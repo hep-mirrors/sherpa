@@ -52,10 +52,10 @@ bool Amisic::Initialize()
   for (size_t i=1;i<model.size();++i) model[0]+=std::string(" ")+model[i];
   SelectSoftModel(StringToModelID(model[0]));
   std::string file;
-  reader->ReadFromFile(file,"HARD_MODEL_FILE");
+  if (!reader->ReadFromFile(file,"HARD_MODEL_FILE")) file=InputFile();
   p_hardbase->SetInputPath(InputPath());
   p_hardbase->SetInputFile(file);
-  reader->ReadFromFile(file,"SOFT_MODEL_FILE");  
+  if (!reader->ReadFromFile(file,"SOFT_MODEL_FILE")) file=InputFile();
   p_softbase->SetInputPath(InputPath());
   p_softbase->SetInputFile(file);
   delete reader;
