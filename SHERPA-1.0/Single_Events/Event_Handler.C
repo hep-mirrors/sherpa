@@ -88,6 +88,7 @@ bool Event_Handler::GenerateEvent(int mode)
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
 
   CleanUpEvent();
+  ATOOLS::ran.SaveStatus();
 
   bool flag     = 1;
   double weight = 1.;
