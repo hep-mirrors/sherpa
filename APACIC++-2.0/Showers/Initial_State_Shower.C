@@ -81,7 +81,7 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
       OutputTree(trees[0]);
       OutputTree(trees[1]);
 
-      return 0;
+      return 1;  // should return 0; but not supported by wrapper !!
     }
     else if ((dabs(m_sprime - cms.Abs2())/m_sprime > rpa.gen.Accu()) ||
 	(dabs(m_sprime - x1*x2*E2)/m_sprime > rpa.gen.Accu())) {
@@ -110,7 +110,7 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
 		 <<"Mismatch of sprimes in Lab !"<<std::endl
 		 <<"   "<<m_sprime<<" / "<<x1*x2*E2<<std::endl
 		 <<"   "<<cms<<" / "<<cms.Abs2()<<std::endl;
-      return 0;
+      return 1;  // should return 0; but not supported by wrapper !!
     }
     else if ((dabs(m_sprime - cms.Abs2())/m_sprime > rpa.gen.Accu()) ||
 	(dabs(m_sprime - x1*x2*E2)/m_sprime > rpa.gen.Accu())) {
@@ -813,9 +813,16 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
 void Initial_State_Shower::OutputTree(Tree * tree) 
 {
   int number=0;
-  msg.Out()<<"final Tree:"<<std::endl<<tree<<std::endl
-	   <<"Total 4 Mom = "<<GetMomentum(tree->GetInitiator(),number);
-  msg.Out()<<" for "<<number<<" FS particles."<<std::endl;
+  if (tree->GetInitiator()==0) {
+    msg.Out()<<"empty Tree"<<endl;
+  }
+  else {
+    msg.Out()<<"final Tree:"<<std::endl<<tree<<std::endl
+	     <<"Total 4 Mom = "<<GetMomentum(tree->GetInitiator(),number);
+    msg.Out()<<" for "<<number<<" FS particles."<<std::endl;
+    // Note: we NEED two "msg.Out()" since otherwise "number" is print
+    //       before it is calculated!!
+  }
 }
 
 

@@ -1052,11 +1052,16 @@ void Final_State_Shower::Reset(Knot * mo)
 void Final_State_Shower::OutputTree(Tree * tree) 
 {
   int number = 0;
-  msg.Out()<<"final Tree:"<<std::endl<<tree<<std::endl
-	   <<"Total 4 Mom = "<<GetMomentum(tree->GetRoot(),number);
-  msg.Out()<<" for "<<number<<" FS particles."<<std::endl;
-  // Note: we NEED two "msg.Out()" since otherwise "number" is print
-  //       before it is calculated!!
+  if (tree->GetRoot()==0) {
+    msg.Out()<<"empty Tree"<<endl;
+  }
+  else {
+    msg.Out()<<"final Tree:"<<std::endl<<tree<<std::endl
+	     <<"Total 4 Mom = "<<GetMomentum(tree->GetRoot(),number);
+    msg.Out()<<" for "<<number<<" FS particles."<<std::endl;
+    // Note: we NEED two "msg.Out()" since otherwise "number" is print
+    //       before it is calculated!!
+  }
 }
 
 
