@@ -513,6 +513,11 @@ void Amegic::FifoOutput(double wt)
   // "conti" or "endss"
 }
 
+bool Amegic::SameEvent()
+{
+  return p_procs->SameEvent();
+}
+
 
 bool Amegic::UnweightedEvent()
 {

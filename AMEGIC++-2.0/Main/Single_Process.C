@@ -45,6 +45,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 	       _scalescheme,_kfactorscheme,_scalefactor,_pl,_nex,_ex_fl),
   p_partner(this)
 {
+  m_save_max=0.;
   GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,m_ptypename,m_libname);
 
   PolarizationNorm();
@@ -698,22 +699,28 @@ void Single_Process::Empty() {
 }
 
 void Single_Process::SetTotalXS(int _tables)  { 
-  if (m_analyse) p_analysis->FinishAnalysis(m_resdir+string("/Tab")+m_name,_tables);
-  m_totalxs  = m_totalsum/m_n; 
-  m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-		    (AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+  if (_tables!=2) {
+    if (m_analyse) p_analysis->FinishAnalysis(m_resdir+string("/Tab")+m_name,_tables);
+    m_totalxs  = m_totalsum/m_n; 
+    m_totalerr = sqrt( (m_totalsumsqr/m_n - 
+			(AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+  }
+  else {
+    //   _tables==2  means  check xs with sum of subprocesses
+    //   nothing to do for a Single_Process
+  }
   if (m_nin==2) {
-    AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
+    msg.Events()<<"      xs for "<<m_name<<" : "
 			   <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
 			   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 			   <<"       max : "<<m_max<<endl;
+    msg.Events()<<"   exp. eff: "<<(100.*m_totalxs/m_max)<<"%"<<endl;
   }
   if (m_nin==1) {
-    AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
+    msg.Events()<<"      xs for "<<m_name<<" : "
 			   <<m_totalxs<<" GeV"
 			   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 			   <<"       max : "<<m_max<<endl;
- 
   }
 }
 
@@ -842,6 +849,14 @@ void Single_Process::AddPoint(const double value) {
   m_totalsum    += value;
   m_totalsumsqr += value*value;
   if (value>m_max) m_max = value;
+  int iter=1;
+  if (m_n<200000)        iter =  40000;
+  else if  (m_n<400000)  iter = 200000;
+  if (iter!=1 && m_n%iter==0) {
+    m_max = m_save_max;
+    m_save_max = 0.;
+  }
+  if (value>m_save_max) m_save_max = value;
   if (m_analyse) p_analysis->DoAnalysis(value*rpa.Picobarn());
 }
 

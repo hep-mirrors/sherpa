@@ -8,6 +8,8 @@
 #include "Running_AlphaS.H"
 #include "Combined_Selector.H"
 #include "Primitive_Observable_Base.H"
+#include "MathTools.H"
+
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -407,6 +409,17 @@ void Process_Group::SelectOne()
       }
     }
     else {
+      // ======= temorary check ======
+      double m=0.;
+      for (int i=0;i<m_procs.size();i++) {
+	m+= m_procs[i]->Max();
+      }
+      if (!AMATOOLS::IsEqual(m,m_max)) {
+	msg.Out()<<"Shifted maximum in Group "<<Name()<<" : "
+		 <<m_max<<" -> "<<m<<endl;
+	SetMax(0.);
+      }
+      // =======
       disc = m_max * ran.Get();
       for (int i=0;i<m_procs.size();i++) {
 	disc -= m_procs[i]->Max();
@@ -474,25 +487,55 @@ void Process_Group::SetTables(bool _tables)
   for (int i=0;i<m_procs.size();i++) m_procs[i]->SetTables(m_tables);
 } 
 
-
 void Process_Group::SetTotalXS(int tables)  { 
-  if (p_analysis) p_analysis->FinishAnalysis(m_resdir+string("/Tab")+m_name,m_tables);
+  if (tables!=2) {
+    if (p_analysis) p_analysis->FinishAnalysis(m_resdir+string("/Tab")+m_name,m_tables);
 
-  m_totalxs  = m_totalsum/m_n; 
-  m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-		    (AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
-  if (p_sel) p_sel->Output();
-
-  m_max = 0.;
-  for (int i=0;i<m_procs.size();i++) {
-    m_procs[i]->SetTotalXS(m_tables);
-    m_max += m_procs[i]->Max();
+    m_totalxs  = m_totalsum/m_n; 
+    m_totalerr = sqrt( (m_totalsumsqr/m_n - 
+			(AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+    if (p_sel) p_sel->Output();
+    m_max = 0.;
+    for (int i=0;i<m_procs.size();i++) {
+      m_procs[i]->SetTotalXS(tables);
+      m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
+    }
+  }
+  else {
+    //   _tables==2  means  check xs with sum of subprocesses
+    //               update maximum to sum of maximum
+    SetMax(0.);
   }
   msg.Events()<<"-----------------------------------------------------------------------"<<endl
-	      <<"Total XS for "<<m_name<<"("<<m_procs.size()<<") : "<<m_totalxs*rpa.Picobarn()<<" pb"
-	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-	      <<"      max = "<<m_max<<endl;
+   <<"Total XS for "<<m_name<<"("<<m_procs.size()<<") : "<<m_totalxs*rpa.Picobarn()<<" pb"
+   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl;
+  //   msg.Events()<<"      max = "<<m_max<<endl;
 }
+
+void Process_Group::SetMax(double max) {
+  if (max>0.) {
+    m_max=max;
+    return;
+  }
+  // paramter is dummy!
+  double sum = 0.;
+  m_max = 0.;
+  for (int i=0;i<m_procs.size();i++) {
+    m_procs[i]->SetTotalXS(2);
+    sum += m_procs[i]->Total();
+    m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
+  }
+  if (m_totalxs!=0.) {
+    if (!AMATOOLS::IsEqual(sum,m_totalxs)) {
+      msg.Out().precision(12);
+      msg.Out()<<" WARNING: group "<<Name()<<": xs and sum of daughters does not agree ! "<<endl;
+      msg.Out()<<" sum="<<sum<<"  total:"<<m_totalxs
+	       <<"  ("<<((sum-m_totalxs)/m_totalxs)<<")"<<endl;
+    }
+    m_totalxs=sum;
+  }
+}
+
 
 void Process_Group::SetAtoms(bool _atoms) { m_atoms = _atoms; }
 
@@ -629,10 +672,10 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 		      <<"       max : "<<_max<<endl;
 	  Process_Base * _proc = NULL;
 	  if (Find(_name,_proc)) {
-	    msg.Debugging()<<"Set... ";
+	    msg.Events()<<"Set... "<<_totalxs<<","<<_max<<endl;
 	    _proc->SetTotal(_totalxs);
 	    _proc->SetMax(_max);
-	    msg.Debugging()<<"... done"<<endl;
+	    msg.Events()<<"... done"<<endl;
 	  }
 	  else {
 	    msg.Debugging()<<"########################################"<<endl
@@ -649,6 +692,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	  if (okay) {
 	    msg.Events()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
 			<<"   Found all xsecs. Continue"<<endl;
+	    SetTotalXS(2);
 	    return 1;
 	  }
 	}
@@ -680,6 +724,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
       if (_resdir!=string("")) {
 	std::ofstream to;
 	to.open(filename,ios::out);
+	to.precision(12);
 	msg.Events()<<"Store result : xs for "<<m_name<<" : "
 		    <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
 		    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
@@ -693,6 +738,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
   }
   return 0;
 }
+
 
 
 void  Process_Group::RescaleXSec(double fac) {

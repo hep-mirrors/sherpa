@@ -14,6 +14,7 @@ namespace AMEGIC {
     std::string             m_ptypename,m_libname; 
     Polarisation            m_pol;
     double                  m_Norm;
+    double                  m_save_max;
 
     Helicity              * p_hel;
     Basic_Sfuncs          * p_BS;

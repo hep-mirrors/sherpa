@@ -46,6 +46,7 @@ namespace AMEGIC {
     void           SetISRThreshold(double);
     void           SetTables(bool);
     void           SetTotalXS(int);
+    void           SetMax(double);
     void           SetAtoms(bool);
     void           SetPartner(Single_Process * _p) { }
     Process_Base * Partner()                       { return 0; }
