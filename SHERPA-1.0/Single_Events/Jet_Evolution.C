@@ -93,6 +93,10 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->Weight();
       }  
+      if ((blob->Status()==1 && blob->Type()==btp::Soft_Collision) ||
+	  (blob->Status()==5 && blob->Type()==btp::Signal_Process)) {
+	found = AttachShowers(blob,_bloblist,piIter->second);
+      }  
       if (blob->Status()==1 && blob->Type()==btp::Hard_Decay) {
 	FillDecayBlobMap(blob,_bloblist);
 	piIter = m_interfaces.find(string("HardDecays"));
@@ -115,7 +119,9 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 				 Perturbative_Interface * interface) 
 {
-  if (_blob->Type()==btp::Hard_Collision && !p_showerhandler->ShowerMI()) {
+  if ((_blob->Type()==btp::Hard_Collision && !p_showerhandler->ShowerMI()) ||
+      _blob->Type()==btp::Soft_Collision || 
+      (_blob->Type()==btp::Signal_Process && _blob->Status()==5)) {
     Blob * myblob;
     for (int i=0;i<2;i++) {
       myblob = new Blob();

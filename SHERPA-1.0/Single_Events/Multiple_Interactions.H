@@ -13,11 +13,19 @@ namespace SHERPA {
 
     double m_ecms, m_pperpmax, m_ecmsmax, m_xmax[2];
 
-    MI_Handler *p_mihandler;
+    MI_Handler   *p_mihandler;
     Remnant_Base *p_remnants[2];
 
-    bool CheckBlobList(const ATOOLS::Blob_List *bloblist);
-    void VetoHardProcess(ATOOLS::Blob *const blob);
+    ATOOLS::Blob_List *p_bloblist;
+
+    std::set<ATOOLS::Blob*> m_deleted;
+
+    bool m_vetoed;
+
+    bool CheckBlobList(ATOOLS::Blob_List *const bloblist);
+    bool VetoHardProcess(ATOOLS::Blob *const blob);
+    
+    void DeleteConnected(ATOOLS::Blob *const blob);
 
   public:
 

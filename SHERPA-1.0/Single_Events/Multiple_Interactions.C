@@ -34,8 +34,10 @@ Multiple_Interactions::~Multiple_Interactions()
 {
 }
 
-bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist) 
+bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist) 
 {
+  p_bloblist=bloblist;
+  bool diced=false;
   double pperpmax=m_pperpmax=std::numeric_limits<double>::max();
   for (size_t i=0;i<2;++i) {
     m_xmax[i]=1.0;
@@ -43,14 +45,19 @@ bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist)
   }
   for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision || 
-	(*bit)->Type()==ATOOLS::btp::Signal_Process) {
+    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision) diced=true;
+    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision ||
+	(*bit)->Type()==ATOOLS::btp::Signal_Process) 
       if ((*bit)->Status()!=0) return false;
-    }
-    else if ((*bit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
-      for (int i=0;i<(*bit)->NInP();++i) {
-	pperpmax=ATOOLS::Min(pperpmax,
-			     (*bit)->InParticle(i)->Momentum().PPerp());
+  }
+  for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
+       bit!=bloblist->end();++bit) {
+    if ((*bit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
+      for (int i=0;i<(*bit)->NInP();++i) 
+	pperpmax=ATOOLS::Min(pperpmax,(*bit)->InParticle(i)->Momentum().PPerp());
+      if (!diced && VetoHardProcess(*bit)) {
+	m_pperpmax=0.0;
+	break;
       }
     }
     else if ((*bit)->Type()==ATOOLS::btp::IS_Shower) {
@@ -58,8 +65,7 @@ bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist)
       p_mihandler->ISRHandler()->
 	Extract((*bit)->InParticle(0)->Flav(),
 		(*bit)->InParticle(0)->Momentum()[0],(*bit)->Beam());
-      if (!p_remnants[(*bit)->Beam()]->Extract((*bit)->InParticle(0))) 
-	VetoHardProcess(*bit);
+      p_remnants[(*bit)->Beam()]->Extract((*bit)->InParticle(0)); 
     }
   }
   if (pperpmax>=m_pperpmax) {
@@ -67,15 +73,13 @@ bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist)
 	 bit!=bloblist->end();++bit) {
       if ((*bit)->Type()==ATOOLS::btp::Hard_Collision || 
 	  (*bit)->Type()==ATOOLS::btp::Signal_Process) {
-	for (int i=0;i<(*bit)->NOutP();++i) {
-	  pperpmax=ATOOLS::Min(pperpmax,
-			       (*bit)->OutParticle(i)->Momentum().PPerp());
-	}
+	for (int i=0;i<(*bit)->NOutP();++i) 
+	  pperpmax=ATOOLS::Min(pperpmax,(*bit)->OutParticle(i)->Momentum().PPerp());
 	for (int i=0;i<(*bit)->NInP();++i) {
 	  p_mihandler->ISRHandler()->
 	    Extract((*bit)->InParticle(i)->Flav(),
 		    (*bit)->InParticle(i)->Momentum()[0],i);
-	  if (!p_remnants[i]->Extract((*bit)->InParticle(i))) VetoHardProcess(*bit);
+	  p_remnants[i]->Extract((*bit)->InParticle(i));
 	}
       }
     }
@@ -86,7 +90,8 @@ bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist)
 bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
   PROFILE_HERE;
-  if (p_mihandler->Type()==MI_Handler::None) return false;
+  if (p_mihandler->Type()==MI_Handler::None ||
+      AMISIC::MI_Base::StopGeneration()) return false;
   if (bloblist->empty()) {
     ATOOLS::msg.Error()<<"Multiple_Interactions::Treat(): "
 		       <<"Incoming blob list is empty!"<<std::endl;
@@ -94,18 +99,30 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   }
   if (!CheckBlobList(bloblist)) return false;
   p_mihandler->SetScaleMax(m_pperpmax,0);
+  p_mihandler->SetScaleMin(p_mihandler->ScaleMin(0),0);
   p_mihandler->SetScaleMax(m_xmax[0],2);
   p_mihandler->SetScaleMax(m_xmax[1],3);
   ATOOLS::Blob *blob = new ATOOLS::Blob();
-  blob->SetType(ATOOLS::btp::Hard_Collision);
   p_mihandler->Reset();
-  if (p_mihandler->GenerateHardProcess(blob)) {
+  bool success=false;
+  if (!m_vetoed && m_pperpmax>p_mihandler->ScaleMin(0)) {
+    success=p_mihandler->GenerateHardProcess(blob);
+  }
+  else if (m_vetoed) {
+    success=p_mihandler->GenerateSoftProcess(blob);
+    // dummy settings for unweighted analysis
+    blob->SetType(ATOOLS::btp::Signal_Process);
+    blob->SetTypeSpec("Soft UE");
+    blob->SetStatus(5);
+    blob->AddData("ME_Weight",new ATOOLS::Blob_Data<double>(1.0));
+    blob->AddData("ME_NumberOfTrials",new ATOOLS::Blob_Data<int>(1));
+  }
+//   std::cout<<"result "<<m_vetoed<<" "<<success<<" "<<m_pperpmax<<"\n";
+  if (success) {
     blob->SetId(bloblist->size());
-    blob->SetStatus(1);
     for (size_t i=0;i<(size_t)blob->NInP();++i) {
       p_mihandler->ISRHandler()->Reset(i);
       if (!p_remnants[i]->Extract(blob->InParticle(i))) {
-	AMISIC::MI_Base::SetStopGeneration();
 	delete blob;
 	return false;
       }
@@ -119,9 +136,36 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   return false;
 }
 
-void Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)
+void Multiple_Interactions::DeleteConnected(ATOOLS::Blob *const blob)
 {
-  ATOOLS::msg.Error()<<"Veto "<<*blob<<std::endl;
+  if (m_deleted.find(blob)!=m_deleted.end()) return;
+  m_deleted.insert(blob);
+  for (int i=blob->NOutP()-1;i>=0;i=ATOOLS::Min(blob->NOutP()-1,i-1)) {
+    ATOOLS::Blob *dblob=blob->OutParticle(i)->DecayBlob();
+    if (dblob!=NULL) DeleteConnected(dblob);
+  }
+  for (int i=blob->NInP()-1;i>=0;i=ATOOLS::Min(blob->NInP()-1,i-1)) {
+    ATOOLS::Blob *pblob=blob->InParticle(i)->ProductionBlob();
+    if (pblob!=NULL) DeleteConnected(pblob);
+  }
+  delete blob;
+  for (ATOOLS::Blob_List::iterator bit=p_bloblist->begin();
+       bit!=p_bloblist->end();++bit)
+    if (*bit==blob) {
+      p_bloblist->erase(bit);
+      break;
+    }
+}
+
+bool Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)
+{
+  if (p_mihandler->VetoHardProcess(blob)) {
+    m_deleted.clear();
+    DeleteConnected(blob);
+//     std::cout<<"veto "<<*p_bloblist<<"\n";
+    return m_vetoed=true;
+  }
+  return false;
 }
 
 void Multiple_Interactions::Finish(const std::string &resultpath) 
@@ -131,4 +175,5 @@ void Multiple_Interactions::Finish(const std::string &resultpath)
 void Multiple_Interactions::CleanUp() 
 {
   p_mihandler->CleanUp();
+  m_vetoed=false;
 }
