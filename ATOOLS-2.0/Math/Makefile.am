@@ -30,7 +30,9 @@ libToolsMath_la_SOURCES       =	\
 				Data_To_Function.C \
 				Histogram.C \
 				Variable.C \
-				Permutation.C
+				Permutation.C \
+				Grid.C \
+				Primitive_Integrator.C
 noinst_HEADERS        =	\
 			MathTools.H \
 			Random.H \
@@ -48,7 +50,9 @@ noinst_HEADERS        =	\
 			Data_To_Function.H \
 			Data_To_Function.inl.H \
 			Histogram.H \
-			Permutation.H
+			Permutation.H \
+			Grid.H \
+			Primitive_Integrator.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
