@@ -266,8 +266,8 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
     if (treat[1]) success=success&&p_beampart[1]->FillBlob(p_beamblob[1],particlelist);
     if ((p_beampart[0]->Type()==rtp::hadron)||
 	(p_beampart[1]->Type()==rtp::hadron)) {
-      p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
-      for (size_t i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
+//       p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
+//       for (size_t i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
     }
     bool empty=false;
     for (size_t i=0;i<2;++i) {

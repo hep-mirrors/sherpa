@@ -8,11 +8,18 @@
 #ifdef PROFILE__all
 #include "prof.hh"
 #endif
+#ifdef ROOT_SUPPORT
+#include "My_Root.H"
+#endif
 
 using namespace SHERPA;
 
 int main(int argc,char* argv[]) 
 {  
+#ifdef ROOT_SUPPORT
+  MYROOT::myroot = new MYROOT::My_Root(argc,argv);
+  ATOOLS::Exception_Handler::AddTerminatorObject(MYROOT::myroot);
+#endif
   std::set_terminate(ATOOLS::Exception_Handler::Terminate);
   std::set_unexpected(ATOOLS::Exception_Handler::Terminate);
   signal(SIGSEGV,ATOOLS::Exception_Handler::SignalHandler);
@@ -47,6 +54,9 @@ int main(int argc,char* argv[])
 		     <<"Sherpa finished its simulation run with "
 		     <<Generator.NumberOfErrors()<<" errors."<<std::endl
 		     <<"=========================================================================="<<std::endl;
+#ifdef ROOT_SUPPORT
+    delete MYROOT::myroot;
+#endif
 #ifdef PROFILE__all    
     std::ofstream *output = new std::ofstream("profile.out",std::ios::out);
     print_profile(*output);
