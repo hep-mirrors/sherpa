@@ -100,6 +100,22 @@ DEFINE_FUNCTION(Square_Root,"sqrt")
   return ToString(sqrt(arg0));
 }
 
+DEFINE_FUNCTION(Minimum,"min")
+{
+  if (args.size()!=2) THROW(fatal_error,"Min requires 2 arguments.")
+  double arg0=ToType<double>(args[0]);
+  double arg1=ToType<double>(args[1]);
+  return ToString(Min(arg0,arg1));
+}
+
+DEFINE_FUNCTION(Maximum,"max")
+{
+  if (args.size()!=2) THROW(fatal_error,"Max requires 2 arguments.")
+  double arg0=ToType<double>(args[0]);
+  double arg1=ToType<double>(args[1]);
+  return ToString(Max(arg0,arg1));
+}
+
 DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
 {
   if (expr.find("(")==std::string::npos ||
@@ -208,7 +224,15 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t tlfpos=lstr.rfind(oit->second->Tag());
     if (tlfpos!=std::string::npos) {
-      lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
+      if (tlfpos>0 && 
+	  (lstr[tlfpos-1]=='e' || lstr[tlfpos-1]=='E')) {
+	tlfpos=lstr.rfind(oit->second->Tag(),tlfpos-1);
+	if (tlfpos!=std::string::npos) 
+	  lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
+      } 
+      else {
+	lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
+      }
     }
   }
   lrstr=lstr.substr(0,lfpos);
@@ -220,7 +244,15 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t trfpos=rstr.find(oit->second->Tag());
     if (trfpos!=std::string::npos) {
-      rfpos=Min(rfpos,trfpos);
+      if (trfpos>0 && 
+	  (rstr[trfpos-1]=='e' || rstr[trfpos-1]=='E')) {
+	trfpos=rstr.find(oit->second->Tag(),trfpos+1);
+	if (trfpos!=std::string::npos) 
+	  rfpos=Min(rfpos,trfpos);
+      } 
+      else {
+	rfpos=Min(rfpos,trfpos);
+      }
     }
   }
   rrstr=rstr.substr(rfpos);
@@ -262,7 +294,15 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t trfpos=rstr.find(oit->second->Tag());
     if (trfpos!=std::string::npos) {
-      rfpos=Min(rfpos,trfpos);
+      if (trfpos>0 && 
+	  (rstr[trfpos-1]=='e' || rstr[trfpos-1]=='E')) {
+	trfpos=rstr.find(oit->second->Tag(),trfpos+1);
+	if (trfpos!=std::string::npos) 
+	  rfpos=Min(rfpos,trfpos);
+      } 
+      else {
+	rfpos=Min(rfpos,trfpos);
+      }
     }
   }
   rrstr=rstr.substr(rfpos);
@@ -294,6 +334,8 @@ Primitive_Interpreter::Primitive_Interpreter(const bool standard)
   AddFunction(new Absolute_Value());
   AddFunction(new Square());
   AddFunction(new Square_Root());
+  AddFunction(new Minimum());
+  AddFunction(new Maximum());
 }
 
 Primitive_Interpreter::~Primitive_Interpreter()
@@ -320,7 +362,9 @@ std::string &Primitive_Interpreter::ReplaceTags(std::string &expr) const
 
 std::string Primitive_Interpreter::Interprete(const std::string &expr)
 {
-  return Iterate(expr);
+  std::string res=expr;
+  ReplaceTags(res);
+  return Iterate(res);
 }
 
 void Primitive_Interpreter::AddFunction(Function *const f)
@@ -339,7 +383,6 @@ std::string Primitive_Interpreter::Iterate(const std::string &expr)
   if (++depth>1000) THROW(critical_error,"Max depth reached.");
   msg_Indent();
   std::string res=expr;
-  ReplaceTags(res);
   Interpreter_Set::const_iterator iit=m_interpreters.begin();
   for (;iit!=m_interpreters.end();++iit) 
     res=(*iit)->Interprete(res);
