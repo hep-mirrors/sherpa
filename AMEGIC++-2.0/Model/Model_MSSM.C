@@ -43,14 +43,12 @@ void Model_MSSM::c_FFS(Single_Vertex* v,int& vanz)
 
 void Model_MSSM::c_VVS(Single_Vertex* v,int& vanz) 
 {
-  mosm.c_VVS(v,vanz);
   moHiggs.c_VVS(v,vanz);
 }
 
 
 void Model_MSSM::c_SSS(Single_Vertex* v,int& vanz) 
 {
-  mosm.c_SSS(v,vanz);
   moHiggs.c_SSS(v,vanz);
   mosL.c_SSS(v,vanz);
   mosq.c_SSS(v,vanz);
@@ -64,16 +62,28 @@ void Model_MSSM::c_SSV(Single_Vertex* v,int& vanz)
   mosq.c_SSV(v,vanz);
 }
 
+void Model_MSSM::c_SSVV(Single_Vertex* v,int& vanz)
+{ 
+  moHiggs.c_SSVV(v,vanz);
+  mosL.c_SSVV(v,vanz);
+  mosq.c_SSVV(v,vanz);
+}
+
+void Model_MSSM::c_VVVV(Single_Vertex* v,int& vanz)
+{
+  mosm.c_VVVV(v,vanz);
+}
+
+void Model_MSSM::c_SSSS(Single_Vertex* v,int& vanz)
+{
+  mosL.c_SSSS(v,vanz);
+}
+
 inline double Model_MSSM::Aqcd(double t)    {return APHYTOOLS::as->AlphaS(t);} // switch dependent running
 inline double Model_MSSM::Aqcd()            {return APHYTOOLS::as->AsFixed();} // alpha_S _eff (read in)
 inline double Model_MSSM::Aqed(double t)    {return APHYTOOLS::aqed->Aqed(t);}
 inline double Model_MSSM::Aqed()            {return APHYTOOLS::aqed->AqedFixed();}
-/*
-inline double Model_MSSM::Aqcd(double t)    {return (*APHYTOOLS::as)(t);}
-inline double Model_MSSM::Aqcd()            {return (*APHYTOOLS::as)(sqr(AORGTOOLS::rpa.gen.Ecms()));}
-inline double Model_MSSM::Aqed(double t)    {return (*APHYTOOLS::aqed)(t);}
-inline double Model_MSSM::Aqed()            {return (*APHYTOOLS::aqed)(sqr(AORGTOOLS::rpa.gen.Ecms()));}
-*/
+
 inline double Model_MSSM::SinTW()           {return mosm.SinTW();}
 inline double Model_MSSM::CosTW()           {return mosm.CosTW();}
 inline double Model_MSSM::TanB()            {return moHiggs.TanB();}

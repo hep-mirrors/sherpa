@@ -15,7 +15,6 @@ void String_Library::InitMakefile(string pathID)
 
   msg.Out()<<newMakefile<<" is not available !"<<endl;
     
-
   system((string("cd Process;cp Dummy/Makefile ")+pathID).c_str());
 
   string pID;

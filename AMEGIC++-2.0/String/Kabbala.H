@@ -5,7 +5,6 @@
 #include "MyComplex.H"
 #include "MathTools.H"
 #include <strstream>
-// #include <sstream>
 
 #define Kabbala_on
 

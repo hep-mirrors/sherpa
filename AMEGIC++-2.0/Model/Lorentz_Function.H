@@ -20,9 +20,21 @@ namespace AMEGIC {
 	       SSS    = 7, 
 	       FFS    = 8, 
 	       Pol    =10,
+	       VVSS   =11,//the generic interaction of 2 vectors and 2 scalars (Gab)
+	       SSSS   =12,//the generic interaction of 4 scalars
 	       Gamma_NC   = 51,
 	       Photon3_NC = 53,
 	       Photon4_NC = 55,
+	       FFT    =60,
+	       VVT    =61,
+	       SST    =62,
+	       FFVT   =63,
+	       VVVT   =64,
+	       SSST   =65,
+               FFGS   =70,
+	       VVGS   =71,
+	       SSGS   =72,
+	       FFVGS  =73,
 	       Unknown=99}; 
   };
   
@@ -33,8 +45,7 @@ namespace AMEGIC {
 
     std::string Str(int a) const
     {
-      std::strstream sstream;  
-      // std::stringstream sstream;
+      std::strstream sstream;
       sstream<<partarg[a];
       std::string help;
       sstream>>help;
@@ -64,11 +75,22 @@ namespace AMEGIC {
       case lf::Gluon4: return 4;
       case lf::SSV   : return 3;	
       case lf::Pol   : return 1;	
+      case lf::VVSS  : return 2;	
       case lf::Gamma_NC   : return 1;
       case lf::Photon3_NC : return 3;
       case lf::Photon4_NC : return 4;
+      case lf::FFT   : return 1;
+      case lf::VVT   : return 3;
+      case lf::SST   : return 3;
+      case lf::FFVT  : return 2;
+      case lf::VVVT  : return 4;
+      case lf::SSST  : return 1;
+      case lf::VVGS  : return 3;
+      case lf::FFVGS : return 1;
+      case lf::SSGS  : return 2;
+      default: return 0;
       }
-      //default
+      //default (includes FFS, SSS and SSSS )
       return 0;
     }
 
@@ -84,8 +106,9 @@ namespace AMEGIC {
     int  NextPermutation();
 
     std::string String(int shortversion=0) const {
-      if (type==lf::SSS) return std::string("1");
-      if (type==lf::FFS) return std::string("1");
+      if (type==lf::SSS)  return std::string("1");
+      if (type==lf::FFS)  return std::string("1");
+      if (type==lf::SSSS) return std::string("1");
       std::string help;
       switch (type) {
       case lf::Gamma:  
@@ -97,6 +120,9 @@ namespace AMEGIC {
       case lf::Gab:   
 	// G[0,1]
 	help = std::string("G[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
+      case lf::VVSS:   
+	// G(2V2S)[0,1]
+	help = std::string("G(2V2S)[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
       case lf::Gauge3: 
 	// (P[0,2]-P[1,2])*G(0,1)+(P[1,0]-P[2,0])*G(1,2)+(P[2,1]-P[0,1])*G(2,0)
 	if (shortversion) {
@@ -198,10 +224,39 @@ namespace AMEGIC {
 	  help += std::string("G[")  + Str(2) + std::string(",") + Str(1) + std::string("])");
 	}
 	break;
-      }
+      case lf::FFT:
+	help = std::string("FFT[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
+      case lf::FFVT:
+	help = std::string("FFVT[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
+      case lf::FFVGS:
+	help = std::string("FFVGS[") + Str(0) + std::string("]");break;
+      case lf::VVT:
+	help = std::string("VVT[") + Str(0) + std::string(",") + Str(1) 
+	     + std::string(",") + Str(2) + std::string("]");break;    
+      case lf::VVGS:
+	help = std::string("VVGS[") + Str(0) + std::string(",") + Str(1) 
+	     + std::string(",") + Str(2) + std::string("]");break;
+      }     
       return help;
     }
   };
+
+  // Format of a Lorentz_Function to transport via MPI:
+  struct MPI_Lorentz_Function {
+    
+    int m_type;
+    int    m_partarg[4];         
+
+   };
+
+  //for MPI usage
+  
+  void Lorentz_Function2MPI(const Lorentz_Function * , MPI_Lorentz_Function &);
+  
+  Lorentz_Function * MPI2Lorentz_Function(const MPI_Lorentz_Function &);
+  
+  std::ostream & operator<<(std::ostream &, const MPI_Lorentz_Function &);
+
 }
 #endif
 

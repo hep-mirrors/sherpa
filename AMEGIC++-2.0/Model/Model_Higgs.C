@@ -789,8 +789,362 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
   } 
 }
 
+void Model_Higgs::c_SSVV(Single_Vertex* v,int& vanz) 
+{
+    
+  Flavour flW(kf::W);
+  Flavour flZ(kf::Z);
+  Flavour flHmin(kf::Hmin);    
+  Flavour flh0(kf::h0);
+  Flavour flH0(kf::H0);
+  Flavour flA0(kf::A0);
+  Flavour flPhoton(kf::photon);
+  
+  Kabbala kcpl0,kcpl1;
 
-inline Kabbala Model_Higgs::K_yuk(Flavour fl) {
+  // Z - h0/H0/A0 - h0/H0/A0 - Z  
+  if (flZ.IsOn()) {
+    for(short int i=31; i<34;++i){
+      Flavour flav = Flavour(kf::code(i));
+      if(flav.IsOn()) {
+	
+ 	v[vanz].in[0] = flZ;
+	v[vanz].in[1] = flav;
+	v[vanz].in[2] = flav;
+	v[vanz].in[3] = flZ;
+  
+	v[vanz].nleg     = 4;
+
+	kcpl0 = M_I*g2*g2/(num_2*K_cosTW()*K_cosTW());
+	kcpl1 = kcpl0;
+    
+	v[vanz].cpl[0]  = kcpl0.Value();
+	v[vanz].cpl[1]  = kcpl1.Value();
+	v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+  
+	v[vanz].ncf   = 1;
+	v[vanz].Color = new Color_Function; 
+	
+	v[vanz].Color->type   = cf::None;     
+	
+	v[vanz].nlf     = 1;
+	v[vanz].Lorentz = new Lorentz_Function; 
+	
+	v[vanz].Lorentz->type = lf::VVSS;     
+	v[vanz].Lorentz->SetParticleArg(0,3);     
+	
+	v[vanz].on      = 1;
+	vanz++;
+      }
+    }
+  }
+ // W - h0/H0/A0 - h0/H0/A0 - W  
+  if (flZ.IsOn()) {
+    for(short int i=31; i<34;++i){
+      Flavour flav = Flavour(kf::code(i));
+      if(flav.IsOn()) {
+	
+ 	v[vanz].in[0] = flW;
+	v[vanz].in[1] = flav;
+	v[vanz].in[2] = flav;
+	v[vanz].in[3] = flW;
+  
+	v[vanz].nleg     = 4;
+
+	kcpl0 = M_I*g2*g2/num_2;
+	kcpl1 = kcpl0;
+    
+	v[vanz].cpl[0]  = kcpl0.Value();
+	v[vanz].cpl[1]  = kcpl1.Value();
+	v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+  
+	v[vanz].ncf   = 1;
+	v[vanz].Color = new Color_Function; 
+	
+	v[vanz].Color->type   = cf::None;     
+	
+	v[vanz].nlf     = 1;
+	v[vanz].Lorentz = new Lorentz_Function; 
+	
+	v[vanz].Lorentz->type = lf::VVSS;     
+	v[vanz].Lorentz->SetParticleArg(0,3);     
+	
+	v[vanz].on      = 1;
+	vanz++;
+      }
+    }
+  }
+
+  if (flW.IsOn() && flHmin.IsOn()) {
+    //W -> H- - H- - W
+    v[vanz].in[0] = flW;
+    v[vanz].in[1] = flHmin.Bar();
+    v[vanz].in[2] = flHmin;
+    v[vanz].in[3] = flW;
+    
+    v[vanz].nleg     = 4;
+
+    kcpl0 = M_I*g2*g2/num_2;
+    kcpl1 = kcpl0;
+    
+    v[vanz].cpl[0]  = kcpl0.Value();
+    v[vanz].cpl[1]  = kcpl1.Value();
+    v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+    v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+    
+    v[vanz].ncf   = 1;
+    v[vanz].Color = new Color_Function; 
+    
+    v[vanz].Color->type   = cf::None;     
+	
+    v[vanz].nlf     = 1;
+    v[vanz].Lorentz = new Lorentz_Function; 
+    
+    v[vanz].Lorentz->type = lf::VVSS;     
+    v[vanz].Lorentz->SetParticleArg(0,3);     
+    
+    v[vanz].on      = 1;
+    vanz++;
+    
+    // W+ -> H+ + h0/H0 + Z/P 
+    for(short int i=31; i<33;++i){
+      Flavour flav = Flavour(kf::code(i));
+      if(flav.IsOn()) {
+	if(flZ.IsOn()) {
+
+ 	v[vanz].in[0] = flW.Bar();
+	v[vanz].in[1] = flHmin.Bar();
+	v[vanz].in[2] = flav;
+	v[vanz].in[3] = flZ;
+  
+	v[vanz].nleg     = 4;
+
+	kcpl0 = M_I*g1*g1/(num_2*K_cosTW())*K_A_M(i-31,0);
+	kcpl1 = kcpl0;
+    
+	v[vanz].cpl[0]  = kcpl0.Value();
+	v[vanz].cpl[1]  = kcpl1.Value();
+	v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+  
+	v[vanz].ncf   = 1;
+	v[vanz].Color = new Color_Function; 
+	
+	v[vanz].Color->type   = cf::None;     
+	
+	v[vanz].nlf     = 1;
+	v[vanz].Lorentz = new Lorentz_Function; 
+	
+	v[vanz].Lorentz->type = lf::VVSS;     
+	v[vanz].Lorentz->SetParticleArg(0,3);     
+	
+	v[vanz].on      = 1;
+	vanz++;
+	}
+
+	if(flPhoton.IsOn()) {
+
+ 	v[vanz].in[0] = flW.Bar();
+	v[vanz].in[1] = flHmin.Bar();
+	v[vanz].in[2] = flav;
+	v[vanz].in[3] = flPhoton;
+  
+	v[vanz].nleg     = 4;
+
+	kcpl0 = -M_I*g1*g1/(num_2*K_sinTW())*K_A_M(i-31,0);
+	kcpl1 = kcpl0;
+    
+	v[vanz].cpl[0]  = kcpl0.Value();
+	v[vanz].cpl[1]  = kcpl1.Value();
+	v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+  
+	v[vanz].ncf   = 1;
+	v[vanz].Color = new Color_Function; 
+	
+	v[vanz].Color->type   = cf::None;     
+	
+	v[vanz].nlf     = 1;
+	v[vanz].Lorentz = new Lorentz_Function; 
+	
+	v[vanz].Lorentz->type = lf::VVSS;     
+	v[vanz].Lorentz->SetParticleArg(0,3);     
+	
+	v[vanz].on      = 1;
+	vanz++;
+	}
+      }
+    }
+    // W+ -> H+ + A0 + Z/P   
+    if (flA0.IsOn()) {
+      if (flZ.IsOn()) {
+	
+ 	v[vanz].in[0] = flW.Bar();
+	v[vanz].in[1] = flHmin.Bar();
+	v[vanz].in[2] = flA0;
+	v[vanz].in[3] = flZ;
+  
+	v[vanz].nleg     = 4;
+	
+	kcpl0 = g1*g1/(num_2*K_cosTW());
+	kcpl1 = kcpl0;
+	
+	v[vanz].cpl[0]  = kcpl0.Value();
+	v[vanz].cpl[1]  = kcpl1.Value();
+	v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+  
+	v[vanz].ncf   = 1;
+	v[vanz].Color = new Color_Function; 
+	
+	v[vanz].Color->type   = cf::None;     
+	
+	v[vanz].nlf     = 1;
+	v[vanz].Lorentz = new Lorentz_Function; 
+	
+	v[vanz].Lorentz->type = lf::VVSS;     
+	v[vanz].Lorentz->SetParticleArg(0,3);     
+	
+	v[vanz].on      = 1;
+	vanz++;
+      }
+      if (flPhoton.IsOn()) {
+	
+	v[vanz].in[0] = flW.Bar();
+	v[vanz].in[1] = flHmin.Bar();
+	v[vanz].in[2] = flA0;
+	v[vanz].in[3] = flPhoton;
+  
+	v[vanz].nleg     = 4;
+	
+	kcpl0 = -g1*g1/(num_2*K_sinTW());
+	kcpl1 = kcpl0;
+	
+	v[vanz].cpl[0]  = kcpl0.Value();
+	v[vanz].cpl[1]  = kcpl1.Value();
+	v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+  
+	v[vanz].ncf   = 1;
+	v[vanz].Color = new Color_Function; 
+	
+	v[vanz].Color->type   = cf::None;     
+	
+	v[vanz].nlf     = 1;
+	v[vanz].Lorentz = new Lorentz_Function; 
+	
+	v[vanz].Lorentz->type = lf::VVSS;     
+	v[vanz].Lorentz->SetParticleArg(0,3);     
+	
+	v[vanz].on      = 1;
+	vanz++;
+      }
+    }
+  }
+  //P/Z -> H- - H- - Z/P 
+  if (flHmin.IsOn()) {
+    if (flZ.IsOn()) {
+      
+      Kabbala cot2TW = Kabbala(string("cot2\\theta_W"),
+			       (CosTW()*CosTW()-SinTW()*SinTW())/(2.*SinTW()*CosTW()));
+      
+      v[vanz].in[0] = flZ;
+      v[vanz].in[1] = flHmin;
+      v[vanz].in[2] = flHmin.Bar();
+      v[vanz].in[3] = flZ;
+      
+      v[vanz].nleg     = 4;
+      
+      kcpl0 = M_I*g1*g1*num_2*cot2TW*cot2TW;
+      kcpl1 = kcpl0;
+      
+      v[vanz].cpl[0]  = kcpl0.Value();
+      v[vanz].cpl[1]  = kcpl1.Value();
+      v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+      v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+      
+      v[vanz].ncf   = 1;
+      v[vanz].Color = new Color_Function; 
+	
+      v[vanz].Color->type   = cf::None;     
+      
+      v[vanz].nlf     = 1;
+      v[vanz].Lorentz = new Lorentz_Function; 
+	
+      v[vanz].Lorentz->type = lf::VVSS;     
+      v[vanz].Lorentz->SetParticleArg(0,3);     
+      
+      v[vanz].on      = 1;
+      vanz++;
+      
+      if(flPhoton.IsOn()) {
+	v[vanz].in[0] = flZ;
+	v[vanz].in[1] = flHmin;
+	v[vanz].in[2] = flHmin.Bar();
+	v[vanz].in[3] = flPhoton;
+	
+	v[vanz].nleg     = 4;
+	
+	kcpl0 = M_I*g1*g1*num_2*cot2TW;
+	kcpl1 = kcpl0;
+	
+	v[vanz].cpl[0]  = kcpl0.Value();
+	v[vanz].cpl[1]  = kcpl1.Value();
+	v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+  
+	v[vanz].ncf   = 1;
+	v[vanz].Color = new Color_Function; 
+	
+	v[vanz].Color->type   = cf::None;     
+	
+	v[vanz].nlf     = 1;
+	v[vanz].Lorentz = new Lorentz_Function; 
+	
+	v[vanz].Lorentz->type = lf::VVSS;     
+	v[vanz].Lorentz->SetParticleArg(0,3);     
+	
+	v[vanz].on      = 1;
+	vanz++;
+	
+      }
+    }
+    if(flPhoton.IsOn()) {
+      v[vanz].in[0] = flPhoton;
+      v[vanz].in[1] = flHmin;
+      v[vanz].in[2] = flHmin.Bar();
+      v[vanz].in[3] = flPhoton;
+      
+      v[vanz].nleg     = 4;
+      
+      kcpl0 = M_I*g1*g1*num_2;
+      kcpl1 = kcpl0;
+      
+      v[vanz].cpl[0]  = kcpl0.Value();
+      v[vanz].cpl[1]  = kcpl1.Value();
+      v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+      v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+      
+      v[vanz].ncf   = 1;
+      v[vanz].Color = new Color_Function; 
+      
+      v[vanz].Color->type   = cf::None;     
+      
+      v[vanz].nlf     = 1;
+      v[vanz].Lorentz = new Lorentz_Function; 
+      
+      v[vanz].Lorentz->type = lf::VVSS;     
+      v[vanz].Lorentz->SetParticleArg(0,3);     
+      
+      v[vanz].on      = 1;
+      vanz++;
+    }
+  }    
+}
+
+Kabbala Model_Higgs::K_yuk(Flavour fl) {
   return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
 }
 
@@ -800,33 +1154,33 @@ Kabbala Model_Higgs::K_yuk_sign(Flavour fl) {
   return Kabbala(string(hi),fl.MassSign());
 }
 
-inline Kabbala Model_Higgs::K_v0() {
+Kabbala Model_Higgs::K_v0() {
   return Kabbala(string("v_0"),SpHiggs.v_0());
 }  
 
-inline Kabbala Model_Higgs::K_v1() {
+Kabbala Model_Higgs::K_v1() {
   return Kabbala(string("v_1"),SpHiggs.v_1());
 }  
 
-inline Kabbala Model_Higgs::K_v2() {
+Kabbala Model_Higgs::K_v2() {
   return Kabbala(string("v_2"),SpHiggs.v_2());
 }
 
-inline Kabbala Model_Higgs::K_Z_H(short int i,short int j) {   
+Kabbala Model_Higgs::K_Z_H(short int i,short int j) {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_H"),SpHiggs.Z_H(i,j));
 }     
 
-inline Kabbala Model_Higgs::K_Z_R(short int i,short int j) {   
+Kabbala Model_Higgs::K_Z_R(short int i,short int j) {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_R"),SpHiggs.Z_R(i,j));
 }  
 
-inline Kabbala Model_Higgs::K_A_M(short int i,short int j) {
+Kabbala Model_Higgs::K_A_M(short int i,short int j) {
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
@@ -834,7 +1188,7 @@ inline Kabbala Model_Higgs::K_A_M(short int i,short int j) {
 		 SpHiggs.Z_R(0,i)*SpHiggs.Z_H(0,j)-SpHiggs.Z_R(1,i)*SpHiggs.Z_H(1,j));
 }  
 
-inline Kabbala Model_Higgs::K_A_H(short int i,short int j) {
+Kabbala Model_Higgs::K_A_H(short int i,short int j) {
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
@@ -842,7 +1196,7 @@ inline Kabbala Model_Higgs::K_A_H(short int i,short int j) {
 		 SpHiggs.Z_H(0,i)*SpHiggs.Z_H(0,j)-SpHiggs.Z_H(1,i)*SpHiggs.Z_H(1,j));
 }  
 
-inline Kabbala Model_Higgs::K_A_P(short int i,short int j) {
+Kabbala Model_Higgs::K_A_P(short int i,short int j) {
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
@@ -850,7 +1204,7 @@ inline Kabbala Model_Higgs::K_A_P(short int i,short int j) {
 		 SpHiggs.Z_R(0,i)*SpHiggs.Z_H(1,j)+SpHiggs.Z_R(1,i)*SpHiggs.Z_H(0,j));
 }  
 
-inline Kabbala Model_Higgs::K_B_R(short int i) {   
+Kabbala Model_Higgs::K_B_R(short int i) {   
   char hi[2];
   sprintf(hi,"%i",i);
   return Kabbala(string("B^{")+string(hi)+string("}_R"),

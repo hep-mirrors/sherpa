@@ -29,7 +29,7 @@ void Model_QCD::c_FFV(Single_Vertex* v,int& vanz)
   
   for (short int i=1;i<=6;i++) {
     Flavour flav = Flavour(kf::code(i));
-    if (flav.Strong() && flav.IsOn()) { 
+    if (flav.Strong() && flav.IsOn() && Flavour(kf::gluon).IsOn()) { 
       v[vanz].in[0] = flav;
       v[vanz].in[1] = Flavour(kf::gluon);
       v[vanz].in[2] = flav;
@@ -71,6 +71,8 @@ void Model_QCD::c_FFV(Single_Vertex* v,int& vanz)
 void Model_QCD::c_VVV(Single_Vertex* v,int& vanz)
 {
   Kabbala kcpl0,kcpl1; 
+ 
+  if (Flavour(kf::gluon).IsOn()) { 
   
   for (short int i=0;i<3;i++)
     v[vanz].in[i] = Flavour(kf::gluon);
@@ -87,9 +89,6 @@ void Model_QCD::c_VVV(Single_Vertex* v,int& vanz)
   v[vanz].Color = new Color_Function; 
 
   v[vanz].Color->type       = cf::F;     
-  //v[vanz].Color->SetParticleArg(0,1,2);     
-  //v[vanz].Color->SetStringArg('0','1','2');     
-  //new Test 021
   v[vanz].Color->SetParticleArg(0,2,1);     
   v[vanz].Color->SetStringArg('0','2','1');     
 
@@ -101,11 +100,14 @@ void Model_QCD::c_VVV(Single_Vertex* v,int& vanz)
 
   v[vanz].on      = 1;
   vanz++;
+  }
 }
 
 void Model_QCD::c_VVVV(Single_Vertex* v,int& vanz)
 {
   Kabbala kcpl0,kcpl1; 
+
+  if (Flavour(kf::gluon).IsOn()) { 
   
   for (short int i=0;i<4;i++)
     v[vanz].in[i] = Flavour(kf::gluon);
@@ -130,13 +132,6 @@ void Model_QCD::c_VVVV(Single_Vertex* v,int& vanz)
   v[vanz].Lorentz[0].type = lf::Gluon4;      
   v[vanz].Lorentz[0].SetParticleArg(0,1,2,3);     
     
-  //changed to double minus in CF and LF
-  /* old
-     v[vanz].Color[1]        = Color_Function(cf::F,0,3,4,'0','3','4');
-     (v[vanz].Color[1]).Next = new Color_Function(cf::F,2,1,4,'2','1','4');
-     v[vanz].Lorentz[1].type = lf::Gluon4;      
-     v[vanz].Lorentz[1].SetParticleArg(0,2,3,1);     
-  */
   v[vanz].Color[1]        = Color_Function(cf::F,0,3,4,'0','3','4');
   (v[vanz].Color[1]).Next = new Color_Function(cf::F,1,2,4,'1','2','4');
   v[vanz].Lorentz[1].type = lf::Gluon4;      
@@ -149,7 +144,7 @@ void Model_QCD::c_VVVV(Single_Vertex* v,int& vanz)
   
   v[vanz].on      = 1;
   vanz++;
-  
+  }  
 }
 
 

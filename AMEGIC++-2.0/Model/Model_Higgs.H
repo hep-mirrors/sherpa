@@ -22,6 +22,7 @@ namespace AMEGIC {
     void c_VVS(Single_Vertex*,int&);
     void c_SSS(Single_Vertex*,int&);
     void c_SSV(Single_Vertex*,int&);
+    void c_SSVV(Single_Vertex*,int&);
     
     inline Kabbala K_sinTW()                     {return mosm->K_sinTW();}
     inline Kabbala K_cosTW()                     {return mosm->K_cosTW();}    

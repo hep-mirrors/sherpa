@@ -87,6 +87,26 @@ namespace AMEGIC {
   
   std::ostream& operator<<(std::ostream&, const Single_Vertex&);
   std::ostream& operator<<(std::ostream&, const Vertex&);
+
+ // Format of a Color_Function to transport via MPI:
+  struct MPI_Single_Vertex {
+    
+    int                   m_fl[4];
+    /*
+    double                m_cpl[8];        
+    MPI_Lorentz_Function  m_lf;
+    MPI_Color_Function    m_cf;
+    */
+  };
+  
+  //for MPI usage
+  
+  void Single_Vertex2MPI(const Single_Vertex * , MPI_Single_Vertex &);
+  
+  Single_Vertex * MPI2Single_Vertex(const MPI_Single_Vertex &);
+  
+
+  std::ostream & operator<<(std::ostream &, const MPI_Single_Vertex &);
 }
 #endif
 

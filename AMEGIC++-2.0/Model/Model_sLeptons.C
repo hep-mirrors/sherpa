@@ -33,6 +33,7 @@ void Model_sLeptons::Init()
   M_I    = Kabbala(string("i"),Complex(0.,1.));
   root2  = Kabbala(string("\\sqrt{2}"),sqrt(2.));
   K_zero = Kabbala(string("zero"),0.);
+  num_1  = Kabbala(string("1"),1.);    	
   num_2  = Kabbala(string("2"),2.);    	
   num_4  = Kabbala(string("4"),4.);    		
 }
@@ -77,7 +78,6 @@ void Model_sLeptons::c_SSS(Single_Vertex* v,int& vanz)
 	v[vanz].Lorentz->type       = lf::SSS;     
 	
 	v[vanz].on      = 1;
-	//v[vanz].on      = 0;
 	vanz++;
 	//checked RK & FK
       }
@@ -185,8 +185,6 @@ void Model_sLeptons::c_SSS(Single_Vertex* v,int& vanz)
       }
     }
   }
-
-
 			       
   //slepton - h0/H0 - slepton
  
@@ -250,7 +248,6 @@ void Model_sLeptons::c_SSS(Single_Vertex* v,int& vanz)
 	  v[vanz].Lorentz->type       = lf::SSS;     
 	  
 	  v[vanz].on      = 1;
-	  //v[vanz].on      = 0;
 	  vanz++;
   	}
       }
@@ -422,35 +419,227 @@ void Model_sLeptons::c_SSV(Single_Vertex* v,int& vanz)
   }
 }
 
-inline Kabbala Model_sLeptons::K_Z_nue(short int i,short int j)       
+void Model_sLeptons::c_SSSS(Single_Vertex* v,int& vanz)
+{
+  Flavour flHmin(kf::Hmin);    
+  Flavour flh0(kf::h0);
+  Flavour flH0(kf::H0);
+  Flavour flA0(kf::A0);
+
+  Kabbala kcpl0,kcpl1,help,K_lI;
+
+  //Hmin -> slepton - slepton - Hmin 
+  if (flHmin.IsOn()) {
+    for (short int i=71;i<77;++i) {
+      Flavour flav1 = Flavour(kf::code(i));
+      for (short int j=i;j<77;++j) {
+	Flavour flav2 = Flavour(kf::code(j));
+	if (flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)) {
+	  
+	  v[vanz].in[0] = flHmin;
+	  v[vanz].in[1] = flav1.Bar();
+	  v[vanz].in[2] = flav2;
+	  v[vanz].in[3] = flHmin;
+	  
+	  v[vanz].nleg  = 4;  
+	  
+	  help = K_zero;
+	  if(i==j) help = num_1;
+	  
+	  K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
+				 -Flavour(kf::code(2*gen_sLep(flav1)+11)).Yuk()/(K_v1()).Value()*sqrt(2.));
+	  
+	  
+	kcpl0 = M_I*(g1*g1/(K_cosTW()*K_cosTW()*num_2)*K_A_H(0,0)*
+		     (help-(num_1+num_2*K_sinTW()*K_sinTW())/(num_2*K_sinTW()*K_sinTW())*
+		       K_Z_L(gen_sLep(flav1),i-71)*K_Z_L(gen_sLep(flav1),j-71))-
+		     K_lI*K_lI*K_Z_H(0,0)*K_Z_H(0,0)*
+		     K_Z_L(gen_sLep(flav1)+3,i-71)*K_Z_L(gen_sLep(flav1)+3,j-71));
+	
+	kcpl1 = kcpl0;
+	
+	v[vanz].cpl[0]  = kcpl0.Value(); 
+	v[vanz].cpl[1]  = kcpl1.Value();
+	v[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
+	v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+
+	v[vanz].ncf   = 1;
+	v[vanz].Color = new Color_Function; 
+	      
+	v[vanz].Color->type = cf::None; 
+	
+	v[vanz].nlf     = 1;
+	v[vanz].Lorentz = new Lorentz_Function; 
+	
+	v[vanz].Lorentz->type       = lf::SSSS;     
+	
+	v[vanz].on      = 1;
+	vanz++;
+	}
+      }
+    }
+  }
+}
+
+void Model_sLeptons::c_SSVV(Single_Vertex* v,int& vanz)
+{
+  Flavour flavW(kf::W);
+  Flavour flavZ(kf::Z);
+  Flavour flavPhoton(kf::photon);
+  Kabbala kcpl0,kcpl1;
+
+  for (short int i=71;i<77;i++) {
+    Flavour flav1 = Flavour(kf::code(i));
+    for (short int j=i;j<77;j++) {
+      Flavour flav2 =Flavour(kf::code(j));
+      if(flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)){
+	
+	// W - L - L - W  
+	if (flavW.IsOn()) {
+	  
+	  v[vanz].in[0] = flavW;
+	  v[vanz].in[1] = flav1.Bar();
+	  v[vanz].in[2] = flav2;
+	  v[vanz].in[3] = flavW;
+	  
+	  v[vanz].nleg     = 4;
+	  
+	  kcpl0 = num_2;
+	  kcpl1 = kcpl0;
+	  
+	  v[vanz].cpl[0]  = kcpl0.Value();
+	  v[vanz].cpl[1]  = kcpl1.Value();
+	  v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	  v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+	  
+	  v[vanz].ncf   = 1;
+	  v[vanz].Color = new Color_Function; 
+	  
+	  v[vanz].Color->type       = cf::None;     
+	  
+	  v[vanz].nlf     = 1;
+	  v[vanz].Lorentz = new Lorentz_Function; 
+	  
+	  v[vanz].Lorentz->type = lf::VVSS;     
+	  v[vanz].Lorentz->SetParticleArg(0,3);     
+	  
+	  v[vanz].on      = 1;
+	  vanz++;
+	}
+      }
+    }
+  }
+  
+  // W - snu - L - P/Z  
+  for (short int i=81;i<84;i++) {
+    Flavour flav1 = Flavour(kf::code(i));
+    for (short int j=71;j<77;j++) {
+      Flavour flav2 =Flavour(kf::code(j));
+      if(flav1.IsOn() && flav2.IsOn() && gen_sLep(flav1)==gen_sLep(flav2)){
+	
+	// W - snu - L - P  
+	if (flavW.IsOn()) {
+	  if (flavPhoton.IsOn()) {
+	    
+	    v[vanz].in[0] = flavW;
+	    v[vanz].in[1] = flav1.Bar();
+	    v[vanz].in[2] = flav2;
+	    v[vanz].in[3] = flavPhoton;
+	    
+	    v[vanz].nleg     = 4;
+	    
+	    kcpl0 = num_2;
+	    kcpl1 = kcpl0;
+	    
+	    v[vanz].cpl[0]  = kcpl0.Value();
+	    v[vanz].cpl[1]  = kcpl1.Value();
+	    v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	    v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+	    
+	    v[vanz].ncf   = 1;
+	    v[vanz].Color = new Color_Function; 
+	    
+	    v[vanz].Color->type       = cf::None;     
+	    
+	    v[vanz].nlf     = 1;
+	    v[vanz].Lorentz = new Lorentz_Function; 
+	    
+	    v[vanz].Lorentz->type = lf::VVSS;     
+	    v[vanz].Lorentz->SetParticleArg(0,3);     
+	    
+	    v[vanz].on      = 1;
+	    vanz++;
+	  }
+	  
+	  if (flavZ.IsOn()) {
+	    // W - snu - L - Z  
+	    
+	    v[vanz].in[0] = flavW;
+	    v[vanz].in[1] = flav1.Bar();
+	    v[vanz].in[2] = flav2;
+	    v[vanz].in[3] = flavZ;
+	    
+	    v[vanz].nleg     = 4;
+	    
+	    kcpl0 = num_2;
+	    kcpl1 = kcpl0;
+	    
+	    v[vanz].cpl[0]  = kcpl0.Value();
+	    v[vanz].cpl[1]  = kcpl1.Value();
+	    v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	    v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+	    
+	    v[vanz].ncf   = 1;
+	    v[vanz].Color = new Color_Function; 
+	    
+	    v[vanz].Color->type       = cf::None;     
+	    
+	    v[vanz].nlf     = 1;
+	    v[vanz].Lorentz = new Lorentz_Function; 
+	    
+	    v[vanz].Lorentz->type = lf::VVSS;     
+	    v[vanz].Lorentz->SetParticleArg(0,3);     
+	    
+	    v[vanz].on      = 1;
+	    vanz++;
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+Kabbala Model_sLeptons::K_Z_nue(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_\\nu"),SpsN.Znue(i,j));
 }  
-inline Kabbala Model_sLeptons::K_Z_L(short int i,short int j)       
+Kabbala Model_sLeptons::K_Z_L(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_L"),SpsL.Z_L(i,j));
 }   
-inline Kabbala Model_sLeptons::K_l_S(short int i,short int j)
+Kabbala Model_sLeptons::K_l_S(short int i,short int j)
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("l^{")+string(hi)+string(hj)+string("}_S"),SpsL.l_S(i,j));
 }  
-inline Kabbala Model_sLeptons::K_k_S(short int i,short int j)
+Kabbala Model_sLeptons::K_k_S(short int i,short int j)
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("k^{")+string(hi)+string(hj)+string("}_S"),SpsL.k_S(i,j));
-}  
-inline int Model_sLeptons::gen_sLep(Flavour fl)
+} 
+
+int Model_sLeptons::gen_sLep(Flavour fl)
 {
   int gen_sL;
 
@@ -460,6 +649,14 @@ inline int Model_sLeptons::gen_sLep(Flavour fl)
     gen_sL = 1;
   if (fl.Kfcode() == 73 || fl.Kfcode() == 76)
     gen_sL = 2;
+
+  if (fl.Kfcode() == 81)
+    gen_sL = 0;
+  if (fl.Kfcode() == 82)
+    gen_sL = 1;
+  if (fl.Kfcode() == 83)
+    gen_sL = 2;
+
 
   return gen_sL;
 }

@@ -78,8 +78,6 @@ void Model_SQCD::c_FFS(Single_Vertex* v,int& vanz)
 	v[vanz].Color = new Color_Function; 
 	
 	v[vanz].Color->type       = cf::T;     
-	//v[vanz].Color->SetParticleArg(2,1,0);     
-	//v[vanz].Color->SetStringArg('2','1','0');     
 	v[vanz].Color->SetParticleArg(2,1,0);     
 	v[vanz].Color->SetStringArg('2','1','0');     
 	
@@ -802,49 +800,138 @@ void Model_SQCD::c_SSS(Single_Vertex* v,int& vanz)
   }
 }
 
-inline Kabbala Model_SQCD::K_Z_D(short int i,short int j)       
+void Model_SQCD::c_SSVV(Single_Vertex* v,int& vanz)
+{
+  Flavour flavW(kf::W);
+  Flavour flavZ(kf::Z);
+  Flavour flavPhoton(kf::photon);
+  Kabbala kcpl0,kcpl1;
+  
+  // W - D - U - P/Z  
+  for (short int i=51;i<57;i++) {
+    Flavour flav1 = Flavour(kf::code(i));
+    for (short int j=61;j<67;j++) {
+      Flavour flav2 = Flavour(kf::code(j));
+      if (flav1.IsOn() && flav2.IsOn()) {
+	// W - D - U - P  
+	if (flavW.IsOn()) {
+	  if (flavPhoton.IsOn()) {
+	    
+	    v[vanz].in[0] = flavW;
+	    v[vanz].in[1] = flav1.Bar();
+	    v[vanz].in[2] = flav2;
+	    v[vanz].in[3] = flavPhoton;
+	    
+	    v[vanz].nleg     = 4;
+	    
+	    kcpl0 = num_2;
+	    kcpl1 = kcpl0;
+	    
+	    v[vanz].cpl[0]  = kcpl0.Value();
+	    v[vanz].cpl[1]  = kcpl1.Value();
+	    v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	    v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+	    
+	    v[vanz].ncf   = 1;
+	    v[vanz].Color = new Color_Function; 
+	    
+	    v[vanz].Color->type       = cf::D;     
+	    v[vanz].Color->SetParticleArg(1,2);     
+	    v[vanz].Color->SetStringArg('1','2');     
+	    
+	    v[vanz].nlf     = 1;
+	    v[vanz].Lorentz = new Lorentz_Function; 
+	    
+	    v[vanz].Lorentz->type = lf::VVSS;     
+	    v[vanz].Lorentz->SetParticleArg(0,3);     
+	    
+	    v[vanz].on      = 1;
+	    vanz++;
+	  }
+	  
+	  if (flavZ.IsOn()) {
+	    // W - D - U - Z  
+	    
+	    v[vanz].in[0] = flavW;
+	    v[vanz].in[1] = flav1.Bar();
+	    v[vanz].in[2] = flav2;
+	    v[vanz].in[3] = flavZ;
+	    
+	    v[vanz].nleg     = 4;
+	    
+	    kcpl0 = num_2;
+	    kcpl1 = kcpl0;
+	    
+	    v[vanz].cpl[0]  = kcpl0.Value();
+	    v[vanz].cpl[1]  = kcpl1.Value();
+	    v[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	    v[vanz].cpl[2]  = 0.;v[vanz].cpl[3]  = 0.;
+	    
+	    v[vanz].ncf   = 1;
+	    v[vanz].Color = new Color_Function; 
+	    
+	    v[vanz].Color->type       = cf::D;     
+	    v[vanz].Color->SetParticleArg(1,2);     
+	    v[vanz].Color->SetStringArg('1','2');     
+	    
+	    v[vanz].nlf     = 1;
+	    v[vanz].Lorentz = new Lorentz_Function; 
+	    
+	    v[vanz].Lorentz->type = lf::VVSS;     
+	    v[vanz].Lorentz->SetParticleArg(0,3);     
+	    
+	    v[vanz].on      = 1;
+	    vanz++;
+	  }
+	}
+      }
+    }
+  }
+}
+
+Kabbala Model_SQCD::K_Z_D(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_D"),SpsD.Zd(i,j));
 }  
-inline Kabbala Model_SQCD::K_Z_U(short int i,short int j)       
+Kabbala Model_SQCD::K_Z_U(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_U"),SpsU.Zu(i,j));
 }  
-inline Kabbala Model_SQCD::K_w_S(short int i,short int j)
+Kabbala Model_SQCD::K_w_S(short int i,short int j)
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("w^{")+string(hi)+string(hj)+string("}_S"),SpsU.w_S(i,j));
 }  
-inline Kabbala Model_SQCD::K_u_S(short int i,short int j)
+Kabbala Model_SQCD::K_u_S(short int i,short int j)
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("u^{")+string(hi)+string(hj)+string("}_S"),SpsU.u_S(i,j));
 }  
-inline Kabbala Model_SQCD::K_e_S(short int i,short int j)
+Kabbala Model_SQCD::K_e_S(short int i,short int j)
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("e^{")+string(hi)+string(hj)+string("}_S"),SpsD.e_S(i,j));
 }  
-inline Kabbala Model_SQCD::K_d_S(short int i,short int j)
+Kabbala Model_SQCD::K_d_S(short int i,short int j)
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("d^{")+string(hi)+string(hj)+string("}_S"),SpsD.d_S(i,j));
 }  
-inline int Model_SQCD::gen_sUp(Flavour fl)
+int Model_SQCD::gen_sUp(Flavour fl)
 {
   int gen_sUp;
 
@@ -857,7 +944,7 @@ inline int Model_SQCD::gen_sUp(Flavour fl)
 
   return gen_sUp;
 }
-inline int Model_SQCD::gen_sDown(Flavour fl)
+int Model_SQCD::gen_sDown(Flavour fl)
 {
   int gen_sDown;
 

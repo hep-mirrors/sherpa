@@ -220,17 +220,17 @@ void Model_Chi::c_FFS(Single_Vertex* v,int& vanz)
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flHm;
 	  v[vanz].in[2] = flav2;
-	  
-	  kcpl0 = K_yuk_sign(flav1)*M_I*g2/K_cosTW()*
-	    K_Z_H(0,0)*(K_Z_MI(1,i-41)/root2*
-			(K_Z_N(0,j-43)*K_sinTW()+K_Z_N(1,j-43)*
-			 K_cosTW())-K_Z_MI(0,i-41)*K_Z_N(2,j-43)*K_cosTW());
-	 	  
-	  kcpl1 = K_yuk_sign(flav2)*M_I*g2/K_cosTW()*
+	  	    
+	  kcpl0 = -M_I*g2/K_cosTW()*
 	    K_Z_H(1,0)*(K_Z_PL(1,i-41)/root2*
 			(K_Z_N(0,j-43)*K_sinTW()+K_Z_N(1,j-43)*K_cosTW())+
 			K_Z_PL(0,i-41)*K_Z_N(3,j-43)*K_cosTW());
 	 	  
+	  kcpl1 = M_I*g2/K_cosTW()*
+	    K_Z_H(0,0)*(K_Z_MI(1,i-41)/root2*
+			(K_Z_N(0,j-43)*K_sinTW()+K_Z_N(1,j-43)*K_cosTW())-
+			K_Z_MI(0,i-41)*K_Z_N(2,j-43)*K_cosTW());
+	  
 	  v[vanz].cpl[0] = kcpl0.Value(); 
 	  v[vanz].cpl[1] = kcpl1.Value();
 	  v[vanz].Str    = (kcpl0*PR+kcpl1*PL).String();
@@ -418,7 +418,6 @@ void Model_Chi::c_FFV(Single_Vertex* v,int& vanz)
 	v[vanz].Lorentz->SetParticleArg(1);     
 	
 	v[vanz].on      = 1;
-	//v[vanz].on      = 0;
 	vanz++;
 	//checked FK & RK & SS 
       }
@@ -427,7 +426,7 @@ void Model_Chi::c_FFV(Single_Vertex* v,int& vanz)
 }
 
 
-inline Kabbala Model_Chi::K_Z_PL(short int i,short int j)       
+Kabbala Model_Chi::K_Z_PL(short int i,short int j)       
 {   
   char hi[2];
   char hj[2];
@@ -435,14 +434,14 @@ inline Kabbala Model_Chi::K_Z_PL(short int i,short int j)
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^\\p_{")+string(hi)+string(hj)+string("}"),SpCh.Zplus(i,j));
 }  
-inline Kabbala Model_Chi::K_Z_MI(short int i,short int j)       
+Kabbala Model_Chi::K_Z_MI(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
   return Kabbala(string("Z^\\m_{")+string(hi)+string(hj)+string("}"),SpCh.Zminus(i,j));
 }  
-inline Kabbala Model_Chi::K_Z_N(short int i,short int j)       
+Kabbala Model_Chi::K_Z_N(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
@@ -451,7 +450,7 @@ inline Kabbala Model_Chi::K_Z_N(short int i,short int j)
 }  
 //we use transposed convention !!! 
 
-inline Kabbala Model_Chi::K_Z_N_com(short int i,short int j)       
+Kabbala Model_Chi::K_Z_N_com(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
@@ -463,7 +462,7 @@ inline Kabbala Model_Chi::K_Z_N_com(short int i,short int j)
   
   return Kabbala(string("Z^{")+string(hi)+string(hj)+string("}_N"),exp_i*SpNe.Z_N(i,j));
 }  
-inline Kabbala Model_Chi::K_Z_N_com_conj(short int i,short int j)       
+Kabbala Model_Chi::K_Z_N_com_conj(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);

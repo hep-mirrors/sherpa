@@ -27,6 +27,10 @@ void Lorentz_Function::InitPermutation()
     AddPermutation(1,0,1);
     AddPermutation(1,1,0);  
     break;
+  case lf::VVSS   : 
+    AddPermutation(1,0,1);
+    AddPermutation(1,1,0);  
+    break;
   case lf::Gauge3:
     AddPermutation( 1,0,1,2);
     AddPermutation(-1,0,2,1);  
@@ -70,6 +74,30 @@ void Lorentz_Function::InitPermutation()
   case lf::Photon4_NC:
     //still to be done
     break;
+  case lf::VVT:
+    AddPermutation( 1,0,1,2);
+    AddPermutation( 1,1,0,2);
+    break;
+  case lf::SST:
+    AddPermutation( 1,0,1,2);
+    AddPermutation( 1,1,0,2);
+    break;    
+  case lf::VVGS:
+    AddPermutation( 1,0,1,2);
+    AddPermutation( 1,1,0,2);
+    break;
+  case lf::SSGS:
+    AddPermutation( 1,0,1);
+    AddPermutation( 1,1,0);
+    break;
+  case lf::VVVT:
+    AddPermutation( 1,0,1,2,3);
+    AddPermutation(-1,0,2,1,3);  
+    AddPermutation(-1,1,0,2,3);
+    AddPermutation(-1,2,1,0,3);  
+    AddPermutation( 1,1,2,0,3);
+    AddPermutation( 1,2,0,1,3);  
+    break;    
   }
   permcount = 0;
 }
@@ -96,11 +124,26 @@ int Lorentz_Function::GetSign()
   return signlist[permcount];
 }
 
+void AMEGIC::Lorentz_Function2MPI(const Lorentz_Function * lf , MPI_Lorentz_Function & mpi_lf) {
+  
+  mpi_lf.m_type =  lf->type;
+  for (int i=0; i<4; ++i)  
+    mpi_lf.m_partarg[i] = lf->partarg[i];
+}
 
+Lorentz_Function * AMEGIC::MPI2Lorentz_Function(const MPI_Lorentz_Function & mpi_lf ) {
 
+  Lorentz_Function * lf ;
+  
+  lf = new Lorentz_Function((AMEGIC::lf::code)(mpi_lf.m_type));
+  for (int i=0; i<4; ++i)
+    lf->partarg[i] = mpi_lf.m_partarg[i];
+    
+  return lf;
+}
 
-
-
-
-
-
+std::ostream & AMEGIC::operator<<(std::ostream & s, const MPI_Lorentz_Function & lf) {
+  s<<lf.m_type<<",";
+  s<<lf.m_partarg[0]<<","<<lf.m_partarg[1]<<","<<lf.m_partarg[2]<<","<<lf.m_partarg[3];
+  return s;
+}

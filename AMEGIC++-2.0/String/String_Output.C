@@ -354,6 +354,11 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
           zf<<"Complex(-0.5,0.);"<<endl;
 	  break;        
 	}
+	if (AMATOOLS::IsEqual(norm,1./3.)) {
+          hit = 1;
+          zf<<"Complex(1./3.,0.);"<<endl;
+          break;
+	}
 	if (AMATOOLS::IsEqual(norm,1.)) { 
 	  hit = 1;
 	  zf<<"Complex(1.,0.);"<<endl;

@@ -31,6 +31,14 @@ void Model_SM::c_VVVV(Single_Vertex* v,int& vanz)
   moqcd.c_VVVV(v,vanz);
   moew.c_VVVV(v,vanz);
 }
+void Model_SM::c_SSVV(Single_Vertex* v,int& vanz)
+{
+  moew.c_SSVV(v,vanz);
+}
+void Model_SM::c_SSSS(Single_Vertex* v,int& vanz)
+{
+  moew.c_SSSS(v,vanz);
+}
 
 void Model_SM::c_FFS(Single_Vertex* v,int& vanz) {moew.c_FFS(v,vanz);}
 void Model_SM::c_VVS(Single_Vertex* v,int& vanz) {moew.c_VVS(v,vanz);}

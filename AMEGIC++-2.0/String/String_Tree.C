@@ -172,6 +172,7 @@ Complex String_Tree::eval(sknot* m)
     if (m->Str()==string("2"))   return Complex(2.,0.);
     if (m->Str()==string("1"))   return Complex(1.,0.);
     if (m->Str()==string("3"))   return Complex(3.,0.);
+    if (m->Str()==string("8"))   return Complex(8.,0.);
     if (m->Str()==string("1/2")) return Complex(1./2.,0.);
     if (m->Str()==string("1/3")) return Complex(1./3.,0.);
     if (m->Str()==string("0.5")) return Complex(1./2.,0.);

@@ -27,9 +27,10 @@ void Vertex::GenerateVertex()
   for (int i=0;i<vanz4_save;++i) {
     int hit = 1;
     if (hit) {
-      if (AMATOOLS::IsZero(v4[i].cpl[0]) && AMATOOLS::IsZero(v4[i].cpl[1]))
-	v4[i].on = 0;
-      else { 
+      //required by Model_LED due to small couplings
+      //if (AMATOOLS::IsZero(v4[i].cpl[0]) && AMATOOLS::IsZero(v4[i].cpl[1]))
+      //v4[i].on = 0;
+      //else { 
 	if(v4[i].nleg==4) {
 	  for (short int k=1;k<5;k++) {
 	    for (short int l=1;l<5;l++) {
@@ -59,14 +60,15 @@ void Vertex::GenerateVertex()
 	    }
 	  }
 	}
-      }
+	//}
     }
   }
   for (int i=0;i<vanz_save;++i) {
     int hit = 1;
     if (hit) {
-      if (AMATOOLS::IsZero(v[i].cpl[0]) && AMATOOLS::IsZero(v[i].cpl[1]))
-	v[i].on = 0;
+      //required by Model_LED due to small couplings
+      //if (AMATOOLS::IsZero(v[i].cpl[0]) && AMATOOLS::IsZero(v[i].cpl[1]))
+      //v[i].on = 0;
       if (v[i].nleg==3) {  
 	  for (short int k=1;k<4;k++) {
 	    for (short int l=1;l<4;l++) {
@@ -360,6 +362,18 @@ Vertex::Vertex()
   AORGTOOLS::msg.Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   mo->c_SSSS(v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_FFT(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_VVT(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_SST(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_VVVT(v4,vanz4);
+  AORGTOOLS::msg.Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_FFVT(v4,vanz4);
+  AORGTOOLS::msg.Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_SSST(v4,vanz4);
+  AORGTOOLS::msg.Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
 
   nvertex = vanz;
   n4vertex = vanz4;
@@ -686,7 +700,61 @@ ostream& AMEGIC::operator<<(ostream& s, const Vertex& v)
   return s;
 }
 
+void AMEGIC::Single_Vertex2MPI(const Single_Vertex * v , MPI_Single_Vertex & mpi_v) {
+  
+    
+  if (!v) {
+    for (int i=0;i<4;++i)
+      mpi_v.m_fl[i] = 0;
+    
+    return; 
+  }
+  /*
+  Lorentz_Function2MPI(v->Lorentz,mpi_v.m_lf);
+  Color_Function2MPI(v->Color,mpi_v.m_cf);
+  */
 
+  for (int i=0;i<4;++i)
+    mpi_v.m_fl[i] = int(v->in[i]);
+
+  /*  
+  for (int i=0;i<7;i+=2) {
+    mpi_v.m_cpl[i]   = real(v->cpl[i/2]);
+    mpi_v.m_cpl[i+1] = imag(v->cpl[i/2]);
+  }
+  */
+}
+
+
+Single_Vertex * AMEGIC::MPI2Single_Vertex(const MPI_Single_Vertex & mpi_v ) {
+
+  Single_Vertex * v ;
+  
+  v = new Single_Vertex();
+  
+  for (int i=0;i<4;++i) {
+    v->in[i] = Flavour((kf::code)(abs(mpi_v.m_fl[i])));
+    if (mpi_v.m_fl[i]<0) v->in[i]=v->in[i].Bar();
+  }
+
+  /*
+  v->Lorentz = AMEGIC::MPI2Lorentz_Function(mpi_v.m_lf);
+  v->Color   = AMEGIC::MPI2Color_Function(mpi_v.m_cf);
+  
+  for (int i=0;i<7;i+=2) {
+    (v->cpl[i/2]) = Complex(mpi_v.m_cpl[i],mpi_v.m_cpl[i+1]);
+  }
+  */
+  
+  return v;
+
+}
+
+
+std::ostream & AMEGIC::operator<<(std::ostream & s, const MPI_Single_Vertex & sv) {
+  s<<sv.m_fl[0]<<","<<sv.m_fl[1]<<","<<sv.m_fl[2]<<","<<sv.m_fl[3];
+  return s;
+}
 
 
 

@@ -45,6 +45,12 @@ namespace AMEGIC {
     virtual void  c_VVVV(Single_Vertex*,int&) { }
     virtual void  c_SSVV(Single_Vertex*,int&) { }
     virtual void  c_SSSS(Single_Vertex*,int&) { }
+    virtual void c_FFT(Single_Vertex*,int&)   { }
+    virtual void c_VVT(Single_Vertex*,int&)   { }
+    virtual void c_SST(Single_Vertex*,int&)   { }
+    virtual void c_VVVT(Single_Vertex*,int&)  { }
+    virtual void c_FFVT(Single_Vertex*,int&)  { }
+    virtual void c_SSST(Single_Vertex*,int&)  { }
     virtual double SinTW();
     virtual double CosTW();
     virtual double Aqed();

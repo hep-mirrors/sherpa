@@ -26,9 +26,6 @@ Isajet::Isajet()
   //  Data_Read dr(rpa.GetPath()+std::string("/")+rpa.me.ModelFile());
   Data_Read dr(rpa.GetPath()+std::string("/Isajet.dat"));
 
-  cout<<" ISAJET Running "<<endl;
-  cout<<"  swichh="<<dr.GetValue<Switch::code>("Isajet")<<endl;
-
   if (!dr.GetValue<Switch::code>("Isajet")) return;
   float M0    = float(dr.GetValue<double>("M_0"));
   float M12   = float(dr.GetValue<double>("M_(1/2)"));
@@ -36,8 +33,6 @@ Isajet::Isajet()
   float tanb  = float(dr.GetValue<double>("tanb"));
   float sgnmu = float(dr.GetValue<double>("sgn(mu)"));
   float Mt    = float(dr.GetValue<double>("M_t"));
-
-  cout<<" ISAJET is Running "<<endl;
 
   sugrun_(M0,M12,A0,tanb,sgnmu,Mt);  
 }

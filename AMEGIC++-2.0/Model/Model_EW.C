@@ -25,8 +25,8 @@ void Model_EW::Init()
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
-  vev   = Kabbala(string("v_{EW}"),CplEW.VEV());
-  //vev   = Kabbala(string("v_{EW}"),2.*SinTW()*CosTW()*Flavour(kf::Z).Mass()/g1.Value());
+  //vev   = Kabbala(string("v_{EW}"),CplEW.VEV());
+  vev   = Kabbala(string("v_{EW}"),2.*SinTW()*CosTW()*Flavour(kf::Z).Mass()/g1.Value());
 }
 
 void Model_EW::c_FFV(Single_Vertex* v,int& vanz)
@@ -256,7 +256,7 @@ void Model_EW::c_FFS(Single_Vertex* v,int& vanz)
   for (short int i=1;i<17;i++) {
     if (i==7) i=11;
     Flavour flav = Flavour(kf::code(i));
-    if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
+    if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.05)) {
       
       M_h = Kabbala(string("M_{")+flav.TexName()+string("}"),flav.Yuk());
 
@@ -432,7 +432,7 @@ void Model_EW::c_SSSS(Single_Vertex* v,int& vanz)
     v[vanz].nlf     = 1;
     v[vanz].Lorentz = new Lorentz_Function; 
     
-    v[vanz].Lorentz->type = lf::SSS;     
+    v[vanz].Lorentz->type = lf::SSSS;     
 
     v[vanz].on      = 1;
     vanz++;
@@ -611,7 +611,7 @@ void Model_EW::c_SSVV(Single_Vertex* v,int& vanz)
     v[vanz].nlf     = 1;
     v[vanz].Lorentz = new Lorentz_Function; 
     
-    v[vanz].Lorentz->type = lf::Gab;     
+    v[vanz].Lorentz->type = lf::VVSS;     
     v[vanz].Lorentz->SetParticleArg(0,3);     
     
     v[vanz].on      = 1;
@@ -643,7 +643,7 @@ void Model_EW::c_SSVV(Single_Vertex* v,int& vanz)
     v[vanz].nlf     = 1;
     v[vanz].Lorentz = new Lorentz_Function; 
     
-    v[vanz].Lorentz->type = lf::Gab;     
+    v[vanz].Lorentz->type = lf::VVSS;     
     v[vanz].Lorentz->SetParticleArg(0,3);     
     
     v[vanz].on      = 1;
@@ -656,18 +656,8 @@ void Model_EW::c_SSVV(Single_Vertex* v,int& vanz)
 inline double Model_EW::Aqed(double t) {return aqed->Aqed(t);}
 inline double Model_EW::Aqed()         {return aqed->AqedFixed();}
 
-/*
-inline double Model_EW::Aqed(double t) {
-  return (*APHYTOOLS::aqed)(t);
-}
-
-inline double Model_EW::Aqed() {
-  return APHYTOOLS::aqed->Aqed(sqr(rpa.gen.Ecms()));
-}
-*/
-
-inline Complex Model_EW::CKM(short int i,short int j)   {return CplEW.CKM(i,j);}
-inline Kabbala Model_EW::K_CKM(short int i,short int j)       
+Complex Model_EW::CKM(short int i,short int j)   {return CplEW.CKM(i,j);}
+Kabbala Model_EW::K_CKM(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
@@ -675,7 +665,7 @@ inline Kabbala Model_EW::K_CKM(short int i,short int j)
   return Kabbala(string("V_{")+string(hi)+string(hj)+string("}"),CplEW.CKM(i,j));
 } 
   
-inline Kabbala Model_EW::conj_K_CKM(short int i,short int j)       
+Kabbala Model_EW::conj_K_CKM(short int i,short int j)       
 {   
   char hi[2],hj[2];
   sprintf(hi,"%i",i);

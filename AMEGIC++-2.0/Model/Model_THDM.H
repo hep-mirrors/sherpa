@@ -19,6 +19,8 @@ namespace AMEGIC {
     void c_VVS(Single_Vertex*,int&);
     void c_SSS(Single_Vertex*,int&);
     void c_SSV(Single_Vertex*,int&);
+    void c_SSVV(Single_Vertex*,int&);
+    void c_VVVV(Single_Vertex*,int&);
     
     inline double Aqcd(double);
     inline double Aqcd();

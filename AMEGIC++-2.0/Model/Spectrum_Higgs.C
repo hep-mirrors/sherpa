@@ -52,8 +52,12 @@ void Spectrum_Higgs::Init()
 void Spectrum_Higgs::Masses_LO()
 {
   double e       = sqrt(4.*M_PI*(aqed->AqedFixed()));
-  double MW      = e/(2.*CplEW.SinThetaW())*v;
-  double MZ      = e/(2.*CplEW.SinThetaW())*v/sqrt(1.-sqr(CplEW.SinThetaW()));
+ 
+  double MW = Flavour(kf::W).Mass();
+  double MZ = Flavour(kf::Z).Mass();
+   
+  //double MW      = e/(2.*CplEW.SinThetaW())*v;
+  //double MZ      = e/(2.*CplEW.SinThetaW())*v/sqrt(1.-sqr(CplEW.SinThetaW()));
 
   v1 = v*sqrt(1./(1.+sqr(tanb)));
   v2 = v1*tanb;  

@@ -11,7 +11,7 @@ namespace AMEGIC {
   class Model_sLeptons : public virtual Model {
     Spectrum_sNeutrinos  SpsN;
     Spectrum_sLeptons    SpsL;
-    Kabbala              g1,g2,PL,PR,M_I,root2,K_zero,num_2,num_4;    
+    Kabbala              g1,g2,PL,PR,M_I,root2,K_zero,num_1,num_2,num_4;    
     
     Model_Higgs* moHiggs;
     int          ini_higgs;
@@ -22,6 +22,8 @@ namespace AMEGIC {
     void Init(Model_Higgs*,Isajet*);
     void c_SSS(Single_Vertex*,int&);
     void c_SSV(Single_Vertex*,int&);
+    void c_SSSS(Single_Vertex*,int&);
+    void c_SSVV(Single_Vertex*,int&);
 
     inline Kabbala K_sinTW()                        {return moHiggs->K_sinTW();}
     inline Kabbala K_cosTW()                        {return moHiggs->K_cosTW();}    
@@ -29,6 +31,7 @@ namespace AMEGIC {
     inline Kabbala K_v2()                           {return moHiggs->K_v2();}            
     inline Kabbala K_Z_R(short int i,short int j)   {return moHiggs->K_Z_R(i,j);}   
     inline Kabbala K_Z_H(short int i,short int j)   {return moHiggs->K_Z_H(i,j);} 
+    inline Kabbala K_A_H(short int i,short int j)   {return moHiggs->K_A_H(i,j);} 
     inline Kabbala K_yuk(APHYTOOLS::Flavour fl)                {return moHiggs->K_yuk(fl);} 
     inline Kabbala K_yuk_sign(APHYTOOLS::Flavour fl)           {return moHiggs->K_yuk_sign(fl);}            
     inline Kabbala K_B_R(short int i)               {return moHiggs->K_B_R(i);}
