@@ -48,8 +48,8 @@ int main(int argc,char* argv[])
 	  double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
 	  msg_Info()<<"  Event "<<i<<" ( "
 		    <<int(diff)<<" s elapsed / "
-		    <<int((m_initevents-m_events)/(double)m_events*diff)
-		    <<" s left / "<<int(m_initevents/(double)m_events*diff)
+		    <<int((nevt-i)/(double)i*diff)
+		    <<" s left / "<<int(nevt/(double)i*diff)
 		    <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
 	}
 	if (Generator.GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
