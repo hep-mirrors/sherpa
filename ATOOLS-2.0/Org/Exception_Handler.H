@@ -18,6 +18,7 @@ namespace ATOOLS {
     
   private:
 
+    static bool          s_active;
     static unsigned int  s_exitcode;
     static Exception    *s_exception;
     
@@ -52,6 +53,9 @@ namespace ATOOLS {
     static void AddTerminatorFunction(void (*terminatorfunction)(void));      
     static void AddTesterObject(Tester_Object *const object);     
     static void AddTerminatorObject(Terminator_Object *const object);     
+
+    inline static void SetActive(const bool active) { s_active=active;  }
+    inline static bool Active()                     { return s_active;  }
 
   };// end of class Exception_Handler
   

@@ -6,6 +6,8 @@
 
 using namespace ATOOLS;
 
+bool Exception_Handler::s_active=true;
+
 unsigned int Exception_Handler::s_exitcode=0;
 Exception *Exception_Handler::s_exception=0;
 
@@ -67,6 +69,7 @@ void Exception_Handler::Terminate()
     return;
   }
   PrepareTerminate();
+  if (!s_active) abort();
   SetExitCode();
   Exit(s_exitcode);
 }

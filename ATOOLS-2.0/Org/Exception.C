@@ -22,6 +22,7 @@ bool Tester_Object::ApproveTerminate()
 {
   msg.Error()<<"Tester_Oject::ApproveTerminate(): "
 	     <<"Vitual function called !"<<std::endl;
+  return true;
 }
 
 void Terminator_Object::PrepareTerminate()
