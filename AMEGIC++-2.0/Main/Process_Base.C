@@ -499,8 +499,15 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
 }
 
 double Process_Base::KFactor(double _scale) {
- 
   switch (m_kfactorscheme) {
+  case 2  :
+    if (m_nstrong>2) {
+      double f= m_rfactor*pow(as->AlphaS(m_scale * m_scalefactor)/
+			 as->AlphaS(AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms())),m_nstrong-2);
+      return f;
+    } 
+    else 
+      return m_rfactor;
   case 1  :
     if (m_nstrong>2) {
       return m_rfactor*pow(as->AlphaS(_scale * m_scalefactor)/
