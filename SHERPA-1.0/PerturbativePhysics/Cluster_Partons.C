@@ -470,6 +470,9 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   m_scale = s;
   m_asscale = m_scale;
 
+  if (ncol==4) msg.Out()<<" WARNING: Cluster_Partons::SetColours() called for 4 coloured objects \n"
+			<<"          Don't know how to handle this ! "<<std::endl;
+
   // (a) no colors
   if (ncol==0) return 0;
 
