@@ -40,7 +40,7 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   bool hit   = 0;
   while (found) {
     found = 0;
-    for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
+    for (Blob_List::iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
       if ((*blit)->Status()==1 && (*blit)->Type()==btp::FS_Shower) {
 	myblob = (*blit);
 	//std::cout<<"Found a blob : "<<std::endl<<myblob;

@@ -18,15 +18,11 @@ namespace SHERPA {
 
     ATOOLS::Blob_List *p_bloblist;
 
-    std::set<ATOOLS::Blob*> m_deleted;
-
     bool m_vetoed, m_diced;
 
     bool CheckBlobList(ATOOLS::Blob_List *const bloblist);
     bool VetoHardProcess(ATOOLS::Blob *const blob);
     
-    void DeleteConnected(ATOOLS::Blob *const blob);
-
   public:
 
     // constructor

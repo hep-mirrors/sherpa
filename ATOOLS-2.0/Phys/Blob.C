@@ -208,6 +208,24 @@ void Blob::DeleteInParticle(Particle * _part) {
   }
 }
 
+void Blob::RemoveOwnedParticles(const bool del)
+{
+  for (int i=0;i<m_inparticles.size();++i) {
+    if (m_inparticles[i]->ProductionBlob()==NULL) {
+      if (del) delete m_inparticles[i];
+    }
+    else m_inparticles[i]->SetDecayBlob(NULL);
+  }
+  m_inparticles.clear();
+  for (int i=0;i<m_outparticles.size();++i) {
+    if (m_outparticles[i]->DecayBlob()==NULL) {
+      if (del) delete m_outparticles[i];
+    }
+    else m_outparticles[i]->SetProductionBlob(NULL);
+  }
+  m_outparticles.clear();
+}
+
 void Blob::DeleteOutParticle(Particle * _part) {
   if (!_part) return;
   for (Particle_Vector::iterator part = m_outparticles.begin();

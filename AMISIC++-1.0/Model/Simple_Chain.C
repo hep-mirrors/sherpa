@@ -592,7 +592,11 @@ bool Simple_Chain::Initialize()
   }
   SetStop(stop,0);
   SetStop(stop,4); 
-  if (m_regulate) SetStop(ATOOLS::rpa.gen.Accu()*stop,4);
+  if (m_regulate) {
+    SetStop(ATOOLS::rpa.gen.Accu()*stop,4);
+    // // Uncomment for cross-check vs. PYHTIA
+    // SetStop(0.08*stop,0);
+  }
   if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=1;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
   if (!reader->ReadFromFile(m_pi,"PI_MI")) m_pi=0;

@@ -148,7 +148,7 @@ void Primitive_Detector::Print() {
 void Primitive_Detector::Fill(const ATOOLS::Blob_List * bl)
 {
   Particle_List * pl = new Particle_List; 
-  for (Blob_Const_Iterator blit=bl->begin();blit!=bl->end();++blit) {
+  for (Blob_List::const_iterator blit=bl->begin();blit!=bl->end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Particle * p = (*blit)->OutParticle(i);
       if (p->DecayBlob()==NULL) pl->push_back(new Particle(*p));

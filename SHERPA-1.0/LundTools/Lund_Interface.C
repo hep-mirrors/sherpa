@@ -265,7 +265,7 @@ bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particl
   Reset();
   std::list<ATOOLS::Particle *> plist;
   ATOOLS::Particle * part;
-  for (ATOOLS::Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
+  for (ATOOLS::Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Type()==ATOOLS::btp::FS_Shower || 
 	(*blit)->Type()==ATOOLS::btp::IS_Shower ||
 	(*blit)->Type()==ATOOLS::btp::Hard_Collision ||

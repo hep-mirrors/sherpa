@@ -1014,7 +1014,7 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
 		 <<(*blobs)<<std::endl;
 
       if (!blobs->empty()) {
-	for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) delete (*blit);
+	for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) delete (*blit);
 	blobs->clear();
       }
       DeleteObsolete(1);

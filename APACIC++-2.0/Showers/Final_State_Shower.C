@@ -390,7 +390,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 {
   // fetch last ME PS blob
   Blob *bl_meps=NULL;
-  for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
+  for (Blob_List::iterator blit=bl->begin();blit!=bl->end();++blit) {
     if((*blit)->Type()==btp::ME_PS_Interface_FS) {
       bl_meps=*blit;
     }

@@ -197,10 +197,7 @@ void Event_Handler::CleanUpEvent()
       (*pit)->CleanUp();
     }
   }
-  if (!m_blobs.empty()) {
-    for (Blob_Iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) delete (*blit);
-    m_blobs.clear();
-  }
+  m_blobs.Clear();
   if (Particle::Counter()>m_lastparticlecounter || 
       Blob::Counter()>m_lastblobcounter) {
     msg.Error()<<"Error in Event_Handler::CleanUpEvent()"<<std::endl

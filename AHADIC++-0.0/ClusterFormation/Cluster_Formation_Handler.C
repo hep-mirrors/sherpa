@@ -36,7 +36,7 @@ Blob *  Cluster_Formation_Handler::FormClusters(Blob_List * bl)
 void Cluster_Formation_Handler::Shift(Blob_List * bl,Blob * blob)
 {
   Particle * part1, * part2;
-  for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
+  for (Blob_List::iterator blit=bl->begin();blit!=bl->end();++blit) {
     if ((*blit)->Type()==btp::FS_Shower || (*blit)->Type()==btp::IS_Shower) {
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part2 = (*blit)->OutParticle(i); 

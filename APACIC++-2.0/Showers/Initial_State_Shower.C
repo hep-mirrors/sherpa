@@ -117,7 +117,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
   // fetch last PSME blobs
   m_bl_meps_is=0;
   m_bl_meps_fs=0;
-  for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
+  for (Blob_List::iterator blit=bl->begin();blit!=bl->end();++blit) {
     if ((*blit)->Type()==btp::ME_PS_Interface_IS) {
       m_bl_meps_is=(*blit);
     }

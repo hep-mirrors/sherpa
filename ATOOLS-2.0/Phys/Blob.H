@@ -34,25 +34,30 @@ namespace ATOOLS {
 
   struct btp {
     enum code {
-      Unspecified         =    0,
-      Signal_Process      =    1,
-      Hard_Decay          =    2,
-      Hard_Collision      =    3,
-      Soft_Collision      =    4,
-      ME_PS_Interface_IS  =    9,
-      ME_PS_Interface_FS  =   10,
-      FS_Shower           =   11,
-      IS_Shower           =   12,
-      Beam                =  101,
-      Bunch               =  102,
-      Fragmentation       =  201,
-      Cluster_Formation   =  202,
-      Cluster_Decay       =  250,
-      Hadron_Decay        = 1001,
-      Hadron_Mixing       = 1002,
-      Hadron_To_Parton    = 1003
+      Signal_Process      =     1,
+      Hard_Decay          =     2,
+      Hard_Collision      =     4,
+      Soft_Collision      =     8,
+      ME_PS_Interface_IS  =    16,
+      ME_PS_Interface_FS  =    32,
+      FS_Shower           =    64,
+      IS_Shower           =   128,
+      Beam                =   256,
+      Bunch               =   512,
+      Fragmentation       =  1024,
+      Cluster_Formation   =  2048,
+      Cluster_Decay       =  4096,
+      Hadron_Decay        =  8192,
+      Hadron_Mixing       = 16384,
+      Hadron_To_Parton    = 32768,
+      Unspecified         = 65535
     };
   };// end of struct btp
+
+  inline const btp::code operator|(const btp::code c1,const btp::code c2)
+  { return (btp::code)((int)c1|(int)c2); }
+  inline const btp::code operator&(const btp::code c1,const btp::code c2)
+  { return (btp::code)((int)c1&(int)c2); }
 
   std::ostream& operator<<(std::ostream&,const btp::code);
 
@@ -90,7 +95,7 @@ namespace ATOOLS {
     Particle * RemoveOutParticle(Particle *,bool = true);
     void     DeleteInParticle(Particle *);
     void     DeleteOutParticle(Particle *);
-    void     RemoveOwnedParticles();
+    void     RemoveOwnedParticles(const bool = true);
     void     DeleteOwnedParticles();
 
     void     BoostInCMS();

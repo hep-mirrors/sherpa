@@ -41,7 +41,7 @@ void Statistics_Observable::Evaluate(const Blob_List &  blobs,double value, int 
 
   std::string key="unknown";
   unsigned long blcount=0;
-  for (Blob_Const_Iterator bit=blobs.begin();bit!=blobs.end();++bit) {
+  for (Blob_List::const_iterator bit=blobs.begin();bit!=blobs.end();++bit) {
     ++blcount;
     if ((*bit)->Type()==btp::Signal_Process) key  = (*bit)->TypeSpec();
   }

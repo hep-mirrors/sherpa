@@ -209,13 +209,13 @@ bool Apacic::ExtractPartons(bool ini,bool fin,Blob_List * bl,Particle_List * pl)
       p_inishower->ExtractPartons(p_initrees[i]->GetInitiator(),i,0,bl,pl);
     }
   }
-  for (Blob_List::iterator bit=bl->begin();bit!=bl->end();++bit) {
-    if ((*bit)->Type()==btp::Signal_Process) {
-      (*bit)->AddData("Shower_Info_cms",new Blob_Data<std::vector<double> >(m_info_cms));
-      (*bit)->AddData("Shower_Info_lab",new Blob_Data<std::vector<double> >(m_info_lab));
-      break;
-    }
-  }
+//   for (Blob_List::iterator bit=bl->begin();bit!=bl->end();++bit) {
+//     if ((*bit)->Type()==btp::Signal_Process) {
+//       (*bit)->AddData("Shower_Info_cms",new Blob_Data<std::vector<double> >(m_info_cms));
+//       (*bit)->AddData("Shower_Info_lab",new Blob_Data<std::vector<double> >(m_info_lab));
+//       break;
+//     }
+//   }
   return 1;
 }
 

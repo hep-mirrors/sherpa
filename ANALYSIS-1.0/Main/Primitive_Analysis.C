@@ -111,7 +111,7 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
 {
   int nout=-1;
   std::string name;
-  for (Blob_Const_Iterator bit=bl->begin();bit!=bl->end();++bit) {
+  for (Blob_List::const_iterator bit=bl->begin();bit!=bl->end();++bit) {
     if ((*bit)->Type()==btp::Signal_Process) {
       nout  = (*bit)->NOutP();      
       name  = (*bit)->TypeSpec();// orig: (*bit)->Type();
@@ -306,7 +306,7 @@ void Primitive_Analysis::CreateFinalStateParticleList()
 
   Particle_List * pl = new Particle_List;
 
-  for (Blob_Const_Iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
+  for (Blob_List::const_iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
     if ((*blit)->Type()==btp::Signal_Process) {
       Blob_Data_Base * info=(*(*blit))["ME_Weight"];
       if (info) {
@@ -374,7 +374,7 @@ void Primitive_Analysis::CreateIntermediateHadronsList()
 
   if (m_mode&ANALYSIS::do_hadron) {
 
-    for (Blob_Const_Iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
+    for (Blob_List::const_iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
       if ((*blit)->Type()==btp::Hadron_Decay || (*blit)->Type()==btp::Fragmentation) {
 	for (int i=0;i<(*blit)->NOutP();++i) {
 	  Particle * p = (*blit)->OutParticle(i);

@@ -195,7 +195,7 @@ bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weig
   if (m_io&1 && msg.LevelIsEvents()) {
     if (!blobs->empty()) {
       msg.Out()<<"  -------------------------------------------------  "<<std::endl;
-      for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) 
+      for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) 
 	msg.Out()<<*(*blit)<<std::endl;
       msg.Out()<<"  -------------------------------------------------  "<<std::endl;
     }
@@ -266,7 +266,7 @@ void IO_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double weight
   ATOOLS::Particle_Int_Map           P2I;
   ATOOLS::Particle_Int_Map::iterator P2Iiter;
   
-  for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) {
+  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     for (int i=0;i<(*blit)->NInP();i++) {
       if (P2I.find((*blit)->InParticle(i))==P2I.end()) 
 	P2I.insert(std::make_pair((*blit)->InParticle(i),P2I.size()+1));
@@ -288,7 +288,7 @@ void IO_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double weight
 	       <<" "<<part->Momentum()[0]<<" "<<part->Momentum()[1]
 	       <<" "<<part->Momentum()[2]<<" "<<part->Momentum()[3]<<" \n";
   }
-  for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) {
+  for (Blob_List::iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     m_outstream<<(*blit)->Id()<<" "<<(*blit)->Status()<<" "<<(int)(*blit)->Type()<<" "<<(*blit)->TypeSpec()
 	       <<" "<<(*blit)->NInP()<<" "<<(*blit)->NOutP()<<" \n"
 	       <<" "<<(*blit)->Position()[0]<<" "<<(*blit)->Position()[1]

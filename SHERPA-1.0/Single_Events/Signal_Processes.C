@@ -49,7 +49,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
   
   while (found) {
     found = 0;
-    for (Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
+    for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
       if ((*blit)->Type()==btp::Signal_Process && (*blit)->Status()==2) {
 	myblob = (*blit);
 	found  = 1;
@@ -202,8 +202,8 @@ void Signal_Processes::FillBlob(Blob * blob, const double weight, const int ntri
     blob->AddData("ME_Weight_One",new Blob_Data<double>(weight_one));
     blob->AddData("ME_NumberOfTrials_One",new Blob_Data<int>(ntrial_one));
   }
-  blob->AddData("ISR_Info_cms",p_mehandler->GetISR_Handler()->Info(0));
-  blob->AddData("ISR_Info_lab",p_mehandler->GetISR_Handler()->Info(1));
+//   blob->AddData("ISR_Info_cms",p_mehandler->GetISR_Handler()->Info(0));
+//   blob->AddData("ISR_Info_lab",p_mehandler->GetISR_Handler()->Info(1));
 }
 
 void Signal_Processes::Finish(const std::string &) {}
