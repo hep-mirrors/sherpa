@@ -1,36 +1,36 @@
-#ifndef InterfaceTools_h
-#define InterfaceTools_h
+#ifndef Interface_Tools_H
+#define Interface_Tools_H
 
-#include <set> 
-#include <iterator> 
-#include <iostream> 
-
-
-#include "XS_Base.H"
-
-#include "Tree.H"
-#include "Knot.H"
 #include "Particle_List.H"
-#include "Particle.H"
-#include "Flow.H"
 #include "Blob.H"
-
+#include "Tree.H"
 
 namespace SHERPA {
+
   class Interface_Tools {
-    APACIC::Tree ** p_initrees; 
-    APACIC::Tree  * p_fintree; 
+
+    APACIC::Tree **p_initrees; 
+    APACIC::Tree  *p_fintree; 
+
+    ATOOLS::Particle *p_dummy;
 
     bool IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *) ;
+
   public :
+
+    // constructor
     Interface_Tools(APACIC::Tree **,APACIC::Tree *); 
+
+    // destructor
     ~Interface_Tools(); 
 
+    // member functions
     void InitializeIncoming(ATOOLS::Blob *,double,double,double,double,double,double);
     void InitializeOutGoing(ATOOLS::Blob *,double,double,double,double);
 
     double ColourAngle(ATOOLS::Particle *,ATOOLS::Blob *);
-  };
+
+  };// end of class Interface_Tools
 
   /*!
     \file 
@@ -91,7 +91,9 @@ namespace SHERPA {
     Basically, all partons in the blob are considered, if two partons are colour connected
     to the initial one, which might be the case for gluons, the larger angle is returned.
   */
-}
+
+}// end of namespace SHERPA
+
 #endif
 
 

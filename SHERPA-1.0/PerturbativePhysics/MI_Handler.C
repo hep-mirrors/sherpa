@@ -103,6 +103,52 @@ void MI_Handler::SameSoftProcess(ATOOLS::Blob *blob)
   }
 }
 
+bool MI_Handler::GenerateHardEvent(ATOOLS::Blob_List *bloblist)
+{
+  switch (m_type) {
+  case Amisic:
+    return p_amisic->GenerateHardEvent(bloblist);
+    break;
+  default:
+    break;
+  }
+  return false;
+}
+
+bool MI_Handler::GenerateSoftEvent(ATOOLS::Blob_List *bloblist)
+{
+  switch (m_type) {
+  case Amisic:
+    return p_amisic->GenerateSoftEvent(bloblist);
+    break;
+  default:
+    break;
+  }
+  return false;
+}
+
+void MI_Handler::SameHardEvent(ATOOLS::Blob_List *bloblist)
+{
+  switch (m_type) {
+  case Amisic:
+    p_amisic->SameHardEvent(bloblist);
+    break;
+  default:
+    break;
+  }
+}
+
+void MI_Handler::SameSoftEvent(ATOOLS::Blob_List *bloblist)
+{
+  switch (m_type) {
+  case Amisic:
+    p_amisic->SameSoftEvent(bloblist);
+    break;
+  default:
+    break;
+  }
+}
+
 void MI_Handler::SetScaleMin(double scalemin,unsigned int i)
 {
   switch (m_type) {

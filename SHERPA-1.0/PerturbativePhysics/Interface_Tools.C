@@ -6,18 +6,20 @@ using namespace SHERPA;
 using namespace APACIC;
 using namespace ATOOLS;
 
+Interface_Tools::Interface_Tools(Tree **ini_trees,Tree *fin_tree):
+  p_initrees(ini_trees), 
+  p_fintree(fin_tree), 
+  p_dummy(new Particle(0,Flavour(kf::none),ATOOLS::Vec4D())) {}
+	  
+Interface_Tools::~Interface_Tools() 
+{ 
+  delete p_dummy;
+}
 
-Interface_Tools::Interface_Tools(Tree ** _ini_trees,Tree * _fin_tree) :
-  p_initrees(_ini_trees), p_fintree(_fin_tree) 
-{ }
-
-Interface_Tools::~Interface_Tools() { }
-
-void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
+void Interface_Tools::InitializeIncoming(Blob *blob,double scale,double E,
 					 double th1,double th2,double x1,double x2)
 {
   p_initrees[0]->Reset();  
-
   Knot * m1      = p_initrees[0]->NewKnot();
   *(m1->part)    = blob->InParticle(0);
   m1->part->SetInfo('G');
@@ -31,9 +33,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
   m1->E2         = sqr(x1*E);
   m1->stat       = 1;
   m1->part->SetDecayBlob(blob);
-
   p_initrees[1]->Reset();  
-
   Knot * m2      = p_initrees[1]->NewKnot();
   *(m2->part)    = blob->InParticle(1);
   m2->part->SetInfo('G');
@@ -49,7 +49,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
   m2->part->SetDecayBlob(blob);
 }
 
-void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
+void Interface_Tools::InitializeOutGoing(Blob *blob,double scale,double E,
 					 double th1,double th2)
 {
   blob->SetCMS();
@@ -57,8 +57,8 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   ATOOLS::Particle *part1=blob->OutParticle(0);
   ATOOLS::Particle *part2=blob->OutParticle(1);
   p_fintree->Reset();
-  Knot * dummy   = p_fintree->NewKnot(new Particle(0,Flavour(kf::none),
-						   part1->Momentum()+part2->Momentum()));
+  p_dummy->SetMomentum(part1->Momentum()+part2->Momentum());
+  Knot * dummy   = p_fintree->NewKnot(p_dummy);
   dummy->part->SetInfo('M');
   dummy->part->SetStatus(2);
   dummy->t       = scale;

@@ -62,6 +62,12 @@ namespace SHERPA {
     void SameHardProcess(ATOOLS::Blob *blob);
     void SameSoftProcess(ATOOLS::Blob *blob);
 
+    bool GenerateHardEvent(ATOOLS::Blob_List *bloblist);
+    bool GenerateSoftEvent(ATOOLS::Blob_List *bloblist);
+
+    void SameHardEvent(ATOOLS::Blob_List *bloblist);
+    void SameSoftEvent(ATOOLS::Blob_List *bloblist);
+
   }; // end of class MI_Handler
 
 } // end of namespace SHERPA

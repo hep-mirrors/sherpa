@@ -22,6 +22,8 @@ namespace SHERPA {
     ATOOLS::Flavour *p_fl;
     ATOOLS::Vec4D   *p_moms;
 
+    void DeleteMergingBlobs(ATOOLS::Blob *const blob,const bool forward);
+
   public :
 
     // constructor
@@ -34,10 +36,14 @@ namespace SHERPA {
     virtual int  DefineInitialConditions(ATOOLS::Blob *) = 0;
     virtual bool FillBlobs(ATOOLS::Blob_List *) = 0; 
 
-    virtual int  PerformShowers() = 0;
-    virtual int  PerformDecayShowers() = 0;
+    virtual int PerformShowers() = 0;
+    virtual int PerformDecayShowers() = 0;
 
-    void CleanBlobs(ATOOLS::Blob_List *); 
+    virtual void Reset();
+    virtual void UpdateEnergy(const double energy,const size_t i);
+
+    void CleanBlobList(ATOOLS::Blob_List *const bloblist,
+		       const ATOOLS::btp::code type);
 
     // inline functions
     inline double Weight() const { return m_weight; }

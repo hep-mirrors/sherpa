@@ -19,12 +19,35 @@ Perturbative_Interface::~Perturbative_Interface()
   if (p_moms) { delete p_moms; p_moms = NULL; }
 }
 
-void Perturbative_Interface::CleanBlobs(ATOOLS::Blob_List * bl)
+void Perturbative_Interface::DeleteMergingBlobs(ATOOLS::Blob *const blob,
+						const bool forward)
+{ 
+  for (size_t i=0;!forward && i<(size_t)blob->NInP();++i) {
+    ATOOLS::Particle *cur=blob->InParticle(i);
+    if (cur->ProductionBlob()!=NULL) DeleteMergingBlobs(cur->ProductionBlob(),false);
+  } 
+  for (size_t i=0;forward && i<(size_t)blob->NOutP();++i) {
+    ATOOLS::Particle *cur=blob->OutParticle(i);
+    if (cur->DecayBlob()!=NULL) DeleteMergingBlobs(cur->DecayBlob(),true);
+  } 
+}
+
+void Perturbative_Interface::CleanBlobList(ATOOLS::Blob_List *const bloblist,
+					   const ATOOLS::btp::code type)
 {
-  for (Blob_Iterator blit=bl->begin();blit!=bl->end();) {
-    if ((*blit)->Type()==btp::ME_PS_Interface_FS || 
-	(*blit)->Type()==btp::ME_PS_Interface_IS) blit=bl->erase(blit);
-    else ++blit;
+  for (Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
+    if ((*blit)->Type()==type) {
+      DeleteMergingBlobs(*blit,true);
+      DeleteMergingBlobs(*blit,false);
+      blit=bloblist->begin();
+    }
   }
 }
 
+void Perturbative_Interface::Reset()
+{
+}
+
+void Perturbative_Interface::UpdateEnergy(const double energy,const size_t i)
+{
+}

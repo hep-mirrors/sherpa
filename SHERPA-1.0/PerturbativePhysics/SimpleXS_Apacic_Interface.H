@@ -5,14 +5,23 @@
 #include "Interface_Tools.H"
 
 namespace SHERPA {
-  class SimpleXS_Apacic_Interface : public Perturbative_Interface {
+
+  class SimpleXS_Apacic_Interface: public Perturbative_Interface {
   private:
 
     Interface_Tools *p_tools;
 
-    ATOOLS::Blob *p_psme_is, *p_psme_fs;
+    EXTRAXS::XS_Group *p_twototwo;
+    EXTRAXS::XS_Base  *p_xs;
 
-    bool InitColours(ATOOLS::Blob *blob);
+    ATOOLS::Vec4D   *p_momenta;
+    ATOOLS::Flavour *p_flavours;
+
+    ATOOLS::Blob *p_psme_is, *p_psme_fs, *p_hard;
+
+    double m_rescale[2];
+
+    int InitColours(ATOOLS::Blob *blob);
 
   public :
 
@@ -27,7 +36,12 @@ namespace SHERPA {
     bool FillBlobs(ATOOLS::Blob_List *blobs); 
 
     int  PerformShowers();
-    int  PerformDecayShowers() { return 1; }
+    int  PerformDecayShowers();
+
+    void Reset();
+
+    void UpdateEnergy(const double energy,const size_t i);
+
   };// end of class Simple_XS_Interface
 
   /*!
