@@ -33,7 +33,7 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
   delete[] Z;
 
 
-  cout<<"Constructor RamboKK(1)"<<endl;
+  std::cout<<"Constructor RamboKK(1)"<<std::endl;
 
   kkp=-1;mpss=1.;
   for (int i=nin;i<nin+nout;i++) {
@@ -46,12 +46,12 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
       
       MODEL::ADD add(rpa.GetPath()+std::string("/"),rpa.me.ModelDataFile());
       ed  = add.ScalarNumber(std::string("ED"));
-      cout<<"ED "<<ed<<endl;
+      std::cout<<"ED "<<ed<<std::endl;
       r2  = sqr(add.ScalarConstant(std::string("Radius")));
       double gn  = add.ScalarConstant(std::string("G_Newton"));
       double m_s = add.ScalarConstant(std::string("M_s"));
-      cout.precision(20);
-      cout<<"r2 "<<r2<<endl;       
+      std::cout.precision(20);
+      std::cout<<"r2 "<<r2<<std::endl;       
       double mm=rpa.gen.Ecms();
       for(int j=nin;j<nin+nout;j++)
 	if(j!=i) mm -= sqrt(ms[j]);
@@ -61,7 +61,7 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
       break;
     }
   }
-  cout<<"Constructor RamboKK(2)"<<endl;
+  std::cout<<"Constructor RamboKK(2)"<<std::endl;
 
 }
 

@@ -353,9 +353,7 @@ void Phase_Space_Handler::WriteOut(string pID) {
 
   char * filename = new char[100];
   string help     = (pID+string("/Random")).c_str();
-  for (int pos=0;pos<help.length();pos++) filename[pos] = help[pos];
-  filename[help.length()]=0;
-  int nran = ran.WriteOutStatus(filename);
+  int nran = ran.WriteOutStatus(help.c_str());
 }
 
 bool Phase_Space_Handler::ReadIn(string pID) {
