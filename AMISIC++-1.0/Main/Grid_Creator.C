@@ -198,7 +198,7 @@ bool Grid_Creator::CreateOptimizedGrid()
       msg_Tracking()<<"Grid_Creator::CreateOptimizedGrid(): "
 		    <<"Event "<<m_events<<std::endl;
     if ((m_events%(m_maxevents/100))==0) {
-      ATOOLS::msg.Out()<<"\r   "<<m_events/(float)m_maxevents
+      ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents
 		       <<" %"<<std::flush;
     }
   }
@@ -216,7 +216,7 @@ bool Grid_Creator::CreateInitialGrid()
       msg_Tracking()<<"Grid_Creator::CreateInitialGrid(): "
 		    <<"Event "<<m_events<<std::endl;
     if ((m_events%(m_maxevents/100))==0) 
-      ATOOLS::msg.Out()<<"\r   "<<m_events/(float)m_maxevents
+      ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents
 		       <<" %"<<std::flush;
   }
   return true;
