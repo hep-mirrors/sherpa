@@ -7,6 +7,17 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace std;
 
+void Data_Read::SetValue(std::string name, std::string value) {
+  Shorten(name);
+  // define value
+  Shorten(value);
+  // insert name-value pair in list
+  parameters[name]=value;
+
+  cout<<" paramerter "<<name<<" = "<<value<<endl;
+}
+
+
 // definition
 template <class Type>
 Type  Data_Read::GetValue(std::string name, Type default_value) {
@@ -289,7 +300,6 @@ void Data_Read::WriteOut(std::string filename,int flag) {
 // All others
   file.open(filename.c_str(),flag);
 #endif
-
 
   // add a header
   file<<"!======================================== "<<endl;

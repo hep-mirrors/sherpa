@@ -12,7 +12,7 @@ using namespace std;
 
 Run_Parameter AORGTOOLS::rpa;
 
-void Run_Parameter::Init(std::string _path)
+void Run_Parameter::Init(std::string _path,int argc,char* argv[])
 {
   path = _path;
   gen.output = 0;
@@ -52,6 +52,16 @@ void Run_Parameter::Init(std::string _path)
   // read in some consts
   dr.ReadIn(path+std::string("/")+me.model_file);
 
+  // read in comand line
+  int iarg=0;
+  while ((argc-iarg)>=3) {
+    if (argv[iarg][0]=='-' && argv[iarg][1]=='p') {
+      dr.SetValue(string(argv[iarg+1]),string(argv[iarg+2]));
+      iarg+=3;
+    }
+    else ++iarg;
+  }
+
 
   consts.aqed_mz         = 1./dr.GetValue<double>("alpha_QED(MZ)");
   consts.sin2_tw         = dr.GetValue<double>("SIN2_TW");
@@ -79,6 +89,26 @@ void Run_Parameter::Init(std::string _path)
   dshower.kt_min         = dr.GetValue<double>("K_T_MIN");
 
   test.analysis          = dr.GetValue<int>("ANALYSIS");
+
+  test.faca = dr.GetValue<double>("TEST_FAC_YCUT");
+  if (test.facycut==NotDefined<double>()) test.facycut = 1.;
+  test.faca = dr.GetValue<double>("TEST_FAC_NLLQ");
+  if (test.facnlly==NotDefined<double>()) test.facnlly = 1.;
+
+
+  test.faca = dr.GetValue<double>("TEST_FAC_A");
+  if (test.faca==NotDefined<double>()) test.faca = 1.;
+  test.facb = dr.GetValue<double>("TEST_FAC_B");
+  if (test.facb==NotDefined<double>()) test.facb = 1.;
+  test.facc = dr.GetValue<double>("TEST_FAC_C");
+  if (test.facc==NotDefined<double>()) test.facc = 1.; 
+
+  test.flaga = dr.GetValue<int>("TEST_FLAG_A");
+  if (test.flaga==NotDefined<int>()) test.flaga = 0;
+  test.flagb = dr.GetValue<int>("TEST_FLAG_B");
+  if (test.flagb==NotDefined<int>()) test.flagb = 0;
+  test.flagc = dr.GetValue<int>("TEST_FLAG_C");
+  if (test.flagc==NotDefined<int>()) test.flagc = 0; 
 
   dr.ReadIn(path+std::string("/Integration.dat"));
 

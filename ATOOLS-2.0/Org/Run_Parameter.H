@@ -26,7 +26,7 @@ namespace AORGTOOLS {
   public:
     Run_Parameter()    {gen.output = 0;}
     ~Run_Parameter();
-    void Init(std::string);
+    void Init(std::string,int argc=0,char* argv[]=0);
     
     // CONSTs!
 
@@ -171,9 +171,35 @@ namespace AORGTOOLS {
 
     class Test { // test == only for the experts
       int    analysis;
+      double   faca;
+      double   facb;
+      double   facc;
+      int      flaga;
+      int      flagb;
+      int      flagc;
+      // matching test
+      double   facycut;
+      double   facnlly;
     public:
       inline int Analysis()          { SAVE_RETURN(analysis,"analysis"); }
       inline int SetAnalysis(int k)  { return analysis=k;}
+      inline double FactorYcut()        { return facycut; }
+      inline double SetFactorYcut(double f) { return facycut=f;}
+      inline double FactorNLLQ()        { return facnlly; }
+      inline double SetFactorNLLQ(double f) { return facnlly=f;}
+
+      inline double FactorA()        { return faca; }
+      inline double SetFactorA(double f) { return faca=f;}
+      inline double FactorB()        { return facb; }
+      inline double SetFactorB(double f) { return facb=f;}
+      inline double FactorC()        { return facc; }
+      inline double SetFactorC(double f) { return facc=f;}
+      inline double FlagA()          { return flaga;}
+      inline double SetFlagA(int f)  { return flaga=f;} 
+      inline double FlagB()          { return flagb;}
+      inline double SetFlagB(int f)  { return flagb=f;} 
+      inline double FlagC()          { return flagc;}
+      inline double SetFlagC(int f)  { return flagc=f;} 
       friend class Run_Parameter;
     } test;
 

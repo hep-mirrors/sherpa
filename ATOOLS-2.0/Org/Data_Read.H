@@ -90,8 +90,8 @@ namespace AORGTOOLS {
     template <class Type> 
       Type GetValue(std::string name,Type default_value);
 
-    template <class Type> 
-      void SetValue(std::string name, Type value);
+    //    template <class Type> 
+      void SetValue(std::string name, std::string value);
 
     std::string GenerateKey();
   };  
