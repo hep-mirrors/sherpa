@@ -16,9 +16,12 @@ Particle_Selector::Particle_Selector(const std::string & inlistname,const std::s
     else if (outlistname=="NeutralHadron") m_mode=2;
     else if (outlistname=="Hadron") m_mode=3;
     else if (outlistname=="ChargedParticle") m_mode=4;
+    else if (outlistname=="NeutralParticle") m_mode=5;
     else if (outlistname=="ChargedPion") m_mode=11;
     else if (outlistname=="ChargedKaon") m_mode=12;
     else if (outlistname=="ProtonAntiproton") m_mode=13;
+    else if (outlistname=="Parton") m_mode=21;
+    else if (outlistname=="All") m_mode=22;
     else {
       msg.Error()<<"ERROR in Particle_Selector: unknown particle qualifier "<<outlistname<<std::endl;
       m_mode=4;
@@ -34,6 +37,8 @@ Particle_Selector::Particle_Selector(const std::string & inlistname,const std::s
   case 11: p_qualifier = new Is_Charged_Pion(); break;
   case 12: p_qualifier = new Is_Charged_Kaon(); break;
   case 13: p_qualifier = new Is_Proton_Antiproton(); break;
+  case 21: p_qualifier = new Is_Parton(); break;
+  case 22: p_qualifier = new Is_There(); break;
   default:
     msg.Error()<<"ERROR in Particle_Selector: unknown particle qualifier "<<m_mode<<std::endl;
     p_qualifier = new Is_Charged(); break;
