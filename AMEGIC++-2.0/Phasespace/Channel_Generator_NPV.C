@@ -453,6 +453,7 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
     string pout0sum = Order(LinkedMasses(p->left));
     string pout1sum = Order(LinkedMasses(p->right));
     string sctmax("m_ctmax");
+    string sctmin("m_ctmin");
     if (flag>=0) {
       if (pin0.size()==0 && pout0sum.length()==1 && pin1.size()==0 && pout1sum.length()==1) {
 	sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<pout0sum<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
@@ -466,7 +467,10 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
 	sf<<"  m_ctmax = cuts->cosmax[1]["<<pout1sum<<"];"<<endl;
 	if (nout>2) sf<<"  m_ctmin = cuts->cosmin[1]["<<pout1sum<<"];"<<endl;
       }
-      else sctmax = string("1.");
+      else {
+	sctmax = string("1.");
+	sctmin = string("-1.");
+      }
     }
     char hs[4];
     switch (flag) {
@@ -484,7 +488,7 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
       if (pout0sum.length()==1) sf<<",p["<<pout0sum<<"]"; else sf<<",p"<<pout0sum;
       if (pout1sum.length()==1) sf<<",p["<<pout1sum<<"]"; else sf<<",p"<<pout1sum;
       sf<<",s"<<pout0sum<<",s"<<pout1sum;
-      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<",m_ctmin,m_amct,0,ran["<<rannum++<<"],ran[";
+      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,ran["<<rannum++<<"],ran[";
       sf<<rannum++<<"]);"<<endl;
       break;
     default:
@@ -498,7 +502,7 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
       if (pin1.size()==0) sf<<",p[1]"; else sf<<",p"<<pin1sum;
       if (pout0sum.length()==1) sf<<",p["<<pout0sum<<"]"; else sf<<",p"<<pout0sum;
       if (pout1sum.length()==1) sf<<",p["<<pout1sum<<"]"; else sf<<",p"<<pout1sum;
-      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<",m_ctmin,m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+      sf<<","<<tmstr<<",m_alpha,"<<sctmax<<","<<sctmin<<",m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
       sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
       sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
       sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
