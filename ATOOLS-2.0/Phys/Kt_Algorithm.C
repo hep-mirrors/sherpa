@@ -20,7 +20,7 @@ Kt_Algorithm::Kt_Algorithm(double rmin) :
   m_matrixsize(0), p_ktij(NULL), p_imap(NULL), p_kis(NULL), p_jets(NULL),
   p_kts(NULL)
 {
-  std::cout<<" Init Kt_Algorithm "<<std::endl;
+  msg.Tracking()<<" Init Kt_Algorithm "<<std::endl;
 }
 
 Kt_Algorithm::~Kt_Algorithm()
