@@ -675,7 +675,20 @@ bool XS_f1f2b_f1f2b::SetColours(double s, double t, double u)
 
 bool XS_f1f2b_f1f2b::SetColours() 
 {
-  return true;
+  if (M_t > (M_t+M_s) * ran.Get()) {
+    if (m_rev) {
+      p_colours[3][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
+      p_colours[2][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
+    }
+    else {
+      p_colours[2][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
+      p_colours[3][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
+    }
+    return true;
+  }
+  p_colours[0][m_anti]       = p_colours[1][1-m_anti]       = Flow::Counter();
+  p_colours[2+m_rev][m_anti] = p_colours[3-m_rev][1-m_anti] = Flow::Counter();
+  return false;
 }
 
 double XS_f1f2b_f1f2b::KFactor(double scale) 
@@ -694,9 +707,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f3f4>(const size_t nin,const size_t nou
 					       const ATOOLS::Flavour *flavours,
 					       const size_t nqed, const size_t nqcd)
 {
-  //  std::cout<<"XS_f1f2_f3f4 Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
   int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
+  if (!(flavours[0].IsQuark() &&flavours[1].IsQuark() &&
+	flavours[2].IsQuark() &&flavours[3].IsQuark()))                           return NULL;
   if (!(((flavours[0].IsUptype() && flavours[1].IsDowntype()) ||
 	 (flavours[0].IsDowntype() && flavours[1].IsUptype())) &&
 	((flavours[2].IsUptype() && flavours[3].IsDowntype()) ||
@@ -724,6 +738,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f3f4>(const size_t nin,const size_t nou
 	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
 	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0))  return NULL;    
   }
+  //  std::cout<<"Return XS_f1f2_f3f4 : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   return new XS_f1f2_f3f4(nin,nout,flavours); 
 }
 
@@ -743,8 +758,8 @@ XS_f1f2_f3f4::XS_f1f2_f3f4(const size_t nin,const size_t nout,
 
   if (flavours[0].IsUptype()) {
     if (flavours[2].IsDowntype()) {
-      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc1/2-1);
-      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc4/2-1);
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc1/2-1);  //???? u-d
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc4/2-1);  //???
     } 
     if (flavours[2].IsUptype()) {
       m_rev  = true;
@@ -814,9 +829,13 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 {
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                      return NULL;
   if (nqcd!=0 || nqed!=2)                                                         return NULL;
+//   std::cout<<"Return XS_f1f2b_f3f4b : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+//       std::cout<<"XS_f1f2b_f3f4b nqed= "<<nqed<<", nqcd="<<nqcd<<std::endl;
   if (!ATOOLS::Flavour(ATOOLS::kf::W).IsOn())                                     return NULL;
   int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
   int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
+  if (!(flavours[0].IsQuark() &&flavours[1].IsQuark() &&
+	flavours[2].IsQuark() &&flavours[3].IsQuark()))                           return NULL;
   if (flavours[0].IsUptype() && flavours[1].IsDowntype()) {
     if (flavours[2].IsUptype() && 
 	(!flavours[3].IsDowntype() ||
@@ -863,6 +882,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t n
 	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
 	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)))  return NULL;
   }    
+  //  std::cout<<"Return XS_f1f2b_f3f4b : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   return new XS_f1f2b_f3f4b(nin,nout,flavours); 
 }
 
