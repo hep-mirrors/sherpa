@@ -12,13 +12,13 @@ namespace APACIC {
     Knot * left, * right, * prev;
     ATOOLS::Particle * part;
     int stat;
-    double t, tout, tmax, E2, costh, phi, z, thcrit, maxpt2, x;
+    double t, tout, tmax, E2, costh, phi, z, thcrit, maxpt2, x, pt2lcm;
     int kn_no;
     ATOOLS::Simple_Polarisation_Info polinfo;
   public :
     Knot():left(0),right(0),prev(0),part(0),stat(0),
            t(0.),tout(0.),tmax(0.),E2(0.),costh(0.),phi(0.),z(0.),thcrit(M_PI),
-	   maxpt2(1.e10),x(0.),kn_no(-1),
+	   maxpt2(1.e10),x(0.),pt2lcm(0.0),kn_no(-1),
 	   polinfo(ATOOLS::Simple_Polarisation_Info()) {};
     Knot(Knot * in);
     ~Knot();

@@ -132,6 +132,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
       double z = p_kin->CalcZShift(m_z,ta_save,m_tb,m_tc);
       if (granny) wa_save = 0.25*sqr(ta_save+granny->E2)/granny->E2;
       pt2_save = m_z*(1.-m_z)*ta_save;
+      mother->pt2lcm = pt2_save;
       //      m_pt2    = 0.25*Min((1.-m_z)/m_z,m_z/(1.-m_z))*m_ta; 
       //      m_pt2    = 0.25*Min((1.-z)/z,z/(1.-z))*m_ta; 
       //      std::cout<<" pt2="<<m_pt2<<" ("<<m_tb<<","<<m_tc<<")"<<std::endl;
