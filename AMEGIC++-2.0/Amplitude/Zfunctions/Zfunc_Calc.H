@@ -37,7 +37,9 @@ namespace AMEGIC {
 	       VVGS   = 71,
 	       SSGS   = 72,
 	       FFVGS  = 73,
-	       Unknown= 99}; 
+	       Unknown= 99,
+               Triangle = 101
+    }; 
   };
   
   class Zfunc_Calc : public virtual Basic_Func {

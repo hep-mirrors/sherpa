@@ -292,5 +292,17 @@ class VVSS4_Calc : public Zfunc_Calc,
     Kabbala Do();
   };
 
+  class Triangle_Calc : public Zfunc_Calc, 
+			public Basic_Zfunc,
+			public Basic_Xfunc,
+			public Basic_Vfunc {
+  public:
+    Triangle_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~Triangle_Calc() {}
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 1; }
+#endif
+    Kabbala Do();
+  };
 }
 #endif
