@@ -3,10 +3,6 @@
 #include "MathTools.H"
 #include "Message.H"
 
-#ifdef DEBUG__Data_To_Function
-#include <iostream>
-#endif
-
 #ifdef PROFILE__Data_To_Function
 #include "prof.hh"
 #else 
@@ -440,16 +436,14 @@ IntegrateY(ArgumentType xmin,ArgumentType xmax)
   ClosestX(xmax,stop,dummy);
   yright=LinearY(xmax,stop,dummy);
   if (xmax>=dummy) stop=dummy;
-  integral+=((*p_yaxis)[(*p_xydata)[start].second]+(*p_yaxis)[yleft])*
-    ((*p_xaxis)[(*p_xydata)[start].first]-(*p_xaxis)[xmin])/2.0;
+  integral+=(*p_yaxis)[yleft]*
+    ((*p_xaxis)[(*p_xydata)[start].first]-(*p_xaxis)[xmin]);
   for (unsigned int i=start;i<stop;++i) {
-    integral+=((*p_yaxis)[(*p_xydata)[i+1].second]+
-	       (*p_yaxis)[(*p_xydata)[i].second])*
-      ((*p_xaxis)[(*p_xydata)[i+1].first]-
-       (*p_xaxis)[(*p_xydata)[i].first])/2.0;
+    integral+=(*p_yaxis)[(*p_xydata)[i].second]*
+      ((*p_xaxis)[(*p_xydata)[i+1].first]-(*p_xaxis)[(*p_xydata)[i].first]);
   }
-  integral+=((*p_yaxis)[yright]+(*p_yaxis)[(*p_xydata)[stop].second])*
-    ((*p_xaxis)[xmax]-(*p_xaxis)[(*p_xydata)[stop].first])/2.0;
+  integral+=(*p_yaxis)[(*p_xydata)[stop].second]*
+    ((*p_xaxis)[xmax]-(*p_xaxis)[(*p_xydata)[stop].first]);
   return integral;
 }
 
