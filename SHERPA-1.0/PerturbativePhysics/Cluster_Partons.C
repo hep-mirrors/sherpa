@@ -509,11 +509,6 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     int k=i%2+1;
     p_blob->OutParton(j-2)->SetFlow(k, knots[j]->part->GetFlow(k));
   }
-
-  cout<<" tree0:"<<endl;
-  cout<<ini_trees[0]<<endl;
-  cout<<" tree1:"<<endl;
-  cout<<ini_trees[1]<<endl;
 }
 
 
