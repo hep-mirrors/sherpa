@@ -11,7 +11,7 @@
 #include "Blob_List.H"
 #include "Blob.H"
 
-namespace MOCAIC {
+namespace SHERPA {
   class Soft_Interface {
     APHYTOOLS::Flavour ** constituents;
     int     *  n_const;

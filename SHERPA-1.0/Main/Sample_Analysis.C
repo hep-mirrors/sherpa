@@ -3,7 +3,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 
-using namespace MOCAIC;
+using namespace SHERPA;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
@@ -38,6 +38,7 @@ void Sample_Analysis::AfterME(APHYTOOLS::Blob_List * blobs) {
 void Sample_Analysis::AfterPartonShower(APHYTOOLS::Blob_List * blobs) {
   msg.Events()<<" in Sample_Analysis::AfterPartonShower() "<<endl;
 
+  int i=0;
   // fill partons FORTRAN HEPEVT
   for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
     if ((*bit)->Type()[0]=='F'  && (*bit)->Type()[1]=='S') {
@@ -84,7 +85,7 @@ void Sample_Analysis::Finish() {
     }
 
     //    ana->FinishAnalysis("testout_mocaic_EU108",0);
-    ana->FinishAnalysis("testout_mocaic_GA",0);
+    ana->FinishAnalysis("testout_sherpa_GD",0);
   }
 
 }

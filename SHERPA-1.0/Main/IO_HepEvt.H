@@ -4,7 +4,7 @@
 #include "Parton_List.H"
 #include "Blob_List.H"
 
-namespace MOCAIC {
+namespace SHERPA {
   class IO_HepEvt {
     static const int maxentries = 2000;
     double * phep, * vhep;

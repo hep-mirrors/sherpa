@@ -1,7 +1,7 @@
 #include"Cluster_Partons.H"
 #include"Message.H"
 
-using namespace MOCAIC;
+using namespace SHERPA;
 using namespace APACIC;
 using namespace EXTRAXS;
 using namespace AMEGIC;

@@ -3,10 +3,10 @@ rootincdir = $(rootdir)/include
 rootlibdir = $(rootdir)/lib
 CLHEPlibdir   = $(CLHEPDIR)/lib
 CLHEPincdir   = $(CLHEPDIR)/include
-bin_PROGRAMS   = Mocaic
-Mocaic_SOURCES = main.C
-Mocaic_LDADD =  \
-         @libdir@/libMocaic.la \
+bin_PROGRAMS   = Sherpa
+Sherpa_SOURCES = Main.C
+Sherpa_LDADD =  \
+         @libdir@/libSherpa.la \
          @libdir@/libMEPSInterface.la \
          @libdir@/libHadInterface.la \
 	 @libdir@/libMain.la \
@@ -32,8 +32,8 @@ Mocaic_LDADD =  \
 	 @libdir@/libToolsOrg.la \
 	 -lg2c -lm 
 #	 -L$(rootlibdir) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
-Mocaic_LDFLAGS =  -rdynamic
-INCLUDES = -I../Mocaic/ \
+Sherpa_LDFLAGS =  -rdynamic
+INCLUDES = -I../Main/ \
 	   -I../ME_PS_Interface/ \
 	   -I../Had_Interface/ \
 	   -I../../AMEGIC++-2.0/Amplitude \

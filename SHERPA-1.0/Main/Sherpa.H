@@ -1,5 +1,5 @@
-#ifndef Mocaic_h
-#define Mocaic_h
+#ifndef Sherpa_h
+#define Sherpa_h
 
 
 #include "ME_PS_Interface.H"
@@ -19,8 +19,8 @@
 #include "Parton.H"
 #include "Parton_List.H"
 
-namespace MOCAIC {
-  class Mocaic {
+namespace SHERPA {
+  class Sherpa {
     bool tune;
 
     AMEGIC::Amegic         * AM;
@@ -47,9 +47,9 @@ namespace MOCAIC {
     bool SendBlobs();
     bool RecieveBlobs();
   public:
-    Mocaic(): tune(0),AM(0), hard_interface(0), soft_interface(0),
+    Sherpa(): tune(0),AM(0), hard_interface(0), soft_interface(0),
 	      isr(0),partons(0),blobs(0) {  } 
-    ~Mocaic();
+    ~Sherpa();
     // init all essentials (e.g. rpa, Flavour, msg, aqed, ..., Amegic )
     // returns 1 for successful
     bool Init();

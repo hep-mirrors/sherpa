@@ -1,7 +1,7 @@
 #include "Combine_Table.H"
 #include "Run_Parameter.H"
 
-using namespace MOCAIC;
+using namespace SHERPA;
 using namespace AMEGIC;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
@@ -28,7 +28,7 @@ Combine_Data::~Combine_Data() {
   if (down==0) delete down;
 }
 
-std::ostream& MOCAIC::operator<< (std::ostream & s ,Combine_Data & cd) {
+std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd) {
     s<<" "<<cd.i<<"&"<<cd.j<<"   "<<cd.pt2ij<<"    "<<std::flush;
     for (int k=0; k<cd.graphs.size(); ++k)
     s<<cd.graphs[k]<<","<<std::flush;
@@ -272,7 +272,7 @@ Combine_Table::~Combine_Table()
   msg.Tracking()<<" done "<<std::endl;
 }
 
-std::ostream& MOCAIC::operator<< (std::ostream& s ,Combine_Table * ct) {
+std::ostream& SHERPA::operator<< (std::ostream& s ,Combine_Table * ct) {
   if (ct) {
     s<<std::endl<<" Combine_Table "<<ct->no<<" (up=";
     if (ct->up) s<<ct->up->no<<")"<<std::endl; else s<<"#)"<<std::endl;

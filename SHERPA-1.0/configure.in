@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Run/main.C)
+AC_INIT(Run/Main.C)
 AM_INIT_AUTOMAKE(SHERPA, 1.0)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD}/..)
@@ -23,7 +23,7 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
 
-AC_OUTPUT(Mocaic/Makefile \
+AC_OUTPUT(Main/Makefile \
           ME_PS_Interface/Makefile \
           Had_Interface/Makefile \
           Run/Makefile \

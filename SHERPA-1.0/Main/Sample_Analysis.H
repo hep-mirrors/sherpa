@@ -5,7 +5,7 @@
 #include "Blob_List.H"
 #include "Primitive_Analysis.H"
 
-namespace MOCAIC {
+namespace SHERPA {
   class Sample_Analysis {
     IO_HepEvt  convert;
     int status;

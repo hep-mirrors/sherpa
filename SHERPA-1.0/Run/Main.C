@@ -1,4 +1,4 @@
-#include "Mocaic.H"
+#include "Sherpa.H"
 #include "prof.hh"
 
 //#define _USE_MPI_
@@ -11,7 +11,7 @@ extern "C" {
   void aparun_();
 }
 
-using namespace MOCAIC;
+using namespace SHERPA;
 
 int main(int argc,char* argv[]) {  
   /*
@@ -32,7 +32,7 @@ int main(int argc,char* argv[]) {
   MPI::Init(argc, argv);
 #endif
 
-  Mocaic Generator;
+  Sherpa Generator;
   Generator.Init();
   if (Generator.CrossSections())
     Generator.GenerateEvents();

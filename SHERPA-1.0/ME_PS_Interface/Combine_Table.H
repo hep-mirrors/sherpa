@@ -9,7 +9,7 @@
 
 
 
-namespace MOCAIC {
+namespace SHERPA {
   // Look for more comments at the end of this file!
 
   /*---------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 #include "Vector.H"
 #include "Data_Read.H"
 
-using namespace MOCAIC;
+using namespace SHERPA;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;

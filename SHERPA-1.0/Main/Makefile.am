@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libMocaic.la
-libMocaic_la_SOURCES = Mocaic.C IO_HepEvt.C Sample_Analysis.C
-INCLUDES = -I../Mocaic/ \
+lib_LTLIBRARIES = libSherpa.la
+libSherpa_la_SOURCES = Sherpa.C IO_HepEvt.C Sample_Analysis.C
+INCLUDES = -I../Sherpa/ \
 	   -I../ME_PS_Interface/ \
 	   -I../Had_Interface/ \
 	   -I../../AMEGIC++-2.0/Amplitude \
@@ -24,7 +24,7 @@ INCLUDES = -I../Mocaic/ \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Mocaic.H IO_HepEvt.H Sample_Analysis.H
+noinst_HEADERS = Sherpa.H IO_HepEvt.H Sample_Analysis.H
 
 
 

@@ -2,7 +2,7 @@
 #include "Run_Parameter.H"
 #include "Random.H"
 
-using namespace MOCAIC;
+using namespace SHERPA;
 using namespace APACIC;
 using namespace AMEGIC;
 using namespace EXTRAXS;

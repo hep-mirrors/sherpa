@@ -1,4 +1,4 @@
-#include "Mocaic.H"
+#include "Sherpa.H"
 #include "Running_AlphaS.H"
 #include "Running_AlphaQED.H"
 #include "Run_Parameter.H"
@@ -22,22 +22,22 @@
 #include "Random.H"
 #endif
 
-namespace MOCAIC {
-  Mocaic mm;
+namespace SHERPA {
+  Sherpa mm;
 }
 
 // interface for calling from fortran or c:
 extern "C" {
   void apainit_() {
-    MOCAIC::mm.Init();
-    MOCAIC::mm.CrossSections();
+    SHERPA::mm.Init();
+    SHERPA::mm.CrossSections();
     //    mm.GenerateEvents();
   }
   void aparun_() {
-    MOCAIC::mm.OneEvent();
+    SHERPA::mm.OneEvent();
   } 
   void apaend_() {
-    MOCAIC::mm.Finalize();
+    SHERPA::mm.Finalize();
   } 
 }
 
@@ -48,14 +48,14 @@ extern "C" {
   void altest_(double&,double&,double&);
 }
 
-using namespace MOCAIC;
+using namespace SHERPA;
 using namespace AMEGIC;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
 
-bool Mocaic::Init() {
+bool Sherpa::Init() {
   ParticleInit("./");
   rpa.Init("./");
 
@@ -89,7 +89,7 @@ bool Mocaic::Init() {
   return 1;
 }
 
-Mocaic::~Mocaic() {
+Sherpa::~Sherpa() {
   if (blobs) CleanUpEvent();
 
   if (hard_interface) delete hard_interface;
@@ -120,7 +120,7 @@ public:
 };
 
 
-bool Mocaic::RescaleJetrates() {
+bool Sherpa::RescaleJetrates() {
   Process_Base * procs = AM->Processes();
   // we have somehow to determine wich process is included in which other process!
   // ???!!!
@@ -204,7 +204,7 @@ bool Mocaic::RescaleJetrates() {
 
 }
 
-bool Mocaic::CrossSections() {
+bool Sherpa::CrossSections() {
   if (AM->InitializeProcesses()) { 
     if (tune) { 
       int  mode_dir = 448;
@@ -231,7 +231,7 @@ bool Mocaic::CrossSections() {
   return 0;
 }
 
-bool Mocaic::GenerateEvents() {
+bool Sherpa::GenerateEvents() {
   if (rpa.gen.NumberOfEvents()==0) return 1;
   if (MPIGenerateEvents()) return 1;
 
@@ -304,7 +304,7 @@ bool Mocaic::GenerateEvents() {
       }
 
       if ((stat==0)  ) {
-	msg.Error()<<"ERROR in Mocaic::GenerateEvents"<<std::endl
+	msg.Error()<<"ERROR in Sherpa::GenerateEvents"<<std::endl
 		   <<"   The hard interface did not know how to perform the shower."
 		   <<std::endl;
 	--n;
@@ -313,6 +313,10 @@ bool Mocaic::GenerateEvents() {
       }
 
       hard_interface->ExtractPartons(blobs,partons);
+      msg.SetPrecision(4);
+      msg.Events()<<(*blobs)<<std::endl;
+      msg.SetPrecision(12);
+
       analysis.AfterPartonShower(blobs);
 
       soft_interface->PerformFragmentation(blobs,partons);
@@ -327,7 +331,7 @@ bool Mocaic::GenerateEvents() {
       CleanUpEvent();
     }
     else {
-      msg.Error()<<" Warning: AM->Processes()->OneEvent() in Mocaic.C failed "<<std::endl;
+      msg.Error()<<" Warning: AM->Processes()->OneEvent() in Sherpa.C failed "<<std::endl;
     }
   }
 
@@ -338,7 +342,7 @@ bool Mocaic::GenerateEvents() {
 }
 
 
-void Mocaic::OneEvent() {
+void Sherpa::OneEvent() {
   int stat=1;
   do {
     // remove last event
@@ -384,7 +388,7 @@ void Mocaic::OneEvent() {
       }
 
       if ((stat==0)  ) {
-	msg.Error()<<"ERROR in Mocaic::GenerateEvents"<<std::endl
+	msg.Error()<<"ERROR in Sherpa::GenerateEvents"<<std::endl
 		   <<"   The hard interface did not know how to perform the shower."
 		   <<std::endl;
 	continue;
@@ -400,17 +404,17 @@ void Mocaic::OneEvent() {
 
     }
     else {
-      msg.Error()<<" Warning: AM->Processes()->OneEvent() in Mocaic.C failed "<<std::endl;
+      msg.Error()<<" Warning: AM->Processes()->OneEvent() in Sherpa.C failed "<<std::endl;
     }
   } while (stat!=1);
 }
 
-void Mocaic::Finalize() {
+void Sherpa::Finalize() {
   // nothing to be done
 }
 
 
-void Mocaic::RunPythiaTest() {
+void Sherpa::RunPythiaTest() {
   msg.Out()<<"calculating alphas with Pythia: "<<std::endl;
   double q2_max=sqr(91.2);
   double q2_min=sqr(.912);
@@ -508,7 +512,7 @@ void Mocaic::RunPythiaTest() {
 }
 
 
-void Mocaic::CleanUpEvent() {
+void Sherpa::CleanUpEvent() {
   if (!blobs->empty()) {
     // delete Blobs
     for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) delete (*blit);
@@ -521,9 +525,9 @@ void Mocaic::CleanUpEvent() {
   Flow::ResetCounter();
 }
 
-void Mocaic::FillBlob(Blob * blob,Process_Base * proc) {
+void Sherpa::FillBlob(Blob * blob,Process_Base * proc) {
   msg.Debugging()<<"##################################################"<<std::endl
-		 <<"In Mocaic::FillBlob() :"<<std::endl
+		 <<"In Sherpa::FillBlob() :"<<std::endl
 		 <<"   "<<proc->Nin()<<" -> "<<proc->Nout()<<" process."<<std::endl;
     
   msg.Debugging()<<"Partons : "<<partons<<" "<<partons->size()<<std::endl;
@@ -555,7 +559,7 @@ void Mocaic::FillBlob(Blob * blob,Process_Base * proc) {
   blob->SetPosition(pos);
   blob->SetType(std::string("Hard ME (AMEGIC++2.0)"));
   
-  msg.Debugging()<<"Out Mocaic::FillBlob() :"<<std::endl;
+  msg.Debugging()<<"Out Sherpa::FillBlob() :"<<std::endl;
   for (int i=0;i<proc->Nin();++i) 
     msg.Debugging()<<blob->InParton(i)->Flav()<<" ";
   for (int i=proc->Nin();i<proc->Nin()+proc->Nout();++i) 
@@ -564,7 +568,7 @@ void Mocaic::FillBlob(Blob * blob,Process_Base * proc) {
   msg.Debugging()<<"########################################################"<<std::endl;
 }
 
-bool Mocaic::MPIInit() {
+bool Sherpa::MPIInit() {
 #ifdef _USE_MPI_
 
   return 1;
@@ -577,7 +581,7 @@ bool Mocaic::MPIInit() {
 
 
 
-bool Mocaic::MPIGenerateEvents() {
+bool Sherpa::MPIGenerateEvents() {
 #ifdef _USE_MPI_
   int mpi_rank = MPI::COMM_WORLD.Get_Rank();
   int mpi_size = MPI::COMM_WORLD.Get_size();
@@ -734,7 +738,7 @@ bool Mocaic::MPIGenerateEvents() {
 
 	  stat=hard_interface->PerformShower(proc,1);
 	  if ((stat==3)  ) {
-//  	    cout<<"NEW Feature in Mocaic::GenerateEvents"<<std::endl
+//  	    cout<<"NEW Feature in Sherpa::GenerateEvents"<<std::endl
 //  		<<" got return value 3! dice again  "<<std::endl;
 	 
 // 	    cout<<" old blob"<<(*blob);
@@ -754,7 +758,7 @@ bool Mocaic::MPIGenerateEvents() {
 
 
 	if ((stat==0)  ) {
-	  msg.Error()<<"ERROR in Mocaic::GenerateEvents"<<std::endl
+	  msg.Error()<<"ERROR in Sherpa::GenerateEvents"<<std::endl
 		     <<"   The hard interface did not know how to perform the shower."<<std::endl;
 	  
 	  // *AS*  rejection test
@@ -806,7 +810,7 @@ bool Mocaic::MPIGenerateEvents() {
 
       }
       else {
-	msg.Error()<<" Warning: AM->Processes()->OneEvent() in Mocaic.C failed "<<std::endl;
+	msg.Error()<<" Warning: AM->Processes()->OneEvent() in Sherpa.C failed "<<std::endl;
 	
       }
 

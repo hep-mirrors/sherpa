@@ -14,7 +14,7 @@
 
 #include "Blob.H"
 
-namespace MOCAIC {
+namespace SHERPA {
   class Cluster_Partons {
     int                      maxjetnumber;
     double                   weight;

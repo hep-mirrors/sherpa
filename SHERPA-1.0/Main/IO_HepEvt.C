@@ -1,7 +1,7 @@
 #include "IO_HepEvt.H"
 #include "Message.H"
 
-using namespace MOCAIC;
+using namespace SHERPA;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
@@ -132,9 +132,9 @@ void IO_HepEvt::Blob2HepEvt(Blob * blob, int mode) {
   }
 }
 
+
 void IO_HepEvt::Blob2HepEvt(int blob, int mode) {
   // mode ==  0/10/20  transfer internal list to  hepevt (FORTRAN)
-
 
   if (blob) {
     msg.Error()<<" UNEXPECTED void IO_HepEvt::Blob2HepEvt(int blob, int mode) call "<<endl;
@@ -183,7 +183,7 @@ void IO_HepEvt::Parton2HepEvt(Parton_List * pl, int mode) {
 
   }
 
-
+  int ic=0;
    for (Parton_List::const_iterator pit=pl->begin(); pit!=pl->end();++pit) {
     Parton * parton=(*pit);
 

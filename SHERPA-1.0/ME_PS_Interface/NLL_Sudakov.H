@@ -7,7 +7,7 @@
 #include "Gauss_Integrator.H"
 #include "Kabbala.H"
 
-namespace MOCAIC {
+namespace SHERPA {
   class NLL {
   public:
     enum code { G_g_G_f    = 0,

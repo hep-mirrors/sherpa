@@ -16,7 +16,7 @@
 #include "Jet_Finder.H"
 #include "ISR_Handler.H"
 
-namespace MOCAIC {
+namespace SHERPA {
   //! The Interface between Matrix element and Parton Shower
   class ME_PS_Interface {
     bool   ini,fin;

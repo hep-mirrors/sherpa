@@ -4,7 +4,7 @@
 #include "Message.H"
 #include "Blob.H"
 
-using namespace MOCAIC;
+using namespace SHERPA;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;

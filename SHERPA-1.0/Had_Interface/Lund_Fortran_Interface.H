@@ -4,7 +4,7 @@
 #include "Parton_List.H"
 #include "Parton.H"
 
-namespace MOCAIC {
+namespace SHERPA {
   class Lund_Fortran_Interface {
     bool  pyinit;
     double a,b,sigma;

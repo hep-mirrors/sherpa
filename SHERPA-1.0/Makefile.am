@@ -1,2 +1,2 @@
 MAKE = make 
-SUBDIRS = Mocaic ME_PS_Interface Had_Interface Run
+SUBDIRS = Main ME_PS_Interface Had_Interface Run

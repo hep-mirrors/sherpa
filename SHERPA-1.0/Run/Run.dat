@@ -15,7 +15,7 @@ KFACTORSCHEME  = 1     ! 0 - no K-fact, 1 - [as(q)/as(s)]^(ns-2)   ! for matchin
 SCALESCHEME    = 2     ! 0 - s, 1 - pt2, 2 - scale                 ! form matching 2
 ! Shower parameter
 INITIAL_Q02    = 4.             ! initial state shower end virtuality         
-MODEL          = SM            ! Model                             ! for matching QCD
+MODEL          = QCD            ! Model                             ! for matching QCD
 MODELFILE      = Const.dat      ! Model File
 MODELMASS      = Off            ! uses masses in Model File
 RUNMASS        = Off            ! running masses
