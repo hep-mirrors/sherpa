@@ -39,11 +39,26 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 
 Initialization_Handler::~Initialization_Handler()
 {
-  if (p_model)         { delete p_model;         p_model         = NULL; }
-  if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
-  if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
-  if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
+  cout<<" in Initialization_Handler::~Initialization_Handler()"<<endl;
+  // deleting all in reverse order:
+
+  cout<<" deleting p_hadrondecays"<<endl;
+  if (p_hadrondecays)  { delete p_hadrondecays; p_hadrondecays = NULL; }
+  cout<<" deleting p_fragmentation"<<endl;
+  if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
+  cout<<" deleting p_beamremnants"<<endl;
+  if (p_beamremnants)  { delete p_beamremnants; p_beamremnants = NULL; }
+  cout<<" deleting p_showerhandler"<<endl;
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
+  cout<<" deleting p_mehandler"<<endl;
+  if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
+  cout<<" deleting p_isrhandler"<<endl;
+  if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
+  cout<<" deleting p_beamspectra"<<endl;
+  if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
+  cout<<" deleting p_model"<<endl;
+  if (p_model)         { delete p_model;         p_model         = NULL; }
+  cout<<" out Initialization_Handler::~Initialization_Handler()"<<endl;
 }
 
 
