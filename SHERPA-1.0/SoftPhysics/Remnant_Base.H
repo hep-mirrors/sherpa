@@ -39,7 +39,7 @@ namespace SHERPA {
     ATOOLS::Blob  *p_beamblob;
     ATOOLS::Vec4D  m_pbeam;
 
-    double m_erem, m_pzrem, m_deltae, m_deltap;
+    double m_erem, m_pzrem, m_deltae, m_deltap, m_ebeam;
 
     bool m_active, m_initialized;
 
@@ -62,6 +62,7 @@ namespace SHERPA {
 
     // member functions
     virtual void Clear();
+    virtual void QuickClear();
 
     virtual double MinimalEnergy(const ATOOLS::Flavour &flavour);
 
@@ -69,6 +70,8 @@ namespace SHERPA {
     virtual bool AdjustKinematics();
 
     virtual void UnDo(); 
+
+    bool Extract(ATOOLS::Particle *parton);
 
     // inline functions 
     inline void SetPartner(SHERPA::Remnant_Base *partner)   { p_partner=partner;     }
@@ -79,12 +82,14 @@ namespace SHERPA {
     inline rtp::code    Type() const { return m_type; }
     inline unsigned int Beam() const { return m_beam; }
 
+    inline double BeamEnergy() const    { return m_ebeam; }
+    inline double RemnantEnergy() const { return m_erem;  }
+
     inline unsigned int Errors() const { return m_errors; }
 
     inline void ClearErrors() { m_errors=0; }
 
-    inline void Extract(ATOOLS::Particle *parton) 
-    { m_extracted.push_back(parton); }
+    inline void SetBeamEnergy(const double ebeam) { m_ebeam=ebeam; }
 
   };// end of class Remnant_Base
 

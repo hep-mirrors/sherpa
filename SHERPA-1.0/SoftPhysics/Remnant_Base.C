@@ -30,7 +30,7 @@ std::ostream &SHERPA::operator<<(std::ostream &ostr,const rtp::code code)
 }
 
 Remnant_Base::Remnant_Base(const rtp::code type,const unsigned int beam):
-  Object(std::string("Remnant_Base_")+ATOOLS::ToString(beam)),
+  Object("Remnant_Base_"+ATOOLS::ToString(beam)),
   m_type(type),
   m_beam(beam),
   p_partner(NULL) {}
@@ -44,6 +44,14 @@ void Remnant_Base::Clear()
   m_active=true;
   p_last[1]=p_last[0]=NULL;
   p_beamblob=NULL;
+  m_erem=m_ebeam;
+  m_initialized=false;
+}
+
+void Remnant_Base::QuickClear()
+{
+  m_extracted.clear();
+  m_erem=m_ebeam;
   m_initialized=false;
 }
 
@@ -117,6 +125,19 @@ void Remnant_Base::UnDo()
 double Remnant_Base::MinimalEnergy(const ATOOLS::Flavour &flavour) 
 {
   return 0.;
+}
+
+bool Remnant_Base::Extract(ATOOLS::Particle *parton) 
+{ 
+  m_extracted.push_back(parton); 
+  m_erem-=parton->Momentum()[0]+MinimalEnergy(parton->Flav());
+  if (m_erem<=0.0) {
+    msg_Tracking()<<"Remnant_Base::Extract(..): No remaining energy for "<<parton->Flav()
+		  <<", p = "<<parton->Momentum()<<" -> E_min = "
+		  <<(parton->Momentum()[0]+MinimalEnergy(parton->Flav()))<<std::endl;
+    return false;
+  }
+  return true;
 }
 
 bool Remnant_Base::FindHardProcess(ATOOLS::Particle *const initiator,
