@@ -277,6 +277,20 @@ void Amegic::ReadInProcessfile(string file)
 		  str>>fixed_scale;
 		}
 
+		position     = buf.find(string("N_Max :"));
+		if (position > -1) {
+		  int nmax;
+		  MyStrStream str;      
+		  buf    = buf.substr(position+7);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>nmax;
+		  if (nmax>m_maxjet) {
+		    msg.Out()<<" WARNING: setting max n to "<<nmax<<std::endl;
+		    m_maxjet = nmax;
+		  }		  
+		}
+
 		position       = buf.find(string("End process"));
 		if (!from) {
 		  msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
