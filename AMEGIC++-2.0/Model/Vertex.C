@@ -181,27 +181,6 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
       if (flaglist[i]==0) hc = 1;
     }
   }
-  /*
-  for (short int i=0;i<orig.nleg;i++) {
-    // All incoming
-    Flavour flav = orig.in[i];
-    if (flav!=flav.Bar()) {
-      if (i==0) flav = flav.Bar();
-      int hit = 1;
-      for (short int j=i+1;j<orig.nleg;j++) {
-	if (flav.Bar()==orig.in[j]) {
-	  hit = 1;
-	  break;
-	}
-	else hit = 0; 
-      }
-      if (hit==0) {
-	hc = 1;
-	break;
-      }
-    }
-  }
-  */
   
   int probehc = 0;
   if (hc) {
