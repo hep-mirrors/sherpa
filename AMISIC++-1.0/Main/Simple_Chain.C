@@ -267,13 +267,13 @@ bool Simple_Chain::ReadInData()
   if (reader->ReadFromFile(regulate,"REGULATE_XS")) {
     m_regulate=regulate;
     if (!reader->ReadFromFile(m_regulator,"XS_REGULATOR")) 
-      m_regulator="Massive_Propagator";
+      m_regulator="QCD_Trivial";
     if (!reader->VectorFromFile(m_regulation,"XS_REGULATION")) 
       m_regulation=std::vector<double>(1,.71);
   }
-  if (!reader->ReadFromFile(m_scalescheme,"SCALE_SCHEME")) 
-    m_scalescheme=11;
-  if (!reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME")) 
+  if (!reader->ReadFromFile(m_scalescheme,"MI_SCALE_SCHEME")) 
+    m_scalescheme=2;
+  if (!reader->ReadFromFile(m_kfactorscheme,"MI_K_FACTOR_SCHEME")) 
     m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
@@ -347,6 +347,8 @@ bool Simple_Chain::CreateGrid()
   p_isr->SetSprimeMin(4.0*m_stop[0]*m_stop[0]);
   p_isr->SetSprimeMax(4.0*m_start[0]*m_start[0]);
   p_gridcreator = new Grid_Creator(&m_differentials,p_processes);
+  p_gridcreator->SetGridXMin(ATOOLS::Min(m_stop[0],m_stop[4]));
+  p_gridcreator->SetGridXMax(m_ecms/2.0);
   p_gridcreator->ReadInArguments(InputFile(),InputPath());
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMCExtension(m_mcextension);
@@ -391,6 +393,7 @@ bool Simple_Chain::SetUpInterface()
       FSRIntegrator()->Best();    
     if (best.size()>0) p_fsrinterface->SetChID(best[0]->Name());
     else p_fsrinterface->SetChID("T-Channel");
+    p_fsrinterface->SetChID("T-Channel");
     group->SetFSRInterface(p_fsrinterface);
     group->SetFSRMode(2);
     group->CreateFSRChannels();
@@ -598,10 +601,14 @@ bool Simple_Chain::Initialize()
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
-  double stop;
-  if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
+  double stop, exponent;
+  if (!reader->ReadFromFile(stop,"SCALE_MIN")) stop=Stop(0);
+  if (reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) {
+    double scale;
+    if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1960.0;
+    stop*=pow(m_ecms/scale,exponent);
+  }
   SetStop(stop,0);
-  if (!reader->ReadFromFile(stop,"GRID_X_MIN")) stop=m_regulate?0.0:Stop(0);
   SetStop(stop,4);
   if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
@@ -660,7 +667,6 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     if (!m_weighted) {
       double max=m_differentials[m_selected]->BinMax(m_last[0]);
       p_fsrinterface->SetTrigger(false);
-#ifndef USING_Max_Reduction
       while (++pstrials<m_maxtrials) {
 	ATOOLS::Blob_Data_Base *data=selected->WeightedEvent(2);
 	if (data!=NULL) {
@@ -676,17 +682,6 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	  if (p_fsrinterface->Trigger() && weight>max*ATOOLS::ran.Get()) break;
 	}
       }
-#else
-      while (true) {
-	if (selected->Overflow()>10.0*max) {
-	  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): '"
-			     <<selected->Name<<"'"<<std::endl;
-	}
-	selected->SetMax(max/10.0,1);
-	selected->SameEvent();
-	if (p_fsrinterface->Trigger()) break;
-      }      
-#endif
     }
     else {
       throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,
@@ -849,7 +844,8 @@ void Simple_Chain::PrepareTerminate()
 {
   p_gridcreator->WriteOutGrid();
   for (size_t i=0;i<p_processes->Size();++i)
-    (*p_processes)[i]->PSHandler(false)->WriteOut(OutputPath()+m_mcextension);
+    (*p_processes)[i]->PSHandler(false)->
+      WriteOut(OutputPath()+m_mcextension,true);
 }
 
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)

@@ -6,6 +6,15 @@
 #include "Blob.H"
 #include "Run_Parameter.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Simple_Chain
+#endif
+#ifdef PROFILE__Simple_Chain
+#include "prof.hh"
+#else
+#define PROFILE_HERE
+#endif
+
 using namespace AMISIC;
 
 Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
@@ -70,14 +79,12 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   if (!reader->VectorFromFile(helps,"Y_VARIABLE")) 
     m_gridyvariable="\\frac{d\\sigma}{dp_\\perp}";
   else m_gridyvariable=MakeString(helps);
-  if (!reader->ReadFromFile(m_gridxmin,"GRID_X_MIN")) 
+  if (m_gridxmin==0.0) 
     m_gridxmin=sqrt(ATOOLS::Max(p_processes->ISR()->PDF(0)->Q2Min(),
 				p_processes->ISR()->PDF(1)->Q2Min()));
   m_gridxmin=ATOOLS::Max(m_gridxmin,1.e-3);
-  if (!reader->ReadFromFile(m_gridxmax,"GRID_X_MAX")) 
-    m_gridxmax=ATOOLS::rpa.gen.Ecms()/2.0;
   if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) 
-    m_griddeltax=(log(m_gridxmax)-log(m_gridxmin))/1000.;
+    m_griddeltax=(log(m_gridxmax)-log(m_gridxmin))/250.;
   double helpd;
   if (!reader->ReadFromFile(helpd,"INITIAL_EVENTS")) helpd=0;
   m_initevents=(long unsigned)helpd;
@@ -125,6 +132,7 @@ void Grid_Creator::Clear()
 
 bool Grid_Creator::ReadInGrid()
 {
+  PROFILE_HERE;
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {
     if (hit->second->ReadIn(OutputPath()+hit->first+m_xsextension,
@@ -153,7 +161,9 @@ bool Grid_Creator::InitializeCalculation()
     SetData(m_criterion,flavours,helpi,m_gridxmin,m_gridxmax);
   p_processes->ResetSelector(p_processes->SelectorData());
   p_processes->Reset();
-  p_processes->CalculateTotalXSec(OutputPath()+OutputFile()+MCExtension());
+  p_processes->CalculateTotalXSec("");
+  p_processes->PSHandler(false)->
+    WriteOut(OutputPath()+OutputFile()+MCExtension(),true);
   return true;
 }
 
@@ -215,6 +225,7 @@ bool Grid_Creator::CreateInitialGrid()
 
 bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments) 
 {
+  PROFILE_HERE;
   bool success=true;
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {
