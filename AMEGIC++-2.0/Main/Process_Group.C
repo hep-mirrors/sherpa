@@ -371,6 +371,7 @@ bool Process_Group::Find(string _name,Process_Base *& _proc)
 
 void Process_Group::WriteOutXSecs(std::ofstream & _to)
 {
+  _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl;
   for (int i=0;i<m_procs.size();i++) m_procs[i]->WriteOutXSecs(_to);
 }
 
@@ -678,7 +679,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	  if (okay) {
 	    msg.Debugging()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
 			   <<"   Found all xsecs. Continue"<<endl;
-	    //SetTotalXS(2);
+	    SetTotalXS(2);
 	    return 1;
 	  }
 	}
