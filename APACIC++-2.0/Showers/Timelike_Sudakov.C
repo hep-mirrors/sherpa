@@ -19,8 +19,9 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):
 {
   ordering_scheme = 1; /*  (1=VO+Coherence, 2=VO);                           */ 
   cpl_scheme      = 1; /*  (0=fix, 1=pt^2, 2=t/4)                            */ 
-  pt_scheme       = 1; /*  (0=> pt^2 = z(1-z)t      for VO
-			    1=> z(1-z)t - (1-z)*t_0(b) - z*t_0(c)            */ 	  
+  pt_scheme       = 2; /*  (0=> pt^2 = z(1-z)t      for VO
+			    1=> z(1-z)t - (1-z)*t_0(b) - z*t_0(c)           
+                            2=> pt^2 = 1/4 min (z/(1-z),(1-z)/z) t */ 	  
   mass_scheme     = 1; /*  (0=cuts, 1=a la Catani, 2=define t_eff)           */
   width_scheme    = 0; /* (1) (0=no width supression,
 			    1=cut such that pt2 always > square of width
@@ -100,7 +101,13 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
 
   while (ta>tend) {
     //    if (last_veto==0 || last_veto==7) {
-    z0 = 0.5 * (1. - sqrt(1.-t0/ta)) ; // condition that pt^2 > t0 !!!
+    if (pt_scheme == 2 ) {
+      z0 = 1. / ( 1. + ta/t0) ;
+    }
+    else {
+      z0 = 0.5 * (1. - sqrt(1.-t0/ta)) ; // condition that 4 pt^2 > t0 !!!
+    }
+
     
       if (z0<rpa.gen.Accu()) {
         msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl;
@@ -135,7 +142,9 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
       tb  = sqr(GetFlB().PSMass());
       tc  = sqr(GetFlC().PSMass());
       if (pt_scheme == 1) pt2 -= (1.-z)*tb + z*tc;
-      
+      else if (pt_scheme == 2)
+	pt2 = 0.25*Min((1-z)/z,z/(1-z))*ta;
+
       if (pt2>pt2min) {
 	if (!Veto(mother)) {
 	  msg.Debugging()<<"Timelike_Sudakov::Dice Branch with t="<<ta<<", z="<<z<<", ("
@@ -237,11 +246,15 @@ bool Timelike_Sudakov::MassVeto()
 {
 
   // *FK*  double newt0  = sqr( sqrt(tb+0.25*t0) + sqrt(tc+0.25*t0));
+  /*
   double z0 = 0.5 * (1. - sqrt(1.-t0/ta)) ; // condition that pt^2 > t0/4 !!!
+  if (pt_scheme == 2 ) {
+    z0 = 1. / ( 1. + ta/t0) ;
+  }
   double zm = z0;
   double zp = 1. - z0;
   // *FK*  if (z<zm || zp<z) return 1;
-
+  */
 
   double x_p_mom = sqrt(1.-ta/wa) ;   
   double mean_z,delta_z;              
@@ -402,7 +415,10 @@ void Timelike_Sudakov::CheckSplittings() {
 	double pt2=z*(1.-z)*ta;
 	tb  = sqr(sf->GetFlB().PSMass());
 	tc  = sqr(sf->GetFlC().PSMass());
-	//	if (pt_scheme == 1) pt2 -= (1.-z)*tb + z*tc;
+	if (pt_scheme == 1) pt2 -= (1.-z)*tb + z*tc;
+	else if (pt_scheme == 2)
+	  pt2 = 0.25*Min((1-z)/z,z/(1-z))*ta;
+
         data[i].values[j]=sf->GetWeight(z,pt2,masses);
       }
     }

@@ -13,6 +13,14 @@ using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
+Timelike_Kinematics::Timelike_Kinematics() 
+{
+  double ycut   = AORGTOOLS::rpa.integ.Ycut();
+  jf            = new APHYTOOLS::Jet_Finder(ycut,1);
+  pt_scheme     = 2;  // cf. Timelike_Sudakov
+  mass_scheme   = 1;
+}
+
 
 //-----------------------------------------------------------------------
 //------------------- Checks for kinematics : The shuffles --------------
@@ -176,8 +184,10 @@ bool Timelike_Kinematics::ShuffleZ(Knot * mo)
   t1  = (t1-0.25*t0);   // teff1
   t2  = (t2-0.25*t0);   // teff2
   double pt2 = z*(1.-z)*t;
-  //  if (pt_scheme == 1)
-  pt2 -= (1.-z)*t1 + z*t2;
+  if (pt_scheme == 1)
+    pt2 -= (1.-z)*t1 + z*t2;
+  else if (pt_scheme == 2)
+    pt2 = 0.25*Min((1.-z)/z,z/(1.-z))*t;
   double  pt2min = rpa.pshower.FinalQ02();
   if (pt2<pt2min) {
     mo->z = z;
@@ -408,8 +418,10 @@ bool Timelike_Kinematics::KinCheck(int first,Knot * mo)
       double pt2 = mo->z*(1.-mo->z)*mo->t;
       double tb  = d1->tout;         
       double tc  = d2->tout;         
-      //      if (pt_scheme == 1) 
-      pt2       -= (1.-mo->z)*tb + mo->z*tc;
+      if (pt_scheme == 1) 
+	pt2       -= (1.-mo->z)*tb + mo->z*tc;
+      else if (pt_scheme == 2)
+	pt2 = 0.25*Min((1.-mo->z)/mo->z,mo->z/(1.-mo->z))*mo->t;
       double pt2th    = sqrt(pt2/mo->E2)/(mo->z*(1.- mo->z));
       double crudeth  = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );
       
@@ -496,8 +508,10 @@ bool Timelike_Kinematics::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
   double pt2 = z*(1.-z)*t;
   double tb  = d1->tout;         
   double tc  = d2->tout;         
-  //      if (pt_scheme == 1) 
-  pt2 -= (1.-z)*tb + z*tc;
+  if (pt_scheme == 1) 
+    pt2 -= (1.-z)*tb + z*tc;
+  else if (pt_scheme == 2)
+    pt2 = 0.25*Min((1.-z)/z,z/(1.-z))*t;
   double pt2th  = sqrt(pt2/E2)/(z*(1.- z));
   double crudeth  = sqrt( t/(z*(1.- z)*E2) );
   
@@ -522,8 +536,11 @@ bool Timelike_Kinematics::JetVeto(double mo_t, double mo_e2, double mo_z,
     double pt2 = mo_z*(1.-mo_z)*mo_t;
 //     double tb  = d1->tout;         
 //     double tc  = d2->tout;         
-    //      if (pt_scheme == 1) 
-    pt2       -= (1.-mo_z)*tb + mo_z*tc;
+    if (pt_scheme == 1) 
+      pt2       -= (1.-mo_z)*tb + mo_z*tc;
+    else if (pt_scheme == 2)
+      pt2 = 0.25*Min((1.-mo_z)/mo_z,mo_z/(1.-mo_z))*mo_t;
+
     double pt2th    = sqrt(pt2/mo_e2)/(mo_z*(1.- mo_z));
     double crudeth  = sqrt( mo_t/(mo_z*(1.- mo_z)*mo_e2) );
     
