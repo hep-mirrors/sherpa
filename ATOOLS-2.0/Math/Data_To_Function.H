@@ -1,0 +1,232 @@
+#ifndef Data_To_Function_H
+#define Data_To_Function_H
+
+#include "Axis.H"
+
+#include <functional>
+#include <map>
+#include <vector>
+
+namespace ATOOLS {
+
+  template <class Argument_Type,class Result_Type>
+  class Data_To_Function: public std::unary_function<Argument_Type,Result_Type> {
+  public:
+
+    enum MonotonyID { Increasing =  1,
+		      Decreasing =  2,
+		      None       =  3,
+		      MUnknown    = 99 };
+
+    enum AcquisitionModeID { // Analytic      =  1,
+                             LowerData     =  2,
+                             Data          =  3,
+                             UpperData     =  4,
+			     Interpolation =  5,
+			     // Fit           =  6,
+			     AUnknown       = 99 };
+
+    enum InterpolationModeID { Linear        =  1,
+			       IUnknown       = 99 };
+
+  public:
+
+    typedef Argument_Type ArgumentType;
+    typedef Result_Type   ResultType;
+
+    typedef std::vector<ArgumentType> ArgumentVector;
+    typedef std::vector<ResultType>   ResultVector;
+
+#ifdef __GNUC__
+#if __GNUC__>2
+    typedef __gnu_cxx::__normal_iterator<ArgumentType*, std::vector<ArgumentType> > ArgumentIterator;
+    typedef __gnu_cxx::__normal_iterator<ResultType*, std::vector<ResultType> > ResultIterator;
+#else
+    typedef ArgumentType *ArgumentIterator;
+    typedef ResultType *ResultIterator;
+#endif
+#else
+    typedef ArgumentType *ArgumentIterator;
+    typedef ResultType *ResultIterator;
+#endif
+
+    typedef std::pair<ArgumentType,ResultType> XYPair;
+    typedef std::pair<ResultType,ArgumentType> YXPair;
+
+    typedef std::vector<XYPair> XYVector;
+    typedef std::vector<YXPair> YXVector;
+
+    typedef std::map<ArgumentType,Result_Type> XYMap;
+    typedef std::map<ResultType,Argument_Type> YXMap;
+
+#ifdef __GNUC__
+#if __GNUC__>2
+    typedef __gnu_cxx::__normal_iterator<XYPair*, std::vector<XYPair> > XYVectorIterator;
+    typedef __gnu_cxx::__normal_iterator<YXPair*, std::vector<YXPair> > YXVectorIterator;
+#else
+    typedef XYPair *XYVectorIterator;
+    typedef YXPair *YXVectorIterator;
+#endif
+#else
+    typedef XYPair *XYVectorIterator;
+    typedef YXPair *YXVectorIterator;
+#endif
+    typedef std::_Rb_tree_iterator<XYPair,XYPair&,XYPair*> XYMapIterator;
+    typedef std::_Rb_tree_iterator<YXPair,YXPair&,YXPair*> YXMapIterator;
+
+    typedef Data_To_Function<Argument_Type,ResultType> DataToFunctionType;
+
+  private:
+
+    ATOOLS::Axis<ArgumentType> *p_xaxis;
+    ATOOLS::Axis<ResultType>   *p_yaxis;
+
+    XYVector *p_xydata;
+    YXVector *p_yxdata;
+
+    MonotonyID m_monotony;
+
+    AcquisitionModeID   m_acquisitionmode;
+    InterpolationModeID m_interpolationmode;
+
+    void Init();
+
+    void Resize(unsigned int newsize);
+
+    bool Sort();
+    bool SortX();
+    bool SortY();
+
+    unsigned int ClosestX(Argument_Type x,unsigned int &left,unsigned int &right);
+    unsigned int ClosestY(Result_Type y,unsigned int &left,unsigned int &right);
+
+    ResultType   LinearY(ArgumentType x,unsigned int &left,unsigned int &right);
+    ArgumentType LinearX(ResultType y,unsigned int &left,unsigned int &right);
+
+  protected:
+
+    unsigned int ClosestX(Argument_Type x);
+    unsigned int ClosestY(Result_Type y);
+
+    ResultType   InterpolateY(ArgumentType x);
+    ArgumentType InterpolateX(ResultType y);
+
+    ResultType   DataY(ArgumentType x,AcquisitionModeID tempmode);
+    ArgumentType DataX(ResultType y,AcquisitionModeID tempmode);
+
+  public:
+
+    // constructors
+    Data_To_Function();
+    Data_To_Function(const DataToFunctionType &reference,bool adoptscaling=true);
+    Data_To_Function(const XYMap *_m_xydata);
+    Data_To_Function(const ArgumentVector *_m_xdata,const ResultVector *_m_ydata);
+
+    // destructor
+    ~Data_To_Function();
+
+    // setters
+    void SetMonotony(const MonotonyID _m_monotony);
+    void SetAcquisitionMode(const AcquisitionModeID _m_acquisitionmode);
+    void SetInterpolationMode(const InterpolationModeID _m_interpolationmode);
+
+    // getters
+    const MonotonyID          Monotony() const;
+    const AcquisitionModeID   AcquisitionMode() const;
+    const InterpolationModeID InterpolationMode() const;
+
+    ArgumentType XMin();
+    ArgumentType XMax();
+    ResultType   YMin();
+    ResultType   YMax();
+
+    ArgumentType DeltaXMin();
+    ArgumentType DeltaXMax();
+    ResultType   DeltaYMin();
+    ResultType   DeltaYMax();
+
+    ArgumentType DeltaXMin(ResultType& left,ResultType& right);
+    ArgumentType DeltaXMax(ResultType& left,ResultType& right);
+    ResultType   DeltaYMin(ArgumentType& left,ArgumentType& right);
+    ResultType   DeltaYMax(ArgumentType& left,ArgumentType& right);
+
+    // access functions
+    ATOOLS::Axis<ArgumentType> *XAxis();
+    ATOOLS::Axis<ResultType>   *YAxis();
+
+    // member functions
+    bool Import(const DataToFunctionType &reference,bool adoptscaling=true);
+    bool Import(const XYMap *_p_xydata,bool normal=true);
+    bool Import(const ArgumentVector *_p_xdata,const ResultVector *_p_ydata,bool normal=true);
+
+    void Export(XYMap *_p_xydata,bool normal=true);
+    void Export(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal=true);
+
+    bool AddPoint(ArgumentType x,ResultType y);
+    bool DeleteXPoint(ArgumentType x);
+    bool DeleteYPoint(ResultType y);
+    bool ReplaceXPoint(ArgumentType x,ResultType y);
+    bool ReplaceYPoint(ArgumentType x,ResultType y);
+
+    void RescaleY(const std::string scalename);
+    void RescaleX(const std::string scalename);
+
+    void Clear();
+
+    ResultType   YData(unsigned int i);
+    ArgumentType XData(unsigned int i);
+
+    XYPair XYData(unsigned int i);
+    YXPair YXData(unsigned int i);
+
+    unsigned int YDataSize();
+    unsigned int XDataSize();
+
+    int YPosition(ResultType y);
+    int XPosition(ArgumentType x);
+
+    void ScaleY(ResultType scalefactor);
+    void ScaleX(ArgumentType scalefactor);
+
+    void MoveY(ResultType distance);
+    void MoveX(ArgumentType distance);
+
+    void NormalizeY(ArgumentType xmin=0.0,ArgumentType xmax=0.0,ResultType norm=1.0);
+    void NormalizeX(ResultType ymin=0.0,ResultType ymax=0.0,ArgumentType norm=1.0);
+
+    DataToFunctionType *IntegralY(ArgumentType xmin=0.0,ArgumentType xmax=0.0,
+				  std::string xscaling=nullstring,
+				  std::string yscaling=nullstring,
+				  bool forward=true);
+    DataToFunctionType *IntegralX(ResultType ymin=0.0,ResultType ymax=0.0,
+  				  std::string yscaling=nullstring,
+				  std::string xscaling=nullstring,
+				  bool forward=true);
+
+    ResultType   IntegrateY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
+    ArgumentType IntegrateX(ResultType ymin=0.0,ResultType ymax=0.0);
+
+    DataToFunctionType *DerivativeY(ArgumentType xmin=0.0,ArgumentType xmax=0.0,
+				    std::string xscaling=nullstring,
+				    std::string yscaling=nullstring);
+    DataToFunctionType *DerivativeX(ResultType ymin=0.0,ResultType ymax=0.0,
+				    std::string xscaling=nullstring,
+				    std::string yscaling=nullstring);
+
+    ResultType   DifferentialY(ArgumentType x);
+    ArgumentType DifferentialX(ResultType y);
+
+    ResultType   Y(ArgumentType x,AcquisitionModeID tempmode = AUnknown);
+    ArgumentType X(ResultType y,AcquisitionModeID tempmode = AUnknown);
+
+    ResultType   operator()(ArgumentType x);
+    ArgumentType operator[](ResultType y);
+
+  }; // end of class Data_To_Function
+
+} // end of namespace ATOOLS
+
+#include "Data_To_Function.inl.H"
+#include "Data_To_Function.C"
+
+#endif
