@@ -1,5 +1,5 @@
-#ifndef Primitive_Interpreter_H
-#define Primitive_Interpreter_H
+#ifndef Algebra_Interpreter_H
+#define Algebra_Interpreter_H
 
 #include "Node.H"
 
@@ -55,17 +55,17 @@ namespace ATOOLS {
 
   };// end of class Operator
 
-  class Primitive_Interpreter;
+  class Algebra_Interpreter;
 
   class Interpreter_Function {
   protected:
     
-    Primitive_Interpreter *p_interpreter;
+    Algebra_Interpreter *p_interpreter;
 
   public:
     
     // constructor
-    inline Interpreter_Function(Primitive_Interpreter *interpreter):
+    inline Interpreter_Function(Algebra_Interpreter *interpreter):
       p_interpreter(interpreter) {}
 
     // member functions
@@ -74,7 +74,7 @@ namespace ATOOLS {
 
   };// end of class Interpreter_Function
 
-  class Primitive_Interpreter {
+  class Algebra_Interpreter {
   public:
 
     typedef std::map<std::string,std::string> String_Map;
@@ -99,10 +99,10 @@ namespace ATOOLS {
   public:
 
     // constructors
-    Primitive_Interpreter(const bool standard=true);
+    Algebra_Interpreter(const bool standard=true);
 
     // destructor
-    ~Primitive_Interpreter();
+    ~Algebra_Interpreter();
 
     // member functions
     std::string Interprete(const std::string &expr);
@@ -118,7 +118,7 @@ namespace ATOOLS {
     inline const Function_Set &Functions() const { return m_functions; }
     inline const Operator_Map &Operators() const { return m_operators; }
 
-  };// end of class Primitive_Interpreter
+  };// end of class Algebra_Interpreter
 
 }// end of namespace ATOOLS
 
@@ -149,7 +149,7 @@ namespace ATOOLS {
 #define DEFINE_INTERPRETER_FUNCTION(NAME)				\
   class NAME: public Interpreter_Function {				\
   public:								\
-    inline NAME(Primitive_Interpreter *interpreter):			\
+    inline NAME(Algebra_Interpreter *interpreter):			\
       Interpreter_Function(interpreter) {}				\
     std::string Interprete(const std::string &expr);			\
   };									\

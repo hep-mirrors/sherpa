@@ -1,4 +1,4 @@
-#include "Primitive_Interpreter.H"
+#include "Algebra_Interpreter.H"
 
 #include "MyStrStream.H"
 #include "MathTools.H"
@@ -128,7 +128,7 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
     if (expr[i]=='(') {
       ++open;
       if (l==std::string::npos) {
-	Primitive_Interpreter::Function_Set::const_iterator fit=
+	Algebra_Interpreter::Function_Set::const_iterator fit=
 	  p_interpreter->Functions().begin();
 	for (;fit!=p_interpreter->Functions().end();++fit) {
 	  size_t pos=expr.rfind((*fit)->Tag(),i);
@@ -164,7 +164,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
       expr.find(")")==std::string::npos) return expr;
   Function *func=NULL;
   size_t pos=std::string::npos;
-  for (Primitive_Interpreter::Function_Set::const_reverse_iterator 
+  for (Algebra_Interpreter::Function_Set::const_reverse_iterator 
 	 fit=p_interpreter->Functions().rbegin();
        fit!=p_interpreter->Functions().rend();++fit) 
     if ((pos=expr.rfind((*fit)->Tag()))!=std::string::npos) {
@@ -204,7 +204,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
       expr.find(")")!=std::string::npos) return expr;
   Operator *op=NULL;
   size_t pos=std::string::npos;
-  for (Primitive_Interpreter::Operator_Map::const_reverse_iterator 
+  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) 
     if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos &&
@@ -219,7 +219,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   if (op==NULL) return expr;
   std::string lrstr, lstr=expr.substr(0,pos);
   size_t lfpos=0;
-  for (Primitive_Interpreter::Operator_Map::const_reverse_iterator 
+  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t tlfpos=lstr.rfind(oit->second->Tag());
@@ -239,7 +239,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   lstr=lstr.substr(lfpos);
   std::string rrstr, rstr=expr.substr(pos+op->Tag().length());
   size_t rfpos=rstr.length();
-  for (Primitive_Interpreter::Operator_Map::const_reverse_iterator 
+  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t trfpos=rstr.find(oit->second->Tag());
@@ -273,7 +273,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
       expr.find(")")!=std::string::npos) return expr;
   Operator *op=NULL;
   size_t pos=std::string::npos;
-  for (Primitive_Interpreter::Operator_Map::const_reverse_iterator 
+  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) 
     if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos &&
@@ -289,7 +289,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   std::string lrstr=expr.substr(0,pos);
   std::string rrstr, rstr=expr.substr(pos+op->Tag().length());
   size_t rfpos=rstr.length();
-  for (Primitive_Interpreter::Operator_Map::const_reverse_iterator 
+  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t trfpos=rstr.find(oit->second->Tag());
@@ -315,7 +315,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
     Iterate(lrstr+op->Evaluate(args)+rrstr);
 }
 
-Primitive_Interpreter::Primitive_Interpreter(const bool standard) 
+Algebra_Interpreter::Algebra_Interpreter(const bool standard) 
 {
   m_interpreters.insert(new Resolve_Bracket(this));
   m_interpreters.insert(new Interprete_Binary(this));
@@ -338,7 +338,7 @@ Primitive_Interpreter::Primitive_Interpreter(const bool standard)
   AddFunction(new Maximum());
 }
 
-Primitive_Interpreter::~Primitive_Interpreter()
+Algebra_Interpreter::~Algebra_Interpreter()
 {
   while (!m_operators.empty()) {
     delete m_operators.begin()->second;
@@ -350,14 +350,14 @@ Primitive_Interpreter::~Primitive_Interpreter()
   }
 }
 
-std::string &Primitive_Interpreter::KillBlanks(std::string& expr) const
+std::string &Algebra_Interpreter::KillBlanks(std::string& expr) const
 {
   for (size_t i=0;i<expr.length();++i) 
     if (expr[i]==' ') expr.replace(i--,1,"");
   return expr;
 }
 
-std::string &Primitive_Interpreter::ReplaceTags(std::string &expr) const
+std::string &Algebra_Interpreter::ReplaceTags(std::string &expr) const
 {
   size_t pos=std::string::npos;
   for (String_Map::const_iterator sit=m_tags.begin();
@@ -367,7 +367,7 @@ std::string &Primitive_Interpreter::ReplaceTags(std::string &expr) const
   return expr;
 }
 
-std::string Primitive_Interpreter::Interprete(const std::string &expr)
+std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
   std::string res=expr;
   KillBlanks(res);
@@ -375,17 +375,17 @@ std::string Primitive_Interpreter::Interprete(const std::string &expr)
   return Iterate(res);
 }
 
-void Primitive_Interpreter::AddFunction(Function *const f)
+void Algebra_Interpreter::AddFunction(Function *const f)
 {
   m_functions.insert(f); 
 }
 
-void Primitive_Interpreter::AddOperator(Operator *const b)
+void Algebra_Interpreter::AddOperator(Operator *const b)
 { 
   m_operators.insert(Operator_Pair(b->Priority(),b)); 
 }
 
-std::string Primitive_Interpreter::Iterate(const std::string &expr)
+std::string Algebra_Interpreter::Iterate(const std::string &expr)
 {
   static size_t depth=0;
   if (++depth>1000) THROW(critical_error,"Max depth reached.");
@@ -398,13 +398,13 @@ std::string Primitive_Interpreter::Iterate(const std::string &expr)
   return res;
 }
 
-void Primitive_Interpreter::AddTag(const std::string &tag,
+void Algebra_Interpreter::AddTag(const std::string &tag,
 				   const std::string &value)
 {
   m_tags[tag]=value;
 }
 
-void Primitive_Interpreter::SetTags(const String_Map &tags)
+void Algebra_Interpreter::SetTags(const String_Map &tags)
 {
   m_tags=tags;
 }
