@@ -31,7 +31,7 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
                                                                      0 = none, 1 = pt^2, 2 = pt^2/E^2     */
   m_cpl_scheme      = dataread->GetValue<int>("IS_COUPLINGS",3); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
   m_pdf_scheme      = dataread->GetValue<int>("IS_PDF_SCALE",1); /*  0 = -Q^2, 1 = -(1-z)*Q^2 */
-  m_pdf_scale_fac   = dataread->GetValue<double>("IS_PDF_SCALE_FACTOR",1.);
+  m_pdf_scale_fac   = dataread->GetValue<double>("IS_PDF_SCALE_FACTOR",.25);
   m_jetveto_scheme  = dataread->GetValue<int>("IS_JETVETOSCHEME",2);
 
   m_emin            = .5;
@@ -98,7 +98,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
     return 0; 
   }
   
-  p_pdf->Calculate(m_x,0.,0.,(-m_t));
+  p_pdf->Calculate(m_x,(-m_t));
   
   while (m_t<m_t0) {
     CrudeInt(m_zmin,m_zmax);
@@ -208,16 +208,16 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
 
 
   if (extra_pdf) {
-    //    std::cout<<" extrapdf ";
-    firstq2*=m_pdf_scale_fac;
+//     std::cout<<" extrapdf : "<<firstq2<<std::endl;
+    //    firstq2*=m_pdf_scale_fac;
     p_pdf->Calculate(m_x,0.,0.,firstq2);
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
-  p_pdf->Calculate(m_x,0.,0.,q2);
+  p_pdf->Calculate(m_x,q2);
   if (!extra_pdf) {
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
-  p_pdfa->Calculate(m_x/m_z,0.,0.,q2);
+  p_pdfa->Calculate(m_x/m_z,q2);
   double test = p_pdfa->GetXPDF(GetFlA());
   if (test==0.) return 1;
   weight        *= test/wb_jet;
