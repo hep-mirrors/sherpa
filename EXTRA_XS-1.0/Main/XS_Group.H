@@ -19,6 +19,7 @@ namespace EXTRAXS {
     XS_Selector            * p_xsselector;
     bool                     m_atoms;
     std::vector<XS_Base *>   m_xsecs;
+    bool                     m_fsrchannels;
   private :
     virtual void CreateFSRChannels() {}
   public :
@@ -30,12 +31,16 @@ namespace EXTRAXS {
     XS_Group();
     ~XS_Group();
 
+    void      PushBack(XS_Base *_xsec) { m_xsecs.push_back(_xsec); }
     void      Add(XS_Base *);
+    bool      Delete(XS_Base *);
+    void      Clear();
     int       Size() { return m_xsecs.size(); }
     XS_Base * operator[] (int idx) { 
-      if ((idx<m_xsecs.size()) && (idx>=0)) return m_xsecs[idx];
+      if ((idx<(int)m_xsecs.size()) && (idx>=0)) return m_xsecs[idx];
       return 0;
     } 
+    XS_Selector     * XSSelector() { return p_xsselector; }
     virtual XS_Base * Selected();
     virtual bool      CalculateTotalXSec();
     virtual bool      OneEvent();

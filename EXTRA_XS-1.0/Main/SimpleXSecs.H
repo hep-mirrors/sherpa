@@ -15,43 +15,59 @@
 
 
 namespace EXTRAXS {
+
   class SimpleXSecs : public XS_Group {
   private :
-    std::string                  m_path,m_file;
-    std::string                  m_respath,m_resfile;
 
-    int                          m_nmax,m_count,m_maxjet;
+    std::string               m_path,m_file;
+    std::string               m_respath,m_resfile;
+
+    int                       m_nmax,m_count,m_maxjet;
 
     ATOOLS::Data_Read       * p_dataread;
     ATOOLS::Selector_Data   * p_seldata;
+
     BEAM::Beam_Spectra_Handler * p_beam;
     PDF::ISR_Handler           * p_isr;
+
   public :
+
+    // constructor
     SimpleXSecs(std::string,std::string,MODEL::Model_Base * _model);
+
+    // destructor
     ~SimpleXSecs();
-    bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
-    bool CalculateTotalXSec();
 
-    void        SelectOne();
-    bool        UnweightedEvent(int mode=0);
-    double      WeightedEvent(int mode=0);
-    bool        SameEvent()    ;
-    double      SameWeightedEvent();
+    // access functions
+    std::string       ProcessName() { return p_selected->Selected()->Name();     }
+    int               Nin()         { return p_selected->Selected()->Nin();      }
+    int               Nout()        { return p_selected->Selected()->Nout();     }
+    int             **Colours()     { return p_selected->Selected()->Colours();  }
+    ATOOLS::Flavour  *Flavs()       { return p_selected->Selected()->Flavs();    }
+    ATOOLS::Vec4D    *Momenta()     { return p_selected->Selected()->Momenta();  }
+    int               InSwaped()    { return p_selected->Selected()->InSwaped(); }
+    int               MaxJets()     { return m_maxjet;                           }
 
-    std::string          ProcessName() { return p_selected->Selected()->Name();    }
-    int                  Nin()         { return p_selected->Selected()->Nin();     }
-    int                  Nout()        { return p_selected->Selected()->Nout();    }
-    int               ** Colours()     { return p_selected->Selected()->Colours(); }
-    ATOOLS::Flavour * Flavs()          { return p_selected->Selected()->Flavs();   }
-    ATOOLS::Vec4D    * Momenta()       { return p_selected->Selected()->Momenta(); }
-    int  InSwaped() { return p_selected->Selected()->InSwaped(); }
-    int  MaxJets()  { return m_maxjet; }
+    ATOOLS::Selector_Data *SelectorData() { return p_seldata; }
 
-    void SingleEvents();
-    bool PrepareXSecTables();
-    bool LookUpXSec(double,bool,std::string);
+    // member functions
+    void   ResetSelector(ATOOLS::Selector_Data *);
 
-  };
-}
+    bool   InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
+    bool   CalculateTotalXSec();
+
+    void   SelectOne();
+    bool   UnweightedEvent(int mode=0);
+    double WeightedEvent(int mode=0);
+    bool   SameEvent()    ;
+    double SameWeightedEvent();
+
+    void   SingleEvents();
+    bool   PrepareXSecTables();
+    bool   LookUpXSec(double,bool,std::string);
+
+  }; // end of class SimpleXSecs
+
+} // end of namespace EXTRAXS
 
 #endif

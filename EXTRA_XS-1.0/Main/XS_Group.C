@@ -18,7 +18,7 @@ XS_Group::XS_Group(int _nin,int _nout,Flavour * _fl,
 		   ATOOLS::Selector_Data * _seldata,
 		   int _scalescheme,int _kfactorscheme,double _scalefactor) :
   XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor),
-  p_xsselector(NULL), m_atoms(0)
+  p_xsselector(NULL), m_atoms(0), m_fsrchannels(false)
 {
   p_selected = NULL;
 }
@@ -72,6 +72,26 @@ void XS_Group::Add(XS_Base * _xsec)
   }  
   ATOOLS::msg.Debugging()<<"Add xs "<<_xsec->Name()<<" to group "<<m_name<<" ! "<<endl; 
   m_xsecs.push_back(_xsec);
+}
+
+bool XS_Group::Delete(XS_Base *_xsec) 
+{
+  for (std::vector<XS_Base*>::iterator xsit=m_xsecs.begin();xsit!=m_xsecs.end();++xsit) {
+    if (*xsit==_xsec) {
+      delete *xsit;
+      m_xsecs.erase(xsit);
+      return true;
+    }
+  }
+  return false;
+}
+
+void XS_Group::Clear() 
+{
+  while (m_xsecs.size()>0) {
+    delete *m_xsecs.begin();
+    m_xsecs.erase(m_xsecs.begin());
+  }
 }
 
 void XS_Group::SelectOne()
@@ -137,6 +157,9 @@ void XS_Group::SetISR(PDF::ISR_Handler * _isr) {
 
 bool XS_Group::CalculateTotalXSec()
 {
+  m_n=0;
+  m_last=m_lastlumi=m_lastdxs=0.0;
+  m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
   if (p_isr) {
     if (m_nin==2) {
       if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
@@ -145,8 +168,10 @@ bool XS_Group::CalculateTotalXSec()
     for (int i=0;i<m_xsecs.size();i++) m_xsecs[i]->SetISR(p_isr);
   }
 
-  CreateFSRChannels();
-  p_ps->CreateIntegrators();
+  if (!m_fsrchannels) {
+    CreateFSRChannels();
+    p_ps->CreateIntegrators();
+  }
 
   m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn(); 
   if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {

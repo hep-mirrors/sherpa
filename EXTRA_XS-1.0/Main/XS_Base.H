@@ -54,8 +54,13 @@ namespace EXTRAXS {
     XS_Base(int,int,ATOOLS::Flavour *);
     XS_Base() {   m_name     = std::string("Empty XS"); }
 
+    virtual void ResetSelector(ATOOLS::Selector_Data *);
     
     virtual ~XS_Base();
+
+    double ScaleFactor()   { return m_scalefactor;   }
+    int    KFactorScheme() { return m_kfactorscheme; }
+    int    ScaleScheme()   { return m_scalescheme;   }
 
     virtual int    Size() { return 0; }
     virtual double Differential(ATOOLS::Vec4D *);

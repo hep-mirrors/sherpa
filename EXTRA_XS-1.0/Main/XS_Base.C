@@ -23,13 +23,7 @@ XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
   p_fl(NULL), p_colours(NULL), p_moms(NULL)
 {
   Init(_fl);
-  if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
-  else {
-    msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
-	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
-    p_sel = new No_Selector();
-  }
-
+  ResetSelector(_seldata);
   p_ps   = new PHASIC::Phase_Space_Handler(this,p_isr,p_beam);
   p_moms = new ATOOLS::Vec4D[m_nin+m_nout];
 }
@@ -48,8 +42,8 @@ XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl) :
 }
 
 XS_Base::~XS_Base() {
-  if (p_fl)      { delete [] p_fl;   p_fl   = 0; }
-  if (p_moms)    { delete [] p_moms; p_moms = 0; }
+  if (p_fl)       { delete [] p_fl;   p_fl   = 0; }
+  if (p_moms)     { delete [] p_moms; p_moms = 0; }
   if (p_sel)     { delete    p_sel;  p_sel  = 0; }
   if (p_colours) { 
     for (int i=0;i<m_nin+m_nout;i++) delete p_colours[i];
@@ -192,6 +186,17 @@ void XS_Base::RestoreInOrder() {
     p_fl[0] = p_fl[1];
     p_fl[1] = help;
     m_swaped = 0;
+  }
+}
+
+void XS_Base::ResetSelector(ATOOLS::Selector_Data *_seldata)
+{
+  if (p_sel!=NULL) delete p_sel;
+  if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
+  else {
+    msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
+	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
+    p_sel = new No_Selector();
   }
 }
 

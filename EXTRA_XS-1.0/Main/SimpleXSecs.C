@@ -24,9 +24,6 @@ SimpleXSecs::~SimpleXSecs()
 {
   if (p_dataread) { delete p_dataread; p_dataread = NULL; }
   if (p_seldata)  { delete p_seldata;  p_seldata  = NULL; }
-  for(int i=m_xsecs.size();i>0;i--) {
-    if (m_xsecs[i-1]) delete m_xsecs[i-1];
-  }
 }
 
 bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
@@ -61,6 +58,11 @@ bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
 	flavs[0] = flavs[1] = flavs[2] = flavs[3] = Flavour(kf::jet);
 	m_xsecs.push_back(new QCD_Processes(p_isr,p_beam,flavs,p_seldata,
 					    _scale_scheme,_kfactor_scheme,_scale_factor));
+	m_maxjet = 4;
+	continue;
+      }
+      position = buf.find(string("Init QCD 2->2")); 
+      if (position>-1 && position<buf.length()) {
 	m_maxjet = 4;
 	continue;
       }
@@ -99,6 +101,9 @@ bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
 
 bool SimpleXSecs::CalculateTotalXSec() 
 {
+  m_n=0;
+  m_last=m_lastlumi=m_lastdxs=0.0;
+  m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
   bool okay = 1;
   for (int i=0;i<m_xsecs.size();i++) {
     okay = okay && m_xsecs[i]->CalculateTotalXSec();
@@ -144,6 +149,12 @@ double SimpleXSecs::WeightedEvent(int mode)
   return 0.;
 }
 
+void SimpleXSecs::ResetSelector(ATOOLS::Selector_Data *_seldata)
+{
+  for (unsigned int i=0;i<m_xsecs.size();++i) m_xsecs[i]->ResetSelector(_seldata);
+}
+
 bool SimpleXSecs::PrepareXSecTables() { return 0; }
 bool SimpleXSecs::LookUpXSec(double,bool,std::string) { return 0;}
 void SimpleXSecs::SingleEvents() {}
+
