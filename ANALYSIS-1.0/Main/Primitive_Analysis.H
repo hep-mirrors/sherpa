@@ -76,6 +76,7 @@ namespace ANALYSIS {
     Weight_Statistics      m_stats;
 
     ATOOLS::Particle_Qualifier_Base * p_bfinder;
+    bool  m_active;
     
     void Init();
     bool SelectBlob(const ATOOLS::Blob *blob); 
@@ -108,12 +109,7 @@ namespace ANALYSIS {
     ATOOLS::Particle_List * GetParticleList(const std::string &);
     void AddParticleList(const std::string &,ATOOLS::Particle_List *);
 
-    ATOOLS::Blob_Data_Base * operator[](const std::string name) 
-    {
-      ATOOLS::String_BlobDataBase_Map::const_iterator cit=m_datacontainer.find(name);
-      if (cit==m_datacontainer.end()) return 0;
-      return cit->second;
-    } 
+    ATOOLS::Blob_Data_Base * operator[](const std::string name);
     void AddData(const std::string name,ATOOLS::Blob_Data_Base * data); 
     void ClearAllData();
 

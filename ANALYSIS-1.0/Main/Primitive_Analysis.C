@@ -18,7 +18,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) :
-  , p_bfinder(0)
+  , p_bfinder(0) , m_active(true)
 {
   m_nevt = 0;
   p_partner = this;
@@ -29,7 +29,7 @@ Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) 
 }
 
 Primitive_Analysis::Primitive_Analysis(const int mode) :
-  m_nevt(0), p_partner(this), p_bfinder(0)
+  m_nevt(0), p_partner(this), p_bfinder(0), m_active(true)
 {
   m_mode = mode;
 
@@ -146,7 +146,9 @@ void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double valu
 	  it->second->DoAnalysis(bl,value);
 	}
 	else {
-	  it->second->DoAnalysis(bl,0.);
+	  m_active=false;
+	  it->second->DoAnalysis(bl,value);
+	  m_active=true;
 	}
       }
     }
@@ -418,6 +420,7 @@ void Primitive_Analysis::CreateFinalStateParticleList(bool markb)
     }
   }
   m_pls[key]=pl;
+  AddParticleList("NULL",new Particle_List);
 }
 
 void Primitive_Analysis::CreateIntermediateHadronsList()
@@ -460,6 +463,10 @@ void Primitive_Analysis::CreateChargedParticleList()
 
 Particle_List * Primitive_Analysis::GetParticleList(const std::string & key) 
 {
+  if (!m_active) {
+    PL_Container::const_iterator cit=m_pls.find("NULL");
+    if (cit!=m_pls.end()) return cit->second;
+  }
   PL_Container::const_iterator cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
 
@@ -516,6 +523,18 @@ void Primitive_Analysis::AddParticleList(const std::string & key,Particle_List *
 
   m_pls[key]=pl;
 }
+
+ATOOLS::Blob_Data_Base * Primitive_Analysis::operator[](const std::string name) 
+{
+  ATOOLS::String_BlobDataBase_Map::const_iterator cit;
+  if (!m_active) {
+    cit=m_datacontainer.find("NULL"+name);
+    if (cit!=m_datacontainer.end()) return cit->second;
+  }
+  cit=m_datacontainer.find(name);
+  if (cit==m_datacontainer.end()) return 0;
+  return cit->second;
+} 
 
 void Primitive_Analysis::AddData(const std::string name, Blob_Data_Base * data) 
 {
