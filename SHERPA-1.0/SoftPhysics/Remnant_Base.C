@@ -148,7 +148,6 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton)
 		       <<"Called with NULL pointer."<<std::endl;
     return false;
   }
-  m_extracted.push_back(parton); 
   double E=parton->Momentum()[0];
   if (E<0.0 || E>m_ebeam) {
     ATOOLS::msg.Error()<<"Remnant_Base::Extract("<<parton<<"): "
@@ -156,8 +155,8 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton)
 		       <<E<<"."<<std::endl;
     return false;
   }
-  m_erem-=parton->Momentum()[0]+MinimalEnergy(parton->Flav());
-  if (m_erem<0.0) {
+  double erem=m_erem-parton->Momentum()[0]+MinimalEnergy(parton->Flav());
+  if (erem<0.0) {
     msg_Tracking()<<"Remnant_Base::Extract(..): No remaining energy for "
 		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" -> E_min = "
 		  <<(parton->Momentum()[0]+MinimalEnergy(parton->Flav()))<<std::endl;
@@ -169,6 +168,8 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton)
 		  <<m_emin<<std::endl;
     return false;
   }
+  m_extracted.push_back(parton); 
+  m_erem=erem;
   return true;
 }
 
