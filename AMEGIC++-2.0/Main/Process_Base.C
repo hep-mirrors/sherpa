@@ -27,7 +27,7 @@ Process_Base::Process_Base():
   m_gen_str(3),p_b(0),m_nvec(0),m_nin(0),m_nout(0),p_fl(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0),p_moms(0),p_ps(0),p_beam(0),p_isr(0),p_cuts(0),
   p_sel(0),p_analysis(0),p_selected(0),
-  m_rfactor(1.) 
+  m_rfactor(1.) , m_swaped(0)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
@@ -658,7 +658,7 @@ int                     Process_Base::Nin()                          { return m_
 int                     Process_Base::Nout()                         { return m_nout; }
 int                     Process_Base::Nvec()                         { return m_nvec; }
 Flavour               * Process_Base::Flavs()                        { return p_fl; }
-ATOOLS::Vec4D       * Process_Base::Momenta()                      { return p_moms; }
+Vec4D                 * Process_Base::Momenta()                      { return p_moms; }
 int                     Process_Base::NStrong()                      { return m_nstrong; }
 int                     Process_Base::NEWeak()                       { return m_neweak; }
 string                  Process_Base::Name()                         { return m_name; }
@@ -684,6 +684,7 @@ double                  Process_Base::LastXS()                       { return m_
 double                  Process_Base::LastLumi()                     { return m_lastlumi; }
 
 double                  Process_Base::ISRThreshold()                 { return m_isrthreshold;}
+int                     Process_Base::InSwaped()                     { return m_swaped;}
 
 int                     Process_Base::ISRNumber()                                        { return 0; }
 int                     Process_Base::BeamNumber()                                       { return 0; }
@@ -697,6 +698,26 @@ int              Process_Base::NumberOfISRIntegrators()  { return p_ps->NumberOf
 int              Process_Base::NumberOfFSRIntegrators()  { return p_ps->NumberOfFSRIntegrators(); }
 Multi_Channel *  Process_Base::FSRIntegrator()           { return p_ps->FSRIntegrator(); }
 Single_Channel * Process_Base::FSRIntegrator(int i)      { return p_ps->FSRIntegrator(i); }
+
+void Process_Base::SwapInOrder() {
+  Flavour help = p_fl[0];
+  p_fl[0] = p_fl[1];
+  p_fl[1] = help;
+  Vec4D mom = p_moms[0];
+  p_moms[0] = p_moms[1];
+  p_moms[1] = mom;
+  m_swaped = 1;
+}
+
+void Process_Base::RestoreInOrder() {
+  if (m_swaped) {
+    Flavour help = p_fl[0];
+    p_fl[0] = p_fl[1];
+    p_fl[1] = help;
+    m_swaped = 0;
+  }
+}
+
 
 
 

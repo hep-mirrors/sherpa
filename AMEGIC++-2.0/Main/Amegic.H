@@ -61,6 +61,7 @@ namespace AMEGIC {
     int                  Nout()             { return p_procs->Selected()->Nout(); }
     ATOOLS::Flavour * Flavs()            { return p_procs->Selected()->Flavs(); }
     ATOOLS::Vec4D    * Momenta()          { return p_procs->Selected()->Momenta(); }
+    int        InSwaped() { return p_procs->Selected()->InSwaped(); }
     int                  NumberOfDiagrams() { return p_procs->Selected()->NumberOfDiagrams(); }
     AMEGIC::Point      * Diagram(int _diag) { return p_procs->Selected()->Diagram(_diag); }
     int                  MaxJets()          { return m_maxjet; }

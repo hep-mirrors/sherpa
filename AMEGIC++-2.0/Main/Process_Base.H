@@ -48,6 +48,7 @@ namespace AMEGIC {
     double                           m_scale,m_scalefactor;
     double                           m_isrthreshold;
 
+    int m_swaped;
 
     PHASIC::Phase_Space_Handler    * p_ps; 
     Phase_Space_Generator          * p_psgen;
@@ -159,6 +160,10 @@ namespace AMEGIC {
     virtual double WeightedEvent()                                                 =0;
     virtual double SameWeightedEvent()                                             =0;
 
+    virtual void SwapInOrder();
+    virtual void RestoreInOrder();
+    int InSwaped();
+
     /*------------------------------------------------------------------------------
 
       Access methods
@@ -167,8 +172,8 @@ namespace AMEGIC {
     virtual int                             Nin();
     virtual int                             Nout();
     virtual int                             Nvec();
-    virtual ATOOLS::Flavour            * Flavs();
-    virtual ATOOLS::Vec4D               * Momenta();
+    virtual ATOOLS::Flavour               * Flavs();
+    virtual ATOOLS::Vec4D                 * Momenta();
 
     virtual int                             NStrong();
     virtual int                             NEWeak();
