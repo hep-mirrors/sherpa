@@ -480,13 +480,14 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
   double pt2;
 
   //new
-switch (m_scalescheme) {
+  switch (m_scalescheme) {
   case 1  :
     if (m_nin+m_nout==4) {
       double t = (_p[0]-_p[2]).Abs2();
       double u = (_p[0]-_p[3]).Abs2();
       pt2 = 2.*s*t*u/(s*s+t*t+u*u);
     }
+    pt2 = s;
   break;
   case 2  :
     pt2 = m_scale;
@@ -498,11 +499,12 @@ switch (m_scalescheme) {
 }
 
 double Process_Base::KFactor(double _scale) {
+ 
   switch (m_kfactorscheme) {
   case 1  :
     if (m_nstrong>2) {
       return m_rfactor*pow(as->AlphaS(_scale * m_scalefactor)/
-			 as->AlphaS(AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms())),m_nstrong-2);
+			   as->AlphaS(AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms())),m_nstrong-2);
     } 
     else 
       return m_rfactor;
