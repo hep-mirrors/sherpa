@@ -629,8 +629,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	s<<value;
 	double ecms;
 	s>>ecms;
+	s.clear();
 	s<<ecms/2.;
 	s>>value;
+	msg.Out()<<" Setting ECMS/2 to : "<<value<<endl;
 	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
 	Read_Write_Base::AddCommandLine(std::string("BEAM_ENERGY_1 = ")+value);
@@ -703,8 +705,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	  MyStrStream s;
 	  s<<argv[++i];
 	  s>>m_scan_begin;
+	  s.clear();
 	  s<<argv[++i];
 	  s>>m_scan_end;
+	  s.clear();
 	  s<<argv[++i];
 	  s>>m_scan_nsteps;
 	  m_scan_istep=0;
@@ -779,6 +783,7 @@ int Initialization_Handler::UpdateParameters()
     s<<key.substr(a,b);
     int kfc;
     s>>kfc;
+    s.clear();
     Flavour fl((kf::code)kfc);
     msg_Tracking()<<" : "<<fl<<endl;
     if (key.find("MASS")!=string::npos) {
@@ -786,6 +791,7 @@ int Initialization_Handler::UpdateParameters()
       msg_Tracking()<<" old mass = "<<mass<<endl;
       s<<value;
       s>>mass;
+      s.clear();
       msg_Tracking()<<" new mass = "<<mass<<endl;
       fl.SetMass(mass);
     }
@@ -795,6 +801,7 @@ int Initialization_Handler::UpdateParameters()
       msg_Tracking()<<" old width = "<<width<<endl;
       s<<value;
       s>>width;
+      s.clear();
       msg_Tracking()<<" new width = "<<width<<endl;
       fl.SetWidth(width);
     }
