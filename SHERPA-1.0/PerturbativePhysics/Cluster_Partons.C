@@ -470,7 +470,7 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     msg.Out()<<"WARNING in Cluster_Partons::SetColours() : called for 4 coloured objects \n"
 	     <<"          Don't know how to handle this ! "<<std::endl;
     for (int i=0; i<4; ++i) {
-      std::cout<<i<<" : "<<fl[i]<<"\n";
+      msg.Out()<<i<<" : "<<fl[i]<<"\n";
     }
     return 1;
   }
@@ -785,6 +785,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     if (xs) scale = 
       xs->Scale(PHASIC::stp::fac);
     mo->t      = scale;                   // s for drell-yan and e+e- seems fine
+    // we have a virtuality ordered shower, therefore:
     mo->t      = mo->part->Momentum().Abs2();  // ????? *FK* 
   }
 
@@ -958,7 +959,8 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode
     //  d1->part->Momentum() - in the moment also in LAB system
     //  p_blob->InParticle(0)->Momentum() - in CMS system
 
-    double q2      = mo->t;
+    double q2 = 4.*(m_qmin_i*m_qmin_i);
+    q2= Max(q2,mo->t);
     // set x1 and x2
     double x1,x2;
     p_ct->GetX1X2(x1,x2);
