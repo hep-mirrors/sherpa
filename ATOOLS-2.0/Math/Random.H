@@ -3,10 +3,11 @@
 
 #include <fstream>
 #include "MathTools.H"
+#include "Exception.H"
 
 namespace ATOOLS {
 
-  class Random {
+  class Random: public Terminator_Object {
   private:
 
     long int m_id, m_ma[56], m_written;
@@ -20,6 +21,8 @@ namespace ATOOLS {
     double Ran3();
 
     void InitRan3(long*);
+
+    void PrepareTerminate();
 
   public:
 

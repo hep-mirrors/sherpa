@@ -1,6 +1,7 @@
 #include "Random.H"
 #include "Message.H"
 #include "MathTools.H"
+#include "Scaling.H"
 #include <iostream>
 
 using namespace ATOOLS;
@@ -248,4 +249,23 @@ void Random::SetSeed(long int nid)
   m_written=0;    
   p_outstream=0;
   std::strcpy(m_outname,"");
+}
+
+void Random::PrepareTerminate()
+{
+  if (Exception_Handler::LastException()==NULL && 
+      Exception_Handler::LastSignal()==0) return;
+  if (Exception_Handler::LastException()!=NULL) {
+    if (Exception_Handler::LastException()->Type()==ex::normal_exit) return;
+  }
+  if (Exception_Handler::LastSignal()==2) return;
+  std::string name="debug_info_";
+  unsigned int i=0;
+  do { 
+    std::ifstream testfile((name+ATOOLS::ToString(++i)+
+			    std::string(".random")).c_str());
+    if (!testfile.is_open()) break;
+  } while (true);
+  WriteOutStatus((name+ATOOLS::ToString(++i)+
+		  std::string(".random")).c_str());
 }
