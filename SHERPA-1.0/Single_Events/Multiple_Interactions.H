@@ -10,14 +10,10 @@ namespace SHERPA {
   class Multiple_Interactions : public Event_Phase_Handler {
   private :
 
-    bool m_one;
+    bool m_diced;
     double m_pperpmax, m_ecmsmax, m_xmax[2];
 
     MI_Handler *p_mihandler;
-
-    void CompleteBlob(ATOOLS::Blob *);
-    void Clean(ATOOLS::Blob *const blob,const bool forward);
-    void Clean(ATOOLS::Blob *const blob);
 
   public :
 

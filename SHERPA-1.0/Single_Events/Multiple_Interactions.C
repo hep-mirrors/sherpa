@@ -12,7 +12,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 Multiple_Interactions::Multiple_Interactions(MI_Handler *_p_mihandler):
-  m_one(true),
+  m_diced(false),
   p_mihandler(_p_mihandler)
 {
   m_name = std::string("Multiple_Interactions:")+p_mihandler->Name();
@@ -24,155 +24,53 @@ Multiple_Interactions::~Multiple_Interactions() {}
 bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
   PROFILE_HERE;
-  if (p_mihandler->Type()==MI_Handler::None) return false;
+  if (p_mihandler->Type()==MI_Handler::None || m_diced) return false;
   if (bloblist->empty()) {
-    ATOOLS::msg.Error()<<"Potential error in Multiple_Interactions::Treat."<<std::endl
-		       <<"   Incoming blob list is empty!"<<std::endl;
+    ATOOLS::msg.Error()<<"Multiple_Interactions::Treat(): "
+		       <<"Incoming blob list is empty!"<<std::endl;
     return false;
   }
-  ATOOLS::Blob * myblob;
-  bool hit=false;
-  m_one=false;
+  bool check=false;
   for (Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==btp::Hard_Collision) {
-      m_one=true;
-      if ((*bit)->Status()==2) {
-	myblob=*bit;
-	Clean(myblob);
-	m_xmax[1]=m_xmax[0]=1.0;
-	for (Blob_Iterator xit=bloblist->begin();xit!=bloblist->end();++xit) {
-	  if ((*xit)->Type()==btp::IS_Shower) {
-	    m_xmax[(*xit)->Beam()]-=2.0*(*xit)->InParticle(0)->Momentum()[0]/ATOOLS::rpa.gen.Ecms();
-	  }
-	}
-	p_mihandler->SetScaleMax(m_xmax[0],2);
-	p_mihandler->SetScaleMax(m_xmax[1],3);
-	if (p_mihandler->GenerateHardProcess(myblob)) {
-	  CompleteBlob(myblob);
-	  myblob->SetStatus(1);
-	  ATOOLS::Blob *blob = new ATOOLS::Blob();
-	  blob->SetType(btp::Hard_Collision);
-	  blob->SetStatus(2);
-	  blob->SetId(bloblist->size());
-	  bloblist->push_back(blob);
-	  hit=true;
-	  break;
-	}
-	else {
-	  delete myblob;
-	  bloblist->erase(bit--);
-	  break;
-	}
-      }
-      else if ((*bit)->Status()==-1) {
-	myblob=(*bit);
-	Clean(myblob);
-	p_mihandler->SameHardProcess(myblob); 
-	CompleteBlob(myblob);
-	myblob->SetStatus(1);
-	hit=true;
-	break;
-      }
-    }
+    if ((*bit)->Type()==btp::Hard_Collision) check=true;
   }
-  if (!m_one) {
-    bool found=false;
-    for (Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-      if ((*bit)->Type()==btp::ME_PS_Interface_FS) {
-	myblob=*bit;
-	found=true;
-	break;
-      }
-    }
-    if (!found) {
-      for (Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-	if ((*bit)->Type()==btp::Signal_Process) {
-	  myblob=*bit;
-	  break;
-	}
-      }
-    }
-    if (myblob->Status()!=0) return false;
-    m_pperpmax=1.0e37; 
-    m_ecmsmax=ATOOLS::rpa.gen.Ecms();
-    double val=0.0;
-    ATOOLS::Vec4D cur, ptot;
-    for (int i=0;i<myblob->NOutP();++i) {
-      ptot+=cur=myblob->OutParticle(i)->Momentum();
-      val=ATOOLS::Max(val,cur.PPerp());
-    }
-    m_ecmsmax-=sqrt(ptot.Abs2());
-    m_pperpmax=ATOOLS::Min(m_pperpmax,val);
-    myblob = new ATOOLS::Blob();
-    myblob->SetType(btp::Hard_Collision);
-    myblob->SetStatus(2);
-    myblob->SetId(bloblist->size());
-    bloblist->push_back(myblob);
-    p_mihandler->SetScaleMax(m_pperpmax,0);
-    p_mihandler->SetScaleMax(m_ecmsmax,1);
-    p_mihandler->Reset();
-    hit=true;
+  if (check) return false;
+  ATOOLS::Blob *mepsblob=NULL, *signalblob=NULL;
+  for (Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
+    if ((*bit)->Type()==btp::ME_PS_Interface_FS) mepsblob=*bit;
+    else if ((*bit)->Type()==btp::Signal_Process) signalblob=*bit;
   }
-  return hit;
-}
-
-void Multiple_Interactions::CleanUp() 
-{ 
-  return; 
-}
-
-void Multiple_Interactions::CompleteBlob(ATOOLS::Blob *blob)
-{
-  PROFILE_HERE;
-  EXTRAXS::XS_Base *xs=NULL;
-  if (blob->Type()==btp::Hard_Collision) {
-    xs=p_mihandler->HardMEHandler()->GetXS();
+  if (mepsblob==NULL) return false;
+  m_diced=true;
+  m_pperpmax=1.0e37; 
+  m_ecmsmax=ATOOLS::rpa.gen.Ecms();
+  double val=0.0;
+  m_xmax[1]=m_xmax[0]=1.0;
+  ATOOLS::Vec4D cur, ptot;
+  for (int i=0;i<mepsblob->NInP();++i) {
+    ptot+=cur=mepsblob->InParticle(i)->Momentum();
+    val=ATOOLS::Max(val,cur.PPerp());
   }
-  if (blob->Type()==btp::Soft_Collision) {
-    xs=p_mihandler->SoftMEHandler()->GetXS();
+  for (int i=0;i<signalblob->NInP();++i) {
+    m_xmax[i]-=2.0*signalblob->InParticle(i)->Momentum()[0]/ATOOLS::rpa.gen.Ecms();
   }
-  blob->SetPosition(Vec4D(0.,0.,0.,0.));
-  blob->SetStatus(1);
-
-  ATOOLS::Vec4D cms = ATOOLS::Vec4D(0.,0.,0.,0.);
-  for (size_t i=0;i<xs->NIn();i++) cms += xs->Momenta()[i];
-  blob->SetCMS(cms);
-  blob->SetBeam(-1);
-
-  ATOOLS::Particle *particle;
-  for (int i=0;i<(int)blob->NInP();i++) {
-    particle=blob->InParticle(i);
-    particle->SetNumber((long int)particle);
-    particle->SetStatus(2);
-    particle->SetInfo('G');
-  }
-  for (int i=0;i<(int)blob->NOutP();i++) {
-    particle=blob->OutParticle(i);
-    particle->SetNumber((long int)particle);
-    particle->SetStatus(1);
-    particle->SetInfo('H');
-  }
-}
-
-void Multiple_Interactions::Clean(ATOOLS::Blob *const blob,const bool forward)
-{ 
-  for (size_t i=0;!forward && i<(size_t)blob->NInP();++i) {
-    ATOOLS::Particle *cur=blob->InParticle(i);
-    if (cur->ProductionBlob()!=NULL) Clean(cur->ProductionBlob(),false);
-  } 
-  for (size_t i=0;forward && i<(size_t)blob->NOutP();++i) {
-    ATOOLS::Particle *cur=blob->OutParticle(i);
-    if (cur->DecayBlob()!=NULL) Clean(cur->DecayBlob(),true);
-  } 
-}
-
-void Multiple_Interactions::Clean(ATOOLS::Blob *const blob)
-{ 
-  Clean(blob,false);
-  Clean(blob,true);
-  blob->DeleteOwnedParticles();
+  m_ecmsmax-=sqrt(ptot.Abs2());
+  m_pperpmax=ATOOLS::Min(m_pperpmax,val);
+  p_mihandler->SetScaleMax(m_pperpmax,0);
+  p_mihandler->SetScaleMax(m_ecmsmax,1);
+  p_mihandler->SetScaleMax(m_xmax[0],2);
+  p_mihandler->SetScaleMax(m_xmax[1],3);
+  size_t size=bloblist->size();
+  p_mihandler->GenerateHardEvent(bloblist);
+  return (size!=bloblist->size());
 }
 
 void Multiple_Interactions::Finish(const std::string &) 
 {
 }
+
+void Multiple_Interactions::CleanUp() 
+{ 
+  m_diced=false;
+}
+

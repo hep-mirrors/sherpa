@@ -9,26 +9,35 @@
 
 namespace SHERPA {
 
-  class Jet_Evolution : public Event_Phase_Handler {
+  class Jet_Evolution: public Event_Phase_Handler {
   private :
 
-    Matrix_Element_Handler * p_mehandler;
-    //    MI_Handler             * p_mihandler;
     Shower_Handler         * p_showerhandler;
     PertInterfaceMap         m_interfaces;
 
-    bool AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,Perturbative_Interface *);
+    int m_initializedhardest;
+
+    int AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,Perturbative_Interface *);
+    
+    void ResetInterfaces();
+    void UpdateInterfaces(const ATOOLS::Blob *blob,const size_t beam);
+    bool DefineInitialConditions(const ATOOLS::Blob *blob,
+				 const ATOOLS::Blob_List *bloblist); 
 
   public :
 
+    // constructor
     Jet_Evolution(MEHandlersMap *,Shower_Handler *);
 
+    // destructor
     ~Jet_Evolution();
 
+    // member functions
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
     void Finish(const std::string &);
-  };
+
+  };// end of class Jet_Evolution
 
   /*!
     \file 

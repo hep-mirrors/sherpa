@@ -16,7 +16,8 @@ using namespace ATOOLS;
 using namespace std;
 
 Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerhandler) :
-  p_showerhandler(_showerhandler)
+  p_showerhandler(_showerhandler),
+  m_initializedhardest(-1)
 {
   m_name      = std::string("Jet_Evolution:")+p_showerhandler->ShowerGenerator();
   m_type      = eph::Perturbative;
@@ -34,7 +35,7 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerh
     if (meIter->second->Name()==string("SimpleXS") &&
 	p_showerhandler->ShowerGenerator()==string("Adicic")) 
       interface = new SimpleXS_Adicic_Interface(meIter->second,p_showerhandler);
-    m_interfaces.insert(make_pair(meIter->first,interface));
+    if (interface!=NULL) m_interfaces.insert(make_pair(meIter->first,interface));
   }
 }
 
@@ -74,11 +75,17 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}	
+	if (m_initializedhardest==-1) {
+	  m_initializedhardest = piIter->second->DefineInitialConditions(blob);
+	  piIter->second->FillBlobs(_bloblist);
+	  return true;
+	}
+	else {
+	  DefineInitialConditions(blob,_bloblist);
+	}
 	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->Weight();
       }  
-
-      // Search for active blobs of type "Hard Collision :"
       if (blob->Status()==1 && blob->Type()==btp::Hard_Collision) {
 	piIter = m_interfaces.find(string("MIMEs"));
 	if (piIter==m_interfaces.end()) {
@@ -90,8 +97,6 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->Weight();
       }  
-
-      // Search for active blobs of type "Hard_Decay :"
       if (blob->Status()==1 && blob->Type()==btp::Hard_Decay) {
 	piIter = m_interfaces.find(string("HardDecays"));
 	if (piIter==m_interfaces.end()) {
@@ -105,22 +110,30 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
       } 
     }
     if (found) hit = 1;
+    ResetInterfaces();
   }
   return hit;
 }
 
-bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
+int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 				  Perturbative_Interface * interface) 
 {
   bool decayblob   = (_blob->NInP()==1);
-  int shower,stat = interface->DefineInitialConditions(_blob);
+  int shower, stat = m_initializedhardest;
+  if (_blob->Type()!=ATOOLS::btp::Signal_Process) {
+    stat = interface->DefineInitialConditions(_blob);
+  }
   if (stat==3) {
     _blob->SetStatus(-1);
     p_showerhandler->CleanUp();
-    return true;
+    return 1;
   }
   if (stat==1) {
-    interface->FillBlobs(_bloblist);
+    if (m_initializedhardest==-1) {
+      interface->FillBlobs(_bloblist);
+      DefineInitialConditions(_blob,_bloblist);
+    }
+    else m_initializedhardest=-1;
     if (!decayblob) shower = interface->PerformShowers();
                else shower = interface->PerformDecayShowers();  
     if (shower==1) {
@@ -171,17 +184,17 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       _blob->SetStatus(-1);
       p_showerhandler->CleanUp();
       // delete all meps blobs
-      interface->CleanBlobs(_bloblist);
+      interface->CleanBlobList(_bloblist,_blob->Type());
     }
     else {
       _blob->SetStatus(2);
       p_showerhandler->CleanUp();
     }
-    return true;
+    return 1;
   }
   _blob->SetStatus(2);
   p_showerhandler->CleanUp();
-  return false;
+  return 0;
 }
 
 void Jet_Evolution::CleanUp() 
@@ -189,5 +202,54 @@ void Jet_Evolution::CleanUp()
   p_showerhandler->CleanUp();
 }
 
+void Jet_Evolution::ResetInterfaces() 
+{
+  for (PertInterfaceMap::iterator piiter=m_interfaces.begin();
+       piiter!=m_interfaces.end();++piiter) {
+    piiter->second->Reset();
+  }
+  p_showerhandler->GetISRHandler()->Reset(0);
+  p_showerhandler->GetISRHandler()->Reset(1);
+}
 
-void Jet_Evolution::Finish(const std::string &) {}
+bool Jet_Evolution::DefineInitialConditions(const ATOOLS::Blob *blob,
+					    const ATOOLS::Blob_List *bloblist) 
+{ 
+  ResetInterfaces();
+  // fetch maximum remnant energy from mi handler
+  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),2.,0);
+  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),2.,1);
+  for (ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
+       blit!=bloblist->end();++blit) {
+    if (((*blit)->Type()==ATOOLS::btp::Signal_Process ||
+	 (*blit)->Type()==ATOOLS::btp::Hard_Collision) && *blit!=blob) {
+      UpdateInterfaces(*blit,0);
+      UpdateInterfaces(*blit,1);
+    }
+  }
+  return true;
+}
+
+void Jet_Evolution::UpdateInterfaces(const ATOOLS::Blob *blob,const size_t beam) 
+{ 
+  for (size_t i=0;i<(size_t)blob->NInP();++i) {
+    const ATOOLS::Particle *cur=blob->ConstInParticle(i);
+    if (i==beam || blob->NInP()<=1) {
+      if (cur->ProductionBlob()!=NULL) {
+	UpdateInterfaces(cur->ProductionBlob(),beam);
+      }
+      else {
+	for (PertInterfaceMap::iterator piiter=m_interfaces.begin();
+	     piiter!=m_interfaces.end();++piiter) {
+	  piiter->second->UpdateEnergy(cur->Momentum()[0],i);
+	}
+	p_showerhandler->GetISRHandler()->Extract(cur->Flav(),cur->Momentum()[0],beam);
+	return;
+      }
+    }
+  }
+}
+
+void Jet_Evolution::Finish(const std::string &) 
+{
+}
