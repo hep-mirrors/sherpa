@@ -40,17 +40,16 @@ void Primitive_Observable_Base::Evaluate(const Blob_List & _blist,double _weight
   size_t pos;
   bool   take;
   Particle_List plist;
+  plist.clear();
   for (Blob_Const_Iterator blit=_blist.begin();blit!=_blist.end();++blit) {
-    if ((*blit)->Status()==1) {
-      take = true;
-      if (m_blobdisc) {
-	take = false;
-	pos  = (*blit)->Type().find(m_blobtype);
-	if (pos!=std::string::npos) take = true;
-      }
-      if (take) {
-	for (int i=0;i<(*blit)->NOutP();i++) plist.push_back((*blit)->OutParticle(i));
-      }
+    take = true;
+    if (m_blobdisc) {
+      take = false;
+      pos  = (*blit)->Type().find(m_blobtype);
+      if (pos!=std::string::npos) take = true;
+    }
+    if (take) {
+      for (int i=0;i<(*blit)->NOutP();i++) plist.push_back((*blit)->OutParticle(i));
     }
   }
   if (plist.size()>0) Evaluate(plist,_weight);

@@ -39,11 +39,12 @@ void Primitive_Analysis::DoAnalysis(const Particle_List & pl, double _weight) {
 }
 
 void Primitive_Analysis::DoAnalysis(const Blob_List & bl, double _weight) {
-  for (int i=0;i<observables.size();i++) observables[i]->Evaluate(bl,_weight);
+  for (int i=0;i<observables.size();i++) {
+    observables[i]->Evaluate(bl,_weight);
+  }
 }
 
 void Primitive_Analysis::FinishAnalysis(std::string resdir,int tables) {
-  std::cout<<"In Primitive_Analysis::FinishAnalysis : "<<resdir<<std::endl;
   int  mode_dir = 448;
   mkdir(resdir.c_str(),mode_dir); 
   for (int i=0;i<observables.size();i++) {

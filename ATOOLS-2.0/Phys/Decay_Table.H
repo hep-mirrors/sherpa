@@ -5,20 +5,6 @@
 #include <set>
 
 namespace ATOOLS {
-  class Flavour_Sorting_Criterion {
-  public :
-    bool operator() (const Flavour & _fl1,const Flavour & _fl2) {
-      int fl1 = _fl1.Kfcode(), fl2 = _fl2.Kfcode();
-      if (fl1<fl2) return 0;
-      if (fl1==fl2 && _fl1.IsAnti() && !(_fl2.IsAnti())) return 0;
-      return 1;
-    }
-  };
-
-  typedef std::set<Flavour,Flavour_Sorting_Criterion> FlavourSet;
-  typedef FlavourSet::iterator FlSetIter;
-  typedef const FlavourSet::iterator FlSetConstIter;
-
   class Decay_Channel {
   protected :
     std::string m_processname;

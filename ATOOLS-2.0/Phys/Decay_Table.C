@@ -59,6 +59,10 @@ void Decay_Table::Select() {
   }
   else {
     p_selected = NULL;
+    if (m_channels.size()==1) {
+      p_selected = m_channels[0];
+      return;
+    }
     double disc = m_width*ran.Get();
     for (int i=0;i<m_channels.size();i++) {
       disc -= m_channels[i]->Width();

@@ -9,7 +9,7 @@ Two_Particle_Observable_Base::Two_Particle_Observable_Base(Flavour & _flav1,Flav
   Primitive_Observable_Base(_type,_xmin,_xmax,_nbins,NULL), 
   m_flav1(_flav1), m_flav2(_flav2)
 {
-  name       = _name + std::string(m_flav1.Name()) + std::string(m_flav2.Name()) +std::string(".dat");
+  name       = _name + m_flav1.Name() + m_flav2.Name() +std::string(".dat");
   m_blobtype = std::string("");
   m_blobdisc = false;
 }
@@ -22,10 +22,10 @@ void Two_Particle_Observable_Base::Evaluate(double _value,double _weight) {
 void Two_Particle_Observable_Base::Evaluate(int _nout,ATOOLS::Vec4D * _moms,ATOOLS::Flavour * _flavs,
 					    double _weight) 
 {
-  for (int i=0;i<_nout-1;i++) { 
+  for (int i=0;i<_nout;i++) { 
     if (_flavs[i]==m_flav1) {
-      for (int j=i;j<_nout;j++) { 
-	if (_flavs[j]==m_flav2) Evaluate(_moms[i],_moms[j],_weight); 
+      for (int j=0;j<_nout;j++) { 
+	if (_flavs[j]==m_flav2 && i!=j) Evaluate(_moms[i],_moms[j],_weight); 
       }
     }
   }
@@ -36,11 +36,12 @@ void Two_Particle_Observable_Base::Evaluate(const Particle_List & _plist,double 
 {
   size_t pos;
   bool   take;
-  for (Particle_Const_Iterator plit1=_plist.begin();plit1!=_plist.end()-1;++plit1) {
+  for (Particle_Const_Iterator plit1=_plist.begin();plit1!=_plist.end();++plit1) {
     if ((*plit1)->Flav()==m_flav1) {
-      for (Particle_Const_Iterator plit2=plit1+1;plit2!=_plist.end();++plit2) {
-	if ((*plit2)->Flav()==m_flav2) 
+      for (Particle_Const_Iterator plit2=_plist.begin();plit2!=_plist.end();++plit2) {
+	if ((*plit2)->Flav()==m_flav2 && plit1!=plit2) {
 	  Evaluate((*plit1)->Momentum(),(*plit2)->Momentum(),_weight);
+	}
       }
     }
   }

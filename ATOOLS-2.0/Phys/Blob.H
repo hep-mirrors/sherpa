@@ -70,8 +70,8 @@ namespace ATOOLS {
     void     BoostInLab();
 
     void     SetVecs();
-    void     SetPosition(Vec4D pos)  { m_position = pos; }
-    void     SetCMS(Vec4D _cms)      { m_cms_vec  = _cms; }
+    void     SetPosition(Vec4D pos)            { m_position = pos; }
+    void     SetCMS(Vec4D _cms)                { m_cms_vec  = _cms; }
     void     SetCMS();
     void     SetId(int _id)                    { m_id       = _id; }
     void     SetStatus(int _status)            { m_status   = _status; }

@@ -300,7 +300,7 @@ std::string Flavour::TexName()
 {
   std::string name;
 
-  if (anti) name+=std::string("\\bar ");
+  if (anti) name = std::string("\\bar ");
 
   switch(kfc) {
   case kf::d: {name+=std::string("d");break;}

@@ -9,7 +9,7 @@ One_Particle_Observable_Base::One_Particle_Observable_Base(Flavour & _flav,
   Primitive_Observable_Base(_type,_xmin,_xmax,_nbins,NULL), 
   m_flav(_flav)
 {
-  name       = _name + std::string(m_flav.Name())+std::string(".dat");
+  name       = _name + m_flav.Name()+std::string(".dat");
   m_blobtype = std::string("");
   m_blobdisc = false;
 }
