@@ -21,6 +21,7 @@ SendMail() {
   if [ "$COMPILE_ERROR" = "TRUE" ] ; then SetStatus "Compile error " ; fi
   if [ "$SETUP_ERROR" = "TRUE" ] ; then SetStatus "Setup error " ; fi
   if [ "$BENCHMARK_ERROR" = "TRUE" ] ; then SetStatus "Benchmark error " ; fi
+  echo -e "\nbenchmark: for details consider '$PWD/$OUTPUTFILE'\n" >> $LOGFILE
   nail -s "$STATUS" $MAILADDRESS < $LOGFILE
   exit $1
 }
@@ -77,33 +78,33 @@ LIST=""
 if [ -f $FILE ] ; then
   GetList < $FILE
 else
-  echo -e "benchmark: reading from input file '$FILE' failed on `date`\n" >> $LOGFILE
-  echo -e "benchmark: reading from input file '$FILE' failed on `date`\n" >> $OUTPUTFILE
+  echo -e "benchmark: reading from input file '$FILE' failed" >> $LOGFILE
+  echo -e "benchmark: reading from input file '$FILE' failed\n" >> $OUTPUTFILE
   IO_ERROR=TRUE
   SendMail 1
 fi
 
-echo -e "updating current sherpa version from cvs {\n" >> $LOGFILE
+echo -en "updating current sherpa version from cvs ... " >> $LOGFILE
 echo -e "updating current sherpa version from cvs {\n" >> $OUTPUTFILE
 if ! cvs update >> $OUTPUTFILE 2>&1 ; then
-  echo -e "\n} update failed\n\nbenchmark: cvs update failed" >> $LOGFILE
+  echo -e "update failed\n\nbenchmark: cvs update failed" >> $LOGFILE
   echo -e "\n} update failed\n\nbenchmark: cvs update failed" >> $OUTPUTFILE
   CVS_ERROR=TRUE
   SendMail 2
 else 
-  echo -e "\n} finished update\n" >> $LOGFILE
+  echo -e "finished" >> $LOGFILE
   echo -e "\n} finished update\n" >> $OUTPUTFILE
 fi
 
-echo -e "compiling current sherpa version via '$COMPILECOMMAND' {\n" >> $LOGFILE
+echo -en "compiling current sherpa version via '$COMPILECOMMAND' ..." >> $LOGFILE
 echo -e "compiling current sherpa version via '$COMPILECOMMAND' {\n" >> $OUTPUTFILE
 if ! $COMPILECOMMAND >> $OUTPUTFILE 2>&1 ; then
-  echo -e "\n} compilation failed\n\nbenchmark: compilation failed" >> $LOGFILE
+  echo -e "failed\n\nbenchmark: compilation failed" >> $LOGFILE
   echo -e "\n} compilation failed\n\nbenchmark: compilation failed" >> $OUTPUTFILE
   COMPILE_ERROR=TRUE
   SendMail 3
 else 
-  echo -e "\n} finished compilation\n" >> $LOGFILE
+  echo -e "finished" >> $LOGFILE
   echo -e "\n} finished compilation\n" >> $OUTPUTFILE
 fi
 
@@ -113,7 +114,7 @@ for I in $LIST ; do
     echo "benchmark: setup directory '$I' is missing" >> $OUTPUTFILE
     SETUP_ERROR=TRUE
   else
-    echo -e "benchmark: benchmarking in '$I' {\n" >> $LOGFILE
+    echo -e "benchmark: benchmarking in '$I' ..." >> $LOGFILE
     echo -e "benchmark: benchmarking in '$I' {\n" >> $OUTPUTFILE
     cd $I
     BENCHMARK=""
@@ -152,12 +153,11 @@ for I in $LIST ; do
       fi
     done
     cd ..
-    echo -e "\n} benchmarking finished \n" >> $LOGFILE
+    echo -e "... finished" >> $LOGFILE
     echo -e "\n} benchmarking finished \n" >> $OUTPUTFILE
   fi
 done
 
-echo -e "\nbenchmark: for details consider '$PWD/$OUTPUTFILE'\n" >> $LOGFILE
 if [ ! "BENCHMARK_ERROR" = "TRUE" ] ; then
   SetStatus "Benchmarking succeeded "
 fi
