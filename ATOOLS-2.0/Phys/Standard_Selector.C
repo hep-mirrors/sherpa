@@ -470,9 +470,9 @@ void Angle_Selector::BuildCuts(Cut_Data * cuts)
     if (i==1) {
       for (int j=i+1;j<m_n;j++) {
 	cuts->cosmin[i][j] = cuts->cosmin[j][i] = 
-	  Max(cosmin[i][j],-cuts->cosmax[0][j]);
+	  Max(cuts->cosmin[i][j],-cuts->cosmax[0][j]);
 	cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
-	  Min(cosmax[i][j],-cuts->cosmin[0][j]);
+	  Min(cuts->cosmax[i][j],-cuts->cosmin[0][j]);
       }
     }
   }
