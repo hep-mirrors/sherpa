@@ -20,7 +20,7 @@ namespace ATOOLS {
   typedef std::map<int,std::pair<Particle *,bool> > Translation_Map;
 
   class HepEvt_Interface {
-    static bool     s_hadronized;
+    bool            m_hadronized;
     bool            m_io;
     int             m_mode;
     std::string     m_path, m_file;
@@ -93,8 +93,8 @@ namespace ATOOLS {
 
     bool Sherpa2HepEvt(ATOOLS::Blob_List * const);
     bool HepEvt2Sherpa(ATOOLS::Blob_List * const);
-    inline static void SetHadronized(const bool hadronized) { s_hadronized=hadronized; }
-    inline static bool Hadronized() { return s_hadronized; }
+    inline void SetHadronized(const bool hadronized) { m_hadronized=hadronized; }
+    inline bool Hadronized() const                   { return m_hadronized;     }
   };
 }
 
