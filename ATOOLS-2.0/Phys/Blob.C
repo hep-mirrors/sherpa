@@ -29,6 +29,14 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   }
 }
 
+std::ostream &ATOOLS::operator<<(std::ostream &str,const std::vector<double> &info)
+{
+  str<<"std::vector<double>: this = "<<&info<<" {\n";
+  for (size_t i=0;i<info.size();++i) str<<"   (*this)["<<i<<"] = "<<info[i]<<"\n";
+  str<<"}";
+  return str;
+}
+
 namespace ATOOLS {
   int Blob::s_totalnumber=0;
 }
@@ -166,7 +174,6 @@ Particle * Blob::RemoveOutParticle(Particle * _part,bool setit) {
   return NULL;
 }
 
-
 void Blob::DeleteInParticle(Particle * _part) {
   if (!_part) return;
   for (Particle_Vector::iterator part = m_inparticles.begin();
@@ -174,13 +181,11 @@ void Blob::DeleteInParticle(Particle * _part) {
     if ((*part)==_part) {
       m_inparticles.erase(part);
       if (_part->DecayBlob()==this) {
-	if (_part->ProductionBlob()!=NULL) {
-	  _part = _part->ProductionBlob()->RemoveOutParticle(_part);
-	}
+	if (_part->ProductionBlob()!=NULL) _part->ProductionBlob()->RemoveOutParticle(_part);
 	delete _part;
 	_part = NULL;
       }
-      //else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
       return ;
     }
   }
@@ -193,19 +198,15 @@ void Blob::DeleteOutParticle(Particle * _part) {
     if ((*part)==_part) {
       m_outparticles.erase(part);
       if (_part->ProductionBlob()==this) {
-	if (_part->DecayBlob()!=NULL) {
-	  _part = _part->DecayBlob()->RemoveInParticle(_part);
-	}
+	if (_part->DecayBlob()!=NULL) _part->DecayBlob()->RemoveInParticle(_part);
 	delete _part;
 	_part = NULL;
       }
-      //else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
       return ;
     }
   }
 }
-
-
 
 void Blob::DeleteOwnedParticles() {
   if (m_inparticles.empty() && m_outparticles.empty()) return;
@@ -336,18 +337,21 @@ template size_t Blob_Data_Base::Get<size_t>();
 template long Blob_Data_Base::Get<long>();
 template double Blob_Data_Base::Get<double>();
 template std::string Blob_Data_Base::Get<std::string>();
+template std::vector<double> Blob_Data_Base::Get<std::vector<double> >();
 
 template void Blob_Data_Base::Set<int>(const int &data);
 template void Blob_Data_Base::Set<size_t>(const size_t &data);
 template void Blob_Data_Base::Set<long>(const long &data);
 template void Blob_Data_Base::Set<double>(const double &data);
 template void Blob_Data_Base::Set<std::string>(const std::string &data);
+template void Blob_Data_Base::Set<std::vector<double> >(const std::vector<double> &data);
 
 template class Blob_Data<int>;
 template class Blob_Data<size_t>;
 template class Blob_Data<long>;
 template class Blob_Data<double>;
 template class Blob_Data<std::string>;
+template class Blob_Data<std::vector<double> >;
 
 void Blob::SwapInParticles(const size_t i, const size_t j) 
 {
@@ -366,3 +370,5 @@ void Blob::SwapOutParticles(const size_t i, const size_t j)
     m_outparticles[i]=help;
   }
 }
+
+

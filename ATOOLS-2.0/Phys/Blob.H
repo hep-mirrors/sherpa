@@ -169,6 +169,8 @@ namespace ATOOLS {
     return ((Blob_Data<Type>*)this)->Set(data);
   }
 
+  std::ostream &operator<<(std::ostream &str,const std::vector<double> &info);
+
   /*!
     \file 
     \brief  contains the class Blob
