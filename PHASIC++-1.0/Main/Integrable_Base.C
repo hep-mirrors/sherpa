@@ -317,21 +317,6 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
       }
     }
     break;
-  case 22 :
-    if (m_nin+m_nout==4) {
-      double t = (momenta[0]-momenta[2]).Abs2()-
-	(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
-      double u = (momenta[0]-momenta[3]).Abs2()-
-	(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
-      pt2 = 2.*s*t*u/(s*s+t*t+u*u);
-    }
-    else {
-      pt2 = 0.;
-      for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-	pt2 += ATOOLS::sqr(momenta[i][1])+ATOOLS::sqr(momenta[i][2]);
-      }
-    }
-    break;
   case 63 :
     if ((int)m_nout!=m_maxjetnumber) {
       pt2 = m_scale[stp::as];
