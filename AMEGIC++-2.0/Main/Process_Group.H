@@ -19,7 +19,7 @@ namespace AMEGIC {
   public :
     Process_Group(int,int,APHYTOOLS::Flavour *&,
 		  ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
-		  int,int,int,double,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
+		  int,int,int,int,int,double,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
     Process_Group();
     ~Process_Group();
     /*------------------------------------------------------------------------------
@@ -31,6 +31,7 @@ namespace AMEGIC {
     void           ConstructProcesses(APHYTOOLS::Selector_Data *);
     void           GroupProcesses();
   public :
+    bool           Find(std::string,Process_Base *&);
     void           Add(Process_Base *);
     void           SelectOne();
     void           DeSelect();
@@ -62,10 +63,11 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    bool           CalculateTotalXSec();
+    bool           CalculateTotalXSec(std::string _resdir=std::string(""));
     bool           LookUpXSec(double,bool,std::string);
     void           RescaleXSec(double);
     bool           PrepareXSecTables();
+    void           WriteOutXSecs(ofstream &);
     void           AddPoint(const double value); 
     double         Differential(AMATOOLS::Vec4D *);
     double         Differential2();

@@ -116,13 +116,13 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
 
   ----------------------------------------------------------------------------------*/
 
-bool All_Processes::CalculateTotalXSec()
+bool All_Processes::CalculateTotalXSec(string _resdir)
 {
   bool okay = 1;
   for (int i=0;i<m_procs.size();i++) {
     msg.Tracking()<<"All_Processes::CalculateTotalXSec for "<<m_procs[i]->Name()<<endl;
-    if (!(m_procs[i]->CalculateTotalXSec())) okay = 0;
-                                      else m_totalxs += m_procs[i]->Total();
+    if (!(m_procs[i]->CalculateTotalXSec(_resdir))) okay = 0;
+                                               else m_totalxs += m_procs[i]->Total();
   }
   return okay;
 }

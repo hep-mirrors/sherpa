@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "Phase_Space_Generator.H"
 #include "Channel_Generator.H"
+#include "Process_Base.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 

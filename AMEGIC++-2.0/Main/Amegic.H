@@ -22,7 +22,7 @@ namespace AMEGIC {
     std::string                  m_path,m_file;
     std::string                  m_respath,m_resfile;
 
-    int                          m_nmax,m_count;
+    int                          m_nmax,m_count,m_maxjet;
 
     All_Processes              * p_procs;
     Interaction_Model_Base     * p_model;
@@ -42,14 +42,33 @@ namespace AMEGIC {
   public :
     Amegic(std::string,std::string,MODEL::Model_Base * _model);
     ~Amegic();
-    bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
-    bool CalculateTotalXSec();
-    bool PrepareXSecTables();
-    bool LookUpXSec(double,bool,std::string);
+    bool        InitializeProcesses(BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
+    bool        CalculateTotalXSec(std::string _resdir=std::string(""));
+    void        SetResDir(std::string);
+
+    bool        UnweightedEvent();
+    bool        WeightedEvent();
+    bool        SameEvent();
+    Process_Base       * GetProcess()       { return p_procs->Selected(); }
+    std::string          ProcessName()      { return p_procs->Selected()->Name(); }
+    int                  Nin()              { return p_procs->Selected()->Nin(); }
+    int                  Nout()             { return p_procs->Selected()->Nout(); }
+    APHYTOOLS::Flavour * Flavs()            { return p_procs->Selected()->Flavs(); }
+    AMATOOLS::Vec4D    * Momenta()          { return p_procs->Selected()->Momenta(); }
+    int                  NumberOfDiagrams() { return p_procs->Selected()->NumberOfDiagrams(); }
+    AMEGIC::Point      * Diagram(int _diag) { return p_procs->Selected()->Diagram(_diag); }
+    int                  MaxJets()          { return m_maxjet; }
+
+
     void SingleEvents();
-    void           FifoOutput(double = 1.0) ;
+    void FifoOutput(double = 1.0) ;
+
     //!The decay tables of all unstable particles are calculated
     void DecCalc(); 
+
+    // not used right now !!!
+    bool        LookUpXSec(double,bool,std::string);
+    bool        PrepareXSecTables();
  };
 }
 

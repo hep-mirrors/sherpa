@@ -28,7 +28,7 @@ using namespace std;
   ----------------------------------------------------------------------------------*/
 
 Process_Group::Process_Group() :
-  Process_Base(0,0,NULL,NULL,NULL,0,0,0,0.)
+  Process_Base(0,0,NULL,NULL,NULL,0,0,0,0,0,0.)
 { 
   m_name  = "Empty_Group"; 
   p_fl    = 0;
@@ -45,9 +45,11 @@ Process_Group::Process_Group() :
 
 Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 			     ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
-			     int _gen_str,int _kfactorscheme,int _scalescheme,double _scalefactor,
+			     int _gen_str,int _orderQCD, int _orderEW,
+			     int _kfactorscheme,int _scalescheme,double _scalefactor,
 			     Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
-  Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_scalescheme,_kfactorscheme,_scalefactor,_pl,_nex,_ex_fl)
+  Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
+	       _scalescheme,_kfactorscheme,_scalefactor,_pl,_nex,_ex_fl)
 {
   p_selected  = NULL;
 
@@ -115,6 +117,10 @@ void Process_Group::ConstructProcesses(APHYTOOLS::Selector_Data * _seldata) {
   _fl     = new Flavour[m_nin+m_nout];
   _pl     = new Pol_Info[m_nin+m_nout];
 
+  msg.Debugging()<<"Construct processes : "
+		 <<p_flin[0].Size()<<" "<<p_flin[1].Size()<<" "<<p_flout[0].Size()<<" "<<p_flout[1].Size()<<endl;
+  for (int i=0;i<p_flin[0].Size();i++) msg.Debugging()<<i<<" : "<<p_flin[0][i]<<endl;
+
   string _name,_stan,_oli;
   bool flag = 1;
   bool take,overflow;
@@ -139,13 +145,13 @@ void Process_Group::ConstructProcesses(APHYTOOLS::Selector_Data * _seldata) {
       if (CheckExternalFlavours(m_nin,_flin,m_nout,_flout)) {
 	for (int i=0;i<m_nin;i++)  { _fl[i]       = _flin[i];  _pl[i]       = _plin[i];  }
 	for (int i=0;i<m_nout;i++) { _fl[i+m_nin] = _flout[i]; _pl[i+m_nin] = _plout[i]; } 
-	Add(new Single_Process(m_nin,m_nout,_fl,p_isr,p_beam,_seldata,
-			       m_gen_str,m_kfactorscheme,m_scalescheme,m_scalefactor,p_pl,m_nex,p_ex_fl));
+	Add(new Single_Process(m_nin,m_nout,_fl,p_isr,p_beam,_seldata,m_gen_str,m_orderQCD,m_orderEW,
+			       m_kfactorscheme,m_scalescheme,m_scalefactor,p_pl,m_nex,p_ex_fl));
       }
     }
     overflow = 0;
     for (int i=1;i<m_nout+1;i++) {
-      if (p_flout[m_nout-i].Size()-1 > flindex[m_nin+m_nout-i]) {
+      if (p_flout[m_nout-i].Size()-1>flindex[m_nin+m_nout-i]) {
 	flindex[m_nin+m_nout-i] = flindex[m_nin+m_nout-i]+1; 
 	break;
       }
@@ -157,7 +163,7 @@ void Process_Group::ConstructProcesses(APHYTOOLS::Selector_Data * _seldata) {
     if (overflow) {
       overflow = 0;
       for (int i=1;i<m_nin+1;i++) {
-	if (p_flin[m_nin-i].Size()-1 > flindex[m_nin-i]) {
+	if (p_flin[m_nin-i].Size()-1>flindex[m_nin-i]) {
 	  flindex[m_nin-i] = flindex[m_nin-i]+1; 
 	  break;
 	}
@@ -237,46 +243,46 @@ void Process_Group::GroupProcesses() {
       flav2    = sproc->Flavs()[1]; 
       if ( (flav1.IsVector()) && (flav2.IsVector()) ) {
 	if ( (flav1.Bar() == flav1) && (flav2.Bar() == flav2) ) {
-	  if (flav1 == flav2) help += string("V V -> ");
-	                 else help += string("V V' -> ");
+	  if (flav1 == flav2) help += string("V_V_->_");
+	                 else help += string("V_V'_->_");
 	}
 	else if (flav1.Bar() == flav1) { 
-	  if (flav2.Charge() > 0) help += string("V0 V+ -> "); 
-	                     else help += string("V0 V- -> "); 
+	  if (flav2.Charge() > 0) help += string("V0_V+_->_"); 
+	                     else help += string("V0_V-_->_"); 
 	}
 	else if (flav2.Bar() == flav2) { 
-	  if (flav1.Charge() > 0) help += string("V+ V0 -> "); 
-	                     else help += string("V- V0 -> "); 
+	  if (flav1.Charge() > 0) help += string("V+_V0_->_"); 
+	                     else help += string("V-_V0_->_"); 
 	}
 	else {
-	  if (flav1.Charge() > 0) help += string("V+ "); 
-	                     else help += string("V- "); 
-	  if (flav2.Charge() > 0) help += string("V+ -> "); 
-	                     else help += string("V- -> "); 
+	  if (flav1.Charge() > 0) help += string("V+_"); 
+	                     else help += string("V-_"); 
+	  if (flav2.Charge() > 0) help += string("V+_->_"); 
+	                     else help += string("V-_->_"); 
 	}
       }
       else if ( (flav1.IsFermion()) && (flav2.IsVector()) ) {
-	if (flav1.IsAnti())          help += string("fb ");
-	                        else help += string("f ");
-	if (flav2==flav2.Bar())      help += string("V -> ");
-	else if (flav2.Charge() > 0) help += string("V+ -> "); 
-	                        else help += string("V- -> "); 
+	if (flav1.IsAnti())          help += string("fb_");
+	                        else help += string("f_");
+	if (flav2==flav2.Bar())      help += string("V_->_");
+	else if (flav2.Charge() > 0) help += string("V+_->_"); 
+	                        else help += string("V-_->_"); 
       }
       else if ( (flav1.IsVector()) && (flav2.IsFermion()) ) {
-	if (flav1==flav1.Bar())      help += string("V ");
-	else if (flav1.Charge() > 0) help += string("V+ "); 
-	                        else help += string("V- "); 
-	if (flav2.IsAnti())          help += string("fb -> ");
-	                        else help += string("f -> ");
+	if (flav1==flav1.Bar())      help += string("V_");
+	else if (flav1.Charge() > 0) help += string("V+_"); 
+	                        else help += string("V-_"); 
+	if (flav2.IsAnti())          help += string("fb_->_");
+	                        else help += string("f_->_");
       }
       else if ( (flav1.IsFermion()) && (flav2.IsFermion()) ) {
-	if ( (flav1.IsAnti()) && (flav2==flav1) )             help += string ("fb fb -> ");
-	else if ( !(flav1.IsAnti()) && (flav2==flav1) )       help += string ("f f -> ");
-	else if ( !(flav1.IsAnti()) && (flav2==flav1.Bar()) ) help += string ("f fb -> ");
-	else if ( (flav1.IsAnti()) && (flav2.IsAnti()) )      help += string ("fb fb' -> ");
-	else if ( !(flav1.IsAnti()) && (flav2.IsAnti()) )     help += string ("fb f' -> ");
-	else if ( (flav1.IsAnti()) && !(flav2.IsAnti()) )     help += string ("f fb' -> ");
-	else if ( !(flav1.IsAnti()) && !(flav2.IsAnti()) )    help += string ("f f' -> ");
+	if ( (flav1.IsAnti()) && (flav2==flav1) )             help += string ("fb_fb_->_");
+	else if ( !(flav1.IsAnti()) && (flav2==flav1) )       help += string ("f_f_->_");
+	else if ( !(flav1.IsAnti()) && (flav2==flav1.Bar()) ) help += string ("f_fb_->_");
+	else if ( (flav1.IsAnti()) && (flav2.IsAnti()) )      help += string ("fb_fb'_->_");
+	else if ( !(flav1.IsAnti()) && (flav2.IsAnti()) )     help += string ("fb_f'_->_");
+	else if ( (flav1.IsAnti()) && !(flav2.IsAnti()) )     help += string ("f_fb'_->_");
+	else if ( !(flav1.IsAnti()) && !(flav2.IsAnti()) )    help += string ("f_f'_->_");
       }
     }
     else {
@@ -292,9 +298,9 @@ void Process_Group::GroupProcesses() {
     }
     char numb[20];
     sprintf(numb,"%i",scalars);
-    help += string(numb) + string("S ");
+    help += string(numb) + string("S_");
     sprintf(numb,"%i",fermions);
-    help += string(numb) + string("F ");
+    help += string(numb) + string("F_");
     sprintf(numb,"%i",vectors);
     help += string(numb) + string("V");
 
@@ -350,6 +356,24 @@ void Process_Group::Add(Process_Base * _proc)
   m_procs.push_back(_proc);
 }
 
+bool Process_Group::Find(string _name,Process_Base *& _proc) 
+{
+  if (m_name==_name) {
+    _proc = this;
+    return 1;
+  }
+  for (int i=0;i<m_procs.size();i++) {
+    if (m_procs[i]->Find(_name,_proc)) return 1;
+  }
+  return 0;
+}
+
+void Process_Group::WriteOutXSecs(ofstream & _to)
+{
+  msg.Debugging()<<"Write out xsec for "<<m_name<<endl;
+  _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl;
+  for (int i=0;i<m_procs.size();i++) m_procs[i]->WriteOutXSecs(_to);
+}
 
 
 void Process_Group::SelectOne()
@@ -357,20 +381,41 @@ void Process_Group::SelectOne()
   DeSelect();
   if (m_totalxs==0) p_selected = m_procs[int(ran.Get()*m_procs.size())];
   else {
-    double disc = m_max * ran.Get();
-    for (int i=0;i<m_procs.size();i++) {
-      disc -= m_procs[i]->Max();
-      if (disc<0.) {
-	p_selected = m_procs[i];
-	msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
-	p_selected->SelectOne();
+    double disc;
+    if (m_atoms) {
+      // select according to total xsecs.
+      disc = m_totalxs * ran.Get();
+      for (int i=0;i<m_procs.size();i++) {
+	disc -= m_procs[i]->Total();
+	if (disc<0.) {
+	  p_selected = m_procs[i];
+	  //msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
+	  p_selected->SelectOne();
+	  return;
+	}
+      }
+      if (disc>0.) { 
+	msg.Error()<<"Error in Process_Group::SelectOne() : ";
+	msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
 	return;
       }
     }
-    if (disc>0.) { 
-      msg.Error()<<"Error in Process_Group::SelectOne() : ";
-      msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
-      return;
+    else {
+      disc = m_max * ran.Get();
+      for (int i=0;i<m_procs.size();i++) {
+	disc -= m_procs[i]->Max();
+	if (disc<0.) {
+	  p_selected = m_procs[i];
+	  //msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
+	  p_selected->SelectOne();
+	  return;
+	}
+      }
+      if (disc>0.) { 
+	msg.Error()<<"Error in Process_Group::SelectOne() : ";
+	msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	return;
+      }
     }
   }
 }
@@ -549,18 +594,66 @@ void Process_Group::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Bas
 
   ----------------------------------------------------------------------------------*/
 
-bool Process_Group::CalculateTotalXSec()
+bool Process_Group::CalculateTotalXSec(std::string _resdir)
 {
-  msg.Tracking()<<"Process_Group::CalculateTotalXSec()"<<endl;
+  msg.Tracking()<<"Process_Group::CalculateTotalXSec("<<_resdir<<")"<<endl;
   if (m_atoms) {
     bool okay = 1;
     for (int i=0;i<m_procs.size();i++) {
       msg.Tracking()<<"Process_Group::CalculateTotalXSec for "<<m_procs[i]->Name()<<endl;
-      if (!(m_procs[i]->CalculateTotalXSec())) okay = 0;
+      if (!(m_procs[i]->CalculateTotalXSec(_resdir))) okay = 0;
     }
     return okay;
   }
   else {
+    char filename[100];
+    sprintf(filename,"%s.xstotal",(_resdir+string("/")+m_name).c_str());
+    string _name;
+    double _totalxs,_totalerr,_max;
+    if (_resdir!=string("")) {
+      if (IsFile(filename)) {
+	ifstream from;
+	bool okay=1;
+	from.open(filename);
+	while (from) {
+	  from>>_name>>_totalxs>>_max>>_totalerr;
+	  msg.Events()<<"Found result : xs for "<<_name<<" : "
+		      <<_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+		      <<" +/- "<<_totalerr/_totalxs*100.<<"%,"<<endl
+		      <<"       max : "<<_max<<endl;
+	  Process_Base * _proc = NULL;
+	  if (Find(_name,_proc)) {
+	    msg.Debugging()<<"Set... ";
+	    _proc->SetTotal(_totalxs);
+	    _proc->SetMax(_max);
+	    msg.Debugging()<<"... done"<<endl;
+	  }
+	  else {
+	    msg.Debugging()<<"########################################"<<endl
+			   <<"  Did not find "<<_name<<" in group."<<endl;
+	    okay = 0;
+	  }
+	}
+	from.close();
+	p_ps->ReadIn(_resdir+string("/MC_")+m_name);
+	if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
+	if (p_ps->ISRIntegrator() != 0)  p_ps->ISRIntegrator()->Print();
+	if (p_ps->FSRIntegrator() != 0)  p_ps->FSRIntegrator()->Print();
+	if (m_totalxs>0.) {
+	  if (okay) {
+	    msg.Events()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
+			<<"   Found all xsecs. Continue"<<endl;
+	    return 1;
+	  }
+	}
+	else {
+	  msg.Error()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
+		     <<"   Something went wrong : Negative xsec : "<<m_totalxs<<endl;
+	  return 0;
+	}
+      }
+    }
+
     if (m_nin==2) {
       if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
 	   (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
@@ -569,15 +662,28 @@ bool Process_Group::CalculateTotalXSec()
     m_tables  = 0;
     msg.Debugging()<<"In Process_Group::CalculateTotalXSec : "<<p_beam->On()<<":"<<p_isr->On()<<endl
 		   <<"   "<<p_isr->SprimeMin()<<" ... "<<p_isr->SprimeMax()<<" ... "<<p_isr->Pole()<<endl;
-
-
+    
+    
     m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
     if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
     SetTotalXS(0);
-    if (m_totalxs>0.) return 1;
+    if (m_totalxs>0.) {
+      if (_resdir!=string("")) {
+	ofstream to;
+	to.open(filename,ios::out);
+	msg.Events()<<"Store result : xs for "<<m_name<<" : "
+		    <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+		    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+		    <<"       max : "<<m_max<<endl;
+	WriteOutXSecs(to);
+	p_ps->WriteOut(_resdir+string("/MC_")+m_name);
+	to.close();
+      }
+      return 1;
+    }
   }
   return 0;
 }
@@ -613,9 +719,9 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 		  <<" : "<<endl<<"   "<<m_totalxs<<" / "<<m_max<<endl;
 
       p_ps->ReadIn(m_resdir+string("/MC_")+m_name);
-      //if (p_ps->BeamIntegrator() != 0) ps->BeamIntegrator()->Print();
-      //if (p_ps->ISRIntegrator() != 0)  ps->ISRIntegrator()->Print();
-      //if (p_ps->FSRIntegrator() != 0)  ps->FSRIntegrator()->Print();
+      if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
+      if (p_ps->ISRIntegrator() != 0)  p_ps->ISRIntegrator()->Print();
+      if (p_ps->FSRIntegrator() != 0)  p_ps->FSRIntegrator()->Print();
       return 1;
     }
     if (calc) {
@@ -630,7 +736,7 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 	  m_totalxs += m_procs[i]->Total();
 	  m_max     += m_procs[i]->Max();
 	}
-	msg.Tracking()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
+	msg.Out()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
 		    <<" : "<<endl<<"   "<<m_totalxs<<" / "<<m_max<<endl;
 	return 1;
       }
@@ -638,8 +744,6 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
     return 0;
   }
 }
-
-
 
 bool Process_Group::PrepareXSecTables()
 {

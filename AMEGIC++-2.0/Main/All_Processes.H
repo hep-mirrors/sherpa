@@ -17,7 +17,7 @@ namespace AMEGIC {
     void SelectOne();
     void RescaleXSec(double);
 
-    bool CalculateTotalXSec();
+    bool CalculateTotalXSec(std::string _resdir=std::string(""));
     bool OneEvent();
     bool SameEvent();
 

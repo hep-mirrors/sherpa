@@ -38,9 +38,11 @@ int fak(int N)
 
 Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
-			       int _gen_str,int _kfactorscheme, int _scalescheme,double _scalefactor,
+			       int _gen_str,int _orderQCD, int _orderEW,
+			       int _kfactorscheme, int _scalescheme,double _scalefactor,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
-  Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_scalescheme,_kfactorscheme,_scalefactor,_pl,_nex,_ex_fl),
+  Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
+	       _scalescheme,_kfactorscheme,_scalefactor,_pl,_nex,_ex_fl),
   p_partner(this)
 {
   GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,m_ptypename,m_libname);
@@ -64,70 +66,6 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 		<<"String handling : "<<m_gen_str<<endl;;
 }
 
-/*
-Single_Process::Single_Process(int _nin,int _nout,
-			       Flavour* _fl,Pol_Info * _pl,
-			       int _gen_str,int _runmode) 
-{
-  m_nin     = _nin; 
-  m_nout    = _nout; 
-  m_gen_str = _gen_str;
-  p_isr     = 0;
-  beam    = 0;
-
-  p_flin  = new Flavour[m_nin];
-  p_flout = new Flavour[m_nout];  
-  plin  = new Pol_Info[m_nin];
-  plout = new Pol_Info[m_nout]; 
-  for (short int i=0;i<m_nin;i++) {
-    p_flin[i]  = _fl[i];
-    if (_pl!=0) plin[i] = _pl[i];
-           else plin[i] = Pol_Info(p_flin[i]); 
-
-  }
-  for (short int i=0;i<m_nout;i++) { 
-    p_flout[i] = _fl[i+m_nin]; 
-    if (_pl!=0) plout[i] = _pl[i+m_nin];
-           else plout[i] = Pol_Info(p_flout[i]); 
-  }
-
-  nstrong = 0;
-  neweak  = 0;
-  for (int i=0;i<m_nin;i++) {
-    if (p_flin[i].Strong())      nstrong++;
-    if (p_flin[i].IntCharge()!=0)  neweak++;
-  }
-  for (int i=0;i<m_nout;i++) {
-    if (p_flout[i].Strong())     nstrong++;
-    if (p_flout[i].IntCharge()!=0) neweak++;
-  }
-
- xsflag = 0;
-  if (_runmode!=AMPLITUDE_MODE) {
-    if ((xsflag = FindXS()) != 0) {
-      msg.Debugging()<<"In Single_Process : xs is available as fast function "<<std::endl;
-    }
-    if ((_runmode==XS_MODE) && (xsflag == 0)) {
-      msg.Debugging()<<"Error in Single_Process : xs not available as fast function ! "<<std::endl
-		     <<"                          Delete this process ! "<<std::endl;
-      return;
-    }
-  }
-
-  GenerateNames(m_nin,p_flin,plin,m_nout,p_flout,plout,m_name,m_ptypename,m_libname);
-  PolarizationNorm();
-  //Initialize();
-
-  // making directory
-  int  mode_dir = 448;
-
-  mkdir((string("Process/")+m_ptypename).c_str(),mode_dir); 
-
-  msg.Tracking()<<"Initialized Single_Process : "<<m_name
-		<<", "<<m_nvec<<", 1/norm = "<<1./m_Norm<<endl;
-
-}
-*/
 
 Single_Process::~Single_Process()
 {
@@ -218,7 +156,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     msg.Debugging()<<"Init moms : "<<_testmoms<<" : "<<m_nin+m_nout<<endl;
     _testmoms = new Vec4D[m_nvec];
     p_ps->TestPoint(_testmoms);
-    for (int i=0;i<m_nin+m_nout;i++) msg.Debugging()<<i<<" th mom : "<<_testmoms[i]<<" ("<<_testmoms[i].Abs2()<<")"<<endl;
+    for (int i=0;i<m_nin+m_nout;i++)
+      msg.Debugging()<<i<<" th mom : "<<_testmoms[i]<<" ("<<_testmoms[i].Abs2()<<")"<<endl;
   }
   if (p_moms) { delete [] p_moms; }
   p_moms = new Vec4D[m_nvec]; 
@@ -229,7 +168,8 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvec,p_fl,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS);
 
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,&m_pol,model,top,p_BS,p_shand,m_ptypename+string("/")+m_name);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,&m_pol,model,top,m_orderQCD,m_orderEW,
+				   p_BS,p_shand,m_ptypename+string("/")+m_name);
   if (p_ampl->GetGraphNumber()==0) {
     msg.Error()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
@@ -654,16 +594,6 @@ bool Single_Process::FoundMappingFile(std::string & tempname) {
   return 0;
 }
 
-bool Single_Process::IsFile(string filename)
-{
-  msg.Debugging()<<"Check for "<<filename<<endl;
-  ifstream from;
-  bool     hit = 0;
-  from.open(filename.c_str());
-  if (from) hit = 1;
-  from.close();
-  return hit;
-}
 
 void Single_Process::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *> _obs) {
   p_analysis = new APHYTOOLS::Primitive_Analysis(this->Name());
@@ -698,6 +628,7 @@ bool Single_Process::CreateChannelLibrary()
   msg.Tracking()<<"Creating Multichannel for phasespace integration for "<<m_name<<endl;
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
+  msg.Tracking()<<"Try to Construct("<<p_ps<<"->"<<p_ps->FSRIntegrator()<<","<<m_ptypename<<","<<m_libname<<")"<<endl;
   if (m_nin>1)  newch = p_psgen->Construct(p_ps->FSRIntegrator(),m_ptypename,m_libname,p_fl,this); 
 
   if (newch) {
@@ -737,16 +668,16 @@ void Single_Process::SetTotalXS(int _tables)  {
   m_totalerr = sqrt( (m_totalsumsqr/m_n - 
 		    (AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1)) )  / m_n); 
   if (m_nin==2) {
-  AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
-			 <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
-			 <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-			 <<"       max : "<<m_max<<endl;
+    AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
+			   <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+			   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+			   <<"       max : "<<m_max<<endl;
   }
   if (m_nin==1) {
-  AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
-			 <<m_totalxs<<" GeV"
-			 <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-			 <<"       max : "<<m_max<<endl;
+    AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
+			   <<m_totalxs<<" GeV"
+			   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+			   <<"       max : "<<m_max<<endl;
  
   }
 }
@@ -757,10 +688,32 @@ void Single_Process::SetTotalXS(int _tables)  {
   
   ------------------------------------------------------------------------------*/
 
-bool Single_Process::CalculateTotalXSec() { 
-  msg.Events()<<"In Single_Process::CalculateTotalXSec() for "<<m_name<<endl; 
+bool Single_Process::CalculateTotalXSec(std::string _resdir) { 
+  msg.Events()<<"In Single_Process::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
   
-  
+  string _name;
+  double _totalxs,_totalerr,_max;
+  char filename[100];
+  sprintf(filename,"%s.xstotal",(_resdir+string("/")+m_name).c_str());
+  if (_resdir!=string("")) {
+    if (IsFile(filename)) {
+      ifstream from;
+      from.open(filename,ios::in);
+      from>>_name>>_totalxs>>_totalerr>>_max;
+      if (_name==m_name) {
+	m_totalxs  = _totalxs;
+	m_totalerr = _totalerr; 
+	m_max      = _max;
+      }
+      msg.Events()<<"Found result : xs for "<<m_name<<" : "
+		  <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+		  <<"       max : "<<m_max<<endl;
+      from.close();
+      if (m_totalxs>0.) return 1;
+      return 0;
+    }
+  }
   m_totalxs = p_ps->Integrate();
   if (m_nin==2) m_totalxs /= AORGTOOLS::rpa.Picobarn();
   if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
@@ -768,7 +721,34 @@ bool Single_Process::CalculateTotalXSec() {
 	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
   SetTotalXS(0);
-  if (m_totalxs>0.) return 1;
+  if (m_totalxs>0.) {
+    if (_resdir!=string("")) {
+      ofstream to;
+      to.open(filename,ios::out);
+      WriteOutXSecs(to);
+      msg.Events()<<"Store result : xs for "<<m_name<<" : "
+		  <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+		  <<"       max : "<<m_max<<endl;
+      to.close();
+    }
+    return 1;
+  }
+  return 0;      
+}
+
+void Single_Process::WriteOutXSecs(ofstream & _to)    
+{ 
+  msg.Debugging()<<"Write out xsec for "<<m_name<<endl;
+  _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl; 
+}
+
+bool Single_Process::Find(std::string _name,Process_Base *& _proc)  
+{ 
+  if (_name==m_name) {
+    _proc = this;
+    return 1;
+  }
   return 0;
 }
 
@@ -776,7 +756,7 @@ bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) {
   string filename = (m_resdir+string("/Tab")+m_name+string("/")+obs).c_str();
   if (IsFile(filename)) {
     Histogram * histo = new Histogram(filename);
-    double * res      = new double[histo->Depth()];
+    double    * res   = new double[histo->Depth()];
     histo->Extrapolate(ycut,res,1);
     m_totalxs = res[0];
     m_max     = res[1];
@@ -800,8 +780,6 @@ bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) {
   }
 }
 
-
-
 bool Single_Process::PrepareXSecTables() { 
   msg.Events()<<"In Single_Process::PrepareXSecTables() for "<<m_name<<endl; 
 
@@ -824,13 +802,6 @@ bool Single_Process::PrepareXSecTables() {
 }
 
 void Single_Process::AddPoint(const double value) {
-  if (rpa.gen.Debugging()) {
-    if (m_n<=10 || (m_n>=500000 && m_n<=500010)) {
-      msg.Debugging()<<"In Process_Base::AddPoint("<<value<<")"<<endl;  
-      msg.Out()<<" n        = "<<m_n<<endl;
-      msg.Out()<<" totalsum = "<<m_totalsum<<endl;
-    }
-  }
   m_n++;
   m_totalsum    += value;
   m_totalsumsqr += value*value;

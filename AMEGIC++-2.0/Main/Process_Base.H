@@ -8,6 +8,7 @@
 
 #include "Phase_Space_Handler.H"
 #include "Multi_Channel.H"
+#include "Integrable_Base.H"
 
 #include "Phase_Space_Generator.H"
 
@@ -26,9 +27,8 @@
 namespace AMEGIC {
   class Process_Base;
   class Single_Process;
-  class Phase_Space_Generator;
 
-  class Process_Base {
+  class Process_Base : public PHASIC::Integrable_Base {
   protected:
     std::string                      m_name, m_resdir;
     int                              m_gen_str;
@@ -44,7 +44,7 @@ namespace AMEGIC {
     double                           m_totalxs, m_totalerr, m_totalsum, m_totalsumsqr, m_max, m_rfactor;
     double                           m_last, m_lastdxs, m_lastlumi;
     int                              m_kfactorscheme,m_scalescheme;
-    int                              m_nstrong,m_neweak;
+    int                              m_orderQCD, m_orderEW,m_nstrong,m_neweak;
     double                           m_scale,m_scalefactor;
     double                           m_isrthreshold;
 
@@ -73,6 +73,7 @@ namespace AMEGIC {
 				 int,APHYTOOLS::Flavour *,Pol_Info *,
 				 std::string &,std::string &,std::string &);
     void           Reshuffle(int,APHYTOOLS::Flavour *,AMEGIC::Pol_Info *);
+    bool           IsFile(std::string);
     /*------------------------------------------------------------------------------
 
       Process initialization
@@ -82,7 +83,7 @@ namespace AMEGIC {
     Process_Base::Process_Base();
     Process_Base(int,int,APHYTOOLS::Flavour *,
 		 ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
-		 int,int,int,double,Pol_Info * _pl = 0,
+		 int,int,int,int,int,double,Pol_Info * _pl = 0,
 		 int _nex = 0,APHYTOOLS::Flavour * _ex_fl = 0);
     virtual ~Process_Base();
 
@@ -111,6 +112,8 @@ namespace AMEGIC {
     virtual void             SelectOne()                                           =0;
     virtual void             DeSelect()                                            =0;
     virtual void             Add(Process_Base *)                                   =0;
+    virtual bool             Find(std::string,Process_Base *&)                     =0;
+    virtual void             WriteOutXSecs(std::ofstream &)                        =0;
     virtual int              Size()                                                =0;
     virtual Process_Base  *  operator[] (int idx)                                  =0;
 
@@ -127,6 +130,7 @@ namespace AMEGIC {
     virtual void             SetTotalXS(int)                                       =0;
     virtual void             SetScale(double)                                      =0;
     virtual void             SetISRThreshold(double)                               =0;
+    virtual void             SetTotal(double);
     virtual void             SetMax(double);
 
 
@@ -135,7 +139,7 @@ namespace AMEGIC {
       Calculating total cross sections and single event generation
 
       ------------------------------------------------------------------------------*/
-    virtual bool   CalculateTotalXSec()                                            =0;
+    virtual bool   CalculateTotalXSec(std::string _resdir=std::string(""))         =0;
     virtual bool   LookUpXSec(double,bool,std::string)                             =0;
     virtual void   RescaleXSec(double);
     virtual bool   PrepareXSecTables()                                             =0;
@@ -194,6 +198,7 @@ namespace AMEGIC {
     virtual void                            BeamInfo(int,int &,double &,double &);
 
     virtual double                          Total();
+    virtual double                          TotalError();
     virtual double                          Max();
     virtual double                          Last();
     virtual double                          LastXS();

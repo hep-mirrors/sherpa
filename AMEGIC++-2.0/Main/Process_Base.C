@@ -30,7 +30,8 @@ Process_Base::Process_Base():
   m_atoms=1;
   m_analyse=m_tables=0;
 
-  m_n=m_kfactorscheme=m_scalescheme=m_nstrong=m_neweak=0;
+  m_n=m_kfactorscheme=m_scalescheme=0;
+  m_nstrong=m_neweak=m_orderQCD=m_orderEW=0;
   m_totalxs=m_totalerr=m_totalsum=m_totalsumsqr=m_max=0.;
   m_last=m_lastdxs=0.;
   m_lastlumi=1.;
@@ -42,10 +43,12 @@ Process_Base::Process_Base():
 
 Process_Base::Process_Base(int _nin,int _nout,APHYTOOLS::Flavour * _fl,
 			   ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
-			   int _gen_str,int _scalescheme,int _kfactorscheme,double _scalefactor,
+			   int _gen_str, int _orderQCD, int _orderEW,
+			   int _scalescheme,int _kfactorscheme,double _scalefactor,
 			   Pol_Info * _pl,
 			   int _nex,APHYTOOLS::Flavour * _ex_fl) :
   m_nin(_nin), m_nout(_nout), m_nvec(_nin+_nout), m_nex(_nex),m_gen_str(_gen_str),
+  m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
   p_isr(_isr), p_beam(_beam), p_cuts(NULL), p_analysis(NULL),
   p_selected(this), p_ex_fl(_ex_fl),p_moms(NULL), 
   m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),
@@ -62,8 +65,6 @@ Process_Base::Process_Base(int _nin,int _nout,APHYTOOLS::Flavour * _fl,
   p_pl = 0;
   p_ps = 0;
   p_sel = 0;
-  m_nstrong = 0;
-  m_neweak  = 0;
   
   AORGTOOLS::msg.Debugging()<<"In Process_Base: "<<_pl<<endl;
 
@@ -252,8 +253,8 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
 					 int _nout,Flavour * _out) {
   // first : sum over all invariants and compare
-  
-  std::cout<<"CheckExternalFlavours "<<_nin<<" / "<<_nout<<" "<<_in[0]<<" "<<_in[1]<<" "<<_out[0]<<" "<<_out[1]<<endl;
+  for (int i=0;i<_nin;i++)  { if (_in[i].Size()>1)  return 1; }
+  for (int i=0;i<_nout;i++) { if (_out[i].Size()>1) return 1; }
   
   int    cin  = 0, cout  = 0;
   int    sin  = 0, sout  = 0;
@@ -263,7 +264,6 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   int    lfin = 0, lfout = 0;  
   double bin  = 0, bout  = 0;
   for (int i=0;i<_nin;i++) {
-    std::cout<<"Hallo "<<endl;
     cin   += _in[i].IntCharge();
     sin   += _in[i].IntSpin();
     bin   += _in[i].BaryonNumber();
@@ -273,29 +273,28 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
     lfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].LeptonFamily()-1));
   }
   for (int i=0;i<_nout;i++) {
-    std::cout<<"Hossa"<<endl;
     cout  += _out[i].IntCharge();
     sout  += _out[i].IntSpin();
     bout  += _out[i].BaryonNumber();
     lout  += _out[i].LeptonNumber();
     qout  += _out[i].StrongCharge();
-    std::cout<<" Still alive "<<endl;
     qfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].QuarkFamily()-1));
     lfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].LeptonFamily()-1));
-    std::cout<<" Still alive (2) "<<endl;
   }
-  std::cout<<" Still alive (3) "<<endl;
   sin = sin%2; sout = sout%2;
   qin = qin%9; qout = qout%9;
 
-  AORGTOOLS::msg.Debugging()<<cin<<" <-> "<<cout<<"  "
-			    <<sin<<" <-> "<<sout<<"  "
-			    <<bin<<" <-> "<<bout<<"  "
-			    <<lin<<" <-> "<<lout<<"  "
-			    <<qin<<" <-> "<<qout<<"  "
-			    <<qfin<<" <-> "<<qfout<<"  "
-			    <<lfin<<" <-> "<<lfout<<endl;
-
+  /*
+    AORGTOOLS::msg.Debugging()<<"Check "<<_in[0]<<" "<<_in[1]<<" -> "
+    <<_out[0]<<" "<<_out[1]<<"  "
+    <<cin<<" <-> "<<cout<<"  "
+    <<sin<<" <-> "<<sout<<"  "
+    <<bin<<" <-> "<<bout<<"  "
+    <<lin<<" <-> "<<lout<<"  "
+    <<qin<<" <-> "<<qout<<"  "
+    <<qfin<<" <-> "<<qfout<<"  "
+    <<lfin<<" <-> "<<lfout<<endl;
+  */
 
   if (cin  != cout) return 0;    // electric charge violation
   if (sin  != sout) return 0;    // spin/fermion number violation
@@ -305,6 +304,17 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   if (qfin != qfout) return 0;   // quark family violation
   //if (lfin != lfout) return 0;   // lepton family violation
   return 1;
+}
+
+bool Process_Base::IsFile(string filename)
+{
+  AORGTOOLS::msg.Debugging()<<"Check for "<<filename<<endl;
+  ifstream from;
+  bool     hit = 0;
+  from.open(filename.c_str());
+  if (from) hit = 1;
+  from.close();
+  return hit;
 }
 
 /*------------------------------------------------------------------------------
@@ -435,6 +445,7 @@ void Process_Base::SetSelector(Selector_Base * _sel)    { p_sel     = _sel;    }
 void Process_Base::SetMomenta(AMATOOLS::Vec4D * _moms)  { p_moms    = _moms;   }
 void Process_Base::SetNStrong(int _nstrong)             { m_nstrong = _nstrong;}
 void Process_Base::SetNEWeak(int _neweak)               { m_neweak  = _neweak; }
+void Process_Base::SetTotal(double _total)              { m_totalxs = _total;  } 
 void Process_Base::SetMax(double _max)                  { m_max     = _max;    } 
 void Process_Base::SetScale(double _scale)              { m_scale   = _scale;  } 
 void Process_Base::SetISRThreshold(double _isrthreshold){ m_isrthreshold  = _isrthreshold;}
@@ -472,8 +483,8 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
     if (m_nin+m_nout==4) {
       double t = (_p[0]-_p[2]).Abs2();
       double u = (_p[0]-_p[3]).Abs2();
-      //pt2 = AMATOOLS::sqr(_p[2][1])+AMATOOLS::sqr(_p[2][2]);
-      pt2 = 2.*s*t*u/(s*s+t*t+u*u);
+      pt2 = AMATOOLS::sqr(_p[2][1])+AMATOOLS::sqr(_p[2][2]);
+      //pt2 = 2.*s*t*u/(s*s+t*t+u*u);
     }
     return pt2;
   case 2  :
@@ -526,6 +537,7 @@ Primitive_Analysis    * Process_Base::Analysis()                     { return p_
 Phase_Space_Generator * Process_Base::PSGenerator()                  { return p_psgen; }
 double                  Process_Base::Scale()                        { return m_scale;    }
 double                  Process_Base::Total()                        { return m_totalxs; }
+double                  Process_Base::TotalError()                   { return m_totalerr; }
 double                  Process_Base::Max()                          { return m_max; }
 double                  Process_Base::Last()                         { return m_last; }
 double                  Process_Base::LastXS()                       { return m_lastdxs; }

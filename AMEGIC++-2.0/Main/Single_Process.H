@@ -28,14 +28,9 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
 
-Single_Process(int,int,APHYTOOLS::Flavour *,
+    Single_Process(int,int,APHYTOOLS::Flavour *,
 		   ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
-		   int,int,int,double,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
-    /*
-    Single_Process(int,int,
-		   APHYTOOLS::Flavour*,Pol_Info* _plin=0,
-		   int _gen_str=1,int _runmode=0.){}
-    */
+		   int,int,int,int,int,double,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
     ~Single_Process();
 
     void Add(Process_Base *) {
@@ -61,7 +56,6 @@ Single_Process(int,int,APHYTOOLS::Flavour *,
     int            InitLibrary(double);
     void           CreateMappingFile();
     bool           FoundMappingFile(std::string &);
-    bool           IsFile(std::string);
     bool           CreateChannelLibrary();
   public:
     int            InitAmplitude(Interaction_Model_Base *,Topology *,AMATOOLS::Vec4D *&,
@@ -79,20 +73,22 @@ Single_Process(int,int,APHYTOOLS::Flavour *,
 
       ------------------------------------------------------------------------------*/
   public:
-    Process_Base   * Selected()                       { return this;          }
-    void             SelectOne()                      {                       }
-    void             DeSelect()                       {                       }
-    int              Size()                           { return 1;             }
-    Process_Base   * operator[] (int idx)             { return this;          }
-    std::string      LibName()                        { return m_libname;     }
+    Process_Base   * Selected()                         { return this;          }
+    void             SelectOne()                        {                       }
+    void             DeSelect()                         {                       }
+    int              Size()                             { return 1;             }
+    bool             Find(std::string,Process_Base *&);
+    void             WriteOutXSecs(ofstream & _to);
+    Process_Base   * operator[] (int idx)               { return this;          }
+    std::string      LibName()                          { return m_libname;     }
     //void             SetLibName(std::string _libname) { libname = _libname;   }
     void             SetTotalXS(int);
-    void             SetScale(double _sc)             { m_scale      = _sc;   }
+    void             SetScale(double _sc)               { m_scale      = _sc;   }
     void             FixISRThreshold();
-    void             SetISRThreshold(double _isrth)   { m_isrthreshold = _isrth;}
+    void             SetISRThreshold(double _isrth)     { m_isrthreshold = _isrth;}
     void             Empty();
-    void             SetPartner(Single_Process * _p)  { p_partner = _p;       }
-    Process_Base   * Partner()                        { return p_partner;     }
+    void             SetPartner(Single_Process * _p)    { p_partner = _p;       }
+    Process_Base   * Partner()                          { return p_partner;     }
 
     /*------------------------------------------------------------------------------
 
@@ -100,7 +96,7 @@ Single_Process(int,int,APHYTOOLS::Flavour *,
 
       ------------------------------------------------------------------------------*/
   public:
-    bool           CalculateTotalXSec();
+    bool           CalculateTotalXSec(std::string _resdir=std::string(""));
     bool           LookUpXSec(double,bool,std::string);
     bool           PrepareXSecTables();
     void           AddPoint(const double value); 

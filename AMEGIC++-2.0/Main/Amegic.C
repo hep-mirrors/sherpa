@@ -22,7 +22,7 @@ using namespace std;
   ----------------------------------------------------------------------------------*/
 
 Amegic::Amegic(std::string _path,std::string _file,MODEL::Model_Base * _model) :
-  m_path(_path), m_file(_file)
+  m_path(_path), m_file(_file), m_maxjet(0)
 {
   p_dataread         = new Data_Read(m_path+m_file);
   InitializeInteractionModel(_model);
@@ -36,8 +36,8 @@ Amegic::Amegic(std::string _path,std::string _file,MODEL::Model_Base * _model) :
  
 
 Amegic::~Amegic() {
-  if (p_dataread) { delete p_dataread; p_dataread = NULL;}
-  if (p_fifo)     { delete p_fifo;    p_fifo       = 0;  }
+  if (p_dataread) { delete p_dataread; p_dataread = NULL; }
+  if (p_fifo)     { delete p_fifo;     p_fifo     = 0;    }
 }
 
 
@@ -114,7 +114,7 @@ void Amegic::ReadInProcessfile(string file)
   m_nmax    = 0;
   char buffer[100];
 
-  int         flag,position;
+  int         flag,position,njets;
   string      buf,ini,fin;
   int         nIS,   nFS,    nex;
   Flavour   * IS,  * FS,   * excluded, * flavs;
@@ -138,28 +138,23 @@ void Amegic::ReadInProcessfile(string file)
 	  fin    = buf.substr(position+2);
 	  nIS    = ExtractFlavours(IS,plIS,ini);
 	  nFS    = ExtractFlavours(FS,plFS,fin);
-	  int jet_flag =0;
-	  
-	  /*
-	  for (int i=0;i<nIS;i++) {
-	    if (IS[i]==Flavour(kf::code(93)) || IS[i]==Flavour(kf::code(94)))
-	      jet_flag=1;
-	  }
-	  */
-	  cout<<"nis / nfs "<<nIS<<" "<<"-> "<<nFS<<endl; 
+	  njets  = 0;
+	  for (int i=0;i<nIS;i++)       { if (IS[i].Strong()) njets++; } 
+	  for (int i=nIS;i<nIS+nFS;i++) { if (FS[i].Strong()) njets++; } 
+	  if (njets>m_maxjet) m_maxjet = njets;
+
 	  if ((nIS< 1) || (nIS > 2)) {
 	    msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 		       <<"   Wrong number of partons in "<<string(buffer)<<endl;
 	    flag = 0;
 	  }
 	  if (nIS==2) {
-	    if (!(p_procs->CheckExternalFlavours(2,IS,nFS,FS)) && jet_flag==0) {
+	    if (!(p_procs->CheckExternalFlavours(2,IS,nFS,FS))) {
 	      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 			 <<"   Mismatch of flavours. Cannot initialize this process."<<endl
 			 <<"   flavours are "<<buf<<endl;
 	      flag = 0;
 	    }
-	    cout<<"Try CheckConsistency "<<endl;
 	    if (!(p_isr->CheckConsistency(IS))) {
 	      msg.Error()<<"Error in initialising ISR_Handler."<<endl
 			 <<" "<<p_isr->Flav(0)<<" -> "<<IS[0]<<", "
@@ -180,6 +175,8 @@ void Amegic::ReadInProcessfile(string file)
 	    scale_scheme   = _scale_scheme;
 	    scale_factor   = _scale_factor;
 	    kfactor_scheme = _kfactor_scheme;
+	    order_ew       = 99;
+	    order_strong   = 99;
 	    nex            = 0;
 	    do {
 	      from.getline(buffer,100);
@@ -270,9 +267,11 @@ void Amegic::ReadInProcessfile(string file)
 	    } 
 
 	    if (single) p_procs->Add(new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+							order_strong,order_ew,
 							kfactor_scheme,scale_scheme,scale_factor,
 							plavs,nex,excluded));
  	    else p_procs->Add(new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+						order_strong,order_ew,
 						kfactor_scheme,scale_scheme,scale_factor,
 						plavs,nex,excluded));
 	    delete [] flavs;
@@ -445,18 +444,20 @@ void Amegic::Shorten(std::string& str) {
   ----------------------------------------------------------------------------------*/
 
 
-bool Amegic::CalculateTotalXSec() {
-  return p_procs->CalculateTotalXSec();
+bool Amegic::CalculateTotalXSec(string _resdir) {
+  return p_procs->CalculateTotalXSec(_resdir);
+}
+
+void Amegic::SetResDir(string _respath) {
+  m_respath = _respath;
+  p_procs->SetResDir(_respath);
 }
 
 bool Amegic::LookUpXSec(double ycut,bool calc,string obs) {
-  p_procs->SetResDir(m_respath);
   return p_procs->LookUpXSec(ycut,calc,obs);
 }
 
-
 bool Amegic::PrepareXSecTables() {
-  p_procs->SetResDir(m_respath);
   return p_procs->PrepareXSecTables();
 }
 
@@ -494,6 +495,29 @@ void Amegic::FifoOutput(double wt)
     }
   }
   // "conti" or "endss"
+}
+
+
+bool Amegic::UnweightedEvent()
+{
+  if (p_procs->OneEvent()) {
+    msg.Debugging()<<"OneEvent for "<<p_procs->Name()<<" successful !"<<endl
+		   <<"    Selected "<<p_procs->Selected()->Name()<<" as subprocess."<<endl
+		   <<"    Found "<<p_procs->Selected()->NumberOfDiagrams()
+		   <<" Feynman diagrams."<<endl;
+    for (int j = 0;j<p_procs->Selected()->Nin(); j++) {
+      msg.Debugging()<<p_procs->Selected()->Flavs()[j]<<" : "
+		     <<p_procs->Selected()->Momenta()[j]<<endl;
+    }
+    msg.Debugging()<<"                      -> "<<endl;
+    for (int j = 0;j<p_procs->Selected()->Nout(); j++) {
+      msg.Debugging()<<p_procs->Selected()->Flavs()[j+p_procs->Selected()->Nin()]<<" : "
+		     <<p_procs->Selected()->Momenta()[j+p_procs->Selected()->Nin()]<<endl;
+    }
+    msg.Debugging()<<endl;
+    return 1;
+  }
+  return 0;
 }
 
 
