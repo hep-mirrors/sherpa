@@ -27,7 +27,7 @@ namespace PHASIC {
 
   class Phase_Space_Handler;
 
-  class Integrable_Base: public ATOOLS::Terminator_Base {
+  class Integrable_Base: public ATOOLS::Terminator_Object {
   protected:
 
     std::string m_name, m_resultpath, m_resultfile;

@@ -18,7 +18,7 @@ namespace EXTRAXS {
 
     XS_Selector *p_xsselector;
 
-    void Terminate();
+    void PrepareTerminate();
 
   public :
 

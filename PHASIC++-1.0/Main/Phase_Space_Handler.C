@@ -969,20 +969,23 @@ bool Phase_Space_Handler::CreateKMRChannels()
     case 0:
     case 1: channel = new Leading_Log_Z_QQ(m_zparams[i].parameters[0],
 					   m_zparams[i].parameters[1],"",p_info);
+      p_zchannels->Add(channel);
       if (m_zparams[i].type!=0) break;
     case 2: channel = new Leading_Log_Z_QG(m_zparams[i].parameters[0],
 					   m_zparams[i].parameters[1],"",p_info);
+      p_zchannels->Add(channel);
       if (m_zparams[i].type!=0) break;
     case 3: channel = new Leading_Log_Z_GQ(m_zparams[i].parameters[0],
 					   m_zparams[i].parameters[1],"",p_info);
+      p_zchannels->Add(channel);
       if (m_zparams[i].type!=0) break;
     case 4: channel = new Leading_Log_Z_GG(m_zparams[i].parameters[0],
 					   m_zparams[i].parameters[1],"",p_info);
+      p_zchannels->Add(channel);
       if (m_zparams[i].type!=0) break;
     default:
       break;
     }
-    p_zchannels->Add(channel);
   }
   for (size_t i=0;i<m_kpparams.size();++i) {
     channel = new LL_KPerp(m_kpparams[i].parameters[0],"",p_info);

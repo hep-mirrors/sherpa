@@ -78,10 +78,14 @@ void Leading_Log_Z_QG::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &y
   for (short int i=0;i<2;++i) {
     double zc=m_zkey[i][1]*m_cut, rc=(zc-m_zkey[i][0])/(m_zkey[i][1]-m_zkey[i][0]);
     if (rans[i]<rc) {
-      m_zkey[i][2]=CE.LLPropMomenta(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,rans[i]/rc);
+      double value=CE.LLPropMomenta(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,rans[i]/rc);
+      if (i==0) m_zkey[i][2]=value;
+      else m_zkey[i][2]=1.-value;
     }
     else {
-      m_zkey[i][2]=m_zkey[i][1]*(m_cut+(1.-m_cut)*(1.-rans[i])/(1.-rc));
+      double value=m_zkey[i][1]*(m_cut+(1.-m_cut)*(1.-rans[i])/(1.-rc));
+      if (i==0) m_zkey[i][2]=value;
+      else m_zkey[i][2]=1.-value;
     }
   }
 }
@@ -91,10 +95,12 @@ void Leading_Log_Z_QG::GenerateWeight(const int mode)
   weight=0.;
   for (short int i=0;i<2;++i) {
     if (m_zkey[i].Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-      if (m_zkey[i][2]>=m_zkey[i][0] && m_zkey[i][2]<=m_zkey[i][1]) {
+      double value=m_zkey[i][2];
+      if (i==1) value=1.-value;
+      if (value>=m_zkey[i][0] && value<=m_zkey[i][1]) {
 	double zc=m_zkey[i][1]*m_cut;
-	if (m_zkey[i][2]<zc) {
-	  m_zkey[i]<<1./CE.LLPropWeight(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,m_zkey[i][2]);
+	if (value<zc) {
+	  m_zkey[i]<<1./CE.LLPropWeight(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,value);
 	}
 	else {
 	  m_zkey[i]<<m_zkey[i][1]-zc;
@@ -129,10 +135,14 @@ void Leading_Log_Z_GQ::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &y
   for (short int i=0;i<2;++i) {
     double zc=m_zkey[i][1]*m_cut, rc=(zc-m_zkey[i][0])/(m_zkey[i][1]-m_zkey[i][0]);
     if (rans[i]<rc) {
-      m_zkey[i][2]=CE.LLPropMomenta(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,rans[i]/rc);
+      double value=CE.LLPropMomenta(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,rans[i]/rc);
+      if (i==1) m_zkey[i][2]=value;
+      else m_zkey[i][2]=1.-value;
     }
     else {
-      m_zkey[i][2]=m_zkey[i][1]*(m_cut+(1.-m_cut)*(1.-rans[i])/(1.-rc));
+      double value=m_zkey[i][1]*(m_cut+(1.-m_cut)*(1.-rans[i])/(1.-rc));
+      if (i==1) m_zkey[i][2]=value;
+      else m_zkey[i][2]=1.-value;
     }
   }
 }
@@ -142,10 +152,12 @@ void Leading_Log_Z_GQ::GenerateWeight(const int mode)
   weight=0.;
   for (short int i=0;i<2;++i) {
     if (m_zkey[i].Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-      if (m_zkey[i][2]>=m_zkey[i][0] && m_zkey[i][2]<=m_zkey[i][1]) {
+      double value=m_zkey[i][2];
+      if (i==0) value=1.-value;
+      if (value>=m_zkey[i][0] && value<=m_zkey[i][1]) {
 	double zc=m_zkey[i][1]*m_cut;
-	if (m_zkey[i][2]<zc) {
-	  m_zkey[i]<<1./CE.LLPropWeight(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,m_zkey[i][2]);
+	if (value<zc) {
+	  m_zkey[i]<<1./CE.LLPropWeight(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,value);
 	}
 	else {
 	  m_zkey[i]<<m_zkey[i][1]-zc;
@@ -180,10 +192,10 @@ void Leading_Log_Z_GG::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &y
   for (short int i=0;i<2;++i) {
     double zc=m_zkey[i][1]*m_cut, rc=(zc-m_zkey[i][0])/(m_zkey[i][1]-m_zkey[i][0]);
     if (rans[i]<rc) {
-      m_zkey[i][2]=CE.LLPropMomenta(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,rans[i]/rc);
+      m_zkey[i][2]=1.-CE.LLPropMomenta(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,rans[i]/rc);
     }
     else {
-      m_zkey[i][2]=m_zkey[i][1]*(m_cut+(1.-m_cut)*(1.-rans[i])/(1.-rc));
+      m_zkey[i][2]=1.-m_zkey[i][1]*(m_cut+(1.-m_cut)*(1.-rans[i])/(1.-rc));
     }
   }
 }
@@ -193,10 +205,11 @@ void Leading_Log_Z_GG::GenerateWeight(const int mode)
   weight=0.;
   for (short int i=0;i<2;++i) {
     if (m_zkey[i].Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-      if (m_zkey[i][2]>=m_zkey[i][0] && m_zkey[i][2]<=m_zkey[i][1]) {
+      double value=1.-m_zkey[i][2];
+      if (value>=m_zkey[i][0] && value<=m_zkey[i][1]) {
 	double zc=m_zkey[i][1]*m_cut;
-	if (m_zkey[i][2]<zc) {
-	  m_zkey[i]<<1./CE.LLPropWeight(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,m_zkey[i][2]);
+	if (value<zc) {
+	  m_zkey[i]<<1./CE.LLPropWeight(1.-m_beta,m_zkey[i][1],m_zkey[i][0],zc,value);
 	}
 	else {
 	  m_zkey[i]<<m_zkey[i][1]-zc;

@@ -187,7 +187,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     }
     m_resultpath=resultpath;
     m_resultfile=filename;
-    ATOOLS::Exception::AddObject(this);
+    ATOOLS::Exception_Handler::AddTerminatorObject(this);
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
@@ -208,15 +208,15 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	p_pshandler->WriteOut(resultpath+std::string("/MC_")+m_name);
 	to.close();
       }
-      ATOOLS::Exception::RemoveObject(this);
+      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
       return 1;
     }
-    ATOOLS::Exception::RemoveObject(this);
+    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
     return 0;
   }
 }
 
-void XS_Group::Terminate()  
+void XS_Group::PrepareTerminate()  
 {
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotalXS();
