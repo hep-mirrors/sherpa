@@ -22,6 +22,7 @@ namespace MODEL {
     str<<" as->["<<set.as_low<<","<<set.as_high<<"]";
     str<<" nf->"<<set.nf<<" lam2->"<<set.lambda2;
     str<<" bet0->"<<set.beta0;
+    return str;
   }
 
 }

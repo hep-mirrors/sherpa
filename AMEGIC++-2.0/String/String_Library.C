@@ -211,7 +211,7 @@ void String_Library::InitMakefile(string pathID)
     Replace(buf,string("/Dummy"),string("/")+pID);
     //Replace Makefile:
     Replace(buf,string("Makefile:"),string("Makefile.bla:"));
-    if (buf.find(string("depcomp"))==-1) to<<buf<<endl;
+    if (buf.find(string("depcomp"))==string::npos) to<<buf<<endl;
   }
   from.close();
   to.close();
@@ -261,7 +261,7 @@ void String_Library::InitMakefile(string pathID)
     string buf = string(buffer);
     int pos = buf.find(string("libProcess"));
     if (pos!=-1) {
-      if (buf.find(string("\\"))==-1) {
+      if (buf.find(string("\\"))==string::npos) {
 	//no backslash
 	to3<<buffer<<"\\"<<endl;
 	to3<<"\t"<<"${exec_prefix}/lib/libProc_"<<pID<<".la"<<endl; 
@@ -331,7 +331,7 @@ int String_Library::Search(string file,string search)
 
   for(;from;) {
     from.getline(buffer,buffersize);    
-    if (string(buffer).find(string(search))!=-1) {
+    if (string(buffer).find(string(search))!=string::npos) {
       from.close();
       return 1;
     }
@@ -375,7 +375,7 @@ void String_Library::AddToMakefile(string makefilename,string pathID,string file
   for(;from;) {
     from.getline(buffer,buffersize);
     if (string(buffer).find(lib+string("_la_SOURCES"))==0) {
-      if (string(buffer).find(string("\\"))==-1) {
+      if (string(buffer).find(string("\\"))==string::npos) {
 	//no backslash
 	to<<buffer<<"\\"<<endl;
 	to<<"\t"<<(fileID+string(".C")).c_str()<<endl; 
@@ -387,7 +387,7 @@ void String_Library::AddToMakefile(string makefilename,string pathID,string file
     }
     else {
       if (string(buffer).find(lib+string("_la_OBJECTS"))==0) {
-	if (string(buffer).find(string("\\"))==-1) {
+	if (string(buffer).find(string("\\"))==string::npos) {
 	  //no backslash
 	  to<<buffer<<"\\"<<endl;
 	  to<<"\t"<<(fileID+string(".lo")).c_str()<<endl; 
