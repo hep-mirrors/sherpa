@@ -174,8 +174,6 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
   }
   m_unintegrated*=(*p_alphas)(m_kperp2)/(2.0*M_PI);
   m_unintegrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2));
-  std::cout<<flavour<<" sud / pdf : "<<p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2))
-	   <<" / "<<m_unintegrated<<std::endl;
   m_unintegrated/=m_kperp2;
   return true;
 }
