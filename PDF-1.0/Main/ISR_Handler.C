@@ -91,22 +91,27 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double 
   for (double test=-1.;test<=4.;test+=0.1) {
     testpdf.m_z=0.8;
     testpdf.m_kt2=exp(test);
+#ifdef USING__KPerp
+#define PREFACTOR exp(test)*
+#else
+#define PREFACTOR 
+#endif
     testpdf.m_x=0.1;
-    *out<<exp(test)<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
+    *out<<exp(test)<<" "<<PREFACTOR gauss.Integrate(testpdf.m_x,1.,1.e-3);
     testpdf.m_x=0.01;
-    *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
+    *out<<" "<<PREFACTOR gauss.Integrate(testpdf.m_x,1.,1.e-3);
     testpdf.m_x=0.001;
-    *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
+    *out<<" "<<PREFACTOR gauss.Integrate(testpdf.m_x,1.,1.e-3);
     testpdf.m_x=0.0001;
-    *out<<" "<<exp(test)*gauss.Integrate(testpdf.m_x,1.,1.e-3);
+    *out<<" "<<PREFACTOR gauss.Integrate(testpdf.m_x,1.,1.e-3);
     testpdf.m_x=0.1;
-    *out<<exp(test)<<" "<<exp(test)*testpdf();
+    *out<<exp(test)<<" "<<PREFACTOR testpdf();
     testpdf.m_x=0.01;
-    *out<<" "<<exp(test)*testpdf();
+    *out<<" "<<PREFACTOR testpdf();
     testpdf.m_x=0.001;
-    *out<<" "<<exp(test)*testpdf();
+    *out<<" "<<PREFACTOR testpdf();
     testpdf.m_x=0.0001;
-    *out<<" "<<exp(test)*testpdf()<<std::endl;
+    *out<<" "<<PREFACTOR testpdf()<<std::endl;
   }
   delete out;
   throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"finished integration"));

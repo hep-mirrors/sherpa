@@ -81,9 +81,13 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       if (pdfbase!=NULL) {
 	if (kmr==Switch::On) {
 	  double mu0=dataread->GetValue("KMR_KPERP_CUT",(double)1.0);
+	  Doubly_Unintegrated_PDF *dupdf =
+	    new Doubly_Unintegrated_PDF(pdfbase,MODEL::as,mu0*mu0);
 	  int kpscheme=dataread->GetValue("KMR_KPERP_SCHEME",(int)0);
-	  return new Doubly_Unintegrated_PDF(pdfbase,MODEL::as,
-					     mu0*mu0,(kps::type)kpscheme);
+	  dupdf->SetKPerpScheme((kps::type)kpscheme);
+	  double rescale=dataread->GetValue("KMR_CUT_RESCALE",(double)0.0);
+	  dupdf->SetCutRescale(rescale);
+	  return dupdf;
 	}
  	if (cont==Switch::On) {
 	  int pcscheme=dataread->GetValue("CONTINUATION",(int)1);
