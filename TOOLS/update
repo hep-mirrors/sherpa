@@ -1,5 +1,9 @@
 #!/bin/bash
 
+DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
+DIRS=$DIRS" EXTRA_XS-1.0 ADICIC++-0.0 APACIC++-2.0 AMEGIC++-2.0 AMISIC++-1.0"
+DIRS=$DIRS" AHADIC++-0.0 ANALYSIS-1.0 SHERPA-1.0 COMPARE-1.0"
+
 NOUPDATE="TRUE"
 NOSTATS=
 TEMPFILE="#update#"
@@ -19,6 +23,7 @@ LOGFILE="#updated-source#"
 for I in $* ; do
   if [ "$I" = "-f" ]; then NOUPDATE=
   elif [ "$I" = "-s" ]; then NOSTATS=
+  elif [ "$I" = "-o" ]; then ONE=TRUE
   elif [ "$I" = "-l" ]; then DLOGFILE=TRUE && CLOGFILE=TRUE
   elif [ "$I" = "--no-update" ]; then NOUPDATE=TRUE
   elif [ "$I" = "--no-stats" ]; then NOSTATS=TRUE
@@ -26,6 +31,7 @@ for I in $* ; do
     echo "update version 1.0" && echo && \
     echo "options: -f             run 'cvs update <options>'" && \
     echo "         -s             show statistics" && \
+    echo "         -o             update single module" && \
     echo "         -l <logfile>   create logfile <logfile>" && \
     echo "         --no-update    run 'cvs -n update <options>'" && \
     echo "         --no-stats     do not show statistics" && \
@@ -37,11 +43,25 @@ for I in $* ; do
   fi
 done
 
-if [ "$NOUPDATE" = "TRUE" ] ; then 
-  cvs -n update $OPTIONS > $LOGFILE 2>&1
-else 
-  cvs update $OPTIONS > $LOGFILE 2>&1
+if [ "$ONE" = "TRUE" ] ; then 
+  echo "makeinstall: select module ( q) to quit )"
+  select DIRS in $DIRS ; do
+    if [ "$DIRS" != "" ] ; then 
+      break
+    else 
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
+    fi
+  done
 fi
+
+echo "" > $LOGFILE
+for DIR in $DIRS ; do
+  if [ "$NOUPDATE" = "TRUE" ] ; then 
+    cvs -n update $OPTIONS $DIR >> $LOGFILE 2>&1
+  else 
+    cvs update $OPTIONS $DIR >> $LOGFILE 2>&1
+  fi
+done
 
 CHANGES=
 EXTCNT=0
