@@ -85,8 +85,10 @@ double XS_q1q1_q1q1::operator()(double s,double t,double u) {
 bool XS_q1q1_q1q1::SetColours(double s, double t, double u) 
 {
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
-  Mt      = (s*s + u*u) / (t*t);
-  Mu      = (s*s + t*t) / (u*u);
+  
+  Mt      = 1. - 2.*(u*s) / (t*t);
+  Mu      = 1. - 2.*(s*t) / (u*u);
+  
   return SetColours();
 }
 
@@ -119,21 +121,23 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(int _nin,int _nout,
 
 double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
   if (s<m_thres) return 0.;
-  Mt = (s*s + u*u) / (t*t);
-  Ms = (t*t + u*u) / (s*s);
+  Mt = 1. - 2.*(u*s)/(t*t); 
+  Ms = 1. - 2.*(t*u)/(s*s); 
   return sqr(4.*M_PI*aS)*4./9.*(Mt + Ms - 2./3. * (u*u) / (s*t));
 }
 
 
 bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
-  Mt    = (s*s + u*u) / (t*t);
-  Ms    = (t*t + u*u) / (s*s);
+
+  Mt = 1. - 2.*(u*s)/(t*t); 
+  Ms = 1. - 2.*(t*u)/(s*s); 
+
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
 
 bool XS_q1qbar1_q1qbar1::SetColours() {
-  if (Mt >  (Mt+Ms) * ran.Get()) {
+  if (Ms >  (Mt+Ms) * ran.Get()) {
     p_colours[0][a] = p_colours[2][a] = 500;	
     p_colours[1][p] = p_colours[3][p] = 501;
   }
@@ -229,7 +233,7 @@ bool XS_gg_q1qbar1::SetColours() {
   else {
     p_colours[2][0] = p_colours[1][0] = 502;
     p_colours[3][1] = p_colours[0][1];
-    p_colours[1][1] = p_colours[1][0];
+    p_colours[1][1] = p_colours[0][0];
   }
   return 1;
 }
@@ -289,7 +293,7 @@ bool XS_q1g_q1g::SetColours(double s, double t, double u) {
 }
       
 bool XS_q1g_q1g::SetColours() {
-  if (Ms > (Ms+Mu) * ran.Get()) {
+  if (Mu > (Ms+Mu) * ran.Get()) {
     p_colours[5-fin_q][a] = p_colours[ini_q][a];
     p_colours[5-fin_q][p] = p_colours[1-ini_q][p] = 502;
     p_colours[1-ini_q][a] = p_colours[fin_q][a];
@@ -324,9 +328,11 @@ double XS_gg_gg::operator()(double s,double t,double u) {
 }
   
 bool XS_gg_gg::SetColours(double s, double t, double u) {
-  Ms      = 1 - t*u/(s*s);
-  Mt      = 1 - s*u/(t*t);
-  Mu      = 1 - s*t/(u*u);
+  
+  Mu      = 1 + t*t/(u*s) - s*t/(u*u) - t*u/(s*s);
+  Ms      = 1 + s*s/(t*u) - s*t/(u*u) - u*s/(t*t);
+  Mt      = 1 + u*u/(s*t) - u*s/(t*t) - t*u/(s*s);
+
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
