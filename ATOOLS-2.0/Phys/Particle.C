@@ -208,7 +208,7 @@ void   Particle::SetProductionBlob(Blob * _blob)
     if (p_startblob->Id()>-1) 
       ATOOLS::msg.Out()<<"Warning in Particle::SetProductionBlob(..): "<<std::endl
 		       <<"   Particle already has a production blob!"<<std::endl
-		       <<this<<std::endl;
+		       <<*this<<std::endl;
   }
   p_startblob = _blob; 
 }
@@ -219,7 +219,7 @@ void   Particle::SetDecayBlob(Blob * _blob)
     if (p_endblob->Id()>-1) 
       ATOOLS::msg.Out()<<"Warning in Particle::SetDecayBlob(..): "<<std::endl
 		       <<"   Particle already has a decay blob!"<<std::endl
-		       <<this<<std::endl;
+		       <<*this<<std::endl;
   }
   p_endblob = _blob; 
 }
