@@ -29,8 +29,8 @@ Single_Channel::Single_Channel(Single_Channel * old)
 
   name   = old->name;
 
-  ms     = new double[nin+nout+1];
-  for (short int i=0;i<nin+nout+1;i++) ms[i] = old->ms[i];
+  ms     = new double[nin+nout];
+  for (short int i=0;i<nin+nout;i++) ms[i] = old->ms[i];
 }
 
 void Single_Channel::Reset(double value) {
