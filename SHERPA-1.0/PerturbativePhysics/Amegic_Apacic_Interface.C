@@ -162,13 +162,19 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     
     p_cluster->CalculateWeight(m_scale,asscale,m_jetscale,m_qmin_i,m_qmin_f);
 
+    p_blob_psme_FS->AddData("d#hard_scale",new ATOOLS::Blob_Data<double>(sqrt(m_scale)));
+    p_blob_psme_FS->AddData("d#as_scale",new ATOOLS::Blob_Data<double>(sqrt(asscale)));
+
     // try alternative scale for UE
     m_scale=asscale;
     p_cluster->FixJetvetoPt2(m_scale);
+    p_blob_psme_FS->AddData("d#soft_scale",new ATOOLS::Blob_Data<double>(sqrt(asscale)));
 
     p_blob_psme_FS->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_scale));
     p_blob_psme_FS->AddData("OrderStrong",new ATOOLS::Blob_Data<double>(double(p_cluster->OrderStrong())));
     p_blob_psme_FS->AddData("OrderEWeak",new ATOOLS::Blob_Data<double>(double(p_cluster->OrderEWeak())));
+
+
 
     m_weight = p_cluster->Weight();
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {

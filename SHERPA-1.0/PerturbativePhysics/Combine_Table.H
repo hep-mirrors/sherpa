@@ -124,8 +124,10 @@ namespace SHERPA {
 
     double m_x1, m_x2;
 
+    double m_kt2min;
+
     bool  Combinable(const Leg &, const Leg &, 
-		     Vertex_Info &) const ;
+		     Vertex_Info &, Vertex_Info &) const ;
     static Leg * CombineLegs(Leg *, int, int, int );
     static Leg   CombinedLeg(Leg *, int, int);
 
@@ -133,7 +135,7 @@ namespace SHERPA {
     static void CombineMoms(ATOOLS::Vec4D *, int, int, int, ATOOLS::Vec4D * &);
 
     void AddPossibility(int i, int j, int ngraph, 
-			const Vertex_Info & vinfo);
+			const Vertex_Info & vinfo1, const Vertex_Info & vinfo2);
     double ColorFactor(int i, int j, AMEGIC::Color_Function * const color,
 		       unsigned int mode);
     double Sprime() const;
@@ -153,20 +155,9 @@ namespace SHERPA {
     const int   NLegs()                   { return m_nlegs; }
     const Leg & GetLeg(int ngraph, int l) { return p_legs[ngraph][l]; }
     const Leg & GetLeg(int l)             { return p_legs[m_gwin][l]; }
-    double GetWinner(int & i, int & j)    { 
-      i = m_cwin->first.i; 
-      j = m_cwin->first.j;
-      return sqrt(m_cwin->second.pt2ij);
-    }
-    int AddCouplings(int & nqed, int & nqcd) {
-      if (p_up) {
-	int nstrong = p_up->m_cwin->second.strong;
-	nqed+=1-nstrong;
-	nqcd+=nstrong;
-	return p_up->AddCouplings(nqed,nqcd);
-      }
-      return NLegs();
-    }
+    double GetWinner(int & i, int & j);
+    int AddCouplings(int & nqed, int & nqcd);
+    double MinKt();
     void GetX1X2(double & x1, double & x2) {
       x1=m_x1;
       x2=m_x2;

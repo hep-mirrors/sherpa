@@ -100,7 +100,7 @@ namespace SHERPA {
   */
   /*! 
     \fn     bool Amegic_Apacic_Interface::CleanBlobs(ATOOLS::Blob_List * blobs)
-    \brief  deletes all ME PS merging blobs in the event record
+    \brief  deletes all ME PS merging blobs in the event record -- obsolete
   */
   /*!
     \fn int Amegic_Apacic_Interface::PerformShowers()

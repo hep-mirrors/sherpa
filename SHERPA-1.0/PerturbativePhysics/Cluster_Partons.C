@@ -33,7 +33,7 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, Jet_Finder * jf,
   m_mode = Init(); // !!! ew merging see also Combine_Table
   m_mode = dr.GetValue<int>("EW_MERGING",m_mode);
   if (m_mode) {
-    msg_Info()<<"Cluster_Partons: EW merging mode "<<std::endl;
+    msg_Info()<<"Cluster_Partons: EW merging mode "<<m_mode<<std::endl;
   }
 
   m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",0);
@@ -249,8 +249,9 @@ bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
 
   CreateFlavourMap();
 
-  msg_Tracking()<<"========================================\n";
-  msg_Tracking()<<*p_combi<<std::endl;
+  //  msg_Tracking()
+//      std::cout<<"========================================\n"
+// 	      <<*p_combi<<std::endl;
 
   return 1;
 }
@@ -267,6 +268,17 @@ bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
   }
   if (root->left) {
     if (root->middle) return 0; // four vertex 
+
+    if (root->cpl[1]!=Complex(0.,0.)) {
+      if ((root->fl.IsScalar() && root->left->fl.IsVector() && root->right->fl.IsVector()) ||
+	  (root->fl.IsVector() && root->left->fl.IsScalar() && root->right->fl.IsVector()) ||
+	  (root->fl.IsVector() && root->left->fl.IsVector() && root->right->fl.IsScalar())) {
+// 	std::cout<<" reset VSS vertex "<<root->fl<<" "<<root->left->fl<<" "<<root->right->fl<<" \n";
+	  root->cpl[1]=Complex(0.,0.);
+      }
+    }
+
+
     return FillLegs(alegs,root->left,l,maxl)*FillLegs(alegs,root->right,l,maxl);
   } 
   else {
@@ -359,18 +371,27 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     int i,j;
     double ptij = p_ct->GetWinner(i,j);
 
-    if (m_sud_mode%10>1 && ct_down->GetLeg(i)->fl.Strong()) {  // sudakov form factor
+    bool strong_vertex = ct_down->GetLeg(i)->fl.Strong()
+      && p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong();
+    bool singlet_clustered = !(ct_down->GetLeg(i)->fl.Strong())
+      && p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong();
+//     if (singlet_clustered) std::cout<<" singlet clustered "<<std::endl;
+//     else std::cout<<" no singlet clustered "<<std::endl;
+
+    if (m_sud_mode%10>1 && 
+	( strong_vertex || 
+	  (m_mode&2==0 && ct_down->GetLeg(i)->fl.Strong()))) {  // sudakov form factor
       double qmin = m_qmin_f;
       if (i<2) qmin = m_qmin_i;
       double w_in =  p_sud->Delta(ct_down->GetLeg(i)->fl)(last_q[i],qmin)/
 	             p_sud->Delta(ct_down->GetLeg(i)->fl)(ptij,qmin);
       m_weight *= w_in;
-//         std::cout<<" in  Delta("<<ct_down->GetLeg(i)->fl<<") : "<<last_q[i]<<","<<ptij<<","<<qmin<<"\n";
+//       std::cout<<" in  Delta("<<ct_down->GetLeg(i)->fl<<") : "<<last_q[i]<<","<<ptij<<","<<qmin<<" = ";
+//       std::cout<<w_in<<"\n";
       ++count_startscale;
     }
 
-    if (m_sud_mode%10>0 && ct_down->GetLeg(i)->fl.Strong()  // alphaS factor
-	&& p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong()) {  
+    if (m_sud_mode%10>0 && strong_vertex) {    // alphaS factor
       double a = (*p_runas)(ptij*ptij);
       double w_in_as = a/as_jet;
       if (m_kfac!=0.) 	w_in_as *= 1. + a/(2. * M_PI)*m_kfac;
@@ -382,13 +403,14 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
 
     // store old q values
     last_i[i] = si;
-    last_q[i] = ptij;
+    if (m_mode&2==0 || strong_vertex || singlet_clustered)
+      last_q[i] = ptij;
     for (int l=nlegs-1;l>j;--l) {
       last_i[l] = last_i[l-1];
       last_q[l] = last_q[l-1];
     } 
     last_i[j] = si;
-    last_q[j] = ptij;
+    last_q[j] = last_q[i];
 
     // check that not too many hardscales are present!
     if (count_startscale==2) {
@@ -431,9 +453,10 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   m_hard_nqed = m_nstrong-m_hard_nqcd-2;    
   if (m_nstrong-m_hard_nqcd>2) {
     m_weight *= pow(as_amegic/as_jet,m_hard_nqed);
-//           std::cout<<" cancel As : "<<as_amegic<<" ("<<m_hard_nqed<<" ) \n";
+//     std::cout<<" cancel As : "<<as_amegic/as_jet<<"^("<<m_hard_nqed<<" ) \n";
   }
 
+//   std::cout<<" weight="<<m_weight<<"\n";
 
   p_ct = ct_tmp;
 
@@ -507,7 +530,7 @@ XS_Base * Cluster_Partons::GetXS(EXTRAXS::XS_Group * group, ATOOLS::Flavour * fl
   const size_t nin=2, nout=2;
   const size_t n=nin+nout;
   if (group->XSSelector()->FindInGroup(group,xs,nin,nout,fl)==std::string::npos) {
-    if (m_mode==1) {
+    if (m_mode&1) {
       xs = group->XSSelector()->GetXS(nin,nout,fl,true);
     }
     else {
@@ -547,7 +570,7 @@ int Cluster_Partons::SetColours(XS_Base * xs, Vec4D * p, Flavour * fl)
     return test;
   }
 
-  if (m_mode!=1 || xs->Size()==1) {
+  if (!(m_mode&1) || xs->Size()==1) {
     m_hard_nqed = xs->OrderEW();
     m_hard_nqcd = xs->OrderStrong();
     // output calc remaining ew and strong order
@@ -692,7 +715,10 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
     // in case one leg is massive we add all m^2 to the pt:
     // naive:    m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
     // massive into account:
-    m_asscale = 0.5*(sqr(p[2][1])+sqr(p[2][2])+sqr(p[3][1])+sqr(p[3][2]));
+    //    m_asscale = 0.5*(sqr(p[2][1])+sqr(p[2][2])+sqr(p[3][1])+sqr(p[3][2]));
+    m_asscale = 0.;
+    if (fl[2].Strong()) m_asscale+=sqr(p[2][1])+sqr(p[2][2]);
+    if (fl[3].Strong()) m_asscale+=sqr(p[3][1])+sqr(p[3][2]);
 
     // --- better determine pt in the right system  ---
 
@@ -702,11 +728,11 @@ int Cluster_Partons::SetColours(Vec4D * p, Flavour * fl)
     for (int i=0;i<4;++i)    cms.Boost(q[i]);
     Poincare rot(q[0],Vec4D::ZVEC);
     for (int i=0;i<4;++i)      rot.Rotate(q[i]);
-    m_asscale = 0.5*(sqr(q[2][1])+sqr(q[2][2])+sqr(q[3][1])+sqr(q[3][2]));
+    //    m_asscale = 0.5*(sqr(q[2][1])+sqr(q[2][2])+sqr(q[3][1])+sqr(q[3][2]));
 
     // --- end ---
-
-    m_scale = m_asscale + p[2].Abs2()+p[3].Abs2();
+    m_scale = 0.5*(sqr(q[2][1])+sqr(q[2][2])+sqr(q[3][1])+sqr(q[3][2]));
+    m_scale += p[2].Abs2()+p[3].Abs2();
     //    m_asscale = Min(dabs(t),dabs(u));
     
   }
@@ -882,6 +908,10 @@ void Cluster_Partons::FillDecayTree(Tree * fin_tree,XS_Base * xs)
 
 void Cluster_Partons::FixJetvetoPt2(double & jetvetopt2)
 {
+  double pt2min=p_ct->MinKt();
+  if (pt2min!=0.) jetvetopt2=pt2min;
+
+  /*
   //  std::cout<<" FixJetvetoPt2("<<jetvetopt2<<")\n"<<std::endl;
   Combine_Table * ct_tmp = p_ct;
 
@@ -898,8 +928,8 @@ void Cluster_Partons::FixJetvetoPt2(double & jetvetopt2)
   }
 
   p_ct = ct_tmp;
-
-  //  std::cout<<"  jetveto = "<<jetvetopt2<<")\n"<<std::endl;
+  */
+  //  std::cout<<"  Cluster_Partons::FixJetvetoPt2() jetveto = "<<jetvetopt2<<")\n"<<std::endl;
 }
 
 
@@ -1281,7 +1311,6 @@ double Cluster_Partons::ColourAngle(const std::vector<Knot *> & knots, const int
 
   double angle = 0.;
   int start = 0;
-  //  if (!m_isron) start=2;       // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   for (int j=start;j<(int)knots.size();++j) {
     if (j!=i) {
       if (IsColourConnected(knots[i]->part,knots[j]->part)) {
@@ -1375,7 +1404,6 @@ void Cluster_Partons::CreateFlavourMap() {
   m_nstrong   = proc->NStrong();
   const Flavour * flavs=proc->Flavours();
   double ycut= proc->Ycut();
-  m_delta_r=ATOOLS::rpa.gen.DeltaR();
   if (ycut!=-1.) {
 //     std::cout<<" selector ycut= "<<ycut<<" \n"<<std::endl;
     m_ycut=ycut;

@@ -43,7 +43,7 @@ Combine_Data::Combine_Data():pt2ij(0),down(0)
 Combine_Data::Combine_Data(double _pt2ij, int _ngraph):
   pt2ij(_pt2ij),sij(0.),prop(0.),coupling(0.),weight(0.),down(0) 
 {
-  graphs.push_back(_ngraph);
+  if (_ngraph>=0) graphs.push_back(_ngraph);
 }
 
 
@@ -89,64 +89,89 @@ std::ostream& SHERPA::operator<< (std::ostream& s,const Combine_Data & cd)
 Combine_Table::Combine_Table(Jet_Finder * jf,Vec4D * moms, Combine_Table * up,
 			     int isrmode, int isrshoweron, int mode):
   p_up(up),p_legs(0),m_gwin(0),m_isr1on(isrmode&1),m_isr2on((isrmode&2)/2),
-  m_isrshoweron(isrshoweron),p_jf(jf),p_moms(moms)
+  m_isrshoweron(isrshoweron),p_jf(jf),p_moms(moms),m_kt2min(0.)
 {
   m_mode=mode;  // default = 0 !!! ew merging see also Cluster_Partons
   m_no=s_all++;
 }
 
 bool Combine_Table::Combinable(const Leg & a , const Leg & b, 
-			       Vertex_Info & vinfo) const
+			       Vertex_Info & vinfo1, Vertex_Info & vinfo2) const
 // 			       Flavour & fl, Complex *& cpl, 
 // 			       Color_Function *& color) const 
 {
+  bool hit=false;
+  
   // 1.) check if both points have common mother
   if ((a->prev == b->prev) && (a->prev != 0)) {
-    vinfo.fl=a->prev->fl;
-    vinfo.cpl = a->prev->cpl;
-    vinfo.color = a->prev->Color;
-    vinfo.mode  = 1;
-    //    std::cout<<"fls="<<vinfo.fl<<","<<a->fl<<","<<b->fl<<"\n";
-    return 1;
+    vinfo1.fl=a->prev->fl;
+    vinfo1.cpl = a->prev->cpl;
+    vinfo1.color = a->prev->Color;
+    vinfo1.mode  = 1;
+    if (a->prev->prev!=0) {
+      vinfo2.fl=a->prev->prev->fl;
+      vinfo2.cpl = a->prev->prev->cpl;
+      vinfo2.color = a->prev->prev->Color;
+      vinfo2.mode  = 1;
+      //    std::cout<<"fls="<<vinfo1.fl<<","<<a->fl<<","<<b->fl<<"\n";
+    }
+    else {
+      std::cout<<" error in Combine_Table::Combinable mode =1 "<<std::endl;
+    }
+    hit=true;
   }
 
   // 2.) check if "a" is daughter of "b"
-  if (a->prev == &b)   {
+  else if (a->prev == &b)   {
     if (&a==b->left) {
-      vinfo.fl  = b->right->fl;
-      vinfo.cpl = b->cpl;
-      vinfo.color = b->Color;
-      vinfo.mode  = 2;
+      vinfo1.fl    = b->right->fl;
+      vinfo1.cpl   = b->cpl;
+      vinfo1.color = b->Color;
+      vinfo2.cpl   = b->right->cpl;
+      vinfo2.color = b->right->Color;
+      vinfo1.mode  = 2;
+      vinfo2.mode  = 2;
     }
     else if (&a==b->right) {
-      vinfo.fl  = b->left->fl;
-      vinfo.cpl = b->left->cpl;
-      vinfo.color = b->left->Color;
-      vinfo.mode  = 3;
+      vinfo1.fl    = b->left->fl;
+      vinfo1.cpl   = b->cpl;
+      vinfo1.color = b->Color;
+      vinfo2.cpl   = b->left->cpl;
+      vinfo2.color = b->left->Color;
+      vinfo1.mode  = 3;
+      vinfo2.mode  = 3;
     }
-    //    std::cout<<"fls="<<vinfo.fl<<","<<a->fl<<","<<b->fl<<"\n";
-    return 1;
+
+    hit=true;
   }
 
   // 3.) check if "b" is daughter of "a"
-  if (b->prev == &a)  {
+  else if (b->prev == &a)  {
     if (&b==a->left) {
-      vinfo.fl  = a->right->fl;
-      vinfo.cpl = a->cpl;
-      vinfo.color = a->Color;
-      vinfo.mode  = 4;
+      vinfo1.fl    = a->right->fl;
+      vinfo1.cpl   = a->cpl;
+      vinfo1.color = a->Color;
+      vinfo2.cpl   = a->right->cpl;
+      vinfo2.color = a->right->Color;
+      vinfo1.mode  = 4;
+      vinfo2.mode  = 4;
     }
     else if (&b==a->right) {
-      vinfo.fl  = a->left->fl;
-      vinfo.cpl = a->cpl;
-      vinfo.color = a->Color;
-      vinfo.mode  = 5;
+      vinfo1.fl    = a->left->fl;
+      vinfo1.cpl   = a->cpl;
+      vinfo1.color = a->Color;
+      vinfo2.cpl   = a->left->cpl;
+      vinfo2.color = a->left->Color;
+      vinfo1.mode  = 5;
+      vinfo2.mode  = 5;
     }
-    //    std::cout<<"fls="<<vinfo.fl<<","<<a->fl<<","<<b->fl<<"\n";
-    return 1;
+    //    std::cout<<"fls="<<vinfo1.fl<<","<<a->fl<<","<<b->fl<<"\n";
+    hit=true;
   }
+
+
   // else legs not combinable
-  return 0;
+  return hit;
 }
 
 Leg Combine_Table::CombinedLeg(Leg * legs, int i, int j)
@@ -260,12 +285,22 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 	// never combine "0&1" !
 	if (j==1) j=2;
 	// check if leg i is combinable with leg j in any graph
+	bool hit=false;
 	for (int k=0;k<m_nampl;++k) {
-	  Vertex_Info vinfo;
-	  if (Combinable(p_legs[k][i],p_legs[k][j],vinfo)) {  
-	    AddPossibility(i,j,k,vinfo); // insert graph k with combination i&j in table
+	  Vertex_Info vinfo1, vinfo2;
+	  if (Combinable(p_legs[k][i],p_legs[k][j],vinfo1,vinfo2)) {  
+	    AddPossibility(i,j,k,vinfo1,vinfo2); // insert graph k with combination i&j in table
+	    hit=true;
 	  } 
-	}	 
+	}
+	if (!hit) {
+	  if (p_legs[0][i]->fl.Strong() && p_legs[0][j]->fl.Strong()) {
+	    Combine_Data cd(0.,-1);
+	    cd.strong   = true;
+	    cd.coupling = 0.;
+	    m_combinations[Combine_Key(i,j,Flavour(kf::none))]=cd;
+	  }
+	}
       }
     }
   }
@@ -307,43 +342,55 @@ double Combine_Table::ColorFactor(int i, int j, AMEGIC::Color_Function * const c
 }
 
 
-void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info & vinfo) 
+void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info & vinfo1, const Vertex_Info & vinfo2) 
 {
   CD_Iterator cit=m_combinations.find(Combine_Key(i,j));
   if (cit!=m_combinations.end()) {
     // add graph only ("i&j" row exists already)
     cit->second.graphs.push_back(ngraph);
-    if (vinfo.color->Type()==cf::T || vinfo.color->Type()==cf::F) cit->second.strong=true;
+    if (vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F) cit->second.strong=true;
 
     //    we should probably only change to strong status if 
     //    strong graph is also to be used in shower initialization !!!
-    if (m_mode==1) {
-      cit=m_combinations.find(Combine_Key(i,j,vinfo.fl));
+    if (m_mode&1) {
+      cit=m_combinations.find(Combine_Key(i,j,vinfo1.fl));
       if (cit!=m_combinations.end()) {
 	cit->second.graphs.push_back(ngraph);
       }
       else {
-	double cfac = ColorFactor(i,j,vinfo.color,vinfo.mode);
-	//	std::cout<<vinfo.color->String()<<"="<<cfac<<std::endl;
+	double cfac1 = 1.; //ColorFactor(i,j,vinfo1.color,vinfo1.mode);
+	double cfac2 = 1.; //ColorFactor(i,j,vinfo2.color,vinfo2.mode);
+// 	std::cout<<" ngraph="<<ngraph<<" mode="<<vinfo1.mode<<"  fl="<<vinfo1.fl<<" \n"
+// 		 <<vinfo1.color->String()<<"="<<cfac1<<" \n"
+// 		 <<vinfo2.color->String()<<"="<<cfac2<<" \n";
+// 	std::cout<<"  cpl1="<<(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]))<<" \n"
+// 		 <<"  cpl2="<<(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]))<<" \n";
 	Combine_Data cd(0.,ngraph);
-	cd.strong   = (vinfo.color->Type()==cf::T || vinfo.color->Type()==cf::F);
-	cd.coupling = cfac*(norm(vinfo.cpl[0])+norm(vinfo.cpl[1]));
-	m_combinations[Combine_Key(i,j,vinfo.fl)]=cd;
+	cd.strong   = (vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F);
+	cd.coupling = cfac1*(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]));
+	cd.coupling *= cfac2*(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]));
+	m_combinations[Combine_Key(i,j,vinfo1.fl)]=cd;
       }
     }
   }
   else {
     // add new "i&j" combination 
     Combine_Data cd(0.,ngraph);
-    //    cd.strong=vinfo.fl.Strong();
-    cd.strong=(vinfo.color->Type()==cf::T || vinfo.color->Type()==cf::F);
+    //    cd.strong=vinfo1.fl.Strong();
+    cd.strong=(vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F);
     m_combinations[Combine_Key(i,j)]=cd;
-    if (m_mode==1) {
-      double cfac = ColorFactor(i,j,vinfo.color,vinfo.mode);
-      cd.strong   = (vinfo.color->Type()==cf::T || vinfo.color->Type()==cf::F);
-      //      std::cout<<" ngraph="<<ngraph<<" "<<vinfo.color->String()<<"="<<cfac<<std::endl;
-      cd.coupling = cfac*(norm(vinfo.cpl[0])+norm(vinfo.cpl[1]));
-      m_combinations[Combine_Key(i,j,vinfo.fl)]=cd;
+    if (m_mode&1) {
+      double cfac1 = 1.; //ColorFactor(i,j,vinfo1.color,vinfo1.mode);
+      double cfac2 = 1.; //ColorFactor(i,j,vinfo2.color,vinfo2.mode);
+//       std::cout<<" ngraph="<<ngraph<<" mode="<<vinfo1.mode<<"  fl="<<vinfo1.fl<<" \n"
+// 	       <<vinfo1.color->String()<<"="<<cfac1<<" \n"
+// 	       <<vinfo2.color->String()<<"="<<cfac2<<" \n";
+//       std::cout<<"  cpl1="<<(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]))<<" \n"
+// 	       <<"  cpl2="<<(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]))<<" \n";
+      cd.strong   = (vinfo1.color->Type()==cf::T || vinfo1.color->Type()==cf::F);
+      cd.coupling = cfac1*(norm(vinfo1.cpl[0])+norm(vinfo1.cpl[1]));
+      cd.coupling *= cfac2*(norm(vinfo2.cpl[0])+norm(vinfo2.cpl[1]));
+      m_combinations[Combine_Key(i,j,vinfo1.fl)]=cd;
     }
   }
 }
@@ -394,12 +441,25 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
   CD_Iterator pwcit=cl.end();
   CD_Iterator cwin2=cl.end();
   m_cwin=cl.end();
+
+  bool set=true;
+  m_kt2min=0.;
+  //  std::cout<<" determine kt "<<m_kt2min<<std::endl;
   for (CD_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
     CD_Iterator tit = CalcPropagator(cit);
     // if flav==none calc  s, pt2ij
     // else determine coupling, propagator
     double pt2ij = cit->second.pt2ij;
     double prop  = tit->second.weight;
+    if (cit->second.strong) {
+      double pt2 = cit->second.pt2ij;
+      if (set) {
+	m_kt2min = pt2;
+	set    = false;
+      }
+      if (pt2 < m_kt2min) m_kt2min=pt2;
+    }
+    if (cit->second.graphs.size()==0) continue;
 
     if (prop>prop_max) {
       pwcit=tit;
@@ -467,7 +527,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
     m_cwin=cwin2;
 
 
-  if (m_mode==1) {
+  if (m_mode&1) {
     double disc = ran.Get()*pwcit->second.weight;
     double sum = 0.;
     do {
@@ -562,7 +622,10 @@ CD_Iterator  Combine_Table::CalcPropagator(CD_Iterator & cit)
 	cit->second.prop = 1./sqr(sij);
       }
       else {
-	cit->second.prop = 1./(sqr(sij-mass2) + mass2*width2);
+	cit->second.prop  = 1./(sqr(sij-mass2) + mass2*width2);
+	// extra suppression factor
+	//	cit->second.prop *= mass2*width2/(sqr(sij-mass2) + mass2*width2);
+	//	cit->second.prop *= 4.*mass2*width2/(sqr(sij-mass2) + 4.*mass2*width2);
       }
       cit->second.weight = cit->second.prop*cit->second.coupling;
       father->second.weight += cit->second.weight;
@@ -584,6 +647,58 @@ Combine_Table::~Combine_Table()
     delete [] p_legs[k];
   delete [] p_legs;
 }
+
+
+double Combine_Table::GetWinner(int & i, int & j)    { 
+  i = m_cwin->first.i; 
+  j = m_cwin->first.j;
+
+
+  if (m_mode>1) {
+    Flavour flb=Flav(i);
+    Flavour flc=Flav(j);
+    Flavour fla=m_cwin->second.down->Flav(i);
+    //    std::cout<<fla<<" <- "<<flb<<" "<<flc<<std::endl;
+    if (2<=i && !fla.Strong() && flb.Strong() && flc.Strong()) {
+      //      std::cout<<"sqrt(sij)="<<sqrt(m_cwin->second.sij)<<std::endl;
+      return sqrt(m_cwin->second.sij);
+    }
+  }
+  //  std::cout<<" ptij="<<sqrt(m_cwin->second.pt2ij)<<std::endl;
+  return sqrt(m_cwin->second.pt2ij);
+}
+
+int Combine_Table::AddCouplings(int & nqed, int & nqcd) {
+  if (p_up) {
+    int nstrong = p_up->m_cwin->second.strong;
+    nqed+=1-nstrong;
+    nqcd+=nstrong;
+    return p_up->AddCouplings(nqed,nqcd);
+  }
+  return NLegs();
+}
+
+double Combine_Table::MinKt()
+{
+  if (p_up) return p_up->MinKt();
+
+//   bool set=true;
+//   double pt2min=0.;
+//   for (CD_Iterator cit=m_combinations.begin(); cit!=m_combinations.end(); ++cit) {
+//     std::cout<<cit->first.i<<"&"<<cit->first.j<<"\n";
+
+//     if (cit->second.strong) {
+//       double pt2 = cit->second.pt2ij;
+//       if (set) {
+// 	pt2min = pt2;
+// 	set    = false;
+//       }
+//       if (pt2 < pt2min) pt2min=pt2;
+//     }
+//   }
+  return m_kt2min;
+}
+
 
 std::ostream& SHERPA::operator<< (std::ostream& s ,const Combine_Table & ct) 
 {
