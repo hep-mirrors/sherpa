@@ -13,6 +13,7 @@ COMPILECOMMAND="TOOLS/makeinstall --clean-run -t --clean"
 DIR="BENCHMARK"
 FILE="Benchmark.dat"
 SHERPAPATH="SHERPA-1.0/Run"
+TIMEOUT="3600"
 MEHANDLEREXIT=201
 
 SetStatus() {
@@ -173,7 +174,7 @@ for I in $LIST ; do
     while (( $? == $MEHANDLEREXIT )) ; do
       ./makelibs >> $MAINPATH/$OUTPUTFILE 2>&1
       $MAINPATH/$SHERPAPATH/Sherpa PRETTY_PRINT=Off PATH="." ANALYSIS_OUTPUT="./" \
-             RESULT_DIRECTORY="./Results/" >> $MAINPATH/$OUTPUTFILE 2>&1
+             RESULT_DIRECTORY="./Results/" TIMEOUT=$TIMEOUT >> $MAINPATH/$OUTPUTFILE 2>&1
     done 
     if (( $? != 0 )) ; then
       RUNTIME_ERROR=TRUE
