@@ -51,6 +51,20 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,const size_t
 
 void Integration_Info::ReleaseKey(Info_Key &key)
 {
+  if (m_keymap.find(key.m_name)==m_keymap.end()) return;
+  std::vector<Info_Key*> &keys=m_keymap[key.m_name].second;
+  size_t i;
+  for (std::vector<Info_Key*>::iterator kit=keys.begin();kit!=keys.end();++kit) {
+    if ((*kit)->m_info==key.m_info) { 
+      keys.erase(kit);
+      ATOOLS::msg.Tracking()<<om::bold<<"erased key: "<<om::reset<<"("
+			    <<om::red<<key.m_valuekey<<om::reset<<","
+			    <<om::red<<key.m_weightkey<<om::reset<<") <=> (\""
+			    <<om::green<<key.m_name<<om::reset<<"\",\""
+			    <<om::blue<<key.m_info<<om::reset<<"\")\n";
+      break;
+    }
+  }
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Double_Container &doubles)
