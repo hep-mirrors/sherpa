@@ -5,20 +5,34 @@
 #include "Parton_List.H"
 #include "Blob_List.H"
 #include "Primitive_Analysis.H"
+#include "Event_Phase_Handler.H"
 
 namespace SHERPA {
-  class Sample_Analysis {
+  class Sample_Analysis;
+
+  class Analysis_Phase : public Event_Phase_Handler {
+    Sample_Analysis * p_analysis;
+    int m_mode;
+    int m_status;
+  public:
+    Analysis_Phase(Sample_Analysis *,int);
+    bool Treat(APHYTOOLS::Blob_List *);
+    void CleanUp();
+  };
+
+  class Sample_Analysis  {
     bool                            hepevt;
     bool                            InitIO;
     int                             status,hepevtmode;
     int                             nhep;
     IO_HepEvt                     * convert;
     APHYTOOLS::Primitive_Analysis * ana;
+    std::vector<APHYTOOLS::Primitive_Observable_Base *> obs;
   public:
     Sample_Analysis(IO_HepEvt *&,bool);
     ~Sample_Analysis();
     void Init();
-    void DoAnalysis(APHYTOOLS::Parton_List *) {}
+
     void AfterME(APHYTOOLS::Blob_List *);
     void AfterPartonShower(APHYTOOLS::Blob_List *);
     void AfterHadronization(APHYTOOLS::Blob_List *);
