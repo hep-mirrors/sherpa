@@ -193,7 +193,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) 
     if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos &&
 	expr[pos-1]!='e' && expr[pos-1]!='E') 
-      if (oit->second->Binary()) {
+      if (oit->second->Binary() && pos!=0) {
 	op=oit->second;
 	break;
       }
@@ -229,8 +229,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   args[0]=p_interpreter->Iterate(lstr);
   args[1]=p_interpreter->Iterate(rstr);
   msg_Tracking()<<"Interprete_Binary -> '"
-		<<lrstr<<"' '"<<lstr<<op->Tag()
-		<<rstr<<"' '"<<rrstr<<"'\n";
+	    <<lrstr<<"' '"<<lstr<<"' '"<<op->Tag()
+	    <<"' '"<<rstr<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
     Iterate(lrstr+op->Evaluate(args)+rrstr);
 }
@@ -335,12 +335,15 @@ void Primitive_Interpreter::AddOperator(Operator *const b)
 
 std::string Primitive_Interpreter::Iterate(const std::string &expr)
 {
+  static size_t depth=0;
+  if (++depth>1000) THROW(critical_error,"Max depth reached.");
   msg_Indent();
   std::string res=expr;
   ReplaceTags(res);
   Interpreter_Set::const_iterator iit=m_interpreters.begin();
   for (;iit!=m_interpreters.end();++iit) 
     res=(*iit)->Interprete(res);
+  --depth;
   return res;
 }
 
