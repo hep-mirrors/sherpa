@@ -1,5 +1,5 @@
-#ifndef Apacic_h
-#define Apacic_h
+#ifndef Apacic_H
+#define Apacic_H
 
 #include "Model_Base.H"
 
@@ -30,7 +30,7 @@ namespace APACIC {
     Apacic(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,ATOOLS::Data_Read *); 
     ~Apacic(); 
     void PrepareTrees();
-    void SetJetvetoPt2(const double pt2);
+    void SetJetvetoPt2(const double q2i, const double q2f);
     void SetFactorisationScale(const double scale);
     int  PerformShowers(bool,bool,int,double,double);
     bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);

@@ -1,10 +1,10 @@
-#ifndef Shower_Handler_h
-#define Shower_Handler_h 
+#ifndef Shower_Handler_H
+#define Shower_Handler_H 
 
 #include "Model_Base.H"
 #include "ISR_Handler.H"
 #include "Adicic.H"
-#include "Hard_Interface.H"
+#include "Apacic.H"
 #include "Data_Read.H"
 
 #include <string>
@@ -18,7 +18,6 @@ namespace SHERPA {
   private :
     std::string          m_dir,m_file;
     int                  m_maxjetnumber;
-
 
     std::string          m_showergenerator;
     bool                 m_isrshowerswitch,m_fsrshowerswitch;
@@ -44,7 +43,7 @@ namespace SHERPA {
     APACIC::Tree    ** GetIniTrees();
     APACIC::Apacic   * GetApacic() { return p_apacic; }
     ADICIC::Chain    * GetChain();
-    void SetJetvetoPt2(const double pt2) { p_apacic->SetJetvetoPt2(pt2); }
+    void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
     void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
   };
 

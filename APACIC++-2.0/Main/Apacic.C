@@ -1,4 +1,4 @@
-#include "Hard_Interface.H"
+#include "Apacic.H"
 #include "Initial_State_Shower.H"
 #include "Final_State_Shower.H"
 #include "Tree.H"
@@ -45,12 +45,12 @@ void Apacic::PrepareTrees() {
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
-void Apacic::SetJetvetoPt2(const double pt2)
+void Apacic::SetJetvetoPt2(const double q2i, const double q2f)
 { 
   if (m_fsron) 
-    p_finshower->SetJetvetoPt2(pt2); 
+    p_finshower->SetJetvetoPt2(q2f); 
   if (m_isron)
-    p_inishower->SetJetvetoPt2(pt2); 
+    p_inishower->SetJetvetoPt2(q2i,q2f); 
 }
 
 void Apacic::SetFactorisationScale(const double scale)
@@ -80,9 +80,10 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
     // check ME if still njet ME!
     // if isr is on, this check will be performed after the initial state shower
     if (!m_isron) {
-      double ycut   = ATOOLS::rpa.gen.Ycut();
-      double s  = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-      SetJetvetoPt2(s*ycut);
+      double ycut   = rpa.gen.Ycut();
+      double s  = sqr(rpa.gen.Ecms());
+      double dr2 = sqr(rpa.gen.DeltaR());
+      SetJetvetoPt2(s*ycut,dr2*s*ycut);
       if (!p_finshower->ExtraJetCheck()) {
 	return 3;
       }
@@ -122,9 +123,10 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
       p_fintree->BoRo(lab);
 
       // check ME if still njet ME!
-      double ycut   = ATOOLS::rpa.gen.Ycut();
-      double s  = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-      SetJetvetoPt2(s*ycut);
+      double ycut   = rpa.gen.Ycut();
+      double s  = sqr(rpa.gen.Ecms());
+      double dr2 = sqr(rpa.gen.DeltaR());
+      SetJetvetoPt2(s*ycut,dr2*s*ycut);
       if (!p_finshower->ExtraJetCheck()) {
 	return 3;
       }
