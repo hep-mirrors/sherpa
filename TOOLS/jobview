@@ -1,0 +1,16 @@
+#!/bin/bash
+
+NODES="90 91 92 93"
+
+echo -e "\e[34m\e[1mstatus report:\e[0m `date`"
+
+for I in $NODES
+do
+  echo -en "\e[1mptpp$I :\e[0m\e[32m"
+  ssh ptpp$I uptime
+  echo -en "\e[0m\e[31m"
+  ssh ptpp$I ps -fA | grep "Sherpa" 
+  echo -en "\e[0m"
+done
+echo -en "\e[0m"
+
