@@ -130,9 +130,9 @@ void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
 		kcpl1 = -M_I/root2*g2;
 	      if (i<7 && j<7) {
 		if (flav1.IsDowntype())
-		kcpl1 = -M_I/root2*g2*K_CKM((i-1)/2,j/2-1);
-		else 	    
-		kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2);		
+		  kcpl1 = -M_I/root2*g2*K_CKM(j/2-1,(i-1)/2);
+		else
+		  kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2);
 	      }
 	      if (!ATOOLS::IsZero(kcpl1.Value())) {
 		vertex[vanz].in[1] = Flavour(kf::W);
