@@ -47,7 +47,7 @@ namespace APACIC {
     ~Hard_Interface(); 
     void PrepareTrees();
     bool ReduceBlob(APHYTOOLS::Blob *);
-    int  PerformShowers(bool,bool);
+    int  PerformShowers(bool,bool,int);
     bool ExtractPartons(bool,bool,APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
     void FinalStats();
 

@@ -207,7 +207,7 @@ void Apacic::GenerateEvents() {
 	msg.Error()<<"Reduction of hard blob did not work out !"<<std::endl;
 	continue;
       }
-      if (!(me_ps_interface->PerformShowers(ini,fin))) {
+      if (!(me_ps_interface->PerformShowers(ini,fin,2))) {
 	msg.Error()<<"Performing the showers did not work out !"<<std::endl;
 	continue;
       } 

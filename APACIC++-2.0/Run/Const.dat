@@ -11,8 +11,8 @@ m_top         = 175.	! mass of top-quark
 m_bottom      = 5.	! mass of bottom-quark
 m_tau         = 1.777	! mass of tauon	
 !Racoon Parameter
-alpha_S(MZ)   = .11     ! alpha_s(M_Z) (initialisation for running)
-alpha_S_fixed = .11     ! effective coupling 
+alpha_S(MZ)   = .125     ! alpha_s(M_Z) (initialisation for running)
+!alpha_S_fixed = .125     ! effective coupling 
 v             = 246.2   ! vev of SM Higgs-field
 m_H_SM        = 115.0   ! SM Higgs mass (only for non-SUSY)
 alpha_QED(MZ) = 137.035995 ! 1/alpha_QED(M_Z)

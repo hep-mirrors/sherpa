@@ -12,10 +12,12 @@
 
 namespace APACIC {
   /*!
+    \brief    Does the final state parton shower evolution of a given particle ensemble.
+
     Does the final state parton shower evolution of a given particle ensemble.
     It will be called from outside via 
-    1. PerformShowers
-    2. FirstTimelikeFromSpacelike
+     -# PerformShower() or
+     -# FirstTimelikeFromSpacelike()
 
     I think it should contain also all possible F.S. particle decays, but this 
     is something I still have to work on.
@@ -51,7 +53,7 @@ namespace APACIC {
       Otherwise, the particle is set on its "mass shell" according to the definitions of 
       the Final_State_Shower and Timelike_Sudakov.
     */
-    void FirstTimelikeFromSpacelike(Tree *,Knot *,bool);
+    void FirstTimelikeFromSpacelike(Tree *,Knot *,bool,double,double);
     //-----------------------------------------------------------------------
     //---------------------------- After the Shower -------------------------
     //----------------------------------------------------------------------- 

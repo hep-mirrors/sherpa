@@ -37,17 +37,12 @@ bool Timelike_Kinematics::CheckZRange(Knot * mo) {
   // minimal (t1/t2) eff. mass
   double t0 = 4.*rpa.pshower.FinalQ02();
 
+  /* *as*1
   t1  = Max(t1,mo->left->tout);
   t2  = Max(t2,mo->right->tout);
   t1  = (t1+0.25*t0);   // teff1
   t2  = (t2+0.25*t0);   // teff2
-  /*
-  double teff1=(mo->right->tout+0.25*t0);
-  double teff2=(mo->left->tout+0.25*t0);
-  t1  = Max(t1,teff1);
-  t2  = Max(t2,teff2);
   */
-
   msg.Debugging()<<" Timelike_Kinematics::CheckZRange("<<t<<","<<t1<<","<<t2<<") "<<endl;
   if (t  < t1+t2+2.*sqrt(t1*t2)) {
     if (d1->stat==0 && d2->stat==0) return 0;
@@ -145,17 +140,11 @@ bool Timelike_Kinematics::ShuffleZ(Knot * mo)
   // minimal (t1/t2) eff. mass
   double t0 = 4.*rpa.pshower.FinalQ02();
 
-
+  /* *as*1
   t1  = Max(t1,mo->left->tout);
   t2  = Max(t2,mo->right->tout);
   t1  = (t1+0.25*t0);   // teff1
   t2  = (t2+0.25*t0);   // teff2
-
-  /*
-  double teff1=(mo->right->tout+0.25*t0);
-  double teff2=(mo->left->tout+0.25*t0);
-  t1  = Max(t1,teff1);
-  t2  = Max(t2,teff2);
   */
 
   // decay kinematically not allowed
@@ -172,8 +161,10 @@ bool Timelike_Kinematics::ShuffleZ(Knot * mo)
   mo->z         = z - r1*z + r2*(1.-z);
 
   // check for more kinematics
+  /* *as*1
   t1  = (t1-0.25*t0);   // teff1
   t2  = (t2-0.25*t0);   // teff2
+  */
   double pt2 = z*(1.-z)*t;
   if (pt_scheme == 1)
     pt2 -= (1.-z)*t1 + z*t2;
@@ -215,12 +206,6 @@ bool Timelike_Kinematics::ShuffleMoms(Knot * mo)
   t2  = Max(t2,mo->right->tout);
   t1  = (t1+0.25*t0);   // teff1
   t2  = (t2+0.25*t0);   // teff2
-  */
-  /*  first
-  double teff1=(mo->right->tout+0.25*t0);
-  double teff2=(mo->left->tout+0.25*t0);
-  t1  = Max(t1,teff1);
-  t2  = Max(t2,teff2);
   */
 
   // decay kinematically not allowed

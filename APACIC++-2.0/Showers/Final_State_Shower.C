@@ -67,7 +67,7 @@ int Final_State_Shower::PerformShower(Tree * tree,bool jetveto)
   }
 }
 
-void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool jetveto)
+void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool jetveto,double sprime,double z)
 {
   msg.Debugging()<<"-----------------------------------------"<<std::endl
 		 <<"Final_State_Shower::FirstTimelikeFromSpacelike for Knot "
@@ -75,9 +75,19 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
 		 <<"    Knot has E2/t : "<<mo->E2<<"/"<<mo->t<<std::endl;
   kin->SetJetVeto(jetveto);
 
+  // *AS* no fs interf.
+  //  Reset(mo);
+
   Flavour flavs[2];
   for (;;) {
     if (sud->Dice(mo)) {
+      // update E2
+      msg.Debugging()<<" old (E2,t) = "<<mo->E2<<","<<mo->t<<endl;
+      double test_e4  =((1./z-1.)*sprime - mo->t)/(2.*sqrt(sprime));
+      mo->E2=sqr(test_e4);
+      msg.Debugging()<<" new (E2,t) = "<<mo->E2<<","<<mo->t<<endl;
+
+      // init daughters
       flavs[0]  = sud->GetFlB();
       flavs[1]  = sud->GetFlC();
       InitDaughters(tree,mo,flavs,1);
@@ -357,7 +367,8 @@ bool Final_State_Shower::TestShower(Tree * tree)
     
 
   }
-  ana.FinishAnalysis("testout_shower_GE125a",0);
+//  ana.FinishAnalysis("testout_shower_GE125a",0);
+  ana.FinishAnalysis("apa_GX_125",0);
   msg.Events()<<"Final_State_Shower::TestShower : "
 	      <<"Terminated loops over events successfully."<<std::endl;
   return 1;
@@ -556,9 +567,9 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
 
   Flavour mo_flavs[2];
   for(;;) {
-    //    mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*4.)));   // *AS* default *5.
+    mo_flavs[0] = Flavour(kf::code(1+int(ran.Get()*4.)));   // *AS* default *5.
     //    mo_flavs[0] = Flavour(kf::b);
-    mo_flavs[0] = Flavour(kf::d);
+    //    mo_flavs[0] = Flavour(kf::d);
     if (4.*sqr(mo_flavs[0].PSMass()) < scale) break;
   }
   mo_flavs[1] = mo_flavs[0].Bar();
@@ -582,6 +593,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->left->part->SetFlow(1,-1);
   mo->left->t          = mo->t;
   mo->left->tout       = sqr(mo_flavs[0].PSMass());
+  mo->left->maxpt2     = 0.;
   //  std::cout<<" da set on="<<mo->left->tout<<std::endl;
 
   mo->left->E2         = E*E;
@@ -596,6 +608,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->right->part->SetFlow(2,mo->left->part->GetFlow(1));
   mo->right->t         = mo->t;
   mo->right->tout      = sqr(mo_flavs[1].PSMass());
+  mo->right->maxpt2    = 0.;
   //  std::cout<<" da set on="<<mo->right->tout<<std::endl;
   mo->right->E2        = E*E;
   mo->right->thcrit    = start_th;
@@ -676,8 +689,6 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
   
   bool do12,accept;
   bool diced1=0, diced2=0;
-
-  double z_tmp = mo->z;
 
   for (;;) {
     Knot * g =0;

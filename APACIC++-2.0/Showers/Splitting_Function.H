@@ -44,7 +44,7 @@ namespace APACIC {
 
   /*!
     \file
-    \brief contains the class Splitting_Function
+    \brief contains the class APACIC::Splitting_Function
   */
 
   /*! 

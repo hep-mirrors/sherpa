@@ -19,7 +19,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):
 {
   ordering_scheme = 1; /*  (1=VO+Coherence, 2=VO);                           */ 
   cpl_scheme      = 1; /*  (0=fix, 1=pt^2, 2=t/4)                            */ 
-  pt_scheme       = 2; /*  (0=> pt^2 = z(1-z)t      for VO
+  pt_scheme       = 1; /*  (0=> pt^2 = z(1-z)t      for VO
 			    1=> z(1-z)t - (1-z)*t_0(b) - z*t_0(c)           
                             2=> pt^2 = 1/4 min (z/(1-z),(1-z)/z) t */ 	  
   mass_scheme     = 1; /*  (0=cuts, 1=a la Catani, 2=define t_eff)           */
@@ -101,6 +101,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
 
   while (ta>tend) {
     //    if (last_veto==0 || last_veto==7) {
+    if (mass_scheme == 2) ta -= mother->tout;
     if (pt_scheme == 2 ) {
       z0 = 1. / ( 1. + ta/t0) ;
     }
@@ -109,17 +110,15 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
     }
 
     
-      if (z0<rpa.gen.Accu()) {
-        msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl;
-      }
-      CrudeInt(z0,1.-z0);
-      //    }
+    if (z0<rpa.gen.Accu()) {
+      msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl;
+    }
+    CrudeInt(z0,1.-z0);
+    //    }
 
-    if (mass_scheme == 2) ta -= mother->tout;
     ProduceT();
-    if (mass_scheme == 2) ta += mother->tout;
 
-    if (ta<tend) {
+    if (ta+mother->tout<tend) {
       msg.Debugging()<<"Timelike_Sudakov::No Branch for ("<<mother->kn_no<<"), "<<inflav
 		     <<", set on t="<<mother->tout
 		     <<"  fl="<<mother->part->Flav()<<"  mfl="<<mother->part->Flav().PSMass()<<std::endl;
@@ -149,6 +148,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
 	if (!Veto(mother)) {
 	  msg.Debugging()<<"Timelike_Sudakov::Dice Branch with t="<<ta<<", z="<<z<<", ("
 			 <<GetFlB()<<","<<GetFlC()<<"), tend="<<tend<<std::endl;      
+	  if (mass_scheme == 2) ta += mother->tout;
 	  UniformPhi();
 	  mother->z      = z;
 	  mother->t      = ta;
@@ -156,10 +156,6 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
 	  if (inflav.IsQuark()) mother->maxpt2 = pt2;
 	  else mother->maxpt2 = pt2max;
 	  return 1;
-	}
-	else {
-	  msg.Tracking()<<"Timelike_Sudakov:  Vetoed Branch with t="<<ta<<", z="<<z<<", ("
-			<<GetFlB()<<","<<GetFlC()<<"), tend="<<tend<<std::endl;      
 	}
       }
     }
@@ -181,8 +177,6 @@ void Timelike_Sudakov::ProduceT() {
 bool Timelike_Sudakov::Veto(Knot * mo) 
 {  
   last_veto=0;
-  msg.Debugging()<<std::endl<<"      Enter the vetos with E2, t, z, pt2 = "<<wa<<", "
-		 <<ta<<", "<<z<<", "<<z*(1.-z)*ta<<std::endl;
   
   // 0. trivial ranges : timelike, enough energy for daughters and physical opening angle ?
 
@@ -190,10 +184,6 @@ bool Timelike_Sudakov::Veto(Knot * mo)
   double wc      = (1.-z)*(1.-z)*wa;
   // timelike daughters
   if ((tb>wb) || (tc>wc)) {
-    msg.Debugging()<<"      Timelike_Sudakov::Veto : Killed by timelike condition:"
-		   <<z<<" "<<wa<<std::endl
-		   <<"         d1 "<<tb<<", "<<wb<<" for "<<GetFlB()<<std::endl
-		   <<"         d2 "<<tc<<", "<<wc<<" for "<<GetFlC()<<std::endl;
     return 1;
   }
 
@@ -210,25 +200,21 @@ bool Timelike_Sudakov::Veto(Knot * mo)
 
   // 1. masses, z-range and splitting function
   if (MassVeto()) {
-    msg.Tracking()<<"MassVeto!"<<endl;
     last_veto=3;
     return 1;
   }
   // 2. alphaS
   if (CplVeto()) {
-    msg.Tracking()<<"CplVeto!"<<endl;
     last_veto=4;
     return 1;
   }
   // 3. angular ordering
   if (AngleVeto(mo)) {
-    msg.Tracking()<<"AngleVeto!"<<endl;
     last_veto=5;
     return 1;
   }
   // 4. ME
   if (MEVeto(mo))  {
-    msg.Tracking()<<"ME!"<<endl;
     last_veto=6;
     return 1;
   }
@@ -236,7 +222,6 @@ bool Timelike_Sudakov::Veto(Knot * mo)
   // 5. JetVeto *AS*
   if (JetVeto(mo)) {
     last_veto=7;
-    msg.Tracking()<<"JetVeto!"<<endl;
     return 1;    
   }
   return 0;
@@ -293,7 +278,6 @@ bool Timelike_Sudakov::MassVeto()
 }
 
 bool Timelike_Sudakov::CplVeto() {
-  msg.Debugging()<<"            In CplVeto. ("<<pt2<<")  "<<std::endl;
   switch (cpl_scheme) {
   case 0 :
     return 0;
@@ -308,7 +292,6 @@ bool Timelike_Sudakov::CplVeto() {
 }
 
 bool Timelike_Sudakov::AngleVeto(Knot * mo) {
-  msg.Debugging()<<"            In AngleVeto. ("<<ta<<", "<<z<<")  "<<std::endl;
   if (!inflav.Strong()) return 0;
 
   switch (ordering_scheme) {
@@ -325,16 +308,19 @@ bool Timelike_Sudakov::AngleVeto(Knot * mo) {
 }
 
 bool Timelike_Sudakov::MEVeto(Knot * mo) {
-  msg.Debugging()<<"            In MEVeto. ("<<ta<<", "<<z<<")  "<<std::endl;
   if (!inflav.Strong()) return 0;
+  //cout<<" (a) "<<endl;
 
   Knot * gr = mo->prev;
   if (gr->t < 0) return 0;
+  //cout<<" (b) "<<endl;
 
   if ((MEcorr_scheme == 0) || (!gr))            return 0;
+  //cout<<" (c) "<<endl;
   if ((MEcorr_scheme == 2) && (gr->prev))       return 0;
+  //cout<<" (d) "<<endl;
   if ((MEcorr_scheme == 1) && (pt2<mo->maxpt2)) return 0;
-
+  //cout<<" (e) "<<endl;
   // Flavours: ME correction only for q->qg and q->qgamma (has to be done)
   if (!(inflav.IsQuark()))                      return 0;
 
@@ -355,6 +341,10 @@ bool Timelike_Sudakov::MEVeto(Knot * mo) {
   //      / \   \
   //     1   3   2
 
+
+  //cout<<" gr: E2:"<<gr->E2<<"   t:"<<gr->t<<endl;
+  //cout<<"   ta:"<<ta<<"   z = "<<z<<endl;
+
   double mass123 = gr->t;
   double mass13  = ta;
   if (ordering_scheme == 0) {
@@ -365,11 +355,18 @@ bool Timelike_Sudakov::MEVeto(Knot * mo) {
   double x1 = z*(2.- x2);           // quark or antiquark !!! 
   double x3 = 2. - x1 -x2;
 
+  //cout<<" x123: "<<x1<<"  "<<x2<<"  "<<x3<<endl;
+
   // without global factor: alpha_s/(2 Pi) * C_F * 1 / ((1-x1) (1-x2));
   double ds_ps =  (1.-x1)/x3 * ( 1. + sqr(x1/(2.-x2)))
                  +(1.-x2)/x3 * ( 1. + sqr(x2/(2.-x1)));
   double ds_me = sqr(x1) + sqr(x2);
+  //cout<<" ps:"<<ds_ps<<endl;
+  //cout<<" me:"<<ds_me<<endl;
+
   double ratio = ds_me/ds_ps;
+
+  //cout<<" ME weight= "<<ratio<<endl;
 
   return (ratio<ran.Get()) ? 1 : 0;
 }

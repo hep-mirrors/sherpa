@@ -1,6 +1,6 @@
 #include "Spacelike_Kinematics.H"
 #include "Run_Parameter.H"
-#include <iomanip.h>
+#include <iomanip>
 
 using std::endl;
 
@@ -8,9 +8,11 @@ using namespace APACIC;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
+using namespace std;
 
 
-void Spacelike_Kinematics::InitKinematics(Knot *& k1, Knot *& k2) {
+void Spacelike_Kinematics::InitKinematics(Knot *& k1, Knot *& k2) 
+{
   if ((!k1) || (!k2)) {
     msg.Error()<<"ERROR in Spacelike_Kinematics::InitKinematics : No knots."<<endl;
     return;
@@ -32,7 +34,12 @@ void Spacelike_Kinematics::InitKinematics(Knot *& k1, Knot *& k2) {
 		 <<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<endl;
 }
 
-bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * partner,int leg) {
+bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * partner,int leg) 
+{
+  if (leg==0) msg.Debugging()<<" Spacelike_Kinematics::DoKinematics( I ";
+  else msg.Debugging()<<" Spacelike_Kinematics::DoKinematics( II ";
+  msg.Debugging()<<",("<<active->kn_no<<"), <"<<partner->kn_no<<"> );"<<endl;
+
   if (!active->prev) {
     msg.Error()<<"Error Spacelike_Kinematics::DoKinematics : "
 	       <<"     No mother for active knot, no kinematics to be constructed"<<endl;
@@ -62,6 +69,11 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
   double pt_mo     = sqrt((maxt_d2-sister->t)/(np1*np1) *
     (0.5*(s1*s3 + np1*np3) + partner->t * (sister->t - active->t - mother->t)));
  
+
+  double test_f4  =((1./active->z-1.)*sprime - sister->t)/(2.*sqrt(sprime));
+  msg.Debugging()<<" (spr,z,t4) : "<<sprime<<","<<active->z<<","<<sister->t<<endl;
+  msg.Debugging()<<"  e4^2  =="<<sqr(test_f4)<<endl;
+
   msg.Debugging()<<"Spacelike_Kinematics::DoKinematics :"<<endl
 		 <<"   CMS, s' = "<<cms<<", "<<sprime<<endl
 		 <<"   timelike daughter's t : "<<maxt_d2<<"  >?>  "<<sister->t<<endl;
@@ -86,7 +98,8 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
 	       <<" / "<<(1./active->z-1.)*sqrt(sprime/4.)-sister->t/sqrt(4.*sprime)<<endl
 	       <<"  Test s' "<<sprime/active->z<<" =?= "
 	       <<(v_mo+partner->part->Momentum()).Abs2()<<endl;
-    return 0;
+    msg.Error()<<" (spr,z,t4) : " <<sprime<<","<<active->z<<","<<sister->t<<endl;
+    // *AS*    return 0;
   }
   
   mother->part->SetMomentum(v_mo);
@@ -95,15 +108,17 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
   if (ResetEnergies(sister)) kink->DoKinematics(sister);
                         else return 0;
   return 1;
-};
+}
 
-bool Spacelike_Kinematics::CheckVector(Vec4D vec) {
+bool Spacelike_Kinematics::CheckVector(Vec4D vec) 
+{
   if ( (vec.Abs2() > 0) && (vec.Abs2() < 0) ) return 1;
   if (vec[0] < 0) return 1;
   return 0;
-};
+}
 
-double Spacelike_Kinematics::BoostInCMS(Tree ** trees,Knot * active, Knot * partner) {
+double Spacelike_Kinematics::BoostInCMS(Tree ** trees,Knot * active, Knot * partner) 
+{
   Vec4D cms = active->part->Momentum()+partner->part->Momentum();
 
   msg.Debugging()<<"BoostInCMS ... "<<cms<<endl
@@ -120,7 +135,8 @@ double Spacelike_Kinematics::BoostInCMS(Tree ** trees,Knot * active, Knot * part
   return cms.Abs2();
 }
 
-Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees) {
+Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees) 
+{
   Knot * init1 = trees[0]->GetInitiator();
   Knot * init2 = trees[1]->GetInitiator();
 
@@ -173,18 +189,21 @@ bool Spacelike_Kinematics::ResetEnergies(Knot * in) {
     if (!ResetEnergies(in->right)) return 0;
   }
   return 1;
-};
+}
 
 bool Spacelike_Kinematics::KinCheck(Knot * active,bool jetveto)
 {
   if (!jetveto) return 0;
-  if (jf->TwoJets(active->part->Momentum())) return 1;
+  if (jf->TwoJets(active->part->Momentum())) {
+    msg.Tracking()<<" Spacelike_Kinematics::KinCheck   JETVETO"<<std::endl;
+    return 1;
+  }
   return 0;
 }
 
 double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
   if ((!active) || (!partner) || (!active->prev)) {
-    msg.Error()<<"Error in Spacelike_Kinematics."<<endl
+    msg.Error()<<"ERROR: in Spacelike_Kinematics."<<endl
 	       <<"   CalculateMaxT : No knots."<<endl;
     return 0.;
   }
@@ -204,7 +223,7 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
   if (dabs(t2)>rpa.gen.Accu()) maxt = (t1 + t3 + (np1*np3 - s1*s3)/(2.*t2));
                           else maxt = (-(t1/active->z - t3)*(s/(s-t1)-s/(s/active->z-t3))); 
   return maxt;
-};
+}
 
 
 

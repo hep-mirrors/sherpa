@@ -113,10 +113,12 @@ bool Hard_Interface::InitialConditions(Blob * blob,XS_Base * xs) {
 
 
 
-int Hard_Interface::PerformShowers(bool ini,bool fin) {
+int Hard_Interface::PerformShowers(bool ini,bool fin, int _nout) {
   bool jetveto = 1;   // *AS* default is one !
   int stat=1;
+  nout=_nout;
   if (nout==maxjetnumber) jetveto = 0; 
+    
   if (fin) {
     stat=fin_shower->PerformShower(fin_tree,jetveto);
     if (!(stat)) return 0;
@@ -125,12 +127,14 @@ int Hard_Interface::PerformShowers(bool ini,bool fin) {
     fin_shower->SetColours(fin_tree->GetRoot());
     if (rpa.gen.Tracking()) fin_shower->OutputTree(fin_tree);
   }
+
   if (ini) {
     ini_shower->InitShowerPT(ini_trees[0]->GetRoot()->maxpt2);
     if (!(ini_shower->PerformShower(ini_trees,jetveto))) return 0;
     msg.Tracking()<<"Initial State Shower successful !"<<std::endl;
     msg.Tracking()<<"Has to be boosted into lab frame !"<<std::endl;
   }
+
   return stat;
 }
 

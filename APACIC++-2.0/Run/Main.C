@@ -4,7 +4,7 @@
 using namespace APACIC;
 
 int main() {  
-  bool test=0; // testmode
+  bool test=1; // testmode
 
 //   std::cout<<"Run Apacic in Testmode ? (Yes = 1, No = 0)"<<std::endl;
 //   std::cin>>test;
