@@ -26,6 +26,12 @@ QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,const unsigned i
   p_pdfbase=isrhandler->PDF(m_beam)->GetBasicPDF();
 }
 
+void QCD_Remnant_Base::Clear()
+{
+  m_undo.clear();
+  Remnant_Base::Clear();
+}
+
 bool QCD_Remnant_Base::TestColours(ATOOLS::Particle *particle,int oldc,int newc,
 				 bool singlet,bool force,int anti)
 {
@@ -168,5 +174,6 @@ void QCD_Remnant_Base::UnDo()
 		  m_undo[i].second.second,singlet,true);
     p_beamblob->RemoveOutParticle(m_undo[i].first);
   }
+  m_undo.clear();
   Remnant_Base::UnDo();
 }

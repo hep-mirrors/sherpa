@@ -24,17 +24,6 @@ void Remnant_Base::Clear()
   m_initialized=false;
 }
 
-void Remnant_Base::DeleteRemnants()
-{
-  while (m_parton[0].size()>0) {
-    if (m_parton[0].front()->ProductionBlob()!=NULL) {
-      m_parton[0].front()->ProductionBlob()->RemoveOutParticle(m_parton[0].front());
-    }
-    delete m_parton[0].front();
-    m_parton[0].erase(m_parton[0].begin());
-  }
-}
-
 bool Remnant_Base::AdjustKinematics()
   {
   if (!m_active) return true;

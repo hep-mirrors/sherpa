@@ -36,6 +36,8 @@ namespace SHERPA {
 		     const double _m_scale, const Remnant_Base::TypeID type);
 
     // member functions
+    void Clear();
+
     void UnDo(); 
 
   };// end of class QCD_Remnant_Base
