@@ -6,6 +6,7 @@ using namespace APACIC;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
+using namespace std;
 
 //-----------------------------------------------------------------------
 //--------------------------- Constructors ------------------------------

@@ -1,6 +1,7 @@
 #include "QCD_Splitting_Functions.H"
 
 using namespace APACIC;
+using namespace std;
 
 // quark to quark + gluon  splitting function
 q_qg::q_qg(APHYTOOLS::Flavour quarkflavour) : tools(0) 

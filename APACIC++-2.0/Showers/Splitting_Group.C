@@ -2,7 +2,7 @@
 
 using namespace APACIC;
 
-Splitting_Group::Splitting_Group(Splitting_Function * spl=0):partsums(0) 
+Splitting_Group::Splitting_Group(Splitting_Function * spl):partsums(0) 
 {
   if (spl) group.Append(spl);
   selected = spl;
@@ -36,7 +36,7 @@ void Splitting_Group::SelectOne() {
 }
 
 
-void Splitting_Group::PrintStat(int mode=0) {
+void Splitting_Group::PrintStat(int mode) {
   if (mode>0) for(int i=0;i<mode;++i) std::cout<<' ';
   std::cout<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
   for (SplFunIter iter(group);iter();++iter) {

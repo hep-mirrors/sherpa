@@ -10,6 +10,7 @@ using namespace APACIC;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
+using namespace std;
 
 
 Sudakov_Tools::Sudakov_Tools() {

@@ -24,7 +24,7 @@ APHYTOOLS::Flavour & Splitting_Function::GetFlA() { return flavs[0];}
 APHYTOOLS::Flavour & Splitting_Function::GetFlB() { return flavs[1];}
 APHYTOOLS::Flavour & Splitting_Function::GetFlC() { return flavs[2];}
 
-void Splitting_Function::PrintStat(int mode=0) {
+void Splitting_Function::PrintStat(int mode) {
   if (mode>0) for(int i=0;i<mode;++i) std::cout<<' ';
   std::cout<<"Splitting Function: "
 	   <<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl;
