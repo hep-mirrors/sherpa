@@ -42,7 +42,7 @@ namespace ANALYSIS {
   protected:
     void Evaluate(const ATOOLS::Particle_List &,double=1.,int ncount=1);
   public:
-    Oblateness(int,double,double,int,const std::string & =std::string("Minor"));
+    Oblateness(int,double,double,int,const std::string & =std::string("Oblateness"));
     Primitive_Observable_Base * Copy() const;
   };
 
