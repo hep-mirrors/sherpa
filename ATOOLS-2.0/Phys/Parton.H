@@ -29,7 +29,7 @@ namespace APHYTOOLS {
   public:
     Parton();
     Parton(Parton * );
-    Parton(int,Flavour,AMATOOLS::Vec4D);
+    Parton(int,Flavour=Flavour(kf::none),AMATOOLS::Vec4D=AMATOOLS::Vec4D(0.,0.,0.,0.));
     ~Parton();
     friend std::ostream& operator<<(std::ostream &,Parton*);
 
@@ -60,7 +60,7 @@ namespace APHYTOOLS {
     void   SetTime();
     void   SetFlav(APHYTOOLS::Flavour &);
     void   SetFlow(APHYTOOLS::Flow *);
-    void   SetFlow( int code_index, int code=0 );
+    void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int);
     void   SetJetNumber(const int);
   };

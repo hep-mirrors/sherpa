@@ -55,7 +55,6 @@ Parton::Parton() {
   m_dec_time  = 0.;
   p_startblob = NULL;
   p_endblob   = NULL;
-  cout<<"Blobs done."<<endl;
   p_flow      = new Flow(this);
 }
 
@@ -85,7 +84,7 @@ Parton::Parton(int number,Flavour fl,Vec4D p)  {
   p_flow      = new Flow(this);
 }
 
-void Parton::Copy(Parton* in)  {
+void Parton::Copy(Parton * in)  {
   m_number    = in->m_number;
   m_info      = in->m_info;
   m_status    = in->Status();
@@ -94,7 +93,9 @@ void Parton::Copy(Parton* in)  {
   m_dec_time  = in->m_dec_time;
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
-  p_flow      = in->p_flow;
+  p_flow      = new Flow(this);
+  p_flow->SetCode(1,in->GetFlow(1));
+  p_flow->SetCode(2,in->GetFlow(2));
 }
 
 double Parton::ProperTime() {
@@ -164,10 +165,8 @@ Flow    * Parton::GetFlow() const                  { return p_flow; }
 int       Parton::GetFlow(const int index) const   { return p_flow->Code(index); }
 void      Parton::SetFlow(Flow * _flow)            { p_flow    = _flow; }
 void      Parton::SetFlow(const int index, const int code) {
-  cout<<"In Parton SetFlow("<<index<<","<<code<<")"<<endl;
   if (!m_fl.Strong()) return;
-  if (code==-1) p_flow->SetUniqueCode(index);
-  else p_flow->SetCode(index,code);
+  p_flow->SetCode(index,code);
 }
 
 

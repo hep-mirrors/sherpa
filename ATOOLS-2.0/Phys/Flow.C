@@ -1,7 +1,5 @@
-// former Flow.cxx of HepMC
 #include "Flow.H"
 #include "Parton.H"
-//#include "Blob.H"
 
 
 namespace APHYTOOLS {
@@ -10,32 +8,28 @@ namespace APHYTOOLS {
 
 using namespace APHYTOOLS;
 
-Flow::Flow( Parton * _owner ) : m_owner(_owner) { m_code[1]=0; m_code[2]=0; }
-
-Flow::Flow( const Flow & inflow ) : 
-  m_owner(inflow.m_owner)
-{
-  *this = inflow;
+Flow::Flow(Parton * _owner) : m_owner(_owner) { 
+  m_code.insert(std::make_pair<int,int>(1,0)); 
+  m_code.insert(std::make_pair<int,int>(2,0)); 
 }
 
 Flow::~Flow() { 
   m_code.clear(); 
 }
-	
-/////////////
-// Friends //
-/////////////
 
-std::ostream& APHYTOOLS::operator<<( std::ostream& ostr, const Flow& f ) {
-  ostr << f.m_code.size();
-  for ( std::map<int,int>::const_iterator i = f.m_code.begin();
-	i != f.m_code.end(); ++i ) {
-    ostr << " " << (*i).first << " " << (*i).second;
-  }
-  return ostr;
+
+const Parton * Flow::Owner() const { return m_owner; }
+
+int Flow::Code(int _index) {
+  int count = m_code.count(_index);
+  if (count>0) return m_code[_index];
+  return 0;
 }
 
-
+void Flow::SetCode(int _index,int _code) {
+  if (_code==-1) _code = ++qcd_counter; 
+  m_code.insert(std::make_pair<int,int>(_index,_code));
+}
 
 
 
