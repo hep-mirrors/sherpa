@@ -129,7 +129,7 @@ Lorentz_Function * AMEGIC::MPI2Lorentz_Function(const MPI_Lorentz_Function & mpi
   return lf;
 }
 
-std::string Lorentz_Function::String(int shortversion=0) const 
+std::string Lorentz_Function::String(int shortversion) const 
 {
   if (m_type==lf::SSS)  return std::string("1");
   if (m_type==lf::FFS)  return std::string("1");
