@@ -104,7 +104,7 @@ void Primitive_Calorimeter::Extract(Particle_List * pl)
     for (int j=0;j<m_ny;++j) {
       if (p_cells[i][j]!=0.0) {
 	Vec4D mom(1.0,p_sintheta[i]*p_cosphi[j],p_sintheta[i]*p_sinphi[j],p_costheta[i]);
-	mom*=p_cells[i][j];
+	mom*=p_cells[i][j]/p_sinphi[i];
 	Particle *track = new Particle(1,kf::jet,mom);
 	pl->push_back(track);
       }
