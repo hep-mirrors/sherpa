@@ -366,17 +366,41 @@ ArgumentType Amisic_Histogram<ArgumentType>::BinXMean(const size_t i)
 }
 
 template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinVariance(const size_t i)
+{ 
+  return ((*p_yaxis)[m_data[hci::y_square][i]]-
+	  ATOOLS::sqr((*p_yaxis)[m_data[hci::y_value][i]])/m_entries)/
+    (m_entries-1.0); 
+}
+
+template <class ArgumentType>
 ArgumentType Amisic_Histogram<ArgumentType>::BinError(const size_t i)
 { 
-  return (*p_yaxis)[m_data[hci::y_square][i]/
-		    m_data[hci::y_value][i]-
-		    m_data[hci::y_value][i]]; 
+  return sqrt(BinVariance(i)); 
 }
 
 template <class ArgumentType> ArgumentType Amisic_Histogram<ArgumentType>::
 BinExtra(const size_t i,const size_t dim)
 {
   return dim<m_extradim?m_data[hci::size+dim][i]:0.0;
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinXMean(const Argument_Type &x) 
+{ 
+  return BinXMean(FindX(x)); 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinVariance(const Argument_Type &x)
+{ 
+  return BinVariance(FindX(x)); 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinError(const Argument_Type &x)
+{ 
+  return BinError(FindX(x)); 
 }
 
 template <class ArgumentType>

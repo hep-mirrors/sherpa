@@ -97,6 +97,7 @@ namespace AMISIC {
     Argument_Type BinXMax(const size_t i); 
 
     Argument_Type BinXMean(const size_t i); 
+    Argument_Type BinVariance(const size_t i);
     Argument_Type BinError(const size_t i);
 
     Argument_Type BinContent(const size_t i);
@@ -104,6 +105,10 @@ namespace AMISIC {
     Argument_Type BinMax(const size_t i);
     Argument_Type BinEntries(const size_t i);
     Argument_Type BinExtra(const size_t i,const size_t dim=0);
+
+    Argument_Type BinXMean(const Argument_Type &x); 
+    Argument_Type BinVariance(const Argument_Type &x);
+    Argument_Type BinError(const Argument_Type &x);
 
     Argument_Type BinContent(const Argument_Type &x);
     Argument_Type BinSumSqr(const Argument_Type &x);
