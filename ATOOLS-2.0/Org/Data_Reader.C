@@ -123,7 +123,7 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
   }
   if(((pos=inputstring.find(parameter))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+parameter.length())).length()>0)) {
-    std::stringstream converter;
+    MyStrStream converter;
     converter<<HighlightSeperator(inputstring);
     converter>>value;
 #ifdef DEBUG__Data_Reader
