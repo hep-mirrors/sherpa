@@ -63,7 +63,10 @@ void Run_Parameter::AnalyseEnvironment()
 	s_variables["SHERPA_BIN_PATH"]=cur;
 	break;
       }
-      paths=paths.substr(pos+1);
+      if (pos<paths.length())
+	paths=paths.substr(pos+1);
+      else 
+	paths="";
     } while (paths.length()>0);
   }
   else {
