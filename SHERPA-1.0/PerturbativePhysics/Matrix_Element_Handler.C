@@ -216,7 +216,7 @@ bool Matrix_Element_Handler::RescaleJetrates()
 
   cout<<" rescale Jetrates : "<<endl;
   //vs.facs[10] = { 1., 1., 1. , 0.1, 1., 1.,1., 1., 1., 1.};
-  double facs[10] = { 1., 1., 1. , 1, 1., 1.,1., 1., 1., 1.};
+  double facs[10] = { 1., 1., 1. , 1., 1., 1.,1., 1., 1., 1.};
   for (int i=0; i<procs->Size();++i) {
     //    double xstot = (*procs)[i]->Total()*rpa.Picobarn();
     //    double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();

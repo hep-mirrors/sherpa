@@ -346,10 +346,6 @@ void Amegic::ReadInProcessfile(string file)
       }
     }
   }
-  
-  //trick um highest mult. treatment auszuschalten
-  // !!!!!!!!!!! boeser trick, sagt Ande !!!!!!!!!
-  //m_maxjet++;
   p_procs->SetMaxJetNumber(m_maxjet);
 }
 
