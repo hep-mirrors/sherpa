@@ -75,7 +75,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	  abort();
 	}	
 	found   = AttachShowers(blob,_bloblist,piIter->second);
-	weight *= piIter->second->GetWeight();
+	weight *= piIter->second->Weight();
       }  
 
       // Search for active blobs of type "Hard Collision :"
@@ -88,7 +88,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	  abort();
 	}	
 	found   = AttachShowers(blob,_bloblist,piIter->second);
-	weight *= piIter->second->GetWeight();
+	weight *= piIter->second->Weight();
       }  
 
       // Search for active blobs of type "Hard_Decay :"
@@ -101,7 +101,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	  abort();
 	}
 	found   = AttachShowers(blob,_bloblist,piIter->second);
-	weight *= piIter->second->GetWeight();
+	weight *= piIter->second->Weight();
       } 
     }
     if (found) hit = 1;
