@@ -10,6 +10,7 @@ for I in $* ; do
   if [ "$I" = "-c" ]; then CLEAN=TRUE 
   elif [ "$I" = "--clean" ]; then ALLCLEAN=TRUE 
   elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
+  elif [ "$I" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" 
   elif [ "$I" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
@@ -18,6 +19,7 @@ for I in $* ; do
     echo "options: -c             execute './SHERPA-1.0/Run/makeclean' first" && \
     echo "         --clean        execute 'make clean' before 'make dist'" && \
     echo "         --configure    configure before 'make dist' (enabled with '-t')" && \
+    echo "         --hide-cvs     do not include cvs directories in distribution" && \
     echo "         --total        rebuild 'Makefile.in's and 'configure' before 'make dist'" && \
     echo "         --copt         define option for 'configure'" && \
     echo "         --no-abort     ignore exit status of 'make'" && \
