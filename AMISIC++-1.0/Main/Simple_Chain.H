@@ -51,7 +51,10 @@ namespace AMISIC {
     unsigned int m_selected, m_nflavour, m_scalescheme;
     unsigned int m_kfactorscheme, m_maxtrials;
     double       m_sigmahard, m_error, m_ecms;
-    bool         m_external, m_reweight;
+    bool         m_external, m_regulate;
+
+    std::string         m_regulator;
+    std::vector<double> m_regulation;
 
     ATOOLS::Blob *GetBlob(ATOOLS::Flavour *flavour);
 

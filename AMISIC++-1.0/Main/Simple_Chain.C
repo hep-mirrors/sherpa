@@ -52,7 +52,7 @@ Simple_Chain::Simple_Chain():
   m_kfactorscheme(1),
   m_maxtrials(1),
   m_external(false),
-  m_reweight(true)
+  m_regulate(true)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -89,7 +89,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   m_kfactorscheme(1),
   m_maxtrials(1),
   m_external(true),
-  m_reweight(true)
+  m_regulate(true)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -355,6 +355,12 @@ bool Simple_Chain::ReadInData()
   if (reader->ReadFromFile(helps,"GENERATION_MODE")) {
     m_weighted=helps.find("Weighted")!=std::string::npos;
   }
+  int regulate=1;
+  if (reader->ReadFromFile(regulate,"REGULATE_XS")) {
+    m_regulate=regulate;
+    if (!reader->ReadFromFile(m_regulator,"XS_REGULATOR")) m_regulator="Massive_Propagator";
+    if (!reader->VectorFromFile(m_regulation,"XS_REGULATION")) m_regulation=std::vector<double>(1,.71);
+  }
   if (!reader->ReadFromFile(m_scalescheme,"SCALE_SCHEME")) m_scalescheme=11;
   if (!reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME")) m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=3;
@@ -367,10 +373,11 @@ bool Simple_Chain::ReadInData()
   converter<<ATOOLS::rpa.gen.Bunch(1);
   converter>>help[1];
   outputpath=std::string("MI-Grid__")+help[0]+std::string("_")+help[1]+
-    std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV__")+
-    p_isr->PDF(0)->Type()+std::string("_")+p_isr->PDF(1)->Type()+std::string("__as_")+
-    ATOOLS::ToString(static_cast<MODEL::Running_AlphaS*>
-		     (p_model->GetScalarFunction("alpha_S"))->Order())+
+    std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV_");
+  if (m_regulate) outputpath+="(r)_";
+  outputpath+=std::string("_")+p_isr->PDF(0)->Type()+std::string("_")+p_isr->PDF(1)->Type()+
+    std::string("__as_")+ATOOLS::ToString(static_cast<MODEL::Running_AlphaS*>
+					  (p_model->GetScalarFunction("alpha_S"))->Order())+
     std::string("__sc_")+ATOOLS::ToString(m_scalescheme)+
     std::string("__kf_")+ATOOLS::ToString(m_kfactorscheme)+std::string("/");
   SetOutputPath(OutputPath()+outputpath);
@@ -494,8 +501,9 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
   for (Blob_Iterator bit=bloblist.begin();bit!=bloblist.end();++bit) {
     for (size_t i=0;i<group->NIn();++i) flavour[i]=(*bit)->InParticle(i)->Flav();
     for (size_t j=0;j<group->NOut();++j) flavour[group->NIn()+j]=(*bit)->OutParticle(j)->Flav();
-    EXTRAXS::Single_XS *newxs = group->XSSelector()->GetXS(group->NIn(),group->NOut(),
-							   flavour,p_isr->KMROn());
+    group->XSSelector()->SetOffShell(p_isr->KMROn());
+    EXTRAXS::Single_XS *newxs = group->XSSelector()->GetXS(group->NIn(),group->NOut(),flavour);
+    if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
     if (newxs==NULL) {
       ATOOLS::msg.Error()<<"Simple_Chain::CreateGrid(..): "
 			 <<"Did not find any process! Abort calculation."<<std::endl;
@@ -640,8 +648,9 @@ bool Simple_Chain::InitializeBlobList()
     for (Blob_Iterator bit=m_blobs[i].begin();bit!=m_blobs[i].end();++bit) {
       for (size_t j=0;j<group[i]->NIn();++j) flavour[j]=(*bit)->InParticle(j)->Flav();
       for (size_t j=0;j<group[i]->NOut();++j) flavour[group[i]->NIn()+j]=(*bit)->OutParticle(j)->Flav();
-      EXTRAXS::Single_XS *newxs = group[i]->XSSelector()->GetXS(group[i]->NIn(),group[i]->NOut(),
-								flavour,p_isr->KMROn());
+      group[i]->XSSelector()->SetOffShell(p_isr->KMROn());
+      EXTRAXS::Single_XS *newxs = group[i]->XSSelector()->GetXS(group[i]->NIn(),group[i]->NOut(),flavour);
+      if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
       if (newxs==NULL) {
 	ATOOLS::msg.Error()<<"Simple_Chain::InitializeBlobList(): "
 			   <<"Did not find any process! Abort."<<std::endl;
@@ -840,8 +849,6 @@ bool Simple_Chain::Initialize()
       p_profile = Profile_Function_Base::SelectProfile(function,parameters);
     }
   }
-  int reweight=true;
-  if (reader->ReadFromFile(reweight,"REWEIGHT_HARDEST")) m_reweight=reweight;
   delete reader;
   for (unsigned int i=0;i<m_blobs.size();++i) {
     if (!CreateGrid(m_blobs[i],m_filename[i])) {
@@ -1071,26 +1078,7 @@ bool Simple_Chain::DiceOrderingParameter()
     s_stophard=true;
     return false;
   }
-  if (!m_reweight) {
-    m_last[0]=(*p_total)[(*p_total)(m_last[0])-log(ATOOLS::ran.Get())/m_enhance]; 
-  }
-  else {
-    if (s_cleaned) {
-      double last=0.5*m_ecms;
-      double hardweight=(*p_differential)(m_last[0])*
-	exp(-m_enhance*(*p_total)(m_last[0]));
-      do {
-	last=(*p_total)[(*p_total)(last)-log(ATOOLS::ran.Get())/m_enhance]; 
-	double weight=(*p_differential)(last)*
-	  exp(-m_enhance*(*p_total)(last));
-	if (weight<ATOOLS::ran.Get()*hardweight) continue;
-      } while (last>m_last[0]);
-      m_last[0]=last;
-    }
-    else {
-      m_last[0]=(*p_total)[(*p_total)(m_last[0])-log(ATOOLS::ran.Get())/m_enhance]; 
-    }
-  }
+  m_last[0]=(*p_total)[(*p_total)(m_last[0])-log(ATOOLS::ran.Get())/m_enhance]; 
   s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
     m_dicedparameter=false;
