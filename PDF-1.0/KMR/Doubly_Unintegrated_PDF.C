@@ -44,7 +44,7 @@ Doubly_Unintegrated_PDF::Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running
       m_branching[m_partons[i]] = new LL_Branching(m_partons[i],p_alphas);
     }
   }
-  p_sudakov = new SHERPA::LL_Sudakov(p_alphas);
+  p_sudakov = new LL_Sudakov(p_alphas);
   std::string ecms;
   MyStrStream sstr;
   sstr<<ATOOLS::rpa.gen.Ecms();
@@ -174,6 +174,8 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
   }
   m_unintegrated*=(*p_alphas)(m_kperp2)/(2.0*M_PI);
   m_unintegrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2));
+  std::cout<<flavour<<" sud / pdf : "<<p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2))
+	   <<" / "<<m_unintegrated<<std::endl;
   m_unintegrated/=m_kperp2;
   return true;
 }

@@ -60,6 +60,11 @@ namespace PDF {
     // inline functions
     inline static const SF_Set &AllSplittings() { return s_splittings; }
     
+    inline static double NfMax() { return s_nfmax; }
+    inline static double NC()    { return s_nc;    }
+    inline static double CF()    { return s_cf;    }
+    inline static double CA()    { return s_ca;    }
+
   };// end of class LL_Branching_Probabilities
 
 }// end of namespace PDF

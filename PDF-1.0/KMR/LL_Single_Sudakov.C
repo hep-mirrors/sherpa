@@ -5,14 +5,14 @@
 #include "Integration_Info.H"
 #include <sys/stat.h>
 
-using namespace SHERPA;
-using namespace ATOOLS;
+using namespace PDF;
 
-LL_Single_Sudakov::LL_Single_Sudakov(NLL_Branching_Probability_Base *bp,int mode):
+LL_Single_Sudakov::
+LL_Single_Sudakov(SHERPA::NLL_Branching_Probability_Base *bp,int mode):
   m_qmax(0.),
   m_qmin(0.),
-  m_calcmode((Sudakov::code)mode),
-  m_cutmode((Sudakov::code)mode),
+  m_calcmode((SHERPA::Sudakov::code)mode),
+  m_cutmode((SHERPA::Sudakov::code)mode),
   p_bp(bp),
   m_gauss(bp) {}
 
@@ -30,11 +30,11 @@ bool LL_Single_Sudakov::Initialize(double qmin,double qmax)
 {
   m_qmin=qmin;
   m_qmax=qmax;
-  m_calcmode = (Sudakov::code)(m_calcmode&896);
-  m_cutmode  = (Sudakov::code)(m_cutmode&7);
+  m_calcmode=(SHERPA::Sudakov::code)(m_calcmode&896);
+  m_cutmode=(SHERPA::Sudakov::code)(m_cutmode&7);
   if (m_qmin==m_qmax) {
-    m_qmin=sqrt(rpa.gen.Ycut())*rpa.gen.Ecms();
-    m_qmax=2.*rpa.gen.Ecms();
+    m_qmin=sqrt(ATOOLS::rpa.gen.Ycut())*ATOOLS::rpa.gen.Ecms();
+    m_qmax=2.*ATOOLS::rpa.gen.Ecms();
   }
   return true;
 }

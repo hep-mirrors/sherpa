@@ -5,18 +5,19 @@
 #include "NLL_Sudakov_Base.H"
 #include "Info_Key.H"
 
-namespace SHERPA {
+namespace PDF {
 
-  class LL_Single_Sudakov : public NLL_Sudakov_Base  {
+  class LL_Single_Sudakov : public SHERPA::NLL_Sudakov_Base  {
   private:
 
     double m_qmax, m_qmin;
 
-    Sudakov::code m_calcmode;
-    Sudakov::code m_cutmode;
+    SHERPA::Sudakov::code m_calcmode;
+    SHERPA::Sudakov::code m_cutmode;
 
-    NLL_Branching_Probability_Base *p_bp;
-    ATOOLS::Gauss_Integrator        m_gauss;
+    SHERPA::NLL_Branching_Probability_Base *p_bp;
+    
+    ATOOLS::Gauss_Integrator m_gauss;
 
     std::string      m_outpath;
     ATOOLS::Info_Key m_lastsud;
@@ -24,7 +25,7 @@ namespace SHERPA {
   public:
 
     // constructor
-    LL_Single_Sudakov(NLL_Branching_Probability_Base *,int);
+    LL_Single_Sudakov(SHERPA::NLL_Branching_Probability_Base *,int);
 
     // destructor
     ~LL_Single_Sudakov();

@@ -18,9 +18,10 @@ namespace PDF {
   class Doubly_Unintegrated_PDF: public PDF_Base {
   private:
 
-    PDF_Base              *p_pdf;
+    PDF_Base   *p_pdf;
+    LL_Sudakov *p_sudakov;
+
     MODEL::Running_AlphaS *p_alphas;
-    SHERPA::LL_Sudakov    *p_sudakov;
 
     std::map<ATOOLS::Flavour,APACIC::Splitting_Function*> m_splitting;
     std::map<ATOOLS::Flavour,LL_Branching*>               m_branching;
