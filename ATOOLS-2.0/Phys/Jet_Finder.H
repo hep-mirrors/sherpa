@@ -33,7 +33,7 @@ namespace ATOOLS {
 		   std::vector<Vec4D>,int &,int &);
 
     double DEta12(Vec4D &,Vec4D &);
-    double DPhi12(Vec4D &,Vec4D &);
+    double CosDPhi12(Vec4D &,Vec4D &);
     double DCos12(Vec4D &,Vec4D &);
     double Coshyp(double);
   public:
