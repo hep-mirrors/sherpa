@@ -12,9 +12,11 @@ namespace SHERPA {
     std::string m_type,m_name;
   public :
     Event_Phase_Handler();
+    Event_Phase_Handler(std::string);
     virtual ~Event_Phase_Handler();
     virtual bool Treat(ATOOLS::Blob_List *, double &) = 0;
-    virtual void        CleanUp()                        = 0;
+    virtual void        CleanUp()                     = 0;
+    virtual void        Finish(std::string)           = 0;
     virtual std::string Type();
     virtual void        SetType(std::string);
     virtual std::string Name();
