@@ -11,7 +11,7 @@ const std::string integralfile=std::string("integral.dat");
 using namespace AMISIC;
 
 Simple_Chain::Simple_Chain():
-  MI_Base("Simple Chain",MI_Base::HardEvent,2),
+  MI_Base("Simple Chain",MI_Base::HardEvent,4),
   m_differential(std::vector<GridFunctionType*>(0)),
   p_total(NULL),
   m_environmentfile(std::string("Run.dat")),
@@ -38,7 +38,7 @@ Simple_Chain::Simple_Chain():
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 			   BEAM::Beam_Spectra_Handler *_p_beam,PDF::ISR_Handler *_p_isr):
-  MI_Base("Simple Chain",MI_Base::HardEvent,2),
+  MI_Base("Simple Chain",MI_Base::HardEvent,4),
   m_differential(std::vector<GridFunctionType*>(0)),
   p_total(NULL),
   m_environmentfile(std::string("Run.dat")),
@@ -706,8 +706,13 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #endif
       p_xs=(*p_processes)[m_selected]->Selected();
       ATOOLS::Vec4D ptot;
-      for (int j=0;j<p_xs->Nin();++j) ptot+=p_xs->Momenta()[j];
+      for (int j=0;j<p_xs->Nin();++j) {
+	ptot+=p_xs->Momenta()[j];
+	m_last[j+2]-=2.0*p_xs->Momenta()[j][0]/ATOOLS::rpa.gen.Ecms();
+	if (m_last[j+2]<=0.0) return false;
+      }
       m_last[1]-=sqrt(ptot.Abs2());
+      if (m_last[1]<=0.0) return false;
       p_xs->SetColours(p_xs->Momenta());
       ATOOLS::Particle *particle;
       for (int j=0;j<p_xs->Nin();++j) {
@@ -813,8 +818,7 @@ bool Simple_Chain::DiceOrderingParameter()
 
 void Simple_Chain::Reset()
 {
-  m_last[0]=m_start[0];
-  m_last[1]=m_start[1];
+  for (unsigned int i=0;i<4;++i) m_last[i]=m_start[i];
 }
 
 void Simple_Chain::Update(const MI_Base *mibase)
