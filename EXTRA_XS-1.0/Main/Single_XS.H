@@ -36,8 +36,8 @@ namespace EXTRAXS {
 
   inline int Single_XS::Size() { return 1; }
   inline XS_Base * Single_XS::operator[](int idx) {
-    AORGTOOLS::msg.Error()<<"Error in XS_Base * Single_XS::operator[]. "<<endl
-			  <<"   This is absolutely meaningless. Return this."<<endl;
+    AORGTOOLS::msg.Error()<<"Error in XS_Base * Single_XS::operator[]. "<<std::endl
+			  <<"   This is absolutely meaningless. Return this."<<std::endl;
     return this;
   }
   inline void Single_XS::SetISR(PDF::ISR_Handler * _isr) { p_isr     = _isr; }
