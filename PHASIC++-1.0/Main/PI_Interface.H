@@ -14,7 +14,7 @@ namespace PHASIC {
     Phase_Space_Handler *p_pshandler;
 
     std::string m_key;
-    bool        m_initialize;
+    bool        m_initialize, m_stop;
     psm::code   m_mode, m_cmode;
 
     std::vector<double> m_point;
@@ -53,6 +53,8 @@ namespace PHASIC {
 
     inline double Integral() const { return m_integral; }
     inline double Value() const    { return m_value;    }
+
+    inline bool Stop() const { return m_stop; }
 
     inline ATOOLS::Primitive_Integrator *operator->() const 
     { return p_integrator; }
