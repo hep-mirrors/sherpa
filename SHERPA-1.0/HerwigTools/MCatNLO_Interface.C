@@ -115,6 +115,13 @@ bool MCatNLO_Interface::ReadInTheParameters()
     hwproc.iproc = -proc;
     m_proc       = ptp::Lepton_Pair; 
     break;
+  case 285:
+  case 286:
+  case 287:
+  case 288:
+    hwproc.iproc = -proc;
+    m_proc       = ptp::Boson_Pair; 
+    break;
   default: 
     msg.Error()<<"Error in MCatNLO_Interface::ReadInTheParameters("<<m_path<<"/"<<m_file<<"):"<<std::endl
 	       <<"   Process number not understood : "<<proc<<std::endl
