@@ -23,6 +23,11 @@ Run_Parameter::Run_Parameter()
 
 void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
 {
+#ifdef __GNUC__
+#if __GNUC__ == 2 && __GNUC_MINOR__ == 96
+#error Sherpa was not designed for gcc 2.96
+#endif
+#endif
   gen.m_timer.Start();
   std::string gccversion;
   system("gcc -dumpversion > sherpa_gcc_test");
@@ -30,7 +35,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (*gcctest) (*gcctest)>>gccversion;
   delete gcctest;
   system("if test -f sherpa_gcc_test; then rm sherpa_gcc_test; fi");
-  if (gccversion==std::string("2.96")) {
+  if (gccversion.find("2.96")!=std::string::npos) {
     ATOOLS::msg.Error()<<"Run_Parameter::Init(..): "<<om::red
 		       <<"Sherpa must not be run with gcc version 2.96 !"<<om::reset<<std::endl;
     exit(1);
