@@ -17,7 +17,7 @@ Timelike_Kinematics::Timelike_Kinematics()
 {
   double ycut   = AORGTOOLS::rpa.integ.Ycut();
   jf            = new APHYTOOLS::Jet_Finder(ycut,1);
-  pt_scheme     = 2;  // cf. Timelike_Sudakov
+  pt_scheme     = 1;  // cf. Timelike_Sudakov
   mass_scheme   = 1;
 }
 
@@ -50,19 +50,15 @@ bool Timelike_Kinematics::CheckZRange(Knot * mo) {
 
   msg.Debugging()<<" Timelike_Kinematics::CheckZRange("<<t<<","<<t1<<","<<t2<<") "<<endl;
   if (t  < t1+t2+2.*sqrt(t1*t2)) {
-    msg.Debugging()<<" Timelike_Kinematics::CheckZRange() A "<<endl;
     if (d1->stat==0 && d2->stat==0) return 0;
-    msg.Debugging()<<" a "<<endl;
     if (d1->stat==0 && d2->stat!=0) {
       d2->stat=3;
       return 0;
     }
-    msg.Debugging()<<" b "<<endl;
     if (d1->stat!=0 && d2->stat==0) {
       d1->stat=3;
       return 0;
     }
-    msg.Debugging()<<" c "<<endl;
     // select one of the two to be diced again and return "daughter selected"
     if (d1->t > d2->t) d1->stat=3;
     else d2->stat=3;
@@ -71,8 +67,6 @@ bool Timelike_Kinematics::CheckZRange(Knot * mo) {
 
   // determine real Energy fractions 
   // *AS* this works only for massless momenta!!!! (cf. also problems in Shuffle routines)
-
-
 
   double lambda   = sqrt(sqr(t-t1-t2)-4.*t1*t2);   
   double z        = mo->z;
@@ -118,13 +112,11 @@ bool Timelike_Kinematics::CheckZRange(Knot * mo) {
   if (!do1 && !do2) return 1; // all fine
 
   if (!do1 && do2) {
-    msg.Debugging()<<" Timelike_Kinematics::CheckZRange() B "<<endl;
     d2->stat=3;
     return 0; // dice d2 again!
   }
 
   if (do1 && !do2) {
-    msg.Debugging()<<" Timelike_Kinematics::CheckZRange() C "<<endl;
     d1->stat=3;
     return 0; // dice d1 again!
   }
@@ -134,7 +126,6 @@ bool Timelike_Kinematics::CheckZRange(Knot * mo) {
   if (d1->t > d2->t) d1->stat=3;
   else d2->stat=3;
 
-  msg.Debugging()<<" Timelike_Kinematics::CheckZRange() D "<<endl;
   return 0;
 }
 
@@ -406,9 +397,7 @@ bool Timelike_Kinematics::KinCheck(int first,Knot * mo)
     coth1 = (mo->costh*p1p2+w1-t1)/(sqrt((mo->E2-mo->t)*(w1-t1)));
   }
 
-  //  if (dabs(coth1)-1 > rpa.gen.Accu()) return 1;
   if (dabs(coth1) > 1.+rpa.gen.Accu()) return 1;
-
 
 
   if (!first) {
