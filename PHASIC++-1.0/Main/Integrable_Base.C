@@ -14,7 +14,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS
   m_scalefactor(scalefactor), m_threshold(0.), m_overflow(0.), 
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
-  m_swaped(false), p_selected(NULL), p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
+  m_swaped(false), p_selected(this), p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_selector(NULL), p_cuts(NULL) {}
 
 Integrable_Base::~Integrable_Base()
