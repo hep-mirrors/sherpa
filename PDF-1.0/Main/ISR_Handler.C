@@ -11,7 +11,7 @@ using namespace PDF;
 using namespace std;
 
 ISR_Handler::ISR_Handler(ISR_Base ** _ISRBase,double * _splimits) :
-  p_ISRBase(_ISRBase), m_x1(1.), m_x2(1.), m_mass12(0.), m_mass22(0.)
+  p_ISRBase(_ISRBase), m_mass12(0.), m_mass22(0.), m_x1(1.), m_x2(1.)
 {
   m_mode = 0;
   for (short int i=0;i<2;i++) {
@@ -48,10 +48,11 @@ void   ISR_Handler::SetSprimeMin(double _spl)       { m_splimits[0]  = Max(m_fix
 void   ISR_Handler::SetSprimeMax(double _spl)       { m_splimits[1]  = Min(m_fixed_smax,_spl); }
 void   ISR_Handler::SetFixedSprimeMin(double _spl)  
 { 
-  m_fixed_smin  = Max(m_fixed_smin,_spl); 
+  m_fixed_smin  = Max(m_fixed_smin,_spl);
   m_splimits[0] = Max(m_splimits[0],_spl);
 }
-void   ISR_Handler::SetFixedSprimeMax(double _spl)  {
+void   ISR_Handler::SetFixedSprimeMax(double _spl)  
+{
   m_fixed_smax  = Min(m_fixed_smax,_spl);
   m_splimits[1] = Min(m_splimits[1],_spl);
 }
