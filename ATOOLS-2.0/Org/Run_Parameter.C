@@ -107,7 +107,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     std::string command=argv[0];
     if (!system((std::string("test -f ")+command).c_str())) {
       if (command[0]!='/') command=std::string(getenv("PWD"))+std::string("/Sherpa");
-      std::cout<<command<<std::endl;
       s_variables["SHERPA_BIN_PATH"]=command.substr(0,command.length()-7);
     }
     else if (!system("test -f $PWD/Sherpa")) {
