@@ -167,8 +167,8 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
     if(orig.in[i]!=orig.in[i].Bar()) cnt++;
   }
   if(cnt>0){
-    Flavour flavlist[cnt];
-    int flaglist[cnt];
+    Flavour *flavlist= new Flavour[cnt];
+    int *flaglist= new int[cnt];
     cnt = 0;
     for(int i=0;i<orig.nleg;i++){
       if(orig.in[i]!=orig.in[i].Bar()) {
@@ -186,6 +186,8 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
     for (int i=0;i<cnt;i++) {
       if (flaglist[i]==0) hc = 1;
     }
+    delete[] flavlist;
+    delete[] flaglist;
   }
   
   int probehc = 0;

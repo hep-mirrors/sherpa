@@ -252,8 +252,8 @@ bool Beam_Spectra_Handler::MakeBeams(Vec4D * p,double sprime,double y)
     
     p[0]          = Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass12));
     p[1]          = Vec4D(E2,(-1.)*Vec3D(p[0]));
-    E1            = std::exp(y);  
-    E2            = std::exp(-y);  
+    E1            = exp(y);  
+    E2            = exp(-y);  
 
 
     m_CMSBoost    = Poincare(Vec4D(E1+E2,0.,0.,E1-E2));
