@@ -81,15 +81,22 @@ double Off_Shell_qqb_llb::Scale(const ATOOLS::Vec4D *momenta)
   SetMomenta(momenta);
   SetSTU(momenta);
   const double MZ2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
+  ATOOLS::Vec4D *p=p_momenta;
+  double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
+  double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
+  m_scale[PHASIC::stp::kp21]=x1*x1*2.*S2*xi;
+  m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
   switch (m_scalescheme) {
   case -1:
     return m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-  case 10:
-    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MZ2,1./3.);
-  default:
-    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MZ2,1./3.);
+  case 10: {
+    double sc=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(sc,2./3.)*pow(MZ2,1./3.);
+  }
+  default: {
+    double sc=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(sc,2./3.)*pow(MZ2,1./3.);
+  }
   }
 }
 
@@ -169,15 +176,22 @@ double Off_Shell_q1q2b_lnulb::Scale(const ATOOLS::Vec4D *momenta)
   SetMomenta(momenta);
   SetSTU(momenta);
   const double MW2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
+  ATOOLS::Vec4D *p=p_momenta;
+  double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
+  double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
+  m_scale[PHASIC::stp::kp21]=x1*x1*2.*S2*xi;
+  m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
   switch (m_scalescheme) {
   case -1:
     return m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-  case 10:
-    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MW2,1./3.);
-  default:
-    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MW2,1./3.);
+  case 10: {
+    double sc=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(sc,2./3.)*pow(MW2,1./3.);
+  }
+  default: {
+    double sc=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(sc,2./3.)*pow(MW2,1./3.);
+  }
   }
 }
 
@@ -259,15 +273,22 @@ double Off_Shell_q1q2b_q3q4b::Scale(const ATOOLS::Vec4D *momenta)
   SetMomenta(momenta);
   SetSTU(momenta);
   const double MW2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
+  ATOOLS::Vec4D *p=p_momenta;
+  double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
+  double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
+  m_scale[PHASIC::stp::kp21]=x1*x1*2.*S2*xi;
+  m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
   switch (m_scalescheme) {
   case -1:
     return m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-  case 10:
-    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MW2,1./3.);
-  default:
-    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MW2,1./3.);
+  case 10: {
+    double sc=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(sc,2./3.)*pow(MW2,1./3.);
+  }
+  default: {
+    double sc=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(sc,2./3.)*pow(MW2,1./3.);
+  }
   }
 }
 
