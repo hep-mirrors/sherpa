@@ -2,6 +2,7 @@
 #include<fstream>
 #include<iomanip>
 #include<math.h>
+#include<stdio.h>
 
 using namespace std;
 
@@ -1383,7 +1384,7 @@ void TFOAM::Explore(TFCELL *Cell){
   }
 
   // ||||||||||||||||||||||||||BEGIN MC LOOP|||||||||||||||||||||||||||||
-  double NevEff;
+  double NevEff=1.;
   for(iev=0;iev<m_nSampl;iev++){
     MakeLambda();              // generate uniformly vector inside simplex
     MakeAlpha();               // generate uniformly vector inside hypercube

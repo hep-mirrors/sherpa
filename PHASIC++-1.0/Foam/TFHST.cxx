@@ -4,15 +4,15 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include<math.h>
-#include<stdlib.h>
-#include<fstream.h>
-#include<iomanip.h>
+#include<cmath>
+#include<iostream>
+#include<fstream>
+#include<iomanip>
 
 #include"TFHST.h"
 
-#define SW12 setprecision(7)<<setw(12)
-#define SW8  setprecision(5)<<setw(8)
+#define SW12 std::setprecision(7)<<std::setw(12)
+#define SW8  std::setprecision(5)<<std::setw(8)
 
 
 
@@ -37,14 +37,14 @@ TFHST::TFHST(double xmin, double xmax, int nb){
   m_Bin1 = NULL;
   m_Bin2 = NULL;
   if( m_xmin >= m_xmax || m_Nb<1 ){
-    cout<<"TFHST constructor failed, xmax<xmin or Nb<1 "<<endl;
+    std::cout<<"TFHST constructor failed, xmax<xmin or Nb<1 "<<std::endl;
     exit(0);
   }
   if(nb>0){
     m_Bin1 = new double[m_Nb+2];
     m_Bin2 = new double[m_Nb+2];
     if(m_Bin1 == NULL || m_Bin2 == NULL){
-      cout<<"TFHST constructor failed to allocate Bin1 or Bin2"<<endl;
+      std::cout<<"TFHST constructor failed to allocate Bin1 or Bin2"<<std::endl;
       exit(0);
     }
     for (i=0; i<=m_Nb+1; i++) m_Bin1[i]=0.0;
@@ -64,13 +64,13 @@ TFHST::TFHST(TFHST &From){
     m_Bin1 = new double[m_Nb+2];
     m_Bin2 = new double[m_Nb+2];
     if(m_Bin1 == NULL || m_Bin2 == NULL){
-      cout<<"TFHST constructor failed to allocate Bin1 or Bin2"<<endl;
+      std::cout<<"TFHST constructor failed to allocate Bin1 or Bin2"<<std::endl;
       exit(0);
     }
     for (i=0; i<=m_Nb+1; i++) m_Bin1[i]=From.m_Bin1[i];
     for (i=0; i<=m_Nb+1; i++) m_Bin2[i]=From.m_Bin2[i];
   }
-  cout << "TFHST::TFHST NEVER UESE Copy constructor !!!" << endl; exit(0);
+  std::cout << "TFHST::TFHST NEVER UESE Copy constructor !!!" << std::endl; exit(0);
 }
 ///////////////////////////////////////////////////////////////////////////////
 TFHST::~TFHST(){
@@ -99,7 +99,7 @@ TFHST& TFHST::operator =(TFHST &From){
   m_xmax = From.m_xmax;
   for (i=0; i<=m_Nb+1; i++) m_Bin1[i] = From.m_Bin1[i];
   for (i=0; i<=m_Nb+1; i++) m_Bin2[i] = From.m_Bin2[i];
-  if(m_chat)  cout<<" SUBSITUTE operator = "<<endl;
+  if(m_chat)  std::cout<<" SUBSITUTE operator = "<<std::endl;
   return *this;
 }
 
@@ -109,7 +109,7 @@ double& TFHST::operator[](int nb){
   if( (nb>=0) &&  (nb<=(m_Nb+1)) ){
     return m_Bin1[nb];
   }else{
-    cout<<" STOP in TFHST[], wrong bin index "<<endl;
+    std::cout<<" STOP in TFHST[], wrong bin index "<<std::endl;
     exit(0);
   }
 }
@@ -120,7 +120,7 @@ double& TFHST::operator()(int nb){
   if( (nb>=0) &&  (nb<=(m_Nb+1)) ){
     return m_Bin2[nb];
   }else{
-    cout<<" STOP in TFHST(), wrong bin index "<<endl;
+    std::cout<<" STOP in TFHST(), wrong bin index "<<std::endl;
     exit(0);
   }
 }
@@ -144,7 +144,7 @@ double TFHST::GetBinContent(int nb){
   if( (nb>=0) &&  (nb<m_Nb+2) ){
     return m_Bin1[nb];
   }else{
-    cout<<" STOP in TFHST[], wrong bin index "<<endl;
+    std::cout<<" STOP in TFHST[], wrong bin index "<<std::endl;
     exit(0);
   }
 }
@@ -155,7 +155,7 @@ double TFHST::GetBinError(int nb){
   if( (nb>=0) &&  (nb<m_Nb+2) ){
     return sqrt(m_Bin2[nb]);
   }else{
-    cout<<" STOP in TFHST[], wrong bin index "<<endl;
+    std::cout<<" STOP in TFHST[], wrong bin index "<<std::endl;
     exit(0);
   }
 }
@@ -169,7 +169,7 @@ void TFHST::Print(void){
   int i,k;
   double bi,bi2,err,xx;
   double Lmax =80.0;
-  cout << "-----------------------------------Histogram-------------------------------------------"<<endl;
+  std::cout << "-----------------------------------Histogram-------------------------------------------"<<std::endl;
   double bmin= +1e150;
   double bmax= -1e150;
   for(i=1; i<=m_Nb;i++){
@@ -177,11 +177,11 @@ void TFHST::Print(void){
     if(m_Bin1[i]<bmin) bmin=m_Bin1[i];
   }
   if(bmax==bmin){
-    cout<<" ++++ EMPTY Histogram "<<endl;
+    std::cout<<" ++++ EMPTY Histogram "<<std::endl;
     return;
   }
-  cout <<" min_bin ="<<SW12<<bmin<<"      ";
-  cout <<" max_bin ="<<SW12<<bmax<<endl;
+  std::cout <<" min_bin ="<<SW12<<bmin<<"      ";
+  std::cout <<" max_bin ="<<SW12<<bmax<<std::endl;
   for(i=0; i<=m_Nb+1; i++){
     bi  = m_Bin1[i];
     bi2 = m_Bin2[i];
@@ -190,21 +190,21 @@ void TFHST::Print(void){
     if(i>0 && i<m_Nb+1) {
       xx=m_xmin+(i-1)*((m_xmax-m_xmin)/m_Nb);
       line= (int)(Lmax*bi/(bmax-bmin));
-      cout <<SW8<<xx <<"  ";
-      cout <<SW12<<bi <<"  +- " <<SW12 << err << " ";
-      cout<<"I";
-      for(k=0;k<line;k++) cout<<"X";
+      std::cout <<SW8<<xx <<"  ";
+      std::cout <<SW12<<bi <<"  +- " <<SW12 << err << " ";
+      std::cout<<"I";
+      for(k=0;k<line;k++) std::cout<<"X";
     }else if(i==0){
-      cout <<" Underflow";
-      cout <<SW12<<bi <<"  +- " <<SW12 << err << " ";
+      std::cout <<" Underflow";
+      std::cout <<SW12<<bi <<"  +- " <<SW12 << err << " ";
     }else if(i==m_Nb+1){    
-      cout <<" Overlow  ";
-      cout <<SW12<<bi <<"  +- " <<SW12 << err << " ";
+      std::cout <<" Overlow  ";
+      std::cout <<SW12<<bi <<"  +- " <<SW12 << err << " ";
     }
-    cout <<endl;
+    std::cout <<std::endl;
   }
-  cout << "---------------------------------------------------------------------------------------"<<endl;
-  cout <<endl;
+  std::cout << "---------------------------------------------------------------------------------------"<<std::endl;
+  std::cout <<std::endl;
 }
 ///////////////////////////////////////////////////////////////////////////////
 void TFHST::Reset(){

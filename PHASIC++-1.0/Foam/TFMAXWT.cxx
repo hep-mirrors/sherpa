@@ -11,10 +11,10 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include<math.h>
-#include<stdlib.h>
-#include<fstream.h>
-#include<iomanip.h>
+#include<cmath>
+#include<fstream>
+#include<iostream>
+#include<iomanip>
 
 #include"TFMAXWT.h"
 
@@ -60,7 +60,7 @@ TFMAXWT::TFMAXWT(TFMAXWT &From){
   m_wmax   = From.m_wmax;
   m_WtHst1 = From.m_WtHst1;
   m_WtHst2 = From.m_WtHst2;
-  cout<<"+++++ Stop in  COPY CONSTRUCTOR TFMAXWT::TFMAXWT,   NOT TESTED!"<<endl;
+  std::cout<<"+++++ Stop in  COPY CONSTRUCTOR TFMAXWT::TFMAXWT,   NOT TESTED!"<<std::endl;
   exit(1);  
 }
 
@@ -102,10 +102,10 @@ void TFMAXWT::Make(const double eps, double &MCeff){
   double WtLim,AveWt;
   GetMCeff(eps, MCeff, WtLim);
   AveWt = MCeff*WtLim;
-  cout<< "00000000000000000000000000000000000000000000000000000000000000000000000"<<endl;
-  cout<< "00 -->WtLim: No_evt ="<<m_Nent<<"   <Wt> = "<<AveWt<<"  WtLim=  "<<WtLim<<endl;
-  cout<< "00 -->WtLim: For eps = "<<eps  <<"    EFFICIENCY <Wt>/WtLim= "<<MCeff<<endl;
-  cout<< "00000000000000000000000000000000000000000000000000000000000000000000000"<<endl;
+  std::cout<< "00000000000000000000000000000000000000000000000000000000000000000000000"<<std::endl;
+  std::cout<< "00 -->WtLim: No_evt ="<<m_Nent<<"   <Wt> = "<<AveWt<<"  WtLim=  "<<WtLim<<std::endl;
+  std::cout<< "00 -->WtLim: For eps = "<<eps  <<"    EFFICIENCY <Wt>/WtLim= "<<MCeff<<std::endl;
+  std::cout<< "00000000000000000000000000000000000000000000000000000000000000000000000"<<std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ void TFMAXWT::GetMCeff(const double eps, double &MCeff, double &WtLim){
     sumWt += m_WtHst2->GetBinContent(ib);
   }
   if( (sum == 0.0) || (sumWt == 0.0) ){
-    cout<<"TFMAXWT::Make: zero content of histogram !!!,sum,sumWt ="<<sum<<sumWt<<endl;
+    std::cout<<"TFMAXWT::Make: zero content of histogram !!!,sum,sumWt ="<<sum<<sumWt<<std::endl;
   }
   AveWt = sumWt/sum;
   //--------------------------------------
@@ -149,11 +149,11 @@ void TFMAXWT::GetMCeff(const double eps, double &MCeff, double &WtLim){
   if(ibX == (m_nBin+1) ){
     WtLim = 1.0e200;
     MCeff   = 0.0;
-    cout<< "+++++ WtLim undefined. Higher uper limit in histogram"<<endl;
+    std::cout<< "+++++ WtLim undefined. Higher uper limit in histogram"<<std::endl;
   }else if( ibX == 1){
     WtLim = 0.0;
     MCeff   =-1.0;
-    cout<< "+++++ WtLim undefined. Lower uper limit or more bins "<<endl;
+    std::cout<< "+++++ WtLim undefined. Lower uper limit or more bins "<<std::endl;
   }else{
     WtLim= (ibX)*m_wmax/m_nBin; // We over-estimate WtLim, under-estimate MCeff
     MCeff  = AveWt/WtLim;
