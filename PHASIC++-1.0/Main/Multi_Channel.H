@@ -99,6 +99,7 @@ namespace PHASIC {
     inline std::string          Name()      { return name; }
     std::string                 ChID(int);
     Single_Channel*             LastChannel() { if (m_lastdice>=0) return Channel(m_lastdice); return 0;}
+    void                        NoDice()    { m_lastdice=-1; }
   };
 
 

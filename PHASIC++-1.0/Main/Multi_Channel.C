@@ -293,7 +293,7 @@ void Multi_Channel::AddPoint(double value)
     }
     channels[i]->IncrementN();
   }
-  Channel(m_lastdice)->AddPoint(value);
+  if (m_lastdice>=0) Channel(m_lastdice)->AddPoint(value);
 }
 
 double Multi_Channel::Result()
