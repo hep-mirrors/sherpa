@@ -54,11 +54,21 @@ if [ "$ONE" = "TRUE" ] ; then
   done
 fi
 
-if [ "$NOUPDATE" = "TRUE" ] ; then 
-  cvs -n update $OPTIONS $DIRS > $LOGFILE 2>&1
-else 
-  cvs update $OPTIONS $DIRS > $LOGFILE 2>&1
-fi
+CUR=$PWD
+echo "" > $LOGFILE
+for DIR in $DIRS ; do
+  if test -d $DIR ; then
+    cd $DIR
+    if [ "$NOUPDATE" = "TRUE" ] ; then 
+      cvs -n update $OPTIONS >> $CUR/$LOGFILE 2>&1
+    else 
+      cvs update $OPTIONS >> $CUR/$LOGFILE 2>&1
+    fi
+    cd $CUR
+  else
+    echo "update: error: directory $DIR not found"
+  fi
+done
 
 CHANGES=
 EXTCNT=0
