@@ -325,6 +325,8 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::SameWeightedEvent()
 bool Phase_Space_Handler::OneEvent(double mass,int mode)
 {
   PROFILE_HERE;
+  const bool use_overflow=true;
+
   if ((mass<0) && (!m_initialized)) InitIncoming();
   if ((mass>0) && (m_nin==1)) InitIncoming(mass);
   m_weight=1.;
@@ -375,7 +377,7 @@ bool Phase_Space_Handler::OneEvent(double mass,int mode)
     if (value > 0.) {
       double disc = 0.;
       if (value > max) {
-	if (p_process->Selected()->MaxReduction()==1.) {
+	if (use_overflow) {
 	  // don't use overflow
 	  msg.Events()<<"Shifted maximum in "<<p_process->Selected()->Name()<<" : "
 		      <<p_process->Selected()->Max()<<" -> "<<value<<endl;
