@@ -110,7 +110,7 @@ void Amegic::InitializeInteractionModel(MODEL::Model_Base * _model)
   string modeltype   = p_dataread->GetValue<string>("SIGNAL_MODEL",string("SM"));
   string cplscheme   = p_dataread->GetValue<string>("COUPLING SCHEME",string("Running"));
   string massscheme  = p_dataread->GetValue<string>("YUKAWA MASSES",string("Running"));
-  string widthscheme = p_dataread->GetValue<string>("WIDTH SCHEME",string("Complex"));
+  string widthscheme = p_dataread->GetValue<string>("WIDTH SCHEME",string("Fixed"));
 
   Interaction_Model_Handler mh(_model);
   p_model = mh.GetModel(modeltype,cplscheme,massscheme);
