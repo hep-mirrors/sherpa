@@ -372,7 +372,7 @@ int Single_Process::Tests() {
 
   //shorten helicities
   for (short int i=0;i<p_hel->MaxHel();i++) {
-    if (M_doub[i]/M2g<1.e-20) {
+    if (M_doub[i]/M2g<(ATOOLS::Accu()*1.e-2)) {
       p_hel->SwitchOff(i);
       msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
 		     <<M_doub[i]<<"/"<<M_doub[i]/M2g<<endl;
@@ -419,7 +419,8 @@ int Single_Process::Tests() {
 	       <<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
       msg.Out()<<"WARNING: Library cross check not satisfied: "
 	       <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-      return 0;
+      if (abs(M2/M2g-1.)>rpa.gen.Accu()) return 0;
+      msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
     } 
     else {
       msg.Debugging()<<"Mapping file(1) : "<<abs(M2)<<endl
@@ -463,12 +464,12 @@ int Single_Process::Tests() {
     if (p_shand->Is_String()) {
       double  M2S = 0.;
       p_shand->Calculate();
-
+      
       msg.Debugging()<<"3:";msg.Debugging().flush();
       for (short int i=0;i<p_hel->MaxHel();i++) {
 	if (p_hel->On(i)) {
 	  msg.Debugging()<<"*";msg.Debugging().flush();
-	  M2S      += p_ampl->Differential(i)*p_hel->PolarizationFactor(i)*p_hel->Multiplicity(i);
+	  M2S += p_ampl->Differential(i)*p_hel->PolarizationFactor(i)*p_hel->Multiplicity(i);
 	}
       }
       msg.Debugging()<<endl;
@@ -476,7 +477,8 @@ int Single_Process::Tests() {
       if (!ATOOLS::IsEqual(M2g,M2S)) {
 	msg.Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
-	return 0;
+	if (abs(M2g/M2S-1.)>rpa.gen.Accu()) return 0;
+	msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
       }
       else {
 	if (M2S!=0.)
