@@ -313,7 +313,7 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
       channels[i]->GenerateWeight(p,cuts);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this->name
 		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
@@ -372,7 +372,7 @@ void Multi_Channel::GenerateWeight(Vec4D * p)
       channels[i]->GenerateWeight(p);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+	msg.Error()<<"Multi_Channel::GenerateWeight(.): ("<<this->name
 		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
@@ -409,7 +409,7 @@ void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
       channels[i]->GenerateWeight(sprime,y,mode);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+	msg.Error()<<"Multi_Channel::GenerateWeight(...): ("<<this->name
 		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0.) 
@@ -480,7 +480,7 @@ void Multi_Channel::GenerateWeight(int mode=0)
       channels[i]->GenerateWeight(mode);
       if (!(channels[i]->Weight()>0)&&
 	  !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
-	msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+	msg.Error()<<"Multi_Channel::GenerateWeight(): ("<<this->name
 		   <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
