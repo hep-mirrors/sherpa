@@ -1,0 +1,37 @@
+#ifndef Amplitude_Output_H
+#define Amplitude_Output_H
+
+#include <fstream>
+#include <string> 
+#include "Point.H"
+#include "Topology.H"
+
+namespace AMEGIC {
+
+  class Amplitude_Output {
+    int counter;
+    std::ofstream  pios;
+    int nin, nout, nmed;   // total
+    int ic, oc, mc;        // counters
+    std::vector<std::string> ins;    // incomming points 
+    std::vector<std::string> outs;   // outgoin points
+    std::vector<std::string> meds;   // intermediate points
+
+    Topology * top;
+    Point    * ampl;
+
+    std::string Int2String(const int);
+    void LegCount(Point * mo);
+    void DrawLine(std::string from, Point * d);
+    int InclInComming(Point * mo);
+    void WriteHeader();
+  public:
+    Amplitude_Output() { top=0; ampl=0;}
+    Amplitude_Output(std::string pid, Topology * _top);
+    void WriteOut(Point *);
+    ~Amplitude_Output();
+  };
+
+}
+
+#endif

@@ -1,4 +1,5 @@
 #include "Amplitude_Handler.H"
+#include "Amplitude_Output.H"
 #include "Zfunc_Calc.H"
 #include "Random.H"
 #include "Run_Parameter.H"
@@ -105,6 +106,13 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 
   if (rpa.gen.Tracking()) {
     PrintGraph();
+    /*
+    Amplitude_Output ao(pID,top);
+    for (int i=0;i<namplitude;i++) {
+      ao.WriteOut(GetAmplitude(i)->GetPointlist());
+    }
+    */
+
     //BS->PrintMomlist();
   }
 
