@@ -590,11 +590,11 @@ namespace ATOOLS {
       else return 0;
     }
     inline double BaryonNumber() {
-      if (IsQuark()) { return anti ? -1./3. : 1./3.; }
+      if (IsQuark() || IsSquark()) { return anti ? -1./3. : 1./3.; }
       return 0.;
     }
     inline int LeptonNumber() {
-      if (IsLepton()) { return anti ? -1 : 1; }
+      if (IsLepton() || IsSlepton() || IsSneutrino()) { return anti ? -1 : 1; }
       return 0;
     }
     inline int StrongCharge() {
