@@ -14,6 +14,10 @@ Amplitude_Output::Amplitude_Output(std::string pid, Topology * _top)
   top = top;
   ampl=0;
   counter=0;
+  maincounter=1;
+  subcounter='a';
+  super_amplitude=false;
+  for (int i=0; i<3;++i) captions.push_back("");
   WriteHeader();
 }
 
@@ -127,6 +131,14 @@ void Amplitude_Output::WriteOut(Point * start) {
   if (counter%3==0) {
     s<<"\\begin{tabular}{ccc}"<<endl;
   }
+  MyStrStream str;
+  if (super_amplitude) 
+    str<<maincounter<<subcounter++;
+  else 
+    str<<maincounter++;
+  str>>captions[counter%3];
+  captions[counter%3]=std::string(" Graph ")+captions[counter%3];
+
   s<<" % Graph "<<++counter<<endl;
   s<<"\\begin{fmfgraph*}(40,40) "<<endl;
 
@@ -176,9 +188,9 @@ void Amplitude_Output::WriteOut(Point * start) {
   s<<"\\end{fmfgraph*} "<<endl<<endl;
   if (counter%3==0) {
     s<<"\\\\"<<endl;
-    for (int i=2;;--i) {
-      s<<" Graph "<<counter-i;
-      if (i==0) break;
+    for (int i=0;;++i) {
+      s<<captions[i];
+      if (i==2) break;
       s<<" & "<<endl;
     }
     s<<"\\\\[15mm]"<<endl;
@@ -237,9 +249,9 @@ Amplitude_Output::~Amplitude_Output()
 {
   if (counter%3!=0) {
     pios<<"\\\\"<<endl;
-    for (int i=counter%3-1;;--i) {
-      pios<<" Graph "<<counter-i;
-      if (i==0) break;
+    for (int i=0;;++i) {
+      pios<<captions[i];
+      if (i==counter%3-1) break;
       pios<<" & "<<endl;
     }
     pios<<"\\end{tabular}"<<endl;

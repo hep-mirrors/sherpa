@@ -31,7 +31,7 @@ namespace AMEGIC {
     void    SetNumber(int & n)                {Single_Amplitude_Base::SetNumber(n);}
     Zfunc_List* GetZlist()                    {Single_Amplitude_Base::GetZlist();}
 
-    Amplitude_Base* GetAmplitude(int n)       {return (n==amplnumber) ? this : 0;}
+    Amplitude_Base* GetAmplitude(const int n) {return (n==amplnumber) ? this : 0;}
   };
 }
 #endif

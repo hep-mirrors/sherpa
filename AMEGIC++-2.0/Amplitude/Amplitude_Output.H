@@ -10,12 +10,17 @@ namespace AMEGIC {
 
   class Amplitude_Output {
     int counter;
+    int maincounter;
+    char subcounter;
+    bool super_amplitude;
     std::ofstream  pios;
     int nin, nout, nmed;   // total
     int ic, oc, mc;        // counters
     std::vector<std::string> ins;    // incomming points 
     std::vector<std::string> outs;   // outgoin points
     std::vector<std::string> meds;   // intermediate points
+
+    std::vector<std::string> captions;
 
     Topology * top;
     Point    * ampl;
@@ -30,8 +35,12 @@ namespace AMEGIC {
     Amplitude_Output(std::string pid, Topology * _top);
     void WriteOut(Point *);
     ~Amplitude_Output();
+    void BeginSuperAmplitude();
+    void EndSuperAmplitude();
   };
 
+  inline void Amplitude_Output::BeginSuperAmplitude() { super_amplitude=true; subcounter='a';}
+  inline void Amplitude_Output::EndSuperAmplitude() { super_amplitude=false; ++maincounter;}
 }
 
 #endif

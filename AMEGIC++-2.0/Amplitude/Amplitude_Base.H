@@ -35,8 +35,8 @@ namespace AMEGIC {
 
     virtual void Add(Amplitude_Base*, int sign=1)
       {std::cerr<<"Error: Virtual  Amplitude_Base::Add() called!"<<std::endl;}
-    virtual int Size()
-      {std::cerr<<"Error: Virtual  Amplitude_Base::Size() called!"<<std::endl;return 0;}
+    virtual int Size()  {return 1;}
+    virtual Amplitude_Base* operator[](const int i) { return this; }
 
     virtual Zfunc_List* GetZlist()
       {std::cerr<<"Error: Virtual  Amplitude_Base::GetZlist() called!"<<std::endl;return 0;}
