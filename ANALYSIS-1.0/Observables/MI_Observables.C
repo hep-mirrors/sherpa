@@ -15,7 +15,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     if (parameters[0].size()<5) return NULL;
     std::string list=parameters[0].size()>4?parameters[0][4]:"Charged";
     std::string jetlist=parameters[0].size()>5?parameters[0][5]:"AnalysedJets";
-    return new Class(10*(int)(parameters[0][3]=="Log"),
+    return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),jetlist,list);
@@ -33,7 +33,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     else if (parameters[i][0]=="JetList") jetlist=parameters[i][1];
     else if (parameters[i][0]=="List") list=parameters[i][1];
   }
-  return new Class((scale=="Log")*10,min,max,bins,jetlist,list);
+  return new Class(HistogramType(scale),min,max,bins,jetlist,list);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
@@ -58,7 +58,7 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
     if (parameters[0].size()<5) return NULL;
     std::string list=parameters[0].size()>5?parameters[0][5]:"Charged";
     std::string jetlist=parameters[0].size()>6?parameters[0][6]:"AnalysedJets";
-    return new Class(10*(int)(parameters[0][3]=="Log"),
+    return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),
@@ -81,7 +81,7 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
     else if (parameters[i][0]=="List") list=parameters[i][1];
   }
   if (jetlists.size()==0) jetlists.push_back("Jets");
-  return new Class((scale=="Log")*10,min,max,bins,offset,jetlists,list);
+  return new Class(HistogramType(scale),min,max,bins,offset,jetlists,list);
 }									
 
 #define DEFINE_OFFSET_GETTER_METHOD(CLASS,NAME)				\

@@ -11,7 +11,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
     std::string list=parameters[0].size()>4?parameters[0][4]:"EEShapes";
-    return new Class(10*(int)(parameters[0][3]=="Log"),
+    return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),list);
@@ -28,7 +28,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class((scale=="Log")*10,min,max,bins,list);
+  return new Class(HistogramType(scale),min,max,bins,list);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\

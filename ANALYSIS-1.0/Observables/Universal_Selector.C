@@ -88,7 +88,7 @@ General_Observable_Getter::operator()(const String_Matrix &parameters) const
     keymin=ATOOLS::ToType<double>(parameters[0][1]);
     keymax=ATOOLS::ToType<double>(parameters[0][2]);
     nbins=ATOOLS::ToType<int>(parameters[0][3]);
-    return new General_Observable(10*(int)(parameters[0][4]=="Log"),
+    return new General_Observable(HistogramType(parameters[0][4]),
 				  keymin,keymax,nbins,obskey);
   }
   return NULL;

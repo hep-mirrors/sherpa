@@ -15,7 +15,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
     if (kf<0) flavour=flavour.Bar();
     std::string list=parameters[0].size()>5?parameters[0][5]:"Analysed";
-    return new Class(flavour,10*(int)(parameters[0][4]=="Log"),
+    return new Class(flavour,HistogramType(parameters[0][4]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<double>(parameters[0][2]),
 		     ATOOLS::ToType<int>(parameters[0][3]),list);
@@ -38,7 +38,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class(flavour,(scale=="Log")*10,min,max,bins,list);
+  return new Class(flavour,HistogramType(scale),min,max,bins,list);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\

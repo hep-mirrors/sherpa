@@ -12,6 +12,12 @@ using namespace ANALYSIS;
 
 using namespace ATOOLS;
 
+int HistogramType(const std::string &scale)
+{
+  if (scale=="Log") return 10;
+  return 0;
+}
+
 Primitive_Observable_Base::Primitive_Observable_Base() :
   m_type(0), m_nbins(0), m_xmin(0.), m_xmax(0.),
   m_name(std::string("noname")), m_listname(std::string("Analysed")),

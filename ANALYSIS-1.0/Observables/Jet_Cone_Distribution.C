@@ -17,7 +17,7 @@ Jet_Cone_Distribution_Getter::operator()(const String_Matrix &parameters) const
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<7) return NULL;
-    return new Jet_Cone_Distribution(10*(int)(parameters[0][6]=="Log"),
+    return new Jet_Cone_Distribution(HistogramType(parameters[0][6]),
 				     ATOOLS::ToType<double>(parameters[0][0]),
 				     ATOOLS::ToType<double>(parameters[0][1]),
 				     ATOOLS::ToType<double>(parameters[0][2]),
@@ -40,7 +40,7 @@ Jet_Cone_Distribution_Getter::operator()(const String_Matrix &parameters) const
     else if (parameters[i][0]=="SCALE")  scale=parameters[i][1];
     else if (parameters[i][0]=="NBINS")  bins=ATOOLS::ToType<int>(parameters[i][1]);
   }
-  return new Jet_Cone_Distribution((scale=="Log")*10,etcut,etamin,etamax,rmin,rmax,bins,parameters());
+  return new Jet_Cone_Distribution(HistogramType(scale),etcut,etamin,etamax,rmin,rmax,bins,parameters());
 }									
 
 void Jet_Cone_Distribution_Getter::PrintInfo(std::ostream &str,const size_t width) const
@@ -143,7 +143,7 @@ Jet_Cone_Dependence_Getter::operator()(const String_Matrix &parameters) const
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<9) return NULL;
-    return new Jet_Cone_Dependence(10*(int)(parameters[0][8]=="Log"),
+    return new Jet_Cone_Dependence(HistogramType(parameters[0][8]),
 				   ATOOLS::ToType<double>(parameters[0][0]),
 				   ATOOLS::ToType<double>(parameters[0][1]),
 				   ATOOLS::ToType<double>(parameters[0][2]),
@@ -170,7 +170,7 @@ Jet_Cone_Dependence_Getter::operator()(const String_Matrix &parameters) const
     else if (parameters[i][0]=="NBINS")  bins=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="SCALE")  scale=parameters[i][1];
   }
-  return new Jet_Cone_Dependence((scale=="Log")*10,etcut,etamin,etamax,rmin,rmax,
+  return new Jet_Cone_Dependence(HistogramType(scale),etcut,etamin,etamax,rmin,rmax,
 				 nmin,nmax,bins,parameters());
 }									
 
@@ -283,7 +283,7 @@ Jet_Cone_Shape_Getter::operator()(const String_Matrix &parameters) const
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<6) return NULL;
-    return new Jet_Cone_Shape(10*(int)(parameters[0][5]=="Log"),
+    return new Jet_Cone_Shape(HistogramType(parameters[0][5]),
 				     ATOOLS::ToType<double>(parameters[0][0]),
 				     ATOOLS::ToType<double>(parameters[0][1]),
 				     ATOOLS::ToType<int>(parameters[0][2]),
@@ -304,7 +304,7 @@ Jet_Cone_Shape_Getter::operator()(const String_Matrix &parameters) const
     else if (parameters[i][0]=="NMAX")   nmax=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="NBINS")  bins=ATOOLS::ToType<int>(parameters[i][1]);
   }
-  return new Jet_Cone_Shape((scale=="Log")*10,rmin,rmax,nmin,nmax,bins,NULL);
+  return new Jet_Cone_Shape(HistogramType(scale),rmin,rmax,nmin,nmax,bins,NULL);
 }									
 
 void Jet_Cone_Shape_Getter::PrintInfo(std::ostream &str,const size_t width) const

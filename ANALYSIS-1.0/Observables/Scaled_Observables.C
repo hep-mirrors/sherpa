@@ -14,7 +14,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
     double ref=parameters[0].size()>5?ATOOLS::ToType<double>(parameters[0][5]):
       ATOOLS::rpa.gen.Ecms();
-    return new Class(10*(int)(parameters[0][3]=="Log"),
+    return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),list,ref);
@@ -32,7 +32,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class((scale=="Log")*10,min,max,bins,list,ref);
+  return new Class(HistogramType(scale),min,max,bins,list,ref);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\

@@ -18,7 +18,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
       if (kf<0) f[i]=f[i].Bar();
     }
     std::string list=parameters[0].size()>8?parameters[0][8]:"Analysed";
-    return new Class(f,10*(int)(parameters[0][7]=="Log"),
+    return new Class(f,HistogramType(parameters[0][7]),
 		     ATOOLS::ToType<double>(parameters[0][4]),
 		     ATOOLS::ToType<double>(parameters[0][5]),
 		     ATOOLS::ToType<int>(parameters[0][6]),list);
@@ -43,7 +43,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class(f,(scale=="Log")*10,min,max,bins,list);
+  return new Class(f,HistogramType(scale),min,max,bins,list);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
@@ -197,7 +197,7 @@ Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
     std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
-    return new Class(10*(int)(parameters[0][3]=="Log"),
+    return new Class(HistogramType(parameters[0][3]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),list);
@@ -214,7 +214,7 @@ Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
     else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class((scale=="Log")*10,min,max,bins,list);
+  return new Class(HistogramType(scale),min,max,bins,list);
 }									
 
 #define DEFINE_GETTER_METHOD2(CLASS,NAME)				\

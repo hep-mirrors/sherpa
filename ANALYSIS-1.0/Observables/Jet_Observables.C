@@ -14,7 +14,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   if (parameters.size()==1) {
     if (parameters[0].size()<7) return NULL;
     std::string list=parameters[0].size()>7?parameters[0][7]:"Analysed";
-    return new Class(10*(int)(parameters[0][6]=="Log"),
+    return new Class(HistogramType(parameters[0][6]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),
@@ -38,7 +38,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class((scale=="Log")*10,min,max,bins,mode,nmin,nmax,list);
+  return new Class(HistogramType(scale),min,max,bins,mode,nmin,nmax,list);
 }									
 
 template <>
@@ -49,7 +49,7 @@ Primitive_Observable_Base *const GetObservable<Jet_Differential_Rates>(const Str
     if (parameters[0].size()<7) return NULL;
     std::string list=parameters[0].size()>7?parameters[0][7]:"Analysed";
     std::string reflist=parameters[0].size()>8?parameters[0][8]:"";
-    return new Jet_Differential_Rates(10*(int)(parameters[0][6]=="Log"),
+    return new Jet_Differential_Rates(HistogramType(parameters[0][6]),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),
@@ -75,7 +75,7 @@ Primitive_Observable_Base *const GetObservable<Jet_Differential_Rates>(const Str
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
     else if (parameters[i][0]=="REF")  reflist=parameters[i][1];
   }
-  return new Jet_Differential_Rates((scale=="Log")*10,min,max,bins,mode,nmin,nmax,list,reflist);
+  return new Jet_Differential_Rates(HistogramType(scale),min,max,bins,mode,nmin,nmax,list,reflist);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\

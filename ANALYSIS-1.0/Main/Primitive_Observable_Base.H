@@ -13,6 +13,8 @@
 namespace ANALYSIS {
 
   class Primitive_Analysis;
+
+  int HistogramType(const std::string &scale);
   
   class String_Matrix: public std::vector<std::vector<std::string> > {
   private:
