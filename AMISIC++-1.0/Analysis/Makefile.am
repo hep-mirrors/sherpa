@@ -6,6 +6,10 @@ ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 MODELINC      =	-I$(SHERPASYS)/MODEL-1.0/Main
 
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 lib_LTLIBRARIES               =	libAmisicAnalysis.la
 libAmisicAnalysis_la_SOURCES  = \
 				Primordial_KT.C \
@@ -19,5 +23,6 @@ noinst_HEADERS        =	\
 			Jet_Y.H \
 			Jet_Multiplicity.H \
 			Jet_Observables.H
+EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(AMISICFLAGS)
-INCLUDES      = $(MODELINCS) -I$(ATOOLSINCS)
+INCLUDES      = $(MODELINC) $(ATOOLSINCS)

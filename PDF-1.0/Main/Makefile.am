@@ -1,11 +1,15 @@
 SHERPASYS     =	../..
 
-SHERPAFLAGS   =	-pedantic -Wall -Winline
+PDFFLAGS      =	-pedantic -Wall -Winline -Woverloaded-virtual
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-PDFINCS       =	-I../LHAPDF 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+PDFINCS       =	-I../LHAPDF -I../KMR
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
 
 lib_LTLIBRARIES       =	libPDF.la
 libPDF_la_SOURCES     =	\
@@ -19,9 +23,7 @@ libPDF_la_SOURCES     =	\
 			Cteq61Pdf.f \
 			cteq6_inter.f \
 		    	CTEQ6_Fortran_Interface.C \
-			GRVph_Fortran_Interface.C \
-		    	grvphoton.f \
-			PDF_Handler.C 
+		    	PDF_Handler.C 
 noinst_HEADERS        =	\
 			ISR_Base.H \
 		 	ISR_Handler.H \
@@ -32,8 +34,8 @@ noinst_HEADERS        =	\
 			PDF_MRST99.H \
 		 	PDF_Electron.H \
 			CTEQ6_Fortran_Interface.H \
-			GRVph_Fortran_Interface.H \
 			PDF_Handler.H 
-AM_CXXFLAGS   =	$(SHERPAFLAGS)
-INCLUDES      =	$(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
+EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(PDFFLAGS)
+INCLUDES      =	$(SHERPAINCS) $(APACICINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
 

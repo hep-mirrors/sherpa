@@ -1,5 +1,8 @@
 MAKE  =	make
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
 SUBDIRS       =	\
-		DUPDF \
 		Main \
 		Analysis
+EXTRA_DIST    = $(CVSINCLUDE)

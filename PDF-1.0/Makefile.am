@@ -1,3 +1,7 @@
 MAKE = make 
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
 SUBDIRS = Main LHAPDF
+EXTRA_DIST    = $(CVSINCLUDE)
 
