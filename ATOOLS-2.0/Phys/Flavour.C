@@ -197,7 +197,7 @@ int Flavour::HepEvt() {
   if (kfc==kf::graviton)                     return 39;
   if (kfc==kf::gscalar)                      return 89;
 
-  if (IsSquark() || IsSlepton() || IsSneutrino()) {
+  if (IsSquark() || IsSlepton() || IsSneutrino() || IsIno()) {
     
     int pdgnum = -1;
     
