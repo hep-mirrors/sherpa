@@ -95,6 +95,7 @@ bool Phase_Space_Handler::InitIncoming()
   msg.SetPrecision(12);
   if (bh) {
     if (bh->On()>0) {
+      bh->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
       beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
       beamchannels->GetRange();
     }
