@@ -80,7 +80,7 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   }
 
 //   cout<<" starting FS from IS knot : "<<mo->kn_no<<"  t="<<mo->t<<" tmax="<<mo->tmax<<endl;
-//   cout<<*mo;
+//    cout<<*mo;
   if (mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
 
@@ -107,10 +107,13 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
 	flavs[0]  = p_sud->GetFlB();
 	flavs[1]  = p_sud->GetFlC();
 	InitDaughters(tree,mo,flavs,1);
-	if (EvolveJet(tree,mo)) return;
+	if (EvolveJet(tree,mo)) {
+	  return;
+	}
       }
     
       Reset(mo);
+
       return;
     }
     

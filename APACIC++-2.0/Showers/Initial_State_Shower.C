@@ -481,6 +481,13 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     // *AS* should always be done 
     if (caught_jetveto==0) {
       if (p_fin) {
+
+	// in case mass already known from ME:
+	// determine real daughter momenta first!
+	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first,true)) {
+	  msg.Debugging()<<" C2 do kinematics failed "<<endl;
+	  return 0;
+	}
 	p_fin->FirstTimelikeFromSpacelike(trees[ntree0],k1->prev->left,m_jetveto,sprime_a,k1->z);
       }
       else {
@@ -492,7 +499,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     }
 
 
-    if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first)) {
+    if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first,false)) {
       msg.Debugging()<<" do kinematics failed "<<endl;
       return 0;
       if (k1->prev->t==k1->prev->tout) return 0; 

@@ -72,12 +72,15 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,doubl
     if (fsrstatus==0) return fsrstatus;
     // check ME if still njet ME!
     // if isr is on, this check will be performed after the initial state shower
-    if (!m_isron)
+    if (!m_isron) {
+      double ycut   = ATOOLS::rpa.gen.Ycut();
+      double s  = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+      SetJetvetoPt2(s*ycut);
       if (!p_finshower->ExtraJetCheck()) {
 	//	std::cout<<" lose jet veto called FS "<<std::endl;
 	return 3;
       }
-
+    }
     p_finshower->SetAllColours(p_fintree->GetRoot());
 
     if (!m_isron) {
@@ -113,6 +116,9 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,doubl
       p_fintree->BoRo(lab);
 
       // check ME if still njet ME!
+      double ycut   = ATOOLS::rpa.gen.Ycut();
+      double s  = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+      SetJetvetoPt2(s*ycut);
       if (!p_finshower->ExtraJetCheck()) {
 	//	std::cout<<" lose jet veto called IS "<<std::endl;
 	return 3;

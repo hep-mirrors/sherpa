@@ -48,6 +48,9 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
   if (rpa.gen.Debugging()) {
     cout<<" after boost "<<endl;
     cout<<*k1<<*k2<<endl;
+
+    cout<<"INI 0:"<<trees[0];
+    cout<<"INI 1:"<<trees[1];
   }
 
   Vec4D o1 = k1->part->Momentum();
@@ -101,7 +104,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       Vec4D b2(eboo2,0.,0.,pboo2);
       boost = Poincare(b2);
       boost.Boost(o2);
-      trees[0]->BoRo(boost);
+      trees[1]->BoRo(boost);
       if (!(o2==v2)) {
 	error=1;
 	msg.Error()<<" ERROR in Spacelike_Kinematics::InitKinematics "<<endl;
@@ -124,9 +127,11 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
 		<<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
 		<<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<endl;
   }
+
+
 }
 
-bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * partner,int leg, int first) 
+bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * partner,int leg, int first, bool test) 
 {
   if (!active->prev) {
     msg.Tracking()<<"Error Spacelike_Kinematics::DoKinematics : "
@@ -134,63 +139,108 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
     return 0;
   }
 
-  Vec4D o1 = active->part->Momentum();
-  Vec4D o2 = partner->part->Momentum();
-  BoostInCMS(trees,active, partner);
-
-  o1 = active->part->Momentum();
-  o2 = partner->part->Momentum();
-
-  Vec4D cms      = active->part->Momentum()+partner->part->Momentum();
-  double sprime  = cms.Abs2();
 
   Knot * mother  = active->prev;
   Knot * sister  = mother->left;
 
-  double s1      = sprime           - (partner->t) - (active->t);    
-  double s3      = sprime/active->z - (partner->t) - (mother->t);
-  double np1     = sqrt(s1*s1-4.*(partner->t)*(active->t));
-  double np3     = sqrt(s3*s3-4.*(partner->t)*(mother->t));
-  double maxt_d2 = CalculateMaxT(active,partner);
 
-  if (maxt_d2 < sister->t) {
-    return 0;
+  int mode=0;
+  if (mother->part->Info()=='H') {
+    // momenta known (keep phi)   "B"
+    mode=1;
+    if (mother->prev) if (mother->prev->part->Info()=='H') {
+      // boost mother tree appropriate (after momentum determination)  "C1"
+      mode+=2;
+    }
+    if (sister->left) if (sister->left->part->Info()=='H') {
+      // boost sister tree appropriate (after momentum determination)  "C2"
+      mode+=4;
+    }
   }
+
+  if (rpa.gen.Debugging()) {
+    switch (mode) {
+    case 1: cout<<" DoKinematics B"<<endl; break;
+    case 3: cout<<" DoKinematics C1"<<endl; break;
+    case 5: cout<<" DoKinematics C2"<<endl; break;
+    case 7: cout<<" DoKinematics C3"<<endl; break;
+    default : cout<<" DoKinematics A "<<mode<<endl; break;
+    }
+  }
+
+  if (test && mode!=5) return 1;
+
+  BoostInCMS(trees,active, partner);
+
+
+  if (mode!=7) {
+
+    Vec4D o1 = active->part->Momentum();
+    Vec4D o2 = partner->part->Momentum();
+
+    Vec4D cms      = active->part->Momentum()+partner->part->Momentum();
+    double sprime  = cms.Abs2();
+
+
+    double s1      = sprime           - (partner->t) - (active->t);    
+    double s3      = sprime/active->z - (partner->t) - (mother->t);
+    double np1     = sqrt(s1*s1-4.*(partner->t)*(active->t));
+    double np3     = sqrt(s3*s3-4.*(partner->t)*(mother->t));
+    double maxt_d2 = CalculateMaxT(active,partner);
+
+    if (maxt_d2 < sister->t) {
+      return 0;
+    }
   
-  double E_mo      = 1./(2.*sqrt(sprime)) *
-    (sprime/active->z - partner->t + active->t - sister->t);
-  double pz_mo     = 1./(2.*active->part->Momentum()[3]) * 
-    (s3 - 2. * partner->part->E() * E_mo);
-  double pt_mo     = sqrt((maxt_d2-sister->t)/(np1*np1) *
-    (0.5*(s1*s3 + np1*np3) + partner->t * (sister->t - active->t - mother->t)));
+    double E_mo      = 1./(2.*sqrt(sprime)) *
+      (sprime/active->z - partner->t + active->t - sister->t);
+    double pz_mo     = 1./(2.*active->part->Momentum()[3]) * 
+      (s3 - 2. * partner->part->E() * E_mo);
+    double pt_mo     = sqrt((maxt_d2-sister->t)/(np1*np1) *
+			    (0.5*(s1*s3 + np1*np3) + partner->t * (sister->t - active->t - mother->t)));
  
+    double cph=cos(active->phi), sph=sin(active->phi);
 
-  double cph=cos(active->phi), sph=sin(active->phi);
+    if (mode>0) {
+      // determine phi
+      Vec4D p_mo= mother->part->Momentum();
+      double pt=sqrt(sqr(p_mo[1]) + sqr(p_mo[2]));
+      cph=p_mo[2]/pt;
+      sph=p_mo[1]/pt;
+      active->phi=acos(cph);
+    }
+
   
-  Vec4D v_mo(E_mo,sph*pt_mo,cph*pt_mo,pz_mo);
-  Vec4D v_si = v_mo + (-1.)*active->part->Momentum();
+    Vec4D v_mo(E_mo,sph*pt_mo,cph*pt_mo,pz_mo);
+    Vec4D v_si = v_mo + (-1.)*active->part->Momentum();
 
-  bool error = 0;
-  // Checks:
-  error = CheckVector(active->part->Momentum()) || CheckVector(partner->part->Momentum()) ||
-    CheckVector(v_mo) || CheckVector(v_si);
+    bool error = 0;
+    // Checks:
+    error = CheckVector(active->part->Momentum()) || CheckVector(partner->part->Momentum()) ||
+      CheckVector(v_mo) || CheckVector(v_si);
 
-  if (error) {
-    msg.Error()<<"Error in Spacelike_Kinematics::DoKinematics : Bad vectors. "<<endl
-	       <<"  Act : "<<active->part->Momentum()<<" : "<<active->part->Momentum().Abs2()
-	       <<" / "<<active->t<<endl
-	       <<"  Mom : "<<v_mo<<" : "<<v_mo.Abs2()<<" / "<<mother->t<<endl
-	       <<"  Sis : "<<v_si<<" : "<<v_si.Abs2()<<" / "<<sister->t<<endl
-	       <<"  nominal e_sis :"<<(1./active->z-1.)*sqrt(sprime/4.)
-	       <<" / "<<(1./active->z-1.)*sqrt(sprime/4.)-sister->t/sqrt(4.*sprime)<<endl
-	       <<"  Test s' "<<sprime/active->z<<" =?= "
-	       <<(v_mo+partner->part->Momentum()).Abs2()<<endl;
-    msg.Error()<<" (spr,z,t4) : " <<sprime<<","<<active->z<<","<<sister->t<<endl;
+    if (error) {
+      msg.Error()<<"Error in Spacelike_Kinematics::DoKinematics : Bad vectors. "<<endl
+		 <<"  Act : "<<active->part->Momentum()<<" : "<<active->part->Momentum().Abs2()
+		 <<" / "<<active->t<<endl
+		 <<"  Mom : "<<v_mo<<" : "<<v_mo.Abs2()<<" / "<<mother->t<<endl
+		 <<"  Sis : "<<v_si<<" : "<<v_si.Abs2()<<" / "<<sister->t<<endl
+		 <<"  nominal e_sis :"<<(1./active->z-1.)*sqrt(sprime/4.)
+		 <<" / "<<(1./active->z-1.)*sqrt(sprime/4.)-sister->t/sqrt(4.*sprime)<<endl
+		 <<"  Test s' "<<sprime/active->z<<" =?= "
+		 <<(v_mo+partner->part->Momentum()).Abs2()<<endl;
+      msg.Error()<<" (spr,z,t4) : " <<sprime<<","<<active->z<<","<<sister->t<<endl;
+    }
+  
+    BoostPartial(mode,mother,sister,v_mo,v_si);
   }
-  
-  mother->part->SetMomentum(v_mo);
-  sister->part->SetMomentum(v_si);
-  sister->E2 = sqr(v_si[0]);
+
+  if (test && mode==5) {
+    BoostFromCMS(trees);
+    return 1;
+  }
+
+
   if (ResetEnergies(sister)) {
     kink->DoKinematics(sister);
   }
@@ -198,6 +248,101 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
     return 0;
   }
   return 1;
+}
+
+
+void Spacelike_Kinematics::BoostPartial(const int mode, Knot * si, const Vec4D & v_si) {
+  Vec4D p_si=si->part->Momentum();
+  double s1 = 4. * sqr(p_si[0]);
+  double t1 = p_si.Abs2();
+
+  if (dabs((t1-v_si.Abs2())/t1)>1.e-7) {
+    msg.Error()<<" Warning: mass deviation in Spacelike_Kinematics::BoostPartial "<<std::endl;
+    msg.Error()<<" t1="<<t1<<"   t1'="<<v_si.Abs2()<<"  ("<<t1-v_si.Abs2()<<std::endl;
+  }
+
+  // rotation
+  Poincare rot(p_si,v_si);
+  rot.Rotate(p_si);
+
+  Vec3D  np_si(p_si);
+  double lp_si=np_si.Abs();
+  np_si=np_si*(1./lp_si);
+
+  Vec3D  nv_si(v_si);
+  double lv_si=nv_si.Abs();
+  nv_si=nv_si*(1./lv_si);
+
+  double E1     = v_si[0];
+  double pz     = lv_si;
+
+  double sgn2 = 1.;
+  if (t1<0.) sgn2 = -1.;
+  double sgn1 = E1/dabs(E1);
+  double eboo1 = sgn2*(dabs(E1) * s1 - pz*sqrt(s1*(s1-4.*t1))); // / -(2. * t1);
+  double pboo1 = -sgn2*sgn1 * (pz * s1 - dabs(E1)*sqrt(s1*(s1-4.*t1))); // /-(2. * t1);
+
+  // boost
+  Vec4D b1(eboo1,pboo1*np_si);
+  boost = Poincare(b1);
+  boost.Boost(p_si);
+
+
+  // apply rotation and boost on tree rest (sequence depending on mode)
+  if (mode==3) RoBoIni(si,rot,boost);
+  else if (mode==5) RoBoFin(si,rot,boost);
+  else {
+    msg.Error()<<" Error in Spacelike_Kinematics::BoostPartial "<<endl;
+  }
+}
+
+
+void Spacelike_Kinematics::RoBoIni(Knot * k, Poincare & rot, Poincare & boost) 
+{
+  if (!k) return;
+  Vec4D  p = k->part->Momentum();
+  rot.Rotate(p);
+  boost.Boost(p);
+  k->part->SetMomentum(p);
+  if (k->prev) {
+    RoBoIni(k->prev,rot,boost);
+    RoBoFin(k->prev->left,rot,boost);
+  }
+}
+
+void Spacelike_Kinematics::RoBoFin(Knot * k, Poincare & rot, Poincare & boost) 
+{
+  if (!k) return;
+  Vec4D  p = k->part->Momentum();
+  rot.Rotate(p);
+  boost.Boost(p);
+  k->part->SetMomentum(p);
+  RoBoFin(k->left,rot,boost);
+  RoBoFin(k->right,rot,boost);
+}
+
+
+
+void Spacelike_Kinematics::BoostPartial(const int mode, Knot * mo, Knot * si, const Vec4D & v_mo, const Vec4D & v_si) 
+{
+  if (mode==3) {
+    // boost mother and the rest
+    BoostPartial(mode,mo,v_mo);
+    si->part->SetMomentum(v_si);
+    si->E2 = sqr(v_si[0]);
+  } 
+  else if (mode==5) {
+    // boost sister and the rest
+    BoostPartial(mode,si,v_si);
+      
+    mo->part->SetMomentum(v_mo);
+    si->E2 = sqr(si->part->Momentum()[0]);
+  }
+  else {
+    mo->part->SetMomentum(v_mo);
+    si->part->SetMomentum(v_si);
+    si->E2 = sqr(v_si[0]);
+  }
 }
 
 bool Spacelike_Kinematics::CheckVector(Vec4D vec) 
@@ -217,8 +362,19 @@ double Spacelike_Kinematics::BoostInCMS(Tree ** trees,Knot * active, Knot * part
   rot       = Poincare(active->part->Momentum(),Vec4D::ZVEC);
   trees[0]->BoRo(rot);
   trees[1]->BoRo(rot);
-
   return cms.Abs2();
+}
+
+double Spacelike_Kinematics::BoostFromCMS(Tree ** trees) 
+{
+  rot.Invert();
+  trees[0]->BoRo(rot);
+  trees[1]->BoRo(rot);
+  boost.Invert();
+  trees[0]->BoRo(boost);
+  trees[1]->BoRo(boost);
+  rot.Invert();
+  boost.Invert();
 }
 
 Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees) 
@@ -238,6 +394,11 @@ bool Spacelike_Kinematics::ResetEnergies(Knot * in) {
   if (in->E2 < in->t) return 0;
 
   if (in->left) {
+//     if (in->part->Info()=='H' && in->left->part->Info()=='H') {
+//       // update z:
+//       in->z=in->left->part->Momentum()[0]/in->part->Momentum()[0];
+//     }
+
     in->left->E2  = in->z*in->z*in->E2;
     in->right->E2 = (1.-in->z)*(1.-in->z)*in->E2;
     if (!ResetEnergies(in->left)) return 0;

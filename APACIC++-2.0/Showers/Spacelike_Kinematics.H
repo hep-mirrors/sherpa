@@ -30,6 +30,13 @@ namespace APACIC {
       nan values, negative energies ?
     */
     bool   CheckVector(ATOOLS::Vec4D);
+
+
+
+    void RoBoIni(Knot * k, ATOOLS::Poincare & rot, ATOOLS::Poincare & boost);
+    void RoBoFin(Knot * k, ATOOLS::Poincare & rot, ATOOLS::Poincare & boost);
+    void BoostPartial(const int mode, Knot * si, const ATOOLS::Vec4D & v_si);
+    void BoostPartial(const int mode, Knot * mo, Knot * si, const ATOOLS::Vec4D & v_mo, const ATOOLS::Vec4D & v_si);
   public:
     //! Constructor to initialise the Jet_Finder
     Spacelike_Kinematics(double pt2minFS, ATOOLS::Data_Read * const );
@@ -48,7 +55,7 @@ namespace APACIC {
       The vectors of the mother and the sister of k1 will be constructed in
       the cm frame of k1 and k2. Both trees are boosted in that system.
     */
-    bool DoKinematics(Tree **,Knot *, Knot *,int,int first);
+    bool DoKinematics(Tree **,Knot *, Knot *,int,int first,bool test);
     /*!
       Checking for extra jets in the initial shower.
       If an emission gives rise to an extra jet, true is returned.
@@ -82,6 +89,8 @@ namespace APACIC {
       Note: Both vectors will be oriented along the z-axis !
     */
     double BoostInCMS(Tree **,Knot *, Knot *);
+    double BoostFromCMS(Tree **);
+
     /*!
       Boosts the initiators of the two trees and thus the trees themselves
       into the lab system and returns the sum of the fourvector of their roots in the 
