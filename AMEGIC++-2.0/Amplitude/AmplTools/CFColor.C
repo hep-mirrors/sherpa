@@ -125,28 +125,25 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	//looking for j
 	while (cm1) {
 	  for(short int i=0;i<3;i++) {
-	    if ((cm1->type==cf::D || cm1->type==cf::G) && i==2) break;    
-	    if (cm1->partarg[i]==j) {
+	    if ((cm1->Type()==cf::D || cm1->Type()==cf::G) && i==2) break;    
+	    if (cm1->ParticleArg(i)==j) {
 	      for (short int k=0;k<3;k++) {
-		if ((cm1->type==cf::D || cm1->type==cf::G) && k==2) break;    
-		if ((k!=i) && (cm1->partarg[k]>99) && 
-		    ((cm1->partarg[k]<120) || (cm1->partarg[k]>150)))
-		  hit = cm1->partarg[k];
+		if ((cm1->Type()==cf::D || cm1->Type()==cf::G) && k==2) break;    
+		if ((k!=i) && (cm1->ParticleArg(k)>99) && 
+		    ((cm1->ParticleArg(k)<120) || (cm1->ParticleArg(k)>150)))
+		  hit = cm1->ParticleArg(k);
 	      }
 	    }
 	  } 
 	  if (hit>0) break;
-	  cm1 = cm1->Next;
+	  cm1 = cm1->Next();
 	}
 	if (hit>0) {
 	  //replace hit with prop
 	  cm1 = m1->Get_CFlist();
 	  while (cm1) {
-	    for (short int i=0;i<3;i++) {
-	      if ((cm1->type==cf::D || cm1->type==cf::G) && i==2) break;    
-	      if (cm1->partarg[i]==hit) cm1->partarg[i] = prop;
-	    }
-	    cm1 = cm1->Next;
+	    cm1->Replace(hit,prop);
+	    cm1 = cm1->Next();
 	  }
 	  prop++;
 	}
@@ -171,7 +168,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	c1 = 0;
 	while (cm1) {
 	  c1++;
-	  cm1 = cm1->Next;
+	  cm1 = cm1->Next();
 	}
 	m2 = m1->Next;
 	n2 = n1+1;
@@ -181,7 +178,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	    c2 = 0;
 	    while (cm2) {
 	      c2++;
-	      cm2 = cm2->Next;
+	      cm2 = cm2->Next();
 	    }
 	    if (c1==c2) {
 	      cm1 = m1->Get_CFlist();
@@ -197,13 +194,13 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 		    hit *= hit2;
 		    break;
 		  }
-		  cm2 = cm2->Next;
+		  cm2 = cm2->Next();
 		}
 		if (hit2==0) {
 		  hit = 0;
 		  break;
 		}
-		cm1 = cm1->Next;
+		cm1 = cm1->Next();
 	      }
 	      if (hit && hit2 && !(hit<0 && n1==0 )) {
 		//equal
@@ -341,21 +338,21 @@ void CFColor::Output(string & dirname) {
 
 int CFColor::CompareArg(int a,int b, int c,Color_Function* cm1,Color_Function* cm2)
 {
-  if (cm1->partarg[a]!= cm2->partarg[0]) return 0;
-  if (cm1->partarg[b]!= cm2->partarg[1]) return 0;
-  if (cm1->type==cf::D || cm1->type==cf::G) return 1;
-  if (cm1->partarg[c]!=cm2->partarg[2]) return 0;
+  if (cm1->ParticleArg(a)!= cm2->ParticleArg(0)) return 0;
+  if (cm1->ParticleArg(b)!= cm2->ParticleArg(1)) return 0;
+  if (cm1->Type()==cf::D || cm1->Type()==cf::G) return 1;
+  if (cm1->ParticleArg(c)!=cm2->ParticleArg(2)) return 0;
 
   return 1;
 }
 
 int CFColor::Compare(Color_Function* cm1,Color_Function* cm2)
 {
-  if (cm1->type!=cm2->type) return 0;
+  if (cm1->Type()!=cm2->Type()) return 0;
   if (CompareArg(0,1,2,cm1,cm2)) return 1;
-  if (cm1->type==cf::D) 
+  if (cm1->Type()==cf::D) 
     if (CompareArg(1,0,2,cm1,cm2)) return 1;
-  if (cm1->type==cf::F) {
+  if (cm1->Type()==cf::F) {
     if (CompareArg(2,0,1,cm1,cm2)) return 1;
     if (CompareArg(1,2,0,cm1,cm2)) return 1;
 

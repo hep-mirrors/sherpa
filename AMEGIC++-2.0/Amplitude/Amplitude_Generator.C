@@ -110,11 +110,11 @@ void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
     p->fl = fl[*perm];
     p->b  = b[*perm];
     if (p->fl.IsBoson()) {
-      p->Lorentz->type = lf::Pol;
+      *(p->Lorentz) = Lorentz_Function(lf::Pol);
       p->Lorentz->SetParticleArg(0);
     }
     else {
-      p->Lorentz->type = lf::None;
+      *(p->Lorentz) = Lorentz_Function(lf::None);
       p->Lorentz->SetParticleArg();
     }
 
@@ -773,7 +773,7 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 int Amplitude_Generator::CompareColors(Color_Function* c1,vector<int> blindlist1,
 				       Color_Function* c2,vector<int> blindlist2)
 {
-  if (c1->type!=c2->type) return 0;
+  if (c1->Type()!=c2->Type()) return 0;
   if (blindlist1.size()==0){
     if (c1->String()==c2->String()) return 1;
     else return 0;
@@ -781,8 +781,8 @@ int Amplitude_Generator::CompareColors(Color_Function* c1,vector<int> blindlist1
    
   int l1[3],l2[3];
   for (int i=0;i<3;i++){
-    l1[i]=c1->partarg[i];
-    l2[i]=c2->partarg[i];
+    l1[i]=c1->ParticleArg(i);
+    l2[i]=c2->ParticleArg(i);
   }
   for (int i=0;i<blindlist1.size();i++){
     for (int j=0;j<3;j++)
@@ -791,7 +791,7 @@ int Amplitude_Generator::CompareColors(Color_Function* c1,vector<int> blindlist1
 	if (l2[j]>=blindlist2[i]) l2[j]--;
       }
   }
-  if (c1->type!=cf::D && c1->type!=cf::G) {
+  if (c1->Type()!=cf::D && c1->Type()!=cf::G) {
     for (int i=0;i<3;i++) {
       if (l1[i]!=l2[i]) return 0;
     }
@@ -827,7 +827,7 @@ int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
   if ((p1->left!=0) && (p2->left==0)) return 0;
 
   //Check extended Color_Functions
-  if (p1->Color->type!=p2->Color->type) return 0;
+  if (p1->Color->Type()!=p2->Color->Type()) return 0;
 
   std::vector<int> blindlist1;
   std::vector<int> blindlist2;
@@ -844,17 +844,17 @@ int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
   if(blindlist1.size()!=blindlist2.size()) return 0;
 
   if (CompareColors(p1->Color,blindlist1,p2->Color,blindlist2)) {
-  if (p1->Color->Next && p2->Color->Next) {
+    if (p1->Color->Next() && p2->Color->Next()) {
       Color_Function* ctmp1 = p1->Color;
       Color_Function* ctmp2 = p2->Color;
-      while(ctmp1->Next) {
-	if(!CompareColors(ctmp1->Next,blindlist1,ctmp2->Next,blindlist2)) return 0;
-	ctmp1 = ctmp1->Next;
-	ctmp2 = ctmp2->Next;
+      while(ctmp1->Next()) {
+	if(!CompareColors(ctmp1->Next(),blindlist1,ctmp2->Next(),blindlist2)) return 0;
+	ctmp1 = ctmp1->Next();
+	ctmp2 = ctmp2->Next();
       }
     }
     else {
-      if (p1->Color->Next!=0 || p2->Color->Next!=0) return 0;
+      if (p1->Color->Next()!=0 || p2->Color->Next()!=0) return 0;
     }
   }
   else return 0;
@@ -1313,32 +1313,15 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  else {
 	    
 	    for (short int k=0;k<(*v)(i)->ncf;k++) {
-
 	      *(pcopy->Color)   = ((*v)(i)->Color)[k];
-
-	      if (((*v)(i)->Color[k]).Next!=0) {
-		Color_Function* cforig = ((*v)(i)->Color[k]).Next;
-		Color_Function* cfcopy = pcopy->Color;
-		while (cforig) {
-		  cfcopy->Next = new Color_Function(*cforig);
-		  cfcopy = cfcopy->Next;
-		  cforig = cforig->Next;
-		}
-	      }	      
-	      
 	      *(pcopy->Lorentz) = ((*v)(i)->Lorentz)[k];
 	      
 	      Color_Function* cfmemo = pcopy->Color;
 	      
 	      //set the contraction indices: 4 -> (prop->number) 
 	      while (cfmemo) {
-		for (short int i=0;i<3;i++) {
-		  if ((cfmemo->type==cf::D || cfmemo->type==cf::G) && i==2) break;
-		  if (cfmemo->partarg[i]==4) {
-		    cfmemo->partarg[i] = pnext->number;
-		  }
-		  }
-		cfmemo = cfmemo->Next;
+		cfmemo->Replace(4,pnext->number);
+		cfmemo = cfmemo->Next();
 	      }
 
 	      //fill the vector pcollist

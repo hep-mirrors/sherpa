@@ -51,14 +51,16 @@ void Zfunc_Generator::LorentzConvert(Point* p)
   if (p==0) return;
   Lorentz_Function* l = p->Lorentz;
 
+  int partarg[4]={-1,-1,-1,-1};
   for (short int i=0;i<l->NofIndex();i++) {
-    switch (l->partarg[i]) {
-    case 0: l->partarg[i] = p->number;break;
-    case 1: l->partarg[i] = p->left->number;break;
-    case 2: l->partarg[i] = p->right->number;break;
-    case 3: l->partarg[i] = p->middle->number;break;
+    switch (l->ParticleArg(i)) {
+    case 0: partarg[i] = p->number;break;
+    case 1: partarg[i] = p->left->number;break;
+    case 2: partarg[i] = p->right->number;break;
+    case 3: partarg[i] = p->middle->number;break;
     }
   }
+  l->SetParticleArg(partarg[0],partarg[1],partarg[2],partarg[3]);
   LorentzConvert(p->right);
   LorentzConvert(p->left);  
   LorentzConvert(p->middle);
@@ -150,8 +152,8 @@ void Zfunc_Generator::Convert(Point* p)
 	    return;
 	  }
       }
-      if(pf!=0 && ((p->Lorentz)->type==lf::FFVT || 
-                   (p->Lorentz)->type==lf::FFVGS  ) ){
+      if(pf!=0 && ((p->Lorentz)->Type()==lf::FFVT || 
+                   (p->Lorentz)->Type()==lf::FFVGS  ) ){
 	pb->m=1;
 	Convert(p);
 	return;
@@ -255,7 +257,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
       for (short int j=0;j<lflist.size();j++) {
 	int hit2 = 1;
 	for (short int k=0;k<typerem.size();k++) {
-	  if (typerem[k]==LFEff(lflist[j].type)) {
+	  if (typerem[k]==LFEff(lflist[j].Type())) {
 	    hit2 = 0;
 	    break;
 	  }
@@ -264,17 +266,17 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 	  //counting 
 	  int type1 = 0;
 	  for (short int k=j;k<lflist.size();k++) {
-	    if (LFEff(lflist[j].type)==LFEff(lflist[k].type)) type1++;
+	    if (LFEff(lflist[j].Type())==LFEff(lflist[k].Type())) type1++;
 	  }
 	  int type2 = 0;
 	  for (short int k=0;k<(zcalc[i]->lorentzlist).size();k++) {
-	    if (LFEff(lflist[j].type)==LFEff((zcalc[i]->lorentzlist[k]).type)) type2++;
+	    if (LFEff(lflist[j].Type())==LFEff((zcalc[i]->lorentzlist[k]).Type())) type2++;
 	  }  
 	  if (type1!=type2) {
 	    hit = 0;
 	    break;
 	  }
-	  else typerem.push_back(LFEff(lflist[j].type));
+	  else typerem.push_back(LFEff(lflist[j].Type()));
 	}
       }
       if (hit) {
@@ -326,8 +328,8 @@ int Zfunc_Generator::Compare(int Nargs,
   
   for (short int i=0;i<lfpointer.size();i++) {
     for (short int k=0;k<lfpointer[i]->NofIndex();k++) {
-      int lfarg = abs(lfpointer[i]->partarg[k]);
-      int caarg = abs(capointer[i]->partarg[k]);
+      int lfarg = abs(lfpointer[i]->ParticleArg(k));
+      int caarg = abs(capointer[i]->ParticleArg(k));
       
       int hit = 1;
       
@@ -384,7 +386,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
       int typemax   = 0;
 
       for (short int j=0;j<lfpointer.size();j++) {
-	if (LFEff(lfpointer[j]->type)==LFEff(lfpointer[i]->type)) {
+	if (LFEff(lfpointer[j]->Type())==LFEff(lfpointer[i]->Type())) {
 	  if (typemin>j) typemin = j;
 	  if (typemax<j) typemax = j;
 	  typecount++;
@@ -559,9 +561,9 @@ void Zfunc_Generator::SetPropDirection(int Nargs,int incoming,
   int start = -1;
   //works only for incoming vectors!!!!
   for (short int i=0;i<lfpointer.size();i++) {
-    if (LFEff(lfpointer[i]->type)==lf::Gamma) {
+    if (LFEff(lfpointer[i]->Type())==lf::Gamma) {
       for (short int k=0;k<lfpointer[i]->NofIndex();k++) {
-	if (lfpointer[i]->partarg[k]==incoming) {
+	if (lfpointer[i]->ParticleArg(k)==incoming) {
 	  start = i;
 	  break;
 	}
@@ -586,7 +588,7 @@ void Zfunc_Generator::SearchNextProp(int Nargs,
   for (short int i=0;i<lfpointer.size();i++) {
     if (i!=position) {
       for (short int k=0;k<lfpointer[i]->NofIndex();k++) {
-	if (lfpointer[i]->partarg[k]==incoming) {
+	if (lfpointer[i]->ParticleArg(k)==incoming) {
 	  start = i;
 	  break;
 	}
@@ -598,8 +600,8 @@ void Zfunc_Generator::SearchNextProp(int Nargs,
   if (start==-1) return;
 
   for (short int k=0;k<lfpointer[position]->NofIndex();k++) {
-    if (lfpointer[position]->partarg[k]==incoming) {
-      if (capointer[position]->partarg[k]<0) {
+    if (lfpointer[position]->ParticleArg(k)==incoming) {
+      if (capointer[position]->ParticleArg(k)<0) {
 	for (short int i=0;i<Nargs;i++) {
 	  if (lfnumb[i]==incoming) {
 	    canumb[i] = -canumb[i];
@@ -612,8 +614,8 @@ void Zfunc_Generator::SearchNextProp(int Nargs,
   }
   
   for (short int k=0;k<lfpointer[start]->NofIndex();k++) {
-    if (lfpointer[start]->partarg[k]!=incoming) 
-      SearchNextProp(Nargs,lfpointer,lfnumb,capointer,canumb,lfpointer[start]->partarg[k],start);
+    if (lfpointer[start]->ParticleArg(k)!=incoming) 
+      SearchNextProp(Nargs,lfpointer,lfnumb,capointer,canumb,lfpointer[start]->ParticleArg(k),start);
   }
 }
 

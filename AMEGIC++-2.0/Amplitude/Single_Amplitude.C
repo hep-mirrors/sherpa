@@ -105,23 +105,9 @@ Single_Amplitude::~Single_Amplitude()
     sd = sd->Next;
     delete sd2;
   }
-
-  Color_Function* c;
-  Color_Function* c2;
-  c = CFlist;
-  while (c) {
-    c2 = c;
-    c = c->Next;
-    delete c2;
-  }
-
-  c = CCFlist;
-  while (c) {
-    c2 = c;
-    c = c->Next;
-    delete c2;
-  }
   
+  delete CFlist;
+  delete CCFlist;
 
 }
 
@@ -155,25 +141,25 @@ void Single_Amplitude::PrintGraph()
   c = CFlist;
   ATOOLS::msg.Out()<<"Color-matrix: ";
   while(c) {
-    switch (c->type) {
+    switch (c->Type()) {
       case  0: {
-	ATOOLS::msg.Out()<<"T("<<c->partarg[0]<<" "<<c->partarg[1]
-			    <<" "<<c->partarg[2]<<") ";
+	ATOOLS::msg.Out()<<"T("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)
+			    <<" "<<c->ParticleArg(2)<<") ";
 	break;
       }
       case  1: {
-	ATOOLS::msg.Out()<<"F("<<c->partarg[0]<<" "<<c->partarg[1]
-			    <<" "<<c->partarg[2]<<") ";
+	ATOOLS::msg.Out()<<"F("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)
+			    <<" "<<c->ParticleArg(2)<<") ";
 	break;
       }
       case 10: {
-	ATOOLS::msg.Out()<<"TP("<<c->partarg[0]<<" "<<c->partarg[1]
-			    <<" "<<c->partarg[2]<<") ";
+	ATOOLS::msg.Out()<<"TP("<<c->ParticleArg(0)<<" "<<c->ParticleArg(1)
+			    <<" "<<c->ParticleArg(2)<<") ";
 	break;
       }
       default : break;
     }
-    c = c->Next;     
+    c = c->Next();     
   }
   ATOOLS::msg.Out()<<endl<<"Color-string: "<<Colstring<<endl<<endl<<"Spinflow:"<<endl;
   SpinorDirection* sd = spind;
