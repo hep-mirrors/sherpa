@@ -265,6 +265,10 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_flux=.25;
   m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   if (!m_kmrmode) {
+#ifndef NO_ANALYSIS__ISR_Handler
+    m_info_lab[iic::E_1]=m_x[0];
+    m_info_lab[iic::E_2]=m_x[1];
+#endif
     return true;
   }
   double phi=0.0;
