@@ -101,48 +101,98 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
   m_zkey[0].Assign("z_1",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_zkey[1].Assign("z_2",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
-  if (!reader->ReadFromFile(m_jets,"LIPATOV_JETS","")) m_jets=4;
+  if (!reader->ReadFromFile(m_jets,"LIPATOV_JETS","")) m_jets=2;
   delete reader;
 }
 
 #include "MyComplex.H"
 
-#define USING__NLO_Lipatov_Vertex
-
-Complex App(double k1p,double k1m,Complex kp1,
-	    double k2p,double k2m,Complex kp2,
-	    double p3p,double p3m,Complex pp3,
-	    double p4p,double p4m,Complex pp4,
-	    double s,double s3bb)
+Complex App(const ATOOLS::Vec4D *p)
 {
-  return 2.0*std::conj(kp1)*kp2/pp3*sqrt(p3p/p4p/s);
+  double kp[4];
+  Complex kt[4], qt[3];
+  for (short unsigned int i=2;i<4;++i) {
+    kp[i]=p[i].PPlus();
+    double spt=p[i].PPerp();
+    kt[i]=Complex(spt*p[i].CosPhi(),spt*p[i].SinPhi());
+    ATOOLS::Vec4D pi=p[i-2];
+    if (i==3) pi=-1.0*pi;
+    spt=pi.PPerp();
+    qt[i-1]=Complex(spt*pi.CosPhi(),spt*pi.SinPhi());
+  }
+  Complex ab23=sqrt(kp[3]/kp[2])*kt[2]-sqrt(kp[2]/kp[3])*kt[3];
+  return 2.0*std::conj(qt[1])*qt[2]/kt[2]*sqrt(kp[2]/kp[3])/ab23;
 }
 
-Complex Apm(double k1p,double k1m,Complex kp1,
-	    double k2p,double k2m,Complex kp2,
-	    double p3p,double p3m,Complex pp3,
-	    double p4p,double p4m,Complex pp4,
-	    double s,double s3bb)
+Complex Apm(const ATOOLS::Vec4D *p)
 {
-  double kp12=ATOOLS::sqr(std::abs(k1p));
-  double kp22=ATOOLS::sqr(std::abs(k2p));
-  return -2.0*std::conj(kp2)/kp2*
-    (-1.0/s*(pp4*pp4*kp12/((p3m+p4m)*p4p)+
-	     pp3*pp3*kp22/((p3p+p4p)*p3m)+
-	     s3bb*pp3*pp4/(p3m*p4p))
-     +(kp2+pp4)*(kp2+pp4)/s3bb
-     -(kp2+pp4)/s*((p3m+p4m)/p3m*pp3-(p3p+p4p)/p4p*pp4));
+  double kp[4], km[4];
+  Complex kt[4], qt[3];
+  for (short unsigned int i=2;i<4;++i) {
+    kp[i]=p[i].PPlus();
+    km[i]=p[i].PMinus();
+    double spt=p[i].PPerp();
+    kt[i]=Complex(spt*p[i].CosPhi(),spt*p[i].SinPhi());
+    ATOOLS::Vec4D pi=p[i-2];
+    if (i==3) pi=-1.0*pi;
+    spt=pi.PPerp();
+    qt[i-1]=Complex(spt*pi.CosPhi(),spt*pi.SinPhi());
+  }
+  double qt12=p[0].PPerp2(), qt22=p[1].PPerp2();
+  double s23=(p[2]+p[3]).Abs2();
+  double s3bb=(p[3]-p[1]).Abs2();
+  return -2.0*std::conj(kt[2])/kt[2]*
+    (-1.0/s23*(kt[3]*kt[3]*qt12/((km[2]+km[3])*kp[3])+
+	       kt[2]*kt[2]*qt22/((kp[2]+kp[3])*km[2])+
+	       s3bb*kt[2]*kt[3]/(km[2]*kp[3]))
+     +(qt[2]+kt[3])*(qt[2]+kt[3])/s3bb
+     -(qt[2]+kt[3])/s23*((km[2]+km[3])/km[2]*kt[2]-
+			 (kp[2]+kp[3])/kp[3]*kt[3]));
 }
 
 #define USING__NLO_LEV
-// #define USING__No_Turn
+#define USING__Angular_Ordering_Check
+// #define USING__NLO_LEV_Rapidity_Check
+// #define USING__Turn
+// #define USING__LO_Offshell_ME
+
+#ifdef USING__LO_Offshell_ME
+#include "GO1.C"
+#endif
 
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
 {
 #ifdef USING__NLO_LEV
   // use nlo lipatov vertex
   ATOOLS::Vec4D *const p=p_momenta;
-#ifndef USING__No_Turn
+#ifdef USING__LO_Offshell_ME
+  return ATOOLS::sqr(4.0*M_PI*m_alphas)*GO1(p)/2.0;
+#endif
+#ifdef USING__Angular_Ordering_Check
+  // check angular ordering of emitted gluons
+  const ATOOLS::Vec4D &g1=p_addmomenta[0];
+  const ATOOLS::Vec4D &g2=p_addmomenta[1];
+  double Xi1=p[2].PMinus()/p[2].PPlus(), Xi2=p[3].PPlus()/p[3].PMinus();
+  double xi1=g1.PMinus()/g1.PPlus(), xi2=g2.PPlus()/g2.PMinus();
+  if (xi1>=Xi1 || xi2>=Xi2) return 0.;
+#endif
+#ifdef USING__NLO_LEV_Rapidity_Check
+  const double m_cut=1.0;
+  double y1=p_addmomenta[0].Y();
+  double y2=p[2].Y();
+  double y3=p[3].Y();
+  double y4=p_addmomenta[1].Y();
+  //  std::cout<<y1<<" "<<y2<<" "<<y3<<" "<<y4<<std::endl;
+  if ((p[2]+p[3]).Y()>0.0) {
+    if (m_cut*y1<y2) return 0.0;
+    if (m_cut*y3<y4) return 0.0;
+  }
+  else {
+    if (y1<m_cut*y2) return 0.0;
+    if (y3<m_cut*y4) return 0.0;
+  }
+#endif
+#ifdef USING__Turn
   double c1=(p_addmomenta[0]+p[2]+p[3]).PPlus()/p[4].PPlus();
   double c2=(p_addmomenta[1]+p[2]+p[3]).PMinus()/p[5].PMinus();
   bool turn=false;
@@ -159,38 +209,17 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
     turn=true;
   }
 #endif
-  double pp[6], pm[6];
-  Complex pt[6];
-  for (short unsigned int i=0;i<6;++i) {
-    ATOOLS::Vec4D pi=p[i];
-    if (i==1) pi=-1.0*pi;
-    pp[i]=pi.PPlus();
-    pm[i]=pi.PMinus();
-    double spt=pi.PPerp();
-    pt[i]=Complex(spt*pi.CosPhi(),spt*pi.SinPhi());
-    //    std::cout<<i<<" "<<pi<<" "<<pp[i]<<" "<<pm[i]<<" "<<pt[i]<<std::endl;
-  }
-  double s42=(p[3]+p_addmomenta[1]+p[2]).Abs2();
-  Complex app34=App(pp[0],pm[0],pt[0],pp[1],pm[1],pt[1],
-		    pp[2],pm[2],pt[2],pp[3],pm[3],pt[3],s,s42);
-  Complex apm34=Apm(pp[0],pm[0],pt[0],pp[1],pm[1],pt[1],
-		    pp[2],pm[2],pt[2],pp[3],pm[3],pt[3],s,s42);
-  Complex app43=App(pp[0],pm[0],pt[0],pp[1],pm[1],pt[1],
-		    pp[3],pm[3],pt[3],pp[2],pm[2],pt[2],s,s42);
-  Complex apm43=Apm(pp[0],pm[0],pt[0],pp[1],pm[1],pt[1],
-		    pp[3],pm[3],pt[3],pp[2],pm[2],pt[2],s,s42);
-  double Mpp=ATOOLS::sqr(std::abs(app34))+ATOOLS::sqr(std::abs(app43))
-    +0.5*std::abs(app34*std::conj(app43)+std::conj(app34)*app43);
-  double Mpm=ATOOLS::sqr(std::abs(apm34))+ATOOLS::sqr(std::abs(apm43))
-    +0.5*std::abs(apm34*std::conj(apm43)+std::conj(apm34)*apm43);
-  double M=(Mpp+Mpm);
-  // check angular ordering of emitted gluons
-  const ATOOLS::Vec4D &g1=p_addmomenta[0];
-  const ATOOLS::Vec4D &g2=p_addmomenta[1];
-  double Xi1=pm[2]/pp[2], Xi2=pp[3]/pm[3];
-  double xi1=g1.PMinus()/g1.PPlus(), xi2=g2.PPlus()/g2.PMinus();
-  if (xi1>=Xi1 || xi2>=Xi2) return 0.;
-#ifndef USING__No_Turn
+  Complex app34=App(p);
+  Complex apm34=App(p);
+  std::swap<ATOOLS::Vec4D>(p[2],p[3]);
+  Complex app43=App(p);
+  Complex amp43=App(p);
+  std::swap<ATOOLS::Vec4D>(p[2],p[3]);
+  double Mpp=std::abs(app34*std::conj(app34)+app43*std::conj(app43)
+		      +0.5*(app34*std::conj(app43)+std::conj(app34)*app43));
+  double Mpm=std::abs(apm34*std::conj(apm34)+amp43*std::conj(amp43));
+  double M=2.0*(Mpp+Mpm);
+#ifdef USING__Turn
   if (turn) {
     ATOOLS::Vec4D plus(1.0,0.0,0.0,1.0);
     ATOOLS::Vec4D minus(1.0,0.0,0.0,-1.0);
@@ -203,8 +232,7 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
     std::swap<ATOOLS::Vec4D>(p_addmomenta[0],p_addmomenta[1]);
   }
 #endif
-  return ATOOLS::sqr(4.0*M_PI*m_alphas)
-    *(NC*NC)/(NC*NC-1)/(2.0*4.0)*M/(2.0*p[4]*p[5]);
+  return ATOOLS::sqr(4.0*M_PI*m_alphas)*(NC*NC)/(NC*NC-1)/(2.0*4.0)*M;
 #else
   const ATOOLS::Vec4D *p=p_momenta;
   const ATOOLS::Vec4D &p1=p[4], &p2=p[5];
@@ -216,6 +244,7 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
   double kp12=k1.PPerp2(), kp22=k2.PPerp2(), kp2=k.PPerp2();
 #ifndef USING__LEV
   // use equivalence of lipatov vertex and triple gluon vertex
+  // note: this correspondence is not gauge invariant
   ATOOLS::Vec4D A1=
     (k1.Perp()*k.Perp())*(k1+k)
     +(k1.Perp()*(p3-k))*k.Perp()
@@ -262,35 +291,20 @@ bool Off_Shell_gg_gg::SetColours(double s,double t,double u)
 
 bool Off_Shell_gg_gg::Trigger(const ATOOLS::Vec4D *const momenta) 
 {
-//   ATOOLS::Vec4D *temp = new ATOOLS::Vec4D[6];
-//   for (int i=4;i<6;++i) temp[i-4]=momenta[i];
-//   for (int i=2;i<4;++i) temp[i+2]=momenta[i];
-//   double x1=momenta[0]*momenta[5]/(momenta[4]*momenta[5]);
-//   double x2=momenta[1]*momenta[4]/(momenta[4]*momenta[5]);
-//   double b1=m_zkey[0][2]/(1.-m_zkey[0][2])*
-//     momenta[0].PPerp2()/x1/p_isrhandler->Pole();
-//   double b2=m_zkey[1][2]/(1.-m_zkey[1][2])*
-//     momenta[1].PPerp2()/x2/p_isrhandler->Pole();
-//   temp[2]=x1*(1./m_zkey[0][2]-1.)*momenta[4]+b1*momenta[5]-momenta[0].Perp();
-//   temp[3]=x2*(1./m_zkey[1][2]-1.)*momenta[5]+b2*momenta[4]-momenta[1].Perp();
-//   if (!(temp[2]==p_addmomenta[0])) std::cout<<temp[2]<<p_addmomenta[0]<<std::endl;
-//   if (!(temp[3]==p_addmomenta[1])) std::cout<<temp[3]<<p_addmomenta[1]<<std::endl;
   bool result=true;
   if (m_jets<4) result=Integrable_Base::Trigger(momenta);
   else {
     ATOOLS::Vec4D temp[6];
-    for (int i=4;i<6;++i) temp[i-4]=momenta[i];
-    for (int i=2;i<4;++i) temp[i+2]=p_addmomenta[i-2];
+    for (int i=2;i<4;++i) {
+      temp[i-2]=momenta[i+2];
+      temp[i+2]=momenta[i];
+      temp[i]=p_addmomenta[i-2];
+    }
     p_selector->SetNOut(m_nvector-m_nin);
     p_selector->SetNTot(m_nvector);
     result=p_selector->Trigger(temp);
     p_selector->SetNTot(m_nin+m_nout);
     p_selector->SetNOut(m_nout);
   }
-//   p_addmomenta[0]=temp[2];
-//   p_addmomenta[1]=temp[3];
-// //   for (size_t i=0;i<6;++i) std::cout<<momenta[i]<<std::endl;
-// //   for (size_t i=0;i<6;++i) std::cout<<temp[i]<<std::endl;
-//   delete [] temp;
   return result;
 }
