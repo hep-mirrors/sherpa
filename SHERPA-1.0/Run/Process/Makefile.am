@@ -16,15 +16,19 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 SUBDIRS = Dummy
 lib_LTLIBRARIES = libProcess.la
 libProcess_la_SOURCES =	\
 			Set_Channel.C \
 			Set_Values.C 
+EXTRA_DIST    =	$(CVSINCLUDE) Set_Channel.C.clean Set_Values.C.clean
 AM_CXXFLAGS   =	$(SHERPAFLAGS)
 INCLUDES      = $(AMEGICINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) 
-EXTRA_DIST = Set_Channel.C.clean Set_Values.C.clean
 
 
 

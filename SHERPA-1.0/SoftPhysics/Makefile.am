@@ -13,6 +13,10 @@ BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 SUBDIRS       =	Lund
 lib_LTLIBRARIES       =	libSherpaSoftPhysics.la
 libSherpaSoftPhysics_la_SOURCES	      =	\
@@ -34,6 +38,7 @@ noinst_HEADERS        =	\
 			Beam_Remnant_Handler.H \
 		 	Fragmentation_Handler.H \
 			Hadron_Decay_Handler.H
+EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS)
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \

@@ -20,6 +20,10 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 lib_LTLIBRARIES       =	libSherpaPerturbativePhysics.la
 libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Matrix_Element_Handler.C \
@@ -55,6 +59,7 @@ noinst_HEADERS        =	\
 			NLL_Single_Sudakov.H \
 			NLL_Combined_Sudakov.H \
 			NLL_JetRate.H
+EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS)
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \

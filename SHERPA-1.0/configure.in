@@ -35,6 +35,18 @@ AC_ARG_ENABLE(root,
   fi ],[ root=false ])
 AM_CONDITIONAL(CLHEP_SUPPORT, test $clhep = true)
 AM_CONDITIONAL(ROOT_SUPPORT, test $root = true)
+AC_ARG_ENABLE(cvsinclude,
+[  --disable-cvs           Disable CVS Synchronization ],
+[ cvsinclude=true
+  case "${enableval}" in
+    no) echo "enable CVS synchronization... no" ;
+        cvsinclude=false ;;
+    yes) echo "enable CVS synchronization... yes" ;;
+    *) echo "enable CVS synchronization... yes" ;;
+  esac ],
+[ echo "enable CVS synchronization... yes" ;
+  cvsinclude=true ])
+AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
 
 AM_CONDITIONAL(AMISIC_SUPPORT, test -d "../AMISIC++-1.0")
 

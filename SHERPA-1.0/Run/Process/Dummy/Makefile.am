@@ -1,3 +1,7 @@
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 lib_LTLIBRARIES = libDummy.la
 libDummy_la_SOURCES = Dummy.C
 INCLUDES = -I../../../../AMEGIC++-2.0/Amplitude \
@@ -12,7 +16,7 @@ INCLUDES = -I../../../../AMEGIC++-2.0/Amplitude \
 	   -I../../../../ATOOLS-2.0/Math \
 	   -I../../../../ATOOLS-2.0/Org \
 	   -I../../../../MODEL-1.0/Main 
-EXTRA_DIST = Dummy.H
+EXTRA_DIST = $(CVSINCLUDE) Dummy.H
 
 
 

@@ -14,6 +14,10 @@ CLHEPINCS     =	-I$(CLHEPDIR)/include
 CLHEPFLAGS    = -DCLHEP_SUPPORT
 endif
 
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 lib_LTLIBRARIES       =	libSherpaTools.la
 libSherpaTools_la_SOURCES     =	\
 				Kinematics.C \
@@ -28,6 +32,7 @@ noinst_HEADERS        =	\
 		 	HepMC_Interface.H \
 			HepEvt_Interface.H \
 			Sample_Analysis.H 
+EXTRA_DIST    =	$(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
 INCLUDES      =	$(SHERPAINCS) $(AMISICINCS) $(MODELINCS) $(ATOOLSINCS) \
 		$(CLHEPINCS)

@@ -1,14 +1,29 @@
-SHERPASYS  = ../..
+SHERPASYS     =	../..
 
-ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
-PDFINC     = $(SHERPASYS)/PDF-1.0
-BEAMINC    = $(SHERPASYS)/BEAM-1.0
-PHASICINC  = $(SHERPASYS)/PHASIC++-1.0
-MODELINC   = $(SHERPASYS)/MODEL-1.0
-EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
-AMEGICINC  = $(SHERPASYS)/AMEGIC++-2.0
-APACICINC  = $(SHERPASYS)/APACIC++-2.0
-AMISICINC  = $(SHERPASYS)/AMISIC++-1.0
+SHERPAFLAGS   =	-pedantic -Wall -Winline -Woverloaded-virtual
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
+AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
+APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+SHERPAINCS    =	-I../PerturbativePhysics -I../SoftPhysics \
+		-I../SoftPhysics/Lund -I../LundTools -I../Tools 
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
+PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
+AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
+AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
+		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
+		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
+		-I$(AMEGICDIR)/String 
+APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
 
 lib_LTLIBRARIES	      =	libSherpaSingleEvents.la
 libSherpaSingleEvents_la_SOURCES      =	\
@@ -19,35 +34,6 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Jet_Evolution.C \
 					Hard_Decays.C \
 					Hadronization.C
-#CXXFLAGS      =	-pedantic -Wall -Winline
-INCLUDES      =	\
-		-I../../SHERPA-1.0/Tools \
-		-I../../SHERPA-1.0/PerturbativePhysics \
-		-I../../SHERPA-1.0/SoftPhysics \
-		-I../../SHERPA-1.0/SoftPhysics/Lund \
-		-I$(AMEGICINC)/Main \
-		-I$(AMEGICINC)/Amplitude \
-		-I$(AMEGICINC)/Phasespace \
-		-I$(AMEGICINC)/Amplitude/AmplTools \
-		-I$(AMEGICINC)/Amplitude/Zfunctions \
-		-I$(AMEGICINC)/Phasespace \
-		-I$(AMEGICINC)/String \
-		-I$(AMEGICINC)/Model \
-		-I$(APACICINC)/Main \
-		-I$(APACICINC)/Showers \
-		-I$(AMISICINC)/Main \
-		-I$(AMISICINC)/Other \
-		-I$(AMISICINC)/Tools \
-		-I$(EXTRAXSINC)/Main \
-		-I$(EXTRAXSINC)/Two2Two \
-		-I$(MODELINC)/Main \
-		-I$(PHASICINC)/Main \
-		-I$(BEAMINC)/Main \
-		-I$(PDFINC)/LHAPDF \
-		-I$(PDFINC)/Main \
-		-I$(ATOOLSINC)/Phys \
-		-I$(ATOOLSINC)/Math \
-		-I$(ATOOLSINC)/Org 
 noinst_HEADERS        =	\
 			Event_Handler.H \
 			Event_Phase_Handler.H \
@@ -56,6 +42,11 @@ noinst_HEADERS        =	\
 			Jet_Evolution.H \
 			Hard_Decays.H \
 		 	Hadronization.H
+EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(SHERPAFLAGS)
+INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
+		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
+		$(BEAMINCS) $(ATOOLSINCS)
 
 
 

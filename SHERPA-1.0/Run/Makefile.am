@@ -54,6 +54,10 @@ CLHEPLIBS     =	$(wildcard $(CLHEPDIR)/lib/libCLHEP-g++.*.a)
 CLHEPFLAGS    = -DCLHEP_SUPPORT
 endif
 
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
 Sherpa_LDADD  =	$(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(AMISICLIBS) \
@@ -66,6 +70,7 @@ INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 SUBDIRS       =	Process
 EXTRA_DIST    =	\
+		$(CVSINCLUDE) \
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
 	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat simplechain.dat \
 		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs Lund.dat
