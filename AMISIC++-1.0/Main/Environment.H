@@ -42,11 +42,11 @@ namespace AMEGIC {
     void InitializeTheEnvironment();
     ~Environment();
 
-    MODEL::Model_Base          * GetModel()              { return p_model; }
-    BEAM::Beam_Spectra_Handler * GetBeamSpectraHandler() { return p_beamspectra; }
-    PDF::ISR_Handler           * GetISRHandler()         { return p_isrhandler; }
+    MODEL::Model_Base          * Model()              { return p_model; }
+    BEAM::Beam_Spectra_Handler * BeamSpectraHandler() { return p_beamspectra; }
+    PDF::ISR_Handler           * ISRHandler()         { return p_isrhandler; }
 
-    std::string                  GetMEFile()             { return m_medat; }
+    std::string                  MEFile()             { return m_medat; }
   };
 }
 

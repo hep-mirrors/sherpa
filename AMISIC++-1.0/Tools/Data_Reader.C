@@ -154,7 +154,7 @@ namespace ATOOLS {
   
   template <class Read_Type>
   std::vector<Read_Type> 
-  Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,VectorType tempvtype)
+  Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,VectorTypeID tempvtype)
   {
     if (tempvtype==VUnknown) tempvtype=M_VectorType();
     if (tempvtype==VUnknown) tempvtype=VVertical;
@@ -211,7 +211,7 @@ namespace ATOOLS {
 
   template <class Read_Type>
   std::vector<Read_Type> 
-  Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,VectorType tempvtype)
+  Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,VectorTypeID tempvtype)
   {
     if (tempvtype==VUnknown) tempvtype=M_VectorType();
     if (tempvtype==VUnknown) tempvtype=VVertical;
@@ -252,7 +252,7 @@ namespace ATOOLS {
 
   template <class Read_Type>
   std::vector< std::vector<Read_Type> > 
-  Data_Reader::M_ArrayFromString(std::string parameter,std::string inputstring,MatrixType tempmtype)
+  Data_Reader::M_ArrayFromString(std::string parameter,std::string inputstring,MatrixTypeID tempmtype)
   {
     if (tempmtype==MUnknown) tempmtype=M_MatrixType();
     if (tempmtype==MUnknown) tempmtype=MNormal;
@@ -305,7 +305,7 @@ namespace ATOOLS {
 
   template <class Read_Type>
   std::vector< std::vector<Read_Type> > 
-  Data_Reader::M_ArrayFromFile(std::string parameter,std::string filename,MatrixType tempmtype)
+  Data_Reader::M_ArrayFromFile(std::string parameter,std::string filename,MatrixTypeID tempmtype)
   {
     if (tempmtype==MUnknown) tempmtype=M_MatrixType();
     if (tempmtype==MUnknown) tempmtype=MNormal;
@@ -379,67 +379,67 @@ namespace ATOOLS {
   { if ((result=M_ReadFromString<std::string>(parameter,filename))!=Default<std::string>()) return true; else return false; }
   
   bool Data_Reader::VectorFromFile(std::vector<int> &result,std::string parameter,
-				   std::string filename, VectorType tempvtype) 
+				   std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromFile<int>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   bool Data_Reader::VectorFromFile(std::vector<long int> &result,std::string parameter,
-				   std::string filename, VectorType tempvtype) 
+				   std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromFile<long int>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   bool Data_Reader::VectorFromFile(std::vector<float> &result,std::string parameter,
-				    std::string filename, VectorType tempvtype) 
+				    std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromFile<float>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   bool Data_Reader::VectorFromFile(std::vector<double> &result,std::string parameter,
-				    std::string filename, VectorType tempvtype) 
+				    std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromFile<double>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   bool Data_Reader::VectorFromFile(std::vector<std::string> &result,std::string parameter,
-				    std::string filename, VectorType tempvtype) 
+				    std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromFile<std::string>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   
   bool Data_Reader::VectorFromString(std::vector<int> &result,std::string parameter,
-				      std::string filename, VectorType tempvtype) 
+				      std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromString<int>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   bool Data_Reader::VectorFromString(std::vector<long int> &result,std::string parameter,
-				      std::string filename, VectorType tempvtype) 
+				      std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromString<long int>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   bool Data_Reader::VectorFromString(std::vector<float> &result,std::string parameter,
-				      std::string filename, VectorType tempvtype) 
+				      std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromString<float>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   bool Data_Reader::VectorFromString(std::vector<double> &result,std::string parameter,
-				      std::string filename, VectorType tempvtype) 
+				      std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromString<double>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   bool Data_Reader::VectorFromString(std::vector<std::string> &result,std::string parameter,
-				      std::string filename, VectorType tempvtype) 
+				      std::string filename, VectorTypeID tempvtype) 
   { if ((result=M_VectorFromString<std::string>(parameter,filename,tempvtype)).size()!=0) return true; else return false; }
   
   bool Data_Reader::ArrayFromFile(std::vector<std::vector<int> > &result,std::string parameter,
-				  std::string filename, MatrixType tempmtype) 
+				  std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromFile<int>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   bool Data_Reader::ArrayFromFile(std::vector<std::vector<long int> > &result,std::string parameter,
-				  std::string filename, MatrixType tempmtype) 
+				  std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromFile<long int>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   bool Data_Reader::ArrayFromFile(std::vector<std::vector<float> > &result,std::string parameter,
-				  std::string filename, MatrixType tempmtype) 
+				  std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromFile<float>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   bool Data_Reader::ArrayFromFile(std::vector<std::vector<double> > &result,std::string parameter,
-				  std::string filename, MatrixType tempmtype) 
+				  std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromFile<double>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   bool Data_Reader::ArrayFromFile(std::vector<std::vector<std::string> > &result,std::string parameter,
-				  std::string filename, MatrixType tempmtype) 
+				  std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromFile<std::string>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   
   bool Data_Reader::ArrayFromString(std::vector<std::vector<int> > &result,std::string parameter,
-				    std::string filename, MatrixType tempmtype) 
+				    std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromString<int>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   bool Data_Reader::ArrayFromString(std::vector<std::vector<long int> > &result,std::string parameter,
-				    std::string filename, MatrixType tempmtype) 
+				    std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromString<long int>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   bool Data_Reader::ArrayFromString(std::vector<std::vector<float> > &result,std::string parameter,
-				    std::string filename, MatrixType tempmtype) 
+				    std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromString<float>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   bool Data_Reader::ArrayFromString(std::vector<std::vector<double> > &result,std::string parameter,
-				    std::string filename, MatrixType tempmtype) 
+				    std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromString<double>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
   bool Data_Reader::ArrayFromString(std::vector<std::vector<std::string> > &result,std::string parameter,
-				    std::string filename, MatrixType tempmtype) 
+				    std::string filename, MatrixTypeID tempmtype) 
   { if ((result=M_ArrayFromString<std::string>(parameter,filename,tempmtype)).size()!=0) return true; else return false; }
 
 } // end of namespace ATOOLS

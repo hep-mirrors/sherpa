@@ -10,9 +10,9 @@ namespace ATOOLS {
   class Axis {
   public:
 
-    enum ScalingMode { Reference =  1,
-		       Identical =  2,
-		       Unknown   = 99 };
+    enum ScalingModeID { Reference =  1,
+			 Identical =  2,
+			 Unknown   = 99 };
 
   public:
 
@@ -21,7 +21,7 @@ namespace ATOOLS {
   private:
     
     ATOOLS::Variable m_variable;
-    ScalingMode      m_scalingmode;
+    ScalingModeID    m_scalingmode;
 
     ATOOLS::Scaling_Base<ValueType> *p_scaling;
 
@@ -35,19 +35,19 @@ namespace ATOOLS {
 
     // setters
     void SetVariable(ATOOLS::Variable _m_variable);
-    void SetScalingMode(ScalingMode _m_scalingmode);
+    void SetScalingMode(ScalingModeID _m_scalingmode);
 
     void SetScaling(ATOOLS::Scaling_Base<ValueType> *_p_scaling);
 
     // getters
-    ATOOLS::Variable GetVariable();
-    ScalingMode      GetScalingMode();
+    ATOOLS::Variable Variable();
+    ScalingModeID    ScalingMode();
 
-    ATOOLS::Scaling_Base<ValueType> *GetScaling();
+    ATOOLS::Scaling_Base<ValueType> *Scaling();
 
     // member functions
-    ValueType DisplayedValue(ValueType realvalue,ScalingMode tempsmode);
-    ValueType RealValue(ValueType displayedvalue,ScalingMode tempsmode);
+    ValueType DisplayedValue(ValueType realvalue,ScalingModeID tempsmode);
+    ValueType RealValue(ValueType displayedvalue,ScalingModeID tempsmode);
 
     ValueType operator()(ValueType realvalue);
     ValueType operator[](ValueType displayedvalue);

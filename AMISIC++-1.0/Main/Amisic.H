@@ -87,10 +87,10 @@ namespace AMISIC {
     void SetOutputDirectory(std::string _m_outputdirectory);
 
     // getters
-    std::string GetInputFile();
-    std::string GetEnvironmentFile();
-    std::string GetInputDirectory();
-    std::string GetOutputDirectory();
+    std::string InputFile();
+    std::string EnvironmentFile();
+    std::string InputDirectory();
+    std::string OutputDirectory();
 
     // member functions
     bool Initialize(std::string tempidir=ATOOLS::nullstring,

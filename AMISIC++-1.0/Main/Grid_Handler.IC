@@ -12,7 +12,7 @@ namespace AMISIC {
   
   template <class Argument_Type,class Result_Type>
   inline ATOOLS::Type::ID Grid_Handler<Argument_Type,Result_Type>::
-  GetStreamType()
+  StreamType()
   { return m_streamtype; }
   
   template <class Argument_Type,class Result_Type>
@@ -22,7 +22,7 @@ namespace AMISIC {
   
   template <class Argument_Type,class Result_Type>
   inline std::string Grid_Handler<Argument_Type,Result_Type>::
-  GetStreamName()
+  StreamName()
   { return m_streamname; }
   
   template <class Argument_Type,class Result_Type>

@@ -13,14 +13,14 @@ namespace ATOOLS {
   class Data_To_Function: public std::unary_function<Argument_Type,Result_Type> {
   public:
 
-    enum AcquisitionMode { // Analytic      =  1,
-	                   Data          =  2,
-			   Interpolation =  3,
-			   // Fit           =  4,
-			   AUnknown       = 99 };
+    enum AcquisitionModeID { // Analytic      =  1,
+                             Data          =  2,
+			     Interpolation =  3,
+			     // Fit           =  4,
+			     AUnknown       = 99 };
 
-    enum InterpolationMode { Linear        =  1,
-			     IUnknown       = 99 };
+    enum InterpolationModeID { Linear        =  1,
+			       IUnknown       = 99 };
 
   public:
 
@@ -30,16 +30,10 @@ namespace ATOOLS {
     typedef std::vector<ArgumentType> ArgumentVector;
     typedef std::vector<ResultType>   ResultVector;
 
-    typedef std::pair<const ArgumentType,ResultType> XYPair;
-    typedef std::pair<const ResultType,ArgumentType> YXPair;
-
-    typedef std::map<ArgumentType,Result_Type> XYDataMap;
-    typedef std::map<ResultType,Argument_Type> YXDataMap;
-
 #ifdef __GNUC__
 #if __GNUC__>2
     typedef __gnu_cxx::__normal_iterator<ArgumentType*, std::vector<ArgumentType> > ArgumentIterator;
-    typedef __gnu_cxx::__normal_iterator<ResultType*, std::vector<ResultType> >     ResultIterator;
+    typedef __gnu_cxx::__normal_iterator<ResultType*, std::vector<ResultType> > ResultIterator;
 #else
     typedef ArgumentType *ArgumentIterator;
     typedef ResultType *ResultIterator;
@@ -48,22 +42,41 @@ namespace ATOOLS {
     typedef ArgumentType *ArgumentIterator;
     typedef ResultType *ResultIterator;
 #endif
-    typedef std::_Rb_tree_iterator<XYPair,XYPair&,XYPair*> XYDataIterator;
-    typedef std::_Rb_tree_iterator<YXPair,YXPair&,YXPair*> YXDataIterator;
+
+    typedef std::pair<ArgumentType,ResultType> XYPair;
+    typedef std::pair<ResultType,ArgumentType> YXPair;
+
+    typedef std::vector<XYPair> XYVector;
+    typedef std::vector<YXPair> YXVector;
+
+    typedef std::map<ArgumentType,Result_Type> XYMap;
+    typedef std::map<ResultType,Argument_Type> YXMap;
+
+#ifdef __GNUC__
+#if __GNUC__>2
+    typedef __gnu_cxx::__normal_iterator<XYPair*, std::vector<XYPair> > XYVectorIterator;
+    typedef __gnu_cxx::__normal_iterator<YXPair*, std::vector<YXPair> > YXVectorIterator;
+#else
+    typedef XYPair *XYVectorIterator;
+    typedef YXPair *YXVectorIterator;
+#endif
+#else
+    typedef XYPair *XYVectorIterator;
+    typedef YXPair *YXVectorIterator;
+#endif
+    typedef std::_Rb_tree_iterator<XYPair,XYPair&,XYPair*> XYMapIterator;
+    typedef std::_Rb_tree_iterator<YXPair,YXPair&,YXPair*> YXMapIterator;
 
   private:
 
     ATOOLS::Axis<ArgumentType> *p_xaxis;
     ATOOLS::Axis<ResultType>   *p_yaxis;
 
-    ArgumentVector *p_xdata;
-    ResultVector   *p_ydata;
+    XYVector *p_xydata;
+    YXVector *p_yxdata;
 
-    XYDataMap      *p_xydata;
-    YXDataMap      *p_yxdata;
-
-    AcquisitionMode   m_acquisitionmode;
-    InterpolationMode m_interpolationmode;
+    AcquisitionModeID   m_acquisitionmode;
+    InterpolationModeID m_interpolationmode;
 
     void Init();
 
@@ -95,46 +108,46 @@ namespace ATOOLS {
     // constructors
     Data_To_Function();
     Data_To_Function(const Data_To_Function<ArgumentType,ResultType> &reference);
-    Data_To_Function(XYDataMap *_m_xydata);
+    Data_To_Function(XYMap *_m_xydata);
     Data_To_Function(ArgumentVector *_m_xdata,ResultVector *_m_ydata);
 
     // destructor
     ~Data_To_Function();
 
     // setters
-    void SetAcquisitionMode(AcquisitionMode _m_acquisitionmode);
-    void SetInterpolationMode(InterpolationMode _m_interpolationmode);
+    void SetAcquisitionMode(AcquisitionModeID _m_acquisitionmode);
+    void SetInterpolationMode(InterpolationModeID _m_interpolationmode);
 
     // getters
-    AcquisitionMode   GetAcquisitionMode();
-    InterpolationMode GetInterpolationMode();
+    AcquisitionModeID   AcquisitionMode();
+    InterpolationModeID InterpolationMode();
 
-    ArgumentType GetXMin();
-    ArgumentType GetXMax();
-    ResultType   GetYMin();
-    ResultType   GetYMax();
+    ArgumentType XMin();
+    ArgumentType XMax();
+    ResultType   YMin();
+    ResultType   YMax();
 
-    ArgumentType GetDeltaXMin();
-    ArgumentType GetDeltaXMax();
-    ResultType   GetDeltaYMin();
-    ResultType   GetDeltaYMax();
+    ArgumentType DeltaXMin();
+    ArgumentType DeltaXMax();
+    ResultType   DeltaYMin();
+    ResultType   DeltaYMax();
 
-    ArgumentType GetDeltaXMin(ResultType& left,ResultType& right);
-    ArgumentType GetDeltaXMax(ResultType& left,ResultType& right);
-    ResultType   GetDeltaYMin(ArgumentType& left,ArgumentType& right);
-    ResultType   GetDeltaYMax(ArgumentType& left,ArgumentType& right);
+    ArgumentType DeltaXMin(ResultType& left,ResultType& right);
+    ArgumentType DeltaXMax(ResultType& left,ResultType& right);
+    ResultType   DeltaYMin(ArgumentType& left,ArgumentType& right);
+    ResultType   DeltaYMax(ArgumentType& left,ArgumentType& right);
 
     // access functions
     ATOOLS::Axis<ArgumentType> *XAxis();
     ATOOLS::Axis<ResultType>   *YAxis();
 
     // member functions
-    void Import(XYDataMap *_p_xydata);
-    void Import(ArgumentVector *_p_xdata,ResultVector *_p_ydata);
     void Import(Data_To_Function<ArgumentType,ResultType> &reference);
+    void Import(XYMap *_p_xydata,bool normal=true);
+    void Import(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal=true);
 
-    void Export(XYDataMap *_p_xydata);
-    void Export(ArgumentVector *_p_xdata,ResultVector *_p_ydata);
+    void Export(XYMap *_p_xydata,bool normal=true);
+    void Export(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal=true);
 
     bool AddPoint(ArgumentType x,ResultType y);
     bool DeleteXPoint(ArgumentType x);
@@ -163,8 +176,8 @@ namespace ATOOLS {
     ResultType   IntegrateY(ArgumentType xmin,ArgumentType xmax);
     ArgumentType IntegrateX(ResultType ymin,ResultType ymax);
 
-    ResultType   Y(ArgumentType x,AcquisitionMode tempmode = AUnknown);
-    ArgumentType X(ResultType y,AcquisitionMode tempmode = AUnknown);
+    ResultType   Y(ArgumentType x,AcquisitionModeID tempmode = AUnknown);
+    ArgumentType X(ResultType y,AcquisitionModeID tempmode = AUnknown);
 
     ResultType   operator()(ArgumentType x);
     ArgumentType operator[](ResultType y);

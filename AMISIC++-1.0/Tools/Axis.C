@@ -16,7 +16,7 @@ namespace ATOOLS {
   { delete p_scaling; }
 	      
   template <class Value_Type>
-  Value_Type Axis<Value_Type>::DisplayedValue(ValueType realvalue,ScalingMode tempsmode)
+  Value_Type Axis<Value_Type>::DisplayedValue(ValueType realvalue,ScalingModeID tempsmode)
   {
     if (tempsmode==Unknown) tempsmode=m_scalingmode;
     switch (tempsmode) {
@@ -32,7 +32,7 @@ namespace ATOOLS {
   }
   
   template <class Value_Type>
-  Value_Type Axis<Value_Type>::RealValue(ValueType displayedvalue,ScalingMode tempsmode)
+  Value_Type Axis<Value_Type>::RealValue(ValueType displayedvalue,ScalingModeID tempsmode)
   {
     if (tempsmode==Unknown) tempsmode=m_scalingmode;
     switch (tempsmode) {

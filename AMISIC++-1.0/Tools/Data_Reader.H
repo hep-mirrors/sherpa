@@ -19,16 +19,16 @@ namespace ATOOLS {
     Read_Type M_ReadFromString(std::string parameter,std::string inputstring);
     template <class Read_Type >
     std::vector<Read_Type> 
-    M_VectorFromFile(std::string parameter,std::string filename,VectorType tempvtype);
+    M_VectorFromFile(std::string parameter,std::string filename,VectorTypeID tempvtype);
     template <class Read_Type >
     std::vector<Read_Type>
-    M_VectorFromString(std::string parameter,std::string inputstring,VectorType tempvtype);
+    M_VectorFromString(std::string parameter,std::string inputstring,VectorTypeID tempvtype);
     template <class Read_Type >
     std::vector< std::vector<Read_Type> > 
-    M_ArrayFromFile(std::string parameter,std::string filename,MatrixType tempmtype);
+    M_ArrayFromFile(std::string parameter,std::string filename,MatrixTypeID tempmtype);
     template <class Read_Type >
     std::vector< std::vector<Read_Type> >
-    M_ArrayFromString(std::string parameter,std::string inputstring,MatrixType tempmtype);
+    M_ArrayFromString(std::string parameter,std::string inputstring,MatrixTypeID tempmtype);
 
   public:
 
@@ -51,48 +51,48 @@ namespace ATOOLS {
     bool ReadFromString(std::string& value,std::string parameter=nullstring,std::string inputstring=noinputtag);
 
     bool VectorFromFile(std::vector<int>& values,std::string parameter=nullstring,
-			std::string filename=noinputtag,VectorType tempvtype=VUnknown);
+			std::string filename=noinputtag,VectorTypeID tempvtype=VUnknown);
     bool VectorFromFile(std::vector<long int>& values,std::string parameter=nullstring,
-			std::string filename=noinputtag,VectorType tempvtype=VUnknown);
+			std::string filename=noinputtag,VectorTypeID tempvtype=VUnknown);
     bool VectorFromFile(std::vector<float>& values,std::string parameter=nullstring,
-			std::string filename=noinputtag,VectorType tempvtype=VUnknown);
+			std::string filename=noinputtag,VectorTypeID tempvtype=VUnknown);
     bool VectorFromFile(std::vector<double>& values,std::string parameter=nullstring,
-			std::string filename=noinputtag,VectorType tempvtype=VUnknown);
+			std::string filename=noinputtag,VectorTypeID tempvtype=VUnknown);
     bool VectorFromFile(std::vector<std::string>& values,std::string parameter=nullstring,
-			std::string filename=noinputtag,VectorType tempvtype=VUnknown);
+			std::string filename=noinputtag,VectorTypeID tempvtype=VUnknown);
 
     bool VectorFromString(std::vector<int>& values,std::string parameter=nullstring,
-			  std::string inputstring=noinputtag,VectorType tempvtype=VUnknown);
+			  std::string inputstring=noinputtag,VectorTypeID tempvtype=VUnknown);
     bool VectorFromString(std::vector<long int>& values,std::string parameter=nullstring,
-			  std::string inputstring=noinputtag,VectorType tempvtype=VUnknown);
+			  std::string inputstring=noinputtag,VectorTypeID tempvtype=VUnknown);
     bool VectorFromString(std::vector<float>& values,std::string parameter=nullstring,
-			  std::string inputstring=noinputtag,VectorType tempvtype=VUnknown);
+			  std::string inputstring=noinputtag,VectorTypeID tempvtype=VUnknown);
     bool VectorFromString(std::vector<double>& values,std::string parameter=nullstring,
-			  std::string inputstring=noinputtag,VectorType tempvtype=VUnknown);
+			  std::string inputstring=noinputtag,VectorTypeID tempvtype=VUnknown);
     bool VectorFromString(std::vector<std::string>& values,std::string parameter=nullstring,
-			  std::string inputstring=noinputtag,VectorType tempvtype=VUnknown);
+			  std::string inputstring=noinputtag,VectorTypeID tempvtype=VUnknown);
 
     bool ArrayFromFile(std::vector<std::vector<int> >& values,std::string parameter=nullstring,
-		       std::string filename=noinputtag,MatrixType tempmtype=MUnknown);
+		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
     bool ArrayFromFile(std::vector<std::vector<long int> >& values,std::string parameter=nullstring,
-		       std::string filename=noinputtag,MatrixType tempmtype=MUnknown);
+		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
     bool ArrayFromFile(std::vector<std::vector<float> >& values,std::string parameter=nullstring,
-		       std::string filename=noinputtag,MatrixType tempmtype=MUnknown);
+		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
     bool ArrayFromFile(std::vector<std::vector<double> >& values,std::string parameter=nullstring,
-		       std::string filename=noinputtag,MatrixType tempmtype=MUnknown);
+		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
     bool ArrayFromFile(std::vector<std::vector<std::string> >& values,std::string parameter=nullstring,
-		       std::string filename=noinputtag,MatrixType tempmtype=MUnknown);
+		       std::string filename=noinputtag,MatrixTypeID tempmtype=MUnknown);
 
     bool ArrayFromString(std::vector<std::vector<int> >& values,std::string parameter=nullstring,
-			 std::string inputstring=noinputtag,MatrixType tempmtype=MUnknown);
+			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
     bool ArrayFromString(std::vector<std::vector<long int> >& values,std::string parameter=nullstring,
-			 std::string inputstring=noinputtag,MatrixType tempmtype=MUnknown);
+			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
     bool ArrayFromString(std::vector<std::vector<float> >& values,std::string parameter=nullstring,
-			 std::string inputstring=noinputtag,MatrixType tempmtype=MUnknown);
+			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
     bool ArrayFromString(std::vector<std::vector<double> >& values,std::string parameter=nullstring,
-			 std::string inputstring=noinputtag,MatrixType tempmtype=MUnknown);
+			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
     bool ArrayFromString(std::vector<std::vector<std::string> >& values,std::string parameter=nullstring,
-			 std::string inputstring=noinputtag,MatrixType tempmtype=MUnknown);
+			 std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
 
   }; // end of class Data_Reader
 

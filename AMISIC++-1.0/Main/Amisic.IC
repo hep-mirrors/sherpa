@@ -8,25 +8,25 @@ namespace AMISIC {
   inline void Amisic::SetInputFile(std::string _m_inputfile)
   { m_inputfile=_m_inputfile; }
 
-  inline std::string Amisic::GetInputFile()
+  inline std::string Amisic::InputFile()
   { return m_inputfile; }
 
   inline void Amisic::SetEnvironmentFile(std::string _m_environmentfile)
   { m_environmentfile=_m_environmentfile; }
 
-  inline std::string Amisic::GetEnvironmentFile()
+  inline std::string Amisic::EnvironmentFile()
   { return m_environmentfile; }
 
   inline void Amisic::SetInputDirectory(std::string _m_inputdirectory)
   { m_inputdirectory=_m_inputdirectory; }
 
-  inline std::string Amisic::GetInputDirectory()
+  inline std::string Amisic::InputDirectory()
   { return m_inputdirectory; }
 
   inline void Amisic::SetOutputDirectory(std::string _m_outputdirectory)
   { m_outputdirectory=_m_outputdirectory; }
 
-  inline std::string Amisic::GetOutputDirectory()
+  inline std::string Amisic::OutputDirectory()
   { return m_outputdirectory; }
 
 } // end of namespace AMISIC

@@ -66,7 +66,7 @@ namespace ATOOLS {
 
     // getters
     Type        GetType();
-    std::string GetName();
+    std::string Name();
 
     // member functions
     unsigned int TypeToInt(Type type);

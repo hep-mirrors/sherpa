@@ -54,11 +54,11 @@ namespace AMISIC {
     void SetYDataTag(std::string _m_ydatatag);
 
     // getters
-    ATOOLS::Type::ID         GetStreamType();
-    std::string              GetStreamName();
-    std::string              GetXDataTag();
-    std::string              GetYDataTag();
-    std::vector<std::string> GetComment();
+    ATOOLS::Type::ID         StreamType();
+    std::string              StreamName();
+    std::string              XDataTag();
+    std::string              YDataTag();
+    std::vector<std::string> Comment();
 
     // member functions
     void SetScaling(std::string gridxscaling,std::string gridyscaling);

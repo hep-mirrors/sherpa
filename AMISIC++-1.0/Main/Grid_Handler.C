@@ -117,8 +117,8 @@ namespace AMISIC {
       return false;
     }
     SetScaling(gridxscaling,gridyscaling);
-    typename ATOOLS::Axis<GridArgumentType>::ScalingMode xscalingmode=p_grid->XAxis()->GetScalingMode();
-    typename ATOOLS::Axis<GridResultType>::ScalingMode yscalingmode=p_grid->YAxis()->GetScalingMode();
+    typename ATOOLS::Axis<GridArgumentType>::ScalingModeID xscalingmode=p_grid->XAxis()->ScalingMode();
+    typename ATOOLS::Axis<GridResultType>::ScalingModeID yscalingmode=p_grid->YAxis()->ScalingMode();
     p_grid->XAxis()->SetScalingMode(p_grid->XAxis()->Identical);
     p_grid->YAxis()->SetScalingMode(p_grid->YAxis()->Identical);
     p_grid->Import(&_m_xdata,&_m_ydata);
@@ -150,8 +150,8 @@ namespace AMISIC {
     writer->SetBlank(ATOOLS::defaulttab);
     std::vector<GridArgumentType> __m_xdata;
     std::vector<GridResultType> _m_ydata;
-    typename ATOOLS::Axis<GridArgumentType>::ScalingMode xscalingmode=p_grid->XAxis()->GetScalingMode();
-    typename ATOOLS::Axis<GridResultType>::ScalingMode yscalingmode=p_grid->YAxis()->GetScalingMode();
+    typename ATOOLS::Axis<GridArgumentType>::ScalingModeID xscalingmode=p_grid->XAxis()->ScalingMode();
+    typename ATOOLS::Axis<GridResultType>::ScalingModeID yscalingmode=p_grid->YAxis()->ScalingMode();
     p_grid->XAxis()->SetScalingMode(p_grid->XAxis()->Identical);
     p_grid->YAxis()->SetScalingMode(p_grid->YAxis()->Identical);
     p_grid->Export(&__m_xdata,&_m_ydata);

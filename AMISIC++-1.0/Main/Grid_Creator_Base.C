@@ -77,7 +77,7 @@ namespace AMISIC {
   {
     if (tempifile!=ATOOLS::nullstring) SetInputFile(tempifile);
     if (m_inputfile==ATOOLS::nullstring) {
-      ATOOLS::msg.Error()<<"Grid_Creator_Base::GetArguments("<<tempifile<<"): "
+      ATOOLS::msg.Error()<<"Grid_Creator_Base::Arguments("<<tempifile<<"): "
 			 <<"No input file specified! Abort."<<std::endl;
       abort();
     }
@@ -232,12 +232,12 @@ namespace AMISIC {
     ATOOLS::Axis<GridResultType> *yaxis=grid->YAxis();
     InitializeCalculation();
     yaxis->SetScalingMode(yaxis->Identical);
-    for (;(deltaymax=grid->GetDeltaYMax(left,right))>GridDeltaYMax();yaxis->SetScalingMode(yaxis->Identical)) {
+    for (;(deltaymax=grid->DeltaYMax(left,right))>GridDeltaYMax();yaxis->SetScalingMode(yaxis->Identical)) {
       if (((*xaxis)(right)-(*xaxis)(left))<GridDeltaXMin()) break;
       min=ATOOLS::Min(grid->Y(left,grid->Data),grid->Y(right,grid->Data));
       max=ATOOLS::Max(grid->Y(left,grid->Data),grid->Y(right,grid->Data));
-      if (!m_useymin) SetGridYMin(grid->GetYMin());
-      if (!m_useymax) SetGridYMax(grid->GetYMax());
+      if (!m_useymin) SetGridYMin(grid->YMin());
+      if (!m_useymax) SetGridYMax(grid->YMax());
       yaxis->SetScalingMode(yaxis->Reference);
       if ((min>=GridYMin())&&(max<=GridYMax())) {
 	middle=(*xaxis)[((*xaxis)(left)+(*xaxis)(right))/(GridArgumentType)2.0];
@@ -303,29 +303,29 @@ namespace AMISIC {
     std::vector<std::string> comments;
     std::string xvar, yvar;
     ATOOLS::Data_To_Function<GridArgumentType,GridResultType> *grid=p_gridhandler->Grid(); 
-    xvar=grid->XAxis()->GetVariable().GetName();
-    yvar=grid->YAxis()->GetVariable().GetName();
+    xvar=grid->XAxis()->Variable().Name();
+    yvar=grid->YAxis()->Variable().Name();
     comments.push_back(std::string("x : ")+xvar);
     comments.push_back(std::string("y : ")+yvar);
     comments.push_back("--------------------");
     comments.push_back(std::string("x scale : ")+
-		       p_gridhandler->Grid()->XAxis()->GetScaling()->GetName());
+		       p_gridhandler->Grid()->XAxis()->Scaling()->Name());
     comments.push_back(std::string("y scale : ")+
-		       p_gridhandler->Grid()->YAxis()->GetScaling()->GetName());
+		       p_gridhandler->Grid()->YAxis()->Scaling()->Name());
     comments.push_back("--------------------");
     comments.push_back(std::string("x_{min} = ")+ATOOLS::ToString(GridXMin()));
     comments.push_back(std::string("x_{max} = ")+ATOOLS::ToString(GridXMax()));
     comments.push_back(std::string("y_{min} = ")+ATOOLS::ToString(GridYMin()));
     comments.push_back(std::string("y_{max} = ")+ATOOLS::ToString(GridYMax()));
     comments.push_back("--------------------");
-    typename ATOOLS::Axis<GridArgumentType>::ScalingMode xscalingmode=grid->XAxis()->GetScalingMode();
-    typename ATOOLS::Axis<GridResultType>::ScalingMode yscalingmode=grid->YAxis()->GetScalingMode();
+    typename ATOOLS::Axis<GridArgumentType>::ScalingModeID xscalingmode=grid->XAxis()->ScalingMode();
+    typename ATOOLS::Axis<GridResultType>::ScalingModeID yscalingmode=grid->YAxis()->ScalingMode();
     grid->XAxis()->SetScalingMode(grid->XAxis()->Identical);
     grid->YAxis()->SetScalingMode(grid->YAxis()->Identical);
-    comments.push_back(std::string("\\Delta x_{max} = ")+ATOOLS::ToString(grid->GetDeltaXMax()));
-    comments.push_back(std::string("\\Delta x_{min} = ")+ATOOLS::ToString(grid->GetDeltaXMin()));
-    comments.push_back(std::string("\\Delta y_{max} = ")+ATOOLS::ToString(grid->GetDeltaYMax()));
-    comments.push_back(std::string("\\Delta y_{min} = ")+ATOOLS::ToString(grid->GetDeltaYMin()));
+    comments.push_back(std::string("\\Delta x_{max} = ")+ATOOLS::ToString(grid->DeltaXMax()));
+    comments.push_back(std::string("\\Delta x_{min} = ")+ATOOLS::ToString(grid->DeltaXMin()));
+    comments.push_back(std::string("\\Delta y_{max} = ")+ATOOLS::ToString(grid->DeltaYMax()));
+    comments.push_back(std::string("\\Delta y_{min} = ")+ATOOLS::ToString(grid->DeltaYMin()));
     grid->XAxis()->SetScalingMode(xscalingmode);
     grid->YAxis()->SetScalingMode(yscalingmode);
     if (addcomments.size()!=0) {

@@ -25,7 +25,7 @@ namespace ATOOLS {
   public:
 
     // getter
-    virtual std::string GetName();
+    virtual std::string Name();
 
     // member functions
     virtual Value_Type operator()(Value_Type x);
@@ -37,7 +37,7 @@ namespace ATOOLS {
   class Id_Scaling: public Scaling_Base<Value_Type> {
   public:
 
-    std::string GetName() { return std::string("Id"); }
+    std::string Name() { return std::string("Id"); }
 
     Value_Type operator()(Value_Type x) { return x; }
     Value_Type operator[](Value_Type y) { return y; }
@@ -48,7 +48,7 @@ namespace ATOOLS {
   class Log_Scaling: public Scaling_Base<Value_Type> {
   public:
 
-    std::string GetName() { return std::string("Log"); }
+    std::string Name() { return std::string("Log"); }
 
     Value_Type operator()(Value_Type x) { return log(x); }
     Value_Type operator[](Value_Type y) { return exp(y); }
@@ -59,7 +59,7 @@ namespace ATOOLS {
   class Sqr_Scaling: public Scaling_Base<Value_Type> {
   public:
 
-    std::string GetName() { return std::string("Sqr"); }
+    std::string Name() { return std::string("Sqr"); }
 
     Value_Type operator()(Value_Type x) { return x*x; }
     Value_Type operator[](Value_Type y) { return sqrt(y); }
@@ -76,7 +76,7 @@ namespace ATOOLS {
 
     Log_B_Scaling(Value_Type _b) { b=_b; }
 
-    std::string GetName() { return std::string("Log_B_")+ToString(b); }
+    std::string Name() { return std::string("Log_B_")+ToString(b); }
 
     Value_Type operator()(Value_Type x) { return log(x)/log(b); }
     Value_Type operator[](Value_Type y) { return pow(b,y); }
@@ -93,7 +93,7 @@ namespace ATOOLS {
 
     B_To_X_Scaling(Value_Type _b) { b=_b; }
 
-    std::string GetName() { return std::string("B_To_X_")+ToString(b); }
+    std::string Name() { return std::string("B_To_X_")+ToString(b); }
 
     Value_Type operator()(Value_Type x) { return pow(b,x); }
     Value_Type operator[](Value_Type y) { return log(y)/log(b); }
@@ -110,7 +110,7 @@ namespace ATOOLS {
 
     X_To_P_Scaling(Value_Type _p) { p=_p; }
 
-    std::string GetName() { return std::string("X_To_P_")+ToString(p); }
+    std::string Name() { return std::string("X_To_P_")+ToString(p); }
 
     Value_Type operator()(Value_Type x) { return pow(x,p); }
     Value_Type operator[](Value_Type y) { return pow(y,(Value_Type)1.0/p); }

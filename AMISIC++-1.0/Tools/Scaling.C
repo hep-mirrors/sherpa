@@ -23,9 +23,9 @@ namespace ATOOLS {
   }
   
   template <class Value_Type>
-  std::string Scaling_Base<Value_Type>::GetName()
+  std::string Scaling_Base<Value_Type>::Name()
   { 
-    ATOOLS::msg.Error()<<"Scaling_Base::GetName(): "
+    ATOOLS::msg.Error()<<"Scaling_Base::Name(): "
 		       <<"Virtual method called!"<<std::endl; 
     return std::string("Scaling_Base");
   }

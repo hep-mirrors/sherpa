@@ -96,7 +96,7 @@ namespace ATOOLS {
   template <class Write_Type>  
   bool Data_Writer::M_VectorToFile(std::vector<Write_Type> values,std::string tag,
 				   bool endline,std::string tempfname,
-				   VectorType tempvtype,int precision)
+				   VectorTypeID tempvtype,int precision)
   {
     int blank=defaultblank;
     if (!InitFile(tempfname)) return false;
@@ -124,7 +124,7 @@ namespace ATOOLS {
   template <class Write_Type>  
   bool Data_Writer::M_ArrayToFile(std::vector<std::vector<Write_Type> > values,std::string tag,
 				  bool endline,std::string tempfname,
-				  MatrixType tempmtype,int precision)
+				  MatrixTypeID tempmtype,int precision)
   {
     std::vector<std::vector<Write_Type> > tempvalues;
     if (!InitFile(tempfname)) return false;
@@ -174,44 +174,44 @@ namespace ATOOLS {
 
   bool Data_Writer::VectorToFile(std::vector<int>& values,std::string tag,
 				 bool endline,std::string tempfname,
-				 VectorType tempvtype,int precision)
+				 VectorTypeID tempvtype,int precision)
   { return M_VectorToFile<int>(values,tag,endline,tempfname,tempvtype,precision); }
   bool Data_Writer::VectorToFile(std::vector<long int>& values,std::string tag,
 				 bool endline,std::string tempfname,
-				 VectorType tempvtype,int precision)
+				 VectorTypeID tempvtype,int precision)
   { return M_VectorToFile<long int>(values,tag,endline,tempfname,tempvtype,precision); }
   bool Data_Writer::VectorToFile(std::vector<float>& values,std::string tag,
 				 bool endline,std::string tempfname,
-				 VectorType tempvtype,int precision)
+				 VectorTypeID tempvtype,int precision)
   { return M_VectorToFile<float>(values,tag,endline,tempfname,tempvtype,precision); }
   bool Data_Writer::VectorToFile(std::vector<double>& values,std::string tag,
 				 bool endline,std::string tempfname,
-				 VectorType tempvtype,int precision)
+				 VectorTypeID tempvtype,int precision)
   { return M_VectorToFile<double>(values,tag,endline,tempfname,tempvtype,precision); }
   bool Data_Writer::VectorToFile(std::vector<std::string>& values,std::string tag,
 				 bool endline,std::string tempfname,
-				 VectorType tempvtype,int precision)
+				 VectorTypeID tempvtype,int precision)
   { return M_VectorToFile<std::string>(values,tag,endline,tempfname,tempvtype,precision); }
 
   bool Data_Writer::ArrayToFile(std::vector<std::vector<int> >& values,std::string tag,
 				bool endline,std::string tempfname,
-				MatrixType tempmtype,int precision)
+				MatrixTypeID tempmtype,int precision)
   { return M_ArrayToFile<int>(values,tag,endline,tempfname,tempmtype,precision); }
   bool Data_Writer::ArrayToFile(std::vector<std::vector<long int> >& values,std::string tag,
 				bool endline,std::string tempfname,
-				MatrixType tempmtype,int precision)
+				MatrixTypeID tempmtype,int precision)
   { return M_ArrayToFile<long int>(values,tag,endline,tempfname,tempmtype,precision); }
   bool Data_Writer::ArrayToFile(std::vector<std::vector<float> >& values,std::string tag,
 				bool endline,std::string tempfname,
-				MatrixType tempmtype,int precision)
+				MatrixTypeID tempmtype,int precision)
   { return M_ArrayToFile<float>(values,tag,endline,tempfname,tempmtype,precision); }
   bool Data_Writer::ArrayToFile(std::vector<std::vector<double> >& values,std::string tag,
 				bool endline,std::string tempfname,
-				MatrixType tempmtype,int precision)
+				MatrixTypeID tempmtype,int precision)
   { return M_ArrayToFile<double>(values,tag,endline,tempfname,tempmtype,precision); }
   bool Data_Writer::ArrayToFile(std::vector<std::vector<std::string> >& values,std::string tag,
 				bool endline,std::string tempfname,
-				MatrixType tempmtype,int precision)
+				MatrixTypeID tempmtype,int precision)
   { return M_ArrayToFile<std::string>(values,tag,endline,tempfname,tempmtype,precision); }
 
 } // end of namespace ATOOLS

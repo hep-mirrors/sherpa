@@ -350,8 +350,8 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
   AMEGIC::Environment *environment = new AMEGIC::Environment(m_inputdirectory,m_environmentfile);
   environment->InitializeTheEnvironment();
   EXTRAXS::SimpleXSecs *processes = new EXTRAXS::SimpleXSecs(m_inputdirectory,m_xsfile,
-							     environment->GetModel());
-  processes->InitializeProcesses(environment->GetBeamSpectraHandler(),environment->GetISRHandler());  
+							     environment->Model());
+  processes->InitializeProcesses(environment->BeamSpectraHandler(),environment->ISRHandler());  
   if (processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Amisic::CreateGrid(..): "
 			  <<"Found an initialized process group."<<std::endl
@@ -361,7 +361,7 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
   ATOOLS::Flavour flavour[4];
   flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
   EXTRAXS::QCD_Processes *group;
-  group = new EXTRAXS::QCD_Processes(environment->GetISRHandler(),environment->GetBeamSpectraHandler(),
+  group = new EXTRAXS::QCD_Processes(environment->ISRHandler(),environment->BeamSpectraHandler(),
 				     flavour,processes->SelectorData(),processes->ScaleScheme(),
 				     processes->KFactorScheme(),processes->ScaleFactor(),false);
   for (Blob_Iterator bit=bloblist.begin();bit!=bloblist.end();++bit) {
@@ -394,6 +394,14 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
   delete gridhandler;
   delete processes;
   delete environment;
+  return true;
+}
+
+bool Amisic::CalculateTotal()
+{
+  for (std::vector<GridHandlerType*>::iterator blit=m_differential.begin();
+       blit!=m_differential.end();++blit) {
+  }
   return true;
 }
 
@@ -453,6 +461,12 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
       }
     }
   }
+  if (!CalculateTotal()) {
+    ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): "
+		       <<"Determination of \\sigma_{tot} failed. "<<std::endl
+		       <<" Run cannot continue."<<std::endl;
+	abort();
+  }
   return true;
 }
 
@@ -473,7 +487,7 @@ template <class Argument_Type,class Result_Type>
 bool Amisic::Grid_Creator<Argument_Type,Result_Type>::InitializeCalculation()
 {
   p_xaxis=p_gridhandler->Grid()->XAxis();
-  m_criterion=p_xaxis->GetVariable().TypeToSelectorID(p_xaxis->GetVariable().GetType());
+  m_criterion=p_xaxis->Variable().TypeToSelectorID(p_xaxis->Variable().GetType());
   m_initialdata=p_processes->SelectorData()->RemoveData(m_criterion);
   return true;
 }
@@ -494,7 +508,7 @@ Result_Type Amisic::Grid_Creator<Argument_Type,Result_Type>::CalculateSingleValu
   p_processes->CalculateTotalXSec();
   result=(GridResultType)p_processes->Total()/(upper-lower);
   ATOOLS::msg.Out()<<"Amisic::Grid_Creator::CalculateSingleValue(): Got value for "<<middle<<" GeV"<<std::endl
-		   <<"   Calculation for "<<lower<<" GeV < "<<p_xaxis->GetVariable().GetName()
+		   <<"   Calculation for "<<lower<<" GeV < "<<p_xaxis->Variable().Name()
 		   <<" < "<<upper<<" GeV yielded "<<result*rpa.Picobarn()<<" pb/GeV"<<std::endl;
   return result;
 }

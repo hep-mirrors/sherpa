@@ -46,7 +46,7 @@ namespace ATOOLS {
   }
     
   bool Read_Write_Base::OpenFile(std::string filename,std::ios_base::openmode omode,
-				 OpenMode tempomode)
+				 OpenModeID tempomode)
   {  
     if (filename!=nullstring) SetFileName(filename);
     if (tempomode!=Unknown) SetOpenMode(tempomode);

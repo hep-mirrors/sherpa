@@ -14,7 +14,7 @@ namespace ATOOLS {
   inline void Variable::SetName(std::string _m_name)
   { m_name=_m_name; }
 
-  inline std::string Variable::GetName()
+  inline std::string Variable::Name()
   { return m_name; }
 
   inline unsigned int Variable::TypeToInt(Type type)

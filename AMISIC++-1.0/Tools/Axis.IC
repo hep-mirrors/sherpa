@@ -10,15 +10,15 @@ namespace ATOOLS {
   { m_variable=_m_variable; }
 
   template <class Value_Type>
-  inline ATOOLS::Variable Axis<Value_Type>::GetVariable()
+  inline ATOOLS::Variable Axis<Value_Type>::Variable()
   { return m_variable; }
 
   template <class Value_Type>
-  inline void Axis<Value_Type>::SetScalingMode(ScalingMode _m_scalingmode)
+  inline void Axis<Value_Type>::SetScalingMode(ScalingModeID _m_scalingmode)
   { m_scalingmode=_m_scalingmode; }
 
   template <class Value_Type>
-  inline typename ATOOLS::Axis<Value_Type>::ScalingMode Axis<Value_Type>::GetScalingMode()
+  inline typename ATOOLS::Axis<Value_Type>::ScalingModeID Axis<Value_Type>::ScalingMode()
   { return m_scalingmode; }
 
   template <class Value_Type>
@@ -26,7 +26,7 @@ namespace ATOOLS {
   { delete p_scaling; p_scaling=_p_scaling; }
 
   template <class Value_Type>
-  inline Scaling_Base<Value_Type> *Axis<Value_Type>::GetScaling()
+  inline Scaling_Base<Value_Type> *Axis<Value_Type>::Scaling()
   { return p_scaling; }
 
   template <class Value_Type>

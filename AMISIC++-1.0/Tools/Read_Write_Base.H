@@ -19,17 +19,17 @@ namespace ATOOLS {
   class Read_Write_Base {
   public:
 
-    enum OpenMode { Temporary =  1,
-		    Permanent =  2,
-		    Unknown   = 99 };
+    enum OpenModeID { Temporary =  1,
+		      Permanent =  2,
+		      Unknown   = 99 };
 
-    enum VectorType { VVertical   =  1,
-		      VHorizontal =  2,
-		      VUnknown    = 99 };
+    enum VectorTypeID { VVertical   =  1,
+			VHorizontal =  2,
+			VUnknown    = 99 };
 
-    enum MatrixType { MNormal     =  1,
-		      MTransposed =  2,
-		      MUnknown    = 99 };
+    enum MatrixTypeID { MNormal     =  1,
+			MTransposed =  2,
+			MUnknown    = 99 };
 
   private:
 
@@ -41,10 +41,10 @@ namespace ATOOLS {
 
     std::fstream *p_file;
 
-    OpenMode m_openmode;
+    OpenModeID m_openmode;
 
-    VectorType m_vectortype;
-    MatrixType m_matrixtype;
+    VectorTypeID m_vectortype;
+    MatrixTypeID m_matrixtype;
 
     void Init();
 
@@ -60,17 +60,17 @@ namespace ATOOLS {
     std::string M_FileName();
     std::string M_String();
 
-    OpenMode M_OpenMode();
+    OpenModeID M_OpenMode();
 
     std::fstream *M_File();
 
-    VectorType M_VectorType();
-    MatrixType M_MatrixType();
+    VectorTypeID M_VectorType();
+    MatrixTypeID M_MatrixType();
 
     // member functions
     bool OpenFile(std::string filename=nullstring,
 		  std::ios_base::openmode omode=std::ios_base::in,
-		  OpenMode tempomode=Unknown);
+		  OpenModeID tempomode=Unknown);
     void CloseFile(bool force=false);
 
     template <class ReadWrite_Type >
@@ -111,25 +111,23 @@ namespace ATOOLS {
     void SetFileName(std::string);
     void SetString(std::string);
 
-    void SetOpenMode(OpenMode _m_openmode);
+    void SetOpenMode(OpenModeID _m_openmode);
 
-    void SetVectorType(VectorType _m_vectortype);
-    void SetMatrixType(MatrixType _m_matrixtype);
+    void SetVectorType(VectorTypeID _m_vectortype);
+    void SetMatrixType(MatrixTypeID _m_matrixtype);
 
     // getters
-    std::vector<std::string> GetComment();
-    std::vector<std::string> GetIgnore();
-    std::vector<std::string> GetSeperator();
+    std::vector<std::string> Comment();
+    std::vector<std::string> Ignore();
+    std::vector<std::string> Seperator();
 
-    std::vector<int>         GetBlank();
+    std::vector<int>         Blank();
 
-    std::string              GetFileName();
-    std::string              GetString();
+    std::string              FileName();
+    std::string              String();
 
-    OpenMode                 GetOpenMode();
-
-    VectorType               GetVectorType();
-    MatrixType               GetMatrixType();
+    VectorTypeID             VectorType();
+    MatrixTypeID             MatrixType();
 
   }; // end of class Read_Write_Base
 
@@ -200,27 +198,27 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Read_Write_Base::GetCut()
+    \fn Read_Write_Base::Cut()
     \brief Returns the current cut
   */
 
   /*!
-    \fn Read_Write_Base::GetSeperator()
+    \fn Read_Write_Base::Seperator()
     \brief Returns the current seperator
   */
 
   /*!
-    \fn Read_Write_Base::GetComment()
+    \fn Read_Write_Base::Comment()
     \brief Returns the current comment indicator
   */
 
   /*!
-    \fn Read_Write_Base::GetString()
+    \fn Read_Write_Base::String()
     \brief Returns the current filename
   */
 
   /*!
-    \fn Read_Write_Base::GetString()
+    \fn Read_Write_Base::String()
     \brief Returns the current input string
   */
 
