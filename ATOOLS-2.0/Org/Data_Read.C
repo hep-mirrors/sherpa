@@ -92,6 +92,26 @@ void Data_Read::ReadIn(std::string filename) {
 
 
 // definition  (specialisation), explicit instanciation
+template <> std::string Data_Read::GetValue<std::string>(std::string name) {
+  Shorten(name);
+  Parameter_Map::const_iterator cit=parameters.find(name);
+  if (cit==parameters.end()) return  NotDefined<std::string>();
+
+  std::string value = parameters[name];
+  std::string invar;
+
+  if (value.length()==0)         return NotDefined<std::string>();
+  /*
+  MyStrStream str;      
+  str<<value;
+  str>>invar;
+  if (value!=invar) cout<<" Warning:"<<value<<" -> "<<invar<<endl;
+  return invar;
+  */
+  return value;
+}
+
+
 template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=parameters.find(name);
@@ -363,7 +383,7 @@ template int              Data_Read::GetValue<int>(std::string);
 template long             Data_Read::GetValue<long>(std::string);
 template float            Data_Read::GetValue<float>(std::string);
 template double           Data_Read::GetValue<double>(std::string);
-template std::string      Data_Read::GetValue<std::string>(std::string);
+//template std::string      Data_Read::GetValue<std::string>(std::string);
 
 template int              Data_Read::GetValue<int>(std::string,int);
 template long             Data_Read::GetValue<long>(std::string,long);

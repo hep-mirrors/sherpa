@@ -111,6 +111,7 @@ namespace AORGTOOLS {
 
   // specialisation
 
+  template <>  std::string        Data_Read::GetValue<std::string>(std::string);
   template <>  Switch::code       Data_Read::GetValue<Switch::code>(std::string);
   template <>  Model_Type::code   Data_Read::GetValue<Model_Type::code>(std::string);
   template <>  APHYTOOLS::Flavour Data_Read::GetValue<APHYTOOLS::Flavour>(std::string);
