@@ -90,3 +90,7 @@ tar -czvf $DISTDIR.tar.gz $ALL TOOLS
 rm -rf $ALL
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
 exit 0
+
+# mode:shell-script
+# sh-indentation:2
+

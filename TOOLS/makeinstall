@@ -302,3 +302,6 @@ if [ "$RELEASE" = "TRUE" ] ; then
     echo -e "\nhave a nice day `whoami`\n"
   fi
 fi
+
+# mode:shell-script
+# sh-indentation:2
