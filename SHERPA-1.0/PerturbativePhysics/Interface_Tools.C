@@ -1,4 +1,5 @@
 #include "Interface_Tools.H"
+
 #include "Random.H"
 
 using namespace SHERPA;
@@ -29,6 +30,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
   m1->x          = x1;
   m1->E2         = sqr(x1*E);
   m1->stat       = 1;
+  m1->part->SetDecayBlob(blob);
 
   p_initrees[1]->Reset();  
 
@@ -44,6 +46,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
   m2->x          = x2;
   m2->E2         = sqr(x2*E);
   m2->stat       = 1;
+  m2->part->SetDecayBlob(blob);
 }
 
 void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
@@ -72,6 +75,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   d1->tout       = sqr((d1->part->Flav()).PSMass());
   d1->E2         = sqr(d1->part->Momentum()[0]);
   d1->stat       = 3;
+  d1->part->SetProductionBlob(blob);
 
   Knot * d2      = p_fintree->NewKnot(blob->OutParticle(1));
   d2->part->SetInfo('H');
@@ -83,6 +87,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   d2->tout       = sqr((d2->part->Flav()).PSMass());
   d2->E2         = sqr(d2->part->Momentum()[0]);
   d2->stat       = 3;
+  d2->part->SetProductionBlob(blob);
   
   dummy->E2      = sqr(sqrt(d1->E2)+sqrt(d2->E2));
   dummy->z       = sqrt(d1->E2/dummy->E2);
