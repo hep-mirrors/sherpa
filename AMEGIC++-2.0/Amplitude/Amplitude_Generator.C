@@ -21,6 +21,27 @@ MPI::Datatype   mpi_sv_type;
 MPI::Datatype   mpi_point_type;
 #endif
 
+
+std::ostream & AMEGIC::operator<<(std::ostream & s, const Point * p)
+{
+  //  if (!(ATOOLS::rpa.gen.Debugging())) return s;
+  if ((p->left==0) && (p->right==0)) {
+    s<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<std::endl;
+    return s;
+  }
+  s<<" ["<<p->fl<<"("<<p->b<<")]"<<std::endl;
+  s<<"left : ";
+  s<<p->left;
+  s<<"right : ";
+  s<<p->right;
+  if(p->middle){
+    s<<" middle : ";
+    s<<p->middle;
+  }
+  return s;
+}
+
+
 namespace AMEGIC {
   class Compare_Pre_Amplitudes {
   public:
