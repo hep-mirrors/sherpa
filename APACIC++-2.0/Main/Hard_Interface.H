@@ -1,5 +1,5 @@
-#ifndef HardInterface_h
-#define HardInterface_h
+#ifndef Apacic_h
+#define Apacic_h
 
 #include "Model_Base.H"
 
@@ -20,15 +20,15 @@ namespace APACIC {
   class Tree;
 
   //! The Interface between Matrix element and Parton Shower
-  class Hard_Interface {
+  class Apacic {
     bool                   m_isron,m_fsron,m_showers;
     Initial_State_Shower * p_inishower;
     Final_State_Shower   * p_finshower;
     Tree                ** p_initrees;
     Tree                 * p_fintree;
   public :
-    Hard_Interface(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,ATOOLS::Data_Read *); 
-    ~Hard_Interface(); 
+    Apacic(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,ATOOLS::Data_Read *); 
+    ~Apacic(); 
     void PrepareTrees();
     void SetJetvetoPt2(const double pt2);
     void SetFactorisationScale(const double scale);
@@ -43,11 +43,11 @@ namespace APACIC {
 
   };
 
-  inline Tree  *Hard_Interface::FinTree()  { return p_fintree; }
-  inline Tree **Hard_Interface::IniTrees() { return p_initrees; }
+  inline Tree  *Apacic::FinTree()  { return p_fintree; }
+  inline Tree **Apacic::IniTrees() { return p_initrees; }
 
-  inline Final_State_Shower   *Hard_Interface::FinShower() { return p_finshower; }
-  inline Initial_State_Shower *Hard_Interface::IniShower() { return p_inishower; }
+  inline Final_State_Shower   *Apacic::FinShower() { return p_finshower; }
+  inline Initial_State_Shower *Apacic::IniShower() { return p_inishower; }
 
 }
 #endif
