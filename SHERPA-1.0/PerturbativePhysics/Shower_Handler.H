@@ -41,6 +41,7 @@ namespace SHERPA {
     APACIC::Tree ** GetIniTrees();
     APACIC::Hard_Interface *GetApacic() { return p_apacic; }
     void SetJetvetoPt2(const double pt2) { p_apacic->SetJetvetoPt2(pt2); }
+    void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
   };
 
 

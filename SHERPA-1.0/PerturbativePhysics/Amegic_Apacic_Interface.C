@@ -221,6 +221,8 @@ int Amegic_Apacic_Interface::PerformShowers()
   if (p_mehandler->UseSudakovWeight()) {
     double pt2 = p_cluster->JetvetoPt2();
     p_shower->SetJetvetoPt2(pt2);
+    double scale = p_mehandler->FactorisationScale();
+    p_shower->SetFactorisationScale(scale);
     jetveto=1;
   }
   return m_lastshowerveto=p_shower->PerformShowers(jetveto,

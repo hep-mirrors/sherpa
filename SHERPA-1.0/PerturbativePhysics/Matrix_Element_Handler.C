@@ -1,4 +1,4 @@
-#include"Matrix_Element_Handler.H"
+#include "Matrix_Element_Handler.H"
 #include "Data_Read.H"
 #include "Message.H"
 #include "Amegic.H"
@@ -206,7 +206,7 @@ bool Matrix_Element_Handler::RescaleJetrates()
     for (int i=0; i<procs->Size();++i) {
       double xstot = (*procs)[i]->Total()*rpa.Picobarn();
       double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
-      double njet  = (*procs)[i]->Nout();
+      //      double njet  = (*procs)[i]->Nout();
       rfile<<setw(10)<<xstot<<" "<<setw(10)<<xserr<<" ";
     }
     rfile<<endl;
@@ -232,6 +232,13 @@ bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double
   case 1: return p_amegic->GetAllDecays()->UnweightedEvent(_dc,_mass);
   }
   return false;
+}
+
+double Matrix_Element_Handler::FactorisationScale()
+{
+  if (m_mode==1) return p_amegic->GetProcess()->FactorisationScale();
+  msg.Out()<<" Warning: Matrix_Element_Handler::FactorisationScale() called without AMEGIC!"<<std::endl;
+  return 0.;
 }
 
 bool Matrix_Element_Handler::GenerateSameEvent() 

@@ -93,6 +93,7 @@ namespace SHERPA {
 
     PDF::ISR_Handler   * GetISR_Handler()   { return p_isr; }
     int                  UseSudakovWeight() { return m_sudakovon; }
+    double               FactorisationScale();
   };
 
   typedef std::map<std::string,Matrix_Element_Handler *> MEHandlersMap;
