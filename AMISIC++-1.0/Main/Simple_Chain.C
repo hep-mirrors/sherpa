@@ -44,7 +44,7 @@ Simple_Chain::Simple_Chain():
   m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
-  m_maxtrials(100),
+  m_maxtrials(1),
   m_external(false)
 {
   SetInputFile("MI.dat");
@@ -77,7 +77,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
-  m_maxtrials(100),
+  m_maxtrials(1),
   m_external(true)
 {
   SetInputFile("MI.dat");
@@ -172,7 +172,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       m_blobs[m_blobs.size()-1].push_back(newblob);
     }
     m_filename.push_back("gg_to_gg__grid");
-//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::gggg) break;
   case EXTRAXS::QCD_Processes::qqbgg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -185,7 +184,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("qqb_to_gg__grid");
-//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::qqbgg) break;
   case EXTRAXS::QCD_Processes::ggqqb:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -198,7 +196,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("gg_to_qqb__grid");
-//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::ggqqb) break;
   case EXTRAXS::QCD_Processes::qgqg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -214,7 +211,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("qg_to_qg__grid");
-//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::qgqg) break;
   case EXTRAXS::QCD_Processes::q1q2q1q2:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -250,11 +246,9 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     }
     if (mode==EXTRAXS::QCD_Processes::q1q2bq1q2b) {
       m_filename.push_back("q1q2b_to_q1q2b__grid");
-//       m_create.push_back(false);
       break;
     }
     m_filename.push_back("q1q2_to_q1q2__grid");
-//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q2q1q2) break;
   case EXTRAXS::QCD_Processes::q1q1q1q1:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -269,7 +263,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1_to_q1q1__grid");
-//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1q1q1) break;
   case EXTRAXS::QCD_Processes::q1q1bq1q1b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -281,7 +274,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1b_to_q1q1b__grid");
-//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1bq1q1b) break;
   case EXTRAXS::QCD_Processes::q1q1bq2q2b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
@@ -297,7 +289,6 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
       }
     }
     m_filename.push_back("q1q1b_to_q2q2b__grid");
-//     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes::q1q1bq2q2b) break;
     break;
   case EXTRAXS::QCD_Processes::Unknown:
@@ -330,7 +321,8 @@ bool Simple_Chain::ReadInData()
     std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV__")+
     p_isr->PDF(0)->Type()+std::string("_")+p_isr->PDF(1)->Type()+std::string("__as_")+
     ATOOLS::ToString(static_cast<MODEL::Running_AlphaS*>
-		     (p_model->GetScalarFunction("alpha_S"))->Order())+std::string("/");
+		     (p_model->GetScalarFunction("alpha_S"))->Order())+
+    std::string("__sc_")+ATOOLS::ToString(m_scalescheme)+std::string("/");
   SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
   comments.push_back("->");
@@ -379,7 +371,6 @@ bool Simple_Chain::ReadInData()
 	  filename+=std::string("_grid");
 	  if (temp[i].size()>4) m_filename.push_back(temp[i][4]);
 	  else m_filename.push_back(filename);
-// 	  m_create.push_back(false);
 	}
       }
     }
@@ -520,6 +511,22 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
   for (unsigned int i=1;i<gridhandler.size();++i) {
     m_maxima[(*group)[i-1]->Name()] = new GridFunctionType(*gridhandler[i]->Grid());
     delete gridhandler[i];
+  }
+  if (ATOOLS::msg.LevelIsDebugging()) {
+    p_processes->CalculateTotalXSec("");
+    double total=p_processes->TotalXS();
+    double result=m_differential[m_differential.size()-1]->IntegrateY();
+    ATOOLS::msg.Debugging()<<"Simple_Chain::CreateGrid(): \\sigma_{hard} = "
+			  <<total*ATOOLS::rpa.Picobarn()<<" pb vs."
+			  <<result*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
+ 			  <<"   Relative error : "
+ 			  <<ATOOLS::dabs((total-result)/(total))*100.0
+ 			  <<"%."<<std::endl;
+    if (ATOOLS::dabs((total-result)/total)>5.0e-2) {
+      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
+			      "Result of grid integration and total cross section do not coincide",
+			      "Simple_Chain","CreateGrid"));
+    }
   }
   delete p_processes;
   p_processes=NULL;
@@ -699,6 +706,22 @@ bool Simple_Chain::CalculateTotal()
   delete gridhandler;
 #endif
   delete differential;
+  if (ATOOLS::msg.LevelIsDebugging()) {
+    p_processes->CalculateTotalXSec("");
+    double total=p_processes->TotalXS();
+    double result=m_sigmahard;
+    ATOOLS::msg.Debugging()<<"Simple_Chain::InitializeBlobList(): \\sigma_{hard} = "
+			   <<total*ATOOLS::rpa.Picobarn()<<" pb vs."
+			   <<result*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
+			   <<"   Relative error : "
+			   <<ATOOLS::dabs((total-result)/(total))*100.0
+			   <<"%."<<std::endl;
+    if (ATOOLS::dabs((total-result)/total)>5.0e-2) {
+      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
+			      "Result of grid integration and total cross section do not coincide",
+			      "Simple_Chain","CreateGrid"));
+    }
+  }
   return true;
 }
 
@@ -769,7 +792,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #endif
     size_t trials=0;
     bool test=false;
-    while (!test && trials<m_maxtrials) {
+    while (!test && m_maxtrials) {
       ++trials;
       dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[m_selected])->SetAtoms(true);
       (*p_processes)[m_selected]->SelectOne();
