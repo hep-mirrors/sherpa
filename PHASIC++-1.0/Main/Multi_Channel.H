@@ -6,7 +6,7 @@
 namespace PHASIC {
 
   class Single_Channel;
-  class Foam_Interface;
+  class PI_Interface;
 
   struct Channel_Info {
     int                  type;
@@ -63,9 +63,9 @@ namespace PHASIC {
     void    GeneratePoint(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
     void    GenerateWeight(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
-    void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,Foam_Interface*);
+    void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,PI_Interface*);
     void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);     
-    void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,Foam_Interface*);     
+    void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,PI_Interface*);     
 
     void    GeneratePoint(int,ATOOLS::Vec4D *,double *);
     void    GenerateWeight(int,ATOOLS::Vec4D *);
@@ -79,9 +79,9 @@ namespace PHASIC {
 
     void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode);
     void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode,
-			  Foam_Interface *foam);
+			  PI_Interface *pi);
     void    GenerateWeight(int mode);
-    void    GenerateWeight(int mode,Foam_Interface*);
+    void    GenerateWeight(int mode,PI_Interface*);
 
     void    ISRInfo(int,int &,double &,double &);
 

@@ -1,7 +1,7 @@
 #include "Single_Channel.H"
 #include "Multi_Channel.H"
 #include "Random.H"
-#include "Foam_Interface.H"
+#include "PI_Interface.H"
 #include "Run_Parameter.H"
 
 using namespace PHASIC;
@@ -354,13 +354,13 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 }
 
 void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts,
-				  Foam_Interface *foam)
+				  PI_Interface *pi)
 {
   size_t i=0;
   for (;channels.size();++i) {
-    if (foam->Key().find(channels[i]->ChID())!=std::string::npos) break;
+    if (pi->Key().find(channels[i]->ChID())!=std::string::npos) break;
   }  
-  channels[i]->GeneratePoint(p,cuts,(double*)&foam->Values().front()+2);
+  channels[i]->GeneratePoint(p,cuts,(double*)&pi->Point().front()+2);
   m_lastdice = i;
 }
 
@@ -374,11 +374,11 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p)
   else m_weight = 0.;
 }
 
-void Multi_Channel::GenerateWeight(Vec4D* p,Cut_Data *cuts,Foam_Interface *foam)
+void Multi_Channel::GenerateWeight(Vec4D* p,Cut_Data *cuts,PI_Interface *pi)
 {
   size_t i=0;
   for (;channels.size();++i) {
-    if (foam->Key().find(channels[i]->ChID())!=std::string::npos) break;
+    if (pi->Key().find(channels[i]->ChID())!=std::string::npos) break;
   }  
   channels[i]->GenerateWeight(p,cuts);
   m_weight = channels[i]->Weight();
@@ -493,13 +493,13 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
 }
 
 void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode,
-				  Foam_Interface *foam) 
+				  PI_Interface *pi) 
 {
   size_t i=0;
   for (;channels.size();++i) {
-    if (foam->Key().find(channels[i]->ChID())!=std::string::npos) break;
+    if (pi->Key().find(channels[i]->ChID())!=std::string::npos) break;
   }  
-  channels[i]->GeneratePoint(spkey,ykey,(double*)&foam->Values().front(),mode);
+  channels[i]->GeneratePoint(spkey,ykey,(double*)&pi->Point().front(),mode);
   m_lastdice = i;
 }
 
@@ -526,11 +526,11 @@ void Multi_Channel::GenerateWeight(int mode=0)
   if (m_weight!=0) m_weight=1./m_weight;
 }
 
-void Multi_Channel::GenerateWeight(int mode,Foam_Interface *foam) 
+void Multi_Channel::GenerateWeight(int mode,PI_Interface *pi) 
 {
   size_t i=0;
   for (;channels.size();++i) {
-    if (foam->Key().find(channels[i]->ChID())!=std::string::npos) break;
+    if (pi->Key().find(channels[i]->ChID())!=std::string::npos) break;
   }  
   channels[i]->GenerateWeight(mode);
   m_weight = channels[i]->Weight();

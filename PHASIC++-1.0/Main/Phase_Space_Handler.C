@@ -12,7 +12,7 @@
 #include "LDL_KPerp.H"
 #include "FSR_Channel.H"
 #include "ISR_Vegas.H"
-#include "Foam_Interface.H"
+#include "PI_Interface.H"
 #include "Running_AlphaS.H"
 
 #include "Run_Parameter.H"
@@ -55,11 +55,11 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_name(proc->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL), p_zchannels(NULL), p_kpchannels(NULL), 
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), 
-  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_use_foam(0), m_initialized(0),
+  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_use_pi(0), m_initialized(0),
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.)
 {
-  p_activefoam=NULL;
+  p_activepi=NULL;
   Data_Read dr(rpa.GetPath()+"/Integration.dat");
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
@@ -111,9 +111,9 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_isrchannels)  { delete p_isrchannels;  p_isrchannels = 0;   }
   if (p_beamchannels) { delete p_beamchannels; p_beamchannels  = 0; }
   if (p_cuts)         { delete p_cuts;         p_cuts = 0;          }
-  while (m_foams.size()>0) {
-    delete m_foams.back();
-    m_foams.pop_back();
+  while (m_pis.size()>0) {
+    delete m_pis.back();
+    m_pis.pop_back();
   }
   delete [] p_cms;
   delete [] p_lab;
@@ -224,9 +224,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 					 const int mode) 
 { 
   PROFILE_HERE;
-  if (mode>=0 && p_activefoam!=NULL) {
+  if (mode>=0 && p_activepi!=NULL) {
     p_active=process;
-    return p_activefoam->MCEvent();
+    p_activepi->GeneratePoint();
+    return p_activepi->GenerateWeight();
   }
   p_info->ResetAll();
   if (m_nin>1) {
@@ -249,7 +250,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 	if (mode>=0) 
 	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
 	else p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
-					  p_isrhandler->On(),p_activefoam);
+					  p_isrhandler->On(),p_activepi);
 	if (p_isrhandler->KMROn()) {
 	  p_kpchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
 	  p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
@@ -284,7 +285,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     }
   }
   if (mode>=-1) p_fsrchannels->GeneratePoint(p_lab,p_cuts);
-  else p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_activefoam);
+  else p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_activepi);
   if (!Check4Momentum(p_lab)) {
     msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<std::endl;
     for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
@@ -314,7 +315,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       if (p_isrhandler->On()>0 && mode<3) {
 	p_isrhandler->CalculateWeight(Q2);
  	if (mode>=0) p_isrchannels->GenerateWeight(p_isrhandler->On());
-	else p_isrchannels->GenerateWeight(p_isrhandler->On(),p_activefoam);
+	else p_isrchannels->GenerateWeight(p_isrhandler->On(),p_activepi);
  	m_result_1 *= p_isrchannels->Weight();
 	if (p_isrhandler->KMROn()) {
 	  p_zchannels->GenerateWeight(p_isrhandler->KMROn());
@@ -331,7 +332,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       KFactor *= process->KFactor(Q2);
     }
     if (mode>=-1) p_fsrchannels->GenerateWeight(p_cms,p_cuts);
-    else p_fsrchannels->GenerateWeight(p_cms,p_cuts,p_activefoam);
+    else p_fsrchannels->GenerateWeight(p_cms,p_cuts,p_activepi);
     m_psweight = m_result_1 *= KFactor * p_fsrchannels->Weight();
     if (m_nin>1) {
       if (p_isrhandler->On()==3) m_result_2 = m_result_1;
@@ -548,7 +549,6 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 
 void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force) 
 {
-  if (m_use_foam!=0) return;
   msg_Tracking()<<"Write out channels into directory : "<<pID<<std::endl;
   int  mode_dir = 448;
   ATOOLS::MakeDir(pID.c_str(),mode_dir,force); 
@@ -558,16 +558,21 @@ void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force)
   if (p_kpchannels!= 0) p_kpchannels->WriteOut(pID+"/MC_KMR_KP");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
   std::string help     = (pID+"/Random").c_str();
+  if (!m_pis.empty()) {
+    ATOOLS::MakeDir((pID+"/PI/").c_str(),mode_dir,force); 
+    std::ofstream piinfo((pID+"/PI/Integrators").c_str());
+    if (piinfo.good()) {
+      for (size_t i=0;i<m_pis.size();++i) {
+	piinfo<<m_pis[i]->Key()<<" "<<m_pis[i]->Point().size()<<"\n";
+	m_pis[i]->WriteOut(pID+"/PI/");
+      }
+    }
+  }
   ran.WriteOutStatus(help.c_str());
 }
 
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
 {
-  if (m_use_foam!=0) {
-    msg_Info()<<"Phase_Space_Handler::ReadIn(..): "
-	      <<"Read in not supported for Foam yet.\n";
-    return false;
-  }
   msg_Info()<<"Read in channels from directory : "<<pID<<std::endl;
   bool okay = 1;
   if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+"/MC_Beam");
@@ -575,6 +580,17 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   if (p_zchannels!=NULL && !(exclude&4)) okay = okay && p_zchannels->ReadIn(pID+"/MC_KMR_Z");
   if (p_kpchannels!=NULL && !(exclude&8)) okay = okay && p_kpchannels->ReadIn(pID+"/MC_KMR_KP");
   if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+"/MC_FSR");
+  std::ifstream piinfo((pID+"/PI/Integrators").c_str());
+  if (piinfo.good()) {
+    size_t dim;
+    std::string key;
+    piinfo>>key>>dim;
+    while (!piinfo.eof()) {
+      m_pis.push_back(new PI_Interface(this,key,dim));
+      m_pis.back()->ReadIn(pID+"/PI/");
+      piinfo>>key>>dim;
+    }
+  }
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
     std::string filename     = (pID+"/Random").c_str();
     ran.ReadInStatus(filename.c_str(),0);
@@ -1301,20 +1317,20 @@ void Phase_Space_Handler::DeleteInfo()
 }
 
 bool Phase_Space_Handler::
-CreateFoamChannel(const std::vector<Single_Channel *> &channels)
+CreatePIChannel(const std::vector<Single_Channel *> &channels)
 {
-  if (m_use_foam==0 || channels.size()<1) return false;
+  if (m_use_pi==0 || channels.size()<1) return false;
   std::string key(p_process->Name()+"_"+channels[0]->ChID());
   size_t dim=channels[0]->Dimension();
   for (size_t i=1;i<channels.size();++i) {
     key+="_"+channels[i]->ChID();
     dim+=channels[i]->Dimension();
   }
-  msg_Info()<<"Phase_Space_Handler::CreateFoamChannel(..): "
-	    <<"Creating "<<dim<<"-dimensional foam \n";
+  msg_Info()<<"Phase_Space_Handler::CreatePIChannel(..): "
+	    <<"Creating "<<dim<<"-dimensional PI \n";
   msg_Info()<<"   '"<<key<<"'\n";
-  m_foams.push_back(new Foam_Interface(this,key,dim));
-  m_foams.back()->SetMode(m_use_foam);
+  m_pis.push_back(new PI_Interface(this,key,dim));
+  m_pis.back()->SetMode(m_use_pi);
   return true;
 }
 

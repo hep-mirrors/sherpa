@@ -24,7 +24,7 @@ namespace PHASIC {
   };// end of struct Weight_Info
 
   class Phase_Space_Integrator;
-  class Foam_Interface;
+  class PI_Interface;
 
   class Phase_Space_Handler {
   private: 
@@ -52,7 +52,7 @@ namespace PHASIC {
     ATOOLS::Flavour *p_flavours;
     ATOOLS::Vec4D   *p_cms, *p_lab;
 
-    int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt, m_use_foam;
+    int  m_nin, m_nout, m_nvec, m_inttype, m_fin_opt, m_use_pi;
     bool m_initialized;
 
     long int m_trials, m_maxtrials, m_sumtrials, m_events;
@@ -60,9 +60,9 @@ namespace PHASIC {
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
     double m_result_1, m_result_2, m_flux, m_weight, m_error; 
     
-    std::vector<Foam_Interface*> m_foams;
+    std::vector<PI_Interface*> m_pis;
     
-    Foam_Interface* p_activefoam;
+    PI_Interface* p_activepi;
 
     bool MakeIncoming(ATOOLS::Vec4D *const p,const double mass=-1.);
 
@@ -119,7 +119,7 @@ namespace PHASIC {
     void ISRChannels(const int i,Channel_Info &ci) const; 
     void BeamChannels(const int i,Channel_Info &ci) const;
 
-    bool CreateFoamChannel(const std::vector<Single_Channel *> &channels);
+    bool CreatePIChannel(const std::vector<Single_Channel *> &channels);
 
     static ATOOLS::Integration_Info *const GetInfo();
 
@@ -133,7 +133,7 @@ namespace PHASIC {
     inline double   Weight() const    { return m_weight;    }
     inline double   Error() const     { return m_error;     }
     inline long int MaxTrials() const { return m_maxtrials; }
-    inline int      UseFoam() const   { return m_use_foam;  }
+    inline int      UsePI() const   { return m_use_pi;  }
  
     inline Multi_Channel *const BeamIntegrator() const  
     { return p_beamchannels; }
@@ -176,17 +176,17 @@ namespace PHASIC {
     { m_error=error; }
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
-    inline void SetUseFoam(const int use_foam) 
-    { m_use_foam=use_foam; }
+    inline void SetUsePI(const int use_pi) 
+    { m_use_pi=use_pi; }
 
     inline Phase_Space_Integrator *const Integrator() const 
     { return p_integrator; }
 
-    inline const std::vector<Foam_Interface*> &Foams() const
-    { return m_foams; }
+    inline const std::vector<PI_Interface*> &PIs() const
+    { return m_pis; }
 
-    inline void SetActive(Foam_Interface *const foam) 
-    { p_activefoam=foam; }
+    inline void SetActive(PI_Interface *const pi) 
+    { p_activepi=pi; }
 
   };// end of class Phase_Space_Handler
 

@@ -186,7 +186,7 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
 		     p_processes->ScaleFactor());
   newgroup->XSSelector()->SetOffShell(p_isr->KMROn());
   newgroup->PSHandler(false)->SetError(m_error);
-  newgroup->PSHandler(false)->SetUseFoam(m_foam);
+  newgroup->PSHandler(false)->SetUsePI(m_pi);
   newgroup->SetScaleScheme(m_scalescheme);
   newgroup->SetKFactorScheme(m_kfactorscheme);
   p_processes->Add(newgroup);
@@ -219,7 +219,7 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	    newxs->SetScaleScheme(m_scalescheme);
 	    newxs->SetKFactorScheme(m_kfactorscheme);
 	    pdfgroup->Add(newxs);
-	    if (m_foam==0) pdfgroup->CreateISRChannels();
+	    if (m_pi==0) pdfgroup->CreateISRChannels();
 	    m_processmap[newxs->Name()]=newxs;
 	    success=true;
 	    msg_Debugging()<<"Simple_Chain::AddProcess(..): "
@@ -355,7 +355,7 @@ bool Simple_Chain::SetUpInterface()
   for (size_t i=0;i<p_processes->Size();++i) {
     Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
     group->InitIntegrators();
-    if (m_foam==0) group->CreateISRChannels();
+    if (m_pi==0) group->CreateISRChannels();
     else group->CalculateTotalXSec("");
     group->SetFSRInterface(p_fsrinterface);
     group->SetFSRMode(2);
@@ -590,7 +590,7 @@ bool Simple_Chain::Initialize()
   if (m_regulate) SetStop(ATOOLS::rpa.gen.Accu()*stop,4);
   if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=1;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
-  if (!reader->ReadFromFile(m_foam,"FOAM_MI")) m_foam=0;
+  if (!reader->ReadFromFile(m_pi,"PI_MI")) m_pi=0;
   if (!reader->ReadFromFile(m_maxreduction,"MI_MAX_REDUCTION")) 
     m_maxreduction=10.0;
   std::string function;

@@ -79,7 +79,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     double param=p_dataread->GetValue<double>("XS_REGULATION",0.71);
     m_regulation.push_back(param);
   }
-  m_foam=p_dataread->GetValue<int>("FOAM",0);
+  m_pi=p_dataread->GetValue<int>("PI",0);
   if (!construct) return true;
   ifstream from((m_path+processfile).c_str());
   if (!from) {
@@ -175,7 +175,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 			  if (m_regulator.length()>0) 
 			    newxs->AssignRegulator(m_regulator,m_regulation);
 			  pdfgroup->Add(newxs);
-			  newxs->PSHandler(false)->SetUseFoam(m_foam);
+			  newxs->PSHandler(false)->SetUsePI(m_pi);
 			}
 			setup.insert(name);
 		      }
@@ -243,7 +243,7 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
 		 p_beamhandler,p_isrhandler,p_selectordata);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
   container->Add(newgroup);
-  newgroup->PSHandler(false)->SetUseFoam(m_foam);
+  newgroup->PSHandler(false)->SetUsePI(m_pi);
   container->SetAtoms(1);
   delete [] copy;
   return newgroup;
