@@ -118,8 +118,8 @@ for I in $LIST ; do
     echo -e "benchmark: benchmarking in '$I' {\n" >> $OUTPUTFILE
     cd $I
     BENCHMARK=""
-    if [ -f $INPUTFILE ] ; then
-      GetFiles < $INPUTFILE
+    if [ -f $FILE ] ; then
+      GetFiles < $FILE
     else
       echo -e "benchmark: no benchmarking points specified in '$PWD'" >> $LOGFILE
       echo -e "benchmark: no benchmarking points specified in '$PWD'" >> $OUTPUTFILE
