@@ -32,15 +32,15 @@
 
 namespace ATOOLS {
 
-  template <class Type> inline const Type &
-  Min(const Type &a,const Type &b) { return a<b?a:b; }
-  template <class Type> inline const Type &
-  Max(const Type &a,const Type &b) { return a>b?a:b; }
+  template <class Type> const Type &Min(const Type &a,const Type &b) 
+  { return a<b?a:b; }
+  template <class Type> const Type &Max(const Type &a,const Type &b) 
+  { return a>b?a:b; }
 
-  template <class Type> inline Type &
-  Min(Type &a,Type &b) { return a<b?a:b; }
-  template <class Type> inline Type &
-  Max(Type &a,Type &b) { return a>b?a:b; }
+  template <class Type> Type &Min(Type &a,Type &b) 
+  { return a<b?a:b; }
+  template <class Type> Type &Max(Type &a,Type &b) 
+  { return a>b?a:b; }
 
   inline double Accu() {return 1.e-12;};
 
