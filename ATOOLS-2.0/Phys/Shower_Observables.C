@@ -56,7 +56,7 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
-      if (p->Info()=='F')
+      if ((p->Info()=='F')||(p->Info()=='H' && (*blit)->Type()[0]!='H'))
 	pl.push_back(p);
     }
   }
@@ -66,6 +66,12 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
   all_obs.jetrates->Evaluate(pl,value);
   all_obs.multi->Evaluate(pl,value);
   all_obs.sum+=value;
+
+  // *AS* debugging output:
+//   if (all_obs.jetrates->ymin<0.008) {
+//     cout<<" ymin = "<<all_obs.jetrates->ymin<<endl;
+//     cout<<blobs<<endl;
+//   }
 
 
   // fill histograms (for each flavour)

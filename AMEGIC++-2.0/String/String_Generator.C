@@ -343,7 +343,7 @@ Kabbala String_Generator::Get_Massnumber(int numb,Flavour fl,Complex value)
   return newz.value;
 }
 
-Kabbala String_Generator::Get_Snumber(int& a1,int& a2,Complex value) 
+Kabbala String_Generator::Get_Snumber(const int a1,const int a2,Complex value) 
 {
   for (long int i=0;i<zxl.size();i++) {
     if (zxl[i].zlist==3) {
@@ -366,30 +366,7 @@ Kabbala String_Generator::Get_Snumber(int& a1,int& a2,Complex value)
   return newz.value;
 }
 
-Kabbala String_Generator::Get_VNCnumber(int& a1,int& a2,Complex value) 
-{
-  for (long int i=0;i<zxl.size();i++) {
-    if (zxl[i].zlist==3) {
-      if ((zxl[i].arg[0]==a1) && (zxl[i].arg[1]==a2)) return zxl[i].value;
-      if ((zxl[i].arg[1]==a1) && (zxl[i].arg[0]==a2)) return -zxl[i].value;
-    }
-  }
-  //new Zfunc VNC
-  ZXlist newz;
-
-  newz.zlist  = 8;
-  newz.value  = Number(zxl.size(),value);
-  newz.narg   = 2;
-  newz.arg    = new int[2];
-  newz.arg[0] = a1;
-  newz.arg[1] = a2;
-
-  zxl.push_back(newz);
-
-  return newz.value;
-}
-
-Kabbala String_Generator::Get_Scplxnumber(const int& a1,const int& a2,Complex value) 
+Kabbala String_Generator::Get_Scplxnumber(const int a1,const int a2,Complex value) 
 {
   if (AMATOOLS::IsZero(value)) return zxl[0].value;
   for (long int i=0;i<zxl.size();i++) {
@@ -462,9 +439,6 @@ void String_Generator::Calculate(Values* val)
 		Kabbala(zxl[i].value.String(), 
 			MassTermCalc(arg[1],flavours[arg[0]]));
       break;      
-      case 8: zxl[i].value = 
-		Kabbala(zxl[i].value.String(),VNCcalc(arg[0],arg[1]));
-	break;
       case 9: zxl[i].value = 
  		Kabbala(zxl[i].value.String(),Vcplxcalc(arg[0],arg[1]));
       break;

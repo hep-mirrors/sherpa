@@ -32,13 +32,11 @@ void Model_MSSM::c_VVV(Single_Vertex* v,int& vanz)
 
 void Model_MSSM::c_FFS(Single_Vertex* v,int& vanz)
 {
-  mosm.c_FFS(v,vanz);
   moHiggs.c_FFS(v,vanz);
   moch.c_FFS(v,vanz);
   mosLChi.c_FFS(v,vanz);
   mosq.c_FFS(v,vanz);
   mosqChi.c_FFS(v,vanz);
-  
 }
 
 void Model_MSSM::c_VVS(Single_Vertex* v,int& vanz) 

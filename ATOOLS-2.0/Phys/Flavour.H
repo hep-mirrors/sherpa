@@ -488,6 +488,13 @@ namespace APHYTOOLS {
 
     Flavour operator[](int) const;
 
+    Flavour& operator=(const Flavour& fl) {
+      if (this!=&fl) {
+	kfc   = fl.kfc;
+	anti  = fl.anti;
+      }
+      return *this;
+    }
 
 
     inline double Charge() const {

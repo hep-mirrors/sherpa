@@ -4,7 +4,7 @@
 
 #include "Phase_Space_Handler.H"
 #include "ISR_Handler.H"
-#include "Beam_Spectra_Handler.H"
+#include "Beam_Handler.H"
 #include "Selector.H"
 #include "Standard_Selector.H"
 
@@ -71,9 +71,9 @@ namespace EXTRAXS {
     void ISRInfo(int,int &,double &,double &);
     void SetISRTypes(APHYTOOLS::Flavour *);
 
-    virtual void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Spectra_Handler *,
+    virtual void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Handler *,
 			    APHYTOOLS::Selector_Data *,AMEGIC::Process_Group *) { }
-    virtual void Initialize(ISR::ISR_Handler *, BEAM::Beam_Spectra_Handler *,
+    virtual void Initialize(ISR::ISR_Handler *, BEAM::Beam_Handler *,
 			    APHYTOOLS::Selector_Data *, AMEGIC::Process_Group *) { }
 
   };

@@ -270,9 +270,7 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
 	  if (i==j) {help = K_sinTW()*K_sinTW()*num_2/num_3;}  
 
 	  kcpl0 = M_I*g2/K_cosTW()*
-	    /*((K_Z_U(0,j-51)*K_Z_U(0,i-51)+
-	      K_Z_U(1,j-51)*K_Z_U(1,i-51)+
-	      K_Z_U(2,j-51)*K_Z_U(2,i-51))*/ (K_Z_U(gen_sUp(flav2),j-51)*K_Z_U(gen_sUp(flav2),i-51)/num_2-help);
+	    (K_Z_U(gen_sUp(flav2),j-51)*K_Z_U(gen_sUp(flav2),i-51)/num_2-help);
 	  kcpl1 = kcpl0;
 	  
 	  v[vanz].cpl[0]  = kcpl0.Value();
@@ -314,9 +312,7 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
 	  if (i==j) {help = K_sinTW()*K_sinTW()/num_3;}  
 	  
 	  kcpl0 = M_I*g2/K_cosTW()*
-	    /*((K_Z_D(0,j-61)*K_Z_D(0,i-61)+
-	      K_Z_D(1,j-61)*K_Z_D(1,i-61)+
-	      K_Z_D(2,j-61)*K_Z_D(2,i-61))*/ (K_Z_D(gen_sDown(flav2),j-61)*K_Z_D(gen_sDown(flav2),i-61)/num_2-help);
+	    (K_Z_D(gen_sDown(flav2),j-61)*K_Z_D(gen_sDown(flav2),i-61)/num_2-help);
 	  kcpl1 = kcpl0;
 
 	  v[vanz].cpl[0]  = kcpl0.Value();
@@ -344,7 +340,6 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
     }
   }    
   
-//check the summing Convention !!!!
   //supquarks - W - sdownquarks
   Flavour flW = Flavour(kf::W);
   if (flW.IsOn()) {
@@ -356,17 +351,6 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
 	v[vanz].in[0] = flav2;
 	v[vanz].in[1] = flW;
 	v[vanz].in[2] = flav1;
-	
-	/*
-	  Kabbala help = Kabbala(string("zero"),0.);
-	  
-	  for (short int t=0;t<3;t++){
-	  for (short int z=0;z<3;z++) { 
-	  help += K_Z_D(t,j-61)*K_Z_U(z,i-51)*K_CKM(t,z);   
-	  }
-	}
-	//  kcpl0 = -M_I*g2*inv_root2*help;
-	*/
 	
 	kcpl0 = -M_I*g2*inv_root2*(K_Z_D(gen_sDown(flav2),j-61)*K_Z_U(gen_sUp(flav1),i-51))*
 	  K_CKM(gen_sDown(flav2),gen_sUp(flav1));
@@ -845,7 +829,8 @@ void Model_SQCD::c_SSVV(Single_Vertex* v,int& vanz)
 	    v[vanz].Lorentz->type = lf::VVSS;     
 	    v[vanz].Lorentz->SetParticleArg(0,3);     
 	    
-	    v[vanz].on      = 1;
+	    //v[vanz].on      = 1;
+	    v[vanz].on      = 0;
 	    vanz++;
 	  }
 	  
@@ -880,7 +865,8 @@ void Model_SQCD::c_SSVV(Single_Vertex* v,int& vanz)
 	    v[vanz].Lorentz->type = lf::VVSS;     
 	    v[vanz].Lorentz->SetParticleArg(0,3);     
 	    
-	    v[vanz].on      = 1;
+	    //v[vanz].on      = 1;
+	    v[vanz].on      = 0;
 	    vanz++;
 	  }
 	}

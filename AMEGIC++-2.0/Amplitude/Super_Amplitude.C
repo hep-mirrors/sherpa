@@ -1,4 +1,5 @@
 #include "Super_Amplitude.H"
+#include "Zfunc.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 
@@ -15,11 +16,11 @@ void Super_Amplitude::Init(string _str)
   for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) {  
     int old = zlist.size();
 
-    list<Zfunc*>* gzlist = (*g)->GetZlist(); 
-    for (list<Zfunc*>::iterator zit=gzlist->begin();zit!=gzlist->end();++zit) {
+    Zfunc_List* gzlist = (*g)->GetZlist(); 
+    for (Zfunc_Iterator zit=gzlist->begin();zit!=gzlist->end();++zit) {
       int hit = 0;
-      for (list<Zfunc*>::iterator zit2=zlist.begin();zit2!=zlist.end();++zit2) {
-	if ((*zit)->Equal==(*zit2)->Equal) {
+      for (Zfunc_Iterator zit2=zlist.begin();zit2!=zlist.end();++zit2) {
+	if ((*zit)->p_equal==(*zit2)->p_equal) {
 	  hit = 1;
 	  break;
 	}
@@ -30,18 +31,18 @@ void Super_Amplitude::Init(string _str)
       }
     }
 
-    list<Pfunc*>* gplist = (*g)->GetPlist(); 
+    Pfunc_List* gplist = (*g)->GetPlist(); 
     
     vector<Pair> pairlist;
 
-    for (list<Pfunc*>::iterator pit=gplist->begin();pit!=gplist->end();++pit) {
+    for (Pfunc_Iterator pit=gplist->begin();pit!=gplist->end();++pit) {
       Pfunc* p = *pit;
       //search for number in old list
       
       Pfunc* pequalnum  = 0;
       Pfunc* pequalprop = 0;
       
-      for (list<Pfunc*>::iterator pit2=plist.begin();pit2!=plist.end();++pit2) {
+      for (Pfunc_Iterator pit2=plist.begin();pit2!=plist.end();++pit2) {
 	Pfunc* p2 = *pit2;
 	if (p->momnum==p2->momnum && p->fl==p2->fl) pequalprop = p2;
 	if (p->arg[0]==p2->arg[0])                  pequalnum  = p2;
@@ -73,7 +74,7 @@ void Super_Amplitude::Init(string _str)
     //cout<<"Old is: "<<old<<"/"<<
 
     int i=0;
-    for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
+    for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
       if (i>=old) {
 	(*zit)->ReplaceProp(&pairlist);	
       }
@@ -94,10 +95,10 @@ void Super_Amplitude::Init(string _str)
 
   for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) {  
     if (rpa.gen.Tracking()) {
-      list<Zfunc*>* gzlist = (*g)->GetZlist(); 
+      Zfunc_List* gzlist = (*g)->GetZlist(); 
       cout<<(*g)->GetSign()<<flush;
-      for (list<Zfunc*>::iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
-	msg.Out()<<" "<<(*gzit)->str<<flush;
+      for (Zfunc_Iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
+	msg.Out()<<" "<<(*gzit)->m_str<<flush;
       }
       msg.Out()<<endl;
     }
@@ -151,7 +152,7 @@ void Super_Amplitude::SetZfuncSign()
 
   vector<vector<int> > zsignlists;
 
-  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
 
 // if super zf (+)
       if ((*zit)->GetOp()=='+')
@@ -171,18 +172,18 @@ void Super_Amplitude::SetZfuncSign()
     // probieren
     for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) { 
       int sign=1;
-      list<Zfunc*>* gzlist = (*g)->GetZlist(); 
-      for (list<Zfunc*>::iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
+      Zfunc_List* gzlist = (*g)->GetZlist(); 
+      for (Zfunc_Iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
 	// looking for zfunc in superampl
 	int i =0;
-	for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
+	for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
 	    int zsize=(*zit)->GetSize();
 	    if (!((*zit)->GetOp()=='+'))
 		zsize=1;
 	  for (int j=0;j<zsize;j++) {
 	    Zfunc* z = (*(*zit))[j]; 
 	    if (zsize==1) z=(*zit);  // *AS* ? *-group? !!!!!!!
-	    if ((*gzit)->str==z->str) {
+	    if ((*gzit)->m_str==z->m_str) {
 	      //gotcha
 	      sign*=zsignlists[i][j];
 	    }
@@ -196,9 +197,9 @@ void Super_Amplitude::SetZfuncSign()
       //      cout<<"  Global Sign = "<<global_sign<<endl;
       /*
       int i =0;
-      for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
+      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
 	for (int j=0;j<(*zit)->GetSize();++j) {
-	  cout<<"   "<<(*(*zit))[j]->str<<" has sign "<<zsignlists[i][j]<<endl;
+	  cout<<"   "<<(*(*zit))[j]->m_str<<" has sign "<<zsignlists[i][j]<<endl;
 	}
       }
       */
@@ -209,11 +210,11 @@ void Super_Amplitude::SetZfuncSign()
       msg.Out()<<"Found a suitable permutation!!"<<endl;
       //      cout<<"  Global Sign = "<<global_sign<<endl;
       int i =0;
-      for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
+      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
 	for (int j=0;j<(*zit)->GetSize();++j) {
 	    if ((*zit)->GetOp()=='+') { 
 	      (*zit)->SetSign(j,zsignlists[i][j]);
-	      //	      cout<<"   "<<(*(*zit))[j]->str<<" has sign "<<zsignlists[i][j]<<endl;
+	      //	      cout<<"   "<<(*(*zit))[j]->m_str<<" has sign "<<zsignlists[i][j]<<endl;
 	  }
 	}
       }
@@ -234,7 +235,7 @@ void Super_Amplitude::SetZfuncSign()
   cout<<"In SetZfuncSign"<<endl;
   //search for suitable factor
   int ok = 0;
-  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
     if ((*zit)->GetSize()>1) {
       ok = 1;
       vector<int> zsignlist;
@@ -242,9 +243,9 @@ void Super_Amplitude::SetZfuncSign()
 	Zfunc* z = (*(*zit))[i];
 	int zsign = 0;
 	for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) { 
-	  list<Zfunc*>* gzlist = (*g)->GetZlist(); 
-	  for (list<Zfunc*>::iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
-	    if ((*gzit)->str==z->str) {
+	  Zfunc_List* gzlist = (*g)->GetZlist(); 
+	  for (Zfunc_Iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
+	    if ((*gzit)->m_str==z->m_str) {
 	      //gotcha
 	      if (zsign==0) zsign = (*g)->GetSign();
 	      if (zsign!=(*g)->GetSign()) ok = 0;
@@ -296,17 +297,17 @@ void Super_Amplitude::ReduceZfuncs(string str)
     for (list<sknot*>::iterator sit=zfunclist.begin();sit!=zfunclist.end();++sit) {
       //cout<<"   New Zfunc: "<<st.Tree2String(*sit,0)<<endl; 
       int hit = 0;
-      for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
-	if ((*zit)->str==st.Tree2String(*sit,0)) {
+      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+	if ((*zit)->m_str==st.Tree2String(*sit,0)) {
 	  hit = 1;
-	  //cout<<"New Hit for "<<(*zit)->str<<endl;
+	  //cout<<"New Hit for "<<(*zit)->m_str<<endl;
 	  if (first) {
 	    first = 0;
 	    superfunc = new Zfunc_Group(*(*zit));
-	    superfunc->str = st.Tree2String(*fit,0);
+	    superfunc->m_str = st.Tree2String(*fit,0);
 	  }
-	  superfunc->zlist.push_back(*zit);
-	  superfunc->zsign.push_back(1);
+	  superfunc->m_zlist.push_back(*zit);
+	  superfunc->m_zsigns.push_back(1);
 	  zlist.erase(zit);
 	  break;
 	}
@@ -330,7 +331,7 @@ int Super_Amplitude::FindNewNumber(int number)
   int hit;
   do {
     hit = 0;
-    for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
+    for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) {
       Pfunc* p = *pit;
       if (p->arg[0]==number) {
 	hit = 1;

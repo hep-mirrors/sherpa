@@ -98,7 +98,6 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libToolsPhys.la \
 	       @libdir@/libToolsMath.la \
 	       @libdir@/libToolsOrg.la \
-	       @libdir@/libLHAPDF.la \
 	       @libdir@/libPDF.la \
 	       @libdir@/libExtraXS.la \
 	       @libdir@/libExtraXS2_2.la \
@@ -119,7 +118,7 @@ INCLUDES = -I../Main \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../PHASIC++-1.0/ISR \
 	   -I../../PHASIC++-1.0/Beam \
-	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/Include \
 	   -I../../EXTRA_XS-1.0/Main \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
@@ -144,10 +143,10 @@ Amegic_DEPENDENCIES = @libdir@/libProcess.la @libdir@/libAmegic.la \
 	@libdir@/libAmplTools.la @libdir@/libModel.la \
 	@libdir@/libIsajet.la @libdir@/libString.la \
 	@libdir@/libToolsPhys.la @libdir@/libToolsMath.la \
-	@libdir@/libToolsOrg.la @libdir@/libLHAPDF.la \
-	@libdir@/libPDF.la @libdir@/libExtraXS.la \
-	@libdir@/libExtraXS2_2.la @libdir@/libPhasespace.la \
-	@libdir@/libISR.la @libdir@/libBeam.la
+	@libdir@/libToolsOrg.la @libdir@/libPDF.la \
+	@libdir@/libExtraXS.la @libdir@/libExtraXS2_2.la \
+	@libdir@/libPhasespace.la @libdir@/libISR.la \
+	@libdir@/libBeam.la
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir)

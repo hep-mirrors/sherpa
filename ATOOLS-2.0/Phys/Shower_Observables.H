@@ -49,7 +49,7 @@ namespace APHYTOOLS {
 
     Jetrates(int _type,double _xmin,double _xmax,int _nbins,
 		      APHYTOOLS::Selector_Base * _sel);
-    Jetrates::Jetrates(Jetrates * _partner, std::string _prefix);
+    Jetrates(Jetrates * _partner, std::string _prefix);
 //     Jetrates * GetCopy() {
 //       return new Jetrates(this);
 //     }
@@ -90,7 +90,7 @@ namespace APHYTOOLS {
       histo -> Reset();
     }
 
-    Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix);
+    Multiplicity(Multiplicity * _partner, std::string _prefix);
 
     void Evaluate(const APHYTOOLS::Parton_List & pl,double);
     void Evaluate(const APHYTOOLS::Blob_List &,double);

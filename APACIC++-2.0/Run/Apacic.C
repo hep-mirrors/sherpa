@@ -1,7 +1,7 @@
 #include "Apacic.H"
 
 #include "ISR_Handler.H"
-#include "Beam_Spectra_Handler.H"
+#include "Beam_Handler.H"
 
 #include "Initial_State_Shower.H"
 #include "Final_State_Shower.H"
@@ -85,7 +85,7 @@ void Apacic::Init() {
   pol[0] = 0;
   pol[1] = 0;
 
-  if (!beam) beam = new Beam_Spectra_Handler(beamtypes,bunches,pol,beams,pol,splimits);
+  if (!beam) beam = new Beam_Handler(beamtypes,bunches,pol,beams,pol,splimits);
   if (!isr)  isr  = new ISR_Handler(isrtypes,beams,parton,splimits);
 
 

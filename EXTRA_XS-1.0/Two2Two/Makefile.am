@@ -11,7 +11,7 @@ INCLUDES = -I../Main \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../PHASIC++-1.0/ISR \
 	   -I../../PHASIC++-1.0/Beam \
-	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/Include \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org 

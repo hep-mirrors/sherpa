@@ -1,6 +1,8 @@
 #include "Amplitude_Group.H"
 #include "Super_Amplitude.H"
 #include "Message.H"
+#include "Zfunc.H"
+#include "Basic_Sfuncs.H"
 
 #include "MyTiming.H"
 #include "prof.hh"
@@ -48,9 +50,9 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
   //  PROFILE_HERE;
   // fill map
   for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) {    
-    list<Zfunc*>* zl = (*g)->GetZlist();
-    for (list<Zfunc*>::iterator zit=zl->begin();zit!=zl->end();++zit) {
-      graph_table[(*zit)->str].push_back((*g));
+    Zfunc_List* zl = (*g)->GetZlist();
+    for (Zfunc_Iterator zit=zl->begin();zit!=zl->end();++zit) {
+      graph_table[(*zit)->m_str].push_back((*g));
     }
   }
 
@@ -73,10 +75,10 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
     }
     gf->graphs.push_back(*g);
 
-    list<Zfunc*> * zl = (*g)->GetZlist();
-    for (list<Zfunc*>::iterator zit=zl->begin();zit!=zl->end();++zit) {
+    Zfunc_List * zl = (*g)->GetZlist();
+    for (Zfunc_Iterator zit=zl->begin();zit!=zl->end();++zit) {
       if (zit!=zl->begin()) gf->banner += string("*");
-      gf->banner += (*zit)->str;
+      gf->banner += (*zit)->m_str;
     }
 
   }
@@ -267,15 +269,15 @@ Amplitude_Base* Amplitude_Group::GetSingleGraph(list<sknot*>& zfunclist)
   for (vector<Amplitude_Base*>::iterator g=al.begin();g!=al.end();++g) {    
     int hit = 1;
     for (list<sknot*>::iterator it=zfunclist.begin();it!=zfunclist.end();++it) {      
-      list<Zfunc*>* zl = (*g)->GetZlist();
+      Zfunc_List* zl = (*g)->GetZlist();
       if (zl==0) {
 	//SuperGraph....
 	hit = 0;
 	break;
       }
       int hit2 = 0;
-      for (list<Zfunc*>::iterator zit=zl->begin();zit!=zl->end();++zit) {
-	if ((*zit)->str==st.Tree2String(*it,0)) {
+      for (Zfunc_Iterator zit=zl->begin();zit!=zl->end();++zit) {
+	if ((*zit)->m_str==st.Tree2String(*it,0)) {
 	  hit2 = 1;
 	  break;
 	}

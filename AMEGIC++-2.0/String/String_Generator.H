@@ -5,12 +5,11 @@
 #include "MyComplex.H"
 #include "Pfunc.H"
 #include "String_Tree.H"
-#include "Basic_Sfuncs.H"
 #include "Basic_Func.H"
 #include <vector>
 
 namespace AMEGIC {
-  class Elementary_Zfuncs;
+  class Basic_Sfuncs;
   class Values;
 
   class ZXlist {
@@ -36,6 +35,7 @@ namespace AMEGIC {
 	arg = new int[narg];
 	for (short int i=0;i<narg;i++) arg[i] = copy.arg[i];
       }
+      return *this;
     }
   };
 
@@ -60,11 +60,9 @@ namespace AMEGIC {
       std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}  
     virtual Kabbala Get_Enumber(Complex) {
       std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
-    virtual Kabbala Get_Snumber(int&,int&,Complex) {     
+    virtual Kabbala Get_Snumber(const int,const int,Complex) {     
       std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
-    virtual Kabbala Get_VNCnumber(int&,int&,Complex) {     
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
-  virtual Kabbala Get_Scplxnumber(const int&,const int&,Complex)     
+  virtual Kabbala Get_Scplxnumber(const int,const int,Complex)     
     {std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
 #else
     virtual Kabbala Get_CZnumber(Complex,std::string) {
@@ -81,21 +79,18 @@ namespace AMEGIC {
       std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}  
     virtual Kabbala Get_Enumber(Complex) {
       std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
-    virtual Kabbala Get_Snumber(int&,int&,Complex) {     
+    virtual Kabbala Get_Snumber(const int,const int,Complex) {     
       std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
-    virtual Kabbala Get_VNCnumber(int&,int&,Complex) {     
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
-  virtual Kabbala Get_Scplxnumber(const int&,const int&,Complex)     
-    {std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
+  virtual Kabbala Get_Scplxnumber(const int,const int,Complex)     
 #endif    
     virtual void     Calculate(Values*) {
       std::cerr<<"Virtual Method called !"<<std::endl;}
     virtual int      Massless(int) {
-      std::cerr<<"Virtual Method called !"<<std::endl;}
+      std::cerr<<"Virtual Method called !"<<std::endl;
+      return 0;
+    }
     virtual Kabbala* Get_Kabbala(const std::string&) {
       std::cerr<<"Virtual Method called !"<<std::endl;return 0;}
-    virtual void     Set_EZ(Elementary_Zfuncs*) {
-      std::cerr<<"Virtual Method called !"<<std::endl;}
     virtual inline int ZX_Max_Number() {
       std::cerr<<"Virtual Method called !"<<std::endl;return 0;}
     virtual inline std::vector<int>* GetFlavours() {
@@ -113,9 +108,13 @@ namespace AMEGIC {
     virtual inline void SetOff(const int&) {
       std::cerr<<"Virtual Method called !"<<std::endl;}
     virtual inline int couplingsLength() {
-      std::cerr<<"Virtual Method called !"<<std::endl;}
+      std::cerr<<"Virtual Method called !"<<std::endl;
+      return 0;
+    }
     virtual inline int zxlLength() {
-      std::cerr<<"Virtual Method called !"<<std::endl;}
+      std::cerr<<"Virtual Method called !"<<std::endl;
+      return 0;
+    }
   };
   
 
@@ -126,14 +125,12 @@ namespace AMEGIC {
 			   public Basic_Xfunc,
 			   public Basic_Mfunc,
 			   public Basic_Vfunc,
-			   public Basic_VNCfunc,
 			   public Basic_Pfunc,
 			   public Basic_MassTermfunc {
     std::vector<ZXlist>  zxl;
     std::vector<Complex> couplings;
     std::vector<int>     flavours;
     String_Tree stree;
-    Elementary_Zfuncs * EZ;
     int ZX_Count(); 
     int Z_Number(int*,int*);
     int X_Number(int*,int*);
@@ -150,7 +147,6 @@ namespace AMEGIC {
       Basic_Xfunc(this,_BS), 
       Basic_Mfunc(this,_BS), 
       Basic_Vfunc(this,_BS), 
-      Basic_VNCfunc(this,_BS), 
       Basic_Pfunc(this,_BS),
       Basic_MassTermfunc(this,_BS) {Reset();}
     ~String_Generator();
@@ -170,13 +166,11 @@ namespace AMEGIC {
     Kabbala Get_Pnumber(Pfunc*,int);
     Kabbala Get_Massnumber(int,APHYTOOLS::Flavour,Complex);
     Kabbala Get_Enumber(Complex); 
-    Kabbala Get_Snumber(int&,int&,Complex); 
-    Kabbala Get_Scplxnumber(const int&,const int&,Complex); 
-    Kabbala Get_VNCnumber(int&,int&,Complex); 
+    Kabbala Get_Snumber(int,int,Complex); 
+    Kabbala Get_Scplxnumber(const int,const int,Complex); 
     void Calculate(Values*); 
     int  Massless(int); 
     Kabbala* Get_Kabbala(const std::string&);
-    void Set_EZ(Elementary_Zfuncs* _EZ)    { EZ = _EZ; } 
     inline int ZX_Max_Number()             { return zxl.size(); }
     inline std::vector<int>* GetFlavours() {return &flavours;}
     inline ZXlist* Get_ZXl(const int& i)   { return &zxl[i]; }
@@ -193,7 +187,6 @@ namespace AMEGIC {
     inline int FlavoursLength()            { return flavours.size(); }
     inline int Fllist(int i)               { return flavours[i]; }  
     inline String_Tree Stree()             { return stree; }
-    inline Elementary_Zfuncs * EZlist()    { return EZ; }
   };
   
   class No_String_Generator : public Virtual_String_Generator {
@@ -208,9 +201,8 @@ namespace AMEGIC {
     Kabbala Get_Pnumber(Pfunc* pl,int)               {return Kabbala(std::string(""),pl->value);} 
     Kabbala Get_Massnumber(int,APHYTOOLS::Flavour,Complex value){return Kabbala(std::string(""),value);}
     Kabbala Get_Enumber(Complex value)               {return Kabbala(std::string(""),value);}
-    Kabbala Get_Snumber(int&,int&,Complex value)     {return Kabbala(std::string(""),value);}
-    Kabbala Get_VNCnumber(int&,int&,Complex value)   {return Kabbala(std::string(""),value);}
-    Kabbala Get_Scplxnumber(const int&,const int&,Complex value)     {return Kabbala(std::string(""),value);}
+    Kabbala Get_Snumber(int,int,Complex value)     {return Kabbala(std::string(""),value);}
+    Kabbala Get_Scplxnumber(const int,const int,Complex value)     {return Kabbala(std::string(""),value);}
 #else
     Kabbala Get_CZnumber(Complex value,std::string)       {return value;}
     Kabbala Get_Znumber(int*,Complex*,Complex value) {return value;}
@@ -219,13 +211,11 @@ namespace AMEGIC {
     Kabbala Get_Pnumber(Pfunc* pl,int)               {return pl->value;} 
     Kabbala Get_Massnumber(int,APHYTOOLS::Flavour,Complex value){return value;}
     Kabbala Get_Enumber(Complex value)               {return value;}
-    Kabbala Get_VNCnumber(int&,int&,Complex value)   {return value;}
     Kabbala Get_Scplxnumber(const int&,const int&,Complex value)     {return value;}
 #endif    
     void     Calculate(Values*)                       {}  
     int      Massless(int)                            { return 0; }  
-    Kabbala* Get_Kabbala(const std::string&)          {}
-    void     Set_EZ(Elementary_Zfuncs*)               {}
+    Kabbala* Get_Kabbala(const std::string&)          { return 0;}
     inline   int zxlLength()                          { return 0; }
     inline   int couplingsLength()                    { return 0; }
   };

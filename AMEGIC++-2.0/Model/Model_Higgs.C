@@ -161,8 +161,6 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
 
 	Kabbala K_rpa_Mass;
 	K_rpa_Mass = Kabbala(string("M_{")+fl1.TexName()+string("}"),fl1.Yuk());
-	//	K_rpa_Mass = Kabbala(string("M_{")+fl1.TexName()+string("}"),
-	//			     rpa.consts.Mass(fl1,sqr(flA0.Mass())));
 
 	kcpl0 = -K_rpa_Mass/K_v1()*K_Z_H(0,0);
 	kcpl1 = -kcpl0;
@@ -274,7 +272,7 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
       }
     }  
     
-    // q(d) -> H- + q(u) plus Generation Mixing !
+    // q(d) -> H- + q(u) 
     
     for(short int j=1;j<7;j++) {
       Flavour fl1 = Flavour(kf::code(j));
@@ -292,8 +290,6 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
 	    v[vanz].in[1] = flHmin;
 	    v[vanz].in[2] = fl2;
 	   
-	    //unbedingt noch einmal checken !!!!!!!!!!!!!!!
-
 	    kcpl0 = M_I/K_v2()*root2*K_yuk(fl2)*K_Z_H(1,0)*K_CKM(geni,genj);
 	    kcpl1 = M_I/K_v1()*root2*K_yuk(fl1)*K_Z_H(0,0)*K_CKM(geni,genj);
 	    	   
@@ -436,8 +432,6 @@ void Model_Higgs::c_SSS(Single_Vertex* v,int& vanz)
 	v[vanz].in[1] = flav;
 	v[vanz].in[2] = flHmin;
 	
-	//unbedingt noch einmal checken !!!!
-
 	kcpl0 = -M_I*g2*g2*(K_A_H(0,0)*K_B_R(i-31)/(K_cosTW()*K_cosTW()*num_4)+
 			    K_v0()*K_A_P(i-31,0)/num_2);
 	kcpl1 = kcpl0;
@@ -531,8 +525,6 @@ void Model_Higgs::c_SSS(Single_Vertex* v,int& vanz)
       Kabbala C3 = K_Z_R(1,1)*K_Z_R(0,1)*K_Z_R(0,1);
       Kabbala C4 = K_Z_R(0,1)*K_Z_R(1,1)*K_Z_R(1,1);
       
-      //noch einmal checken !!
-
       kcpl0 = -M_I*g2*g2/(K_cosTW()*K_cosTW()*num_4)*
 	((C1-C4)*K_v1()*num_3+(C2-C3)*K_v2()*num_3);
       kcpl1 = kcpl0;
@@ -567,8 +559,6 @@ void Model_Higgs::c_SSS(Single_Vertex* v,int& vanz)
 	v[vanz].in[1] = flav;
 	v[vanz].in[2] = flA0;
 	
-	//noch einmal checken !!!
-
 	kcpl0 = -M_I/(K_cosTW()*K_cosTW()*num_4)*g2*g2*K_A_H(0,0)*K_B_R(i-31);
 	kcpl1 = kcpl0;
 	
@@ -689,8 +679,6 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
     v[vanz].in[1] = flPhoton;
     v[vanz].in[2] = flHmin;
    
-    //sollte so stimmen !
-
     kcpl0 = -M_I*g1;
     kcpl1 = kcpl0;
 
@@ -726,8 +714,6 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
 	v[vanz].in[0] = flHmin;
 	v[vanz].in[1] = flW;  
 	v[vanz].in[2] = flav;
-
-	//sollte so stimmen !
 	
 	kcpl0 = -(M_I/num_2)*g2*K_A_M(i-31,0);
 	kcpl1 = kcpl0;
@@ -760,8 +746,6 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
       v[vanz].in[0] = flHmin;
       v[vanz].in[1] = flW;    
       v[vanz].in[2] = flA0;
-
-      //sollte so stimmen !
 
       kcpl0 = -g2/num_2;
       kcpl1 = kcpl0;

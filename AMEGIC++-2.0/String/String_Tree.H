@@ -33,6 +33,7 @@ namespace AMEGIC {
       strp = new std::string(str);
     }
     sknot& operator=(const sknot& cp) {
+      if (this!=&cp) {
       left  = cp.left;
       right = cp.right;
       value = cp.value;
@@ -40,8 +41,9 @@ namespace AMEGIC {
       if (strp!=0) delete strp;
       if (cp.strp!=0) strp = new std::string(cp.Str());
                  else strp = 0;
+      }
+      return *this;
     }
-
   };
 
   class String_Tree {

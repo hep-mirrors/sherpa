@@ -407,10 +407,6 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
       case 7: 
 	zf<<"MassTermCalc("<<arg[1]<<",f["<<arg[0]<<"]);"<<endl;
 	break;
-	
-      case 8: 
-	zf<<"VNCcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
- 	break;
       case 9: 
  	zf<<"Vcplxcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
  	break;

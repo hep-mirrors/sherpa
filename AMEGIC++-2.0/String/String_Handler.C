@@ -29,7 +29,7 @@ String_Handler::String_Handler(const int &_gen_str,const string& _path,Basic_Sfu
 
   working = 0;
   sk      = 0;
-  csk     = 0;
+  //csk     = 0;
   val     = 0;
   own_sgen= 1;
   if (gen_str==0) sgen = new No_String_Generator;
@@ -71,7 +71,7 @@ String_Handler::String_Handler(const int &_gen_str,Basic_Sfuncs* _BS)
   own_sgen= 1;
   working = 0;
   sk      = 0;
-  csk     = 0;
+  //csk     = 0;
   val     = 0;
   if (gen_str==0) sgen = new No_String_Generator;
              else sgen = new String_Generator(_BS);
@@ -83,7 +83,7 @@ String_Handler::String_Handler(Virtual_String_Generator * _sgen)
   own_sgen= 0;
   working = 0;
   sk      = 0;
-  csk     = 0;
+  //csk     = 0;
   val     = 0;
 
   sgen    = _sgen;
@@ -111,8 +111,8 @@ void String_Handler::Initialize(const int& _maxgraph,const int& _maxhel)
   if (gen_str==0) return;
   maxgraph = _maxgraph;
   maxhel   = _maxhel;
-  csk = new Complex*[maxgraph];
-  for (short int i=0;i<maxgraph;i++) csk[i] = new Complex[maxhel];
+  //csk = new Complex*[maxgraph];
+  //for (short int i=0;i<maxgraph;i++) csk[i] = new Complex[maxhel];
 
   if (val==0) {
     stringsk = new string*[maxgraph];
@@ -134,10 +134,10 @@ String_Handler::~String_Handler()
     for (short int i=0;i<maxgraph;i++) delete[] sk[i];
     delete[] sk;
   }
-  if (csk!=0) {
+  /*if (csk!=0) {
     for (short int i=0;i<maxgraph;i++) delete[] csk[i];
     delete[] csk;
-  }
+    }*/
 
   if (own_sgen)  // delete only if constructed
     delete sgen;

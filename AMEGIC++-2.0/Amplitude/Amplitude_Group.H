@@ -1,7 +1,6 @@
 #ifndef Amplitude_Group_h
 #define Amplitude_Group_h
 
-#include "Point.H"
 #include "String_Handler.H"
 #include "Amplitude_Base.H"
 #include "Message.H"

@@ -405,6 +405,9 @@ bool Timelike_Kinematics::KinCheck(int first,Knot * mo)
       msg.Tracking()<<" cos cru = "<<coscrude<<"    ("<<crudeth<<","<<mo->z<<")"<<endl;
       coscrude        = cos(pt2th);  // *AS* *FK* new choise !!!
       msg.Tracking()<<" cos cru = "<<coscrude<<"    ("<<pt2th<<","<<pt2<<")"<<endl;
+
+      //double cosex= (2.* mo->E2 *(mo->z*(1.- mo->z)) + tb + tc - mo->t)/
+      //(2. * sqrt( ( mo->E2 *(mo->z*mo->z) - tb) * (mo->E2 *((1.- mo->z)*(1.- mo->z)) - tc)));
       
       int hit=0;
       if (jf->TwoJets(mo->E2,mo->z,coscrude,0)) {
@@ -528,9 +531,9 @@ bool Timelike_Kinematics::JetVeto(double mo_t, double mo_e2, double mo_z,
 
    
     double coscrude = cos(crudeth);
-//     cout<<" cos cru = "<<coscrude<<"    ("<<crudeth<<","<<mo_z<<")"<<endl;
-//     cout<<" cos cru = "<<coscrude<<"    ("<<pt2th<<","<<mo_z<<")"<<endl;
     coscrude        = cos(pt2th);  // *AS* *FK* new choise !!!
+    //double cosex= (2.* mo_e2 *(mo_z*(1.- mo_z)) + tb + tc - mo_t)/
+    //(2. * sqrt( ( mo_e2 *(mo_z*mo_z) - tb) * (mo_e2 *((1.- mo_z)*(1.- mo_z)) - tc)));
     
     if (jf->TwoJets(mo_e2,mo_z,coscrude,0)) {
       msg.Tracking()<<"      Failed by JetVeto. coscrude = "<<coscrude<<endl;

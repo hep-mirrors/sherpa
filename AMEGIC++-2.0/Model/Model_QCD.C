@@ -12,10 +12,6 @@ using namespace std;
 
 void Model_QCD::Init()
 {
-  // Spectrum
-  //  SpQCD.Fill_Masses();
-  //Couplings
-  //Cpl.Init();
   g3 = Kabbala(string("g_3"),sqrt(4.*M_PI*Aqcd()));
   PL = Kabbala(string("P_L"),1.);
   PR = Kabbala(string("P_R"),1.);

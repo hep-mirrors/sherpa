@@ -120,7 +120,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
   m_zmax = m_x/(m_x+m_xe);
   msg.Debugging()<<"Spacelike_Sudakov::Dice : zrange "<<m_zmin<<" < "<<m_zmax<<std::endl;
   if (m_x >= (1 - 2.*m_xe)) {
-    msg.Debugging()<<"x to big no zrange left "<<endl;
+    msg.Debugging()<<"x to big no zrange left "<<std::endl;
     // same as below
   }
 
@@ -164,7 +164,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
       return 1;
     }
     else {
-      msg.Debugging()<<" Branch Vetoed "<<m_last_veto<<endl;
+      msg.Debugging()<<" Branch Vetoed "<<m_last_veto<<std::endl;
       msg.Debugging()<<m_t<<", z="<<m_z<<", "<<m_inflav<<" for "<<m_lastint<<std::endl;
     }
   }

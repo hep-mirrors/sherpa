@@ -1,8 +1,32 @@
-#include "Zfunc_Calc.H"
+#include "Calculator.H"
 #include "String_Generator.H"
 
 using namespace AMEGIC;
 using namespace std;
+
+V5_Calc::V5_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Zfunc(_sgen,_BS), 
+  Basic_Xfunc(_sgen,_BS), 
+  Basic_Mfunc(_sgen,_BS), 
+  Basic_Vfunc(_sgen,_BS) 
+{ 
+  type     = zl::V5;
+  ncoupl=19;narg=10;pn=7;
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gauge3));
+  lorentzlist.push_back(Lorentz_Function(lf::Gauge3));
+  lorentzlist.push_back(Lorentz_Function(lf::Gauge3));
+  for (short int i=0;i<5;i++) lorentzlist[i].SetParticleArg(i);
+  lorentzlist[5].SetParticleArg(0,5,6);           
+  lorentzlist[6].SetParticleArg(-5,1,2);     
+  lorentzlist[7].SetParticleArg(-6,3,4);     
+}
 
 Kabbala V5_Calc::G5()
 { 

@@ -1,36 +1,40 @@
 #include "Basic_Func.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include "Pfunc.H"
 
 using namespace AMEGIC;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace std;
 
-void Basic_Func::SetArgCouplProp(int narg,Argument* _arg,Complex* _coupl,
-				 int _pn,Argument* _ps,list<Pfunc*>* _pl) 
+void Basic_Func::SetArgCouplProp(int narg,int* _arg,Complex* _coupl,
+				 int _pn,Argument* _ps,Pfunc_List* _pl) 
 {
   arg = _arg; coupl = _coupl;ps = _ps;pl = _pl;pn= _pn;
   for (short int i=0;i<narg;i+=2) {
-    Map(arg[i].numb,arg[i].maped);
+    Map(arg[i]);
     //changing sign according to spinordirection
-    if (arg[i].spinortype==Spinor::v || arg[i].spinortype==Spinor::vbar) {
-      arg[i].numb   *= -1; //for mu
-      arg[i+1].numb *= -1; //for sign
-    }
+    //    if (arg[i].spinortype==Spinor::v || arg[i].spinortype==Spinor::vbar) {
+    //  arg[i].numb   *= -1; //for mu
+    //  arg[i+1].numb *= -1; //for sign
+    //}
   }
 
   for (short int i=0;i<pn;i++) Map(ps[i].numb,ps[i].maped);
 
-/* cout<<"*****SetArgCouplProp nachher: "<<endl;
-  for (short int i=0;i<narg;i+=2) {
-    cout<<"("<<i<<":"<<arg[i].numb<<"/"<<arg[i].maped<<") ";
+}
+
+void Basic_Func::Map(int& numb) 
+{
+  if (iabs(numb)>99) {
+    Pfunc* p;
+    for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
+      p = *pit;
+      if (p->arg[0]==AMATOOLS::iabs(numb)) break;
+    }
+    numb = (numb>0) ? p->momnum:-p->momnum;
   }
-  cout<<endl;
-  for (short int i=0;i<pn;i++) {
-    cout<<"("<<i<<":"<<ps[i].numb<<"/"<<ps[i].maped<<") ";
-  }
-  cout<<endl;*/
 }
 
 void Basic_Func::Map(int& numb,bool& maped) 
@@ -45,11 +49,11 @@ void Basic_Func::Map(int& numb,bool& maped)
   }
   if (numb>99) {
     Pfunc* p;
-    for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+    for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
       p = *pit;
-      if (p->arg[0]==AMATOOLS::iabs(numb)) break;
+      if (p->arg[0]==numb) break;
     }
-    numb = (numb>0) ? p->momnum:-p->momnum;
+    numb = p->momnum;
   }
 }
 
@@ -60,7 +64,7 @@ double Basic_Func::GetPMass(int a,int sign)
   for(b=0;b<pn;b++)if(ps[b].numb==AMATOOLS::iabs(a))break;
   Pfunc* p1;
   int hit = 0;
-  for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+  for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
     p1 = *pit;
     if (p1->momnum==AMATOOLS::iabs(a) && (p1->fl).Kfcode()==ps[b].kfcode) {
       hit = 1;

@@ -1,13 +1,16 @@
 #ifndef Amplitude_Base_h
 #define Amplitude_Base_h
 
-#include "Point.H"
+#include "MyComplex.H"
+#include "Flavour.H"
 #include "Zfunc.H"
-#include "Pfunc.H"
-#include "Basic_Sfuncs.H"
-#include "String_Handler.H"
 
 namespace AMEGIC {
+
+  class String_Handler;
+  class Point;
+  class Basic_Sfuncs;
+
   class Amplitude_Base {
   protected:
     int buildstring;
@@ -30,10 +33,12 @@ namespace AMEGIC {
 
     virtual void Add(Amplitude_Base*, int sign=1)
       {std::cerr<<"Error: Virtual  Amplitude_Base::Add() called!"<<std::endl;}
+    virtual int Size()
+      {std::cerr<<"Error: Virtual  Amplitude_Base::Size() called!"<<std::endl;return 0;}
 
-    virtual std::list<Zfunc*>* GetZlist()
+    virtual Zfunc_List* GetZlist()
       {std::cerr<<"Error: Virtual  Amplitude_Base::GetZlist() called!"<<std::endl;return 0;}
-    virtual std::list<Pfunc*>* GetPlist()
+    virtual Pfunc_List* GetPlist()
       {std::cerr<<"Error: Virtual  Amplitude_Base::GetPlist() called!"<<std::endl;return 0;}
 
     virtual int GetSign()

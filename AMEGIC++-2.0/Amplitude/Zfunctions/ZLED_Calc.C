@@ -1,14 +1,168 @@
-#include "Zfunc_Calc.H"
+#include "Basic_Sfuncs.H"
+#include "Calculator.H"
 #include "String_Generator.H"
 
 using namespace AMEGIC;
 
+FFT_Calc::FFT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Yfunc(_sgen,_BS), 
+  Basic_Xfunc(_sgen,_BS), 
+  Basic_Vfunc(_sgen,_BS)
+{ 
+  type     = zl::FFT;
+  ncoupl=4;narg=4;pn=3;
+  lorentzlist.push_back(Lorentz_Function(lf::FFT));
+  lorentzlist[0].SetParticleArg(0);
+}
+
+VVT_Calc::VVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Zfunc(_sgen,_BS), 
+  Basic_Xfunc(_sgen,_BS), 
+  Basic_Vfunc(_sgen,_BS) 
+{ 
+  type     = zl::VVT;
+  ncoupl=7;narg=6;pn=3;
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::VVT));
+  lorentzlist[0].SetParticleArg(0);
+  lorentzlist[1].SetParticleArg(1);
+  lorentzlist[2].SetParticleArg(0,1,2);
+}
+
+SST_Calc::SST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Vfunc(_sgen,_BS) 
+{ 
+  type     = zl::SST;
+  ncoupl=7;narg=6;pn=3;
+  lorentzlist.push_back(Lorentz_Function(lf::SST));
+  lorentzlist[0].SetParticleArg(0,1,2);
+}
+
+FFVT_Calc::FFVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Xfunc(_sgen,_BS), 
+  Basic_Zfunc(_sgen,_BS), 
+  Basic_Mfunc(_sgen,_BS), 
+  Basic_Vfunc(_sgen,_BS)
+{ 
+  type     = zl::FFVT;
+  ncoupl=7;narg=6;pn=2;
+  lorentzlist.push_back(Lorentz_Function(lf::FFVT));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist[0].SetParticleArg(0,1);
+  lorentzlist[1].SetParticleArg(0);
+}
+
+VVVT_Calc::VVVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Zfunc(_sgen,_BS), 
+  Basic_Xfunc(_sgen,_BS), 
+  Basic_Vfunc(_sgen,_BS) 
+{ 
+  type     = zl::VVVT;
+  ncoupl=9;narg=8;pn=4;
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::VVVT));
+  for (short int i=0;i<3;i++) lorentzlist[i].SetParticleArg(i);
+  lorentzlist[3].SetParticleArg(0,1,2,3);     
+}
+
+SSST_Calc::SSST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Vfunc(_sgen,_BS) 
+{ 
+  type     = zl::SSST;
+  ncoupl=2;narg=2;pn=1;
+#ifdef Scalar_Args
+  narg=5;
+#endif
+  lorentzlist.push_back(Lorentz_Function(lf::SSST));
+  lorentzlist[0].SetParticleArg(0);     
+}
+
+FFGS_Calc::FFGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Yfunc(_sgen,_BS), 
+  Basic_Xfunc(_sgen,_BS) 
+{ 
+  type     = zl::FFGS;
+  ncoupl=3;narg=2;pn=3;
+#ifdef Scalar_Args
+  narg=3;
+#endif
+  lorentzlist.push_back(Lorentz_Function(lf::FFGS));
+}
+
+
+VVGS_Calc::VVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Zfunc(_sgen,_BS), 
+  Basic_Xfunc(_sgen,_BS),
+  Basic_Vfunc(_sgen,_BS) 
+{ 
+  type     = zl::VVGS;
+  ncoupl=8;narg=6;pn=3;
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::VVGS));
+  lorentzlist[0].SetParticleArg(0);
+  lorentzlist[1].SetParticleArg(1);
+  lorentzlist[2].SetParticleArg(0,1,2);
+}
+
+SSGS_Calc::SSGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Vfunc(_sgen,_BS) 
+{ 
+  type     = zl::SSGS;
+  ncoupl=6;narg=4;pn=2;
+#ifdef Scalar_Args
+  narg=5;
+#endif
+  lorentzlist.push_back(Lorentz_Function(lf::SSGS));
+  lorentzlist[0].SetParticleArg(0,1);
+}
+
+FFVGS_Calc::FFVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : 
+  Basic_Func(_sgen,_BS), 
+  Zfunc_Calc(_sgen,_BS),
+  Basic_Zfunc(_sgen,_BS), 
+  Basic_Xfunc(_sgen,_BS),
+  Basic_Vfunc(_sgen,_BS), 
+  Basic_Mfunc(_sgen,_BS)      { 
+  type     = zl::FFVGS;
+  ncoupl=4;narg=4;pn=1;
+#ifdef Scalar_Args
+  narg=5;
+#endif
+  lorentzlist.push_back(Lorentz_Function(lf::Gamma));
+  lorentzlist.push_back(Lorentz_Function(lf::FFVGS));
+  lorentzlist[0].SetParticleArg(0);
+  lorentzlist[1].SetParticleArg(0);
+}
+
+
 Kabbala FFT_Calc::Do() 
 {
   int sarg[4];
-  //cout<<"FFT_Calc:"<<arg[4].numb<<","<<arg[5].numb<<","<<arg[6].numb<<","<<arg[7].numb<<endl;
-  sarg[2]=BS->Get_Pol_Number(arg[4].numb,arg[5].numb,GetPMass(arg[4].numb,arg[5].numb));
-  sarg[3]=BS->Get_Pol_Number(arg[6].numb,arg[7].numb,GetPMass(arg[6].numb,arg[7].numb));
+  //cout<<"FFT_Calc:"<<arg[4]<<","<<arg[5]<<","<<arg[6]<<","<<arg[7]<<endl;
+  sarg[2]=BS->GetPolNumber(arg[4],arg[5],GetPMass(arg[4],arg[5]));
+  sarg[3]=BS->GetPolNumber(arg[6],arg[7],GetPMass(arg[6],arg[7]));
 
   int s1=ps[1].direction,s2=ps[2].direction;
  
@@ -27,8 +181,8 @@ Kabbala VVT_Calc::Do()
   int sarg[4];
   sarg[0]=ps[0].numb;
   sarg[1]=ps[1].numb;
-  sarg[2]=BS->Get_Pol_Number(arg[8].numb,arg[9].numb,GetPMass(arg[8].numb,arg[9].numb));
-  sarg[3]=BS->Get_Pol_Number(arg[10].numb,arg[11].numb,GetPMass(arg[10].numb,arg[11].numb));
+  sarg[2]=BS->GetPolNumber(arg[8],arg[9],GetPMass(arg[8],arg[9]));
+  sarg[3]=BS->GetPolNumber(arg[10],arg[11],GetPMass(arg[10],arg[11]));
   int s0=ps[0].direction,
       s1=ps[1].direction;
   if (sarg[0]<BS->GetNmomenta()) s0 *= BS->Sign(sarg[0]);
@@ -58,8 +212,8 @@ Kabbala SST_Calc::Do()
   int sarg[4];
   sarg[0]=ps[0].numb;
   sarg[1]=ps[1].numb;
-  sarg[2]=BS->Get_Pol_Number(arg[8].numb,arg[9].numb,GetPMass(arg[8].numb,arg[9].numb));
-  sarg[3]=BS->Get_Pol_Number(arg[10].numb,arg[11].numb,GetPMass(arg[10].numb,arg[11].numb));
+  sarg[2]=BS->GetPolNumber(arg[8],arg[9],GetPMass(arg[8],arg[9]));
+  sarg[3]=BS->GetPolNumber(arg[10],arg[11],GetPMass(arg[10],arg[11]));
   int s0=ps[0].direction,
       s1=ps[1].direction;
   if (sarg[0]<BS->GetNmomenta()) s0 *= BS->Sign(sarg[0]);
@@ -74,8 +228,8 @@ Kabbala FFVT_Calc::Do()
 {
   int sarg[4];
   sarg[0]=ps[0].numb;
-  sarg[2]=BS->Get_Pol_Number(arg[8].numb,arg[9].numb,GetPMass(arg[8].numb,arg[9].numb));
-  sarg[3]=BS->Get_Pol_Number(arg[10].numb,arg[11].numb,GetPMass(arg[10].numb,arg[11].numb));
+  sarg[2]=BS->GetPolNumber(arg[8],arg[9],GetPMass(arg[8],arg[9]));
+  sarg[3]=BS->GetPolNumber(arg[10],arg[11],GetPMass(arg[10],arg[11]));
   int s0=ps[0].direction;
   if (sarg[0]<BS->GetNmomenta()) s0 *= BS->Sign(sarg[0]);
 
@@ -94,8 +248,8 @@ Kabbala VVVT_Calc::Do()
   sarg[0]=ps[0].numb;
   sarg[1]=ps[1].numb;
   sarg[2]=ps[2].numb;
-  sarg[3]=BS->Get_Pol_Number(arg[12].numb,arg[13].numb,GetPMass(arg[12].numb,arg[13].numb));
-  sarg[4]=BS->Get_Pol_Number(arg[14].numb,arg[15].numb,GetPMass(arg[14].numb,arg[15].numb));
+  sarg[3]=BS->GetPolNumber(arg[12],arg[13],GetPMass(arg[12],arg[13]));
+  sarg[4]=BS->GetPolNumber(arg[14],arg[15],GetPMass(arg[14],arg[15]));
   int s0=ps[0].direction,s1=ps[1].direction,s2=ps[2].direction;
   if (sarg[0]<BS->GetNmomenta()) s0 *= BS->Sign(sarg[0]);
   if (sarg[1]<BS->GetNmomenta()) s1 *= BS->Sign(sarg[1]);
@@ -119,8 +273,8 @@ Kabbala VVVT_Calc::Do()
 Kabbala SSST_Calc::Do() 
 {
   int sarg[2];
-  sarg[0]=BS->Get_Pol_Number(arg[0].numb,arg[1].numb,GetPMass(arg[0].numb,arg[1].numb));
-  sarg[1]=BS->Get_Pol_Number(arg[2].numb,arg[3].numb,GetPMass(arg[2].numb,arg[3].numb));
+  sarg[0]=BS->GetPolNumber(arg[0],arg[1],GetPMass(arg[0],arg[1]));
+  sarg[1]=BS->GetPolNumber(arg[2],arg[3],GetPMass(arg[2],arg[3]));
   return sgen->Get_Enumber(coupl[0])* Vcplx(sarg[0],sarg[1]);     
 }
 

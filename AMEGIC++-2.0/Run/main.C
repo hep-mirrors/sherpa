@@ -8,8 +8,11 @@
 #include "Running_AlphaQED.H"
 #include "Flow.H"
 #include "Message.H"
-//#include <mpi++.h>
 
+//#define _USE_MPI_
+#ifdef _USE_MPI_
+#include <mpi++.h>
+#endif
 
 using namespace AMEGIC;
 using namespace APHYTOOLS;
@@ -18,6 +21,11 @@ using namespace AORGTOOLS;
 
 int main(int argc,char* argv[]) 
 {    
+  
+#ifdef _USE_MPI_
+  MPI::Init(argc, argv);
+#endif
+  
   int runmode = AMEGIC::AMPLITUDE_MODE; 
 
   std::string path("Testrun");
@@ -35,6 +43,8 @@ int main(int argc,char* argv[])
   if (!aqed) aqed = new Running_AlphaQED;
   
   Amegic generator(path,0);
+  
+  generator.DecCalc();
 
   if (generator.InitializeProcesses(runmode)) { 
     generator.CalculateTotalXSec();
@@ -46,6 +56,12 @@ int main(int argc,char* argv[])
   if (aqed) delete aqed;
   msg.Tracking()<<"Deleted couplings in the wrapper "<<std::endl;
   return 1;
+
+#ifdef _USE_MPI_
+  MPI::Finalize();
+#endif
+
+
 }
 
 

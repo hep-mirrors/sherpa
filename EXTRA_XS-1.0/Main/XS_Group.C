@@ -56,7 +56,7 @@ void XS_Group::Add(XS_Base * _xsec, bool createbroker)
   xsecs.push_back(_xsec);
 };
 
-void XS_Group::MakeBroker(ISR::ISR_Handler * isr, BEAM::Beam_Spectra_Handler * beam,
+void XS_Group::MakeBroker(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
 			  APHYTOOLS::Selector_Data * _seldata, AMEGIC::Process_Group * _broker) 
 {
   seldata = _seldata;

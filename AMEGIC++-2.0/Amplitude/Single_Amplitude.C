@@ -1,6 +1,8 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "Single_Amplitude.H"
+#include "Prop_Generator.H"
+#include "Color_Generator.H"
 #include "Kabbala.H"
 #include "Zfunc_Generator.H"
 
@@ -93,8 +95,8 @@ Single_Amplitude::~Single_Amplitude()
   delete[] Pointlist;
   //Zlist,Clist,Plist
 
-  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) delete (*zit);
-  for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) delete (*pit);
+  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) delete (*zit);
+  for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) delete (*pit);
   
   SpinorDirection* sd;
   SpinorDirection* sd2;
@@ -215,20 +217,20 @@ void Single_Amplitude::Zprojecting(Flavour* fl,int ngraph)
 
 void Single_Amplitude::FillCoupling(String_Handler* _shand) 
 {
-  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
     Zfunc* z = (*zit);
-    for (short int i=0;i<z->ncoupl;i++) {
-      (_shand->Get_Generator())->Get_Cnumber(z->coupl[i]);
+    for (short int i=0;i<z->m_ncoupl;i++) {
+      (_shand->Get_Generator())->Get_Cnumber(z->p_couplings[i]);
     }
   }
 }
 
 void Single_Amplitude::MPolconvert(int alt,int neu)
 {
-  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
     Zfunc* z = (*zit);
-    for (int i=0;i<z->narg;i++) {
-      if (z->arg[i]==alt) z->arg[i]=neu;
+    for (int i=0;i<z->m_narg;i++) {
+      if (z->p_arguments[i]==alt) z->p_arguments[i]=neu;
     } 
   }  
 }

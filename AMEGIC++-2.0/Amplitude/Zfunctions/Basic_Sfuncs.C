@@ -1,4 +1,5 @@
 #include "Basic_Sfuncs.H"
+#include "MathTools.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "MathTools.H"
@@ -11,13 +12,15 @@ using namespace APHYTOOLS;
 
 using namespace std;
 
+#define SQRT_05 0.70710678118654757
+
 Basic_Sfuncs::Basic_Sfuncs(int _nmom,int _nvec, Flavour* flav,int* _b) 
-  : fl(flav), Nmom(_nmom), nvec(_nvec), b(_b)
+  : fl(flav), nmom(_nmom), nvec(_nvec), b(_b)
 {
-  momcount = Initialize_Momlist();
+  momcount = InitializeMomlist();
   _eta=_mu=0;
   _S0=_S1=0;
-  k0_n=0;
+  k0_n=0;m_precalc=0;
 }
 
 Basic_Sfuncs::~Basic_Sfuncs() 
@@ -55,11 +58,10 @@ void Basic_Sfuncs::Initialize()
 }
 
 
-int Basic_Sfuncs::Initialize_Momlist()
+int Basic_Sfuncs::InitializeMomlist()
 {
   for (short int i=0;i<nvec;i++) {
     Momfunc Mom;
-    Mom.on = 1;
     Mom.argnum = 1;
     Mom.arg    = new int[Mom.argnum];
     Mom.arg[0] = i;
@@ -70,14 +72,7 @@ int Basic_Sfuncs::Initialize_Momlist()
   return nvec; 
 }
 
-Vec4D Basic_Sfuncs::Mom_dir(int i)
-{
-  double sign=1.;-Sign(i);
-  //return Vec4D(Momlist[i].mom[0],sign*Momlist[i].mom[1],sign*Momlist[i].mom[2],sign*Momlist[i].mom[3]);
-  return sign*Momlist[i].mom;
-}
-
-int Basic_Sfuncs::Get_Mom_Number(Pfunc* p)
+int Basic_Sfuncs::GetMomNumber(Pfunc* p)
 {
   for(short int k=0;k<Momlist.size();k++) {
     if (Momlist[k].argnum==p->argnum) {
@@ -98,15 +93,14 @@ int Basic_Sfuncs::Get_Mom_Number(Pfunc* p)
   return -1;
 }
 
-int Basic_Sfuncs::Build_Momlist(list<Pfunc*>& pl) 
+int Basic_Sfuncs::BuildMomlist(Pfunc_List& pl) 
 {
-  for (list<Pfunc*>::iterator pit=pl.begin();pit!=pl.end();++pit) {
+  for (Pfunc_Iterator pit=pl.begin();pit!=pl.end();++pit) {
     Pfunc* p = *pit;
-    int n = Get_Mom_Number(p);
+    int n = GetMomNumber(p);
     if (n==-1) {
       Momfunc* Mom;
       Mom = new Momfunc;
-      Mom->on = 1;
 
       Mom->argnum = p->argnum;
       Mom->arg    = new int[Mom->argnum];
@@ -116,12 +110,11 @@ int Basic_Sfuncs::Build_Momlist(list<Pfunc*>& pl)
       for (short int i=1;i<p->argnum;i++) 
 	Mom->arg[i] = p->arg[i];
 
-      if(p->argnum==(Nmom-1) && b[1]==-1){
+      if(p->argnum==(nmom-1) && b[1]==-1){
         int hit=1;
         for(short int i=1;i<p->argnum;i++) if(p->arg[i]<2)hit=0;
 	if(hit==1) Mom->type=mt::cmprop;
       }
-	
       Momlist.push_back(*Mom);
       //      cout<<"******Build_Momlist: "<<momcount<<endl;
       momcount++;
@@ -138,16 +131,16 @@ int Basic_Sfuncs::Build_Momlist(list<Pfunc*>& pl)
       
     }
     else p->momnum = n;
-    if (p->haspol) Build_Polarisations(n,p->fl); 	
+    if (p->haspol) BuildPolarisations(n,p->fl); 	
   }
   return momcount;
 }
 
-void Basic_Sfuncs::PropPolarisation(int pindex,list<Pfunc*>& pl,vector<int>& iargs)
+void Basic_Sfuncs::PropPolarisation(int pindex,Pfunc_List& pl,vector<int>& iargs)
 {
   int momindex = -1;
   Flavour momfl;
-  for (list<Pfunc*>::iterator pit=pl.begin();pit!=pl.end();++pit) {
+  for (Pfunc_Iterator pit=pl.begin();pit!=pl.end();++pit) {
     Pfunc* p = *pit;
     if (p->arg[0]==pindex) {
       momindex = p->momnum;
@@ -157,7 +150,7 @@ void Basic_Sfuncs::PropPolarisation(int pindex,list<Pfunc*>& pl,vector<int>& iar
   }
 
   if(!momfl.IsScalar()){
-    for(short int k=Nmom;k<Momlist.size();k++) {
+    for(short int k=nmom;k<Momlist.size();k++) {
       if (Momlist[k].arg[1]==momindex) {
 	switch(Momlist[k].type)
 	  {
@@ -178,9 +171,9 @@ void Basic_Sfuncs::PropPolarisation(int pindex,list<Pfunc*>& pl,vector<int>& iar
 }
 
 
-int Basic_Sfuncs::Get_Pol_Number(int momindex, int sign,double mass,int check)
+int Basic_Sfuncs::GetPolNumber(int momindex, int sign,double mass,int check)
 {
-  for(short int k=Nmom;k<Momlist.size();k++) 
+  for(short int k=nmom;k<Momlist.size();k++) 
     if (Momlist[k].type==sign) 
       if (Momlist[k].arg[1]==momindex && (sign!=mt::p_s || Momlist[k].mass==mass)) return k;
 
@@ -191,28 +184,27 @@ int Basic_Sfuncs::Get_Pol_Number(int momindex, int sign,double mass,int check)
   return -1;
 }
 
-void Basic_Sfuncs::Print_Momlist()
+void Basic_Sfuncs::PrintMomlist()
 {
-  return;
+  //return;
 
   AORGTOOLS::msg.Out()<<"Momlist: "<<endl;
   for(short int k=0;k<Momlist.size();k++) {
     AORGTOOLS::msg.Out()<<Momlist[k].arg[0]<<" --> ";
     for (short int i=1;i<Momlist[k].argnum;i++) AORGTOOLS::msg.Out()<<Momlist[k].arg[i]<<",";
-    AORGTOOLS::msg.Out()<<"on = "<<Momlist[k].on<<", type = "<<Momlist[k].type<<endl;
+    AORGTOOLS::msg.Out()<<" type = "<<Momlist[k].type<<endl;
   }
 }
 
-int Basic_Sfuncs::Build_TensorPolarisations(int momindex) 
+int Basic_Sfuncs::BuildTensorPolarisations(int momindex) 
 {
   //Add polarisation vectors to construct tensors for external spin 2 particles
   if (momindex>nvec) {
-    msg.Error()<<"*****Build_TensorPolarisations: Not an external momentum!"<<endl;
+    msg.Error()<<"*****BuildTensorPolarisations: Not an external momentum!"<<endl;
     return 0;
   }
   Momfunc* Mom;
   Mom = new Momfunc;
-  Mom->on = 1;
 
   //Polarisation -1
   Mom->argnum = 2;
@@ -221,37 +213,36 @@ int Basic_Sfuncs::Build_TensorPolarisations(int momindex)
   Mom->arg[1] = momindex;
   Mom->type=mt::p_m;  
   Mom->mass=Momlist[momindex].mass;
-  msg.Debugging()<<"*****Build_TensorPolarisations: -("<<Mom->type<<") "<<momcount<<" M:"<<Mom->mass<<endl;
+  msg.Debugging()<<"*****BuildTensorPolarisations: -("<<Mom->type<<") "<<momcount<<" M:"<<Mom->mass<<endl;
   momcount++;
   Momlist.push_back(*Mom);
 
   //Polarisation +1
   Mom->arg[0] = momcount;
   Mom->type=mt::p_p;
-  msg.Debugging()<<"*****Build_TensorPolarisations: + ("<<Mom->type<<") "<<momcount<<endl;
+  msg.Debugging()<<"*****BuildTensorPolarisations: + ("<<Mom->type<<") "<<momcount<<endl;
   momcount++;
   Momlist.push_back(*Mom);
 
   //Polarisation longitudinal
   Mom->arg[0] = momcount;
   Mom->type=mt::p_l;
-  msg.Debugging()<<"*****Build_TensorPolarisations: l "<<momcount<<endl;
+  msg.Debugging()<<"*****BuildTensorPolarisations: l "<<momcount<<endl;
   momcount++;
   Momlist.push_back(*Mom);
   return momcount;
 }
 
 
-int Basic_Sfuncs::Build_Polarisations(int momindex,char type,double angle) 
+int Basic_Sfuncs::BuildPolarisations(int momindex,char type,double angle) 
 {
   //Add polarisation vectors for external particles
   if (momindex>nvec) {
-    msg.Error()<<"*****Build_Polarisations: Not an external momentum!"<<endl;
+    msg.Error()<<"*****BuildPolarisations: Not an external momentum!"<<endl;
     return 0;
   }
   Momfunc* Mom;
   Mom = new Momfunc;
-  Mom->on = 1;
 
   //Polarisation -1
   Mom->argnum = 2;
@@ -266,7 +257,7 @@ int Basic_Sfuncs::Build_Polarisations(int momindex,char type,double angle)
   default:Mom->type=mt::p_m;
   }
   Mom->mass=Momlist[momindex].mass;
-  msg.Debugging()<<"*****Build_Polarisations: -("<<Mom->type<<") "<<momcount<<" M:"<<Mom->mass<<endl;
+  msg.Debugging()<<"*****BuildPolarisations: -("<<Mom->type<<") "<<momcount<<" M:"<<Mom->mass<<endl;
   momcount++;
   Momlist.push_back(*Mom);
 
@@ -280,7 +271,7 @@ int Basic_Sfuncs::Build_Polarisations(int momindex,char type,double angle)
   default:Mom->type=mt::p_p;
   }
   Mom->mass=Momlist[momindex].mass;
-  msg.Debugging()<<"*****Build_Polarisations: + ("<<Mom->type<<") "<<momcount<<endl;
+  msg.Debugging()<<"*****BuildPolarisations: + ("<<Mom->type<<") "<<momcount<<endl;
   momcount++;
   Momlist.push_back(*Mom);
   if(AMATOOLS::IsZero(Momlist[momindex].mass))  return momcount;
@@ -289,17 +280,17 @@ int Basic_Sfuncs::Build_Polarisations(int momindex,char type,double angle)
   Mom->arg[0] = momcount;
   Mom->type=mt::p_l;
   Mom->mass=Momlist[momindex].mass;
-  msg.Debugging()<<"*****Build_Polarisations: l "<<momcount<<endl;
+  msg.Debugging()<<"*****BuildPolarisations: l "<<momcount<<endl;
   momcount++;
   Momlist.push_back(*Mom);
   return momcount;
 }
 
-int Basic_Sfuncs::Build_Polarisations(int momindex, Flavour fl) 
+int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl) 
   //Add polarisation vectors for cutted propagators
 {
   if (momindex<nvec) {
-    msg.Error()<<"*****Build_Polarisations: Not an internal momentum!"<<endl;
+    msg.Error()<<"*****BuildPolarisations: Not an internal momentum!"<<endl;
     return 0;
   }
     //cout<<"Build Pols"<<endl;
@@ -308,25 +299,24 @@ double Mass = fl.Mass();
   if(!AMATOOLS::IsZero(fl.Width()))
       Mass2-=Complex(0.,fl.Width()*Mass);
   Momfunc* Mom = new Momfunc;
-  Mom->on = 1;
   Mom->argnum = 2;
   Mom->arg    = new int[Mom->argnum];
   Mom->arg[1] = momindex;
   Mom->mass  = Mass;
   Mom->cplxmass2 = Mass2;
 
-  if (Get_Pol_Number(momindex,mt::p_lh,0,1)==-1) {
+  if (GetPolNumber(momindex,mt::p_lh,0,1)==-1) {
     //Polarisation -1
     Mom->arg[0] = momcount;
     Mom->type=mt::p_lh;
-    msg.Debugging()<<"*****Build_Polarisations: -("<<Mom->type<<") "<<momcount<<endl;
+    msg.Debugging()<<"*****BuildPolarisations: -("<<Mom->type<<") "<<momcount<<endl;
     momcount++;
     Momlist.push_back(*Mom);
 
     //Polarisation +1
     Mom->arg[0] = momcount;
     Mom->type=mt::p_lp;
-    msg.Debugging()<<"*****Build_Polarisations: +("<<Mom->type<<") "<<momcount<<endl;
+    msg.Debugging()<<"*****BuildPolarisations: +("<<Mom->type<<") "<<momcount<<endl;
     momcount++;
     Momlist.push_back(*Mom);
     if(momindex<nvec&&AMATOOLS::IsZero(Mass))  return momcount;
@@ -334,27 +324,26 @@ double Mass = fl.Mass();
     //Polarisation longitudinal
     Mom->arg[0] = momcount;
     Mom->type=mt::p_l;
-    msg.Debugging()<<"*****Build_Polarisations: l "<<momcount<<endl;
+    msg.Debugging()<<"*****BuildPolarisations: l "<<momcount<<endl;
     momcount++;
     Momlist.push_back(*Mom);
     }
   
   if(AMATOOLS::IsZero(Mass)){ 
-    if (Get_Pol_Number(momindex,mt::p_si,0,1)==-1 && rpa.me.CutScheme()!=1 ) {
+    if (GetPolNumber(momindex,mt::p_si,0,1)==-1 && rpa.me.CutScheme()!=1 ) {
       Mom->arg[0] = momcount;
       Mom->type=mt::p_si;
-      msg.Debugging()<<"*****Build_Polarisations: zero mass s "<<momcount<<endl;
+      msg.Debugging()<<"*****BuildPolarisations: zero mass s "<<momcount<<endl;
       momcount++;
-      //cout<<"******Build_Polarisations: "<<momcount<<endl;
       Momlist.push_back(*Mom);
     }
     return momcount;
   }
-  if (Get_Pol_Number(momindex,mt::p_s,Mass,1)==-1) {
+  if (GetPolNumber(momindex,mt::p_s,Mass,1)==-1) {
     //Polarisation scalar
     Mom->arg[0] = momcount;
     Mom->type=mt::p_s;
-    msg.Debugging()<<"*****Build_Polarisations: s "<<momcount<<" mass:"<<Mass<<endl;
+    msg.Debugging()<<"*****BuildPolarisations: s "<<momcount<<" mass:"<<Mass<<endl;
     momcount++;
     Momlist.push_back(*Mom);
   }
@@ -362,30 +351,12 @@ double Mass = fl.Mass();
   return momcount;
 }
 
-double Basic_Sfuncs::N(int i,int j)
+double Basic_Sfuncs::Norm(int i,int j)
 {
   return 1./(sqrt(2.)*abs(S0(i,j)));
 }
 
-int Basic_Sfuncs::epsilon(int i,int j,int k,int l)
-{
-  short int i1,j1,k1,l1,dummy,perm;
-  perm = 0;
-  i1=i;j1=j;k1=k;l1=l;
-  for (;;) {
-     if (i1>j1) {perm++;dummy = j1;j1=i1;i1=dummy;}
-     if (i1==j1) return 0;
-     if (j1>k1) {perm++;dummy = k1;k1=j1;j1=dummy;}
-     if (j1==k1) return 0;
-     if (k1>l1) {perm++;dummy = l1;l1=k1;k1=dummy;}
-     if (k1==l1) return 0;
-     if ((i1<j1)&&(j1<k1)&&(k1<l1)) break;
-  }
-  if (perm%2==0) return 1;
-  return -1; 
-}
-
-void Basic_Sfuncs::Calc_Momlist()
+void Basic_Sfuncs::CalcMomlist()
 {
   double ps,pt;
   Vec4D mom,vh1,vh2;
@@ -408,20 +379,18 @@ void Basic_Sfuncs::Calc_Momlist()
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));
       pt=sqrt(sqr(mom[1])+sqr(mom[2]));
       if(!AMATOOLS::IsZero(pt)){
-	Momlist[j].mom = sqrt(.5)*Vec4D(0.,mom[1]*mom[3]/ps/pt,
+	Momlist[j].mom = SQRT_05*Vec4D(0.,mom[1]*mom[3]/ps/pt,
 					mom[2]*mom[3]/ps/pt,-pt/ps);
-	Momlist[j].mom_img = -sqrt(.5)*Vec4D(.0,-mom[2]/pt,mom[1]/pt,0.);
+	Momlist[j].mom_img = -SQRT_05*Vec4D(.0,-mom[2]/pt,mom[1]/pt,0.);
       }
       else {
-	//if(mom[3]>0) Momlist[j].mom = sqrt(.5)*Vec4D(0.,1.,0.,0.);
-	//else Momlist[j].mom = sqrt(.5)*Vec4D(0.,-1.,0.,0.);
-	//Momlist[j].mom_img = sqrt(.5)*Vec4D(0.,0.,1.,0.);
-	Momlist[j].mom = sqrt(.5)*Vec4D(0.,1.,0.,0.);
-	if(mom[3]>0)Momlist[j].mom_img = -sqrt(.5)*Vec4D(0.,0.,1.,0.);
-	else Momlist[j].mom_img = -sqrt(.5)*Vec4D(0.,0.,-1.,0.);
+	Momlist[j].mom = SQRT_05*Vec4D(0.,1.,0.,0.);
+	if(mom[3]>0)Momlist[j].mom_img = -SQRT_05*Vec4D(0.,0.,1.,0.);
+	else Momlist[j].mom_img = -SQRT_05*Vec4D(0.,0.,-1.,0.);
        }
       Momlist[j+1].mom = Momlist[j].mom;
       Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
+      //msg.Out()<<"MOM("<<j<<"): "<<Momlist[j].mom<<Momlist[j].mom_img<<std::endl;
       j++;
       break;
 
@@ -453,13 +422,9 @@ void Basic_Sfuncs::Calc_Momlist()
 	if(mom[1]+mom[2]<0)vh2=-1.*vh2;
      }
       else {
-	vh1 = sqrt(.5)*Vec4D(0.,1.,-1.,0.);
-	//if(mom[3]>0) vh1 = Vec4D(0.,1.,0.,0.);
-	//else vh1 = Vec4D(0.,-1.,0.,0.);
-	vh2 = sqrt(.5)*Vec4D(0.,1.,1.,0.);
+	vh1 = SQRT_05*Vec4D(0.,1.,-1.,0.);
+	vh2 = SQRT_05*Vec4D(0.,1.,1.,0.);
       }
-      //Momlist[j].mom = sqrt(.5)*(vh1+vh2);
-      //Momlist[j+1].mom = sqrt(.5)*(vh1-vh2);      
       Momlist[j].mom = vh1;
       Momlist[j+1].mom = vh2;      
       j++;
@@ -488,25 +453,21 @@ void Basic_Sfuncs::Calc_Momlist()
 	  Complex help=sqrt((Complex(1.,0.)-Momlist[j].cplxmass2/ps)/Momlist[j].cplxmass2);
 	  Momlist[j].mom=real(help)*mom;
 	  Momlist[j].mom_img=imag(help)*mom;
-	  //cout<<"Pol 's'=("<<j<<") "<<Momlist[j].mom<<","<<Momlist[j].mom_img<<endl;
-	  //cout<<"complex Mass2:"<<Momlist[j].cplxmass2<<help<<" ps: "<<ps<<" Mom:"<<mom<<endl;
       }
       break;
     case mt::p_si :
       mom=Momlist[Momlist[j].arg[1]].mom;
       Complex help=csqrt(-1./mom.Abs2());
-      //cout<<help<<endl;
       Momlist[j].mom =    real(help)*mom;
       Momlist[j].mom_img= imag(help)*mom;
     } 
-    //cout<<"MOM("<<j<<"): "<<Momlist[j].mom<<Momlist[j].mom_img<<endl;
+    //msg.Out()<<"MOM("<<j<<"): "<<Momlist[j].mom<<Momlist[j].mom_img<<std::endl;
    
   }
 }
 
-void Basic_Sfuncs::ResetS_GT(double theta)
+void Basic_Sfuncs::InitGaugeTest(double theta)
 {
-  double sq05=sqrt(.5);
   double ps,pt;
   double s,c,s0,c0,sf,cf;
   Momfunc* m;
@@ -530,75 +491,76 @@ void Basic_Sfuncs::ResetS_GT(double theta)
 	Vec4D(c0*c+s0*s*cf,s0*c+s*c0*cf,s*c0*sf,c0*c-s*s0*cf);
       Momlist[j].mom_img=1./sqrt(1.-mom[1]/ps*::sin(theta)-mom[3]/ps*::cos(theta))*
 	Vec4D(s0*s*sf,s*c0*sf,s0*c-s*c0*cf,-s*s0*sf);
+      //msg.Out()<<"MOM("<<j<<"): "<<Momlist[j].mom<<Momlist[j].mom_img<<std::endl;
 
       Momlist[j+1].mom = Momlist[j].mom;
       Momlist[j+1].mom_img = (-1.)*Momlist[j].mom_img;
     }    
     if(AMATOOLS::IsZero(Momlist[j].mass))if(Momlist[j].type==mt::p_m||Momlist[j].type==mt::p_p){
       m=&Momlist[j];
-      //cout<<"recalc "<<j<<endl;
       switch(k0_n){
       case 1:
-	if(!iscplx(j)) 
-	  _eta[j] = csqrt(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*sq05));
-	else _eta[j] = sqrt(Complex(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*sq05),
-				    2.*(m->mom_img[0]-(m->mom_img[2]+m->mom_img[3])*sq05)));
+	if(!IsComplex(j)) 
+	  _eta[j] = csqrt(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*SQRT_05));
+	else _eta[j] = sqrt(Complex(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*SQRT_05),
+				    2.*(m->mom_img[0]-(m->mom_img[2]+m->mom_img[3])*SQRT_05)));
 	break;
       case 2:
-	if(!iscplx(j)) 
-	  _eta[j] = csqrt(2.*(m->mom[0]-(m->mom[1]+m->mom[2])*sq05));
-	else _eta[j] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[2])*sq05),
-				    2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[2])*sq05)));
+	if(!IsComplex(j)) 
+	  _eta[j] = csqrt(2.*(m->mom[0]-(m->mom[1]+m->mom[2])*SQRT_05));
+	else _eta[j] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[2])*SQRT_05),
+				    2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[2])*SQRT_05)));
 	break;
       default:
-	if(!iscplx(j)) 
-	  _eta[j] = csqrt(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*sq05));
-	else _eta[j] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*sq05),
-				    2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[3])*sq05)));
+	if(!IsComplex(j)) 
+	  _eta[j] = csqrt(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*SQRT_05));
+	else _eta[j] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*SQRT_05),
+				    2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[3])*SQRT_05)));
       }
     }
   }
 }
 
-int Basic_Sfuncs::setS(Vec4D* _p)
+int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
 {
   //  PROFILE_HERE;
   PROFILE_LOCAL("int Basic_Sfuncs::setS(Vec4D* _p)");
   // _eta's and _mu's precalc
   
-  double sq05=sqrt(.5);
   p = _p;
-  Calc_Momlist();
+  CalcMomlist();
 
   Momfunc* m;
   
   int etachk=1;
+  double zchk;
 
+  if (m_precalc) k0_n = 1;
   for(short int i=0;i<Momlist.size();i++) {
     m=&Momlist[i];
 
     switch(k0_n){
     case 1:
-      if(!iscplx(i)) 
-	_eta[i] = csqrt(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*sq05));
-      else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*sq05),
-				  2.*(m->mom_img[0]-(m->mom_img[2]+m->mom_img[3])*sq05)));
+      if(!IsComplex(i)) 
+	_eta[i] = csqrt(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*SQRT_05));
+      else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[2]+m->mom[3])*SQRT_05),
+				  2.*(m->mom_img[0]-(m->mom_img[2]+m->mom_img[3])*SQRT_05)));
       break;
     case 2:
-      if(!iscplx(i)) 
-	_eta[i] = csqrt(2.*(m->mom[0]-(m->mom[1]+m->mom[2])*sq05));
-      else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[2])*sq05),
-				  2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[2])*sq05)));
+      if(!IsComplex(i)) 
+	_eta[i] = csqrt(2.*(m->mom[0]-(m->mom[1]+m->mom[2])*SQRT_05));
+      else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[2])*SQRT_05),
+				  2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[2])*SQRT_05)));
       break;
     default:
-      if(!iscplx(i)) 
-	_eta[i] = csqrt(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*sq05));
-      else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*sq05),
-				  2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[3])*sq05)));
+      if(!IsComplex(i)) 
+	_eta[i] = csqrt(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*SQRT_05));
+      else _eta[i] = sqrt(Complex(2.*(m->mom[0]-(m->mom[1]+m->mom[3])*SQRT_05),
+				  2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[3])*SQRT_05)));
     }
-
+    //msg.Out()<<"Etas: "<<i<<" "<<_eta[i]<<std::endl;
     if(AMATOOLS::IsZero(_eta[i]))etachk=0;
-    if (i<Nmom) {
+    if (i<nmom) {
       _mu[i]  =Momlist[i].mass/_eta[i];
       //if (b[i]==1 && 
       if (fl[i].IsAnti() && i!=0) 
@@ -613,7 +575,8 @@ int Basic_Sfuncs::setS(Vec4D* _p)
 	    case mt::p_p:
 	    case mt::p_m: _mu[i] = Complex(0.,0.);
 		break;
-	    case mt::p_l:
+	    case mt::p_l: _mu[i] = Complex(0.,1.)/_eta[i];
+	        break;
 	    case mt::p_si:
 		_mu[i]  = (csqrt((m->mom).Abs2())+csqrt(-(m->mom_img).Abs2()))/_eta[i];
 		break;
@@ -621,74 +584,101 @@ int Basic_Sfuncs::setS(Vec4D* _p)
 		_mu[i] = sqrt(Complex((m->mom).Abs2()-(m->mom_img).Abs2(),
 				      2 * m->mom * m->mom_img))/_eta[i];
 		break;
-	    default: _mu[i]  = csqrt((m->mom).Abs2())/_eta[i];
+	    default: 
+	      zchk = (m->mom).Abs2();
+	      if (IsZero(zchk)) _mu[i] = Complex(0.,0.);
+	      else _mu[i] = csqrt(zchk)/_eta[i];
 	}
-	/*_mu[i]  = csqrt((m->mom).Abs2())/_eta[i];
-      if(m->type==mt::p_p||m->type==mt::p_m) _mu[i] = Complex(0.,0.);
-      if(m->type==mt::p_l||m->type==mt::p_s) _mu[i]+= csqrt(-(m->mom_img).Abs2())/_eta[i];*/
     }
   }
-  for(short int i=0;i<momcount;i++)
-    for(short int j=0;j<momcount;j++)
-      calc_st[i][j]=0;
+  if (!m_precalc){
+    for(short int i=0;i<momcount;i++)
+      for(short int j=0;j<momcount;j++)
+	calc_st[i][j]=0;
+  }
+  else PrecalcS();
   return etachk;
 }
 
+void Basic_Sfuncs::PrecalcS()
+{
+  for(short int i=1;i<momcount;i++)
+    for(short int j=0;j<i;j++)
+      if (calc_st[i][j]) {
+	Momfunc* m = &Momlist[i];
+	Momfunc* m1 = &Momlist[j];
+	Complex A= _eta[j]/_eta[i];
 
-void Basic_Sfuncs::calcS(int i, int j)
+	_S0[i][j] = Complex(m->mom[1],(m->mom[2]-m->mom[3])*SQRT_05)*A; 
+	_S1[i][j] = Complex(-m->mom[1],(m->mom[2]-m->mom[3])*SQRT_05)*A;
+	if (IsComplex(i)){
+	  _S0[i][j] += Complex(-(m->mom_img[2]-m->mom_img[3])*SQRT_05,m->mom_img[1])*A;
+	  _S1[i][j] += Complex(-(m->mom_img[2]-m->mom_img[3])*SQRT_05,-m->mom_img[1])*A;
+	}      
+	_S0[i][j] -= Complex(m1->mom[1],(m1->mom[2]-m1->mom[3])*SQRT_05)/A;
+	_S1[i][j] -= Complex(-m1->mom[1],(m1->mom[2]-m1->mom[3])*SQRT_05)/A;
+	if (IsComplex(j)){
+	  _S0[i][j] -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*SQRT_05,m1->mom_img[1])/A;
+	  _S1[i][j] -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*SQRT_05,-m1->mom_img[1])/A;
+	}
+	_S0[j][i] = - _S0[i][j];
+	_S1[j][i] = - _S1[i][j];	
+      }
+}
+
+void Basic_Sfuncs::CalcS(int i, int j)
 {
   //  PROFILE_HERE;
-  double sq05=sqrt(.5);
-  Momfunc* m = &Momlist[i];
-  Momfunc* m1 = &Momlist[j];
-  if (!(AMATOOLS::IsZero((m->mom+(-1.)*m1->mom).Abs2()) &&
-	AMATOOLS::IsZero(m->mom[0]-m1->mom[0]))) {
+  if (i!=j) {
+    Momfunc* m = &Momlist[i];
+    Momfunc* m1 = &Momlist[j];
     Complex A= _eta[j]/_eta[i];
 
     switch(k0_n){
     case 1:
-      _S0[i][j] = Complex(m->mom[1],(m->mom[2]-m->mom[3])*sq05)*A; 
-      _S1[i][j] = Complex(-m->mom[1],(m->mom[2]-m->mom[3])*sq05)*A;
-      if (iscplx(i)){
-	_S0[i][j] += Complex(-(m->mom_img[2]-m->mom_img[3])*sq05,m->mom_img[1])*A;
-	_S1[i][j] += Complex(-(m->mom_img[2]-m->mom_img[3])*sq05,-m->mom_img[1])*A;
+      _S0[i][j] = Complex(m->mom[1],(m->mom[2]-m->mom[3])*SQRT_05)*A; 
+      _S1[i][j] = Complex(-m->mom[1],(m->mom[2]-m->mom[3])*SQRT_05)*A;
+      if (IsComplex(i)){
+	_S0[i][j] += Complex(-(m->mom_img[2]-m->mom_img[3])*SQRT_05,m->mom_img[1])*A;
+	_S1[i][j] += Complex(-(m->mom_img[2]-m->mom_img[3])*SQRT_05,-m->mom_img[1])*A;
       }      
-      _S0[i][j] -= Complex(m1->mom[1],(m1->mom[2]-m1->mom[3])*sq05)/A;
-      _S1[i][j] -= Complex(-m1->mom[1],(m1->mom[2]-m1->mom[3])*sq05)/A;
-      if (iscplx(j)){
-	_S0[i][j] -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*sq05,m1->mom_img[1])/A;
-	_S1[i][j] -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*sq05,-m1->mom_img[1])/A;
+      _S0[i][j] -= Complex(m1->mom[1],(m1->mom[2]-m1->mom[3])*SQRT_05)/A;
+      _S1[i][j] -= Complex(-m1->mom[1],(m1->mom[2]-m1->mom[3])*SQRT_05)/A;
+      if (IsComplex(j)){
+	_S0[i][j] -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*SQRT_05,m1->mom_img[1])/A;
+	_S1[i][j] -= Complex(-(m1->mom_img[2]-m1->mom_img[3])*SQRT_05,-m1->mom_img[1])/A;
       }
       break;
     case 2:
-      _S0[i][j] = Complex(m->mom[3],(m->mom[1]-m->mom[2])*sq05)*A; 
-      _S1[i][j] = Complex(-m->mom[3],(m->mom[1]-m->mom[2])*sq05)*A;
-      if (iscplx(i)){
-	_S0[i][j] += Complex(-(m->mom_img[1]-m->mom_img[2])*sq05,m->mom_img[3])*A;
-	_S1[i][j] += Complex(-(m->mom_img[1]-m->mom_img[2])*sq05,-m->mom_img[3])*A;
+      _S0[i][j] = Complex(m->mom[3],(m->mom[1]-m->mom[2])*SQRT_05)*A; 
+      _S1[i][j] = Complex(-m->mom[3],(m->mom[1]-m->mom[2])*SQRT_05)*A;
+      if (IsComplex(i)){
+	_S0[i][j] += Complex(-(m->mom_img[1]-m->mom_img[2])*SQRT_05,m->mom_img[3])*A;
+	_S1[i][j] += Complex(-(m->mom_img[1]-m->mom_img[2])*SQRT_05,-m->mom_img[3])*A;
       }
-      _S0[i][j] -= Complex(m1->mom[3],(m1->mom[1]-m1->mom[2])*sq05)/A;
-      _S1[i][j] -= Complex(-m1->mom[3],(m1->mom[1]-m1->mom[2])*sq05)/A;
-      if (iscplx(j)){
-	_S0[i][j] -= Complex(-(m1->mom_img[1]-m1->mom_img[2])*sq05,m1->mom_img[3])/A;
-	_S1[i][j] -= Complex(-(m1->mom_img[1]-m1->mom_img[2])*sq05,-m1->mom_img[3])/A;
+      _S0[i][j] -= Complex(m1->mom[3],(m1->mom[1]-m1->mom[2])*SQRT_05)/A;
+      _S1[i][j] -= Complex(-m1->mom[3],(m1->mom[1]-m1->mom[2])*SQRT_05)/A;
+      if (IsComplex(j)){
+	_S0[i][j] -= Complex(-(m1->mom_img[1]-m1->mom_img[2])*SQRT_05,m1->mom_img[3])/A;
+	_S1[i][j] -= Complex(-(m1->mom_img[1]-m1->mom_img[2])*SQRT_05,-m1->mom_img[3])/A;
       }
       break;
     default:
-      _S0[i][j] = Complex(m->mom[2],(m->mom[3]-m->mom[1])*sq05)*A; 
-      _S1[i][j] = Complex(-m->mom[2],(m->mom[3]-m->mom[1])*sq05)*A;
-      if (iscplx(i)){
-	_S0[i][j] += Complex(-(m->mom_img[3]-m->mom_img[1])*sq05,m->mom_img[2])*A;
-	_S1[i][j] += Complex(-(m->mom_img[3]-m->mom_img[1])*sq05,-m->mom_img[2])*A;
+      _S0[i][j] = Complex(m->mom[2],(m->mom[3]-m->mom[1])*SQRT_05)*A; 
+      _S1[i][j] = Complex(-m->mom[2],(m->mom[3]-m->mom[1])*SQRT_05)*A;
+      if (IsComplex(i)){
+	_S0[i][j] += Complex(-(m->mom_img[3]-m->mom_img[1])*SQRT_05,m->mom_img[2])*A;
+	_S1[i][j] += Complex(-(m->mom_img[3]-m->mom_img[1])*SQRT_05,-m->mom_img[2])*A;
       }
-      _S0[i][j] -= Complex(m1->mom[2],(m1->mom[3]-m1->mom[1])*sq05)/A;
-      _S1[i][j] -= Complex(-m1->mom[2],(m1->mom[3]-m1->mom[1])*sq05)/A;
-      if (iscplx(j)){
-	_S0[i][j] -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*sq05,m1->mom_img[2])/A;
-	_S1[i][j] -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*sq05,-m1->mom_img[2])/A;
+      _S0[i][j] -= Complex(m1->mom[2],(m1->mom[3]-m1->mom[1])*SQRT_05)/A;
+      _S1[i][j] -= Complex(-m1->mom[2],(m1->mom[3]-m1->mom[1])*SQRT_05)/A;
+      if (IsComplex(j)){
+	_S0[i][j] -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*SQRT_05,m1->mom_img[2])/A;
+	_S1[i][j] -= Complex(-(m1->mom_img[3]-m1->mom_img[1])*SQRT_05,-m1->mom_img[2])/A;
       }
     }
-
+    if (IsZero(_S0[i][j])) _S0[i][j] = Complex(0.,0.);
+    if (IsZero(_S1[i][j])) _S1[i][j] = Complex(0.,0.);
     _S0[j][i] = - _S0[i][j];
     _S1[j][i] = - _S1[i][j];
   }
@@ -703,7 +693,7 @@ void Basic_Sfuncs::calcS(int i, int j)
   calc_st[i][j]=calc_st[j][i]=1;
 }
 
-void Basic_Sfuncs::set_k0(int i)
+void Basic_Sfuncs::Setk0(int i)
 {
   k0_n=i;
   //i=0: k0=Vec4D(1.,sqrt(.5),0.,sqrt(.5));
@@ -716,4 +706,41 @@ void Basic_Sfuncs::set_k0(int i)
   //     k1=Vec4D(0.,0.,0.,1.);
 }
 
+void Basic_Sfuncs::StartPrecalc()
+{ 
+  m_precalc=1; 
+  int cnt=0;
+  for(short int i=0;i<momcount;i++)
+    for(short int j=0;j<momcount;j++)
+      if (calc_st[i][j]){
+	if (_S0[i][j]==Complex(0.,0.) && _S1[i][j]==Complex(0.,0.)) calc_st[i][j]=0;
+	else if(i>j) ++cnt;
+      }
+  msg.Debugging()<<"Basic_Sfuncs::StartPrecalc(): "<<cnt<<" Sfuncs"<<std::endl;
+}
 
+bool Basic_Sfuncs::IsMomSum(int x,int y,int z)
+{
+  x = iabs(x); y = iabs(y); z = iabs(z); 
+  if (Momlist[x].type==mt::p_s || Momlist[x].type==mt::p_si) x = Momlist[x].arg[1];
+   else 
+    if (Momlist[x].type==mt::p_l)
+      if (Momlist[Momlist[x].arg[1]].mom[1]==0. &&
+	  Momlist[Momlist[x].arg[1]].mom[2]==0. &&
+	  Momlist[Momlist[x].arg[1]].mom[3]==0. ) x = Momlist[x].arg[1];
+  if (Momlist[x].type!=mt::prop && 
+      Momlist[x].type!=mt::cmprop) return false;
+  if (Momlist[y].type!=mt::prop && 
+      Momlist[y].type!=mt::cmprop && 
+      Momlist[y].type!=mt::mom) return false;
+  if (Momlist[z].type!=mt::prop && 
+      Momlist[z].type!=mt::cmprop && 
+      Momlist[z].type!=mt::mom) return false;
+
+  Vec4D sum;
+  if (Momlist[y].type==mt::mom) sum = b[y]*Momlist[y].mom;
+  else sum = Momlist[y].mom;
+  if (Momlist[z].type==mt::mom) sum += b[z]*Momlist[z].mom;
+  else sum += Momlist[z].mom;
+  return (sum==Momlist[x].mom);
+}

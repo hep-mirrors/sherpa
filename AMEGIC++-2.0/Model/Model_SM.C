@@ -49,9 +49,3 @@ inline double Model_SM::Aqcd()            {return APHYTOOLS::as->AsFixed();} // 
 inline double Model_SM::Aqed(double t)    {return APHYTOOLS::aqed->Aqed(t);}
 inline double Model_SM::Aqed()            {return APHYTOOLS::aqed->AqedFixed();}
 
-/*
-inline double Model_SM::Aqcd(double t) {return (*APHYTOOLS::as)(t);}
-inline double Model_SM::Aqcd()         {return (*APHYTOOLS::as)(sqr(rpa.gen.Ecms()));}
-inline double Model_SM::Aqed(double t) {return (*APHYTOOLS::aqed)(t);}
-inline double Model_SM::Aqed()         {return (*APHYTOOLS::aqed)(sqr(rpa.gen.Ecms()));}
-*/

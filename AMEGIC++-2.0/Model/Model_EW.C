@@ -540,7 +540,6 @@ void Model_EW::c_VVVV(Single_Vertex* v,int& vanz)
   v[vanz].Lorentz->SetParticleArg(0,3,1,2);     
 
   v[vanz].on      = 1;
-  //v[vanz].on      = 0;
   vanz++;
   }
   

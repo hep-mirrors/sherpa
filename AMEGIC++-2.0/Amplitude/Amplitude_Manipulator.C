@@ -215,6 +215,7 @@ Point* Amplitude_Manipulator::ForwardLine(Point* p)
   if (p->right->fl.IsFermion()) return ForwardLine(p->right);
 
   cerr<<"Dead fermion line!!!"<<endl;
+  return 0;
 }
 
 Point* Amplitude_Manipulator::BackwardLine(Point* p)
@@ -237,6 +238,7 @@ Point* Amplitude_Manipulator::BackwardLine(Point* p)
   }
 
   cerr<<"Dead fermion line!!!"<<endl;
+  return 0;
 }
 
 int Amplitude_Manipulator::SetPropOrientation(Point* pb,Point* pe)

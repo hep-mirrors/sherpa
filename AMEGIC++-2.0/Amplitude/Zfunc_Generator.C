@@ -1,4 +1,8 @@
 #include "Zfunc_Generator.H"
+#include "String_Generator.H"
+#include "Basic_Sfuncs.H"
+#include "Calculator.H"
+#include "Zfunc.H"
 #include "Vector.H"
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -27,8 +31,6 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
   zcalc.push_back(new VVSS_Calc(_sgen,_BS));
   zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
   zcalc.push_back(new SSSS_Calc(_sgen,_BS));
-  zcalc.push_back(new ZNC_Calc(_sgen,_BS));
-  zcalc.push_back(new VVVNC_Calc(_sgen,_BS));
   
   if(rpa.me.Model()==AORGTOOLS::Model_Type::LED){
     zcalc.push_back(new FFT_Calc(_sgen,_BS));
@@ -46,7 +48,7 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
   AORGTOOLS::msg.Out()<<"Available Zfunctions:"<<endl;
 
   for (short int i=0;i<zcalc.size();i++) {
-    AORGTOOLS::msg.Out()<<"Type: "<<zcalc[i]->type<<"; Ncoupl: "<<zcalc[i]->ncoupl<<"; Narg: "<<zcalc[i]->narg<<"; ";
+    AORGTOOLS::msg.Out()<<"Type: "<<zcalc[i]->type<<"; Ncoupl: "<<zcalc[i]->ncoupl<<"; Narg: "<<zcalc[i]->m_narg<<"; ";
     LFPrint(zcalc[i]->lorentzlist);
   }
   */
@@ -234,13 +236,12 @@ void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
 
 lf::code Zfunc_Generator::LFEff(lf::code type)
 { 
-  if (AORGTOOLS::rpa.me.Model()==AORGTOOLS::Model_Type::NCQED) return (type==lf::Pol) ? lf::Gamma_NC : type;
   return (type==lf::Pol) ? lf::Gamma : type;
 }
 
 int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 {
-  Zh->type = -10;
+  Zh->m_type = -10;
   vector<Lorentz_Function> lflist;
 
   if (pf!=0) lflist.push_back(*(p->Lorentz));
@@ -292,13 +293,13 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 	}
       }
       if (hit) {
-	Zh->type       = zcalc[i]->type;
-	Zh->calculator = zcalc[i];
+	Zh->m_type       = zcalc[i]->type;
+	Zh->p_calculator = zcalc[i];
 	break;
       }
     }
   }
-  if (Zh->type==-10) {
+  if (Zh->m_type==-10) {
     return 0;
     AORGTOOLS::msg.Error()<<"No Lorentzfunction found!"<<endl;
     LFPrint(lflist);  
@@ -375,7 +376,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
   CopyOrder(lflist,lfpointer);
   //LFPrint(lfpointer);
   vector<Lorentz_Function*> capointer;
-  CopyOrder(Zh->calculator->lorentzlist,capointer);
+  CopyOrder(Zh->p_calculator->lorentzlist,capointer);
   //LFPrint(capointer);
 
   vector<Lorentz_Function*> permpointer;
@@ -385,12 +386,12 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
     permpointer[j]->InitPermutation();
   }
   
-  int* lfnumb = new int[Zh->calculator->pn];
-  int* canumb = new int[Zh->calculator->pn];
+  int* lfnumb = new int[Zh->p_calculator->pn];
+  int* canumb = new int[Zh->p_calculator->pn];
 
   //loop over all permutations
   for (;;) {
-    int i = Compare(Zh->calculator->pn,lfpointer,lfnumb,capointer,canumb);
+    int i = Compare(Zh->p_calculator->pn,lfpointer,lfnumb,capointer,canumb);
     if (i==lfpointer.size()) break;
 
     //loop over previous permutations
@@ -425,7 +426,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
 	  
 	  if (hit) {
 	    for (short int j=typemin;j<=typemax;j++) copypointer[j] = lfpointer[ii[j]];
-	    i = Compare(Zh->calculator->pn,copypointer,lfnumb,capointer,canumb);
+	    i = Compare(Zh->p_calculator->pn,copypointer,lfnumb,capointer,canumb);
 	    if (i>typemax) {
 	      for (short int j=typemin;j<=typemax;j++) lfpointer[j] = copypointer[j];
 	      break;
@@ -446,7 +447,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
 	}
 	delete[] ii;
       }
-      else i = Compare(Zh->calculator->pn,lfpointer,lfnumb,capointer,canumb);
+      else i = Compare(Zh->p_calculator->pn,lfpointer,lfnumb,capointer,canumb);
 
       if (i==lfpointer.size()) break;
 	
@@ -475,42 +476,42 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
   }
 
   //Total Sign......
-  Zh->sign = 1;
+  Zh->m_sign = 1;
 
-  for (short int j=0;j<permpointer.size();j++) Zh->sign *= permpointer[j]->GetSign();
+  for (short int j=0;j<permpointer.size();j++) Zh->m_sign *= permpointer[j]->GetSign();
   
-  SetPropDirection(Zh->calculator->pn,pb->number,lfpointer,lfnumb,capointer,canumb);
+  SetPropDirection(Zh->p_calculator->pn,pb->number,lfpointer,lfnumb,capointer,canumb);
 
 
   //Setting the arguments
 
-  Zh->narg   = Zh->calculator->narg;
-  Zh->ncoupl = Zh->calculator->ncoupl;
-  Zh->pn     = Zh->calculator->pn;
+  Zh->m_narg   = Zh->p_calculator->narg;
+  Zh->m_ncoupl = Zh->p_calculator->ncoupl;
+  Zh->m_nprop  = Zh->p_calculator->pn;
 
-  Zh->arg    = NULL;
-  Zh->psnew  = NULL;
+  Zh->p_arguments   = NULL;
+  Zh->p_propagators = NULL;
 
-  if (Zh->narg>0)   Zh->arg = new int[Zh->narg];
-  if (Zh->ncoupl>0) Zh->coupl = new Complex[Zh->ncoupl];
-  if (Zh->pn>0)     Zh->psnew = new Argument[Zh->pn];
+  if (Zh->m_narg>0)   Zh->p_arguments   = new int[Zh->m_narg];
+  if (Zh->m_ncoupl>0) Zh->p_couplings   = new Complex[Zh->m_ncoupl];
+  if (Zh->m_nprop>0)  Zh->p_propagators = new Argument[Zh->m_nprop];
   
   //Set all Couplings Zero
-  for (short int i=0;i<Zh->ncoupl;i++) Zh->coupl[i] = Complex(0.,0.);
+  for (short int i=0;i<Zh->m_ncoupl;i++) Zh->p_couplings[i] = Complex(0.,0.);
 
-  for (short int i=0;i<Zh->calculator->pn;i++) {
+  for (short int i=0;i<Zh->p_calculator->pn;i++) {
     if (lfnumb[i]==pb->number) {
       Set_In(Zh,canumb[i],p,pf,pb);
       break;
     }
   }
 
-    if(Zh->type>=zl::FFT && Zh->type<zl::FFGS)Set_Tensor(Zh,p);
+    if(Zh->m_type>=zl::FFT && Zh->m_type<zl::FFGS)Set_Tensor(Zh,p);
   
   //Special cases
-  int icoupl        = Zh->narg - Zh->calculator->GetScalarNumb();
+  int icoupl        = Zh->m_narg - Zh->p_calculator->GetScalarNumb();
 
-  switch (Zh->type) {
+  switch (Zh->m_type) {
     
   case zl::SSST: break;
   case zl::FFT:
@@ -520,7 +521,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
     break;
   case zl::FFGS:
     Set_FermionProp(Zh,p,pf);
-    Zh->coupl[2]=p->cpl[2];
+    Zh->p_couplings[2]=p->cpl[2];
   case zl::Y:
         if (pf==0) Set_Out(Zh,0,pb,p);
               else Set_In(Zh,0,p,pf,pb);
@@ -541,23 +542,22 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
       Set_In(Zh,1,p,pf,pb);break;
     }
   case zl::Z:Set_Out(Zh,1,pb,p);break;
-  case zl::ZNC:Set_Out(Zh,1,pb,p);break;
   case zl::SSGS:
   case zl::VVGS:
-    Zh->coupl[icoupl] = pb->cpl[0];icoupl++;
+    Zh->p_couplings[icoupl] = pb->cpl[0];icoupl++;
   default:
-    Zh->coupl[icoupl] = pb->cpl[1];icoupl++;
+    Zh->p_couplings[icoupl] = pb->cpl[1];icoupl++;
 
     SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
     SetArgs(Zh,lfnumb,canumb,pb->right,p,icoupl);
     SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
   }
 
-  if(Zh->calculator->GetScalarNumb()>0){
-    int scnt=Zh->calculator->narg - Zh->calculator->GetScalarNumb();
+  if(Zh->p_calculator->GetScalarNumb()>0){
+    int scnt=Zh->p_calculator->narg - Zh->p_calculator->GetScalarNumb();
     if(pb->fl.IsScalar())SetScalarArgs(Zh,scnt,pb);
-    if(Zh->type==zl::FFVGS && pb->fl.IsVector())pb=p;
-    if(Zh->type!=zl::Y && Zh->type!=zl::FFGS){
+    if(Zh->m_type==zl::FFVGS && pb->fl.IsVector())pb=p;
+    if(Zh->m_type!=zl::Y && Zh->m_type!=zl::FFGS){
       SetScalarArgs(Zh,scnt,pb->left);
       SetScalarArgs(Zh,scnt,pb->right);
       SetScalarArgs(Zh,scnt,pb->middle);
@@ -641,18 +641,18 @@ void Zfunc_Generator::SetArgs(Zfunc* Zh,int* lfnumb,int* canumb,Point* pb,Point*
   //if (!pb->fl.IsVector()) return;
 
 
-  for (short int i=0;i<Zh->calculator->pn;i++) {
+  for (short int i=0;i<Zh->p_calculator->pn;i++) {
     if (lfnumb[i]==pb->number) {
       if (pb->number<99 || pb->fl.IsScalar() || pb->m==1) Set_Out(Zh,canumb[i],pb,p);
       else {
 	if  (!pb->left->fl.IsVector() && !pb->right->fl.IsVector()) Set_Out(Zh,canumb[i],pb,p);
 	else {
-	  Zh->coupl[icoupl]                   = pb->cpl[1];icoupl++;
-	  Zh->psnew[abs(canumb[i])].numb      = pb->number;
-	  Zh->psnew[abs(canumb[i])].kfcode    = (pb->fl).Kfcode();
-	  Zh->psnew[abs(canumb[i])].direction = Direction::Outgoing;
+	  Zh->p_couplings[icoupl]                   = pb->cpl[1];icoupl++;
+	  Zh->p_propagators[abs(canumb[i])].numb      = pb->number;
+	  Zh->p_propagators[abs(canumb[i])].kfcode    = (pb->fl).Kfcode();
+	  Zh->p_propagators[abs(canumb[i])].direction = Direction::Outgoing;
 	  if (canumb[i]<0) 
-	    Zh->psnew[abs(canumb[i])].direction = Direction::Incoming;
+	    Zh->p_propagators[abs(canumb[i])].direction = Direction::Incoming;
 	  SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
 	  SetArgs(Zh,lfnumb,canumb,pb->right,p,icoupl);
 	  SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
@@ -668,14 +668,14 @@ void Zfunc_Generator::SetScalarArgs(Zfunc* Zh,int &scnt,Point* pb)
   if (pb==0) return;
   //if (!pb->fl.IsVector()) return;
 
-  if (scnt==Zh->narg) return;
+  if (scnt==Zh->m_narg) return;
 
   if(pb->fl.IsScalar()){
     //cout<<pb->number<<pb->fl<<endl;
-    if  (scnt<Zh->narg)  Zh->arg[scnt]=pb->number;
+    if  (scnt<Zh->m_narg)  Zh->p_arguments[scnt]=pb->number;
     else{
       Zh->Print();
-      cout<<"scnt : "<<scnt<<" Zh->narg : "<<Zh->narg<<endl;
+      cout<<"scnt : "<<scnt<<" Zh->m_narg : "<<Zh->m_narg<<endl;
       cout<<"Error in Zfunc_Generator::SetScalarArgs!"<<endl;
       abort();
     }
@@ -698,67 +698,67 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
   //cout<<"Incoming: "<<number<<" : "<<pb->number<<p->fl<<endl;
   if(p->fl.IsTensor())return;
   int nb=number;
-  if (Zh->type==zl::FFVT||Zh->type==zl::FFVGS)nb--;
-  if (Zh->pn>nb && nb>=0) {
-    Zh->psnew[nb].numb      = pb->number;
-    Zh->psnew[nb].kfcode    = (pb->fl).Kfcode();
-    Zh->psnew[nb].direction = Direction::Incoming;
+  if (Zh->m_type==zl::FFVT||Zh->m_type==zl::FFVGS)nb--;
+  if (Zh->m_nprop>nb && nb>=0) {
+    Zh->p_propagators[nb].numb      = pb->number;
+    Zh->p_propagators[nb].kfcode    = (pb->fl).Kfcode();
+    Zh->p_propagators[nb].direction = Direction::Incoming;
   }
   if (pf!=0) {
     if (pb->m==1) {
       //cout<<"Changing Directions...."<<number<<endl;
-      if (Zh->pn>nb && nb>=0)Zh->psnew[nb].direction = Direction::Outgoing;
+      if (Zh->m_nprop>nb && nb>=0)Zh->p_propagators[nb].direction = Direction::Outgoing;
     }
     if (pb->number<99) {
       if (BS->Sign(pb->number)==1) {
-	if (Zh->pn>nb && nb>=0)Zh->psnew[nb].direction = Direction::Outgoing;
+	if (Zh->m_nprop>nb && nb>=0)Zh->p_propagators[nb].direction = Direction::Outgoing;
       }
     }
 
     if ((p->fl).IsAnti()) {
-      Zh->arg[number*2+1] = p->number;
-      Zh->arg[number*2]   = pf->number;
+      Zh->p_arguments[number*2+1] = p->number;
+      Zh->p_arguments[number*2]   = pf->number;
     }
     else {
-      Zh->arg[number*2]   = p->number;
-      Zh->arg[number*2+1] = pf->number;
+      Zh->p_arguments[number*2]   = p->number;
+      Zh->p_arguments[number*2+1] = pf->number;
     }
-    Zh->coupl[number*2]   = p->cpl[0];
-    Zh->coupl[number*2+1] = p->cpl[1];
+    Zh->p_couplings[number*2]   = p->cpl[0];
+    Zh->p_couplings[number*2+1] = p->cpl[1];
   }
   else {
     if (pb->number<99) {
       if (BS->Sign(pb->number)==-1) {
-	if (Zh->pn>nb && nb>=0) Zh->psnew[nb].direction = Direction::Outgoing;
+	if (Zh->m_nprop>nb && nb>=0) Zh->p_propagators[nb].direction = Direction::Outgoing;
       }
     }
 
     if (p->m==1) {
-      Zh->arg[number*2]   = p->number;
+      Zh->p_arguments[number*2]   = p->number;
       if (!(p->fl).IsTensor()) {
       //Marker for -99
-	Zh->arg[number*2+1] = 99;
-	Zh->coupl[number*2]   = Complex(1.,0.);
-	Zh->coupl[number*2+1] = Complex(1.,0.);
+	Zh->p_arguments[number*2+1] = 99;
+	Zh->p_couplings[number*2]   = Complex(1.,0.);
+	Zh->p_couplings[number*2+1] = Complex(1.,0.);
 	}
 	else {
-	  Zh->arg[number*2+1]   = p->number;
+	  Zh->p_arguments[number*2+1]   = p->number;
 	  }
     }
     else {
       //incoming boson
-      Zh->arg[number*2+1]   = p->number;
+      Zh->p_arguments[number*2+1]   = p->number;
       
       if ((p->fl).IsScalar()) {
-	Zh->arg[number*2]     = p->number;
-	Zh->coupl[number*2]   = Complex(0.,0.);
-	Zh->coupl[number*2+1] = Complex(0.,0.);
+	Zh->p_arguments[number*2]     = p->number;
+	Zh->p_couplings[number*2]   = Complex(0.,0.);
+	Zh->p_couplings[number*2+1] = Complex(0.,0.);
       }
       else {
-	if (p->fl.IsVector() && !AMATOOLS::IsZero(p->fl.Mass())) Zh->arg[number*2] = p->number+20;
-	                                                    else Zh->arg[number*2] = p->number+10+1;
-	Zh->coupl[number*2]   = Complex(1.,0.);
-	Zh->coupl[number*2+1] = Complex(1.,0.);
+	if (p->fl.IsVector() && !AMATOOLS::IsZero(p->fl.Mass())) Zh->p_arguments[number*2] = p->number+20;
+	                                                    else Zh->p_arguments[number*2] = p->number+10+1;
+	Zh->p_couplings[number*2]   = Complex(1.,0.);
+	Zh->p_couplings[number*2+1] = Complex(1.,0.);
       }
     }
   }
@@ -770,62 +770,62 @@ void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
   //setting an outgoing in gauge vertices
   //if(pg->fl.IsTensor())return;
   int nb=number;
-  if (Zh->type==zl::FFVT||Zh->type==zl::FFVGS)nb--;
-  if (Zh->pn>nb && nb>=0) {
-    Zh->psnew[nb].numb      = pg->number;
-    Zh->psnew[nb].kfcode    = (pg->fl).Kfcode();
-    Zh->psnew[nb].direction = Direction::Outgoing;
+  if (Zh->m_type==zl::FFVT||Zh->m_type==zl::FFVGS)nb--;
+  if (Zh->m_nprop>nb && nb>=0) {
+    Zh->p_propagators[nb].numb      = pg->number;
+    Zh->p_propagators[nb].kfcode    = (pg->fl).Kfcode();
+    Zh->p_propagators[nb].direction = Direction::Outgoing;
   }
 
   // old:  if ((pg->fl).IsScalar() && pg->left==0) {
-  if ((pg->fl).IsScalar() && (pg->left==0 || Zh->type==zl::SSV || p!=pg)) {
-    Zh->arg[number*2]     = pg->number;
-    Zh->arg[number*2+1]   = pg->number;
-    Zh->coupl[number*2]   = Complex(0.,0.);
-    Zh->coupl[number*2+1] = Complex(0.,0.);
+  if ((pg->fl).IsScalar() && (pg->left==0 || Zh->m_type==zl::SSV || p!=pg)) {
+    Zh->p_arguments[number*2]     = pg->number;
+    Zh->p_arguments[number*2+1]   = pg->number;
+    Zh->p_couplings[number*2]   = Complex(0.,0.);
+    Zh->p_couplings[number*2+1] = Complex(0.,0.);
   }
   else {
     if (pg->left!=0) {
       if (pg->m==1 && pg!=p) {
-	Zh->arg[number*2]     = pg->number;
+	Zh->p_arguments[number*2]     = pg->number;
 	if (!(pg->fl).IsTensor()) {
 	  //Marker for -99
-	  Zh->arg[number*2+1]   = 99;
+	  Zh->p_arguments[number*2+1]   = 99;
 	  
-	  Zh->coupl[number*2]   = Complex(1.,0.);
-	  Zh->coupl[number*2+1] = Complex(1.,0.);
+	  Zh->p_couplings[number*2]   = Complex(1.,0.);
+	  Zh->p_couplings[number*2+1] = Complex(1.,0.);
 	}
       }
       else {
-	Zh->arg[number*2]     = pg->left->number;
-	Zh->arg[number*2+1]   = pg->right->number;
+	Zh->p_arguments[number*2]     = pg->left->number;
+	Zh->p_arguments[number*2+1]   = pg->right->number;
 	if(pg->middle)if(pg->middle->fl.IsFermion()){
-	  if(!(pg->left->fl.IsFermion())) Zh->arg[number*2]   = pg->middle->number;
-	  if(!(pg->right->fl.IsFermion()))Zh->arg[number*2+1] = pg->middle->number;
+	  if(!(pg->left->fl.IsFermion())) Zh->p_arguments[number*2]   = pg->middle->number;
+	  if(!(pg->right->fl.IsFermion()))Zh->p_arguments[number*2+1] = pg->middle->number;
 	}
-	Zh->coupl[number*2]   = pg->cpl[0];
-	Zh->coupl[number*2+1] = pg->cpl[1];
+	Zh->p_couplings[number*2]   = pg->cpl[0];
+	Zh->p_couplings[number*2+1] = pg->cpl[1];
       }
     }
     else {
-      Zh->arg[number*2]     = pg->number;
+      Zh->p_arguments[number*2]     = pg->number;
       if (BS->Sign(pg->number)==-1) {
-	Zh->arg[number*2+1]     = pg->number;
-	if (pg->fl.IsVector() && !AMATOOLS::IsZero(pg->fl.Mass())) Zh->arg[number*2] = pg->number+20;
-	                                                      else Zh->arg[number*2] = pg->number+10+1;
+	Zh->p_arguments[number*2+1]     = pg->number;
+	if (pg->fl.IsVector() && !AMATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2] = pg->number+20;
+	                                                      else Zh->p_arguments[number*2] = pg->number+10+1;
       }
       else {
-	if (pg->fl.IsVector() && !AMATOOLS::IsZero(pg->fl.Mass())) Zh->arg[number*2+1] = pg->number+20;
-	else Zh->arg[number*2+1] = pg->number+10+1;
+	if (pg->fl.IsVector() && !AMATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2+1] = pg->number+20;
+	else Zh->p_arguments[number*2+1] = pg->number+10+1;
       }
-      Zh->coupl[number*2]   = Complex(1.,0.);
-      Zh->coupl[number*2+1] = Complex(1.,0.);	
+      Zh->p_couplings[number*2]   = Complex(1.,0.);
+      Zh->p_couplings[number*2+1] = Complex(1.,0.);	
     }
   }
 }	
 void Zfunc_Generator::Set_Tensor(Zfunc* Zh,Point* p)
 {
-  if(Zh->type==zl::SSST)cout<<"in Set_Tensor "<<p->left->fl<<p->right->fl<<p->middle->fl<<endl;
+  //if(Zh->m_type==zl::SSST)cout<<"in Set_Tensor "<<p->left->fl<<p->right->fl<<p->middle->fl<<endl;
   Point *pb=p,*pt;
   if(p->fl.IsFermion()){
     if(p->left->fl.IsBoson())pb=p->left;
@@ -842,44 +842,44 @@ void Zfunc_Generator::Set_Tensor(Zfunc* Zh,Point* p)
   }else pb=p;
   if(!(pt->fl.IsTensor()))return;
   cout<<pt->number<<endl;
-  Zh->psnew[Zh->pn-1].numb      = pt->number;
-  Zh->psnew[Zh->pn-1].kfcode    = (pt->fl).Kfcode();
-  Zh->psnew[Zh->pn-1].direction = Direction::Outgoing;
+  Zh->p_propagators[Zh->m_nprop-1].numb      = pt->number;
+  Zh->p_propagators[Zh->m_nprop-1].kfcode    = (pt->fl).Kfcode();
+  Zh->p_propagators[Zh->m_nprop-1].direction = Direction::Outgoing;
   
-  int narg=Zh->narg - Zh->calculator->GetScalarNumb();
-  Zh->arg[narg-2]     = pt->number;
-  Zh->arg[narg-1]     = pt->number;
+  int narg=Zh->m_narg - Zh->p_calculator->GetScalarNumb();
+  Zh->p_arguments[narg-2]     = pt->number;
+  Zh->p_arguments[narg-1]     = pt->number;
   int ic=narg-2;
-  switch(Zh->type){
-    case zl::FFT: Zh->coupl[2]=pb->cpl[2];
+  switch(Zh->m_type){
+    case zl::FFT: Zh->p_couplings[2]=pb->cpl[2];
     case zl::FFVT: ic=0;break;  
   }
-  Zh->coupl[ic]     = pb->cpl[0];
-  Zh->coupl[ic+1]     = pb->cpl[1];  
+  Zh->p_couplings[ic]       = pb->cpl[0];
+  Zh->p_couplings[ic+1]     = pb->cpl[1];  
 }	
 
 void Zfunc_Generator::Set_FermionProp(Zfunc* Zh,Point* p,Point* pf)
 {
-  if(Zh->pn!=3)return;
+  if(Zh->m_nprop!=3)return;
   //cout<<"Fermions:"<<p->fl<<p->fl.IsAnti()<<p->left->fl.IsAnti()<<p->right->fl.IsAnti()<<endl;
   if(pf){
     int i1=1,i2=2;
     if((p->fl).IsAnti()){i1=2;i2=1;}
-    Zh->psnew[i2].numb      = p->number;
-    Zh->psnew[i2].kfcode    = (p->fl).Kfcode();
-    Zh->psnew[i2].direction = Direction::Incoming;
-    if(p->number==0)Zh->psnew[i2].direction = Direction::Outgoing;
-    Zh->psnew[i1].numb      = pf->number;
-    Zh->psnew[i1].kfcode    = (pf->fl).Kfcode();
-    Zh->psnew[i1].direction = Direction::Outgoing;
+    Zh->p_propagators[i2].numb      = p->number;
+    Zh->p_propagators[i2].kfcode    = (p->fl).Kfcode();
+    Zh->p_propagators[i2].direction = Direction::Incoming;
+    if(p->number==0)Zh->p_propagators[i2].direction = Direction::Outgoing;
+    Zh->p_propagators[i1].numb      = pf->number;
+    Zh->p_propagators[i1].kfcode    = (pf->fl).Kfcode();
+    Zh->p_propagators[i1].direction = Direction::Outgoing;
   }
   else{
-    Zh->psnew[2].numb      = p->left->number;
-    Zh->psnew[2].kfcode    = (p->left->fl).Kfcode();
-    Zh->psnew[2].direction = Direction::Outgoing;
-    Zh->psnew[1].numb      = p->right->number;
-    Zh->psnew[1].kfcode    = (p->right->fl).Kfcode();
-    Zh->psnew[1].direction = Direction::Outgoing;
+    Zh->p_propagators[2].numb      = p->left->number;
+    Zh->p_propagators[2].kfcode    = (p->left->fl).Kfcode();
+    Zh->p_propagators[2].direction = Direction::Outgoing;
+    Zh->p_propagators[1].numb      = p->right->number;
+    Zh->p_propagators[1].kfcode    = (p->right->fl).Kfcode();
+    Zh->p_propagators[1].direction = Direction::Outgoing;
   }
 }
 
@@ -913,16 +913,16 @@ void Zfunc_Generator::SetDirection(int N,SpinorDirection* spind)
   short int i,j;
   short int ip,jp;
   ip = jp = -1;
-  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
     Zfunc* z = (*zit);
-    for (int pos=0;pos<(z->narg - z->calculator->GetScalarNumb());pos+=2) {
+    for (int pos=0;pos<(z->m_narg - z->p_calculator->GetScalarNumb());pos+=2) {
       int swchange = 0;
       i = pos;
       int first;
-      if (z->arg[i]<N) {
+      if (z->p_arguments[i]<N) {
 	SpinorDirection* sd = spind;
 	while (sd) {
-	  if (sd->to==z->arg[i]) {
+	  if (sd->to==z->p_arguments[i]) {
 	    first = 1;
 	    swchange = 1;
 	    ip = i;
@@ -935,10 +935,10 @@ void Zfunc_Generator::SetDirection(int N,SpinorDirection* spind)
       }
       if (!swchange) {
 	i=pos+1;
-	if (z->arg[i]<N) {
+	if (z->p_arguments[i]<N) {
 	  SpinorDirection* sd = spind;
 	  while (sd) {
-	    if (sd->from==z->arg[i]) {
+	    if (sd->from==z->p_arguments[i]) {
 	      first = 0;
 	      swchange = 1;
 	      ip = i;
@@ -952,31 +952,31 @@ void Zfunc_Generator::SetDirection(int N,SpinorDirection* spind)
       }
       if (swchange) {
 	//change
-	partner = z->arg[jp];
-	oldp    = z->arg[ip];
+	partner = z->p_arguments[jp];
+	oldp    = z->p_arguments[ip];
 	//
-	h          = z->arg[ip];
-	z->arg[ip] = z->arg[jp];
-	z->arg[jp] = h;
+	h          = z->p_arguments[ip];
+	z->p_arguments[ip] = z->p_arguments[jp];
+	z->p_arguments[jp] = h;
 	if (partner>99) {
 	  //Fermionline
 	  for (;;) {
 	    int end;
-	    for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+	    for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
 	      Zfunc* zh = (*zit);
 	      if (zh!=z) {
 		end = 0;
-		for (int pos2=0;pos2<(zh->narg - zh->calculator->GetScalarNumb());pos2+=2) {
+		for (int pos2=0;pos2<(zh->m_narg - zh->p_calculator->GetScalarNumb());pos2+=2) {
 		  j = pos2;
 		  swchange = 0;
-		  if (zh->arg[j]==partner) {
+		  if (zh->p_arguments[j]==partner) {
 		    if (first==0) {end = 1;break;}
 		    ip = j+1;
 		    swchange = 1;
 		  }
 		  else {
 		    j = pos2+1;
-		    if (zh->arg[j]==partner) {
+		    if (zh->p_arguments[j]==partner) {
 		      if (first==1) {end = 1;break;}
 		      ip = j-1;
 		      swchange = 1;
@@ -984,15 +984,15 @@ void Zfunc_Generator::SetDirection(int N,SpinorDirection* spind)
 		  }
 		  jp = j;
 		  if (swchange) {
-		    if (zh->arg[ip] == oldp) break;
-		    partner = zh->arg[ip];
-		    oldp = zh->arg[jp];
+		    if (zh->p_arguments[ip] == oldp) break;
+		    partner = zh->p_arguments[ip];
+		    oldp = zh->p_arguments[jp];
 		    if (ip>jp) first = 1;
 		          else first = 0; 
 		    
-		    h           = zh->arg[jp];
-		    zh->arg[jp] = zh->arg[ip];
-		    zh->arg[ip] = h;
+		    h           = zh->p_arguments[jp];
+		    zh->p_arguments[jp] = zh->p_arguments[ip];
+		    zh->p_arguments[ip] = h;
 		    break;
 		  }
 		}

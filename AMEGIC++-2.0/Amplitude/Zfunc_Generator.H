@@ -2,16 +2,17 @@
 #define Zfunc_Generator_h
 
 #include "Point.H"
-#include "Zfunc.H"
-#include "Basic_Sfuncs.H"
-#include "String_Generator.H"
-#include "Zfunc_Calc.H"
 #include <vector>
+#include "Zfunc.H"
 
 namespace AMEGIC {
+  class Zfunc_Calc;
+  struct SpinorDirection;
+  class Basic_Sfuncs;
+  class Virtual_String_Generator;
 
   class Zfunc_Generator {
-    std::list<Zfunc*> zlist;
+    Zfunc_List zlist;
     std::vector<Zfunc_Calc*> zcalc;
     Basic_Sfuncs* BS;
     void  Set_In(Zfunc*,int,Point*,Point*,Point*);
@@ -49,8 +50,8 @@ namespace AMEGIC {
     void Convert(Point*);
 
     void SetDirection(int,SpinorDirection*);
-    void Get(std::list<Zfunc*>& _zlist) {
-      for (std::list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) 
+    void Get(Zfunc_List& _zlist) {
+      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) 
 	_zlist.push_back(*zit); 
     }
   };

@@ -7,8 +7,6 @@
 //SUSY
 #include "Model_MSSM.H"
 #include "Model_THDM.H"
-//NC QED
-#include "Model_NC_QED.H"
 //Large Extra Dimensions
 #include "Model_LED.H"
 
@@ -35,7 +33,6 @@ Model* Model_Handler::GetModel()
   case Model_Type::SM       : m = new Model_SM;break;
   case Model_Type::MSSM     : m = new Model_MSSM;break;
   case Model_Type::THDM     : m = new Model_THDM;break;
-  case Model_Type::NCQED    : m = new Model_NC_QED;break;
   case Model_Type::LED      : m = new Model_LED;break;
   default:
     msg.Error()<<"Model does not exist !!!"<<endl;

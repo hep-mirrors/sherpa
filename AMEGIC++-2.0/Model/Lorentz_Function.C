@@ -63,17 +63,6 @@ void Lorentz_Function::InitPermutation()
     AddPermutation( 1,0,1,2);
     AddPermutation(-1,1,0,2);
     break;
-  case lf::Photon3_NC:
-    AddPermutation( 1,0,1,2);
-    AddPermutation(-1,0,2,1);  
-    AddPermutation(-1,1,0,2);
-    AddPermutation(-1,2,1,0);  
-    AddPermutation( 1,1,2,0);
-    AddPermutation( 1,2,0,1);  
-    break;
-  case lf::Photon4_NC:
-    //still to be done
-    break;
   case lf::VVT:
     AddPermutation( 1,0,1,2);
     AddPermutation( 1,1,0,2);

@@ -52,6 +52,7 @@ namespace APHYTOOLS {
     virtual double * ActualValue() {
       AORGTOOLS::msg.Error()<<"Selector_Base::ActualValue :"
 			    <<m_name<<" Virtual method."<<std::endl;
+      return 0;
     }
     virtual void BuildCuts(Cut_Data *) { 
       AORGTOOLS::msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;

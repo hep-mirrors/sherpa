@@ -32,9 +32,9 @@ void Coulomb::Build_Matrix()
     //tops later on
     m = first_ampl;
     while (m) {
-      list<Pfunc*>* pl = m->GetPlist();
+      Pfunc_List* pl = m->GetPlist();
       wcount = 0;
-      for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+      for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
 	Pfunc* p = *pit;
 	if ((p->fl==Flavour(kf::W)) ||  (p->fl==Flavour(kf::W).Bar())) wcount++;
       }
@@ -75,9 +75,9 @@ void Coulomb::Calculate(int* b,Vec4D* mom)
   }
   double mp,mm;
   mp = mm = 0.;
-  list<Pfunc*>* pl = m->GetPlist();
+  Pfunc_List* pl = m->GetPlist();
   Vec4D sump;
-  for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+  for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
     Pfunc* pp = *pit;  
     if (pp->fl==Flavour(kf::W)) {
       sump = Vec4D(0.,0.,0.,0.);

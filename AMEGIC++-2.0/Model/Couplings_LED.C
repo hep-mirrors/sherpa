@@ -109,6 +109,7 @@ Complex Couplings_LED::KKProp(double p2)
   case 5:
     return Complex(-.5/(sqr(Msq())*gn),0.);
   }
+  return Complex(0.,0.);
 }
 
 

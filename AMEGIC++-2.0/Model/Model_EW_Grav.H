@@ -30,7 +30,7 @@ namespace AMEGIC {
       inline double Aqed();
       inline double SinTW()           {return CplEW.SinThetaW();}
       inline double CosTW()           {return CplEW.CosThetaW();}
-      inline double v_0()             {return abs(vev.Value());}
+      inline double v_0()             {return std::abs(vev.Value());}
       inline Spectrum_EW* Get_Spectrum_EW() {return &SpEW;}
       inline Kabbala K_sinTW()        {return Kabbala(std::string("sin\\theta_W"),SinTW());}
       inline Kabbala K_cosTW()        {return Kabbala(std::string("cos\\theta_W"),CosTW());}

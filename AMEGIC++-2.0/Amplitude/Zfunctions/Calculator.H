@@ -1,0 +1,272 @@
+#ifndef Calculator_h
+#define Calculator_h
+
+#include "Zfunc_Calc.H"
+
+namespace AMEGIC {
+  
+  class Y_Calc : public Zfunc_Calc, public Basic_Yfunc {
+  public:
+    Y_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 1; }
+#endif
+    Kabbala Do();
+  };
+
+  class Z_Calc : public Zfunc_Calc, 
+		 public Basic_Zfunc,
+                 public Basic_Xfunc,
+                 public Basic_Mfunc,
+		 public Basic_Vfunc {
+  public:
+    Z_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class VVS_Calc : public Zfunc_Calc, 
+		   public Basic_Zfunc,
+		   public Basic_Xfunc,
+		   public Basic_Mfunc,
+		   public Basic_Vfunc {
+  public:
+    VVS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 1; }
+#endif
+    Kabbala Do();
+  };
+
+class VVSS4_Calc : public Zfunc_Calc, 
+		   public Basic_Zfunc,
+		   public Basic_Xfunc,
+		   public Basic_Mfunc,
+		   public Basic_Vfunc {
+  public:
+    VVSS4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 2; }
+#endif
+    Kabbala Do();
+  };
+
+  class SSV_Calc : public Zfunc_Calc, 
+		   public Basic_Xfunc,
+		   public Basic_Mfunc,
+		   public Basic_Vfunc {
+  public:
+    SSV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class SSS_Calc : public Zfunc_Calc {
+  public:
+    SSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 3; }
+#endif
+    Kabbala Do();
+  };
+  
+  class SSSS_Calc : public Zfunc_Calc {
+  public:
+    SSSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 4; }
+#endif
+    Kabbala Do();
+  };
+
+  class VVSS_Calc : public Zfunc_Calc, 
+		    public Basic_Zfunc,
+		    public Basic_Xfunc,
+		    public Basic_Mfunc,
+		    public Basic_Vfunc {
+  public:
+    VVSS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 2; }
+#endif
+    Kabbala Do();
+  };
+
+  class VVV_Calc : public Zfunc_Calc, 
+		   public Basic_Zfunc,
+		   public Basic_Xfunc,
+		   public Basic_Mfunc,
+		   public Basic_Vfunc {
+    Kabbala GGG();
+  public:
+    VVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class V4_Calc : public Zfunc_Calc, 
+		  public Basic_Zfunc,
+		  public Basic_Xfunc,
+		  public Basic_Mfunc,
+		  public Basic_Vfunc {
+    Kabbala Massless();
+  public:
+    V4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class G4_Calc : public Zfunc_Calc, 
+		  public Basic_Zfunc,
+		  public Basic_Xfunc,
+		  public Basic_Vfunc {
+  public:
+    G4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do(); 
+  };
+
+  class VVVV_Calc : public Zfunc_Calc, 
+		    public Basic_Zfunc,
+		    public Basic_Xfunc,
+		    public Basic_Mfunc,
+		    public Basic_Vfunc {
+    Kabbala GGGG();
+    Kabbala Triple_M1(const int &,const int &,const int &,const int &,const int &);
+    Kabbala Triple_M2(const int &,const int &,const int &,const int &,const int &);
+    Kabbala Double_M1(const int &,const int &,const int &,const int &,const int &);
+    Kabbala Double_M2(const int &,const int &,const int &,const int &,const int &);
+    Kabbala Double_M3(const int &,const int &,const int &,const int &,const int &);
+    Kabbala Single_M (const int &,const int &,const int &,const int &,const int &);
+  public:
+    VVVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class V5_Calc : public Zfunc_Calc, 
+		  public Basic_Zfunc,
+		  public Basic_Xfunc,
+		  public Basic_Mfunc,
+		  public Basic_Vfunc {
+    Kabbala G5();
+    Kabbala ZXXX1(const int&,const int&,const int&,
+		  const int&,const int&,const int&,
+		  const int&);
+    Kabbala ZXXX2(const int&,const int&,const int&,
+		  const int&,const int&,const int&,
+		  const int&);
+    Kabbala ZXXX3(const int&,const int&,const int&,
+		  const int&,const int&,const int&,
+		  const int&);
+  public:
+    V5_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class V4V3_Calc : public Zfunc_Calc, 
+		    public Basic_Zfunc,
+		    public Basic_Xfunc,
+		    public Basic_Vfunc,
+		    public Basic_Mfunc {
+    Kabbala ZXX(const int&,const int&,const int&,const int&);
+    Kabbala G4G3();
+  public:
+    V4V3_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+
+  class FFT_Calc : public Zfunc_Calc, 
+		   public Basic_Yfunc,
+		   public Basic_Xfunc,
+		   public Basic_Vfunc {
+  public:
+    FFT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class VVT_Calc : public Zfunc_Calc, 
+		   public Basic_Zfunc,
+		   public Basic_Xfunc,
+		   public Basic_Vfunc {
+  public:
+    VVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
+    Kabbala Do();
+  };
+
+  class SST_Calc : public Zfunc_Calc, 
+		   public Basic_Vfunc {
+  public:
+    SST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
+    Kabbala Do();
+  };
+
+  class FFVT_Calc : public Zfunc_Calc, 
+		    public Basic_Xfunc,
+		    public Basic_Zfunc,
+		    public Basic_Mfunc,
+		    public Basic_Vfunc {
+  public:
+    FFVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class VVVT_Calc : public Zfunc_Calc, 
+		   public Basic_Zfunc,
+		   public Basic_Xfunc,
+		   public Basic_Vfunc {
+  public:
+    VVVT_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class SSST_Calc : public Zfunc_Calc, 
+		   public Basic_Vfunc {
+  public:
+    SSST_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 3; }
+#endif
+    Kabbala Do();
+  };
+
+  class FFGS_Calc : public Zfunc_Calc, 
+		   public Basic_Yfunc,
+		   public Basic_Xfunc {
+  public:
+    FFGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+#ifdef Scalar_Args
+    int GetScalarNumb() {return 1;}
+#endif
+    Kabbala Do();
+  };
+
+  class VVGS_Calc : public Zfunc_Calc, 
+		   public Basic_Zfunc,
+		   public Basic_Xfunc,
+		   public Basic_Vfunc {
+  public:
+    VVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    Kabbala Do();
+  };
+
+  class SSGS_Calc : public Zfunc_Calc, 
+		   public Basic_Vfunc {
+  public:
+    SSGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+#ifdef Scalar_Args
+    int GetScalarNumb() {return 1;} 
+#endif
+    Kabbala Do();
+  };
+  
+  class FFVGS_Calc : public Zfunc_Calc, 
+		     public Basic_Zfunc,
+		     public Basic_Xfunc,
+		     public Basic_Mfunc,
+		     public Basic_Vfunc {
+  public:
+    FFVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS); 
+#ifdef Scalar_Args
+    int GetScalarNumb() {return 1;}
+#endif
+    Kabbala Do();
+  };
+
+}
+#endif

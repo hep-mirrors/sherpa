@@ -1,6 +1,7 @@
 #include "Basic_Func.H"
+#include "Basic_Sfuncs.H"
 #include "String_Generator.H"
-#include "Run_Parameter.H"
+//#include "Run_Parameter.H"
 
 using namespace AMEGIC;
 using namespace APHYTOOLS;
@@ -18,19 +19,14 @@ Kabbala Basic_MassTermfunc::MassTerm(int a)
   }
 
   Pfunc* p1;
-  for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+  for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
     p1 = *pit;
     if (p1->arg[0]==iabs(a)) break;
   }
 
   double mass = (p1->fl).Mass();
 
-  if (AMATOOLS::IsZero(mass)) 
-#ifdef Kabbala_on
-    return Kabbala(string("1"),Complex(1.,0.));
-#else
-    return Complex(1.,0.);
-#endif    
+  if (AMATOOLS::IsZero(mass)) return Kabbala(string("1"),Complex(1.,0.));
 
   return sgen->Get_Massnumber(Sign(a)*p1->momnum,p1->fl,MassTermCalc(Sign(a)*p1->momnum,p1->fl));
 }

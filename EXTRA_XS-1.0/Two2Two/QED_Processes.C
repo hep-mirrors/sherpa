@@ -36,7 +36,7 @@ QED_Processes::QED_Processes(int initflag) :
   }
 }
 
-void QED_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Spectra_Handler * beam,
+void QED_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
 			       APHYTOOLS::Selector_Data * _seldata, AMEGIC::Process_Group * _broker)
 {
   fl[nin+0] = APHYTOOLS::Flavour(kf::quark);

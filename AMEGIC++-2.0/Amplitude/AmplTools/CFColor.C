@@ -201,8 +201,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	      cm1 = m1->Get_CFlist();
 	      //cm1=cm2 ??
 	      int hit = 1;
-	      int count1 = 0;
-	      int count2 = 0;
 	      int hit2 = 0;
 	      while (cm1) {
 		cm2 = m2->Get_CFlist();

@@ -89,10 +89,10 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   for (;;) {
     if (p_sud->Dice(mo)) {
       // update E2
-      msg.Debugging()<<" old (E2,t) = "<<mo->E2<<","<<mo->t<<endl;
+      msg.Debugging()<<" old (E2,t) = "<<mo->E2<<","<<mo->t<<std::endl;
       double test_e4  =((1./z-1.)*sprime - mo->t)/(2.*sqrt(sprime));
       mo->E2=sqr(test_e4);
-      msg.Debugging()<<" new (E2,t) = "<<mo->E2<<","<<mo->t<<endl;
+      msg.Debugging()<<" new (E2,t) = "<<mo->E2<<","<<mo->t<<std::endl;
 
       // init daughters
       flavs[0]  = p_sud->GetFlB();
@@ -484,7 +484,7 @@ bool  Final_State_Shower::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
 
 bool  Final_State_Shower::ExtraJetCheck() {
   bool test=1;
-  //  cout<<" (A) "<<m_ini_partons.size()<<endl;
+  //  msg.Out<<" (A) "<<m_ini_partons.size()<<std::endl;
   for (int i=0;i<m_ini_partons.size()-1;++i) {
     for (int j=i+1;j<m_ini_partons.size();++j) {
       test=test & p_kin->ExtraJetCheck(0,m_ini_partons[i],m_ini_partons[j]);

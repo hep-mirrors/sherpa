@@ -22,9 +22,6 @@ namespace AMEGIC {
 	       Pol    =10,
 	       VVSS   =11,//the generic interaction of 2 vectors and 2 scalars (Gab)
 	       SSSS   =12,//the generic interaction of 4 scalars
-	       Gamma_NC   = 51,
-	       Photon3_NC = 53,
-	       Photon4_NC = 55,
 	       FFT    =60,
 	       VVT    =61,
 	       SST    =62,
@@ -76,9 +73,6 @@ namespace AMEGIC {
       case lf::SSV   : return 3;	
       case lf::Pol   : return 1;	
       case lf::VVSS  : return 2;	
-      case lf::Gamma_NC   : return 1;
-      case lf::Photon3_NC : return 3;
-      case lf::Photon4_NC : return 4;
       case lf::FFT   : return 1;
       case lf::VVT   : return 3;
       case lf::SST   : return 3;
@@ -177,54 +171,7 @@ namespace AMEGIC {
 	  help += std::string("G[")  + Str(2) + std::string(",") + Str(1) + std::string("])");
 	}
 	break;
-      case lf::Gamma_NC:  
-	// Gam_NC[0]
-	help  = std::string("Exp[") + Str(0) + std::string("]*");
-	help += std::string("Gam[") + Str(0) + std::string("]");break;
-      case lf::Photon3_NC: 
-	// (P[0,2]-P[1,2])*G(0,1)+(P[1,0]-P[2,0])*G(1,2)+(P[2,1]-P[0,1])*G(2,0)
-	if (shortversion) {
-	  help += std::string("P3NC[") + Str(0) + std::string(",") + 
-	                            Str(1) + std::string(",") + 
-                                    Str(2) + std::string("]");
-	}
-	else {
-	  help  = std::string("Sin[p") + Str(0) + std::string("^") + Str(1) +std::string("]*(");
-
-	  help += std::string("(P[") + Str(0) + std::string(",") + Str(2) + std::string("]-");
-	  help += std::string("P[")  + Str(1) + std::string(",") + Str(2) + std::string("])*");
-	  help += std::string("G[")  + Str(0) + std::string(",") + Str(1) + std::string("]");
-	  
-	  help += std::string("+");
-	  
-	  help += std::string("(P[") + Str(1) + std::string(",") + Str(0) + std::string("]-");
-	  help += std::string("P[")  + Str(2) + std::string(",") + Str(0) + std::string("])*");
-	  help += std::string("G[")  + Str(1) + std::string(",") + Str(2) + std::string("]");
-	  
-	  help += std::string("+");
-	  
-	  help += std::string("(P[") + Str(2) + std::string(",") + Str(1) + std::string("]-");
-	  help += std::string("P[")  + Str(0) + std::string(",") + Str(1) + std::string("])*");
-	  help += std::string("G[")  + Str(2) + std::string(",") + Str(0) + std::string("])");
-	}
-	break;
-      case lf::Photon4_NC:
-	//G(0,1)*G(2,3)-G(0,3)*G(2,1)
-	if (shortversion) {
-	  help += std::string("P4NC[") + Str(0) + std::string(",") + 
-	                            Str(1) + std::string(",") + 
-	                            Str(2) + std::string(",") + 
-                                    Str(3) + std::string("]");
-	}
-	else {
-	  //still to be done
-	  help  = std::string("(G[")  + Str(0) + std::string(",") + Str(1) + std::string("]*");
-	  help += std::string("G[")  + Str(2) + std::string(",") + Str(3) + std::string("]-");
-	  help += std::string("G[")  + Str(0) + std::string(",") + Str(3) + std::string("]*");
-	  help += std::string("G[")  + Str(2) + std::string(",") + Str(1) + std::string("])");
-	}
-	break;
-      case lf::FFT:
+       case lf::FFT:
 	help = std::string("FFT[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
       case lf::FFVT:
 	help = std::string("FFVT[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;

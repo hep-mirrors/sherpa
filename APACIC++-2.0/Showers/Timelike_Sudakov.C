@@ -107,7 +107,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
 
   while (m_ta>tend) {
     //    if (last_veto==0 || last_veto==7) {
-    if (m_mass_scheme == 2) m_ta -= mother->tout;
+    if (m_mass_scheme >= 2) m_ta -= mother->tout;
     if (m_pt_scheme == 2 ) {
       z0 = 1. / ( 1. + m_ta/m_t0) ;
     }
@@ -124,7 +124,10 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
 
     ProduceT();
 
-    if (m_ta+mother->tout<tend) {
+    int test_mass=0;
+    if ((m_mass_scheme >= 2) && (m_ta+mother->tout<tend)) test_mass=1;
+    if ((m_mass_scheme < 2) && (m_ta<tend)) test_mass=1;
+    if (test_mass) {
       msg.Debugging()<<"Timelike_Sudakov::No Branch for ("<<mother->kn_no<<"), "<<m_inflav
 		     <<", set on t="<<mother->tout
 		     <<"  fl="<<mother->part->Flav()<<"  mfl="<<mother->part->Flav().PSMass()<<std::endl;
@@ -154,7 +157,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
 	if (!Veto(mother)) {
 	  msg.Debugging()<<"Timelike_Sudakov::Dice Branch with t="<<m_ta<<", z="<<m_z<<", ("
 			 <<GetFlB()<<","<<GetFlC()<<"), tend="<<tend<<std::endl;      
-	  if (m_mass_scheme == 2) m_ta += mother->tout;
+	  if (m_mass_scheme >= 2) m_ta += mother->tout;
 	  UniformPhi();
 	  mother->z      = m_z;
 	  mother->t      = m_ta;
@@ -266,7 +269,7 @@ bool Timelike_Sudakov::MassVeto()
     return 1;
   }
 
-  double w1 = GetWeight(m_z,m_pt2,(m_mass_scheme==1));
+  double w1 = GetWeight(m_z,m_pt2,(m_mass_scheme==1 || m_mass_scheme==3));
   if (w1<ran.Get()) {
     //    cout<<"weight="<<w1<<endl;
     return 1;

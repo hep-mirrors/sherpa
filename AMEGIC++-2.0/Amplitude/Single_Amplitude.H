@@ -6,13 +6,9 @@
 #include "Topology.H"
 #include "Basic_Sfuncs.H"
 #include "Zfunc.H"
-#include "Prop_Generator.H"
-#include "Color_Generator.H"
 #include "String_Handler.H"
-#include "String_Tree.H"
 #include "Color_Function.H"
 
-#include "Amplitude_Base.H"
 #include "Single_Amplitude_Base.H"
 
 namespace AMEGIC {

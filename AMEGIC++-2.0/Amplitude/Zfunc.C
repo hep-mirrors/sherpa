@@ -1,4 +1,6 @@
 #include "Zfunc.H"
+#include "Pfunc.H"
+#include "Zfunc_Calc.H"
 #include "Message.H"
 
 using namespace AMEGIC;
@@ -7,21 +9,85 @@ using namespace std;
 
 #define new_calc
 
+Zfunc::Zfunc() 
+{
+  p_equal  = this;
+  m_narg   = 0;
+  m_ncoupl = 0;
+  m_nprop  = 0;
+}
+
+Zfunc::Zfunc(const Zfunc& z) 
+{
+  m_narg   = 0;
+  m_ncoupl = 0;
+  m_nprop  = 0;
+  *this = z;
+}
+ 
+Zfunc::~Zfunc() {
+  if (m_narg!=0)   delete[] p_arguments;
+  if (m_ncoupl!=0) delete[] p_couplings;
+  if (m_nprop!=0)  delete[] p_propagators;
+  for (CL_Iterator clit=m_calclist.begin();clit!=m_calclist.end();++clit) delete[] (*clit).p_args;
+}
+    	
+Zfunc& Zfunc::operator=(const Zfunc& z) {
+  if (this!=&z) {
+    if (m_narg!=0)   delete[] p_arguments;
+    if (m_ncoupl!=0) delete[] p_couplings;
+    if (m_nprop!=0)  delete[] p_propagators;
+    
+    m_type   = z.m_type;
+    m_narg   = z.m_narg;
+    m_ncoupl = z.m_ncoupl;
+    m_nprop  = z.m_nprop;
+    
+    if (m_narg>0) {
+      p_arguments = new int[m_narg];
+      for (int i=0;i<m_narg;i++) p_arguments[i] = z.p_arguments[i];
+    }
+    if (m_ncoupl>0) {
+      p_couplings = new Complex[m_ncoupl];
+      for (int i=0;i<m_ncoupl;i++) p_couplings[i] = z.p_couplings[i];
+    }
+    if (m_nprop>0) {
+      p_propagators = new Argument[m_nprop];
+      for (int i=0;i<m_nprop;i++) p_propagators[i] = z.p_propagators[i];
+    }
+    
+    m_sign   = z.m_sign;
+    m_str    = z.m_str;
+    
+    for (CL_Iterator clit=m_calclist.begin();clit!=m_calclist.end();++clit) delete[] (*clit).p_args;
+    m_calclist.clear();
+
+    for (Calc_List::const_iterator clit=z.m_calclist.begin();clit!=z.m_calclist.end();++clit) {
+      int* newargs = new int[2*m_narg];
+      for (int j=0;j<2*m_narg;j++) newargs[j] = (*clit).p_args[j];
+      m_calclist.push_back(CValue(newargs,(*clit).m_value));
+    }
+    
+    p_equal      = z.p_equal;
+    p_calculator = z.p_calculator;
+  }
+  return *this;
+}
 
 void Zfunc::ReplaceProp(vector<Pair>* pairlist)
 {
-  for(int i=0;i<narg;i++){
+  for(int i=0;i<m_narg;i++){
     for (int k=0;k<pairlist->size();k++) {
-      if ((*pairlist)[k].pold==arg[i]) {
-	arg[i] = (*pairlist)[k].pnew;
+      if ((*pairlist)[k].pold==p_arguments[i]) {
+	p_arguments[i] = (*pairlist)[k].pnew;
 	break;
       }
     }
   }
-  for (int i=0;i<pn;i++) {
+  for (int i=0;i<m_nprop;i++) {
     for (int k=0;k<pairlist->size();k++) {
-      if ((*pairlist)[k].pold==psnew[i].numb) {
-	psnew[i].numb = (*pairlist)[k].pnew;
+      if ((*pairlist)[k].pold==p_propagators[i].numb) {
+	p_propagators[i].numb = (*pairlist)[k].pnew;
 	break;
       }
     }
@@ -30,234 +96,239 @@ void Zfunc::ReplaceProp(vector<Pair>* pairlist)
 
 void Zfunc::ClearCalcList()
 {
-  if (!value.empty()) {
-    value.clear();
-    for (int i=0;i<calclist.size();i++) {
-      delete[] calclist[i];
-    }
-    calclist.clear();
+  if (!m_calclist.empty()){
+    for (CL_Iterator clit=m_calclist.begin();clit!=m_calclist.end();++clit) delete[] (*clit).p_args;
+    m_calclist.clear();
   }
 }
 
 void Zfunc::Print() 
 {
-  msg.Out()<<"Z(["<<type<<"],";
+  msg.Out()<<"Z(["<<m_type<<"],";
   msg.Out()<<"[";
-  for (int i=0;i<narg-1;i++) msg.Out()<<arg[i]<<";";
+  for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";
   
-  if (narg>0) msg.Out()<<arg[narg-1];
+  if (m_narg>0) msg.Out()<<p_arguments[m_narg-1];
   msg.Out()<<"][";
   msg.Out().precision(2);
-  for (int i=0;i<ncoupl-1;i++) {
-    if ( !AMATOOLS::IsZero(real(coupl[i])) &&
-	    AMATOOLS::IsZero(imag(coupl[i])) )
-      msg.Out()<<real(coupl[i])<<";";
-    if (  AMATOOLS::IsZero(real(coupl[i])) &&
-	  !AMATOOLS::IsZero(imag(coupl[i])) )
-      msg.Out()<<imag(coupl[i])<<" I;";
-    if ( !AMATOOLS::IsZero(real(coupl[i])) &&
-	 !AMATOOLS::IsZero(imag(coupl[i])) )
-      msg.Out()<<real(coupl[i])<<"+"<<imag(coupl[i])<<" I;";
-    if (  AMATOOLS::IsZero(real(coupl[i])) &&
-	  AMATOOLS::IsZero(imag(coupl[i])) )
+  for (int i=0;i<m_ncoupl-1;i++) {
+    if ( !AMATOOLS::IsZero(real(p_couplings[i])) &&
+	    AMATOOLS::IsZero(imag(p_couplings[i])) )
+      msg.Out()<<real(p_couplings[i])<<";";
+    if (  AMATOOLS::IsZero(real(p_couplings[i])) &&
+	  !AMATOOLS::IsZero(imag(p_couplings[i])) )
+      msg.Out()<<imag(p_couplings[i])<<" I;";
+    if ( !AMATOOLS::IsZero(real(p_couplings[i])) &&
+	 !AMATOOLS::IsZero(imag(p_couplings[i])) )
+      msg.Out()<<real(p_couplings[i])<<"+"<<imag(p_couplings[i])<<" I;";
+    if (  AMATOOLS::IsZero(real(p_couplings[i])) &&
+	  AMATOOLS::IsZero(imag(p_couplings[i])) )
       msg.Out()<<"0;";
   }
-  if ( !AMATOOLS::IsZero(real(coupl[ncoupl-1])) &&
-       AMATOOLS::IsZero(imag(coupl[ncoupl-1])) )
-      msg.Out()<<real(coupl[ncoupl-1])<<"])";
-  if (  AMATOOLS::IsZero(real(coupl[ncoupl-1])) &&
-	!AMATOOLS::IsZero(imag(coupl[ncoupl-1])) )
-    msg.Out()<<imag(coupl[ncoupl-1])<<" I])";
-  if ( !AMATOOLS::IsZero(real(coupl[ncoupl-1])) &&
-       !AMATOOLS::IsZero(imag(coupl[ncoupl-1])) )
-    msg.Out()<<real(coupl[ncoupl-1])<<"+"<<imag(coupl[ncoupl-1])<<" I])";
-  if (  AMATOOLS::IsZero(real(coupl[ncoupl-1])) &&
-	AMATOOLS::IsZero(imag(coupl[ncoupl-1])) )
+  if ( !AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
+       AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+      msg.Out()<<real(p_couplings[m_ncoupl-1])<<"])";
+  if (  AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
+	!AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+    msg.Out()<<imag(p_couplings[m_ncoupl-1])<<" I])";
+  if ( !AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
+       !AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+    msg.Out()<<real(p_couplings[m_ncoupl-1])<<"+"<<imag(p_couplings[m_ncoupl-1])<<" I])";
+  if (  AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
+	AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
 	msg.Out()<<"0])";
   msg.Out()<<endl;
   msg.Out().precision(6);
 }
 
-Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,list<Pfunc*>* pl)
+
+
+
+Zfunc_Group::Zfunc_Group(const Zfunc& z) : Zfunc(z) 
 {
-  int n99=0;                    //Marker 99
-  int i1=0;
-  for(int i=0;i<z1.narg;i++){
-    if (z1.arg[i]==si) i1++;
-    if (z1.arg[i]==99) n99++;   //polarisation dummys not needed in Zfunc_Group
+  m_op = '+';
+  if (m_nprop!=0) delete[] p_propagators;
+  m_nprop = 0;
+  p_equal = this;
+}
+
+Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl)
+{
+  int n99 = 0;                    //Marker 99
+  int i1  = 0;
+  for(int i=0;i<z1.m_narg;i++){
+    if (z1.p_arguments[i]==si) i1++;
+    if (z1.p_arguments[i]==99) n99++;   //polarisation dummys not needed in Zfunc_Group
   }
-  int i2=0;
-  for(int i=0;i<z2.narg;i++){
-    if (z2.arg[i]==si) i2++;
-    if (z2.arg[i]==99) n99++;
+  int i2  = 0;
+  for(int i=0;i<z2.m_narg;i++){
+    if (z2.p_arguments[i]==si) i2++;
+    if (z2.p_arguments[i]==99) n99++;
   }
-  if((i1==0&&i2>0) || (i2==0&&i1>0)){
+  if ( (i1==0&&i2>0) || (i2==0&&i1>0) ) {
     msg.Error()<<"Error in Zfunc_Group(Z*Z-Constructor): sum index"<<endl;
     abort();
   }
 
-  type   = zl::Unknown;
-  narg   = z1.narg + z2.narg - i1 - i2 - n99;
-  ncoupl = z1.ncoupl+z2.ncoupl;
-  pn=0;
+  m_type   = zl::Unknown;
+  m_narg   = z1.m_narg   + z2.m_narg - i1 - i2 - n99;
+  m_ncoupl = z1.m_ncoupl + z2.m_ncoupl;
+  m_nprop  = 0;
 
-  int ii=0;
-  if(narg>0){
-    arg = new int[narg];
-    while (ii<narg) {
-      for (int i=0;i<z1.narg;i++) 
-	if( z1.arg[i]!=si && z1.arg[i]!=99 ){
-	  arg[ii] = z1.arg[i];
+  int ii = 0;
+  if (m_narg>0) {
+    p_arguments = new int[m_narg];
+    while (ii<m_narg) {
+      for (int i=0;i<z1.m_narg;i++) 
+	if ( z1.p_arguments[i]!=si && z1.p_arguments[i]!=99 ){
+	  p_arguments[ii] = z1.p_arguments[i];
 	  ii++;
 	}
-      for (int i=0;i<z2.narg;i++) 
-	if( z2.arg[i]!=si && z2.arg[i]!=99 ){
-	  arg[ii] = z2.arg[i];
+      for (int i=0;i<z2.m_narg;i++) 
+	if( z2.p_arguments[i]!=si && z2.p_arguments[i]!=99 ){
+	  p_arguments[ii] = z2.p_arguments[i];
 	  ii++;
 	}
     }
   }
 
-  if(z1.GetOp()=='*')pn+=z1.pn;
-  if(z1.GetOp()==0){
-    for(int i=0;i<z1.pn;i++){
-      for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+  if (z1.GetOp()=='*') m_nprop += z1.m_nprop;
+  if (z1.GetOp()==0) {
+    for (int i=0;i<z1.m_nprop;i++){
+      for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
 	Pfunc*  p = *pit;
-	if (p->arg[0]==z1.psnew[i].numb && p->on==0){
-	  pn++;
+	if (p->arg[0]==z1.p_propagators[i].numb && p->on==0){
+	  m_nprop++;
 	  break;
 	}
       } 
     }
   }
-  int k=pn;
+  int k = m_nprop;
 
-  if(z2.GetOp()=='*')pn+=z2.pn;
-  if(z2.GetOp()==0){
-    for(int i=0;i<z2.pn;i++){
-      for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+  if (z2.GetOp()=='*') m_nprop += z2.m_nprop;
+  if (z2.GetOp()==0) {
+    for (int i=0;i<z2.m_nprop;i++){
+      for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
 	Pfunc*  p = *pit;
-	if (p->arg[0]==z2.psnew[i].numb && p->on==0){
-	  pn++;
+	if (p->arg[0]==z2.p_propagators[i].numb && p->on==0){
+	  m_nprop++;
 	  break;
 	}
       } 
     }
   }
 
-  pn++;
+  m_nprop++;
 
-  if (pn>0) {
-    psnew = new Argument[pn];
-    if((z1.GetOp()=='*')&&(z1.pn>0)){
-      for (int i=0;i<k;i++) psnew[i] = z1.psnew[i];
-      k=z1.pn;
-      delete[] z1.psnew;
-      z1.pn=0;
+  if (m_nprop>0) {
+    p_propagators = new Argument[m_nprop];
+    if ( (z1.GetOp()=='*') && (z1.m_nprop>0) ) { 
+      for (int i=0;i<k;i++) p_propagators[i] = z1.p_propagators[i];
+      k = z1.m_nprop;
+      delete[] z1.p_propagators;
+      z1.m_nprop = 0;
     }
-    if(z1.GetOp()==0){
-      int j=0;
-      for(int i=0;i<z1.pn;i++){
-	for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+    if (z1.GetOp()==0) {
+      int j = 0;
+      for (int i=0;i<z1.m_nprop;i++) {
+	for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
 	  Pfunc*  p = *pit;
-	  if (p->arg[0]==z1.psnew[i].numb && p->on==0){
-	    psnew[j] = z1.psnew[i];
+	  if (p->arg[0]==z1.p_propagators[i].numb && p->on==0){
+	    p_propagators[j] = z1.p_propagators[i];
 	    j++;
 	    break;
 	  }
 	} 
       }
     }
-    if((z2.GetOp()=='*')&&(z2.pn>0)){
-      for (int i=0;i<z2.pn;i++) psnew[i+k] = z2.psnew[i];
-      delete[] z2.psnew;
-      z2.pn=0;      
+    if ( (z2.GetOp()=='*') && (z2.m_nprop>0) ) {
+      for (int i=0;i<z2.m_nprop;i++) p_propagators[i+k] = z2.p_propagators[i];
+      delete[] z2.p_propagators;
+      z2.m_nprop = 0;      
     }
-    if(z2.GetOp()==0){
-      int j=k;
-      for(int i=0;i<z2.pn;i++){
-	for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
+    if (z2.GetOp()==0) {
+      int j = k;
+      for (int i=0;i<z2.m_nprop;i++){
+	for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
 	  Pfunc*  p = *pit;
-	  if (p->arg[0]==z2.psnew[i].numb && p->on==0){
-	    psnew[j] = z2.psnew[i];
+	  if (p->arg[0]==z2.p_propagators[i].numb && p->on==0){
+	    p_propagators[j] = z2.p_propagators[i];
 	    j++;
 	    break;
 	  }
 	} 
       }
     }
-    psnew[pn-1].numb=si;
+    p_propagators[m_nprop-1].numb = si;
   }
 	
-  if(ncoupl>0){
-    coupl = new Complex[ncoupl];
-    for (int i=0;i<z1.ncoupl;i++) coupl[i] = z1.coupl[i];
-    for (int i=z1.ncoupl;i<z1.ncoupl+z2.ncoupl;i++) coupl[i] = z2.coupl[i-z1.ncoupl];
+  if (m_ncoupl>0) {
+    p_couplings = new Complex[m_ncoupl];
+    for (int i=0;i<z1.m_ncoupl;i++) p_couplings[i] = z1.p_couplings[i];
+    for (int i=z1.m_ncoupl;i<z1.m_ncoupl+z2.m_ncoupl;i++) p_couplings[i] = z2.p_couplings[i-z1.m_ncoupl];
   }
 
-  Equal      = this;
-  sign=1;
-  sumindex = si;
-  op='*';
-  zlist.push_back(&z1);
-  zsign.push_back(1);
-  zlist.push_back(&z2);
-  zsign.push_back(1);
- //z1.Print();
-  //z2.Print();
-  //Print();
+  p_equal = this;
+  m_sign     = 1;
+  m_sumindex = si;
+  m_op       = '*';
+  m_zlist.push_back(&z1);
+  m_zsigns.push_back(1);
+  m_zlist.push_back(&z2);
+  m_zsigns.push_back(1);
 }
 
 
 void Zfunc_Group::ReplaceProp(vector<Pair>* pairlist)
 {
   for (int k=0;k<pairlist->size();k++) {
-    if ((*pairlist)[k].pold==sumindex) {
-      sumindex = (*pairlist)[k].pnew;
+    if ((*pairlist)[k].pold==m_sumindex) {
+      m_sumindex = (*pairlist)[k].pnew;
       break;
     }
   }
   Zfunc::ReplaceProp(pairlist);
-  for(int i=0;i<zlist.size();i++) zlist[i]->ReplaceProp(pairlist);
+  for (int i=0;i<m_zlist.size();i++) m_zlist[i]->ReplaceProp(pairlist);
 }
 
 void Zfunc_Group::ClearCalcList()
 {
   Zfunc::ClearCalcList();
-  for(int i=0;i<zlist.size();i++) zlist[i]->ClearCalcList();
+  for (int i=0;i<m_zlist.size();i++) m_zlist[i]->ClearCalcList();
 }
 
 void Zfunc_Group::Print() 
 {
-  msg.Out()<<"SZ(["<<type<<"],";
+  msg.Out()<<"SZ(["<<m_type<<"],";
   msg.Out()<<"[";
-  for (int i=0;i<narg-1;i++) msg.Out()<<arg[i]<<";";
+  for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";
   
-  if (narg>0) msg.Out()<<arg[narg-1];
+  if (m_narg>0) msg.Out()<<p_arguments[m_narg-1];
   msg.Out()<<"])";
   msg.Out()<<endl;
 
-  if(op=='+'){  
-    for (int i=0;i<zlist.size();i++) {
-      if (zsign[i]==-1) {
-	cout<<"   - "<<zlist[i]->psnew[0].numb<<" * ";zlist[i]->Print();
+  if (m_op=='+'){  
+    for (int i=0;i<m_zlist.size();i++) {
+      if (m_zsigns[i]==-1) {
+	msg.Out()<<"   - "<<m_zlist[i]->p_propagators[0].numb<<" * ";m_zlist[i]->Print();
       }
       else {
-	if (zlist[i]->psnew!=NULL) {
-	  cout<<"   + "<<zlist[i]->psnew[0].numb<<" * ";
-	  zlist[i]->Print();
+	if (m_zlist[i]->p_propagators!=NULL) {
+	  msg.Out()<<"   + "<<m_zlist[i]->p_propagators[0].numb<<" * ";
+	  m_zlist[i]->Print();
 	}
 	else {
-	  cout<<" ??? "<<" * ";zlist[i]->Print();
+	  msg.Out()<<" ??? "<<" * ";m_zlist[i]->Print();
 	}
       }
     }
   }
-  if(op=='*'){
-    for (int i=0;i<zlist.size();i++) {
-      if(i>0)cout<<"  *";else cout<<" ->";
-      zlist[i]->Print();
+  if (m_op=='*'){
+    for (int i=0;i<m_zlist.size();i++) {
+      if (i>0) msg.Out()<<"  *";else msg.Out()<<" ->";
+      m_zlist[i]->Print();
     }
-    cout<<"Sum over "<<sumindex<<endl;
+    msg.Out()<<"Sum over "<<m_sumindex<<endl;
   }  
 }

@@ -100,6 +100,7 @@ namespace APHYTOOLS {
 
     virtual Primitive_Observable_Base * GetCopy() {
       AORGTOOLS::msg.Error()<<"Error in Primitive_Observable_Base::GetCopy."<<std::endl;
+      return 0;
     }
 
     virtual void Output(std::string pname) {

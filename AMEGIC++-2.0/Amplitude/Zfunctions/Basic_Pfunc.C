@@ -1,6 +1,7 @@
 #include "Basic_Func.H"
+#include "Basic_Sfuncs.H"
 #include "String_Generator.H"
-#include "Run_Parameter.H"
+//#include "Run_Parameter.H"
 #include "Couplings_LED.H"
 #include "MathTools.H"
 
@@ -16,10 +17,10 @@ Kabbala Basic_Pfunc::P(Pfunc* p1)
 }
 
 
-Complex Basic_Pfunc::Pcalc(const Flavour& fl,const int& a)
+Complex Basic_Pfunc::Pcalc(const Flavour& fl,const int a)
 { return Propagator((BS->Momentum(a)).Abs2(),fl);}
 
-Complex Basic_Pfunc::Pcalc(const int& fl,const int& a)
+Complex Basic_Pfunc::Pcalc(const int fl,const int a)
 { return Pcalc(Flavour(kf::code(fl)),a);}
 
 Complex Basic_Pfunc::Propagator(double p2,Flavour fl)

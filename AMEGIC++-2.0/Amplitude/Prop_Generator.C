@@ -1,4 +1,7 @@
 #include "Prop_Generator.H"
+#include "Pfunc.H"
+#include "Zfunc.H"
+#include "Point.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 
@@ -62,7 +65,7 @@ void Prop_Generator::Fill()
   int sw1;
   for (;;) {
     sw1 = 1;
-    for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
+    for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) {
       Pfunc* p = *pit;
       for (int i=1;i<p->argnum;i++) {
 	if (p->arg[i]>99) {
@@ -71,7 +74,7 @@ void Prop_Generator::Fill()
 	  harg = new int[p->argnum];
 	  for (int j=0;j<p->argnum;j++) harg[j] = p->arg[j];
 	  Pfunc* ph;
-	  for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
+	  for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) {
 	    ph = *pit;
 	    if (ph->arg[0]==harg[i]) break;
 	  }
@@ -90,18 +93,18 @@ void Prop_Generator::Fill()
   }
 }
 
-void Prop_Generator::Kill(list<Zfunc*>& zlist) 
+void Prop_Generator::Kill(Zfunc_List& zlist) 
 {
   //neglect props without sum
 
-  for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
+  for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) {
     Pfunc* p = *pit;
     int sw1 = 1;
     //if (p->arg[0]>199) p->on = 0;
-    for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+    for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
       Zfunc* z = (*zit);
-      for (int i=0;i<z->narg;i++) {
-	if (z->arg[i]==p->arg[0]) {
+      for (int i=0;i<z->m_narg;i++) {
+	if (z->p_arguments[i]==p->arg[0]) {
 	  sw1 = 0;
 	  break;
 	}
@@ -113,21 +116,7 @@ void Prop_Generator::Kill(list<Zfunc*>& zlist)
   }
 }
 
-
-/*void Prop_Generator::Calculate(Vec4D* p,int* b)
-{
-  for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
-    Pfunc* p1 = *pit;
-    Vec4D sump(0.,0.,0.,0.);
-    for (int i=1;i<p1->argnum;i++) sump += b[p1->arg[i]]*p[p1->arg[i]]; 
-
-    p1->value = Complex(1.,0.)/
-      Complex(sump.Abs2()-
-	      sqr(AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()))),
-	      AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()))*
-	      AORGTOOLS::rpa.consts.Width(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms())));
-
-    if (p1->fl.IsFermion() || p1->fl.IsScalar()) p1->value *= Complex (0.,1.);
-    if (p1->fl.IsVector()) p1->value *= Complex (0.,-1.);
-  }  
-  }*/
+void Prop_Generator::Get(Pfunc_List& _plist) {
+  for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) 
+    _plist.push_back(*pit);
+}

@@ -1,7 +1,9 @@
 #ifndef Pfunc_h
 #define Pfunc_h
 
-#include "Point.H"
+#include "MyComplex.H"
+#include "Flavour.H"
+#include <list>
 
 namespace AMEGIC {
   class Pfunc {
@@ -39,6 +41,7 @@ namespace AMEGIC {
 	haspol = p.haspol;
 	fl     = p.fl;
       }
+      return *this;
     }
 
     std::ostream& operator<<(std::ostream& os) {
@@ -47,8 +50,12 @@ namespace AMEGIC {
       for (int i=0; i<argnum; ++i) 
 	os<<" "<<arg[i];
       os<<" )"<<std::endl;
+      return os;
     }
   };
+  typedef std::vector<Pfunc*> Pfunc_List;
+  typedef Pfunc_List::iterator Pfunc_Iterator;
+
 }
 
 #endif

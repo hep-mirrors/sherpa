@@ -19,19 +19,19 @@ using namespace std;
 
 void Vertex::GenerateVertex()
 {
-  int vanz_save = nvertex; 
-  int vanz4_save = n4vertex; 
+  int vanzsave = m_nvertex; 
+  int vanz4save = m_n4vertex; 
   
   Single_Vertex dummy;
   
-  for (int i=0;i<vanz4_save;++i) {
+  for (int i=0;i<vanz4save;++i) {
     int hit = 1;
     if (hit) {
       //required by Model_LED due to small couplings
-      //if (AMATOOLS::IsZero(v4[i].cpl[0]) && AMATOOLS::IsZero(v4[i].cpl[1]))
-      //v4[i].on = 0;
-      //else { 
-	if(v4[i].nleg==4) {
+      if (m_v4[i].cpl[0]==Complex(0.,0.) && m_v4[i].cpl[1]==Complex(0.,0.))
+	m_v4[i].on = 0;
+      else { 
+	if(m_v4[i].nleg==4) {
 	  for (short int k=1;k<5;k++) {
 	    for (short int l=1;l<5;l++) {
 	      if (l!=k) {
@@ -43,13 +43,13 @@ void Vertex::GenerateVertex()
 			if (l==1) l = -l;
 			if (m==1) m = -m;
 			if (n==1) n = -n;
-			if (SetVertex(v4[i],dummy,k,l,m,n)) {
-			  v4[n4vertex] = dummy;
-			  n4vertex++;
+			if (SetVertex(m_v4[i],dummy,k,l,m,n)) {
+			  m_v4[m_n4vertex] = dummy;
+			  m_n4vertex++;
 			}
-			if (SetVertex(v4[i],dummy,-k,-l,-m,-n)) {
-			  v4[n4vertex] = dummy;
-			  n4vertex++;
+			if (SetVertex(m_v4[i],dummy,-k,-l,-m,-n)) {
+			  m_v4[m_n4vertex] = dummy;
+			  m_n4vertex++;
 			}
 			k = abs(k);l=abs(l);m=abs(m);n=abs(n);
 		      }
@@ -60,38 +60,38 @@ void Vertex::GenerateVertex()
 	    }
 	  }
 	}
-	//}
+      }
     }
   }
-  for (int i=0;i<vanz_save;++i) {
+  for (int i=0;i<vanzsave;++i) {
     int hit = 1;
     if (hit) {
       //required by Model_LED due to small couplings
-      //if (AMATOOLS::IsZero(v[i].cpl[0]) && AMATOOLS::IsZero(v[i].cpl[1]))
-      //v[i].on = 0;
-      if (v[i].nleg==3) {  
-	  for (short int k=1;k<4;k++) {
-	    for (short int l=1;l<4;l++) {
-	      if (l!=k) {
-		for (short int m=1;m<4;m++) {
-		  if (m!=l && m!=k) {
-		    if (k!=1) k = -k;
-		    if (l==1) l = -l;
-		    if (m==1) m = -m;
-		    if (SetVertex(v[i],dummy,k,l,m)) {
-		      v[nvertex] = dummy;
-		      nvertex++;
-		    }
-		    if (SetVertex(v[i],dummy,-k,-l,-m)) {
-		      v[nvertex] = dummy;
-		      nvertex++;
-		    }
-		    k = abs(k);l=abs(l);m=abs(m);
+      if (m_v[i].cpl[0]==Complex(0.,0.) && m_v[i].cpl[1]==Complex(0.,0.))
+	m_v[i].on = 0;
+      if (m_v[i].nleg==3) {  
+	for (short int k=1;k<4;k++) {
+	  for (short int l=1;l<4;l++) {
+	    if (l!=k) {
+	      for (short int m=1;m<4;m++) {
+		if (m!=l && m!=k) {
+		  if (k!=1) k = -k;
+		  if (l==1) l = -l;
+		  if (m==1) m = -m;
+		  if (SetVertex(m_v[i],dummy,k,l,m)) {
+		    m_v[m_nvertex] = dummy;
+		    m_nvertex++;
 		  }
+		  if (SetVertex(m_v[i],dummy,-k,-l,-m)) {
+		    m_v[m_nvertex] = dummy;
+		    m_nvertex++;
+		  }
+		  k = abs(k);l=abs(l);m=abs(m);
 		}
 	      }
 	    }
 	  }
+	}
       }
     }
   }
@@ -102,52 +102,52 @@ int Vertex::CheckExistence(Single_Vertex& probe)
 {
   //4 leg vertices
   if (probe.nleg==4) {
-    for (short int i=0;i<n4vertex;++i) {     
+    for (short int i=0;i<m_n4vertex;++i) {     
       // 0 -> 1 2 3
-      if (v4[i].in[0]==probe.in[0] &&
-	  v4[i].in[1]==probe.in[1] &&
-	  v4[i].in[2]==probe.in[2] &&
-	  v4[i].in[3]==probe.in[3]) return 0;
+      if (m_v4[i].in[0]==probe.in[0] &&
+	  m_v4[i].in[1]==probe.in[1] &&
+	  m_v4[i].in[2]==probe.in[2] &&
+	  m_v4[i].in[3]==probe.in[3]) return 0;
       /*
       // 0 -> 1 3 2
-      if (v4[i].in[0]==probe.in[0] &&
-	  v4[i].in[1]==probe.in[1] &&
-	  v4[i].in[2]==probe.in[3] &&
-	  v4[i].in[3]==probe.in[2]) return 0;
+      if (m_v4[i].in[0]==probe.in[0] &&
+	  m_v4[i].in[1]==probe.in[1] &&
+	  m_v4[i].in[2]==probe.in[3] &&
+	  m_v4[i].in[3]==probe.in[2]) return 0;
       // 0 -> 2 1 3
-      if (v4[i].in[0]==probe.in[0] &&
-	  v4[i].in[1]==probe.in[2] &&
-	  v4[i].in[2]==probe.in[1] &&
-	  v4[i].in[3]==probe.in[3]) return 0;
+      if (m_v4[i].in[0]==probe.in[0] &&
+	  m_v4[i].in[1]==probe.in[2] &&
+	  m_v4[i].in[2]==probe.in[1] &&
+	  m_v4[i].in[3]==probe.in[3]) return 0;
       // 0 -> 2 3 1
-      if (v4[i].in[0]==probe.in[0] &&
-	  v4[i].in[1]==probe.in[2] &&
-	  v4[i].in[2]==probe.in[3] &&
-	  v4[i].in[3]==probe.in[1]) return 0;
+      if (m_v4[i].in[0]==probe.in[0] &&
+	  m_v4[i].in[1]==probe.in[2] &&
+	  m_v4[i].in[2]==probe.in[3] &&
+	  m_v4[i].in[3]==probe.in[1]) return 0;
       // 0 -> 3 1 2
-      if (v4[i].in[0]==probe.in[0] &&
-	  v4[i].in[1]==probe.in[3] &&
-	  v4[i].in[2]==probe.in[1] &&
-	  v4[i].in[3]==probe.in[2]) return 0;
+      if (m_v4[i].in[0]==probe.in[0] &&
+	  m_v4[i].in[1]==probe.in[3] &&
+	  m_v4[i].in[2]==probe.in[1] &&
+	  m_v4[i].in[3]==probe.in[2]) return 0;
       // 0 -> 3 2 1
-      if (v4[i].in[0]==probe.in[0] &&
-	  v4[i].in[1]==probe.in[3] &&
-	  v4[i].in[2]==probe.in[2] &&
-	  v4[i].in[3]==probe.in[1]) return 0;
+      if (m_v4[i].in[0]==probe.in[0] &&
+	  m_v4[i].in[1]==probe.in[3] &&
+	  m_v4[i].in[2]==probe.in[2] &&
+	  m_v4[i].in[3]==probe.in[1]) return 0;
       */
     }
   }
   //3 leg vertices
   if (probe.nleg==3) {
     // 0 -> 1 2
-    for (short int i=0;i<nvertex;++i) {
-      if (v[i].in[0]==probe.in[0] &&
-	  v[i].in[1]==probe.in[1] &&
-	  v[i].in[2]==probe.in[2]) return 0;
+    for (short int i=0;i<m_nvertex;++i) {
+      if (m_v[i].in[0]==probe.in[0] &&
+	  m_v[i].in[1]==probe.in[1] &&
+	  m_v[i].in[2]==probe.in[2]) return 0;
       // 0 -> 2 1
-      if (v[i].in[0]==probe.in[0] &&
-	  v[i].in[1]==probe.in[2] &&
-	  v[i].in[2]==probe.in[1]) return 0;
+      if (m_v[i].in[0]==probe.in[0] &&
+	  m_v[i].in[1]==probe.in[2] &&
+	  m_v[i].in[2]==probe.in[1]) return 0;
     }
   }
   return 1;
@@ -336,75 +336,72 @@ Vertex::Vertex()
   */ 
   AORGTOOLS::msg.Debugging()<<"In Vertex::Vertex()."<<endl;
 
-  nvertex  = 10000;
-  n4vertex = 10000;
-  v  = new Single_Vertex[nvertex];
-  v4 = new Single_Vertex[n4vertex];
+  m_nvertex  = 10000;
+  m_n4vertex = 10000;
+  m_v  = new Single_Vertex[m_nvertex];
+  m_v4 = new Single_Vertex[m_n4vertex];
   int vanz  = 0;
   int vanz4 = 0;
 
   AORGTOOLS::msg.Tracking()<<"   Setting vertices..."<<endl;
-  mo->c_FFV(v,vanz);
+  mo->c_FFV(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_FFS(v,vanz);
+  mo->c_FFS(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVV(v,vanz);
+  mo->c_VVV(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSV(v,vanz);
+  mo->c_SSV(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVS(v,vanz);
+  mo->c_VVS(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSS(v,vanz);
+  mo->c_SSS(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVVV(v4,vanz4);
+  mo->c_VVVV(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSVV(v4,vanz4);
+  mo->c_SSVV(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSSS(v4,vanz4);
+  mo->c_SSSS(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_FFT(v,vanz);
+  mo->c_FFT(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVT(v,vanz);
+  mo->c_VVT(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SST(v,vanz);
+  mo->c_SST(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVVT(v4,vanz4);
+  mo->c_VVVT(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_FFVT(v4,vanz4);
+  mo->c_FFVT(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSST(v4,vanz4);
+  mo->c_SSST(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
 
-  nvertex = vanz;
-  n4vertex = vanz4;
+  m_nvertex  = vanz;
+  m_n4vertex = vanz4;
   //Print();
   GenerateVertex();
   Print();
-  vanz = nvertex;
-  vanz4 = n4vertex;
+  vanz = m_nvertex;
+  vanz4 = m_n4vertex;
   //Kill_Off(); to be written....
   //TexOutput();
-  nvertex = 10000;
-  n4vertex = 10000;
+  m_nvertex = 10000;
+  m_n4vertex = 10000;
   
-  //Uffpeppen
+  //should be improved and made dynamical
 
-  int vanz_save = vanz;
-  int vanz4_save = vanz4;
-  
-  if (vanz>nvertex) {
+  if (vanz>m_nvertex) {
       msg.Error()<<"Number of vertices to large"<<endl;
       abort();
   }
-  if (vanz4>n4vertex) {
+  if (vanz4>m_n4vertex) {
       msg.Error()<<"Number of 4 leg vertices to large"<<endl;
       abort();
   }
   
   AORGTOOLS::msg.Debugging()<<"... done with it ("<<vanz<<")."<<endl;
   AORGTOOLS::msg.Debugging()<<"... done with the 4 legs ("<<vanz4<<")."<<endl;
-  nvertex = vanz;
-  n4vertex = vanz4;
+  m_nvertex  = vanz;
+  m_n4vertex = vanz4;
 }
 
 void Vertex::CheckEqual(Flavour** fl,short int& count)
@@ -434,40 +431,40 @@ void Vertex::Print()
 {
   if (!rpa.gen.Debugging()) return;
   //3 legs
-  for (int i=0;i<nvertex;i++) {
-    AORGTOOLS::msg.Out()<<i+1<<". vertex for :"<<v[i].in[0]<<":"<<v[i].in[1]<<":"<<v[i].in[2];
-    if (v[i].on) AORGTOOLS::msg.Out()<<"...On  ";
+  for (int i=0;i<m_nvertex;i++) {
+    AORGTOOLS::msg.Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];
+    if (m_v[i].on) AORGTOOLS::msg.Out()<<"...On  ";
     else  AORGTOOLS::msg.Out()<<"...Off ";
-    AORGTOOLS::msg.Out()<<v[i].cpl[0]<<";"<<v[i].cpl[1];
-    AORGTOOLS::msg.Out()<<"; "<<v[i].Color->String();
-    AORGTOOLS::msg.Out()<<"; "<<v[i].Lorentz->String()<<endl;
+    AORGTOOLS::msg.Out()<<m_v[i].cpl[0]<<";"<<m_v[i].cpl[1];
+    AORGTOOLS::msg.Out()<<"; "<<m_v[i].Color->String();
+    AORGTOOLS::msg.Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
   }
   //4 legs
-  for (int i=nvertex;i<(n4vertex+nvertex);i++) {
-    if (v4[i-nvertex].ncf==1) {
-    AORGTOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<v4[i-nvertex].in[0]<<":"
-	<<v4[i-nvertex].in[1]<<":"<<v4[i-nvertex].in[2]<<":"<<v4[i-nvertex].in[3];
-    if (v4[i-nvertex].on) AORGTOOLS::msg.Out()<<"...On  ";
+  for (int i=m_nvertex;i<(m_n4vertex+m_nvertex);i++) {
+    if (m_v4[i-m_nvertex].ncf==1) {
+    AORGTOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
+	<<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
+    if (m_v4[i-m_nvertex].on) AORGTOOLS::msg.Out()<<"...On  ";
     else  AORGTOOLS::msg.Out()<<"...Off ";
-    AORGTOOLS::msg.Out()<<v4[i-nvertex].cpl[0]<<";"<<v4[i-nvertex].cpl[1];
-    AORGTOOLS::msg.Out()<<"; "<<v4[i-nvertex].Color->String();
-    AORGTOOLS::msg.Out()<<"; "<<v4[i-nvertex].Lorentz->String()<<endl;
+    AORGTOOLS::msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+    AORGTOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
+    AORGTOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
     }
     else {
-      for (short int k=0;k<v4[i-nvertex].ncf;k++) {
-      AORGTOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<v4[i-nvertex].in[0]<<":"
-	  <<v4[i-nvertex].in[1]<<":"<<v4[i-nvertex].in[2]<<":"<<v4[i-nvertex].in[3];
-      if (v4[i-nvertex].on) AORGTOOLS::msg.Out()<<"...On  ";
+      for (short int k=0;k<m_v4[i-m_nvertex].ncf;k++) {
+      AORGTOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
+	  <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
+      if (m_v4[i-m_nvertex].on) AORGTOOLS::msg.Out()<<"...On  ";
       else  AORGTOOLS::msg.Out()<<"...Off ";
-      AORGTOOLS::msg.Out()<<v4[i-nvertex].cpl[0]<<";"<<v4[i-nvertex].cpl[1];
-      AORGTOOLS::msg.Out()<<"; "<<v4[i-nvertex].Color[k].String();
-      if (v4[i-nvertex].Color[k].Next!=0) AORGTOOLS::msg.Out()<<" "<<v4[i-nvertex].Color[k].Next->String();
-      AORGTOOLS::msg.Out()<<"; "<<v4[i-nvertex].Lorentz[k].String()<<endl;
+      AORGTOOLS::msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+      AORGTOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
+      if (m_v4[i-m_nvertex].Color[k].Next!=0) AORGTOOLS::msg.Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next->String();
+      AORGTOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k].String()<<endl;
       }
     }
   }
 }
-Vertex::~Vertex() {delete[] v;delete[] v4;}
+Vertex::~Vertex() {delete[] m_v;delete[] m_v4;}
 
 void Vertex::TexOutput()
 {
@@ -481,9 +478,9 @@ void Vertex::TexOutput()
   
   int fmfcount = 0;  
   
-  for (int i=0;i<nvertex;i++) {
+  for (int i=0;i<m_nvertex;i++) {
     st.Reset();
-    sknot* shelp = st.String2Tree(v[i].Str);
+    sknot* shelp = st.String2Tree(m_v[i].Str);
     st.Delete(shelp,string("zero"));
 
     string newstr = st.Tree2Tex(shelp,0);
@@ -530,25 +527,25 @@ void Vertex::TexOutput()
     sf<<"\\fmf{phantom}{l1,v1}"<<endl;
     sf<<"\\fmffreeze"<<endl;
 
-    if (v[i].in[1].IsVector()) {
-      if (v[i].in[0].IsFermion() && v[i].in[2].IsFermion()) {
+    if (m_v[i].in[1].IsVector()) {
+      if (m_v[i].in[0].IsFermion() && m_v[i].in[2].IsFermion()) {
 	sf<<"\\fmf{plain}{l1,v1,r1}"<<endl; 
-	if (v[i].in[1]==Flavour(kf::gluon))
+	if (m_v[i].in[1]==Flavour(kf::gluon))
 	  sf<<"\\fmf{curly}{v1,r2}"<<endl;
 	else 
 	  sf<<"\\fmf{photon}{v1,r2}"<<endl;
-	if (v[i].in[1].Charge() != 0)
+	if (m_v[i].in[1].Charge() != 0)
 	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<"$}{l1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<"$}{r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<",\\;r^\\mu$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[2].TexName()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<",\\;r^\\mu$}{r2}"<<endl;
       }
       
      
-      if (v[i].in[0].IsVector() && v[i].in[2].IsVector() ){
-	if (v[i].in[1]==Flavour(kf::gluon)) {
+      if (m_v[i].in[0].IsVector() && m_v[i].in[2].IsVector() ){
+	if (m_v[i].in[1]==Flavour(kf::gluon)) {
 	  sf<<"\\fmf{curly}{r1,v1,r2}"<<endl;
 	  sf<<"\\fmf{curly}{v1,l1}"<<endl;
 	}
@@ -558,65 +555,65 @@ void Vertex::TexOutput()
 	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<",\\;k^\\lambda $}{r1}"<<endl;
-	sf<<"\\fmflabel{$"<<(v[i].in[2].Bar()).TexName()<<",\\;p^\\nu $}{r2}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<",\\;r^\\mu $}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[0].TexName()<<",\\;k^\\lambda $}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<(m_v[i].in[2].Bar()).TexName()<<",\\;p^\\nu $}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<",\\;r^\\mu $}{l1}"<<endl;
       }   
       
-      if (v[i].in[0].IsScalar() && v[i].in[2].IsScalar()) {
-	if (v[i].in[1]==Flavour(kf::gluon))
+      if (m_v[i].in[0].IsScalar() && m_v[i].in[2].IsScalar()) {
+	if (m_v[i].in[1]==Flavour(kf::gluon))
 	  sf<<"\\fmf{curly}{v1,r2}"<<endl;
 	else 
 	  sf<<"\\fmf{photon}{v1,r2}"<<endl;
 	sf<<"\\fmf{dashes}{l1,v1,r1}"<<endl; 
-	if (v[i].in[1].Charge() != 0)
+	if (m_v[i].in[1].Charge() != 0)
 	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
-	if (v[i].in[0].Charge() !=0 || v[i].in[2].Charge() !=0){
+	if (m_v[i].in[0].Charge() !=0 || m_v[i].in[2].Charge() !=0){
 	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl; }
-	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<"$}{r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<"$}{l1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<",\\;r^\\mu $}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[2].TexName()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<",\\;r^\\mu $}{r2}"<<endl;
       }
     }
     
-    if (v[i].in[1].IsScalar()) {
-      if (v[i].in[0].IsVector() && v[i].in[2].IsVector()) {
+    if (m_v[i].in[1].IsScalar()) {
+      if (m_v[i].in[0].IsVector() && m_v[i].in[2].IsVector()) {
 	sf<<"\\fmf{dashes}{r2,v1}"<<endl; 
-	if (v[i].in[1].Charge() != 0) {
+	if (m_v[i].in[1].Charge() != 0) {
 	  sf<<"\\fmf{phantom_arrow}{r2,v1}"<<endl;
 	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;}
-	if (v[i].in[0].Charge() !=0 || v[i].in[2].Charge() !=0)
+	if (m_v[i].in[0].Charge() !=0 || m_v[i].in[2].Charge() !=0)
 	  {sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;}
 	sf<<"\\fmf{photon}{l1,v1,r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<",\\;p^\\nu $}{l1}"<<endl;	  
-	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<"$}{r2}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<",\\;r^\\mu $}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[0].TexName()<<",\\;p^\\nu $}{l1}"<<endl;	  
+	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[2].TexName()<<",\\;r^\\mu $}{r1}"<<endl;
       } 
       
-      if (v[i].in[0].IsFermion() && v[i].in[2].IsFermion()) {
+      if (m_v[i].in[0].IsFermion() && m_v[i].in[2].IsFermion()) {
 	sf<<"\\fmf{plain}{l1,v1,r1}"<<endl;
 	sf<<"\\fmf{dashes}{v1,r2}"<<endl;
-	if (v[i].in[1].Charge() != 0)
+	if (m_v[i].in[1].Charge() != 0)
 	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
 	
 	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<"$}{l1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<"$}{r2}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[2].TexName()<<"$}{r1}"<<endl;
       }
       
-      if (v[i].in[0].IsScalar() && v[i].in[2].IsScalar()) {
+      if (m_v[i].in[0].IsScalar() && m_v[i].in[2].IsScalar()) {
 	sf<<"\\fmf{dashes}{r1,v1,r2}"<<endl; 
 	sf<<"\\fmf{dashes}{v1,l1}"<<endl;
-	if (v[i].in[0].Charge() != 0) {
+	if (m_v[i].in[0].Charge() != 0) {
 	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl; 
 	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;}
-	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<"$}{l1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<"$}{r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[2].TexName()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<"$}{r2}"<<endl;
       }
     }
     
@@ -635,19 +632,19 @@ void Vertex::TexOutput()
 }
 
 void Vertex::AddVertex(Single_Vertex* addv){
-  int oldnvertex=nvertex;
-  Single_Vertex * oldv=v;
-  v = new Single_Vertex[nvertex+1];
-  for (int i=0;i<nvertex;++i) {
-    v[i].on=oldv[i].on;
-    for (int j=0;j<4;++j) v[i].in[j]=oldv[i].in[j];
-    for (int j=0;j<4;++j) v[i].cpl[j]=oldv[i].cpl[j];
+  int oldnvertex=m_nvertex;
+  Single_Vertex * oldv=m_v;
+  m_v = new Single_Vertex[m_nvertex+1];
+  for (int i=0;i<m_nvertex;++i) {
+    m_v[i].on=oldv[i].on;
+    for (int j=0;j<4;++j) m_v[i].in[j]=oldv[i].in[j];
+    for (int j=0;j<4;++j) m_v[i].cpl[j]=oldv[i].cpl[j];
   }
-  v[nvertex].on=addv->on;
-  for (int j=0;j<4;++j) v[nvertex].in[j]=addv->in[j];
-  for (int j=0;j<4;++j) v[nvertex].cpl[j]=addv->cpl[j];
-  ++nvertex;
-  //  for (int i=0;i<nvertex;++i) printvertex(&v[i]);
+  m_v[m_nvertex].on=addv->on;
+  for (int j=0;j<4;++j) m_v[m_nvertex].in[j]=addv->in[j];
+  for (int j=0;j<4;++j) m_v[m_nvertex].cpl[j]=addv->cpl[j];
+  ++m_nvertex;
+  //  for (int i=0;i<m_nvertex;++i) printvertex(&m_v[i]);
 }
 
 int Vertex::FindVertex(Single_Vertex* v_tofind)
@@ -662,15 +659,15 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
       v_tofind->in[1]=v_tofind->in[2];
       v_tofind->in[2]=help;
       //    printvertex(v_tofind);
-      for (int i=0;i<nvertex;++i) {
-	//   printvertex(&v[i]);
-	if (v_tofind->in[0].Kfcode()==v[i].in[0].Kfcode())
-	  if (v_tofind->in[1].Kfcode()==v[i].in[1].Kfcode())
-	    if (v_tofind->in[2].Kfcode()==v[i].in[2].Kfcode()) {
-	    //    v_tofind=&v[i];
+      for (int i=0;i<m_nvertex;++i) {
+	//   printvertex(&m_v[i]);
+	if (v_tofind->in[0].Kfcode()==m_v[i].in[0].Kfcode())
+	  if (v_tofind->in[1].Kfcode()==m_v[i].in[1].Kfcode())
+	    if (v_tofind->in[2].Kfcode()==m_v[i].in[2].Kfcode()) {
+	    //    v_tofind=&m_v[i];
 	      nr=i;
 	      //break;
-	      v_tofind=&v[nr];
+	      v_tofind=&m_v[nr];
 	      return nr;
 	    }
       }
@@ -678,6 +675,9 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
     AORGTOOLS::msg.Debugging()<<"Vertex not found!"<<endl;
   }
   else AORGTOOLS::msg.Debugging()<<"no routine to search for 4 legs"<<endl;
+  
+  
+  
 }
 
 ostream& AMEGIC::operator<<(ostream& s, const Single_Vertex& sv)
@@ -691,7 +691,7 @@ ostream& AMEGIC::operator<<(ostream& s, const Vertex& v)
 {
   s<<"---------------- Vertices --------------------------------"<<endl;
 
-  int n=v.Max_Number();
+  int n=v.MaxNumber();
   s<<n<<" verticies found"<<endl;
   for (int i=0;i<n;++i)
     s<<(*v[i])<<endl;
