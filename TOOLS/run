@@ -1,5 +1,5 @@
 #!/bin/bash
-TIME=`date +'%y-%m-%d_%H-%M-%S'`
+TIME=`date +'%m-%d_%H-%M-%S'`
 
 rmr () {  
   for file in * ; do                                                          
@@ -79,7 +79,7 @@ if [ "$QUEUE" = "TRUE" ] ; then
   echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$LOGFILE" >> $FILE
   echo "echo \"HOME        = \$HOME\" >> \$LOGFILE" >> $FILE
   echo "echo \"USER        = \$USER\" >> \$LOGFILE" >> $FILE
-  echo "echo \"\" >> \$LOGFILE.log" >> $FILE
+  echo "echo \"\" >> \$LOGFILE" >> $FILE
   echo "echo \"QUEUE       = \$QUEUE\" >> \$LOGFILE" >> $FILE
   echo "echo \"SGE_TASK_ID = \$SGE_TASK_ID\" >> \$LOGFILE" >> $FILE
   echo "echo \"JOB_ID      = \$JOB_ID\" >> \$LOGFILE" >> $FILE
