@@ -20,7 +20,7 @@ namespace PDF {
     \class PDF::Intact
     \brief For the handling of no initial state radiation.
 
-    This class is used as a kind of dummy wrapper for particles experiencing no
+    This class is used as a kind of "dummy" wrapper for particles experiencing no
     initial state radiation. Therefore the internal structure is pretty simple,
     and there is no PDF_Base related to it, quite in contrast to the Structure_Function.
 
@@ -30,6 +30,15 @@ namespace PDF {
     \fn Intact::Intact(Flavour)
     Sets the flavour of the bunch and the type, fixes the weight to 1.
   */
+  /*!
+    \fn bool Intact::CalculateWeight(const double,const double)
+    No weight has to be calculated here.
+  */
+  /*!
+    \fn double Intact::Weight(APHYTOOLS::Flavour)
+    The trivial weight is returned.
+  */
+
 }
 #endif
 

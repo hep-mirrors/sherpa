@@ -25,7 +25,7 @@ Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) :
     abort();
   }
 
-  m_mode        = 0;
+  m_mode = 0;
   for (short int i=0;i<2;i++) {
     if (p_BeamBase[i]->On()) m_mode += i+1;
   }
@@ -112,8 +112,6 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Read * dataread,int num)
   if (flav<0) beam_particle = beam_particle.Bar();
   double  beam_energy       = dataread->GetValue<double>("BEAM_ENERGY_"+number);
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number);
-
-  msg.Debugging()<<"For "<<number<<" : "<<beam_energy<<"  "<<beam_particle<<"  "<<beam_polarization<<endl;
   p_BeamBase[num]           = new Monochromatic(beam_particle,beam_energy,beam_polarization,1-2*num);
   return 1;
 }
@@ -127,8 +125,8 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
   double E      = sqrt(s);
   rpa.gen.SetEcms(E);
 
-  m_splimits[0] = m_smin = s*dataread->GetValue<double>("BEAM_SMIN");
-  m_splimits[1] = m_smax = s*AMATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX"),Upper1()*Upper2());
+  m_splimits[0] = s*dataread->GetValue<double>("BEAM_SMIN");
+  m_splimits[1] = s*AMATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX"),Upper1()*Upper2());
   m_splimits[2] = s;
   m_ylimits[0]  = -10.;
   m_ylimits[1]  = 10.;
@@ -148,13 +146,6 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
 
 
   m_type = p_BeamBase[0]->Type() + std::string("*") + p_BeamBase[1]->Type();
-  if (m_mode>0) msg.Debugging()<<"Beam is on;  "
-			       <<m_splimits[0]<<" .. "<<m_splimits[1]<<" .. "<<m_splimits[2]<<endl;
-           else msg.Debugging()<<"Beam is off; ";
-  msg.Debugging()<<"m_type = "<<m_type<<" for "
-		 <<p_BeamBase[0]->Flav()<<" / "<<p_BeamBase[1]->Flav();
-  if (m_asymmetric) msg.Debugging()<<" for asymmetric situation"<<endl;
-               else msg.Debugging()<<" for symmetric situation"<<endl;
   return 1;
 }
 
@@ -258,7 +249,6 @@ bool Beam_Spectra_Handler::MakeBeams(Vec4D * p,double sprime,double y)
     m_x1          = 2.*p1[0]/E;
     m_x2          = 2.*p2[0]/E;
 
-    //AORGTOOLS::msg.Out()<<"*** x1/2 : "<<x1<<" , "<<x2<<endl;
     if (m_mode==1) m_x2 = 1.;
     if (m_mode==2) m_x1 = 1.;
 
@@ -293,14 +283,8 @@ bool Beam_Spectra_Handler::CalculateWeight(double scale)
 
 double Beam_Spectra_Handler::Weight(Flavour * flin)
 {
-  double weight = (p_BeamBase[0]->Weight(flin[0]) * p_BeamBase[1]->Weight(flin[1]));
-  return weight;
-}
-
-double Beam_Spectra_Handler::Weight()
-{
-  double weight = (p_BeamBase[0]->Weight() * p_BeamBase[1]->Weight());
-  return weight;
+  if (flin==NULL) return (p_BeamBase[0]->Weight() * p_BeamBase[1]->Weight());
+  return (p_BeamBase[0]->Weight(flin[0]) * p_BeamBase[1]->Weight(flin[1]));
 }
 
 /* ----------------------------------------------------------------

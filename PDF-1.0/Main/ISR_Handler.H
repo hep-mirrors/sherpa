@@ -13,7 +13,7 @@ namespace PDF {
     int                   m_mode; 
     double                m_mass12, m_mass22, m_x1, m_x2;
     double                m_exponent[2];
-    double                m_smin,m_smax,m_splimits[3],m_ylimits[2];
+    double                m_splimits[3],m_ylimits[2];
     AMATOOLS::Vec4D       m_fiXVECs[2];
     std::string           m_name, m_type;
   public:
@@ -34,8 +34,8 @@ namespace PDF {
     void   BoostInLab(AMATOOLS::Vec4D *,int);
 
     void   SetName(std::string _name) { m_name = _name; }
-    void   SetSprimeMin(double _spl)  { if (_spl > m_smin) m_splimits[0]  = _spl; }
-    void   SetSprimeMax(double _spl)  { if (_spl < m_smax) m_splimits[1]  = _spl; }
+    void   SetSprimeMin(double _spl)  { m_splimits[0]  = _spl; }
+    void   SetSprimeMax(double _spl)  { m_splimits[1]  = _spl; }
     void   SetPole(double _spl)       { m_splimits[2] = _spl; }
     void   SetYMin(double _yl)        { m_ylimits[0]  = _yl; }
     void   SetYMax(double _yl)        { m_ylimits[1]  = _yl; }
@@ -61,8 +61,8 @@ namespace PDF {
   };
 
   /*!
-    \namespace ISR
-    The namespace ISR houses all classes that are employed to generate
+    \namespace PDF
+    The namespace PDF houses all classes that are employed to generate
     parton spectra. In the framework of both the SHERPA package and of the
     program AMEGIC the following nomenclature is assumed :
     - There are incoming beams at a certain energy, the nominal energy of the 
@@ -74,7 +74,7 @@ namespace PDF {
 
     As an illustrative example, consider the case of DIS of an electron on a photon.
     The incoming electron beam emits bunches of photons that might or might not
-    resolved into partons during the interaction with the proton. In the ISR namespace,
+    resolved into partons during the interaction with the proton. In the PDF namespace,
     the parton distribution funcitons of both the photon and the proton are handled.
   */
   /*!
@@ -83,13 +83,13 @@ namespace PDF {
            distributions.
     This class manages all initial state radiation (ISR) according to the parton 
     distribution functions (PDFs) that are handed over. The ISR_Handler is initialized from 
-    the SHERPA package or from Amegic. Before oming into full efect during integration
+    the SHERPA package or from Amegic. Before coming into full effect during integration
     or event generation, it initalises suitable ISR treatment through ISR_Bases that will
-    contain the PDFs for each of the bunchs.
+    contain the PDFs for each of the bunches.
   */
   /*!
     \var ISR_Base ** ISR_Handler::p_ISRBase
-    The two ISR bases, one for each bunch.
+    Pointers to the two ISR bases, one for each bunch.
 
     \sa ISR_Base
   */
@@ -99,8 +99,7 @@ namespace PDF {
      - 0 no ISR for both bunchs 
      - 1 only bunch 1 experiences ISR
      - 2 only bunch 2 experiences ISR
-     - 3 both bunches experience ISR.
-     
+     - 3 both bunches experience ISR.     
   */  
   /*!
     \var AMATOOLS::Poincare ISR_Handler::m_CMSBoost
@@ -113,25 +112,63 @@ namespace PDF {
   */
   /*!
     \var double ISR_Handler::m_splimits[3]
-    \f$s'\f$-limits and characteristics.
+    \f$s'\f$-limits and characteristics:
+    m_splimits[0,1] = \f$s'_{\rm min, max}\f$
+    and 
+    m_splimits[2] = \f$s_{\rm beams}\f$.
   */ 
   /*!
     \var ISR_Handler::m_ylimits[2]
-    The rapidity region covered. It is set to the range \f$y \in [-10,10]\f$.
+    The rapidity region covered. It is per default set to the range \f$y \in [-10,10]\f$. In fact 
+    this range should be calculated from the range of the BeamBases.
+    \todo Rapidity range from BeamBases.
+  */
+  /*!
+    \var double ISR_Handler::m_mass12
+    Square of the mass of the first incoming particle.
+  */
+  /*!
+    \var double ISR_Handler::m_mass22
+    Square of the mass of the second incoming particle.
+  */
+  /*!
+    \var double ISR_Handler::m_x1
+    The energy fractions \f$x_{1}\f$ the outgoing bunch 1 have w.r.t. the corresponding 
+    incoming beams.
+  */
+  /*!
+    \var double ISR_Handler::m_x2
+    The energy fractions \f$x_{2}\f$ the outgoing bunch 2 have w.r.t. the corresponding 
+    incoming beams.
+  */
+  /*!
+    var std::string ISR_Handler::m_name
+    Name of the ISR_Handler.
+  */
+  /*!
+    var std::string ISR_Handler::m_type
+    Type of the ISR_Handler, it consists of the types of the BeamBases.
   */
   /*!
     \var AMATOOLS::Vec4D ISR_Handler::m_fiXVECs[2]
     The c.m. momenta of the two incoming bunches.
   */
   /*!
-    \var std::string m_type
-    The type of ISR handling, it consists of the two types named in the two ISR_Bases.
+    \fn bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *)
+    This checks whether the two sets of flavours match the flavours of the incoming
+    and outgonig particles of the two p_ISRBases. If this is the case, true is returned.
+    This method is largely similar to the corresponding one in the BEAM::Beam_Spectra_Handler.
   */
   /*!
-    \fn bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *)
-    This checks whether the incoming and outgoing flavours match the flaovurs needed by the
-    two p_ISRBases. This method is largely similar to the corresponding one in the
-    BEAM::Beam_Spectra_Handler.
+    \fn bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour *)
+    This checks whether the flavours are allowed to be used as outgonig flavours in the
+    two p_ISRBases. If this is the case, true is returned. This method is largely similar to 
+    the corresponding one in the BEAM::Beam_Spectra_Handler.
+  */  
+  /*!
+    \fn void ISR_Handler::SetPartonMasses(APHYTOOLS::Flavour * _fl)
+    This sets the masses squared and the vectors such that they fit to the masses of the
+    flavours.
   */
   /*!
     \fn bool ISR_Handler::MakeISR(AMATOOLS::Vec4D *,double,double);

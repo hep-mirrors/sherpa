@@ -39,8 +39,15 @@ namespace PDF {
   */
   /*!
     \var double PDF_Electron::m_alpha
-    The elctromagnetic couplnig constant, taken at the scale at which the structure 
+    The electromagnetic coupling constant, taken at the scale at which the structure 
     function is to be evaluated.
+  */
+  /*!
+    \var double PDF_Electron::m_beta
+    The characteristic exponent of the lepton PDF. It is given by
+    \f[
+    \beta = \alpha(m_l^2)/\pi (\log(E^2/m_l^2)-1)
+    \f]
   */
   /*!
     \var double PDF_Electron::m_mass
@@ -53,6 +60,15 @@ namespace PDF {
   /*!
     \var int PDF_Electron::m_izetta
     The \f$\zeta\f$-scheme for the definition of how the logarithms enter the exponentiation.
+  */
+  /*!
+    \fn PDF_Electron::PDF_Electron(const APHYTOOLS::Flavour,const int,const int)
+    The constructor, initializes all constant parameters for evaluation in Calculate.
+  */
+  /*!
+    \fn PDF_Base * PDF_Electron::GetCopy()
+    A method to initialize another electron PDF as exact copy of the current one.
+    This is needed for the initial state shower of APACIC.
   */
   /*!
     \fn void PDF_Electron::Calculate(const double, const double);

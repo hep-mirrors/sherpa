@@ -21,7 +21,7 @@ PDF_MRST99::PDF_MRST99(const APHYTOOLS::Flavour _bunch,
   m_anti   = 1;
   if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti = -1;
 
-  msg.Debugging()<<"Initialise MRST99/"<<m_set<<" from "<<m_path<<endl;
+  msg.Tracking()<<"Initialise MRST99/"<<m_set<<" from "<<m_path<<endl;
   if (p_proton==NULL) p_proton = new c_mrst(m_path);
 
   for (int i=1;i<6;i++) {
@@ -65,8 +65,6 @@ void PDF_MRST99::Calculate(const double x, const double Q2) {
 
 
 double PDF_MRST99::GetXPDF(const APHYTOOLS::Flavour & infl) {
-  //  int kfc = m_anti*infl.Kfcode();
-  //    kf::code kfc=fl.Kfcode(); does not hold anti information
   int kfc=m_anti*int(infl);
   switch (kfc) {
   case  APHYTOOLS::kf::d : return (m_content.dnv + m_content.dsea);

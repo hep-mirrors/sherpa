@@ -1,0 +1,26 @@
+07/16/03
+
+Package BEAM, version 1.0
+
+This directory contains all methods for the handling of beam spectra
+implemented up to now. Currently, two types of spectra are supported:
+- Monochromatic beams, i.e. no spectrum at all.
+- Laser backscattering spectrum, i.e. the mode for a photon collider 
+  option.
+It is foreseen that simple beam geometries as well as more spectrum 
+options will be implemented. 
+
+Since this directory contains no executable it should be compiled and
+linked to any executable in the framework. To install it the first time
+follow the sequence
+
+libtoolize --force
+aclocal
+automake -a
+autoconf
+configure
+make install
+
+Everything should be ready then. Note that the directory ATOOLS is needed
+for this.
+

@@ -26,17 +26,17 @@ void ISR_Handler::Init(double * _splimits) {
   m_type = p_ISRBase[0]->Type() + std::string("*") + p_ISRBase[1]->Type();
 
   double s      = sqr(AORGTOOLS::rpa.gen.Ecms());
-  m_splimits[0] = m_smin = s*_splimits[0];
-  m_splimits[1] = m_smax = AMATOOLS::Min(s*_splimits[1],s*Upper1()*Upper2());
+  m_splimits[0] = s*_splimits[0];
+  m_splimits[1] = AMATOOLS::Min(s*_splimits[1],s*Upper1()*Upper2());
   m_splimits[2] = s;
   m_ylimits[0]  = -10.;
   m_ylimits[1]  = 10.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * p_ISRBase[0]->Exponent() * p_ISRBase[1]->Exponent();
 
-  if (m_mode>0) msg.Debugging()<<"ISR is on:  ";
-           else msg.Debugging()<<"ISR is off: ";
-  msg.Debugging()<<"type = "<<m_type<<" for "
+  if (m_mode>0) msg.Tracking()<<"ISR is on:  ";
+           else msg.Tracking()<<"ISR is off: ";
+  msg.Tracking()<<"type = "<<m_type<<" for "
 		 <<p_ISRBase[0]->Flav()<<" / "<<p_ISRBase[1]->Flav()<<endl
 		 <<"            Range = "<<m_splimits[0]<<" ... "<<m_splimits[1]<<" from "<<m_splimits[2]<<endl;
 }
@@ -82,9 +82,7 @@ bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _partons) {
   for (int i=0;i<2;i++) {
     if (p_ISRBase[i]->On()) {
       fit = 0;
-      msg.Debugging()<<"ISR_Handler::CheckConsistency : "<<_partons[i]<<" "<<PDF(i)->Bunch()<<endl;
       for (int j = 0;j<(PDF(i)->Partons()).size();j++) {
-	msg.Debugging()<<"ISR_Handler::CheckConsistency : "<<_partons[i]<<" "<<(PDF(i)->Partons())[j]<<endl;
 	if (_partons[i] == (PDF(i)->Partons())[j]) {
 	  fit = 1;
 	  break; 

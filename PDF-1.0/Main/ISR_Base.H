@@ -34,8 +34,7 @@ namespace PDF {
     contains some information about the incoming bunch and in its realization
     as Structure_Function also concerning the PDF related to it.
 
-    \todo
-    We have to sort out what happens to our YFS framework.
+    \todo It has to be sorted out what happens to the YFS framework.
   */
   /*!
     \var std::string ISR_Base::m_type
@@ -58,10 +57,6 @@ namespace PDF {
     This is the method that will calculate the weights for the parton densities in
     dependence on the energy fraction of the outgoing particle w.r.t. the incoming one
     and in dependence on the scale of the process. 
-  */
-  /*!
-    \fn double ISR_Base::Weight()
-    Returns the weight, m_weight.
   */
   /*!
     \fn double ISR_Base::Weight(APHYTOOLS::Flavour)

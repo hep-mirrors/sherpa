@@ -10,7 +10,7 @@ namespace PDF {
     bool m_initlhapdf;
   public:
     PDF_Handler() : m_initlhapdf(0) {};
-    PDF_Base * GetPDFLib(AORGTOOLS::Data_Read *,APHYTOOLS::Flavour & flav,const int);
+    PDF_Base * GetPDFLib(AORGTOOLS::Data_Read *,APHYTOOLS::Flavour &,const int);
   };
   /*!
     \namespace PDF
@@ -30,17 +30,27 @@ namespace PDF {
     a pointer to this object.
   */
   /*!
-    \fn PDF_Base * PDF_Handler::GetPDFLib(const AORGTOOLS::Data_Read *,const int)
+    \var bool PDF_Handler::m_initlhapdf
+    Gives the status concerning LHAPDF to avoid double initialization. A similar thing has to
+    be done for every Fortran PDF.
+    \todo Add a flag for cteq6, Fortran version.
+  */
+  /*!
+    \fn PDF_Handler::PDF_Handler()
+    The constructor is basically empty, it just sets the "is already initialised"-flags.
+  */
+  /*!
+    \fn PDF_Base * PDF_Handler::GetPDFLib(const AORGTOOLS::Data_Read *,APHYTOOLS::Flavour &,const int)
     
     This is the only method in the PDF_Handler. According to the file read in through
-    the Data_Read object, a suitable parton density or structure function is instantiated and 
-    returned. So far only a structure function for electrons (that can handle charged
-    leptons) and protons is available.
+    the Data_Read object and according to the actual flavour, a suitable parton density or structure 
+    function is instantiated and returned. So far only a structure function for electrons (that can 
+    handle charged leptons) and various pdfs for protons are available.
 
     In case there is a mismatch of input and options, the program will terminate.
 
     \todo We will have to include also photon PDFs and maybe even pion PDFs.
-          Also, we might want to use isospin argmunets to map the proton PDFs to
+          Also, we might want to use isospin arguments to map the proton PDFs to
 	  neutron ones.
   */
 }

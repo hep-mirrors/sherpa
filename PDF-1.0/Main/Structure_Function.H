@@ -11,15 +11,7 @@ namespace PDF {
   public:
     Structure_Function(PDF::PDF_Base *,APHYTOOLS::Flavour); 
     ~Structure_Function();
-
-
-    /*!
-      Calculates the PDF's at the corresponding x-values and the scale.
-    */
     bool   CalculateWeight(double,double);
-    /*!
-      The parton-flavour dependent weight;
-    */
     double Weight(APHYTOOLS::Flavour);
     bool            On()       { return 1;  }
     PDF_Base      * PDF()      { return p_pdf; }
@@ -28,10 +20,10 @@ namespace PDF {
   };
   /*!
     \file 
-    \brief contains the class ISR::Structure_Function.
+    \brief contains the class PDF::Structure_Function.
   */
   /*!
-    \class ISR::Structure_Function
+    \class PDF::Structure_Function
     \brief This class is used for initial state radiation off particles characterized
            by energy fractions and scales of the hard interaction, i.e. structure functions
 	   and PDFs.
@@ -45,9 +37,9 @@ namespace PDF {
     The type related to this ISR_Base is "(SF)".
   */
   /*!
-    \var PDF::PDF_Base * Structure_Function::pdf
-    The pdf for the structure function. It is handed over to the constructor,
-    after having been instantiated by the PDF::PDF_Handler. Note that also 
+    \var PDF_Base * Structure_Function::pdf
+    The pointer to the pdf for the structure function. It is handed over to the 
+    constructor, after having been instantiated by the PDF::PDF_Handler. Note that also 
     structure functions like the one for the electron are handed over as PDF_Base.
   */
   /*! 

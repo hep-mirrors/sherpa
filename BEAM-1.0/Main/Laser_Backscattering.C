@@ -43,8 +43,6 @@ Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
   if (_nonlin==1) { m_nonlin1 = 0.06594662; m_nonlin2 = 0.7060851e-3; }
              else { m_nonlin1 = 0.;         m_nonlin2 = 0.;           }
   m_xe     = 4.*m_energy*m_energyL/sqr(APHYTOOLS::Flavour(kf::e).PSMass());
-  m_Emax   = m_energy*m_xe/(1.+m_xe);
-
   m_xi     = m_nonlin1 + m_nonlin2 * m_energy;
   m_xe    /= (1+m_xi);
   m_xmax   = m_xe/(1.+m_xe);

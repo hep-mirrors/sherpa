@@ -36,18 +36,18 @@ namespace BEAM {
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
 
-    virtual APHYTOOLS::Flavour Flav()                     { return m_beam; }
-    virtual AMATOOLS::Vec4D    OutMomentum()              { return m_vecout; }
-    virtual AMATOOLS::Vec4D    Momentum()                 { return m_lab; }
-    virtual double             Energy()                   { return m_energy; }
-    virtual double             Polarization()             { return m_polarization; }
-    virtual double             Weight()                   { return m_weight; }
-    virtual double             Weight(APHYTOOLS::Flavour) { return m_weight; }
-    virtual bool               On()                       { return 0; }
-    virtual std::string        Type()                     { return m_type; }
-    virtual double             Exponent()                 { return 0.; }
-    virtual double             Xmax()                     { return 1.; }
-    virtual double             Peak()                     { return 1.; }
+    virtual APHYTOOLS::Flavour Flav()         { return m_beam; }
+    virtual AMATOOLS::Vec4D    OutMomentum()  { return m_vecout; }
+    virtual AMATOOLS::Vec4D    Momentum()     { return m_lab; }
+    virtual double             Energy()       { return m_energy; }
+    virtual double             Polarization() { return m_polarization; }
+    virtual double             Weight(APHYTOOLS::Flavour fl = APHYTOOLS::Flavour(APHYTOOLS::kf::none)) 
+                                              { return m_weight; }
+    virtual bool               On()           { return 0; }
+    virtual std::string        Type()         { return m_type; }
+    virtual double             Exponent()     { return 0.; }
+    virtual double             Xmax()         { return 1.; }
+    virtual double             Peak()         { return 1.; }
   };
 
   /*!
@@ -62,11 +62,6 @@ namespace BEAM {
     for interfaces to new beam spectra provided from outside the program. So far, two 
     spectra have been implemented, one for monochromatic beams BEAM::Monochromatic,
     and one for Laser back scattering of an electron BEAM::Laser_Backscattering.
-
-    In the corresponding constructors, the four momenta of the incoming beams in the lab 
-    frame are constructed. They are important especially for asymmetric collisions, like,
-    e.g., at HERA.
-
     \todo
     A number of beam spectra are still missing : 
     Gaussian, Beamstrahlung and Weiszaecker-Williams off both electron and protons. 
@@ -93,12 +88,40 @@ namespace BEAM {
   */
   /*!
     \var AMATOOLS::Vec4D Beam_Base::m_lab
-    The incoming momentum of the beam particle before the effect of the spectrum kicks in.
+    The momentum of the incoming beam particle, i.e. before the spectrum becomes effective.
+  */
+  /*!
+    \var AMATOOLS::Vec4D Beam_Base::m_vecout
+    The momentum of the outgoing bunch particle, i.e. after the spectrum becomes effective.
+  */
+  /*!
+    \var int m_dir
+    A direction flag for the construction of the beam momentum.
   */
   /*!
     \var double Beam_Base::m_weight
     The internal weight for the spectrum. It is calculated through the method
     CalculateWeight(const double,const double).
+  */
+  /*!
+    \var double Beam_Base::m_x
+    The energy portion the outgoing bunch particle carries away from the beam particle.
+    This is in the c.m. frame of the two incoming beams.
+  */
+  /*!
+    \var double Beam_Base::m_Q2
+    The scale of the transition of the beams into bunches. This can - in principle - be set
+    individually, for instance for Weizsaecker-Williams photons. This option has not been
+    fully implemented yet because all beam spectra included so far depend on the energy fraction 
+    only.
+  */
+  /*!
+    \fn Beam_Base::Beam_Base(std::string,const APHYTOOLS::Flavour,const double,const double,const int)
+    \brief The constructor, initializes the full structure of this beam spectrum.
+
+    In this constructor the incoming vectors are constructed from the direction flag, the energy of
+    the beam in the lab frame and the mass of the beam particle. By default, also the outgonig momentum
+    is set as the incoming one.
   */
   /*!
     \fn Beam_Base * Beam_Base::Copy()
@@ -110,15 +133,11 @@ namespace BEAM {
     This is the method that will calculate the weight for a given beam spectrum in
     dependence on the energy fraction of the outgoing particle w.r.t. the incoming one
     and in dependence on the scale of the process. The scale might, for instance, become
-    important once we consider Weizsaecker-Williams type spectra.
+    important once Weizsaecker-Williams type spectra are considered.
   */
   /*!
-    \fn double Beam_Base::Weight()
-    Returns the weight, m_weight.
-  */
-  /*!
-    \fn double Beam_Base::Weight(APHYTOOLS::Flavour)
-    Returns the weight after the flavours are checked.
+    \fn double Beam_Base::Weight(APHYTOOLS::Flavour fl=Flavour(kf::none))
+    Returns the weight. A flavour checking could be included in the future.
   */
   /*!
     \fn bool Beam_Base::On()

@@ -11,7 +11,7 @@ namespace BEAM {
     double m_energyL,m_polarizationL;
     double m_rho2,m_delta;
     double m_nonlin1,m_nonlin2,m_xi;
-    double m_xe, m_xmax, m_xmax2, m_Emax;
+    double m_xe, m_xmax, m_xmax2;
     double m_upper,m_peak;
 
     double m_yfix,m_yden;
@@ -33,13 +33,11 @@ namespace BEAM {
 
     Beam_Base     * Copy();
     void            PrintSpectra(std::string);
-
     bool            CalculateWeight(double,double);
-    double          Weight(APHYTOOLS::Flavour);
+    double          Weight(APHYTOOLS::Flavour=APHYTOOLS::Flavour(APHYTOOLS::kf::none));
     AMATOOLS::Vec4D OutMomentum();
 
     double          PolarisationDegree() { return m_polar; }
-
     void            SetMode(int _mode)   { m_mode = _mode; }
     void            SetPol(bool on)      { m_pol  = on; }
     bool            On()                 { return 1;  }
@@ -165,16 +163,58 @@ namespace BEAM {
     The peak position of the spectrum, \f$ x_{\rm max}\f$.
   */
   /*!
+    \var double Laser_Backscattering::m_yfix
+    A parameter for the evaluation of the rescattering-convolution, \f$y_{\rm fix} = 1/(1-\xi)\f$.
+  */
+  /*!
+    \var double Laser_Backscattering::m_yden
+    A parameter for the evaluation of the rescattering-convolution, \f$y_{\rm den} = \log(1-\xi)\f$.
+  */
+  /*!
+    \var int Laser_Backscattering::m_ysteps
+    The number of steps in the convolution for the rescattering.
+  */
+  /*!
+    \var double Laser_Backscattering::m_totalC
+    The norm of the Compton contribution.
+  */
+  /*!
+    \var double Laser_Backscattering::m_total2
+    The norm of the two-photon contribution.
+  */
+  /*!
+    \var double Laser_Backscattering::m_totalE
+    The norm of the rescatering contribution.
+  */
+  /*!
+    \var double Laser_Backscattering::m_polar
+    The polarization degree.
+  /*!
     \fn Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour,const double,const double,
                                                    const double,const double,const int,
 						   const int,const int,bool &);
-    This is the constructor of the class. It initializes a large variety of internal parameters, and
-    also the lab vector is constructed. It reads
-    \f[
-    \vec p_{\rm in} = (E,0,0,\pm \sqrt{E^2-m^2})^T\,,
-    \f]
-    where the sign of the \f$ z\f$-component of the vector is given by the sign of the energy
-    that is handed over. Of course, internally, the energies are all positive.
+    This is the constructor of the class. It initializes a large variety of internal parameters.
+    The vectors are constructed by calling the default constructor of the Beam_Base.
+  */
+  /*!
+    \fn Beam_Base * Laser_Backscattering::Copy()
+    A method to fully copy the class, including all parameter settings.
+  */
+  /*!
+    \fn void Laser_Backscattering::PrintSpectra(std::string)
+    When called, this method outputs the spectra and its contributions to a file specified by
+    the string variable.
+  */
+  /*!
+    \fn bool Laser_Backscattering::CalculateWeight(double,double);
+    Calculates the weight dependent on hte energy fraction \f$x\f$ of the photon w.r.t the
+    incoming lepton and in accordance with the mode given by Laser_Backscattering::m_mode.
+  */
+  /*!
+    \fn double Laser_Backscattering::Weight(APHYTOOLS::Flavour=APHYTOOLS::Flavour(kf::none));
+    After checking that the outgoing particle indeed is a photon, the calculated weight
+    is returned. In principle, from there one could also return an electron energy distribution,
+    but this has not been implmeneted yet.
   */
   /*!
     \fn double Laser_Backscattering::SimpleCompton(double,double,double).

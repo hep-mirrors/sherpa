@@ -74,8 +74,25 @@ namespace PDF {
     The subset of the set named above. Usually "1" is the optimized version with the best fit to data.
   */
   /*!
+    \var int LHAPDF_Fortran_Interface::m_anti
+    To denote particles and antiparticles, m_anti = 1, -1, respectively.
+  */
+  /*!
     \var double LHAPDF_Fortran_Interface::m_f[13]
     The array of the 13 pdfs.
+  */
+  /*!
+    \fn LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour,
+                                                           std::string,int,std::string,bool &)
+    In the constructor the corresponding PDF of the LHAPDF package is initialized. This results
+    in either a read-in of an already prepared grid or its calculation.
+    The list of partons is filled and the boolean is set to true. this will in the following
+    prevent the Fortran code to be initialised twice.
+  */
+  /*!
+    \fn PDF_Base * LHAPDF_Fortran_Interface::GetCopy()
+    A method to initialize another electron PDF as exact copy of the current one.
+    This is needed for the initial state shower of APACIC.
   */
   /*!
     \var double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2)
@@ -87,6 +104,12 @@ namespace PDF {
     Calculates the initialized set at a given energy fraction and a scale. Note that within the SHERPA
     package usually scales are handled as squares of scales, whereas within the LHAPDF package 
     the scales come without squaring.
+  */
+  /*!
+    \fn double LHAPDF_Fortran_Interface::GetXPDF(const APHYTOOLS::Flavour &)
+    This returns x times one specific pdf out of the set of all calculated ones - it checks 
+    whether the flavour passed over as argument is included in the list of legitimate constituents, 
+    PDF_Base::m_partons and selects the appropriate one.
   */
 }
  

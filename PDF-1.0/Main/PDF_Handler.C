@@ -65,7 +65,5 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
     abort();
   }
 
-  msg.Debugging()<<"In PDF_Handler::GetPDFLib : No PDF to be initialized."<<endl
-		 <<"   "<<bunch_particle<<" from "<<flav<<endl;
   return NULL;
 }
