@@ -347,7 +347,7 @@ PseudoRapidity_Selector::PseudoRapidity_Selector(int _nin,int _nout, Flavour * _
   etamin  = new double[m_n];
   etamax  = new double[m_n];
   value = new double[m_n];
-  for (int i=0;i<m_nout;i++) {
+  for (int i=0;i<m_n;i++) {
       etamax[i] = 100.;
       etamin[i] = -etamax[i];
   }
