@@ -81,7 +81,6 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
     msg.Error()<<"Error in Amplitude Handler! Multiple external KK-particles not supported!"<<endl;
 
   while (n) {
-    cout<<"Amplitude : "<<n<<" "<<ncount<<endl;
     while(TOrder(n)>maxorder){
       n=n->Next;
       if (!n) break;
