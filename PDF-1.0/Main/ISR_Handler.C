@@ -11,12 +11,14 @@ using namespace PDF;
 using namespace std;
 
 ISR_Handler::ISR_Handler(ISR_Base ** _ISRBase,double * _splimits) :
-  p_ISRBase(_ISRBase), m_x1(1.), m_x2(1.)
+  p_ISRBase(_ISRBase), m_mass12(0.), m_mass22(0.), m_x1(1.), m_x2(1.)
 {
   m_mode = 0;
   for (short int i=0;i<2;i++) {
     if (p_ISRBase[i]->On()) m_mode += i+1;
   }
+  m_mass12     = sqr(p_ISRBase[0]->Flav().Mass());
+  m_mass22     = sqr(p_ISRBase[1]->Flav().Mass());
   Init(_splimits);
 }
 
@@ -104,9 +106,9 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour * _partons) {
   return fit;
 }
 
-void ISR_Handler::SetPartonMasses(Flavour * _fl) { 
-  m_mass12     = sqr(_fl[0].Mass());
-  m_mass22     = sqr(_fl[1].Mass());
+void ISR_Handler::SetPartonMasses(Flavour * fl) { 
+  m_mass12     = sqr(fl[0].Mass());
+  m_mass22     = sqr(fl[1].Mass());
   double E     = ATOOLS::rpa.gen.Ecms();
   double x     = 1./2.+(m_mass12-m_mass22)/(2.*E*E);
   double E1    = x*E;
