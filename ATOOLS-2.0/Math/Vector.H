@@ -99,6 +99,7 @@ namespace ATOOLS {
     inline const double operator[] (int i) const;
     inline const double Abs2() const; 
     inline const double Abs() const; 
+    inline const double Mass() const; 
     inline const double P() const; 
 
     inline const double PPerp2() const; 
@@ -365,6 +366,11 @@ namespace ATOOLS {
   inline const double Vec4D::Abs() const 
   { 
     return sqrt(Abs2()); 
+  }
+
+  inline const double Vec4D::Mass() const 
+  { 
+    return sqrt(dabs(Abs2())); 
   }
 
   inline const double Vec4D::Y() const 
