@@ -218,6 +218,8 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   }
   for (short unsigned int i=0;i<2;++i) 
     if (p_beamblob[i]) if (!p_beampart[i]->FillBlob(p_beamblob[i],particlelist)) {
+      msg_Tracking()<<"Beam_Remnant_Handler::FillBeamBlobs(..): {\n"
+		    <<*bloblist<<"}"<<std::endl;
       if (i==0) p_beampart[1]->FillBlob(p_beamblob[i],particlelist);
       while (bloblist->size()>0) {
 	delete *bloblist->begin();
