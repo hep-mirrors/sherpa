@@ -1,15 +1,14 @@
 #include "Particle_Qualifier.H"
 
+#include "Message.H"
+
 using namespace ATOOLS;
-
-
-
 
 template<>
 Particle_Qualifier_Base *const Getter_Function<Particle_Qualifier_Base,std::string>::
 GetObject(const std::string &name,const std::string &parameters)
 {
-  std::cout<<" looking for "<<name<<" "<<parameters<<"\n";
+  msg.Tracking()<<"Looking for Qualifier '"<<name<<"' ... ";
   if (name[0]=='!') {
     std::string name1=name.substr(1);
     Particle_Qualifier_Base * qual = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
@@ -23,10 +22,12 @@ GetObject(const std::string &name,const std::string &parameters)
     Particle_Qualifier_Base * qual2 = ATOOLS::Particle_Qualifier_Getter::GetObject(name2,name2);
     if (qual1 && qual2) return new And_Particle_Qualifier(qual1,qual2);
   }
-
   String_Getter_Map::iterator git=s_getters->find(name);
-  if (git!=s_getters->end()) return (*git->second)(parameters);
-  std::cout<<" not found "<<std::endl;
+  if (git!=s_getters->end()) {
+    msg.Tracking()<<"found."<<std::endl;
+    return (*git->second)(parameters);
+  }
+  msg.Tracking()<<"not found."<<std::endl;
   return NULL;
 }
 
