@@ -758,6 +758,22 @@ namespace ATOOLS {
       if (kfc-100*int(kfc/100)<10) return 0;
       return 1;
     }
+    inline const bool IsB_Hadron() const {
+      if (abs(kfc)<100)                            return 0;
+      if (kfc-100*int(kfc/100)<10)                 return 0;
+      if (abs((kfc-100*int(kfc/100))/10)==5)       return 1;
+      if (abs((kfc-1000*int(kfc/1000))/100)==5)    return 1;
+      if (abs((kfc-10000*int(kfc/10000))/1000)==5) return 1;
+      return 0;
+    }
+    inline const bool IsC_Hadron() const {
+      if (abs(kfc)<100)                            return 0;
+      if (kfc-100*int(kfc/100)<10)                 return 0;
+      if (abs((kfc-100*int(kfc/100))/10)==4)       return 1;
+      if (abs((kfc-1000*int(kfc/1000))/100)==4)    return 1;
+      if (abs((kfc-10000*int(kfc/10000))/1000)==4) return 1;
+      return 0;
+    }
 
     inline const bool IsSusy() const {     
       if ((30<kfc)&&(kfc<100)) return 1;
