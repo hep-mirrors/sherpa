@@ -4,6 +4,15 @@
 #include "Amisic.H"
 #include "Data_Read.H"
 
+#ifdef PROFILE__all
+#define PROFILE__MI_Handler
+#endif
+#ifdef PROFILE__MI_Handler
+#include "prof.hh" 
+#else
+#define PROFILE_HERE
+#endif
+
 using namespace SHERPA;
 
 MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *model,
@@ -64,6 +73,7 @@ Matrix_Element_Handler *MI_Handler::SoftMEHandler()
 
 bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
 {
+  PROFILE_HERE;
   switch (m_type) {
   case Amisic:
     return p_amisic->GenerateHardProcess(blob);
@@ -76,6 +86,7 @@ bool MI_Handler::GenerateHardProcess(ATOOLS::Blob *blob)
 
 bool MI_Handler::GenerateSoftProcess(ATOOLS::Blob *blob)
 {
+  PROFILE_HERE;
   switch (m_type) {
   case Amisic:
     return p_amisic->GenerateSoftProcess(blob);
@@ -206,6 +217,17 @@ void MI_Handler::Reset()
   switch (m_type) {
   case Amisic:
     p_amisic->Reset();
+    break;
+  default:
+    break;
+  }
+}
+
+void MI_Handler::CleanUp()
+{
+  switch (m_type) {
+  case Amisic:
+    p_amisic->CleanUp();
     break;
   default:
     break;

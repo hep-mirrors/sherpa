@@ -52,6 +52,7 @@ namespace SHERPA {
 
     // member functions
     void Reset();
+    void CleanUp();
 
     void SetScaleMin(double scalemax,unsigned int i);
     void SetScaleMax(double scalemin,unsigned int i);
