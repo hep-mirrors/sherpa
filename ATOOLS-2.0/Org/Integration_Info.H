@@ -7,9 +7,9 @@ Please include the header 'Info_Key.H' instead.
 #else
 
 #include "Info_Key.H"
+#include "My_Limits.H"
 #include <map>
 #include <vector>
-#include <limits>
 
 namespace ATOOLS {
 

@@ -56,7 +56,15 @@ void Integration_Info::ReleaseKey(Info_Key &key)
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Double_Container &doubles)
 {
   if (doubles.size()==0) return str<<"{<no entries>}";
+#ifdef __GNUC__
+#if __GNUC__ > 2
   std::ios_base::fmtflags flags=str.flags();
+#else
+  std::ios::fmtflags flags=str.flags();
+#endif
+#else
+  std::ios::fmtflags flags=str.flags();
+#endif
   str.precision(6);
   str<<"{";
   for (size_t i=0;i<doubles.size();++i) {
@@ -71,7 +79,15 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Double_Container &doubl
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Vector_Container &vectors)
 {
   if (vectors.size()==0) return str<<"{<no entries>}";
+#ifdef __GNUC__
+#if __GNUC__ > 2
   std::ios_base::fmtflags flags=str.flags();
+#else
+  std::ios::fmtflags flags=str.flags();
+#endif
+#else
+  std::ios::fmtflags flags=str.flags();
+#endif
   str.precision(6);
   str<<"{";
   for (size_t i=0;i<vectors.size();++i) {

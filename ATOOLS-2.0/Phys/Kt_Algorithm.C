@@ -3,6 +3,7 @@
 #include "Message.H"
 
 #include <iomanip>
+#include <algorithm>
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"

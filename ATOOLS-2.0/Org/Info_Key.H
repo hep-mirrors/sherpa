@@ -2,8 +2,9 @@
 #define Info_Key_H
 
 #include "Vector.H"
+#include <string>
 #include <vector>
-#include <ostream>
+#include <iostream>
 
 namespace ATOOLS {
 
@@ -12,13 +13,15 @@ namespace ATOOLS {
 
   namespace si {
 
-    enum code { idle      =  0,
-		reset     =  1,
-		dicing    =  2,
-		diced     =  3,
-		weighting =  4,
-		weighted  =  5,
-		error     =  6  };
+    enum code { 
+      idle      =  0,
+      reset     =  1,
+      dicing    =  2,
+      diced     =  3,
+      weighting =  4,
+      weighted  =  5,
+      error     =  6  
+    };
 
   }// end of namespace si
 
