@@ -353,7 +353,7 @@ Algebra_Interpreter::~Algebra_Interpreter()
 std::string &Algebra_Interpreter::KillBlanks(std::string& expr) const
 {
   for (size_t i=0;i<expr.length();++i) 
-    if (expr[i]==' ') expr.replace(i--,1,"");
+    if (expr[i]==32 || expr[i]==9) expr.replace(i--,1,"");
   return expr;
 }
 
