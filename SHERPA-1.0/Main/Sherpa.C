@@ -116,7 +116,11 @@ bool Sherpa::GenerateOneEvent()
 
 
 
-bool Sherpa::SummarizeRun() { p_eventhandler->Finish(); }
+bool Sherpa::SummarizeRun() 
+{ 
+  p_eventhandler->Finish(); 
+  return true; 
+}
 
 void Sherpa::DrawLogo() { }
 
