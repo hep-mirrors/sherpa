@@ -246,7 +246,11 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       infile.close();
       SetMax(0.,false);
       if (hits==0) {
-	p_pshandler->ReadIn(resultpath+std::string("/MC_")+m_name);
+	if (!p_pshandler->ReadIn(resultpath+std::string("/MC_")+m_name)) {
+	  for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->Reset();
+	  Reset();
+	  m_foundown=false;
+	}
 	if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
 	if (p_pshandler->ISRIntegrator() != 0) p_pshandler->ISRIntegrator()->Print();
 	if (p_pshandler->KMRZIntegrator() != 0) p_pshandler->KMRZIntegrator()->Print();
