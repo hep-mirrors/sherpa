@@ -482,11 +482,13 @@ void Process_Group::SetScale(double _scale)
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetScale(_scale); 
 } 
 
+/*
 void Process_Group::SetScales(double q2_fac, double q2_ren)
 { 
   Process_Base::SetScales(q2_fac,q2_ren);
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetScales(q2_fac,q2_ren); 
 } 
+*/
 
 void Process_Group::SetISRThreshold(double _isrth)
 {
