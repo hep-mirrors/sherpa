@@ -1,2 +1,2 @@
-#ifndef Dipole_Handler
+#ifndef _Dipole_Handler
 #endif
