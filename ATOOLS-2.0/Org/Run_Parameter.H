@@ -212,7 +212,7 @@ namespace AORGTOOLS {
     double c()                              { return 299792458.e3;} // mm/s
     double hBar()                           { return 6.58211889e-25;} // GeV s
     std::string GetPath()                   { return path;} 
-    std::string SetPath(std::string _path)  { path = _path;} 
+    std::string SetPath(std::string _path)  { return path = _path;} 
   };
 
   extern Run_Parameter rpa;
