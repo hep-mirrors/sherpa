@@ -147,6 +147,10 @@ sknot* String_Tree::String2Tree(string term,int fixed)
     }
     else {
       if (term[0]=='-') {
+	if (term.substr(1)==string("") || term.substr(1)==string("0")) {
+	  term = string("0");
+	  return Leaf(term,m,fixed);
+	}
 	m->op = '-';
 	m->left  = String2Tree(string("0"),fixed);
 	m->right = String2Tree(term.substr(1),fixed);
