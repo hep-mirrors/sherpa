@@ -1,5 +1,5 @@
 MAKE    = make
-SUBDIRS = Tool Structure Handler TestIt RunIt
+SUBDIRS = Tool Structure Handler Main TestIt RunIt
 
 if CVS_INCLUDE
 CVSINCLUDE = CVS

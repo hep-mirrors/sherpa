@@ -465,8 +465,20 @@ const bool Chain::Initialize(const Dipole::Branch& ban,
   return true;
 
 }
+const bool Chain::ExtractPartons(Particle_List& parlist) {
 
+  if(varset.l_dip.empty()) return false;
+  list<Dipole*>::iterator dit;
+  for(dit=varset.l_dip.begin();dit!=varset.l_dip.end(); ++dit) {
+    Particle* par=new Particle((*dit)->GetTopBranchPointer()->Parton);
+    parlist.push_back(par); 
 
+  }
+  --dit;
+  Particle* par=new Particle((*dit)->GetBotBranchPointer()->Parton);
+  parlist.push_back(par);
+  return true;
+}
 
 //=============================================================================
 

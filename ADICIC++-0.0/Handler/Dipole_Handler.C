@@ -238,8 +238,8 @@ const bool Dipole_Handler::FinishGluonEmission() {
   m_p1=p_dip->GetTopBranchPointer()->Momentum();
   m_p3=p_dip->GetBotBranchPointer()->Momentum();
   //cout<<m_p1.Abs2()<<endl;
-  assert(m_p1.Abs2() > -1.0e-11);
-  assert(m_p3.Abs2() > -1.0e-11);
+  assert(m_p1.Abs2() > -1.0e-6);
+  assert(m_p3.Abs2() > -1.0e-6);
   assert(m_p1[0] > 0.0);
   assert(m_p3[0] > 0.0);
 

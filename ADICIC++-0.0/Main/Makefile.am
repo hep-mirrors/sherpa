@@ -1,0 +1,47 @@
+SHERPASYS  = ../..
+
+ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
+PDFINC     = $(SHERPASYS)/PDF-1.0
+BEAMINC    = $(SHERPASYS)/BEAM-1.0
+PHASICINC  = $(SHERPASYS)/PHASIC++-1.0
+MODELINC   = $(SHERPASYS)/MODEL-1.0
+EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
+SHERPAINC  = $(SHERPASYS)/SHERPA-1.0
+
+
+
+if CVS_INCLUDE
+CVSINCLUDE = CVS
+endif
+
+
+
+lib_LTLIBRARIES = libAdicicMain.la
+libAdicicMain_la_SOURCES = Adicic.C 
+
+
+
+#AM_CXXFLAGS = -pedantic -Wall -Winline -DUSING_SHERPA
+
+
+
+INCLUDES = -I../Tool \
+	   -I../Handler \
+           -I../Structure \
+           -I$(ATOOLSINC)/Phys \
+           -I$(ATOOLSINC)/Math \
+           -I$(ATOOLSINC)/Org
+
+
+  
+noinst_HEADERS = Adicic.H
+
+
+
+EXTRA_DIST = $(CVSINCLUDE) 
+
+
+
+
+
+

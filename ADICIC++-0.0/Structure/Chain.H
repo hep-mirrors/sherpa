@@ -10,6 +10,7 @@
 
 
 #include "Dipole.H"
+#include "Particle_List.H"
 
 
 #define CHAIN_OUTPUT CHAIN_OUTPUT
@@ -157,7 +158,14 @@ namespace ADICIC {
     const bool CheckMomentumConservation(ATOOLS::Vec4D&) const;
     const bool Clear();
     const bool Initialize(const Dipole::Branch&, const Dipole::Antibranch&);
-
+    /*
+      const bool StartChain(const Dipole::Branch&);
+      const bool StartChain(const Dipole::Glubranch&);
+      const bool AddToChain(const Dipole::Glubranch&);
+      const bool FinishChain(const Dipole::Antibranch&);
+      const bool FinishChain(const Dipole::Glubranch&);
+    */
+    const bool ExtractPartons(ATOOLS::Particle_List&);
   };
 
 

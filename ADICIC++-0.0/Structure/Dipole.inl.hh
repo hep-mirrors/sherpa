@@ -338,6 +338,15 @@ namespace ADICIC {
     ++s_count; this->sc_info();
   }
 
+  inline Dipole_Particle::Dipole_Particle(Trio i,
+					  const ATOOLS::Particle& par)
+    : m_num(++s_maxcount), Name(m_num),
+      m_typ(i), m_tag(i),
+      m_pac( ATOOLS::Particle(par) ), Parton(m_pac),
+      m_tow(std::list<Dipole*>()) {
+
+    ++s_count; this->sc_info();
+  }
 
 
 

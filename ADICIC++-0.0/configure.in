@@ -40,6 +40,7 @@ AC_OUTPUT(Tool/Makefile \
 	  Tool/savemaketool/Makefile \
 	  Structure/Makefile \
 	  Handler/Makefile \
+	  Main/Makefile \
 	  TestIt/Makefile \
 	  TestIt/data/Makefile \
 	  RunIt/Makefile \

@@ -283,8 +283,8 @@ const bool Chain_Handler::SplitDipole() {
   Dipole& winner=**i_fix;
 
   Vec4D momm=winner.GetTopBranchPointer()->Momentum();
-  momm+=winner.GetBotBranchPointer()->Momentum();cout<<momm<<endl;/////////////
-  p_cha->UpdateMomentum(-1.0,momm);cout<<p_cha->Momentum()<<endl;//////////////
+  momm+=winner.GetBotBranchPointer()->Momentum();//cout<<momm<<endl;/////////////
+  p_cha->UpdateMomentum(-1.0,momm);// cout<<p_cha->Momentum()<<endl;//////////////
 
   assert(p_dhwait->FinishGluonEmission());
 

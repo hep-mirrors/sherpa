@@ -270,20 +270,17 @@ Dipole_Particle* Dipole_Particle::Copy() const {
 
 
 
-Dipole_Branch::Dipole_Branch(const Particle& par) : Dipole_Particle() {
+Dipole_Branch::Dipole_Branch(const Particle& par) : Dipole_Particle(Positive,par) {
   //The interface structure.
-  cerr<<"\nSorry :o( Permission denied! Method has not been implemented.\n";
-  assert(0); exit(1);
+  assert(par.Flav().IsQuark() && !par.Flav().IsAnti());
 }
-Dipole_Antibranch::Dipole_Antibranch(const Particle& par) : Dipole_Particle() {
+Dipole_Antibranch::Dipole_Antibranch(const Particle& par) : Dipole_Particle(Negative,par) {
   //The interface structure.
-  cerr<<"\nSorry :o( Permission denied! Method has not been implemented.\n";
-  assert(0); exit(1);
+  assert(par.Flav().IsQuark() && par.Flav().IsAnti());
 }
-Dipole_Glubranch::Dipole_Glubranch(const Particle& par) : Dipole_Particle() {
+Dipole_Glubranch::Dipole_Glubranch(const Particle& par) : Dipole_Particle(Nil,par) {
   //The interface structure.
-  cerr<<"\nSorry :o( Permission denied! Method has not been implemented.\n";
-  assert(0); exit(1);
+  assert(par.Flav().IsGluon());
 }
 
 

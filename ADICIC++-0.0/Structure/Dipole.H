@@ -222,6 +222,7 @@ namespace ADICIC {
   public:
 
     inline Dipole_Particle();    //Standard particle is the SM gluon!
+    inline Dipole_Particle(Trio,const ATOOLS::Particle&);
     Dipole_Particle(const Dipole_Particle&);
 
     Dipole_Particle(const Dipole_Quark_Base&, const ATOOLS::Vec4D&);
