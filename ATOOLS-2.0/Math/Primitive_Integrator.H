@@ -44,7 +44,7 @@ namespace ATOOLS {
   private:
     
     double m_alpha, m_oldalpha, m_weight;
-    double m_sum, m_sum2, m_max, m_np, m_ssum, m_ssum2, m_snp;
+    double m_sum, m_sum2, m_max, m_np, m_ssum2, m_snp;
 
     std::vector<double>             m_this;
     std::vector<Primitive_Channel*> m_next;
@@ -103,11 +103,6 @@ namespace ATOOLS {
     /*!
       \fn void Reset()
       \brief Resets the weight, the squared weight and the number of points.
-    */
-    void ResetAll();
-    /*!
-      \fn void ResetAll()
-      \brief Resets all data.
     */
     void SetWeight();
     /*!
@@ -197,11 +192,6 @@ namespace ATOOLS {
       \fn inline double Sum2() const
       \brief Returns \f$\sum w^2\f$.
     */
-    inline double SSum() const    { return m_ssum;  }
-    /*!
-      \fn inline double SSum() const
-      \brief Returns \f$\sum_{stored} w\f$.
-    */
     inline double SSum2() const   { return m_ssum2; }
     /*!
       \fn inline double SSum2() const
@@ -228,35 +218,17 @@ namespace ATOOLS {
       \fn inline double Mean() const
       \brief Returns \f$\frac{\sum w}{n}\f$.
     */
-    inline double SMean() const    { return m_ssum/m_snp; }
-    /*!
-      \fn inline double SMean() const
-      \brief Returns \f$\frac{\sum_{stored} w}{n_{stored}}\f$.
-    */
     inline double Variance() const    
     { return (m_sum2-m_sum*m_sum/m_np)/(m_np-1.0); }
     /*!
       \fn inline double Variance() const
       \brief Returns \f$\frac{\sum (w^2-\left<w\right>^2)}{n-1}\f$.
     */
-    inline double SVariance() const    
-    { return (m_ssum2-m_ssum*m_ssum/m_snp)/(m_snp-1.0); }
-    /*!
-      \fn inline double SVariance() const
-      \brief Returns \f$\frac{\sum_{stored} (w^2-\left<w\right>^2)}
-      {n_{stored}-1}\f$.
-    */
     inline double Sigma() const  
     { return sqrt(Variance()/m_np); }
     /*!
       \fn inline double Sigma() const
       \brief Returns \f$\sqrt{\frac{Variance()}{n}}\f$
-    */
-    inline double SSigma() const  
-    { return sqrt(SVariance()/m_snp); }
-    /*!
-      \fn inline double SSigma() const
-      \brief Returns \f$\sqrt{\frac{SVariance()}{n_{stored}}}\f$
     */
 
     inline bool Boundary() const { return m_next[0]==NULL; }
