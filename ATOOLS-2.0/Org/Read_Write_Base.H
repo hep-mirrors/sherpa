@@ -35,7 +35,8 @@ namespace ATOOLS {
 
     std::vector<std::string> m_comment, m_ignore, m_separator, m_filecontent;
     std::vector<int>         m_blank;
-    std::vector<bool>        m_ifresults;
+
+    std::vector<std::pair<int,size_t> > m_ifresults;
 
     std::string              m_string;
     std::vector<std::string> m_filebegin, m_fileend;

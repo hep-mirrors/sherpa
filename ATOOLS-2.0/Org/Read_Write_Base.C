@@ -2,6 +2,7 @@
 
 #include "MyStrStream.H"
 #include "MathTools.H"
+
 //#define DEBUG__Read_Write_Base
 #ifdef DEBUG__Read_Write_Base
 #include <iostream>
@@ -126,20 +127,29 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
   return pos;
 }
 
-#include "Message.H"
-
 std::string &Read_Write_Base::Interprete(std::string &lastline) 
 {
   if (!m_cmode) return lastline;
   if (!m_ifresults.empty()) {
-    size_t pos=lastline.find("}");
+    size_t pos=std::string::npos;
+    for (size_t i=0;i<lastline.length();++i)
+      if (lastline[i]=='{') ++m_ifresults.back().second;
+      else if (lastline[i]=='}') {
+	if (m_ifresults.back().second>1) --m_ifresults.back().second;
+	else {
+	  pos=i; 
+	  break;
+	}
+      }
     if (pos!=std::string::npos) {
-      if (m_ifresults.back()) lastline.replace(pos,1,"");
+      if (m_ifresults.back().first) lastline.replace(pos,1,"");
       else lastline=lastline.substr(pos+1);
       m_ifresults.pop_back();
+      return Interprete(lastline);
     }
-    if (!m_ifresults.empty() && 
-	!m_ifresults.back()) lastline="";
+    else {
+      if (!m_ifresults.back().first) lastline="";
+    }
   }
   size_t pos=Min(lastline.find("if "),lastline.find("if("));
   if (pos>0 && 
@@ -156,7 +166,7 @@ std::string &Read_Write_Base::Interprete(std::string &lastline)
 				substr(opos+1,cpos-opos-1)));
       for (opos=cpos+1;opos<lastline.length();++opos) 
 	if (lastline[opos]=='{') {
-	  m_ifresults.push_back(result);
+	  m_ifresults.push_back(std::pair<int,size_t>(result,1));
 	  ++opos;
 	  break;
 	}
