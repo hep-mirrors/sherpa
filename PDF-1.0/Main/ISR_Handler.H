@@ -71,9 +71,6 @@ namespace PDF {
     inline void SetYMax(const double ymax)      { m_ylimits[1]  = ymax; }
     inline void SetName(const std::string name) { m_name = name;        }
 
-    inline void SetOn(const bool mode)       { m_mode=mode;       }
-    inline void SetKMROn(const bool kmrmode) { m_kmrmode=kmrmode; }
-
     inline std::string Name() { return m_name; }
     inline std::string Type() { return m_type; }
 
