@@ -152,7 +152,7 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton)
     return false;
   }
   m_erem-=parton->Momentum()[0]+MinimalEnergy(parton->Flav());
-  if (m_erem<=0.0) {
+  if (m_erem<0.0) {
     msg_Tracking()<<"Remnant_Base::Extract(..): No remaining energy for "
 		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" -> E_min = "
 		  <<(parton->Momentum()[0]+MinimalEnergy(parton->Flav()))<<std::endl;

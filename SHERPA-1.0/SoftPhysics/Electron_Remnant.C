@@ -51,3 +51,10 @@ bool Electron_Remnant::AdjustKinematics()
   // if (p_partner->Type()!=Hadron) return Remnant_Base::AdjustKinematics();
   return true;
 }
+
+ATOOLS::Flavour Electron_Remnant::
+ConstituentType(const ATOOLS::Flavour &flavour) 
+{
+  if (flavour.Kfcode()==ATOOLS::kf::e) return flavour;
+  return ATOOLS::kf::none;
+}
