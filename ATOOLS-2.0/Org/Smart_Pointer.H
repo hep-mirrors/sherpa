@@ -55,8 +55,8 @@ namespace ATOOLS {
     { 
       if (p_owner!=this) p_owner->p_copy=p_copy;
       else {
-	if (p_copy==NULL && p_this!=NULL) delete p_this; 
-	else p_copy->p_owner=p_copy; 
+	if (p_copy!=NULL) p_copy->p_owner=p_copy; 
+	else if (p_this!=NULL) delete p_this; 
       } 
       Reset();
     } 
