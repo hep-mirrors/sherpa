@@ -119,6 +119,8 @@ void Signal_Processes::FillBlob(Blob * blob, const double, const int)
   // store some additional information
   blob->AddData("ME_Weight",new Blob_Data<double>(p_mehandler->Weight()));
   blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(p_mehandler->NumberOfTrials()));
+  blob->AddData("ISR_Info_cms",p_mehandler->GetISR_Handler()->Info(0));
+  blob->AddData("ISR_Info_lab",p_mehandler->GetISR_Handler()->Info(1));
 }
 
 void Signal_Processes::Finish(const std::string &) {}
