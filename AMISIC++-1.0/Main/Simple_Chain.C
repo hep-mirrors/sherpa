@@ -797,7 +797,6 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #ifdef DEBUG__Simple_Chain
 //     std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
 #endif
-    p_processes->Selected()->PSHandler(false)->CreateIntegrators();
     p_processes->Selected()->PSHandler(false)->InitIncoming();
     if ((*p_processes)[m_selected]->OneEvent()) {
 #ifdef DEBUG__Simple_Chain
