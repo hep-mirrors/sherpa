@@ -1,13 +1,13 @@
 SHERPASYS  = ../..
 
-SHERPAFLAGS   =	-pedantic -Wall -Winline
+SHERPAFLAGS   =	# -pedantic -Wall -Winline
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
-		-I../SoftPhysics -I../LundTools -I../Single_Events \
+		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
 		-I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
@@ -39,7 +39,7 @@ AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
+		-lSherpaSoftPhysics -lLundInterface -lSherpaTools 
 
 if AMISIC_SUPPORT
 AMISICFLAGS   =	-DUSING__Amisic
