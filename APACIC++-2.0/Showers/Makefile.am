@@ -1,3 +1,6 @@
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
 lib_LTLIBRARIES = libApacicShowers.la
 libApacicShowers_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
 			      Timelike_Kinematics.C  Spacelike_Kinematics.C \
@@ -17,3 +20,4 @@ noinst_HEADERS = Final_State_Shower.H Timelike_Sudakov.H \
                  Sudakov_Tools.H Splitting_Function.H \
 		 Splitting_Group.H Backward_Splitting_Group.H \
 		 QED_Splitting_Functions.H QCD_Splitting_Functions.H 
+EXTRA_DIST    = $(CVSINCLUDE)

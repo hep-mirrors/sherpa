@@ -1,2 +1,6 @@
 MAKE = make 
-SUBDIRS = Main Showers
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+SUBDIRS       =	Main Showers
+EXTRA_DIST    = $(CVSINCLUDE)
