@@ -1,6 +1,10 @@
 #include "Poincare.H"
 #include "MathTools.H"
 
+#ifdef DEBUG__Poincare
+#include <iostream>
+#endif
+
 using namespace ATOOLS;
 
 Poincare::Poincare(): m_status(0),m_beta(1.,0.,0.,0.)        // standard constructor Unity
@@ -50,6 +54,13 @@ Poincare::Poincare(Vec4D v1, Vec4D v2)   // rotations constructor
     st[i] = sqrt(1.-sqr(ct[i]));
     cp[i] = pp[i][n1+1]/st[i];
     sp[i] = pp[i][n0+1]/st[i];
+#ifdef DEBUG__Poincare
+    std::cout<<"Poincare::Poincare("<<v1<<","<<v2<<"): "
+	     <<"cos(\\theta)="<<ct[i]<<" \t"
+	     <<"sin(\\theta)="<<st[i]<<" \t"
+	     <<"cos(\\phi)="<<cp[i]<<" \t"
+	     <<"sin(\\phi)="<<sp[i]<<std::endl;
+#endif
     // calculate matrix
     r[i][n0][n0] = cp[i]; 
     r[i][n0][n1] = sp[i]*ct[i]; 
@@ -113,6 +124,24 @@ void Poincare::RotateBack(Vec4D& v)         // rotate back
     for (int j=1;j<4;j++) 
       v[i] += m_mat[i][j]*p2[j];
   }
+}
+
+bool Poincare::CheckBoost() 
+{
+  if (m_beta.Abs2()<0.) return false;
+  return true;
+}
+
+bool Poincare::CheckRotation() 
+{
+  bool okay=true;
+  for (short unsigned i=0;i<3;++i) {
+    for (short unsigned j=0;j<3;++j) {
+      double test=dabs(m_mat[i+1][j+1]);
+      if ((test>1.)||!(test>=0.)) okay=false; 
+    }
+  } 
+  return okay;
 }
 
 void Poincare::Invert() 

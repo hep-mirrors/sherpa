@@ -1,13 +1,19 @@
-#ifndef poincare_h
-#define poincare_h
+#ifndef Poincare_H
+#define Poincare_H
+
 #include "Vector.H"
 
 namespace ATOOLS {
+
   class Poincare {
+  private:
+
     int    m_status;               // 0 no operation, 1 boost, 2 rot, 3 boost+rot
     double m_mat[4][4];               
     Vec4D  m_beta;
+
   public:
+
     Poincare();                    // standard constructor Unity
     Poincare(Vec4D v1, Vec4D v2);  // rotations constructor
     Poincare(Vec4D v);             // boost constuctor 
@@ -18,14 +24,18 @@ namespace ATOOLS {
     void Rotate(Vec4D& v);         // rotate
     void RotateBack(Vec4D& v);     // rotate back
 
+    bool CheckBoost();             // test boost 
+    bool CheckRotation();          // test rotation
+
     void Invert();  
 
-    Vec4D operator*(const Vec4D& vin) {
+    inline Vec4D operator*(const Vec4D& vin) {
       Vec4D v(vin);
       if ((m_status)&(1)) Boost(v);
       if ((m_status)&(2)) Rotate(v);
       return v;
     }
+
   };
 
   /*!

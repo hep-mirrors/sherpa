@@ -1,13 +1,15 @@
 SHERPASYS = ../..
 
-MODELINC = $(SHERPASYS)/MODEL-1.0
+ATOOLSFLAGS   =	# -pedantic -Wall -Winline
 
-lib_LTLIBRARIES       =	libToolsMath.la
+ATOOLSINCS    =	-I../Org -I../Phys
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+lib_LTLIBRARIES       =	libToolsMath.la
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
 				Random.C \
@@ -18,7 +20,8 @@ libToolsMath_la_SOURCES       =	\
 				Matrix.C \
 				Fast_Function.C \
 				Gauss_Integrator.C \
-				Histogram.C
+				Histogram.C \
+				Variable.C 
 noinst_HEADERS        =	\
 			MathTools.H \
 			Random.H \
@@ -30,9 +33,17 @@ noinst_HEADERS        =	\
 			Vegas.H \
 			Fast_Function.H \
 			Gauss_Integrator.H \
+			Histogram.H \
+			Variable.H \
+			Scaling.H \
+			Scaling.C \
+			Axis.H \
+			Axis.inl.H \
+			Axis.C \
+			Data_To_Function.H \
+			Data_To_Function.inl.H \
+			Data_To_Function.C \
 			Histogram.H
-INCLUDES      =	-I../Phys \
-	   	-I../Org \
-	   	-I$(MODELINC)/Main
-
 EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(ATOOLSFLAGS)
+INCLUDES      = $(MODELINCS) $(ATOOLSINCS)

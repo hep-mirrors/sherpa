@@ -132,14 +132,20 @@ Histogram::~Histogram() {
 
 void Histogram::Finalize() {
   double total=0.0;
-  for (int i=0;i<m_nbin;++i) total+=m_bins[i][0];
-  total=m_fills;  // comment this line
-  for (int i=0;i<m_nbin;++i) m_bins[i][0]/=total*m_binsize;
+  for (int i=0;i<m_nbin;++i) {
+    m_bins[i][0]/=m_fills*m_binsize;
+    if (m_depth>1) {
+      m_bins[i][1]=m_bins[i][1]/(m_fills*m_binsize)-sqr(m_bins[i][0]);
+    }
+  }
 }
 
 void Histogram::Reset() {
   for (int i=0;i<m_nbin;i++) { 
-    m_bins[i][0]=0;
+    m_bins[i][0]=0.;
+    if (m_depth>1) {
+      m_bins[i][1]=0.;
+    }
   }
   m_fills=0;
 }
@@ -249,7 +255,10 @@ void Histogram::Insert(double coordinate,double value,int ncount) {
     if ( (coordinate >= low) && (coordinate < up) ) {
       m_bins[i][0] += value;
       if (m_depth>1) {
-	if (value>m_bins[i][1]) m_bins[i][1] = value;
+	m_bins[i][1] += value*value;
+	if (m_depth>2) {
+	  if (value>m_bins[i][2]) m_bins[i][2] = value;
+	}
       }
       return; 
     }

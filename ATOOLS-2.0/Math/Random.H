@@ -5,61 +5,45 @@
 #include "MathTools.H"
 
 namespace ATOOLS {
-  class Random {
-    long     m_id;
-    int      m_inext,m_inextp;
-    long     m_ma[56];
-    
-    // for read and write status
-    long int m_written;
-    char     m_outname[150];
-    std::fstream * m_outstream;
 
-    double   Ran1(long *idum);
-    double   Ran2(long *idum);
-    double   Ran3();
-    void     InitRan3(long*);
+  class Random {
+  private:
+
+    long int m_id, m_ma[56], m_written;
+    int      m_inext,m_inextp;
+    char     m_outname[150];
+
+    std::fstream *p_outstream;
+
+    double Ran1(long *idum);
+    double Ran2(long *idum);
+    double Ran3();
+
+    void InitRan3(long*);
 
   public:
-    Random(long nid): m_outstream(NULL) {SetSeed(nid);}
+
+    // constructor
+    Random(long nid): p_outstream(NULL) { SetSeed(nid); }
+
+    // destructor
+    ~Random();
     
-    inline double Get() {return Ran2(&m_id);}
-    inline double GetNZ() {      // not zero random number
-      double ran1;
-      do {
-	ran1 = Get();
-      } 
-      while (ran1==0.); 
-      return ran1;
-    }
-    inline long GetSeed() {return m_id;}
-    inline void SetSeed(long nid) {
-      m_id = nid<0 ? nid : -nid;
-      InitRan3(&m_id);
-      // for status recovery
-      m_written=0;    
-      m_outstream=0;
-      std::strcpy(m_outname,"");
-    }
-    
-    inline double Theta() {
-      return acos(2.*Get()-1.);
-    }  
+    // member functions
+    void SetSeed(long nid);
 
-    int WriteOutStatus(const char*);
+    inline long int GetSeed() { return m_id; }
 
-    void ReadInStatus(const char* filename, long int index=0 );
+    int  WriteOutStatus(const char *outfile);
+    void ReadInStatus(const char *infile,long int index=0);
 
-    ~Random() { 
-      if (m_outstream!=0) {
-	m_outstream->close();
-	delete m_outstream;
-      }
-    } 
-  };
+    inline double Get()   { return Ran2(&m_id);       }
+    inline double Theta() { return acos(2.*Get()-1.); }  
+    double        GetNZ();
+
+  };// end of class Random
 
   extern Random ran;
-
 
   // --------------------------------------------------
   //         Doxygen part
@@ -144,9 +128,6 @@ namespace ATOOLS {
     \brief reads in a status from a file
   */
 
-  
-
-}
-
-
+}// end of namespace ATOOLS
+ 
 #endif

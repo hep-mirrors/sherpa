@@ -23,6 +23,14 @@ using namespace std;
 
 ATOOLS::Random ATOOLS::ran(1234);
 
+Random::~Random() 
+{ 
+  if (p_outstream!=NULL) {
+    p_outstream->close();
+    delete p_outstream;
+  }
+} 
+
 double Random::Ran2(long *idum)
 {
   int   j;
@@ -172,14 +180,14 @@ int Random::WriteOutStatus(const char * filename){
   // write out every Statusregister of Random Number generator
 
   //  sprintf(m_outname,"%s%i.dat",filename,m_written); 
-  if ((m_outstream!=0) && (std::strcmp(filename,m_outname)!=0)) {
-    m_outstream->close();
-    m_outstream = 0;
+  if ((p_outstream!=0) && (std::strcmp(filename,m_outname)!=0)) {
+    p_outstream->close();
+    p_outstream = 0;
   }
-  if (m_outstream == 0){
+  if (p_outstream == 0){
     msg.Events()<<" Saving Random Number Generator Status to "<<filename<<endl;
     long int count=0;
-    std::ifstream *myinstream = new std::ifstream(filename);
+    std::ifstream *myinstream = new std::ifstream(filename,std::ios::in);
     if (myinstream->good()) {
       char * buffer[600];
       while (!myinstream->eof()) {
@@ -191,16 +199,16 @@ int Random::WriteOutStatus(const char * filename){
       delete myinstream;
     }
 #ifdef _IOS_BAD
-    m_outstream = new std::fstream(filename,ios::app | ios::out);
+    p_outstream = new std::fstream(filename,ios::app | ios::out);
 #else
-    m_outstream = new std::fstream(filename,std::ios_base::app | std::ios_base::out);
+    p_outstream = new std::fstream(filename,std::ios_base::app | std::ios_base::out);
 #endif
     std::strcpy(m_outname,filename);
     m_written=count;
   } 
-  (*m_outstream)<<m_written<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
-  for (int i=0;i<56;++i) (*m_outstream)<<m_ma[i]<<"\t";
-  (*m_outstream)<<endl;
+  (*p_outstream)<<m_written<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
+  for (int i=0;i<56;++i) (*p_outstream)<<m_ma[i]<<"\t";
+  (*p_outstream)<<endl;
   return m_written++;
 }
 
@@ -225,4 +233,20 @@ void Random::ReadInStatus(const char * filename, long int index){
     myinstream.close();
   } 
   else msg.Error()<<filename<<" not found!!"<<endl;
+}
+
+double Random::GetNZ() 
+{
+  double ran1;
+  do ran1=Get(); while (ran1==0.); 
+  return ran1;
+}
+
+void Random::SetSeed(long int nid) 
+{
+  m_id = nid<0 ? nid : -nid;
+  InitRan3(&m_id);
+  m_written=0;    
+  p_outstream=0;
+  std::strcpy(m_outname,"");
 }
