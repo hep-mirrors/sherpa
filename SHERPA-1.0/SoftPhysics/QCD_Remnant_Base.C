@@ -37,13 +37,14 @@ QCD_Remnant_Base::~QCD_Remnant_Base()
 
 void QCD_Remnant_Base::Clear()
 {
+  if (p_start!=NULL) delete p_start;
   while (m_connected.size()>0) {
-    delete m_connected.front();
+    if (m_connected.front()!=p_start) delete m_connected.front();
     m_connected.erase(m_connected.begin());
   }
-  if (p_start!=NULL) delete p_start;
   Color_Dipole::s_partons.clear();
   Remnant_Base::Clear();
+  p_start=NULL;
 }
 
 void QCD_Remnant_Base::AssignRemnants() 
