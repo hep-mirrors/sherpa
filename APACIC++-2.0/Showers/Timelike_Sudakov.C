@@ -7,6 +7,8 @@
 #include "Knot.H"
 #include "MathTools.H"
 
+#include <iomanip>
+
 using namespace APACIC;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
@@ -146,8 +148,8 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
       else if (m_pt_scheme == 2) m_pt2 = 0.25*Min((1.-m_z)/m_z,m_z/(1.-m_z))*m_ta;
       if (m_pt2>m_pt2min) {
 	if (!Veto(mother)) {
-	  //msg.Debugging()<<"Timelike_Sudakov::Dice Branch with t="<<m_ta<<", z="<<m_z<<", ("
-	  //	 <<GetFlB()<<","<<GetFlC()<<"), tend="<<tend<<std::endl;      
+	  msg.Out()<<"Timelike_Sudakov::Dice Branch with t="<<m_ta<<", z="<<m_z<<", ("
+	   <<GetFlB()<<","<<GetFlC()<<"), tend="<<tend<<std::endl;      
 	  if (m_mass_scheme >= 2) m_ta += mother->tout;
 	  UniformPhi();
 	  mother->z      = m_z;
@@ -156,6 +158,11 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
 	  if (m_inflav.IsQuark()) mother->maxpt2 = m_pt2;
 	  else                    mother->maxpt2 = m_pt2max;
 	  return 1;
+	}
+	else {
+	  msg.Out()<<"Timelike_Sudakov::Dice Branch Vetoed with t="<<m_ta<<", z="<<m_z<<", ("
+	   <<GetFlB()<<","<<GetFlC()<<"), tend="<<tend<<std::endl;      
+	  msg.Out()<<" last_veto="<<m_last_veto<<endl;
 	}
       }
     }
@@ -287,6 +294,9 @@ bool Timelike_Sudakov::AngleVeto(Knot * mo)
     default:  
       thest  = sqrt( m_ta/(m_z*(1.- m_z)*m_wa) );
     }  
+
+    //    cout<<" th_fs = "<<std::setw(16)<<thest<<" thcrit"<<std::setw(16)<<mo->thcrit<<endl;
+
     if (thest < mo->thcrit) return 0;
     return 1;
   }

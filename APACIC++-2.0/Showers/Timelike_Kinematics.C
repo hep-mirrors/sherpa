@@ -17,7 +17,7 @@ Timelike_Kinematics::Timelike_Kinematics(double _pt2min) :
   pt2min(_pt2min), t0(4.*pt2min),pt_scheme(1),mass_scheme(1)
 {
   double ycut   = AORGTOOLS::rpa.integ.Ycut();
-  jf            = new APHYTOOLS::Jet_Finder(ycut,1);
+  jf            = new APHYTOOLS::Jet_Finder(ycut,4);  //// *AS* !!!! fixed to Hadron Hadron
 }
 
 
@@ -452,6 +452,31 @@ bool Timelike_Kinematics::KinCheck(int first,Knot * mo)
 
 bool Timelike_Kinematics::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
   // check for loosing jets
+  //     hadron - hadron check:
+  if (d1==0 && d2 ==0) {
+    cout<<" ERROR in Timelike_Kinematics::ExtraJetCheck "<<endl;
+  }
+
+  if (d1==0) {
+    if (! (jf->TwoJets(d2->part->Momentum()))) {
+      return 0;
+    }
+    return 1;
+  }
+
+  if (d2==0) {
+    if (! (jf->TwoJets(d1->part->Momentum()))) {
+      return 0;
+    }
+    return 1;
+  }
+
+  if (! (jf->TwoJets(d1->part->Momentum(),d2->part->Momentum()))) {
+    return 0;
+  }
+  return 1;
+
+  // =====================  old e+ e- jetveto ====================
   // using pt2
   double z;
   double E2;
@@ -703,23 +728,7 @@ bool Timelike_Kinematics::DoKinematics(Knot * mo)
   if (!DoKinematics(mo->left))  return 0;
   if (!DoKinematics(mo->right)) return 0;
 
-
-
-  // *AS* daughter trees are perhaps to be boosted/rotated, checking...
-  /*
-  cout<<" before boost:"<<mo->kn_no<<endl;
-  cout<<" mo: "<<mo->part->Momentum()<<endl
-      <<" d1: "<<mo->left->part->Momentum()<<endl 
-      <<" d2: "<<mo->right->part->Momentum()<<endl;
-  */
   BoostDaughters(mo);
-  /*
-  cout<<" after boost:"<<mo->kn_no<<endl;
-  cout<<" mo: "<<mo->part->Momentum()<<endl
-      <<" d1: "<<mo->left->part->Momentum()<<endl 
-      <<" d2: "<<mo->right->part->Momentum()<<endl;
-  */
-  
   return 1;
 };
 

@@ -318,9 +318,3 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
                           else maxt = (-(t1/active->z - t3)*(s/(s-t1)-s/(s/active->z-t3))); 
   return maxt;
 }
-
-
-
-
-
-

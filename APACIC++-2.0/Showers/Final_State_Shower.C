@@ -51,11 +51,6 @@ int Final_State_Shower::PerformShower(Tree * tree,bool jetveto)
   m_ini_partons.clear();
   int stat=InitializeJets(tree,tree->GetRoot());
 
-  /*  
-  int statb=ExtraJetCheck();
-  if (stat==1 && statb==0)
-    stat=3;
-  */
   if (stat) {
     //msg.Tracking()<<" Now DoKinematics "<<std::endl;
     if (!p_kin->DoKinematics(tree->GetRoot())) {
@@ -66,10 +61,7 @@ int Final_State_Shower::PerformShower(Tree * tree,bool jetveto)
 
       return 0;
     }
-    int statb=ExtraJetCheck();
-    if (stat==1 && statb==0) stat=3;
-
-    return stat;
+    return 1;
   }
   else {
     msg.Error()<<"Error in Final_State_Shower : "<<std::endl
@@ -98,23 +90,28 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   msg.Tracking()<<"("<<si->kn_no<<")  : "<<si->part->Momentum()<<endl;
   if (mo->thcrit!=M_PI) {
     double th1c   = sqrt( dabs(si->t)/((1.- si->z)*si->E2));
-    msg.Tracking()<<" setting thcrit from "<<mo->thcrit<<" to "<<th1c<<endl;
+    cout<<" setting thcrit from "<<mo->thcrit<<" to "<<th1c<<endl;
     mo->thcrit=th1c;
   }
 
   //  mo->thcrit=M_PI;   // *AS* HACK!!!!
 
 
-// // if hard part angles should be correct!!!
-  
-
   if (mo->left && mo->right) {
-    m_ini_partons.clear();
     EstablishRelations(mo,mo->left,mo->right);
 
     int stat=InitializeJets(tree,mo,1);
   }
   else {
+    if (mo->part->Info()=='H') {
+      int found=0;
+      for (int i=0;i<m_ini_partons.size();++i) {
+	if (m_ini_partons[i]==mo) found=1;
+      }
+      if (!found) {
+	m_ini_partons.push_back(mo);
+      }
+    }
 
     Flavour flavs[2];
     for (;;) {
@@ -363,8 +360,8 @@ void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
     // using shower variables
     //    double th  = 
     //    cout<<" th_old "<<th_old<<std::endl;
-    //    cout<<" th="<<sqrt( t_mo/(mo->z*(1.- mo->z)*sqr(E_mo) ))<<std::endl;
     double th  = sqrt( t_mo/(mo->z*(1.- mo->z)))/E_mo;
+    //    cout<<" fs th in establish="<<th<<std::endl;
 
     // thcrit : approximation (for small t):
     if (mo->part->Flav().Strong()) {
@@ -640,14 +637,21 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
       cout<<" rel set : "<<endl;
       OutputTree(tree);
     }
-
+    //    cout<<" calling InitializeJets("<<d1->kn_no<<")"<<endl;
     int ok1=InitializeJets(tree,d1);
     if (ok1==3) ej=3;
     ok = ok && ok1;
   }
   else {
-    if (d1->part->Flav().Strong())
-      m_ini_partons.push_back(d1);
+    if (d1->part->Flav().Strong()) {
+      int found=0;
+      for (int i=0;i<m_ini_partons.size();++i) {
+	if (m_ini_partons[i]==d1) found=1;
+      }
+      if (!found) {
+	m_ini_partons.push_back(d1);
+      }
+    }
   }
   if (!decay2) {
     if (init_rel) EstablishRelations(d2,d2->left,d2->right);
@@ -656,19 +660,22 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
       cout<<" rel set : "<<endl;
       OutputTree(tree);
     }
-
     int ok2=InitializeJets(tree,d2);
     if (ok2==3) ej=3;
     ok = ok && ok2;
   }
   else {
-    if (d2->part->Flav().Strong())
-      m_ini_partons.push_back(d2);
+    if (d2->part->Flav().Strong()) {
+      int found=0;
+      for (int i=0;i<m_ini_partons.size();++i) {
+	if (m_ini_partons[i]==d2) found=1;
+      }
+      if (!found) {
+	m_ini_partons.push_back(d2);
+      }
+    }
   }
 
-  for (int i=0;i<m_ini_partons.size();++i) 
-
-  // *AS*  if (!ExtraJetCheck(mo,d1,d2)) ej=3;
 
   if (ok==0) return 0;  // did not work out!
   if (ej==3) return 3;  // jetnumber reduced after shower! need new kinematics from (same) ME!
@@ -679,9 +686,8 @@ bool  Final_State_Shower::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
   return p_kin->ExtraJetCheck(0,d1,d2); // *AS* test E2 dependence
 }
 
-bool  Final_State_Shower::ExtraJetCheck() {
+bool  Final_State_Shower::ExtraJetCheck() const {
   bool test=1;
-  //  msg.Out<<" (A) "<<m_ini_partons.size()<<std::endl;
 
   if (m_ini_partons.size()>=2) {
     for (int i=0;i<m_ini_partons.size()-1;++i) {
@@ -692,7 +698,10 @@ bool  Final_State_Shower::ExtraJetCheck() {
       if (test==0) break;
     }
   }
-  m_ini_partons.clear();
+  else if (m_ini_partons.size()==1) {
+    test=p_kin->ExtraJetCheck(0,0,m_ini_partons[0]);
+  }
+
   return test;
 }
 
@@ -990,6 +999,7 @@ void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
   // Reset kinematics
   mo->left->t          = mo->t; 
   mo->thcrit           = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );
+  //  cout<<" fs th in daughters="<<mo->thcrit<<std::endl;
   double th            = M_PI;
 
   if ((mo->left->part->Flav().Strong()) && (mo->right->part->Flav().Strong())) th = mo->thcrit;

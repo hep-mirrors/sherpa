@@ -43,6 +43,7 @@ namespace APACIC {
     bool TestShower(Tree *) ;
     AMATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
     void OutputTree(Tree *);
+    bool ExtraJetCheck() const;
     double                PT2Min()        { return m_pt2min; }
     Timelike_Kinematics * GetKinematics() { return p_kin; }
   private:
@@ -61,7 +62,6 @@ namespace APACIC {
     void Reset(Knot *);
 
     bool ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2);
-    bool ExtraJetCheck();
   };
 
 

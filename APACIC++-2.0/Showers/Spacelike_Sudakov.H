@@ -30,6 +30,8 @@ namespace APACIC {
     int             m_cpl_scheme;
     int             m_ordering_scheme;
     int             m_last_veto;
+    double          m_qjet;
+    double          m_pdf_fac;
     // mother
     double m_E2;
     double m_x, m_z, m_t, m_phi,m_pt2;
@@ -41,17 +43,17 @@ namespace APACIC {
     
     void SelectOne() { p_selected->SelectOne();};
     void ProduceT();  
-    bool Veto(Knot *,bool); 
+    bool Veto(Knot *,bool,int & extra_pdf); 
     bool CplVeto();
     bool PTVeto(Knot *);
     bool JetVeto(Knot *);
-    bool MassVeto();
+    bool MassVeto(int);
     void UniformPhi() { m_phi =  2.*M_PI*AMATOOLS::ran.Get(); };
   public:
     Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools *, Spacelike_Kinematics *,
 		      double,AORGTOOLS::Data_Read *); 
     ~Spacelike_Sudakov() {};
-    bool Dice(Knot * mother,double sprime,bool jetveto);
+    bool Dice(Knot * mother,double sprime,bool jetveto, int & extra_pdf);
 
     static double Q02(APHYTOOLS::Flavour const & flav) { 
       return AMATOOLS::sqr(flav.PSMass()); 

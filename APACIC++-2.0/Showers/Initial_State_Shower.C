@@ -31,6 +31,8 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * _isr,
     p_suds[0]         = new Spacelike_Sudakov(_isr->PDF(0),p_tools,p_kin,m_t0,_dataread);
     p_suds[1]         = new Spacelike_Sudakov(_isr->PDF(1),p_tools,p_kin,m_t0,_dataread);
     m_allowed         = 200;
+    m_extra_pdf[0]    = 1;
+    m_extra_pdf[1]    = 1;
     return;
   }
 
@@ -114,13 +116,6 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
       */
     }
 
-    /*
-    if (rpa.gen.Events()) {
-      OutputTree(trees[0]);
-      OutputTree(trees[1]);
-    }
-    msg.Events()<<" s after shower : "<<cms.Abs2()<<" == "<<x1*x2*E2<<", "<<"Internally : "<<m_sprime<<std::endl;
-    */
     return 1;
   }
     
@@ -267,6 +262,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
   if (k1) msg.Events()<<(*k1)<<endl; else msg.Events()<<"###"<<endl;
   if (k2) msg.Events()<<(*k2)<<endl; else msg.Events()<<"###"<<endl;
 
+  m_extra_pdf[0]    = 1;
+  m_extra_pdf[1]    = 1;
 
   if ( (!k1) || (!k2) ) {
     msg.Error()<<"ERROR: Initial_State_Shower::InitializeSystem : No trees found !"<<std::endl;
@@ -302,37 +299,25 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     accepted = 1;  
     // Parton 1/Tree 1 is the one to decay.
     if (decay1) {
-      //      for (;;) {  // *AS* angle and pt vetos only done in dice!!!
 	msg.Debugging()<<"------------------------------"<<endl;
 	msg.Debugging()<<"  * calling FillBranch  I ("<<k1->kn_no<<")"<<endl;
 	if (FillBranch(trees,k1,k2,0)) {
 	  if (k1->z>0.) m_sprime = m_sprime/k1->z;
-
-	  //	  if ((k1->maxpt2 < m_pt2_1) && (k1->thcrit < m_th_1)) break;   // *AS* !!!!?
-	  //	  if (k1->stat==0) break;
 	}
 	else {
 	  accepted = 0;
-	  //	  break;
 	}
-	//      }
     }
     // Parton 2/Tree 2 is the one to decay.    
     if (decay2) {
-      //      for (;;) {
 	msg.Debugging()<<"------------------------------"<<endl;
 	msg.Debugging()<<"  * calling FillBranch II ("<<k2->kn_no<<")"<<endl;
 	if (FillBranch(trees,k2,k1,1)) {
 	  if (k2->z > 0.) m_sprime = m_sprime/k2->z;
-
-	  //	  if ((k2->maxpt2 < m_pt2_2) && (k2->thcrit < m_th_2)) break;   // *AS* !!!!?
-	  //	  if (k2->stat==0) break;
 	}
 	else {
 	  accepted = 0;
-	  //	  break;
 	}
-	//    }
     }
     
     if (accepted) {
@@ -374,15 +359,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 		   <<"Initial_State_Shower::InitializeSystem failed "
 		   <<mismatch<<" trials."<<std::endl
 		   <<"---------------------------------------"<<std::endl;
-    /*
-    //    trees[0]->Restore(k1);
-    trees[0]->Restore(trees[0]->GetInitiator(),k1);
-    //    trees[1]->Restore(k2);
-    trees[1]->Restore(trees[1]->GetInitiator(),k2);
-    k1->Copy(k1save);
-    k2->Copy(k2save);
-    */
-    //    msg.Out()<<" Restoring Trees "<<endl;
+    msg.Debugging()<<" Restoring Trees "<<endl;
     trees[0]->Restore();
     trees[1]->Restore();
     if (rpa.gen.Events()) {
@@ -412,7 +389,6 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
   if ((!decay1 && decay2)||(decay1 && !decay2)) first=1;
   if (!decay1 && !decay2) first=2;
 
-  //  if (!(k1->stat) && !(k2->stat)) return 1;   // ----- *AS* 4jet ?!!!
   if ((k1->t == k1->tout) && (k2->t == k2->tout)) return 1;   // evolution finished
 
 
@@ -455,6 +431,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     double pt2max = sqr(rpa.gen.Ecms());
     double th     = 4.*k1->z*k1->z*k1->t/(4.*k1->z*k1->z*k1->t-(1.-k1->z)*k1->x*k1->x*pt2max);
 
+    //   cout<<" update thcrit = "<<k1->thcrit<<endl;
     k1->prev->thcrit       = k1->thcrit;
     k1->prev->t            = k1->t;
     k1->prev->left->thcrit = th;  // will be updated in FirstTimelike...
@@ -480,7 +457,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
   } 
   
   double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
-  p_fin->FirstTimelikeFromSpacelike(trees[0],k1->prev->left,m_jetveto,sprime_a,k1->z);
+  p_fin->FirstTimelikeFromSpacelike(trees[ntree0],k1->prev->left,m_jetveto,sprime_a,k1->z);
 
   if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first)) {
     msg.Debugging()<<"Initial_State_Shower::EvolveSystem for knots"
@@ -514,9 +491,8 @@ bool Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner
   msg.Debugging()<<",("<<active->kn_no<<"), <"<<partner->kn_no<<"> );"<<endl;
 
   Flavour flavs[2];
-  if (p_suds[leg]->Dice(active,m_sprime,m_jetveto)) {
+  if (p_suds[leg]->Dice(active,m_sprime,m_jetveto,m_extra_pdf[leg])) {
 
-    // *AS* ? jetveto hier ? active not active->prev->left? moved to dice !!!
     if (p_kin->KinCheck(active,m_jetveto)) return 0;
 
     flavs[0] = p_suds[leg]->GetFlA();
@@ -556,6 +532,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   mother->x      = k->x/k->z;
   mother->stat   = 1;
   mother->E2     = 0.;
+  //  cout<<" FMS update thcrit"<<k->thcrit<<endl;
   mother->thcrit = k->thcrit;
 
   //  mother->E2     = sqr(1./k->z) * k->E2;

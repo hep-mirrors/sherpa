@@ -27,6 +27,7 @@ namespace APACIC {
     double m_pt2_1, m_pt2_2, m_th_1, m_th_2;
 
     int    m_allowed;
+    int    m_extra_pdf[2];
 
     AMATOOLS::Vec4D m_lab;
 
