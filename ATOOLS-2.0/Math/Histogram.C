@@ -178,13 +178,14 @@ Histogram::~Histogram() {
 
 void Histogram::Finalize() {
   if (!m_finished) {
+    m_finished=true;
+    if (m_fills==0.) return;
     for (int i=0;i<m_nbin;++i) {
       m_bins[i][0]/=m_fills*m_binsize;
       if (m_depth>1) {
 	m_bins[i][1]=m_bins[i][1]/(m_fills*m_binsize)-sqr(m_bins[i][0]);
       }
     }
-    m_finished=true;
   }
 }
 
