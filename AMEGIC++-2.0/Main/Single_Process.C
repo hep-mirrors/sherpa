@@ -57,6 +57,11 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
     p_sel = new No_Selector();
   }
 
+  double sum_massin = 0.,sum_massout = 0.;
+  for (int i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
+  for (int i=0;i<m_nout;i++) sum_massout += p_flout[i].Mass();
+  m_isrthreshold = AMATOOLS::Max(sum_massin,sum_massout);
+
   p_ps   = new Phase_Space_Handler(this,p_isr,p_beam);
   
   // making directory
