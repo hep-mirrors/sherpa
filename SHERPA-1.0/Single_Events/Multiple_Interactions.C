@@ -61,6 +61,8 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     p_remnants[i]->QuickClear();
   }
   Blob_List isr=bloblist->Find(btp::IS_Shower);
+  static double ntot=0.0;
+  ++ntot;
   for (Blob_List::reverse_iterator iit=isr.rbegin();
        iit!=isr.rend();++iit) {
     m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
@@ -68,9 +70,9 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       Extract((*iit)->InParticle(0)->Flav(),
 	      (*iit)->InParticle(0)->Momentum()[0],(*iit)->Beam());
     if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
-      ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
-			 <<"Cannot extract parton from hadron. \n"
-			 <<*(*iit)->InParticle(0)<<std::endl;
+      msg_Tracking()<<"Multiple_Interactions::CheckBlobList(..): "
+		    <<"Cannot extract parton from hadron. \n"
+		    <<*(*iit)->InParticle(0)<<std::endl;
       p_bloblist->DeleteConnected(*iit);
       if (bloblist->empty()) {
 	Blob *blob = new Blob();
@@ -80,6 +82,11 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 	blob->SetStatus(2);
 	bloblist->push_back(blob);	  
       }
+      static double nrej=0.0;
+      if (10*++nrej>rpa.gen.NumberOfDicedEvents())
+	ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
+			   <<"Shower rejection rate is "
+			   <<nrej/ntot<<"."<<std::endl;
       return false;
     } 
   }
@@ -120,10 +127,11 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       Blob_List shower=bloblist->
 	FindConnected(m_diced?bloblist->FindLast(btp::Hard_Collision):signal);
       Particle_List jets=shower.ExtractLooseParticles(1);
+      Is_Parton isparton;
+      jets.Keep(&isparton);
       Jet_Finder finder(p_mihandler->YCut(),4);
       finder.ConstructJets(&jets,1,true);
       if (jets.size()>0) {
-	m_ptmax=0.0;
 	for (size_t i=0;i<jets.size();++i)
 	  m_ptmax=Min(m_ptmax,jets[i]->Momentum().PPerp());
       }
