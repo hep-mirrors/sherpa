@@ -8,6 +8,8 @@
 
 namespace ATOOLS {
 
+  class Particle_Qualifier_Base;
+
   class Particle_List: public std::deque<Particle*> {
   private:
 
@@ -37,6 +39,9 @@ namespace ATOOLS {
 
     // member functions
     void Clear();
+
+    void Keep(Particle_Qualifier_Base *const qual);
+    void Delete(Particle_Qualifier_Base *const qual);
     
   };// end of class Particle_List
 

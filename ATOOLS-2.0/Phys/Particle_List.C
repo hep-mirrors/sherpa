@@ -40,3 +40,15 @@ void Particle_List::Clear()
     pop_back();
   }
 }
+
+void Particle_List::Keep(Particle_Qualifier_Base *const qual)
+{
+  for (iterator pit=begin();pit!=end();++pit) 
+    if (!(*qual)(*pit)) pit=erase(pit);
+}
+
+void Particle_List::Delete(Particle_Qualifier_Base *const qual)
+{
+  for (iterator pit=begin();pit!=end();++pit) 
+    if ((*qual)(*pit)) pit=erase(pit);
+}
