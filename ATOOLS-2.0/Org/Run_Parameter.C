@@ -27,6 +27,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   m_path        = path;
   Data_Read dr(m_path+file);
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);
+  std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
+  msg.Init(gen.Output(),logfile);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)
@@ -37,13 +39,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   rpa.gen.m_timer.Start();
   double ycut=dr.GetValue<double>("YCUT");
   if (ycut!=NotDefined<double>()) gen.m_ycut=ycut;
-
   gen.m_accu               = dr.GetValue<double>("Num. Accuracy",1.e-10);
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
-
   Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT");
-
-  msg.Init(gen.Output());
   if (color==Switch::On) msg.SetModifiable(true);
   gen.m_rpa_id = dr.GenerateKey();
   if (gen.m_seed!=1234) ran.SetSeed(gen.m_seed);

@@ -109,8 +109,8 @@ Initialization_Handler::~Initialization_Handler()
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
   if (nr<=0) {
-    ATOOLS::ParticleInit(m_path); 
     rpa.Init(m_path,m_file);
+    ATOOLS::ParticleInit(m_path); 
   }
 
   if (m_mode==9999) {
@@ -555,10 +555,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 12:
 	{
 	  // should call a version roution
-	  ATOOLS::msg.Out()<<" Sherpa Version 1.0.2"<<endl;
+	  ATOOLS::msg.Out()<<" Sherpa Version 1.0.3"<<endl;
 	  ATOOLS::msg.Out()<<"   employing: "<<endl;
-	  ATOOLS::msg.Out()<<"    * AMEGIC++ Version 2.0.2 "<<endl;
-	  ATOOLS::msg.Out()<<"    * APACIC++ Version 2.0.2 "<<endl;
+	  ATOOLS::msg.Out()<<"    * AMEGIC++ Version 2.0.3 "<<endl;
+	  ATOOLS::msg.Out()<<"    * APACIC++ Version 2.0.3 "<<endl;
 
 	  string pyver("6.214");
 	  ATOOLS::msg.Out()<<"    * Pythia Version "<<pyver<<endl;

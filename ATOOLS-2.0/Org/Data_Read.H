@@ -96,6 +96,8 @@ namespace ATOOLS {
     // returns sum of digits
     int Crossfoot(std::string name);
     void AddCommandLine();
+    template <class Type>
+    const Type ReturnData(const std::string &name,const Type type);
   public:
     Data_Read(std::string filename);
     void ReadIn(std::string filename);

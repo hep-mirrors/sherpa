@@ -39,23 +39,27 @@ namespace ATOOLS {
   class Message {
   private:
 
-    std::ofstream *m_no; 
-    std::ostream  *m_output, *m_error;
+    std::ofstream *p_no, *p_logfile; 
+    std::ostream  *p_output, *p_error;
 
     int m_file, m_level;
 
     bool m_modifiable;
+
+    void InitLogFile(const std::string &logfile); 
 
   public:
 
     // constructor
     Message();
 
+    // destructor
+    ~Message(); 
+
     // member functions
-    void Init(const int level);
-    void SetStandard();
-    void SetFile(const char *file);
+    void Init(const int level,const std::string &logfile="");
     void SetPrecision(const int precision);
+    void SetStandard();
 
     // inline functions
     inline void SetLevel(const int level)     { m_level = level;    }
@@ -64,17 +68,19 @@ namespace ATOOLS {
     inline int  Level()      { return m_level;      }
     inline bool Modifiable() { return m_modifiable; }
 
-    inline void SetNoStream(std::ostream *no)      { m_no = (std::ofstream*)no; }
-    inline void SetOutStream(std::ostream *output) { m_output = output;         }
-    inline void SetErrStream(std::ostream *error)  { m_error = error;           }
+    inline void SetNoStream(std::ostream *const no)      { p_no=(std::ofstream*)no; }
+    inline void SetOutStream(std::ostream *const output) { p_output=output;         }
+    inline void SetErrStream(std::ostream *const error)  { p_error=error;           }
 
-    inline std::ostream &Out()       { return *m_output; }
+    inline std::ostream &Out()       { return *p_output; }
 
-    inline std::ostream &Error()     { if (m_level >= 0) return *m_output; return *m_no; }
-    inline std::ostream &Events()    { if (m_level & 1)  return *m_output; return *m_no; }
-    inline std::ostream &Info()      { if (m_level & 2)  return *m_output; return *m_no; }
-    inline std::ostream &Tracking()  { if (m_level & 4)  return *m_output; return *m_no; }
-    inline std::ostream &Debugging() { if (m_level & 8)  return *m_output; return *m_no; }
+    inline std::ostream &Error()     { if (m_level >= 0) return *p_output; return *p_no; }
+    inline std::ostream &Events()    { if (m_level & 1) return *p_output; return *p_no;  }
+    inline std::ostream &Info()      { if (m_level & 2) return *p_output; return *p_no;  }
+    inline std::ostream &Tracking()  { if (m_level & 4) return *p_output; return *p_no;  }
+    inline std::ostream &Debugging() { if (m_level & 8) return *p_output; return *p_no;  }
+
+    inline std::ostream &LogFile()   { if (m_level & 4) return *p_logfile; return *p_no; }
 
   };// end of class Message
 

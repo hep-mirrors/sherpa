@@ -467,11 +467,19 @@ void ATOOLS::ParticleInit(std::string path)
   }
   
   part.getline(buffer,150);
+  msg.LogFile()<<"! ****************************************"<<std::endl;
+  msg.LogFile()<<"! *               kf table               *"<<std::endl;
+  msg.LogFile()<<"! ****************************************"<<std::endl;
+  msg.LogFile()<<"! "<<buffer<<std::endl;
 
 
   for(;part;) {
     part>>kfc>>mass>>width>>charge>>icharge>>strong>>spin
 	>>Majorana>>Take>>stable>>massive>>name;
+    msg.LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
+		 <<icharge<<" \t"<<strong<<" \t"<<spin
+		 <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
+		 <<massive<<" \t"<<name<<std::endl;
     if (kfc!=kfcold) { // read last line only once!
       *(pi++)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
 			 strong, spin, Majorana, Take, stable, massive, name, 1);
@@ -491,9 +499,14 @@ void ATOOLS::ParticleInit(std::string path)
   }
   else {
     part2.getline(buffer,150);
+    msg.LogFile()<<"! "<<buffer<<std::endl;
   
     for(;part2;) {
       part2>>kfc>>mass>>width>>charge>>icharge>>spin>>Take>>stable>>name;
+      msg.LogFile()<<"! "<<kfc<<" \t"<<mass<<" \t"<<width<<" \t"<<charge<<" \t"
+		   <<icharge<<" \t"<<strong<<" \t"<<spin
+		   <<" \t"<<Majorana<<" \t"<<Take<<" \t"<<stable<<" \t"
+		   <<massive<<" \t"<<name<<std::endl;
       if (kfc!=kfcold) {  // read last line only once!	
 	//	if (Take) {
 	  ++pc;

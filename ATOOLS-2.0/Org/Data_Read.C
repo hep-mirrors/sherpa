@@ -2,11 +2,21 @@
 #include "Data_Return.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "Type.H"
 
 using namespace ATOOLS;
 using namespace std;
 // static
 Parameter_Map ATOOLS::Data_Read::s_commandlineparameters;
+
+template <class Type> 
+const Type Data_Read::ReturnData(const std::string &name,const Type type) 
+{
+  ATOOLS::msg.LogFile()<<name<<" \t= \t"<<type<<"\t! Type<"
+		       <<ATOOLS::Type::GetType(type)<<"> "<<std::endl;
+  return type;
+}
+
 
 void Data_Read::SetValue(std::string name, std::string value) {
   Shorten(name);
@@ -20,10 +30,12 @@ Type  Data_Read::GetValue(std::string name, Type default_value) {
   Shorten(name);
   if (name.length()==0) {
     msg.Events()<<"Could not find any value for empty name. Return "<<default_value<<"."<<endl;
-    return default_value;
+    return ReturnData(name,default_value);
   }
   Type dummy = GetValue<Type>(name);
-  if (dummy!=NotDefined<Type>()) { return dummy; }
+  if (dummy!=NotDefined<Type>()) { 
+    return ReturnData(name,dummy); 
+  }
   msg.Error()<<"Could not find any allowed value for "<<name<<". Return "<<default_value<<"."<<endl;
   MyStrStream str;      
   std::string default_value_str;
@@ -31,25 +43,22 @@ Type  Data_Read::GetValue(std::string name, Type default_value) {
   str>>default_value_str;
 
   m_parameters[name]=default_value_str;
-  return default_value;
+  return ReturnData(name,default_value);
 }
 
 template <class Type>
 Type  Data_Read::GetValue(std::string name) {
   Shorten(name);
   Type invar;
-  if (name.length()==0) return NotDefined<Type>();
-
+  if (name.length()==0) return ReturnData(name,NotDefined<Type>());
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<Type>();
-
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Type>());
   std::string value = m_parameters[name];
-  if (value.length()==0) return NotDefined<Type>();
-  
+  if (value.length()==0) return ReturnData(name,NotDefined<Type>());
   MyStrStream str;      
   str<<value;
   str>>invar;
-  return invar;
+  return ReturnData(name,invar);
 }
 
 Data_Read::Data_Read(std::string filename) { 
@@ -107,33 +116,30 @@ void Data_Read::AddCommandLine()
 
 
 // definition  (specialisation), explicit instanciation
-template <> std::string Data_Read::GetValue<std::string>(std::string name) {
+template <> std::string Data_Read::GetValue<std::string>(std::string name) 
+{
   Shorten(name);
-  Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<std::string>();
-
-  std::string value = m_parameters[name];
   std::string invar;
-
-  if (value.length()==0)         return NotDefined<std::string>();
-  return value;
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<std::string>());
+  std::string value=m_parameters[name];
+  if (value.length()==0) return ReturnData(name,NotDefined<std::string>());
+  return ReturnData(name,value);
 }
 
 
 template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   Shorten(name);
+  Switch::code test;
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<Switch::code>();
-
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Switch::code>());
   std::string value = m_parameters[name];
-
-  if (value.length()==0)         return NotDefined<Switch::code>();
-  if (value==std::string("On"))  return Switch::On;
-  if (value==std::string("Off")) return Switch::Off;
-  
+  if (value.length()==0) return ReturnData(name,NotDefined<Switch::code>());
+  if (value==std::string("On")) return ReturnData(name,Switch::On);
+  if (value==std::string("Off")) return ReturnData(name,Switch::Off);
   msg.Error()<<"Error in Data_Read::GetValue<Switch::code>:"<<endl
 	     <<"   Unknown Switch::code "<<name<<" = "<<value<<"."<<endl;
-  return NotDefined<Switch::code>();
+  return ReturnData(name,NotDefined<Switch::code>());
 }
 
 // Beams
@@ -143,28 +149,25 @@ template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string nam
   if (cit==m_parameters.end()) return  NotDefined<Beam_Type::code>();
   std::string value = m_parameters[name];
   
-  if (value==std::string("Monochromatic"))        return Beam_Type::Monochromatic;    
-  if (value==std::string("Gaussian"))             return Beam_Type::Gaussian;    
-  if (value==std::string("Laser_Backscattering")) return Beam_Type::Laser_Back;    
-  if (value==std::string("Spectrum_Reader"))      return Beam_Type::Spec_Read;    
-  if (value==std::string("Simple_Compton"))       return Beam_Type::Simple_Compton;
-    
+  if (value==std::string("Monochromatic")) return ReturnData(name,Beam_Type::Monochromatic); 
+  if (value==std::string("Gaussian")) return ReturnData(name,Beam_Type::Gaussian);    
+  if (value==std::string("Laser_Backscattering")) return ReturnData(name,Beam_Type::Laser_Back);    
+  if (value==std::string("Spectrum_Reader")) return ReturnData(name,Beam_Type::Spec_Read);    
+  if (value==std::string("Simple_Compton")) return ReturnData(name,Beam_Type::Simple_Compton);
   msg.Error()<<"Error in Data_Read::GetValue<Beam_Type::code>:"<<endl
 	     <<"   Unknown Beam type  "<<name<<" = "<<value<<"."<<endl;
-  return NotDefined<Beam_Type::code>();
+  return ReturnData(name,NotDefined<Beam_Type::code>());
 }
 
 template <> Beam_Generator::code Data_Read::GetValue<Beam_Generator::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<Beam_Generator::code>();
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Beam_Generator::code>());
   std::string value = m_parameters[name];
-  
-  if (value==std::string("Internal"))  return Beam_Generator::Internal;
-    
+  if (value==std::string("Internal")) return ReturnData(name,Beam_Generator::Internal);
   msg.Error()<<"Error in Data_Read::GetValue<Beam_Generator::code>:"<<endl
 	     <<"Unknown Beam generator  "<<name<<" = "<<value<<"."<<endl;
-  return NotDefined<Beam_Generator::code>();
+  return ReturnData(name,NotDefined<Beam_Generator::code>());
 }
 
 
@@ -173,15 +176,13 @@ template <> Beam_Generator::code Data_Read::GetValue<Beam_Generator::code>(std::
 template <> Beam_Shape::code Data_Read::GetValue<Beam_Shape::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<Beam_Shape::code>();
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Beam_Shape::code>());
   std::string value = m_parameters[name];
-  
-  if (value==std::string("Cylinder"))          return Beam_Shape::Cylinder;
-  if (value==std::string("Gaussian_Cylinder")) return Beam_Shape::Gaussian_Cylinder;
-  
+  if (value==std::string("Cylinder")) return ReturnData(name,Beam_Shape::Cylinder);
+  if (value==std::string("Gaussian_Cylinder")) return ReturnData(name,Beam_Shape::Gaussian_Cylinder);
   msg.Error()<<"Error in Data_Read::GetValue<Beam_Shape::code>:"<<endl
 	     <<"Unknown Beam shape  "<<name<<" = "<<value<<" !!!"<<endl;
-  return NotDefined<Beam_Shape::code>();
+  return ReturnData(name,NotDefined<Beam_Shape::code>());
 }
 
 
