@@ -7,7 +7,7 @@ EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
-		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
+		-I../SoftPhysics -I../LundTools -I../Single_Events \
 		-I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
@@ -26,7 +26,7 @@ APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lLHAPDF 
+PDFLIBS       =	-L@libdir@ -lPDF -lLHAPDF -lDUPDF
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
@@ -39,7 +39,11 @@ AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundInterface -lSherpaTools 
+		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
+
+if AMISIC_SUPPORT
+AMISICFLAGS   =	-DUSING__Amisic
+endif
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
@@ -64,7 +68,7 @@ Sherpa_LDADD  =	$(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(AMISICLIBS) \
 		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) $(BEAMLIBS) \
 		$(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS)
 Sherpa_LDFLAGS        =	-rdynamic
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(CLHEPFLAGS)
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)

@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-SHERPAFLAGS   =	-pedantic -Wall -Winline
+SHERPAFLAGS   =	-pedantic -Wall -Winline 
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
@@ -20,6 +20,9 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
+if AMISIC_SUPPORT
+AMISICFLAGS   =	-DUSING__Amisic
+endif
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
@@ -60,7 +63,7 @@ noinst_HEADERS        =	\
 			NLL_Combined_Sudakov.H \
 			NLL_JetRate.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS)
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS)
