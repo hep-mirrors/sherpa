@@ -39,10 +39,7 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
     else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
     else if (cur[0]=="JetMode" && cur.size()>1) jetmode=ATOOLS::ToType<int>(cur[1]);
     else if (cur[0]=="Qual" && cur.size()>1) {
-      if (ATOOLS::rpa.gen.Beam1().IsLepton() && 
-	  ATOOLS::rpa.gen.Beam2().IsLepton()) {
-	qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
-      }
+      qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
     }
   }
   if (!qualifier) qualifier = new ATOOLS::Is_Not_Lepton(); 
