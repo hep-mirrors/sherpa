@@ -41,7 +41,7 @@ namespace ATOOLS {
     VectorTypeID m_vectortype;
     MatrixTypeID m_matrixtype;
 
-    bool m_ignorecase, m_ignoreblanks, m_exactmatch, m_interprete;
+    bool m_ignorecase, m_ignoreblanks, m_exactmatch, m_interprete, m_cmode;
 
     size_t m_occurrence;
 
@@ -144,6 +144,7 @@ namespace ATOOLS {
 
     inline void SetExactMatch(const bool exact);
     inline void SetInterprete(const bool interprete);
+    inline void SetCMode(const bool cmode);
 
     inline void SetEscape(const char escape);
 
@@ -172,6 +173,7 @@ namespace ATOOLS {
 
     inline bool ExactMatch() const;
     inline bool Interprete() const;
+    inline bool CMode() const;
 
     inline char Escape() const;
 

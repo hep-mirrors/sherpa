@@ -1,6 +1,7 @@
 #include "Read_Write_Base.H"
 
 #include "Algebra_Interpreter.H"
+#include "MyStrStream.H"
 //#define DEBUG__Read_Write_Base
 #ifdef DEBUG__Read_Write_Base
 #include <iostream>
@@ -61,6 +62,7 @@ void Read_Write_Base::Init()
   m_ignoreblanks=false;
   m_exactmatch=true;
   m_interprete=false;
+  m_cmode=false;
   m_occurrence=std::string::npos;
   m_escape='\\';
 }
@@ -124,6 +126,8 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
   return pos;
 }
 
+#include "Message.H"
+
 bool Read_Write_Base::OpenInFile(const unsigned int i)
 {  
   if (InputFile(i)==nullstring) {
@@ -146,6 +150,7 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
     bool checkbegin=(bool)(m_filebegin.size()>0);
     bool checkend=(bool)(m_fileend.size()>0);
     int filebegin=0;
+    std::vector<bool> ifresults;
     unsigned int occurrence=0;
     if (*m_infile[i]) {
       getline(*m_infile[i],lastline);
@@ -175,6 +180,38 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 		  ++occurrence;
 		}
 		break;
+	      }
+	    }
+	  }
+	  if (m_cmode) {
+	    if (!ifresults.empty()) {
+	      size_t pos=lastline.find("}");
+	      if (pos!=std::string::npos) {
+		if (ifresults.back()) lastline.replace(pos,1,"");
+		else lastline=lastline.substr(pos+1);
+		ifresults.pop_back();
+	      }
+	      if (!ifresults.empty() && 
+		  !ifresults.back()) lastline="";
+	    }
+	    size_t pos=lastline.find("if");
+	    if (pos!=std::string::npos) {
+	      size_t opos=pos, cpos=lastline.find(")");
+	      for (;opos<lastline.length();++opos) 
+		if (lastline[opos]=='(') break;
+	      if (opos<cpos) {
+		Algebra_Interpreter interpreter;
+		bool result=ToType<int>
+		  (interpreter.Interprete(lastline.
+					  substr(opos+1,cpos-opos-1)));
+		for (opos=cpos;opos<lastline.length();++opos) 
+		  if (lastline[opos]=='{') {
+		    ifresults.push_back(result);
+		    break;
+		  }
+		if (opos==std::string::npos) opos=cpos;
+		if (result) lastline=lastline.substr(opos+1);
+		else lastline="";
 	      }
 	    }
 	  }

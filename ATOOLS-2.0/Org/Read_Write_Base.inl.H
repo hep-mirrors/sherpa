@@ -398,6 +398,16 @@ namespace ATOOLS {
     return m_interprete; 
   }
 
+  inline void Read_Write_Base::SetCMode(const bool cmode) 
+  { 
+    m_cmode=cmode; 
+  }
+
+  inline bool Read_Write_Base::CMode() const 
+  { 
+    return m_cmode; 
+  }
+
   inline Algebra_Interpreter *Read_Write_Base::Interpreter() const
   {
     return p_interpreter;
