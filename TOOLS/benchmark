@@ -99,7 +99,7 @@ LIST=""
 if [ "$UPDATE" = "TRUE" ] ; then
   echo -en "checking out current benchmarking points from cvs ... " >> $LOGFILE
   echo -e "checking out current benchmarking points from cvs {\n" >> $OUTPUTFILE
-  if ! cvs update -d benchmark >> $OUTPUTFILE 2>&1 ; then
+  if ! cvs update -d $DIR >> $OUTPUTFILE 2>&1 ; then
     echo -e "checkout failed\n\nbenchmark: cvs checkout failed" >> $LOGFILE
     echo -e "\n} checkout failed\n\nbenchmark: cvs checkout failed" >> $OUTPUTFILE
     CVS_ERROR=TRUE
