@@ -14,7 +14,7 @@ namespace EXTRAXS {
 
     QED_Processes(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler *const beam,
 		  const ATOOLS::Flavour *fl,ATOOLS::Selector_Data *const seldata,
-		  const int scalescheme,const int kfactorscheme,const double scalefactor); 
+		  const int scalescheme,const int kfactorscheme); 
 
   };
 

@@ -35,7 +35,7 @@ namespace EXTRAXS {
     // constructor
     QCD_Processes(PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		  ATOOLS::Flavour *,ATOOLS::Selector_Data *,int,int,
-		  double,bool=true);
+		  bool=true);
 
     // setters
     void SetFSRMode(int _m_fsrmode);

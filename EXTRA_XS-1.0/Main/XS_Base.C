@@ -18,12 +18,13 @@ XS_Base::XS_Base()
 } 
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		 const int scalescheme,const int kfactorscheme,const double scalefactor,
-		 BEAM::Beam_Spectra_Handler *const beamhandler,PDF::ISR_Handler *const isrhandler,
+		 const int scalescheme,const int kfactorscheme,
+		 BEAM::Beam_Spectra_Handler *const beamhandler,
+		 PDF::ISR_Handler *const isrhandler,
 		 ATOOLS::Selector_Data *const selectordata):
   Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
-  p_colours(NULL), m_scalefactor(scalefactor)
+  p_colours(NULL)
 {
   Init(flavours);
   ResetSelector(selectordata);

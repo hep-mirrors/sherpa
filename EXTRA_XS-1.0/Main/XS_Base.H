@@ -15,7 +15,6 @@ namespace EXTRAXS {
     int **p_colours;
 
     double m_s, m_t, m_u;
-    double m_scalefactor;
 
     size_t m_order_ew, m_order_strong;
 
@@ -33,8 +32,9 @@ namespace EXTRAXS {
     XS_Base(); 
     XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
     XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-	    const int scalescheme,const int kfactorscheme,const double scalefactor,
-	    BEAM::Beam_Spectra_Handler *const beamhandler,PDF::ISR_Handler *const isrhandler,
+	    const int scalescheme,const int kfactorscheme,
+	    BEAM::Beam_Spectra_Handler *const beamhandler,
+	    PDF::ISR_Handler *const isrhandler,
 	    ATOOLS::Selector_Data *const selectordata);
 
     // destructor
@@ -85,10 +85,6 @@ namespace EXTRAXS {
 
     inline const std::vector<ATOOLS::Flavour> &Resonances() const 
     { return m_resonances; }
-
-    inline double ScaleFactor() const   { return m_scalefactor;   }
-    inline void SetScaleFactor(const double scalefactor)  
-    { m_scalefactor=scalefactor;     }
 
     inline size_t OrderEW() const     { return m_order_ew;     }
     inline size_t OrderStrong() const { return m_order_strong; }

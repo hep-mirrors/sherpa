@@ -76,7 +76,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   ATOOLS::rpa.gen.SetModelType(model);
   m_scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
-  m_scalefactor=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
+  double fac_scale_fac=p_dataread->
+    GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
+  double ren_scale_fac=p_dataread->
+    GetValue<double>("RENOMALIZATION_SCALE_FACTOR",1.);
+  ATOOLS::rpa.gen.SetScaleFactors(fac_scale_fac,ren_scale_fac );
   int regulate=p_dataread->GetValue<int>("REGULATE_XS",0);
   if (regulate>0) {
     m_regulator=p_dataread->GetValue<std::string>
@@ -218,7 +222,7 @@ XS_Group *Simple_XS::FindGroup(const size_t nin,const size_t nout,
     }
   }
   XS_Group *newgroup = 
-    new XS_Group(nin,nout,flavours,m_scalescheme,m_kfactorscheme,m_scalefactor,
+    new XS_Group(nin,nout,flavours,m_scalescheme,m_kfactorscheme,
 		 p_beamhandler,p_isrhandler,p_selectordata);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
   m_xsecs.push_back(newgroup);
@@ -246,7 +250,7 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
     copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
   for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
   XS_Group *newgroup = 
-    new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,m_scalefactor,
+    new XS_Group(nin,nout,copy,m_scalescheme,m_kfactorscheme,
 		 p_beamhandler,p_isrhandler,p_selectordata);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
   container->Add(newgroup);

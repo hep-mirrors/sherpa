@@ -15,8 +15,8 @@ using namespace ATOOLS;
 
 QED_Processes::QED_Processes(PDF::ISR_Handler *const isr,BEAM::Beam_Spectra_Handler *const beam,
 			     const ATOOLS::Flavour *fl,ATOOLS::Selector_Data *const seldata,
-			     const int scalescheme,const int kfactorscheme,const double scalefactor): 
-  XS_Group(2,2,fl,scalescheme,kfactorscheme,scalefactor,beam,isr,seldata)
+			     const int scalescheme,const int kfactorscheme): 
+  XS_Group(2,2,fl,scalescheme,kfactorscheme,beam,isr,seldata)
 {
   m_name       = std::string("ee -> qqbar");
   for (int ifl=1;ifl<6;++ifl) {

@@ -67,7 +67,6 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
     if (xs!=NULL) {
       xs->SetScaleScheme(p_owner->ScaleScheme());
       xs->SetKFactorScheme(p_owner->KFactorScheme());
-      xs->SetScaleFactor(p_owner->ScaleFactor());
     }
     return xs;
   }
@@ -88,7 +87,6 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   if (xs!=NULL) {
     xs->SetScaleScheme(p_owner->ScaleScheme());
     xs->SetKFactorScheme(p_owner->KFactorScheme());
-    xs->SetScaleFactor(p_owner->ScaleFactor());
     xs->m_order_ew=nqed;
     xs->m_order_strong=nqcd;
   }

@@ -21,8 +21,7 @@ namespace AMISIC {
 		 ATOOLS::Selector_Data *const seldata,
 		 const ATOOLS::Flavour *flavours,
 		 const int scalescheme,
-		 const int kfactorscheme,
-		 const double scalefactor);
+		 const int kfactorscheme);
 
     // destructor 
     ~Semihard_QCD();

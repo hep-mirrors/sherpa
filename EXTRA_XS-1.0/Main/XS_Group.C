@@ -21,11 +21,11 @@
 using namespace EXTRAXS;
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		   const int scalescheme,const int kfactorscheme,const double scalefactor,
+		   const int scalescheme,const int kfactorscheme,
 		   BEAM::Beam_Spectra_Handler *const beamhandler,
 		   PDF::ISR_Handler *const isrhandler,
 		   ATOOLS::Selector_Data *const selectordata):
-  XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,scalefactor,
+  XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,
 	  beamhandler,isrhandler,selectordata),
   m_atoms(false), m_channels(false), p_xsselector(new XS_Selector(this)) 
 {

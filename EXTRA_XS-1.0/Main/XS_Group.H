@@ -31,8 +31,9 @@ namespace EXTRAXS {
     XS_Group(const size_t nin,const size_t nout,const std::string &name);
     XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
     XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-	     const int scalescheme,const int kfactorscheme,const double scalefactor,
-	     BEAM::Beam_Spectra_Handler *const beamhandler,PDF::ISR_Handler *const isrhandler,
+	     const int scalescheme,const int kfactorscheme,
+	     BEAM::Beam_Spectra_Handler *const beamhandler,
+	     PDF::ISR_Handler *const isrhandler,
 	     ATOOLS::Selector_Data *const selectordata);
 
     // destructor

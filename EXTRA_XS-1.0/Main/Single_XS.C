@@ -7,12 +7,13 @@
 
 using namespace EXTRAXS;
 
-Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		     const int scalescheme,const int kfactorscheme,const double scalefactor,
+Single_XS::Single_XS(const size_t nin,const size_t nout,
+		     const ATOOLS::Flavour *flavours,
+		     const int scalescheme,const int kfactorscheme,
 		     BEAM::Beam_Spectra_Handler *const beamhandler,
 		     PDF::ISR_Handler *const isrhandler,
 		     ATOOLS::Selector_Data *const selectordata):
-  XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,scalefactor,
+  XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,
 	  beamhandler,isrhandler,selectordata)
 {
   p_selected=this;
