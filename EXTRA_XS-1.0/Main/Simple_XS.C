@@ -12,6 +12,7 @@
 #include "XS_Selector.H"
 #include "Regulator_Base.H"
 #include "Remnant_Base.H"
+#include "Phase_Space_Handler.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -77,12 +78,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     double param=p_dataread->GetValue<double>("XS_REGULATION",0.71);
     m_regulation.push_back(param);
   }
+  m_foam=p_dataread->GetValue<int>("FOAM",0);
   if (!construct) return true;
   ifstream from((m_path+processfile).c_str());
   if (!from) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Cannot open file '")+
-			    m_path+processfile+std::string("'"),
-			    "Simple_XS","InitializeProcesses"));
+    THROW(critical_error,"Cannot open file '"+m_path+processfile+"'");
   }
   char buffer[100];
   size_t position;
@@ -166,6 +166,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 			  if (m_regulator.length()>0) 
 			    newxs->AssignRegulator(m_regulator,m_regulation);
 			  pdfgroup->Add(newxs);
+			  newxs->PSHandler(false)->SetUseFoam(m_foam);
 			}
 			setup.insert(name);
 		      }
@@ -232,6 +233,7 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
 		 p_beamhandler,p_isrhandler,p_selectordata);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
   container->Add(newgroup);
+  newgroup->PSHandler(false)->SetUseFoam(m_foam);
   container->SetAtoms(1);
   delete [] copy;
   return newgroup;
