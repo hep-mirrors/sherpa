@@ -88,6 +88,12 @@ Sample_Analysis::Sample_Analysis(std::ifstream * readin, std::string _phase, con
 	else split = true;
 	_phase = _phase.substr(2);
       }
+      if (phasemode==std::string("MI")) {
+	mode  = mode|ANALYSIS::do_mi;
+	if (split) mode = mode|ANALYSIS::splitt_phase;
+	else split = true;
+	_phase = _phase.substr(2);
+      }
       if (phasemode==std::string("Showers")) {
 	mode = mode|ANALYSIS::do_shower;
 	if (split) mode = mode|ANALYSIS::splitt_phase;

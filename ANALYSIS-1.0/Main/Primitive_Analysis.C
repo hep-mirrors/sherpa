@@ -86,9 +86,10 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis(const std::string & key,
   if (cit!=m_subanalyses.end()) return cit->second;
 
   bool master=true;
-  if (key=="ME" || key=="Shower" || key=="Hadron") {
+  if (key=="ME" || key=="MI" || key=="Shower" || key=="Hadron") {
     master=false;
     if (key!="ME"     && mode&ANALYSIS::do_me) mode=mode^ANALYSIS::do_me;
+    if (key!="MI"     && mode&ANALYSIS::do_mi) mode=mode^ANALYSIS::do_mi;
     if (key!="Shower" && mode&ANALYSIS::do_shower) mode=mode^ANALYSIS::do_shower;
     if (key!="Hadron" && mode&ANALYSIS::do_hadron) mode=mode^ANALYSIS::do_hadron;
   }
@@ -149,6 +150,7 @@ void Primitive_Analysis::DoAnalysis(Blob_List * const bl, double value) {
     m_mode=m_mode|ANALYSIS::output_this;
     int mode=m_mode^ANALYSIS::splitt_phase;
     if (m_mode&ANALYSIS::do_me)     GetSubAnalysis("ME",mode)->DoAnalysis(bl,value);
+    if (m_mode&ANALYSIS::do_mi)     GetSubAnalysis("MI",mode)->DoAnalysis(bl,value);
     if (m_mode&ANALYSIS::do_shower) GetSubAnalysis("Shower",mode)->DoAnalysis(bl,value);
     if (m_mode&ANALYSIS::do_hadron) GetSubAnalysis("Hadron",mode)->DoAnalysis(bl,value);
     return;
@@ -248,6 +250,16 @@ void Primitive_Analysis::Init()
     CreateFinalStateParticleList();
 }
 
+bool Primitive_Analysis::SelectBlob(const ATOOLS::Blob *blob) 
+{
+  if (m_mode&ANALYSIS::do_hadron) return true;
+  if (m_mode&ANALYSIS::do_shower && 
+      (blob->Type()==btp::IS_Shower || blob->Type()==btp::FS_Shower)) return true;
+  if (m_mode&ANALYSIS::do_mi && blob->Type()==btp::Hard_Collision) return true;
+  if (m_mode&ANALYSIS::do_me && blob->Type()==btp::Signal_Process) return true;
+  return false;
+}
+
 void Primitive_Analysis::CreateFinalStateParticleList()
 {
   PL_Container::const_iterator cit=m_pls.find("FinalState");
@@ -267,9 +279,7 @@ void Primitive_Analysis::CreateFinalStateParticleList()
 	}
       }
     }
-    if (m_mode&ANALYSIS::do_hadron ||
-        (m_mode&ANALYSIS::do_shower && ((*blit)->Type()==btp::IS_Shower || (*blit)->Type()==btp::FS_Shower)) ||
-        (m_mode&ANALYSIS::do_me && (*blit)->Type()==btp::Signal_Process)) {
+    if (SelectBlob(*blit)) {
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);
 	if (p->DecayBlob()==NULL || 

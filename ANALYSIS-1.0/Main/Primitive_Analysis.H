@@ -27,9 +27,10 @@ namespace ANALYSIS {
     output_process  = 512,
     
     do_me           = 1024,
-    do_shower       = 2048,
-    do_hadron       = 4096,
-    splitt_phase    = 8192
+    do_mi           = 2048,
+    do_shower       = 4096,
+    do_hadron       = 8192,
+    splitt_phase    = 16384
   };
 
   class Primitive_Observable_Base;
@@ -58,6 +59,7 @@ namespace ANALYSIS {
     Primitive_Analysis   * p_partner;
 
     void Init();
+    bool SelectBlob(const ATOOLS::Blob *blob); 
     void CreateFinalStateParticleList();
     void CreateChargedParticleList();
 
