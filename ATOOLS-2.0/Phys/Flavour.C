@@ -99,7 +99,7 @@ const bool Part_Info::Includes(Flavour _fl) {
   bool isin;
   for (int j=0;j<_fl.Size();j++) {
     isin = 0;
-    for (int i=0;i<flavs.size();i++) {
+    for (size_t i=0;i<flavs.size();i++) {
       if (flavs[i]->Kfcode() == _fl[j].Kfcode()) { isin = 1; break; }
     }
     if (isin==0) return 0;
@@ -109,7 +109,7 @@ const bool Part_Info::Includes(Flavour _fl) {
 
 Flavour Part_Info::operator[](const int i) {
   if (!group) return Flavour(kfc);
-  if ((i<0) || (i>flavs.size())) {
+  if ((i<0) || (i>(int)flavs.size())) {
     std::cerr<<"Error in Part_Info::operator[]("<<i<<") . Delimiter out of bounds."<<std::endl;
     return Flavour(kfc);
   }
