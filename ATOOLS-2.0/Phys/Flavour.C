@@ -198,28 +198,33 @@ int Flavour::HepEvt() {
   if (kfc==kf::gscalar)                      return 89;
 
   if (IsSquark() || IsSlepton() || IsSneutrino()) {
-    if (kfc==kf::sDownL)                     return 1000001;
-    if (kfc==kf::sUpL)                       return 1000002;
-    if (kfc==kf::sStrangeL)                  return 1000003;
-    if (kfc==kf::sCharmL)                    return 1000004;
-    if (kfc==kf::sBottom1)                   return 1000005;
-    if (kfc==kf::sTop1)                      return 1000006;
-    if (kfc==kf::sElectronL)                 return 1000011;
-    if (kfc==kf::sNu1)                       return 1000012;
-    if (kfc==kf::sMuL)                       return 1000013;
-    if (kfc==kf::sNu2)                       return 1000014;
-    if (kfc==kf::sTau1)                      return 1000015;
-    if (kfc==kf::sNu3)                       return 1000016;
     
-    if (kfc==kf::sDownR)                     return 2000001;
-    if (kfc==kf::sUpR)                       return 2000002;
-    if (kfc==kf::sStrangeR)                  return 2000003;
-    if (kfc==kf::sCharmR)                    return 2000004;
-    if (kfc==kf::sBottom2)                   return 2000005;
-    if (kfc==kf::sTop2)                      return 2000006;
-    if (kfc==kf::sElectronR)                 return 2000011;
-    if (kfc==kf::sMuR)                       return 2000013;
-    if (kfc==kf::sTau2)                      return 2000015;
+    int pdgnum = -1;
+    
+    if (kfc==kf::sDownL)                     pdgnum = 1000001;
+    if (kfc==kf::sUpL)                       pdgnum = 1000002;
+    if (kfc==kf::sStrangeL)                  pdgnum = 1000003;
+    if (kfc==kf::sCharmL)                    pdgnum = 1000004;
+    if (kfc==kf::sBottom1)                   pdgnum = 1000005;
+    if (kfc==kf::sTop1)                      pdgnum = 1000006;
+    if (kfc==kf::sElectronL)                 pdgnum = 1000011;
+    if (kfc==kf::sNu1)                       pdgnum = 1000012;
+    if (kfc==kf::sMuL)                       pdgnum = 1000013;
+    if (kfc==kf::sNu2)                       pdgnum = 1000014;
+    if (kfc==kf::sTau1)                      pdgnum = 1000015;
+    if (kfc==kf::sNu3)                       pdgnum = 1000016;
+    
+    if (kfc==kf::sDownR)                     pdgnum = 2000001;
+    if (kfc==kf::sUpR)                       pdgnum = 2000002;
+    if (kfc==kf::sStrangeR)                  pdgnum = 2000003;
+    if (kfc==kf::sCharmR)                    pdgnum = 2000004;
+    if (kfc==kf::sBottom2)                   pdgnum = 2000005;
+    if (kfc==kf::sTop2)                      pdgnum = 2000006;
+    if (kfc==kf::sElectronR)                 pdgnum = 2000011;
+    if (kfc==kf::sMuR)                       pdgnum = 2000013;
+    if (kfc==kf::sTau2)                      pdgnum = 2000015;
+  
+    if (pdgnum!=-1) return (anti) ? pdgnum: -pdgnum;
   }
 
   if (IsGluino())                            return 1000021;
