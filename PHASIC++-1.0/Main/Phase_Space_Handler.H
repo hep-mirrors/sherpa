@@ -51,9 +51,6 @@ namespace PHASIC {
   public:
     Phase_Space_Handler(AMEGIC::Process_Base *,ISR::ISR_Handler *,BEAM::Beam_Handler *);
     ~Phase_Space_Handler();
-
-    void ExchangeReference(AMEGIC::Process_Base * _proc) { proc = _proc; }
-
     bool   CreateChannelLibrary(std::string,std::string);
     void   CollectChannels();
     bool   CreateIntegrators();
@@ -114,21 +111,6 @@ namespace PHASIC {
 
 #endif
 
-// #ifndef Phase_Space_Handler_h
-// #define Phase_Space_Handler_h
-
-// #include "Multi_Channel.H"
-
-// namespace PHASIC  { class  Phase_Space_Integrator; }
-// namespace PHASIC  { class  Phase_Space_Generator;  }
-// namespace PHASIC  { const int IS_XS_FLAG = -255;   }
-// namespace BEAM    { class  Beam_Handler;           }
-// namespace ISR     { class  ISR_Handler;            }
-// namespace AMEGIC  { class  Process_Base;           }                                       
-// namespace EXTRAXS { class  XS_Base;                }                                       
-
-
-// namespace PHASIC {
 //   /*!
 //     This class manages the interaction of individual processes or process groups
 //     with the integration methods. The idea behind is that these processes don't know
