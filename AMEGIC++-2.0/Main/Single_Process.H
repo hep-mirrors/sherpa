@@ -54,6 +54,8 @@ namespace AMEGIC {
     void           PolarizationNorm();
     double         SymmetryFactors();
     void           PrepareTerminate();
+    bool           CheckMapping(const Process_Base * proc);
+
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.

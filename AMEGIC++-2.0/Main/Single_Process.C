@@ -253,11 +253,13 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   case 2 : 
     for (size_t j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
-	msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
-		      <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
-		      <<"   Map processes."<<std::endl;
-	p_partner = links[j];
-	break;
+	if (CheckMapping(links[j])) {
+	  msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
+			<<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
+			<<"   Map processes."<<std::endl;
+	  p_partner = links[j];
+	  break;
+	}
       } 
     }
     if (p_partner==this) {
@@ -1340,3 +1342,26 @@ void Single_Process::AddToHelicity(const double M2,const int hel)
   m_helresults[hel]  += M2;
 }
 
+bool Single_Process::CheckMapping(const Process_Base * proc)
+{
+  const Flavour * flavs=Flavours();
+  const Flavour * partner_flavs=proc->Flavours();
+  // create map
+  std::map<ATOOLS::Flavour,ATOOLS::Flavour> flmap;
+  for (size_t i=0;i<NIn()+NOut();++i) {
+    if (partner_flavs[i]!=flavs[i]) {
+      flmap[partner_flavs[i]]=flavs[i];
+      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
+	flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();
+      }
+    }
+  }
+  // check map
+  for (size_t i=0;i<NIn()+NOut();++i) {
+    if (flmap[partner_flavs[i]]!=flavs[i]) {
+      msg_Tracking()<<" mapping test failed "<<std::endl;
+      return false;
+    }
+  }
+  return true;
+}
