@@ -24,6 +24,17 @@ Run_Parameter::Run_Parameter()
 void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
 {
   gen.m_timer.Start();
+  std::string gccversion;
+  system("gcc -dumpversion > sherpa_gcc_test");
+  std::ifstream *gcctest = new std::ifstream("sherpa_gcc_test");
+  if (*gcctest) (*gcctest)>>gccversion;
+  delete gcctest;
+  system("if test -f sherpa_gcc_test; then rm sherpa_gcc_test; fi");
+  if (gccversion==std::string("2.96")) {
+    ATOOLS::msg.Error()<<"Run_Parameter::Init(..): "<<om::red
+		       <<"Sherpa must not be run with gcc version 2.96 !"<<om::reset<<std::endl;
+    exit(1);
+  }
   m_path        = path;
   Data_Read dr(m_path+file);
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);

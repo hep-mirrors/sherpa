@@ -467,9 +467,9 @@ void ATOOLS::ParticleInit(std::string path)
   }
   
   part.getline(buffer,150);
-  msg.LogFile()<<"! ****************************************"<<std::endl;
-  msg.LogFile()<<"! *               kf table               *"<<std::endl;
-  msg.LogFile()<<"! ****************************************"<<std::endl;
+  msg.LogFile()<<"\n! +--------------------------------------+"<<std::endl;
+  msg.LogFile()<<"! |               kf table               |"<<std::endl;
+  msg.LogFile()<<"! +--------------------------------------+\n"<<std::endl;
   msg.LogFile()<<"! "<<buffer<<std::endl;
 
 
@@ -490,6 +490,7 @@ void ATOOLS::ParticleInit(std::string path)
       kfcold = kfc;
     }
   }
+  msg.LogFile()<<std::endl;
   part.close();
 
   filename=(path+std::string("/Hadron.dat"));
@@ -517,6 +518,7 @@ void ATOOLS::ParticleInit(std::string path)
       }
     }
     part2.close();
+    msg.LogFile()<<std::endl;
   }
   // kfcode,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,name,1
   *(pi++) = Part_Info( kf::pol,      0.,0., 0, 0,0, 0,0,0,1,0,"polarisation",1);

@@ -93,13 +93,17 @@ void Message::InitLogFile(const std::string &logfile)
   command="echo \"! starting Sherpa 1.0.3 at '$HOSTNAME' ";
   command+="(architecture $HOSTTYPE) \n! on `date`\n\" >> ";
   system((command+name).c_str());
+  command="echo \"! +--------------------------------------+\n";
+  command+="! |            shell settings            |\n";
+  command+="! +--------------------------------------+\n\" >> ";
+  system((command+name).c_str());
   command="echo \"! PATH=$PATH\n\n! LD_LIBRARY_PATH=$LD_LIBRARY_PATH\n\n! CLHEPDIR=$CLHEPDIR\n";
-  command+="! PWD=$PWD\n\" >> ";
+  command+="! PWD=$PWD\n\n! Sherpa was compiled for gcc `gcc -dumpversion`\n\" >> ";
   system((command+name).c_str());
   p_logfile = new std::ofstream(name.c_str(),std::ios::app);
-  (*p_logfile)<<"! ****************************************"<<std::endl;
-  (*p_logfile)<<"! *            run parameters            *"<<std::endl;
-  (*p_logfile)<<"! ****************************************"<<std::endl;
+  (*p_logfile)<<"! +--------------------------------------+"<<std::endl;
+  (*p_logfile)<<"! |            run parameters            |"<<std::endl;
+  (*p_logfile)<<"! +--------------------------------------+\n"<<std::endl;
 }
 
 void Message::SetStandard() 

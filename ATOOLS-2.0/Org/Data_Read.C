@@ -13,7 +13,7 @@ Parameter_Map ATOOLS::Data_Read::s_commandlineparameters;
 template <class Type> 
 const Type Data_Read::ReturnData(const std::string &name,const Type type) 
 {
-  ATOOLS::msg.LogFile()<<name<<" \t= \t"<<type<<"! "
+  ATOOLS::msg.LogFile()<<name<<" \t= \t"<<type<<" \t! "
 		       <<"Type<"<<ATOOLS::Type::GetType(type)<<"> "<<std::endl;
   return type;
 }
