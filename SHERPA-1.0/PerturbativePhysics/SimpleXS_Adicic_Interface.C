@@ -72,7 +72,7 @@ bool SimpleXS_Adicic_Interface::Valid(Blob* blob) {
 
 bool SimpleXS_Adicic_Interface::FillBlobs(Blob_List * blobs)
 {
-  myblob->SetId(blobs->size());
+  myblob->SetId();
   blobs->push_back(myblob);
   return true;
 }

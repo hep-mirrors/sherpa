@@ -82,7 +82,7 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * bloblist,Particle_List * p
 	(*biter)->SetStatus(2);
 	blob = new ATOOLS::Blob();
 	bloblist->insert(bloblist->begin(),blob);
-	blob->SetId(bloblist->size());
+	blob->SetId();
 	blob->SetType(btp::Bunch);
 	blob->SetBeam(i);
 	blob->AddToOutParticles((*biter)->InParticle(0));
@@ -136,7 +136,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * bloblist,Particle_List * pa
 	  if (flag) {
 	    blob = new ATOOLS::Blob();
 	    bloblist->insert(bloblist->begin(),blob);
-	    blob->SetId(bloblist->size());
+	    blob->SetId();
 	    blob->SetType(btp::Beam);
 	    blob->SetBeam(i);
 	    blob->SetStatus(1);
@@ -154,7 +154,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * bloblist,Particle_List * pa
 	else if (!IsEqual((*biter)->InParticle(0)->E(),p_beam->GetBeam(i)->OutMomentum()[0])) {
 	  (*biter)->SetStatus(2);
 	  blob = new ATOOLS::Blob();
-	  blob->SetId(bloblist->size());
+	  blob->SetId();
 	  blob->SetType(btp::Beam);
 	  blob->SetBeam(i);
 	  blob->SetStatus(1);

@@ -426,7 +426,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       p->SetNumber(number);
 
       kn->part->SetNumber(number);
-      jet->SetId(bl->size());
+      jet->SetId();
       jet->SetType(btp::FS_Shower);
       jet->SetTypeSpec("APACIC++2.0");
       jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
@@ -449,7 +449,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 	else number = (long int)(kn->part);
 	p->SetNumber(number);
 	kn->part->SetNumber(number);
-	jet->SetId(bl->size());
+	jet->SetId();
 	jet->SetType(btp::FS_Shower);
 	jet->SetTypeSpec("APACIC++2.0");
 	jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));

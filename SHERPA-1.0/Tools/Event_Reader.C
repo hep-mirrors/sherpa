@@ -225,7 +225,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   hardblob         = new Blob();
   hardblob->SetType(btp::Signal_Process);
   hardblob->SetTypeSpec(m_generator);
-  hardblob->SetId(0);
+  hardblob->SetId();
   hardblob->SetPosition(Vec4D(0.,0.,0.,0.));
   hardblob->SetStatus(1);
   hardblob->SetBeam(-1);
@@ -236,7 +236,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   showerblob         = new Blob();
   showerblob->SetType(btp::FS_Shower);
   showerblob->SetTypeSpec(m_generator);
-  showerblob->SetId(1);
+  showerblob->SetId();
   showerblob->SetPosition(Vec4D(0.,0.,0.,0.));
   showerblob->SetStatus(1);
   showerblob->SetBeam(-1);
@@ -245,7 +245,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   hadronblob         = new Blob();
   hadronblob->SetType(btp::Fragmentation);
   hadronblob->SetTypeSpec(m_generator);
-  hadronblob->SetId(2);
+  hadronblob->SetId();
   hadronblob->SetPosition(Vec4D(0.,0.,0.,0.));
   hadronblob->SetStatus(1);
   hadronblob->SetBeam(-1);

@@ -157,7 +157,7 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 	  decay->SetStatus(1);
 	  decay->SetType(btp::Hadron_Decay);
 	  decay->SetTypeSpec("Lund Pythia 6.214");
-	  decay->SetId(bloblist->size());
+	  decay->SetId();
 	  decay->AddToInParticles(particle);
 	  if (particle->Info()=='P') particle->SetInfo('p');
 	  if (particle->Info()=='D') particle->SetInfo('d');
@@ -202,7 +202,7 @@ void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
       decay->SetStatus(1);
       decay->SetType(btp::Hadron_Decay);
       decay->SetTypeSpec("Lund Pythia 6.214");
-      decay->SetId(bloblist->size());
+      decay->SetId();
       decay->AddToInParticles(particle);
       if (particle->Info()=='P') particle->SetInfo('p');
       if (particle->Info()=='D') particle->SetInfo('d');

@@ -529,14 +529,14 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
   fsr2->SetType(btp::FS_Shower);
   cf->SetType(btp::Cluster_Formation);
 
-  blobs->push_back(beam1);  beam1->SetId(blobs->size());
-  blobs->push_back(beam2);  beam2->SetId(blobs->size());
-  blobs->push_back(isr1);   isr1->SetId(blobs->size());
-  blobs->push_back(isr2);   isr2->SetId(blobs->size());
-  blobs->push_back(signal); signal->SetId(blobs->size());
-  blobs->push_back(fsr1);   fsr1->SetId(blobs->size());
-  blobs->push_back(fsr2);   fsr2->SetId(blobs->size());
-  blobs->push_back(cf);     cf->SetId(blobs->size());
+  blobs->push_back(beam1);  beam1->SetId();
+  blobs->push_back(beam2);  beam2->SetId();
+  blobs->push_back(isr1);   isr1->SetId();
+  blobs->push_back(isr2);   isr2->SetId();
+  blobs->push_back(signal); signal->SetId();
+  blobs->push_back(fsr1);   fsr1->SetId();
+  blobs->push_back(fsr2);   fsr2->SetId();
+  blobs->push_back(cf);     cf->SetId();
 
   Translation_Map::iterator piter, miter;
   for (int i=0;i<m_nhep;i++) {
@@ -607,7 +607,7 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
 	blob = new ATOOLS::Blob();
 	blobs->push_back(blob);
 	blob->SetType(btp::Cluster_Decay);
-	blob->SetId(blobs->size());
+	blob->SetId();
 	blob->AddToInParticles(part);
       }
       piter->second.second = false;
@@ -633,7 +633,7 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
 	blob = new ATOOLS::Blob();
 	blobs->push_back(blob);
 	blob->SetType(btp::Hadron_Decay);
-	blob->SetId(blobs->size());
+	blob->SetId();
 	blob->AddToInParticles(part);
 	piter->second.second = false;
       }
@@ -771,7 +771,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
     }
     for (;;) {
       blobs->push_back(_blobs.back());
-      _blobs.back()->SetId(blobs->size());
+      _blobs.back()->SetId();
       _blobs.pop_back();
       if (_blobs.empty()) break;
     }
@@ -917,7 +917,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	    productionblob->AddToInParticles(mother);
 	    miter->second.second = false;
 	  }
-	  productionblob->SetId(blobs->size());
+	  productionblob->SetId();
 	  blobs->push_back(productionblob);
 	}
 	else {
@@ -953,7 +953,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	    decayblob->AddToInParticles(part);
 	    diter->second.second = false;
 	    piter->second.second = false;
-	    decayblob->SetId(blobs->size());
+	    decayblob->SetId();
 	    blobs->push_back(decayblob);
 	  }
 	}
@@ -1006,7 +1006,7 @@ bool HepEvt_Interface::ConstructBlobs(ATOOLS::Blob_List * const blobs)
 	  productionblob->AddToInParticles(mother);
 	  miter->second.second = false;
 	}
-	productionblob->SetId(blobs->size());
+	productionblob->SetId();
 	blobs->push_back(productionblob);
       }
       else {
@@ -1240,7 +1240,7 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
 
   int blobid = 0;
   for (biter=blobs->begin();biter!=blobs->end();biter++) {
-    (*biter)->SetId(blobid);
+    (*biter)->SetId(-blobid);
     blobid++;
   }
 

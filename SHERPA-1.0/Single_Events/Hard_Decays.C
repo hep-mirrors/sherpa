@@ -64,7 +64,7 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 	    }
 	    decblob->AddToInParticles(myblob->OutParticle(i));
 	    FillBlob(check,decblob);
-	    decblob->SetId(_bloblist->size());
+	    decblob->SetId();
 	    _bloblist->push_back(decblob);
 	  }
 	}

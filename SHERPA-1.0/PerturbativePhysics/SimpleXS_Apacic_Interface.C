@@ -86,11 +86,10 @@ bool SimpleXS_Apacic_Interface::FillBlobs(Blob_List *blobs)
     p_psme_is->SetType(btp::ME_PS_Interface_IS);
     p_psme_is->SetTypeSpec("Sherpa");
     p_psme_is->SetStatus(1);
+    p_psme_is->SetId();
     for (int i=0;i<p_hard->NInP();++i) {
       p_psme_is->AddToOutParticles(p_hard->InParticle(i));
-      p_psme_is->SetId(-1);
     }
-    p_psme_is->SetId(blobs->size());
     blobs->push_back(p_psme_is);
   }
   if (p_shower->FSROn()) {
@@ -98,11 +97,10 @@ bool SimpleXS_Apacic_Interface::FillBlobs(Blob_List *blobs)
     p_psme_fs->SetType(btp::ME_PS_Interface_FS);
     p_psme_fs->SetTypeSpec("Sherpa");
     p_psme_fs->SetStatus(1);
+    p_psme_fs->SetId();
     for (int i=0;i<p_hard->NOutP();++i) {
       p_psme_fs->AddToInParticles(p_hard->OutParticle(i));
-      p_psme_fs->SetId(-1);
     }
-    p_psme_fs->SetId(blobs->size());
     blobs->push_back(p_psme_fs);
   }
   return true;

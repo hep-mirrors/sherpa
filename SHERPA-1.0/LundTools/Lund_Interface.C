@@ -216,7 +216,7 @@ bool Lund_Interface::ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS
 						    hepevt.vhep[i][2],hepevt.vhep[i][3]));
 	  productionblob->AddToOutParticles(converted[i]);
 	  if (mother!=NULL) productionblob->AddToInParticles(mother);
-	  productionblob->SetId(blobs->size());
+	  productionblob->SetId();
 	  blobs->push_back(productionblob);
       }
       else {
@@ -380,10 +380,11 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
 	  decay->SetStatus(1);
 	  decay->SetType(ATOOLS::btp::Hadron_Decay);
 	  decay->SetTypeSpec("Pythia_v6.214");
-	  decay->SetId(bloblist->size());
+	  decay->SetId();
 	  decay->AddToInParticles(particle);
 	  if (particle->Info()=='P') particle->SetInfo('p');
 	  if (particle->Info()=='D') particle->SetInfo('d');
+	  particle->SetStatus(2);
 	  bloblist->push_back(decay);
 	  FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[j][0]-1,hepevt.jdahep[j][1],pl);
 	}
@@ -421,10 +422,11 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
       decay->SetStatus(1);
       decay->SetType(ATOOLS::btp::Hadron_Decay);
       decay->SetTypeSpec("Pythia_v6.214");
-      decay->SetId(bloblist->size());
+      decay->SetId();
       decay->AddToInParticles(particle);
       if (particle->Info()=='P') particle->SetInfo('p');
       if (particle->Info()=='D') particle->SetInfo('d');
+      particle->SetStatus(2);
       bloblist->push_back(decay);
       FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[i][0]-1,hepevt.jdahep[i][1],pl);
     }

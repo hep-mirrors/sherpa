@@ -98,7 +98,7 @@ bool Event_Handler::GenerateEvent(int mode)
       hardblob = new Blob();
       hardblob->SetType(btp::Signal_Process);
       hardblob->SetStatus(-1);
-      hardblob->SetId(0);
+      hardblob->SetId();
       hardblob->SetStatus(2);
       m_blobs.push_back(hardblob);
       while (flag) {
@@ -131,7 +131,6 @@ bool Event_Handler::GenerateEvent(int mode)
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
-    PrintBlobs();
     return 1;
   case 9000:
     while (flag) {
@@ -179,8 +178,9 @@ void Event_Handler::CleanUpEvent()
     for (Blob_Iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) delete (*blit);
     m_blobs.clear();
   }
-  Flow::ResetCounter();
+  Blob::Reset();
   Particle::Reset();
+  Flow::ResetCounter();
 }
 
 

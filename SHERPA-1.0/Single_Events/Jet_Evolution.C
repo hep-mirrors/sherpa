@@ -154,7 +154,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  myblob->AddToInParticles(p);
 	  myblob->AddToOutParticles(_blob->InParticle(i));
 	  _blob->InParticle(i)->SetStatus(2);
-	  myblob->SetId(_bloblist->size());
+	  myblob->SetId();
 	  _bloblist->insert(_bloblist->begin(),myblob);
 	}
       }
@@ -175,7 +175,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  myblob->AddToInParticles(_blob->OutParticle(i));
 	  _blob->OutParticle(i)->SetStatus(2);
 	  myblob->AddToOutParticles(p);
-	  myblob->SetId(_bloblist->size());
+	  myblob->SetId();
 	  _bloblist->push_back(myblob);
 	}
       }

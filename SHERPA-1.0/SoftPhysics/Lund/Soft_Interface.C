@@ -106,7 +106,7 @@ bool Soft_Interface::ExtractSinglets(Blob_List * bl,Parton_List * pl) {
 
 	if (use_one_blob==0 || newb==0) {
 	  newb = new Blob();
-	  newb->SetId(bl->size());
+	  newb->SetId();
 	  newb->SetStatus(1);
 	  newb->SetType(std::string("Fragmentation"));
 	  myblobs->push_back(newb);
@@ -196,7 +196,7 @@ bool Soft_Interface::HadronsToPartons(Blob_List * bl,Parton_List * pl) {
       Parton * inpart = (*biter)->InParton(0);
 
       blob = new ATOOLS::Blob();
-      blob->SetId(bl->size());
+      blob->SetId();
       blob->SetType(std::string("Beam Remnant"));
       bl->push_back(blob);
 

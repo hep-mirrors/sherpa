@@ -171,7 +171,7 @@ void Initial_State_Shower::SingleExtract(Knot * kn,int beam,Blob * jet,
   if (newblob) {
     jet = new Blob();
     jet->SetStatus(1);
-    jet->SetId(bl->size());
+    jet->SetId();
     if (is_is) {
       jet->SetType(btp::IS_Shower);
       jet->SetTypeSpec("APACIC++2.0");

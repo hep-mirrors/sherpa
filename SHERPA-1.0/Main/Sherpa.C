@@ -44,7 +44,6 @@ Sherpa::Sherpa() :
   PROFILE_HERE;
   m_errors = 0;
   m_trials = 100;
-  DrawLogo();
 }
 
 Sherpa::~Sherpa() 
@@ -58,6 +57,7 @@ Sherpa::~Sherpa()
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
 { 
   PROFILE_HERE;
+  DrawLogo();
   m_path = std::string("./");
   p_inithandler  = new Initialization_Handler(argc, argv);
   int mode = p_inithandler->Mode();  

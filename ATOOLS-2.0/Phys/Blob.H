@@ -69,6 +69,7 @@ namespace ATOOLS {
     Particle_Vector         m_inparticles, m_outparticles;
     Vec4D                   m_cms_vec;
     Poincare                m_cms_boost;
+    static int              s_totalnumber;
   public:
     Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=-1);
     ~Blob();
@@ -92,16 +93,17 @@ namespace ATOOLS {
     void     BoostInCMS();
     void     BoostInLab();
 
-    void     SetVecs();
-    void     SetPosition(Vec4D pos)            { m_position = pos; }
-    void     SetCMS(Vec4D _cms)                { m_cms_vec  = _cms; }
-    void     SetCMS();
-    void     SetId(int _id)                    { m_id       = _id; }
-    void     SetStatus(int _status)            { m_status   = _status; }
-    void     SetType(btp::code _type)          { m_type     = _type; }
-    void     SetTypeSpec(std::string _type)    { m_typespec = _type; }
-    void     SetBeam(int _beam)                { m_beam     = _beam; }
-    void     SetWeight(double _weight)         { 
+    void        SetVecs();
+    void        SetPosition(Vec4D pos)            { m_position = pos; }
+    void        SetCMS(Vec4D _cms)                { m_cms_vec  = _cms; }
+    void        SetCMS();
+    void        SetId(const int _id=0);
+    static void Reset()                           { s_totalnumber = 0; }
+    void        SetStatus(int _status)            { m_status   = _status; }
+    void        SetType(btp::code _type)          { m_type     = _type; }
+    void        SetTypeSpec(std::string _type)    { m_typespec = _type; }
+    void        SetBeam(int _beam)                { m_beam     = _beam; }
+    void        SetWeight(double _weight)         { 
       m_weightcontainer.clear();
       m_weightcontainer.push_back(_weight);
       m_weight   = _weight; 

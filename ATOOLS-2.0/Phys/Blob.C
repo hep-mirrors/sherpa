@@ -28,6 +28,10 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
 }
 
 namespace ATOOLS {
+  int Blob::s_totalnumber=0;
+}
+
+namespace ATOOLS {
 
   std::ostream& operator<<( std::ostream& ostr, const Blob & bl) {
 #ifdef __GNUC__
@@ -94,7 +98,7 @@ namespace ATOOLS {
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
   m_position(_pos), m_id(_id), m_weight(1.), m_hasboost(false), m_status(0), 
-  m_beam(-1), m_type(btp::Unspecified), m_typespec(std::string("unspecified")) {}
+  m_beam(-1), m_type(btp::Unspecified), m_typespec(std::string("none")) {}
 
 Blob::~Blob() {
   DeleteOwnedParticles();
@@ -307,6 +311,11 @@ void Blob::SetVecs() {
   m_position = 1./(NInP()+NOutP()) * pos;
 }
 
+
+void  Blob::SetId(const int _id) { 
+  if (_id<0) m_id = -_id;
+        else m_id = ++s_totalnumber; 
+}
 
 void  Blob::AddData(const std::string name, Blob_Data_Base * data) 
 {

@@ -92,9 +92,9 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     p_blob_psme_IS->SetType(btp::ME_PS_Interface_IS);
     p_blob_psme_IS->SetTypeSpec(string("Sherpa"));
     p_blob_psme_IS->SetStatus(1);
+    p_blob_psme_IS->SetId();
     for (int i=0;i<blob->NInP();++i) {
       p_blob_psme_IS->AddToOutParticles(blob->InParticle(i));
-      p_blob_psme_IS->SetId(-1);
     }
   }
 
@@ -104,6 +104,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     p_blob_psme_FS->SetType(btp::ME_PS_Interface_FS);
     p_blob_psme_FS->SetTypeSpec(string("Sherpa"));
     p_blob_psme_FS->SetStatus(1);
+    p_blob_psme_FS->SetId();
     for (int i=0;i<blob->NOutP();++i) {
       dec = NULL;
       if (blob->OutParticle(i)->DecayBlob()) {
@@ -112,7 +113,6 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
       }
       p_blob_psme_FS->AddToInParticles(blob->OutParticle(i));
       if (dec) blob->OutParticle(i)->SetDecayBlob(dec);
-      p_blob_psme_FS->SetId(-2);
     }
   }
 
@@ -224,12 +224,12 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 {
   if (p_blob_psme_IS) {
-    p_blob_psme_IS->SetId(bl->size());
+    p_blob_psme_IS->SetId();
     bl->push_back(p_blob_psme_IS);  
     p_blob_psme_IS=0;
   }
   if (p_blob_psme_FS) {
-    p_blob_psme_FS->SetId(bl->size());
+    p_blob_psme_FS->SetId();
     for (int i=0;i<p_blob_psme_FS->NInP();++i) {
       if (p_blob_psme_FS->InParticle(i)->DecayBlob()!=p_blob_psme_FS) 
 	p_blob_psme_FS->InParticle(i)->SetDecayBlob(p_blob_psme_FS);

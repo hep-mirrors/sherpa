@@ -14,7 +14,7 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
   p_lund(NULL)
 {
   ATOOLS::Data_Read dr(m_dir+m_file);
-  m_fragmentationmodel=dr.GetValue<std::string>("FRAGMENTATION",std::string("Lund"));
+  m_fragmentationmodel=dr.GetValue<std::string>("FRAGMENTATION",std::string("Pythiav6.214"));
   if (m_fragmentationmodel==std::string("Lund")) {
     std::string lundfile=dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
     p_lund = new Lund_Interface(m_dir,lundfile);
@@ -38,9 +38,9 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
 {
   if (m_mode==0 || bloblist->size()==0) return 1;
   p_blob = new ATOOLS::Blob();
-  bloblist->push_back(p_blob);
-  p_blob->SetId(bloblist->size());
+  p_blob->SetId();
   p_blob->SetType(ATOOLS::btp::Fragmentation);
+  bloblist->push_back(p_blob);
   std::set<ATOOLS::Particle*> startpoints;
   for (ATOOLS::Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
     for (size_t i=0;i<(size_t)(*bit)->NOutP();++i) {
