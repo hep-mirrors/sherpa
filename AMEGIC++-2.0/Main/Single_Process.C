@@ -382,7 +382,6 @@ int Single_Process::Tests() {
   M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
   m_iresult  = M2g;
 
-  delete[] M_doub;
   p_ampl->ClearCalcList();  
   p_ampl->FillCoupling(p_shand);
   p_ampl->KillZList();  
@@ -405,6 +404,7 @@ int Single_Process::Tests() {
     }
   }
   else {
+    delete[] M_doub;
     number++;
     if (p_shand->SearchValues(m_gen_str,testname,p_BS)) {
       p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
@@ -441,8 +441,6 @@ int Single_Process::Tests() {
 
      --------------------------------------------------- */
 
-  {
-  }
   if (string_test) {
     //String-Test
     for (short int i=0;i<p_hel->MaxHel();i++) {
@@ -459,6 +457,7 @@ int Single_Process::Tests() {
 	}
       }
     }
+    delete[] M_doub;
     PROFILE_LOCAL("Shand.Complete()");
     p_shand->Complete(p_hel);
 
@@ -492,6 +491,7 @@ int Single_Process::Tests() {
     }
     return 1;
   }
+  delete[] M_doub;
   return 0;
 }
 
