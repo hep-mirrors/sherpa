@@ -36,43 +36,39 @@ const std::string integralfile=std::string("integral.dat");
 const std::string normalizedfile=std::string("normalized.dat");
 #endif
 
-static ATOOLS::Info_Key m_spkey, m_ykey, m_isrspkey, m_isrykey;
-static double s_epsilon=1.0e-3;
+#define REWEIGHT_HARDEST
+
+static double s_epsilon=1.0e-3, s_xsnd, s_xstot;
 
 using namespace AMISIC;
 
 Simple_Chain::Simple_Chain():
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
-  p_total(NULL), p_differential(NULL), m_norm(1.0), m_enhance(1.0), 
+  p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0), 
   m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), 
   m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
-  m_external(false), m_regulate(false)
+  m_ecms(ATOOLS::rpa.gen.Ecms()), m_external(false), m_regulate(false)
 {
-  SetInputFile("MI.dat");
-  SetInputFile("XS.dat",1);
-  SetInputFile("Run.dat",2);
-  SetInputFile("Model.dat",3);
-  SetOutputFile("SC.log");
-  p_remnants[1]=p_remnants[0]=NULL;
-  m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
-  m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
-  m_isrspkey.Assign("s' isr mi",3,0,PHASIC::Phase_Space_Handler::GetInfo());
-  m_isrykey.Assign("y isr mi",2,0,PHASIC::Phase_Space_Handler::GetInfo());
+  Init();
 }
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
 			   BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isr):
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
-  p_total(NULL), p_differential(NULL), m_norm(1.0), m_enhance(1.0),
-  m_maxreduction(1.0), m_xsfile("XS.dat"), m_xsextension("_xs.dat"), 
-  m_mcextension("MC"), p_processes(NULL), p_fsrinterface(NULL), 
-  p_environment(NULL), p_model(model), p_beam(beam), p_isr(isr), 
-  p_profile(NULL), m_nflavour(5), m_maxtrials(1000), m_scalescheme(2), 
-  m_kfactorscheme(1), m_ecms(ATOOLS::rpa.gen.Ecms()),
-  m_external(true), m_regulate(false)
+  p_differential(NULL), p_total(NULL), m_norm(1.0), m_enhance(1.0),
+  m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
+  p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), 
+  p_model(model), p_beam(beam), p_isr(isr), p_profile(NULL), m_nflavour(5), 
+  m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
+  m_ecms(ATOOLS::rpa.gen.Ecms()), m_external(true), m_regulate(false)
+{
+  Init();
+}
+
+void Simple_Chain::Init()
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -83,11 +79,16 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   m_stop[4]=m_stop[0]=0.0;
   m_start[3]=m_start[2]=m_ecms/2;
   m_stop[3]=m_stop[2]=0.0;
-  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
-  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
-  if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-    ATOOLS::msg.Error()<<"Simple_XS::Simple_XS(..): "
-		       <<"No beam remnant handler found."<<std::endl;
+  if (!m_external) {
+    p_remnants[1]=p_remnants[0]=NULL;
+  }
+  else {
+    p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
+    p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
+    if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
+      ATOOLS::msg.Error()<<"Simple_XS::Simple_XS(..): "
+			 <<"No beam remnant handler found."<<std::endl;
+    }
   }
   m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
@@ -374,7 +375,7 @@ bool Simple_Chain::SetUpInterface()
 }
 
 bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
-				    Grid_Function_Type *const grid,
+				    Amisic_Histogram_Type *const grid,
 				    const double min,const double max,
 				    const double integral)
 {  
@@ -444,6 +445,8 @@ void Simple_Chain::CalculateSigmaND()
   double xsel=0.0511*xstot*xstot/(4*(b+pow(s,eps))-4.2);
   double xssd=0.0336*X*sqrt(X)*JAX;
   double xsdd=0.0084*X*JXX;
+  s_xstot=xstot;
+  s_xsnd=xstot-xsel-2.0*xssd-xsdd;
   msg_Tracking()<<"Simple_Chain::CalculateSigmaND(): Results are {\n"
 		<<"   \\sigma_{tot} = "<<xstot<<" mb\n"
 		<<"   \\sigma_{el}  = "<<xsel<<" mb\n"
@@ -488,24 +491,22 @@ bool Simple_Chain::CalculateTotal()
 #endif
   SetStart(p_differential->XMax(),0);
   SetStop(ATOOLS::Max(p_differential->XMin(),m_stop[0]),0);
-  p_total = new Grid_Function_Type();
+  p_total = p_differential->GetIntegral(true);
   xaxis=p_total->XAxis();
   yaxis=p_total->YAxis();
   xaxis->SetVariable(refx->Variable()->Name());
   yaxis->SetVariable(refy->Variable()->Name());
   xaxis->SetScaling(refx->Scaling()->Name());
   yaxis->SetScaling(refy->Scaling()->Name());
-  m_sigmahard=0.0;
-  for (size_t i=ref->NBins()-2;
-       i>0 && p_differential->BinXMin(i)>=m_stop[4];--i) {
-    double width=p_differential->BinXMax(i)-p_differential->BinXMin(i);
-    m_sigmahard+=p_differential->BinContent(i)*width;
-    p_total->AddPoint(p_differential->BinXMin(i),m_sigmahard);
-  }
-  msg_Info()<<"Simple_Chain::CalculateTotal(): Result is {\n"
-	    <<"   \\sigma_{hard} = "
-	    <<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
-	    <<" mb.\n}"<<std::endl;
+#ifdef DEBUG__Simple_Chain
+  comments[0]="     Total XS      "; 
+  p_total->WriteOut(OutputPath()+integralfile,"[x,w,w2,max,n] = ",comments);
+#endif
+  m_sigmahard=(*p_total)(m_stop[4]);
+  msg_Info()<<"Simple_Chain::CalculateTotal(): Result is {\n   "
+	    <<"\\sigma_{hard} = "<<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
+	    <<" mb\n   at "<<xaxis->Variable()->Name()<<"_{min} = "
+	    <<m_stop[4]<<" GeV\n}"<<std::endl;
   CalculateSigmaND();
   if (m_sigmahard<m_norm) {
     ATOOLS::msg.Error()<<"Simple_Chain::CalculateTotal(): "<<ATOOLS::om::red
@@ -547,7 +548,7 @@ bool Simple_Chain::CalculateTotal()
 			<<" GeV\n   \\sigma_{cut} = "
 			<<((*p_total)(m_stop[0])*ATOOLS::rpa.Picobarn()/1.e9)
 			<<" mb p_\\perp = "<<m_stop[0]<<" GeV\n}"<<std::endl;
-  p_total->ScaleY(1.0/m_norm);
+  p_total->Scale(1.0/m_norm);
   return true;
 }
 
@@ -852,7 +853,7 @@ bool Simple_Chain::DiceOrderingParameter()
     return false;
   }
   m_last[0]=(*p_total)[(*p_total)
-		       (m_last[0])-log(ATOOLS::ran.Get())/m_enhance]; 
+ 		       (m_last[0])-log(ATOOLS::ran.Get())/m_enhance]; 
   s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
     m_dicedparameter=false;
@@ -882,25 +883,9 @@ void Simple_Chain::PrepareTerminate()
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)
 {
   if (s_soft==NULL) return false;
-  double ptmax=std::numeric_limits<double>::max();
-  if (blob->Type()==ATOOLS::btp::Signal_Process) {
-    for (size_t i=0;i<(size_t)blob->NOutP();++i) 
-      ptmax=ATOOLS::Min(ptmax,blob->OutParticle(i)->Momentum().PPerp());
-  }
-  else {
-    for (size_t i=0;i<(size_t)blob->NInP();++i) 
-      ptmax=ATOOLS::Min(ptmax,blob->InParticle(i)->Momentum().PPerp());
-  }
-  bool veto=ptmax<m_stop[0];
-#ifdef REWEIGHT_HARDEST
-  if (!veto) {
-    m_last[0]=m_start[0]=m_ecms/2.0;
-    DiceOrderingParameter();
-    veto=m_dicedparameter;
-  }
-#endif
+  bool veto=ATOOLS::ran.Get()>s_xsnd/s_xstot;
   if (veto) {
-    s_soft->SetStart(ptmax,0); 
+    s_soft->SetStart(m_stop[0],0); 
     s_soft->SetStart((*p_differential)(m_stop[0]),2); 
   }
   return s_stophard=veto;

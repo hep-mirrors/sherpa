@@ -7,7 +7,6 @@
 
 #include "MI_Base.H"
 #include "Grid_Creator.H"
-#include "Data_To_Function.H"
 #include "Profile_Function_Base.H"
 #include "Fixed_Variable_Channel.H"
 #include "Simple_XS.H"
@@ -23,8 +22,6 @@ namespace AMISIC {
   class Simple_Chain: public MI_Base {
   public:
 
-    typedef ATOOLS::Data_To_Function<double,double> Grid_Function_Type;
-
     typedef Amisic_Histogram<double> Amisic_Histogram_Type;
     typedef std::map<std::string,Amisic_Histogram_Type*>  Amisic_Histogram_Map;
 
@@ -37,15 +34,13 @@ namespace AMISIC {
   private:
 
     Amisic_Histogram_Map   m_differentials;
-    Grid_Function_Type    *p_total;
-    Amisic_Histogram_Type *p_differential;
+    Amisic_Histogram_Type *p_differential, *p_total;
     Grid_Creator          *p_gridcreator;
 
     Process_Map m_processmap;
 
     double m_norm, m_enhance, m_maxreduction;
 
-    std::string m_environmentfile, m_xsfile;
     std::string m_xsextension, m_mcextension;
 
     EXTRAXS::Simple_XS *p_processes;
@@ -70,6 +65,9 @@ namespace AMISIC {
 
     SHERPA::Remnant_Base *p_remnants[2];
 
+    ATOOLS::Info_Key m_spkey, m_ykey, m_isrspkey, m_isrykey;
+
+    void Init();
     void CleanUp();
 
     EXTRAXS::XS_Group *FindPDFGroup(const size_t nin,const size_t nout,
@@ -103,12 +101,12 @@ namespace AMISIC {
     */
 
     bool CheckConsistency(EXTRAXS::XS_Group *const group,
-			  Grid_Function_Type *const grid,
+			  Amisic_Histogram_Type *const grid,
 			  const double min,const double max,
 			  const double integral);
     /*!
       \fn bool CheckConsistency(EXTRAXS::XS_Group *const group,
-      Grid_Function_Type *const grid,const double min,const double max,
+      Amisic_Histogram_Type *const grid,const double min,const double max,
       const double integral)
       \brief Checks for the given process group whether the 
       grid integral and the standard phasespace integral coincide.
@@ -202,14 +200,9 @@ namespace AMISIC {
     // inline functions
     inline double Norm() { return m_norm; }
 
-    inline std::string EnvironmentFile() { return m_environmentfile; }
-
     inline Profile_Function_Base *ProfileFunction() { return p_profile; }
 
     inline void SetNorm(double norm) { m_norm=norm; }
-
-    inline void SetEnvironmentFile(std::string environmentfile)
-    { m_environmentfile=environmentfile; }
 
   }; // end of class Simple_Chain
   /*!
