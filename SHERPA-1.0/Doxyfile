@@ -46,7 +46,7 @@ OUTPUT_LANGUAGE        = English
 # Private class members and static file members will be hidden unless 
 # the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES 
 
-EXTRACT_ALL            = NO 
+EXTRACT_ALL            = YES 
 
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
 # will be included in the documentation. 
@@ -304,7 +304,7 @@ INPUT                  = .
 # and *.h) to filter out the source-files in the directories. If left 
 # blank all files are included. 
 
-FILE_PATTERNS          = *.H *.dat 
+FILE_PATTERNS          = *.H
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
@@ -400,7 +400,7 @@ HTML_OUTPUT            = html
 # each generated HTML page. If it is left blank doxygen will generate a 
 # standard header.
 
-HTML_HEADER            = /home/ptpp85/frank/SHERPA/SHERPA-1.0/HTML/head_documentation.html 
+HTML_HEADER            = 
 
 # The HTML_FOOTER tag can be used to specify a personal HTML footer for 
 # each generated HTML page. If it is left blank doxygen will generate a 
@@ -413,7 +413,7 @@ HTML_FOOTER            =
 # fine-tune the look of the HTML output. If the tag is left blank doxygen 
 # will generate a default style sheet 
 
-HTML_STYLESHEET        = /home/ptpp85/frank/SHERPA/SHERPA-1.0/HTML/documentation.css
+HTML_STYLESHEET        = 
 
 # If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes, 
 # files or namespaces will be aligned in HTML using tables. If set to 

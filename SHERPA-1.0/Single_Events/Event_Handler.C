@@ -73,12 +73,11 @@ bool Event_Handler::GenerateEvent()
       if ((*pit)->Type()==std::string("Perturbative")) {
 	bool result=(*pit)->Treat(&m_blobs,weight);
  	ATOOLS::msg.Tracking()<<(*pit)->Name()<<" yields "<<result<<std::endl;
+	ATOOLS::msg.Tracking()<<m_blobs;
  	if (result) flag = 1;
       }
     }
   }
-
-  // Maybe a boost phase here ???
 
   if (flag==0) flag=1;
   while (flag) {

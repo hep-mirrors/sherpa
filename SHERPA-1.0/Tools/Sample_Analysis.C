@@ -97,7 +97,7 @@ void Sample_Analysis::AfterHadronization(ATOOLS::Blob_List * blobs, double weigh
 void Sample_Analysis::Finish(std::string addpath) 
 {
   if (status== 1) {
-    for (int i=0; i<obs.size();++i) {
+    for (size_t i=0; i<obs.size();++i) {
       ana->AddObservable(obs[i]);
     }
 
@@ -162,6 +162,8 @@ bool  Analysis_Phase::Treat(ATOOLS::Blob_List * bl, double & weight)
 {
   switch (m_mode) {
   case 1:
+    // should be if "signal process" has status 1! beware of MI
+
     if (bl->size()==1 && bl->back()->Status()==1) {
       p_analysis->AfterME(bl,weight);
       m_status = 1;
@@ -169,6 +171,7 @@ bool  Analysis_Phase::Treat(ATOOLS::Blob_List * bl, double & weight)
     break;
   case 2:
     if (m_status) return 0;
+    // should look for a shower blobs! 
     if (bl->size()>2) {
       p_analysis->AfterPartonShower(bl,weight);
       m_status = 1;

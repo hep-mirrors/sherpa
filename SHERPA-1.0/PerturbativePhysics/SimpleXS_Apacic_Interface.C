@@ -21,7 +21,7 @@ SimpleXS_Apacic_Interface::~SimpleXS_Apacic_Interface()
   if (p_tools) delete p_tools;
 }
 
-bool SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob) 
+int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob) 
 {
   if (blob==NULL) return false;
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {

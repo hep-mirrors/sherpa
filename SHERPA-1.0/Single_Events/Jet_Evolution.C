@@ -98,9 +98,16 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 				  Perturbative_Interface * interface) 
 {
-  std::string type = _blob->Type();
+  size_t colon= _blob->Type().find(":");
+  std::string type = _blob->Type().substr(0,colon+2);
   bool decayblob   = (_blob->NInP()==1);
   int shower,stat = interface->DefineInitialConditions(_blob);
+  if (stat==3) {
+    _blob->SetType(type);
+    _blob->SetStatus(-1);
+    p_showerhandler->CleanUp();
+    return true;
+  }
   if (stat) {
     interface->FillBlobs(_bloblist);
     if (!decayblob) {
@@ -149,6 +156,8 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       _blob->SetType(type);
       _blob->SetStatus(-1);
       p_showerhandler->CleanUp();
+      // delete all meps blobs
+      interface->CleanBlobs(_bloblist);
     }
     else {
       _blob->SetType(type);

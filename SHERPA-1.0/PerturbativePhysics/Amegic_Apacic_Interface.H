@@ -16,7 +16,7 @@
 namespace SHERPA {
   class Amegic_Apacic_Interface : public Perturbative_Interface {
   private :
-    int    m_type;
+    int    m_type, m_lastshowerveto;
     double m_ycut,m_jetscale;
 
     ATOOLS::Jet_Finder * p_jf;
@@ -35,8 +35,9 @@ namespace SHERPA {
   public :
     Amegic_Apacic_Interface(Matrix_Element_Handler *,Shower_Handler *);
     ~Amegic_Apacic_Interface(); 
-    bool DefineInitialConditions(ATOOLS::Blob *);
+    int  DefineInitialConditions(ATOOLS::Blob *);
     bool FillBlobs(ATOOLS::Blob_List *); 
+    void CleanBlobs(ATOOLS::Blob_List *);
 
     int  PerformShowers();
 

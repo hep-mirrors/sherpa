@@ -14,6 +14,10 @@
 
 #include "Blob.H"
 
+namespace MODEL {
+  class Running_AlphaS;
+}
+
 namespace SHERPA {
   class Matrix_Element_Handler;
 
@@ -24,18 +28,22 @@ namespace SHERPA {
     NLL_Sudakov    * p_sud;
 
     //    AMEGIC::Process_Base   * p_lastproc;
-    Matrix_Element_Handler  * p_me;
-    ATOOLS::Jet_Finder   * p_jf;
-    ATOOLS::Blob         * p_blob;
+    Matrix_Element_Handler * p_me;
+    ATOOLS::Jet_Finder     * p_jf;
+    ATOOLS::Blob           * p_blob;
+
+    MODEL::Running_AlphaS  * p_runas;
 
     int     m_maxjetnumber;
     double  m_weight;
 
-    double  m_scale;
+    double  m_scale,m_asscale;
     int     m_colors[4][2];
 
-    int     m_sud_mode;
+    int     m_sud_mode, m_bp_mode, m_as_order;
     int     m_isrmode, m_isrshoweron, m_fsrshoweron;
+
+    double m_kfac;
 
     APACIC::Tree   * p_local_tree; 
 
@@ -54,12 +62,13 @@ namespace SHERPA {
     void    EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,int);
     void    DetermineColourAngles(const std::vector<APACIC::Knot *> &);
 
+    void    WriteOutSudakovWeights();
   public :
     Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf, 
 		    int maxjetnumber, int isrmode, int isrshoweron, int fsrshoweron) ;
     ~Cluster_Partons();
     bool ClusterConfiguration(ATOOLS::Blob *,double=1.,double=1.);
-    void CalculateWeight(double,double);
+    void CalculateWeight(double,double,double);
     void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);
     void FillDecayTree(APACIC::Tree *);
 
@@ -67,13 +76,15 @@ namespace SHERPA {
     int     SetDecayColours(ATOOLS::Vec4D *, ATOOLS::Flavour *,int,int);
     double  Weight();
     double  Scale();
+    double  AsScale();
 
     ATOOLS::Flavour Flav(int);
-    ATOOLS::Vec4D    Momentum(int); 
+    ATOOLS::Vec4D   Momentum(int); 
   };
 
-  inline double  Cluster_Partons::Weight() { return m_weight; }
-  inline double  Cluster_Partons::Scale()  { return m_scale; }
+  inline double  Cluster_Partons::Weight()   { return m_weight; }
+  inline double  Cluster_Partons::Scale()    { return m_scale; }
+  inline double  Cluster_Partons::AsScale()  { return m_asscale; }
 
 
   /*!
@@ -83,8 +94,8 @@ namespace SHERPA {
     This Class controls the merging of Parton Shower (PS) and
     Matrix Elements (ME). The main steps are the following:
       - ClusterConfiguration() : determines for a given 
-        2 \to n ME a parton shower history and a hard
-        2 \to 2 Process
+        \f$2 \to n\f$ ME a parton shower history and a hard
+        \f$2 \to 2\f$ Process
       - CalculateWeight() : evaluates the a NLL Sudakov weight
         used for reweighting the ME kinematics
       - FillTrees() : determines the starting condition of the 
@@ -93,9 +104,9 @@ namespace SHERPA {
   */
 
   /*!
-    \fn  bool Cluster_Partons::Cluster_Configuration(ATOOLS::Blob *)
+    \fn  bool Cluster_Partons::ClusterConfiguration(ATOOLS::Blob *,double,double)
     \brief Applys a jet cluster algorithm one a given process until
-           2 \to 2 Process is obtained
+           \f$2 \to 2\f$ Process is obtained
 
     Determine best clustering, in order to initialise the PS there for
     a jet algorithm (given at initialization time is used). The actual
@@ -104,12 +115,18 @@ namespace SHERPA {
   */
 
   /*!
-    \fn  void Cluster_Partons::CalculateWeight(double hardscale ,double jetscale);
+    \fn  void Cluster_Partons::CalculateWeight(double hardscale , double asscale, double jetscale);
     \brief  Evaluates the NLL Sudakov factors
 
     Evaluates the sudakov weight for matching ME to PS. The Matrix Elements
     are reweighted with this weight.
 
+    The general form is 
+    \f[
+       w = \frac{\Delta_{\cal f}(q_i)}{\Delta(q_j)} \frac{\alpha_S(q_j)}{\alpha_S(q_0)}
+    \f]
+    where the Sudakov form factors \f$\Delta(q)\f$ are calculated with the help of 
+    NLL_Sudakov.
   */
 
   /*!
@@ -124,7 +141,7 @@ namespace SHERPA {
 
   /*!
     \fn  int  Cluster_Partons::SetColours(ATOOLS::Vec4D *, ATOOLS::Flavour *)
-    \brief Determines a Colour Structure for a given hard 2 \to 2 process
+    \brief Determines a Colour Structure for a given hard \f$2 \to 2\f$ process
     and fixes a hard scale. These can be used as initial condition for 
     CalculateWeight()
   */
@@ -145,13 +162,13 @@ namespace SHERPA {
     \fn void EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,int)
 
     Three cases:
-      -# two incoming partons from the hard 2 \to 2 process
+      -# two incoming partons from the hard \f$2 \to 2\f$ process
       -# two outgoing partons from a common mother
       -# one incoming parton its mother and its sister
      .
      
      For the initialization of the incoming particles of 
-     the hard 2 \to 2 process the energy fractions x_1 and x_2
+     the hard \f$2 \to 2\f$ process the energy fractions \f$x_1\f$ and \f$x_2\f$
      are filled from information in the Combine_Table
      The stating scale of the shower, is given by the 
      virtual mass of the mother (since we have a shower in virtualities).

@@ -55,7 +55,7 @@ Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up
   no=all++;
 }
 
-inline bool Combine_Table::Combinable(const Leg & a , const Leg & b, int & strong) const 
+bool Combine_Table::Combinable(const Leg & a , const Leg & b, int & strong) const 
 {
   strong = 0;
   // 1.) check if both points have common mother
@@ -220,7 +220,7 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, int strong)
 
 Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec4D * _moms) 
 {
-  int prefer_ew_clustering = 0;
+  int prefer_ew_clustering = 1;
 
   Combine_Table * ct=0;
   CD_List & cl=combinations;
@@ -277,18 +277,20 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
 	// check if combined momenta is physical even in LAB frame
 	double e = save_moms[cit->i][0] - save_moms[cit->j][0];
 	if (e<0. ) {
+	  //	  std::cout<<"lv ("<<cit->i<<","<<cit->j<<") "<<pt2ij<<endl;
 	  cit->pt2ij = pt2ij = pt2min;
 	}
 	else {
-	// check if combined momenta are physical in their CMS frame
-	Vec4D s1 = save_moms[cit->i] - save_moms[cit->j];
-	Vec4D s2 = save_moms[1-cit->i];
-	Poincare test(s1+s2);
-	test.Boost(s1);
-	test.Boost(s2);
-	if (s1[0]<0. || s2[0]<0.) {
-	  cit->pt2ij = pt2ij = pt2min;
-	}
+	  // check if combined momenta are physical in their CMS frame
+	  Vec4D s1 = save_moms[cit->i] - save_moms[cit->j];
+	  Vec4D s2 = save_moms[1-cit->i];
+	  Poincare test(s1+s2);
+	  test.Boost(s1);
+	  test.Boost(s2);
+	  if (s1[0]<0. || s2[0]<0.) {
+	    //	    std::cout<<"cv ("<<cit->i<<","<<cit->j<<") "<<pt2ij<<endl; 
+	    cit->pt2ij = pt2ij = pt2min;
+	  }
 	}
       }
 

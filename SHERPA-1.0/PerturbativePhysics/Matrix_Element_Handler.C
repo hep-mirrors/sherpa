@@ -1,9 +1,9 @@
 #include"Matrix_Element_Handler.H"
-
 #include "Data_Read.H"
 #include "Message.H"
 #include "Amegic.H"
 #include "SimpleXSecs.H"
+#include <iomanip>
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -151,7 +151,8 @@ bool Matrix_Element_Handler::FillDecayTable(ATOOLS::Decay_Table * _dt,bool _ow)
 
 bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice) 
 {
-  switch (m_mode) {
+  cout<<" scalechoice "<<scalechoice<<endl;
+  switch (m_mode) { 
   case 1: 
     m_readin = p_dataread->GetValue<string>("RESULT DIRECTORY",string(""));
     if (scalechoice>0) p_amegic->Processes()->SetScale(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
@@ -177,9 +178,39 @@ bool Matrix_Element_Handler::RescaleJetrates()
 {
   // processes not rescaled in the moment only status printed
   AMEGIC::Process_Base * procs = p_amegic->Processes();
+
+  double errsum=0;
   for (int i=0; i<procs->Size();++i) {
-//     double xstot = (*procs)[i]->Total()*rpa.Picobarn();
-//     double njet  = (*procs)[i]->Nout();
+    errsum+= (*procs)[i]->TotalError();
+  }
+
+  if (errsum!=0.) {
+    MyStrStream sstr;
+    int ecms = int(rpa.gen.Ecms()*10.);
+    double ycut=log(rpa.gen.Ycut())/log(10.);
+    sstr<<"xsections_"<<ecms<<".dat"<<endl;
+    std::string filename;
+    sstr>>filename;
+    cout<<" looking for "<<filename<<endl;
+    std::ofstream  rfile(filename.c_str(),std::ios::app);
+    rfile<<"# ";
+    for (int i=0; i<procs->Size();++i) {
+      rfile<<(*procs)[i]->Name()<<" ";
+    }
+    rfile<<endl;
+    
+
+    rfile.precision(6);
+    rfile<<setw(10)<<ycut<<" ";
+
+    for (int i=0; i<procs->Size();++i) {
+      double xstot = (*procs)[i]->Total()*rpa.Picobarn();
+      double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
+      double njet  = (*procs)[i]->Nout();
+      rfile<<setw(10)<<xstot<<" "<<setw(10)<<xserr<<" ";
+    }
+    rfile<<endl;
+    rfile.close();
   }
   return true;
 }

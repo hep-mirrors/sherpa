@@ -24,7 +24,7 @@ namespace  SHERPA {
 
 Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
 						 Shower_Handler * shower) :
-  Perturbative_Interface(me,shower), p_blob_psme_IS(0), p_blob_psme_FS(0)
+  Perturbative_Interface(me,shower), m_lastshowerveto(0), p_blob_psme_IS(0), p_blob_psme_FS(0)
 {
   p_jf      = 0;
   p_cluster = 0;
@@ -109,7 +109,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   return 1;  // OK!
 }
 
-bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
+int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 {
   int nin  = blob->NInP();
   int nout = blob->NOutP();
@@ -121,33 +121,59 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
       p_xs = XS_Selector::GetXS(nin,2,p_fl);
       if (p_xs) p_two2two->Add(p_xs);
     }
-  
+
 
     //if (!p_xs) p_cluster->SetColours(nin,p_moms,p_fl);
     if (!p_xs) p_cluster->SetColours(p_moms,p_fl);
     else { if (!(p_xs->SetColours(p_moms))) return 0; }
+
+//     if (p_xs) {
+//       cout<<" found "<<p_xs->Name()<<endl;
+//       for (size_t i = 0; i<4; ++i) cout<<p_xs->Flavs()[i]<<" ";
+//       cout<<endl;
+//       for (int i=0;i<4;i++) {
+// 	cout<<"( ";
+// 	for (int j=0;j<2;j++) {
+// 	  cout<<p_xs->Colours()[i][j]<<" ";
+// 	}
+// 	cout<<"), ";
+//       }
+//       cout<<endl;
+
+//     }
     
     if (m_type==1) { // e+ e-
       double sprime = (p_mehandler->Momenta()[0]+p_mehandler->Momenta()[1]).Abs2();
       m_jetscale    = m_ycut * sprime;
     }
     
-    double scale;
-    if (p_xs) scale = p_xs->Scale();
-    else scale = p_cluster->Scale();
+    double scale,asscale;
+    if (p_xs) asscale=scale = p_xs->Scale();
+    else {
+      scale   = p_cluster->Scale();
+      asscale = p_cluster->AsScale();
+    }
     // save hard scale to be used in plots!
     amegic_apacic_interface_last_hard_scale = scale;
     
-    p_cluster->CalculateWeight(scale,m_jetscale);
+    p_cluster->CalculateWeight(scale,asscale,m_jetscale);
     
     m_weight = p_cluster->Weight();
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
+	//	cout<<" sudweight accepted "<<endl;
 	p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
 	m_weight=1.;
 	return 1;
       }
+      if (m_lastshowerveto==3) {
+	//	cout<<" same event sudweight rejected "<<endl;
+	m_weight=1.;
+	return 3;
+      }
+      //      cout<<" sudweight rejected "<<endl;
       m_weight=1.;
+      return 0;
     }
     else {
       if (!(p_mehandler->UseSudakovWeight())) m_weight=1.;
@@ -184,6 +210,22 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
   return 1;
 }
 
+void Amegic_Apacic_Interface::CleanBlobs(ATOOLS::Blob_List * bl)
+{
+  for (Blob_Iterator blit=bl->begin();blit!=bl->end();) {
+    if ((*blit)->Type().find(string("ME PS Interface (Sherpa, IS)"))!=string::npos) {
+      blit=bl->erase(blit);
+    }
+    else if ((*blit)->Type().find(string("ME PS Interface (Sherpa, FS)"))!=string::npos) {
+      blit=bl->erase(blit);
+    }
+    else {
+      ++blit;
+    }
+  }
+
+}
+
 int Amegic_Apacic_Interface::PerformShowers()
 {
   int jetveto=-1;
@@ -191,5 +233,6 @@ int Amegic_Apacic_Interface::PerformShowers()
     jetveto=0;
     if (p_shower->MaxJetNumber()!=p_mehandler->NOut()) jetveto=1;
   }
-  return p_shower->PerformShowers(jetveto,p_mehandler->GetISR_Handler()->X1(),p_mehandler->GetISR_Handler()->X2());
+  return m_lastshowerveto=p_shower->PerformShowers(jetveto,
+		p_mehandler->GetISR_Handler()->X1(),p_mehandler->GetISR_Handler()->X2());
 }

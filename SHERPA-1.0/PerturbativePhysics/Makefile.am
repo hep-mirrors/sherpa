@@ -21,7 +21,12 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 					   	SimpleXS_Apacic_Interface.C \
 						Amegic_Apacic_Interface.C \
 						Combine_Table.C \
-						NLL_Sudakov.C
+						NLL_Sudakov.C \
+						NLL_Branching_Probability_Base.C \
+						NLL_Branching_Probabilities.C \
+						NLL_Single_Sudakov.C \
+						NLL_Combined_Sudakov.C \
+						NLL_JetRate.C
 AM_CXXFLAGS   =	-pedantic -Wall -Winline
 INCLUDES      =	\
 		-I../../SHERPA-1.0/Tools \
@@ -61,7 +66,11 @@ noinst_HEADERS        =	\
 			SimpleXS_Apacic_Interface.H \
 			Amegic_Apacic_Interface.H \
 			Combine_Table.H \
-			NLL_Sudakov.H
-
-
+			NLL_Sudakov.H \
+			NLL_Branching_Probabilities.H \
+			NLL_Branching_Probability_Base.H \
+			NLL_Sudakov_Base.H \
+			NLL_Single_Sudakov.H \
+			NLL_Combined_Sudakov.H \
+			NLL_JetRate.H
 

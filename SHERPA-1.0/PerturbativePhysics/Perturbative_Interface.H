@@ -34,8 +34,9 @@ namespace SHERPA {
       if (p_fl)   { delete p_fl;   p_fl   = NULL; }
       if (p_moms) { delete p_moms; p_moms = NULL; }
     }
-    virtual bool DefineInitialConditions(ATOOLS::Blob *) = 0;
+    virtual int  DefineInitialConditions(ATOOLS::Blob *) = 0;
     virtual bool FillBlobs(ATOOLS::Blob_List *) = 0; 
+    virtual void CleanBlobs(ATOOLS::Blob_List *) {}; 
 
     virtual int  PerformShowers() = 0;
 

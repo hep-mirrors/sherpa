@@ -1,124 +1,167 @@
 #ifndef NLL_Sudakov_H
 #define NLL_Sudakov_H
 
-//#include "Sudakov_Tools.H"
-#include "Running_AlphaS.H"
-#include "Fast_Function.H"
-#include "Gauss_Integrator.H"
-#include "Kabbala.H"
+
+#include "NLL_Sudakov_Base.H"
+#include "NLL_Branching_Probability_Base.H"
+#include "Message.H"
+#include <vector>
+#include <map>
+
+namespace MODEL {
+  class Running_AlphaS;
+}
 
 namespace SHERPA {
-  class NLL {
-  public:
-    enum code { G_g_G_f    = 0,
-		G_q        = 1,
-		G_g        = 2,
-                G_f        = 3,
-		//	what about Delta_q, Delta_g, Delta_f
-		// direct versions - LLA  2/(2 pi q) * Int( p_?_lla)
-		G_g_lla    = 10,     
-		G_q_lla    = 11,
-		// direct versions - MLLA  2/(2 pi q) * Int( p_?_mlla)
-		G_g_mlla   = 20,
-		G_q_mlla   = 21,
+  class NLL_JetRate;
 
-                three_jet   = 30,   //  G_q(Qmax,Q)*Delta_g(Q) 
-
-		four_jet_1 = 41,  //  G_q(Qmax,Q)*Delta_g(Q) * Int( NLL::four_jet_2)
-		four_jet_2 = 42,  //  G_g*Delta_g   and/or   G_f*Delta_f
-
-		five_jet_1 = 51,  //  G_q * Delta_g * ((Int( NLL::five_jet_2 ))^2 
-		                  // + Int( NLL::five_jet_3) [ + Int( NLL::five_jet_4) ])
-		five_jet_2 = 52,  //  ( G_g * Delta_g )
-                five_jet_3 = 53,  //  G_g * Delta_g * (Int( NLL::five_jet_5))
-		five_jet_4 = 54,  //  2*G_f*Dleta_f*(Int( NLL::five_jet_6))
-                five_jet_5 = 55,  //  2*G_g*Delta_g  and/or  4*G_f*Delta_f
-                five_jet_6 = 56,  //  2*(G_q - G_g + Gq)*Delta_g
-
-                P_g_lla    = 200, //   P_g_LLA(qstat,tt)     tt=z
-		P_q_lla    = 201, //   P_q_LLA(qstat,tt)     tt=z
-		P_g_mlla   = 210, //   P_g_MLLA(qstat,tt);   tt=z
-		P_q_mlla   = 211, //   P_q_MLLA(qstat,tt);   tt=z
-
-		Unknown    = 99,
-
-		int_G_g_G_f= 300,
-		int_G_q    = 301,
-		int_G_g    = 302,
-		int_G_f    = 303,
-
-		// select methode for Sudakov determination
-		use_table   = 900,
-		inte_self   = 901,
-                analytic    = 902,
-                alphas_repl = 903
-    };
-  };
+  typedef std::map<ATOOLS::Flavour,NLL_Sudakov_Base*> Sudakov_Map;
 
   class NLL_Sudakov : public ATOOLS::Function_Base {
-    double tmax,tmin;
-    NLL::code            inte;    // specifies integration algorithm used for Deltas
-    ATOOLS::Gauss_Integrator gauss;    // integrator routine
-    double qmax,qmin,qstat;
-    int    Nc,Nf;
-    double CA,CF,TR;
-    double K;
-    double beta0,beta1,lambda2,mu2,asmu;
-    bool   nlo,run_as;
-    
-    void   FixLambda2();
 
-    NLL::code            type;    // specifies return value of operator()
+    std::vector<NLL_Sudakov_Base*> m_all_suds;
+    Sudakov_Map m_sud_map;
 
-    // logs of sudakovs
-    ATOOLS::Fast_Function log_delta_q, log_delta_g;
+    int m_mode;
+    double m_lambda;
+    double m_mu2,m_asmu;
 
-    // branching probabilities (branch at q, with start scale Q)
-    double GammaQ(double q, double Q);
-    double GammaG(double q, double Q);
-    double GammaF(double q);
+    MODEL::Running_AlphaS * p_runas;
 
-    // integrated branching probabilities 
-    double IntGammaI(double q, double i0, double i1, double i2, double i3);
+    NLL_JetRate * p_jetrate;
 
-    double IntGammaQ(double Q0, double Q);
-    double IntGammaG(double Q0, double Q);
-    double IntGammaF(double Q0, double Q);
-
-    // splitting functions
-    double P_g_LLA(double q, double z);
-    double P_q_LLA(double q, double z);
-    double P_g_MLLA(double q, double z);
-    double P_q_MLLA(double q, double z);
+    // --------------------------------------------------
+    void PrepareMap(MODEL::Running_AlphaS *);
+    void PrepareMassiveMap(MODEL::Running_AlphaS *, int);
+    double Delta(const ATOOLS::Flavour &, double ,double );
+    void   FixLambda2();    
 
   public:
-    NLL_Sudakov(double,double);
-    // Sudakovs (default: relying on fast interpolatoin of log sudakov)
-    // no branching between Q (high scale) and q (low scale)
-    double DeltaQ(double Q, double q);
-    double DeltaG(double Q, double q);
-    double DeltaF(double Q, double q);
+    NLL_Sudakov(int mode, double q2max, double q2min, MODEL::Running_AlphaS * =0 ,int =-1);
+    NLL_Sudakov_Base & Delta(const ATOOLS::Flavour &);
 
-    double R2(double Q0, double Q); 
-    double R3(double Q0, double Q); 
-    double R4(double Q0, double Q); 
-    double R5(double Q0, double Q); 
-
-    // Kabbala-Sudakovs, do not only return values but also a string
-    AMEGIC::Kabbala DeltaQ(int,double Q, double q);
-    AMEGIC::Kabbala DeltaG(int,double Q, double q);
-    AMEGIC::Kabbala DeltaF(int,double Q, double q);
-
-    // LL AlphaS routine
-    double AlphaS(double);
-
-    // general function, depending on specified type.
-    double operator()(double);
 
     // consitency checks
-    void CheckSudakovs();
+    void CheckSudakovs(int);
+    ~NLL_Sudakov();
   };
 
 
+  inline NLL_Sudakov_Base &  NLL_Sudakov::Delta(const ATOOLS::Flavour & fl) {
+    //    return *(m_sud_map[fl]);
+    Sudakov_Map::const_iterator sit=m_sud_map.find(fl);
+    if (sit!=m_sud_map.end()) {
+      return *(sit->second);
+    }
+    ATOOLS::msg.Out()<<" ERROR: did not find sudakov for "<<fl<<std::endl;
+    return *(m_sud_map[ATOOLS::Flavour(ATOOLS::kf::none)]);
+  }
+
+  inline double NLL_Sudakov::Delta(const ATOOLS::Flavour & fl, double Q, double q) {
+    return Delta(fl)(Q,q);
+  }
+
+
+  /*!
+    \file NLL_Sudakov.H
+    \brief contains the class SHERPA::NLL_Sudakov
+  */
+  /*!
+    \class NLL_Sudakov.H
+    \brief this class provides the numerical values for the sudakov form factors 
+           used in the merging procedure of parton shower and matrix elements
+
+    The main purpose of this class is to provide sudakov form factors for
+    the merging procedure of parton shower and matrix elements (cf. class 
+    Cluster_Partons). Consequently the main routine is Delta(const ATOOLS::Flavour &)
+    which returns the sudakov form factor for a given flavour.
+  */
+  /*!
+    \fn NLL_Sudakov::NLL_Sudakov(double q2max, double q2min);
+    \brief special constructor
+
+    Constructor is called with a minimal and a maximal \f$q^2\f$. Within 
+    the given domain sudakov form factors are initialized. Consequently a map 
+    is filled. If neccessary lookup tables are precalculated.
+  */
+  /*!
+    \fn NLL_Sudakov::~NLL_Sudakov();
+    \brief destructor
+
+    removes all sudakov objects from memory
+  */
+  /*!
+    \fn void NLL_Sudakov::PrepareMap();
+    \brief initializes a map with all (massless) sudakov form factors needed.
+
+    For each Flavour (d-, u-, s-, c-, b-quark or anti-quark, and gluon) the corresponding
+    sudakov form factor (cf. NLL_Single_Sudakov and NLL_Combined_Sudakov) are initialized
+    and put into a map, allowing a fast access to a sudakov form factor object for any flavour.
+
+    For purpose of completeness a NLL_Dummy_Sudakov (always one) is added to the map, 
+    which will be returned for any flavour without a corresponding sudakov form 
+    factor.
+
+    In order to keep track of all sudakov objects inserted in the map, a list of
+    unique NLL_Sudakov_Base objects is maintained, and will be used for a proper
+    removal at the end.
+
+    The default massless integrated splitting functions are obtained by 
+    GammaQ_Lambda, GammaG_Lambda, and   GammaF_Lambda.
+  */
+  /*!
+    \fn void NLL_Sudakov::PrepareMassiveMap();
+    \brief initializes a map with all massive sudakov form factors.
+
+    For each Flavour (d-, u-, s-, c-, b-quark or anti-quark, and gluon) the corresponding
+    sudakov form factor (cf. NLL_Single_Sudakov and NLL_Combined_Sudakov) are initialized
+    and put into a map, allowing a fast access to a sudakov form factor object for any 
+    flavour. The difference to routine PrepareMap() comes from utilizing different integrated 
+    splitting functions (cf. Krauss and Rodrigo hep-ph/0303038). Consequently different quark
+    flavour can no longer be mapped to one common sudakov (as in the massless case) but
+    have all to have individual sudakov objects instead.
+    
+    The massive integrated splitting functions are obtained by 
+    GammaQ_Lambda_Massive, GammaG_Lambda_Massive, and   GammaF_Lambda_Massive.
+  */
+  /*!   
+    \fn NLL_Sudakov_Base & NLL_Sudakov::Delta(const ATOOLS::Flavour &);
+    \brief returns a NLL_Sudakov_Base object for a given flavour.
+
+    This the main access method to NLL sudakov form factors. It can be 
+    called after a map has been initialized via PrepareMap() or PrepareMassiveMap().
+    After that each call of this routine returns the corresponding sudakov form
+    factor in form of a NLL_Sudakov_Base object. 
+    For not strong interacting particles usually an NLL_Dummy_Sudakov is returned, 
+    giving a one for all possible scale combinations.
+  */
+  /*!
+    \fn    double NLL_Sudakov::Delta(const ATOOLS::Flavour &, double ,double );
+    \brief returns the result of a sudakov form factor for a given flavour and scales
+
+    This is a wrapper around the routine Delta(const ATOOLS::Flavour &). It has basically 
+    the same features, but is provided for convinience of the user.
+
+    The following two lines are equivalent:
+    \verbatim
+
+      dg = sud.Delta(Flavour(kf::gluon))(Q,Q0);
+      dg = sud.Delta(Flavour(kf::gluon),Q,Q0);
+    \endverbatim
+  */
+  /*!
+    \fn void   NLL_Sudakov::FixLambda2();    
+    \brief sets up some input paramter for the calculation of the sudakov form factors
+
+    This routine sets all parameter (correlated to the running coupling) used
+    in sudakov form factors. In most cases the main parameter is \f$\Lambda_{\rm QCD}\f$.
+    In some parameterization it may as well be a renomaization scale \f$\mu\f$ and a
+    corresponding value for the strong coupling \f$\alpha_S(\mu)\f$.
+  */
+  /*!
+    \fn void NLL_Sudakov::CheckSudakovs();
+    \brief here some consitency checks are performed and some results for 
+           selected paramters are returned.
+  */
 }
 #endif

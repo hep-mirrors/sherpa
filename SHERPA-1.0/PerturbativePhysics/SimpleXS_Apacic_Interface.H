@@ -23,7 +23,7 @@ namespace SHERPA {
     ~SimpleXS_Apacic_Interface();
 
     // member functions
-    bool DefineInitialConditions(ATOOLS::Blob *blob);
+    int  DefineInitialConditions(ATOOLS::Blob *blob);
     bool FillBlobs(ATOOLS::Blob_List *blobs); 
 
     int  PerformShowers();

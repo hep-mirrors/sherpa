@@ -17,7 +17,6 @@ namespace SHERPA {
                              Leg                       
 
     ---------------------------------------------------------------------------*/
-  //! Stores all information of a point and an extra "anti"-flag
 
 
   class Leg {  // can be used as synonym for "Point *"
@@ -81,7 +80,6 @@ namespace SHERPA {
 
   std::ostream & operator<<(std::ostream &,Combine_Table *);
 
-  //! This is the main structure for the combination scheme.
   class Combine_Table {
     static int        all;
     int               no;
@@ -142,25 +140,21 @@ namespace SHERPA {
     friend std::ostream & operator<< (std::ostream&,Combine_Table *);
     friend std::ostream & operator<< (std::ostream& s ,Combine_Data& cd);
   };
-}
 
-
-
-
-
-/*!
-  \file Combine_Table.H
-  \brief Defines the basic structures for the combination of matrix elements and 
-         parton shower. Therefore a class APACIC::Combine_Table, APACIC::Combine_Data, 
-	 and APACIC::Leg is defined, in order to determine and store all possiblities 
-	 to combine two legs of a given matrix element. The information of all graphs 
-	 (used in AMEGIC) is employed to seperate allowed combination. The aim is to 
-	 have all neccessary information to establish a parton histories for a n-jet 
-	 matrix element configuration easily.
-*/
+  /*!
+    \file Combine_Table.H
+    \brief Defines the basic structures for the combination of matrix elements and 
+           parton shower. Therefore a class SHERPA::Combine_Table, SHERPA::Combine_Data, 
+	   and SHERPA::Leg is defined, in order to determine and store all possiblities 
+ 	   to combine two legs of a given matrix element. The information of all graphs 
+	   (used in AMEGIC) is employed to seperate allowed combination. The aim is to 
+	   have all neccessary information to establish a parton histories for a n-jet 
+	   matrix element configuration easily.
+  */
 
 /*! 
-  \class APACIC::Leg
+  \class Leg
+  \brief Stores all information of a point and an extra "anti"-flag
 
   The idea is to access, all information of the Point with same syntax as an pointer 
   to a Point. For this reason the operator-> is overloaded. In addition a anti-flag 
@@ -174,7 +168,7 @@ namespace SHERPA {
 */
 
 /*! 
-  \class APACIC::Combine_Data
+  \class Combine_Data
 
   This includes the number of combined leg (i and j), the jet measure of these legs 
   (yij), a list of numbers graphs where this combination is possible (graphs) and a 
@@ -182,7 +176,8 @@ namespace SHERPA {
 */
 
 /*! 
-  \class APACIC::Combine_Table
+  \class Combine_Table
+  \brief This is the main structure for storing a combination scheme.
 
   it stores: 
     - a table with (e.g. 6) combinations: (i and j are leg numbers)
@@ -208,8 +203,10 @@ namespace SHERPA {
     - a link to a jet_measure calculator (Jet_Finder)
     - a reference to the winner combination and graph number
     - a link "up" to the table with one combination less performed
-
 */
+
+}
+
 
 #endif
 

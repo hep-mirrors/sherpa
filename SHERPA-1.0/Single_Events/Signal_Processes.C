@@ -28,7 +28,7 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
 #ifdef PROFILE__Signal_Processes
   PROFILE_HERE;
 #endif
-  if (_bloblist->size()>1) return 0;
+  //  if (_bloblist->size()>1) return 0;
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Signal_Processes::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
