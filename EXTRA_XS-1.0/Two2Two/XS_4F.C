@@ -42,10 +42,10 @@ XS_f1f1_f1f1::XS_f1f1_f1f1(const size_t nin,const size_t nout,
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  std::cout<<"Init f1f1 -> f1f1 : anti = "<<m_anti<<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
-	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
+  //   std::cout<<"Init f1f1 -> f1f1 : anti = "<<m_anti<<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
+  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
 }
 
 double XS_f1f1_f1f1::operator()(double s,double t,double u) 
@@ -122,7 +122,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t n
 						 const ATOOLS::Flavour *flavours,
 						 const size_t nqed, const size_t nqcd)
 {
-  std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  //std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   if (flavours[0]!=flavours[1].Bar() || 
       flavours[0]!=flavours[2] || flavours[1]!=flavours[3])  return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
@@ -149,11 +149,11 @@ XS_f1f1b_f1f1b::XS_f1f1b_f1f1b(const size_t nin,const size_t nout,
   m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  std::cout<<"Init f1f1b -> f1f1b : anti = "<<m_anti1<<m_anti2
-	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
-	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
+  // std::cout<<"Init f1f1b -> f1f1b : anti = "<<m_anti1<<m_anti2
+  // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
+  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
 }
 
 double XS_f1f1b_f1f1b::operator()(double s,double t,double u) 
@@ -240,11 +240,12 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 						 const ATOOLS::Flavour *flavours,
 						 const size_t nqed, const size_t nqcd)
 {
-  std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  //std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   int  kfc1  = abs(flavours[0].Kfcode()), kfc2  = abs(flavours[2].Kfcode());
   if (flavours[0]!=flavours[1].Bar() || 
       flavours[0]!=flavours[2] || flavours[0]==flavours[3] || 
       flavours[2]!=flavours[3].Bar())                        return NULL;
+  if (!flavours[0].IsFermion() || !flavours[2].IsFermion())  return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if ((flavours[0].Charge()!=0. && flavours[2].Charge()!=0. &&
@@ -256,10 +257,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 	(kfc1/2!=kfc1/2. && kfc2/2==kfc2/2. && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1))>0))) ||
       ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f1b_f2f2b(nin,nout,flavours); 
-  std::cout<<"Checks "<<ATOOLS::Flavour(ATOOLS::kf::W).IsOn()<<" "
-	   <<(flavours[0].IsQuark() && flavours[1].IsQuark())<<" "
-	   <<kfc1<<" "<<kfc2<<" "
-	   <<rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1)<<std::endl;
+  //   std::cout<<"Checks "<<ATOOLS::Flavour(ATOOLS::kf::W).IsOn()<<" "
+  // 	   <<(flavours[0].IsQuark() && flavours[1].IsQuark())<<" "
+  // 	   <<kfc1<<" "<<kfc2<<" "
+  // 	   <<rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1)<<std::endl;
   return NULL;
 }
 
@@ -296,11 +297,11 @@ XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const size_t nin,const size_t nout,
     }
     if (abs(m_ckm)==0.) m_W_on = false;
   }
-  std::cout<<"Init f1f1b -> f2f2b : anti = "<<m_anti1<<m_anti2
-	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
-	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
+  // std::cout<<"Init f1f1b -> f2f2b : anti = "<<m_anti1<<m_anti2
+  // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
+  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
 }
 
 double XS_f1f1b_f2f2b::operator()(double s,double t,double u) 
@@ -386,8 +387,8 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
 					       const ATOOLS::Flavour *flavours,
 					       const size_t nqed, const size_t nqcd)
 {
+  //std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   int kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   if (!(flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
       !(flavours[0]==flavours[3] && flavours[1]==flavours[2]) || 
       (flavours[0].IsAnti() && !flavours[1].IsAnti()) ||
@@ -406,10 +407,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
 	(kfc1/2!=kfc1/2. && kfc2/2==kfc2/2. && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1))>0))) ||
       ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f2_f1f2(nin,nout,flavours); 
-  std::cout<<"Checks "<<ATOOLS::Flavour(ATOOLS::kf::W).IsOn()<<" "
-	   <<(flavours[0].IsQuark() && flavours[1].IsQuark())<<" "
-	   <<kfc1<<" "<<kfc2<<" "
-	   <<rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1)<<std::endl;
+  //std::cout<<"Checks "<<ATOOLS::Flavour(ATOOLS::kf::W).IsOn()<<" "
+  // 	   <<(flavours[0].IsQuark() && flavours[1].IsQuark())<<" "
+  // 	   <<kfc1<<" "<<kfc2<<" "
+  // 	   <<rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1)<<std::endl;
   return NULL;
 }
 
@@ -446,14 +447,14 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const size_t nin,const size_t nout,
     }
     if (abs(m_ckm)==0.) m_W_on = false;
   }
-  std::cout<<"Init f1f2 -> f1f2 : anti = "<<m_anti
-	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<" : W_on = "<<m_W_on<<std::endl
-	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
-	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
-	   <<" ("<<flavours[0].Charge()<<", "<<flavours[1].Charge()<<")"
-	   <<", CKM = "<<m_ckm<<std::endl;
+  // std::cout<<"Init f1f2 -> f1f2 : anti = "<<m_anti
+  // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<" : W_on = "<<m_W_on<<std::endl
+  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
+  // 	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
+  // 	   <<" ("<<flavours[0].Charge()<<", "<<flavours[1].Charge()<<")"
+  // 	   <<", CKM = "<<m_ckm<<std::endl;
 }
 
 double XS_f1f2_f1f2::operator()(double s,double t,double u) 
@@ -549,7 +550,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t n
 						 const size_t nqed, const size_t nqcd)
 {
   int kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  //std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   if (!(flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
       !(flavours[0]==flavours[3] && flavours[1]==flavours[2]) || 
       (flavours[0].IsAnti() && flavours[1].IsAnti()) ||
@@ -568,10 +569,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t n
 	(kfc1/2!=kfc1/2. && kfc2/2==kfc2/2. && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1))>0))) ||
       ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f2b_f1f2b(nin,nout,flavours); 
-  std::cout<<"Checks "<<ATOOLS::Flavour(ATOOLS::kf::W).IsOn()<<" "
-	   <<(flavours[0].IsQuark() && flavours[1].IsQuark())<<" "
-	   <<kfc1<<" "<<kfc2<<" "
-	   <<rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1)<<std::endl;
+  //   std::cout<<"Checks "<<ATOOLS::Flavour(ATOOLS::kf::W).IsOn()<<" "
+  // 	   <<(flavours[0].IsQuark() && flavours[1].IsQuark())<<" "
+  // 	   <<kfc1<<" "<<kfc2<<" "
+  // 	   <<rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1)<<std::endl;
   return NULL;
 }
 
@@ -608,14 +609,14 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const size_t nin,const size_t nout,
     }
     if (abs(m_ckm)==0.) m_W_on = false;
   }
-  std::cout<<"Init f1f2 -> f1f2 : anti = "<<m_anti
-	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<" : W_on = "<<m_W_on<<std::endl
-	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
-	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
-	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
-	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
-	   <<" ("<<flavours[0].Charge()<<", "<<flavours[1].Charge()<<")"
-	   <<", CKM = "<<m_ckm<<std::endl;
+  //   std::cout<<"Init f1f2 -> f1f2 : anti = "<<m_anti
+  // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<" : W_on = "<<m_W_on<<std::endl
+  // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+  // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+  // 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
+  // 	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
+  // 	   <<" ("<<flavours[0].Charge()<<", "<<flavours[1].Charge()<<")"
+  // 	   <<", CKM = "<<m_ckm<<std::endl;
 }
 
 double XS_f1f2b_f1f2b::operator()(double s,double t,double u) 
