@@ -48,10 +48,10 @@ PDF_MRST01LO::PDF_MRST01LO(const ATOOLS::Flavour bunch,const std::string path):
   m_partons.push_back(Flavour(kf::jet));
   m_partons.push_back(Flavour(kf::quark));
   m_partons.push_back(Flavour(kf::quark).Bar());
-  m_xmin=1.e-12;
+  m_xmin=1.e-5;
   m_xmax=1.;
-  m_q2min=.5;
-  m_q2max=1.e12;
+  m_q2min=1.25;
+  m_q2max=1.e7;
   MakeFortranString(input.mfile,m_path+std::string("/lo2002.dat"),128);
 }
 
@@ -70,7 +70,7 @@ void PDF_MRST01LO::Output()
 void PDF_MRST01LO::Calculate(double x,double z,double kp2,double Q2) 
 {
   m_overscaled=false;
-  if (x/m_rescale>m_xmax) {
+  if (x/m_rescale>m_xmax || m_rescale<0.) {
     m_overscaled=true;
     return;
   }

@@ -70,7 +70,7 @@ void PDF_MRST99::Output() {
 void PDF_MRST99::Calculate(double x,double z,double kp2,double Q2) 
 {
   m_overscaled=false;
-  if (x/m_rescale>m_xmax) {
+  if (x/m_rescale>m_xmax || m_rescale<0.) {
     m_overscaled=true;
     return;
   }
