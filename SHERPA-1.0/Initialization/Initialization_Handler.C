@@ -12,7 +12,6 @@
 using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
-using namespace ISR;
 using namespace PDF;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
@@ -24,8 +23,8 @@ using namespace std;
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file),
   p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), p_mehandler(NULL),
-  p_showerhandler(NULL),  p_beamremnants(NULL), p_fragmentation(NULL), p_hadrondecays(NULL)
-
+  p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL),
+  p_hadrondecays(NULL)
 {
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
@@ -144,6 +143,7 @@ bool Initialization_Handler::InitializeThePDFs()
   m_bunch_splimits[1]      = dataread->GetValue<double>("ISR_SMAX",1.);
   p_isrhandler             = new ISR_Handler(isrbases,m_bunch_splimits);
 
+  delete pdfhandler;
   delete dataread;
 
   if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {

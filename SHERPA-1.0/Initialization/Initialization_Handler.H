@@ -31,7 +31,7 @@ namespace SHERPA {
 
     MODEL::Model_Base                  * p_model;
     BEAM::Beam_Spectra_Handler         * p_beamspectra;
-    ISR::ISR_Handler                   * p_isrhandler;
+    PDF::ISR_Handler                   * p_isrhandler;
     Matrix_Element_Handler             * p_mehandler;
     Shower_Handler                     * p_showerhandler;
     Beam_Remnant_Handler               * p_beamremnants;
@@ -57,7 +57,7 @@ namespace SHERPA {
     bool CalculateTheHardProcesses();
 
     MODEL::Model_Base           * GetModel()                { return p_model;           }
-    ISR::ISR_Handler            * GetISRHandler()           { return p_isrhandler;      }
+    PDF::ISR_Handler            * GetISRHandler()           { return p_isrhandler;      }
     BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()   { return p_beamspectra;     }
     Matrix_Element_Handler      * GetMatrixElementHandler() { return p_mehandler;       }
     Shower_Handler              * GetShowerHandler()        { return p_showerhandler;   }
