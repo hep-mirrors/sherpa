@@ -30,7 +30,7 @@ namespace EXTRAXS {
 
   class XS_q1q2_q1q2 : public Single_XS {
     int a,p;
-    double Ms,Mt,Mu,aS;
+    double m12,m22,Ms,Mt,Mu,aS;
   public:
     XS_q1q2_q1q2(int _nin,int _nout, 
 		 APHYTOOLS::Flavour * _fl);
@@ -41,7 +41,7 @@ namespace EXTRAXS {
 
   class XS_q1qbar1_q2qbar2 : public Single_XS {
     int a,p;
-    double Ms,Mt,Mu,aS;
+    double m12,m32,Ms,Mt,Mu,aS;
   public:
     XS_q1qbar1_q2qbar2(int _nin,int _nout, 
 		       APHYTOOLS::Flavour * _fl);
@@ -52,7 +52,7 @@ namespace EXTRAXS {
 
   class XS_q1q1_q1q1 : public Single_XS {
     int a,p;
-    double Ms,Mt,Mu,aS;
+    double m2,Ms,Mt,Mu,Mtu,aS;
   public:
     XS_q1q1_q1q1(int _nin,int _nout, 
 		 APHYTOOLS::Flavour * _fl) ;
@@ -63,7 +63,7 @@ namespace EXTRAXS {
 
   class XS_q1qbar1_q1qbar1 : public Single_XS {
     int a,p;
-    double Ms,Mt,Mu,aS;
+    double m2,Ms,Mt,Mu,Mts,aS;
   public:
     XS_q1qbar1_q1qbar1(int _nin,int _nout, 
 		       APHYTOOLS::Flavour * _fl) ;
@@ -74,7 +74,7 @@ namespace EXTRAXS {
 
   class XS_q1qbar1_gg : public Single_XS {
     int a,p;
-    double Ms,Mt,Mu,aS;
+    double m2,Ms,Mt,Mu,Mtu,aS;
   public:
     XS_q1qbar1_gg(int _nin,int _nout, 
 		  APHYTOOLS::Flavour * _fl);
@@ -84,7 +84,7 @@ namespace EXTRAXS {
   };
   
   class XS_gg_q1qbar1 : public Single_XS {
-    double Ms,Mt,Mu,aS;
+    double m2,Ms,Mt,Mu,Mtu,aS;
   public:
     XS_gg_q1qbar1(int _nin,int _nout, 
 		  APHYTOOLS::Flavour * _fl);
@@ -95,7 +95,7 @@ namespace EXTRAXS {
 
   class XS_q1g_q1g : public Single_XS {
     int a,p;
-    double Ms,Mt,Mu,aS;
+    double m2,Ms,Mt,Mu,Msu,aS;
   public:
     XS_q1g_q1g(int _nin,int _nout, 
 	       APHYTOOLS::Flavour * _fl) ;

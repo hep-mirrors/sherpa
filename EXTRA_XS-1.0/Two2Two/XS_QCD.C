@@ -28,6 +28,11 @@ using namespace AMATOOLS;
 XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) : 
   Single_XS(_nin,_nout,_fl) 
 {
+  m12 = sqr(_fl[0].Mass());
+  m22 = sqr(_fl[1].Mass());
+  if ((m12 != 0) && (m22 != 0)) massive = 1;
+  else massive = 0;
+
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
   a  = _fl[0].IsAnti();
   colours[0][a] = colours[2][a] = 500;
@@ -40,7 +45,8 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) :
 
 double XS_q1q2_q1q2::operator()(double s,double t,double u) {
   if (s<Thres()) return 0.;
-  return sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
+  if (!massive) return sqr(4.*M_PI*aS)* (4./9.) * ( s*s + u*u ) / ( t*t );
+  else return sqr(4.*M_PI*aS) * (4./9.) * ( sqr(s-m12-m22) + sqr(u-m12-m22) - 2.*t*(m12+m22) + 16.*m12*m22 ) / ( t*t );
 };
 
 bool XS_q1q2_q1q2::SetColours(double s,double t,double u) { 
@@ -56,6 +62,11 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(int _nin,int _nout,
 				       Flavour * _fl)  : 
   Single_XS(_nin,_nout,_fl) 
 {
+  m12 = sqr(_fl[0].Mass());
+  m32 = sqr(_fl[2].Mass());
+  if ((m12 != 0) && (m32 != 0)) massive = 1;
+  else massive = 0;
+
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
   a = _fl[0].IsAnti();
@@ -70,7 +81,8 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(int _nin,int _nout,
 
 double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
   if (s<Thres()) return 0.;
-  return sqr(4.*M_PI*aS)* 4. * (t*t + u*u) / ( 9. * s*s); 
+  if (!massive) return sqr(4.*M_PI*aS) * (4./9.) * ( t*t + u*u ) / ( s*s ); 
+  else return sqr(4.*M_PI*aS) * (4./9.) * ( sqr(t-m12-m32) + sqr(u-m12-m32) + 2.*s*(m12+m32) ) / ( s*s );
 };
 
 bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u) { 
@@ -84,6 +96,10 @@ bool XS_q1qbar1_q2qbar2::SetColours()                           { return 1; }
 XS_q1q1_q1q1::XS_q1q1_q1q1(int _nin,int _nout, Flavour * _fl) : 
   Single_XS(_nin,_nout,_fl) 
 {
+  m2 = sqr(_fl[0].Mass());
+  if (m2 != 0) massive = 1;
+  else massive = 0;
+
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
   a  = _fl[0].IsAnti();
@@ -95,9 +111,17 @@ XS_q1q1_q1q1::XS_q1q1_q1q1(int _nin,int _nout, Flavour * _fl) :
 
 double XS_q1q1_q1q1::operator()(double s,double t,double u) {
   if (s<Thres()) return 0.;
-  Mt    = (s*s + u*u) / (t*t);
-  Mu    = (s*s + t*t) / (u*u);
-  return sqr(4.*M_PI*aS) * 4./9.*(Mt + Mu - 2./3. * (s*s) / (u*t));
+  if (!massive) {
+    Mt    = ( s*s + u*u ) / ( t*t );
+    Mu    = ( s*s + t*t ) / ( u*u );
+    Mtu   = (2./3.) * ( s*s ) /( u*t );
+  }
+  else {
+    Mt    = ( sqr(s-2.*m2) + sqr(u-2.*m2) - 4.*t*m2 + 16.*m2*m2 ) / ( t*t );
+    Mu    = ( sqr(s-2.*m2) + sqr(t-2.*m2) - 4.*u*m2 + 16.*m2*m2 ) / ( u*u );
+    Mtu   = (2./3.) * ( sqr(s-2.*m2) + 8.*m2*m2 ) / ( t*u );
+  }
+  return sqr(4.*M_PI*aS) * (4./9.) * ( Mt + Mu - Mtu);
 };
 
 bool XS_q1q1_q1q1::SetColours(double s, double t, double u) 
@@ -127,6 +151,10 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(int _nin,int _nout,
 				       Flavour * _fl) : 
   Single_XS(_nin,_nout,_fl) 
 {
+  m2 = sqr(_fl[0].Mass());
+  if (m2 != 0) massive = 1;
+  else massive = 0;
+
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
   a  = _fl[0].IsAnti();
@@ -139,9 +167,17 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(int _nin,int _nout,
 
 double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
   if (s<Thres()) return 0.;
-  Mt = (s*s + u*u) / (t*t);
-  Ms = (t*t + u*u) / (s*s);
-  return sqr(4.*M_PI*aS)*4./9.*(Mt + Ms - 2./3. * (u*u) / (s*t));
+  if (!massive) {
+    Mt  = ( s*s + u*u ) / ( t*t );
+    Ms  = ( t*t + u*u ) / ( s*s );
+    Mts = (2./3.) * ( u*u ) / ( s*t );
+  }
+  else {
+    Mt    = ( sqr(s-2.*m2) + sqr(u-2.*m2) - 4.*t*m2 + 16.*m2*m2 ) / ( t*t );
+    Ms    = ( sqr(t-2.*m2) + sqr(u-2.*m2) + 4.*s*m2 ) / ( s*s );
+    Mts   = (2./3.) * ( sqr(s-2.*m2) + 8.*m2*m2 ) / ( s*t );
+  }
+  return sqr(4.*M_PI*aS) * (4./9.) * ( Mt + Ms - Mts );
 };
 
 
@@ -170,6 +206,10 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(int _nin,int _nout,
 			     Flavour * _fl) : 
   Single_XS(_nin,_nout,_fl) 
 {
+  m2 = sqr(_fl[0].Mass());
+  if (m2 != 0) massive = 1;
+  else massive = 0;
+
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
   a = _fl[0].IsAnti();
@@ -185,9 +225,19 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(int _nin,int _nout,
 
 double XS_q1qbar1_gg::operator()(double s,double t,double u) {
   if (s<Thres()) return 0.;
-  Mt = u/t;
-  Mu = t/u;
-  return sqr(4.*M_PI*aS)* (32./27.* ( Mt + Mu )   - 8./3. *(t*t +u*u)/ (s*s));
+  if (!massive) {
+    Mt  = u / t;
+    Mu  = t / u;
+    Mtu = 0;
+    Ms  = ( t*t + u*u ) / ( s*s );
+  }
+  else {
+    Mt  = ( (t-m2)*(u+m2) - 16.*m2*(u+m2) + 2.*m2*(s-m2) ) / sqr(u-m2);
+    Mu  = ( (u-m2)*(t+m2) - 16.*m2*(t+m2) + 2.*m2*(s-m2) ) / sqr(t-m2);
+    Mtu = ( -2.*m2*(s-2.*m2) + 4.*m2*m2 ) / ( (t-m2) * (u-m2) );
+    Ms  = ( sqr(t-m2) + sqr(u-m2) + 2.*s*m2 ) / ( s*s );
+  }
+  return sqr(4.*M_PI*aS) * ( (32./27.) * ( Mt + Mu ) - (8./3.) * Ms );
 };
 
 
@@ -217,6 +267,10 @@ bool XS_q1qbar1_gg::SetColours() {
 XS_gg_q1qbar1::XS_gg_q1qbar1(int _nin,int _nout, Flavour * _fl) : 
   Single_XS(_nin,_nout,_fl) 
 {
+  m2 = sqr(_fl[2].Mass());
+  if (m2 != 0) massive = 1;
+  else massive = 0;
+
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
   colours[0][0] = 500;
@@ -229,15 +283,23 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(int _nin,int _nout, Flavour * _fl) :
 
 double XS_gg_q1qbar1::operator()(double s,double t,double u) {
   if (s<Thres()) return 0.;
-  Mt = u/t;
-  Mu = t/u;
-  return sqr(4.*M_PI*aS)*(1./6.* ( Mt + Mu )   - 3./8. *(t*t +u*u)/ (s*s)); 
+  if (!massive) {
+    Mt  = u / t;
+    Mu  = t / u;
+    Mtu = 0;
+    Ms  = ( t*t + u*u ) / ( s*s );
+  }
+  else {
+    Mt  = ( (u-m2)*(t+m2) - 16.*m2*(t+m2) + 2.*m2*(s-m2) ) / sqr(t-m2);
+    Mu  = ( (t-m2)*(u+m2) - 16.*m2*(u+m2) + 2.*m2*(s-m2) ) / sqr(u-m2);
+    Mtu = ( -2.*m2*(s-2.*m2) + 4.*m2*m2 ) / ( (t-m2) * (u-m2) );
+    Ms  = ( sqr(t-m2) + sqr(u-m2) + 2.*s*m2 ) / ( s*s );
+  }
+  return sqr(4.*M_PI*aS) * ( (1./6.) * ( Mt + Mu + Mtu ) - (3./8.) * Ms );
 };
 
 
 bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
-  Mt    = u/t;
-  Mu    = t/u;
   scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
@@ -261,6 +323,10 @@ bool XS_gg_q1qbar1::SetColours() {
 XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) : 
   Single_XS(_nin,_nout,_fl) 
 {
+  for (int i=0; i<2; i++) if ((m2 = sqr(_fl[2].Mass())) != 0) break;
+  if (m2 != 0) massive = 1;
+  else massive = 0;
+
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
   a = _fl[0].IsAnti();
 
@@ -274,14 +340,22 @@ XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) :
 
 double XS_q1g_q1g::operator()(double s,double t,double u) {
   if (s<Thres()) return 0.;
-  Ms = u/s;
-  Mu = s/u;
-  return  sqr(4.*M_PI*aS)*(-4./9. * (Ms + Mu) +  (s*s + u*u)/(t*t));
+  if (!massive) {
+    Ms  = u / s;
+    Mu  = s / u;
+    Msu = 0;
+    Mt  = ( s*s + u*u ) / ( t*t );
+  }
+  else {
+    Ms  = ( (u-m2)*(s+m2) - 16.*m2*(s+m2) + 2.*m2*(t-m2) ) / sqr(s-m2);
+    Mu  = ( (s-m2)*(u+m2) - 16.*m2*(u+m2) + 2.*m2*(t-m2) ) / sqr(u-m2);
+    Msu = ( -2.*m2*(t-2.*m2) + 4.*m2*m2 ) / ( (s-m2) * (u-m2) );
+    Mt  = ( sqr(s-m2) + sqr(u-m2) + 2.*t*m2 ) / ( t*t );
+  }
+  return  sqr(4.*M_PI*aS)*( (-4./9.) * ( Ms + Mu + Msu ) + Mt );
 };
 
 bool XS_q1g_q1g::SetColours(double s, double t, double u) {
-  Ms    = u/s;
-  Mu    = s/u;
   scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }

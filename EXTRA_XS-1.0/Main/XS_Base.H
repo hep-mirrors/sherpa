@@ -28,6 +28,8 @@ namespace EXTRAXS {
     APHYTOOLS::Flavour   * fl;
     std::string            name;
 
+    int                    massive;         
+
     double                 s, t, u;
     double                 scale;
 
