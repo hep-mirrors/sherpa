@@ -96,46 +96,80 @@ namespace ATOOLS {
   void Particle2MPI(const Particle * , MPI_Particle &);  
   Particle * MPI2Particle(const MPI_Particle &);
 
-  class Is_Photon {
+
+  class Particle_Qualifier_Base {
   public:
-    bool operator() ( Particle* p ) {
-      if ( p && p->Flav().IsPhoton() ) return 1;
-      return 0;
-    }
+    virtual bool operator() (const Particle *) = 0;
   };
 
-  class Is_Gluon {
+  class Is_Photon : public Particle_Qualifier_Base {
   public:
-    bool operator() ( Particle* p ) {
-      if ( p && p->Flav().IsGluon() ) return 1;
-      return 0;
-    }
+    bool operator()(const Particle *);
+  };
+  class Is_Gluon : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *);
+  };
+  class Is_Charged : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *);
+  };
+  class Is_Hadron : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *);
+  };
+  class Is_Charged_Hadron : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *);
+  };
+  class Is_Neutral_Hadron : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *);
+  };
+  class Is_Final_State : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *);
   };
 
-  class Is_Final_State {
-  public:
-    bool operator() ( const Particle* p ) {
-      if ( p && (p->Status() == 1) ) return 1;
-      return 0;
-    }
+
+
+  inline bool Is_Photon::operator() (const Particle * p) {
+    if ( p && p->Flav().IsPhoton() ) return 1;
+    return 0;
   };
 
-  class Is_Charged {
-  public:
-    bool operator() ( const Particle* p ) {
+  inline bool Is_Gluon::operator() (const Particle * p) {
+    if ( p && p->Flav().IsGluon() ) return 1;
+    return 0;
+  };
+
+  inline bool Is_Charged::operator() (const Particle * p) {
       if ( p && (p->Flav().IntCharge() !=0) ) return 1;
       return 0;
-    }
   };
 
-  class Is_Charged_Hadron {
-  public:
-    bool operator() ( const Particle* p ) {
-      if ( p && (p->Flav().IntCharge() !=0) 
-	   &&  p->Flav().IsHadron() &&  !p->Flav().IsDiQuark()) return 1;
-      return 0;
-    }
+  inline bool Is_Hadron::operator() (const Particle * p) {
+    if ( p && p->Flav().IsHadron() &&  !p->Flav().IsDiQuark()) return 1;
+    return 0;
   };
+
+  inline bool Is_Charged_Hadron::operator() (const Particle * p) {
+    if ( p && p->Flav().IntCharge() !=0 &&  
+	 p->Flav().IsHadron() &&  !p->Flav().IsDiQuark()) return 1;
+    return 0;
+  };
+
+  inline bool Is_Neutral_Hadron::operator() (const Particle * p) {
+    if ( p && p->Flav().IntCharge() ==0 &&  
+	 p->Flav().IsHadron() &&  !p->Flav().IsDiQuark()) return 1;
+    return 0;
+  };
+
+  inline bool Is_Final_State::operator() (const Particle * p) {
+    if ( p && (p->Status() == 1) ) return 1;
+    return 0;
+  };
+
 
   /*! 
     \class Particle
