@@ -1045,23 +1045,33 @@ bool Phase_Space_Handler::MakeISRChannels()
   }
   
   if ((p_flavours[0].IsLepton()) || (p_flavours[1].IsLepton())) {
-    // leptons : 1/s'^2 and 1/(s-s')^beta, sharp FW-BW peak
-//     ci.type = 0;
-//     (ci.parameters).push_back(.5);
-//     (ci.parameters).push_back(1.);
-//     m_isrparams.push_back(ci);
-//     ci.parameters.clear();
-//     ci.type = 0;
-//     (ci.parameters).push_back(2.);
-//     (ci.parameters).push_back(1.);
-//     m_isrparams.push_back(ci);
-//     ci.parameters.clear();
-    ci.type = 3;
-    (ci.parameters).push_back(p_isrhandler->Exponent(1));
-    (ci.parameters).push_back(1.00000001);
-    (ci.parameters).push_back(1.);
-    m_isrparams.push_back(ci);
-    ci.parameters.clear();
+    if ((p_flavours[0].IsLepton() && p_flavours[1].Strong()) ||
+	(p_flavours[1].IsLepton() && p_flavours[0].Strong())) {
+      //The DIS case
+      ci.type = 0; 
+      (ci.parameters).push_back(1.);
+      m_isrparams.push_back(ci);
+      ci.parameters.clear();
+    }
+    else {
+      // leptons : 1/s'^2 and 1/(s-s')^beta, sharp FW-BW peak
+      //     ci.type = 0;
+      //     (ci.parameters).push_back(.5);
+      //     (ci.parameters).push_back(1.);
+      //     m_isrparams.push_back(ci);
+      //     ci.parameters.clear();
+      //     ci.type = 0;
+      //     (ci.parameters).push_back(2.);
+      //     (ci.parameters).push_back(1.);
+      //     m_isrparams.push_back(ci);
+      //     ci.parameters.clear();
+      ci.type = 3;
+      (ci.parameters).push_back(p_isrhandler->Exponent(1));
+      (ci.parameters).push_back(1.00000001);
+      (ci.parameters).push_back(1.);
+      m_isrparams.push_back(ci);
+      ci.parameters.clear();
+    }
   }
   else {
     // default : 1/s'
@@ -1270,8 +1280,10 @@ bool Phase_Space_Handler::CreateISRChannels()
 #endif
       }
       else {
+	//The channels used for DIS
 	channel = new Simple_Pole_Central_V(m_isrparams[i].parameters[0]," isr",p_info,isr);
 	p_isrchannels->Add(channel);
+	m_use_pi=m_use_pi|psm::pi_isr;
       }
       break;
     case 1:
