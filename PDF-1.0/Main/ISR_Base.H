@@ -13,13 +13,13 @@ namespace PDF {
     std::string     m_type;
     ATOOLS::Flavour m_bunch;
 
-    double m_weight;
+    double m_weight, m_exponent, m_xmax;
     bool   m_on, m_kmr;
 
   public:
 
     // constructor
-    ISR_Base(PDF_Base *_p_pdf);
+    ISR_Base(PDF_Base *pdf);
 
     // destructor
     virtual ~ISR_Base();
@@ -35,15 +35,15 @@ namespace PDF {
 
     inline double Cut(const std::string &type) const { return p_pdf->Cut(type); }
 
-    inline double Exponent() const { return p_pdf->Exponent(); }
-    inline double XMax() const     { return p_pdf->XMax();     }
+    inline double Exponent() const { return m_exponent; }
+    inline double XMax() const     { return m_xmax;     } 
 
     inline PDF_Base *PDF() { return p_pdf; }
 
     void AssignKeys(ATOOLS::Integration_Info *const info) { p_pdf->AssignKeys(info); }
 
     // member functions
-    virtual bool   CalculateWeight(double,double,double,double) = 0;
+    virtual bool   CalculateWeight(double x,double z,double kp2,double Q2) = 0;
     virtual double Weight(ATOOLS::Flavour) = 0;
 
   };// end of class ISR_Base

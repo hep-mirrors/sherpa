@@ -95,7 +95,8 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double 
 
 //   }
 //   delete out;
-//   abort();
+//   throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"finished integration"));
+
 }
 
 ISR_Handler::~ISR_Handler() 
@@ -124,9 +125,11 @@ void ISR_Handler::Init(const double *splimits,const double *kplimits)
   m_exponent[1] = .98 * p_isrbase[0]->Exponent() * p_isrbase[1]->Exponent();
   m_zlimits[0] = 0.;
   m_zlimits[1] = 1.;
-  m_kplimits[0] = kplimits[0]*s;
-  m_kplimits[1] = (p_isrbase[0]->Cut("kp")+p_isrbase[1]->Cut("kp"))/2.;
-  m_kplimits[2] = kplimits[1]*s;
+  if (p_isrbase[0]->PDF()!=NULL) {
+    m_kplimits[0] = kplimits[0]*s;
+    m_kplimits[1] = p_isrbase[0]->Cut("kp");
+    m_kplimits[2] = kplimits[1]*s;
+  }
   m_mass2[0]=sqr(p_isrbase[0]->Flavour().Mass());
   m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
   double E=ATOOLS::rpa.gen.Ecms();
@@ -292,6 +295,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
   else m_kmrrot=Poincare(Vec4D::ZVEC,p[0]);
   m_kmrrot.RotateBack(p[0]);
   m_kmrrot.RotateBack(p[1]);
+  if (p[0][0]<0. || p[1][0]<0.) return false;
   xi*=xi;
   m_mu2[0]=m_x[0]*m_x[0]*m_splimits[2]/xi;
   m_mu2[1]=m_x[1]*m_x[1]*m_splimits[2]*xi;
@@ -310,16 +314,23 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
 
 void ISR_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
 {
-  ATOOLS::msg.Tracking()<<"ISR_Handler::ISR_Handler(..):"
+  ATOOLS::msg.Tracking()<<"ISR_Handler::AssignKeys(..):"
 			<<"Creating initial mapping keys ...\n";
-  m_spkey.Assign("s'",4,0,info);
-  m_ykey.Assign("y",3,0,info);
-  m_xkey.Assign("x",5,0,info);
+  m_spkey.Assign("s' isr",4,0,info);
+  m_ykey.Assign("y isr",3,0,info);
+  m_xkey.Assign("x isr",5,0,info);
   m_zkey[0].Assign("z_1",3,0,info);
   m_zkey[1].Assign("z_2",3,0,info);
   m_kpkey[0].Assign("k_perp_1",4,0,info);
   m_kpkey[1].Assign("k_perp_2",4,0,info);
   ATOOLS::msg.Tracking()<<"... done."<<std::endl;
+}
+
+void ISR_Handler::Reset() 
+{
+  m_splimits[0]=m_fixed_smin;
+  m_splimits[1]=m_fixed_smax*Upper1()*Upper2();
+  m_splimits[2]=m_fixed_smax;
 }
 
 void ISR_Handler::SetLimits() 
@@ -404,7 +415,7 @@ void  ISR_Handler::BoostInLab(Vec4D* p,const size_t n)
 {
   for (size_t i=0; i<n; ++i) {
     if (!m_kmrmode) {
-      m_cmsboost.Boost(p[i]);
+      m_cmsboost.BoostBack(p[i]);
     }
     else {
       m_kmrrot.Rotate(p[i]);

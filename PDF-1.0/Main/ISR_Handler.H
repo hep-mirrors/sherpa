@@ -28,7 +28,6 @@ namespace PDF {
     ATOOLS::Vec4D    m_fixvecs[2], m_kp[2], p_cms[2];
 
     void Init(const double *splimits,const double *kplimits);
-
     const ATOOLS::Flavour  DiQuark(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
     bool CheckRemnantKinematics(const ATOOLS::Flavour &,double,int);
 
@@ -64,6 +63,7 @@ namespace PDF {
 
     void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();
+    void Reset();
 
     // inline functions 
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
