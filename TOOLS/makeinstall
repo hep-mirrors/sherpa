@@ -42,6 +42,7 @@ for I in $* ; do
   elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && NOEXTRACT=""
   elif [ "$I" = "--clean-up" ]; then CLEANUP=TRUE
   elif [ "$I" = "--rm-libs" ]; then RMLIBS=TRUE
+  elif [ "$I" = "--make-only" ]; then MAKEONLY=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "makeinstall version 1.0" && echo && \
     echo "options: -c             configure before compiling (enabled with '-t')" && \
@@ -60,6 +61,7 @@ for I in $* ; do
     echo "         --force-tar    force extraction of tar files" && \
     echo "         --clean-up     execute 'make clean' in every module" && \
     echo "         --rm-libs      remove shared libraries (does not remove '.lo' files)" && \
+    echo "         --make-only    do not install shared libraries" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$I" "$ECXXFLAGS
@@ -255,16 +257,32 @@ do
     while test "$CONTINUE" = "r" ; do 
       CONTINUE=""
       if ! ( if [ "$RELEASE" = "TRUE" ] ; then
-	       if [ "$ECXXFLAGS" = "" ] && [ "$EFFLAGS" = "" ] ; then make install $EMOPT >> ../$LOGFILE 2>&1 
-               elif [ "$EFFLAGS" = "" ] ; then make install $EMOPT "$ECXXFLAGS" >> ../$LOGFILE 2>&1 
-               elif [ "$ECXXFLAGS" = "" ] ; then make install $EMOPT "$EFFLAGS" >> ../$LOGFILE 2>&1 
-               else make install $EMOPT "$ECXXFLAGS" "$EFFLAGS" >> ../$LOGFILE 2>&1 
-               fi
+	       if [ "$MAKEONLY" = "TRUE" ] ; then
+  	         if [ "$ECXXFLAGS" = "" ] && [ "$EFFLAGS" = "" ] ; then make $EMOPT >> ../$LOGFILE 2>&1 
+                 elif [ "$EFFLAGS" = "" ] ; then make $EMOPT "$ECXXFLAGS" >> ../$LOGFILE 2>&1 
+                 elif [ "$ECXXFLAGS" = "" ] ; then make $EMOPT "$EFFLAGS" >> ../$LOGFILE 2>&1 
+                 else make $EMOPT "$ECXXFLAGS" "$EFFLAGS" >> ../$LOGFILE 2>&1 
+		 fi
+               else
+	         if [ "$ECXXFLAGS" = "" ] && [ "$EFFLAGS" = "" ] ; then make install $EMOPT >> ../$LOGFILE 2>&1 
+                 elif [ "$EFFLAGS" = "" ] ; then make install $EMOPT "$ECXXFLAGS" >> ../$LOGFILE 2>&1 
+                 elif [ "$ECXXFLAGS" = "" ] ; then make install $EMOPT "$EFFLAGS" >> ../$LOGFILE 2>&1 
+                 else make install $EMOPT "$ECXXFLAGS" "$EFFLAGS" >> ../$LOGFILE 2>&1 
+		 fi
+               fi 
              else 
-               if [ "$ECXXFLAGS" = "" ] && [ "$EFFLAGS" = "" ] ; then make install $EMOPT 
-               elif [ "$EFFLAGS" = "" ] ; then make install $EMOPT "$ECXXFLAGS" 
-               elif [ "$ECXXFLAGS" = "" ] ; then make install $EMOPT "$EFFLAGS" 
-               else make install $EMOPT "$ECXXFLAGS" "$EFFLAGS" 
+	       if [ "$MAKEONLY" = "TRUE" ] ; then
+		 if [ "$ECXXFLAGS" = "" ] && [ "$EFFLAGS" = "" ] ; then make $EMOPT 
+                 elif [ "$EFFLAGS" = "" ] ; then make $EMOPT "$ECXXFLAGS" 
+                 elif [ "$ECXXFLAGS" = "" ] ; then make $EMOPT "$EFFLAGS" 
+                 else make $EMOPT "$ECXXFLAGS" "$EFFLAGS" 
+                 fi 
+	       else
+                 if [ "$ECXXFLAGS" = "" ] && [ "$EFFLAGS" = "" ] ; then make install $EMOPT 
+                 elif [ "$EFFLAGS" = "" ] ; then make install $EMOPT "$ECXXFLAGS" 
+                 elif [ "$ECXXFLAGS" = "" ] ; then make install $EMOPT "$EFFLAGS" 
+                 else make install $EMOPT "$ECXXFLAGS" "$EFFLAGS" 
+	         fi 
                fi 
 	     fi ) ; then
         if [ "$RELEASE" = "TRUE" ] ; then 
