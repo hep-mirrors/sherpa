@@ -11,6 +11,10 @@ endif
 
 lib_LTLIBRARIES = libToolsOrg.la
 libToolsOrg_la_SOURCES        = \
+				File_IO_Base.C \
+				Read_Write_Base.C \
+				Data_Reader.C \
+				Data_Writer.C \
 				Data_Read.C \
 				Run_Parameter.C \
 				FastList.C \
@@ -21,12 +25,14 @@ libToolsOrg_la_SOURCES        = \
 				IO_Handler.C \
 				Info_Key.C \
 				Integration_Info.C 
-#				File_IO_Base.C \
-#				Read_Write_Base.C \
-#				Data_Reader.C \
-#				Data_Writer.C \
 noinst_HEADERS        =	\
 			Exeptions.H \
+			File_IO_Base.H \
+			File_IO_Base.IC \
+			Read_Write_Base.H \
+			Read_Write_Base.IC \
+			Data_Reader.H \
+			Data_Writer.H \
 			Data_Read.H \
 			My_Limits.H \
 			Data_Return.H \
@@ -46,12 +52,6 @@ noinst_HEADERS        =	\
 			Info_Key.inl.H \
 			Integration_Info.H \
 			Integration_Info.inl.H 
-#			File_IO_Base.H \
-#			File_IO_Base.IC \
-#			Read_Write_Base.H \
-#			Read_Write_Base.IC \
-#			Data_Reader.H \
-#			Data_Writer.H \
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
