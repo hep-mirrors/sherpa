@@ -761,6 +761,7 @@ void Single_Process::Minimize()
   if (p_momenta)     { delete [] p_momenta;  p_momenta     = 0; }
   if (p_selector)      { delete p_selector;      p_selector      = 0; }
   if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
+  p_selected=p_partner;
 }
 
 void Single_Process::Empty() {

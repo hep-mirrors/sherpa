@@ -47,7 +47,8 @@ double Lambda2(double sp,double sp1,double sp2)
 
 ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double *kplimits):
   p_isrbase(isrbase),
-  p_info(new ATOOLS::Integration_Info())
+  p_info(new ATOOLS::Integration_Info()),
+  m_weight(1.)
 {
   m_mode=0;
   m_kmrmode=0;
@@ -396,6 +397,13 @@ double ISR_Handler::Weight2(Flavour *flin)
       CheckRemnantKinematics(flin[1],m_xkey[1],0)) 
     return p_isrbase[0]->Weight(flin[1])*p_isrbase[1]->Weight(flin[0])/m_weight;
   return 0.;
+}
+
+double ISR_Handler::Flux(const ATOOLS::Vec4D *const p)
+{
+  if (m_mode!=0) return m_flux;
+  m_flux=.25;
+  return m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
 }
 
 void  ISR_Handler::BoostInCMS(Vec4D *p,const size_t n) 
