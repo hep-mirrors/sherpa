@@ -79,6 +79,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   msg.Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
 	     <<"   Try to run nevertheless ... ."<<endl;
+  
   return 0;
 }
 
@@ -103,7 +104,7 @@ bool Sherpa::InitializeTheEventHandler()
     break;
 #endif
   case 9999: 
-    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_iohandler)); 
+    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader())); 
     break;
   default:
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(sme),
