@@ -37,15 +37,15 @@ Combine_Data::~Combine_Data()
 
 std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd) 
 {
-    s<<" "<<cd.i<<"&"<<cd.j<<"   "<<cd.pt2ij<<"    "<<cd.strong<<"    "<<std::flush;
-    for (size_t k=0; k<cd.graphs.size(); ++k)
+  s<<" "<<cd.i<<"&"<<cd.j<<"   "<<cd.pt2ij<<"    "<<cd.strong<<"    "<<std::flush;
+  for (size_t k=0; k<cd.graphs.size(); ++k)
     s<<cd.graphs[k]<<","<<std::flush;
-    s<<"     ";
-    if (cd.down)
+  s<<"     ";
+  if (cd.down)
     s<<" "<<cd.down->no<<std::endl;
-    else 
+  else 
     s<<" #"<<std::endl;
-    return s;
+  return s;
 }
 
 Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up,

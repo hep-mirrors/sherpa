@@ -30,6 +30,7 @@ namespace SHERPA {
     PDF::ISR_Handler     * p_isr;
     int                    m_mode;
     double                 m_weight;
+    unsigned long          m_ntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
     bool                   m_eventmode;
@@ -43,7 +44,9 @@ namespace SHERPA {
     int    InitializeAmegic(MODEL::Model_Base *,
 			    BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     bool   UnweightedEvent();
-    double WeightedEvent();
+    ATOOLS::Blob_Data_Base * WeightedEvent();
+    bool   UnweightedSameEvent();
+    ATOOLS::Blob_Data_Base * WeightedSameEvent();
 
   public :
 
@@ -91,6 +94,7 @@ namespace SHERPA {
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS();
     double               Weight();
+    unsigned long        NumberOfTrials();
 
     PDF::ISR_Handler   * GetISR_Handler()   { return p_isr; }
     int                  UseSudakovWeight() { return m_sudakovon; }

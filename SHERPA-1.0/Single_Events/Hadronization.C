@@ -4,6 +4,14 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
+#ifdef PROFILE__Hadronization
+#include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
+#endif
+
+
 Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_Handler * _fragmentation) :
   p_beamremnanthandler(_beamremnant), p_fragmentationhandler(_fragmentation)
 {
@@ -15,6 +23,7 @@ Hadronization::~Hadronization() {}
 
 bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &) 
 {
+  PROFILE_LOCAL("Hadronization::Treat");
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Hadronization::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
@@ -33,4 +42,6 @@ bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &)
 
 
 void Hadronization::CleanUp() {}
+
+void Hadronization::Finish(const std::string &) {}
 

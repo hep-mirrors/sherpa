@@ -28,8 +28,8 @@ namespace SHERPA {
     // member functions
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
-    void Finish() {};
-  }; // end of class Hard Subprocesses
+    void Finish(const std::string &);
+  }; // end of class Multiple_Interactions
 
 } // end of namespace SHERPA
 

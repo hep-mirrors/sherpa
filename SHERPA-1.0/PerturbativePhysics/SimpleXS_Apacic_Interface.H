@@ -27,7 +27,7 @@ namespace SHERPA {
     bool FillBlobs(ATOOLS::Blob_List *blobs); 
 
     int  PerformShowers();
-    int  PerformDecayShowers() {}
+    int  PerformDecayShowers() { return 1; }
   };// end of class Simple_XS_Interface
 
   /*!

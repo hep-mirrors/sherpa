@@ -2,6 +2,14 @@
 #include "SimpleXS_Apacic_Interface.H"
 #include "Amegic_Apacic_Interface.H"
 
+#ifdef PROFILE__Jet_Evolution
+#include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
+#endif
+
+
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
@@ -37,6 +45,7 @@ Jet_Evolution::~Jet_Evolution()
 
 bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 {
+  PROFILE_LOCAL("Jet_Evolution::Treat");
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Jet_Evolution::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
@@ -48,11 +57,9 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
   std::string tag;
   bool found = 1;
   bool hit   = 0;
-  bool take;
   size_t pos;
   Blob * blob;
   while (found) {
-  int b=0;
     found = 0;
     for (size_t i=0;i<_bloblist->size();++i) {
       blob = (*_bloblist)[i];
@@ -191,3 +198,4 @@ void Jet_Evolution::CleanUp()
 }
 
 
+void Jet_Evolution::Finish(const std::string &) {}

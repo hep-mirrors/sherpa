@@ -3,6 +3,9 @@
 
 #ifdef PROFILE__Multiple_Interactions
 #include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
 #endif
 
 using namespace SHERPA;
@@ -20,9 +23,7 @@ Multiple_Interactions::~Multiple_Interactions() {}
 
 bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
-#ifdef PROFILE__Multiple_Interactions
   PROFILE_HERE;
-#endif
   if (p_mihandler->Type()==MI_Handler::None) return false;
   if (bloblist->empty()) {
     ATOOLS::msg.Error()<<"Potential error in Multiple_Interactions::Treat."<<std::endl
@@ -122,9 +123,7 @@ void Multiple_Interactions::CleanUp()
 
 void Multiple_Interactions::CompleteBlob(Blob *blob)
 {
-#ifdef PROFILE__Multiple_Interactions
   PROFILE_HERE;
-#endif
   EXTRAXS::XS_Base *xs=NULL;
   if (blob->Type()==std::string("Hard Subprocess : ")) {
     xs=p_mihandler->HardMEHandler()->GetXS();
@@ -155,3 +154,5 @@ void Multiple_Interactions::CompleteBlob(Blob *blob)
     particle->SetInfo('H');
   }
 }
+
+void Multiple_Interactions::Finish(const std::string &) {}

@@ -878,7 +878,7 @@ Knot * Cluster_Partons::Point2Knot(Tree * tree, const Leg & po,
 
   if (po.ExtraAnti() == -1) flav = flav.Bar();
 
-  Knot * k;
+  Knot * k =0 ;
 
   bool found = 0;
   for (int i=0;i<p_blob->NInP();i++) {

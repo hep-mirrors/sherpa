@@ -2,6 +2,9 @@
 
 #ifdef PROFILE__Signal_Processes
 #include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
 #endif
 
 using namespace SHERPA;
@@ -25,9 +28,8 @@ Signal_Processes::~Signal_Processes()
 
 bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
 {
-#ifdef PROFILE__Signal_Processes
-  PROFILE_HERE;
-#endif
+  PROFILE_LOCAL("Signal_Processes::Treat");
+
   //  if (_bloblist->size()>1) return 0;
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Signal_Processes::Treat."<<endl
@@ -46,18 +48,22 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
       if (((*blit)->Type()==string("Signal Process : ")) && ((*blit)->Status()==0)) {
 	myblob = (*blit);
 	found  = 1;
+	msg.Tracking()<<" calling GenerateOneEvent() "<<endl;
 	if (p_mehandler->GenerateOneEvent()) {
-	  FillBlob(myblob);
 	  weight=p_mehandler->Weight();
+	  int  ntrial =p_mehandler->NumberOfTrials();
+	  FillBlob(myblob,weight,ntrial);
 	  hit = 1;
 	}
       }
       else if (((*blit)->Type()==string("Signal Process : ")) && ((*blit)->Status()==-1)) {
 	myblob = (*blit);
 	found  = 1;
+	msg.Tracking()<<" calling GenerateSameEvent() "<<endl;
 	if (p_mehandler->GenerateSameEvent()) {
-	  FillBlob(myblob);
 	  weight=p_mehandler->Weight();
+	  int  ntrial =p_mehandler->NumberOfTrials();
+	  FillBlob(myblob,weight,ntrial);
 	  hit = 1;
 	}
       }
@@ -68,22 +74,22 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
 
 void Signal_Processes::CleanUp() { return; }
 
-void Signal_Processes::FillBlob(Blob * _blob)
+void Signal_Processes::FillBlob(Blob * blob, const double, const int)
 {
-#ifdef PROFILE__Signal_Processes
   PROFILE_HERE;
-#endif
-  _blob->SetPosition(Vec4D(0.,0.,0.,0.));
-  _blob->SetType(_blob->Type()+p_mehandler->ProcessName());
-  _blob->SetStatus(1);
+
+  blob->SetPosition(Vec4D(0.,0.,0.,0.));
+  blob->SetType(blob->Type()+p_mehandler->ProcessName());
+  blob->SetStatus(1);
 
   Vec4D cms = Vec4D(0.,0.,0.,0.);
   for (size_t i=0;i<p_mehandler->NIn();i++) cms += p_mehandler->Momenta()[i];
-  _blob->SetCMS(cms);
-  _blob->SetBeam(-1);
+  blob->SetCMS(cms);
+  blob->SetBeam(-1);
 
   // make sure that blob is empty
-  _blob->DeleteOwnedParticles();
+  blob->DeleteOwnedParticles();
+  blob->ClearAllData();
 
   Particle * particle;
   for (unsigned int i=0;i<p_mehandler->NIn();i++) {
@@ -91,7 +97,7 @@ void Signal_Processes::FillBlob(Blob * _blob)
     particle->SetNumber((long int)particle);
     particle->SetStatus(2);
     particle->SetInfo('G');
-    _blob->AddToInParticles(particle);
+    blob->AddToInParticles(particle);
   }
   bool unstable = false; 
   for (unsigned int i=p_mehandler->NIn();i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
@@ -99,12 +105,12 @@ void Signal_Processes::FillBlob(Blob * _blob)
     if (!(particle->Flav().IsStable())) unstable = true;
     particle->SetStatus(1);
     particle->SetInfo('H');
-    _blob->AddToOutParticles(particle);
+    blob->AddToOutParticles(particle);
   }
   if (unstable) {
     if (p_hdhandler->On()) {
       p_hdhandler->ResetTables();
-      p_hdhandler->DefineSecondaryDecays(_blob);
+      p_hdhandler->DefineSecondaryDecays(blob);
       return;
     }
     else {
@@ -114,5 +120,12 @@ void Signal_Processes::FillBlob(Blob * _blob)
       abort();
     }
   }
+  msg.Tracking()<<" ME_Weight = "<<p_mehandler->Weight()<<std::endl;
+  msg.Tracking()<<" Blob: "<<blob<<std::endl;
+
+  // store some additional information
+  blob->AddData("ME_Weight",new Blob_Data<double>(p_mehandler->Weight()));
+  blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(p_mehandler->NumberOfTrials()));
 }
 
+void Signal_Processes::Finish(const std::string &) {}

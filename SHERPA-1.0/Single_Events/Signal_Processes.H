@@ -11,13 +11,13 @@ namespace SHERPA {
   private :
     Matrix_Element_Handler * p_mehandler;
     Hard_Decay_Handler     * p_hdhandler;
-    void FillBlob(ATOOLS::Blob *);
+    void FillBlob(ATOOLS::Blob *, const double, const int);
   public :
     Signal_Processes(Matrix_Element_Handler *,Hard_Decay_Handler * = NULL);
     ~Signal_Processes();
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
-    void Finish(std::string) {}
+    void Finish(const std::string &);
   };
 
   /*!

@@ -14,14 +14,14 @@ using namespace std;
 
 Matrix_Element_Handler::Matrix_Element_Handler() :
   m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), m_mode(0), m_weight(1.), m_name(""), m_eventmode(1),
+  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_name(""), m_eventmode(1),
   p_dataread(NULL) {}
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
 					       Matrix_Element_Handler * _me) :
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), m_mode(0), m_weight(1.), m_name(""), m_eventmode(1),
+  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_name(""), m_eventmode(1),
   p_dataread(NULL) 
 {
   if (_me) p_amegic = _me->GetAmegic(); 
@@ -42,7 +42,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       PDF::ISR_Handler * _isr,
 					       Matrix_Element_Handler * _me) :
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(_isr), m_mode(0), m_weight(1.)
+  p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1) 
 {
   p_dataread        = new Data_Read(m_dir+m_file);
   m_signalgenerator = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
@@ -185,6 +185,25 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   abort();
 }
 
+
+void RescaleProcesses(AMEGIC::Process_Base * procs, double fac ) {
+  if (fac==1.) return;
+  if (!procs) return;
+  if ((*procs)[0]==procs) {
+    double xs=procs->Total();
+    procs->SetTotal(xs*fac);
+    std::cout<<" changing xs from "<<xs<<" to "<<procs->Total()<<std::endl;
+  }
+  else {
+    double xs=procs->Total();
+    for (int i=0; i<procs->Size();++i) {
+      RescaleProcesses((*procs)[i],fac);
+    }
+    procs->SetTotal(xs*fac);
+    std::cout<<" changing xs from "<<xs<<" to "<<procs->Total()<<std::endl;
+  }
+}
+
 bool Matrix_Element_Handler::RescaleJetrates() 
 {
   // processes not rescaled in the moment only status printed
@@ -194,6 +213,18 @@ bool Matrix_Element_Handler::RescaleJetrates()
   for (int i=0; i<procs->Size();++i) {
     errsum+= (*procs)[i]->TotalError();
   }
+
+
+  cout<<" rescale Jetrates : "<<endl;
+  //vs.facs[10] = { 1., 1., 1. , 0.1, 1., 1.,1., 1., 1., 1.};
+  double facs[10] = { 1., 1., 1. , 1, 1., 1.,1., 1., 1., 1.};
+  for (int i=0; i<procs->Size();++i) {
+    //    double xstot = (*procs)[i]->Total()*rpa.Picobarn();
+    //    double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
+    int njet  = (*procs)[i]->Nout();
+    RescaleProcesses((*procs)[i],facs[njet]);
+  }
+  procs->SetMax(0.);
 
   if (errsum!=0.) {
     MyStrStream sstr;
@@ -233,7 +264,16 @@ bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) { return true; 
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
   if (m_eventmode) return UnweightedEvent();
-  m_weight = WeightedEvent() * rpa.Picobarn();
+  Blob_Data_Base * message = WeightedEvent();
+  if (message) {
+    PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
+    m_weight =  winfo.weight * rpa.Picobarn();
+    m_ntrial =  winfo.ntrial;
+    delete message;
+  }
+  else {
+    m_weight=0.;
+  }
   return (m_weight>0.);
 }
 
@@ -254,19 +294,38 @@ double Matrix_Element_Handler::FactorisationScale()
 
 bool Matrix_Element_Handler::GenerateSameEvent() 
 {
-  if (m_eventmode) {
-    switch (m_mode) {
-    case 1: return p_amegic->SameEvent();
-    case 2: return p_simplexs->OneEvent();
-    }
+  if (m_eventmode) return UnweightedSameEvent();
+  Blob_Data_Base * message = WeightedSameEvent();
+  if (message) {
+    PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
+    m_weight =  winfo.weight * rpa.Picobarn();
+    m_ntrial =  winfo.ntrial;
+    delete message;
   }
   else {
-    switch (m_mode) {
-    case 1: return p_amegic->SameWeightedEvent();
-    case 2: return p_simplexs->WeightedEvent();
-    }
+    m_weight=0.;
   }
-  return false;
+  return (m_weight>0.);
+}
+    
+
+bool Matrix_Element_Handler::UnweightedSameEvent() 
+{
+  switch (m_mode) {
+  case 1: return p_amegic->SameEvent();
+  case 2: return p_simplexs->OneEvent();
+  }
+  return 0;
+}
+
+  
+Blob_Data_Base * Matrix_Element_Handler::WeightedSameEvent() 
+{
+  switch (m_mode) {
+  case 1: return p_amegic->SameWeightedEvent();
+  case 2: return p_simplexs->WeightedEvent();
+  }
+  return 0;
 }
 
 bool Matrix_Element_Handler::UnweightedEvent() 
@@ -280,7 +339,7 @@ bool Matrix_Element_Handler::UnweightedEvent()
 
 
 
-double Matrix_Element_Handler::WeightedEvent() 
+Blob_Data_Base * Matrix_Element_Handler::WeightedEvent() 
 {
   switch (m_mode) {
   case 1: return p_amegic->WeightedEvent();
@@ -404,6 +463,11 @@ EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS()
 double  Matrix_Element_Handler::Weight() 
 {
   return m_weight;
+}
+
+unsigned long Matrix_Element_Handler::NumberOfTrials()
+{
+  return m_ntrial;
 }
 
 void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *_p_amegic)

@@ -56,13 +56,14 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
   if (m_mode==0) return 1;
 
   if (!ExtractSinglets(bl,pl)) return 0;
+
   bool okay = 1;
   for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {
     if ( ((*biter)->Type()==std::string("Fragmentation")) && 
 	 ((*biter)->Status()==1) ) {
       //(*biter)->BoostInCMS();
       (*biter)->SetCMS();
-      okay = okay && p_lund->Hadronize((*biter),bl,pl);
+       okay = okay && p_lund->Hadronize((*biter),bl,pl);
       //(*biter)->BoostInLab();
       (*biter)->SetStatus(0);
     }
@@ -86,8 +87,8 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List 
 	for (int i=0;i<(*blit)->NOutP();i++) {
 	  part = (*blit)->OutParticle(i);
 	  if ( (part->Info()=='F' || part->Info()=='H') && part->Status()==1) {
-	    if (( (part->Flav().IsQuark()    && !part->Flav().IsAnti() ) ||
-		  (part->Flav().IsDiQuark()) && part->Flav().IsAnti()       ) && part->GetFlow(1)>0 ) {
+	    if (( (part->Flav().IsQuark()   && !part->Flav().IsAnti() ) ||
+		  (part->Flav().IsDiQuark() && part->Flav().IsAnti())) && part->GetFlow(1)>0 ) {
 	      if (use_one_blob==0 || newb==0) {
 		newb = new Blob();
 		newb->SetId(_bloblist->size());

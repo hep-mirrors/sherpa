@@ -1,60 +1,108 @@
 #include "Sample_Analysis.H"
-#include "Shower_Observables.H"
-#include "One_Particle_Observables.H"
 #include "MyStrStream.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 
 
+#include "Shower_Observables.H"
+#include "Primitive_Detector.H"
+#include "One_Particle_Observables.H"
+
+
+namespace SHERPA {
+
+  class PHard_Observable : public ATOOLS::Primitive_Observable_Base {  
+  public:
+    PHard_Observable(int type,double xmin,double xmax,int nbins, const std::string & name);
+    void Evaluate(double,int); 
+    void Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double w, int);
+    void Evaluate(const ATOOLS::Particle_List &,double w, int);
+    void Evaluate(const ATOOLS::Blob_List &,double w, int); 
+    Primitive_Observable_Base * Copy() const;
+  };
+
+  extern double amegic_apacic_interface_last_hard_scale;
+}
 
 using namespace SHERPA;
 using namespace ATOOLS;
+//using namespace ATOOLS::ANALYSIS;
 using namespace std;
 
 
 int Sample_Analysis::m_njet=2;
 double Sample_Analysis::m_pt_W=0.;
 
-extern double amegic_apacic_interface_last_hard_scale;
-
-
-PHard_Observable::PHard_Observable(int _type,double _xmin,double _xmax, int _nbins, 
-				   std::string _name = std::string("pt_hard.dat")) :
-  Primitive_Observable_Base(_type,_xmin,_xmax,_nbins,NULL) { name = _name; }
-
-
-void PHard_Observable::Evaluate(double w)
+PHard_Observable::PHard_Observable(int type,double xmin,double xmax,int nbins, const std::string & name)
 {
-  histo->Insert(Sample_Analysis::m_pt_W,w); 
+  m_splitt_flag=false;
+  m_type = type; m_xmin = xmin; m_xmax = xmax; m_nbins = nbins;
+  m_name  = std::string("pt_hard.dat");
+  m_name  = name+std::string(".dat");
+  p_histo = new ATOOLS::Histogram(m_type,m_xmin,m_xmax,m_nbins);
 }
 
-void PHard_Observable::Evaluate(int,ATOOLS::Vec4D *,ATOOLS::Flavour *,double w)
+
+
+void PHard_Observable::Evaluate(double w, int ncount)
 {
-  Evaluate(w);
+  //  histo->Insert(sqrt(amegic_apacic_interface_last_hard_scale),w); 
+  p_histo->Insert(Sample_Analysis::m_pt_W,w,ncount); 
 }
 
-void PHard_Observable::Evaluate(const ATOOLS::Particle_List &,double w)
+void PHard_Observable::Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double w, int ncount)
 {
-  Evaluate(w);
+  Evaluate(w,ncount);
 }
 
-void PHard_Observable::Evaluate(const ATOOLS::Blob_List &,double w)
+void PHard_Observable::Evaluate(const ATOOLS::Particle_List &,double w, int ncount)
 {
-  Evaluate(w);
+  Evaluate(w,ncount);
 }
 
-Sample_Analysis::Sample_Analysis(std::string _m_path,std::string _m_file):
-  m_path(_m_path),
-  m_file(_m_file)
+void PHard_Observable::Evaluate(const ATOOLS::Blob_List &,double w, int ncount)
+{
+  Evaluate(w,ncount);
+}
+
+Primitive_Observable_Base * PHard_Observable::Copy() const {
+  std::cerr<<" ERROR in PHard_Observable::Copy() : not splittable "<<std::endl;
+  return 0;
+}
+
+
+void Sample_Analysis::Init() { 
+  if (hepevt) nhep = 0;
+}
+
+Sample_Analysis::Sample_Analysis(const std::string & path,const std::string & file):
+  m_path(path),
+  m_file(file)
 {
   status     = rpa.gen.Analysis();
   if (!(status)) { ana = 0; return; }
-  ana        = new Primitive_Analysis();
-  ana->AddObservable(new Shower_Observables(11,1.e-6,1.,180,0));
-  //  ana->AddObservable();
+  ana        = new Primitive_Analysis("Sample_Analysis",ANALYSIS::splitt_all|ANALYSIS::fill_all);
+  //  ana->AddObservable(new Shower_Observables(11,1.e-6,1.,180,0));
+  ana->AddObservable(new Primitive_Detector(0.5,8.,0,"ConeJets(.5)"));
+  ana->AddObservable(new Jetrates(11,1.e-6,1.,80,0));
+  ana->AddObservable(new Jetrates(11,1.e-6,1.,80,0,"ConeJets(.5)"));
+  ana->AddObservable(new Multiplicity(00,-0.5,50.5,51,0,"FinalState"));
+  ana->AddObservable(new Multiplicity(00,-0.5,50.5,51,0,"ConeJets(.5)"));
+  ana->AddObservable(new Multiplicity(00,-0.5,50.5,51,0,"KtJets"));
+  ana->AddObservable(new PT_Distribution(00,0.,200.,100,1,Flavour(kf::W)));
+  ana->AddObservable(new PT_Distribution(00,0.,200.,100,6,Flavour(kf::jet)));
+  ana->AddObservable(new PT_Distribution(00,0.,200.,100,0,4,Flavour(kf::jet),"ConeJets(.5)"));
+  ana->AddObservable(new PT_Distribution(00,0.,200.,100,1,4,Flavour(kf::jet),"ConeJets(.5)"));
+  ana->AddObservable(new PT_Distribution(00,0.,200.,100,2,4,Flavour(kf::jet),"ConeJets(.5)"));
+  ana->AddObservable(new PT_Distribution(00,0.,200.,100,3,4,Flavour(kf::jet),"ConeJets(.5)"));
+  ana->AddObservable(new PT_Distribution(00,0.,200.,100,4,4,Flavour(kf::jet),"ConeJets(.5)"));
+  ana->AddObservable(new PT_Distribution(00,0.,200.,100,6,Flavour(kf::jet),"KtJets"));
+
+
+  //  ana->AddObservable(new PT_Distribution(00,0.,250.,50,6,Flavour(kf::Z)));
+
   //  ana->AddObservable(new PHard_Observable(00,0.,250.,125));
   //  ana->AddObservable(new PT_Distribution(00,0.,250.,125,1,Flavour(kf::photon)));
-//   ana->AddObservable(new PT_Distribution(00,0.,250.,50,6,Flavour(kf::jet)));
 
   obs.push_back(new ME_Rate(00,1.5,7.5,6,"me"));
   obs.push_back(new ME_Rate(00,1.5,7.5,6,"me_nll"));
@@ -72,11 +120,6 @@ Sample_Analysis::Sample_Analysis(std::string _m_path,std::string _m_file):
   obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_6"));
 }
 
-
-
-void Sample_Analysis::Init() { 
-  if (hepevt) nhep = 0;
-}
 
 void Sample_Analysis::AfterME(ATOOLS::Blob_List * blobs, double weight) {
   if (!(status)) return;
@@ -109,22 +152,24 @@ void Sample_Analysis::AfterPartonShower(ATOOLS::Blob_List * blobs, double weight
 
   
   // simple parton level analysis:
-  ana->DoAnalysis(*blobs,weight);
+  ana->DoAnalysis(blobs,weight);
 }
 
 void Sample_Analysis::AfterHadronization(ATOOLS::Blob_List * blobs, double weight) {
   if (!(status == 2)) return;
-  ana->DoAnalysis(*blobs,weight);
+  ana->DoAnalysis(blobs,weight);
 }
 
 
 
 void Sample_Analysis::Finish(std::string addpath) 
 {
-  if (status== 1) {
+  if (status>= 1) {
+    Primitive_Analysis * sana=new Primitive_Analysis("ME_Analysis",ANALYSIS::fill_all);
     for (size_t i=0; i<obs.size();++i) {
-      ana->AddObservable(obs[i]);
+      sana->AddObservable(obs[i]);
     }
+    ana->AddSubAnalysis("ME",sana);
 
     MyStrStream s1;
     int   alf = int(1000.*rpa.gen.ScalarFunction(string("alpha_S"))+0.5);
@@ -136,12 +181,12 @@ void Sample_Analysis::Finish(std::string addpath)
     std::string outputpath=dataread->GetValue<std::string>("ANALYSIS_OUTPUT",std::string("output"));
     delete dataread;
     msg.Out()<<" FinishAnalysis("<<outputpath+addpath<<");"<<endl;
-    ana->FinishAnalysis(outputpath+addpath,0);
+    ana->FinishAnalysis(outputpath+addpath);
   }
 
 }
 
 
 Sample_Analysis::~Sample_Analysis() {
-  if (ana)                   { delete ana;     ana     = 0; }
+  if (ana)   { delete ana;     ana     = 0; }
 }

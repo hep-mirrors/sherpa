@@ -185,6 +185,19 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     }
     else {
       if (!(p_mehandler->UseSudakovWeight())) m_weight=1.;
+      else {
+	// update me weight
+	Blob_Data_Base * message = (*blob)["ME_Weight"];
+	if (message) {
+	  double weight = message->Get<double>();
+	  weight*=m_weight;
+	  blob->AddData("ME_Weight",new Blob_Data<double>(weight));
+	}
+	else {
+	  msg.Out()<<" WARNING: ME_Weight not found in Amegic_Apacic_Interface::DefineInitialCondition() "<<std::endl;
+	}
+
+      }
       p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
       return 1;
     }

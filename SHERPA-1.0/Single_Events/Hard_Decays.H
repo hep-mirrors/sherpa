@@ -14,7 +14,7 @@ namespace SHERPA {
     ~Hard_Decays();
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
-    void Finish(std::string) {}
+    void Finish(const std::string &);
   };
 }
 #endif
