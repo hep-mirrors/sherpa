@@ -175,6 +175,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
   Knot * d1 = mo->left;
   Knot * d2 = mo->right;
 
+
   if (all_colors_known) return ( SetColours(d1,kin) && SetColours(d2,kin) );
 
   Knot * partner, * nopart;
@@ -215,19 +216,30 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 	  }
 	}
 	else if ( (d1->part->Flav().IsGluon()) && (d2->part->Flav().IsGluon())) {
-	  Knot * au = mo->prev->left;
-	  if (au == mo) au = mo->prev->right;
+	  Parton * aup = FindAuntParton(mo);
 
 	  partner = d1; nopart = d2;
-	  if (au->part->Flav().Strong() && kin) {
-	    if (kin->ArrangeColourPartners(au,d1,d2)) { partner = d2; nopart = d1; }
-	    for (int i=1;i<3;i++) {
-	      if (au->part->GetFlow(i) == mo->part->GetFlow(3-i)) {
+	  if (aup->Flav().Strong() && kin) {
+	    if (kin->ArrangeColourPartners(aup,d1,d2)) { partner = d2; nopart = d1; }
+	    int cset=0;
+ 	    for (int i=1;i<3;i++) {
+	      if (aup->GetFlow(i) == mo->part->GetFlow(3-i)) {
  		partner->part->SetFlow(3-i,mo->part->GetFlow(3-i));
 		partner->part->SetFlow(i,-1);
 		nopart->part->SetFlow(3-i,partner->part->GetFlow(i));
 		nopart->part->SetFlow(i,mo->part->GetFlow(i));
 		break;
+	      }
+	    }
+	    if (!cset) {
+	      for (int i=1;i<3;i++) {
+		if (aup->GetFlow(i) == mo->part->GetFlow(i)) {
+		  partner->part->SetFlow(i,mo->part->GetFlow(i));
+		  partner->part->SetFlow(3-i,-1);
+		  nopart->part->SetFlow(i,partner->part->GetFlow(3-i));
+		  nopart->part->SetFlow(3-i,mo->part->GetFlow(3-i));
+		  break;
+		}
 	      }
 	    }
 	  }
@@ -250,7 +262,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
       }
     }
     else {
-      msg.Error()<<"ERROR in Final_State_Shower::SetColours()"<<std::endl
+      msg.Out()<<"ERROR in Final_State_Shower::SetColours()"<<std::endl
 		 <<"    case not covered : colourful "<<mo->part->Flav()
 		 <<" -> "<<d1->part->Flav()<<" + "<<d2->part->Flav()<<std::endl;
       return 0;
@@ -277,7 +289,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 	d2->part->SetFlow(1,d1->part->GetFlow(2));
       }
       else {
-	msg.Error()<<"ERROR in Final_State_Shower::SetColours()"<<std::endl
+	msg.Out()<<"ERROR in Final_State_Shower::SetColours()"<<std::endl
 		   <<"    case not covered : colourless "<<mo->part->Flav()<<" -> "
 		   <<d1->part->Flav()<<" + "<<d2->part->Flav()<<std::endl;
 	return 0;
@@ -358,9 +370,15 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
     int pos = (*blit)->Type().find(string("ME PS Interface (Sherpa, FS)"));
     if (pos>-1) {
       bl_meps=(*blit);
+      // deactivate in partons!
+      for (int i=0;i<bl_meps->NInP();++i) {
+	bl_meps->InParton(i)->SetStatus(2);
+      }
       break;
     }
   }
+
+
 
 
   if (!kn) return;
@@ -950,4 +968,38 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number) {
   }
   number++;
   return mo->part->Momentum();
+}
+
+
+Parton * Final_State_Shower::FindAuntParton(Knot * mo) 
+{
+  Knot * au = mo->prev->left;
+  if (au == mo) au = mo->prev->right;
+  bool found=0;
+  for (int k1=1;k1<=2;++k1)
+    for (int k2=1;k2<=2;++k2)
+      if ((mo->part->GetFlow(k1) > 0 ) &&
+	  (au->part->GetFlow(3-k1)==mo->part->GetFlow(k1))) found=1;
+	  
+  if (found) return au->part;
+
+  Blob * bl = mo->part->ProductionBlob();
+  if (!bl) {
+    cout<<" no blob ! return normal aunt"<<endl;
+    return au->part;
+  }
+
+  Parton * aup=0;
+  for (int i=0; i<bl->NInP();++i) {
+    aup=bl->InParton(i);
+    for (int k1=1;k1<=2;++k1)
+      for (int k2=1;k2<=2;++k2)
+	if ((mo->part->GetFlow(k1) > 0 ) &&
+	    (aup->GetFlow(k2)==mo->part->GetFlow(k1))) found=1;
+    if (found) return aup;
+  }
+
+  cout<<" no aunt in blob  found ! return normal aunt"<<endl;
+  return au->part;
+
 }

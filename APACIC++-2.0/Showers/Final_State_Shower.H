@@ -25,6 +25,7 @@ namespace APACIC {
     Timelike_Sudakov       * p_sud;
     Timelike_Kinematics    * p_kin;
     std::vector<Knot*> m_ini_partons;
+    static ATOOLS::Parton * FindAuntParton(Knot *);
   public:
     Final_State_Shower(MODEL::Model_Base *,ATOOLS::Data_Read * const);
     ~Final_State_Shower();

@@ -48,7 +48,8 @@ void Hard_Interface::PrepareTrees() {
 int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,double x2) {
   if (!m_showers) return 1;
   if (m_fsron) {
-    Poincare cms(p_fintree->GetRoot()->part->Momentum());
+    Vec4D sum=p_fintree->GetRoot()->part->Momentum();
+    Poincare cms(sum);
     p_fintree->BoRo(cms);
 
     int fsrstatus = p_finshower->PerformShower(p_fintree,jetveto);
@@ -61,14 +62,10 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,doub
     p_finshower->SetAllColours(p_fintree->GetRoot());
 
     if (!m_isron) {
-      cout<<"====================================="<<endl;
-      p_finshower->OutputTree(p_fintree);
-      Vec4D vl =Vec4D(x1+x2,0.,0.,x2-x1);
+      //      Vec4D vl =Vec4D(x1+x2,0.,0.,x2-x1);
+      Vec4D vl =Vec4D(sum[0],-1.*Vec3D(sum));
       Poincare lab(vl);
       p_fintree->BoRo(lab);
-      cout<<"====================================="<<endl;
-      p_finshower->OutputTree(p_fintree);
-      cout<<"====================================="<<endl;
     }
   }
 
@@ -76,7 +73,8 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,doub
     p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
     if (!(p_inishower->PerformShower(p_initrees,jetveto))) return 0;
 
-    // boost in LAB (using x1, x2 from initiator) done in is-shower
+
+    // boost in Beam-System (using x1, x2 from initiator) done in is-shower
 
     // determine Boost+Rotate in cms(using moms from root1 und root2)
     Vec4D mom1=p_initrees[0]->GetRoot()->part->Momentum();
@@ -90,7 +88,7 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,doub
     rot.RotateBack(mom1);
     rot.RotateBack(mom2);
 
-    // rotate and boost fs in lab "if (fin)"
+    // rotate and boost fs in beam-system "if (fin)"
     if (fin) {
       p_fintree->BoRo(rot);
       p_fintree->BoRo(lab);
@@ -115,6 +113,7 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,doub
 
 bool Hard_Interface::ExtractPartons(bool ini,bool fin,Blob_List * bl,Parton_List * pl) {
   if (fin) p_finshower->ExtractPartons(p_fintree->GetRoot(),0,bl,pl);
+
   if (ini) {
     for (int i=0;i<2;i++) {
       p_inishower->ExtractPartons(p_initrees[i]->GetInitiator(),i,0,bl,pl);

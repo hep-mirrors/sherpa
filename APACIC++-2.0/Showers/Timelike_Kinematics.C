@@ -472,12 +472,12 @@ bool Timelike_Kinematics::DoKinematics(Knot * mo)
 }
 
 
-bool Timelike_Kinematics::ArrangeColourPartners(Knot * au,Knot * d1,Knot * d2) {
-  if (!au) return 0;
+bool Timelike_Kinematics::ArrangeColourPartners(Parton * aup,Knot * d1,Knot * d2) {
+  if (!aup) return 0;
   if (!d1) return 0;
   if (!d2) return 0;
-  if (jf->PTij(au->part->Momentum(),d1->part->Momentum()) <
-      jf->PTij(au->part->Momentum(),d2->part->Momentum()) ) {
+  if (jf->PTij(aup->Momentum(),d1->part->Momentum()) <
+      jf->PTij(aup->Momentum(),d2->part->Momentum()) ) {
     return 0;
   }
   return 1;

@@ -114,6 +114,10 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
       bl_meps->SetStatus(0);
       break;
     }
+    // deactivate out partons!
+//     for (int i=0;i<bl_meps->NOutP();++i) {
+//       bl_meps->OutParton(i)->SetStatus(2);
+//     }
   }
 
   int number;
