@@ -67,7 +67,7 @@ C***************************************************************C
         do 20 m=1,nq
         read(33,50)f1(n,m),f2(n,m),f3(n,m),f4(n,m),
      .		  f5(n,m),f7(n,m),f6(n,m),f8(n,m)
-c notation: 1=uval 2=val 3=glue 4=usea 5=chm 6=str 7=btm 8=dsea
+c notation: 1=uval 2=dval 3=glue 4=usea 5=chm 6=str 7=btm 8=dsea
   20  continue
       do 40 m=1,nq
       f1(nx,m)=0.d0

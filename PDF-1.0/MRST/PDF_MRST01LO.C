@@ -93,7 +93,7 @@ double PDF_MRST01LO::GetXPDF(const ATOOLS::Flavour infl)
   case  ATOOLS::kf::c : 
   case -ATOOLS::kf::c : return m_rescale*p_xpdf[3];
   case  ATOOLS::kf::b : 
-  case -ATOOLS::kf::b : return m_rescale*p_xpdfv[4];
+  case -ATOOLS::kf::b : return m_rescale*p_xpdf[4];
   case  ATOOLS::kf::gluon : 
   case -ATOOLS::kf::gluon :return m_rescale*p_xpdf[5]; 
   default: return 0.;
