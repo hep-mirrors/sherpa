@@ -1,7 +1,6 @@
 #ifndef  Sample_Analysis_H
 #define Sample_Analysis_H
 
-//#include "IO_HepEvt.H"
 #include "Parton_List.H"
 #include "Blob_List.H"
 #include "Primitive_Analysis.H"
@@ -25,11 +24,9 @@ namespace SHERPA {
     bool                            InitIO;
     int                             status,hepevtmode;
     int                             nhep;
-    // IO_HepEvt                     * convert;
     ATOOLS::Primitive_Analysis * ana;
     std::vector<ATOOLS::Primitive_Observable_Base *> obs;
   public:
-    // Sample_Analysis(IO_HepEvt *&,bool);
     Sample_Analysis();
     ~Sample_Analysis();
     void Init();
