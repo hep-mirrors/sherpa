@@ -66,8 +66,6 @@ namespace AMEGIC {
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
     void           InitDecay(Topology* top); 
     bool           SetUpIntegrator();
-    //void           AddChannels(Process_Base *,PHASIC::Multi_Channel *,
-    //			       PHASIC::channelinfos &,PHASIC::channelinfos &);
     bool           IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); };
 
     /*------------------------------------------------------------------------------
