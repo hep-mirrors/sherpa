@@ -46,13 +46,24 @@ Analysis_Handler::FindArguments(const String_Matrix &strings,
     for (size_t k=0;j<strings[i].size();++j,++k) {
       result.back()[k]=strings[i][j];
       size_t opos=result.back()[k].find("{");
-      if (opos!=std::string::npos) ++open;
+      if (opos!=std::string::npos) {
+	++open;
+	if (open==1) {
+	  result.back()[k]=result.back()[k].substr(opos+1);
+	  if (result.back()[k].length()==0) {
+	    --k;
+	    result.back().resize(result.back().size()-1);
+	    continue;
+	  }
+	}
+      }
       if (open>0) {
 	size_t cpos=result.back()[k].find("}");
 	if (cpos!=std::string::npos) --open;
 	if (open==0) {
 	  result.back()[k]=result.back()[k].substr(0,cpos);
 	  result.back().resize(k+1);
+	  if (k==0 && result.back()[0].length()==0) result.resize(result.size()-1);
 	  return result;
 	}
       }
