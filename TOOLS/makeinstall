@@ -177,7 +177,7 @@ if [ "$TOTAL" = "TRUE" ] ; then
   rmr "Makefile Makefile.in \
        aclocal.m4 config.guess config.log config.status config.sub configure \
        depcomp install-sh libtool ltconfig ltmain.sh missing mkinstalldirs"
-  rmr ".deps .libs autom4te.cache" -r
+  rmr "autom4te.cache" -r
 fi
 
 if [ "$SED" = "" ] ; then export SED="sed" ; fi
@@ -272,6 +272,7 @@ do
               exit 1
 	    elif [ "$CONTINUE" = "b" ] ; then
               bash
+	      CONTINUE="r"
 	    fi
 	  done
         fi
@@ -281,8 +282,7 @@ do
     done
     cd ..
   else
-    echo "makeinstall: error: directory $I not found"
-    exit 2
+    echo "makeinstall: warning: directory $I not found"
   fi
 done;
 sleep 1

@@ -53,7 +53,7 @@ return (2*q*s1*s2*(s1*s2 - t*u)*z1*z2)/(t*u*(-s1 - s2 + t + u)) +
           2*s1*(-(pow(s2,2)*(pow(t,2) + 3*t*u + 5*pow(u,2))) + 
              s2*(3*pow(t,3) + pow(t,2)*u + 4*t*pow(u,2) + 
                 pow(u,3)) + 
-             t*(pow(t,3) + pow(t,2)*u + 2*t*pow(u,2) + 2*pow(u,3))\
+             t*(pow(t,3) + pow(t,2)*u + 2*t*pow(u,2) + 2*pow(u,3))
 )) + a4*(pow(s1,2)*(-2*(-1 + b4)*pow(t,3) + 
              (2 - 3*b4 + 2*pow(b4,2))*pow(t,2)*u - 
              (1 - b4 + 2*pow(b4,2))*t*pow(u,2) - 2*b4*pow(u,3) + 
@@ -105,10 +105,10 @@ return (2*q*s1*s2*(s1*s2 - t*u)*z1*z2)/(t*u*(-s1 - s2 + t + u)) +
           2*pow(b4,2)*(pow(s2,2)*t*(2*t + u) + 
              4*t*(pow(t,3) + 2*pow(t,2)*u + 2*t*pow(u,2) + 
                 pow(u,3)) - s2*
-              (3*pow(t,3) + 4*pow(t,2)*u + 4*t*pow(u,2) + pow(u,3))\
+              (3*pow(t,3) + 4*pow(t,2)*u + 4*t*pow(u,2) + pow(u,3))
 )) + pow(a4,2)*(pow(s1,2)*
            (4*(-1 + pow(b4,2))*pow(t,2) + 
-             (-5 - 4*b4 + 4*pow(b4,2))*t*u + 4*(-2 + b4)*b4*pow(u,2)) \
+             (-5 - 4*b4 + 4*pow(b4,2))*t*u + 4*(-2 + b4)*b4*pow(u,2)) 
 + 4*pow(b4,2)*(pow(t,2) + t*u + pow(u,2))*
            (pow(s2,2) - 2*s2*(t + u) + 2*pow(t + u,2)) + 
           u*(-(pow(s2,2)*(t - 4*u)) - 
@@ -221,7 +221,7 @@ double ggggosmet(double q,double s,double t,double u,double s1,double s2,
              8*(-1 + a4)*pow(u,2)) + 
           pow(s2,2)*(4*(-2 + a4)*pow(t,3) + 
              (1 - a4 + 6*pow(a4,2))*pow(t,2)*u + 
-             3*(-5 + 3*a4)*t*pow(u,2) + 8*(-1 + pow(a4,2))*pow(u,3)\
+             3*(-5 + 3*a4)*t*pow(u,2) + 8*(-1 + pow(a4,2))*pow(u,3)
 ) - 2*s2*(2*(-1 + a4)*pow(t,4) + 
              (13 - 8*a4 + 4*pow(a4,2))*pow(t,3)*u + 
              (8 - 18*a4 + 9*pow(a4,2))*pow(t,2)*pow(u,2) + 
@@ -252,7 +252,7 @@ double ggggosmet(double q,double s,double t,double u,double s1,double s2,
                  (7 - 10*b4 + 5*pow(b4,2)) + 
                 b4*(13 - 31*b4 + 8*pow(b4,2)) + 
                 a4*(9 - 25*b4 + 44*pow(b4,2) - 14*pow(b4,3)))*t*
-              pow(u,2) - 4*a4*(-1 + b4)*(1 + a4*(-4 + 3*b4))*pow(u,3)\
+              pow(u,2) - 4*a4*(-1 + b4)*(1 + a4*(-4 + 3*b4))*pow(u,3)
 ) + 2*t*(-4*a4*u*(2*pow(t,2) + 3*t*u + 4*pow(u,2)) + 
              pow(b4,3)*((-1 + a4)*t + a4*u)*
               (2*pow(t,2) - t*u + 5*pow(u,2)) + 
@@ -277,7 +277,7 @@ double ggggosmet(double q,double s,double t,double u,double s1,double s2,
                 t*(u - a4*u)))))*pow(z1,3)*pow(z2,3))/
    ((-1 + b4)*pow(t,2)*pow(s1 + s2 - t - u,2)*pow(u,2)) + 
   (8*pow(q,4)*(-(a4*b4*(pow(s1,2)*t*
-             ((4 - 6*b4 + 6*pow(b4,2))*t + (2 - 5*b4 + 3*pow(b4,2))*u) \
+             ((4 - 6*b4 + 6*pow(b4,2))*t + (2 - 5*b4 + 3*pow(b4,2))*u) 
 + 2*u*(pow(s2,2)*(t + 2*u) + 4*t*(pow(t,2) + t*u + pow(u,2)) - 
                s2*(5*pow(t,2) + 5*t*u + 2*pow(u,2))) + 
             s1*(2*s2*(2*(1 - 3*b4 + 4*pow(b4,2))*pow(t,2) + 
@@ -316,7 +316,7 @@ double ggggosmet(double q,double s,double t,double u,double s1,double s2,
              4*(pow(t,4) + 5*pow(t,3)*u + 8*pow(t,2)*pow(u,2) + 
                 7*t*pow(u,3) + 3*pow(u,4)) + 
              s1*(-10*pow(t,3) - 31*pow(t,2)*u - 37*t*pow(u,2) - 
-                24*pow(u,3) + 2*s2*(4*pow(t,2) + 7*t*u + 10*pow(u,2))\
+                24*pow(u,3) + 2*s2*(4*pow(t,2) + 7*t*u + 10*pow(u,2))
 )) + b4*(pow(s1,2)*(4*pow(t,2) + 7*t*u + 12*pow(u,2)) + 
              s1*(-4*pow(t,3) - 20*pow(t,2)*u - 27*t*pow(u,2) - 
                 24*pow(u,3) + 4*s2*(pow(t,2) + 2*t*u + 4*pow(u,2))) + 
@@ -364,12 +364,12 @@ return (q*s1*(4*(1 + b4)*pow(s1,2)*s2*u +
                 2*pow(b4,2))*pow(t,2)*u + 
              (41 + pow(a4,2)*(35 - 6*b4) + 2*pow(b4,2) - 
                 8*a4*(9 + b4))*t*pow(u,2) + 
-             2*(8*pow(a4,2) + 8*(1 + b4) - 3*a4*(7 + 3*b4))*pow(u,3))) \
+             2*(8*pow(a4,2) + 8*(1 + b4) - 3*a4*(7 + 3*b4))*pow(u,3))) 
 - s1*(u*(pow(s2,3)*((5 - a4 + 4*pow(a4,2))*t + 
                 2*(5 - 10*a4 + 8*pow(a4,2) - 2*pow(a4,3))*u) - 
              pow(s2,2)*((20 - 27*a4 + 25*pow(a4,2))*pow(t,2) + 
                 (32 - 45*a4 + 27*pow(a4,2))*t*u + 
-                2*(7 - 15*a4 + 10*pow(a4,2) - 2*pow(a4,3))*pow(u,2)\
+                2*(7 - 15*a4 + 10*pow(a4,2) - 2*pow(a4,3))*pow(u,2)
 ) + s2*((21 - 32*a4 + 17*pow(a4,2))*pow(t,3) + 
                 2*(17 - 24*a4 + 11*pow(a4,2))*pow(t,2)*u + 
                 (25 - 48*a4 + 27*pow(a4,2))*t*pow(u,2) + 
@@ -425,11 +425,11 @@ return (q*s1*(4*(1 + b4)*pow(s1,2)*s2*u +
                 2*(-6 + 17*a4 - 14*pow(a4,2) + 2*pow(a4,3))*
                  pow(t,2)*u + 
                 (-8 + 26*a4 - 23*pow(a4,2) + pow(a4,3))*t*
-                 pow(u,2) + 2*a4*(2 - 3*a4 + pow(a4,2))*pow(u,3)))) \
+                 pow(u,2) + 2*a4*(2 - 3*a4 + pow(a4,2))*pow(u,3)))) 
 + s1*(2*u*(-pow(t,3) + t*pow(u,2) - 2*s2*u*(2*t + u) + 
              pow(s2,2)*(t + 2*u)) + 
           2*pow(a4,3)*s2*u*((4 - 7*b4)*pow(t,2) - 5*(-1 + b4)*t*u + 
-             2*(5 - 3*b4)*pow(u,2) + 2*s2*((-1 + b4)*t + 2*(-2 + b4)*u)) \
+             2*(5 - 3*b4)*pow(u,2) + 2*s2*((-1 + b4)*t + 2*(-2 + b4)*u)) 
 + 2*pow(b4,2)*t*(3*pow(s2,2)*(2*t + u) + 
              2*t*(pow(t,2) + 2*pow(u,2)) - 
              s2*(8*pow(t,2) + 7*t*u + 6*pow(u,2))) + 
@@ -463,7 +463,7 @@ return (q*s1*(4*(1 + b4)*pow(s1,2)*s2*u +
                 s2*(4*pow(t,3) + 25*pow(t,2)*u + 11*t*pow(u,2) - 
                    8*pow(u,3)) - 
                 4*(2*pow(t,4) + 10*pow(t,3)*u + 
-                   9*pow(t,2)*pow(u,2) + 4*t*pow(u,3) - pow(u,4))))\
+                   9*pow(t,2)*pow(u,2) + 4*t*pow(u,3) - pow(u,4))))
 ))*pow(z1,3)*pow(z2,3))/
    ((-1 + a4)*pow(t,2)*pow(s1 + s2 - t - u,2)*pow(u,2)) + 
   (8*pow(q,4)*(-2*pow(b4,2)*(s2 - t)*t*
@@ -490,7 +490,7 @@ return (q*s1*(4*(1 + b4)*pow(s1,2)*s2*u +
                 4*(pow(t,2) + t*u + pow(u,2)))) - 
           b4*(pow(s1,2)*(4*pow(t,2) + 7*t*u + 10*pow(u,2)) + 
              s1*(-4*pow(t,3) - 19*pow(t,2)*u - 25*t*pow(u,2) - 
-                18*pow(u,3) + 2*s2*(2*pow(t,2) + 5*t*u + 8*pow(u,2))\
+                18*pow(u,3) + 2*s2*(2*pow(t,2) + 5*t*u + 8*pow(u,2))
 ) + u*(3*pow(s2,2)*(t + 2*u) - 
                 s2*(11*pow(t,2) + 17*t*u + 14*pow(u,2)) + 
                 8*(pow(t,3) + 2*pow(t,2)*u + 2*t*pow(u,2) + 
@@ -506,10 +506,10 @@ return (q*s1*(4*(1 + b4)*pow(s1,2)*s2*u +
              4*(3*pow(t,4) + 7*pow(t,3)*u + 8*pow(t,2)*pow(u,2) + 
                 5*t*pow(u,3) + pow(u,4)) + 
              s1*(-20*pow(t,3) - 29*pow(t,2)*u - 23*t*pow(u,2) - 
-                6*pow(u,3) + 2*s2*(10*pow(t,2) + 7*t*u + 4*pow(u,2)))\
+                6*pow(u,3) + 2*s2*(10*pow(t,2) + 7*t*u + 4*pow(u,2)))
 ) - b4*(pow(s1,2)*(8*pow(t,2) + 9*t*u + 6*pow(u,2)) + 
              s1*(-8*pow(t,3) - 29*pow(t,2)*u - 33*t*pow(u,2) - 
-                14*pow(u,3) + 2*s2*(4*pow(t,2) + 7*t*u + 6*pow(u,2))) \
+                14*pow(u,3) + 2*s2*(4*pow(t,2) + 7*t*u + 6*pow(u,2))) 
 + u*(pow(s2,2)*(5*t + 6*u) - 
                 s2*(21*pow(t,2) + 25*t*u + 14*pow(u,2)) + 
                 8*(2*pow(t,3) + 3*pow(t,2)*u + 3*t*pow(u,2) + 
@@ -544,7 +544,7 @@ double ggggosmee(double q,double s,double t,double u,double s1,double s2,
        a*b*(4*pow(s1,3)*s2*((2 - 3*b4 + pow(b4,2))*pow(t,2) + 
              t*u + b4*(1 + b4)*pow(u,2)) + 
           pow(s1,2)*(t*u*(-((-1 + pow(b4,2))*pow(t,2)) + 
-                6*(1 - b4 + pow(b4,2))*t*u - (-2 + b4)*b4*pow(u,2)) \
+                6*(1 - b4 + pow(b4,2))*t*u - (-2 + b4)*b4*pow(u,2)) 
 + 2*pow(s2,2)*((7 + 2*pow(a4,2) - 4*a4*(-2 + b4) - 8*b4 + 
                    2*pow(b4,2))*pow(t,2) + 
                 (7 + 2*a4 - 2*pow(a4,2) + 2*b4 - 2*pow(b4,2))*t*u + 
@@ -577,7 +577,7 @@ double ggggosmee(double q,double s,double t,double u,double s1,double s2,
                 2*pow(s2,2)*(pow(t,2) - 3*pow(u,2)) + 
                 u*(pow(t,3) + 3*pow(t,2)*u - t*pow(u,2) + 
                    pow(u,3)) - 
-                b4*(pow(t,4) + 6*pow(t,2)*pow(u,2) + pow(u,4))))) \
+                b4*(pow(t,4) + 6*pow(t,2)*pow(u,2) + pow(u,4))))) 
 - 2*pow(b,2)*(pow(s1,3)*s2*t*
            (2*(2 + 2*a4 - 4*b4 + pow(b4,2))*t + a4*u) + 
           pow(s2,2)*t*pow(u,2)*(-2*u - a4*u + pow(a4,2)*(3*t + u)) + 
@@ -613,14 +613,14 @@ double ggggosmee(double q,double s,double t,double u,double s1,double s2,
                   2*(6*a4 + 2*pow(a4,2)*(-2 + b4) - pow(1 + b4,2))*
                    pow(u,2))) + 
             s1*s2*(pow(b4,2)*u*
-                ((-3 + a4)*pow(t,2) + (2 - 5*a4)*t*u - 2*a4*pow(u,2)) \
+                ((-3 + a4)*pow(t,2) + (2 - 5*a4)*t*u - 2*a4*pow(u,2)) 
 + u*((3 - 3*a4 + 2*pow(a4,2))*pow(t,2) + 
                   (3 - 13*a4 - 3*pow(a4,2))*t*u - 2*a4*pow(u,2)) + 
                s2*(-2*(1 + pow(a4,2) - 6*b4 + 4*pow(b4,2) - 
                      2*a4*(-1 + pow(b4,2)))*pow(t,2) + 
                   (-2 + 6*b4 + pow(b4,2) + pow(a4,2)*(1 + 2*b4) + 
                      2*a4*(1 - 6*b4 + pow(b4,2)))*t*u + 
-                  2*(-1 + b4)*(1 - 4*a4 + 2*pow(a4,2) + b4)*pow(u,2)) \
+                  2*(-1 + b4)*(1 - 4*a4 + 2*pow(a4,2) + b4)*pow(u,2)) 
 + b4*(-2*pow(-1 + a4,2)*pow(t,3) + 
                   (-13 + 18*a4 - 5*pow(a4,2))*pow(t,2)*u + 
                   (-3 + 18*a4 + pow(a4,2))*t*pow(u,2) + 
@@ -674,7 +674,7 @@ double ggggosmee(double q,double s,double t,double u,double s1,double s2,
                    (2 + 5*b4 + 2*pow(b4,2))*t*pow(u,2) + 
                    3*(-1 + 2*b4)*pow(u,3)) + 
                 2*pow(b4,2)*
-                 (pow(t,4) + pow(t,3)*u - t*pow(u,3) - pow(u,4)) \
+                 (pow(t,4) + pow(t,3)*u - t*pow(u,3) - pow(u,4)) 
 - 2*b4*(pow(t,4) + 5*pow(t,3)*u + 4*pow(t,2)*pow(u,2) + 
                    3*t*pow(u,3) - pow(u,4))) - 
              b4*(-8*t*u*(pow(t,3) + 2*pow(t,2)*u + 2*t*pow(u,2) + 
@@ -682,7 +682,7 @@ double ggggosmee(double q,double s,double t,double u,double s1,double s2,
                 pow(s2,2)*(2*pow(t,3) - 7*pow(t,2)*u + 
                    t*pow(u,2) + 2*pow(u,3)) + 
                 2*s2*(-pow(t,4) + 3*pow(t,3)*u + 
-                   4*pow(t,2)*pow(u,2) + 5*t*pow(u,3) + pow(u,4)))\
+                   4*pow(t,2)*pow(u,2) + 5*t*pow(u,3) + pow(u,4)))
 )) + pow(b,2)*(b4*(-4*pow(s2,2)*t*pow(u,2) + 
              pow(s1,2)*t*(s2*(2*(-2 + b4)*t - (2 + 3*b4)*u) + 
                 t*(2*(-2 + b4)*t + (2 + 5*b4)*u)) + 
@@ -715,11 +715,11 @@ double ggggosmee(double q,double s,double t,double u,double s1,double s2,
         (a4*u*(-(s2*(t + a4*t + 2*u - 2*a4*u)) + 
              s1*(-t + a4*t - 2*u + 6*a4*u)) - 
           b4*(s2*(-2*(-1 + pow(a4,2))*pow(t,2) + 
-                (1 - 6*a4 + pow(a4,2))*t*u + 4*(-1 + a4)*a4*pow(u,2)) \
+                (1 - 6*a4 + pow(a4,2))*t*u + 4*(-1 + a4)*a4*pow(u,2)) 
 + s1*(2*pow(-1 + a4,2)*pow(t,2) + (1 - 6*a4 + 5*pow(a4,2))*t*u + 
                 8*pow(a4,2)*pow(u,2))) + 
           pow(b4,2)*(s2*(2*(3 - 4*a4 + pow(a4,2))*pow(t,2) + 
-                (1 - 5*a4 + 2*pow(a4,2))*t*u + 2*(-1 + a4)*a4*pow(u,2)\
+                (1 - 5*a4 + 2*pow(a4,2))*t*u + 2*(-1 + a4)*a4*pow(u,2)
 ) + s1*(2*pow(-1 + a4,2)*pow(t,2) + (-1 - a4 + 2*pow(a4,2))*t*u + 
                 2*a4*(1 + a4)*pow(u,2)))) + 
        2*pow(b,2)*(s1 + s2)*(2*pow(b4,2)*t*(2*s1*t - s2*u) + 
@@ -728,7 +728,7 @@ double ggggosmee(double q,double s,double t,double u,double s1,double s2,
              b4*(-3*s2*u*(t + 2*u) + 
                 s1*(4*pow(t,2) + t*u - 2*pow(u,2)))) + 
           a4*b4*(-(s1*t*((4 + 6*b4)*t + (-2 + 3*b4)*u)) + 
-             s2*(2*(t - 2*u)*u + b4*(-2*pow(t,2) + t*u + 4*pow(u,2))))) \
+             s2*(2*(t - 2*u)*u + b4*(-2*pow(t,2) + t*u + 4*pow(u,2))))) 
 + a*b*(2*a4*(pow(s1,2)*(2*(-1 - b4 + 4*pow(b4,2))*pow(t,2) + 
                 (-1 - 7*b4 + 4*pow(b4,2))*t*u - 2*b4*pow(u,2)) + 
              s2*u*(t*(t - u) + s2*(t + 2*u)) - 
