@@ -23,14 +23,10 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   if (flav[0]==ATOOLS::kf::e && flav[1]==ATOOLS::kf::p_plus) {
     beam[0]="e-";
     beam[1]="p+";
-    throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"DIS is not implemented yet",
-			    "Lund_Interface","Lund_Interface"));
   }
   else if (flav[0]==ATOOLS::kf::p_plus && flav[1]==ATOOLS::kf::e) {
     beam[0]="p+";
     beam[1]="e-";
-    throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"DIS is not implemented yet",
-			    "Lund_Interface","Lund_Interface"));
   }
   else if (flav[0]==ATOOLS::kf::e && flav[1]==ATOOLS::kf::photon) {
     if (flav[0].IsAnti()) beam[0]="e+"; else beam[0]="e-";

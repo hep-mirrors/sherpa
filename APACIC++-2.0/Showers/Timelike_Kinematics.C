@@ -3,6 +3,7 @@
 #include "Poincare.H"
 #include "Tree.H"
 #include "Data_Read.H"
+#include "Exception.H"
 #include <iomanip>
 
 
@@ -29,6 +30,8 @@ Timelike_Kinematics::Timelike_Kinematics(double _pt2min, Data_Read * const datar
   else {
     msg.Error()<<"Error in Timelike_Kinematics DIS is not yet implemented in the Jetfinder "<<endl;
     m_type = 4;
+    throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"DIS is not implemented yet",
+			    "Timelike_Kinematics","Timelike_Kinematics"));
   }
   jf            = new ATOOLS::Jet_Finder(ycut,m_type); 
   m_losejet_veto = dataread->GetValue<int>("FS LOSEJETVETO",1);
