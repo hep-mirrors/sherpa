@@ -96,6 +96,7 @@ int Lorentz_Function::ResetPermutation()
 {
   m_permcount=0;
   for (short int i=0;i<NofIndex();i++) partarg[i]  = m_permlist[m_permcount][i];
+  return 1;
 }
 
 int Lorentz_Function::NextPermutation()
@@ -105,6 +106,7 @@ int Lorentz_Function::NextPermutation()
   if (m_permcount==m_permlist.size()) return 0;
   
   for (short int i=0;i<NofIndex();i++) partarg[i]  = m_permlist[m_permcount][i];
+  return 1;
 }
 
 int Lorentz_Function::GetSign() 
