@@ -328,6 +328,30 @@ Primitive_Observable_Base * Jet_PT_Distribution::Copy() const
   return new Jet_PT_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
 
+DEFINE_OBSERVABLE_GETTER(Jet_ET_Distribution,Jet_ET_Distribution_Getter,"JetET");
+
+Jet_ET_Distribution::Jet_ET_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+					 unsigned int mode,unsigned int minn,unsigned int maxn, 
+					 const std::string & listname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
+{
+  m_name+="Et_";
+}
+
+
+double Jet_ET_Distribution::Calc(const Particle * p)
+{
+  Vec4D mom=p->Momentum();
+  double pt2 = sqr(mom[1])+sqr(mom[2]);
+  double p2  = sqr(mom[3])+pt2;
+  return mom[0]*sqrt(pt2/p2);
+}
+
+Primitive_Observable_Base * Jet_ET_Distribution::Copy() const 
+{
+  return new Jet_ET_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+}
+
 DEFINE_OBSERVABLE_GETTER(Jet_E_Distribution,Jet_E_Distribution_Getter,"JetE");
 
 Jet_E_Distribution::Jet_E_Distribution(unsigned int type,double xmin,double xmax,int nbins,
