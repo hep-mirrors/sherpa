@@ -49,6 +49,8 @@ namespace ATOOLS {
   std::ostream &operator<<(std::ostream &str,const bm::code modifier); 
   std::ostream &operator<<(std::ostream &str,const om::code modifier);
 
+  class Indentation;
+
   class Message {
   private:
 
@@ -57,9 +59,15 @@ namespace ATOOLS {
 
     int m_file, m_level;
 
-    bool m_modifiable;
+    int m_modifiable;
+
+    size_t m_indent;
 
     void InitLogFile(const std::string &logfile); 
+
+    const std::string Indent() { return std::string(m_indent,' '); }
+
+    friend class Indentation;
 
   public:
 
@@ -85,15 +93,21 @@ namespace ATOOLS {
     inline void SetOutStream(std::ostream *const output) { p_output=output;         }
     inline void SetErrStream(std::ostream *const error)  { p_error=error;           }
 
-    inline std::ostream &Out()       { return *p_output; }
+    inline std::ostream &Out() { return *p_output<<Indent(); }
 
-    inline std::ostream &Error()     { if (m_level >= 0) return *p_output; return *p_no; }
-    inline std::ostream &Events()    { if (m_level & 1) return *p_output; return *p_no;  }
-    inline std::ostream &Info()      { if (m_level & 2) return *p_output; return *p_no;  }
-    inline std::ostream &Tracking()  { if (m_level & 4) return *p_output; return *p_no;  }
-    inline std::ostream &Debugging() { if (m_level & 8) return *p_output; return *p_no;  }
+    inline std::ostream &Error()     
+    { if (m_level >= 0) return *p_output<<Indent(); return *p_no; }
+    inline std::ostream &Events()    
+    { if (m_level & 1) return *p_output<<Indent(); return *p_no;  }
+    inline std::ostream &Info()      
+    { if (m_level & 2) return *p_output<<Indent(); return *p_no;  }
+    inline std::ostream &Tracking()  
+    { if (m_level & 4) return *p_output<<Indent(); return *p_no;  }
+    inline std::ostream &Debugging() 
+    { if (m_level & 8) return *p_output<<Indent(); return *p_no;  }
 
-    inline std::ostream &LogFile()   { if (m_level & 4) return *p_logfile; return *p_no; }
+    inline std::ostream &LogFile()   
+    { if (m_level & 16) return *p_logfile<<Indent(); return *p_no; }
 
     inline bool  LevelIsError()     { return (m_level >= 0); }
     inline bool  LevelIsEvents()    { return (m_level & 1); }
@@ -104,6 +118,21 @@ namespace ATOOLS {
   };// end of class Message
 
   extern Message msg;
+
+  class Indentation {
+  private:
+
+    size_t m_col;
+
+  public:
+
+    // constructor
+    inline Indentation(const size_t col=2) { msg.m_indent+=m_col=col; }
+
+    // destructor
+    inline ~Indentation() { msg.m_indent-=m_col; }
+
+  };//end of class Indentation
 
   /*!
     \file
@@ -132,6 +161,9 @@ namespace ATOOLS {
 #define msg_Info() if (ATOOLS::msg.LevelIsInfo()) ATOOLS::msg.Out()
 #define msg_Tracking() if (ATOOLS::msg.LevelIsTracking()) ATOOLS::msg.Out()
 #define msg_Debugging() if (ATOOLS::msg.LevelIsDebugging()) ATOOLS::msg.Out()
+
+#define msg_Indent() ATOOLS::Indentation indent
+#define msg_Indentation(COL) ATOOLS::Indentation indent(col)
 
 #define PRINT_METHOD \
   std::cout<<ATOOLS::om::blue<<__FUNCTION__<<ATOOLS::om::reset<<std::endl

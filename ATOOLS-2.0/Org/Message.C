@@ -71,6 +71,7 @@ Message::Message()
   m_file = 0;
   m_level = 0;
   m_modifiable = false;
+  m_indent = 0;
 }
 
 Message::~Message() 
