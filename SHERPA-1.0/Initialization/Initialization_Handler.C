@@ -90,13 +90,6 @@ bool Initialization_Handler::InitializeTheFramework()
     }
   }
 
-  cout<<" smin smax "<<endl;
-  cout<<p_beamspectra->SprimeMin()<<endl;
-  cout<<p_beamspectra->SprimeMax()<<endl;
-  cout<<p_isrhandler->SprimeMin()<<endl;
-  cout<<p_isrhandler->SprimeMax()<<endl;
-
-
   if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
     msg.Error()<<"Error in Initialization of the Sherpa framework : "<<endl
 	       <<"    Detected a mismatch of flavours from beams to bunches : "<<endl
