@@ -24,8 +24,7 @@ namespace ADICIC {
   private:
     static const bool status;
     static const bool Now() {
-      //ATOOLS::ParticleInit("./"); return true;
-      ATOOLS::ParticleInit("../TestIt/data"); return true;
+      // Error deleted by FK.
     }
   public:
     Dipole_Flavour_Init() {}
