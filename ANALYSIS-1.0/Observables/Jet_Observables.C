@@ -350,8 +350,16 @@ Primitive_Observable_Base * Jet_E_Distribution::Copy() const
   return new Jet_E_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
 
-DEFINE_OBSERVABLE_GETTER(Jet_Differential_Rates,
-			 Jet_Differential_Rates_Getter,"JetDRate");
+DECLARE_GETTER(Jet_Differential_Rates_Getter,"JetDRate",
+	       Primitive_Observable_Base,String_Matrix);	
+
+DEFINE_GETTER_METHOD(Jet_Differential_Rates,Jet_Differential_Rates_Getter,"JetDRate");					
+
+void Jet_Differential_Rates_Getter::PrintInfo(std::ostream &str,const size_t width) const	
+{ 
+  str<<"min max bins mode nmin nmax Lin|Log [list] -> Finder 93 .."; 
+}
+
 
 Jet_Differential_Rates::Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,
 					       unsigned int mode,unsigned int minn,unsigned int maxn, 

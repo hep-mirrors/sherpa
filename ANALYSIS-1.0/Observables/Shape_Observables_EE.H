@@ -9,7 +9,7 @@
 namespace ANALYSIS {
   class Event_Shapes_Observable_Base : public Primitive_Observable_Base {  
   protected:
-    std::string m_key,m_inlistname;
+    std::string m_key;
   public:
     Event_Shapes_Observable_Base(int,double,double,int,const std::string & =std::string(""));
   };

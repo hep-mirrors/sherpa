@@ -159,17 +159,17 @@ Primitive_Observable_Base * Oblateness::Copy() const
 
 DEFINE_OBSERVABLE_GETTER(PT_In_Thrust,PT_In_Thrust_Getter,"PTIn");
 
-PT_In_Thrust::PT_In_Thrust(int _type,double _min,double _max,int _nbins,
-			   const std::string & _inlistname,const string & _name) :
-  Event_Shapes_Observable_Base(_type,_min,_max,_nbins,_name) 
-{ m_inlistname = _inlistname; }
+PT_In_Thrust::PT_In_Thrust(int type,double min,double max,int nbins,
+			   const std::string & listname,const string & name) :
+  Event_Shapes_Observable_Base(type,min,max,nbins,name) 
+{ m_listname = listname; }
 
 void PT_In_Thrust::Evaluate(const Particle_List &,double weight,int ncount) 
 {
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
     Vec3D Majoraxis = data->Get<Event_Shape_EE_Data>().majoraxis;
-    Particle_List * pl=p_ana->GetParticleList(m_inlistname);
+    Particle_List * pl=p_ana->GetParticleList(m_listname);
     for (Particle_List::const_iterator pit=pl->begin();pit!=pl->end();++pit) {
       p_histo->Insert(dabs(Majoraxis*Vec3D((*pit)->Momentum())),weight,ncount);
     }
@@ -178,7 +178,7 @@ void PT_In_Thrust::Evaluate(const Particle_List &,double weight,int ncount)
 
 Primitive_Observable_Base * PT_In_Thrust::Copy() const 
 {
-  return new PT_In_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_inlistname);
+  return new PT_In_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //================================================================================
@@ -191,7 +191,7 @@ DEFINE_OBSERVABLE_GETTER(PT_Out_Thrust,PT_Out_Thrust_Getter,"PTOut");
 PT_Out_Thrust::PT_Out_Thrust(int _type,double _min,double _max,int _nbins,
 			     const std::string & _inlistname,const string & _name) :
   Event_Shapes_Observable_Base(_type,_min,_max,_nbins,_name) 
-{ m_inlistname = _inlistname; }
+{ m_listname = _inlistname; }
 
 
 void PT_Out_Thrust::Evaluate(const Particle_List &,double weight,int ncount) 
@@ -199,7 +199,7 @@ void PT_Out_Thrust::Evaluate(const Particle_List &,double weight,int ncount)
   Blob_Data_Base * data = (*p_ana)[m_key];
   if (data) {
     Vec3D Minoraxis = data->Get<Event_Shape_EE_Data>().minoraxis;
-    Particle_List * pl=p_ana->GetParticleList(m_inlistname);
+    Particle_List * pl=p_ana->GetParticleList(m_listname);
     for (Particle_List::const_iterator pit=pl->begin();pit!=pl->end();++pit) {
       p_histo->Insert(dabs(Minoraxis*Vec3D((*pit)->Momentum())),weight,ncount);
     }
@@ -208,6 +208,6 @@ void PT_Out_Thrust::Evaluate(const Particle_List &,double weight,int ncount)
 
 Primitive_Observable_Base * PT_Out_Thrust::Copy() const 
 {
-  return new PT_Out_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_inlistname);
+  return new PT_Out_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 

@@ -31,6 +31,9 @@ libObservables_la_SOURCES     =	\
 			    	Calorimeter_Cone.C \
 			    	Jet_Cone_Distribution.C \
 			    	Jet_Observables.C \
+				Momentum_Tensor.C \
+				CD_Parameters.C \
+				Sphericity_Observables.C \
 			    	Event_Shapes_EE.C \
 			    	Shape_Observables_EE.C \
 			    	Scaled_Observables.C \
@@ -48,6 +51,9 @@ noinst_HEADERS        =	\
 			Calorimeter_Cone.H \
 			Jet_Cone_Distribution.H \
 			Jet_Observables.H \
+			Momentum_Tensor.H \
+			CD_Parameters.H \
+			Sphericity_Observables.H \
 			Event_Shapes_EE.H \
 			Shape_Observables_EE.H \
 			Scaled_Observables.H \
