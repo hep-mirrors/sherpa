@@ -309,11 +309,14 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
     if (p->right->fl.Majorana())  majo++;
 
     if (vect==1 && ferm==2 && majo!=2) {
+      /*
+	Complex h = p->cpl[0];
+	p->cpl[0] = -p->cpl[1];
+	p->cpl[1] = -h;
+      */
       if (rpa.gen.Debugging()) 
-	AORGTOOLS::msg.Debugging()<<"FL GammaPrime: "<<p->number<<" -> "<<p->left->number<<";"<<p->right->number<<endl;
-      Complex h = p->cpl[0];
-      p->cpl[0] = -p->cpl[1];
-      p->cpl[1] = -h;
+	cout<<"Hit hit hit : FL GammaPrime: "<<p->number<<" -> "<<p->left->number<<";"<<p->right->number<<endl
+	    <<p->cpl[0]<<" "<<p->cpl[1]<<" "<<p->v->cpl[0]<<" "<<p->v->cpl[1]<<endl;
     }    
   }
 
