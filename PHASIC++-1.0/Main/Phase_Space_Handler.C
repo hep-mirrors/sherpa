@@ -340,29 +340,60 @@ bool Phase_Space_Handler::OneEvent(double mass,int mode)
 	return false;
       }
     }
-    p_process->Selected()->RestoreInOrder();
-    if (p_isrchannels) p_isrchannels->SetRange(p_isrhandler->SprimeRange(),p_isrhandler->YRange());
     double max = p_process->Selected()->Max();
-    if (p_process->Overflow()==0.) {
+
+    if (p_process->Selected()->Overflow()==0.) {
+      p_process->Selected()->RestoreInOrder(); // use last order for overflow events
+      // *SH*    if (p_isrchannels) p_isrchannels->SetRange(p_isrhandler->SprimeRange(),p_isrhandler->YRange());
       value = Differential(p_process->Selected());
     }
     else {
-      value = p_process->Overflow();
+      value = p_process->Selected()->Overflow();
+      msg.Debugging()<<om::green<<" old Overflow event: "<<value<<" ("<<max<<") "<<om::bold<<value/max<<om::reset<<std::endl;
+      msg.Debugging()<<"     proc "<<p_process->Selected()->Name()<<std::endl;
+
+      std::vector<double> & xinfo =p_process->Selected()->XInfo();
+      m_beamspkey[3] = xinfo[0];
+      m_beamykey[2]  = xinfo[1];
+      m_isrspkey[3]  = xinfo[2];
+      m_isrykey[2]   = xinfo[3];
+      p_isrhandler->MakeISR(p_lab,m_nvec);
+      for (int i=0;i<m_nvec;++i)  p_lab[i]=p_process->Selected()->Momenta()[i];
+
       if (value > max) {
-	p_process->SetOverflow(value-max);
+	p_process->Selected()->SetOverflow(value-max);
 	value=max;
       }
       else {
-	p_process->SetOverflow(0.);
+	p_process->Selected()->SetOverflow(0.);
+	msg.Debugging()<<om::blue<<" Overflow event finished: "<<value<<" ("<<max<<")"<<om::reset<<std::endl;
+	msg.Debugging()<<"     proc "<<p_process->Selected()->Name()<<std::endl;
       }
+      m_result_1=value;
+      m_result_2=0.;
     }
     if (value > 0.) {
       double disc = 0.;
       if (value > max) {
-	msg.Events()<<"Shifted maximum in "<<p_process->Selected()->Name()<<" : "
-		    <<p_process->Selected()->Max()<<" -> "<<value<<endl;
-	p_process->Selected()->SetMax(value*1.001);
-	p_process->SetMax(0.);
+	if (p_process->Selected()->MaxReduction()==1.) {
+	  // don't use overflow
+	  msg.Events()<<"Shifted maximum in "<<p_process->Selected()->Name()<<" : "
+		      <<p_process->Selected()->Max()<<" -> "<<value<<endl;
+	  p_process->Selected()->SetMax(value*1.001);
+	  p_process->SetMax(0.);
+	}
+	else {
+	  // use overflow
+	  msg.Debugging()<<om::red<<" Overflow event: "<<value<<" ("<<max<<") "<<om::bold<<value/max<<om::reset<<std::endl;
+	  msg.Debugging()<<"     proc "<<p_process->Selected()->Name()<<std::endl;
+	  p_process->Selected()->SetOverflow(value-max);
+	  std::vector<double> & xinfo =p_process->Selected()->XInfo();
+	  xinfo[0]=m_beamspkey[3];
+	  xinfo[1]=m_beamykey[2];
+	  xinfo[2]=m_isrspkey[3];
+	  xinfo[3]=m_isrykey[2];
+	  value=max;	
+	}
       }
       else disc  = max*ATOOLS::ran.Get();
       if (value >= disc) {
@@ -376,6 +407,9 @@ bool Phase_Space_Handler::OneEvent(double mass,int mode)
 	  p_process->Selected()->SetMomenta(p_lab);
 	}
 	return true;
+      }
+      else {
+	msg.Tracking()<<" rejected "<<std::endl;
       }
     }
   }
