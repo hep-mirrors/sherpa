@@ -18,12 +18,14 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   double win;
   std::string beam[2], frame("CMS");
   for (size_t i=0;i<2;++i) {
+    // ATOOLS::Flavour flav=ATOOLS::rpa.gen.Beam1();
+    // if (i==1) flav=ATOOLS::rpa.gen.Beam2();
     ATOOLS::Flavour flav=ATOOLS::rpa.gen.Bunch(i);
     if (flav==ATOOLS::kf::e) {
       if (flav.IsAnti()) beam[i]=std::string("e+");
       else beam[i]=std::string("e-");
     }
-    else if (flav=ATOOLS::kf::photon) {
+    else if (flav==ATOOLS::kf::photon) {
       beam[i]=std::string("gamma");
     }
     else {
