@@ -16,6 +16,7 @@ lib_LTLIBRARIES       =	libPhasespace.la
 libPhasespace_la_SOURCES      =	\
 				Info_Key.C \
 				Integration_Info.C \
+				Integrable_Base.C \
 			   	Channel_Basics.C \
 				Channel_Elements.C \
 				Single_Channel.C \
