@@ -1,5 +1,4 @@
 #include "Color_Generator.H"
-#include <strstream>
 
 using namespace AMEGIC;
 using namespace std;
