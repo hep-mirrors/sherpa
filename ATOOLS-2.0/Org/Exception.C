@@ -42,8 +42,8 @@ void Exception::Terminate()
 
 void Exception::Exit(int exitcode)
 {
-  msg.Error()<<om::bold<<"Exception::Exit: "<<om::reset
-	     <<"exiting sherpa with code "<<om::bold<<"("<<om::red<<exitcode
+  msg.Error()<<om::bold<<"Exception::Exit: "<<om::reset<<om::blue
+	     <<"exiting sherpa with code "<<om::reset<<om::bold<<"("<<om::red<<exitcode
 	     <<om::reset<<om::bold<<")"<<om::reset<<std::endl;
   exit(exitcode);
 }
@@ -52,19 +52,13 @@ void Exception::SignalHandler(int signal)
 {
   std::string input="y";
   static unsigned int bus_signals, segv_signals;
-  msg.Error()<<om::bold<<"Exception::SignalHandler: "<<om::reset
-	     <<"Signal "<<om::bold<<"("<<om::red<<signal
-	     <<om::reset<<om::bold<<")"<<om::reset<<" caught. "<<std::endl;
+  msg.Error()<<om::bold<<"Exception::SignalHandler: "<<om::reset<<om::blue
+	     <<"Signal "<<om::reset<<om::bold<<"("<<om::red<<signal
+	     <<om::reset<<om::bold<<")"<<om::reset<<om::blue<<" caught. "<<om::reset<<std::endl;
   switch (signal) {
-  case SIGBUS:
-    ++bus_signals;
-    if (bus_signals>3) {
-      msg.Error()<<om::reset<<"   Terminating."<<om::reset<<std::endl;
-      s_exitcode=3;
-      Terminate();
-    }
-    msg.Error()<<om::reset<<"   Try to run further."<<om::reset<<std::endl;
-    break;
+  case SIGABRT:
+  case SIGTERM:
+  case SIGXCPU:
   case SIGSEGV:
     ++segv_signals;
     if (segv_signals>3) {
@@ -83,6 +77,15 @@ void Exception::SignalHandler(int signal)
     if (input!="y" && input!="Y") return;
     s_exitcode=1;
     Terminate();
+    break;
+  case SIGBUS:
+    ++bus_signals;
+    if (bus_signals>3) {
+      msg.Error()<<om::reset<<"   Terminating."<<om::reset<<std::endl;
+      s_exitcode=3;
+      Terminate();
+    }
+    msg.Error()<<om::reset<<"   Try to run further."<<om::reset<<std::endl;
     break;
   case SIGFPE:
     msg.Error()<<"   Sherpa does not throw floating point exceptions."<<om::reset<<std::endl;
