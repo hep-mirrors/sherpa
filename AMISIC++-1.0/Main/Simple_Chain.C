@@ -896,8 +896,8 @@ bool Simple_Chain::DiceOrderingParameter()
   PROFILE_HERE;
   if (m_last[0]<=m_stop[0]) {
     ATOOLS::msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
-		       <<"Ordering parameter exceeded allowed range."<<std::endl
-		       <<"   Cannot proceed in blob creation."<<std::endl;
+		       <<"Value exceeded minimum: last = "<<m_last[0]
+		       <<" vs. stop = "<<m_stop[0]<<std::endl;
     m_stophard=true;
     return false;
   }
