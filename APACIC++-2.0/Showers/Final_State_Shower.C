@@ -985,10 +985,10 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
 
   Blob * bl = mo->part->ProductionBlob();
   if (!bl) {
-    cout<<" no blob ! return normal aunt"<<endl;
+    msg.Out()<<" no blob ! return normal aunt"<<endl;
     return au->part;
   }
-
+  
   Particle * aup=0;
   for (int i=0; i<bl->NInP();++i) {
     aup=bl->InParticle(i);
@@ -999,7 +999,7 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
     if (found) return aup;
   }
 
-  cout<<" no aunt in blob  found ! return normal aunt"<<endl;
+  msg.Out()<<" no aunt in blob  found ! return normal aunt"<<endl;
   return au->part;
 
 }
