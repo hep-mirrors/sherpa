@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/03
+//Version: 1 ADICIC++-0.0/2004/03/12
 
 //Implementation of Dipole.H.
 
@@ -36,34 +36,36 @@ using namespace ADICIC;
 ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
   ost<<"\e[1mDipole "<<dip.m_name<<": "
      <<dip.p_top->Flav()<<" | "
-     <<dip.p_bot->Flav()<<"\e[0m   type: ";
+     <<dip.p_bot->Flav()<<"\e[0m   type:";
   switch(dip.m_type) {
   case -99: ost<<"incorrect"; break;
   default : ost<<dip.m_type;
   }
-  ost<<"   origs: "<<dip.p_top->OrgType()<<"|"<<dip.p_bot->OrgType();
+  ost<<"   origs:"<<dip.p_top->OrgType()<<"|"<<dip.p_bot->OrgType();
+  ost<<"   hdl:"<<bool(dip.p_hdl);
   ost<<endl<<setiosflags(ios::left)<<"  "
-     <<"mass: "<<setw(10)<<dip.m_mass
-     <<"sqrm: "<<setw(10)<<dip.m_invmass
-     <<"ph:  "<<setw(8)<<dip.PointerHandling()
+     <<"mass :"<<setw(10)<<dip.m_mass
+     <<"sqrm :"<<setw(12)<<dip.m_invmass
+     <<"ph "<<setw(8)<<dip.PointerHandling()
      <<"P="<<dip.m_momentum;
   string st1, st2, st3, st4; stringstream cv1, cv2, cv3, cv4;
   cv1<<dip.m_memory; cv2<<dip.m_copy; cv1>>st1; cv2>>st2;
   cv3<<dip.p_top->Name; cv4<<dip.p_bot->Name; cv3>>st3; cv4>>st4;
-  st1=string("(memo: ")+st1+string(")");
-  st2=string("[copy: ")+st2+string("]");
+  st1=string("(memo:")+st1+string(")");
+  st2=string("[copy:")+st2+string("]");
   st3+=string("]"); st4+=string("]");
-  ost<<endl<<"  "
-     <<setw(16)<<st1<<setw(16)<<st2
-     <<"br: ["<<setw(8)<<st3
-     <<"p="<<dip.p_top->Momentum();
-  ost<<endl<<"  state: "<<setw(25);
+  ost<<endl<<"  state:"<<setw(10);
   switch(dip.f_active) {
   case -1 : ost<<"blocked"; break;
   case 0  : ost<<"off"; break;
   default : ost<<"on";
   }
-  ost<<"ab: ["<<setw(8)<<st4<<"q="<<dip.p_bot->Momentum();
+  ost<<"scale:"<<setw(12)<<dip.m_k2t
+     <<"br["<<setw(8)<<st3<<"p="<<dip.p_top->Momentum()
+     <<"\t"<<dip.p_top->Momentum().Abs2();
+  ost<<endl<<"  "<<setw(16)<<st1<<setw(18)<<st2
+     <<"ab["<<setw(8)<<st4<<"q="<<dip.p_bot->Momentum()
+     <<"\t"<<dip.p_bot->Momentum().Abs2();
   ost<<resetiosflags(ios::left);
   return ost;
 }
@@ -81,15 +83,19 @@ void Dipole::Gate::operator()(Dipole* dipo,
   if(dipo->p_top==Od) {
     dipo->p_top=Nw;
     if(b) dipo->f_top=true;
+#ifdef DIPOLE_OUTPUT
     cout<<"    confirm TopBranch re-linking for Dipole "<<dipo->m_name
 	<<"."<<endl;
+#endif
     return;
   }
   if(dipo->p_bot==Od) {
     dipo->p_bot=Nw;
     if(b) dipo->f_bot=true;
+#ifdef DIPOLE_OUTPUT
     cout<<"    confirm BotBranch re-linking for Dipole "<<dipo->m_name
 	<<"."<<endl;
+#endif
     return;
   }
   cerr<<"\nBug: Dipole_Particle does not belong to the Dipole!\n";
@@ -118,8 +124,8 @@ Dipole::Dipole()
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
     m_memory(0), f_active(Blocked),
-    p_top(NULL), p_bot(NULL),
-    m_type(incorrect),
+    p_top(NULL), p_bot(NULL), p_hdl(NULL),
+    m_type(incorrect), m_k2t(0.0),
     m_mass(0.0), m_invmass(0.0), m_momentum(Vec4D()) {
 
   ++s_count;
@@ -143,8 +149,8 @@ Dipole::Dipole(const Dipole& dip, bool phdl)
     m_name(++s_maxcount), Name(m_name),
     m_copy(dip.m_name), CopyOf(m_copy),
     m_memory(dip.m_memory), f_active(dip.f_active),
-    p_top(NULL), p_bot(NULL),
-    m_type(dip.m_type),
+    p_top(NULL), p_bot(NULL), p_hdl(NULL),
+    m_type(dip.m_type), m_k2t(dip.m_k2t),
     m_mass(dip.m_mass), m_invmass(dip.m_invmass), m_momentum(dip.m_momentum) {
 
   //Due to "towering" type and momentum of Dipole dip are already up-to-date.
@@ -185,7 +191,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Antibranch& ati,
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
     m_memory(source), f_active(On),
-    p_top(NULL), p_bot(NULL),
+    p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect) {
 
   ++s_count;
@@ -203,6 +209,8 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Antibranch& ati,
   UpdateType();
   UpdateMass();
 
+  m_k2t=m_invmass;
+
   AddDipoleToTowers();
 
 }
@@ -217,7 +225,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Glubranch& glu,
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
     m_memory(source), f_active(On),
-    p_top(NULL), p_bot(NULL),
+    p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect) {
 
   ++s_count;
@@ -235,6 +243,8 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Glubranch& glu,
   UpdateType();
   UpdateMass();
 
+  m_k2t=m_invmass;
+
   AddDipoleToTowers();
 
 }
@@ -249,7 +259,7 @@ Dipole::Dipole(Dipole::Glubranch& glu, Dipole::Antibranch& ati,
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
     m_memory(source), f_active(On),
-    p_top(NULL), p_bot(NULL),
+    p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect) {
 
   ++s_count;
@@ -267,6 +277,8 @@ Dipole::Dipole(Dipole::Glubranch& glu, Dipole::Antibranch& ati,
   UpdateType();
   UpdateMass();
 
+  m_k2t=m_invmass;
+
   AddDipoleToTowers();
 
 }
@@ -281,11 +293,11 @@ Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
     m_memory(source), f_active(On),
-    p_top(NULL), p_bot(NULL),
+    p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect) {
 
   if(&glut==&glub && !f_top) {
-    std::cerr<<"\nError: TopBranch and BotBranch point to a single gluon!\n";
+    cerr<<"\nError: TopBranch and BotBranch point to a single gluon!\n";
     assert(0);
   }
 
@@ -304,6 +316,8 @@ Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
   UpdateType();
   UpdateMass();
 
+  m_k2t=m_invmass;
+
   AddDipoleToTowers();
 
 }
@@ -315,10 +329,23 @@ Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
 Dipole::~Dipole() {
 
   //Check for Dipole_Handler.
+  if(p_hdl) {
+    cerr<<"\nMethod: ADICIC::Dipole::~Dipole(): "
+	<<"Warning: Detaching Dipole_Handler from Dipole!\n"<<endl;
+    if(p_hdl->IsDockedAt(*this)==false) {
+      cerr<<"\nBug: Wrong Dipole-Dipole_Handler connection emerged!\n";
+      assert(p_hdl->IsDockedAt(*this));
+    }
+    Dipole_Handler* phand=p_hdl;
+    p_hdl=NULL;
+    phand->DetachDipole(this);
+  }
 
   RemoveDipoleFromTowers();    //To be sure.
 
+#ifdef DIPOLE_OUTPUT
   cout<<"    destructing Dipole ["<<m_name<<"]"<<endl;
+#endif
 
   if(f_top) {
     list<Dipole*>& toptow=AccessTopBranch();
@@ -363,6 +390,7 @@ Dipole& Dipole::operator=(const Dipole& dip) {
   f_active=dip.f_active;
 
   m_type=dip.m_type;
+  m_k2t=dip.m_k2t;
   m_mass=dip.m_mass;
   m_invmass=dip.m_invmass;
   m_momentum=dip.m_momentum;

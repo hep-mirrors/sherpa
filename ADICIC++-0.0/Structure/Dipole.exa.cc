@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/05
+//Version: 1 ADICIC++-0.0/2004/03/12
 
 //Implementation of the Dipole_Particle structure of Dipole.H.
 
@@ -100,13 +100,17 @@ Dipole_Particle::~Dipole_Particle() {
 
     this->Test();    //Pointer handling test.
     Dipole_Particle* pcopy=this->Copy();
+#ifdef DIPOLE_OUTPUT
     cout<<"    1.Test: Old tower: Empty? ..."<<m_tow.empty();
     cout<<"    New tower: Empty? ..."<<pcopy->m_tow.empty()<<endl;
+#endif
     list<Dipole*>::iterator iter=pcopy->m_tow.begin();
     pcopy->m_tow.splice(iter,this->m_tow);
     iter=pcopy->m_tow.begin();
+#ifdef DIPOLE_OUTPUT
     cout<<"    2.Test: Old tower: Empty? ..."<<m_tow.empty();
     cout<<"    New tower: Empty? ..."<<pcopy->m_tow.empty()<<endl;
+#endif
     Dipole::Gate gate;
     gate(*iter,this,pcopy,true);
     ++iter;

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/05
+//Version: 1 ADICIC++-0.0/2004/03/12
 
 //Inline methods of Dipole.H.
 
@@ -9,12 +9,17 @@
 
 #include <cassert>
 #include <cstdlib>
+#include "Dipole_Handler.H"
 
 
 
 
 
 namespace ADICIC {
+
+
+
+  //===========================================================================
 
 
 
@@ -30,6 +35,11 @@ namespace ADICIC {
 
   inline const Bool Dipole::Status() const {
     return f_active;
+  }
+
+
+  inline const double Dipole::ProdScale() const {
+    return m_k2t;
   }
 
 
@@ -50,6 +60,16 @@ namespace ADICIC {
 
   inline const ATOOLS::Vec4D& Dipole::TotP() const {
     return m_momentum;
+  }
+
+
+  inline const bool Dipole::IsHandled() const {
+    return bool(p_hdl);
+  }
+
+
+  inline const bool Dipole::IsHandledBy(const Dipole_Handler& DH) const {
+    if(p_hdl==&DH) return true; return false;
   }
 
 
@@ -76,6 +96,29 @@ namespace ADICIC {
   }
 
 
+  inline double& Dipole::SetProdScale() {
+    return m_k2t;
+  }
+
+
+  inline const bool Dipole::operator|(Dipole_Handler& DH) {
+    if(p_hdl || DH.IsDocked()) return false;
+    p_hdl=&DH;
+    return p_hdl->AttachDipole(this);
+  }
+
+
+  inline void Dipole::operator|(bool s) {
+    if(!p_hdl) return;
+    Dipole_Handler* phand=p_hdl;
+    if(p_hdl->IsDockedAt(*this)) {
+      p_hdl=NULL; phand->DetachDipole(this); return;
+    }
+    std::cerr<<"\nBug: Wrong Dipole-Dipole_Handler connection emerged!\n";
+    assert(p_hdl->IsDockedAt(*this));
+  }
+
+
 
 
 
@@ -84,7 +127,7 @@ namespace ADICIC {
       std::cerr<<"\nError: Demand will produce invalid Dipole type!\n";
       assert( (p_top->OrgType()==-1 || p_bot->OrgType()==1) == false );
     }
-#ifdef STRICT_VERSION
+#ifdef DIPOLE_STRICT_VERSION
     m_type=Type( (10*p_top->Tag()+p_bot->Tag()) );
     return m_type;
     //Does that sufficiently work? No.
@@ -236,19 +279,29 @@ namespace ADICIC {
 
 
   inline void Dipole_Particle::sc_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"    construct standard Dipole_Particle ["<<m_num<<"]\n";
+#endif
   }
   inline void Dipole_Particle::cc_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"    construct copied Dipole_Particle ["<<m_num<<"]\n";
+#endif
   }
   inline void Dipole_Particle::bc_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"    construct Dipole_Particle ["<<m_num<<"]\n";
+#endif
   }
   inline void Dipole_Particle::sd_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"    destruct Dipole_Particle ["<<m_num<<"]\n";
+#endif
   }
   inline void Dipole_Particle::cp_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"    renew Dipole_Particle ["<<m_num<<"]\n";
+#endif
   }
   void Dipole_Particle::nm_info() const {
     std::cout<<"[dipa"<<m_num<<"]";
@@ -329,10 +382,14 @@ namespace ADICIC {
 
 
   inline void Dipole_Branch::cb_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"      Branch ["<<Name<<"]"<<std::endl;
+#endif
   }
   inline void Dipole_Branch::db_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"      ~Branch ["<<Name<<"]";
+#endif
   }
   inline void Dipole_Branch::nm_info() const {
     std::cout<<"[dipa"<<Name<<".branch]";
@@ -343,10 +400,14 @@ namespace ADICIC {
 
 
   inline void Dipole_Antibranch::ca_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"      Antibranch ["<<Name<<"]"<<std::endl;
+#endif
   }
   inline void Dipole_Antibranch::da_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"      ~Antibranch ["<<Name<<"]";
+#endif
   }
   inline void Dipole_Antibranch::nm_info() const {
     std::cout<<"[dipa"<<Name<<".antibranch]";
@@ -357,10 +418,14 @@ namespace ADICIC {
 
 
   inline void Dipole_Glubranch::cg_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"      Glubranch ["<<Name<<"]"<<std::endl;
+#endif
   }
   inline void Dipole_Glubranch::dg_info() const {
+#ifdef DIPOLE_OUTPUT
     std::cout<<"      ~Glubranch ["<<Name<<"]";
+#endif
   }
   inline void Dipole_Glubranch::nm_info() const {
     std::cout<<"[dipa"<<Name<<".glubranch]";
@@ -396,6 +461,10 @@ namespace ADICIC {
 
   inline Dipole::Particle_Pointer::Particle_Pointer(const Particle_Pointer& B)
     : p_dipa(B.p_dipa) {}    //Private!
+
+
+
+  //===========================================================================
 
 
 

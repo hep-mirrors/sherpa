@@ -26,6 +26,7 @@ libAdicicStruct_la_SOURCES = Dipole_Flavour.C Information.cpp Dipole.C
 
 
 INCLUDES = -I../Tool \
+           -I../Handler \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
            -I$(ATOOLSINC)/Org
@@ -38,7 +39,6 @@ noinst_HEADERS = Dipole_Flavour.H Information.hpp Dipole.H
 
 EXTRA_DIST = $(CVSINCLUDE) \
              Dipole.inl.hh Dipole.exa.cc
-
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/04
+//Version: 1 ADICIC++-0.0/2004/03/12
 
 //The Dipole structure is an carrier of information.
 
@@ -16,8 +16,10 @@
 #include "Information.hpp"
 
 
-#define STRICT_VERSION STRICT_VERSION
-#undef STRICT_VERSION
+#define DIPOLE_OUTPUT DIPOLE_OUTPUT
+#undef  DIPOLE_OUTPUT
+#define DIPOLE_STRICT_VERSION DIPOLE_STRICT_VERSION
+#undef  DIPOLE_STRICT_VERSION
 
 
 
@@ -34,6 +36,8 @@ namespace ADICIC {
   class Dipole_Branch;
   class Dipole_Antibranch;
   class Dipole_Glubranch;
+
+  class Dipole_Handler;
 
 
 
@@ -53,8 +57,6 @@ namespace ADICIC {
     typedef Dipole_Antibranch Antibranch;
     typedef Dipole_Glubranch  Glubranch;
 
-  private:
-
     enum Type {    //Blocked: qq=11, qbarq=-9, qbarqbar=-11, qbarg=-10, gq=1.
       qqbar    = 9,
       qg       = 10,
@@ -62,8 +64,6 @@ namespace ADICIC {
       gg       = 0,
       incorrect=-9999
     };
-
-  public:
 
     class Gate {
       friend class Dipole_Particle;
@@ -83,8 +83,6 @@ namespace ADICIC {
     friend void Gate::operator()(Dipole*, Dipole_Particle*, Dipole_Particle*,
 				 bool) const;
 
-  private:
-
     static int s_count;
     static int s_maxcount;
 
@@ -99,7 +97,10 @@ namespace ADICIC {
     Dipole_Particle* p_top;
     Dipole_Particle* p_bot;
 
+    Dipole_Handler*  p_hdl;
+
     Type          m_type;
+    double        m_k2t;
     double        m_mass;
     double        m_invmass;
     ATOOLS::Vec4D m_momentum;
@@ -138,14 +139,20 @@ namespace ADICIC {
     inline const int            Source() const;
     inline const Bool           Status() const;
     inline const Type           IsType() const;
+    inline const double         ProdScale() const;
     inline const double         Mass() const;
     inline const double         InvMass() const;
     inline const ATOOLS::Vec4D& TotP() const;
+    inline const bool           IsHandled() const;
+    inline const bool           IsHandledBy(const Dipole_Handler&) const;
 
     inline void PrintTowers() const;
 
-    inline int&  SetSource();
-    inline Bool& SetStatus();
+    inline int&    SetSource();
+    inline Bool&   SetStatus();
+    inline double& SetProdScale();
+    inline const bool operator|(Dipole_Handler&);
+    inline void       operator|(bool b);
 
     inline const Type   UpdateType();
     inline const double UpdateMass();
@@ -278,7 +285,7 @@ namespace ADICIC {
     //Blocking of group-changing methods:
     const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {}
     const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {}
-#ifdef STRICT_VERSION
+#ifdef DIPOLE_STRICT_VERSION
     const ATOOLS::Particle& Gluonize() {}
 #endif
 
@@ -323,7 +330,7 @@ namespace ADICIC {
     //Blocking of group-changing methods:
     const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {}
     const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {}
-#ifdef STRICT_VERSION
+#ifdef DIPOLE_STRICT_VERSION
     const ATOOLS::Particle& Gluonize() {}
 #endif
 
@@ -366,7 +373,7 @@ namespace ADICIC {
     Dipole_Glubranch& operator=(const Dipole_Antibranch&);
 
     //Blocking of group-changing methods:
-#ifdef STRICT_VERSION
+#ifdef DIPOLE_STRICT_VERSION
     const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {}
     const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {}
 #endif
