@@ -9,8 +9,8 @@ namespace PDF {
   struct pcs {
     
     enum type {
-      linear = 1,
-      cubic  = 2
+      constant = 1,
+      linear   = 2
     };
 
   };// end of struct pcs
@@ -26,8 +26,8 @@ namespace PDF {
 
     double m_x, m_z, m_kperp2, m_mu2, m_epsilon;
 
+    double ContinueConstant(const ATOOLS::Flavour flavour);
     double ContinueLinear(const ATOOLS::Flavour flavour);
-    double ContinueSquarish(const ATOOLS::Flavour flavour);
 
   public:
 

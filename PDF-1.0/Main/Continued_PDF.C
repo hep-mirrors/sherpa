@@ -37,8 +37,12 @@ double Continued_PDF::ContinueLinear(const ATOOLS::Flavour flavour)
   return ATOOLS::Min(x/p_pdf->XMin(),mu2/p_pdf->Q2Min())*xpdf;
 }
 
-double Continued_PDF::ContinueSquarish(const ATOOLS::Flavour flavour)
+double Continued_PDF::ContinueConstant(const ATOOLS::Flavour flavour)
 {
+  double x=ATOOLS::Max(p_pdf->XMin(),m_x);
+  double mu2=ATOOLS::Max(p_pdf->Q2Min(),m_mu2);
+  p_pdf->Calculate(x,m_z,m_kperp2,mu2);
+  return p_pdf->GetXPDF(flavour);
 }
 
 void Continued_PDF::Calculate(double x,double z,double kperp2,double mu2)
@@ -60,8 +64,8 @@ double Continued_PDF::GetXPDF(const ATOOLS::Flavour flavour)
 {
   if (!m_continue) return p_pdf->GetXPDF(flavour);
   switch (m_scheme) {
+  case pcs::constant: return ContinueConstant(flavour);
   case pcs::linear: return ContinueLinear(flavour);
-  case pcs::cubic: return ContinueSquarish(flavour);
   default: return ContinueLinear(flavour);
   }
   return 0.0;
