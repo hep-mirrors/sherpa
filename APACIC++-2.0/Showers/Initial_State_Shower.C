@@ -108,7 +108,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
   // fetch PSME blob
   Blob * bl_meps=0;
   for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
-    int pos = (*blit)->Type().find(string("ME PS Interface (Sherpa)"));
+    int pos = (*blit)->Type().find(string("ME PS Interface (Sherpa, IS)"));
     if (pos>-1) {
       bl_meps=(*blit);
       bl_meps->SetStatus(0);

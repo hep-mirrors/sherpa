@@ -9,15 +9,16 @@ namespace BEAM {
   class Beam_Base { 
   protected:
     std::string        m_type;
-    ATOOLS::Flavour m_beam;
+    ATOOLS::Flavour    m_beam,m_bunch;
     double             m_energy,m_polarization;
-    ATOOLS::Vec4D    m_lab,m_vecout;
+    ATOOLS::Vec4D      m_lab,m_vecout;
     int                m_dir;
     double             m_x,m_Q2,m_weight;
   public:
     Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
 	      const double _energy,const double _polarization,const int _dir) :
-      m_type(_type), m_beam(_beam), m_energy(_energy),m_polarization(_polarization),
+      m_type(_type), m_beam(_beam), m_bunch(m_beam),
+      m_energy(_energy),m_polarization(_polarization),
       m_dir(_dir),m_x(1.),m_Q2(0.),m_weight(1.)
     {
       double disc      =  1.-ATOOLS::sqr(m_beam.PSMass()/m_energy);
@@ -36,9 +37,11 @@ namespace BEAM {
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
 
-    virtual ATOOLS::Flavour Flav()         { return m_beam; }
-    virtual ATOOLS::Vec4D    OutMomentum()  { return m_vecout; }
-    virtual ATOOLS::Vec4D    Momentum()     { return m_lab; }
+    virtual ATOOLS::Flavour    Beam()         { return m_beam; }
+    virtual ATOOLS::Flavour    Bunch()        { return m_bunch; }
+    virtual ATOOLS::Flavour    Remnant()      { return m_beam; }
+    virtual ATOOLS::Vec4D      OutMomentum()  { return m_vecout; }
+    virtual ATOOLS::Vec4D      InMomentum()   { return m_lab; }
     virtual double             Energy()       { return m_energy; }
     virtual double             Polarization() { return m_polarization; }
     virtual double             Weight(ATOOLS::Flavour fl = ATOOLS::Flavour(ATOOLS::kf::none)) 

@@ -189,6 +189,7 @@ bool MSSM::RunSpectrumGenerator() {
       p_spectrumgenerator = new ISAJET::Isajet_Fortran_Interface(p_dataread,this);
       p_spectrumgenerator->Run(std::string(m_scenario));
       p_spectrumgenerator->FillMasses();
+      p_spectrumgenerator->FillDecays();
       return 1;
     }
     

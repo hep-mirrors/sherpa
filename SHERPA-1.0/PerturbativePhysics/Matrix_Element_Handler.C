@@ -14,7 +14,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       MODEL::Model_Base * _model,
 					       BEAM::Beam_Spectra_Handler * _beam,
 					       PDF::ISR_Handler * _isr) :
-  m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL), m_mode(0), m_weight(1.)
+  m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL), p_isr(_isr), m_mode(0), m_weight(1.)
 {
   p_dataread = new Data_Read(m_dir+m_file);
   m_signalgenerator  = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));

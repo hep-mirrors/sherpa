@@ -1,14 +1,9 @@
 %
+Process : 22 11  -> 11 1 -1
+End process
+%
 %   Three jets
 %
-Process : 11 -11 -> 1 -1 
-Order electroweak : 99
-Order strong : 99
-End process
-%Process : 11 -11 -> 93 93 
-%Order electroweak : 99
-%Order strong : 99
-%End process
 %
 %
 % W-
@@ -20,8 +15,3 @@ End process
 %Order strong : 99
 %End process
 %
-%
-%
-%
-%11 -11 -> 93 93 93 93 93
-%2212 -2212 -> 93 93 -> 11 -11 93 93

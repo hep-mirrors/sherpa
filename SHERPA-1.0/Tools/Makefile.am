@@ -2,8 +2,9 @@ lib_LTLIBRARIES = libSherpaTools.la
 CLHEPlibdir   = $(CLHEPDIR)/lib
 CLHEPincdir   = $(CLHEPDIR)/include
 libSherpaTools_la_SOURCES = Output_Handler.C \
-			    HepMC_Interface.C IO_HepEvt.C \
-			    Sample_Analysis.C
+			    HepMC_Interface.C HepEvt_Interface.C \
+			    Sample_Analysis.C \
+			    fhepevt.f
 INCLUDES = -I../Single_Events \
 	   -I../../HepMC_Version1.23 \
 	   -I../../ATOOLS-2.0/Phys \
@@ -13,7 +14,7 @@ INCLUDES = -I../Single_Events \
 	   -I../Single_Events \
 	   -I$(CLHEPincdir)
 noinst_HEADERS = Output_Handler.H \
-		 HepMC_Interface.H IO_HepEvt.H \
+		 HepMC_Interface.H HepEvt_Interface.H \
 		 Sample_Analysis.H
 
 

@@ -53,7 +53,7 @@ Cluster_Partons::~Cluster_Partons()
   if (p_weight_sum_sqr) delete [] p_weight_sum_sqr;
 }
 
-bool Cluster_Partons::ClusterConfiguration(Blob * _blob) {
+bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
   int nin         = p_me->Nin();
   int nout        = p_me->Nout();
   Flavour * flavs = p_me->Flavs();
@@ -101,11 +101,11 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob) {
 
     p_combi = new Combine_Table(p_jf,amoms,0,m_isron,m_isron);
     p_combi->FillTable(legs,nlegs,nampl);   
-    p_ct = p_combi->CalcJet(nlegs); 
+    p_ct = p_combi->CalcJet(nlegs,_x1,_x2); 
   }
   else {
     // use the existing combination table and determine best combination sheme
-    p_ct = p_combi->CalcJet(nlegs,p_me->Momenta());
+    p_ct = p_combi->CalcJet(nlegs,_x1,_x2,p_me->Momenta());
   }
 
   return 1;

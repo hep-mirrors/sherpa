@@ -29,7 +29,7 @@ namespace SHERPA {
     EXTRAXS::XS_Base      * p_xs; 
     EXTRAXS::XS_Group     * p_two2two;
 
-    ATOOLS::Blob * p_blob_psme;
+    ATOOLS::Blob * p_blob_psme_IS,* p_blob_psme_FS;
 
     bool ClusterConfiguration(ATOOLS::Blob * blob);
   public :

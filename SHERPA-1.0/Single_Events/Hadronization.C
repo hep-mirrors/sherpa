@@ -28,6 +28,9 @@ bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &) {
   }
   p_beamremnanthandler->FillBeamBlobs(_bloblist);
   p_beamremnanthandler->FillBunchBlobs(_bloblist);
+
+  // Here we should boost -> It's only here we have the full beam information.
+
   p_fragmentationhandler->PerformFragmentation(_bloblist);
 }
 

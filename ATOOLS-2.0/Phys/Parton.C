@@ -119,7 +119,7 @@ void Parton::Copy(Parton * in)  {
 double Parton::ProperTime() {
   double q2    = m_momentum.Abs2();
   double m2    = sqr(m_fl.Mass());
-  double tau2  = 1.e6;
+  double tau2  = 1.e96;
   if (!( (q2-m2 < rpa.gen.Accu()) && (m_fl.Width() < rpa.gen.Accu()))) { 
     if (m2>rpa.gen.Accu()) { 
       tau2 = q2/(sqr(q2-m2)+sqr(q2*m_fl.Width())/m2);
@@ -139,6 +139,10 @@ double Parton::LifeTime() {
   if (t>1.e6) t = 1.e6;
   double gamma = 1./rpa.gen.Accu();
   if (m_fl.Mass()>rpa.gen.Accu()) gamma = E()/m_fl.Mass();
+  else {
+    double q2    = dabs(m_momentum.Abs2());
+    if (q2>rpa.gen.Accu()) gamma = E()/sqrt(q2);
+  }
   return gamma * t;      
 }
 

@@ -48,9 +48,11 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
   for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {
     if ( ((*biter)->Type()==std::string("Fragmentation")) && 
 	 ((*biter)->Status()==1) ) {
-      (*biter)->BoostInCMS();
+      //(*biter)->BoostInCMS();
+      (*biter)->SetCMS();
+      cout<<"Found active Fragmentation blob : "<<(*biter)->CMS()<<endl;
       okay = okay && p_lund->Hadronize((*biter),bl,pl);
-      (*biter)->BoostInLab();
+      //(*biter)->BoostInLab();
       (*biter)->SetStatus(0);
     }
   }
@@ -102,7 +104,9 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
 	active = 0;
 	for (int i=0;i<(*blit)->NOutP();i++) {
 	  if ((*blit)->OutParton(i)->Status()==1) { 
-	    active = 1; break; }
+	    active = 1; 
+	    break; 
+	  }
 	}
 	if (!active) (*blit)->SetStatus(0);
       }
@@ -113,7 +117,9 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
       active = 0;
       for (int i=0;i<(*blit)->NOutP();i++) {
 	if ((*blit)->OutParton(i)->Status()==1) { 
-	  active = 1; break; }
+	  active = 1; 
+	  break; 
+	}
       }
       if (!active) (*blit)->SetStatus(0);
     }

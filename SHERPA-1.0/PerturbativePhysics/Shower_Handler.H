@@ -26,7 +26,7 @@ namespace SHERPA {
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
 		   PDF::ISR_Handler *,int);
     ~Shower_Handler();
-    int             PerformShowers(bool);
+    int             PerformShowers(bool,double,double);
     void            FillBlobs(ATOOLS::Blob_List *);
     void            CleanUp();
     std::string     ShowerGenerator() { return m_showergenerator; }

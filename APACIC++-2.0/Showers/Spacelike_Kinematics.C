@@ -209,18 +209,10 @@ double Spacelike_Kinematics::BoostInCMS(Tree ** trees,Knot * active, Knot * part
 
 Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees) 
 {
-  Knot * init1 = trees[0]->GetInitiator();
-  Knot * init2 = trees[1]->GetInitiator();
-
-  double E     = rpa.gen.Ecms()/2.;
-  Vec4D  cms1  = init1->part->Momentum();
-  double E1    = init1->x * E;
-  double p1    = sqrt(E1*E1 - cms1.Abs2());
-
-  Vec4D  cms2  = init2->part->Momentum();
-  double E2    = init2->x * E;
-  double p2    = sqrt(E2*E2 - cms2.Abs2());
-  Vec4D  lab   = Vec4D(E1+E2,0.,0.,p2-p1);
+  double x1 = trees[0]->GetInitiator()->x;
+  double x2 = trees[1]->GetInitiator()->x;
+  // Only for massless initiators.
+  Vec4D  lab   = Vec4D(x1+x2,0.,0.,x2-x1);
   boost        = Poincare(lab);
   trees[0]->BoRo(boost);
   trees[1]->BoRo(boost);

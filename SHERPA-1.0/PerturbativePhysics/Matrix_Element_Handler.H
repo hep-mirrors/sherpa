@@ -25,6 +25,7 @@ namespace SHERPA {
     std::string            m_dir,m_file;
     AMEGIC::Amegic       * p_amegic;
     EXTRAXS::SimpleXSecs * p_simplexs;
+    PDF::ISR_Handler     * p_isr;
     int                    m_mode;
     double                 m_weight;
 
@@ -67,6 +68,8 @@ namespace SHERPA {
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS();
     double               Weight();
+
+    PDF::ISR_Handler   * GetISR_Handler() { return p_isr; }
   };
 
   /*!

@@ -216,7 +216,7 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, int strong)
 }
 
 
-Combine_Table * Combine_Table::CalcJet(int nl, ATOOLS::Vec4D * _moms) 
+Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec4D * _moms) 
 {
   int prefer_ew_clustering = 0;
 
@@ -224,10 +224,8 @@ Combine_Table * Combine_Table::CalcJet(int nl, ATOOLS::Vec4D * _moms)
   CD_List & cl=combinations;
   if (cl.size()==0) {
     if (up==0) {
-      double Ebeam1 = 0.5*rpa.gen.Ecms();
-      double Ebeam2 = 0.5*rpa.gen.Ecms();
-      x1=moms[0][0]/Ebeam1; 
-      x2=moms[1][0]/Ebeam2;
+      x1 = _x1;
+      x2 = _x2;
     }
 
     return this;
@@ -239,12 +237,8 @@ Combine_Table * Combine_Table::CalcJet(int nl, ATOOLS::Vec4D * _moms)
       moms[l]=_moms[l];
     }
     if (up==0) {
-      //      initialize x1 and x2
-      double Ebeam1 = 0.5*rpa.gen.Ecms();
-      double Ebeam2 = 0.5*rpa.gen.Ecms();
-      //      for massless momenta :
-      x1=moms[0][0]/Ebeam1; 
-      x2=moms[1][0]/Ebeam2;
+      x1 = _x1;
+      x2 = _x2;
     }
 
     // boost in CMS frame and rotate to z-axis (store old moms)
@@ -361,7 +355,7 @@ Combine_Table * Combine_Table::CalcJet(int nl, ATOOLS::Vec4D * _moms)
 	cwin->down->x2=x2;
       }
 
-      ct   = cwin->down->CalcJet(nl);
+      ct   = cwin->down->CalcJet(nl,_x1,_x2);
       gwin = cwin->down->gwin;
       gwin = cwin->graphs[gwin];   // translate back
 

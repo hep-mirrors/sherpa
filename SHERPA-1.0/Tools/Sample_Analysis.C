@@ -55,7 +55,8 @@ void Sample_Analysis::Init() {
   if (hepevt) nhep = 0;
 }
 
-Sample_Analysis::Sample_Analysis(IO_HepEvt *& _convert,bool _hepevt) : 
+/*
+  Sample_Analysis::Sample_Analysis(IO_HepEvt *& _convert,bool _hepevt) : 
   convert(_convert), hepevt(_hepevt)
 {
   InitIO       = 0;
@@ -79,20 +80,37 @@ Sample_Analysis::Sample_Analysis(IO_HepEvt *& _convert,bool _hepevt) :
   obs.push_back(new ME_Rate(00,1.5,7.5,6,"me"));
   obs.push_back(new ME_Rate(00,1.5,7.5,6,"me_nll"));
 }
+*/
+
+Sample_Analysis::Sample_Analysis() 
+{
+  status     = rpa.gen.Analysis();
+  if (!(status)) { ana = 0; return; }
+  ana        = new Primitive_Analysis();
+  ana->AddObservable(new Shower_Observables(11,1.e-6,1.,180,0));
+  ana->AddObservable(new PHard_Observable(00,0.,250.,125));
+  //  ana->AddObservable(new PT_Distribution(00,0.,250.,125,1,Flavour(kf::photon)));
+//   ana->AddObservable(new PT_Distribution(00,0.,250.,50,6,Flavour(kf::jet)));
+
+  obs.push_back(new ME_Rate(00,1.5,7.5,6,"me"));
+  obs.push_back(new ME_Rate(00,1.5,7.5,6,"me_nll"));
+}
 
 
 
 void Sample_Analysis::AfterME(ATOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
-  if (hepevt) {
+  /*
+    if (hepevt) {
     convert->Blobs2HepEvt(blobs,std::string("Beam"),nhep);
     convert->Blobs2HepEvt(blobs,std::string("ISR"),nhep);
     convert->Blobs2HepEvt(blobs,std::string("Hard ME"),nhep);
-
+    
     msg.Events()<<" HepEVT after Matrix Element"<<endl;
     //pyhepc_(hepevtmode);    // from standard to pythia
     //pylist_(hepevtmode);
   }
+  */
   // extra statistics
   //  cout<<" in Sample_Analysis::AfterME with "<<blobs->size()<<" ("<<status<<")"<<endl;
   if (!(status)) return;
@@ -102,6 +120,7 @@ void Sample_Analysis::AfterME(ATOOLS::Blob_List * blobs, double weight) {
 void Sample_Analysis::AfterPartonShower(ATOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
   //  cout<<" in Sample_Analysis::AfterPartonShower with "<<blobs->size()<<" ("<<status<<")"<<endl;
+  /*
   if (hepevt) {
     convert->Blobs2HepEvt(blobs,std::string("ISR"),nhep);
     convert->Blobs2HepEvt(blobs,std::string("FSR"),nhep);
@@ -110,7 +129,7 @@ void Sample_Analysis::AfterPartonShower(ATOOLS::Blob_List * blobs, double weight
     //pyhepc_(hepevtmode);    // from standard to pythia
     //pylist_(hepevtmode);
   }
-
+  */
   if (!(status & 1)) return;
 
   // extra statistics
@@ -122,6 +141,7 @@ void Sample_Analysis::AfterPartonShower(ATOOLS::Blob_List * blobs, double weight
 
 void Sample_Analysis::AfterHadronization(ATOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
+  /*
   if (hepevt) {
     convert->Blobs2HepEvt(blobs,std::string("ISR"),nhep);
     convert->Blobs2HepEvt(blobs,std::string("FSR"),nhep);
@@ -130,7 +150,7 @@ void Sample_Analysis::AfterHadronization(ATOOLS::Blob_List * blobs, double weigh
     //pyhepc_(hepevtmode);    // from standard to pythia
     //pylist_(hepevtmode);
   }
-
+  */
   if (!(status == 2)) return;
   ana->DoAnalysis(*blobs,weight);
 }
@@ -161,7 +181,7 @@ void Sample_Analysis::Finish() {
 
 Sample_Analysis::~Sample_Analysis() {
   if (ana)                   { delete ana;     ana     = 0; }
-  if ((convert) && (InitIO)) { delete convert; convert = 0; } 
+  //if ((convert) && (InitIO)) { delete convert; convert = 0; } 
 }
 
 

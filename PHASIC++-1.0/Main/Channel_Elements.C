@@ -451,7 +451,9 @@ double Channel_Elements::WeightYCentral(double tau, double * yrange,
     ATOOLS::msg.Error()<<"y out of trivial bounds in CE.WeightYCentral : "
 			  <<yrange[0]<<" < "<<y<<" < "<<yrange[1]<<endl;
   }
-  return (atan(exp(ymax))-atan(exp(ymin)))*2.*cosh(y);
+  //return (atan(exp(ymax))-atan(exp(ymin)))*2.*cosh(y);
+  cout<<2.*(atan(exp(ymax))-atan(exp(ymin)))<<endl;
+  return 2.*(atan(exp(ymax))-atan(exp(ymin)));
 }
 
 double Channel_Elements::DiceYForward(double tau, double * yrange, double * deltay, double yexp, 

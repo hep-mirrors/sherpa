@@ -26,7 +26,7 @@ bool Sherpa::InitializeTheRun(std::string _path) {
   m_path = _path;
   p_inithandler  = new Initialization_Handler(m_path);
   if (p_inithandler->InitializeTheFramework()) {
-    p_output     = new Output_Handler(1);
+    p_output     = new Output_Handler(2);
     return p_inithandler->CalculateTheHardProcesses();
   }
   msg.Error()<<"Error in Sherpa::InitializeRun("<<_path<<")"<<endl
@@ -37,8 +37,7 @@ bool Sherpa::InitializeTheRun(std::string _path) {
 
 
 bool Sherpa::InitializeTheEventHandler() {
-  IO_HepEvt * dummy = 0;
-  p_analysis        = new Sample_Analysis(dummy,0);
+  p_analysis        = new Sample_Analysis();
 
   p_eventhandler    = new Event_Handler();
   p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));

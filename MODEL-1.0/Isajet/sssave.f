@@ -9,7 +9,7 @@ C
       COMMON/SSLUN/LOUT
       INTEGER LOUT
       SAVE /SSLUN/
-C          MXSS         =  maximum number of modes
+C          MXSS         = maximum number of modes
 C          NSSMOD       = number of modes
 C          ISSMOD       = initial particle
 C          JSSMOD       = final particles
@@ -30,7 +30,7 @@ C
       REAL GAM
 C
       IF (GAM.LE.0.) THEN
-        IF(GAM.LT.0.) THEN
+         IF(GAM.LT.0.) THEN
           WRITE(LOUT,1000) IIN,IOUT1,IOUT2,IOUT3,IOUT4,IOUT5,GAM
 1000      FORMAT(' WARNING: SSSAVE: ',I5,' --> ',5I5,E14.5)
         ENDIF

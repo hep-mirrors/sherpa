@@ -15,7 +15,9 @@ namespace ISAJET {
     void sUpMasses();
     void sDownMasses();
     void sLeptonMasses();
-
+    void Decays(ATOOLS::Flavour);
+    int  FlavourToIsaID(ATOOLS::Flavour);
+    ATOOLS::Flavour  IsaIDToFlavour(int);
   public:
     Isajet_Fortran_Interface(ATOOLS::Data_Read *,MODEL::Model_Base *);
     ~Isajet_Fortran_Interface();

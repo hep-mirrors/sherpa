@@ -118,7 +118,7 @@ namespace SHERPA {
 
 
     void            FillTable(Leg **,int, int); 
-    Combine_Table * CalcJet(int, ATOOLS::Vec4D * _moms=0);
+    Combine_Table * CalcJet(int, double, double, ATOOLS::Vec4D * _moms=0);
 
     //! general access routines (return value is determined by winner combination 
     //! and winner graph number)

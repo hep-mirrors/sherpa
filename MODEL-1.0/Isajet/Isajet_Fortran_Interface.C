@@ -18,6 +18,7 @@ extern "C" {
   void sdowns_(float*,float&,float&);
   void sleptons_(float*,float&,float&,float&);
   void gluino_(float&);
+  void filldecays_(int &,float &,int &,int *,int *,float *);
 }
 
 
@@ -30,7 +31,6 @@ Isajet_Fortran_Interface::Isajet_Fortran_Interface(Data_Read * _dataread,
 
 
 Isajet_Fortran_Interface::~Isajet_Fortran_Interface() { }
-
 
 
 
@@ -152,6 +152,287 @@ void Isajet_Fortran_Interface::FillMasses() {
 }
 
 void Isajet_Fortran_Interface::FillDecays() {
+  
+  msg.Tracking()<<endl;
+  msg.Tracking()<<"---------- Set particles widths according to Isasusy ! ---------"<<endl;
+  
+  Decays(Flavour(kf::Chargino1));
+  Decays(Flavour(kf::Chargino2));
+  
+  Decays(Flavour(kf::Neutralino1));
+  Decays(Flavour(kf::Neutralino2));
+  Decays(Flavour(kf::Neutralino3));
+  Decays(Flavour(kf::Neutralino4));
+
+  Decays(Flavour(kf::Gluino));
+  
+  Decays(Flavour(kf::h0));
+  Decays(Flavour(kf::H0));
+  Decays(Flavour(kf::A0));
+  Decays(Flavour(kf::Hmin));
+
+  Decays(Flavour(kf::sElectronL));
+  Decays(Flavour(kf::sMuL));
+  Decays(Flavour(kf::sTauL));
+  Decays(Flavour(kf::sElectronR));
+  Decays(Flavour(kf::sMuR));
+  Decays(Flavour(kf::sTauR));
+
+  Decays(Flavour(kf::sNu1));
+  Decays(Flavour(kf::sNu2));
+  Decays(Flavour(kf::sNu3));
+  
+  Decays(Flavour(kf::sUpL));
+  Decays(Flavour(kf::sCharmL));
+  Decays(Flavour(kf::sTopL));
+  Decays(Flavour(kf::sUpR));
+  Decays(Flavour(kf::sCharmR));
+  Decays(Flavour(kf::sTopR));
+  
+  Decays(Flavour(kf::sDownL));
+  Decays(Flavour(kf::sStrangeL));
+  Decays(Flavour(kf::sBottomL));
+  Decays(Flavour(kf::sDownR));
+  Decays(Flavour(kf::sStrangeR));
+  Decays(Flavour(kf::sBottomR));
+    
+  msg.Tracking()<<"----------------------------------------------------------------"<<endl;
+}
+
+int Isajet_Fortran_Interface::FlavourToIsaID(Flavour flav) {
+
+  int isaID = 0;
+
+  int sherpaID = int(flav);
+  bool antifl = 0;
+
+  if (sherpaID<0) {
+    sherpaID*=-1;
+    antifl   = 1;
+  }
+  
+  switch(sherpaID) {
+  case 41 : isaID = 39; //39 equals anti-chargino^-_1
+    break;
+  case 42 : isaID = 49; //49 equals anti-chargino^-_2
+    break;
+  case 43 : isaID = 30; //30 equals neutralino_1
+    break;
+  case 44 : isaID = 40; //40 equals neutralino_2
+    break;
+  case 45 : isaID = 50; //50 equals neutralino_3
+    break;
+  case 46 : isaID = 60; //60 equals neutralino_4
+    break;
+  case 47 : isaID = 29; //29 equals gluino
+    break;
+  case 31 : isaID = 82; //82 equals h0
+    break;  
+  case 32 : isaID = 83; //83 equals H0
+    break;
+  case 33 : isaID = 84; //84 equals A0
+    break;
+  case 34 : isaID = 86; //86 equals anti-H^-
+    break;
+  case 81 : isaID = 31; //31 equals sNu1
+     break;
+  case 82 : isaID = 33; //33 equals sNu2
+    break;
+  case 83 : isaID = 35; //35 equals sNu3
+    break;
+  case 71 : isaID = 32; //32 equals sElectronL
+    break;
+  case 72 : isaID = 34; //34 equals sMuonL
+    break;  
+  case 73 : isaID = 56; //36 equals sTauL
+    break;  
+  case 74 : isaID = 52; //52 equals sElectronR
+    break;  
+  case 75 : isaID = 54; //54 equals sMuonR
+    break;  
+  case 76 : isaID = 36; //56 equals sTauR
+    break;
+  case 51 : isaID = 21; //21 equals sUpL
+    break;
+  case 52 : isaID = 24; //24 equals sCharmL
+    break;
+  case 53 : isaID = 46; //26 equals sTopL
+    break;
+  case 54 : isaID = 41; //41 equals sUpR
+    break;
+  case 55 : isaID = 44; //44 equals sCharmR
+    break;
+  case 56 : isaID = 26; //46 equals sTopR
+    break;
+  case 61 : isaID = 22; //22 equals sDownL
+    break;
+  case 62 : isaID = 23; //23 equals sStrangeL
+    break;
+  case 63 : isaID = 45; //25 equals sBottomL
+    break;
+  case 64 : isaID = 42; //42 equals sDownR
+    break;
+  case 65 : isaID = 43; //43 equals sStrangeR
+    break;
+  case 66 : isaID = 25; //43 equals sBottomR
+    break;
+  }
+  if (antifl) isaID*=-1;
+  return isaID;
+}
+
+Flavour Isajet_Fortran_Interface::IsaIDToFlavour(int isaID) {
+
+  bool antifl  = 0;
+  int sherpaID = 0;
+  
+  if (isaID<0) {
+    isaID *= -1; 
+    antifl = 1;
+  }
+  
+  switch(isaID) {
+  case 1   : sherpaID = 2; //up-quark
+    break;
+  case 2   : sherpaID = 1; //down-quark
+    break;
+  case 3   : sherpaID = 3; //strange-quark
+    break;
+  case 4   : sherpaID = 4; //charm-quark
+    break;
+  case 5   : sherpaID = 5; //bottom-quark
+    break;
+  case 6   : sherpaID = 6; //top-quark
+    break;
+  case 11  : sherpaID = 12; //nuelectron
+    break;
+  case 12  : sherpaID = 11; //electron
+    break;
+  case 13  : sherpaID = 14; //numu
+    break;
+  case 14  : sherpaID = 13; //muon
+    break;
+  case 15  : sherpaID = 16; //nutau
+    break;
+  case 16  : sherpaID = 15; //tau
+    break;
+  case 9   : sherpaID = 21; //gluon
+    break;
+  case 10  : sherpaID = 22; //photon
+    break;
+  case 80  : sherpaID = 23; //W-
+    break;
+  case 90  : sherpaID = 24; //Z0
+    break;
+  case 39  : sherpaID = 41; //Chargino1
+    break;
+  case 49  : sherpaID = 42; //Chargino2
+    break;
+  case 30  : sherpaID = 43; //Neutralino1
+    break;
+  case 40  : sherpaID = 44; //Neutralino2
+    break;
+  case 50  : sherpaID = 45; //Neutralino3
+    break;
+  case 60  : sherpaID = 46; //Neutralino4
+    break;
+  case 29  : sherpaID = 47; //gluino
+    break;
+  case 82  : sherpaID = 31; //h0
+    break;  
+  case 83  : sherpaID = 32; //H0
+    break;
+  case 84  : sherpaID = 33; //A0
+    break;
+  case 86  : sherpaID = 34; //Hmin
+    break;
+  case 31  : sherpaID = 81; //sNu1
+     break;
+  case 33  : sherpaID = 82; //sNu2
+    break;
+  case 35  : sherpaID = 83; //sNu3
+    break;
+  case 32  : sherpaID = 71; //sElectronL
+    break;
+  case 34  : sherpaID = 72; //sMuonL
+    break;  
+  case 56  : sherpaID = 73; //sTauL
+    break;  
+  case 52  : sherpaID = 74; //sElectronR
+    break;  
+  case 54  : sherpaID = 75; //sMuonR
+    break;  
+  case 36  : sherpaID = 76; //sTauR
+    break;
+  case 21  : sherpaID = 51; //sUpL
+    break;
+  case 24  : sherpaID = 52; //sCharmL
+    break;
+  case 46  : sherpaID = 53; //sTopL
+    break;
+  case 41  : sherpaID = 54; //sUpR
+    break;
+  case 44  : sherpaID = 55; //sCharmR
+    break;
+  case 26  : sherpaID = 56; //sTopR
+    break;
+  case 22  : sherpaID = 61; //sDownL 
+    break;
+  case 23  : sherpaID = 62; //sStrangeL 
+    break;
+  case 45  : sherpaID = 63; //sBottomL 
+    break;
+  case 42  : sherpaID = 64; //sDownR 
+    break;
+  case 43  : sherpaID = 65; //sStrangeR 
+    break;
+  case 25  : sherpaID = 66; //sBottomR 
+    break;
+  }
+  Flavour flav = Flavour(kf::code(sherpaID));
+  if (sherpaID==23 || sherpaID==41 || sherpaID==42 || sherpaID==34) flav = flav.Bar(); 
+  if (antifl) flav = flav.Bar();
+  return flav;
+}
+
+
+void Isajet_Fortran_Interface::Decays(Flavour flav) {
+  
+  int   mother,ndecays, * daughters, * ndaughters;
+  float totalwidth, * partialwidths;
+  daughters     = new int[300];
+  ndaughters    = new int[100];
+  partialwidths = new float[100];
+ 
+  mother = FlavourToIsaID(flav);
+
+  /*
+    Take care for decays of chargino1/2 and Hmin
+    there the convention of Sherpa and Isasusy is opposite
+    concerning the charge of the particles,
+    same holds true for W-boson
+  */
+    
+  filldecays_(mother,totalwidth,ndecays,daughters,ndaughters,partialwidths);
+  /*
+  cout<<"Test this : "<<mother<<" ("<<IsaIDToFlavour(mother)<<") "<<totalwidth<<" "<<endl;
+  for (int i=0;i<ndecays;i++) {
+    cout<<daughters[3*i]<<" "<<daughters[3*i+1]<<" "<<daughters[3*i+2]<<" "<<partialwidths[i]<<endl;
+    cout<<IsaIDToFlavour(daughters[3*i])<<" "<<IsaIDToFlavour(daughters[3*i+1])<<" ";
+    if (daughters[3*i+2]!=0) cout<<IsaIDToFlavour(daughters[3*i+2]);
+    cout<<" "<<partialwidths[i]<<endl;
+  }
+  */
+  //cout<<flav<<"  Width(before) = "<<flav.Width()<<endl;
+  
+  flav.SetWidth(totalwidth);
+  //flav.Bar().SetWidth(totalwidth);
+  
+  msg.Tracking()<<"Set "<<flav<<"  width to "<<flav.Width()<<" GeV."<<endl;
+
+  delete [] daughters;
+  delete [] ndaughters;
+  delete [] partialwidths;
 }
 
 
@@ -504,5 +785,6 @@ void Isajet_Fortran_Interface::GluinoMasses()
   flav = Flavour(kf::Gluino);flav.SetMass(dabs(mGL));
   if (mGL<0) flav.SetMassSign(-1);
   
-  msg.Tracking()<<"Gluino mass : "<<dabs(mGL)<<std::endl;
+  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
+		<<"Gluino mass : "<<dabs(mGL)<<std::endl;
 }

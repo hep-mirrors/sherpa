@@ -133,17 +133,17 @@ Flavour Flavour::operator[](int idx) const  {
 Flavour Flavour::Bar() { 
   Flavour flbar = *this;
   
-  if (flbar==Flavour(kf::photon)) return flbar;
-  if (flbar==Flavour(kf::Z))      return flbar;
-  if (flbar==Flavour(kf::gluon))  return flbar;
-  if (flbar==Flavour(kf::h))      return flbar;
-  if (flbar==Flavour(kf::h0))     return flbar;
-  if (flbar==Flavour(kf::H0))     return flbar;
-  if (flbar==Flavour(kf::A0))     return flbar;
+  if (flbar==Flavour(kf::photon))   return flbar;
+  if (flbar==Flavour(kf::Z))        return flbar;
+  if (flbar==Flavour(kf::gluon))    return flbar;
+  if (flbar==Flavour(kf::h))        return flbar;
+  if (flbar==Flavour(kf::h0))       return flbar;
+  if (flbar==Flavour(kf::H0))       return flbar;
+  if (flbar==Flavour(kf::A0))       return flbar;
   if (flbar==Flavour(kf::graviton)) return flbar;
   if (flbar==Flavour(kf::gscalar))  return flbar;
-  if (flbar==Flavour(kf::none))   return flbar;
-  if (Majorana())                 return flbar;
+  if (flbar==Flavour(kf::none))     return flbar;
+  if (Majorana())                   return flbar;
 
   flbar.anti = (anti)?0:1;
   return flbar;
@@ -186,35 +186,109 @@ void Flavour::FromCtq(int code) {
 }
 
 int Flavour::HepEvt() {
-  int code;
-  switch(kfc) {
-  case kf::d      : code=1;break;
-  case kf::u      : code=2;break;
-  case kf::s      : code=3;break;
-  case kf::c      : code=4;break;
-  case kf::b      : code=5;break;
-  case kf::t      : code=6;break;
-  case kf::gluon  : code=21;break;
-  case kf::photon : code=22;break;
-  default         : code=kfc;
+  if (IsLepton() || IsQuark() || IsHadron()) return (anti)? -Kfcode():Kfcode();
+  if (IsGluon())                             return 21;
+  if (IsPhoton())                            return 22;
+  if (kfc==kf::Z)                            return 23;
+  if (kfc==kf::W)                            return (anti)? 24:-24;
+  if ((kfc==kf::h) || (kfc==kf::h0))         return 25;
+
+  if (kfc==kf::H0)                           return 35;
+  if (kfc==kf::A0)                           return 36;
+  if (kfc==kf::Hmin)                         return (anti)? 37:-37;
+  if (kfc==kf::graviton)                     return 39;
+  if (kfc==kf::gscalar)                      return 89;
+
+  if (IsSquark() || IsSlepton() || IsSneutrino()) {
+    if (kfc==kf::sDownL)                     return 1000001;
+    if (kfc==kf::sUpL)                       return 1000002;
+    if (kfc==kf::sStrangeL)                  return 1000003;
+    if (kfc==kf::sCharmL)                    return 1000004;
+    if (kfc==kf::sBottomR)                   return 1000005;
+    if (kfc==kf::sTopR)                      return 1000006;
+    if (kfc==kf::sElectronL)                 return 1000011;
+    if (kfc==kf::sNu1)                       return 1000012;
+    if (kfc==kf::sMuL)                       return 1000013;
+    if (kfc==kf::sNu2)                       return 1000014;
+    if (kfc==kf::sTauR)                      return 1000015;
+    if (kfc==kf::sNu3)                       return 1000016;
+    
+    if (kfc==kf::sDownR)                     return 2000001;
+    if (kfc==kf::sUpR)                       return 2000002;
+    if (kfc==kf::sStrangeR)                  return 2000003;
+    if (kfc==kf::sCharmR)                    return 2000004;
+    if (kfc==kf::sBottomL)                   return 2000005;
+    if (kfc==kf::sTopL)                      return 2000006;
+    if (kfc==kf::sElectronR)                 return 2000011;
+    if (kfc==kf::sMuR)                       return 2000013;
+    if (kfc==kf::sTauL)                      return 2000015;
   }
-  if (anti) code= -code;
-  return code;
+
+  if (IsGluino())                            return 1000021;
+  if (IsIno()) {
+    if (kfc==kf::Neutralino1)                return 1000022; 
+    if (kfc==kf::Neutralino2)                return 1000023; 
+    if (kfc==kf::Chargino1)                  return (anti)? 1000024:-1000024; 
+    if (kfc==kf::Neutralino3)                return 1000025; 
+    if (kfc==kf::Neutralino4)                return 1000035; 
+    if (kfc==kf::Chargino2)                  return (anti)? 1000037:-1000037; 
+  }
+  cerr<<"Error in Flavour::HepEvt() : No HepEvt number for "<<Flavour(kfc)<<endl;
+  return 0;
 }
 
 void Flavour::FromHepEvt(int code) {
-  anti=0;
-  if (code<0) {code=-code;anti=1;}
-  switch(abs(code)) {
-  case 1   : kfc=kf::d;break;
-  case 2   : kfc=kf::u;break;
-  case 3   : kfc=kf::s;break;
-  case 4   : kfc=kf::c;break;
-  case 5   : kfc=kf::b;break;
-  case 7   : kfc=kf::photon;break;
-  case 21  : kfc=kf::gluon;break;
-  default  : kfc=kf::none;
+  anti = (code<0);
+  code = abs(code);
+  
+  if ((code<23) || (code>100 && code<1000000) || (code>9000000)) {
+    kfc = kf::code(code);
+    return;
   }
+  switch (code) {
+  case 23:      kfc = kf::Z; return; 
+  case 24:      kfc = kf::W; anti = 1-anti; return; 
+  case 25: 
+    if (Flavour(kf::h0).IsOn()) kfc = kf::h0; 
+    else kfc = kf::h; 
+    return;
+  case 35:      kfc = kf::H0; return;
+  case 36:      kfc = kf::A0; return;
+  case 37:      kfc = kf::Hmin; anti = 1-anti; return; 
+  case 39:      kfc = kf::graviton; return;
+  case 89:      kfc = kf::gscalar; return;
+  case 92:      kfc = kf::string; return;    // string ....
+  case 1000001: kfc = kf::sDownL; return;
+  case 1000002: kfc = kf::sUpL; return;
+  case 1000003: kfc = kf::sStrangeL; return;
+  case 1000004: kfc = kf::sCharmL; return;
+  case 1000005: kfc = kf::sBottomR; return;
+  case 1000006: kfc = kf::sTopR; return;
+  case 1000011: kfc = kf::sElectronL; return;
+  case 1000012: kfc = kf::sNu1; return;
+  case 1000013: kfc = kf::sMuL; return;
+  case 1000014: kfc = kf::sNu2; return;
+  case 1000015: kfc = kf::sTauR; return;
+  case 1000016: kfc = kf::sNu3; return;
+  case 2000001: kfc = kf::sDownR; return;
+  case 2000002: kfc = kf::sUpR; return;
+  case 2000003: kfc = kf::sStrangeR; return;
+  case 2000004: kfc = kf::sCharmR; return;
+  case 2000005: kfc = kf::sBottomL; return;
+  case 2000006: kfc = kf::sTopL; return;
+  case 2000011: kfc = kf::sElectronR; return;
+  case 2000013: kfc = kf::sMuR; return;
+  case 2000015: kfc = kf::sTauL; return;
+  case 1000021: kfc = kf::Gluino; return;
+  case 1000022: kfc = kf::Neutralino1; return;
+  case 1000023: kfc = kf::Neutralino2; return;
+  case 1000024: kfc = kf::Chargino1; anti = 1-anti; return;
+  case 1000025: kfc = kf::Neutralino3; return;
+  case 1000035: kfc = kf::Neutralino4; return;
+  case 1000037: kfc = kf::Chargino2; anti = 1-anti; return;
+  default: cerr<<"Error in Flavour::FromHepEvt() : No flavour for "<<code<<endl;
+  }
+  return;
 }
 
 std::string Flavour::TexName() 

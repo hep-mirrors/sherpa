@@ -15,6 +15,9 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   Beam_Base(string("Laser_Backscattering"),_beam,_energy,_polarization,_dir),
   m_energyL(_energyL), m_polarizationL(_polarizationL), m_mode(_mode), m_angles(_angles)
 {
+  m_bunch        = Flavour(kf::photon);
+  double disc    = 1.-sqr(m_bunch.PSMass()/m_energy);
+  m_vecout       = Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
   m_Ebounds[0]   = 0.;  
   m_Ebounds[1]   = 500.;
 
@@ -23,7 +26,7 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
 	       <<"   Angular distribution not implemented yet. Assume collinear beam."<<endl; 
     m_angles     = 0;
   }
-  if (m_angles==0) m_lab = m_vecout = Vec4D(m_energy,0.,0.,_dir*m_energy);
+  //if (m_angles==0) m_lab = Vec4D(m_energy,0.,0.,_dir*m_energy);
 
 
   if (m_energy>m_Ebounds[1] || m_energy<m_Ebounds[0]) {
@@ -58,7 +61,7 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   m_total2 = m_totalC * 0.5540019 * (1.-exp(-37.38912 * m_xi * m_xi));
   m_totalE = m_totalC * (0.7257064 + 1.517959e-3 * m_energy);
 
-  msg.Debugging()<<"Initialised Laser-Backscattering ("<<m_mode<<") : "<<endl
+  msg.Debugging()<<"Initialized Laser-Backscattering ("<<m_mode<<") : "<<endl
 		 <<" xe,xmax = "<<m_xe<<", "<<m_xmax
 		 <<" for energyL,mass ="<<m_energyL<<", "<<ATOOLS::Flavour(kf::e).PSMass()<<endl
 		 <<" with xi = "<<m_xi<<", norms   = "<<m_totalC<<"  /  "<<m_total2<<endl

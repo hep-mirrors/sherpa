@@ -10,15 +10,15 @@ namespace BEAM {
   class Beam_Spectra_Handler {
   protected:
     Beam_Base          ** p_BeamBase;
-    ATOOLS::Poincare    m_CMSBoost;
-    ATOOLS::Poincare    m_LABBoost;
+    ATOOLS::Poincare      m_CMSBoost;
+    ATOOLS::Poincare      m_LABBoost;
 
     bool                  m_asymmetric;
     int                   m_mode; 
     double                m_mass12, m_mass22, m_x1, m_x2;
     double                m_exponent[2];
     double                m_splimits[3],m_ylimits[2];
-    ATOOLS::Vec4D       m_fiXVECs[2];
+    ATOOLS::Vec4D         m_fiXVECs[2];
     std::string           m_name,m_type;
   private:
     bool InitKinematics(ATOOLS::Data_Read *);

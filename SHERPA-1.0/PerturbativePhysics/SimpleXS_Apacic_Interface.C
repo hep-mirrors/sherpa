@@ -44,16 +44,17 @@ bool SimpleXS_Apacic_Interface::InitColours(Blob * blob) {
   }
  
   double scale = xs->Scale();
+  double E     = sqrt(p_me->GetISR_Handler()->Pole())/2.;
   double th1,th2;
   if (m_ini) {
     th1   = p_tools->ColourAngle(blob->InParton(0),blob);
     th2   = p_tools->ColourAngle(blob->InParton(1),blob);
-    p_tools->InitializeIncoming(blob,scale,th1,th2);
+    p_tools->InitializeIncoming(blob,scale,E,th1,th2,p_me->GetISR_Handler()->X1(),p_me->GetISR_Handler()->X2());
   }
   if (m_fin) {
     th1   = p_tools->ColourAngle(blob->OutParton(0),blob);
     th2   = p_tools->ColourAngle(blob->OutParton(1),blob);
-    p_tools->InitializeOutGoing(blob,scale,th1,th2);
+    p_tools->InitializeOutGoing(blob,scale,E,th1,th2);
   }
   return 1;
 }

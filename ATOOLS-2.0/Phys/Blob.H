@@ -51,6 +51,7 @@ namespace ATOOLS {
     void     SetVecs();
     void     SetPosition(Vec4D pos)  { m_position = pos; }
     void     SetCMS(Vec4D _cms)      { m_cms_vec  = _cms; }
+    void     SetCMS();
     void     SetId(int _id)                    { m_id       = _id; }
     void     SetStatus(int _status)            { m_status   = _status; }
     void     SetType(std::string _type)        { m_type     = _type; }
@@ -73,10 +74,10 @@ namespace ATOOLS {
  
     double              const Weight()   const { return m_weight; }
     std::vector<double> WeightContainer()      { return m_weightcontainer; } 
-    Vec4D     CheckMomentumConservation();
-    Vec4D     const Position() const { return m_position; }
-    Vec4D    const CMS()      const { return m_cms_vec; }
-    std::string        const Type()     const { return m_type; }
+    Vec4D       CheckMomentumConservation();
+    Vec4D       const Position()         const { return m_position; }
+    Vec4D       const CMS()              const { return m_cms_vec; }
+    std::string const Type()             const { return m_type; }
   };
 
 

@@ -69,7 +69,7 @@ bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
     AddPartonToString(blob->InParton(i),nhep);
   }
 
-  int dummy=1;
+  int dummy=2;
   if (rpa.gen.Debugging()) {
     msg.Out()<<"before hadronisation"<<std::endl;
     pylist_(dummy);
@@ -132,13 +132,14 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 
   int number;
   for (int i=0; i<nk; ++i) {
-    flav = Flavour(kf::code(abs(*(kfjet+i))));
-    if (flav==Flavour(kf::code(92))) {
+    flav.FromHepEvt((*(kfjet+i)));
+    if (flav==Flavour(kf::string)) {
       for (int j=(*(daughters+2*i))-1;j<(*(daughters+2*i+1));j++) {
-	flav = Flavour(kf::code(abs(*(kfjet+j))));
+	//	flav = Flavour(kf::code(abs(*(kfjet+j))));
+	flav.FromHepEvt((*(kfjet+j)));
 	if (!flav.IsHadron()) continue;
 
-	if ((*(kfjet+j))<0)    flav        = flav.Bar();
+	// if ((*(kfjet+j))<0)    flav        = flav.Bar();
 	for(int k=0; k<4; ++k) momentum[k] = *(pjet+j+k*2000);
 	for(int k=0; k<4; ++k) position[k] = *(xjet+j+k*2000);
 	parton         = new Parton(-1,flav,momentum);
@@ -185,8 +186,9 @@ void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
   Vec4D     momentum, position;
   int number;
   for (int i=daughter1; i<daughter2; ++i) {
-    flav = Flavour(kf::code(abs(*(kfjet+i))));
-    if ((*(kfjet+i))<0)    flav        = flav.Bar();
+    flav.FromHepEvt((*(kfjet+i)));
+    //flav = Flavour(kf::code(abs(*(kfjet+i))));
+    //if ((*(kfjet+i))<0)    flav        = flav.Bar();
     for(int k=0; k<4; ++k) momentum[k] = *(pjet+i+k*2000);
     for(int k=0; k<4; ++k) position[k] = *(xjet+i+k*2000);
 

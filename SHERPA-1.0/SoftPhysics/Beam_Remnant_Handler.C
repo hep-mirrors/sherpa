@@ -16,15 +16,19 @@ Beam_Remnant_Handler::Beam_Remnant_Handler(std::string _dir,std::string _file,
   m_dir(_dir), m_file(_file), p_isr(_isr), p_beam(_beam),
   p_constituents(NULL), p_numberofconstituents(NULL)
 {
+  p_numberofconstituents = new int[2];
+  for (int i=0;i<2;i++) p_numberofconstituents[i] = 0;
   if (p_isr->Flav(0).IsHadron() || p_isr->Flav(1).IsHadron()) {
     p_constituents         = new Flavour *[2];
-    p_numberofconstituents = new int[2];
     for (int i=0;i<2;i++) {
-      p_numberofconstituents[i] = 0;
       if (p_isr->Flav(i).IsHadron()) 
 	p_numberofconstituents[i] = Constituents(p_isr->Flav(i),p_constituents[i]);
       else p_constituents[i] = NULL;
     }
+    m_fill = 1;
+  }
+  else if ((p_isr->Flav(0).Kfcode()==kf::e && (p_isr->On()==1 || p_isr->On()==3)) ||
+	   (p_isr->Flav(1).Kfcode()==kf::e && (p_isr->On()==2 || p_isr->On()==3))) {
     m_fill = 1;
   }
   else m_fill = 0;
@@ -80,31 +84,41 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _p
 {
   Blob_Iterator endblob = _bloblist->end(); 
   Blob * blob;
-  bool match;
   bool flag = 0;
+  int  pos,pos1,pos2,number;
   for (int i=0;i<2;i++) {
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
-      match = 1;
-      if (m_fill) match = ((*biter)->Type()==std::string("Beam Remnant"));
-      if ((*biter)->Status()==1 && (*biter)->Beam()==i && match) {
+      pos1 = (*biter)->Type().find(string("Beam Remnant"));
+      pos2 = (*biter)->Type().find(string("IS"));
+      pos  = Max(pos1,pos2);
+      if ((*biter)->Status()==1 && (*biter)->Beam()==i && pos>-1) {
+	(*biter)->SetStatus(2);
 	blob = new ATOOLS::Blob();
 	blob->SetId(_bloblist->size());
 	blob->SetType(std::string("Bunch"));
 	blob->SetBeam(i);
 	blob->AddToOutPartons((*biter)->InParton(0));
 	(*biter)->InParton(0)->SetProductionBlob(blob);
-	if ((*biter)->InParton(0)->Flav()==p_beam->GetBeam(i)->Flav() &&
-	    (*biter)->InParton(0)->E()==p_beam->GetBeam(i)->Momentum()[0]) {
+	if ((*biter)->InParton(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
+	    IsEqual((*biter)->InParton(0)->E(),p_beam->GetBeam(i)->InMomentum()[0])) {
 	  Parton * p = new Parton((*biter)->InParton(0));
 	  p->SetDecayBlob(blob);
 	  p->SetProductionBlob(NULL);
 	  blob->AddToInPartons(p);
 	}
 	else {
-	  blob->AddToInPartons(new Parton(-1,p_beam->GetBeam(i)->Flav(),p_beam->GetBeam(i)->Momentum()));
+	  blob->AddToInPartons(new Parton(-1,p_beam->GetBeam(i)->Beam(),p_beam->GetBeam(i)->InMomentum()));
 	  blob->InParton(0)->SetDecayBlob(blob);
 	  blob->InParton(0)->SetStatus(2);
 	  (*biter)->InParton(0)->SetProductionBlob(blob);
+	  Parton * p = new Parton(-1,p_beam->GetBeam(i)->Remnant(),
+				  p_beam->GetBeam(i)->InMomentum()+(-1.)*(*biter)->InParton(0)->Momentum());
+	  if (_partonlist) number = _partonlist->size();
+	  else number = int(p);
+	  p->SetNumber(number);
+	  p->SetDecayBlob(NULL);
+	  p->SetProductionBlob(blob);
+	  blob->AddToOutPartons(p);
 	}
 	_bloblist->insert(_bloblist->begin(),blob);
 	flag = 1;
@@ -120,28 +134,61 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Parton_List * _pa
   Blob_Iterator endblob = _bloblist->end(); 
   Blob * blob;
   bool okay = 0;
-  int pos;
+  int pos,number;
   for (int i=0;i<2;i++) {
     bool flag=1;
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
       pos = (*biter)->Type().find(string("IS"));
-      if ((*biter)->Beam()==i && (*biter)->Status()==1 && 
-	  (p_numberofconstituents[i]>0) && pos>-1 ) {
-	if (flag) {
-	  blob = new ATOOLS::Blob();
-	  blob->SetId(_bloblist->size());
-	  blob->SetType(std::string("Beam Remnant"));
-	  blob->SetBeam(i);
-	  blob->SetStatus(1);
-	  blob->AddToInPartons(new Parton(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum()));
-	  blob->InParton(0)->SetStatus(2);
-	  _bloblist->insert(_bloblist->begin(),blob);
-	  flag = 0;
-	  okay = 1;
+      if (m_fill) {
+	if ((*biter)->Beam()==i && (*biter)->Status()==1 && pos>-1) { 
+	  if (p_numberofconstituents[i]>0) {
+	    if (flag) {
+	      blob = new ATOOLS::Blob();
+	      blob->SetId(_bloblist->size());
+	      blob->SetType(std::string("Beam Remnant"));
+	      blob->SetBeam(i);
+	      blob->SetStatus(1);
+	      blob->AddToInPartons(new Parton(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum()));
+	      blob->InParton(0)->SetStatus(2);
+	      _bloblist->insert(_bloblist->begin(),blob);
+	      flag = 0;
+	      okay = 1;
+	    }
+	    blob->AddToOutPartons((*biter)->InParton(0));
+	    (*biter)->SetStatus(2);
+	    // Similar things are needed for photons, leptons, etc. !!!!
+	    if (p_isr->Flav(i).IsHadron()) okay == okay && FillHadron(blob,i,_partonlist);
+	  }
+	  else if (!IsEqual((*biter)->InParton(0)->E(),p_beam->GetBeam(i)->OutMomentum()[0])) {
+	    (*biter)->SetStatus(2);
+	    blob = new ATOOLS::Blob();
+	    blob->SetId(_bloblist->size());
+	    blob->SetType(std::string("Beam Remnant"));
+	    blob->SetBeam(i);
+	    blob->SetStatus(1);
+	    blob->AddToOutPartons((*biter)->InParton(0));
+	    (*biter)->InParton(0)->SetProductionBlob(blob);
+	    Parton * p = new Parton(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum());
+	    if (_partonlist) number = _partonlist->size();
+	                else number = int(p);
+	    p->SetNumber(number);
+	    p->SetStatus(2);
+	    p->SetDecayBlob(blob);
+	    p->SetProductionBlob(NULL);
+	    blob->AddToInPartons(p);
+	    p = new Parton(-1,Flavour(kf::photon),
+			   p_beam->GetBeam(i)->OutMomentum()+(-1.)*(*biter)->InParton(0)->Momentum());
+	    if (_partonlist) number = _partonlist->size();
+	                else number = int(p);
+	    p->SetNumber(number);
+	    p->SetDecayBlob(NULL);
+	    p->SetProductionBlob(blob);
+	    blob->AddToOutPartons(p);
+	    _bloblist->insert(_bloblist->begin(),blob);
+	    flag = 0;
+	    okay = 1;
+	  }
 	}
-	blob->AddToOutPartons((*biter)->InParton(0));
-	// Similar things are needed for photons, leptons, etc. !!!!
-	if (p_isr->Flav(i).IsHadron()) okay == okay && FillHadron(blob,i,_partonlist);
       }
     }
   }

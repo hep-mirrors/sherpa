@@ -69,7 +69,7 @@ bool Environment::InitializeTheBeams()
   msg.Debugging()<<"Initialized Beam_Initialization for "<<m_path<<m_beamdat<<std::endl;
   Data_Read * dataread = new Data_Read(m_path+m_beamdat);
   p_beamspectra        = new Beam_Spectra_Handler(dataread);
-  for (short int i=0;i<2;i++) m_beam_particles[i] = p_beamspectra->GetBeam(i)->Flav();
+  for (short int i=0;i<2;i++) m_beam_particles[i] = p_beamspectra->GetBeam(i)->Beam();
   delete dataread;  
   
   return 1;

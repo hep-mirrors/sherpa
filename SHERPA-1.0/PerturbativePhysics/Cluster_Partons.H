@@ -56,7 +56,7 @@ namespace SHERPA {
     Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf, 
 		    int maxjetnumber, int isron, int fsron) ;
     ~Cluster_Partons();
-    bool ClusterConfiguration(ATOOLS::Blob *);
+    bool ClusterConfiguration(ATOOLS::Blob *,double,double);
     void CalculateWeight(double,double);
     void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);
 

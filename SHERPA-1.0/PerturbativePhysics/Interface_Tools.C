@@ -12,13 +12,9 @@ Interface_Tools::Interface_Tools(Tree ** _ini_trees,Tree * _fin_tree) :
 
 Interface_Tools::~Interface_Tools() { }
 
-void Interface_Tools::InitializeIncoming(Blob * blob,double scale,
-					 double th1,double th2)
+void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
+					 double th1,double th2,double x1,double x2)
 {
-  double E      = rpa.gen.Ecms();
-  double x1     = (blob->InParton(0)->Momentum())[0]/E;
-  double x2     = (blob->InParton(1)->Momentum())[0]/E;
-
   Knot * m1      = p_initrees[0]->NewKnot();
   *(m1->part)    = blob->InParton(0);
   m1->part->SetInfo('G');
@@ -46,7 +42,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,
   m2->stat       = 1;
 }
 
-void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,
+void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
 					 double th1,double th2)
 {
   Knot * dummy   = p_fintree->NewKnot(new Parton(0,Flavour(kf::none),blob->CMS()));

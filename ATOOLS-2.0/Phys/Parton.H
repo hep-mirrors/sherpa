@@ -22,7 +22,7 @@ namespace ATOOLS {
     int               m_jetnumber; 
     Flavour           m_fl;         
     Flow            * p_flow;
-    Vec4D   m_momentum; 
+    Vec4D             m_momentum; 
     Blob            * p_startblob;
     Blob            * p_endblob;
     double            m_dec_time;      
@@ -35,7 +35,7 @@ namespace ATOOLS {
     ~Parton();
     friend std::ostream& operator<<(std::ostream &,Parton*);
 
-    void Copy(Parton * );
+    void   Copy(Parton * );
     double ProperTime();
     double LifeTime();
     Vec3D Distance();

@@ -8,7 +8,7 @@ namespace PDF {
   protected :
     std::vector<ATOOLS::Flavour> m_partons;    
     ATOOLS::Flavour m_bunch;
-    std::string        m_type;    
+    std::string     m_type;    
   public:
     virtual ~PDF_Base() {}
     virtual void Calculate(const double x, const double Q2) = 0;
@@ -20,8 +20,8 @@ namespace PDF {
     virtual double                          GetXMax()       = 0;
     virtual double                          GetQ2Min()      = 0;
     virtual double                          GetQ2Max()      = 0;
-    virtual ATOOLS::Flavour              Bunch()         = 0;
-    virtual std::vector<ATOOLS::Flavour> Partons()       = 0;
+    virtual ATOOLS::Flavour                 Bunch()         = 0;
+    virtual std::vector<ATOOLS::Flavour>    Partons()       = 0;
     virtual double                          Exponent()     { return 1.; }
   };
   /*!

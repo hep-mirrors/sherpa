@@ -26,8 +26,8 @@ namespace SHERPA {
     Interface_Tools(APACIC::Tree **,APACIC::Tree *); 
     ~Interface_Tools(); 
 
-    void InitializeIncoming(ATOOLS::Blob *,double,double,double);
-    void InitializeOutGoing(ATOOLS::Blob *,double,double,double);
+    void InitializeIncoming(ATOOLS::Blob *,double,double,double,double,double,double);
+    void InitializeOutGoing(ATOOLS::Blob *,double,double,double,double);
 
     double ColourAngle(ATOOLS::Parton *,ATOOLS::Blob *);
   };

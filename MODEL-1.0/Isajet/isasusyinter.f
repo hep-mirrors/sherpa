@@ -172,7 +172,7 @@ C
       NSTEP    = 1000
       XNRIN(2) = 1.E20
       
-C     OPEN(1,FILE=FNAME,STATUS='NEW',FORM='FORMATTED')
+C      OPEN(1,FILE=FNAME,STATUS='NEW',FORM='FORMATTED')
       
       IMODEL   = IIMODEL
 
@@ -188,7 +188,7 @@ C     OPEN(1,FILE=FNAME,STATUS='NEW',FORM='FORMATTED')
          TANB  = XXSUGIN(4)
          SGNMU = XXSUGIN(5)
          MT    = XXSUGIN(6)
-
+         AMGVSS = 1.0E+20 
         IF (IMODEL.EQ.6) THEN
           IMODEL=1
           PRINT*,'Error in Interface to Isajet :'
@@ -232,7 +232,7 @@ C
 C          Solve RG equations
 C
       PRINT *,'CALL SUGRA(',M0,'/',MHF,'/',A0,'/',
-     .         TANB,'/',MT,'/',IMODEL,')'
+     .     TANB,'/',SGNMU,'/',MT,'/',IMODEL,')'
 15    CALL SUGRA(M0,MHF,A0,TANB,SGNMU,MT,IMODEL)
 C
 C          Print results
@@ -354,6 +354,45 @@ C          Write all modes
 200   CONTINUE
 C
       END
+
+
+C================================================================
+C
+C
+      SUBROUTINE FILLDECAYS(MOTHER,TOTALWIDTH,NDECAYS,
+     &                      DAUGHTERS,ND,PARTIALWIDTH)
+
+      
+      INTEGER MXSS
+      PARAMETER (MXSS=1000)
+      COMMON/SSMODE/NSSMOD,ISSMOD(MXSS),JSSMOD(5,MXSS),GSSMOD(MXSS)
+     $,BSSMOD(MXSS),MSSMOD(MXSS),LSSMOD
+      INTEGER NSSMOD,ISSMOD,JSSMOD,MSSMOD
+      REAL GSSMOD,BSSMOD
+      LOGICAL LSSMOD
+      SAVE /SSMODE/
+C
+      INTEGER ID,I,K,NOUT,MOTHER,NDECAYS
+      INTEGER DAUGHTERS(300),ND(100)
+      REAL    TOTALWIDTH,PARTIALWIDTH(100)
+      CHARACTER*5 SSID,LBLIN,LBLOUT(3)
+
+      NDECAYS    = 0
+      TOTALWIDTH = 0.D0
+      DO 100 I=1,NSSMOD
+        IF(ISSMOD(I).NE.MOTHER) GO TO 100
+        NDECAYS               = NDECAYS+1
+        PARTIALWIDTH(NDECAYS) = GSSMOD(I)
+        TOTALWIDTH            = TOTALWIDTH+GSSMOD(I) 
+        LBLIN=SSID(ISSMOD(I))
+        DO 110 K=1,3
+        LBLOUT(K)=SSID(JSSMOD(K,I))
+110     DAUGHTERS(3*(NDECAYS-1)+K)  = JSSMOD(K,I)    
+C        Print *, LBLIN,' ',(LBLOUT(K),K=1,3),' ',GSSMOD(I),' ',BSSMOD(I)
+100   CONTINUE
+
+      END
+
 C================================================================
 C
 C
@@ -382,6 +421,7 @@ C
  
       REAL MCH1,MCH2,GamL,GamR,ThX,ThY
 
+
 C CHECK SIGN CONVENTION   
 
       MCH1 = AMW1SS
@@ -391,7 +431,7 @@ C CHECK SIGN CONVENTION
 
       ThX = SIGN(1.0D0,1.0D0/TAN(GamL))
       ThY = SIGN(1.0D0,1.0D0/TAN(GamR))
-
+C
       END
 C================================================================
 C

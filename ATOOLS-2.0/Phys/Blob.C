@@ -206,6 +206,11 @@ void Blob::BoostInCMS() {
     OutParton(i)->SetMomentum(m_cms_boost*OutParton(i)->Momentum());
 }
 
+void Blob::SetCMS() {
+  m_cms_vec = Vec4D(0.,0.,0.,0.);
+  for (int i=0;i<NInP();i++) m_cms_vec = m_cms_vec + InParton(i)->Momentum();
+}
+
 void Blob::SetVecs() {
   m_cms_vec  = Vec4D(0.,0.,0.,0.);
   Vec4D  pos = Vec4D(0.,0.,0.,0.);

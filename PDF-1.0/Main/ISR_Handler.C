@@ -11,7 +11,7 @@ using namespace PDF;
 using namespace std;
 
 ISR_Handler::ISR_Handler(ISR_Base ** _ISRBase,double * _splimits) :
-  p_ISRBase(_ISRBase)
+  p_ISRBase(_ISRBase), m_x1(1.), m_x2(1.)
 {
   m_mode = 0;
   for (short int i=0;i<2;i++) {

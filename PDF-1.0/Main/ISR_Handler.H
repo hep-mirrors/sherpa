@@ -54,9 +54,11 @@ namespace PDF {
     // Don't use this !!! It is for the ISRChannels only !!!
     double               Upper1()          { return p_ISRBase[0]->Xmax(); }
     double               Upper2()          { return p_ISRBase[1]->Xmax(); }
+    double               X1()              { return m_x1; }
+    double               X2()              { return m_x2; }
   
     PDF_Base           * PDF(int beam)     { return p_ISRBase[beam]->PDF(); }
-    ATOOLS::Flavour   Flav(int beam)    { return p_ISRBase[beam]->Flav(); }
+    ATOOLS::Flavour      Flav(int beam)    { return p_ISRBase[beam]->Flav(); }
     int                  On()              { return m_mode; }
   };
 

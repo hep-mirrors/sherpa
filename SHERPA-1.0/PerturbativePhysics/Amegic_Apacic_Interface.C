@@ -24,7 +24,7 @@ namespace  SHERPA {
 
 Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
 						 Shower_Handler * shower) :
-  Perturbative_Interface(me,shower), p_blob_psme(0)
+  Perturbative_Interface(me,shower), p_blob_psme_IS(0), p_blob_psme_FS(0)
 {
   p_jf      = 0;
   p_cluster = 0;
@@ -67,7 +67,7 @@ Amegic_Apacic_Interface::~Amegic_Apacic_Interface()
 
 bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
 {
-  if (!(p_cluster->ClusterConfiguration(blob))) {
+  if (!(p_cluster->ClusterConfiguration(blob,p_me->GetISR_Handler()->X1(),p_me->GetISR_Handler()->X2()))) {
     return 0; // Failure!
   }
   for (int i=0;i<4;i++) {
@@ -76,28 +76,33 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   }
 
   // prepare Blob , will be inserted later
-  if (p_blob_psme) {
-    delete p_blob_psme; p_blob_psme=0;
+  if (p_blob_psme_IS) {
+    delete p_blob_psme_IS; p_blob_psme_IS = 0;
   }
-  if (p_shower->ISROn() || p_shower->FSROn()) {
-    p_blob_psme = new Blob();
-    p_blob_psme->SetType(string("ME PS Interface (Sherpa)"));
-    p_blob_psme->SetStatus(1);
-    if (p_shower->ISROn()) {
-      for (int i=0;i<blob->NInP();++i) {
-	p_blob_psme->AddToOutPartons(blob->InParton(i));
-	blob->InParton(i)->SetProductionBlob(p_blob_psme);
-	p_blob_psme->SetId(-1);
-      }
-    }
-    if (p_shower->FSROn()) {
-      for (int i=0;i<blob->NOutP();++i) {
-	p_blob_psme->AddToInPartons(blob->OutParton(i));
-	blob->OutParton(i)->SetDecayBlob(p_blob_psme);
-	p_blob_psme->SetId(-2);
-      }
+  if (p_blob_psme_FS) {
+    delete p_blob_psme_FS; p_blob_psme_FS = 0;
+  }
+  if (p_shower->ISROn()) {
+    p_blob_psme_IS = new Blob();
+    p_blob_psme_IS->SetType(string("ME PS Interface (Sherpa, IS)"));
+    p_blob_psme_IS->SetStatus(1);
+    for (int i=0;i<blob->NInP();++i) {
+      p_blob_psme_IS->AddToOutPartons(blob->InParton(i));
+      blob->InParton(i)->SetProductionBlob(p_blob_psme_IS);
+      p_blob_psme_IS->SetId(-1);
     }
   }
+  if (p_shower->FSROn()) {
+    p_blob_psme_FS = new Blob();
+    p_blob_psme_FS->SetType(string("ME PS Interface (Sherpa, FS)"));
+    p_blob_psme_FS->SetStatus(1);
+    for (int i=0;i<blob->NOutP();++i) {
+      p_blob_psme_FS->AddToInPartons(blob->OutParton(i));
+      blob->OutParton(i)->SetDecayBlob(p_blob_psme_FS);
+      p_blob_psme_FS->SetId(-2);
+    }
+  }
+
   return 1;  // OK!
 }
 
@@ -153,12 +158,15 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 
 bool   Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 {
-  if (p_blob_psme) {
-    p_blob_psme->SetId(bl->size());
-
-    // give blob control to bloblist
-    bl->push_back(p_blob_psme);  
-    p_blob_psme=0;
+  if (p_blob_psme_IS) {
+    p_blob_psme_IS->SetId(bl->size());
+    bl->push_back(p_blob_psme_IS);  
+    p_blob_psme_IS=0;
+  }
+  if (p_blob_psme_FS) {
+    p_blob_psme_FS->SetId(bl->size());
+    bl->push_back(p_blob_psme_FS);  
+    p_blob_psme_FS=0;
   }
   return 1;
 }

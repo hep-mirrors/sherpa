@@ -108,7 +108,6 @@ namespace ATOOLS {
       ------------------------------------------ */
       isrphoton              = 26,
       pol                    = 70,
-      
       /* ------------------------------------------
 	containers
       ------------------------------------------ */
@@ -117,6 +116,7 @@ namespace ATOOLS {
       fermion                = 92,
       jet                    = 93,
       quark                  = 94,
+      string                 = 95,
       /* ------------------------------------------
 	unspecified hadrons
       ------------------------------------------ */
@@ -629,6 +629,10 @@ namespace ATOOLS {
 
     inline bool IsSlepton() const {
       if ((abs(kfc)>70) && (abs(kfc)<80)) return 1;
+      return 0;      
+    }
+    inline bool IsSneutrino() const {
+      if ((abs(kfc)>80) && (abs(kfc)<84)) return 1;
       return 0;      
     }
     inline bool IsChargino() const {

@@ -27,8 +27,8 @@ Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) :
   for (short int i=0;i<2;i++) {
     if (p_BeamBase[i]->On()) m_mode += i+1;
   }
-  ATOOLS::rpa.gen.SetBeam1(p_BeamBase[0]->Flav());
-  ATOOLS::rpa.gen.SetBeam2(p_BeamBase[1]->Flav());
+  ATOOLS::rpa.gen.SetBeam1(p_BeamBase[0]->Beam());
+  ATOOLS::rpa.gen.SetBeam2(p_BeamBase[1]->Beam());
 }
 
 Beam_Spectra_Handler::~Beam_Spectra_Handler() { 
@@ -120,7 +120,7 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Read * dataread,int num)
 bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
  
   // cms system from beam momenta - this is for potential assymmetric collisions.
-  Vec4D  P      = p_BeamBase[0]->Momentum()+p_BeamBase[1]->Momentum();
+  Vec4D  P      = p_BeamBase[0]->InMomentum()+p_BeamBase[1]->InMomentum();
   double s      = P.Abs2();
   double E      = sqrt(s);
   rpa.gen.SetEcms(E);
@@ -132,8 +132,8 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
   m_ylimits[1]  = 10.;
   m_exponent[0] = .5;
   m_exponent[1] = .98 * ( p_BeamBase[0]->Exponent() + p_BeamBase[1]->Exponent());
-  m_mass12      = sqr(p_BeamBase[0]->Flav().PSMass());
-  m_mass22      = sqr(p_BeamBase[1]->Flav().PSMass());
+  m_mass12      = sqr(p_BeamBase[0]->Bunch().PSMass());
+  m_mass22      = sqr(p_BeamBase[1]->Bunch().PSMass());
   double x      = 1./2.+(m_mass12-m_mass22)/(2.*E*E);
   double E1     = x*E;
   double E2     = E-E1;
@@ -141,8 +141,8 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
   m_fiXVECs[1]  = Vec4D(E2,0.,0.,-sqrt(sqr(E1)-m_mass12));
 
   m_asymmetric  = 0;
-  if ((dabs((m_fiXVECs[0]+(-1.)*p_BeamBase[0]->Momentum()).Abs2())>0.0000001) ||
-      (dabs((m_fiXVECs[1]+(-1.)*p_BeamBase[1]->Momentum()).Abs2())>0.0000001) ) m_asymmetric = 1;
+  if ((dabs((m_fiXVECs[0]+(-1.)*p_BeamBase[0]->InMomentum()).Abs2())>0.0000001) ||
+      (dabs((m_fiXVECs[1]+(-1.)*p_BeamBase[1]->InMomentum()).Abs2())>0.0000001) ) m_asymmetric = 1;
 
 
   m_type = p_BeamBase[0]->Type() + std::string("*") + p_BeamBase[1]->Type();
@@ -153,8 +153,8 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
 void Beam_Spectra_Handler::Output() {
   msg.Out()<<"Beam_Spectra_Handler : "<<endl
 	   <<"   type = "<<m_type<<endl
-	   <<"   for    "<<p_BeamBase[0]->Flav()<<"  ("<<p_BeamBase[0]->Momentum()<<")"<<endl
-	   <<"   and    "<<p_BeamBase[1]->Flav()<<"  ("<<p_BeamBase[1]->Momentum()<<")"<<endl;
+	   <<"   for    "<<p_BeamBase[0]->Beam()<<"  ("<<p_BeamBase[0]->InMomentum()<<")"<<endl
+	   <<"   and    "<<p_BeamBase[1]->Beam()<<"  ("<<p_BeamBase[1]->InMomentum()<<")"<<endl;
 }
 
 
@@ -162,27 +162,33 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _beams,
 					    ATOOLS::Flavour * _bunches) {
   bool fit = 1;
   for (int i=0;i<2;i++) {
-    if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
+    if ((_beams[i]!=GetBeam(i)->Beam()) || (_bunches[i]!=GetBeam(i)->Bunch())) {
+      fit = 0;
+      break;
+    }
+    /*
+      if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
       if (! ( ((_beams[i]==Flavour(kf::e)) || (_beams[i]==Flavour(kf::e).Bar())) &&
-	      (_bunches[i]==Flavour(kf::photon))         ) ) {
-	fit = 0;
-	break;
+      (_bunches[i]==Flavour(kf::photon))         ) ) {
+      fit = 0;
+      break;
       }
-    }
-    if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
+      }
+      if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
       if (! ( ((_beams[i] == Flavour(kf::e)) || (_beams[i] == Flavour(kf::e).Bar())) &&
-	      (_beams[i] == _bunches[i])         ) ) {
-	fit = 0;
-	break;
+      (_beams[i] == _bunches[i])         ) ) {
+      fit = 0;
+      break;
       }
-    }
-    if (p_BeamBase[i]->Type() == string("Monochromatic") ||
-	p_BeamBase[i]->Type() == string("Gaussian") ) {
+      }
+      if (p_BeamBase[i]->Type() == string("Monochromatic") ||
+      p_BeamBase[i]->Type() == string("Gaussian") ) {
       if (_bunches[i]!=_beams[i]) {
-	fit = 0;
-	break;
+      fit = 0;
+      break;
       }
-    }
+      }
+    */
   }
   return fit;
 }
@@ -190,26 +196,32 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _beams,
 bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _bunches) {
   bool fit = 1;
   for (int i=0;i<2;i++) {
-    if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
+    if (_bunches[i]!=GetBeam(i)->Bunch()) {
+      fit = 0;
+      break;
+    }
+    /*
+      if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
       if (_bunches[i]!=Flavour(kf::photon)) {
-	fit = 0;
-	break;
+      fit = 0;
+      break;
       }
-    }
-    if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
+      }
+      if (p_BeamBase[i]->Type() == string("Beam_Strahlung")) {
       if ((_bunches[i]!=Flavour(kf::e) && _bunches[i]!=Flavour(kf::e).Bar()) ||
-	  (_bunches[i]!=GetBeam(i)->Flav()) ){
-	fit = 0;
-	break;
+      (_bunches[i]!=GetBeam(i)->Bunch()) ){
+      fit = 0;
+      break;
       }
-    }
-    if (p_BeamBase[i]->Type() == string("Monochromatic") ||
-	p_BeamBase[i]->Type() == string("Gaussian") ) {
-      if (_bunches[i]!=GetBeam(i)->Flav()) {
-	fit = 0;
-	break;
       }
-    }
+      if (p_BeamBase[i]->Type() == string("Monochromatic") ||
+      p_BeamBase[i]->Type() == string("Gaussian") ) {
+      if (_bunches[i]!=GetBeam(i)->Bunch()) {
+      fit = 0;
+      break;
+      }
+      }
+    */
   }
   return fit;
 }

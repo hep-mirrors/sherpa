@@ -73,6 +73,8 @@ bool Event_Handler::GenerateEvent()
     }
   }
 
+  // Maybe a boost phase here ???
+
   if (flag==0) flag=1;
   while (flag) {
     flag = 0;

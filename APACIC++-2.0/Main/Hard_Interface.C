@@ -45,7 +45,7 @@ void Hard_Interface::PrepareTrees() {
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
-int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
+int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,double x2) {
   if (!m_showers) return 1;
   if (m_fsron) {
     Poincare cms(p_fintree->GetRoot()->part->Momentum());
@@ -60,9 +60,16 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
 
     p_finshower->SetAllColours(p_fintree->GetRoot());
 
-    msg.Debugging()<<"Final State Shower successful !"<<std::endl;
-    if (!m_isron) msg.Debugging()<<"Has to be boosted into lab frame (done by is shower part)!"<<std::endl;
-    if (rpa.gen.Debugging()) p_finshower->OutputTree(p_fintree);
+    if (!m_isron) {
+      cout<<"====================================="<<endl;
+      p_finshower->OutputTree(p_fintree);
+      Vec4D vl =Vec4D(x1+x2,0.,0.,x2-x1);
+      Poincare lab(vl);
+      p_fintree->BoRo(lab);
+      cout<<"====================================="<<endl;
+      p_finshower->OutputTree(p_fintree);
+      cout<<"====================================="<<endl;
+    }
   }
 
   if (m_isron) {
@@ -75,7 +82,6 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
     Vec4D mom1=p_initrees[0]->GetRoot()->part->Momentum();
     Vec4D mom2=p_initrees[1]->GetRoot()->part->Momentum();
 
-    mom1+mom2;
     Vec4D vl =Vec4D(mom1[0]+mom2[0], -1.*Vec3D(mom1+mom2));
     Poincare lab(vl);
     lab.BoostBack(mom1);
