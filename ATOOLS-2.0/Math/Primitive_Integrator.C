@@ -146,7 +146,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
     Update();
     error=Sigma()/Mean();
     msg_Info()<<om::blue<<Mean()<<om::reset<<" +- ( "
-	      <<error*Mean()<<" = "<<om::red<<error<<" %"
+	      <<error*Mean()<<" = "<<om::red<<error*100.0<<" %"
 	      <<om::reset<<" ) @ "<<m_np<<std::endl;
     Split();
   }
@@ -158,7 +158,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
     Update();
     error=Sigma()/Mean();
     msg_Info()<<om::blue<<Mean()<<om::reset<<" +- ( "
-	      <<error*Mean()<<" = "<<om::red<<error<<" %"
+	      <<error*Mean()<<" = "<<om::red<<error*100.0<<" %"
 	      <<om::reset<<" ) @ "<<m_np<<std::endl;
   }
   return m_sum/m_np;
