@@ -277,6 +277,8 @@ void Cut_Data::Update(double sprime,double y)
   Poincare Backward(Vec4D(E1+E2,0.,0.,E2-E1));
   Vec4D help;
   for (int i=2;i<ncut;i++) {
+
+
     if (cosmax[0][i]<1.) {
       if (!fl[i].IsMassive() || y>=0.) {
 	help = Vec4D(1.,sqrt(1.-sqr(cosmax[0][i])),0.,cosmax[0][i]);
@@ -291,6 +293,11 @@ void Cut_Data::Update(double sprime,double y)
       }
       else cosmax[1][i] = cosmax[i][1] = 1.;  // No better estimate for massive particles
     }
+
+    double ct= sqrt(1.0-(sqr(etmin[i])-sqr(fl[i].Mass()))/(sprime/4.0-sqr(fl[i].Mass())));
+    cosmax[i][0] = cosmax[0][i] = Min(cosmax[0][i],ct);
+    cosmax[i][1] = cosmax[1][i] = Min(cosmax[1][i],ct);
+    cosmin[i][1] = cosmin[i][0] = cosmin[1][i] = cosmin[0][i] = -ct;
   }
   
   //for (int i=2;i<ncut;i++) 
