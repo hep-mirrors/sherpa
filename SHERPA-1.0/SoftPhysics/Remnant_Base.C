@@ -143,6 +143,11 @@ ATOOLS::Flavour Remnant_Base::ConstituentType(const ATOOLS::Flavour &flavour)
 
 bool Remnant_Base::Extract(ATOOLS::Particle *parton) 
 { 
+  if (parton==NULL) {
+    ATOOLS::msg.Error()<<"Remnant_Base::Extract(NULL): "
+		       <<"Called with NULL pointer."<<std::endl;
+    return false;
+  }
   m_extracted.push_back(parton); 
   double E=parton->Momentum()[0];
   if (E<0.0 || E>m_ebeam) {
