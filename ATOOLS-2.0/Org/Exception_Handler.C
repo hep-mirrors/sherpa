@@ -162,10 +162,20 @@ void Exception_Handler::SignalHandler(int signal)
     break;
   case SIGINT:
     if (!rpa.gen.BatchMode()) {
-      msg.Error()<<"   Do you want to stop the program (y/n/s/d)? "<<om::reset;
+      msg.Error()<<"   Do you want to stop the program (y/n/k/p/d/s)? "<<om::reset;
       std::cin>>input;
     }
-    if (input=="d" || input=="D") {
+    if (input=="k" || input=="K") {
+      kill(getpid(),9);
+    }
+    else if (input=="p" || input=="P") {
+      bool print=s_print;
+      s_print=true;
+      PrepareTerminate();
+      s_print=print;
+      std::cin.get();
+    }
+    else if (input=="d" || input=="D") {
       system((std::string("gdb Sherpa ")+ATOOLS::ToString(getpid())).c_str());
     }
     else if (input=="s" || input=="S") {
