@@ -249,14 +249,13 @@ void PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
     return;
   }
 
-  double MaxPTmin = 0., PTmin = 0.;
+  double MaxPTmin = 0.;
   int    contrib  = 0;
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       ptmin[i] = _min; 
       ptmax[i] = AMATOOLS::Min(_max,AORGTOOLS::rpa.gen.Ecms());
-      PTmin   += ptmin[i];
-      if (PTmin>MaxPTmin) MaxPTmin = PTmin;
+      if (ptmin[i]>MaxPTmin) MaxPTmin = ptmin[i];
       contrib++;
       AORGTOOLS::msg.Debugging()<<"Set PT-Range for "<<m_fl[i]<<" : "
 				<<ptmin[i]<<" ... "<<ptmax[i]<<endl;
