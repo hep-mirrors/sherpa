@@ -333,7 +333,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode, Knot * mo, Knot * si, co
 bool Spacelike_Kinematics::CheckVector(Vec4D vec) 
 {
   if ( (vec.Abs2() > 0) && (vec.Abs2() < 0) ) return 1;
-  if (vec[0] < 0) return 1;
+  //  if (vec[0] < 0) return 1;
   return 0;
 }
 

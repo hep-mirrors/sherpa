@@ -81,7 +81,7 @@ namespace APACIC {
       of the sister of k1 is calculated in dependence on k1->t, k1->prev->t,
       and k2->t.
     */
-    double CalculateMaxT(Knot * k1,Knot * k2);
+    static double CalculateMaxT(Knot * k1,Knot * k2);
     /*!
       Boosts two trees related to the two incoming Knots into the
       cm system of these two konts and returns the cm energy squared
