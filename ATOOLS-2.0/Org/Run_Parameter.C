@@ -4,6 +4,7 @@
 #include "Message.H"
 #include "Exception.H"
 #include "Random.H"
+#include "Data_Reader.H"
 
 using namespace ATOOLS;
 
@@ -32,14 +33,30 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_timer.Start();
   std::string gccversion;
   system("gcc -dumpversion > sherpa_gcc_test");
-  std::ifstream *gcctest = new std::ifstream("sherpa_gcc_test");
-  if (*gcctest) (*gcctest)>>gccversion;
-  delete gcctest;
+  std::ifstream *test = new std::ifstream("sherpa_gcc_test");
+  if (*test) (*test)>>gccversion;
+  delete test;
   system("if test -f sherpa_gcc_test; then rm sherpa_gcc_test; fi");
   if (gccversion.find("2.96")!=std::string::npos) {
     throw(Exception(ex::fatal_error,"Sherpa must not be run on gcc version 2.96 !",
 		    "Run_Parameter","Init"));
   }
+  system("finger `whoami` > sherpa_user_test");
+  Data_Reader *reader = new Data_Reader();
+  reader->SetInputFile("sherpa_user_test");
+  reader->SetVectorType(reader->VHorizontal);
+  std::vector<std::string> help;
+  if (!reader->VectorFromFile(help,"Name:")) { 
+    gen.m_username=std::string("<unknown user>");
+  }
+  else {
+    for (std::vector<std::string>::iterator nit=help.begin();nit!=help.end();++nit) {
+      gen.m_username+=*nit+std::string(" ");
+    }
+  }
+  delete reader;
+  std::cout<<"Welcome to Sherpa, "<<gen.m_username<<std::endl;
+  system("if test -f sherpa_user_test; then rm sherpa_user_test; fi");
   m_path        = path;
   Data_Read dr(m_path+file);
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);

@@ -45,6 +45,7 @@ namespace ATOOLS {
       MyTiming m_timer;
       double m_timeout;
       bool m_batchmode;
+      std::string m_username;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   RandomSeed()                          { return m_seed;    }
@@ -66,6 +67,7 @@ namespace ATOOLS {
       inline MyTiming &Timer()                            { return m_timer;     }
       inline bool   BatchMode()                           { return m_batchmode; }
       bool CheckTime(const double limit=0.);
+      inline const std::string &UserName() { return m_username; }
 #ifndef USING__ATOOLS_only
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
       inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }
