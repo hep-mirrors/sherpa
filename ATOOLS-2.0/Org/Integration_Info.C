@@ -35,9 +35,8 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,const size_t
   std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > > &keys=m_keymap[key.m_name].second;
   std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > >::iterator kit=keys.find(key.m_info);
   if (kit==keys.end()) {
-    size_t max=0;
-    for (kit=keys.begin();kit!=keys.end();++kit) max=ATOOLS::Max(max,kit->second.first);
-    keys[key.m_info]=std::pair<size_t,std::vector<Info_Key*> >(++max,std::vector<Info_Key*>());
+    keys[key.m_info]=std::pair<size_t,std::vector<Info_Key*> >(m_weights[key.m_valuekey].size(),
+							       std::vector<Info_Key*>());
     m_weights[key.m_valuekey].push_back(0.);
     kit=keys.find(key.m_info);
   }
