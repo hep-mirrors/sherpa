@@ -90,13 +90,18 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
       }
     }
   }
-#ifdef DEBUG__Read_Write_Base
-  std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
-	   <<"   parameter = '"<<parameter<<"'"<<std::endl;
-#endif
   length=parameter.length()+cutinputblanks;
   size_t pos=input.find(parameter);
-  if (m_exactmatch && pos!=0) pos=std::string::npos;
+  if (m_exactmatch && pos!=0) {
+    size_t i=0;
+    for (;i<Blank().size();++i) if (input[pos-1]==Blank()[i]) break;
+    if (i==Blank().size()) pos=std::string::npos;
+  }
+#ifdef DEBUG__Read_Write_Base
+  std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
+	   <<"   parameter = '"<<parameter<<"' at "<<(int)pos<<"\n"
+	   <<"   exact     = "<<(pos!=std::string::npos)<<std::endl;
+#endif
   if (pos==std::string::npos) length=0;
   return pos;
 }
