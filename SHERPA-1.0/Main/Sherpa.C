@@ -56,7 +56,7 @@ using namespace AMATOOLS;
 using namespace std;
 
 //const double facycut=.125;
-const double facycut=.125;
+//const double facycut=.125;
 
 bool Sherpa::Init(int argc,char* argv[]) {
   ParticleInit("./");
@@ -68,7 +68,7 @@ bool Sherpa::Init(int argc,char* argv[]) {
 
 
 
-  double sy = facycut*rpa.integ.Ycut()*sqr(rpa.gen.Ecms());
+  double sy = rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms());
   double sa = sqr(rpa.gen.Ecms());
 
   cout<<" a = "<<(*as)(sy)<<endl;
@@ -82,7 +82,7 @@ bool Sherpa::Init(int argc,char* argv[]) {
   blobs             = new Blob_List;
   AM                = new Amegic("./"); // ,isr;
 
-  int jetnumber     = 5;   // *AS* WARNING this influences the jetveto! Have to apply
+  int jetnumber     = 4;   // *AS* WARNING this influences the jetveto! Have to apply
   // modified sudakovs as well!
   
   isr=0; // NO Initial-Shower (isr has to be initialised by Amegic)
@@ -215,20 +215,24 @@ bool Sherpa::RescaleJetrates() {
 
 bool Sherpa::CrossSections() {
   if (AM->InitializeProcesses()) { 
+    msg.Out()<<" Matching: yf   = "<<rpa.test.FactorYcut()<<endl;
+    msg.Out()<<" Matching: nllf = "<<rpa.test.FactorNLLQ()<<endl;
+
+
     if (tune) { 
       int  mode_dir = 448;
       mkdir("Tuning",mode_dir); 
       AM->SetResDir(std::string("Tuning"));
       // set scale for alphaS factors
       if (rpa.me.KFactorScheme()==1 && rpa.me.ScaleScheme()==2)
-	AM->Processes()->SetScale(facycut*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
+	AM->Processes()->SetScale(rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
       if (!AM->LookUpXSec(rpa.integ.Ycut(),1,std::string("dY_cut"))) return 0;
       return 1;
     }
     else {
       // set scale for alphaS factors
       if (rpa.me.KFactorScheme()==1 && rpa.me.ScaleScheme()==2)
-	AM->Processes()->SetScale(facycut*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
+	AM->Processes()->SetScale(rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
       if (AM->CalculateTotalXSec()) {
 	// determine (rescaled) jetrates
 	RescaleJetrates();

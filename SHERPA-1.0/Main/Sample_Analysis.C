@@ -87,12 +87,25 @@ void Sample_Analysis::Finish() {
     }
 
     //    ana->FinishAnalysis("testout_sherpa_GE130c",0);
-    MyStrStream s;
+    MyStrStream s1;
     int   alf = int(1000.*rpa.consts.FixedAlphaS()+0.5);
-    s<<alf;
     string salf;
-    s>>salf;
-    string name=string("testout_sherpa_GM") + salf;
+    s1<<alf;
+    s1>>salf;
+
+    MyStrStream s2;
+    int   yf = int(1000.*rpa.test.FactorYcut()+0.5);
+    string syf;
+    s2<<yf;
+    s2>>syf;
+
+    MyStrStream s3;
+    int   nllf = int(100.*rpa.test.FactorNLLQ()+0.5);
+    string snllf;
+    s3<<nllf;
+    s3>>snllf;
+
+    string name=string("sh_GO_") + salf + string("_") + syf + string("_") + snllf;
 
     //    ana->FinishAnalysis("testout_sherpa_GE125g",0);
     ana->FinishAnalysis(name,0);
