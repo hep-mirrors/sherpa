@@ -60,16 +60,16 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Cannot open file '")+
 			    m_path+processfile+std::string("'"),"Simple_XS","InitializeProcesses"));
   }
-  char buffer[100];
+  std::string buffer;
   size_t position;
   int         flag;
   string      buf,ini,fin;
   int         nIS,   nFS;
   Flavour   * IS,  * FS, * flavs;
   while(from) {
-    from.getline(buffer,100);
-    if (buffer[0] != '%' && strlen(buffer)>0) {
-      buf        = string(buffer);
+    getline(from,buffer);
+    if (buffer[0] != '%' && buffer.length()>0) {
+      buf        = buffer;
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position!=std::string::npos && position<buf.length()) {
@@ -94,9 +94,9 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	  }
 	  else {
 	    do {
-	      from.getline(buffer,100);
-	      if (buffer[0] != '%' && strlen(buffer)>0) {
-		buf      = string(buffer);
+	      getline(from,buffer);
+	      if (buffer[0] != '%' && buffer.length()>0) {
+		buf      = buffer;
 		position = buf.find(string("End process"));
 		if (!from) {
 		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("<<m_path+processfile<<")."<<endl
@@ -105,8 +105,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		  position     = 0;
 		}
 	      }
-	    }
-	    while (position==std::string::npos);
+	    } while (position==std::string::npos);
 	    if (nIS+nFS>(int)m_nmax) m_nmax = nIS+nFS;
 	    flavs              = new Flavour[nIS+nFS];
 	    for (int i=0;i<nIS;i++) flavs[i]     = IS[i]; 
