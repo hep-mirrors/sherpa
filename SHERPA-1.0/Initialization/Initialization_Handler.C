@@ -427,6 +427,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
   if (!helpi) return true;
   helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
   if (helpi>0) {
+    ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
     ANALYSIS::Analysis_Handler::ShowSyntax(helpi);
     throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"Syntax shown.",
 			    "Initialization_Handler","InitializeTheAnalyses"));
