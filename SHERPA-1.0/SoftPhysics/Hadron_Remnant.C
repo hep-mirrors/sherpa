@@ -214,15 +214,23 @@ ATOOLS::Flavour Hadron_Remnant::Opposite(ATOOLS::Flavour flav) const
 bool Hadron_Remnant::DecomposeHadron() 
 {
   PROFILE_HERE;
+  bool success=true;
   for (ATOOLS::Particle_List::iterator pit=m_extracted.begin();
        pit!=m_extracted.end();++pit) {
+    if ((*pit)->Momentum()[0]>m_ebeam || (*pit)->Momentum()[0]<0.0) {
+      ATOOLS::msg.Error()<<"Hadron_Remnant::DecomposeHadron(): "
+			 <<"Constituent energy out of range. \n   E_"
+			 <<(*pit)->Flav()<<" = "<<(*pit)->Momentum()[0]
+			 <<"."<<std::endl;
+      success=false;
+    }
     for (size_t j=0;j<m_constit.size();++j) {
       if ((*pit)->Flav()==m_constit[j]) {
-	if (ValenceQuark(*pit)) {
+	if (success && ValenceQuark(*pit)) {
 	  p_start = new Color_Dipole(*pit,&m_companions);  
 	  p_start->Begin(ANTI((*pit)->Flav().IsAnti()))->
 	    SetFlav(Opposite((*pit)->Flav()));
-	  return true;
+	  return success;
 	}
       }
     }
@@ -233,7 +241,7 @@ bool Hadron_Remnant::DecomposeHadron()
   p_start = new Color_Dipole(part,&m_companions);  
   p_start->Begin(ANTI(flav.IsAnti()))->SetFlav(Opposite(flav));
   m_companions.push_back(part);
-  return true;
+  return success;
 }
 
 double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale) 
