@@ -117,17 +117,12 @@ double XS_Base::Scale(const ATOOLS::Vec4D *momenta)
   SetMomenta(momenta);
   if (m_nin==1) return momenta[0].Abs2();
   SetSTU(momenta);
-  double MZ=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
   switch (m_scalescheme) {
   case 1:
     m_scale=momenta[2].PPerp2();
     break;
   case 2:
     m_scale=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
-    break;
-  case 10:
-    m_scale=(momenta[0]+momenta[1]).PPerp2();
-    m_scale=pow(m_scale,2./3.)*pow(MZ,1./3.);
     break;
   case 11:
     m_scale=(momenta[0]+momenta[1]).PPerp2();
