@@ -475,23 +475,26 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
 			  <<"Do not know how to handle more than 2 incoming particles."<<endl;
     abort();
   }
+  
   double s = (_p[0]+_p[1]).Abs2();
-
   double pt2;
-  switch (m_scalescheme) {
+
+  //new
+switch (m_scalescheme) {
   case 1  :
     if (m_nin+m_nout==4) {
       double t = (_p[0]-_p[2]).Abs2();
       double u = (_p[0]-_p[3]).Abs2();
-      pt2 = AMATOOLS::sqr(_p[2][1])+AMATOOLS::sqr(_p[2][2]);
-      //pt2 = 2.*s*t*u/(s*s+t*t+u*u);
+      pt2 = 2.*s*t*u/(s*s+t*t+u*u);
     }
-    return pt2;
+  break;
   case 2  :
-    return m_scale;
+    pt2 = m_scale;
+    break;
   default :
-    return s;
+    pt2 = s;
   }
+ return pt2;
 }
 
 double Process_Base::KFactor(double _scale) {
