@@ -4,12 +4,18 @@
 
 #include "Random.H"
 
+#ifdef PROFILE__Event_Handler
+#include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
+#endif
+
 using namespace SHERPA;
 using namespace ATOOLS;
 
 
-Event_Handler::Event_Handler() :
-  p_analysis(NULL)
+Event_Handler::Event_Handler() 
 {
   p_phases  = new Phase_List;
 }
@@ -20,29 +26,29 @@ Event_Handler::~Event_Handler()
   EmptyEventPhases();
   
   if (p_phases)   { delete p_phases;   p_phases   = NULL; }
-  if (p_analysis) { delete p_analysis; p_analysis = NULL; }
 }
 
-void Event_Handler::AddEventPhase(Event_Phase_Handler * _phase) 
+void Event_Handler::AddEventPhase(Event_Phase_Handler * phase) 
 {
-  std::string _type = _phase->Type();
-  std::string _name = _phase->Name();
+  std::string type = phase->Type();
+  std::string name = phase->Name();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
-    if ((_type==(*pit)->Type()) && (_name==(*pit)->Name())) {
-      msg.Events()<<"Event_Handler::AddEventPhase("<<_type<<":"<<_name<<") "
+    if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
+      msg.Events()<<"Event_Handler::AddEventPhase("<<type<<":"<<name<<") "
 		  <<"already included."<<std::endl;
       return;
     }
   }
-  msg.Events()<<"Event_Handler::AddEventPhase("<<_type<<":"<<_name<<")."<<std::endl;
-  p_phases->push_back(_phase);
+  msg.Events()<<"Event_Handler::AddEventPhase("<<type<<":"<<name<<")."<<std::endl;
+  p_phases->push_back(phase);
 }
 
-Event_Phase_Handler * Event_Handler::GetEventPhase(int i) {
-  if (i>-1 && i<p_phases->size()) {
+Event_Phase_Handler * Event_Handler::GetEventPhase(const size_t i) {
+  if (i<p_phases->size()) {
+    size_t count=i;
     for (Phase_Iterator pit=p_phases->begin();pit<p_phases->end();pit++) {
-      if (i==0) return (*pit);
-      i--;
+      if (count==0) return (*pit);
+      count--;
     }
   }
   msg.Error()<<"Error in Event_Handler::GetEventPhase("<<i<<")"<<std::endl
@@ -51,7 +57,7 @@ Event_Phase_Handler * Event_Handler::GetEventPhase(int i) {
   return NULL;
 }
 
-int Event_Handler::NumberOfEventPhases() { return p_phases->size(); }
+size_t Event_Handler::NumberOfEventPhases() { return p_phases->size(); }
 
 void Event_Handler::EmptyEventPhases() 
 {
@@ -72,16 +78,47 @@ void Event_Handler::PrintGenericEventStructure()
   }
 }
 
-bool Event_Handler::GenerateEvent() 
+bool Event_Handler::GenerateEvent(int mode) 
 {
+  PROFILE_LOCAL("Event_Handler::GenerateEvent");
+
   CleanUpEvent();
+
+
+  bool flag     = 1;
+  double weight = 1.;
+  if (mode>0) {
+    if (mode==9999) {
+      while (flag) {
+	flag = 0;
+	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+	  if ((*pit)->Type()==std::string("Read-in") &&
+	      (*pit)->Name()!=std::string("Analysis") ) {
+	    bool result=(*pit)->Treat(&m_blobs,weight);
+	    if (result) flag = 1;
+	  }
+	}
+      }
+      
+      for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+	if ((*pit)->Type()==std::string("Perturbative") &&
+	    (*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
+      }
+      for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+	if ((*pit)->Type()==std::string("Hadronization") &&
+	    (*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
+      }
+      
+      return 1;
+    }
+  } 
+
+
   Blob * hardblob = new Blob();
   hardblob->SetType(std::string("Signal Process : "));
   hardblob->SetId(0);
   m_blobs.push_back(hardblob);
 
-  bool flag     = 1;
-  double weight = 1.;
   while (flag) {
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -98,14 +135,20 @@ bool Event_Handler::GenerateEvent()
 	(*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
   }
 
-  if (flag==0) flag=1;
+  flag=1;
   while (flag) {
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Type()==std::string("Hadronization")) {
+      if ((*pit)->Type()==std::string("Hadronization") &&
+	  (*pit)->Name()!=std::string("Analysis") ) {
 	if ((*pit)->Treat(&m_blobs,weight)) flag = 1;
       }
     }
+  }
+
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+    if ((*pit)->Type()==std::string("Hadronization") &&
+	(*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
   }
 
   return 1;
@@ -146,9 +189,6 @@ void Event_Handler::PrintBlobs() {
 }
 
 
-void Event_Handler::PerformAnalysis() {
-  //if (p_analysis) p_analysis->DoAnalysis(&m_partons);
-}
 
 
 void Event_Handler::Finish() {
@@ -157,4 +197,3 @@ void Event_Handler::Finish() {
     (*pit)->Finish(std::string("Results"));
 }
 
-void Event_Handler::SetAnalysis(Sample_Analysis * _analysis) { _analysis = p_analysis; }

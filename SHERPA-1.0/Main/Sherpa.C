@@ -1,11 +1,19 @@
 #include "Sherpa.H"
 #include "Analysis_Phase.H"
+#include "EvtReadin_Phase.H"
 #include "Signal_Processes.H"
 #include "Hard_Decays.H"
 #include "Multiple_Interactions.H"
 #include "Jet_Evolution.H"
 #include "Hadronization.H"
 #include "Message.H"
+
+#ifdef PROFILE__Sherpa
+#include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
+#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -31,12 +39,14 @@ extern "C" {
 Sherpa::Sherpa() :
   p_inithandler(NULL), p_eventhandler(NULL), p_output(NULL), p_analysis(NULL)  
 {
+  PROFILE_HERE;
   m_errors = 0;
   m_trials = 100;
 }
 
 Sherpa::~Sherpa() 
 {
+  PROFILE_HERE;
   if (p_analysis)     { delete p_analysis;     p_analysis     = NULL; }
   if (p_output)       { delete p_output;       p_output       = NULL; }
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
@@ -45,20 +55,21 @@ Sherpa::~Sherpa()
 
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
 { 
+  PROFILE_HERE;
   m_path = std::string("./");
   p_inithandler  = new Initialization_Handler(argc, argv);
-  int mode = p_inithandler->Mode();
+
+  int mode = p_inithandler->Mode();  
   if (mode==14) {
     return PerformScan();
   }
   else {
-    bool okay;
     if (p_inithandler->InitializeTheFramework()) {
       p_output = new Output_Handler(0);
-      okay     =  p_inithandler->CalculateTheHardProcesses();
-      return okay;
+      return p_inithandler->CalculateTheHardProcesses();
     }
   }
+  
   msg.Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
 	     <<"   Try to run nevertheless ... ."<<endl;
@@ -68,28 +79,35 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
 bool Sherpa::InitializeTheEventHandler() 
 {
-  //p_analysis        = new Sample_Analysis(p_inithandler->Path(),p_inithandler->File());
+  PROFILE_HERE;
+  
+  int mode       = p_inithandler->Mode();
   p_eventhandler = new Event_Handler();
-  p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(std::string("SignalMEs")),
-						     p_inithandler->GetHardDecayHandler()));
-  p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
-  //p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
-  p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Signal Process")));
-  //p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Hard decay")));
-  p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
-						  p_inithandler->GetShowerHandler()));
-  //p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));
-  //p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
-  //						  p_inithandler->GetFragmentationHandler()));
-  //p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,3));
+
+  if (mode==9999) p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader()));
+  else {
+      cout<<" ============================================ "<<std::endl;
+      p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(std::string("SignalMEs")),
+							 p_inithandler->GetHardDecayHandler()));
+      //p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
+      p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
+      p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
+						      p_inithandler->GetShowerHandler()));
+      p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
+						      p_inithandler->GetFragmentationHandler()));
+  }
+  
+  p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Signal Process"),
+						   p_inithandler->Path(),p_inithandler->File()));
   return 1;
 }
 
 
 bool Sherpa::GenerateOneEvent() 
 {
+  PROFILE_HERE;
   for (int i=0;i<m_trials;i++) {
-    if (p_eventhandler->GenerateEvent()) {
+    if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
       if (p_output->Active()) p_output->OutputToFormat(p_eventhandler->GetBlobs());
       return 1;
     }

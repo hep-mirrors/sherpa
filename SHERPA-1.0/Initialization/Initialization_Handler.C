@@ -60,6 +60,10 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   ExtractCommandLineParameters(argc, argv);
 
+  if (m_mode>9000) {
+    p_evtreader = new Event_Reader(m_path,m_evtfile);
+    return;
+  }
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
@@ -76,6 +80,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
 Initialization_Handler::~Initialization_Handler()
 {
+  if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
@@ -94,6 +99,13 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     ATOOLS::ParticleInit(m_path); 
     rpa.Init(m_path,m_file);
   }
+
+  if (m_mode==9999) {
+    msg.Out()<<"SHERPA will read in the events."<<std::endl
+	     <<"   The full framework is not needed."<<std::endl;
+    return true;
+  }
+
   bool okay = InitializeTheModel();  
 
   //  set masses and widths from command line
@@ -324,7 +336,7 @@ bool Initialization_Handler::InitializeTheFragmentation()
 
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
-  if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
+    if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
 //   p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
 //  					     p_fragmentation->GetLundInterface());
   p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
@@ -332,8 +344,15 @@ bool Initialization_Handler::InitializeTheHadronDecays()
   return 1;
 }
 
+
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
+  if (m_mode>9000) {
+    msg.Out()<<"SHERPA will read in the events."<<std::endl
+	     <<"   No cross sections for hard processes to be calculated."<<std::endl;
+    return true;
+  }
+
   int scalechoice = 0;
   if (p_showerhandler) {
     if (p_showerhandler->ISROn()) scalechoice += 1;
@@ -405,6 +424,9 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["PATH"]=101;
   special_options["RUNDATA"]=102;
   special_options["ECMS"]=103;
+  special_options["EVTDATA"]=9999;
+
+  
 
   for (int i=1; i<argc;++i) {
     int mode   = 0;
@@ -433,12 +455,12 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     if (mode>=100) {
       MyStrStream s;
       switch (mode) {
-      case 101:
+       case 101:
 	if (value[value.length()-1]!='/') value+=std::string("/");
 	m_path=value;
 	break;
       case 102:
-	m_file=value;
+	  m_file=value;
 	break;
       case 103:
 	s<<value;
@@ -451,8 +473,13 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
 	break;
+      case 9999:
+	  m_mode       = 9999;
+	  m_evtfile    = value;
+	  ATOOLS::msg.Out()<<" Sherpa will readin events from : "<<value<<endl;
+        break;
       case 100:
-	m_options[key]=value;
+	m_options[key] = value;
       }
     }
     else {

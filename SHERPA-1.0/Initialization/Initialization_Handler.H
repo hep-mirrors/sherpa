@@ -11,7 +11,7 @@
 #include "Beam_Remnant_Handler.H"
 #include "Fragmentation_Handler.H"
 #include "Hadron_Decay_Handler.H"
-
+#include "Event_Reader.H"
 #include "Data_Read.H"
 
 #include <map>
@@ -21,7 +21,7 @@
 namespace SHERPA {
   class Initialization_Handler {
   private :
-    std::string m_path,m_file;
+    std::string m_path,m_file,m_evtfile;
     std::string m_modeldat, m_beamdat, m_isrdat, m_medat, m_midat, m_decaydat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat;
 
@@ -47,6 +47,7 @@ namespace SHERPA {
     Fragmentation_Handler      * p_fragmentation;
     Hadron_Decay_Handler       * p_hadrondecays;
     MI_Handler                 * p_mihandler; 
+    Event_Reader               * p_evtreader;
 
   private :
 
@@ -76,8 +77,9 @@ namespace SHERPA {
     bool InitializeTheFramework(int =-1);
     bool CalculateTheHardProcesses();
 
-    const std::string Path() const { return m_path; }
-    const std::string File() const { return m_file; }
+    const std::string Path()    const { return m_path; }
+    const std::string File()    const { return m_file; }
+    const std::string EvtFile() const { return m_evtfile; }
 
     Matrix_Element_Handler      * GetMatrixElementHandler(std::string _key);
 
@@ -92,6 +94,7 @@ namespace SHERPA {
     Hadron_Decay_Handler        * GetHadronDecayHandler()    { return p_hadrondecays;    }
     ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
     MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
+    Event_Reader                * GetEventReader()           { return p_evtreader;       }
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

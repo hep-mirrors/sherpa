@@ -13,7 +13,6 @@ namespace SHERPA {
 
   class Event_Handler {
     Phase_List        * p_phases;
-    Sample_Analysis   * p_analysis;
     ATOOLS::Blob_List   m_blobs;
 
     void PrintBlobs();
@@ -23,18 +22,16 @@ namespace SHERPA {
     ~Event_Handler();
 
     void AddEventPhase(Event_Phase_Handler *);
-    Event_Phase_Handler * GetEventPhase(int);
-    int  NumberOfEventPhases();
+    Event_Phase_Handler * GetEventPhase(const size_t);
+    size_t  NumberOfEventPhases();
     void EmptyEventPhases();
 
     void PrintGenericEventStructure();
 
-    bool GenerateEvent();
-    void PerformAnalysis();
+    bool GenerateEvent(int=0);
     void PrintEvent(int);
     void Finish();
 
-    void SetAnalysis(Sample_Analysis *);
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
   };
 

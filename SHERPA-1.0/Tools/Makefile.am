@@ -26,6 +26,8 @@ libSherpaTools_la_SOURCES     =	\
 				HepEvt_Interface.C \
 			    	Sample_Analysis.C \
 			    	Analysis_Phase.C \
+			    	EvtReadin_Phase.C \
+                                Event_Reader.C \
 				fhepevt.f 
 noinst_HEADERS        =	\
 			Kinematics.H \
@@ -33,7 +35,9 @@ noinst_HEADERS        =	\
 		 	HepMC_Interface.H \
 			HepEvt_Interface.H \
 			Sample_Analysis.H \
-			Analysis_Phase.H 
+			Analysis_Phase.H \
+			EvtReadin_Phase.H \
+			Event_Reader.H
 
 EXTRA_DIST    =	$(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
