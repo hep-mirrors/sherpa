@@ -58,7 +58,7 @@ template Process_Info ATOOLS::Blob_Data_Base::Get<Process_Info>();
 
 std::ostream & ATOOLS::operator<<(std::ostream & s, const Process_Info & wi)
 {
-  s<<" name="<<wi.texname<<"   xsec="<<wi.xsec<<" +- "<<wi.xsec_err<<" pb \n";
+  s<<" name="<<wi.texname<<"   xsec="<<wi.xsec<<" +- "<<wi.xsec_err<<" pb ";
   return s;
 }
 
