@@ -1,3 +1,4 @@
+#ifdef ROOT_SUPPORT
 #ifndef My_Root_H
 #define My_Root_H
 
@@ -64,4 +65,5 @@ namespace MYROOT {
   
 }// end of namespace MYROOT
 
+#endif
 #endif

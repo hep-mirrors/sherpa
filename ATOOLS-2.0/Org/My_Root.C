@@ -1,3 +1,4 @@
+#ifdef ROOT_SUPPORT
 #include "My_Root.H"
 
 using namespace MYROOT;
@@ -68,3 +69,5 @@ bool My_Root::AddObject(TObject *const object,const std::string &key)
   }
   return false;
 }
+
+#endif

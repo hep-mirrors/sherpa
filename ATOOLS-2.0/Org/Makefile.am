@@ -1,6 +1,6 @@
 SHERPASYS = ../..
 
-ATOOLSFLAGS   =	-DUSING__COLOUR -pedantic -Wall -Winline -Wno-long-long
+ATOOLSFLAGS   =	-DUSING__COLOUR -pedantic -Wall -Winline
 
 ATOOLSINCS    =	-I../Math -I../Phys
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
@@ -8,8 +8,10 @@ MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
+
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
 lib_LTLIBRARIES = libToolsOrg.la
@@ -67,5 +69,5 @@ noinst_HEADERS        =	\
 			Node.C \
 			My_Root.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ATOOLSFLAGS)
+AM_CXXFLAGS   =	$(ATOOLSFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
