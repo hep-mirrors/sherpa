@@ -1,5 +1,4 @@
 #include "Amegic.H"
-#include "Decay.H"
 
 #include "Interaction_Model_Handler.H"
 #include "Message.H"

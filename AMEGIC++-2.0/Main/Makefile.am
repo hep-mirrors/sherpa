@@ -24,7 +24,7 @@ INCLUDES = -I../Amplitude \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H \
-		 Process_Base.H Single_Process.H Process_Group.H Decay.H \
+		 Process_Base.H Single_Process.H Process_Group.H \
 		 All_Processes.H Full_Decay_Table.H All_Decays.H Amegic.H 
 
 EXTRA_DIST    = $(CVSINCLUDE) 
