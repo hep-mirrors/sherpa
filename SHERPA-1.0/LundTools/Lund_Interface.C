@@ -21,6 +21,7 @@ ATOOLS::Blob_List *Lund_Interface::s_bloblist;
 Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   m_path(_m_path),
   m_file(_m_file),
+  p_hepevt(NULL), 
   p_phep(new double[5*4000]),
   p_vhep(new double[4*4000]),
   p_jmohep(new int[2*4000]),
