@@ -64,13 +64,23 @@ namespace AMISIC {
 		      std::vector<std::string>(0));
 
     // inline functions
-    inline const std::string XSExtension() const  { return m_xsextension;  }
-    inline const std::string MCExtension() const  { return m_mcextension;  }
+    inline double GridXMin() const { return m_gridxmin; }
+    inline double GridXMax() const { return m_gridxmax; }
+   
+    inline const std::string XSExtension() const  
+    { return m_xsextension;  }
+    inline const std::string MCExtension() const  
+    { return m_mcextension;  }
 
     inline void SetXSExtension(const std::string xsextension)
     { m_xsextension=xsextension; }
     inline void SetMCExtension(const std::string mcextension)
     { m_mcextension=mcextension; }
+
+    inline void SetGridXMin(const double gridxmin) 
+    { m_gridxmin=gridxmin; }
+    inline void SetGridXMax(const double gridxmax) 
+    { m_gridxmax=gridxmax; }
 
   }; // end of class Grid_Creator
 

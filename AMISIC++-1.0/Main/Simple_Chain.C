@@ -388,7 +388,8 @@ bool Simple_Chain::SetUpInterface()
     group->InitIntegrators();
     if (!group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension+
 					 "/MC_"+group->Name(),16|32))
-      group->CalculateTotalXSec(OutputPath()+m_mcextension);
+      group->CalculateTotalXSec(OutputPath()+m_mcextension+
+				"/MC_"+group->Name(),true);
     const std::vector<PHASIC::Single_Channel*> &best=group->PSHandler(false)->
       FSRIntegrator()->Best();    
     if (best.size()>0) p_fsrinterface->SetChID(best[0]->Name());

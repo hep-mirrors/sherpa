@@ -42,7 +42,7 @@ bool Amisic::Initialize()
   reader->SetInputFile(InputFile());
   std::vector<std::string> model;
   if (!reader->VectorFromFile(model,"HARD_MODEL_NAME",ATOOLS::noinputtag,reader->VHorizontal)) {
-    model.push_back("None");
+    model.push_back("Simple_Chain");
   }
   for (size_t i=1;i<model.size();++i) model[0]+=std::string(" ")+model[i];
   SelectHardModel(StringToModelID(model[0]));

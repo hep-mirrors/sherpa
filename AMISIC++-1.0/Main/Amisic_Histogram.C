@@ -272,9 +272,9 @@ WriteOut(const std::string &filename,const std::string &datatag,
 		       p_yaxis->Variable().Name());
   writer->WriteComment("--------------------");
   writer->WriteComment(std::string("x_{min} : ")+
-		       ATOOLS::ToString(m_xmin));
+		       ATOOLS::ToString(m_xmin,12));
   writer->WriteComment(std::string("x_{max} : ")+
-		       ATOOLS::ToString(m_xmax));
+		       ATOOLS::ToString(m_xmax,12));
   writer->WriteComment("--------------------");
   writer->WriteComment(comments);
   writer->WriteComment("  Data Set follows  ");
@@ -489,4 +489,4 @@ void Amisic_Histogram<ArgumentType>::SetFinished(const bool finished)
   m_finished=finished; 
 }
 
-template AMISIC::Amisic_Histogram<double>;
+template class AMISIC::Amisic_Histogram<double>;

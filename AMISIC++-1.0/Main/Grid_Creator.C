@@ -91,13 +91,11 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   if (!reader->ReadFromFile(helpd,"MAX_EVENTS")) helpd=100000;
   m_maxevents=(long unsigned)helpd;
   if (!reader->ReadFromFile(m_binerror,"GRID_ERROR")) m_binerror=0.05;
-  if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) {
-    m_outputlevel=ATOOLS::msg.Level();
-  }
-  if (!reader->ReadFromFile(m_gridxscaling,
-			    "HISTO_X_SCALING")) m_gridxscaling="Log_B_10";
-  if (!reader->ReadFromFile(m_gridyscaling,
-			    "HISTO_Y_SCALING")) m_gridyscaling="Id";
+  if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) m_outputlevel=0;
+  if (!reader->ReadFromFile(m_gridxscaling,"HISTO_X_SCALING")) 
+    m_gridxscaling="Log_B_10";
+  if (!reader->ReadFromFile(m_gridyscaling,"HISTO_Y_SCALING")) 
+    m_gridyscaling="Id";
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {
     hit->second->XAxis()->SetVariable(m_gridxvariable);
@@ -137,8 +135,8 @@ bool Grid_Creator::ReadInGrid()
        hit!=p_histograms->end();++hit) {
     if (hit->second->ReadIn(OutputPath()+hit->first+m_xsextension,
 			    m_datatag)) {
-      if (hit->second->XMin()>m_gridxmin ||
-	  hit->second->XMax()<m_gridxmax ||
+      if (hit->second->XMin()-m_gridxmin>m_gridxmin*1.0e-7 ||
+	  m_gridxmax-hit->second->XMax()>m_gridxmax*1.0e-7 ||
 	  hit->second->Entries()<m_initevents) {
 	Clear();
 	return false;
@@ -161,9 +159,8 @@ bool Grid_Creator::InitializeCalculation()
     SetData(m_criterion,flavours,helpi,m_gridxmin,m_gridxmax);
   p_processes->ResetSelector(p_processes->SelectorData());
   p_processes->Reset();
-  p_processes->CalculateTotalXSec("");
-  p_processes->PSHandler(false)->
-    WriteOut(OutputPath()+OutputFile()+MCExtension(),true);
+  p_processes->CalculateTotalXSec(OutputPath()+OutputFile()
+				  +MCExtension(),true);
   return true;
 }
 
@@ -191,16 +188,17 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
 
 bool Grid_Creator::CreateOptimizedGrid()
 {
+  msg_Info()<<"Grid_Creator::CreateInitialGrid(): Optimizing grid for MI.";
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_maxevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_maxevents/100))==0) {
       double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
-      ATOOLS::msg.Out()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
- 		       <<int(diff)<<" s elapsed / "
- 		       <<int((m_maxevents-m_events)/(double)m_events*diff)
- 		       <<" s left / "<<int(m_maxevents/(double)m_events*diff)
-		       <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
+      msg_Tracking()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
+		    <<int(diff)<<" s elapsed / "
+		    <<int((m_maxevents-m_events)/(double)m_events*diff)
+		    <<" s left / "<<int(m_maxevents/(double)m_events*diff)
+		    <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
   return true;
@@ -208,16 +206,17 @@ bool Grid_Creator::CreateOptimizedGrid()
 
 bool Grid_Creator::CreateInitialGrid()
 {
+  msg_Info()<<"Grid_Creator::CreateInitialGrid(): Initializing grid for MI.";
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_initevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_initevents/100))==0) {
       double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
-      ATOOLS::msg.Out()<<"   "<<((100*m_events)/m_initevents)<<" % ( "
-		       <<int(diff)<<" s elapsed / "
-		       <<int((m_initevents-m_events)/(double)m_events*diff)
-		       <<" s left / "<<int(m_initevents/(double)m_events*diff)
-		       <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
+      msg_Tracking()<<"   "<<((100*m_events)/m_initevents)<<" % ( "
+		    <<int(diff)<<" s elapsed / "
+		    <<int((m_initevents-m_events)/(double)m_events*diff)
+		    <<" s left / "<<int(m_initevents/(double)m_events*diff)
+		    <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
   return true;
@@ -230,8 +229,9 @@ bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments)
   for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
        hit!=p_histograms->end();++hit) {
     hit->second->Finish();
-    if (!hit->second->WriteOut(OutputPath()+hit->first+m_xsextension,
-			       m_datatag,addcomments)) success=false;
+    if (!hit->second->WriteOut(OutputPath()+hit->first
+			       +m_xsextension,m_datatag,
+			       addcomments)) success=false;
   }
   return success;
 }
