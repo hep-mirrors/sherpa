@@ -104,9 +104,6 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
       Vec4D help=amoms[0];
       amoms[0]=amoms[1];
       amoms[1]=help;
-      double h=_x1;
-      _x1=_x2;
-      _x2=h;
     }
 
     p_combi = new Combine_Table(p_jf,amoms,0,m_isrmode,m_isrshoweron);
@@ -122,9 +119,6 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
       Vec4D help=amoms[0];
       amoms[0]=amoms[1];
       amoms[1]=help;
-      double h=_x1;
-      _x1=_x2;
-      _x2=h;
     }
     p_ct = p_combi->CalcJet(nlegs,_x1,_x2,amoms);
     delete [] amoms;
@@ -515,6 +509,11 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     int k=i%2+1;
     p_blob->OutParton(j-2)->SetFlow(k, knots[j]->part->GetFlow(k));
   }
+
+  cout<<" tree0:"<<endl;
+  cout<<ini_trees[0]<<endl;
+  cout<<" tree1:"<<endl;
+  cout<<ini_trees[1]<<endl;
 }
 
 
