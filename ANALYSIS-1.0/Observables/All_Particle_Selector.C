@@ -260,8 +260,8 @@ void DPhi_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
   ATOOLS::Particle_List *reflist=p_ana->GetParticleList(m_reflist);
   int no=-1; 
   size_t pos=std::string::npos;
-  for (size_t i=0;i<particlelist.size();++i) 
-    if (particlelist[i]->Flav()==m_flavour || 
+  for (size_t i=0;i<reflist->size();++i) 
+    if ((*reflist)[i]->Flav()==m_flavour || 
 	m_flavour.Kfcode()==ATOOLS::kf::none) {
       ++no;
       if (no==(int)m_item) {
