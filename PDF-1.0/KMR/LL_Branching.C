@@ -118,6 +118,7 @@ double LL_Branching::Gamma(double q, double Q)
     splitting=m_splitting[0]->Integral(0.,Q/(Q+q));
   }
   else if (m_flavour.IsGluon()) {
+    // splitting=p_alphas->Nf(q*q)*m_const[0]/s_nf;
     splitting=m_const[0];
     splitting+=m_splitting[0]->Integral(q/(Q+q),Q/(Q+q));
   }
