@@ -59,16 +59,19 @@ namespace ATOOLS {
 	getline(*m_infile[i],lastline);
 	if (checkbegin) {
 	  if (!filebegin) {
-	    if (lastline.find(m_filebegin)!=std::string::npos) filebegin=true;
+	    if (lastline.find(m_filebegin)!=std::string::npos) {
+	      lastline=lastline.substr(lastline.find(m_filebegin)+m_filebegin.length());
+	      filebegin=true;
+	    }
 	  }
 	  else {
-	    m_filecontent.push_back(lastline);
 	    if (checkend) {
 	      if (lastline.find(m_fileend)!=std::string::npos) {
+		lastline=lastline.substr(0,lastline.find(m_fileend));
 		filebegin=false;
-		m_filecontent.erase(m_filecontent.end());
 	      }
 	    }
+	    if (lastline.length()>0) m_filecontent.push_back(lastline);
 	  }
 	}
 	else {
