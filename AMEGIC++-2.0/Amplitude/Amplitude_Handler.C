@@ -22,12 +22,13 @@ void out_pfunc(Pfunc & pf) {
 
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 				     Interaction_Model_Base * model,Topology* top,
+				     int _orderQCD,int _orderEW,
 				     Basic_Sfuncs* BS,String_Handler* _shand,
 				     std::string pID) : shand(_shand)
 {
   groupname = string("All Amplitudes");
 
-  gen = new Amplitude_Generator(N,fl,b,model,top,BS,shand);
+  gen = new Amplitude_Generator(N,fl,b,model,top,_orderQCD,_orderEW,BS,shand);
   Single_Amplitude* firstgraph = gen->Matching();
   delete gen;
 

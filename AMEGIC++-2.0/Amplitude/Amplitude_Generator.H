@@ -33,8 +33,6 @@ namespace AMEGIC {
   typedef  std::vector<Single_Vertex *>  Vertex_List;
   typedef  std::map<APHYTOOLS::Flavour, Vertex_List> Vertex_Table;
   typedef  std::vector<Pre_Amplitude> Pre_Ampl_List;
-//   typedef  std::vector<Point*> Point_List;
-//   typedef  std::vector<int*>   Counter_List;
 
 
   class Mpi_Tag {
@@ -61,7 +59,7 @@ namespace AMEGIC {
   
 class Amplitude_Generator {
   static int NMAX;
-  int N;
+  int                      N,nEW,nQCD;
   APHYTOOLS::Flavour     * fl;
   int                    * b;
   Interaction_Model_Base * p_model;
@@ -89,7 +87,7 @@ class Amplitude_Generator {
   int  Single_Compare(Point*,Point*);
   int  FindQEDOrder(Point*,int&);
   int  FindQCDOrder(Point*,int&);
-  void KillHigherOrders(Single_Amplitude* &,int,int);
+  void KillHigherOrders(Single_Amplitude* &);
   void Compare(Single_Amplitude* &);
   void Unite(Point*,Point*);
 
@@ -112,8 +110,8 @@ class Amplitude_Generator {
   int CountRealAmplitudes(Single_Amplitude* first);
 public:
   static int * DivideComparisons(int cpu_size, int nampl, int rank);
-  Amplitude_Generator(int,APHYTOOLS::Flavour*,int*,Interaction_Model_Base *,Topology*,
-		      Basic_Sfuncs*,String_Handler*);
+  Amplitude_Generator(int,APHYTOOLS::Flavour *,int *,Interaction_Model_Base *,Topology *,
+		      int,int,Basic_Sfuncs *,String_Handler *);
   ~Amplitude_Generator(); 
   Single_Amplitude* Matching();
 };

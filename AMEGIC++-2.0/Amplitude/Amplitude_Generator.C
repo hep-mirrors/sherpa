@@ -39,8 +39,10 @@ using namespace std;
 
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 					 Interaction_Model_Base * _model,Topology* _top,
+					 int _nQCD,int _nEW,
 					 Basic_Sfuncs* _BS,String_Handler* _shand) 
-  : N(_no), fl(_fl), b(_b), p_model(_model), top(_top), BS(_BS), shand(_shand), s_buffer(0)
+  : N(_no), fl(_fl), b(_b), p_model(_model), top(_top), nEW(_nEW), nQCD(_nQCD),
+    BS(_BS), shand(_shand), s_buffer(0)
 {
   single_top = top->Get(N-2);
   
@@ -967,8 +969,10 @@ int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
   return countQCD;
 }
 
-void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first,int noQEDcpl,int noQCDcpl)
+void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first)
 {
+  msg.Tracking()<<"In KillHigherOrders() nEW = "<<nEW<<", nQCD = "<<nQCD<<endl; 
+    
   Single_Amplitude* last;
   last = first;
   Single_Amplitude* f1 = first;
@@ -979,8 +983,8 @@ void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first,int noQEDc
     int hitQCD = 0;
     hitQED = FindQEDOrder(f1->GetPointlist(),hitQED);
     hitQCD = FindQCDOrder(f1->GetPointlist(),hitQCD);
-    msg.Tracking()<<"hitQED / hitQCD "<<hitQED<<" / "<<hitQCD<<endl;
-    if (hitQED > noQEDcpl || hitQCD > noQCDcpl) {
+    msg.Tracking()<<"hitQED / hitQCD "<<hitQED<<" "<<hitQCD<<endl;
+    if (hitQED > nEW || hitQCD > nQCD) {
       msg.Tracking()<<"Diagram has to be kicked "<<endl;
       ++count;
       if (f1==first) {
@@ -1657,15 +1661,9 @@ Single_Amplitude* Amplitude_Generator::Matching()
 
   CheckFor4Vertices(first_amp);
   
-  int OrderQED = 99;
-  int OrderQCD = 99;
-    
-  OrderQED = rpa.me.OrderAlpha12();
-  OrderQCD = rpa.me.OrderAlphaS();
-  
-  if (OrderQED != 99 || OrderQCD != 99) KillHigherOrders(first_amp,OrderQED,OrderQCD);
-
-  msg.Debugging()<<"Now Compare"<<endl;
+  if (nEW != 99 || nQCD != 99) KillHigherOrders(first_amp);
+ 
+  msg.Debugging()<<"Now Amplitude_Generator::Compare"<<endl;
 
   Compare(first_amp);
 
