@@ -1,16 +1,26 @@
 #!/bin/bash
 
 NODES="90 91 92 93"
+HOSTN=`hostname`
 
 echo -e "\e[34m\e[1mstatus report:\e[0m `date`"
 
 for I in $NODES
 do
+ if [[ $HOSTN == ptpp$I ]]
+ then
+  echo -en "\e[1mptpp$I :\e[0m\e[32m"
+  uptime
+  echo -en "\e[0m\e[31m"
+  ps -fA | grep "Sherpa" 
+  echo -en "\e[0m"
+ else
   echo -en "\e[1mptpp$I :\e[0m\e[32m"
   ssh ptpp$I uptime
   echo -en "\e[0m\e[31m"
   ssh ptpp$I ps -fA | grep "Sherpa" 
   echo -en "\e[0m"
+ fi
 done
 echo -en "\e[0m"
 
