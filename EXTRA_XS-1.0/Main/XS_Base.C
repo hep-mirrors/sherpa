@@ -12,7 +12,8 @@
 
 using namespace EXTRAXS;
 
-XS_Base::XS_Base()
+XS_Base::XS_Base():
+  p_colours(NULL), m_order_ew(0), m_order_strong(0)
 {
   m_name="Empty XS";
 } 
@@ -24,7 +25,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 		 ATOOLS::Selector_Data *const selectordata):
   Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
-  p_colours(NULL)
+  p_colours(NULL), m_order_ew(0), m_order_strong(0)
 {
   Init(flavours);
   ResetSelector(selectordata);
@@ -34,7 +35,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
   Integrable_Base(nin,nout,flavours),
-  p_colours(NULL)
+  p_colours(NULL), m_order_ew(0), m_order_strong(0)
 {
   Init(flavours);
   p_selector = new ATOOLS::No_Selector();

@@ -95,7 +95,13 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   static Getter_Function_Map s_gettermap;
   Getter_Function_Map::const_iterator git=s_gettermap.find(Flavour_Container(flavours,nqed,nqcd));
   if (git!=s_gettermap.end()) {
-    return git->second(nin,nout,flavours,nqed,nqcd);
+    xs=git->second(nin,nout,flavours,nqed,nqcd);
+    if (xs==NULL) return xs;
+    xs->SetScaleScheme(p_owner->ScaleScheme());
+    xs->SetKFactorScheme(p_owner->KFactorScheme());
+    xs->m_order_ew=nqed;
+    xs->m_order_strong=nqcd;
+    return xs;
   }
   if (m_offshell) { 
     if ((xs=Single_XS::GetProcess<Off_Shell_qqb_llb>(nin,nout,flavours,nqed,nqcd))!=NULL);
