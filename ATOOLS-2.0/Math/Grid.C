@@ -2,6 +2,7 @@
 
 #include "MathTools.H"
 #include "Message.H"
+#include "MyStrStream.H"
 #ifdef DEBUG__Grid
 #include "Blob.H"
 #endif
@@ -201,32 +202,32 @@ bool Grid::WriteOut(const std::string &filename)
   }
   p_file->precision(14);
   (*p_file)<<m_dim<<" "<<m_points<<" {"<<std::endl;
-  size_t node=0;
-  bool result=WriteOut(p_root,node);
+  bool result=WriteOut(p_root,0);
   (*p_file)<<"}"<<std::endl;
   delete p_file;
   return result;
 }
 
-bool Grid::WriteOut(Node<double> *current,size_t &node)
+bool Grid::WriteOut(Node<double> *current,const size_t node)
 {
   bool result=true;
   for (size_t i=0;i<current->size();++i) {
-    (*p_file)<<(*current)[i]<<" ";
-    if (current->operator->()==NULL) node=0;
-    else {
-      if (!WriteOut((*current)()[i],node)) result=false;
-      ++node;
-    }
-    if (node==2) (*p_file)<<std::endl;
+    (*p_file)<<(node!=m_dim?std::string(node,' '):"")<<(*current)[i]<<" ";
+    if (node<m_dim-1) (*p_file)<<std::endl;
+    if (current->operator->()!=NULL) 
+      if (!WriteOut((*current)()[i],node+1)) result=false;
+    if (node==m_dim-1) (*p_file)<<std::endl;
   }
   return result;
 }
 
 bool Grid::ReadIn(const std::string &filename)
 {
+  msg_Debugging()<<"Grid::ReadIn(\""<<filename<<"\"):"<<std::endl;
   p_file = new std::fstream((m_file=filename).c_str(),std::ios::in);
-  if (p_file->bad()) {
+  if (!p_file->good()) {
+    msg_Info()<<"Grid::ReadIn(\""<<filename<<"\"): "
+	      <<"Cannot find file."<<std::endl;
     delete p_file;
     return false;
   }
@@ -235,26 +236,43 @@ bool Grid::ReadIn(const std::string &filename)
   p_file->precision(14);
   (*p_file)>>dim>>points>>dummy;
   if (dim!=m_dim || points!=m_points || dummy!="{") {
+    msg.Error()<<"Grid::ReadIn(\""<<filename<<"\"): "
+	       <<"Inconsistent grid dimension."<<std::endl;
     delete p_file;
     return false;
   }
-  size_t node=0;
-  bool result=ReadIn(p_root,node);
-  if (result) (*p_file)>>dummy;
+  bool result=ReadIn(p_root,0);
+  if (!p_file->eof()) (*p_file)>>dummy;
   if (dummy!="}") result=false;
   delete p_file;
+  if (!result) msg.Error()<<"Grid::ReadIn(\""<<filename<<"\"): "
+			  <<"Data error."<<std::endl;
   return result;
 }
 
-bool Grid::ReadIn(Node<double> *current,size_t &node)
+bool Grid::ReadIn(Node<double> *current,const size_t node)
 {
-  bool result=true;
   for (size_t i=0;i<current->size();++i) {
-    if (p_file->eof()) return false;
-    (*p_file)>>(*current)[i];
-    if (current->operator->()!=NULL) 
-      if (!ReadIn((*current)()[i],node)) result=false;
+    if (p_file->eof()) {
+      msg.Error()<<"Grid::ReadIn(..): "
+		 <<"EOF at "<<i<<" ";
+      return false;
+    }
+    std::string dummy;
+    (*p_file)>>dummy;
+    (*current)[i]=ATOOLS::ToType<double>(dummy);
+    if (ATOOLS::msg.LevelIsDebugging()) {
+      msg_Debugging()<<std::string(node,' ')<<(*current)[i]<<" ";
+      if (node!=m_dim-1) msg_Debugging()<<std::endl;
+    }
+    if (current->operator->()!=NULL) {
+      if (!ReadIn((*current)()[i],node+1)) {
+        if (node==0) msg.Error()<<std::endl;
+	else msg.Error()<<i<<" ";
+	return false;
+      }
+    }
   }
-  return result;
+  return true;
 }
 

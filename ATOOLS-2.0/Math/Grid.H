@@ -33,8 +33,8 @@ namespace ATOOLS {
 		     Node<double> *const node,std::vector<double> &y,
 		     const size_t j);
 
-    bool WriteOut(Node<double> *current,size_t &node);
-    bool ReadIn(Node<double> *current,size_t &node);
+    bool WriteOut(Node<double> *current,const size_t node);
+    bool ReadIn(Node<double> *current,const size_t node);
 
   public:
 
