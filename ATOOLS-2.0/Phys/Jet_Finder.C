@@ -279,7 +279,12 @@ double Jet_Finder::PTij(AMATOOLS::Vec4D p1,AMATOOLS::Vec4D p2)
   if (m_type>=2) {
     double pt1_2  = sqr(p1[1]) + sqr(p1[2]); 
     double pt2_2  = sqr(p2[1]) + sqr(p2[2]); 
-    pt12_2        = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - DPhi12(p1,p2));
+    if (IsZero(pt1_2/(pt1_2+pt2_2))) {
+      pt12_2        = pt2_2;
+    }
+    else 
+      pt12_2        = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - DPhi12(p1,p2));
+    //    cout<<" ptij = "<<pt12_2<<endl;
   }
   else {
     pt12_2        = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
@@ -292,6 +297,10 @@ bool Jet_Finder::TwoJets(const AMATOOLS::Vec4D & p1)
 {
   if (m_type>=2) {
     if (sqr(p1[1]) + sqr(p1[2])  < m_s * m_ycut) return 0;
+  }
+  else {
+    msg.Out()<<"Jet_Finder::TwoJets(Vec4D &) "<<endl;
+    msg.Out()<<"    JETFINDER METHOD STILL NOT IMPLEMENTED for mode "<<m_type<<std::endl;
   }
   return 1;
 }
