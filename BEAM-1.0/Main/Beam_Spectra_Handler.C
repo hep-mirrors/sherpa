@@ -375,3 +375,27 @@ void   Beam_Spectra_Handler::SetSprimeMin(double _spl)
 }
 
 void   Beam_Spectra_Handler::SetSprimeMax(double _spl)      { m_splimits[1]  = Min(m_splimits[1],_spl); }
+
+void Beam_Spectra_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
+{
+  ATOOLS::msg.Tracking()<<"Beam_Spectra_Handler::AssignKeys(..):"
+			<<"Creating initial mapping keys ...\n";
+  m_spkey.Assign("s' beam",4,0,info);
+  m_ykey.Assign("y beam",3,0,info);
+  m_xkey.Assign("x beam",5,0,info);
+  ATOOLS::msg.Tracking()<<"... done."<<std::endl;
+}
+
+void Beam_Spectra_Handler::SetLimits() 
+{
+  for (short int i=0;i<2;++i) {
+    m_spkey[i]=m_splimits[i];
+    m_ykey[i]=m_ylimits[i];
+  }
+  m_spkey[2]=ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+  m_xkey[0]=-std::numeric_limits<double>::max();
+  m_xkey[2]=-std::numeric_limits<double>::max();
+  m_xkey[1]=log(Upper1());
+  m_xkey[3]=log(Upper2());
+}
+

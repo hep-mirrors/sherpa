@@ -5,6 +5,7 @@
 #include "Vector.H"
 #include "Poincare.H"
 #include "Data_Read.H"
+#include "Info_Key.H"
 
 namespace BEAM {
   class Beam_Spectra_Handler {
@@ -20,6 +21,7 @@ namespace BEAM {
     double                m_splimits[3],m_ylimits[2];
     ATOOLS::Vec4D         m_fiXVECs[2];
     std::string           m_name,m_type;
+    ATOOLS::Info_Key      m_spkey, m_ykey, m_xkey;
   private:
     bool InitKinematics(ATOOLS::Data_Read *);
     bool SpecifySpectra(ATOOLS::Data_Read *);
@@ -40,6 +42,9 @@ namespace BEAM {
 
     void   BoostInCMS(ATOOLS::Vec4D *,int);
     void   BoostInLab(ATOOLS::Vec4D *,int);
+
+    void   AssignKeys(ATOOLS::Integration_Info *const info);
+    void   SetLimits();
 
     void   SetName(std::string _name)     { m_name         = _name; }
     void   SetSprimeMin(double _spl);
