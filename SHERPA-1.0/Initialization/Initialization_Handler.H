@@ -14,6 +14,7 @@
 #include "Analysis_Handler.H"
 #include "Lund_Interface.H"
 #include "Herwig_Interface.H"
+#include "MCatNLO_Interface.H"
 #include "Data_Read.H"
 
 #include <map>
@@ -69,6 +70,7 @@ namespace SHERPA {
     IO_Handler                 * p_iohandler;
     Lund_Interface             * p_pythia;
     Herwig_Interface           * p_herwig;
+    MCatNLO_Interface          * p_mcatnlo;
   private :
     bool InitializeTheIO();
     bool InitializeTheExternalMC();
@@ -122,6 +124,7 @@ namespace SHERPA {
     IO_Handler                  * GetIOHandler()             { return p_iohandler;       }
     Lund_Interface              * GetPythiaInterface()       { return p_pythia;          }
     Herwig_Interface            * GetHerwigInterface()       { return p_herwig;          }
+    MCatNLO_Interface           * GetMCatNLOInterface()      { return p_mcatnlo;         }
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

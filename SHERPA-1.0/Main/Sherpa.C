@@ -97,6 +97,9 @@ bool Sherpa::InitializeTheEventHandler()
   case 9001:
     p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetHerwigInterface())); 
     break;
+  case 9002:
+    p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetMCatNLOInterface())); 
+    break;
   case 9999: 
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_iohandler)); 
     break;
