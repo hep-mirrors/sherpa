@@ -5,7 +5,7 @@
 #include "Cut_Data.H"
 #include "Flavour.H"
 #include "Vector.H"
-#include "Integration_Info.H"
+#include "Info_Key.H"
 
 namespace PHASIC {
 
