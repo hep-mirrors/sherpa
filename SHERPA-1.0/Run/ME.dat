@@ -1,7 +1,7 @@
 !-------------------------------------------------------
 !-- ME generators --------------------------------------
 !-------------------------------------------------------
-RESULT DIRECTORY      = Results
+!RESULT DIRECTORY      = Results      not working at the moment.
 ME_SIGNAL_GENERATOR   = Amegic      ! Internal or Amegic
 EVENT_GENERATION_MODE = Unweighted
 SIGNAL_MODEL          = SM

@@ -509,9 +509,9 @@ void APHYTOOLS::SetMassless()
 }
 
 int Flavour::GetIntID(double value) {
-// double 0.mmmmm00000 * 10^ee
-// negative exponent possible
-// negative mantisse is not included!!!!
+  // double 0.mmmmm00000 * 10^ee
+  // negative exponent possible
+  // negative mantisse is not included!!!!
   if (value==0) return 0;
 
   int length = 4;
@@ -522,7 +522,6 @@ int Flavour::GetIntID(double value) {
   else exp_10=0x80+((-exp_10)&0x7F);
 
   int result = int (value/nref+0.5)*0x100+exp_10;
-  //  cout<<" doubleID="<<result<<std::endl;
   return result;
 }
 
@@ -534,38 +533,32 @@ int Flavour::PropertiesID() {
   pid^=Rot(wid,12,24);
 
   pid=pid^FlagID();
-  //  cout<<" pid="<<pid;
   return pid;
 }
 
 int Flavour::FlagID() {
-//ch+4 -3, -1, 0, 2       
-//    1   3   4  6
-//
-//y+1 0 1 2
-//s   0 1 2
-//
-//mj   0 1
-//on  0 1
-//t   0 1
-//M   0 1 
-//
-// su3 0 1
+  //ch+4 -3, -1, 0, 2       
+  //    1   3   4  6
+  //
+  //y+1 0 1 2
+  //s   0 1 2
+  //
+  //mj   0 1
+  //on  0 1
+  //t   0 1
+  //M   0 1 
+  //
+  // su3 0 1
   int ix=Index();
 
   int flag=0;
   flag+= IntCharge() +4;
   flag*=16;
-
   flag+= (particles[ix].isow +1)*4 + particles[ix].sp;
   flag*=16;
-
   flag+=  particles[ix].Maj*8+ particles[ix].on*4+ particles[ix].stbl*2 + particles[ix].msv;
   flag*=16;
-
   flag+=  particles[ix].str;
-
-  //  cout<<" flags="<<flag<<std::endl;
   return flag;
 }
 
@@ -592,13 +585,9 @@ int Flavour::ID_SM() {
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy()) {
       count++;
-      //      cout<<flav<<":"<<std::endl;
       int local_id=flav.PropertiesID();
-      // Rot ( all single IDs rot by kfcode )
       local_id=Rot(local_id,flav.Kfcode(),24);
-      // combine all results by XOR
       sm_id=sm_id^local_id;
-      //      cout<<" sm_id="<<sm_id<<std::endl;
     } 
   }
   return sm_id+(count*0x1000000);
@@ -612,11 +601,9 @@ int Flavour::ID_MSSM() {
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && !flav.IsHadron() && flav.IsSusy()) {
       count++;
-      //      cout<<flav<<":"<<std::endl;
       int local_id=flav.PropertiesID();
       local_id=Rot(local_id,flav.Kfcode(),24);
       mssm_id=mssm_id^local_id;
-      //      cout<<" mssm_id="<<mssm_id<<std::endl;
     } 
   }
   return mssm_id+(count*0x1000000);
@@ -631,11 +618,9 @@ int Flavour::ID_Had() {
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.IsOn() && flav.IsHadron() && !flav.IsSusy()) {
       count++;
-      //      cout<<flav<<":"<<std::endl;
       int local_id=flav.PropertiesID();
       local_id=Rot(local_id,flav.Kfcode(),24);
       had_id=had_id^local_id;
-      //      cout<<" had_id="<<had_id<<std::endl;
     } 
   }
   return had_id+(count*0x1000000);

@@ -93,9 +93,7 @@ bool Test_Selector::Trigger(const Vec4D* vecs)
     for (int k=0; k<m_nin ; ++k) {
       if ((m_fl[i].IntCharge()!=0)&&(m_fl[i].IsFermion())&&(!m_fl[i].IsQuark())
 	  &&(cos_ij(i,k)>max_cos_l_beam)) return sel_logs[4]->Hit();   
-      //if ((m_fl[i].Kfcode()==kf::photon)) cout<<"p_beam : "<<cos_ij(i,k)<<endl;
       if ((m_fl[i].Kfcode()==kf::photon)&&(cos_ij(i,k)>max_cos_p_beam)) {
-	//cout<<"p_beam (kicked) : "<<cos_ij(i,k)<<endl;
 	return sel_logs[5]->Hit();   
       }
       if ((m_fl[i].IsGluon())&&(cos_ij(i,k)>max_cos_g_beam)) 
@@ -122,7 +120,6 @@ bool Test_Selector::Trigger(const Vec4D* vecs)
       }
     } 
   }
-  //  cout<<" done "<<endl;
   return 1;
 }
 
@@ -169,17 +166,6 @@ void Test_Selector::BuildCuts(Cut_Data* cuts)
     } 
   }
 
-  // used
-
-  /*
-  cout<<" in void Test_Selector::BuildCuts(Cut_Data* cuts) :"<<endl;
-
-  for (int i=0;i<m_nin+m_nout; ++i) {
-    for (int j=i+1;j<m_nin+m_nout; ++j) {
-      cout<<" cut["<<j<<"]["<<i<<"]="<<cuts->scut[j][i]<<endl;      
-    }
-  }
-  */
 
   //minimal energy = mass
   for (int i=0; i<m_nin+m_nout; ++i) cuts->energymin[i] = Max(cuts->energymin[i],rpa.consts.Mass(m_fl[i],sqr(rpa.gen.Ecms())));
@@ -194,64 +180,13 @@ void Test_Selector::BuildCuts(Cut_Data* cuts)
   	   *sqrt(dabs(sqr(cuts->energymin[j])-sqr(rpa.consts.Mass(m_fl[j],sqr(rpa.gen.Ecms())))))
 	*cuts->cosmax[i][j];
       cuts->scut[i][j] = Max(Max(cuts->scut[i][j],sc),1.e-12*sqr(rpa.gen.Ecms()));
-      //cuts->scut[i][j] = 1.e-14*sqr(rpa.gen.Ecms());
       cuts->scut[j][i] = cuts->scut[i][j];
-      //      cout<<i<<";"<<j<<" : "<<cuts->scut[i][j]<<endl;
     }
   } 
-
-  /*
-  cout<<" in void Test_Selector::BuildCuts(Cut_Data* cuts) :"<<endl;
-
-  for (int i=0;i<m_nin+m_nout; ++i) {
-    for (int j=i+1;j<m_nin+m_nout; ++j) {
-      cout<<" cut["<<j<<"]["<<i<<"]="<<cuts->scut[j][i]<<endl;      
-    }
-  }
-  */
-
 }
 
 
 
-/* old
-int Test_Selector::Trigger(const Vec4D* vecs) {
-  cur_vecs=vecs;
-  for (int i=m_nin; i<m_nin+m_nout; ++i) {
-    // minimal Energy of gluon and photon
-    if ((m_fl[i].IsGluon())&&(vecs[i][0]<min_E_g)) return 0;
-    if ((m_fl[i].Kfcode()==kf::photon)&&(vecs[i][0]<min_E_p)) return 0;
-
-
-    if (((m_fl[i].IsLepton())||
-	(m_fl[i].IsQuark())) &&
-	(m_fl[i].IntCharge()!=0)) {  // charged lepton/quark
-      // minimal Energy of charged lepton and quark
-      if ((m_fl[i].IsLepton())&&(vecs[i][0]<min_E_l)) return 0;
-      if ((m_fl[i].IsQuark())&&(vecs[i][0]<min_E_q)) return 0;
-    
-      // minimal angle between lepton/quark <-> beam
-      if (cos_ij(i,0)>max_cos_l_beam) return 0;   
-
-
-      for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (((m_fl[j].IsQuark())||(m_fl[j].IsLepton())) &&
-	    (m_fl[j].IntCharge()!=0)) {	  
-	  
-	  if ((m_fl[j].IsQuark())&&(m_fl[i].IsQuark())) {
-	    // minmal invariant mass squared between quarks
-	    if (m2_ij(i,j)<min_m2_q_q) return 0;   
-	  } else {
-	    // minimal angle between lepton/quark <-> lepton
-	    if (cos_ij(i,j)>max_cos_l_l) return 0; 
-	  }
-	} 
-      }
-    }
-  }
-  return 1;
-}
-*/
 
 
 

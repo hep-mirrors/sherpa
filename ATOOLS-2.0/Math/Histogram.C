@@ -39,10 +39,7 @@ Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
     m_bins[i]   = new double[m_depth];
     for (int j=0;j<m_depth;j++) m_bins[i][j] = 0.;
   }
-
-  msg.Debugging()<<"Histogram initialized : "
-			    <<m_nbin-2<<" bins in "<<m_lower<<" ... "<<m_upper<<std::endl;
-};
+}
 
 Histogram::Histogram(Histogram * histo) {
   m_lower   = histo->m_lower;
@@ -62,8 +59,6 @@ Histogram::Histogram(Histogram * histo) {
     m_bins[i]  = new double[m_depth]; 
     for (int j=0;j<m_depth;j++) m_bins[i][j] = histo->m_bins[i][j];
   }
-  msg.Debugging()<<"Histogram initialized(copy) : "
-			    <<m_nbin-2<<" bins in "<<m_lower<<" ... "<<m_upper<<std::endl;
 }
 
 
@@ -134,7 +129,6 @@ void Histogram::Finalize() {
     //    total += m_bins[i][0]; 
     total += m_bins[i][0]/=m_fills; 
   }
-  msg.Debugging()<<"Finalize histogram : "<<total<<"/"<<m_fills<<"="<<total/m_fills<<std::endl;
 }
 
 void Histogram::Reset() {
@@ -152,25 +146,25 @@ void Histogram::Scale(double scale) {
     total += m_bins[i][0]; 
   }
   m_fills = int(double(m_fills)/scale);
-  msg.Debugging()<<"Scale histogram : "<<scale<<std::endl;
 }
 
 void Histogram::Output() {
-  msg.Tracking()<<"----------------------------------------"<<std::endl;
-  msg.Tracking()<<"    "<<m_bins[0][0]<<std::endl;
-  msg.Tracking()<<"----------------------------------------"<<std::endl;
+  if (!rpa.gen.Tracking()) return;
+  msg.Out()<<"----------------------------------------"<<std::endl
+	   <<"    "<<m_bins[0][0]<<std::endl
+	   <<"----------------------------------------"<<std::endl;
   double result = 0.;
   for (int i=0;i<m_nbin-2;i++) {
-    msg.Tracking()<<m_lower+i*m_binsize<<"  ";
-    for (int j=0;j<m_depth;j++) msg.Tracking()<<m_bins[i+1][j]<<"  ";
+    msg.Out()<<m_lower+i*m_binsize<<"  ";
+    for (int j=0;j<m_depth;j++) msg.Out()<<m_bins[i+1][j]<<"  ";
     result += m_bins[i+1][0];
-    msg.Tracking()<<std::endl;
+    msg.Out()<<std::endl;
   }
-  msg.Tracking()<<m_lower+(m_nbin-2)*m_binsize<<" == "<< m_upper<<std::endl;
-  msg.Tracking()<<"----------------------------------------"<<std::endl;
-  msg.Tracking()<<"    "<<m_bins[m_nbin-1][0]<<std::endl;
-  msg.Tracking()<<"----------------------------------------"<<std::endl;
-  msg.Tracking()<<"Inside the range : "<<result<<std::endl;
+  msg.Out()<<m_lower+(m_nbin-2)*m_binsize<<" == "<< m_upper<<std::endl
+	   <<"----------------------------------------"<<std::endl
+	   <<"    "<<m_bins[m_nbin-1][0]<<std::endl
+	   <<"----------------------------------------"<<std::endl
+	   <<"Inside the range : "<<result<<std::endl;
 }
 
 
@@ -188,8 +182,6 @@ void Histogram::Output(std::string name) {
     ofile<<std::endl;
   }
   ofile.close();
-
-  msg.Tracking()<<"written file "<<name<<std::endl;
 }
 
 
@@ -302,23 +294,18 @@ void Histogram::InsertRange(double start, double end, double value) {
       double fac=1;
       if ((start<=low)&&(up<=end )) {
 	m_bins[i][0] += value;
-	//	std::cout<<" case a "<<std::endl;
       } 
       else if ((low<start)&&(up<=end)) {
 	fac = (start-low)/m_binsize;
 	m_bins[i][0] += value *fac;
-	//	std::cout<<" case b "<<std::endl;
       }
       else if ((start<=low)&&(end < up)) {
 	fac = (up-end)/m_binsize;
 	m_bins[i][0] += value *fac;
-	//	std::cout<<" case c "<<std::endl;
       }
       else if ((low<start)&&(end <up)) {
 	fac = (end-start)/m_binsize;
 	m_bins[i][0] += value *fac;
-// 	std::cout<<" case d "<<std::endl;
-// 	std::cout<<" fill ("<<start<<","<<end<<") in ["<<low<<","<<up<<"]  fac="<<fac<<std::endl;
       }
     
 
@@ -330,8 +317,6 @@ void Histogram::InsertRange(double start, double end, double value) {
     low = up;
     up += m_binsize;
   }
-
-  //  if (end==0. && hit==0) std::cout<<" not stored "<<std::endl;
 }
 
 
@@ -364,17 +349,10 @@ void Histogram::Extrapolate(double coordinate,double * res,int mode) {
   }
   else {
     if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
-    std::cout<<" in Extrapolate("<<coordinate<<","<<mode<<")"<<std::endl;
-    std::cout<<" "<<m_lower<<" < "<<coordinate<<" <   "<<m_upper<<std::endl;
 
     for (int i=1;i<m_nbin;i++) {
       if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
 	   (coordinate <  m_lower + i*m_binsize) ) {
-	// coordinate falls in bin no. i
-	std::cout<<" i="<<i<<std::endl;
-	// start of bin is m_lower + (i-1)*m_binsize 
-	// end   of bin is m_lower +  i*m_binsize    
-
 	res[0] = m_bins[i-1][0] +
 	  (m_bins[i][0]-m_bins[i-1][0])/m_binsize *
 	  (coordinate - m_lower - (i-1) * m_binsize);

@@ -210,10 +210,6 @@ void Matrix<_rank>::DiagonalizeSort(double* evalues,Matrix<_rank>& evectors)
     }
   }
   for (short int i=0;i<_rank;++i) flippit[flips[i]][i] = 1.;
-  //flippit.MatrixOut();
-  //msg.Out()<<"EV's"<<endl;
-  //evectors.MatrixOut();
-  //Mat_help = evectors*flippit;
   for (short int i=0;i<_rank;++i) {
     for (short int j=0;j<_rank;++j) {
       Mat_help[i][j] = 0;
@@ -222,8 +218,6 @@ void Matrix<_rank>::DiagonalizeSort(double* evalues,Matrix<_rank>& evectors)
   }
 
   evectors = Mat_help;
-  //msg.Out()<<"EV's rot"<<endl;
-  //evectors.MatrixOut();
 }
 
 #define NRANSI

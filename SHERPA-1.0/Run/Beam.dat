@@ -1,16 +1,16 @@
 !-------------------------------------------------------
 !-- Beam parameters ------------------------------------
 !-------------------------------------------------------
-BEAM_1          = 2212                 ! possible beam particles:  P+, P-, e+, e-
-BEAM_ENERGY_1   = 1000.                ! in GeV
+BEAM_1          = 11                   ! possible beam particles:  P+, P-, e+, e-
+BEAM_ENERGY_1   = 100.                 ! in GeV
 BEAM_POL_1      = 0.                   ! Polarization degree -1 .... 1
 BEAM_SPECTRUM_1 = Monochromatic        ! Monochromatic,Gaussian,Laser_Backscattering
 BEAM_SHAPE_1    = Gaussian_Cylinder    ! Cylinder,Gaussian_Cylinder
 !BEAM_LENGTH_1   = 0.0002              ! Length in cm (lab system)
 !BEAM_RADIUS_1   = 0.0001              ! Radius in cm (lab system)
 !
-BEAM_2          = 2212                 ! possible beam particles:  P+, P-, e+, e- 
-BEAM_ENERGY_2   = 1000.                ! in GeV
+BEAM_2          = -11                  ! possible beam particles:  P+, P-, e+, e- 
+BEAM_ENERGY_2   = 100.                 ! in GeV
 BEAM_POL_2      = 0.                   ! Polarization degree -1 .... 1
 BEAM_SPECTRUM_2 = Monochromatic        ! Monochromatic,Gaussian,Laser_Backscattering
 BEAM_SHAPE_2    = Gaussian_Cylinder    ! Cylinder,Gaussian_Cylinder

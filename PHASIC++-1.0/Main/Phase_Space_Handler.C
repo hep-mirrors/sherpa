@@ -280,7 +280,6 @@ bool Phase_Space_Handler::OneEvent(int mode)
 	return 0;
       }
     }
-    // *AS*    ih->SetSprimeMin(sqr(proc->ISRThreshold()));
     
     if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
     value = Differential(proc->Selected());

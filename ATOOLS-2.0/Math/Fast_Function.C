@@ -143,8 +143,8 @@ double Fast_Function::Invers(double y) {
   }
   if (it==m_data.end()) {
     // x is bigger than or smaller than all stored values
-    std::cout<<"ERROR: Fast_Function::Invers() "<<std::endl;
-    std::cout<<" given y="<<y<<" is not in range "<<YRange()<<std::endl;
+    std::cout<<"ERROR: Fast_Function::Invers() "<<std::endl
+	     <<" given y="<<y<<" is not in range "<<YRange()<<std::endl;
     return 0; 
   }
   return LinInterInv(it,y);
@@ -183,7 +183,6 @@ void Fast_Function::WriteOut(char * name) {
   for (Data_Iter it=m_data.begin();it!=m_data.end();++it) 
     to<<it->x<<"    "<<it->y<<std::endl;
 
-  std::cout<<"File "<<name<<" "<<m_data.size()<<" entries saved."<<std::endl;
 }
 
 
@@ -201,7 +200,6 @@ bool Fast_Function::ReadIn(char * name) {
   }
   from.close();
 
-  std::cout<<"File "<<name<<" read."<<std::endl;
   return 1; // success
 }
 

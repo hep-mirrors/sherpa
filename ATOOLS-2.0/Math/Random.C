@@ -155,7 +155,6 @@ void Random::InitRan3(long *idum)
 
 double Random::Ran3()
 {
-  //  cout<<" inext= "<<m_inext<<endl;
   if (++m_inext == 56) m_inext=1;
   if (++m_inextp == 56) m_inextp=1;
   long mj=m_ma[m_inext]-m_ma[m_inextp];

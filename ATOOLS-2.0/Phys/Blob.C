@@ -53,7 +53,6 @@ namespace APHYTOOLS {
 
 Blob::~Blob() {
   DeleteOwnedPartons();
-  msg.Debugging()<<"Deleted all partons in blob : "<<m_id<<std::endl;
 }
 
 void Blob::AddToInPartons(Parton * Newp) {
@@ -145,7 +144,7 @@ void Blob::DeleteInParton(Parton * _part) {
 	delete _part;
 	_part = NULL;
       }
-      else msg.Out()<<"WARNING: parton not owned by the Blob asked to delete it"<<std::endl;
+      // else msg.Out()<<"WARNING: parton not owned by the Blob asked to delete it"<<std::endl;
       return ;
     }
   }
@@ -164,7 +163,7 @@ void Blob::DeleteOutParton(Parton * _part) {
 	delete _part;
 	_part = NULL;
       }
-      else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<std::endl;
+      // else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<std::endl;
       return ;
     }
   }
@@ -174,17 +173,11 @@ void Blob::DeleteOutParton(Parton * _part) {
 
 void Blob::DeleteOwnedPartons() {
   if (m_inpartons.empty() && m_outpartons.empty()) return;
-  msg.Debugging()<<"In DeleteOwnedPartons() for blob no. : "<<m_id<<" with "
-      <<m_inpartons.size()<<" -> "<<m_outpartons.size()<<std::endl;
   for (int i=m_inpartons.size()-1;i>=0;i--)  {
-    //    msg.Debugging()<<"Try to delete inparton : "<<i<<"/"<<m_inpartons.size()-1<<"  "<<int(m_inpartons[i])<<"  no :"<<m_inpartons[i]->Number()<<std::endl;
     DeleteInParton(m_inpartons[i]);
-    //    msg.Debugging()<<"Succeeded."<<std::endl;
   }
   for (int i=m_outpartons.size()-1;i>=0;i--) {
-    //    msg.Debugging()<<"Try to delete outparton : "<<i<<"/"<<m_outpartons.size()-1<<"  "<<int(m_outpartons[i])<<"  no :"<<m_outpartons[i]->Number()<<std::endl;
     DeleteOutParton(m_outpartons[i]);
-    //    msg.Debugging()<<"Succeeded."<<std::endl;
   }
   m_inpartons.clear();
   m_outpartons.clear();

@@ -26,10 +26,6 @@ int TestListFunction() {
   v1.push_back(3);
   v1.push_back(1);
   
-  msg.Out()<<" std::vector<int> :";
-  for (int k=0;k<v1.size();++k) msg.Out()<<v1[k]<<" ";
-  msg.Out()<<std::endl;
-  
   
   Flavour_List flavs;
   int i;

@@ -20,9 +20,8 @@ void MyTiming::SetCurrent()
 void MyTiming::Start()
 {
   if (status==1) { 
-    msg.Out()<<"Timer already running! Use Stop first!\n";
-  } else { 
-    msg.Out()<<"Starting Timer\n";
+  } 
+  else { 
     status=1;
     SetCurrent();
     startclock=currentclock;
@@ -33,9 +32,8 @@ void MyTiming::Start()
 void MyTiming::Stop()
 {
   if ((status==0)||(status==3)) { 
-    msg.Out()<<"Timer already stoped! Use Start first!\n";
-  } else { 
-    msg.Out()<<"Stoping Timer\n";
+  } 
+  else { 
     status=0;
     SetCurrent();
     stopclock=currentclock;
@@ -46,8 +44,8 @@ void MyTiming::Stop()
 void MyTiming::PrintTime()
 {
   if (status==3) {
-    msg.Out()<<"Start Timer first!!!\n";
-  } else {
+  } 
+  else {
     if (status==1) SetCurrent();
     double clocks=currentclock-startclock;
     double secs=clocks/double(CLK_TCK);

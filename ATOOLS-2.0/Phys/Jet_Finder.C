@@ -89,9 +89,7 @@ bool Jet_Finder::ConstructJets(const APHYTOOLS::Parton_List * parts,
   BoostInFrame(momsout);
 
   bool ordered = 1;
-  //  while (momsout.size() <= jets[jets.front()-lastys.size()]) {
   while ((momsout.size()<=jets[lastys.size()]) && (lastys.size()<jets.size())) {
-    //    cout<<" i="<<lastys.size()<<" moms="<<momsout.size()<<" "<<jets[lastys.size()]<<std::endl;
     lastys.push_back(-1.);
   }
   while (momsout.size()>jets.back()) {
@@ -164,9 +162,6 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
   }
 
   if (j1==-3) {
-    std::cout<<" problem: "<<ymin<<std::endl;
-    for (int k=0; k<momsout.size();++k)
-      std::cout<<k<<" "<<momsout[k]<<std::endl;
     j1=0;
     k1=1;
   }

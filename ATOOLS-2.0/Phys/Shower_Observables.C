@@ -30,7 +30,6 @@ using namespace std;
 void Shower_Observables::InitObservables() {
   all_obs.flav     = Flavour(kf::none);
   all_obs.jet_ini  = 0;
-  //  all_obs.jetrates = new Jetrates(11,1.e-6,1.,180,0);
   all_obs.jetrates = new Jetrates(11,1.e-6,1.,120,0);
   all_obs.multi    = new Multiplicity(00,-0.5,50.5,51,0);
   all_obs.wz_pt    = new PT_Distribution(00,0.,200.,40,1,Flavour(kf::W));
@@ -54,13 +53,9 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
 
   Parton_List pl;
 
-  // determin "leading flavour and njet_ini"
   int njet_ini=0;
   Flavour lfl;
-  // looking for a hard blob
-  //  msg.Out()<<" ---- Blobs ---- "<<endl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
-    //    msg.Out()<<(*blit)<<endl;
     if ((*blit)->Type()[0]=='S') {
       njet_ini=(*blit)->NOutP();
       lfl =(*blit)->OutParton(0)->Flav();
@@ -71,48 +66,31 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
     }
   }
 
-  // looking for Final State particles
-  //  cout<< " ---" <<endl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
 
       if (!PartonIsInList(p,pl) && (*blit)->Status()==1 && 
 	  (((p->Info()=='F') || (p->Info()==' ') || p->Info()=='H') && p->Status()!=2 )) {
-
-	//	cout<<p<<endl;
 	pl.push_back(p);
       }
-	//	  (p->Info()=='H' && (*blit)->Type()[0]!='S'))
     }
   }
 
-  //  cout<< " ---" <<endl;
-
-  //  fill histograms (for all events)
   all_obs.jetrates->Evaluate(pl,value);
   all_obs.multi->Evaluate(pl,value);
   all_obs.wz_pt->Evaluate(pl,value);
   all_obs.jet_pt->Evaluate(pl,value);
   all_obs.sum+=value;
 
-  // *AS* debugging output:
-//   if (all_obs.jetrates->ymin<0.008) {
-//     cout<<" ymin = "<<all_obs.jetrates->ymin<<endl;
-//     cout<<blobs<<endl;
-//   }
-
   int nc=0;
   if (do_fl) {
-  // fill histograms (for each flavour)
-  //  cout<<" look for flavour channel :"<<lfl<<endl;
   nc=fl_obs.size();
   for (int i=0;i<nc;++i) {
     if (fl_obs[i].flav==lfl) 
       nc=i;
   }
   if (nc==fl_obs.size()) {
-    cout<<" create flavour channel :"<<lfl<<endl;
     Event_Obi obs;
     obs.flav     = lfl;  
     obs.jet_ini  = 0;
@@ -146,8 +124,6 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
     sstr<<"_";
     sstr>>jname;
 
-    cout<<" create "<<njet_ini<<"-jet channel : "<<jname<<endl;
-
     Event_Obi obs;
     obs.flav     = Flavour(kf::none);  
     obs.jet_ini  = njet_ini;
@@ -177,7 +153,6 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
     MyStrStream sstr;
     sstr<<"j"<<njet_ini<<"_"<<lfl.Name()<<"_";
     sstr>>jname;
-    cout<<" create "<<njet_ini<<"-jet, "<<lfl.Name()<<" channel : "<<jname<<endl;
 
     Event_Obi obs;
     obs.flav     = lfl;  
@@ -199,7 +174,6 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
 
 
 void Shower_Observables::EndEvaluation() {
-  //  cout<<" EndEvaluation "<<endl;
   all_obs.jetrates->EndEvaluation(); 
   all_obs.multi->EndEvaluation();
   all_obs.wz_pt->EndEvaluation(); 
@@ -228,7 +202,6 @@ void Shower_Observables::EndEvaluation() {
 }
 
 void Shower_Observables::Output(std::string pname) {
-  //  cout<<" Output "<<pname<<endl;
   all_obs.jetrates->Output(pname); 
   all_obs.multi->Output(pname);
   all_obs.wz_pt->Output(pname); 
@@ -304,14 +277,14 @@ Jetrates::Jetrates(Jetrates * _partner, std::string _prefix)
 {
   partner = _partner;
   type = partner->type; xmin = partner->xmin; xmax = partner->xmax; nbins = partner->nbins; sel = partner->sel;
-  name  = _prefix; //+std::string("jetrate");
+  name  = _prefix; 
   histo = 0;
   jfind = 0;
 
   for (int i=0;i<partner->jets.size();++i) {
     jets.push_back(partner->jets[i]);
     histos.push_back(new AMATOOLS::Histogram(partner->histos[i]));
-    histos.back()->Reset();  // clear histogram 
+    histos.back()->Reset();  
     rates.push_back(new AMATOOLS::Histogram(partner->rates[i]));
     rates.back()->Reset();
   }
@@ -323,49 +296,37 @@ Jetrates::Jetrates(Jetrates * _partner, std::string _prefix)
 
 
 void Jetrates::Evaluate(const APHYTOOLS::Parton_List & pl,double value) {
-  /*
-    cout<<" pln="<<pl.size()<<endl;
-    for (int i=0; i<pl.size();++i) { 
-      cout<<i<<" :"<<pl[i]<<endl;
-    }
-  */
-
   ys.clear();
   if (partner==0)  jfind->ConstructJets(&pl,jets,ys);
   else ys=partner->ys;
 
 
-  // differential n+1 -> n Jetrates 
   for (int k=0; k<jets.size(); ++k ){
     histos[k]->Insert(ys[k], value);
   }
 
-  // total n Jetrates(ycut)
   for (int k=0; k<jets.size()-1; ++k ){
     rates[k]->InsertRange(ys[k],ys[k+1], value);
   }
   rates.back()->InsertRange(ys.back(),1., value);
 
-  // some extra statistics
   ymax=AMATOOLS::Max(ymax,ys.back());
   ymin=ys.back();
 }
 
 void  Jetrates::EndEvaluation() {
-  AORGTOOLS::msg.Tracking()<<"  "<<name<<" : "<<std::endl;
+  AORGTOOLS::msg.Debugging()<<"  "<<name<<" : "<<std::endl;
   for (int i=0; i<histos.size();++i) {
     histos[i]->Finalize();
     histos[i]->Output();
     rates[i]->Finalize();
     rates[i]->Output();
   }
-  AORGTOOLS::msg.Tracking()<<std::endl<<std::endl;
-
-  //  std::cout<<name<<" ymax ="<<ymax<<std::endl;
+  AORGTOOLS::msg.Debugging()<<std::endl<<std::endl;
 }
 
 void  Jetrates::EndEvaluation(double scale) {
-  AORGTOOLS::msg.Tracking()<<"  "<<name<<" : "<<std::endl;
+  AORGTOOLS::msg.Debugging()<<"  "<<name<<" : "<<std::endl;
   for (int i=0; i<histos.size();++i) {
     histos[i]->Finalize();
     histos[i]->Scale(scale);
@@ -374,10 +335,7 @@ void  Jetrates::EndEvaluation(double scale) {
     rates[i]->Scale(scale);
     rates[i]->Output();
   }
-  AORGTOOLS::msg.Tracking()<<std::endl<<std::endl;
-
-//   std::cout<<" =================== "<<std::endl;
-//   std::cout<<" ymax ="<<ymax<<std::endl;
+  AORGTOOLS::msg.Debugging()<<std::endl<<std::endl;
 }
 
 void Jetrates::Output(std::string pname) {
@@ -412,12 +370,10 @@ Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix)
 
 
 void Multiplicity::Evaluate(const APHYTOOLS::Parton_List & pl,double value) {
-  //  cout<<" multi = "<<pl.size()<<endl;
   histo->Insert(pl.size()-2,value);
 }
 
 void  Multiplicity::Evaluate(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double value) {
-  //  histo->Insert(nout, value);  
 }
 
 void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
@@ -431,7 +387,6 @@ void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
     }
   }
 
-  // looking for Final State Shower blob
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
@@ -453,11 +408,9 @@ void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
 void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
   for (Blob_Const_Iterator bit=blobs.begin();bit!=blobs.end();++bit) {
     if ((*bit)->Type().find("Signal") !=-1 ) {
-      // fill jet number
       histo->Insert((*bit)->NOutP(),value);
       sum+=value;
 
-      // fill detailed process history:
       int jets=(*bit)->NOutP();
       Flavour flavs[3];
       flavs[0]=(*bit)->OutParton(0)->Flav();
@@ -472,7 +425,6 @@ void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
       }
 
       if (nc==all_rates.size()) {
-	//	cout<<" create rate channel :"<<(*(*bit))<<endl;
 	ME_Data  me_data;
 	me_data.jets     = jets;
 	me_data.sum      = 0.;
@@ -491,7 +443,6 @@ void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
 	    +string(flavs[1].Name())+ string(flavs[2].Name())+name;
 	}
 	me_data.histo    = new AMATOOLS::Histogram(type,xmin,xmax,nbins);
-	cout<<" create rate channel :"<<me_data.name<<endl;
 	all_rates.push_back(me_data);
       }
       all_rates[nc].histo->Insert((*bit)->NOutP(),value);
@@ -502,7 +453,6 @@ void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
 
 
 void  ME_Rate::EndEvaluation() {
-  cout<<" Scale intern "<<name<<endl;
   Primitive_Observable_Base::EndEvaluation();
   for (int i=0; i<all_rates.size();++i) {
     all_rates[i].histo->Finalize();
@@ -512,7 +462,6 @@ void  ME_Rate::EndEvaluation() {
 }
 
 void  ME_Rate::EndEvaluation(double scale) {
-  cout<<" Scale extern "<<name<<endl;
   Primitive_Observable_Base::EndEvaluation(scale);
   for (int i=0; i<all_rates.size();++i) { 
     all_rates[i].histo->Finalize();
@@ -523,8 +472,6 @@ void  ME_Rate::EndEvaluation(double scale) {
 
 
 void ME_Rate::Output(std::string pname) {
-  // write histo
-  //  cout<<" Output "<<pname<<endl;
   Primitive_Observable_Base::Output(pname);
 
   for (int i=0;i<all_rates.size();++i) {
@@ -566,9 +513,7 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
     AMATOOLS::Vec4D mom;
     AMATOOLS::Vec4D mom_w;
     int count=0;
-//     cout<<" --- Partons : "<<endl;
     for (int i=2;i<pl.size();i++) {
-      //      msg.Out()<<i<<" : "<<pl[i]->Flav()<<endl;
       if (pl[i]->Flav().IsLepton()) {
 	mom+=pl[i]->Momentum();
 	++count;
@@ -579,10 +524,8 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
     if (count==2) {
       double pt=sqrt(sqr(mom[1]) + sqr(mom[2]));
       histos[0]->Insert(pt,weight);
-      //      cout<<" 2 leptons ("<<checkfl<<") found pt="<<pt<<endl;
     }
     else {
-      //      cout<<"WARNING looking for 2 leptons ("<<checkfl<<") found "<<count<<endl;
       if (mom_w[0]!=0) {
 	double pt=sqrt(sqr(mom_w[1]) + sqr(mom_w[2]));
 	histos[0]->Insert(pt,weight);
@@ -603,9 +546,7 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
 
   std::sort(pts.begin(),pts.end());
 
-  //  cout<<" pt of "<<checkfl<<endl;
   for (int i=1;i<=pts.size();++i) {
-    //    cout<<"  "<<i<<" : "<<pts[pts.size()-i]<<" w="<<weight<<endl;
     histos[0]->Insert(pts[pts.size()-i],weight);
     if (i<histos.size()) histos[i]->Insert(pts[pts.size()-i],weight);
   }
@@ -613,9 +554,7 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
 
 void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
   Parton_List pl;
-  //  msg.Out()<<" ---- Blobs ---- "<<endl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
-    //    msg.Out()<<(*blit)<<endl;
     if ((*blit)->Type()[0]=='S') {
       for (int i=0;i<(*blit)->NInP();++i) {
 	Parton * p = (*blit)->InParton(i);
@@ -628,13 +567,10 @@ void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value)
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
-//       cout<<" check "<<p<<endl;
       if ((p->Info()=='F') ||  
 	  (p->Info()=='H' && p->Status()!=2 ) && (*blit)->Status()==1 ){
-// 	cout<<" added"<<endl;
 	if (!PartonIsInList(p,pl)) pl.push_back(p);
       }
-	//	  ((*blit)->Type()[0]!='S' &&  p->Info()=='H'))
     }
   }
   Evaluate(pl,value);
@@ -643,7 +579,7 @@ void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value)
 
 
 void  PT_Distribution::EndEvaluation() {
-  AORGTOOLS::msg.Tracking()<<"  "<<name<<" : "<<std::endl;
+  AORGTOOLS::msg.Debugging()<<"  "<<name<<" : "<<std::endl;
   for (int i=0; i<histos.size();++i) {
     histos[i]->Finalize();
     histos[i]->Output();
@@ -651,7 +587,7 @@ void  PT_Distribution::EndEvaluation() {
 }
 
 void  PT_Distribution::EndEvaluation(double scale) {
-  AORGTOOLS::msg.Tracking()<<"  "<<name<<" : "<<std::endl;
+  AORGTOOLS::msg.Debugging()<<"  "<<name<<" : "<<std::endl;
   for (int i=0; i<histos.size();++i) {
     histos[i]->Finalize();
     histos[i]->Scale(scale);

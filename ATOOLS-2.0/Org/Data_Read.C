@@ -77,7 +77,6 @@ void Data_Read::ReadIn(std::string filename) {
   file.open(filename.c_str());
   if (!file.good()) {
     msg.Error()<< " ERROR: opening " << filename <<endl;
-    msg.Error()<< " ERROR: opening " << filename <<endl;
     exit (-1);
   }
   char dummy[256];

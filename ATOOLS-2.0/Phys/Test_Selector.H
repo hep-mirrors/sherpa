@@ -37,16 +37,13 @@ namespace APHYTOOLS {
 	(*it)->Output();
 	count += (*it)->Rejections();
       }
-      std::cout<<"Total Number of Rejections: "<<count<<std::endl;
     }
     ~Test_Selector() { 
-      std::cout<<" deleting Test_Selector "<<std::endl;
       delete [] m_fl; 
       m_fl = 0;
       for (std::vector<Selector_Log*>::iterator it = sel_logs.begin(); it!=sel_logs.end(); ++it) {
 	delete (*it);
       }
-      std::cout<<" ... done "<<std::endl;
     }
     void BuildCuts(Cut_Data *);
   };

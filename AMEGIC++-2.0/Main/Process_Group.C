@@ -657,6 +657,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	from.open(filename);
 	while (from) {
 	  from>>_name>>_totalxs>>_max>>_totalerr;
+	  m_totalxs += _totalxs;
 	  msg.Events()<<"Found result : xs for "<<_name<<" : "
 		      <<_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
 		      <<" +/- "<<_totalerr/_totalxs*100.<<"%,"<<endl
@@ -679,7 +680,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	  if (okay) {
 	    msg.Debugging()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
 			   <<"   Found all xsecs. Continue"<<endl;
-	    SetTotalXS(2);
+	    //SetTotalXS(2);
 	    return 1;
 	  }
 	}

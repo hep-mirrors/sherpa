@@ -67,7 +67,6 @@ void Cut_Data::Init(Cut_Data * _cuts,Flavour * _fl) {
   fl        = _fl;
   double E  = AORGTOOLS::rpa.gen.Ecms();
   if (!energymin) {
-    std::cout<<"Initialize new cuts."<<std::endl;
     energymin           = new double[ncut];
     energymax           = new double[ncut];
     cosmin              = new double*[ncut];
@@ -90,7 +89,6 @@ void Cut_Data::Init(Cut_Data * _cuts,Flavour * _fl) {
     }
   }
   else {
-    std::cout<<"Compare cuts."<<std::endl;
     for (int i=0;i<ncut;i++) {
       energymin[i]      = AMATOOLS::Min(energymin[i],_cuts->energymin[i]);
       energymax[i]      = AMATOOLS::Max(energymax[i],_cuts->energymax[i]);

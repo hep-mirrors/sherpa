@@ -6,12 +6,10 @@ using namespace APHYTOOLS;
 Primitive_Analysis::Primitive_Analysis(std::string _name)
 {
   name = std::string("Analysis : ") + _name;
-  AORGTOOLS::msg.Debugging()<<"Initialized new Primitive_Analysis : "<<name<<std::endl;
 }
 Primitive_Analysis::Primitive_Analysis() 
 {
   name = std::string("noname");
-  AORGTOOLS::msg.Debugging()<<"Initialized new Primitive_Analysis : "<<name<<std::endl;
 }
 
 Primitive_Analysis::~Primitive_Analysis()
@@ -28,7 +26,6 @@ void Primitive_Analysis::AddObservable(Primitive_Observable_Base * obs) {
 void Primitive_Analysis::DoAnalysis(double value) {
   for (int i=0;i<observables.size();i++) {
     observables[i]->Evaluate(value);
-    //    observables[i]->Evaluate(proc->Momenta(),proc->Flavs(),value);
   }
 }
 
