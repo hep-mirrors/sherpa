@@ -37,7 +37,7 @@ Regulator_Base::SelectRegulator<LO_QCD_Regulator>(XS_Base *const xs,const std::s
 
 LO_QCD_Regulator::LO_QCD_Regulator(XS_Base *const xs,
 				       const std::vector<double> &parameters):
-  Regulator_Base(xs,parameters,rf::massive_propagator) {}
+  Regulator_Base(xs,parameters,rf::qcd_trivial) {}
 
 double LO_QCD_Regulator::operator()(const double dsigma) const
 {
@@ -47,17 +47,19 @@ double LO_QCD_Regulator::operator()(const double dsigma) const
 
 double LO_QCD_Regulator::operator[](const double scale) const
 {
+  p_xs->SetMomenta();
   const ATOOLS::Vec4D *p=p_xs->Momenta();
-  double pperp2=p[2].PPerp2(), oldscale=pperp2, s=0.0, t=0.0, u=0.0;
+  double oldscale=0.0;
   switch (p_xs->ScaleScheme()) {
-  case 2:
-    s=(p[0]+p[1]).Abs2();
-    t=(p[0]-p[2]).Abs2();
-    u=(p[0]-p[3]).Abs2();
+  case 2: {
+    double s=(p[0]+p[1]).Abs2();
+    double t=(p[0]-p[2]).Abs2();
+    double u=(p[0]-p[3]).Abs2();
     oldscale=2.*s*t*u/(s*s+t*t+u*u);
     break;
+  }
   default:
-    oldscale=pperp2;
+    oldscale=p[2].PPerp2();
     break;
   }
   return scale*(oldscale+ATOOLS::sqr(m_parameters[0]))/oldscale;

@@ -8,9 +8,9 @@ using namespace EXTRAXS;
 std::ostream &EXTRAXS::operator<<(std::ostream &ostr,const rf::code code)
 {
   switch (code) {
-  case rf::none:               return ostr<<"None";
-  case rf::identity:           return ostr<<"Identity";
-  case rf::massive_propagator: return ostr<<"Massive Propagator";
+  case rf::none:        return ostr<<"None";
+  case rf::identity:    return ostr<<"Identity";
+  case rf::qcd_trivial: return ostr<<"QCD Trivial";
   }
   return ostr;
 }

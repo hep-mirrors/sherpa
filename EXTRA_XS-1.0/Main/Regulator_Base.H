@@ -10,9 +10,9 @@ namespace EXTRAXS {
   struct rf {
     
     enum code {
-      none               = 0,
-      identity           = 1,
-      massive_propagator = 2
+      none        = 0,
+      identity    = 1,
+      qcd_trivial = 2
     };
     
   };// end of struct rf
@@ -50,6 +50,9 @@ namespace EXTRAXS {
 
     // inline functions
     inline rf::code Type() const { return m_type; }
+
+    inline const std::vector<double> &Parameters() const
+    { return m_parameters; }
     
   };// end of class Regulator_Base
 
