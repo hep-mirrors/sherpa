@@ -52,6 +52,8 @@ bool Simple_String::Initialize()
   CleanUp();
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
+  if (!ATOOLS::rpa.gen.Beam1().IsHadron() ||
+      !ATOOLS::rpa.gen.Beam2().IsHadron()) return false;
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
@@ -64,18 +66,18 @@ bool Simple_String::Initialize()
     helpsvv.back()[1]="1.0808";
     helpsvv.back()[2]="0.25";
   }
-  msg_Tracking()<<"Simple_String::Initialize(): Adding Reggeon {\n";
+  msg_Info()<<"Simple_String::Initialize(): Adding Reggeon {\n";
   for (size_t i=0;i<helpsvv.size();++i) {
     if (helpsvv[i].size()<3) continue;
     m_reggeons.push_back(new Reggeon_Trajectory
 			 (ATOOLS::ToType<double>(helpsvv[i][1]),
 			  ATOOLS::ToType<double>(helpsvv[i][2])));
     m_reggeons.back()->SetS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
-    msg_Tracking()<<"   "<<std::setw(10)<<IOS_BASE::left<<helpsvv[i][0]
-		  <<" "<<std::setw(8)<<helpsvv[i][1]
-		  <<" "<<std::setw(8)<<helpsvv[i][2]<<"\n";
+    msg_Info()<<"   "<<std::setw(10)<<helpsvv[i][0]
+	      <<" "<<std::setw(8)<<helpsvv[i][1]
+	      <<" "<<std::setw(8)<<helpsvv[i][2]<<"\n";
   }
-  msg_Tracking()<<"}"<<std::endl;
+  msg_Info()<<"}"<<std::endl;
   p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
   p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
@@ -97,7 +99,6 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
   m_start[1]=sqrt(m_reggeons[0]->GetT(0.0,m_start[0]*m_start[0],ATOOLS::ran.Get()));
   blob->DeleteOwnedParticles();
   const unsigned int flow=ATOOLS::Flow::Counter();
-  //  const double type=ATOOLS::ran.Get();
   for (short unsigned int i=0;i<2;++i) {
     SHERPA::Hadron_Remnant *hadron=dynamic_cast<SHERPA::Hadron_Remnant*>(p_remnants[i]);
     if (hadron==NULL) {
@@ -121,9 +122,6 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
 	} while (!(ATOOLS::dabs(pz)>0.0));
 	particle->SetFlow(1+constit[j].IsAnti(),flow);
  	particle->SetFlow(2-constit[j].IsAnti(),0);
-//  	// double gluon exchange
-// 	if (i==1 && type<2./6.) 
-// 	  particle->SetFlow(1+constit[j].IsAnti(),ATOOLS::Flow::Counter());
 	particle->SetStatus(1);
 	blob->AddToInParticles(particle);
 	blob->AddToOutParticles(particle);

@@ -26,14 +26,16 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
 {
   std::string mihandler;
   ATOOLS::Data_Read *read = new ATOOLS::Data_Read(path+file,true);
-  mihandler="None";
+  mihandler="Amisic";
   if (read->FileExists()) {
-    mihandler=read->GetValue<std::string>("MI_HANDLER",std::string("None"));
+    mihandler=read->GetValue<std::string>("MI_HANDLER",std::string("Amisic"));
     m_scalescheme=read->GetValue<int>("MI_HARD_SCALE",1);
     path+=read->GetValue<std::string>("INPUT_PATH",std::string(""));
     file=read->GetValue<std::string>("INPUT_FILE",file);
   }
   delete read;
+  if (!ATOOLS::rpa.gen.Beam1().IsHadron() ||
+      !ATOOLS::rpa.gen.Beam2().IsHadron()) mihandler="None";
   if (mihandler==std::string("Amisic")) {
     p_amisic = new AMISIC::Amisic(model,beam,isr);
     p_amisic->SetInputPath(path);
