@@ -4,7 +4,7 @@
 #include "Beam_Spectra_Handler.H"
 #include "Particle_List.H"
 #include "Blob.H"
-#include <vector>
+#include "My_Vector.H"
 
 namespace SHERPA {
 
@@ -29,6 +29,8 @@ namespace SHERPA {
     ATOOLS::Vec4D  m_pbeam;
 
     bool m_active;
+
+    double Lambda2(double sp,double sp1,double sp2);
 
   public:
 
