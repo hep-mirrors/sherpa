@@ -482,7 +482,10 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
   if (mkdir(OutputPath().c_str(),448)==0) {
     ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
 		     <<"Created output directory "<<OutputPath()<<"."<<std::endl;
-    mkdir((OutputPath()+filename+m_mcextension+std::string("/")).c_str(),448);
+  }
+  if (mkdir((OutputPath()+filename+m_mcextension+std::string("/")).c_str(),448)==0) {
+    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): Created output directory "
+		     <<OutputPath()+filename+m_mcextension+std::string("/")<<"."<<std::endl;
   }
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMaxExtension(m_maxextension);
@@ -901,9 +904,9 @@ bool Simple_Chain::DiceOrderingParameter()
   PROFILE_HERE;
 #endif
   if (m_last[0]<=m_stop[0]) {
-    ATOOLS::msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
-		       <<"Ordering parameter exceeded allowed range."<<std::endl
-		       <<"   Cannot proceed in blob creation."<<std::endl;
+    ATOOLS::msg.Tracking()<<"Simple_Chain::DiceOrderingParameter(): "
+			  <<"Ordering parameter exceeded allowed range."<<std::endl
+			  <<"   Cannot proceed in blob creation."<<std::endl;
     return false;
   }
   m_last[0]=(*p_total)[(*p_total)(m_last[0])-log(ATOOLS::ran.Get())]; 
