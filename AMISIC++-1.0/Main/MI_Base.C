@@ -5,6 +5,9 @@
 #ifdef PROFILE__MI_Base
 #include "prof.hh"
 #endif
+#ifdef USING_SHERPA
+#include "Matrix_Element_Handler.H"
+#endif
 
 using namespace AMISIC;
 
@@ -176,7 +179,12 @@ MI_Base::TypeID MI_Base::StringToType(std::string type)
 MI_None::MI_None(TypeID _m_type):
   MI_Base(TypeToString(_m_type),_m_type) {}
 
-MI_None::~MI_None() {}
+MI_None::~MI_None() 
+{
+#ifdef USING_SHERPA
+  delete p_mehandler;
+#endif
+}
 
 void MI_None::Update(const MI_Base *mibase) 
 {
@@ -185,6 +193,9 @@ void MI_None::Update(const MI_Base *mibase)
 
 bool MI_None::Initialize()
 {
+#ifdef USING_SHERPA
+  p_mehandler = new SHERPA::Matrix_Element_Handler();
+#endif
   return true;
 }
 

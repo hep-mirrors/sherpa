@@ -34,6 +34,7 @@ bool Amisic::Initialize()
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   std::vector<std::string> model;
   if (!reader->VectorFromFile(model,"HARD_MODEL_NAME",ATOOLS::noinputtag,reader->VHorizontal)) {

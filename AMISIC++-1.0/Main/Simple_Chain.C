@@ -657,9 +657,9 @@ bool Simple_Chain::Initialize()
   CleanUp();
   SetNorm(pyint7.sigt[5][0][0]);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  reader->SetInputPath(InputPath());
   if (!m_external) {
     ATOOLS::ParticleInit(InputPath());
-    reader->SetInputPath(InputPath());
     reader->SetInputFile(InputFile());
     std::string initfile=std::string("Run.dat");
     reader->ReadFromFile(initfile,"ENVIRONMENT");
@@ -667,7 +667,6 @@ bool Simple_Chain::Initialize()
     ATOOLS::rpa.Init(InputPath(),InputFile(2));
   }
   if (!ReadInData()) return false;
-  reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
@@ -803,9 +802,6 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 		       <<"Could not select any process! Retry."<<std::endl;
     return false;
   }
-  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(): "
-		     <<"Internal error!"
-		     <<"   Please submit a bug report."<<std::endl;
   return false;
 }
 

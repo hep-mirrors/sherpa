@@ -14,12 +14,18 @@
 namespace ATOOLS {
 
   Data_Writer::Data_Writer(): 
-    Read_Write_Base(0,1) {}
+    Read_Write_Base(0,1) 
+  {
+    SetOutFileMode(Permanent);
+  }
 
   Data_Writer::Data_Writer(const std::string _m_cut,
 			   const std::string _m_seperator,
 			   const  std::string _m_comment):
-    Read_Write_Base(0,1,_m_cut,_m_seperator,_m_comment) {}
+    Read_Write_Base(0,1,_m_cut,_m_seperator,_m_comment) 
+  {
+    SetOutFileMode(Permanent);
+  }
   
   bool Data_Writer::InitFile(std::string tempfname) 
   {

@@ -15,12 +15,18 @@
 namespace ATOOLS {
 
   Data_Reader::Data_Reader(): 
-    Read_Write_Base(1,0) {}
+    Read_Write_Base(1,0) 
+  {
+    SetInFileMode(Permanent);
+  }
 
   Data_Reader::Data_Reader(const std::string _m_cut,
 			   const std::string _m_seperator,
 			   const std::string _m_comment):
-    Read_Write_Base(1,0,_m_cut,_m_seperator,_m_comment) {}
+    Read_Write_Base(1,0,_m_cut,_m_seperator,_m_comment) 
+  {
+    SetInFileMode(Permanent);
+  }
   
   void Data_Reader::KillComments(std::string& buffer)
   {

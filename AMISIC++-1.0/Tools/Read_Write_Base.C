@@ -43,6 +43,10 @@ namespace ATOOLS {
     if (InputFile(i)==nullstring) return false;
     if (InFileMode(i)==Unknown) SetInFileMode(Temporary);
     if (m_infile[i]==NULL) {
+#ifdef DEBUG__Read_Write_Base
+    std::cout<<"Read_Write_Base::OpenInFile("<<i<<"): "
+	     <<"Opening file '"<<m_inputpath[i]+m_inputfile[i]<<"'."<<std::endl;
+#endif
       m_infile[i]=new std::ifstream();	
       m_infile[i]->open((m_inputpath[i]+m_inputfile[i]).c_str()); 
       m_filecontent.clear();
@@ -59,6 +63,10 @@ namespace ATOOLS {
     if (OutputFile(i)==nullstring) return false;
     if (OutFileMode(i)==Unknown) SetOutFileMode(Permanent);
     if (m_outfile[i]==NULL) {
+#ifdef DEBUG__Read_Write_Base
+    std::cout<<"Read_Write_Base::OpenOutFile("<<i<<"): "
+	     <<"Opening file '"<<m_outputpath[i]+m_outputfile[i]<<"'."<<std::endl;
+#endif
       m_outfile[i]=new std::ofstream();	
       m_outfile[i]->open((m_outputpath[i]+m_outputfile[i]).c_str());
     }
@@ -69,6 +77,10 @@ namespace ATOOLS {
   { 
     if (m_infile[i]==NULL) return;
     if ((m_infilemode[i]==Permanent)&&(!force)) return;
+#ifdef DEBUG__Read_Write_Base
+    std::cout<<"Read_Write_Base::CloseInFile("<<i<<","<<force<<"): "
+	     <<"Closing file '"<<m_inputpath[i]+m_inputfile[i]<<"'."<<m_infilemode[i]<<std::endl;
+#endif
     m_filecontent.clear();
     m_infile[i]->close(); 
     delete m_infile[i]; 
@@ -79,6 +91,10 @@ namespace ATOOLS {
   { 
     if (m_outfile[i]==NULL) return;
     if ((m_outfilemode[i]==Permanent)&&(!force)) return;
+#ifdef DEBUG__Read_Write_Base
+    std::cout<<"Read_Write_Base::CloseOutFile("<<i<<","<<force<<"): "
+	     <<"Closing file '"<<m_outputpath[i]+m_outputfile[i]<<"'."<<std::endl;
+#endif
     m_outfile[i]->close(); 
     delete m_outfile[i]; 
     m_outfile[i]=NULL;
