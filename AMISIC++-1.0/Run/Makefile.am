@@ -51,7 +51,7 @@ INCLUDES      = $(AMISICINCS) $(APACICINCS) $(EXTRAXSINCS) \
 		$(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) 
 else
-SOURCES	      = Main.C Set_Channel.C Set_Values.C
+SOURCE	      = Main.C Set_Channel.C Set_Values.C
 endif
 
 EXTRA_DIST    =	\
