@@ -181,15 +181,15 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
 
 
 
-void   Run_Parameter::Gen::SetEcms(double _ecms)     { 
+void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
   m_ecms    = _ecms;
   Data_Collector::AddData("ECMS",new Blob_Data<double>(m_ecms));
 }
-void   Run_Parameter::Gen::SetBeam1(const Flavour b) { 
-  Data_Collector::AddData("BEAM1",new Blob_Data<std::string>(b.TexName()));
+void  Run_Parameter::Gen::SetBeam1(const Flavour b) { 
   m_beam1  = b;   
+  Data_Collector::AddData("BEAM1",new Blob_Data<std::string>(m_beam1.TexName()));
 }
-void   Run_Parameter::Gen::SetBeam2(const Flavour b) { 
-  Data_Collector::AddData("ECMS",new Blob_Data<std::string>(b.TexName()));
+void  Run_Parameter::Gen::SetBeam2(const Flavour b) { 
   m_beam2  = b;   
+  Data_Collector::AddData("BEAM2",new Blob_Data<std::string>(m_beam2.TexName()));
 }
