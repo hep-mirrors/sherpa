@@ -184,11 +184,12 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
   size_t length=0;
   if(((pos=Find(inputstring,parameter,length))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+length)).length()>0)) {
+    inputstring=ReplaceTags(HighlightSeparator(inputstring));
     Type typeinfo;
     Type::ID type = typeinfo.GetType(value);
     if (Interprete() && type!=Type::TChar && type!=Type::TString)
       inputstring=Interpreter()->Interprete(inputstring);
-    value=ATOOLS::ToType<Read_Type>(ReplaceTags(HighlightSeparator(inputstring)));
+    value=ATOOLS::ToType<Read_Type>(inputstring);
 #ifdef DEBUG__Data_Reader
     std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<Type::GetType(value)<<" )"<<std::endl;
 #endif
