@@ -91,7 +91,7 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
   test.analysis          = dr.GetValue<int>("ANALYSIS");
 
   test.faca = dr.GetValue<double>("TEST_FAC_YCUT");
-  if (test.facycut==NotDefined<double>()) test.facycut = 1.;
+  if (test.facycut==NotDefined<double>()) test.facycut = 0.125;
   test.faca = dr.GetValue<double>("TEST_FAC_NLLQ");
   if (test.facnlly==NotDefined<double>()) test.facnlly = 1.;
 
