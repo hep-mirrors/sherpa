@@ -22,6 +22,11 @@ namespace SHERPA {
   };
 
   /*!
+    \file 
+    \brief Contains the class SHERPA::Event_Phase_Handler
+  */
+
+  /*!
     \class Event_Phase_Handler
     \brief The base class for all specific event phases (such as, e.g., JetEvolution)
 

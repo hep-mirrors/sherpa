@@ -16,6 +16,13 @@ namespace SHERPA {
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
   };
+
+
+  /*!
+    \file 
+    \brief Contains the class SHERPA::Hadronization
+  */
+
   /*!
     \class Hadronization
     \brief The specific Event_Phase_Handler responsible for the translation of partons

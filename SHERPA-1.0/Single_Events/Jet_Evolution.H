@@ -30,6 +30,11 @@ namespace SHERPA {
     void CleanUp();
 
   };
+
+  /*!
+    \file 
+    \brief Contains the class SHERPA::Jet_Evolution
+  */
   /*!
     \class Jet_Evolution
     \brief The handler for the perturbative shower evolution around hard production processes or decays.
