@@ -57,7 +57,7 @@ Getter_Function<ObjectType,ParameterType>::~Getter_Function()
 
 template<class ObjectType,class ParameterType>
 void Getter_Function<ObjectType,ParameterType>::
-PrintInfo(std::ostream &str) const
+PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"No Information";
 }
@@ -80,7 +80,7 @@ PrintGetterInfo(std::ostream &str,const size_t width)
   for (typename String_Getter_Map::const_iterator git=s_getters->begin();
        git!=s_getters->end();++git) {
     str<<"   "<<std::setw(width)<<git->first<<" ";
-    git->second->PrintInfo(str);
+    git->second->PrintInfo(str,width);
     str<<"\n";
   }
   str.setf(def);
