@@ -25,7 +25,7 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-		-I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool
+                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
 
 if CLHEP_SUPPORT
 CLHEPINCS     =	-I$(CLHEPDIR)/include

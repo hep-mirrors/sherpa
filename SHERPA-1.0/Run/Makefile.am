@@ -28,7 +28,7 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-		-I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool
+                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
@@ -44,7 +44,7 @@ endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lProcess -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
-ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct -lAdicicTool 
+ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct -lAdicicTool -lAdicicInput
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
 		-lSherpaSoftPhysics -lLundTools -lHerwigTools -lSherpaTools 

@@ -21,7 +21,7 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-		-I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool
+                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 if AMISIC_SUPPORT
