@@ -21,7 +21,7 @@ SendMail() {
   if [ "$COMPILE_ERROR" = "TRUE" ] ; then SetStatus "Compile error " ; fi
   if [ "$SETUP_ERROR" = "TRUE" ] ; then SetStatus "Setup error " ; fi
   if [ "$BENCHMARK_ERROR" = "TRUE" ] ; then SetStatus "Benchmark error " ; fi
-  echo -e "\nbenchmark: for details consider '$PWD/$OUTPUTFILE'\n" >> $LOGFILE
+  echo -e "\nbenchmark: for details consider\n\n           '$PWD/$OUTPUTFILE'\n" >> $LOGFILE
   nail -s "$STATUS" $MAILADDRESS < $LOGFILE
   exit $1
 }
@@ -96,7 +96,7 @@ else
   echo -e "\n} finished update\n" >> $OUTPUTFILE
 fi
 
-echo -en "compiling current sherpa version via '$COMPILECOMMAND' ..." >> $LOGFILE
+echo -en "compiling current sherpa version via '$COMPILECOMMAND' ... " >> $LOGFILE
 echo -e "compiling current sherpa version via '$COMPILECOMMAND' {\n" >> $OUTPUTFILE
 if ! $COMPILECOMMAND >> $OUTPUTFILE 2>&1 ; then
   echo -e "failed\n\nbenchmark: compilation failed" >> $LOGFILE
@@ -114,7 +114,7 @@ for I in $LIST ; do
     echo "benchmark: setup directory '$I' is missing" >> $OUTPUTFILE
     SETUP_ERROR=TRUE
   else
-    echo -e "benchmark: benchmarking in '$I' ..." >> $LOGFILE
+    echo -e "benchmark: benchmarking in '$I' ... " >> $LOGFILE
     echo -e "benchmark: benchmarking in '$I' {\n" >> $OUTPUTFILE
     cd $I
     BENCHMARK=""
