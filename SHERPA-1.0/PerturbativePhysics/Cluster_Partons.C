@@ -240,7 +240,9 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     ++njet;
   }
 
-  //  std::cout<<ct_test<<std::endl;
+//   std::cout<<ct_test<<std::endl;
+  msg.Tracking()<<"njet :"<<njet<<endl;
+
 
   m_weight      = 1.;
 
@@ -271,7 +273,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   // weight with correct alphas at hard scale (if needed).
   if (strong>2 && m_sud_mode%10>0) {
     m_weight *= pow(as_hard/as_jet,strong-2);
-    msg.Tracking()<<" whardas - as("<<facycut*asscale<<")/as("<<facycut*jetscale<<")^"<<strong-2<<" = "<<as_hard/as_jet<<std::endl;
+    msg.Tracking()<<" whardas - as("<<sqrt(asscale)<<")/as("<<sqrt(jetscale)<<")^"<<strong-2<<" = "<<as_hard/as_jet<<std::endl;
   }
 
 
@@ -322,7 +324,8 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       msg.Tracking()<<" wqin - DeltaQ("<<last_q[i]<<")/DeltaQ("<<ptij<<") = "<<w_in_q<<std::endl;
       m_weight *= w_in_q;
     }
-    if (m_sud_mode%10>0 && ct_down->GetLeg(i)->fl.Strong()) {   // alphaS factor
+    if (m_sud_mode%10>0 && ct_down->GetLeg(i)->fl.Strong()  // alphaS factor
+	&& p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong()) {  
       double a = (*p_runas)(facycut*ptij*ptij);
       double w_in_as = a/as_jet;
       if (m_kfac!=0.) {
@@ -373,7 +376,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       }    
     }
   }
-  //msg.Tracking()<<" sudakov weight="<<m_weight<<std::endl;
+  msg.Tracking()<<" sudakov weight="<<m_weight<<std::endl;
 
   p_ct = ct_tmp;
 
@@ -494,6 +497,29 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     // naive:    m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
     // massive into account:
     m_asscale = 0.5*(sqr(p[2][1])+sqr(p[2][2])+sqr(p[3][1])+sqr(p[3][2]));
+    msg.Tracking()<<"q1^2 = "<<m_asscale<<endl;
+
+    // --- test only ---
+    /*
+    Vec4D q[4];
+    for (int i=0;i<4;++i) {
+      q[i]=p[i];
+    }
+    Poincare cms(q[0]+q[1]);
+    for (int i=0;i<4;++i) {
+      cms.Boost(q[i]);
+      msg.Tracking()<<i<<" : "<<q[i]<<endl;
+    }
+    Poincare rot(q[0],Vec4D::ZVEC);
+    for (int i=0;i<4;++i) {
+      rot.Rotate(q[i]);
+      msg.Tracking()<<i<<" : "<<q[i]<<endl;
+    }
+    m_asscale = 0.5*(sqr(q[2][1])+sqr(q[2][2])+sqr(q[3][1])+sqr(q[3][2]));
+    msg.Tracking()<<"q1^2 = "<<m_asscale<<endl;
+    */
+    // --- end test
+
     m_scale = m_asscale + p[2].Abs2()+p[3].Abs2();
 
     //    m_asscale = Min(dabs(t),dabs(u));
