@@ -42,7 +42,7 @@ namespace SHERPA {
     APACIC::Tree     * GetFinTree(); 
     APACIC::Tree    ** GetIniTrees();
     APACIC::Apacic   * GetApacic() { return p_apacic; }
-    ADICIC::Chain    * GetChain();
+    ADICIC::Cascade&   GetCascade();
     void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
     void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
     inline bool ShowerMI() const { return m_showermi; }

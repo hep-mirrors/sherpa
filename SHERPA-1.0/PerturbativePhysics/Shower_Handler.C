@@ -92,7 +92,7 @@ void Shower_Handler::FillDecayBlobs(ATOOLS::Blob_List * _bloblist)
 
 void Shower_Handler::CleanUp() {
   if (p_apacic) p_apacic->PrepareTrees();
-  if (p_adicic) p_adicic->PrepareChain();
+  if (p_adicic) p_adicic->PrepareCascade();
 }
 
 APACIC::Tree * Shower_Handler::GetFinTree() { 
@@ -111,8 +111,8 @@ APACIC::Tree ** Shower_Handler::GetIniTrees() {
   abort();
 }
 
-ADICIC::Chain * Shower_Handler::GetChain() {
-  if (p_adicic) return p_adicic->GetChain();
+ADICIC::Cascade& Shower_Handler::GetCascade() {
+  if(p_adicic) return p_adicic->GetCascade();
   msg.Error()<<"Error in Shower_Handler::GetChain()."<<std::endl
 	     <<"   Adicic is not the shower handler."<<std::endl
 	     <<"   Initialized "<<m_showergenerator<<". Abort run."<<std::endl;

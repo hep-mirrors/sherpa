@@ -1,7 +1,6 @@
 #include "SimpleXS_Adicic_Interface.H"
 
 #include "Adicic.H"
-#include "Chain.H"
 #include "XS_Base.H"
 #include "Exception.H"
 
@@ -39,7 +38,6 @@ bool SimpleXS_Adicic_Interface::InitColours(Blob * blob)
     }
     for (int i=0;i<blob->NOutP();++i) blob->OutParticle(i)->SetFlow(j+1,xs->Colours()[i+blob->NInP()][j]);
   }
-  Chain    * chain;
   if(Valid(blob)) {
     myblob = new Blob();
     myblob->AddToInParticles(blob->OutParticle(0));
@@ -50,8 +48,7 @@ bool SimpleXS_Adicic_Interface::InitColours(Blob * blob)
 
     Dipole::Branch     q((*blob->OutParticle(0)));
     Dipole::Antibranch qbar((*blob->OutParticle(1)));
-    chain = p_shower->GetChain();
-    chain->Initialize(q,qbar);
+    assert(p_shower->GetCascade().AddChain(q,qbar));
     return 1;
   }
   return 0;
@@ -81,6 +78,10 @@ int SimpleXS_Adicic_Interface::PerformShowers()
 {
   return p_shower->PerformShowers(false,1.,1.);
 }
+
+
+
+
 
 
 
