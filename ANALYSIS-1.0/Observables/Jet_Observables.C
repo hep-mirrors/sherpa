@@ -85,7 +85,7 @@ Primitive_Observable_Base *const GetObservable<Jet_Differential_Rates>(const Str
 
 #define DEFINE_PRINT_METHOD(NAME)					\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"min max bins mode nmin nmax Lin|Log [list]"; }
+  { str<<"min max bins mode nmin nmax Lin|LinErr|Log|LogErr [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
@@ -419,7 +419,7 @@ DEFINE_GETTER_METHOD(Jet_Differential_Rates,Jet_Differential_Rates_Getter);
 
 void Jet_Differential_Rates_Getter::PrintInfo(std::ostream &str,const size_t width) const	
 { 
-  str<<"min max bins mode nmin nmax Lin|Log [list] -> Finder 93 .."; 
+  str<<"min max bins mode nmin nmax Lin|LinErr|Log|LogErr [list] -> Finder 93 .."; 
 }
 
 

@@ -43,7 +43,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_PRINT_METHOD(NAME)					\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"min max bins Lin|Log [jetlist] [list]"; }
+  { str<<"min max bins Lin|LinErr|Log|LogErr [jetlist] [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
@@ -91,7 +91,7 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
 
 #define DEFINE_OFFSET_PRINT_METHOD(NAME)				\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"min max bins offset Lin|Log [jetlist] [list]"; }
+  { str<<"min max bins offset Lin|LinErr|Log|LogErr [jetlist] [list]"; }
 
 #define DEFINE_OFFSET_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
@@ -146,6 +146,7 @@ MI_Statistics::~MI_Statistics()
 
 void MI_Statistics::Evaluate(const Blob_List &  blobs,double weight,int ncount)
 {
+  double hard=0.0;
   unsigned int number=0;
   for (Blob_List::const_iterator bit=blobs.begin();bit!=blobs.end();++bit) {
     double scale=0.0;
@@ -154,9 +155,15 @@ void MI_Statistics::Evaluate(const Blob_List &  blobs,double weight,int ncount)
       ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
       if (info!=NULL) scale=info->Get<double>();
     }
-    if (number-1<m_scales.size() && scale!=0.0) 
+    else if ((*bit)->Type()==ATOOLS::btp::Signal_Process) {
+      ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
+      if (info!=NULL) hard=info->Get<double>();
+    }
+    if (number-1<m_scales.size() && scale!=0.0) {
       m_scales[number-1]->Insert(scale,weight,ncount);
+    }
   }
+  if (number==0) m_scales[0]->Insert(hard,weight,ncount);
   p_histo->Insert(number,weight,ncount);
 }
 

@@ -45,7 +45,7 @@ Jet_Cone_Distribution_Getter::operator()(const String_Matrix &parameters) const
 
 void Jet_Cone_Distribution_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"etcut etamin etamax rmin rmax bins Lin|Log";
+  str<<"etcut etamin etamax rmin rmax bins Lin|LinErr|Log|LogErr";
 }
 
 Jet_Cone_Distribution::Jet_Cone_Distribution(const int linlog, const double Etcut, 
@@ -176,7 +176,7 @@ Jet_Cone_Dependence_Getter::operator()(const String_Matrix &parameters) const
 
 void Jet_Cone_Dependence_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"etcut etamin etamax rmin rmax nmin nmax bins Lin|Log";
+  str<<"etcut etamin etamax rmin rmax nmin nmax bins Lin|LinErr|Log|LogErr";
 }
 
 
@@ -309,7 +309,7 @@ Jet_Cone_Shape_Getter::operator()(const String_Matrix &parameters) const
 
 void Jet_Cone_Shape_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
-  str<<"rmin rmax nmin nmax bins Lin|Log";
+  str<<"rmin rmax nmin nmax bins Lin|LinErr|Log|LogErr";
 }
 
 

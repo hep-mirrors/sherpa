@@ -78,8 +78,8 @@ public:
       }
     }
     // sort according to pt
-    std::sort(jetlist->begin(),jetlist->end(),ATOOLS::Order_PT());
-    std::sort(addlist.begin(),addlist.end(),ATOOLS::Order_PT());
+    std::stable_sort(jetlist->begin(),jetlist->end(),ATOOLS::Order_PT());
+    std::stable_sort(addlist.begin(),addlist.end(),ATOOLS::Order_PT());
     // build jets
     for (size_t i=0;i<jetlist->size();++i) {
       if ((*jetlist)[i]==NULL) continue;

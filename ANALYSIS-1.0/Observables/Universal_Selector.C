@@ -96,7 +96,7 @@ General_Observable_Getter::operator()(const String_Matrix &parameters) const
 
 void General_Observable_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"datakey  obsmin  obsmax nbins  Lin|Log"; 
+  str<<"datakey  obsmin  obsmax nbins  Lin|LinErr|Log|LogErr"; 
 }
 
 General_Observable::General_Observable(int type,double xmin,double xmax,int nbins,
