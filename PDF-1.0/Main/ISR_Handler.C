@@ -268,9 +268,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
   double phi=0.0;
   for (size_t i=0;i<2;++i) {
     phi+=2.0*M_PI*ran.Get();
-    double cp=cos(phi), kp=0.0;
-    kp=sqrt(m_kpkey[i][3]); 
-    m_kp[i]=Vec4D(0.0,cp*kp,sqrt(1.-cp*cp)*kp,0.0);
+    double kp=sqrt(m_kpkey[i][3]); 
+    m_kp[i]=Vec4D(0.0,cos(phi)*kp,sin(phi)*kp,0.0);
   }
   E=sqrt(m_spkey[3]-(m_kp[0]+m_kp[1]).Abs2());
   double xi=exp(m_ykey[2]);
