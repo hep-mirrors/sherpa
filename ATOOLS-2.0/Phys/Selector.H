@@ -23,6 +23,7 @@ namespace ATOOLS {
     bool ReadInData(std::string);
   public :
     Selector_Data(std::string path);
+    Selector_Data();
     ~Selector_Data()     {};
     int  Size()          { return data.size(); }
     Mom_Data RemoveData(int &);

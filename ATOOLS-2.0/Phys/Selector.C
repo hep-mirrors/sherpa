@@ -57,6 +57,8 @@ std::string Selector_Base::Name()                          { return m_name; }
   -----------------------------------------------------------------------------------*/
 
 
+Selector_Data::Selector_Data() {}
+
 Selector_Data::Selector_Data(std::string path) {
   if (!ReadInData(path)) {
     msg.Error()<<"Error in Selector_Data::Selector_Data("<<path<<")."<<endl
