@@ -197,6 +197,8 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * bloblist,Particle_List * pa
 #endif
   }
   if (!success) {
+    ATOOLS::msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
+		       <<"Not enough energy to preserve remnant masses."<<std::endl;
     for (size_t i=0;i<2;++i) p_beampart[i]->Clear();
     while (bloblist->size()>0) {
       delete *bloblist->begin();
