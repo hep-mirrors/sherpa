@@ -1,5 +1,6 @@
 #include "Event_Reader.H"
 #include "MyStrStream.H"
+#include "Run_Parameter.H"
 #include "Message.H"
 #include <iostream>
 
@@ -8,25 +9,58 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Event_Reader::Event_Reader(const std::string & path,const std::string & file) :
-  m_path(path), m_file(file), m_generator(std::string("Unknown generator")),
-  m_inputmode(0), m_eventmode(0), m_phasemode(-1)
-{
-  std::string filename = m_path + m_file; 
-  p_instream = new std::ifstream(filename.c_str()); 
 
-  if (!p_instream->good()) {
+Event_Reader::Event_Reader(const std::string & path,const std::string & file) :
+  m_path(path), m_add(file), m_file(file),
+  m_generator(std::string("Unknown generator")),
+  f_gz(false), m_inputmode(0), m_eventmode(0), m_phasemode(-1)
+{
+  std::string filename=m_path+m_file;
+  msg.Out()<<" -> "<<filename<<"\n";
+
+  size_t pst=filename.find(".gz");
+  size_t lng=filename.length();
+
+  if(pst!=std::string::npos) {
+    if(pst==lng-3) {
+      f_gz=true;
+      system((std::string("gunzip ")+filename).c_str());
+      filename.resize(pst);
+      m_file.resize(m_file.length()-3);
+    } else {
+      msg.Error()<<"Error in "<<__PRETTY_FUNCTION__<<":\n"
+		 <<"   Cannot handle event file "<<filename<<".\n"
+		 <<"   Will abort the run. Please check."<<std::endl;
+      abort();
+    }
+  }
+
+  pst=m_add.find("/");
+  if(pst!=std::string::npos) {
+    m_add.resize(pst+1);
+    m_file=m_file.substr(pst+1);
+  }
+
+  msg.Out()<<" -> "<<filename<<" , "<<m_add<<" , "<<m_file<<"\n";
+  p_instream=new std::ifstream(filename.c_str());
+
+  if(!p_instream->good()) {
     msg.Error()<<"ERROR: Event file "<<filename<<" not found."<<std::endl
 	       <<"   Will abort the run."<<std::endl;
     abort();
   }
+
   InitialSettings();
-  msg.Out()<<"Generator  = "<<m_generator<<std::endl
-	   <<"Input mode = "<<m_inputmode<<std::endl
-	   <<"Event mode = "<<m_eventmode<<std::endl
+  msg.Out()<<"Generator  = "<<m_generator<<"\n"
+	   <<"Input mode = "<<m_inputmode<<"\n"
+	   <<"Event mode = "<<m_eventmode<<"\n"
 	   <<"Phase mode = "<<m_phasemode<<std::endl;
+  if(f_gz) msg.Out()<<"G(un)zip handling is switched on for the whole run!\n......."<<std::endl;
 }
-  
+
+
+
+
 
 void Event_Reader::InitialSettings() 
 {
@@ -99,13 +133,35 @@ void Event_Reader::InitialSettings()
     }
   }
 }
-	
+
+
+
+
+
+void Event_Reader::CloseFile() {
+  if(p_instream) {
+    p_instream->close();
+    delete p_instream;
+    p_instream=NULL;
+    if(f_gz) system((std::string("gzip ")+m_path+m_add+m_file).c_str());
+  } else {
+    msg.Error()<<__PRETTY_FUNCTION__<<":\n   Warning: File already closed."<<std::endl;
+  }
+}
+
+
+
+
 
 bool Event_Reader::FillBlobs(Blob_List * blobs) 
 {
+  bool result;
+  long nev=rpa.gen.NumberOfEvents();
   switch (m_phasemode) {
-  case -1: 
-    return ReadInEvent(blobs);
+  case -1:
+    result=ReadInEvent(blobs);
+    if(nev==rpa.gen.NumberOfDicedEvents()) CloseFile();
+    return result;
   }
   msg.Error()<<"Error in Event_Reader::FillBlobs."<<std::endl
 	     <<"   Phasemode = "<<m_phasemode<<" is not specified so far."<<std::endl
@@ -114,6 +170,10 @@ bool Event_Reader::FillBlobs(Blob_List * blobs)
   abort();
   return false;
 }
+
+
+
+
 
 bool Event_Reader::ReadInEvent(Blob_List * blobs) 
 {
@@ -138,6 +198,7 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
 	  while(tmp.length()>0) {
 	    if (tmp[0]==' ') tmp = tmp.substr(1);
 	    else {
+	      CloseFile();
 	      pos      = tmp.find(string(" "));
 	      tmp      = tmp.substr(0,pos);
 	      m_file   = tmp;
@@ -146,14 +207,13 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
 	    }
 	  }
 	  if (new_file) {
-	    std::string filename = m_path + m_file; 
-	    p_instream->close();
-	    delete p_instream;
-	    p_instream = new std::ifstream(filename.c_str()); 
-	    if (!p_instream->good()) {
-	      msg.Error()<<"ERROR in  Event_Reader::ReadInEvent."<<std::endl
-		       <<"   New event file "<<filename<<" not found."<<std::endl
-		       <<"   Will abort the run."<<std::endl;
+	    std::string filename=m_path+m_add+m_file;
+	    if(f_gz) system((std::string("gunzip ")+filename+std::string(".gz")).c_str());
+	    msg_Info()<<" => "<<filename<<"\n";
+	    p_instream=new std::ifstream(filename.c_str());
+	    if(!p_instream->good()) {
+	      msg.Error()<<"ERROR: Event file "<<filename<<" not found."<<std::endl
+			 <<"   Will abort the run."<<std::endl;
 	      abort();
 	    }
 	    continue;
@@ -211,6 +271,10 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
   abort();
   return false;
 }
+
+
+
+
 
 bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs) 
 {
@@ -368,6 +432,8 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 
 
 
+
+
 Particle* Event_Reader::TranslateFromInput(std::string buffer, int& mother, const int control)
 {
   unsigned int     pos;
@@ -407,7 +473,7 @@ Particle* Event_Reader::TranslateFromInput(std::string buffer, int& mother, cons
   }
   Particle* part=NULL;
   if (flags.size()<4 || numbers.size()<4) {
-    msg.Error()<<"Error in "<<__PRETTY_FUNCTION__<<"\n"
+    msg.Error()<<"Error in "<<__PRETTY_FUNCTION__<<":\n"
 	       <<"   Not enough information provided for particle construction: "
 	       <<"   ("<<flags.size()<<" "<<numbers.size()<<")\n"
 	       <<"   in event number "<<m_evtnumber<<" of file "<<m_file<<".\n"
@@ -422,4 +488,3 @@ Particle* Event_Reader::TranslateFromInput(std::string buffer, int& mother, cons
   mother=flags[3];
   return part;
 }
-
