@@ -1,10 +1,10 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/08
+//Version: 1 ADICIC++-0.0/2004/05/27
 
-//Inline methods of Dipole_Handler.H.
+//Inline methods of Chain_Handler.H.
 
 
-
+////////////////////////////////////////////////////
 
 
 #include <cassert>

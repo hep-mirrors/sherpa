@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/12
+//Version: 1 ADICIC++-0.0/2004/05/21
 
 //Inline methods of Dipole.H.
 
@@ -41,6 +41,9 @@ namespace ADICIC {
   inline const double Dipole::ProdScale() const {
     return m_k2t;
   }
+  inline const double Dipole::EmitScale() const {
+    return m_l2t;
+  }
 
 
   inline const Dipole::Type Dipole::IsType() const {
@@ -51,13 +54,9 @@ namespace ADICIC {
   inline const double Dipole::Mass() const {
     return m_mass;
   }
-
-
   inline const double Dipole::InvMass() const {
     return m_invmass;
   }
-
-
   inline const ATOOLS::Vec4D& Dipole::TotP() const {
     return m_momentum;
   }
@@ -98,6 +97,9 @@ namespace ADICIC {
 
   inline double& Dipole::SetProdScale() {
     return m_k2t;
+  }
+  inline double& Dipole::SetEmitScale() {
+    return m_l2t;
   }
 
 
@@ -303,7 +305,7 @@ namespace ADICIC {
     std::cout<<"    renew Dipole_Particle ["<<m_num<<"]\n";
 #endif
   }
-  void Dipole_Particle::nm_info() const {
+  inline void Dipole_Particle::nm_info() const {
     std::cout<<"[dipa"<<m_num<<"]";
   }
 
@@ -326,7 +328,7 @@ namespace ADICIC {
 
 
 
-  void Dipole_Particle::WhatIsIt() const {
+  inline void Dipole_Particle::WhatIsIt() const {
     std::cout<<"Dipole_Particle."<<std::endl;
   }
 

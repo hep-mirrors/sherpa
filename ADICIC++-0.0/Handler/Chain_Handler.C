@@ -1,9 +1,9 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/11
+//Version: 1 ADICIC++-0.0/2004/05/27
 
-//Implementation of Dipole_Handler.H.
+//Implementation of Chain_Handler.H.
 
-
+///////////////////////////////////////////////////////////
 
 #include "Random.H"
 #include "Poincare.H"
@@ -417,54 +417,6 @@ Dipole_Handler::Calcpair::~Calcpair() {
 
 
 //=============================================================================
-
-
-
-/*
-const bool Dipole_Handler::GenerateEfracs() {
-
-  const double s=p_dip->InvMass();
-  const double x2tmin=s_k2tmin/s;
-
-  double x2t=Min(1.0,s_k2tmax/s);
-
-  while(x2t>x2tmin) {
-    double ran=ATOOLS::ran.Get();
-#ifdef DIPOLE_HANDLER_OUTPUT
-    cout<<"\t\t\tran="<<ran<<endl;
-#endif
-    //double coeff=std::log(ran)*1.5*M_PI/s_alphasfix;
-    double coeff=std::log(ran)*0.75*M_PI/s_alphasfix;
-    double A=sqr(std::log(x2t));
-    if( coeff < A-sqr(std::log(x2tmin)) ) return false;
-    x2t=std::exp(-sqrt(A-coeff));
-
-    double ymax=-0.5*std::log(x2t);
-    double rap=ymax*(-1.0+2.0*ATOOLS::ran.Get());
-
-    m_x3=sqrt(x2t);
-    m_x1=1.0-m_x3*std::exp(rap);
-    m_x3=1.0-m_x3*std::exp(-rap);
-
-    if( ATOOLS::ran.Get() < 0.5*(sqr(m_x1)+sqr(m_x3)) ) {
-      m_p2t=s*x2t; return true;
-    }
-  }
-
-  return false;
-
-}
-
-
-
-
-
-const bool Dipole_Handler::TestEfracs() const {
-  double sum=m_x1+m_x3;
-  if(sum>1.0 && sum<2.0) return true;
-  return false;
-}
-*/
 
 
 

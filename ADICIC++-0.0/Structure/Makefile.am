@@ -17,7 +17,8 @@ endif
 
 
 lib_LTLIBRARIES = libAdicicStruct.la
-libAdicicStruct_la_SOURCES = Dipole_Flavour.C Information.cpp Dipole.C
+libAdicicStruct_la_SOURCES = Dipole_Flavour.C Information.cpp \
+                             Dipole.C Chain.C
 
 
 
@@ -33,14 +34,13 @@ INCLUDES = -I../Tool \
 
 
   
-noinst_HEADERS = Dipole_Flavour.H Information.hpp Dipole.H
+noinst_HEADERS = Dipole_Flavour.H Information.hpp \
+                 Dipole.H Chain.H
 
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
-             Dipole.inl.hh Dipole.exa.cc
-
-
+             Dipole.inl.hh Dipole.exa.cc Chain.inl.hh
 
 
 

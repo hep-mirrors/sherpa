@@ -15,7 +15,7 @@ endif
 
 
 
-bin_PROGRAMS = Flavtest Emissiontest
+bin_PROGRAMS = Flavtest Emissiontest Chaintest
 
 
 
@@ -48,6 +48,17 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
 
 
 
+Chaintest_SOURCES = Chaintest.C
+Chaintest_LDADD = @libdir@/libAdicicTool.la \
+                  @libdir@/libAdicicStruct.la \
+                  @libdir@/libAdicicHdl.la \
+                  @libdir@/libToolsPhys.la \
+                  @libdir@/libToolsMath.la \
+                  @libdir@/libToolsOrg.la \
+                  -lg2c -lm
+
+
+
 INCLUDES = -I../Tool \
            -I../Structure \
            -I../Handler \
@@ -63,7 +74,6 @@ INCLUDES = -I../Tool \
 
 EXTRA_DIST = $(CVSINCLUDE)
 #EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat
-
 
 
 

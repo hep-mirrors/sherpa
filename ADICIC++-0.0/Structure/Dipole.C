@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/12
+//Version: 1 ADICIC++-0.0/2004/05/18
 
 //Implementation of Dipole.H.
 
@@ -38,11 +38,17 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
      <<dip.p_top->Flav()<<" | "
      <<dip.p_bot->Flav()<<"\e[0m   type:";
   switch(dip.m_type) {
-  case -99: ost<<"incorrect"; break;
-  default : ost<<dip.m_type;
+  case -9999: ost<<"incorrect"; break;
+  default   : ost<<dip.m_type;
   }
   ost<<"   origs:"<<dip.p_top->OrgType()<<"|"<<dip.p_bot->OrgType();
   ost<<"   hdl:"<<bool(dip.p_hdl);
+  ost<<"   state:";
+  switch(dip.f_active) {
+  case -1 : ost<<"blocked"; break;
+  case 0  : ost<<"off"; break;
+  default : ost<<"on";
+  }
   ost<<endl<<setiosflags(ios::left)<<"  "
      <<"mass :"<<setw(10)<<dip.m_mass
      <<"sqrm :"<<setw(12)<<dip.m_invmass
@@ -54,13 +60,8 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
   st1=string("(memo:")+st1+string(")");
   st2=string("[copy:")+st2+string("]");
   st3+=string("]"); st4+=string("]");
-  ost<<endl<<"  state:"<<setw(10);
-  switch(dip.f_active) {
-  case -1 : ost<<"blocked"; break;
-  case 0  : ost<<"off"; break;
-  default : ost<<"on";
-  }
-  ost<<"scale:"<<setw(12)<<dip.m_k2t
+  ost<<endl<<"  pscal:"<<setw(10)<<dip.m_k2t
+     <<"escal:"<<setw(12)<<dip.m_l2t
      <<"br["<<setw(8)<<st3<<"p="<<dip.p_top->Momentum()
      <<"\t"<<dip.p_top->Momentum().Abs2();
   ost<<endl<<"  "<<setw(16)<<st1<<setw(18)<<st2
@@ -125,7 +126,7 @@ Dipole::Dipole()
     m_copy(0), CopyOf(m_copy),
     m_memory(0), f_active(Blocked),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(incorrect), m_k2t(0.0),
+    m_type(incorrect), m_k2t(0.0), m_l2t(0.0),
     m_mass(0.0), m_invmass(0.0), m_momentum(Vec4D()) {
 
   ++s_count;
@@ -150,7 +151,7 @@ Dipole::Dipole(const Dipole& dip, bool phdl)
     m_copy(dip.m_name), CopyOf(m_copy),
     m_memory(dip.m_memory), f_active(dip.f_active),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(dip.m_type), m_k2t(dip.m_k2t),
+    m_type(dip.m_type), m_k2t(dip.m_k2t), m_l2t(dip.m_l2t),
     m_mass(dip.m_mass), m_invmass(dip.m_invmass), m_momentum(dip.m_momentum) {
 
   //Due to "towering" type and momentum of Dipole dip are already up-to-date.
@@ -209,7 +210,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Antibranch& ati,
   UpdateType();
   UpdateMass();
 
-  m_k2t=m_invmass;
+  m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -243,7 +244,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Glubranch& glu,
   UpdateType();
   UpdateMass();
 
-  m_k2t=m_invmass;
+  m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -277,7 +278,7 @@ Dipole::Dipole(Dipole::Glubranch& glu, Dipole::Antibranch& ati,
   UpdateType();
   UpdateMass();
 
-  m_k2t=m_invmass;
+  m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -316,7 +317,7 @@ Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
   UpdateType();
   UpdateMass();
 
-  m_k2t=m_invmass;
+  m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -328,8 +329,7 @@ Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
 
 Dipole::~Dipole() {
 
-  //Check for Dipole_Handler.
-  if(p_hdl) {
+  if(p_hdl) {    //Check for Dipole_Handler.
     cerr<<"\nMethod: ADICIC::Dipole::~Dipole(): "
 	<<"Warning: Detaching Dipole_Handler from Dipole!\n"<<endl;
     if(p_hdl->IsDockedAt(*this)==false) {
@@ -391,6 +391,7 @@ Dipole& Dipole::operator=(const Dipole& dip) {
 
   m_type=dip.m_type;
   m_k2t=dip.m_k2t;
+  m_l2t=dip.m_l2t;
   m_mass=dip.m_mass;
   m_invmass=dip.m_invmass;
   m_momentum=dip.m_momentum;

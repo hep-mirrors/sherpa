@@ -1,7 +1,7 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/12
+//Version: 1 ADICIC++-0.0/2004/05/08
 
-//The Dipole structure is an carrier of information.
+//The Dipole structure is a carrier of information.
 
 
 
@@ -17,7 +17,7 @@
 
 
 #define DIPOLE_OUTPUT DIPOLE_OUTPUT
-#undef  DIPOLE_OUTPUT
+//#undef  DIPOLE_OUTPUT
 #define DIPOLE_STRICT_VERSION DIPOLE_STRICT_VERSION
 #undef  DIPOLE_STRICT_VERSION
 
@@ -101,6 +101,7 @@ namespace ADICIC {
 
     Type          m_type;
     double        m_k2t;
+    double        m_l2t;
     double        m_mass;
     double        m_invmass;
     ATOOLS::Vec4D m_momentum;
@@ -140,6 +141,7 @@ namespace ADICIC {
     inline const Bool           Status() const;
     inline const Type           IsType() const;
     inline const double         ProdScale() const;
+    inline const double         EmitScale() const;
     inline const double         Mass() const;
     inline const double         InvMass() const;
     inline const ATOOLS::Vec4D& TotP() const;
@@ -151,8 +153,9 @@ namespace ADICIC {
     inline int&    SetSource();
     inline Bool&   SetStatus();
     inline double& SetProdScale();
+    inline double& SetEmitScale();
     inline const bool operator|(Dipole_Handler&);
-    inline void       operator|(bool b);
+    inline void       operator|(bool);
 
     inline const Type   UpdateType();
     inline const double UpdateMass();

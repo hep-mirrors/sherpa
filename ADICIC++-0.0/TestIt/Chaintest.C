@@ -16,8 +16,8 @@
 #include "Chain.H"
 
 
-#define EMISSIONTEST_OUTPUT EMISSIONTEST_OUTPUT
-#undef  EMISSIONTEST_OUTPUT
+#define CHAINTEST_OUTPUT CHAINTEST_OUTPUT
+#undef  CHAINTEST_OUTPUT
 
 
 
@@ -72,48 +72,71 @@ int main() {
 
   cout<<endl;
 
-  Chain cha;
-  cha.Print();
-  cout<<cha.MaxParticleNumber()<<endl;
-  cout<<cha.MaxDipoleNumber()<<endl;
-
-  cout<<endl;
-  cout<<"=============================================================="<<endl;
-
   Dipole_Handler::ShowCalcBox();
 
   cout<<endl; cin>>enter; cout<<endl;
   cout<<"=============================================================="<<endl;
-
-  {
-
-    Vec4D pl(45.0, 20.0,-5.0, 40.0);
-    Vec4D pr(45.0,-20.0, 5.0,-40.0);
-    Dipole D1;
-    Dipole::Branch b0(info.quark.s,pl);
-    Dipole::Antibranch a0(info.antiquark.t,pl);
-    Dipole D2(b0,a0,33);
-    cout<<D1<<endl<<D2<<endl;
-    D1.PrintTowers(); D2.PrintTowers();
-    D1=D2;
-    cout<<endl;
-
-  }
-  cout<<"=============================================================="<<endl;
   cout<<endl;
 
-  cout<<"======================================="<<endl;
-  cout<<" Testing the Dipole_Handler structure. "<<endl;
-  cout<<"======================================="<<endl;
+  cout<<"======================="<<endl;
+  cout<<" Testing the chaining. "<<endl;
+  cout<<"======================="<<endl;
 
   {
 
+    Chain cha;
+    cha.Print();
+    cout<<cha.MaxParticleNumber()<<endl;
+    cout<<cha.MaxDipoleNumber()<<endl;
+
     Vec4D pl(45.0, 20.0,-5.0, 40.0);
     Vec4D pr(45.0,-20.0, 5.0,-40.0);
+    Dipole::Branch     b1(info.quark.u,pl);
+    Dipole::Glubranch  g1(pl);
+    Dipole::Antibranch a1(info.antiquark.u,pr);
+    Dipole::Glubranch  g2(pr);
+
+    {
+      Chain ch1(b1,a1,Chain::Initiator::simple_epem);
+      ch1.Print();
+      cout<<ch1.MaxParticleNumber()<<endl;
+      cout<<ch1.MaxDipoleNumber()<<endl;
+
+      Chain ch2(g1,g1,Chain::Initiator::simple_epem);
+      ch2.Print();
+      cout<<ch2.MaxParticleNumber()<<endl;
+      cout<<ch2.MaxDipoleNumber()<<endl;
+
+      Chain ch3(g1,g2,Chain::Initiator::simple_epem);
+      ch3.Print();
+      cout<<ch3.MaxParticleNumber()<<endl;
+      cout<<ch3.MaxDipoleNumber()<<endl;
+
+      Chain ch4(ch3);//(ch1)
+      ch4.Print();
+      cout<<ch4.MaxParticleNumber()<<endl;
+      cout<<ch4.MaxDipoleNumber()<<endl;
+
+      ch2.Clear();
+      ch3.Clear();
+      ch2=ch4;
+      ch3.Initialize(b1,a1);
+      ch2.Print();
+      ch3.Print();
+
+      cout<<"Number of Dipole_Particle's = "<<Dipole_Particle::InStore<<endl;
+      cout<<"Number of Dipole's          = "<<Dipole::InStore<<endl;
+      cout<<"Number of Chain's           = "<<Chain::InStore<<endl;
+    }
+
+    cout<<"==="<<endl;
+    cout<<"Number of Dipole_Particle's = "<<Dipole_Particle::InStore<<endl;
+    cout<<"Number of Dipole's          = "<<Dipole::InStore<<endl;
+    cout<<"Number of Chain's           = "<<Chain::InStore<<endl;
+
+    cout<<endl; cin>>enter; cout<<endl;
 
     Dipole D1;
-    Dipole::Branch b1(info.quark.u,pl);
-    Dipole::Antibranch a1(info.antiquark.u,pr);
     Dipole D2(b1,a1);
     cout<<D1<<endl<<D2<<endl;
     D1.PrintTowers(); D2.PrintTowers();
@@ -270,7 +293,7 @@ int main() {
   cout<<"=============================================================="<<endl;
 
   {
-    unsigned total=4000000; //total=0;
+    unsigned total=0; //total=0;
     unsigned count=0;
 
     for(unsigned i=1; i<=total; ++i) {
