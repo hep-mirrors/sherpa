@@ -107,16 +107,19 @@ void Exception_Handler::RemoveTerminatorObject(Terminator_Object *const terminat
 
 void Exception_Handler::SetExitCode()
 {
+  s_print=true;
   if (s_exception==NULL) return;
   if (s_exception->m_class=="ISR_Handler")                 s_exitcode=151;
   else if (s_exception->m_class=="MI_Base")                s_exitcode=211;
   else if (s_exception->m_class=="Simple_Chain")           s_exitcode=212;
   else if (s_exception->m_class=="Matrix_Element_Handler") s_exitcode=201;
   else s_exitcode=1;
+  if (s_exception->m_type==ex::normal_exit) s_print=false;
 }
 
 void Exception_Handler::SignalHandler(int signal) 
 {
+  s_print=true;
   std::string input="y";
   msg.Error()<<om::bold<<"Exception_Handler::SignalHandler: "<<om::reset<<om::blue
 	     <<"Signal "<<om::reset<<om::bold<<"("<<om::red<<signal
