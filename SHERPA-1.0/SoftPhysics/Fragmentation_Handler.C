@@ -76,7 +76,6 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
       }
     }
   }
-  std::cout<<*p_blob<<std::endl;
   return p_lund->Hadronize(p_blob,bloblist,particlelist);
 }
 
