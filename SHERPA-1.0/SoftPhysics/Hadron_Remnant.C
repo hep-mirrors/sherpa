@@ -3,12 +3,18 @@
 #include "Exception.H"
 #include "Random.H"
 
+#ifdef DEBUG__Hadron_Remnant
+#include "Run_Parameter.H"
+#define EVENT 0
+#endif
+
 using namespace SHERPA;
 
 Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,const unsigned int _m_beam,double _m_scale):
   Remnant_Base(Hadron_Remnant::Hadron,_m_beam),
   m_deltax(0.0125), 
   m_scale(-_m_scale),
+  m_ecms(sqrt(isrhandler->Pole())),
   m_xscheme(1), 
   m_maxtrials(100)
 {
@@ -16,7 +22,7 @@ Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,const unsigned int _
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Hadron remnant needs ISR Handler.",
 			    "Hadron_Remnant","Hadron_Remnant"));
   }
-  p_pdfbase=isrhandler->PDF(m_beam);
+  p_pdfbase=isrhandler->PDF(m_beam)->GetBasicPDF();
   GetConstituents(isrhandler->Flav(m_beam));
 }
 
@@ -66,19 +72,33 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
     ATOOLS::Particle *cur=m_parton[1][i];
     m_hardpt+=cur->Momentum();
     if (i>0) {
-      if (cur->Flav().Kfcode()==ATOOLS::kf::gluon) TreatGluon(cur);
-      else TreatQuark(cur);
+      if (cur->Flav().Kfcode()==ATOOLS::kf::gluon) {
+	if (!TreatGluon(cur)) {
+	  UnDo();
+	  p_partner->UnDo();
+	  return false;
+	}
+      }
+      else {
+	if (!TreatQuark(cur)) {
+	  UnDo();
+	  p_partner->UnDo();
+	  return false;
+	}
+      }
     }
     else {
       if (cur->Flav().Kfcode()==ATOOLS::kf::gluon) TreatFirstGluon(cur);
       else TreatFirstQuark(cur);
     }
 #ifdef DEBUG__Hadron_Remnant
-    std::cout<<"particle ["<<i<<"]("<<m_parton[1].size()<<") {\n";
-    for (size_t j=0;j<m_parton[0].size();++j) std::cout<<m_parton[0][j]<<std::endl;
-    std::cout<<"\n";
-    for (size_t j=0;j<m_parton[2].size();++j) std::cout<<m_parton[2][j]<<std::endl;
-    std::cout<<"}\n";
+    if (ATOOLS::rpa.gen.NumberOfDicedEvents()==EVENT) {
+      std::cout<<"particle ["<<i<<"]("<<m_parton[1].size()<<") {\n";
+      for (size_t j=0;j<m_parton[0].size();++j) std::cout<<m_parton[0][j]<<std::endl;
+      std::cout<<"\n";
+      for (size_t j=0;j<m_parton[2].size();++j) std::cout<<m_parton[2][j]<<std::endl;
+      std::cout<<"}\n";
+    }
 #endif
   }
   // select x's according to pdf
@@ -113,12 +133,18 @@ void Hadron_Remnant::DiceKinematics()
   do {
     ++trials;
     xtot=m_xtot;
+    p_pdfbase->Reset();
+    for(unsigned int i=0;i<m_parton[1].size();++i) {
+      p_pdfbase->Extract(m_parton[1][i]->Flav(),
+			 2.*m_parton[1][i]->Momentum()[0]/m_ecms);
+    }
     for (unsigned int i=0;i<m_parton[0].size();++i) {
       if (!m_parton[0][i]->Flav().IsDiQuark()) {
 	double value=1.0;
 	for (unsigned int j=0;(xtot-value<m_deltax)&&(j<m_maxtrials/100);++j) { 
 	  value=GetXPDF(m_parton[0][i]->Flav(),m_scale); 
-	}
+      	}
+	p_pdfbase->Extract(m_parton[0][i]->Flav(),value);
 	xmap[m_parton[0][i]]=value;
  	xtot-=value;
       }
@@ -128,12 +154,13 @@ void Hadron_Remnant::DiceKinematics()
     }
     xmap[p_last[0]]=xtot;
     if (trials>m_maxtrials) {
-      ATOOLS::msg.Tracking()<<"Hadron_Remnant::TreatHadron: "
+      ATOOLS::msg.Tracking()<<"Hadron_Remnant::DiceKinematics(): "
 			    <<"Too many trials to find appropriate x values for partons."<<std::endl
 			    <<"   Using naive distribution instead."<<std::endl;
       m_xscheme=0;
     }
   } while ((xtot<m_deltax)&&(m_xscheme!=0));
+  p_pdfbase->Reset();
   if (m_xscheme==0) {
     for (std::map<ATOOLS::Particle*,double>::iterator it=xmap.begin();it!=xmap.end(); ++it) {
       it->second=m_xtot/xmap.size();
@@ -146,6 +173,12 @@ void Hadron_Remnant::DiceKinematics()
 					    -m_hardpt.PPerp2()/ATOOLS::sqr(m_parton[0].size()));
     m_parton[0][j]->SetMomentum(ATOOLS::Vec4D(E,-m_hardpt[1]/m_parton[0].size(),
 					      -m_hardpt[2]/m_parton[0].size(),pz));
+    // the brackets are necessary for 'nan'-values
+    if (!(E>0.) || (!(pz>0.) && !(pz<=0.))) {
+      ATOOLS::msg.Tracking()<<"Hadron_Remnant::DiceKinematics(): "
+			    <<"Parton ("<<(long int)m_parton[0][j]<<") has non-positive momentum "
+			    <<m_parton[0][j]->Momentum()<<std::endl;
+    }
   }
 }
 
@@ -244,16 +277,36 @@ bool Hadron_Remnant::TreatFirstQuark(ATOOLS::Particle *cur)
   return true;
 }
 
-bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,bool &singlet,
-				   int anti,bool forward)
+bool Hadron_Remnant::TestColours(ATOOLS::Particle *particle,int oldc,int newc,
+				 bool singlet,bool force,int anti)
 {
+  if (particle->GetFlow(anti)==oldc && 
+      (m_adjusted.find(particle)==m_adjusted.end() || 
+       (force && m_singlet.find(particle)==m_singlet.end()))) {
+    return true;
+  }
+  return false;
+}
+
+bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,
+				   bool &singlet,bool force,int anti,bool forward)
+{
+  if (m_adjusted.find(particle)!=m_adjusted.end()) m_singlet.insert(particle);
   m_adjusted.insert(particle);
 #ifdef DEBUG__Hadron_Remnant
-  std::cout<<"["<<m_adjusted.size()<<"] ("<<oldc<<" -> "<<newc<<")"<<particle<<std::endl;
+  if (ATOOLS::rpa.gen.NumberOfDicedEvents()==EVENT) {
+    std::cout<<"["<<m_adjusted.size()<<"] ("<<oldc<<" -> "<<newc<<")"<<particle<<std::endl;
+  }
 #endif
-  if (particle->GetFlow(1)==newc || particle->GetFlow(2)==newc) {
+  if (!force && (particle->GetFlow(1)==newc || particle->GetFlow(2)==newc)) {
     ATOOLS::msg.Tracking()<<"Hadron_Remnant::AdjustColours(..): "
 			  <<"Created colour singlet. Retry."<<std::endl;
+#ifdef DEBUG__Hadron_Remnant
+    if (ATOOLS::rpa.gen.NumberOfDicedEvents()==EVENT) {
+      std::cout<<"Hadron_Remnant::AdjustColours(..): "
+	       <<"Created colour singlet. Retry."<<std::endl;
+    }
+#endif
     return singlet=true;
   }
   if ((forward && particle->DecayBlob()==NULL) ||
@@ -268,52 +321,44 @@ bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,
 		       <<"Result might be unreliable."<<std::endl;
     return false;
   }
-  if (forward) {
-    for (int i=0;i<particle->DecayBlob()->NOutP();++i) {
-      ATOOLS::Particle *help=particle->DecayBlob()->OutParticle(i);
-      if (help->GetFlow(anti)==oldc && m_adjusted.find(help)==m_adjusted.end()) {
-	if (!AdjustColours(help,oldc,newc,singlet,anti,forward)) return false;
-	if (!singlet) help->SetFlow(anti,newc);
-	return true;
-      }
-    }
-    for (int i=0;i<particle->DecayBlob()->NInP();++i) {
-      ATOOLS::Particle *help=particle->DecayBlob()->InParticle(i);
-      if (help->GetFlow(3-anti)==oldc && m_adjusted.find(help)==m_adjusted.end()) {
-	if (!AdjustColours(help,oldc,newc,singlet,3-anti,!forward)) return false;
-	if (!singlet) help->SetFlow(3-anti,newc);
-	return true;
-      }
+  ATOOLS::Blob *cur=particle->DecayBlob();
+  int newanti=anti;
+  bool newforward=forward;
+  if (!forward) {
+    newanti=3-anti;
+    newforward=!forward;
+    cur=particle->ProductionBlob();
+  }
+  for (int i=0;i<cur->NOutP();++i) {
+    ATOOLS::Particle *help=cur->OutParticle(i);
+    if (TestColours(help,oldc,newc,singlet,force,newanti)) { 
+      if (!AdjustColours(help,oldc,newc,singlet,force,newanti,newforward)) return false;
+      if (!singlet) help->SetFlow(newanti,newc);
+      return true;
     }
   }
-  else {
-    for (int i=0;i<particle->ProductionBlob()->NInP();++i) {
-      ATOOLS::Particle *help=particle->ProductionBlob()->InParticle(i);
-      if (help->GetFlow(anti)==oldc && m_adjusted.find(help)==m_adjusted.end()) {
-	if (!AdjustColours(help,oldc,newc,singlet,anti,forward)) return false;
-	if (!singlet) help->SetFlow(anti,newc);
-	return true;
-      }
-    }
-    for (int i=0;i<particle->ProductionBlob()->NOutP();++i) {
-      ATOOLS::Particle *help=particle->ProductionBlob()->OutParticle(i);
-      if (help->GetFlow(3-anti)==(int)oldc && m_adjusted.find(help)==m_adjusted.end()) {
-	if (!AdjustColours(help,oldc,newc,singlet,3-anti,!forward)) return false;
-	if (!singlet) help->SetFlow(3-anti,newc);
-	return true;
-      }
+  newanti=3-newanti;
+  newforward=!newforward;
+  for (int i=0;i<cur->NInP();++i) {
+    ATOOLS::Particle *help=cur->InParticle(i);
+    if (TestColours(help,oldc,newc,singlet,force,newanti)) { 
+      if (!AdjustColours(help,oldc,newc,singlet,force,newanti,newforward)) return false;
+      if (!singlet) help->SetFlow(newanti,newc);
+      return true;
     }
   }
   return true;
 }
 
-bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,bool &singlet)
+bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,
+				   bool &singlet,bool force)
 {
+  m_singlet.clear();
   m_adjusted.clear();
   if (oldc==newc) return true; 
   size_t i=1;
   for (;i<3;++i) if (particle->GetFlow(i)==oldc) break;
-  bool result=AdjustColours(particle,oldc,newc,singlet,i,true);
+  bool result=AdjustColours(particle,oldc,newc,singlet,force,i,true);
   if (result && !singlet) particle->SetFlow(i,newc);
   return result;
 }
@@ -374,27 +419,32 @@ bool Hadron_Remnant::TreatQuark(ATOOLS::Particle *cur)
     }
     if (cur->Flav().IsAnti()) {
       int old=comp[1]->GetFlow(2);
-      success=success&&AdjustColours(comp[1],old,newpart->GetFlow(1),singlet);
+      success=success&&AdjustColours(comp[1],old,newpart->GetFlow(1),
+				     singlet,m_errors>=m_maxtrials/10);
       if (singlet) continue;
-      success=success&&AdjustColours(cur,cur->GetFlow(2),comp[0]->GetFlow(1),singlet);
+      success=success&&AdjustColours(cur,cur->GetFlow(2),comp[0]->GetFlow(1),
+				     singlet,m_errors>=m_maxtrials/10);
       if (singlet) {
-	AdjustColours(comp[1],comp[1]->GetFlow(2),old,singlet=false);
+	AdjustColours(comp[1],comp[1]->GetFlow(2),old,singlet=false,false);
 	singlet=true;
 	continue;
       }
     }
     else {
       int old=comp[1]->GetFlow(1);
-      success=success&&AdjustColours(comp[1],old,newpart->GetFlow(2),singlet);
+      success=success&&AdjustColours(comp[1],old,newpart->GetFlow(2),
+				     singlet,m_errors>=m_maxtrials/10);
       if (singlet) continue;
-      success=success&&AdjustColours(cur,cur->GetFlow(1),comp[0]->GetFlow(2),singlet);
+      success=success&&AdjustColours(cur,cur->GetFlow(1),comp[0]->GetFlow(2),
+				     singlet,m_errors>=m_maxtrials/10);
       if (singlet) {
-	AdjustColours(comp[1],comp[1]->GetFlow(1),old,singlet=false);
+	AdjustColours(comp[1],comp[1]->GetFlow(1),old,singlet=false,false);
 	singlet=true;
 	continue;
       }
     }
   }
+  if (trials==m_maxtrials/10 && m_errors<m_maxtrials/10) success=false;
   m_parton[0].push_back(newpart);
   p_beamblob->AddToOutParticles(newpart);
   m_parton[2].push_back(cur);
@@ -414,27 +464,32 @@ bool Hadron_Remnant::TreatGluon(ATOOLS::Particle *cur)
     do { comp[0]=SelectCompanion(cur); } while ((comp[1]=FindConnected(comp[0]))==NULL);
     if (comp[0]->Flav().IsAnti()^comp[0]->Flav().IsDiQuark()) {
       int old=comp[0]->GetFlow(2);
-      success=success&&AdjustColours(comp[0],old,cur->GetFlow(1),singlet);
+      success=success&&AdjustColours(comp[0],old,cur->GetFlow(1),
+				     singlet,m_errors>=m_maxtrials/10);
       if (singlet) continue;
-      success=success&&AdjustColours(cur,cur->GetFlow(2),comp[1]->GetFlow(1),singlet);
+      success=success&&AdjustColours(cur,cur->GetFlow(2),comp[1]->GetFlow(1),
+				     singlet,m_errors>=m_maxtrials/10);
       if (singlet) {
-	AdjustColours(comp[0],comp[0]->GetFlow(2),old,singlet=false);
+	AdjustColours(comp[0],comp[0]->GetFlow(2),old,singlet=false,false);
 	singlet=true;
 	continue;
       }
     }
     else {
       int old=comp[0]->GetFlow(1);
-      success=success&&AdjustColours(comp[0],old,cur->GetFlow(2),singlet);
+      success=success&&AdjustColours(comp[0],old,cur->GetFlow(2),
+				     singlet,m_errors>=m_maxtrials/10);
       if (singlet) continue;
-      success=success&&AdjustColours(cur,cur->GetFlow(1),comp[1]->GetFlow(2),singlet);
+      success=success&&AdjustColours(cur,cur->GetFlow(1),comp[1]->GetFlow(2),
+				     singlet,m_errors>=m_maxtrials/10);
       if (singlet) {
-	AdjustColours(comp[0],comp[0]->GetFlow(1),old,singlet=false);
+	AdjustColours(comp[0],comp[0]->GetFlow(1),old,singlet=false,false);
 	singlet=true;
 	continue;
       }
     }
   }
+  if (trials==m_maxtrials/10 && m_errors<m_maxtrials/10) success=false;
   m_parton[2].push_back(cur);
   p_beamblob->AddToOutParticles(cur);
   return success;
@@ -460,11 +515,10 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
       x=ATOOLS::ran.Get(); 
       if (xtrials>=m_maxtrials) x=cut;
     } while (x<cut);
-    p_pdfbase->GetBasicPDF()->Calculate(x,0.,0.,scale);
+    p_pdfbase->Calculate(x,0.,0.,scale);
     if (pdftrials>=m_maxtrials) { m_xscheme=0; return 0.01; }
-    if (p_pdfbase->GetBasicPDF()->GetXPDF(flavour)/x>ATOOLS::ran.Get()) return x;
+    if (p_pdfbase->GetXPDF(flavour)/x>ATOOLS::ran.Get()) return x;
   } 
   return 0.0;
 }
-
 

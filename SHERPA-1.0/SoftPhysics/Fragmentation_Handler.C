@@ -1,6 +1,7 @@
 #include "Fragmentation_Handler.H"
 
 #include "Data_Read.H"
+#include "Run_Parameter.H"
 #include "Exception.H"
 
 using namespace SHERPA;
@@ -9,6 +10,7 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
   m_dir(_dir), 
   m_file(_file),
   m_mode(0),
+  m_maxtrials(1),
   p_lund(NULL)
 {
   ATOOLS::Data_Read dr(m_dir+m_file);
@@ -38,7 +40,7 @@ Fragmentation_Handler::~Fragmentation_Handler()
 bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
 						 ATOOLS::Particle_List *particlelist) 
 {
-  if (m_mode==0) return 1;
+  if (m_mode==0 || bloblist->size()==0) return 1;
   p_blob = new ATOOLS::Blob();
   bloblist->push_back(p_blob);
   p_blob->SetId(bloblist->size());
@@ -82,11 +84,24 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
       if (!found) {
 	ATOOLS::msg.Error()<<"Fragmentation_Handler::PerformFragmentation(..): "
 			   <<"Cannot find connected parton for parton ("
-			   <<cur->Number()<<")"<<std::endl;
+			   <<cur->Number()<<") in event ["
+			   <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"] {\n"
+			   <<*bloblist<<"}"<<std::endl;
 	return false;
       }
     } while ((cur=comp)->Flav().IsGluon());
   }
-  return p_lund->Hadronize(p_blob,bloblist,particlelist);
+  for (size_t trials=0;trials<m_maxtrials;++trials) {
+    if (p_lund->Hadronize(p_blob,bloblist,particlelist)) return true;
+    if (m_maxtrials>1) ATOOLS::msg.Error()<<"Fragmentation_Handler::PerformFragmentation(..): "
+					  <<"Hadronization failed. Retry."<<std::endl;
+  }
+  ATOOLS::msg.Error()<<"Fragmentation_Handler::PerformFragmentation(..): "
+		     <<"Hadronization failed."<<std::endl;
+  while (bloblist->size()>0) {
+    delete *bloblist->begin();
+    bloblist->erase(bloblist->begin());
+  }
+  return false;
 }
 

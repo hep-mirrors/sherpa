@@ -50,6 +50,7 @@ Beam_Remnant_Handler::Beam_Remnant_Handler(std::string _m_path,std::string _m_fi
   p_beam(_p_beam),
   m_path(_m_path), 
   m_file(_m_file),
+  m_maxtrials(1),
   m_fill(true)
 {
   for (size_t i=0;i<2;++i) {
@@ -69,42 +70,42 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler()
 }
 
 
-bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Particle_List * _particlelist)
+bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * bloblist,Particle_List * particlelist)
 {
-  Blob_Iterator endblob = _bloblist->end(); 
+  Blob_Iterator endblob = bloblist->end(); 
   Blob * blob;
   bool flag=false;
   int  number;
   Particle * p;
   for (int i=0;i<2;i++) {
-    for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
+    for (Blob_Iterator biter = bloblist->begin();biter != endblob;++biter) {
       if ((*biter)->Status()==1 && (*biter)->Beam()==i && 
 	  ((*biter)->Type()==btp::Beam || (*biter)->Type()==btp::IS_Shower)) {
 	(*biter)->SetStatus(2);
 	blob = new ATOOLS::Blob();
-	_bloblist->insert(_bloblist->begin(),blob);
-	blob->SetId(_bloblist->size());
+	bloblist->insert(bloblist->begin(),blob);
+	blob->SetId(bloblist->size());
 	blob->SetType(btp::Bunch);
 	blob->SetBeam(i);
 	blob->AddToOutParticles((*biter)->InParticle(0));
 	if ((*biter)->InParticle(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
 	    IsEqual((*biter)->InParticle(0)->E(),p_beam->GetBeam(i)->InMomentum()[0])) {
 	  p = new Particle((*biter)->InParticle(0));
-	  if (_particlelist) number = _particlelist->size();
+	  if (particlelist) number = particlelist->size();
 	  else number = (long int)p;
 	  p->SetNumber(number);
 	  blob->AddToInParticles(p);
 	}
 	else {
 	  p = new Particle(-1,p_beam->GetBeam(i)->Beam(),p_beam->GetBeam(i)->InMomentum());
-	  if (_particlelist) number = _particlelist->size();
+	  if (particlelist) number = particlelist->size();
 	  else number = (long int)p;
 	  p->SetNumber(number);	  
 	  p->SetStatus(2);
 	  blob->AddToInParticles(p);
 	  Particle * p = new Particle(-1,p_beam->GetBeam(i)->Remnant(),
 				      p_beam->GetBeam(i)->InMomentum()+(-1.)*(*biter)->InParticle(0)->Momentum());
-	  if (_particlelist) number = _particlelist->size();
+	  if (particlelist) number = particlelist->size();
 	  else number = (long int)p;
 	  p->SetNumber(number);
 	  blob->AddToOutParticles(p);
@@ -114,29 +115,30 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Particle_List * 
     }
   }
 #ifdef DEBUG__Beam_Remnant_Handler
-  SumMomenta(_bloblist->front());
+  SumMomenta(bloblist->front());
 #endif
   return flag;
 }
 
-bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _particlelist)
+bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * bloblist,Particle_List * particlelist)
 { 
   if (!m_fill) return false;
-  Blob_Iterator endblob = _bloblist->end(); 
+  Blob_Iterator endblob = bloblist->end(); 
   Blob * blob;
-  bool okay=false;
+  bool okay=false, treat[2];
   int number;
   for (int i=0;i<2;i++) {
     p_beampart[i]->Clear();
-    bool flag=true,treat=false;
-    for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
+    bool flag=true;
+    treat[i]=false;
+    for (Blob_Iterator biter = bloblist->begin();biter != endblob;++biter) {
       if ((*biter)->Beam()==i && (*biter)->Status()==1 && 
 	  (*biter)->Type()==btp::IS_Shower) { 
 	if (p_beampart[i]->Type()==Remnant_Base::Hadron) {
 	  if (flag) {
 	    blob = new ATOOLS::Blob();
-	    _bloblist->insert(_bloblist->begin(),blob);
-	    blob->SetId(_bloblist->size());
+	    bloblist->insert(bloblist->begin(),blob);
+	    blob->SetId(bloblist->size());
 	    blob->SetType(btp::Beam);
 	    blob->SetBeam(i);
 	    blob->SetStatus(1);
@@ -149,40 +151,59 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _
 	  }
 	  p_beampart[i]->ExtractParton((*biter)->InParticle(0));
 	  (*biter)->SetStatus(2);
-	  treat=true;
+	  treat[i]=true;
 	}
 	else if (!IsEqual((*biter)->InParticle(0)->E(),p_beam->GetBeam(i)->OutMomentum()[0])) {
 	  (*biter)->SetStatus(2);
 	  blob = new ATOOLS::Blob();
-	  blob->SetId(_bloblist->size());
+	  blob->SetId(bloblist->size());
 	  blob->SetType(btp::Beam);
 	  blob->SetBeam(i);
 	  blob->SetStatus(1);
 	  p_beampart[i]->ExtractParton((*biter)->InParticle(0));
 	  Particle *p = new Particle(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum());
-	  if (_particlelist) number = _particlelist->size();
+	  if (particlelist) number = particlelist->size();
 	  else number = (long int)p;
 	  p->SetNumber(number);
 	  p->SetStatus(2);
 	  blob->AddToInParticles(p);
-	  _bloblist->insert(_bloblist->begin(),blob);
+	  bloblist->insert(bloblist->begin(),blob);
 	  p_beamblob[i]=blob;
 	  flag=false;
 	  okay=true;
 	}
       }
     }
-    if (treat) p_beampart[i]->FillBlob(blob,_particlelist);
   }
-  if ((p_beampart[0]->Type()==Remnant_Base::Hadron)||
-      (p_beampart[1]->Type()==Remnant_Base::Hadron)) {
-    p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
-    for (size_t i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
-  }
-  for (size_t i=0;i<2;++i) p_beampart[i]->AdjustKinematics();
+  bool success=true;
+  for (size_t trials=0;trials<m_maxtrials;++trials) {
+    success=false;
+    for (size_t i=0;i<2;++i) p_beampart[i]->ClearErrors();
+    while (!success) {
+      success=true;
+      if (treat[0]) success=success&&p_beampart[0]->FillBlob(p_beamblob[0],particlelist);
+      if (treat[1]) success=success&&p_beampart[1]->FillBlob(p_beamblob[1],particlelist);
+    }
+    if ((p_beampart[0]->Type()==Remnant_Base::Hadron)||
+	(p_beampart[1]->Type()==Remnant_Base::Hadron)) {
+      p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
+      for (size_t i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
+    }
+    for (size_t i=0;i<2;++i) {
+      if (!(success=success&&p_beampart[i]->AdjustKinematics())) continue;
+    }
 #ifdef DEBUG__Beam_Remnant_Handler
-  SumMomenta(_bloblist->front());
+    SumMomenta(bloblist->front());
 #endif
+  }
+  if (!success) {
+    for (size_t i=0;i<2;++i) p_beampart[i]->Clear();
+    while (bloblist->size()>0) {
+      delete *bloblist->begin();
+      bloblist->erase(bloblist->begin());
+    }
+    return false;
+  }
   return okay;
 }
 

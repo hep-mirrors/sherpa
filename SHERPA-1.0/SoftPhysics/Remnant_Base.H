@@ -21,7 +21,7 @@ namespace SHERPA {
   protected:
     
     TypeID       m_type;
-    unsigned int m_beam;
+    unsigned int m_beam, m_errors;
 
     ATOOLS::Particle_List m_parton[3];
 
@@ -38,27 +38,34 @@ namespace SHERPA {
   public:
 
     // constructor
-    Remnant_Base(const TypeID _m_type,const unsigned int _m_beam);
+    Remnant_Base(const TypeID type,const unsigned int beam);
 
     // destructor
     virtual ~Remnant_Base();
-
-    // setters
-    void SetPartner(SHERPA::Remnant_Base *_p_partner);
-    void ExtractParton(ATOOLS::Particle *_m_parton);
-
-    // getters
-    const TypeID       Type() const;
-    const unsigned int Beam() const;
-
-    ATOOLS::Particle *Last();
-    ATOOLS::Blob     *BeamBlob();
 
     // member functions
     virtual void Clear();
 
     virtual bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist) = 0;
     virtual bool AdjustKinematics();
+
+    void UnDo(); 
+
+    // inline functions 
+    inline void SetPartner(SHERPA::Remnant_Base *_p_partner) { p_partner=_p_partner; }
+
+    inline ATOOLS::Particle *Last()     { m_active=false; return p_last[0]; }
+    inline ATOOLS::Blob     *BeamBlob() { return p_beamblob;                }
+
+    inline TypeID       Type() const { return m_type; }
+    inline unsigned int Beam() const { return m_beam; }
+
+    inline unsigned int Errors() const { return m_errors; }
+
+    inline void ClearErrors() { m_errors=0; }
+
+    inline void ExtractParton(ATOOLS::Particle *parton) 
+    { if (parton!=NULL) m_parton[1].push_back(parton); }
 
   };// end of class Remnant_Base
 

@@ -10,11 +10,11 @@ namespace SHERPA {
   private:
 
     std::vector<ATOOLS::Flavour> m_constit;
-    std::set<ATOOLS::Particle*>  m_companions, m_adjusted;
+    std::set<ATOOLS::Particle*>  m_companions, m_adjusted, m_singlet;
 
     PDF::PDF_Base *p_pdfbase;
 
-    double       m_deltax, m_scale;
+    double       m_deltax, m_scale, m_ecms;
     unsigned int m_xscheme, m_maxtrials;
 
     ATOOLS::Vec4D m_hardpt;
@@ -24,9 +24,12 @@ namespace SHERPA {
     ATOOLS::Particle *FindConnected(ATOOLS::Particle *cur,bool=false,int=1); 
     ATOOLS::Particle *SelectCompanion(ATOOLS::Particle *cur);
 
-    bool AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,bool &singlet,
-		       int anti,bool foward);
-    bool AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,bool &singlet);
+    bool TestColours(ATOOLS::Particle *particle,int oldc,int newc,
+		     bool singlet,bool force,int anti);
+    bool AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,
+		       bool &singlet,bool force,int anti,bool foward);
+    bool AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,
+		       bool &singlet,bool force);
 
     double GetXPDF(ATOOLS::Flavour flavour,double scale);
     void   DiceKinematics();

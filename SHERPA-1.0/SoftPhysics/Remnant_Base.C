@@ -6,9 +6,9 @@
 
 using namespace SHERPA;
 
-Remnant_Base::Remnant_Base(const TypeID _m_type,const unsigned int _m_beam):
-  m_type(_m_type),
-  m_beam(_m_beam),
+Remnant_Base::Remnant_Base(const TypeID type,const unsigned int beam):
+  m_type(type),
+  m_beam(beam),
   p_partner(NULL) {}
 
 Remnant_Base::~Remnant_Base() {}
@@ -84,24 +84,38 @@ bool Remnant_Base::AdjustKinematics()
   */
   pr1=ATOOLS::Vec4D(E1,pr1[1],pr1[2],pz1); p_last[0]->SetMomentum(pr1);
   pr2=ATOOLS::Vec4D(E2,pr2[1],pr2[2],pz2); p_last[1]->SetMomentum(pr2);
+  for (size_t i=0;i<2;++i) {
+    // the brackets are necessary for 'nan'-values
+    if (!(p_last[i]->Momentum()[0]>0.)) {
+      ATOOLS::msg.Tracking()<<"Remnant_Base::AdjustKinematics(): "
+			    <<"Parton ("<<p_last[i]->Number()<<") has non-positive energy "
+			    <<p_last[i]->Momentum()<<std::endl;
+      UnDo();
+      p_partner->UnDo();
+      return false;
+    }
+  }
   return true;
 }
 
-const Remnant_Base::TypeID Remnant_Base::Type() const
-{ return m_type; }
-
-const unsigned int Remnant_Base::Beam() const
-{ return m_beam; }
-
-ATOOLS::Particle *Remnant_Base::Last()
-{ m_active=false; return p_last[0]; }
-
-ATOOLS::Blob *Remnant_Base::BeamBlob()
-{ return p_beamblob; }
-
-void Remnant_Base::ExtractParton(ATOOLS::Particle *_m_parton)
-{ if (_m_parton!=NULL) m_parton[1].push_back(_m_parton); }
-
-void Remnant_Base::SetPartner(SHERPA::Remnant_Base *_p_partner)
-{ p_partner=_p_partner; }
+void Remnant_Base::UnDo() 
+{
+  ATOOLS::msg.Tracking()<<"Remnant_Base::UnDo(): Undoing changes on blob list."<<std::endl;
+#ifdef DEBUG__Remnant_Base
+  std::cout<<"Remnant_Base::UnDo(): ["<<m_errors<<"] Undoing changes on blob list."<<std::endl;
+#endif
+  for (size_t i=0;i<3;++i) {
+    for (ATOOLS::Particle_List::iterator pit=m_parton[i].begin();
+	 pit!=m_parton[i].end();++pit) {
+      p_beamblob->RemoveOutParticle(*pit);
+    }
+  }
+  for (ATOOLS::Particle_List::iterator pit=m_parton[0].begin();
+       pit!=m_parton[0].end();++pit) {
+    delete *pit;
+  }
+  m_parton[0].clear();
+  m_parton[2].clear();
+  ++m_errors;
+}
 

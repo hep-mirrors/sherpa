@@ -13,7 +13,8 @@ namespace SHERPA {
     std::string m_dir,m_file;
     std::string m_fragmentationmodel;
 
-    int m_mode;
+    int    m_mode;
+    size_t m_maxtrials;
 
     Lund_Interface *p_lund;
     ATOOLS::Blob   *p_blob;

@@ -22,6 +22,7 @@ namespace SHERPA {
     ATOOLS::Blob                * p_beamblob[2];
 
     std::string  m_path, m_file;
+    size_t       m_maxtrials;
     bool         m_fill;
 
   public :
