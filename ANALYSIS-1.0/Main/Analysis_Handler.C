@@ -67,6 +67,11 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 		   <<"   ..|..  -  mandatory selection\n"
 		   <<"   [..]   -  optional variable\n"
 		   <<"   -> ..  -  depends on\n\n"
+                   <<"   list   -  particle list specifier, \n"
+		   <<"             user defined lists can be created using e.g. Trigger \n"
+                   <<"             predefined lists include:\n"
+		   <<"              FinalState, Parton, ChargedParticle, Hadron, ChargedHadron,\n"
+		   <<"              NeutralHadron, ChargePion, ChargedKaon, ProtonAntiproton \n\n"
 		   <<"   BEGIN_ANALYSIS {\n\n"
 		   <<"   LEVEL      [ME]|[MI]|[Shower]|[Hadron]\n\n"
 		   <<"   PATH_PIECE path\n\n";
@@ -183,10 +188,12 @@ void Analysis_Handler::Finish(const std::string &path)
       SetOutputPath(ATOOLS::rpa.gen.Variable("SHERPA_RUN_PATH"));
     }
   }
-  msg_Info()<<"Analysis_Handler::Finish(..): "
-	    <<"Writing to '"<<OutputPath()<<"'."<<std::endl; 
+  msg_Info()<<"Analysis_Handler::Finish(..): ";
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
-       ait!=m_analyses.end();++ait) (*ait)->FinishAnalysis(OutputPath()); 
+       ait!=m_analyses.end();++ait) {
+    msg_Info()<<"Writing to '"<<OutputPath()<<(*ait)->OutputPath()<<"'."<<std::endl; 
+    (*ait)->FinishAnalysis(OutputPath()); 
+  }
   ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
 }
 
