@@ -99,8 +99,8 @@ bool Remnant_Base::AdjustKinematics()
   }
   ATOOLS::ms::error_code error=shift.Scale();
   if (error!=ATOOLS::ms::no_error) {
-    ATOOLS::msg.Info()<<"Remnant_Base::AdjustKinematics(): "<<error<<".\n"
-		      <<"   Retry using new remnant pair."<<std::endl;
+    ATOOLS::msg.Tracking()<<"Remnant_Base::AdjustKinematics(): "<<error<<".\n"
+			  <<"   Retry using new remnant pair."<<std::endl;
     while (ChooseLast()) {
       if (AdjustKinematics()) return true;
     }
