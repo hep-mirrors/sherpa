@@ -21,10 +21,13 @@ namespace ATOOLS {
   class Primitive_Channel {
   private:
     
-    double m_alpha, m_weight;
+    double m_alpha, m_oldalpha, m_weight;
     double m_sum, m_sum2, m_max, m_np;
-    std::vector<double> m_this;
+
+    std::vector<double>             m_this;
     std::vector<Primitive_Channel*> m_next;
+
+    size_t m_pos;
 
     friend std::ostream &
     operator<<(std::ostream &str,const Primitive_Channel &channel);
@@ -43,11 +46,14 @@ namespace ATOOLS {
     // member functions
     double Point(const Primitive_Integrand *function,
 		 std::vector<double> &point);
+    double Point(const Primitive_Integrand *function,
+		 std::vector<double> &point,std::vector<double> &opt);
 
     bool Find(const std::vector<double> &point) const;
     
     void Reset();
     void SetWeight();
+    void SetAlpha(const double &alpha);
 
     bool WriteOut(std::fstream *const file,
 		  std::map<Primitive_Channel*,size_t> &pmap) const;
@@ -59,10 +65,12 @@ namespace ATOOLS {
 			   std::vector<Primitive_Channel*> &channels);
 
     // inline functions
-    inline void SetAlpha(const double &alpha) { m_alpha=alpha; }
+    inline void SetPosition(const size_t pos) { m_pos=pos; }
 
-    inline double Alpha() const  { return m_alpha;  }
-    inline double Weight() const { return m_weight; }
+    inline double Alpha() const    { return m_alpha;    }
+    inline double OldAlpha() const { return m_oldalpha; }
+    inline double Weight() const   { return m_weight;   }
+    inline size_t Position() const { return m_pos;      }
 
     inline double Sum() const    { return m_sum;  }
     inline double Sum2() const   { return m_sum2; }
@@ -85,7 +93,8 @@ namespace ATOOLS {
   class Primitive_Integrator {
   public:
 
-    typedef std::map<std::string,std::pair<size_t,size_t> > Position_Map;
+    typedef std::pair<size_t,std::pair<size_t,size_t> > Position_Pair;
+    typedef std::map<std::string,Position_Pair>         Position_Map;
 
   private:
 
@@ -94,7 +103,8 @@ namespace ATOOLS {
     double m_error, m_scale;
     double m_sum, m_sum2, m_max, m_np;
 
-    std::vector<double> m_rmin, m_rmax, m_point;
+    std::vector<double>   m_rmin, m_rmax, m_point, m_opt;
+    std::map<size_t,bool> m_nosplit;
 
     std::vector<Primitive_Channel*> m_channels;
 
@@ -104,6 +114,8 @@ namespace ATOOLS {
 
     std::string  m_vname, m_uname;
     Position_Map m_reserved;
+
+    void SelectDimension(const size_t pos);
 
     void Point();
     void Split();
@@ -119,6 +131,8 @@ namespace ATOOLS {
 
     // member functions
     void SetDimension(const size_t dim);
+    void SetMin(const std::vector<double> &min);
+    void SetMax(const std::vector<double> &max);
 
     double Integrate(const Primitive_Integrand *function);
 
@@ -128,13 +142,11 @@ namespace ATOOLS {
     bool WriteOut(const std::string &filename) const;
     bool ReadIn(const std::string &filename);
 
-    void Reserve(const std::string &key,const size_t n);
+    void Reserve(const std::string &key,
+		 const size_t n,const size_t nprev=0);
     const double *const Reserved(const std::string &key) const;
 
     // inline functions
-    inline void SetMin(const std::vector<double> &min) { m_rmin=min; }
-    inline void SetMax(const std::vector<double> &max) { m_rmax=max; }
-
     inline void SetNOpt(const long unsigned int &nopt) { m_nopt=nopt; }
     inline void SetNMax(const long unsigned int &nmax) { m_nmax=nmax; }
     inline void SetNMaxOpt(const long unsigned int &nmaxopt) 

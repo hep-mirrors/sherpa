@@ -38,14 +38,14 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
 }
 
 Primitive_Channel::Primitive_Channel():
-  m_alpha(0.0), m_weight(0.0), m_sum(0.0), m_sum2(0.0), 
-  m_max(0.0), m_np(0.0) {}
+  m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
+  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), m_pos(0) {}
 
 Primitive_Channel::
 Primitive_Channel(const std::vector<Primitive_Channel*> &all,
 		  Primitive_Channel *const prev,const size_t i):
-  m_alpha(0.0), m_weight(0.0), m_sum(0.0), m_sum2(0.0), 
-  m_max(0.0), m_np(0.0)
+  m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
+  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), m_pos(0)
 {
   if (all.empty()) THROW(fatal_error,"No cells.");
   if (i>=prev->m_this.size()) THROW(fatal_error,"Inconsistent dimensions.");
@@ -67,6 +67,24 @@ Primitive_Channel(const std::vector<Primitive_Channel*> &all,
     
 Primitive_Channel::~Primitive_Channel()
 {
+}
+
+double Primitive_Channel::
+Point(const Primitive_Integrand *function,
+      std::vector<double> &point,std::vector<double> &opt)
+{
+  if (opt.size()<m_pos+8*m_this.size())
+    THROW(fatal_error,"Inconsistent dimensions.");
+  double cur=Point(function,point);
+  for (size_t i=0;i<m_this.size();++i) {
+    double mid=(m_this[i]+m_next[i]->m_this[i])/2.0;
+    size_t pos=8*(m_this.size()*m_pos+i)+4*(size_t)(point[i]<mid);
+    ++opt[pos];
+    opt[pos+1]+=cur*m_weight;
+    opt[pos+2]+=sqr(cur*m_weight);
+    opt[pos+3]=ATOOLS::Max(opt[pos+3],cur);
+  }
+  return cur;
 }
 
 double Primitive_Channel::Point(const Primitive_Integrand *function,
@@ -111,11 +129,18 @@ void Primitive_Channel::SetWeight()
     m_weight*=m_next[i]->m_this[i]-m_this[i];
 }
 
+void Primitive_Channel::SetAlpha(const double &alpha)
+{ 
+  m_oldalpha=m_alpha;
+  m_alpha=alpha;
+  if (m_oldalpha==0.0) m_oldalpha=m_alpha;
+}
+
 bool Primitive_Channel::
 WriteOut(std::fstream *const file,
 	 std::map<Primitive_Channel*,size_t> &pmap) const
 {
-  (*file)<<"[ "<<m_alpha<<" "<<m_sum<<" "<<m_sum2
+  (*file)<<"[ "<<m_alpha<<" "<<m_oldalpha<<" "<<m_sum<<" "<<m_sum2
 	 <<" "<<m_max<<" "<<m_np<<" ( ";
   for (size_t i=0;i<m_this.size();++i) (*file)<<m_this[i]<<" ";
   (*file)<<") ( ";
@@ -129,7 +154,7 @@ bool Primitive_Channel::ReadIn(std::fstream *const file,
 {
   if (file->eof()) return false;
   std::string dummy;
-  (*file)>>dummy>>m_alpha>>m_sum>>m_sum2>>m_max>>m_np>>dummy;
+  (*file)>>dummy>>m_alpha>>m_oldalpha>>m_sum>>m_sum2>>m_max>>m_np>>dummy;
   for (size_t i=0;i<m_this.size();++i) {
     if (file->eof()) return false;
     (*file)>>m_this[i];
@@ -185,6 +210,8 @@ void Primitive_Integrator::SetDimension(const size_t dim)
 {
   m_rmin.resize(dim,0.0);
   m_rmax.resize(dim,1.0);
+  m_nosplit.clear();
+  for (size_t i=0;i<dim;++i) m_nosplit[i]=false;
 }
 
 double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
@@ -202,6 +229,8 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
     msg_Debugging()<<"}"<<std::endl;
   }
   double error=1.0;
+  m_opt.resize(16*m_point.size());
+  for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
   while (((long unsigned int)m_np)<Min(m_nmaxopt,m_nmax) && error>m_error) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
     Update();
@@ -213,6 +242,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
 	      <<m_channels.size()-m_point.size()<<" cells"<<std::endl;
     Split();
   }
+  m_opt.clear();
   double alpha=1.0/(m_channels.size()-m_point.size());
   for (size_t i=0;i<m_channels.size();++i) 
     if (!m_channels[i]->Boundary()) m_channels[i]->SetAlpha(alpha);
@@ -256,7 +286,8 @@ void Primitive_Integrator::Point()
     }
   }
   if (selected==NULL) THROW(fatal_error,"No channel selected.");
-  selected->Point(p_function,m_point);
+  if (m_opt.size()>0) selected->Point(p_function,m_point,m_opt);
+  else selected->Point(p_function,m_point);
 }
 
 void Primitive_Integrator::Point(std::vector<double> &x)
@@ -292,12 +323,6 @@ void Primitive_Integrator::Split()
   Primitive_Channel *selected=NULL;
   for (size_t i=0;i<m_channels.size();++i) {
     switch (m_mode) {
-    case 2:
-      if ((cur=m_channels[i]->Mean())>max) {
-	max=cur;
-	selected=m_channels[i];
-      }
-      break;
     case 1:
       if ((cur=m_channels[i]->Max())>max) {
 	max=cur;
@@ -315,13 +340,46 @@ void Primitive_Integrator::Split()
   }
   if (selected==NULL) THROW(fatal_error,"Internal error.");
   for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(0.0);
-  if (++m_lastdim>=m_point.size()) m_lastdim=0;
+  SelectDimension(selected->Position());
+  for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
   Primitive_Channel *next = 
     new Primitive_Channel(m_channels,selected,m_lastdim);
   m_channels.push_back(next);
   next->SetAlpha(0.5);
+  next->SetPosition(1);
+  selected->SetPosition(0);
   selected->SetAlpha(0.5);
   selected->Reset();
+}
+
+void Primitive_Integrator::SelectDimension(const size_t pos)
+{
+  m_lastdim=0;
+  double max=-std::numeric_limits<double>::max(), cur=0.0;
+  for (size_t i=0;i<m_point.size();++i) {
+    if (m_nosplit[i]==true) continue;
+    size_t l=8*(m_point.size()*pos+i);
+    switch (m_mode) {
+    case 1: 
+      if ((cur=ATOOLS::Max(m_opt[l+3],m_opt[l+7]))>max) {
+	max=cur;
+	m_lastdim=i;
+      }
+      break;
+    case 0: 
+    default:
+      cur=ATOOLS::Max((m_opt[l+2]-m_opt[l+1]*m_opt[l+1]/m_opt[l])
+		      /(m_opt[l]-1.0),
+		      (m_opt[l+6]-m_opt[l+5]*m_opt[l+5]/m_opt[l+4])
+		      /(m_opt[l+4]-1.0));
+      if (cur>max) {
+	max=cur;
+	m_lastdim=i;
+      }
+      break;
+    }
+    if (!(cur<0) && !(cur>=0)) THROW(fatal_error,"Criterion is nan.")
+  } 
 }
 
 bool Primitive_Integrator::WriteOut(const std::string &filename) const
@@ -349,7 +407,8 @@ bool Primitive_Integrator::WriteOut(const std::string &filename) const
   for (Position_Map::const_iterator rit=m_reserved.begin();
        rit!=m_reserved.end();++rit) 
     (*file)<<rit->first<<" "<<rit->second.first<<" "
-	   <<rit->second.second<<"\n";
+	   <<rit->second.second.first<<" "
+	   <<rit->second.second.second<<"\n";
   (*file)<<"}\n"<<std::endl;
   delete file;
   return result;
@@ -419,9 +478,9 @@ bool Primitive_Integrator::ReadIn(const std::string &filename)
   (*file)>>size>>dummy;
   for (size_t i=0;i<size;++i) {
     std::string tag;
-    size_t pos, ext;
-    (*file)>>tag>>pos>>ext;
-    m_reserved[tag]=std::pair<size_t,size_t>(pos,ext);
+    size_t pos, next, ext;
+    (*file)>>tag>>pos>>next>>ext;
+    m_reserved[tag]=Position_Pair(pos,std::pair<size_t,size_t>(next,ext));
   }
   (*file)>>dummy;
   if (file->eof() || dummy!="}") {
@@ -435,15 +494,17 @@ bool Primitive_Integrator::ReadIn(const std::string &filename)
   return result;
 }
 
-void Primitive_Integrator::Reserve(const std::string &key,const size_t n)
+void Primitive_Integrator::Reserve(const std::string &key,const size_t n,
+				   const size_t nprev)
 {
   if (m_reserved.find(key)!=m_reserved.end())
     THROW(critical_error,"Key already present.");
   size_t cur=0;
   for (Position_Map::iterator rit=m_reserved.begin();
-       rit!=m_reserved.end();++rit) cur+=rit->second.second;
+       rit!=m_reserved.end();++rit) cur+=rit->second.second.second;
   if (cur+n>m_rmin.size()) THROW(fatal_error,"Inconsistent dimesions.");
-  m_reserved[key]=std::pair<size_t,size_t>(cur,n);
+  m_reserved[key]=Position_Pair(cur,std::pair<size_t,size_t>(nprev,n));
+  for (size_t i=cur;i<cur+nprev;++i) m_nosplit[i]=true;
 }
 
 const double *const Primitive_Integrator::
@@ -453,3 +514,18 @@ Reserved(const std::string &key) const
   if (rit==m_reserved.end()) THROW(critical_error,"Key not found.");
   return &m_point[rit->second.first];
 }
+
+void Primitive_Integrator::SetMin(const std::vector<double> &min) 
+{ 
+  m_rmin=min; 
+  m_nosplit.clear();
+  for (size_t i=0;i<min.size();++i) m_nosplit[i]=false;
+}
+
+void Primitive_Integrator::SetMax(const std::vector<double> &max) 
+{
+  m_rmax=max; 
+  m_nosplit.clear();
+  for (size_t i=0;i<max.size();++i) m_nosplit[i]=false;
+}
+
