@@ -666,7 +666,7 @@ void Single_Process::SetTotalXS(int _tables)  {
   if (m_analyse) p_analysis->FinishAnalysis(m_resdir+string("/Tab")+m_name,_tables);
   m_totalxs  = m_totalsum/m_n; 
   m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-		    (AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1)) )  / m_n); 
+		    (AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
   if (m_nin==2) {
     AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
 			   <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"

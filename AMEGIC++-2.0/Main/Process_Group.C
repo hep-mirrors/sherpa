@@ -474,7 +474,7 @@ void Process_Group::SetTotalXS(int tables)  {
 
   m_totalxs  = m_totalsum/m_n; 
   m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-		    (AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1)) )  / m_n); 
+		    (AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
   if (p_sel) p_sel->Output();
 
   m_max = 0.;
