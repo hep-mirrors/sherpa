@@ -13,14 +13,10 @@ Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
 					   const double _energy,const double _polarization,
 					   const double _energyL,const double _polarizationL,
 					   const int _mode,const int _angles,
-					   const int _nonlin,bool & okay) :
+					   const int _nonlin,const int _dir) :
+  Beam_Base(string("Laser_Backscattering"),_beam,_energy,_polarization,_dir),
   m_energyL(_energyL), m_polarizationL(_polarizationL), m_mode(_mode), m_angles(_angles)
 {
-  m_beam         = _beam;
-  m_energy       = dabs(_energy);
-  m_polarization = _polarization; 
-  m_type         = std::string("Laser_Backscattering");
-
   m_Ebounds[0]   = 0.;  
   m_Ebounds[1]   = 500.;
 
@@ -29,6 +25,9 @@ Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
 	       <<"   Angular distribution not implemented yet. Assume collinear beam."<<endl; 
     m_angles     = 0;
   }
+  if (m_angles==0) m_lab = m_vecout = Vec4D(m_energy,0.,0.,_dir*m_energy);
+
+
   if (m_energy>m_Ebounds[1] || m_energy<m_Ebounds[0]) {
     msg.Error()<<"Warning in Laser_Backscattering::Laser_Backscattering."<<endl
 	       <<"   m_energy = "<<m_energy<<" out of bounds ... . Continue."<<endl;
@@ -68,17 +67,15 @@ Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
 		<<" for energyL,mass ="<<m_energyL<<", "<<APHYTOOLS::Flavour(kf::e).PSMass()<<endl
 		<<" with xi = "<<m_xi<<", norms   = "<<m_totalC<<"  /  "<<m_total2<<endl
 		<<" with polarization = "<<m_polarization<<", polarizationL = "<<m_polarizationL<<endl;
-  okay = 1;
 }
 
 
 
 Beam_Base * Laser_Backscattering::Copy() {
-  bool okay = 1;
   if (m_nonlin1>0.) return new Laser_Backscattering(m_beam,m_energy,m_polarization,
-						    m_energyL,m_polarizationL,m_mode,m_angles,1,okay);
+						    m_energyL,m_polarizationL,m_mode,m_angles,1,m_dir);
   return new Laser_Backscattering(m_beam,m_energy,m_polarization,
-				  m_energyL,m_polarizationL,m_mode,m_angles,0,okay);
+				  m_energyL,m_polarizationL,m_mode,m_angles,0,m_dir);
 }
 
 Laser_Backscattering::~Laser_Backscattering() {}
@@ -109,9 +106,10 @@ void Laser_Backscattering::PrintSpectra(std::string filename) {
   if (flag) ofile.close();
 }
 
-bool Laser_Backscattering::CalculateWeight(double x,double scale) 
+bool Laser_Backscattering::CalculateWeight(double _x,double _scale) 
 {
-  if (!( (x*m_energy>=m_Ebounds[0]) && (x*m_energy<=m_Ebounds[1]))) {
+  m_x = _x; m_Q2 = _scale;
+  if (!( (_x*m_energy>=m_Ebounds[0]) && (_x*m_energy<=m_Ebounds[1]))) {
     m_weight = 0.;
     return 0;
   }
@@ -120,29 +118,23 @@ bool Laser_Backscattering::CalculateWeight(double x,double scale)
   double spec;
   switch (m_mode) {
   case 1: 
-    spec = Compton(x,m_polarization,m_polarizationL,m_polar);
+    spec = Compton(_x,m_polarization,m_polarizationL,m_polar);
     break;
   case 2: 
-    spec = TwoPhotons(x,m_polarization,m_polarizationL,m_polar);
+    spec = TwoPhotons(_x,m_polarization,m_polarizationL,m_polar);
     break;
   case 3: 
-    spec = Rescattering(x,m_polarization,m_polarizationL,m_polar);  
+    spec = Rescattering(_x,m_polarization,m_polarizationL,m_polar);  
     break;
   default:
-    spec = Compton(x,m_polarization,m_polarizationL,m_polar) + 
-           TwoPhotons(x,m_polarization,m_polarizationL,m_polar) + 
-           Rescattering(x,m_polarization,m_polarizationL,m_polar);  
+    spec = Compton(_x,m_polarization,m_polarizationL,m_polar) + 
+           TwoPhotons(_x,m_polarization,m_polarizationL,m_polar) + 
+           Rescattering(_x,m_polarization,m_polarizationL,m_polar);  
     break;
   }
   m_polar  = m_polar/spec;
   m_weight = spec;
 
-  /*
-    cout<<" ======================================== "<<endl;
-    cout<<" x,scale ="<<x<<","<<scale<<endl;
-    cout<<" polar= "<<m_polar<<endl;
-    cout<<" weight="<<m_weight<<endl;
-  */
   return 1;
 };
 
@@ -153,6 +145,12 @@ double Laser_Backscattering::Weight(Flavour flin)
   return m_weight;
 }
 
+AMATOOLS::Vec4D Laser_Backscattering::OutMomentum() {
+  if (m_angles==0) return m_x*m_vecout;
+  AORGTOOLS::msg.Error()<<"Error in Laser_Backscattering::OutMomentum()."<<endl
+			<<"    m_angles != 0 not implemented yet."<<endl;
+  return m_x*m_vecout; 
+}
 
 double Laser_Backscattering::Compton(double x,double pole,double poll,double & deg)
 {

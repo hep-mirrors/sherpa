@@ -7,7 +7,7 @@
 namespace BEAM {
   class Monochromatic : public Beam_Base {
   public:
-    Monochromatic(const APHYTOOLS::Flavour,const double,const double,bool &);
+    Monochromatic(const APHYTOOLS::Flavour,const double,const double,const int);
     Beam_Base * Copy();     
     bool        CalculateWeight(const double,const double);
     double      Weight(APHYTOOLS::Flavour);

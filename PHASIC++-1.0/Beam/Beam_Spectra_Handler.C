@@ -13,7 +13,9 @@ using namespace BEAM;
 using namespace std;
 
 
-Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) {
+Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) : 
+  p_BeamBase(NULL) 
+{
   p_BeamBase = new Beam_Base*[2];
   for (short int i=0;i<2;i++) p_BeamBase[i] = NULL;
 
@@ -99,8 +101,8 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,in
   if (num==1) beam_energy  = -beam_energy; 
   p_BeamBase[num]          = new Laser_Backscattering(beam_particle,beam_energy,beam_polarization,
 						      Laser_energy,Laser_polarization,
-						      mode,angles,nonlin,okay);
-  return okay;
+						      mode,angles,nonlin,1-2*num);
+  return 1;
 }
 
 bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Read * dataread,int num) {
@@ -115,9 +117,8 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Read * dataread,int num)
   double  beam_polarization = dataread->GetValue<double>("BEAM_POL_"+number);
 
   msg.Debugging()<<"For "<<number<<" : "<<beam_energy<<"  "<<beam_particle<<"  "<<beam_polarization<<endl;
-  if (num==1) beam_energy   = -beam_energy; 
-  p_BeamBase[num]           = new Monochromatic(beam_particle,beam_energy,beam_polarization,okay);
-  return okay;
+  p_BeamBase[num]           = new Monochromatic(beam_particle,beam_energy,beam_polarization,1-2*num);
+  return 1;
 }
 
 

@@ -28,24 +28,26 @@ namespace BEAM {
     double Polarization(double,double,double,double);
   public:
     Laser_Backscattering(const APHYTOOLS::Flavour,const double,const double,
-			 const double,const double,const int,const int,const int,bool &);
+			 const double,const double,const int,const int,const int,const int);
     ~Laser_Backscattering();
 
-    Beam_Base * Copy();
-    void        PrintSpectra(std::string);
+    Beam_Base     * Copy();
+    void            PrintSpectra(std::string);
 
-    bool        CalculateWeight(double,double);
-    double      Weight(APHYTOOLS::Flavour);
-    double      PolarisationDegree() { return m_polar; }
+    bool            CalculateWeight(double,double);
+    double          Weight(APHYTOOLS::Flavour);
+    AMATOOLS::Vec4D OutMomentum();
 
-    void        SetMode(int _mode)   { m_mode = _mode; }
-    void        SetPol(bool on)      { m_pol  = on; }
-    bool        On()                 { return 1;  }
-    int         Mode()               { return m_mode; }
-    bool        Pol()                { return m_pol; }
-    double      Exponent()           { return 2.; }
-    double      Xmax()               { return m_upper; }
-    double      Peak()               { return m_peak; }
+    double          PolarisationDegree() { return m_polar; }
+
+    void            SetMode(int _mode)   { m_mode = _mode; }
+    void            SetPol(bool on)      { m_pol  = on; }
+    bool            On()                 { return 1;  }
+    int             Mode()               { return m_mode; }
+    bool            Pol()                { return m_pol; }
+    double          Exponent()           { return 2.; }
+    double          Xmax()               { return m_upper; }
+    double          Peak()               { return m_peak; }
   };
 
 

@@ -11,14 +11,33 @@ namespace BEAM {
     std::string        m_type;
     APHYTOOLS::Flavour m_beam;
     double             m_energy,m_polarization;
-    AMATOOLS::Vec4D    m_lab;
-    double             m_weight;
+    AMATOOLS::Vec4D    m_lab,m_vecout;
+    int                m_dir;
+    double             m_weight,m_x,m_Q2;
   public:
+    Beam_Base(std::string _type,const APHYTOOLS::Flavour _beam,
+	      const double _energy,const double _polarization,const int _dir) :
+      m_type(_type), m_beam(_beam), m_energy(_energy),m_polarization(_polarization),
+      m_dir(_dir),m_x(1.),m_Q2(0.),m_weight(1.)
+    {
+      double disc      =  1.-AMATOOLS::sqr(m_beam.PSMass()/m_energy);
+      if (disc<0) {
+	AORGTOOLS::msg.Error()<<"Error in Beam_Base :"<<m_type<<endl
+			      <<"   Mismatch of energy and mass of beam particle : "
+			      <<m_beam<<" / "<<m_energy<<endl
+			      <<"   Will lead to termination of program."<<endl;
+	abort();
+      }
+      m_lab    = AMATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
+      m_vecout = AMATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
+    }
+
     virtual ~Beam_Base() {};
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
 
     virtual APHYTOOLS::Flavour Flav()                     { return m_beam; }
+    virtual AMATOOLS::Vec4D    OutMomentum()              { return m_vecout; }
     virtual AMATOOLS::Vec4D    Momentum()                 { return m_lab; }
     virtual double             Energy()                   { return m_energy; }
     virtual double             Polarization()             { return m_polarization; }
