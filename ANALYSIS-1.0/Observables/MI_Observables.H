@@ -21,6 +21,7 @@ namespace ANALYSIS {
     void EndEvaluation(double scale);
     void Output(const std::string & pname);
 
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
   };// end of class MI_Statistics
@@ -63,6 +64,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -75,7 +77,7 @@ namespace ANALYSIS {
     std::string m_jetlist;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Scalar_PT_Sum_vs_JetPT(const int type,
@@ -86,6 +88,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -98,7 +101,7 @@ namespace ANALYSIS {
     std::string m_jetlist;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Scalar_PT_Sum_vs_JetET(const int type,
@@ -109,6 +112,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -121,7 +125,7 @@ namespace ANALYSIS {
     std::string m_jetlist;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Multiplicity_vs_PT(const int type,
@@ -132,6 +136,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -146,7 +151,7 @@ namespace ANALYSIS {
     double m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Multiplicity_vs_DPhi(const int type,
@@ -158,6 +163,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -172,7 +178,7 @@ namespace ANALYSIS {
     double m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Scalar_PT_Sum_vs_DPhi(const int type,
@@ -184,6 +190,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -198,7 +205,7 @@ namespace ANALYSIS {
     double m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Scalar_ET_Sum_vs_DPhi(const int type,
@@ -210,6 +217,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -223,7 +231,7 @@ namespace ANALYSIS {
     double      m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Multiplicity_vs_DEta(const int type,
@@ -235,6 +243,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -248,7 +257,7 @@ namespace ANALYSIS {
     double      m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Scalar_PT_Sum_vs_DEta(const int type,
@@ -260,6 +269,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -273,7 +283,7 @@ namespace ANALYSIS {
     double      m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Scalar_ET_Sum_vs_DEta(const int type,
@@ -285,6 +295,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -297,7 +308,7 @@ namespace ANALYSIS {
     std::string m_jetlist;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Multiplicity_vs_Eta(const int type,
@@ -308,6 +319,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -320,7 +332,7 @@ namespace ANALYSIS {
     std::string m_jetlist;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Scalar_PT_Sum_vs_Eta(const int type,
@@ -331,6 +343,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -343,7 +356,7 @@ namespace ANALYSIS {
     std::string m_jetlist;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     Scalar_ET_Sum_vs_Eta(const int type,
@@ -354,6 +367,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
@@ -366,7 +380,7 @@ namespace ANALYSIS {
     std::string m_jetlist;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
-    
+
   public:
 
     MIScale_vs_JetPT(const int type,
@@ -376,6 +390,7 @@ namespace ANALYSIS {
     
     void Evaluate(const ATOOLS::Blob_List & blobs,double value,int ncount);
     
+    Primitive_Observable_Base &operator+=(const Primitive_Observable_Base &obs);
     Primitive_Observable_Base *Copy() const;
 
     void EndEvaluation(double scale);
