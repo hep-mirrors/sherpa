@@ -1,5 +1,7 @@
 #include "MI_Handler.H"
 
+#define USING__Sherpa
+#include "Amisic.H"
 #include "Data_Read.H"
 
 using namespace SHERPA;
@@ -173,6 +175,30 @@ void MI_Handler::SetScaleMax(double scalemax,unsigned int i)
   default:
     break;
   }
+}
+
+double MI_Handler::ScaleMin(unsigned int i)
+{
+  switch (m_type) {
+  case Amisic:
+    return p_amisic->HardBase()->Stop(i);
+    break;
+  default:
+    break;
+  }
+  return 0.;
+}
+
+double MI_Handler::ScaleMax(unsigned int i)
+{
+  switch (m_type) {
+  case Amisic:
+    return p_amisic->HardBase()->Start(i);
+    break;
+  default:
+    break;
+  }
+  return 0.;
 }
 
 void MI_Handler::Reset()

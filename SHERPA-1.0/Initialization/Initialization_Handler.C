@@ -6,6 +6,7 @@
 #include "PDF_Handler.H"
 #include "PDF_Base.H"
 #include "Initial_State_Shower.H"
+#include "MI_Base.H"
 #include "LL_Branching.H"
 #include "Data_Read.H"
 #include "Message.H"
@@ -395,6 +396,7 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
 					    p_beamspectra,scale);
   for (size_t i=0;i<2;++i) {
     AMISIC::MI_Base::SetRemnantHandler(p_beamremnants->BeamParticle(i),i);
+    p_beamremnants->BeamParticle(i)->SetMIHandler(p_mihandler);
   }
   ATOOLS::msg.Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
