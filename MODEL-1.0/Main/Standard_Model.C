@@ -151,18 +151,18 @@ void Standard_Model::FixCKM() {
     for (int j=i;j<3;j++) CKM[i][j] = CKM[j][i] = Complex(0.,0.);
     CKM[i][i] = Complex(1.,0.);
   }
-
+  
   double Cabibbo,A,rho,eta;
   m_ckmorder     = p_dataread->GetValue<int>("CKMORDER",0);  
   if (m_ckmorder>0) {
     Cabibbo    = p_dataread->GetValue<double>("CABIBBO",0.22);
+    CKM[0][0] += sqr(Cabibbo)/2. * Complex(-1.,0.);
+    CKM[1][1] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[0][1] += Cabibbo * Complex( 1.,0.);
     CKM[1][0] += Cabibbo * Complex(-1.,0.);
   }
   if (m_ckmorder>1) {
     A          = p_dataread->GetValue<double>("A",0.8);
-    CKM[0][0] += sqr(Cabibbo)/2. * Complex(-1.,0.);
-    CKM[1][1] += sqr(Cabibbo)/2. * Complex(-1.,0.);
     CKM[1][2] += A*sqr(Cabibbo)  * Complex( 1.,0.);
     CKM[2][1] += A*sqr(Cabibbo)  * Complex(-1.,0.);
   }
