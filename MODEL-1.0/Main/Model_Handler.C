@@ -1,7 +1,7 @@
 #include "Model_Handler.H"
 #include "Standard_Model.H"
 #include "MSSM.H"
-//#include "ADD.H"
+#include "ADD.H"
 #include "Message.H"
 
 
@@ -17,12 +17,10 @@ Model_Base * Model_Handler::GetModel(Data_Read * _dataread,string _path) {
     msg.Debugging()<<"Initialize MSSM through "<<_path<<modelfile<<endl;
     return new MSSM(_path,modelfile);
   }
-  /*
   if (model==string("ADD")) {
     msg.Debugging()<<"Initialize ADD through "<<_path<<modelfile<<endl;
     return new ADD(_path,modelfile);
   }
-  */
   if (model!=string("SM")) { 
     msg.Error()<<"Error in Model_Handler::GetModel :"<<endl
 	       <<"   Tried to initialize model : "<<model<<endl
