@@ -6,22 +6,42 @@
 #include <set>
 
 namespace ATOOLS {
+
   class Particle;
+
   class Flow {  
-    friend std::ostream& operator<<( std::ostream& ostr, const Flow& f );
   private:
-    Particle *          p_owner;
-    std::map<int,int>   m_code;
-    static long s_qcd_counter;
+
+    Particle *p_owner;
+
+    std::map<unsigned int,unsigned int> m_code;
+
+    static unsigned int s_qcd_counter;
+
+    friend std::ostream& operator<<(std::ostream &ostr,const Flow &flow);
+
   public:
-    Flow(Particle * _owner=NULL);
+
+    // constructor
+    Flow(Particle *const owner=NULL);
+
+    // destructor
     ~Flow();
-    const Particle *   Owner() const;
-    int                Code(int _index=1);
-    void               SetCode(int code_index=1,int code=-1);
-    static void        ResetCounter() { s_qcd_counter = 600; }
-    static long        Counter()      { return ++s_qcd_counter; }    
-  };  
-}
+    
+    // member functions
+    void SetCode(const unsigned int code_index=1,const int code=-1);
+
+    unsigned int Code(const unsigned int index=1) const;
+
+    // inline functions
+    inline static void ResetCounter() { s_qcd_counter=600; }
+
+    inline static unsigned int Counter() { return ++s_qcd_counter; }    
+
+    inline const Particle *Owner() const { return p_owner; }
+
+  };// end of class Flow  
+
+}// end of namespace ATOOLS
 
 #endif

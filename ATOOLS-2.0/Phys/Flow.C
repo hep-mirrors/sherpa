@@ -1,37 +1,39 @@
 #include "Flow.H"
-#include "Particle.H"
-
-
-namespace ATOOLS {
-  long Flow::s_qcd_counter = 600;
-}
 
 using namespace ATOOLS;
 
-Flow::Flow(Particle * _owner) : p_owner(_owner) { 
-  m_code.insert(std::make_pair<int,int>(1,0)); 
-  m_code.insert(std::make_pair<int,int>(2,0)); 
+unsigned int Flow::s_qcd_counter=600;
+
+std::ostream& ATOOLS::operator<<(std::ostream &ostr,const Flow &flow)
+{
+  ostr<<"[";
+  for (std::map<unsigned int,unsigned int>::const_iterator fit=flow.m_code.begin();
+       fit!=flow.m_code.end();++fit) ostr<<"("<<fit->first<<"="<<fit->second<<")";
+  return ostr<<"]";
 }
 
-Flow::~Flow() { 
+Flow::Flow(Particle *owner): 
+  p_owner(owner) 
+{ 
+  for (short unsigned int i=0;i<2;++i) m_code[i]=0;
+}
+
+Flow::~Flow() 
+{ 
   m_code.clear(); 
 }
 
-
-const Particle * Flow::Owner() const { return p_owner; }
-
-int Flow::Code(int _index) {
-  int count = m_code.count(_index);
-  if (count>0) return m_code[_index];
+unsigned int Flow::Code(const unsigned int index) const
+{
+  std::map<unsigned int,unsigned int>::const_iterator count=m_code.find(index);
+  if (count!=m_code.end()) return count->second;
   return 0;
 }
 
-void Flow::SetCode(int _index,int _code) {
-  if (_code==-1) _code = ++s_qcd_counter; 
-  //  m_code.insert(std::make_pair<int,int>(_index,_code)); 
-  //    caused problems with gcc 2.95.3 20010315 !
-
-  m_code[_index]=_code;
+void Flow::SetCode(const unsigned int index,const int code) 
+{
+  if (code==-1) m_code[index]=++s_qcd_counter; 
+  else m_code[index]=(unsigned int)code;
 }
 
 
