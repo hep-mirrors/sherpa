@@ -8,7 +8,7 @@
 #include "Message.H"
 #include "Exception.H"
 #include "Running_AlphaS.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
 
 using namespace SHERPA;
 
