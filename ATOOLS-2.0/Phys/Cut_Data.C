@@ -122,13 +122,16 @@ void Cut_Data::Complete()
   std::string str;
   strs>>str;
   smin = 0.;
+  double etmm = 0.; 
   double e1=0.,e2=0.;
   for (int i=2;i<ncut;i++) {
+    if (etmin[i]>etmm) etmm = etmin[i];
     smin += etmin[i];
     e1 += energymin[i];
     e2 += energymin[i]*cosmax[0][i];
   }
   smin = Max(sqr(smin),sqr(e1)-sqr(e2));
+  smin = Max(smin,sqr(2.*etmm));
   smin = Max(Getscut(str),smin);
 
   ATOOLS::msg.Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
@@ -295,6 +298,7 @@ void Cut_Data::Update(double sprime,double y)
     }
 
     double ct= sqrt(1.0-(sqr(etmin[i])-sqr(fl[i].Mass()))/(sprime/4.0-sqr(fl[i].Mass())));
+    if (etmin[i]<fl[i].Mass()) ct=1.;
     cosmax[i][0] = cosmax[0][i] = Min(cosmax[0][i],ct);
     cosmax[i][1] = cosmax[1][i] = Min(cosmax[1][i],ct);
     cosmin[i][1] = cosmin[i][0] = cosmin[1][i] = cosmin[0][i] = -ct;

@@ -207,7 +207,7 @@ void PT_Selector::BuildCuts(Cut_Data * cuts)
     cuts->energymin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].Mass())),cuts->energymin[i]);
     cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
       Min(cuts->cosmax[0][i],sqrt(1.-sqr(ptmin[i])/(0.25*m_smax-sqr(m_fl[i].Mass()))));
-    cuts->etmin[i] = Max(ptmin[i],cuts->etmin[i]);
+    cuts->etmin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].Mass())*(1.-sqr(cuts->cosmax[0][i]))),cuts->etmin[i]);
   }
 }
 
@@ -466,8 +466,8 @@ void Angle_Selector::BuildCuts(Cut_Data * cuts)
 {
   for (int i=0;i<m_n-1;i++) {
     for (int j=i+1;j<m_n;j++) {
-      cuts->cosmin[i][j] = cuts->cosmin[j][i] = 
-	Max(cosmin[i][j],cuts->cosmin[i][j]);
+//       cuts->cosmin[i][j] = cuts->cosmin[j][i] = 
+// 	Max(cosmin[i][j],cuts->cosmin[i][j]);
       cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
 	Min(cosmax[i][j],cuts->cosmax[i][j]);
     }
