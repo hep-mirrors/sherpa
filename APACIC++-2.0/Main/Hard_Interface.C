@@ -47,8 +47,8 @@ Hard_Interface::~Hard_Interface()
 }
 
 void Hard_Interface::PrepareTrees() {
-  msg.Tracking()<<"In Hard_Interface::PrepareTrees : Reset trees."<<std::endl;
-  if (m_fsron) p_fintree->Reset();    
+  msg.Tracking()<<"In Hard_Interface::PrepareTrees : Reset trees."<<std::endl; 
+  if (m_fsron) p_fintree->Reset(); 
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
@@ -56,18 +56,52 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
   msg.Debugging()<<"In Hard_Interface::PerformShowers("<<ini<<","<<fin<<","<<jetveto<<")."<<endl;
   if (!m_showers) return 1;
   if (m_fsron) {
+    Poincare cms(p_fintree->GetRoot()->part->Momentum());
+    p_fintree->BoRo(cms);
+
     int fsrstatus = p_finshower->PerformShower(p_fintree,jetveto);
-    if (fsrstatus!=1) return fsrstatus;
-    msg.Tracking()<<"Final State Shower successful !"<<std::endl
-		  <<"Has to be boosted into lab frame !"<<std::endl;
+    //    if (fsrstatus!=1) return fsrstatus;         // "Extrajetveto not yet supported"
+    if (fsrstatus==0) return fsrstatus;
     p_finshower->SetAllColours(p_fintree->GetRoot());
+
+    msg.Tracking()<<"Final State Shower successful !"<<std::endl;
+    if (!m_isron) msg.Tracking()<<"Has to be boosted into lab frame (done by is shower part)!"<<std::endl;
     if (rpa.gen.Tracking()) p_finshower->OutputTree(p_fintree);
   }
   if (m_isron) {
     p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
     if (!(p_inishower->PerformShower(p_initrees,jetveto))) return 0;
-    msg.Tracking()<<"Initial State Shower successful !"<<std::endl
-		  <<"Has to be boosted into lab frame !"<<std::endl;
+
+    // boost in LAB (using x1, x2 from initiator) done in is-shower
+
+    // determine Boost+Rotate in cms(using moms from root1 und root2)
+    Vec4D mom1=p_initrees[0]->GetRoot()->part->Momentum();
+    Vec4D mom2=p_initrees[1]->GetRoot()->part->Momentum();
+
+    mom1+mom2;
+    Vec4D vl =Vec4D(mom1[0]+mom2[0], -1.*Vec3D(mom1+mom2));
+    Poincare lab(vl);
+    lab.BoostBack(mom1);
+    lab.BoostBack(mom2);
+    Poincare rot(Vec4D::ZVEC,mom1);
+    rot.RotateBack(mom1);
+    rot.RotateBack(mom2);
+
+    // rotate and boost fs in lab "if (fin)"
+    if (fin) {
+      p_fintree->BoRo(rot);
+      p_fintree->BoRo(lab);
+    }
+    msg.Tracking()<<"Initial State Shower successful !"<<std::endl;
+  }
+
+  if (rpa.gen.Tracking()) {
+    if (m_fsron) 
+      p_finshower->OutputTree(p_fintree);
+    if (m_isron) {
+      p_inishower->OutputTree(p_initrees[0]);
+      p_inishower->OutputTree(p_initrees[1]);
+    }
   }
   return 1;
 }
