@@ -89,6 +89,14 @@ void Event_Handler::PrintGenericEventStructure()
 bool Event_Handler::GenerateEvent(int mode) 
 {
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
+  if (!rpa.gen.CheckTime()) {
+    ATOOLS::msg.Error()<<ATOOLS::om::bold
+		       <<"\n\nEvent_Handler::GenerateEvent("<<mode<<"): "
+		       <<ATOOLS::om::reset<<ATOOLS::om::red
+		       <<"Timeout. Interrupt event generation."
+		       <<ATOOLS::om::reset<<std::endl;
+    kill(getpid(),SIGINT);
+  }
   bool   flag   = true;
   double weight = 1.;
   Blob * hardblob;
