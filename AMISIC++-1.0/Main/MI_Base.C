@@ -186,6 +186,7 @@ bool MI_None::DiceOrderingParameter()
 
 bool MI_None::DiceProcess()
 {
+  m_dicedprocess=false;
   return true;
 }
 

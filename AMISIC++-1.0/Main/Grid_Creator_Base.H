@@ -90,7 +90,9 @@ namespace AMISIC {
     virtual bool CreateOptimizedGrid();
 
     bool ReadSingleArguments(GridHandlerType *grid);
+#ifndef DEBUG__Simple_Chain
     bool WriteSingleGrid(GridHandlerType *grid,std::vector<std::string> addcomments);
+#endif
 
   public:
 
@@ -114,6 +116,10 @@ namespace AMISIC {
 			      std::string tempopath=ATOOLS::nullstring);
     
     bool CreateGrid();
+
+#ifdef DEBUG__Simple_Chain
+    bool WriteSingleGrid(GridHandlerType *grid,std::vector<std::string> addcomments);
+#endif
 
   }; // end of class Grid_Creator_Base
 

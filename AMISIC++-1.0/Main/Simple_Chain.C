@@ -562,13 +562,15 @@ bool Simple_Chain::CalculateTotal()
   p_total->MoveY(-p_total->YMin());
   p_total->ScaleY((GridArgumentType)1.0/p_total->YMax());
 #ifdef DEBUG__Simple_Chain
-  EXTRAXS::SimpleXSecs *processes;
-  GridHandlerVector gridhandler;
-  for (unsigned int i=0;i<2;++i) gridhandler.push_back(new GridHandlerType(p_total));
-  GridCreatorType *gridcreator = new GridCreatorType(gridhandler,processes);
-  gridcreator->WriteOutGrid(integralfile);
+  std::vector<std::string> comments;
+  comments.push_back("   Integrated XS    "); 
+  GridHandlerType *gridhandler = new GridHandlerType(p_total);
+  GridCreatorBaseType *gridcreator = new GridCreatorBaseType();
+  gridcreator->SetOutputPath(m_outputpath);
+  gridcreator->SetOutputFile(integralfile);
+  gridcreator->WriteSingleGrid(gridhandler,comments);
   delete gridcreator;
-  for (unsigned int i=0;i<gridhandler.size();++i) delete gridhandler[i];
+  delete gridhandler;
 #endif
   delete differential;
   return true;
@@ -672,7 +674,13 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     return false;
   }
   if (m_selected<(unsigned int)p_processes->Size()) {
+#ifdef DEBUG__Simple_Chain
+    std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
+#endif
     if ((*p_processes)[m_selected]->OneEvent()) {
+#ifdef DEBUG__Simple_Chain
+      std::cout<<"   Completed one event."<<std::endl;
+#endif
       p_xs=(*p_processes)[m_selected]->Selected();
       ATOOLS::Vec4D ptot;
       for (int j=0;j<p_xs->Nin();++j) ptot+=p_xs->Momenta()[j];
@@ -739,10 +747,13 @@ bool Simple_Chain::DiceProcess()
 			      <<"   Cannot create any process. Abort."<<std::endl;
 	return false;
       }
+      double sprimemax=(*p_processes)[m_selected]->ISR()->SprimeMax();
       (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]*0.2),1);
       (*p_processes)[m_selected]->ISR()->SetSprimeMax(m_last[1]*m_last[1]);
       m_dicedprocess=true;
-      return FillBlob(p_blob);
+      bool result=FillBlob(p_blob);
+      (*p_processes)[m_selected]->ISR()->SetSprimeMax(sprimemax);
+      return result;
     }
   }
   ATOOLS::msg.Tracking()<<"Simple_Chain::DiceProcess(): "
