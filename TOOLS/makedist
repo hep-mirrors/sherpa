@@ -9,6 +9,7 @@ ECOPT=""
 for I in $* ; do
   if [ "$I" = "-c" ]; then CLEAN=TRUE 
   elif [ "$I" = "-f" ]; then DISTDIR=$DISTDIR"_"`date +'%H-%M'` 
+  elif [ "$I" = "-n" ]; then DNAME=TRUE
   elif [ "$I" = "--clean" ]; then ALLCLEAN=TRUE 
   elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
   elif [ "$I" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" && CONFIGURE=TRUE
@@ -19,6 +20,7 @@ for I in $* ; do
     echo "makedist version 1.0 " && echo && \
     echo "options: -c             execute './SHERPA-1.0/Run/makeclean' first" && \
     echo "         -f             include full time information in distribution name" && \
+    echo "         -n <name>      write compressed distribution to <name>.tar.gz" && \
     echo "         --clean        execute 'make clean' before 'make dist'" && \
     echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
     echo "         --hide-cvs     do not include cvs directories in distribution" && \
@@ -27,6 +29,7 @@ for I in $* ; do
     echo "         --no-abort     ignore exit status of 'make'" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
+  elif [ "$DNAME" = "TRUE" ]; then DNAME="" && DISTDIR=$I
   elif [ "$DCOPT" = "TRUE" ]; then DCOPT="" && ECOPT=$ECOPT" "$I
   else echo "makeinstall: error: unrecognized option $I" && exit 1 ;
   fi
