@@ -119,9 +119,15 @@ namespace ATOOLS {
 
 }// end of namespace ATOOLS
 
+#if defined(__sgi) || defined(__GNUC__)
 #define THROW(exception,message)			\
   throw(ATOOLS::Exception(ATOOLS::ex::exception,	\
 			  message,__PRETTY_FUNCTION__));
+#else
+#define THROW(exception,message)					\
+  throw(ATOOLS::Exception(ATOOLS::ex::exception,message,		\
+			  "<unknown class>::<unknown function>"));
+#endif
 
 #include "Exception_Handler.H"
 
