@@ -120,7 +120,6 @@ Initialization_Handler::~Initialization_Handler()
     m_isrhandlers.erase(m_isrhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
-  PDF::LL_Branching::DeleteSplittings();
 }
 
 
