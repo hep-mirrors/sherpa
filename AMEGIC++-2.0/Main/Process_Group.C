@@ -458,11 +458,6 @@ void Process_Group::DeSelect() {
   for (int i=0;i<m_procs.size();i++) m_procs[i]->DeSelect();
 }
 
-Integrable_Base *const Process_Group::Selected() const 
-{ 
-  return static_cast<Integrable_Base*>(p_selected->Selected()); 
-}    
-
 void Process_Group::Empty() {
   for (int i=0;i<m_procs.size();i++) m_procs[i]->Empty();
 }
@@ -804,6 +799,22 @@ void  Process_Group::RescaleXSec(double fac) {
     m_procs[i]->RescaleXSec(fac);
   }
 }
+
+void Process_Group::SetupEnhance() {
+  if (m_enhancefac==1. && m_maxfac==1.) return;
+  std::cout<<" Process_Group::SetupEnhance() "<<std::endl;
+
+  for (int i=0;i<m_procs.size();++i) {
+    double xs=TotalXS();
+    m_procs[i]->SetEnhance(m_enhancefac,m_maxfac);
+    m_procs[i]->SetupEnhance();
+    if (m_enhancefac!=1.) {
+      SetTotalXS(xs*m_enhancefac);
+      std::cout<<" changing xs from "<<xs<<" to "<<TotalXS()<<std::endl;
+    }
+  }
+}
+
 
 bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
   msg.Tracking()<<"Process_Group::LookUpXSec() for "<<m_name<<" in "<<m_resdir<<endl;

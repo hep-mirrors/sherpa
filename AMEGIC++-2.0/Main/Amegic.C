@@ -38,7 +38,29 @@ Amegic::Amegic(std::string _path,std::string _file,
 }
  
 
+double Amegic::OverflowStatistics(Process_Base * proc,int level)
+{
+  if (proc==NULL) proc=p_procs;
+  double sum=0.;
+  if ((*proc)[0]==proc) {
+    sum=proc->Overflow()/proc->Max();
+    for (int i=0;i<level;++i) msg.Out()<<"  ";
+    msg.Out()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+  }
+  else {
+    for (size_t i=0; i<proc->Size();++i) {
+      sum+=OverflowStatistics((*proc)[i],level+1);
+    }
+    for (int i=0;i<level;++i) msg.Out()<<"  ";
+    msg.Out()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+  }
+  return sum;
+}
+
+
 Amegic::~Amegic() {
+  OverflowStatistics();
+
   if (p_dataread) { delete p_dataread; p_dataread = NULL; }
   if (p_fifo)     { delete p_fifo;     p_fifo     = 0;    }
   if (p_model)    { delete p_model;    p_model    = 0;    }
@@ -151,6 +173,7 @@ void Amegic::ReadInProcessfile(string file)
   Pol_Info  * plIS,* plFS, * pldummy,  * plavs;
   int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
   double      scale_factor,fixed_scale;
+  double      enhance_factor=1.,maxreduction_factor=1.;
   string      selectorfile;
   for(;from;) {
     from.getline(buffer,100);
@@ -279,6 +302,24 @@ void Amegic::ReadInProcessfile(string file)
 		  str>>fixed_scale;
 		}
 
+		position       = buf.find(string("Enhance_Factor :"));
+		if (position > -1) {
+		  MyStrStream str;      
+		  buf          = buf.substr(buf.find(":",position)+1);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>enhance_factor;
+		}
+		position       = buf.find(string("Max_Reduction :"));
+		if (position > -1) {
+		  MyStrStream str;      
+		  buf          = buf.substr(buf.find(":",position)+1);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>maxreduction_factor;
+		  cout<<" Max_Reduction : "<<maxreduction_factor<<std::endl;
+		}
+
 		position     = buf.find(string("N_Max :"));
 		if (position > -1) {
 		  int nmax;
@@ -337,14 +378,17 @@ void Amegic::ReadInProcessfile(string file)
 	      summass += flavs[i+nIS].Mass();
 
 	    if (summass<rpa.gen.Ecms()) {
-	      if (single) p_procs->Add(new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-							  order_strong,order_ew,
-							  kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
-							  plavs,nex,excluded));
-	      else p_procs->Add(new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-						  order_strong,order_ew,
-						  kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
-						  plavs,nex,excluded));
+	      Process_Base * proc=NULL;
+	      if (single) proc = new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+						     order_strong,order_ew,
+						     kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
+						     plavs,nex,excluded);
+	      else proc = new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+					    order_strong,order_ew,
+					    kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
+					    plavs,nex,excluded);
+	      proc->SetEnhance(enhance_factor,maxreduction_factor);
+	      p_procs->Add(proc);
 
 	    }
 	    else {
@@ -489,7 +533,9 @@ void Amegic::Shorten(std::string& str) {
 
 
 bool Amegic::CalculateTotalXSec(string _resdir) {
-  return p_procs->CalculateTotalXSec(_resdir);
+  bool success = p_procs->CalculateTotalXSec(_resdir);
+  if (success)   p_procs->SetupEnhance();
+  return success;
 }
 
 bool Amegic::CalculateBranchingWidths(string _resdir) {

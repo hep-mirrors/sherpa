@@ -29,7 +29,7 @@ Process_Base::Process_Base():
   Integrable_Base(0,0),
   m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0), 
-  m_rfactor(1.), p_psgen(0)
+  m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.), p_psgen(0)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
@@ -57,7 +57,7 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   m_nex(_nex),m_gen_str(_gen_str),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
   p_ex_fl(_ex_fl),m_asscale(_scale),
-  m_facscale(_scale), m_rfactor(1.),
+  m_facscale(_scale), m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.),
   m_atoms(0), m_analyse(0), m_tables(0), p_psgen(0)
 {
   p_flin    = new Flavour[m_nin];
@@ -516,6 +516,19 @@ void Process_Base::RescaleXSec(double fac) {
   m_totalsumsqr *= fac*fac; // only an estimate
 }
 
+void Process_Base::SetupEnhance() {
+  if (m_enhancefac==1. && m_maxfac==1.) return;
+  if (m_enhancefac!=1.) {
+    double xs=TotalXS();
+    SetTotal(xs*m_enhancefac);
+    std::cout<<" changing xs from "<<xs<<" to "<<TotalXS()<<std::endl;
+  }
+  if (m_maxfac!=1.) {
+    double max=Max();
+    SetMax(max*m_maxfac);
+    std::cout<<" changing xs-max from "<<max<<" to "<<Max()<<std::endl;
+  }
+}
 
 double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
   if (m_nin==1) return _p[0].Abs2();
@@ -635,6 +648,13 @@ double Process_Base::KFactor(double _scale) {
   }
 }
 
+void Process_Base::SetEnhance(double enhancefac, double maxfac) 
+{
+  m_enhancefac = enhancefac;
+  m_maxfac     = maxfac;
+}
+
+
 /*------------------------------------------------------------------------------
   
   Access methods
@@ -642,13 +662,8 @@ double Process_Base::KFactor(double _scale) {
   ------------------------------------------------------------------------------*/
 
 double                  Process_Base::Scale()                        { return m_asscale; }
-int                     Process_Base::NStrong()                      { return m_nstrong; }
-int                     Process_Base::NEWeak()                       { return m_neweak; }
-string                  Process_Base::Name()                         { return m_name; }
 string                  Process_Base::ResDir()                       { return m_resdir; }
 string                  Process_Base::LibName()                      { return string("error"); }
-bool                    Process_Base::Atoms()                        { return m_atoms; }
-bool                    Process_Base::Tables()                       { return m_tables; }
 int                     Process_Base::NumberOfDiagrams()             { return 0; }
 Point                 * Process_Base::Diagram(int i)                 { return 0; }
 bool                    Process_Base::IsFreeOfFourVertex(Point * _p) { return 1; }

@@ -35,10 +35,10 @@ namespace AMEGIC {
     AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
     int                            * p_b;
 
-    bool                             m_atoms, m_analyse, m_tables;
-    double  m_rfactor;
-    int                              m_orderQCD, m_orderEW,m_nstrong,m_neweak;
-    double                           m_asscale,m_facscale;
+    bool    m_atoms, m_analyse, m_tables;
+    double  m_rfactor, m_enhancefac, m_maxfac;
+    int     m_orderQCD, m_orderEW,m_nstrong,m_neweak;
+    double  m_asscale,m_facscale;
 
     int m_swaped;
 
@@ -90,6 +90,9 @@ namespace AMEGIC {
     virtual void             SetResDir(std::string);
     virtual void             SetAtoms(bool);
     virtual void             SetTables(bool);
+
+    void                     SetEnhance(double,double);
+    virtual void             SetupEnhance();
 
     virtual Process_Base  *  Partner()                                             =0;
     virtual void             SelectOne()                                           =0;
@@ -148,14 +151,18 @@ namespace AMEGIC {
       Access methods
 
       ------------------------------------------------------------------------------*/
-    virtual int                             NStrong();
-    virtual int                             NEWeak();
+    inline int          NStrong();
+    inline int          NEWeak();
 
-    virtual std::string                     Name();
+    inline bool         Atoms();
+    inline bool         Tables();
+    inline std::string  Name();
+
+    inline double       EnhanceFactor();
+    inline double       MaxReduction();
+
     virtual std::string                     ResDir();
     virtual std::string                     LibName();
-    virtual bool                            Atoms();
-    virtual bool                            Tables();
 
     virtual int                             NumberOfDiagrams();
     virtual AMEGIC::Point                 * Diagram(int i);
@@ -186,6 +193,15 @@ namespace AMEGIC {
     virtual void               PrintDifferential() = 0;
 
   };
+
+  inline int         Process_Base::NStrong() { return m_nstrong; }
+  inline int         Process_Base::NEWeak()  { return m_neweak; }
+  inline bool        Process_Base::Atoms()   { return m_atoms; }
+  inline bool        Process_Base::Tables()  { return m_tables; }
+  inline std::string Process_Base::Name()    { return m_name; }
+
+  inline double      Process_Base::EnhanceFactor() { return m_enhancefac; }
+  inline double      Process_Base::MaxReduction()  { return m_maxfac; }
 }
 
 #endif

@@ -70,6 +70,7 @@ namespace AMEGIC {
 
     void SingleEvents();
     void FifoOutput(double = 1.0) ;
+    double OverflowStatistics(Process_Base * proc=NULL,int level=0);
 
     //!The decay tables of all unstable particles are calculated
     void DecCalc(); 

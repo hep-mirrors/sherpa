@@ -17,6 +17,7 @@ namespace AMEGIC {
     void Add(Process_Base *);
     void SelectOne();
     void RescaleXSec(double);
+    void SetupEnhance();
 
     bool CalculateTotalXSec(std::string _resdir=std::string(""));
     bool OneEvent(double = -1.);

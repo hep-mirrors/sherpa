@@ -37,7 +37,7 @@ namespace AMEGIC {
     void           GroupProcesses();
     void           SelectOne();
     void           DeSelect();
-    Integrable_Base *const Selected() const;
+
     void           Empty();
     size_t         Size()                          { return m_procs.size(); }
     Process_Base * operator[] (int idx)            { return m_procs[idx]; } 
@@ -71,6 +71,8 @@ namespace AMEGIC {
     bool           CalculateTotalXSec(std::string _resdir=std::string(""));
     bool           LookUpXSec(double,bool,std::string);
     void           RescaleXSec(double);
+    void           SetupEnhance();
+
     bool           PrepareXSecTables();
     void           WriteOutXSecs(std::ofstream &);
     void           AddPoint(const double value); 

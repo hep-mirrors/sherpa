@@ -51,6 +51,12 @@ void All_Processes::RescaleXSec(double) {
   m_max     = summax;
 }
 
+void All_Processes::SetupEnhance() {
+  for (int i=0;i<m_procs.size();++i) {
+    m_procs[i]->SetupEnhance();
+  }
+}
+
 
 /*----------------------------------------------------------------------------------
   
