@@ -511,7 +511,7 @@ void ATOOLS::ParticleInit(std::string path)
   *(pi++) = Part_Info( kf::neutrino, 0.,0., 0, 1,0, 1,0,1,1,0,"neutrino",1);
   *(pi++) = Part_Info( kf::fermion,  0.,0., 0, 0,0, 1,0,1,1,0,"fermion",1);
   *(pi++) = Part_Info( kf::jet,      0.,0., 0, 0,1, 2,0,1,1,0,"jet",1);
-  *(pi++) = Part_Info( kf::quark,    0.,0., 0, 0,1, 1,0,1,1,0,"quark",1);
+  *(pi++) = Part_Info( kf::quark,    0.,0., 0, 0,1, 1,0,1,1,0,"Quark",1);
 
   *(pi++) = Part_Info( kf::cluster,    0.,0., 0, 0,0, 0,0,1,1,0,"cluster",1);
   *(pi++) = Part_Info( kf::string,    0.,0., 0, 0,0, 0,0,1,1,0,"string",1);
