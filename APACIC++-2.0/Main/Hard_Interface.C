@@ -60,14 +60,19 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
     p_fintree->BoRo(cms);
 
     int fsrstatus = p_finshower->PerformShower(p_fintree,jetveto);
-    //    if (fsrstatus!=1) return fsrstatus;         // "Extrajetveto not wanted for hadron hadron"
     if (fsrstatus==0) return fsrstatus;
+    // check ME if still njet ME!
+    // if isr is on, this check will be performed after the initial state shower
+    if (!m_isron)
+      if (!p_finshower->ExtraJetCheck()) return 3;
+
     p_finshower->SetAllColours(p_fintree->GetRoot());
 
     msg.Tracking()<<"Final State Shower successful !"<<std::endl;
     if (!m_isron) msg.Tracking()<<"Has to be boosted into lab frame (done by is shower part)!"<<std::endl;
     if (rpa.gen.Tracking()) p_finshower->OutputTree(p_fintree);
   }
+
   if (m_isron) {
     p_inishower->InitShowerPT(p_initrees[0]->GetRoot()->maxpt2);
     if (!(p_inishower->PerformShower(p_initrees,jetveto))) return 0;
@@ -92,6 +97,10 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
       p_fintree->BoRo(rot);
       p_fintree->BoRo(lab);
     }
+
+    // check ME if still njet ME!
+    if (!p_finshower->ExtraJetCheck()) return 3;
+
     msg.Tracking()<<"Initial State Shower successful !"<<std::endl;
   }
 
