@@ -441,7 +441,7 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
       LL_Branching::AllSplittings().begin();
     for (;sfit!=LL_Branching::AllSplittings().end();++sfit) {
       if ((*sfit)->GetFlB()==flavour) {
-	if ((*sfit)->GetFlC().IsQuark() && 
+ 	if ((*sfit)->GetFlC().IsGluon() && 
 	    m_z*(1.+sqrt(m_kperp2/m_mu2))>1.) continue;
 	m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
 	if (flavour.IsGluon() && (*sfit)->GetFlA().IsGluon())
