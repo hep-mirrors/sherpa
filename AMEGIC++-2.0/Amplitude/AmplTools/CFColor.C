@@ -446,7 +446,7 @@ string CFColor::BuildTChain(vector<string>  string_list)
     vector<string>::iterator it = string_list.begin();
     string_list.erase(it);
     }
-    for (int i=0;i<string_list.size();i++) {
+    for (size_t i=0;i<string_list.size();i++) {
       if (tmp_list[tmp_list.size()-1][6]==string_list[i][4]) { 
 	tmp_list.push_back(string_list[i]);
 	tmp = string_list[i][2];
@@ -476,7 +476,7 @@ string CFColor::MapFChain(vector<string> fstring_list)
   char tmp,ca = 'A';
   std::vector<string> tmp_list;
   
-  for (int i=0;i<fstring_list.size();i++) {
+  for (size_t i=0;i<fstring_list.size();i++) {
     for (int j=2;j<8;j+=2) {
       tmp = fstring_list[i][j];
       if (translator.insert(std::make_pair(tmp,ca)).second) ca++;

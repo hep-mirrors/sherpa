@@ -217,7 +217,7 @@ void Zfunc_Generator::LFPrint(const vector<Lorentz_Function> &lflist)
 {
   if (!msg.LevelIsTracking()) return;
   ATOOLS::msg.Out()<<"LorentzList: "<<endl;
-  for (short int i=0;i<lflist.size();i++)
+  for (size_t i=0;i<lflist.size();i++)
     ATOOLS::msg.Out()<<lflist[i].String(1)<<endl;
   ATOOLS::msg.Out()<<endl;
 }
@@ -226,7 +226,7 @@ void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
 {
   if (!msg.LevelIsTracking()) return;
   ATOOLS::msg.Out()<<"LorentzList: "<<endl;
-  for (short int i=0;i<lflist.size();i++)
+  for (size_t i=0;i<lflist.size();i++)
     ATOOLS::msg.Out()<<lflist[i]->String(1)<<endl;
   ATOOLS::msg.Out()<<endl;
 }
@@ -259,14 +259,14 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
   }
   //LFPrint(lflist);  
 
-  for (short int i=0;i<zcalc.size();i++) {
+  for (size_t i=0;i<zcalc.size();i++) {
     if (lflist.size()==(zcalc[i]->lorentzlist).size()) {
       int hit = 1; 
       vector<int> typerem;
       
-      for (short int j=0;j<lflist.size();j++) {
+      for (size_t j=0;j<lflist.size();j++) {
 	int hit2 = 1;
-	for (short int k=0;k<typerem.size();k++) {
+	for (size_t k=0;k<typerem.size();k++) {
 	  if (typerem[k]==LFEff(lflist[j].Type())) {
 	    hit2 = 0;
 	    break;
@@ -275,11 +275,11 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 	if (hit2) {
 	  //counting 
 	  int type1 = 0;
-	  for (short int k=j;k<lflist.size();k++) {
+	  for (size_t k=j;k<lflist.size();k++) {
 	    if (LFEff(lflist[j].Type())==LFEff(lflist[k].Type())) type1++;
 	  }
 	  int type2 = 0;
-	  for (short int k=0;k<(zcalc[i]->lorentzlist).size();k++) {
+	  for (size_t k=0;k<(zcalc[i]->lorentzlist).size();k++) {
 	    if (LFEff(lflist[j].Type())==LFEff((zcalc[i]->lorentzlist[k]).Type())) type2++;
 	  }  
 	  if (type1!=type2) {
@@ -311,10 +311,10 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 
 void Zfunc_Generator::CopyOrder(vector<Lorentz_Function> &lflist,vector<Lorentz_Function*> & lfpointer)
 {
-  for (short int i=0;i<lflist.size();i++) lfpointer.push_back(&lflist[i]);
+  for (size_t i=0;i<lflist.size();i++) lfpointer.push_back(&lflist[i]);
 
-  for (short int i=0;i<lfpointer.size();i++) 
-    for (short int j=i+1;j<lfpointer.size();j++) {
+  for (size_t i=0;i<lfpointer.size();i++) 
+    for (size_t j=i+1;j<lfpointer.size();j++) {
       if (lfpointer[i]->NofIndex()<lfpointer[j]->NofIndex()) {
 	Lorentz_Function* help;
 	help         = lfpointer[i];
@@ -337,14 +337,14 @@ int Zfunc_Generator::Compare(int Nargs,
   
   int numbcount = 0;
   
-  for (short int i=0;i<lfpointer.size();i++) {
-    for (short int k=0;k<lfpointer[i]->NofIndex();k++) {
+  for (size_t i=0;i<lfpointer.size();i++) {
+    for (int k=0;k<lfpointer[i]->NofIndex();k++) {
       int lfarg = abs(lfpointer[i]->ParticleArg(k));
       int caarg = abs(capointer[i]->ParticleArg(k));
       
       int hit = 1;
       
-      for (short int j=0;j<numbcount;j++) {
+      for (int j=0;j<numbcount;j++) {
 	if (lfnumb[j]==lfarg) {
 	  if (canumb[j]==caarg) {
 	    hit = 0;
@@ -378,7 +378,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
 
   vector<Lorentz_Function*> permpointer;
 
-  for (short int j=0;j<lfpointer.size();j++) {
+  for (size_t j=0;j<lfpointer.size();j++) {
     permpointer.push_back(lfpointer[j]);
     permpointer[j]->InitPermutation();
   }
@@ -389,7 +389,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
   //loop over all permutations
   for (;;) {
     int i = Compare(Zh->p_calculator->pn,lfpointer,lfnumb,capointer,canumb);
-    if (i==lfpointer.size()) break;
+    if (i==(int)lfpointer.size()) break;
 
     //loop over previous permutations
     for (;;) {
@@ -397,7 +397,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
       int typemin   = 1000; 
       int typemax   = 0;
 
-      for (short int j=0;j<lfpointer.size();j++) {
+      for (int j=0;j<(int)lfpointer.size();j++) {
 	if (LFEff(lfpointer[j]->Type())==LFEff(lfpointer[i]->Type())) {
 	  if (typemin>j) typemin = j;
 	  if (typemax<j) typemax = j;
@@ -406,7 +406,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
       }
       
       vector<Lorentz_Function*> copypointer;
-      for (short int j=0;j<lfpointer.size();j++) copypointer.push_back(lfpointer[j]);
+      for (size_t j=0;j<lfpointer.size();j++) copypointer.push_back(lfpointer[j]);
 
       if (typecount>1) {
 	int over = 0;
@@ -446,7 +446,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
       }
       else i = Compare(Zh->p_calculator->pn,lfpointer,lfnumb,capointer,canumb);
 
-      if (i==lfpointer.size()) break;
+      if (i==(int)lfpointer.size()) break;
 	
       if (i<=typemax) {
 	int sn  = 1;
@@ -469,13 +469,13 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,
 	//LFPrint(lfpointer);
       }
     }
-    if (i==lfpointer.size()) break;
+    if (i==(int)lfpointer.size()) break;
   }
 
   //Total Sign......
   Zh->m_sign = 1;
 
-  for (short int j=0;j<permpointer.size();j++) Zh->m_sign *= permpointer[j]->GetSign();
+  for (size_t j=0;j<permpointer.size();j++) Zh->m_sign *= permpointer[j]->GetSign();
   
   SetPropDirection(Zh->p_calculator->pn,pb->number,lfpointer,lfnumb,capointer,canumb);
 
@@ -570,7 +570,7 @@ void Zfunc_Generator::SetPropDirection(int Nargs,int incoming,
   //Search Incoming
   int start = -1;
   //works only for incoming vectors!!!!
-  for (short int i=0;i<lfpointer.size();i++) {
+  for (size_t i=0;i<lfpointer.size();i++) {
     if (LFEff(lfpointer[i]->Type())==lf::Gamma) {
       for (short int k=0;k<lfpointer[i]->NofIndex();k++) {
 	if (lfpointer[i]->ParticleArg(k)==incoming) {
@@ -595,8 +595,8 @@ void Zfunc_Generator::SearchNextProp(int Nargs,
 				     int position)
 {
   int start= -1;
-  for (short int i=0;i<lfpointer.size();i++) {
-    if (i!=position) {
+  for (size_t i=0;i<lfpointer.size();i++) {
+    if ((int)i!=position) {
       for (short int k=0;k<lfpointer[i]->NofIndex();k++) {
 	if (lfpointer[i]->ParticleArg(k)==incoming) {
 	  start = i;

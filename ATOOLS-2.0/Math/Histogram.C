@@ -86,7 +86,7 @@ Histogram::Histogram(const std::string & pID) {
     Data_Reader dr;
     std::vector<std::string> conf;
     dr.VectorFromString(conf,"",dummy,dr.VHorizontal);
-    int k=0;
+    size_t k=0;
 
     if (k>=conf.size()) {
       msg.Error()<<"Error in Histogram : reading file :"<<pID<<std::endl;
@@ -147,7 +147,6 @@ Histogram::Histogram(const std::string & pID) {
   }
 
 
-  double value;
   std::vector<std::string> data;
   MyStrStream str;
   Data_Reader dr;
@@ -175,7 +174,6 @@ Histogram::~Histogram() {
 
 
 void Histogram::Finalize() {
-  double total=0.0;
   for (int i=0;i<m_nbin;++i) {
     m_bins[i][0]/=m_fills*m_binsize;
     if (m_depth>1) {
