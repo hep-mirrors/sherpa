@@ -123,9 +123,11 @@ namespace ATOOLS {
     inline const double PPerp(const Vec4D &) const; 
     inline const double CosTheta(const Vec4D &) const; 
     inline const double Theta(const Vec4D &) const; 
+    inline const double Eta(const Vec4D &) const; 
 
     inline const double CosDPhi(const Vec4D &) const; 
     inline const double DPhi(const Vec4D &) const; 
+    inline const double DEta(const Vec4D &) const; 
 
     inline const double Y() const; 
     inline const double Eta() const; 
@@ -501,6 +503,17 @@ namespace ATOOLS {
   inline const double Vec4D::DPhi(const Vec4D &ref) const 
   { 
     return acos(CosDPhi(ref));
+  }
+  
+  inline const double Vec4D::Eta(const Vec4D &ref) const 
+  { 
+    double cos=CosTheta(ref);
+    return (2.0*cos>M_PI?-0.5:0.5)*log(sqr(1.0+cos)/(1.0-cos*cos));
+  }
+  
+  inline const double Vec4D::DEta(const Vec4D &ref) const 
+  { 
+    return Eta()-ref.Eta();
   }
   
   inline Vec4D Vec4D::Perp() const 
