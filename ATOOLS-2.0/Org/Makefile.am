@@ -16,6 +16,7 @@ endif
 
 lib_LTLIBRARIES = libToolsOrg.la
 libToolsOrg_la_SOURCES        = \
+				Object.C \
 				Exception.C \
 				Exception_Handler.C \
 				File_IO_Base.C \
@@ -36,6 +37,7 @@ libToolsOrg_la_SOURCES        = \
 				Debugger.C \
 				My_Root.C
 noinst_HEADERS        =	\
+			Object.H \
 			Exception.H \
 			Exception_Handler.H \
 			Exception_Handler.inl.H \
