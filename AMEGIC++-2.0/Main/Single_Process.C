@@ -62,8 +62,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   }
 
   double sum_massin = 0.,sum_massout = 0.;
-  for (int i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
-  for (int i=0;i<m_nout;i++) sum_massout += p_flout[i].Mass();
+  for (size_t i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
+  for (size_t i=0;i<m_nout;i++) sum_massout += p_flout[i].Mass();
   m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
   p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
@@ -103,9 +103,9 @@ void Single_Process::PolarizationNorm() {
   p_flavours   = new Flavour[m_nvector];
   p_pl   = new Pol_Info[m_nvector];
   p_b    = new int[m_nvector];
-  for (short int i=0;i<m_nin;i++)             { p_flavours[i] = p_flin[i]       ; p_pl[i] = p_plin[i]       ; p_b[i] = -1; }
-  for (short int i=m_nin;i<m_nin+m_nout;i++)  { p_flavours[i] = p_flout[i-m_nin]; p_pl[i] = p_plout[i-m_nin]; p_b[i] = 1; } 
-  for (short int i=m_nin+m_nout;i<m_nvector;i++) { p_flavours[i] = Flavour(kf::pol); p_b[i]  = 1; }
+  for (size_t i=0;i<m_nin;i++)             { p_flavours[i] = p_flin[i]       ; p_pl[i] = p_plin[i]       ; p_b[i] = -1; }
+  for (size_t i=m_nin;i<m_nin+m_nout;i++)  { p_flavours[i] = p_flout[i-m_nin]; p_pl[i] = p_plout[i-m_nin]; p_b[i] = 1; } 
+  for (size_t i=m_nin+m_nout;i<m_nvector;i++) { p_flavours[i] = Flavour(kf::pol); p_b[i]  = 1; }
 
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,p_flin);
 #ifndef Explicit_Pols
@@ -124,7 +124,7 @@ double Single_Process::SymmetryFactors()
     if (hflav==Flavour(kf::pi)) break; 
     int cp  = 0;
     int cap = 0;
-    for (int j=0;j<m_nout;j++) {
+    for (size_t j=0;j<m_nout;j++) {
       if (p_flout[j]==hflav)                                      cp++;
       else {
 	if ((p_flout[j]==hflav.Bar()) && (hflav != hflav.Bar()))  cap++;
@@ -141,8 +141,8 @@ void Single_Process::FixISRThreshold()
   double m_mass_in  = 0.;
   double m_mass_out = 0.;
   
-  for (int i = 0;i<m_nin;i++)  m_mass_in  += p_flin[i].Mass(); 
-  for (int i = 0;i<m_nout;i++) m_mass_out += p_flout[i].Mass(); 
+  for (size_t i = 0;i<m_nin;i++)  m_mass_in  += p_flin[i].Mass(); 
+  for (size_t i = 0;i<m_nout;i++) m_mass_out += p_flout[i].Mass(); 
   
   double isrth = ATOOLS::Max(m_mass_in,m_mass_out);
   
@@ -188,7 +188,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   }
   if (p_momenta) { delete [] p_momenta; }
   p_momenta = new Vec4D[m_nvector]; 
-  for (int i=0;i<m_nin+m_nout;i++) p_momenta[i] = _testmoms[i];
+  for (size_t i=0;i<m_nin+m_nout;i++) p_momenta[i] = _testmoms[i];
 
   p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
@@ -201,7 +201,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     return -1;
   }
   procs++;
-  for (int j=0;j<links.size();j++) {
+  for (size_t j=0;j<links.size();j++) {
     if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler())) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	msg.Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
@@ -227,7 +227,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 
   switch (Tests()) {
   case 2 : 
-    for (int j=0;j<links.size();j++) {
+    for (size_t j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	msg.Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
 		      <<"   Found an equivalent partner process for "<<m_name<<" : "<<links[j]->Name()<<std::endl
@@ -243,7 +243,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     Minimize();
     return 1;
   case 1 :
-    for (int j=0;j<links.size();j++) {
+    for (size_t j=0;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	msg.Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
 		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
@@ -255,7 +255,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     if (p_partner==this) links.push_back(this);
     
     if (CheckLibraries()) return 1;
-    for (int j=0;j<links.size();j++) {
+    for (size_t j=0;j<links.size();j++) {
       if (links[j]->NewLibs()) {
 	if (CheckStrings(links[j])) return 1;	
       }      
@@ -973,7 +973,7 @@ double Single_Process::Differential2() {
 double Single_Process::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
 {
   m_last = m_lastdxs = 0.;
-  for (int i=0;i<m_nin+m_nout;i++) {
+  for (size_t i=0;i<m_nin+m_nout;i++) {
     if (_moms[i][0] < p_flavours[i].PSMass()) return m_last = 0.;
   }
   if (p_partner == this) {
