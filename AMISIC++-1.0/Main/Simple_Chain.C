@@ -318,7 +318,9 @@ bool Simple_Chain::ReadInData()
   if (!reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME")) m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=3;
   std::string outputpath;
-  reader->ReadFromFile(outputpath,"GRID DIRECTORY");
+  outputpath=std::string("MI-Grid__")+
+    ATOOLS::rpa.gen.Bunch(1).Name()+std::string("_")+ATOOLS::rpa.gen.Bunch(1).Name()+
+    std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV");
   SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
   comments.push_back("->");
