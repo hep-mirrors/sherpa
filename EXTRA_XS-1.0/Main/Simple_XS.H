@@ -17,8 +17,6 @@ namespace EXTRAXS {
 
     ATOOLS::Data_Read *p_dataread;
 
-    ATOOLS::Selector_Data *p_selectordata;
-
     int  ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
     void OrderFlavours(ATOOLS::Flavour *flavours);
 
@@ -62,8 +60,6 @@ namespace EXTRAXS {
     inline bool InSwaped() const { return p_selected->Selected()->InSwaped(); }
 
     inline size_t MaxJets() const { return m_maxjet; }
-
-    inline ATOOLS::Selector_Data *const SelectorData() { return p_selectordata; }
 
     void ResetSelector(ATOOLS::Selector_Data *const selectordata);
 
