@@ -16,7 +16,7 @@
 namespace SHERPA {
   class Amegic_Apacic_Interface : public Perturbative_Interface {
   private :
-    double m_type;
+    int     m_type;
     double m_ycut,m_jetscale;
 
     ATOOLS::Jet_Finder * p_jf;
