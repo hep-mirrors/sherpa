@@ -272,6 +272,26 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
   for (;;) {
     m_sprime      = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
 
+    /*
+    if (k1->prev && k2->prev) {
+      Vec4D mom1=k1->part->Momentum();
+      Vec4D mom3=k1->prev->part->Momentum();
+      Vec4D mom2=k2->part->Momentum();
+      Vec4D mom5=k2->prev->part->Momentum();
+
+      double s12=(mom1+mom2).Abs2();
+      double s32=(mom3+mom2).Abs2();
+      double s15=(mom1+mom5).Abs2();
+      double s35=(mom3+mom5).Abs2();
+      double z1=s12/s32;
+      double z2=s12/s15;
+      double z1p=s32/s35;
+      double z2p=s15/s35;
+      std::cout<< " z1="<<z1<<"    z2="<<z2<<std::endl;
+      std::cout<<" zp1="<<z1p<<"   zp2="<<z2p<<std::endl;
+    }
+    */
+
     accepted = 1;  
     // Parton 1/Tree 1 is the one to decay.
     if (decay1 && caught_jetveto!=3) {
@@ -356,6 +376,43 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 //-----------------------------------------------------------------------
 //------------------------ Evolution of the Shower ----------------------
 //----------------------------------------------------------------------- 
+void Initial_State_Shower::ChooseMother(int & ntree0, int & ntree1, Knot * & k1, Knot * & k2)
+{
+  bool swap=false;
+  if (((k1->t) > (k2->t)) && (k2->t != k2->tout)) {  
+    swap = true;
+  }
+
+  bool known1=false;
+  bool known2=false;
+  if (k1->stat==0 && k1->t != k1->tout) known1=true;
+  if (k2->stat==0 && k2->t != k2->tout) known2=true;
+
+  if (known1 || known2) {
+    bool save_swap=swap;
+    if (known1 && !known2) swap=false;
+    else if (!known1 && known2) swap=true;
+
+    if (known1 && known2) {
+      if (k1->prev->kn_no<k2->prev->kn_no) swap=false;
+      else swap=true;
+    }
+
+    if (swap!=save_swap) {
+      msg_Tracking()<<"Initial_State_Shower::ChooseMother changed swap according to known history \n";
+    }
+  }
+
+  if (swap) {
+    Knot * kh=k1;
+    k1 =k2;
+    k2 =kh;
+    ntree0=1;
+    ntree1=0;
+  }
+}
+
+
 
 int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 {
@@ -370,13 +427,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 
 
   int ntree0=0, ntree1=1;
-  if (((k1->t) > (k2->t)) && (k2->t != k2->tout)) {  
-    Knot * kh=k1;
-    k1 =k2;
-    k2 =kh;
-    ntree0=1;
-    ntree1=0;
-  }
+  ChooseMother(ntree0,ntree1,k1,k2);
 
   int caught_jetveto=0;
 
@@ -388,11 +439,25 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       k1->prev->left->E2 = k1->prev->E2*sqr(1.-k1->z);
     }  
     else {
+      /*
+      Vec4D mom1=k1->part->Momentum();
+      Vec4D mom3=k1->prev->part->Momentum();
+      Vec4D mom2=k2->part->Momentum();
+
+      std::cout<<" momenta \n";
+      std::cout<<"mom1="<<mom1<<" ("<<mom1.Abs()<<")\n";
+      std::cout<<"  mom2="<<mom2<<" ("<<mom2.Abs()<<")\n";
+      std::cout<<"mom3="<<mom3<<" ("<<mom3.Abs()<<")\n";
+
+      std::cout<<"mom1+2="<<mom1+mom2<<" ("<<(mom1+mom2).Abs()<<")\n";
+      std::cout<<"mom3+2="<<mom3+mom2<<" ("<<(mom3+mom2).Abs()<<")\n";
+      */
 
       double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
       double sprime_b = (k1->prev->part->Momentum()+k2->part->Momentum()).Abs2();
       k1->z=sprime_a/sprime_b;
       k1->prev->x=k1->x/k1->z;
+      //      std::cout<<" setting from existing x="<<k1->prev->x<<" "<<k1->x<<"/"<<k1->z<<std::endl;
       m_sprime/=k1->z;
 
       /*  // *AS*

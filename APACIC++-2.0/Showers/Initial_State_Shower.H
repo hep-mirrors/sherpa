@@ -65,6 +65,7 @@ namespace APACIC {
       p_suds[1]->SetFactorisationScale(scale);
     }
   private:
+    void ChooseMother(int & ntree0, int & ntree1, Knot * & k1, Knot * & k2);
     bool InitializeSystem(Tree **trees,Knot *k1,Knot *k2);
     void InitTwoTrees(Tree ** trees,double E2);
     int  EvolveSystem(Tree ** trees,Knot *k1,Knot *k2);
