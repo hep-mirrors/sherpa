@@ -189,6 +189,7 @@ void XS_Base::SetSTU(const ATOOLS::Vec4D *momenta)
 
 void XS_Base::SetMax(const double max,const int flag)             
 { 
+  if (flag==1) m_max=max;
   SetMax();
 }
 
