@@ -455,7 +455,8 @@ namespace ATOOLS {
 
   inline const double Vec4D::Phi() const 
   {
-    return acos(CosPhi());
+    if(m_x[2]>0.) return acos(CosPhi());
+    else return -acos(CosPhi());
   }
 
   inline const double Vec4D::CosTheta() const 
