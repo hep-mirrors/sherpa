@@ -17,12 +17,8 @@ using namespace SHERPA;
 
 QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,const unsigned int beam,
 				   const double scale,const rtp::code type):
-  Remnant_Base(type,beam),
-  m_deltax(0.0125), 
-  m_scale(scale),
-  m_ecms(sqrt(isrhandler->Pole())),
-  m_xscheme(1), 
-  m_maxtrials(100)
+  Remnant_Base(type,beam), m_deltax(0.0125), m_scale(scale),
+  m_ecms(sqrt(isrhandler->Pole())), m_xscheme(1), m_maxtrials(100)
 {
   if (isrhandler==NULL) {
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"QCD remnant needs ISR Handler.",
@@ -43,7 +39,7 @@ void QCD_Remnant_Base::Clear()
 }
 
 bool QCD_Remnant_Base::TestColours(ATOOLS::Particle *particle,unsigned int oldc,unsigned int newc,
-				 bool singlet,bool force,int anti)
+				   bool singlet,bool force,int anti)
 {
   if (particle->GetFlow(anti)==oldc && 
       (m_adjusted.find(particle)==m_adjusted.end() || 
@@ -54,16 +50,16 @@ bool QCD_Remnant_Base::TestColours(ATOOLS::Particle *particle,unsigned int oldc,
 }
 
 bool QCD_Remnant_Base::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,unsigned int newc,
-				   bool &singlet,bool force,int anti,bool forward)
+				     bool &singlet,bool force,int anti,bool forward)
 {
   if (m_adjusted.find(particle)!=m_adjusted.end()) m_singlet.insert(particle);
   m_adjusted.insert(particle);
-  if (!force && (particle->GetFlow(1)==newc || particle->GetFlow(2)==newc)) {
+  if (!force && 
+      (particle->GetFlow(1)==newc || particle->GetFlow(2)==newc)) {
     msg_Tracking()<<"QCD_Remnant_Base::AdjustColours(..): "
 		  <<"Created colour singlet. Retry."<<std::endl;
     return singlet=true;
   }
-  msg_Debugging()<<*particle<<" "<<oldc<<" -> "<<newc<<" "<<anti<<" "<<forward<<std::endl;
   if ((forward && particle->DecayBlob()==NULL) ||
       (!forward && particle->ProductionBlob()==NULL)) {
     return true;
@@ -71,60 +67,42 @@ bool QCD_Remnant_Base::AdjustColours(ATOOLS::Particle *particle,unsigned int old
   if (m_adjusted.size()>100) {
     ATOOLS::msg.Error()<<"QCD_Remnant_Base::AdjustColours(..): "
 		       <<"Colour nesting is too deep (more than "<<m_adjusted.size()-1
-		       <<" levels)."<<std::endl
-		       <<"   Cannot adjust colours completely. "
+		       <<" levels).\n   Cannot adjust colours completely. "
 		       <<"Result might be unreliable."<<std::endl;
     return false;
   }
   ATOOLS::Blob *cur=particle->DecayBlob();
-  int newanti=anti;
-  bool newforward=forward;
-  if (forward) {
-    for (int i=0;i<cur->NOutP();++i) {
-      ATOOLS::Particle *help=cur->OutParticle(i);
-      if (TestColours(help,oldc,newc,singlet,force,newanti)) { 
-	if (!AdjustColours(help,oldc,newc,singlet,force,newanti,newforward)) return false;
-	if (!singlet) help->SetFlow(newanti,newc);
-	return true;
-      }
-    }
-    newanti=3-newanti;
-    newforward=!newforward;
-    for (int i=0;i<cur->NInP();++i) {
-      ATOOLS::Particle *help=cur->InParticle(i);
-      if (TestColours(help,oldc,newc,singlet,force,newanti)) { 
-	if (!AdjustColours(help,oldc,newc,singlet,force,newanti,newforward)) return false;
-	if (!singlet) help->SetFlow(newanti,newc);
-	return true;
-      }
+  if (!forward) {
+    cur=particle->ProductionBlob();
+    anti=3-anti;
+    forward=!forward;
+  }
+  for (int i=0;i<cur->NOutP();++i) {
+    ATOOLS::Particle *help=cur->OutParticle(i);
+    if (help==particle) continue;
+    if (TestColours(help,oldc,newc,singlet,force,anti)) { 
+      if (!AdjustColours(help,oldc,newc,singlet,force,anti,forward)) return false;
+      if (!singlet) help->SetFlow(anti,newc);
+      return true;
     }
   }
-  else {
-    cur=particle->ProductionBlob();
-    for (int i=0;i<cur->NInP();++i) {
-      ATOOLS::Particle *help=cur->InParticle(i);
-      if (TestColours(help,oldc,newc,singlet,force,newanti)) { 
-	if (!AdjustColours(help,oldc,newc,singlet,force,newanti,newforward)) return false;
-	if (!singlet) help->SetFlow(newanti,newc);
-	return true;
-      }
-    }
-    newanti=3-newanti;
-    newforward=!newforward;
-    for (int i=0;i<cur->NOutP();++i) {
-      ATOOLS::Particle *help=cur->OutParticle(i);
-      if (TestColours(help,oldc,newc,singlet,force,newanti)) { 
-	if (!AdjustColours(help,oldc,newc,singlet,force,newanti,newforward)) return false;
-	if (!singlet) help->SetFlow(newanti,newc);
-	return true;
-      }
+  anti=3-anti;
+  forward=!forward;
+  for (int i=0;i<cur->NInP();++i) {
+    ATOOLS::Particle *help=cur->InParticle(i);
+    if (help==particle) continue;
+    if (TestColours(help,oldc,newc,singlet,force,anti)) { 
+      if (!AdjustColours(help,oldc,newc,singlet,force,anti,forward)) return false;
+      if (!singlet) help->SetFlow(anti,newc);
+      return true;
     }
   }
   return true;
 }
 
-bool QCD_Remnant_Base::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,unsigned int newc,
-				   bool &singlet,bool force)
+bool QCD_Remnant_Base::AdjustColours(ATOOLS::Particle *particle,
+				     unsigned int oldc,unsigned int newc,
+				     bool &singlet,bool force)
 {
   PROFILE_HERE;
   m_singlet.clear();
@@ -135,7 +113,8 @@ bool QCD_Remnant_Base::AdjustColours(ATOOLS::Particle *particle,unsigned int old
   ATOOLS::Parton_Finder finder;
   particle=finder.FindConnected(particle,true,i);
   for (i=1;i<3;++i) if (particle->GetFlow(i)==oldc) break;
-  bool result=AdjustColours(particle,oldc,newc,singlet,force,i,particle->DecayBlob()!=NULL);
+  bool result=AdjustColours(particle,oldc,newc,singlet,force,i,
+			    particle->DecayBlob()!=NULL);
   if (result && !singlet) { 
     particle->SetFlow(i,newc);
   }
@@ -167,7 +146,6 @@ ATOOLS::Particle *QCD_Remnant_Base::FindDisconnected(ATOOLS::Particle *final,
   for (short unsigned int set=0;set<2;++set) {
     for (size_t i=0;i<m_parton[set].size();++i) {
       if (m_adjusted.find(m_parton[set][i])==m_adjusted.end()) {
-	msg_Debugging()<<"take "<<m_parton[set][i]<<" "<<" "<<final<<std::endl;
 	selected=m_parton[set][i];
       }
       else if (m_initial==2) {
@@ -190,7 +168,6 @@ ATOOLS::Particle *QCD_Remnant_Base::FindClosest(ATOOLS::Particle *final,
 	ATOOLS::Particle *end=m_finder.FindConnected(m_parton[set][i]);
 	double dist=end->Momentum().PPerp(final->Momentum());
 	if (min>dist && dist>0. && m_parton[set][i]->GetFlow(2-anti)!=0) {
-	  msg_Debugging()<<"compare "<<m_parton[set][i]<<" "<<end<<" "<<" "<<final<<std::endl;
 	  min=dist;
 	  selected=m_parton[set][i];
 	}
@@ -203,15 +180,13 @@ ATOOLS::Particle *QCD_Remnant_Base::FindClosest(ATOOLS::Particle *final,
 bool QCD_Remnant_Base::SelectCompanion(QCD_Remnant_Info *const cur) 
 {
   PROFILE_HERE;
-  msg_Debugging()<<"look for "<<*cur<<std::endl;
   m_finder.SetColour(1+!*cur,(*cur)->GetFlow(1+!cur));
   ++*cur=m_finder.FindConnected((*cur)(),true);
   m_adjusted.clear();
-  size_t k=0;//, l=0;
+  size_t k=0;
   for (short unsigned int i=0;i<2;++i) {
     m_adjusted.insert((*cur)(1));
     while ((*cur)[i]==NULL) {
-      //      msg_Debugging()<<++l<<std::endl;
       ATOOLS::Particle *final=FindConnected((*cur)(i),i);
       if (final==NULL) {
 	final=FindClosest(++*cur,i);
@@ -227,21 +202,10 @@ bool QCD_Remnant_Base::SelectCompanion(QCD_Remnant_Info *const cur)
       ATOOLS::Particle *initial=m_finder.FindConnected(final,false);
       m_adjusted.insert(initial);
       m_adjusted.insert(final);
-      //      msg_Debugging()<<*initial<<" "<<initial<<" "<<final<<" "
-      //			     <<++*cur<<" "<<m_adjusted.size()<<" ("<<m_constrained<<" "
-      //			     <<p_beamblob->NOutP()<<")"<<std::endl;
       if (m_constrained<m_initial-1) if (cur->Find(initial)>-1) continue;
-      //      msg_Debugging()<<"constrained "<<m_constrained<<" vs "<<m_initial<<" "<<(cur->Find(initial)>-1)<<std::endl;
-      //      msg_Debugging()<<*initial<<" "<<initial<<" "<<final<<" "
-      //                             <<++*cur<<" "<<m_adjusted.size()<<std::endl;
-//       for (std::set<ATOOLS::Particle*>::iterator pit=m_adjusted.begin();pit!=m_adjusted.end();++pit) 
-// 	msg_Debugging()<<*pit<<" "; msg_Debugging()<<(m_adjusted.find(initial)==m_adjusted.end())<<std::endl;
       for (size_t j=0;j<m_sorted.size();++j) {
 	if ((*m_sorted[j])(0)==initial || (*m_sorted[j])(1)==initial) {
 	  ++k;
-//  	  msg_Debugging()<<i<<" "<<++k<<" "<<m_adjusted.size()<<" "<<m_sorted.size()<<" "
-// 				 <<m_parton[1].size()<<" found "<<*m_sorted[j]<<" "
-// 				 <<((*m_sorted[j])[1-i]!=NULL)<<std::endl;
 	  if ((*m_sorted[j])[1-i]!=NULL) {
 	    break;
 	  }
@@ -258,7 +222,6 @@ bool QCD_Remnant_Base::SelectCompanion(QCD_Remnant_Info *const cur)
       }
     }
   }
-  //  msg_Debugging()<<"leave "<<*cur<<"__________________________________________________"<<std::endl;
   return true;
 }
 
@@ -286,10 +249,6 @@ void QCD_Remnant_Base::SortRemnants()
     m_sorted.push_back(shifted);
   }
   m_initial=m_sorted.size();
-//   for (size_t j=0;j<m_sorted.size();++j) {
-//     msg_Debugging()<<j<<" -> "<<m_finder.FindConnected((*m_sorted)[j]())
-//       ->Momentum().PPerp2()<<*(*m_sorted)[j]()<<"\n";
-//   }
 }
 
 bool QCD_Remnant_Base::SelectCompanions() 
@@ -315,15 +274,12 @@ bool QCD_Remnant_Base::ConnectRemnants()
       }
     }
   }
-//   msg_Debugging()<<"=====next===="<<std::endl;
-//   msg_Debugging()<<*p_beamblob<<std::endl;
   return true;
 }
 
 bool QCD_Remnant_Base::TreatDipole(QCD_Remnant_Info *const cur,const size_t i) 
 {
   PROFILE_HERE;
-  //  msg_Debugging()<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"<<*cur<<std::endl;
   if (m_adjusted.find((*cur)(i))!=m_adjusted.end()) return true;
   m_adjusted.insert((*(*cur)[i])(1-i));
   bool singlet=false;
@@ -347,10 +303,9 @@ bool QCD_Remnant_Base::TreatDipole(QCD_Remnant_Info *const cur,const size_t i)
     (*newinfo)[i]=(*cur)[i];
     (*(*cur)[i])[1-i]=newinfo;
     (*cur)[i]=newinfo;
-    //    msg_Debugging()<<"inserted "<<i<<" "<<*newinfo<<std::endl;
   }
   else (*cur)-i=old;
-  //  msg_Debugging()<<*p_beamblob<<std::endl;
+  msg_Debugging()<<*p_beamblob<<std::endl;
   return true;
 }
 
@@ -361,6 +316,8 @@ void QCD_Remnant_Base::UnDo()
   for (int i=(int)m_sorted.size()-1;i>=0;--i) {
     for (int j=1;j>=0;--j) {
       bool singlet=false;
+      msg_Debugging()<<*(*(*m_sorted[i])[j])(1-j)<<" "<<(*(*m_sorted[i])[j])(1-j)->GetFlow(2-j)
+		     <<" "<<((*(*m_sorted[i])[j])-j)<<std::endl;
       AdjustColours((*(*m_sorted[i])[j])(1-j),
  		    (*(*m_sorted[i])[j])(1-j)->GetFlow(2-j),(*m_sorted[i])-j,singlet,true);
     }
