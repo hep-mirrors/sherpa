@@ -170,12 +170,12 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       interface->CleanBlobs(_bloblist);
     }
     else {
-      _blob->SetStatus(0);
+      _blob->SetStatus(2);
       p_showerhandler->CleanUp();
     }
     return true;
   }
-  _blob->SetStatus(0);
+  _blob->SetStatus(2);
   p_showerhandler->CleanUp();
   return false;
 }
