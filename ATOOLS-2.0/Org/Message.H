@@ -93,11 +93,11 @@ namespace ATOOLS {
     There are four pipes that can be used.
      - Out()      Important run information 
           (e.g. start/end of an integration) and warnings 
-     - Results()  less important run information 
+     - Info()  less important run information 
           (e.g. calculated partial cross sections) 
-     - Events() detailed information of the integration process
-              and an output of each single event (event generation mode only)
-     - Error()   critical error messages (they usually lead to a stop of 
+     - Tracking() detailed information of the integration process
+     - Events()   output of each single event (event generation mode only)
+     - Error()    critical error messages (they usually lead to a stop of 
            the program)
     .
   */
