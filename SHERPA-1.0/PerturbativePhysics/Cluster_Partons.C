@@ -759,16 +759,22 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   }
 
   if (mo) {
-    *(mo->part) = Particle(0,Flavour(kf::none),p_ct->Momentum(2)+p_ct->Momentum(3));
+    Vec4D sum=p_ct->Momentum(2)+p_ct->Momentum(3);
+    m_cms_boost=Poincare(sum);
+    Vec4D p1   =m_cms_boost*sum;
+    Vec4D p2   =m_cms_boost*p_ct->Momentum(2);
+    Vec4D p3   =m_cms_boost*p_ct->Momentum(3);
+
+    *(mo->part) = Particle(0,Flavour(kf::none),sum);
     mo->part->SetInfo('M');
     mo->part->SetStatus(2);
     mo->stat   = 0;
-    mo->z      = knots[2]->part->Momentum()[0]/mo->part->Momentum()[0];
-    mo->E2     = sqr(mo->part->Momentum()[0]);
+    mo->z      = p2[0]/p1[0];
+    mo->E2     = sqr(p1[0]);
     mo->thcrit = M_PI;
 
     double scale = Scale();
-    if (xs) scale = dynamic_cast<PHASIC::Integrable_Base*>(xs)->Scale(PHASIC::stp::as);// *AS* perhaps additional factor but 
+    if (xs) scale = dynamic_cast<PHASIC::Integrable_Base*>(xs)->Scale(PHASIC::stp::as);
     mo->t      = scale;                   // s for drell-yan and e+e- seems fine
     mo->t      = mo->part->Momentum().Abs2();  // ????? *FK* 
   }
@@ -914,15 +920,21 @@ Knot * Cluster_Partons::Point2Knot(Tree * tree, const Leg & po,
 void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode)
 {
   if (mode==1) {
+    Vec4D p1   =m_cms_boost*mo->part->Momentum();
+    Vec4D p2   =m_cms_boost*d1->part->Momentum();
+    Vec4D p3   =m_cms_boost*d2->part->Momentum();
+
     mo->left  = d1;
     mo->right = d2;
-    mo->z     = d1->part->Momentum()[0]/mo->part->Momentum()[0];
+    mo->z     = p2[0]/p1[0];
     mo->stat  = 0;
     mo->part->SetStatus(2);
     if (mo->part->Info() != 'H') mo->part->SetInfo('f');
 
     d1->prev  = mo;
     d2->prev  = mo;
+    d1->E2    = sqr(p2[0]);
+    d2->E2    = sqr(p3[0]);
 
     APACIC::Final_State_Shower::EstablishRelations(mo,d1,d2);
 

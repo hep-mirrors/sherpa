@@ -62,6 +62,8 @@ namespace SHERPA {
 
     Flavour_Map m_flmap;
 
+    ATOOLS::Poincare m_cms_boost;
+
     bool            FillLegs(Leg *, AMEGIC::Point *, int &, int);
     APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char);
     ATOOLS::Vec4D Momentum(APACIC::Knot *, int &);
