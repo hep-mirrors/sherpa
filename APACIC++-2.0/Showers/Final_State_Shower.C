@@ -71,6 +71,7 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   Knot * gr = mo ->prev;
   Knot * si = gr ->right;
   if (mo->thcrit!=M_PI) {
+    // updateing theta crit
     double th1c   = sqrt( dabs(si->t)/((1.- si->z)*si->E2));
     mo->thcrit=th1c;
   }
@@ -355,8 +356,20 @@ void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
 
 void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Parton_List * pl) 
 {
+  // fetch PSME blob
+  Blob * bl_meps=0;
+  for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
+    int pos = (*blit)->Type().find(string("ME PS Interface (Sherpa)"));
+    if (pos>-1) {
+      bl_meps=(*blit);
+      break;
+    }
+  }
+
+
   if (!kn) return;
   int number;
+  Parton * p = 0;
   if (kn->part->Info()=='H') {
     /* 
        New jet : kn = hard parton from ME info = 'HF'
@@ -367,11 +380,23 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       if (pl) pl->push_back(kn->part);
       jet = new Blob();
       jet->SetStatus(1);
-      jet->AddToInPartons(new Parton(kn->part));
-      jet->AddToOutPartons(new Parton(kn->part));
+      p=new Parton(kn->part);
+      jet->AddToInPartons(p);
+      p->SetDecayBlob(jet);
+      if (bl_meps) {
+	bl_meps->AddToOutPartons(p);
+	p->SetProductionBlob(bl_meps);
+	bl_meps->SetStatus(0);
+      }
+
+      p=new Parton(kn->part);
+      jet->AddToOutPartons(p);
       if (pl) number = pl->size();
          else number = int(kn->part);
-      jet->InParton(0)->SetNumber(number);
+      p->SetNumber(number);
+      p->SetProductionBlob(jet);
+      p->SetDecayBlob(NULL);
+
       kn->part->SetNumber(number);
       jet->SetId(bl->size());
       jet->SetType(std::string("FS Shower (APACIC++2.0)"));
@@ -383,13 +408,19 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
 	jet = new Blob();
 	jet->SetStatus(1);
-      	kn->part->SetDecayBlob(jet);
-      	kn->part->SetStatus(2);
-	if (pl) pl->push_back(kn->part);
-	jet->AddToInPartons(new Parton(kn->part));
+	p = new Parton(kn->part);
+      	p->SetDecayBlob(jet);
+      	p->SetStatus(2);
+	if (pl) pl->push_back(p);
+	jet->AddToInPartons(p);
+	if (bl_meps) {
+	  bl_meps->AddToOutPartons(p);
+	  p->SetProductionBlob(bl_meps);
+	  bl_meps->SetStatus(0);
+	}
 	if (pl) number = pl->size();
 		  else number = int(kn->part);
-	jet->InParton(0)->SetNumber(number);
+	p->SetNumber(number);
 	kn->part->SetNumber(number);
 	jet->SetId(bl->size());
 	jet->SetType(std::string("FS Shower (APACIC++2.0)"));
@@ -470,17 +501,15 @@ bool Final_State_Shower::TestShower(Tree * tree)
       }
       pl.clear();
     }
-    
-    
   }
   ana.FinishAnalysis("apa_GX_125",0);
+
   return 1;
 }
 
 //-----------------------------------------------------------------------
 //------------------- Initialisation of the Shower ----------------------
 //----------------------------------------------------------------------- 
-
 int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
 {
   if (!mo) {
@@ -526,15 +555,11 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
     }
   }
 
-  int ok=1; int ej=0;
+  int ok=1; 
   if (!decay1) {
-    if (init_rel) {
-      EstablishRelations(d1,d1->left,d1->right);
-      OutputTree(tree);
-    } 
-    int ok1=InitializeJets(tree,d1);
-    if (ok1==3) ej=3;
-    ok = ok && ok1;
+    if (init_rel) EstablishRelations(d1,d1->left,d1->right);
+
+    ok = ok && InitializeJets(tree,d1);
   }
   else {
     if (d1->part->Flav().Strong()) {
@@ -548,13 +573,9 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
     }
   }
   if (!decay2) {
-    if (init_rel) {
-      EstablishRelations(d2,d2->left,d2->right);
-      OutputTree(tree);
-    }
-    int ok2=InitializeJets(tree,d2);
-    if (ok2==3) ej=3;
-    ok = ok && ok2;
+    if (init_rel) EstablishRelations(d2,d2->left,d2->right);
+
+    ok = ok && InitializeJets(tree,d2);
   }
   else {
     if (d2->part->Flav().Strong()) {
@@ -568,9 +589,7 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
     }
   }
 
-
   if (ok==0) return 0;  // did not work out!
-  if (ej==3) return 3;  // jetnumber reduced after shower! need new kinematics from (same) ME!
   return 1;             // everything ok.
 }
 
