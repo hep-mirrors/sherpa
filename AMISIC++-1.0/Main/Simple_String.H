@@ -37,6 +37,9 @@ namespace AMISIC {
     void Update(const MI_Base *mibase);
     void Reset();
 
+    bool VetoProcess(ATOOLS::Blob *blob);
+    bool DiceProcess();
+
   }; // end of class Simple_String
 
 } // end of namespace AMISIC

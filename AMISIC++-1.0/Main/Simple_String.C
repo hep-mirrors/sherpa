@@ -20,9 +20,13 @@
 using namespace AMISIC;
 
 Simple_String::Simple_String():
-  MI_Base("Simple String",MI_Base::SoftEvent,1,1,0)
+  MI_Base("Simple String",MI_Base::SoftEvent,5,4,1)
 {
   SetInputFile("MI.dat");
+  m_start[0]=1.0;
+  m_stop[0]=0.0;
+  m_start[3]=m_start[2]=0.0;
+  m_stop[3]=m_stop[2]=0.0;
 }
 
 Simple_String::~Simple_String()
@@ -74,11 +78,12 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
     const std::vector<ATOOLS::Flavour> &constit=
       hadron->GetConstituents(ATOOLS::kf::none);
     for (size_t j=0;j<constit.size();++j) {
-      if (constit[j].IsQuark()) {
+      if (constit[j].IsQuark() && constit[j].IsAnti()==i) {
 	ATOOLS::Particle *particle = new ATOOLS::Particle(0,constit[j]);
 	double E=hadron->GetXPDF(constit[j],m_start[0]*m_start[0]);
-	particle->SetMomentum(ATOOLS::Vec4D(E,0.0,0.0,
-					    sqrt(E*E-ATOOLS::sqr(constit[j].Mass()))));
+	double pz=sqrt(E*E-ATOOLS::sqr(constit[j].Mass()));
+	if (i==1) pz*=-1.0;
+	particle->SetMomentum(ATOOLS::Vec4D(E,0.0,0.0,pz));
 	particle->SetFlow(1+constit[j].IsAnti(),flow);
 	particle->SetFlow(2-constit[j].IsAnti(),0);
 	particle->SetStatus(1);
@@ -92,6 +97,12 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
   return true;
 }
 
+bool Simple_String::DiceProcess()
+{
+  s_stopsoft=true;
+  return m_dicedprocess=FillBlob(p_blob);
+}
+
 void Simple_String::Reset()
 {
 }
@@ -103,4 +114,9 @@ void Simple_String::Update(const MI_Base *mibase)
 
 void Simple_String::PrepareTerminate() 
 {
+}
+
+bool Simple_String::VetoProcess(ATOOLS::Blob *blob)
+{
+  return false;
 }
