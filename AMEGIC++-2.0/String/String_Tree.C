@@ -51,6 +51,10 @@ void String_Tree::Reset()
   skpos=-1;
 }
 
+void String_Tree::CleanValues()
+{
+  for (int i=0;i<=skpos;i++) sblocks[i/block_size][i%block_size].KillValue();
+}
 
 sknot* String_Tree::String2Tree(string term,int fixed) 
 {

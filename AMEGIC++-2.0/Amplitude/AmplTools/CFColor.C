@@ -6,6 +6,10 @@
 
 #include "IO_Handler.H"
 
+
+#include "MyTiming.H"
+
+
 using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
@@ -45,8 +49,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
 	id  = ioh.ArrayInput<int>("",mcount);
 	CFC = ioh.MatrixInput<Complex>("",ncount,ncount);
-
-
 
 	// generate map
 	map = new int[mcount];
@@ -102,6 +104,9 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
   }
   else {
+    MyTiming watch;
+    watch.Start();
+    
     int prop;
   
     m1 = first;
@@ -196,10 +201,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		ncount--;
 		m2 ->on = 0;
 		id[n2] = hit*n1;
-		if (hit<0 && n1==0) {
-		  msg.Error()<<" ERROR in CFColor Constructor "<<endl;
-		  abort();
-		}
 	      }
 	    }
 	  }
@@ -211,6 +212,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
       m1 = m1->Next;
     } 
     msg.Debugging()<<ncount<<" different color structures left"<<endl;
+
+    watch.PrintTime();
 
     map = new int[mcount];
     int cc=0;
@@ -230,7 +233,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
     for (short int j=0;j<ncount;j++) CFC[j] = new Complex[ncount];
     
     string Cstr;
-
+    
     m1 = first;
     c1 = 0;
     while (m1) { 
@@ -250,27 +253,102 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	    m->op = '*';
 	    m->right = s1;
 	    m->left  = s2;
+	    
 	    ReplaceF(m,c);	    
-
-	    st.Expand(m);st.Linear(m);st.Sort(m);
-	    ReplaceG(m);
-	    ReplaceT(m);
 	    st.Expand(m);
 	    st.Linear(m);
-	    ReplaceD(m);
-	    CFC[map[c1]][map[c2]] = st.eval(m);
+
+	    
+	    list<sknot*>   addend_list;
+	    st.Addends(m,addend_list);
+	    
+	    for (list<sknot*>::iterator it=addend_list.begin();it!=addend_list.end();++it) {
+	      string newaddend = st.Tree2String(*it,0); 
+	      ReplaceG(*it);
+	      ReplaceD(*it);
+
+	      list<sknot*>    factor_list;
+	      st.Factors(*it,factor_list);
+	      
+	      vector<string>  string_list;
+	      string help;
+	      Complex total  = Complex(1.,0.);
+	      Complex factor = Complex(1.,0.);;
+
+	      int foundd = 0;
+	      
+	      //extract string 
+	      for (list<sknot*>::iterator it2=factor_list.begin();it2!=factor_list.end();++it2) {
+		help = (*it2)->Str();
+		if (help[0]=='D') foundd=1;
+		if (help[0]=='T') string_list.push_back(help);
+		else {
+		  factor = st.eval(*it2);
+		  total *= factor;
+		  Kabbala* newone = new Kabbala(help,factor);
+		  (*it2)->value = newone;
+		  (*it2)->op = 0;
+		}
+	      }
+	      
+	      Complex value;
+	      
+	      //can not deal with deltas right now
+	      if (foundd && string_list.size()>0) string_list.clear();
+	      
+	      if (string_list.size()>0) {
+		newaddend = BuildChain(string_list);
+		string_list.clear();
+		factor_list.clear();
+		
+		//lookup string key in map 
+		TT_Iterator tit = t_table.find(newaddend);
+		if (tit!=t_table.end()) value = total*t_table[newaddend];
+		else {
+		  st.Sort(*it);
+		  ReplaceT(*it);
+		  st.Expand(*it);
+		  st.Linear(*it);
+		  ReplaceD(*it);
+		  value = st.eval(*it);
+		  t_table.insert(std::make_pair(newaddend,value/total));
+		}
+		Kabbala* newone = new Kabbala(newaddend,value);
+		(*it)->value = newone;
+		(*it)->op = 0;
+	      }
+	      else {
+		st.Sort(*it);
+		ReplaceT(*it);
+		st.Expand(*it);
+		st.Linear(*it);
+		ReplaceD(*it);
+		value = st.eval(*it);
+		Kabbala* newone = new Kabbala(newaddend,value);
+		(*it)->value = newone;
+		(*it)->op = 0;
+	      }
+	    }
+	    Complex factor = st.Evaluate(m);
+	    if (abs(factor)<rpa.gen.Accu()) factor = Complex(0.,0.);
+	    
+	    CFC[map[c1]][map[c2]] = factor;
 	    CFC[map[c2]][map[c1]] = conj(CFC[map[c1]][map[c2]]);
+	    msg.Debugging()<<"+";msg.Out().flush();
+	    
+	    //clean up the string tree ...
+	    st.CleanValues();
 	  }
 	  m2 = m2->Next;
 	  c2++;
 	}
+	msg.Debugging()<<endl;
       }
       m1 = m1->Next;
       c1++;
     }
-    
+    watch.PrintTime();
   }
-
   
   if (pID!=noname && pID[0]!='N') Output(pID);
 
@@ -319,6 +397,46 @@ CFColor::~CFColor()
   }
   if (id)  delete id;
   if (map) delete map;
+}
+
+string CFColor::BuildChain(vector<string>  string_list) 
+{
+  string    key;
+  Char_Map  translator;  
+  char tmp,ca = 'A';
+  std::vector<string> tmp_list;
+  
+  //generate the traces  
+  for(;;) {
+    if (tmp_list.size()==0) {
+    tmp = string_list[0][2];
+    tmp_list.push_back(string_list[0]);
+    if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
+    key+=translator[tmp];
+    vector<string>::iterator it = string_list.begin();
+    string_list.erase(it);
+    }
+    for (int i=0;i<string_list.size();i++) {
+      if (tmp_list[tmp_list.size()-1][6]==string_list[i][4]) { 
+	tmp_list.push_back(string_list[i]);
+	tmp = string_list[i][2];
+	if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
+	key+=translator[tmp];
+	vector<string>::iterator it = string_list.begin();
+	string_list.erase(it+=i);
+	i--;
+      }
+      if (tmp_list[0][4]==tmp_list[tmp_list.size()-1][6]) {
+	char hi[2];
+	sprintf(hi,"%i",tmp_list.size());
+	key += string(hi); 
+	tmp_list.clear();
+	break;
+      }
+    }
+    if (string_list.size()==0) break; 
+  }
+  return key;
 }
 
 void CFColor::Output(string & dirname) {
@@ -470,6 +588,18 @@ void CFColor::ReplaceD(sknot* m)
 		    m->right->SetString(shelp);
 		  }
 		}
+		//new
+		if (m->right->Str().length()==8) {
+		  if (m->right->Str()[0]=='T') {
+		    string shelp = m->right->Str();
+		    if (shelp[4]==c) shelp[4] = s1->Str()[4];
+		    else {
+		      if (shelp[6]==c) shelp[6] = s1->Str()[4];
+		    }
+		    m->right->SetString(shelp);
+		  }
+		}
+		//
 	      }
 	      if (m->left->op==0) {
 		// left...
@@ -483,6 +613,18 @@ void CFColor::ReplaceD(sknot* m)
 		    m->left->SetString(shelp); 
 		  }
 		}
+		//new
+		if (m->left->Str().length()==8) {
+		  if (m->left->Str()[0]=='T') {
+		    string shelp = m->left->Str();
+		    if (shelp[4]==c) shelp[4] = s1->Str()[4];	   
+		    else {
+		      if (shelp[6]==c) shelp[6] = s1->Str()[4];
+		    }
+		    m->left->SetString(shelp); 
+		  }
+		}
+		//
 	      }
 	      
 	      m = m->left;

@@ -17,7 +17,7 @@ namespace AMEGIC {
     Kabbala* value;
     char     op;
 
-    sknot() {strp = 0;}
+    sknot() {strp = 0; value =0;}
     sknot(const sknot& cp) {
       left  = cp.left;
       right = cp.right;
@@ -28,6 +28,7 @@ namespace AMEGIC {
     }
     ~sknot() {if (strp!=0) delete strp;}
     void KillString() {if (strp!=0) delete strp; strp=0;}
+    void KillValue()  {if (value!=0) delete value; value=0;}
     const std::string& Str() const { if (strp!=0) return *strp;return emptystring;}
     void SetString(const std::string& str) {
       if (strp!=0) delete strp;
@@ -98,6 +99,7 @@ namespace AMEGIC {
     void    Cluster(sknot*,sknot*,int full = 0);
     void    Addends(sknot*,std::list<sknot*> &);
     void    Factors(sknot*,std::list<sknot*> &);
+    void    CleanValues();
   };
 }
 #endif

@@ -3,11 +3,20 @@
 
 #include "String_Tree.H"
 #include "Single_Amplitude.H"
+#include <map>
 
 namespace AMEGIC {
+
+  //!the container for the T products
+  typedef std::map<std::string, Complex> Tprod_Table;
+  typedef Tprod_Table::iterator          TT_Iterator;
+  //!the container for the T products
+  typedef std::map<char, char>           Char_Map;
+  typedef Char_Map::iterator             CM_Iterator;
+ 
   class CFColor {
     static std::string noname;
-
+    
     String_Tree    st;
     Complex     ** CFC;
 
@@ -25,6 +34,10 @@ namespace AMEGIC {
 
     int  Compare(Color_Function*,Color_Function*);
     int  CompareArg(int,int,int,Color_Function*,Color_Function*);
+    
+    std::string BuildChain(std::vector<std::string>);
+    Tprod_Table t_table;
+  
   public:
     /*!
       The constructor of the colour class that basically organizes the
@@ -53,5 +66,6 @@ namespace AMEGIC {
     inline const int CFSign(int i) const {return (id[i]>=0) ? 1 : -1; }
     inline const int MatrixSize() const {return ncount;}
   };
+  
 }
 #endif
