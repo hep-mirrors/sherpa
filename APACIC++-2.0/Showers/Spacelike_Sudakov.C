@@ -90,7 +90,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
     return 0; 
   }
   
-  p_pdf->Calculate(m_x,0.,0.,sqrt(-m_t));
+  p_pdf->Calculate(m_x,0.,0.,(-m_t));
   
   while (m_t<m_t0) {
     CrudeInt(m_zmin,m_zmax);
@@ -179,30 +179,31 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
 {
   double weight  = p_pdf->GetXPDF(GetFlB())/(p_pdf->GetXPDF(GetFlA())*m_pdf_fac); 
 
-  double q = sqrt(-m_t);
-  double firstq = sqrt(m_facscale);
+  double q2 = -m_t;
+  double firstq2 = m_facscale;
   double wb_jet = 0.;
   switch (m_pdf_scheme) {
   case 0:
-    firstq/=sqrt(1.-m_z);
+    firstq2/=(1.-m_z);
     break;
   default:
-    q = sqrt(m_pt2);
+    q2 = m_pt2;
   }
 
-  q *= m_pdf_scale_fac;
+  q2 *= m_pdf_scale_fac;
 
 
   if (extra_pdf) {
-    firstq*=m_pdf_scale_fac;
-    p_pdf->Calculate(m_x,0.,0.,firstq);
+    //    std::cout<<" extrapdf ";
+    firstq2*=m_pdf_scale_fac;
+    p_pdf->Calculate(m_x,0.,0.,firstq2);
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
-  p_pdf->Calculate(m_x,0.,0.,q);
+  p_pdf->Calculate(m_x,0.,0.,q2);
   if (!extra_pdf) {
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
-  p_pdfa->Calculate(m_x/m_z,0.,0.,q);
+  p_pdfa->Calculate(m_x/m_z,0.,0.,q2);
   double test = p_pdfa->GetXPDF(GetFlA());
   if (test==0.) return 1;
   weight        *= test/wb_jet;
