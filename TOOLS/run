@@ -93,7 +93,8 @@ if [ "$QUEUE" = "TRUE" ] ; then
 else
   echo "#!/bin/bash" >> $FILE
   echo "" >> $FILE
-  echo "LOGFILE=$LOGFILE" >> $FILE
+  echo "RUNPATH=$SETUPPATH" >> $FILE
+  echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
 fi
 echo "cd $BINPATH" >> $FILE
@@ -105,10 +106,10 @@ if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$PYTHIA" = "" ] ; then echo -en "PYTHIA=$PYTHIA " >> $FILE ; fi
 echo -e ">> \$RUNPATH\$LOGFILE 2>&1 \n\n" >> $FILE
 
+chmod 777 $FILE
 if [ "$QUEUE" = "TRUE" ] ; then
   qsub $FILE  
 else
-  chmod 777 $FILE
   ( nohup $FILE > /dev/null & ) 
 fi
 mv $FILE $SETUPPATH
