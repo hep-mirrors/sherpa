@@ -226,8 +226,8 @@ namespace ATOOLS {
   ReplaceXPoint(ArgumentType x,ResultType y)
   { 
     bool deletepoint=DeleteXPoint(x);
-    bool addpoint=AddPoint(x,y); 
-    return deletepoint&&addpoint; 
+    if (deletepoint) return AddPoint(x,y); 
+    return false; 
   }
 
   template <class Argument_Type,class Result_Type>
@@ -235,8 +235,8 @@ namespace ATOOLS {
   ReplaceYPoint(ArgumentType x,ResultType y)
   { 
     bool deletepoint=DeleteYPoint(y);
-    bool addpoint=AddPoint(x,y);
-    return deletepoint&&addpoint;
+    if (deletepoint) return AddPoint(x,y);
+    return false;
   }
 
   template <class Argument_Type,class Result_Type>

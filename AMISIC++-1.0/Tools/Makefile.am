@@ -17,6 +17,7 @@ INCLUDES      = \
 noinst_HEADERS        =	\
 			My_String.H \
 			My_Functional.H \
+			My_Utility.H \
 			My_Map.H \
 			My_Vector.H \
 			My_IO_Stream.H \
