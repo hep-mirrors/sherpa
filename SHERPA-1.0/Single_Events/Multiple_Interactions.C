@@ -36,6 +36,11 @@ Multiple_Interactions::~Multiple_Interactions()
 bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist) 
 {
   p_bloblist=bloblist;
+  if (!p_bloblist->FourMomentumConservation()) {
+    ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): Retry event "
+		       <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<std::endl;
+    p_bloblist->Clear();
+  }
   for (size_t i=0;i<2;++i) {
     m_emax[i]=p_remnants[i]->BeamEnergy();
     p_remnants[i]->QuickClear();
@@ -47,49 +52,74 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 	(*bit)->Type()==ATOOLS::btp::Signal_Process) 
       if ((*bit)->Status()!=0) return false;
   }
-  for (ATOOLS::Blob_List::const_iterator bit=bloblist->end();bit!=bloblist->begin();) {
-    --bit;
-    if ((*bit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
-      if (!m_diced) {
-	ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
-	if (info==NULL) {
-	  ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
-			     <<"No scale information in merging blob. "
-			     <<"Taking P_\\perp."<<std::endl;
-	  for (int i=0;i<(*bit)->NInP();++i) 
-	    m_ptmax=ATOOLS::Min(m_ptmax,(*bit)->InParticle(i)->Momentum().PPerp());
-	}
-	else {
-	  m_ptmax=sqrt(ATOOLS::Min(m_ptmax,info->Get<double>()));
-	}
-	if (VetoHardProcess(*bit)) {
-	  m_ptmax=0.0;
-	  break;
+  switch (p_mihandler->ScaleScheme()) {
+  case 1: {
+    ATOOLS::Blob_List signal;
+    if (!m_diced) {
+      signal=bloblist->
+	FindConnected(bloblist->FindFirst(ATOOLS::btp::Signal_Process));
+    }
+    else {
+      signal=bloblist->
+	FindConnected(bloblist->FindLast(ATOOLS::btp::Hard_Collision));
+    }
+    double ptmax=0.0;
+    for (ATOOLS::Blob_List::const_iterator sit=signal.begin();
+	 sit!=signal.end();++sit) {
+      for (int i=0;i<(*sit)->NOutP();++i) {
+	const ATOOLS::Particle *part=(*sit)->ConstOutParticle(i);
+	if (part->DecayBlob()==NULL)
+	  ptmax=ATOOLS::Max(ptmax,part->Momentum().PPerp());
+      }
+    }
+    m_ptmax=ATOOLS::Min(m_ptmax,ptmax);
+    break;
+  }
+  default: 
+    for (ATOOLS::Blob_List::reverse_iterator bit=bloblist->rbegin();
+	 bit!=bloblist->rend();++bit) {
+      if ((*bit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
+	if (!m_diced) {
+	  ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
+	  if (info==NULL) {
+	    ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
+			       <<"No scale information in merging blob. "
+			       <<"Taking P_\\perp."<<std::endl;
+	    for (int i=0;i<(*bit)->NInP();++i) 
+	      m_ptmax=ATOOLS::Min(m_ptmax,(*bit)->InParticle(i)->Momentum().PPerp());
+	  }
+	  else {
+	    m_ptmax=sqrt(ATOOLS::Min(m_ptmax,info->Get<double>()));
+	  }
+	  if (VetoHardProcess(*bit)) {
+	    m_ptmax=0.0;
+	    break;
+	  }
 	}
       }
     }
-    else if ((*bit)->Type()==ATOOLS::btp::IS_Shower) {
-      m_emax[(*bit)->Beam()]-=(*bit)->InParticle(0)->Momentum()[0];
-      p_mihandler->ISRHandler()->
-	Extract((*bit)->InParticle(0)->Flav(),
-		(*bit)->InParticle(0)->Momentum()[0],(*bit)->Beam());
-      if (!p_remnants[(*bit)->Beam()]->Extract((*bit)->InParticle(0))) {
-	msg_Tracking()<<"Multiple_Interactions::CheckBlobList(..): "
-		      <<"Cannot extract parton from hadron. \n"
-		      <<*(*bit)->InParticle(0)<<std::endl;
-	m_deleted.clear();
-	DeleteConnected(*bit);
-	if (bloblist->empty()) {
-	  ATOOLS::Blob *blob = new ATOOLS::Blob();
-	  blob->SetType(ATOOLS::btp::Signal_Process);
-	  blob->SetStatus(-1);
-	  blob->SetId();
-	  blob->SetStatus(2);
-	  bloblist->push_back(blob);	  
-	}
-	return true; // blob-list changed
-      } 
-    }
+  }
+  ATOOLS::Blob_List isr=bloblist->Find(ATOOLS::btp::IS_Shower);
+  for (ATOOLS::Blob_List::const_iterator iit=isr.begin();iit!=isr.end();++iit) {
+    m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
+    p_mihandler->ISRHandler()->
+      Extract((*iit)->InParticle(0)->Flav(),
+	      (*iit)->InParticle(0)->Momentum()[0],(*iit)->Beam());
+    if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
+      msg_Tracking()<<"Multiple_Interactions::CheckBlobList(..): "
+		    <<"Cannot extract parton from hadron. \n"
+		    <<*(*iit)->InParticle(0)<<std::endl;
+      p_bloblist->DeleteConnected(*iit);
+      if (bloblist->empty()) {
+	ATOOLS::Blob *blob = new ATOOLS::Blob();
+	blob->SetType(ATOOLS::btp::Signal_Process);
+	blob->SetStatus(-1);
+	blob->SetId();
+	blob->SetStatus(2);
+	bloblist->push_back(blob);	  
+      }
+      return true;
+    } 
   }
   if (m_ptmax==std::numeric_limits<double>::max()) {
     for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
@@ -130,6 +160,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   p_mihandler->SetScaleMax(m_emax[0],2);
   p_mihandler->SetScaleMax(m_emax[1],3);
   ATOOLS::Blob *blob = new ATOOLS::Blob();
+  blob->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_ptmax));
   p_mihandler->Reset();
   bool success=false;
   if (!m_vetoed && m_ptmax>p_mihandler->ScaleMin(0)) {
@@ -166,32 +197,10 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   return false;
 }
 
-void Multiple_Interactions::DeleteConnected(ATOOLS::Blob *const blob)
-{
-  if (m_deleted.find(blob)!=m_deleted.end()) return;
-  m_deleted.insert(blob);
-  for (int i=blob->NOutP()-1;i>=0;i=ATOOLS::Min(blob->NOutP()-1,i-1)) {
-    ATOOLS::Blob *dblob=blob->OutParticle(i)->DecayBlob();
-    if (dblob!=NULL) DeleteConnected(dblob);
-  }
-  for (int i=blob->NInP()-1;i>=0;i=ATOOLS::Min(blob->NInP()-1,i-1)) {
-    ATOOLS::Blob *pblob=blob->InParticle(i)->ProductionBlob();
-    if (pblob!=NULL) DeleteConnected(pblob);
-  }
-  delete blob;
-  for (ATOOLS::Blob_List::iterator bit=p_bloblist->begin();
-       bit!=p_bloblist->end();++bit)
-    if (*bit==blob) {
-      p_bloblist->erase(bit);
-      break;
-    }
-}
-
 bool Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)
 {
   if (p_mihandler->VetoHardProcess(blob)) {
-    m_deleted.clear();
-    DeleteConnected(blob);
+    p_bloblist->DeleteConnected(blob);
     return m_vetoed=true;
   }
   return false;

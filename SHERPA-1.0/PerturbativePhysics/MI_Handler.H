@@ -29,6 +29,7 @@ namespace SHERPA {
 
     TypeID      m_type;
     std::string m_name;
+    int         m_scalescheme;
 
   public:
 
@@ -68,6 +69,9 @@ namespace SHERPA {
     bool GenerateEvent(ATOOLS::Blob_List *bloblist);
 
     bool VetoHardProcess(ATOOLS::Blob *blob);
+    
+    // inline functions
+    inline int ScaleScheme() const { return m_scalescheme; }
 
   }; // end of class MI_Handler
 
