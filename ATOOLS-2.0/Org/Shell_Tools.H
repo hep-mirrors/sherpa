@@ -2,10 +2,13 @@
 #define Shell_Tools_H
 
 #include <string>
+#include <vector>
 
 namespace ATOOLS {
 
   bool MakeDir(std::string path,const mode_t mode);
+
+  std::vector<std::string> EnvironmentVariable(const std::string &name);
 
 }// end of namespace ATOOLS
 

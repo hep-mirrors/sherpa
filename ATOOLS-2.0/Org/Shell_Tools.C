@@ -49,3 +49,26 @@ bool ATOOLS::MakeDir(std::string path,const mode_t mode)
 #endif
   return true;
 }
+
+std::vector<std::string> ATOOLS::EnvironmentVariable(const std::string &name)
+{
+#ifdef DEBUG__Shell_Tools
+  std::cout<<"EnvironmentVariable("<<name<<"): {\n";
+#endif
+  char *var=NULL;
+  std::string entry=(var=getenv(name.c_str()))==NULL?"":var;
+  size_t pos=std::string::npos;
+  std::vector<std::string> entries;
+  if (entry[entry.length()-1]!=':') entry+=":";
+  while ((pos=entry.find(":"))!=std::string::npos) {
+    if (pos>0) entries.push_back(entry.substr(0,pos));
+    entry=entry.substr(pos+1);
+#ifdef DEBUG__Shell_Tools
+    if (pos>0) std::cout<<"   Extracted entry '"<<entries.back()<<"'\n";
+#endif
+  }
+#ifdef DEBUG__Shell_Tools
+  std::cout<<"}"<<std::endl;
+#endif
+  return entries;
+}
