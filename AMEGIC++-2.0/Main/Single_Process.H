@@ -94,8 +94,8 @@ namespace AMEGIC {
     void             WriteOutXSecs(std::ofstream & _to);
     Process_Base   * operator[] (int idx)               { return this;          }
     std::string      LibName()                          { return m_libname;     }
-    std::string      PSLibName()                        { return m_pslibname;     }
-    void             SetTotal(int);
+    std::string      PSLibName()                        { return m_pslibname;   }
+    void             SetTotal(int flag, int depth=0);
     void             FixISRThreshold();
     void             SetISRThreshold(double _isrth)     { m_threshold = _isrth;}
     void             Empty();

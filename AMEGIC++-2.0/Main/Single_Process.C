@@ -449,16 +449,20 @@ int Single_Process::Tests() {
       	ATOOLS::msg.Error()<<"ERROR in Single_Process::Tests()"<<std::endl
 			   <<"   No compiled & linked library found for process "<<testname<<std::endl
 			   <<"   but files already written out !"<<std::endl
-			   <<"   Interrupt run and execute \"makelibs\" in Run-directory."<<std::endl;
-	abort(); // How 'bout exception handling ???
+			   <<om::bold<<"   Interrupt run and execute \"makelibs\" in Run-directory."
+			   <<om::reset<<std::endl;
+	throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to load library."),
+				"Single_Process","Tests"));
       }
       else {
       	ATOOLS::msg.Error()<<"ERROR in Single_Process::Tests()"<<std::endl
 			   <<"   Mapping file exists, but no compiled & linked library found for process "
 			   <<testname<<std::endl
 			   <<"   and no files written out !"<<std::endl
-			   <<"   Interrupt run, execute \"makeclean\" in Run-directory and re-start."<<std::endl;
-	abort(); // How 'bout exception handling ???
+			   <<om::bold<<"   Interrupt run, execute \"makeclean\" in Run-directory and re-start."
+			   <<om::reset<<std::endl;
+	throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Failed to load library."),
+				"Single_Process","Tests"));
       }
     }
     if (!ATOOLS::IsEqual(M2,M2g)) {
@@ -759,10 +763,12 @@ void Single_Process::Minimize()
   if (p_ampl)     {delete p_ampl; p_ampl=0;}
   if (p_psgen)    {delete p_psgen; p_psgen=0;}
 
-  if (p_momenta)     { delete [] p_momenta;  p_momenta     = 0; }
-  if (p_selector)      { delete p_selector;      p_selector      = 0; }
+  if (p_selector && m_ownselector) { 
+    delete p_selector;      
+  }
+  p_selector      = p_partner->Selector(); 
+  m_ownselector=false;
   if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
-  p_selected=p_partner;
 }
 
 void Single_Process::Empty() {
@@ -772,23 +778,25 @@ void Single_Process::Empty() {
   }
 }
 
-void Single_Process::SetTotal(int _tables)  { 
-  if (_tables!=2) {
+void Single_Process::SetTotal(int flag, int depth)  { 
+  if (flag!=2) {
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
     if ((m_nin==1 && m_nout==2) || m_n==1) m_totalerr = 0.;
   }
   else {
-    //   _tables==2  means  check xs with sum of subprocesses
+    //   flag==2  means  check xs with sum of subprocesses
     //   nothing to do for a Single_Process
   }
-  if (m_nin==2) {
-    msg.Info()<<"Total xs for "<<om::bold<<m_name<<om::reset<<" : "
-	      <<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
-	      <<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset
-	      <<" max : "<<m_max<<", "
-	      <<om::bold<<" exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %."<<om::reset<<endl;
+  if (m_nin==2 && flag==0) {
+    if ( (depth<=0 && msg.LevelIsInfo()) || msg.LevelIsTracking()) {
+      for (int i=0;i<depth;++i) msg.Out()<<"  ";
+      msg.Out()<<om::bold<<m_name<<om::reset<<" : "
+	       <<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
+	       <<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset
+	       <<om::bold<<" exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %."<<om::reset<<endl;
+    }
   }
   if (m_nin==1) {
     msg.Info()<<"Total width for "<<m_name<<" : "
