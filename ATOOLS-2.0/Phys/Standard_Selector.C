@@ -212,7 +212,7 @@ bool Rapidity_Selector::Trigger(const Vec4D * mom)
 {
   double yi;
   for (int i=m_nin;i<m_n;i++) {
-    yi = value[i] = log( (mom[i][0]+mom[i][3])/(mom[i][0]-mom[i][3]) );
+    yi = value[i] = 0.5 * log( (mom[i][0]+mom[i][3])/(mom[i][0]-mom[i][3]) );
     if (m_sel_log->Hit( ((yi<ymin[i]) || (yi>ymax[i])) )) return 0;
   }
   return 1;
