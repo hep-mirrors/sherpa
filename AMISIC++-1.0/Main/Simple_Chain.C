@@ -320,7 +320,7 @@ bool Simple_Chain::ReadInData()
   std::string outputpath;
   outputpath=std::string("MI-Grid__")+
     ATOOLS::rpa.gen.Bunch(0).Name()+std::string("_")+ATOOLS::rpa.gen.Bunch(1).Name()+
-    std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV");
+    std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV/");
   SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
   comments.push_back("->");
@@ -716,18 +716,6 @@ bool Simple_Chain::Initialize()
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
   delete reader;
-  ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer("=",";","!");
-  writer->SetOutputPath(InputPath());
-  writer->SetOutputFile(InputFile(1));
-  writer->SetBlank(32);
-  writer->WriteComment("========================");
-  writer->WriteComment("     Dummy XS File      ");
-  writer->WriteComment("========================");
-  writer->WriteToFile(std::string(" "));
-  writer->WriteToFile(std::string(" XS_FILE = ")+InputFile(1));
-  writer->WriteToFile(std::string(" "));
-  writer->WriteToFile(std::string(" Init QCD 2->2"));
-  delete writer;
   for (unsigned int i=0;i<m_blobs.size();++i) {
     GridHandlerType *xsgridhandler = new GridHandlerType();
     GridHandlerType *maxgridhandler = new GridHandlerType();
