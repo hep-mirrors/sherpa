@@ -273,7 +273,7 @@ void Multi_Channel::EndOptimize(double error)
 void Multi_Channel::AddPoint(double value)
 {
   //if (!ATOOLS::IsZero(value)) n_contrib++;
-  if (value>0.) n_contrib++;
+  if (value!=0.) n_contrib++;
   n_points++;
   double var;
   for (size_t i=0;i<channels.size();i++) {

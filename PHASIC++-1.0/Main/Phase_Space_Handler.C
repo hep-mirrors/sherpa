@@ -395,7 +395,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   if (m_nin>1 && p_isrhandler->On()==3 && trigger==1) {
     Rotate(p_cms);
     p_isrhandler->CalculateWeight2(Q2);
-    if (m_result_2 > 0.) m_result_2 *= process->Differential2();
+    if (m_result_2 != 0.) m_result_2 *= process->Differential2();
     else m_result_2 = 0.;
   }
   if (m_nin>1 && (p_isrhandler->On()>0 || p_beamhandler->On()>0)) {
