@@ -1231,8 +1231,8 @@ void LBS_Compton_Peak_Central_V::AddPoint(double value)
 }
 
 
-Simple_Pole_PDF_Uniform_V::Simple_Pole_PDF_Uniform_V(const double exponent,const std::string cinfo,
-					 ATOOLS::Integration_Info *info):
+Flat_ISR_V::Flat_ISR_V(const double exponent,const std::string cinfo,
+		       ATOOLS::Integration_Info *info):
   m_exponent(exponent)
 {
   name=std::string("Simple_Pole_PDF_Uniform_")+ATOOLS::ToString((int)(100.*exponent));
@@ -1249,81 +1249,28 @@ Simple_Pole_PDF_Uniform_V::Simple_Pole_PDF_Uniform_V(const double exponent,const
   rans  = new double[2];
 }
 
-void Simple_Pole_PDF_Uniform_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-					const double *rns,const int mode) 
+void Flat_ISR_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+			       const double *rns,const int mode) 
 {
   double *ran = p_vegas->GeneratePoint(rns);
   for(int i=0;i<2;i++) rans[i]=ran[i];
-  m_spkey[3]=CE.MasslessPDFMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+  m_spkey[3]=CE.FlatMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
+  m_ykey[2]=CE.DiceYUniform(m_spkey[3]/m_spkey[2],
+			    m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
 }
 
-void Simple_Pole_PDF_Uniform_V::GenerateWeight(const int mode) 
+void Flat_ISR_V::GenerateWeight(const int mode) 
 {
   if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPDFWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
+      m_spkey<<1./CE.FlatWeight(m_exponent,m_spkey[0],
+				m_spkey[1],m_spkey[3],m_sgridkey[0]);
     }
   }
 
   if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
-    }
-  }
-  rans[0] = m_sgridkey[0];
-  rans[1] = m_ygridkey[0];
-  double pw= p_vegas->GenerateWeight(rans);
-  weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
-}
-
-void Simple_Pole_PDF_Uniform_V::AddPoint(double value)
-{
-  Single_Channel::AddPoint(value);
-  p_vegas->AddPoint(value,rans);
-}
-
-
-Simple_Pole_PDF_Forward_V::Simple_Pole_PDF_Forward_V(const double sexponent,const double yexponent,
-					 const std::string cinfo,ATOOLS::Integration_Info *info): 
-  m_sexponent(sexponent), 
-  m_yexponent(yexponent)
-{
-  name=std::string("Simple_Pole_PDF_Forward_")+ATOOLS::ToString((int)(100.*sexponent));
-  m_spkey.SetInfo(std::string("Simple_Pole_PDF_")+ATOOLS::ToString(sexponent));
-  m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
-  m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
-  m_ykey.Assign(std::string("y")+cinfo,3,0,info);
-  m_xkey.Assign(std::string("x")+cinfo,5,0,info);
-  m_sgridkey.Assign(m_spkey.Info(),1,0,info);
-  m_ygridkey.Assign(m_ykey.Info(),1,0,info);
-  m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  rannum=2;
-  p_vegas = new Vegas(2,500,name,0);
-  rans  = new double[2];
-}
-
-void Simple_Pole_PDF_Forward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-					const double *rns,const int mode) 
-{
-  double *ran = p_vegas->GeneratePoint(rns);
-  for(int i=0;i<2;i++) rans[i]=ran[i];
-  m_spkey[3]=CE.MasslessPDFMomenta(m_sexponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			     m_ykey.Doubles(),rans[1],mode);
-}
-
-void Simple_Pole_PDF_Forward_V::GenerateWeight(int mode)
-{
-  if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-    if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPDFWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
-    }
-  }
-
-  if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-    if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
+      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
 				m_ykey.Doubles(),m_ygridkey[0],mode);
     }
   }
@@ -1331,122 +1278,11 @@ void Simple_Pole_PDF_Forward_V::GenerateWeight(int mode)
   rans[1] = m_ygridkey[0];
   double pw= p_vegas->GenerateWeight(rans);
   weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
-} 
+}
 
-void Simple_Pole_PDF_Forward_V::AddPoint(double value)
+void Flat_ISR_V::AddPoint(double value)
 {
   Single_Channel::AddPoint(value);
   p_vegas->AddPoint(value,rans);
 }
-
-
-Simple_Pole_PDF_Backward_V::Simple_Pole_PDF_Backward_V(const double sexponent,const double yexponent,
-					   const std::string cinfo,ATOOLS::Integration_Info *info): 
-  m_sexponent(sexponent), 
-  m_yexponent(yexponent)
-{
-  name=std::string("Simple_Pole_PDF_Backward_")+ATOOLS::ToString((int)(100.*sexponent));
-  m_spkey.SetInfo(std::string("Simple_Pole_PDF_")+ATOOLS::ToString(sexponent));
-  m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
-  m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
-  m_ykey.Assign(std::string("y")+cinfo,3,0,info);
-  m_xkey.Assign(std::string("x")+cinfo,5,0,info);
-  m_sgridkey.Assign(m_spkey.Info(),1,0,info);
-  m_ygridkey.Assign(m_ykey.Info(),1,0,info);
-  m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  rannum=2;
-  p_vegas = new Vegas(2,500,name,0);
-  rans  = new double[2];
-}
-
-void Simple_Pole_PDF_Backward_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-					 const double *rns,int mode)
-{
-  double *ran = p_vegas->GeneratePoint(rns);
-  for(int i=0;i<2;i++) rans[i]=ran[i];
-  m_spkey[3]=CE.MasslessPDFMomenta(m_sexponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			      m_ykey.Doubles(),rans[1],mode);
-}
-
-void Simple_Pole_PDF_Backward_V::GenerateWeight(int mode)
-{
-  if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-    if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPDFWeight(m_sexponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
-    }
-  }
-
-  if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-    if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-				 m_ykey.Doubles(),m_ygridkey[0],mode);
-    }
-  }
-  rans[0] = m_sgridkey[0];
-  rans[1] = m_ygridkey[0];
-  double pw= p_vegas->GenerateWeight(rans);
-  weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
-} 
-
-void Simple_Pole_PDF_Backward_V::AddPoint(double value)
-{
-  Single_Channel::AddPoint(value);
-  p_vegas->AddPoint(value,rans);
-}
-
-
-Simple_Pole_PDF_Central_V::Simple_Pole_PDF_Central_V(const double exponent,const std::string cinfo,
-					 ATOOLS::Integration_Info *info,int mode):
-  m_exponent(exponent)
-{
-  name=std::string("Simple_Pole_PDF_Central_")+ATOOLS::ToString((int)(100.*exponent));
-  m_spkey.SetInfo(std::string("Simple_Pole_PDF_")+ATOOLS::ToString(exponent));
-  m_ykey.SetInfo("Central");
-  m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
-  m_ykey.Assign(std::string("y")+cinfo,3,0,info);
-  m_xkey.Assign(std::string("x")+cinfo,5,0,info);
-  m_sgridkey.Assign(m_spkey.Info(),1,0,info);
-  m_ygridkey.Assign(m_ykey.Info(),1,0,info);
-  m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  rannum=1;
-  if (mode==3) rannum=2;
-  p_vegas = new Vegas(rannum,300,name,0);
-  rans  = new double[2];
-}
-
-void Simple_Pole_PDF_Central_V::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-					const double *rns,int mode)
-{
-  double *ran = p_vegas->GeneratePoint(rns);
-  for(int i=0;i<2;i++) rans[i]=ran[i];
-  m_spkey[3]=CE.MasslessPDFMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
-  m_ykey[2]=CE.DiceYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
-}
-
-void Simple_Pole_PDF_Central_V::GenerateWeight(int mode)
-{
-  if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-    if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
-      m_spkey<<1./CE.MasslessPDFWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3],m_sgridkey[0]);
-    }
-  }
-
-  if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
-    if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
-      m_ykey<<CE.WeightYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),m_ygridkey[0],mode);
-    }
-  }
-  rans[0] = m_sgridkey[0];
-  rans[1] = m_ygridkey[0];
-  double pw= p_vegas->GenerateWeight(rans);
-  weight=pw*m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
-}
-
-void Simple_Pole_PDF_Central_V::AddPoint(double value)
-{
-  Single_Channel::AddPoint(value);
-  p_vegas->AddPoint(value,rans);
-}
-
 

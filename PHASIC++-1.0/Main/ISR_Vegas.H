@@ -285,7 +285,7 @@ namespace PHASIC {
 
   /////////////////////////////////////////////////////////////////////////////////////
 
-  class Simple_Pole_PDF_Uniform_V: public ISR_Channel_Base {
+  class Flat_ISR_V: public ISR_Channel_Base {
   protected:
 
     double m_exponent;
@@ -294,8 +294,8 @@ namespace PHASIC {
   public:
 
     // constructor
-    Simple_Pole_PDF_Uniform_V(const double exponent,const std::string cinfo,
-			ATOOLS::Integration_Info *info);
+    Flat_ISR_V(const double exponent,const std::string cinfo,
+	       ATOOLS::Integration_Info *info);
 
     // member functions
     void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
@@ -303,68 +303,7 @@ namespace PHASIC {
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
 
-  };// end of class Simple_Pole_PDF_Uniform
-
-  class Simple_Pole_PDF_Forward_V: public ISR_Channel_Base {
-  protected :
-
-    double m_sexponent, m_yexponent;
-    bool   m_zchannel;
-
-  public :
-
-    // constructor
-    Simple_Pole_PDF_Forward_V(const double sexponent,const double yexponent,
-			const std::string cinfo,ATOOLS::Integration_Info *info);
-
-    // member functions
-    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-		       const double *rans,const int mode=0);
-    void GenerateWeight(const int mode=0);
-    void AddPoint(double);
-
-  };// end of class Simple_Pole_PDF_Forward
-
-  class Simple_Pole_PDF_Backward_V: public ISR_Channel_Base {
-  protected :
-
-    double m_sexponent, m_yexponent;
-    bool   m_zchannel;
-
-  public :
-
-    // constructor
-    Simple_Pole_PDF_Backward_V(const double sexponent,const double yexponent,
-			 const std::string cinfo,ATOOLS::Integration_Info *info);
-
-    // member functions
-    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-		       const double *rans,const int mode=0);
-    void GenerateWeight(const int mode=0);
-    void AddPoint(double);
-
-  };// end of class Simple_Pole_PDF_Backward
-
-  class Simple_Pole_PDF_Central_V: public ISR_Channel_Base {
-  protected:
-
-    double m_exponent;
-    bool   m_zchannel;
-
-  public:
-
-    // constructor
-    Simple_Pole_PDF_Central_V(const double exponent,const std::string cinfo,
-			ATOOLS::Integration_Info *info,const int mode=0);
-
-    // member functions
-    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
-		       const double *rans,const int mode=0);
-    void GenerateWeight(const int mode=0);
-    void AddPoint(double);
-
-  };// end of class Simple_Pole_PDF_Central
-
+  };// end of class Flat_ISR_V
 
   /////////////////////////////////////////////////////////////////////////////////
 
