@@ -74,6 +74,7 @@ AC_OUTPUT(Tools/Makefile \
           Initialization/Makefile \
           PerturbativePhysics/Makefile \
           SoftPhysics/Makefile \
+          SoftPhysics/Lund/Makefile \
           Single_Events/Makefile \
           Main/Makefile \
           Run/Makefile \
