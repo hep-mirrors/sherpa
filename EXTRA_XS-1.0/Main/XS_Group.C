@@ -78,7 +78,16 @@ void XS_Group::Add(XS_Base *const xsec)
     }
   }  
   m_xsecs.push_back(xsec);
-  m_nvector=ATOOLS::Max(m_nvector,xsec->NVector());
+  for (size_t i=0;i<xsec->Resonances().size();++i) {
+    bool present=false;
+    for (size_t j=0;j<m_resonances.size();++j) {
+      if (m_resonances[j]==xsec->Resonances()[i]) {
+	present=true;
+	break;
+      }
+    }
+    if (!present) m_resonances.push_back(xsec->Resonances()[i]);
+  }
   p_selected=m_xsecs[0];
   if (!m_atoms) xsec->SetPSHandler(p_activepshandler);
 }
@@ -383,10 +392,13 @@ void XS_Group::SetMax(const double max,const int flag)
 void XS_Group::CreateFSRChannels() 
 {
   p_pshandler->FSRIntegrator()->DropAllChannels();
-  p_pshandler->FSRIntegrator()->Add(new PHASIC::S1Channel(2,2,p_flavours,
-							  ATOOLS::Flavour(ATOOLS::kf::photon)));
+  p_pshandler->FSRIntegrator()->Add(new PHASIC::S1Channel(2,2,p_flavours));
   p_pshandler->FSRIntegrator()->Add(new PHASIC::T1Channel(2,2,p_flavours));
   p_pshandler->FSRIntegrator()->Add(new PHASIC::U1Channel(2,2,p_flavours));
+  for (size_t i=0;i<m_resonances.size();++i) {
+    p_pshandler->FSRIntegrator()->Add(new PHASIC::S1Channel(2,2,p_flavours,
+							    m_resonances[i]));
+  }
 }      
 
 void XS_Group::DeSelect() 

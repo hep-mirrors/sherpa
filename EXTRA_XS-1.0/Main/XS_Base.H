@@ -17,6 +17,8 @@ namespace EXTRAXS {
 
     double m_s, m_t, m_u;
 
+    std::vector<ATOOLS::Flavour> m_resonances;
+
     static std::string GenerateName(const size_t nin,const size_t nout,
 				    const ATOOLS::Flavour *flavours);
 
@@ -77,6 +79,8 @@ namespace EXTRAXS {
 
     // inline functions
     inline int **const Colours() const { return p_colours; }
+
+    inline const std::vector<ATOOLS::Flavour> &Resonances() const { return m_resonances; }
 
   };// end of class XS_Base
 
