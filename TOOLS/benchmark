@@ -72,8 +72,8 @@ OUTPUTFILE=$LOGFILE"_full_output"
 echo "" > $LOGFILE
 echo "" > $OUTPUTFILE
 
-echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`" >> $LOGFILE
-echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`" >> $OUTPUTFILE
+echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n" >> $LOGFILE
+echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n" >> $OUTPUTFILE
 LIST=""
 if [ -f $FILE ] ; then
   GetList < $FILE
@@ -158,7 +158,7 @@ for I in $LIST ; do
   fi
 done
 
-if [ ! "BENCHMARK_ERROR" = "TRUE" ] ; then
+if [ ! "$BENCHMARK_ERROR" = "TRUE" ] ; then
   SetStatus "Benchmarking succeeded "
   exit 0
 fi
