@@ -5,6 +5,7 @@
 #include "Beam_Handler.H"
 #include "ISR_Handler.H"
 #include "Process_Base.H"
+#include "Single_Process.H"
 #include "XS_Base.H"
 
 
@@ -94,7 +95,7 @@ bool Phase_Space_Handler::CreateChannelLibrary(string ptype,string pID)
   int ngraph = proc->NumberOfDiagrams();
   psgen      = new Phase_Space_Generator(nin,nout);
 
-  if (ngraph == PHASIC::IS_XS_FLAG) return 1;
+  if (ngraph == AMEGIC::IS_XS_FLAG) return 1;
 
   fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
   bool newch  = psgen->Construct(fsrchannels,ptype,pID,psflavs,proc); 
@@ -124,7 +125,8 @@ bool Phase_Space_Handler::CreateIntegrators()
 {
   msg.Debugging()<<"In Phase_Space_Handler::CreateIntegrators"<<endl;
 
-  if (proc->GetXS()) psgen = new Phase_Space_Generator(proc->Nin(),proc->Nout());
+  if (proc->NumberOfDiagrams() == IS_XS_FLAG) 
+    psgen = new Phase_Space_Generator(proc->Nin(),proc->Nout());
 
   if (nin==1) int_type = 0;
   if (bh) {
@@ -133,7 +135,7 @@ bool Phase_Space_Handler::CreateIntegrators()
 
       if (!(MakeBeamChannels())) {
 	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
-		 <<"   did not construct any isr channels !"<<endl;
+		 <<"   did not construct any beam channels !"<<endl;
       }
       if (beamchannels) 
 	msg.Debugging()<<"  ("<<beamchannels->Name()<<","<<beamchannels->Number()<<";";
@@ -159,9 +161,9 @@ bool Phase_Space_Handler::CreateIntegrators()
 		   <<" for "<<nin<<" incoming particles."<<endl;
   }
   
-  if (proc->NumberOfDiagrams() == PHASIC::IS_XS_FLAG) {
+  if (proc->NumberOfDiagrams() == AMEGIC::IS_XS_FLAG) {
     fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
-    msg.Debugging()<<"Process is of type XS !"<<std::endl
+    msg.Debugging()<<endl<<"Process is of type XS !"<<std::endl
 		   <<"Set up FS Multi Channel for "<<proc->Name()<<std::endl;
     MakeFSRChannels();
     msg.Debugging()<<"Initialized Phase_Space_Integrator "<<endl<<"   (";
@@ -244,9 +246,15 @@ void Phase_Space_Handler::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 	  if ( (chname!=string("Rambo")) && (chname!=string("Sarge")) ) { 
 	    next   = chname.find(string("--"));
 	    chname = chname.substr(0,next);
-	    sc   = psgen->SetChannel(nin,nout,psflavs,
+	    if ((*_proc)[i]->NumberOfDiagrams() == IS_XS_FLAG) {
+	      sc = psgen->SetSimpleChannel(nin,nout,psflavs,
+					   ((*_proc)[i]->FSRIntegrator(j))->ChNumber(), 
+					   chname);}
+	    else {
+	      sc = psgen->SetChannel(nin,nout,psflavs,
 				     ((*_proc)[i]->FSRIntegrator(j))->ChNumber(),chname);
-	    sc->SetName(((*_proc)[i]->FSRIntegrator(j))->Name());
+ 	      sc->SetName(((*_proc)[i]->FSRIntegrator(j))->Name());
+	    }
 	    // sc = new Single_Channel((*_proc)[i]->FSRIntegrator(j));
 	    _fsr->Add( sc );
 	  }
@@ -311,7 +319,8 @@ bool Phase_Space_Handler::MakeISRChannels()
   deltay[0] = log(ih->Upper1());
   deltay[1] = log(ih->Upper2());
 
-  msg.Out()<<"*** DeltaY1 / 2 = "<<deltay[0]<<" / "<<deltay[1]<<endl;
+  msg.Debugging()<<"DeltaY1 = "<<deltay[0]<<endl;
+  msg.Debugging()<<"DeltaY2 = "<<deltay[1]<<endl;
 
 
   if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) {
@@ -363,14 +372,15 @@ bool Phase_Space_Handler::MakeISRChannels()
   int    type,maxnumber;
   double mass,width;
     
-  if (proc->NumberOfDiagrams() == PHASIC::IS_XS_FLAG) { maxnumber = proc->ISRNumber(); }
-  else { maxnumber = fsrchannels->Number(); };
+  if (proc->NumberOfDiagrams() == IS_XS_FLAG) maxnumber = proc->ISRNumber();
+  else maxnumber = fsrchannels->Number(); 
 
   for (int i=0;i<maxnumber;i++) {
     type = 0; mass = width = 0.;
-    fsrchannels->ISRInfo(i,type,mass,width);
-    
-    msg.Debugging()<<i<<" : "<<type<<"/"<<mass<<"/"<<width<<endl;
+    if (proc->NumberOfDiagrams() == IS_XS_FLAG) proc->ISRInfo(i,type,mass,width);
+    else fsrchannels->ISRInfo(i,type,mass,width);
+    msg.Debugging()<<"ISRInfo "<<i<<" : "<<type<<" -> mass = "<<mass<<" GeV "
+		   <<", width = "<<width<< " GeV "<<std::endl;
     if (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width)) continue;
     if ((type == 0) || (type == 3))                        continue;
 
@@ -443,12 +453,15 @@ bool Phase_Space_Handler::MakeBeamChannels()
   int    type,maxnumber;
   double mass,width;
     
-  if (proc->NumberOfDiagrams() == PHASIC::IS_XS_FLAG) maxnumber = proc->BeamNumber();
+  if (proc->NumberOfDiagrams() == IS_XS_FLAG) maxnumber = proc->ISRNumber();
   else maxnumber = fsrchannels->Number();
     
   for (int i=0;i<maxnumber;i++) {
     type = 0; mass = width = 0.;
-    if (proc) fsrchannels->ISRInfo(i,type,mass,width);
+    if (proc->NumberOfDiagrams() == IS_XS_FLAG) proc->ISRInfo(i,type,mass,width);
+    else fsrchannels->ISRInfo(i,type,mass,width);
+    msg.Debugging()<<"ISRInfo "<<i<<" : "<<type<<" -> mass = "<<mass<<" GeV "
+		   <<", width = "<<width<< " GeV "<<std::endl;
     
     msg.Debugging()<<i<<" : "<<type<<"/"<<mass<<"/"<<width<<endl;
     if (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width)) continue;
@@ -508,12 +521,12 @@ double Phase_Space_Handler::Integrate()
   msg.SetPrecision(12);
   if (bh) 
   if (bh->On()>0) {
-    beamchannels->GetRange();
+    //    beamchannels->GetRange();
     beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
     beamchannels->GetRange();
   }
   if (ih->On()>0) {
-    isrchannels->GetRange();
+    //    isrchannels->GetRange();
     isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
     isrchannels->GetRange();
   }
@@ -581,14 +594,8 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     proc->UpdateCuts(sprime,y);
   }
   
-  //msg.Out()<<"Before FSR"<<endl;
-  //for (int i=0;i<nin+nout;i++) { 
-  //msg.Out()<<" "<<i<<"th : "<<p[i]<<" "<<p[i].Abs2()<<endl;
-  //}
-
-  if (!proc->GetXS()) fsrchannels->GeneratePoint(p,proc->Cuts());
+  if (proc->NumberOfDiagrams() != IS_XS_FLAG) fsrchannels->GeneratePoint(p,proc->Cuts());
   else fsrchannels->GeneratePoint(p);
-
 
   if (!Check4Momentum(p)) return 0.;
 
@@ -602,8 +609,6 @@ double Phase_Space_Handler::Differential(Process_Base * process)
 
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
 
-  double d1,w1;
-
   bool trigger = 0;
   if ( (proc->Selector())->Trigger(p)) {
     trigger = 1;
@@ -612,6 +617,7 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     if (ih->On()>0) {
       ih->CalculateWeight(Q2);
       isrchannels->GenerateWeight(sprimeI,yI,ih->On());
+      //      msg.Out()<<"isr weight for Q2 : "<<Q2<<" , "<<isrchannels->Weight()<<endl;
       result1 *= isrchannels->Weight();
       ih->BoostInCMS(p,nin+nout);
     }
@@ -623,14 +629,17 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     }
 
     KFactor = proc->KFactor(Q2);
-    if (!proc->GetXS()) fsrchannels->GenerateWeight(p,proc->Cuts());
+    if (proc->NumberOfDiagrams() != IS_XS_FLAG) fsrchannels->GenerateWeight(p,proc->Cuts());
     else  fsrchannels->GenerateWeight(p);
-    result1 *= KFactor = w1 = fsrchannels->Weight();
-    
+    result1 *= KFactor *= fsrchannels->Weight();
+
+    //    msg.Debugging()<<"Overall Weight : "<<result1<<endl;
+
     if (ih->On()==3) result2 = result1;
     
-    result1 *= d1 = process->Differential(p);
+    result1 *= process->Differential(p);
   }
+
   // Second part : flin[0] coming from Beam[1] and flin[1] coming from Beam[0]
   if (ih->On()==3 && trigger==1) {
     //Rotate(p);
@@ -821,8 +830,8 @@ void Phase_Space_Handler::DropRedundantChannels()
     //shorten
     int hit    = 0;
     for (short int j=0;j<reson[i];j++) {
-    if (sqr(fl_res[j].Mass())>ycut*sqr(rpa.gen.Ecms()) &&
-    sqr(fl_res[j].Mass())<sqr(rpa.gen.Ecms())) 
+    if (sqr(fl_res[j].mass())>ycut*sqr(rpa.gen.Ecms()) &&
+    sqr(fl_res[j].mass())<sqr(rpa.gen.Ecms())) 
     hit++;
     }
     reson[i] = hit;

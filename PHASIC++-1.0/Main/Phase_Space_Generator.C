@@ -81,11 +81,14 @@ bool Phase_Space_Generator::CreateFSRChannels(Multi_Channel * integrator,
 {
   Single_Channel * channel;   
   channel = new S1Channel(nin,nout,flavs);
+  channel->SetChNumber(0);
   integrator->Add(channel);
-//   channel = new T1Channel(nin,nout,flavs);
-//   integrator->Add(channel);
-//   channel = new U1Channel(nin,nout,flavs);
-//   integrator->Add(channel);
+  channel = new T1Channel(nin,nout,flavs);
+  channel->SetChNumber(1);
+  integrator->Add(channel);
+  channel = new U1Channel(nin,nout,flavs);
+  channel->SetChNumber(2);
+  integrator->Add(channel);
   return 1;
 }
 
@@ -577,6 +580,13 @@ void Phase_Space_Generator::Copy(string sfrom,string sto)
   remove(sfrom.c_str());
 }
 
+Single_Channel * Phase_Space_Generator::SetSimpleChannel(int nin,int nout,APHYTOOLS::Flavour* fl, int chn, string& pID)
+{
+  if (pID==string("S-Channel 1")) return (new S1Channel(nin,nout,fl));
+  if (pID==string("T-Channel 1")) return (new T1Channel(nin,nout,fl));
+  if (pID==string("U-Channel 1")) return (new U1Channel(nin,nout,fl));
+  return 0;
+}
 
 
 /*

@@ -32,8 +32,18 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl)
   msg.Debugging()<<"Initialize S1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
+void S1Channel::GeneratePoint(AMATOOLS::Vec4D * p,
+			      APHYTOOLS::Cut_Data * cuts,double * _ran =0) 
+{
+  GeneratePoint(p, _ran);
+};
+
 void S1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
   CE.Isotropic2Momenta(p[0]+p[1],ms[2],ms[3],p[2],p[3],_ran[1],_ran[2]);
+};
+
+void S1Channel::GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data * cuts) {
+  GenerateWeight(p);
 };
 
 void S1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
@@ -59,9 +69,19 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl)
   msg.Debugging()<<"Initialize T1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
+void T1Channel::GeneratePoint(AMATOOLS::Vec4D * p,
+			      APHYTOOLS::Cut_Data * cuts,double * _ran =0) 
+{
+  GeneratePoint(p, _ran);
+};
+
 void T1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
   CE.TChannelMomenta(p[0],p[1],p[2],p[3],ms[2],ms[3],0.,
 		     0.5,0.,2.,1.,0,_ran[1],_ran[2]);
+};
+
+void T1Channel::GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data * cuts) {
+  GenerateWeight(p);
 };
 
 void T1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
@@ -87,9 +107,19 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl)
   msg.Debugging()<<"Initialize U1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
+void U1Channel::GeneratePoint(AMATOOLS::Vec4D * p,
+			      APHYTOOLS::Cut_Data * cuts,double * _ran =0) 
+{
+  GeneratePoint(p, _ran);
+};
+
 void U1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],ms[3],ms[2],0.,
 		     0.5,0.,2.,1.,0,_ran[1],_ran[2]);
+};
+
+void U1Channel::GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data * cuts) {
+  GenerateWeight(p);
 };
 
 void U1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {

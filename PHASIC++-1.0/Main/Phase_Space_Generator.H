@@ -98,6 +98,7 @@ namespace PHASIC {
       channel library.
     */
     Single_Channel * SetChannel(int,int,APHYTOOLS::Flavour* fl,int,std::string&);
+    Single_Channel * SetSimpleChannel(int,int,APHYTOOLS::Flavour* fl,int,std::string&);
   };
 }
 #endif

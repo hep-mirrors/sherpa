@@ -33,11 +33,15 @@ ISR_Handler::ISR_Handler(int * isrtypes,Flavour * beams,Flavour * partons,
   type = ISRBase[0]->Type() + std::string("*") + ISRBase[1]->Type();
 
   double s    = sqr(AORGTOOLS::rpa.gen.Ecms());
-  //  cout<<"a  "<<_splimits[0]<<" "<<_splimits[1]<<endl;
   splimits[0] = smin = _splimits[0];
   splimits[1] = smax = AMATOOLS::Min(_splimits[1],s*Upper1()*Upper2());
   splimits[2] = s;
-  //  cout<<"b  "<<splimits[0]<<" "<<splimits[1]<<endl;
+
+//   cout<<"splimits[0]  "<<splimits[0]<<endl;
+//   cout<<"splimits[1]  "<<splimits[1]<<endl;
+//   cout<<"splimits[2]  "<<splimits[2]<<endl;
+//   cout<<"upper1  "<<Upper1()<<endl;
+//   cout<<"upper2  "<<Upper2()<<endl;
 
   ylimits[0]  = -10.;
   ylimits[1]  = 10.;
@@ -51,8 +55,6 @@ ISR_Handler::ISR_Handler(int * isrtypes,Flavour * beams,Flavour * partons,
          else msg.Debugging()<<"ISR is off; ";
   msg.Debugging()<<"type = "<<type<<" for "<<beams[0]<<" / "<<beams[1]<<endl;
 }
-
-
 
 ISR_Handler::~ISR_Handler() {
   if (ISRBase) {
@@ -92,7 +94,6 @@ void ISR_Handler::SetPartonMasses(Flavour * _fl) {
   fiXVECs[0]  = Vec4D(E1,0.,0., sqrt(sqr(E1)-mass12));
   fiXVECs[1]  = Vec4D(E2,0.,0.,-sqrt(sqr(E1)-mass12));
 }
-
 
 bool ISR_Handler::MakeISR(Vec4D * p,double sprime,double y) 
 {
@@ -134,12 +135,12 @@ bool ISR_Handler::MakeISR(Vec4D * p,double sprime,double y)
     x1       = 2.*p1[0]/E;
     x2       = 2.*p2[0]/E;
 
+//     AORGTOOLS::msg.Debugging()<<"sprime,y,x1,x2 = "<<sprime<<" , "<<y<<" , "<<x1<<" , "<<x2<<std::endl;
+
     if (mode==1) {
-      //msg.Out()<<"Mode = 1 : x2 should be 1, is "<<x2<<endl;
       x2 = 1.;
     }
     if (mode==2) {
-      //msg.Out()<<"Mode = 2 : x1 should be 1, is "<<x1<<endl;
       x1 = 1.;
     }
     return 1;
@@ -152,11 +153,12 @@ bool ISR_Handler::MakeISR(Vec4D * p,double sprime,double y)
 
    ---------------------------------------------------------------- */
 
-
 bool ISR_Handler::CalculateWeight(double scale) 
 {
   switch (mode) {
   case 3 :
+//     msg.Debugging()<<" x1 : "<<x1<<endl;
+//     msg.Debugging()<<" x2 : "<<x2<<endl;
     if ( (ISRBase[0]->CalculateWeight(x1,scale)) && 
 	 (ISRBase[1]->CalculateWeight(x2,scale)) ) return 1;
     break;
@@ -185,22 +187,21 @@ bool ISR_Handler::CalculateWeight2(double scale)
 
 double ISR_Handler::Weight(Flavour * flin)
 {
+//   AORGTOOLS::msg.Debugging()<<"weight  = "<<ISRBase[0]->Weight(flin[0]) * ISRBase[1]->Weight(flin[1])<<std::endl;
   return (ISRBase[0]->Weight(flin[0]) * ISRBase[1]->Weight(flin[1]));
 }
 
 double ISR_Handler::Weight2(Flavour* flin)
 {
+//   AORGTOOLS::msg.Debugging()<<"weight2 = "<<ISRBase[0]->Weight(flin[1]) * ISRBase[1]->Weight(flin[0])<<std::endl;
   return (ISRBase[0]->Weight(flin[1]) * ISRBase[1]->Weight(flin[0]));
 }
-
-
 
 /* ----------------------------------------------------------------
 
    Boosts
 
    ---------------------------------------------------------------- */
-
 
 void  ISR_Handler::BoostInCMS(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) CMSBoost.Boost(p[i]);

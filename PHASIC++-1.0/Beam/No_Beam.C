@@ -4,6 +4,7 @@
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace BEAM;
+using namespace std;
 
 No_Beam_at_all::No_Beam_at_all(Flavour beam,double)
 {

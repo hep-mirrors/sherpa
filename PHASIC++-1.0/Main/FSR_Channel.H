@@ -14,12 +14,17 @@ namespace PHASIC {
     double E1,E2,Ehat,shat,phat;
     double pt,pl,pt2,pt2min,pt2max,smin,smax;
     double zmin,zmax,z;
+    int    chnumber;
   public :
     S1Channel(int,int,APHYTOOLS::Flavour *); 
-    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
+    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
+    void GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *);
+    void GeneratePoint(AMATOOLS::Vec4D *,double *);
     void GenerateWeight(AMATOOLS::Vec4D * p);
+    int  ChNumber()                 { return chnumber;      }
+    void SetChNumber(int _chnumber) { chnumber = _chnumber; }
   };
-
+  
 
   class T1Channel : public Single_Channel {
     /*!
@@ -31,10 +36,15 @@ namespace PHASIC {
     double E1,E2,Ehat,shat,phat;
     double pt,pl,pt2,pt2min,pt2max,smin,smax;
     double zmin,zmax,z;
+    int    chnumber;
   public :
     T1Channel(int,int,APHYTOOLS::Flavour *); 
+    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
+    void GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *);
     void GeneratePoint(AMATOOLS::Vec4D * p,double *);
     void GenerateWeight(AMATOOLS::Vec4D * p);
+    int  ChNumber()                 { return chnumber;      }
+    void SetChNumber(int _chnumber) { chnumber = _chnumber; }
   };
 
 
@@ -49,10 +59,15 @@ namespace PHASIC {
     double E1,E2,Ehat,shat,phat;
     double pt,pl,pt2,pt2min,pt2max,smin,smax;
     double zmin,zmax,z;
+    int    chnumber;
   public :
     U1Channel(int,int,APHYTOOLS::Flavour *); 
+    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
+    void GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *);
     void GeneratePoint(AMATOOLS::Vec4D * p,double *);
     void GenerateWeight(AMATOOLS::Vec4D * p);
+    int  ChNumber()                 { return chnumber;      }
+    void SetChNumber(int _chnumber) { chnumber = _chnumber; }
   };
 }
 
