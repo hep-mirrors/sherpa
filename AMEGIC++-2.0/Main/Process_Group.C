@@ -162,6 +162,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	  if (i==0) flag = 0;
 	  flindex[i] = 0;
 	}
+	if (i==0) break;
       }
     }
   }
