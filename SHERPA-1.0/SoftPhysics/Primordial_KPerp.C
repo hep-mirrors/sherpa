@@ -209,10 +209,6 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   Vec3D kp1;
   Vec4D mom1, old1=cur1->Momentum();
   kp1=(*p_kperp[beam])[m_current[beam]];
-  if (cur1->Flav().IsDiQuark()) {
-    kp1=p_kperp[beam]->back();
-    --m_current[beam];
-  }
   Particle *cur2;
   if (!FindConnected(cur1,cur2,true,0)) {
     mom1=Vec4D(old1[0],kp1[1],kp1[2],
