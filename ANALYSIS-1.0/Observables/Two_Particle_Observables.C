@@ -1,4 +1,5 @@
 #include "Two_Particle_Observables.H"
+#include "MyStrStream.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
@@ -10,7 +11,10 @@ Two_Particle_Observable_Base::Two_Particle_Observable_Base(const Flavour & _flav
   Primitive_Observable_Base(_type,_xmin,_xmax,_nbins,NULL), 
   m_flav1(_flav1), m_flav2(_flav2)
 {
-  m_name     = _name + m_flav1.Name() + m_flav2.Name() +std::string(".dat");
+  MyStrStream str;
+  str<<_name<<m_flav1<<m_flav2<<".dat";
+  str>>m_name;
+  //  m_name     = _name + m_flav1.Name() + m_flav2.Name() +std::string(".dat");
   m_blobtype = std::string("");
   m_blobdisc = false;
 }
