@@ -13,7 +13,8 @@
 #endif
 #endif
 
-// #include "Exception.H"
+#include "Exception.H"
+
 // #include "MyRoot.H"
 
 using namespace PDF;
@@ -189,9 +190,8 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
     }
   }
   else {
-    ATOOLS::msg.Error()<<"Doubly_Unintegrated_PDF::Unintegrate("<<flavour<<"): "<<ATOOLS::om::red
-		       <<"Called with nonsense flavour. Abort."<<ATOOLS::om::reset<<std::endl;
-    exit(159);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Called with nonsense flavour.",
+			    "Doubly_Unintegrated_PDF","Unintegrate"));
   }
   m_unintegrated*=(*p_alphas)(m_kperp2)/(2.0*M_PI);
   m_unintegrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2));

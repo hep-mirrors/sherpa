@@ -99,8 +99,9 @@ void Exception_Handler::SetExitCode()
   s_exitcode=1;
   if (s_exception==NULL) return;
   if (s_exception->m_class=="ISR_Handler")            s_exitcode=151;
+  if (s_exception->m_class=="MI_Base")                s_exitcode=211;
+  if (s_exception->m_class=="Simple_Chain")           s_exitcode=212;
   if (s_exception->m_class=="Matrix_Element_Handler") s_exitcode=201;
-
 }
 
 void Exception_Handler::SignalHandler(int signal) 

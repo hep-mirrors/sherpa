@@ -1,5 +1,7 @@
 #include "SimpleXS_Apacic_Interface.H"
+
 #include "XS_Base.H"
+#include "Exception.H"
 
 using namespace SHERPA;
 using namespace EXTRAXS;
@@ -25,11 +27,8 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 {
   if (blob==NULL) return false;
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
-    msg.Error()<<"Error in SimpleXS_Apacic_Interface::DefineInitialConditions."<<std::endl
-	       <<"   Cannot handle blobs with "
-	       <<blob->NInP()<<" -> "<<blob->NOutP()<<" legs."<<std::endl
-	       <<"   Run cannot continue. "<<std::endl;
-    exit(131);
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Cannot handle blobs with more than 4 legs.",
+			    "SimpleXS_Apacic_Interface","DefineInitialConditions"));
   }
   if (p_shower->ISROn()) {
     p_psme_is = new Blob();

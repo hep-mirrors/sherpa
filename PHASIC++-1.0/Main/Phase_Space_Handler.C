@@ -489,15 +489,15 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
   ran.WriteOutStatus(help.c_str());
 }
 
-bool Phase_Space_Handler::ReadIn(const std::string &pID) 
+bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
 {
   msg.Debugging()<<"Read in channels from directory : "<<pID<<endl;
   bool okay = 1;
-  if (p_beamchannels != 0) okay = okay && p_beamchannels->ReadIn(pID+string("/MC_Beam"));
-  if (p_isrchannels  != 0) okay = okay && p_isrchannels->ReadIn(pID+string("/MC_ISR"));
-  if (p_zchannels != 0) okay = okay && p_zchannels->ReadIn(pID+string("/MC_KMR_Z"));
-  if (p_kpchannels!= 0) okay = okay && p_kpchannels->ReadIn(pID+string("/MC_KMR_KP"));
-  if (p_fsrchannels  != 0) okay = okay && p_fsrchannels->ReadIn(pID+string("/MC_FSR"));
+  if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+string("/MC_Beam"));
+  if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+string("/MC_ISR"));
+  if (p_zchannels!=NULL && !(exclude&4)) okay = okay && p_zchannels->ReadIn(pID+string("/MC_KMR_Z"));
+  if (p_kpchannels!=NULL && !(exclude&8)) okay = okay && p_kpchannels->ReadIn(pID+string("/MC_KMR_KP"));
+  if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+string("/MC_FSR"));
   if (rpa.gen.RandomSeed()==1234) {
     string filename     = (pID+string("/Random")).c_str();
     ran.ReadInStatus(filename.c_str(),0);

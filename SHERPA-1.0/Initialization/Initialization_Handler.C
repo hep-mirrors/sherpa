@@ -7,6 +7,7 @@
 #include "PDF_Base.H"
 
 #include "Initial_State_Shower.H"
+#include "LL_Branching.H"
 
 #include "Data_Read.H"
 #include "Message.H"
@@ -113,6 +114,7 @@ Initialization_Handler::~Initialization_Handler()
     m_isrhandlers.erase(m_isrhandlers.begin());
   }
   PHASIC::Phase_Space_Handler::DeleteInfo();
+  PDF::LL_Branching::DeleteSplittings();
 }
 
 

@@ -2,6 +2,7 @@
 #include "Run_Parameter.H"
 #include "MathTools.H"
 #include "Message.H"
+#include "Exception.H"
 #include "Random.H"
 
 using namespace ATOOLS;
@@ -36,9 +37,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   delete gcctest;
   system("if test -f sherpa_gcc_test; then rm sherpa_gcc_test; fi");
   if (gccversion.find("2.96")!=std::string::npos) {
-    ATOOLS::msg.Error()<<"Run_Parameter::Init(..): "<<om::red
-		       <<"Sherpa must not be run with gcc version 2.96 !"<<om::reset<<std::endl;
-    exit(1);
+    throw(Exception(ex::fatal_error,"Sherpa must not be run on gcc version 2.96 !",
+		    "Run_Parameter","Init"));
   }
   m_path        = path;
   Data_Read dr(m_path+file);

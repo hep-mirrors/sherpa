@@ -1,5 +1,6 @@
 #include "Hadron_Remnant.H"
 
+#include "Exception.H"
 #include "Random.H"
 
 using namespace SHERPA;
@@ -12,9 +13,8 @@ Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,const unsigned int _
   m_maxtrials(100)
 {
   if (isrhandler==NULL) {
-    ATOOLS::msg.Error()<<"Hadron_Remnant::Hadron_Remnant(NULL,"<<m_beam<<"): "
-		       <<"Cannot proceed without ISR and Beam Handler! Abort."<<std::endl;
-    exit(129);
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Hadron remnant needs ISR Handler.",
+			    "Hadron_Remnant","Hadron_Remnant"));
   }
   p_pdfbase=isrhandler->PDF(m_beam);
   GetConstituents(isrhandler->Flav(m_beam));
@@ -48,17 +48,15 @@ void Hadron_Remnant::GetConstituents(const ATOOLS::Flavour flav)
 			  <<m_constit[0]<<","<<m_constit[1]<<"]."<<std::endl;
     return;
   }
-  ATOOLS::msg.Error()<<"Hadron_Remnant::FindConstituents("<<flav<<"): "
-		     <<"Cannot determine constituents. Abort."<<std::endl; 
-  exit(129);
+  throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Cannot determine constituents.",
+			  "Hadron_Remnant","GetConstituents"));
 }
 
 bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist)
 {
   if (p_partner==NULL) {
-    ATOOLS::msg.Error()<<"Hadron_Remnant::FillBlob(..): "
-		       <<"Partner Remnant not set! Abort."<<std::endl;
-    exit(129);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Partner Remnant not set.",
+			    "Hadron_Remnant","GetConstituents"));
   }
   p_beamblob=beamblob;
   m_pbeam=beamblob->InParticle(0)->Momentum();

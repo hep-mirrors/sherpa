@@ -30,6 +30,7 @@ Simple_Chain::Simple_Chain():
   p_total(NULL),
   m_xsextension("_xs.dat"),
   m_maxextension("_max.dat"),
+  m_mcextension("_mc"),
   p_processes(NULL),
   p_fsrinterface(NULL), 
   p_environment(NULL),
@@ -61,6 +62,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   m_xsfile(std::string("XS.dat")),
   m_xsextension("_xs.dat"),
   m_maxextension("_max.dat"),
+  m_mcextension("_mc"),
   p_processes(NULL),
   p_fsrinterface(NULL), 
   p_environment(NULL),
@@ -480,9 +482,11 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
   if (mkdir(OutputPath().c_str(),448)==0) {
     ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
 		     <<"Created output directory "<<OutputPath()<<"."<<std::endl;
+    mkdir((OutputPath()+filename+m_mcextension+std::string("/")).c_str(),448);
   }
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMaxExtension(m_maxextension);
+  p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
   p_gridcreator->SetOutputFile(filename);
   ATOOLS::Exception_Handler::AddTerminatorObject(this);
@@ -749,26 +753,21 @@ bool Simple_Chain::Initialize()
 	delete maxgridhandler;
       }
       else {
-	ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
-			   <<"Grid creation failed for "<<OutputPath()+m_filename[i]<<std::endl
-			   <<"   Run cannot continue."<<std::endl;
-	exit(211);
+	throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
+				std::string("Grid creation failed for ")+OutputPath()+m_filename[i],
+				"Simple_Chain","Initialize"));
       }
     }
   }
   if (!CalculateTotal()) {
-    ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
-		       <<"Determination of \\sigma_{tot} failed. "<<std::endl
-		       <<"   Run cannot continue."<<std::endl;
-    exit(211);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Determination of \\sigma_{tot} failed.",
+			    "Simple_Chain","Initialize"));
   }
   SetStart(p_total->XMax(),0);
   SetStop(ATOOLS::Max(p_total->XMin(),stop),0);
   if (!InitializeBlobList()) {
-    ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
-		       <<"Cannot initialize selected processes. "<<std::endl
-		       <<"   Run cannot continue."<<std::endl;
-    exit(211);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Cannot initialize selected processes.",
+			    "Simple_Chain","Initialize"));
   }  
   return true;
 }
@@ -794,7 +793,6 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #ifdef DEBUG__Simple_Chain
 //     std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
 #endif
-    p_processes->Selected()->PSHandler(false)->InitIncoming();
     if ((*p_processes)[m_selected]->OneEvent()) {
 #ifdef DEBUG__Simple_Chain
 //       std::cout<<"   Completed one event."<<std::endl;
@@ -868,6 +866,10 @@ bool Simple_Chain::DiceProcess()
       m_selected=sorter.XYData(i).second;
 #ifdef USING__Sherpa
       p_processes->SetSelected((*p_processes)[m_selected]);
+      std::string path=OutputPath()+m_filename[i]+m_mcextension+std::string("/")+
+	ATOOLS::ToString(m_differential[i]->XData(m_differential[i]->XPosition(sorter.XData(i))));
+      p_processes->Selected()->PSHandler(false)->ReadIn(path,16);
+      p_processes->Selected()->PSHandler(false)->InitIncoming();
 #endif
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
 	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): s' out of bounds: "
@@ -888,9 +890,8 @@ bool Simple_Chain::DiceProcess()
       return m_filledblob;
     }
   }
-  ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): Internal error!"<<std::endl
-		     <<"   Could not select any process. Abort."<<std::endl;
-  exit(211);
+  throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Internal Error. Could not select any process.",
+			  "Simple_Chain","DiceProcess"));
   return false;
 }
 

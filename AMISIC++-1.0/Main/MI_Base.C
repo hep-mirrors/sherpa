@@ -32,17 +32,13 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 {
   for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
     if (nbit->first==m_name) {
-      ATOOLS::msg.Error()<<"MI_Base::MI_Base("<<m_name<<","<<m_type<<"): "
-			 <<"MI_Base already exists!"<<std::endl
-			 <<"   Run cannot continue."<<std::endl;
-      exit(210);
+      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"MI_Base already exists!",
+			      "MI_Base","MI_Base"));
     }
   }
   if (m_type==Unknown) {
-    ATOOLS::msg.Error()<<"MI_Base::MI_Base("<<m_name<<","<<m_type<<"): "
-		       <<"Base has no type!"<<std::endl
-		       <<"   Run cannot continue."<<std::endl;
-    exit(210);
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"MI base has no type!",
+			    "MI_Base","MI_Base"));
   }
   m_start = new double[m_nparameter];
   m_stop = new double[m_nparameter];

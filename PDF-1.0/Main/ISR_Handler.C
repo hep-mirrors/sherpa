@@ -4,7 +4,7 @@
 #include "Structure_Function.H"
 #include "Run_Parameter.H" 
 #include "Info_Key.H"
-#include "Message.H"
+#include "Exception.H"
 #include "Random.H"
 #include <stdio.h>
 
@@ -369,9 +369,8 @@ bool ISR_Handler::CalculateWeight(const double scale)
 bool ISR_Handler::CalculateWeight2(const double scale) 
 {
   if (m_mode != 3) { 
-    ATOOLS::msg.Error()<<"ISR_Handler::CalculateWeight2(..): "<<om::red
-		       <<"Called for one ISR only."<<om::reset<<endl;
-    exit(150);
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Called for one ISR only.",
+			    "ISR_Handler","CalculateWeight2"));
   }
   if (!m_kmrmode) m_mu2[0]=m_mu2[1]=scale;
   if (p_isrbase[0]->CalculateWeight(m_x[1],m_zkey[1][2],m_kpkey[1][3],m_mu2[1]) && 

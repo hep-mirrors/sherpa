@@ -185,7 +185,7 @@ int Random::WriteOutStatus(const char * filename){
     p_outstream = 0;
   }
   if (p_outstream == 0){
-    msg.Events()<<" Saving Random Number Generator Status to "<<filename<<endl;
+    msg.Tracking()<<" Saving Random Number Generator Status to "<<filename<<endl;
     long int count=0;
     std::ifstream *myinstream = new std::ifstream(filename,std::ios::in);
     if (myinstream->good()) {

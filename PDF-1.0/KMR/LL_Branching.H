@@ -44,6 +44,8 @@ namespace PDF {
     double Gamma(double q, double Q);
     double IntGamma(double q, double Q);
 
+    static void DeleteSplittings();
+
   };// end of class LL_Branching_Probabilities
 
   extern LL_Branching LLB;

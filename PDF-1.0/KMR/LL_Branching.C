@@ -2,6 +2,7 @@
 
 #include "QCD_Splitting_Functions.H"
 #include "MyStrStream.H"
+#include "Exception.H"
 
 #define NC 3.
 #define CF (NC*NC-1.)/(2.*NC)
@@ -12,6 +13,14 @@ const unsigned int PDF::LL_Branching::s_nf=3;
 
 LL_Branching::SF_Set PDF::LL_Branching::s_splitting=LL_Branching::SF_Set();
 LL_Branching PDF::LLB;
+
+void LL_Branching::DeleteSplittings()
+{
+  while (s_splitting.size()>0) {
+    delete *s_splitting.begin();
+    s_splitting.erase(s_splitting.begin());
+  }
+}
 
 LL_Branching::LL_Branching() {}
 
@@ -60,22 +69,13 @@ LL_Branching::LL_Branching(const ATOOLS::Flavour flavour,MODEL::Running_AlphaS *
     }
   }
   else {
-    ATOOLS::msg.Error()<<"LL_Branching("<<flavour<<"): "
-		       <<" No splitting function available. Abort."<<std::endl;
-    exit(139);
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"No splitting function available.",
+			    "LL_Branching","LL_Branching"));
   }
   GenerateName();
 }
 
-LL_Branching::~LL_Branching()
-{
-  while (m_splitting.size()>0) {
-    std::set<APACIC::Splitting_Function*>::iterator sfit=s_splitting.find(m_splitting.front());
-    if (sfit!=s_splitting.end()) s_splitting.erase(sfit);
-    delete m_splitting.front();
-    m_splitting.erase(m_splitting.begin());
-  }
-}
+LL_Branching::~LL_Branching() {}
 
 void LL_Branching::GenerateName() 
 {

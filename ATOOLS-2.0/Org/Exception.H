@@ -58,6 +58,9 @@ namespace ATOOLS {
     Exception(const ex::type type,const std::string info,
 	      const std::string cclass,const std::string cmethod);
 
+    // destructor
+    ~Exception();
+
     // member functions
     void UpdateLogFile() const;
     

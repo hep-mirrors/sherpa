@@ -99,6 +99,8 @@ namespace AMISIC {
 	if (m_storemax) if (!p_gridhandler[1]->Grid()->DeleteXPoint(boundary[0])) success=0;
       }
       if (p_gridhandler[0]->Grid()->AddPoint(boundary[0],newxs)) {
+	p_processes->PSHandler(false)->WriteOut(OutputPath()+OutputFile()+MCExtension()+
+						std::string("/")+ATOOLS::ToString(boundary[0]));
 	m_lastxs=newxs;
       }
       else {

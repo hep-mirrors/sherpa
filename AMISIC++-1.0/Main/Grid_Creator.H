@@ -41,7 +41,7 @@ namespace AMISIC {
     ATOOLS::Axis<GridArgumentType> *p_xaxis;
     ATOOLS::Axis<GridResultType>   *p_yaxis;
     
-    std::string m_xsextension, m_maxextension;
+    std::string m_xsextension, m_maxextension, m_mcextension;
     
   public:
     
@@ -54,12 +54,14 @@ namespace AMISIC {
     // setters
     void SetXSExtension(const std::string _m_xsextension);
     void SetMaxExtension(const std::string _m_maxextension);
+    void SetMCExtension(const std::string _m_mcextension);
 
     void SetMaxPoints(const long int _m_maxpoints);
     
     // getters
     const std::string XSExtension() const;
     const std::string MaxExtension() const;
+    const std::string MCExtension() const;
 
     const long int MaxPoints() const;
     

@@ -85,7 +85,7 @@ namespace PHASIC {
 
     // member functions
     void WriteOut(const std::string &path);
-    bool ReadIn(const std::string &path);
+    bool ReadIn(const std::string &path,const size_t exclude=0);
     bool InitIncoming(const double mass=-1.);
     bool CreateIntegrators();
     void InitCuts();

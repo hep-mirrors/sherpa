@@ -6,7 +6,7 @@
 
 #include "Flavour.H"
 #include "MathTools.H"
-#include "Message.H"
+#include "Exception.H"
 #include "MyStrStream.H"
 
 namespace ATOOLS {
@@ -27,8 +27,8 @@ void Kf_To_Int::Init()
   }
 
   if(anz==MAX_PARTICLES) {
-    std::cerr<<"ERROR in Kf_To_Int::kftab(): Too many particle types !"<<std::endl;
-    exit(1);
+    throw(Exception(ex::fatal_error,"Too many particle types.",
+		    "Kf_To_Int","Init"));
   }
   is_initialised = 1;
 }

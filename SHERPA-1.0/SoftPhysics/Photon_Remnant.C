@@ -1,5 +1,7 @@
 #include "Photon_Remnant.H"
 
+#include "Exception.H"
+
 using namespace SHERPA;
 
 Photon_Remnant::Photon_Remnant(const unsigned int _m_beam):
@@ -8,9 +10,8 @@ Photon_Remnant::Photon_Remnant(const unsigned int _m_beam):
 bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist)
 {
   if (p_partner==NULL) {
-    ATOOLS::msg.Error()<<"Photon_Remnant::FillBlob(..): "
-		       <<"Partner Remnant not set! Abort."<<std::endl;
-    exit(129);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Partner Remnant not set.",
+			    "Photon_Remnant","FillBlob"));
   }
   // fill blob
   for (size_t j=0;j<m_parton[1].size();++j) {

@@ -48,6 +48,11 @@ Exception::Exception(const ex::type type,const std::string info,
   Exception_Handler::s_exception=this;
 }
 
+Exception::~Exception() 
+{
+  if (Exception_Handler::s_exception==this) Exception_Handler::s_exception=NULL;
+}
+
 void Exception::UpdateLogFile() const 
 {
   msg.LogFile()<<"Sherpa";

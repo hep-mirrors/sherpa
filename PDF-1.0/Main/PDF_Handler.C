@@ -3,7 +3,7 @@
 #include "PDF_MRST99.H"
 #include "LHAPDF_Fortran_Interface.H"
 #include "CTEQ6_Fortran_Interface.H"
-#include "Message.H"
+#include "Exception.H"
 #include "Running_AlphaS.H"
 #include "Doubly_Unintegrated_PDF.H"
 #include <stdio.h>
@@ -28,10 +28,9 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 				dataread->GetValue<int>("ISR_E_ORDER",1),
 				dataread->GetValue<int>("ISR_E_SCHEME",2));
       }
-      msg.Error()<<"Error in PDF_Handler::GetPDFLib :"<<endl
-		 <<"   Tried to initialize a structure function for an uncharged particle."<<endl
-		 <<"   Will abort the program."<<endl;
-      exit(151);
+      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
+			      "Tried to initialize a structure function for an uncharged particle.",
+			      "PDF_Handler","GetPDFLib"));
     }
     if ((bunch_particle==Flavour(kf::p_plus) || (bunch_particle==Flavour(kf::p_plus).Bar()))) {
       PDF_Base *pdfbase=NULL;
@@ -73,16 +72,12 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 								mu0*mu0,(kps::type)kpscheme);
 	return pdfbase;
       }
-      msg.Error()<<"Error in PDF_Handler::GetPDFLib :"<<endl
-		 <<"   Combination of set/member/path for proton not properly specified :"<<endl
-		 <<"   ("<<set<<"/"<<version<<"/"<<grid_path<<")"<<endl
-		 <<"   Will abort the program."<<endl;
-      exit(151);
+      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
+			      "Combination of set/member/path for proton not properly specified.",
+			      "PDF_Handler","GetPDFLib"));
     }
-    msg.Error()<<"Error in PDF_Handler::GetPDFLib :"<<endl
-	       <<"   So far no PDF for the bunch_particle :"<<bunch_particle<<endl
-	       <<"   Will abort the program."<<endl;
-    exit(151);
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"So far no PDF for the bunch_particle.",
+			    "PDF_Handler","GetPDFLib"));
   }
 
   return NULL;

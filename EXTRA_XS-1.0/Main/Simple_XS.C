@@ -49,9 +49,8 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   if (!construct) return true;
   ifstream from((m_path+processfile).c_str());
   if (!from) {
-    msg.Error()<<"Error in Simple_XS::InitializeProcesses : "<<endl
-	       <<"   File : "<<(m_path+processfile).c_str()<<" not found ! Abort program execution."<<endl;
-    exit(145);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Cannot open file '")+
+			    m_path+processfile+std::string("'"),"Simple_XS","InitializeProcesses"));
   }
   char buffer[100];
   size_t position;
@@ -229,6 +228,7 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
   bool okay = 1;
   for (size_t i=0;i<m_xsecs.size();++i) {
     okay = okay && m_xsecs[i]->CalculateTotalXSec(resultpath);
+    p_activepshandler=m_xsecs[i]->PSHandler(false);
     m_totalxs += m_xsecs[i]->TotalXS();
   }
   msg.Events()<<"In Simple_XS::CalculateTotalXSec() = "

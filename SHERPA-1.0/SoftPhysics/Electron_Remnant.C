@@ -1,5 +1,7 @@
 #include "Electron_Remnant.H"
 
+#include "Exception.H"
+
 using namespace SHERPA;
 
 Electron_Remnant::Electron_Remnant(PDF::ISR_Handler *isrhandler,const unsigned int _m_beam,double _m_scale):
@@ -7,9 +9,8 @@ Electron_Remnant::Electron_Remnant(PDF::ISR_Handler *isrhandler,const unsigned i
   m_scale(-_m_scale)
 {
   if (isrhandler==NULL) {
-    ATOOLS::msg.Error()<<"Electron_Remnant::Electron_Remnant(NULL,"<<m_beam<<"): "
-		       <<"Cannot proceed without ISR and Beam Handler! Abort."<<std::endl;
-    exit(129);
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Cannot proceed without ISR and Beam Handler.",
+			    "Electron_Remnant","Electron_Remnant"));
   }
   p_pdfbase=isrhandler->PDF(m_beam);
 }
@@ -17,9 +18,8 @@ Electron_Remnant::Electron_Remnant(PDF::ISR_Handler *isrhandler,const unsigned i
 bool Electron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist)
 {
   if (p_partner==NULL) {
-    ATOOLS::msg.Error()<<"Electron_Remnant::FillBlob(..): "
-		       <<"Partner Remnant not set! Abort."<<std::endl;
-    exit(129);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Partner Remnant not set.",
+			    "Electron_Remnant","FillBlob"));
   }
   // p_last remains NULL since in DIS the hadron accounts for momentum conservation
   p_beamblob=beamblob;

@@ -2,6 +2,7 @@
 #include "Data_Return.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "Exception.H"
 #include "Type.H"
 #include <iomanip>
 
@@ -86,8 +87,8 @@ void Data_Read::ReadIn(std::string filename) {
   std::ifstream file;
   file.open(filename.c_str());
   if (!file.good()) {
-    msg.Error()<< " ERROR: opening " << filename <<endl;
-    exit (-1);
+    throw(Exception(ex::critical_error,std::string("Cannot open file '")+filename+std::string("'"),
+		    "Data_Read","ReadIn"));
   }
   std::string dummy;
       

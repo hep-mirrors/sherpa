@@ -2,7 +2,7 @@
 
 #include "MathTools.H"
 #include "Run_Parameter.H"
-#include "Message.H"
+#include "Exception.H"
 
 using namespace SHERPA;
 
@@ -30,15 +30,14 @@ bool Remnant_Base::AdjustKinematics()
 {
   if (!m_active) return true;
   if (p_partner==NULL) {
-    ATOOLS::msg.Error()<<"Remnant_Base::AdjustKinematics(): "
-		       <<"No partner found. Abort."<<std::endl;
-    exit(129);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"No partner remnant found.",
+			    "Remnant_Base","AdjustKinematics"));
   }
   p_last[1]=p_partner->Last();
   if ((p_last[0]==NULL)||(p_last[1]==NULL)) {
-    ATOOLS::msg.Error()<<"Remnant_Base::AdjustKinematics(): "
-		       <<"Not enough remnants to ensure four momentum conservation. Abort."<<std::endl;
-    exit(129);
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
+			    "Not enough remnants to ensure four momentum conservation.",
+			    "Remnant_Base","AdjustKinematics"));
   }
   double Erem=ATOOLS::rpa.gen.Ecms(), pzrem=0.0;
   for (int i=0;i<p_beamblob->NOutP();++i) {

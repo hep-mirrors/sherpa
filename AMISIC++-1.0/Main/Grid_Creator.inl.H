@@ -31,6 +31,15 @@ namespace AMISIC {
 
   template <class Argument_Type,class Result_Type>
   void Grid_Creator<Argument_Type,Result_Type>::
+  SetMCExtension(const std::string _m_mcextension)
+  { m_mcextension=_m_mcextension; }
+
+  template <class Argument_Type,class Result_Type>
+  const std::string Grid_Creator<Argument_Type,Result_Type>::MCExtension() const
+  { return m_mcextension; }
+
+  template <class Argument_Type,class Result_Type>
+  void Grid_Creator<Argument_Type,Result_Type>::
   SetMaxPoints(const long int _m_maxpoints)
   { m_maxpoints[0]=_m_maxpoints; }
 

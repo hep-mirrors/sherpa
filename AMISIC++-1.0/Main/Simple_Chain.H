@@ -33,7 +33,7 @@ namespace AMISIC {
     GridCreatorType *p_gridcreator;
 
     std::string m_environmentfile, m_xsfile;
-    std::string m_xsextension, m_maxextension;
+    std::string m_xsextension, m_maxextension, m_mcextension;
 
     EXTRAXS::Simple_XS *p_processes;
     FSRChannel         *p_fsrinterface;
