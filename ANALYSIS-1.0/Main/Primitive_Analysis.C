@@ -14,9 +14,11 @@
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) :
-  m_nevt(0), p_partner(this)
+Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode)
+  //  : m_nevt(0), p_partner(this)
 {
+  m_nevt = 0;
+  p_partner = this;
   m_mode = mode;
 
   m_name = std::string("Analysis : ") + _name;
@@ -39,11 +41,8 @@ Primitive_Analysis::~Primitive_Analysis()
   }
   m_observables.clear();
 
-  //
-  for (Analysis_List::iterator it=m_subanalyses.begin();
-       it!=m_subanalyses.end();++it) {
+  for (Analysis_List::iterator it=m_subanalyses.begin();it!=m_subanalyses.end();++it) 
     delete it->second;
-  }
   m_subanalyses.clear();
 }
 
@@ -95,7 +94,7 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis(const std::string & key,
     if (key!="Hadron" && mode&ANALYSIS::do_hadron) mode=mode^ANALYSIS::do_hadron;
   }
 
-  Primitive_Analysis * ana=new Primitive_Analysis(m_name.substr(11)+key,mode);
+  Primitive_Analysis * ana = new Primitive_Analysis(m_name.substr(11)+key,mode);
   if (master) ana->SetPartner(p_partner);
 
   for (size_t i=0;i<m_observables.size();i++) {
@@ -112,9 +111,8 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
   std::string name;
   for (Blob_Const_Iterator bit=bl->begin();bit!=bl->end();++bit) {
     if ((*bit)->Type()==btp::Signal_Process) {
-      nout  = (*bit)->NOutP();
-      // orig: (*bit)->Type();
-      name  = (*bit)->TypeSpec();
+      nout  = (*bit)->NOutP();      
+      name  = (*bit)->TypeSpec();// orig: (*bit)->Type();
       break;
     }
   }
@@ -268,7 +266,6 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
 	  if (m_stats.nevt_one>0) {
 	    double xshist=m_stats.sum_weight/double(m_stats.nevt);
 	    double xsreal=m_stats.sum_weight_one/double(m_stats.nevt_one);
-	    //	    std::cout<<m_observables[i]->Name()<<"   xshist="<<xshist<<"  xsreal"<<xsreal<<std::endl;
 	    m_observables[i]->EndEvaluation(xsreal/xshist);
 	  }
 	  else {
@@ -385,7 +382,8 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   std::string testname=std::string("ParticleSelector_")+key;
   for(size_t i=0;i<m_observables.size();++i) {
     if (m_observables[i]->Name()==testname) {
-      std::cout<<" WARNING"<<testname<<" already present "<<std::endl;
+      msg.Error()<<"WARNING in Primitive_Analysis::GetParticleList:"<<std::endl
+		 <<"   "<<testname<<" already present, will continue."<<std::endl;
       ps = static_cast<Particle_Selector*>(m_observables[i]);
       break;
     } 
@@ -399,7 +397,8 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   ps->CreateParticleList();
   cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
-  std::cout<<" ERROR  "<<key<<" not found"<<std::endl;
+  msg.Error()<<"WARNING in Primitive_Analysis::GetParticleList:"<<std::endl
+	     <<"   "<<key<<" not found, return 0."<<std::endl;
 
   return 0;
 }

@@ -101,6 +101,129 @@ void Jet_Observable_Base::Reset()
   }  
 }
 
+
+
+Two_Jet_Observable_Base::Two_Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
+						 unsigned int mode,unsigned int minn,unsigned int maxn, 
+						 const std::string & lname) :
+  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_mode(mode), m_minn(minn), m_maxn(maxn)
+{
+  m_listname = lname;
+  m_name     = std::string("jet_");
+  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  if (m_minn!=0) {
+    MyStrStream str;
+    str<<m_name<<m_mode<<"_"<<m_minn<<"_";
+    str>>m_name;
+  }
+
+  p_histo =  0;
+  unsigned int num = (m_maxn*m_maxn-m_maxn)/2;
+  for (unsigned int i=0;i<num+1;++i)
+    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,m_nbins));
+
+  p_minpts = new double[maxn]; p_maxpts = new double[maxn];
+  for (int i=0;i<maxn;i++) { p_minpts[i]=0.; p_maxpts[i]=1.e12; }
+}
+
+
+void Two_Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int ncount)
+{
+  if ((m_mode==1 && pl.size()>=m_minn) ||
+      (m_mode==2 && pl.size()==m_minn)) {
+    // fill
+    size_t i=1;
+    int jet1=0,jet2=0;
+    for (Particle_List::const_iterator it1=pl.begin();it1!=pl.end();++it1,++jet1) {
+      for (Particle_List::const_iterator it2=it1+1;it2!=pl.end() && i<=(sqr(m_maxn)-m_maxn)/2;++it2,++i,++jet2) {
+	double value=Calc(*it1,*it2,jet1,jet2);
+	m_histos[0]->Insert(value,weight,ncount);
+	m_histos[i]->Insert(value,weight,ncount);
+      }
+    }
+    for (; i<m_histos.size();++i) { 
+      m_histos[0]->Insert(0.,0.,ncount);
+      m_histos[i]->Insert(0.,0.,ncount);
+    }
+  }
+  else {
+    // fill with 0
+    for (size_t i=0; i<m_histos.size();++i) {
+      m_histos[0]->Insert(0.,0.,ncount);
+      m_histos[i]->Insert(0.,0.,ncount);
+    }
+  }
+}
+
+void Two_Jet_Observable_Base::Evaluate(const Blob_List & blobs,double value, int ncount)
+{
+  Particle_List * pl=p_ana->GetParticleList(m_listname);
+  Evaluate(*pl,value, ncount);
+}
+
+void Two_Jet_Observable_Base::EndEvaluation(double scale) {
+  for (size_t i=0; i<m_histos.size();++i) {
+    m_histos[i]->Finalize();
+    if (scale!=1.) m_histos[i]->Scale(scale);
+    m_histos[i]->Output();
+  }
+}
+
+void Two_Jet_Observable_Base::Output(const std::string & pname) {
+  int  mode_dir = 448;
+  mkdir((pname).c_str(),mode_dir); 
+  for (size_t i=0; i<m_histos.size();++i) {
+    std::string fname;
+    MyStrStream s;
+    s<<i;
+    s<<".dat"; 
+    s>>fname;
+    m_histos[i]->Output((pname+std::string("/")+m_name+fname).c_str());
+  }
+}
+
+Primitive_Observable_Base & Two_Jet_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
+{
+  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
+    std::cout<<" ERROR: in Two_Jet_Observable_Base::operator+=  in"<<m_name<<std::endl;
+    return *this;
+  }
+
+  Two_Jet_Observable_Base * jdrd = ((Two_Jet_Observable_Base*)(&ob));
+
+  if (m_histos.size()==jdrd->m_histos.size()) {
+    for (size_t i=0; i<m_histos.size();++i) {
+      (*m_histos[i])+=(*jdrd->m_histos[i]);
+    }
+  }
+  return *this;
+}
+
+void Two_Jet_Observable_Base::Reset()
+{
+  for (size_t i=0; i<m_histos.size();++i) {
+    m_histos[i]->Reset();
+  }  
+}
+
+void Two_Jet_Observable_Base::SetPTRange(const int jetno,const double minpt,const double maxpt)
+{
+  if (!(jetno>=m_minn&&jetno<=m_maxn)) {
+    msg.Error()<<"Potential Error in Two_Jet_Observable_Base::SetMinPT("<<jetno<<")"<<std::endl
+	       <<"   Out of bounds : "<<m_minn<<" ... "<<m_maxn<<", will continue."<<std::endl;
+    return;
+  }
+  p_minpts[jetno-1] = minpt; 
+  p_maxpts[jetno-1] = maxpt; 
+}
+
+
+
+
+//########################################################################################
+//########################################################################################
+//########################################################################################
+
 Jet_Eta_Distribution::Jet_Eta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 					   unsigned int mode,unsigned int minn,unsigned int maxn, 
 					   const std::string & lname) :
@@ -221,196 +344,103 @@ Primitive_Observable_Base * Jet_Differential_Rates::Copy() const
 
 
 
-////////////////////////////////////////////////////////////////////////////////
 
+//##############################################################################
+//##############################################################################
+//##############################################################################
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 Jet_DeltaR_Distribution::Jet_DeltaR_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 						 unsigned int mode,unsigned int minn,unsigned int maxn, 
 						 const std::string & lname) :
-  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_mode(mode), m_minn(minn), m_maxn(maxn)
+  Two_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname)
 {
-  m_listname=lname;
-  m_name  = std::string("dr");
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
-  if (m_minn!=0) {
-    MyStrStream str;
-    str<<m_name<<m_mode<<"_"<<m_minn<<"_";
-    str>>m_name;
-  }
-
-  p_histo =  0;
-  unsigned int num = (m_maxn*m_maxn-m_maxn)/2;
-  for (unsigned int i=0;i<num+1;++i)
-    m_histos.push_back(new Histogram(type,m_xmin,m_xmax,m_nbins));
+  m_name+="dR2_";
 }
-
-
-void Jet_DeltaR_Distribution::Evaluate(const Particle_List & pl,double weight, int ncount)
-{
-  
-  //std::cout<<"pl size is : "<<pl.size()<<std::endl;
-
-  if ((m_mode==1 && pl.size()>=m_minn) ||
-      (m_mode==2 && pl.size()==m_minn)) {
-    // fill
-    size_t i=1;
-    for (Particle_List::const_iterator it1=pl.begin();it1!=pl.end();++it1) {
-      for (Particle_List::const_iterator it2=it1+1;it2!=pl.end() && i<=(sqr(m_maxn)-m_maxn)/2;++it2,++i) {
-	double value=Calc(*it1,*it2);
-	//std::cout<<"Insert : "<<value<<std::endl;
-	m_histos[0]->Insert(value,weight,ncount);
-	m_histos[i]->Insert(value,weight,ncount);
-      }
-    }
-    for (; i<m_histos.size();++i) { 
-      m_histos[0]->Insert(0.,0.,ncount);
-      m_histos[i]->Insert(0.,0.,ncount);
-    }
-  }
-  else {
-    // fill with 0
-    for (size_t i=0; i<m_histos.size();++i) {
-      m_histos[0]->Insert(0.,0.,ncount);
-      m_histos[i]->Insert(0.,0.,ncount);
-    }
-  }
-}
-
-void Jet_DeltaR_Distribution::Evaluate(const Blob_List & blobs,double value, int ncount)
-{
-  Particle_List * pl=p_ana->GetParticleList(m_listname);
-  //std::cout<<"Evaluate for "<<m_listname<<" : "<<pl->size()<<" from "<<p_ana<<std::endl;
-  Evaluate(*pl,value, ncount);
-}
-
-void Jet_DeltaR_Distribution::EndEvaluation(double scale) {
-  for (size_t i=0; i<m_histos.size();++i) {
-    m_histos[i]->Finalize();
-    if (scale!=1.) m_histos[i]->Scale(scale);
-    m_histos[i]->Output();
-  }
-}
-
-void Jet_DeltaR_Distribution::Output(const std::string & pname) {
-  int  mode_dir = 448;
-  mkdir((pname).c_str(),mode_dir); 
-  for (size_t i=0; i<m_histos.size();++i) {
-    std::string fname;
-    MyStrStream s;
-    s<<i;
-    s<<".dat"; 
-    s>>fname;
-    m_histos[i]->Output((pname+std::string("/")+m_name+fname).c_str());
-  }
-}
-
-Primitive_Observable_Base & Jet_DeltaR_Distribution::operator+=(const Primitive_Observable_Base & ob)
-{
-  if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
-    std::cout<<" ERROR: in Jet_DeltaR_Distribution::operator+=  in"<<m_name<<std::endl;
-    return *this;
-  }
-
-  Jet_DeltaR_Distribution * jdrd = ((Jet_DeltaR_Distribution*)(&ob));
-
-  if (m_histos.size()==jdrd->m_histos.size()) {
-    for (size_t i=0; i<m_histos.size();++i) {
-      (*m_histos[i])+=(*jdrd->m_histos[i]);
-    }
-  }
-  return *this;
-}
-
-void Jet_DeltaR_Distribution::Reset()
-{
-  for (size_t i=0; i<m_histos.size();++i) {
-    m_histos[i]->Reset();
-  }  
-}
-
 
 Primitive_Observable_Base * Jet_DeltaR_Distribution::Copy() const 
 {
-  return new Jet_DeltaR_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  Jet_DeltaR_Distribution * jdr =
+    new Jet_DeltaR_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  for (int i=0;i<m_maxn;i++) jdr->SetPTRange(i+1,p_minpts[i],p_maxpts[i]);
+  return jdr;
 }
 
-double Jet_DeltaR_Distribution::Calc(const Particle * p1,const Particle * p2)
+double Jet_DeltaR_Distribution::Calc(const Particle * p1,const Particle * p2,
+				     const int jet1,const int jet2)
 {
   Vec4D mom1=p1->Momentum();
   Vec4D mom2=p2->Momentum();
   
-  double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]);
-  double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
-  double dphi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
-  double c1=mom1[3]/Vec3D(mom1).Abs();
-  double c2=mom2[3]/Vec3D(mom2).Abs();
-  double deta=0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
-  double dr= sqrt(sqr(deta) + sqr(dphi)); 
-  
-  return dr;
+  double pt1  = mom1.PPerp();
+  double pt2  = mom2.PPerp();
+  if (pt1<p_minpts[jet1] || pt2<p_minpts[jet2] ||
+      pt1>p_maxpts[jet1] || pt2>p_maxpts[jet2]) return 0.;
+  double dphi = acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+  double deta = mom1.Eta()-mom2.Eta();
+  return sqrt(sqr(deta) + sqr(dphi)); 
 }
 
 //----------------------------------------------------------------------
 
 
 Jet_DeltaEta_Distribution::Jet_DeltaEta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
-						 unsigned int mode,unsigned int minn,unsigned int maxn, 
-						 const std::string & lname) :
-  Jet_DeltaR_Distribution(type,xmin,xmax,nbins,mode,minn,maxn,lname)
+						     unsigned int mode,unsigned int minn,unsigned int maxn, 
+						     const std::string & lname) :
+  Two_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname)
 {
-  m_name  = std::string("deta");
-
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
-  if (m_minn!=0) {
-    MyStrStream str;
-    str<<m_name<<m_mode<<"_"<<m_minn<<"_";
-    str>>m_name;
-  }
+  m_name+="deta2_";
 }
 
 Primitive_Observable_Base * Jet_DeltaEta_Distribution::Copy() const 
 {
-  return new Jet_DeltaEta_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  Jet_DeltaEta_Distribution * jde =
+    new Jet_DeltaEta_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  for (int i=0;i<m_maxn;i++) jde->SetPTRange(i+1,p_minpts[i],p_maxpts[i]);
+  return jde;
 }
 
-double Jet_DeltaEta_Distribution::Calc(const Particle * p1,const Particle * p2)
+double Jet_DeltaEta_Distribution::Calc(const Particle * p1,const Particle * p2,
+				       const int jet1,const int jet2)
 {
-  Vec4D mom1=p1->Momentum();
-  Vec4D mom2=p2->Momentum();
+  Vec4D mom1 = p1->Momentum();
+  Vec4D mom2 = p2->Momentum();
+  double pt1 = mom1.PPerp(), pt2 = mom2.PPerp();
+  if (pt1<p_minpts[jet1] || pt2<p_minpts[jet2] ||
+      pt1>p_maxpts[jet1] || pt2>p_maxpts[jet2]) return 0.;
   
-  double deta = dabs((mom1.Eta()-mom2.Eta()));
-  return deta;
+  return dabs((mom1.Eta()-mom2.Eta()));
 }
 //----------------------------------------------------------------------
 
 
 Jet_DeltaPhi_Distribution::Jet_DeltaPhi_Distribution(unsigned int type,double xmin,double xmax,int nbins,
-						 unsigned int mode,unsigned int minn,unsigned int maxn, 
-						 const std::string & lname) :
-  Jet_DeltaR_Distribution(type,xmin,xmax,nbins,mode,minn,maxn,lname)
+						     unsigned int mode,unsigned int minn,unsigned int maxn, 
+						     const std::string & lname) :
+  Two_Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname)
 {
-  m_name  = std::string("dphi");
-
-  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
-  if (m_minn!=0) {
-    MyStrStream str;
-    str<<m_name<<m_mode<<"_"<<m_minn<<"_";
-    str>>m_name;
-  }
+  m_name+="dphi2_";
 }
 
 Primitive_Observable_Base * Jet_DeltaPhi_Distribution::Copy() const 
 {
-  return new Jet_DeltaPhi_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  Jet_DeltaPhi_Distribution * jdp =
+    new Jet_DeltaPhi_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  for (int i=0;i<m_maxn;i++) jdp->SetPTRange(i+1,p_minpts[i],p_maxpts[i]);
+  return jdp;
 }
 
-double Jet_DeltaPhi_Distribution::Calc(const Particle * p1,const Particle * p2)
+double Jet_DeltaPhi_Distribution::Calc(const Particle * p1,const Particle * p2,
+				       const int jet1,const int jet2)
 {
   Vec4D mom1=p1->Momentum();
   Vec4D mom2=p2->Momentum();
+  double pt1 = mom1.PPerp(), pt2 = mom2.PPerp();
+  if (pt1<p_minpts[jet1] || pt2<p_minpts[jet2] ||
+      pt1>p_maxpts[jet1] || pt2>p_maxpts[jet2]) return 0.;
   
-  double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]);
-  double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
-  double adphi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
-  return adphi;
+  return acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
 }

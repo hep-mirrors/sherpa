@@ -164,12 +164,9 @@ void Calorimeter_Cone::FillShape(int jetno,ATOOLS::Histogram * histo,
       int j=jp;
       if (j<0) j+=m_nphi;
       else if (j>=m_nphi) j-=m_nphi;
-      //if (p_calorimeter->Cell(i,j)>0.) {
-      //	std::cout<<"("<<i<<","<<j<<") : "<<p_calorimeter->Cell(i,j)
-      //<<" -> "<<p_jetno[i][j]<<std::endl;
-      //}
+      if (p_calorimeter->Cell(i,j)==0.) continue; 
       if (p_jetno[i][j]!=number) continue;
-      double dphi = sqr(j*m_delta_phi-phi);
+      double dphi = sqr(Min(dabs(j*m_delta_phi-phi),dabs(j*m_delta_phi-phi-2.*M_PI)));
       double deta = sqr(m_mineta+m_delta_eta*i-y);
       dR    = sqrt(dphi+deta);
       histo->Insert(dR,p_calorimeter->Cell(i,j)*weight/et,ncount);

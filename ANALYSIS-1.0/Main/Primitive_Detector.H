@@ -55,17 +55,6 @@ namespace ANALYSIS {
   };
 
   inline std::string Primitive_Detector::Name() const { return m_name; }
-  inline void Primitive_Detector::Print() {
-    ATOOLS::msg.Out()<<"==================================================="<<std::endl
-		     <<m_name<<" with "<<m_elements.size()<<" components : "<<std::endl;
-    int i=1;
-    std::string name;
-    for (String_DetectorElement_Iter sdeiter=m_elements.begin();
-	 sdeiter!=m_elements.end();sdeiter++) {
-      ATOOLS::msg.Out()<<"Element "<<i<<": "<<sdeiter->second->Name()<<std::endl;
-    }
-    ATOOLS::msg.Out()<<"==================================================="<<std::endl;
-  }
   inline void Primitive_Detector::Reset() {
     for (String_DetectorElement_Iter sdeiter=m_elements.begin();
 	 sdeiter!=m_elements.end();sdeiter++) {

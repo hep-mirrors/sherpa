@@ -20,7 +20,7 @@ Jet_Cone_Distribution::Jet_Cone_Distribution(const int linlog, const double Etcu
   for (int i=0;i<nbins;i++) {
     m_cones.push_back(new Calorimeter_Cone(Etcut,m_xmin+i*dx,p_calorimeter));
     m_cones[i]->SetEtaRangeForJets(etamin,etamax,1);
-    m_histos.push_back(new ATOOLS::Histogram(0,0.,10.,10));
+    m_histos.push_back(new ATOOLS::Histogram(0,0.,10.,nbins));
   }
 }
 
@@ -39,7 +39,7 @@ Jet_Cone_Distribution::Jet_Cone_Distribution(const int linlog, const double Etcu
   double dx = (m_xmax-m_xmin)/double(m_nbins);
   for (int i=0;i<nbins;i++) {
     m_cones.push_back(new Calorimeter_Cone(Etcut,m_xmin+i*dx,p_calorimeter));
-    m_histos.push_back(new ATOOLS::Histogram(0,0.,10.,10));
+    m_histos.push_back(new ATOOLS::Histogram(0,0.,10.,nbins));
   }
 }
 
@@ -114,9 +114,6 @@ Jet_Cone_Dependence::Jet_Cone_Dependence(const int linlog, const double Etcut,
   Primitive_Observable_Base(linlog,Rmin,Rmax,nbins,NULL), 
   m_Etcut(Etcut), m_njetmin(njetmin), m_njetmax(njetmax), p_calorimeter(calorimeter)
 {
-  std::cout<<"JetConeDep with ETcut = "<<Etcut<<"("<<etamin<<" ... "<<etamax<<"), R ="
-	   <<Rmin<<" ... "<<Rmax<<", jets : "<<m_njetmin<<" ... "<<m_njetmax<<", in "
-	   <<nbins<<" Bins."<<std::endl;
   std::string etname;
   MyStrStream s1;
   s1<<m_Etcut;
@@ -234,7 +231,7 @@ Jet_Cone_Shape::Jet_Cone_Shape(const int linlog,const double Rmin, const double 
   s1>>etname;
   m_name = std::string("ConeShape_")+etname+std::string("_")+rname;
   for (int i=jetmin;i<jetmax;i++) {
-    m_histos.push_back(new ATOOLS::Histogram(linlog,Rmin,Rmax,10));
+    m_histos.push_back(new ATOOLS::Histogram(linlog,Rmin,Rmax,nbins));
   }
 }
 

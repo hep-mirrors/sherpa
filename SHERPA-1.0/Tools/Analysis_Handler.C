@@ -328,7 +328,8 @@ void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
 	if (kfcs.size()==1 && numbers.size()>=3) {
 	  flav       = Flavour(kf::code(abs(kfcs[0])));
 	  if (kfcs[0]<0) flav = flav.Bar();
-	  if (!mode && (flav==Flavour(kf::jet) || flav==Flavour(kf::bjet))) {
+	  if (!(flav==Flavour(kf::jet) || flav==Flavour(kf::bjet))) continue;
+	  if (!mode) {
 	    Primitive_Calorimeter * Hcal = 
 	      dynamic_cast<Primitive_Calorimeter * >
 	      (p_detector->GetElement(std::string("Hadronic Calorimeter")));
@@ -449,7 +450,7 @@ void Analysis_Handler::SetUpObservables()
     switch (odn) {
     case 1: // One-Particle Observables
       if (!(od->ints.size()==2 && od->numbers.size()==2 && od->keywords.size()==1)) {
-	msg.Error()<<"Potential Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+	msg.Error()<<"Potential Error in Analysis_Handler::SetUpObservables()"<<std::endl
 		   <<"   One particle observable with "
 		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
 		   <<". Continue and hope for the best."<<std::endl;
@@ -481,7 +482,7 @@ void Analysis_Handler::SetUpObservables()
       }
     case 2:
       if (!(od->ints.size()==3 && od->numbers.size()==2 && od->keywords.size()==1)) {
-	msg.Error()<<"Potential Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+	msg.Error()<<"Potential Error in Analysis_Handler::SetUpObservables()"<<std::endl
 		   <<"   One particle observable with "
 		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
 		   <<". Continue and hope for the best."<<std::endl;
@@ -521,8 +522,9 @@ void Analysis_Handler::SetUpObservables()
       }
     case 10:
       {
-	if (!(od->ints.size()==5 && od->numbers.size()==2 && od->keywords.size()==1)) {
-	  msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+	if (!((od->ints.size()==5 && od->numbers.size()==2 && od->keywords.size()==1) ||
+	      (od->ints.size()==5 && od->numbers.size()==4 && od->keywords.size()==1)) ) {
+	  msg.Error()<<"Potential Error in Sample_Analysis::SetUpObservables()"<<std::endl
 		     <<"   One particle observable with "
 		     <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
 		     <<". Continue and hope for the best."<<std::endl;
@@ -581,29 +583,41 @@ void Analysis_Handler::SetUpObservables()
 	  break; 
 	}
 	if (type==std::string("JetDR"))  {
-	  obs = new Jet_DeltaR_Distribution(linlog,od->numbers[0],od->numbers[1],
-					   od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  Jet_DeltaR_Distribution * jdr;
+	  jdr = new Jet_DeltaR_Distribution(linlog,od->numbers[0],od->numbers[1],
+					    od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  if (od->numbers.size()>=4) jdr->SetPTRange(1,od->numbers[2],od->numbers[3]);
+	  if (od->numbers.size()>=6) jdr->SetPTRange(2,od->numbers[4],od->numbers[5]);
+	  obs = jdr;
 	  break; 
 	}
 	if (type==std::string("JetDEta"))  {
-	  obs = new Jet_DeltaEta_Distribution(linlog,od->numbers[0],od->numbers[1],
-					   od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  Jet_DeltaEta_Distribution * jde;
+	  jde = new Jet_DeltaEta_Distribution(linlog,od->numbers[0],od->numbers[1],
+					      od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  if (od->numbers.size()>=4) jde->SetPTRange(1,od->numbers[2],od->numbers[3]);
+	  if (od->numbers.size()>=6) jde->SetPTRange(2,od->numbers[4],od->numbers[5]);
+	  obs = jde;
 	  break; 
 	}
 	if (type==std::string("JetDPhi"))  {
-	  obs = new Jet_DeltaPhi_Distribution(linlog,od->numbers[0],od->numbers[1],
-					   od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  Jet_DeltaPhi_Distribution * jdp;
+	  jdp = new Jet_DeltaPhi_Distribution(linlog,od->numbers[0],od->numbers[1],
+					      od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	  if (od->numbers.size()>=4) jdp->SetPTRange(1,od->numbers[2],od->numbers[3]);
+	  if (od->numbers.size()>=6) jdp->SetPTRange(2,od->numbers[4],od->numbers[5]);
+	  obs = jdp;
 	  break; 
 	}
       }
     case 20:
       {
- 	if (!(od->ints.size()==2 && od->numbers.size()==3 && od->keywords.size()==1) ||
-	    !(od->ints.size()==2 && od->numbers.size()==5 && od->keywords.size()==1) ||
-	    !(od->ints.size()==4 && od->numbers.size()==6 && od->keywords.size()==1) ||
-	    !(od->ints.size()==4 && od->numbers.size()==3 && od->keywords.size()==1) ||
-	    !(od->ints.size()==4 && od->numbers.size()==5 && od->keywords.size()==1) ) {
-	  msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+ 	if (!((od->ints.size()==2 && od->numbers.size()==3 && od->keywords.size()==1) ||
+	      (od->ints.size()==2 && od->numbers.size()==5 && od->keywords.size()==1) ||
+	      (od->ints.size()==4 && od->numbers.size()==6 && od->keywords.size()==1) ||
+	      (od->ints.size()==4 && od->numbers.size()==3 && od->keywords.size()==1) ||
+	      (od->ints.size()==4 && od->numbers.size()==5 && od->keywords.size()==1) )) {
+	  msg.Error()<<"Potential Error in Sample_Analysis::SetUpObservables()"<<std::endl
 		     <<"   Detector observable with "
 		     <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
 		     <<". Continue and hope for the best."<<std::endl;
@@ -616,7 +630,7 @@ void Analysis_Handler::SetUpObservables()
 	if (od->keywords[0]==std::string("Log")) linlog = 10;
 	if (type==std::string("JetConeShape"))  {
 	  if (flav!=Flavour(kf::jet)) {
-	    msg.Error()<<"Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+	    msg.Error()<<"Error in Analysis_Handler::SetUpObservables()"<<std::endl
 		       <<"   Jet cone number not defined for non-jets."<<std::endl
 		       <<"   Don't initialize an observable."<<std::endl;
 	    continue;
@@ -633,7 +647,7 @@ void Analysis_Handler::SetUpObservables()
 	}
 	if (type==std::string("JetConeDep"))  {
 	  if (flav!=Flavour(kf::jet)) {
-	    msg.Error()<<"Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+	    msg.Error()<<"Error in Analysis_Handler::SetUpObservables()"<<std::endl
 		       <<"   Jet cone dependence not defined for non-jets."<<std::endl
 		       <<"   Don't initialize an observable."<<std::endl;
 	    continue;
@@ -656,7 +670,7 @@ void Analysis_Handler::SetUpObservables()
 	}
 	if (type==std::string("JetCone"))  {
 	  if (flav!=Flavour(kf::jet)) {
-	    msg.Error()<<"Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+	    msg.Error()<<"Error in Analysis_Handler::SetUpObservables()"<<std::endl
 		       <<"   Jet cone number not defined for non-jets."<<std::endl
 		       <<"   Don't initialize an observable."<<std::endl;
 	    continue;
@@ -679,7 +693,7 @@ void Analysis_Handler::SetUpObservables()
 	}
       }
     default:
-      msg.Error()<<"Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+      msg.Error()<<"Error in Analysis_Handler::SetUpObservables()"<<std::endl
 		 <<"   "<<odn<<"-Particle Observables not yet realized for "<<type<<"."<<std::endl;
       abort();
     }

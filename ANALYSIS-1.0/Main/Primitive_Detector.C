@@ -41,6 +41,19 @@ void Primitive_Detector::Add(Primitive_Detector_Element * pde)
   m_elements[pde->Name()] = pde;
 }
 
+void Primitive_Detector::Print() {
+  if (!ATOOLS::msg.LevelIsInfo()) return;
+  ATOOLS::msg.Out()<<"==================================================="<<std::endl
+		   <<m_name<<" with "<<m_elements.size()<<" components : "<<std::endl;
+  int i=1;
+  std::string name;
+  for (String_DetectorElement_Iter sdeiter=m_elements.begin();
+       sdeiter!=m_elements.end();sdeiter++) {
+    ATOOLS::msg.Out()<<"Element "<<i<<": "<<sdeiter->second->Name()<<std::endl;
+  }
+  ATOOLS::msg.Out()<<"==================================================="<<std::endl;
+}
+
 void Primitive_Detector::Fill(const ATOOLS::Blob_List * bl)
 {
   Particle_List * pl = new Particle_List; 
