@@ -37,6 +37,8 @@ namespace ATOOLS {
     VectorTypeID m_vectortype;
     MatrixTypeID m_matrixtype;
 
+    bool m_ignorecase, m_ignoreblanks;
+
     void Init();
 
   protected:
@@ -57,6 +59,8 @@ namespace ATOOLS {
     ReadWrite_Type NotDefined();
     template <class ReadWrite_Type >
     ReadWrite_Type Default();
+
+    size_t Find(std::string input,std::string parameter,size_t &length) const;
 
   public:
 
@@ -125,6 +129,9 @@ namespace ATOOLS {
     inline static void AddCommandLine(const std::string _s_commandline);
     inline static void AddCommandLine(const std::vector<std::string> &_s_commandline);
   
+    inline void SetIgnoreCase(const bool ignorecase);
+    inline void SetIgnoreBlanks(const bool ignorecase);
+
     // getters
     inline const std::vector<std::string> &Comment() const;
     inline const std::vector<std::string> &Ignore() const;
@@ -142,6 +149,9 @@ namespace ATOOLS {
 
     inline const bool AllowNans() const;
     inline const bool AddCommandLine() const;
+
+    inline bool IgnoreCase() const;
+    inline bool IgnoreBlanks() const;
 
     // inline functions
     inline bool RereadInFile(const unsigned int i=0);

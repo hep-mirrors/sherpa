@@ -19,9 +19,7 @@ Data_Reader::Data_Reader():
 Data_Reader::Data_Reader(const std::string _m_cut,
 			 const std::string _m_separator,
 			 const std::string _m_comment):
-  Read_Write_Base(1,0,_m_cut,_m_separator,_m_comment),
-  m_ignorecase(false),
-  m_ignoreblanks(false)
+  Read_Write_Base(1,0,_m_cut,_m_separator,_m_comment)
 {
   SetInFileMode(Permanent);
 }
@@ -124,59 +122,6 @@ std::string Data_Reader::ReplaceTags(std::string tag)
   }
   if (success && tag!=oldtag) return ReplaceTags(tag);
   return tag;
-}
-
-size_t Data_Reader::Find(std::string input,std::string parameter,size_t &length) const
-{
-#ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::Find("<<input<<","<<parameter<<"): "<<std::endl;
-#endif
-  if (m_ignorecase) {
-    for (size_t i=0;i<input.length();++i) input[i]=toupper(input[i]);
-    for (size_t i=0;i<parameter.length();++i) parameter[i]=toupper(parameter[i]);
-  }
-  size_t cutinputblanks=0;
-  if (m_ignoreblanks) {
-    for (size_t j=0;j<Blank().size();++j) {
-      bool lastblank=true;
-      for (size_t i=0;i<input.length();++i) {
-	if (input[i]==Blank()[j]) {
-	  input[i]=Blank()[0];
-	  if (lastblank) {
-	    input=input.substr(0,i)+input.substr(i+1,input.length());
-	    ++cutinputblanks;
-	  }
-	  lastblank=true;
-	}
-	else {
-	  lastblank=false;
-	}
-      }
-    }
-    for (size_t j=0;j<Blank().size();++j) {
-      bool lastblank=true;
-      for (size_t i=0;i<parameter.length();++i) {
-	if (parameter[i]==Blank()[j]) {
-	  parameter[i]=Blank()[0];
-	  if (lastblank) {
-	    parameter=parameter.substr(0,i)+parameter.substr(i,parameter.length());
-	  }
-	  lastblank=true;
-	}
-	else {
-	  lastblank=false;
-	}
-      }
-    }
-  }
-#ifdef DEBUG__Data_Reader
-  std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
-	   <<"   parameter = '"<<parameter<<"'("<<cutparameterblanks<<")"<<std::endl;
-#endif
-  length=parameter.length()+cutinputblanks;
-  size_t pos=input.find(parameter);
-  if (pos==std::string::npos) length=0;
-  return pos;
 }
 
 template <class Read_Type>

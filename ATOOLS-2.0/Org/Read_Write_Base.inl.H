@@ -348,6 +348,26 @@ namespace ATOOLS {
     return OpenInFile(i); 
   }
 
+  inline void Read_Write_Base::SetIgnoreCase(const bool ignorecase) 
+  { 
+    m_ignorecase=ignorecase; 
+  }
+
+  inline bool Read_Write_Base::IgnoreCase() const
+  {
+    return m_ignorecase;
+  }
+  
+  inline void Read_Write_Base::SetIgnoreBlanks(const bool ignoreblanks) 
+  { 
+    m_ignoreblanks=ignoreblanks; 
+  }
+  
+  inline bool Read_Write_Base::IgnoreBlanks() const
+  {
+    return m_ignoreblanks;
+  }
+  
 } // end of namespace ATOOLS
 
 #endif

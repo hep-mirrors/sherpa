@@ -37,6 +37,61 @@ void Read_Write_Base::Init()
   m_matrixtype=MNormal; 
   m_allownans=false;
   m_addcommandline=true;
+  m_ignorecase=false;
+  m_ignoreblanks=false;
+}
+
+size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &length) const
+{
+#ifdef DEBUG__Read_Write_Base
+  std::cout<<"Read_Write_Base::Find("<<input<<","<<parameter<<"): "<<std::endl;
+#endif
+  if (m_ignorecase) {
+    for (size_t i=0;i<input.length();++i) input[i]=toupper(input[i]);
+    for (size_t i=0;i<parameter.length();++i) parameter[i]=toupper(parameter[i]);
+  }
+  size_t cutinputblanks=0;
+  if (m_ignoreblanks) {
+    for (size_t j=0;j<Blank().size();++j) {
+      bool lastblank=true;
+      for (size_t i=0;i<input.length();++i) {
+	if (input[i]==Blank()[j]) {
+	  input[i]=Blank()[0];
+	  if (lastblank) {
+	    input=input.substr(0,i)+input.substr(i+1,input.length());
+	    ++cutinputblanks;
+	  }
+	  lastblank=true;
+	}
+	else {
+	  lastblank=false;
+	}
+      }
+    }
+    for (size_t j=0;j<Blank().size();++j) {
+      bool lastblank=true;
+      for (size_t i=0;i<parameter.length();++i) {
+	if (parameter[i]==Blank()[j]) {
+	  parameter[i]=Blank()[0];
+	  if (lastblank) {
+	    parameter=parameter.substr(0,i)+parameter.substr(i,parameter.length());
+	  }
+	  lastblank=true;
+	}
+	else {
+	  lastblank=false;
+	}
+      }
+    }
+  }
+#ifdef DEBUG__Read_Write_Base
+  std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
+	   <<"   parameter = '"<<parameter<<"'("<<cutparameterblanks<<")"<<std::endl;
+#endif
+  length=parameter.length()+cutinputblanks;
+  size_t pos=input.find(parameter);
+  if (pos==std::string::npos) length=0;
+  return pos;
 }
 
 bool Read_Write_Base::OpenInFile(const unsigned int i)
