@@ -19,6 +19,18 @@ namespace ATOOLS {
     }
   };
   
+  class Order_ET {
+  public:
+    int operator()(ATOOLS::Particle * a, ATOOLS::Particle * b) {
+      if (a->Momentum().EPerp() > b->Momentum().EPerp()) return 1;
+      return 0;
+    }
+    int operator()(ATOOLS::Vec4D & a, ATOOLS::Vec4D & b) {
+      if (a.EPerp() > b.EPerp()) return 1;
+      return 0;
+    }
+  };
+  
   class Order_E {
   public:
     int operator()(ATOOLS::Particle * a, ATOOLS::Particle * b) {
