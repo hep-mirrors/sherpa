@@ -17,6 +17,7 @@ using namespace SHERPA;
 
 MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *model,
 		       BEAM::Beam_Spectra_Handler *beam,PDF::ISR_Handler *isr):
+  ATOOLS::Object("MI_Handler"),
   p_amisic(NULL),
   p_beam(beam),
   p_isr(isr),

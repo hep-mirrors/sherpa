@@ -3,6 +3,7 @@
 
 #include "Run_Parameter.H"
 #include "Blob_List.H"
+#include "Object.H"
 
 namespace BEAM   { class Beam_Spectra_Handler; }
 namespace PDF    { class ISR_Handler;          }
@@ -13,7 +14,7 @@ namespace SHERPA {
 
   class Matrix_Element_Handler;
 
-  class MI_Handler {
+  class MI_Handler: public ATOOLS::Object {
   public:
     
     enum TypeID { None    =  0,
@@ -22,7 +23,7 @@ namespace SHERPA {
 
   private:
 
-    AMISIC::Amisic   *p_amisic;
+    AMISIC::Amisic *p_amisic;
 
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
