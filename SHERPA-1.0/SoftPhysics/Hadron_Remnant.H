@@ -12,9 +12,6 @@ namespace SHERPA {
 
     size_t m_last;
 
-    void GetConstituents(ATOOLS::Flavour flav);
-
-    double GetXPDF(ATOOLS::Flavour flavour,double scale);
     bool   DiceKinematics();
 
     ATOOLS::Flavour Opposite(ATOOLS::Flavour flav) const; 
@@ -32,6 +29,10 @@ namespace SHERPA {
     double MinimalEnergy(const ATOOLS::Flavour &flavour); 
     
     bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist);
+
+    const std::vector<ATOOLS::Flavour> &GetConstituents(ATOOLS::Flavour flav);
+
+    double GetXPDF(ATOOLS::Flavour flavour,double scale);
 
   };// end of class Remnant_Base
 

@@ -2,6 +2,8 @@
 
 #include "Amisic.H"
 #include "My_Limits.H"
+#include "Remnant_Base.H"
+#include "ISR_Handler.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Multiple_Interactions
@@ -20,15 +22,25 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *mihandler):
   m_name = std::string("Multiple_Interactions:")+p_mihandler->Name();
   m_type = eph::Perturbative;
   m_ecms = sqrt(p_mihandler->ISRHandler()->Pole());
+  p_remnants[0]=GET_OBJECT(Remnant_Base,"Remnant_Base_0");
+  p_remnants[1]=GET_OBJECT(Remnant_Base,"Remnant_Base_1");
+  if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"No beam remnant handler found.",
+			    "Multiple_Interactions","Multiple_Interactions"));
+  }
 }
 
-Multiple_Interactions::~Multiple_Interactions() {}
-
+Multiple_Interactions::~Multiple_Interactions() 
+{
+}
 
 bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist) 
 {
-  m_xmax[1]=m_xmax[0]=1.0;
-  double pperpmax=std::numeric_limits<double>::max();
+  double pperpmax=m_pperpmax=std::numeric_limits<double>::max();
+  for (size_t i=0;i<2;++i) {
+    m_xmax[i]=1.0;
+    p_remnants[i]->QuickClear();
+  }
   for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==ATOOLS::btp::Hard_Collision || 
@@ -46,6 +58,8 @@ bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist)
       p_mihandler->ISRHandler()->
 	Extract((*bit)->InParticle(0)->Flav(),
 		(*bit)->InParticle(0)->Momentum()[0],(*bit)->Beam());
+      if (!p_remnants[(*bit)->Beam()]->Extract((*bit)->InParticle(0))) 
+	VetoHardProcess(*bit);
     }
   }
   if (pperpmax>=m_pperpmax) {
@@ -56,6 +70,12 @@ bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist)
 	for (int i=0;i<(*bit)->NOutP();++i) {
 	  pperpmax=ATOOLS::Min(pperpmax,
 			       (*bit)->OutParticle(i)->Momentum().PPerp());
+	}
+	for (int i=0;i<(*bit)->NInP();++i) {
+	  p_mihandler->ISRHandler()->
+	    Extract((*bit)->InParticle(i)->Flav(),
+		    (*bit)->InParticle(i)->Momentum()[0],i);
+	  if (!p_remnants[i]->Extract((*bit)->InParticle(i))) VetoHardProcess(*bit);
 	}
       }
     }
@@ -81,16 +101,27 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   p_mihandler->Reset();
   if (p_mihandler->GenerateHardProcess(blob)) {
     blob->SetId(bloblist->size());
-    bloblist->push_back(blob);
     blob->SetStatus(1);
-    p_mihandler->ISRHandler()->Reset(0);
-    p_mihandler->ISRHandler()->Reset(1);
+    for (size_t i=0;i<(size_t)blob->NInP();++i) {
+      p_mihandler->ISRHandler()->Reset(i);
+      if (!p_remnants[i]->Extract(blob->InParticle(i))) {
+	AMISIC::MI_Base::SetStopGeneration();
+	delete blob;
+	return false;
+      }
+    }
+    bloblist->push_back(blob);
     return true;
   }
   delete blob;
   p_mihandler->ISRHandler()->Reset(0);
   p_mihandler->ISRHandler()->Reset(1);
   return false;
+}
+
+void Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)
+{
+  ATOOLS::msg.Error()<<"Veto "<<*blob<<std::endl;
 }
 
 void Multiple_Interactions::Finish(const std::string &resultpath) 
@@ -100,5 +131,4 @@ void Multiple_Interactions::Finish(const std::string &resultpath)
 void Multiple_Interactions::CleanUp() 
 {
   p_mihandler->CleanUp();
-  m_pperpmax==std::numeric_limits<double>::max();
 }

@@ -27,8 +27,10 @@ Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,
   GetConstituents(isrhandler->Flav(m_beam));
 }
 
-void Hadron_Remnant::GetConstituents(const ATOOLS::Flavour flav) 
+const std::vector<ATOOLS::Flavour> &Hadron_Remnant::
+GetConstituents(const ATOOLS::Flavour flav) 
 {
+  if (m_constit.size()>0) return m_constit;
   int hadint=(flav.Kfcode()-flav.Kfcode()/10000)/10;
   if ((hadint>100)&&(hadint<1000)) {
     m_constit.resize(3);
@@ -43,7 +45,7 @@ void Hadron_Remnant::GetConstituents(const ATOOLS::Flavour flav)
 		  <<"Hadron is baryon."<<std::endl<<"   Constituents are ["
 		  <<m_constit[0]<<","<<m_constit[1]<<","
 		  <<m_constit[2]<<"]."<<std::endl;
-    return;
+    return m_constit;
   }
   if ((hadint>10)&&(hadint<100)) {
     m_constit.resize(2);
@@ -55,11 +57,12 @@ void Hadron_Remnant::GetConstituents(const ATOOLS::Flavour flav)
     msg_Tracking()<<"Hadron_Remnant::FindConstituents("<<flav<<"): "
 		  <<"Hadron is meson."<<std::endl<<"   Constituents are ["
 		  <<m_constit[0]<<","<<m_constit[1]<<"]."<<std::endl;
-    return;
+    return m_constit;
   }
   throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
 			  "Cannot determine constituents.",
 			  "Hadron_Remnant","GetConstituents"));
+  return m_constit;
 }
 
 bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
@@ -142,8 +145,8 @@ bool Hadron_Remnant::DiceKinematics()
     xtot=0.;
     for (std::map<ATOOLS::Particle*,double>::iterator it=xmap.begin();
 	 it!=xmap.end(); ++it) {
-      double x=it->first->Flav().PSMass()/m_pbeam[0];
-      if (x==0.) x=10.*ATOOLS::rpa.gen.Accu();
+      double x=1.1*it->first->Flav().PSMass()/m_pbeam[0];
+      if (x==0.0) x=10.*ATOOLS::rpa.gen.Accu();
       xtot+=it->second=x;
     }
     for (std::map<ATOOLS::Particle*,double>::iterator it=xmap.begin();
@@ -155,7 +158,7 @@ bool Hadron_Remnant::DiceKinematics()
   for (unsigned int i=0;i<m_extracted.size();++i) 
     ptot-=m_extracted[i]->Momentum();
   for (unsigned int j=0;j<m_companions.size();++j) {
-    double E=xmap[m_companions[j]]*ptot[0];
+    double E=xmap[m_companions[j]]*m_pbeam[0];
     double m=m_companions[j]->Flav().PSMass();
     double pmax=0.9999999999*sqrt(E*E-m*m);
     double xperp=ATOOLS::Min(xperptot,pmax/ptot.PPerp());

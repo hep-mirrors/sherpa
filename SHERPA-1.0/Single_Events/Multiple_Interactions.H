@@ -6,14 +6,18 @@
 
 namespace SHERPA {
 
+  class Remnant_Base;
+
   class Multiple_Interactions: public Event_Phase_Handler {
   private:
 
     double m_ecms, m_pperpmax, m_ecmsmax, m_xmax[2];
 
     MI_Handler *p_mihandler;
+    Remnant_Base *p_remnants[2];
 
     bool CheckBlobList(const ATOOLS::Blob_List *bloblist);
+    void VetoHardProcess(ATOOLS::Blob *const blob);
 
   public:
 
