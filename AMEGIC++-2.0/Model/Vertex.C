@@ -149,13 +149,39 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
     if (i3<0) probe.in[3] = orig.in[-i3-1].Bar();
          else if (i3<99) probe.in[3] = orig.in[i3-1];
   }
-    
+  
   if (CheckExistence(probe)==0) return 0;
   if (probe.nleg==3) {
     if (FermionRule(probe)==0) return 0;}
   
   int hc = 0;
 
+  int cnt = 0;
+  for(int i=0;i<orig.nleg;i++) {
+    if(orig.in[i]!=orig.in[i].Bar()) cnt++;
+  }
+  if(cnt>0){
+    Flavour flavlist[cnt];
+    int flaglist[cnt];
+    cnt = 0;
+    for(int i=0;i<orig.nleg;i++){
+      if(orig.in[i]!=orig.in[i].Bar()) {
+	flavlist[cnt] = orig.in[i];
+	if (i==0) flavlist[cnt] = flavlist[cnt].Bar();
+	flaglist[cnt] = 0;
+	cnt++;
+      }
+    }
+    for (int i=0;i<cnt;i++) {
+      for (int j=i+1;j<cnt;j++) {
+	if (flavlist[i]==flavlist[j].Bar()) flaglist[i]=flaglist[j]=1;
+      }
+    }
+    for (int i=0;i<cnt;i++) {
+      if (flaglist[i]==0) hc = 1;
+    }
+  }
+  /*
   for (short int i=0;i<orig.nleg;i++) {
     // All incoming
     Flavour flav = orig.in[i];
@@ -175,7 +201,7 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
       }
     }
   }
-
+  */
   
   int probehc = 0;
   if (hc) {
@@ -214,7 +240,7 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 
       Conjugate(probe.Color);
 
-      if (probe.Lorentz->String()==string("1")) {
+       if (probe.Lorentz->String()==string("1")) {
 	//exchange left and right
 	Complex help = probe.cpl[0];
 	probe.cpl[0] = probe.cpl[1];
