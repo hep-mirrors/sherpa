@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/02
+//Version: 1 ADICIC++-0.0/2004/06/07
 
 //Inline methods of Sudakov_Calculator.H.
 
@@ -41,7 +41,7 @@ namespace ADICIC {
 
 
   inline const bool Sudakov_Calculator::IsAlphaSRunning() {    //Static.
-    return sf_alphasrun;
+    return (s_isalphasrun && s_pas);
   }
   inline const double Sudakov_Calculator::MinOfK2t() {    //Static.
     return s_k2tmin;
@@ -49,8 +49,33 @@ namespace ADICIC {
   inline const double Sudakov_Calculator::MaxOfK2t() {    //Static.
     return s_k2tmax;
   }
-  inline const double Sudakov_Calculator::FixedAlphaS() {    //Static.
+  inline const double Sudakov_Calculator::AlphaSFix() {    //Static.
     return s_alphasfix;
+  }
+  inline const double Sudakov_Calculator::AlphaSApprox() {    //Static.
+    return s_approx;
+  }
+  inline const double Sudakov_Calculator::AlphaSCorr(const double p2t) {
+    //Static method.
+    return GetAlphaSCorr(p2t);
+  }
+
+
+
+  //---------------------------------------------------------------------------
+
+
+
+  inline const double Sudakov_Calculator::FixAlphaSCorr(const double p2t) {
+    //Static method.
+    return 1.0;
+  }
+  inline const double Sudakov_Calculator::RunAlphaSCorr(const double p2t) {
+    //Static method.
+    //return (*s_pas)(p2t);    //Testing.
+    //return (*s_pas)(p2t)/s_approx;
+    double ret=(*s_pas)(p2t)/s_approx; assert(ret<=1.0);
+    return ret;
   }
 
 
@@ -78,9 +103,8 @@ namespace ADICIC {
 
 
 
-  template<Dipole::Type DT, class AS> inline Sudakov<DT,AS>::Sudakov()
+  template<Dipole::Type DT> inline Sudakov<DT>::Sudakov()
     : Sudakov_Calculator(),
-      m_alphas(Sudakov_Calculator::FixedAlphaS()),
       m_s(Sudakov_Calculator::MaxOfK2t()),
       m_x2tmin(Sudakov_Calculator::MinOfK2t()/m_s), m_x2t(1.0),
       m_rap(0.0), m_corr(1.0) {}
@@ -91,28 +115,36 @@ namespace ADICIC {
 
 
 
-  template<> inline void Sudakov<Dipole::qqbar,Alpha_S_Fix>::Which() const {
-    std::cout<<"Sudakov_Calculator for a q-qbar dipole using fixed alpha_s.\n";
+  template<> inline void Sudakov<Dipole::qqbar>::Which() const {
+    std::cout<<"Sudakov_Calculator for a q-qbar dipole using ";
+    if(IsAlphaSRunning()) std::cout<<"running alpha_s.\n";
+    else std::cout<<"fixed alpha_s.\n";
   }
-  template<> inline void Sudakov<Dipole::qg,Alpha_S_Fix>::Which() const {
-    std::cout<<"Sudakov_Calculator for a q-g dipole using fixed alpha_s.\n";
+  template<> inline void Sudakov<Dipole::qg>::Which() const {
+    std::cout<<"Sudakov_Calculator for a q-g dipole using ";
+    if(IsAlphaSRunning()) std::cout<<"running alpha_s.\n";
+    else std::cout<<"fixed alpha_s.\n";
   }
-  template<> inline void Sudakov<Dipole::gqbar,Alpha_S_Fix>::Which() const {
-    std::cout<<"Sudakov_Calculator for a g-qbar dipole using fixed alpha_s.\n";
+  template<> inline void Sudakov<Dipole::gqbar>::Which() const {
+    std::cout<<"Sudakov_Calculator for a g-qbar dipole using ";
+    if(IsAlphaSRunning()) std::cout<<"running alpha_s.\n";
+    else std::cout<<"fixed alpha_s.\n";
   }
-  template<> inline void Sudakov<Dipole::gg,Alpha_S_Fix>::Which() const {
-    std::cout<<"Sudakov_Calculator for a g-g dipole using fixed alpha_s.\n";
+  template<> inline void Sudakov<Dipole::gg>::Which() const {
+    std::cout<<"Sudakov_Calculator for a g-g dipole using ";
+    if(IsAlphaSRunning()) std::cout<<"running alpha_s.\n";
+    else std::cout<<"fixed alpha_s.\n";
   }
 
 
-  template<Dipole::Type DT, class AS>
-  inline void Sudakov<DT,AS>::ShowSpecification() const {
+  template<Dipole::Type DT>
+  inline void Sudakov<DT>::ShowSpecification() const {
     std::cout<<"Sudakov handling for Dipole::Type: "
-	     <<Sudakov_Info<DT,AS>::Dipoletype
+	     <<Sudakov_Info<DT>::Dipoletype
 	     <<"\t ME correction powers: "
-	     <<Sudakov_Info<DT,AS>::X1power<<","
-	     <<Sudakov_Info<DT,AS>::X3power
-	     <<"\t Colour factor: "<<Sudakov_Info<DT,AS>::Colourfactor
+	     <<Sudakov_Info<DT>::X1power<<","
+	     <<Sudakov_Info<DT>::X3power
+	     <<"\t Colour factor: "<<Sudakov_Info<DT>::Colourfactor
 	     <<std::endl;
   }
 
@@ -122,13 +154,12 @@ namespace ADICIC {
 
 
 
-  template<Dipole::Type DT, class AS>
-  inline void Sudakov<DT,AS>::InitWith(const Dipole& dip) {
+  template<Dipole::Type DT>
+  inline void Sudakov<DT>::InitWith(const Dipole& dip) {
 
     //m_alphas is set with the alphas_fixed value.
 
-    Dipole::Type test=Sudakov_Info<DT,AS>::Dipoletype;
-    assert(dip.IsType()==test);
+    assert(dip.IsType()==Sudakov_Info<DT>::Dipoletype);
 
     m_s=dip.InvMass();
     m_x2tmin=Sudakov_Calculator::MinOfK2t()/m_s;
@@ -144,8 +175,8 @@ namespace ADICIC {
 
 
 
-  template<Dipole::Type DT, class AS>
-  inline void Sudakov<DT,AS>::GenerateRap() {
+  template<Dipole::Type DT>
+  inline void Sudakov<DT>::GenerateRap() {
     double ymax=-0.5*std::log(m_x2t);
     m_rap=ymax*(-1.0+2.0*ATOOLS::ran.Get());
   }
@@ -154,18 +185,19 @@ namespace ADICIC {
 
 
 
-  template<Dipole::Type DT, class AS>
-  inline void Sudakov<DT,AS>::GenerateCorr() {
-    m_corr=0.5*( power<Sudakov_Info<DT,AS>::X1power >(m_x1) +
-		 power<Sudakov_Info<DT,AS>::X3power >(m_x3));
+  template<Dipole::Type DT>
+  inline void Sudakov<DT>::GenerateCorr() {
+    m_corr=AlphaSCorr(m_p2t)*0.5*
+           ( power<Sudakov_Info<DT>::X1power >(m_x1) +
+	     power<Sudakov_Info<DT>::X3power >(m_x3));
   }
 
 
 
 
 
-  template<Dipole::Type DT, class AS>
-  inline const bool Sudakov<DT,AS>::TestEfracs() const {
+  template<Dipole::Type DT>
+  inline const bool Sudakov<DT>::TestEfracs() const {
     double sum=m_x1+m_x3;
     if(sum>1.0 && sum<2.0) return true;
     return false;

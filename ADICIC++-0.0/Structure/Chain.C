@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/03
+//Version: 1 ADICIC++-0.0/2004/06/06
 
 //Implementation of Chain.H.
 
@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include "Message.H"
 #include "Chain.H"
 
 
@@ -35,21 +36,21 @@ using namespace ADICIC;
 
 ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Chain& cha) {
   unsigned i=0;
-  ost<<endl<<"\e[1m"<<string(80,'O')<<"\e[0m"<<endl;
+  ost<<endl<<om::bold<<string(80,'O')<<om::reset<<endl;
   for(list<Dipole*>::const_iterator it=cha.DipolePointerList().begin();
       it!=cha.DipolePointerList().end(); ++it) {
     ++i;
-    if(*it==&cha.ChainRoot()) ost<<"\e[1m\e[31m";
-    else ost<<"\e[1m\e[34m";
-    ost<<setiosflags(ios::left)<<setw(4)<<i<<"\e[0m"
+    if(*it==&cha.ChainRoot()) ost<<om::bold<<om::red;
+    else ost<<om::bold<<om::blue;
+    ost<<setiosflags(ios::left)<<setw(4)<<i<<om::reset
        <<resetiosflags(ios::left)<<(**it)<<endl;
   }
-  ost<<"\e[1m"<<string(80,'o')<<"\e[0m"<<endl;
+  ost<<om::bold<<string(80,'o')<<om::reset<<endl;
   ost<<"Chain type: ";
   switch(cha.ChainType()) {
-  case 1: ost<<"Ring"; break;
-  case 0: ost<<"Line"; break;
-  default : ost<<"incorrect";
+  case 1 : ost<<"ring"; break;
+  case 0 : ost<<"line"; break;
+  default: ost<<"incorrect";
   }
   ost<<"    Chain state: ";
   switch(cha.Status()) {
@@ -64,7 +65,7 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Chain& cha) {
      <<"SqrMass="<<setw(12)<<cha.InvMass()
      <<"P="<<cha.Momentum();
   ost<<resetiosflags(ios::left)<<endl;
-  ost<<"\e[1m"<<string(80,'O')<<"\e[0m";
+  ost<<om::bold<<string(80,'O')<<om::reset;
   return ost;
 }
 
@@ -102,57 +103,73 @@ Chain::Chain() {
 
 Chain::Chain(const Chain& cha) {
 
+  //Later: Additional Chain initialization methods will cause further
+  //modifications here!
+
   ++s_count;
   varset.Init();
+
+  Type type=cha.ChainType();
+  if(type==incorrect) return;//////////////////////////////////////////////////
 
   varset.f_active=cha.varset.f_active;
   varset.m_k2tlast=cha.varset.m_k2tlast;
 
-  char key;
+  if(type==line) {
+    assert(!varset.p_quab); assert(!varset.p_atib);
+    varset.p_quab=new Dipole::Branch(*cha.varset.p_quab);
+    varset.p_atib=new Dipole::Antibranch(*cha.varset.p_atib);
+    assert(varset.p_quab); assert(varset.p_atib);
+  }
+  if(type==ring) {
+    assert(varset.l_glub.empty()); assert(!varset.p_1glu);
+    varset.l_glub.push_front
+      (new Dipole::Glubranch(*cha.varset.l_glub.front()));
+    varset.p_1glu=varset.l_glub.front();
+    assert(varset.p_1glu);
+  }
 
-  Dipole::Branch* topb;
-  Dipole::Antibranch* bota;
-  Dipole::Glubranch* topg;
-  Dipole::Glubranch* botg;
+  Dipole* dip=NULL;
+  Dipole::Glubranch* preg=NULL, * botg=NULL;
+  list<Dipole*>::const_iterator dit=cha.varset.l_dip.begin();
+  list<Dipole*>::const_iterator dot=cha.varset.l_dip.end(); --dot;
 
-  for(list<Dipole*>::const_iterator dit=cha.varset.l_dip.begin();
-      dit!=cha.varset.l_dip.end(); ++dit) {
-    key=0; topb=NULL; bota=NULL; topg=botg=NULL;
-    bool root=false; if(*dit==cha.varset.p_root) root=true;
-    Dipole_Particle* to=(*dit)->GetTopBranchPointer().operator->();
+  //First Dipole.
+  if(dit!=dot) {
     Dipole_Particle* bo=(*dit)->GetBotBranchPointer().operator->();
-    if(to->OrgType()==Nil) topg=static_cast<Dipole::Glubranch*>(to);
-    else                 { topb=static_cast<Dipole::Branch*>(to); key=2;}
-    if(bo->OrgType()==Nil) botg=static_cast<Dipole::Glubranch*>(bo);
-    else                 { bota=static_cast<Dipole::Antibranch*>(bo); key+=1;}
-    if(topg) {
-      topg=new Dipole::Glubranch(*topg);
-      assert(topg);
-      varset.l_glub.push_back(topg);
-    } else {
-      topb=new Dipole::Branch(*topb);
-      assert(topb); assert(!varset.p_quab);
-      varset.p_quab=topb;
-    }
-    if(botg) {
-      botg=new Dipole::Glubranch(*botg);
-      assert(botg);
-      varset.l_glub.push_back(botg);
-    } else {
-      bota=new Dipole::Antibranch(*bota);
-      assert(bota); assert(!varset.p_atib);
-      varset.p_atib=bota;
-    }
-    Dipole* dip=NULL;
-    switch(key) {
-    case 0: dip=new Dipole(*topg,*botg); break;
-    case 1: dip=new Dipole(*topg,*bota); break;
-    case 2: dip=new Dipole(*topb,*botg); break;
-    case 3: dip=new Dipole(*topb,*bota);
-    }
+    assert(bo->OrgType()==Nil);
+    botg=static_cast<Dipole::Glubranch*>(bo);
+    preg=botg=new Dipole::Glubranch(*botg); assert(botg);
+    varset.l_glub.push_back(botg);
+    if(type==line) dip=new Dipole(*varset.p_quab,*botg);
+    else if(type==ring) dip=new Dipole(*varset.l_glub.front(),*botg);
     assert(dip);
     varset.l_dip.push_back(dip);
-    if(root) varset.p_root=dip;
+    if(*dit==cha.varset.p_root) varset.p_root=dip;
+    ++dit;
+  }
+  //Inbetween Dipoles.
+  for(; dit!=dot; ++dit) {
+    Dipole_Particle* bo=(*dit)->GetBotBranchPointer().operator->();
+    assert(bo->OrgType()==Nil);
+    botg=static_cast<Dipole::Glubranch*>(bo);
+    botg=new Dipole::Glubranch(*botg); assert(botg);
+    varset.l_glub.push_back(botg);
+    dip=new Dipole(*preg,*botg); assert(dip);
+    varset.l_dip.push_back(dip);
+    if(*dit==cha.varset.p_root) varset.p_root=dip;
+    preg=botg;
+  }
+  //Last Dipole.
+  if(!dip) {
+    dip=new Dipole(*varset.p_quab,*varset.p_atib); assert(dip);
+    varset.l_dip.push_back(dip);
+    varset.p_root=dip;
+  } else {
+    if(type==line) dip=new Dipole(*preg,*varset.p_atib);
+    else if(type==ring) dip=new Dipole(*preg,*varset.l_glub.front());
+    varset.l_dip.push_back(dip);
+    if(*dot==cha.varset.p_root) varset.p_root=dip;
   }
 
   if(cha.CheckMomentumConservation(varset.m_momentum)) {
@@ -181,6 +198,7 @@ Chain::Chain(const Dipole::Branch& ban, const Dipole::Antibranch& ati,
   ++s_count;
 
   varset.p_hdl=NULL;
+  varset.p_1glu=NULL;
   varset.l_glub.clear();
   varset.l_dip.clear();
 
@@ -231,14 +249,20 @@ Chain::Chain(const Dipole::Glubranch& glut, const Dipole::Glubranch& glub,
   Dipole::Glubranch* top=new Dipole::Glubranch(glut);
   assert(top);
   varset.l_glub.push_front(top);
+  varset.p_1glu=top;
   Dipole::Glubranch* bot=new Dipole::Glubranch(glub);
   assert(bot);
   varset.l_glub.push_back(bot);
 
+  //First Dipole.
   Dipole* root=new Dipole(*top,*bot);
   assert(root);
   varset.l_dip.push_front(root);
   varset.p_root=root;
+  //Second Dipole.
+  root=new Dipole(*bot,*top);
+  assert(root);
+  varset.l_dip.push_back(root);
 
   varset.m_k2tlast=root->ProdScale();
   varset.m_mass=root->Mass();
@@ -293,53 +317,73 @@ Chain::~Chain() {
 
 Chain& Chain::operator=(const Chain& cha) {
 
+  //Later: Additional Chain initialization methods will cause further
+  //modifications here!
+
   if(this==&cha) return *this;
   if(this->Clear()==false) return *this;
+
+  Type type=cha.ChainType();
+  if(type==incorrect) return *this;////////////////////////////////////////////
 
   varset.f_active=cha.varset.f_active;
   varset.m_k2tlast=cha.varset.m_k2tlast;
 
-  char key;
+  if(type==line) {
+    assert(!varset.p_quab); assert(!varset.p_atib);
+    varset.p_quab=new Dipole::Branch(*cha.varset.p_quab);
+    varset.p_atib=new Dipole::Antibranch(*cha.varset.p_atib);
+    assert(varset.p_quab); assert(varset.p_atib);
+  }
+  if(type==ring) {
+    assert(varset.l_glub.empty()); assert(!varset.p_1glu);
+    varset.l_glub.push_front
+      (new Dipole::Glubranch(*cha.varset.l_glub.front()));
+    varset.p_1glu=varset.l_glub.front();
+    assert(varset.p_1glu);
+  }
 
-  Dipole::Branch*     topb;
-  Dipole::Antibranch* bota;
-  Dipole::Glubranch*  topg;
-  Dipole::Glubranch*  botg;
+  Dipole* dip=NULL;
+  Dipole::Glubranch* preg=NULL, * botg=NULL;
+  list<Dipole*>::const_iterator dit=cha.varset.l_dip.begin();
+  list<Dipole*>::const_iterator dot=cha.varset.l_dip.end(); --dot;
 
-  for(list<Dipole*>::const_iterator dit=cha.varset.l_dip.begin();
-      dit!=cha.varset.l_dip.end(); ++dit) {
-    key=0; topb=NULL; bota=NULL; topg=botg=NULL;
-    bool root=false; if(*dit==cha.varset.p_root) root=true;
-    Dipole_Particle* to=(*dit)->GetTopBranchPointer().operator->();
+  //First Dipole.
+  if(dit!=dot) {
     Dipole_Particle* bo=(*dit)->GetBotBranchPointer().operator->();
-    if(to->OrgType()==Nil) topg=static_cast<Dipole::Glubranch*>(to);
-    else                 { topb=static_cast<Dipole::Branch*>(to); key=2;}
-    if(bo->OrgType()==Nil) botg=static_cast<Dipole::Glubranch*>(bo);
-    else                 { bota=static_cast<Dipole::Antibranch*>(bo); key+=1;}
-    if(topg) {
-      topg=new Dipole::Glubranch(*topg); assert(topg);
-      varset.l_glub.push_back(topg);
-    } else {
-      topb=new Dipole::Branch(*topb); assert(topb); assert(!varset.p_quab);
-      varset.p_quab=topb;
-    }
-    if(botg) {
-      botg=new Dipole::Glubranch(*botg); assert(botg);
-      varset.l_glub.push_back(botg);
-    } else {
-      bota=new Dipole::Antibranch(*bota); assert(bota); assert(!varset.p_atib);
-      varset.p_atib=bota;
-    }
-    Dipole* dip=NULL;
-    switch(key) {
-    case 0: dip=new Dipole(*topg,*botg); break;
-    case 1: dip=new Dipole(*topg,*bota); break;
-    case 2: dip=new Dipole(*topb,*botg); break;
-    case 3: dip=new Dipole(*topb,*bota);
-    }
+    assert(bo->OrgType()==Nil);
+    botg=static_cast<Dipole::Glubranch*>(bo);
+    preg=botg=new Dipole::Glubranch(*botg); assert(botg);
+    varset.l_glub.push_back(botg);
+    if(type==line) dip=new Dipole(*varset.p_quab,*botg);
+    else if(type==ring) dip=new Dipole(*varset.l_glub.front(),*botg);
     assert(dip);
     varset.l_dip.push_back(dip);
-    if(root) varset.p_root=dip;
+    if(*dit==cha.varset.p_root) varset.p_root=dip;
+    ++dit;
+  }
+  //Inbetween Dipoles.
+  for(; dit!=dot; ++dit) {
+    Dipole_Particle* bo=(*dit)->GetBotBranchPointer().operator->();
+    assert(bo->OrgType()==Nil);
+    botg=static_cast<Dipole::Glubranch*>(bo);
+    botg=new Dipole::Glubranch(*botg); assert(botg);
+    varset.l_glub.push_back(botg);
+    dip=new Dipole(*preg,*botg); assert(dip);
+    varset.l_dip.push_back(dip);
+    if(*dit==cha.varset.p_root) varset.p_root=dip;
+    preg=botg;
+  }
+  //Last Dipole.
+  if(!dip) {
+    dip=new Dipole(*varset.p_quab,*varset.p_atib); assert(dip);
+    varset.l_dip.push_back(dip);
+    varset.p_root=dip;
+  } else {
+    if(type==line) dip=new Dipole(*preg,*varset.p_atib);
+    else if(type==ring) dip=new Dipole(*preg,*varset.l_glub.front());
+    varset.l_dip.push_back(dip);
+    if(*dot==cha.varset.p_root) varset.p_root=dip;
   }
 
   if(cha.CheckMomentumConservation(varset.m_momentum)) {
@@ -378,20 +422,22 @@ Chain& Chain::operator=(const Chain& cha) {
 
 void Chain::Print() const {
   cout<<(*this)<<endl;
-  if(varset.p_quab)
-    cout<<"\e[1mBranch:\e[0m"<<endl<<&(varset.p_quab->Parton)<<endl;
-  if(varset.p_atib)
-    cout<<"\e[1mAntibranch:\e[0m"<<endl<<&(varset.p_atib->Parton)<<endl;
-  if(!varset.l_glub.empty())
-    cout<<"\e[1mGlubranches:\e[0m"<<endl;
+  if(varset.p_quab) cout<<om::bold<<"Branch:"<<om::reset<<endl
+			<<&(varset.p_quab->Parton)<<endl;
+  if(varset.p_atib) cout<<om::bold<<"Antibranch:"<<om::reset<<endl
+			<<&(varset.p_atib->Parton)<<endl;
+  if(!varset.l_glub.empty()) cout<<om::bold<<"Glubranches:"<<om::reset<<endl;
   for(list<Dipole::Glubranch*>::const_iterator gut=varset.l_glub.begin();
       gut!=varset.l_glub.end(); ++gut) {
-    cout<<&((*gut)->Parton)<<endl;
+    if(*gut==varset.p_1glu)
+      cout<<&((*gut)->Parton)<<"  "<<om::red<<"g_root"<<om::reset<<endl;
+    else
+      cout<<&((*gut)->Parton)<<endl;
   }
-  cout<<"\e[1m"<<string(80,'o')<<"\e[0m"<<endl;
+  cout<<om::bold<<string(80,'o')<<om::reset<<endl;
   cout<<"Number of branches = "<<ParticleNumber()<<endl;
   cout<<"Number of  dipoles = "<<DipoleNumber()<<endl;
-  cout<<"\e[1m"<<string(80,'O')<<"\e[0m"<<endl;
+  cout<<om::bold<<string(80,'O')<<om::reset<<endl;
 }
 
 
@@ -407,6 +453,57 @@ const bool Chain::CheckMomentumConservation(ATOOLS::Vec4D& sum) const {
     sum+=(*gut)->Momentum();
   if(sum==varset.m_momentum) return true;
   return false;
+}
+
+
+
+
+
+const bool Chain::ExtractPartons(Particle_List& parlist) const {
+
+  Type type=this->ChainType();
+  if(type==incorrect) return false;
+
+  list<Dipole*>::const_iterator dit;
+  for(dit=varset.l_dip.begin(); dit!=varset.l_dip.end(); ++dit) {
+    Particle* par=new Particle( (*dit)->GetTopBranchPointer()->Parton );
+    parlist.push_back(par);
+  }
+
+  if(type==line) {
+    --dit;
+    Particle* par=new Particle( (*dit)->GetBotBranchPointer()->Parton );
+    parlist.push_back(par);
+
+    if(parlist.size()>2) {
+      Particle_Iterator pit=parlist.begin();
+      int upflow=(*pit)->GetFlow(1);
+      ++pit;
+      Particle_Iterator pot=parlist.end();
+      --pot;
+      for(; pit!=pot; ++pit) {
+	(*pit)->SetFlow(2,upflow);
+	(*pit)->SetFlow(1,-1);
+	upflow=(*pit)->GetFlow(1);
+      }
+      (*pit)->SetFlow(2,upflow);
+    }
+
+#ifdef CHAIN_OUTPUT
+    cout<<parlist<<endl;
+#endif
+
+    return true;
+  }
+
+  //else ... type==ring ... No flow setting so far.
+
+#ifdef CHAIN_OUTPUT
+  cout<<parlist<<endl;
+#endif
+
+  return true;
+
 }
 
 
@@ -465,20 +562,33 @@ const bool Chain::Initialize(const Dipole::Branch& ban,
   return true;
 
 }
-const bool Chain::ExtractPartons(Particle_List& parlist) {
 
-  if(varset.l_dip.empty()) return false;
-  list<Dipole*>::iterator dit;
-  for(dit=varset.l_dip.begin();dit!=varset.l_dip.end(); ++dit) {
-    Particle* par=new Particle((*dit)->GetTopBranchPointer()->Parton);
-    parlist.push_back(par); 
 
-  }
-  --dit;
-  Particle* par=new Particle((*dit)->GetBotBranchPointer()->Parton);
-  parlist.push_back(par);
-  return true;
+
+
+
+const bool Chain::StartInitChain(const Dipole::Branch&) {//////////////////////
+  assert(0);
+  return false;
 }
+const bool Chain::StartInitChain(const Dipole::Glubranch&) {///////////////////
+  assert(0);
+  return false;
+}
+const bool Chain::AddToInitChain(const Dipole::Glubranch&, const double&) {////
+  assert(0);
+  return false;
+}
+const bool Chain::FinishInitChain(const Dipole::Antibranch&, const double&) {//
+  assert(0);
+  return false;
+}
+const bool Chain::FinishInitChain(const Dipole::Glubranch&, const double&) {///
+  assert(0);
+  return false;
+}
+
+
 
 //=============================================================================
 

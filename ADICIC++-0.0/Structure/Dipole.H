@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/02
+//Version: 1 ADICIC++-0.0/2004/06/05
 
 //The Dipole structure is a carrier of information.
 
@@ -210,6 +210,12 @@ namespace ADICIC {
 
   protected:
 
+    //Interfacing ATOOLS::Particle with ADICIC::Dipole_Particle
+    //=========================================================
+    inline Dipole_Particle(Trio, const ATOOLS::Particle&);
+    inline short& SetTag();
+    inline void   if_info() const;
+
     //Monitoring via output functions:
     //================================
     inline  void sc_info() const;
@@ -222,9 +228,7 @@ namespace ADICIC {
   public:
 
     inline Dipole_Particle();    //Standard particle is the SM gluon!
-    inline Dipole_Particle(Trio,const ATOOLS::Particle&);
     Dipole_Particle(const Dipole_Particle&);
-
     Dipole_Particle(const Dipole_Quark_Base&, const ATOOLS::Vec4D&);
     Dipole_Particle(const Dipole_Antiquark_Base&, const ATOOLS::Vec4D&);
     Dipole_Particle(const Dipole_Gluon_Base&, const ATOOLS::Vec4D&);
@@ -305,7 +309,7 @@ namespace ADICIC {
     Dipole_Branch(const Dipole_Branch& DB)
       : Dipole_Particle(DB) { cb_info();}
 
-    Dipole_Branch(const ATOOLS::Particle&);//-
+    Dipole_Branch(const ATOOLS::Particle&);
     Dipole_Branch(const Dipole_Quark_Base& Q, const ATOOLS::Vec4D& P)
       : Dipole_Particle(Q,P) { cb_info();}
 
@@ -350,7 +354,7 @@ namespace ADICIC {
     Dipole_Antibranch(const Dipole_Antibranch& DA)
       : Dipole_Particle(DA) { ca_info();}
 
-    Dipole_Antibranch(const ATOOLS::Particle&);//-
+    Dipole_Antibranch(const ATOOLS::Particle&);
     Dipole_Antibranch(const Dipole_Antiquark_Base& A, const ATOOLS::Vec4D& P)
       : Dipole_Particle(A,P) { ca_info();}
 
@@ -397,7 +401,7 @@ namespace ADICIC {
     Dipole_Glubranch(const Dipole_Glubranch& DG)
       : Dipole_Particle(DG) { cg_info();}
 
-    Dipole_Glubranch(const ATOOLS::Particle&);//-
+    Dipole_Glubranch(const ATOOLS::Particle&);
     Dipole_Glubranch(const ATOOLS::Vec4D& P)
       : Dipole_Particle(info.gluon.g,P) { cg_info();}
     //Dipole_Glubranch(const Dipole_Gluon_Base& G, const ATOOLS::Vec4D& P)

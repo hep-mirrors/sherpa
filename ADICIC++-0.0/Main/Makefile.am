@@ -22,18 +22,20 @@ libAdicicMain_la_SOURCES = Adicic.C
 
 
 #AM_CXXFLAGS = -pedantic -Wall -Winline -DUSING_SHERPA
+AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 
 INCLUDES = -I../Tool \
-	   -I../Handler \
+           -I../Handler \
            -I../Structure \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
-           -I$(ATOOLSINC)/Org
+           -I$(ATOOLSINC)/Org \
+           -I$(MODELINC)/Main
 
 
-  
+
 noinst_HEADERS = Adicic.H
 
 

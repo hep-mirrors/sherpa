@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/03
+//Version: 1 ADICIC++-0.0/2004/06/07
 
 //Inline methods of Chain_Handler.H.
 
@@ -90,17 +90,17 @@ namespace ADICIC {
 
 
 
-  template<>
-  const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Production>();
-  //template<>
-  //const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Emission>();
-  //template<>
-  //const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Mass>();
+  template<> const bool
+  Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Production>();
+  //template<> const bool
+  //Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Emission>();
+  //template<> const bool
+  //Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Mass>();
 
 
 
   inline const bool Chain_Handler::FindDipole() {
-    return FindDipole<Chain_Evolution_Strategy::Ret>();
+    return FindDecDipole<Chain_Evolution_Strategy::Ret>();
   }
 
 

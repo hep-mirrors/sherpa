@@ -47,5 +47,3 @@ AC_OUTPUT(Tool/Makefile \
           Makefile)
 
 
-
-

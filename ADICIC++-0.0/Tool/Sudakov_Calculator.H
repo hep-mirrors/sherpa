@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/07    (surely preliminarily)
+//Version: 1 ADICIC++-0.0/2004/06/07    (surely preliminarily)
 
 //Classes are provided, which manage the Sudakov calculation needed for the
 //gluon emission or splitting of a specific dipole.
@@ -11,6 +11,8 @@
 
 
 //#include <...>
+#include "Model_Base.H"
+#include "Function_Base.H"
 #include "Dipole.H"
 #include "Sudakov_Calculator.dat.hh"
 
@@ -26,14 +28,11 @@ namespace ADICIC {
 
 
 
-  struct Alpha_S_Fix {};
-  struct Alpha_S_Run {};
-
-
-
-
- 
   class Sudakov_Calculator {
+
+  private:
+
+    typedef const double (*AlphaSCorr_Func)(const double);
 
   private:
 
@@ -43,13 +42,20 @@ namespace ADICIC {
 
   private:
 
-    static int s_count;
-
-    static const bool sf_alphasrun;
+    static const bool s_isalphasrun;
 
     static const double s_k2tmin;
     static const double s_k2tmax;
     static const double s_alphasfix;
+
+    static int    s_count;
+    static double s_approx;
+
+    static ATOOLS::Function_Base* s_pas;
+
+    static AlphaSCorr_Func     GetAlphaSCorr;
+    static inline const double FixAlphaSCorr(const double);
+    static inline const double RunAlphaSCorr(const double);
 
   protected:
 
@@ -69,7 +75,11 @@ namespace ADICIC {
     static inline const bool   IsAlphaSRunning();
     static inline const double MinOfK2t();
     static inline const double MaxOfK2t();
-    static inline const double FixedAlphaS();
+    static inline const double AlphaSFix();
+    static inline const double AlphaSApprox();
+    static inline const double AlphaSCorr(const double);
+
+    static const bool Init(MODEL::Model_Base*);
 
     inline void GetResult(bool&, double&, double&, double&) const;
 
@@ -83,8 +93,7 @@ namespace ADICIC {
 
 
 
-  template<Dipole::Type _DipType, class _AlphaSTreatment> class Sudakov
-  : public Sudakov_Calculator {
+  template<Dipole::Type _DipType> class Sudakov : public Sudakov_Calculator {
 
   public:
 
@@ -96,14 +105,11 @@ namespace ADICIC {
 
     //Blocked methods:
 
-    Sudakov(const Sudakov<_DipType,_AlphaSTreatment>&);
-    Sudakov<_DipType,_AlphaSTreatment>&
-    operator=(const Sudakov<_DipType,_AlphaSTreatment>&);
-    const bool operator==(const Sudakov<_DipType,_AlphaSTreatment>&) const;
+    Sudakov(const Sudakov<_DipType>&);
+    Sudakov<_DipType>& operator=(const Sudakov<_DipType>&);
+    const bool operator==(const Sudakov<_DipType>&) const;
 
   private:
-
-    double m_alphas;
 
     double m_s;
     double m_x2tmin;

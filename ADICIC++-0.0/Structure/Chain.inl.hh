@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/02
+//Version: 1 ADICIC++-0.0/2004/06/06
 
 //Inline methods of Chain.H.
 
@@ -27,7 +27,7 @@ namespace ADICIC {
     return varset.f_active;
   }
   inline const bool Chain::IsEmpty() const {
-    return varset.l_dip.empty();
+    return (varset.l_dip.empty() && !varset.p_quab && !varset.p_1glu);
   }
 
 
@@ -65,14 +65,38 @@ namespace ADICIC {
 
 
   inline const Chain::Type Chain::ChainType() const {
-    if( varset.p_quab &&  varset.p_atib) return Chain::line;
-    if(!varset.p_quab && !varset.p_atib && !varset.l_dip.empty())
+    if(varset.l_dip.empty()) return Chain::incorrect;
+    if(varset.l_dip.front()->GetTopBranchPointer().operator->()==varset.p_quab
+       &&
+       varset.l_dip.back()->GetBotBranchPointer().operator->()==varset.p_atib)
+      return Chain::line;
+    if(varset.l_dip.front()->GetTopBranchPointer().operator->()==varset.p_1glu
+       &&
+       varset.l_dip.back()->GetBotBranchPointer().operator->()==varset.p_1glu)
       return Chain::ring;
     return Chain::incorrect;
   }
-  inline const bool Chain::IsRing() const {
-    return bool(!varset.p_quab && !varset.p_atib && !varset.l_dip.empty());
+
+
+  inline const bool Chain::IsLine() const {
+    if(varset.l_dip.empty()) return false;
+    return bool(varset.l_dip.front()->GetTopBranchPointer().operator->()
+		==varset.p_quab	&&
+		varset.l_dip.back()->GetBotBranchPointer().operator->()
+		==varset.p_atib);
   }
+
+
+  inline const bool Chain::IsRing() const {
+    if(varset.l_dip.empty()) return false;
+    return bool(varset.l_dip.front()->GetTopBranchPointer().operator->()
+		==varset.p_1glu	&&
+		varset.l_dip.back()->GetBotBranchPointer().operator->()
+		==varset.p_1glu);
+  }
+
+
+
 
 
   inline const Dipole& Chain::ChainRoot() const {
@@ -153,6 +177,9 @@ namespace ADICIC {
   }
   inline Dipole::Antibranch*& Chain::ChainAntibranchPointer() {
     return varset.p_atib;
+  }
+  inline const Dipole::Glubranch* Chain::ChainFirstGlubranchPointer() const {
+    return varset.p_1glu;
   }
   inline std::list<Dipole::Glubranch*>& Chain::GlubranchPointerList() {
     return varset.l_glub;

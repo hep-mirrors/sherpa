@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/02/27
+//Version: 1 ADICIC++-0.0/2004/06/05
 
 //ADICIC-specific provider class for global parameters and compile-time
 //information.
@@ -23,6 +23,9 @@ namespace ADICIC {
   class Info {
 
   public:
+
+    Info();
+    ~Info();
 
     struct {
       Dipole_Gluon_G g;
@@ -63,7 +66,4 @@ namespace ADICIC {
 
 
 //eof
-
-
-
 

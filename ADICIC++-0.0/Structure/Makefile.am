@@ -23,6 +23,7 @@ libAdicicStruct_la_SOURCES = Dipole_Flavour.C Information.cpp \
 
 
 #AM_CXXFLAGS = -pedantic -Wall -Winline -DUSING_SHERPA
+AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 
@@ -30,7 +31,8 @@ INCLUDES = -I../Tool \
            -I../Handler \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
-           -I$(ATOOLSINC)/Org
+           -I$(ATOOLSINC)/Org \
+           -I$(MODELINC)/Main
 
 
   
@@ -41,8 +43,6 @@ noinst_HEADERS = Dipole_Flavour.H Information.hpp \
 
 EXTRA_DIST = $(CVSINCLUDE) \
              Dipole.inl.hh Dipole.exa.cc Chain.inl.hh
-
-
 
 
 

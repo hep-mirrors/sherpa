@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/03
+//Version: 1 ADICIC++-0.0/2004/06/07
 
 //Implementation of Chain_Handler.H.
 
@@ -51,13 +51,13 @@ const int& Chain_Handler::InStore=Chain_Handler::s_count;
 
 
 template
-const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Unknown>();
-//template
-//const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Production>();
+const bool Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Unknown>();
+//template const bool
+//Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Production>();
 template
-const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Emission>();
+const bool Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Emission>();
 template
-const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Mass>();
+const bool Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Mass>();
 
 
 
@@ -206,7 +206,7 @@ const bool Chain_Handler::EvolveChain() {
 
 
 template<class _Strategy>
-const bool Chain_Handler::FindDipole() {
+const bool Chain_Handler::FindDecDipole() {
   cerr<<"\nMethod: const bool ADICIC::Chain_Handler::FindDipole(): "
       <<"Warning: Method has not been specified!\n"<<endl;
   return false;
@@ -216,8 +216,8 @@ const bool Chain_Handler::FindDipole() {
 
 
 
-template<>
-const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Production>() {
+template<> const bool
+Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Production>() {
 
   static bool confirm=true;
   if(confirm) {
@@ -283,8 +283,15 @@ const bool Chain_Handler::SplitDipole() {
   Dipole& winner=**i_fix;
 
   Vec4D momm=winner.GetTopBranchPointer()->Momentum();
-  momm+=winner.GetBotBranchPointer()->Momentum();//cout<<momm<<endl;/////////////
-  p_cha->UpdateMomentum(-1.0,momm);// cout<<p_cha->Momentum()<<endl;//////////////
+  momm+=winner.GetBotBranchPointer()->Momentum();
+  p_cha->UpdateMomentum(-1.0,momm);
+
+#ifdef CHAIN_HANDLER_OUTPUT
+  cout<<momm<<"\t"<<momm.Abs2()<<endl;
+  cout<<p_cha->Momentum()<<"\t"
+      <<p_cha->Momentum().Abs2()<<"\t"
+      <<p_cha->InvMass()<<endl;
+#endif
 
   assert(p_dhwait->FinishGluonEmission());
 

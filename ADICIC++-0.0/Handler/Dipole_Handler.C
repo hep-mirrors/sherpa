@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/02
+//Version: 1 ADICIC++-0.0/2004/06/07
 
 //Implementation of Dipole_Handler.H.
 
@@ -334,45 +334,37 @@ const bool Dipole_Handler::InitCalcBox() {    //Static.
 
   static Calcpair qqpa, qgpa, gqpa, ggpa;
 
-  if(Sudakov_Calculator::IsAlphaSRunning()==false) {
+  //Arrange the Sudakov's.
+  qqpa.p_sud=new Sudakov<Dipole::qqbar>;
+  qgpa.p_sud=new Sudakov<Dipole::qg>;
+  gqpa.p_sud=new Sudakov<Dipole::gqbar>;
+  ggpa.p_sud=new Sudakov<Dipole::gg>;
+  assert(qqpa.p_sud);
+  assert(qgpa.p_sud);
+  assert(gqpa.p_sud);
+  assert(ggpa.p_sud);
 
-    //Arrange the Sudakov's.
-    qqpa.p_sud=new Sudakov<Dipole::qqbar,Alpha_S_Fix>;
-    qgpa.p_sud=new Sudakov<Dipole::qg,Alpha_S_Fix>;
-    gqpa.p_sud=new Sudakov<Dipole::gqbar,Alpha_S_Fix>;
-    ggpa.p_sud=new Sudakov<Dipole::gg,Alpha_S_Fix>;
-    assert(qqpa.p_sud);
-    assert(qgpa.p_sud);
-    assert(gqpa.p_sud);
-    assert(ggpa.p_sud);
+  //Establish the overall recoil strategy right now and here.
+  qqpa.p_rec=new Recoil<Kleiss_Strategy>;
+  qgpa.p_rec=new Recoil<FixDir3_Strategy>;
+  gqpa.p_rec=new Recoil<FixDir1_Strategy>;
+  ggpa.p_rec=
+    new Recoil<MinimizePt_Strategy>;
+    //new Recoil<Lonnblad_Strategy>;
+    //new Recoil<OldAdicic_Strategy>;
+    //new Recoil<Test_Strategy>;
+  assert(qqpa.p_rec);
+  assert(qgpa.p_rec);
+  assert(gqpa.p_rec);
+  assert(ggpa.p_rec);
 
-    //Establish the overall recoil strategy right now and here.
-    qqpa.p_rec=new Recoil<Kleiss_Strategy>;
-    qgpa.p_rec=new Recoil<FixDir3_Strategy>;
-    gqpa.p_rec=new Recoil<FixDir1_Strategy>;
-    ggpa.p_rec=
-      new Recoil<MinimizePt_Strategy>;
-      //new Recoil<Lonnblad_Strategy>;
-      //new Recoil<OldAdicic_Strategy>;
-      //new Recoil<Test_Strategy>;
-    assert(qqpa.p_rec);
-    assert(qgpa.p_rec);
-    assert(gqpa.p_rec);
-    assert(ggpa.p_rec);
+  //Fix the whole map - finishing arrangement of the calculator box.
+  s_map[Dipole::qqbar] = &qqpa;
+  s_map[Dipole::qg]    = &qgpa;
+  s_map[Dipole::gqbar] = &gqpa;
+  s_map[Dipole::gg]    = &ggpa;
 
-    //Fix the whole map - finishing arrangement of the calculator box.
-    s_map[Dipole::qqbar] = &qqpa;
-    s_map[Dipole::qg]    = &qgpa;
-    s_map[Dipole::gqbar] = &gqpa;
-    s_map[Dipole::gg]    = &ggpa;
-
-    return true;
-
-  }
-
-  cerr<<"\nSorry :o( Option of using a running alpha_s ";
-  cerr<<" has not been implemented yet.\n";
-  assert(0);
+  return true;
 
 }
 

@@ -1,5 +1,5 @@
 //bof
-//Version: ADICIC++-0.0/2004/01/29
+//Version: ADICIC++-0.0/2004/06/05
 
 //Implementation of Information.hpp.
 
@@ -17,6 +17,10 @@
 
 
 
+ADICIC::Info::Info() {}
+ADICIC::Info::~Info() {}
+
+
 const ADICIC::Info ADICIC::info;
 
 
@@ -24,6 +28,12 @@ const ADICIC::Info ADICIC::info;
 
 
 //eof
+
+
+
+
+
+
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/12
+//Version: 1 ADICIC++-0.0/2004/06/05
 
 //Implementation of the Dipole_Particle structure of Dipole.H.
 
@@ -41,7 +41,7 @@ Dipole_Particle::Dipole_Particle(const Dipole_Particle& dipa)
   //It cannot belong to any dipole since it is just created, right now.
   //Thus, we use an empty tower.
 
-  ++s_count; this->cc_info(); this->SetPacNum();
+  ++s_count; this->SetPacNum(); this->cc_info();
 }
 
 
@@ -270,17 +270,26 @@ Dipole_Particle* Dipole_Particle::Copy() const {
 
 
 
-Dipole_Branch::Dipole_Branch(const Particle& par) : Dipole_Particle(Positive,par) {
-  //The interface structure.
+//The interface structures.
+//=========================
+
+
+
+Dipole_Branch::Dipole_Branch(const Particle& par)
+  : Dipole_Particle(Positive,par) {
   assert(par.Flav().IsQuark() && !par.Flav().IsAnti());
+  //later: this->SetTag()=...;
+  //test: this->SetTag()=9; -> Dipole::Type assertion failed
 }
-Dipole_Antibranch::Dipole_Antibranch(const Particle& par) : Dipole_Particle(Negative,par) {
-  //The interface structure.
+Dipole_Antibranch::Dipole_Antibranch(const Particle& par)
+  : Dipole_Particle(Negative,par) {
   assert(par.Flav().IsQuark() && par.Flav().IsAnti());
+  //later: this->SetTag()=...;
 }
-Dipole_Glubranch::Dipole_Glubranch(const Particle& par) : Dipole_Particle(Nil,par) {
-  //The interface structure.
+Dipole_Glubranch::Dipole_Glubranch(const Particle& par)
+  : Dipole_Particle(Nil,par) {
   assert(par.Flav().IsGluon());
+  //later: this->SetTag()=...;
 }
 
 

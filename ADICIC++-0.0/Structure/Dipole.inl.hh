@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/02
+//Version: 1 ADICIC++-0.0/2004/06/05
 
 //Inline methods of Dipole.H.
 
@@ -329,6 +329,33 @@ namespace ADICIC {
 
 
 
+  inline Dipole_Particle::Dipole_Particle(Trio i, const ATOOLS::Particle& par)
+    : m_num(++s_maxcount), Name(m_num),
+      m_typ(i), m_tag(i),
+      m_pac(par), Parton(m_pac),
+      m_tow(std::list<Dipole*>()) {
+
+    ++s_count; this->SetPacNum(); this->if_info();
+  }
+
+
+  inline short& Dipole_Particle::SetTag() {
+    return m_tag;
+  }
+
+
+  inline void Dipole_Particle::if_info() const {
+#ifdef DIPOLE_OUTPUT
+    std::cout<<"    construct Dipole_Particle ["<<m_num<<"] from interface\n";
+#endif
+  }
+
+
+
+  //===========================================================================
+
+
+
   inline Dipole_Particle::Dipole_Particle()
     : m_num(++s_maxcount), Name(m_num),
       m_typ(Nil), m_tag(info.gluon.g.Tag()),
@@ -338,15 +365,6 @@ namespace ADICIC {
     ++s_count; this->sc_info();
   }
 
-  inline Dipole_Particle::Dipole_Particle(Trio i,
-					  const ATOOLS::Particle& par)
-    : m_num(++s_maxcount), Name(m_num),
-      m_typ(i), m_tag(i),
-      m_pac( ATOOLS::Particle(par) ), Parton(m_pac),
-      m_tow(std::list<Dipole*>()) {
-
-    ++s_count; this->sc_info();
-  }
 
 
 

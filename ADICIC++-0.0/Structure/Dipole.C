@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/02
+//Version: 1 ADICIC++-0.0/2004/06/08
 
 //Implementation of Dipole.H.
 
@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include "Message.H"
 #include "Dipole.H"
 
 
@@ -34,9 +35,9 @@ using namespace ADICIC;
 
 
 ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
-  ost<<"\e[1mDipole "<<dip.m_name<<": "
+  ost<<om::bold<<"Dipole "<<dip.m_name<<": "
      <<dip.p_top->Flav()<<" | "
-     <<dip.p_bot->Flav()<<"\e[0m   type:";
+     <<dip.p_bot->Flav()<<om::reset<<"   type:";
   switch(dip.m_type) {
   case -9999: ost<<"incorrect"; break;
   default   : ost<<dip.m_type;

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/03
+//Version: 1 ADICIC++-0.0/2004/06/05
 
 //Implementation of Dipole_Flavour.H.
 
@@ -55,15 +55,45 @@ const Flavour Dipole_Antiquark_Base::TA(kf::t,1);
 
 
 
+
+
+
+
+
+Dipole_Gluon_G::Dipole_Gluon_G() {}
+Dipole_Gluon_G::~Dipole_Gluon_G() {}
+
+
+Dipole_Quark_D::Dipole_Quark_D() {}
+Dipole_Quark_D::~Dipole_Quark_D() {}
+Dipole_Quark_U::Dipole_Quark_U() {}
+Dipole_Quark_U::~Dipole_Quark_U() {}
+Dipole_Quark_S::Dipole_Quark_S() {}
+Dipole_Quark_S::~Dipole_Quark_S() {}
+Dipole_Quark_C::Dipole_Quark_C() {}
+Dipole_Quark_C::~Dipole_Quark_C() {}
+Dipole_Quark_B::Dipole_Quark_B() {}
+Dipole_Quark_B::~Dipole_Quark_B() {}
+Dipole_Quark_T::Dipole_Quark_T() {}
+Dipole_Quark_T::~Dipole_Quark_T() {}
+
+
+Dipole_Antiquark_D::Dipole_Antiquark_D() {}
+Dipole_Antiquark_D::~Dipole_Antiquark_D() {}
+Dipole_Antiquark_U::Dipole_Antiquark_U() {}
+Dipole_Antiquark_U::~Dipole_Antiquark_U() {}
+Dipole_Antiquark_S::Dipole_Antiquark_S() {}
+Dipole_Antiquark_S::~Dipole_Antiquark_S() {}
+Dipole_Antiquark_C::Dipole_Antiquark_C() {}
+Dipole_Antiquark_C::~Dipole_Antiquark_C() {}
+Dipole_Antiquark_B::Dipole_Antiquark_B() {}
+Dipole_Antiquark_B::~Dipole_Antiquark_B() {}
+Dipole_Antiquark_T::Dipole_Antiquark_T() {}
+Dipole_Antiquark_T::~Dipole_Antiquark_T() {}
+
+
+
+
+
 //eof
-
-
-
-
-
-
-
-
-
-
 

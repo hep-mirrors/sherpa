@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/03
+//Version: 1 ADICIC++-0.0/2004/06/08
 
 //Chaintest.C - testing the first chaining.
 
@@ -8,8 +8,10 @@
 #include <typeinfo>
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 #include <ioextra>
 #include <enumextra>
+#include "Message.H"
 #include "Dipole.H"
 #include "Dipole_Handler.H"
 #include "Sudakov_Calculator.H"
@@ -61,6 +63,10 @@ public:
 
 int main() {
 
+  msg.SetModifiable(true);
+
+  cout<<endl;
+  cout<<cout.precision(6)<<endl;
   cout<<endl;
 
   Lev1 kkk;
@@ -140,22 +146,22 @@ int main() {
 
     Chain ch1(b1,a1,Chain::Initiator::simple_epem);
     cout<<ch1<<endl;
-    cout<<"cha handling="<<cha.IsHandled()<<endl;
-    cout<<"ch1 handling="<<ch1.IsHandled()<<endl;
+    cout<<"cha handling(0)="<<cha.IsHandled()<<endl;
+    cout<<"ch1 handling(0)="<<ch1.IsHandled()<<endl;
     cha|0; ch1|0;
-    cout<<"cha handling="<<cha.IsHandled()<<endl;
-    cout<<"ch1 handling="<<ch1.IsHandled()<<endl;
+    cout<<"cha handling(0)="<<cha.IsHandled()<<endl;
+    cout<<"ch1 handling(0)="<<ch1.IsHandled()<<endl;
 
     {
       Chain_Handler H1;
       Chain_Handler H2(ch1);
 
-      cout<<"H1 docking="<<H1.IsDocked()<<endl;
-      cout<<"H2 docking="<<H2.IsDocked()<<endl;
-      cout<<"H2 docking cha? "<<H2.IsDockedAt(cha)<<endl;
-      cout<<"H2 docking ch1? "<<H2.IsDockedAt(ch1)<<endl;
-      cout<<"ch1 handled by H1? "<<ch1.IsHandledBy(H1)<<endl;
-      cout<<"ch1 handled by H2? "<<ch1.IsHandledBy(H2)<<endl;
+      cout<<"H1 docking(0)="<<H1.IsDocked()<<endl;
+      cout<<"H2 docking(1)="<<H2.IsDocked()<<endl;
+      cout<<"H2 docking cha (0)? "<<H2.IsDockedAt(cha)<<endl;
+      cout<<"H2 docking ch1 (1)? "<<H2.IsDockedAt(ch1)<<endl;
+      cout<<"ch1 handled by H1 (0)? "<<ch1.IsHandledBy(H1)<<endl;
+      cout<<"ch1 handled by H2 (1)? "<<ch1.IsHandledBy(H2)<<endl;
       cout<<endl;
       cout<<H1.DetachChain(&cha)<<endl;
       cout<<H1.DetachChain(&ch1)<<endl;
@@ -171,43 +177,43 @@ int main() {
       {
 	Chain E(g1,g2,Chain::Initiator::simple_epem);
 	E|H3;
-	cout<<"H3 docking="<<H3.IsDocked()<<endl;
+	cout<<"H3 docking(1)="<<H3.IsDocked()<<endl;
 	cout<<E.IsRing()<<endl;
 	cout<<E<<endl;
       }
-      cout<<"H3 docking="<<H3.IsDocked()<<endl;
+      cout<<"H3 docking(0)="<<H3.IsDocked()<<endl;
       cout<<endl;
 
-      cout<<(cha|H3)<<endl;
-      cout<<H3.DetachChain(&cha)<<endl;
-      cout<<H3.DetachChain(&ch1)<<endl;
-      cout<<H3.AttachChain(&cha)<<endl;
-      cout<<H3.AttachChain(&ch1)<<endl;
-      cout<<(cha|H1)<<endl;
-      cout<<(cha|H2)<<endl;
-      cout<<(cha|H3)<<endl;
-      cout<<(ch1|H1)<<endl;
-      cout<<(ch1|H2)<<endl;
-      cout<<(ch1|H3)<<endl;
+      cout<<"(1)"<<(cha|H3)<<endl;
+      cout<<"(0)"<<H3.DetachChain(&cha)<<endl;
+      cout<<"(0)"<<H3.DetachChain(&ch1)<<endl;
+      cout<<"(0)"<<H3.AttachChain(&cha)<<endl;
+      cout<<"(0)"<<H3.AttachChain(&ch1)<<endl;
+      cout<<"(0)"<<(cha|H1)<<endl;
+      cout<<"(0)"<<(cha|H2)<<endl;
+      cout<<"(0)"<<(cha|H3)<<endl;
+      cout<<"(0)"<<(ch1|H1)<<endl;
+      cout<<"(0)"<<(ch1|H2)<<endl;
+      cout<<"(0)"<<(ch1|H3)<<endl;
       cout<<endl;
       ch1|0;
-      cout<<(ch1|H3)<<endl;
-      cout<<(ch1|H1)<<endl;
-      cout<<(ch1|H2)<<endl;
+      cout<<"(0)"<<(ch1|H3)<<endl;
+      cout<<"(1)"<<(ch1|H1)<<endl;
+      cout<<"(0)"<<(ch1|H2)<<endl;
       cout<<cha<<endl<<ch1<<endl;
-      cout<<"cha handled by H1? "<<cha.IsHandledBy(H1)<<endl;
-      cout<<"cha handled by H2? "<<cha.IsHandledBy(H2)<<endl;
-      cout<<"cha handled by H3? "<<cha.IsHandledBy(H3)<<endl;
-      cout<<"ch1 handled by H1? "<<ch1.IsHandledBy(H1)<<endl;
-      cout<<"ch1 handled by H2? "<<ch1.IsHandledBy(H2)<<endl;
-      cout<<"ch1 handled by H3? "<<ch1.IsHandledBy(H3)<<endl;
+      cout<<"cha handled by H1(0)? "<<cha.IsHandledBy(H1)<<endl;
+      cout<<"cha handled by H2(0)? "<<cha.IsHandledBy(H2)<<endl;
+      cout<<"cha handled by H3(1)? "<<cha.IsHandledBy(H3)<<endl;
+      cout<<"ch1 handled by H1(1)? "<<ch1.IsHandledBy(H1)<<endl;
+      cout<<"ch1 handled by H2(0)? "<<ch1.IsHandledBy(H2)<<endl;
+      cout<<"ch1 handled by H3(0)? "<<ch1.IsHandledBy(H3)<<endl;
 
-      cout<<cha.IsEmpty()<<endl;
-      cout<<ch1.IsEmpty()<<endl;
-      cout<<cha.IsRing()<<endl;
-      cout<<ch1.IsRing()<<endl;
-      cout<<cha.ChainType()<<endl;
-      cout<<ch1.ChainType()<<endl;
+      cout<<"(1)"<<cha.IsEmpty()<<endl;
+      cout<<"(0)"<<ch1.IsEmpty()<<endl;
+      cout<<"(0)"<<cha.IsRing()<<endl;
+      cout<<"(0)"<<ch1.IsRing()<<endl;
+      cout<<"(inc.)"<<cha.ChainType()<<endl;
+      cout<<"(line)"<<ch1.ChainType()<<endl;
       cout<<ch1.ChainRoot()<<endl;
 
       cout<<H1.CompScale()<<endl;
@@ -237,6 +243,23 @@ int main() {
 
   {
 
+    cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
+    cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;
+    cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
+    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
+    cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
+    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
+    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    //cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
+    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
+    cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
+    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
+    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+
+    //abort();
+
     Vec4D pl(45.0, 20.0,-5.0, 40.0);
     Vec4D pr(45.0,-20.0, 5.0,-40.0);
     Dipole::Branch     b1(info.quark.u,pl);
@@ -244,12 +267,15 @@ int main() {
     Dipole::Antibranch a1(info.antiquark.u,pr);
     Dipole::Glubranch  g2(pr);
 
-    Chain cha(b1,a1,Chain::Initiator::simple_epem);
+    //Chain cha(b1,a1,Chain::Initiator::simple_epem);
+    Chain cha(g1,g2,Chain::Initiator::simple_epem);
+    Chain chtest(cha);
     Chain_Handler H(cha);
 
     cha.Print();
     cout<<cha.MaxParticleNumber()<<endl;
     cout<<cha.MaxDipoleNumber()<<endl;
+    chtest.Print();
     cout<<endl;
     cout<<"\e[7m\e[31m                    \e[0m";
     cout<<"\e[1m\e[40m\e[33mSTART\e[0m";
@@ -268,6 +294,20 @@ int main() {
     cha.Print();
     cout<<cha.MaxParticleNumber()<<endl;
     cout<<cha.MaxDipoleNumber()<<endl;
+    //chtest.Print();
+    cout<<endl;
+
+    cout<<om::greenbg<<"Operator= test:"<<om::reset<<endl;
+    chtest=cha;
+    chtest.Print();
+    cout<<endl<<om::greenbg<<"Copy constructor test:"<<om::reset<<endl;
+    Chain chacopy(cha);
+    chacopy.Print();
+    cout<<endl<<om::greenbg<<"Extracting test:"<<om::reset<<endl;
+    Particle_List plist;
+    cha.ExtractPartons(plist);
+    cout<<plist<<endl;
+    cha.Print();
 
     /*
     cout<<"\t  p1="<<b1.Momentum()<<" \t "<<b1.Momentum().Abs2()<<endl;
@@ -285,13 +325,18 @@ int main() {
 
   }
 
-  cout<<"=============================================================="<<endl;
+  cout<<endl<<endl;
+  cout<<cout.precision(6)<<endl<<endl<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
   cout<<"Test: 8.123^7="<<power<7>(8.123)<<endl;
   cout<<"Test: 4.573^3="<<power<3>(4.573)<<endl;
   cout<<"Test: 7.000^2="<<power<2>(7.000);
   Dipole_Handler::ShowCalcBox();
   cout<<"Number of Dipole_Handler's = "<<Dipole_Handler::InStore<<endl;
-  cout<<"=============================================================="<<endl;
+  cout<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
 
   {
     unsigned total=0; //total=0;

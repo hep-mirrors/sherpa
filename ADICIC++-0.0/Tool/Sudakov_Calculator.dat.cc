@@ -5,7 +5,7 @@
 
 
 //AlphaS treatment flag
-const bool ADICIC::Sudakov_Calculator::sf_alphasrun=false;
+const bool ADICIC::Sudakov_Calculator::s_isalphasrun=true;//false;
 
 //GeV^2
 const double ADICIC::Sudakov_Calculator::s_k2tmin=1.0;
@@ -14,6 +14,6 @@ const double ADICIC::Sudakov_Calculator::s_k2tmin=1.0;
 const double ADICIC::Sudakov_Calculator::s_k2tmax=8100.0;
 
 //coupling
-const double ADICIC::Sudakov_Calculator::s_alphasfix=0.14;//0.19;//0.12;
+const double ADICIC::Sudakov_Calculator::s_alphasfix=0.12;//0.19;//0.14;
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/03    (surely preliminarily)
+//Version: 1 ADICIC++-0.0/2004/06/07    (surely preliminarily)
 
 //Only the Chain_Handler structure can reasonably modify the state of a Chain.
 
@@ -87,7 +87,7 @@ namespace ADICIC {
 
     //Private methods:
     //================
-    template<class _Strategy> const bool FindDipole();
+    template<class _Strategy> const bool FindDecDipole();
     const bool SplitDipole();
 
   public:

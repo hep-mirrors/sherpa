@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/01
+//Version: 1 ADICIC++-0.0/2004/06/08
 
 //Emissiontest.C - testing the first emission.
 
@@ -10,6 +10,7 @@
 #include <iostream>
 #include <ioextra>
 #include <enumextra>
+#include "Message.H"
 #include "Dipole.H"
 #include "Dipole_Handler.H"
 #include "Sudakov_Calculator.H"
@@ -60,6 +61,8 @@ public:
 
 
 int main() {
+
+  msg.SetModifiable(true);
 
   cout<<endl;
 
@@ -205,6 +208,20 @@ int main() {
   cout<<"============================="<<endl;
 
   {
+    cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
+    cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;
+    cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
+    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
+    cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
+    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
+    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
+    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
+    cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
+    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
+    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+
     TEMP::CPTEST=true;
 
     Vec4D pl(45.0, 20.0,-5.0, 40.0);

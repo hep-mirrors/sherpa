@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/12
+//Version: 1 ADICIC++-0.0/2004/06/08
 
 //Flavtest.C - testing the dipole-flavour structure.
 
@@ -10,6 +10,7 @@
 #include <iostream>
 #include <ioextra>
 #include <enumextra>
+#include "Message.H"
 #include "Dipole.H"
 
 
@@ -45,6 +46,8 @@ public:
 
 
 int main() {
+
+  msg.SetModifiable(true);
 
   cout<<endl;
   cout<<"=============================================================="<<endl;

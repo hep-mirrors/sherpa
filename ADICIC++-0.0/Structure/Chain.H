@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/02
+//Version: 1 ADICIC++-0.0/2004/06/06
 
 //This structure supports the evolution of a Chain of Dipoles.
 
@@ -9,8 +9,8 @@
 #define _Chain_H_ _Chain_H_
 
 
-#include "Dipole.H"
 #include "Particle_List.H"
+#include "Dipole.H"
 
 
 #define CHAIN_OUTPUT CHAIN_OUTPUT
@@ -81,6 +81,7 @@ namespace ADICIC {
 
       Dipole::Branch*               p_quab;
       Dipole::Antibranch*           p_atib;
+      const Dipole::Glubranch*      p_1glu;
       std::list<Dipole::Glubranch*> l_glub;
       std::list<Dipole*>            l_dip;
 
@@ -89,7 +90,7 @@ namespace ADICIC {
 	m_k2tlast=m_mass=m_invmass=0.0;	m_momentum=ATOOLS::Vec4D();
 	p_root=NULL;
 	p_hdl=NULL;
-	p_quab=NULL; p_atib=NULL;
+	p_quab=NULL; p_atib=NULL; p_1glu=NULL;
 	l_glub.clear();	l_dip.clear();
       }
 
@@ -103,6 +104,7 @@ namespace ADICIC {
     //=======================
     inline Dipole::Branch*&               ChainBranchPointer();
     inline Dipole::Antibranch*&           ChainAntibranchPointer();
+    inline const Dipole::Glubranch*       ChainFirstGlubranchPointer() const;
     inline std::list<Dipole::Glubranch*>& GlubranchPointerList();
     inline std::list<Dipole*>&            DipolePointerList();
     inline const std::list<Dipole*>&      DipolePointerList() const;
@@ -138,6 +140,7 @@ namespace ADICIC {
     inline const bool           IsHandled() const;
     inline const bool           IsHandledBy(const Chain_Handler&) const;
     inline const Type           ChainType() const;
+    inline const bool           IsLine() const;
     inline const bool           IsRing() const;
     inline const Dipole&        ChainRoot() const;
 
@@ -156,16 +159,18 @@ namespace ADICIC {
     //===============
     void Print() const;
     const bool CheckMomentumConservation(ATOOLS::Vec4D&) const;
+    const bool ExtractPartons(ATOOLS::Particle_List&) const;
+
     const bool Clear();
+
     const bool Initialize(const Dipole::Branch&, const Dipole::Antibranch&);
-    /*
-      const bool StartChain(const Dipole::Branch&);
-      const bool StartChain(const Dipole::Glubranch&);
-      const bool AddToChain(const Dipole::Glubranch&);
-      const bool FinishChain(const Dipole::Antibranch&);
-      const bool FinishChain(const Dipole::Glubranch&);
-    */
-    const bool ExtractPartons(ATOOLS::Particle_List&);
+
+    const bool StartInitChain(const Dipole::Branch&);//////////////////////////
+    const bool StartInitChain(const Dipole::Glubranch&);///////////////////////
+    const bool AddToInitChain(const Dipole::Glubranch&, const double&);////////
+    const bool FinishInitChain(const Dipole::Antibranch&, const double&);//////
+    const bool FinishInitChain(const Dipole::Glubranch&, const double&);///////
+
   };
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/03
+//Version: 1 ADICIC++-0.0/2004/06/07
 
 //Implementation of the template structures of Sudakov_Calculator.H.
 
@@ -21,8 +21,8 @@
 
 
 
-template<Dipole::Type DT, class AS>
-const bool Sudakov<DT,AS>::GenerateEfracsFor(const Dipole& dip) {
+template<Dipole::Type DT>
+const bool Sudakov<DT>::GenerateEfracsFor(const Dipole& dip) {
 
   InitWith(dip);
 
@@ -36,12 +36,11 @@ const bool Sudakov<DT,AS>::GenerateEfracsFor(const Dipole& dip) {
     m_x1=1.0-m_x3*std::exp(m_rap);
     m_x3=1.0-m_x3*std::exp(-m_rap);
 
+    m_p2t=m_s*m_x2t;
+
     GenerateCorr();
 
-    if( ATOOLS::ran.Get() < m_corr ) {
-      m_p2t=m_s*m_x2t; //return true;
-      return TestEfracs();
-    }
+    if( ATOOLS::ran.Get() < m_corr ) return TestEfracs();
 
   }
 
@@ -55,14 +54,14 @@ const bool Sudakov<DT,AS>::GenerateEfracsFor(const Dipole& dip) {
 
 
 
-template<Dipole::Type DT, class AS>
-const bool Sudakov<DT,AS>::GenerateX2t() {
+template<Dipole::Type DT>
+const bool Sudakov<DT>::GenerateX2t() {
 
   double ran=ATOOLS::ran.Get();
 #ifdef SUDAKOV_CALCULATOR_OUTPUT
   cout<<"\t\t\trandom="<<ran<<endl;
 #endif
-  double coeff=std::log(ran)*Sudakov_Info<DT,AS>::Colourfactor/m_alphas;
+  double coeff=std::log(ran)*Sudakov_Info<DT>::Colourfactor/AlphaSApprox();
   double A=sqr(std::log(m_x2t));
   if( coeff < A-sqr(std::log(m_x2tmin)) ) return false;
   m_x2t=std::exp(-sqrt(A-coeff));

@@ -15,6 +15,10 @@ endif
 
 
 
+AM_CXXFLAGS = -pedantic -Wall -Winline
+
+
+
 bin_PROGRAMS = Flavtest Emissiontest Chaintest
 
 
@@ -26,6 +30,9 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
                  @libdir@/libToolsPhys.la \
                  @libdir@/libToolsMath.la \
                  @libdir@/libToolsOrg.la \
+                 @libdir@/libModelMain.la \
+                 @libdir@/libHdecay.la \
+                 @libdir@/libIsajet.la \
                  -lg2c -lm
 #Flavtest_LDFLAGS = -rdynamic
 
@@ -44,6 +51,9 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
                      @libdir@/libToolsPhys.la \
                      @libdir@/libToolsMath.la \
                      @libdir@/libToolsOrg.la \
+                     @libdir@/libModelMain.la \
+                     @libdir@/libHdecay.la \
+                     @libdir@/libIsajet.la \
                      -lg2c -lm
 
 
@@ -55,6 +65,9 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
                   @libdir@/libToolsPhys.la \
                   @libdir@/libToolsMath.la \
                   @libdir@/libToolsOrg.la \
+                  @libdir@/libModelMain.la \
+                  @libdir@/libHdecay.la \
+                  @libdir@/libIsajet.la \
                   -lg2c -lm
 
 
@@ -64,7 +77,8 @@ INCLUDES = -I../Tool \
            -I../Handler \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
-           -I../../ATOOLS-2.0/Org
+           -I../../ATOOLS-2.0/Org \
+           -I../../MODEL-1.0/Main
 
 
 
@@ -74,6 +88,12 @@ INCLUDES = -I../Tool \
 
 EXTRA_DIST = $(CVSINCLUDE)
 #EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat
+
+
+
+
+
+
 
 
 

@@ -26,6 +26,7 @@ libAdicicTool_la_SOURCES = Xio.C \
 
 
 #AM_CXXFLAGS = -pedantic -Wall -Winline -DUSING_SHERPA
+AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 
@@ -33,7 +34,8 @@ INCLUDES = -I../Handler \
            -I../Structure \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
-           -I$(ATOOLSINC)/Org
+           -I$(ATOOLSINC)/Org \
+           -I$(MODELINC)/Main
 
 
   
@@ -46,4 +48,12 @@ EXTRA_DIST = $(CVSINCLUDE) \
              Sudakov_Calculator.dat.hh Sudakov_Calculator.inl.hh \
              Sudakov_Calculator.dat.cc Sudakov_Calculator.tpt.cc \
              Recoil_Calculator.inl.hh Recoil_Calculator.tpt.cc
+
+
+
+
+
+
+
+
 

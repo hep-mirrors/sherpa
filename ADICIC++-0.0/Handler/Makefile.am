@@ -22,6 +22,7 @@ libAdicicHdl_la_SOURCES = Dipole_Handler.C Chain_Handler.C
 
 
 #AM_CXXFLAGS = -pedantic -Wall -Winline -DUSING_SHERPA
+AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 
@@ -29,10 +30,11 @@ INCLUDES = -I../Tool \
            -I../Structure \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
-           -I$(ATOOLSINC)/Org
+           -I$(ATOOLSINC)/Org \
+           -I$(MODELINC)/Main
 
 
-  
+
 noinst_HEADERS = Dipole_Handler.H Chain_Handler.H
 
 
@@ -40,8 +42,6 @@ noinst_HEADERS = Dipole_Handler.H Chain_Handler.H
 EXTRA_DIST = $(CVSINCLUDE) \
              Dipole_Handler.inl.hh Dipole_Handler.dat.cc \
              Chain_Handler.dat.hh Chain_Handler.inl.hh
-
-
 
 
 
