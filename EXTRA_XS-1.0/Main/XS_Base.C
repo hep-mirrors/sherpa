@@ -134,7 +134,7 @@ double XS_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
     m_scale[PHASIC::stp::kp21]=x1*x1*2.*S2*xi;
     m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
-    double sc=(momenta[0]+momenta[1]).PPerp2();
+    double sc=(p[0]+p[1]).PPerp2();
     m_scale[PHASIC::stp::as]=pow(sc,2./3.)*pow(M2,1./3.);
     break;
   }
