@@ -74,8 +74,19 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 
   // fill color groups
   int ncount = 0;
+
+  int maxorder = 1;
+  for(int i=0; i<N; i++) if (fl[i].IsKK()) maxorder--;
+  if (maxorder<0) 
+    msg.Error()<<"Error in Amplitude Handler! Multiple external KK-particles not supported!"<<endl;
+
   while (n) {
-    while(TOrder(n)>0)n=n->Next;
+    cout<<"Amplitude : "<<n<<" "<<ncount<<endl;
+    while(TOrder(n)>maxorder){
+      n=n->Next;
+      if (!n) break;
+    }
+    if (!n) break; 
     //Kicker does not work properly right now!!!!
     //if (switch_graphs[ncount])
     pointlist.push_back(n->GetPointlist()); 
@@ -516,14 +527,11 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
 {  
   if(rpa.gen.Model()!=Model_Type::ADD) return 0;
-  int maxorder = rpa.gen.ScalarNumber(string("Max_KK-Props"));
-
   int cnt=0;
   Pfunc_List* pl = a->GetPlist();
   for(Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit)
     if((*pit)->fl.IsKK())cnt++;
-  if (cnt>maxorder) return 1;
-  return 0;
+  return cnt;
 } 
 
 
