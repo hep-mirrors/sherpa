@@ -1,7 +1,7 @@
 #ifdef ROOT_SUPPORT
 
 #include "My_Root.H"
-#include <sys/stat.h>
+#include "Shell_Tools.H"
 
 using namespace MYROOT;
 
@@ -17,7 +17,7 @@ My_Root::My_Root(const int argc,char **const argv):
   for (int i=0;i<argc;++i) inputstring+=std::string(argv[i])+std::string("; ");
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
   reader->SetString(inputstring);
-  if (!reader->ReadFromString(path,"ROOT_PATH")) path="./";
+  if (!reader->ReadFromString(path,"ROOT_PATH")) path="./Analysis/";
   if (!reader->ReadFromString(file,"ROOT_FILE")) file="output.root";
   if (reader->ReadFromString(inputstring,"DRAW_ROOT_RESULTS")) {
     if (inputstring=="YES") m_draw=true;
@@ -33,7 +33,6 @@ My_Root::My_Root(const int argc,char **const argv):
   char **argvf = new char*[1];
   p_root = new TApplication("MyRoot",&argcf,argvf);
   if ((OutputPath()+OutputFile())!="") {
-    if (OutputPath()[OutputPath().length()-1]!='/') SetOutputPath(OutputPath()+std::string("/"));
     ATOOLS::MakeDir(OutputPath().c_str(),448);
     if (!system((std::string("test -f ")+OutputPath()+OutputFile()).c_str())) {
       system((std::string("rm -f ")+OutputPath()+OutputFile()).c_str());
