@@ -20,7 +20,7 @@ namespace ANALYSIS {
   public:
 
     typedef ATOOLS::Getter_Function<Primitive_Observable_Base,
-				    String_Matrix> Getter_Function;
+				    String_Matrix,Primitive_Analysis> Getter_Function;
 
   protected:
 

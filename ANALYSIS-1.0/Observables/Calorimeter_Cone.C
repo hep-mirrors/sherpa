@@ -139,7 +139,7 @@ void Calorimeter_Cone::SortPT()
 void Calorimeter_Cone::FillShape(int jetno,ATOOLS::Histogram * histo,
 				 double weight,int ncount)
 {
-  if (jetno>m_jets.size()) return;
+  if (jetno>(int)m_jets.size()) return;
 
   double dR, phi, et = m_jets[jetno-1].et;
 
@@ -151,8 +151,8 @@ void Calorimeter_Cone::FillShape(int jetno,ATOOLS::Histogram * histo,
   int ipos=m_jets[jetno-1].i, jpos=m_jets[jetno-1].j;
 
 
-  int itest = int((y-m_mineta)/m_delta_eta);
-  int jtest = int(phi/m_delta_phi);
+//   int itest = int((y-m_mineta)/m_delta_eta);
+//   int jtest = int(phi/m_delta_phi);
 
   //std::cout<<"Check this out : "<<ipos<<"/"<<jpos<<" -> "<<mom<<","<<et<<","
   //	   <<itest<<"/"<<jtest<<"("<<number<<")"<<std::endl;

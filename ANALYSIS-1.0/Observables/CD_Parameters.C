@@ -14,10 +14,11 @@ using namespace ATOOLS;
 #include "MyStrStream.H"
 
 DECLARE_GETTER(CD_Parameter_Calculator_Getter,"CDCalc",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
 
 Primitive_Observable_Base *const 
-CD_Parameter_Calculator_Getter::operator()(const String_Matrix &parameters) const
+CD_Parameter_Calculator_Getter::operator()(const String_Matrix &parameters,   
+					   Primitive_Analysis *const analysis) const
 {
   std::string listname="Analysed";
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
@@ -58,7 +59,8 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *const					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const String_Matrix &parameters,                     \
+		   Primitive_Analysis *const analysis) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -66,7 +68,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"min max bins Lin|Log [list] -> CDCalc"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix,Primitive_Analysis);	\
   DEFINE_GETTER_METHOD(CLASS,NAME);					\
   DEFINE_PRINT_METHOD(NAME)
 

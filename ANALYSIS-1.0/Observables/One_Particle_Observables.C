@@ -43,7 +43,8 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *const					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const String_Matrix &parameters,                     \
+		   Primitive_Analysis *const analysis) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -51,7 +52,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"kf min max bins Lin|Log [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix,Primitive_Analysis);	\
   DEFINE_GETTER_METHOD(CLASS,NAME);					\
   DEFINE_PRINT_METHOD(NAME)
 

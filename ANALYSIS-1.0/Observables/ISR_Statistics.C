@@ -3,10 +3,11 @@
 using namespace ANALYSIS;
 
 DECLARE_GETTER(ISR_Statistics_Getter,"ISRStats",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
 
 Primitive_Observable_Base *const 
-ISR_Statistics_Getter::operator()(const String_Matrix &parameters) const
+ISR_Statistics_Getter::operator()(const String_Matrix &parameters,
+				  Primitive_Analysis *const analysis) const
 {
   std::string listname="Analysed";
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];

@@ -43,7 +43,8 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME,TAG)				\
   Primitive_Observable_Base *const					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const String_Matrix &parameters,                     \
+		   Primitive_Analysis *const analysis) const		\
   { return GetObservable<CLASS,NAME>(parameters); }
 
 #define DEFINE_PRINT_METHOD(CLASS,NAME)					\
@@ -51,7 +52,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"min max bins mode nmin nmax Lin|Log [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix,Primitive_Analysis);	\
   DEFINE_GETTER_METHOD(CLASS,NAME,TAG);					\
   DEFINE_PRINT_METHOD(CLASS,NAME)
 
@@ -351,7 +352,7 @@ Primitive_Observable_Base * Jet_E_Distribution::Copy() const
 }
 
 DECLARE_GETTER(Jet_Differential_Rates_Getter,"JetDRate",
-	       Primitive_Observable_Base,String_Matrix);	
+	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);	
 
 DEFINE_GETTER_METHOD(Jet_Differential_Rates,Jet_Differential_Rates_Getter,"JetDRate");					
 

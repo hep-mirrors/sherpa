@@ -160,7 +160,7 @@ bool Analysis_Handler::ReadIn()
 	}
 	*/
 	ANALYSIS::Primitive_Observable_Base *observable = 
-	  Getter_Function::GetObject(helpsvv[k][0],mat);
+	  Getter_Function::GetObject(helpsvv[k][0],mat,m_analyses.back());
 	if (observable!=NULL) {
 	  k+=mat.size()-1;
 	  m_analyses.back()->AddObservable(observable);
@@ -180,7 +180,7 @@ bool Analysis_Handler::ReadIn()
       }
       if (!trigger) {
 	ANALYSIS::Primitive_Observable_Base *observable = 
-	  Getter_Function::GetObject("Trigger",String_Matrix());
+	  Getter_Function::GetObject("Trigger",String_Matrix(),m_analyses.back());
 	m_analyses.back()->AddObservable(observable);
       }
       msg_Tracking()<<"   }\n";

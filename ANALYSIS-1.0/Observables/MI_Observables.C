@@ -35,7 +35,8 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *const					\
-  NAME::operator()(const String_Matrix &parameters) const		\
+  NAME::operator()(const String_Matrix &parameters,                     \
+		   Primitive_Analysis *const analysis) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -43,15 +44,16 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"min max bins Lin|Log [jetlist] [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix,Primitive_Analysis);	\
   DEFINE_GETTER_METHOD(CLASS,NAME);					\
   DEFINE_PRINT_METHOD(NAME)
 
 DECLARE_GETTER(MI_Statistics_Getter,"MIStats",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
 
 Primitive_Observable_Base *const 
-MI_Statistics_Getter::operator()(const String_Matrix &parameters) const
+MI_Statistics_Getter::operator()(const String_Matrix &parameters,
+				 Primitive_Analysis *const analysis) const
 {
   std::string listname="Analysed";
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
@@ -66,10 +68,11 @@ void MI_Statistics_Getter::PrintInfo(std::ostream &str,const size_t width) const
 #include <iomanip>
 
 DECLARE_GETTER(Transverse_Region_Selector_Getter,"TransReg",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
 
 Primitive_Observable_Base *const 
-Transverse_Region_Selector_Getter::operator()(const String_Matrix &parameters) const
+Transverse_Region_Selector_Getter::operator()(const String_Matrix &parameters,
+					      Primitive_Analysis *const analysis) const
 {									
   if (parameters.size()<5) return NULL;
   double min=60.0, max=120.0;
@@ -98,10 +101,11 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 DECLARE_GETTER(Leading_PT_Selector_Getter,"LeadJetPT",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
 
 Primitive_Observable_Base *const 
-Leading_PT_Selector_Getter::operator()(const String_Matrix &parameters) const
+Leading_PT_Selector_Getter::operator()(const String_Matrix &parameters,
+				       Primitive_Analysis *const analysis) const
 {									
   if (parameters.size()<5) return NULL;
   double min=30.0, max=70.0;
@@ -126,15 +130,16 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+7)<<" "<<"OutList list\n" 
      <<std::setw(width+7)<<" "<<"PTMin   min\n" 
      <<std::setw(width+7)<<" "<<"PTMax   max\n" 
-     <<std::setw(width+7)<<" "<<"Item    max\n" 
+     <<std::setw(width+7)<<" "<<"Item    item\n" 
      <<std::setw(width+4)<<" "<<"}"; 
 }
 
 DECLARE_GETTER(Leading_ET_Selector_Getter,"LeadJetET",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
 
 Primitive_Observable_Base *const 
-Leading_ET_Selector_Getter::operator()(const String_Matrix &parameters) const
+Leading_ET_Selector_Getter::operator()(const String_Matrix &parameters,
+				       Primitive_Analysis *const analysis) const
 {									
   if (parameters.size()<5) return NULL;
   double min=30.0, max=70.0;
@@ -159,7 +164,7 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+7)<<" "<<"OutList list\n" 
      <<std::setw(width+7)<<" "<<"ETMin   min\n" 
      <<std::setw(width+7)<<" "<<"ETMax   max\n" 
-     <<std::setw(width+7)<<" "<<"Item    max\n" 
+     <<std::setw(width+7)<<" "<<"Item    item\n" 
      <<std::setw(width+4)<<" "<<"}"; 
 }
 

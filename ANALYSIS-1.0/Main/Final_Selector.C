@@ -8,7 +8,7 @@ using namespace ANALYSIS;
 #include <iomanip>
 
 DECLARE_GETTER(Final_Selector_Getter,"Trigger",
- 	       Primitive_Observable_Base,String_Matrix);
+ 	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
 
 void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -25,7 +25,8 @@ void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) cons
 }
 
 Primitive_Observable_Base *const 
-Final_Selector_Getter::operator()(const String_Matrix &parameters) const
+Final_Selector_Getter::operator()(const String_Matrix &parameters,
+				  Primitive_Analysis *const analysis) const
 {
   Final_Selector_Data data;
   int jetmode=0;

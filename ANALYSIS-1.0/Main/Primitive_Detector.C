@@ -9,7 +9,7 @@ using namespace ANALYSIS;
 #include <iomanip>
 
 DECLARE_GETTER(Primitive_Detector_Getter,"Detector",
-	       Primitive_Observable_Base,String_Matrix);
+	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
 
 void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -22,7 +22,8 @@ void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) 
 }
 
 Primitive_Observable_Base *const 
-Primitive_Detector_Getter::operator()(const String_Matrix &parameters) const
+Primitive_Detector_Getter::operator()(const String_Matrix &parameters,
+				      Primitive_Analysis *const analysis) const
 {
   std::string inlist="FinalState", outlist="Detected";
   for (size_t i=0;i<parameters.size();++i) {
@@ -40,6 +41,7 @@ Primitive_Detector_Getter::operator()(const String_Matrix &parameters) const
 					      ATOOLS::ToType<int>(cur[4])));
     }
     else if (cur[0]=="CalCone" && cur.size()>4) {
+      detector->SetAnalysis(analysis);
       detector->AddSelector(ATOOLS::ToType<double>(cur[0]),
 			    ATOOLS::ToType<double>(cur[1]),
 			    ATOOLS::ToType<double>(cur[2]),
@@ -94,6 +96,9 @@ Primitive_Detector::~Primitive_Detector()
 
 Primitive_Observable_Base* Primitive_Detector::Copy() const
 {
+  std::cout<<"WARNING: Potential error in Primitive_Detector: "
+	   <<"No appropriate Copy() method.\n"
+	   <<"   Continue and hope for the best"<<std::endl;
   Primitive_Detector *detector = 
     new Primitive_Detector(m_inlistname,m_outlistname);
   return detector;
