@@ -52,10 +52,13 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
 void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
 					 double th1,double th2)
 {
+  blob->SetCMS();
+  blob->BoostInCMS();
+  ATOOLS::Particle *part1=blob->OutParticle(0);
+  ATOOLS::Particle *part2=blob->OutParticle(1);
   p_fintree->Reset();
-
   Knot * dummy   = p_fintree->NewKnot(new Particle(0,Flavour(kf::none),
-						   blob->OutParticle(0)->Momentum()+blob->OutParticle(1)->Momentum()));
+						   part1->Momentum()+part2->Momentum()));
   dummy->part->SetInfo('M');
   dummy->part->SetStatus(2);
   dummy->t       = scale;
@@ -64,8 +67,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   dummy->thcrit  = M_PI;
   dummy->stat    = 0;
   dummy->E2      = sqr(dummy->part->Momentum()[0]);
-    
-  Knot * d1      = p_fintree->NewKnot(blob->OutParticle(0));
+  Knot * d1      = p_fintree->NewKnot(part1);
   d1->part->SetInfo('H');
   d1->part->SetStatus(1);
   d1->t          = scale;
@@ -76,8 +78,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   d1->E2         = sqr(d1->part->Momentum()[0]);
   d1->stat       = 3;
   d1->part->SetProductionBlob(blob);
-
-  Knot * d2      = p_fintree->NewKnot(blob->OutParticle(1));
+  Knot * d2      = p_fintree->NewKnot(part2);
   d2->part->SetInfo('H');
   d2->part->SetStatus(1);
   d2->t          = scale;
@@ -88,14 +89,13 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   d2->E2         = sqr(d2->part->Momentum()[0]);
   d2->stat       = 3;
   d2->part->SetProductionBlob(blob);
-  
   dummy->E2      = sqr(sqrt(d1->E2)+sqrt(d2->E2));
   dummy->z       = sqrt(d1->E2/dummy->E2);
-
   d1->prev       = dummy;
   dummy->left    = d1;
   d2->prev       = dummy;
   dummy->right   = d2;
+  blob->BoostInLab();
 }
 
 bool Interface_Tools::IsColourConnected(Particle * a, Particle * b) {
