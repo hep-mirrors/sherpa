@@ -9,7 +9,7 @@ namespace ATOOLS {
 
   template <class Value_Type>
   std::string ToString(const Value_Type value) {
-    std::stringstream converter;
+    MyStrStream converter;
     std::string converted;
     converter<<value;
     converter>>converted;
