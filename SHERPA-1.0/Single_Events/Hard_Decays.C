@@ -36,14 +36,14 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   Particle * check;
   bool found = 1;
   bool hit   = 0;
-  int  pos;
-  //while (found) {
+  size_t pos;
+  while (found) {
     found = 0;
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
       pos = (*blit)->Type().find(string("FS Shower"));
-      if ((*blit)->Status()==1 && pos>-1) {
+      if ((*blit)->Status()==1 && pos!=std::string::npos) {
 	myblob = (*blit);
-	// found  = 1;
+	found  = 1;
 	for (int i=0;i<myblob->NOutP();i++) {
 	  if ((!myblob->OutParticle(i)->Flav().IsStable()) &&
 	      (myblob->OutParticle(i)->DecayBlob()!=NULL)) {
@@ -54,7 +54,7 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 			 <<"   Terminate run."<<endl;
 	      abort();
 	    }
-	    check = decblob->RemoveInParticle(0,false);
+	    check = decblob->RemoveInParticle(0,0);
 	    if (check->Flav()!=myblob->OutParticle(i)->Flav()) {
 	      msg.Error()<<"Error in Hard_Decays::Treat : "<<endl
 			 <<"   wrong incoming particle for decayblob : "
@@ -72,7 +72,7 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 	return 1;
       }
     }
-    //}
+  }
   return hit;
 }
 

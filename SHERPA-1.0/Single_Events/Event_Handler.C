@@ -38,6 +38,21 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * _phase)
   p_phases->push_back(_phase);
 }
 
+Event_Phase_Handler * Event_Handler::GetEventPhase(int i) {
+  if (i>-1 && i<p_phases->size()) {
+    for (Phase_Iterator pit=p_phases->begin();pit<p_phases->end();pit++) {
+      if (i==0) return (*pit);
+      i--;
+    }
+  }
+  msg.Error()<<"Error in Event_Handler::GetEventPhase("<<i<<")"<<std::endl
+	     <<"   Out of bounds, only "<<p_phases->size()<<" event phases."<<std::endl
+	     <<"   Will return NULL."<<std::endl;
+  return NULL;
+}
+
+int Event_Handler::NumberOfEventPhases() { return p_phases->size(); }
+
 void Event_Handler::EmptyEventPhases() 
 {
   if (p_phases) {
@@ -65,14 +80,14 @@ bool Event_Handler::GenerateEvent()
   hardblob->SetId(0);
   m_blobs.push_back(hardblob);
 
-  bool flag = 1;
-  double weight=1.;
+  bool flag     = 1;
+  double weight = 1.;
   while (flag) {
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==std::string("Perturbative")) {
 	bool result=(*pit)->Treat(&m_blobs,weight);
- 	ATOOLS::msg.Tracking()<<(*pit)->Name()<<" yields "<<result<<std::endl;
+	// 	ATOOLS::msg.Tracking()<<(*pit)->Name()<<" yields "<<result<<std::endl;
 	//	ATOOLS::msg.Tracking()<<m_blobs;
  	if (result) flag = 1;
       }
@@ -89,7 +104,7 @@ bool Event_Handler::GenerateEvent()
     }
   }
 
-  if (rpa.gen.Events()) PrintBlobs();
+  //if (rpa.gen.Events()) PrintBlobs();
   return 1;
 }
 
@@ -130,6 +145,13 @@ void Event_Handler::PrintBlobs() {
 
 void Event_Handler::PerformAnalysis() {
   //if (p_analysis) p_analysis->DoAnalysis(&m_partons);
+}
+
+
+void Event_Handler::Finish() {
+  std::cout<<"In SummarizeRun()"<<std::endl;
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
+    (*pit)->Finish(std::string("Results"));
 }
 
 void Event_Handler::SetAnalysis(Sample_Analysis * _analysis) { _analysis = p_analysis; }

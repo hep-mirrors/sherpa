@@ -48,13 +48,17 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
   std::string tag;
   bool found = 1;
   bool hit   = 0;
+  bool take;
   size_t pos;
+  Blob * blob;
   while (found) {
   int b=0;
     found = 0;
     for (size_t i=0;i<_bloblist->size();++i) {
-      pos = (*_bloblist)[i]->Type().find(std::string("Signal Process :"));
-      if ((*_bloblist)[i]->Status()==1 && pos!=std::string::npos) {
+      blob = (*_bloblist)[i];
+      // Search for active blobs of type "Signal Process :"
+      pos = blob->Type().find(std::string("Signal Process :"));
+      if (blob->Status()==1 && pos!=std::string::npos) {
 	piIter = m_interfaces.find(string("SignalMEs"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -62,11 +66,13 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}	
-	found   = AttachShowers((*_bloblist)[i],_bloblist,piIter->second);
+	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->GetWeight();
-      }  // Search for active blobs of type "Signal Process :"
-      pos = (*_bloblist)[i]->Type().find(std::string("Hard Subprocess :"));
-      if ((*_bloblist)[i]->Status()==1 && pos!=std::string::npos) {
+      }  
+
+      // Search for active blobs of type "Hard Subprocess :"
+      pos = blob->Type().find(std::string("Hard Subprocess :"));
+      if (blob->Status()==1 && pos!=std::string::npos) {
 	piIter = m_interfaces.find(string("MIMEs"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -74,11 +80,13 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}	
-	found   = AttachShowers((*_bloblist)[i],_bloblist,piIter->second);
+	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->GetWeight();
-      }  // Search for active blobs of type "Hard Subprocess :"
-      pos = (*_bloblist)[i]->Type().find(std::string("Hard decay :"));
-      if ((*_bloblist)[i]->Status()==1 && pos!=std::string::npos) {
+      }  
+
+      // Search for active blobs of type "Hard Decay :"
+      pos = blob->Type().find(std::string("Hard decay :"));
+      if (blob->Status()==1 && pos!=std::string::npos) {
 	piIter = m_interfaces.find(string("HardDecays"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -86,9 +94,9 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}
-	found   = AttachShowers((*_bloblist)[i],_bloblist,piIter->second);
+	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->GetWeight();
-      } // Search for active blobs of type "Hard Decay :"
+      } 
     }
     if (found) hit = 1;
   }
@@ -110,14 +118,11 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
   }
   if (stat) {
     interface->FillBlobs(_bloblist);
-    if (!decayblob) {
-      shower = interface->PerformShowers();
-    }
-    else {
-      shower = p_showerhandler->PerformDecayShowers(0);
-    }      
+    if (!decayblob) shower = interface->PerformShowers();
+               else shower = interface->PerformDecayShowers();  
     if (shower==1) {
       Blob * myblob;
+      if (decayblob) _blob->InParticle(0)->SetInfo('h');
       p_showerhandler->FillBlobs(_bloblist); // BUG !!!!
       _blob->SetStatus(0);
       if ((!decayblob) && (!p_showerhandler->ISROn())) {
@@ -144,6 +149,14 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  myblob->SetBeam(i);
 	  myblob->SetStatus(1);
 	  Particle * p = new Particle(_blob->OutParticle(i));
+	  if (_blob->OutParticle(i)->DecayBlob()) {
+	    Blob * dec  = _blob->OutParticle(i)->DecayBlob();
+	    size_t pos = dec->Type().find(std::string("Hard decay"));
+	    if (pos!=std::string::npos) {
+	      dec->RemoveInParticle(_blob->OutParticle(i));
+	      dec->AddToInParticles(p);
+	    }
+	  }
 	  myblob->AddToInParticles(_blob->OutParticle(i));
 	  _blob->OutParticle(i)->SetStatus(2);
 	  myblob->AddToOutParticles(p);

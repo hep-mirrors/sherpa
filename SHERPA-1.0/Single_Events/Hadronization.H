@@ -15,6 +15,7 @@ namespace SHERPA {
     ~Hadronization();
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
+    void Finish(std::string) {}
   };
 
 
