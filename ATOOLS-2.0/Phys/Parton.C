@@ -147,10 +147,10 @@ void   Parton::SetTime()                        { m_dec_time = LifeTime(); }
   // Production and decay vertices
 Vec4D  Parton::XProd()                          { return m_startblob->Position(); }
 Blob * Parton::Prod()                           { return m_startblob; }
-void   Parton::SetProd(Blob * _blob)            { m_startblob = _blob; }
+void   Parton::SetProductionBlob(Blob * _blob)  { m_startblob = _blob; }
 Vec4D  Parton::XDec()                           { return m_endblob->Position(); }
 Blob * Parton::Dec()                            { return m_endblob; }
-void   Parton::SetDec(Blob * _blob)             { m_endblob = _blob; }
+void   Parton::SetDecayBlob(Blob * _blob)       { m_endblob = _blob; }
 
   // Flavour and flow
 APHYTOOLS::Flavour Parton::Flav() const         { return m_fl; }

@@ -71,8 +71,8 @@ namespace APHYTOOLS {
     void   SetMomentum(const AMATOOLS::Vec4D &);
     void   SetStatus( int status = 0 );
     void   SetInfo(char);
-    void   SetProd(Blob *);
-    void   SetDec(Blob *);
+    void   SetProductionBlob(Blob *);
+    void   SetDecayBlob(Blob *);
     void   SetTime(const int);
     void   SetTime();
     void   SetFlav(APHYTOOLS::Flavour &);
