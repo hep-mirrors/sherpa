@@ -108,7 +108,7 @@ namespace AMEGIC {
     int    CalcEtaMu(ATOOLS::Vec4D*);//setS
     void   InitGaugeTest(double);//ResetS_GT
 
-    inline Complex Mu(int i)  { return (i>=0) ? _mu[i] : -_mu[-i]; }
+    inline Complex Mu(int i)  { return (i>0) ? _mu[i] : -_mu[-i]; }
     inline Complex Eta(int i) { return _eta[ATOOLS::iabs(i)]; }
     inline Complex S0d(int i,int j) { return _S0[ATOOLS::iabs(i)][ATOOLS::iabs(j)]; }
     inline Complex S1d(int i,int j) { return _S1[ATOOLS::iabs(i)][ATOOLS::iabs(j)]; }
