@@ -445,18 +445,23 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       Vec4D mom2=k2->part->Momentum();
 
       std::cout<<" momenta \n";
-      std::cout<<"mom1="<<mom1<<" ("<<mom1.Abs()<<")\n";
-      std::cout<<"  mom2="<<mom2<<" ("<<mom2.Abs()<<")\n";
-      std::cout<<"mom3="<<mom3<<" ("<<mom3.Abs()<<")\n";
+      std::cout<<"mom1="<<mom1<<" ("<<mom1.Abs2()<<")\n";
+      std::cout<<"  mom2="<<mom2<<" ("<<mom2.Abs2()<<")\n";
+      std::cout<<"mom3="<<mom3<<" ("<<mom3.Abs2()<<")\n";
 
-      std::cout<<"mom1+2="<<mom1+mom2<<" ("<<(mom1+mom2).Abs()<<")\n";
-      std::cout<<"mom3+2="<<mom3+mom2<<" ("<<(mom3+mom2).Abs()<<")\n";
+      std::cout<<"mom1+2="<<mom1+mom2<<" ("<<(mom1+mom2).Abs2()<<")\n";
+      std::cout<<"mom3+2="<<mom3+mom2<<" ("<<(mom3+mom2).Abs2()<<")\n";
       */
-
       double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
       double sprime_b = (k1->prev->part->Momentum()+k2->part->Momentum()).Abs2();
       k1->z=sprime_a/sprime_b;
       k1->prev->x=k1->x/k1->z;
+
+      if (k1->prev->x>1.) {
+	// unphysical situation, restart shower evolution
+	return 0;
+      }
+
       //      std::cout<<" setting from existing x="<<k1->prev->x<<" "<<k1->x<<"/"<<k1->z<<std::endl;
       m_sprime/=k1->z;
 
