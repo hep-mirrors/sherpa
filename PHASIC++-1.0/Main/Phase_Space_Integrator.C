@@ -83,10 +83,10 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   int       endopt = 1;
   double    value;
   int nlo=0;
-  ran.SetSeed(-100*rank);
   
 #ifdef _USE_MPI_
   // ------ total sums for MPI ---
+  ran.SetSeed(-100*rank);
   long int alln;
   int iterall;
   double allsum  = 0.;
