@@ -29,6 +29,8 @@ namespace EXTRAXS {
 
     ATOOLS::Info_Key m_zkey[2];
 
+    unsigned int m_jets;
+
   public:
 
     // constructor

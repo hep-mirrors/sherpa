@@ -3,6 +3,7 @@
 #include "Run_Parameter.H"
 #include "Running_AlphaS.H"
 #include "Phase_Space_Handler.H"
+#include "Data_Reader.H"
 #include "Random.H"
 #include "Flow.H"
 
@@ -88,6 +89,9 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
   CreateMomenta(m_nvector);
   m_zkey[0].Assign("z_1",3,0,PHASIC::Phase_Space_Handler::GetInfo());
   m_zkey[1].Assign("z_2",3,0,PHASIC::Phase_Space_Handler::GetInfo());
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
+  if (!reader->ReadFromFile(m_jets,"LIPATOV_JETS","")) m_jets=4;
+  delete reader;
 }
 
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
@@ -124,6 +128,7 @@ bool Off_Shell_gg_gg::SetColours(double s,double t,double u)
 
 bool Off_Shell_gg_gg::Trigger(const ATOOLS::Vec4D *const momenta) 
 {
+  if (m_jets<4) return Integrable_Base::Trigger(momenta);
   ATOOLS::Vec4D *temp = new ATOOLS::Vec4D[6];
   for (int i=4;i<6;++i) temp[i-4]=momenta[i];
   for (int i=2;i<4;++i) temp[i+2]=momenta[i];
