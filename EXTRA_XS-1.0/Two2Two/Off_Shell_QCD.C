@@ -93,23 +93,26 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
 {
   const ATOOLS::Vec4D *p=p_momenta;
   const ATOOLS::Vec4D &p1=p[4], &p2=p[5];
-  const ATOOLS::Vec4D &k1=p[0], &k2=p[1], &p3=p[2], &p4=p[3];
-  ATOOLS::Vec4D k=k1-p3;
+  const ATOOLS::Vec4D &k1=p[0], k2=-1.*p[1], &p3=p[2], &p4=p[3];
+  ATOOLS::Vec4D k=k1-p3, l=k1-p4;;
   double S=2.*p1*p2, S2=2./S;
   double a=p2*k*S2, b=p1*k*S2;
   double a1=p2*k1*S2, b2=p1*k2*S2;
-  ATOOLS::Vec4D A1=
-    (k1.Perp()*k.Perp())*(2.*k1-p3)
-    +((2.*p3-k1)*k1.Perp())*k.Perp()
-    -((k1+p3)*k.Perp())*k1.Perp();
-  ATOOLS::Vec4D A2=
-    (k2.Perp()*k.Perp())*(p4-2.*k2)
-    +((k2+p4)*k.Perp())*k2.Perp()
-    -((k2-2.*p4)*k2.Perp())*k.Perp();
-  double M11=2*(A1*p3)*(A1*p4)/(p3*p4)-A1*A1;
-  double M22=2*(A2*p4)*(A2*p3)/(p4*p3)-A2*A2;
-  double result=M11*M22*
-    ATOOLS::sqr(4./(S*S*k.PPerp2()*a1*a*b*b2));
+  ATOOLS::Vec4D At1=
+    (k1.Perp()*k.Perp())*(k1+k)
+    +(k1.Perp()*(p3-k))*k.Perp()
+    -(k.Perp()*(k1+p3))*k1.Perp();
+  ATOOLS::Vec4D At2=
+    (k.Perp()*k2.Perp())*(k+k2)
+    +(k.Perp()*(p4-k2))*k2.Perp()
+    -(k2.Perp()*(k+p4))*k.Perp();
+  double Mt1=2*(At1*p3)*(At1*p4)/(p3*p4)-At1*At1;
+  double Mt2=2*(At2*p4)*(At2*p3)/(p4*p3)-At2*At2;
+  double Xi1=p3.PMinus()/p3.PPlus(), Xi2=p4.PPlus()/p4.PMinus();
+  double xi1=k1.PMinus()/k1.PPlus(), xi2=k2.PPlus()/k2.PMinus();
+  if (xi1>=Xi1 || xi2>=Xi2 || Xi1*Xi2>=1.) return 0.;
+  double result=(Mt1*Mt2)*
+    ATOOLS::sqr(S2*S2/(k.PPerp2()*a1*a*b*b2));
   return ATOOLS::sqr(4.*M_PI*m_alphas)*(NC*NC)/(NC*NC-1)/(2.*4.)*result;
 }
 
