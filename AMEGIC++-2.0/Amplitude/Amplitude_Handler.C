@@ -59,8 +59,9 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
     msg.Tracking()<<endl;
     return;
   }
+
+
   //Colors
-  
   CFCol_Matrix   = new CFColor(N,firstgraph,pID);
 
   for (int i=0;i<CFCol_Matrix->MatrixSize();i++) graphs.push_back(new Color_Group());
@@ -82,22 +83,19 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 
   while (n) {
     while(TOrder(n)>maxorder){
+      ncount++;	   
       n=n->Next;
       if (!n) break;
     }
     if (!n) break; 
-    //Kicker does not work properly right now!!!!
-    //if (switch_graphs[ncount])
     pointlist.push_back(n->GetPointlist()); 
     graphs[CFCol_Matrix->CFMap(ncount)]->Add(n,CFCol_Matrix->CFSign(ncount));
-    //    graphs[colgroup[ncount]]->Add(n);
     n = n->Next;
     ncount++;	   
   }
   
   //delete[] switch_graphs;
-  
-  ngraph = ncount;
+  ngraph=pointlist.size();
    
   for (int i=0;i<graphs.size();i++) graphs[i]->BuildGlobalString(b,N,BS,fl,shand);
 

@@ -515,7 +515,6 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
   case zl::FFVGS:
     if(pf==0){
       Set_Out(Zh,0,pb,p);
-      Zh->Print();
       if(pb->fl.IsVector()){Set_In(Zh,1,p,0,pb);break;}
       if(pb->left->fl.IsVector()){Set_Out(Zh,1,pb->left,p);break;}
       if(pb->right->fl.IsVector()){Set_Out(Zh,1,pb->right,p);break;}
@@ -539,8 +538,8 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
 
   if(Zh->p_calculator->GetScalarNumb()>0){
     int scnt=Zh->p_calculator->narg - Zh->p_calculator->GetScalarNumb();
-    if(pb->fl.IsScalar())SetScalarArgs(Zh,scnt,pb);
-    if(Zh->m_type==zl::FFVGS && pb->fl.IsVector())pb=p;
+    if(pb->fl.IsScalar()) SetScalarArgs(Zh,scnt,pb);
+    if(Zh->m_type==zl::FFVGS && pb->fl.IsVector()) pb=p;   
     if(Zh->m_type!=zl::Y && Zh->m_type!=zl::FFGS){
       SetScalarArgs(Zh,scnt,pb->left);
       SetScalarArgs(Zh,scnt,pb->right);
@@ -650,7 +649,6 @@ void Zfunc_Generator::SetScalarArgs(Zfunc* Zh,int &scnt,Point* pb)
   if (pb==0) return;
   
   if (scnt==Zh->m_narg) return;
-
   if(pb->fl.IsScalar()){
     if  (scnt<Zh->m_narg)  Zh->p_arguments[scnt]=pb->number;
     else{
@@ -663,7 +661,7 @@ void Zfunc_Generator::SetScalarArgs(Zfunc* Zh,int &scnt,Point* pb)
   }
   if (pb->number<99 || pb->m==1) {}
   else {
-    if  (!pb->left->fl.IsVector() && !pb->right->fl.IsVector()) {}
+    if  (!pb->left->fl.IsVector() && !pb->right->fl.IsVector() && !pb->middle) {}
     else {
       SetScalarArgs(Zh,scnt,pb->left);
       SetScalarArgs(Zh,scnt,pb->right);
