@@ -112,7 +112,6 @@ void Laser_Backscattering::PrintSpectra(std::string filename,int mode) {
     if (flag) ofile.close();
   }
   if (mode==1) {
-    double deg, z;
     ofstream  bsp(filename.c_str());
     bsp.setf(ios::scientific);
     bsp.setf(ios::right,ios::adjustfield);
