@@ -281,14 +281,8 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
   }
   SumMomenta(bloblist->front());
   if (!success) {
-    if (p_isr->KMROn()==0) {
-      ATOOLS::msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
-			 <<"Not enough energy to preserve remnant masses."<<std::endl;
-    }
-    else {
-      msg_Tracking()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
-		    <<"Not enough energy to preserve remnant masses."<<std::endl;
-    }
+    msg_Tracking()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
+		  <<"Not enough energy to preserve remnant masses."<<std::endl;
     for (size_t i=0;i<2;++i) p_beampart[i]->Clear();
     while (bloblist->size()>0) {
       delete *bloblist->begin();
