@@ -12,7 +12,7 @@
 #include <deque>
 
 namespace AMEGIC {
-  typedef Vertex_Table::iterator                  VTIterator;
+  typedef Vertex_Table::iterator                        VTIterator;
 
   typedef std::map<ATOOLS::Flavour, Full_Decay_Table *> DecayMap;
   typedef DecayMap::iterator                            DMIterator;
@@ -36,6 +36,7 @@ namespace AMEGIC {
   public:
     All_Decays(Interaction_Model_Base *,Topology *);
     bool AddToDecays(const ATOOLS::Flavour &);
+    bool AddToDecays(ATOOLS::Decay_Channel *);
     void PrintDecayings();
     bool InitializeDecayTables();
     bool CalculateWidths(std::string=std::string(""));

@@ -29,6 +29,39 @@ bool All_Decays::AddToDecays(const Flavour & flav)
   return 0;
 }
 
+bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec) 
+{
+  Flavour flav = _dec->GetDecaying();
+  DMIterator dit = m_decays.find(flav);
+  if (dit->first==flav) {
+    msg.Error()<<"Error in All_Decays::AddToDecays("<<flav<<") :"<<endl
+	       <<"   could not add flavour to list of all_decays with specfied decay."<<endl
+	       <<"   Already booked for unspecified decays. Will continue."<<endl;
+    return 0;
+  }
+  if (CheckInVertex(flav)) {
+    double mass = 0.;
+    Full_Decay_Channel * dc = new Full_Decay_Channel(_dec);
+    if (dc->CreateDecay()) {
+      Full_Decay_Table * dt = new Full_Decay_Table(flav,false);
+      dt->AddDecayChannel(dc);
+      msg.Tracking()<<"Added Decay_Channel :"<<endl;
+      if (rpa.gen.Tracking()) dc->Output();
+      m_decays.insert(std::make_pair(flav,dt));
+      return 1;
+    }
+    msg.Error()<<"Error in All_Decays::AddToDecays("<<flav<<") :"<<endl
+	       <<"   Specified decay is impossible : ";dc->Output();
+    msg.Error()<<"   Will continue and hope for the best."<<endl;
+    delete dc;
+    return 0;
+  }
+  msg.Error()<<"Error in All_Decays::AddToDecays("<<flav<<") :"<<endl
+	     <<"   could not add flavour to list of all_decays, no vertex found. Abort run."<<endl;
+  abort();
+  return 0;
+}
+
 void All_Decays::PrintDecayings()
 {
   if (rpa.gen.Tracking()) {
@@ -73,7 +106,7 @@ Full_Decay_Table * All_Decays::GetFullDecayTable(ATOOLS::Flavour _fl)
 bool All_Decays::UnweightedEvent(ATOOLS::Decay_Channel * _dec,double _mass)
 {
   DMIterator dit = m_decays.find(_dec->GetDecaying());
-  for (int i=0;i<dit->second->NumberOfChannels();++dit) {
+  for (int i=0;i<dit->second->NumberOfChannels();i++) {
     if (dit->second->GetChannel(i)==_dec) {
       p_decay = dit->second->GetFullChannel(i);
       return p_decay->OneEvent(_mass);
@@ -90,7 +123,7 @@ bool All_Decays::InitializeDecayTables() {
 
 void All_Decays::BinaryDecays()
 {
-  Vertex_List           vertexlist;
+  Vertex_List          vertexlist;
   Flavour              flavs[3];
   Full_Decay_Table   * dt;
   Full_Decay_Channel * dc;

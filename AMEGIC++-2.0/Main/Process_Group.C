@@ -551,7 +551,7 @@ void Process_Group::SetMax(double max) {
   m_max = 0.;
   for (int i=0;i<m_procs.size();i++) {
     m_procs[i]->SetTotalXS(2);
-    sum += m_procs[i]->Total();
+    sum   += m_procs[i]->Total();
     m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
   }
   if (m_totalxs!=0.) {
@@ -732,7 +732,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	from.open(filename);
 	while (from) {
 	  from>>_name>>_totalxs>>_max>>_totalerr;
-	  m_totalxs += _totalxs;
+	  if (_name==m_name) m_totalxs += _totalxs;
 	  msg.Events()<<"Found result : xs for "<<_name<<" : "
 		      <<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		      <<" +/- "<<_totalerr/_totalxs*100.<<"%,"<<endl

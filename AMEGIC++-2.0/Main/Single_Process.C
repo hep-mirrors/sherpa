@@ -1029,7 +1029,7 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
 }
 
 
-bool   Single_Process::OneEvent(double _mass) { return (p_ps->OneEvent(_mass)); }
+bool   Single_Process::OneEvent(double _mass) { return p_ps->OneEvent(_mass); }
 bool   Single_Process::SameEvent()            { return (p_ps->SameEvent()); }
 double Single_Process::WeightedEvent()        { return (p_ps->WeightedEvent()); }
 double Single_Process::SameWeightedEvent()    { return (p_ps->SameWeightedEvent()); }
