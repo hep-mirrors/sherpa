@@ -31,9 +31,9 @@ void Jet_Algorithm_Base::SortPT(Particle_List * jets)
 }
 
 
-Kt_Algorithm::Kt_Algorithm(double rmin) : 
-  m_matrixsize(0), p_ktij(NULL), p_imap(NULL), p_kis(NULL), p_jets(NULL),
-  p_kts(NULL)
+Kt_Algorithm::Kt_Algorithm(ATOOLS::Particle_Qualifier_Base * const qualifier) : 
+  Jet_Algorithm_Base(qualifier), m_matrixsize(0), p_ktij(NULL), p_imap(NULL), 
+  p_kis(NULL), p_jets(NULL), p_kts(NULL)
 { }
 
 Kt_Algorithm::~Kt_Algorithm()
@@ -76,7 +76,8 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
   Vec4D * moms = new Vec4D[pl->size()];
   bool * bflag = new bool[pl->size()];
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
-    if (!(*it)->Flav().IsLepton()) {
+    if ((*p_qualifier)(*it)) {
+      //    if (!(*it)->Flav().IsLepton()) {
       moms[n]  = ((*it)->Momentum()); 
       bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
       ++n;

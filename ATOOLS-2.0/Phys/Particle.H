@@ -154,6 +154,17 @@ namespace ATOOLS {
     bool operator()(const Particle *) const;
   };
 
+  class Is_Not_Lepton : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Not_Neutrino : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
+
   class Is_There : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
@@ -227,12 +238,22 @@ namespace ATOOLS {
     return 0;
   };
 
+  inline bool Is_Not_Lepton::operator() (const Particle * p) const {
+    if ( p && !p->Flav().IsLepton() ) return 1;
+    return 0;
+  };
+
+  inline bool Is_Not_Neutrino::operator() (const Particle * p) const {
+    if ( p && !(p->Flav().IsLepton() && p->Flav().IntCharge()==0) ) return 1;
+    return 0;
+  };
 
 
   inline bool Is_There::operator() (const Particle * p) const {
     if ( p ) return 1;
     return 0;
   };
+
 
 
   /*! 

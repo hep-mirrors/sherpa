@@ -16,8 +16,8 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Durham_Algorithm::Durham_Algorithm(double rmin) : 
-  m_matrixsize(0), p_imap(NULL), p_jets(NULL)
+Durham_Algorithm::Durham_Algorithm(ATOOLS::Particle_Qualifier_Base * const qualifier) : 
+  Jet_Algorithm_Base(qualifier), m_matrixsize(0), p_imap(NULL), p_jets(NULL)
 {
 
 }
@@ -25,12 +25,7 @@ Durham_Algorithm::Durham_Algorithm(double rmin) :
 Durham_Algorithm::~Durham_Algorithm()
 {
   if (p_imap) {
-//     for (int i=0;i<m_matrixsize;++i) {
-//       delete [] p_ktij[i];
-//     }
-//     delete [] p_ktij;
     delete [] p_imap;
-    //    delete [] p_kis;
   }
 }
 
@@ -64,7 +59,8 @@ bool Durham_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * j
   bool * bflag = new bool[pl->size()];
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
     momsum+=(*it)->Momentum();
-    if (!(*it)->Flav().IsLepton()) {
+    if ((*p_qualifier)(*it)) {
+      //    if (!(*it)->Flav().IsLepton()) {
       moms[n]  = ((*it)->Momentum()); 
       bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
       ++n;

@@ -27,7 +27,7 @@ namespace ATOOLS {
   public:
     static double Kt2(const Vec4D & p);    
 
-    Durham_Algorithm(double =1.0);
+    Durham_Algorithm(ATOOLS::Particle_Qualifier_Base * const qualifier);
     ~Durham_Algorithm();
 
     void   Init(int);

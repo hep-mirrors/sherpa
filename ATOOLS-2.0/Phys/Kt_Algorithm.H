@@ -29,7 +29,11 @@ namespace ATOOLS {
   class Jet_Algorithm_Base {
   protected:
     bool   m_bflag;
+    ATOOLS::Particle_Qualifier_Base * p_qualifier;
   public:
+    Jet_Algorithm_Base(ATOOLS::Particle_Qualifier_Base * const qualifier) : 
+      p_qualifier(qualifier) {}
+
     virtual bool ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double)=0;
 
     void Setbflag(bool bf) { m_bflag=bf; }
@@ -64,7 +68,7 @@ namespace ATOOLS {
   public:
     static double Kt2(const Vec4D & p);    
 
-    Kt_Algorithm(double =1.0);
+    Kt_Algorithm(ATOOLS::Particle_Qualifier_Base * const qualifier);
     ~Kt_Algorithm();
 
     void   Init(int);
