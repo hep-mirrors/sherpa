@@ -99,7 +99,7 @@ namespace ANALYSIS {
 
   };// end of class One_DPhi_Selector
 
-  class One_EFrac_Selector: public Primitive_Observable_Base {  
+  class One_ETFrac_Selector: public Primitive_Observable_Base {  
   private:
 
     std::string     m_reflist, m_outlist;
@@ -109,7 +109,7 @@ namespace ANALYSIS {
 
   public:
 
-    One_EFrac_Selector(const ATOOLS::Flavour flav,const size_t item,
+    One_ETFrac_Selector(const ATOOLS::Flavour flav,const size_t item,
 		       const ATOOLS::Flavour ref,const size_t refitem,
 		       const double min,const double max,
 		       const std::string &inlist,const std::string &reflist,
@@ -122,7 +122,7 @@ namespace ANALYSIS {
     
     void EndEvaluation(double scale);
 
-  };// end of class One_EFrac_Selector
+  };// end of class One_ETFrac_Selector
 
 }// end of namespace ANALYSIS
 

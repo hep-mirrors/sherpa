@@ -339,17 +339,17 @@ void One_DPhi_Selector::EndEvaluation(double scale)
 {
 }
 
-DEFINE_ONE_SELECTOR_DELTA_GETTER(One_EFrac_Selector,
-				 One_EFrac_Selector_Getter,"OneEFracSel");
+DEFINE_ONE_SELECTOR_DELTA_GETTER(One_ETFrac_Selector,
+				 One_ETFrac_Selector_Getter,"OneETFracSel");
 
-One_EFrac_Selector::
-One_EFrac_Selector(const ATOOLS::Flavour flav,const size_t item,
+One_ETFrac_Selector::
+One_ETFrac_Selector(const ATOOLS::Flavour flav,const size_t item,
 		   const ATOOLS::Flavour refflav,const size_t refitem,
 		   const double min,const double max,
 		   const std::string &inlist,const std::string &reflist,
 		   const std::string &outlist):
   m_reflist(reflist),
-  m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<One_EFrac<"+
+  m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<One_ETFrac<"+
 	    ATOOLS::ToString(max)+inlist),
   m_flavour(flav),
   m_refflavour(refflav),
@@ -362,7 +362,7 @@ One_EFrac_Selector(const ATOOLS::Flavour flav,const size_t item,
   m_listname=inlist;
 }
 
-void One_EFrac_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
+void One_ETFrac_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
 				     double weight,int ncount)
 {
   ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
@@ -389,20 +389,21 @@ void One_EFrac_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
     }
   }
   if (pos==std::string::npos || refpos==std::string::npos) return;
-  double efrac=(*reflist)[pos]->Momentum()[0]/(*reflist)[refpos]->Momentum()[0];
+  double efrac=(*reflist)[pos]->Momentum().EPerp()/
+    (*reflist)[refpos]->Momentum().EPerp();
   if (efrac<m_xmin || efrac>m_xmax) return;
   outlist->resize(particlelist.size());
   for (size_t i=0;i<particlelist.size();++i) 
     (*outlist)[i] = new ATOOLS::Particle(*particlelist[i]);
 }
 
-Primitive_Observable_Base *One_EFrac_Selector::Copy() const
+Primitive_Observable_Base *One_ETFrac_Selector::Copy() const
 {
-  return new One_EFrac_Selector(m_flavour,m_item,m_refflavour,m_refitem,
-				   m_xmin,m_xmax,m_listname,m_reflist,m_outlist);
+  return new One_ETFrac_Selector(m_flavour,m_item,m_refflavour,m_refitem,
+				 m_xmin,m_xmax,m_listname,m_reflist,m_outlist);
 }
 
-void One_EFrac_Selector::EndEvaluation(double scale)
+void One_ETFrac_Selector::EndEvaluation(double scale)
 {
 }
 
