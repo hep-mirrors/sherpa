@@ -286,9 +286,8 @@ public:
 class Order_Coupling {
 public:
   int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a < b" return 1  else 0;
-    if (!a.fl.Strong() && b.fl.Strong()) return 1;
-    return 0;
+      if (!a.fl.Strong() && b.fl.Strong()) return 1;
+      return 0;
   }
 };
 
@@ -297,6 +296,7 @@ public:
 
 void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 {
+    
   std::vector<S_Data> sd;
   for (int i=0;i<n;++i) sd.push_back(S_Data(i,flav[i],plav[i]));
 
@@ -306,11 +306,11 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
   std::stable_sort(sd.begin(),sd.end(),Order_Mass());
   std::stable_sort(sd.begin(),sd.end(),Order_Coupling());
   
+  
   for (int i=0;i<n;++i) {
     flav[i]=sd[i].fl;
     plav[i]=sd[i].pl;
   }
-
   
 // old method
 /*
