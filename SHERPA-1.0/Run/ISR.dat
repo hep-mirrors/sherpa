@@ -1,8 +1,8 @@
 !-------------------------------------------------------
 !-- ISR parameters -------------------------------------
 !-------------------------------------------------------
-ISR1     = extended Struct ! No   
-ISR2     = extended Struct ! No   
+ISR1     = No  ! extended Struct ! No   
+ISR2     = No  ! extended Struct ! No   
 BEAM1    = No  ! Laser_Backscattering ! No
 BEAM2    = No  ! Laser_Backscattering ! No
 !SMIN1     = 0.10     ! Minimal Energy of particle 1 in fractions of the CM energy
