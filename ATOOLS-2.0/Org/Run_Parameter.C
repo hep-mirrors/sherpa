@@ -67,12 +67,7 @@ void Run_Parameter::AnalyseEnvironment()
       else paths="";
     } while (paths.length()>0);
   }
-  std::string runpath;
-  system("echo $PWD > sherpa_path_test");
-  test = new std::ifstream("sherpa_path_test");
-  if (*test) (*test)>>s_variables["SHERPA_RUN_PATH"];
-  delete test;
-  system("if test -f sherpa_path_test; then rm sherpa_path_test; fi");
+  s_variables["SHERPA_RUN_PATH"]=getenv("PWD");
   s_initialized=true;
 }
 
@@ -101,41 +96,45 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg.Init(gen.m_output,logfile);
+  // make path nice
+  if (path.length()>0) {
+    if (path[0]!='/') path=std::string(getenv("PWD"))+std::string("/")+path;
+    while (path[path.length()-1]=='/' || path[path.length()-1]=='.') 
+      path=path.substr(0,path.length()-1);
+  }
+  // search for sherpa executeable
   if (argc>0) {
     std::string command=argv[0];
-    if (command.length()>6 && !(command[0]=='/')) {
-      command=std::string(getenv("PWD"))+std::string("/Sherpa");
+    if (command.find("Sherpa")>0) {
+      if (command[0]!='/') command=std::string(getenv("PWD"))+std::string("/Sherpa");
+      s_variables["SHERPA_BIN_PATH"]=command.substr(0,command.find("/Sherpa"));
     }
-    if (!system((std::string("test -f ")+command).c_str())) {
-      command=command.substr(0,command.find("Sherpa"));
-      s_variables["SHERPA_BIN_PATH"]=command[command.length()-1]!='/'?command:
-	command.substr(0,command.length()-1);
-    }
+    else s_variables["SHERPA_BIN_PATH"]=std::string(getenv("PWD"));
   }
-  if (s_variables["SHERPA_BIN_PATH"]==std::string("")) {
-    s_variables["SHERPA_BIN_PATH"]=std::string(getenv("PWD"));
-  }
-  s_variables["SHERPA_PDF_PATH"] = dr.GetValue<std::string>("SHERPA_PDF_PATH",std::string(""));
-  s_variables["SHERPA_CPP_PATH"] = dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
-  s_variables["SHERPA_LIB_PATH"] = dr.GetValue<std::string>("SHERPA_LIB_PATH",std::string(""));
-  if (s_variables["SHERPA_CPP_PATH"]=="") {
-    if (path[path.length()-1]=='/') path=path.substr(0,path.length()-1); 
-    s_variables["SHERPA_CPP_PATH"]=path;
-  }
-  if (s_variables["SHERPA_PDF_PATH"]==std::string("")) {
+  // set pdf path
+  std::string pdfpath=dr.GetValue<std::string>("SHERPA_PDF_PATH",std::string(""));
+  if (pdfpath.length()>0 && pdfpath[0]=='/') s_variables["SHERPA_PDF_PATH"]=pdfpath;
+  else if (s_variables["SHERPA_PDF_PATH"].length()==0) 
     s_variables["SHERPA_PDF_PATH"]=s_variables["SHERPA_BIN_PATH"];
-  }
-  // temporary
-  if (s_variables["SHERPA_LIB_PATH"]=="") {
-    s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]+
-      std::string("/Process/lib");
-  }
+  // set cpp path
+  std::string cpppath=dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
+  if (cpppath.length()>0 && cpppath[0]=='/') s_variables["SHERPA_CPP_PATH"]=cpppath;
+  else if (path!=getenv("PWD")) s_variables["SHERPA_CPP_PATH"]=path;
+  else if (s_variables["SHERPA_CPP_PATH"].length()==0) 
+    s_variables["SHERPA_CPP_PATH"]=s_variables["SHERPA_RUN_PATH"];
+  // set lib path
+  std::string libpath=dr.GetValue<std::string>("SHERPA_LIB_PATH",std::string(""));
+  if (libpath.length()>0 && libpath[0]=='/') s_variables["SHERPA_LIB_PATH"]=libpath;
+  else if (s_variables["SHERPA_LIB_PATH"].length()==0) 
+    s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]
+      +std::string("/Process/lib");
   msg_Tracking()<<"Run_Parameter::Init(..): Paths are {\n"
 		<<"   SHERPA_BIN_PATH = "<<s_variables["SHERPA_BIN_PATH"]<<"\n"
 		<<"   SHERPA_PDF_PATH = "<<s_variables["SHERPA_PDF_PATH"]<<"\n"
 		<<"   SHERPA_CPP_PATH = "<<s_variables["SHERPA_CPP_PATH"]<<"\n"
 		<<"   SHERPA_LIB_PATH = "<<s_variables["SHERPA_LIB_PATH"]<<"\n"
 		<<"}"<<std::endl;
+  abort();
   s_variables["CURRENT_SHERPASYS"]=s_variables["SHERPA_BIN_PATH"]+std::string("/../..");
   setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
 			    s_variables["SHERPA_LIB_PATH"]).c_str(),1);
