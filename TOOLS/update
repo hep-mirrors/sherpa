@@ -12,6 +12,7 @@ for I in $* ; do
     echo "makeinstall version 1.0" && echo && \
     echo "options: -n             run 'cvs -n update <options>'" && \
     echo "         -f             run 'cvs update <options>'" && \
+    echo "         -l <logfile>   create logfile <logfile>" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DLOGFILE" = "TRUE" ]; then DLOGFILE="" && LOGFILE=$I
