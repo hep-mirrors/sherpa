@@ -86,7 +86,7 @@ void Event_Handler::PrintGenericEventStructure()
 bool Event_Handler::GenerateEvent(int mode) 
 {
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
-  bool flag     = 1;
+  bool   flag   = true;
   double weight = 1.;
   Blob * hardblob;
   switch (mode) {
@@ -101,7 +101,7 @@ bool Event_Handler::GenerateEvent(int mode)
       hardblob->SetStatus(2);
       m_blobs.push_back(hardblob);
       while (flag) {
-	flag = 0;
+	flag = false;
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Perturbative) {
 	    bool result=(*pit)->Treat(&m_blobs,weight);
@@ -109,20 +109,20 @@ bool Event_Handler::GenerateEvent(int mode)
 			  <<ATOOLS::om::reset
 			  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
 			  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
-	    if (result) flag = 1;
+	    if (result) flag = true;
 	  }
 	}
       }
       flag=1;
       while (flag) {
-	flag = 0;
+	flag = false;
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Hadronization) {
 	    bool result=(*pit)->Treat(&m_blobs,weight);
 	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
 				  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
 				  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
-	    if (result) flag = 1;
+	    if (result) flag = true;
 	  }
 	}
       }
@@ -131,43 +131,51 @@ bool Event_Handler::GenerateEvent(int mode)
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
-    return 1;
+    return true;
   case 9000:
   case 9001:
   case 9002:
     CleanUpEvent();
-    while (flag) {
-      flag = 0;
-      for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-	if ((*pit)->Type()==eph::External_MC) {
-	  bool result=(*pit)->Treat(&m_blobs,weight);
-	  if (result) flag = 1;
-	}
+    flag = false;
+    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+      if ((*pit)->Type()==eph::External_MC) {
+	bool result=(*pit)->Treat(&m_blobs,weight);
+	if (result) flag = true;
       }
+    }
+    if (!flag) {
+      msg.Error()<<"Error in Event_Handler::GenerateEvent"<<std::endl
+		 <<"   Treat by External_MC failed, mode = "<<mode<<"."<<std::endl
+		 <<"   Return 0 and hope for the best."<<std::endl;
+    }
+    if (m_blobs.empty()) {
+      msg.Out()<<"Potential error in Event_Handler::GenerateEvent"<<std::endl
+	       <<"   Empty bloblist would go into analysis !"<<std::endl;
+      return false;
     }
     PrintBlobs();
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
 
-    return 1;
+    return true;
   case 9999:
     CleanUpEvent();
     while (flag) {
-      flag = 0;
+      flag = false;
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	if ((*pit)->Type()==eph::Read_In) {
 	  bool result=(*pit)->Treat(&m_blobs,weight);
-	  if (result) flag = 1;
+	  if (result) flag = true;
 	}
       }
-    }      
+    }
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
-    return 1;
+    return true;
   }
-  return 0;
+  return false;
 } 
 
 
@@ -182,6 +190,11 @@ void Event_Handler::CleanUpEvent()
     for (Blob_Iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) delete (*blit);
     m_blobs.clear();
   }
+  if (Particle::Counter()!=0 || Blob::Counter()!=0) 
+    msg.Error()<<"Error in Event_Handler::CleanUpEvent()"<<std::endl
+	       <<"   After event : "<<Particle::Counter()<<" / "<<Blob::Counter()
+	       <<" particles / blobs undeleted !"<<std::endl
+	       <<"   Continue and hope for the best."<<std::endl;
   Blob::Reset();
   Particle::Reset();
   Flow::ResetCounter();

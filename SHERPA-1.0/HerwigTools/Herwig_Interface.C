@@ -196,7 +196,16 @@ bool Herwig_Interface::Initialize()
 bool Herwig_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
 {
   for (int trials=0;trials<5;++trials) {
+    hwevnt.ierror=0;
     hwcgse();
+    if (hwevnt.ierror>0) {
+      ATOOLS::msg.Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
+			 <<"   Herwig throws error with code "<<hwevnt.ierror<<"."<<std::endl
+			 <<"   Continue run with a new event and hope for the best."<<std::endl
+			 <<"   Sizes : "<<ATOOLS::Blob::Counter()<<" / "
+			 <<ATOOLS::Particle::Counter()<<"."<<std::endl;
+      continue;
+    }
     weight = hwevnt.evwgt; 
     for (int i=0;i<hepevt.nhep;i++) {
       for (int j=0;j<2;j++) {
@@ -220,10 +229,13 @@ bool Herwig_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
 	  return true;
 	} 
       }
+      ATOOLS::msg.Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
+			 <<"   No signal blob in event. Will continue and hope for the best."<<std::endl;
     }
     else {
       if (!blobs->empty()) {
-	for (ATOOLS::Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit) delete (*blit);
+	for (ATOOLS::Blob_List::const_iterator blit=blobs->begin();
+	     blit!=blobs->end();++blit) delete (*blit);
 	blobs->clear();
       }
       ATOOLS::msg.Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl

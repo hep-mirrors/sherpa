@@ -105,11 +105,13 @@ extern struct {
 #define hwcint hwcint_
 #define hwcgse hwcgse_
 #define hwctrm hwctrm_
+#define hwuepr hwuepr_
 
 extern "C" {
   void hwcint();
   void hwcgse();
   void hwctrm();
+  void hwuepr();
 }
 
 inline void hwinit() { hwcint(); }
