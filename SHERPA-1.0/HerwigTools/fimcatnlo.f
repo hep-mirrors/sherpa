@@ -39,8 +39,8 @@ C LHSOFT=.FALSE. SWITCHES UNDERLYING EVENT OFF
       WRITE(*,*)
 C      WRITE(*,*) IBRN(1),IBRN(2)
 C Select W/Z boson decay modes
-C      MODBOS(1)=4
-C      MODBOS(2)=3
+C       MODBOS(1)=2
+C       MODBOS(2)=3
 C      IF(IPDF.EQ.1)THEN
 C         DO I=1,2
 C            WRITE(*,*)'   Incoming particle # ',I

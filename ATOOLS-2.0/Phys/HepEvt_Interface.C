@@ -550,6 +550,13 @@ void HepEvt_Interface::OpenNewHepEvtFile()
 
 void HepEvt_Interface::HepEvt2Particle(const int pos)
 {
+  /*
+    std::cout<<pos<<": stat,id "<<p_isthep[pos]<<","<<p_idhep[pos]
+    <<"; mos : "<<p_jmohep[2*pos]<<","<<p_jmohep[2*pos+1]
+    <<"; das : "<<p_jdahep[2*pos]<<","<<p_jdahep[2*pos+1]<<std::endl
+    <<"    mom: "<<p_phep[5*pos+3]<<" "<<p_phep[5*pos+0]<<" "<<p_phep[5*pos+1]
+    <<" "<<p_phep[5*pos+2]<<" "<<p_phep[5*pos+4]<<std::endl;
+  */
   Flavour flav;
   if ((m_generator==gtp::Herwig) &&
       (p_idhep[pos]==94 || p_idhep[pos]==0)) flav=Flavour(kf::none);
@@ -562,9 +569,10 @@ void HepEvt_Interface::HepEvt2Particle(const int pos)
 
 bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
 {
-  int helper;
+  bool signalwarner=true,breakit=false,first_fsr=false;
+  int helper, helper1;
   ATOOLS::Particle * part, * mother;
-  ATOOLS::Blob * blob, * help,
+  ATOOLS::Blob * blob, * help, *fsr,
     * signal = new ATOOLS::Blob(), 
     * beam1  = new ATOOLS::Blob(), 
     * beam2  = new ATOOLS::Blob(), 
@@ -623,82 +631,172 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
       piter->second.second = false;
       break;
     case 123:
-      if (p_isthep[p_jmohep[2*i]-1]==125 || p_isthep[p_jmohep[2*i]-1]==155) break;
-      signal->AddToOutParticles(part);
-      fsr1->AddToInParticles(part);
-      piter->second.second = false;
-      part->SetStatus(2);
-      part->SetInfo('H');
-      if (p_isthep[p_jdahep[2*i]-1]==195 || p_isthep[p_jdahep[2*i]-1]==3) {
-	helper = i;
-	if (p_isthep[p_jdahep[2*i]-1]==3) helper = (p_jdahep[2*i]-1);
-	piter = m_convertH2S.find(p_jdahep[2*helper]-1);
-	if (piter==m_convertH2S.end() || !piter->second.second) continue;
-	part = piter->second.first;
-	piter->second.second = false;
-	part->SetStatus(2);
-	part->SetInfo('f');
-	fsr2->AddToOutParticles(part);
-	help = new ATOOLS::Blob();
-	blobs->push_back(help);
-	help->SetType(btp::Hard_Decay);
-	help->SetId();
-	help->AddToInParticles(part);
-	for (int j=p_jdahep[2*(p_jdahep[2*helper]-1)]-1;
-	     j<=p_jdahep[2*(p_jdahep[2*helper]-1)+1]-1;j++) {
-	  piter = m_convertH2S.find(j);
-	  if (piter==m_convertH2S.end() || !piter->second.second) continue;
-	  part = piter->second.first;
-	  part->SetStatus(2);
-	  part->SetInfo('h');
-	  piter->second.second = false;
-	  help->AddToOutParticles(part);
-	  blob = new ATOOLS::Blob();
-	  blobs->push_back(blob);
-	  blob->SetType(btp::FS_Shower);
-	  blob->SetId();
-	  blob->AddToInParticles(part);
-	}
-      }
-      break;
+      first_fsr = true;
     case 124:
-      if (p_isthep[p_jmohep[2*i]-1]==125 || p_isthep[p_jmohep[2*i]-1]==155) break;
+      if (p_isthep[p_jmohep[2*i]-1]==125 || 
+	  p_isthep[p_jmohep[2*i]-1]==195 || p_isthep[p_jmohep[2*i]-1]==155) break;
+      if (part->Flav()==Flavour(kf::none) && 
+	  p_idhep[p_jdahep[2*i]-1]==94 && p_isthep[p_jdahep[2*i]-1]==144) {
+	helper = p_jdahep[2*(p_jdahep[2*(p_jdahep[2*i]-1)]-1)]-1;
+	if (p_idhep[helper]==0 && p_isthep[helper]==155) {
+	  signalwarner=false;
+	  //std::cout<<"Gotcha : "<<p_jdahep[2*i]-1<<" : "<<p_idhep[p_jdahep[2*i]-1]
+	  //	   <<" -> "<<helper<<", "<<p_jdahep[2*helper]-1
+	  //	   <<" -> "<<p_jdahep[2*(p_jdahep[2*helper]-1)]-1<<std::endl;
+	  for (int k=0;k<2;k++) {
+	    helper1 = p_jdahep[2*helper+k]-1;
+	    piter = m_convertH2S.find(helper1);
+	    if (piter==m_convertH2S.end() || !piter->second.second) continue;
+	    part = piter->second.first;
+	    piter->second.second = false;
+	    part->SetStatus(2);
+	    part->SetInfo('H');
+	    signal->AddToOutParticles(part);
+	    if (k==0) { 
+	      //std::cout<<"Add "<<helper1+1<<" to "<<first_fsr<<std::endl;
+	      if (first_fsr) fsr1->AddToInParticles(part);
+	                else fsr2->AddToInParticles(part);
+	    }
+	    else {
+	      fsr = new ATOOLS::Blob();
+	      blobs->push_back(fsr);
+	      fsr->SetType(btp::FS_Shower);
+	      fsr->SetId();
+	      fsr->AddToInParticles(part);
+	    }
+	    if (p_jdahep[2*helper1]>p_jdahep[2*helper1+1]) {
+	      helper1 = p_jdahep[2*helper1]-1;
+	      piter   = m_convertH2S.find(helper1);
+	      if (piter==m_convertH2S.end() || !piter->second.second) continue;
+	      part = piter->second.first;
+	      piter->second.second = false;
+	      part->SetStatus(2);
+	      part->SetInfo('f');
+	      if (k==0) { 
+		if (first_fsr) fsr1->AddToOutParticles(part);
+		          else fsr2->AddToOutParticles(part);
+	      }
+	      else fsr->AddToOutParticles(part);	    
+	      help = new ATOOLS::Blob();
+	      blobs->push_back(help);
+	      help->SetType(btp::Hard_Decay);
+	      help->SetId();
+	      help->AddToInParticles(part);
+	      for (int j=p_jdahep[2*helper1]-1;j<=p_jdahep[2*helper1+1]-1;j++) {
+		//std::cout<<j+1<<" in "<<p_jdahep[2*helper1]<<"..."<<p_jdahep[2*helper1+1]<<std::endl;
+		piter = m_convertH2S.find(j);
+		if (piter==m_convertH2S.end() || !piter->second.second) continue;
+		piter->second.second = false;
+		part = piter->second.first;
+		help->AddToOutParticles(part);
+		part->SetInfo('h');
+		if (p_isthep[j]==1) part->SetStatus(1);
+		else {
+		  blob = new ATOOLS::Blob();
+		  blobs->push_back(blob);
+		  blob->SetType(btp::FS_Shower);
+		  blob->SetId();
+		  blob->AddToInParticles(part);
+		  part->SetStatus(2);
+		  //std::cout<<"---------------"<<j+1<<" -> "<<p_jdahep[2*j]<<" ->"
+		  //	   <<p_jdahep[2*(p_jdahep[2*j]-1)]<<","<<p_jdahep[2*(p_jdahep[2*j]-1)+1]
+		  //	   <<"---------------------------"<<std::endl;
+		  for (int l=p_jdahep[2*(p_jdahep[2*j]-1)];l<=p_jdahep[2*(p_jdahep[2*j]-1)+1];l++) {
+		    //std::cout<<"Find this : "<<p_jdahep[2*j]<<" -> "<<l<<std::endl;
+		    breakit=true;
+		    piter = m_convertH2S.find(l-1);
+		    if (piter==m_convertH2S.end() || !piter->second.second) continue;
+		    part = piter->second.first;
+		    piter->second.second = false;
+		    blob->AddToOutParticles(part);
+		    cf->AddToInParticles(part);
+		    part->SetStatus(2);
+		    part->SetInfo('f');
+		  }
+		}
+	      }
+	    }
+	    //if (k==0) std::cout<<(*signal)<<(*fsr2)<<(*help)<<std::endl;
+	    //if (k==1) std::cout<<(*signal)<<(*fsr)<<(*help)<<std::endl;
+	  }
+	  //if (breakit) {
+	  // std::cout<<(*blobs)<<std::endl;
+	  // abort();
+	  //}
+	  first_fsr = false;
+	  break;
+	}
+	else{
+	  msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig : "<<std::endl
+		     <<"   Unexpected feature in HepEvt, will continue & hope for the best."<<std::endl;
+	  first_fsr = false;
+	  break;
+	}
+      }
+      //std::cout<<"Check124 "<<i+1<<" -> "<<p_jdahep[2*i]<<" ("<<p_isthep[p_jdahep[2*i]-1]<<")"
+      //	       <<" <- "<<p_jmohep[2*i]<<" ("<<p_isthep[p_jmohep[2*i]-1]<<")"<<std::endl;
       signal->AddToOutParticles(part);
-      fsr2->AddToInParticles(part);
+      if (first_fsr) fsr1->AddToInParticles(part);
+	        else fsr2->AddToInParticles(part);
       part->SetStatus(2);
       piter->second.second = false;
       part->SetInfo('H');
       if (p_isthep[p_jdahep[2*i]-1]==195 || p_isthep[p_jdahep[2*i]-1]==3) {
-	helper = i;
-	if (p_isthep[p_jdahep[2*i]-1]==3) helper = (p_jdahep[2*i]-1);
-	piter = m_convertH2S.find(p_jdahep[2*helper]-1);
+	//helper = i;
+	helper = p_jdahep[2*i]-1;
+	//std::cout<<"Try 1 : "<<i+1<<"-> "<<helper+1<<std::endl;
+	if (p_isthep[p_jdahep[2*i]-1]==3) helper = (p_jdahep[2*helper]-1);
+	//std::cout<<"Try 2 : "<<i+1<<"-> "<<helper+1<<std::endl;
+	piter = m_convertH2S.find(helper);
 	if (piter==m_convertH2S.end() || !piter->second.second) continue;
-	part = piter->second.first;
 	piter->second.second = false;
+	part = piter->second.first;
 	part->SetStatus(2);
 	part->SetInfo('f');
-	fsr2->AddToOutParticles(part);
+	if (first_fsr) fsr1->AddToOutParticles(part);
+	          else fsr2->AddToOutParticles(part);
 	help = new ATOOLS::Blob();
 	blobs->push_back(help);
 	help->SetType(btp::Hard_Decay);
 	help->SetId();
 	help->AddToInParticles(part);
-	for (int j=p_jdahep[2*(p_jdahep[2*helper]-1)]-1;
-	     j<=p_jdahep[2*(p_jdahep[2*helper]-1)+1]-1;j++) {
+	for (int j=p_jdahep[2*helper]-1;j<=p_jdahep[2*helper+1]-1;j++) {
+	  //std::cout<<helper+1<<" -> "<<j+1<<" into decay blob."<<std::endl;
 	  piter = m_convertH2S.find(j);
 	  if (piter==m_convertH2S.end() || !piter->second.second) continue;
 	  part = piter->second.first;
-	  part->SetStatus(2);
-	  part->SetInfo('h');
-	  piter->second.second = false;
 	  help->AddToOutParticles(part);
-	  blob = new ATOOLS::Blob();
-	  blobs->push_back(blob);
-	  blob->SetType(btp::FS_Shower);
-	  blob->SetId();
-	  blob->AddToInParticles(part);
+	  piter->second.second = false;
+	  part->SetInfo('h');
+	  if (p_isthep[j]==1) part->SetStatus(1);
+	  else {
+	    blob = new ATOOLS::Blob();
+	    blobs->push_back(blob);
+	    blob->SetType(btp::FS_Shower);
+	    blob->SetId();
+	    blob->AddToInParticles(part);
+	    part->SetStatus(2);
+	    //std::cout<<"---------------"<<j+1<<" -> "<<p_jdahep[2*j]<<" ->"
+	    //	     <<p_jdahep[2*(p_jdahep[2*j]-1)]<<","<<p_jdahep[2*(p_jdahep[2*j]-1)+1]
+	    //	     <<"---------------------------"<<std::endl;
+	    for (int l=p_jdahep[2*(p_jdahep[2*j]-1)];l<=p_jdahep[2*(p_jdahep[2*j]-1)+1];l++) {
+	      //std::cout<<"Find this : "<<p_jdahep[2*j]<<" -> "<<l<<std::endl;
+	      breakit=true;
+	      piter = m_convertH2S.find(l-1);
+	      if (piter==m_convertH2S.end() || !piter->second.second) continue;
+	      part = piter->second.first;
+	      piter->second.second = false;
+	      blob->AddToOutParticles(part);
+	      cf->AddToInParticles(part);
+	      part->SetStatus(2);
+	      part->SetInfo('f');
+	    }
+	  }
 	}
+	//std::cout<<(*blobs)<<std::endl<<std::endl<<std::endl<<std::endl;
+	//abort();
       }
+      first_fsr = false;
       break;
     case 125:
     case 155:
@@ -905,19 +1003,23 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
     default : break;
     }
   }
-  if (signal->NOutP()!=2 || signal->NInP()<2) {
-    msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig"<<std::endl
-	       <<"   Signal is funny: "<<signal->NInP()<<" -> "<<signal->NOutP()<<std::endl
-	       <<"   ====================================="<<std::endl
-	       <<(*signal)<<std::endl
-	       <<"   ====================================="<<std::endl
-	       <<"   Clear blobs, return false and hope for the best."<<Particle::Counter()<<" / "<<Blob::Counter()<<std::endl;
-    if (!blobs->empty()) {
-      for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) delete (*blit);
-      blobs->clear();
+  if (signalwarner) {
+    if (signal->NOutP()!=2 || signal->NInP()<2) {
+      msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig"<<std::endl
+		 <<"   Signal is funny: "<<signal->NInP()<<" -> "<<signal->NOutP()<<std::endl
+		 <<"   ====================================="<<std::endl
+		 <<(*signal)<<std::endl
+		 <<"   ====================================="<<std::endl
+		 <<"   Clear blobs, return false and hope for the best."<<Particle::Counter()<<" / "<<Blob::Counter()<<std::endl
+		 <<(*blobs)<<std::endl;
+
+      if (!blobs->empty()) {
+	for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) delete (*blit);
+	blobs->clear();
+      }
+      DeleteObsolete(1);
+      return false;
     }
-    DeleteObsolete(1);
-    return false;
   }
   DeleteObsolete(-1);
   return true;

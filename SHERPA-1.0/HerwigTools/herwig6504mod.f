@@ -38237,25 +38237,28 @@ C   PARTON SHOWER (ADDED TO MASSES GIVEN BELOW)
       VPCUT=0.40
       ALPFAC=1
 C---D,U,S,C,B,T QUARK AND GLUON MASSES (IN THAT ORDER)
-      RMASS(1)=0.32
-      RMASS(2)=0.32
-      RMASS(3)=0.5
-      RMASS(4)=1.55
-      RMASS(5)=4.95
-      RMASS(6)=174.3
-      RMASS(13)=0.75
+C   
+C   documented out by Frank, 1/27/05 - overwrites our settings
+C       
+c      RMASS(1)=0.32
+c      RMASS(2)=0.32
+c      RMASS(3)=0.5
+c      RMASS(4)=1.55
+c      RMASS(5)=4.95
+c      RMASS(6)=174.3
+c      RMASS(13)=0.75
 C---W+/- AND Z0 MASSES
-      RMASS(198)=80.42
-      RMASS(199)=80.42
-      RMASS(200)=91.188
+c      RMASS(198)=80.42
+c      RMASS(199)=80.42
+c      RMASS(200)=91.188
 C---HIGGS BOSON MASS
-      RMASS(201)=115.
+c      RMASS(201)=115.
 C---WIDTHS OF W, Z, HIGGS
-      GAMW=2.12
-      GAMZ=2.495
+c      GAMW=2.12
+c      GAMZ=2.495
 C SM Higgs width is actually recomputed by HWDHIG
 C but this value corresponds to RMASS(201)=115.
-      GAMH=0.0037
+c      GAMH=0.0037
 C Include additional neutral, massive vector boson (Z')
       ZPRIME=.FALSE.
 C Z' mass and width
@@ -38349,7 +38352,8 @@ C---GAUGE BOSON DECAYS
       DO 50 I=1,12
       BRHIG(I)=1.D0/12
       ENHANC(I)=1.D0
- 50   IF (I.LE.MODMAX) MODBOS(I)=0
+ 50   IF (I.LE.MODMAX) MODBOS(I)=MODBOS(I)   
+C     Before MODBOS(I)=0
 C
 C THE iTH GAUGE BOSON DECAY PER EVENT IS CONTROLLED BY MODBOS AS FOLLOWS
 C         MODBOS(i)     W DECAY        Z DECAY

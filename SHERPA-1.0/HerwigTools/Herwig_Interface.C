@@ -113,6 +113,13 @@ void Herwig_Interface::ReadInTheParameters()
   if (!reader->ReadFromFile(hwhard.ibrn[1],"HWSEED2")) hwhard.ibrn[1]  = 8447766;
   if (!reader->ReadFromFile(hwhard.ptmin,"PTMIN"))     hwhard.ptmin    = 20.;
 
+  // HWBOSC common block
+  if (!reader->ReadFromFile(hwbosc.modbos[0],"MODBOS1")) hwbosc.modbos[0] = 0;
+  if (!reader->ReadFromFile(hwbosc.modbos[1],"MODBOS2")) hwbosc.modbos[1] = 0;
+  if (!reader->ReadFromFile(hwbosc.modbos[2],"MODBOS3")) hwbosc.modbos[2] = 0;
+  if (!reader->ReadFromFile(hwbosc.modbos[3],"MODBOS4")) hwbosc.modbos[3] = 0;
+  if (!reader->ReadFromFile(hwbosc.modbos[4],"MODBOS5")) hwbosc.modbos[4] = 0;
+
   // HWPROP common block
   if (!reader->ReadFromFile(hwprop.rmass[2],"M_DOWN"))  hwprop.rmass[2]   = 0.32;
   if (!reader->ReadFromFile(hwprop.rmass[3],"M_UP"))    hwprop.rmass[3]   = 0.32;
@@ -121,9 +128,14 @@ void Herwig_Interface::ReadInTheParameters()
   if (!reader->ReadFromFile(hwprop.rmass[6],"M_BOTT"))  hwprop.rmass[6]   = 4.95;
   if (!reader->ReadFromFile(hwprop.rmass[7],"M_TOP"))   hwprop.rmass[7]   = 174.3;
   if (!reader->ReadFromFile(hwprop.rmass[14],"M_GLUE")) hwprop.rmass[14]  = 0.75;
-  if (!reader->ReadFromFile(hwprop.rmass[199],"M_W"))   hwprop.rmass[199] = 80.42;
+  if (!reader->ReadFromFile(hwprop.rmass[199],"M_W"))   hwprop.rmass[199] = hwprop.rmass[200] = 80.42;
   if (!reader->ReadFromFile(hwprop.rmass[201],"M_Z"))   hwprop.rmass[201] = 91.188;
   if (!reader->ReadFromFile(hwprop.rmass[202],"M_H"))   hwprop.rmass[202] = 115.;
+
+  // HWPRAM common block
+  if (!reader->ReadFromFile(hwpram.gamw,"Gamma_W"))     hwpram.gamw = 2.12;
+  if (!reader->ReadFromFile(hwpram.gamz,"Gamma_Z"))     hwpram.gamz = 2.495;
+  if (!reader->ReadFromFile(hwpram.gamh,"Gamma_H"))     hwpram.gamh = 0.0037;
 
   // HWEVNT common block
   if (!reader->ReadFromFile(hwevnt.maxpr,"MAXPR"))      hwevnt.maxpr    = 0; 
