@@ -153,6 +153,7 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
     p_beampart[i]->ClearErrors();
     okay=false;
     treat[i]=false;
+    p_beamblob[i]=NULL;
     for (ATOOLS::Blob_List::iterator biter=bloblist->begin();
 	 biter!=endblob;++biter) {
       if ((*biter)->Beam()==i && (*biter)->Type()==ATOOLS::btp::IS_Shower) { 
@@ -201,7 +202,7 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
     }
   }
   for (short unsigned int i=0;i<2;++i) 
-    p_beampart[i]->FillBlob(p_beamblob[i],particlelist);
+    if (p_beamblob[i]) p_beampart[i]->FillBlob(p_beamblob[i],particlelist);
   if (p_beampart[0]->Type()==rtp::hadron || 
       p_beampart[1]->Type()==rtp::hadron) {
     p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
