@@ -1,7 +1,11 @@
-SHERPASYS  = ../..
+SHERPASYS     =	../..
 
-ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
-MODELINC   = $(SHERPASYS)/MODEL-1.0
+SHERPAFLAGS   =	-pedantic -Wall -Winline 
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+SHERPAINCS    =	-I../Single_Events 	
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 
 lib_LTLIBRARIES       =	libLundTools.la
 libLundTools_la_SOURCES       =	\
@@ -9,16 +13,11 @@ libLundTools_la_SOURCES       =	\
 				pydata.f \
 				pyplst.f \
 				Lund_Interface.C 
-AM_CXXFLAGS   =	-pedantic -Wall -Winline 
-INCLUDES      =	\
-		-I../Single_Events \
-		-I$(MODELINC)/Main \
-		-I$(ATOOLSINC)/Phys \
-		-I$(ATOOLSINC)/Math \
-		-I$(ATOOLSINC)/Org 
 noinst_HEADERS        =	\
 		 	Lund_Wrapper.H \
 			Lund_Interface.H 
+AM_CXXFLAGS   =	$(SHERPAFLAGS)
+INCLUDES      =	$(MODELINCS) $(ATOOLSINCS)
 
 
 

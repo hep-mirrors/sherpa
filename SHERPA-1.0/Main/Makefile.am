@@ -1,38 +1,39 @@
-lib_LTLIBRARIES = libSherpaMain.la
-CLHEPlibdir   = $(CLHEPDIR)/lib
-CLHEPincdir   = $(CLHEPDIR)/include
+SHERPASYS     =	../..
+
+SHERPAFLAGS   =	# -pedantic -Wall -Winline
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
+AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
+APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+SHERPAINCS    =	-I../Initialization -I../PerturbativePhysics \
+		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
+		-I../LundTools -I../Tools 
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
+PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
+AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
+AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
+		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
+		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
+		-I$(AMEGICDIR)/String 
+APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
+
+if CLHEP_SUPPORT
+CLHEPINCS     =	-I$(CLHEPDIR)/include
+CLHEPFLAGS    = -DCLHEP_SUPPORT
+endif
+
+lib_LTLIBRARIES       =	libSherpaMain.la
 libSherpaMain_la_SOURCES      =	Sherpa.C 
-INCLUDES = -I../../SHERPA-1.0/Tools \
-	   -I../../SHERPA-1.0/Initialization \
-	   -I../../SHERPA-1.0/PerturbativePhysics \
-	   -I../../SHERPA-1.0/SoftPhysics \
-	   -I../../SHERPA-1.0/SoftPhysics/Lund \
-	   -I../../SHERPA-1.0/Single_Events \
-	   -I../../AMEGIC++-2.0/Amplitude \
-	   -I../../AMEGIC++-2.0/Amplitude/AmplTools \
-	   -I../../AMEGIC++-2.0/Amplitude/Zfunctions \
-           -I../../AMEGIC++-2.0/Phasespace \
-	   -I../../AMEGIC++-2.0/Main \
-	   -I../../AMEGIC++-2.0/Model \
-	   -I../../AMEGIC++-2.0/String \
-	   -I../../AMISIC++-1.0/Main \
-	   -I../../AMISIC++-1.0/Other \
-	   -I../../AMISIC++-1.0/Tools \
-	   -I../../APACIC++-2.0/Main \
-	   -I../../APACIC++-2.0/Hard_Interface \
-	   -I../../APACIC++-2.0/Showers \
-	   -I../../EXTRA_XS-1.0/Main \
-           -I../../MODEL-1.0/Main \
-           -I../../BEAM-1.0/Main \
-	   -I../../PDF-1.0/Main \
-	   -I../../PDF-1.0/LHAPDF \
-	   -I../../PHASIC++-1.0/Main \
-           -I../../ATOOLS-2.0/Phys \
-           -I../../ATOOLS-2.0/Math \
-           -I../../ATOOLS-2.0/Org \
-	   -I$(HEPMCINCDIR) \
-	   -I$(CLHEPincdir)
 noinst_HEADERS        =	Sherpa.H 
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
+INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
+		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
+		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS)
 
 
 

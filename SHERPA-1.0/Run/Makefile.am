@@ -1,14 +1,26 @@
 SHERPASYS  = ../..
 
-ATOOLSINC     =	$(SHERPASYS)/ATOOLS-2.0
-PDFINC        =	$(SHERPASYS)/PDF-1.0
-BEAMINC       =	$(SHERPASYS)/BEAM-1.0
-PHASICINC     =	$(SHERPASYS)/PHASIC++-1.0
-MODELINC      =	$(SHERPASYS)/MODEL-1.0
-EXTRAXSINC    =	$(SHERPASYS)/EXTRA_XS-1.0
-AMISICINC     =	$(SHERPASYS)/AMISIC++-1.0
-AMEGICINC     =	$(SHERPASYS)/AMEGIC++-2.0
-APACICINC     =	$(SHERPASYS)/APACIC++-2.0
+SHERPAFLAGS   =	-pedantic -Wall -Winline
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
+AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
+APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
+		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
+		-I../LundTools -I../Tools 
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
+PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
+AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
+AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
+		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
+		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
+		-I$(AMEGICDIR)/String 
+APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
@@ -23,54 +35,31 @@ AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundInterface -lSherpaTools 
+		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
 
-ROOTINC       =	$(ROOTSYS)/include
-ROOTLIBS      =	$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
 		-lGraf3d -lGpad -lTree -lRint -lPostscript \
 		-lMatrix -lPhysics -lGui -ldl 
+endif
 
-CLHEPLIB   = $(CLHEPSYS)/lib
-CLHEPINC   = $(CLHEPSYS)/include
+if CLHEP_SUPPORT
+CLHEPINCS     =	-I$(CLHEPDIR)/include
+CLHEPLIBS     =	$(wildcard $(CLHEPDIR)/lib/libCLHEP-g++.*.a)
+CLHEPFLAGS    = -DCLHEP_SUPPORT
+endif
 
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
-Sherpa_LDADD  =	$(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
-		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
-		$(PDFLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS)
-#		$(ROOTLIBS)
+Sherpa_LDADD  =	$(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(AMISICLIBS) \
+		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) $(BEAMLIBS) \
+		$(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS)
 Sherpa_LDFLAGS        =	-rdynamic
-INCLUDES      = \
-		-I../Main \
-		-I../Initialization \
-		-I../PerturbativePhysics \
-		-I../SoftPhysics \
-		-I../SoftPhysics/Lund \
-		-I../Single_Events \
-		-I../Tools \
-		-I$(APACICINC)/Main \
-		-I$(APACICINC)/Showers \
-		-I$(AMEGICINC)/Amplitude \
-		-I$(AMEGICINC)/Amplitude/AmplTools \
-		-I$(AMEGICINC)/Amplitude/Zfunctions \
-		-I$(AMEGICINC)/Phasespace \
-		-I$(AMEGICINC)/Main \
-		-I$(AMEGICINC)/Model \
-		-I$(AMEGICINC)/String \
-		-I$(AMISICINC)/Main \
-		-I$(AMISICINC)/Other \
-		-I$(AMISICINC)/Tools \
-		-I$(AMISICINC)/Tools \
-		-I$(EXTRAXSINC)/Two2Two \
-		-I$(EXTRAXSINC)/Main \
-		-I$(PHASICINC)/Main \
-		-I$(MODELINC)/Main \
-		-I$(PDFINC)/Main \
-		-I$(BEAMINC)/Main \
-		-I$(ATOOLSINC)/Phys \
-		-I$(ATOOLSINC)/Math \
-		-I$(ATOOLSINC)/Org 
-#		-I$(ROOTINC)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
+INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
+		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
+		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 SUBDIRS       =	Process
 EXTRA_DIST    =	\
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
