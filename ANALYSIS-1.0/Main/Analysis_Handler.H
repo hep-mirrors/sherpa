@@ -24,7 +24,7 @@ namespace ANALYSIS {
 
     Analyses_Vector m_analyses;
 
-    bool m_weighted;
+    bool m_weighted, m_initialized;
 
     void Clean();
     void PrepareTerminate();

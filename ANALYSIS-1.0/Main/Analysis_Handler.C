@@ -21,7 +21,7 @@ using namespace ANALYSIS;
 size_t Analysis_Handler::s_maxanalyses=100;
 
 Analysis_Handler::Analysis_Handler():
-  m_weighted(false) {}
+  m_weighted(false), m_initialized(false) {}
 
 Analysis_Handler::~Analysis_Handler()
 {
@@ -186,13 +186,14 @@ bool Analysis_Handler::ReadIn()
   }
   msg_Info()<<"}"<<std::endl;
   if (success) ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  m_initialized=true;
   return success;
 }
 
 void Analysis_Handler::DoAnalysis(const ATOOLS::Blob_List *bloblist,
 				  const double weight)
 {
-  if (m_analyses.empty()) ReadIn();
+  if (!m_initialized) ReadIn();
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) (*ait)->DoAnalysis(bloblist,weight); 
 }
