@@ -16,6 +16,7 @@ namespace ANALYSIS {
     virtual ~Primitive_Detector_Element();
     virtual void Fill(const ATOOLS::Particle_List *) = NULL;
     virtual void Reset()                             = NULL;
+    virtual Primitive_Detector_Element * Copy() const = NULL;
     double       Cell(const int i,const int j);
     std::string  Name() const;
   };
@@ -35,7 +36,7 @@ namespace ANALYSIS {
 
 
   class Primitive_Detector: public Primitive_Observable_Base {
-    std::string                m_name,m_inlistname,m_outlistname;
+    std::string                m_inlistname,m_outlistname;
     String_DetectorElement_Map m_elements;
   public:
     Primitive_Detector(const std::string &inlist,const std::string &outlist);

@@ -3,9 +3,13 @@
 #include "Primitive_Calorimeter.H"
 #include "Primitive_Analysis.H"
 
-using namespace ANALYSIS;
 
 #include "MyStrStream.H"
+#include "Message.H"
+
+using namespace ANALYSIS;
+using namespace ATOOLS;
+
 #include <iomanip>
 
 DECLARE_GETTER(Primitive_Detector_Getter,"Detector",
@@ -40,12 +44,7 @@ Primitive_Detector_Getter::operator()(const String_Matrix &parameters) const
 					      ATOOLS::ToType<int>(cur[4])));
     }
     else if (cur[0]=="CalCone" && cur.size()>4) {
-      detector->SetAnalysis(parameters());
-      detector->AddSelector(ATOOLS::ToType<double>(cur[1]),
-			    ATOOLS::ToType<double>(cur[2]),
-			    ATOOLS::ToType<double>(cur[3]),
-			    ATOOLS::ToType<double>(cur[4]),
-			    cur.size()>5?ATOOLS::ToType<int>(cur[5]):0);
+      msg.Out()<<"WARNING CalCone   no longer supported by Primitive Detector ! "<<std::endl;
     }
   }
   return detector;
@@ -88,7 +87,9 @@ Primitive_Detector::~Primitive_Detector()
 {
   for (String_DetectorElement_Iter sdeiter=m_elements.begin();
        sdeiter!=m_elements.end();++sdeiter) {
-    if (sdeiter->second!=NULL) delete [] sdeiter->second;
+    if (sdeiter->second!=NULL) {
+      m_elements.erase(sdeiter--);
+    }
   }
   m_elements.clear();
 }
@@ -98,8 +99,17 @@ Primitive_Observable_Base* Primitive_Detector::Copy() const
   std::cout<<"WARNING: Potential error in Primitive_Detector: "
 	   <<"No appropriate Copy() method.\n"
 	   <<"   Continue and hope for the best"<<std::endl;
+  
   Primitive_Detector *detector = 
     new Primitive_Detector(m_inlistname,m_outlistname);
+
+  for (String_DetectorElement_Map::const_iterator sdeiter=m_elements.begin();
+       sdeiter!=m_elements.end();++sdeiter) {
+    if (sdeiter->second!=NULL) {
+      detector->Add(sdeiter->second->Copy());
+    }
+  }
+
   return detector;
 }
 
@@ -166,23 +176,4 @@ Primitive_Detector_Element * Primitive_Detector::GetElement(std::string name)
     return NULL;
   }
   return sdeiter->second;
-}
-
-void Primitive_Detector::AddSelector(const double etmin,const double etamin,
-				     const double etamax,const double rmin,
-				     const int bjets)
-{
-  Primitive_Calorimeter *calorimeter= 
-    dynamic_cast<Primitive_Calorimeter *>(GetElement("Hadronic Calorimeter"));
-  Final_Selector *selector=
-    dynamic_cast<Final_Selector *>(p_ana->GetObservable("Trigger"));
-  if (calorimeter==NULL || selector==NULL) return;
-  Calorimeter_Cone *jetfinder = new Calorimeter_Cone(etmin,rmin,calorimeter);
-  jetfinder->SetEtaRangeForJets(etamin,etamax,bjets);
-  Final_Selector_Data data;
-  data.pt_min=etmin;
-  data.eta_min=etamin;
-  data.eta_max=etamax;
-  data.r_min=rmin;
-  selector->AddSelector(ATOOLS::kf::jet,data,jetfinder);
 }

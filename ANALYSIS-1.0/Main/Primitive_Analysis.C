@@ -501,7 +501,6 @@ Primitive_Observable_Base * Primitive_Analysis::GetObservable(const std::string 
   for (size_t i=0;i<m_observables.size();i++) {
     if (m_observables[i]->Name()==key) return m_observables[i];
   }
-
   return 0;
 }
 

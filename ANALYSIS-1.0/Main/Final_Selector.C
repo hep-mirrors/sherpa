@@ -44,6 +44,7 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
   }
   if (!qualifier) qualifier = new ATOOLS::Is_Not_Lepton(); 
   Final_Selector *selector = new Final_Selector(inlist,outlist,jetmode,qualifier);
+  selector->SetAnalysis(parameters());
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="Finder" && cur.size()>1) {
@@ -125,6 +126,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 {
   msg_Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<","<<qualifier<<")"<<std::endl;
   m_splitt_flag = false;
+  m_name="Trigger";
   switch (mode) {
   case 1: p_jetalg = new Durham_Algorithm(p_qualifier); break;
   case 0: p_jetalg = new Kt_Algorithm(p_qualifier); break;
@@ -147,7 +149,8 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.pt_min  = fs.pt_min;
     it->second.r_min   = fs.r_min;
   }
-  if (fl==Flavour(kf::jet) && fs.r_min>0. && m_mode!=1) AddSelector(fl,fl,fs);
+  if (m_mode==2 && fl==kf::jet) 
+    p_jetalg = new Calorimeter_Cone(fs.pt_min,p_ana);
 }
 
 void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2, 
@@ -407,7 +410,6 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
       // add leptons
       for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
 	if (!(*p_qualifier)(*pit))  pl_out->push_back(new Particle(**pit));
-	//	if ((*pit)->Flav().IsLepton()) pl_out->push_back(new Particle(**pit));
       }
       m_ownlist=true;
       std::string key;
@@ -441,7 +443,6 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
     std::copy(pl_in->begin(),pl_in->end(),back_inserter(*pl_out));
     m_ownlist=false;
   }
-
   // one particle select
   for (it=m_fmap.begin();it!=m_fmap.end();++it) Select(pl_out,it);  
 
@@ -460,9 +461,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
       *itp = new Particle(**itp);
     }
   }
-  
   //  std::sort(pl_out->begin(),pl_out->end(),ATOOLS::Order_PT());
-  
   p_ana->AddParticleList(m_outlistname,pl_out);
 }
 
@@ -470,6 +469,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
 Primitive_Observable_Base * Final_Selector::Copy() const 
 {
   Final_Selector *fs = new Final_Selector(m_inlistname,m_outlistname,m_mode,p_qualifier);
+  fs->SetAnalysis(p_ana);
   for (Final_Data_Map::const_iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
     fs->AddSelector(it->first,it->second);
   }

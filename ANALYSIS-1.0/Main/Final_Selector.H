@@ -69,6 +69,8 @@ namespace ANALYSIS {
 
     void Evaluate(const ATOOLS::Blob_List &,double, int);
     void Output();
+    ATOOLS::Jet_Algorithm_Base * GetJetAlgorithm() { return  p_jetalg; }
+
     Primitive_Observable_Base * Copy() const;    
     ~Final_Selector();
   };

@@ -27,6 +27,7 @@ namespace ANALYSIS {
 			 double & mineta, double & maxeta); 
     void   GetCosSinTheta(const int i,double & costheta,double & sintheta);  
     void   GetCosSinPhi(const int i,double & cosphi,double & sinphi);  
+    Primitive_Detector_Element * Copy() const ;
   };
 
 

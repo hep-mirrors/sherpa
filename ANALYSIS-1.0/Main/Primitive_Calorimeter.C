@@ -76,7 +76,7 @@ void Primitive_Calorimeter::Fill(const Particle_List * pl)
   Vec4D  mom=Vec4D(0.,0.,0.,0.);
   int ii,jj;
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
-    if (!((*it)->Flav().IsLepton()) ) {
+    if (!((*it)->Flav().IsLepton())) {
       double phi = 0;
       double y   = PseudoRapidityNAzimuthalAngle((*it)->Momentum(),phi);
       
@@ -92,6 +92,12 @@ void Primitive_Calorimeter::Fill(const Particle_List * pl)
     }
   }  
 }
+
+Primitive_Detector_Element * Primitive_Calorimeter::Copy() const 
+{
+  return new Primitive_Calorimeter(m_mineta,m_maxeta,m_nx,m_ny);
+}
+
 
 void Primitive_Calorimeter::Print(std::ostream & s)
 {
