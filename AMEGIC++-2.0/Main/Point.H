@@ -111,6 +111,7 @@ public:
 
 
   std::ostream & operator<<(std::ostream &, const MPI_Point &);
+  std::ostream & operator<<(std::ostream &, const Point *);
 }
 #endif
 
