@@ -56,8 +56,8 @@ namespace ATOOLS {
   inline FlavourSet  Decay_Channel::GetDecayProducts()                        { return m_flouts;  }
   inline Flavour     Decay_Channel::GetDecayProduct(int i) {
     if (i<0 || i>m_flouts.size()) {
-      cout<<"Error in Decay_Channel::GetDecayProduct("<<i<<") :"<<endl
-	  <<"   out of bounds, return no flavour."<<endl;
+      std::cout<<"Error in Decay_Channel::GetDecayProduct("<<i<<") :"<<std::endl
+	       <<"   out of bounds, return no flavour."<<std::endl;
       return Flavour(kf::none);
     }
     for (FlSetIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
