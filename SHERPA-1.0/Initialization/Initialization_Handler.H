@@ -12,6 +12,8 @@
 #include "Hadron_Decay_Handler.H"
 #include "MI_Handler.H"
 #include "Analysis_Handler.H"
+#include "Lund_Interface.H"
+#include "Herwig_Interface.H"
 #include "Data_Read.H"
 
 #include <map>
@@ -66,6 +68,7 @@ namespace SHERPA {
     MI_Handler                 * p_mihandler; 
     IO_Handler                 * p_iohandler;
     Lund_Interface             * p_pythia;
+    Herwig_Interface           * p_herwig;
   private :
     bool InitializeTheIO();
     bool InitializeTheExternalMC();
@@ -118,6 +121,7 @@ namespace SHERPA {
     MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
     IO_Handler                  * GetIOHandler()             { return p_iohandler;       }
     Lund_Interface              * GetPythiaInterface()       { return p_pythia;          }
+    Herwig_Interface            * GetHerwigInterface()       { return p_herwig;          }
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

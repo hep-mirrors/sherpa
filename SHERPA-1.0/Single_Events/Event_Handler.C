@@ -149,6 +149,23 @@ bool Event_Handler::GenerateEvent(int mode)
     }
 
     return 1;
+  case 9001:
+    CleanUpEvent();
+    while (flag) {
+      flag = 0;
+      for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+	if ((*pit)->Type()==eph::External_MC) {
+	  bool result=(*pit)->Treat(&m_blobs,weight);
+	  if (result) flag = 1;
+	}
+      }
+    }
+    PrintBlobs();
+    for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+      if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
+    }
+
+    return 1;
   case 9999:
     CleanUpEvent();
     while (flag) {

@@ -33,7 +33,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
-  p_iohandler(NULL), p_pythia(NULL)
+  p_iohandler(NULL), p_pythia(NULL), p_herwig(NULL)
 {
   m_scan_istep=-1;  
 
@@ -57,7 +57,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_mode(0), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
-  p_iohandler(NULL), p_pythia(NULL)
+  p_iohandler(NULL), p_pythia(NULL), p_herwig(NULL)
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
@@ -102,6 +102,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
+  if (p_herwig)        { delete p_herwig;        p_herwig        = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   std::set<Matrix_Element_Handler*> deleted;
   while (m_mehandlers.size()>0) {
@@ -238,6 +239,9 @@ bool Initialization_Handler::InitializeTheExternalMC()
   switch (m_mode) {
   case 9000: 
     p_pythia = new Lund_Interface(m_path,m_evtfile,false);
+    return true;
+  case 9001: 
+    p_herwig = new Herwig_Interface(m_path,m_evtfile,false);
     return true;
   default: 
     m_mode = 9999;
@@ -483,6 +487,10 @@ bool Initialization_Handler::CalculateTheHardProcesses()
       msg.Out()<<"SHERPA will generate the events through Pythia."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
       return true;
+    case 9001:
+      msg.Out()<<"SHERPA will generate the events through Herwig."<<std::endl
+	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
+      return true;
     case 9999:
       msg.Out()<<"SHERPA will read in the events."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
@@ -569,6 +577,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["RUNDATA"]=102;
   special_options["ECMS"]=103;
   special_options["PYTHIA"]=9000;
+  special_options["HERWIG"]=9001;
   special_options["EVTDATA"]=9999;
 
   
@@ -620,6 +629,11 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	m_mode       = 9000;
 	m_evtfile    = value;
 	msg.Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
+	break;
+      case 9001:
+	m_mode       = 9001;
+	m_evtfile    = value;
+	msg.Out()<<" Sherpa will produce Herwig events according to "<<value<<endl;
 	break;
       case 9999:
 	m_mode       = 9999;

@@ -48,7 +48,9 @@ namespace ATOOLS {
       Fragmentation       =  201,
       Cluster_Formation   =  202,
       Cluster_Decay       =  250,
-      Hadron_Decay        = 1001
+      Hadron_Decay        = 1001,
+      Hadron_Mixing       = 1002,
+      Hadron_To_Parton    = 1003
     };
   };// end of struct btp
 

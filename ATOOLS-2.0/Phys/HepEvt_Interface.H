@@ -59,6 +59,7 @@ namespace ATOOLS {
     void OpenNewHepEvtFile();
     void HepEvt2Particle(const int);
     bool ConstructBlobsFromHerwig(ATOOLS::Blob_List * const);
+    void FollowDaughters(const int & i,ATOOLS::Blob * hadron,ATOOLS::Blob * clusters);
     bool ConstructBlobsFromPythia(ATOOLS::Blob_List * const);
     bool ConstructBlobs(ATOOLS::Blob_List * const);
     bool IdentifyBlobs(ATOOLS::Blob_List * const);
