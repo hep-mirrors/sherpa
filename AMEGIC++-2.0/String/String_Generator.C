@@ -81,7 +81,7 @@ void String_Generator::ReStore()
 void String_Generator::Print()
 {
   if (!(msg.LevelIsDebugging())) return;
-  for (long int i=0;i<(*p_zxl).size();i++) {
+  for (size_t i=0;i<(*p_zxl).size();i++) {
     msg.Out()<<i<<". Zfunction: Type="<<(*p_zxl)[i].zlist<<";On="<<(*p_zxl)[i].on<<";Value="<<(*p_zxl)[i].value.String(); 
     if ((*p_zxl)[i].narg>0) msg.Out()<<";Arg[0] = "<<(*p_zxl)[i].arg[0];
     msg.Out()<<endl;
@@ -91,7 +91,7 @@ void String_Generator::Print()
 int String_Generator::ZCount() 
 {
   int count = 0;
-  for (long int i=1;i<(*p_zxl).size();i++) {
+  for (size_t i=1;i<(*p_zxl).size();i++) {
     if (((*p_zxl)[i].zlist==1) && ((*p_zxl)[i].on)) count++;
   }
   return count;
@@ -100,7 +100,7 @@ int String_Generator::ZCount()
 int String_Generator::XCount() 
 {
   int count = 0;
-  for (long int i=1;i<(*p_zxl).size();i++) {
+  for (size_t i=1;i<(*p_zxl).size();i++) {
     if (((*p_zxl)[i].zlist==0) && ((*p_zxl)[i].on)) count++;
   } 
   return count;
@@ -109,7 +109,7 @@ int String_Generator::XCount()
 int String_Generator::ECount() 
 {
   int count = 0;
-  for (long int i=1;i<(*p_zxl).size();i++) {
+  for (size_t i=1;i<(*p_zxl).size();i++) {
     if (((*p_zxl)[i].zlist==2) && ((*p_zxl)[i].on)) count++;
   }
   return count;
@@ -118,7 +118,7 @@ int String_Generator::ECount()
 int String_Generator::ZXCount() 
 {
   int count = 0;
-  for (long int i=1;i<(*p_zxl).size();i++) {
+  for (size_t i=1;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].on) count++;
   } 
   return count;
@@ -126,10 +126,10 @@ int String_Generator::ZXCount()
 
 int String_Generator::ZXYNumber(int type,int narg,int* arg,int ncoupl,int* coupl)
 {
-  for (long int i=1;i<(*p_zxl).size();i++) {
+  for (size_t i=1;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==type) {
       int hit = 1;
-      for (short int j=0;j<narg;j++) {
+      for (int j=0;j<narg;j++) {
 	if (arg[j]!=(*p_zxl)[i].arg[j]) {
 	  hit = 0;
 	  break;
@@ -151,7 +151,7 @@ int String_Generator::ZXYNumber(int type,int narg,int* arg,int ncoupl,int* coupl
 
 int String_Generator::GetCnumber(Complex coupl)
 {
-  for (short int i=0;i<(*p_couplings).size();i++) {
+  for (size_t i=0;i<(*p_couplings).size();i++) {
     if (ATOOLS::IsEqual(coupl,(*p_couplings)[i])) return i;
   }
   (*p_couplings).push_back(coupl);
@@ -160,7 +160,7 @@ int String_Generator::GetCnumber(Complex coupl)
 
 int String_Generator::GetFnumber(int fl)
 {
-  for (short int i=0;i<(*p_flavours).size();i++) {
+  for (size_t i=0;i<(*p_flavours).size();i++) {
     if (fl==(*p_flavours)[i]) return i;
   }
   (*p_flavours).push_back(fl);
@@ -178,7 +178,7 @@ int String_Generator::GetNumber(int type,Complex value)
 {
   if (ATOOLS::IsEqual((*p_zxl)[0].value.Value(),value)) return 0;
 
-  for (long int i=1;i<(*p_zxl).size();i++) {
+  for (size_t i=1;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==type) {
       if (ATOOLS::IsEqual((*p_zxl)[i].value.Value(),value)) return i;
     }
@@ -191,7 +191,7 @@ Kabbala String_Generator::GetCZnumber(Complex value,string str)
 {
   int numb = GetNumber(6,value);
 
-  if (numb!=(*p_zxl).size()) return (*p_zxl)[numb].value;
+  if (numb!=(int)(*p_zxl).size()) return (*p_zxl)[numb].value;
 
   ZXlist newz;
 
@@ -210,9 +210,9 @@ Kabbala String_Generator::GetCZnumber(Complex value,string str)
     if (newz.sk->Str()==string("0")) return (*p_zxl)[0].value;
   }
   string newstr = m_sthelp.Tree2String(newz.sk,0);
-  if ( newstr.find(string("+"))==-1 &&
-       newstr.find(string("-"))==-1 &&
-       newstr.find(string("*"))==-1 ) return Kabbala(newstr,value);
+  if ( newstr.find(string("+"))==string::npos &&
+       newstr.find(string("-"))==string::npos &&
+       newstr.find(string("*"))==string::npos ) return Kabbala(newstr,value);
 
   newz.sk = m_sthelp.String2Tree(newstr);
   m_sthelp.DeleteMinus(newz.sk);
@@ -226,7 +226,7 @@ Kabbala String_Generator::GetCZnumber(Complex value,string str)
 Kabbala String_Generator::GetZnumber(int* arg,Complex* coupl,Complex value) 
 {
   int numb = GetNumber(1,value);
-  if (numb!=(*p_zxl).size()) return (*p_zxl)[numb].value;
+  if (numb!=(int)(*p_zxl).size()) return (*p_zxl)[numb].value;
   
   //new Zfunc  
 
@@ -247,7 +247,7 @@ Kabbala String_Generator::GetZnumber(int* arg,Complex* coupl,Complex value)
 Kabbala String_Generator::GetXnumber(int* arg,Complex* coupl,Complex value) 
 {
   int numb = GetNumber(0,value);
-  if (numb!=(*p_zxl).size()) return (*p_zxl)[numb].value;
+  if (numb!=(int)(*p_zxl).size()) return (*p_zxl)[numb].value;
 
   //new Zfunc (X)
   ZXlist newz;
@@ -268,7 +268,7 @@ Kabbala String_Generator::GetXnumber(int* arg,Complex* coupl,Complex value)
 Kabbala String_Generator::GetYnumber(int* arg,Complex* coupl,Complex value) 
 {
   int numb = GetNumber(4,value);
-  if (numb!=(*p_zxl).size()) return (*p_zxl)[numb].value;
+  if (numb!=(int)(*p_zxl).size()) return (*p_zxl)[numb].value;
 
   //new Zfunc (Y)
   ZXlist newz;
@@ -290,7 +290,7 @@ Kabbala String_Generator::GetEnumber(Complex value)
   if (value==Complex(0.,0.)) return (*p_zxl)[0].value;
 
   int numb = GetNumber(2,value);
-  if (numb!=(*p_zxl).size()) return (*p_zxl)[numb].value;
+  if (numb!=(int)(*p_zxl).size()) return (*p_zxl)[numb].value;
 
   //new Zfunc E
   ZXlist newz;
@@ -305,7 +305,7 @@ Kabbala String_Generator::GetEnumber(Complex value)
 
 Kabbala String_Generator::GetPnumber(Pfunc* pl,int numb) 
 {
-  for (long int i=0;i<(*p_zxl).size();i++) {
+  for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==5) {
       if( ATOOLS::IsEqual((*p_zxl)[i].value.Value(),pl->value) &&
 	  ((*p_flavours)[int((*p_zxl)[i].arg[0])]==(pl->fl).Kfcode()) )
@@ -330,7 +330,7 @@ Kabbala String_Generator::GetPnumber(Pfunc* pl,int numb)
 
 Kabbala String_Generator::GetMassnumber(int numb,ATOOLS::Flavour fl,Complex value) 
 {
-  for (long int i=0;i<(*p_zxl).size();i++) {
+  for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==7) {
       if( ATOOLS::IsEqual((*p_zxl)[i].value.Value(),value) &&
 	  ( ((*p_flavours)[int((*p_zxl)[i].arg[0])]==fl.Kfcode()) ||
@@ -359,7 +359,7 @@ Kabbala String_Generator::GetMassnumber(int numb,ATOOLS::Flavour fl,Complex valu
 
 Kabbala String_Generator::GetSnumber(const int a1,const int a2,Complex value) 
 {
-  for (long int i=0;i<(*p_zxl).size();i++) {
+  for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==3) {
       if (((*p_zxl)[i].arg[0]==a1) && ((*p_zxl)[i].arg[1]==a2)) return (*p_zxl)[i].value;
       if (((*p_zxl)[i].arg[1]==a1) && ((*p_zxl)[i].arg[0]==a2)) return (*p_zxl)[i].value;
@@ -383,7 +383,7 @@ Kabbala String_Generator::GetSnumber(const int a1,const int a2,Complex value)
 Kabbala String_Generator::GetScplxnumber(const int a1,const int a2,Complex value) 
 {
   if (ATOOLS::IsZero(value)) return (*p_zxl)[0].value;
-  for (long int i=0;i<(*p_zxl).size();i++) {
+  for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==9) {
       if (((*p_zxl)[i].arg[0]==a1) && ((*p_zxl)[i].arg[1]==a2)) return (*p_zxl)[i].value;
       if (((*p_zxl)[i].arg[1]==a1) && ((*p_zxl)[i].arg[0]==a2)) return (*p_zxl)[i].value;
@@ -410,7 +410,7 @@ void String_Generator::Calculate(Values* val)
     return;
   }
 
-  for (long int i=1;i<(*p_zxl).size();i++) {
+  for (size_t i=1;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].on) {
       int* arg = (*p_zxl)[i].arg;
       switch ((*p_zxl)[i].zlist) {
@@ -514,7 +514,7 @@ Kabbala* String_Generator::GetKabbala(const string& str)
     }
   }
 
-  for (long int i=0;i<(*p_zxl).size();i++) {
+  for (size_t i=0;i<(*p_zxl).size();i++) {
     if ((*p_zxl)[i].zlist==2) {
       if (str==string("1") && (*p_zxl)[i].value.Value()==Complex(1.,0.)) {
 	(*p_zxl)[i].on = 1;

@@ -234,7 +234,7 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
   zf<<"void "<<pID<<"::SetCouplFlav(vector<Complex>& coupl)"<<endl;
   zf<<"{"<<endl;
   lines ++;
-  for (short int i=0;i<sgen->GetFlavours()->size();i++) {
+  for (size_t i=0;i<sgen->GetFlavours()->size();i++) {
     zf<<"  f["<<i<<"] = "<<(*sgen->GetFlavours())[i]<<";"<<endl;
     lines++;
   }
@@ -499,7 +499,7 @@ int String_Output::Line_Form(ofstream& file,const string &str)
 {
   int counter = 0;
   int lines   = 0;
-  for (short int j=0;j<str.length();j++) {
+  for (size_t j=0;j<str.length();j++) {
     if (counter>70) {
       int hit = 0;
       switch (str[j]) {
@@ -548,9 +548,10 @@ void String_Output::Add_To_Set_Values()
   for(;from;) {
     getline(from,buffer);
     
-    if (buffer.find(pID)!=-1) break;
+    if (buffer.find(pID)!=string::npos) break;
 
-    if (buffer.find(string("return 0"))!=-1 || buffer.find(string("libname"))!=-1) {
+    if (buffer.find(string("return 0"))!=string::npos || 
+	buffer.find(string("libname"))!=string::npos) {
       hit = 1;
       to<<"#ifdef "<<pID<<"_on"<<endl;
       to<<"  if (pID==string("<<'"'<<pID<<'"'<<")) return (new "<<pID<<"(BS));"<<endl;
