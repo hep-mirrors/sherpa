@@ -469,6 +469,10 @@ double Integrable_Base::KFactor(const double scale)
     const double CF=4./3.;
     return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
   }
+  case 102  :
+    return MODEL::as->AlphaS(m_scale[stp::kp21])
+      *MODEL::as->AlphaS(m_scale[stp::kp22])
+      /ATOOLS::sqr(MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
   default :
     return 1.;
   }
