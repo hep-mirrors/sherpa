@@ -260,13 +260,11 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   BoostConnected(cur2->DecayBlob(),0);
   p_filled->insert(cur2);
   p_filled->insert(cur1);
-  // the brackets are necessary for 'nan'-values
   if (!(cur1->Momentum()[0]>0.)) {
     ATOOLS::msg.Tracking()<<"Primordial_KPerp::FillKPerp(..): "
 			  <<"Parton ("<<cur1->Number()<<") has non-positive energy "
 			  <<cur1->Momentum()<<std::endl;
   }
-  // the brackets are necessary for 'nan'-values
   if (!(cur2->Momentum()[0]>0.)) {
     ATOOLS::msg.Tracking()<<"Primordial_KPerp::FillKPerp(..): "
 			  <<"Parton ("<<cur2->Number()<<") has non-positive energy "
