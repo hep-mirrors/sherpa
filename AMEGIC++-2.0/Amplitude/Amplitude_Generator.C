@@ -1013,20 +1013,20 @@ int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
   int hit = 0;
   
   //Gluon propagators
-  if (p->number>99 && p->fl.IsGluon()) {
+  if (p->number>99 && (p->fl.IsGluon() || p->fl.IsGluino())) {
     countQCD += 2;
     hit       = 1;
   }
   //External gluon 
-  if (p->number<99 && p->fl.IsGluon()) {
+  if (p->number<99 && (p->fl.IsGluon() || p->fl.IsGluino())) {
     countQCD += 1;
     hit       = 1;
   }
 
-   //triple and quartic Gluon vertices 
+   //triple and quartic Gluon/Gluino vertices 
   if (hit) {
-    if (p->left   && p->left->fl.IsGluon())   countQCD -= 1;
-    if (p->right  && p->right->fl.IsGluon())  countQCD -= 1;
+    if (p->left   && (p->left->fl.IsGluon() || p->left->fl.IsGluino()))   countQCD -= 1;
+    if (p->right  && (p->right->fl.IsGluon() || p->right->fl.IsGluino()))  countQCD -= 1;
   }
   
   FindQCDOrder(p->left,countQCD);
@@ -1046,8 +1046,9 @@ void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
   while (f1) {
     int hitQED = 0;
     int hitQCD = 0;
-    hitQED = FindQEDOrder(f1->GetPointlist(),hitQED);
     hitQCD = FindQCDOrder(f1->GetPointlist(),hitQCD);
+    hitQED = N -2 - hitQCD;  // N = nin + nout
+
     if (hitQED>QEDmax) QEDmax=hitQED;
     if (hitQCD>QCDmax) QCDmax=hitQCD;
     if (hitQED > nEW || hitQCD > nQCD) {
