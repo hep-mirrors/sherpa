@@ -1,13 +1,14 @@
 #ifndef Remnant_Base_H
 #define Remnant_Base_H
 
+#include "Remnant_Info.H"
 #include "Particle_List.H"
 #include "Blob.H"
 #include <vector>
 
 namespace SHERPA {
 
-  class Remnant_Base {
+  class Remnant_Base: public ATOOLS::Remnant_Info {
   public:
 
     enum TypeID { 
@@ -30,7 +31,7 @@ namespace SHERPA {
     ATOOLS::Blob  *p_beamblob;
     ATOOLS::Vec4D  m_pbeam;
 
-    bool m_active;
+    bool m_active, m_initialized;
 
     double Lambda2(double sp,double sp1,double sp2);
 
@@ -44,6 +45,8 @@ namespace SHERPA {
 
     // member functions
     virtual void Clear();
+
+    virtual double MinimalEnergy(const ATOOLS::Flavour &flavour);
 
     virtual bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist) = 0;
     virtual bool AdjustKinematics();

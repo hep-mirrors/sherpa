@@ -19,6 +19,7 @@ void Remnant_Base::Clear()
   m_active=true;
   p_last[1]=p_last[0]=NULL;
   p_beamblob=NULL;
+  m_initialized=false;
 }
 
 double Remnant_Base::Lambda2(double sp,double sp1,double sp2) 
@@ -100,6 +101,7 @@ bool Remnant_Base::AdjustKinematics()
 
 void Remnant_Base::UnDo() 
 {
+  ATOOLS::msg.Tracking()<<"Remnant_Base::UnDo(): Undoing changes on blob list."<<std::endl;
   while (p_beamblob->NOutP()>0) {
     p_beamblob->RemoveOutParticle(p_beamblob->OutParticle(0));
   }
@@ -112,3 +114,7 @@ void Remnant_Base::UnDo()
   ++m_errors;
 }
 
+double Remnant_Base::MinimalEnergy(const ATOOLS::Flavour &flavour) 
+{
+  return 0.;
+}

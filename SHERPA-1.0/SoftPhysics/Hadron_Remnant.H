@@ -27,6 +27,8 @@ namespace SHERPA {
 		   const unsigned int beam,const double scale);
 
     // member functions
+    double MinimalEnergy(const ATOOLS::Flavour &flavour); 
+    
     bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist);
 
   };// end of class Remnant_Base

@@ -3,11 +3,6 @@
 #include "Exception.H"
 #include "Random.H"
 
-#ifdef DEBUG__Hadron_Remnant
-#include "Run_Parameter.H"
-#define EVENT 753
-#endif
-
 using namespace SHERPA;
 
 Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,
@@ -361,12 +356,6 @@ bool Hadron_Remnant::TreatGluon(ATOOLS::Particle *cur)
     }
   }
   if (trials==m_maxtrials/10 && m_errors<m_maxtrials/10) success=false;
-#ifdef DEBUG__Hadron_Remnant
-  if (ATOOLS::rpa.gen.NumberOfDicedEvents()==EVENT) {
-    std::cout<<"exited with trials = "<<trials<<", singlet = "<<singlet
-	     <<", m_errors = "<<m_errors<<", m_maxtrials = "<<m_maxtrials<<std::endl;
-  }
-#endif
   m_parton[2].push_back(cur);
   p_beamblob->AddToOutParticles(cur);
   return success;
@@ -397,4 +386,72 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
     if (p_pdfbase->GetXPDF(flavour)/x>ATOOLS::ran.Get()) return x;
   } 
   return 0.0;
+}
+
+double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour) 
+{
+  if (!m_initialized) {
+    m_initialized=true;
+    if (flavour.IsGluon()) {
+      size_t single=(size_t)(ATOOLS::ran.Get()*3.); 
+      ATOOLS::Flavour difl, fl=m_constit[single];
+      int di[2];
+      for (unsigned int j=0, i=0;i<3;i++) if (i!=single) di[j++]=m_constit[i].Kfcode();
+      if (di[0]!=di[1]) {
+	ATOOLS::Flavour singlet=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+abs(di[1])*100+1));
+	ATOOLS::Flavour triplet=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+abs(di[1])*100+3));
+	if (singlet.PSMass()>triplet.PSMass()) difl=singlet;
+	else difl=triplet;
+      }
+      else {
+	difl=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1100+3));
+      }
+      if (m_constit[0].IsAnti()) difl=difl.Bar();
+      return difl.PSMass()+fl.PSMass();
+    }
+    else if (flavour.IsQuark()) {
+      bool found=false;
+      int di[3];
+      for (size_t j=0,i=0;i<m_constit.size();++i) {
+	if (found||flavour!=m_constit[i]) di[j++]=m_constit[i];
+	else found=true;
+      }
+      if (found) {
+	ATOOLS::Flavour difl;
+	if (di[0]!=di[1]) {
+	  ATOOLS::Flavour singlet=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+abs(di[1])*100+1));
+	  ATOOLS::Flavour triplet=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+abs(di[1])*100+3));
+	  if (singlet.PSMass()>triplet.PSMass()) difl=singlet;
+	  else difl=triplet;
+	}
+	else {
+	  difl=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1100+3));
+	}
+	if (m_constit[0].IsAnti()) difl=difl.Bar();
+	return difl.PSMass();
+      }
+      else {
+	unsigned int single=(unsigned int)(ATOOLS::ran.Get()*3.0); 
+	ATOOLS::Flavour difl, fl=m_constit[single];
+	for (unsigned int j=0,i=0;i<3;i++) {
+	  if (i!=single) di[j++]=m_constit[i].Kfcode();
+	}
+	if (di[0]!=di[1]) {
+	  ATOOLS::Flavour singlet=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+abs(di[1])*100+1));
+	  ATOOLS::Flavour triplet=ATOOLS::Flavour(ATOOLS::kf::code(abs(di[0])*1000+abs(di[1])*100+3));
+	  if (singlet.PSMass()>triplet.PSMass()) difl=singlet;
+	  else difl=triplet;
+	}
+	else {
+	  difl=ATOOLS::Flavour(ATOOLS::kf::code(di[0]*1100+3));
+	}
+	if (m_constit[0].IsAnti()) difl=difl.Bar();
+	return difl.PSMass()+fl.PSMass()+flavour.Bar().PSMass();
+      }
+    }
+  }
+  else {
+    if (flavour.IsQuark()) return flavour.Bar().PSMass();
+  }
+  return 0.;
 }
