@@ -180,21 +180,15 @@ do
   if test -d $I; then
     cd $I
       if [ "$RMLIBS" = "TRUE" ] ; then
-        echo "======================================"
         echo " removing libraries in $I"
-        echo "======================================"
         rmr "*.la *.so *.so.0 *.so.0.0.0"
       fi
       if [ "$CLEANUP" = "TRUE" ] ; then 
-        echo "======================================"
         echo " making clean in $I"
-        echo "======================================"
         make clean
       fi
       if [ "$TOTAL" = "TRUE" ] ; then
-        echo "======================================"
         echo " removing setup files in $I"
-        echo "======================================"
         rmr "Makefile Makefile.in \
              aclocal.m4 config.guess config.log config.status config.sub configure \
              depcomp install-sh libtool ltconfig ltmain.sh missing mkinstalldirs"

@@ -120,7 +120,7 @@ Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
 double Off_Shell_q1q2b_lnulb::operator()(double s,double t,double u) 
 {
   if (s<m_threshold) return 0.;
-  return ATOOLS::sqr(4.*M_PI*m_aqed/m_kappa)*m_colfac*m_ckm2*(1+ATOOLS::sqr(1.+2.*t/s))*
+  return ATOOLS::sqr(4.*M_PI*m_aqed/m_kappa)*m_colfac*m_ckm2*ATOOLS::sqr(1+(1.+2.*t/s))*
     m_mw2*m_mw2/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
 }
 
