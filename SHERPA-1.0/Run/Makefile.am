@@ -52,13 +52,14 @@ PHASICLIBS    =	-L@libdir@ -lPhasespace -lFoam
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 if AMISIC_SUPPORT
-AMISICLIBS    =	-L@libdir@ -lAmisic
+AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
 endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 if ADICIC_SUPPORT
-ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct -lAdicicTool -lAdicicInput
+ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct \
+		-lAdicicTool -lAdicicInput
 endif
 if AHADIC_SUPPORT
 AHADICLIBS    =	-L@libdir@ -lAhadicMain -lClusterFormation -lClusterDecays
