@@ -266,7 +266,9 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   // (a) no colors
   // (b) two quarks
   // (c) two quarks and one gluon
-  // (d) two gluons  
+  // (d) two gluons (ADD-Model) 
+  // (e) three gluons (ADD-Model)
+
 
   for (int i=0; i<4; ++i) m_colors[i][0]=m_colors[i][1]=0;
   double s = (p[0]+p[1]).Abs2();
@@ -293,7 +295,7 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     return 1;
   }  
 
-  int cols[2]={0,0};
+  int cols[3]={0,0,0};
   // (b) two quarks
   if (ncol==2 && nquark==2)
     cols[0]=cols[1]=500;
@@ -307,6 +309,20 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     // naive:    m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
   }
   
+  // (d) two gluons (ADD)
+  if (ncol==2 && nquark==0 && ngluon==2) {
+    cols[0]=500;
+    cols[1]=501;
+  }
+
+  // (e) three gluons (ADD-Model)
+  if (ncol==3 && nquark==0 && ngluon==3) {
+    cols[0]=500;
+    cols[1]=501;
+    cols[1]=502;
+  }
+
+
   if (cols[0]==0) {
     msg.Error()<<"ERROR: in Cluster_Partons::SetColours "<<endl
 	       <<"Can not handle color structure in 2 -> 2 process!"<<endl;
@@ -315,7 +331,8 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   }
 
   ncol=0;
-  int antis[2]={0,0};
+  int antis[3]={0,1,0};
+  if (ngluon==3) antis[2]=2;
   int test = 3;
   for (int i=0; i<4; ++i) {
     if (fl[i].IsQuark() || fl[i].IsSquark()) {
@@ -348,12 +365,18 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     for (int i=0; i<4; ++i) {
       if (fl[i].IsGluon() || fl[i].IsGluino()) {
 	if (i<2) {
-	  m_colors[i][antis[0]]=cols[1];
-	  m_colors[i][antis[1]]=cols[0];
+	  m_colors[i][0]=cols[antis[1]];
+	  m_colors[i][1]=cols[antis[0]];
 	}
 	else {
-	  m_colors[i][antis[0]]=cols[0];
-	  m_colors[i][antis[1]]=cols[1];
+	  m_colors[i][0]=cols[antis[0]];
+	  m_colors[i][1]=cols[antis[1]];
+	}
+	if (ngluon>=2 && nquark==0) {
+	  int a=antis[0];
+	  antis[0]=antis[1];
+	  antis[1]=antis[2];
+	  antis[2]=a;
 	}
       }
     }
@@ -369,7 +392,6 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     return;
   } 
   
-  // **rm**  if (!m_isron && !m_fsron) return;
 
   if (!m_isrshoweron) {
     // prepare dummy tree
