@@ -299,15 +299,30 @@ void Amegic::ReadInProcessfile(string file)
 	    for (int i=0;i<nIS+nFS;i++) {
 	      if (flavs[i].Size()>1) { single = 0; break; }
 	    } 
+	    
+	    double summass = 0.;
+	    for (int i=0;i<nFS;i++)
+	      summass += flavs[i+nIS].Mass();
 
-	    if (single) p_procs->Add(new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-							order_strong,order_ew,
-							kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
-							plavs,nex,excluded));
- 	    else p_procs->Add(new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
-						order_strong,order_ew,
-						kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
-						plavs,nex,excluded));
+	    if (summass<rpa.gen.Ecms()) {
+	      if (single) p_procs->Add(new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+							  order_strong,order_ew,
+							  kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
+							  plavs,nex,excluded));
+	      else p_procs->Add(new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+						  order_strong,order_ew,
+						  kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
+						  plavs,nex,excluded));
+
+	    }
+	    else {
+	      msg.Out()<<"Kicked Process: ";
+	      for (short int i=0;i<nIS;i++) msg.Out()<<" "<<IS[i].Name();
+	      msg.Out()<<" -> ";
+	      for (short int i=0;i<nFS;i++) msg.Out()<<FS[i].Name()<<" ";
+	      msg.Out()<<", kinematically not allowed."<<endl;
+	    }	    
+
 	    delete [] flavs;
 	    delete [] plavs;
 	  }
