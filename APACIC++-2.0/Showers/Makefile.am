@@ -2,8 +2,14 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-SHERPAFLAGS   =	-pedantic -Wall 
-#-Winline 
+APACICFLAGS   =	-pedantic -Wall -Winline 
+
+SHERPASYS     =	../..
+
+if SHERPA_SUPPORT
+SHERPAFLAGS   = -DSHERPA_SUPPORT
+SHERPAINCS    =	-I$(SHERPASYS)/SHERPA-1.0/SoftPhysics
+endif
 
 lib_LTLIBRARIES = libApacicShowers.la
 libApacicShowers_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
@@ -13,8 +19,8 @@ libApacicShowers_la_SOURCES = Final_State_Shower.C Timelike_Sudakov.C \
 			      Splitting_Group.C Backward_Splitting_Group.C \
 			      QED_Splitting_Functions.C QCD_Splitting_Functions.C \
 			      SUSY_QCD_Splitting_Functions.C
-AM_CXXFLAGS   = $(SHERPAFLAGS)
-INCLUDES = -I../../APACIC++-2.0/Main \
+AM_CXXFLAGS   = $(APACICFLAGS) $(SHERPAFLAGS)
+INCLUDES = $(SHERPAINCS) -I../../APACIC++-2.0/Main \
 	   -I../../MODEL-1.0/Main \
 	   -I../../PDF-1.0/Main \
 	   -I../../ATOOLS-2.0/Phys \
