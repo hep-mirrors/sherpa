@@ -19,6 +19,7 @@ void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) cons
      <<std::setw(width+7)<<" "<<"DRMin   kf1 kf2 drmin\n"
      <<std::setw(width+7)<<" "<<"Counts  kf min max\n"
      <<std::setw(width+7)<<" "<<"Keep    kf\n"
+     <<std::setw(width+7)<<" "<<"Qual    qualifier\n"
      <<std::setw(width+4)<<" "<<"}";
 }
 
