@@ -27,7 +27,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str,Parton* part) {
   default : // user defined or reserved
     return str<<"--- unrecognized status:"<<part->Status()<<" ---"<<std::endl;
   }
-  str<<setiosflags(std::ios::scientific)
+  str<<std::setiosflags(std::ios::scientific)
      <<" ["<<part->Momentum()<<", "<<part->Momentum().Abs2()<<"]"
      <<" ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")";
   return str;
