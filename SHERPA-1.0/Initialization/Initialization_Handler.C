@@ -152,6 +152,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     return true;
   }
 
+  okay = okay && InitializeTheBeamRemnants();
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   //  only if events:
@@ -159,7 +160,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheShowers();
     okay = okay && InitializeTheFragmentation();
     okay = okay && InitializeTheHadronDecays();
-    okay = okay && InitializeTheBeamRemnants();
     okay = okay && InitializeTheUnderlyingEvents();
   }
   return okay;
@@ -380,10 +380,13 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
 
 bool Initialization_Handler::InitializeTheShowers()
 {
-  if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
+  if (p_showerhandler) delete p_showerhandler;
   int maxjets     = GetMatrixElementHandler(std::string("SignalMEs"))->MaxJets();
   p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,
 				       m_isrhandlers[isr::hard_process],maxjets);
+  APACIC::Apacic *apacic=p_showerhandler->GetApacic();
+  if (apacic!=NULL && apacic->IniShower()!=NULL) 
+    p_beamremnants->SetScale(-apacic->IniShower()->CutOff());
   msg_Info()<<"Initialized the Shower_Handler."<<endl;
   return 1;
 }
@@ -391,16 +394,11 @@ bool Initialization_Handler::InitializeTheShowers()
 
 bool Initialization_Handler::InitializeTheBeamRemnants() 
 {
-  if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
-  double scale=-4.0;
-  if (p_showerhandler!=NULL && p_showerhandler->GetApacic()) {
-    if (p_showerhandler->GetApacic()->IniShower()) {
-      scale=p_showerhandler->GetApacic()->IniShower()->CutOff();
-    }
-  }
-  p_beamremnants = new Beam_Remnant_Handler(m_path,m_beamremnantdat,
-					    m_isrhandlers[isr::hard_process],
-					    p_beamspectra,scale);
+  if (p_beamremnants)  delete p_beamremnants;
+  p_beamremnants = 
+    new Beam_Remnant_Handler(m_path,m_beamremnantdat,
+			     m_isrhandlers[isr::hard_process],p_beamspectra);
+  p_beamremnants->SetScale(4.0);
   msg_Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }
