@@ -14,7 +14,7 @@ extern "C" {
   void pylist_(int&);
 };
 
-Lund_Fortran_Interface::Lund_Fortran_Interface(double _a,double _b, double _sigma) :
+Lund_Fortran_Interface::Lund_Fortran_Interface(double _a,double _b, double _sigma) 
 { 
   Init();
   apyinit_(ATOOLS::rpa.gen.Ecms(),_a,_b,_sigma,1,0);
