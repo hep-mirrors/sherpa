@@ -49,7 +49,7 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
   return InitColours(blob);
 }
 
-int SimpleXS_Apacic_Interface::InitColours(Blob * blob) 
+int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob) 
 {
   if (!p_xs->SetColours(p_momenta)) return 0; 
   if (blob->InParticle(0)->Momentum()[3]<blob->InParticle(1)->Momentum()[3]) {
@@ -70,8 +70,8 @@ int SimpleXS_Apacic_Interface::InitColours(Blob * blob)
   if (m_ini) {
     th1=p_tools->ColourAngle(blob->InParticle(0),blob);
     th2=p_tools->ColourAngle(blob->InParticle(1),blob);
-    double x1=blob->InParticle(0)->Momentum()[0]/E;//m_rescale[0];
-    double x2=blob->InParticle(1)->Momentum()[0]/E;//m_rescale[1];
+    double x1=blob->InParticle(0)->Momentum()[0]/E;
+    double x2=blob->InParticle(1)->Momentum()[0]/E;
     p_tools->InitializeIncoming(blob,scale,E,th1,th2,x1,x2);
   }
   if (m_fin) {
@@ -82,12 +82,12 @@ int SimpleXS_Apacic_Interface::InitColours(Blob * blob)
   return 1;
 }
 
-bool SimpleXS_Apacic_Interface::FillBlobs(Blob_List *blobs)
+bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 {
   if (p_hard==NULL) return false;
   if (p_shower->ISROn()) {
-    p_psme_is = new Blob();
-    p_psme_is->SetType(btp::ME_PS_Interface_IS);
+    p_psme_is = new ATOOLS::Blob();
+    p_psme_is->SetType(ATOOLS::btp::ME_PS_Interface_IS);
     p_psme_is->SetTypeSpec("Sherpa");
     p_psme_is->SetStatus(1);
     p_psme_is->SetId();
@@ -97,8 +97,8 @@ bool SimpleXS_Apacic_Interface::FillBlobs(Blob_List *blobs)
     blobs->push_back(p_psme_is);
   }
   if (p_shower->FSROn()) {
-    p_psme_fs = new Blob();
-    p_psme_fs->SetType(btp::ME_PS_Interface_FS);
+    p_psme_fs = new ATOOLS::Blob();
+    p_psme_fs->SetType(ATOOLS::btp::ME_PS_Interface_FS);
     p_psme_fs->SetTypeSpec("Sherpa");
     p_psme_fs->SetStatus(1);
     p_psme_fs->SetId();

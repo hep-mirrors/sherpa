@@ -67,7 +67,7 @@ bool Exception_Handler::ApproveTerminate()
 
 void Exception_Handler::PrepareTerminate()
 {
-  if (s_print) msg.Tracking()<<"Exception_Handler::PrepareTerminate(): Preparing termination ..."<<std::flush;
+  if (s_print) msg.Tracking()<<"Exception_Handler::PrepareTerminate(): Preparing termination ..."<<std::endl;
   for (size_t i=0;i<s_terminatorobjects.size();++i) s_terminatorobjects[i]->PrepareTerminate(); 
   for (size_t i=0;i<s_terminatorfunctions.size();++i) s_terminatorfunctions[i](); 
   if (s_print) msg.Tracking()<<"... prepared."<<std::endl;

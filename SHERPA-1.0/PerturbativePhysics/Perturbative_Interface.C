@@ -35,7 +35,7 @@ void Perturbative_Interface::DeleteMergingBlobs(ATOOLS::Blob *const blob,
 void Perturbative_Interface::CleanBlobList(ATOOLS::Blob_List *const bloblist,
 					   const ATOOLS::btp::code type)
 {
-  for (Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
+  for (ATOOLS::Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Type()==type) {
       DeleteMergingBlobs(*blit,true);
       DeleteMergingBlobs(*blit,false);
