@@ -26,6 +26,13 @@ const Vec3D Vec3D::XVEC=Vec3D(1.,0.,0.);
 const Vec3D Vec3D::YVEC=Vec3D(0.,1.,0.);
 const Vec3D Vec3D::ZVEC=Vec3D(0.,0.,1.);
 
+Vec3D::Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tcross) 
+{
+  m_x[0]=v1[2]*v2[3]-v1[3]*v2[2];
+  m_x[1]=v1[3]*v2[1]-v1[1]*v2[3];
+  m_x[2]=v1[1]*v2[2]-v1[2]*v2[1];
+}
+
 std::ostream& ATOOLS::operator<< (std::ostream& s, const Vec4D& vec)
 {
   return s<<'('<<vec[0]<<','<<vec[1]<<','<<vec[2]<<','<<vec[3]<<')';

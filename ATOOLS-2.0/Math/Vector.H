@@ -55,7 +55,7 @@ namespace ATOOLS {
     //!  Computational constructor
     inline Vec3D(const Vec3D& v1 ,const double scal, const Tag::Tsmul); 
     //!  Computational constructor
-    inline Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tcross); 
+    Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tcross); 
 
 
     inline const double Abs() const;
@@ -195,13 +195,6 @@ namespace ATOOLS {
     m_x[0]=scal*v1[1];
     m_x[1]=scal*v1[2];
     m_x[2]=scal*v1[3];
-  }
-
-  inline Vec3D::Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tcross) 
-  {
-    m_x[0]=v1[2]*v2[3]-v1[3]*v2[2];
-    m_x[1]=v1[3]*v2[1]-v1[1]*v2[3];
-    m_x[2]=v1[1]*v2[2]-v1[2]*v2[1];
   }
 
   // new operator definitions:
