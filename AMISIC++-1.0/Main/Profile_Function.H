@@ -65,7 +65,7 @@ namespace AMISIC {
   class Double_Gaussian_Profile: public Profile_Function_Base {
   private:
 
-    double m_radius[2], m_partition;
+    double m_radius[2], m_partition, m_rmin, m_rmax;
 
   public:
   

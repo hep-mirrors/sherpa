@@ -125,8 +125,7 @@ double Gaussian_Profile::MajorIntegral(const double b) const
 
 double Gaussian_Profile::InverseMajorIntegral(const double I) const
 {
-  return m_radius*sqrt(-2.0*log(I/M_PI+
-				exp(-0.5*ATOOLS::sqr(m_bmax/m_radius))));
+  return m_radius*sqrt(-2.0*log(I/M_PI+exp(-0.5*ATOOLS::sqr(m_bmax/m_radius))));
 }
 
 template <> Profile_Function_Base*
@@ -150,6 +149,8 @@ Double_Gaussian_Profile::Double_Gaussian_Profile(const double radius1,
   m_omax=Value(m_bmin);
   m_omin=Value(m_bmax);
   m_norm=M_PI;
+  m_rmin=ATOOLS::Min(m_radius[0],m_radius[1]);
+  m_rmax=ATOOLS::Max(m_radius[0],m_radius[1]);
 }
 
 double Double_Gaussian_Profile::Value(const double b) const
@@ -163,21 +164,18 @@ double Double_Gaussian_Profile::Value(const double b) const
 
 double Double_Gaussian_Profile::MajorValue(const double b) const
 {
-  return 0.5/ATOOLS::sqr(ATOOLS::Min(m_radius[0],m_radius[1]))*
-    exp(-0.5*ATOOLS::sqr(b/ATOOLS::Max(m_radius[0],m_radius[1])));
+  return 0.5*exp(-0.5*ATOOLS::sqr(b/m_rmax))/ATOOLS::sqr(m_rmin);
 }
 
 double Double_Gaussian_Profile::MajorIntegral(const double b) const
 {
-  return M_PI*ATOOLS::sqr(ATOOLS::Max(m_radius[0],m_radius[1])/
-			  ATOOLS::Min(m_radius[0],m_radius[1]))*
-    (1.0-exp(-0.5*ATOOLS::sqr(b/ATOOLS::Max(m_radius[0],m_radius[1]))));
+  return M_PI*ATOOLS::sqr(m_rmax/m_rmin)*
+    (exp(-0.5*ATOOLS::sqr(b/m_rmax))-exp(-0.5*ATOOLS::sqr(m_bmax/m_rmax)));
 }
 
 double Double_Gaussian_Profile::InverseMajorIntegral(const double I) const
 {
-  return -ATOOLS::Max(m_radius[0],m_radius[1])*
-    log(1.0-ATOOLS::sqr(ATOOLS::Min(m_radius[0],m_radius[1])/
-			ATOOLS::Max(m_radius[0],m_radius[1]))*I/M_PI);
+  return m_rmax*sqrt(-2.0*log(ATOOLS::sqr(m_rmin/m_rmax)*I/M_PI+
+			      exp(-0.5*ATOOLS::sqr(m_bmax/m_rmax))));
 }
 
