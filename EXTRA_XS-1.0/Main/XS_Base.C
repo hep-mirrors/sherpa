@@ -119,13 +119,16 @@ double XS_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
   if (m_nin==1) return momenta[0].Abs2();
   SetSTU(momenta);
   switch (m_scalescheme) {
+  case 0:
+    m_scale[PHASIC::stp::as]=1.;
+    break;
   case 1:
     m_scale[PHASIC::stp::as]=momenta[2].PPerp2();
     break;
   case 2:
     m_scale[PHASIC::stp::as]=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
     break;
-  case 10: {
+  case 11: {// ew scheme
     double M2=0.;
     if (m_resonances.size()>0) {
       M2=ATOOLS::sqr(m_resonances[0].Mass());
@@ -135,41 +138,20 @@ double XS_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
     m_scale[PHASIC::stp::kp21]=x1*x1*2.*S2*xi;
     m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
+    // ew scale a la watt
     double sc=(p[0]+p[1]).PPerp2();
     m_scale[PHASIC::stp::as]=pow(sc,2./3.)*pow(M2,1./3.);
     break;
   }
-  case 21: {// hadron scheme
+  case 12: {// qcd scheme
     const ATOOLS::Vec4D *p=momenta;
     double S2=p[4]*p[5];
     double a1=p[5]*p[0]/S2;
     double b2=p[4]*p[1]/S2;
     m_scale[PHASIC::stp::kp21]=a1*a1*2.*S2*p[2].PMinus()/p[2].PPlus();
     m_scale[PHASIC::stp::kp22]=b2*b2*2.*S2*p[3].PPlus()/p[3].PMinus();
-    // average of transverse momenta w.r.t. incoming
-    m_scale[PHASIC::stp::as]=ATOOLS::sqr((p[2].PPerp(p[0])+p[3].PPerp(p[1]))/2);
-    break;
-  }
-  case 22: {// hadron scheme
-    const ATOOLS::Vec4D *p=momenta;
-    double S2=p[4]*p[5];
-    double a1=p[5]*p[0]/S2;
-    double b2=p[4]*p[1]/S2;
-    m_scale[PHASIC::stp::kp21]=a1*a1*2.*S2*p[2].PMinus()/p[2].PPlus();
-    m_scale[PHASIC::stp::kp22]=b2*b2*2.*S2*p[3].PPlus()/p[3].PMinus();
-    // average of transverse momenta 
-    m_scale[PHASIC::stp::as]=ATOOLS::sqr((p[2].PPerp()+p[3].PPerp())/2);
-    break;
-  }
-  case 23: {// dis scheme
-    const ATOOLS::Vec4D *p=momenta;
-    ATOOLS::Vec4D k=p[0]-p[2];
-    double z1=p[5]*k/(p[5]*p[0]);
-    double z2=p[4]*k/(p[4]*p[1]);
-    m_scale[PHASIC::stp::kp21]=p[2].PPerp2()/ATOOLS::sqr(1.-z1);
-    m_scale[PHASIC::stp::kp22]=p[3].PPerp2()/ATOOLS::sqr(1.+z2);
-    // average of transverse momenta w.r.t. incoming
-    m_scale[PHASIC::stp::as]=ATOOLS::sqr((p[2].PPerp(p[0])+p[3].PPerp(p[1]))/2);
+    // qcd scale
+    m_scale[PHASIC::stp::as]=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
     break;
   }
   case 24: {// dis scheme
@@ -180,22 +162,6 @@ double XS_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     m_scale[PHASIC::stp::as]=ATOOLS::sqr((p[2].PPerp(p[0])+p[3].PPerp(p[1]))/2);
     break;
   }
-  case 31: {// hadron scheme qq
-    double M2=0.;
-    if (m_resonances.size()>0) {
-      M2=ATOOLS::sqr(m_resonances[0].Mass());
-    }
-    ATOOLS::Vec4D *p=p_momenta;
-    double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
-    double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
-    m_scale[PHASIC::stp::kp21]=x1*x1*2.*S2*xi;
-    m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
-    m_scale[PHASIC::stp::as]=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
-    break;
-  }
-  case 20:
-    m_scale[PHASIC::stp::as]=1.;
-    break;
   default:
     m_scale[PHASIC::stp::as]=m_s;
     break;
@@ -208,11 +174,16 @@ double XS_Base::KFactor(const double scale)
   switch (m_kfactorscheme) {
   case 1:
     return pow(MODEL::as->AlphaS(scale*m_scalefactor)/
-	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nin+m_nout-2);
-  case 10:{
+	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),
+	       m_nin+m_nout-2);
+  case 11:{
     const double CF=4./3.;
     return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
   }
+  case 12:
+    return pow(MODEL::as->AlphaS(scale)/
+	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),
+	       m_nin+m_nout-2);
   default:
     return 1.;
   }
