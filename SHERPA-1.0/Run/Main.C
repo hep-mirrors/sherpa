@@ -8,6 +8,7 @@ using namespace SHERPA;
 
 int main(int argc,char* argv[]) 
 {  
+  /*
   std::set_terminate(ATOOLS::Exception_Handler::Terminate);
   std::set_unexpected(ATOOLS::Exception_Handler::Terminate);
   signal(SIGSEGV,ATOOLS::Exception_Handler::SignalHandler);
@@ -18,6 +19,7 @@ int main(int argc,char* argv[])
   signal(SIGTERM,ATOOLS::Exception_Handler::SignalHandler);
   signal(SIGXCPU,ATOOLS::Exception_Handler::SignalHandler);
   try {
+  */
     Sherpa Generator;
     ATOOLS::msg.Out()<<" Process initialization started "<<std::endl;
     Generator.InitializeTheRun(argc,argv);
@@ -37,6 +39,7 @@ int main(int argc,char* argv[])
     }
     ATOOLS::msg.Out()<<" Simulation finished "<<std::endl;
     return 0;
+    /*
   }
   catch (ATOOLS::Exception exception) {
     exception.UpdateLogFile();
@@ -47,6 +50,7 @@ int main(int argc,char* argv[])
     std::cout<<"Sherpa: throws std::exception "<<exception.what()<<" ..."<<std::endl;
     std::terminate();
   }
+    */
 }
 
 
