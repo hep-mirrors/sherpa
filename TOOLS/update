@@ -3,9 +3,11 @@
 NOUPDATE="TRUE"
 TEMPFILE="#update#"
 
-EXTENSIONS="\.C \.H \.am configure\.in"
-DESCRIPTIONS="C-Files H-Files Makefiles configures"
-COLOURS="4 2 1 6"
+EXTENSIONS="\.C \.cpp \.cc \.H \.hpp \.hh \.am configure\.in"
+DESCRIPTIONS="C-Files cpp-Files cc-Files"
+DESCRIPTIONS=$DESCRIPTIONS" H-Files hpp-Files hh-Files"
+DESCRIPTIONS=$DESCRIPTIONS" Makefiles configures"
+COLOURS="4 4 4 2 2 2 1 1"
 
 OPTIONS=
 LOGFILE="updated"
