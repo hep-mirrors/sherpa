@@ -224,12 +224,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     if (p_beamhandler->On()>0) { 
       p_beamhandler->SetLimits();
       p_beamchannels->GeneratePoint(m_beamspkey,m_beamykey,p_beamhandler->On()); 
-      if (!(p_beamhandler->MakeBeams(p_lab,m_beamspkey[3],m_beamykey[2]))) return 0.;
-      if (p_isrhandler) {
-	p_isrhandler->SetSprimeMax(m_beamspkey[3]*
-				   p_isrhandler->Upper1()*p_isrhandler->Upper2());
-	p_isrhandler->SetPole(m_beamspkey[3]);
-      }
+      if (!p_beamhandler->MakeBeams(p_lab)) return 0.;
+      p_isrhandler->SetSprimeMax(m_beamspkey[3]*
+				 p_isrhandler->Upper1()*p_isrhandler->Upper2());
+      p_isrhandler->SetPole(m_beamspkey[3]);
     }
     p_isrhandler->SetLimits();
     if (p_isrhandler->On()>0) { 
@@ -239,7 +237,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
 	p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
       }
     }
-    if (!(p_isrhandler->MakeISR(p_lab,m_nvec))) return 0.;
+    if (!p_isrhandler->MakeISR(p_lab,m_nvec)) return 0.;
     if (p_beamhandler->On()>0 || p_isrhandler->On()>0) {
       process->Selector()->UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
     }

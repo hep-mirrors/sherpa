@@ -255,8 +255,9 @@ bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _bunches) {
 }
 
 
-bool Beam_Spectra_Handler::MakeBeams(Vec4D * p,double sprime,double y) 
+bool Beam_Spectra_Handler::MakeBeams(Vec4D * p) 
 {
+  double sprime=m_spkey[3], y=m_ykey[2];
   if (m_mode==0) {
     m_x1 = m_x2 = 1.;
     p[0] = m_fiXVECs[0];

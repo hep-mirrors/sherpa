@@ -35,7 +35,7 @@ namespace BEAM {
     void   Output();
     bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
     bool   CheckConsistency(ATOOLS::Flavour *);
-    bool   MakeBeams(ATOOLS::Vec4D *,double,double);
+    bool   MakeBeams(ATOOLS::Vec4D *);
     bool   CalculateWeight(double);
     double Weight(ATOOLS::Flavour * flin = NULL);
     double Weight(int * pol_types, double * dofs);
