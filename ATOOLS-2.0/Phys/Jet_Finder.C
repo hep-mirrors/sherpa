@@ -30,8 +30,41 @@ void Jet_Finder::Init(const Vec4D * p)
       return;
     }
     case 2 : {
-      msg.Error()<<"Jet_Finder::Init : process-type "<<m_type
-		 <<" not implemented yet !"<<std::endl;
+      //Initialize the Breit frame
+      int lepton=0;
+      if (m_fl[0].Strong()) lepton=1;
+      int hadron=lepton==1?0:1;
+      
+      Vec4D q=p[lepton];
+            
+      for (int i=m_nin;i<m_nin+m_nout;i++)
+	if (m_fl[i]==m_fl[lepton]) q-=p[i];
+      Vec4D store = q;
+
+      double x = -q.Abs2()/(2.*p[hadron]*q); 
+      Vec4D pp = 2.*x*p[hadron]+q;
+
+      double gamma = pp[0]/pp.Abs();
+      Vec3D eta    = Vec3D(pp)/pp.Abs();
+      
+      m_cms_boost = Poincare(Vec4D(gamma,eta));
+      m_cms_boost.Boost(q);
+      m_zrot = Poincare(-1.*q,Vec4D::ZVEC);
+      m_zrot.Rotate(q);
+      
+      BoostBack(q);
+      
+      //checks
+      if (dabs(q*pp)>1.e-10) 
+	msg.Error()<<" ERROR: Jet_Finder::Init could not initialize Breit frame correctly (1) : "
+		   <<dabs(q*pp)<<std::endl;
+      
+      bool check = true;
+      for (int i=0;i<3;i++) 
+	if (dabs((q[i]-store[i]))>1.e10) check = false; 
+      if (!check) msg.Error()<<" ERROR: Jet_Finder::Init could not initialize Breit frame correctly (2) : "
+			     <<q-store<<std::endl;
+      
       return;
     }  
     case 1 : {
@@ -65,7 +98,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
 
   m_name    = std::string("Jetfinder");
 
-  m_ene     = rpa.gen.Ecms()/2;
+  m_ene     = rpa.gen.Ecms()/2.;
   m_sprime  = m_s = sqr(2.*m_ene); 
   m_smin    = m_ycut * m_s;
   m_smax    = m_s;
@@ -92,34 +125,65 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res,
     if ( (flavsin[0].Strong()) || (flavsin[1].Strong()) || (m_type != 1) ) {
       if (m_type==1) m_type=4;  // assume hadron hadron
     }
+    
+    // remove everything not to cluster and create momentum list
+    for (Particle_List::iterator it=pl->begin(); it!=pl->end();) {
+      if (!(*it)->Flav().IsLepton()) {
+	momsout.push_back((*it)->Momentum());
+	++it;
+      }
+      else {
+	it=pl->erase(it);
+      }
+    }
 
-    Init(momsin);
+    Vec4D * moms = new Vec4D[m_nin+momsout.size()];
+    for (int i=0;i<m_nin;i++) 
+      moms[i]=momsin[i];
+    for (unsigned int i=m_nin;i<m_nin+momsout.size();i++) 
+      moms[i]=momsout[i-m_nin];
+    
+    Init(moms);
+    BoostInFrame(momsin);
     BoostInFrame(momsout);
-
+    
     // delete first two
     pl->erase(pl->begin());
     pl->erase(pl->begin());
   }
   else {
-    if (rpa.gen.Beam1().Strong() || rpa.gen.Beam2().Strong() || rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) 
+    if (rpa.gen.Beam1().Strong()   || rpa.gen.Beam2().Strong() || 
+	rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) 
       m_type=4;
     flavsin[0]=rpa.gen.Beam1();
     flavsin[1]=rpa.gen.Beam1();
-
+    
+    if (m_type!=2) {
     momsin[0]=Vec4D::ZVEC;
     momsin[0]*=(rpa.gen.Ecms()*0.5);
     momsin[1]=Vec4D(momsin[0][0],-1.*Vec3D(momsin[0]));
-  }
-
-  // remove everything not to cluster and create momentum list
-  for (Particle_List::iterator it=pl->begin(); it!=pl->end();) {
-    //    if ((*parts)[i]->Flav().Strong()) {
-    if (!(*it)->Flav().IsLepton()) {
-      momsout.push_back((*it)->Momentum());
-      ++it;
     }
-    else {
-      it=pl->erase(it);
+    // remove everything not to cluster and create momentum list
+    for (Particle_List::iterator it=pl->begin(); it!=pl->end();) {
+      if (!(*it)->Flav().IsLepton()) {
+	momsout.push_back((*it)->Momentum());
+	++it;
+      }
+      else {
+	it=pl->erase(it);
+      }
+    }
+    //DIS case
+    if (m_type==2) {
+      Vec4D * moms = new Vec4D[m_nin+momsout.size()];
+      for (int i=0;i<m_nin;i++) 
+	moms[i]=momsin[i];
+      for (unsigned int i=m_nin;i<m_nin+momsout.size();i++) 
+	moms[i]=momsout[i-m_nin];
+      
+      Init(moms);
+      BoostInFrame(momsin);
+      BoostInFrame(momsout);
     }
   }
 
@@ -141,8 +205,8 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res,
     for (size_t i=k;i<pl->size()-1;i++) (*pl)[i] = (*pl)[i+1];
     pl->pop_back();
   }
-
-
+  
+  
   // create "complete new particle list"
   int j=0;
   for (Particle_List::iterator it=pl->begin(); it!=pl->end();++it,++j) {
@@ -182,31 +246,50 @@ bool Jet_Finder::ConstructJets(const Particle_List * parts,
     }
 
     for (size_t i=2;i<parts->size();i++) {
-      //    if ((*parts)[i]->Flav().Strong()) {
       if (!(*parts)[i]->Flav().IsLepton()) {
 	momsout.push_back((*parts)[i]->Momentum());
       }
     }
-    Init(momsin);
+    
+    Vec4D * moms = new Vec4D[m_nin+momsout.size()];
+    for (int i=0;i<m_nin;i++) 
+      moms[i]=momsin[i];
+    for (unsigned int i=m_nin;i<m_nin+momsout.size();i++) 
+      moms[i]=momsout[i-m_nin];
+    
+    Init(moms);
+    BoostInFrame(momsin);
     BoostInFrame(momsout);
   }
   else {
-    if (rpa.gen.Beam1().Strong() || rpa.gen.Beam2().Strong() || rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) 
+    if (rpa.gen.Beam1().Strong() || rpa.gen.Beam2().Strong() || 
+	rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) 
       m_type=4;
     flavsin[0]=rpa.gen.Beam1();
     flavsin[1]=rpa.gen.Beam1();
 
-    momsin[0]=Vec4D::ZVEC;
-    momsin[0]*=(rpa.gen.Ecms()*0.5);
-    momsin[1]=Vec4D(momsin[0][0],-1.*Vec3D(momsin[0]));
-
+    if (m_type!=2) {
+      momsin[0]=Vec4D::ZVEC;
+      momsin[0]*=(rpa.gen.Ecms()*0.5);
+      momsin[1]=Vec4D(momsin[0][0],-1.*Vec3D(momsin[0]));
+    }
     for (size_t i=0;i<parts->size();i++) {
-      //    if ((*parts)[i]->Flav().Strong()) {
       if (!(*parts)[i]->Flav().IsLepton()) {
 	momsout.push_back((*parts)[i]->Momentum());
       }
     }
-
+    //DIS case
+    if (m_type==2) {
+      Vec4D * moms = new Vec4D[m_nin+momsout.size()];
+      for (int i=0;i<m_nin;i++) 
+	moms[i]=momsin[i];
+      for (unsigned int i=m_nin;i<m_nin+momsout.size();i++) 
+	moms[i]=momsout[i-m_nin];
+      
+      Init(moms);
+      BoostInFrame(momsin);
+      BoostInFrame(momsout);
+    }
   }
 
   bool ordered = 1;
@@ -263,7 +346,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 	k1   = j;
 	if (momsout[j][3]*momsin[0][3] > 0.) j1 = -2;
 	                                else j1 = -1;
-      } 
+      }
       for (size_t k=j+1;k<momsout.size();k++) {
 	pt2k  = (sqr(momsout[k][1]) + sqr(momsout[k][2]));
 	pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(momsout[j],momsout[k])) - 
@@ -275,6 +358,17 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
       }
     }
     else {
+      if (m_type==2) {
+	int hadron=m_fl[0].Strong()?0:1;
+	pt2j = 2.*sqr(momsout[j][0])*(1.-DCos12(momsout[j],momsin[hadron]));
+	if (pt2j < ymin*m_sprime) {
+	  ymin = pt2j/m_sprime;
+	  k1   = j;
+	  //cluster to beam 
+	  if (hadron) j1 = -1;
+	         else j1 = -2;
+	}
+      }
       for (size_t k=j+1;k<momsout.size();k++) {
 	pt2jk  = 2.*sqr(Min(momsout[j][0],momsout[k][0]))*(1.-DCos12(momsout[j],momsout[k]));
 	if (pt2jk<ymin*m_sprime) {
@@ -291,8 +385,6 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
   }
   return ymin;
 }
-
-
 
 
 /*---------------------------------------------------------------------
@@ -327,10 +419,14 @@ Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) 
     if((m_type>=3) || (m_type==1)) {
       m_ene      = rpa.gen.Ecms()/2.;
       m_sprime   = m_s = sqr(2.*m_ene); 
-	p_frame[0] = Vec4D(m_ene,0.,0., sqrt(sqr(m_ene)-sqr(m_fl[0].Mass())));
-	p_frame[1] = Vec4D(m_ene,0.,0.,-sqrt(sqr(m_ene)-sqr(m_fl[1].Mass())));
+      p_frame[0] = Vec4D(m_ene,0.,0., sqrt(sqr(m_ene)-sqr(m_fl[0].Mass())));
+      p_frame[1] = Vec4D(m_ene,0.,0.,-sqrt(sqr(m_ene)-sqr(m_fl[1].Mass())));
     }    
     if (m_type==3) m_cms_boost = Poincare(p_frame[0]+p_frame[1]);
+    if (m_type==2) {
+      m_ene      = rpa.gen.Ecms()/2.;
+      m_sprime   = m_s = sqr(2.*m_ene);
+    }
   }
   
   m_smin = m_ycut * m_s;
@@ -371,7 +467,7 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   BoostBack(moms);
 
   delete [] moms;
-
+  
   p_value[0] = ymin;
   return (1-m_sel_log->Hit(1-trigger));
 }
@@ -379,6 +475,7 @@ bool Jet_Finder::Trigger(const Vec4D * p)
 double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
 {
   double mt12_2;
+  //check for DIS situation
   if (m_type>=2) {
     double pt1_2  = sqr(p1[1]) + sqr(p1[2]);
     double mt1_2  = pt1_2 + dabs(p1.Abs2()); 
@@ -388,33 +485,14 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
       mt12_2        = mt2_2;
     }
     else 
-      mt12_2        = 2.*Min(mt1_2,mt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
+      if (m_type==2) mt12_2 = 2.*Min(mt1_2,mt2_2) * (1.-DCos12(p1,p2));
+                else mt12_2 = 2.*Min(mt1_2,mt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
   }
-  else {
+  else 
     mt12_2        = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
-  }
+  
   return mt12_2;
 }
-
-/*
-double Jet_Finder::PTij2(Vec4D p1,Vec4D p2)
-{
-  double pt12_2;
-  if (m_type>=2) {
-    double pt1_2  = sqr(p1[1]) + sqr(p1[2]); 
-    double pt2_2  = sqr(p2[1]) + sqr(p2[2]); 
-    if (IsZero(pt1_2/(pt1_2+pt2_2))) {
-      pt12_2        = pt2_2;
-    }
-    else 
-      pt12_2        = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
-  }
-  else {
-    pt12_2        = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
-  }
-  return pt12_2;
-}
-*/
 
 bool Jet_Finder::TwoJets(const Vec4D & p1) 
 {
@@ -441,7 +519,11 @@ bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2)
     double pt2_2  = sqr(p2[1]) + sqr(p2[2]); 
     if (pt1_2  < m_shower_pt2 ) return 0;
     if (pt2_2  < m_shower_pt2 ) return 0;
-    double pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
+    double pt12_2;
+    
+    if (m_type==2) pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
+      else pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
+    
     if (m_delta_r!=0.) {
       pt12_2/=sqr(m_delta_r);
       if (pt12_2 < m_shower_pt2 ) return 0;
@@ -497,16 +579,24 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	    Min(cuts->cosmax[0][i],sqrt(1.-4.*m_ycut));
 	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
 	}
+	if (m_type==2) {
+	  int hadron=m_fl[0].Strong()?0:1;
+	  cuts->cosmax[hadron][i] = cuts->cosmax[i][hadron] = 
+	    Min(cuts->cosmax[hadron][i],sqrt(1.-4.*m_ycut));
+	  cuts->cosmin[hadron][i] = cuts->cosmin[i][hadron] = 
+	    Max(cuts->cosmin[hadron][i],-sqrt(1.-4.*m_ycut));
+	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
+	}
       }
       else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
-
+      
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong()) {                
 	  /* 
 	     minimal scut :
 	     either   :  s_ij = 2 E_i E_j (1-cos(ij)) > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
-	                 m_ycut s' > ycut s_min   
-	                 (lepton-lepton collisions)
+	     m_ycut s' > ycut s_min   
+	     (lepton-lepton collisions)
 	     or       :  similarly .... have to think ...
                	         (hadron-hadron collisions)
  
@@ -544,6 +634,7 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 
 double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 {
+  
   PROFILE_HERE;
   double ymin = 2.;
   double pt2jk,pt2j,pt2k;
@@ -568,6 +659,14 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 	}
       }
       else {
+	if (m_type==2) {
+	  int hadron=m_fl[0].Strong()?0:1;
+	  pt2j = 2.*sqr(p[j][0])*(1.-DCos12(p[j],p[hadron]));
+	  if (pt2j < ymin*m_sprime) {
+	    ymin = pt2j/m_sprime;
+	    j1   = j;k1=1;
+	  }
+	}
 	for (int k=j+1;k<m_n;k++) {
 	  if (m_fl[k].Strong()) {
 	    pt2jk  = 2.*sqr(Min(p[j][0],p[k][0]))*(1.-DCos12(p[j],p[k]));
@@ -611,36 +710,49 @@ double Jet_Finder::Coshyp(double x)
 
 void Jet_Finder::BoostInFrame(Vec4D * p)
 {
-  for (int i=0;i<m_n;i++) m_cms_boost.Boost(p[i]);
+  for (int i=0;i<m_n;i++) {
+    m_cms_boost.Boost(p[i]);
+    m_zrot.Rotate(p[i]);
+  }
 }
 
 void Jet_Finder::BoostBack(Vec4D * p)
 {
-  for (int i=0;i<m_n;i++) m_cms_boost.BoostBack(p[i]);
+  for (int i=0;i<m_n;i++) {
+    m_zrot.RotateBack(p[i]);
+    m_cms_boost.BoostBack(p[i]);
+  }
 }
 
 void Jet_Finder::BoostInFrame(std::vector<Vec4D> p)
 {
-  for (size_t i=0;i<p.size();i++) m_cms_boost.Boost(p[i]);
+  for (size_t i=0;i<p.size();i++) {
+    m_cms_boost.Boost(p[i]);
+    m_zrot.Rotate(p[i]);
+  }
 }
 
 void Jet_Finder::BoostBack(std::vector<Vec4D> p)
 {
-  for (size_t i=0;i<p.size();i++) m_cms_boost.BoostBack(p[i]);
+  for (size_t i=0;i<p.size();i++) {
+    m_zrot.RotateBack(p[i]);
+    m_cms_boost.BoostBack(p[i]);
+  }
 }
 
 void Jet_Finder::BoostInFrame(Vec4D & p)
 {
   m_cms_boost.Boost(p);
+  m_zrot.Rotate(p);
 }
 
 void Jet_Finder::BoostBack(Vec4D & p)
 {
+  m_zrot.RotateBack(p);
   m_cms_boost.BoostBack(p);
 }
 
 void Jet_Finder::SetDeltaR(double dr) 
 { 
   m_delta_r = dr; 
-//   rpa.gen.SetDeltaR(dr);
 }
