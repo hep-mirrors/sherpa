@@ -41,6 +41,67 @@
 #include "My_Root.H"
 #include "TH2D.h"
 static ATOOLS::Info_Key m_isrzkey[2], m_isrkpkey[2];
+class PS_Histogram: public TH2D {
+private:
+  TH2D *p_ps;
+public:
+  // constructor
+  PS_Histogram(const char *name,const char *title,
+	       const size_t nbinsx,const double xmin,const double xmax,
+	       const size_t nbinsy,const double ymin,const double ymax):
+    TH2D(name,title,nbinsx,xmin,xmax,nbinsy,ymin,ymax),
+    p_ps(new TH2D((std::string(name)+"_ps").c_str(),
+		  (std::string(title)+"_ps").c_str(),
+		  nbinsx,xmin,xmax,nbinsy,ymin,ymax)) {}
+  // destructor
+  ~PS_Histogram() {}
+  // member functions
+  Int_t Fill(const Double_t x,const Double_t y,
+	     const Double_t weight)
+  {
+    p_ps->Fill(x,y,1.0);
+    return TH2D::Fill(x,y,weight);
+  }
+  void Draw(Option_t *option="")
+  {
+    for (Int_t i=0;i<GetNbinsX();++i)
+      for (Int_t j=0;j<GetNbinsY();++j)
+	SetBinContent(i,j,p_ps->GetBinContent(i,j)==0.0?0.0:
+		      GetBinContent(i,j)/
+		      p_ps->GetBinContent(i,j));
+#ifdef USING__Distinct_Canvas
+    TH2D::Draw(option);
+    Int_t logx=gPad->GetLogx();
+    Int_t logy=gPad->GetLogy();
+    Int_t logz=gPad->GetLogz();
+    TCanvas *psc = new TCanvas(p_ps->GetName(),
+			       p_ps->GetTitle());
+    psc->SetLogx(logx);
+    psc->SetLogy(logy);
+    psc->SetLogz(logz);
+    p_ps->Draw(option);
+#else
+    TVirtualPad *psc=gPad;
+    Int_t logx=psc->GetLogx();
+    Int_t logy=psc->GetLogy();
+    Int_t logz=psc->GetLogz();
+    psc->Divide(2,1);
+    psc->cd(1);
+    gPad->SetLogx(logx);
+    gPad->SetLogy(logy);
+    gPad->SetLogz(logz);
+    TH2D::Draw(option);
+    psc->cd(2);
+    gPad->SetLogx(logx);
+    gPad->SetLogy(logy);
+    gPad->SetLogz(logz);
+    p_ps->Draw(option);
+#endif
+  }
+};// end of class PS_Histogram
+typedef std::map<PHASIC::Integrable_Base*,
+		 PS_Histogram*> Analysis_Map;
+static Analysis_Map s_psspy, s_psz, s_pskp;
 #endif
 
 using namespace PHASIC;
@@ -224,7 +285,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   if (!(mode&psm::pi_call) && p_pi!=NULL) {
     p_active=process;
     p_pi->GeneratePoint(mode);
-    return p_pi->GenerateWeight();
+    return p_pi->Value()*p_pi->GenerateWeight();
   }
   p_info->ResetAll();
   if (m_nin>1) {
@@ -262,19 +323,6 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 	}
       }
     }
-#ifdef ANALYSE__Phase_Space_Handler
-    TH2D* spyps=((TH2D*)(*MYROOT::myroot)["Sprime_Y_PS"]);
-    if (spyps!=NULL) spyps->
-      Fill(log(m_isrspkey[3]/m_isrspkey[2])/log(10.),m_isrykey[2],1.0);
-    TH2D* z1z2ps=((TH2D*)(*MYROOT::myroot)["Z1_Z2_PS"]);
-    if (z1z2ps!=NULL) z1z2ps->
-      Fill(log(m_isrzkey[0][2]*m_isrzkey[1][2])/log(10.),
-	   log(m_isrzkey[0][2]/m_isrzkey[1][2])/log(10.),1.0);
-    TH2D* kperpps=((TH2D*)(*MYROOT::myroot)["KPerp_PS"]);
-    if (kperpps!=NULL) kperpps->
-      Fill(log(m_isrkpkey[0][3]/m_isrkpkey[0][2])/log(10.0),
-	   log(m_isrkpkey[1][3]/m_isrkpkey[1][2])/log(10.0),1.0);
-#endif
     if (!p_isrhandler->MakeISR(p_lab,m_nvec,
 			       p_process->Selected()->Flavours(),m_nin+m_nout)) {
       if (p_beamchannels) p_beamchannels->NoDice();    
@@ -354,20 +402,49 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     m_psweight*=m_flux=p_isrhandler->Flux();
   }
 #ifdef ANALYSE__Phase_Space_Handler
-  TH2D* spyme=((TH2D*)(*MYROOT::myroot)["Sprime_Y_ME"]);
-  if (spyme!=NULL) spyme->
-    Fill(log(m_isrspkey[3]/m_isrspkey[2])/log(10.),m_isrykey[2],
-	 m_flux*(m_result_1+m_result_2));
-  TH2D* z1z2ps=((TH2D*)(*MYROOT::myroot)["Z1_Z2_ME"]);
-  if (z1z2ps!=NULL) z1z2ps->
-    Fill(log(m_isrzkey[0][2]*m_isrzkey[1][2])/log(10.),
-	 log(m_isrzkey[0][2]/m_isrzkey[1][2])/log(10.),
-	 m_flux*(m_result_1+m_result_2));
-  TH2D* kperpps=((TH2D*)(*MYROOT::myroot)["KPerp_ME"]);
-  if (kperpps!=NULL) kperpps->
-    Fill(log(m_isrkpkey[0][3]/m_isrkpkey[0][2])/log(10.0),
-	 log(m_isrkpkey[1][3]/m_isrkpkey[1][2])/log(10.0),
-	 m_flux*(m_result_1+m_result_2));
+  Analysis_Map::const_iterator ait=s_psspy.find(process);
+  if (ait==s_psspy.end()) {
+    const char *name=(process->Name()+"_sprime_y").c_str();
+    PS_Histogram *psh = 
+      new PS_Histogram(name,name,100,-10.0,0.0,100,-10.0,10.0);
+    ait=s_psspy.insert(std::pair<Integrable_Base*,
+		       PS_Histogram*>(process,psh)).first;
+    MYROOT::myroot->AddObject(psh,name);
+    MYROOT::myroot->SetDrawOption("lego2");
+  }
+  ait->second->Fill(log(m_isrspkey[3]/m_isrspkey[2])/log(10.),
+		    m_isrykey[2],m_psweight==0.0?0.0:
+		    m_flux*(m_result_1+m_result_2)/m_psweight);
+  if (p_isrhandler->KMROn()>0) {
+    Analysis_Map::const_iterator ait=s_psz.find(process);
+    if (ait==s_psz.end()) {
+      const char *name=(process->Name()+"_z1_z2").c_str();
+      PS_Histogram *psh = 
+	new PS_Histogram(name,name,100,-10.0,0.0,100,-10.0,10.0);
+      ait=s_psz.insert(std::pair<Integrable_Base*,
+		       PS_Histogram*>(process,psh)).first;
+      MYROOT::myroot->AddObject(psh,name);
+      MYROOT::myroot->SetDrawOption("lego2");
+    }
+    ait->second->Fill(log10(m_isrzkey[0][2]*m_isrzkey[1][2]),
+	  	      log10(m_isrzkey[0][2]/m_isrzkey[1][2]),
+		      m_psweight==0.0?0.0:
+		      m_flux*(m_result_1+m_result_2)/m_psweight);
+    ait=s_pskp.find(process);
+    if (ait==s_pskp.end()) {
+      const char *name=(process->Name()+"_kp1_kp2").c_str();
+      PS_Histogram *psh = 
+	new PS_Histogram(name,name,100,-10.0,0.0,100,-10.0,10.0);
+      ait=s_pskp.insert(std::pair<Integrable_Base*,
+			PS_Histogram*>(process,psh)).first;
+      MYROOT::myroot->AddObject(psh,name);
+      MYROOT::myroot->SetDrawOption("lego2");
+    }
+    ait->second->Fill(log10(m_isrkpkey[0][3]/m_isrkpkey[0][2]),
+		      log10(m_isrkpkey[1][3]/m_isrkpkey[1][2]),
+		      m_psweight==0.0?0.0:
+		      m_flux*(m_result_1+m_result_2)/m_psweight);
+  }
 #endif
   return m_flux*(m_result_1+m_result_2);
 }

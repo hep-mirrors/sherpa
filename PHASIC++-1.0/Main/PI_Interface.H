@@ -18,7 +18,7 @@ namespace PHASIC {
     psm::code   m_mode, m_cmode;
 
     std::vector<double> m_point;
-    double              m_integral;
+    double              m_integral, m_value;
 
     size_t m_nopt, m_nmax, m_ncells;
 
@@ -48,6 +48,9 @@ namespace PHASIC {
 
     inline void SetMode(const psm::code mode) { m_mode=mode;   }
     inline psm::code Mode() const             { return m_mode; }
+
+    inline double Integral() const { return m_integral; }
+    inline double Value() const    { return m_value;    }
 
     inline ATOOLS::Primitive_Integrator *operator->() const 
     { return p_integrator; }

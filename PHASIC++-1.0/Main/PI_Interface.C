@@ -8,7 +8,7 @@ PI_Interface::PI_Interface(Phase_Space_Handler *const pshandler,
 			   const std::string &key,const size_t dim):
   p_integrator(new ATOOLS::Primitive_Integrator()), p_pshandler(pshandler), 
   m_key(key), m_initialize(false), m_point(dim), m_integral(0.0),
-  m_nopt(dim*200), m_nmax(dim*100000), m_ncells(dim*100)
+  m_nopt(dim*200), m_nmax(dim*100000), m_ncells(dim*1000)
 {
   p_integrator->SetDimension(dim);
   p_integrator->SetFunction(this);
@@ -25,7 +25,7 @@ bool PI_Interface::Initialize()
 {
   p_integrator->SetError(p_pshandler->Error());
   p_integrator->SetMode(0);
-  p_integrator->SetShuffleMode(0);
+  p_integrator->SetShuffleMode(1);
   p_integrator->SetNOpt(m_nopt);
   p_integrator->SetNMax(m_nmax);
   p_integrator->SetNCells(m_ncells);
@@ -44,16 +44,16 @@ void PI_Interface::GeneratePoint(const psm::code &mode)
 
 double PI_Interface::GenerateWeight()
 {
-  return m_integral*p_integrator->Weight(m_point);
+  return p_integrator->Weight(m_point);
 }
 
 double PI_Interface::operator()(const std::vector<double> &x) const
 {
   PI_Interface *cur=(PI_Interface*)this;
   cur->m_point=x;
-  double value=p_pshandler->
+  cur->m_value=p_pshandler->
     Differential(p_pshandler->Active(),m_cmode|psm::pi_call);
-  return value;
+  return cur->m_value;
 }
 
 bool PI_Interface::WriteOut(const std::string &path) const
