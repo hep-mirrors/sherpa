@@ -2,10 +2,11 @@
 #include "Shower_Observables.H"
 #include "One_Particle_Observables.H"
 #include "Two_Particle_Observables.H"
+#include "Four_Particle_Observables.H"
 #include "MyStrStream.H"
 #include "Run_Parameter.H"
 #include "Message.H"
-
+#include <vector>
 
 
 using namespace SHERPA;
@@ -23,11 +24,17 @@ Analysis_Phase::Analysis_Phase(std::string _btype) :
   m_type        = string("Perturbative");
   m_status      = 0;
   p_analysis    = new Primitive_Analysis(m_btype);
-  Flavour flav1 = Flavour(kf::nue), flav2 = flav1.Bar();
-  p_analysis->AddObservable(new One_Particle_PT(flav1,00,0.,200.,100));
-  p_analysis->AddObservable(new One_Particle_Eta(flav1,00,-3.,3.,30));
-  p_analysis->AddObservable(new Two_Particle_Mass(flav1,flav2,00,0.,200.,100));
-  p_analysis->AddObservable(new Two_Particle_PT(flav1,flav2,00,0.,200.,100));
+  Flavour flav1 = Flavour(kf::u), flav2 = Flavour(kf::d).Bar(),
+    flav3 = Flavour(kf::u).Bar(), flav4 = Flavour(kf::d);
+  std::vector<Flavour> flavs;
+  flavs.push_back(flav1);
+  flavs.push_back(flav2);
+  flavs.push_back(flav3);
+  flavs.push_back(flav4);
+  p_analysis->AddObservable(new Two_Particle_Mass(flav1,flav2,00,0.,200.,100,"Mass"));
+  p_analysis->AddObservable(new Two_Particle_PT(flav1,flav2,00,0.,200.,100,"PT"));
+  p_analysis->AddObservable(new Two_Particle_Mass(flav3,flav4,00,0.,200.,100,"Mass"));
+  p_analysis->AddObservable(new Four_Particle_PlaneAngle(flavs,00,-1.,1.,100,"PlaneAngle"));
   p_analysis->SetBlobType(_btype);
 }
 
@@ -57,6 +64,5 @@ void  Analysis_Phase::CleanUp()
 
 void Analysis_Phase::Finish(std::string _dirname)
 {
-  std::cout<<"In Analysis_Phase::Finish : "<<_dirname<<std::endl;
   p_analysis->FinishAnalysis(_dirname);
 }
