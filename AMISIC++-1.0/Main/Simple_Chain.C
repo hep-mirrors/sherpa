@@ -1,11 +1,12 @@
 #include "Simple_Chain.H"
 
+#include "Phase_Space_Handler.H"
 #include "Single_XS.H"
 #include "XS_Selector.H"
 #include "Channel_Elements.H"
 #include "Particle.H"
 #include "Random.H"
-#ifdef USING__SHERPA
+#ifdef USING__Sherpa
 #include "Matrix_Element_Handler.H"
 #endif
 #include <sys/stat.h>
@@ -85,7 +86,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 Simple_Chain::~Simple_Chain()
 {
   CleanUp();
-#ifdef USING__SHERPA
+#ifdef USING__Sherpa
   delete p_mehandler;
 #endif
 }
@@ -93,7 +94,7 @@ Simple_Chain::~Simple_Chain()
 void Simple_Chain::CleanUp() 
 {
   if (p_fsrinterface!=NULL) delete p_fsrinterface;
-#ifndef USING__SHERPA
+#ifndef USING__Sherpa
   if (p_processes!=NULL) delete p_processes;
 #endif
   if (!m_external) {
@@ -587,7 +588,7 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->CreateFSRChannels();
     group[i]->InitIntegrators();
   }
-#ifdef USING__SHERPA
+#ifdef USING__Sherpa
   p_mehandler = new SHERPA::Matrix_Element_Handler();
   p_mehandler->SetXS(p_processes);
 #endif
@@ -796,6 +797,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #ifdef DEBUG__Simple_Chain
 //     std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
 #endif
+    p_processes->Selected()->PSHandler(false)->CreateIntegrators();
+    p_processes->Selected()->PSHandler(false)->InitIncoming();
     if ((*p_processes)[m_selected]->OneEvent()) {
 #ifdef DEBUG__Simple_Chain
 //       std::cout<<"   Completed one event."<<std::endl;
@@ -867,7 +870,7 @@ bool Simple_Chain::DiceProcess()
   for (int i=sorter.XDataSize()-1;i>=0;--i) {
     if ((cur+=sorter.XData(i)/norm)>rannr) {
       m_selected=sorter.XYData(i).second;
-#ifdef USING__SHERPA
+#ifdef USING__Sherpa
       p_processes->SetSelected((*p_processes)[m_selected]);
 #endif
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {

@@ -32,7 +32,7 @@ namespace AMISIC {
     return true;
   }
 
-#ifdef USING__SHERPA
+#ifdef USING__Sherpa
   inline SHERPA::Matrix_Element_Handler *MI_Base::MEHandler()
   { return p_mehandler; }
 #endif
