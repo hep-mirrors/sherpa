@@ -60,6 +60,7 @@ void Amplitude_Manipulator::GetPerm(int* perm,Single_Amplitude* f,int& sign)
 
   do {
     pnext = FindNext(p);
+    
     if (pnext) {
       Point* pb;
       Point* pe;
@@ -181,13 +182,14 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
     return;
   }
 
-  cerr<<"Error in Amplitude_Manipulator::GetFermionLine()"<<endl;
+  msg.Error()<<"Error in Amplitude_Manipulator::GetFermionLine()"<<endl;
   return;
 }
 
 Point* Amplitude_Manipulator::ForwardLine(Point* p)
 {
   p->m = 1;
+  
   if (p->left==0) return p;
   
   if (p->left->fl.IsFermion())  return ForwardLine(p->left);
@@ -198,13 +200,14 @@ Point* Amplitude_Manipulator::ForwardLine(Point* p)
 
   if (p->right->fl.IsFermion()) return ForwardLine(p->right);
 
-  cerr<<"Dead fermion line!!!"<<endl;
+  msg.Error()<<"Dead fermion line in Amplitude_Manipulator::ForwardLine !!!"<<endl;
   return 0;
 }
 
 Point* Amplitude_Manipulator::BackwardLine(Point* p)
 {  
   p->m = 1;
+
   if (p->prev==0) return p;  
 
   if (p->prev->fl.IsFermion()) return BackwardLine(p->prev);
@@ -221,7 +224,7 @@ Point* Amplitude_Manipulator::BackwardLine(Point* p)
     return ForwardLine(p->prev->middle);
   }
 
-  cerr<<"Dead fermion line!!!"<<endl;
+  msg.Error()<<"Dead fermion line in Amplitude_Manipulator::BackwardLine !!!"<<endl;
   return 0;
 }
 
@@ -236,6 +239,7 @@ int Amplitude_Manipulator::SetPropOrientation(Point* pb,Point* pe)
 
 void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
 {
+
   if (p->prev==0) {
     if (b[p->number]==-1) {
       // ----<---O Orientation
@@ -321,6 +325,7 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
 
 void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
 {  
+  
   if (p->left==0) {  
     if (b[p->number]==-1) {
       // ----<---O Orientation
@@ -392,10 +397,20 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
     }
   }
 
-  if (p->prev->fl.IsFermion()) { BackwardLineOrientation(p->prev,sign);        return; }
-  if (p->prev->left==p)        { ForwardLineOrientation(p->prev->right,sign);  return; }
-  if (p->prev->middle==p)      { ForwardLineOrientation(p->prev->middle,sign); return; }
-  if (p->prev->right==p)       { ForwardLineOrientation(p->prev->left,sign);   return; }
+
+  if (p->prev->fl.IsFermion()) { BackwardLineOrientation(p->prev,sign); return; }
+  if (p->prev->left==p){
+    if (p->prev->right->fl.IsFermion()) { ForwardLineOrientation(p->prev->right,sign); return; }
+    ForwardLineOrientation(p->prev->middle,sign); return;
+  }
+  if (p->prev->middle==p){
+    if(p->prev->right->fl.IsFermion()) { ForwardLineOrientation(p->prev->right,sign); return;}
+    ForwardLineOrientation(p->prev->left,sign); return;
+  }
+  if (p->prev->right==p){
+    if (p->prev->left->fl.IsFermion()) { ForwardLineOrientation(p->prev->left,sign); return; }
+    ForwardLineOrientation(p->prev->middle,sign); return;
+  }
 
   msg.Error()<<"Error in Amplitude_Manipulator::BackwardLineOrientation : Dead fermion line!!!"<<endl;
 }
@@ -489,7 +504,7 @@ void Amplitude_Manipulator::SetForwardFNFlow(Point* p,int majoflag)
   }
   if (p->right->fl.IsFermion())    { SetForwardFNFlow(p->right,majoflag);  return; }
 
-  cerr<<"Dead fermion line!!!"<<endl;
+  msg.Error()<<"Dead fermion line in Amplitude_Manipulator::SetForwardFNFlow !!!"<<endl;
 }
 
 void Amplitude_Manipulator::SetBackwardFNFlow(Point* p,int majoflag)
@@ -500,12 +515,27 @@ void Amplitude_Manipulator::SetBackwardFNFlow(Point* p,int majoflag)
   if (majoflag==-1) p->m = 1;
   else p->m = -1;
 
+  /*
   if (p->prev->fl.IsFermion()) { SetBackwardFNFlow(p->prev,majoflag);        return; }
   if (p->prev->left==p)        { SetForwardFNFlow(p->prev->right,majoflag);  return; }
   if (p->prev->middle==p)      { SetForwardFNFlow(p->prev->middle,majoflag); return; }
   if (p->prev->right==p)       { SetForwardFNFlow(p->prev->left,majoflag);   return; }
+  */
 
-  cerr<<"Dead fermion line!!!"<<endl;
+  if (p->prev->fl.IsFermion()) { SetBackwardFNFlow(p->prev,majoflag); return; }
+  if (p->prev->left==p){
+    if (p->prev->right->fl.IsFermion()) { SetForwardFNFlow(p->prev->right,majoflag); return; }
+    SetForwardFNFlow(p->prev->middle,majoflag); return;
+  }
+  if (p->prev->middle==p){
+    if(p->prev->right->fl.IsFermion()) { SetForwardFNFlow(p->prev->right,majoflag); return;}
+    SetForwardFNFlow(p->prev->left,majoflag); return;
+  }
+  if (p->prev->right==p){
+    if (p->prev->left->fl.IsFermion()) { SetForwardFNFlow(p->prev->left,majoflag); return; }
+    SetForwardFNFlow(p->prev->middle,majoflag); return;
+  }
+  msg.Error()<<"Dead fermion line in Amplitude_Manipulator::SetBackwardFNFlow !!!"<<endl;
 }
 
 
