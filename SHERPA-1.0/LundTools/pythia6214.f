@@ -52103,13 +52103,14 @@ C...Write first few errors, then be silent or stop program.
         IF(MSTU(21).GE.2.AND.MSTU(23).GT.MSTU(22)) THEN
           WRITE(MSTU(11),5100) MERR-10,MSTU(31),CHMESS
           WRITE(MSTU(11),5200)
-          IF(MERR.NE.17) CALL PYLIST(2)
+          CALL PYLIST(2)
           CALL SHERRM(MERR)
         ENDIF
  
 C...Stop program in case of irreparable error.
       ELSE
         WRITE(MSTU(11),5300) MERR-20,MSTU(31),CHMESS
+        CALL PYLIST(2)
         CALL SHERRM(MERR)
       ENDIF
  
