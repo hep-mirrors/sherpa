@@ -36,7 +36,7 @@ void Analysis_Handler::Clean()
 
 String_Matrix
 Analysis_Handler::FindArguments(const String_Matrix &strings,
-				const size_t starty,const size_t startx)
+				size_t &starty,size_t &startx)
 {
   size_t j=0, open=0;
   String_Matrix result;
@@ -57,7 +57,6 @@ Analysis_Handler::FindArguments(const String_Matrix &strings,
 	    --k;
 	    result.back().pop_back();
 	    if (result.back().size()==0) result.pop_back();
-	    // result.back().resize(result.back().size()-1);
 	    continue;
 	  }
 	}
@@ -68,7 +67,8 @@ Analysis_Handler::FindArguments(const String_Matrix &strings,
 	if (open==0) {
 	  result.back()[k]=result.back()[k].substr(0,cpos);
 	  result.back().resize(k+1);
-	  if (k==0 && result.back()[0].length()==0) result.resize(result.size()-1);
+	  if (k==0 && result.back()[0].length()==0) 
+	    result.resize(result.size()-1);
 	  return result;
 	}
       }
@@ -125,10 +125,12 @@ bool Analysis_Handler::ReadIn()
     for (size_t j=0;j<helpsv.size();++j) {
       if (split) mode=mode|ANALYSIS::splitt_phase;
       else split=true;
-      if (helpsv[j]=="ME") mode=mode|ANALYSIS::do_me;
-      else if (helpsv[j]=="MI") mode=mode|ANALYSIS::do_mi;
-      else if (helpsv[j]=="Shower") mode=mode|ANALYSIS::do_shower;
-      else if (helpsv[j]=="Hadron") mode=mode|ANALYSIS::do_hadron;
+      if (helpsv[j].find("ME")!=std::string::npos) mode=mode|ANALYSIS::do_me;
+      else if (helpsv[j].find("MI")!=std::string::npos) mode=mode|ANALYSIS::do_mi;
+      else if (helpsv[j].find("Shower")!=std::string::npos) 
+	mode=mode|ANALYSIS::do_shower;
+      else if (helpsv[j].find("Hadron")!=std::string::npos) 
+	mode=mode|ANALYSIS::do_hadron;
       else {
 	ATOOLS::msg.Error()<<"Analysis_Handler::ReadIn(): "
 			   <<"Invalid analysis mode '"<<helpsv[j]
@@ -143,31 +145,21 @@ bool Analysis_Handler::ReadIn()
       if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
       m_analyses.back()->SetOutputPath(outpath);
       reader.MatrixFromFile(helpsvv,"");
-      // !? why is there 4 times the comandline parameter in "helpsvv" ?
-      //      std::cout<<"TOTAL size "<<helpsvv.size()<<std::endl;
+      String_Matrix arguments(helpsvv);
       for (size_t k=0;k<helpsvv.size();++k) {
-	if (helpsvv[k].size()>0) {
-	  //	  std::cout<<k<<" #"<<helpsvv[k][0]<<"#"<<std::endl;
-	  if (helpsvv[k][0]=="{" || helpsvv[k][0]=="}") continue;
+	if (arguments[k].size()>0) {
+	  if (arguments[k][0]=="{" || arguments[k][0]=="}") continue;
 	}
-	String_Matrix mat=FindArguments(helpsvv,k,1);
-	/*
-	for (size_t m=0; m<mat.size();++m) {
-	  for (size_t n=0; n<mat[m].size();++n) {
-	    std::cout<<"#"<<mat[m][n]<<"#";
-	  }
-	  std::cout<<std::endl;
-	}
-	*/
+	size_t col=1;
+	String_Matrix mat=FindArguments(arguments,k,col);
 	ANALYSIS::Primitive_Observable_Base *observable = 
-	  Getter_Function::GetObject(helpsvv[k][0],mat,m_analyses.back());
+	  Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
 	if (observable!=NULL) {
-	  k+=mat.size()-1;
 	  m_analyses.back()->AddObservable(observable);
-	  if (helpsvv[k][0]=="Trigger") trigger=true;
+	  if (arguments[k][0]=="Trigger") trigger=true;
 	  if (ATOOLS::msg.LevelIsTracking()) {
 	    ATOOLS::msg.Out()<<"      new Primitive_Observable_Base(\""
-			     <<helpsvv[k][0]<<"\",";
+			     <<arguments[k][0]<<"\",";
 	    for (size_t i=0;i<mat.size();++i) {
 	      ATOOLS::msg.Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
 	      for (size_t j=1;j<mat[i].size();++j) 
@@ -180,7 +172,7 @@ bool Analysis_Handler::ReadIn()
       }
       if (!trigger) {
 	ANALYSIS::Primitive_Observable_Base *observable = 
-	  Getter_Function::GetObject("Trigger",String_Matrix(),m_analyses.back());
+	  Getter_Function::GetObject("Trigger",String_Matrix()(m_analyses.back()));
 	m_analyses.back()->AddObservable(observable);
       }
       msg_Tracking()<<"   }\n";

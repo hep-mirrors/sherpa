@@ -9,7 +9,7 @@ using namespace ANALYSIS;
 #include <iomanip>
 
 DECLARE_GETTER(Primitive_Detector_Getter,"Detector",
-	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
+	       Primitive_Observable_Base,String_Matrix);
 
 void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -22,8 +22,7 @@ void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) 
 }
 
 Primitive_Observable_Base *const 
-Primitive_Detector_Getter::operator()(const String_Matrix &parameters,
-				      Primitive_Analysis *const analysis) const
+Primitive_Detector_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="Detected";
   for (size_t i=0;i<parameters.size();++i) {
@@ -41,7 +40,7 @@ Primitive_Detector_Getter::operator()(const String_Matrix &parameters,
 					      ATOOLS::ToType<int>(cur[4])));
     }
     else if (cur[0]=="CalCone" && cur.size()>4) {
-      detector->SetAnalysis(analysis);
+      detector->SetAnalysis(parameters());
       detector->AddSelector(ATOOLS::ToType<double>(cur[1]),
 			    ATOOLS::ToType<double>(cur[2]),
 			    ATOOLS::ToType<double>(cur[3]),

@@ -7,7 +7,7 @@ using namespace ANALYSIS;
 
 #include "MyStrStream.H"
 
-template <class Class,class Getter>
+template <class Class>
 Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 {									
   if (parameters.size()<1) return NULL;
@@ -41,20 +41,19 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   return new Class((scale=="Log")*10,min,max,bins,mode,nmin,nmax,list);
 }									
 
-#define DEFINE_GETTER_METHOD(CLASS,NAME,TAG)				\
+#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *const					\
-  NAME::operator()(const String_Matrix &parameters,                     \
-		   Primitive_Analysis *const analysis) const		\
-  { return GetObservable<CLASS,NAME>(parameters); }
+  NAME::operator()(const String_Matrix &parameters) const		\
+  { return GetObservable<CLASS>(parameters); }
 
-#define DEFINE_PRINT_METHOD(CLASS,NAME)					\
+#define DEFINE_PRINT_METHOD(NAME)					\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
   { str<<"min max bins mode nmin nmax Lin|Log [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix,Primitive_Analysis);	\
-  DEFINE_GETTER_METHOD(CLASS,NAME,TAG);					\
-  DEFINE_PRINT_METHOD(CLASS,NAME)
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_PRINT_METHOD(NAME)
 
 using namespace ATOOLS;
 
@@ -352,9 +351,9 @@ Primitive_Observable_Base * Jet_E_Distribution::Copy() const
 }
 
 DECLARE_GETTER(Jet_Differential_Rates_Getter,"JetDRate",
-	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);	
+	       Primitive_Observable_Base,String_Matrix);	
 
-DEFINE_GETTER_METHOD(Jet_Differential_Rates,Jet_Differential_Rates_Getter,"JetDRate");					
+DEFINE_GETTER_METHOD(Jet_Differential_Rates,Jet_Differential_Rates_Getter);
 
 void Jet_Differential_Rates_Getter::PrintInfo(std::ostream &str,const size_t width) const	
 { 

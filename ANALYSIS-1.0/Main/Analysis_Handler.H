@@ -45,7 +45,7 @@ namespace ANALYSIS {
     static void ShowSyntax(const size_t i);
 
     static String_Matrix FindArguments(const String_Matrix &strings,
-				       const size_t starty,const size_t startx);
+				       size_t &starty,size_t &startx);
 
   };// end of class Analysis_Handler   
 

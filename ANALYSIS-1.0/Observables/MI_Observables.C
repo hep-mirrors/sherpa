@@ -35,8 +35,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
   Primitive_Observable_Base *const					\
-  NAME::operator()(const String_Matrix &parameters,                     \
-		   Primitive_Analysis *const analysis) const		\
+  NAME::operator()(const String_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
 #define DEFINE_PRINT_METHOD(NAME)					\
@@ -44,16 +43,15 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   { str<<"min max bins Lin|Log [jetlist] [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
-  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix,Primitive_Analysis);	\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME);					\
   DEFINE_PRINT_METHOD(NAME)
 
 DECLARE_GETTER(MI_Statistics_Getter,"MIStats",
-	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
+	       Primitive_Observable_Base,String_Matrix);
 
 Primitive_Observable_Base *const 
-MI_Statistics_Getter::operator()(const String_Matrix &parameters,
-				 Primitive_Analysis *const analysis) const
+MI_Statistics_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string listname="Analysed";
   if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
@@ -68,11 +66,10 @@ void MI_Statistics_Getter::PrintInfo(std::ostream &str,const size_t width) const
 #include <iomanip>
 
 DECLARE_GETTER(Transverse_Region_Selector_Getter,"TransReg",
-	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
+	       Primitive_Observable_Base,String_Matrix);
 
 Primitive_Observable_Base *const 
-Transverse_Region_Selector_Getter::operator()(const String_Matrix &parameters,
-					      Primitive_Analysis *const analysis) const
+Transverse_Region_Selector_Getter::operator()(const String_Matrix &parameters) const
 {									
   if (parameters.size()<5) return NULL;
   double min=60.0, max=120.0;
@@ -100,12 +97,11 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+4)<<" "<<"}"; 
 }
 
-DECLARE_GETTER(Leading_PT_Selector_Getter,"LeadJetPT",
-	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
+DECLARE_GETTER(Leading_PT_Selector_Getter,"JetPTSel",
+	       Primitive_Observable_Base,String_Matrix);
 
 Primitive_Observable_Base *const 
-Leading_PT_Selector_Getter::operator()(const String_Matrix &parameters,
-				       Primitive_Analysis *const analysis) const
+Leading_PT_Selector_Getter::operator()(const String_Matrix &parameters) const
 {									
   if (parameters.size()<5) return NULL;
   double min=30.0, max=70.0;
@@ -134,12 +130,11 @@ PrintInfo(std::ostream &str,const size_t width) const
      <<std::setw(width+4)<<" "<<"}"; 
 }
 
-DECLARE_GETTER(Leading_ET_Selector_Getter,"LeadJetET",
-	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
+DECLARE_GETTER(Leading_ET_Selector_Getter,"JetETSel",
+	       Primitive_Observable_Base,String_Matrix);
 
 Primitive_Observable_Base *const 
-Leading_ET_Selector_Getter::operator()(const String_Matrix &parameters,
-				       Primitive_Analysis *const analysis) const
+Leading_ET_Selector_Getter::operator()(const String_Matrix &parameters) const
 {									
   if (parameters.size()<5) return NULL;
   double min=30.0, max=70.0;
@@ -290,14 +285,14 @@ void Leading_PT_Selector::EndEvaluation(double scale)
 }
 
 Leading_ET_Selector::
-Leading_ET_Selector(const size_t item,const double ptmin,const double ptmax,
+Leading_ET_Selector(const size_t item,const double etmin,const double etmax,
 		    const std::string &inlist,const std::string &outlist):
-  m_outlist(outlist!=""?outlist:ATOOLS::ToString(ptmin)+"<Leading_ET<"+
-	    ATOOLS::ToString(ptmax)+inlist),
+  m_outlist(outlist!=""?outlist:ATOOLS::ToString(etmin)+"<Leading_ET<"+
+	    ATOOLS::ToString(etmax)+inlist),
   m_item(item)
 {
-  m_xmin=ptmin;
-  m_xmax=ptmax;
+  m_xmin=etmin;
+  m_xmax=etmax;
   m_listname=inlist;
 }
 
@@ -307,8 +302,8 @@ void Leading_ET_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
   ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
   p_ana->AddParticleList(m_outlist,outlist);
   if (particlelist.size()<=m_item) return;
-  double pt=particlelist[m_item]->Momentum().PPerp();
-  if (pt<m_xmin || pt>m_xmax) return;
+  double et=particlelist[m_item]->Momentum().EPerp();
+  if (et<m_xmin || et>m_xmax) return;
   outlist->resize(particlelist.size());
   for (size_t i=0;i<particlelist.size();++i) 
     (*outlist)[i] = new ATOOLS::Particle(*particlelist[i]);
@@ -345,7 +340,7 @@ void Transverse_Region_Selector::Evaluate(const ATOOLS::Particle_List &particlel
   m_leadingjet=(*jetlist)[0]->Momentum();
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    double phi=(*pit)->Momentum().DPhi(m_leadingjet);
+    double phi=(*pit)->Momentum().DPhi(m_leadingjet)/M_PI*180.;
     if (phi>m_xmin && phi<m_xmax) outlist->push_back(new ATOOLS::Particle(**pit));
   }
 }

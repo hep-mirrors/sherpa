@@ -23,7 +23,7 @@ Particle_Qualifier_Base *const GetQualifier(const std::string &parameter)
   { str<<PRINT; }
 
 #define DEFINE_QUALIFIER_GETTER(CLASS,NAME,TAG,PRINT)			\
-  DECLARE_PRIMITIVE_GETTER(NAME,TAG,Particle_Qualifier_Base,std::string);		\
+  DECLARE_GETTER(NAME,TAG,Particle_Qualifier_Base,std::string);		\
   DEFINE_GETTER_METHOD(CLASS,NAME);					\
   DEFINE_PRINT_METHOD(NAME,PRINT)
 

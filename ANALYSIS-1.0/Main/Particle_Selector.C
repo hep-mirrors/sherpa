@@ -7,7 +7,7 @@
 using namespace ANALYSIS;
 
 DECLARE_GETTER(Particle_Selector_Getter,"PartSel",
- 	       Primitive_Observable_Base,String_Matrix,Primitive_Analysis);
+ 	       Primitive_Observable_Base,String_Matrix);
 
 void Particle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
 {
@@ -19,8 +19,7 @@ void Particle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) c
 }
 
 Primitive_Observable_Base *const 
-Particle_Selector_Getter::operator()(const String_Matrix &parameters,
-				     Primitive_Analysis *const analysis) const
+Particle_Selector_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="Selected";
   ATOOLS::Particle_Qualifier_Base *qualifier=NULL;

@@ -12,7 +12,7 @@ namespace ATOOLS {
     static void ShowQualifiers(const int mode);
   };
 
-  typedef Primitive_Getter_Function<Particle_Qualifier_Base,std::string> 
+  typedef Getter_Function<Particle_Qualifier_Base,std::string> 
   Particle_Qualifier_Getter;
   
   class Is_Photon : public Particle_Qualifier_Base {

@@ -14,13 +14,30 @@ namespace ANALYSIS {
 
   class Primitive_Analysis;
   
-  typedef std::vector<std::vector<std::string> > String_Matrix;
+  class String_Matrix: public std::vector<std::vector<std::string> > {
+  private:
+
+    Primitive_Analysis *p_analysis;
+
+  public:
+
+    // constructor
+    inline String_Matrix() {}
+    inline String_Matrix(const std::vector<std::vector<std::string> > &ref):
+      std::vector<std::vector<std::string> >(ref) {}
+
+    // member functions
+    inline Primitive_Analysis *const operator()() const { return p_analysis; }
+    inline const String_Matrix &operator()(Primitive_Analysis *const analysis) 
+    { p_analysis=analysis; return *this; }
+    
+  };// end of class String_Matrix
 
   class Primitive_Observable_Base {  
   public:
 
-    typedef ATOOLS::Getter_Function<Primitive_Observable_Base,
-				    String_Matrix,Primitive_Analysis> Getter_Function;
+    typedef ATOOLS::Getter_Function<Primitive_Observable_Base,String_Matrix> 
+    Getter_Function;
 
   protected:
 
