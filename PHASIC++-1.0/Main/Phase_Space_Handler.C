@@ -684,8 +684,9 @@ bool Phase_Space_Handler::MakeBeamChannels()
     beam_params.push_back(ci);
     ci.parameters.clear();
   }
-  // Laser Backscattering spectrum
-  if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
+  else {
+    // Laser Backscattering spectrum
+    //if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
     ci.type = 0;
     (ci.parameters).push_back(.5);
     (ci.parameters).push_back(1.);
@@ -745,8 +746,6 @@ bool Phase_Space_Handler::MakeISRChannels()
   double deltay[2];  
   deltay[0] = log(ih->Upper1());
   deltay[1] = log(ih->Upper2());
-
-
 
   if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) {
     // leptons : 1/s'^2 and 1/(s-s')^beta, sharp FW-BW peak
@@ -875,7 +874,7 @@ bool Phase_Space_Handler::CreateBeamChannels()
       beamchannels->Add(channel);
     }
     if ((beam_params[i]).type==3) {
-      if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
+      //if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
 	channel = new LBSComptonPeakCentral(beam_params[i].parameters[0],
 					    beam_params[i].parameters[1],
 					    beam_params[i].parameters[2],
@@ -893,7 +892,7 @@ bool Phase_Space_Handler::CreateBeamChannels()
 					       beam_params[i].parameters[3],
 					       beam_params[i].parameters[4]);
 	  beamchannels->Add(channel);
-      }
+	  // }
     }
   }
   return 1;
