@@ -67,6 +67,7 @@ void Exception_Handler::Terminate()
     return;
   }
   PrepareTerminate();
+  SetExitCode();
   Exit(s_exitcode);
 }
 
