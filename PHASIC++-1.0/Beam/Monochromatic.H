@@ -32,7 +32,7 @@ namespace BEAM {
     This is still to be implemented !
   */
   /*!
-    \fn Monochromatic::Monochromatic(const APHYTOOLS::Flavour,const double,const double,bool &)
+    \fn Monochromatic::Monochromatic(const APHYTOOLS::Flavour,const double,const double,const int)
     This is the constructor of the class. here, apart from setting internal variables,
     also the lab vector is constructed. It reads
     \f[
