@@ -16,6 +16,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &ostr,const ms::error_code code)
   case ms::boost_error_1:   return ostr<<"boost error (1)";
   case ms::boost_error_2:   return ostr<<"boost error (2)";
   case ms::scale_error:     return ostr<<"scale error";
+  case ms::setup_error:     return ostr<<"setup error";
   case ms::no_error:        return ostr<<"no error";
   }
   return ostr;
@@ -33,8 +34,8 @@ double Momentum_Shifter::Lambda2(double sp,double sp1,double sp2)
 { 
   double lambda2=(sp-sp1-sp2)*(sp-sp1-sp2)-4.0*sp1*sp2;
   if (!(lambda2>0.)) {
-    ATOOLS::msg.Error()<<"Momentum_Shifter::Lambda2("<<sp<<","<<sp1<<","<<sp2<<"): "
-		       <<"\\Lambda^2(s,s_1,s_2) < 0."<<std::endl;
+    ATOOLS::msg.Tracking()<<"Momentum_Shifter::Lambda2("<<sp<<","<<sp1<<","<<sp2<<"): "
+			  <<"\\Lambda^2(s,s_1,s_2) < 0."<<std::endl;
   }
   return lambda2;
 }
@@ -55,8 +56,8 @@ bool Momentum_Shifter::DetermineDirection()
   if (m_setshift && !m_setdirection) {
     double abs=Vec3D(m_shift).Abs();
     if (abs==0.0) {
-      msg.Error()<<"Momentum_Shifter::DetermineDirection(): "
-		 <<"Shift has vanishing 3-momentum. Abort."<<std::endl;
+      msg.Tracking()<<"Momentum_Shifter::DetermineDirection(): "
+		    <<"Shift has vanishing 3-momentum. Abort."<<std::endl;
       return false;
     }
     m_direction=Vec4D(0.0,Vec3D(m_shift));
@@ -91,16 +92,16 @@ bool Momentum_Shifter::CalculateSPerp()
     if (!m_setsp[i]) {
       m_sp[i]=(m_pold[i]-m_pperp[i]).Abs2();
       if (m_sp[i]<0.0) {
-	msg.Error()<<"Momentum_Shifter::CalculateSPerp(): "
-		   <<"s_{\\perp "<<i<<"} < 0. Abort."<<std::endl;
+	msg.Tracking()<<"Momentum_Shifter::CalculateSPerp(): "
+		      <<"s_{\\perp "<<i<<"} < 0. Abort."<<std::endl;
 	return false;
       }
     }
   }
   m_sp[0]=(m_pnew[0]-m_pperp[0]).Abs2();
   if (m_sp[0]<0.0) {
-    msg.Error()<<"Momentum_Shifter::CalculateSPerp(): "
-	       <<"s_\\perp < 0. Abort."<<std::endl;
+    msg.Tracking()<<"Momentum_Shifter::CalculateSPerp(): "
+		  <<"s_\\perp < 0. Abort."<<std::endl;
     return false;
   }
   return true;
@@ -110,9 +111,9 @@ bool Momentum_Shifter::ConstructMomenta()
 {
   double E1, E2, plong1, plong2, lambda2=Lambda2(m_sp[0],m_sp[1],m_sp[2]);
   if (lambda2<0.) {
-    ATOOLS::msg.Error()<<"Momentum_Shifter::ConstructBoost(..): "
-		       <<"\\Lambda^2("<<m_sp[0]<<","<<m_sp[1]<<","
-		       <<m_sp[2]<<") < 0. Cannot shift momenta."<<std::endl;
+    ATOOLS::msg.Tracking()<<"Momentum_Shifter::ConstructMomenta(..): "
+			  <<"\\Lambda^2("<<m_sp[0]<<","<<m_sp[1]<<","
+			  <<m_sp[2]<<") < 0. Cannot shift momenta."<<std::endl;
     return false;
   }
   lambda2=sqrt(lambda2);
@@ -152,9 +153,9 @@ bool Momentum_Shifter::Boost(Particle *const particle,const size_t catcher)
 {
   if (m_boosted.find(particle)!=m_boosted.end()) return true;
   if (catcher>=m_maxdepth) {
-    msg.Error()<<"Momentum_Shifter::Boost(..): "
-	       <<"Nesting of event structure is deeper than "<<m_maxdepth
-	       <<" levels.\n   Cannot adjust momenta."<<std::endl;
+    msg.Tracking()<<"Momentum_Shifter::Boost(..): "
+		  <<"Nesting of event structure is deeper than "<<m_maxdepth
+		  <<" levels.\n   Cannot adjust momenta."<<std::endl;
     return false;
   }
   if (particle->DecayBlob()!=NULL) {
@@ -172,13 +173,19 @@ bool Momentum_Shifter::Boost(Particle *const particle,const size_t catcher)
   return true;
 }
 
+bool Momentum_Shifter::Boost(Particle *const particle)
+{
+  if (!m_initboost) return false;
+  return Boost(particle,0);
+}
+
 bool Momentum_Shifter::BoostBack(Particle *const particle,const size_t catcher)
 {
   if (m_boosted.find(particle)!=m_boosted.end()) return true;
   if (catcher>=m_maxdepth) {
-    msg.Error()<<"Momentum_Shifter::Boost(..): "
-	       <<"Nesting of event structure is deeper than "<<m_maxdepth
-	       <<" levels.\n   Cannot adjust momenta."<<std::endl;
+    msg.Tracking()<<"Momentum_Shifter::Boost(..): "
+		  <<"Nesting of event structure is deeper than "<<m_maxdepth
+		  <<" levels.\n   Cannot adjust momenta."<<std::endl;
     return false;
   }
   if (particle->DecayBlob()!=NULL) {
@@ -194,6 +201,12 @@ bool Momentum_Shifter::BoostBack(Particle *const particle,const size_t catcher)
   particle->SetMomentum(p);
   m_boosted.insert(particle);
   return true;
+}
+
+bool Momentum_Shifter::BoostBack(Particle *const particle)
+{
+  if (!m_initboost) return false;
+  return BoostBack(particle,0);
 }
 
 ms::error_code Momentum_Shifter::Boost()
@@ -219,6 +232,20 @@ ms::error_code Momentum_Shifter::Boost()
     BoostBack(p_initial[0],0);
     return ms::boost_error_2;
   }
+  m_initboost=true;
+  return ms::no_error;
+}
+
+ms::error_code Momentum_Shifter::BoostBack()
+{
+  if (!m_initboost) return ms::setup_error;
+  m_boosted.clear();
+  if (!BoostBack(p_initial[0],0)) return ms::boost_error_1;
+  if (!BoostBack(p_initial[1],0)) {
+    m_boosted.clear();
+    Boost(p_initial[0],0);
+    return ms::boost_error_2;
+  }
   return ms::no_error;
 }
 
@@ -230,12 +257,15 @@ ms::error_code Momentum_Shifter::Scale()
   if (!ConstructMomenta()) return ms::momenta_error;
   p_initial[0]->SetMomentum(m_pnew[1]);
   p_initial[1]->SetMomentum(m_pnew[2]);
+  m_initscale=true;
   return ms::no_error;
 }
 
 void Momentum_Shifter::Reset()
 {
   m_maxdepth=100;
+  m_initboost=false;
+  m_initscale=false;
   m_accuracy=rpa.gen.Accu();
   m_setshift=false;
   m_setdirection=false;

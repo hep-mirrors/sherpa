@@ -11,14 +11,15 @@ namespace ATOOLS {
   struct ms {
 
     enum error_code {
-      no_error        =  0,
-      shift_error     =  1,
-      direction_error =  2,
-      sperp_error     =  4,
-      momenta_error   =  8,
-      boost_error_1   = 16,
-      boost_error_2   = 32,
-      scale_error     = 64
+      no_error        =   0,
+      shift_error     =   1,
+      direction_error =   2,
+      sperp_error     =   4,
+      momenta_error   =   8,
+      boost_error_1   =  16,
+      boost_error_2   =  32,
+      scale_error     =  64,
+      setup_error     = 128
     };
 
   };// end of struct ms
@@ -39,6 +40,7 @@ namespace ATOOLS {
     size_t m_maxdepth;
     double m_sp[3], m_accuracy;
     bool   m_setshift, m_setdirection, m_setsp[3];
+    bool   m_initboost, m_initscale;
 
     bool CalculateShift();
     bool DetermineDirection();
@@ -55,8 +57,13 @@ namespace ATOOLS {
 
     // member functions
     double Lambda2(double sp,double sp1,double sp2);
+
+    bool Boost(Particle *const particle);
+    bool BoostBack(Particle *const particle);
  
     ms::error_code Boost();
+    ms::error_code BoostBack();
+
     ms::error_code Scale();
 
     void Reset();
