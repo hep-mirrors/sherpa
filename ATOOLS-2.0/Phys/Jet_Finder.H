@@ -49,7 +49,7 @@ namespace ATOOLS {
     bool   TwoJets(const Vec4D &);
     bool   TwoJets(const Vec4D &, const Vec4D &);
     bool   TwoJets(double &,double &,double &,bool);
-    double PTij(Vec4D,Vec4D);
+    double MTij2(Vec4D,Vec4D);
     double Yij(Vec4D,Vec4D);
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);

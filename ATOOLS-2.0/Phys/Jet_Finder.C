@@ -247,7 +247,26 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   return (1-m_sel_log->Hit(1-trigger));
 }
 
-double Jet_Finder::PTij(Vec4D p1,Vec4D p2)
+double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
+{
+  double mt12_2;
+  if (m_type>=2) {
+    double mt1_2  = sqr(p1[1]) + sqr(p1[2]) + p1.Abs2(); 
+    double mt2_2  = sqr(p2[1]) + sqr(p2[2]) + p2.Abs2(); 
+    if (IsZero(mt1_2/(mt1_2+mt2_2))) {
+      mt12_2        = mt2_2;
+    }
+    else 
+      mt12_2        = 2.*Min(mt1_2,mt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
+  }
+  else {
+    mt12_2        = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
+  }
+  return mt12_2;
+}
+
+/*
+double Jet_Finder::PTij2(Vec4D p1,Vec4D p2)
 {
   double pt12_2;
   if (m_type>=2) {
@@ -264,7 +283,7 @@ double Jet_Finder::PTij(Vec4D p1,Vec4D p2)
   }
   return pt12_2;
 }
-
+*/
 
 bool Jet_Finder::TwoJets(const Vec4D & p1) 
 {
