@@ -421,7 +421,9 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {
-  int helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
+  int helpi=p_dataread->GetValue<int>("ANALYSIS",0);
+  if (!helpi) return true;
+  helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
   if (helpi>0) {
     ANALYSIS::Analysis_Handler::ShowSyntax(helpi);
     throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"Syntax shown.",
