@@ -151,7 +151,8 @@ Forward_Backward_Eta_Correlation(const int type,
 				 const double detamin,const double detamax,
 				 const int nbins,const std::string &jetlist,
 				 const std::string &listname):
-  Primitive_Observable_Base(0,detamin,detamax,nbins,NULL)
+  Primitive_Observable_Base(0,detamin,detamax,nbins,NULL),
+  m_etafw(1)
 {
   m_name="FwBwEtaCorr.dat";
   m_listname=listname;
@@ -176,9 +177,10 @@ Evaluate(const ATOOLS::Particle_List &particlelist,double weight,int ncount)
   for (int i=1;i<=p_histo->Nbin();++i) {
     double eta=p_histo->Xmin()+(i-1)*width;
     double nfw=etafw.Value(i), nbw=etabw.Value(i);
-    m_etafw.Add(eta,nfw,ncount);
-    m_etafwsq.Add(eta,nfw*nfw,ncount);
-    m_etafwbw.Add(eta,nfw*nbw,ncount);
+    m_etafw.Add(eta,nfw*weight);
+    m_etafwsq.Add(eta,nfw*nfw*weight);
+    m_etafwbw.Add(eta,nfw*nbw*weight);
+    m_etafw.AddBinExtra(eta,weight);
   }
 }
 
@@ -191,10 +193,11 @@ Primitive_Observable_Base *Forward_Backward_Eta_Correlation::Copy() const
 void Forward_Backward_Eta_Correlation::EndEvaluation(double scale) 
 {
   for (size_t i=0;i<(size_t)m_nbins+2;++i) {
-    double nfwm=m_etafw.BinContent(i)/m_etafw.BinEntries(i);
+    double wgt=m_etafw.BinExtra(i);
+    double nfwm=m_etafw.BinContent(i)/wgt;
     p_histo->Bin((int)i)[0]=
-      (m_etafwbw.BinContent(i)/m_etafwbw.BinEntries(i)-nfwm*nfwm)/
-      (m_etafwsq.BinContent(i)/m_etafwsq.BinEntries(i)-nfwm*nfwm);
+      (m_etafwbw.BinContent(i)/wgt-nfwm*nfwm)/
+      (m_etafwsq.BinContent(i)/wgt-nfwm*nfwm);
   }
   p_histo->Output();
 }
