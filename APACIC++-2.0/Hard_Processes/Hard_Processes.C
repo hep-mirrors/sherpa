@@ -8,6 +8,8 @@
 #include "QED_Processes.H"
 #include "QCD_Processes.H"
 
+#include "Process_XS_Trait.H"
+
 using namespace APACIC;
 using namespace EXTRAXS;
 using namespace PHASIC;

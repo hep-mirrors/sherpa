@@ -160,7 +160,7 @@ void XS_Group::SetISR(ISR::ISR_Handler * _isr) {
   msg.Debugging()<<"XS_Group::SetISR("<<_isr->Type()<<") for "<<name<<"  : "<<_isr<<endl;
   isr = _isr; 
 
-  isr->SetSprimeMin(taumin);
-  isr->SetSprimeMax(taumax);
+//   isr->SetSprimeMin(taumin*s);
+//   isr->SetSprimeMax(taumax*s);
   for (int i=0;i<xs.size();i++) xs[i]->SetISR(isr);
 }

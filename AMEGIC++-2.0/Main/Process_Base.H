@@ -19,12 +19,11 @@
 #include "Message.H"
 #include <string>
 
-namespace AMEGIC { 
-  class Process_Base; 
-  class Single_Process; 
-}
 
 namespace AMEGIC {
+  class Process_Base;
+  class Single_Process;
+
   class Process_Base {
   protected:
     std::string                      name, resdir;

@@ -70,7 +70,7 @@ XS_ee_ffbar::XS_ee_ffbar(int _nin,int _nout,APHYTOOLS::Flavour * _fl)
   MZ2    = sqr(APHYTOOLS::Flavour(APHYTOOLS::kf::Z).mass());
   GZ2    = sqr(APHYTOOLS::Flavour(APHYTOOLS::kf::Z).width());
  
-  alpha  = (*aqed)(sqr(rpa.gen.Ecms()));
+  alpha  = aqed->Aqed((sqr(rpa.gen.Ecms())));
   sin2tw = rpa.consts.Sin2TW();
   if (APHYTOOLS::Flavour(APHYTOOLS::kf::Z).ison()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
@@ -114,8 +114,8 @@ double XS_ee_ffbar::operator()(double s,double t,double u) {
 				(ae*ae+ve*ve) * (af*af+vf*vf) * chi2);
   term2 = (1.+2.*t/s) * (4. * qe*qf*ae*af * chi1 + 8. * ae*ve*af*vf * chi2);
 
-  // Divide by two ????
-  return sqr(4.*M_PI*alpha) * colfac * (term1+term2)/2.; 
+  // Divide by two ???? no !
+  return sqr(4.*M_PI*alpha) * colfac * (term1+term2); 
 }
 
 bool XS_ee_ffbar::SetColours(double s,double t,double u) { 

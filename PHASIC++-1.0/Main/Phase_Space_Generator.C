@@ -80,8 +80,8 @@ bool Phase_Space_Generator::CreateFSRChannels(Multi_Channel * integrator,
 					      APHYTOOLS::Flavour * flavs)
 {
   Single_Channel * channel;   
-  channel = new S1Channel(nin,nout,flavs);
-  integrator->Add(channel);
+  //channel = new S1Channel(nin,nout,flavs);
+  //integrator->Add(channel);
   channel = new T1Channel(nin,nout,flavs);
   integrator->Add(channel);
   //channel = new U1Channel(nin,nout,flavs);

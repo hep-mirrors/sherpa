@@ -3,7 +3,7 @@
 !-------------------------------------------------------
 !YCUT  = 0.004073802778   ! ycut initial, double 10^-2.39
 YCUT  = 0.01        ! ycut initial, double 
-ERROR = 10.e-2      ! Error by calculating matrix-elements              
+ERROR = 1.e-3      ! Error by calculating matrix-elements              
 !-------------------------------------------------------
 !-- General switches -----------------------------------
 !-------------------------------------------------------    

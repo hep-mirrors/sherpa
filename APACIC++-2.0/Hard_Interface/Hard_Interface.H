@@ -43,7 +43,7 @@ namespace APACIC {
     bool InitColours(APHYTOOLS::Blob *);
     bool InitialConditions(APHYTOOLS::Blob *,EXTRAXS::XS_Base *);
   public :
-    Hard_Interface(ISR::ISR_Handler *,int,bool); 
+    Hard_Interface(ISR::ISR_Handler *&,int,bool); 
     ~Hard_Interface(); 
     void PrepareTrees();
     bool ReduceBlob(APHYTOOLS::Blob *);

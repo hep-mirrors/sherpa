@@ -1,23 +1,23 @@
-EVENTS         = 500000   ! Number of Events
-CMSENERGY      = 91.2.   ! cms-Energy in GeV
+EVENTS         = 0   ! Number of Events
+CMSENERGY      = 300   ! cms-Energy in GeV
 BEAM1          = e+     ! possible beam particle:  P+, P-, e+, e-
 BEAM2          = e-     ! possible beam particle:  P+, P-, e+, e- 
 !
-MASSES         = On    ! Include effect of quark masses
+MASSES         = Off    ! Include effect of quark masses
 ANALYSIS       = 1     ! Analysis :
 !                      ! 0=none, 1=parton-level only, 
 !                      ! 2=hadron-level only, 3=both
-OUTPUT         = 0     ! Output level :
+OUTPUT         = 4     ! Output level :
 !                      ! 0=errors,1=events,2=tracking,3=debug,4=everything
 LAMBDA_QCD     = 0.4   ! Lambda_QCD used for running alpha_s l^2=0.16
-ALPHA_S_FIX    = 0.1123   ! Fixed alpha_s if needed
+ALPHA_S_FIX    = 0.11   ! Fixed alpha_s if needed
 K_T_MIN        = 100.  ! Minimum pt for hard process !!!! (differs from ADICIC)
 Jet_Scheme     = 1     ! Jet-Scheme : 1=Durham,2=Jade,3=Geneva
 Ycut           = 1.   ! and its ycut.
 ! Shower parameter
-FINAL_Q02      = 0.25           ! minimal virtualitaet in parton shower
+FINAL_Q02      = 0.5           ! minimal virtualitaet in parton shower
 INITIAL_Q02    = 4.             ! initial state shower end virtuality         
-MODEL          = QCD            ! Standard Model
+MODEL          = SM            ! Standard Model
 MODELFILE      = Const.dat      ! Model File
 MODELMASS      = Off            ! uses masses in Model File
 RUNMASS        = Off            ! running masses
@@ -25,8 +25,8 @@ RUNWIDTH       = 0              ! scheme of running widths
 RUNAQED        = Off            ! running alpha_qed
 COULOMB        = Off            ! coulomb correction
 RUN_ALPHA_S    = Off            ! running alpha_S
-ALPHA_QED      = 0.0078125      ! alpha_QED at Z pole
-SIN2_TW        = 0.2311           ! sin^2 of theta_Weinberg
+ALPHA_QED      = 0.0078125       ! alpha_QED at Z pole
+SIN2_TW        = 0.2319            ! sin^2 of theta_Weinberg
 Num. Accuracy  = 1.e-10  !
 Runtime        = 0              ! maximal runtime (min); 0 means off
 PT2MIN         = 100.           ! Minimum pt for hard process 	

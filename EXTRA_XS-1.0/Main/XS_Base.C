@@ -62,8 +62,8 @@ bool XS_Base::SetUpIntegrator(ISR_Handler * _isr,Beam_Handler * _beam) {
   isr  = _isr;
   beam = _beam;
 
-  isr->SetSprimeMin(taumin);
-  isr->SetSprimeMax(taumax);
+//   isr->SetSprimeMin(taumin*s);
+//   isr->SetSprimeMax(taumax*s);
 
   ps  = new Phase_Space_Handler(this,isr,beam);
   CreateSelector();

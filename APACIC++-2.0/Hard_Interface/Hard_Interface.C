@@ -11,7 +11,7 @@ using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
 
-Hard_Interface::Hard_Interface(ISR_Handler * _isr,int _maxjetnumber,bool outside) :
+Hard_Interface::Hard_Interface(ISR_Handler *& _isr,int _maxjetnumber,bool outside) :
   isr(_isr), maxjetnumber(_maxjetnumber)
 {
   msg.Debugging()<<"Passed isr : "<<isr<<std::endl;
@@ -21,6 +21,7 @@ Hard_Interface::Hard_Interface(ISR_Handler * _isr,int _maxjetnumber,bool outside
 
   fin_shower   = new Final_State_Shower();
   ini_shower   = new Initial_State_Shower(isr,fin_shower);
+  _isr=isr;
   tools        = new Interface_Tools(ini_trees,fin_tree);
 
 

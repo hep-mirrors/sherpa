@@ -88,7 +88,7 @@ void Phase_Space_Handler::Init(Flavour * _fl) {
   psi = 0; psgen = 0; beamchannels = 0; isrchannels = 0; fsrchannels = 0; 
   
   
-  msg.Tracking()<<"Initialized a new Phase_Space_Handler(proc) for "<<proc->Name()<<endl;
+  //  msg.Tracking()<<"Initialized a new Phase_Space_Handler(proc) for "<<proc->Name()<<endl;
   msg.Tracking()<<"   ("<<ih->Type()<<", "<<nin<<"  ->  "<<nout<<" process)"<<endl;
 }
 
@@ -141,23 +141,23 @@ bool Phase_Space_Handler::CreateIntegrators()
   if (xs) psgen = new Phase_Space_Generator(xs->Nin(),xs->Nout());
 
   if (nin==1) int_type = 0;
+  if (bh) {
+    if ((nin==2) && bh && (bh->On()>0) ) {
+      if (xs)   beamchannels = new Multi_Channel(string("beam_")+xs->Name());
+      if (proc) beamchannels = new Multi_Channel(string("beam_")+proc->Name());
 
-  if ((nin==2) && (bh->On()>0)) {
-    if (xs)   beamchannels = new Multi_Channel(string("beam_")+xs->Name());
-    if (proc) beamchannels = new Multi_Channel(string("beam_")+proc->Name());
-
-    if (!(MakeBeamChannels())) {
-      msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
+      if (!(MakeBeamChannels())) {
+	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
 		 <<"   did not construct any isr channels !"<<endl;
+      }
+      if (beamchannels) 
+	msg.Debugging()<<"  ("<<beamchannels->Name()<<","<<beamchannels->Number()<<";";
     }
-    if (beamchannels) 
-      msg.Debugging()<<"  ("<<beamchannels->Name()<<","<<beamchannels->Number()<<";";
+    else {
+      msg.Debugging()<<" no Beam-Handling needed : "<<bh->Name()
+		     <<" for "<<nin<<" incoming particles."<<endl;
+    }
   }
-  else {
-    msg.Debugging()<<" no Beam-Handling needed : "<<bh->Name()
-		   <<" for "<<nin<<" incoming particles."<<endl;
-  }
-
 
   if ((nin==2) && (ih->On()>0)) {
     if (xs)   isrchannels = new Multi_Channel(string("isr_")+xs->Name());
@@ -537,6 +537,7 @@ double Phase_Space_Handler::Integrate()
   } 
 
   msg.SetPrecision(12);
+  if (bh) 
   if (bh->On()>0) {
     beamchannels->GetRange();
     beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
@@ -651,13 +652,12 @@ double Phase_Space_Handler::Differential(Process_Base * process)
 
     KFactor = proc->KFactor(Q2);
     fsrchannels->GenerateWeight(p,proc->Cuts());
-    result1 *= KFactor * fsrchannels->Weight();
+    result1 *= KFactor = fsrchannels->Weight();
     
     if (ih->On()==3) result2 = result1;
     
     result1 *= process->Differential(p);
   }
-  
   // Second part : flin[0] coming from Beam[1] and flin[1] coming from Beam[0]
   if (ih->On()==3) {
     Rotate(p);
@@ -669,9 +669,9 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     else                result2  = 0.;
     Rotate(p);
   }
-  
   if ( (ih->On()>0) || (bh->On()>0) ) 
     flux = 1./(2.*sqrt(sqr(sprime-m12-m22)-4.*m12*m22));
+  //  cout<<"weight"<<x1<<" Diff"<<x2<<endl;
 
   return flux*(result1+result2);
 }
@@ -688,7 +688,67 @@ bool Phase_Space_Handler::Check4Momentum(vec4d * _p) {
 }
 
 
-double Phase_Space_Handler::Differential(XS_Base * xsec) { }
+double Phase_Space_Handler::Differential(XS_Base * xsec) {
+  y = 0;
+  if (ih->On()>0) { 
+    isrchannels->GeneratePoint(sprimeI,yI,ih->On());
+    //msg.Out()<<"ISR : "<<sprimeI<<" / "<<yI<<endl;
+    if (!(ih->MakeISR(p,sprimeI,yI))) return 0.;
+    sprime = sprimeI; y += yI;
+  }
+
+//   if ((ih->On()>0) ) {
+//     xsec->UpdateCuts(sprime,y);
+//   }
+  
+  //msg.Out()<<"Before FSR"<<endl;
+  //for (int i=0;i<nin+nout;i++) msg.Out()<<" "<<i<<"th : "<<p[i]<<" "<<p[i].abs2()<<endl;
+
+  //  fsrchannels->GeneratePoint(p,xsec->Cuts());
+  fsrchannels->GeneratePoint(p);
+
+  if (!Check4Momentum(p)) {
+    msg.Out()<<" WARNING: Check4Momentum(p) failed "<<endl;
+    return 0.;
+  }
+
+  double value = 0., KFactor = 0., Q2 = -1.;
+  bool take = 1;
+
+  result1 = result2 = 0.;
+
+  if (ih->On()>0) ih->BoostInLab(p,nin+nout);
+
+  // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
+
+  bool trigger = 0;
+  if ( (xsec->Selector())->Trigger(p)) {
+    trigger = 1;
+    result1 = 1.;
+    Q2 = xsec->Scale(p);
+    //msg.Out()<<"Scale = "<<Q2<<endl;
+    if (ih->On()>0) {
+      ih->CalculateWeight(Q2);
+      isrchannels->GenerateWeight(sprimeI,yI,ih->On());
+      result1 *= isrchannels->Weight();
+      ih->BoostInCMS(p,nin+nout);
+    }
+
+    KFactor = xsec->KFactor(Q2);
+    fsrchannels->GenerateWeight(p);
+    result1 *= KFactor = fsrchannels->Weight();
+    
+    if (ih->On()==3) result2 = result1;
+    
+    result1 *= xsec->Differential(p);
+  }
+  
+  //  cout<<"weight"<<x1<<" Diff"<<x2<<endl;
+  if ( (ih->On()>0) ) 
+    flux = 1./(2.*sqrt(sqr(sprime-m12-m22)-4.*m12*m22));
+
+  return flux*(result1+result2);
+ }
 
 
 bool Phase_Space_Handler::SameEvent() {

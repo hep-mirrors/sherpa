@@ -11,7 +11,7 @@ using namespace AORGTOOLS;
 //--------------------------- Constructors ------------------------------
 //----------------------------------------------------------------------- 
 
-Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler * _isr,Final_State_Shower * _fin) : 
+Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler *& _isr,Final_State_Shower * _fin) : 
   fin(_fin) {
   
   if (_isr) {
@@ -39,8 +39,10 @@ Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler * _isr,Final_State_S
     Flavour * beams, * partons;
     beams        = new Flavour[2];
     partons      = new Flavour[2];
-    beams[0]     = Flavour(kf::p_plus);
-    beams[1]     = Flavour(kf::p_plus);
+    beams[0]     = rpa.gen.Beam1();
+    beams[1]     = rpa.gen.Beam2();
+//     beams[0]     = Flavour(kf::p_plus);
+//     beams[1]     = Flavour(kf::p_plus);
     rpa.gen.SetBeam1(beams[0]);
     rpa.gen.SetBeam2(beams[1]);
 

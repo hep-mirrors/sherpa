@@ -424,15 +424,15 @@ void APHYTOOLS::particle_init(std::string path)
   int idx      = KF_table.to_int(test.kfcode());
   Particles[idx].SetGroup();
   Particles[idx].Add(Flavour(kf::d));
-//   Particles[idx].Add(Flavour(kf::u));
-//   Particles[idx].Add(Flavour(kf::s));
-//   Particles[idx].Add(Flavour(kf::c));
-//   Particles[idx].Add(Flavour(kf::b));
+  Particles[idx].Add(Flavour(kf::u));
+  Particles[idx].Add(Flavour(kf::s));
+  Particles[idx].Add(Flavour(kf::c));
+  Particles[idx].Add(Flavour(kf::b));
   Particles[idx].Add(Flavour(kf::d).bar());
-//   Particles[idx].Add(Flavour(kf::u).bar());
-//   Particles[idx].Add(Flavour(kf::s).bar());
-//   Particles[idx].Add(Flavour(kf::c).bar());
-//   Particles[idx].Add(Flavour(kf::b).bar());
+  Particles[idx].Add(Flavour(kf::u).bar());
+  Particles[idx].Add(Flavour(kf::s).bar());
+  Particles[idx].Add(Flavour(kf::c).bar());
+  Particles[idx].Add(Flavour(kf::b).bar());
   Particles[idx].Add(Flavour(kf::gluon));
 
   test = Flavour(kf::quark);

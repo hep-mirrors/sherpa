@@ -1,12 +1,12 @@
 !-------------------------------------------------------
 !-- ISR parameters -------------------------------------
 !-------------------------------------------------------
-ISR1     = No  ! extended Struct ! No   
-ISR2     = No  ! extended Struct ! No   
+ISR1     = No ! extended Struct ! No   
+ISR2     = No ! extended Struct ! No   
 BEAM1    = No ! Laser_Backscattering ! No
 BEAM2    = No ! Laser_Backscattering ! No
 !SMIN1     = 0.10     ! Minimal Energy of particle 1 in fractions of the CM energy
 !SMIN2     = 0.10     ! Minimal Energy of particle 2 in fractions of the CM energy
-SMIN     = 0.7     ! Minimal Energy in fractions of the CM energy
-SMAX     = 0.9      ! Maximal Energy in fractions of the CM energy
+SMIN     = 0.01     ! Minimal Energy in fractions of the CM energy
+SMAX     = 0.998      ! Maximal Energy in fractions of the CM energy
 Max_Phot = 25       ! Maximum number of Photons  (YFS) 

@@ -1,5 +1,5 @@
 EVENTS         = 0      ! Number of Events
-CMSENERGY      = 91.2   ! cms-Energy in GeV
+CMSENERGY      = 300    ! cms-Energy in GeV
 BEAM1          = e+     ! possible beam particle:  P+, P-, e+, e-
 BEAM2          = e-     ! possible beam particle:  P+, P-, e+, e- 
 !
@@ -7,7 +7,7 @@ MASSES         = On    ! Include effect of quark masses
 ANALYSIS       = 1     ! Analysis :
 !                      ! 0=none, 1=parton-level only, 
 !                      ! 2=hadron-level only, 3=both
-OUTPUT         = 0     ! Output level :
+OUTPUT         = 2     ! Output level :
 !                      ! 0=errors,1=events,2=tracking,3=debug,4=everything
 KFACTORSCHEME  = 0      !
 SCALESCHEME    = 0      !
