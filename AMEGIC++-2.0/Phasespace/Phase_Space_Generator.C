@@ -36,6 +36,7 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
 
   string lmapname = string("Process/")+pathID+string("/fsrchannels");
   string mapname  = string("Process/")+path+string("/fsrchannels.map");
+  
   if (IsFile(lmapname)) return 1-LoadChannels(fl,Ch);
 
   int newchannels = 0;
@@ -57,11 +58,14 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
     cnt--;
   }
 
-  string fsrpath= string("fsrchannels");
+  string fsrpath0= string("fsrchannels");
+  string fsrpath = fsrpath0;
   char hlp[4];
+  sprintf(hlp,"%i",nout);
+  fsrpath += string(hlp);
   if (cnt>=maxchannels) {
-    sprintf(hlp,"%i",cnt/maxchannels);
-    fsrpath = fsrpath+string(hlp);
+    sprintf(hlp,"_%i",cnt/maxchannels);
+    fsrpath = fsrpath0+string(hlp);
   }
   string fsrp = path+string("/")+fsrpath;
 
@@ -84,8 +88,8 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
 	// making directory
 	if (cnt%maxchannels==0) {
 	  if (cnt>0) {
-	    sprintf(hlp,"%i",cnt/maxchannels);
-	    fsrpath = string("fsrchannels") + string(hlp);
+	    sprintf(hlp,"_%i",cnt/maxchannels);
+	    fsrpath = fsrpath0 + string(hlp);
 	    fsrp = path+string("/")+fsrpath;
 	  }
 	  unsigned int  mode_dir = 0755;
@@ -259,7 +263,8 @@ bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch
 
   string chlname   = string("Process/")+pathID + string("/fsrchannels");
   string chmapname = string("Process/")+path   + string("/fsrchannels.map");
-  ifstream chlist;
+ 
+ ifstream chlist;
   chlist.open(chlname.c_str());
   if (!IsFile(chmapname)) {
     ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
