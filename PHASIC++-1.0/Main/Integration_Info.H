@@ -109,6 +109,9 @@ namespace PHASIC {
 
     friend class Info_Key;
 
+    friend std::ostream &operator<<(std::ostream &str,const Integration_Info &info);
+    friend std::ostream &operator<<(std::ostream &str,const Info_Key &key);
+
   public:
 
     // constructor
@@ -116,9 +119,6 @@ namespace PHASIC {
 
     // member functions
     void ResetAll();
-
-    friend std::ostream &operator<<(std::ostream &str,const Integration_Info &info);
-    friend std::ostream &operator<<(std::ostream &str,const Info_Key &key);
 
   };// end of class Integration_Info
 
