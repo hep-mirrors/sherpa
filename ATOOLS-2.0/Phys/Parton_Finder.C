@@ -15,14 +15,12 @@ using namespace ATOOLS;
 
 void Parton_Tester::Turn()
 {
-  throw(Exception(ex::fatal_error,"Virtual method called.",
-		  "Parton_Tester","Turn"));
+  THROW(fatal_error,"Virtual method called.");
 }
 
 bool Parton_Tester::Test(const Particle *parton) const
 {
-  throw(Exception(ex::fatal_error,"Virtual method called.",
-		  "Parton_Tester","Test"));
+  THROW(fatal_error,"Virtual method called.");
   return false;
 }
 

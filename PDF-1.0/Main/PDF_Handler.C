@@ -31,9 +31,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 				dataread->GetValue<int>("ISR_E_ORDER",1),
 				dataread->GetValue<int>("ISR_E_SCHEME",2));
       }
-      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			      "Tried to initialize a structure function for an uncharged particle.",
-			      "PDF_Handler","GetPDFLib"));
+      THROW(fatal_error,"Tried to initialize a structure function for an uncharged particle.");
     }
     if (bunch_particle.IsPhoton()) {
       msg.Out()<<"PDF_Handler::GetPDFLib : Try to initialize photon PDF."<<endl;
@@ -95,12 +93,9 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	}
 	return pdfbase;
       }
-      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			      "Combination of set/member/path for proton not properly specified.",
-			      "PDF_Handler","GetPDFLib"));
+      THROW(fatal_error,"Combination of set/member/path for proton not properly specified.");
     }
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"So far no PDF for the bunch_particle.",
-			    "PDF_Handler","GetPDFLib"));
+    THROW(fatal_error,"So far no PDF for the bunch_particle.");
   }
 
   return NULL;

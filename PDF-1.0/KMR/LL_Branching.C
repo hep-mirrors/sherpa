@@ -55,9 +55,7 @@ LL_Branching::LL_Branching(const ATOOLS::Flavour flavour,
     }
   }
   else if (!m_flavour.IsQuark()) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			    "No splitting function available.",
-			    "LL_Branching","LL_Branching"));
+    THROW(fatal_error,"No splitting function available.");
   }
   GenerateName();
 }

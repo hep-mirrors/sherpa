@@ -45,8 +45,7 @@ void Run_Parameter::AnalyseEnvironment()
   delete test;
   system("if test -f sherpa_gcc_test; then rm sherpa_gcc_test; fi");
   if (gccversion.find("2.96")!=std::string::npos) {
-    throw(Exception(ex::fatal_error,"Sherpa must not be run on gcc version 2.96 !",
-		    "Run_Parameter","Init"));
+    THROW(fatal_error,"Sherpa must not be run on gcc version 2.96 !");
   }
   char *var=NULL;
   s_variables["PATH"]=std::string(((var=getenv("PATH"))==NULL?"":var));

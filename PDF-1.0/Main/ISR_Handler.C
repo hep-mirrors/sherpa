@@ -114,7 +114,7 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double 
     *out<<" "<<PREFACTOR testpdf()<<std::endl;
   }
   delete out;
-  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"finished integration"));
+  THROW(normal_exit,"finished integration");
 #endif
 }
 
@@ -438,8 +438,7 @@ bool ISR_Handler::CalculateWeight(const double scale)
 bool ISR_Handler::CalculateWeight2(const double scale) 
 {
   if (m_mode != 3) { 
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Called for one ISR only.",
-			    "ISR_Handler","CalculateWeight2"));
+    THROW(fatal_error,"Called for one ISR only.");
   }
   if (!m_kmrmode) {
     m_mu2[0]=m_mu2[1]=scale;

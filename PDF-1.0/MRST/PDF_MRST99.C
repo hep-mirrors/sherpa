@@ -1,7 +1,7 @@
 #include "PDF_MRST99.H"
 
 #include "Message.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
 
 using namespace std;
 using namespace PDF;

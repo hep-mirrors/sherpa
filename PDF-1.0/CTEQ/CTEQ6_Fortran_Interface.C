@@ -121,7 +121,5 @@ void CTEQ6_Fortran_Interface::AssignKeys(ATOOLS::Integration_Info *const info)
 
 void CTEQ6_Fortran_Interface::Error()
 {
-  throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Cteq6Pdf called ERRORMSG "),
-			  "CTEQ6_Fortran_Interface","Error"));
-
+  THROW(critical_error,"Cteq6Pdf called ERRORMSG ");
 }

@@ -93,8 +93,7 @@ void Data_Read::ReadIn(std::string filename, bool ignoremissingfile) {
       m_fileexists=false;
     }
     else {
-    throw(Exception(ex::critical_error,std::string("Cannot open file '")+filename+std::string("'"),
-		    "Data_Read","ReadIn"));
+      THROW(critical_error,"Cannot open file '"+filename+"'");
     }
   }
   std::string dummy;

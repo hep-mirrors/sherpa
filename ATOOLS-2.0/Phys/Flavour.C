@@ -27,8 +27,7 @@ void Kf_To_Int::Init()
   }
 
   if(anz==MAX_PARTICLES) {
-    throw(Exception(ex::fatal_error,"Too many particle types.",
-		    "Kf_To_Int","Init"));
+    THROW(fatal_error,"Too many particle types.");
   }
   is_initialised = 1;
 }

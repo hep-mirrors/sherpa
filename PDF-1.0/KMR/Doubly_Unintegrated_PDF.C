@@ -125,8 +125,7 @@ Doubly_Unintegrated_PDF::~Doubly_Unintegrated_PDF()
 	}
       }
     }
-    throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,
-			    "Finished Sudakov histograms","DUPDF","DUPDF"));
+    THROW(normal_exit,"Finished Sudakov histograms");
   }
 #else
 #error ROOT is disabled
