@@ -63,27 +63,26 @@ Exponential_Profile::Exponential_Profile(const double radius):
   m_omax=Value(m_bmin);
   m_omin=Value(m_bmax);
   m_norm=M_PI;
-  THROW(not_implemented,"Exponential profile not implemented yet");
 }
 
 double Exponential_Profile::Value(const double b) const
 {
-  return 0.0;
+  return 0.5*exp(-b/m_radius)/m_radius;
 }
 
 double Exponential_Profile::MajorValue(const double b) const
 {
-  return 0.0;
+  return 0.5*exp(-b/m_radius)/m_radius;
 }
 
 double Exponential_Profile::MajorIntegral(const double b) const
 {
-  return 0.0;
+  return -M_PI*(exp(-b/m_radius)-exp(-m_bmax/m_radius));
 }
 
 double Exponential_Profile::InverseMajorIntegral(const double I) const
 {
-  return 0.0;
+  return -m_radius*log(-I/M_PI+exp(-m_bmax/m_radius));
 }
 
 template <> Profile_Function_Base*
