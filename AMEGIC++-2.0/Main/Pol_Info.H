@@ -61,7 +61,7 @@ namespace AMEGIC {
     - p_s/p_si:    scalar polarization for massive/massless off-shell vector boson
     - p_l0/p_l1:   linear polarization vectors with a direction (defined in AMEGIC::Pol_Info::angle)
     - p_lh/p_lp:   linear polarization vectors with fixed direction
-    - p_t1-p_t5:   dummies for polarization tensors of external spin-2 particles, will be replaced in AMEGIC::Single_Amplitude_Base::Single_ZvalueTensor(Zfunc* z,vector<int>*,vector<int>*,int) by combinations of polarization vectors
+    - p_t1-p_t5:   dummies for polarization tensors of external spin-2 particles, will be replaced in AMEGIC::Single_Amplitude_Base::Single_ZvalueTensor(Zfunc* z,std::vector<int>*,std::vector<int>*,int) by combinations of polarization vectors
 
     For the calculation of these vectors see AMEGIC::Basic_Sfuncs::Calc_Momlist().
   */
@@ -135,7 +135,7 @@ namespace AMEGIC {
     in terms of (outer) products of two polarization vectors.
 
     Polarization tensors are defined as follows:
-    - mt::p_t1 \f$\epsilon_{\mu}^{+}\epsilon_{\nu}^{+}\f$
+    - AMEGIC::mt::p_t1 \f$\epsilon_{\mu}^{+}\epsilon_{\nu}^{+}\f$
     - AMEGIC::mt::p_t2 \f$\sqrt{2}\,\epsilon_{\mu}^{+}\epsilon_{\nu}^{0}\f$
     - AMEGIC::mt::p_t3 \f$\sqrt{\frac{2}{3}}\left(\epsilon_{\mu}^{+}\epsilon_{\nu}^{-}-\epsilon_{\mu}^{0}\epsilon_{\nu}^{0}\right)\f$
     - AMEGIC::mt::p_t4 \f$\sqrt{2}\,\epsilon_{\mu}^{-}\epsilon_{\nu}^{0}\f$

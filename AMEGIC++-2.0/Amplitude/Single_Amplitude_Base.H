@@ -72,7 +72,7 @@ namespace AMEGIC {
     A list of all propagators in the amplitude.
   */
   /*!
-    \fn Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,vector<int>* iz,vector<int>* iargs,int last=0)
+    \fn Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,std::vector<int>* iz,std::vector<int>* iargs,int last=0)
     Calculates the Z function z. 
     
     The vector iz contains a list of labels for propagators or external particles, 
@@ -101,7 +101,7 @@ namespace AMEGIC {
     - The result is saved in Zfunc::m_calclist and returned.
   */
   /*!
-    \fn Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z, vector<int>* iz, vector<int>* iargs,int last=0)
+    \fn Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z, std::vector<int>* iz, std::vector<int>* iargs,int last=0)
     Calculates a Zfunc_Group. 
 
     - For a group with the operator '+' it's simply the sum of all sub Z functions, 
@@ -114,10 +114,10 @@ namespace AMEGIC {
     in Single_Amplitude_Base::SetLoopVar.    
   */
   /*!
-    \fn Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,vector<int>* iz, vector<int>* iargs,int)
+    \fn Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,std::vector<int>* iz, std::vector<int>* iargs,int)
   */
   /*!
-    \fn int Single_Amplitude_Base::FillArgs(Zfunc* z,int* args,vector<int>*,vector<int>*)
+    \fn int Single_Amplitude_Base::FillArgs(Zfunc* z,int* args,std::vector<int>*,std::vector<int>*)
     Generates the argument array args for the calculator of the Zfunc (Zfunc_Calc).
 
     For every element of Zfunc::p_arguments args contains a pair of elements:
@@ -129,7 +129,7 @@ namespace AMEGIC {
       - the spinor type is encoded in an extra \f$-\f$ sign in the arguments 
   */
   /*!
-    \fn void Single_Amplitude_Base::SetLoopVar(vector<int>& iz ,vector<vector<int> >& iarg)
+    \fn void Single_Amplitude_Base::SetLoopVar(std::vector<int>& iz ,std::vector<std::vector<int> >& iarg)
     Determines a list of arguments for the decomposition of a propagator.
   */
   /*!

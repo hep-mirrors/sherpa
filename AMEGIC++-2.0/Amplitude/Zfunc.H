@@ -224,7 +224,7 @@ namespace AMEGIC {
     Deletes all entries in Zfunc::m_calclist.
   */
   /*!
-    \fn Zfunc::ReplaceProp(vector<Pair>*);
+    \fn Zfunc::ReplaceProp(std::vector<Pair>*);
     Changes the labels of propagators (Zfunc::p_propagators) and 
     arguments (Zfunc::p_arguments) from Pair::pold to Pair::new.
   */
@@ -339,7 +339,7 @@ namespace AMEGIC {
     
    */
   /*!
-    \fn void Zfunc_Group::ReplaceProp(vector<Pair>*)
+    \fn void Zfunc_Group::ReplaceProp(std::vector<Pair>*)
     See Zfunc::ReplaceProp.
   */ 
 }
