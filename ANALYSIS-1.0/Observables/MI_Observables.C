@@ -445,24 +445,27 @@ void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
-  ATOOLS::Vec3D perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::ZVEC);
-  if (jetlist->size()>1) {
-    ATOOLS::Vec3D test=ATOOLS::cross(leadingjet,(*jetlist)[1]->Momentum());
-    test=ATOOLS::cross(test,leadingjet);
-    if (test.Abs()>0.0) perp=test;
-  }
-  else if (perp.Abs()==0.0) {
-    perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::XVEC);
-  }
+//   ATOOLS::Vec3D perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::ZVEC);
+//   if (jetlist->size()>1) {
+//     ATOOLS::Vec3D test=ATOOLS::cross(leadingjet,(*jetlist)[1]->Momentum());
+//     test=ATOOLS::cross(test,leadingjet);
+//     if (test.Abs()>0.0) perp=test;
+//   }
+//   else if (perp.Abs()==0.0) {
+//     perp=ATOOLS::cross(leadingjet,ATOOLS::Vec3D::XVEC);
+//   }
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
     double phi=(*pit)->Momentum().DPhi(leadingjet);
-    if (perp*(ATOOLS::Vec3D)(*pit)->Momentum()<0.0) phi*=-1.0;
-    phi+=1.5*M_PI;
-    while (phi>=2.0*M_PI) phi-=2.0*M_PI;
-    while (phi<0.0) phi+=2.0*M_PI;
+//     if (perp*(ATOOLS::Vec3D)(*pit)->Momentum()<0.0) phi*=-1.0;
+//     phi+=1.5*M_PI;
+//     while (phi>=2.0*M_PI) phi-=2.0*M_PI;
+//     while (phi<0.0) phi+=2.0*M_PI;
+    phi-=0.5*M_PI;
+    histo.Add((phi>=0.0?phi:2.0*M_PI+phi)/M_PI*180.,weight);
+    phi=M_PI-phi;
     histo.Add(phi/M_PI*180.,weight);
   }
   for (size_t i=1;i<=(size_t)p_histo->Nbin()-1;++i) {
