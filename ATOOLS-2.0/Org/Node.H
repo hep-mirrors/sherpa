@@ -13,28 +13,19 @@ namespace ATOOLS {
     
   public:
 
-    Node(const Node_Type &node,const bool create=false): 
-      std::vector<Node_Type>(1,node), 
-      p_next(NULL) 
-    {
-      if (create) p_next = new std::vector<Node<Node_Type>*>();
-    }
+    // constructor
+    Node(const Node_Type &node,const bool create=false);
     
-    ~Node() 
-    {
-      if (p_next!=NULL) {
-	for (typename std::vector<Node<Node_Type>*>::iterator nit=p_next->begin();
-	     nit!=p_next->end();++nit) {
-	  delete (*nit);
-	}
-	delete p_next;
-      }
-    }
+    // destructor
+    ~Node();
     
-    inline std::vector<Node<Node_Type>*> *operator->() { return p_next; }
+    // member function
+    std::vector<Node<Node_Type>*> *operator->();
 
   };// end of class Node
 
 }// end of namespace ATOOLS
+
+#include "Node.C"
 
 #endif
