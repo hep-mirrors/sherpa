@@ -63,9 +63,9 @@ namespace ATOOLS {
 
     inline std::ostream &Error()     { if (m_level >= 0) return *m_output; return *m_no; }
     inline std::ostream &Events()    { if (m_level & 1)  return *m_output; return *m_no; }
-    inline std::ostream &Info()      { if (m_level >= 2) return *m_output; return *m_no; }
-    inline std::ostream &Tracking()  { if (m_level >= 3) return *m_output; return *m_no; }
-    inline std::ostream &Debugging() { if (m_level >= 4) return *m_output; return *m_no; }
+    inline std::ostream &Info()      { if (m_level & 2)  return *m_output; return *m_no; }
+    inline std::ostream &Tracking()  { if (m_level & 4)  return *m_output; return *m_no; }
+    inline std::ostream &Debugging() { if (m_level & 8)  return *m_output; return *m_no; }
 
   };// end of class Message
 
