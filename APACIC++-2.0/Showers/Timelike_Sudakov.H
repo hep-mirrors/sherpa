@@ -62,6 +62,7 @@ namespace APACIC {
     bool JetVeto(Knot *);
 
     void UniformPhi() { m_phi = 2.*M_PI*ATOOLS::ran.Get(); }
+    void SetJetvetoPt2(const double pt2);
   };
 
 

@@ -390,3 +390,8 @@ void Timelike_Sudakov::CheckSplittings()
   exit(0);
 }
 
+
+void Timelike_Sudakov::SetJetvetoPt2(const double pt2) 
+{ 
+  p_kin->SetJetvetoPt2(pt2); 
+}

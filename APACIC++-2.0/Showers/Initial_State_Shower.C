@@ -442,7 +442,18 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     // *AS*    if (k1->prev->stat>0 || m_to_be_diced[ntree0]) {
     if (k1->prev->stat>0) {
       m_to_be_diced[ntree0]=0;
-      if (k1->prev->stat!=2) {  
+      bool fill=true;
+      if (k1->prev->part->Info()=='H') {
+	if (k1->prev->prev) {
+	  if (k1->prev->prev->part->Info()=='H') {
+	    msg.Debugging()<<" internal line "<<endl;
+	    fill=false;
+	  }
+	}
+      }
+	  
+
+      if (fill) {
 	if (!FillBranch(trees,k1->prev,k2,ntree0)) {
 	  msg.Debugging()<<" fillbranch failed "<<endl;
 	  return 0; 
@@ -482,8 +493,8 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 
 
     if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first)) {
-      return 0;
       msg.Debugging()<<" do kinematics failed "<<endl;
+      return 0;
       if (k1->prev->t==k1->prev->tout) return 0; 
       p_kin->ResetMomenta(k1,trees[ntree0]);
       return (ntree0+2);
@@ -662,7 +673,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   //  sister->thcrit = k->thcrit; 
   sister->thcrit = th; 
 
-  if (k->part->Info() != 'G') k->part->SetInfo('i');
+  if (k->part->Info() != 'G' && k->part->Info() != 'H') k->part->SetInfo('i');
   k->part->SetStatus(2);
   SetColours(k);
 

@@ -45,6 +45,14 @@ void Hard_Interface::PrepareTrees() {
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
+void Hard_Interface::SetJetvetoPt2(const double pt2)
+{ 
+  if (m_fsron) 
+    p_finshower->SetJetvetoPt2(pt2); 
+  if (m_isron)
+    p_inishower->SetJetvetoPt2(pt2); 
+}
+
 int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
   if (!m_showers) return 1;
   if (rpa.gen.Debugging()) {

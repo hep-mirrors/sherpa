@@ -57,6 +57,9 @@ namespace APACIC {
 
     void OutputTree(Tree *);
     static void SetColours(Knot *);
+    void SetJetvetoPt2(const double pt2) { 
+      p_kin->SetJetvetoPt2(pt2); 
+    }
   private:
     bool InitializeSystem(Tree **,Knot *,Knot *);
     void InitTwoTrees(Tree **,double);
@@ -65,7 +68,6 @@ namespace APACIC {
 
     void FillMotherAndSister(Tree *,Knot *,ATOOLS::Flavour *);
     void SetStartingConditions(double,double,int) ;
-
   };
 
   //----------------------------------------------------------------------

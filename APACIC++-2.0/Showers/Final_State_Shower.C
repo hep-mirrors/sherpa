@@ -36,6 +36,9 @@ Final_State_Shower::~Final_State_Shower()
 //-----------------------------------------------------------------------
 //----------------------- Performing the Shower -------------------------
 //----------------------------------------------------------------------- 
+void Final_State_Shower::SetJetvetoPt2(const double pt2) { 
+  p_kin->SetJetvetoPt2(pt2); 
+}
 
 int Final_State_Shower::PerformShower(Tree * tree,int _jetveto) 
 {

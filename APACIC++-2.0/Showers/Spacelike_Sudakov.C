@@ -284,3 +284,8 @@ double Spacelike_Sudakov::CrudeInt(double _zmin, double _zmax)
   if (!iter()) return m_lastint = -1.;
   return m_lastint = p_selected->CrudeInt(_zmin,_zmax);
 }     
+
+void Spacelike_Sudakov::SetJetvetoPt2(const double pt2) 
+{ 
+  p_kin->SetJetvetoPt2(pt2); 
+}

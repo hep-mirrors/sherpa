@@ -57,6 +57,7 @@ namespace APACIC {
     bool ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2);
 
     bool ArrangeColourPartners(ATOOLS::Particle *,Knot *,Knot *);
+    void SetJetvetoPt2(const double pt2) { jf->SetShowerPt2(pt2); }
   private:
     //-----------------------------------------------------------------------
     //------------------- Service for the Checks ----------------------------

@@ -93,6 +93,11 @@ namespace APACIC {
 
 
     void ResetMomenta(Knot*,Tree*,int=0);
+
+    void SetJetvetoPt2(const double pt2) { 
+      jf->SetShowerPt2(pt2); 
+      kink->SetJetvetoPt2(pt2); 
+    }
   };
 
   /*!

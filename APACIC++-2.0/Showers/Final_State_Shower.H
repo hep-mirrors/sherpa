@@ -47,6 +47,7 @@ namespace APACIC {
     bool ExtraJetCheck() const;
     double                PT2Min()        { return m_pt2min; }
     Timelike_Kinematics * GetKinematics() { return p_kin; }
+    void SetJetvetoPt2(const double pt2);
   private:
     int InitializeJets(Tree *,Knot *,int =0);
     bool SmearDaughters(Knot * mo);
