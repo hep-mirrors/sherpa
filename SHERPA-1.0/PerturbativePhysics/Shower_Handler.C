@@ -9,7 +9,7 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 			       MODEL::Model_Base * _model,
 			       PDF::ISR_Handler * _isr,int _maxjet) :
   m_dir(_dir), m_file(_file), m_maxjetnumber(_maxjet),
-  p_apacic(NULL)
+  p_apacic(NULL),p_isr_handler(_isr)
 {
   p_dataread        = new Data_Read(m_dir+m_file);
   m_showergenerator = p_dataread->GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));

@@ -35,7 +35,9 @@ namespace SHERPA {
     int     m_colors[4][2];
 
     int     m_sud_mode;
-    int     m_isron, m_fsron;
+    int     m_isrmode, m_isrshoweron, m_fsrshoweron;
+
+    APACIC::Tree   * p_local_tree; 
 
     // some statistics:
     long    * p_events;
@@ -54,7 +56,7 @@ namespace SHERPA {
 
   public :
     Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf, 
-		    int maxjetnumber, int isron, int fsron) ;
+		    int maxjetnumber, int isrmode, int isrshoweron, int fsrshoweron) ;
     ~Cluster_Partons();
     bool ClusterConfiguration(ATOOLS::Blob *,double,double);
     void CalculateWeight(double,double);

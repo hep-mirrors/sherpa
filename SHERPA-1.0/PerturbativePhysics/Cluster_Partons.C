@@ -14,8 +14,9 @@ using namespace MODEL;
 using std::endl;
 
 Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf,
-				 int maxjetnumber, int isron, int fsron) :
-  p_me(me),p_jf(jf),m_maxjetnumber(maxjetnumber),m_isron(isron), m_fsron(fsron) 
+				 int maxjetnumber, int isrmode,int isrshoweron, int fsrshoweron) :
+  p_me(me),p_jf(jf),m_maxjetnumber(maxjetnumber),
+  m_isrmode(isrmode), m_isrshoweron(isrshoweron), m_fsrshoweron(fsrshoweron), p_local_tree(0)
 {
   //      p_lastproc  = 0;
   p_combi = 0;
@@ -36,6 +37,7 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder
 
 Cluster_Partons::~Cluster_Partons()
 {
+  if (p_local_tree) delete p_local_tree;
   if (p_combi) delete p_combi;
   if (p_sud)  delete p_sud;
   
@@ -99,7 +101,7 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
     Vec4D * amoms = new Vec4D[nlegs];
     for (int i=0;i<nlegs;++i) amoms[i] = p_me->Momenta()[i];
 
-    p_combi = new Combine_Table(p_jf,amoms,0,m_isron,m_isron);
+    p_combi = new Combine_Table(p_jf,amoms,0,m_isrmode,m_isrshoweron);
     p_combi->FillTable(legs,nlegs,nampl);   
     p_ct = p_combi->CalcJet(nlegs,_x1,_x2); 
   }
@@ -157,7 +159,14 @@ void Cluster_Partons::CalculateWeight(double hard,double jet)
   std::vector<double> last_q(nlegs,qmax);
   std::vector<int>    last_i(nlegs,si);
   double as_jet  = (*as)(facycut*jet);
-  double as_hard = (*as)(facycut*hard);  //*AS* check this!
+  double as_hard = (*as)(facycut*hard);
+  
+  if (jet<1.e-6 || hard<1.e-6) {
+    as_jet  = 1.;
+    as_hard = 1.;
+  }
+
+
   // remove (for e+e- -> Jets) universal 2 Quark sudakov to increase the effectivity!
   int strong=0;
   for (int l=0; l<nlegs; ++l) {
@@ -341,14 +350,25 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
 
 void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
 {
-  if ((!ini_trees && m_isron) || (!fin_tree && m_fsron)) {
+  cout<< "Cluster"<<endl;
+  if ((!ini_trees && m_isrshoweron) || (!fin_tree && m_fsrshoweron)) {
     msg.Error()<<"ERROR in Cluster_Partons::FillTrees: no trees! no shower to be performed! "<<endl;
     return;
   } 
   
-  if (!m_isron && !m_fsron) return;
+  // **rm**  if (!m_isron && !m_fsron) return;
 
-
+  if (!m_isrshoweron) {
+    // prepare dummy tree
+    if (!p_local_tree)  p_local_tree=new Tree();
+    p_local_tree->Reset();
+  }
+  if (!m_fsrshoweron) {
+    // prepare dummy tree
+    if (!p_local_tree)  p_local_tree=new Tree();
+    p_local_tree->Reset();
+    fin_tree=p_local_tree;
+  }
 
   std::vector<Knot *> knots;
   std::vector<Knot *> ini_knots; // production points
@@ -358,34 +378,35 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   // generate knotlist from pointlist in Combine_Table
 
   // start initial state
-  if (m_isron) {
+  if (m_isrshoweron) {
     knots.push_back(Point2Knot(ini_trees[0],p_ct->GetLeg(0), p_ct->Momentum(0),'G'));
     knots.push_back(Point2Knot(ini_trees[1],p_ct->GetLeg(1), p_ct->Momentum(1),'G'));
   }
   else {
-    knots.push_back(0);
-    knots.push_back(0);
+    knots.push_back(Point2Knot(p_local_tree,p_ct->GetLeg(0), p_ct->Momentum(0),'G'));
+    knots.push_back(Point2Knot(p_local_tree,p_ct->GetLeg(1), p_ct->Momentum(1),'G'));
   }
   
   Knot * mo = 0;   
-  if (m_fsron) {
-    mo   = fin_tree->NewKnot();
-    knots.push_back(Point2Knot(fin_tree    ,p_ct->GetLeg(2), p_ct->Momentum(2),'H'));
-    knots.push_back(Point2Knot(fin_tree    ,p_ct->GetLeg(3), p_ct->Momentum(3),'H'));
-  }
 
-  if (knots[0]) knots[0]->part->SetDecayBlob(p_blob);  
-  if (knots[1]) knots[1]->part->SetDecayBlob(p_blob);
-  if (knots[2]) knots[2]->part->SetProductionBlob(p_blob);
-  if (knots[3]) knots[3]->part->SetProductionBlob(p_blob);
+  mo   = fin_tree->NewKnot();
+  knots.push_back(Point2Knot(fin_tree    ,p_ct->GetLeg(2), p_ct->Momentum(2),'H'));
+  knots.push_back(Point2Knot(fin_tree    ,p_ct->GetLeg(3), p_ct->Momentum(3),'H'));
+
+  knots[0]->part->SetDecayBlob(p_blob);  
+  knots[1]->part->SetDecayBlob(p_blob);
+  knots[2]->part->SetProductionBlob(p_blob);
+  knots[3]->part->SetProductionBlob(p_blob);
 
   for (int i=0;i<4;i++) {
     for (int j=0;j<2;j++) {
       if (xs) {
-	if (knots[i])	knots[i]->part->SetFlow(j+1,xs->Colours()[i][j]);
+	cout<<" xscols["<<i<<"]["<<j<<"]"<<xs->Colours()[i][j]<<endl;
+	knots[i]->part->SetFlow(j+1,xs->Colours()[i][j]); 
       }
       else {
-	if (knots[i])	knots[i]->part->SetFlow(j+1,m_colors[i][j]);
+	cout<<" clcols["<<i<<"]["<<j<<"]"<<m_colors[i][j]<<endl;
+	knots[i]->part->SetFlow(j+1,m_colors[i][j]);
       }	
     }
   }
@@ -401,18 +422,15 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   mo->thcrit = M_PI;
   }
 
-  if (m_isron)
-    EstablishRelations(mo,knots[0],knots[1],0);
-  if (m_fsron)
-    EstablishRelations(mo,knots[2],knots[3],1);      
+  EstablishRelations(mo,knots[0],knots[1],0);
+  EstablishRelations(mo,knots[2],knots[3],1);      
 
   // determine starting conditions for showers
   // note, that starting conditions for subsequent branches have to be 
   // evaluted during the shower evoultion (since the system, esp. for 
   // final state showers starting from the initial state shower are not
   // known.)
-  if (m_isron && m_fsron)
-    DetermineColourAngles(knots);
+  DetermineColourAngles(knots);
 
   for (int l=0; l<4; ++l) ini_knots.push_back(knots[l]);
 
@@ -456,23 +474,24 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
           
   p_ct = ct_tmp;
 
-  // determine colour partners and colour angles (if isr on it is done above)
-  if (!m_isron && m_fsron) {
-    for (int i=2; i<nlegs; ++i) 
-      knots[i]->thcrit = ColourAngle(knots,i);
-  }
 
   // update colours in blob
   for (int i=0; i<4 ; ++i) {
     int j=i/2;
     int k=i%2+1;
     if (knots[j]) p_blob->InParton(j)->SetFlow(k, knots[j]->part->GetFlow(k));
+    else {
+      cout<<" Problem in Cluster_Partons ini"<<endl;
+    }
   }
   
   for (int i=4; i<2*nlegs ; ++i) {
     int j=i/2;
     int k=i%2+1;
     if (knots[j])  p_blob->OutParton(j-2)->SetFlow(k, knots[j]->part->GetFlow(k));
+    else {
+      cout<<" Problem in Cluster_Partons fin"<<endl;
+    }
   }
 }
 
@@ -638,16 +657,13 @@ double Cluster_Partons::ColourAngle(const std::vector<Knot *> & knots, const int
 
   double sprime = sum.Abs2();
 
-  if (m_isron) {
-    x1=knots[0]->x;
-    x2=knots[1]->x;
-    sprime = (knots[0]->part->Momentum() + knots[1]->part->Momentum()).Abs2();
-  }
+  x1=knots[0]->x;
+  x2=knots[1]->x;
+  sprime = (knots[0]->part->Momentum() + knots[1]->part->Momentum()).Abs2();
   Poincare lab(Vec4D(x1+x2,0.,0.,-(x1-x2)));
 
   double angle = 0.;
   int start = 0;
-  if (!m_isron) start=2;
   for (int j=start;j<knots.size();++j) {
     if (j!=i) {
       if (IsColourConnected(knots[i]->part,knots[j]->part)) {

@@ -49,7 +49,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   }
 
   p_jf       = new ATOOLS::Jet_Finder(m_ycut,m_type);
-  p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber,p_shower->ISROn(),p_shower->FSROn());
+  p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber,p_shower->GetISRHandler()->On(),p_shower->ISROn(),p_shower->FSROn());
   m_jetscale = m_ycut * sqr(rpa.gen.Ecms());
 }  
 
@@ -140,8 +140,7 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   m_weight=p_cluster->Weight();
   if (p_me->Weight()==1.) {
     if (m_weight>ran.Get()) {
-      if (p_shower->GetIniTrees() || p_shower->GetFinTree())
-	p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
+      p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
 
       m_weight=1.;
       return 1;
@@ -149,8 +148,7 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     m_weight=1.;
   }
   else {
-    if (p_shower->GetIniTrees() || p_shower->GetFinTree())
-      p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
+    p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
     return 1;
   }
   return 0;

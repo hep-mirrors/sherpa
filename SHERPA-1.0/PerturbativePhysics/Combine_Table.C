@@ -48,8 +48,8 @@ std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd)
 }
 
 Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up,
-			     int isron, int isrshoweron):
-  jf(_jf),moms(_moms),legs(0),gwin(0),up(_up),m_isron(isron),m_isrshoweron(isrshoweron)
+			     int isrmode, int isrshoweron):
+  jf(_jf),moms(_moms),legs(0),gwin(0),up(_up),m_isr1on(isrmode&1),m_isr2on(isrmode&2),m_isrshoweron(isrshoweron)
 {
   no=all++;
 }
@@ -176,8 +176,11 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
   // determine possible combinations and corresponding y_ij  if nlegs>4
   if (nlegs>4) {
     int start=0;
-    if (!m_isron) start=2;
-    for (int i=start; i<nlegs; ++i) {   // *AS* start with 2 for outgoing only , 0 for all
+    // cluster only initial state only if isrshower and isr_x is on. 
+    if (!m_isrshoweron) start=2;
+    for (int i=start; i<nlegs; ++i) {  
+      if (!m_isr1on && i==0) i=1;
+      if (!m_isr2on && i==1) i=2;
       for (int j=i+1; j<nlegs; ++j) {
 	// never combine "0&1" !
 	if (j==1) j=2;
@@ -332,7 +335,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
 	}
 	Vec4D * amoms;
 	CombineMoms(moms,cwin->i,cwin->j,nl,amoms); // generate new momenta
-	cwin->down=new Combine_Table(jf,amoms,this,m_isron,m_isrshoweron);
+	cwin->down=new Combine_Table(jf,amoms,this,m_isr1on+2*m_isr2on,m_isrshoweron);
 	cwin->down->FillTable(alegs,nl,cwin->graphs.size());   // initialise Combine_Table
       } 
       else {

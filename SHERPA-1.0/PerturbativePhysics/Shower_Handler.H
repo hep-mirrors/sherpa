@@ -22,6 +22,7 @@ namespace SHERPA {
     bool                         m_isrshowerswitch,m_fsrshowerswitch;
     ATOOLS::Data_Read          * p_dataread;
     APACIC::Hard_Interface     * p_apacic;
+    PDF::ISR_Handler           * p_isr_handler;       
   public :
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
 		   PDF::ISR_Handler *,int);
@@ -33,6 +34,7 @@ namespace SHERPA {
     bool            ISROn()           { return m_isrshowerswitch; }
     bool            FSROn()           { return m_fsrshowerswitch; }
     int             MaxJetNumber()    { return m_maxjetnumber;    }
+    PDF::ISR_Handler * GetISRHandler() { return p_isr_handler; }
     APACIC::Tree  * GetFinTree(); 
     APACIC::Tree ** GetIniTrees();
   };

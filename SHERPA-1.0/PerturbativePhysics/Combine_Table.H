@@ -96,7 +96,7 @@ namespace SHERPA {
     CD_Iterator       cwin;
     int               gwin;
 
-    int               m_isron, m_isrshoweron;
+    int               m_isr1on, m_isr2on, m_isrshoweron;
 
     ATOOLS::Jet_Finder * jf;
     ATOOLS::Vec4D       * moms;
