@@ -28,6 +28,13 @@ namespace SHERPA {
 
     ATOOLS::Data_Read * p_dataread;
 
+    int m_mode;
+    std::string m_scan_variable;
+    double m_scan_begin, m_scan_end, m_scan_value;
+    int m_scan_nsteps;
+    int m_scan_istep;
+    ATOOLS::Parameter_Map m_options;
+
     MODEL::Model_Base                  * p_model;
     BEAM::Beam_Spectra_Handler         * p_beamspectra;
     PDF::ISR_Handler                   * p_isrhandler;
@@ -49,12 +56,17 @@ namespace SHERPA {
     bool InitializeTheHadronDecays();
     //bool InitializeTheHardDecays();
     //bool InitializeTheAnalysis();
+
+    int  ExtractCommandLineParameters(int argc,char * argv[]);
+    bool CheckBeamISRConsistency();
+    void SetParameter(int nr);
   public :
+    Initialization_Handler(int argc,char * argv[]);
     Initialization_Handler(std::string=std::string("./"),
 			   std::string=std::string("Run.dat"));
     ~Initialization_Handler();
 
-    bool InitializeTheFramework();
+    bool InitializeTheFramework(int =-1);
     bool CalculateTheHardProcesses();
     bool InitializeAllHardDecays();
 
@@ -68,6 +80,12 @@ namespace SHERPA {
     Fragmentation_Handler       * GetFragmentationHandler() { return p_fragmentation;   }
     Hadron_Decay_Handler        * GetHadronDecayHandler()   { return p_hadrondecays;    }
     ATOOLS::Flavour             * GetBunches()              { return m_bunch_particles; }
+
+    int     Mode()          { return m_mode; };
+    int     NumberOfSteps() { return m_scan_nsteps; }
+    double  ParameterValue(){ return m_scan_value; }
+
+    int     UpdateParameters();
   };
 
   /*!

@@ -16,14 +16,22 @@ using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
+struct Char_Array40 {
+ char  s[40];
+} ;
 
+extern "C" {
+  Char_Array40 visaje_();
+}
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file),
   p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), p_mehandler(NULL),
-  p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL),
-  p_hadrondecays(NULL)
+  p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
+  p_fragmentation(NULL), p_hadrondecays(NULL)
 {
+  m_scan_istep=-1;  
+
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
@@ -35,6 +43,33 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
 }
+
+
+Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
+  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), p_mehandler(NULL),
+  p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
+  p_fragmentation(NULL), p_hadrondecays(NULL)
+{
+  m_path=std::string("./");
+  m_file=std::string("Run.dat");
+
+  m_scan_istep=-1;
+
+  ExtractCommandLineParameters(argc, argv);
+
+  p_dataread         = new Data_Read(m_path+m_file);
+  m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
+  m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
+  m_isrdat           = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
+  m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
+  m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
+  m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
+  m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
+  m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
+  m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
+
+}
+
 
 Initialization_Handler::~Initialization_Handler()
 {
@@ -50,15 +85,37 @@ Initialization_Handler::~Initialization_Handler()
 }
 
 
-bool Initialization_Handler::InitializeTheFramework()
+bool Initialization_Handler::InitializeTheFramework(int nr)
 {
-  ATOOLS::ParticleInit(m_path); 
-  rpa.Init(m_path);
-
+  if (nr<=0) {
+    ATOOLS::ParticleInit(m_path); 
+    rpa.Init(m_path,m_file);
+  }
   bool okay = InitializeTheModel();  
+
+  //  set masses and withs from command line
+  SetParameter(nr);
+  UpdateParameters();
+    
   okay      = okay && InitializeTheBeams();
   okay      = okay && InitializeThePDFs();
 
+  if (!CheckBeamISRConsistency()) return 0.;
+  
+  okay = okay && InitializeTheHardDecays();
+  okay = okay && InitializeTheMatrixElements();
+  //  only if events:
+  if (rpa.gen.NumberOfEvents()>0) {
+    okay = okay && InitializeTheShowers();
+    okay = okay && InitializeTheBeamRemnants();
+    okay = okay && InitializeTheFragmentation();
+    okay = okay && InitializeTheHadronDecays();
+  }
+  return okay;
+}
+
+bool Initialization_Handler::CheckBeamISRConsistency()
+{
   if (p_model->Name()==std::string("ADD")) {
     double ms = p_model->ScalarConstant("M_s");
     if (ms<rpa.gen.Ecms()) {
@@ -99,22 +156,152 @@ bool Initialization_Handler::InitializeTheFramework()
 	       <<p_beamspectra->GetBeam(1)<<" -> "<<p_isrhandler->Flav(1)<<endl;
     return 0;
   }
-  
-  okay = okay && InitializeTheHardDecays();
-  okay = okay && InitializeTheMatrixElements();
-  okay = okay && InitializeTheShowers();
-  okay = okay && InitializeTheBeamRemnants();
-  okay = okay && InitializeTheFragmentation();
-  okay = okay && InitializeTheHadronDecays();
 
-  return okay;
+  return 1;
 }
 
+int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
+{
+  map<std::string,int> special_options;
+  special_options["-V"]=12;
+  special_options["--version"]=12;
+  special_options["-?"]=13;
+  special_options["-h"]=13;
+  special_options["--help"]=13;
+  special_options["-scan"]=14;
+  special_options["-xsout"]=15;
+  special_options["-eventout"]=16;
 
+  special_options["PATH"]=101;
+  special_options["RUNDATA"]=102;
+  special_options["ECMS"]=103;
+
+  for (int i=1; i<argc;++i) {
+    int mode=0;
+    string par=string(argv[i]);
+    string key,value;
+    int equal=par.find("=");
+    if (equal!=-1) {
+      mode=1;
+      value = par.substr(equal+1);
+      key   = par = par.substr(0,equal);
+      if (key.find("MASS")!=string::npos || key.find("WIDTH")!=string::npos) mode=100;
+    }
+
+
+    if (special_options.find(par)!=special_options.end()) 
+      mode=special_options[par];
+    cout<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
+
+    // variables in dat files
+    if (equal!=-1 && mode==0) {
+      cout<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
+      Data_Read::SetCommandLine(key,value);
+    }
+    
+    // special variables
+    if (mode>=100) {
+      MyStrStream s;
+      switch (mode) {
+      case 101:
+	if (value[value.length()-1]!='/') value+=std::string("/");
+	m_path=value;
+	break;
+      case 102:
+	m_file=value;
+	break;
+      case 103:
+	s<<value;
+	double ecms;
+	s>>ecms;
+	cout<<" Setting Ecms to : "<<ecms<<endl;
+	s<<ecms/2.;
+	s>>value;
+	cout<<" Setting Ecms/2 to : "<<value<<endl;
+	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
+	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
+	break;
+      case 100:
+	m_options[key]=value;
+      }
+    }
+    else {
+      // other option
+      switch (mode) {
+      case 12:
+	{
+	  // should call a version roution
+	  cout<<" Sherpa Version 1.0.2"<<endl;
+	  cout<<"   employing: "<<endl;
+	  cout<<"    * AMEGIC++ Version 2.0.2 "<<endl;
+	  cout<<"    * APACIC++ Version 2.0.2 "<<endl;
+
+	  string pyver("6.214");
+	  cout<<"    * Pythia Version "<<pyver<<endl;
+	  Char_Array40 cid=visaje_();
+	  cout<<"    * IsaJet Version "<<cid.s<<endl;
+	}
+	exit(0);
+      case 13:
+	cout<<" Help: "<<endl;
+	cout<<" Sherpa [options] [<variable>=<value>] "<<endl;
+	cout<<endl;
+	cout<<" Possible options: "<<endl;
+	cout<<"  -V,--version   prints the Version number"<<endl;
+	cout<<"  -?,--help      prints this help message"<<endl;
+	cout<<"  -xsout <filename> "<<endl;
+	cout<<"                 sets a file where calculated cross sections should be printed to"<<endl;
+	cout<<"  -eventout <filename> "<<endl;
+	cout<<"                 sets a file where events should be printed to"<<endl;	
+	cout<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
+	cout<<"                 performs a parameter scan"<<endl;
+	exit(0);
+      case 14: 
+	// scan
+	m_mode=14;
+	Data_Read::SetCommandLine("EVENTS","0");
+	if (i+4<argc) {
+	  m_scan_variable=argv[++i];
+	  MyStrStream s;
+	  s<<argv[++i];
+	  s>>m_scan_begin;
+	  s<<argv[++i];
+	  s>>m_scan_end;
+	  s<<argv[++i];
+	  s>>m_scan_nsteps;
+	  m_scan_istep=0;
+	  cout<<" scanning "<<m_scan_variable
+	      <<" from "<<m_scan_begin<<" to "<<m_scan_end
+	      <<" in "<<m_scan_nsteps<<" steps"<<endl;
+	}
+	else {
+	  cout<<"ERROR: too less parameter after -scan"<<endl;
+	  cout<<"       try Sherpa -? for more information "<<endl;
+	  exit(1);
+	}
+
+	break;
+      case 15:
+	// xsout
+	break;
+      case 16:
+	// eventout
+	break;
+      }
+
+
+    }
+
+  }
+
+  return m_mode;
+}
 
 bool Initialization_Handler::InitializeTheModel()
 {
+  if (p_model) { delete p_model; p_model = NULL; }
   Data_Read     * dataread     = new Data_Read(m_path+m_modeldat);
+  // - add commandline parameter - !!
   Model_Handler * modelhandler = new Model_Handler();
   p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);
 
@@ -133,7 +320,23 @@ bool Initialization_Handler::InitializeTheModel()
 
 bool Initialization_Handler::InitializeTheBeams()
 {
+  if (p_beamspectra) { 
+    delete p_beamspectra; p_beamspectra = NULL; 
+
+    // look for memory leaks
+    /*
+    for (int i=0; i<10;++i) {
+      Data_Read * dataread = new Data_Read(m_path+m_beamdat);
+      // - add commandline parameter - !!
+      p_beamspectra        = new Beam_Spectra_Handler(dataread);
+      delete p_beamspectra; p_beamspectra = NULL; 
+      cout<<" Press Enter "<<endl;
+      char key = cin.get();
+    }
+    */
+  }
   Data_Read * dataread = new Data_Read(m_path+m_beamdat);
+  // - add commandline parameter - !!
   p_beamspectra        = new Beam_Spectra_Handler(dataread);
   msg.Events()<<"Initialized the beams "<<p_beamspectra->Type()<<endl;
 
@@ -144,7 +347,9 @@ bool Initialization_Handler::InitializeTheBeams()
 
 bool Initialization_Handler::InitializeThePDFs()
 {
+  if (p_isrhandler)  { delete p_isrhandler; p_isrhandler = NULL; }
   Data_Read * dataread     = new Data_Read(m_path+m_isrdat);
+  // - add commandline parameter - !!
   PDF_Handler * pdfhandler = new PDF_Handler();
   PDF_Base *  pdfbase;
   ISR_Base ** isrbases     = new ISR_Base*[2];
@@ -173,25 +378,35 @@ bool Initialization_Handler::InitializeThePDFs()
 
 bool Initialization_Handler::InitializeTheHardDecays()
 {
+  if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   p_harddecays = new Hard_Decay_Handler(m_path,m_decaydat,m_medat,p_model);
   return 1;
 }
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
-  if (p_harddecays) 
+  //   for (int i=0; i<20;++i) {
+
+  if (p_mehandler)  { delete p_mehandler; p_mehandler = NULL; }
+  if (p_harddecays) {
     p_mehandler = new Matrix_Element_Handler(m_path,m_medat,
 					     p_model,p_beamspectra,p_isrhandler,
 					     p_harddecays->GetAmegic());
+  }
   else
     p_mehandler = new Matrix_Element_Handler(m_path,m_medat,
 					     p_model,p_beamspectra,p_isrhandler,NULL);
+
+//        cout<<" Press Enter "<<endl;
+//        char key = cin.get();
+//    }
  
   return 1;
 }
 
 bool Initialization_Handler::InitializeTheShowers()
 {
+  if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,
 				       p_isrhandler,p_mehandler->MaxJets());
   
@@ -201,6 +416,7 @@ bool Initialization_Handler::InitializeTheShowers()
 
 bool Initialization_Handler::InitializeTheBeamRemnants() 
 {
+  if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   p_beamremnants = new Beam_Remnant_Handler(m_path,m_beamremnantdat,
 					    p_isrhandler,p_beamspectra);
   return 1;
@@ -208,12 +424,14 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
 
 bool Initialization_Handler::InitializeTheFragmentation() 
 {
+  if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   p_fragmentation = new Fragmentation_Handler(m_path,m_fragmentationdat);
   return 1;
 }
 
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
+  if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
 					     p_fragmentation->GetLundFortranInterface());
   return 1;
@@ -222,14 +440,98 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
   int scalechoice = 0;
-  if (p_showerhandler->ISROn()) scalechoice += 1;
-  if (p_showerhandler->FSROn()) scalechoice += 2;
-
-  return p_mehandler->CalculateTotalXSecs(scalechoice);
+  if (p_showerhandler) {
+    if (p_showerhandler->ISROn()) scalechoice += 1;
+    if (p_showerhandler->FSROn()) scalechoice += 2;
+  }
+  int ok = p_mehandler->CalculateTotalXSecs(scalechoice);
+  if (ok && m_scan_istep!=-1) {
+    AMEGIC::Process_Base * procs= p_mehandler->GetAmegic()->Processes();
+    cout<<ParameterValue()<<" ";
+    for (int i=0; i<procs->Size();++i) {
+      double xstot = (*procs)[i]->Total()*rpa.Picobarn();
+      cout<<xstot<<" ";
+    }
+    for (int i=0; i<procs->Size();++i) {
+      cout<<"###"<<(*procs)[i]->Name();
+    }
+    cout<<endl;
+  }
+  return ok;
 }
 
 bool Initialization_Handler::InitializeAllHardDecays()
 {
   return 1;
   return p_harddecays->InitializeAllHardDecays(m_medat,p_model);
+}
+
+void Initialization_Handler::SetParameter(int nr) {
+  if (nr<0) return;
+
+  if (nr!=m_scan_istep) 
+    cout<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
+
+  double value=m_scan_value=m_scan_begin+(m_scan_end-m_scan_begin)*double(m_scan_istep)/double(m_scan_nsteps);
+
+  MyStrStream s;
+  string sval;
+  if (m_scan_variable==string("ECMS")) {
+    s<<value/2.;
+    s>>sval;
+    cout<<" Setting Ecms/2 to : "<<sval<<endl;
+    Data_Read::SetCommandLine("BEAM_ENERGY_1",sval);
+    Data_Read::SetCommandLine("BEAM_ENERGY_2",sval);
+  }
+  else if (m_scan_variable.find("MASS")!=string::npos || m_scan_variable.find("WIDTH")!=string::npos ) {
+    s<<value;
+    s>>sval;
+    m_options[m_scan_variable]=sval;
+    // make sure UpdateParameters() is called
+  }   
+  else {
+    cout<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
+    cout<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
+    s<<value; 
+    s>>sval;
+    m_options[m_scan_variable]=sval;    
+    //    exit(1);
+  }
+  ++m_scan_istep;
+}
+
+int Initialization_Handler::UpdateParameters() 
+{
+  for (Parameter_Iterator it = m_options.begin(); it!=m_options.end() ; ++it) {
+    MyStrStream s;
+    string key=it->first;
+    string value=it->second;
+    cout<<" "<<key<<" = "<<value<<endl;
+    int a=key.find("(")+1;
+    int b=key.find(")")-a;
+    cout<<"Flavour "<<key.substr(a,b);
+    s<<key.substr(a,b);
+    int kfc;
+    s>>kfc;
+    Flavour fl((kf::code)kfc);
+    cout<<" : "<<fl<<endl;
+    if (key.find("MASS")!=string::npos) {
+      double mass=fl.Mass();
+      cout<<" old mass = "<<mass<<endl;
+      s<<value;
+      s>>mass;
+      cout<<" new mass = "<<mass<<endl;
+      fl.SetMass(mass);
+    }
+    if (key.find(string("WIDTH"))!=string::npos) {
+      cout<<"key:"<<key<<endl;
+      double width=fl.Width();
+      cout<<" old width = "<<width<<endl;
+      s<<value;
+      s>>width;
+      cout<<" new width = "<<width<<endl;
+      fl.SetWidth(width);
+    }
+  }
+  return 1;
 }
