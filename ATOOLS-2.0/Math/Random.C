@@ -1,7 +1,7 @@
 #include "Random.H"
 #include "Message.H"
 #include "MathTools.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
 #include <iostream>
 
 using namespace ATOOLS;
