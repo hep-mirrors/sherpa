@@ -42,10 +42,10 @@ Primitive_Detector_Getter::operator()(const String_Matrix &parameters,
     }
     else if (cur[0]=="CalCone" && cur.size()>4) {
       detector->SetAnalysis(analysis);
-      detector->AddSelector(ATOOLS::ToType<double>(cur[0]),
-			    ATOOLS::ToType<double>(cur[1]),
+      detector->AddSelector(ATOOLS::ToType<double>(cur[1]),
 			    ATOOLS::ToType<double>(cur[2]),
 			    ATOOLS::ToType<double>(cur[3]),
+			    ATOOLS::ToType<double>(cur[4]),
 			    cur.size()>5?ATOOLS::ToType<int>(cur[5]):0);
     }
   }
