@@ -39,70 +39,6 @@ namespace ANALYSIS {
 
   };// end of class Forward_Backward_Eta_Correlation
 
-  class Leading_PT_Selector: public Primitive_Observable_Base {  
-  private:
-
-    std::string m_outlist;
-
-    size_t m_item;
-
-  public:
-
-    Leading_PT_Selector(const size_t item,const double ptmin,const double ptmax,
-			const std::string &jetlist,const std::string &outlist);
-    
-    void Evaluate(const ATOOLS::Particle_List &particlelist,
-		  double weight=1.,int ncount=1);
-    
-    Primitive_Observable_Base *Copy() const;
-    
-    void EndEvaluation(double scale);
-
-  };// end of class Leading_PT_Selector
-
-  class Leading_ET_Selector: public Primitive_Observable_Base {  
-  private:
-
-    std::string m_outlist;
-
-    size_t m_item;
-
-  public:
-
-    Leading_ET_Selector(const size_t item,const double ptmin,const double ptmax,
-			const std::string &jetlist,const std::string &outlist);
-    
-    void Evaluate(const ATOOLS::Particle_List &particlelist,
-		  double weight=1.,int ncount=1);
-    
-    Primitive_Observable_Base *Copy() const;
-    
-    void EndEvaluation(double scale);
-
-  };// end of class Leading_ET_Selector
-
-  class Transverse_Region_Selector: public Primitive_Observable_Base {  
-  private:
-
-    std::string m_jetlist, m_outlist;
-
-    ATOOLS::Vec4D m_leadingjet;
-
-  public:
-
-    Transverse_Region_Selector(const double phimin,const double phimax,
-			       const std::string &jetlist,const std::string &inlist,
-			       const std::string &outlist);
-
-    void Evaluate(const ATOOLS::Particle_List &particlelist,
-		  double weight=1.,int ncount=1);
-
-    Primitive_Observable_Base *Copy() const;
-
-    void EndEvaluation(double scale);
-
-  };// end of class Transverse_Region_Selector
-
   class Multiplicity_vs_JetPT: public Primitive_Observable_Base {  
   private:
 
@@ -125,6 +61,52 @@ namespace ANALYSIS {
     void EndEvaluation(double scale);
 
   };// end of class Multiplicity_vs_JetPT
+
+  class Scalar_PT_Sum_vs_JetPT: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Scalar_PT_Sum_vs_JetPT(const int type,
+			   const double ptmin,const double ptmax,
+			   const int nbins,const std::string &jetlist,
+			   const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Scalar_PT_Sum_vs_JetPT
+
+  class Scalar_PT_Sum_vs_JetET: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Scalar_PT_Sum_vs_JetET(const int type,
+			   const double ptmin,const double ptmax,
+			   const int nbins,const std::string &jetlist,
+			   const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Scalar_PT_Sum_vs_JetET
 
   class Multiplicity_vs_PT: public Primitive_Observable_Base {  
   private:
@@ -149,6 +131,7 @@ namespace ANALYSIS {
   private:
 
     std::string m_jetlist;
+    double      m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
     
@@ -156,7 +139,8 @@ namespace ANALYSIS {
 
     Multiplicity_vs_DPhi(const int type,
 			 const double dphimin,const double dphimax,
-			 const int nbins,const std::string &jetlist,
+			 const int nbins,const double offset,
+			 const std::string &jetlist,
 			 const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -167,6 +151,131 @@ namespace ANALYSIS {
     void EndEvaluation(double scale);
 
   };// end of class Multiplicity_vs_DPhi
+
+  class Scalar_PT_Sum_vs_DPhi: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+    double      m_offset;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Scalar_PT_Sum_vs_DPhi(const int type,
+			  const double dphimin,const double dphimax,
+			  const int nbins,const double offset,
+			  const std::string &jetlist,
+			  const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Scalar_PT_Sum_vs_DPhi
+
+  class Scalar_ET_Sum_vs_DPhi: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+    double      m_offset;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Scalar_ET_Sum_vs_DPhi(const int type,
+			  const double dphimin,const double dphimax,
+			  const int nbins,const double offset,
+			  const std::string &jetlist,
+			  const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Scalar_ET_Sum_vs_DPhi
+
+  class Multiplicity_vs_DEta: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+    double      m_offset;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Multiplicity_vs_DEta(const int type,
+			 const double dphimin,const double dphimax,
+			 const int nbins,const double offset,
+			 const std::string &jetlist,
+			 const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Multiplicity_vs_DEta
+
+  class Scalar_PT_Sum_vs_DEta: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+    double      m_offset;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Scalar_PT_Sum_vs_DEta(const int type,
+			 const double dphimin,const double dphimax,
+			 const int nbins,const double offset,
+			 const std::string &jetlist,
+			 const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Scalar_PT_Sum_vs_DEta
+
+  class Scalar_ET_Sum_vs_DEta: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+    double      m_offset;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Scalar_ET_Sum_vs_DEta(const int type,
+			 const double dphimin,const double dphimax,
+			 const int nbins,const double offset,
+			 const std::string &jetlist,
+			 const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Scalar_ET_Sum_vs_DEta
 
 }// end of namespace ANALYSIS
 
