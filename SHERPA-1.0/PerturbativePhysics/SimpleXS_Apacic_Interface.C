@@ -52,6 +52,10 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
 int SimpleXS_Apacic_Interface::InitColours(Blob * blob) 
 {
   if (!p_xs->SetColours(p_momenta)) return 0; 
+  if (blob->InParticle(0)->Momentum()[3]<blob->InParticle(1)->Momentum()[3]) {
+    blob->SwapInParticles(0,1);
+    blob->SwapOutParticles(0,1);
+  }
   for (int j=0;j<2;j++) {
     for (int i=0;i<blob->NInP();++i) {
       blob->InParticle(i)->SetFlow(j+1,p_xs->Colours()[i][j]);
