@@ -72,6 +72,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (isrchannels)  { delete isrchannels;  isrchannels  = 0; }
   if (fsrchannels)  { delete fsrchannels;  fsrchannels  = 0; }
   if (beamchannels) { delete beamchannels; beamchannels = 0; }
+  delete p_info;
 }
 
 /* ----------------------------------------------------------------------
