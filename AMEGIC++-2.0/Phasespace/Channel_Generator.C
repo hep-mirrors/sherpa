@@ -533,7 +533,6 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
 				       int& rannum,ofstream& sf)
 {
-  short int i,j;
   string * lm    = new string[pcount];
   string * momp  = new string[pcount];
   int    * sflag = new int[pcount];
@@ -618,19 +617,11 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     //    if ((flag==1) || (flag==11)) {
     else {
       string s(""); 
-      for (i=0;i<lm[hit].length()-1;i++) s += string("p[")+lm[hit][i]+string("]+");
+      for (short int i=0;i<lm[hit].length()-1;i++) s += string("p[")+lm[hit][i]+string("]+");
       s += string("p[")+lm[hit][lm[hit].length()-1]+string("]");
      
       AddToVariables(flag,lm[hit],s,1,sf);
       AddToVariables(flag,lm[hit],string("dabs(")+momp[hit]+string(".Abs2())"),0,sf);
-     
-      //sf<<"  Vec4D  "<<Order(momp[hit])<<" = "<<s<<";"<<endl
-      //<<"  double s"<<Order(lm[hit])<<" = "<<string("dabs(")<<momp[hit]<<string(".Abs2());")<<endl;
-
-      /*
-	sf<<"  Vec4D  "<<momp[hit]<<" = ";
-	for (i=0;i<lm[hit].length()-1;i++) sf<<"p["<<lm[hit][i]<<"] + ";
-      */
       if (maxpole>0.) {
 	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
 	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,"<<"s"<<Order(lm[hit])<<");"<<endl;
@@ -765,14 +756,9 @@ void Channel_Generator::CalcSmin(int flag,char* min,string lm,ofstream& sf,Point
     AddToVariables(flag,Order(lm) + string("_") + string(min),
 		   string("Max(s")+Order(lm)+string("_")+string(min)+string("1,s")
 		                  +Order(lm)+string("_")+string(min)+string("2)"),0,sf);
-    //sf<<"  double s"<<Order(lm)<<"_"<<min<<"2 = "<<s2<<";"<<endl
-    //<<"  double s"<<Order(lm)<<"_"<<min<<" = "
-    //<<string("Max(s")+Order(lm)+string("_")+string(min)+string("1,s")
-    //+Order(lm)+string("_")+string(min)+string("2)")<<";"<<endl;
   }
   else {
     AddToVariables(flag,lm + string("_") + string(min),s,0,sf);
-    //sf<<"  double s"<<Order(lm)<<"_"<<min<<" = "<<s<<";"<<endl;
   }
 }
 
@@ -858,28 +844,7 @@ string Channel_Generator::Order(string s)
 void  Channel_Generator::AddToVariables(int flag,const string& lhs,const string& rhs,const int& type,
 					ofstream& sf)
 {
-  int hit = 1;
   string lhso = Order(lhs);
-  /*
-  if (flag) {
-    for (short i=0;i<vars->size();i++) {
-      if (lhso==(*vars)[i].lhs.String() && type==(*vars)[i].type) {
-	hit = 0;
-	(*vars)[i].count++;
-	break;
-      }
-    }
-    if (hit) {
-      Variable newv;
-      newv.lhs  = Kabbala(lhso,Complex(0.,0.));
-      newv.rhs  = rhs;
-      newv.type = type;
-      newv.count = 1;
-      vars->push_back(newv);
-    }
-  }
-  else {
-*/
   std::string name;
   if (type ==0) name=string("s")+lhso;
   else name=string("p")+lhso;
@@ -900,8 +865,5 @@ void  Channel_Generator::AddToVariables(int flag,const string& lhs,const string&
       abort();
     }
   }
-
-
-//  }
 }
 

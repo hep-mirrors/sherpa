@@ -16,9 +16,9 @@ namespace APACIC {
   // dicing z and t for spacelike (initial state) shower evolution
   class Spacelike_Sudakov : public Backward_Splitting_Group {
     // global parameters
-    Sudakov_Tools * p_tools;
+    Sudakov_Tools        * p_tools;
     Spacelike_Kinematics * p_kin;
-    PDF::PDF_Base * p_pdfa;
+    PDF::PDF_Base        * p_pdfa;
     double          m_pt2min, m_pt2max; 
     double          m_alphaSmax, m_alphaSfix; 
     double          m_lambda2, m_b, m_t0;

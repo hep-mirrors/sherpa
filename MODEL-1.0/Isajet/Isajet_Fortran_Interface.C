@@ -8,6 +8,7 @@ using namespace MODEL;
 using namespace AMATOOLS;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
+using namespace std;
 
 extern "C" {
   void isasusyinter_(float *,float *,float *,float *,int &,const char *);

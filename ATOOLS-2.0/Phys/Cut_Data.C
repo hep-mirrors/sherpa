@@ -65,7 +65,6 @@ void Cut_Data::Init(int _ncut,Flavour * _fl) {
 void Cut_Data::Init(Cut_Data * _cuts,Flavour * _fl) {
   ncut      = _cuts->ncut;
   fl        = _fl;
-  double E  = AORGTOOLS::rpa.gen.Ecms();
   if (!energymin) {
     energymin           = new double[ncut];
     energymax           = new double[ncut];

@@ -21,7 +21,6 @@ All_Decays::All_Decays(Interaction_Model_Base * _model,Topology * _top) :
 
 void All_Decays::FindUnstableParticles() 
 {
-  int count = 0;
   Flavour flav;
   for (int i=1;i<MAX_PARTICLES;i++) {
     flav = Flavour(particles[i].kfc);
@@ -116,6 +115,7 @@ bool All_Decays::InitializeDecays()
     }
     dit++;
   }
+  return 1;
 }
 
-bool All_Decays::CalculateBranchingWidths(string _resdir) {}
+bool All_Decays::CalculateBranchingWidths(string _resdir) { return 1; }

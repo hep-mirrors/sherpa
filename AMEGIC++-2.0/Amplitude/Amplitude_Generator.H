@@ -59,11 +59,12 @@ namespace AMEGIC {
   
   class Amplitude_Generator {
     static int NMAX;
-    int                      N,nEW,nQCD;
     APHYTOOLS::Flavour     * fl;
     int                    * b;
     Interaction_Model_Base * p_model;
     Topology               * top;
+    int                      N,nEW,nQCD;
+
     Single_Topology        * single_top;
     int                      prenum;
     Pre_Amplitude          * prea;

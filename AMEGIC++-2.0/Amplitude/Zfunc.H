@@ -21,10 +21,10 @@ namespace AMEGIC {
 
   class CValue {
   public:
-    Kabbala m_value;
-    int* p_args;
-    CValue() {p_args=0;}
-    CValue(int* _args, const Kabbala _value) : p_args(_args) , m_value(_value) {}
+    int     * p_args;
+    Kabbala   m_value;
+    CValue() { p_args=0; }
+    CValue(int * _args, const Kabbala _value) : p_args(_args) , m_value(_value) {}
     inline bool Compare(int* args, int n){
       for(int i=0;i<n;++i) if (args[i]!=p_args[i]) return false;
       return true;
@@ -53,7 +53,7 @@ namespace AMEGIC {
 
     Zfunc();
     Zfunc(const Zfunc& z);
-    ~Zfunc();
+    virtual ~Zfunc();
     	
     Zfunc& operator=(const Zfunc& z);
     //virtual part

@@ -145,7 +145,6 @@ double Parton::LifeTime() {
 }
 
 Vec3D Parton::Distance() {
-  double gamma     = E()/m_fl.Mass();
   Vec3D v = Vec3D(m_momentum)/E()*AORGTOOLS::rpa.c();
   return v*LifeTime();
 }

@@ -70,10 +70,7 @@ namespace AORGTOOLS {
     // helpers
     void FillIn(const std::string &);
     void Shorten(std::string&);
-
-
   };
-
 }
 
 #endif //  AORGTOOLS

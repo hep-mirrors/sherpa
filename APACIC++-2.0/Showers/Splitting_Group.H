@@ -23,7 +23,7 @@ namespace APACIC {
     */
     Splitting_Group(Splitting_Function * spl=0);
     //! Standard Destructor
-    ~Splitting_Group();
+    virtual ~Splitting_Group();
     //! Summing over all splittings, filling individual values and total sum
     virtual double CrudeInt(double _zmin, double _zmax);
     /*!

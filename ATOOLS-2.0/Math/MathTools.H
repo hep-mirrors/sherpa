@@ -6,16 +6,17 @@
 // GNU C++ Compiler       
 #include <cmath>        
 
-// if __GNUC__ == 3 && __GNUC_MINOR__ == 0.
-// if defined __GNUC__ && defined __cplusplus && __GNUC_MINOR__ >= 8
-// if !defined __GNUC__ || __GNUC__ < 2 || __GNUC_MINOR__ < 7 
-// #define GCC_VERSION (__GNUC__ * 10000 \
-//                     + __GNUC_MINOR__ * 100 \
-//                     + __GNUC_PATCHLEVEL__)
-//...
-// Test for GCC > 3.2.0 
-// #if GCC_VERSION > 30200 
-
+/*
+  if __GNUC__ == 3 && __GNUC_MINOR__ == 0.
+  if defined __GNUC__ && defined __cplusplus && __GNUC_MINOR__ >= 8
+  if !defined __GNUC__ || __GNUC__ < 2 || __GNUC_MINOR__ < 7 
+  #define GCC_VERSION (__GNUC__ * 10000 \
+  + __GNUC_MINOR__ * 100 \
+  + __GNUC_PATCHLEVEL__)
+  ...
+  Test for GCC > 3.2.0 
+  #if GCC_VERSION > 30200 
+*/
 
 #endif
 

@@ -8,6 +8,7 @@ using namespace MODEL;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
+using namespace std;
 
 
 /* 

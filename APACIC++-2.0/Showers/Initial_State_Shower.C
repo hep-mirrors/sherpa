@@ -69,8 +69,6 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
   if (InitializeSystem(trees,trees[0]->GetRoot(),trees[1]->GetRoot())) {
     double x1,x2;
     Vec4D  cms;
-    double E2 = sqr(rpa.gen.Ecms());   
-
     p_kin->BoostInCMS(trees,GetInitiator(trees[0]),GetInitiator(trees[1]));
     cms = trees[0]->GetInitiator()->part->Momentum() +
           trees[1]->GetInitiator()->part->Momentum();
@@ -239,9 +237,6 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
 
 bool Initial_State_Shower::TestShower(Tree ** trees) 
 {
-  int number;
-  double x1,x2;
-  Vec4D  cms;
   double E2 = sqr(rpa.gen.Ecms());
 
   ran.ReadInStatus("RandomA.dat",2735);
@@ -276,8 +271,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     return 0;
   }
 
-  Flavour k1_flavs[2];
-  Flavour k2_flavs[2];
   bool decay1 = (k1->stat>=1), decay2 = (k2->stat>=1);
   int first = 0;
   if ((!decay1 && decay2)||(decay1 && !decay2)) first=1;
@@ -290,8 +283,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
   int mismatch  = 0;
   bool accepted =1; 
   int caught_jetveto=0;
-
-  int asc1 = 0;
 
   for (;;) {
     m_sprime      = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
@@ -398,9 +389,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       double sprime_b = (k1->prev->part->Momentum()+k2->part->Momentum()).Abs2();
       k1->z=sprime_a/sprime_b;
       k1->prev->x=k1->x/k1->z;
-      double s = sqr(rpa.gen.Ecms());
-      double sprime_c = k1->x  * k2 ->x * s;
-      double sprime_d = k1->prev->x  * k2 ->x * s;
       m_sprime/=k1->z;
 
 

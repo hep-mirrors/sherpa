@@ -8,11 +8,12 @@ namespace AMATOOLS {
 
   class Histogram {
   private :
-    double     m_lower, m_upper, m_binsize, m_logbase;
-    int        m_nbin, m_depth;
-    long int   m_fills;
+    int        m_type, m_nbin;
+    double     m_lower, m_upper;
     double  ** m_bins;
-    int        m_type;
+    long int   m_fills;
+    double     m_binsize, m_logbase;
+    int        m_depth;
     bool       m_active;
     int        m_logarithmic;
   public :

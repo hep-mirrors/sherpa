@@ -34,10 +34,7 @@ double Gauss_Integrator::Integrate(double x1, double x2, double prec, int mode, 
   if (x1==x2) return 0.;
 
   int n = 64;
-  if (n>nmax) {
-    n=nmax;
-    cout<<" reduced to n="<<n<<endl;
-  }
+  if (n>nmax) n=nmax;
   double i2=0.,i1=1.;
   int err;
   for (n;(n<=nmax)&&(dabs(1-i2/i1)>prec);n*=2) { 

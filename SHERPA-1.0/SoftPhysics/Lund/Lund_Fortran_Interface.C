@@ -86,6 +86,7 @@ bool Lund_Fortran_Interface::Hadronize(APHYTOOLS::Blob * blob,
 
 
   FillPrimaryHadronsInBlob(blob,bloblist,pl);
+  return 1;
 }
 
 

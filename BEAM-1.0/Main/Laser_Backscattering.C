@@ -197,7 +197,7 @@ double Laser_Backscattering::Rescattering(double x,double pole,double poll,doubl
   if (yMin > 1.) return 0.;
   
   double y1, y2;
-  double dy, dp, value, pvalue;
+  double dy, value, pvalue;
   double val1,val2,p1,p2;
 
   value    = pvalue  = 0.;

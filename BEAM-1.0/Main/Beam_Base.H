@@ -13,7 +13,7 @@ namespace BEAM {
     double             m_energy,m_polarization;
     AMATOOLS::Vec4D    m_lab,m_vecout;
     int                m_dir;
-    double             m_weight,m_x,m_Q2;
+    double             m_x,m_Q2,m_weight;
   public:
     Beam_Base(std::string _type,const APHYTOOLS::Flavour _beam,
 	      const double _energy,const double _polarization,const int _dir) :

@@ -11,6 +11,7 @@ using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace MODEL;
+using namespace std;
 
 NLL_Sudakov::NLL_Sudakov(double _tmax,double _tmin) :
   tmax(_tmax), tmin(_tmin), gauss(this), inte(NLL::analytic) 
@@ -156,12 +157,11 @@ double NLL_Sudakov::IntGammaQ(double Q0, double Q) {
   case NLL::alphas_repl :
     {
       double balpi = beta0*asmu/(4.*M_PI) ;
-      double eta0  = balpi * log(sqr(Q0)/mu2);
-      double eta1  = balpi * log(sqr(Q)/mu2);
       return 8.*M_PI * CF/(sqr(beta0)* asmu) *
 	       ( balpi * log(sqr(Q0/Q)) + 
 		 (1.+ balpi*(log(sqr(Q)/mu2) - 3./2.)) * log(AlphaS(Q0*Q0)/AlphaS(Q*Q))  );
     }
+  default : break;
   }
 
   msg.Error()<<" Error in NLL_Sudakov::IntGammaQ.wrong type specified in NLL_Sudakov::IntGammaF  "<<std::endl;
@@ -213,12 +213,11 @@ double NLL_Sudakov::IntGammaG(double Q0, double Q) {
   case NLL::alphas_repl :
     {
       double balpi = beta0*asmu/(4.*M_PI) ;
-      double eta0  = balpi * log(sqr(Q0)/mu2);
-      double eta1  = balpi * log(sqr(Q)/mu2);
       return 8.*M_PI * CA/(sqr(beta0)* asmu) *
 	       ( balpi * log(sqr(Q0/Q)) + 
 		 (1.+ balpi*(log(sqr(Q)/mu2) - 11./6.)) * log(AlphaS(Q0*Q0)/AlphaS(Q*Q)) );
     }
+  default : break;
   }
 
   msg.Error()<<" Error wrong type specified in NLL_Sudakov::IntGammaF  "<<std::endl;
@@ -263,6 +262,7 @@ double NLL_Sudakov::IntGammaF(double Q0, double Q) {
     // Integrate NLL branching (using analytic LO formula with running alphaS);
   case NLL::alphas_repl :
     return 2.*Nf/(3.*beta0) * log(AlphaS(Q0*Q0)/AlphaS(Q*Q));
+  default : break;
   }
 
   msg.Error()<<" ERROR wrong type specified in NLL_Sudakov::IntGammaF  "<<std::endl;
@@ -423,6 +423,7 @@ double NLL_Sudakov::operator()(double x) {
   default           : 
     msg.Error()<<" ERROR wrong type specified in NLL_Sudakov::operator() !!!!!  "<<std::endl;
   }
+  return 0.;
 }
 
 

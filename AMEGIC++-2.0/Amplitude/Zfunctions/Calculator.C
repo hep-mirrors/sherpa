@@ -18,8 +18,8 @@ Z_Calc::Z_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
   Zfunc_Calc(_sgen,_BS),
   Basic_Zfunc(_sgen,_BS), 
   Basic_Xfunc(_sgen,_BS), 
-  Basic_Vfunc(_sgen,_BS), 
-  Basic_Mfunc(_sgen,_BS) 
+  Basic_Mfunc(_sgen,_BS), 
+  Basic_Vfunc(_sgen,_BS)
 { 
   type     = zl::Z;
   ncoupl=4;narg=4;pn=1;

@@ -189,7 +189,6 @@ bool Timelike_Kinematics::ShuffleMoms(Knot * mo)
     r2 = D - sqrt(D*D- E);
     r1 = A + r2*B;
     Vec4D p1a( (1.-r1)*p1 + r2*p2 );
-    Vec4D p2a( (1.-r2)*p2 + r1*p1 );
     Vec4D p =mo->part->Momentum();
     mo->z= p1a[0]/p[0];
 
@@ -254,11 +253,9 @@ bool Timelike_Kinematics::KinCheck(int first,Knot * mo)
       else if (pt_scheme == 2)
 	pt2 = 0.25*Min((1.-mo->z)/mo->z,mo->z/(1.-mo->z))*mo->t;
       double pt2th    = sqrt(pt2/mo->E2)/(mo->z*(1.- mo->z));
-      double crudeth  = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );
-      
+      // double crudeth  = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );      
       double coscrude = cos(pt2th);
 
-      int hit=0;
       if (jf->TwoJets(mo->E2,mo->z,coscrude,0)) return 1;
     }
     return 0;
@@ -320,11 +317,9 @@ bool Timelike_Kinematics::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2)
   else if (pt_scheme == 2)
     pt2 = 0.25*Min((1.-z)/z,z/(1.-z))*t;
   double pt2th  = sqrt(pt2/E2)/(z*(1.- z));
-  double crudeth  = sqrt( t/(z*(1.- z)*E2) );
-  
+  //double crudeth  = sqrt( t/(z*(1.- z)*E2) );
   double coscrude = cos(pt2th);
   
-  int hit=0;
   if (! (jf->TwoJets(E2,z,coscrude,0))) return 0;
   return 1;
 }
@@ -341,8 +336,7 @@ bool Timelike_Kinematics::JetVeto(double mo_t, double mo_e2, double mo_z,
       pt2 = 0.25*Min((1.-mo_z)/mo_z,mo_z/(1.-mo_z))*mo_t;
 
     double pt2th    = sqrt(pt2/mo_e2)/(mo_z*(1.- mo_z));
-    double crudeth  = sqrt( mo_t/(mo_z*(1.- mo_z)*mo_e2) );
-   
+    //double crudeth  = sqrt( mo_t/(mo_z*(1.- mo_z)*mo_e2) );
     double coscrude = cos(pt2th); 
     
     if (jf->TwoJets(mo_e2,mo_z,coscrude,0)) {
@@ -374,7 +368,6 @@ bool Timelike_Kinematics::DoKinematics(Knot * mo)
   double p1real = mo->left->part->Momentum()[1]; 
   double t2     = mo->right->t,w2 = mo->right->E2;
   double p2     = sqrt(w2-t2);
-  double p2real = mo->right->part->Momentum()[1]; 
   
   if (p1real==0.) {
     mo->part->SetStatus(2);

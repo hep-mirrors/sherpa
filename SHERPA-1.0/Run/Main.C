@@ -3,6 +3,8 @@
 #include "prof.hh"
 #include "Random.H"
 
+using namespace std;
+
 extern "C" {
   void apainit_();
   void aparun_();

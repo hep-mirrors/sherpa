@@ -184,6 +184,8 @@ namespace AMEGIC {
       case lf::VVGS:
 	help = std::string("VVGS[") + Str(0) + std::string(",") + Str(1) 
 	     + std::string(",") + Str(2) + std::string("]");break;
+      default :
+	return std::string("1");
       }     
       return help;
     }

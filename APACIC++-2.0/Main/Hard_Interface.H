@@ -23,8 +23,8 @@ namespace APACIC {
     bool                   m_isron,m_fsron,m_showers;
     Initial_State_Shower * p_inishower;
     Final_State_Shower   * p_finshower;
-    Tree                 * p_fintree;
     Tree                ** p_initrees;
+    Tree                 * p_fintree;
   public :
     Hard_Interface(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,AORGTOOLS::Data_Read *); 
     ~Hard_Interface(); 

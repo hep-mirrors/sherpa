@@ -68,7 +68,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
   maxopt    = iter*nopt;
 
-  bool flag = 0;
   long int  n;
   int       endopt = 1;
   double    value;
@@ -76,9 +75,8 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   ran.SetSeed(-100*rank);
   
   // ------ total sums for MPI ---
-  //int    iterall = 50; 
-  int    iterall = iter/size + 1 ; 
-  long   alln    = 0;
+  long int alln;
+  int iterall;
   double allsum  = 0.;
   double allsum2 = 0.;
   // ------- local sums ------
@@ -301,13 +299,11 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
 
   maxopt    = iter*nopt;
 
-
-  double flux = 1./(2.*mass);
+  // double flux = 1./(2.*mass);
   long int n;
   double value;
   double max = 0.;
   double error;
-  double ymin;
   
   (psh->FSRIntegrator())->Reset();
 

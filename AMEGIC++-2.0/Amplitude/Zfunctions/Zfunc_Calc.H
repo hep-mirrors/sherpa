@@ -47,6 +47,7 @@ namespace AMEGIC {
     zl::code                 type; 
 
     Zfunc_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {} 
+    virtual ~Zfunc_Calc() {}
     virtual Kabbala Do(); 
     
     virtual int GetScalarNumb();

@@ -87,6 +87,7 @@ void Lorentz_Function::InitPermutation()
     AddPermutation( 1,1,2,0,3);
     AddPermutation( 1,2,0,1,3);  
     break;    
+  default : break;
   }
   m_permcount = 0;
 }
@@ -104,7 +105,6 @@ int Lorentz_Function::NextPermutation()
   if (m_permcount==m_permlist.size()) return 0;
   
   for (short int i=0;i<NofIndex();i++) partarg[i]  = m_permlist[m_permcount][i];
-					 
 }
 
 int Lorentz_Function::GetSign() 

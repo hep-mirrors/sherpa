@@ -11,7 +11,7 @@ using namespace AMATOOLS;
 
 Model_Base::Model_Base(std::string _dir,std::string _file) :
   m_dir(_dir), m_file(_file), p_dataread(NULL),
-  p_numbers(NULL), p_functions(NULL), p_constants(NULL), p_matrices(NULL),
+  p_numbers(NULL), p_constants(NULL), p_functions(NULL), p_matrices(NULL),
   p_spectrumgenerator(NULL)
 { }
 

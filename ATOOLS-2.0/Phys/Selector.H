@@ -75,10 +75,10 @@ namespace APHYTOOLS {
   };
 
   class Selector_Log {
-    long int passed,rejected;
     std::string   m_name;
+    long int      m_rejected, m_passed;
   public :
-    Selector_Log(std::string _name) : m_name(_name), rejected(0), passed(0) { }
+    Selector_Log(std::string _name) : m_name(_name), m_rejected(0), m_passed(0) { }
     int  Hit();
     int  Hit(bool);
     void Output();
@@ -86,17 +86,17 @@ namespace APHYTOOLS {
     int  Passed();
   };
 
-  inline int Selector_Log::Hit() { ++rejected; return 0; } 
+  inline int Selector_Log::Hit() { ++m_rejected; return 0; } 
   inline int Selector_Log::Hit(bool hit) { 
-    if (hit) { ++rejected; return 1; } 
-        else { ++passed; return 0;}
+    if (hit) { ++m_rejected; return 1; } 
+        else { ++m_passed; return 0;}
   }
-  inline int  Selector_Log::Rejections() { return rejected; }
-  inline int  Selector_Log::Passed()     { return passed; }
+  inline int  Selector_Log::Rejections() { return m_rejected; }
+  inline int  Selector_Log::Passed()     { return m_passed; }
   inline void Selector_Log::Output() { 
     AORGTOOLS::msg.Out()<<"  Selector "<<m_name<<" rejection quota  : "
-			<<double(rejected)/double(rejected+passed)
-			<<"  ("<<rejected<<" / "<<passed+rejected<<")"<<std::endl;
+			<<double(m_rejected)/double(m_rejected+m_passed)
+			<<"  ("<<m_rejected<<" / "<<m_passed+m_rejected<<")"<<std::endl;
   }
 }
 

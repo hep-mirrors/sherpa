@@ -46,8 +46,6 @@ Interaction_Model_Higgs::Interaction_Model_Higgs(MODEL::Model_Base * _model,
 void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 {
   Flavour flHmin(kf::Hmin);
-  Flavour flH0(kf::H0);
-  Flavour flh0(kf::h0);
   Flavour flA0(kf::A0);
   
   // l(e)/q(d) -> h0/H0 + l(e)/q(d)
@@ -317,11 +315,6 @@ void Interaction_Model_Higgs::c_VVS(Single_Vertex* vertex,int& vanz)
     
   Flavour flW(kf::W);
   Flavour flZ(kf::Z);
-  Flavour flHmin(kf::Hmin);    
-  Flavour flh0(kf::h0);
-  Flavour flH0(kf::H0);
-  Flavour flA0(kf::A0);
-  Flavour flPhoton(kf::photon);
   
   Kabbala kcpl0,kcpl1;
   
@@ -374,9 +367,7 @@ void Interaction_Model_Higgs::c_VVS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].in[1] = flav;
 	vertex[vanz].in[2] = flZ;
 	
-	kcpl0 = M_I/(costW*costW*num_2)*g2*g2*
-	  (v1*K_Z_R(0,i-31)+v2*K_Z_R(1,i-31));
-
+	kcpl0 = M_I/(costW*costW*num_2)*g2*g2*(v1*K_Z_R(0,i-31)+v2*K_Z_R(1,i-31));
 	kcpl1 = kcpl0;
 
 	vertex[vanz].cpl[0]  = kcpl0.Value();
@@ -585,8 +576,6 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
   Flavour flW(kf::W);
   Flavour flZ(kf::Z);
   Flavour flHmin(kf::Hmin);
-  Flavour flh0(kf::h0);
-  Flavour flH0(kf::H0);
   Flavour flA0(kf::A0);
   Flavour flPhoton(kf::photon);
   Kabbala kcpl0,kcpl1;
@@ -772,8 +761,6 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
   Flavour flW(kf::W);
   Flavour flZ(kf::Z);
   Flavour flHmin(kf::Hmin);    
-  Flavour flh0(kf::h0);
-  Flavour flH0(kf::H0);
   Flavour flA0(kf::A0);
   Flavour flPhoton(kf::photon);
   

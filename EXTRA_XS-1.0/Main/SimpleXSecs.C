@@ -16,8 +16,7 @@ using namespace std;
 
 SimpleXSecs::SimpleXSecs(std::string _path,std::string _file,
 			 MODEL::Model_Base * _model) :
-  m_path(_path), m_file(_file), 
-  XS_Group(0,0,NULL)
+  m_path(_path), m_file(_file), XS_Group(0,0,NULL)
 {
   m_atoms    = 1;
   p_dataread = new Data_Read(m_path+m_file);
@@ -51,7 +50,6 @@ bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
     abort();
   }
 
-  XS_Base * xs;
   string    buf;
   char      buffer[100];
   int       position;

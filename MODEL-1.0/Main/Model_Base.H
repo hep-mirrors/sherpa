@@ -23,20 +23,20 @@ namespace MODEL {
     std::string               m_dir,m_file;
     std::string               m_name;
 
+    AORGTOOLS::Data_Read    * p_dataread;
+
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
     ScalarFunctionsMap      * p_functions;
     ComplexMatricesMap      * p_matrices; 
 
-    AORGTOOLS::Data_Read    * p_dataread;
-
-    int                       m_spectrum;
     Spectrum_Generator_Base * p_spectrumgenerator;
+    int                       m_spectrum;
 
     virtual void ReadInFile() = 0;
   public:
     Model_Base(std::string,std::string);
-    ~Model_Base();
+    virtual ~Model_Base();
     virtual bool RunSpectrumGenerator() = 0;
     virtual void FillMasses()           = 0;
     virtual void FillWidths()           = 0;

@@ -10,6 +10,7 @@ namespace PDF {
     APHYTOOLS::Flavour m_bunch;
     std::string        m_type;    
   public:
+    virtual ~PDF_Base() {}
     virtual void Calculate(const double x, const double Q2) = 0;
     virtual double GetXPDF(const APHYTOOLS::Flavour &)      = 0;
 

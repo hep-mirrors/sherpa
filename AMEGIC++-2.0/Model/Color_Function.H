@@ -59,10 +59,11 @@ namespace AMEGIC {
       
       std::string help;
       switch (type) {
-      case 0: help = std::string("T[ , , ]");break;
-      case 1: help = std::string("F[ , , ]");break;
-      case 2: help = std::string("D[ , ]");break;
-      case 4: help = std::string("G[ , ]");break;
+      case 0 :  help = std::string("T[ , , ]");break;
+      case 1 :  help = std::string("F[ , , ]");break;
+      case 2 :  help = std::string("D[ , ]");break;
+      case 4 :  help = std::string("G[ , ]");break;
+      default : return std::string("1");
       }
       for (short int i=0;i<3;i++) {
 	if ((type==cf::D || type==cf::G) && i==2) break;

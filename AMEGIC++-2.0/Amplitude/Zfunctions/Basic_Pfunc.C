@@ -58,7 +58,6 @@ double Basic_Pfunc::Ifunc(double x,int ed)
 
 double Basic_Pfunc::IEfunc(double x,int ed)
 {
-  int n;
   double a=0.;
   if((ed%2)==0){
     for(int k=2;k<ed;k+=2){

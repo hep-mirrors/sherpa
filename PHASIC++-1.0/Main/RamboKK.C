@@ -8,6 +8,7 @@ using namespace PHASIC;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
+using namespace std;
 
 RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
 {

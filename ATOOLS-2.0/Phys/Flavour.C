@@ -17,6 +17,7 @@ namespace APHYTOOLS {
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
+using namespace std;
 
 int APHYTOOLS::Kf_To_Int::is_initialised=0;
 
@@ -66,9 +67,8 @@ Part_Info::Part_Info(kf::code kfc_,
 		     bool strong, int spin, bool Majorana, 
 		     bool Take, bool stable,bool massive,
 		     char* name,int _masssign) : 
-  kfc(kfc_), m(mass), yuk(mass), w(width), iq(icharge), isow(isoweak), 
-  str(strong), sp(spin), Maj(Majorana), on(Take), stbl(stable), msv(massive),hadron(0),
-  n(name), masssign(_masssign), group(0) { 
+  kfc(kfc_), m(mass), w(width), yuk(mass), iq(icharge), isow(isoweak), sp(spin), masssign(_masssign),  
+  str(strong), Maj(Majorana), on(Take), stbl(stable), msv(massive),hadron(0), n(name), group(0) { 
   n  = new char[strlen(name)+1];
   strcpy(n,name);
 }
@@ -77,9 +77,8 @@ Part_Info::Part_Info(kf::code kfc_,
 		     double mass, double width, int icharge, int isoweak, 
 		     int spin, bool Take, bool stable,
 		     char* name) : 
-  kfc(kfc_), m(mass), yuk(0.),  w(width), iq(icharge), isow(isoweak), 
-  str(0), sp(spin), Maj(0), on(Take), stbl(stable), msv(1), hadron(1),
-  n(name), masssign(1), group(0) { 
+  kfc(kfc_), m(mass), w(width), yuk(0.), iq(icharge), isow(isoweak), sp(spin), masssign(1), 
+  str(0), Maj(0), on(Take), stbl(stable), msv(1), hadron(1), n(name), group(0) { 
   n  = new char[strlen(name)+1];
   strcpy(n,name);
 }

@@ -624,7 +624,6 @@ void Vertex::TexOutput()
 }
 
 void Vertex::AddVertex(Single_Vertex* addv){
-  int oldnvertex=m_nvertex;
   Single_Vertex * oldv=m_v;
   m_v = new Single_Vertex[m_nvertex+1];
   for (int i=0;i<m_nvertex;++i) {
@@ -667,6 +666,7 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
     AORGTOOLS::msg.Debugging()<<"Vertex not found!"<<endl;
   }
   else AORGTOOLS::msg.Debugging()<<"no routine to search for 4 legs"<<endl;
+  return 0;
 }
 
 ostream& AMEGIC::operator<<(ostream& s, const Single_Vertex& sv)

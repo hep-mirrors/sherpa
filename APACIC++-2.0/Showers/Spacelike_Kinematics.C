@@ -153,7 +153,6 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
     (0.5*(s1*s3 + np1*np3) + partner->t * (sister->t - active->t - mother->t)));
  
 
-  double test_f4  =((1./active->z-1.)*sprime - sister->t)/(2.*sqrt(sprime));
   double cph=cos(active->phi), sph=sin(active->phi);
   
   Vec4D v_mo(E_mo,sph*pt_mo,cph*pt_mo,pz_mo);
@@ -223,10 +222,6 @@ Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees)
   Vec4D  cms2  = init2->part->Momentum();
   double E2    = init2->x * E;
   double p2    = sqrt(E2*E2 - cms2.Abs2());
-
-  Vec4D  lab1  = Vec4D(E1,0.,0.,p1);
-  Vec4D  lab2  = Vec4D(E2,0.,0.,-p2);
-
   Vec4D  lab   = Vec4D(E1+E2,0.,0.,p2-p1);
   boost        = Poincare(lab);
   trees[0]->BoRo(boost);

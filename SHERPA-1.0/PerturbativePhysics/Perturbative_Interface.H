@@ -9,12 +9,13 @@
 namespace SHERPA {
   class Perturbative_Interface {
   protected :
-    bool   m_ini,m_fin;
-    int    m_nin,m_nout,m_maxjetnumber;
-    double m_weight;
-
     Matrix_Element_Handler * p_me;
     Shower_Handler         * p_shower;        
+    bool                     m_ini,m_fin;
+    int                      m_maxjetnumber;
+    double                   m_weight;
+
+    int                      m_nin,m_nout;
     APHYTOOLS::Flavour     * p_fl;
     AMATOOLS::Vec4D        * p_moms;
   public :

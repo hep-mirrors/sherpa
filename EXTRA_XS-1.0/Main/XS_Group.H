@@ -16,8 +16,8 @@ namespace EXTRAXS { class XS_Selector; }
 namespace EXTRAXS {
   class XS_Group : public XS_Base {
   protected:
-    bool                     m_atoms;
     XS_Selector            * p_xsselector;
+    bool                     m_atoms;
     std::vector<XS_Base *>   m_xsecs;
   private :
     virtual void CreateFSRChannels() {}
@@ -45,8 +45,8 @@ namespace EXTRAXS {
     void      AddPoint(const double);
     double    Differential2();
     double    Differential(double,double,double);
-    double    operator()(double,double,double)    {}
-    bool      SetColours(double, double, double)  {}
+    double    operator()(double,double,double)    { return 0.; }
+    bool      SetColours(double, double, double)  { return 1; }
     void      UpdateCuts(double,double)           {}
     void      DeSelect();
     void      SelectOne();

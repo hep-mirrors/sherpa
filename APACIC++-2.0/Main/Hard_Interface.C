@@ -18,7 +18,7 @@ using namespace AORGTOOLS;
 Hard_Interface::Hard_Interface(ISR_Handler * _isr,MODEL::Model_Base * _model,int _maxjetnumber,
 			       bool _isron,bool _fsron,Data_Read * _dataread):
   m_isron(_isron), m_fsron(_fsron), m_showers(_isron||_fsron),
-  p_fintree(NULL), p_finshower(NULL), p_initrees(NULL), p_inishower(NULL)
+  p_inishower(NULL), p_finshower(NULL), p_initrees(NULL), p_fintree(NULL)
 {
   if (m_fsron) {
     p_fintree   = new Tree();

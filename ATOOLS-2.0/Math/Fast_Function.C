@@ -81,7 +81,6 @@ void Fast_Function::Init(Function_Base & fun, double xmin, double xmax, int min_
 
     // transfer all remaining testpoints to data 
     std::list<Pair>::iterator it=testpoints.begin();
-    Data_Iter dit=m_data.begin();
     for (;it!=testpoints.end();) {
       Insert(it->x,it->y);
       ++it;

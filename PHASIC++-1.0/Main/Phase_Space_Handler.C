@@ -187,8 +187,8 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
     return 0.;
   }
 
-  double value = 0., KFactor = 0., Q2 = -1.;
-  result1      = result2     = 0.;
+  double KFactor = 0., Q2 = -1.;
+  result1 = result2 = 0.;
 
   if (bh->On()>0) bh->BoostInLab(p,nin+nout);
   if (ih->On()>0) ih->BoostInLab(p,nin+nout);
@@ -383,7 +383,6 @@ void Phase_Space_Handler::WriteOut(string pID) {
   if (isrchannels  != 0) isrchannels->WriteOut(pID+string("/MC_ISR"));
   if (fsrchannels  != 0) fsrchannels->WriteOut(pID+string("/MC_FSR"));
 
-  char * filename = new char[100];
   string help     = (pID+string("/Random")).c_str();
   int nran = ran.WriteOutStatus(help.c_str());
 }

@@ -5,10 +5,10 @@
 
 namespace BEAM {  
   class Laser_Backscattering : public Beam_Base {
+    double m_energyL,m_polarizationL;
     int    m_mode;
     bool   m_angles,m_pol;
     double m_Ebounds[2];
-    double m_energyL,m_polarizationL;
     double m_rho2,m_delta;
     double m_nonlin1,m_nonlin2,m_xi;
     double m_xe, m_xmax, m_xmax2;
@@ -189,6 +189,7 @@ namespace BEAM {
   /*!
     \var double Laser_Backscattering::m_polar
     The polarization degree.
+  */
   /*!
     \fn Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour,const double,const double,
                                                    const double,const double,const int,

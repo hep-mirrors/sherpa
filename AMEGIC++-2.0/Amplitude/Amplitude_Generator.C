@@ -40,7 +40,7 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 					 Interaction_Model_Base * _model,Topology * _top,
 					 int _nQCD,int _nEW,
 					 Basic_Sfuncs* _BS,String_Handler* _shand) 
-  : N(_no), fl(_fl), b(_b), p_model(_model), top(_top), nEW(_nEW), nQCD(_nQCD),
+  : fl(_fl), b(_b), p_model(_model), top(_top), N(_no), nEW(_nEW), nQCD(_nQCD),
     BS(_BS), shand(_shand), s_buffer(0)
 {
   single_top = top->Get(N-2);

@@ -33,8 +33,10 @@ Hadron_Decay_Handler::~Hadron_Decay_Handler()
 
 bool Hadron_Decay_Handler::FillHadronDecayBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *)
 {
+  return 1;
 }
 
 bool Hadron_Decay_Handler::ReconstructLundHadronDecays() 
 {
+  return 1;
 }

@@ -16,7 +16,7 @@ using namespace APACIC;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
-using std::endl;
+using namespace std;
 
 //-----------------------------------------------------------------------
 //--------------------------- Constructors ------------------------------
@@ -79,7 +79,7 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   if (mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
 
-    int stat=InitializeJets(tree,mo,1);
+    int stat = InitializeJets(tree,mo,1);
   }
   else {
     if (mo->part->Info()=='H') {
@@ -108,7 +108,7 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
       Reset(mo);
       return;
     }
-
+    
   }
 }
 
@@ -117,7 +117,7 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
 //----------------------------------------------------------------------- 
 
 bool Final_State_Shower::SetAllColours(Knot * mo) {
-  SetColours(mo,p_kin);
+  return SetColours(mo,p_kin);
 }
 
 
@@ -302,8 +302,6 @@ void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
   // set color conections (if not jet known)
   APACIC::Final_State_Shower::SetColours(mo,0);
   
-  Vec3D vec1 = Vec3D(d1->part->Momentum());
-  Vec3D vec2 = Vec3D(d2->part->Momentum());
   double t_mo = mo->part->Momentum().Abs2();
   double E_mo= mo->part->Momentum()[0];
   
@@ -476,7 +474,6 @@ bool Final_State_Shower::TestShower(Tree * tree)
   ana.AddObservable(sobs);
   ana.AddObservable(new Multiplicity(00,-0.5,50.5,51,0));
   
-  int number;
   double E2 = sqr(rpa.gen.Ecms());
   double E  =rpa.gen.Ecms()*0.5;
   for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
@@ -783,7 +780,7 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
   Flavour d1_flavs[2];
   Flavour d2_flavs[2];
   
-  bool do12,accept;
+  bool do12;
   bool diced1=0, diced2=0;
 
   for (;;) {

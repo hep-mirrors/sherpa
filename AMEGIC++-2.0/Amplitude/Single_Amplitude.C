@@ -172,6 +172,7 @@ void Single_Amplitude::PrintGraph()
 			    <<" "<<c->partarg[2]<<") ";
 	break;
       }
+      default : break;
     }
     c = c->Next;     
   }

@@ -9,6 +9,7 @@ using namespace SHERPA;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
+using namespace std;
 
 
 Beam_Remnant_Handler::Beam_Remnant_Handler(std::string _dir,std::string _file,
@@ -83,7 +84,6 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _p
   Blob * blob;
   bool match;
   bool flag = 0;
-  int pos;
   for (int i=0;i<2;i++) {
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
       match = 1;

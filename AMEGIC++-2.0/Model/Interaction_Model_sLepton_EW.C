@@ -418,9 +418,6 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 {
   Flavour flHmin(kf::Hmin);    
-  Flavour flh0(kf::h0);
-  Flavour flH0(kf::H0);
-  Flavour flA0(kf::A0);
 
   Kabbala kcpl0,kcpl1,help,K_lI, num_1;
   num_1    = Kabbala(string("1"),1.);    	

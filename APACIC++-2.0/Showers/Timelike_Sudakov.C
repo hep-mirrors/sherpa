@@ -278,12 +278,14 @@ bool Timelike_Sudakov::MEVeto(Knot * mo)
   if (twig==gr->left) isleft=1;
                  else isleft=0;
 
-  // if "first" branch perform ME - Correction for gluon radiation
-  // (t',z') *      
-  //        / \      x_i = 2 E_i / sqrt(t')
-  // (t,z) *   \
-  //      / \   \
-  //     1   3   2
+  /*
+     if "first" branch perform ME - Correction for gluon radiation
+     (t',z') *      
+            / \      x_i = 2 E_i / sqrt(t')
+     (t,z) *   \
+          / \   \
+         1   3   2
+  */
 
   double mass123 = gr->t;
   double mass13  = m_ta;

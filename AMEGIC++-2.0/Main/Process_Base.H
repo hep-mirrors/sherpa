@@ -81,7 +81,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    Process_Base::Process_Base();
+    Process_Base();
     Process_Base(int,int,APHYTOOLS::Flavour *,
 		 PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		 int,int,int,int,int,double,Pol_Info * _pl = 0,

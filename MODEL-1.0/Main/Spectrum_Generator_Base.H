@@ -25,8 +25,8 @@ namespace MODEL {
 
   class Spectrum_Generator_Base {
   protected:
-    Model_Base           * p_model;
     AORGTOOLS::Data_Read * p_dataread;
+    Model_Base           * p_model;
 
     std::vector<double>             widths;
     std::vector<double>             masses;
@@ -35,7 +35,7 @@ namespace MODEL {
     std::vector<DecayChannel *>     decayproducts;
   public:
     Spectrum_Generator_Base(AORGTOOLS::Data_Read *,Model_Base *);
-    ~Spectrum_Generator_Base();
+    virtual ~Spectrum_Generator_Base();
     virtual void Run(std::string) = 0;
     virtual void FillMasses()     = 0;
     virtual void FillDecays()     = 0;

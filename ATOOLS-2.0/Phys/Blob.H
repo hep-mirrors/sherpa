@@ -19,14 +19,15 @@ namespace APHYTOOLS {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
     friend std::ostream& operator<<( std::ostream&, const Blob *);
   private:
-    int                 m_id,m_status,m_beam;
+    AMATOOLS::Vec4D     m_position;
+    int                 m_id;
+    double              m_weight;
+    int                 m_status,m_beam;
     std::string         m_type;
     std::vector<double> m_weightcontainer;
-    double              m_weight;
     Parton_Queue        m_inpartons, m_outpartons;
     AMATOOLS::Vec4D     m_cms_vec;
     AMATOOLS::Poincare  m_cms_boost;
-    AMATOOLS::Vec4D     m_position;
   public:
     Blob(const AMATOOLS::Vec4D _pos = AMATOOLS::Vec4D(0.,0.,0.,0.), const int _id=0) : 
       m_position(_pos), m_id(_id), m_weight(1.) { m_beam = -1; m_status = 0; };

@@ -51,7 +51,7 @@ double * Jet_Finder::ActualValue() {
   --------------------------------------------------------------------- */
 
 Jet_Finder::Jet_Finder(double _ycut,int _type=1) : 
-  p_value(NULL), p_frame(NULL), m_ycut(_ycut), m_type(_type) , m_jet_alg(1)
+  m_ycut(_ycut), m_type(_type) , m_jet_alg(1), p_value(NULL), p_frame(NULL)
 {
   rpa.gen.SetYcut(_ycut);
 
@@ -130,7 +130,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 {
   double ymin = 2.;
   j1=-3; k1=-3;
-  double pt2jk,pt2j,pt2k,pt2min;
+  double pt2jk,pt2j,pt2k;
   for (int j=0;j<momsout.size();j++) {
     if (m_type>=3) {
       pt2j = (sqr(momsout[j][1]) + sqr(momsout[j][2]));
@@ -179,7 +179,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 
 
 Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) : 
-  p_value(NULL),p_frame(NULL),m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type) 
+  m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type), p_value(NULL), p_frame(NULL) 
 {
   rpa.gen.SetYcut(_ycut);
 
@@ -391,7 +391,7 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
 double Jet_Finder::YminKt(AMATOOLS::Vec4D * p,int & j1,int & k1)
 {
   double ymin = 2.;
-  double pt2jk,pt2j,pt2k,pt2min;
+  double pt2jk,pt2j,pt2k;
   for (int j=m_nin;j<m_n;j++) {
     if (m_fl[j].Strong()) {
       if (m_type>=3) {

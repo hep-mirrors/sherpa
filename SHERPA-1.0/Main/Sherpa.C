@@ -69,6 +69,7 @@ bool Sherpa::GenerateOneEvent() {
 
 bool Sherpa::SummarizeRun() {
   if (p_analysis) p_analysis->Finish();
+  return 1;
 }
 
 void Sherpa::DrawLogo() { }

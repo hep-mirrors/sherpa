@@ -488,7 +488,8 @@ Complex Single_Amplitude_Base::Zvalue(String_Handler * sh, int ihel)
 {
   if (sh) return sh->Zvalue(amplnumber,ihel);
   msg.Error()<<" ERROR in Single_Amplitude_Base::Zvalue(String_Handler * sh, int ihel) "<<endl;
-  shand->Zvalue(amplnumber,ihel); 
+  shand->Zvalue(amplnumber,ihel);   
+  return Complex(0.,0.);
 }
 
 Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist) 

@@ -627,7 +627,6 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
 }
 
 double Process_Base::KFactor(double _scale) {
-  double kfactor;
   switch (m_kfactorscheme) {
   case 2  :
     if (m_nstrong>2) {

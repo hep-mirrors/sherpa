@@ -18,8 +18,7 @@ namespace APHYTOOLS {
 
   class Primitive_Observable_Base {  
   protected:
-    int         type;
-    int         nbins;
+    int         type,nbins;
     double      xmin,xmax;
 
     std::string name;
@@ -52,12 +51,12 @@ namespace APHYTOOLS {
 
     Primitive_Observable_Base(int _type,double _xmin,double _xmax,int _nbins,
 			      APHYTOOLS::Selector_Base * _sel) :
-      type(_type), xmin(_xmin), xmax(_xmax), nbins(_nbins), sel(_sel) 
+      type(_type), nbins(_nbins), xmin(_xmin), xmax(_xmax), sel(_sel) 
     { 
       AORGTOOLS::msg.Error()<<"Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
     };
 
-    ~Primitive_Observable_Base() {
+    virtual ~Primitive_Observable_Base() {
       if (histo!=0) { delete histo; histo = 0; }
     }
 

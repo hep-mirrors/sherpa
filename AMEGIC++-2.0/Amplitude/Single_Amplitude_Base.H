@@ -14,12 +14,12 @@ namespace AMEGIC {
 
     Zfunc_List zlist;
     Pfunc_List plist;
+    int * b;
     int   N;
-    int*  b;
 
-    String_Handler* shand;
-    Basic_Sfuncs* BS;
-    APHYTOOLS::Flavour*      fl;
+    String_Handler     * shand;
+    Basic_Sfuncs       * BS;
+    APHYTOOLS::Flavour * fl;
 
     virtual Kabbala SingleZvalue(Zfunc*,std::vector<int>*,std::vector<int>*,int last=0);
     Kabbala SingleZGroupvalue(Zfunc* z, std::vector<int>* iz, std::vector<int>* iargs,int last=0);

@@ -4,9 +4,9 @@
 
 namespace AMATOOLS {
   class Poincare {
+    int    m_status;               // 0 no operation, 1 boost, 2 rot, 3 boost+rot
     double m_mat[4][4];               
     Vec4D  m_beta;
-    int    m_status;               // 0 no operation, 1 boost, 2 rot, 3 boost+rot
   public:
     Poincare();                    // standard constructor Unity
     Poincare(Vec4D v1, Vec4D v2);  // rotations constructor

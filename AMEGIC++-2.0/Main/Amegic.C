@@ -22,7 +22,7 @@ using namespace std;
   ----------------------------------------------------------------------------------*/
 
 Amegic::Amegic(std::string _path,std::string _file,MODEL::Model_Base * _model) :
-  m_path(_path), m_file(_file), m_maxjet(0), m_nmax(0),
+  m_path(_path), m_file(_file), m_nmax(0),m_maxjet(0), 
   p_procs(NULL), p_decs(NULL), p_model(NULL), p_top(NULL), p_fifo(NULL),
   p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
@@ -311,7 +311,6 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
   double pd[20],angle[20];
   int count = 0;
   buf += string(" "); 
-  int int_tag;
   short int i;
   for (i=0;i<20;i++) { pp[i]=' '; pd[i]=0.; pc[i]=' '; angle[i]=0.;}
 

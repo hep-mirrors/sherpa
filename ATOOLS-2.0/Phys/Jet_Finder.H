@@ -7,9 +7,8 @@
 
 namespace APHYTOOLS {
   class Jet_Finder : public Selector_Base {
-    int    m_jet_alg;
-    int    m_type;
     double m_ycut;
+    int    m_type,m_jet_alg;
     double * p_value;
     double m_ene, m_s, m_sprime; //, m_smin, m_smax;
     /*

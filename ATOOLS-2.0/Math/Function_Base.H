@@ -9,6 +9,7 @@ namespace AMATOOLS {
     double      m_defval;
     std::string m_type;
   public:
+    virtual ~Function_Base() {}
     virtual void        SetDefault(double _def)    { m_defval = _def; }
     virtual void        SetType(std::string _type) { m_type   = _type; }
     virtual void        SetParameters(double *)    { }

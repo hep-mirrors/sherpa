@@ -121,7 +121,10 @@ void Color_Generator::FillString(int N, Color_Function* cflist,int& prop)
 	                     else chelp = ca+(prop++)+N;
 	  
 	  break;
+	default :
+	  break;
 	}
+	
 	Color_Function* CFh2 = CFh;
 	while (CFh2) {
 	  //if (CFh2->type==cf::None) break;

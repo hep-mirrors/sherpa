@@ -7,8 +7,9 @@
 namespace PDF {
   class LHAPDF_Fortran_Interface : public PDF_Base {
   private:
-    std::string m_path,m_set;
+    std::string m_set;
     int         m_member;
+    std::string m_path;
     int         m_anti;
     double      m_f[13];
   public:

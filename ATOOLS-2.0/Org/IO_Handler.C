@@ -263,9 +263,9 @@ void IO_Handler::Shorten(std::string& str) {
 }
 
 
-// readin class from file 
+// read in class from file 
 template <class Type> 
- IO_Handler &  IO_Handler::operator>>(Type & value) {
+IO_Handler & IO_Handler::operator>>(Type & value) {
   file>>value;
 }
 

@@ -3,7 +3,7 @@
 using namespace APACIC;
 
 Backward_Splitting_Group::Backward_Splitting_Group(Splitting_Function * spl, PDF::PDF_Base * _pdf): 
-  p_pdf(_pdf),Splitting_Group(spl) {
+  Splitting_Group(spl), p_pdf(_pdf) {
 }
 
 double Backward_Splitting_Group::CrudeInt(double _zmin, double _zmax) {

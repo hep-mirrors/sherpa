@@ -10,8 +10,9 @@ namespace PDF {
   private:
     static c_mrst * p_proton;
     s_partoncontent m_content;
+    int             m_set;
     std::string     m_path;
-    int             m_set, m_anti;
+    int             m_anti;
   public:
     PDF_MRST99(const APHYTOOLS::Flavour,const int,const std::string); 
     void               Output();

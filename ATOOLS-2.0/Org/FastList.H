@@ -23,8 +23,7 @@ namespace AORGTOOLS {
       Module * next;
       F * datapointer;
     };
-    Module * root;
-    Module * last;
+    Module * root, * last;
     long counter;
   public:
     FastList() : root(0), last(0), counter(0) {};
@@ -63,8 +62,7 @@ namespace AORGTOOLS {
     F * operator[](long int i) { return Get(i+1);};
     friend class Iterator;
     class Iterator {
-      Module * current;
-      Module * root;
+      Module * root, * current;
     public:
       Iterator(): root(0), current(0) {};
       Iterator(FastList & list): root(list.root), current(list.root) {};

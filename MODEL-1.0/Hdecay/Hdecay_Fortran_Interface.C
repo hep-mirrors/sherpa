@@ -85,10 +85,11 @@ void Hdecay_Fortran_Interface::CalculateEffectiveCouplings(std::string _mode) {
   masses.push_back(higgs.Mass());
   particles.push_back(higgs);
 
-  double   yukawa;
   double   vev       = p_model->ScalarConstant(std::string("vev"));
-  double   ferm_pref = 8.*M_PI*sqr(vev)*hwidth/hmass;
-
+  /*
+    double   yukawa;
+    double   ferm_pref = 8.*M_PI*sqr(vev)*hwidth/hmass;
+  */
 
   DecayChannel * decay;
   for (int i=1;i<7;++i) {

@@ -81,9 +81,6 @@ void Super_Amplitude::Init(string _str)
   int hit = 0;
 
   for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) {  
-    if (rpa.gen.Tracking()) {
-      Zfunc_List* gzlist = (*g)->GetZlist(); 
-    }
     if (sign!=(*g)->GetSign()) {
       hit = 1;
     }

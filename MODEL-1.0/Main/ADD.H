@@ -9,10 +9,10 @@ namespace MODEL {
     void   ReadInFile();
   public :
     ADD(std::string,std::string);
-    ~ADD()                     {}
-    bool   RunSpectrumGenerator(){}
-    void   FillMasses()        {}
-    void   FillWidths()        {}
+    ~ADD()                        {}
+    bool   RunSpectrumGenerator() { return 1; }
+    void   FillMasses()           {}
+    void   FillWidths()           {}
   };
   /*!
     \class ADD

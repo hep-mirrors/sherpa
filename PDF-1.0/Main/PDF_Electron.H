@@ -11,6 +11,7 @@ namespace PDF {
     int    m_izetta,m_order;
   public:
     PDF_Electron(const APHYTOOLS::Flavour,const int,const int);
+    ~PDF_Electron() {}
     PDF_Base * GetCopy();
 
     void   Output();

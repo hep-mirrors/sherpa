@@ -18,9 +18,6 @@ int main(int argc,char* argv[])
 #ifdef _USE_MPI_
   MPI::Init(argc, argv);
 #endif
-  
-  int runmode = 0;
- 
   std::string path("./");
   Environment environment(path,std::string("Run.dat"));
   environment.InitializeTheEnvironment();

@@ -61,8 +61,8 @@ double Sudakov_Tools::AlphaS(double t){
 
   return (*p_as)(t);
 
-  const double b   =0.6100939485; 
-  const double lam2=sqr(0.29); 
+  // const double b   =0.6100939485; 
+  const double lam2 = sqr(0.29); 
   double thr[7];
   int nf =5;
   thr[0]=thr[1]=thr[2]=thr[3]=0.;

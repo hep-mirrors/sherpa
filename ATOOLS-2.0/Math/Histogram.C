@@ -7,7 +7,7 @@ using namespace AMATOOLS;
 using namespace AORGTOOLS;
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
-  m_type(_type), m_lower(_lower), m_upper(_upper), m_nbin(_nbin), m_bins(0), m_fills(0)
+  m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), m_bins(0), m_fills(0)
 {
   m_logarithmic = int(m_type/10);
   m_depth       = m_type-m_logarithmic*10+1;
@@ -132,7 +132,6 @@ void Histogram::Finalize() {
 }
 
 void Histogram::Reset() {
-  double total = 0;
   for (int i=0;i<m_nbin;i++) { 
     m_bins[i][0]=0;
   }

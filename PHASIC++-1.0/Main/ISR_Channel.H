@@ -36,9 +36,8 @@ namespace PHASIC {
 
   class SimplePoleForward : public Single_Channel {
   protected :
-    double norm,yexp;
+    double norm,sprimeexp,yexp;
     double deltay[2];
-    double sprimeexp;
   public :
     SimplePoleForward(double _sprimeexp,double _yexp,double _deltay1, double _deltay2);
     void GenerateWeight(double,double,int); 
@@ -47,9 +46,8 @@ namespace PHASIC {
 
   class SimplePoleBackward : public Single_Channel {
   protected :
-    double norm,yexp;
+    double norm,sprimeexp,yexp;
     double deltay[2];
-    double sprimeexp;
   public :
     SimplePoleBackward(double _sprimeexp,double _yexp,double _deltay1, double _deltay2);
     void GenerateWeight(double,double,int); 
@@ -83,9 +81,8 @@ namespace PHASIC {
 
   class ResonanceForward : public Single_Channel {
   protected :
-    double norm,yexp;
+    double norm,mass,width,yexp;
     double deltay[2];
-    double mass,width;
   public :
     ResonanceForward(double _mass,double _width,double _yexp,double _deltay1, double _deltay2);
     void GenerateWeight(double,double,int); 
@@ -95,9 +92,8 @@ namespace PHASIC {
 
   class ResonanceBackward : public Single_Channel {
   protected :
-    double norm,yexp;
+    double norm,mass,width,yexp;
     double deltay[2];
-    double mass,width;
   public :
     ResonanceBackward(double _mass,double _width,double _yexp,double _deltay1, double _deltay2);
     void GenerateWeight(double,double,int); 
@@ -128,9 +124,8 @@ namespace PHASIC {
 
   class ThresholdForward : public Single_Channel {
   protected :
-    double norm,yexp;
+    double norm,mass,yexp;
     double deltay[2];
-    double mass;
   public :
     ThresholdForward(double _mass,double _yexp,double _deltay1, double _deltay2);
     void GenerateWeight(double,double,int); 
@@ -140,9 +135,8 @@ namespace PHASIC {
 
   class ThresholdBackward : public Single_Channel {
   protected :
-    double norm,yexp;
+    double norm,mass,yexp;
     double deltay[2];
-    double mass;
   public :
     ThresholdBackward(double _mass,double _yexp,double _deltay1, double _deltay2);
     void GenerateWeight(double,double,int); 
