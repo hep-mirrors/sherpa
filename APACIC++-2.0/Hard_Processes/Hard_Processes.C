@@ -21,7 +21,8 @@ Hard_Processes::Hard_Processes(APHYTOOLS::Selector_Data * _seldata,
   seldata(_seldata), isr(_isr), beam(_beam)
 {
   success = 0;
-  broker  = new All_Processes(AMEGIC::XS_MODE);
+  broker  = new All_Processes();
+  //  broker->SetAtoms(1);
   if (ProcessesInit()) success = 1;
 }
 
