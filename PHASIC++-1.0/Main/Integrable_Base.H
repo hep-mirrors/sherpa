@@ -42,7 +42,7 @@ namespace PHASIC {
     ATOOLS::Vec4D   *p_momenta, *p_addmomenta;
 
     int    m_scalescheme, m_kfactorscheme, m_maxjetnumber;
-    int    m_nstrong, m_neweak;
+    int    m_nstrong, m_neweak, m_usepi;
     double m_threshold, m_overflow, m_rfactor;
     bool   m_updatescales;
 
@@ -147,6 +147,8 @@ namespace PHASIC {
     { m_scalescheme=scalescheme;     }
     inline void SetKFactorScheme(const int kfactorscheme) 
     { m_kfactorscheme=kfactorscheme; }
+    inline void SetUsePI(const int usepi) 
+    { m_usepi=usepi; }
 
     inline void SetTotalXS(const double totalxs)   { m_totalxs=totalxs;    }
     inline void SetTotalError(const double error)  { m_totalerr=error;     }
@@ -211,8 +213,10 @@ namespace PHASIC {
 
     inline std::vector<double> &XInfo() { return m_xinfo; }
 
-    inline ATOOLS::Cut_Data      *const Cuts() const     { return p_cuts;     }
-    inline ATOOLS::Selector_Base *const Selector() const { return p_selector; }
+    inline ATOOLS::Cut_Data      *const Cuts() const     
+    { return p_cuts;     }
+    inline ATOOLS::Selector_Base *const Selector() const 
+    { return p_selector; }
 
     inline BEAM::Beam_Spectra_Handler *const Beam() const 
     { return p_beamhandler; }

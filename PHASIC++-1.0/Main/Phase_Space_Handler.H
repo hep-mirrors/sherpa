@@ -60,9 +60,7 @@ namespace PHASIC {
     double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
     double m_result_1, m_result_2, m_flux, m_weight, m_error; 
     
-    std::vector<PI_Interface*> m_pis;
-    
-    PI_Interface* p_activepi;
+    PI_Interface* p_pi;
 
     bool MakeIncoming(ATOOLS::Vec4D *const p,const double mass=-1.);
 
@@ -119,7 +117,7 @@ namespace PHASIC {
     void ISRChannels(const int i,Channel_Info &ci) const; 
     void BeamChannels(const int i,Channel_Info &ci) const;
 
-    bool CreatePIChannel(const std::vector<Single_Channel *> &channels);
+    bool CreatePI();
 
     static ATOOLS::Integration_Info *const GetInfo();
 
@@ -182,11 +180,7 @@ namespace PHASIC {
     inline Phase_Space_Integrator *const Integrator() const 
     { return p_integrator; }
 
-    inline const std::vector<PI_Interface*> &PIs() const
-    { return m_pis; }
-
-    inline void SetActive(PI_Interface *const pi) 
-    { p_activepi=pi; }
+    inline PI_Interface *const PI() const { return p_pi; }
 
   };// end of class Phase_Space_Handler
 

@@ -35,7 +35,7 @@ namespace PHASIC {
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
     std::vector<Single_Channel *> channels, m_best;
-    bool m_readin;
+    bool m_readin, m_fixalpha;
     int m_lastdice,m_optcnt;
     double m_pol;
   public:
@@ -65,7 +65,6 @@ namespace PHASIC {
     void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,PI_Interface*);
     void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);     
-    void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,PI_Interface*);     
 
     void    GeneratePoint(int,ATOOLS::Vec4D *,double *);
     void    GenerateWeight(int,ATOOLS::Vec4D *);
@@ -81,7 +80,6 @@ namespace PHASIC {
     void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode,
 			  PI_Interface *pi);
     void    GenerateWeight(int mode);
-    void    GenerateWeight(int mode,PI_Interface*);
 
     void    ISRInfo(int,int &,double &,double &);
 
@@ -92,6 +90,8 @@ namespace PHASIC {
     void    GetRange(); 
     void    WriteOut(std::string);
     bool    ReadIn(std::string);
+
+    inline void FixAlpha() { m_fixalpha=true; }
 
     inline int                  Number()    { return channels.size(); }
     inline int                  N()         { return n_points; }

@@ -328,14 +328,15 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
-      if (!p_psh->PIs().empty() && ncontrib/iter1<4) allowbreak = false;
+      if (p_psh->PI()!=NULL && ncontrib/iter1<6) allowbreak = false;
       if (error<maxerror && allowbreak) break;
-      if (ncontrib/iter1==1) {
-	CreatePIChannels();
-	if (psh->BeamIntegrator()) psh->BeamIntegrator()->Reset();
-	if (psh->ISRIntegrator()) psh->ISRIntegrator()->Reset();
-	if (psh->KMRZIntegrator()) psh->KMRZIntegrator()->Reset();
-	if (psh->KMRKPIntegrator()) psh->KMRKPIntegrator()->Reset();
+      if (ncontrib/iter1==1 && p_psh->UsePI()>0 && p_psh->PI()==NULL) {
+	p_psh->CreatePI();
+	p_psh->PI()->Initialize();
+	if (psh->ISRIntegrator()) psh->ISRIntegrator()->FixAlpha();
+	if (psh->FSRIntegrator()) psh->FSRIntegrator()->FixAlpha();
+	if (psh->KMRZIntegrator()) psh->KMRZIntegrator()->FixAlpha();
+	if (psh->KMRKPIntegrator()) psh->KMRKPIntegrator()->FixAlpha();
       }
 #endif
 
@@ -416,49 +417,3 @@ long int Phase_Space_Integrator::MaxPoints()
 void     Phase_Space_Integrator::SetMaxPoints(long int _nmax) 
 { nmax=_nmax;  };
 
-void Phase_Space_Integrator::CreatePIChannels()
-{
-  if (p_psh->UsePI()==0 || !p_psh->PIs().empty()) return;
-  msg_Tracking()<<"Phase_Space_Integrator::CreatePIChannels(): {\n";
-  {
-    msg_Indentation(3);
-    const std::vector<Single_Channel*> &bestisr=p_psh->ISRIntegrator()->Best();
-    const std::vector<Single_Channel*> &bestfsr=p_psh->FSRIntegrator()->Best();
-    std::vector<Single_Channel*> channels(1);
-    for (size_t i=0;i<bestisr.size();++i) {
-      msg_Tracking()<<bestisr[i]->Name()<<" {\n";
-      channels[0]=bestisr[i];
-      {
-	msg_Indent();
-	if (p_psh->UsePI()>1 && p_psh->ISRIntegrator()!=NULL) {
-	  channels.resize(2);
-	  for (size_t j=0;j<bestfsr.size();++j) {
-	    msg_Tracking()<<bestfsr[j]->Name()<<" {\n";
-	    {
-	      msg_Indent();
-	      channels[1]=bestfsr[j];
-	      p_psh->CreatePIChannel(channels);
-	      // for testing purposes
-	      if (p_psh->PIs().size()>0) {
-		p_psh->SetActive(p_psh->PIs().back());
-		p_psh->PIs().back()->Initialize();
-		p_psh->Active()->ResetMax(3);
-	      }
-	    }
-	  msg_Tracking()<<"}\n";
-	  }
-	}
-	else {
-	  p_psh->CreatePIChannel(channels);
-	  if (p_psh->PIs().size()>0) {
-	    p_psh->SetActive(p_psh->PIs().back());
-	    p_psh->PIs().back()->Initialize();
-	    p_psh->Active()->ResetMax(3);
-	  }
-	}
-      }
-      msg_Tracking()<<"}\n";
-    }
-  }
-  msg_Tracking()<<"}"<<std::endl;
-}

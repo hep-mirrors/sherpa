@@ -19,7 +19,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS
   m_name(""), m_nin(nin), m_nout(nout), m_naddin(0), m_naddout(0), 
   m_nvector(nin+nout), p_flavours(NULL), p_addflavours(NULL), 
   p_momenta(new ATOOLS::Vec4D[nin+nout]), p_addmomenta(NULL), 
-  m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
+  m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), m_usepi(0), 
   m_nstrong(0), m_neweak(0),
   m_threshold(0.), m_overflow(0.), m_rfactor(1.0), m_xinfo(std::vector<double>(4)),
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),

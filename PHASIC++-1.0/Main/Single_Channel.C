@@ -187,9 +187,7 @@ std::string Single_Channel::ChID()
 
 size_t Single_Channel::Dimension() const 
 { 
-  // ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::Dimension()"<<std::endl;
-  // for testing purposes
-  return 2;
+  return rannum;
 }
 
 ATOOLS::Flavour *Single_Channel::Flavs()     { return fl; }

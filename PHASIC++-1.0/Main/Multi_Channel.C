@@ -3,6 +3,7 @@
 #include "Random.H"
 #include "PI_Interface.H"
 #include "Run_Parameter.H"
+#include "MyStrStream.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -13,7 +14,7 @@ using namespace std;
 #include <mpi++.h>
 #endif
 
-Multi_Channel::Multi_Channel(string _name) : fl(NULL), s1(NULL), s2(NULL), m_readin(false)
+Multi_Channel::Multi_Channel(string _name) : fl(NULL), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
 {
   string help;
   int    pos;
@@ -153,6 +154,7 @@ public:
 
 void Multi_Channel::Optimize(double error)
 {
+  if (m_fixalpha) return;
   msg.Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
 
   double aptot = 0.;
@@ -203,7 +205,7 @@ void Multi_Channel::Optimize(double error)
   m_optcnt++;
   m_best=channels;
   std::sort(m_best.begin(),m_best.end(),Order_Weight());
-  m_best.resize(1);
+  m_best.resize(2);
 }
 
 void Multi_Channel::EndOptimize(double error)
@@ -356,12 +358,27 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts,
 				  PI_Interface *pi)
 {
-  size_t i=0;
-  for (;channels.size();++i) {
-    if (pi->Key().find(channels[i]->ChID())!=std::string::npos) break;
+  for(size_t i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
+  if(channels.size()==1) {
+    channels[0]->GeneratePoint(p,cuts,(double*)(*pi)->Reserved(name)+1);
+    m_lastdice = 0;
+    return;
   }  
-  channels[i]->GeneratePoint(p,cuts,(double*)&pi->Point().front()+2);
-  m_lastdice = i;
+  double rn  = *(*pi)->Reserved(name);
+  double sum = 0;
+  for (size_t i=0;;++i) {
+    if (i==channels.size()) {
+      rn  = ran.Get();
+      i   = 0;
+      sum = 0.;
+    }
+    sum += channels[i]->Alpha();
+    if (sum>rn) {
+      channels[i]->GeneratePoint(p,cuts,(double*)(*pi)->Reserved(name)+1);
+      m_lastdice = i;
+      break;
+    }
+  }  
 }
 
 void Multi_Channel::GenerateWeight(int n,Vec4D* p) 
@@ -372,16 +389,6 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p)
                               else m_weight = 1./channels[n]->Weight();
   }
   else m_weight = 0.;
-}
-
-void Multi_Channel::GenerateWeight(Vec4D* p,Cut_Data *cuts,PI_Interface *pi)
-{
-  size_t i=0;
-  for (;channels.size();++i) {
-    if (pi->Key().find(channels[i]->ChID())!=std::string::npos) break;
-  }  
-  channels[i]->GenerateWeight(p,cuts);
-  m_weight = channels[i]->Weight();
 }
 
 void Multi_Channel::GenerateWeight(Vec4D * p)
@@ -495,12 +502,21 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
 void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode,
 				  PI_Interface *pi) 
 {
-  size_t i=0;
-  for (;channels.size();++i) {
-    if (pi->Key().find(channels[i]->ChID())!=std::string::npos) break;
+  for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
+  double disc = *(*pi)->Reserved(name);
+  double sum=0.;
+  for (size_t n=0;n<channels.size();++n) {
+    sum+=channels[n]->Alpha();
+    if (sum>disc) {
+      channels[n]->
+	GeneratePoint(spkey,ykey,(double*)(*pi)->Reserved(name)+1,mode);
+      m_lastdice = n;
+      return;
+    }
   }  
-  channels[i]->GeneratePoint(spkey,ykey,(double*)&pi->Point().front(),mode);
-  m_lastdice = i;
+  msg.Error()<<"Multi_Channel::GeneratePoint(..): ("<<this
+	     <<") No channel selected. \n"
+	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
 }
 
 void Multi_Channel::GenerateWeight(int mode=0)
@@ -524,16 +540,6 @@ void Multi_Channel::GenerateWeight(int mode=0)
     }
   }
   if (m_weight!=0) m_weight=1./m_weight;
-}
-
-void Multi_Channel::GenerateWeight(int mode,PI_Interface *pi) 
-{
-  size_t i=0;
-  for (;channels.size();++i) {
-    if (pi->Key().find(channels[i]->ChID())!=std::string::npos) break;
-  }  
-  channels[i]->GenerateWeight(mode);
-  m_weight = channels[i]->Weight();
 }
 
 void Multi_Channel::ISRInfo(int i,int & type,double & mass,double & width) 

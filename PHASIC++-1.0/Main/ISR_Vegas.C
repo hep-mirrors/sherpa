@@ -54,6 +54,7 @@ Threshold_Uniform_V::Threshold_Uniform_V(const double mass,const double sexp,con
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -106,6 +107,7 @@ Threshold_Forward_V::Threshold_Forward_V(const double mass,const double sexp,con
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -160,6 +162,7 @@ Threshold_Backward_V::Threshold_Backward_V(const double mass,const double sexp,c
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -268,6 +271,7 @@ Resonance_Uniform_V::Resonance_Uniform_V(const double mass,const double width,
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -322,6 +326,7 @@ Resonance_Forward_V::Resonance_Forward_V(const double mass,const double width,co
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -378,6 +383,7 @@ Resonance_Backward_V::Resonance_Backward_V(const double mass,const double width,
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -487,6 +493,7 @@ Simple_Pole_Uniform_V::Simple_Pole_Uniform_V(const double exponent,const std::st
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -540,6 +547,7 @@ Simple_Pole_Forward_V::Simple_Pole_Forward_V(const double sexponent,const double
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -595,6 +603,7 @@ Simple_Pole_Backward_V::Simple_Pole_Backward_V(const double sexponent,const doub
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -704,6 +713,7 @@ Leading_Log_Uniform_V::Leading_Log_Uniform_V(const double beta,const double fact
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -764,6 +774,7 @@ Leading_Log_Forward_V::Leading_Log_Forward_V(const double beta,const double fact
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -826,6 +837,7 @@ Leading_Log_Backward_V::Leading_Log_Backward_V(const double beta,const double fa
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -949,6 +961,7 @@ LBS_Compton_Peak_Uniform_V::LBS_Compton_Peak_Uniform_V(const double exponent,con
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -1019,6 +1032,7 @@ LBS_Compton_Peak_Forward_V::LBS_Compton_Peak_Forward_V(const double exponent,con
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -1091,6 +1105,7 @@ LBS_Compton_Peak_Backward_V::LBS_Compton_Peak_Backward_V(const double exponent,c
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -1228,6 +1243,7 @@ Simple_Pole_PDF_Uniform_V::Simple_Pole_PDF_Uniform_V(const double exponent,const
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,100,name,0);
   rans  = new double[2];
 }
@@ -1281,6 +1297,7 @@ Simple_Pole_PDF_Forward_V::Simple_Pole_PDF_Forward_V(const double sexponent,cons
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,500,name,0);
   rans  = new double[2];
 }
@@ -1336,6 +1353,7 @@ Simple_Pole_PDF_Backward_V::Simple_Pole_PDF_Backward_V(const double sexponent,co
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+  rannum=2;
   p_vegas = new Vegas(2,500,name,0);
   rans  = new double[2];
 }

@@ -21,6 +21,8 @@ namespace PHASIC {
     std::vector<double> m_point;
     double              m_integral;
 
+    size_t m_nopt, m_nmax, m_ncells;
+
   public:
 
     // constructor 
@@ -42,15 +44,14 @@ namespace PHASIC {
     bool ReadIn(const std::string &path);
 
     // inline functions
-    inline ATOOLS::Primitive_Integrator *const Integrator() const 
-    { return p_integrator; }
-
-    inline const std::string &Key() const { return m_key; }
-
+    inline const std::string         &Key() const   { return m_key;   }
     inline const std::vector<double> &Point() const { return m_point; }
 
     inline void SetMode(const int mode) { m_mode=mode;   }
     inline int  Mode() const            { return m_mode; }
+
+    inline ATOOLS::Primitive_Integrator *operator->() const 
+    { return p_integrator; }
 
   };// end of class PI_Interface
 

@@ -15,6 +15,7 @@ LDL_KPerp::LDL_KPerp(const double lambda2,const std::string cinfo,
   m_kp2key.SetInfo(name+cinfo);
   m_kp1key.Assign("k_perp_1",4,0,info);
   m_kp2key.Assign("k_perp_2",4,0,info);
+  rannum=2;
 }
 
 void LDL_KPerp::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,const double *rans,const int mode)

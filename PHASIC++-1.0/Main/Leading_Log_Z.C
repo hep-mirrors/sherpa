@@ -19,6 +19,7 @@ Leading_Log_Z_QQ::Leading_Log_Z_QQ(const double beta,const double cut,
   m_zkey[1].SetInfo(std::string("Leading_Log_Z_Q_")+help);
   m_zkey[0].Assign(std::string("z_1")+cinfo,3,0,info);
   m_zkey[1].Assign(std::string("z_2")+cinfo,3,0,info);
+  rannum=2;
 }
 
 void Leading_Log_Z_QQ::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,const double *rans,const int mode) 
@@ -69,6 +70,7 @@ Leading_Log_Z_QG::Leading_Log_Z_QG(const double beta,const double cut,
   m_zkey[1].SetInfo(std::string("Leading_Log_Z_G_")+help);
   m_zkey[0].Assign(std::string("z_1")+cinfo,3,0,info);
   m_zkey[1].Assign(std::string("z_2")+cinfo,3,0,info);
+  rannum=2;
 }
 
 void Leading_Log_Z_QG::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,const double *rans,const int mode) 
@@ -125,6 +127,7 @@ Leading_Log_Z_GQ::Leading_Log_Z_GQ(const double beta,const double cut,
   m_zkey[1].SetInfo(std::string("Leading_Log_Z_Q_")+help);
   m_zkey[0].Assign(std::string("z_1")+cinfo,3,0,info);
   m_zkey[1].Assign(std::string("z_2")+cinfo,3,0,info);
+  rannum=2;
 }
 
 void Leading_Log_Z_GQ::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,const double *rans,const int mode) 
@@ -181,6 +184,7 @@ Leading_Log_Z_GG::Leading_Log_Z_GG(const double beta,const double cut,
   m_zkey[1].SetInfo(std::string("Leading_Log_Z_G_")+help);
   m_zkey[0].Assign(std::string("z_1")+cinfo,3,0,info);
   m_zkey[1].Assign(std::string("z_2")+cinfo,3,0,info);
+  rannum=2;
 }
 
 void Leading_Log_Z_GG::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,const double *rans,const int mode) 

@@ -59,7 +59,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.)
 {
-  p_activepi=NULL;
+  p_pi=NULL;
   Data_Read dr(rpa.GetPath()+"/Integration.dat");
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
@@ -111,10 +111,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (p_isrchannels)  { delete p_isrchannels;  p_isrchannels = 0;   }
   if (p_beamchannels) { delete p_beamchannels; p_beamchannels  = 0; }
   if (p_cuts)         { delete p_cuts;         p_cuts = 0;          }
-  while (m_pis.size()>0) {
-    delete m_pis.back();
-    m_pis.pop_back();
-  }
+  if (p_pi) delete p_pi;
   delete [] p_cms;
   delete [] p_lab;
   delete [] p_flavours;
@@ -224,10 +221,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 					 const int mode) 
 { 
   PROFILE_HERE;
-  if (mode>=0 && p_activepi!=NULL) {
+  if (mode>=0 && p_pi!=NULL) {
     p_active=process;
-    p_activepi->GeneratePoint();
-    return p_activepi->GenerateWeight();
+    p_pi->GeneratePoint();
+    return p_pi->GenerateWeight();
   }
   p_info->ResetAll();
   if (m_nin>1) {
@@ -247,13 +244,20 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     if (mode<3) {
       p_isrhandler->SetLimits();
       if (p_isrhandler->On()>0) { 
-	if (mode>=0) 
-	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
-	else p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
-					  p_isrhandler->On(),p_activepi);
+	if ((-mode)&1) 
+	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
+				       p_isrhandler->On(),p_pi);
+	else p_isrchannels->
+	  GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
 	if (p_isrhandler->KMROn()) {
-	  p_kpchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
-	  p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
+	  if ((-mode)&8) p_kpchannels->
+	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn(),p_pi);
+	  else p_kpchannels->
+	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
+	  if ((-mode)&4) p_zchannels->
+	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn(),p_pi);
+	  else p_zchannels->
+	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
 	}
       }
     }
@@ -284,8 +288,8 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       process->Selector()->UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
     }
   }
-  if (mode>=-1) p_fsrchannels->GeneratePoint(p_lab,p_cuts);
-  else p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_activepi);
+  if ((-mode)&2) p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_pi);
+  else p_fsrchannels->GeneratePoint(p_lab,p_cuts);
   if (!Check4Momentum(p_lab)) {
     msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<std::endl;
     for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
@@ -314,8 +318,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       }
       if (p_isrhandler->On()>0 && mode<3) {
 	p_isrhandler->CalculateWeight(Q2);
- 	if (mode>=0) p_isrchannels->GenerateWeight(p_isrhandler->On());
-	else p_isrchannels->GenerateWeight(p_isrhandler->On(),p_activepi);
+	p_isrchannels->GenerateWeight(p_isrhandler->On());
  	m_result_1 *= p_isrchannels->Weight();
 	if (p_isrhandler->KMROn()) {
 	  p_zchannels->GenerateWeight(p_isrhandler->KMROn());
@@ -331,8 +334,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       }
       KFactor *= process->KFactor(Q2);
     }
-    if (mode>=-1) p_fsrchannels->GenerateWeight(p_cms,p_cuts);
-    else p_fsrchannels->GenerateWeight(p_cms,p_cuts,p_activepi);
+    p_fsrchannels->GenerateWeight(p_cms,p_cuts);
     m_psweight = m_result_1 *= KFactor * p_fsrchannels->Weight();
     if (m_nin>1) {
       if (p_isrhandler->On()==3) m_result_2 = m_result_1;
@@ -558,14 +560,12 @@ void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force)
   if (p_kpchannels!= 0) p_kpchannels->WriteOut(pID+"/MC_KMR_KP");
   if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
   std::string help     = (pID+"/Random").c_str();
-  if (!m_pis.empty()) {
+  if (p_pi!=NULL) {
     ATOOLS::MakeDir((pID+"/PI/").c_str(),mode_dir,force); 
     std::ofstream piinfo((pID+"/PI/Integrators").c_str());
     if (piinfo.good()) {
-      for (size_t i=0;i<m_pis.size();++i) {
-	piinfo<<m_pis[i]->Key()<<" "<<m_pis[i]->Point().size()<<"\n";
-	m_pis[i]->WriteOut(pID+"/PI/");
-      }
+      piinfo<<p_pi->Key()<<" "<<p_pi->Point().size()<<"\n";
+      p_pi->WriteOut(pID+"/PI/");
     }
   }
   ran.WriteOutStatus(help.c_str());
@@ -585,11 +585,9 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
     size_t dim;
     std::string key;
     piinfo>>key>>dim;
-    while (!piinfo.eof()) {
-      m_pis.push_back(new PI_Interface(this,key,dim));
-      m_pis.back()->ReadIn(pID+"/PI/");
-      piinfo>>key>>dim;
-    }
+    p_pi = new PI_Interface(this,key,dim);
+    p_pi->SetMode(m_use_pi);
+    p_pi->ReadIn(pID+"/PI/");
   }
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
     std::string filename     = (pID+"/Random").c_str();
@@ -1316,21 +1314,61 @@ void Phase_Space_Handler::DeleteInfo()
   p_info=NULL;
 }
 
-bool Phase_Space_Handler::
-CreatePIChannel(const std::vector<Single_Channel *> &channels)
+bool Phase_Space_Handler::CreatePI()
 {
-  if (m_use_pi==0 || channels.size()<1) return false;
-  std::string key(p_process->Name()+"_"+channels[0]->ChID());
-  size_t dim=channels[0]->Dimension();
-  for (size_t i=1;i<channels.size();++i) {
-    key+="_"+channels[i]->ChID();
-    dim+=channels[i]->Dimension();
+  size_t dim=0, sdim[4]={0,0,0,0};
+  if (m_use_pi&1) {
+    if (p_isrchannels==NULL || p_isrchannels->Number()==0) return false;
+    dim+=sdim[0]=(*p_isrchannels)[0]->Dimension()+1;
   }
-  msg_Info()<<"Phase_Space_Handler::CreatePIChannel(..): "
-	    <<"Creating "<<dim<<"-dimensional PI \n";
-  msg_Info()<<"   '"<<key<<"'\n";
-  m_pis.push_back(new PI_Interface(this,key,dim));
-  m_pis.back()->SetMode(m_use_pi);
+  if (m_use_pi&2) {
+    if (p_fsrchannels==NULL || p_fsrchannels->Number()==0) return false;
+    dim+=sdim[1]=(*p_fsrchannels)[0]->Dimension()+1;
+  }
+  if (m_use_pi&4) {
+    if (p_zchannels==NULL || p_zchannels->Number()==0) return false;
+    dim+=sdim[2]=(*p_zchannels)[0]->Dimension()+1;
+  }
+  if (m_use_pi&8) {
+    if (p_kpchannels==NULL || p_kpchannels->Number()==0) return false;
+    dim+=sdim[3]=(*p_kpchannels)[0]->Dimension()+1;
+  }
+  if (dim>25) THROW(critical_error,"Dimension too large for PI.");
+  if (dim==0) return false;
+  msg_Info()<<"Phase_Space_Handler::CreatePI(..): "
+	    <<"Creating "<<dim<<"-dimensional PI\n";
+  msg_Tracking()<<"   '"<<p_process->Name()<<"'\n";
+  p_pi = new PI_Interface(this,p_process->Name(),dim);
+  p_pi->SetMode(m_use_pi);
+  (*p_pi)->Initialize();
+  if (sdim[0]>0) {
+    std::vector<double> alpha(p_isrchannels->Number()-1);
+    for (size_t i=0;i<alpha.size();++i) 
+      alpha[i]=(i+1.0)/(double)(alpha.size()+1);
+    (*p_pi)->Reserve(p_isrchannels->Name(),sdim[0],1);
+    (*p_pi)->Split(p_isrchannels->Name(),0,alpha);
+  }
+  if (sdim[1]>0) {
+    std::vector<double> alpha(p_fsrchannels->Number()-1);
+    for (size_t i=0;i<alpha.size();++i) 
+      alpha[i]=(i+1)/(double)(alpha.size()+1);
+    (*p_pi)->Reserve(p_fsrchannels->Name(),sdim[1],1);
+    (*p_pi)->Split(p_fsrchannels->Name(),0,alpha);
+  }
+  if (sdim[2]>0) {
+    std::vector<double> alpha(p_zchannels->Number()-1);
+    for (size_t i=0;i<alpha.size();++i) 
+      alpha[i]=(i+1)/(double)(alpha.size()+1);
+    (*p_pi)->Reserve(p_zchannels->Name(),sdim[2],1);
+    (*p_pi)->Split(p_zchannels->Name(),0,alpha);
+  }
+  if (sdim[3]>0) {
+    std::vector<double> alpha(p_kpchannels->Number()-1);
+    for (size_t i=0;i<alpha.size();++i) 
+      alpha[i]=(i+1)/(double)(alpha.size()+1);
+    (*p_pi)->Reserve(p_kpchannels->Name(),sdim[3],1);
+    (*p_pi)->Split(p_kpchannels->Name(),0,alpha);
+  }
   return true;
 }
 

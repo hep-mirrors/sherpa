@@ -27,8 +27,6 @@ namespace PHASIC {
     static long int MaxPoints();
     static void     SetMaxPoints(long int _nmax);
 
-    void CreatePIChannels();
-
   };
   /*!
     To perform the phase space integral. Its main task is to
