@@ -76,6 +76,23 @@ void Particle_Qualifier_Base::ShowQualifiers(const int mode)
   msg.Out()<<"\n}"<<std::endl;
 }
 
+
+
+class Is_Zboson : public Particle_Qualifier_Base {
+public:
+  bool operator()(const Particle*) const;
+};
+class Is_Wboson : public Particle_Qualifier_Base {
+public:
+  bool operator()(const Particle*) const;
+};
+
+
+
+DEFINE_QUALIFIER_GETTER(Is_Zboson,Is_Zboson_Getter,
+			"kf24","zboson");
+DEFINE_QUALIFIER_GETTER(Is_Wboson,Is_Wboson_Getter,
+			"kf23","wboson");
 DEFINE_QUALIFIER_GETTER(Is_Photon,Is_Photon_Getter,
 			"kf22","photon");
 DEFINE_QUALIFIER_GETTER(Is_Gluon,Is_Gluon_Getter,
@@ -193,6 +210,16 @@ bool Is_ME_Particle::operator() (const Particle * p) const {
 
 bool Is_Photon::operator() (const Particle * p) const {
   if ( p && p->Flav().IsPhoton() ) return 1;
+  return 0;
+};
+
+bool Is_Zboson::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::Z ) return 1;
+  return 0;
+};
+
+bool Is_Wboson::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::W ) return 1;
   return 0;
 };
 
