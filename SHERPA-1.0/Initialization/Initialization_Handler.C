@@ -29,7 +29,7 @@ extern "C" {
 }
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
-  m_path(_path), m_file(_file),
+  m_path(_path), m_file(_file), m_mode(0),
   p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
@@ -54,7 +54,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
-  p_model(NULL), p_beamspectra(NULL), 
+  m_mode(0), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
   p_pythia(NULL)
@@ -129,6 +129,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
 
   bool okay = InitializeTheIO();
+  std::cout<<"m_mode = "<<m_mode<<std::endl;
   if (m_mode>8999) {
     okay &= InitializeTheExternalMC();
     InitializeTheAnalyses();
@@ -271,21 +272,7 @@ bool Initialization_Handler::InitializeTheModel()
 
 bool Initialization_Handler::InitializeTheBeams()
 {
-  if (p_beamspectra) { 
-    delete p_beamspectra; p_beamspectra = NULL; 
-
-    // look for memory leaks
-    /*
-    for (int i=0; i<10;++i) {
-      Data_Read * dataread = new Data_Read(m_path+m_beamdat);
-      // - add commandline parameter - !!
-      p_beamspectra        = new Beam_Spectra_Handler(dataread);
-      delete p_beamspectra; p_beamspectra = NULL; 
-      ATOOLS::msg.Out()<<" Press Enter "<<endl;
-      char key = cin.get();
-    }
-    */
-  }
+  if (p_beamspectra) { delete p_beamspectra; p_beamspectra = NULL; }
   Data_Read * dataread = new Data_Read(m_path+m_beamdat);
   p_beamspectra        = new Beam_Spectra_Handler(dataread);
   msg.Events()<<"Initialized the beams "<<p_beamspectra->Type()<<endl;
@@ -398,7 +385,7 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
 {
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   double scale=-4.0;
-  if (p_showerhandler!=NULL) {
+  if (p_showerhandler!=NULL && p_showerhandler->GetApacic()) {
     if (p_showerhandler->GetApacic()->IniShower()) {
       scale=p_showerhandler->GetApacic()->IniShower()->CutOff();
     }

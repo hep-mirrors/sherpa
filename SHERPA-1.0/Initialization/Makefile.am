@@ -8,6 +8,7 @@ EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 PYTHIADIR     =	$(SHERPASYS)/PYTHIA-1.0
+ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 SHERPAINCS    =	-I../Single_Events -I../PerturbativePhysics -I../SoftPhysics \
 		-I../SoftPhysics/Lund  -I../LundTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
@@ -24,6 +25,8 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
+ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
+		-I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool
 PYTHIAINCS    = -I$(PYTHIADIR)/Main -I$(PYTHIADIR)/Tools
 
 if CVS_INCLUDE
@@ -35,7 +38,7 @@ libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C
 noinst_HEADERS        =	Initialization_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS)
-INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
+INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(ADICICINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(ANALYSISINCS) $(PYTHIAINCS)
 

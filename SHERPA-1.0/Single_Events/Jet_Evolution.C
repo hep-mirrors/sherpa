@@ -1,5 +1,6 @@
 #include "Jet_Evolution.H"
 #include "SimpleXS_Apacic_Interface.H"
+#include "SimpleXS_Adicic_Interface.H"
 #include "Amegic_Apacic_Interface.H"
 
 #ifdef PROFILE__Jet_Evolution
@@ -30,6 +31,9 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerh
     if (meIter->second->Name()==string("SimpleXS") &&
 	p_showerhandler->ShowerGenerator()==string("Apacic")) 
       interface = new SimpleXS_Apacic_Interface(meIter->second,p_showerhandler);
+    if (meIter->second->Name()==string("SimpleXS") &&
+	p_showerhandler->ShowerGenerator()==string("Adicic")) 
+      interface = new SimpleXS_Adicic_Interface(meIter->second,p_showerhandler);
     m_interfaces.insert(make_pair(meIter->first,interface));
   }
 }

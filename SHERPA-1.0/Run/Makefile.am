@@ -8,6 +8,7 @@ EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 PYTHIADIR     =	$(SHERPASYS)/PYTHIA-1.0
+ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
 		-I../SoftPhysics -I../LundTools -I../Single_Events \
@@ -27,6 +28,8 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
+ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
+		-I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool
 PYTHIAINCS    = -I$(PYTHIADIR)/Main -I$(PYTHIADIR)/Tools
 
 SYSLIBS	      =	-lg2c -lm -ldl
@@ -43,6 +46,7 @@ endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lProcess -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
+ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct -lAdicicTool 
 PYTHIALIBS    =	-L@libdir@ -lPythiaTools -lPythiaMain 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
@@ -71,13 +75,13 @@ endif
 
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
-Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
+Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(ADICICLIBS) \
 		$(AMISICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) \
 		$(PYTHIALIBS) 
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(CLHEPFLAGS)
-INCLUDES      = $(ANALYSISINCS) $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) \
+INCLUDES      = $(ANALYSISINCS) $(SHERPAINCS) $(APACICINCS) $(ADICICINCS) $(AMEGICINCS) \
 		$(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) $(PYTHIAINCS) 
 SUBDIRS       =	Process
