@@ -78,6 +78,7 @@ PrintGetterInfo(std::ostream &str)
        git!=s_getters->end();++git) {
     str<<"   \""<<git->first<<"\" ";
     git->second->PrintInfo(str);
+    str<<"\n";
   }
 }
 
