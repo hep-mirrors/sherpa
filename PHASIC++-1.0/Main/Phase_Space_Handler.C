@@ -375,7 +375,8 @@ bool Phase_Space_Handler::ReadIn(string pID) {
 
   char * filename = new char[100];
   string help     = (pID+string("/Random")).c_str();
-  for (int pos=0;pos<help.length();pos++) filename[pos] = help[pos];
+  strcpy(filename,help.c_str());
+  //  for (int pos=0;pos<help.length();pos++) filename[pos] = help[pos]; // missing '\0' to end the string
 
   ran.ReadInStatus(filename,0);
 
