@@ -608,11 +608,11 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     EXTRAXS::XS_Base *selected=m_processmap[m_selected];
     (*p_processes)[0]->SetSelected(selected);
     double weight=1.;
-    size_t trials=0;
+    size_t pstrials=0, trials=0;
     if (!m_weighted) {
       double max=m_differentials[m_selected]->BinMax(m_last[0]);
       p_fsrinterface->SetTrigger(false);
-      while (++trials<m_maxtrials) {
+      while (++pstrials<m_maxtrials) {
 	ATOOLS::Blob_Data_Base *data=selected->WeightedEvent(2);
 	if (data==NULL) return false;
 	weight=data->Get<PHASIC::Weight_Info>().weight;
