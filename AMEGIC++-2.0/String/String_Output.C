@@ -297,51 +297,51 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
 	  zf<<"-";
 	  norm = -norm;
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).mass()))) { 
+	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()))) { 
 	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::Z).mass()),0.);"<<endl;
+	  zf<<"Complex(1./sqr(Flavour(kf::Z).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
-	if (AMATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Z).mass()),
-			      -Flavour(kf::Z).mass()*Flavour(kf::Z).width())))) { 
+	if (AMATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Z).Mass()),
+			      -Flavour(kf::Z).Mass()*Flavour(kf::Z).Width())))) { 
 	    hit = 1;
-	    zf<<"(1./Complex(sqr(Flavour(kf::Z).mass()),"
-	      <<"-Flavour(kf::Z).mass()*Flavour(kf::Z).width()));"<<endl;
+	    zf<<"(1./Complex(sqr(Flavour(kf::Z).Mass()),"
+	      <<"-Flavour(kf::Z).Mass()*Flavour(kf::Z).Width()));"<<endl;
 	    break;
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).mass()))) { 
+	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()))) { 
 	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::W).mass()),0.);"<<endl;
+	  zf<<"Complex(1./sqr(Flavour(kf::W).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
-	if (AMATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::W).mass()),
-			      -Flavour(kf::W).mass()*Flavour(kf::W).width())))) { 
+	if (AMATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::W).Mass()),
+			      -Flavour(kf::W).Mass()*Flavour(kf::W).Width())))) { 
 	    hit = 1;
-	    zf<<"(1./Complex(sqr(Flavour(kf::W).mass()),"
-	      <<"-Flavour(kf::W).mass()*Flavour(kf::W).width()));"<<endl;
+	    zf<<"(1./Complex(sqr(Flavour(kf::W).Mass()),"
+	      <<"-Flavour(kf::W).Mass()*Flavour(kf::W).Width()));"<<endl;
 	    break;
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h).mass()))) { 
+	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h).Mass()))) { 
 	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::h).mass()),0.);"<<endl;
+	  zf<<"Complex(1./sqr(Flavour(kf::h).Mass()),0.);"<<endl;
 	  break;
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf::Z).mass())))) { 
+	if (AMATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf::Z).Mass())))) { 
 	  hit = 1;
-	  zf<<"Complex(1./sqr(sqr(Flavour(kf::Z).mass())),0.);"<<endl;
+	  zf<<"Complex(1./sqr(sqr(Flavour(kf::Z).Mass())),0.);"<<endl;
 	  break;
 	}	  
 	// double masses
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).mass()*Flavour(kf::W).mass()))) { 
+	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()))) { 
 	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::Z).mass()*Flavour(kf::W).mass()),0.);"<<endl;
+	  zf<<"Complex(1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
 	  break;	
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).mass()*Flavour(kf::W).mass()))) { 
+	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()))) { 
 	  hit = 1;
-	  zf<<"Complex(1./sqr(Flavour(kf::W).mass()*Flavour(kf::W).mass()),0.);"<<endl;
+	  zf<<"Complex(1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
 	  break;
 	}
 	if (AMATOOLS::IsEqual(norm,0.5)) {

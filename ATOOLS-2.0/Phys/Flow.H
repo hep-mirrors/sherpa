@@ -32,12 +32,12 @@
 //  a unique code for you using Flow::set_unique_icode() ).
 //  The first two code indices are reserved for color codes, so we store 
 //  these codes with the partons as follows:
-//    q2->flow().set_icode(1,678);
-//    g->flow().set_icode(1,678);
-//    q3->flow().set_icode(1,678);
-//    q1->flow().set_icode(1,269);
-//    g->flow().set_icode(2,269);
-//    q4->flow().set_icode(1,269);
+//    q2->Flow().set_icode(1,678);
+//    g->Flow().set_icode(1,678);
+//    q3->Flow().set_icode(1,678);
+//    q1->Flow().set_icode(1,269);
+//    g->Flow().set_icode(2,269);
+//    q4->Flow().set_icode(1,269);
 //  later on if we wish to know the color partner of q1 we can ask for a list
 //  of all partons connected via this code to q1 which do have less than 
 //  2 color partners using:
@@ -201,7 +201,7 @@ namespace APHYTOOLS {
   inline Flow& Flow::operator=( const Flow& inflow ) {
     // copies only the m_icode ... not the parton_owner
     // this is intuitive behaviour so you can do
-    // oneparton->flow() = otherparton->flow()
+    // oneparton->Flow() = otherparton->Flow()
     //
     m_icode = inflow.m_icode;
     return *this;

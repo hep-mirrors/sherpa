@@ -17,18 +17,17 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-int Gauss_Integrator::n_gauleg=0;
-int Gauss_Integrator::n_gaulag=0;
-int Gauss_Integrator::n_gauherm=0;
-int Gauss_Integrator::n_gaujac=0;
-weightlist* Gauss_Integrator::wlistroot=0;
+int Gauss_Integrator::s_ngauleg=0;
+int Gauss_Integrator::s_ngaulag=0;
+int Gauss_Integrator::s_ngauherm=0;
+int Gauss_Integrator::s_ngaujac=0;
+Weight_Module* Gauss_Integrator::s_wlistroot=0;
 
 
-Gauss_Integrator::Gauss_Integrator(Function_Base *_func=0){
-  mode=0;        // Methode not jet choosen
-  numberabsc=0;  // precisision (number of points) not jet choosen
-  wlistact=0;    // so no precalculated weights or abscissas are available jet;
-  func=_func;    // set function to be integrated
+Gauss_Integrator::Gauss_Integrator(Function_Base *func=0){
+  m_numberabsc = 0;  // precisision (number of points) not jet choosen
+  m_wlistact   = 0;    // so no precalculated weights or abscissas are available jet;
+  m_func       = func;    // set function to be integrated
 }
 
 double Gauss_Integrator::Integrate(double x1, double x2, double prec, int mode, int nmax) {
@@ -55,10 +54,10 @@ double Gauss_Integrator::Integrate(double x1, double x2, double prec, int mode, 
       // case 3 : return Laguerre(n);
       // case 4 : return Hermite(n);
     case 5 : 
-      i1=Jacobi(x1,x2,n,-0.5, -0.5);
+      i1 = Jacobi(x1,x2,n,-0.5, -0.5);
       break;
     default: 
-      i1= Legendre(x1,x2,n);
+      i1 = Legendre(x1,x2,n);
     }
     //    cout<<"Guess the "<<n<<"th="<<i1<<" ("<<(dabs(i1-i2)/i1)<<")"<<endl;
     //cout<<"LegG("<<n<<".)="<<myintegrator.Legendre(s1,s2,n)<<endl;
@@ -68,7 +67,7 @@ double Gauss_Integrator::Integrate(double x1, double x2, double prec, int mode, 
 
 // * Gauss_Legendre Integation ******************
 
-void Gauss_Integrator::gauleg(double x[], double w[], int n)
+void Gauss_Integrator::GauLeg(double * x, double * w, int n)
 {
   const double EPS=3.0e-11;
 
@@ -144,75 +143,65 @@ double Gauss_Integrator::Legendre(double x1, double x2,int n=8)
     double sum=0.0;
     double xm=0.5*(x2+x1);
     double xl=0.5*(x2-x1);
-    // cout<<"already "<<n_gauleg<<" points calculated\n";
-    if (n>n_gauleg) {
+    // cout<<"already "<<s_ngauleg<<" points calculated\n";
+    if (n>s_ngauleg) {
       // generate new weights and abscissas
-      wlistact = new weightlist;
-      wlistact->w =new double[n];
-      wlistact->x =new double[n];
-      wlistact->methode=1;             // legendre
-      wlistact->n = n;                 // number of points
-      if (n>n_gauleg) n_gauleg=n;
-      wlistact->next = wlistroot;      // put in list
-      wlistroot=wlistact;
+      m_wlistact    = new Weight_Module;
+      m_wlistact->w = new double[n];
+      m_wlistact->x = new double[n];
+      m_wlistact->methode = 1;             // legendre
+      m_wlistact->n       = n;             // number of points
+      if (n>s_ngauleg) s_ngauleg=n;
+      m_wlistact->next = s_wlistroot;      // put in list
+      s_wlistroot=m_wlistact;
       cout<<"calculate "<<n<<" legendre weights and abscissas..."<<endl;
-      gauleg(wlistact->x, wlistact->w, n); 
+      GauLeg(m_wlistact->x, m_wlistact->w, n); 
 
     } else {
       // use already calculated abscissas
       // cout<<"looking for weights and absiscissas ...\n";
-      weightlist * listitem;
-      listitem = wlistroot;
-      wlistact = 0;
+      Weight_Module * listitem;
+      listitem = s_wlistroot;
+      m_wlistact = 0;
       for (;listitem!=0;listitem=listitem->next) 
-	if ((listitem->n>=n)&&(listitem->methode==1)) 
-	  if ((wlistact==0)||(wlistact->n>listitem->n)) 
-	    wlistact=listitem;
-      if ((wlistact==0)||(wlistact->n>2*n)) { 
+	if ((listitem->n>=n) && (listitem->methode==1)) 
+	  if ((m_wlistact==0) || (m_wlistact->n>listitem->n)) 
+	    m_wlistact=listitem;
+      if ((m_wlistact==0)||(m_wlistact->n>2*n)) { 
 	cout<<" * no aproriate weights found!\n";
 	// generate new weights and abscissas
-	wlistact = new weightlist;
-	wlistact->w =new double[n];
-	wlistact->x =new double[n];
-	wlistact->methode=1;             // legendre
-	wlistact->n = n;                 // number of points
-	wlistact->next = wlistroot;      // put in list
-	wlistroot=wlistact;
-	if (n>n_gauleg) n_gauleg=n;
+	m_wlistact    = new Weight_Module;
+	m_wlistact->w = new double[n];
+	m_wlistact->x = new double[n];
+	m_wlistact->methode = 1;             // legendre
+	m_wlistact->n       = n;                 // number of points
+	m_wlistact->next    = s_wlistroot;      // put in list
+	s_wlistroot       = m_wlistact;
+	if (n>s_ngauleg) s_ngauleg = n;
 	cout<<"calculate "<<n<<" new legendre weights and abscissas...\n";
-	gauleg(wlistact->x, wlistact->w, n); 
+	GauLeg(m_wlistact->x, m_wlistact->w, n); 
       } ; //else cout<<"...found!\n";
     }
     // do the summation (the same for all gauss integrations);
-    if (n!=(wlistact->n)) cout<<" increase n to "<<(n=(wlistact->n))<<" from "<<n<<endl;
+    if (n!=(m_wlistact->n)) cout<<" increase n to "<<(n=(m_wlistact->n))<<" from "<<n<<endl;
     for (int i=0;i<n;i++) {
-      double x=xm+xl*wlistact->x[i];
-      sum+=wlistact->w[i]*((*func)( x ));
-      //      cout<<" "<<i<<": x="<<x<<" w="<<wlistact->w[i]
-      //        	<<" f="<<(*func)(x)<<" sum="<<sum<<endl;
+      double x=xm+xl*m_wlistact->x[i];
+      sum+=m_wlistact->w[i]*((*m_func)( x ));
+      //      cout<<" "<<i<<": x="<<x<<" w="<<m_wlistact->w[i]
+      //        	<<" f="<<(*m_func)(x)<<" sum="<<sum<<endl;
     }
     sum*=xl;
     return sum;
   }
 }
-
-/*  great integration routine, from Ch. Hofmann.
- *  Changed to integrate classes derived from dfunc.       
- *                                      M. W. Beinker, 27.02.1996
- */
-
-//#include "df.H" 
-//extern "C" { 
-//#include <math.h> 
-//} 
  
-double Gauss_Integrator::Chebyshev( double a, double b, double prec, int N_Max, int &I_Err ) 
+double Gauss_Integrator::Chebyshev( double a, double b, double prec, int n_max, int &i_err ) 
 {
 // 	a;		lower boundary                            
 // 	b;		upper boundary                            
 // 	prec;		relative error                            
-//      N_Max;		maximum number of steps allowed           
-//	*I_Err;		= 0 for an alleged successful calculation 
+//      n_max;		maximum number of steps allowed           
+//	*i_err;		= 0 for an alleged successful calculation 
 //			= 1 otherwise                             
 //      f;              dfunc (integrated function)               
   double 	ch;		// value of integral 
@@ -225,45 +214,37 @@ double Gauss_Integrator::Chebyshev( double a, double b, double prec, int N_Max, 
   double intalt;
   double intneu;
 
+  // initializing m, i_err, n, s0, c0, tsch and p. 
+  intalt = intneu = 0.;
 
-  // initializing m, I_Err, n, s0, c0, tsch and p. 
-
-  intalt=intneu = 0.;
-
-  h = (b-a)/2.;
-  m = 0;
-  n = 1;
+  h  = (b-a)/2.;
+  m  = 0;
+  n  = 1;
   s0 = 1.;
   c0 = 0.;
-  t = a + h;
-  ch = (*func)( t );
-  //p = ch;
+  t  = a + h;
+  ch = (*m_func)( t );
 
   // computing the (2n+1) points quadrature formula. 
   // updating q, p, c1, s1, c0, s0, s and c. 
-
-  while( m < 5 || ( dabs( intneu-intalt ) > prec * dabs( intneu ) 
-		   && m < N_Max ) ) {
-
+  while (m<5 || ( dabs( intneu-intalt ) > prec * dabs( intneu ) 
+		   && m<n_max ) ) {
     intalt = intneu;
-    //    q = p + p;
-    //p = ch + ch;
     c1 = c0;
     s1 = s0;
     c0 = sqrt( ( 1. + c1 ) * 0.5 );
     s0 = s1 / ( c0 + c0 );
-    s = s0;
-    c = c0;
+    s  = s0;
+    c  = c0;
 
     // computing f() at the new points. 
-
     for ( i = 1; i <= n; ){
       di = i;
       x = 1. + 0.21220659078919378103 * s * c * ( 3. + 2. * s * s )
 	- di / ( n+1 );
       tm = a + h * ( -x + 1. );
       tp = a + h * ( x + 1. );
-      ch = ch + ( (*func)( tm ) + (*func)( tp ) ) * pow( s, 4 );
+      ch = ch + ( (*m_func)( tm ) + (*m_func)( tp ) ) * pow( s, 4 );
       x = s;
       s = s * c1 + c * s1;
       c = c * c1 - x * s1;
@@ -271,7 +252,6 @@ double Gauss_Integrator::Chebyshev( double a, double b, double prec, int N_Max, 
     }
 
     // replacing n by 2n+1.
-
     m = m + 1;
     n = n + n + 1;
     
@@ -281,10 +261,10 @@ double Gauss_Integrator::Chebyshev( double a, double b, double prec, int N_Max, 
   // test for successfullness and integral final value. 
   cout<<" used "<<n<<" points in Chebyshev"<<endl;
 
-  if ( fabs( intneu - intalt ) > prec * fabs( intneu ) )
-    I_Err = 1;
+  if (fabs(intneu - intalt)>prec * fabs(intneu))
+    i_err = 1;
   else
-    I_Err = 0;
+    i_err = 0;
   
   ch = 16. * ch / ( 3. * (n+1) );
   ch = h * ch;
@@ -294,13 +274,11 @@ double Gauss_Integrator::Chebyshev( double a, double b, double prec, int N_Max, 
 
 
 // ******* Gauss Jacobi Interation *************************************
-void Gauss_Integrator::gaujac(double x[], double w[], int n, double alf, double bet)
+void Gauss_Integrator::GauJac(double * x, double * w, int n, double alf, double bet)
 {
   const double EPS   = 3.0e-14;
   const int    MAXIT = 10;
   // calculate Gauss Jacobi weights and abscissas
-  //    double gammln(double xx);
-  //	void nrerror(char error_text[]);
   int i,its,j;
   double alfbet,an,bn,r1,r2,r3;
   double a,b,c,p1,p2,p3,pp,temp,z,z1;
@@ -356,29 +334,12 @@ void Gauss_Integrator::gaujac(double x[], double w[], int n, double alf, double 
     }
     if (its > MAXIT) cout<<"too many iterations in Gauss_Integrator::gaujac";
     x[i-1]=z;
-    w[i-1]=exp(gammln(alf+n)+gammln(bet+n)-gammln(n+1.0)-
-	     gammln(n+alfbet+1.0))*temp*pow(2.0,alfbet)/(pp*p2)
+    w[i-1]=exp(Gammln(alf+n)+Gammln(bet+n)-Gammln(n+1.0)-
+	     Gammln(n+alfbet+1.0))*temp*pow(2.0,alfbet)/(pp*p2)
              *pow((1.-z),-alf)*pow((1.+z),-bet);
   }
 }
 /* (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. */
-
-
-double Gauss_Integrator::gammln(double xx)
-{
-  double x,y,tmp,ser;
-  static double cof[6]={76.18009172947146,-86.50532032941677,
-			24.01409824083091,-1.231739572450155,
-			0.1208650973866179e-2,-0.5395239384953e-5};
-  short int j;
-  y=x=xx;
-  tmp=x+5.5;
-  tmp -= (x+0.5)*log(tmp);
-  ser=1.000000000190015;
-  for (j=0;j<=5;j++) ser += cof[j]/++y;
-  return -tmp+log(2.5066282746310005*ser/x);
-}
-// (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. 
 
 double Gauss_Integrator::Jacobi(double x1, double x2,int n=8, 
                                double alf= -0.5f, double bet= -0.5f)
@@ -386,51 +347,51 @@ double Gauss_Integrator::Jacobi(double x1, double x2,int n=8,
   double sum=0.0;
   double xm=0.5*(x2+x1);
   double xl=0.5*(x2-x1);
-  if (n>n_gaujac) {
+  if (n>s_ngaujac) {
     // generate new weights and abscissas
-    wlistact = new weightlist;
-    wlistact->w =new double[n];
-    wlistact->x =new double[n];
-    wlistact->methode=5;             // Jacobi
-    wlistact->n = n;                 // number of points
-    if (n>n_gaujac) n_gaujac=n;
-    wlistact->next = wlistroot;      // put in list
-    wlistroot=wlistact;
+    m_wlistact    = new Weight_Module;
+    m_wlistact->w = new double[n];
+    m_wlistact->x = new double[n];
+    m_wlistact->methode = 5;             // Jacobi
+    m_wlistact->n       = n;                 // number of points
+    if (n>s_ngaujac) s_ngaujac = n;
+    m_wlistact->next = s_wlistroot;      // put in list
+    s_wlistroot      = m_wlistact;
     cout<<"calculate "<<n<<" jacobi weights and abscissas..."<<endl;
-    gaujac(wlistact->x, wlistact->w, n, alf, bet); 
+    GauJac(m_wlistact->x, m_wlistact->w, n, alf, bet); 
   } else {
     // use already calculated abscissas
     // cout<<"looking for weights and absiscissas ...\n";
-    weightlist * listitem;
-    listitem = wlistroot;
-    wlistact = 0;
+    Weight_Module * listitem;
+    listitem = s_wlistroot;
+    m_wlistact = 0;
     for (;listitem!=0;listitem=listitem->next) 
       if ((listitem->n>=n)&&(listitem->methode==5)) 
-	if ((wlistact==0)||(wlistact->n>listitem->n)) 
-	  wlistact=listitem;
-    if ((wlistact==0)||(wlistact->n>2*n)) { 
+	if ((m_wlistact==0)||(m_wlistact->n>listitem->n)) 
+	  m_wlistact=listitem;
+    if ((m_wlistact==0)||(m_wlistact->n>2*n)) { 
       cout<<" * no aproriate weights found!\n";
       // generate new weights and abscissas
-      wlistact = new weightlist;
-      wlistact->w =new double[n];
-      wlistact->x =new double[n];
-      wlistact->methode=5;             // jacobi
-      wlistact->n = n;                 // number of points
-      wlistact->next = wlistroot;      // put in list
-      wlistroot=wlistact;
-      if (n>n_gaujac) n_gaujac=n;
+      m_wlistact    = new Weight_Module;
+      m_wlistact->w = new double[n];
+      m_wlistact->x = new double[n];
+      m_wlistact->methode = 5;             // jacobi
+      m_wlistact->n       = n;             // number of points
+      m_wlistact->next    = s_wlistroot;   // put in list
+      s_wlistroot         = m_wlistact;
+      if (n>s_ngaujac) s_ngaujac = n;
       cout<<"calculate "<<n<<" new legendre weights and abscissas..."<<endl;
-      gaujac(wlistact->x, wlistact->w, n, alf, bet); 
+      GauJac(m_wlistact->x, m_wlistact->w, n, alf, bet); 
     }  //else cout<<"...found!\n";
   }
   
   // do the summation (the same for all gauss integrations);
   for (int i=0;i<n;i++) {
-    double x=xm+xl*wlistact->x[i];
-    sum+=wlistact->w[i]*((*func)( x ));
+    double x=xm+xl*m_wlistact->x[i];
+    sum+=m_wlistact->w[i]*((*m_func)( x ));
 
-    //  cout<<" "<<i<<": x="<<x<<" w="<<wlistact->w[i]
-    //	<<" f="<<(*func)(x)<<" sum="<<sum<<endl;
+    //  cout<<" "<<i<<": x="<<x<<" w="<<m_wlistact->w[i]
+    //	<<" f="<<(*m_func)(x)<<" sum="<<sum<<endl;
   }
   sum*=xl;
   return sum;

@@ -78,7 +78,7 @@ namespace APACIC {
     */
     bool TestShower(Tree *) ;
     //! check momentum conservation (adds daughter momenta recursively)
-    AMATOOLS::vec4d GetMomentum(Knot * mo, int & number);
+    AMATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
     /*!
       Outputs the tree.
     */

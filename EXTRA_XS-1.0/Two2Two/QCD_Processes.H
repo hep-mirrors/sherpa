@@ -17,7 +17,7 @@ namespace EXTRAXS {
     void CreateSelector();
   public:
     QCD_Processes();
-    double Scale(AMATOOLS::vec4d *);
+    double Scale(AMATOOLS::Vec4D *);
     double KFactor(double);
   };
 }

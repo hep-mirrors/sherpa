@@ -39,7 +39,7 @@ std::ostream& MOCAIC::operator<< (std::ostream & s ,Combine_Data & cd) {
     s<<" #"<<std::endl;
 }
 
-Combine_Table::Combine_Table(Jet_Finder * _jf,vec4d * _moms, Combine_Table * _up):
+Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up):
   jf(_jf),moms(_moms),legs(0),gwin(0),up(_up)
 {
   msg.Debugging()<<"creating new Combine_Table::Combine_Table() "<<std::endl;
@@ -93,11 +93,11 @@ Leg Combine_Table::CombinedLeg(Leg * legs, int i, int j)
 
   // fix charge incase initial state has wrong
   int icharge;
-  if (i<2)  icharge = a.ExtraAnti()*a->fl.icharge() - b.ExtraAnti()*b->fl.icharge();
-  else      icharge = a->fl.icharge() + b->fl.icharge();
+  if (i<2)  icharge = a.ExtraAnti()*a->fl.IntCharge() - b.ExtraAnti()*b->fl.IntCharge();
+  else      icharge = a->fl.IntCharge() + b->fl.IntCharge();
 
-  if (icharge!=mo->fl.icharge()) {
-    std::cout<<" changing "<<mo->fl<<" to "<<Flavour(mo->fl).bar()<<", "<<std::endl;
+  if (icharge!=mo->fl.IntCharge()) {
+    std::cout<<" changing "<<mo->fl<<" to "<<Flavour(mo->fl).Bar()<<", "<<std::endl;
     mo.SetAnti(-1);
   }    
   
@@ -117,7 +117,7 @@ Leg * Combine_Table::CombineLegs(Leg *legs, int i, int j, int _nlegs) {
 }
 
 
-void Combine_Table::CombineMoms(vec4d* _moms , int i, int j, int maxl) {
+void Combine_Table::CombineMoms(Vec4D* _moms , int i, int j, int maxl) {
   
   msg.Debugging()<<"CombineMoms(i="<<i<<",  j="<<j<<",  maxl="<<maxl<<")"<<std::endl;
   // assume i < j
@@ -136,8 +136,8 @@ void Combine_Table::CombineMoms(vec4d* _moms , int i, int j, int maxl) {
   }
 }
 
-void Combine_Table::CombineMoms(vec4d * _moms ,int i,int j,int maxl,vec4d *& omoms) {
-  omoms = new vec4d[maxl];
+void Combine_Table::CombineMoms(Vec4D * _moms ,int i,int j,int maxl,Vec4D *& omoms) {
+  omoms = new Vec4D[maxl];
   msg.Debugging()<<"CombineMoms(i="<<i<<",  j="<<j<<",  maxl="<<maxl<<",  omoms="<<omoms<<")"<<std::endl;
   
   // assume i < j
@@ -200,7 +200,7 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph) {
 }
 
 
-Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::vec4d * _moms) {
+Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
   Combine_Table * ct=0;
   CD_List & cl=combinations;
   msg.Tracking()<<"in Combine_Table::CalcJet "<<std::endl;
@@ -235,7 +235,7 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::vec4d * _moms) {
 	for (int k=0;k<cwin->graphs.size();++k) {
 	  alegs[k]   = CombineLegs(legs[cwin->graphs[k]],cwin->i,cwin->j,nl);
 	}
-	vec4d * amoms;
+	Vec4D * amoms;
 	CombineMoms(moms,cwin->i,cwin->j,nl,amoms); // generate new momenta
 	cwin->down=new Combine_Table(jf,amoms,this);
 	cwin->down->FillTable(alegs,nl,cwin->graphs.size());   // initialise Combine_Table

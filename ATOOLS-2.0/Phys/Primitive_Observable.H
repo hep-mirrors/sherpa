@@ -31,7 +31,7 @@ namespace APHYTOOLS {
     }
 
     void Evaluate(double); 
-    void Evaluate(int,AMATOOLS::vec4d *,APHYTOOLS::Flavour *,double);
+    void Evaluate(int,AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double);
     void Evaluate(const APHYTOOLS::Parton_List &,double);
   };
 

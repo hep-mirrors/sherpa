@@ -26,9 +26,9 @@ void All_Processes::Add(Process_Base * _proc)
 void  All_Processes::SelectOne() {
   //  msg.Out()<<"AllProcesses::SelectOne : totalxs, max = "<<totalxs<<", "<<max<<endl;
   DeSelect();
-  if (totalxs==0) selected = procs[int(Ran.get()*procs.size())];
+  if (totalxs==0) selected = procs[int(ran.Get()*procs.size())];
   else {
-    double disc = totalxs * Ran.get(); 
+    double disc = totalxs * ran.Get(); 
     //    cout<<" disc="<<disc<<endl;
     for (int i=0;i<procs.size();i++) {
       disc -= procs[i]->Total();
@@ -71,7 +71,7 @@ void All_Processes::RescaleXSec(double) {
   ----------------------------------------------------------------------------------*/
 
 
-int All_Processes::InitAllProcesses(Topology* top,vec4d *& moms,
+int All_Processes::InitAllProcesses(Topology* top,Vec4D *& moms,
 				    vector<double> & results,vector<Single_Process *> & links)
 {
   bool okay = 1;

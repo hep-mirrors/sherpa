@@ -21,7 +21,7 @@
 
 
 #if defined(__sgi) && !defined(__GNUC__)
-// SGI IRIX C++ Compiler, complex but not double methods need "std::", e.g. abs() exp()
+// SGI IRIX C++ Compiler, complex but not double methods need "std::", e.g. Abs() exp()
 #include <math.h> 
 #endif
 
@@ -30,6 +30,12 @@
 
 namespace AMATOOLS {
 
+  template <class Type>
+  inline Type Min(Type a, Type b) { return a<b ? a : b; }
+  template <class Type>
+  inline Type Max(Type a, Type b) { return a>b ? a : b; }
+
+  /*
   inline int Min(int a, int b) { return a<b ? a : b; }
   inline int Max(int a, int b) { return a>b ? a : b; }
   inline int Min(long int a, long int b) { return a<b ? a : b; }
@@ -39,6 +45,8 @@ namespace AMATOOLS {
   inline double Max(double a, double b) { return a>b ? a : b; }
   inline long double Min(long double a, long double b) { return a<b ? a : b; }
   inline long double Max(long double a, long double b) { return a>b ? a : b; }
+  */
+
   inline int         Sign(const int& a) {return (a<0) ? -1 : 1;}
   inline int         iabs(const int& a) {return a>0 ? a : -a;} 
   inline double      dabs(const double& a) {return a>0 ? a : -a;} 
@@ -67,26 +75,84 @@ namespace AMATOOLS {
 
 #define GAMMA_E 0.5772156649015328606
 
-  // calculates the logarithm of the Gammafunction
   double Gammln(double xx);
+
+
+  /*!
+    \file
+    \brief contains a collection of simple mathematical functions
+  */
+
+  /*!
+    \fn inline Type Min(Type a, Type b)
+    \brief returns the minimum of two numbers  
+  */
+
+  /*!
+    \fn inline Type Max(Type a, Type b) 
+    \brief returns the maximum of two numbers
+  */
+
+  /*! 
+    \fn  inline int         Sign(const int& a) {return (a<0) ? -1 : 1;}
+    \brief returns the sign of the argument
+  */
+
+  /*! 
+    \fn  inline int         iabs(const int& a) {return a>0 ? a : -a;} 
+    \brief returns the absolute value of the argument
+  */
+
+  /*! 
+    \fn  inline double      dabs(const double& a) {return a>0 ? a : -a;} 
+    \brief returns the absolute value of the argument
+  */
+
+  /*! 
+    \fn  inline double      sqr(double x) {return x*x;} 
+    \brief returns the argument squared 
+  */
+
+  /*! 
+    \fn  inline double      Accu() {return 1.e-12;};
+    \brief returns a (platform dependent) precission, default is \f$1^{-12}\f$
+  */
+
+  /*! 
+    \fn  inline int IsZero(const double a) 
+    \brief returns \em true if argument is smaller than AMATOOLS::Accu()
+  */
+
+  /*! 
+    \fn  inline int IsZero(const Complex& a)
+    \brief  returns \em true if argument is smaller than AMATOOLS::Accu()
+  */
+
+  /*! 
+    \fn  inline int IsEqual(const double a,const double b)
+    \brief  returns \em true if arguments are equal (compared to AMATOOLS::Accu())
+  */
+
+  /*! 
+    \fn  inline int IsEqual(const Complex& a,const Complex& b)
+    \brief  returns \em true if arguments are equal (compared to AMATOOLS::Accu())
+  */
+
+  /*! 
+    \fn  inline Complex csqrt(const double d)
+    \brief returns the complex root of a (possibly negative) float or double variable
+  */
+
+  /*! 
+    \fn  inline Complex csqr(Complex x)
+    \brief returns the argument squared
+  */
+
+  /*!
+    \fn    double Gammln(double xx)
+    \brief calculates the logarithm of the Gammafunction
+  */
 
 }
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

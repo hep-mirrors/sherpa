@@ -20,7 +20,7 @@ void Prop_Generator::Convert(Point* p)
     //Initial Fermionline
     if (p->t==1) {
       AORGTOOLS::msg.Out()<<"Flavour gedreht"<<endl;
-      Ph->fl = (Ph->fl).bar();
+      Ph->fl = (Ph->fl).Bar();
     }
     */
     if (p->middle) Ph->argnum = 4;
@@ -43,7 +43,7 @@ void Prop_Generator::Convert(Point* p)
 	Ph2->fl = p->extrafl[i];
 	Ph2->argnum = Ph->argnum;
 	Ph2->arg = new int[Ph2->argnum];
-	Ph2->arg[0] = p->number*(p->extrafl[i]).kfcode();
+	Ph2->arg[0] = p->number*(p->extrafl[i]).Kfcode();
 	Ph2->arg[1] = p->left->number;
 	Ph2->arg[2] = p->right->number;
 	if (p->middle) Ph2->arg[3] = p->middle->number;
@@ -109,25 +109,25 @@ void Prop_Generator::Kill(list<Zfunc*>& zlist)
       if (sw1==0) break;
     }
 
-    if (sw1 && !p->fl.isscalar()) p->on = 0;
+    if (sw1 && !p->fl.IsScalar()) p->on = 0;
   }
 }
 
 
-void Prop_Generator::Calculate(vec4d* p,int* b)
+void Prop_Generator::Calculate(Vec4D* p,int* b)
 {
   for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
     Pfunc* p1 = *pit;
-    vec4d sump(0.,0.,0.,0.);
+    Vec4D sump(0.,0.,0.,0.);
     for (int i=1;i<p1->argnum;i++) sump += b[p1->arg[i]]*p[p1->arg[i]]; 
 
     p1->value = Complex(1.,0.)/
-      Complex(sump.abs2()-
+      Complex(sump.Abs2()-
 	      sqr(AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()))),
 	      AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()))*
 	      AORGTOOLS::rpa.consts.Width(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms())));
 
-    if (p1->fl.isfermion() || p1->fl.isscalar()) p1->value *= Complex (0.,1.);
-    if (p1->fl.isvector()) p1->value *= Complex (0.,-1.);
+    if (p1->fl.IsFermion() || p1->fl.IsScalar()) p1->value *= Complex (0.,1.);
+    if (p1->fl.IsVector()) p1->value *= Complex (0.,-1.);
   }  
 }

@@ -1,5 +1,5 @@
-#ifndef Run_Parameter_h
-#define Run_Parameter_h
+#ifndef Run_Parameter_H
+#define Run_Parameter_H
 
 #include <string>
 #include "Data_Read.H"
@@ -19,7 +19,7 @@
 
 
 namespace AORGTOOLS {  
-  //! An all purpose class for reading in parameters.
+
   class Run_Parameter {
     std::string         path;
 
@@ -30,7 +30,7 @@ namespace AORGTOOLS {
     
     // CONSTs!
 
-    class {  // general parameters
+    class Gen {  // general parameters
       int                output;
       std::string        runtime;
       long               nevents;
@@ -52,7 +52,7 @@ namespace AORGTOOLS {
       inline int Tracking()                    { return (output>=2);}
       inline int Debugging()                   { return (output>=3);}
       inline int SetOutput(int o)              { return output=o;}
-      inline void Output_Off()                 { output = -1;}
+      inline void OutputOff()                  { output = -1;}
       // misc
       inline double Accu()                     { SAVE_RETURN(accu,"accu");}
       // beam particles
@@ -73,7 +73,7 @@ namespace AORGTOOLS {
       
     } gen;
 
-    class { // matrix element
+    class Me { // matrix element
       std::string       model_file;
       Model_Type::code  the_model;
       String_Type::code m_string; 
@@ -98,7 +98,7 @@ namespace AORGTOOLS {
       friend class Run_Parameter;
     } me;
 
-    class { // integration
+    class Integ { // integration
       int    integrator;
       int    jetfinder;
       double ycut;
@@ -108,14 +108,14 @@ namespace AORGTOOLS {
       inline double Accu()   { return accu; }
       inline int Integrator() { return integrator; }
       inline int Jetfinder()  { return jetfinder; } 
-      inline void Set_Ycut(double _ycut) { ycut = _ycut; }
+      inline void SetYcut(double _ycut) { ycut = _ycut; }
       // inline double Ycut()   { SAVE_RETURN(ycut,"ycut");}
       // inline int JetFinder() { SAVE_RETURN(jet_scheme,"jet_scheme");}
       friend class Run_Parameter;
     } integ;
 
 
-    class { // parton shower
+    class Pshower { // parton shower
       double           final_q02;
       double           initial_q02;   // t0 for initial state shower
       double           lambda_qcd;
@@ -128,7 +128,7 @@ namespace AORGTOOLS {
       friend class Run_Parameter;
     } pshower ;
 
-    class { // dipole shower
+    class Dshower { // dipole shower
       int              k_perp_scheme;
       int              k_ord_scheme;
       double           kt_min;
@@ -143,7 +143,7 @@ namespace AORGTOOLS {
       friend class Run_Parameter;
     } dshower ;
 
-    class cl_consts { // general coupling consts (possibly running)
+    class Consts { // general coupling consts (possibly running)
       double           alpha_s_fix;
 
       Switch::code     running_masses;
@@ -169,7 +169,7 @@ namespace AORGTOOLS {
       friend class Run_Parameter;
     } consts;
 
-    class { // test == only for the experts
+    class Test { // test == only for the experts
       int    analysis;
     public:
       inline int Analysis()          { SAVE_RETURN(analysis,"analysis"); }
@@ -180,13 +180,77 @@ namespace AORGTOOLS {
 
     double Picobarn()                       { return 3.89379656e8;} // pb/GeV^2
     double c()                              { return 299792458.e3;} // mm/s
-    double hbar()                           { return 6.58211889e-25;} // GeV s
+    double hBar()                           { return 6.58211889e-25;} // GeV s
     std::string GetPath()                   { return path;} 
     std::string SetPath(std::string _path)  { path = _path;} 
   };
 
   extern Run_Parameter rpa;
-}
 
+
+/*!
+  \class Run_Parameter
+  \brief reads in parameter files and provides the main parameters for the rest of the program
+
+  This class reads in the parameter file Run.dat and provides the program with all
+  parameters an swiches necessary for one run.
+*/
+
+/*!
+  \intern 
+  double Picobarn()                       { return 3.89379656e8;} // pb/GeV^2
+  double c()                              { return 299792458.e3;} // mm/s
+  double hBar()                           { return 6.58211889e-25;} // GeV s
+  
+  std::string GetPath()                   { return path;} 
+  std::string SetPath(std::string _path)  { path = _path;} 
+*/
+
+}  // namespace AORGTOOLS
+
+
+/*!
+ \file
+ \brief   contains AORGTOOLS::Run_Parameter and the description the whole ATOOLS package
+
+*/
+
+/*!
+  \mainpage
+
+  The ATOOLS package is the basis of the simulation of physics within the SHERPA framework.
+  Three main libraries are defined.
+
+  \section amatools Mathematical Tools
+  In the namespace AMATOOLS all classes with a pure mathematical meaning are collected.
+
+  \section aphytools Physical Tools
+  In the namespace APHYTOOLS all basic classes needed for physics descriptions are collected.
+  Here you can find APHYTOOLS::Flavour, APHYTOOLS::Blob, etc.
+
+  \section aorgtools Organisation Tools
+  In the namespace AORGTOOLS all basic classes needed organisational purposes are collected.
+  Here you can find classes for reading in and writing out variables (IO_Handler), accessing
+  runtime parameters (Run_Parameter), etc.
+*/
+
+
+/*!
+ \namespace AMATOOLS
+  In the namespace AMATOOLS all classes with a pure mathematical meaning are collected.
+*/
+
+/*!
+ \namespace APHYTOOLS
+  In the namespace APHYTOOLS all basic classes needed for physics descriptions are collected.
+  Here you can find APHYTOOLS::Flavour, APHYTOOLS::Blob, etc.
+*/
+
+/*!
+ \namespace AORGTOOLS
+  In the namespace AORGTOOLS all basic classes needed organisational purposes are collected.
+  Here you can find classes for reading in and writing out variables (IO_Handler), accessing
+  runtime parameters (Run_Parameter), etc.
+*/
 
 #endif  // Run_Parameter_h

@@ -152,7 +152,7 @@ bool Phase_Space_Generator::CreateBeamChannels(Multi_Channel * integrator,
       integrator->Add(channel);
     } 
     if ((cis[i]).type==3) {
-      if ((inflavs[0].isphoton()) || (inflavs[1].isphoton())) {
+      if ((inflavs[0].IsPhoton()) || (inflavs[1].IsPhoton())) {
 	  channel = new LBSComptonPeakCentral(cis[i].parameters[0],cis[i].parameters[1],
 					      cis[i].parameters[2],cis[i].parameters[3]);
 	  integrator->Add(channel);
@@ -190,16 +190,16 @@ bool Phase_Space_Generator::MakeHeader(string &headername,char* name,int rannum)
 	<<"    int     chnumber;"<<endl;
 
   //actual Channel
-  header<<"    void   "<<name<<"Momenta(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *,double *);"<<endl
-	<<"    double "<<name<<"Weight(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);"<<endl
+  header<<"    void   "<<name<<"Momenta(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);"<<endl
+	<<"    double "<<name<<"Weight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);"<<endl
 	<<"    int    "<<name<<"Resonances(APHYTOOLS::Flavour*&);"<<endl
 	<<"    void   "<<name<<"ISRtype(int &,double &,double &);"<<endl
 	<<"  public:"<<endl
 	<<"    "<<pID.c_str()<<"(int nin,int nout,APHYTOOLS::Flavour* fl,int _chn)"<<endl
 	<<"       : Single_Channel(nin,nout,fl), chnumber(_chn)"<<endl
 	<<"    { name = std::string(\""<<pID.c_str()<<"\"); };"<<endl
-	<<"    void   GenerateWeight(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);"<<endl
-	<<"    void   GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *,double *);"<<endl
+	<<"    void   GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);"<<endl
+	<<"    void   GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);"<<endl
 	<<"    int    CountResonances(APHYTOOLS::Flavour*&);"<<endl
 	<<"    void   ISRInfo(int &,double &,double &);"<<endl
 	<<"    int    ChNumber()           { return chnumber; };"<<endl
@@ -231,7 +231,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"#include "<<'"'<<"Random.H"<<'"'<<endl<<endl
        <<"using namespace PHASIC;"<<endl<<endl
        <<"void "<<pID.c_str()<<"::GeneratePoint("
-       <<"AMATOOLS::vec4d * p,APHYTOOLS::Cut_Data * cuts,double* ran)"<<endl 
+       <<"AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data * cuts,double* ran)"<<endl 
        <<"{"<<endl  
        <<"  switch (chnumber) {"<<endl
        <<"    case "<<chnumber<<": "<<name<<"Momenta(p,cuts,ran);break;"<<endl
@@ -240,7 +240,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"  }"<<endl
        <<"}"<<endl<<endl
        <<"void "<<pID.c_str()<<"::GenerateWeight("
-       <<"AMATOOLS::vec4d * p,APHYTOOLS::Cut_Data * cuts)"<<endl 
+       <<"AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data * cuts)"<<endl 
        <<"{"<<endl  
        <<"  switch (chnumber) {"<<endl
        <<"    case "<<chnumber<<": weight = "<<name<<"Weight(p,cuts);break;"<<endl
@@ -296,8 +296,8 @@ int Phase_Space_Generator::AddToHeader(string &headername,char* name,bool constr
   for(;from2;) {
     from2.getline(buffer,buffersize);
     if (string(buffer).find(string("public:"))!=-1) {
-      to<<"    void   "<<name<<"Momenta(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *,double *);"<<endl
-	<<"    double "<<name<<"Weight(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);"<<endl
+      to<<"    void   "<<name<<"Momenta(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);"<<endl
+	<<"    double "<<name<<"Weight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);"<<endl
 	<<"    int    "<<name<<"Resonances(APHYTOOLS::Flavour*&);"<<endl
 	<<"    void   "<<name<<"ISRtype(int &,double &,double &);"<<endl;
     }

@@ -19,8 +19,8 @@ namespace AMEGIC {
     int    Massive_Vectors(int,APHYTOOLS::Flavour*);
     void   Add_Extern_Polarisations(Basic_Sfuncs*,APHYTOOLS::Flavour*,Helicity*);
     void   Attach(int,APHYTOOLS::Flavour*);
-    void   Reset_Gauge_Vectors(int,AMATOOLS::vec4d*,AMATOOLS::vec4d);
-    void   Set_Gauge_Vectors(int,AMATOOLS::vec4d*,AMATOOLS::vec4d);
+    void   Reset_Gauge_Vectors(int,AMATOOLS::Vec4D*,AMATOOLS::Vec4D);
+    void   Set_Gauge_Vectors(int,AMATOOLS::Vec4D*,AMATOOLS::Vec4D);
     double Massless_Norm(int,APHYTOOLS::Flavour*,Basic_Sfuncs*);
     double Massive_Norm() { return Mass_Norm; }
     void   Replace_Numbers(int,APHYTOOLS::Flavour*,Single_Amplitude*);

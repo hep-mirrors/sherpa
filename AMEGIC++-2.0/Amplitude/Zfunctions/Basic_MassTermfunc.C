@@ -38,7 +38,7 @@ Kabbala Basic_MassTermfunc::MassTerm(int a)
 Complex Basic_MassTermfunc::MassTermCalc(int a,int fl)
 {
   Flavour flav = Flavour(kf::code(iabs(fl)));
-  if (fl<0) flav = flav.bar();
+  if (fl<0) flav = flav.Bar();
   return MassTermCalc(a,flav);
 }
 
@@ -53,13 +53,13 @@ Complex Basic_MassTermfunc::MassTermCalc(int a,Flavour flav)
   mass = AORGTOOLS::rpa.consts.Mass(flav,sqr(AORGTOOLS::rpa.gen.Ecms()));
 
 #ifdef Complex_Mass_Scheme
-  mass -= Complex(0.,1./2.)*flav.width();
+  mass -= Complex(0.,1./2.)*flav.Width();
 #endif
 
   if (a<0)           mass = -mass;
-  if (flav.isanti()) mass = -mass;
-  if (flav.get_mass_sign()==-1) mass = -mass;
+  if (flav.IsAnti()) mass = -mass;
+  if (flav.MassSign()==-1) mass = -mass;
 
-  return 1.+mass/csqrt((BS->Momentum(iabs(a))).abs2());
+  return 1.+mass/csqrt((BS->Momentum(iabs(a))).Abs2());
 }
 

@@ -22,21 +22,21 @@ namespace ISR {
     double                mass12, mass22, x1, x2;
     double                exponent[2];
     double                smin,smax,splimits[3], ylimits[2];
-    AMATOOLS::vec4d       fixvecs[2];
+    AMATOOLS::Vec4D       fiXVECs[2];
     std::string           name, type;
   public:
     ISR_Handler(int *,APHYTOOLS::Flavour *,APHYTOOLS::Flavour *,double *);
     ~ISR_Handler();
     bool   CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *);
     void   SetPartonMasses(APHYTOOLS::Flavour * _fl); 
-    bool   MakeISR(AMATOOLS::vec4d *,double,double);
+    bool   MakeISR(AMATOOLS::Vec4D *,double,double);
     bool   CalculateWeight(double);
     bool   CalculateWeight2(double);
     double Weight(APHYTOOLS::Flavour *);
     double Weight2(APHYTOOLS::Flavour *);
 
-    void   BoostInCMS(AMATOOLS::vec4d *,int);
-    void   BoostInLab(AMATOOLS::vec4d *,int);
+    void   BoostInCMS(AMATOOLS::Vec4D *,int);
+    void   BoostInLab(AMATOOLS::Vec4D *,int);
 
     void   SetName(std::string _name) { name         = _name; }
     void   SetSprimeMin(double _spl)  { if (_spl > smin) splimits[0]  = _spl; }

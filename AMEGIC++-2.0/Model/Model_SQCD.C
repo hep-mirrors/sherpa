@@ -55,13 +55,13 @@ void Model_SQCD::c_FFS(Single_Vertex* v,int& vanz)
   //quark - squark - gluino
 
   Flavour flgluino = Flavour(kf::code(47));
-  if (flgluino.ison()) {
+  if (flgluino.IsOn()) {
   //uptype - sup - gluino
     for (short int i=2;i<7;i+=2) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=51;j<57;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison()) {
+	if (flav1.IsOn() && flav2.IsOn()) {
 	v[vanz].in[0] = flav1;
 	v[vanz].in[1] = flav2;
 	v[vanz].in[2] = flgluino;
@@ -98,7 +98,7 @@ void Model_SQCD::c_FFS(Single_Vertex* v,int& vanz)
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=61;j<67;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison()) {
+	if (flav1.IsOn() && flav2.IsOn()) {
 	v[vanz].in[0] = flav1;
 	v[vanz].in[1] = flav2;
 	v[vanz].in[2] = flgluino;
@@ -137,9 +137,9 @@ void Model_SQCD::c_FFV(Single_Vertex* v,int& vanz)
   
   //gluino - gluon - gluino
   Flavour flgluino = Flavour(kf::code(47));
-  if (flgluino.ison()) {      
+  if (flgluino.IsOn()) {      
     Flavour flgluon = Flavour(kf::gluon);
-    if (flgluon.ison()) {
+    if (flgluon.IsOn()) {
       v[vanz].in[0] = flgluino;
       v[vanz].in[1] = flgluon;
       v[vanz].in[2] = flgluino;
@@ -178,16 +178,16 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
  //squark - Photon - squark
 
   Flavour flph = Flavour(kf::photon);
-  if (flph.ison()) {
+  if (flph.IsOn()) {
     //sUpypes
     for (short int i=51 ;i<57;i++) {
       Flavour flav = Flavour(kf::code(i));
-      if (flav.ison()) {
+      if (flav.IsOn()) {
 	v[vanz].in[0] = flav;
 	v[vanz].in[1] = flph;
 	v[vanz].in[2] = flav;
 	
-	Kabbala charge = Kabbala(string("Q_{"+flav.texname()+"}"),flav.charge());
+	Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
 	
 	//changed sign - -> +
 	kcpl0 = M_I*charge*g1;
@@ -218,12 +218,12 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
     //sDowntypes
     for (short int i=61 ;i<67;i++) {
       Flavour flav = Flavour(kf::code(i));
-      if (flav.ison()) {
+      if (flav.IsOn()) {
 	v[vanz].in[0] = flav;
 	v[vanz].in[1] = flph;
 	v[vanz].in[2] = flav;
 	
-	Kabbala charge = Kabbala(string("Q_{"+flav.texname()+"}"),flav.charge());
+	Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
 
 	kcpl0 = -M_I*charge*g1;
 	kcpl1 = kcpl0;
@@ -255,13 +255,13 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
   //squark - Z - squark
 
   Flavour flZ = Flavour(kf::Z);
-  if (flZ.ison()) {
+  if (flZ.IsOn()) {
     //sUpypes
     for (short int i=51;i<57;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=i;j<57;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison()) {
+	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flZ;
@@ -305,7 +305,7 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=61 ;j<67;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison()) {
+	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flZ;
@@ -349,12 +349,12 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
 //check the summing Convention !!!!
   //supquarks - W - sdownquarks
   Flavour flW = Flavour(kf::W);
-  if (flW.ison()) {
+  if (flW.IsOn()) {
     for (short int i=51;i<57;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=61;j<67;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison()) {
+	if (flav1.IsOn() && flav2.IsOn()) {
 	v[vanz].in[0] = flav2;
 	v[vanz].in[1] = flW;
 	v[vanz].in[2] = flav1;
@@ -403,12 +403,12 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
   //sQuark - Gluon - sQuark
    
   Flavour flgl = Flavour(kf::gluon); 
-  if (flgl.ison()) {
+  if (flgl.IsOn()) {
 
   //uptypes 
   for (short int i=51;i<57;i++) {
     Flavour flav = Flavour(kf::code(i));
-    if (flav.ison()) { 
+    if (flav.IsOn()) { 
       v[vanz].in[0] = flav;
       v[vanz].in[1] = flgl;
       v[vanz].in[2] = flav;
@@ -442,7 +442,7 @@ void Model_SQCD::c_SSV(Single_Vertex* v,int& vanz)
   //downtypes 
   for (short int i=61;i<67;i++) {
     Flavour flav = Flavour(kf::code(i));
-    if (flav.ison()) { 
+    if (flav.IsOn()) { 
       v[vanz].in[0] = flav;
       v[vanz].in[1] = flgl;
       v[vanz].in[2] = flav;
@@ -483,15 +483,15 @@ void Model_SQCD::c_SSS(Single_Vertex* v,int& vanz)
   //sQuarks - A0 - sQuarks
   
   Flavour flA0 = Flavour(kf::A0);
-  if (flA0.ison()) {
+  if (flA0.IsOn()) {
     //uptypes
     for (short int i=51;i<57;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=51;j<57;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison() && i<=j) {
+	if (flav1.IsOn() && flav2.IsOn() && i<=j) {
 	  
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).yuk()/
+	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).Yuk()/
 				 (K_v2()).Value()*sqrt(2.));
 
 	  v[vanz].in[0] = flav1;
@@ -538,10 +538,10 @@ void Model_SQCD::c_SSS(Single_Vertex* v,int& vanz)
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=61;j<67;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison() && i<=j) {
+	if (flav1.IsOn() && flav2.IsOn() && i<=j) {
 	  
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				-Flavour(kf::code(2*gen_sDown(flav1)+1)).yuk()/(K_v1()).Value()*sqrt(2.));
+				-Flavour(kf::code(2*gen_sDown(flav1)+1)).Yuk()/(K_v1()).Value()*sqrt(2.));
 	  
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flA0;
@@ -600,14 +600,14 @@ void Model_SQCD::c_SSS(Single_Vertex* v,int& vanz)
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=51;j<57;j++) {
 	Flavour flav2 =Flavour(kf::code(j));
-	if(flav1.ison() && flav2.ison() && i<=j){
+	if(flav1.IsOn() && flav2.IsOn() && i<=j){
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flH;
 	  v[vanz].in[2] = flav2;
 
 	  Kabbala help = K_zero;
 
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).yuk()/
+	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav1)+2)).Yuk()/
 				 (K_v2()).Value()*sqrt(2.));
 
 	  Kabbala fac = Kabbala(string("\\frac{3-8sin^2\\theta_W}{4sin^2\\theta_W}"),
@@ -666,7 +666,7 @@ void Model_SQCD::c_SSS(Single_Vertex* v,int& vanz)
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=61;j<67;j++) {
 	Flavour flav2 =Flavour(kf::code(j));
-	if(flav1.ison() && flav2.ison() && i<=j){
+	if(flav1.IsOn() && flav2.IsOn() && i<=j){
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flH;
 	  v[vanz].in[2] = flav2;
@@ -674,7 +674,7 @@ void Model_SQCD::c_SSS(Single_Vertex* v,int& vanz)
 	  Kabbala help = K_zero;
 
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour(kf::code(2*gen_sDown(flav1)+1)).yuk()/(K_v1()).Value()*sqrt(2.));
+				 -Flavour(kf::code(2*gen_sDown(flav1)+1)).Yuk()/(K_v1()).Value()*sqrt(2.));
 	  
 	  Kabbala fac = Kabbala(string("\\frac{3-4sin^2\\theta_W}{2sin^2\\theta_W}"),
 				(3.-4.*(K_sinTW()).Value()*(K_sinTW()).Value())/
@@ -732,19 +732,19 @@ void Model_SQCD::c_SSS(Single_Vertex* v,int& vanz)
   //sUp - Hmin - sDown
 
   Flavour flHmin = Flavour(kf::Hmin);
-  if (flHmin.ison()) {
+  if (flHmin.IsOn()) {
     for (short int i=51;i<57;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=61;j<67;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	v[vanz].in[0] = flav1.bar();
-	v[vanz].in[1] = flHmin.bar();
+	v[vanz].in[0] = flav1.Bar();
+	v[vanz].in[1] = flHmin.Bar();
 	v[vanz].in[2] = flav2;
 	
 	Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour(kf::code(2*gen_sUp(flav1)+1)).yuk()/(K_v1()).Value()*sqrt(2.));
+				 -Flavour(kf::code(2*gen_sUp(flav1)+1)).Yuk()/(K_v1()).Value()*sqrt(2.));
 		
-	Kabbala K_uJ = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sDown(flav2)+2)).yuk()/
+	Kabbala K_uJ = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sDown(flav2)+2)).Yuk()/
 			 (K_v2()).Value()*sqrt(2.));
 		
 	Kabbala K_massW = Kabbala(string("M_W"),g1.Value()/2.*sqrt(K_v1().Value()*K_v1().Value()+
@@ -848,11 +848,11 @@ inline int Model_SQCD::gen_sUp(Flavour fl)
 {
   int gen_sUp;
 
-  if (fl.kfcode() == 51 || fl.kfcode() == 54)
+  if (fl.Kfcode() == 51 || fl.Kfcode() == 54)
     gen_sUp = 0;
-  if (fl.kfcode() == 52 || fl.kfcode() == 55)
+  if (fl.Kfcode() == 52 || fl.Kfcode() == 55)
     gen_sUp = 1;
-  if (fl.kfcode() == 53 || fl.kfcode() == 56)
+  if (fl.Kfcode() == 53 || fl.Kfcode() == 56)
     gen_sUp = 2;
 
   return gen_sUp;
@@ -861,11 +861,11 @@ inline int Model_SQCD::gen_sDown(Flavour fl)
 {
   int gen_sDown;
 
-  if (fl.kfcode() == 61 || fl.kfcode() == 64)
+  if (fl.Kfcode() == 61 || fl.Kfcode() == 64)
     gen_sDown = 0;
-  if (fl.kfcode() == 62 || fl.kfcode() == 65)
+  if (fl.Kfcode() == 62 || fl.Kfcode() == 65)
     gen_sDown = 1;
-  if (fl.kfcode() == 63 || fl.kfcode() == 66)
+  if (fl.Kfcode() == 63 || fl.Kfcode() == 66)
     gen_sDown = 2;
 
   return gen_sDown;

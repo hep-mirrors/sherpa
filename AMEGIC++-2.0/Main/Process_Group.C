@@ -198,19 +198,19 @@ void Process_Group::GroupProcesses() {
   // First : Check for identical masses.
   double * massin  = new double[nin];
   double * massout = new double[nout];
-  for (int i=0;i<nin;i++)  massin[i]  = flin[i].mass();
-  for (int i=0;i<nout;i++) massout[i] = flout[i].mass();
+  for (int i=0;i<nin;i++)  massin[i]  = flin[i].Mass();
+  for (int i=0;i<nout;i++) massout[i] = flout[i].Mass();
 
   bool massok = 1;
   for (int i=0;i<procs.size();i++) {
     for (int j=0;j<procs[i]->Nin();j++) {
-      if (!(AMATOOLS::IsEqual(massin[j],(procs[i]->Flavs()[j]).mass()))) {
+      if (!(AMATOOLS::IsEqual(massin[j],(procs[i]->Flavs()[j]).Mass()))) {
 	massok = 0; break;
       }
     }
     if (!massok) break;
     for (int j=0;j<procs[i]->Nout();j++) {
-      if (!(AMATOOLS::IsEqual(massout[j],(procs[i]->Flavs()[j+procs[i]->Nin()]).mass()))) {
+      if (!(AMATOOLS::IsEqual(massout[j],(procs[i]->Flavs()[j+procs[i]->Nin()]).Mass()))) {
 	massok = 0; break;
       }
     }
@@ -240,48 +240,48 @@ void Process_Group::GroupProcesses() {
     if (sproc->Nin()==2) {
       flav1    = sproc->Flavs()[0]; 
       flav2    = sproc->Flavs()[1]; 
-      if ( (flav1.isvector()) && (flav2.isvector()) ) {
-	if ( (flav1.bar() == flav1) && (flav2.bar() == flav2) ) {
+      if ( (flav1.IsVector()) && (flav2.IsVector()) ) {
+	if ( (flav1.Bar() == flav1) && (flav2.Bar() == flav2) ) {
 	  if (flav1 == flav2) help += string("V V -> ");
 	                 else help += string("V V' -> ");
 	}
-	else if (flav1.bar() == flav1) { 
-	  if (flav2.charge() > 0) help += string("V0 V+ -> "); 
+	else if (flav1.Bar() == flav1) { 
+	  if (flav2.Charge() > 0) help += string("V0 V+ -> "); 
 	                     else help += string("V0 V- -> "); 
 	}
-	else if (flav2.bar() == flav2) { 
-	  if (flav1.charge() > 0) help += string("V+ V0 -> "); 
+	else if (flav2.Bar() == flav2) { 
+	  if (flav1.Charge() > 0) help += string("V+ V0 -> "); 
 	                     else help += string("V- V0 -> "); 
 	}
 	else {
-	  if (flav1.charge() > 0) help += string("V+ "); 
+	  if (flav1.Charge() > 0) help += string("V+ "); 
 	                     else help += string("V- "); 
-	  if (flav2.charge() > 0) help += string("V+ -> "); 
+	  if (flav2.Charge() > 0) help += string("V+ -> "); 
 	                     else help += string("V- -> "); 
 	}
       }
-      else if ( (flav1.isfermion()) && (flav2.isvector()) ) {
-	if (flav1.isanti())          help += string("fb ");
+      else if ( (flav1.IsFermion()) && (flav2.IsVector()) ) {
+	if (flav1.IsAnti())          help += string("fb ");
 	                        else help += string("f ");
-	if (flav2==flav2.bar())      help += string("V -> ");
-	else if (flav2.charge() > 0) help += string("V+ -> "); 
+	if (flav2==flav2.Bar())      help += string("V -> ");
+	else if (flav2.Charge() > 0) help += string("V+ -> "); 
 	                        else help += string("V- -> "); 
       }
-      else if ( (flav1.isvector()) && (flav2.isfermion()) ) {
-	if (flav1==flav1.bar())      help += string("V ");
-	else if (flav1.charge() > 0) help += string("V+ "); 
+      else if ( (flav1.IsVector()) && (flav2.IsFermion()) ) {
+	if (flav1==flav1.Bar())      help += string("V ");
+	else if (flav1.Charge() > 0) help += string("V+ "); 
 	                        else help += string("V- "); 
-	if (flav2.isanti())          help += string("fb -> ");
+	if (flav2.IsAnti())          help += string("fb -> ");
 	                        else help += string("f -> ");
       }
-      else if ( (flav1.isfermion()) && (flav2.isfermion()) ) {
-	if ( (flav1.isanti()) && (flav2==flav1) )             help += string ("fb fb -> ");
-	else if ( !(flav1.isanti()) && (flav2==flav1) )       help += string ("f f -> ");
-	else if ( !(flav1.isanti()) && (flav2==flav1.bar()) ) help += string ("f fb -> ");
-	else if ( (flav1.isanti()) && (flav2.isanti()) )      help += string ("fb fb' -> ");
-	else if ( !(flav1.isanti()) && (flav2.isanti()) )     help += string ("fb f' -> ");
-	else if ( (flav1.isanti()) && !(flav2.isanti()) )     help += string ("f fb' -> ");
-	else if ( !(flav1.isanti()) && !(flav2.isanti()) )    help += string ("f f' -> ");
+      else if ( (flav1.IsFermion()) && (flav2.IsFermion()) ) {
+	if ( (flav1.IsAnti()) && (flav2==flav1) )             help += string ("fb fb -> ");
+	else if ( !(flav1.IsAnti()) && (flav2==flav1) )       help += string ("f f -> ");
+	else if ( !(flav1.IsAnti()) && (flav2==flav1.Bar()) ) help += string ("f fb -> ");
+	else if ( (flav1.IsAnti()) && (flav2.IsAnti()) )      help += string ("fb fb' -> ");
+	else if ( !(flav1.IsAnti()) && (flav2.IsAnti()) )     help += string ("fb f' -> ");
+	else if ( (flav1.IsAnti()) && !(flav2.IsAnti()) )     help += string ("f fb' -> ");
+	else if ( !(flav1.IsAnti()) && !(flav2.IsAnti()) )    help += string ("f f' -> ");
       }
     }
     else {
@@ -291,9 +291,9 @@ void Process_Group::GroupProcesses() {
     }
     int scalars = 0,fermions = 0,vectors = 0;
     for (int j=0;j<sproc->Nout();j++) {
-      if ((sproc->Flavs()[sproc->Nin()+j]).isscalar())  scalars++;
-      if ((sproc->Flavs()[sproc->Nin()+j]).isfermion()) fermions++;
-      if ((sproc->Flavs()[sproc->Nin()+j]).isvector())  vectors++;
+      if ((sproc->Flavs()[sproc->Nin()+j]).IsScalar())  scalars++;
+      if ((sproc->Flavs()[sproc->Nin()+j]).IsFermion()) fermions++;
+      if ((sproc->Flavs()[sproc->Nin()+j]).IsVector())  vectors++;
     }
     char numb[20];
     sprintf(numb,"%i",scalars);
@@ -362,9 +362,9 @@ void Process_Group::Add(Process_Base * _proc)
 void Process_Group::SelectOne()
 {
   DeSelect();
-  if (totalxs==0) selected = procs[int(Ran.get()*procs.size())];
+  if (totalxs==0) selected = procs[int(ran.Get()*procs.size())];
   else {
-    double disc = max * Ran.get();
+    double disc = max * ran.Get();
     for (int i=0;i<procs.size();i++) {
       disc -= procs[i]->Max();
       if (disc<0.) {
@@ -492,7 +492,7 @@ void Process_Group::Initialize(APHYTOOLS::Selector_Data * _seldata) {
   lastlumi = 1.;
 }
 
-int Process_Group::InitAmplitude(Topology * top,vec4d *& testmoms,
+int Process_Group::InitAmplitude(Topology * top,Vec4D *& testmoms,
 				  vector<double> & results,vector<Single_Process *> & links)
 {
   int okay = 1;
@@ -558,8 +558,8 @@ bool Process_Group::SetUpIntegrator()
   
   sel->BuildCuts(cuts);
   if (nin==2) {
-    if ( (fl[0].mass() != rpa.gen.Beam1().mass()) ||
-	 (fl[1].mass() != rpa.gen.Beam2().mass()) ) isr->SetPartonMasses(fl);
+    if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
+	 (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
   }
   ps  = new Phase_Space_Handler(this,isr,beam);
   ps->CollectChannels();
@@ -605,8 +605,8 @@ bool Process_Group::CalculateTotalXSec()
   }
   else {
     if (nin==2) {
-      if ( (fl[0].mass() != rpa.gen.Beam1().mass()) ||
-	   (fl[1].mass() != rpa.gen.Beam2().mass()) ) isr->SetPartonMasses(fl);
+      if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
+	   (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
     }
     sel->BuildCuts(cuts);
     tables  = 0;
@@ -693,8 +693,8 @@ bool Process_Group::PrepareXSecTables()
   }
   else {
     if (nin==2) {
-      if ( (fl[0].mass() != rpa.gen.Beam1().mass()) ||
-	   (fl[1].mass() != rpa.gen.Beam2().mass()) ) isr->SetPartonMasses(fl);
+      if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
+	   (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
     }
     sel->BuildCuts(cuts);
     totalxs = ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
@@ -733,7 +733,7 @@ void Process_Group::AddPoint(const double value)
 
 
 
-double Process_Group::Differential(vec4d * p)
+double Process_Group::Differential(Vec4D * p)
 {
   last = 0;
   for (int i=0;i<procs.size();i++) {
@@ -768,7 +768,7 @@ double Process_Group::Differential2()
 
 
 
-double Process_Group::DSigma(vec4d * p,bool lookup)
+double Process_Group::DSigma(Vec4D * p,bool lookup)
 {
   last = 0;
   for (int i=0;i<procs.size();i++) last += procs[i]->DSigma(p,lookup);
@@ -842,13 +842,13 @@ void Process_Group::PrintDifferential()
   msg.Out()<<"--------------------------------------------------------"<<endl;
 }
 
-void Process_Group::ControlOutput(vec4d * p)
+void Process_Group::ControlOutput(Vec4D * p)
 { 
   msg.Out()<<"***************************************************************************"<<endl;
   msg.Out()<<"***************************************************************************"<<endl;
-  double s   = (p[0]+p[1]).abs2();
-  double t   = (p[0]-p[2]).abs2();
-  double u   = (p[0]-p[3]).abs2();
+  double s   = (p[0]+p[1]).Abs2();
+  double t   = (p[0]-p[2]).Abs2();
+  double u   = (p[0]-p[3]).Abs2();
   double a_s = as->AsFixed();
   msg.Out()<<"-------- Process_Group : "<<name<<" : DSigma -------------------"<<endl;
   msg.Out()<<"         scale = "<<scale<<" = "<<2.*s*t*u/(s*s+u*u+t*t)<<endl;

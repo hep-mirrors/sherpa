@@ -1,18 +1,19 @@
+#ifndef Vector_H
+#define Vector_H
+
 /*
  * Vector.H: Declarations for vec.C
  * 3 dim. euklidean vectors and 4 dim. Minkowski vectors
  * Poincare transformations
  */
 
-#ifndef vector_h
-#define vector_h
 
 #include <iostream>
 #include "MathTools.H"
  
 namespace AMATOOLS {
-  class vec4d;
-  class vec3d;
+  class Vec4D;
+  class Vec3D;
 
   class Tag {
     static const struct Tsum {} sum;
@@ -20,231 +21,246 @@ namespace AMATOOLS {
     static const struct Tsmul {} smul;
     static const struct Tcross {} cross;
 
-    friend class vec4d;
-    friend vec4d operator+ (const vec4d&, const vec4d&);
-    friend vec4d operator- (const vec4d&, const vec4d&);
-    friend vec4d operator* (const double, const vec4d&);
+    friend class Vec4D;
+    friend Vec4D operator+ (const Vec4D&, const Vec4D&);
+    friend Vec4D operator- (const Vec4D&, const Vec4D&);
+    friend Vec4D operator* (const double, const Vec4D&);
 
-    friend class vec3d;
-    friend vec3d operator+ (const vec3d&, const vec3d&);
-    friend vec3d operator- (const vec3d&, const vec3d&);
-    friend vec3d operator* (const double, const vec3d&);
-    friend vec3d operator* (const vec3d&, const double);
-    friend vec3d cross (const vec3d&, const vec3d&);
+    friend class Vec3D;
+    friend Vec3D operator+ (const Vec3D&, const Vec3D&);
+    friend Vec3D operator- (const Vec3D&, const Vec3D&);
+    friend Vec3D operator* (const double, const Vec3D&);
+    friend Vec3D operator* (const Vec3D&, const double);
+    friend Vec3D cross (const Vec3D&, const Vec3D&);
   };
 
 
-  class vec3d {
-    double x[3];
+  class Vec3D {
+    double m_x[3];
   public:
-    vec3d(double x0, double x1, double x2){
-      x[0]=x0;x[1]=x1;x[2]=x2;};
-    vec3d(const vec4d& v);
-    vec3d(){
-      x[0]=x[1]=x[2]=0;};
-    ~vec3d() {}
+    Vec3D(double x, double y, double z){
+      m_x[0] = x;
+      m_x[1] = y;
+      m_x[2] = z;
+    }
+    Vec3D(const Vec4D& v);
+    Vec3D(){
+      m_x[0]=m_x[1]=m_x[2]=0.;
+    }
 
-    // computational constructors:
-    vec3d(const vec3d& v1 ,const vec3d& v2, const Tag::Tsum);
-    vec3d(const vec3d& v1 ,const vec3d& v2, const Tag::Tdiff);
-    vec3d(const vec3d& v1 ,const double scal, const Tag::Tsmul); 
-    vec3d(const vec3d& a ,const vec3d& b, const Tag::Tcross); 
+    //!  Computational constructor
+    inline Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tsum);
+    //!  Computational constructor
+    inline Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tdiff);
+    //!  Computational constructor
+    inline Vec3D(const Vec3D& v1 ,const double scal, const Tag::Tsmul); 
+    //!  Computational constructor
+    inline Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tcross); 
 
-    inline const double abs() const;
-    inline const double sqr() const;
-    inline double& operator[] (int idx);
-    inline const double operator[] (int idx) const;
+
+    inline const double Abs() const;
+    inline const double Sqr() const;
+    inline double& operator[] (int i);
+    inline const double operator[] (int i) const;
   };
 
-  class vec4d {
-    double x[4];
+  class Vec4D {
+    double m_x[4];
   public:
-    vec4d(const double x0, const double x1, const double x2, const double x3) { 
-      x[0]=x0; x[1]=x1; x[2]=x2; x[3]=x3; };
-    vec4d(const double E, const vec3d& xn){
-      x[0]=E;x[1]=xn[1];x[2]=xn[2];x[3]=xn[3];};
-    vec4d(const vec4d& v1) {
-      x[0]=v1[0]; x[1]=v1[1]; x[2]=v1[2]; x[3]=v1[3];};
-    vec4d(){ x[0]=x[1]=x[2]=x[3]=0.0;};
+    Vec4D() {
+      m_x[0]=m_x[1]=m_x[2]=m_x[3]=0.;
+    }
+    Vec4D(const double x0, const double x1, const double x2, const double x3) { 
+      m_x[0] = x0; 
+      m_x[1] = x1; 
+      m_x[2] = x2; 
+      m_x[3] = x3; 
+    }
+    Vec4D(const double E, const Vec3D& xn) {
+      m_x[0] = E;
+      m_x[1] = xn[1];
+      m_x[2] = xn[2];
+      m_x[3] = xn[3];
+    }
 
-    // computational constructors:
-    vec4d(const vec4d& v1 ,const vec4d& v2, const Tag::Tsum);
-    vec4d(const vec4d& v1 ,const vec4d& v2, const Tag::Tdiff);
-    vec4d(const vec4d& v1 ,const double scal, const Tag::Tsmul); 
+    //! Computational constructor
+    Vec4D(const Vec4D& v1 ,const Vec4D& v2, const Tag::Tsum);
+    //! Computational constructor
+    Vec4D(const Vec4D& v1 ,const Vec4D& v2, const Tag::Tdiff);
+    //! Computational constructor
+    Vec4D(const Vec4D& v1 ,const double scal, const Tag::Tsmul); 
   
-    ~vec4d() {}
-    inline double& operator[] (int idx);
-    inline const double operator[] (int idx) const;
-    const double abs2() const {return x[0]*x[0]-x[1]*x[1]-x[2]*x[2]-x[3]*x[3];};
-    vec4d& operator+= (const vec4d& v);
-    vec4d& operator-= (const vec4d& v);
-    vec4d& operator*= (const double scal);
+    inline double& operator[] (int i);
+    inline const double operator[] (int i) const;
+    const double Abs2() const {return m_x[0]*m_x[0]-m_x[1]*m_x[1]-m_x[2]*m_x[2]-m_x[3]*m_x[3];};
+
+    Vec4D& operator+= (const Vec4D& v);
+    Vec4D& operator-= (const Vec4D& v);
+    Vec4D& operator*= (const double scal);
 
   };
 
 
-  inline vec3d::vec3d(const vec4d& v)
+  inline Vec3D::Vec3D(const Vec4D& v)
   {
-    x[0]=v[1];x[1]=v[2];x[2]=v[3];
+    m_x[0]=v[1];m_x[1]=v[2];m_x[2]=v[3];
   }
 
-  inline double& vec3d::operator[] (int idx) 
+  inline double& Vec3D::operator[] (int i) 
   {
 #ifdef CHECK
-    if(idx<1 || idx>3) {
-      cerr<<"vec3d: out of bound.\n";
-      return x[0];
+    if(i<1 || i>3) {
+      cerr<<"Vec3D: out of bound.\n";
+      return m_x[0];
     }
 #endif
     
-    return x[--idx];
+    return m_x[--i];
   }
 
-  inline const double vec3d::operator[] (int idx) const 
+  inline const double Vec3D::operator[] (int i) const 
   {
 #ifdef CHECK
-    if(idx<1 || idx>3) {
-      cerr<<"vec3d: out of bound.\n";
-      return x[0];
+    if(i<1 || i>3) {
+      cerr<<"Vec3D: out of bound.\n";
+      return m_x[0];
     }
 #endif
 
-    return x[--idx];
+    return m_x[--i];
   }
 
-  inline const double vec3d::sqr() const {
-    return x[0]*x[0]+x[1]*x[1]+x[2]*x[2];
+  inline const double Vec3D::Sqr() const {
+    return m_x[0]*m_x[0]+m_x[1]*m_x[1]+m_x[2]*m_x[2];
   }
 
-  inline const double vec3d::abs() const{
-    return sqrt(sqr());
+  inline const double Vec3D::Abs() const{
+    return sqrt(Sqr());
   }
 
-  // computational constructors:
-  inline vec3d::vec3d(const vec3d& v1 ,const vec3d& v2, const Tag::Tsum) 
+  inline Vec3D::Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tsum) 
   {
-    x[0]= v1[1]+v2[1];
-    x[1]= v1[2]+v2[2];
-    x[2]= v1[3]+v2[3];
+    m_x[0]= v1[1]+v2[1];
+    m_x[1]= v1[2]+v2[2];
+    m_x[2]= v1[3]+v2[3];
   }
 
-  inline vec3d::vec3d(const vec3d& v1 ,const vec3d& v2, const Tag::Tdiff) 
+  inline Vec3D::Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tdiff) 
   {
-    x[0]= v1[1]-v2[1];
-    x[1]= v1[2]-v2[2];
-    x[2]= v1[3]-v2[3];
+    m_x[0]= v1[1]-v2[1];
+    m_x[1]= v1[2]-v2[2];
+    m_x[2]= v1[3]-v2[3];
 
   }
 
-  inline vec3d::vec3d(const vec3d& v1 ,const double scal, const Tag::Tsmul) 
+  inline Vec3D::Vec3D(const Vec3D& v1 ,const double scal, const Tag::Tsmul) 
   {
-    x[0]=scal*v1[1];
-    x[1]=scal*v1[2];
-    x[2]=scal*v1[3];
+    m_x[0]=scal*v1[1];
+    m_x[1]=scal*v1[2];
+    m_x[2]=scal*v1[3];
   }
 
-  inline vec3d::vec3d(const vec3d& a ,const vec3d& b, const Tag::Tcross) 
+  inline Vec3D::Vec3D(const Vec3D& v1 ,const Vec3D& v2, const Tag::Tcross) 
   {
-    x[0]=a[2]*b[3]-a[3]*b[2];
-    x[1]=a[3]*b[1]-a[1]*b[3];
-    x[2]=a[1]*b[2]-a[2]*b[1];
+    m_x[0]=v1[2]*v2[3]-v1[3]*v2[2];
+    m_x[1]=v1[3]*v2[1]-v1[1]*v2[3];
+    m_x[2]=v1[1]*v2[2]-v1[2]*v2[1];
   }
-
 
   // new operator definitions:
-  inline vec3d operator+ (const vec3d& v1, const vec3d& v2) {
-    return vec3d(v1,v2,Tag::sum);
+  inline Vec3D operator+ (const Vec3D& v1, const Vec3D& v2) {
+    return Vec3D(v1,v2,Tag::sum);
   }
 
-  inline vec3d operator- (const vec3d& v1, const vec3d& v2) {
-    return vec3d(v1,v2,Tag::diff);
+  inline Vec3D operator- (const Vec3D& v1, const Vec3D& v2) {
+    return Vec3D(v1,v2,Tag::diff);
   }
 
-  inline vec3d operator* (const double scal,const vec3d& v) {
-    return vec3d(v,scal,Tag::smul);
+  inline Vec3D operator* (const double scal,const Vec3D& v) {
+    return Vec3D(v,scal,Tag::smul);
   }
 
-  inline double operator* (const vec3d& v1, const vec3d& v2) {
+  inline double operator* (const Vec3D& v1, const Vec3D& v2) {
     return v1[1]*v2[1] + v1[2]*v2[2] + v1[3]*v2[3];
   }
 
-  inline vec3d operator* (const vec3d& v, const double scal) {
-    return vec3d(v,scal,Tag::smul);
+  inline Vec3D operator* (const Vec3D& v, const double scal) {
+    return Vec3D(v,scal,Tag::smul);
   }
 
-  inline vec3d operator/ (const vec3d& v, const double scal) {
+  inline Vec3D operator/ (const Vec3D& v, const double scal) {
     return (1./scal)*v;
   }
 
 
-  inline vec3d cross(const vec3d& a, const  vec3d& b)
+  inline Vec3D cross(const Vec3D& a, const  Vec3D& b)
   {
-    return vec3d(a,b,Tag::cross);
+    return Vec3D(a,b,Tag::cross);
   }
 
 
 
   // **********************************************************************
-  //   class vec4d
+  //   class Vec4D
   // **********************************************************************
 
-  inline double& vec4d::operator[] (int idx) 
+  inline double& Vec4D::operator[] (int i) 
   {
 #ifdef CHECK
-    if(idx<0 || idx>3) {
-      cerr<<"vec4d: out of bound.\n";
-      return x[0];
+    if(i<0 || i>3) {
+      cerr<<"Vec4D: out of bound.\n";
+      return m_x[0];
     }
 #endif
 
-    return x[idx];
+    return m_x[i];
   }
 
-  inline const double vec4d::operator[] (int idx) const 
+  inline const double Vec4D::operator[] (int i) const 
   {
 #ifdef CHECK
-    if(idx<0 || idx>3) {
-      cerr<<"vec4d: out of bound.\n";
-      return x[0];
+    if(i<0 || i>3) {
+      cerr<<"Vec4D: out of bound.\n";
+      return m_x[0];
     }
 #endif
 
-    return x[idx];
+    return m_x[i];
   }
 
-  inline vec4d& vec4d::operator+= (const vec4d& v) 
+  inline Vec4D& Vec4D::operator+= (const Vec4D& v) 
   {
-    x[0] += v[0];
-    x[1] += v[1];
-    x[2] += v[2];
-    x[3] += v[3];
+    m_x[0] += v[0];
+    m_x[1] += v[1];
+    m_x[2] += v[2];
+    m_x[3] += v[3];
     return *this;
   }
 
-  inline vec4d& vec4d::operator-= (const vec4d& v) 
+  inline Vec4D& Vec4D::operator-= (const Vec4D& v) 
   {
-    x[0] -= v[0];
-    x[1] -= v[1];
-    x[2] -= v[2];
-    x[3] -= v[3];
+    m_x[0] -= v[0];
+    m_x[1] -= v[1];
+    m_x[2] -= v[2];
+    m_x[3] -= v[3];
     return *this;
   }
 
-  inline vec4d& vec4d::operator*= (const double scal) 
+  inline Vec4D& Vec4D::operator*= (const double scal) 
   {
-    x[0] *=scal;
-    x[1] *=scal;
-    x[2] *=scal;
-    x[3] *=scal;
+    m_x[0] *= scal;
+    m_x[1] *= scal;
+    m_x[2] *= scal;
+    m_x[3] *= scal;
     return *this;
   }
 
-  inline double operator* (const vec4d& v1, const vec4d& v2) 
+  inline double operator* (const Vec4D& v1, const Vec4D& v2) 
   {
     return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3];
   }
 
-  inline bool operator==(const vec4d& v1, const vec4d& v2) 
+  inline bool operator==(const Vec4D& v1, const Vec4D& v2) 
   {
     double maxp=Max(v1[0],Max(v1[1],Max(v1[2],v1[3]))); 
     double q=1.;
@@ -255,64 +271,159 @@ namespace AMATOOLS {
     return true;
   }
 
-  inline bool operator!=(const vec4d& v1, const vec4d& v2) 
+  inline bool operator!=(const Vec4D& v1, const Vec4D& v2) 
   {
     return !(v1==v2);
   }
 
-  // computational constructors
-  inline vec4d::vec4d(const vec4d& v1 ,const vec4d& v2, const Tag::Tsum) 
+  inline Vec4D::Vec4D(const Vec4D& v1 ,const Vec4D& v2, const Tag::Tsum) 
   {
-    x[0]=v1[0]+v2[0];
-    x[1]=v1[1]+v2[1];
-    x[2]=v1[2]+v2[2];
-    x[3]=v1[3]+v2[3];
+    m_x[0] = v1[0]+v2[0];
+    m_x[1] = v1[1]+v2[1];
+    m_x[2] = v1[2]+v2[2];
+    m_x[3] = v1[3]+v2[3];
   }
 
-  inline vec4d::vec4d(const vec4d& v1 ,const vec4d& v2, const Tag::Tdiff) 
+  inline Vec4D::Vec4D(const Vec4D& v1 ,const Vec4D& v2, const Tag::Tdiff) 
   {
-    x[0]=v1[0]-v2[0];
-    x[1]=v1[1]-v2[1];
-    x[2]=v1[2]-v2[2];
-    x[3]=v1[3]-v2[3];
+    m_x[0] = v1[0]-v2[0];
+    m_x[1] = v1[1]-v2[1];
+    m_x[2] = v1[2]-v2[2];
+    m_x[3] = v1[3]-v2[3];
   }
 
-  inline vec4d::vec4d(const vec4d& v1 ,const double scal, const Tag::Tsmul) 
+  inline Vec4D::Vec4D(const Vec4D& v1 ,const double scal, const Tag::Tsmul) 
   {
-    x[0]=scal*v1[0];
-    x[1]=scal*v1[1];
-    x[2]=scal*v1[2];
-    x[3]=scal*v1[3];
+    m_x[0] = scal*v1[0];
+    m_x[1] = scal*v1[1];
+    m_x[2] = scal*v1[2];
+    m_x[3] = scal*v1[3];
   }
-
 
   // new operator definitions:
-  inline vec4d operator* (const double scal, const vec4d& v1) {
-    return vec4d(v1,scal,Tag::smul);
+  inline Vec4D operator* (const double scal, const Vec4D& v1) {
+    return Vec4D(v1,scal,Tag::smul);
   }
 
-  inline vec4d operator+ (const vec4d& v1, const vec4d& v2) 
+  inline Vec4D operator+ (const Vec4D& v1, const Vec4D& v2) 
   {
-    return vec4d(v1,v2,Tag::sum);
+    return Vec4D(v1,v2,Tag::sum);
   }
 
-  inline vec4d operator- (const vec4d& v1, const vec4d& v2) 
+  inline Vec4D operator- (const Vec4D& v1, const Vec4D& v2) 
   {
-    return vec4d(v1,v2,Tag::diff);
+    return Vec4D(v1,v2,Tag::diff);
   }
 
 
   // output streams:
-  std::ostream& operator<<(std::ostream& s, const vec4d& vec);
-  std::ostream& operator<<(std::ostream& s, const vec3d& vec);
+  std::ostream& operator<<(std::ostream& s, const Vec4D& vec);
+  std::ostream& operator<<(std::ostream& s, const Vec3D& vec);
 
 
   // standard vectors:
-  const static vec4d xvec;
-  const static vec4d yvec;
-  const static vec4d zvec;
+  const static Vec4D XVEC;
+  const static Vec4D YVEC;
+  const static Vec4D ZVEC;
 
   // end of namespace
-};
+}
+
+
+// --------------------------------------------------
+//           Doxygen part starts here
+// --------------------------------------------------
+
+
+/*!
+ \file
+ \brief   contains class AMATOOLS::Vec3D and class AMATOOLS::Vec4D 
+*/
+
+// --- class Vec3D ---
+
+/*!
+ \class AMATOOLS::Vec3D
+ \brief implementation of a 3 dimensional vector and its algebraic operations
+
+ This class can be used as a (real) 3 dimensional vector. All necessary
+ operations, e.g. addition, scalar product, cross product, etc. are available.
+*/
+
+/*!
+ \fn AMATOOLS::Vec3D::Vec3D()
+ \brief Standard Constructor
+*/
+
+/*!
+ \fn AMATOOLS::Vec3D::Vec3D(double x, double y, double z){
+ \brief Special Constructor taking 3 single components
+*/
+
+/*!
+ \fn AMATOOLS::Vec3D::Vec3D(const Vec4D& v)
+ \brief Special Constructor extracting the space part of a minkowski vector
+*/
+
+/*!
+ \fn inline const double AMATOOLS::Vec3D::Abs() const
+ \brief returns \f$ \sqrt{x^2 + y^2 + z^2} \f$.
+*/
+
+/*!
+ \fn inline const double AMATOOLS::Vec3D::Sqr() const
+ \brief returns \f$ x^2 + y^2 + z^2 \f$.
+*/
+
+/*!
+ \fn   inline double& AMATOOLS::Vec3D::operator[] (int i)
+ \brief returns x,y,z for i=1,2,3 resp. (May be manipulated.)
+*/
+
+/*!
+ \fn   inline const double AMATOOLS::Vec3D::operator[] (int i) const
+ \brief returns x,y,z for i=1,2,3 resp.
+*/
+
+// --- class Vec4D ---
+
+/*!
+ \class AMATOOLS::Vec4D
+ \brief implementation of a 4 dimensional (Minkowski) vector and its algebraic operations
+
+ This class can be used as Minkowski vector. All necessary  operations, e.g. addition,
+ subtraction, scalar product, etc. are available.
+*/
+
+/*!
+ \fn AMATOOLS::Vec4D::Vec4D()
+ \brief Standard Constructor
+*/
+
+/*!
+ \fn AMATOOLS::Vec4D::Vec4D(double x0,double x1, double x2, double x3){
+ \brief Special Constructor taking 4 single components
+*/
+
+/*!
+ \fn AMATOOLS::Vec4D::Vec4D(const double E, const Vec3D& v)
+ \brief Special Constructor taking the space part and a Energie
+*/
+
+/*!
+ \fn inline const double AMATOOLS::Vec4D::Abs2() const
+ \brief returns \f$ x_0^2 - (x_1^2 + x_2^2 + x_3^2) \f$.
+*/
+
+/*!
+ \fn   inline double& AMATOOLS::Vec4D::operator[] (int i)
+ \brief returns \f$x_i\f$. (May be manipulated.)
+*/
+
+/*!
+ \fn   inline const double AMATOOLS::Vec4D::operator[] (int i) const
+ \brief returns \f$x_i\f$.
+*/
+
 
 #endif

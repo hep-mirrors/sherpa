@@ -64,12 +64,12 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
   nstrong = 0;
   neweak  = 0;
   for (int i=0;i<nin;i++) {
-    if (flin[i].strong())      nstrong++;
-    if (flin[i].icharge()!=0)  neweak++;
+    if (flin[i].Strong())      nstrong++;
+    if (flin[i].IntCharge()!=0)  neweak++;
   }
   for (int i=0;i<nout;i++) {
-    if (flout[i].strong())     nstrong++;
-    if (flout[i].icharge()!=0) neweak++;
+    if (flout[i].Strong())     nstrong++;
+    if (flout[i].IntCharge()!=0) neweak++;
   }
 
   GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
@@ -167,16 +167,16 @@ void Single_Process::PolarizationNorm() {
 double Single_Process::SymmetryFactors()
 {
   double sym = 1.;
-  fl_iter fli;
+  Fl_Iter fli;
   for (Flavour hflav=fli.first();hflav!=Flavour(kf::none);hflav = fli.next()) {
-    // no need to compare Hadrons: if (hflav.ishadron()) break;
+    // no need to compare Hadrons: if (hflav.IsHadron()) break;
     if (hflav==Flavour(kf::pi)) break; 
     int cp  = 0;
     int cap = 0;
     for (int j=0;j<nout;j++) {
       if (flout[j]==hflav)                                      cp++;
       else {
-	if ((flout[j]==hflav.bar()) && (hflav != hflav.bar()))  cap++;
+	if ((flout[j]==hflav.Bar()) && (hflav != hflav.Bar()))  cap++;
       }
     }
     if (cp>1)  sym *= double(fak(cp));
@@ -207,17 +207,17 @@ void Single_Process::InitCuts()
 
 
 
-int Single_Process::InitAmplitude(Topology* top,vec4d *& _testmoms,
+int Single_Process::InitAmplitude(Topology* top,Vec4D *& _testmoms,
 				   vector<double> & results,vector<Single_Process *> & links)
 {
   if (_testmoms==0) {
     msg.Debugging()<<"Init moms : "<<_testmoms<<" : "<<nin+nout<<endl;
-    _testmoms = new vec4d[nvec];
+    _testmoms = new Vec4D[nvec];
     ps->TestPoint(_testmoms);
-    for (int i=0;i<nin+nout;i++) msg.Debugging()<<i<<" th mom : "<<_testmoms[i]<<" ("<<_testmoms[i].abs2()<<")"<<endl;
+    for (int i=0;i<nin+nout;i++) msg.Debugging()<<i<<" th mom : "<<_testmoms[i]<<" ("<<_testmoms[i].Abs2()<<")"<<endl;
   }
   if (moms) { delete [] moms; }
-  moms = new vec4d[nvec]; 
+  moms = new Vec4D[nvec]; 
   for (int i=0;i<nin+nout;i++) moms[i] = _testmoms[i];
 
   double result = 0.;
@@ -288,7 +288,7 @@ int Single_Process::Tests(double & result) {
 
   double M2 = 0.;
   if (gauge_test) {
-    pol.Set_Gauge_Vectors(nin+nout,moms,vec4d(sqrt(3.),1.,1.,-1.));
+    pol.Set_Gauge_Vectors(nin+nout,moms,Vec4D(sqrt(3.),1.,1.,-1.));
     BS->set_k0(0);
     BS->setS(moms);  
     BS->ResetS_GT(.9);
@@ -322,7 +322,7 @@ int Single_Process::Tests(double & result) {
 
      --------------------------------------------------- */
 #ifndef Explicit_Pols 
-  vec4d gauge(sqrt(3.),1.,1.,1.);
+  Vec4D gauge(sqrt(3.),1.,1.,1.);
   if (nout==4) gauge = moms[4];
   if (nout==5) gauge = moms[4];
   //?????????
@@ -388,7 +388,7 @@ int Single_Process::Tests(double & result) {
   else {
     number++;
     if (shand->SearchValues(gen_str,testname,BS)) {
-      pol.Set_Gauge_Vectors(nin+nout,moms,vec4d(sqrt(3.),1.,1.,-1.));
+      pol.Set_Gauge_Vectors(nin+nout,moms,Vec4D(sqrt(3.),1.,1.,-1.));
       BS->setS(moms);  
       shand->Initialize(ampl->GetGraphNumber(),hel->Max_Hel());
       (shand->Get_Generator())->Reset();
@@ -665,8 +665,8 @@ void Single_Process::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Ba
 bool Single_Process::SetUpIntegrator() {  
   sel->BuildCuts(cuts);
   if (nin==2) {
-    if ( (fl[0].mass() != rpa.gen.Beam1().mass()) ||
-	 (fl[1].mass() != rpa.gen.Beam2().mass()) ) isr->SetPartonMasses(fl);
+    if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
+	 (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
   }
 
   if (ps->CreateChannelLibrary(ptypename,libname)) {
@@ -808,7 +808,7 @@ void Single_Process::AddPoint(const double value) {
 
 
 
-double Single_Process::Differential(AMATOOLS::vec4d* _moms) { return DSigma(_moms,0); }
+double Single_Process::Differential(AMATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
 
 
 
@@ -818,7 +818,7 @@ double Single_Process::Differential2() {
 }
 
 
-double Single_Process::DSigma(AMATOOLS::vec4d* _moms,bool lookup)
+double Single_Process::DSigma(AMATOOLS::Vec4D* _moms,bool lookup)
 {
   last = lastdxs = 0.;
   if (partner == this) {
@@ -830,7 +830,7 @@ double Single_Process::DSigma(AMATOOLS::vec4d* _moms,bool lookup)
            else        lastdxs = partner->operator()(_moms);
   }
   for (int i=0;i<nin+nout;i++) {
-    if (_moms[i][0] < fl[i].PSmass()) return last = 0.;
+    if (_moms[i][0] < fl[i].PSMass()) return last = 0.;
   }
   if (lastdxs <= 0.)                  return lastdxs = last = 0.;
   if (nin==2)          lastlumi = isr->Weight(flin);
@@ -853,12 +853,12 @@ double Single_Process::DSigma2() {
 
 
 
-double Single_Process::operator()(AMATOOLS::vec4d * mom)
+double Single_Process::operator()(AMATOOLS::Vec4D * mom)
 {
   double M2 = 0.;
 
 #ifndef Explicit_Pols   
-  vec4d gauge(sqrt(3.),1.,1.,1.);
+  Vec4D gauge(sqrt(3.),1.,1.,1.);
   
   if (nout==4) gauge = mom[4];
   if (nout==5) gauge = mom[4];
@@ -959,7 +959,7 @@ double Single_Process::DSigma(double s, double t, double u) {
 	  if (AMATOOLS::IsZero(abs(result/M2-1.))) {
 	    msg.Tracking()<<"Cross check satisfied: "<<abs(result/M2-1.)*100.<<"%"<<endl;
 	    msg.Tracking()<<"Cross check satisfied: "<<abs(result/M1-1.)*100.<<"%"<<endl;
-	    libname = partner->Libname();
+	    libname = partner->LibName();
 	    CreateMappingFile();
 	    return 1;
 	  }

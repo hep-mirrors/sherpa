@@ -517,7 +517,7 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
 Point* Amplitude_Handler::GetPointlist(int n)
 { return pointlist[n];}
 
-void Amplitude_Handler::Reset_Probabs()
+void Amplitude_Handler::Reset_ProbAbs()
 {
   short int i;
   for (i=0;i<graphs.size();i++) probabs[i] = 0.;

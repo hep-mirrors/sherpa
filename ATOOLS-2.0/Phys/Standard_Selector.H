@@ -8,9 +8,9 @@
 namespace APHYTOOLS {
   class No_Selector : public Selector_Base {
   public:
-    No_Selector()                       { name = std::string ("No_Selector"); sel_log = 0; }
-    No_Selector(int,int,Flavour *)      { name = std::string ("No_Selector"); sel_log = 0; }
-    bool Trigger(const AMATOOLS::vec4d*)                    { return 1; }
+    No_Selector()                       { m_name = std::string ("No_Selector"); m_sel_log = 0; }
+    No_Selector(int,int,Flavour *)      { m_name = std::string ("No_Selector"); m_sel_log = 0; }
+    bool Trigger(const AMATOOLS::Vec4D*)                    { return 1; }
     void BuildCuts(Cut_Data * cuts)                         { }
     void UpdateCuts(double sprime,double y,Cut_Data * cuts) { }
     void Output()                                           { }
@@ -22,7 +22,7 @@ namespace APHYTOOLS {
     Energy_Selector(int,int,Flavour *);
     ~Energy_Selector();
     void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::vec4d * );
+    bool     Trigger(const AMATOOLS::Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -34,7 +34,7 @@ namespace APHYTOOLS {
     PT_Selector(int,int,Flavour *);
     ~PT_Selector();
     void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::vec4d * );
+    bool     Trigger(const AMATOOLS::Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -46,7 +46,7 @@ namespace APHYTOOLS {
     Rapidity_Selector(int,int,Flavour *);
     ~Rapidity_Selector();
     void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::vec4d * );
+    bool     Trigger(const AMATOOLS::Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -59,7 +59,7 @@ namespace APHYTOOLS {
     ~Angle_Selector();
     void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
     void     SetRange(std::vector<APHYTOOLS::Flavour>,int,double,double);
-    bool     Trigger(const AMATOOLS::vec4d * );
+    bool     Trigger(const AMATOOLS::Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -71,7 +71,7 @@ namespace APHYTOOLS {
     Mass_Selector(int,int,Flavour *);
     ~Mass_Selector();
     void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::vec4d * );
+    bool     Trigger(const AMATOOLS::Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -84,7 +84,7 @@ namespace APHYTOOLS {
     Summed_PT_Selector(int,int,Flavour *);
     ~Summed_PT_Selector();
     void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::vec4d * );
+    bool     Trigger(const AMATOOLS::Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -95,13 +95,17 @@ namespace APHYTOOLS {
 
 
 /*!
-  \class No_Selector
+  \class APHYTOOLS::No_Selector
+  \brief Dummy Selector, does not select anything.
+
   This is a dummy selector that does not apply any cuts on the
   phase space. Consequently, the methods are all empty.
 */
 
 /*!
-  \class Energy_Selector
+  \class APHYTOOLS::Energy_Selector
+  \brief Selector used for energy cuts on final state particles
+
   Selects according to energy ranges for the particles.
   These ranges are set with the method SetRange for each flavour, the 
   default choice is from 0 to the c.m. energy. However, all energy selection 
@@ -111,7 +115,9 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \class Angle_Selector
+  \class APHYTOOLS::Angle_Selector
+  \brief Selector used to apply cuts on angle between two final state particles
+
   Selects according to angular ranges (cosines) for pairs of particles.
   These ranges are set with the method SetRange for each flavour pair
   or for each flavour w.r.t. a beam specified by its number, the 
@@ -123,7 +129,9 @@ namespace APHYTOOLS {
 
 
 /*!
-  \class Mass_Selector
+  \class APHYTOOLS::Mass_Selector
+  \brief Selector used to apply cuts on invariant mass of two final state particles
+
   Selects according to invariant-mass ranges for pairs of particles.
   These ranges are set with the method SetRange for each flavour pair, the default 
   choice is from 0 to the square of the c.m. energy. Again, all mass selection 

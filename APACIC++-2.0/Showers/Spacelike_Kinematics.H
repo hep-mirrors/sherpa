@@ -17,7 +17,7 @@ namespace APACIC {
     //! For vetos on extra jet from Shower.
     APHYTOOLS::Jet_Finder* jf;
     AMATOOLS::Poincare     boost,rot;
-    AMATOOLS::vec4d        zvec;
+    AMATOOLS::Vec4D        ZVEC;
     /*!
       Starting from a Knot with given energy E all energies of the subsequent
       knots are reset recursively as z*E and (1-z)*E, respectively. 
@@ -29,14 +29,14 @@ namespace APACIC {
       Check individual momenta :
       nan values, negative energies ?
     */
-    bool   CheckVector(AMATOOLS::vec4d);
+    bool   CheckVector(AMATOOLS::Vec4D);
   public:
     //! Constructor to initialise the Jet_Finder
     Spacelike_Kinematics() {
       double ycut   = AORGTOOLS::rpa.integ.Ycut();
       jf            = new APHYTOOLS::Jet_Finder(ycut,1);
 
-      zvec          = AMATOOLS::vec4d(1.,0.,0.,1.);
+      ZVEC          = AMATOOLS::Vec4D(1.,0.,0.,1.);
       kink          = new Timelike_Kinematics();
     };
     //! Destructor to delete the Jet_Finder and the Timelike_Kinematics
@@ -80,7 +80,7 @@ namespace APACIC {
 
       Note: Both initiators will be oriented along the z-axis !
     */
-    AMATOOLS::vec4d BoostInLab(Tree **);
+    AMATOOLS::Vec4D BoostInLab(Tree **);
   };
 }
 #endif

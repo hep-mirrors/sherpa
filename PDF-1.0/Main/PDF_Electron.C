@@ -13,14 +13,14 @@ using namespace PDF;
 
 PDF_Electron::PDF_Electron(int mode) {
   if (mode==0) beam = Flavour(kf::e);
-          else beam = Flavour(kf::e).bar();
+          else beam = Flavour(kf::e).Bar();
   partons.push_back(beam);
   
-  mass     = beam.PSmass();
+  mass     = beam.PSMass();
   alpha    = (*aqed)(sqr(rpa.gen.Ecms()));
 
-  double L = log(sqr(rpa.gen.Ecms()/beam.PSmass()));
-  beta     = (*aqed)(sqr(beam.PSmass()))/M_PI*(L-1.);
+  double L = log(sqr(rpa.gen.Ecms()/beam.PSMass()));
+  beta     = (*aqed)(sqr(beam.PSMass()))/M_PI*(L-1.);
 }
 
 

@@ -117,7 +117,7 @@ namespace PHASIC {
       deltay[0] = _deltay1;
       deltay[1] = _deltay2;
       factor   = 1.00000001;
-      ms = ran = 0;
+      ms = rans = 0;
     };
     void GenerateWeight(double,double,int); 
     void GeneratePoint(double &,double &,int,double *);
@@ -134,7 +134,7 @@ namespace PHASIC {
       deltay[0] = _deltay1;
       deltay[1] = _deltay2;
       factor   = 1.00000001;
-      ms = ran = 0;
+      ms = rans = 0;
     };
     void GenerateWeight(double,double,int); 
     void GeneratePoint(double &,double &,int,double *);
@@ -155,7 +155,7 @@ namespace PHASIC {
       beta     = _beta;
       yexp     = _yexp;
       factor   = 1.00000001;
-      ms = ran = 0;
+      ms = rans = 0;
     };
     void GenerateWeight(double,double,int); 
     void GeneratePoint(double &,double &,int,double *);
@@ -174,7 +174,7 @@ namespace PHASIC {
       beta     = _beta;
       yexp     = _yexp;
       factor   = 1.00000001;
-      ms = ran = 0;
+      ms = rans = 0;
     };
     void GenerateWeight(double,double,int); 
     void GeneratePoint(double &,double &,int,double *);
@@ -193,7 +193,7 @@ namespace PHASIC {
       sexp      = _sexp;
       deltay[0] = _deltay1;
       deltay[1] = _deltay2;
-      ms = ran = 0;
+      ms = rans = 0;
       AORGTOOLS::msg.Tracking()<<"Initialize LBSComptonPeakUniform("<<pole<<")"<<std::endl;
     }; 
 
@@ -212,7 +212,7 @@ namespace PHASIC {
       sexp      = _sexp;
       deltay[0] = _deltay1;
       deltay[1] = _deltay2;
-      ms = ran = 0;
+      ms = rans = 0;
       AORGTOOLS::msg.Tracking()<<"Initialize LBSComptonPeakCentral("<<pole<<")"<<std::endl;
     }; 
 
@@ -232,7 +232,7 @@ namespace PHASIC {
       deltay[0] = _deltay1;
       deltay[1] = _deltay2;
       yexp     = _yexp;
-      ms = ran = 0;
+      ms = rans = 0;
       AORGTOOLS::msg.Tracking()<<"Initialize LBSComptonPeakForward("<<pole<<")"<<std::endl;
     }; 
 
@@ -252,7 +252,7 @@ namespace PHASIC {
       deltay[0] = _deltay1;
       deltay[1] = _deltay2;
       yexp     = _yexp;
-      ms = ran = 0;
+      ms = rans = 0;
       AORGTOOLS::msg.Tracking()<<"Initialize LBSComptonPeakBackward("<<pole<<")"<<std::endl;
     }; 
 

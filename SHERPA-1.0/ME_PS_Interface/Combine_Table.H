@@ -90,23 +90,23 @@ namespace MOCAIC {
     int               gwin;
 
     APHYTOOLS::Jet_Finder * jf;
-    AMATOOLS::vec4d       * moms;
+    AMATOOLS::Vec4D       * moms;
 
     bool  Combinable(const Leg &, const Leg &) const ;
     Leg * CombineLegs(Leg *, int, int, int );
 
-    void CombineMoms(AMATOOLS::vec4d *, int, int, int);
-    void CombineMoms(AMATOOLS::vec4d *, int, int, int, AMATOOLS::vec4d * &);
+    void CombineMoms(AMATOOLS::Vec4D *, int, int, int);
+    void CombineMoms(AMATOOLS::Vec4D *, int, int, int, AMATOOLS::Vec4D * &);
 
     void AddPossibility(int, int, int);
     Leg  CombinedLeg(Leg *, int, int);
   public:
-    Combine_Table(APHYTOOLS::Jet_Finder *, AMATOOLS::vec4d *, Combine_Table *);
+    Combine_Table(APHYTOOLS::Jet_Finder *, AMATOOLS::Vec4D *, Combine_Table *);
     ~Combine_Table();
 
 
     void            FillTable(Leg **,int, int); 
-    Combine_Table * CalcJet(int, AMATOOLS::vec4d * _moms=0);
+    Combine_Table * CalcJet(int, AMATOOLS::Vec4D * _moms=0);
 
     //! general access routines (return value is determined by winner combination 
     //! and winner graph number)
@@ -120,7 +120,7 @@ namespace MOCAIC {
     }
 
     APHYTOOLS::Flavour   Flav(int i)      { return legs[gwin][i].Flav(); }
-    AMATOOLS::vec4d    & Momentum(int i)  { return moms[i]; }
+    AMATOOLS::Vec4D    & Momentum(int i)  { return moms[i]; }
     Combine_Table      * Up()             { return up; }
     //@}
 

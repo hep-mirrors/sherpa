@@ -176,7 +176,7 @@ bool Single_Broker::OneEvent() {
   return ps->OneEvent();  
 }
 
-double Single_Broker::Differential(AMATOOLS::vec4d * p) { 
+double Single_Broker::Differential(AMATOOLS::Vec4D * p) { 
   return DSigma(p, 0); 
 }
 
@@ -184,10 +184,10 @@ double Single_Broker::Differential2() {
   return DSigma2(); 
 }
 
-double Single_Broker::DSigma(AMATOOLS::vec4d * p, bool lookup) { 
-  s = (p[0]+p[1]).abs2();
-  t = (p[0]-p[2]).abs2();
-  u = (p[0]-p[3]).abs2();
+double Single_Broker::DSigma(AMATOOLS::Vec4D * p, bool lookup) { 
+  s = (p[0]+p[1]).Abs2();
+  t = (p[0]-p[2]).Abs2();
+  u = (p[0]-p[3]).Abs2();
   lastdxs = xsec->operator()(s,t,u);
   lastlumi = isr->Weight(fl);
   return last = lastdxs * lastlumi;

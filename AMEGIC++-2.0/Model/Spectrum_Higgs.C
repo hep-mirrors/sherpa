@@ -19,7 +19,7 @@ void Spectrum_Higgs::Interface(Isajet* isa)
 
   msg.Tracking()<<"ISAJET v_Z:"<<v<<endl;  
     
-  v = Flavour(kf::Z).mass()*CplEW.SinThetaW()*CplEW.CosThetaW()/
+  v = Flavour(kf::Z).Mass()*CplEW.SinThetaW()*CplEW.CosThetaW()/
     (2.*M_PI*M_PI*aqed->AqedFixed());
 
   msg.Tracking()<<"AMEGIC v_Z:"<<v<<endl;  
@@ -29,9 +29,9 @@ void Spectrum_Higgs::Interface(Isajet* isa)
   v1 = v*sqrt(1./(1.+sqr(tanb)));
   v2 = v1*tanb;  
   
-  if (rpa.gen.Tracking())_Z_R.matrix_out();
+  if (rpa.gen.Tracking())_Z_R.MatrixOut();
   msg.Tracking()<<"Z_H: "<<endl;  
-  if (rpa.gen.Tracking())_Z_H.matrix_out();
+  if (rpa.gen.Tracking())_Z_H.MatrixOut();
   msg.Tracking()<<"======================================================"<<endl;
 }
 
@@ -61,7 +61,7 @@ void Spectrum_Higgs::Masses_LO()
   // Charged Higgses
   double M_Hmin  = sqrt(sqr(MW)+sqr(M_A0));
   Flavour flav;
-  flav = Flavour(kf::Hmin);flav.set_mass(M_Hmin);
+  flav = Flavour(kf::Hmin);flav.SetMass(M_Hmin);
 
   _Z_H[0][0] = v2/v;
   _Z_H[0][1] = -v1/v;
@@ -83,26 +83,26 @@ void Spectrum_Higgs::Masses_LO()
 
   double evalues[2];
 
-  M.Diagonalize_Sort(evalues,_Z_R);
+  M.DiagonalizeSort(evalues,_Z_R);
 
-  flav = Flavour(kf::h0);flav.set_mass(sqrt(evalues[0]));
-  flav = Flavour(kf::H0);flav.set_mass(sqrt(evalues[1]));
-  flav = Flavour(kf::A0);flav.set_mass(M_A0);
+  flav = Flavour(kf::h0);flav.SetMass(sqrt(evalues[0]));
+  flav = Flavour(kf::H0);flav.SetMass(sqrt(evalues[1]));
+  flav = Flavour(kf::A0);flav.SetMass(M_A0);
 
   msg.Tracking()<<"--------------------------------------------------------------"<<endl;
   msg.Tracking()<<"Higgs Masses :"<<endl;
-  msg.Tracking()<<"m_h0 = "<<Flavour(kf::h0).mass()<<endl;
-  msg.Tracking()<<"m_H0 = "<<Flavour(kf::H0).mass()<<endl;
-  msg.Tracking()<<"m_A0 = "<<Flavour(kf::A0).mass()<<endl;
-  msg.Tracking()<<"m_H- = "<<Flavour(kf::Hmin).mass()<<endl;
+  msg.Tracking()<<"m_h0 = "<<Flavour(kf::h0).Mass()<<endl;
+  msg.Tracking()<<"m_H0 = "<<Flavour(kf::H0).Mass()<<endl;
+  msg.Tracking()<<"m_A0 = "<<Flavour(kf::A0).Mass()<<endl;
+  msg.Tracking()<<"m_H- = "<<Flavour(kf::Hmin).Mass()<<endl;
   msg.Tracking()<<"m_Z = "<<MZ<<endl;
   msg.Tracking()<<"v = "<<sqrt(sqr(v1)+sqr(v2))<<", tan(beta) = "<<v2/v1<<endl;
   msg.Tracking()<<"Test of tree--level relation : (m_h0^2+m_H0^2)/(m_A0^2+m_Z^2) = ";
   msg.Tracking()<<(evalues[0]+evalues[1])/(sqr(M_A0)+sqr(MZ))<<endl;
   msg.Tracking()<<"Z_R: "<<endl;  
-  _Z_R.matrix_out();
+  _Z_R.MatrixOut();
   msg.Tracking()<<"Z_H: "<<endl;  
-  _Z_H.matrix_out();
+  _Z_H.MatrixOut();
 }
 
 

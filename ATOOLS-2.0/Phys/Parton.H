@@ -16,104 +16,71 @@ namespace APHYTOOLS {
    
   class Parton {
   private :
-    //! The parton's number (integer >0)
-    int     Number;     
-    /*!
-      The parton status (HepMC 1.01):
-       0       null entry
-       1       existing entry (not decayed or fragmented), i.e. final state
-       2       decayed or fragmented parton
-       3       documentation line
-       4-10    reserved
-       11-200  at disposal of each model builder
-       201-... user status
-    */
+    int     m_number;     
     int     m_status;         
-    /*! 
-      info flag, marks production step: 
-      G - IS for hard interaction, H - FS from hard interaction, 
-
-      I - initial particle, F - final particle, 
-      i - particle from ISR, f - particle from FSR, decayed
-    */ 
-    char    m_info;     // just for fun!
-    int     JetNumber;  //! Maybe obsolete
-    /*! 
-      The parton's flavour. Additional information can 
-      be obtained using methods related to the class Flavour.
-    */
+    char    m_info;   
+    int     m_jetnumber; 
     Flavour m_fl;         
     Flow    m_flow;
-    AMATOOLS::vec4d   m_momentum; //! The parton's momentum.
+    AMATOOLS::Vec4D   m_momentum; 
     //! The parton's production vertex
-    Blob * startblob;
+    Blob * m_startblob;
     //! The parton's decay vertex as a fourvector in the system of the hard process
-    Blob * endblob;
+    Blob * m_endblob;
     //! The parton's lifetime in the system of the hard process
-    double            T_Dec;      
+    double            m_dec_time;      
   public:
     //! Standard constructor
     Parton();
     //! Copy constructor
     Parton(Parton * );
     //! Explicit constructor to set number, flavour and momentum of the parton.
-    Parton(int,Flavour,AMATOOLS::vec4d);
+    Parton(int,Flavour,AMATOOLS::Vec4D);
     //! Standard Destructor
     ~Parton();
-    //! Copy 
+    //! Creates a copy of that parton
     void Copy(Parton * );
-    /*
-      Calculate proper time tau^* of particle in its rest frame via
-      tau^* = hbar sqrt[q^2/((q^2-M^2)^2 + (Gamma/M q^2)^2)]
-      Result is given in seconds
-    */
+
     double ProperTime();
-    /*
-      Calculate lifetime of the particle according to an exponential
-      decay law (like radioactive decays). Lifetime is given in cm-system of
-      the hard process (where the parton list is filled), boost taken care of
-      by factor gamma.
-    */
-    double Lifetime();
-    /*
-      Calculate the distance travelled by the particle during its lifetime.
-      Result is given as a 3-vector in mm
-    */
-    AMATOOLS::vec3d Distance();
+
+    double LifeTime();
+
+    AMATOOLS::Vec3D Distance();
 
     friend std::ostream& operator<<(std::ostream &,Parton*);
 
-    //! (almost) HepMC syntax:
-    /*! 
-      Some self-explanatory methods to extract or manipulate information above 
-     */
-    AMATOOLS::vec4d    momentum() const;
+    // (almost) HepMC syntax:
+    //    Some self-explanatory methods to extract or manipulate information above 
+    //@{
+    //!    simple access method
+    AMATOOLS::Vec4D    Momentum() const;
     double             E();
-    int                status() const;
-    char               info() const;
-    AMATOOLS::vec4d    xprod();
-    Blob             * prod();
-    AMATOOLS::vec4d    xdec();
-    Blob             * dec();
-    double             time() const ;
-    APHYTOOLS::Flavour flav() const ;
-    APHYTOOLS::Flow    flow() const ;
-    int                flow( int ) const ;
-    int                Get_Numb() const;
-    int                Get_JetN() const;
+    int                Status() const;
+    char               Info() const;
+    AMATOOLS::Vec4D    XProd();
+    Blob             * Prod();
+    AMATOOLS::Vec4D    XDec();
+    Blob             * Dec();
+    double             Time() const ;
+    APHYTOOLS::Flavour Flav() const ;
+    APHYTOOLS::Flow    GetFlow() const ;
+    int                GetFlow( int ) const ;
+    int                Number() const;
+    int                JetNumber() const;
 
-    void   set_momentum(const AMATOOLS::vec4d &);
-    void   set_status( int status = 0 );
-    void   set_info(char);
-    void   set_prod(Blob *);
-    void   set_dec(Blob *);
-    void   set_time(const int);
-    void   set_time();
-    void   set_flav(APHYTOOLS::Flavour &);
-    void   set_flow( const APHYTOOLS::Flow & );
-    void   set_flow( int code_index, int code=0 );
-    void   Set_Numb(const int);
-    void   Set_JetN(const int);
+    void   SetMomentum(const AMATOOLS::Vec4D &);
+    void   SetStatus( int status = 0 );
+    void   SetInfo(char);
+    void   SetProd(Blob *);
+    void   SetDec(Blob *);
+    void   SetTime(const int);
+    void   SetTime();
+    void   SetFlav(APHYTOOLS::Flavour &);
+    void   SetFlow( const APHYTOOLS::Flow & );
+    void   SetFlow( int code_index, int code=0 );
+    void   SetNumber(const int);
+    void   SetJetNumber(const int);
+    //@}
   };
 
   // Format of a parton to transport via MPI:
@@ -124,7 +91,7 @@ namespace APHYTOOLS {
     char    m_info;   
     int     m_fl;      // kfcode ( -kfcode for anti)
     int     m_flow[2];
-    double  m_mom[4]; //! The parton's momentum.
+    double  m_mom[4];  // The parton's momentum.
 
     // Blob information
     int     blob_owned_by;
@@ -137,12 +104,12 @@ namespace APHYTOOLS {
   Parton * MPI2Parton(const MPI_Parton &);
 
 
-  // some simple predecate operators:
+  // some simple predicate operators:
   // where is_photon() is a predicate like:
   class Is_Photon {
   public:
     bool operator() ( Parton* p ) {
-      if ( p && p->flav().isphoton() ) return 1;
+      if ( p && p->Flav().IsPhoton() ) return 1;
       return 0;
     }
   };
@@ -150,7 +117,7 @@ namespace APHYTOOLS {
   class Is_Gluon {
   public:
     bool operator() ( Parton* p ) {
-      if ( p && p->flav().isgluon() ) return 1;
+      if ( p && p->Flav().IsGluon() ) return 1;
       return 0;
     }
   };
@@ -158,14 +125,10 @@ namespace APHYTOOLS {
   class Is_Final_State {
   public:
     bool operator() ( const Parton* p ) {
-      if ( p && (p->status() == 1) ) return 1;
+      if ( p && (p->Status() == 1) ) return 1;
       return 0;
     }
   };
-
-}
-
-  
 
 /*! 
   \class Parton
@@ -178,25 +141,29 @@ namespace APHYTOOLS {
 */
 
 /*! 
-  \var   int Number     
+  \var   int Parton::m_number     
   \brief The parton's number (integer >0)
 */
 
 /*! 
-  \var   char info
+  \var   char Parton::info
   \brief What the parton really does and where it stems from.
+
   info flag, marks production step: 
+\verbatim
   G - IS for hard interaction, H - FS from hard interaction, 
   M - internal in ME, 
   I - initial particle, F - final particle, 
   i - particle from ISR, f - particle from FSR, decayed
+\endverbatim
 */ 
 
 /*!
-  \var   int m_status;
+  \var   int Parton::m_status;
   \brief The parton status (HepMC 1.01).
   
   The status flag can take the following values:
+\verbatim
   0       null entry
   1       existing entry (not decayed or fragmented), i.e. final state
   2       decayed or fragmented parton
@@ -204,41 +171,81 @@ namespace APHYTOOLS {
   4-10    reserved
   11-200  at disposal of each model builder
   201-... user status
+\endverbatim
+*/
+
+/*!
+  \var   int Parton::m_info
+  \brief The parton info, just for jun!
+
+  info flag, marks production step: 
+  G - IS for hard interaction, H - FS from hard interaction, 
+  
+  I - initial particle, F - final particle, 
+  i - particle from ISR, f - particle from FSR, decayed
+*/
+
+
+/*!
+  \var   int Parton::m_jetnumber
+  \brief number of jet the parton belongs to (Maybe obsolete)
+*/
+
+/*!
+  \var     Flavour m_fl
+  \brief The parton's flavour. 
+
+  The parton's flavour. 
+
+  Additional information can be obtained using methods 
+  related to the class Flavour.
+*/
+
+/*!
+  \var   AMATOOLS::Vec4D   m_momentum
+  \brief The parton's momentum.
 */
 
 /*! 
-  Blob * startblob, *endblob
+  \var  Blob * Parton::m_startblob, * Parton::m_endblob
   \brief Pointers to the parton's production and decay vertex.
 */
 
-/*
-  \var   double T_Dec
+/*!
+  \var   double Parton::m_dec_time
   \brief The proper decay time of the parton.
 */
 
-/*  
-  \fn    double ProperTime()
-  \brief Calculate T_Dec.
-  Calculate proper decay time tau^* of particle in its rest frame via
-  tau^* = hbar sqrt[q^2/((q^2-M^2)^2 + (Gamma/M q^2)^2)]
+/*!  
+  \fn    double Parton::ProperTime()
+  \brief Calculate m_dec_time.
+
+  Calculate proper decay time \f$\tau^*\f$ of particle in its rest frame via
+  \f[
+    \tau^* = hbar \sqrt{q^2/((q^2-M^2)^2 + (\Gamma/M q^2)^2)}
+  \f]
   Result is given in seconds.
 */
 
-/*
-  \fn    double Lifetime()
+/*!
+  \fn    double Parton::LifeTime()
   \brief Calculate lifetime.
+
   Calculate lifetime of the particle according to an exponential
   decay law (like radioactive decays). Lifetime is given in cm-system of
   the hard process (where the parton list is filled), boost taken care of
   by factor gamma.
 */
 
-/*
-  \fn    AMATOOLS::vec3d Distance()
+/*!
+  \fn    AMATOOLS::Vec3D Parton::Distance()
   \brief Calculate decay length.
+
   Calculate the distance travelled by the particle during its lifetime.
   Result is given as a 3-vector in mm
 */
+
+} // namespace APHYTOOLS
 
 #endif
 

@@ -45,10 +45,10 @@ bool XS_Base::SetColours(double,double,double) {
   return 0.; 
 }
 
-bool XS_Base::SetColours(AMATOOLS::vec4d * p) {
-  s = (p[0]+p[1]).abs2();
-  t = (p[0]-p[2]).abs2();
-  u = (p[0]-p[3]).abs2();
+bool XS_Base::SetColours(AMATOOLS::Vec4D * p) {
+  s = (p[0]+p[1]).Abs2();
+  t = (p[0]-p[2]).Abs2();
+  u = (p[0]-p[3]).Abs2();
   return SetColours(s,t,u);
 }
 

@@ -77,7 +77,7 @@ namespace AMEGIC {
     //! Returns the point list of a certain graph.
     Point* GetPointlist(int);
     //! Currently not used.
-    void Reset_Probabs();
+    void Reset_ProbAbs();
     //! Currently not used.
     double Get_Probab(int);
     /*!

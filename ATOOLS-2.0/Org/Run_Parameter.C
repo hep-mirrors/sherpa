@@ -94,54 +94,54 @@ void Run_Parameter::Init(std::string _path)
 Run_Parameter::~Run_Parameter() { }
 
 
-double Run_Parameter::cl_consts::Mass(Flavour flav,double t)
+double Run_Parameter::Consts::Mass(Flavour flav,double t)
 {
-  if (flav.isboson()) {
+  if (flav.IsBoson()) {
     if (IsWidthRunning()==1) {
-      double gamm = flav.width()/flav.mass();
-      return flav.mass()/sqrt(1.-gamm*gamm);
+      double gamm = flav.Width()/flav.Mass();
+      return flav.Mass()/sqrt(1.-gamm*gamm);
     } 
-    return flav.mass();
+    return flav.Mass();
   }
   if (rpa.gen.Masses()==Switch::Off) return 0.;
-  return flav.mass();
+  return flav.Mass();
 }  
 
-double Run_Parameter::cl_consts::Width(Flavour flav,double t)
+double Run_Parameter::Consts::Width(Flavour flav,double t)
 {
-  if (flav.isboson()) {
+  if (flav.IsBoson()) {
     if (IsWidthRunning() == 1) {
-      double gamm = flav.width()/flav.mass();
-      return flav.width()/sqrt(1.-gamm*gamm);
+      double gamm = flav.Width()/flav.Mass();
+      return flav.Width()/sqrt(1.-gamm*gamm);
     } 
-    if (IsWidthRunning() == 2) return flav.width()*sqrt(t)/flav.mass();
-    // *AS*  in Zfitter:     if (Run_Width() == 2) return flav.width()*t/sqr(flav.mass());
-    return flav.width();
+    if (IsWidthRunning() == 2) return flav.Width()*sqrt(t)/flav.Mass();
+    // *AS*  in Zfitter:     if (Run_Width() == 2) return flav.Width()*t/sqr(flav.Mass());
+    return flav.Width();
   }
   //later on running width for fermions like top
-  return flav.width();
+  return flav.Width();
 }
 
-double Run_Parameter::cl_consts::RunningMass(Flavour flav,double t)
+double Run_Parameter::Consts::RunningMass(Flavour flav,double t)
 {
-  if (flav.mass()==0.) return 0.;
+  if (flav.Mass()==0.) return 0.;
 
-  if (flav.isboson()) {
+  if (flav.IsBoson()) {
     if (IsWidthRunning() == 1) {
-      double gamm = flav.width()/flav.mass();
-      return flav.mass()/sqrt(1.-gamm*gamm);
+      double gamm = flav.Width()/flav.Mass();
+      return flav.Mass()/sqrt(1.-gamm*gamm);
     } 
-    return flav.mass();
+    return flav.Mass();
   
   }
   // turn off running by uncommenting:
-  //  return flav.mass();
+  //  return flav.Mass();
 
 
   // test 0.3 GeV limit for masses
-  //*AS*    if (sqr(flav.mass()) < 0.3) return 0.;
+  //*AS*    if (sqr(flav.Mass()) < 0.3) return 0.;
   if (t<1.) t=1.;
-  if ((t<sqr(flav.mass())) || (!flav.isquark())) return flav.mass(); 
+  if ((t<sqr(flav.Mass())) || (!flav.IsQuark())) return flav.Mass(); 
 
   /*  
 //======================================================================
@@ -153,7 +153,7 @@ double Run_Parameter::cl_consts::RunningMass(Flavour flav,double t)
 //                                      pi
 //
 
-  double mass0   = flav.mass();
+  double mass0   = flav.Mass();
   double as_t    = mo->Aqcd(t);
 
   //  for (double s=6. ; s<120; s+=5)
@@ -171,7 +171,7 @@ double Run_Parameter::cl_consts::RunningMass(Flavour flav,double t)
 
     // running for quarks only
     // alpha_S(M_Z^2)
-    double asMZ=(*as)(sqr(Flavour(kf::Z).PSmass()));
+    double asMZ=(*as)(sqr(Flavour(kf::Z).PSMass()));
     //    cout<<" in Run_Parameter::Mass() "<<endl;
     //    cout<<" alpha_s(Mz^2)="<<asMZ<<endl;
     // alpha_S(t)
@@ -180,11 +180,11 @@ double Run_Parameter::cl_consts::RunningMass(Flavour flav,double t)
 
     double factor = 1.;
     // expo = 6 * CF/(11 - 2/3 n_f)     /2 !!!!
-    double mas_Z  = Flavour(kf::Z).PSmass();
-    double mas_s2 = Flavour(kf::s).PSmass()*Flavour(kf::s).mass();
-    double mas_c2 = Flavour(kf::c).PSmass()*Flavour(kf::c).mass();
-    double mas_b2 = Flavour(kf::b).PSmass()*Flavour(kf::b).mass();
-    double mas_t2 = Flavour(kf::t).PSmass()*Flavour(kf::t).mass();
+    double mas_Z  = Flavour(kf::Z).PSMass();
+    double mas_s2 = Flavour(kf::s).PSMass()*Flavour(kf::s).Mass();
+    double mas_c2 = Flavour(kf::c).PSMass()*Flavour(kf::c).Mass();
+    double mas_b2 = Flavour(kf::b).PSMass()*Flavour(kf::b).Mass();
+    double mas_t2 = Flavour(kf::t).PSMass()*Flavour(kf::t).Mass();
     
     double ast = (*as)(mas_t2);
     double asb = (*as)(mas_b2);
@@ -196,19 +196,19 @@ double Run_Parameter::cl_consts::RunningMass(Flavour flav,double t)
       factor*= pow(as2/ast,4./(11.-12./3.));
     }
     else if (t>mas_b2) factor*= pow(as2/asb,4./(11.-10./3.));
-    if (((flav==Flavour(kf::c)) || flav==Flavour(kf::c).bar()) && (t>mas_b2)) 
+    if (((flav==Flavour(kf::c)) || flav==Flavour(kf::c).Bar()) && (t>mas_b2)) 
       factor*= pow(asb/asc,4./(11.-8./3.));
-    if (((flav==Flavour(kf::c)) || flav==Flavour(kf::c).bar())&& (t<=mas_b2)) 
+    if (((flav==Flavour(kf::c)) || flav==Flavour(kf::c).Bar())&& (t<=mas_b2)) 
       factor*= pow(as2/asc,4./(11.-8./3.));  
     // running quark masses below 0.3 GeV are assumed to be massless!!!
-    if (sqr(flav.mass()*factor) < 0.3) factor = 0.;
+    if (sqr(flav.Mass()*factor) < 0.3) factor = 0.;
 
-    double as_M =(*as)(sqr(flav.mass()));
+    double as_M =(*as)(sqr(flav.Mass()));
     double factor_b=1.- 4. * as_M / (3. * M_PI);
 
     factor*=factor_b; //1.- 4. * as2 / (3. * M_PI);
-    return flav.mass()*factor;
+    return flav.Mass()*factor;
     // }
-  return flav.mass();
+  return flav.Mass();
 }  
 

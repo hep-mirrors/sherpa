@@ -22,12 +22,12 @@ using namespace std;
 #define EPS 1.2e-7
 #define RNMX (1.0-EPS)
 
-AMATOOLS::Random AMATOOLS::Ran(1234);
+AMATOOLS::Random AMATOOLS::ran(1234);
 
-double Random::ran2(long *idum)
+double Random::Ran2(long *idum)
 {
-  int j;
-  long k;
+  int   j;
+  long  k;
   static long idum2=123456789;
   static long iy=0;
   static long iv[NTAB];
@@ -84,33 +84,33 @@ double Random::ran2(long *idum)
 #define EPS 1.2e-7
 #define RNMX (1.0-EPS)
 
-double Random::ran1(long *idum)
+double Random::Ran1(long *idum)
 {
-	int j;
-	long k;
-	static long iy=0;
-	static long iv[NTAB];
-	double temp;
+  int j;
+  long k;
+  static long iy=0;
+  static long iv[NTAB];
+  double temp;
 
-	if (*idum <= 0 || !iy) {
-		if (-(*idum) < 1) *idum=1;
-		else *idum = -(*idum);
-		for (j=NTAB+7;j>=0;j--) {
-			k=(*idum)/IQ;
-			*idum=IA*(*idum-k*IQ)-IR*k;
-			if (*idum < 0) *idum += IM;
-			if (j < NTAB) iv[j] = *idum;
-		}
-		iy=iv[0];
-	}
-	k=(*idum)/IQ;
-	*idum=IA*(*idum-k*IQ)-IR*k;
-	if (*idum < 0) *idum += IM;
-	j=iy/NDIV;
-	iy=iv[j];
-	iv[j] = *idum;
-	if ((temp=AM*iy) > RNMX) return RNMX;
-	else return temp;
+  if (*idum <= 0 || !iy) {
+    if (-(*idum) < 1) *idum=1;
+    else *idum = -(*idum);
+    for (j=NTAB+7;j>=0;j--) {
+      k=(*idum)/IQ;
+      *idum=IA*(*idum-k*IQ)-IR*k;
+      if (*idum < 0) *idum += IM;
+      if (j < NTAB) iv[j] = *idum;
+    }
+    iy=iv[0];
+  }
+  k=(*idum)/IQ;
+  *idum=IA*(*idum-k*IQ)-IR*k;
+  if (*idum < 0) *idum += IM;
+  j=iy/NDIV;
+  iy=iv[j];
+  iv[j] = *idum;
+  if ((temp=AM*iy) > RNMX) return RNMX;
+  else return temp;
 }
 #undef IA
 #undef IM
@@ -128,39 +128,39 @@ double Random::ran1(long *idum)
 #define MZ 0
 #define FAC (1.0/MBIG)
 
-void Random::Init_Ran3(long *idum)
+void Random::InitRan3(long *idum)
 {
   long mj,mk;
   int i,ii,k;
   
   mj=MSEED-(*idum < 0 ? -*idum : *idum);
   mj %= MBIG;
-  ma[55]=mj;
+  m_ma[55]=mj;
   mk=1;
   for (i=1;i<=54;i++) {
     ii=(21*i) % 55;
-    ma[ii]=mk;
+    m_ma[ii]=mk;
     mk=mj-mk;
     if (mk < MZ) mk += MBIG;
-    mj=ma[ii];
+    mj=m_ma[ii];
   }
   for (k=1;k<=4;k++)
     for (i=1;i<=55;i++) {
-      ma[i] -= ma[1+(i+30) % 55];
-      if (ma[i] < MZ) ma[i] += MBIG;
+      m_ma[i] -= m_ma[1+(i+30) % 55];
+      if (m_ma[i] < MZ) m_ma[i] += MBIG;
     }
-  inext=0;
-  inextp=31;
+  m_inext=0;
+  m_inextp=31;
 }
 
 double Random::Ran3()
 {
-  //  cout<<" inext= "<<inext<<endl;
-  if (++inext == 56) inext=1;
-  if (++inextp == 56) inextp=1;
-  long mj=ma[inext]-ma[inextp];
+  //  cout<<" inext= "<<m_inext<<endl;
+  if (++m_inext == 56) m_inext=1;
+  if (++m_inextp == 56) m_inextp=1;
+  long mj=m_ma[m_inext]-m_ma[m_inextp];
   if (mj < MZ) mj += MBIG;
-  ma[inext]=mj;
+  m_ma[m_inext]=mj;
   return mj*FAC;
 }
 #undef MBIG
@@ -173,12 +173,12 @@ double Random::Ran3()
 int Random::WriteOutStatus(char * filename){
   // write out every Statusregister of Random Number generator
 
-  //  sprintf(outname,"%s%i.dat",filename,written); 
-  if ((myoutstream!=0) && (strcmp(filename,outname)!=0)) {
-    myoutstream->close();
-    myoutstream = 0;
+  //  sprintf(m_outname,"%s%i.dat",filename,m_written); 
+  if ((m_outstream!=0) && (strcmp(filename,m_outname)!=0)) {
+    m_outstream->close();
+    m_outstream = 0;
   }
-  if (myoutstream == 0){
+  if (m_outstream == 0){
     msg.Events()<<" Saving Random Number Generator Status to "<<filename<<endl;
     long int count=0;
     std::ifstream myinstream(filename);
@@ -192,17 +192,17 @@ int Random::WriteOutStatus(char * filename){
       myinstream.close();
     }
 #ifdef _IOS_BAD
-    myoutstream=new std::fstream(filename,ios::app);
+    m_outstream = new std::fstream(filename,ios::app);
 #else
-    myoutstream=new std::fstream(filename,std::ios_base::app);
+    m_outstream = new std::fstream(filename,std::ios_base::app);
 #endif
-    strcpy(outname,filename);
-    written=count;
+    strcpy(m_outname,filename);
+    m_written=count;
   } 
-  (*myoutstream)<<written<<"\t"<<id<<"\t"<<inext<<"\t"<<inextp<<"\t";
-  for (int i=0;i<56;++i) (*myoutstream)<<ma[i]<<"\t";
-  (*myoutstream)<<endl;
-  return written++;
+  (*m_outstream)<<m_written<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
+  for (int i=0;i<56;++i) (*m_outstream)<<m_ma[i]<<"\t";
+  (*m_outstream)<<endl;
+  return m_written++;
 }
 
 void Random::ReadInStatus(char * filename, long int index){
@@ -219,8 +219,8 @@ void Random::ReadInStatus(char * filename, long int index){
     };
     if (count==index) {
       msg.Events()<<" index="<<index<<" found"<<endl;
-      (myinstream)>>id; (myinstream)>>inext; (myinstream)>>inextp;
-      for (int i=0;i<56;++i) (myinstream)>>ma[i];    
+      (myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
+      for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
     } 
     else msg.Error()<<" index="<<index<<" not found in "<<filename<<endl;
     myinstream.close();

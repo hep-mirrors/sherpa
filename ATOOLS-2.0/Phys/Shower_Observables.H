@@ -94,7 +94,7 @@ namespace APHYTOOLS {
 
     void Evaluate(const APHYTOOLS::Parton_List & pl,double);
 
-    void Evaluate(AMATOOLS::vec4d *,APHYTOOLS::Flavour *,double);
+    void Evaluate(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double);
   };
 
 

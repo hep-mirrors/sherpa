@@ -61,10 +61,3 @@ void MyTiming::PrintTime()
   }
 }
 
-MyTiming::~MyTiming()
-{
-  // delete starttms;
-  // delete currenttms;
-  // delete endtms;
-}
-

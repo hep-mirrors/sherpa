@@ -41,7 +41,7 @@ namespace AORGTOOLS {
     };
   };
 
-  // different (QED) - ISR realization  
+  //! different (QED) - ISR realization  
   class ISR_Type {
   public:
     enum code {No             = 0, 
@@ -58,7 +58,7 @@ namespace AORGTOOLS {
   };
 
 
-  // different Beam realization  
+  //! different Beam realization  
   class Beam_Type {
   public:
     enum code {No             = 0, 
@@ -68,16 +68,6 @@ namespace AORGTOOLS {
   };
 
 
-  //! The Data file reading class; it can be used for all different kind of parameters.
-  /*! 
-    It is capable of reading standard types (e.g. int, double, string,...) as well
-    as a few user defined types (e.g. Switch::code, Flavour,...) from a data file like:
-      ! comment line
-      BEAM1      =  P+
-      BEAM2      =  P-
-      CMSENERGY  = 2000.0  ! note: in GeV
-    cf. Run_Parameter.C for example usage                                  
-  */
   typedef std::map<std::string,std::string> Parameter_Map;
   typedef Parameter_Map::iterator           Parameter_Iterator;
 
@@ -87,21 +77,13 @@ namespace AORGTOOLS {
     
     void FillIn(char * dummy) ;
     void Shorten(std::string& str);
+    // returns sum of digits
+    int Crossfoot(std::string name);
   public:
-    // constructor ; reads a datafile via ReadIn()
     Data_Read(std::string filename);
-    
-    // reads a datafile in buffer
-    /* can be used to read more than one data file, e.g. "default.dat" and "user.dat"
-       the last apearance of a key word actually defines the value of it */
     void ReadIn(std::string filename);
-
-    // write out or append to file (ios_base::out,ios_base::app)
     void WriteOut(std::string filename,int flag=std::ios::out);
 
-    // returns value for given name or zero in case it did not appear in the read data file
-    /* (template function needs to be specialised for user defined types/classes) 
-       or the in and output operators of the iostream might be overloaded         */   
     template <class Type> 
       Type GetValue(std::string name);
 
@@ -111,11 +93,7 @@ namespace AORGTOOLS {
     template <class Type> 
       void SetValue(std::string name, Type value);
 
-    // generates a (hopefully) unique identifier
     std::string GenerateKey();
-    // returns sum of digits
-    int Crossfoot(std::string name);
-
   };  
 
   // specialisation
@@ -127,14 +105,70 @@ namespace AORGTOOLS {
   template <>  ISR_Type::code     Data_Read::GetValue<ISR_Type::code>(std::string);
   template <>  String_Type::code  Data_Read::GetValue<String_Type::code>(std::string);
 
-  /*
-  template <>  void  Data_Read::SetValue<Switch::code>(std::string,Switch::code);
-  template <>  void  Data_Read::SetValue<Model_Type::code>(std::string,Model_Type::code);
-  template <>  void  Data_Read::SetValue<APHYTOOLS::Flavour>(std::string,APHYTOOLS::Flavour);
-  template <>  void  Data_Read::SetValue<ISR_Type::code>(std::string,ISR_Type::code);
-  template <>  void  Data_Read::SetValue<String_Type::code>(std::string,String_Type::code);
+
+  /*!
+    \file contains the class AORGTOOLS::Data_Read
   */
 
+  /*!
+    \class Data_Read
+    \brief  is an all purpose class for reading in parameters.
+
+    This is the data file reading class. It can be used for all different kind of parameters.
+    It is capable of reading standard types (e.g. int, double, string,...) as well
+    as a few user defined types (e.g. Switch::code, Flavour,...) from a data file like:
+    \verbatim
+      ! comment line
+      BEAM1      =  P+
+      BEAM2      =  P-
+      CMSENERGY  = 2000.0  ! note: in GeV
+    \endverbatim  
+    cf. Run_Parameter.C for example usage                                  
+  */
+
+  /*!
+    \fn    Data_Read::Data_Read(std::string filename)
+    \brief Constructor, reads a datafile via ReadIn()
+  */
+
+  /*!
+    \fn    void Data_Read::ReadIn(std::string filename)    
+    \brief reads a datafile in buffer
+    
+    This routine read a parameter file in buffer. I can be called more than once to read 
+    a number of data files, e.g. "default.dat" and "user.dat".
+    The last apearance of a key word actually defines the value of it
+  */
+
+  /*!
+    \fn    void Data_Read::WriteOut(std::string filename,int flag=std::ios::out)
+    \brief write out or append to file (ios_base::out,ios_base::app)
+  */
+
+  /*!
+    \fn    Type Data_Read::GetValue(std::string name);
+    \brief returns value for given name or zero in case it did not appear in the read data file
+    
+    \internal
+    (template function needs to be specialised for user defined types/classes) 
+       or the in and output operators of the iostream might be overloaded      
+  */
+
+  /*!
+    \fn    Type Data_Read::GetValue(std::string name,Type default_value)
+    \brief returns value for given parameter name or a given default value in case
+        it did not appear in the data file
+  */
+
+  /*!
+    \fn    void Data_Read::SetValue(std::string name, Type value)
+    \brief set a value for a parameter
+  */
+
+  /*!
+    \fn    std::string Data_Read::GenerateKey()
+    \brief generates a (hopefully) unique identifier
+  */
 
 } // namespace AORGTOOLS
 

@@ -7,65 +7,65 @@
 
 namespace APHYTOOLS {
   class Jet_Finder : public Selector_Base {
-    int    jet_alg;
-    int    type;
-    double ycut;
-    double * value;
-    double E, s, sprime, smin, smax;
-    /*!
+    int    m_jet_alg;
+    int    m_type;
+    double m_ycut;
+    double * m_value;
+    double m_ene, m_s, m_sprime; //, m_smin, m_smax;
+    /*
       The vectors related to the frame
     */
-    AMATOOLS::vec4d * frame;
+    AMATOOLS::Vec4D *  m_frame;
+    AMATOOLS::Poincare m_cms_boost;
+    AMATOOLS::Poincare m_zrot;
 
-    AMATOOLS::Poincare CMSBoost;
-    AMATOOLS::Poincare ZRot;
-    void BoostInFrame(AMATOOLS::vec4d *);
-    void BoostBack(AMATOOLS::vec4d *);
-    void BoostInFrame(std::vector<AMATOOLS::vec4d>);
-    void BoostBack(std::vector<AMATOOLS::vec4d>);
-    void BoostInFrame(AMATOOLS::vec4d &);
-    void BoostBack(AMATOOLS::vec4d &);
+    void BoostInFrame(AMATOOLS::Vec4D *);
+    void BoostBack(AMATOOLS::Vec4D *);
+    void BoostInFrame(std::vector<AMATOOLS::Vec4D>);
+    void BoostBack(std::vector<AMATOOLS::Vec4D>);
+    void BoostInFrame(AMATOOLS::Vec4D &);
+    void BoostBack(AMATOOLS::Vec4D &);
 
-    bool ConstructJetSystem(AMATOOLS::vec4d *,APHYTOOLS::Flavour *,std::vector<AMATOOLS::vec4d> &,
+    bool ConstructJetSystem(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,std::vector<AMATOOLS::Vec4D> &,
 			    std::vector<int> jets,std::vector<double> & lastys);
 
-    double ymin_kt(AMATOOLS::vec4d *,int &,int &);
-    double ymin_kt(AMATOOLS::vec4d *,APHYTOOLS::Flavour *,
-		   std::vector<AMATOOLS::vec4d>,int &,int &);
+    double YminKt(AMATOOLS::Vec4D *,int &,int &);
+    double YminKt(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,
+		   std::vector<AMATOOLS::Vec4D>,int &,int &);
 
-    double deta12(AMATOOLS::vec4d &,AMATOOLS::vec4d &);
-    double dphi12(AMATOOLS::vec4d &,AMATOOLS::vec4d &);
-    double dcos12(AMATOOLS::vec4d &,AMATOOLS::vec4d &);
-    double coshyp(double);
+    double DEta12(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
+    double DPhi12(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
+    double DCos12(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
+    double Coshyp(double);
   public:
     Jet_Finder(double,int);
     Jet_Finder(int,Flavour *,double,int,int);
     ~Jet_Finder();
 
-    void   Init(const AMATOOLS::vec4d *);
+    void   Init(const AMATOOLS::Vec4D *);
     bool   ConstructJets(const APHYTOOLS::Parton_List *,
 			 const std::vector<int> &,std::vector<double> &);
 
-    bool   Trigger(const AMATOOLS::vec4d *);
-    bool   TwoJets(const AMATOOLS::vec4d &);
-    bool   TwoJets(AMATOOLS::vec4d &,AMATOOLS::vec4d &);
+    bool   Trigger(const AMATOOLS::Vec4D *);
+    bool   TwoJets(const AMATOOLS::Vec4D &);
+    bool   TwoJets(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
     bool   TwoJets(double &,double &,double &,bool);
-    double PTij(AMATOOLS::vec4d,AMATOOLS::vec4d);
-    double Yij(AMATOOLS::vec4d,AMATOOLS::vec4d);
+    double PTij(AMATOOLS::Vec4D,AMATOOLS::Vec4D);
+    double Yij(AMATOOLS::Vec4D,AMATOOLS::Vec4D);
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
 
 
-    double Smin() { return smin; }
-    double Smax() { return smax; }
+    double Smin() { return m_smin; }
+    double Smax() { return m_smax; }
   };
-}
+
 
 
 /*! 
   \class Jet_Finder
-  \brief A general Jet_Finder for Durham (k_t)-jets.
+  \brief A general jet finder for Durham (k_t)-jets.
 
   The jet definition is managed by the Jet_Finder 
   giving a flag for whether it's a Hadron-Hadron(4), 
@@ -77,12 +77,14 @@ namespace APHYTOOLS {
   For the k_t algorithm the following frames have to
   be employed :
   
+\verbatim
   Collision type           | Frame
   hadron-hadron            | c.m. of the hadrons
   lepton-lepton            | c.m. frame of the leptons
   DIS (electro-production) | Breit-frame
   DIS (photon-production)  | c.m. of photon-hadron
-  
+\endverbatim  
+
   So far no thought was lost on photon-photon collisions, since 
   they might be of basically any type. Presumably a new type has to
   be set up with an awful lot of conditions in it due to the
@@ -92,7 +94,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   int type
+  \var   int Jet_Finder::m_type
   \brief The general type of process - it affects the proper jet definition.
   
   Decay = 0, 
@@ -107,34 +109,36 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   double ycut
+  \var   double Jet_Finder::m_ycut
   \brief The jet resolution parameter.
 */
 
-/*!
+/*
   \var   double E, s, sprime, smin, smax;
   \brief General scales : energy, s, the actual s, its limits.
 */
 
 /*!
-  \var   AMATOOLS::vec4d * frame;
+  \var   AMATOOLS::Vec4D * Jet_Finder::m_frame;
   \brief The vectors related to the frame.
+
   These vectors span the corresponding frame in which the jet-algorithm is
   performed. It is the c.m. frame of the vector boson (i.e. the vectors of the
   leptons) or the c.m. frame of the hadrons.
 */
 
 /*!
-  \fn    double ymin_kt(AMATOOLS::vec4d *,int &,int &);
+  \fn    double Jet_Finder::YminKt(AMATOOLS::Vec4D *,int &,int &);
   \brief Find the minimal y for a number of vectors, fill in the appropriate 
          numbers.
+
   This method scans over all momenta (being constrained by n) and
   determines the minimal y in the k_t scheme. This should be
   used for matrix elements only.
 */
 
 /*!
-  \fn    Jet_Finder(double,int);
+  \fn    Jet_Finder::Jet_Finder(double,int);
   \brief The explicit constructor for the usage in the Parton Shower.
 
   This explicit constructor just sets the ycut of the jet criterion,
@@ -143,7 +147,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \fn    Jet_Finder(int,Flavour *,double,int,int);
+  \fn    Jet_Finder::Jet_Finder(int,Flavour *,double,int,int);
   \brief The explicit constructor for the usage in matrix elements and their 
          interface to the Parton Shower.
 
@@ -159,7 +163,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \fn    void Init(AMATOOLS::vec4d *);
+  \fn    void Jet_Finder::Init(AMATOOLS::Vec4D *);
   \brief Setting up the reference system for a number of vectors.
 
   In this method, only the initial momenta are analysed and
@@ -175,7 +179,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   bool Trigger(AMATOOLS::vec4d *);
+  \var   bool Jet_Finder::Trigger(AMATOOLS::Vec4D *);
   \brief Checks for pairs of vectors to belong to one jet only.
 
   This method yields a zero if any pair of momenta of strong 
@@ -184,7 +188,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   bool TwoJets(AMATOOLS::vec4d &,AMATOOLS::vec4d &);
+  \var   bool Jet_Finder::TwoJets(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
   \brief Checks, if the two vectors belong to one jet.
 
   This method returns a zero if the two vectors do not fulfil the 
@@ -193,7 +197,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   bool TwoJets(double &, double &, double &, bool)
+  \var   bool Jet_Finder::TwoJets(double &, double &, double &, bool)
   \brief Checks, if the two vectors belong to one jet.
 
   This method returns a zero if the two vectors do not fulfil the 
@@ -203,7 +207,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   double PTij(AMATOOLS::vec4d,AMATOOLS::vec4d);
+  \var   double Jet_Finder::PTij(AMATOOLS::Vec4D,AMATOOLS::Vec4D);
   \brief Returns the actual p_t of two vectors.
 
   Depending on the set-up of the jet-finder the actual value of
@@ -211,7 +215,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   double PTi(AMATOOLS::vec4d);
+  \var   double Jet_Finder::PTi(AMATOOLS::Vec4D);
   \brief Returns the actual p_t of a vector w.r.t. the beam.
 
   Depending on the set-up of the jet-finder the actual value of
@@ -219,9 +223,11 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   void BuildCuts(Cut_Data *);
+  \var   void Jet_Finder::BuildCuts(Cut_Data *);
   \brief Creates cuts to be used in the evaluation of the ME.
 */
+
+}
 
 #endif
 

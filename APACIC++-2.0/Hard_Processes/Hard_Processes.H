@@ -34,7 +34,7 @@ namespace APACIC {
     int                  Nin();
     int                  Nout();
     int               ** Colours();
-    AMATOOLS::vec4d    * Momenta();
+    AMATOOLS::Vec4D    * Momenta();
     APHYTOOLS::Flavour * Flavs();
   };
   inline AMEGIC::Process_Base * Hard_Processes::proc()    { return two2two; }
@@ -42,7 +42,7 @@ namespace APACIC {
   inline int                    Hard_Processes::Nin()     { return two2two->Selected()->Nin(); }
   inline int                    Hard_Processes::Nout()    { return two2two->Selected()->Nout(); }
   inline int                 ** Hard_Processes::Colours() { return two2two->Selected()->GetXS()->Colours(); }
-  inline AMATOOLS::vec4d      * Hard_Processes::Momenta() { return two2two->Selected()->Momenta(); }
+  inline AMATOOLS::Vec4D      * Hard_Processes::Momenta() { return two2two->Selected()->Momenta(); }
   inline APHYTOOLS::Flavour   * Hard_Processes::Flavs()   { return two2two->Selected()->Flavs(); }
 }
 #endif

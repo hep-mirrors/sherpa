@@ -19,11 +19,11 @@ void Spectrum_sDownquarks::Interface(Isajet* isa)
   isa->sDowns(_Zd,_es,_ds);
   
   msg.Tracking()<<"Zd: "<<endl;
-  if (rpa.gen.Tracking()) _Zd.matrix_out();
+  if (rpa.gen.Tracking()) _Zd.MatrixOut();
   msg.Tracking()<<"es: "<<endl;
-  if (rpa.gen.Tracking()) _es.matrix_out();
+  if (rpa.gen.Tracking()) _es.MatrixOut();
   msg.Tracking()<<"ds: "<<endl;
-  if (rpa.gen.Tracking()) _ds.matrix_out();
+  if (rpa.gen.Tracking()) _ds.MatrixOut();
   msg.Tracking()<<"======================================================"<<endl;
 }
 
@@ -115,12 +115,12 @@ void Spectrum_sDownquarks::Masses_LO()
   }
 
   Flavour flav;    
-  flav = Flavour(kf::sDownL);flav.set_mass(sqrt(dabs(evalues[0])));
-  flav = Flavour(kf::sStrangeL);flav.set_mass(sqrt(dabs(evalues[1])));
-  flav = Flavour(kf::sBottomL);flav.set_mass(sqrt(dabs(evalues[2])));
-  flav = Flavour(kf::sDownR);flav.set_mass(sqrt(dabs(evalues[3])));
-  flav = Flavour(kf::sStrangeR);flav.set_mass(sqrt(dabs(evalues[4])));
-  flav = Flavour(kf::sBottomR);flav.set_mass(sqrt(dabs(evalues[5])));
+  flav = Flavour(kf::sDownL);flav.SetMass(sqrt(dabs(evalues[0])));
+  flav = Flavour(kf::sStrangeL);flav.SetMass(sqrt(dabs(evalues[1])));
+  flav = Flavour(kf::sBottomL);flav.SetMass(sqrt(dabs(evalues[2])));
+  flav = Flavour(kf::sDownR);flav.SetMass(sqrt(dabs(evalues[3])));
+  flav = Flavour(kf::sStrangeR);flav.SetMass(sqrt(dabs(evalues[4])));
+  flav = Flavour(kf::sBottomR);flav.SetMass(sqrt(dabs(evalues[5])));
 
   msg.Tracking()<<"--------------------------------------------------------------"<<endl;
   msg.Tracking()<<"sQuark masses :"<<endl;
@@ -128,7 +128,7 @@ void Spectrum_sDownquarks::Masses_LO()
     msg.Tracking()<<"sDownquarks["<<i<<"] : ";
     msg.Tracking()<<sqrt(dabs(evalues[i]))<<endl;
   }
-  _Zd.matrix_out();
+  _Zd.MatrixOut();
 }
 
 

@@ -110,12 +110,12 @@ namespace PHASIC {
       A simple check whether a specific flavour is massive or not.
     */
 
-    bool    Massive(APHYTOOLS::Flavour fl) { return (fl.mass()!=0.) ? 1:0; }
+    bool    Massive(APHYTOOLS::Flavour fl) { return (fl.Mass()!=0.) ? 1:0; }
     /*
       void    SetDouble(std::string,double);
       double  GetDouble(std::string);
-      void    SetVector(std::string,vec4d);
-      vec4d   GetVector(std::string);
+      void    SetVector(std::string,Vec4D);
+      Vec4D   GetVector(std::string);
       void    Clean();
       void    PrintSettings();
       ostream Translate(APHYTOOLS::Flavour);

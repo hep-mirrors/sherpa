@@ -11,12 +11,12 @@ namespace PHASIC {
       According to the flag, either rot (lflag = 0) or p1 (lflag = 1) 
       is calculated.
     */
-    static void   Rotat(int lflag,AMATOOLS::vec4d& p1,AMATOOLS::vec4d p2,double** rot);
+    static void   Rotat(int lflag,AMATOOLS::Vec4D& p1,AMATOOLS::Vec4D p2,double** rot);
     /*!
       ph is the 4-vector in the rest frame of q                    
       p  is the corresponding 4-vector in the lab frame             
     */
-    static void   Boost(int lflag,AMATOOLS::vec4d q,AMATOOLS::vec4d& ph,AMATOOLS::vec4d& p);
+    static void   Boost(int lflag,AMATOOLS::Vec4D q,AMATOOLS::Vec4D& ph,AMATOOLS::Vec4D& p);
     /*!
       This is the squareroot of the ordinary lambda function. 
     */

@@ -35,7 +35,7 @@ namespace PHASIC {
     // redefined methods of AMEGIC::Process_Base 
 
     void   Initialize(APHYTOOLS::Selector_Data * _seldata);
-    int    InitAmplitude(AMEGIC::Topology *,AMATOOLS::vec4d *&,std::vector<double> &,
+    int    InitAmplitude(AMEGIC::Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
 			 std::vector<AMEGIC::Single_Process *> &)            { return 0; }
     void   InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>) { return;   }
     void   UpdateCuts(double,double) { return; }
@@ -77,7 +77,7 @@ namespace PHASIC {
 
     // interfaces to EXTRAXS::XS_Base
 
-//     bool SetColours(AMATOOLS::vec4d *);
+//     bool SetColours(AMATOOLS::Vec4D *);
 //     bool SetColours(double, double, double);
 
     void CreateSelector() { sel = new APHYTOOLS::No_Selector(); }
@@ -88,9 +88,9 @@ namespace PHASIC {
     void SetTotalXS(int);
     bool OneEvent();
 
-    double Differential(AMATOOLS::vec4d *);
+    double Differential(AMATOOLS::Vec4D *);
     double Differential2();
-    double DSigma(AMATOOLS::vec4d *,bool);
+    double DSigma(AMATOOLS::Vec4D *,bool);
     double DSigma2();
     bool   SameEvent();
     double WeightedEvent();

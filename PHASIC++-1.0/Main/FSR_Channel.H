@@ -16,8 +16,8 @@ namespace PHASIC {
     double zmin,zmax,z;
   public :
     S1Channel(int,int,APHYTOOLS::Flavour *); 
-    void GeneratePoint(AMATOOLS::vec4d * p,double *);
-    void GenerateWeight(AMATOOLS::vec4d * p);
+    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
+    void GenerateWeight(AMATOOLS::Vec4D * p);
   };
 
 
@@ -33,8 +33,8 @@ namespace PHASIC {
     double zmin,zmax,z;
   public :
     T1Channel(int,int,APHYTOOLS::Flavour *); 
-    void GeneratePoint(AMATOOLS::vec4d * p,double *);
-    void GenerateWeight(AMATOOLS::vec4d * p);
+    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
+    void GenerateWeight(AMATOOLS::Vec4D * p);
   };
 
 
@@ -51,8 +51,8 @@ namespace PHASIC {
     double zmin,zmax,z;
   public :
     U1Channel(int,int,APHYTOOLS::Flavour *); 
-    void GeneratePoint(AMATOOLS::vec4d * p,double *);
-    void GenerateWeight(AMATOOLS::vec4d * p);
+    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
+    void GenerateWeight(AMATOOLS::Vec4D * p);
   };
 }
 

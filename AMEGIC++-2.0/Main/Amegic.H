@@ -48,7 +48,7 @@ namespace AMEGIC {
     bool           PrepareXSecTables();
     bool           LookUpXSec(double,bool,std::string);
     void           SingleEvents();
-    bool           InitializeProcesses(int);
+    bool           InitializeProcesses(int _mode=0);
     bool           InitializeXS(int);
     Process_Base * Processes();
 

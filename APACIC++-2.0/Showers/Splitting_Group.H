@@ -63,7 +63,7 @@ namespace APACIC {
     };
     //! Selects one splitting function out of the group.
     virtual void SelectOne() {
-      double rr = lastint*AMATOOLS::Ran.get();
+      double rr = lastint*AMATOOLS::ran.Get();
       int i;
       for (i=0;partsums[i]<rr;++i) {};
       selected=group[i];

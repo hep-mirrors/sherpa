@@ -83,23 +83,23 @@ bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _beams,
 }
 
 void ISR_Handler::SetPartonMasses(Flavour * _fl) { 
-  mass12      = sqr(_fl[0].mass());
-  mass22      = sqr(_fl[1].mass());
+  mass12      = sqr(_fl[0].Mass());
+  mass22      = sqr(_fl[1].Mass());
   double E    = AORGTOOLS::rpa.gen.Ecms();
   double x    = 1./2.+(mass12-mass22)/(2.*E*E);
   double E1   = x*E;
   double E2   = E-E1;
-  fixvecs[0]  = vec4d(E1,0.,0., sqrt(sqr(E1)-mass12));
-  fixvecs[1]  = vec4d(E2,0.,0.,-sqrt(sqr(E1)-mass12));
+  fiXVECs[0]  = Vec4D(E1,0.,0., sqrt(sqr(E1)-mass12));
+  fiXVECs[1]  = Vec4D(E2,0.,0.,-sqrt(sqr(E1)-mass12));
 }
 
 
-bool ISR_Handler::MakeISR(vec4d * p,double sprime,double y) 
+bool ISR_Handler::MakeISR(Vec4D * p,double sprime,double y) 
 {
   if (mode==0) {
     x1   = x2 = 1.;
-    p[0] = fixvecs[0];
-    p[1] = fixvecs[1];
+    p[0] = fiXVECs[0];
+    p[1] = fiXVECs[1];
     return 1;
   }
   else {
@@ -117,18 +117,18 @@ bool ISR_Handler::MakeISR(vec4d * p,double sprime,double y)
     double E2     = Eprime-E1;
     
     // initial state momenta in CMS frame
-    p[0]          = vec4d(E1,0.,0.,sqrt(sqr(E1)-mass12));
-    p[1]          = vec4d(E2,(-1.)*vec3d(p[0]));
+    p[0]          = Vec4D(E1,0.,0.,sqrt(sqr(E1)-mass12));
+    p[1]          = Vec4D(E2,(-1.)*Vec3D(p[0]));
     // Energies in the lab system
     E1            = exp(y);  
     E2            = exp(-y);  
 
     // establish boost
-    CMSBoost = Poincare(vec4d(E1+E2,0.,0.,E1-E2));
+    CMSBoost = Poincare(Vec4D(E1+E2,0.,0.,E1-E2));
     
     // calculate real x1,2
-    vec4d p1 = p[0];
-    vec4d p2 = p[1];
+    Vec4D p1 = p[0];
+    Vec4D p2 = p[1];
     CMSBoost.BoostBack(p1);
     CMSBoost.BoostBack(p2);
     x1       = 2.*p1[0]/E;
@@ -202,10 +202,10 @@ double ISR_Handler::Weight2(Flavour* flin)
    ---------------------------------------------------------------- */
 
 
-void  ISR_Handler::BoostInCMS(vec4d* p,int n) {
+void  ISR_Handler::BoostInCMS(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) CMSBoost.Boost(p[i]);
 }
 
-void  ISR_Handler::BoostInLab(vec4d* p,int n) {
+void  ISR_Handler::BoostInLab(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) CMSBoost.BoostBack(p[i]);
 }

@@ -14,32 +14,32 @@ using namespace AMATOOLS;
   --------------------------------------------------------------------*/
 
 Energy_Selector::Energy_Selector(int _nin,int _nout, Flavour * _fl) {
-  name = std::string("Energy_Selector"); 
-  nin  = _nin; nout = _nout; n = nin+nout;
-  fl   = _fl;
+  m_name = std::string("Energy_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
   
   double E = AORGTOOLS::rpa.gen.Ecms();
-  emin  = new double[n];
-  emax  = new double[n];
-  value = new double[n];
-  for (int i=0;i<n;i++) { emin[i] = 0.; emax[i] = E; }
-  sel_log = new Selector_Log(name);
+  emin  = new double[m_n];
+  emax  = new double[m_n];
+  value = new double[m_n];
+  for (int i=0;i<m_n;i++) { emin[i] = 0.; emax[i] = E; }
+  m_sel_log = new Selector_Log(m_name);
 }
 
 Energy_Selector::~Energy_Selector() {
-  //  delete [] sel_log;
+  //  delete [] m_sel_log;
   delete [] emin;
   delete [] emax;
   delete [] value;
 }
 
 
-bool Energy_Selector::Trigger(const vec4d * mom) 
+bool Energy_Selector::Trigger(const Vec4D * mom) 
 {
   double ei;
-  for (int i=nin;i<n;i++) {
+  for (int i=m_nin;i<m_n;i++) {
     ei = value[i] = mom[i][0];
-    if (sel_log->Hit( ((ei<emin[i]) || (ei>emax[i])) )) return 0;
+    if (m_sel_log->Hit( ((ei<emin[i]) || (ei>emax[i])) )) return 0;
   }
   return 1;
 }
@@ -48,10 +48,10 @@ double * Energy_Selector::ActualValue() { return value; }
 
 void Energy_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=0;i<n-1;i++) {
+  for (int i=0;i<m_n-1;i++) {
     cuts->energymin[i] = Max(emin[i],cuts->energymin[i]);
     cuts->energymax[i] = Min(emax[i],cuts->energymax[i]);
-    for (int j=i+1;j<n;j++) {
+    for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = 
 	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
     }
@@ -59,10 +59,10 @@ void Energy_Selector::BuildCuts(Cut_Data * cuts)
 }
 
 void Energy_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-  for (int i=0;i<n-1;i++) {
+  for (int i=0;i<m_n-1;i++) {
     cuts->energymin[i] = Max(emin[i],cuts->energymin[i]);
     cuts->energymax[i] = Min(emax[i],cuts->energymax[i]);
-    for (int j=i+1;j<n;j++) {
+    for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = 
 	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
     }
@@ -78,11 +78,11 @@ void Energy_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
     return;
   }
 
-  for (int i=nin;i<n;i++) {
-    if ( (crit[0].Includes(fl[i])) || ((crit[0].bar()).Includes(fl[i]) ) ) {
-      emin[i] = AMATOOLS::Max(_min,fl[i].mass()); 
+  for (int i=m_nin;i<m_n;i++) {
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
+      emin[i] = AMATOOLS::Max(_min,m_fl[i].Mass()); 
       emax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
-      AORGTOOLS::msg.Debugging()<<"Set e-Range for "<<fl[i]<<" : "
+      AORGTOOLS::msg.Debugging()<<"Set e-Range for "<<m_fl[i]<<" : "
 				<<emin[i]<<" ... "<<emax[i]<<endl;
     }
   }
@@ -97,32 +97,32 @@ void Energy_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
   --------------------------------------------------------------------*/
 
 PT_Selector::PT_Selector(int _nin,int _nout, Flavour * _fl) {
-  name = std::string("PT_Selector"); 
-  nin  = _nin; nout = _nout; n = nin+nout;
-  fl   = _fl;
+  m_name = std::string("PT_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
   
   double E = AORGTOOLS::rpa.gen.Ecms();
-  ptmin  = new double[n];
-  ptmax  = new double[n];
-  value = new double[n];
-  for (int i=0;i<n;i++) { ptmin[i] = 0.; ptmax[i] = E; }
-  sel_log = new Selector_Log(name);
+  ptmin  = new double[m_n];
+  ptmax  = new double[m_n];
+  value = new double[m_n];
+  for (int i=0;i<m_n;i++) { ptmin[i] = 0.; ptmax[i] = E; }
+  m_sel_log = new Selector_Log(m_name);
 }
 
 PT_Selector::~PT_Selector() {
-  //  delete [] sel_log;
+  //  delete [] m_sel_log;
   delete [] ptmin;
   delete [] ptmax;
   delete [] value;
 }
 
 
-bool PT_Selector::Trigger(const vec4d * mom) 
+bool PT_Selector::Trigger(const Vec4D * mom) 
 {
   double pti;
-  for (int i=nin;i<n;i++) {
+  for (int i=m_nin;i<m_n;i++) {
     pti = value[i] = sqrt(sqr(mom[i][1]) + sqr(mom[i][2]));
-    if (sel_log->Hit( ((pti<ptmin[i]) || (pti>ptmax[i])) )) return 0;
+    if (m_sel_log->Hit( ((pti<ptmin[i]) || (pti>ptmax[i])) )) return 0;
   }
   return 1;
 }
@@ -131,10 +131,10 @@ double * PT_Selector::ActualValue() { return value; }
 
 void PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=0;i<n-1;i++) {
+  for (int i=0;i<m_n-1;i++) {
     cuts->energymin[i] = Max(ptmin[i],cuts->energymin[i]);
     cuts->energymax[i] = Min(ptmax[i],cuts->energymax[i]);
-    for (int j=i+1;j<n;j++) {
+    for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = 
 	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
     }
@@ -142,10 +142,10 @@ void PT_Selector::BuildCuts(Cut_Data * cuts)
 }
 
 void PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-  for (int i=0;i<n-1;i++) {
+  for (int i=0;i<m_n-1;i++) {
     cuts->energymin[i] = Max(ptmin[i],cuts->energymin[i]);
     cuts->energymax[i] = Min(ptmax[i],cuts->energymax[i]);
-    for (int j=i+1;j<n;j++) {
+    for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = 
 	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
     }
@@ -161,11 +161,11 @@ void PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
     return;
   }
 
-  for (int i=nin;i<n;i++) {
-    if ( (crit[0].Includes(fl[i])) || ((crit[0].bar()).Includes(fl[i]) ) ) {
-      ptmin[i] = AMATOOLS::Max(_min,fl[i].mass()); 
+  for (int i=m_nin;i<m_n;i++) {
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
+      ptmin[i] = AMATOOLS::Max(_min,m_fl[i].Mass()); 
       ptmax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
-      AORGTOOLS::msg.Debugging()<<"Set PT-Range for "<<fl[i]<<" : "
+      AORGTOOLS::msg.Debugging()<<"Set PT-Range for "<<m_fl[i]<<" : "
 				<<ptmin[i]<<" ... "<<ptmax[i]<<endl;
     }
   }
@@ -182,38 +182,38 @@ void PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
 
 
 Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) {
-  name = std::string("Rapidity_Selector"); 
-  nin  = _nin; nout = _nout; n = nin+nout;
-  fl   = _fl;
+  m_name = std::string("Rapidity_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
   
   double E = AORGTOOLS::rpa.gen.Ecms()/2;
   double pl;
 
-  ymin  = new double[n];
-  ymax  = new double[n];
-  value = new double[n];
-  for (int i=0;i<n;i++) {
-    pl      = sqrt(E*E-sqr(_fl[i].mass()));
+  ymin  = new double[m_n];
+  ymax  = new double[m_n];
+  value = new double[m_n];
+  for (int i=0;i<m_n;i++) {
+    pl      = sqrt(E*E-sqr(_fl[i].Mass()));
     ymax[i] = log( (E+pl)/(E-pl) );
     ymin[i] = -ymax[i];
   }
-  sel_log = new Selector_Log(name);
+  m_sel_log = new Selector_Log(m_name);
 }
 
 Rapidity_Selector::~Rapidity_Selector() {
-  //  delete [] sel_log;
+  //  delete [] m_sel_log;
   delete [] ymin;
   delete [] ymax;
   delete [] value;
 }
 
 
-bool Rapidity_Selector::Trigger(const vec4d * mom) 
+bool Rapidity_Selector::Trigger(const Vec4D * mom) 
 {
   double yi;
-  for (int i=nin;i<n;i++) {
+  for (int i=m_nin;i<m_n;i++) {
     yi = value[i] = log( (mom[i][0]+mom[i][3])/(mom[i][0]-mom[i][3]) );
-    if (sel_log->Hit( ((yi<ymin[i]) || (yi>ymax[i])) )) return 0;
+    if (m_sel_log->Hit( ((yi<ymin[i]) || (yi>ymax[i])) )) return 0;
   }
   return 1;
 }
@@ -238,12 +238,12 @@ void Rapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _mi
   double E = AORGTOOLS::rpa.gen.Ecms()/2;
   double pl,y;
 
-  for (int i=nin;i<n;i++) {
-    pl      = sqrt(E*E-sqr(fl[i].mass())); 
+  for (int i=m_nin;i<m_n;i++) {
+    pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
     y       = log((E+pl)/(E-pl));
     ymin[i] = AMATOOLS::Max(_min,-y);
     ymax[i] = AMATOOLS::Min(_max,y);
-    AORGTOOLS::msg.Debugging()<<"Set y-Range for "<<fl[i]<<" : "
+    AORGTOOLS::msg.Debugging()<<"Set y-Range for "<<m_fl[i]<<" : "
 			      <<ymin[i]<<" ... "<<ymax[i]<<endl;
   }
 }
@@ -253,27 +253,27 @@ void Rapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _mi
 
 
 Angle_Selector::Angle_Selector(int _nin,int _nout, Flavour * _fl) {
-  name = std::string("Angle_Selector"); 
-  nin  = _nin; nout = _nout; n = nin+nout;
-  fl   = _fl;
+  m_name = std::string("Angle_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
 
-  cosmin = new double*[n];
-  cosmax = new double*[n];
-  value  = new double[n*n];
-  for (int i=0;i<n;i++) { cosmin[i] = new double[n]; cosmax[i] = new double[n]; }
-  for (int i=0;i<n;i++) {
-    for (int j=i+1;j<n;j++) {
+  cosmin = new double*[m_n];
+  cosmax = new double*[m_n];
+  value  = new double[m_n*m_n];
+  for (int i=0;i<m_n;i++) { cosmin[i] = new double[m_n]; cosmax[i] = new double[m_n]; }
+  for (int i=0;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
       cosmin[i][j] = cosmin[j][i] = -1.; 
       cosmax[i][j] = cosmax[j][i] =  1.; 
     }
   }
     
-  sel_log = new Selector_Log(name);
+  m_sel_log = new Selector_Log(m_name);
 }
 
 Angle_Selector::~Angle_Selector() {
-  //  delete [] sel_log;
-  for (int i=0;i<n;i++) {
+  //  delete [] m_sel_log;
+  for (int i=0;i<m_n;i++) {
     delete [] cosmin[i];
     delete [] cosmax[i];
   }
@@ -282,14 +282,14 @@ Angle_Selector::~Angle_Selector() {
   delete [] value;
 }
 
-bool Angle_Selector::Trigger(const vec4d * mom) 
+bool Angle_Selector::Trigger(const Vec4D * mom) 
 {
   double cosij;
-  for (int i=0;i<n;i++) {
-    for (int j=i+1;j<n;j++) {
-      cosij = value[n*i+j] = 
-	vec3d(mom[i])*vec3d(mom[j])/(vec3d(mom[i]).abs()*vec3d(mom[j]).abs());
-      if (sel_log->Hit( ((cosij < cosmin[i][j]) || 
+  for (int i=0;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      cosij = value[m_n*i+j] = 
+	Vec3D(mom[i])*Vec3D(mom[j])/(Vec3D(mom[i]).Abs()*Vec3D(mom[j]).Abs());
+      if (m_sel_log->Hit( ((cosij < cosmin[i][j]) || 
 			 (cosij > cosmax[i][j])) )) return 0;
     }
   }
@@ -300,8 +300,8 @@ double * Angle_Selector::ActualValue() { return value; }
 
 void Angle_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=0;i<n-1;i++) {
-    for (int j=i+1;j<n;j++) {
+  for (int i=0;i<m_n-1;i++) {
+    for (int j=i+1;j<m_n;j++) {
       cuts->cosmin[i][j] = cuts->cosmin[j][i] = 
 	Max(cosmin[i][j],cuts->cosmin[i][j]);
       cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
@@ -313,8 +313,8 @@ void Angle_Selector::BuildCuts(Cut_Data * cuts)
 }
 
 void Angle_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-  for (int i=0;i<n-1;i++) {
-    for (int j=i+1;j<n;j++) {
+  for (int i=0;i<m_n-1;i++) {
+    for (int j=i+1;j<m_n;j++) {
       cuts->cosmin[i][j] = cuts->cosmin[j][i] = 
 	Max(cosmin[i][j],cuts->cosmin[i][j]);
       cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
@@ -334,13 +334,13 @@ void Angle_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,
 			  <<crit.size()<<endl;
     return;
   }
-  for (int i=nin;i<n;i++) {
-    for (int j=i+1;j<n;j++) {
-      if ( ((crit[0].Includes(fl[i])) && (crit[1].Includes(fl[j])) ) || 
-	   ((crit[0].Includes(fl[j])) && (crit[1].Includes(fl[i])) ) ) {
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
 	cosmin[i][j] = cosmin[j][i] = AMATOOLS::Max(_min,-1.); 
 	cosmax[i][j] = cosmax[j][i] = AMATOOLS::Min(_max,1.); 
-	AORGTOOLS::msg.Debugging()<<"Set cos-Range for "<<fl[i]<<"/"<<fl[j]<<" : "
+	AORGTOOLS::msg.Debugging()<<"Set cos-Range for "<<m_fl[i]<<"/"<<m_fl[j]<<" : "
 				  <<cosmin[i][j]<<" ... "<<cosmax[i][j]<<endl;
       }
     }
@@ -355,11 +355,11 @@ void Angle_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,int beam,
 			  <<crit.size()<<endl;
     return;
   }
-  for (int i=nin;i<n;i++) {
-    if ( (crit[0].Includes(fl[i])) || ((crit[0].bar()).Includes(fl[i]) ) ) {
+  for (int i=m_nin;i<m_n;i++) {
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       cosmin[i][beam] = cosmin[beam][i] = AMATOOLS::Max(_min,-1.); 
       cosmax[i][beam] = cosmax[beam][i] = AMATOOLS::Min(_max, 1.); 
-      AORGTOOLS::msg.Debugging()<<"Set cos-Range for "<<fl[i]<<" : "
+      AORGTOOLS::msg.Debugging()<<"Set cos-Range for "<<m_fl[i]<<" : "
 				<<cosmin[beam][i]<<" ... "<<cosmax[beam][i]<<endl;
     }
   }
@@ -370,28 +370,31 @@ void Angle_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,int beam,
 
 
 Mass_Selector::Mass_Selector(int _nin,int _nout, Flavour * _fl) {
-  name = std::string("Mass_Selector"); 
-  nin  = _nin; nout = _nout; n = nin+nout;
-  fl   = _fl;
+  m_name = std::string("Mass_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
   
-  massmin = new double*[n];
-  massmax = new double*[n];
-  value   = new double[n*n];
+  massmin = new double*[m_n];
+  massmax = new double*[m_n];
+  value   = new double[m_n*m_n];
 
-  for (int i=0;i<n;i++) { massmin[i] = new double[n]; massmax[i] = new double[n];}
+  for (int i=0;i<m_n;i++) { 
+    massmin[i] = new double[m_n]; 
+    massmax[i] = new double[m_n];
+  }
 
-  for (int i=nin;i<n;i++) {
-    for (int j=i+1;j<n;j++) {
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
       massmin[i][j] = massmin[j][i] = 0.; 
       massmax[i][j] = massmax[j][i] = sqr(AORGTOOLS::rpa.gen.Ecms()); 
     }
   }
-  sel_log = new Selector_Log(name);
+  m_sel_log = new Selector_Log(m_name);
 }
 
 Mass_Selector::~Mass_Selector() {
-  //  delete [] sel_log;
-  for (int i=0;i<n;i++) {
+  //  delete [] m_sel_log;
+  for (int i=0;i<m_n;i++) {
     delete [] massmin[i];
     delete [] massmax[i];
   }
@@ -400,13 +403,13 @@ Mass_Selector::~Mass_Selector() {
   delete [] value;
 }
 
-bool Mass_Selector::Trigger(const vec4d * mom) 
+bool Mass_Selector::Trigger(const Vec4D * mom) 
 {
   double massij;
-  for (int i=nin;i<n;i++) {
-    for (int j=i+1;j<n;j++) {
-      massij = value[i*n+j] = (mom[i]+mom[j]).abs2();
-      if (sel_log->Hit( ((massij < massmin[i][j]) || 
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      massij = value[i*m_n+j] = (mom[i]+mom[j]).Abs2();
+      if (m_sel_log->Hit( ((massij < massmin[i][j]) || 
 			 (massij > massmax[i][j])) )) return 0;
     }
   }
@@ -417,8 +420,8 @@ double * Mass_Selector::ActualValue() { return value; }
 
 void Mass_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=0;i<n-1;i++) {
-    for (int j=i+1;j<n;j++) {
+  for (int i=0;i<m_n-1;i++) {
+    for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],massmin[i][j]);
       if (cuts->scut[i][j] < 
 	  cuts->energymax[i]*cuts->energymax[j]*(1.-cuts->cosmax[i][j])) {
@@ -430,8 +433,8 @@ void Mass_Selector::BuildCuts(Cut_Data * cuts)
 }
 
 void Mass_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-  for (int i=0;i<n-1;i++) {
-    for (int j=i+1;j<n;j++) {
+  for (int i=0;i<m_n-1;i++) {
+    for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],massmin[i][j]);
       if (cuts->scut[i][j] < 
 	  cuts->energymax[i]*cuts->energymax[j]*(1.-cuts->cosmax[i][j])) {
@@ -450,13 +453,13 @@ void Mass_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, d
 			  <<crit.size()<<endl;
     return;
   }
-  for (int i=nin;i<n;i++) {
-    for (int j=nin+1;i<n;i++) {
-      if ( ((crit[0].Includes(fl[i])) && (crit[1].Includes(fl[j])) ) || 
-	   ((crit[0].Includes(fl[j])) && (crit[1].Includes(fl[i])) ) ) {
-	massmin[i][j] = massmin[j][i] = AMATOOLS::Max(_min,sqr(fl[i].mass()+fl[j].mass())); 
+  for (int i=m_nin;i<m_n;i++) {
+    for (int j=m_nin+1;i<m_n;i++) {
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
+	massmin[i][j] = massmin[j][i] = AMATOOLS::Max(_min,sqr(m_fl[i].Mass()+m_fl[j].Mass())); 
 	massmax[i][j] = massmax[j][i] = AMATOOLS::Min(_max,sqr(AORGTOOLS::rpa.gen.Ecms())); 
-	AORGTOOLS::msg.Debugging()<<"Set mass-Range for "<<fl[i]<<"/"<<fl[j]<<" : "
+	AORGTOOLS::msg.Debugging()<<"Set mass-Range for "<<m_fl[i]<<"/"<<m_fl[j]<<" : "
 				  <<massmin[i][j]<<" ... "<<massmax[i][j]<<endl;
       }
     }
@@ -472,27 +475,27 @@ void Mass_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, d
   --------------------------------------------------------------------*/
 
 Summed_PT_Selector::Summed_PT_Selector(int _nin,int _nout, Flavour * _fl) {
-  name = std::string("Summed_PT_Selector"); 
-  nin  = _nin; nout = _nout; n = nin+nout;
-  fl   = _fl;
+  m_name = std::string("Summed_PT_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
   
   double E = AORGTOOLS::rpa.gen.Ecms();
   ptmin    = 0.; ptmax    = E;
-  sel_log = new Selector_Log(name);
+  m_sel_log = new Selector_Log(m_name);
 }
 
 Summed_PT_Selector::~Summed_PT_Selector() { }
 
 
-bool Summed_PT_Selector::Trigger(const vec4d * mom) 
+bool Summed_PT_Selector::Trigger(const Vec4D * mom) 
 {
   double pt;
-  for (int i=nin;i<n;i++) {
-    if (crit.Includes(fl[i])) {
+  for (int i=m_nin;i<m_n;i++) {
+    if (crit.Includes(m_fl[i])) {
       pt += sqrt(sqr(mom[i][1]) + sqr(mom[i][2]));
     }
   }
-  if (sel_log->Hit( ((pt<ptmin) || (pt>ptmax)) )) return 0;
+  if (m_sel_log->Hit( ((pt<ptmin) || (pt>ptmax)) )) return 0;
   return 1;
 }
 

@@ -46,7 +46,7 @@ Complex Basic_VNCfunc::VNCcalc(const int& a,const int &b)
 
   //cout<<"VNC: "<<a<<":"<<b<<endl;
   Matrix<4>* Theta = AORGTOOLS::rpa.me.GetTheta();
-  return (vec4d(BS->Momentum(a)[0],-1.*vec3d(BS->Momentum(a)))*((*Theta)*BS->Momentum(b)))/2.;
+  return (Vec4D(BS->Momentum(a)[0],-1.*Vec3D(BS->Momentum(a)))*((*Theta)*BS->Momentum(b)))/2.;
 }
   
 

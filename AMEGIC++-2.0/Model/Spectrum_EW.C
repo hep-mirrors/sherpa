@@ -13,17 +13,17 @@ void Spectrum_EW::FillYukawas()
   Data_Read dr(rpa.GetPath()+std::string("/")+rpa.me.ModelFile());
 
   Flavour flav;
-  flav = Flavour(kf::e); flav.set_yuk(dr.GetValue<double>("m_e-"));
-  flav = Flavour(kf::mu); flav.set_yuk(dr.GetValue<double>("m_mu"));
-  flav = Flavour(kf::tau); flav.set_yuk(dr.GetValue<double>("m_tau"));
+  flav = Flavour(kf::e); flav.SetYuk(dr.GetValue<double>("m_e-"));
+  flav = Flavour(kf::mu); flav.SetYuk(dr.GetValue<double>("m_mu"));
+  flav = Flavour(kf::tau); flav.SetYuk(dr.GetValue<double>("m_tau"));
 
-  flav = Flavour(kf::d); flav.set_yuk(dr.GetValue<double>("m_down"));
-  flav = Flavour(kf::u); flav.set_yuk(dr.GetValue<double>("m_up"));
-  flav = Flavour(kf::s); flav.set_yuk(dr.GetValue<double>("m_strange"));
-  flav = Flavour(kf::c); flav.set_yuk(dr.GetValue<double>("m_charm"));
-  flav = Flavour(kf::b); flav.set_yuk(dr.GetValue<double>("m_bottom"));
-  flav = Flavour(kf::t); flav.set_yuk(dr.GetValue<double>("m_top"));
-  flav = Flavour(kf::h); flav.set_yuk(dr.GetValue<double>("m_H_SM"));
+  flav = Flavour(kf::d); flav.SetYuk(dr.GetValue<double>("m_down"));
+  flav = Flavour(kf::u); flav.SetYuk(dr.GetValue<double>("m_up"));
+  flav = Flavour(kf::s); flav.SetYuk(dr.GetValue<double>("m_strange"));
+  flav = Flavour(kf::c); flav.SetYuk(dr.GetValue<double>("m_charm"));
+  flav = Flavour(kf::b); flav.SetYuk(dr.GetValue<double>("m_bottom"));
+  flav = Flavour(kf::t); flav.SetYuk(dr.GetValue<double>("m_top"));
+  flav = Flavour(kf::h); flav.SetYuk(dr.GetValue<double>("m_H_SM"));
 
   double v         = dr.GetValue<double>("v");
   double Aqed      = dr.GetValue<double>("alpha_QED(MZ)");
@@ -32,8 +32,8 @@ void Spectrum_EW::FillYukawas()
   double mass_Z     = sqrt(M_PI*Aqed)*v/(sqrt(sin2)*sqrt(1.-sin2));
   double mass_W     = sqrt(M_PI*Aqed)*v/sqrt(sin2);
 
-  flav = Flavour(kf::Z);flav.set_yuk(mass_Z);
-  flav = Flavour(kf::W);flav.set_yuk(mass_W);
+  flav = Flavour(kf::Z);flav.SetYuk(mass_Z);
+  flav = Flavour(kf::W);flav.SetYuk(mass_W);
 }
 
 

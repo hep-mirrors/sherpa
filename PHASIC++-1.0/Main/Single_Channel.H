@@ -33,7 +33,7 @@ namespace PHASIC {
     double               res1,res2,res3;
     double               alpha,alpha_save;
     int                  rannum;
-    double             * ran;
+    double             * rans;
     /*!
       Specifics for isr and beamchannels
     */
@@ -48,12 +48,12 @@ namespace PHASIC {
       - three rans for each new particle, one for the intermediate propagator,
         two for the orientation of the splitting
     */
-    Single_Channel():ms(0),ran(0) { };
+    Single_Channel():ms(0),rans(0) { };
     Single_Channel(Single_Channel *);
     Single_Channel(int,int,APHYTOOLS::Flavour *);
     virtual ~Single_Channel() {
       if (ms)  { delete[] ms; }
-      if (ran) { delete[] ran; }
+      if (rans) { delete[] rans; }
     }
     /*!
       Adding a value to the Single_Channel. It basically increments n,
@@ -76,24 +76,24 @@ namespace PHASIC {
     /*!
       Point and weight generation for fsr channels.
     */
-    virtual void GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);
-    virtual void GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *,double *) { 
+    virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
+    virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *) { 
       AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GeneratePoint(vec4d,Cut_Data,double)."<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Single_Channel::GeneratePoint(Vec4D,Cut_Data,double)."<<std::endl; 
     }
-    virtual void GenerateWeight(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *) {
+    virtual void GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *) {
       AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(vec4d,Cut_Data)"<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(Vec4D,Cut_Data)"<<std::endl; 
     }
 
-    virtual void GeneratePoint(AMATOOLS::vec4d *);
-    virtual void GeneratePoint(AMATOOLS::vec4d *,double *) { 
+    virtual void GeneratePoint(AMATOOLS::Vec4D *);
+    virtual void GeneratePoint(AMATOOLS::Vec4D *,double *) { 
       AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GeneratePoint(vec4d,double)."<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Single_Channel::GeneratePoint(Vec4D,double)."<<std::endl; 
     }
-    virtual void GenerateWeight(AMATOOLS::vec4d *) {
+    virtual void GenerateWeight(AMATOOLS::Vec4D *) {
       AORGTOOLS::msg.Error()<<"Virtual Method : ";
-      AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(vec4d)"<<std::endl; 
+      AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(Vec4D)"<<std::endl; 
     }
 
     /*!

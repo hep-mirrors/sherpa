@@ -37,7 +37,7 @@ namespace APACIC {
       Returns a pointer to a free knot with a halfway specified parton,
       i.e. momentum and flavour will be set.
     */
-    Knot * NewKnot(APHYTOOLS::Flavour, AMATOOLS::vec4d, double, double);
+    Knot * NewKnot(APHYTOOLS::Flavour, AMATOOLS::Vec4D, double, double);
     /*! 
       Returns a pointer to a free knot in the list while copying another knot with
       zero links into it.

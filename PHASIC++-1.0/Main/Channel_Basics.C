@@ -6,14 +6,14 @@ using namespace PHASIC;
 using namespace AMATOOLS;
 using namespace std;
 
-void Channel_Basics::Rotat(int lflag,vec4d& p1 ,vec4d p2,double** rot)
+void Channel_Basics::Rotat(int lflag,Vec4D& p1 ,Vec4D p2,double** rot)
 {
   if (lflag==0) {
     short int i,k,l;
     double r[2][3][3],pm[2],sp[2],cp[2],st[2],ct[2];
-    vec4d pp[2];
-    pm[0] = vec3d(p1).abs();
-    pm[1] = vec3d(p2).abs();
+    Vec4D pp[2];
+    pm[0] = Vec3D(p1).Abs();
+    pm[1] = Vec3D(p2).Abs();
     pp[0] = (1./pm[0])*p1;
     pp[1] = (1./pm[1])*p2;
     for (i=0;i<2;i++) {
@@ -45,7 +45,7 @@ void Channel_Basics::Rotat(int lflag,vec4d& p1 ,vec4d p2,double** rot)
       }
     }
     
-    vec4d p1new;
+    Vec4D p1new;
     p1new[0] = p2[0];
     for (short int i=0;i<3;i++) {
       p1new[i+1] = 0.;
@@ -66,22 +66,22 @@ void Channel_Basics::Rotat(int lflag,vec4d& p1 ,vec4d p2,double** rot)
   }
 }
 
-void Channel_Basics::Boost(int lflag,vec4d q,vec4d& ph,vec4d& p)
+void Channel_Basics::Boost(int lflag,Vec4D q,Vec4D& ph,Vec4D& p)
 {
-  if (q.abs2() < 0.) {
+  if (q.Abs2() < 0.) {
     AORGTOOLS::msg.Error()<<"Channel_Basics::Boost : Spacelike four vector ..."<<endl;
     return;
   }
-  double rsq = sqrt(q.abs2());
+  double rsq = sqrt(q.Abs2());
   if (lflag==0) {
-    p[0] = (q[0]*ph[0]+vec3d(q)*vec3d(ph))/rsq;
+    p[0] = (q[0]*ph[0]+Vec3D(q)*Vec3D(ph))/rsq;
     double c1 = (ph[0]+p[0])/(rsq+q[0]);
-    p = vec4d(p[0],vec3d(ph)+c1*vec3d(q));  
+    p = Vec4D(p[0],Vec3D(ph)+c1*Vec3D(q));  
   }
   else {
     ph[0] = q*p/rsq;
     double c1 = (p[0]+ph[0])/(rsq+q[0]);
-    ph = vec4d(ph[0],vec3d(p)-c1*vec3d(q));  
+    ph = Vec4D(ph[0],Vec3D(p)-c1*Vec3D(q));  
   }
 }
 

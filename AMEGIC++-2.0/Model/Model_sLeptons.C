@@ -53,7 +53,7 @@ void Model_sLeptons::c_SSS(Single_Vertex* v,int& vanz)
     Flavour flav = Flavour(kf::code(i));
     for (short int k=31;k<33;k++) {
       Flavour flh = Flavour(kf::code(k));
-      if (flh.ison() && flav.ison()) {
+      if (flh.IsOn() && flav.IsOn()) {
 	v[vanz].in[0] = flav;
 	v[vanz].in[1] = flh;
 	v[vanz].in[2] = flav;
@@ -87,18 +87,18 @@ void Model_sLeptons::c_SSS(Single_Vertex* v,int& vanz)
   //sneutrino - Hmin - slepton
  
   Flavour flHm = Flavour(kf::Hmin);
-  if (flHm.ison()) {
+  if (flHm.IsOn()) {
     for (short int i=81;i<84;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=71;j<77;j++) {
 	Flavour flav2 =Flavour(kf::code(j));
-	if(flav1.ison() && flav2.ison()){
+	if(flav1.IsOn() && flav2.IsOn()){
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flHm;
-	  v[vanz].in[2] = flav2.bar();
+	  v[vanz].in[2] = flav2.Bar();
      
-	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav2.texname()+string("}}{ v_1}\\sqrt{2}"),
-				 -Flavour(kf::code(2*gen_sLep(flav2)+11)).yuk()/K_v1().Value()*sqrt(2.));
+	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav2.TexName()+string("}}{ v_1}\\sqrt{2}"),
+				 -Flavour(kf::code(2*gen_sLep(flav2)+11)).Yuk()/K_v1().Value()*sqrt(2.));
 
 	  kcpl0 = M_I*K_Z_nue(gen_sLep(flav2),i-81)*
 	    (-root2*g2*g2/num_4*(K_v1()*K_Z_H(0,0)+K_v2()*K_Z_H(1,0))*
@@ -136,18 +136,18 @@ void Model_sLeptons::c_SSS(Single_Vertex* v,int& vanz)
   
   //slepton - A0 - slepton
   Flavour flA0 = Flavour(kf::A0);
-  if (flA0.ison()) {
+  if (flA0.IsOn()) {
     for (short int i=71;i<77;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=71;j<77;j++) {
 	Flavour flav2 =Flavour(kf::code(j));
-	if(flav1.ison() && flav2.ison() && i<=j){
+	if(flav1.IsOn() && flav2.IsOn() && i<=j){
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flA0;
 	  v[vanz].in[2] = flav2;
 
-	  Kabbala K_lI = Kabbala(string("\\frac{(\\m M_{")+flav1.texname()+string("})}{ v_1}\\sqrt{2}"),
-				 -Flavour(kf::code(2*gen_sLep(flav1)+11)).yuk()/(K_v1()).Value()*sqrt(2.));
+	  Kabbala K_lI = Kabbala(string("\\frac{(\\m M_{")+flav1.TexName()+string("})}{ v_1}\\sqrt{2}"),
+				 -Flavour(kf::code(2*gen_sLep(flav1)+11)).Yuk()/(K_v1()).Value()*sqrt(2.));
      
 	  Kabbala inv_root2  = Kabbala(string("\\frac{1}{\\sqrt{2}}"),1./sqrt(2.));
 
@@ -196,15 +196,15 @@ void Model_sLeptons::c_SSS(Single_Vertex* v,int& vanz)
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=71;j<77;j++) {
 	Flavour flav2 =Flavour(kf::code(j));
-	if(flav1.ison() && flav2.ison() && i<=j){
+	if(flav1.IsOn() && flav2.IsOn() && i<=j){
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flH;
 	  v[vanz].in[2] = flav2;
 
 	  Kabbala help = K_zero;
 
-	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.texname()+string("}}{ v_1}*\\sqrt{2}"),
-				 -Flavour(kf::code(2*gen_sLep(flav1)+11)).yuk()/(K_v1()).Value()*sqrt(2.));
+	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}*\\sqrt{2}"),
+				 -Flavour(kf::code(2*gen_sLep(flav1)+11)).Yuk()/(K_v1()).Value()*sqrt(2.));
 	 
 	  Kabbala fac = Kabbala(string("\\frac{1-4sin^2\\theta_W}{2sin^2\\theta_W}"),
 				(1.-4.*(K_sinTW()).Value()*(K_sinTW()).Value())/
@@ -264,11 +264,11 @@ void Model_sLeptons::c_SSV(Single_Vertex* v,int& vanz)
 
   //slepton - Photon - slepton
   Flavour flPh = Flavour(kf::photon);
-  if (flPh.ison()) {
+  if (flPh.IsOn()) {
     for (short int i=71;i<77;i++) {
       Flavour flav = Flavour(kf::code(i));
-      Kabbala charge1 = Kabbala(string("Q_{")+flav.texname()+string("}"),flav.charge());
-      if (flav.ison()) {
+      Kabbala charge1 = Kabbala(string("Q_{")+flav.TexName()+string("}"),flav.Charge());
+      if (flav.IsOn()) {
 	v[vanz].in[0] = flav;
 	v[vanz].in[1] = flPh;
 	v[vanz].in[2] = flav;
@@ -300,12 +300,12 @@ void Model_sLeptons::c_SSV(Single_Vertex* v,int& vanz)
  
  //slepton - Z - slepton
   Flavour flZ = Flavour(kf::Z);
-  if (flZ.ison()) {
+  if (flZ.IsOn()) {
     for (short int i=71;i<77;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=i;j<77;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison()) {
+	if (flav1.IsOn() && flav2.IsOn()) {
 	  
 	  Kabbala help = K_zero;
 	  if(i==j) help = K_sinTW()*K_sinTW();
@@ -348,7 +348,7 @@ void Model_sLeptons::c_SSV(Single_Vertex* v,int& vanz)
     //sneutrino - Z - sneutrino
     for (short int i=81;i<84;i++) {
       Flavour flav = Flavour(kf::code(i));
-      if (flav.ison()) {
+      if (flav.IsOn()) {
  	  v[vanz].in[0] = flav;
 	  v[vanz].in[1] = flZ;
 	  v[vanz].in[2] = flav;
@@ -384,15 +384,15 @@ void Model_sLeptons::c_SSV(Single_Vertex* v,int& vanz)
   //check for summing convention !!!
   //sneutrino - W - slepton
   Flavour flW = Flavour(kf::W);
-  if (flW.ison()) {
+  if (flW.IsOn()) {
       for (short int i=81;i<84;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=71;j<77;j++) {
 	Flavour flav2 =Flavour(kf::code(j));
-	if(flav1.ison() && flav2.ison()){
+	if(flav1.IsOn() && flav2.IsOn()){
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flW;
-	  v[vanz].in[2] = flav2.bar();
+	  v[vanz].in[2] = flav2.Bar();
 	
 	  kcpl0 = -M_I*g2/root2*K_Z_nue(gen_sLep(flav2),i-81)*
 	    K_Z_L(gen_sLep(flav2),j-71);
@@ -454,11 +454,11 @@ inline int Model_sLeptons::gen_sLep(Flavour fl)
 {
   int gen_sL;
 
-  if (fl.kfcode() == 71 || fl.kfcode() == 74)
+  if (fl.Kfcode() == 71 || fl.Kfcode() == 74)
     gen_sL = 0;
-  if (fl.kfcode() == 72 || fl.kfcode() == 75)
+  if (fl.Kfcode() == 72 || fl.Kfcode() == 75)
     gen_sL = 1;
-  if (fl.kfcode() == 73 || fl.kfcode() == 76)
+  if (fl.Kfcode() == 73 || fl.Kfcode() == 76)
     gen_sL = 2;
 
   return gen_sL;

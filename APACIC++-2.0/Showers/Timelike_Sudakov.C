@@ -41,16 +41,16 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):kin(_kin) {
   for (int i=1;i<17;++i) {
     if (i==7) i=11;
     Flavour fl = Flavour(kf::code(i));
-    if (fl.ison()) {
-      if (fl.strong()) {
+    if (fl.IsOn()) {
+      if (fl.Strong()) {
 	Add(new q_qg(fl,tools));
-	Add(new q_qg(fl.bar(),tools));
-	if (fl.PSmass()<100.) Add(new g_qq(fl,tools));
+	Add(new q_qg(fl.Bar(),tools));
+	if (fl.PSMass()<100.) Add(new g_qq(fl,tools));
       }
-      if (!(fl.charge()==0) && (direct_photons)) {
+      if (!(fl.Charge()==0) && (direct_photons)) {
 	Add(new f_fp(fl,tools));
-	Add(new f_fp(fl.bar(),tools));
-	if (fl.PSmass()<100.) Add(new p_ff(fl,tools));
+	Add(new f_fp(fl.Bar(),tools));
+	if (fl.PSMass()<100.) Add(new p_ff(fl,tools));
       }
     };
   }
@@ -66,7 +66,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):kin(_kin) {
 //----------------------------------------------------------------------- 
 
 bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
-  inflav = mother->part->flav(); 
+  inflav = mother->part->Flav(); 
   ta     = mother->t;                  
   wa     = mother->E2;
 
@@ -83,10 +83,10 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
   if ((ta-tend)<rpa.gen.Accu()) {
     msg.Debugging()<<"Timelike_Sudakov::Dice : mother can't branch (ta<t_end) : "
 		   <<ta<<" < "<<tend<<std::endl
-		   <<"      mother = "<<inflav<<", mass = "<<inflav.PSmass()<<", "
+		   <<"      mother = "<<inflav<<", mass = "<<inflav.PSMass()<<", "
 		   <<"status = "<<mother->stat<<std::endl;
     if (mother->prev) {
-      msg.Debugging()<<"      prev = "<<mother->prev->part->flav()  
+      msg.Debugging()<<"      prev = "<<mother->prev->part->Flav()  
 		     <<", stat = "<<mother->prev->stat<<", t = "<<mother->prev->t<<std::endl;
     }
     return 0; 
@@ -96,7 +96,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
 
   while (ta>tend) {
     /*
-    if ((inflav.isquark()) && (mother->tout>t0)) 
+    if ((inflav.IsQuark()) && (mother->tout>t0)) 
       z0 = 0.5*((1. + mother->tout/ta) -
 		(1. - mother->tout/ta)*sqrt(1.-(ta*t0)/sqr(ta-mother->tout)));
     else 
@@ -126,7 +126,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
     if (ta<tend) {
       msg.Debugging()<<"Timelike_Sudakov::No Branch for ("<<mother->kn_no<<"), "<<inflav
 		     <<", set on t="<<mother->tout
-		     <<"  fl="<<mother->part->flav()<<"  mfl="<<mother->part->flav().PSmass()<<std::endl;
+		     <<"  fl="<<mother->part->Flav()<<"  mfl="<<mother->part->Flav().PSMass()<<std::endl;
       
       return 0;
     }
@@ -143,8 +143,8 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
       SelectOne();
       z   = GetZ();
       pt2 = z*(1.-z)*ta;
-      tb  = sqr(GetFlB().PSmass());
-      tc  = sqr(GetFlC().PSmass());
+      tb  = sqr(GetFlB().PSMass());
+      tc  = sqr(GetFlC().PSMass());
       if (pt_scheme == 1) pt2 -= (1.-z)*tb + z*tc;
       
       if (pt2>pt2min) {
@@ -155,7 +155,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
 	  mother->z      = z;
 	  mother->t      = ta;
 	  mother->phi    = phi;
-	  if (inflav.isquark()) mother->maxpt2 = pt2;
+	  if (inflav.IsQuark()) mother->maxpt2 = pt2;
 	  else mother->maxpt2 = pt2max;
 	  return 1;
 	}
@@ -176,7 +176,7 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
 
 void Timelike_Sudakov::ProduceT() {
   if (lastint<0.) ta  = -1.;
-             else ta *= exp( 2.*M_PI*log(Ran.get()) / lastint );
+             else ta *= exp( 2.*M_PI*log(ran.Get()) / lastint );
 }
 
 
@@ -261,17 +261,17 @@ bool Timelike_Sudakov::MassVeto()
   }
 
   double w1 = GetWeight(z,pt2,(mass_scheme==1));
-  if (w1<Ran.get()) {
+  if (w1<ran.Get()) {
     //    cout<<"weight="<<w1<<endl;
     return 1;
   }
 
-  if ((width_scheme > 0) && (sqr(inflav.width()) > 0.)) {
+  if ((width_scheme > 0) && (sqr(inflav.Width()) > 0.)) {
     if (width_scheme==1) {
-      if (pt2<sqr(inflav.width())) return 1;
+      if (pt2<sqr(inflav.Width())) return 1;
     }
     else {
-      if (pt2/(pt2+sqr(inflav.width())) < Ran.get()) return 1;
+      if (pt2/(pt2+sqr(inflav.Width())) < ran.Get()) return 1;
     }
   }
   //  msg.Debugging()<<"            MassVeto"<<std::endl;  
@@ -285,17 +285,17 @@ bool Timelike_Sudakov::CplVeto() {
     return 0;
     break;
   case 2 : 
-    return (GetCoupling(0.25*ta)/GetCoupling() > Ran.get()) ? 0 : 1;   
+    return (GetCoupling(0.25*ta)/GetCoupling() > ran.Get()) ? 0 : 1;   
     break;
   default : 
-    return (GetCoupling(pt2)/GetCoupling() > Ran.get()) ? 0 : 1;   
+    return (GetCoupling(pt2)/GetCoupling() > ran.Get()) ? 0 : 1;   
     break;
   }
 }
 
 bool Timelike_Sudakov::AngleVeto(Knot * mo) {
   msg.Debugging()<<"            In AngleVeto. ("<<ta<<", "<<z<<")  "<<std::endl;
-  if (!inflav.strong()) return 0;
+  if (!inflav.Strong()) return 0;
 
   switch (ordering_scheme) {
   case 0 : return 0;
@@ -312,7 +312,7 @@ bool Timelike_Sudakov::AngleVeto(Knot * mo) {
 
 bool Timelike_Sudakov::MEVeto(Knot * mo) {
   msg.Debugging()<<"            In MEVeto. ("<<ta<<", "<<z<<")  "<<std::endl;
-  if (!inflav.strong()) return 0;
+  if (!inflav.Strong()) return 0;
 
   Knot * gr = mo->prev;
   if (gr->t < 0) return 0;
@@ -322,7 +322,7 @@ bool Timelike_Sudakov::MEVeto(Knot * mo) {
   if ((MEcorr_scheme == 1) && (pt2<mo->maxpt2)) return 0;
 
   // Flavours: ME correction only for q->qg and q->qgamma (has to be done)
-  if (!(inflav.isquark()))                      return 0;
+  if (!(inflav.IsQuark()))                      return 0;
 
   // determine which is the current twig of the tree:
   Knot * twig = mo;
@@ -357,7 +357,7 @@ bool Timelike_Sudakov::MEVeto(Knot * mo) {
   double ds_me = sqr(x1) + sqr(x2);
   double ratio = ds_me/ds_ps;
 
-  return (ratio<Ran.get()) ? 1 : 0;
+  return (ratio<ran.Get()) ? 1 : 0;
 }
 
 
@@ -399,8 +399,8 @@ void Timelike_Sudakov::CheckSplittings() {
 	int masses= data[i].masses;
 	double ta = data[i].ta;
 	double pt2=z*(1.-z)*ta;
-	tb  = sqr(sf->GetFlB().PSmass());
-	tc  = sqr(sf->GetFlC().PSmass());
+	tb  = sqr(sf->GetFlB().PSMass());
+	tc  = sqr(sf->GetFlC().PSMass());
 	//	if (pt_scheme == 1) pt2 -= (1.-z)*tb + z*tc;
         data[i].values[j]=sf->GetWeight(z,pt2,masses);
       }

@@ -79,13 +79,13 @@ namespace APACIC {
       Check individual momenta :
       nan values, negative energies ?
     */
-    bool CheckVector(AMATOOLS::vec4d);
+    bool CheckVector(AMATOOLS::Vec4D);
     /*!
       Boost/Rotate daughters of given knot, according to difference in pold and pnew.
      */
     void BoostDaughters(Knot * ); 
-    void BoostDaughters(AMATOOLS::vec4d pold, AMATOOLS::vec4d pnew, 
-			const AMATOOLS::vec4d & pmom, Knot * mo);
+    void BoostDaughters(AMATOOLS::Vec4D pold, AMATOOLS::Vec4D pnew, 
+			const AMATOOLS::Vec4D & pmom, Knot * mo);
 
   };
 }

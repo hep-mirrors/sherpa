@@ -32,7 +32,7 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
   fermion_hels = 0;
   /*
   for(i=0;i<N;i++){
-    pnum[i]=fl[i].isfermion() ? 2 : pl[i].num;
+    pnum[i]=fl[i].IsFermion() ? 2 : pl[i].num;
     fnsign*=pnum[i];
     if(p_type[i]=='h')fermion_hels=1;
   }
@@ -72,7 +72,7 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
 	for (k=0;k<j;k++)div *= pnum[k];
 	int l = (i/div)%pnum[j];
 	//msg.Debugging()<<div<<","<<l<<";";
-	if (fl[j].isfermion()&&l>0) FSlist[i].s[j] = mt::p_m;
+	if (fl[j].IsFermion()&&l>0) FSlist[i].s[j] = mt::p_m;
 	                       else FSlist[i].s[j] = pl[j].type[l];
 	
 	msg.Debugging()<<FSlist[i].s[j]<<";";

@@ -82,7 +82,7 @@ namespace APACIC {
     /*!
       Returns an azimuthal angle uniformly distributed.
     */
-    void   UniformPhi() { phi =  2.*M_PI*AMATOOLS::Ran.get(); };
+    void   UniformPhi() { phi =  2.*M_PI*AMATOOLS::ran.Get(); };
   public:
     /*! 
       Standard Constructor -
@@ -98,10 +98,10 @@ namespace APACIC {
     bool Dice(Knot * mother,double sprime);
 
     static double Q02(APHYTOOLS::Flavour const & flav) { 
-      return AMATOOLS::sqr(flav.PSmass()); 
+      return AMATOOLS::sqr(flav.PSMass()); 
     }; // !!!
     static double MinE2(APHYTOOLS::Flavour const & flav) { 
-      return AMATOOLS::sqr(flav.PSmass()); 
+      return AMATOOLS::sqr(flav.PSMass()); 
     }; //!!!mass
 
   };

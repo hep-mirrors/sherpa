@@ -33,7 +33,7 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     if ((*blit)->Type()[0]=='H') {
       njet_ini=(*blit)->NOutP();
-      lfl =(*blit)->OutParton(0)->flav();
+      lfl =(*blit)->OutParton(0)->Flav();
       for (int i=0;i<(*blit)->NInP();++i) {
 	pl.push_back((*blit)->InParton(i));
       }
@@ -67,8 +67,8 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
     Event_Obi obs;
     obs.flav     = lfl;  
     obs.jet_ini  = 0;
-    obs.jetrates = new Jetrates(all_obs.jetrates,lfl.name()+std::string("_"));
-    obs.multi    = new Multiplicity(all_obs.multi,lfl.name()+std::string("_"));
+    obs.jetrates = new Jetrates(all_obs.jetrates,lfl.Name()+std::string("_"));
+    obs.multi    = new Multiplicity(all_obs.multi,lfl.Name()+std::string("_"));
     obs.sum      = 0.;
     fl_obs.push_back(obs);
   }
@@ -114,9 +114,9 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
   if (nc==fl_jet_obs.size()) {
     std::string jname;
     MyStrStream sstr;
-    sstr<<"j"<<njet_ini<<"_"<<lfl.name()<<"_";
+    sstr<<"j"<<njet_ini<<"_"<<lfl.Name()<<"_";
     sstr>>jname;
-    cout<<" create "<<njet_ini<<"-jet, "<<lfl.name()<<" channel : "<<jname<<endl;
+    cout<<" create "<<njet_ini<<"-jet, "<<lfl.Name()<<" channel : "<<jname<<endl;
 
     Event_Obi obs;
     obs.flav     = lfl;  
@@ -315,7 +315,7 @@ void Multiplicity::Evaluate(const APHYTOOLS::Parton_List & pl,double value) {
   histo->Insert(pl.size()-2,value);
 }
 
-void  Multiplicity::Evaluate(AMATOOLS::vec4d *,APHYTOOLS::Flavour *,double value) {
+void  Multiplicity::Evaluate(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double value) {
   //  histo->Insert(nout, value);  
 }
 
@@ -329,9 +329,9 @@ void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
       // fill detailed process history:
       int jets=(*bit)->NOutP();
       Flavour flavs[3];
-      flavs[0]=(*bit)->OutParton(0)->flav();
-      if (jets>=3)       flavs[1]=(*bit)->OutParton(2)->flav();
-      if (jets>=5)       flavs[2]=(*bit)->OutParton(4)->flav();
+      flavs[0]=(*bit)->OutParton(0)->Flav();
+      if (jets>=3)       flavs[1]=(*bit)->OutParton(2)->Flav();
+      if (jets>=5)       flavs[2]=(*bit)->OutParton(4)->Flav();
       int nc=all_rates.size();
       for (int i=0;i<nc;++i) {
 	if (all_rates[i].flavs[0]==flavs[0]
@@ -349,15 +349,15 @@ void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
 	me_data.flavs[1] = flavs[1];
 	me_data.flavs[2] = flavs[2];
 	if (jets<=2) {
-	  me_data.name     = flavs[0].name()+name;
+	  me_data.name     = flavs[0].Name()+name;
 	}
 	else if (jets<=4) {
-	  me_data.name     = string(flavs[0].name())
-	                       +string(flavs[1].name())+name;
+	  me_data.name     = string(flavs[0].Name())
+	                       +string(flavs[1].Name())+name;
 	}
 	else {
-	  me_data.name     = string(flavs[0].name())
-	    +string(flavs[1].name())+ string(flavs[2].name())+name;
+	  me_data.name     = string(flavs[0].Name())
+	    +string(flavs[1].Name())+ string(flavs[2].Name())+name;
 	}
 	me_data.histo    = new AMATOOLS::Histogram(type,xmin,xmax,nbins);
 	cout<<" create rate channel :"<<me_data.name<<endl;

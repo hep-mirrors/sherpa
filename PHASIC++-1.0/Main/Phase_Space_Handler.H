@@ -33,7 +33,7 @@ namespace PHASIC {
     double                   E,m1,m2,m12,m22,s,sprime,y;
     double                   sprimeB,yB,sprimeI,yI;
     double                   result1,result2,flux;
-    AMATOOLS::vec4d        * p;
+    AMATOOLS::Vec4D        * p;
     Phase_Space_Integrator * psi;    
     bool MakeBeamChannels();
     bool MakeISRChannels();
@@ -42,13 +42,13 @@ namespace PHASIC {
 		       std::vector<Channel_Info> &,std::vector<Channel_Info> &);
     void DropRedundantChannels();
     void TestIntegration(double);
-    bool Compare(AMATOOLS::vec4d *,AMATOOLS::vec4d *);
-    bool MakeIncoming(AMATOOLS::vec4d *);
-    void Rotate(AMATOOLS::vec4d *);
+    bool Compare(AMATOOLS::Vec4D *,AMATOOLS::Vec4D *);
+    bool MakeIncoming(AMATOOLS::Vec4D *);
+    void Rotate(AMATOOLS::Vec4D *);
 
 
     void Init(APHYTOOLS::Flavour *);
-    bool Check4Momentum(AMATOOLS::vec4d *);
+    bool Check4Momentum(AMATOOLS::Vec4D *);
   public:
     Phase_Space_Handler(AMEGIC::Process_Base *,ISR::ISR_Handler *,BEAM::Beam_Handler *);
     ~Phase_Space_Handler();
@@ -66,11 +66,11 @@ namespace PHASIC {
     bool   SameEvent();
     double WeightedEvent();
     void AddPoint(double);
-    void TestPoint(AMATOOLS::vec4d *);
+    void TestPoint(AMATOOLS::Vec4D *);
 
     // Simple access methods.
 
-    inline AMATOOLS::vec4d *     Point()        { return p; }
+    inline AMATOOLS::Vec4D *     Point()        { return p; }
     inline APHYTOOLS::Flavour *  Flavs()        { return psflavs; }
 
 
@@ -209,7 +209,7 @@ namespace PHASIC {
 //     double                   E,m1,m2,m12,m22,s,sprime,y;
 //     double                   sprimeB,yB,sprimeI,yI;
 //     double                   result1,result2,flux;
-//     AMATOOLS::vec4d        * p;
+//     AMATOOLS::Vec4D        * p;
 //     Phase_Space_Integrator * psi;    
 //     /*!
 //       Method used to analyse the individual (Final-State-) channels and to construct 
@@ -258,12 +258,12 @@ namespace PHASIC {
 //       Compares whether two sets of momenta are identical (up to permutations).
 //       If so a "true" is returned.
 //     */
-//     bool Compare(AMATOOLS::vec4d *,AMATOOLS::vec4d *);
+//     bool Compare(AMATOOLS::Vec4D *,AMATOOLS::Vec4D *);
 //     /*!
 //       Initializes the initial state part of the process:
 //       - defines default (no ISR) initial state vectors.
 //     */
-//     bool MakeIncoming(AMATOOLS::vec4d *);
+//     bool MakeIncoming(AMATOOLS::Vec4D *);
 //     /*!
 //       This method might be used for the usage of the integration with ISR being switched on.
 //       Let us assume, we have, say, p pbar ->2 jets to be integrated. Obviuosly, there are
@@ -274,11 +274,11 @@ namespace PHASIC {
 //       the full by 180 degrees to ensure some non-symmetric cuts. In fact that's why we may need
 //       this method in the future.
 //     */
-//     void Rotate(AMATOOLS::vec4d *);
+//     void Rotate(AMATOOLS::Vec4D *);
 
 
 //     void Init(APHYTOOLS::Flavour *);
-//     bool Check4Momentum(AMATOOLS::vec4d *);
+//     bool Check4Momentum(AMATOOLS::Vec4D *);
 //   public:
 //     /*!
 //       Explicit constructor for the PS_Handler of a Single_Process or
@@ -392,11 +392,11 @@ namespace PHASIC {
 //       to check the amplitude for string and gauge invariance.
 //       /sa Single_Process::Tests
 //     */
-//     void TestPoint(AMATOOLS::vec4d *);
+//     void TestPoint(AMATOOLS::Vec4D *);
 
 //     // Simple access methods.
 
-//     inline AMATOOLS::vec4d *     Point()        { return p; }
+//     inline AMATOOLS::Vec4D *     Point()        { return p; }
 //     inline APHYTOOLS::Flavour *  Flavs()        { return psflavs; }
 
 

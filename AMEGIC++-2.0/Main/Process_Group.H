@@ -52,7 +52,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    int            InitAmplitude(Topology *,AMATOOLS::vec4d *&,std::vector<double> &,
+    int            InitAmplitude(Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
 				 std::vector<Single_Process *> &);
     bool           SetUpIntegrator();
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
@@ -71,9 +71,9 @@ namespace AMEGIC {
     void           RescaleXSec(double);
     bool           PrepareXSecTables();
     void           AddPoint(const double value); 
-    double         Differential(AMATOOLS::vec4d *);
+    double         Differential(AMATOOLS::Vec4D *);
     double         Differential2();
-    double         DSigma(AMATOOLS::vec4d *,bool);
+    double         DSigma(AMATOOLS::Vec4D *,bool);
     double         DSigma2();
     bool           OneEvent();
     bool           SameEvent();
@@ -85,7 +85,7 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public :
     void           PrintDifferential();
-    void           ControlOutput(AMATOOLS::vec4d * moms);
+    void           ControlOutput(AMATOOLS::Vec4D * moms);
     double         DSigma(double, double, double);
 
   };

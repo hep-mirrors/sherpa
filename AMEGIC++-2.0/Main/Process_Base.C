@@ -41,17 +41,17 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   short int i;
 
   for (i=0;i<nin;i++) {
-    _name += string(_flin[i].name());
-    if ((_flin[i].kfcode()==kf::e)   ||
-	(_flin[i].kfcode()==kf::mu)  ||
-	(_flin[i].kfcode()==kf::tau) ||
-	(_flin[i].kfcode()==kf::Hmin)) {
+    _name += string(_flin[i].Name());
+    if ((_flin[i].Kfcode()==kf::e)   ||
+	(_flin[i].Kfcode()==kf::mu)  ||
+	(_flin[i].Kfcode()==kf::tau) ||
+	(_flin[i].Kfcode()==kf::Hmin)) {
       _name.erase(_name.length()-1,1);
-      if (_flin[i].isanti()) _name += string("+");
+      if (_flin[i].IsAnti()) _name += string("+");
                         else _name += string("-");      
     }
     else {
-      if (_flin[i].isanti()) _name += string("b"); 
+      if (_flin[i].IsAnti()) _name += string("b"); 
     }
     // polinfo for fully polarised incommings
     if (_plin[i].p_type=='c' && _plin[i].num==1) {
@@ -69,18 +69,18 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   _name += string("__");
 
   for (i=0;i<nout;i++) {
-    _name += string(_flout[i].name());
-    if (_flout[i].kfcode()==kf::e  ||
-	_flout[i].kfcode()==kf::mu ||
-	_flout[i].kfcode()==kf::tau ||
-	_flout[i].kfcode()==kf::Hmin ||
-	_flout[i].kfcode()==kf::W) {
+    _name += string(_flout[i].Name());
+    if (_flout[i].Kfcode()==kf::e  ||
+	_flout[i].Kfcode()==kf::mu ||
+	_flout[i].Kfcode()==kf::tau ||
+	_flout[i].Kfcode()==kf::Hmin ||
+	_flout[i].Kfcode()==kf::W) {
       _name.erase(_name.length()-1,1);
-      if (_flout[i].isanti()) _name += string("+");
+      if (_flout[i].IsAnti()) _name += string("+");
                          else _name += string("-");      
     }
     else {
-      if (_flout[i].isanti()) _name += string("b"); 
+      if (_flout[i].IsAnti()) _name += string("b"); 
     }
     // perhaps polinfo for in
 
@@ -131,12 +131,12 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
     for (short int i=0;i<n-1;i++) {
       for (short int j=i+1;j<n;j++) {
 	shuffle = 0;
-        if ( (flav[i].isvector()) && !(flav[j].isvector()))      shuffle = 1;
-	else if ( (flav[i].kfcode()) > (flav[j].kfcode()) ) {
-	  if (!( !(flav[i].isvector()) && (flav[j].isvector()))) shuffle = 1;
+        if ( (flav[i].IsVector()) && !(flav[j].IsVector()))      shuffle = 1;
+	else if ( (flav[i].Kfcode()) > (flav[j].Kfcode()) ) {
+	  if (!( !(flav[i].IsVector()) && (flav[j].IsVector()))) shuffle = 1;
 	}
-	else if ( (flav[i].isanti()) && !(flav[j].isanti()) &&
-		  (flav[i].kfcode()  == flav[j].kfcode()) )      shuffle = 1;
+	else if ( (flav[i].IsAnti()) && !(flav[j].IsAnti()) &&
+		  (flav[i].Kfcode()  == flav[j].Kfcode()) )      shuffle = 1;
 	
 	if (shuffle) {
           flhelp  = flav[j];
@@ -164,22 +164,22 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   int    lfin = 0, lfout = 0;  
   double bin  = 0, bout  = 0;
   for (int i=0;i<_nin;i++) {
-    cin   += _in[i].icharge();
-    sin   += _in[i].ispin();
-    bin   += _in[i].baryonnumber();
-    lin   += _in[i].leptonnumber();
-    qin   += _in[i].strongcharge();
-    qfin  += int(pow(-1.,_in[i].isanti())*pow(10.,_in[i].quarkfamily()-1));
-    lfin  += int(pow(-1.,_in[i].isanti())*pow(10.,_in[i].leptonfamily()-1));
+    cin   += _in[i].IntCharge();
+    sin   += _in[i].IntSpin();
+    bin   += _in[i].BaryonNumber();
+    lin   += _in[i].LeptonNumber();
+    qin   += _in[i].StrongCharge();
+    qfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].QuarkFamily()-1));
+    lfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].LeptonFamily()-1));
   }
   for (int i=0;i<_nout;i++) {
-    cout  += _out[i].icharge();
-    sout  += _out[i].ispin();
-    bout  += _out[i].baryonnumber();
-    lout  += _out[i].leptonnumber();
-    qout  += _out[i].strongcharge();
-    qfout += int(pow(-1.,_out[i].isanti())*pow(10.,_out[i].quarkfamily()-1));
-    lfout += int(pow(-1.,_out[i].isanti())*pow(10.,_out[i].leptonfamily()-1));
+    cout  += _out[i].IntCharge();
+    sout  += _out[i].IntSpin();
+    bout  += _out[i].BaryonNumber();
+    lout  += _out[i].LeptonNumber();
+    qout  += _out[i].StrongCharge();
+    qfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].QuarkFamily()-1));
+    lfout += int(pow(-1.,_out[i].IsAnti())*pow(10.,_out[i].LeptonFamily()-1));
   }
   sin = sin%2; sout = sout%2;
   qin = qin%9; qout = qout%9;
@@ -234,7 +234,7 @@ void Process_Base::SetBeam(Beam_Handler * _beam)       { beam    = _beam;   }
 void Process_Base::SetISR(ISR_Handler * _isr)          { isr     = _isr;    }
 void Process_Base::SetCuts(Cut_Data * _cuts)           { cuts    = _cuts;   }
 void Process_Base::SetSelector(Selector_Base * _sel)   { sel     = _sel;    }
-void Process_Base::SetMomenta(AMATOOLS::vec4d * _moms) { moms    = _moms;   }
+void Process_Base::SetMomenta(AMATOOLS::Vec4D * _moms) { moms    = _moms;   }
 void Process_Base::SetNStrong(int _nstrong)            { nstrong = _nstrong; }
 void Process_Base::SetNEWeak(int _neweak)              { neweak  = _neweak; }
 
@@ -266,16 +266,16 @@ void Process_Base::RescaleXSec(double fac) {
 }
 
 
-double Process_Base::Scale(AMATOOLS::vec4d * _p) {
-  if (nin==1) return _p[0].abs2();
+double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
+  if (nin==1) return _p[0].Abs2();
   if (nin!=2) {
     AORGTOOLS::msg.Error()<<"Error in Process_Base::Scale. "
 			  <<"Do not know how to handle more than 2 incoming particles."<<endl;
     abort();
   }
-  double s = (_p[0]+_p[1]).abs2();
-  double t = (_p[0]-_p[2]).abs2();
-  double u = (_p[0]-_p[3]).abs2();
+  double s = (_p[0]+_p[1]).Abs2();
+  double t = (_p[0]-_p[2]).Abs2();
+  double u = (_p[0]-_p[3]).Abs2();
 
   double pt2;
 //    cout<<" scalescheme = "<<scalescheme<<endl;
@@ -325,14 +325,14 @@ int                  Process_Base::Nin()                 { return nin; }
 int                  Process_Base::Nout()                { return nout; }
 int                  Process_Base::Nvec()                { return nvec; }
 Flavour            * Process_Base::Flavs()               { return fl; }
-AMATOOLS::vec4d    * Process_Base::Momenta()             { return moms; }
+AMATOOLS::Vec4D    * Process_Base::Momenta()             { return moms; }
 
 int                  Process_Base::NStrong()             { return nstrong; }
 int                  Process_Base::NEWeak()              { return neweak; }
 
 string               Process_Base::Name()                { return name; }
 string               Process_Base::ResDir()              { return resdir; }
-string               Process_Base::Libname()             { return string("error"); }
+string               Process_Base::LibName()             { return string("error"); }
 bool                 Process_Base::Atoms()               { return atoms; }
 bool                 Process_Base::Tables()              { return tables; }
 

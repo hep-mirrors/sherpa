@@ -17,11 +17,11 @@ void Spectrum_sLeptons::Interface(Isajet* isa)
 
   isa->sLeptons(_ZLep,_mu,_ls,_ks);
   msg.Tracking()<<"ZLep: "<<endl;
-  if (rpa.gen.Tracking()) _ZLep.matrix_out();
+  if (rpa.gen.Tracking()) _ZLep.MatrixOut();
   msg.Tracking()<<"ls: "<<endl;
-  if (rpa.gen.Tracking()) _ls.matrix_out();
+  if (rpa.gen.Tracking()) _ls.MatrixOut();
   msg.Tracking()<<"ks: "<<endl;
-  if (rpa.gen.Tracking()) _ks.matrix_out();
+  if (rpa.gen.Tracking()) _ks.MatrixOut();
   
   msg.Tracking()<<"======================================================"<<endl;
 }
@@ -97,20 +97,20 @@ void Spectrum_sLeptons::Masses_LO()
 
   double evalues[6];
 
-  //M.matrix_out();
+  //M.MatrixOut();
   M.Diagonalize(evalues,_ZLep);
   Flavour flav;    
-  flav = Flavour(kf::sElectronL);flav.set_mass(sqrt(dabs(evalues[0])));
-  flav = Flavour(kf::sElectronR);flav.set_mass(sqrt(dabs(evalues[3])));
-  flav = Flavour(kf::sMuL);flav.set_mass(sqrt(dabs(evalues[1])));
-  flav = Flavour(kf::sMuR);flav.set_mass(sqrt(dabs(evalues[4])));
-  flav = Flavour(kf::sTauL);flav.set_mass(sqrt(dabs(evalues[2])));
-  flav = Flavour(kf::sTauR);flav.set_mass(sqrt(dabs(evalues[5])));
+  flav = Flavour(kf::sElectronL);flav.SetMass(sqrt(dabs(evalues[0])));
+  flav = Flavour(kf::sElectronR);flav.SetMass(sqrt(dabs(evalues[3])));
+  flav = Flavour(kf::sMuL);flav.SetMass(sqrt(dabs(evalues[1])));
+  flav = Flavour(kf::sMuR);flav.SetMass(sqrt(dabs(evalues[4])));
+  flav = Flavour(kf::sTauL);flav.SetMass(sqrt(dabs(evalues[2])));
+  flav = Flavour(kf::sTauR);flav.SetMass(sqrt(dabs(evalues[5])));
 
   msg.Tracking()<<"--------------------------------------------------------------"<<endl;
   msg.Tracking()<<"sLepton masses :"<<endl;
   for (short int i=0;i<6;++i) msg.Tracking()<<"SLepton["<<i<<"] : "<<sqrt(dabs(evalues[i]))<<endl;
-  _ZLep.matrix_out();
+  _ZLep.MatrixOut();
 }
 
 
@@ -144,12 +144,12 @@ void Spectrum_sLeptons::Isajet()
   double double_tag;
 
   Flavour flav;
-  flav = Flavour(kf::sElectronL);flav.set_mass(param[1]->Get_Value(double_tag));
-  flav = Flavour(kf::sElectronR);flav.set_mass(param[4]->Get_Value(double_tag));
-  flav = Flavour(kf::sMuL);flav.set_mass(param[2]->Get_Value(double_tag));
-  flav = Flavour(kf::sMuR);flav.set_mass(param[5]->Get_Value(double_tag));
-  flav = Flavour(kf::sTauL);flav.set_mass(param[3]->Get_Value(double_tag));
-  flav = Flavour(kf::sTauR);flav.set_mass(param[6]->Get_Value(double_tag));
+  flav = Flavour(kf::sElectronL);flav.SetMass(param[1]->Get_Value(double_tag));
+  flav = Flavour(kf::sElectronR);flav.SetMass(param[4]->Get_Value(double_tag));
+  flav = Flavour(kf::sMuL);flav.SetMass(param[2]->Get_Value(double_tag));
+  flav = Flavour(kf::sMuR);flav.SetMass(param[5]->Get_Value(double_tag));
+  flav = Flavour(kf::sTauL);flav.SetMass(param[3]->Get_Value(double_tag));
+  flav = Flavour(kf::sTauR);flav.SetMass(param[6]->Get_Value(double_tag));
 
 
   for (short int i=0;i<6;++i) {
@@ -162,7 +162,7 @@ void Spectrum_sLeptons::Isajet()
   for (short int i=1;i<7;++i) msg.Tracking()<<"SLepton["<<i<<"] : "<<param[i]->Get_Value(double_tag)<<endl;
   msg.Tracking()<<"Mass matrix diagonal ... no slepton mixing !"<<endl;
 
-  _ZLep.matrix_out();
+  _ZLep.MatrixOut();
 }
 */
 

@@ -11,20 +11,20 @@ namespace PHASIC {
     double** rot;
     
     //temporarily
-    void boost(int,AMATOOLS::vec4d,AMATOOLS::vec4d&,AMATOOLS::vec4d&);
-    void rotat(int,AMATOOLS::vec4d&,AMATOOLS::vec4d,double**);
+    void boost(int,AMATOOLS::Vec4D,AMATOOLS::Vec4D&,AMATOOLS::Vec4D&);
+    void rotat(int,AMATOOLS::Vec4D&,AMATOOLS::Vec4D,double**);
     
-    void QcdAntenna(AMATOOLS::vec4d* &,double);
-    void BasicAntenna(AMATOOLS::vec4d,AMATOOLS::vec4d,AMATOOLS::vec4d &,double*,double);
+    void QcdAntenna(AMATOOLS::Vec4D* &,double);
+    void BasicAntenna(AMATOOLS::Vec4D,AMATOOLS::Vec4D,AMATOOLS::Vec4D &,double*,double);
     void PermP(int,int* &);
     void Polytope(int,double*&);
   public:
     Sarge(int,int);
     ~Sarge();
 
-    void GenerateWeight(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);
-    void GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);
-    void GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *,double *);
+    void GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
+    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
+    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
     void CalculateS0(APHYTOOLS::Cut_Data *);
     std::string Name() {return std::string("Sarge");}
     int CountResonances(APHYTOOLS::Flavour*&) { return 0; }

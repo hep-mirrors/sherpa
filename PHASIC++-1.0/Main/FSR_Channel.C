@@ -21,9 +21,9 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl)
   }
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
   rannum = 3;
-  ran    = new double[rannum];
+  rans   = new double[rannum];
 
   s      = smax  = pt2max = sqr(AORGTOOLS::rpa.gen.Ecms());
   pt2min = 0.;
@@ -32,11 +32,11 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl)
   msg.Debugging()<<"Initialize S1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
-void S1Channel::GeneratePoint(AMATOOLS::vec4d * p,double * _ran =0) {
+void S1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
   CE.Isotropic2Momenta(p[0]+p[1],ms[2],ms[3],p[2],p[3],_ran[1],_ran[2]);
 };
 
-void S1Channel::GenerateWeight(AMATOOLS::vec4d * p) {
+void S1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
   weight = 1. / ( CE.Isotropic2Weight(p[2],p[3]) * pow(2.*M_PI,2.*3.-4.) );
 };
 
@@ -48,9 +48,9 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl)
   }
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
   rannum = 3;
-  ran    = new double[rannum];
+  rans   = new double[rannum];
 
   s      = smax  = pt2max = sqr(AORGTOOLS::rpa.gen.Ecms());
   pt2min = 0.;
@@ -59,12 +59,12 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl)
   msg.Debugging()<<"Initialize T1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
-void T1Channel::GeneratePoint(AMATOOLS::vec4d * p,double * _ran =0) {
+void T1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
   CE.TChannelMomenta(p[0],p[1],p[2],p[3],ms[2],ms[3],0.,
 		     0.5,0.,2.,1.,0,_ran[1],_ran[2]);
 };
 
-void T1Channel::GenerateWeight(AMATOOLS::vec4d * p) {
+void T1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
   weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,0.5,0.,2.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 };
 
@@ -76,9 +76,9 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl)
   }
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
   rannum = 3;
-  ran    = new double[rannum];
+  rans   = new double[rannum];
 
   s      = smax  = pt2max = sqr(AORGTOOLS::rpa.gen.Ecms());
   pt2min = 0.;
@@ -87,11 +87,11 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl)
   msg.Debugging()<<"Initialize U1Channel for "<<smin<<" to "<<smax<<endl;
 }
 
-void U1Channel::GeneratePoint(AMATOOLS::vec4d * p,double * _ran =0) {
+void U1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],ms[3],ms[2],0.,
 		     0.5,0.,2.,1.,0,_ran[1],_ran[2]);
 };
 
-void U1Channel::GenerateWeight(AMATOOLS::vec4d * p) {
+void U1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
   weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,0.5,0.,2.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 };

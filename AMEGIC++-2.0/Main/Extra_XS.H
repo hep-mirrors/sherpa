@@ -12,8 +12,8 @@ namespace AMEGIC {
     double Lambda(double,double,double);
 
     double Pqr(double,double);
-    double DiffBhabhaScattering(AMATOOLS::vec4d*);
-    double DiffMollerScattering(AMATOOLS::vec4d*);
+    double DiffBhabhaScattering(AMATOOLS::Vec4D*);
+    double DiffMollerScattering(AMATOOLS::Vec4D*);
     double NeutralinoPairProduction();
     double SelectronPairProduction();
     double CharginoPairProduction();
@@ -28,7 +28,7 @@ namespace AMEGIC {
     double Calculate();
     
     void   InitDiff(int,int,APHYTOOLS::Flavour*,APHYTOOLS::Flavour*);
-    double Differential(AMATOOLS::vec4d*);
+    double Differential(AMATOOLS::Vec4D*);
   };
 }
 #endif

@@ -18,7 +18,7 @@ void Spectrum_sNeutrinos::Interface(Isajet* isa)
   isa->sNeutrino(_Znue);
   
   msg.Tracking()<<"ZsNeutrino: "<<endl;
-  if (rpa.gen.Tracking()) _Znue.matrix_out();
+  if (rpa.gen.Tracking()) _Znue.MatrixOut();
   msg.Tracking()<<"======================================================"<<endl;
 }
 
@@ -61,7 +61,7 @@ void Spectrum_sNeutrinos::Masses_LO()
 
 
   //msg.Tracking()<<"ML - Matrix: "<<endl;
-  //mL2.matrix_out();
+  //mL2.MatrixOut();
  
 
   for (short int i=0;i<3;i++) {
@@ -74,14 +74,14 @@ void Spectrum_sNeutrinos::Masses_LO()
   M.Diagonalize(evalues,_Znue);
 
   Flavour flav;    
-  flav = Flavour(kf::sNu1);flav.set_mass(sqrt(dabs(evalues[0])));
-  flav = Flavour(kf::sNu2);flav.set_mass(sqrt(dabs(evalues[1])));
-  flav = Flavour(kf::sNu3);flav.set_mass(sqrt(dabs(evalues[2])));
+  flav = Flavour(kf::sNu1);flav.SetMass(sqrt(dabs(evalues[0])));
+  flav = Flavour(kf::sNu2);flav.SetMass(sqrt(dabs(evalues[1])));
+  flav = Flavour(kf::sNu3);flav.SetMass(sqrt(dabs(evalues[2])));
 
   msg.Tracking()<<"--------------------------------------------------------------"<<endl;
   msg.Tracking()<<"sNeutrinomasses :"<<endl;
-  msg.Tracking()<<"m_sNu_1 = "<<Flavour(kf::sNu1).mass();
-  msg.Tracking()<<", m_sNu_2 = "<<Flavour(kf::sNu2).mass();
-  msg.Tracking()<<", m_sNu_3 = "<<Flavour(kf::sNu3).mass()<<endl;
-  _Znue.matrix_out();
+  msg.Tracking()<<"m_sNu_1 = "<<Flavour(kf::sNu1).Mass();
+  msg.Tracking()<<", m_sNu_2 = "<<Flavour(kf::sNu2).Mass();
+  msg.Tracking()<<", m_sNu_3 = "<<Flavour(kf::sNu3).Mass()<<endl;
+  _Znue.MatrixOut();
 }

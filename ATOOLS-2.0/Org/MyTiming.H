@@ -1,7 +1,8 @@
-#ifndef MyTiming_h
-#define MyTiming_h
+#ifndef MyTiming_H
+#define MyTiming_H
 #include <sys/times.h>
 #include <time.h>
+
 #ifndef CLK_TCK
 #define CLK_TCK CLOCKS_PER_SEC
 #endif
@@ -17,7 +18,38 @@ namespace AORGTOOLS {
     void Start();
     void Stop();
     void PrintTime();
-    ~MyTiming();
   };
+
+  /*!
+    \file
+    \brief Contains the class AORGTOOLS::MyTiming
+  */
+
+  /*!
+    \class MyTiming
+    \brief Simple class for making time measurements
+  */
+
+  /*!
+    \fn MyTiming::MyTiming()
+    \brief Standard constructor
+  */
+
+  /*!
+    \fn void MyTiming::Start();
+    \brief start watch
+  */
+
+  /*!
+    \fn void MyTiming::Stop();
+    \brief stop watch
+  */
+
+  /*!
+    \fn void MyTiming::PrintTime();
+    \brief print results on screen
+  */
+
+
 }
 #endif

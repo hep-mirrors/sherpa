@@ -17,8 +17,8 @@ std::ostream& operator<<(std::ostream &,AMEGIC::Pol_Info&);
 
 
 std::ostream& operator<<(std::ostream& str,AMEGIC::Pol_Info& ) {
-    str<<"      "<<part->momentum()<<" "<<part->momentum().abs2()
-       <<" colours : ("<<part->flow(1)<<","<<part->flow(2)<<")"<<std::endl;
+    str<<"      "<<part->Momentum()<<" "<<part->Momentum().Abs2()
+       <<" colours : ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")"<<std::endl;
     return str;
 }
 */
@@ -74,14 +74,14 @@ bool Beam_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches,
   bool fit = 1;
   for (int i=0;i<2;i++) {
     if (BeamBase[i]->Type() == string("Laser_Backscattering")) {
-      if (! ( ((_bunches[i] == Flavour(kf::e)) || (_bunches[i] == Flavour(kf::e).bar())) &&
+      if (! ( ((_bunches[i] == Flavour(kf::e)) || (_bunches[i] == Flavour(kf::e).Bar())) &&
 	      (_beams[i] == Flavour(kf::photon))         ) ) {
 	fit = 0;
 	break;
       }
     }
     if (BeamBase[i]->Type() == string("Beam_Strahlung")) {
-      if (! ( ((_bunches[i] == Flavour(kf::e)) || (_bunches[i] == Flavour(kf::e).bar())) &&
+      if (! ( ((_bunches[i] == Flavour(kf::e)) || (_bunches[i] == Flavour(kf::e).Bar())) &&
 	      (_beams[i] == _bunches[i])         ) ) {
 	fit = 0;
 	break;
@@ -93,26 +93,26 @@ bool Beam_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches,
 
 
 void Beam_Handler::SetBeamMasses(Flavour * beams) {
-  mass12      = sqr(beams[0].mass());
-  mass22      = sqr(beams[1].mass());
+  mass12      = sqr(beams[0].Mass());
+  mass22      = sqr(beams[1].Mass());
   double E    = AORGTOOLS::rpa.gen.Ecms();
   double x    = 1./2.+(mass12-mass22)/(2.*E*E);
   double E1   = x*E;
   double E2   = E-E1;
-  fixvecs[0]  = vec4d(E1,0.,0., sqrt(sqr(E1)-mass12));
-  fixvecs[1]  = vec4d(E2,0.,0.,-sqrt(sqr(E1)-mass12));
+  fiXVECs[0]  = Vec4D(E1,0.,0., sqrt(sqr(E1)-mass12));
+  fiXVECs[1]  = Vec4D(E2,0.,0.,-sqrt(sqr(E1)-mass12));
 }
 
 
 
 Beam_Handler::~Beam_Handler() { }
 
-bool Beam_Handler::MakeBeams(vec4d * p,double sprime,double y) 
+bool Beam_Handler::MakeBeams(Vec4D * p,double sprime,double y) 
 {
   if (mode==0) {
     x1   = x2 = 1.;
-    p[0] = fixvecs[0];
-    p[1] = fixvecs[1];
+    p[0] = fiXVECs[0];
+    p[1] = fiXVECs[1];
     return 1;
   }
   else {
@@ -129,17 +129,17 @@ bool Beam_Handler::MakeBeams(vec4d * p,double sprime,double y)
     double E2     = Eprime-E1;
     
     // initial state momenta in CMS frame
-    p[0]          = vec4d(E1,0.,0.,sqrt(sqr(E1)-mass12));
-    p[1]          = vec4d(E2,(-1.)*vec3d(p[0]));
+    p[0]          = Vec4D(E1,0.,0.,sqrt(sqr(E1)-mass12));
+    p[1]          = Vec4D(E2,(-1.)*Vec3D(p[0]));
     E1            = std::exp(y);  
     E2            = std::exp(-y);  
 
     // establish boost
-    CMSBoost = Poincare(vec4d(E1+E2,0.,0.,E1-E2));
+    CMSBoost = Poincare(Vec4D(E1+E2,0.,0.,E1-E2));
     
     // calculate real x1,2
-    vec4d p1 = p[0];
-    vec4d p2 = p[1];
+    Vec4D p1 = p[0];
+    Vec4D p2 = p[1];
     CMSBoost.BoostBack(p1);
     CMSBoost.BoostBack(p2);
     x1       = 2.*p1[0]/E;
@@ -206,10 +206,10 @@ double Beam_Handler::Weight()
    ---------------------------------------------------------------- */
 
 
-void  Beam_Handler::BoostInCMS(vec4d* p,int n) {
+void  Beam_Handler::BoostInCMS(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) CMSBoost.Boost(p[i]);
 }
 
-void  Beam_Handler::BoostInLab(vec4d* p,int n) {
+void  Beam_Handler::BoostInLab(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) CMSBoost.BoostBack(p[i]);
 }

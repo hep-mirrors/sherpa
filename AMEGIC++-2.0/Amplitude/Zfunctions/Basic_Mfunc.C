@@ -14,7 +14,7 @@ Kabbala Basic_Mfunc::M(const int &a)
 
   for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
     p1 = *pit;
-    if (p1->momnum==ps[iabs(a)].numb && (p1->fl).kfcode()==ps[iabs(a)].kfcode) {
+    if (p1->momnum==ps[iabs(a)].numb && (p1->fl).Kfcode()==ps[iabs(a)].kfcode) {
       hit = 1;
       break;
     }
@@ -27,9 +27,9 @@ Kabbala Basic_Mfunc::M(const int &a)
   
   if (p1->arg[0]>99) {
       mass2 = Complex(sqr(AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()))),0);
-      if (p1->fl.width()>0.) 
+      if (p1->fl.Width()>0.) 
 	  mass2 -= Complex(0,AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()))*
-	  p1->fl.width());
+	  p1->fl.Width());
   }
   if (AMATOOLS::IsZero(mass2)) return sgen->Get_Enumber(0.);
 

@@ -12,24 +12,24 @@ namespace AMATOOLS {
   class Matrix {
   protected:
     double** m;
+    void NumRecipesNotation();
+    void AmegicNotation();
+    void Jacobi(double d[], Matrix<_rank>&, int *);  
   public:
     Matrix();
     Matrix(const double ma[_rank][_rank]);
     Matrix(const Matrix<_rank>&);
     ~Matrix();
     Matrix<_rank>& operator=(const Matrix<_rank>&);
-    //vec4d operator*(const vec4d&); 
+    //Vec4D operator*(const Vec4D&); 
     Matrix<_rank> operator*(const double);
     Matrix<_rank> operator*(const Matrix<_rank>&);
     double* operator[](int i) {return m[i];}
     const double* operator[](int i) const {return m[i];}
-    void matrix_out() const;  
-    const int rank() const {return _rank;}
-    void Num_Recipes_Notation();
-    void Amegic_Notation();
+    void MatrixOut() const;  
+    const int Rank() const {return _rank;}
     void Diagonalize(double*,Matrix<_rank>&);
-    void Diagonalize_Sort(double*,Matrix<_rank>&);
-    void jacobi(double d[], Matrix<_rank>&, int *);  
+    void DiagonalizeSort(double*,Matrix<_rank>&);
     Matrix<_rank> Dagger();
   };
 
@@ -59,8 +59,8 @@ namespace AMATOOLS {
     return out;
   }
 
-  inline vec4d operator*(const Matrix<4>& a,const vec4d& b) {
-    vec4d out;
+  inline Vec4D operator*(const Matrix<4>& a,const Vec4D& b) {
+    Vec4D out;
 
     for(short int i=0; i<4; i++) {
       out[i] = 0.;
@@ -69,8 +69,8 @@ namespace AMATOOLS {
     return out;
   }
 
-  inline vec4d operator*(const vec4d& a,const Matrix<4>& b) {
-    vec4d out;
+  inline Vec4D operator*(const Vec4D& a,const Matrix<4>& b) {
+    Vec4D out;
 
     for(short int i=0; i<4; i++) {
       out[i] = 0.;
@@ -79,6 +79,128 @@ namespace AMATOOLS {
     return out;
   }
 
+
+  /*!
+    \file 
+    \brief contains class AMATOOLS::Matrix
+  */
+
+  /*!
+    \class Matrix
+    \brief is a template for a \f$n\times n\f$ matrix and some operations on it
+
+    This matrix template can be used to represent any (real) \f$n\times n\f$ 
+    (i.e. quadratic) matrix. 
+    
+    The following operations are provided:
+     - Multiplication with a scalar
+     - Multiplication with another matrix of same rank
+     - Transpose of a matrix
+     - Diagonalization of a matrix
+     - Diagonalization with elements sorted
+     .
+     For \f$4\times 4\f$ matrices there is the
+     - Mulitplication with a 4-vector (Vec4D)
+     .
+     also implemented.
+  */
+
+  /*!
+    \fn void Matrix::NumRecipesNotation();
+    \brief changes access mode to matrix
+  */
+
+  /*!
+    \fn void Matrix::AmegicNotation();
+    \brief changes access mode to matrix
+  */
+
+  /*!
+    \fn void Matrix::Jacobi(double d[], Matrix<_rank>&, int *);  
+    \brief uses Jacobi method to obtain eigenvalues and eigenvectors for a matrix
+  */
+
+  /*!
+    \fn Matrix::Matrix();
+    \brief Default constructor, initializes a matrix filed with zeros
+  */
+
+  /*!
+    \fn Matrix::Matrix(const double ma[_rank][_rank]);
+    \brief Special constructor, initializes a matrix with a given C array
+  */
+
+  /*!
+    \fn Matrix::Matrix(const Matrix<_rank>&);
+    \brief Copy constructor
+  */
+
+  /*!
+    \fn Matrix::~Matrix();
+    \brief Destructor
+  */
+
+  /*!
+    \fn Matrix<_rank>& Matrix::operator=(const Matrix<_rank>&);
+    \brief Assignment operator
+  */
+
+  /*!
+    \fn Matrix<_rank> Matrix::operator*(const double);
+    \brief implements the multiplication with a scalar
+  */
+
+  /*!
+    \fn Matrix<_rank> Matrix::operator*(const Matrix<_rank>&);
+    \brief implements the multiplication with a matrix of same rank
+  */
+
+  /*!
+    \fn double* Matrix::operator[](int i) {return m[i];}
+    \brief provides write access matrix via m[i][j]
+  */
+
+  /*!
+    \fn const double* Matrix::operator[](int i) const {return m[i];}
+    \brief provides read only acces to a constant matrix via m[i][j]
+  */
+
+  /*!
+    \fn void Matrix::MatrixOut() const;  
+    \brief prints a matrix on screen
+  */
+
+  /*!
+    \fn const int Matrix::Rank() const {return _rank;}
+    \brief returns the rank of the matrix
+  */
+
+  /*!
+    \fn void Matrix::Diagonalize(double*,Matrix<_rank>&);
+    \brief diagonizes the matrix
+  */
+
+  /*!
+    \fn void Matrix::DiagonalizeSort(double*,Matrix<_rank>&);
+    \brief diagonizes the matrix (eigenvalues are sorted)
+  */
+
+  /*!
+    \fn Matrix<_rank> Matrix::Dagger();
+    \brief transposes the matrix
+  */
+
+  // other methods
+
+  /*!
+    \fn inline Vec4D operator*(const Matrix<4>& a,const Vec4D& b)
+    \brief multiplication of a \f$4\times 4\f$ matrix with a 4-vector
+  */
+  
+  /*!
+    \fn inline Vec4D operator*(const Vec4D& a,const Matrix<4>& b)
+    \brief multiplication of a 4-vector with a \f$4\times 4\f$ matrix
+  */
 }
 
 #endif

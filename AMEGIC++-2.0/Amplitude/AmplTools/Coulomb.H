@@ -13,7 +13,7 @@ class Coulomb {
   void Build_Matrix();
 public:
   Coulomb(Single_Amplitude*);
-  void Calculate(int*,AMATOOLS::vec4d*);
+  void Calculate(int*,AMATOOLS::Vec4D*);
   inline double Factor(int i,int j) {return 1.+fcoul*COULM[i][j];}
 };
 }

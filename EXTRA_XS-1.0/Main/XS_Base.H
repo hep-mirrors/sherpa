@@ -28,6 +28,7 @@ namespace EXTRAXS {
     std::string            name;
 
     double                 s, t, u;
+    double                 scale;
 
     int                 ** colours;
 
@@ -45,7 +46,7 @@ namespace EXTRAXS {
 
     virtual double operator()(double,double,double);
 
-    virtual bool SetColours(AMATOOLS::vec4d *);
+    virtual bool SetColours(AMATOOLS::Vec4D *);
     virtual bool SetColours(double, double, double);
 
     virtual XS_Base * Selected();
@@ -58,6 +59,7 @@ namespace EXTRAXS {
     std::string          Name();
     APHYTOOLS::Flavour * Flavs();
     int               ** Colours();
+    double               Scale();
 
     virtual double KFactor(double _scale) { return 1; }
   };
@@ -68,6 +70,8 @@ namespace EXTRAXS {
   inline std::string            XS_Base::Name()    { return name; }
   inline APHYTOOLS::Flavour   * XS_Base::Flavs()   { return fl; }
   inline int                 ** XS_Base::Colours() { return colours; }
+  inline double                 XS_Base::Scale()   { return scale; }
+
 }
 
 #endif

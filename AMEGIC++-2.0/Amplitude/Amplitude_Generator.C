@@ -37,7 +37,7 @@ void Amplitude_Generator::Set_End(Point* p,int* &perm,int& pnum)
     p->number = *perm;
     p->fl = fl[*perm];
     p->b  = b[*perm];
-    if (p->fl.isboson()) {
+    if (p->fl.IsBoson()) {
       p->Lorentz->type = lf::Pol;
       p->Lorentz->SetParticleArg(0);
     }
@@ -117,28 +117,28 @@ int Amplitude_Generator::Check_End(Point* p,Flavour infl,Vertex* v)
 	flav[2] = p->right->fl;
 
 	if (infl.Majorana()) {
-	  if (p->left->fl.isfermion()) {
-	    if (p->b*p->left->b==1) flav[1] = flav[1].bar(); 
-	    if (p->right->b == -1)  flav[2] = flav[2].bar();
+	  if (p->left->fl.IsFermion()) {
+	    if (p->b*p->left->b==1) flav[1] = flav[1].Bar(); 
+	    if (p->right->b == -1)  flav[2] = flav[2].Bar();
 	  }
 	  else {
-	    if (p->b*p->right->b==1) flav[2] = flav[2].bar(); 
-	    if (p->left->b == -1)    flav[1] = flav[1].bar();
+	    if (p->b*p->right->b==1) flav[2] = flav[2].Bar(); 
+	    if (p->left->b == -1)    flav[1] = flav[1].Bar();
 	  }	  
 	}
 	else {
-	  if (infl.isboson()) {
-	    if (p->left->b == -1) flav[1] = flav[1].bar();
-	    if (p->right->b == -1) flav[2] = flav[2].bar();
+	  if (infl.IsBoson()) {
+	    if (p->left->b == -1) flav[1] = flav[1].Bar();
+	    if (p->right->b == -1) flav[2] = flav[2].Bar();
 	  }
 	  else {
-	    if (infl.isanti()) {
-	      if (p->b*p->left->b==1) flav[1] = flav[1].bar(); 
-	      if (p->right->b == -1)  flav[2] = flav[2].bar();
+	    if (infl.IsAnti()) {
+	      if (p->b*p->left->b==1) flav[1] = flav[1].Bar(); 
+	      if (p->right->b == -1)  flav[2] = flav[2].Bar();
 	    }
 	    else {
-	      if (p->b*p->right->b==1) flav[2] = flav[2].bar(); 
-	      if (p->left->b == -1)    flav[1] = flav[1].bar();
+	      if (p->b*p->right->b==1) flav[2] = flav[2].Bar(); 
+	      if (p->left->b == -1)    flav[1] = flav[1].Bar();
 	    }
 	  }
 	}
@@ -205,32 +205,32 @@ void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,i
 
 	  if (flav[0].Majorana()) {
 	    if (p->left->fl != Flavour(kf::none)) {
-	      if (p->left->fl.isfermion()) {
-		if (p->b*p->left->b == 1)  flav[1] = flav[1].bar();
+	      if (p->left->fl.IsFermion()) {
+		if (p->b*p->left->b == 1)  flav[1] = flav[1].Bar();
 	      }
 	    }
 	    if (p->right->fl != Flavour(kf::none)) {
-	      if (p->right->fl.isfermion()) {
-		if (p->b*p->right->b == 1)  flav[2] = flav[2].bar();
+	      if (p->right->fl.IsFermion()) {
+		if (p->b*p->right->b == 1)  flav[2] = flav[2].Bar();
 	      }
 	    }
 	  }
 	  else {
-	    if (flav[0].isboson()) {
-	      if (p->left->b   == -1) flav[1] = flav[1].bar();
-	      if (p->right->b  == -1) flav[2] = flav[2].bar();
+	    if (flav[0].IsBoson()) {
+	      if (p->left->b   == -1) flav[1] = flav[1].Bar();
+	      if (p->right->b  == -1) flav[2] = flav[2].Bar();
 	      if (p->left->fl  == Flavour(kf::none)) p->left->b  = -1;
 	      if (p->right->fl == Flavour(kf::none)) p->right->b = -1;
 	    }
 	    else {
-	      if (flav[0].isanti()) {
-		if (p->b*p->left->b == 1)  flav[1] = flav[1].bar();
-		if (p->right->b     ==-1)  flav[2] = flav[2].bar();
+	      if (flav[0].IsAnti()) {
+		if (p->b*p->left->b == 1)  flav[1] = flav[1].Bar();
+		if (p->right->b     ==-1)  flav[2] = flav[2].Bar();
 		if (p->left->fl     == Flavour(kf::none)) p->left->b = p->b;
 	      }
 	      else {
-		if (p->b*p->right->b == 1) flav[2] = flav[2].bar();
-		if (p->left->b       ==-1) flav[1] = flav[1].bar();
+		if (p->b*p->right->b == 1) flav[2] = flav[2].Bar();
+		if (p->left->b       ==-1) flav[1] = flav[1].Bar();
 		if (p->right->fl     == Flavour(kf::none)) p->right->b = p->b;
 	      }
 	    }
@@ -238,8 +238,8 @@ void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,i
 	  sw1 = 0;
 	  if (Match_Vertex((*v)[i],flav,cpl)) {
 	    if (flav[0].Majorana()) {    
-	      if (flav[1].isfermion() && p->left->b==0)  p->left->b  = p->b;
-	      if (flav[2].isfermion() && p->right->b==0) p->right->b = p->b;
+	      if (flav[1].IsFermion() && p->left->b==0)  p->left->b  = p->b;
+	      if (flav[2].IsFermion() && p->right->b==0) p->right->b = p->b;
 	    }
 	    sw1 = Check_End(p->left,flav[1],v);	    
 	    if (sw1) {
@@ -283,7 +283,7 @@ void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,i
 	  AORGTOOLS::rpa.me.Model()==AORGTOOLS::Model_Type::pure_QCD) {
 	sw1 = 0;
 	for (j=0;j<dep;j++) {
-	  if (((prea[i].p[j].fl).isboson()) && 
+	  if (((prea[i].p[j].fl).IsBoson()) && 
 	      (prea[i].p[j].fl!=Flavour(kf::gluon))) sw1++;
 	}
 	if (AORGTOOLS::rpa.me.Model()==AORGTOOLS::Model_Type::pure_QCD) {
@@ -362,7 +362,7 @@ void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,i
       if (sw1) {
 	short int k,l;
 	for (k=0;k<dep;k++) {
-	  if ((prea[i].p[k].number>99) && ((prea[i].p[k].fl).isboson())) 
+	  if ((prea[i].p[k].number>99) && ((prea[i].p[k].fl).IsBoson())) 
 	    prea[i].p[k].number += 100;
 	}
 	gra = new Single_Amplitude(prea[i].p,b,dep,N,top,BS,fl,shand);
@@ -726,10 +726,10 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
       
       test = *((*v))(i);
       
-      if (in[0]) test.in[0] = test.in[0].bar();
-      if (in[1]) test.in[1] = test.in[1].bar();
-      if (in[2]) test.in[3] = test.in[3].bar();
-      if (in[3]) test.in[2] = test.in[2].bar();
+      if (in[0]) test.in[0] = test.in[0].Bar();
+      if (in[1]) test.in[1] = test.in[1].Bar();
+      if (in[2]) test.in[3] = test.in[3].Bar();
+      if (in[3]) test.in[2] = test.in[2].Bar();
 
       if (flav[0]==test.in[0] && 
 	  flav[1]==test.in[1] &&
@@ -931,24 +931,24 @@ Single_Amplitude* Amplitude_Generator::Matching()
     if (sw1) count++;
 
     if (sw1) { 
-      if (fl[0].isquark() && !fl[0].isanti()) {
-	if (!(fl[perm[N-1]].isquark() && 
-	      (b[perm[N-1]]==-1 && (fl[perm[N-1]].isanti() || fl[perm[N-1]].Majorana())) ||
-	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].isanti()) || fl[perm[N-1]].Majorana())) ))  sw1 = 0;
+      if (fl[0].IsQuark() && !fl[0].IsAnti()) {
+	if (!(fl[perm[N-1]].IsQuark() && 
+	      (b[perm[N-1]]==-1 && (fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana())) ||
+	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) ))  sw1 = 0;
       }
-      if (fl[0].isquark() && fl[0].isanti()) {
-	if (!(fl[perm[1]].isquark() && 
+      if (fl[0].IsQuark() && fl[0].IsAnti()) {
+	if (!(fl[perm[1]].IsQuark() && 
 	      (b[perm[1]]==-1 && 
-	       (!fl[perm[1]].isanti() || fl[perm[1]].Majorana())) ||
+	       (!fl[perm[1]].IsAnti() || fl[perm[1]].Majorana())) ||
 	      (b[perm[1]]==1 &&  
-	       ((fl[perm[1]].isanti()) || fl[perm[1]].Majorana())) ))  sw1 = 0;
+	       ((fl[perm[1]].IsAnti()) || fl[perm[1]].Majorana())) ))  sw1 = 0;
       }
       //Anti-Leptons too!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      if (fl[0].islepton()) {
-	if (!(fl[perm[N-1]].islepton() //|| fl[perm[N-1]].isslepton() 
+      if (fl[0].IsLepton()) {
+	if (!(fl[perm[N-1]].IsLepton() //|| fl[perm[N-1]].IsSlepton() 
 	      && 
-	      (b[perm[N-1]]==-1 && (fl[perm[N-1]].isanti() || fl[perm[N-1]].Majorana())) ||
-	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].isanti()) || fl[perm[N-1]].Majorana())) )) 
+	      (b[perm[N-1]]==-1 && (fl[perm[N-1]].IsAnti() || fl[perm[N-1]].Majorana())) ||
+	      (b[perm[N-1]]==1  && (!(fl[perm[N-1]].IsAnti()) || fl[perm[N-1]].Majorana())) )) 
 	  sw1 = 0;
       }
       if (fl[0]==Flavour(kf::photon)) {
@@ -961,8 +961,8 @@ Single_Amplitude* Amplitude_Generator::Matching()
       chsum=neusum=qsum=l1sum=l2sum=l3sum=0;
       for (j=0;j<N-1;j++) {
 	/*
-	if (fl[perm[j]].ischargino()) {
-	  if (fl[perm[j]].isanti()) {
+	if (fl[perm[j]].IsChargino()) {
+	  if (fl[perm[j]].IsAnti()) {
 	    if (b[perm[j]]==1) chsum--;
 	                  else chsum++;
 	  }
@@ -970,25 +970,25 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	    if (b[perm[j]]==1) chsum++;
 	                  else chsum--;
 	  }
-	  if (!fl[0].isanti()) {
-	    if ( b[perm[N-1]]==-1 && fl[perm[N-1]].isanti() && chsum>0 ) 
+	  if (!fl[0].IsAnti()) {
+	    if ( b[perm[N-1]]==-1 && fl[perm[N-1]].IsAnti() && chsum>0 ) 
 	      {sw1=0;break;} 
-	    if ( b[perm[N-1]]==1 && !(fl[perm[N-1]].isanti()) && chsum>0 )
+	    if ( b[perm[N-1]]==1 && !(fl[perm[N-1]].IsAnti()) && chsum>0 )
 	      {sw1=0;break;} 
 	  }
 	  else {
-	    if ( b[perm[1]]==-1 && fl[perm[1]].isanti() && chsum<0 ) 
+	    if ( b[perm[1]]==-1 && fl[perm[1]].IsAnti() && chsum<0 ) 
 	      {sw1=0;break;}
-	    if ( b[perm[1]]==1 && !(fl[perm[1]].isanti()) && chsum<0 )
+	    if ( b[perm[1]]==1 && !(fl[perm[1]].IsAnti()) && chsum<0 )
 	      {sw1=0;break;}
 	  }
 	}
 	*/
-	if (fl[perm[j]].isneutralino()) {
+	if (fl[perm[j]].IsNeutralino()) {
 	  // no rules!!!!
 	}
-	if (fl[perm[j]].isquark()) {
-	  if (fl[perm[j]].isanti()) {
+	if (fl[perm[j]].IsQuark()) {
+	  if (fl[perm[j]].IsAnti()) {
 	    if (b[perm[j]]==1) qsum--;
 	    else qsum++;
 	  }
@@ -996,27 +996,27 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	    if (b[perm[j]]==1) qsum++;
 	    else qsum--;
 	  }
-	  if (!fl[0].isanti()) {
-	    if ( b[perm[N-1]]==-1 && fl[perm[N-1]].isanti() && qsum>0 ) 
+	  if (!fl[0].IsAnti()) {
+	    if ( b[perm[N-1]]==-1 && fl[perm[N-1]].IsAnti() && qsum>0 ) 
 	      {sw1=0;break;} // s-channel
-	    if ( b[perm[N-1]]==1 && !(fl[perm[N-1]].isanti()) && qsum>0 )
+	    if ( b[perm[N-1]]==1 && !(fl[perm[N-1]].IsAnti()) && qsum>0 )
 	      {sw1=0;break;} // t-channel,
 	  }
 	  else {
-	    if ( b[perm[1]]==-1 && fl[perm[1]].isanti() && qsum<0 ) 
+	    if ( b[perm[1]]==-1 && fl[perm[1]].IsAnti() && qsum<0 ) 
 	      {sw1=0;break;} // s-channel
-	    if ( b[perm[1]]==1 && !(fl[perm[1]].isanti()) && qsum<0 )
+	    if ( b[perm[1]]==1 && !(fl[perm[1]].IsAnti()) && qsum<0 )
 	      {sw1=0;break;} // t-channel,	    
 	  }
 	}
-	if (fl[perm[j]].islepton()) {
+	if (fl[perm[j]].IsLepton()) {
 	  if ( (fl[perm[j]]==Flavour(kf::e)) || 
 	       (fl[perm[j]]==Flavour(kf::nue)) ) {
 	    if (b[perm[j]]==1) l1sum++;
 	    else l1sum--;
 	  }
-	  if ( (fl[perm[j]]==Flavour(kf::e).bar()) || 
-	       (fl[perm[j]]==Flavour(kf::nue).bar()) ) {
+	  if ( (fl[perm[j]]==Flavour(kf::e).Bar()) || 
+	       (fl[perm[j]]==Flavour(kf::nue).Bar()) ) {
 	    if (b[perm[j]]==1) l1sum--;
 	    else l1sum++;
 	  }
@@ -1025,8 +1025,8 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	    if (b[perm[j]]==1) l2sum++;
 	    else l2sum--;
 	  }
-	  if ( (fl[perm[j]]==Flavour(kf::mu).bar()) || 
-	       (fl[perm[j]]==Flavour(kf::numu).bar()) )  {
+	  if ( (fl[perm[j]]==Flavour(kf::mu).Bar()) || 
+	       (fl[perm[j]]==Flavour(kf::numu).Bar()) )  {
 	    if (b[perm[j]]==1) l2sum--;
 	    else l2sum++;
 	  }
@@ -1035,15 +1035,15 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	    if (b[perm[j]]==1) l3sum++;
 	    else l3sum--;
 	  }
-	  if ( (fl[perm[j]]==Flavour(kf::tau).bar()) || 
-	       (fl[perm[j]]==Flavour(kf::nutau).bar()) )  {
+	  if ( (fl[perm[j]]==Flavour(kf::tau).Bar()) || 
+	       (fl[perm[j]]==Flavour(kf::nutau).Bar()) )  {
 	    if (b[perm[j]]==1) l3sum--;
 	    else l3sum++;
 	  }
 	}
-	if ( (b[perm[N-1]]==-1) && (fl[perm[N-1]].isanti()) && 
+	if ( (b[perm[N-1]]==-1) && (fl[perm[N-1]].IsAnti()) && 
 	     ( (l1sum>0) || (l2sum>0) || (l3sum>0))  ) {sw1=0;break;} // s-channel, e+e-.
-	if ( (b[perm[N-1]]==1) && !(fl[perm[N-1]].isanti()) &&
+	if ( (b[perm[N-1]]==1) && !(fl[perm[N-1]].IsAnti()) &&
 	     ( (l1sum>0) || (l2sum>0) || (l3sum>0)) )  {sw1=0;break;} // t-channel, e+e-.
       }
     }

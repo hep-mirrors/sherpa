@@ -32,7 +32,7 @@ namespace AMEGIC {
     int                              nvec,   nin,    nout;
     APHYTOOLS::Flavour             * fl,   * flin, * flout;
     AMEGIC::Pol_Info               * pl,   * plin, * plout;
-    AMATOOLS::vec4d                * moms;
+    AMATOOLS::Vec4D                * moms;
     bool                             atoms, analyse, tables;
     long int                         n;
     double                           totalxs, totalerr, totalsum, totalsumsqr, max, rfactor;
@@ -71,7 +71,7 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     Process_Base(): rfactor(1.) {};
-    virtual int    InitAmplitude(AMEGIC::Topology *,AMATOOLS::vec4d *&,std::vector<double> &,
+    virtual int    InitAmplitude(AMEGIC::Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
 				 std::vector<AMEGIC::Single_Process *> &)            =0;
     virtual void   InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>) =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
@@ -102,7 +102,7 @@ namespace AMEGIC {
     virtual void             SetISR(ISR::ISR_Handler *);
     virtual void             SetCuts(APHYTOOLS::Cut_Data *);
     virtual void             SetSelector(APHYTOOLS::Selector_Base *);
-    virtual void             SetMomenta(AMATOOLS::vec4d *);
+    virtual void             SetMomenta(AMATOOLS::Vec4D *);
 
     virtual void             SetNStrong(int);
     virtual void             SetNEWeak(int);
@@ -123,13 +123,13 @@ namespace AMEGIC {
     virtual void   RescaleXSec(double);
     virtual bool   PrepareXSecTables()                                             =0;
     virtual void   AddPoint(const double value)                                    =0;
-    virtual double Differential(AMATOOLS::vec4d *)                                 =0;
+    virtual double Differential(AMATOOLS::Vec4D *)                                 =0;
     virtual double Differential2()                                                 =0;
-    virtual double DSigma(AMATOOLS::vec4d *,bool)                                  =0;
+    virtual double DSigma(AMATOOLS::Vec4D *,bool)                                  =0;
     //    virtual double DSigma(double, double, double)                                  =0;
     virtual double DSigma2()                                                       =0;
-    virtual double operator()(AMATOOLS::vec4d *) {}
-    virtual double Scale(AMATOOLS::vec4d *);
+    virtual double operator()(AMATOOLS::Vec4D *) {}
+    virtual double Scale(AMATOOLS::Vec4D *);
     virtual double Scale();
     virtual bool   OneEvent()                                                      =0;
     virtual bool   SameEvent()                                                     =0;
@@ -146,14 +146,14 @@ namespace AMEGIC {
     virtual int                             Nout();
     virtual int                             Nvec();
     virtual APHYTOOLS::Flavour            * Flavs();
-    virtual AMATOOLS::vec4d               * Momenta();
+    virtual AMATOOLS::Vec4D               * Momenta();
 
     virtual int                             NStrong();
     virtual int                             NEWeak();
 
     virtual std::string                     Name();
     virtual std::string                     ResDir();
-    virtual std::string                     Libname();
+    virtual std::string                     LibName();
     virtual bool                            Atoms();
     virtual bool                            Tables();
 
@@ -200,7 +200,7 @@ namespace AMEGIC {
 
     // for testing purposes only ...
 
-    virtual int  InitAllProcesses(Topology *,AMATOOLS::vec4d *&,
+    virtual int  InitAllProcesses(Topology *,AMATOOLS::Vec4D *&,
 		std::vector<double> &,std::vector<Single_Process *> &) { return 0; }
   };
 }

@@ -17,9 +17,9 @@ void Spectrum_Charginos::Interface(Isajet* isa)
   isa->Chargino(_Zplus,_Zminus);
 
   msg.Tracking()<<"Zplus: "<<endl;
-  if (rpa.gen.Tracking()) _Zplus.matrix_out();
+  if (rpa.gen.Tracking()) _Zplus.MatrixOut();
   msg.Tracking()<<"Zminus: "<<endl;
-  if (rpa.gen.Tracking()) _Zminus.matrix_out();
+  if (rpa.gen.Tracking()) _Zminus.MatrixOut();
   msg.Tracking()<<"======================================================"<<endl;
 }
 
@@ -55,10 +55,10 @@ void Spectrum_Charginos::Masses_LO()
   double evalues[2];
   
   Matrix<2> MDM = M.Dagger()*M;
-  MDM.Diagonalize_Sort(evalues,_Zplus);
+  MDM.DiagonalizeSort(evalues,_Zplus);
 
   Matrix<2> MMD = M*M.Dagger();
-  MMD.Diagonalize_Sort(evalues,_Zminus);
+  MMD.DiagonalizeSort(evalues,_Zminus);
 
   /*
   Matrix<2> Dummy;
@@ -79,22 +79,22 @@ void Spectrum_Charginos::Masses_LO()
   evalues[1] = Dummy[1][1];
 
   msg.Tracking()<<"Zplus: "<<endl;
-  _Zplus.matrix_out();
+  _Zplus.MatrixOut();
   msg.Tracking()<<"Zminus: "<<endl;
-  _Zminus.matrix_out();
+  _Zminus.MatrixOut();
   
   Flavour flav;
-  flav = Flavour(kf::Chargino1);flav.set_mass(dabs(evalues[0]));
-  if (evalues[0]<0) flav.set_mass_sign(-1);
-  flav = Flavour(kf::Chargino2);flav.set_mass(dabs(evalues[1]));
-  if (evalues[1]<0) flav.set_mass_sign(-1);
+  flav = Flavour(kf::Chargino1);flav.SetMass(dabs(evalues[0]));
+  if (evalues[0]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::Chargino2);flav.SetMass(dabs(evalues[1]));
+  if (evalues[1]<0) flav.SetMassSign(-1);
   
   msg.Tracking()<<"--------------------------------------------------------------"<<endl;
   msg.Tracking()<<"Charginomasses :"<<endl;
-  msg.Tracking()<<"m_Chi_1 = "<<Flavour(kf::Chargino1).mass();
-  msg.Tracking()<<" Sign: "<<Flavour(kf::Chargino1).get_mass_sign();
-  msg.Tracking()<<", m_Chi_2 = "<<Flavour(kf::Chargino2).mass();
-  msg.Tracking()<<" Sign: "<<Flavour(kf::Chargino2).get_mass_sign()<<endl;
+  msg.Tracking()<<"m_Chi_1 = "<<Flavour(kf::Chargino1).Mass();
+  msg.Tracking()<<" Sign: "<<Flavour(kf::Chargino1).MassSign();
+  msg.Tracking()<<", m_Chi_2 = "<<Flavour(kf::Chargino2).Mass();
+  msg.Tracking()<<" Sign: "<<Flavour(kf::Chargino2).MassSign()<<endl;
 }
 
 /*
@@ -128,8 +128,8 @@ void Spectrum_Charginos::Isajet()
   double double_tag;
 
   Flavour flav;
-  flav = Flavour(kf::Chargino1);flav.set_mass(param[1]->Get_Value(double_tag));
-  flav = Flavour(kf::Chargino2);flav.set_mass(param[2]->Get_Value(double_tag));
+  flav = Flavour(kf::Chargino1);flav.SetMass(param[1]->Get_Value(double_tag));
+  flav = Flavour(kf::Chargino2);flav.SetMass(param[2]->Get_Value(double_tag));
 
 
   double gammaL = param[3]->Get_Value(double_tag); 
@@ -176,12 +176,12 @@ void Spectrum_Charginos::Isajet()
   _Zplus[1][0] = -ThetaY*cos(gammaR)*pow(-1,ThetaM);
   _Zplus[1][1] = ThetaY*sin(gammaR)*pow(-1,ThetaP);  
 
-  _Zminus.matrix_out();
-  _Zplus.matrix_out();
+  _Zminus.MatrixOut();
+  _Zplus.MatrixOut();
   msg.Tracking()<<"--------------------------------------------------------------"<<endl;
   msg.Tracking()<<"Charginomasses (IsaJet) :"<<endl;
-  msg.Tracking()<<"m_Chi_1 = "<<Flavour(kf::Chargino1).mass();
-  msg.Tracking()<<", m_Chi_2 = "<<Flavour(kf::Chargino2).mass()<<endl;
+  msg.Tracking()<<"m_Chi_1 = "<<Flavour(kf::Chargino1).Mass();
+  msg.Tracking()<<", m_Chi_2 = "<<Flavour(kf::Chargino2).Mass()<<endl;
 }
 
 

@@ -24,19 +24,19 @@ namespace PHASIC {
       points, this constant is corrected via MassiveWeight.
       /sa MassiveWeight
     */
-    void GenerateWeight(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);  
+    void GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);  
     /*!
       To generate a phase space point according to a uniform distribution.
       In case massive vectors are needed this point gets modified by 
       MassivePoint.
       /sa MassivePoint
     */
-    void GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);
+    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
     /*!
       This method is only a dummy method meant to comply with the multi-channel.
       In fact it calls the GeneratePoint method without random numbers.
     */
-    void GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *,double *);
+    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
     /*!
       To generate a massive weight. The idea is to invert the generation of
       massive vectors, i.e. we start with massive vectors and force them
@@ -44,7 +44,7 @@ namespace PHASIC {
       factors, such that both four momentum conservation and mass shell 
       conditions are fulfilled.
     */
-    void MassiveWeight(AMATOOLS::vec4d *,double);
+    void MassiveWeight(AMATOOLS::Vec4D *,double);
     /*!
       To generate a massive point. The idea is to start from a massless point
       given by ordinary RAMBO::GeneratePoint and then to force them
@@ -52,7 +52,7 @@ namespace PHASIC {
       factors, such that both four momentum conservation and mass shell 
       conditions are fulfilled.
     */
-    void MassivePoint(AMATOOLS::vec4d *,double);
+    void MassivePoint(AMATOOLS::Vec4D *,double);
     std::string Name() { return std::string("Rambo"); }
     int CountResonances(APHYTOOLS::Flavour *&) { return 0; }
   };

@@ -23,38 +23,38 @@ Sarge::~Sarge()
   delete[] rot;
 }
 
-void Sarge::GenerateWeight(vec4d * p,Cut_Data * cuts)
+void Sarge::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
-  vec4d sump(0.,0.,0.,0.);
+  Vec4D sump(0.,0.,0.,0.);
   CalculateS0(cuts);  
   for (short int i=0;i<nin;i++) sump += p[i];
-  double xi_min = sump.abs2()/s0-((double)(nout)+1.)*((double)(nout)-2.)/2.;
+  double xi_min = sump.Abs2()/s0-((double)(nout)+1.)*((double)(nout)-2.)/2.;
 
-  weight = 2.*pow(M_PI,nout-1)*pow(log(xi_min),2*nout-4)*(2.*nout-3.)/sqr(sump.abs2());
+  weight = 2.*pow(M_PI,nout-1)*pow(log(xi_min),2*nout-4)*(2.*nout-3.)/sqr(sump.Abs2());
   for (short int j=nin;j<nin+nout-1;j++) weight *= p[j]*p[j+1]; // denominator, product of 
   weight *= p[nin+nout-1]*p[nin];                              // momenta of Eq. 10
   weight *= 1./(pow(2.*M_PI,3*nout-4));
 }
 
-void Sarge::GeneratePoint(vec4d* p,Cut_Data * cuts,double* ran)
+void Sarge::GeneratePoint(Vec4D* p,Cut_Data * cuts,double* ran)
 {
   GeneratePoint(p,cuts);
 }
 
-void Sarge::GeneratePoint(vec4d* p,Cut_Data * cuts)
+void Sarge::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 {
-  vec4d sump(0.,0.,0.,0.);
+  Vec4D sump(0.,0.,0.,0.);
   CalculateS0(cuts);  
   for (short int i=0;i<nin;i++) sump += p[i];
-  double ET     = sqrt(sump.abs2());
+  double ET     = sqrt(sump.Abs2());
   double xi_min = sqr(ET)/s0-((double)(nout)+1.)*((double)(nout)-2.)/2.;
 
-  vec4d* q  = &p[nin];
-  double costheta = 2.*Ran.get()-1.;
+  Vec4D* q  = &p[nin];
+  double costheta = 2.*ran.Get()-1.;
   double sintheta = sqrt(1.-costheta*costheta);
-  double phi      = 2.*M_PI*Ran.get();
-  q[0]      = ET/2.*vec4d(1.,sintheta*::sin(phi),sintheta*cos(phi),costheta);
-  q[nout-1] = ET/2.*vec4d(1.,-sintheta*::sin(phi),-sintheta*cos(phi),-costheta);
+  double phi      = 2.*M_PI*ran.Get();
+  q[0]      = ET/2.*Vec4D(1.,sintheta*::sin(phi),sintheta*cos(phi),costheta);
+  q[nout-1] = ET/2.*Vec4D(1.,-sintheta*::sin(phi),-sintheta*cos(phi),-costheta);
   QcdAntenna(q,xi_min);
 }
 
@@ -67,41 +67,41 @@ void Sarge::CalculateS0(Cut_Data * cuts) {
   }
 }
 
-void Sarge::QcdAntenna(vec4d* &p,double xi_min)
+void Sarge::QcdAntenna(Vec4D* &p,double xi_min)
 {
   Polytope(n_xi,x);
   double phi;
   double xi[2];
-  vec4d lab = p[0]+p[nout-1];
+  Vec4D lab = p[0]+p[nout-1];
   double logm = log(xi_min); 
   for (short int j=0;j<nout-2;j++) {
-    phi = 2.*M_PI*Ran.get();
+    phi = 2.*M_PI*ran.Get();
     xi[0] = exp((x[2*j+1]-x[2*j])*logm);
     xi[1] = exp((x[2*j+2]-x[2*j])*logm);
     BasicAntenna(p[j],p[nout-1],p[j+1],xi,phi);
     lab += p[j+1];
   }
   
-  double Elab  = sqrt(lab.abs2());
-  vec3d  B     = (-1.)*vec3d(lab)/Elab;
+  double Elab  = sqrt(lab.Abs2());
+  Vec3D  B     = (-1.)*Vec3D(lab)/Elab;
   double G     = lab[0]/Elab;
   double A     = 1./(1.+G);
   double scale = rpa.gen.Ecms()/Elab;
   double e,BQ;
   for (short int j=0;j<nout;j++) {
     e     = p[j][0];
-    BQ    = B*vec3d(p[j]);
-    p[j]  = scale*vec4d((G*e+BQ),vec3d(p[j])+B*(e+A*BQ));
+    BQ    = B*Vec3D(p[j]);
+    p[j]  = scale*Vec4D((G*e+BQ),Vec3D(p[j])+B*(e+A*BQ));
   }
 }
 
-void Sarge::BasicAntenna(vec4d pin0,vec4d pin1, vec4d &k, double* xi, double phi)
+void Sarge::BasicAntenna(Vec4D pin0,Vec4D pin1, Vec4D &k, double* xi, double phi)
 {
   /* Basic antenna of SARGE, see hep-ph/0004047 */
-  vec4d  cms     = pin0+pin1;
+  Vec4D  cms     = pin0+pin1;
 
-  vec4d ref(1.,0.,0.,1.);
-  vec4d pin0_cms;
+  Vec4D ref(1.,0.,0.,1.);
+  Vec4D pin0_cms;
   boost(1,cms,pin0_cms,pin0);
   double E1 = pin0_cms[0];
 
@@ -111,8 +111,8 @@ void Sarge::BasicAntenna(vec4d pin0,vec4d pin1, vec4d &k, double* xi, double phi
   double cos_cm = (xi[1]-xi[0])/(xi[1]+xi[0]);
 
   double sin_cm = sqrt(1.-sqr(cos_cm));
-  vec4d k_help  = k0_cms*vec4d(1.,sin_cm*::sin(phi),sin_cm*cos(phi),cos_cm);
-  vec4d k_cms;
+  Vec4D k_help  = k0_cms*Vec4D(1.,sin_cm*::sin(phi),sin_cm*cos(phi),cos_cm);
+  Vec4D k_cms;
   rotat(1,k_cms,k_help,rot);
   boost(0,cms,k_cms,k);
 }
@@ -123,7 +123,7 @@ void Sarge::PermP(int number,int* &perm)
      shuffles a number of integers contained in perm  */
   int j,k,dummy;
   for (j=number-1;j>1;j--) {
-    k = (int)(j*Ran.get())+1;
+    k = (int)(j*ran.Get())+1;
     dummy   = perm[j];
     perm[j] = perm[k];
     perm[k] = dummy;
@@ -139,34 +139,34 @@ void Sarge::Polytope(int m,double* &x)
   for (i=1;i<m+1;i++) perm[i] = i;
   PermP(m+1,perm);
   // number of negative values
-  k = (int)((m+1)*Ran.get());
+  k = (int)((m+1)*ran.Get());
   x[0] = 0.;
   if (k==0) {
-    for (i=1;i<m+1;i++) x[perm[i]] = Ran.get();
+    for (i=1;i<m+1;i++) x[perm[i]] = ran.Get();
     delete[] perm;
     return;
   }
   if (k==m) {
-    for (i=1;i<m+1;i++) x[perm[i]] = -Ran.get();
+    for (i=1;i<m+1;i++) x[perm[i]] = -ran.Get();
     delete[] perm;
     return;
   }
   double v1,v2,prod,y1;
   prod = 1.;
-  for (i=1;i<k+1;i++) prod *= Ran.get();
+  for (i=1;i<k+1;i++) prod *= ran.Get();
   v1 = -log(prod);
   prod = 1.;
-  for (i=1;i<m-k+2;i++) prod *= Ran.get();
+  for (i=1;i<m-k+2;i++) prod *= ran.Get();
   v2 = -log(prod);                           // -> b(k)
   y1 = v1/(v1+v2);
   x[perm[1]]   = -y1;
-  x[perm[m]] = (1-y1)*pow(Ran.get(),double(1./(m-k)));
-  for (i=2;i<k+1;i++) x[perm[i]] = x[perm[1]]*Ran.get();
-  for (i=k+1;i<m;i++) x[perm[i]] = x[perm[m]]*Ran.get();
+  x[perm[m]] = (1-y1)*pow(ran.Get(),double(1./(m-k)));
+  for (i=2;i<k+1;i++) x[perm[i]] = x[perm[1]]*ran.Get();
+  for (i=k+1;i<m;i++) x[perm[i]] = x[perm[m]]*ran.Get();
   delete[] perm;
 }
 
-void Sarge::boost(int lflag,vec4d q,vec4d& ph,vec4d& p)
+void Sarge::boost(int lflag,Vec4D q,Vec4D& ph,Vec4D& p)
 {
   /*
                                         _                       
@@ -183,20 +183,20 @@ void Sarge::boost(int lflag,vec4d q,vec4d& ph,vec4d& p)
 
   */
 
-  double rsq = sqrt(q.abs2());
+  double rsq = sqrt(q.Abs2());
   if (lflag==0) {
-    p[0] = (q[0]*ph[0]+vec3d(q)*vec3d(ph))/rsq;
+    p[0] = (q[0]*ph[0]+Vec3D(q)*Vec3D(ph))/rsq;
     double c1 = (ph[0]+p[0])/(rsq+q[0]);
-    p = vec4d(p[0],vec3d(ph)+c1*vec3d(q));  
+    p = Vec4D(p[0],Vec3D(ph)+c1*Vec3D(q));  
   }
   else {
     ph[0] = q*p/rsq;
     double c1 = (p[0]+ph[0])/(rsq+q[0]);
-    ph = vec4d(ph[0],vec3d(p)-c1*vec3d(q));  
+    ph = Vec4D(ph[0],Vec3D(p)-c1*Vec3D(q));  
   }
 }
 
-void Sarge::rotat(int lflag,vec4d& p1 ,vec4d p2,double** _rot)
+void Sarge::rotat(int lflag,Vec4D& p1 ,Vec4D p2,double** _rot)
 {
 /*
    Rotation of a 4-vector:                                      
@@ -213,9 +213,9 @@ void Sarge::rotat(int lflag,vec4d& p1 ,vec4d p2,double** _rot)
   if (lflag==0) {
     short int i,k,l;
     double r[2][3][3],pm[2],sp[2],cp[2],st[2],ct[2];
-    vec4d pp[2];
-    pm[0] = vec3d(p1).abs();
-    pm[1] = vec3d(p2).abs();
+    Vec4D pp[2];
+    pm[0] = Vec3D(p1).Abs();
+    pm[1] = Vec3D(p2).Abs();
     pp[0] = (1./pm[0])*p1;
     pp[1] = (1./pm[1])*p2;
     for (i=0;i<2;i++) {

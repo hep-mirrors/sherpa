@@ -27,7 +27,7 @@ namespace APHYTOOLS {
     APHYTOOLS::Selector_Base * sel;
     int          nout;
     Flavour    * flavs;
-    AMATOOLS::vec4d * moms;
+    AMATOOLS::Vec4D * moms;
   public:
     Primitive_Observable_Base() {
       xmin  = xmax  = 0.;
@@ -65,13 +65,13 @@ namespace APHYTOOLS {
       AORGTOOLS::msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : 0 "<<name<<std::endl;
     }
 
-    virtual void SetFlavInfo(int _nout,AMATOOLS::vec4d * _moms,APHYTOOLS::Flavour * _flavs) {
+    virtual void SetFlavInfo(int _nout,AMATOOLS::Vec4D * _moms,APHYTOOLS::Flavour * _flavs) {
       nout=_nout;
       moms=_moms;
       flavs=_flavs;
     }
 
-    virtual void Evaluate(int,AMATOOLS::vec4d *,APHYTOOLS::Flavour *,double) {
+    virtual void Evaluate(int,AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double) {
       AORGTOOLS::msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : A "<<name<<std::endl;
     }
 

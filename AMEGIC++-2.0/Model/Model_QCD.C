@@ -29,7 +29,7 @@ void Model_QCD::c_FFV(Single_Vertex* v,int& vanz)
   
   for (short int i=1;i<=6;i++) {
     Flavour flav = Flavour(kf::code(i));
-    if (flav.strong() && flav.ison()) { 
+    if (flav.Strong() && flav.IsOn()) { 
       v[vanz].in[0] = flav;
       v[vanz].in[1] = Flavour(kf::gluon);
       v[vanz].in[2] = flav;

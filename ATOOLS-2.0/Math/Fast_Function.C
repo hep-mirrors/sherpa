@@ -7,14 +7,14 @@ using namespace AMATOOLS;
 
 
 Fast_Function::Fast_Function() {
-  ymin=1.e99;
-  ymax=-1.e99;
+  m_ymin = 1.e99;
+  m_ymax = -1.e99;
 }
 
 Fast_Function::Fast_Function(int size) {
-  data = DList(size);
-  ymin=1.e99;
-  ymax=-1.e99;
+  m_data = Data_List(size);
+  m_ymin =  1.e99;
+  m_ymax = -1.e99;
 }
 
 
@@ -27,7 +27,7 @@ void Fast_Function::Init(Function_Base & fun, double xmin, double xmax, int min_
     // min_points equidistant
     for (int i=0; i<min_points; ++i) {
       double x= xmin + (xmax-xmin)*double(i)/double(min_points-1);
-      data.push_back(Pair(x,fun(x)));
+      m_data.push_back(Pair(x,fun(x)));
     }
     break;
   case 1:
@@ -35,22 +35,13 @@ void Fast_Function::Init(Function_Base & fun, double xmin, double xmax, int min_
     std::list<Pair> testpoints;
 
     // initialize data with two points
-    data.push_back(Pair(xmin,fun(xmin)));
-    data.push_back(Pair(xmax,fun(xmax)));
+    m_data.push_back(Pair(xmin,fun(xmin)));
+    m_data.push_back(Pair(xmax,fun(xmax)));
 
     // initialize test points with one point
     double x=(xmin+xmax)/2.;
     double y=fun(x);
     testpoints.push_back(Pair(x,y));
-
-    /*  // --- output ---
-    std::cout<<data.size()<<" Data: "<<std::endl;
-    std::cout<<(*this)<<std::endl;
-    std::cout<<testpoints.size()<<" Testpoints: "<<std::endl;
-    for (std::list<Pair>::iterator it=testpoints.begin(); it!=testpoints.end();++it) {
-      std::cout<<(*it);
-    }
-    */
 
     for (int i=3; i<min_points; i=i+2) {
 
@@ -66,7 +57,7 @@ void Fast_Function::Init(Function_Base & fun, double xmin, double xmax, int min_
 	}
       }
       // insert winner testpoint in data field
-      DIter dit=Insert(win->x,win->y);
+      Data_Iter dit=Insert(win->x,win->y);
 
       // and generates two new test points as neighbors to the last one
       --dit;
@@ -86,30 +77,12 @@ void Fast_Function::Init(Function_Base & fun, double xmin, double xmax, int min_
       
       // delete winner testpoint in testpoints
       testpoints.erase(win);
-      /* // --- output --
-      std::cout<<data.size()<<" Data: "<<std::endl;
-      std::cout<<(*this)<<std::endl;
-      std::cout<<testpoints.size()<<" Testpoints: "<<std::endl;
-      for (std::list<Pair>::iterator it=testpoints.begin(); it!=testpoints.end();++it) {
-	std::cout<<(*it);
-      }
-      */
-
     }
 
     // transfer all remaining testpoints to data 
     std::list<Pair>::iterator it=testpoints.begin();
-    DIter dit=data.begin();
+    Data_Iter dit=m_data.begin();
     for (;it!=testpoints.end();) {
-      /*  // does not work! using our own Insert() routine
-      std::cout<<" insert into fastfunc "<<Pair(it->x,it->y);
-      ++dit;
-      std::cout<<" before  "<<(*dit)<<std::endl;
-      data.insert(dit,(*it));
-      ++it;
-      std::cout<<" before2 "<<(*dit)<<std::endl;
-      */
-
       Insert(it->x,it->y);
       ++it;
     }
@@ -121,57 +94,54 @@ void Fast_Function::Init(Function_Base & fun, double xmin, double xmax, int min_
 }
 
 
-Fast_Function::DIter Fast_Function::Insert(double x, double y) { 
-  if (y>ymax) ymax=y;
-  if (y<ymin) ymin=y;
+Fast_Function::Data_Iter Fast_Function::Insert(double x, double y) { 
+  if (y>m_ymax) m_ymax = y;
+  if (y<m_ymin) m_ymin = y;
 
-  if (data.empty()) {
-    //    std::cout<<" insert in empty fastfunc "<<Pair(x,y)<<std::endl;
-    data.push_back(Pair(x,y));
-    DIter it =data.end();
+  if (m_data.empty()) {
+    m_data.push_back(Pair(x,y));
+    Data_Iter it =m_data.end();
     return --it;
   } 
-  else if (data.back().x<x) {
-    //    std::cout<<" append to fastfunc "<<Pair(x,y)<<std::endl;
-    data.push_back(Pair(x,y));
-    DIter it =data.end();
+  else if (m_data.back().x<x) {
+    m_data.push_back(Pair(x,y));
+    Data_Iter it =m_data.end();
     return --it;
   }
   else {
-    //    std::cout<<" insert into fastfunc "<<Pair(x,y);
-    DIter it=data.begin();
+    Data_Iter it=m_data.begin();
     while ((*it).x < x) {++it; }
 
-    DIter win=data.insert(it,Pair(x,y));
-    //    std::cout<<" before "<<(*it)<<std::endl;
+    Data_Iter win=m_data.insert(it,Pair(x,y));
     return win;
   }
 }
 
 double Fast_Function::Invers(double y) {
-  if (data.empty()) {
-    std::cout<<"ERROR: Fast_Function::Invers() called for empty function!!!"<<std::endl;
+  if (m_data.empty()) {
+    std::cerr<<"ERROR: Fast_Function::Invers() called for empty function!!!"<<std::endl;
     return 0;
   }
-  if (data.size()==1) {
-    if (data.front().y==y) {
-      return data.front().x;
+  if (m_data.size()==1) {
+    if (m_data.front().y==y) {
+      return m_data.front().x;
     }
     else {
-      std::cout<<"ERROR: Fast_Function::Invers() called for almost empty function!!!"<<std::endl;
+      std::cerr<<"ERROR: Fast_Function::Invers() called for almost empty function!!!"<<std::endl;
       return 0;
     }
   }
+
   // at least two elements
-  DIter it=data.begin();
+  Data_Iter it=m_data.begin();
   for (;;) {
     double y1=it->y;
     ++it;
-    if (it==data.end()) break;
+    if (it==m_data.end()) break;
     double y2=it->y;
     if (((y1<y)&&(y<=y2))||((y2<y)&&(y<=y1))) break;
   }
-  if (it==data.end()) {
+  if (it==m_data.end()) {
     // x is bigger than or smaller than all stored values
     std::cout<<"ERROR: Fast_Function::Invers() "<<std::endl;
     std::cout<<" given y="<<y<<" is not in range "<<YRange()<<std::endl;
@@ -181,13 +151,13 @@ double Fast_Function::Invers(double y) {
 }
 
 double Fast_Function::operator()(double x) {
-  if (data.empty()) {
+  if (m_data.empty()) {
     std::cout<<"ERROR: Fast_Function::opertor() called for empty function!!!"<<std::endl;
     return 0;
   }
-  if (data.size()==1) {
-    if (data.front().x==x) {
-      return data.front().y;
+  if (m_data.size()==1) {
+    if (m_data.front().x==x) {
+      return m_data.front().y;
     }
     else {
       std::cout<<"ERROR: Fast_Function::opertor() called for almost empty function!!!"<<std::endl;
@@ -195,10 +165,10 @@ double Fast_Function::operator()(double x) {
     }
   }
   // at least two elements
-  DIter it=data.begin();
-  while (((*it).x < x)&&(it!=data.end())) {++it; }
+  Data_Iter it=m_data.begin();
+  while (((*it).x < x)&&(it!=m_data.end())) {++it; }
 
-  if (it==data.end()) {
+  if (it==m_data.end()) {
     // x is bigger than all stored values
     --it;
   }
@@ -210,10 +180,10 @@ void Fast_Function::WriteOut(char * name) {
   std::ofstream to(name);
   to.precision(10);
   
-  for (DIter it=data.begin();it!=data.end();++it) 
+  for (Data_Iter it=m_data.begin();it!=m_data.end();++it) 
     to<<it->x<<"    "<<it->y<<std::endl;
 
-  std::cout<<"File "<<name<<" "<<data.size()<<" entries saved."<<std::endl;
+  std::cout<<"File "<<name<<" "<<m_data.size()<<" entries saved."<<std::endl;
 }
 
 
@@ -226,8 +196,8 @@ bool Fast_Function::ReadIn(char * name) {
   double x,y;
   for(;from;) {
     from>>x>>y;
-    if ((data.empty())||(x!=data.back().x))
-      data.push_back(Pair(x,y));
+    if ((m_data.empty())||(x!=m_data.back().x))
+      m_data.push_back(Pair(x,y));
   }
   from.close();
 
@@ -237,32 +207,32 @@ bool Fast_Function::ReadIn(char * name) {
 
 
 
-double Fast_Function::LinInter(DIter & it, double x) {
-  double x1=it->x;
-  double y1=it->y;
+double Fast_Function::LinInter(Data_Iter & it, double x) {
+  double x1 = it->x;
+  double y1 = it->y;
 
-  if (it!=data.begin()) --it; else ++it;
-  double x2=it->x;
-  double y2=it->y;
+  if (it!=m_data.begin()) --it; else ++it;
+  double x2 = it->x;
+  double y2 = it->y;
 
   return y1+(y2-y1)*(x-x1)/(x2-x1);
 }
 
-double Fast_Function::LinInterInv(DIter & it, double y) {
-  double x1=it->x;
-  double y1=it->y;
+double Fast_Function::LinInterInv(Data_Iter & it, double y) {
+  double x1 = it->x;
+  double y1 = it->y;
 
   --it; 
-  double x2=it->x;
-  double y2=it->y;
+  double x2 = it->x;
+  double y2 = it->y;
 
-  return x1 +(x2-x1)*(y-y1)/(y2-y1);
+  return x1 + (x2-x1)*(y-y1)/(y2-y1);
 }
 
 
 std::ostream & AMATOOLS::operator<<(std::ostream & s, const Fast_Function & ff) {
   s<<"----------------"<<std::endl;
-  for (Fast_Function::DList::const_iterator it=ff.data.begin();it!=ff.data.end();++it) 
+  for (Fast_Function::Data_List::const_iterator it=ff.m_data.begin();it!=ff.m_data.end();++it) 
     s<<(*it);
   return s;
 }
@@ -275,6 +245,6 @@ std::ostream & AMATOOLS::operator<<(std::ostream & s, const  Fast_Function::Pair
 
 
 std::ostream & AMATOOLS::operator<<(std::ostream & s, const Intervall & i) {
-  s<<'['<<i.minval<<','<<i.maxval<<']'<<std::endl;
+  s<<'['<<i.m_minval<<','<<i.m_maxval<<']'<<std::endl;
   return s;
 }

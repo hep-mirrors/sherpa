@@ -65,7 +65,7 @@ void Running_AlphaQED::Init()
   // if scheme default:
 
   if (alpha_MZ==NotDefined<double>()) {
-    alpha_MZ=Aqed(sqr(Flavour(kf::Z).PSmass()));
+    alpha_MZ=Aqed(sqr(Flavour(kf::Z).PSMass()));
     if (alpha_eff==NotDefined<double>()) { // alpha_QED fixed
       alpha_eff=Aqed(ecms2);
       msg.Out()<<" WARNING: using default value for alpha_eff="<<alpha_eff;
@@ -168,7 +168,7 @@ double Running_AlphaQED::operator()(double t)
 }  
 
 double Running_AlphaQED::PiGamma(const Flavour & fl,double scale) {
-  double mass2=sqr(fl.PSmass()); // onshell mass
+  double mass2=sqr(fl.PSMass()); // onshell mass
   double mqs=mass2/scale;
   if (scale==0.) return 0.;
   if (4.*mqs<1.e-3) {

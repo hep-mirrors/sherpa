@@ -151,9 +151,9 @@ void Broker_Group::SetTotalXS(int hint)  {
 
 void Broker_Group::SelectOne()
 {
-  if (totalxs==0) selected = brokers[int(Ran.get()*brokers.size())];
+  if (totalxs==0) selected = brokers[int(ran.Get()*brokers.size())];
   else {
-    double disc = max * Ran.get();
+    double disc = max * ran.Get();
     for (int i=0;i<brokers.size();i++) {
       disc -= brokers[i]->Max();
       if (disc<0.) {
@@ -181,7 +181,7 @@ AMEGIC::Process_Base * Broker_Group::Selected() {
   return selected->Selected(); 
 }    
 
-double Broker_Group::Differential(AMATOOLS::vec4d * p) 
+double Broker_Group::Differential(AMATOOLS::Vec4D * p) 
 {
   last = 0.;
   for (int i=0;i<brokers.size();i++) last += brokers[i]->Differential(p);
@@ -201,7 +201,7 @@ double Broker_Group::Differential2() {
   return tmp;
 }
 
-double Broker_Group::DSigma(AMATOOLS::vec4d * p, bool lookup) 
+double Broker_Group::DSigma(AMATOOLS::Vec4D * p, bool lookup) 
 { 
   last = 0;
   for (int i=0;i<brokers.size();i++) last += brokers[i]->DSigma(p, lookup);
@@ -248,8 +248,8 @@ bool Broker_Group::CalculateTotalXSec() {
   }
   else {
     if (nin==2) {
-      if ( (fl[0].mass() != rpa.gen.Beam1().mass()) ||
-	   (fl[1].mass() != rpa.gen.Beam2().mass()) ) isr->SetPartonMasses(fl);
+      if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
+	   (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
     }
     sel->BuildCuts(cuts);
     totalxs = ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
@@ -271,8 +271,8 @@ bool Broker_Group::SetUpIntegrator(ISR::ISR_Handler * _isr,BEAM::Beam_Handler * 
   }
   sel->BuildCuts(cuts);
   if (nin==2) {
-    if ( (fl[0].mass() != rpa.gen.Beam1().mass()) ||
-	 (fl[1].mass() != rpa.gen.Beam2().mass()) ) isr->SetPartonMasses(fl);
+    if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
+	 (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
   }
   ps  = new Phase_Space_Handler(this,_isr,_beam);
   if (!ps->CreateIntegrators()) return 0;

@@ -31,8 +31,8 @@ Hard_Processes::~Hard_Processes() {}
 
 bool Hard_Processes::ProcessesInit() {
   if ( ( (rpa.gen.Beam1() == Flavour(kf::e)) &&
-	 (rpa.gen.Beam2() == (Flavour(kf::e).bar())) ) ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::e)).bar()) &&
+	 (rpa.gen.Beam2() == (Flavour(kf::e).Bar())) ) ||
+       ( (rpa.gen.Beam1() == (Flavour(kf::e)).Bar()) &&
 	 (rpa.gen.Beam2() == Flavour(kf::e)) ) ) {
     two2two = (new QED_Processes())->CreateBroker();
     msg.Debugging()<<"In Hard_Processes::Process_Init : "<<std::endl;
@@ -42,13 +42,13 @@ bool Hard_Processes::ProcessesInit() {
     return 1;
   }
   if ( ( (rpa.gen.Beam1() == Flavour(kf::p_plus))         &&
-	 (rpa.gen.Beam2() == (Flavour(kf::p_plus).bar())) )   ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus)).bar()) &&
+	 (rpa.gen.Beam2() == (Flavour(kf::p_plus).Bar())) )   ||
+       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus)).Bar()) &&
 	 (rpa.gen.Beam2() == Flavour(kf::p_plus)) )           ||
        ( (rpa.gen.Beam1() == (Flavour(kf::p_plus)))       &&
 	 (rpa.gen.Beam2() == Flavour(kf::p_plus)) )           ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus).bar())) &&
-	 (rpa.gen.Beam2() == Flavour(kf::p_plus).bar()) )    ) {
+       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus).Bar())) &&
+	 (rpa.gen.Beam2() == Flavour(kf::p_plus).Bar()) )    ) {
     two2two = (new QCD_Processes())->CreateBroker();
     msg.Debugging()<<"In Hard_Processes::Process_Init : "<<std::endl;
     if (two2two) msg.Debugging()<<" Initialised new Broker " 

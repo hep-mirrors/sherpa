@@ -1,9 +1,10 @@
-/*  Flavour.H: Declarations for particle Flavour classes (for Flavour.C)
- *  The use of an explicit init() function is ugly. Changes are needed.
- */
+#ifndef Flavour_H
+#define Flavour_H
 
-#ifndef Flavour_h
-#define Flavour_h
+/*  Flavour.H: 
+ *      Declarations for particle Flavour classes (for Flavour.C)
+ *      The use of an explicit Init() function is ugly. Changes are needed.
+ */
 
 #include <fstream>
 #include <string>
@@ -16,7 +17,7 @@ namespace APHYTOOLS {
 
   const long int MAX_PARTICLES=50000;
 
-  void particle_init(std::string);
+  void ParticleInit(std::string);
 
   /////////////////////////////////////////////////////////////////////////////////////
 
@@ -379,18 +380,15 @@ namespace APHYTOOLS {
   /////////////////////////////////////////////////////////////////////////////////////
 
 
-  class kf_to_int {
+  class Kf_To_Int {
     static int is_initialised;
-    kf::code kf_tab[MAX_PARTICLES];
-    int anz;
+    kf::code   kf_tab[MAX_PARTICLES];
+    int        anz;
   public:
-    kf_to_int() {}
-    ~kf_to_int() {}
-
-    void     init();
-    int      to_int(kf::code);
-    kf::code from_int(int);
-    kf::code from_string(std::string st);
+    void       Init();
+    int        ToInt(kf::code);
+    kf::code   FromInt(int);
+    kf::code   FromString(std::string st);
     int IsInitialised() { return is_initialised;}
   };
 
@@ -400,7 +398,7 @@ namespace APHYTOOLS {
 
   class Flavour; 
 
-  struct part_info {
+  struct Part_Info {
     kf::code kfc;
     double m,w,yuk;
     int    iq,isow,sp,masssign;
@@ -410,11 +408,11 @@ namespace APHYTOOLS {
     std::vector<Flavour *> flavs;
     bool   group;
 
-    part_info() { kfc=kf::none;m=0;iq=0;n=0;group=0; }
-    part_info(kf::code kfc_, double mass, double width, int icharge, int isoweak, 
+    Part_Info() { kfc=kf::none;m=0;iq=0;n=0;group=0; }
+    Part_Info(kf::code kfc_, double mass, double width, int icharge, int isoweak, 
 	      bool strong, int spin, bool Majorana, bool Take, bool stable,bool massive,
 	      char* name,int _masssign);
-    part_info(kf::code kfc_, double mass, double width, int icharge, int isoweak,
+    Part_Info(kf::code kfc_, double mass, double width, int icharge, int isoweak,
 	      int spin, bool Take ,bool stable , char* name);
     void       Add(const Flavour);
     int  const Size();
@@ -422,8 +420,8 @@ namespace APHYTOOLS {
     Flavour    operator[](const int);
     void       SetGroup();
 
-    ~part_info() { delete[] n; };
-    void operator = (const part_info& pi) {
+    ~Part_Info() { delete[] n; };
+    void operator = (const Part_Info& pi) {
       char* np = new char[strlen(pi.n)+1];
       strcpy(np,pi.n);
       delete[] n;
@@ -446,8 +444,8 @@ namespace APHYTOOLS {
     }
   };
 
-  extern part_info Particles[MAX_PARTICLES];
-  extern kf_to_int KF_table;
+  extern Part_Info particles[MAX_PARTICLES];
+  extern Kf_To_Int kf_table;
 
   /////////////////////////////////////////////////////////////////////////////////////
 
@@ -456,27 +454,27 @@ namespace APHYTOOLS {
   protected:
     kf::code kfc;
     int    anti;
-    inline int index() const { return KF_table.to_int(kfc); } 
+    inline int Index() const { return kf_table.ToInt(kfc); } 
     //    friend bool operator==(const Flavour&, const Flavour&);
   public:
     Flavour()                          { kfc=kf::none; anti=0;}
     Flavour(kf::code kfc_) : kfc(kfc_) { anti=0; }
     Flavour(int kfint);
-    Flavour bar();
-    kf::code kfcode()     const { return kfc; }
+    Flavour Bar();
+    kf::code Kfcode()     const { return kfc; }
     inline operator int() const { return (anti)? -int(kfc) : int(kfc) ; }
 
-    int  ctq();
-    void from_ctq(int code);
-    std::string texname();
+    int  Ctq();
+    void FromCtq(int code);
+    std::string TexName();
 
     const int  Size() const {
-      return Particles[ index() ].Size();
+      return particles[ Index() ].Size();
     }
     const bool Includes(Flavour _fl) const {
       if ( (kfc==_fl.kfc) && (anti==_fl.anti))  return 1;
-      if ( Particles[ index() ].Size()==1)      return 0;
-      if ( Particles[ index() ].Includes(_fl) ) return 1;
+      if ( particles[ Index() ].Size()==1)      return 0;
+      if ( particles[ Index() ].Includes(_fl) ) return 1;
       return 0;
     }
 
@@ -484,143 +482,143 @@ namespace APHYTOOLS {
 
 
 
-    inline double charge() const {
-      double c=Particles[ index() ].iq/3.;
+    inline double Charge() const {
+      double c=particles[ Index() ].iq/3.;
       return (anti) ? -c : c;
     }
-    inline int icharge() const {
-      int iq=Particles[index()].iq;
+    inline int IntCharge() const {
+      int iq=particles[Index()].iq;
       return (anti) ? -iq : iq;
     }
-    inline double isoweak() const {
-      double c=Particles[ index() ].isow/2.;
+    inline double IsoWeak() const {
+      double c=particles[ Index() ].isow/2.;
       return (anti) ? -c : c;
     }
-    inline bool strong() const {
-      return (Particles[ index() ].str !=0);
+    inline bool Strong() const {
+      return (particles[ Index() ].str !=0);
     }
-    inline double spin() const {
-      return Particles[ index() ].sp/2.;
+    inline double Spin() const {
+      return particles[ Index() ].sp/2.;
     }
-    inline int ispin() const {
-      return Particles[ index() ].sp;
+    inline int IntSpin() const {
+      return particles[ Index() ].sp;
     }
     inline bool Majorana() const {
-      return Particles[ index() ].Maj;
+      return particles[ Index() ].Maj;
     }
-    inline bool ison() const {
-      return Particles[ index() ].on;
+    inline bool IsOn() const {
+      return particles[ Index() ].on;
     }
-    inline bool isstable() const {
-      return Particles[ index() ].stbl;
+    inline bool IsStable() const {
+      return particles[ Index() ].stbl;
     }
-    inline void set_on(bool on) const {
-      Particles[ index() ].on = on;
+    inline void SetOn(bool on) const {
+      particles[ Index() ].on = on;
     }
-    inline void set_mass_sign(int ms) const {
-      Particles[ index() ].masssign = ms;
+    inline void SetMassSign(int ms) const {
+      particles[ Index() ].masssign = ms;
     }
-    inline int get_mass_sign() const {
-      return Particles[ index() ].masssign;
+    inline int MassSign() const {
+      return particles[ Index() ].masssign;
     }
-    inline bool ismassive() const {
-      if (Particles[ index() ].m > 0) return Particles[ index() ].msv;
+    inline bool IsMassive() const {
+      if (particles[ Index() ].m > 0) return particles[ Index() ].msv;
       return 0;
     }
-    inline double mass() const {
-      if (Particles[ index() ].msv) return Particles[index()].m;
+    inline double Mass() const {
+      if (particles[ Index() ].msv) return particles[Index()].m;
       return 0.;
     }
-    inline double PSmass() const {
-      return Particles[index()].m;
+    inline double PSMass() const {
+      return particles[Index()].m;
     }
-    inline void set_mass(double mass) const {
-      Particles[index()].m = mass; 
+    inline void SetMass(double mass) const {
+      particles[Index()].m = mass; 
     }
-    inline double yuk() const {
-      return Particles[index()].yuk; 
+    inline double Yuk() const {
+      return particles[Index()].yuk; 
     }
-    inline void set_yuk(double _yuk) const {
-      Particles[index()].yuk = _yuk; 
+    inline void SetYuk(double _yuk) const {
+      particles[Index()].yuk = _yuk; 
     }
-    inline double width() const {
-      return Particles[index()].w; 
+    inline double Width() const {
+      return particles[Index()].w; 
     }
-    inline void set_width(double width) const {
-      Particles[index()].w = width; 
+    inline void SetWidth(double width) const {
+      particles[Index()].w = width; 
     }
-    inline char* name() const {
-      return Particles[index()].n; 
+    inline char* Name() const {
+      return particles[Index()].n; 
     }
-    inline bool isfermion() const {
-      return (ispin()==1);
+    inline bool IsFermion() const {
+      return (IntSpin()==1);
     }
-    inline bool isboson() const {
-      return ((ispin()==2) || (ispin()==0)); 
+    inline bool IsBoson() const {
+      return ((IntSpin()==2) || (IntSpin()==0)); 
     }
-    inline bool isscalar() const {
-      return (ispin()==0); 
+    inline bool IsScalar() const {
+      return (IntSpin()==0); 
     }
-    inline bool isvector() const {
-      return (ispin()==2); 
+    inline bool IsVector() const {
+      return (IntSpin()==2); 
     }
-    inline int leptonfamily() const {
-      if (islepton()) return ((abs(kfc)-9)/2);
+    inline int LeptonFamily() const {
+      if (IsLepton()) return ((abs(kfc)-9)/2);
       else return 0;
     }
-    inline int quarkfamily() const {
-      if ((isquark()) && (abs(kfc) < 10)) return ((abs(kfc)+1)/2);
+    inline int QuarkFamily() const {
+      if ((IsQuark()) && (abs(kfc) < 10)) return ((abs(kfc)+1)/2);
       else return 0;
     }
-    inline double baryonnumber() {
-      if (isquark()) { return anti ? -1./3. : 1./3.; }
+    inline double BaryonNumber() {
+      if (IsQuark()) { return anti ? -1./3. : 1./3.; }
       return 0.;
     }
-    inline int leptonnumber() {
-      if (islepton()) { return anti ? -1 : 1; }
+    inline int LeptonNumber() {
+      if (IsLepton()) { return anti ? -1 : 1; }
       return 0;
     }
-    inline int strongcharge() {
-      if (isquark()) { return anti ? -3 : 3; }
-      if (isgluon()) { return -9; }
+    inline int StrongCharge() {
+      if (IsQuark()) { return anti ? -3 : 3; }
+      if (IsGluon()) { return -9; }
       return 0;
     }
-    inline bool isquark() const {
-      return ((strong()>0) && (ispin()==1) && !(Majorana())); 
+    inline bool IsQuark() const {
+      return ((Strong()>0) && (IntSpin()==1) && !(Majorana())); 
     }
-    inline bool isgluon() const {
+    inline bool IsGluon() const {
       return (kfc==kf::gluon); 
     }
-    inline bool isphoton() const {
+    inline bool IsPhoton() const {
       return ((kfc==kf::photon) || (kfc==kf::isrphoton));
     }
-    inline bool issquark() const  {
-      return ((strong()>0) && (ispin()==0) && !(Majorana())); 
+    inline bool IsSquark() const  {
+      return ((Strong()>0) && (IntSpin()==0) && !(Majorana())); 
     }
-    inline bool isgluino()  const {
+    inline bool IsGluino()  const {
       return (kfc==kf::Gluino); 
     }
-    inline bool isino() {
-      return (isgluino() || isneutralino() || ischargino());
+    inline bool IsIno() {
+      return (IsGluino() || IsNeutralino() || IsChargino());
     }                                                                             
-    inline bool islepton() const {
+    inline bool IsLepton() const {
       if ((abs(kfc)>10) && (abs(kfc)<20)) return 1;
       return 0;      
     }
 
-    inline bool isslepton() const {
+    inline bool IsSlepton() const {
       if ((abs(kfc)>70) && (abs(kfc)<80)) return 1;
       return 0;      
     }
-    inline bool ischargino() const {
+    inline bool IsChargino() const {
       if ((abs(kfc)>40) && (abs(kfc)<43)) return 1;
       return 0;      
     }
-    inline bool isneutralino() const {
+    inline bool IsNeutralino() const {
       if ((abs(kfc)>42) && (abs(kfc)<47)) return 1;
       return 0;      
     }
-    inline bool isuptype() const {
+    inline bool IsUptype() const {
       switch (abs(kfc)) {
       case kf::u:     return 1;
       case kf::d:     return 0;
@@ -660,7 +658,7 @@ namespace APHYTOOLS {
       }
       return 0;
     } 
-    inline bool isdowntype() const {
+    inline bool IsDowntype() const {
       switch (abs(kfc)) {
       case kf::u:     return 0;
       case kf::d:     return 1;
@@ -700,34 +698,34 @@ namespace APHYTOOLS {
       }
       return 0;
     } 
-    inline const bool islightquark() const { return (abs(kfc)>=1 && abs(kfc)<=3);}
-    inline const bool isdiquark() const {
+    inline const bool IsLightQuark() const { return (abs(kfc)>=1 && abs(kfc)<=3);}
+    inline const bool IsDiQuark() const {
       if(abs(kfc)>=1103 && abs(kfc)<=5505) {
 	double help=abs(kfc)/100.0-int(abs(kfc)/100.0); if(help<0.031) return true;}
       return false;
     }
-    inline const bool islightdiquark() const {
+    inline const bool IsLightDiQuark() const {
       if(abs(kfc)>=1103 && abs(kfc)<=3303) {
 	double help=abs(kfc)/100.0-int(abs(kfc)/100.0); if(help<0.031) return true;}
       return false;
     }
-    inline const bool isanti() const {     
+    inline const bool IsAnti() const {     
       return anti;
     }
-    inline const bool ishadron() const {     
+    inline const bool IsHadron() const {     
       if(abs(kfc)>=100) return 1;
       return 0;
     }
 
-    inline const bool issusy() const {     
+    inline const bool IsSusy() const {     
       if ((30<kfc)&&(kfc<100)) return 1;
       return 0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Flavour& f);
-    int hepevt();
-    void from_hepevt(int code);
-    void from_hadron(int code);
+    int HepEvt();
+    void FromHepEvt(int code);
+    void FromHadron(int code);
 
     static int GetIntID(double value);
     static int Rot(int,int,int);
@@ -739,12 +737,12 @@ namespace APHYTOOLS {
     static int WriteOut();
   };
 
-  class fl_iter {
+  class Fl_Iter {
     int current;
   public:
-    fl_iter() { current=0; }
+    Fl_Iter() { current=0; }
     Flavour first() {
-      current=KF_table.to_int(kf::start)+1;
+      current=kf_table.ToInt(kf::start)+1;
       return Flavour(current);
     }
     Flavour next() {
@@ -754,10 +752,21 @@ namespace APHYTOOLS {
     }
   };
 
-  struct flav_pair {
+  struct Flavour_Pair {
     Flavour fl1;
     Flavour fl2;
   };
+
+  /*!
+    \file 
+    \brief contains APHYTOOLS::Flavour
+  */
+
+  /*!
+    \class Flavour
+    \brief main class for accessing properties of particles
+  */
+
 }
 
 

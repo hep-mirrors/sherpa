@@ -1,8 +1,6 @@
 #include "Sort.H"
 #include "Vector.H"
 
-AMATOOLS::vec4d asdf;
-
 using namespace AORGTOOLS;
 
 template <class Type>
@@ -12,7 +10,7 @@ inline int Swap(Type & a1, Type & a2) {
 } 
 
 template <class Type>
-void BubbleSort::Up(Type * a, int n)  // starting with the biggest
+void Bubble_Sort::Up(Type * a, int n)  // starting with the biggest
 {
   int test=1;
   for (int end=(n-1);((end>0)&&(test));--end) {
@@ -24,7 +22,7 @@ void BubbleSort::Up(Type * a, int n)  // starting with the biggest
 }
 
 template <class Type>
-void BubbleSort::Down(Type * a, int n)
+void Bubble_Sort::Down(Type * a, int n)
 {
   int test=1;
   for (int end=(n-1);((end>0)&&(test));--end) {
@@ -38,7 +36,7 @@ void BubbleSort::Down(Type * a, int n)
 
 // specialisation and explicit instatiation
 template <>
-void BubbleSort::Up<AMATOOLS::vec4d>(AMATOOLS::vec4d * a, int n)  // starting with the biggest
+void Bubble_Sort::Up<AMATOOLS::Vec4D>(AMATOOLS::Vec4D * a, int n)  // starting with the biggest
 {
   int test=1;
   for (int end=(n-1);((end>0)&&(test));--end) {
@@ -50,7 +48,7 @@ void BubbleSort::Up<AMATOOLS::vec4d>(AMATOOLS::vec4d * a, int n)  // starting wi
 }
 
 template <>
-void BubbleSort::Down<AMATOOLS::vec4d>(AMATOOLS::vec4d * a, int n)
+void Bubble_Sort::Down<AMATOOLS::Vec4D>(AMATOOLS::Vec4D * a, int n)
 {
   int test=1;
   for (int end=(n-1);((end>0)&&(test));--end) {
@@ -76,9 +74,9 @@ void QuickSort::Up(Type * a, int n, int start=0)  // starting with the biggest
 */
 
  
-//template void AORGTOOLS::BubbleSort::Up<AMATOOLS::vec4d>(AMATOOLS::vec4d *, int);
-template void AORGTOOLS::BubbleSort::Up<double>(double *, int);
-template void AORGTOOLS::BubbleSort::Up<int>(int *, int);
-//template void AORGTOOLS::BubbleSort::Down<AMATOOLS::vec4d>(AMATOOLS::vec4d *, int) const ;
-template void AORGTOOLS::BubbleSort::Down<double>(double *, int);
-template void AORGTOOLS::BubbleSort::Down<int>(int *, int);
+//template void AORGTOOLS::Bubble_Sort::Up<AMATOOLS::Vec4D>(AMATOOLS::Vec4D *, int);
+template void AORGTOOLS::Bubble_Sort::Up<double>(double *, int);
+template void AORGTOOLS::Bubble_Sort::Up<int>(int *, int);
+//template void AORGTOOLS::Bubble_Sort::Down<AMATOOLS::Vec4D>(AMATOOLS::Vec4D *, int) const ;
+template void AORGTOOLS::Bubble_Sort::Down<double>(double *, int);
+template void AORGTOOLS::Bubble_Sort::Down<int>(int *, int);

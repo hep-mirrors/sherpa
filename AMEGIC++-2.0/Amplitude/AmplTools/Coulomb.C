@@ -36,7 +36,7 @@ void Coulomb::Build_Matrix()
       wcount = 0;
       for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
 	Pfunc* p = *pit;
-	if ((p->fl==Flavour(kf::W)) ||  (p->fl==Flavour(kf::W).bar())) wcount++;
+	if ((p->fl==Flavour(kf::W)) ||  (p->fl==Flavour(kf::W).Bar())) wcount++;
       }
       if (wcount==2) {
 	icoulomb = 1;
@@ -64,7 +64,7 @@ void Coulomb::Build_Matrix()
   }
 }
 
-void Coulomb::Calculate(int* b,vec4d* mom)
+void Coulomb::Calculate(int* b,Vec4D* mom)
 {
   Single_Amplitude* m;
   short int i;
@@ -76,21 +76,21 @@ void Coulomb::Calculate(int* b,vec4d* mom)
   double mp,mm;
   mp = mm = 0.;
   list<Pfunc*>* pl = m->GetPlist();
-  vec4d sump;
+  Vec4D sump;
   for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
     Pfunc* pp = *pit;  
     if (pp->fl==Flavour(kf::W)) {
-      sump = vec4d(0.,0.,0.,0.);
+      sump = Vec4D(0.,0.,0.,0.);
       for (i=1;i<pp->argnum;i++) sump += b[pp->arg[i]]*mom[pp->arg[i]];
-      mp = sqrt(sump.abs2());
+      mp = sqrt(sump.Abs2());
     }
-    if (pp->fl==Flavour(kf::W).bar()) {
-      sump = vec4d(0.,0.,0.,0.);
+    if (pp->fl==Flavour(kf::W).Bar()) {
+      sump = Vec4D(0.,0.,0.,0.);
       for (i=1;i<pp->argnum;i++) sump += b[pp->arg[i]]*mom[pp->arg[i]];
-      mm = sqrt(sump.abs2());
+      mm = sqrt(sump.Abs2());
     }
   }
-  double s      = (mom[0]+mom[1]).abs2();
+  double s      = (mom[0]+mom[1]).Abs2();
   double MW     = AORGTOOLS::rpa.consts.Mass(Flavour(kf::W),s);
   double GW     = AORGTOOLS::rpa.consts.Width(Flavour(kf::W),s);
   double beta   = sqrt((s-sqr(mp-mm))*(s-sqr(mp+mm)))/s;

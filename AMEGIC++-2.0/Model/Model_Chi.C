@@ -61,7 +61,7 @@ void Model_Chi::c_FFS(Single_Vertex* v,int& vanz)
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=i;j<43;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison() && flav3.ison() && (k != 33)) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k != 33)) {
 	  v[vanz].in[0] = flav2;
 	  v[vanz].in[1] = flav3;
 	  v[vanz].in[2] = flav1;
@@ -93,7 +93,7 @@ void Model_Chi::c_FFS(Single_Vertex* v,int& vanz)
 	  vanz++;
 	  //checked RK
 	}
-	if (flav1.ison() && flav2.ison() && flav3.ison() && (k == 33)) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k == 33)) {
 	  v[vanz].in[0] = flav2;
 	  v[vanz].in[1] = flav3;
 	  v[vanz].in[2] = flav1;
@@ -132,7 +132,7 @@ void Model_Chi::c_FFS(Single_Vertex* v,int& vanz)
     Flavour flav1 = Flavour(kf::code(i));
       for (short int j=43;j<47;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison() && flav3.ison() && (k != 33) && (i<=j)) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k != 33) && (i<=j)) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[2] = flav2;
 	  v[vanz].in[1] = flav3;
@@ -169,7 +169,7 @@ void Model_Chi::c_FFS(Single_Vertex* v,int& vanz)
 	  vanz++;
 	  //checked FK & RK & SS (new -kcpl0)
 	}
-	if (flav1.ison() && flav2.ison() && flav3.ison() && (k == 33)) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn() && (k == 33)) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[2] = flav2;
 	  v[vanz].in[1] = flav3;
@@ -211,12 +211,12 @@ void Model_Chi::c_FFS(Single_Vertex* v,int& vanz)
   }
   // Chargino - Higgs - Neutralino
   Flavour flHm = Flavour(kf::Hmin);
-  if (flHm.ison()) {
+  if (flHm.IsOn()) {
     for (short int i=41;i<43;i++) {
       Flavour flav1 = Flavour(kf::code(i));
       for (short int j=43;j<47;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if (flav1.ison() && flav2.ison()) {
+	if (flav1.IsOn() && flav2.IsOn()) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flHm;
 	  v[vanz].in[2] = flav2;
@@ -265,14 +265,14 @@ void Model_Chi::c_FFV(Single_Vertex* v,int& vanz)
     Flavour flav1 = Flavour(kf::code(i));
     for (short int j=i;j<43;j++) {
       Flavour flav2 = Flavour(kf::code(j));
-      if (flav1.ison() && flav2.ison()) {
-	if (flav1==flav2 && flph.ison()) {
+      if (flav1.IsOn() && flav2.IsOn()) {
+	if (flav1==flav2 && flph.IsOn()) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flph;
 	  v[vanz].in[2] = flav2;
 	  
-	  Kabbala charge1 = Kabbala(string("Q_{")+flav1.texname()+string("}"),
-				    flav1.charge());
+	  Kabbala charge1 = Kabbala(string("Q_{")+flav1.TexName()+string("}"),
+				    flav1.Charge());
 	  
 	  //fixed with Chargino pair production !!!
 	  kcpl0 = -M_I*g1*charge1;
@@ -298,9 +298,9 @@ void Model_Chi::c_FFV(Single_Vertex* v,int& vanz)
 	  vanz++;
 	  //checked RK + SS (tested by chargino pair production)
 	}
-	if (flZ.ison()) {	
-	  Kabbala charge1 = Kabbala(string("Q_{")+flav1.texname()+string("}"),
-				  flav1.charge());
+	if (flZ.IsOn()) {	
+	  Kabbala charge1 = Kabbala(string("Q_{")+flav1.TexName()+string("}"),
+				  flav1.Charge());
 	  Kabbala helper = Kabbala(string("zero"),0.);
 	  
 	  if (flav1 == flav2) helper = Kabbala(string("cos2\\theta_W"),
@@ -347,13 +347,13 @@ void Model_Chi::c_FFV(Single_Vertex* v,int& vanz)
     Flavour flav1 = Flavour(kf::code(i));
     for (short int j=41;j<43;j++) {
       Flavour flav2 = Flavour(kf::code(j));
-      if (flav1.ison() && flav2.ison()) {
+      if (flav1.IsOn() && flav2.IsOn()) {
 	v[vanz].in[0] = flav1;
 	v[vanz].in[1] = Flavour(kf::W);
-	v[vanz].in[2] = flav2.bar();
+	v[vanz].in[2] = flav2.Bar();
 
-	Kabbala charge2 = Kabbala(string("Q_{")+flav2.texname()+string("}"),
-				  flav2.charge());
+	Kabbala charge2 = Kabbala(string("Q_{")+flav2.TexName()+string("}"),
+				  flav2.Charge());
 	
 	kcpl0 = M_I*g2*(K_Z_N(1,i-43)*K_Z_MI(0,j-41)+
 				K_Z_N(2,i-43)*K_Z_MI(1,j-41)/root2);
@@ -389,7 +389,7 @@ void Model_Chi::c_FFV(Single_Vertex* v,int& vanz)
     Flavour flav1 = Flavour(kf::code(j));
     for (short int i=j;i<47;i++) {
       Flavour flav2 = Flavour(kf::code(i));
-      if (flav1.ison() && flav2.ison()) {
+      if (flav1.IsOn() && flav2.IsOn()) {
 		
 	v[vanz].in[0] = flav1;
 	v[vanz].in[1] = Flavour(kf::Z);	
@@ -457,7 +457,7 @@ inline Kabbala Model_Chi::K_Z_N_com(short int i,short int j)
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
 
-  //Complex exp_i = (Flavour(kf::code(43+i)).get_mass_sign()==1) ? 1 : Complex(0.,1.);
+  //Complex exp_i = (Flavour(kf::code(43+i)).MassSign()==1) ? 1 : Complex(0.,1.);
   //Complex exp_i(cos(M_PI*(1.-etai)/4.),sin(M_PI*(1.-etai)/4.));
   Complex exp_i = Complex(1.,0.);
   
@@ -468,7 +468,7 @@ inline Kabbala Model_Chi::K_Z_N_com_conj(short int i,short int j)
   char hi[2],hj[2];
   sprintf(hi,"%i",i);
   sprintf(hj,"%i",j);
-  //Complex exp_i = (Flavour(kf::code(43+i)).get_mass_sign()==1) ? 1 : Complex(0.,-1.);
+  //Complex exp_i = (Flavour(kf::code(43+i)).MassSign()==1) ? 1 : Complex(0.,-1.);
   //Complex exp_i(cos(M_PI*(1.-etai)/4.),-sin(M_PI*(1.-etai)/4.));
   Complex exp_i = Complex(1.,0.);
   

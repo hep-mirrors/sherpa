@@ -61,26 +61,26 @@ void Model_SQCD_Chi::c_FFS(Single_Vertex* v,int& vanz){
   
   for (short int j=43;j<47;j++) {
     Flavour flneu = Flavour(kf::code(j));
-    if (flneu.ison()) {
+    if (flneu.IsOn()) {
       //uptypes 
       for (short int k=2;k<7;k+=2) {
 	Flavour flav1 = Flavour(kf::code(k));
 	for (short int i=51;i<57;i++) {
 	  Flavour flav2 = Flavour(kf::code(i));
-	  if (flav1.ison() && flav2.ison()) {
+	  if (flav1.IsOn() && flav2.IsOn()) {
 	    v[vanz].in[0] = flav1;
 	    v[vanz].in[1] = flav2;
 	    v[vanz].in[2] = flneu;
 	    
 	    /*Kabbala K_uI = Kabbala(string("u^I"),
-	      flav1.yuk()*sqrt(2.)/(mosq->K_v2()).Value());*/
+	      flav1.Yuk()*sqrt(2.)/(mosq->K_v2()).Value());*/
 
 	    Kabbala K_u1 = Kabbala(string("u^1"),
-				   Flavour(kf::code(2)).yuk()*sqrt(2.)/(mosq->K_v2()).Value());
+				   Flavour(kf::code(2)).Yuk()*sqrt(2.)/(mosq->K_v2()).Value());
 	    Kabbala K_u2 = Kabbala(string("u^2"),
-				   Flavour(kf::code(4)).yuk()*sqrt(2.)/(mosq->K_v2()).Value());
+				   Flavour(kf::code(4)).Yuk()*sqrt(2.)/(mosq->K_v2()).Value());
 	    Kabbala K_u3 = Kabbala(string("u^3"),
-				   Flavour(kf::code(6)).yuk()*sqrt(2.)/(mosq->K_v2()).Value());
+				   Flavour(kf::code(6)).Yuk()*sqrt(2.)/(mosq->K_v2()).Value());
 	    
 	    kcpl0 = M_I*(((g1*root2*num_2)/
 			  (K_cosTW()*num_3))*K_Z_U((k-2)/2+3,i-51)*K_Z_N(0,j-43)-
@@ -121,25 +121,25 @@ void Model_SQCD_Chi::c_FFS(Single_Vertex* v,int& vanz){
 
   for (short int j=43;j<47;j++) {
     Flavour flneu = Flavour(kf::code(j));
-    if (flneu.ison()) {
+    if (flneu.IsOn()) {
       //downtypes 
       for (short int k=1;k<6;k+=2) {
 	  Flavour flav1 = Flavour(kf::code(k));
 	  for (short int i=61;i<67;i++) {
 	    Flavour flav2 = Flavour(kf::code(i));
-	    if (flav1.ison() && flav2.ison()) {
+	    if (flav1.IsOn() && flav2.IsOn()) {
 	      v[vanz].in[0] = flav1;
 	      v[vanz].in[1] = flav2;
 	      v[vanz].in[2] = flneu;
 
 	      Kabbala K_dI = Kabbala(string("d^I"),
-		-flav1.yuk()*sqrt(2.)/(mosq->K_v1()).Value());
+		-flav1.Yuk()*sqrt(2.)/(mosq->K_v1()).Value());
 	      Kabbala K_d1 = Kabbala(string("d^1"),
-				     -Flavour(kf::code(1)).yuk()*sqrt(2.)/(mosq->K_v1()).Value());
+				     -Flavour(kf::code(1)).Yuk()*sqrt(2.)/(mosq->K_v1()).Value());
 	      Kabbala K_d2 = Kabbala(string("d^2"),
-				     -Flavour(kf::code(3)).yuk()*sqrt(2.)/(mosq->K_v1()).Value());
+				     -Flavour(kf::code(3)).Yuk()*sqrt(2.)/(mosq->K_v1()).Value());
 	      Kabbala K_d3 = Kabbala(string("d^3"),
-				     -Flavour(kf::code(5)).yuk()*sqrt(2.)/(mosq->K_v1()).Value());
+				     -Flavour(kf::code(5)).Yuk()*sqrt(2.)/(mosq->K_v1()).Value());
 				     
 	      kcpl0 = M_I*((-(g1*root2)/
 			    (K_cosTW()*num_3))*K_Z_D((k-1)/2+3,i-61)*K_Z_N(0,j-43)+
@@ -183,18 +183,18 @@ void Model_SQCD_Chi::c_FFS(Single_Vertex* v,int& vanz){
     Flavour flav1 = Flavour(kf::code(i));
       
     Kabbala K_dI = Kabbala(string("d^I"),
-			   -flav1.yuk()/(mosq->K_v1()).Value()*sqrt(2.));
+			   -flav1.Yuk()/(mosq->K_v1()).Value()*sqrt(2.));
     
     for (short int j=41;j<43;j++) {
       Flavour flav2 = Flavour(kf::code(j));
       for (short int k=51;k<57;k++) {
 	Flavour flav3 = Flavour(kf::code(k));
-	if (flav1.ison() && flav2.ison() && flav3.ison()) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flav3;
 	  v[vanz].in[2] = flav2;
 	
-	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav3)+2)).yuk()*
+	  Kabbala K_uI = Kabbala(string("u^I"),Flavour(kf::code(2*gen_sUp(flav3)+2)).Yuk()*
 				 sqrt(2.)/(mosq->K_v2()).Value());
 
 	  kcpl0 = -M_I*K_dI*K_Z_MI(1,j-41)*K_Z_U(gen_sUp(flav3),k-51)*
@@ -232,19 +232,19 @@ void Model_SQCD_Chi::c_FFS(Single_Vertex* v,int& vanz){
   for (short int i=2;i<7;i+=2) {
     Flavour flav1 = Flavour(kf::code(i));
     
-    Kabbala K_uJ = Kabbala(string("u^J"),flav1.yuk()*sqrt(2.)/(mosq->K_v2()).Value());
+    Kabbala K_uJ = Kabbala(string("u^J"),flav1.Yuk()*sqrt(2.)/(mosq->K_v2()).Value());
     
     for (short int j=41;j<43;j++) {
       Flavour flav2 = Flavour(kf::code(j));
       for (short int k=61;k<67;k++) {
 	Flavour flav3 = Flavour(kf::code(k));
-	if (flav1.ison() && flav2.ison() && flav3.ison()) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flav3;
-	  v[vanz].in[2] = flav2.bar();
+	  v[vanz].in[2] = flav2.Bar();
 
 	  Kabbala K_dI = Kabbala(string("d^I"),
-				 -Flavour(kf::code(2*gen_sDown(flav3)+1)).yuk()*sqrt(2.)/
+				 -Flavour(kf::code(2*gen_sDown(flav3)+1)).Yuk()*sqrt(2.)/
 				 (mosq->K_v1()).Value());
 	  
 	  kcpl0 = M_I*K_uJ*K_Z_D(gen_sDown(flav3),k-61)*K_Z_PL(1,j-41)*

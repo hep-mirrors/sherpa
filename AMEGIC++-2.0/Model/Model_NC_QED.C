@@ -43,7 +43,7 @@ void Model_NC_QED::Init()
 
   (*Theta) = 1./sqr(lambda_NC)*(*Theta);
 
-  Theta->matrix_out();
+  Theta->MatrixOut();
 
   g1   = Kabbala(string("g_1"),sqrt(4.*M_PI*Aqed()));
   M_I  = Kabbala(string("i"),Complex(0.,1.));
@@ -63,13 +63,13 @@ void Model_NC_QED::c_FFV(Single_Vertex* v,int& vanz)
   for (short int i=11;i<16;i+=2) {
     
     Flavour flav    = Flavour(kf::code(i));
-    Kabbala charge  = Kabbala(string("Q_{")+ string(flav.texname())+string("}"),flav.charge());
-    Kabbala isoweak = Kabbala(string("T_{")+ string(flav.texname())+string("}"),flav.isoweak());
+    Kabbala charge  = Kabbala(string("Q_{")+ string(flav.TexName())+string("}"),flav.Charge());
+    Kabbala isoweak = Kabbala(string("T_{")+ string(flav.TexName())+string("}"),flav.IsoWeak());
     
 
-    if (flav.ison()) { 
+    if (flav.IsOn()) { 
       //photon
-      if (flphoton.ison()) {
+      if (flphoton.IsOn()) {
 	v[vanz].in[0] = flav;
 	v[vanz].in[1] = Flavour(kf::photon);
 	v[vanz].in[2] = flav;

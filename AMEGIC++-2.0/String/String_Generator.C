@@ -293,7 +293,7 @@ Kabbala String_Generator::Get_Pnumber(Pfunc* pl,int numb)
   for (long int i=0;i<zxl.size();i++) {
     if (zxl[i].zlist==5) {
       if( AMATOOLS::IsEqual(zxl[i].value.Value(),pl->value) &&
-	  (flavours[int(zxl[i].arg[0])]==(pl->fl).kfcode()) )
+	  (flavours[int(zxl[i].arg[0])]==(pl->fl).Kfcode()) )
 	return zxl[i].value;
     }
   }
@@ -305,7 +305,7 @@ Kabbala String_Generator::Get_Pnumber(Pfunc* pl,int numb)
   newz.value  = Number(zxl.size(),pl->value);
   newz.narg   = 2;
   newz.arg    = new int[2];
-  newz.arg[0] = Get_Fnumber((pl->fl).kfcode());
+  newz.arg[0] = Get_Fnumber((pl->fl).Kfcode());
   newz.arg[1] = numb;
 
   zxl.push_back(newz);
@@ -318,8 +318,8 @@ Kabbala String_Generator::Get_Massnumber(int numb,Flavour fl,Complex value)
   for (long int i=0;i<zxl.size();i++) {
     if (zxl[i].zlist==7) {
       if( AMATOOLS::IsEqual(zxl[i].value.Value(),value) &&
-	  ( (flavours[int(zxl[i].arg[0])]==fl.kfcode()) ||
-	    (flavours[int(zxl[i].arg[0])]==-fl.kfcode() && fl.isanti()) )
+	  ( (flavours[int(zxl[i].arg[0])]==fl.Kfcode()) ||
+	    (flavours[int(zxl[i].arg[0])]==-fl.Kfcode() && fl.IsAnti()) )
 	  ) 
 	return zxl[i].value;
     }
@@ -332,8 +332,8 @@ Kabbala String_Generator::Get_Massnumber(int numb,Flavour fl,Complex value)
   newz.narg  = 2;
   newz.arg   = new int[2];
 
-  if (fl.isanti()) newz.arg[0] = Get_Fnumber(-fl.kfcode());
-              else newz.arg[0] = Get_Fnumber(fl.kfcode());
+  if (fl.IsAnti()) newz.arg[0] = Get_Fnumber(-fl.Kfcode());
+              else newz.arg[0] = Get_Fnumber(fl.Kfcode());
 
   newz.arg[1] = numb;
 

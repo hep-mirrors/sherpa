@@ -32,14 +32,14 @@ double Polarisation::Spin_Average(int nin,Flavour* flin)
   //unpolarized
   double Norm = 1.;
   for (short int i=0;i<nin;i++) {
-    if (flin[i].isquark())   Norm *= 3.;    
-    if (flin[i].issquark())  Norm *= 3.;// sQuark is boson !!    
-    if (flin[i].isgluon())   Norm *= 8.;
-    if (flin[i].isgluino())  Norm *= 8.;// Gluino is fermion !!
+    if (flin[i].IsQuark())   Norm *= 3.;    
+    if (flin[i].IsSquark())  Norm *= 3.;// sQuark is boson !!    
+    if (flin[i].IsGluon())   Norm *= 8.;
+    if (flin[i].IsGluino())  Norm *= 8.;// Gluino is fermion !!
 
-    if (flin[i].isfermion()) Norm *= 2.;
-    if (flin[i].isvector()) {
-      if (AMATOOLS::IsZero(flin[i].mass())) Norm *= 2.;
+    if (flin[i].IsFermion()) Norm *= 2.;
+    if (flin[i].IsVector()) {
+      if (AMATOOLS::IsZero(flin[i].Mass())) Norm *= 2.;
                                        else Norm *= 3.;
     }
   }
@@ -50,7 +50,7 @@ void Polarisation::Add_Extern_Polarisations(Basic_Sfuncs* BS,Flavour* fl,Helicit
 {
 #ifdef Explicit_Pols
   for(short int i=0;i<BS->GetNmomenta();i++)
-    if(fl[i].isvector())BS->Build_Polarisations(i,hel->p_type[i],hel->angle[i]);
+    if(fl[i].IsVector())BS->Build_Polarisations(i,hel->p_type[i],hel->angle[i]);
 #endif
 }
 
@@ -58,7 +58,7 @@ int Polarisation::Massless_Vectors(int N,Flavour* fl)
 {
 #ifndef Explicit_Pols
   for(short int i=0;i<N;i++) {
-    if (fl[i].isvector() && AMATOOLS::IsZero(fl[i].mass())) {
+    if (fl[i].IsVector() && AMATOOLS::IsZero(fl[i].Mass())) {
       npol = 1;
       break;
     }
@@ -74,10 +74,10 @@ int Polarisation::Massive_Vectors(int N,Flavour* fl)
 #ifndef Explicit_Pols
   int nmass_old = nmass;
   for(short int i=0;i<N;i++) {
-    if (fl[i].isvector() && !AMATOOLS::IsZero(fl[i].mass())) {
+    if (fl[i].IsVector() && !AMATOOLS::IsZero(fl[i].Mass())) {
       nmass+=2;
       AORGTOOLS::msg.Debugging()<<"Mass_Norm changed for : "<<fl[i]<<endl;
-      Mass_Norm *= 3./2./sqr(fl[i].mass());//4 Pi for Phasespace
+      Mass_Norm *= 3./2./sqr(fl[i].Mass());//4 Pi for Phasespace
     }
   } 
   return nmass-nmass_old;
@@ -95,7 +95,7 @@ void Polarisation::Attach(int N, Flavour* fl)
     for (short int i=0;i<N;i++) mass_pol[i] = new int[2];
     int count = N+npol;
     for(short int i=0;i<N;i++) {
-      if (fl[i].isvector() && !AMATOOLS::IsZero(fl[i].mass())) {
+      if (fl[i].IsVector() && !AMATOOLS::IsZero(fl[i].Mass())) {
 	mass_pol[i][0] = count;
 	mass_pol[i][1] = count+1;
 	count+=2;
@@ -109,37 +109,37 @@ void Polarisation::Attach(int N, Flavour* fl)
 #endif
 }
 
-void Polarisation::Reset_Gauge_Vectors(int N,vec4d* p,vec4d gauge)
+void Polarisation::Reset_Gauge_Vectors(int N,Vec4D* p,Vec4D gauge)
 {
 #ifndef Explicit_Pols
-  if (npol==1) p[N] = vec4d(vec3d(gauge).abs(),vec3d(gauge));
+  if (npol==1) p[N] = Vec4D(Vec3D(gauge).Abs(),Vec3D(gauge));
 #endif
 }
 
-void Polarisation::Set_Gauge_Vectors(int N,vec4d* p,vec4d gauge)
+void Polarisation::Set_Gauge_Vectors(int N,Vec4D* p,Vec4D gauge)
 {
 #ifndef Explicit_Pols
-  if (npol==1) p[N] = vec4d(vec3d(gauge).abs(),vec3d(gauge));
+  if (npol==1) p[N] = Vec4D(Vec3D(gauge).Abs(),Vec3D(gauge));
   if (nmass>0) {
     for (short int i=0;i<N;i++) {
       if (mass_pol[i][0]>=0) {
-	vec4d r1,r2;
-        vec4d pisave = p[i];
-	double mass = sqrt(p[i].abs2());	
-	double C = 2.*Ran.get()-1.;
+	Vec4D r1,r2;
+        Vec4D pisave = p[i];
+	double mass = sqrt(p[i].Abs2());	
+	double C = 2.*ran.Get()-1.;
 	double S = sqrt(1.-C*C);
-	double F = 2.*M_PI*Ran.get();
-	r1 = mass/2.*vec4d(1.,S*::sin(F),S*::cos(F),C);
-	r2 = vec4d(r1[0],(-1.)*vec3d(r1));
-	vec4d help;
+	double F = 2.*M_PI*ran.Get();
+	r1 = mass/2.*Vec4D(1.,S*::sin(F),S*::cos(F),C);
+	r2 = Vec4D(r1[0],(-1.)*Vec3D(r1));
+	Vec4D help;
 	//r2 boost
-	help[0] = (p[i][0]*r2[0]+vec3d(p[i])*vec3d(r2))/mass;
+	help[0] = (p[i][0]*r2[0]+Vec3D(p[i])*Vec3D(r2))/mass;
 	double c1 = (r2[0]+help[0])/(mass+p[i][0]);
-	p[mass_pol[i][0]] = vec4d(help[0],vec3d(r2)+c1*vec3d(p[i]));  
+	p[mass_pol[i][0]] = Vec4D(help[0],Vec3D(r2)+c1*Vec3D(p[i]));  
 	//r1 boost
-	help[0] = (p[i][0]*r1[0]+vec3d(p[i])*vec3d(r1))/mass;
+	help[0] = (p[i][0]*r1[0]+Vec3D(p[i])*Vec3D(r1))/mass;
         c1 = (r1[0]+help[0])/(mass+p[i][0]);
-	p[mass_pol[i][1]] = vec4d(help[0],vec3d(r1)+c1*vec3d(p[i]));
+	p[mass_pol[i][1]] = Vec4D(help[0],Vec3D(r1)+c1*Vec3D(p[i]));
       }
     }
   }  
@@ -152,9 +152,9 @@ double Polarisation::Massless_Norm(int N,Flavour* fl,Basic_Sfuncs* BS)
   double norm = 1.;
   if (npol==1) {
     for (short int i=0;i<N;i++) {
-      if (fl[i].isvector() && AMATOOLS::IsZero(fl[i].mass()) ) {
+      if (fl[i].IsVector() && AMATOOLS::IsZero(fl[i].Mass()) ) {
         for (short int j=i+1;j<N+1;j++) {
-	  if ((fl[j].isvector() && AMATOOLS::IsZero(fl[j].mass()) ) || 
+	  if ((fl[j].IsVector() && AMATOOLS::IsZero(fl[j].Mass()) ) || 
 	      (fl[j]==Flavour(kf::pol))) {
 	    norm *= BS->N(i,j);
 	    break;
@@ -187,12 +187,12 @@ void Polarisation::Replace_Numbers(int N,Flavour* fl,Single_Amplitude* n)
   }
   //incoming massless bosons
   for (short int i=0;i<N;i++) {
-    if (fl[i].isvector() && AMATOOLS::IsZero(fl[i].mass())) {
-      if (!( (fl[i+1].isvector() && AMATOOLS::IsZero(fl[i+1].mass())) ||
+    if (fl[i].IsVector() && AMATOOLS::IsZero(fl[i].Mass())) {
+      if (!( (fl[i+1].IsVector() && AMATOOLS::IsZero(fl[i+1].Mass())) ||
 	     fl[i+1]==Flavour(kf::pol) ) ) {
 	//search next boson or pol
 	for (short int j=i+1;j<N+1;j++) {
-	  if ( (fl[j].isvector() && AMATOOLS::IsZero(fl[j].mass())) ||
+	  if ( (fl[j].IsVector() && AMATOOLS::IsZero(fl[j].Mass())) ||
 	       fl[j]==Flavour(kf::pol) ) {
 	    n->MPolconvert(i+10+1,j+10);
 	    break;
@@ -204,8 +204,8 @@ void Polarisation::Replace_Numbers(int N,Flavour* fl,Single_Amplitude* n)
   }
 #else
   for (short int i=0;i<N;i++) {
-    if (fl[i].isvector() && AMATOOLS::IsZero(fl[i].mass()))  n->MPolconvert(i+10+1,99);
-    if (fl[i].isvector() && !AMATOOLS::IsZero(fl[i].mass())) n->MPolconvert(i+20,99);
+    if (fl[i].IsVector() && AMATOOLS::IsZero(fl[i].Mass()))  n->MPolconvert(i+10+1,99);
+    if (fl[i].IsVector() && !AMATOOLS::IsZero(fl[i].Mass())) n->MPolconvert(i+20,99);
   }  
 #endif
 }

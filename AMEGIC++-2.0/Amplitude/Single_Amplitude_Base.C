@@ -124,7 +124,7 @@ void Single_Amplitude_Base::Fill_Args(Zfunc* z,Argument* args,int* signlist,
       args[nargs].numb   = z->arg[i];
       if ((args[nargs].numb>N-1) && (args[nargs].numb<20)) {
 	for (short int j=z->arg[i]-10-1;j>=0;j--) {
-	  if ( (fl[j].isvector() && AMATOOLS::IsZero(fl[j].mass())) ||
+	  if ( (fl[j].IsVector() && AMATOOLS::IsZero(fl[j].Mass())) ||
 	       fl[j]==Flavour(kf::pol) ) {
 	    args[++nargs].numb = signlist[j];	    
 	    break;
@@ -246,16 +246,16 @@ void Single_Amplitude_Base::SetLoopVar(vector<int>& iz,vector<vector<int> >& iar
       //cout<<iz[i]<<";"<<p->fl<<" --> ";
       for (short j=1;j<p->argnum;j++) {
 	//cout<<p->arg[j]<<","<<fl[p->arg[j]]<<","<<b[p->arg[j]]<<" ; ";
-	if (fl[p->arg[j]].isanti()) mass -= b[p->arg[j]]*rpa.consts.Mass(fl[p->arg[j]],sqr(rpa.gen.Ecms()));
+	if (fl[p->arg[j]].IsAnti()) mass -= b[p->arg[j]]*rpa.consts.Mass(fl[p->arg[j]],sqr(rpa.gen.Ecms()));
 	                       else mass += b[p->arg[j]]*rpa.consts.Mass(fl[p->arg[j]],sqr(rpa.gen.Ecms()));
       }
       //cout<<endl;
 
       double particlemass = rpa.consts.Mass(p->fl,sqr(rpa.gen.Ecms()));
 
-      if (p->fl.isanti()) particlemass = -particlemass;
+      if (p->fl.IsAnti()) particlemass = -particlemass;
 
-      if (AMATOOLS::IsEqual(particlemass,mass) && (p->fl).width()==0.) {
+      if (AMATOOLS::IsEqual(particlemass,mass) && (p->fl).Width()==0.) {
 	for (short j=1;j<p->argnum;j++)	iargs[2*i].push_back(p->arg[j]);
 	//mark this special propagator as negative
 	iz[i] = -iz[i];
@@ -316,7 +316,7 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
 
   for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
     Pfunc* p = *pit;
-    if ((p->on && (p->fl).isfermion()) ||
+    if ((p->on && (p->fl).IsFermion()) ||
 	p->haspol) {
       if (p->arg[0]>99) iz.push_back(p->arg[0]);
     }
@@ -511,7 +511,7 @@ Complex Single_Amplitude_Base::Zvalue_new_sum(int ihel, int* signlist)
 
   for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
     Pfunc* p = *pit;
-    if ((p->on && (p->fl).isfermion()) ||
+    if ((p->on && (p->fl).IsFermion()) ||
 	p->haspol ) {
       if (p->arg[0]>99) iz.push_back(p->arg[0]);
     }

@@ -20,13 +20,13 @@ QED_Processes::QED_Processes() :
   Init(2,2,0);
 
   if ((rpa.gen.Beam1() == Flavour(kf::e)) &&
-      (rpa.gen.Beam2() == Flavour(kf::e).bar()) ) {
+      (rpa.gen.Beam2() == Flavour(kf::e).Bar()) ) {
     fl[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::e);
-    fl[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::e).bar();
+    fl[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::e).Bar();
   }
-  else if ((rpa.gen.Beam1() == Flavour(kf::e).bar()) &&
+  else if ((rpa.gen.Beam1() == Flavour(kf::e).Bar()) &&
 	   (rpa.gen.Beam2() == Flavour(kf::e)) ) {
-    fl[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::e).bar();
+    fl[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::e).Bar();
     fl[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::e);
   }
   else {
@@ -37,14 +37,14 @@ QED_Processes::QED_Processes() :
 
   for (int ifl=1;ifl<6;++ifl) {
     fl[nin+0] = APHYTOOLS::Flavour(ifl);
-    fl[nin+1] = APHYTOOLS::Flavour(ifl).bar();
+    fl[nin+1] = APHYTOOLS::Flavour(ifl).Bar();
     Add(xsselector->GetXS(nin,nout,fl) );
   }
 
   fl[0]  = Flavour(kf::e);
-  fl[1]  = Flavour(kf::e).bar();
+  fl[1]  = Flavour(kf::e).Bar();
   fl[2]  = Flavour(kf::u);
-  fl[3]  = Flavour(kf::u).bar();
+  fl[3]  = Flavour(kf::u).Bar();
 
 //   isr_types.push_back(0);
 //   isr_masses.push_back(0.);
@@ -54,10 +54,10 @@ QED_Processes::QED_Processes() :
 //   isr_masses.push_back(0.);
 //   isr_widths.push_back(0.);
 
-  if (APHYTOOLS::Flavour(APHYTOOLS::kf::Z).ison()) {
+  if (APHYTOOLS::Flavour(APHYTOOLS::kf::Z).IsOn()) {
 //     isr_types.push_back(1);
-//     isr_masses.push_back(Flavour(APHYTOOLS::kf::Z).mass());
-//     isr_widths.push_back(Flavour(APHYTOOLS::kf::Z).width());
+//     isr_masses.push_back(Flavour(APHYTOOLS::kf::Z).Mass());
+//     isr_widths.push_back(Flavour(APHYTOOLS::kf::Z).Width());
   }
 
   CreateSelector();

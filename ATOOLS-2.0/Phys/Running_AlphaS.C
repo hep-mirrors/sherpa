@@ -265,16 +265,16 @@ void Running_AlphaS::Init()
   }
 
 
-  m2_MZ = sqr(Flavour(kf::Z).PSmass());
+  m2_MZ = sqr(Flavour(kf::Z).PSMass());
 
 
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD
   //------------------------------------------------------------
   short int count = 0;  // count strong flavours
-  fl_iter fli;
+  Fl_Iter fli;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) 
-    if (flav.strong() && flav.ison() && flav.kfcode()<30)  count++;
+    if (flav.Strong() && flav.IsOn() && flav.Kfcode()<30)  count++;
 
   nth = count;
 
@@ -284,14 +284,14 @@ void Running_AlphaS::Init()
   // fill heavy quark thresholds
   count = 0;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.strong() && flav.ison() && flav.kfcode()<30) {
-      masses[count] = sqr(flav.PSmass());  // on shell masses
+    if (flav.Strong() && flav.IsOn() && flav.Kfcode()<30) {
+      masses[count] = sqr(flav.PSMass());  // on shell masses
       count++;
     }
   }
 
   // sort thresholds with sort-tool 
-  BubbleSort::Down<double>(masses,nth);
+  Bubble_Sort::Down<double>(masses,nth);
 
   // fill container (assuming one gluon and nth-1 quarks)
   int j=0; 

@@ -8,9 +8,10 @@ using namespace AMATOOLS;
 
 Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 				     Selector_Data * _seldata) {
-  name  = std::string("Combined_Selector"); 
-  nin   = _nin; nout = _nout; n = nin+nout;
-  fl    = _fl;
+  m_name  = std::string("Combined_Selector"); 
+  m_nin   = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl    = _fl;
+  m_count = 0;
 
   if (_seldata==NULL) return; 
   int                               type;
@@ -26,8 +27,8 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
     init = 1;
     for (int j=0;j<activetypes.size();j++) {
       if (type==activetypes[j]) {
-	  if (type!=14) sels[j]->SetRange(critflavs,rmin,rmax);
-	  else          sels[j]->SetRange(critflavs,help,rmin,rmax);
+	  if (type!=14) m_sels[j]->SetRange(critflavs,rmin,rmax);
+	  else          m_sels[j]->SetRange(critflavs,help,rmin,rmax);
 	init = 0;
       }
     }
@@ -37,7 +38,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
       case 1  : 
 	if (_nin==2) {
 	  int instrong = 0;
-	  for (int j=0;j<_nin;j++) { if (_fl[j].strong()) instrong++; }
+	  for (int j=0;j<_nin;j++) { if (_fl[j].Strong()) instrong++; }
 	  if (instrong==0) jettype = 1;
 	  if (instrong==1) jettype = 2;
 	  if (instrong==2) jettype = 4;
@@ -81,40 +82,40 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 Combined_Selector::~Combined_Selector()
 {
   int count=0;
-  for(int i=0; i<sels.size(); ++i) {
-    if (sels[i-count]) delete sels[i-count];
+  for(int i=0; i<m_sels.size(); ++i) {
+    if (m_sels[i-count]) delete m_sels[i-count];
     count++;
   }
 }
 
 void Combined_Selector::Add(Selector_Base * sel) { 
-  if (sel != NULL) sels.push_back(sel); 
+  if (sel != NULL) m_sels.push_back(sel); 
 }
 
-bool Combined_Selector::Trigger(const vec4d* p) 
+bool Combined_Selector::Trigger(const Vec4D* p) 
 {
-  count++;
-  if (!(count%1000000)) Output(); 
-  for (short int i=0; i<sels.size(); ++i) {
-    if (!(sels[i]->Trigger(p))) return 0;
+  m_count++;
+  if (!(m_count%1000000)) Output(); 
+  for (short int i=0; i<m_sels.size(); ++i) {
+    if (!(m_sels[i]->Trigger(p))) return 0;
   }
   return 1;
 }
 
 void Combined_Selector::BuildCuts(Cut_Data * cuts)
 {
-  for (short int i=0; i<sels.size(); ++i) sels[i]->BuildCuts(cuts);
+  for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->BuildCuts(cuts);
 }
 
 void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 {
-  for (short int i=0; i<sels.size(); ++i) sels[i]->UpdateCuts(sprime,y,cuts);
+  for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->UpdateCuts(sprime,y,cuts);
 }
 
 void Combined_Selector::Output()
 {
   AORGTOOLS::msg.Tracking()<<"========================================="<<std::endl
-			   <<"Efficiency of the Selector : "<<name<<std::endl;
-  for (short int i=0; i<sels.size(); ++i) sels[i]->Output();
+			   <<"Efficiency of the Selector : "<<m_name<<std::endl;
+  for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->Output();
   AORGTOOLS::msg.Tracking()<<"========================================="<<std::endl;
 }

@@ -22,11 +22,21 @@ namespace AORGTOOLS {
     //     };
     // which the user defines herself, since it was somehow dropped from
     // the set of algorithms provided by the standard library:
-    template <class InputIterator, class OutputIterator, class Predicate>
-    void copy_if( InputIterator first, InputIterator last, OutputIterator out,
+    template <class InIter, class OutIter, class Predicate>
+    void copy_if( InIter first, InIter last, OutIter out,
 		  Predicate pred ) {
 	for ( ; first != last; ++first ) { if ( pred(*first) ) out = *first; }
     }
 
+
+  /*!
+    \file
+    \brief contains the copy_if template (somehow  missing in STL) 
+  */
+
+  /*!
+    \fn copy_if ( InIter first, InIter last, OutIter out, Predicate pred )
+    \brief copy_if is provided since it is somehow missing in STL
+  */
 }
 #endif

@@ -17,7 +17,7 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) :
   Single_XS(_nin,_nout,_fl) 
 {
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
-  a  = _fl[0].isanti();
+  a  = _fl[0].IsAnti();
   colours[0][a] = colours[2][a] = 500;
   colours[1][a] = colours[3][a] = 501;
 
@@ -30,7 +30,7 @@ double XS_q1q2_q1q2::operator()(double s,double t,double u) {
 };
 
 bool XS_q1q2_q1q2::SetColours(double s,double t,double u) { 
-  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 bool XS_q1q2_q1q2::SetColours()                           { return 1; }
@@ -44,7 +44,7 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(int _nin,int _nout,
 {
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
-  a = _fl[0].isanti();
+  a = _fl[0].IsAnti();
   p = 1-a;
   colours[0][a] = colours[1][p] = 500;
   colours[2][0] = colours[3][1] = 501;
@@ -58,7 +58,7 @@ double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
 };
 
 bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u) { 
-  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 bool XS_q1qbar1_q2qbar2::SetColours()                           { return 1; }
@@ -70,7 +70,7 @@ XS_q1q1_q1q1::XS_q1q1_q1q1(int _nin,int _nout, Flavour * _fl) :
 {
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
-  a  = _fl[0].isanti();
+  a  = _fl[0].IsAnti();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 };
@@ -84,7 +84,7 @@ double XS_q1q1_q1q1::operator()(double s,double t,double u) {
 
 bool XS_q1q1_q1q1::SetColours(double s, double t, double u) 
 {
-  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   Mt    = (s*s + u*u) / (t*t);
   Mu    = (s*s + t*t) / (u*u);
   return SetColours();
@@ -92,7 +92,7 @@ bool XS_q1q1_q1q1::SetColours(double s, double t, double u)
 
 
 bool XS_q1q1_q1q1::SetColours() {
-  if (Mt > (Mt+Mu) * Ran.get()) {
+  if (Mt > (Mt+Mu) * ran.Get()) {
     colours[3][a] = colours[0][a] = 500;
     colours[2][a] = colours[1][a] = 501;
   }
@@ -111,7 +111,7 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(int _nin,int _nout,
 {
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
-  a  = _fl[0].isanti();
+  a  = _fl[0].IsAnti();
   p  = 1-a;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
@@ -128,12 +128,12 @@ double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
 bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
   Mt    = (s*s + u*u) / (t*t);
   Ms    = (t*t + u*u) / (s*s);
-  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
 
 bool XS_q1qbar1_q1qbar1::SetColours() {
-  if (Mt >  (Mt+Ms) * Ran.get()) {
+  if (Mt >  (Mt+Ms) * ran.Get()) {
     colours[0][a] = colours[2][a] = 500;	
     colours[1][p] = colours[3][p] = 501;
   }
@@ -152,7 +152,7 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(int _nin,int _nout,
 {
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
 
-  a = _fl[0].isanti();
+  a = _fl[0].IsAnti();
   p = 1-a;
 
   colours[0][a] = 500;
@@ -172,12 +172,12 @@ double XS_q1qbar1_gg::operator()(double s,double t,double u) {
 bool XS_q1qbar1_gg::SetColours(double s, double t, double u) {
   Mt    = u/t;
   Mu    = t/u;
-  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
 
 bool XS_q1qbar1_gg::SetColours() {
-  if (Mt > (Mt+Mu) * Ran.get()) {
+  if (Mt > (Mt+Mu) * ran.Get()) {
     colours[2][a] = colours[0][a];
     colours[3][p] = colours[1][p];
     colours[2][p] = colours[3][a] = 502;
@@ -214,12 +214,12 @@ double XS_gg_q1qbar1::operator()(double s,double t,double u) {
 bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
   Mt    = u/t;
   Mu    = t/u;
-  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
 
 bool XS_gg_q1qbar1::SetColours() {
-  if (Mt > (Mt+Mu) * Ran.get()) {
+  if (Mt > (Mt+Mu) * ran.Get()) {
     colours[2][0] = colours[0][0];
     colours[3][1] = colours[1][1] = 502;
     colours[1][0] = colours[0][1];
@@ -238,7 +238,7 @@ XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) :
   Single_XS(_nin,_nout,_fl) 
 {
   for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
-  a = _fl[0].isanti();
+  a = _fl[0].IsAnti();
 
   colours[0][a] = 500;
   colours[2][a] = 501;
@@ -256,12 +256,12 @@ double XS_q1g_q1g::operator()(double s,double t,double u) {
 bool XS_q1g_q1g::SetColours(double s, double t, double u) {
   Ms    = u/s;
   Mu    = s/u;
-  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
       
 bool XS_q1g_q1g::SetColours() {
-  if (Ms > (Ms+Mu) * Ran.get()) {
+  if (Ms > (Ms+Mu) * ran.Get()) {
     colours[3][a] = colours[0][a];
     colours[3][p] = colours[1][p] = 502;
     colours[1][a] = colours[2][a];
@@ -298,12 +298,12 @@ bool XS_gg_gg::SetColours(double s, double t, double u) {
   Ms    = 1 - t*u/(s*s);
   Mt    = 1 - s*u/(t*t);
   Mu    = 1 - s*t/(u*u);
-  //  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
     
 bool XS_gg_gg::SetColours() {
-  double rr = Ran.get() * (Ms+Mt+Mu);
+  double rr = ran.Get() * (Ms+Mt+Mu);
   if (rr-Mt < 0.) {
     colours[2][0] = colours[0][0];
     colours[3][1] = colours[1][1];

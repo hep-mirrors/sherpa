@@ -51,23 +51,23 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
 {
   if (p==0) return; 
 
-  if (p->fl.isvector() && p->number>99){
+  if (p->fl.IsVector() && p->number>99){
     p->m = 1;
     notcut++;
     //cout<<"+++++++++Cut:"<< p->number<<endl;
-    if(fromfermion&&p->left->fl.isfermion()){
+    if(fromfermion&&p->left->fl.IsFermion()){
       //      cout<<"MarkCut: "<<p->number<<" not cutted"<<endl;
       p->m=0;
       }
-    if(AMATOOLS::IsZero(p->fl.mass())){
+    if(AMATOOLS::IsZero(p->fl.Mass())){
       p->m=0;
       }	
-    /*if(!(p->left->fl.kfcode()==kf::gluon&&p->right->fl.kfcode()==kf::gluon&&!fromfermion)){
+    /*if(!(p->left->fl.Kfcode()==kf::gluon&&p->right->fl.Kfcode()==kf::gluon&&!fromfermion)){
       cout<<"MarkCut: "<<p->number<<" not cutted (1)"<<endl;
       p->m=0;
       //notcut=true;
       }*/
-    /* if(!(p->fl.kfcode()==kf::photon||p->fl.kfcode()==kf::Z)){
+    /* if(!(p->fl.Kfcode()==kf::photon||p->fl.Kfcode()==kf::Z)){
       cout<<"MarkCut: "<<p->number<<" not cutted (1)"<<endl;
       p->m=0;
       }*/
@@ -78,17 +78,17 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
   //p->m = 0;
 
   // "new gauge test" cut all massless propagators
-  if (p->fl.isvector() && p->number>99  && rpa.me.CutScheme()==1) {
-    if(AMATOOLS::IsZero(p->fl.mass())){
+  if (p->fl.IsVector() && p->number>99  && rpa.me.CutScheme()==1) {
+    if(AMATOOLS::IsZero(p->fl.Mass())){
       p->m=1;
       }	
 
   }
 
 
-  MarkCut(p->right,notcut,p->fl.isfermion());
-  MarkCut(p->left,notcut,p->fl.isfermion());
-  MarkCut(p->middle,notcut,p->fl.isfermion()); 
+  MarkCut(p->right,notcut,p->fl.IsFermion());
+  MarkCut(p->left,notcut,p->fl.IsFermion());
+  MarkCut(p->middle,notcut,p->fl.IsFermion()); 
 }
 
 void Zfunc_Generator::Convert(Point* p)
@@ -96,19 +96,19 @@ void Zfunc_Generator::Convert(Point* p)
   Zfunc* Zh = 0;
   if ((p->left==0) && (p->right==0)) return;
  
-  if ( p->fl.isfermion() || p->fl.isscalar() || 
-       (p->fl.isvector() && p->number<99) || p->m==1) {
+  if ( p->fl.IsFermion() || p->fl.IsScalar() || 
+       (p->fl.IsVector() && p->number<99) || p->m==1) {
     Zh = new Zfunc;
     Point* pb;
     Point* pf;
     pb = pf = 0;
     
-    if (p->fl.isfermion()) {
-      if (p->left->fl.isboson()) {
+    if (p->fl.IsFermion()) {
+      if (p->left->fl.IsBoson()) {
 	pb = p->left;
 	pf = p->right;
       }
-      if (p->right->fl.isboson()) {
+      if (p->right->fl.IsBoson()) {
 	pb = p->right;
 	pf = p->left;
       }
@@ -121,23 +121,23 @@ void Zfunc_Generator::Convert(Point* p)
       cout<<"Unknown lorentz sequence found! Cutting...";
       Point* ph=pb->right;
       //cout<<"right "<<ph->fl<<endl;
-      if (!( ph->fl.isfermion() || ph->fl.isscalar() || 
-	     (ph->fl.isvector() && ph->number<99) || ph->m==1)&&ph->left)
-	if(!(ph->left->fl.isfermion()))
+      if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
+	     (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
+	if(!(ph->left->fl.IsFermion()))
 	  {ph->m=1;cout<<"right"<<endl;}
       else {
 	ph=pb->left;
 	//cout<<"left "<<ph->fl<<endl;
-	if (!( ph->fl.isfermion() || ph->fl.isscalar() || 
-	       (ph->fl.isvector() && ph->number<99) || ph->m==1)&&ph->left)
-	  if(!(ph->left->fl.isfermion()))
+	if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
+	       (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
+	  if(!(ph->left->fl.IsFermion()))
 	    {ph->m=1;cout<<"left"<<endl;}
 	else if(p->middle){
 	  ph=pb->middle;
 	  //cout<<"middle "<<ph->fl<<endl;
-	  if (!( ph->fl.isfermion() || ph->fl.isscalar() || 
-		 (ph->fl.isvector() && ph->number<99) || ph->m==1)&&ph->left)
-	    if(!(ph->left->fl.isfermion()))
+	  if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
+		 (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
+	    if(!(ph->left->fl.IsFermion()))
 	      {ph->m=1;cout<<"middle"<<endl;}
 	}
       }
@@ -154,7 +154,7 @@ void Zfunc_Generator::Convert(Point* p)
 
 void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflist)
 { 
-  if (pb->left==0 && pb->fl.isscalar()) return;
+  if (pb->left==0 && pb->fl.IsScalar()) return;
  
   lflist.push_back(*(pb->Lorentz));
 
@@ -163,10 +163,10 @@ void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflis
   IsGaugeV(pb,skal,vec);      
   
   if (skal+vec>=3) {
-    if (pb->left->fl.isvector() && pb->left->m==0)  Lorentz_Sequence(pb->left,lflist);
-    if (pb->right->fl.isvector() && pb->right->m==0) Lorentz_Sequence(pb->right,lflist);
+    if (pb->left->fl.IsVector() && pb->left->m==0)  Lorentz_Sequence(pb->left,lflist);
+    if (pb->right->fl.IsVector() && pb->right->m==0) Lorentz_Sequence(pb->right,lflist);
     if (pb->middle!=0) {
-            if (pb->middle->fl.isvector() && pb->middle->m==0) Lorentz_Sequence(pb->middle,lflist);
+            if (pb->middle->fl.IsVector() && pb->middle->m==0) Lorentz_Sequence(pb->middle,lflist);
       if (pb->middle->m==1) {
 	Lorentz_Function lf(lf::Pol);
 	lf.SetParticleArg(pb->middle->number);
@@ -216,13 +216,13 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
 
   if (pf!=0) lflist.push_back(*(p->Lorentz));
 
-  if (pf==0 && pb->fl.isvector()) {
+  if (pf==0 && pb->fl.IsVector()) {
     Lorentz_Function lf(lf::Pol);
     lf.SetParticleArg(pb->number);
     lflist.push_back(lf);
   }
   
-  if (!( (pb->fl.isscalar() || pb->m==1) && pf!=0)) Lorentz_Sequence(pb,lflist);
+  if (!( (pb->fl.IsScalar() || pb->m==1) && pf!=0)) Lorentz_Sequence(pb,lflist);
   else {
     if (pb->m==1 && pf!=0) {
       Lorentz_Function lf(lf::Pol);
@@ -567,18 +567,18 @@ void Zfunc_Generator::SearchNextProp(int Nargs,
 void Zfunc_Generator::SetArgs(Zfunc* Zh,int* lfnumb,int* canumb,Point* pb,Point* p,int& icoupl)
 {
   if (pb==0) return;
-  //if (!pb->fl.isvector()) return;
+  //if (!pb->fl.IsVector()) return;
 
 
   for (short int i=0;i<Zh->calculator->pn;i++) {
     if (lfnumb[i]==pb->number) {
-      if (pb->number<99 || pb->fl.isscalar() || pb->m==1) Set_Out(Zh,canumb[i],pb,p);
+      if (pb->number<99 || pb->fl.IsScalar() || pb->m==1) Set_Out(Zh,canumb[i],pb,p);
       else {
-	if  (!pb->left->fl.isvector() && !pb->right->fl.isvector()) Set_Out(Zh,canumb[i],pb,p);
+	if  (!pb->left->fl.IsVector() && !pb->right->fl.IsVector()) Set_Out(Zh,canumb[i],pb,p);
 	else {
 	  Zh->coupl[icoupl]                   = pb->cpl[1];icoupl++;
 	  Zh->psnew[abs(canumb[i])].numb      = pb->number;
-	  Zh->psnew[abs(canumb[i])].kfcode    = (pb->fl).kfcode();
+	  Zh->psnew[abs(canumb[i])].kfcode    = (pb->fl).Kfcode();
 	  Zh->psnew[abs(canumb[i])].direction = Direction::Outgoing;
 	  if (canumb[i]<0) 
 	    Zh->psnew[abs(canumb[i])].direction = Direction::Incoming;
@@ -596,7 +596,7 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
 {
   //  cout<<"Incoming: "<<number<<" : "<<pb->number<<endl;
   Zh->psnew[number].numb      = pb->number;
-  Zh->psnew[number].kfcode    = (pb->fl).kfcode();
+  Zh->psnew[number].kfcode    = (pb->fl).Kfcode();
   Zh->psnew[number].direction = Direction::Incoming;
   
   if (pf!=0) {
@@ -610,7 +610,7 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
       }
     }
 
-    if ((p->fl).isanti()) {
+    if ((p->fl).IsAnti()) {
       Zh->arg[number*2+1] = p->number;
       Zh->arg[number*2]   = pf->number;
     }
@@ -639,13 +639,13 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
       //incoming boson
       Zh->arg[number*2+1]   = p->number;
       
-      if ((p->fl).isscalar()) {
+      if ((p->fl).IsScalar()) {
 	Zh->arg[number*2]     = p->number;
 	Zh->coupl[number*2]   = Complex(0.,0.);
 	Zh->coupl[number*2+1] = Complex(0.,0.);
       }
       else {
-	if (p->fl.isvector() && !AMATOOLS::IsZero(p->fl.mass())) Zh->arg[number*2] = p->number+20;
+	if (p->fl.IsVector() && !AMATOOLS::IsZero(p->fl.Mass())) Zh->arg[number*2] = p->number+20;
 	                                                    else Zh->arg[number*2] = p->number+10+1;
 	Zh->coupl[number*2]   = Complex(1.,0.);
 	Zh->coupl[number*2+1] = Complex(1.,0.);
@@ -659,11 +659,11 @@ void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
   //setting an outgoing in gauge vertices
   if (Zh->pn>number) {
     Zh->psnew[number].numb      = pg->number;
-    Zh->psnew[number].kfcode    = (pg->fl).kfcode();
+    Zh->psnew[number].kfcode    = (pg->fl).Kfcode();
     Zh->psnew[number].direction = Direction::Outgoing;
   }
 
-  if ((pg->fl).isscalar() && pg->left==0) {
+  if ((pg->fl).IsScalar() && pg->left==0) {
     Zh->arg[number*2]     = pg->number;
     Zh->arg[number*2+1]   = pg->number;
     Zh->coupl[number*2]   = Complex(0.,0.);
@@ -689,11 +689,11 @@ void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
       Zh->arg[number*2]     = pg->number;
       if (BS->Sign(pg->number)==-1) {
 	Zh->arg[number*2+1]     = pg->number;
-	if (pg->fl.isvector() && !AMATOOLS::IsZero(pg->fl.mass())) Zh->arg[number*2] = pg->number+20;
+	if (pg->fl.IsVector() && !AMATOOLS::IsZero(pg->fl.Mass())) Zh->arg[number*2] = pg->number+20;
 	                                                      else Zh->arg[number*2] = pg->number+10+1;
       }
       else {
-	if (pg->fl.isvector() && !AMATOOLS::IsZero(pg->fl.mass())) Zh->arg[number*2+1] = pg->number+20;
+	if (pg->fl.IsVector() && !AMATOOLS::IsZero(pg->fl.Mass())) Zh->arg[number*2+1] = pg->number+20;
 	else Zh->arg[number*2+1] = pg->number+10+1;
       }
       Zh->coupl[number*2]   = Complex(1.,0.);
@@ -707,17 +707,17 @@ void Zfunc_Generator::IsGaugeV(Point* p,int& skal,int& vec)
   skal = 0;
   vec  = 0;
   if (p->left!=0) {
-    if ((p->fl).isscalar())        skal++;
-    if ((p->left->fl).isscalar())  skal++;
-    if ((p->right->fl).isscalar()) skal++;
+    if ((p->fl).IsScalar())        skal++;
+    if ((p->left->fl).IsScalar())  skal++;
+    if ((p->right->fl).IsScalar()) skal++;
 
-    if ((p->fl).isvector())        vec++;
-    if ((p->left->fl).isvector())  vec++;
-    if ((p->right->fl).isvector()) vec++;
+    if ((p->fl).IsVector())        vec++;
+    if ((p->left->fl).IsVector())  vec++;
+    if ((p->right->fl).IsVector()) vec++;
 
     if (p->middle!=0) {
-      if ((p->middle->fl).isscalar()) skal++;
-      if ((p->middle->fl).isvector()) vec++;
+      if ((p->middle->fl).IsScalar()) skal++;
+      if ((p->middle->fl).IsVector()) vec++;
     }
   }
 }

@@ -140,7 +140,7 @@ namespace APACIC {
     bool JetVeto(Knot *);
 
     //! Uniform distribution of phi, angular correlations to be imposed.
-    void   UniformPhi() { phi =  2.*M_PI*AMATOOLS::Ran.get(); };
+    void   UniformPhi() { phi =  2.*M_PI*AMATOOLS::ran.Get(); };
   };
 }
 #endif

@@ -25,7 +25,7 @@ namespace PDF {
     }
     // returns x times the parton distribution corresponding to the given flavour
     double GetXPDF(const APHYTOOLS::Flavour & fl) {
-      //    kf::code kfc=fl.kfcode(); does not hold anti information
+      //    kf::code kfc=fl.Kfcode(); does not hold anti information
       int kfc=anti*int(fl);
       switch (kfc) {
       case  APHYTOOLS::kf::d : return (content.dnv + content.dsea);
@@ -54,7 +54,7 @@ namespace PDF {
     double             GetQ2Min() { return MRST99::qsqmin; };
     double             GetQ2Max() { return MRST99::qsqmax; };
     APHYTOOLS::Flavour Beam()     { 
-      if (anti==-1) return APHYTOOLS::Flavour(APHYTOOLS::kf::p_plus).bar();
+      if (anti==-1) return APHYTOOLS::Flavour(APHYTOOLS::kf::p_plus).Bar();
       return               APHYTOOLS::Flavour(APHYTOOLS::kf::p_plus);
     }
     std::vector<APHYTOOLS::Flavour> Partons() { return partons; }

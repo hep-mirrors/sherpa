@@ -95,7 +95,7 @@ void Multi_Channel::ResetOpt()
 void Multi_Channel::MPIOptimize()
 {
 #ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_rank();
+  int rank = MPI::COMM_WORLD.Get_Rank();
   int size = MPI::COMM_WORLD.Get_size();
   
   cout<<"Process "<<rank<<" in MPIOptimize()."<<endl;
@@ -258,7 +258,7 @@ double Multi_Channel::Variance() {
 };
 
 
-void Multi_Channel::GenerateWeight(int n,vec4d* p,Cut_Data * cuts) 
+void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts) 
 {
   if (channels[n]->Alpha() > 0.) {
     channels[n]->GenerateWeight(p,cuts);
@@ -268,7 +268,7 @@ void Multi_Channel::GenerateWeight(int n,vec4d* p,Cut_Data * cuts)
   else weight = 0.;
 }
 
-void Multi_Channel::GenerateWeight(vec4d * p,Cut_Data * cuts)
+void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
   weight = 0.;
   for (short int i=0; i<channels.size(); ++i) {
@@ -286,19 +286,19 @@ void Multi_Channel::GenerateWeight(vec4d * p,Cut_Data * cuts)
 }
 
 
-void Multi_Channel::GeneratePoint(int n,vec4d * p,Cut_Data * cuts,double * ran)
+void Multi_Channel::GeneratePoint(int n,Vec4D * p,Cut_Data * cuts,double * ran)
 {
   channels[n]->GeneratePoint(p,cuts,ran);
 }
 
-void Multi_Channel::GeneratePoint(vec4d* p,Cut_Data * cuts)
+void Multi_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 {
   for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
-  double ran = Ran.get();
+  double rn  = ran.Get();
   double sum = 0;
   for (short int i=0;i<channels.size();i++) {
     sum += channels[i]->Alpha();
-    if (sum>ran) {
+    if (sum>rn) {
       //      cout<<"Channel number "<<i<<endl;
       channels[i]->GeneratePoint(p,cuts);
       break;
@@ -306,7 +306,7 @@ void Multi_Channel::GeneratePoint(vec4d* p,Cut_Data * cuts)
   }  
 }
 
-void Multi_Channel::GenerateWeight(int n,vec4d* p) 
+void Multi_Channel::GenerateWeight(int n,Vec4D* p) 
 {
   if (channels[n]->Alpha() > 0.) {
     channels[n]->GenerateWeight(p);
@@ -317,7 +317,7 @@ void Multi_Channel::GenerateWeight(int n,vec4d* p)
 }
 
 
-void Multi_Channel::GenerateWeight(vec4d * p)
+void Multi_Channel::GenerateWeight(Vec4D * p)
 {
   weight = 0.;
   for (short int i=0; i<channels.size(); ++i) {
@@ -335,19 +335,19 @@ void Multi_Channel::GenerateWeight(vec4d * p)
 }
 
 
-void Multi_Channel::GeneratePoint(int n,vec4d * p,double * ran)
+void Multi_Channel::GeneratePoint(int n,Vec4D * p,double * rn)
 {
-  channels[n]->GeneratePoint(p,ran);
+  channels[n]->GeneratePoint(p,rn);
 }
 
-void Multi_Channel::GeneratePoint(vec4d* p)
+void Multi_Channel::GeneratePoint(Vec4D* p)
 {
   for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
-  double ran = Ran.get();
+  double rn  = ran.Get();
   double sum = 0;
   for (short int i=0;i<channels.size();i++) {
     sum += channels[i]->Alpha();
-    if (sum>ran) {
+    if (sum>rn) {
       channels[i]->GeneratePoint(p);
       break;
     }
@@ -381,12 +381,12 @@ void Multi_Channel::GenerateWeight(int n,double sprime,double y,int mode) {
 
 void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
   for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
-  double disc = Ran.get();
+  double disc = ran.Get();
   double sum  = 0;
   for (short int n=0;n<channels.size();n++) {
     sum += channels[n]->Alpha();
     if (sum>disc) {
-      for (int i=0;i<2;i++) rans[i] = Ran.get();
+      for (int i=0;i<2;i++) rans[i] = ran.Get();
       channels[n]->GeneratePoint(sprime,y,mode,rans);
       return;
     }
@@ -394,7 +394,7 @@ void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
 }
 
 void Multi_Channel::GeneratePoint(int n,double & sprime,double & y,int mode) {
-  for (int i=0;i<2;i++) rans[i] = Ran.get();
+  for (int i=0;i<2;i++) rans[i] = ran.Get();
   channels[n]->GeneratePoint(sprime,y,mode,rans);
 }
 

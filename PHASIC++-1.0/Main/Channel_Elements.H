@@ -18,9 +18,9 @@ namespace PHASIC {
       the two decay products with given masses 4-pi isotropically and 
       to boost back. The weight is just a constant.
     */
-    double Isotropic2Weight(const AMATOOLS::vec4d&,const AMATOOLS::vec4d&);
-    void Isotropic2Momenta(AMATOOLS::vec4d,double&,double&,
-			   AMATOOLS::vec4d&,AMATOOLS::vec4d&,double,double);
+    double Isotropic2Weight(const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&);
+    void Isotropic2Momenta(AMATOOLS::Vec4D,double&,double&,
+			   AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,double,double);
     /*!
       Weights and momenta for anisotropic two-body decays as they occur
       in splittings involving one outgoing massless vector boson.
@@ -29,25 +29,25 @@ namespace PHASIC {
       of the decaying particle. 
     */
     double Anisotropic2Weight(double,double,double,
-			      const AMATOOLS::vec4d&,const AMATOOLS::vec4d&);
-    void Anisotropic2Momenta(AMATOOLS::vec4d,double,double,double,double,double,
-			     AMATOOLS::vec4d&,AMATOOLS::vec4d&,double,double);
+			      const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&);
+    void Anisotropic2Momenta(AMATOOLS::Vec4D,double,double,double,double,double,
+			     AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,double,double);
     /*!
       Weights and momenta for a Tchannel process. Again, there is a strong peak in
       the forward direction in order to minimize the mass of the propagator.
     */
-    double TChannelWeight(const AMATOOLS::vec4d&,const AMATOOLS::vec4d&,
-			  const AMATOOLS::vec4d&,const AMATOOLS::vec4d&,
+    double TChannelWeight(const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&,
+			  const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&,
 			  double,double,double,double,double,int);
-    int TChannelMomenta(AMATOOLS::vec4d,AMATOOLS::vec4d,AMATOOLS::vec4d&,AMATOOLS::vec4d&,
+    int TChannelMomenta(AMATOOLS::Vec4D,AMATOOLS::Vec4D,AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,
 			double&,double&,double,double,double,double,double,int,double,double);
     /* Decay p -> q + p1, q is space-like with energy Eq given from outside
        cos(pq) is constrianed by ctmin and ctmax. */
     double BremsstrahlungWeight(double,double,double,
-				const AMATOOLS::vec4d&,const AMATOOLS::vec4d&);
-    void BremsstrahlungMomenta(AMATOOLS::vec4d&,const double,const double,const double,
+				const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&);
+    void BremsstrahlungMomenta(AMATOOLS::Vec4D&,const double,const double,const double,
 			       const double,const double,const double,
-			       AMATOOLS::vec4d &, AMATOOLS::vec4d &,const double,const double);
+			       AMATOOLS::Vec4D &, AMATOOLS::Vec4D &,const double,const double);
     /*!
       Scale and weight for a massless propagator. It is distributed 
       according to a simple pole structure peaking at 0 (or the minimal
@@ -72,9 +72,9 @@ namespace PHASIC {
     double ThresMomenta(double,double,double,double,double);
     double ThresWeight(double,double,double,double,double);
     /*
-      double Isotropic3Weight(const AMATOOLS::vec4d&,const AMATOOLS::vec4d&,const AMATOOLS::vec4d&);
-      void Isotropic3Momenta(const AMATOOLS::vec4d&,const double,
-      AMATOOLS::vec4d&,AMATOOLS::vec4d&,AMATOOLS::vec4d&,
+      double Isotropic3Weight(const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&);
+      void Isotropic3Momenta(const AMATOOLS::Vec4D&,const double,
+      AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,
       const double,const double,const double);
     */
     double DiceYUniform(double, double *, double *, int, double);

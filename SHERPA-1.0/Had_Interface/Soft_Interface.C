@@ -24,7 +24,7 @@ Soft_Interface::Soft_Interface() {
   msg.Out()<<" LUND_SIGMA = "<<lund_sigma<<endl;
 
   lund      = new Lund_Fortran_Interface(lund_a,lund_b,lund_sigma);
-  if (rpa.gen.Beam1().ishadron() || rpa.gen.Beam2().ishadron()) {
+  if (rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) {
     constituents = new Flavour *[2];
     for (int i=0;i<2;i++) constituents[i] = new Flavour[3];
     n_const      = new int[2];
@@ -98,11 +98,11 @@ bool Soft_Interface::ExtractSinglets(Blob_List * bl,Parton_List * pl) {
   bool   use_one_blob=1;
 
   for (Parton_Iterator piter = pl->begin();piter != pl->end();++piter) {
-    if ( ( ((*piter)->info() == 'F') || ((*piter)->info() == 'H') ) &&
-	 ( (*piter)->status() == 1) ) {
-      if ( ((((*piter)->flav().isquark()) && (!(*piter)->flav().isanti())) ||
-	    (((*piter)->flav().isdiquark()) && (*piter)->flav().isanti())) &&
-	   ((*piter)->flow(1) > 0)) {
+    if ( ( ((*piter)->Info() == 'F') || ((*piter)->Info() == 'H') ) &&
+	 ( (*piter)->Status() == 1) ) {
+      if ( ((((*piter)->Flav().IsQuark()) && (!(*piter)->Flav().IsAnti())) ||
+	    (((*piter)->Flav().IsDiQuark()) && (*piter)->Flav().IsAnti())) &&
+	   ((*piter)->GetFlow(1) > 0)) {
 	msg.Debugging()<<"   Start new singlet chain."<<std::endl
 		       <<"   for parton : "<<(*piter)<<std::endl;
 
@@ -115,8 +115,8 @@ bool Soft_Interface::ExtractSinglets(Blob_List * bl,Parton_List * pl) {
 	  bl->push_back(newb);
 	}
 
-	(*piter)->set_status(2);
-	(*piter)->set_dec(newb);
+	(*piter)->SetStatus(2);
+	(*piter)->SetDec(newb);
 
 	mypartons->push_back((*piter));
 	newb->AddToInPartons(new Parton(*piter));
@@ -146,23 +146,23 @@ bool Soft_Interface::FindConnected(Parton_List * pl,Parton * compare,Blob * blob
 
   for (Parton_Iterator piter = pl->begin();piter != pl->end();++piter) {
     if ((*piter) == compare) continue;
-    if ( ((*piter)->info() != 'F') && ((*piter)->info() != 'H')) continue;
-    if ((*piter)->status() != 1) continue; 
-    if ((*piter)->flow(2) == compare->flow(1)) {
-      msg.Debugging()<<"Colour match for "<<compare->flow(1)<<std::endl;
+    if ( ((*piter)->Info() != 'F') && ((*piter)->Info() != 'H')) continue;
+    if ((*piter)->Status() != 1) continue; 
+    if ((*piter)->GetFlow(2) == compare->GetFlow(1)) {
+      msg.Debugging()<<"Colour match for "<<compare->GetFlow(1)<<std::endl;
       Parton * newp = (*piter);
-      newp->set_status(2);
-      newp->set_dec(blob);
+      newp->SetStatus(2);
+      newp->SetDec(blob);
 
       mypartons->push_back(newp);
       blob->AddToInPartons(new Parton(newp));
 
-      if ((*piter)->flow(1) ==0) {
-	if (((*piter)->flav().isquark()) && ((*piter)->flav().isanti())) {
+      if ((*piter)->GetFlow(1) ==0) {
+	if (((*piter)->Flav().IsQuark()) && ((*piter)->Flav().IsAnti())) {
 	  msg.Debugging()<<"Closed singlet list with an antiquark."<<std::endl;
 	  return 1;
 	}
-	if (((*piter)->flav().isdiquark()) && (!((*piter)->flav().isanti()))) {
+	if (((*piter)->Flav().IsDiQuark()) && (!((*piter)->Flav().IsAnti()))) {
 	  msg.Debugging()<<"Closed singlet list with a diquark."<<std::endl;
 	  return 1;
 	}
@@ -188,7 +188,7 @@ bool Soft_Interface::FindConnected(Parton_List * pl,Parton * compare,Blob * blob
 
 bool Soft_Interface::HadronsToPartons(Blob_List * bl,Parton_List * pl) {
   Flavour  flav;
-  vec4d    vec;
+  Vec4D    vec;
   Parton * beam;
   Blob   * blob;
 
@@ -204,15 +204,15 @@ bool Soft_Interface::HadronsToPartons(Blob_List * bl,Parton_List * pl) {
 
       if ((*biter)->Beam()==0) {
 	flav = rpa.gen.Beam1();
-	vec  = vec4d(rpa.gen.Ecms()/2.,0.,0.,
-		     sqrt(sqr(rpa.gen.Ecms()/2.)-sqr(flav.mass())));
+	vec  = Vec4D(rpa.gen.Ecms()/2.,0.,0.,
+		     sqrt(sqr(rpa.gen.Ecms()/2.)-sqr(flav.Mass())));
 	beam = new Parton(-1,flav,vec);
 	blob->SetBeam(0);
       }
       if ((*biter)->Beam()==1) {
 	flav = rpa.gen.Beam2();
-	vec  = vec4d(rpa.gen.Ecms()/2.,0.,0.,
-		     -sqrt(sqr(rpa.gen.Ecms()/2.)-sqr(flav.mass())));
+	vec  = Vec4D(rpa.gen.Ecms()/2.,0.,0.,
+		     -sqrt(sqr(rpa.gen.Ecms()/2.)-sqr(flav.Mass())));
 	beam = new Parton(-1,flav,vec);
 	blob->SetBeam(1);
       }      
@@ -223,14 +223,14 @@ bool Soft_Interface::HadronsToPartons(Blob_List * bl,Parton_List * pl) {
 }
 
 int Soft_Interface::Constituents(Flavour had,Flavour * flavs) {
-  int hadint = (had.kfcode() - had.kfcode()/10000)/10;
+  int hadint = (had.Kfcode() - had.Kfcode()/10000)/10;
 
   if ((hadint > 100) && (hadint < 1000)) {
     flavs[0] = Flavour(kf::code(hadint)/100);
     flavs[1] = Flavour(kf::code((hadint-(hadint/100)*100)/10));
     flavs[2] = Flavour(kf::code(hadint-(hadint/10)*10));
-    if (had.isanti()) {
-      for(int i=0;i<3;i++) flavs[i]=flavs[i].bar();
+    if (had.IsAnti()) {
+      for(int i=0;i<3;i++) flavs[i]=flavs[i].Bar();
     }
     msg.Events()<<"Soft_Interface::Constituents for "<<had<<" is baryon :"
 		<<hadint<<std::endl<<"   "<<flavs[0]<<", "<<flavs[1]<<", "<<flavs[2]<<std::endl;
@@ -241,8 +241,8 @@ int Soft_Interface::Constituents(Flavour had,Flavour * flavs) {
     flavs[0] = Flavour(kf::code(hadint)/10);
     flavs[1] = Flavour(kf::code(hadint-(hadint/10)*10));
     flavs[2] = Flavour(kf::none);
-    if (had.isanti()) {
-      for(int i=0;i<2;i++) flavs[i]=flavs[i].bar();
+    if (had.IsAnti()) {
+      for(int i=0;i<2;i++) flavs[i]=flavs[i].Bar();
     }
     msg.Events()<<"Soft_Interface::Constituents for "<<had<<" is meson :"
 		<<hadint<<std::endl<<"   "<<flavs[0]<<", "<<flavs[1]<<std::endl;
@@ -258,18 +258,18 @@ int Soft_Interface::Constituents(Flavour had,Flavour * flavs) {
 
 bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
   msg.Tracking()<<"Soft_Interface::FillHadron : "
-		<<part->flav()<<" in "<<blob->InParton(0)->flav()<<std::endl;
+		<<part->Flav()<<" in "<<blob->InParton(0)->Flav()<<std::endl;
 
 
   Parton * newpart = part;
   blob->AddToOutPartons(newpart);
 
-  vec4d vec1,vec2;
+  Vec4D vec1,vec2;
   Flavour fl,difl;
   int di[2];
   int pos;
 
-  vec4d   vec = blob->InParton(0)->momentum() + (-1.)*(part->momentum());
+  Vec4D   vec = blob->InParton(0)->Momentum() + (-1.)*(part->Momentum());
 
 
   /*  
@@ -285,29 +285,29 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
 
   */
   for (int i=0;i<3;i++) {
-    if (part->flav() == constituents[blob->Beam()][i]) {
+    if (part->Flav() == constituents[blob->Beam()][i]) {
       msg.Tracking()<<"   Parton is one of the constituents "
-		    <<blob->InParton(0)->flav()<<std::endl;
+		    <<blob->InParton(0)->Flav()<<std::endl;
 
       pos = 0;
       for (int j=0;j<3;j++) {
 	if (i!=j) {
-	  di[pos]  = constituents[blob->Beam()][j].kfcode();
+	  di[pos]  = constituents[blob->Beam()][j].Kfcode();
 	  pos++;
 	}
       }
       if (di[0] != di[1]) {
-	if (Ran.get()<0.25) difl = Flavour(kf::code(di[0]*1000+di[1]*100+1));
+	if (ran.Get()<0.25) difl = Flavour(kf::code(di[0]*1000+di[1]*100+1));
 	else difl = Flavour(kf::code(di[0]*1000+di[1]*100+3));
       }
       else difl = Flavour(kf::code(di[0]*1100+3));
-      if (constituents[blob->Beam()][0].isanti()) difl = difl.bar();
+      if (constituents[blob->Beam()][0].IsAnti()) difl = difl.Bar();
 
       Parton * newpart1 = new Parton(pl->size(),difl,vec); 
-      newpart1->set_flow(1,part->flow(2));
-      newpart1->set_flow(2,part->flow(1));
-      newpart1->set_prod(blob);
-      newpart1->set_info('F');
+      newpart1->SetFlow(1,part->GetFlow(2));
+      newpart1->SetFlow(2,part->GetFlow(1));
+      newpart1->SetProd(blob);
+      newpart1->SetInfo('F');
       blob->AddToOutPartons(newpart1);
       pl->push_back(newpart1);
       return 1;
@@ -329,52 +329,52 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
       ------------- newpart2 (assumed diquark)                  = (0,b)
 
   */
-  if ((part->flav()).isgluon()) {
-    int single = int(Ran.get()*3.); 
+  if ((part->Flav()).IsGluon()) {
+    int single = int(ran.Get()*3.); 
     fl  = constituents[blob->Beam()][single];
     pos = 0;
     for (int i=0;i<3;i++) {
       if (i!=single) {
-	di[pos]  = constituents[blob->Beam()][i].kfcode();
+	di[pos]  = constituents[blob->Beam()][i].Kfcode();
 	pos++;
       }
     }
     if (di[0] != di[1]) {
-      if (Ran.get()<0.25) difl = Flavour(kf::code(di[0]*1000+di[1]*100+1));
+      if (ran.Get()<0.25) difl = Flavour(kf::code(di[0]*1000+di[1]*100+1));
       else difl = Flavour(kf::code(di[0]*1000+di[1]*100+3));
     }
     else difl = Flavour(kf::code(di[0]*1100+3));
-    if (constituents[blob->Beam()][0].isanti()) difl = difl.bar();
+    if (constituents[blob->Beam()][0].IsAnti()) difl = difl.Bar();
 
     msg.Tracking()<<"   Parton is a gluon."<<std::endl<<"   Split "
-		  <<blob->InParton(0)->flav()<<" into "<<fl<<" and "<<difl<<std::endl;
+		  <<blob->InParton(0)->Flav()<<" into "<<fl<<" and "<<difl<<std::endl;
     
     vec1 = GetX(fl,difl,vec[0]) * vec;
     vec2 = vec + (-1.)*vec1;
 
     Parton * newpart1 = new Parton(pl->size(),fl,vec1); 
-    newpart1->set_prod(blob);
-    newpart1->set_info('F');
+    newpart1->SetProd(blob);
+    newpart1->SetInfo('F');
     blob->AddToOutPartons(newpart1);
     pl->push_back(newpart1);
 
     Parton * newpart2 = new Parton(pl->size(),difl,vec2); 
-    newpart2->set_prod(blob);
-    newpart2->set_info('F');
+    newpart2->SetProd(blob);
+    newpart2->SetInfo('F');
     blob->AddToOutPartons(newpart2);
     pl->push_back(newpart2);
 
-    if (fl.isanti()) {
-      newpart1->set_flow(1,0);
-      newpart1->set_flow(2,part->flow(1));
-      newpart2->set_flow(1,part->flow(2));
-      newpart2->set_flow(2,0);
+    if (fl.IsAnti()) {
+      newpart1->SetFlow(1,0);
+      newpart1->SetFlow(2,part->GetFlow(1));
+      newpart2->SetFlow(1,part->GetFlow(2));
+      newpart2->SetFlow(2,0);
     }
     else {
-      newpart1->set_flow(1,part->flow(2));
-      newpart1->set_flow(2,0);
-      newpart2->set_flow(1,0);
-      newpart2->set_flow(2,part->flow(1));
+      newpart1->SetFlow(1,part->GetFlow(2));
+      newpart1->SetFlow(2,0);
+      newpart2->SetFlow(1,0);
+      newpart2->SetFlow(2,part->GetFlow(1));
     }
     return 1;
   }
@@ -397,50 +397,50 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
       role of newpart1 and newpart3.
   */
 
-  if ((part->flav()).isquark()) {
-    int single = int(Ran.get()*3.); 
+  if ((part->Flav()).IsQuark()) {
+    int single = int(ran.Get()*3.); 
     fl  = constituents[blob->Beam()][single];
     pos = 0;
     for (int i=0;i<3;i++) {
       if (i!=single) {
-	di[pos]  = constituents[blob->Beam()][i].kfcode();
+	di[pos]  = constituents[blob->Beam()][i].Kfcode();
 	pos++;
       }
     }
     if (di[0] != di[1]) {
-      if (Ran.get()<0.25) difl = Flavour(kf::code(di[0]*1000+di[1]*100+1));
+      if (ran.Get()<0.25) difl = Flavour(kf::code(di[0]*1000+di[1]*100+1));
       else difl = Flavour(kf::code(di[0]*1000+di[1]*100+3));
     }
     else difl = Flavour(kf::code(di[0]*1100+3));
-    if (constituents[blob->Beam()][0].isanti()) difl = difl.bar();
+    if (constituents[blob->Beam()][0].IsAnti()) difl = difl.Bar();
 
     msg.Tracking()<<"   Parton is a quark."<<std::endl
-		  <<"   Split "<<blob->InParton(0)->flav()
+		  <<"   Split "<<blob->InParton(0)->Flav()
 		  <<" into "<<fl<<" and "<<difl<<std::endl;
     
     vec1 = GetX(fl,difl,vec[0]) * vec;
-    vec2 = GetX((part->flav()).bar(),difl,vec[0]) * vec;
+    vec2 = GetX((part->Flav()).Bar(),difl,vec[0]) * vec;
 
     Parton * newpart1 = new Parton(pl->size(),fl,vec1); 
-    newpart1->set_prod(blob);
-    newpart1->set_info('F');
+    newpart1->SetProd(blob);
+    newpart1->SetInfo('F');
     blob->AddToOutPartons(newpart1);
     pl->push_back(newpart1);
 
-    Parton * newpart2 = new Parton(pl->size(),(part->flav()).bar(),vec2); 
-    newpart2->set_prod(blob);
-    newpart2->set_info('F');
+    Parton * newpart2 = new Parton(pl->size(),(part->Flav()).Bar(),vec2); 
+    newpart2->SetProd(blob);
+    newpart2->SetInfo('F');
     blob->AddToOutPartons(newpart2);
     pl->push_back(newpart2);
 
     Parton * newpart3 = new Parton(pl->size(),difl,vec + (-1.)*(vec1+vec2)); 
-    newpart3->set_prod(blob);
-    newpart3->set_info('F');
+    newpart3->SetProd(blob);
+    newpart3->SetInfo('F');
     blob->AddToOutPartons(newpart3);
     pl->push_back(newpart3);
 
-    if ( (fl.isanti() && !((part->flav()).isanti()) ) ||
-	 (!(fl.isanti()) && (part->flav()).isanti() ) ) {
+    if ( (fl.IsAnti() && !((part->Flav()).IsAnti()) ) ||
+	 (!(fl.IsAnti()) && (part->Flav()).IsAnti() ) ) {
       /* 
 	 newpart1, the quark from the hadron connects with the outgoing
 	 hard parton part, since one is a quark and the other is an antiquark.
@@ -448,20 +448,20 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
 	 to form a baryon (baryonic cluster).
       */
       
-      newpart1->set_flow(1,part->flow(2));
-      newpart1->set_flow(2,part->flow(1));
+      newpart1->SetFlow(1,part->GetFlow(2));
+      newpart1->SetFlow(2,part->GetFlow(1));
 
-      if (fl.isanti()) {
-	newpart2->set_flow(1,0);
-	newpart2->set_flow(2,-1);
-	newpart3->set_flow(1,newpart2->flow(2));
-	newpart3->set_flow(2,0);
+      if (fl.IsAnti()) {
+	newpart2->SetFlow(1,0);
+	newpart2->SetFlow(2,-1);
+	newpart3->SetFlow(1,newpart2->GetFlow(2));
+	newpart3->SetFlow(2,0);
       }
       else {
-	newpart2->set_flow(1,-1);
-	newpart2->set_flow(2,0);
-	newpart3->set_flow(1,0);
-	newpart3->set_flow(2,newpart2->flow(1));
+	newpart2->SetFlow(1,-1);
+	newpart2->SetFlow(2,0);
+	newpart3->SetFlow(1,0);
+	newpart3->SetFlow(2,newpart2->GetFlow(1));
       }
     }
     else {
@@ -471,20 +471,20 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
 	 a (anti-) quark. In this case, the antiflavour to part connects with the 
 	 (anti-) quark from the hadron to form a meson (mesonic cluster).
       */
-      newpart3->set_flow(1,part->flow(2));
-      newpart3->set_flow(2,part->flow(1));
+      newpart3->SetFlow(1,part->GetFlow(2));
+      newpart3->SetFlow(2,part->GetFlow(1));
 
-      if (fl.isanti()) {
-	newpart2->set_flow(1,-1);
-	newpart2->set_flow(2,0);
-	newpart1->set_flow(1,0);
-	newpart1->set_flow(2,newpart2->flow(1));
+      if (fl.IsAnti()) {
+	newpart2->SetFlow(1,-1);
+	newpart2->SetFlow(2,0);
+	newpart1->SetFlow(1,0);
+	newpart1->SetFlow(2,newpart2->GetFlow(1));
       }
       else {
-	newpart2->set_flow(1,0);
-	newpart2->set_flow(2,-1);
-	newpart1->set_flow(1,newpart2->flow(2));
-	newpart1->set_flow(2,0);
+	newpart2->SetFlow(1,0);
+	newpart2->SetFlow(2,-1);
+	newpart1->SetFlow(1,newpart2->GetFlow(2));
+	newpart1->SetFlow(2,0);
       }
     }
     return 1;
@@ -492,15 +492,15 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
 };
 
 double Soft_Interface::GetX(Flavour f1,Flavour f2,double E) {
-  double ran, cut, mass; 
-  if (f1.isquark() && f2.isdiquark()) {
+  double rn, cut, mass; 
+  if (f1.IsQuark() && f2.IsDiQuark()) {
     mass = 0.3;
     cut  = 2.*mass/E;
     for (;;) {
-      ran = Ran.get();
+      rn = ran.Get();
       // Check the boundaries.
-      if ((ran > cut) && (ran < (1.-cut))) {
-	if (pow(1.-ran,3)/sqrt(ran*ran+cut*cut) > 1./cut*Ran.get()) return ran;
+      if ((rn > cut) && (rn < (1.-cut))) {
+	if (pow(1.-rn,3)/sqrt(rn*rn+cut*cut) > 1./cut*ran.Get()) return rn;
       }
     }
   }

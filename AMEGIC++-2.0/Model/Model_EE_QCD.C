@@ -37,13 +37,13 @@ void Model_EE_QCD::c_FFV(Single_Vertex* v,int& vanz)
     if (i==7) i=11;
     
     Flavour flav = Flavour(kf::code(i));
-    Kabbala charge = Kabbala(string("Q_{")+ string(flav.texname())+string("}"),flav.charge());
-    Kabbala isoweak = Kabbala(string("T_{")+ string(flav.texname())+string("}"),flav.isoweak());
+    Kabbala charge = Kabbala(string("Q_{")+ string(flav.TexName())+string("}"),flav.Charge());
+    Kabbala isoweak = Kabbala(string("T_{")+ string(flav.TexName())+string("}"),flav.IsoWeak());
     
 
-    if (flav.ison()) { 
+    if (flav.IsOn()) { 
       //photon
-      if (flphoton.ison()) {
+      if (flphoton.IsOn()) {
 	v[vanz].in[0] = flav;
 	v[vanz].in[2] = flav;
 	v[vanz].in[1] = Flavour(kf::photon);
@@ -61,7 +61,7 @@ void Model_EE_QCD::c_FFV(Single_Vertex* v,int& vanz)
 	v[vanz].ncf   = 1;
 	v[vanz].Color = new Color_Function; 
 	
-	if (flav.strong()) {
+	if (flav.Strong()) {
 	  v[vanz].Color->type       = cf::D;     
 	  v[vanz].Color->SetParticleArg(0,2);     
 	  v[vanz].Color->SetStringArg('0','2');     
@@ -78,7 +78,7 @@ void Model_EE_QCD::c_FFV(Single_Vertex* v,int& vanz)
 	vanz++;
       }
       //Z
-      if (flZ.ison()) {
+      if (flZ.IsOn()) {
 	v[vanz].in[0] = flav;
 	v[vanz].in[2] = flav;
 	v[vanz].in[1] = Flavour(kf::Z);
@@ -96,7 +96,7 @@ void Model_EE_QCD::c_FFV(Single_Vertex* v,int& vanz)
 	v[vanz].ncf   = 1;
 	v[vanz].Color = new Color_Function; 
 	
-	if (flav.strong()) {
+	if (flav.Strong()) {
 	  v[vanz].Color->type       = cf::D;     
 	  v[vanz].Color->SetParticleArg(0,2);     
 	  v[vanz].Color->SetStringArg('0','2');     

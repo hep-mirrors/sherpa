@@ -59,7 +59,7 @@ namespace AMEGIC {
     bool           FoundMappingFile(std::string &);
     bool           IsFile(std::string);
   public:
-    int            InitAmplitude(Topology *,AMATOOLS::vec4d *&,std::vector<double> &,
+    int            InitAmplitude(Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
 				 std::vector<Single_Process *> &);
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
     bool           SetUpIntegrator();
@@ -76,7 +76,7 @@ namespace AMEGIC {
     void             DeSelect()                      {                 }
     int              Size()                          { return 1;       }
     Process_Base   * operator[] (int idx)            { return this;    }
-    std::string      Libname()                       { return libname; }
+    std::string      LibName()                       { return libname; }
     void             SetTotalXS(int);
     void             SetScale(double _sc)            { scale = _sc;    }
     void             Empty();
@@ -93,11 +93,11 @@ namespace AMEGIC {
     bool           LookUpXSec(double,bool,std::string);
     bool           PrepareXSecTables();
     void           AddPoint(const double value); 
-    double         Differential(AMATOOLS::vec4d *);
+    double         Differential(AMATOOLS::Vec4D *);
     double         Differential2();
-    double         DSigma(AMATOOLS::vec4d *,bool);
+    double         DSigma(AMATOOLS::Vec4D *,bool);
     double         DSigma2();
-    double         operator()(AMATOOLS::vec4d *);
+    double         operator()(AMATOOLS::Vec4D *);
     bool           OneEvent();
     bool           SameEvent();
     double         WeightedEvent();
@@ -125,7 +125,7 @@ namespace AMEGIC {
 
 
 
-  \fn int Single_Process::InitAmplitude(Topology *,vec4d *&,
+  \fn int Single_Process::InitAmplitude(Topology *,Vec4D *&,
                                         vector<double> &,vector<Process_Base *> &)
   \brief Constructs the amplitudes and deals with the libraries
 

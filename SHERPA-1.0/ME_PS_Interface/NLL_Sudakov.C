@@ -42,7 +42,7 @@ NLL_Sudakov::NLL_Sudakov(double _tmax,double _tmin,bool _run) :
 
 void NLL_Sudakov::FixLambda2() 
 {
-  mu2     = sqr(Flavour(kf::Z).mass());
+  mu2     = sqr(Flavour(kf::Z).Mass());
   asmu    = (*as)(mu2);
   lambda2 = mu2 * exp(1./(beta0 * asmu));
 }                 

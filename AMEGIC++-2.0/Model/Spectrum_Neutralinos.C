@@ -17,9 +17,9 @@ void Spectrum_Neutralinos::Interface(Isajet* isa)
   isa->Neutralino(_Z_N);
 
   msg.Tracking()<<"ZNeutralino: "<<endl;
-  if (rpa.gen.Tracking()) _Z_N.matrix_out();
+  if (rpa.gen.Tracking()) _Z_N.MatrixOut();
   msg.Tracking()<<"ZN(trans): "<<endl;
-  if (rpa.gen.Tracking()) (_Z_N.Dagger()).matrix_out();
+  if (rpa.gen.Tracking()) (_Z_N.Dagger()).MatrixOut();
   msg.Tracking()<<"======================================================"<<endl;
 }
 
@@ -68,34 +68,34 @@ void Spectrum_Neutralinos::Masses_LO()
 
   double evalues[4];
 
-  M.Diagonalize_Sort(evalues,_Z_N);
+  M.DiagonalizeSort(evalues,_Z_N);
 
   Flavour flav;
-  flav = Flavour(kf::Neutralino1);flav.set_mass(dabs(evalues[0]));
-  if (evalues[0]<0) flav.set_mass_sign(-1);
-  flav = Flavour(kf::Neutralino2);flav.set_mass(dabs(evalues[1]));
-  if (evalues[1]<0) flav.set_mass_sign(-1);
-  flav = Flavour(kf::Neutralino3);flav.set_mass(dabs(evalues[2]));
-  if (evalues[2]<0) flav.set_mass_sign(-1);
-  flav = Flavour(kf::Neutralino4);flav.set_mass(dabs(evalues[3]));
-  if (evalues[3]<0) flav.set_mass_sign(-1);
+  flav = Flavour(kf::Neutralino1);flav.SetMass(dabs(evalues[0]));
+  if (evalues[0]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::Neutralino2);flav.SetMass(dabs(evalues[1]));
+  if (evalues[1]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::Neutralino3);flav.SetMass(dabs(evalues[2]));
+  if (evalues[2]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::Neutralino4);flav.SetMass(dabs(evalues[3]));
+  if (evalues[3]<0) flav.SetMassSign(-1);
 
   //Matrix<4> help = _Z_N.Dagger()*M*_Z_N;
-  _Z_N.matrix_out();
+  _Z_N.MatrixOut();
   msg.Tracking()<<"Signs: "<<endl;
-  msg.Tracking()<<"ms_Neu_1 = "<<Flavour(kf::Neutralino1).get_mass_sign();
-  msg.Tracking()<<", ms_Neu_2 = "<<Flavour(kf::Neutralino2).get_mass_sign()<<endl;
-  msg.Tracking()<<"ms_Neu_3 = "<<Flavour(kf::Neutralino3).get_mass_sign();
-  msg.Tracking()<<", ms_Neu_4 = "<<Flavour(kf::Neutralino4).get_mass_sign()<<endl;
+  msg.Tracking()<<"ms_Neu_1 = "<<Flavour(kf::Neutralino1).MassSign();
+  msg.Tracking()<<", ms_Neu_2 = "<<Flavour(kf::Neutralino2).MassSign()<<endl;
+  msg.Tracking()<<"ms_Neu_3 = "<<Flavour(kf::Neutralino3).MassSign();
+  msg.Tracking()<<", ms_Neu_4 = "<<Flavour(kf::Neutralino4).MassSign()<<endl;
   
 
 
   msg.Tracking()<<"--------------------------------------------------------------"<<endl;
   msg.Tracking()<<"Neutralinomasses :"<<endl;
-  msg.Tracking()<<"m_Neu_1 = "<<Flavour(kf::Neutralino1).mass();
-  msg.Tracking()<<", m_Neu_2 = "<<Flavour(kf::Neutralino2).mass()<<endl;
-  msg.Tracking()<<"m_Neu_3 = "<<Flavour(kf::Neutralino3).mass();
-  msg.Tracking()<<", m_Neu_4 = "<<Flavour(kf::Neutralino4).mass()<<endl;
+  msg.Tracking()<<"m_Neu_1 = "<<Flavour(kf::Neutralino1).Mass();
+  msg.Tracking()<<", m_Neu_2 = "<<Flavour(kf::Neutralino2).Mass()<<endl;
+  msg.Tracking()<<"m_Neu_3 = "<<Flavour(kf::Neutralino3).Mass();
+  msg.Tracking()<<", m_Neu_4 = "<<Flavour(kf::Neutralino4).Mass()<<endl;
 }
 
 

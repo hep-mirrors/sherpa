@@ -20,7 +20,7 @@ ME_PS_Interface::ME_PS_Interface(ISR_Handler * _isr,int _number) :
 
   two2two = new XS_Group(2,2,"Core processes");
   fl      = new Flavour[4];
-  p       = new vec4d[4];
+  p       = new Vec4D[4];
 
   ycut      = rpa.integ.Ycut();
   jf        = new APHYTOOLS::Jet_Finder(ycut,1);
@@ -67,12 +67,12 @@ bool ME_PS_Interface::Treat(Process_Base * proc,Blob * blob,int type)
 
   if (NLLweight) {
     if (type==1) {
-      double sprime = (proc->Momenta()[0]+proc->Momenta()[1]).abs2();
+      double sprime = (proc->Momenta()[0]+proc->Momenta()[1]).Abs2();
       jetscale      = ycut * sprime;
     }
     cluster->CalculateWeight(xs->Scale(),jetscale);
     //    cluster->CalculateWeight(sprime,jetscale);
-    if (cluster->Weight()>Ran.get()) return 1;
+    if (cluster->Weight()>ran.Get()) return 1;
     msg.Debugging()<<" Reject event due to sudakov weight "<<std::endl;
     return 0;
 //     msg.Debugging()<<"In principle : Reject event, but for demo : shower !"<<std::endl;

@@ -30,15 +30,15 @@ namespace APACIC {
     };
     double operator()(double z) {return CF*(1.+z*z)/(1.-z);};             
     double GetZ()      {
-      return 1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),AMATOOLS::Ran.get());   
+      return 1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),AMATOOLS::ran.Get());   
     };
     double GetCoupling()         { return alpha;};
     double GetCoupling(double t) { return tools->AlphaS(t);};
     double GetWeight(double z,double pt2,bool massterm) { 
       if (!massterm) return 0.5*(1.+z*z);
       return ( (1.+z*z)/2. - 
-	       z*AMATOOLS::sqr((1.-z)*flavs[0].PSmass())/
-	       (pt2+AMATOOLS::sqr((1.-z)*flavs[0].PSmass())) );
+	       z*AMATOOLS::sqr((1.-z)*flavs[0].PSMass())/
+	       (pt2+AMATOOLS::sqr((1.-z)*flavs[0].PSMass())) );
     };                   
     double CrudeInt(double _zmin, double _zmax) {
       zmin = _zmin;
@@ -70,7 +70,7 @@ namespace APACIC {
       return CA*AMATOOLS::sqr(1.-z*(1.-z))/(z*(1.-z));};                 
     double GetZ() {
       return 1./(1. + ((1.-zmin)/zmin) *
-      		 pow( zmin*(1.-zmax)/((1.-zmin)*zmax), AMATOOLS::Ran.get()));
+      		 pow( zmin*(1.-zmax)/((1.-zmin)*zmax), AMATOOLS::ran.Get()));
     };
     double GetCoupling()         { return alpha;};
     double GetCoupling(double t) { return tools->AlphaS(t);};
@@ -92,26 +92,26 @@ namespace APACIC {
     g_qq(APHYTOOLS::Flavour quarkflavour): tools(0) {
       flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
       flavs[1] = quarkflavour; 
-      flavs[2] = quarkflavour.bar(); 
+      flavs[2] = quarkflavour.Bar(); 
       alpha    = 1.;
     };
     g_qq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
       tools (_tools) {
       flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
       flavs[1] = quarkflavour; 
-      flavs[2] = quarkflavour.bar(); 
+      flavs[2] = quarkflavour.Bar(); 
       alpha    = tools->GetASmax();
     };
     double operator()(double z) {
       return TR*(z*z + (1.-z)*(1.-z));};                                 
     double GetZ()      {
-      return zmin+(zmax-zmin)*AMATOOLS::Ran.get();                       
+      return zmin+(zmax-zmin)*AMATOOLS::ran.Get();                       
     };
     double GetCoupling()         { return alpha;};
     double GetCoupling(double t) { return tools->AlphaS(t);};
     double GetWeight(double z,double pt2,bool masses) { 
       if (!masses) return (*this)(z)/TR;
-      return (1. - 2.*z*(1.-z)*(1.- pt2/(pt2+AMATOOLS::sqr(flavs[1].PSmass())))); // /TR;
+      return (1. - 2.*z*(1.-z)*(1.- pt2/(pt2+AMATOOLS::sqr(flavs[1].PSMass())))); // /TR;
     };                 
     double CrudeInt(double _zmin, double _zmax) {
       zmin = _zmin;
@@ -141,15 +141,15 @@ namespace APACIC {
     };
     double operator()(double z) {return CF*(1.+(1.-z)*(1.-z))/z;}; 
     double GetZ()      {
-      return zmin*pow(zmax/zmin,AMATOOLS::Ran.get());
+      return zmin*pow(zmax/zmin,AMATOOLS::ran.Get());
     };
     double GetCoupling()         { return alpha;};
     double GetCoupling(double t) { return tools->AlphaS(t);};
     double GetWeight(double z,double pt2,bool massterm) { 
       if (!massterm) return 0.5*(1.+AMATOOLS::sqr(1.-z));
       return ( (1.+AMATOOLS::sqr(1.-z))/2. - 
-	       (1.-z)*AMATOOLS::sqr(z*flavs[0].PSmass())/
-	       (pt2+AMATOOLS::sqr(z*flavs[0].PSmass())) );
+	       (1.-z)*AMATOOLS::sqr(z*flavs[0].PSMass())/
+	       (pt2+AMATOOLS::sqr(z*flavs[0].PSMass())) );
     };                   
     double CrudeInt(double _zmin, double _zmax) {
       zmin = _zmin;

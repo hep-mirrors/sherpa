@@ -11,7 +11,7 @@ using namespace std;
 
 Laser_Backscattering::Laser_Backscattering(Flavour _fl,double _pole)
 {
-  if ( (_fl != Flavour(kf::e)) && (_fl != Flavour(kf::e).bar()) ) {
+  if ( (_fl != Flavour(kf::e)) && (_fl != Flavour(kf::e).Bar()) ) {
     msg.Error()<<"Tried to initialize Laser_Backscattering for flavour "<<_fl<<"."<<endl
 	       <<"This option is not available. Terminate program."<<endl;
     abort();
@@ -40,7 +40,7 @@ Laser_Backscattering::Laser_Backscattering(Flavour _fl,double _pole)
   rho2        = 3.315865;   
   delta       = 1.387423/2.;
   nonlin1     = 0.06594662; nonlin2 = 0.7060851e-3;
-  xe          = 4.*E*omegaL/sqr(_fl.PSmass());
+  xe          = 4.*E*omegaL/sqr(_fl.PSMass());
   // to compare with 9302319
 
   polE        = 0.;         polL    = 0.;  
@@ -59,7 +59,7 @@ Laser_Backscattering::Laser_Backscattering(Flavour _fl,double _pole)
   if (mode==0) upper = xmax;
           else upper = xmax2;
   peak   = xmax;
-  //  AORGTOOLS::msg.Out()<<"*** mass :"<<_fl.PSmass()<<" , "<<omegaL<<" , "<<E<<" , "<<xe<<" , "<<peak<<endl;
+  //  AORGTOOLS::msg.Out()<<"*** mass :"<<_fl.PSMass()<<" , "<<omegaL<<" , "<<E<<" , "<<xe<<" , "<<peak<<endl;
 
   yfix   = 1./(1.+xe);
   yden   = log(1.+xe);
@@ -74,7 +74,7 @@ Laser_Backscattering::Laser_Backscattering(Flavour _fl,double _pole)
 
   msg.Tracking()<<"Initialised Laser-Backscattering ("<<mode<<") : "<<endl
 		<<" xe,xmax = "<<xe<<", "<<xmax<<" for omegaL,mass ="
-		<<omegaL<<", "<<_fl.PSmass()<<endl
+		<<omegaL<<", "<<_fl.PSMass()<<endl
 		<<" with xi = "<<xi<<", norms   = "<<totalC<<"  /  "<<total2<<endl
 		<<" with polE = "<<polE<<endl;
   //  PrintSpectra("spectrum.out");

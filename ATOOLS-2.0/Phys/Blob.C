@@ -18,15 +18,15 @@ namespace APHYTOOLS {
 	<<" at "<<bl.Position()<<std::endl<<" with "<<bl.CMS()<<std::endl;
     //    if (bl.NInP() > 0) {
       ostr<<"Incoming partons :"<<std::endl;
-      for (std::deque<Parton *>::const_iterator part = bl.InPartons.begin();
-	   part != bl.InPartons.end(); ++part) {
+      for (Parton_Queue::const_iterator part = bl.m_inpartons.begin();
+	   part != bl.m_inpartons.end(); ++part) {
 	ostr<<*part<<std::endl;
       }
       //    }
     //    if (bl.NOutP() > 0) {
       ostr<<"Outgoing partons :"<<std::endl;
-      for (std::deque<Parton *>::const_iterator part = bl.OutPartons.begin();
-	   part != bl.OutPartons.end(); ++part) {
+      for (Parton_Queue::const_iterator part = bl.m_outpartons.begin();
+	   part != bl.m_outpartons.end(); ++part) {
 	ostr<<*part<<std::endl;
       }
       //    }
@@ -44,15 +44,15 @@ namespace APHYTOOLS {
 	<<" with "<<bl->CMS()<<std::endl;
     //    if (bl->NInP() > 0) {
       ostr<<"Incoming partons :"<<std::endl;
-      for (std::deque<Parton *>::const_iterator part = bl->InPartons.begin();
-	   part != bl->InPartons.end(); ++part) {
+      for (Parton_Queue::const_iterator part = bl->m_inpartons.begin();
+	   part != bl->m_inpartons.end(); ++part) {
 	ostr<<*part<<std::endl;
       }
       //    }
     //    if (bl->NOutP() > 0) {
       ostr<<"Outgoing partons :"<<std::endl;
-      for (std::deque<Parton *>::const_iterator part = bl->OutPartons.begin();
-	   part != bl->OutPartons.end(); ++part) {
+      for (Parton_Queue::const_iterator part = bl->m_outpartons.begin();
+	   part != bl->m_outpartons.end(); ++part) {
 	ostr<<*part<<std::endl;
       }
       //    }
@@ -61,8 +61,8 @@ namespace APHYTOOLS {
 }
 
 Parton * Blob::InParton(int n) {
-  for (std::deque<Parton *>::iterator part = InPartons.begin();
-       part != InPartons.end(); ++part) {
+  for (Parton_Queue::iterator part = m_inpartons.begin();
+       part != m_inpartons.end(); ++part) {
     n--;
     if (n<0) return *part;
   }
@@ -70,8 +70,8 @@ Parton * Blob::InParton(int n) {
 }
 
 Parton * Blob::OutParton(int n) {
-  for (std::deque<Parton *>::iterator part = OutPartons.begin();
-       part != OutPartons.end(); ++part) {
+  for (Parton_Queue::iterator part = m_outpartons.begin();
+       part != m_outpartons.end(); ++part) {
     n--;
     if (n<0) return *part;
   }
@@ -80,92 +80,86 @@ Parton * Blob::OutParton(int n) {
 
 void Blob::AddToInPartons(Parton * Newp) {
   if (!Newp) return;
-  InPartons.push_back( Newp );
-  Nin++;
-};
+  m_inpartons.push_back( Newp );
+  m_nin++;
+}
 
 void Blob::AddToOutPartons(Parton * Newp) {
   if (!Newp) return;
-  OutPartons.push_back( Newp );
-  Nout++;
-};
+  m_outpartons.push_back( Newp );
+  m_nout++;
+}
 
 Blob::~Blob() {
   DeleteOwnedPartons();
-};
+}
 
 void Blob::DeleteOwnedPartons() {
-  if ( (Nin==0) && (Nout==0) ) {
-    if (InPartons.empty() && OutPartons.empty()) {
+  if ( (m_nin==0) && (m_nout==0) ) {
+    if (m_inpartons.empty() && m_outpartons.empty()) {
       msg.Debugging()<<"Funny Partons in Blob !"<<std::endl; 
     }
     return;
   }
-  if (InPartons.empty() && OutPartons.empty()) {
+  if (m_inpartons.empty() && m_outpartons.empty()) {
     msg.Debugging()<<"Blob owns no more partons !"<<std::endl; 
     return;
   }
-  for (std::deque<Parton *>::iterator part = OutPartons.begin();
-       part != OutPartons.end(); ++part) {
+  for (Parton_Queue::iterator part = m_outpartons.begin();
+       part != m_outpartons.end(); ++part) {
     delete *part;
-    Nout--;
+    m_nout--;
   }
-  OutPartons.clear();
+  m_outpartons.clear();
 
-  for (std::deque<Parton *>::iterator part = InPartons.begin();
-       part != InPartons.end(); ++part) {
+  for (Parton_Queue::iterator part = m_inpartons.begin();
+       part != m_inpartons.end(); ++part) {
     delete *part;
-    Nin--;
+    m_nin--;
   }
-  InPartons.clear();
-};
+  m_inpartons.clear();
+}
 
-AMATOOLS::vec4d Blob::CheckMomentumConservation() {
-  AMATOOLS::vec4d sump = AMATOOLS::vec4d(0.,0.,0.,0.);
-  for (std::deque<Parton *>::iterator part = InPartons.begin();
-       part != InPartons.end(); ++part) {
-    sump = sump + (*part)->momentum();
+Vec4D Blob::CheckMomentumConservation() {
+  Vec4D sump = Vec4D(0.,0.,0.,0.);
+  for (Parton_Queue::iterator part = m_inpartons.begin();
+       part != m_inpartons.end(); ++part) {
+    sump = sump + (*part)->Momentum();
   }
-  for (std::deque<Parton *>::iterator part = OutPartons.begin();
-       part != OutPartons.end(); ++part) {
-    sump = sump + (-1.)*((*part)->momentum());
+  for (Parton_Queue::iterator part = m_outpartons.begin();
+       part != m_outpartons.end(); ++part) {
+    sump = sump + (-1.)*((*part)->Momentum());
   }
   return sump;
-};
+}
 
 void Blob::BoostInCMS() {
-  AMATOOLS::vec4d cm       = vec4d(0.,0.,0.,0.);
-  for (int i=0;i<NInP();i++) cm = cm + InParton(i)->momentum();
-  cms_boost = AMATOOLS::Poincare(cm);
+  Vec4D cm       = Vec4D(0.,0.,0.,0.);
+  for (int i=0;i<NInP();i++) cm = cm + InParton(i)->Momentum();
+  m_cms_boost = Poincare(cm);
 
-  cms                      = cm;
+  m_cms_vec                      = cm;
   for (int i=0;i<NInP();i++) 
-    InParton(i)->set_momentum(cms_boost*InParton(i)->momentum());
+    InParton(i)->SetMomentum(m_cms_boost*InParton(i)->Momentum());
   for (int i=0;i<NOutP();i++) 
-    OutParton(i)->set_momentum( cms_boost*OutParton(i)->momentum());
-};
+    OutParton(i)->SetMomentum(m_cms_boost*OutParton(i)->Momentum());
+}
 
 void Blob::SetVecs() {
-  cms  = vec4d(0.,0.,0.,0.);
-  AMATOOLS::vec4d pos = vec4d(0.,0.,0.,0.);
+  m_cms_vec  = Vec4D(0.,0.,0.,0.);
+  Vec4D  pos = Vec4D(0.,0.,0.,0.);
   for (int i=0;i<NInP();i++) {
-    pos = pos + InParton(i)->xdec();
+    pos = pos + InParton(i)->XDec();
   }
   for (int i=0;i<NOutP();i++) {
-    cms = cms + OutParton(i)->momentum();
-    pos = pos + OutParton(i)->xprod();
+    m_cms_vec = m_cms_vec + OutParton(i)->Momentum();
+    pos = pos + OutParton(i)->XProd();
   }
-  position = 1./(NInP()+NOutP()) * pos;
-};
+  m_position = 1./(NInP()+NOutP()) * pos;
+}
 
 void Blob::BoostInLab() {
-};
 
-/*
-Blob::Parton_Iterator::Parton_Iterator() {};
+}
 
-Blob::Parton_Iterator::Parton_Iterator(const Parton_Iterator& piter) {
-  *this = piter;
-};
-*/
 

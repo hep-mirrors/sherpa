@@ -27,10 +27,10 @@ PDF_MRST::PDF_MRST(int isanti) {
   }
   for (int i=1;i<6;i++) {
     partons.push_back(Flavour(kf::code(i)));
-    partons.push_back(Flavour(kf::code(i)).bar());
+    partons.push_back(Flavour(kf::code(i)).Bar());
   }
   partons.push_back(Flavour(kf::gluon));
   partons.push_back(Flavour(kf::jet));
   partons.push_back(Flavour(kf::quark));
-  partons.push_back(Flavour(kf::quark).bar());
+  partons.push_back(Flavour(kf::quark).Bar());
 };

@@ -119,7 +119,7 @@ bool Amegic::InitializeProcesses(int _mode)
 
   vector<double>           results;
   vector<Single_Process *> links;
-  vec4d * moms  = 0;
+  Vec4D * moms  = 0;
 
   if (!mode) {
     switch (procs->InitAllProcesses(top,moms,results,links)) { 
@@ -396,7 +396,7 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
   pl = new Pol_Info[count];
   for (i=0;i<count;i++) {
     fl[i] = Flavour(kf::code(int(abs(double(ii[i])))));
-    if (ii[i]<0) fl[i] = fl[i].bar();
+    if (ii[i]<0) fl[i] = fl[i].Bar();
 
 #ifdef Explicit_Pols
     int t1=mt::p_m, t2=mt::p_p;
@@ -412,9 +412,9 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
       case '0' : type = mt::p_l;break;
       default  : type = t1;
     }
-    if(fl[i].isfermion()) dof=2;
-    if(fl[i].isvector() &&  AMATOOLS::IsZero(fl[i].mass())) dof=2;
-    if(fl[i].isvector() && !AMATOOLS::IsZero(fl[i].mass())) dof=3;
+    if(fl[i].IsFermion()) dof=2;
+    if(fl[i].IsVector() &&  AMATOOLS::IsZero(fl[i].Mass())) dof=2;
+    if(fl[i].IsVector() && !AMATOOLS::IsZero(fl[i].Mass())) dof=3;
 
     if (AMATOOLS::IsZero(pd[i]-1.)) pl[i].init(1);
                                else pl[i].init(dof);
@@ -505,7 +505,7 @@ int Amegic::ExtractFlavours(Flavour*& fl,double*& plfac,string buf)
   plfac = new double[count];
   for (i=0;i<count;i++) {
     fl[i] = Flavour(kf::code(int(abs(double(ii[i])))));
-    if (ii[i]<0) fl[i] = fl[i].bar();
+    if (ii[i]<0) fl[i] = fl[i].Bar();
     plfac[i] = pd[i]; 
     if (pp[i]=='-') plfac[i]=-plfac[i];
   }
@@ -563,8 +563,8 @@ void Amegic::SingleEvents() {
 
 bool Amegic::InitializeXS(int hint) {
   if ( ( (rpa.gen.Beam1() == Flavour(kf::e)) &&
-	 (rpa.gen.Beam2() == (Flavour(kf::e).bar())) ) ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::e)).bar()) &&
+	 (rpa.gen.Beam2() == (Flavour(kf::e).Bar())) ) ||
+       ( (rpa.gen.Beam1() == (Flavour(kf::e)).Bar()) &&
 	 (rpa.gen.Beam2() == Flavour(kf::e)) ) ) {
     procs = (new QED_Processes())->CreateBroker();
     msg.Debugging()<<"In Amegic::InitializeXS() : "<<std::endl;
@@ -574,13 +574,13 @@ bool Amegic::InitializeXS(int hint) {
     procs->SetUpIntegrator(isr, beam);
   }
   if ( ( (rpa.gen.Beam1() == Flavour(kf::p_plus))         &&
-	 (rpa.gen.Beam2() == (Flavour(kf::p_plus).bar())) )   ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus)).bar()) &&
+	 (rpa.gen.Beam2() == (Flavour(kf::p_plus).Bar())) )   ||
+       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus)).Bar()) &&
 	 (rpa.gen.Beam2() == Flavour(kf::p_plus)) )           ||
        ( (rpa.gen.Beam1() == (Flavour(kf::p_plus)))       &&
 	 (rpa.gen.Beam2() == Flavour(kf::p_plus)) )           ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus).bar())) &&
-	 (rpa.gen.Beam2() == Flavour(kf::p_plus).bar()) )    ) {
+       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus).Bar())) &&
+	 (rpa.gen.Beam2() == Flavour(kf::p_plus).Bar()) )    ) {
     procs = (new QCD_Processes())->CreateBroker();
     msg.Debugging()<<"In Amegic::InitializeXS() : "<<std::endl;
     if (procs) msg.Debugging()<<" Initialised new Broker " 

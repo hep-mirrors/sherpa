@@ -62,7 +62,7 @@ void Tree::Links(Knot * act,Knot * ink) {
   }
 }
 
-Knot * Tree::NewKnot(APHYTOOLS::Flavour fl, AMATOOLS::vec4d p, double t, double x1) {
+Knot * Tree::NewKnot(APHYTOOLS::Flavour fl, AMATOOLS::Vec4D p, double t, double x1) {
   Knot * newk = new Knot;
   knots->push_back(newk);
   newk->kn_no     = knots->size();
@@ -113,7 +113,7 @@ Knot * Tree::NewKnot()
   newk->kn_no     = knots->size();
   Parton * newp   = new Parton;
   newk->part      = newp;
-  newk->part->Set_Numb(newk->kn_no);
+  newk->part->SetNumber(newk->kn_no);
   newk->left      = 0;
   newk->right     = 0;
   newk->prev      = 0;
@@ -164,26 +164,26 @@ void Tree::ResetDaughters(Knot * in) {
 
 void Tree::Restore() {
   for (Knot_Iterator kit=knots->begin(); kit!=knots->end(); ++kit) {
-    if ( ( (*kit)->part->info() != 'G') && ( (*kit)->part->info() != 'H') ) {
+    if ( ( (*kit)->part->Info() != 'G') && ( (*kit)->part->Info() != 'H') ) {
       //msg.Debugging()<<"Tree::Restore : Delete knot "<<(*kit)->kn_no
-      //	     <<"  "<<(*kit)->part->flav()<<"  "<<(*kit)->part->info()<<endl;
+      //	     <<"  "<<(*kit)->part->Flav()<<"  "<<(*kit)->part->Info()<<endl;
       delete (*kit);
       knots->erase(kit);
     }
     else {
       //msg.Debugging()<<"Tree::Restore : Kept knot "<<(*kit)->kn_no
-      //	     <<"  "<<(*kit)->part->flav()<<"  "<<(*kit)->part->info()<<endl;
+      //	     <<"  "<<(*kit)->part->Flav()<<"  "<<(*kit)->part->Info()<<endl;
       if ((*kit)->prev) {
-	if (((*kit)->prev->part->info() != 'G') && 
-	    ((*kit)->prev->part->info() != 'H')) (*kit)->prev  = 0;
+	if (((*kit)->prev->part->Info() != 'G') && 
+	    ((*kit)->prev->part->Info() != 'H')) (*kit)->prev  = 0;
       }
       if ((*kit)->left) {
-	if (((*kit)->left->part->info() != 'G') && 
-	    ((*kit)->left->part->info() != 'H')) (*kit)->left  = 0;
+	if (((*kit)->left->part->Info() != 'G') && 
+	    ((*kit)->left->part->Info() != 'H')) (*kit)->left  = 0;
       }
       if ((*kit)->right) {
-	if (((*kit)->right->part->info() != 'G') && 
-	    ((*kit)->right->part->info() != 'H')) (*kit)->right = 0;
+	if (((*kit)->right->part->Info() != 'G') && 
+	    ((*kit)->right->part->Info() != 'H')) (*kit)->right = 0;
       }
     }
   }
@@ -207,31 +207,31 @@ Knot * Tree::GetRoot() { return root; } ;
 void Tree::BoRo(AMATOOLS::Poincare & lorenz) {
   Knot * mo= GetRoot();
   while (mo->prev) mo = mo->prev;
-  // msg.Debugging()<<"changing Knot "<<mo->kn_no<<" from "<<mo->part->momentum()<<endl;
-  mo->part->set_momentum(lorenz*mo->part->momentum());
-  // msg.Debugging()<<"                to "<<mo->part->momentum()<<endl;
+  // msg.Debugging()<<"changing Knot "<<mo->kn_no<<" from "<<mo->part->Momentum()<<endl;
+  mo->part->SetMomentum(lorenz*mo->part->Momentum());
+  // msg.Debugging()<<"                to "<<mo->part->Momentum()<<endl;
   BoRoDaughters(lorenz,mo);
 };
 
 void Tree::BoRoDaughters(AMATOOLS::Poincare & lorenz, Knot * mo) {
   if (mo->left) {
-    // msg.Debugging()<<"changing Knot "<<mo->left->kn_no<<" from "<<mo->left->part->momentum()<<endl;
-    mo->left->part->set_momentum(lorenz*mo->left->part->momentum());
-    // msg.Debugging()<<"                to "<<mo->left->part->momentum()<<endl;
+    // msg.Debugging()<<"changing Knot "<<mo->left->kn_no<<" from "<<mo->left->part->Momentum()<<endl;
+    mo->left->part->SetMomentum(lorenz*mo->left->part->Momentum());
+    // msg.Debugging()<<"                to "<<mo->left->part->Momentum()<<endl;
     BoRoDaughters(lorenz,mo->left);
   }
   if (mo->right) {
-    // msg.Debugging()<<"changing Knot "<<mo->right->kn_no<<" from "<<mo->right->part->momentum()<<endl;
-    mo->right->part->set_momentum(lorenz*mo->right->part->momentum());
-    // msg.Debugging()<<"                to "<<mo->right->part->momentum()<<endl;
+    // msg.Debugging()<<"changing Knot "<<mo->right->kn_no<<" from "<<mo->right->part->Momentum()<<endl;
+    mo->right->part->SetMomentum(lorenz*mo->right->part->Momentum());
+    // msg.Debugging()<<"                to "<<mo->right->part->Momentum()<<endl;
     BoRoDaughters(lorenz,mo->right);      
   }
 };
 
 void Tree::BoRo(AMATOOLS::Poincare & lorenz, Knot * mo) {
-  // msg.Debugging()<<"changing Knot "<<mo->kn_no<<" from "<<mo->part->momentum()<<endl;
-  mo->part->set_momentum(lorenz*mo->part->momentum());
-  // msg.Debugging()<<"                to "<<mo->part->momentum()<<endl;
+  // msg.Debugging()<<"changing Knot "<<mo->kn_no<<" from "<<mo->part->Momentum()<<endl;
+  mo->part->SetMomentum(lorenz*mo->part->Momentum());
+  // msg.Debugging()<<"                to "<<mo->part->Momentum()<<endl;
   BoRoDaughters(lorenz,mo);
 };
 

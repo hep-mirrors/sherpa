@@ -31,9 +31,9 @@ void IO_HepEvt::MakeColorChain() {
     colored=0;
     seed   =0;
     for (Parton_List::iterator pit=start_pit;pit!=mypl.end();++pit) {
-      if ((*pit)->flav().strong()) {
+      if ((*pit)->Flav().Strong()) {
 	colored=1;
-	if ((*pit)->flow(1)!=0  && (*pit)->flow(2)==0) {
+	if ((*pit)->GetFlow(1)!=0  && (*pit)->GetFlow(2)==0) {
 	  // found a seed
 	  seed     = (*pit);
 	  seed_pit = pit;
@@ -60,8 +60,8 @@ void IO_HepEvt::MakeColorChain() {
 
     // sort colors
     for (Parton_List::iterator qit=start_pit;qit!=mypl.end();) {
-      //      cout<<(*qit)->flav()<<" ("<<(*qit)->flow(1)<<","<<(*qit)->flow(2)<<")"<<endl;
-      if ((*qit)->flow(2)==(*seed_pit)->flow(1)) {
+      //      cout<<(*qit)->Flav()<<" ("<<(*qit)->GetFlow(1)<<","<<(*qit)->GetFlow(2)<<")"<<endl;
+      if ((*qit)->GetFlow(2)==(*seed_pit)->GetFlow(1)) {
 	++start_pit;
 	// found a color partner
 	if (qit!=start_pit) {
@@ -193,17 +193,17 @@ void IO_HepEvt::Parton2HepEvt(Parton_List * pl, int mode) {
 		 <<"   nehp>=maxentries "<<endl;
     }
 
-    idhep[nhep] = parton->flav().hepevt();
+    idhep[nhep] = parton->Flav().HepEvt();
         
-    for (short int j=1; j<4; ++j) phep[(j-1)+nhep*5] = parton->momentum()[j];
-    phep[3+nhep*5] = parton->momentum()[0];
-    double pabs = (parton->momentum()).abs2();
+    for (short int j=1; j<4; ++j) phep[(j-1)+nhep*5] = parton->Momentum()[j];
+    phep[3+nhep*5] = parton->Momentum()[0];
+    double pabs = (parton->Momentum()).Abs2();
     if (pabs<0) phep[4+nhep*5] = 0.;
     else phep[4+nhep*5] = sqrt(pabs);
 
     for (short int j=1; j<4; ++j) {
-      vhep[(j-1)+nhep*4] = parton->xprod()[j];
-      vhep[3+nhep*4] = parton->xprod()[j];
+      vhep[(j-1)+nhep*4] = parton->XProd()[j];
+      vhep[3+nhep*4] = parton->XProd()[j];
     }
 
     isthep[nhep] = 1;

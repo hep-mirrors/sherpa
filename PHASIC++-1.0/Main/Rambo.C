@@ -13,11 +13,11 @@ Rambo::Rambo(int _nin,int _nout,Flavour * fl) : nin(_nin), nout(_nout)
   p2  = new double[nin+nout+1];  
   E   = new double[nin+nout+1];
   ms  = new double[nin+nout+1];
-  ran = 0;
+  rans= 0;
 
   massflag = 0;
   for (short int i=0;i<nin+nout;i++) {
-    ms[i] = AMATOOLS::sqr(fl[i].mass());
+    ms[i] = AMATOOLS::sqr(fl[i].Mass());
     if (!AMATOOLS::IsZero(ms[i])) massflag = 1;
   } 
 
@@ -36,63 +36,63 @@ Rambo::~Rambo()
   if (p2)  { delete [] p2;  p2  = 0; }
   if (E)   { delete [] E;   E   = 0; }
   if (ms)  { delete [] ms;  ms  = 0; }
-  if (ran) { delete [] ran; ran = 0; }
+  if (rans){ delete [] rans;rans = 0; }
 }
 
 
 
-void Rambo::GenerateWeight(vec4d * p,Cut_Data * cuts)
+void Rambo::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
-  vec4d sump(0.,0.,0.,0.);
+  Vec4D sump(0.,0.,0.,0.);
   for (short int i=0;i<nin;i++) sump += p[i];
-  double ET = sqrt(sump.abs2());
+  double ET = sqrt(sump.Abs2());
   weight    = 1.;
   if (massflag) MassiveWeight(p,ET);
   weight   *= exp((2.*nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,nout*3.-4.);
 }
 
-void Rambo::GeneratePoint(vec4d * p,Cut_Data * cuts)
+void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {
-  vec4d sump(0.,0.,0.,0.);
+  Vec4D sump(0.,0.,0.,0.);
   for (short int i=0;i<nin;i++) sump += p[i];
 
-  double ET = sqrt(sump.abs2());
+  double ET = sqrt(sump.Abs2());
   
   double Q, S, C, F, G, A, X, RMAS, BQ, e;
   short int i;
-  vec4d R;
-  vec3d B;
+  Vec4D R;
+  Vec3D B;
   
   for(i=nin;i<nin+nout;i++) {
-    C     = 2*Ran.get()-1;
+    C     = 2*ran.Get()-1;
     S     = sqrt(1-C*C);
-    F     = 2*M_PI*Ran.get();
-    Q     = -log(Ran.get()*Ran.get());
-    p[i]  = vec4d(Q, Q*S*::sin(F), Q*S*cos(F), Q*C);
+    F     = 2*M_PI*ran.Get();
+    Q     = -log(ran.Get()*ran.Get());
+    p[i]  = Vec4D(Q, Q*S*::sin(F), Q*S*cos(F), Q*C);
     R    += p[i]; 
   }
 
-  RMAS = sqrt(R.abs2());
-  B    = (-1)*vec3d(R)/RMAS;
+  RMAS = sqrt(R.Abs2());
+  B    = (-1)*Vec3D(R)/RMAS;
   G    = R[0]/RMAS;
   A    = 1.0/(1.0+G);
   X    = ET/RMAS;
   
   for(i=nin;i<nin+nout;i++) {
     e     = p[i][0];
-    BQ    = B*vec3d(p[i]);
-    p[i]  = X*vec4d((G*e+BQ),vec3d(p[i])+B*(e+A*BQ));
+    BQ    = B*Vec3D(p[i]);
+    p[i]  = X*Vec4D((G*e+BQ),Vec3D(p[i])+B*(e+A*BQ));
   }
 
   weight = 1.;
   if (massflag) MassivePoint(p,ET);
 }
 
-void Rambo::GeneratePoint(vec4d * p,Cut_Data * cuts,double * _ran) {
+void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran) {
   GeneratePoint(p,cuts);
 }
 
-void Rambo::MassiveWeight(vec4d* p,double ET)
+void Rambo::MassiveWeight(Vec4D* p,double ET)
 {
   itmax = 6;
   accu  = ET * pow(10.,-14.);
@@ -101,7 +101,7 @@ void Rambo::MassiveWeight(vec4d* p,double ET)
   for (short int i=nin;i<nin+nout;i++) {
     xm2[i]   = 0.;
     xmt     += sqrt(ms[i]);
-    p2[i]    = sqr(vec3d(p[i]).abs());
+    p2[i]    = sqr(Vec3D(p[i]).Abs());
   }
   double x   = 1./sqrt(1.-sqr(xmt/ET));
   xmt        = 0.;
@@ -130,7 +130,7 @@ void Rambo::MassiveWeight(vec4d* p,double ET)
   
   // Calculate Momenta + Weight 
   for (short int i=nin;i<nin+nout;i++) {
-    v    = vec3d(p[i]).abs();
+    v    = Vec3D(p[i]).Abs();
     wt2 *= v/p[i][0];
     wt3 += v*v/p[i][0];
   }  
@@ -138,7 +138,7 @@ void Rambo::MassiveWeight(vec4d* p,double ET)
   weight = exp((2.*nout-3.)*log(x)+log(wt2/wt3*ET));
 }
 
-void Rambo::MassivePoint(vec4d* p,double ET)
+void Rambo::MassivePoint(Vec4D* p,double ET)
 {
   itmax = 6;
   accu  = ET * 1.e-14; //pow(10.,-14.);
@@ -175,7 +175,7 @@ void Rambo::MassivePoint(vec4d* p,double ET)
   }
   
   // Construct Momenta
-  for (short int i=nin;i<nin+nout;i++) p[i] = vec4d(E[i],x*vec3d(p[i]));
+  for (short int i=nin;i<nin+nout;i++) p[i] = Vec4D(E[i],x*Vec3D(p[i]));
 }
 
 

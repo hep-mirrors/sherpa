@@ -98,46 +98,46 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
 
   if (InitializeSystem(trees,trees[0]->GetRoot(),trees[1]->GetRoot())) {
     double x1,x2;
-    vec4d  cms;
+    Vec4D  cms;
     double E2 = 4.*sqr(rpa.gen.Ecms());
     double E  = rpa.gen.Ecms();
 
     kin->BoostInCMS(trees,GetInitiator(trees[0]),GetInitiator(trees[1]));
-    cms = trees[0]->GetInitiator()->part->momentum() +
-          trees[1]->GetInitiator()->part->momentum();
+    cms = trees[0]->GetInitiator()->part->Momentum() +
+          trees[1]->GetInitiator()->part->Momentum();
     x1  = trees[0]->GetInitiator()->x;
     x2  = trees[1]->GetInitiator()->x;
-    if ((dabs(sprime - cms.abs2())/sprime > rpa.gen.Accu()) ||
+    if ((dabs(sprime - cms.Abs2())/sprime > rpa.gen.Accu()) ||
 	(dabs(sprime - x1*x2*E2)/sprime > rpa.gen.Accu())) {
       msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
 		 <<"Initial_State_Shower::PerformShower : "
 		 <<"Mismatch of sprimes in CMS !"<<std::endl
 		 <<"   "<<sprime<<" / "<<x1*x2*E2<<std::endl
-		 <<"   "<<cms<<" / "<<cms.abs2()<<std::endl;
+		 <<"   "<<cms<<" / "<<cms.Abs2()<<std::endl;
       return 0;
     }
     msg.Tracking()<<" In CMS "<<std::endl
-		  <<" s after shower : "<<cms.abs2()<<" =?= "<<std::endl
+		  <<" s after shower : "<<cms.Abs2()<<" =?= "<<std::endl
 		  <<"Internally : "<<sprime<<std::endl;
     lab = kin->BoostInLab(trees);
-    cms = trees[0]->GetInitiator()->part->momentum() +
-      trees[1]->GetInitiator()->part->momentum();
+    cms = trees[0]->GetInitiator()->part->Momentum() +
+      trees[1]->GetInitiator()->part->Momentum();
     x1  = trees[0]->GetInitiator()->x;
     x2  = trees[1]->GetInitiator()->x;
-    if ((dabs(sprime - cms.abs2())/sprime > rpa.gen.Accu()) ||
+    if ((dabs(sprime - cms.Abs2())/sprime > rpa.gen.Accu()) ||
 	(dabs(sprime - x1*x2*E2)/sprime > rpa.gen.Accu())) {
       msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
 		 <<"Initial_State_Shower::PerformShower : "
 		 <<"Mismatch of sprimes in Lab !"<<std::endl
 		 <<"   "<<sprime<<" / "<<x1*x2*E2<<std::endl
-		 <<"   "<<cms<<" / "<<cms.abs2()<<std::endl;
+		 <<"   "<<cms<<" / "<<cms.Abs2()<<std::endl;
       return 0;
     }
     if (rpa.gen.Events()) {
       OutputTree(trees[0]);
       OutputTree(trees[1]);
     }
-    msg.Events()<<" s after shower : "<<cms.abs2()<<" =?= "
+    msg.Events()<<" s after shower : "<<cms.Abs2()<<" =?= "
 		<<x1*x2*E2<<", "<<"Internally : "<<sprime<<std::endl;
     return 1;
   }
@@ -170,9 +170,9 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,Blob * jet,
     /* 
        New jet : kn = incoming parton from hadron info = 'I'
     */
-    if (kn->part->info() != 'G') {
-      kn->part->Set_Numb(pl->size());
-      kn->part->set_status(2);
+    if (kn->part->Info() != 'G') {
+      kn->part->SetNumber(pl->size());
+      kn->part->SetStatus(2);
       pl->push_back(kn->part);
     }
     jet = new Blob();
@@ -180,20 +180,20 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,Blob * jet,
     jet->SetId(bl->size());
     jet->SetType(std::string("IS Parton Shower (APACIC++2.0)"));
     jet->SetBeam(beam);
-    kn->part->set_dec(jet);
+    kn->part->SetDec(jet);
     bl->push_back(jet);
     if (!(kn->left)) {
-      if (kn->part->info() != 'G') {
+      if (kn->part->Info() != 'G') {
 	msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
 		   <<"Initial_State_Shower::ExtractPartons : "<<std::endl
-		   <<" Mislabelling of parton "<<kn->part->Get_Numb()<<std::endl;
-	kn->part->Set_Numb(pl->size());
+		   <<" Mislabelling of parton "<<kn->part->Number()<<std::endl;
+	kn->part->SetNumber(pl->size());
       }
       jet->AddToOutPartons(kn->part);
       return;
     }
   }
-  else if (kn->part->info() == 'H') {
+  else if (kn->part->Info() == 'H') {
     /* 
        New jet : kn = hard parton from ME info = 'H'
                  and kn outgoing
@@ -205,11 +205,11 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,Blob * jet,
     jet->SetType(std::string("IS Parton Shower (APACIC++2.0)"));
     bl->push_back(jet);
     if (kn->left) {
-      kn->part->set_dec(jet);
-      kn->part->set_status(2);
+      kn->part->SetDec(jet);
+      kn->part->SetStatus(2);
     }
     else {
-      kn->part->set_status(1);
+      kn->part->SetStatus(1);
       jet->AddToOutPartons(kn->part);
       return;
     }
@@ -219,14 +219,14 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,Blob * jet,
       if (!jet) {
 	msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
 		   <<"Initial_State_Shower::ExtractPartons : "<<std::endl
-		   <<"No jet for Parton "<<kn->part->Get_Numb()<<std::endl;
+		   <<"No jet for Parton "<<kn->part->Number()<<std::endl;
       }
-      if (kn->part->info() != 'G') {
-	kn->part->Set_Numb(pl->size());
+      if (kn->part->Info() != 'G') {
+	kn->part->SetNumber(pl->size());
 	pl->push_back(kn->part);
       }
-      kn->part->set_prod(jet);
-      kn->part->set_status(1);
+      kn->part->SetProd(jet);
+      kn->part->SetStatus(1);
       jet->AddToOutPartons(kn->part);
     }
   }
@@ -242,7 +242,7 @@ bool Initial_State_Shower::TestShower(Tree ** trees)
 {
   int number;
   double x1,x2;
-  vec4d  cms;
+  Vec4D  cms;
   double E2 = 4.*sqr(rpa.gen.Ecms());
   double E  = rpa.gen.Ecms();
   for (long int n=1;n<=rpa.gen.NumberOfEvents();n++) {
@@ -278,15 +278,15 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 
   int mismatch = 0;
   bool accepted; 
-  sprime      = (k1->part->momentum()+k2->part->momentum()).abs2();
+  sprime      = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
 
   msg.Debugging()<<"Initial_State_Shower::InitializeSystem with s' = "<<sprime<<std::endl
 		 <<"   Compare with scale : "<<4.*k1->x*k2->x*sqr(rpa.gen.Ecms())<<std::endl
 		 <<"   x1,2 = "<<k1->x<<"("<<k1->stat<<"), "<<k2->x<<"("<<k2->stat<<")"<<std::endl
-		 <<"Vecs :"<<std::endl<<k1->part->momentum()<<std::endl<<k2->part->momentum()<<std::endl;
+		 <<"Vecs :"<<std::endl<<k1->part->Momentum()<<std::endl<<k2->part->Momentum()<<std::endl;
 
   for (;;) {
-    sprime      = (k1->part->momentum()+k2->part->momentum()).abs2();
+    sprime      = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
     accepted = 1;  
     // Parton 1/Tree 1 is the one to decay.
     if (!decay1) {
@@ -370,7 +370,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 
   if ((k1->t) < (k2->t)) {
     k1->stat           = 0;
-    k1->E2             = sqr(k1->part->momentum()[0]);
+    k1->E2             = sqr(k1->part->Momentum()[0]);
     k1->prev->E2       = k1->E2/sqr(k1->z);
     k1->prev->left->E2 = k1->prev->E2*sqr(1.-k1->z);
     if (!FillBranch(trees,k1->prev,k2,0)) return 0;
@@ -378,7 +378,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 		   <<k1->prev->left->kn_no<<std::endl<<"    "
 		   <<k1->prev->left->E2<<" from mother "<<k1->prev->kn_no
 		   <<" "<<k1->prev->E2<<" and "<<k1->z<<" : "<<std::endl
-		   <<"    sister : "<<k1->E2<<" : "<<k1->part->momentum()<<std::endl;
+		   <<"    sister : "<<k1->E2<<" : "<<k1->part->Momentum()<<std::endl;
     fin->FirstTimelikeFromSpacelike(trees[0],k1->prev->left,jetveto);
     if (!kin->DoKinematics(trees,k1,k2,0)) {
       msg.Debugging()<<"Initial_State_Shower::EvolveSystem for knots"
@@ -391,7 +391,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
   }
   else {
     k2->stat = 0;
-    k2->E2             = sqr(k2->part->momentum()[0]);
+    k2->E2             = sqr(k2->part->Momentum()[0]);
     k2->prev->E2       = k2->E2/sqr(k2->z);
     k2->prev->left->E2 = k2->prev->E2*sqr(1.-k2->z);
     if (!FillBranch(trees,k2->prev,k1,1)) return 0;
@@ -399,7 +399,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 		   <<k2->prev->left->kn_no<<std::endl<<"    "
 		   <<k2->prev->left->E2<<" from mother "<<k2->prev->kn_no
 		   <<" "<<k2->prev->E2<<" and "<<k2->z<<" : "<<std::endl
-		   <<"    sister : "<<k2->E2<<" : "<<k2->part->momentum()<<std::endl;
+		   <<"    sister : "<<k2->E2<<" : "<<k2->part->Momentum()<<std::endl;
     fin->FirstTimelikeFromSpacelike(trees[1],k2->prev->left,jetveto);
     if (!kin->DoKinematics(trees,k2,k1,1)) {
       msg.Debugging()<<"Initial_State_Shower::EvolveSystem for knots"
@@ -436,7 +436,7 @@ bool Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner
   active->t      = active->tout;
   active->thcrit = 0.;
   active->maxpt2 = 0.;
-  active->part->set_status(1);
+  active->part->SetStatus(1);
   return 1;
 }
 
@@ -449,9 +449,9 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   Knot * mother  = tree->NewKnot();
   k->prev        = mother;
   mother->right  = k;
-  mother->part->set_flav(k_flavs[0]);
-  mother->part->set_info('I');
-  mother->part->set_status(1);
+  mother->part->SetFlav(k_flavs[0]);
+  mother->part->SetInfo('I');
+  mother->part->SetStatus(1);
   mother->t      = k->t;
   mother->tout   = rpa.pshower.InitialQ02();
   mother->x      = k->x/k->z;
@@ -461,17 +461,17 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   Knot * sister  = tree->NewKnot();
   sister->prev   = mother;
   mother->left   = sister;
-  sister->part->set_flav(k_flavs[1]);
-  sister->part->set_info('F');
-  sister->part->set_status(1);
+  sister->part->SetFlav(k_flavs[1]);
+  sister->part->SetInfo('F');
+  sister->part->SetStatus(1);
   sister->t      = 0.;
-  sister->tout   = sqr(k_flavs[1].PSmass());
+  sister->tout   = sqr(k_flavs[1].PSMass());
   sister->x      = (mother->x)*(1.-k->z);
   sister->stat   = 1;
   sister->E2     = 0.;
   
-  if (k->part->info() != 'G') k->part->set_info('i');
-  k->part->set_status(2);
+  if (k->part->Info() != 'G') k->part->SetInfo('i');
+  k->part->SetStatus(2);
   SetColours(k);
 }
 
@@ -479,9 +479,9 @@ void Initial_State_Shower::SetColours(Knot * k)
 {
   Knot * mother = k->prev;
   Knot * sister = mother->left;
-  if (mother->part->flav().isquark()) {
-    if (mother->part->flav().isanti()) {
-      if (k->part->flav().isquark()) {
+  if (mother->part->Flav().IsQuark()) {
+    if (mother->part->Flav().IsAnti()) {
+      if (k->part->Flav().IsQuark()) {
 	/*
 	  mother             k = antiquark
 	    -----   ---------
@@ -490,10 +490,10 @@ void Initial_State_Shower::SetColours(Knot * k)
 	        -------------
 		        sister
 	 */
-	mother->part->set_flow(1,0);
-	mother->part->set_flow(2,-1);
-	sister->part->set_flow(1,k->part->flow(2));
-	sister->part->set_flow(2,mother->part->flow(2));
+	mother->part->SetFlow(1,0);
+	mother->part->SetFlow(2,-1);
+	sister->part->SetFlow(1,k->part->GetFlow(2));
+	sister->part->SetFlow(2,mother->part->GetFlow(2));
       }
       else {
 	/*
@@ -504,14 +504,14 @@ void Initial_State_Shower::SetColours(Knot * k)
 	        -------------
 		             k
 	 */
-	mother->part->set_flow(1,0);
-	mother->part->set_flow(2,k->part->flow(2));
-	sister->part->set_flow(1,0);
-	sister->part->set_flow(2,k->part->flow(1));
+	mother->part->SetFlow(1,0);
+	mother->part->SetFlow(2,k->part->GetFlow(2));
+	sister->part->SetFlow(1,0);
+	sister->part->SetFlow(2,k->part->GetFlow(1));
       }
     }
     else {
-      if (k->part->flav().isquark()) {
+      if (k->part->Flav().IsQuark()) {
 	/*
 	  mother             k = quark
 	    -----   ---------
@@ -520,10 +520,10 @@ void Initial_State_Shower::SetColours(Knot * k)
 	        -------------
 		        sister
 	*/
-	mother->part->set_flow(1,-1);
-	mother->part->set_flow(2,0);
-	sister->part->set_flow(1,mother->part->flow(1));
-	sister->part->set_flow(2,k->part->flow(1));
+	mother->part->SetFlow(1,-1);
+	mother->part->SetFlow(2,0);
+	sister->part->SetFlow(1,mother->part->GetFlow(1));
+	sister->part->SetFlow(2,k->part->GetFlow(1));
       }
       else {
 	/*
@@ -534,16 +534,16 @@ void Initial_State_Shower::SetColours(Knot * k)
 	        -------------
 		             k
 	 */
-	mother->part->set_flow(1,k->part->flow(1));
-	mother->part->set_flow(2,0);
-	sister->part->set_flow(1,k->part->flow(2));
-	sister->part->set_flow(2,0);
+	mother->part->SetFlow(1,k->part->GetFlow(1));
+	mother->part->SetFlow(2,0);
+	sister->part->SetFlow(1,k->part->GetFlow(2));
+	sister->part->SetFlow(2,0);
       }
     }
   }
   else {
-    if (k->part->flav().isquark()) {
-      if (k->part->flav().isanti()) {
+    if (k->part->Flav().IsQuark()) {
+      if (k->part->Flav().IsAnti()) {
 	/*
 	  mother        sister = quark
 	         |------------
@@ -551,10 +551,10 @@ void Initial_State_Shower::SetColours(Knot * k)
 	         |------------
 		             k = antiquark
 	 */
-	mother->part->set_flow(1,-1);
-	mother->part->set_flow(2,k->part->flow(2));
-	sister->part->set_flow(1,mother->part->flow(1));
-	sister->part->set_flow(2,0);
+	mother->part->SetFlow(1,-1);
+	mother->part->SetFlow(2,k->part->GetFlow(2));
+	sister->part->SetFlow(1,mother->part->GetFlow(1));
+	sister->part->SetFlow(2,0);
       }
       else {
 	/*
@@ -564,10 +564,10 @@ void Initial_State_Shower::SetColours(Knot * k)
 	         |------------
 		             k = quark
 	 */
-	mother->part->set_flow(1,k->part->flow(1));
-	mother->part->set_flow(2,-1);
-	sister->part->set_flow(1,0);
-	sister->part->set_flow(2,mother->part->flow(2));
+	mother->part->SetFlow(1,k->part->GetFlow(1));
+	mother->part->SetFlow(2,-1);
+	sister->part->SetFlow(1,0);
+	sister->part->SetFlow(2,mother->part->GetFlow(2));
       }
     }
     else {
@@ -581,17 +581,17 @@ void Initial_State_Shower::SetColours(Knot * k)
 
 	                 k = gluon
       */
-      if (Ran.get() > 0) {
-	mother->part->set_flow(1,k->part->flow(1));
-	mother->part->set_flow(2,-1);
-	sister->part->set_flow(1,k->part->flow(2));
-	sister->part->set_flow(2,mother->part->flow(2));
+      if (ran.Get() > 0) {
+	mother->part->SetFlow(1,k->part->GetFlow(1));
+	mother->part->SetFlow(2,-1);
+	sister->part->SetFlow(1,k->part->GetFlow(2));
+	sister->part->SetFlow(2,mother->part->GetFlow(2));
       }
       else {
-	mother->part->set_flow(1,-1);
-	mother->part->set_flow(2,k->part->flow(2));
-	sister->part->set_flow(1,mother->part->flow(1));
-	sister->part->set_flow(2,k->part->flow(1));
+	mother->part->SetFlow(1,-1);
+	mother->part->SetFlow(2,k->part->GetFlow(2));
+	sister->part->SetFlow(1,mother->part->GetFlow(1));
+	sister->part->SetFlow(2,k->part->GetFlow(1));
       }
     }
   }
@@ -600,19 +600,19 @@ void Initial_State_Shower::SetColours(Knot * k)
 
 
 void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
-  double x1     = 0.005+Ran.get()*0.295;
-  double x2     = 0.005+Ran.get()*0.295;
+  double x1     = 0.005+ran.Get()*0.295;
+  double x2     = 0.005+ran.Get()*0.295;
   double scale  = x1*x2*E2;
   double E      = 0.5 * sqrt(E2);
   pt2_1 = pt2_2 = scale;
   th_1  = th_2  = M_PI;
 
   Knot * d1   = trees[0]->NewKnot();
-  *(d1->part) = Parton(1,Flavour(kf::gluon),x1*E*vec4d(1.,0.,0.,1.));
-  d1->part->set_status(1);
-  d1->part->set_info('G');
-  d1->part->set_flow(1,500);
-  d1->part->set_flow(2,501);
+  *(d1->part) = Parton(1,Flavour(kf::gluon),x1*E*Vec4D(1.,0.,0.,1.));
+  d1->part->SetStatus(1);
+  d1->part->SetInfo('G');
+  d1->part->SetFlow(1,500);
+  d1->part->SetFlow(2,501);
   d1->t       = -scale;
   d1->tout    = rpa.pshower.InitialQ02();
   d1->x       = x1;
@@ -623,11 +623,11 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   d1->stat    = 1;
   
   Knot * d2   = trees[1]->NewKnot();
-  *(d2->part) = Parton(2,Flavour(kf::gluon),x2*E*vec4d(1.,0.,0.,-1.));
-  d2->part->set_status(1);
-  d2->part->set_info('G');
-  d2->part->set_flow(1,502);
-  d2->part->set_flow(2,d1->part->flow(1));
+  *(d2->part) = Parton(2,Flavour(kf::gluon),x2*E*Vec4D(1.,0.,0.,-1.));
+  d2->part->SetStatus(1);
+  d2->part->SetInfo('G');
+  d2->part->SetFlow(1,502);
+  d2->part->SetFlow(2,d1->part->GetFlow(1));
   d2->t       = -scale;
   d2->tout    = rpa.pshower.InitialQ02();
   d2->x       = x2;
@@ -638,10 +638,10 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   d2->stat    = 1;
 
   msg.Debugging()<<"Initial_State_Shower::InitTwoTrees :"<<std::endl
-		 <<"    Daughter1 :"<<d1->part->momentum()<<std::endl
-		 <<"    Daughter2 :"<<d2->part->momentum()<<std::endl
+		 <<"    Daughter1 :"<<d1->part->Momentum()<<std::endl
+		 <<"    Daughter2 :"<<d2->part->Momentum()<<std::endl
 		 <<"    Check :"<<scale<<", "
-		 <<(d1->part->momentum()+d2->part->momentum()).abs2()<<std::endl;
+		 <<(d1->part->Momentum()+d2->part->Momentum()).Abs2()<<std::endl;
 };
 
 void Initial_State_Shower::OutputTree(Tree * tree) 

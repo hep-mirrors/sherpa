@@ -107,15 +107,15 @@ namespace PHASIC {
     /*!
       Methods for the generation of phase space points
     */
-    void   GeneratePoint(int,AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *,double *);
-    void   GenerateWeight(int,AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);
-    void   GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);
-    void   GenerateWeight(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);     
+    void   GeneratePoint(int,AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
+    void   GenerateWeight(int,AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
+    void   GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
+    void   GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);     
 
-    void   GeneratePoint(int,AMATOOLS::vec4d *,double *);
-    void   GenerateWeight(int,AMATOOLS::vec4d *);
-    void   GeneratePoint(AMATOOLS::vec4d *);
-    void   GenerateWeight(AMATOOLS::vec4d *);     
+    void   GeneratePoint(int,AMATOOLS::Vec4D *,double *);
+    void   GenerateWeight(int,AMATOOLS::Vec4D *);
+    void   GeneratePoint(AMATOOLS::Vec4D *);
+    void   GenerateWeight(AMATOOLS::Vec4D *);     
 
     void   GeneratePoint(int n,double & sprime,double & y,int mode);
     void   GenerateWeight(int n,double sprime,double y,int mode);

@@ -25,7 +25,7 @@ namespace MOCAIC {
     int    nin,nout,maxjetnumber;
 
     APHYTOOLS::Flavour     * fl;
-    AMATOOLS::vec4d        * p;
+    AMATOOLS::Vec4D        * p;
     APHYTOOLS::Jet_Finder  * jf;
     ISR::ISR_Handler       * isr;
     Cluster_Partons        * cluster;

@@ -56,7 +56,7 @@ using namespace AMATOOLS;
 
 
 bool Mocaic::Init() {
-  particle_init("./");
+  ParticleInit("./");
   rpa.Init("./");
 
   if (!as) as       = new Running_AlphaS();
@@ -463,17 +463,17 @@ void Mocaic::RunPythiaTest() {
     
     //    msg.Out()<<"nk ="<<nk<<endl;
 
-    pl.push_back(new Parton(0,Flavour(kf::e),vec4d(E,0,0,E)));
-    pl.push_back(new Parton(1,Flavour(kf::e).bar(),vec4d(E,0,0,-E)));
+    pl.push_back(new Parton(0,Flavour(kf::e),Vec4D(E,0,0,E)));
+    pl.push_back(new Parton(1,Flavour(kf::e).Bar(),Vec4D(E,0,0,-E)));
 
     for (int i=0; i<nk; ++i) {
       Flavour flav = Flavour(kf::code(abs(*(kfjet+i))));
-      if ((*(kfjet+i))<0) flav = flav.bar();
-      vec4d momentum;
+      if ((*(kfjet+i))<0) flav = flav.Bar();
+      Vec4D momentum;
       for(int j=0; j<4; ++j) momentum[j] = *(pjet+i+j*2000);
 
       Parton * parton = new Parton(pl.size(),flav,momentum);
-      parton->set_status(1);
+      parton->SetStatus(1);
 
       pl.push_back(parton);
     }
@@ -528,15 +528,15 @@ void Mocaic::FillBlob(Blob * blob,Process_Base * proc) {
     
   msg.Debugging()<<"Partons : "<<partons<<" "<<partons->size()<<std::endl;
 
-  AMATOOLS::vec4d cms = AMATOOLS::vec4d(0.,0.,0.,0.);
-  AMATOOLS::vec4d pos = AMATOOLS::vec4d(0.,0.,0.,0.);
+  AMATOOLS::Vec4D cms = AMATOOLS::Vec4D(0.,0.,0.,0.);
+  AMATOOLS::Vec4D pos = AMATOOLS::Vec4D(0.,0.,0.,0.);
     
   Parton * newp;
   for (int i=0;i<proc->Nin();++i) {
     newp = new Parton(partons->size(),proc->Flavs()[i],proc->Momenta()[i]);
-    newp->set_info('I');
-    newp->Set_Numb( partons->size() );
-    newp->set_dec(blob);
+    newp->SetInfo('I');
+    newp->SetNumber( partons->size() );
+    newp->SetDec(blob);
     blob->AddToInPartons(newp);
     partons->push_back(newp);
     cms             = cms + proc->Momenta()[i];
@@ -544,9 +544,9 @@ void Mocaic::FillBlob(Blob * blob,Process_Base * proc) {
   }
   for (int i=proc->Nin();i<proc->Nin()+proc->Nout();++i) {
     newp   = new Parton(partons->size(),proc->Flavs()[i],proc->Momenta()[i]);
-    newp->set_info('H');
-    newp->Set_Numb( partons->size() );
-    newp->set_prod(blob);
+    newp->SetInfo('H');
+    newp->SetNumber( partons->size() );
+    newp->SetProd(blob);
     partons->push_back(newp);
     blob->AddToOutPartons(newp);
     //    cout<<" AddO :"<<newp<<endl;
@@ -557,9 +557,9 @@ void Mocaic::FillBlob(Blob * blob,Process_Base * proc) {
   
   msg.Debugging()<<"Out Mocaic::FillBlob() :"<<std::endl;
   for (int i=0;i<proc->Nin();++i) 
-    msg.Debugging()<<blob->InParton(i)->flav()<<" ";
+    msg.Debugging()<<blob->InParton(i)->Flav()<<" ";
   for (int i=proc->Nin();i<proc->Nin()+proc->Nout();++i) 
-    msg.Debugging()<<blob->OutParton(i-blob->NInP())->flav()<<" ";
+    msg.Debugging()<<blob->OutParton(i-blob->NInP())->Flav()<<" ";
   msg.Debugging()<<std::endl;
   msg.Debugging()<<"########################################################"<<std::endl;
 }
@@ -579,7 +579,7 @@ bool Mocaic::MPIInit() {
 
 bool Mocaic::MPIGenerateEvents() {
 #ifdef _USE_MPI_
-  int mpi_rank = MPI::COMM_WORLD.Get_rank();
+  int mpi_rank = MPI::COMM_WORLD.Get_Rank();
   int mpi_size = MPI::COMM_WORLD.Get_size();
 
   if (mpi_size<2) return 0;

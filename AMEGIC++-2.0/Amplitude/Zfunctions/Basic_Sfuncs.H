@@ -16,7 +16,7 @@ namespace AMEGIC {
   public:
     int*      arg;
     int       argnum;
-    AMATOOLS::vec4d     mom,mom_img;
+    AMATOOLS::Vec4D     mom,mom_img;
     double    mass,angle;
     Complex   cplxmass2;
     mt::momtype type;
@@ -59,23 +59,23 @@ class Basic_Sfuncs {
   double** delta4x4;
   Complex* _eta;
   Complex* _mu;
-  AMATOOLS::vec4d k0,k1;
+  AMATOOLS::Vec4D k0,k1;
   Complex** _S0;
   Complex** _S1;
   int** calc_st;
   int  momcount;
-  AMATOOLS::vec4d* p;
+  AMATOOLS::Vec4D* p;
   int k0_n;
   int  Initialize_Momlist();
   void Calc_Momlist();
   void calcS(int i, int j);
-  AMATOOLS::vec4d Mom_dir(int i);
+  AMATOOLS::Vec4D Mom_dir(int i);
 public:
   Basic_Sfuncs(int,int, APHYTOOLS::Flavour*,int*);
   ~Basic_Sfuncs();
   double N(int,int);
   int epsilon(int,int,int,int);
-  int setS(AMATOOLS::vec4d*);
+  int setS(AMATOOLS::Vec4D*);
   void ResetS_GT(double);
   void set_k0(int);
   inline Complex S0(int i,int j) {i=AMATOOLS::iabs(i);j=AMATOOLS::iabs(j);if(!calc_st[i][j])calcS(i,j); return _S0[i][j];}
@@ -85,8 +85,8 @@ public:
   inline int    GetNmomenta() {return Nmom;}
   inline int    Sign(int i)   {return b[AMATOOLS::iabs(i)];}
   inline APHYTOOLS::Flavour Flav(int i)   {return fl[AMATOOLS::iabs(i)];}
-  inline AMATOOLS::vec4d  Momentum(int i){return Momlist[i].mom;}
-  inline AMATOOLS::vec4d  Momentum_img(int i){return Momlist[i].mom_img;}
+  inline AMATOOLS::Vec4D  Momentum(int i){return Momlist[i].mom;}
+  inline AMATOOLS::Vec4D  Momentum_img(int i){return Momlist[i].mom_img;}
   int    Build_Momlist(std::list<Pfunc*>&); 
   int    Build_Polarisations(int,char,double angle=0.);
   int    Build_Polarisations(int,APHYTOOLS::Flavour);

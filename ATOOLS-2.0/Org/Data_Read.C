@@ -140,10 +140,10 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
     anti=1;
   }
   // looking in Particles for string
-  if (!KF_table.IsInitialised()) return NotDefined<Flavour>();
+  if (!kf_table.IsInitialised()) return NotDefined<Flavour>();
   
   kf::code kfc;
-  kfc = KF_table.from_string(value);
+  kfc = kf_table.FromString(value);
   if (kfc!=kf::none) return Flavour(kfc);
   else {
     // looking for "+" / "-"
@@ -160,10 +160,10 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
       }
     }
   }
-  kfc = KF_table.from_string(value);
+  kfc = kf_table.FromString(value);
   if (kfc!=kf::none) {
     // here anti should always be true!!!!
-    if (anti) return (Flavour(kfc).bar());
+    if (anti) return (Flavour(kfc).Bar());
     return Flavour(kfc);
   }
   
@@ -171,7 +171,7 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   // check if number
   int kfci = GetValue<int>(name);
   Flavour fl = Flavour(kf::code(abs(kfci)));
-  if (kfci<0) fl = fl.bar();
+  if (kfci<0) fl = fl.Bar();
   return fl;
 }
 //  return NotDefined<Flavour>();

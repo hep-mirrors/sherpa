@@ -24,7 +24,7 @@ namespace BEAM {
     double                mass12, mass22, x1, x2;
     double                exponent[2];
     double                smin,smax,splimits[3], ylimits[2];
-    AMATOOLS::vec4d       fixvecs[2];
+    AMATOOLS::Vec4D       fiXVECs[2];
     std::string           name, type;
   public:
       Beam_Handler(int *,APHYTOOLS::Flavour *,double *,APHYTOOLS::Flavour *,double *,double *);
@@ -33,13 +33,13 @@ namespace BEAM {
     bool   CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *);
     void   SetBeamMasses(APHYTOOLS::Flavour * beams); 
 
-    bool   MakeBeams(AMATOOLS::vec4d *,double,double);
+    bool   MakeBeams(AMATOOLS::Vec4D *,double,double);
     bool   CalculateWeight(double);
     double Weight(APHYTOOLS::Flavour *);
     double Weight();
 
-    void   BoostInCMS(AMATOOLS::vec4d *,int);
-    void   BoostInLab(AMATOOLS::vec4d *,int);
+    void   BoostInCMS(AMATOOLS::Vec4D *,int);
+    void   BoostInLab(AMATOOLS::Vec4D *,int);
 
     void   SetName(std::string _name) { name         = _name; }
     void   SetSprimeMin(double _spl)  { splimits[0]  = _spl; }

@@ -18,11 +18,11 @@ void Spectrum_sUpquarks::Interface(Isajet* isa)
   isa->sUps(_Zu,_mu,_ws,_us);
 
   msg.Tracking()<<"Zu: "<<endl;
-  if (rpa.gen.Tracking()) _Zu.matrix_out();
+  if (rpa.gen.Tracking()) _Zu.MatrixOut();
   msg.Tracking()<<"ws: "<<endl;
-  if (rpa.gen.Tracking()) _ws.matrix_out();
+  if (rpa.gen.Tracking()) _ws.MatrixOut();
   msg.Tracking()<<"us: "<<endl;
-  if (rpa.gen.Tracking()) _us.matrix_out();
+  if (rpa.gen.Tracking()) _us.MatrixOut();
 
   msg.Tracking()<<"======================================================"<<endl;
 
@@ -113,20 +113,20 @@ void Spectrum_sUpquarks::Masses_LO()
 
   double evalues[6];
 
-  M.matrix_out();
+  M.MatrixOut();
   M.Diagonalize(evalues,_Zu);
   Flavour flav;    
-  flav = Flavour(kf::sUpL);flav.set_mass(sqrt(dabs(evalues[0])));
-  flav = Flavour(kf::sUpR);flav.set_mass(sqrt(dabs(evalues[3])));
-  flav = Flavour(kf::sCharmL);flav.set_mass(sqrt(dabs(evalues[1])));
-  flav = Flavour(kf::sCharmR);flav.set_mass(sqrt(dabs(evalues[4])));
-  flav = Flavour(kf::sTopL);flav.set_mass(sqrt(dabs(evalues[2])));
-  flav = Flavour(kf::sTopR);flav.set_mass(sqrt(dabs(evalues[5])));
+  flav = Flavour(kf::sUpL);flav.SetMass(sqrt(dabs(evalues[0])));
+  flav = Flavour(kf::sUpR);flav.SetMass(sqrt(dabs(evalues[3])));
+  flav = Flavour(kf::sCharmL);flav.SetMass(sqrt(dabs(evalues[1])));
+  flav = Flavour(kf::sCharmR);flav.SetMass(sqrt(dabs(evalues[4])));
+  flav = Flavour(kf::sTopL);flav.SetMass(sqrt(dabs(evalues[2])));
+  flav = Flavour(kf::sTopR);flav.SetMass(sqrt(dabs(evalues[5])));
 
   msg.Tracking()<<"--------------------------------------------------------------"<<endl;
   msg.Tracking()<<"sQuark masses :"<<endl;
   for (short int i=0;i<6;++i) msg.Tracking()<<"sUpquarks["<<i<<"] : "<<sqrt(dabs(evalues[i]))<<endl;
-  _Zu.matrix_out();
+  _Zu.MatrixOut();
 }
 
 

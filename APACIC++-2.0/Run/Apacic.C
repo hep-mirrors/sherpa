@@ -29,10 +29,10 @@ using namespace AMATOOLS;
 Apacic::Apacic(bool _t) : test(_t) { isr = 0; beam = 0; };
 
 void Apacic::Init() {
-  particle_init("./");
+  ParticleInit("./");
   rpa.Init("./");
 
-  if (!as) as       = new Running_AlphaS();
+  if (!as)   as     = new Running_AlphaS();
   if (!aqed) aqed   = new Running_AlphaQED();
 
   Data_Read dr(rpa.GetPath()+string("/ISR.dat"));
@@ -60,7 +60,7 @@ void Apacic::Init() {
   bunches[0] = beams[0] = rpa.gen.Beam1();// bunches[] is just for testing ..
   bunches[1] = beams[1] = rpa.gen.Beam2();
 
-  if (beams[0]==Flavour(kf::e) || beams[0]==Flavour(kf::e).bar()) {
+  if (beams[0]==Flavour(kf::e) || beams[0]==Flavour(kf::e).Bar()) {
     parton[0] = beams[0];
     parton[1] = beams[1];
   }
@@ -136,7 +136,7 @@ void Apacic::TestShower()
 
   if (decision) {
     rpa.gen.SetBeam1(Flavour(kf::code(11)));
-    rpa.gen.SetBeam2(Flavour(kf::code(11)).bar());
+    rpa.gen.SetBeam2(Flavour(kf::code(11)).Bar());
     msg.Tracking()<<"Set beams on e- e+."<<std::endl;
 
     FinShower->TestShower(tree_fin);
@@ -252,24 +252,24 @@ void Apacic::FillBlob(Blob * blob) {
     
   msg.Debugging()<<"Partons : "<<partons<<" "<<partons->size()<<std::endl;
 
-  AMATOOLS::vec4d cms = AMATOOLS::vec4d(0.,0.,0.,0.);
-  AMATOOLS::vec4d pos = AMATOOLS::vec4d(0.,0.,0.,0.);
+  AMATOOLS::Vec4D cms = AMATOOLS::Vec4D(0.,0.,0.,0.);
+  AMATOOLS::Vec4D pos = AMATOOLS::Vec4D(0.,0.,0.,0.);
     
   Parton * newp;
   for (int i=0;i<AP_proc->Nin();++i) {
     newp = new Parton(partons->size(),AP_proc->Flavs()[i],AP_proc->Momenta()[i]);
-    newp->set_info('I');
-    newp->Set_Numb( partons->size() );
-    newp->set_dec(blob);
+    newp->SetInfo('I');
+    newp->SetNumber( partons->size() );
+    newp->SetDec(blob);
     blob->AddToInPartons(newp);
     partons->push_back(newp);
     cms             = cms + AP_proc->Momenta()[i];
   }
   for (int i=AP_proc->Nin();i<AP_proc->Nin()+AP_proc->Nout();++i) {
     newp   = new Parton(partons->size(),AP_proc->Flavs()[i],AP_proc->Momenta()[i]);
-    newp->set_info('H');
-    newp->Set_Numb( partons->size() );
-    newp->set_prod(blob);
+    newp->SetInfo('H');
+    newp->SetNumber( partons->size() );
+    newp->SetProd(blob);
     partons->push_back(newp);
     blob->AddToOutPartons(newp);
   }
@@ -280,9 +280,9 @@ void Apacic::FillBlob(Blob * blob) {
   
   msg.Debugging()<<"Out Apacic::FillBlob() :"<<std::endl;
   for (int i=0;i<AP_proc->Nin();++i) 
-    msg.Debugging()<<blob->InParton(i)->flav()<<" ";
+    msg.Debugging()<<blob->InParton(i)->Flav()<<" ";
   for (int i=AP_proc->Nin();i<AP_proc->Nin()+AP_proc->Nout();++i) 
-    msg.Debugging()<<blob->OutParton(i-blob->NInP())->flav()<<" ";
+    msg.Debugging()<<blob->OutParton(i-blob->NInP())->Flav()<<" ";
   msg.Debugging()<<std::endl;
   msg.Debugging()<<"########################################################"<<std::endl;
 }

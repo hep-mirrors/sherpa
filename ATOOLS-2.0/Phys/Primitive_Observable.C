@@ -9,7 +9,7 @@ void Differential_Jetrate::Evaluate(double value) {
 }
 
 
-void Differential_Jetrate::Evaluate(int,AMATOOLS::vec4d *,
+void Differential_Jetrate::Evaluate(int,AMATOOLS::Vec4D *,
 				    APHYTOOLS::Flavour *,double value) 
 {
   histo->Insert(sel->ActualValue()[0],value);

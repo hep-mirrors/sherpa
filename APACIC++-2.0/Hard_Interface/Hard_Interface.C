@@ -76,12 +76,12 @@ bool Hard_Interface::ReduceBlob(Blob * blob)
 
 bool Hard_Interface::InitColours(Blob * blob) {
   Flavour * fl = new Flavour[4];
-  vec4d   * p  = new vec4d[4];
+  Vec4D   * p  = new Vec4D[4];
   for (int i=0;i<2;i++) {
-    fl[i]   = blob->InParton(i)->flav(); 
-    p[i]    = blob->InParton(i)->momentum(); 
-    fl[i+2] = blob->OutParton(i)->flav();
-    p[i+2]  = blob->OutParton(i)->momentum(); 
+    fl[i]   = blob->InParton(i)->Flav(); 
+    p[i]    = blob->InParton(i)->Momentum(); 
+    fl[i+2] = blob->OutParton(i)->Flav();
+    p[i+2]  = blob->OutParton(i)->Momentum(); 
   } 
   XS_Base * xs; 
   if (!(xsselector->FindInGroup(two2two,xs,2,2,fl))) {
@@ -91,8 +91,8 @@ bool Hard_Interface::InitColours(Blob * blob) {
   if (!(xs->SetColours(p))) return 0;
   for (int j=0;j<2;j++) {
     for (int i=0;i<2;i++) {
-      blob->InParton(i)->set_flow(j+1,xs->Colours()[i][j]);
-      blob->OutParton(i)->set_flow(j+1,xs->Colours()[i+2][j]);
+      blob->InParton(i)->SetFlow(j+1,xs->Colours()[i][j]);
+      blob->OutParton(i)->SetFlow(j+1,xs->Colours()[i+2][j]);
     }
   }
   return InitialConditions(blob,xs);

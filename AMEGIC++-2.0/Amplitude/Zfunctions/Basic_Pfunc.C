@@ -33,13 +33,13 @@ Kabbala Basic_Pfunc::P(const int& pntemp)
     int hit = 0;
     for (list<Pfunc*>::iterator pit=pl->begin();pit!=pl->end();++pit) {
       p1 = *pit;
-      if (p1->momnum==ps[i].numb && (p1->fl).kfcode()==ps[i].kfcode) {
+      if (p1->momnum==ps[i].numb && (p1->fl).Kfcode()==ps[i].kfcode) {
 	hit = 1;
 	break;
       }
     }
     if (hit) {
-      if (p1->arg[0]>99 && !p1->fl.isscalar() && p1->on==0) {
+      if (p1->arg[0]>99 && !p1->fl.IsScalar() && p1->on==0) {
 	//cout<<"Multipliy inner with "<<p1->arg[0]<<" = "<<p1->fl<<endl;
 	value *= P(p1);
       }
@@ -50,7 +50,7 @@ Kabbala Basic_Pfunc::P(const int& pntemp)
 }
 
 Complex Basic_Pfunc::Pcalc(const Flavour& fl,const int& a)
-{ return Propagator((BS->Momentum(a)).abs2(),fl);}
+{ return Propagator((BS->Momentum(a)).Abs2(),fl);}
 
 Complex Basic_Pfunc::Pcalc(const int& fl,const int& a)
 { return Pcalc(Flavour(kf::code(fl)),a);}
@@ -63,8 +63,8 @@ Complex Basic_Pfunc::Propagator(double p2,Flavour fl)
 	    AORGTOOLS::rpa.consts.Width(fl,sqr(AORGTOOLS::rpa.gen.Ecms())));
 
   //extra i
-  if (fl.isfermion() || fl.isscalar()) value *= Complex (0.,1.);
-  if (fl.isvector())                   value *= Complex (0.,-1.);
+  if (fl.IsFermion() || fl.IsScalar()) value *= Complex (0.,1.);
+  if (fl.IsVector())                   value *= Complex (0.,-1.);
 
   return value;
 }

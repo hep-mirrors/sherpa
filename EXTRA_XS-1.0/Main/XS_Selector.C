@@ -32,32 +32,32 @@ Single_XS * XS_Selector::GetXS(int nin,int nout,Flavour * fl)
 
 
 
-  if (fl[2].isfermion() && fl[3]==fl[2].bar() &&
-      fl[0].isphoton()  && fl[1]==fl[0])    { return new XS_pp_ffbar(nin,nout,fl); }
+  if (fl[2].IsFermion() && fl[3]==fl[2].Bar() &&
+      fl[0].IsPhoton()  && fl[1]==fl[0])    { return new XS_pp_ffbar(nin,nout,fl); }
 
-  if (fl[2].islepton() && fl[3]==fl[2].bar() &&
-      fl[0].isquark()  && fl[1]==fl[0].bar())    { return new XS_ee_ffbar(nin,nout,fl); }
-  if (fl[0].islepton() && fl[1]==fl[0].bar() &&
-      fl[2].isquark()  && fl[3]==fl[2].bar())    { return new XS_ee_ffbar(nin,nout,fl); 
+  if (fl[2].IsLepton() && fl[3]==fl[2].Bar() &&
+      fl[0].IsQuark()  && fl[1]==fl[0].Bar())    { return new XS_ee_ffbar(nin,nout,fl); }
+  if (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
+      fl[2].IsQuark()  && fl[3]==fl[2].Bar())    { return new XS_ee_ffbar(nin,nout,fl); 
   }
 
-  if (((fl[0].isquark() && fl[1].isgluon()) ||
-       (fl[1].isquark() && fl[0].isgluon()) )   &&
+  if (((fl[0].IsQuark() && fl[1].IsGluon()) ||
+       (fl[1].IsQuark() && fl[0].IsGluon()) )   &&
       (((fl[2] == fl[0]) && (fl[3]==fl[1])) ||
        ((fl[3] == fl[0]) && (fl[2]==fl[1])) ) )  { return new XS_q1g_q1g(nin,nout,fl); }
-  if (fl[0].isgluon() && fl[1].isgluon()) {
-    if (fl[2].isquark() && (fl[3]==fl[2].bar())) { return new XS_gg_q1qbar1(nin,nout,fl); }
-    if (fl[2].isgluon() && fl[3].isgluon())      { return new XS_gg_gg(nin,nout,fl); }
+  if (fl[0].IsGluon() && fl[1].IsGluon()) {
+    if (fl[2].IsQuark() && (fl[3]==fl[2].Bar())) { return new XS_gg_q1qbar1(nin,nout,fl); }
+    if (fl[2].IsGluon() && fl[3].IsGluon())      { return new XS_gg_gg(nin,nout,fl); }
   }
-  if (fl[0].isquark() && (fl[1]==fl[0].bar())) {
-    if (fl[2].isgluon() && fl[3].isgluon())      { return new XS_q1qbar1_gg(nin,nout,fl); }
+  if (fl[0].IsQuark() && (fl[1]==fl[0].Bar())) {
+    if (fl[2].IsGluon() && fl[3].IsGluon())      { return new XS_q1qbar1_gg(nin,nout,fl); }
     if ( ((fl[2]==fl[0]) && (fl[3]==fl[1])) ||
       ((fl[2]==fl[1]) && (fl[2]==fl[1])) )       { return new XS_q1qbar1_q1qbar1(nin,nout,fl); }
-    if (fl[2].isquark() && (fl[3]==fl[2].bar())) { return new XS_q1qbar1_q2qbar2(nin,nout,fl); }
+    if (fl[2].IsQuark() && (fl[3]==fl[2].Bar())) { return new XS_q1qbar1_q2qbar2(nin,nout,fl); }
   }
-  if ( fl[0].isquark() && (fl[1]==fl[0]) &&
+  if ( fl[0].IsQuark() && (fl[1]==fl[0]) &&
 	(fl[2]==fl[0]) && (fl[3]==fl[0]) )       { return new XS_q1q1_q1q1(nin,nout,fl); }
-  if ( fl[0].isquark() && fl[1].isquark() &&
+  if ( fl[0].IsQuark() && fl[1].IsQuark() &&
        ( ((fl[2]==fl[0]) && (fl[3]==fl[1])) ||
 	 ((fl[3]==fl[0]) && (fl[2]==fl[1]))) )   { return new XS_q1q2_q1q2(nin,nout,fl); }
 

@@ -18,15 +18,15 @@ SimplePoleUniform::SimplePoleUniform(double _sprimeexp, double _deltay1, double 
   char help[3];
   sprintf(help,"%i",int(100.*sprimeexp));
   name     = std::string("SimplePoleUniform"+std::string(help));
-  ms = ran = 0;
+  ms = rans = 0;
   msg.Out()<<"Init Simple_Pole : "<<sprimeexp<<" / "<<deltay[0]<<" / "<<deltay[1]<<endl;
 };
 
 
-void SimplePoleUniform::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void SimplePoleUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  sprime = CE.MasslessPropMomenta(sprimeexp,sprimerange[0],sprimerange[1],ran[0]);
-  y      = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, ran[1]);
+  sprime = CE.MasslessPropMomenta(sprimeexp,sprimerange[0],sprimerange[1],rans[0]);
+  y      = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
 void SimplePoleUniform::GenerateWeight(double sprime,double y,int mode)
@@ -48,15 +48,15 @@ SimplePoleCentral::SimplePoleCentral(double _sprimeexp, double _deltay1, double 
   char help[3];
   sprintf(help,"%i",int(100.*sprimeexp));
   name     = std::string("SimplePoleCentral"+std::string(help));
-  ms = ran = 0;
+  ms = rans = 0;
   msg.Out()<<"Init Simple_Pole : "<<sprimeexp<<" / "<<deltay[0]<<" / "<<deltay[1]<<endl;
 };
 
 
-void SimplePoleCentral::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void SimplePoleCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  sprime = CE.MasslessPropMomenta(sprimeexp,sprimerange[0],sprimerange[1],ran[0]);
-  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, ran[1]);
+  sprime = CE.MasslessPropMomenta(sprimeexp,sprimerange[0],sprimerange[1],rans[0]);
+  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
 void SimplePoleCentral::GenerateWeight(double sprime,double y,int mode)
@@ -85,14 +85,14 @@ SimplePoleForward::SimplePoleForward(double _sprimeexp,double _yexp,double _delt
   char help[3];
   sprintf(help,"%i",int(100.*sprimeexp));
   name     = std::string("SimplePoleForward"+std::string(help));
-  ms = ran = 0;
+  ms = rans = 0;
 };
 
 
-void SimplePoleForward::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void SimplePoleForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  sprime = CE.MasslessPropMomenta(sprimeexp,sprimerange[0],sprimerange[1],ran[0]);
-  y = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, ran[1]);
+  sprime = CE.MasslessPropMomenta(sprimeexp,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
 void SimplePoleForward::GenerateWeight(double sprime,double y,int mode)
@@ -119,13 +119,13 @@ SimplePoleBackward::SimplePoleBackward(double _sprimeexp,double _yexp,double _de
   char help[3];
   sprintf(help,"%i",int(100.*sprimeexp));
   name     = std::string("SimplePoleBackward"+std::string(help));
-  ms = ran = 0;
+  ms = rans = 0;
 };
 
-void SimplePoleBackward::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void SimplePoleBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  sprime = CE.MasslessPropMomenta(sprimeexp,sprimerange[0],sprimerange[1],ran[0]);
-  y = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, ran[1]);
+  sprime = CE.MasslessPropMomenta(sprimeexp,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
 void SimplePoleBackward::GenerateWeight(double sprime,double y,int mode)
@@ -150,14 +150,14 @@ ResonanceUniform::ResonanceUniform(double _mass,double _width,double _deltay1, d
   deltay[0] = _deltay1;
   deltay[1] = _deltay2;
   name     = std::string("ResonanceUniform");
-  ms = ran = 0;
+  ms = rans = 0;
 };
 
 
-void ResonanceUniform::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void ResonanceUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  sprime = CE.MassivePropMomenta(mass,width,1,sprimerange[0],sprimerange[1],ran[0]);
-  y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, ran[1]);
+  sprime = CE.MassivePropMomenta(mass,width,1,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
 void ResonanceUniform::GenerateWeight(double sprime,double y,int mode)
@@ -177,14 +177,14 @@ ResonanceCentral::ResonanceCentral(double _mass,double _width,double _deltay1, d
   deltay[0] = _deltay1;
   deltay[1] = _deltay2;
   name     = std::string("ResonanceCentral");
-  ms = ran = 0;
+  ms = rans = 0;
 };
 
 
-void ResonanceCentral::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void ResonanceCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  sprime = CE.MassivePropMomenta(mass,width,1,sprimerange[0],sprimerange[1],ran[0]);
-  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, ran[1]);
+  sprime = CE.MassivePropMomenta(mass,width,1,sprimerange[0],sprimerange[1],rans[0]);
+  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
 void ResonanceCentral::GenerateWeight(double sprime,double y,int mode)
@@ -211,14 +211,14 @@ ResonanceForward::ResonanceForward(double _mass,double _width,double _yexp,doubl
   deltay[0] = _deltay1;
   deltay[1] = _deltay2;
   name     = std::string("ResonanceForward");
-  ms = ran = 0;
+  ms = rans = 0;
 };
 
 
-void ResonanceForward::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void ResonanceForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  sprime = CE.MassivePropMomenta(mass,width,1,sprimerange[0],sprimerange[1],ran[0]);
-  y = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, ran[1]);
+  sprime = CE.MassivePropMomenta(mass,width,1,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
 void ResonanceForward::GenerateWeight(double sprime,double y,int mode)
@@ -243,14 +243,14 @@ ResonanceBackward::ResonanceBackward(double _mass,double _width,double _yexp,dou
   deltay[0] = _deltay1;
   deltay[1] = _deltay2;
   name     = std::string("ResonanceBackward");
-  ms = ran = 0;
+  ms = rans = 0;
 };
 
 
-void ResonanceBackward::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void ResonanceBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  sprime = CE.MassivePropMomenta(mass,width,1,sprimerange[0],sprimerange[1],ran[0]);
-  y = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, ran[1]);
+  sprime = CE.MassivePropMomenta(mass,width,1,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
 void ResonanceBackward::GenerateWeight(double sprime,double y,int mode)
@@ -270,12 +270,12 @@ void ResonanceBackward::GenerateWeight(double sprime,double y,int mode)
 } 
 
 
-void LLUniform::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void LLUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];
   if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
-  sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],ran[0]);
-  y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, ran[1]);
+  sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
 void LLUniform::GenerateWeight(double sprime,double y,int mode)
@@ -291,12 +291,12 @@ void LLUniform::GenerateWeight(double sprime,double y,int mode)
 } 
 
 
-void LLCentral::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void LLCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];
   if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
-  sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],ran[0]);
-  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, ran[1]);
+  sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],rans[0]);
+  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
 void LLCentral::GenerateWeight(double sprime,double y,int mode)
@@ -313,12 +313,12 @@ void LLCentral::GenerateWeight(double sprime,double y,int mode)
 } 
 
 
-void LLForward::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void LLForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];
   if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
-  sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],ran[0]);
-  y      = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, ran[1]);
+  sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],rans[0]);
+  y      = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
 void LLForward::GenerateWeight(double sprime,double y,int mode)
@@ -335,12 +335,12 @@ void LLForward::GenerateWeight(double sprime,double y,int mode)
 } 
 
 
-void LLBackward::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void LLBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];
   if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
-  sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],ran[0]);
-  y      = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, ran[1]);
+  sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],rans[0]);
+  y      = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
 void LLBackward::GenerateWeight(double sprime,double y,int mode)
@@ -359,7 +359,7 @@ void LLBackward::GenerateWeight(double sprime,double y,int mode)
 
 
 
-void LBSComptonPeakUniform::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void LBSComptonPeakUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   /*! former routine
     ! doesn't work since the pole is far off the region of integration
@@ -373,14 +373,14 @@ void LBSComptonPeakUniform::GeneratePoint(double & sprime,double & y,int mode,do
     // tested; ok, but doesn't comply with beam handler
     // will be all right, if 'sprimerange[2]' is chosen to be the end of the spectrum 
     // and 'pole' denotes the coordinate of the compton peak relative to current 'sprimerange[2]'
-    double help   = CE.LLPropMomenta(1., sprimerange[2]*1.000001, sprimerange[0], sprimerange[2], ran[0]);
+    double help   = CE.LLPropMomenta(1., sprimerange[2]*1.000001, sprimerange[0], sprimerange[2], rans[0]);
     double shift  = sprimerange[2] * (1. - pole);
     if (help<shift) sprime = (sprimerange[2] - shift) + help
     else sprime = help - shift;
   */
   double help   = sprimerange[2] * pole; 
-  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, ran[0]);
-  y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, ran[1]);
+  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
+  y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
 void LBSComptonPeakUniform::GenerateWeight(double sprime,double y,int mode)
@@ -411,11 +411,11 @@ void LBSComptonPeakUniform::GenerateWeight(double sprime,double y,int mode)
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
 } 
 
-void LBSComptonPeakCentral::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void LBSComptonPeakCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double help   = sprimerange[2] * pole; 
-  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, ran[0]);
-  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, ran[1]);
+  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
+  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
 void LBSComptonPeakCentral::GenerateWeight(double sprime,double y,int mode)
@@ -434,11 +434,11 @@ void LBSComptonPeakCentral::GenerateWeight(double sprime,double y,int mode)
 } 
 
 
-void LBSComptonPeakForward::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void LBSComptonPeakForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double help   = sprimerange[2] * pole; 
-  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, ran[0]);
-  y = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, ran[1]);
+  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
+  y = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
 void LBSComptonPeakForward::GenerateWeight(double sprime,double y,int mode)
@@ -455,11 +455,11 @@ void LBSComptonPeakForward::GenerateWeight(double sprime,double y,int mode)
 } 
 
 
-void LBSComptonPeakBackward::GeneratePoint(double & sprime,double & y,int mode,double * ran)
+void LBSComptonPeakBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double help   = sprimerange[2] * pole; 
-  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, ran[0]);
-  y = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, ran[1]);
+  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
+  y = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
 void LBSComptonPeakBackward::GenerateWeight(double sprime,double y,int mode)

@@ -62,9 +62,9 @@ public:
     Pol_Info(const APHYTOOLS::Flavour& fl)
     {
       int dof = 1;
-      if(fl.isfermion())                                 { dof = 2;p_type='h';};
-      if(fl.isvector() &&  AMATOOLS::IsZero(fl.mass()))  { dof = 2;p_type='c';}
-      if(fl.isvector() && !AMATOOLS::IsZero(fl.mass()))  {
+      if(fl.IsFermion())                                 { dof = 2;p_type='h';};
+      if(fl.IsVector() &&  AMATOOLS::IsZero(fl.Mass()))  { dof = 2;p_type='c';}
+      if(fl.IsVector() && !AMATOOLS::IsZero(fl.Mass()))  {
 
 #ifdef Explicit_Pols
 	dof=3;

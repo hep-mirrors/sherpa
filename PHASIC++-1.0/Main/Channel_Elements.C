@@ -14,9 +14,9 @@ using namespace std;
 
 Channel_Elements PHASIC::CE;
 
-double Channel_Elements::Isotropic2Weight(const vec4d& p1,const vec4d& p2)
+double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2)
 {
-  double massfactor = Channel_Basics::SqLam((p1+p2).abs2(),p1.abs2(),p2.abs2());
+  double massfactor = Channel_Basics::SqLam((p1+p2).Abs2(),p1.Abs2(),p2.Abs2());
   if (AMATOOLS::IsZero(massfactor)) return 0.;  
   if (!(massfactor>0) && !(massfactor<0)) 
     AORGTOOLS::msg.Error()<<"Isotropic2Weight produces a nan!"<<endl;
@@ -24,36 +24,36 @@ double Channel_Elements::Isotropic2Weight(const vec4d& p1,const vec4d& p2)
   return 2./M_PI/massfactor;
 }
 
-void Channel_Elements::Isotropic2Momenta(vec4d p,double& s1,double& s2,
-					 vec4d& p1,vec4d& p2,
+void Channel_Elements::Isotropic2Momenta(Vec4D p,double& s1,double& s2,
+					 Vec4D& p1,Vec4D& p2,
 					 double ran1,double ran2)
 {
-  double s    = p.abs2();
+  double s    = p.Abs2();
   double rs   = sqrt(dabs(s));
-  vec4d p1h;
+  Vec4D p1h;
   p1h[0]      = (s+s1-s2)/rs/2.;
   double p1m  = rs*Channel_Basics::SqLam(s,s1,s2)/2.;
   double ct   = 2.*ran1-1.;
   double st   = sqrt(1.-ct*ct);
   double phi  = 2.*M_PI*ran2;
 
-  p1h = vec4d(p1h[0],p1m*vec3d(st*::sin(phi),st*cos(phi),ct));	
+  p1h = Vec4D(p1h[0],p1m*Vec3D(st*::sin(phi),st*cos(phi),ct));	
   Channel_Basics::Boost(0,p,p1h,p1);
   p2  = p+(-1.)*p1;
-  s1 = Max(0.,p1.abs2());
-  s2 = Max(0.,p2.abs2());
+  s1 = Max(0.,p1.Abs2());
+  s2 = Max(0.,p2.Abs2());
 }
 
 double Channel_Elements::Anisotropic2Weight(double ctexp,
 					    double ctmin,double ctmax,
-					    const vec4d& p1,const vec4d& p2)
+					    const Vec4D& p1,const Vec4D& p2)
 {
-  vec4d  p      = p1+p2;
-  double s      = p.abs2();
-  double s1     = p1.abs2();
-  double s2     = p2.abs2();
+  Vec4D  p      = p1+p2;
+  double s      = p.Abs2();
+  double s1     = p1.Abs2();
+  double s2     = p2.Abs2();
   double pabs   = sqrt(dabs(s));
-  vec4d p1h;  
+  Vec4D p1h;  
   p1h[0]        = (s+s1-s2)/pabs/2.;
   double p1mass = pabs*Channel_Basics::SqLam(s,s1,s2)/2.;
   double pmass  = sqrt(dabs(p[0]*p[0]-s)); 
@@ -78,15 +78,15 @@ double Channel_Elements::Anisotropic2Weight(double ctexp,
   return wt;
 }
 
-void Channel_Elements::Anisotropic2Momenta(vec4d p,double s1,double s2,
+void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
 					   double ctexp,
 					   double ctmin,double ctmax,
-					   vec4d& p1,vec4d& p2,
+					   Vec4D& p1,Vec4D& p2,
 					   double ran1,double ran2)
 {
-  double s       = p.abs2();
+  double s       = p.Abs2();
   double pabs    = sqrt(dabs(s));
-  vec4d p1h;
+  Vec4D p1h;
   p1h[0]         = (s+s1-s2)/pabs/2.;
   double p1mass  = pabs*Channel_Basics::SqLam(s,s1,s2)/2.;
   double pmass   = sqrt(dabs(p[0]*p[0]-s)); 
@@ -105,9 +105,9 @@ void Channel_Elements::Anisotropic2Momenta(vec4d p,double s1,double s2,
 
   double st       = sqrt(1.-sqr(ct));
   double phi      = 2.*M_PI*ran2;
-  p1h             = vec4d(p1h[0],p1mass*vec3d(st*::sin(phi),st*cos(phi),ct));	
-  vec4d pref,p1ref;
-  pref            = vec4d(p[0],0.,0.,pmass);
+  p1h             = Vec4D(p1h[0],p1mass*Vec3D(st*::sin(phi),st*cos(phi),ct));	
+  Vec4D pref,p1ref;
+  pref            = Vec4D(p[0],0.,0.,pmass);
 
   Channel_Basics::Boost(0,pref,p1h,p1ref);
   Poincare Rot(pref,p);
@@ -116,16 +116,16 @@ void Channel_Elements::Anisotropic2Momenta(vec4d p,double s1,double s2,
 
   p2 = p+(-1.)*p1;  
 
-  if ((dabs(p1.abs2()-s1)>1.e-5)) {  // explicit not relative!
-    //  if ((dabs(p1.abs2()/s1-1.)>1.e-5) && (!AMATOOLS::IsZero(s1))) {
+  if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicit not relative!
+    //  if ((dabs(p1.Abs2()/s1-1.)>1.e-5) && (!AMATOOLS::IsZero(s1))) {
     AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : ";
-    AORGTOOLS::msg.Error()<<"s1,p1: "<<s1<<";"<<p1.abs2()<<" : "<<dabs(s1-p1.abs2())<<endl;
+    AORGTOOLS::msg.Error()<<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
     //    abort();
   }
-  if ((dabs(p2.abs2()-s2)>1.e-5)) {  // explicit not relative!
-    //  if ((dabs(p2.abs2()/s2-1.)>1.e-5) && (!AMATOOLS::IsZero(s2))) {
+  if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicit not relative!
+    //  if ((dabs(p2.Abs2()/s2-1.)>1.e-5) && (!AMATOOLS::IsZero(s2))) {
     AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : ";
-    AORGTOOLS::msg.Error()<<"s2,p2: "<<s2<<";"<<p2.abs2()<<" : "<<dabs(s2-p2.abs2())<<endl;
+    AORGTOOLS::msg.Error()<<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
     //    abort();
   }
 }
@@ -133,16 +133,16 @@ void Channel_Elements::Anisotropic2Momenta(vec4d p,double s1,double s2,
 
 double Channel_Elements::BremsstrahlungWeight(double ctexp,
 					       double ctmin,double ctmax,
-                  			       const vec4d& q,const vec4d& p1)
+                  			       const Vec4D& q,const Vec4D& p1)
 {
-  vec4d  p   = q+p1;
-  double sp  = p.abs2();
-  double P   = vec3d(p).abs();
-  double sq  = q.abs2();
-  double Q   = vec3d(q).abs();
-  double ct  = vec3d(p)*vec3d(q)/(P*Q);
+  Vec4D  p   = q+p1;
+  double sp  = p.Abs2();
+  double P   = Vec3D(p).Abs();
+  double sq  = q.Abs2();
+  double Q   = Vec3D(q).Abs();
+  double ct  = Vec3D(p)*Vec3D(q)/(P*Q);
   if ((ct>ctmax) || (ct<ctmin)) return 0.;
-  double p1m = sqrt(p1.abs2());
+  double p1m = sqrt(p1.Abs2());
   double ctkin = (2.*p[0]*q[0]-sq-sp+p1m*p1m)/(2.*P*Q);
   if ((0.<ctkin) && (ctkin<1.)) ctkin = 1.;
   double amct  = ctkin - ct;
@@ -150,26 +150,26 @@ double Channel_Elements::BremsstrahlungWeight(double ctexp,
 }
 
 
-void Channel_Elements::BremsstrahlungMomenta(vec4d& p,const double p1mass,
+void Channel_Elements::BremsstrahlungMomenta(Vec4D& p,const double p1mass,
 					      const double Eq,const double sq,
 					      const double ctmin,const double ctmax,
 					      const double ctexp,
-					      vec4d &q, vec4d &p1,
+					      Vec4D &q, Vec4D &p1,
 					      const double ran1,const double ran2)
 {
   /* Decay p -> q + p1, q is space-like with energy Eq given from outside
      cos(pq) is constriained by ctmin and ctmax. */
-  double sp    = p.abs2();
-  double P     = vec3d(p).abs();
-  vec4d  pnorm = vec4d(1.,0.,0.,1.);
-  double Q     = vec3d(q).abs();
+  double sp    = p.Abs2();
+  double P     = Vec3D(p).Abs();
+  Vec4D  pnorm = Vec4D(1.,0.,0.,1.);
+  double Q     = Vec3D(q).Abs();
   double ctkin = (2.*p[0]*Eq-sq-sp+p1mass*p1mass)/(2.*P*Q); 
   if ((0.<ctkin) && (ctkin<1.)) ctkin = 1.;
   double cth = ctkin-Channel_Basics::Tj1(ctexp,ctkin-ctmin,ctkin-ctmax,ran1);
   double sth = sqrt(1.-cth*cth);
   double cph = cos(2.*M_PI*ran2);
   double sph = sqrt(1.-cph*cph);
-  vec4d qref = vec4d(Eq,Q*vec3d(sth*cph,sth*sph,cth)); 
+  Vec4D qref = Vec4D(Eq,Q*Vec3D(sth*cph,sth*sph,cth)); 
   double** rot;
   rot = new double*[3];
   short int i;
@@ -271,21 +271,21 @@ double Channel_Elements::MassivePropMomenta(double mass,double width,int lim,
   return s;
 }
 
-double Channel_Elements::TChannelWeight(const vec4d& p1in,const vec4d& p2in,
-					const vec4d& p1out,const vec4d& p2out,  
+double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
+					const Vec4D& p1out,const Vec4D& p2out,  
 					double t_mass,double ctexp,
 					double ctmax,double ctmin,
 					double aminct,int aminctflag)
 {
   double t_mass2   = t_mass*t_mass;
-  vec4d pin        = p1in+p2in;
-  double s         = pin.abs2(); 
+  Vec4D pin        = p1in+p2in;
+  double s         = pin.Abs2(); 
   double sabs      = sqrt(dabs(s));
-  double s1in      = p1in.abs2();
-  double s2in      = p2in.abs2();
-  double s1out     = p1out.abs2();
-  double s2out     = p2out.abs2();
-  vec4d p1inh,p1outh;
+  double s1in      = p1in.Abs2();
+  double s2in      = p2in.Abs2();
+  double s1out     = p1out.Abs2();
+  double s2out     = p2out.Abs2();
+  Vec4D p1inh,p1outh;
   p1inh[0]         = (s+s1in-s2in)/2./sabs;
   p1outh[0]        = (s+s1out-s2out)/2./sabs;
   double p1inmass  = sabs*Channel_Basics::SqLam(s,s1in,s2in)/2.; 
@@ -317,7 +317,7 @@ double Channel_Elements::TChannelWeight(const vec4d& p1in,const vec4d& p2in,
   return wt;
 }
 
-int Channel_Elements::TChannelMomenta(vec4d p1in,vec4d p2in,vec4d &p1out,vec4d &p2out,  
+int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &p2out,  
 				      double& s1out,double& s2out,double t_mass,
 				      double ctexp,double ctmax,double ctmin,
 				      double aminct,int aminctflag,double ran1,double ran2)
@@ -342,15 +342,15 @@ int Channel_Elements::TChannelMomenta(vec4d p1in,vec4d p2in,vec4d &p1out,vec4d &
   /* Note : ct's maximal range : between ctmin = 0 and ctmax = 2 */
 
   double t_mass2   = t_mass*t_mass;
-  vec4d pin        = p1in+p2in;
-  double s         = pin.abs2(); 
+  Vec4D pin        = p1in+p2in;
+  double s         = pin.Abs2(); 
   double sabs      = sqrt(dabs(s));
-  double s1in      = p1in.abs2();
-  double s2in      = p2in.abs2();
-  vec4d p1inh,p1outh;
+  double s1in      = p1in.Abs2();
+  double s2in      = p2in.Abs2();
+  Vec4D p1inh,p1outh;
   p1inh[0]         = (s+s1in-s2in)/2./sabs;
   double p1inmass  = sabs*Channel_Basics::SqLam(s,s1in,s2in)/2.; 
-  p1inh            = vec4d(p1inh[0],0.,0.,p1inmass);
+  p1inh            = Vec4D(p1inh[0],0.,0.,p1inmass);
   p1outh[0]        = (s+s1out-s2out)/2./sabs;
   double p1outmass = sabs*Channel_Basics::SqLam(s,s1out,s2out)/2.; 
   
@@ -373,9 +373,9 @@ int Channel_Elements::TChannelMomenta(vec4d p1in,vec4d p2in,vec4d &p1out,vec4d &
   if (aminctflag==1) st = sqrt(aminct*(1.+ct)); 
                 else st = sqrt(1.-sqr(ct));
   double phi = 2.*M_PI*ran2;
-  p1outh     = vec4d(p1outh[0],p1outmass*vec3d(st*cos(phi),st*::sin(phi),ct)); 
+  p1outh     = Vec4D(p1outh[0],p1outmass*Vec3D(st*cos(phi),st*::sin(phi),ct)); 
 
-  vec4d help;
+  Vec4D help;
   Channel_Basics::Boost(1,pin,help,p1in);  
   
   Poincare Rot(p1inh,help);
@@ -385,21 +385,21 @@ int Channel_Elements::TChannelMomenta(vec4d p1in,vec4d p2in,vec4d &p1out,vec4d &
 
   p2out = pin+(-1.)*p1out;
 
-  if (dabs(s1out-p1out.abs2())>1.e-5) {
-    //  if ((dabs(p1out.abs2()/s1out-1.)>1.e-5) && (!AMATOOLS::IsZero(s1out))) {
+  if (dabs(s1out-p1out.Abs2())>1.e-5) {
+    //  if ((dabs(p1out.Abs2()/s1out-1.)>1.e-5) && (!AMATOOLS::IsZero(s1out))) {
     AORGTOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : ";
-    AORGTOOLS::msg.Error()<<"s1,p1: "<<s1out<<";"<<p1out.abs2()<<" : "<<dabs(s1out-p1out.abs2())<<endl;
+    AORGTOOLS::msg.Error()<<"s1,p1: "<<s1out<<";"<<p1out.Abs2()<<" : "<<dabs(s1out-p1out.Abs2())<<endl;
   }
 
   /*
-  if ((dabs(p2out.abs2()/s2out-1.)>1.e-5) && (!AMATOOLS::IsZero(s1out))) {
+  if ((dabs(p2out.Abs2()/s2out-1.)>1.e-5) && (!AMATOOLS::IsZero(s1out))) {
     AORGTOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : ";
-    AORGTOOLS::msg.Error()<<"s2,p2: "<<s2out<<";"<<p2out.abs2()<<" : "<<dabs(s2out-p2out.abs2())<<endl;
+    AORGTOOLS::msg.Error()<<"s2,p2: "<<s2out<<";"<<p2out.Abs2()<<" : "<<dabs(s2out-p2out.Abs2())<<endl;
   }
   */
 
-  s1out = Max(0.,p1out.abs2());
-  s2out = Max(0.,p2out.abs2());
+  s1out = Max(0.,p1out.Abs2());
+  s2out = Max(0.,p2out.Abs2());
 
 
   /*

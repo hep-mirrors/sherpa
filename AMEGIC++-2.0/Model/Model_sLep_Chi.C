@@ -58,13 +58,13 @@ void Model_sLep_Chi::c_FFS(Single_Vertex* v,int& vanz){
   Kabbala kcpl0,kcpl1;
   
   Kabbala K_l1 = Kabbala(string("l^1"),
-			 -Flavour(kf::code(11)).yuk()/(mosL->K_v1()).Value()*sqrt(2.));
+			 -Flavour(kf::code(11)).Yuk()/(mosL->K_v1()).Value()*sqrt(2.));
 
   Kabbala K_l2 = Kabbala(string("l^2"),
-			 -Flavour(kf::code(13)).yuk()/(mosL->K_v1()).Value()*sqrt(2.));
+			 -Flavour(kf::code(13)).Yuk()/(mosL->K_v1()).Value()*sqrt(2.));
   
   Kabbala K_l3 = Kabbala(string("l^3"),
-			 -Flavour(kf::code(15)).yuk()/(mosL->K_v1()).Value()*sqrt(2.));
+			 -Flavour(kf::code(15)).Yuk()/(mosL->K_v1()).Value()*sqrt(2.));
   
   //neutrino - sneutrino - neutralino
   
@@ -74,7 +74,7 @@ void Model_sLep_Chi::c_FFS(Single_Vertex* v,int& vanz){
       Flavour flav2 = Flavour(kf::code(j));
       for (short int k=81;k<84;k++) {
 	Flavour flav3 = Flavour(kf::code(k));
-	if (flav1.ison() && flav2.ison() && flav3.ison()) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flav3;
 	  v[vanz].in[2] = flav2;
@@ -111,17 +111,17 @@ void Model_sLep_Chi::c_FFS(Single_Vertex* v,int& vanz){
   for (short int i=12;i<17;i+=2) {
     Flavour flav1 = Flavour(kf::code(i));
     
-    Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.texname()+string("}}{ v_1}\\sqrt{2}"),
-			   -Flavour(kf::code(i-1)).yuk()/(mosL->K_v1()).Value()*sqrt(2.));
+    Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}\\sqrt{2}"),
+			   -Flavour(kf::code(i-1)).Yuk()/(mosL->K_v1()).Value()*sqrt(2.));
    
     for (short int j=41;j<43;j++) {
       Flavour flav2 = Flavour(kf::code(j));
       for (short int k=71;k<77;k++) {
 	Flavour flav3 = Flavour(kf::code(k));
-	if (flav1.ison() && flav2.ison() && flav3.ison()) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flav3;
-	  v[vanz].in[2] = flav2.bar();
+	  v[vanz].in[2] = flav2.Bar();
 	 
 	  kcpl0 = K_zero;
 	  kcpl1 = K_yuk_sign(flav2)*(-M_I)*(K_Z_MI(0,j-41)*K_Z_L((i-12)/2,k-71)*g2+
@@ -155,14 +155,14 @@ void Model_sLep_Chi::c_FFS(Single_Vertex* v,int& vanz){
   for (short int i=11;i<16;i+=2) {
     Flavour flav1 = Flavour(kf::code(i));
   
-    Kabbala K_lI = Kabbala(string("\\frac{(\\m M_{")+flav1.texname()+string(")}}{ v_1}\\sqrt{2}"),
-      -flav1.yuk()/(mosL->K_v1()).Value()*sqrt(2.));
+    Kabbala K_lI = Kabbala(string("\\frac{(\\m M_{")+flav1.TexName()+string(")}}{ v_1}\\sqrt{2}"),
+      -flav1.Yuk()/(mosL->K_v1()).Value()*sqrt(2.));
        
     for (short int j=41;j<43;j++) {
       Flavour flav2 = Flavour(kf::code(j));
       for (short int k=81;k<84;k++) {
 	Flavour flav3 = Flavour(kf::code(k));
-	if (flav1.ison() && flav2.ison() && flav3.ison()) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flav3;
 	  v[vanz].in[2] = flav2;
@@ -201,15 +201,15 @@ void Model_sLep_Chi::c_FFS(Single_Vertex* v,int& vanz){
       Flavour flav2 = Flavour(kf::code(j));
       for (short int k=71;k<77;k++) {
 	Flavour flav3 = Flavour(kf::code(k));
-	if (flav1.ison() && flav2.ison() && flav3.ison()) {
+	if (flav1.IsOn() && flav2.IsOn() && flav3.IsOn()) {
 	  
 	  //fixed + save
 	  v[vanz].in[0] = flav1;
 	  v[vanz].in[1] = flav3;
 	  v[vanz].in[2] = flav2;
 
-	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.texname()+string("}}{ v_1}\\sqrt{2}"),
-				     -flav1.yuk()/(mosL->K_v1()).Value()*sqrt(2.));
+	  Kabbala K_lI = Kabbala(string("\\frac{\\m M_{")+flav1.TexName()+string("}}{ v_1}\\sqrt{2}"),
+				     -flav1.Yuk()/(mosL->K_v1()).Value()*sqrt(2.));
 	  
 	  kcpl0 = -M_I*(g1/K_cosTW()*root2*K_Z_L((i-11)/2+3,k-71)*K_Z_N_com_conj(0,j-43)
 			-K_lI*K_Z_L((i-11)/2,k-71)*K_Z_N_com_conj(2,j-43));

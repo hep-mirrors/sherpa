@@ -12,11 +12,11 @@ Single_Channel::Single_Channel(int _nin,int _nout,Flavour * fl)
 { 
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout+1];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
 
   if (nin == 1) rannum = 2 + 3*(nout-2);
   if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
-  ran  = new double[rannum];
+  rans  = new double[rannum];
 }
 
 Single_Channel::Single_Channel(Single_Channel * old)
@@ -25,7 +25,7 @@ Single_Channel::Single_Channel(Single_Channel * old)
   nin    = old->nin;
   nout   = old->nout;
   rannum = old->rannum;
-  ran    = new double[rannum];
+  rans   = new double[rannum];
 
   name   = old->name;
 
@@ -53,18 +53,18 @@ void Single_Channel::AddPoint(double Value) {
 };
 
 
-void Single_Channel::GeneratePoint(vec4d* p,Cut_Data * cuts)
+void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 {
-  for (short int i=1;i<rannum;i++) ran[i] = Ran.get();
+  for (short int i=1;i<rannum;i++) rans[i] = ran.Get();
   //  cout<<"rannum="<<rannum<<endl;
-  GeneratePoint(p,cuts,ran);
+  GeneratePoint(p,cuts,rans);
 }
 
 
-void Single_Channel::GeneratePoint(vec4d* p)
+void Single_Channel::GeneratePoint(Vec4D* p)
 {
-  for (short int i=1;i<rannum;i++) ran[i] = Ran.get();
-  GeneratePoint(p,ran);
+  for (short int i=1;i<rannum;i++) rans[i] = ran.Get();
+  GeneratePoint(p,rans);
 }
 
 

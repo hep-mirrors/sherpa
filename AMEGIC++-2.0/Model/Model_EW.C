@@ -26,7 +26,7 @@ void Model_EW::Init()
   M_I   = Kabbala(string("i"),Complex(0.,1.));
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
   vev   = Kabbala(string("v_{EW}"),CplEW.VEV());
-  //vev   = Kabbala(string("v_{EW}"),2.*SinTW()*CosTW()*Flavour(kf::Z).mass()/g1.Value());
+  //vev   = Kabbala(string("v_{EW}"),2.*SinTW()*CosTW()*Flavour(kf::Z).Mass()/g1.Value());
 }
 
 void Model_EW::c_FFV(Single_Vertex* v,int& vanz)
@@ -37,20 +37,20 @@ void Model_EW::c_FFV(Single_Vertex* v,int& vanz)
   for (short int i=1;i<17;i++) {
     if (i==7) i=11;
     Flavour flav1 = Flavour(kf::code(i));
-    Kabbala charge1 = Kabbala(string("Q_{")+flav1.texname()+string("}"),flav1.charge());
-    Kabbala isoweak1 = Kabbala(string("T_{")+flav1.texname()+string("}"),flav1.isoweak());
+    Kabbala charge1 = Kabbala(string("Q_{")+flav1.TexName()+string("}"),flav1.Charge());
+    Kabbala isoweak1 = Kabbala(string("T_{")+flav1.TexName()+string("}"),flav1.IsoWeak());
     
-    if (flav1.ison()) {
+    if (flav1.IsOn()) {
       for (short int j=i;j<17;j++) {
 	if (j==7) j=11;
 	Flavour flav2 = Flavour(kf::code(j));
-	Kabbala charge2 = Kabbala(string("Q_{")+flav2.texname()+string("}"),flav2.charge());
-	Kabbala isoweak2 = Kabbala(string("T_{")+ flav2.texname()+string("}"),flav2.isoweak());	
+	Kabbala charge2 = Kabbala(string("Q_{")+flav2.TexName()+string("}"),flav2.Charge());
+	Kabbala isoweak2 = Kabbala(string("T_{")+ flav2.TexName()+string("}"),flav2.IsoWeak());	
 	
-	if (flav2.ison()) {
+	if (flav2.IsOn()) {
 	  if (flav1==flav2) {
 	    //photon
-	    if (flphoton.ison()) {
+	    if (flphoton.IsOn()) {
 	      
 	      Kabbala kcpl0,kcpl1;
 	      kcpl0 = -g1*M_I*charge1;
@@ -68,7 +68,7 @@ void Model_EW::c_FFV(Single_Vertex* v,int& vanz)
 		v[vanz].ncf   = 1;
 		v[vanz].Color = new Color_Function; 
 		
-		if (flav1.strong()) {
+		if (flav1.Strong()) {
 		  v[vanz].Color->type       = cf::D;     
 		  v[vanz].Color->SetParticleArg(0,2);     
 		  v[vanz].Color->SetStringArg('0','2');     
@@ -86,7 +86,7 @@ void Model_EW::c_FFV(Single_Vertex* v,int& vanz)
 	      }
 	    }
 	    //Z
-	    if (flZ.ison()) {
+	    if (flZ.IsOn()) {
 	      
 	      Kabbala kcpl0,kcpl1;
 	      kcpl0 = M_I/K_cosTW()*charge1*K_sinTW()*K_sinTW()*g2;
@@ -103,7 +103,7 @@ void Model_EW::c_FFV(Single_Vertex* v,int& vanz)
 	      v[vanz].ncf   = 1;
 	      v[vanz].Color = new Color_Function; 
 	      
-	      if (flav1.strong()) {
+	      if (flav1.Strong()) {
 		v[vanz].Color->type       = cf::D;     
 		v[vanz].Color->SetParticleArg(0,2);     
 		v[vanz].Color->SetStringArg('0','2');     
@@ -121,28 +121,28 @@ void Model_EW::c_FFV(Single_Vertex* v,int& vanz)
 	    }
 	  }
 	  //W
-	  if (flW.ison()) {
+	  if (flW.IsOn()) {
 	    short int hit = 1;
 	    Kabbala kcpl0,kcpl1;
 	    kcpl0 = Kabbala(string("zero"),0.);
 	    kcpl1 = Kabbala(string("1"),0.);
 
-	    if (!((flav1.isdowntype() && flav2.isuptype()) ||
-                  (flav2.isdowntype() && flav1.isuptype()))) hit = 0;
-	    if ((flav1.islepton() && !flav2.islepton()) ||
-		(flav1.isquark() && !flav2.isquark()) ) hit = 0;
+	    if (!((flav1.IsDowntype() && flav2.IsUptype()) ||
+                  (flav2.IsDowntype() && flav1.IsUptype()))) hit = 0;
+	    if ((flav1.IsLepton() && !flav2.IsLepton()) ||
+		(flav1.IsQuark() && !flav2.IsQuark()) ) hit = 0;
 	    if (hit==1) {
-	      if (flav1.isdowntype() && i>10 && j==i+1) 
+	      if (flav1.IsDowntype() && i>10 && j==i+1) 
 		kcpl1 = -M_I/root2*g2;
 	      if (i<7 && j<7) {
-		if (flav1.isdowntype())
+		if (flav1.IsDowntype())
 		kcpl1 = -M_I/root2*g2*K_CKM((i-1)/2,j/2-1);
 		else 	    
 		kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2);		
 	      }
 	      if (!AMATOOLS::IsZero(kcpl1.Value())) {
 		v[vanz].in[1] = Flavour(kf::W);
-		if (flav1.isdowntype()) {
+		if (flav1.IsDowntype()) {
 		  v[vanz].in[0] = flav1;
 		  v[vanz].in[2] = flav2;
 		}
@@ -159,7 +159,7 @@ void Model_EW::c_FFV(Single_Vertex* v,int& vanz)
 		v[vanz].ncf   = 1;
 		v[vanz].Color = new Color_Function; 
 		
-		if (flav1.strong()) {
+		if (flav1.Strong()) {
 		  v[vanz].Color->type       = cf::D;     
 		  v[vanz].Color->SetParticleArg(0,2);     
 		  v[vanz].Color->SetStringArg('0','2');     
@@ -187,9 +187,9 @@ void Model_EW::c_VVV(Single_Vertex* v,int& vanz)
 {
   Flavour flav(kf::W);
   Kabbala kcpl0,kcpl1,kcpl0_1,kcpl1_1,charge;
-  charge = Kabbala(string("Q_{")+flav.texname()+string("}"),flav.charge());
+  charge = Kabbala(string("Q_{")+flav.TexName()+string("}"),flav.Charge());
 
-  if (!flav.ison()) return;
+  if (!flav.IsOn()) return;
 
   // photon WW
   v[vanz].in[0] = flav;
@@ -251,14 +251,14 @@ void Model_EW::c_FFS(Single_Vertex* v,int& vanz)
 {
   Flavour flh(kf::h);
   Kabbala kcpl0,kcpl1,M_h;
-  if (!flh.ison()) return;
+  if (!flh.IsOn()) return;
 
   for (short int i=1;i<17;i++) {
     if (i==7) i=11;
     Flavour flav = Flavour(kf::code(i));
-    if (flav.ison() && flav.isfermion() && (flav.yuk() > 0.)) {
+    if (flav.IsOn() && flav.IsFermion() && (flav.Yuk() > 0.)) {
       
-      M_h = Kabbala(string("M_{")+flav.texname()+string("}"),flav.yuk());
+      M_h = Kabbala(string("M_{")+flav.TexName()+string("}"),flav.Yuk());
 
       kcpl0 = -M_I*M_h/vev;
       kcpl1 = kcpl0;
@@ -276,7 +276,7 @@ void Model_EW::c_FFS(Single_Vertex* v,int& vanz)
 	v[vanz].ncf   = 1;
 	v[vanz].Color = new Color_Function; 
 	
-	if (flav.strong()) {
+	if (flav.Strong()) {
 	  v[vanz].Color->type       = cf::D;     
 	  v[vanz].Color->SetParticleArg(0,2);     
 	  v[vanz].Color->SetStringArg('0','2');     
@@ -302,16 +302,16 @@ void Model_EW::c_VVS(Single_Vertex* v,int& vanz)
   Kabbala kcpl0,kcpl1;  
   Kabbala num_2 = Kabbala(string("2"),2.);  
  
- if (!flh.ison()) return;
+ if (!flh.IsOn()) return;
   
   Flavour flav(kf::W);
   // W h W
-  if (flav.ison()) {
+  if (flav.IsOn()) {
     v[vanz].in[0] = flav;
     v[vanz].in[1] = flh;
     v[vanz].in[2] = flav;
     
-    kcpl0 = M_I*g2*flav.yuk()/vev;
+    kcpl0 = M_I*g2*flav.Yuk()/vev;
     kcpl1 = kcpl0;
     
     v[vanz].cpl[0]  = kcpl0.Value();
@@ -336,12 +336,12 @@ void Model_EW::c_VVS(Single_Vertex* v,int& vanz)
 
   flav = Flavour(kf::Z);
   // Z h Z
-  if (flav.ison()) {
+  if (flav.IsOn()) {
     v[vanz].in[0] = flav;
     v[vanz].in[1] = flh;
     v[vanz].in[2] = flav;
     
-    kcpl0 = M_I*g2*flav.yuk()/vev;
+    kcpl0 = M_I*g2*flav.Yuk()/vev;
     kcpl1 = kcpl0;
 
     v[vanz].cpl[0]  = kcpl0.Value();
@@ -372,12 +372,12 @@ void Model_EW::c_SSS(Single_Vertex* v,int& vanz)
   Kabbala kcpl0,kcpl1,yuk;  
   Kabbala num_3 = Kabbala(string("3"),3.);  
 
- if (flh.ison()) {  
+ if (flh.IsOn()) {  
     v[vanz].in[0] = flh;
     v[vanz].in[1] = flh;
     v[vanz].in[2] = flh;
 
-    yuk   = Kabbala(string("M_{")+flh.texname()+string("}"),flh.yuk());
+    yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
     kcpl0 = -M_I*yuk*yuk*(num_3/vev);
     kcpl1 = kcpl0;
     
@@ -407,7 +407,7 @@ void Model_EW::c_SSSS(Single_Vertex* v,int& vanz)
   Kabbala kcpl0,kcpl1,yuk;  
   Kabbala num_3 = Kabbala(string("3"),3.);  
 
-  if (flh.ison()) {  
+  if (flh.IsOn()) {  
     v[vanz].in[0] = flh;
     v[vanz].in[1] = flh;
     v[vanz].in[2] = flh;
@@ -415,7 +415,7 @@ void Model_EW::c_SSSS(Single_Vertex* v,int& vanz)
 
     v[vanz].nleg  = 4;  
     
-    yuk   = Kabbala(string("M_{")+flh.texname()+string("}"),flh.yuk());
+    yuk   = Kabbala(string("M_{")+flh.TexName()+string("}"),flh.Yuk());
     kcpl0 = -M_I*yuk*yuk*(num_3/(vev*vev));
     kcpl1 = kcpl0;
     
@@ -448,10 +448,10 @@ void Model_EW::c_VVVV(Single_Vertex* v,int& vanz)
   Kabbala kcpl0,kcpl1;
   
   // Ph - W - W - Ph  
-  if (flavW.ison() && flavP.ison()) {
+  if (flavW.IsOn() && flavP.IsOn()) {
   v[vanz].in[0] = flavP;
   v[vanz].in[1] = flavW;
-  v[vanz].in[2] = flavW.bar();
+  v[vanz].in[2] = flavW.Bar();
   v[vanz].in[3] = flavP;
   
   v[vanz].nleg     = 4;
@@ -480,10 +480,10 @@ void Model_EW::c_VVVV(Single_Vertex* v,int& vanz)
   }
 
   // Ph - W - W - Z  
-  if (flavW.ison() && flavP.ison() && flavZ.ison()) {
+  if (flavW.IsOn() && flavP.IsOn() && flavZ.IsOn()) {
   v[vanz].in[0] = flavP;
   v[vanz].in[1] = flavW;
-  v[vanz].in[2] = flavW.bar();
+  v[vanz].in[2] = flavW.Bar();
   v[vanz].in[3] = flavZ;
 
   v[vanz].nleg     = 4;  
@@ -512,10 +512,10 @@ void Model_EW::c_VVVV(Single_Vertex* v,int& vanz)
   vanz++;
   }
   // Z - W - W - Z  
-  if (flavW.ison() && flavZ.ison()) {
+  if (flavW.IsOn() && flavZ.IsOn()) {
   v[vanz].in[0] = flavZ;
   v[vanz].in[1] = flavW;
-  v[vanz].in[2] = flavW.bar();
+  v[vanz].in[2] = flavW.Bar();
   v[vanz].in[3] = flavZ;
   
   v[vanz].nleg     = 4;
@@ -545,11 +545,11 @@ void Model_EW::c_VVVV(Single_Vertex* v,int& vanz)
   }
   
  // W - W - W - W  
-  if (flavW.ison()) {
-  v[vanz].in[0] = flavW.bar();
+  if (flavW.IsOn()) {
+  v[vanz].in[0] = flavW.Bar();
   v[vanz].in[1] = flavW;
-  v[vanz].in[2] = flavW.bar();
-  v[vanz].in[3] = flavW.bar();
+  v[vanz].in[2] = flavW.Bar();
+  v[vanz].in[3] = flavW.Bar();
   
   v[vanz].nleg     = 4;
 
@@ -587,7 +587,7 @@ void Model_EW::c_SSVV(Single_Vertex* v,int& vanz)
   Kabbala kcpl0,kcpl1;
   
   // h - Z - Z - h  
-  if (flavZ.ison() && flavh.ison()) {
+  if (flavZ.IsOn() && flavh.IsOn()) {
     v[vanz].in[0] = flavZ;
     v[vanz].in[1] = flavh;
     v[vanz].in[2] = flavh;
@@ -619,7 +619,7 @@ void Model_EW::c_SSVV(Single_Vertex* v,int& vanz)
   }
 
   // h - W - W - h  
-  if (flavW.ison() && flavh.ison()) {
+  if (flavW.IsOn() && flavh.IsOn()) {
     v[vanz].in[0] = flavW;
     v[vanz].in[1] = flavh;
     v[vanz].in[2] = flavh;

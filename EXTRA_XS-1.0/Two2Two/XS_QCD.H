@@ -11,15 +11,15 @@ namespace EXTRAXS {
       Single_XS(_nin,_nout,_fl)  
     {
       for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
-      if (fl[2].strong()) {
-	int a  = _fl[2].isanti();
+      if (fl[2].Strong()) {
+	int a  = _fl[2].IsAnti();
 	colours[2][a] = 500;
 	colours[3][1-a] = 500;
       }
     }
     double operator()(double,double,double) {};
     bool SetColours(double s,double t,double u) { 
-      //      scale = s;
+      scale = s;
       return 1; 
     }
 

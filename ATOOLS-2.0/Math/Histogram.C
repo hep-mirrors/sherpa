@@ -6,64 +6,64 @@
 using namespace AMATOOLS;
 using namespace AORGTOOLS;
 
-Histogram::Histogram(int _type,double _lower,double _upper,int _nbins) :
-  type(_type), lower(_lower), upper(_upper), nbins(_nbins), bins(0), fills(0)
+Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
+  m_type(_type), m_lower(_lower), m_upper(_upper), m_nbin(_nbin), m_bins(0), m_fills(0)
 {
-  logarithmic = int(type/10);
-  depth       = type-logarithmic*10+1;
+  m_logarithmic = int(m_type/10);
+  m_depth       = m_type-m_logarithmic*10+1;
 
-  logbase = 1;
-  switch(logarithmic) {
+  m_logbase = 1;
+  switch(m_logarithmic) {
     case 1: 
-      logbase = log(10.);
-      upper   = log(upper)/logbase; lower = log(lower)/logbase;
+      m_logbase = log(10.);
+      m_upper   = log(m_upper)/m_logbase; m_lower = log(m_lower)/m_logbase;
       break;
     case 2: 
-      upper   = log(upper); lower = log(lower);
+      m_upper   = log(m_upper); m_lower = log(m_lower);
       break;
     default: break;
   }
-  binsize     = (upper-lower)/(double(nbins));
+  m_binsize     = (m_upper-m_lower)/(double(m_nbin));
 
-  if (binsize<=0.) {
+  if (m_binsize<=0.) {
     msg.Error()<<"Error in Histogram : Tried to initialize a histogram with  binsize <= 0 !"<<std::endl;
-    active = 0;
+    m_active = 0;
     return;
   }
 
-  nbins += 2;
-  active = 1;
-  bins   = new double * [nbins];
+  m_nbin += 2;
+  m_active = 1;
+  m_bins   = new double * [m_nbin];
 
-  for (int i=0;i<nbins;i++) {
-    bins[i]   = new double[depth];
-    for (int j=0;j<depth;j++) bins[i][j] = 0.;
+  for (int i=0;i<m_nbin;i++) {
+    m_bins[i]   = new double[m_depth];
+    for (int j=0;j<m_depth;j++) m_bins[i][j] = 0.;
   }
 
   msg.Debugging()<<"Histogram initialized : "
-			    <<nbins-2<<" bins in "<<lower<<" ... "<<upper<<std::endl;
+			    <<m_nbin-2<<" bins in "<<m_lower<<" ... "<<m_upper<<std::endl;
 };
 
 Histogram::Histogram(Histogram * histo) {
-  lower   = histo->lower;
-  upper   = histo->upper;
-  logbase = histo->logbase;
-  logarithmic = histo->logarithmic;
-  nbins   = histo->nbins;
-  depth   = histo->depth;
-  type    = histo->type;
-  fills   = histo->fills;
+  m_lower   = histo->m_lower;
+  m_upper   = histo->m_upper;
+  m_logbase = histo->m_logbase;
+  m_logarithmic = histo->m_logarithmic;
+  m_nbin   = histo->m_nbin;
+  m_depth   = histo->m_depth;
+  m_type    = histo->m_type;
+  m_fills   = histo->m_fills;
 
-  binsize = histo->binsize;
-  active  = 1;
+  m_binsize = histo->m_binsize;
+  m_active  = 1;
 
-  bins    = new double*[nbins];
-  for (int i=0;i<nbins;i++) {
-    bins[i]  = new double[depth]; 
-    for (int j=0;j<depth;j++) bins[i][j] = histo->bins[i][j];
+  m_bins    = new double*[m_nbin];
+  for (int i=0;i<m_nbin;i++) {
+    m_bins[i]  = new double[m_depth]; 
+    for (int j=0;j<m_depth;j++) m_bins[i][j] = histo->m_bins[i][j];
   }
   msg.Debugging()<<"Histogram initialized(copy) : "
-			    <<nbins-2<<" bins in "<<lower<<" ... "<<upper<<std::endl;
+			    <<m_nbin-2<<" bins in "<<m_lower<<" ... "<<m_upper<<std::endl;
 }
 
 
@@ -77,41 +77,41 @@ Histogram::Histogram(std::string _pID) {
   double _lower, _upper;
   ifile>>_type>>_nbins>>_lower>>_upper;
 
-  type = _type; nbins = _nbins; lower = _lower; upper = _upper;
+  m_type = _type; m_nbin = _nbins; m_lower = _lower; m_upper = _upper;
 
-  logarithmic = int(type/10);
-  depth       = type-logarithmic*10+1;
+  m_logarithmic = int(m_type/10);
+  m_depth       = m_type-m_logarithmic*10+1;
 
-  logbase = 1;
-  switch(logarithmic) {
+  m_logbase = 1;
+  switch(m_logarithmic) {
     case 1: 
-      logbase = log(10.);
+      m_logbase = log(10.);
       break;
     default: break;
   }
-  binsize     = (upper-lower)/(double(nbins-2));
+  m_binsize     = (m_upper-m_lower)/(double(m_nbin-2));
 
-  if (binsize<=0.) {
+  if (m_binsize<=0.) {
     msg.Error()<<"Error in Histogram : "
-	       <<"Tried to initialize a histogram with binsize <= 0 !"
+	       <<"Tried to initialize a histogram with m_binsize <= 0 !"
 	       <<std::endl;
-    active = 0;
+    m_active = 0;
     return;
   }
 
-  //  nbins += 2;
-  active = 1;
-  bins   = new double * [nbins];
+  //  m_nbin += 2;
+  m_active = 1;
+  m_bins   = new double * [m_nbin];
 
-  for (int i=0;i<nbins;i++) bins[i]   = new double[depth];
+  for (int i=0;i<m_nbin;i++) m_bins[i]   = new double[m_depth];
 
-  for (int j=0;j<depth;j++) ifile>>bins[0][j];
-  for (int j=0;j<depth;j++) ifile>>bins[nbins-1][j];
+  for (int j=0;j<m_depth;j++) ifile>>m_bins[0][j];
+  for (int j=0;j<m_depth;j++) ifile>>m_bins[m_nbin-1][j];
 
   double value;
-  for (int i=0;i<nbins-1;i++) {
+  for (int i=0;i<m_nbin-1;i++) {
     ifile>>value;
-    for (int j=0;j<depth;j++) ifile>>bins[i+1][j];
+    for (int j=0;j<m_depth;j++) ifile>>m_bins[i+1][j];
   }
   ifile.close();
 }
@@ -119,10 +119,10 @@ Histogram::Histogram(std::string _pID) {
 
 Histogram::~Histogram() {
     
-  if (bins!=0) { 
-    for (int i=0;i<nbins;i++) 
-      delete [] bins[i];
-    delete [] bins; bins = 0; 
+  if (m_bins!=0) { 
+    for (int i=0;i<m_nbin;i++) 
+      delete [] m_bins[i];
+    delete [] m_bins; m_bins = 0; 
   }
     
 };
@@ -130,45 +130,45 @@ Histogram::~Histogram() {
 
 void Histogram::Finalize() {
   double total = 0;
-  for (int i=0;i<nbins;i++) { 
-    //    total += bins[i][0]; 
-    total += bins[i][0]/=fills; 
+  for (int i=0;i<m_nbin;i++) { 
+    //    total += m_bins[i][0]; 
+    total += m_bins[i][0]/=m_fills; 
   }
-  msg.Debugging()<<"Finalize histogram : "<<total<<"/"<<fills<<"="<<total/fills<<std::endl;
+  msg.Debugging()<<"Finalize histogram : "<<total<<"/"<<m_fills<<"="<<total/m_fills<<std::endl;
 }
 
 void Histogram::Reset() {
   double total = 0;
-  for (int i=0;i<nbins;i++) { 
-    bins[i][0]=0;
+  for (int i=0;i<m_nbin;i++) { 
+    m_bins[i][0]=0;
   }
-  fills=0;
+  m_fills=0;
 }
 
 void Histogram::Scale(double scale) {
   double total = 0;
-  for (int i=0;i<nbins;i++) { 
-    bins[i][0]*= scale;
-    total += bins[i][0]; 
+  for (int i=0;i<m_nbin;i++) { 
+    m_bins[i][0]*= scale;
+    total += m_bins[i][0]; 
   }
-  fills = int(double(fills)/scale);
+  m_fills = int(double(m_fills)/scale);
   msg.Debugging()<<"Scale histogram : "<<scale<<std::endl;
 }
 
 void Histogram::Output() {
   msg.Tracking()<<"----------------------------------------"<<std::endl;
-  msg.Tracking()<<"    "<<bins[0][0]<<std::endl;
+  msg.Tracking()<<"    "<<m_bins[0][0]<<std::endl;
   msg.Tracking()<<"----------------------------------------"<<std::endl;
   double result = 0.;
-  for (int i=0;i<nbins-2;i++) {
-    msg.Tracking()<<lower+i*binsize<<"  ";
-    for (int j=0;j<depth;j++) msg.Tracking()<<bins[i+1][j]<<"  ";
-    result += bins[i+1][0];
+  for (int i=0;i<m_nbin-2;i++) {
+    msg.Tracking()<<m_lower+i*m_binsize<<"  ";
+    for (int j=0;j<m_depth;j++) msg.Tracking()<<m_bins[i+1][j]<<"  ";
+    result += m_bins[i+1][0];
     msg.Tracking()<<std::endl;
   }
-  msg.Tracking()<<lower+(nbins-2)*binsize<<" == "<< upper<<std::endl;
+  msg.Tracking()<<m_lower+(m_nbin-2)*m_binsize<<" == "<< m_upper<<std::endl;
   msg.Tracking()<<"----------------------------------------"<<std::endl;
-  msg.Tracking()<<"    "<<bins[nbins-1][0]<<std::endl;
+  msg.Tracking()<<"    "<<m_bins[m_nbin-1][0]<<std::endl;
   msg.Tracking()<<"----------------------------------------"<<std::endl;
   msg.Tracking()<<"Inside the range : "<<result<<std::endl;
 }
@@ -178,13 +178,13 @@ void Histogram::Output(std::string name) {
   std::ofstream ofile;
   ofile.open(name.c_str());
 
-  ofile<<type<<" "<<nbins<<" "<<lower<<" "<<upper<<" ";
-  for (int j=0;j<depth;j++) ofile<<bins[0][j]<<"  ";
-  for (int j=0;j<depth;j++) ofile<<bins[nbins-1][j]<<"  ";
+  ofile<<m_type<<" "<<m_nbin<<" "<<m_lower<<" "<<m_upper<<" ";
+  for (int j=0;j<m_depth;j++) ofile<<m_bins[0][j]<<"  ";
+  for (int j=0;j<m_depth;j++) ofile<<m_bins[m_nbin-1][j]<<"  ";
   ofile<<std::endl;
-  for (int i=0;i<nbins-1;i++) {
-    ofile<<lower+i*binsize<<"  ";
-    for (int j=0;j<depth;j++) ofile<<bins[i+1][j]<<"  ";
+  for (int i=0;i<m_nbin-1;i++) {
+    ofile<<m_lower+i*m_binsize<<"  ";
+    for (int j=0;j<m_depth;j++) ofile<<m_bins[i+1][j]<<"  ";
     ofile<<std::endl;
   }
   ofile.close();
@@ -199,136 +199,136 @@ void Histogram::Output(std::string name) {
 
 
 void Histogram::Insert(double coordinate) {
-  if (!active) {
+  if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
 
-  fills++;
+  m_fills++;
 
-  if (logarithmic>0) coordinate = log(coordinate)/logbase;
-  if (coordinate<lower) { bins[0][0]       += double(1); return; }
-  if (coordinate>upper) { bins[nbins-1][0] += double(1); return; }
-  for (int i=1;i<nbins-1;i++) {
-    if ( (coordinate >= lower + (i-1)*binsize) &&
-	 (coordinate <  lower + i*binsize) ) {
-      bins[i][0] += double(1); 
+  if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
+  if (coordinate<m_lower) { m_bins[0][0]       += double(1); return; }
+  if (coordinate>m_upper) { m_bins[m_nbin-1][0] += double(1); return; }
+  for (int i=1;i<m_nbin-1;i++) {
+    if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
+	 (coordinate <  m_lower + i*m_binsize) ) {
+      m_bins[i][0] += double(1); 
       return; 
     }
   }
 }
 
 void Histogram::Insert(double coordinate,double value) {
-  if (!active) {
+  if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
-  if (logarithmic>0) coordinate = log(coordinate)/logbase;
+  if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
 
-  fills++;
+  m_fills++;
 
-  if (coordinate<lower) { 
-    bins[0][0] += value;
-    if (depth>1) {
-      if (value>bins[0][1]) bins[0][1] = value;
+  if (coordinate<m_lower) { 
+    m_bins[0][0] += value;
+    if (m_depth>1) {
+      if (value>m_bins[0][1]) m_bins[0][1] = value;
     }
     return; 
   }
 
-  if (coordinate>upper) { 
-    bins[nbins-1][0] += value; 
-    if (depth>1) {
-      if (value>bins[nbins-1][1]) bins[nbins-1][1] = value;
+  if (coordinate>m_upper) { 
+    m_bins[m_nbin-1][0] += value; 
+    if (m_depth>1) {
+      if (value>m_bins[m_nbin-1][1]) m_bins[m_nbin-1][1] = value;
     }
     return; 
   }
 
   double low,up;
-  low = lower; up = lower+binsize;
-  for (int i=1;i<nbins-1;i++) {
+  low = m_lower; up = m_lower+m_binsize;
+  for (int i=1;i<m_nbin-1;i++) {
     if ( (coordinate >= low) && (coordinate < up) ) {
-      bins[i][0] += value;
-      if (depth>1) {
-	if (value>bins[i][1]) bins[i][1] = value;
+      m_bins[i][0] += value;
+      if (m_depth>1) {
+	if (value>m_bins[i][1]) m_bins[i][1] = value;
       }
       return; 
     }
     low = up;
-    up += binsize;
+    up += m_binsize;
   }
 }
 
 void Histogram::InsertRange(double start, double end, double value) {
-  if (!active) {
+  if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a "
 			  <<"histogram with binsize <= 0 !"<<std::endl;
     return;
   }
-  if (logarithmic>0) {
+  if (m_logarithmic>0) {
     if (start>0)
-      start = log(start)/logbase;
+      start = log(start)/m_logbase;
     else
       start = -30;
     if (end>0)
-      end = log(end)/logbase;
+      end = log(end)/m_logbase;
     else 
       end = -30;
   }
-  fills++;
+  m_fills++;
 
   // underrun
-  if (start<lower) { 
-    bins[0][0] += value;
-    if (depth>1) {
-      if (value>bins[0][1]) bins[0][1] = value;
+  if (start<m_lower) { 
+    m_bins[0][0] += value;
+    if (m_depth>1) {
+      if (value>m_bins[0][1]) m_bins[0][1] = value;
     }
   }
 
   // overflow
-  if (start>upper) { 
-    bins[nbins-1][0] += value; 
-    if (depth>1) {
-      if (value>bins[nbins-1][1]) bins[nbins-1][1] = value;
+  if (start>m_upper) { 
+    m_bins[m_nbin-1][0] += value; 
+    if (m_depth>1) {
+      if (value>m_bins[m_nbin-1][1]) m_bins[m_nbin-1][1] = value;
     }
   }
 
   double low,up;
   int hit=0;
-  low = lower; up = lower+binsize;
-  for (int i=1;i<nbins-1;i++) {
+  low = m_lower; up = m_lower+m_binsize;
+  for (int i=1;i<m_nbin-1;i++) {
     if ((start < up) && (end >= low) ) {
       double fac=1;
       if ((start<=low)&&(up<=end )) {
-	bins[i][0] += value;
+	m_bins[i][0] += value;
 	//	std::cout<<" case a "<<std::endl;
       } 
       else if ((low<start)&&(up<=end)) {
-	fac = (start-low)/binsize;
-	bins[i][0] += value *fac;
+	fac = (start-low)/m_binsize;
+	m_bins[i][0] += value *fac;
 	//	std::cout<<" case b "<<std::endl;
       }
       else if ((start<=low)&&(end < up)) {
-	fac = (up-end)/binsize;
-	bins[i][0] += value *fac;
+	fac = (up-end)/m_binsize;
+	m_bins[i][0] += value *fac;
 	//	std::cout<<" case c "<<std::endl;
       }
       else if ((low<start)&&(end <up)) {
-	fac = (end-start)/binsize;
-	bins[i][0] += value *fac;
+	fac = (end-start)/m_binsize;
+	m_bins[i][0] += value *fac;
 // 	std::cout<<" case d "<<std::endl;
 // 	std::cout<<" fill ("<<start<<","<<end<<") in ["<<low<<","<<up<<"]  fac="<<fac<<std::endl;
       }
     
 
       hit=1;
-      if (depth>1) {
-	if (value>bins[i][1]) bins[i][1] = value;
+      if (m_depth>1) {
+	if (value>m_bins[i][1]) m_bins[i][1] = value;
       }
     }
     low = up;
-    up += binsize;
+    up += m_binsize;
   }
 
   //  if (end==0. && hit==0) std::cout<<" not stored "<<std::endl;
@@ -336,22 +336,22 @@ void Histogram::InsertRange(double start, double end, double value) {
 
 
 
-double * Histogram::Bin(int bin) { return bins[bin]; }
+double * Histogram::Bin(int bin) { return m_bins[bin]; }
 
 double * Histogram::Bin(double coordinate) { 
-  if (!active) {
+  if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a histogram wit binsize <= 0 ! Return 0.."<<std::endl;
     return NULL;
   }
   else {
-    if (logarithmic>0) coordinate = log(coordinate)/logbase;
+    if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
 
-    if (coordinate<lower) return bins[0];
-    if (coordinate>upper) return bins[nbins-1];
-    for (int i=1;i<nbins+1;i++) {
-      if ( (coordinate >= lower + (i-1)*binsize) &&
-	   (coordinate <  lower + i*binsize) ) 
-	return bins[i];
+    if (coordinate<m_lower) return m_bins[0];
+    if (coordinate>m_upper) return m_bins[m_nbin-1];
+    for (int i=1;i<m_nbin+1;i++) {
+      if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
+	   (coordinate <  m_lower + i*m_binsize) ) 
+	return m_bins[i];
     }
   }
   return NULL;
@@ -359,42 +359,42 @@ double * Histogram::Bin(double coordinate) {
 
 
 void Histogram::Extrapolate(double coordinate,double * res,int mode) {
-  if (!active) {
+  if (!m_active) {
     msg.Error()<<"Error in Histogram : Tried to access a histogram with binsize <= 0 ! Return 0.."<<std::endl;
   }
   else {
-    if (logarithmic>0) coordinate = log(coordinate)/logbase;
+    if (m_logarithmic>0) coordinate = log(coordinate)/m_logbase;
     std::cout<<" in Extrapolate("<<coordinate<<","<<mode<<")"<<std::endl;
-    std::cout<<" "<<lower<<" < "<<coordinate<<" <   "<<upper<<std::endl;
+    std::cout<<" "<<m_lower<<" < "<<coordinate<<" <   "<<m_upper<<std::endl;
 
-    for (int i=1;i<nbins;i++) {
-      if ( (coordinate >= lower + (i-1)*binsize) &&
-	   (coordinate <  lower + i*binsize) ) {
+    for (int i=1;i<m_nbin;i++) {
+      if ( (coordinate >= m_lower + (i-1)*m_binsize) &&
+	   (coordinate <  m_lower + i*m_binsize) ) {
 	// coordinate falls in bin no. i
 	std::cout<<" i="<<i<<std::endl;
-	// start of bin is lower + (i-1)*binsize 
-	// end   of bin is lower +  i*binsize    
+	// start of bin is m_lower + (i-1)*m_binsize 
+	// end   of bin is m_lower +  i*m_binsize    
 
-	res[0] = bins[i-1][0] +
-	  (bins[i][0]-bins[i-1][0])/binsize *
-	  (coordinate - lower - (i-1) * binsize);
+	res[0] = m_bins[i-1][0] +
+	  (m_bins[i][0]-m_bins[i-1][0])/m_binsize *
+	  (coordinate - m_lower - (i-1) * m_binsize);
 	double over = 0.; double under = 0.;
 	switch (mode) {
 	case 1  : 
-	  under = (coordinate - lower - (i-1) * binsize)/binsize * bins[i][0];
-	  over = (lower + (i) * binsize - coordinate)/binsize * bins[i][0];
+	  under = (coordinate - m_lower - (i-1) * m_binsize)/m_binsize * m_bins[i][0];
+	  over = (m_lower + (i) * m_binsize - coordinate)/m_binsize * m_bins[i][0];
 	  for (int j=0;j<i;j++) {
-	    under += bins[j][0];
+	    under += m_bins[j][0];
 	  }
-	  for (int j=i;j<nbins-1;j++) {
-	    over += bins[j+1][0];
+	  for (int j=i;j<m_nbin-1;j++) {
+	    over += m_bins[j+1][0];
 	  }
 	  res[0]  = over;
 
-	  if (depth) {
+	  if (m_depth) {
 	    res[1]=0.;
-	    for (int j=i;j<nbins;j++) {
-	      res[1] = AMATOOLS::Max(res[1],bins[j][1]);
+	    for (int j=i;j<m_nbin;j++) {
+	      res[1] = AMATOOLS::Max(res[1],m_bins[j][1]);
 	    }
 	  }
 
@@ -402,18 +402,18 @@ void Histogram::Extrapolate(double coordinate,double * res,int mode) {
 	  break;
 	case -1 :
 	  for (int j=i-1;j>0;j--) {
-	    over  += bins[j][0];
-	    under += bins[j-1][0];
+	    over  += m_bins[j][0];
+	    under += m_bins[j-1][0];
 	  }
-	  over    += bins[0][0];
+	  over    += m_bins[0][0];
 	  res[0]  += (over+under)/2;
 	  break;
 	default : break;
 	}
 	/*
-	if (depth>0) {
-	  for (int j=1;j<=depth;j++) 
-	    res[j] = AMATOOLS::Max(bins[i][j],bins[i-1][j]);
+	if (m_depth>0) {
+	  for (int j=1;j<=m_depth;j++) 
+	    res[j] = AMATOOLS::Max(m_bins[i][j],m_bins[i-1][j]);
 	}
 	*/
 

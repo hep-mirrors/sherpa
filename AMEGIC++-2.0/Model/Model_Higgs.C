@@ -63,12 +63,12 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
     Flavour flav = Flavour(kf::code(i));
     Kabbala kcpl0,kcpl1;
 
-    if(flav.ison()) {
+    if(flav.IsOn()) {
       
       for(short int j=1;j<17;j++) {
 	if (j==7) j=11;
 	Flavour fl1 = Flavour(kf::code(j)); 
-       	if(fl1.ison() && fl1.isfermion() && fl1.isdowntype() && (fl1.yuk() > 1.)) {
+       	if(fl1.IsOn() && fl1.IsFermion() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
 	  
 	  v[vanz].in[0] = fl1; 
 	  v[vanz].in[1] = flav;
@@ -86,7 +86,7 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
 	  v[vanz].ncf   = 1;
 	  v[vanz].Color = new Color_Function; 
 	  
-	  if (fl1.strong()) {
+	  if (fl1.Strong()) {
 	    v[vanz].Color->type       = cf::D;     
 	    v[vanz].Color->SetParticleArg(0,2);     
 	    v[vanz].Color->SetStringArg('0','2');     
@@ -109,7 +109,7 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
     for(short int t=1;t<17;t++) {
       if (t==7) t=11;
       Flavour fl1 = Flavour(kf::code(t)); 
-      if(fl1.ison() && fl1.isquark() && fl1.isuptype() && (fl1.yuk() > 1.)) {
+      if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 1.)) {
 	
 	v[vanz].in[0] = fl1; 
 	v[vanz].in[1] = flav;
@@ -145,14 +145,14 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
   
   // l(e)/q(d) -> A0 + l(e)/q(d)
   
-  if(flA0.ison()) {
+  if(flA0.IsOn()) {
 
     Kabbala kcpl0,kcpl1;
  
     for(short int k=1;k<17;k++) {
       if (k==7) k=11;
       Flavour fl1 = Flavour(kf::code(k)); 
-      if(fl1.ison() && fl1.isfermion() && fl1.isdowntype() && (fl1.yuk() > 1.)) {
+      if(fl1.IsOn() && fl1.IsFermion() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
 		
 	v[vanz].in[0] = fl1; 
 	v[vanz].in[1] = flA0;
@@ -160,9 +160,9 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
 
 
 	Kabbala K_rpa_Mass;
-	K_rpa_Mass = Kabbala(string("M_{")+fl1.texname()+string("}"),fl1.yuk());
-	//	K_rpa_Mass = Kabbala(string("M_{")+fl1.texname()+string("}"),
-	//			     rpa.consts.Mass(fl1,sqr(flA0.mass())));
+	K_rpa_Mass = Kabbala(string("M_{")+fl1.TexName()+string("}"),fl1.Yuk());
+	//	K_rpa_Mass = Kabbala(string("M_{")+fl1.TexName()+string("}"),
+	//			     rpa.consts.Mass(fl1,sqr(flA0.Mass())));
 
 	kcpl0 = -K_rpa_Mass/K_v1()*K_Z_H(0,0);
 	kcpl1 = -kcpl0;
@@ -176,7 +176,7 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
 	v[vanz].ncf   = 1;
 	v[vanz].Color = new Color_Function; 
 	  
-	if (fl1.strong()) {
+	if (fl1.Strong()) {
 	  v[vanz].Color->type       = cf::D;     
 	  v[vanz].Color->SetParticleArg(0,2);     
 	  v[vanz].Color->SetStringArg('0','2');     
@@ -198,7 +198,7 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
     
     for(short int z=1;z<7;z++) { 
       Flavour fl1 = Flavour(kf::code(z)); 
-      if(fl1.ison() && fl1.isquark() && fl1.isuptype() && (fl1.yuk() > 1.)) {
+      if(fl1.IsOn() && fl1.IsQuark() && fl1.IsUptype() && (fl1.Yuk() > 1.)) {
 	
 	v[vanz].in[0] = fl1; 
 	v[vanz].in[1] = flA0;
@@ -232,7 +232,7 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
     }
   } 
   
-  if(flHmin.ison()) {
+  if(flHmin.IsOn()) {
     
     // l(e) -> H- + nu(e)
     
@@ -240,9 +240,9 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
 
     for(short int i=11;i<17;i++) {
       Flavour fl1 = Flavour(kf::code(i)); 
-      if(fl1.ison() && fl1.islepton() && fl1.isdowntype() && (fl1.yuk() > 1.)) {
+      if(fl1.IsOn() && fl1.IsLepton() && fl1.IsDowntype() && (fl1.Yuk() > 1.)) {
 	Flavour fl2 = Flavour(kf::code(i=i+1));
-	if(fl2.ison() && fl2.islepton() && fl2.isuptype() ) {
+	if(fl2.IsOn() && fl2.IsLepton() && fl2.IsUptype() ) {
 	  
 	  v[vanz].in[0] = fl1;   
 	  v[vanz].in[1] = flHmin;
@@ -279,14 +279,14 @@ void Model_Higgs::c_FFS(Single_Vertex* v,int& vanz)
     for(short int j=1;j<7;j++) {
       Flavour fl1 = Flavour(kf::code(j));
       Kabbala kcpl0,kcpl1;
-      if(fl1.ison() && fl1.isquark() && fl1.isdowntype()) {
+      if(fl1.IsOn() && fl1.IsQuark() && fl1.IsDowntype()) {
 	for(short int k=1;k<7;k++) {
 	  Flavour fl2 = Flavour(kf::code(k));
-	  if(fl2.ison() && fl2.isquark() && fl2.isuptype() && 
-	     ((fl1.yuk() > 1.) || (fl2.yuk() > 1.)) ) {
+	  if(fl2.IsOn() && fl2.IsQuark() && fl2.IsUptype() && 
+	     ((fl1.Yuk() > 1.) || (fl2.Yuk() > 1.)) ) {
 	    
-            int geni=(fl1.kfcode()-1)/2; //downtype
-	    int genj=(fl2.kfcode()-2)/2; //uptype
+            int geni=(fl1.Kfcode()-1)/2; //downtype
+	    int genj=(fl2.Kfcode()-2)/2; //uptype
 	   
 	    v[vanz].in[0] = fl1;
 	    v[vanz].in[1] = flHmin;
@@ -340,11 +340,11 @@ void Model_Higgs::c_VVS(Single_Vertex* v,int& vanz)
   
   //W- -> h0,H0 + W-
 
-  if(flW.ison()) {
+  if(flW.IsOn()) {
     
     for(short int i=31; i<33;i++){
       Flavour flav = Flavour(kf::code(i));
-      if(flav.ison()) {
+      if(flav.IsOn()) {
 	
 	v[vanz].in[0] = flW;
 	v[vanz].in[1] = flav;
@@ -378,10 +378,10 @@ void Model_Higgs::c_VVS(Single_Vertex* v,int& vanz)
   
   //  Z -> h0,H0 + Z  
   
-  if(flZ.ison()){
+  if(flZ.IsOn()){
     for(short int i=31; i<33;i++){
       Flavour flav = Flavour(kf::code(i));
-      if(flav.ison()) {
+      if(flav.IsOn()) {
 	
  	v[vanz].in[0] = flZ;
 	v[vanz].in[1] = flav;
@@ -427,10 +427,10 @@ void Model_Higgs::c_SSS(Single_Vertex* v,int& vanz)
 
   // h0,H0 -> H+ + H-
   
-  if(flHmin.ison()) {  
+  if(flHmin.IsOn()) {  
     for(short int i=31;i<33;i++) {
       Flavour flav = Flavour(kf::code(i)); 
-      if(flav.ison()) {
+      if(flav.IsOn()) {
 	
 	v[vanz].in[0] = flHmin;
 	v[vanz].in[1] = flav;
@@ -467,13 +467,13 @@ void Model_Higgs::c_SSS(Single_Vertex* v,int& vanz)
   
   // h0 -> h0/H0 + h0/H0 
 
-    if(flh0.ison()) { 
+    if(flh0.IsOn()) { 
       for(short int j=31;j<33;j++) {
 	Flavour flav2 = Flavour(kf::code(j));
-	if(flav2.ison()) {
+	if(flav2.IsOn()) {
 	  for(short int k=31;k<33;k++) {
 	    Flavour flav3 = Flavour(kf::code(k));
-	    if(flav3.ison()) {
+	    if(flav3.IsOn()) {
 	      if(flav2 != flH0 || flav3 != flh0){
 
 	      v[vanz].in[0] = flh0;
@@ -521,7 +521,7 @@ void Model_Higgs::c_SSS(Single_Vertex* v,int& vanz)
   
   //H0 -> H0 + H0
 
-    if(flH0.ison()) { 
+    if(flH0.IsOn()) { 
       v[vanz].in[0] = flH0;
       v[vanz].in[1] = flH0;      
       v[vanz].in[2] = flH0;
@@ -558,10 +558,10 @@ void Model_Higgs::c_SSS(Single_Vertex* v,int& vanz)
       
   // A0 -> h0/H0 + A0
     
-    if(flA0.ison()) {
+    if(flA0.IsOn()) {
       for(short int i=31;i<33;i++) {
 	Flavour flav = Flavour(kf::code(i));
-	if(flav.ison()) {
+	if(flav.IsOn()) {
 	  
 	v[vanz].in[0] = flA0;
 	v[vanz].in[1] = flav;
@@ -610,10 +610,10 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
 
   // A0 -> Z + h0/H0 
   
-  if(flZ.ison()) {
+  if(flZ.IsOn()) {
     for(short int i=31; i<33;i++) {
       Flavour flav = Flavour(kf::code(i)); 
-      if(flav.ison() && flA0.ison()) {
+      if(flav.IsOn() && flA0.IsOn()) {
 	v[vanz].in[0] = flA0;
 	v[vanz].in[1] = flZ;
 	v[vanz].in[2] = flav;
@@ -647,7 +647,7 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
     
     // H- -> Z + H-
     
-    if(flHmin.ison()) {
+    if(flHmin.IsOn()) {
       v[vanz].in[0] = flHmin;
       v[vanz].in[1] = flZ;
       v[vanz].in[2] = flHmin;
@@ -683,7 +683,7 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
   
   // H- -> Photon + H- 
   
-  if(flPhoton.ison() && flHmin.ison()) {
+  if(flPhoton.IsOn() && flHmin.IsOn()) {
     
     v[vanz].in[0] = flHmin;
     v[vanz].in[1] = flPhoton;
@@ -717,11 +717,11 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
   
   //H- -> W- + h0/H0  
   
-  if(flW.ison()) {
+  if(flW.IsOn()) {
     for(short int i=31; i<33;i++) {
       Flavour flav = Flavour(kf::code(i)); 
       
-      if(flav.ison() && flHmin.ison()) {
+      if(flav.IsOn() && flHmin.IsOn()) {
 	
 	v[vanz].in[0] = flHmin;
 	v[vanz].in[1] = flW;  
@@ -756,7 +756,7 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
     
     //H- -> W- +  A0
     
-    if(flHmin.ison() && flA0.ison()) {
+    if(flHmin.IsOn() && flA0.IsOn()) {
       v[vanz].in[0] = flHmin;
       v[vanz].in[1] = flW;    
       v[vanz].in[2] = flA0;
@@ -791,13 +791,13 @@ void Model_Higgs::c_SSV(Single_Vertex* v,int& vanz)
 
 
 inline Kabbala Model_Higgs::K_yuk(Flavour fl) {
-  return Kabbala(string("M_{"+fl.texname()+"}"),fl.yuk());
+  return Kabbala(string("M_{"+fl.TexName()+"}"),fl.Yuk());
 }
 
 Kabbala Model_Higgs::K_yuk_sign(Flavour fl) {
   char hi[3];
-  sprintf(hi,"%i",fl.get_mass_sign());
-  return Kabbala(string(hi),fl.get_mass_sign());
+  sprintf(hi,"%i",fl.MassSign());
+  return Kabbala(string(hi),fl.MassSign());
 }
 
 inline Kabbala Model_Higgs::K_v0() {

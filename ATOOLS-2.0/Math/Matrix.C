@@ -84,7 +84,7 @@ Matrix<_rank> Matrix<_rank>::operator*(const Matrix<_rank>& in)
 }
 
 template<int _rank>
-void Matrix<_rank>::matrix_out() const 
+void Matrix<_rank>::MatrixOut() const 
 {
   double temp;
   short int range=0, prcsn=0;
@@ -137,14 +137,14 @@ void Matrix<_rank>::matrix_out() const
 }   
 
 template<int _rank>
-void Matrix<_rank>::Num_Recipes_Notation() 
+void Matrix<_rank>::NumRecipesNotation() 
 {
   for (short int i=0;i<_rank;i++) m[i]--;
   m--;
 }
 
 template<int _rank>
-void Matrix<_rank>::Amegic_Notation() {
+void Matrix<_rank>::AmegicNotation() {
   m++;
   for (short int i=0;i<_rank;i++) m[i]++;
 }
@@ -172,23 +172,23 @@ void Matrix<_rank>::Diagonalize(double* evalues,Matrix<_rank>& evectors)
   } 
   Matrix<_rank> Save(*this);
   //minus 1  
-  Num_Recipes_Notation();
-  evectors.Num_Recipes_Notation();
+  NumRecipesNotation();
+  evectors.NumRecipesNotation();
   evalues--;
   
   int rot;
   
-  jacobi(evalues,evectors,&rot);
+  Jacobi(evalues,evectors,&rot);
   
   evalues++;
-  Amegic_Notation();
-  evectors.Amegic_Notation();
+  AmegicNotation();
+  evectors.AmegicNotation();
   for (short int i=0;i<_rank;i++)
     for (short int j=0;j<_rank;j++) m[i][j] = Save[i][j];
 }
 
 template<int _rank>
-void Matrix<_rank>::Diagonalize_Sort(double* evalues,Matrix<_rank>& evectors)
+void Matrix<_rank>::DiagonalizeSort(double* evalues,Matrix<_rank>& evectors)
 {
   int flips[_rank];
   Diagonalize(evalues, evectors);
@@ -210,9 +210,9 @@ void Matrix<_rank>::Diagonalize_Sort(double* evalues,Matrix<_rank>& evectors)
     }
   }
   for (short int i=0;i<_rank;++i) flippit[flips[i]][i] = 1.;
-  //flippit.matrix_out();
+  //flippit.MatrixOut();
   //msg.Out()<<"EV's"<<endl;
-  //evectors.matrix_out();
+  //evectors.MatrixOut();
   //Mat_help = evectors*flippit;
   for (short int i=0;i<_rank;++i) {
     for (short int j=0;j<_rank;++j) {
@@ -223,7 +223,7 @@ void Matrix<_rank>::Diagonalize_Sort(double* evalues,Matrix<_rank>& evectors)
 
   evectors = Mat_help;
   //msg.Out()<<"EV's rot"<<endl;
-  //evectors.matrix_out();
+  //evectors.MatrixOut();
 }
 
 #define NRANSI
@@ -231,7 +231,7 @@ void Matrix<_rank>::Diagonalize_Sort(double* evalues,Matrix<_rank>& evectors)
 	a[k][l]=h+s*(g-h*tau);
 
 template<int _rank>
-void Matrix<_rank>::jacobi(double d[], Matrix<_rank>& v, int *nrot)
+void Matrix<_rank>::Jacobi(double d[], Matrix<_rank>& v, int *nrot)
 {
   int j,iq,ip,i;
   double tresh,theta,tau,t,sm,s,h,g,c;

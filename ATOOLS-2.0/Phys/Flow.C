@@ -40,7 +40,7 @@ std::set<Parton*> Flow::connected_partners( int code, int code_index,
   // EXAMPLE: if you want to find all flow partners that have the same
   //   code in indices 2,3,4 as parton p has in index 2, you would use:
   //   set<Parton*> result = 
-  //             p->flow().connected_partners(p->flow().icode(2),2,3);
+  //             p->Flow().connected_partners(p->Flow().icode(2),2,3);
   //
   std::set<Parton*> output;
   for ( int i = code_index; i!=code_index+num_indices; ++i ) {
@@ -72,9 +72,9 @@ void Flow::connected_partners( std::set<Parton*>* output, int code,
       // the set, then we recursively call connected_partners
       for ( int index = code_index; index!=code_index+num_indices; 
 	    ++index ){
-	if ( (*p)->flow(index)==code &&
+	if ( (*p)->Flow(index)==code &&
 	     output->insert(*p).second ) {
-	  (*p)->flow().connected_partners( output, code,
+	  (*p)->Flow().connected_partners( output, code,
 					   code_index, 
 					   num_indices );
 	}
@@ -92,9 +92,9 @@ void Flow::connected_partners( std::set<Parton*>* output, int code,
       // the set, then we recursively call connected_partners
       for ( int index = code_index; index!=code_index+num_indices; 
 	    ++index ){
-	if ( (*p)->flow(index)==code &&
+	if ( (*p)->Flow(index)==code &&
 	     output->insert(*p).second ) {
-	  (*p)->flow().connected_partners( output, code,
+	  (*p)->Flow().connected_partners( output, code,
 					   code_index, 
 					   num_indices );
 	}
@@ -141,10 +141,10 @@ void Flow::dangling_connected_partners( std::set<Parton*>* output,
       // the set, then we recursively call connected_partners
       for ( int index = code_index; index!=code_index+num_indices; 
 	    ++index ){
-	if ( (*p)->flow(index)==code ) {
+	if ( (*p)->Flow(index)==code ) {
 	  if ( *p!=m_parton_owner ) ++count_partners;
 	  if ( visited_partons->insert(*p).second ) {
-	    (*p)->flow().dangling_connected_partners( output, 
+	    (*p)->Flow().dangling_connected_partners( output, 
 						      visited_partons, code,
 						      code_index, num_indices );
 
@@ -165,10 +165,10 @@ void Flow::dangling_connected_partners( std::set<Parton*>* output,
       // the set, then we recursively call connected_partners
       for ( int index = code_index; index!=code_index+num_indices; 
 	    ++index ){
-	if ( (*p)->flow(index)==code ) {
+	if ( (*p)->Flow(index)==code ) {
 	  if ( *p!=m_parton_owner ) ++count_partners;
 	  if ( visited_partons->insert(*p).second ) {
-	    (*p)->flow().dangling_connected_partners( output, 
+	    (*p)->Flow().dangling_connected_partners( output, 
 						      visited_partons, code,
 						      code_index, num_indices );
 

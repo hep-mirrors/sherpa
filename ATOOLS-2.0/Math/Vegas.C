@@ -5,11 +5,10 @@
 using namespace AMATOOLS;
 
 #define NRANSI
-//#include "nrutil.h"
 #define ALPH 1.5
 #define TINY 1.0e-30
 
-void Vegas::rebin(double rc, int nd, double r[], double xin[], double xi[])
+void Vegas::Rebin(double rc, int nd, double * r, double * xin, double * xi)
 {
   int i,k=0;
   double dr=0.0,xn=0.0,xo;
@@ -43,9 +42,9 @@ void Vegas::Reset()
 }
 */
 
-void Vegas::Do(double regn[], int ndim, double (*fxn)(double [], double),
-	       unsigned long ncall, int itmx, double *tgral, double *sd,
-	       double *chi2a)
+void Vegas::Do(double * regn, int ndim, double (*fxn)(double *, double),
+	       unsigned long ncall, int itmx, double * tgral, double * sd,
+	       double * chi2a)
 {  
   //begin old init<=2
   nd=NDMX;
@@ -61,7 +60,7 @@ void Vegas::Do(double regn[], int ndim, double (*fxn)(double [], double),
     }
   }
   for (k=1,i=1;i<=ndim;i++) k *= ng;
-  npg=Max(ncall/k,2);
+  npg=Max(int(ncall/k),2);
   calls=npg*k;
   dxg=1.0/ng;
   for (dv2g=1,i=1;i<=ndim;i++) dv2g *= dxg;
@@ -75,7 +74,7 @@ void Vegas::Do(double regn[], int ndim, double (*fxn)(double [], double),
   }
   if (nd != ndo) {
     for (i=1;i<=nd;i++) r[i]=1.0;
-    for (j=1;j<=ndim;j++) rebin(ndo/xnd,nd,r,xin,xi[j]);
+    for (j=1;j<=ndim;j++) Rebin(ndo/xnd,nd,r,xin,xi[j]);
     ndo=nd;
   }
   /*
@@ -107,7 +106,7 @@ void Vegas::Do(double regn[], int ndim, double (*fxn)(double [], double),
       for (k=1;k<=npg;k++) {
 	wgt=xjac;
 	for (j=1;j<=ndim;j++) {
-	  xn=(kg[j]-Ran.get())*dxg+1.0;
+	  xn=(kg[j]-ran.Get())*dxg+1.0;
 	  ia[j]=Max(Min((int)(xn),NDMX),1);
 	  if (ia[j] > 1) {
 	    xo=xi[j][ia[j]]-xi[j][ia[j]-1];
@@ -199,7 +198,7 @@ void Vegas::Do(double regn[], int ndim, double (*fxn)(double [], double),
 		 (log(dt[j])-log(d[i][j])),ALPH);
 	rc += r[i];
       }
-      rebin(rc/xnd,nd,r,xin,xi[j]);
+      Rebin(rc/xnd,nd,r,xin,xi[j]);
     }
   }
   //end iteration

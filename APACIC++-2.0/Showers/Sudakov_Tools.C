@@ -14,7 +14,7 @@ using namespace AMATOOLS;
 
 Sudakov_Tools::Sudakov_Tools() {
   scalefac = 1.;
-  FixLambda2(sqr((Flavour(kf::Z)).mass()));
+  FixLambda2(sqr((Flavour(kf::Z)).Mass()));
   if (rpa.gen.Debugging()) Output();
 }
 
@@ -23,10 +23,10 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,double tmin, double tmax) {
   if (scheme>0) {
     alphaQEDmax = (*aqed)(tmax);    // max alpha_S 
     alphaSmax   = AlphaS(tmin);      // max alpha_S 
-    FixLambda2(sqr((Flavour(kf::Z)).mass()));                   
+    FixLambda2(sqr((Flavour(kf::Z)).Mass()));                   
     // determine Lambda2 and beta0 at MZ;
     Setscalefac(tmin);              // fix scaling appropriate for q02/4
-    //    Setscalefac(sqr((Flavour(kf::Z)).mass()));              // fix scaling only for pythia alphaS !!!!!!
+    //    Setscalefac(sqr((Flavour(kf::Z)).Mass()));              // fix scaling only for pythia alphaS !!!!!!
   }
   else {
     alphaQEDmax     = 1./128.;      // max alpha_QED has to be read in from
@@ -66,9 +66,9 @@ double Sudakov_Tools::AlphaS(double t){
   double thr[7];
   int nf =5;
   thr[0]=thr[1]=thr[2]=thr[3]=0.;
-  thr[4]=sqr(Flavour(kf::c).PSmass());
-  thr[5]=sqr(Flavour(kf::b).PSmass());
-  thr[6]=sqr(Flavour(kf::t).PSmass());
+  thr[4]=sqr(Flavour(kf::c).PSMass());
+  thr[5]=sqr(Flavour(kf::b).PSMass());
+  thr[6]=sqr(Flavour(kf::t).PSMass());
   while (t<thr[nf]) {
     --nf;
   }
@@ -93,9 +93,9 @@ double Sudakov_Tools::AlphaS(double t){
 //   cout<<"as t="<<t<<endl;
   double thr[7];
   thr[0]=thr[1]=thr[2]=thr[3]=0.;
-  thr[4]=sqr(Flavour(kf::c).PSmass());
-  thr[5]=sqr(Flavour(kf::b).PSmass());
-  thr[6]=sqr(Flavour(kf::t).PSmass());
+  thr[4]=sqr(Flavour(kf::c).PSMass());
+  thr[5]=sqr(Flavour(kf::b).PSMass());
+  thr[6]=sqr(Flavour(kf::t).PSMass());
   while (t<thr[nf]) {
     //    cout<<thr[nf]<<endl;
     --nf;
@@ -129,10 +129,10 @@ void Sudakov_Tools::Output() {
 		 <<"beta0      = "<<beta0<<std::endl
 		 <<"lambda2    = "<<lambda2<<std::endl	
 		 <<"alphaS(MZ) = "
-		 <<CrudeAlphaS(sqr((Flavour(kf::Z)).mass()))
+		 <<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))
 		 <<"  (estimated)"<<std::endl
 		 <<"alphaS(MZ) = "
-		 <<AlphaS(sqr((Flavour(kf::Z)).mass()))
+		 <<AlphaS(sqr((Flavour(kf::Z)).Mass()))
 		 <<"  (exact)"<<std::endl;
   msg.Debugging()<<" scalefac="<<scalefac<<endl;
 }

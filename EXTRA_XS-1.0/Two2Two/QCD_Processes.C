@@ -44,7 +44,7 @@ void QCD_Processes::Fill2q2gmodes() {
   fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   for (int i=1;i<6;i++) {
     fl[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
-    fl[1] = fl[0].bar();
+    fl[1] = fl[0].Bar();
     qqbgg->Add(xsselector->GetXS(2,2,fl));
   }
   Add(qqbgg);
@@ -54,7 +54,7 @@ void QCD_Processes::Fill2q2gmodes() {
   fl[0] = fl[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   for (int i=1;i<6;i++) {
     fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
-    fl[3] = fl[2].bar();
+    fl[3] = fl[2].Bar();
     ggqqb->Add(xsselector->GetXS(2,2,fl));
   }
   Add(ggqqb);
@@ -72,7 +72,7 @@ void QCD_Processes::Fill2q2gmodes() {
   gqbgqb = new XS_Group(2,2,std::string("gqb -> gqb"));
   fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   for (int i=1;i<6;i++) {
-    fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).bar();
+    fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).Bar();
     gqbgqb->Add(xsselector->GetXS(2,2,fl));
   }
   Add(gqbgqb);
@@ -102,7 +102,7 @@ void QCD_Processes::Fill4qmodes() {
   qqbqqb = new XS_Group(2,2,std::string("qqb -> qqb"));
   for (int i=1;i<6;i++) {
     fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
-    fl[1] = fl[3] = fl[0].bar();
+    fl[1] = fl[3] = fl[0].Bar();
     qqbqqb->Add(xsselector->GetXS(2,2,fl));
   }
   Add(qqbqqb);
@@ -112,7 +112,7 @@ void QCD_Processes::Fill4qmodes() {
   for (int i=1;i<5;i++) {
     fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
     for (int j=i+1;j<6;j++) {
-      fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).bar();
+      fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).Bar();
       q1q2bq1q2b->Add(xsselector->GetXS(2,2,fl));
     }
   }
@@ -122,10 +122,10 @@ void QCD_Processes::Fill4qmodes() {
   q1q2bq1q2b = new XS_Group(2,2,std::string("q1q1b -> q2q2b"));
   for (int i=1;i<5;i++) {
     fl[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
-    fl[1] = fl[0].bar();
+    fl[1] = fl[0].Bar();
     for (int j=i+1;j<6;j++) {
-      fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).bar();
-      fl[3] = fl[2].bar();
+      fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).Bar();
+      fl[3] = fl[2].Bar();
       q1q2bq1q2b->Add(xsselector->GetXS(2,2,fl));
     }
   }
@@ -135,7 +135,7 @@ void QCD_Processes::Fill4qmodes() {
   XS_Group * qbqbqbqb;
   qbqbqbqb = new XS_Group(2,2,std::string("qbqb -> qbqb"));
   for (int i=1;i<6;i++) {
-    fl[0] = fl[1] = fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).bar();
+    fl[0] = fl[1] = fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).Bar();
     qbqbqbqb->Add(xsselector->GetXS(2,2,fl));
   }
   Add(qbqbqbqb);
@@ -143,9 +143,9 @@ void QCD_Processes::Fill4qmodes() {
   XS_Group * q1bq2bq1bq2b;
   q1bq2bq1bq2b = new XS_Group(2,2,std::string("q1bq2b -> q1bq2b"));
   for (int i=1;i<5;i++) {
-    fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).bar();
+    fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).Bar();
     for (int j=i+1;j<6;j++) {
-      fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).bar();
+      fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).Bar();
       q1bq2bq1bq2b->Add(xsselector->GetXS(2,2,fl));
     }
   }
@@ -175,11 +175,11 @@ void QCD_Processes::CreateSelector()
 		<<" Initialized jet measure."<<std::endl;
 }
 
-double QCD_Processes::Scale(AMATOOLS::vec4d * p)
+double QCD_Processes::Scale(AMATOOLS::Vec4D * p)
 {
-//   s = (p[0]+p[1]).abs2();
-//   t = (p[0]-p[2]).abs2();
-//   u = (p[0]-p[3]).abs2();
+//   s = (p[0]+p[1]).Abs2();
+//   t = (p[0]-p[2]).Abs2();
+//   u = (p[0]-p[3]).Abs2();
 //   return scale = (2.*s*t*u)/(s*s+t*t+u*u);
 }
 

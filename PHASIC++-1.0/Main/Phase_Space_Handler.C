@@ -56,12 +56,12 @@ void Phase_Space_Handler::Init(Flavour * _fl) {
   
   psflavs    = new Flavour[nin+nout];
   for (int i=0;i<nin+nout;i++) psflavs[i] = _fl[i];
-  p          = new vec4d[nvec];  
+  p          = new Vec4D[nvec];  
   msg.Debugging()<<"Initialize new vectors : "<<nvec<<endl;
 
-  m1 = _fl[0].mass(); m12 = m1*m1;
+  m1 = _fl[0].Mass(); m12 = m1*m1;
   if (nin==2) {
-    m2   = _fl[1].mass(); m22 = m2*m2;
+    m2   = _fl[1].Mass(); m22 = m2*m2;
   }
 
   E          = AORGTOOLS::rpa.gen.Ecms();
@@ -314,7 +314,7 @@ bool Phase_Space_Handler::MakeISRChannels()
   msg.Out()<<"*** DeltaY1 / 2 = "<<deltay[0]<<" / "<<deltay[1]<<endl;
 
 
-  if ((psflavs[0].islepton()) || (psflavs[1].islepton())) {
+  if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) {
     // leptons : 1/s'^2 and 1/(s-s')^beta, sharp FW-BW peak
     ci.type = 0;
     (ci.parameters).push_back(.5);
@@ -377,7 +377,7 @@ bool Phase_Space_Handler::MakeISRChannels()
     ci.type = type;
     (ci.parameters).push_back(mass);
     (ci.parameters).push_back(width);
-    if ((psflavs[0].islepton()) || (psflavs[1].islepton())) (ci.parameters).push_back(1.);
+    if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) (ci.parameters).push_back(1.);
                                                        else (ci.parameters).push_back(.5);
     (ci.parameters).push_back(deltay[0]);
     (ci.parameters).push_back(deltay[1]);
@@ -409,7 +409,7 @@ bool Phase_Space_Handler::MakeBeamChannels()
   Channel_Info ci;
 
   // default : Beamstrahlung
-  if ((psflavs[0].islepton()) && (psflavs[1].islepton())) {
+  if ((psflavs[0].IsLepton()) && (psflavs[1].IsLepton())) {
     ci.type = 0;
     (ci.parameters).push_back(0.5);
     (ci.parameters).push_back(bh->Exponent(1));
@@ -420,7 +420,7 @@ bool Phase_Space_Handler::MakeBeamChannels()
   }
 
   // Laser Backscattering spectrum
-  if ((psflavs[0].isphoton()) || (psflavs[1].isphoton())) {
+  if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
     ci.type = 0;
     (ci.parameters).push_back(.5);
     (ci.parameters).push_back(1.);
@@ -457,7 +457,7 @@ bool Phase_Space_Handler::MakeBeamChannels()
     ci.type = type;
     (ci.parameters).push_back(mass);
     (ci.parameters).push_back(width);
-    if ((psflavs[0].islepton()) || (psflavs[1].islepton())) (ci.parameters).push_back(1.);
+    if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) (ci.parameters).push_back(1.);
                                                        else (ci.parameters).push_back(.5);
     (ci.parameters).push_back(deltay[0]);
     (ci.parameters).push_back(deltay[1]);
@@ -523,11 +523,11 @@ double Phase_Space_Handler::Integrate()
 }
 
 
-bool Phase_Space_Handler::MakeIncoming(vec4d * _p) {
+bool Phase_Space_Handler::MakeIncoming(Vec4D * _p) {
   if (nin == 1) {
     E     = m1;
     s     = E*E;
-    _p[0] = vec4d(E,0.,0.,0.);
+    _p[0] = Vec4D(E,0.,0.,0.);
 
     flux = 1./(2.*m1);
     return 1;
@@ -538,8 +538,8 @@ bool Phase_Space_Handler::MakeIncoming(vec4d * _p) {
     double x      = 1./2.+(m12-m22)/(2.*sprime);
     double E1     = x*Eprime;
     double E2     = (1.-x)*Eprime;
-    _p[0]         = vec4d(E1,0.,0.,sqrt(sqr(E1)-sqr(m1)));
-    _p[1]         = vec4d(E2,(-1.)*vec3d(_p[0]));
+    _p[0]         = Vec4D(E1,0.,0.,sqrt(sqr(E1)-sqr(m1)));
+    _p[1]         = Vec4D(E2,(-1.)*Vec3D(_p[0]));
     
     flux          = 1./(2.*sqrt(sqr(sprime-m12-m22)-4.*m12*m22));
     return 1;
@@ -583,7 +583,7 @@ double Phase_Space_Handler::Differential(Process_Base * process)
   
   //msg.Out()<<"Before FSR"<<endl;
   //for (int i=0;i<nin+nout;i++) { 
-  //msg.Out()<<" "<<i<<"th : "<<p[i]<<" "<<p[i].abs2()<<endl;
+  //msg.Out()<<" "<<i<<"th : "<<p[i]<<" "<<p[i].Abs2()<<endl;
   //}
 
   if (!proc->GetXS()) fsrchannels->GeneratePoint(p,proc->Cuts());
@@ -648,12 +648,12 @@ double Phase_Space_Handler::Differential(Process_Base * process)
   return flux*(result1+result2);
 }
 
-bool Phase_Space_Handler::Check4Momentum(vec4d * _p) {
-  vec4d pin,pout;
-  pin = pout = vec4d(0.,0.,0.,0.);
+bool Phase_Space_Handler::Check4Momentum(Vec4D * _p) {
+  Vec4D pin,pout;
+  pin = pout = Vec4D(0.,0.,0.,0.);
   for (int i=0;i<nin;i++)        pin  += _p[i];
   for (int i=nin;i<nin+nout;i++) pout += _p[i];
-  double sin = pin.abs2(),sout = pout.abs2();
+  double sin = pin.Abs2(),sout = pout.Abs2();
   if (!(AMATOOLS::IsZero((sin-sout)/(sin+sout)))) return 0;
   return 1;
 }
@@ -689,7 +689,7 @@ bool Phase_Space_Handler::OneEvent(int mode)
 		      <<proc->Selected()->Max()<<" -> "<<value<<endl;
 	  proc->Selected()->SetMax(value);
       }
-      else disc  = max*AMATOOLS::Ran.get();
+      else disc  = max*AMATOOLS::ran.Get();
       if (value >= disc) {
 	sumtrials += i;events ++;
 	msg.Debugging()<<"Phase_Space_Handler::OneEvent() : "<<i<<" trials for ";
@@ -698,7 +698,7 @@ bool Phase_Space_Handler::OneEvent(int mode)
 		       <<"   in total = "<<double(events)/double(sumtrials)*100.<<" %."<<endl;
 
 
-	if (result1 < (result1+result2)*AMATOOLS::Ran.get()) Rotate(p);
+	if (result1 < (result1+result2)*AMATOOLS::ran.Get()) Rotate(p);
 	proc->Selected()->SetMomenta(p);
 	for (int i=0;i<nin+nout;i++) {
 	  msg.Debugging()<<"  "<<proc->Selected()->Flavs()[i]<<" : "<<p[i]<<endl; 
@@ -749,25 +749,25 @@ void Phase_Space_Handler::DropRedundantChannels()
   msg.Debugging()<<"    Start with "<<number<<" added channel(s)."<<endl;
 
   if (number<2) return;
-  vec4d** perm_vec = new vec4d*[number]; 
+  Vec4D** perm_vec = new Vec4D*[number]; 
   
-  for (short int i=0;i<number;i++) perm_vec[i] = new vec4d[nin+nout+1];
+  for (short int i=0;i<number;i++) perm_vec[i] = new Vec4D[nin+nout+1];
   
   // Create Momenta
   int rannum   = 1 + 2 + 3*(nout-2);
-  double * ran = new double[rannum];
-  for (short int i=0;i<rannum;i++) ran[i] = Ran.get();  
+  double * rans = new double[rannum];
+  for (short int i=0;i<rannum;i++) rans[i] = ran.Get();  
   // Init markers for deletion and results to compare.
   int    * marker = new int[number];  
   double * res    = new double[number];
   for (short int i=0;i<number;i++) { marker[i] = 0;res[i] = 0.; }
 
   for (short int i=0;i<number;i++) {
-    perm_vec[i][0] = vec4d(rpa.gen.Ecms()/2.,0.,0.,rpa.gen.Ecms()/2.);
-    perm_vec[i][1] = vec4d(rpa.gen.Ecms()/2.,0.,0.,-rpa.gen.Ecms()/2.); 
+    perm_vec[i][0] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,rpa.gen.Ecms()/2.);
+    perm_vec[i][1] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,-rpa.gen.Ecms()/2.); 
     msg.Debugging()<<"==== "<<i<<" : ";
     msg.Debugging()<<(fsrchannels->Channel(i))->Name()<<"====================="<<endl;
-    fsrchannels->GeneratePoint(i,perm_vec[i],proc->Cuts(),ran);
+    fsrchannels->GeneratePoint(i,perm_vec[i],proc->Cuts(),rans);
     // for (short int j=0;j<nin+nout;j++) msg.Debugging()<<j<<"th : "<<perm_vec[i][j]<<endl;
     fsrchannels->GenerateWeight(i,perm_vec[i],proc->Cuts());
     res[i] = fsrchannels->Weight();
@@ -776,7 +776,7 @@ void Phase_Space_Handler::DropRedundantChannels()
       marker[i] = 1;
     }
   }
-  delete[] ran;
+  delete[] rans;
 
   // kick identicals & permutations
   for (short int i=0;i<number;i++) {
@@ -808,8 +808,8 @@ void Phase_Space_Handler::DropRedundantChannels()
     //shorten
     int hit    = 0;
     for (short int j=0;j<reson[i];j++) {
-    if (sqr(fl_res[j].mass())>ycut*sqr(rpa.gen.Ecms()) &&
-    sqr(fl_res[j].mass())<sqr(rpa.gen.Ecms())) 
+    if (sqr(fl_res[j].Mass())>ycut*sqr(rpa.gen.Ecms()) &&
+    sqr(fl_res[j].Mass())<sqr(rpa.gen.Ecms())) 
     hit++;
     }
     reson[i] = hit;
@@ -851,7 +851,7 @@ void Phase_Space_Handler::DropRedundantChannels()
 
    ---------------------------------------------------------------------- */
 
-void Phase_Space_Handler::TestPoint(vec4d * _p)
+void Phase_Space_Handler::TestPoint(Vec4D * _p)
 {
   sprime                  = sqr(AORGTOOLS::rpa.gen.Ecms());
   Single_Channel * TestCh = new Rambo(nin,nout,psflavs);
@@ -881,7 +881,7 @@ void Phase_Space_Handler::WriteOut(string pID) {
   string help     = (pID+string("/Random")).c_str();
   for (int pos=0;pos<help.length();pos++) filename[pos] = help[pos];
   filename[help.length()]=0;
-  int nran = Ran.WriteOutStatus(filename);
+  int nran = ran.WriteOutStatus(filename);
 }
 
 bool Phase_Space_Handler::ReadIn(string pID) {
@@ -896,18 +896,18 @@ bool Phase_Space_Handler::ReadIn(string pID) {
   string help     = (pID+string("/Random")).c_str();
   for (int pos=0;pos<help.length();pos++) filename[pos] = help[pos];
 
-  Ran.ReadInStatus(filename,0);
+  ran.ReadInStatus(filename,0);
 
   return okay;
 }
 
-void Phase_Space_Handler::Rotate(vec4d * _p) 
+void Phase_Space_Handler::Rotate(Vec4D * _p) 
 {
-  for (int i=0;i<nin+nout;i++) _p[i] = vec4d(_p[i][0],(-1.)*vec3d(_p[i]));
+  for (int i=0;i<nin+nout;i++) _p[i] = Vec4D(_p[i][0],(-1.)*Vec3D(_p[i]));
 }
 
 
-bool Phase_Space_Handler::Compare(vec4d* _p1,vec4d* _p2)
+bool Phase_Space_Handler::Compare(Vec4D* _p1,Vec4D* _p2)
 {
   if (nout==2) {
     for (short int i=0;i<nout;i++) { 

@@ -50,11 +50,11 @@ void Lund_Fortran_Interface::Hadronize(APHYTOOLS::Parton_List * pl,
   int nhep = 0;
 
   if (nhep==0) {
-    idhep[nhep] = Flavour(kf::photon).hepevt();
+    idhep[nhep] = Flavour(kf::photon).HepEvt();
         
     for (short int j=1; j<4; ++j) phep[(j-1)+nhep*5] = blob->CMS()[j];
     phep[3+nhep*5] = blob->CMS()[0];
-    double pabs = (blob->CMS()).abs2();
+    double pabs = (blob->CMS()).Abs2();
     if (pabs<0) phep[4+nhep*5] = 0.;
            else phep[4+nhep*5] = sqrt(pabs);
     
@@ -98,17 +98,17 @@ void Lund_Fortran_Interface::Hadronize(APHYTOOLS::Parton_List * pl,
 
 void Lund_Fortran_Interface::AddPartonToString(Parton * parton,int & nhep)
 {
-  idhep[nhep] = parton->flav().hepevt();
+  idhep[nhep] = parton->Flav().HepEvt();
         
-  for (short int j=1; j<4; ++j) phep[(j-1)+nhep*5] = parton->momentum()[j];
-  phep[3+nhep*5] = parton->momentum()[0];
-  double pabs = (parton->momentum()).abs2();
+  for (short int j=1; j<4; ++j) phep[(j-1)+nhep*5] = parton->Momentum()[j];
+  phep[3+nhep*5] = parton->Momentum()[0];
+  double pabs = (parton->Momentum()).Abs2();
   if (pabs<0) phep[4+nhep*5] = 0.;
          else phep[4+nhep*5] = sqrt(pabs);
 
   for (short int j=1; j<4; ++j) {
-    vhep[(j-1)+nhep*4] = parton->xprod()[j];
-    vhep[3+nhep*4] = parton->xprod()[j];
+    vhep[(j-1)+nhep*4] = parton->XProd()[j];
+    vhep[3+nhep*4] = parton->XProd()[j];
   }
 
   isthep[nhep] = 1;
@@ -126,7 +126,7 @@ void Lund_Fortran_Interface::FillHadronsInBlob(APHYTOOLS::Parton_List * pl,
 {
   Parton  * parton;
   Flavour   flav;
-  vec4d     momentum;
+  Vec4D     momentum;
   
   double  * pjet;
   int       nk, * kfjet;
@@ -138,12 +138,12 @@ void Lund_Fortran_Interface::FillHadronsInBlob(APHYTOOLS::Parton_List * pl,
     
   for (int i=0; i<nk; ++i) {
     flav = Flavour(kf::code(abs(*(kfjet+i))));
-    if ((*(kfjet+i))<0) flav = flav.bar();
+    if ((*(kfjet+i))<0) flav = flav.Bar();
     for(int j=0; j<4; ++j) momentum[j] = *(pjet+i+j*2000);
 
     parton = new Parton(pl->size(),flav,momentum);
-    parton->set_status(1);
-    parton->set_prod(blob);
+    parton->SetStatus(1);
+    parton->SetProd(blob);
 
     pl->push_back(parton);
     blob->AddToOutPartons(parton);

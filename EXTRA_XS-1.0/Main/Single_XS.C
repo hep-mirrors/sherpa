@@ -44,18 +44,18 @@ void Single_XS::GenerateName() {
   name      += string("_");
 
   for (int i=0;i<nin;i++) {
-    name    += string(fl[i].name());
-    if ((fl[i].kfcode()==kf::e)   ||
-	(fl[i].kfcode()==kf::mu)  ||
-	(fl[i].kfcode()==kf::tau) ||
-	(fl[i].kfcode()==kf::Hmin)) {
+    name    += string(fl[i].Name());
+    if ((fl[i].Kfcode()==kf::e)   ||
+	(fl[i].Kfcode()==kf::mu)  ||
+	(fl[i].Kfcode()==kf::tau) ||
+	(fl[i].Kfcode()==kf::Hmin)) {
       //kill last
       name.erase(name.length()-1,1);
-      if (fl[i].isanti()) name += string("+");
+      if (fl[i].IsAnti()) name += string("+");
                      else name += string("-");      
     }
     else {
-      if (fl[i].isanti()) name += string("b"); 
+      if (fl[i].IsAnti()) name += string("b"); 
     }
     name += string("_");
   }
@@ -63,18 +63,18 @@ void Single_XS::GenerateName() {
 
   name      += string(" -> ");
   for (int i=nin;i<nin+nout;i++) {
-    name    += string(fl[i].name());
-    if ((fl[i].kfcode()==kf::e)   ||
-	(fl[i].kfcode()==kf::mu)  ||
-	(fl[i].kfcode()==kf::tau) ||
-	(fl[i].kfcode()==kf::Hmin)) {
+    name    += string(fl[i].Name());
+    if ((fl[i].Kfcode()==kf::e)   ||
+	(fl[i].Kfcode()==kf::mu)  ||
+	(fl[i].Kfcode()==kf::tau) ||
+	(fl[i].Kfcode()==kf::Hmin)) {
       //kill last
       name.erase(name.length()-1,1);
-      if (fl[i].isanti()) name += string("+");
+      if (fl[i].IsAnti()) name += string("+");
                        else name += string("-");      
     }
     else {
-      if (fl[i].isanti()) name += string("b"); 
+      if (fl[i].IsAnti()) name += string("b"); 
     }
     name += string("_");
   }

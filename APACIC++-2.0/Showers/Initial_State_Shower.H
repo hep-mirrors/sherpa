@@ -27,7 +27,7 @@ namespace APACIC {
 
     int    allowed;
 
-    AMATOOLS::vec4d lab;
+    AMATOOLS::Vec4D lab;
 
   public:
     Initial_State_Shower(ISR::ISR_Handler *, Final_State_Shower *);// for testing purposes
@@ -38,8 +38,8 @@ namespace APACIC {
 			APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *,int);
     bool TestShower(Tree **) ;
 
-    AMATOOLS::vec4d GetLab();
-    AMATOOLS::vec4d GetMomentum(Knot * mo,int & number);
+    AMATOOLS::Vec4D GetLab();
+    AMATOOLS::Vec4D GetMomentum(Knot * mo,int & number);
 
     Knot * GetInitiator(int);
     Knot * GetInitiator(Tree *);
@@ -70,18 +70,18 @@ namespace APACIC {
     };
   }
 
-  inline AMATOOLS::vec4d Initial_State_Shower::GetLab() { return lab; }
+  inline AMATOOLS::Vec4D Initial_State_Shower::GetLab() { return lab; }
 
   inline Knot * Initial_State_Shower::GetInitiator(Tree * tree) 
   {
     return tree->GetInitiator();
   }
 
-  inline AMATOOLS::vec4d Initial_State_Shower::GetMomentum(Knot * mo,int & number) 
+  inline AMATOOLS::Vec4D Initial_State_Shower::GetMomentum(Knot * mo,int & number) 
   {
     if (mo->left) return GetMomentum(mo->left,number) + GetMomentum(mo->right,number);
     number++;
-    return mo->part->momentum();
+    return mo->part->Momentum();
   }
 } // namespace APACIC
 

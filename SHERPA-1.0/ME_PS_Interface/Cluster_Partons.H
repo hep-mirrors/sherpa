@@ -29,8 +29,8 @@ namespace MOCAIC {
 
     bool            FillLegs(Leg *, AMEGIC::Point *, int &, int);
     void            EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,bool);
-    APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const AMATOOLS::vec4d &,char);
-    AMATOOLS::vec4d Momentum(APACIC::Knot *, int &);
+    APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const AMATOOLS::Vec4D &,char);
+    AMATOOLS::Vec4D Momentum(APACIC::Knot *, int &);
     bool            IsColourConnected(APHYTOOLS::Parton *,APHYTOOLS::Parton *);
     int             colors[4][2];
     double          ColourAngle(const std::vector<APACIC::Knot *> &, const int);
@@ -49,11 +49,11 @@ namespace MOCAIC {
     void CalculateWeight(double,double);
     // translate cluster sequence into initial or final state shower seeds 
     void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);
-    //    int  SetColours(AMATOOLS::vec4d * , APHTOOLS::Flavour );
+    //    int  SetColours(AMATOOLS::Vec4D * , APHTOOLS::Flavour );
 
     double             Weight()      { return weight; }
     APHYTOOLS::Flavour Flav(int);
-    AMATOOLS::vec4d    Momentum(int); 
+    AMATOOLS::Vec4D    Momentum(int); 
 
   };
 }

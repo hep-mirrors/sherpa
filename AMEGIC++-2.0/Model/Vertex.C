@@ -154,8 +154,8 @@ int Vertex::CheckExistence(Single_Vertex& probe)
 int Vertex::FermionRule(Single_Vertex& probe)
 {
   // fermionic: particles left, anti-particles right
-  if (probe.in[1].isfermion() && !probe.in[1].isanti() && !probe.in[1].Majorana()) return 0;
-  if (probe.in[2].isfermion() &&  probe.in[2].isanti() && !probe.in[2].Majorana()) return 0;
+  if (probe.in[1].IsFermion() && !probe.in[1].IsAnti() && !probe.in[1].Majorana()) return 0;
+  if (probe.in[2].IsFermion() &&  probe.in[2].IsAnti() && !probe.in[2].Majorana()) return 0;
 
   return 1;
 }
@@ -164,14 +164,14 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 {
   probe = orig;
   
-  if (i0<0) probe.in[0] = orig.in[-i0-1].bar();
+  if (i0<0) probe.in[0] = orig.in[-i0-1].Bar();
        else probe.in[0] = orig.in[i0-1];
-  if (i1<0) probe.in[1] = orig.in[-i1-1].bar();
+  if (i1<0) probe.in[1] = orig.in[-i1-1].Bar();
        else probe.in[1] = orig.in[i1-1];
-  if (i2<0) probe.in[2] = orig.in[-i2-1].bar();
+  if (i2<0) probe.in[2] = orig.in[-i2-1].Bar();
        else probe.in[2] = orig.in[i2-1];
   if (orig.nleg==4) {
-    if (i3<0) probe.in[3] = orig.in[-i3-1].bar();
+    if (i3<0) probe.in[3] = orig.in[-i3-1].Bar();
          else if (i3<99) probe.in[3] = orig.in[i3-1];
   }
     
@@ -185,11 +185,11 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
   for (short int i=0;i<orig.nleg;i++) {
     // All incoming
     Flavour flav = orig.in[i];
-    if (flav!=flav.bar()) {
-      if (i==0) flav = flav.bar();
+    if (flav!=flav.Bar()) {
+      if (i==0) flav = flav.Bar();
       int hit = 1;
       for (short int j=i+1;j<orig.nleg;j++) {
-	if (flav.bar()==orig.in[j]) {
+	if (flav.Bar()==orig.in[j]) {
 	  hit = 1;
 	  break;
 	}
@@ -208,13 +208,13 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
     // probe = h.c. ???
     for (short int i=0;i<orig.nleg;i++) { 
       Flavour flav = orig.in[i];
-      if (flav!=flav.bar()) {
-	if (i==0) flav = flav.bar();
+      if (flav!=flav.Bar()) {
+	if (i==0) flav = flav.Bar();
 	for (short int j=0;j<orig.nleg;j++) {
 	  Flavour flav2 = probe.in[j];
-	  if (j==0) flav2 = flav2.bar();
-	  if (flav2!=flav2.bar()) {
-	    if (flav==flav2.bar()) {
+	  if (j==0) flav2 = flav2.Bar();
+	  if (flav2!=flav2.Bar()) {
+	    if (flav==flav2.Bar()) {
 	      probehc = 1;
 	      break;
 	    }
@@ -255,12 +255,12 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
   
   for (short int i=0;i<orig.nleg;i++) { 
       Flavour flav = orig.in[i];
-      if (i==0) flav = flav.bar();
+      if (i==0) flav = flav.Bar();
       for (short int j=0;j<orig.nleg;j++) {
 	Flavour flav2 = probe.in[j];
-	if (j==0) flav2 = flav2.bar();
+	if (j==0) flav2 = flav2.Bar();
 	if (flav==flav2 || 
-	    (flav==flav2.bar() && probehc)) {
+	    (flav==flav2.Bar() && probehc)) {
 	  int hit = 1;
 	  for (short int k=0;k<i;k++) {
 	    if (newIndex[k]==j) {
@@ -516,24 +516,24 @@ void Vertex::TexOutput()
     sf<<"\\fmf{phantom}{l1,v1}"<<endl;
     sf<<"\\fmffreeze"<<endl;
 
-    if (v[i].in[1].isvector()) {
-      if (v[i].in[0].isfermion() && v[i].in[2].isfermion()) {
+    if (v[i].in[1].IsVector()) {
+      if (v[i].in[0].IsFermion() && v[i].in[2].IsFermion()) {
 	sf<<"\\fmf{plain}{l1,v1,r1}"<<endl; 
 	if (v[i].in[1]==Flavour(kf::gluon))
 	  sf<<"\\fmf{curly}{v1,r2}"<<endl;
 	else 
 	  sf<<"\\fmf{photon}{v1,r2}"<<endl;
-	if (v[i].in[1].charge() != 0)
+	if (v[i].in[1].Charge() != 0)
 	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<"$}{l1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<"$}{r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<",\\;r^\\mu$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<",\\;r^\\mu$}{r2}"<<endl;
       }
       
      
-      if (v[i].in[0].isvector() && v[i].in[2].isvector() ){
+      if (v[i].in[0].IsVector() && v[i].in[2].IsVector() ){
 	if (v[i].in[1]==Flavour(kf::gluon)) {
 	  sf<<"\\fmf{curly}{r1,v1,r2}"<<endl;
 	  sf<<"\\fmf{curly}{v1,l1}"<<endl;
@@ -544,65 +544,65 @@ void Vertex::TexOutput()
 	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<",\\;k^\\lambda $}{r1}"<<endl;
-	sf<<"\\fmflabel{$"<<(v[i].in[2].bar()).texname()<<",\\;p^\\nu $}{r2}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<",\\;r^\\mu $}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<",\\;k^\\lambda $}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<(v[i].in[2].Bar()).TexName()<<",\\;p^\\nu $}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<",\\;r^\\mu $}{l1}"<<endl;
       }   
       
-      if (v[i].in[0].isscalar() && v[i].in[2].isscalar()) {
+      if (v[i].in[0].IsScalar() && v[i].in[2].IsScalar()) {
 	if (v[i].in[1]==Flavour(kf::gluon))
 	  sf<<"\\fmf{curly}{v1,r2}"<<endl;
 	else 
 	  sf<<"\\fmf{photon}{v1,r2}"<<endl;
 	sf<<"\\fmf{dashes}{l1,v1,r1}"<<endl; 
-	if (v[i].in[1].charge() != 0)
+	if (v[i].in[1].Charge() != 0)
 	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
-	if (v[i].in[0].charge() !=0 || v[i].in[2].charge() !=0){
+	if (v[i].in[0].Charge() !=0 || v[i].in[2].Charge() !=0){
 	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl; }
-	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<"$}{r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<"$}{l1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<",\\;r^\\mu $}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<",\\;r^\\mu $}{r2}"<<endl;
       }
     }
     
-    if (v[i].in[1].isscalar()) {
-      if (v[i].in[0].isvector() && v[i].in[2].isvector()) {
+    if (v[i].in[1].IsScalar()) {
+      if (v[i].in[0].IsVector() && v[i].in[2].IsVector()) {
 	sf<<"\\fmf{dashes}{r2,v1}"<<endl; 
-	if (v[i].in[1].charge() != 0) {
+	if (v[i].in[1].Charge() != 0) {
 	  sf<<"\\fmf{phantom_arrow}{r2,v1}"<<endl;
 	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;}
-	if (v[i].in[0].charge() !=0 || v[i].in[2].charge() !=0)
+	if (v[i].in[0].Charge() !=0 || v[i].in[2].Charge() !=0)
 	  {sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;}
 	sf<<"\\fmf{photon}{l1,v1,r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<",\\;p^\\nu $}{l1}"<<endl;	  
-	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<"$}{r2}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<",\\;r^\\mu $}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<",\\;p^\\nu $}{l1}"<<endl;	  
+	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<",\\;r^\\mu $}{r1}"<<endl;
       } 
       
-      if (v[i].in[0].isfermion() && v[i].in[2].isfermion()) {
+      if (v[i].in[0].IsFermion() && v[i].in[2].IsFermion()) {
 	sf<<"\\fmf{plain}{l1,v1,r1}"<<endl;
 	sf<<"\\fmf{dashes}{v1,r2}"<<endl;
-	if (v[i].in[1].charge() != 0)
+	if (v[i].in[1].Charge() != 0)
 	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
 	
 	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
 	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<"$}{l1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<"$}{r2}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<"$}{r1}"<<endl;
       }
       
-      if (v[i].in[0].isscalar() && v[i].in[2].isscalar()) {
+      if (v[i].in[0].IsScalar() && v[i].in[2].IsScalar()) {
 	sf<<"\\fmf{dashes}{r1,v1,r2}"<<endl; 
 	sf<<"\\fmf{dashes}{v1,l1}"<<endl;
-	if (v[i].in[0].charge() != 0) {
+	if (v[i].in[0].Charge() != 0) {
 	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl; 
 	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;}
-	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<"$}{l1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<"$}{r1}"<<endl;
-	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].TexName()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].TexName()<<"$}{r2}"<<endl;
       }
     }
     
@@ -650,9 +650,9 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
       //    printvertex(v_tofind);
       for (int i=0;i<nvertex;++i) {
 	//   printvertex(&v[i]);
-	if (v_tofind->in[0].kfcode()==v[i].in[0].kfcode())
-	  if (v_tofind->in[1].kfcode()==v[i].in[1].kfcode())
-	    if (v_tofind->in[2].kfcode()==v[i].in[2].kfcode()) {
+	if (v_tofind->in[0].Kfcode()==v[i].in[0].Kfcode())
+	  if (v_tofind->in[1].Kfcode()==v[i].in[1].Kfcode())
+	    if (v_tofind->in[2].Kfcode()==v[i].in[2].Kfcode()) {
 	    //    v_tofind=&v[i];
 	      nr=i;
 	      //break;

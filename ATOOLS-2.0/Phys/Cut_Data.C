@@ -42,7 +42,7 @@ void Cut_Data::Init(int _ncut,Flavour * _fl) {
     cosmax[i]      = new double[ncut];
     scut[i]        = new double[ncut];
     scut_save[i]   = new double[ncut];
-    energymin[i]   = AMATOOLS::Max(0.,fl[i].mass());
+    energymin[i]   = AMATOOLS::Max(0.,fl[i].Mass());
     energymax[i]   = E;
   }
 
@@ -51,10 +51,10 @@ void Cut_Data::Init(int _ncut,Flavour * _fl) {
       cosmin[i][j] = cosmin[j][i] = -1.;
       cosmax[i][j] = cosmax[j][i] =  1.;
       double sc =
-	+AMATOOLS::sqr(fl[i].mass())+AMATOOLS::sqr(fl[j].mass())
+	+AMATOOLS::sqr(fl[i].Mass())+AMATOOLS::sqr(fl[j].Mass())
 	+2.*energymin[i]*energymin[j]
-	-2.*sqrt(AMATOOLS::dabs(AMATOOLS::sqr(energymin[i])-AMATOOLS::sqr(fl[i].mass())))
-	*sqrt(AMATOOLS::dabs(AMATOOLS::sqr(energymin[j])-AMATOOLS::sqr(fl[j].mass())))
+	-2.*sqrt(AMATOOLS::dabs(AMATOOLS::sqr(energymin[i])-AMATOOLS::sqr(fl[i].Mass())))
+	*sqrt(AMATOOLS::dabs(AMATOOLS::sqr(energymin[j])-AMATOOLS::sqr(fl[j].Mass())))
 	*cosmax[i][j];
       scut[i][j] = scut[j][i] = scut_save[i][j] =
 	AMATOOLS::Max(sc,1.e-12*AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms()));
@@ -110,7 +110,7 @@ void Cut_Data::Init(Cut_Data * _cuts,Flavour * _fl) {
 void Cut_Data::Update(double sprime,double y) {
   double E = sqrt(sprime);
   for (int i=0;i<ncut;i++) {
-    energymin[i]   = AMATOOLS::Max(0.,fl[i].mass());
+    energymin[i]   = AMATOOLS::Max(0.,fl[i].Mass());
     energymax[i]   = E;
     for (int j=i+1;j<ncut;j++) {
       cosmin[i][j] = cosmin[j][i] = -1.;

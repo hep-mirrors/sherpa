@@ -58,7 +58,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 
   //Momenta
   chf<<"void "<<pID.c_str()<<"::"<<name;
-  chf<<"Momenta(vec4d * p,Cut_Data * cuts,double * ran)"<<endl;
+  chf<<"Momenta(Vec4D * p,Cut_Data * cuts,double * ran)"<<endl;
   chf<<"{"<<endl;
   
   Flavour * flav    = new Flavour[nout];  
@@ -76,7 +76,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 
   //Weight
   chf<<"double "<<pID.c_str()<<"::"<<name;
-  chf<<"Weight(vec4d* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
+  chf<<"Weight(Vec4D* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
   chf<<"  double wt = 1.;"<<endl;
 
   maxnumb = 0;
@@ -90,7 +90,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   chf<<"int "<<pID.c_str()<<"::"<<name<<"Resonances(Flavour*& res_fl)"<<endl<<"{"<<endl;  
   chf<<"  res_fl = new Flavour["<<maxnumb<<"];"<<endl;
   for (short int i=0;i<maxnumb;i++) {    
-    int hi = flav[i].kfcode();
+    int hi = flav[i].Kfcode();
     chf<<"  res_fl["<<i<<"] = Flavour(kf::code("<<hi<<"));"<<endl;
   }
   chf<<"  return "<<maxnumb<<";"<<endl;
@@ -117,8 +117,8 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	if (flag<2) {
 	  m = LinkedMasses(p->left);
 	  if (m.length()<2) m = LinkedMasses(p->right);
-	  sf<<"  vec4d  p"<<Order(m)<<" = p[0] + p[1];"<<endl
-	    <<"  double s"<<Order(m)<<" = dabs(p"<<Order(m)<<".abs2());"<<endl;
+	  sf<<"  Vec4D  p"<<Order(m)<<" = p[0] + p[1];"<<endl
+	    <<"  double s"<<Order(m)<<" = dabs(p"<<Order(m)<<".Abs2());"<<endl;
 	  flag += 10;
 	  if (!StepS(flag,p->left,rannum,sf,flav,maxnumb)) {
 	    if (!StepS(flag,p->right,rannum,sf,flav,maxnumb)) {
@@ -133,8 +133,8 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	}
 	if (flag==2) {
 	  sf<<"  type  = 1;"<<endl
-	    <<"  mass  = Flavour(kf::code("<<p->left->fl.kfcode()<<")).mass();"<<endl
-	    <<"  width = Flavour(kf::code("<<p->left->fl.kfcode()<<")).width();"<<endl;
+	    <<"  mass  = Flavour(kf::code("<<p->left->fl.Kfcode()<<")).Mass();"<<endl
+	    <<"  width = Flavour(kf::code("<<p->left->fl.Kfcode()<<")).Width();"<<endl;
 	  return;
 	}
       }
@@ -173,7 +173,7 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
 
   // Count resonating props, massless s-channels cannot be resonant....
   for (short int i=0;i<2;i++) {
-    if ((_plist[i]->left !=0) && (_plist[i]->fl.ismassive())) {
+    if ((_plist[i]->left !=0) && (_plist[i]->fl.IsMassive())) {
       flav[maxnumb] = _plist[i]->fl;
       maxnumb++;
     }
@@ -188,8 +188,8 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
   if (flag>9) { first = 1; flag -= 10; }
 
   // Check for decay type.
-  if ((!first) && (l->left==0) && (l->fl.isvector()) && 
-      (!(l->fl.ismassive())) && (r->fl.isfermion()) ) {
+  if ((!first) && (l->left==0) && (l->fl.IsVector()) && 
+      (!(l->fl.IsMassive())) && (r->fl.IsFermion()) ) {
     if (flag==0) {
       sf<<"  CE.Anisotropic2Momenta(p"<<Order(mummy)
 	<<",s"<<Order(lm)<<",s"<<Order(rm)<<",1.,-1.,1."<<","<<moml<<","<<momr<<","
@@ -201,8 +201,8 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
     }
   }
   else {
-    if ((!first) && (r->left==0) && (r->fl.isvector()) && 
-	(!(r->fl.ismassive())) && (l->fl.isfermion()) ) {
+    if ((!first) && (r->left==0) && (r->fl.IsVector()) && 
+	(!(r->fl.IsMassive())) && (l->fl.IsFermion()) ) {
       //anisotropic decay for left outgoing massless vectors
       if (flag==0) {
 	sf<<"  CE.Anisotropic2Momenta(p"<<Order(mummy)
@@ -264,8 +264,8 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
     flav[maxnumb] = props[i]->fl;maxnumb++;
   }
 
-  sf<<"  vec4d  p"<<Order(m)<<" = p[0] + p[1];"<<endl
-    <<"  double s"<<Order(m)<<" = dabs(p"<<Order(m)<<".abs2());"<<endl
+  sf<<"  Vec4D  p"<<Order(m)<<" = p[0] + p[1];"<<endl
+    <<"  double s"<<Order(m)<<" = dabs(p"<<Order(m)<<".Abs2());"<<endl
     <<"  double amct  = 1.;"<<endl
     <<"  double alpha = 0.5;"<<endl
     <<"  double ctmax = 0.;"<<endl
@@ -282,7 +282,7 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
     
   int count = 0;
 
-  if (props[tcount]->number<99 && props[tcount]->fl.isvector()) {
+  if (props[tcount]->number<99 && props[tcount]->fl.IsVector()) {
     for (short int i=0;i<tcount;i++) pout0.push_back(s[i]);
     pout1.push_back(s[tcount]);
     count = tcount - 1;
@@ -291,8 +291,8 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
     pout0.push_back(s[0]);
     for (short int i=1;i<tcount+1;i++) pout1.push_back(s[i]);
   }
-  sf<<"  vec4d  p0_ = p[0];"<<endl
-    <<"  vec4d  p1_ = p[1];"<<endl;
+  sf<<"  Vec4D  p0_ = p[0];"<<endl
+    <<"  Vec4D  p1_ = p[1];"<<endl;
 
   SingleTStep(flag,s,propt,tcount,rannum,sf,count,pin0,pin1,pout0,pout1);
 
@@ -308,8 +308,8 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 				    vector<string> pin0, vector<string> pin1,
 				    vector<string> pout0,vector<string> pout1)
 { 
-  int hi = propt[count]->fl.kfcode(); 
-  sf<<"  double tmass"<<count<<" = Flavour(kf::code("<<hi<<")).mass();"<<endl;
+  int hi = propt[count]->fl.Kfcode(); 
+  sf<<"  double tmass"<<count<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
 
   string pout0sum;
   for (short int i=0;i<pout0.size();i++) pout0sum += pout0[i];
@@ -326,7 +326,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   //maxs
   if (pout0.size()>1) { 
     string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
-               Order(pin1sum)+string(").abs2()))-");
+               Order(pin1sum)+string(").Abs2()))-");
     if (pout1.size()==1) {
        if (pout1[0].length()==1) s += string("sqrt(ms[")+pout1[0]+string("])");
                            else s += string("sqrt(s")+Order(pout1[0])+string(")");    
@@ -339,7 +339,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   //first dice
   if (pout0.size()>1) {
     if (flag==0) {
-      sf<<"  vec4d  p"<<Order(pout0sum)<<";"<<endl;
+      sf<<"  Vec4D  p"<<Order(pout0sum)<<";"<<endl;
       sf<<"  double s"<<Order(pout0sum);
 
       if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==0) {
@@ -350,7 +350,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	sstream>>i;
 	/*
 	  fl not filled!!! // deactivated!!!! *AS*
-	  if (fl[i].isvector() && AMATOOLS::IsZero(fl[i].mass())) {
+	  if (fl[i].IsVector() && AMATOOLS::IsZero(fl[i].Mass())) {
 	  cout<<"New Extra Channel should be created!!!"<<endl;
 	  newchannel = 1; 
 	  }
@@ -374,8 +374,8 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       for (short int i=0;i<pout0sum.length()-1;i++)
 	s += string("p[")+pout0sum[i]+string("]+");
       s += string("p[")+pout0sum[pout0sum.length()-1]+string("]");
-      sf<<"  vec4d p"<<Order(pout0sum)<<" = "<<s<<";"<<endl
-	<<"  double s"<<Order(pout0sum)<<" = dabs(p"<<Order(pout0sum)<<".abs2());"<<endl;    
+      sf<<"  Vec4D p"<<Order(pout0sum)<<" = "<<s<<";"<<endl
+	<<"  double s"<<Order(pout0sum)<<" = dabs(p"<<Order(pout0sum)<<".Abs2());"<<endl;    
 
       if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==1) {
 	sf<<"  wt *= CE.LLPropWeight(0.99,1.001*sqr(rpa.gen.Ecms()),s"<<Order(pout0sum)<<"_min,"
@@ -390,7 +390,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   //second dice
   if (pout1.size()>1) {
     string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
-               Order(pin1sum)+string(").abs2()))-");
+               Order(pin1sum)+string(").Abs2()))-");
     if (pout0.size()==1) {
       if (pout0[0].size()==1) s += string("sqrt(ms[")+pout0[0]+string("])");
                          else s += string("sqrt(s")+Order(pout0[0])+string(")");    
@@ -401,7 +401,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     sf<<"  double s"<<Order(pout1sum)<<"_max = "<<s<<";"<<endl;
 
     if (flag==0) {
-      sf<<"  vec4d  p"<<Order(pout1sum)<<";"<<endl
+      sf<<"  Vec4D  p"<<Order(pout1sum)<<";"<<endl
 	<<"  double s"<<Order(pout1sum)
 	<<" = CE.MasslessPropMomenta(0.5,s"<<Order(pout1sum)<<"_min,"
 	<<"s"<<Order(pout1sum)<<"_max,ran["<<rannum<<"]);"<<endl;
@@ -413,8 +413,8 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	s += string("p[")+pout1sum[i]+string("]+");
       s += string("p[")+pout1sum[pout1sum.length()-1]+string("]");
       
-      sf<<"  vec4d p"<<Order(pout1sum)<<" = "<<s<<";"<<endl
-	<<"  double s"<<Order(pout1sum)<<" = dabs(p"<<Order(pout1sum)<<".abs2());"<<endl;
+      sf<<"  Vec4D p"<<Order(pout1sum)<<" = "<<s<<";"<<endl
+	<<"  double s"<<Order(pout1sum)<<" = dabs(p"<<Order(pout1sum)<<".Abs2());"<<endl;
 
       sf<<"  wt *= CE.MasslessPropWeight(0.5,s"<<Order(pout1sum)<<"_min,"
 	<<"s"<<Order(pout1sum)<<"_max,s"<<Order(pout1sum)<<");"<<endl;
@@ -456,7 +456,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	                      else s += string("-p")+Order(pin1[i]);
 	}
 	
-	sf<<"  vec4d p"<<Order(pin1sum)<<" = "<<s<<";"<<endl ;
+	sf<<"  Vec4D p"<<Order(pin1sum)<<" = "<<s<<";"<<endl ;
 	/*
 	  for (short int i=1;i<pin1.size();i++) {
 	  if (pin1[i].length()==1) sf<<"-p["<<pin1[i]<<"]";
@@ -483,7 +483,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	  pin0.push_back(pout0[0]);
 	  string pin0sum = string("0_");
 	  for (short int i=1;i<pin0.size();i++) pin0sum += pin0[i];
-	  sf<<"  vec4d p"<<Order(pin0sum)<<" = p[0]";
+	  sf<<"  Vec4D p"<<Order(pin0sum)<<" = p[0]";
 	  for (short int i=1;i<pin0.size();i++) {
 	    if (pin0[i].length()==1) sf<<"-p["<<pin0[i]<<"]";
 	                        else sf<<"-p"<<Order(pin0[i]);
@@ -548,7 +548,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     for (short int j=0;j<pcount;j++) {
       if (sflag[j]==0) {
 	flav = _plist[j]->fl;
-	res  = AMATOOLS::sqr(flav.width()*flav.mass());
+	res  = AMATOOLS::sqr(flav.Width()*flav.Mass());
 	if (!AMATOOLS::IsZero(res) && Massive(flav)) {
 	  if (1./res>maxpole) {
 	    maxpole = 1./res;
@@ -571,15 +571,15 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     smax += string(");");
     sf<<"  double s"<<Order(lm[hit])<<"_max = "<<smax<<endl;
     if (maxpole>0.) {
-      int hi = (_plist[hit]->fl).kfcode();
+      int hi = (_plist[hit]->fl).Kfcode();
       sf<<"  Flavour fl"<<lm[hit]<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
     }
     if ((flag==0) || (flag==10)) {
-      sf<<"  vec4d  "<<momp[hit]<<";"<<endl
+      sf<<"  Vec4D  "<<momp[hit]<<";"<<endl
 	<<"  double s"<<Order(lm[hit])<<";"<<endl;
       if (maxpole>0.) {
 	sf<<"  s"<<Order(lm[hit])
-	  <<" = CE.MassivePropMomenta(fl"<<lm[hit]<<".mass(),"<<"fl"<<lm[hit]<<".width(),1,"
+	  <<" = CE.MassivePropMomenta(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
 	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,ran["<<rannum<<"]);"<<endl;
       }
       else {
@@ -593,14 +593,14 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
       string s(""); 
       for (i=0;i<lm[hit].length()-1;i++) s += string("p[")+lm[hit][i]+string("]+");
       s += string("p[")+lm[hit][lm[hit].length()-1]+string("]");
-      sf<<"  vec4d  "<<Order(momp[hit])<<" = "<<s<<";"<<endl
-	<<"  double s"<<Order(lm[hit])<<" = "<<string("dabs(")<<momp[hit]<<string(".abs2());")<<endl;
+      sf<<"  Vec4D  "<<Order(momp[hit])<<" = "<<s<<";"<<endl
+	<<"  double s"<<Order(lm[hit])<<" = "<<string("dabs(")<<momp[hit]<<string(".Abs2());")<<endl;
       /*
-	sf<<"  vec4d  "<<momp[hit]<<" = ";
+	sf<<"  Vec4D  "<<momp[hit]<<" = ";
 	for (i=0;i<lm[hit].length()-1;i++) sf<<"p["<<lm[hit][i]<<"] + ";
       */
       if (maxpole>0.) {
-	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".mass(),"<<"fl"<<lm[hit]<<".width(),1,"
+	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
 	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,"<<"s"<<Order(lm[hit])<<");"<<endl;
       }
       else {

@@ -13,9 +13,9 @@ Selector_Base::~Selector_Base() {
 
 void Selector_Base::Output() { 
   if (!(AORGTOOLS::rpa.gen.Tracking())) return;
-  if(sel_log) {
-    sel_log->Output();
-    AORGTOOLS::msg.Out()<<name<<"  total number of rejections: "<<sel_log->Rejections()<<std::endl;
+  if(m_sel_log) {
+    m_sel_log->Output();
+    AORGTOOLS::msg.Out()<<m_name<<"  total number of rejections: "<<m_sel_log->Rejections()<<std::endl;
   }
 }
 
@@ -44,7 +44,7 @@ bool Selector_Data::ReadInData(std::string filename) {
   }
   
   std::string keyword;
-  mom_data    dat;
+  Mom_Data    dat;
   int         crit1,crit2;
   Flavour     flav;
   for(;from;) {
@@ -60,7 +60,7 @@ bool Selector_Data::ReadInData(std::string filename) {
 	dat.min=Max(dat.min,rpa.integ.Ycut());
 	if (dat.min!=rpa.integ.Ycut()) {
 	  msg.Out()<<"WARNING: ycut restricted by values in Selector.dat!"<<endl;
-	  rpa.integ.Set_Ycut(dat.min);
+	  rpa.integ.SetYcut(dat.min);
 	}
 	msg.Out()<<" using yut = "<<dat.min<<endl;
       }
@@ -70,7 +70,7 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.type = 11;
       from>>crit1>>dat.min>>dat.max;
       flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.bar();
+      if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }
@@ -78,7 +78,7 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.type = 12;
       from>>crit1>>dat.min>>dat.max;
       flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.bar();
+      if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }
@@ -86,7 +86,7 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.type = 13;
       from>>crit1>>dat.min>>dat.max;
       flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.bar();
+      if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }
@@ -94,7 +94,7 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.type = 14;
       from>>crit1>>crit2>>dat.min>>dat.max;
       flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.bar();
+      if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       dat.help = crit2;
       data.push_back(dat);
@@ -103,10 +103,10 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.type = 21;
       from>>crit1>>crit2>>dat.min>>dat.max;
       flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.bar();
+      if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       flav = Flavour(kf::code(abs(crit2)));
-      if (crit2<0) flav = flav.bar();
+      if (crit2<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }
@@ -114,10 +114,10 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.type = 22;
       from>>crit1>>crit2>>dat.min>>dat.max;
       flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.bar();
+      if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       flav = Flavour(kf::code(abs(crit2)));
-      if (crit2<0) flav = flav.bar();
+      if (crit2<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }  
@@ -125,7 +125,7 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.type = 32;
       from>>crit1>>dat.min>>dat.max;
       flav = Flavour(kf::code(abs(crit1)));
-      if (crit1<0) flav = flav.bar();
+      if (crit1<0) flav = flav.Bar();
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }

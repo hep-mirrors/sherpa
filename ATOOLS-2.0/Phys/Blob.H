@@ -8,27 +8,30 @@
 
 #include "Vector.H"
 #include "Poincare.H"
-//#include "Parton.H"
+
 
 namespace APHYTOOLS {
   class Parton; 
+
+  typedef std::deque<Parton *> Parton_Queue;
+
   class Blob {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
     friend std::ostream& operator<<( std::ostream&, const Blob *);
   private:
-    int                   id;
-    int                   status;
-    int                   beam;
-    AMATOOLS::vec4d       cms;
-    AMATOOLS::Poincare    cms_boost;
-    AMATOOLS::vec4d       position;
-    int                   Nin, Nout;
-    std::deque<Parton *>  InPartons;
-    std::deque<Parton *>  OutPartons;
-    std::string           type;
+    int   m_id;
+    int   m_status;
+    int   m_beam;
+    int   m_nin, m_nout;
+    std::string         m_type;
+    Parton_Queue        m_inpartons;
+    Parton_Queue        m_outpartons;
+    AMATOOLS::Vec4D     m_cms_vec;
+    AMATOOLS::Poincare  m_cms_boost;
+    AMATOOLS::Vec4D     m_position;
   public:
-    Blob(const AMATOOLS::vec4d _pos = AMATOOLS::vec4d(0.,0.,0.,0.), const int _id=0) : 
-      position(_pos), id(_id) { Nin = 0; Nout=0; beam = -1; status = 0; };
+    Blob(const AMATOOLS::Vec4D _pos = AMATOOLS::Vec4D(0.,0.,0.,0.), const int _id=0) : 
+      m_position(_pos), m_id(_id) { m_nin = 0; m_nout=0; m_beam = -1; m_status = 0; };
     ~Blob();
     Parton * OutParton(int);
     Parton * InParton(int);
@@ -39,36 +42,47 @@ namespace APHYTOOLS {
     void     BoostInLab();
 
     void     SetVecs();
-    void     SetPosition(AMATOOLS::vec4d pos) { position = pos; }
-    void     SetCMS(AMATOOLS::vec4d _cms)     { cms      = _cms; }
-    void     SetId(int _id)                   { id       = _id; }
-    void     SetStatus(int _status)           { status   = _status; }
-    void     SetType(std::string _type)       { type     = _type; }
-    void     SetBeam(int _beam)               { beam     = _beam; }
+    void     SetPosition(AMATOOLS::Vec4D pos) { m_position = pos; }
+    void     SetCMS(AMATOOLS::Vec4D _cms)     { m_cms_vec  = _cms; }
+    void     SetId(int _id)                   { m_id       = _id; }
+    void     SetStatus(int _status)           { m_status   = _status; }
+    void     SetType(std::string _type)       { m_type     = _type; }
+    void     SetBeam(int _beam)               { m_beam     = _beam; }
 
-    AMATOOLS::vec4d    CheckMomentumConservation();
-    AMATOOLS::vec4d    const Position() const { return position; }
-    AMATOOLS::vec4d    const CMS()      const { return cms; }
-    int Id()                            const { return id; }
-    int Status()                        const { return status; }
-    int Beam()                          const { return beam; }
-    int NInP()                          const { return Nin; }
-    int NOutP()                         const { return Nout; }
-    std::string const Type()            const { return type; }
-    /*
-  public:
-    class Parton_Iterator {
-    public:
-      Parton_Iterator();
-      Parton_Iterator(const Parton_Iterator& );
-    };
-    */
+    int      Id()                       const { return m_id; }
+    int      Status()                   const { return m_status; }
+    int      Beam()                     const { return m_beam; }
+    int      NInP()                     const { return m_nin; }
+    int      NOutP()                    const { return m_nout; }
+
+    AMATOOLS::Vec4D    CheckMomentumConservation();
+    AMATOOLS::Vec4D    const Position() const { return m_position; }
+    AMATOOLS::Vec4D    const CMS()      const { return m_cms_vec; }
+    std::string        const Type()     const { return m_type; }
   };
-}
 
 
 /*!
-  \var   char type;
+  \file 
+  \brief  contains the class APHYTOOLS::Blob
+*/
+
+/*!
+  \class Blob 
+  \brief This class contains a point where a given number of incomming and outgoing Parton interact
+
+  A typical Blob is the hard process at a center of a collision. Another Blob
+  might be the transition between a hard partons and soft partons, i.e. the parton
+  shower.
+*/
+
+/*!
+  \var int Blob::m_id 
+  \brief contains an unique number for each Blob in an event.
+*/
+
+/*!
+  \var   char Blob::m_type;
   \brief Classifies the type of blob.
   
   Info about the blob type:
@@ -80,6 +94,15 @@ namespace APHYTOOLS {
   I = initial state shower for H
   i = hadron to parton transition
 */
+
+/*!
+  \fn void Blob::BoostInLab()
+  \brief boost blob back in lab system
+
+  \warning this is not jet implemented!
+*/
+
+}
 
 #endif
   

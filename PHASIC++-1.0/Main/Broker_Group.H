@@ -34,7 +34,7 @@ namespace PHASIC {
     // redefined methods of AMEGIC::Process_Base()
 
     void   Initialize(APHYTOOLS::Selector_Data * _seldata);
-    int    InitAmplitude(AMEGIC::Topology *,AMATOOLS::vec4d *&,std::vector<double> &,
+    int    InitAmplitude(AMEGIC::Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
 			 std::vector<AMEGIC::Single_Process *> &)            { return 0; }
     void   InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>) { return;   }
     void   UpdateCuts(double,double) { return; }
@@ -84,10 +84,10 @@ namespace PHASIC {
     void SelectOne();
     void DeSelect();
 
-    double Differential(AMATOOLS::vec4d *);
+    double Differential(AMATOOLS::Vec4D *);
 //     double Differential(double, double, double); 
     double Differential2();
-    double DSigma(AMATOOLS::vec4d *, bool);
+    double DSigma(AMATOOLS::Vec4D *, bool);
 //     double DSigma(double, double, double);
     double DSigma2();
 

@@ -5,65 +5,64 @@
 #include <iostream>
 
 #include "Flavour.H"
-//#include "Run_Parameter.H"
 #include "MathTools.H"
 #include "Message.H"
 #include "MyStrStream.H"
 
 namespace APHYTOOLS {
-  part_info Particles[MAX_PARTICLES];
-  kf_to_int KF_table;
+  Part_Info particles[MAX_PARTICLES];
+  Kf_To_Int kf_table;
 }
 
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
-int APHYTOOLS::kf_to_int::is_initialised=0;
+int APHYTOOLS::Kf_To_Int::is_initialised=0;
 
-void kf_to_int::init()
+void Kf_To_Int::Init()
 {
   for(anz=0;anz<MAX_PARTICLES;++anz) {
-    kf_tab[anz] = Particles[anz].kfc;
+    kf_tab[anz] = particles[anz].kfc;
     if(kf_tab[anz]==kf::none) break;
   }
 
   if(anz==MAX_PARTICLES) {
-    std::cerr<<"ERROR in kf_to_int::kftab(): Too many particle types !"<<std::endl;
+    std::cerr<<"ERROR in Kf_To_Int::kftab(): Too many particle types !"<<std::endl;
     exit(1);
   }
   is_initialised = 1;
 }
 
-kf::code kf_to_int::from_int(int code)
+kf::code Kf_To_Int::FromInt(int code)
 {
   return kf_tab[code];
 }
 
-int kf_to_int::to_int(kf::code kfc)
+int Kf_To_Int::ToInt(kf::code kfc)
 {
   for(int i=0;i<anz+1;i++)
     if(kf_tab[i]==kfc) return i;
 
-  std::cerr<<"ERROR in kf_to_int::to_int(): Particle type unknown ! "
+  std::cerr<<"ERROR in Kf_To_Int::to_int(): Particle type unknown ! "
 	   <<kfc<<" in "<<anz<<std::endl;
   return -1;
 }
 
-kf::code kf_to_int::from_string(std::string st)
+kf::code Kf_To_Int::FromString(std::string st)
 {
   for(int i=0;i<anz;i++) {
-    if(std::string(Particles[i].n)==st) return kf_tab[i];
+    if(std::string(particles[i].n)==st) return kf_tab[i];
   }
 
-  std::cerr<<"ERROR in kf_to_int::from_string("<<st<<"): Particle type unknown !"<<std::endl;
+  std::cerr<<"ERROR in Kf_To_Int::FromString("<<st<<"): Particle type unknown !"<<std::endl;
   return kf::none;
 }
 
 
 
 
-part_info::part_info(kf::code kfc_, 
+Part_Info::Part_Info(kf::code kfc_, 
 		     double mass, double width, int icharge, int isoweak, 
 		     bool strong, int spin, bool Majorana, 
 		     bool Take, bool stable,bool massive,
@@ -75,7 +74,7 @@ part_info::part_info(kf::code kfc_,
   strcpy(n,name);
 }
 
-part_info::part_info(kf::code kfc_, 
+Part_Info::Part_Info(kf::code kfc_, 
 		     double mass, double width, int icharge, int isoweak, 
 		     int spin, bool Take, bool stable,
 		     char* name) : 
@@ -86,7 +85,7 @@ part_info::part_info(kf::code kfc_,
   strcpy(n,name);
 }
 
-void part_info::Add(const Flavour _fl) {
+void Part_Info::Add(const Flavour _fl) {
   if (_fl.Size()==1) {
     flavs.push_back(new Flavour(_fl));
     return;
@@ -96,46 +95,46 @@ void part_info::Add(const Flavour _fl) {
   }
 }
 
-const int part_info::Size() {
+const int Part_Info::Size() {
   if (!group) return 1;
   return flavs.size();
 }
 
-const bool part_info::Includes(Flavour _fl) {
+const bool Part_Info::Includes(Flavour _fl) {
   bool isin;
   for (int j=0;j<_fl.Size();j++) {
     isin = 0;
     for (int i=0;i<flavs.size();i++) {
-      if (flavs[i]->kfcode() == _fl[j].kfcode()) { isin = 1; break; }
+      if (flavs[i]->Kfcode() == _fl[j].Kfcode()) { isin = 1; break; }
     }
     if (isin==0) return 0;
   }
   return 1;
 }
 
-Flavour part_info::operator[](const int i) {
+Flavour Part_Info::operator[](const int i) {
   if (!group) return Flavour(kfc);
   if ((i<0) || (i>flavs.size())) {
-    std::cerr<<"Error in part_info::operator[]("<<i<<") . Delimiter out of bounds."<<std::endl;
+    std::cerr<<"Error in Part_Info::operator[]("<<i<<") . Delimiter out of bounds."<<std::endl;
     return Flavour(kfc);
   }
   return (*flavs[i]);
 }
 
-void part_info::SetGroup() { group = 1; }
+void Part_Info::SetGroup() { group = 1; }
 
 
 
 
 Flavour Flavour::operator[](int idx) const  { 
-  if (!(Particles[ index() ].group)) return (*this);
-  if (anti) return Particles[ index() ][idx].bar();
-  return Particles[ index() ][idx];
+  if (!(particles[ Index() ].group)) return (*this);
+  if (anti) return particles[ Index() ][idx].Bar();
+  return particles[ Index() ][idx];
 } 
 
 
 
-Flavour Flavour::bar() { 
+Flavour Flavour::Bar() { 
   Flavour flbar = *this;
   
   if (flbar==Flavour(kf::photon)) return flbar;
@@ -154,11 +153,11 @@ Flavour Flavour::bar() {
 
 Flavour::Flavour(int kf) { 
   anti = (kf<0)? 1:0;
-  kfc  = KF_table.from_int(abs(kf));
+  kfc  = kf_table.FromInt(abs(kf));
 }
 
 
-int Flavour::ctq() {
+int Flavour::Ctq() {
   int code;
   switch(kfc) {
   case kf::u    : code=1;break;
@@ -174,7 +173,7 @@ int Flavour::ctq() {
   return code+6;
 }
 
-void Flavour::from_ctq(int code) {
+void Flavour::FromCtq(int code) {
   anti = 0;
   switch(abs(code)) {
   case 0 : kfc=kf::t;break;
@@ -188,7 +187,7 @@ void Flavour::from_ctq(int code) {
   }
 }
 
-int Flavour::hepevt() {
+int Flavour::HepEvt() {
   int code;
   switch(kfc) {
   case kf::d      : code=1;break;
@@ -205,7 +204,7 @@ int Flavour::hepevt() {
   return code;
 }
 
-void Flavour::from_hepevt(int code) {
+void Flavour::FromHepEvt(int code) {
   anti=0;
   if (code<0) {code=-code;anti=1;}
   switch(abs(code)) {
@@ -220,7 +219,7 @@ void Flavour::from_hepevt(int code) {
   }
 }
 
-std::string Flavour::texname() 
+std::string Flavour::TexName() 
 {
   std::string name;
 
@@ -326,24 +325,24 @@ std::string Flavour::texname()
 std::ostream& APHYTOOLS::operator<<(std::ostream& os, const Flavour& f)
 {
   if(f.anti) {
-    if (f==Flavour(kf::e).bar())      return os<<"e+";
-    if (f==Flavour(kf::mu).bar())     return os<<"mu+";
-    if (f==Flavour(kf::tau).bar())    return os<<"tau+";
-    if (f==Flavour(kf::W).bar())      return os<<"W+";
+    if (f==Flavour(kf::e).Bar())      return os<<"e+";
+    if (f==Flavour(kf::mu).Bar())     return os<<"mu+";
+    if (f==Flavour(kf::tau).Bar())    return os<<"tau+";
+    if (f==Flavour(kf::W).Bar())      return os<<"W+";
 
-    if (f==Flavour(kf::p_plus).bar()) return os<<"P-";
-    if (f==Flavour(kf::pi_plus).bar()) return os<<"pi-";
-    if (f==Flavour(kf::K_plus).bar()) return os<<"K-";
+    if (f==Flavour(kf::p_plus).Bar()) return os<<"P-";
+    if (f==Flavour(kf::pi_plus).Bar()) return os<<"pi-";
+    if (f==Flavour(kf::K_plus).Bar()) return os<<"K-";
     os<<"anti-";
   }
-  return os<<f.name();
+  return os<<f.Name();
 }
 
 // Definitions of all particles
 
-void APHYTOOLS::particle_init(std::string path)
+void APHYTOOLS::ParticleInit(std::string path)
 {
-  part_info * pi = Particles;
+  Part_Info * pi = particles;
 
   int    kfc,charge,icharge,spin;
   int    kfcold=-1;
@@ -354,7 +353,7 @@ void APHYTOOLS::particle_init(std::string path)
 
   int pc=0;
 
-  *(pi++) = part_info( kf::start, -1,0,100000,0,0,0,0,0,1,0,
+  *(pi++) = Part_Info( kf::start, -1,0,100000,0,0,0,0,0,1,0,
 		       "Fatal error: particle type does not exist!",1 );
   ++pc;
 
@@ -373,11 +372,11 @@ void APHYTOOLS::particle_init(std::string path)
     part>>kfc>>mass>>width>>charge>>icharge>>strong>>spin
 	>>Majorana>>Take>>stable>>massive>>name;
     if (kfc!=kfcold) { // read last line only once!
-      *(pi++)=part_info( kf::code(kfc), mass, width, charge, icharge, 
+      *(pi++)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
 			 strong, spin, Majorana, Take, stable, massive, name, 1);
       //isrphoton
       if (kfc==22)
-	*(pi++)=part_info( kf::code(26), mass, width, charge, icharge, 
+	*(pi++)=Part_Info( kf::code(26), mass, width, charge, icharge, 
 			   strong, spin, Majorana, Take, stable, massive, "isrphoton",1);
       kfcold = kfc;
     }
@@ -399,7 +398,7 @@ void APHYTOOLS::particle_init(std::string path)
 	//	if (Take) {
 	  ++pc;
  
-	  *(pi++)=part_info( kf::code(kfc), mass, width, charge, icharge, 
+	  *(pi++)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
 			   spin, Take, stable, name);
 	  kfcold=kfc;
 	  //	}
@@ -408,58 +407,58 @@ void APHYTOOLS::particle_init(std::string path)
     part2.close();
   }
   // kfcode,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,name,1
-  *(pi++) = part_info( kf::pol,      0.,0., 0, 0,0, 0,0,0,1,0,"polarisation",1);
-  *(pi++) = part_info( kf::lepton,   0.,0.,-3,-1,0, 2,0,1,1,0,"lepton",1);
-  *(pi++) = part_info( kf::neutrino, 0.,0., 0, 1,0, 2,0,1,1,0,"neutrino",1);
-  *(pi++) = part_info( kf::fermion,  0.,0., 0, 0,0, 2,0,1,1,0,"fermion",1);
-  *(pi++) = part_info( kf::jet,      0.,0., 0, 0,1, 0,0,1,1,0,"jet",1);
-  *(pi++) = part_info( kf::quark,    0.,0., 0, 0,1, 2,0,1,1,0,"quark",1);
+  *(pi++) = Part_Info( kf::pol,      0.,0., 0, 0,0, 0,0,0,1,0,"polarisation",1);
+  *(pi++) = Part_Info( kf::lepton,   0.,0.,-3,-1,0, 2,0,1,1,0,"lepton",1);
+  *(pi++) = Part_Info( kf::neutrino, 0.,0., 0, 1,0, 2,0,1,1,0,"neutrino",1);
+  *(pi++) = Part_Info( kf::fermion,  0.,0., 0, 0,0, 2,0,1,1,0,"fermion",1);
+  *(pi++) = Part_Info( kf::jet,      0.,0., 0, 0,1, 0,0,1,1,0,"jet",1);
+  *(pi++) = Part_Info( kf::quark,    0.,0., 0, 0,1, 2,0,1,1,0,"quark",1);
 
-  *(pi++)=part_info( kf::none, -1,0,0,0,0,0,0,0,1,0, "no particle",1);
+  *(pi++)=Part_Info( kf::none, -1,0,0,0,0,0,0,0,1,0, "no particle",1);
 
-  KF_table.init(); 
+  kf_table.Init(); 
 
 
   Flavour test = Flavour(kf::jet);
-  int idx      = KF_table.to_int(test.kfcode());
-  Particles[idx].SetGroup();
-  Particles[idx].Add(Flavour(kf::d));
-  Particles[idx].Add(Flavour(kf::u));
-  Particles[idx].Add(Flavour(kf::s));
-  Particles[idx].Add(Flavour(kf::c));
-  Particles[idx].Add(Flavour(kf::b));
-  Particles[idx].Add(Flavour(kf::d).bar());
-  Particles[idx].Add(Flavour(kf::u).bar());
-  Particles[idx].Add(Flavour(kf::s).bar());
-  Particles[idx].Add(Flavour(kf::c).bar());
-  Particles[idx].Add(Flavour(kf::b).bar());
-  Particles[idx].Add(Flavour(kf::gluon));
+  int idx      = kf_table.ToInt(test.Kfcode());
+  particles[idx].SetGroup();
+  particles[idx].Add(Flavour(kf::d));
+  particles[idx].Add(Flavour(kf::u));
+  particles[idx].Add(Flavour(kf::s));
+  particles[idx].Add(Flavour(kf::c));
+  particles[idx].Add(Flavour(kf::b));
+  particles[idx].Add(Flavour(kf::d).Bar());
+  particles[idx].Add(Flavour(kf::u).Bar());
+  particles[idx].Add(Flavour(kf::s).Bar());
+  particles[idx].Add(Flavour(kf::c).Bar());
+  particles[idx].Add(Flavour(kf::b).Bar());
+  particles[idx].Add(Flavour(kf::gluon));
 
   test = Flavour(kf::quark);
-  idx      = KF_table.to_int(test.kfcode());
-  Particles[idx].SetGroup();
-  Particles[idx].Add(Flavour(kf::d));
-  Particles[idx].Add(Flavour(kf::u));
-  Particles[idx].Add(Flavour(kf::s));
-  Particles[idx].Add(Flavour(kf::c));
-  Particles[idx].Add(Flavour(kf::b));
-  Particles[idx].Add(Flavour(kf::d).bar());
-  Particles[idx].Add(Flavour(kf::u).bar());
-  Particles[idx].Add(Flavour(kf::s).bar());
-  Particles[idx].Add(Flavour(kf::c).bar());
-  Particles[idx].Add(Flavour(kf::b).bar());
+  idx      = kf_table.ToInt(test.Kfcode());
+  particles[idx].SetGroup();
+  particles[idx].Add(Flavour(kf::d));
+  particles[idx].Add(Flavour(kf::u));
+  particles[idx].Add(Flavour(kf::s));
+  particles[idx].Add(Flavour(kf::c));
+  particles[idx].Add(Flavour(kf::b));
+  particles[idx].Add(Flavour(kf::d).Bar());
+  particles[idx].Add(Flavour(kf::u).Bar());
+  particles[idx].Add(Flavour(kf::s).Bar());
+  particles[idx].Add(Flavour(kf::c).Bar());
+  particles[idx].Add(Flavour(kf::b).Bar());
 
   test = Flavour(kf::lepton);
-  idx      = KF_table.to_int(test.kfcode());
-  Particles[idx].SetGroup();
-  Particles[idx].Add(Flavour(kf::e));
-  Particles[idx].Add(Flavour(kf::mu));
-  Particles[idx].Add(Flavour(kf::tau));
-  Particles[idx].Add(Flavour(kf::e).bar());
-  Particles[idx].Add(Flavour(kf::mu).bar());
-  Particles[idx].Add(Flavour(kf::tau).bar());
+  idx      = kf_table.ToInt(test.Kfcode());
+  particles[idx].SetGroup();
+  particles[idx].Add(Flavour(kf::e));
+  particles[idx].Add(Flavour(kf::mu));
+  particles[idx].Add(Flavour(kf::tau));
+  particles[idx].Add(Flavour(kf::e).Bar());
+  particles[idx].Add(Flavour(kf::mu).Bar());
+  particles[idx].Add(Flavour(kf::tau).Bar());
 
-  std::cout<<"End of Particle_Init. Initialised the KF_table. "<<std::endl;
+  std::cout<<"End of Particle_Init. Initialised the kf_table. "<<std::endl;
 }
 
 // Unique Identifier of Particle.dat
@@ -493,8 +492,8 @@ int Flavour::GetIntID(double value) {
 
 int Flavour::PropertiesID() {
 // IntID(mass) + Rot(IntID(width),8,16)  xor flags
-  int pid=GetIntID(PSmass());
-  int wid=GetIntID(width());
+  int pid=GetIntID(PSMass());
+  int wid=GetIntID(Width());
   pid^=Rot(wid,12,24);
 
   pid=pid^FlagID();
@@ -515,19 +514,19 @@ int Flavour::FlagID() {
 //M   0 1 
 //
 // su3 0 1
-  int ix=index();
+  int ix=Index();
 
   int flag=0;
-  flag+= icharge() +4;
+  flag+= IntCharge() +4;
   flag*=16;
 
-  flag+= (Particles[ix].isow +1)*4 + Particles[ix].sp;
+  flag+= (particles[ix].isow +1)*4 + particles[ix].sp;
   flag*=16;
 
-  flag+=  Particles[ix].Maj*8+ Particles[ix].on*4+ Particles[ix].stbl*2 + Particles[ix].msv;
+  flag+=  particles[ix].Maj*8+ particles[ix].on*4+ particles[ix].stbl*2 + particles[ix].msv;
   flag*=16;
 
-  flag+=  Particles[ix].str;
+  flag+=  particles[ix].str;
 
   //  cout<<" flags="<<flag<<std::endl;
   return flag;
@@ -549,17 +548,17 @@ int Flavour::Rot( int value , int rotby, int length) {
 }
 
 int Flavour::ID_SM() {
-  fl_iter fli;
+  Fl_Iter fli;
   int count=0;
   int sm_id=0;
 
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.ison() && !flav.ishadron() && !flav.issusy()) {
+    if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy()) {
       count++;
       //      cout<<flav<<":"<<std::endl;
       int local_id=flav.PropertiesID();
       // Rot ( all single IDs rot by kfcode )
-      local_id=Rot(local_id,flav.kfcode(),24);
+      local_id=Rot(local_id,flav.Kfcode(),24);
       // combine all results by XOR
       sm_id=sm_id^local_id;
       //      cout<<" sm_id="<<sm_id<<std::endl;
@@ -569,16 +568,16 @@ int Flavour::ID_SM() {
 }
 
 int Flavour::ID_MSSM() {
-  fl_iter fli;
+  Fl_Iter fli;
   int count=0;
   int mssm_id=0;
 
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.ison() && !flav.ishadron() && flav.issusy()) {
+    if (flav.IsOn() && !flav.IsHadron() && flav.IsSusy()) {
       count++;
       //      cout<<flav<<":"<<std::endl;
       int local_id=flav.PropertiesID();
-      local_id=Rot(local_id,flav.kfcode(),24);
+      local_id=Rot(local_id,flav.Kfcode(),24);
       mssm_id=mssm_id^local_id;
       //      cout<<" mssm_id="<<mssm_id<<std::endl;
     } 
@@ -588,16 +587,16 @@ int Flavour::ID_MSSM() {
 }
 
 int Flavour::ID_Had() {
-  fl_iter fli;
+  Fl_Iter fli;
   int count=0;
   int had_id=0;
 
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.ison() && flav.ishadron() && !flav.issusy()) {
+    if (flav.IsOn() && flav.IsHadron() && !flav.IsSusy()) {
       count++;
       //      cout<<flav<<":"<<std::endl;
       int local_id=flav.PropertiesID();
-      local_id=Rot(local_id,flav.kfcode(),24);
+      local_id=Rot(local_id,flav.Kfcode(),24);
       had_id=had_id^local_id;
       //      cout<<" had_id="<<had_id<<std::endl;
     } 
@@ -620,22 +619,22 @@ int Flavour::WriteOut() {
 
   ofile.open((std::string("save/sm/")+sm_name+std::string(".dat")).c_str());
 
-  fl_iter fli;
+  Fl_Iter fli;
   ofile<<"kf      Mass   Width    3*e     Y     SU(3)  2*Spin majorana   ON    stabil   massive   Name"<<std::endl;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.ison() && !flav.ishadron() && !flav.issusy() && !flav.kfcode()!=26) {
-      ofile<<flav.kfcode()<<"\t"
-	  <<flav.PSmass()<<"\t"
-	  <<flav.width()<<"\t"
-	  <<flav.icharge()<<"\t"
-	  <<flav.isoweak()*2.<<"\t"
-	  <<flav.strong()<<"\t"
-	  <<flav.ispin()<<"\t"
+    if (flav.IsOn() && !flav.IsHadron() && !flav.IsSusy() && !flav.Kfcode()!=26) {
+      ofile<<flav.Kfcode()<<"\t"
+	  <<flav.PSMass()<<"\t"
+	  <<flav.Width()<<"\t"
+	  <<flav.IntCharge()<<"\t"
+	  <<flav.IsoWeak()*2.<<"\t"
+	  <<flav.Strong()<<"\t"
+	  <<flav.IntSpin()<<"\t"
 	  <<flav.Majorana()<<"\t"
-	  <<flav.ison()<<"\t"
-	  <<flav.isstable()<<"\t"
-	  <<flav.ismassive()<<"\t"
-	  <<flav.name()<<std::endl;
+	  <<flav.IsOn()<<"\t"
+	  <<flav.IsStable()<<"\t"
+	  <<flav.IsMassive()<<"\t"
+	  <<flav.Name()<<std::endl;
     } 
   }
   ofile.close();
