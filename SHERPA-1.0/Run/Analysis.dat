@@ -1,21 +1,28 @@
-ANALYSIS_PHASE = Showers+Hadrons    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
+ANALYSIS_PHASE = Showers    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
 OUTPUT = OutputS
 93   10. -4.5   4.5  0.7
 11   1. -4.5   4.5  0. 
 % 93 11 0.8 min rmin separation
 % 93 1 1    min1-max1 jets.
 OBSERVABLES
-PT   11     1.   150. 20   Log
-PT   93     1.   150. 20   Log
-PT2  11 -12 0.   100. 20   Lin
-Eta2 11 -12 -2.  2.   10   Lin
+PT     11     1.   150. 20   Log
+PT     93     1.   150. 20   Log
+PT2    11 -12 0.   100. 20   Lin
+Eta2   11 -12 -2.  2.   10   Lin
+%JetPT  93     1.   100. 10   1  1  5 Log
+%JetEta 93     -2.   2. 10    1  1  5 Lin
 END_ANALYSIS_PHASE
-ANALYSIS_PHASE = Hadrons    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
-OUTPUT = OutputH
+ANALYSIS_PHASE = Showers    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
+OUTPUT = OutputS1
+93   10. -4.5   4.5  0.7
 11   1. -4.5   4.5  0. 
 % 93 11 0.8 min rmin separation
 % 93 1 1    min1-max1 jets.
 OBSERVABLES
-PT   111     1.   150. 20   Log
-PT   2212     1.   150. 20   Log
+PT     11     1.   150. 20   Log
+PT     93     1.   150. 20   Log
+PT2    11 -12 0.   100. 20   Lin
+Eta2   11 -12 -2.  2.   10   Lin
+%JetPT  93     1.   100. 10   1  1  5 Log
+%JetEta 93     -2.   2. 10    1  1  5 Lin
 END_ANALYSIS_PHASE

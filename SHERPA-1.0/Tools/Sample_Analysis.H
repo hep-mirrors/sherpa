@@ -6,6 +6,7 @@
 #include "Particle_List.H"
 #include "Blob_List.H"
 #include <iostream>
+#include <map>
 
 namespace SHERPA {
   class Observable_Data {
@@ -20,9 +21,10 @@ namespace SHERPA {
   };
 
   class Sample_Analysis  {
-    std::string m_phase, m_type, m_outputpath;
-    ANALYSIS::Primitive_Analysis * p_analysis;
-    std::vector<Observable_Data *> m_obsdata;
+    std::string m_phase, m_type,               m_outputpath;
+    ANALYSIS::Primitive_Analysis             * p_analysis;
+    std::vector<Observable_Data *>             m_obsdata;
+    std::multimap<ATOOLS::Flavour,std::string> m_subsamples;
 
     void ReadInFinalSelectors(std::ifstream *,ANALYSIS::Final_Selector *);
     void ReadInObservables(std::ifstream *);

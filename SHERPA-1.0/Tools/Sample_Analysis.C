@@ -38,13 +38,21 @@ void Observable_Data::Output() {
 	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[2]<<" bins,"
 	     <<" extra : "<<keywords[0]<<std::endl;
   }
+  if (Specify()==10) {
+    flav1 = Flavour(kf::code(abs(ints[0])));
+    if (ints[0]<0) flav1=flav1.Bar();
+    msg.Out()<<"Obs : "<<type<<"("<<ints[2]<<", min :"<<ints[3]<<" jets, max : "<<ints[4]<<"jets), "
+	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[1]<<" bins,"
+	     <<" extra : "<<keywords[0]<<std::endl;
+  }
 }
 
 int Observable_Data::Specify() {
   if (type==std::string("ET") || type==std::string("PT") ||
-      type==std::string("Eta") || type==std::string("E")) return 1;
+      type==std::string("Eta") || type==std::string("E"))        return 1;
   if (type==std::string("Mass") || type==std::string("PT2") ||
-      type==std::string("Eta2"))                           return 2;
+      type==std::string("Eta2"))                                 return 2;
+  if (type==std::string("JetPT") || type==std::string("JetEta")) return 10;
   return -1;
 }
 
@@ -58,7 +66,7 @@ Sample_Analysis::Sample_Analysis(std::ifstream * readin,std::string _phase) :
   m_type = std::string("Perturbative");
   std::cout<<"Initialize new Sample_Analysis for "<<_phase<<std::endl;
   std::string phasemode;
-  int  mode  = ANALYSIS::fill_all; //|ANALYSIS::splitt_jetseeds;
+  int  mode  = ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
   bool split = false;
   while (_phase.length()>0) {
     if (_phase[0]==' ' || _phase[0]=='+') _phase = _phase.substr(1);
@@ -99,6 +107,9 @@ Sample_Analysis::Sample_Analysis(std::ifstream * readin,std::string _phase) :
 Sample_Analysis::~Sample_Analysis() 
 {
   if (p_analysis) { delete p_analysis; p_analysis = NULL; }
+  for (int i=m_obsdata.size()-1;i>=0;i--) {
+    if (m_obsdata[i]) { delete m_obsdata[i]; m_obsdata.pop_back(); }
+  }
 }
 
 void Sample_Analysis::SetOutputPath(const std::string path)
@@ -269,10 +280,12 @@ void Sample_Analysis::SetUpObservables()
 {
   Primitive_Observable_Base * obs;
   Observable_Data * od;
-  int     odn,linlog;
-  Flavour flav,flav2;
-  std::vector<Flavour> subsamples;
-  std::string type;
+  int               odn,linlog;
+  Flavour           flav,flav2;
+  std::string type, listname;
+  Final_Selector *  fsel;
+  bool              found;
+
   for (int i=0;i<m_obsdata.size();++i) {
     msg.Tracking()<<"Try to initialize another observable from read in :"<<std::endl;
     od   = m_obsdata[i];
@@ -335,6 +348,48 @@ void Sample_Analysis::SetUpObservables()
 	obs = new Two_Particle_Eta(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
 	break; 
       }
+    case 10:
+      if (!(od->ints.size()==5 && od->numbers.size()==2 && od->keywords.size()==1)) {
+	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+		   <<"   One particle observable with "
+		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
+		   <<". Continue and hope for the best."<<std::endl;
+      }
+      flav   = Flavour(kf::code(abs(od->ints[0])));
+      if (od->ints[0]<0) flav = flav.Bar();
+      if (flav==Flavour(kf::jet)) listname = std::string("Jets");
+      linlog = 0;
+      if (od->keywords[0]==std::string("Log")) linlog = 10;
+      //type,  xmin,xmax,nbins,mode,minn,maxn,listname 
+      //linlog,n0,  n1,  i1,   i2,  i3,  i4
+
+      found = false;
+      if (m_subsamples.size()>0) {
+	for (std::map<Flavour,std::string>::iterator flit=m_subsamples.begin();
+	     flit!=m_subsamples.end();flit++) {
+	  if (flit->first==flav && flit->second==listname) { 
+	    msg.Tracking()<<"List "<<listname<<" already to be projected out."<<std::endl;
+	    found = true; break; 
+	  }
+	}
+      }
+      if (!found) {
+	msg.Tracking()<<"List "<<listname<<" added to be projected out."<<std::endl;
+	fsel = new Final_Selector("Analysed",listname);
+	fsel->AddKeepFlavour(flav);
+	p_analysis->AddObservable(fsel);
+	m_subsamples.insert(std::make_pair(flav,listname));
+      }
+      if (type==std::string("JetPT"))  { 
+	obs = new Jet_PT_Distribution(linlog,od->numbers[0],od->numbers[1],
+				      od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname);
+	break; 
+      }
+      if (type==std::string("JetEta"))  { 
+	obs = new Jet_Eta_Distribution(linlog,od->numbers[0],od->numbers[1],
+				       od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	break; 
+      }
     default:
       msg.Error()<<"Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
 		 <<"   "<<odn<<"-Particle Observables not yet realized for "<<type<<"."<<std::endl;
@@ -348,17 +403,6 @@ void Sample_Analysis::SetUpObservables()
 void Sample_Analysis::SetUpSubSamples()
 {
   // This is the place to add specific observables ....
-  Final_Selector * fsel;
-
-  // jet sample
-  fsel = new Final_Selector("Analysed","KtJets");
-  fsel->AddKeepFlavour(Flavour(kf::jet));
-  p_analysis->AddObservable(fsel);
-  
-  // lepton sample
-  fsel = new Final_Selector("Analysed","Leptons");
-  fsel->AddKeepFlavour(Flavour(kf::lepton));
-  p_analysis->AddObservable(fsel);
 } 
 
 
