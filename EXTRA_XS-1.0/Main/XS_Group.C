@@ -70,6 +70,12 @@ void XS_Group::Add(XS_Base *const xsec)
     for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=xsec->Flavours()[i];
   }
   if (xsec->NVector()>m_nvector) CreateMomenta(xsec->NVector());
+  if (xsec->NAddIn()>m_naddin || xsec->NAddOut()>m_naddout) {
+    if (p_addmomenta!=NULL) delete [] p_addmomenta;
+    m_naddin=xsec->NAddIn();
+    m_naddout=xsec->NAddOut(); 
+    p_addmomenta = new ATOOLS::Vec4D[m_naddin+m_naddout];
+  }
   else {
     if (m_nin!=xsec->NIn() || m_nout!=xsec->NOut()) {
       ATOOLS::msg.Error()<<"XS_Group::Add("<<xsec<<"): ("<<this<<") Cannot add process '"
@@ -405,6 +411,8 @@ double XS_Group::Differential(double s,double t,double u)
   m_last = 0;
   for (size_t i=0;i<m_xsecs.size();++i) {
     m_xsecs[i]->SetMomenta(p_momenta);
+    if (m_naddin>0 || m_naddout>0) 
+      m_xsecs[i]->SetAddMomenta(p_addmomenta);
     m_last+=m_xsecs[i]->Differential(s,t,u);
   }
   if (!(m_last<=0) && !(m_last>0)) {

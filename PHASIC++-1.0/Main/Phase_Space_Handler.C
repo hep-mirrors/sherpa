@@ -305,7 +305,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(p_lab,m_nvec);
   }
   if (p_process->NAddOut()>0) 
-    p_process->Selected()->SetAddMomenta(p_isrhandler->KMRMomenta());
+    p_process->SetAddMomenta(p_isrhandler->KMRMomenta());
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
   bool trigger = 0;
   if (process->Trigger(p_lab)) {
