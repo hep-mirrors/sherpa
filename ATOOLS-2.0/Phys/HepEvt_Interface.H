@@ -52,9 +52,9 @@ namespace ATOOLS {
     void EstablishRelations(ATOOLS::Blob * const);  
     void Particle2HepEvt(ATOOLS::Particle * const,int &);
     void String2HepEvt(ATOOLS::Blob * const,int &);
-
-
-
+    
+    
+    
     void ReadHepEvt(ATOOLS::Blob_List * const);
     void OpenNewHepEvtFile();
     void HepEvt2Particle(const int);
@@ -63,7 +63,7 @@ namespace ATOOLS {
     bool ConstructBlobsFromPythia(ATOOLS::Blob_List * const);
     bool ConstructBlobs(ATOOLS::Blob_List * const);
     bool IdentifyBlobs(ATOOLS::Blob_List * const);
-    bool DeleteObsolete();
+    void DeleteObsolete(const int mode);
   public:
     HepEvt_Interface(int=0);
     HepEvt_Interface(gtp::code=gtp::Unspecified);

@@ -29,12 +29,6 @@ namespace SHERPA {
 
     static bool s_exportas, s_exportpdf;
 
-    // tools for converting a whole event
-    bool ConvertParticles(std::map<int,ATOOLS::Particle*> &converted);
-    bool ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS::Particle*> &converted);
-    bool SetTypes(ATOOLS::Blob_List *blobs);
-    bool DeleteObsolete(std::map<int,ATOOLS::Particle*> &converted);
-
     void NextFile(const bool newfile);
 
     // tools for extracting hadrons
@@ -54,7 +48,6 @@ namespace SHERPA {
 
     // member functions
     bool Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
-    bool ConvertEvent(ATOOLS::Blob_List *bloblist);
 
     static void Error(const int error);
 

@@ -195,154 +195,61 @@ bool Herwig_Interface::Initialize()
 
 bool Herwig_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
 {
-  hwcgse();
-  weight = hwevnt.evwgt; 
-  for (int i=0;i<hepevt.nhep;i++) {
-    for (int j=0;j<2;j++) {
-      p_jmohep[2*i+j] = hepevt.jmohep[i][j]; 
-      p_jdahep[2*i+j] = hepevt.jdahep[i][j];
-    } 
-    for (int j=0;j<5;j++) p_phep[5*i+j] = hepevt.phep[i][j];
-    for (int j=0;j<4;j++) p_vhep[4*i+j] = hepevt.vhep[i][j];
-  }
-  p_hepevt->SetNhep(hepevt.nhep);
-  p_hepevt->SetIsthep(hepevt.isthep);
-  p_hepevt->SetIdhep(hepevt.idhep);
-  p_hepevt->SetJmohep(p_jmohep);
-  p_hepevt->SetJdahep(p_jdahep);
-  p_hepevt->SetPhep(p_phep);
-  p_hepevt->SetVhep(p_vhep);
-  if (p_hepevt->HepEvt2Sherpa(blobs)) {
-    for (ATOOLS::Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
-      if ((*bit)->Type()==ATOOLS::btp::Signal_Process) { 
-	(*bit)->AddData("ME_Weight",new ATOOLS::Blob_Data<double>(weight));
-	return true;
+  for (int trials=0;trials<5;++trials) {
+    hwcgse();
+    weight = hwevnt.evwgt; 
+    for (int i=0;i<hepevt.nhep;i++) {
+      for (int j=0;j<2;j++) {
+	p_jmohep[2*i+j] = hepevt.jmohep[i][j]; 
+	p_jdahep[2*i+j] = hepevt.jdahep[i][j];
       } 
+      for (int j=0;j<5;j++) p_phep[5*i+j] = hepevt.phep[i][j];
+      for (int j=0;j<4;j++) p_vhep[4*i+j] = hepevt.vhep[i][j];
+    }
+    p_hepevt->SetNhep(hepevt.nhep);
+    p_hepevt->SetIsthep(hepevt.isthep);
+    p_hepevt->SetIdhep(hepevt.idhep);
+    p_hepevt->SetJmohep(p_jmohep);
+    p_hepevt->SetJdahep(p_jdahep);
+    p_hepevt->SetPhep(p_phep);
+    p_hepevt->SetVhep(p_vhep);
+    if (p_hepevt->HepEvt2Sherpa(blobs)) {
+      for (ATOOLS::Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
+	if ((*bit)->Type()==ATOOLS::btp::Signal_Process) { 
+	  (*bit)->AddData("ME_Weight",new ATOOLS::Blob_Data<double>(weight));
+	  return true;
+	} 
+      }
+    }
+    else {
+      if (!blobs->empty()) {
+	for (ATOOLS::Blob_List::const_iterator blit=blobs->begin();blit!=blobs->end();++blit) delete (*blit);
+	blobs->clear();
+      }
+      ATOOLS::msg.Error()<<"Error in Herwig_Interface::OneEvent."<<std::endl
+			 <<"   Could not translate HEPEVT common block into blobs."<<std::endl
+			 <<"   Trials so far : "<<trials;
+      if (trials<4) ATOOLS::msg.Error()<<", will continue."<<std::endl;
+      else ATOOLS::msg.Error()<<", will return false, unknown result."<<std::endl;
     }
   }
   return false;
 } 
 
-bool Herwig_Interface::ConvertEvent(ATOOLS::Blob_List *bloblist)
-{
-  //if (ATOOLS::msg.LevelIsDebugging()) pylist(1);
-  bool success=true;
-  std::map<int,ATOOLS::Particle*> converted;
-  bloblist->clear();
-  success=success&&ConvertParticles(converted);
-  success=success&&ConstructBlobs(bloblist,converted);
-  success=success&&SetTypes(bloblist);
-  success=success&&DeleteObsolete(converted);
-  return success;
-}
-
-
-bool Herwig_Interface::ConvertParticles(std::map<int,ATOOLS::Particle*> &converted)
-{
-  for (int i=0;i<hepevt.nhep;++i) {
-    if (ATOOLS::msg.LevelIsTracking()) {
-      ATOOLS::msg.Debugging()<<i<<" "<<hepevt.isthep[i]<<" "<<hepevt.idhep[i]<<" "
-			     <<hepevt.jmohep[i][0]<<" "
-			     <<hepevt.jdahep[i][0]<<" "<<hepevt.jdahep[i][1]<<" "
-			     <<"("<<hepevt.phep[i][0]<<","<<hepevt.phep[i][1]<<","
-			     <<hepevt.phep[i][2]<<","<<hepevt.phep[i][3]<<") "
-			     <<"("<<hepevt.vhep[i][0]<<","<<hepevt.vhep[i][1]<<","
-			     <<hepevt.vhep[i][2]<<","<<hepevt.vhep[i][3]<<")"<<std::endl;
-    }
-    ATOOLS::Flavour flavour;
-    flavour.FromHepEvt(hepevt.idhep[i]);
-    ATOOLS::Particle *newpart = new ATOOLS::Particle(i+1,flavour,
-						     ATOOLS::Vec4D(hepevt.phep[i][3],hepevt.phep[i][0],
-								   hepevt.phep[i][1],hepevt.phep[i][2]));
-    newpart->SetStatus(hepevt.isthep[i]);
-    converted[i]=newpart;
-  }
-  return true;
-}
-
-bool Herwig_Interface::ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS::Particle*> &converted)
-{
-  for (int i=0;i<hepevt.nhep;++i) {
-    ATOOLS::Blob *productionblob=converted[i]->ProductionBlob();
-    ATOOLS::Particle *mother=converted[hepevt.jmohep[i][0]-1];
-    if (productionblob==NULL) {
-      bool createblob=(mother==NULL);
-      if (!createblob) createblob=createblob||(mother->DecayBlob()==NULL); 
-      if (createblob) {
-	  productionblob = new ATOOLS::Blob();
-	  productionblob->SetPosition(ATOOLS::Vec4D(hepevt.vhep[i][0],hepevt.vhep[i][1],
-						    hepevt.vhep[i][2],hepevt.vhep[i][3]));
-	  productionblob->AddToOutParticles(converted[i]);
-	  if (mother!=NULL) productionblob->AddToInParticles(mother);
-	  productionblob->SetId();
-	  blobs->push_back(productionblob);
-      }
-      else {
-	mother->DecayBlob()->AddToOutParticles(converted[i]);
-	productionblob=converted[i]->ProductionBlob();
-      }
-    }
-    ATOOLS::Blob *decayblob=converted[i]->DecayBlob();
-    for (unsigned int j=0;j<2;++j) {
-      if (decayblob==NULL) {
-	ATOOLS::Particle *daughter=converted[hepevt.jdahep[i][j]-1];
-	if (daughter!=NULL) {
-	  if (daughter->ProductionBlob()!=NULL) {
-	    daughter->ProductionBlob()->AddToInParticles(converted[i]);
-	  }
-	}
-      }
-    }
-  }
-  for (int i=0;i<hepevt.nhep;++i) {
-    if (converted[i]->DecayBlob()==NULL) {
-      ATOOLS::Particle *daughter=converted[hepevt.jdahep[i][0]-1];
-      if (daughter!=NULL) daughter->ProductionBlob()->AddToInParticles(converted[i]);
-    }
-  }
-  return true;
-}
-
-bool Herwig_Interface::SetTypes(ATOOLS::Blob_List *blobs)
-{
-  for (ATOOLS::Blob_Iterator bit=blobs->begin();bit!=blobs->end();++bit) {
-    bool final=true;
-    for (int i=0;i<(*bit)->NOutP();++i) {
-      if (((*bit)->OutParticle(i)->DecayBlob()!=NULL)||
-	  ((*bit)->OutParticle(i)->Status()!=1)) final=false;
-    }
-    if (final) (*bit)->SetStatus(1);
-    else (*bit)->SetStatus(0);
-  }
-  return true;
-}
-
-bool Herwig_Interface::DeleteObsolete(std::map<int,ATOOLS::Particle*> &converted)
-{
-  for (int i=0;i<hepevt.nhep;++i) {
-    if ((converted[i]->ProductionBlob()==NULL)&&
-	(converted[i]->DecayBlob()==NULL)) {
-      delete converted[i];
-    }
-  }
-  return true;
-}
-
 void Herwig_Interface::Error(const int error)
 {
   ++s_errors;
   if (s_errors>s_maxerrors) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Herwig calls PYERRM(")+
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Herwig calls HWWARN(")+
 			    ATOOLS::ToString(error)+std::string(")"),"Herwig_Interface","Error"));
   }
   else {
     ATOOLS::msg.Error()<<"Herwig_Interface::Error("<<error<<") "<<ATOOLS::om::red
-		       <<"Herwig calls PYERRM("<<error<<") in event "
+		       <<"Herwig calls HWWARN("<<error<<") in event "
 		       <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"."
 		       <<ATOOLS::om::reset<<std::endl;
     if (ATOOLS::msg.LevelIsDebugging()) {
       ATOOLS::msg.Tracking()<<*s_bloblist<<std::endl;
-      //pylist(2);
     }
   }
 }

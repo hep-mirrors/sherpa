@@ -538,6 +538,7 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
 {
   ATOOLS::Particle * part, * mother;
   int helper;
+  bool deleteall;
   ATOOLS::Blob * blob, * help,
     * signal = new ATOOLS::Blob(), 
     * beam1  = new ATOOLS::Blob(), 
@@ -877,12 +878,21 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
     default : break;
     }
   }
-  if (signal->NOutP()!=2) {
-    std::cout<<"Signal is funny : "<<signal->NInP()<<" -> "<<signal->NOutP()<<std::endl;
-    std::cout<<"====================================="<<std::endl
-	     <<(*blobs)<<std::endl;
-    abort();
+  if (signal->NOutP()!=2 || signal->NInP()<2) {
+    msg.Error()<<"Error in HepEvt_Interface::ConstructBlobsFromHerwig"<<std::endl
+	       <<"   Signal is funny: "<<signal->NInP()<<" -> "<<signal->NOutP()<<std::endl
+	       <<"   ====================================="<<std::endl
+	       <<(*signal)<<std::endl
+	       <<"   ====================================="<<std::endl
+	       <<"   Clear blobs, return false and hope for the best."<<std::endl;
+    if (!blobs->empty()) {
+      for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) delete (*blit);
+      blobs->clear();
+    }
+    DeleteObsolete(0);
+    return false;
   }
+  DeleteObsolete(1);
   return true;
 }
 
@@ -1521,3 +1531,24 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
 
   return true;
 }
+
+void HepEvt_Interface::DeleteObsolete(const int mode)
+{
+  if (!m_convertH2S.empty()) {
+    for (Translation_Map::iterator piter=m_convertH2S.begin();
+	 piter!=m_convertH2S.end();piter++) {
+      switch(mode) {
+      case 0:
+	delete (piter->second.first); piter->second.first=NULL; 
+	break;  
+      default:
+	if (piter->second.second) {
+	  delete (piter->second.first); piter->second.first=NULL; 
+	}
+	break;
+      }
+    }
+    m_convertH2S.clear();
+  }
+}
+
