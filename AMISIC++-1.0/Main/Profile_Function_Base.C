@@ -1,6 +1,8 @@
 #include "Profile_Function_Base.H"
 
 #include "Profile_Function.H"
+#include "Gauss_Integrator.H"
+#include "MathTools.H"
 
 using namespace AMISIC;
 
@@ -16,8 +18,40 @@ std::ostream &AMISIC::operator<<(std::ostream &ostr,const pft::code code)
   return ostr;
 }
 
-Profile_Function_Base::Profile_Function_Base(const pft::code code):
-  m_type(code) {}
+Differential_Overlap::Differential_Overlap(Profile_Function_Base *const owner):
+  p_owner(owner) {}
+
+double Differential_Overlap::operator()(const double b)
+{
+  return 2.0*M_PI*b*p_owner->KFactor()*(*p_owner)(b);
+}
+
+Interaction_Probability::Interaction_Probability(Profile_Function_Base *const owner):
+  p_owner(owner) {}
+
+double Interaction_Probability::operator()(const double b)
+{
+  return 2.0*M_PI*b*(1.0-exp(-p_owner->KFactor()*(*p_owner)(b)));
+}
+
+Profile_Function_Base::Profile_Function_Base(const pft::code code,
+					     const double bmin,const double bmax):
+  p_overlap(new Differential_Overlap(this)),
+  p_probability(new Interaction_Probability(this)),
+  m_type(code), 
+  m_bmin(bmin),
+  m_bmax(bmax),
+  m_omin(0.0),
+  m_omax(0.0),
+  m_kfactor(1.0),
+  m_omean(1.0),
+  m_norm(1.0) {}
+
+Profile_Function_Base::~Profile_Function_Base()
+{
+  delete p_probability;
+  delete p_overlap;
+}
 
 Profile_Function_Base *Profile_Function_Base::SelectProfile(const std::string &type,
 							    const std::vector<double> &parameters)
@@ -29,4 +63,62 @@ Profile_Function_Base *Profile_Function_Base::SelectProfile(const std::string &t
   else profile=CreateProfile<Flat_Profile>(type,parameters);
   return profile;
 }
+
+// class Test_Func: public ATOOLS::Function_Base {
+// private:
+//   Profile_Function_Base *p_owner;
+// public:
+
+//   Test_Func(Profile_Function_Base *profile):p_owner(profile) {}
+//   double operator()(const double b) 
+//   { 
+//     return p_owner->KFactor()*(*p_owner)(b)*(*p_owner->Probability())(b);
+//   }
+// };
+
+bool Profile_Function_Base::CalculateOMean(const double ratio)
+{
+  ATOOLS::Gauss_Integrator *gausso = new ATOOLS::Gauss_Integrator(p_overlap);
+  ATOOLS::Gauss_Integrator *gaussp = new ATOOLS::Gauss_Integrator(p_probability);
+  double k1=ratio, k2=ratio;
+  m_kfactor=k2;
+  double ratio2=gausso->Integrate(m_bmin,m_bmax,1.0e-5);
+  ratio2/=gaussp->Integrate(m_bmin,m_bmax,1.0e-5);
+  m_kfactor=2.0*k2;
+  do {
+    double ratio1=ratio2;
+    ratio2=gausso->Integrate(m_bmin,m_bmax,1.0e-5);
+    ratio2/=gaussp->Integrate(m_bmin,m_bmax,1.0e-5);
+    k2=k1;
+    k1=m_kfactor;
+    m_kfactor=k2+(ratio-ratio1)*(m_kfactor-k2)/(ratio2-ratio1);
+    msg_Debugging()<<"iterate r2 = "<<ratio2<<",\t r= "<<ratio<<",\t r2-r = "<<ratio2-ratio
+      		   <<"\t => "<<m_kfactor<<"\t <- "<<k1<<std::endl;
+    if (!(m_kfactor>0.0)) {
+      ATOOLS::msg.Error()<<"Profile_Function_Base::CalculateOMean("<<ratio<<"): "
+			 <<"Cannot determine k."<<std::endl;
+      delete gausso;
+      delete gaussp;
+      return false;
+    }
+  } while(ATOOLS::dabs(ratio2-ratio)>1.0e-4);
+//   Test_Func testfunc(this);
+//   ATOOLS::Gauss_Integrator gaussh(&testfunc);
+//   double f_c=gaussh.Integrate(m_bmin,m_bmax,1.e-5);
+//   double om=f_c;
+//   double norm=gausso->Integrate(m_bmin,m_bmax,1.e-5);
+//   f_c/=gausso->Integrate(m_bmin,m_bmax,1.0e-5);
+//   om/=gaussp->Integrate(m_bmin,m_bmax,1.0e-5)*m_kfactor;
+//   norm/=m_kfactor*om*gaussp->Integrate(m_bmin,m_bmax,1.0e-5);
+  delete gausso;
+  delete gaussp;
+  m_omean=ratio2/m_kfactor;
+  msg_Tracking()<<"Profile_Function_Base::CalculateOMean("<<ratio<<"): "
+		<<"Results are {\n   k           = "<<m_kfactor
+// 		<<"\n   <\\tilde{O}> = "<<om<<" norm = "<<norm
+// 		<<"\n   f_c         = "<<f_c
+		<<"\n   <\\tilde{O}> = "<<m_omean<<"\n}"<<std::endl;
+  return true;
+}
+
 

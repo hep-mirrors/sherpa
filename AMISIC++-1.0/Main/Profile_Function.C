@@ -1,5 +1,7 @@
 #include "Profile_Function.H"
+
 #include "MathTools.H"
+#include "Exception.H"
 
 using namespace AMISIC;
 
@@ -14,17 +16,34 @@ Profile_Function_Base::CreateProfile<Flat_Profile>(const std::string &type,
 }
 
 Flat_Profile::Flat_Profile(const double radius):
-  Profile_Function_Base(pft::flat),
-  m_radius(radius) {}
+  Profile_Function_Base(pft::flat,0.0,radius),
+  m_radius(radius) 
+{
+  m_omax=Value(m_bmin);
+  m_omin=Value(m_bmax);
+  m_norm=M_PI;
+  throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"Flat profile not implemented yet","",""));
+}
+
 
 double Flat_Profile::Value(const double b) const
 {
-  return 1.0/ATOOLS::sqr(m_radius);
+  return 0.0;
 }
 
-double Flat_Profile::Integral(const double b) const
+double Flat_Profile::MajorValue(const double b) const
 {
-  return M_PI;
+  return 0.0;
+}
+
+double Flat_Profile::MajorIntegral(const double b) const
+{
+  return 0.0;
+}
+
+double Flat_Profile::InverseMajorIntegral(const double I) const
+{
+  return 0.0;
 }
 
 template <> Profile_Function_Base*
@@ -38,17 +57,33 @@ Profile_Function_Base::CreateProfile<Exponential_Profile>(const std::string &typ
 }
 
 Exponential_Profile::Exponential_Profile(const double radius):
-  Profile_Function_Base(pft::exponential),
-  m_radius(radius) {}
+  Profile_Function_Base(pft::exponential,0.0,10.0*radius),
+  m_radius(radius) 
+{
+  m_omax=Value(m_bmin);
+  m_omin=Value(m_bmax);
+  m_norm=M_PI;
+  throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"Exponential profile not implemented yet","",""));
+}
 
 double Exponential_Profile::Value(const double b) const
 {
-  return 0.5*exp(-b/m_radius)/ATOOLS::sqr(m_radius);
+  return 0.0;
 }
 
-double Exponential_Profile::Integral(const double b) const
+double Exponential_Profile::MajorValue(const double b) const
 {
-  return M_PI;
+  return 0.0;
+}
+
+double Exponential_Profile::MajorIntegral(const double b) const
+{
+  return 0.0;
+}
+
+double Exponential_Profile::InverseMajorIntegral(const double I) const
+{
+  return 0.0;
 }
 
 template <> Profile_Function_Base*
@@ -62,17 +97,32 @@ Profile_Function_Base::CreateProfile<Gaussian_Profile>(const std::string &type,
 }
 
 Gaussian_Profile::Gaussian_Profile(const double radius):
-  Profile_Function_Base(pft::gaussian),
-  m_radius(radius) {}
+  Profile_Function_Base(pft::gaussian,0.0,10.0*radius),
+  m_radius(radius) 
+{
+  m_omax=Value(m_bmin);
+  m_omin=Value(m_bmax);
+  m_norm=M_PI;
+}
 
 double Gaussian_Profile::Value(const double b) const
 {
   return 0.5*exp(-0.5*ATOOLS::sqr(b/m_radius))/ATOOLS::sqr(m_radius);
 }
 
-double Gaussian_Profile::Integral(const double b) const
+double Gaussian_Profile::MajorValue(const double b) const
 {
-  return M_PI;
+  return 0.5*exp(-0.5*ATOOLS::sqr(b/m_radius))/ATOOLS::sqr(m_radius);
+}
+
+double Gaussian_Profile::MajorIntegral(const double b) const
+{
+  return M_PI*(1.0-exp(-0.5*ATOOLS::sqr(b/m_radius)));
+}
+
+double Gaussian_Profile::InverseMajorIntegral(const double I) const
+{
+  return -m_radius*log(1.0-I/M_PI);
 }
 
 template <> Profile_Function_Base*
@@ -88,11 +138,14 @@ Profile_Function_Base::CreateProfile<Double_Gaussian_Profile>(const std::string 
 Double_Gaussian_Profile::Double_Gaussian_Profile(const double radius1,
 						 const double radius2,
 						 const double partition):
-  Profile_Function_Base(pft::double_gaussian),
+  Profile_Function_Base(pft::double_gaussian,0.0,10.0*radius1),
   m_partition(partition)
 {
   m_radius[0]=radius1;
   m_radius[1]=radius2;
+  m_omax=Value(m_bmin);
+  m_omin=Value(m_bmax);
+  m_norm=M_PI;
 }
 
 double Double_Gaussian_Profile::Value(const double b) const
@@ -104,8 +157,23 @@ double Double_Gaussian_Profile::Value(const double b) const
     exp(-0.5*ATOOLS::sqr(b/m_radius[1]));
 }
 
-double Double_Gaussian_Profile::Integral(const double b) const
+double Double_Gaussian_Profile::MajorValue(const double b) const
 {
-  return M_PI;
+  return 0.5/ATOOLS::sqr(ATOOLS::Min(m_radius[0],m_radius[1]))*
+    exp(-0.5*ATOOLS::sqr(b/ATOOLS::Max(m_radius[0],m_radius[1])));
+}
+
+double Double_Gaussian_Profile::MajorIntegral(const double b) const
+{
+  return M_PI*ATOOLS::sqr(ATOOLS::Max(m_radius[0],m_radius[1])/
+			  ATOOLS::Min(m_radius[0],m_radius[1]))*
+    (1.0-exp(-0.5*ATOOLS::sqr(b/ATOOLS::Max(m_radius[0],m_radius[1]))));
+}
+
+double Double_Gaussian_Profile::InverseMajorIntegral(const double I) const
+{
+  return -ATOOLS::Max(m_radius[0],m_radius[1])*
+    log(1.0-ATOOLS::sqr(ATOOLS::Min(m_radius[0],m_radius[1])/
+			ATOOLS::Max(m_radius[0],m_radius[1]))*I/M_PI);
 }
 

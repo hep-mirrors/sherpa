@@ -34,7 +34,9 @@ Simple_Chain::Simple_Chain():
   MI_Base("Simple Chain",MI_Base::HardEvent,4,4,1),
   m_differential(std::vector<GridFunctionType*>(0)),
   m_norm((GridResultType)1.0),
+  m_enhance((GridResultType)1.0),
   p_total(NULL),
+  p_differential(NULL),
   m_xsextension("_xs.dat"),
   m_maxextension("_max.dat"),
   m_mcextension("_mc"),
@@ -49,7 +51,8 @@ Simple_Chain::Simple_Chain():
   m_scalescheme(2),
   m_kfactorscheme(1),
   m_maxtrials(1),
-  m_external(false)
+  m_external(false),
+  m_reweight(true)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -67,7 +70,9 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   MI_Base("Simple Chain",MI_Base::HardEvent,4,4,1),
   m_differential(std::vector<GridFunctionType*>(0)),
   m_norm((GridResultType)1.0),
+  m_enhance((GridResultType)1.0),
   p_total(NULL),
+  p_differential(NULL),
   m_xsfile(std::string("XS.dat")),
   m_xsextension("_xs.dat"),
   m_maxextension("_max.dat"),
@@ -83,7 +88,8 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   m_scalescheme(2),
   m_kfactorscheme(1),
   m_maxtrials(1),
-  m_external(true)
+  m_external(true),
+  m_reweight(true)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -114,6 +120,7 @@ void Simple_Chain::CleanUp()
     p_beam=NULL;
     p_isr=NULL;
   }
+  if (p_differential!=NULL) delete p_differential;
   if (p_total!=NULL) delete p_total;
   while (m_blobs.size()>0) {
     while (m_blobs.begin()->size()>0) {
@@ -659,7 +666,9 @@ bool Simple_Chain::InitializeBlobList()
     p_processes->PushBack(group[i]);
   }
   if (ATOOLS::msg.LevelIsTracking()) {
+#ifndef COMPARE__Pythia
     CheckConsistency(p_processes,p_total,p_total->XMin(),p_total->XMax(),m_sigmahard);
+#endif
   }
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
@@ -708,24 +717,28 @@ void Simple_Chain::CalculateSigmaND()
   double xssd=0.0336*X*sqrt(X)*JAX;
   double xsdd=0.0084*X*JXX;
   msg_Tracking()<<"Simple_Chain::CalculateSigmaND(): Results are {\n"
-		<<"   \\sigma^{tot} = "<<xstot<<" pb\n"
-		<<"   \\sigma^{el}  = "<<xsel<<" pb\n"
-		<<"   \\sigma^{sd}  = "<<2.0*xssd<<" pb\n"
-		<<"   \\sigma^{dd}  = "<<xsdd<<" pb\n}"<<std::endl;
+		<<"   \\sigma_{tot} = "<<xstot<<" mb\n"
+		<<"   \\sigma_{el}  = "<<xsel<<" mb\n"
+		<<"   \\sigma_{sd}  = "<<2.0*xssd<<" mb\n"
+		<<"   \\sigma_{dd}  = "<<xsdd<<" mb\n"
+		<<"   \\sigma_{nd}  = "<<(xstot-xsel-2.0*xssd-xsdd)<<" mb.\n}"<<std::endl;
   SetNorm((xstot-xsel-2.0*xssd-xsdd)*1.0e9/ATOOLS::rpa.Picobarn());
 }
+
+#ifdef COMPARE__Pythia
+static double xsfudge=1.0;
+#endif
 
 bool Simple_Chain::CalculateTotal()
 {
   PROFILE_HERE;
   if (m_differential.size()==0) return false;
-  GridFunctionType *differential;
-  differential = new GridHandlerType::GridFunctionType();
-  differential->SetMonotony(differential->None);
-  differential->XAxis()->SetVariable(m_differential[0]->XAxis()->Variable());
-  differential->YAxis()->SetVariable(m_differential[0]->YAxis()->Variable());
-  differential->XAxis()->SetScaling(m_differential[0]->XAxis()->Scaling()->Name());
-  differential->YAxis()->SetScaling(m_differential[0]->YAxis()->Scaling()->Name());
+  p_differential = new GridHandlerType::GridFunctionType();
+  p_differential->SetMonotony(p_differential->None);
+  p_differential->XAxis()->SetVariable(m_differential[0]->XAxis()->Variable());
+  p_differential->YAxis()->SetVariable(m_differential[0]->YAxis()->Variable());
+  p_differential->XAxis()->SetScaling(m_differential[0]->XAxis()->Scaling()->Name());
+  p_differential->YAxis()->SetScaling(m_differential[0]->YAxis()->Scaling()->Name());
   std::vector<GridFunctionType*>::iterator diffit;
   std::set<GridArgumentType> *xvalue = new std::set<GridArgumentType>();
   for (diffit=m_differential.begin();diffit!=m_differential.end();++diffit) {
@@ -739,30 +752,44 @@ bool Simple_Chain::CalculateTotal()
     for (diffit=m_differential.begin();diffit!=m_differential.end();++diffit) {
       y+=(*diffit)->Y(*xit,(*diffit)->Interpolation);
     }
-    differential->AddPoint(*xit,y);
+    p_differential->AddPoint(*xit,y);
   }
   delete xvalue;
 #ifdef DEBUG__Simple_Chain
   std::vector<std::string> comments;
   comments.push_back("  Differential XS   "); 
-  GridHandlerType *gridhandler = new GridHandlerType(differential);
+  GridHandlerType *gridhandler = new GridHandlerType(p_differential);
   GridCreatorBaseType *gridcreator = new GridCreatorBaseType();
   gridcreator->SetOutputPath(OutputPath());
   gridcreator->SetOutputFile(differentialfile);
   gridcreator->WriteSingleGrid(gridhandler,comments);
   delete gridhandler;
 #endif
-  SetStart(differential->XMax(),0);
-  SetStop(ATOOLS::Max(differential->XMin(),m_stop[0]),0);
-  p_total = differential->IntegralY(m_stop[0],m_start[0],
+  SetStart(p_differential->XMax(),0);
+  SetStop(ATOOLS::Max(p_differential->XMin(),m_stop[0]),0);
+  p_total = p_differential->IntegralY(m_stop[0],m_start[0],
 				    ATOOLS::nullstring,ATOOLS::nullstring,false);
   m_sigmahard=p_total->YMax();
+  msg_Tracking()<<"Simple_Chain::CalculateTotal(): Result is {\n   \\sigma_{hard} = "
+		<<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)<<" mb.\n}"<<std::endl;
   CalculateSigmaND();
+  if (m_sigmahard<m_norm) {
+    ATOOLS::msg.Error()<<"Simple_Chain::CalculateTotal(): "<<ATOOLS::om::red
+		       <<"\\sigma_{hard} = "<<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
+		       <<" mb < \\sigma_{nd} = "<<(m_norm*ATOOLS::rpa.Picobarn()/1.e9)
+		       <<" mb !"<<ATOOLS::om::reset<<std::endl;
+  }
   p_total->ScaleY(1.0/m_norm);
+#ifdef COMPARE__Pythia
+  ATOOLS::msg.Error()<<"Simple_Chain::CalculateTotal(): "<<ATOOLS::om::red
+		     <<"Fudge factor is "<<xsfudge<<"."<<ATOOLS::om::reset<<std::endl;
+  m_sigmahard*=xsfudge;
+  p_total->ScaleY(xsfudge);
+#endif
 #ifdef DEBUG__Simple_Chain
   comments.clear();
   comments.push_back("   Integrated XS    "); 
-  GridFunctionType *total = differential->IntegralY(m_stop[0],m_start[0],"Id","Id",false);
+  GridFunctionType *total = p_differential->IntegralY(m_stop[0],m_start[0],"Id","Id",false);
   gridhandler = new GridHandlerType(total);
   gridcreator->SetOutputFile(integralfile);
   gridcreator->WriteSingleGrid(gridhandler,comments);
@@ -776,7 +803,6 @@ bool Simple_Chain::CalculateTotal()
   delete gridcreator;
   delete gridhandler;
 #endif
-  delete differential;
   return true;
 }
 
@@ -801,6 +827,9 @@ bool Simple_Chain::Initialize()
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
+#ifdef COMPARE__Pythia
+  if (!reader->ReadFromFile(xsfudge,"FUDGE_FACTOR")) xsfudge=1.0;
+#endif
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
   SetStop(stop,0);
@@ -811,6 +840,8 @@ bool Simple_Chain::Initialize()
       p_profile = Profile_Function_Base::SelectProfile(function,parameters);
     }
   }
+  int reweight=true;
+  if (reader->ReadFromFile(reweight,"REWEIGHT_HARDEST")) m_reweight=reweight;
   delete reader;
   for (unsigned int i=0;i<m_blobs.size();++i) {
     if (!CreateGrid(m_blobs[i],m_filename[i])) {
@@ -821,10 +852,19 @@ bool Simple_Chain::Initialize()
     }
   }
   if (!CalculateTotal()) {
+    CleanUp();
     throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Determination of \\sigma_{tot} failed.",
 			    "Simple_Chain","Initialize"));
   }
+  if (p_profile!=NULL) {
+    if (!p_profile->CalculateOMean(m_sigmahard/m_norm)) {
+      CleanUp();
+      throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Determination of <\\tilde{O}> failed.",
+			      "Simple_Chain","Initialize"));
+    }
+  }
   if (!InitializeBlobList()) {
+    CleanUp();
     throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Cannot initialize selected processes.",
 			    "Simple_Chain","Initialize"));
   }  
@@ -999,8 +1039,22 @@ bool Simple_Chain::DiceProcess()
 
 bool Simple_Chain::DiceEnhanceFactor()
 {
-  if (p_profile==NULL) return 1.0;
-  return false;
+  if (p_profile==NULL) return true;
+  double b=0.0;
+  double last=(*p_total)(m_last[0]);
+  double maxintegral=(*p_profile)+p_profile->BMax();
+  do {
+    do {
+      b=(*p_profile)-(ATOOLS::ran.Get()*maxintegral);
+    } while ((*p_profile)(b)<=ATOOLS::ran.Get()*(*p_profile)[b]);
+    m_enhance=(*p_profile)(b)/p_profile->OMean();
+  } while (exp(-m_enhance*last)<=ATOOLS::ran.Get());
+  msg_Tracking()<<"Simple_Chain::DiceEnhanceFactor(): { profile '"<<p_profile->Type()
+		<<"'\n   m_last[0]  = "<<m_last[0]<<"\n   b          = "<<b
+		<<"\n   e(b)       = "<<m_enhance<<"\n   e(b)_{min} = "
+		<<p_profile->OMin()/p_profile->OMean()<<"\n   e(b)_{max} = "
+		<<p_profile->OMax()/p_profile->OMean()<<"\n}"<<std::endl;
+  return true;
 }
 
 bool Simple_Chain::DiceOrderingParameter()
@@ -1017,7 +1071,27 @@ bool Simple_Chain::DiceOrderingParameter()
     s_stophard=true;
     return false;
   }
-  m_last[0]=(*p_total)[(*p_total)(m_last[0])-log(ATOOLS::ran.Get())]; 
+  if (!m_reweight) {
+    m_last[0]=(*p_total)[(*p_total)(m_last[0])-log(ATOOLS::ran.Get())/m_enhance]; 
+  }
+  else {
+    if (s_cleaned) {
+      double last=0.5*m_ecms;
+      double hardweight=(*p_differential)(m_last[0])*
+	exp(-m_enhance*(*p_total)(m_last[0]));
+      do {
+	last=(*p_total)[(*p_total)(last)-log(ATOOLS::ran.Get())/m_enhance]; 
+	double weight=(*p_differential)(last)*
+	  exp(-m_enhance*(*p_total)(last));
+	if (weight<ATOOLS::ran.Get()*hardweight) continue;
+      } while (last>m_last[0]);
+      m_last[0]=last;
+    }
+    else {
+      m_last[0]=(*p_total)[(*p_total)(m_last[0])-log(ATOOLS::ran.Get())/m_enhance]; 
+    }
+  }
+  s_cleaned=false;
   if (m_last[0]<=m_stop[0]) { 
     m_dicedparameter=false;
     s_stophard=true;

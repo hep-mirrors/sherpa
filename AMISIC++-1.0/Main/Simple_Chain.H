@@ -30,8 +30,8 @@ namespace AMISIC {
     std::vector<GridFunctionType*>          m_differential;
     std::map<std::string,GridFunctionType*> m_maxima;
 
-    GridResultType    m_norm;
-    GridFunctionType *p_total;
+    GridResultType    m_norm, m_enhance;
+    GridFunctionType *p_total, *p_differential;
 
     GridCreatorType *p_gridcreator;
 
@@ -51,7 +51,7 @@ namespace AMISIC {
     unsigned int m_selected, m_nflavour, m_scalescheme;
     unsigned int m_kfactorscheme, m_maxtrials;
     double       m_sigmahard, m_error, m_ecms;
-    bool         m_external;
+    bool         m_external, m_reweight;
 
     ATOOLS::Blob *GetBlob(ATOOLS::Flavour *flavour);
 
