@@ -66,6 +66,10 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	sel = new Angle_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,help,rmin,rmax);
 	break;
+      case 15 : 
+	sel = new ET_Selector(_nin,_nout,_fl);
+ 	sel->SetRange(critflavs,rmin,rmax);
+	break;
       case 21 : 
 	sel = new Mass_Selector(_nin,_nout,_fl);
 	sel->SetRange(critflavs,rmin,rmax);

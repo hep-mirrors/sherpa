@@ -28,6 +28,18 @@ namespace APHYTOOLS {
     double * ActualValue();
   };
 
+  class ET_Selector : public Selector_Base {
+    double * etmin, * etmax, * value;
+  public:
+    ET_Selector(int,int,Flavour *);
+    ~ET_Selector();
+    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
+    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     BuildCuts(Cut_Data *);
+    void     UpdateCuts(double,double,Cut_Data *);
+    double * ActualValue();
+  };
+
   class PT_Selector : public Selector_Base {
     double * ptmin, * ptmax, * value;
   public:

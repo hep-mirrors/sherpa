@@ -70,7 +70,6 @@ bool Selector_Data::ReadInData(std::string filename) {
     if (keyword == string("ConeFinder")) {
       dat.type = 2;
       from>>dat.min;
-      msg.Out()<<" Rmin in Selector.dat = "<<dat.min<<endl;
       data.push_back(dat);
     }
     if (keyword == string("Energy")) {
@@ -106,6 +105,14 @@ bool Selector_Data::ReadInData(std::string filename) {
       dat.help = crit2;
       data.push_back(dat);
     }  
+    if (keyword == string("ET")) {
+      dat.type = 15;
+      from>>crit1>>dat.min>>dat.max;
+      flav = Flavour(kf::code(abs(crit1)));
+      if (crit1<0) flav = flav.Bar();
+      (dat.flavs).push_back(flav);
+      data.push_back(dat);
+    }
     if (keyword == string("Mass")) {
       dat.type = 21;
       from>>crit1>>crit2>>dat.min>>dat.max;
@@ -155,6 +162,7 @@ void Selector_Data::ControlOutput() {
     case 12: AORGTOOLS::msg.Debugging()<<"PTs        : "; break;
     case 13: AORGTOOLS::msg.Debugging()<<"Rapidities : "; break;
     case 14: AORGTOOLS::msg.Debugging()<<"BeamAngles : "; break;
+    case 15: AORGTOOLS::msg.Debugging()<<"ETs        : "; break;
     case 21: AORGTOOLS::msg.Debugging()<<"Masses     : "; break;
     case 22: AORGTOOLS::msg.Debugging()<<"Angles     : "; break;
     case 32: AORGTOOLS::msg.Debugging()<<"SummedPT   : "; break;

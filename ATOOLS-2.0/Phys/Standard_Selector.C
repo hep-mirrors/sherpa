@@ -22,13 +22,13 @@ Energy_Selector::Energy_Selector(int _nin,int _nout, Flavour * _fl) {
   double E = AORGTOOLS::rpa.gen.Ecms();
   emin  = new double[m_n];
   emax  = new double[m_n];
-  value = new double[m_n];
+  value  = new double[m_n];
   for (int i=0;i<m_n;i++) { emin[i] = 0.; emax[i] = E; }
   m_sel_log = new Selector_Log(m_name);
 }
 
-Energy_Selector::~Energy_Selector() {
-  //  delete [] m_sel_log;
+Energy_Selector::~Energy_Selector() 
+{
   delete [] emin;
   delete [] emax;
   delete [] value;
@@ -89,6 +89,93 @@ void Energy_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
   }
 }
 
+
+
+/*--------------------------------------------------------------------
+
+  Transverse Energy Selector
+
+  --------------------------------------------------------------------*/
+
+ET_Selector::ET_Selector(int _nin,int _nout, Flavour * _fl) 
+{
+  m_name = std::string("ET_Selector"); 
+  m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
+  m_fl   = _fl;
+  
+  double E = AORGTOOLS::rpa.gen.Ecms();
+  etmin  = new double[m_n];
+  etmax  = new double[m_n];
+  value  = new double[m_n];
+  for (int i=0;i<m_n;i++) { etmin[i] = 0.; etmax[i] = E; }
+  m_sel_log = new Selector_Log(m_name);
+}
+
+ET_Selector::~ET_Selector() 
+{
+  delete [] etmin;
+  delete [] etmax;
+  delete [] value;
+}
+
+bool ET_Selector::Trigger(const Vec4D * mom) 
+{
+  double eti;
+  for (int i=m_nin;i<m_n;i++) {
+   
+    double theta = acos(Vec3D(mom[i])*Vec3D(mom[0])/(Vec3D(mom[i]).Abs()*Vec3D(mom[0]).Abs())); 
+
+    //cout<<"theta "<<theta<<endl;
+    
+    //if (theta<0.) theta = -theta; 
+
+    eti = value[i] = mom[i][0]*sin(theta);
+
+    //cout<<"et["<<i<<"] : "<<eti<<" range ("<<etmin[i]<<", "<<etmax[i]<<")"<<endl;
+
+    if (m_sel_log->Hit( ((eti<etmin[i]) || (eti>etmax[i])) )) return 0;
+  }
+  return 1;
+}
+
+double * ET_Selector::ActualValue() { return value; }
+
+void ET_Selector::BuildCuts(Cut_Data * cuts) 
+{
+  
+  for (int i=0;i<m_n-1;i++) {
+    cuts->energymin[i] = Max(etmin[i],cuts->energymin[i]);
+    cuts->energymax[i] = Min(etmax[i],cuts->energymax[i]);
+  }
+}
+
+void ET_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
+{
+  
+  for (int i=0;i<m_n-1;i++) {
+    cuts->energymin[i] = Max(etmin[i],cuts->energymin[i]);
+    cuts->energymax[i] = Min(etmax[i],cuts->energymax[i]);
+  }
+}
+ 
+void ET_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, 
+			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+{
+  if (crit.size() != 1) {
+    AORGTOOLS::msg.Error()<<"Wrong number of arguments in ET_Selector::SetRange : "
+			  <<crit.size()<<endl;
+    return;
+  }
+
+  for (int i=m_nin;i<m_n;i++) {
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
+      etmin[i] = _min; 
+      etmax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
+      AORGTOOLS::msg.Debugging()<<"Set et-Range for "<<m_fl[i]<<" : "
+				<<etmin[i]<<" ... "<<etmax[i]<<endl;
+    }
+  }
+}
 
 
 /*--------------------------------------------------------------------
@@ -433,7 +520,8 @@ void Mass_Selector::BuildCuts(Cut_Data * cuts)
   }
 }
 
-void Mass_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
+void Mass_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
+{
   for (int i=0;i<m_n-1;i++) {
     for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],massmin[i][j]);
