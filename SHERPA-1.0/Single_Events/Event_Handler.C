@@ -1,5 +1,6 @@
 #include "Event_Handler.H"
 #include "Message.H"
+#include "Run_Parameter.H"
 
 using namespace SHERPA;
 using namespace AORGTOOLS;
@@ -91,7 +92,8 @@ bool Event_Handler::GenerateEvent()
     }
   }
 
-  PrintBlobs();
+  if (rpa.gen.Events())
+    PrintBlobs();
   return 1;
 }
 
@@ -147,7 +149,7 @@ void Event_Handler::PrintPartons() {
 
 
 void Event_Handler::PerformAnalysis() {
-  p_analysis->DoAnalysis(&m_partons);
+  //  p_analysis->DoAnalysis(&m_partons);
 }
 
 void Event_Handler::SetAnalysis(Sample_Analysis * _analysis) { _analysis = p_analysis; }
