@@ -21,6 +21,7 @@ namespace SHERPA {
     ATOOLS::Vec4D   *p_moms;
 
     void RemoveConnected(ATOOLS::Blob *const blob,const bool forward);
+
   public :
 
     // constructor
