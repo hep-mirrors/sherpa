@@ -353,6 +353,7 @@ double Spacelike_Kinematics::BoostFromCMS(Tree ** trees)
   trees[1]->BoRo(boost);
   rot.Invert();
   boost.Invert();
+  return 0.;
 }
 
 Vec4D Spacelike_Kinematics::BoostInLab(Tree ** trees) 
