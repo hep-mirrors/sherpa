@@ -53,7 +53,7 @@ void Hard_Interface::PrepareTrees() {
 }
 
 int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
-  msg.Debugging()<<"In Hard_Interface::PerformShowers("<<ini<<","<<fin<<","<<jetveto<<")."<<endl;
+  //  msg.Out()<<"In Hard_Interface::PerformShowers("<<ini<<","<<fin<<","<<jetveto<<")."<<endl;
   if (!m_showers) return 1;
   if (m_fsron) {
     Poincare cms(p_fintree->GetRoot()->part->Momentum());
