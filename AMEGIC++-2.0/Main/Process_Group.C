@@ -427,6 +427,15 @@ void Process_Group::SelectOne()
     if (m_atoms) {
       // select according to total xsecs.
       disc = m_totalxs * ran.Get();
+
+      /*
+      double test=0.;
+      for (size_t i=0;i<m_procs.size();i++) {
+	test+=m_procs[i]->TotalXS();
+      }
+      cout<<"m_total(group) = "<<m_totalxs<<" vs. "<<test<<" "<<m_totalxs/test-1<<endl;
+      */
+
       for (size_t i=0;i<m_procs.size();i++) {
 	disc -= m_procs[i]->TotalXS();
 	if (disc<0.) {
@@ -450,6 +459,15 @@ void Process_Group::SelectOne()
 	SetMax(0.);
       }
       disc = m_max * ran.Get();
+
+      /*
+      double test=0.;
+      for (size_t i=0;i<m_procs.size();i++) {
+	test+=m_procs[i]->TotalXS();
+      }
+      cout<<"m_total(group (atom)) = "<<m_totalxs<<" vs. "<<test<<" "<<m_totalxs/test-1<<endl;
+      */
+
       for (size_t i=0;i<m_procs.size();i++) {
 	disc -= m_procs[i]->Max();
 	if (disc<0.) {
@@ -855,8 +873,9 @@ void Process_Group::PrepareTerminate()
 void  Process_Group::RescaleXSec(double fac) {
   double sumxs=0.;
   for (size_t i=0;i<m_procs.size();++i) sumxs +=m_procs[i]->TotalXS();
-  m_totalxs = sumxs;
-  
+    
+  if (sumxs!=0.) m_totalxs = sumxs;
+
   for (size_t i=0;i<m_procs.size();i++) {
     m_procs[i]->RescaleXSec(fac);
   }
