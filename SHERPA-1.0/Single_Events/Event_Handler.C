@@ -94,7 +94,7 @@ bool Event_Handler::GenerateEvent(int mode)
   Blob * hardblob;
   switch (mode) {
   case 0:
-    while (m_blobs.empty()) {
+    do {
       hardblob = new Blob();
       hardblob->SetType(btp::Signal_Process);
       hardblob->SetStatus(-1);
@@ -126,7 +126,8 @@ bool Event_Handler::GenerateEvent(int mode)
 	  }
 	}
       }
-    }
+      flag=true;
+    } while (m_blobs.empty());
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
