@@ -1,7 +1,3 @@
-//#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include "Single_Process.H"
 #include "Run_Parameter.H"
 #include "ISR_Base.H"
@@ -14,6 +10,9 @@
 #include "Random.H"
 #include "prof.hh"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
 
 using namespace AMEGIC;
 using namespace PHASIC;

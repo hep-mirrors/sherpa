@@ -4,8 +4,8 @@
 #include "MathTools.H"
 #include "MyStrStream.H"
 
+#include <algorithm>
 #include <stdio.h>
-
 
 using namespace AMEGIC;
 using namespace PHASIC;

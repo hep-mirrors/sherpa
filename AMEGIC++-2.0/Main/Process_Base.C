@@ -8,6 +8,7 @@
 #include "Running_AlphaQED.H"
 
 #include <algorithm>
+#include <stdio.h>
 
 using namespace AMEGIC;
 using namespace PHASIC;
