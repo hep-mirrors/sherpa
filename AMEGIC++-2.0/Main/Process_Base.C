@@ -530,11 +530,11 @@ void Process_Base::SetISRThreshold(double threshold)    { m_threshold  = thresho
 void Process_Base::AddToDataCollector(int i)
 {
   std::string name;
-  for (int i=0; i<m_nin; ++i) name+=p_flavours[i].TexName()+"\\,";
+  for (int j=0; j<m_nin; ++j) name+=p_flavours[j].TexName()+"\\,";
   name+="\\to\\,";
-  for (int i=m_nin; i<m_nin+m_nout; ++i) name+=p_flavours[i].TexName()+"\\,";
-  Process_Info pi(name,m_totalxs,m_totalerr);
-  Data_Collector::AddData("PROCESS",new Blob_Data<Process_Info>(pi));
+  for (int j=m_nin; j<m_nin+m_nout; ++j) name+=p_flavours[j].TexName()+"\\,";
+  Process_Info pi(name,m_totalxs*rpa.Picobarn(),m_totalerr*rpa.Picobarn());
+  Data_Collector::AddData("PROCESS"+ToString(i),new Blob_Data<Process_Info>(pi));
 }
 
 /*------------------------------------------------------------------------------
