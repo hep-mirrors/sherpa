@@ -42,14 +42,14 @@ Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int o
   m_nth = 0;
   Fl_Iter fli;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) 
-    if (flav.Strong() && flav.IsOn() && flav.Kfcode()<30) m_nth++;
+    if (flav.Strong() && flav.IsOn() && flav.Kfcode()<=kf::gluon) m_nth++;
 
   p_thresh        = new AsDataSet[m_nth+1]; 
   double * masses = new double[m_nth];
   
   short int count = 0;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
-    if (flav.Strong() && flav.IsOn() && flav.Kfcode()<30) {
+    if (flav.Strong() && flav.IsOn() && flav.Kfcode()<=kf::gluon) {
       masses[count] = sqr(flav.PSMass());
       count++;
     }
