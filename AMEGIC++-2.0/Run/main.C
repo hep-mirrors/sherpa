@@ -27,8 +27,10 @@ int main(int argc,char* argv[])
 
   Amegic generator(path,environment.GetMEFile(),environment.GetModel());
     
-  generator.DecCalc();
-  
+  if (generator.InitializeDecays()) {
+    generator.CalculateBranchingWidths();
+  }
+
   if (generator.InitializeProcesses(environment.GetBeamSpectraHandler(),
 				    environment.GetISRHandler())) { 
     generator.CalculateTotalXSec();
