@@ -53,7 +53,7 @@ double LO_QCD_Regulator::operator[](const double scale) const
   const ATOOLS::Vec4D *p=p_xs->Momenta();
   double oldscale=0.0;
   switch (p_xs->ScaleScheme()) {
-  case 2: {
+  case 21: {
     double s=(p[0]+p[1]).Abs2();
     double t=(p[0]-p[2]).Abs2();
     double u=(p[0]-p[3]).Abs2();
