@@ -59,38 +59,36 @@ done
 if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
 if [ "$RUNFILE" = "" ]; then RUNFILE="Run.dat" ; fi
 if [ "$BINPATH" = "" ]; then BINPATH="./" ; fi
-if [ "$RESULTS" = "" ]; then RESULTS="results/" ; fi
-if [ "$ANALYSIS" = "" ]; then ANALYSIS="analysis/" ; fi
+if [ "$RESULTS" = "" ]; then RESULTS="./" ; fi
+if [ "$ANALYSIS" = "" ]; then ANALYSIS="./" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
 
 LOGPATH=$PWD
 SETUPPATH=$LOGPATH"/"$BASENAME"_"$TIME"/"
-LOGFILE=$SETUPPATH"run.log"
+LOGFILE="run.log"
 FILE=$BASENAME"_"$TIME".sh"
-
-if [ ! "$RESULTS" = "" ]; then RESULTS=$SETUPPATH$RESULTS ; fi
-if [ ! "$ANALYSIS" = "" ]; then ANALYSIS=$SETUPPATH$ANALYSIS ; fi
 
 cp -r $RUNPATH $SETUPPATH
 echo "" > $FILE
 if [ "$QUEUE" = "TRUE" ] ; then 
   echo "#$ -j y" >> $FILE
-  echo "#$ -o $LOGPATH/" >> $FILE
+  echo "#$ -o $SETUPPATH" >> $FILE
   echo "#$ -N $FILE.sge" >> $FILE
   echo "" >> $FILE
-  echo "LOGFILE=$LOGFILE" >> $FILE
+  echo "RUNPATH=$SETUPPATH" >> $FILE
+  echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
-  echo "echo \"\" > \$LOGFILE" >> $FILE
-  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$LOGFILE" >> $FILE
-  echo "echo \"HOME        = \$HOME\" >> \$LOGFILE" >> $FILE
-  echo "echo \"USER        = \$USER\" >> \$LOGFILE" >> $FILE
-  echo "echo \"\" >> \$LOGFILE" >> $FILE
-  echo "echo \"QUEUE       = \$QUEUE\" >> \$LOGFILE" >> $FILE
-  echo "echo \"SGE_TASK_ID = \$SGE_TASK_ID\" >> \$LOGFILE" >> $FILE
-  echo "echo \"JOB_ID      = \$JOB_ID\" >> \$LOGFILE" >> $FILE
-  echo "echo \"JOB_NAME    = \$JOB_NAME\" >> \$LOGFILE" >> $FILE
-  echo "echo \"TMPDIR      = \$TMPDIR\" >> \$LOGFILE" >> $FILE
-  echo "echo \"\" >> \$LOGFILE" >> $FILE
+  echo "echo \"\" > \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"HOME        = \$HOME\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"USER        = \$USER\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"QUEUE       = \$QUEUE\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"SGE_TASK_ID = \$SGE_TASK_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"JOB_ID      = \$JOB_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"JOB_NAME    = \$JOB_NAME\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"TMPDIR      = \$TMPDIR\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"\" >> \$RUNPATH\$LOGFILE" >> $FILE
   echo "" >> $FILE
 else
   echo "#!/bin/bash" >> $FILE
@@ -99,17 +97,15 @@ else
   echo "" >> $FILE
 fi
 echo "cd $BINPATH" >> $FILE
-echo -en "./Sherpa PATH=$SETUPPATH " >> $FILE
+echo -en "./Sherpa PATH=\$RUNPATH " >> $FILE
 if [ ! "$RUNFILE" = "" ] ; then echo -en "RUNDATA=$RUNFILE " >> $FILE ; fi
-if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=$RESULTS " >> $FILE ; fi
-if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=$ANALYSIS " >> $FILE ; fi
+if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=\$RUNPATH\"$RESULTS\" " >> $FILE ; fi
+if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\$RUNPATH\"$ANALYSIS\" " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$PYTHIA" = "" ] ; then echo -en "PYTHIA=$PYTHIA " >> $FILE ; fi
-echo -e ">> \$LOGFILE 2>&1 \n" >> $FILE
+echo -e ">> \$RUNPATH\$LOGFILE 2>&1 \n\n" >> $FILE
 
 if [ "$QUEUE" = "TRUE" ] ; then
-  echo "cp $FILE.sge $SETUPPATH" >> $FILE
-  echo "" >> $FILE
   qsub $FILE  
 else
   chmod 777 $FILE
