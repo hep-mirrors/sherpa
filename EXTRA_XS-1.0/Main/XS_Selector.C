@@ -20,6 +20,7 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
   if (m_offshell) { 
     if ((xs=Single_XS::GetProcess<Off_Shell_qqb_llb>(nin,nout,flavours))!=NULL);
     else if ((xs=Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(nin,nout,flavours))!=NULL);
+    else if ((xs=Single_XS::GetProcess<Off_Shell_q1q2b_q3q4b>(nin,nout,flavours))!=NULL);
     else if ((xs=Single_XS::GetProcess<Off_Shell_gg_qqb>(nin,nout,flavours))!=NULL);
     else if ((xs=Single_XS::GetProcess<Off_Shell_gg_gg>(nin,nout,flavours))!=NULL);
     else;

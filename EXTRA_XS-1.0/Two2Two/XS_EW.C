@@ -19,8 +19,6 @@ Single_XS *Single_XS::GetProcess<XS_q1q2b_q3q4b>(const size_t nin,const size_t n
     else up[i]=false;
     anti[i]=flavours[i].IsAnti();
   }
-  std::cout<<" "<<up[0]<<" "<<up[1]<<" "<<up[2]<<" "<<up[3]<<" "<<std::endl;
-  std::cout<<" "<<anti[0]<<" "<<anti[1]<<" "<<anti[2]<<" "<<anti[3]<<" "<<std::endl;
   if (anti[0]==anti[1] || anti[2]==anti[3]) return NULL;
   if ((up[0] && !up[1] && up[2] && !up[3] && anti[0]==anti[2]) ||
       (!up[0] && up[1] && up[2] && !up[3] && anti[1]==anti[2]) ||
@@ -46,10 +44,8 @@ XS_q1q2b_q3q4b::XS_q1q2b_q3q4b(const size_t nin,const size_t nout,
   m_ww2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
   m_aqed=MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
   m_sin2tw=ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
-  m_kappa=1./(4.*m_sin2tw);
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  m_barred=flavours[0].IsAnti();
-  p_colours[0][m_barred]=p_colours[1][1-m_barred]=ATOOLS::Flow::Counter();
+  p_colours[0][flavours[0].IsAnti()]=p_colours[1][1-flavours[0].IsAnti()]=ATOOLS::Flow::Counter();
   p_colours[0][flavours[2].IsAnti()]=p_colours[1][1-flavours[2].IsAnti()]=ATOOLS::Flow::Counter();
   m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
 }
@@ -58,7 +54,7 @@ double XS_q1q2b_q3q4b::operator()(double s,double t,double u)
 {
   double sc=p_momenta[0]*p_momenta[2];
   if (m_swaped) sc=p_momenta[1]*p_momenta[2];
-  return ATOOLS::sqr(4.*M_PI*m_aqed*m_kappa)*16*m_ckm2[0]*m_ckm2[1]*
+  return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*16*m_ckm2[0]*m_ckm2[1]*
     ATOOLS::sqr(sc)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
 }
 
