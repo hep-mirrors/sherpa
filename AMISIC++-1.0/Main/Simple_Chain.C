@@ -486,7 +486,6 @@ bool Simple_Chain::CalculateTotal()
       }
       y+=diffit->second->Y(*xit,diffit->second->Interpolation);
     }
-    PRINT_INFO(*xit<<" "<<y);
     p_differential->AddPoint(*xit,y);
   }
   delete xvalue;
@@ -501,7 +500,7 @@ bool Simple_Chain::CalculateTotal()
 #endif
   SetStart(p_differential->XMax(),0);
   SetStart(p_differential->XMax(),4);
-  SetStop(ATOOLS::Max(p_differential->XMin(),m_stop[4]),0);
+  SetStop(ATOOLS::Max(p_differential->XMin(),m_stop[0]),0);
   p_total = p_differential->
     IntegralY(m_stop[4],m_start[0],ATOOLS::nullstring,
 	      ATOOLS::nullstring,false);
