@@ -12,9 +12,11 @@ using namespace ANALYSIS;
 
 using namespace ATOOLS;
 
-int HistogramType(const std::string &scale)
+int ANALYSIS::HistogramType(const std::string &scale)
 {
   if (scale=="Log") return 10;
+  if (scale=="LogErr") return 11;
+  if (scale=="LinErr") return 1;
   return 0;
 }
 
