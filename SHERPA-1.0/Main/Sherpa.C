@@ -114,7 +114,8 @@ bool Sherpa::InitializeTheEventHandler()
 						    p_inithandler->GetFragmentationHandler()));
     break;
   }
-  p_eventhandler->AddEventPhase(new Analysis_Phase(p_inithandler->GetSampleAnalysis()));
+  ANALYSIS::Analysis_Handler * ana = p_inithandler->GetSampleAnalysis();
+  if (ana) p_eventhandler->AddEventPhase(new Analysis_Phase(ana));
   p_eventhandler->PrintGenericEventStructure();
   return 1;
 }
