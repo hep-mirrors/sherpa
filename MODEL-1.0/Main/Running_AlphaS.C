@@ -16,15 +16,14 @@ using namespace ATOOLS;
 using namespace std;
 
 
-Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ) : 
-  m_as_MZ(_as_MZ), m_m2_MZ(_m2_MZ) 
+Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ,const int order) : 
+  m_order(order), m_as_MZ(_as_MZ), m_m2_MZ(_m2_MZ) 
 {
   m_type  = std::string("Running Coupling");
   p_thresh  = NULL;
 
   m_CF    = 4./3.;        
   m_CA    = 3.;           
-  m_order = 0;
 
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD

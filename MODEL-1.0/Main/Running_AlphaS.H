@@ -38,7 +38,7 @@ namespace MODEL {
     double AlphaSLam(const double,const int);
     void   ContinueAlphaS(int &);
   public:
-    Running_AlphaS(double,double);
+    Running_AlphaS(const double,const double, const int=0);
     ~Running_AlphaS();
     double operator()(double); 
     double AsMZ()       { return m_as_MZ; }
