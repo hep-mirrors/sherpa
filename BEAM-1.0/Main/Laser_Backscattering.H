@@ -72,12 +72,15 @@ namespace BEAM {
   */
   /*!
     \var int Laser_Backscattering::m_mode
-    The mode for the spectrum:
+    The mode for the CompAZ spectrum:
     - 0 all contributions.
-    - 1 direct Compton process only.
+    - 1 direct contribution of Compton process only.
     - 2 scattering with 2 photons only.
     - 3 scattering off secondary electrons.
-
+    .
+    another option is to use just the simple compton spectrum
+    - -1 for comparison only.
+    .
   */
   /*!
     \var bool Laser_Backscattering::m_angles

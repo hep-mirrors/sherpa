@@ -21,21 +21,22 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   double disc    = 1.-sqr(m_bunch.PSMass()/m_energy);
   m_vecout       = Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
   m_Ebounds[0]   = 0.;  
-  m_Ebounds[1]   = 500.;
+  m_Ebounds[1]   = 5.e10;
+
+  if (m_energy>500. && m_mode!=-1 ) {
+    msg.Out()<<" WARNING: The CompAZ spectrum is only valid for electron energies "<<endl
+	     <<"          between 100 GeV and 400 GeV! "<<endl;
+
+  } 
 
   if (m_angles!=0) {
-    msg.Error()<<"Warning in Laser_Backscattering::Laser_Backscattering."<<endl
-	       <<"   Angular distribution not implemented yet. Assume collinear beam."<<endl; 
+    msg.Out()<<"WARNING:  Laser_Backscattering::Laser_Backscattering."<<endl
+	     <<"   Angular distribution not implemented yet. Assume collinear beam."<<endl; 
     m_angles     = 0;
   }
   //if (m_angles==0) m_lab = Vec4D(m_energy,0.,0.,_dir*m_energy);
 
 
-  if (m_energy>m_Ebounds[1] || m_energy<m_Ebounds[0]) {
-    msg.Error()<<"Warning in Laser_Backscattering::Laser_Backscattering."<<endl
-	       <<"   m_energy = "<<m_energy<<" out of bounds ... . Continue."<<endl;
-  }
-    
   // Setting m_pol flag if electrons ore Laser are polarized
   m_pol          = 0;
   if (m_polarisation!=0. || m_polarisationL!=0.) m_pol = 1;
@@ -43,7 +44,7 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   // Nonlinear corrections.
   m_rho2   = 3.315865;   
   m_delta  = 1.387423/2.;
-  if (_nonlin==1) { m_nonlin1 = 0.06594662; m_nonlin2 = 0.7060851e-3; }
+  if (_nonlin==1 && m_mode!=-1) { m_nonlin1 = 0.06594662; m_nonlin2 = 0.7060851e-3; }
   else { m_nonlin1 = 0.;         m_nonlin2 = 0.;           }
   m_xe     = 4.*m_energy*m_energyL/sqr(ATOOLS::Flavour(kf::e).PSMass());
   m_xi     = m_nonlin1 + m_nonlin2 * m_energy;
@@ -51,7 +52,7 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   m_xmax   = m_xe/(1.+m_xe);
   m_xmax2  = 2.*m_xe/(1.+2.*m_xe);
 
-  if (m_mode==1) m_upper = m_xmax;
+  if (m_mode==1 || m_mode==-1) m_upper = m_xmax;
   else m_upper = m_xmax2;
   m_peak   = m_xmax;
 
@@ -59,10 +60,16 @@ Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
   m_yden   = log(1.+m_xe);
   m_ysteps = 100;
 
-  m_totalC = 0.7115863 - 0.6776124e-3 * m_energy + 0. * m_energy * m_energy; 
-  m_total2 = m_totalC * 0.5540019 * (1.-exp(-37.38912 * m_xi * m_xi));
-  m_totalE = m_totalC * (0.7257064 + 1.517959e-3 * m_energy);
-
+  if (m_mode==-1) {
+    m_totalC=1.;
+    m_total2=0.;
+    m_totalE=0.;
+  }
+  else {
+    m_totalC = 0.7115863 - 0.6776124e-3 * m_energy + 0. * m_energy * m_energy; 
+    m_total2 = m_totalC * 0.5540019 * (1.-exp(-37.38912 * m_xi * m_xi));
+    m_totalE = m_totalC * (0.7257064 + 1.517959e-3 * m_energy);
+  }
   msg.Debugging()<<"Initialized Laser-Backscattering ("<<m_mode<<") : "<<endl
 		 <<" xe,xmax = "<<m_xe<<", "<<m_xmax
 		 <<" for energyL,mass ="<<m_energyL<<", "<<ATOOLS::Flavour(kf::e).PSMass()<<endl
@@ -141,15 +148,11 @@ void Laser_Backscattering::PrintSpectra(std::string filename,int mode) {
 bool Laser_Backscattering::CalculateWeight(double _x,double _scale) 
 {
   m_x = _x; m_Q2 = _scale;
-  if (!( (_x*m_energy>=m_Ebounds[0]) && (_x*m_energy<=m_Ebounds[1]))) {
-    m_weight = 0.;
-    return 0;
-  }
-
   
   m_polar = 0.;
   double spec;
   switch (m_mode) {
+  case -1: 
   case 1: 
     spec = Compton(_x,m_polarisation,m_polarisationL,m_polar);
     break;
@@ -194,7 +197,8 @@ double Laser_Backscattering::Compton(double x,double pole,double poll,double & d
   double value  = SimpleCompton(x,m_xe,pole*poll);
 
   double g2    = m_xe/x - m_xe - 1;
-  if (g2<0.) {
+
+  if (g2<0. || m_mode==-1) {
     if (m_pol) deg += m_totalC * value * Polarisation(x,m_xe,pole,poll);
     return m_totalC * value;
   }
@@ -208,7 +212,7 @@ double Laser_Backscattering::Compton(double x,double pole,double poll,double & d
 
 double Laser_Backscattering::TwoPhotons(double x,double pole,double poll,double & deg)
 {
-  if ((x<=0.) || (x>m_xmax2) || (m_total2 < 0.)) return 0.;
+  if ((x<=0.) || (x>m_xmax2) || (m_total2 < 0.) || m_mode==-1) return 0.;
 
   double value  = SimpleCompton(x,2.*m_xe,pole*poll);
 
@@ -226,7 +230,7 @@ double Laser_Backscattering::TwoPhotons(double x,double pole,double poll,double 
 
 double Laser_Backscattering::Rescattering(double x,double pole,double poll,double & deg)
 {
-  if ((x<=0.) || (x>m_xmax) || (m_totalE < 0.)) return 0.;
+  if ((x<=0.) || (x>m_xmax) || (m_totalE < 0.)|| m_mode==-1) return 0.;
 
   double yMin  = Max(m_yfix,0.5 * x * (1.+sqrt(4./(x*m_xe) + 1.)));
   if (yMin > 1.) return 0.;
