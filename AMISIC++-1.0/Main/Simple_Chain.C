@@ -162,7 +162,14 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	  if (m_processmap.find(name)==m_processmap.end()) {
 	    group->XSSelector()->SetOffShell(group->ISR()->KMROn());
 	    EXTRAXS::Single_XS *newxs = group->XSSelector()->GetXS(2,2,help);
-	    if (newxs==NULL) continue;
+	    if (newxs==NULL) {
+	      msg_Debugging()<<"Simple_Chain::AddProcess(..): "
+			     <<"Cannot add process ' "<<help[0]<<" "<<help[1]
+			     <<" -> "<<help[2]<<" "<<help[3]<<" '."<<std::endl;
+	      continue;
+	    }
+	    msg_Tracking()<<"Simple_Chain::AddProcess(..): "
+			  <<"Added process '"<<newxs->Name()<<"'."<<std::endl;
 	    if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
 	    newxs->SetScaleScheme(m_scalescheme);
 	    newxs->SetKFactorScheme(m_kfactorscheme);
@@ -266,7 +273,12 @@ bool Simple_Chain::CreateGrid()
     }
   }
   delete reader;
-  if (!found) return false;
+  if (!found) {
+    ATOOLS::msg.Error()<<"Simple_Chain::CreateGrid(): "
+		       <<"Did not find any process in '"
+		       <<InputFile()<<"'."<<std::endl;
+    return false;
+  }
   group->SetScaleScheme(m_scalescheme);
   group->SetKFactorScheme(m_kfactorscheme);
   group->PSHandler(false)->SetError(m_error);
@@ -300,12 +312,6 @@ bool Simple_Chain::CreateGrid()
     m_maxima[hit->first] = new Grid_Function_Type(*hit->second->Grid());
     delete hit->second;
   }
-//   if (ATOOLS::msg.LevelIsTracking()) {
-//     CheckConsistency(group,m_differential.back(),
-// 		     m_differential.back()->XMin(),
-// 		     m_differential.back()->XMax(),
-// 		     m_differential.back()->IntegrateY());
-//   }
   p_processes->Reset();
   p_fsrinterface = new FSR_Channel(2,2,flavour,m_differential.begin()->
 				   second->XAxis()->Variable());
