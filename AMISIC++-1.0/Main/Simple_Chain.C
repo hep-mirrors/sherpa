@@ -4,8 +4,13 @@
 #include "Random.H"
 #include "Channel_Elements.H"
 #include "Lund_Wrapper.H"
+#ifdef USING_SHERPA
+#include "Matrix_Element_Handler.H"
+#endif
 
+#ifdef PROFILE__Simple_Chain
 #include "prof.hh"
+#endif
 
 #ifdef DEBUG__Simple_Chain
 const std::string differentialfile=std::string("differential.dat");
@@ -15,12 +20,10 @@ const std::string integralfile=std::string("integral.dat");
 using namespace AMISIC;
 
 Simple_Chain::Simple_Chain():
-  MI_Base("Simple Chain",MI_Base::HardEvent,4),
+  MI_Base("Simple Chain",MI_Base::HardEvent,4,4,1),
   m_differential(std::vector<GridFunctionType*>(0)),
   m_norm((GridResultType)1.0),
   p_total(NULL),
-  m_environmentfile(std::string("Run.dat")),
-  m_xsfile(std::string("XS.dat")),
   m_xsextension("_xs.dat"),
   m_maxextension("_max.dat"),
   p_processes(NULL),
@@ -34,6 +37,9 @@ Simple_Chain::Simple_Chain():
   m_external(false) 
 {
   SetInputFile("MI.dat");
+  SetInputFile("XS.dat",1);
+  SetInputFile("Run.dat",2);
+  SetInputFile("Model.dat",3);
   SetOutputFile("SC.log");
   SetStart(0.0,0);
   SetStop(1.6,0);
@@ -43,11 +49,10 @@ Simple_Chain::Simple_Chain():
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 			   BEAM::Beam_Spectra_Handler *_p_beam,PDF::ISR_Handler *_p_isr):
-  MI_Base("Simple Chain",MI_Base::HardEvent,4),
+  MI_Base("Simple Chain",MI_Base::HardEvent,4,4,1),
   m_differential(std::vector<GridFunctionType*>(0)),
   m_norm((GridResultType)1.0),
   p_total(NULL),
-  m_environmentfile(std::string("Run.dat")),
   m_xsfile(std::string("XS.dat")),
   m_xsextension("_xs.dat"),
   m_maxextension("_max.dat"),
@@ -62,6 +67,9 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   m_external(true)
 {
   SetInputFile("MI.dat");
+  SetInputFile("XS.dat",1);
+  SetInputFile("Run.dat",2);
+  SetInputFile("Model.dat",3);
   SetOutputFile("SC.log");
   SetStart(0.0,0);
   SetStop(1.6,0);
@@ -72,12 +80,17 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 Simple_Chain::~Simple_Chain()
 {
   CleanUp();
+#ifdef USING_SHERPA
+  delete p_mehandler;
+#endif
 }
 
 void Simple_Chain::CleanUp() 
 {
   if (p_fsrinterface!=NULL) delete p_fsrinterface;
+#ifndef USING_SHERPA
   if (p_processes!=NULL) delete p_processes;
+#endif
   if (!m_external) {
     if (p_environment!=NULL) delete p_environment;
     p_environment=NULL;
@@ -136,6 +149,9 @@ ATOOLS::Blob *Simple_Chain::GetBlob(ATOOLS::Flavour *flavour)
 
 void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 {
+#ifdef PROFILE__Simple_Chain
+  PROFILE_HERE;
+#endif
   const unsigned int nflavour=4;
   ATOOLS::Flavour temp[4];
   ATOOLS::Blob *newblob;
@@ -296,14 +312,18 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 
 bool Simple_Chain::ReadInData()
 {
+#ifdef PROFILE__Simple_Chain
+  PROFILE_HERE;
+#endif
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  reader->SetFileName(m_inputpath+m_inputfile);
+  reader->SetInputPath(InputPath());
+  reader->SetInputFile(InputFile());
   reader->SetMatrixType(reader->MTransposed);
   reader->ReadFromFile(m_scalescheme,"SCALE_SCHEME");
   reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME");
   std::string outputpath;
   reader->ReadFromFile(outputpath,"GRID DIRECTORY");
-  m_outputpath+=outputpath;
+  SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
   comments.push_back("->");
   comments.push_back("FOR");
@@ -410,14 +430,17 @@ bool Simple_Chain::ReadInData()
 
 bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::string& processname)
 {
+#ifdef PROFILE__Simple_Chain
+  PROFILE_HERE;
+#endif
   if (!m_external) {
-    p_environment = new AMEGIC::Environment(m_inputpath,m_environmentfile);
+    p_environment = new AMEGIC::Environment(InputPath(),InputFile(2));
     p_environment->InitializeTheEnvironment();
     p_model=p_environment->Model();
     p_beam=p_environment->BeamSpectraHandler();
     p_isr=p_environment->ISRHandler();
   }
-  p_processes = new EXTRAXS::SimpleXSecs(m_inputpath,m_xsfile,p_model);
+  p_processes = new EXTRAXS::SimpleXSecs(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::CreateGrid(..): "
 			  <<"Found an initialized process group."<<std::endl
@@ -464,14 +487,14 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
   GridHandlerVector gridhandler=GridHandlerVector(2);
   for (unsigned int i=0;i<gridhandler.size();++i) gridhandler[i] = new GridHandlerType();
   GridCreatorType *gridcreator = new GridCreatorType(gridhandler,p_processes);
-  gridcreator->ReadInArguments(m_inputfile,m_inputpath);
-  if (mkdir(m_outputpath.c_str(),448)==0) {
+  gridcreator->ReadInArguments(InputFile(),InputPath());
+  if (mkdir(OutputPath().c_str(),448)==0) {
     ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
-		     <<"Created output directory "<<m_outputpath<<"."<<std::endl;
+		     <<"Created output directory "<<OutputPath()<<"."<<std::endl;
   }
   gridcreator->SetXSExtension(m_xsextension);
   gridcreator->SetMaxExtension(m_maxextension);
-  gridcreator->SetOutputPath(m_outputpath);
+  gridcreator->SetOutputPath(OutputPath());
   gridcreator->SetOutputFile(filename);
   gridcreator->CreateGrid();
   gridcreator->WriteOutGrid(comments);
@@ -491,8 +514,11 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
 
 bool Simple_Chain::InitializeBlobList()
 {  
+#ifdef PROFILE__Simple_Chain
+  PROFILE_HERE;
+#endif
   if (!m_external) {
-    p_environment = new AMEGIC::Environment(m_inputpath,m_environmentfile);
+    p_environment = new AMEGIC::Environment(InputPath(),InputFile(2));
     p_environment->InitializeTheEnvironment();
     p_model=p_environment->Model();
     p_beam=p_environment->BeamSpectraHandler();
@@ -500,7 +526,7 @@ bool Simple_Chain::InitializeBlobList()
   }
   SetStart(sqrt(p_isr->SprimeMax()),1);
   SetStop(sqrt(p_isr->SprimeMin()),1);
-  p_processes = new EXTRAXS::SimpleXSecs(m_inputpath,m_xsfile,p_model);
+  p_processes = new EXTRAXS::SimpleXSecs(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::InitializeBlobList(): "
 			  <<"Found an initialized process group."<<std::endl
@@ -560,11 +586,18 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->CreateFSRChannels();
     group[i]->InitIntegrators();
   }
+#ifdef USING_SHERPA
+  p_mehandler = new SHERPA::Matrix_Element_Handler();
+  p_mehandler->SetXS(p_processes);
+#endif
   return true;
 }
 
 bool Simple_Chain::CalculateTotal()
 {
+#ifdef PROFILE__Simple_Chain
+  PROFILE_HERE;
+#endif
   if (m_differential.size()==0) return false;
   GridFunctionType *differential;
   differential = new GridHandlerType::GridFunctionType();
@@ -594,7 +627,7 @@ bool Simple_Chain::CalculateTotal()
   comments.push_back("  Differential XS   "); 
   GridHandlerType *gridhandler = new GridHandlerType(differential);
   GridCreatorBaseType *gridcreator = new GridCreatorBaseType();
-  gridcreator->SetOutputPath(m_outputpath);
+  gridcreator->SetOutputPath(OutputPath());
   gridcreator->SetOutputFile(differentialfile);
   gridcreator->WriteSingleGrid(gridhandler,comments);
   delete gridhandler;
@@ -616,38 +649,47 @@ bool Simple_Chain::CalculateTotal()
 
 bool Simple_Chain::Initialize()
 {
+#ifdef PROFILE__Simple_Chain
+  PROFILE_HERE;
+#endif
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
   CleanUp();
   SetNorm(pyint7.sigt[5][0][0]);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   if (!m_external) {
-    std::string initfile;
-    ATOOLS::ParticleInit(m_inputpath);
-    reader->SetFileName(m_inputpath+m_inputfile);
-    if (!reader->ReadFromFile(initfile,"ENVIRONMENT")) initfile=std::string("Run.dat");
-    ATOOLS::rpa.Init(m_inputpath,initfile);
+    ATOOLS::ParticleInit(InputPath());
+    reader->SetInputPath(InputPath());
+    reader->SetInputFile(InputFile());
+    std::string initfile=std::string("Run.dat");
+    reader->ReadFromFile(initfile,"ENVIRONMENT");
+    SetInputFile(initfile,2);
+    ATOOLS::rpa.Init(InputPath(),InputFile(2));
   }
   if (!ReadInData()) return false;
-  reader->SetFileName(m_inputpath+m_inputfile);
-  if (!reader->ReadFromFile(m_xsfile,"XS_FILE")) m_xsfile=std::string("XS.dat");
+  reader->SetInputPath(InputPath());
+  reader->SetInputFile(InputFile());
+  std::string xsfile=std::string("XS.dat");
+  reader->ReadFromFile(xsfile,"XS_FILE");
+  SetInputFile(xsfile,1);
   delete reader;
   ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer("=",";","!");
-  writer->SetFileName(m_inputpath+m_xsfile);
+  writer->SetOutputPath(InputPath());
+  writer->SetOutputFile(InputFile(1));
   writer->SetBlank(32);
   writer->WriteComment("========================");
   writer->WriteComment("     Dummy XS File      ");
   writer->WriteComment("========================");
   writer->WriteToFile(std::string(" "));
-  writer->WriteToFile(std::string(" XS_FILE = ")+m_xsfile);
+  writer->WriteToFile(std::string(" XS_FILE = ")+InputFile(1));
   writer->WriteToFile(std::string(" "));
   writer->WriteToFile(std::string(" Init QCD 2->2"));
   delete writer;
   for (unsigned int i=0;i<m_blobs.size();++i) {
     GridHandlerType *xsgridhandler = new GridHandlerType();
     GridHandlerType *maxgridhandler = new GridHandlerType();
-    if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputpath+m_filename[i]+m_xsextension)&&
-	maxgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputpath+m_filename[i]+m_maxextension)) {
+    if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_xsextension)&&
+	maxgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_maxextension)) {
       m_differential.push_back(new GridFunctionType(*xsgridhandler->Grid()));
       m_maximum.push_back(new GridFunctionType(*maxgridhandler->Grid()));
       delete xsgridhandler;
@@ -670,8 +712,8 @@ bool Simple_Chain::Initialize()
 	delete maxgridhandler;
 	return false;
       }
-      if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputpath+m_filename[i]+m_xsextension)&&
-	  maxgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputpath+m_filename[i]+m_maxextension)) {
+      if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_xsextension)&&
+	  maxgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_maxextension)) {
 	m_differential.push_back(new GridFunctionType(*xsgridhandler->Grid()));
 	m_maximum.push_back(new GridFunctionType(*maxgridhandler->Grid()));
 	delete xsgridhandler;
@@ -679,7 +721,7 @@ bool Simple_Chain::Initialize()
       }
       else {
 	ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
-			   <<"Grid creation failed for "<<m_outputpath+m_filename[i]<<std::endl
+			   <<"Grid creation failed for "<<OutputPath()+m_filename[i]<<std::endl
 			   <<"   Run cannot continue."<<std::endl;
 	exit(120);
       }
@@ -704,7 +746,9 @@ bool Simple_Chain::Initialize()
 
 bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 {
+#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
+#endif
   m_filledblob=false;
   if (p_processes==NULL) {
     ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
@@ -767,7 +811,9 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 
 bool Simple_Chain::DiceProcess()
 {
+#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
+#endif
   if (m_differential.size()==0) return false;
   if (m_dicedparameter) m_dicedparameter=false;
   else {
@@ -793,6 +839,9 @@ bool Simple_Chain::DiceProcess()
   for (int i=sorter.XDataSize()-1;i>=0;--i) {
     if ((cur+=sorter.XData(i)/norm)>rannr) {
       m_selected=sorter.XYData(i).second;
+#ifdef USING_SHERPA
+      p_processes->SetSelected((*p_processes)[m_selected]);
+#endif
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
 	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): s' out of bounds."<<std::endl
 			   <<"   Cannot create any process. Abort."<<std::endl;
@@ -824,7 +873,9 @@ bool Simple_Chain::DiceProcess()
 
 bool Simple_Chain::DiceOrderingParameter()
 { 
+#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
+#endif
   if (m_last[0]<=m_stop[0]) {
     ATOOLS::msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
 		       <<"Ordering parameter exceeded allowed range."<<std::endl
@@ -849,6 +900,5 @@ void Simple_Chain::Reset()
 
 void Simple_Chain::Update(const MI_Base *mibase)
 {
-  UpdateAll(this);
   return;
 }

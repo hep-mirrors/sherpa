@@ -3,8 +3,13 @@
 
 #include "File_IO_Base.H"
 #include "Blob_List.H"
-#include "XS_Base.H"
 #include "My_Map.H"
+
+#ifdef USING_SHERPA
+namespace SHERPA { class Matrix_Element_Handler; }
+#endif
+
+namespace EXTRAXS { class XS_Base; }
 
 namespace AMISIC {
 
@@ -33,11 +38,15 @@ namespace AMISIC {
     static NameMIBaseMap m_bases;
     
     double       *m_start, *m_stop, *m_last;
-    unsigned int  n_parameter;
+    unsigned int  m_nparameter;
 
     bool m_dicedparameter, m_dicedprocess, m_filledblob;
 
     ATOOLS::Blob *p_blob;
+
+#ifdef USING_SHERPA
+    SHERPA::Matrix_Element_Handler *p_mehandler;
+#endif
 
     EXTRAXS::XS_Base *p_xs;
 
@@ -48,7 +57,8 @@ namespace AMISIC {
 
     // constructor
     MI_Base(std::string _m_name,TypeID _m_type,
-	    unsigned int _n_parameter=0);
+	    unsigned int _m_nparameter=0,
+	    unsigned int infiles=1,unsigned int outfiles=1);
 
     // destructor
     virtual ~MI_Base();
@@ -60,6 +70,10 @@ namespace AMISIC {
     // getters
     const double Start(unsigned int i=0) const;
     const double Stop(unsigned int i=0) const;
+
+#ifdef USING_SHERPA
+    SHERPA::Matrix_Element_Handler *MEHandler();
+#endif
 
     EXTRAXS::XS_Base *XS();
 

@@ -8,6 +8,10 @@
 #include "My_IO_Stream.H"
 #endif
 
+#ifdef PROFILE__Data_To_Function
+#include "prof.hh"
+#endif
+
 namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
@@ -54,6 +58,9 @@ namespace ATOOLS {
   bool Data_To_Function<Argument_Type,Result_Type>::
   Import(const ArgumentVector *_p_xdata,const ResultVector *_p_ydata,bool normal)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     if (_p_xdata->size()==_p_ydata->size()) {
       Resize(_p_xdata->size());
       if (normal) {
@@ -79,6 +86,9 @@ namespace ATOOLS {
   bool Data_To_Function<Argument_Type,Result_Type>::
   Import(const XYMap *_p_xydata,bool normal)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     unsigned int i=-1;
     Resize(_p_xydata->size());
     if (normal) {
@@ -105,6 +115,9 @@ namespace ATOOLS {
   bool Data_To_Function<Argument_Type,Result_Type>::
   Import(const DataToFunctionType &reference,bool adoptscaling)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     if (adoptscaling) {
       p_xaxis->SetScaling(reference.p_xaxis->Scaling()->Name());
       p_yaxis->SetScaling(reference.p_yaxis->Scaling()->Name());
@@ -128,6 +141,9 @@ namespace ATOOLS {
   void Data_To_Function<Argument_Type,Result_Type>::
   Export(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     _p_xdata->clear();
     _p_ydata->clear();
     _p_xdata->resize(p_xydata->size());
@@ -150,6 +166,9 @@ namespace ATOOLS {
   void Data_To_Function<Argument_Type,Result_Type>::
   Export(XYMap *_p_xydata,bool normal)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     _p_xydata->clear();
     if (normal) {
       for (unsigned int i=0;i<p_xydata->size();++i) {
@@ -168,6 +187,9 @@ namespace ATOOLS {
   template <class Argument_Type,class Result_Type>
   bool Data_To_Function<Argument_Type,Result_Type>::SortX()
   {
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     bool success=true;
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::SortX() :"<<std::endl;
@@ -220,6 +242,9 @@ namespace ATOOLS {
   template <class Argument_Type,class Result_Type>
   bool Data_To_Function<Argument_Type,Result_Type>::SortY()
   {
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     bool success=true;
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::SortY() :"<<std::endl;
@@ -273,6 +298,9 @@ namespace ATOOLS {
   unsigned int Data_To_Function<Argument_Type,Result_Type>::
   ClosestX(ArgumentType x,unsigned int &left,unsigned int &right)
   {
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::ClosestX("<<x<<") :"<<std::endl;
     std::cout<<"   p_xdata = [ "; 
@@ -323,6 +351,9 @@ namespace ATOOLS {
   unsigned int Data_To_Function<Argument_Type,Result_Type>::
   ClosestY(ResultType y,unsigned int &left,unsigned int &right)
   {
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::ClosestY("<<y<<") :"<<std::endl;
     std::cout<<"   p_ydata = [ "; 
@@ -373,6 +404,9 @@ namespace ATOOLS {
   bool Data_To_Function<Argument_Type,Result_Type>::
   DeleteXPoint(ArgumentType _x)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::DeleteXPoint("<<_x<<") :"<<std::endl;
     std::cout<<"   before deletion: p_xdata = [ "; 
@@ -409,6 +443,9 @@ namespace ATOOLS {
   bool Data_To_Function<Argument_Type,Result_Type>::
   DeleteYPoint(ResultType _y)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::DeleteYPoint("<<_y<<") :"<<std::endl;
     std::cout<<"   before deletion: p_ydata = [ "; 
@@ -445,6 +482,9 @@ namespace ATOOLS {
   void Data_To_Function<Argument_Type,Result_Type>::
   RescaleX(const std::string scalename)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::RescaleX("<<scalename<<") :"<<std::endl;
     std::cout<<"   before rescaling: p_xdata = [ "; 
@@ -472,6 +512,9 @@ namespace ATOOLS {
   void Data_To_Function<Argument_Type,Result_Type>::
   RescaleY(const std::string scalename)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::RescaleY("<<scalename<<") :"<<std::endl;
     std::cout<<"   before rescaling: p_ydata = [ "; 
@@ -499,6 +542,9 @@ namespace ATOOLS {
   Result_Type Data_To_Function<Argument_Type,Result_Type>::
   InterpolateY(ArgumentType x)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     switch (m_interpolationmode) {
     case Linear:
       unsigned int left, right;
@@ -515,6 +561,9 @@ namespace ATOOLS {
   Argument_Type Data_To_Function<Argument_Type,Result_Type>::
   InterpolateX(ResultType y)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     switch (m_interpolationmode) {
     case Linear:
       unsigned int left, right;
@@ -531,6 +580,9 @@ namespace ATOOLS {
   Result_Type Data_To_Function<Argument_Type,Result_Type>::
   Y(ArgumentType x,AcquisitionModeID tempmode)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     if (p_xydata->size()<2) {
       ATOOLS::msg.Debugging()<<"Data_To_Function::Y("<<x<<","<<tempmode<<"): "
 			     <<"Less than 2 data points available."<<std::endl
@@ -555,6 +607,9 @@ namespace ATOOLS {
   Argument_Type Data_To_Function<Argument_Type,Result_Type>::
   X(ResultType y,AcquisitionModeID tempmode)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     if (p_xydata->size()<2) {
       ATOOLS::msg.Debugging()<<"Data_To_Function::X("<<y<<","<<tempmode<<"): "
 			     <<"Less than 2 data points available."<<std::endl
@@ -579,6 +634,9 @@ namespace ATOOLS {
   Result_Type Data_To_Function<Argument_Type,Result_Type>::
   IntegrateY(ArgumentType xmin,ArgumentType xmax)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     ResultType integral=(ResultType)0.0;
     if (p_xydata->size()<2) return integral;
     if (xmin==xmax) {
@@ -622,6 +680,9 @@ namespace ATOOLS {
   Argument_Type Data_To_Function<Argument_Type,Result_Type>::
   IntegrateX(ResultType ymin,ResultType ymax)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     ArgumentType integral=(ArgumentType)0.0;
     if (p_yxdata->size()<2) return integral;
     if (ymin==ymax) {
@@ -665,6 +726,9 @@ namespace ATOOLS {
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
   IntegralY(ArgumentType xmin,ArgumentType xmax,std::string xscaling,std::string yscaling,bool forward)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     DataToFunctionType *integrated = NULL;
     ResultType integral=(ResultType)0.0;
     if (p_xydata->size()<2) return integrated;
@@ -746,6 +810,9 @@ namespace ATOOLS {
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
   IntegralX(ResultType ymin,ResultType ymax,std::string yscaling,std::string xscaling,bool forward)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     DataToFunctionType *integrated = NULL;
     ArgumentType integral=(ArgumentType)0.0;
     if (p_yxdata->size()<2) return integrated;
@@ -826,6 +893,9 @@ namespace ATOOLS {
   template <class Argument_Type,class Result_Type>
   Result_Type Data_To_Function<Argument_Type,Result_Type>::DifferentialY(ArgumentType x)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     unsigned int left, right;
     ClosestX(x,left,right);
     return ((*p_yaxis)[p_xydata[right].second]-(*p_yaxis)[p_xydata[left].second])/(GridResultType)
@@ -835,6 +905,9 @@ namespace ATOOLS {
   template <class Argument_Type,class Result_Type>
   Argument_Type Data_To_Function<Argument_Type,Result_Type>::DifferentialX(ResultType y)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     unsigned int left, right;
     ClosestY(y,left,right);
     return ((*p_xaxis)[p_yxdata[right].second]-(*p_xaxis)[p_yxdata[left].second])/(GridResultType)
@@ -845,6 +918,9 @@ namespace ATOOLS {
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
   DerivativeY(ArgumentType xmin,ArgumentType xmax,std::string xscaling,std::string yscaling)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     DataToFunctionType *derivated = NULL;
     ResultType differential;
     if (p_xydata->size()<2) return derivated;
@@ -915,6 +991,9 @@ namespace ATOOLS {
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
   DerivativeX(ResultType ymin,ResultType ymax,std::string yscaling,std::string xscaling)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     DataToFunctionType *derivated = NULL;
     ArgumentType differential;
     if (p_yxdata->size()<2) return derivated;
@@ -985,6 +1064,9 @@ namespace ATOOLS {
   void Data_To_Function<Argument_Type,Result_Type>::
   ScaleY(ResultType scalefactor)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
       yxit->first=(*p_yaxis)((*p_yaxis)[yxit->first]*scalefactor);
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
@@ -995,6 +1077,9 @@ namespace ATOOLS {
   void Data_To_Function<Argument_Type,Result_Type>::
   ScaleX(ArgumentType scalefactor)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
       xyit->first=(*p_xaxis)((*p_xaxis)[xyit->first]*scalefactor);
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
@@ -1005,6 +1090,9 @@ namespace ATOOLS {
   void Data_To_Function<Argument_Type,Result_Type>::
   MoveY(ResultType distance)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
       yxit->first=(*p_yaxis)((*p_yaxis)[yxit->first]+distance);
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
@@ -1015,6 +1103,9 @@ namespace ATOOLS {
   void Data_To_Function<Argument_Type,Result_Type>::
   MoveX(ArgumentType distance)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
       xyit->first=(*p_xaxis)((*p_xaxis)[xyit->first]+distance);
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
@@ -1025,6 +1116,9 @@ namespace ATOOLS {
   Argument_Type  Data_To_Function<Argument_Type,Result_Type>::
   DeltaXMin(ResultType& left,ResultType& right)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     ArgumentType minimum=(ArgumentType)0.0, cur;
     if (p_xydata->size()>2) {
       XYVectorIterator xyit=p_xydata->begin()+1;
@@ -1052,6 +1146,9 @@ namespace ATOOLS {
   Argument_Type  Data_To_Function<Argument_Type,Result_Type>::
   DeltaXMax(ResultType& left,ResultType& right)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     ArgumentType maximum=(ArgumentType)0.0, cur;
     if (p_xydata->size()>2) {
       for (XYVectorIterator xyit=p_xydata->begin()+1;xyit!=p_xydata->end();++xyit) {
@@ -1075,6 +1172,9 @@ namespace ATOOLS {
   Result_Type  Data_To_Function<Argument_Type,Result_Type>::
   DeltaYMin(ArgumentType& left,ArgumentType& right)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     ResultType minimum=(ResultType)0.0, cur;
     if (p_yxdata->size()>2) {
       YXVectorIterator yxit=p_yxdata->begin()+1;
@@ -1102,6 +1202,9 @@ namespace ATOOLS {
   Result_Type  Data_To_Function<Argument_Type,Result_Type>::
   DeltaYMax(ArgumentType& left,ArgumentType& right)
   { 
+#ifdef PROFILE__Data_To_Function
+    PROFILE_HERE;
+#endif
     ResultType maximum=(ResultType)0.0, cur;
     if (p_yxdata->size()>2) {
       for (YXVectorIterator yxit=p_yxdata->begin()+1;yxit!=p_yxdata->end();++yxit) {

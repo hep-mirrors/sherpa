@@ -11,7 +11,7 @@ lib_LTLIBRARIES       = libAmisicHelpers.la
 libAmisicHelpers_la_SOURCES   =	\
 				QCD_Processes_C.C \
 				Channel_Interface.C 
-CXXFLAGS      =	-pedantic -Wall -Winline
+AM_CXXFLAGS   =	-pedantic -Wall -Winline
 INCLUDES      =	\
 		-I../Tools \
 		-I$(EXTRAXSINC)/Two2Two \

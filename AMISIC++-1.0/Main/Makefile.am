@@ -6,6 +6,7 @@ BEAMINC    = $(SHERPASYS)/BEAM-1.0
 PHASICINC  = $(SHERPASYS)/PHASIC++-1.0
 MODELINC   = $(SHERPASYS)/MODEL-1.0
 EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
+SHERPAINC  = $(SHERPASYS)/SHERPA-1.0
 
 lib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
@@ -13,11 +14,12 @@ libAmisic_la_SOURCES  = \
 			Environment.C \
 			Simple_Chain.C \
 			Amisic.C 
-CXXFLAGS      =	-pedantic -Wall -Winline
+AM_CXXFLAGS   =	-pedantic -Wall -Winline -DUSING_SHERPA
 INCLUDES      =	\
 		-I../Tools \
 		-I../Other \
-		-I../../SHERPA-1.0/LundTools \
+		-I$(SHERPAINC)/LundTools \
+		-I$(SHERPAINC)/PerturbativePhysics \
 		-I$(EXTRAXSINC)/Two2Two \
 		-I$(EXTRAXSINC)/Main \
 		-I$(PHASICINC)/Main \

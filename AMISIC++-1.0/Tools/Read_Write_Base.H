@@ -1,13 +1,11 @@
 #ifndef Read_Write_Base_H
 #define Read_Write_Base_H
 
-#include "My_Vector.H"
-#include "My_String.H"
 #include "My_Filestream.H"
+#include "File_IO_Base.H"
 
 namespace ATOOLS {
 
-  const std::string nullstring = std::string("");
   const std::string defaultcut = std::string("=");
   const std::string defaultsep = std::string(";");
   const std::string defaultcom = std::string("#");
@@ -16,12 +14,8 @@ namespace ATOOLS {
   const int defaultblank = 32;
   const int defaulttab   = 9;
 
-  class Read_Write_Base {
+  class Read_Write_Base: public File_IO_Base {
   public:
-
-    enum OpenModeID { Temporary =  1,
-		      Permanent =  2,
-		      Unknown   = 99 };
 
     enum VectorTypeID { VVertical   =  1,
 			VHorizontal =  2,
@@ -33,13 +27,10 @@ namespace ATOOLS {
 
   private:
 
-    std::string              m_filename, m_string;
     std::vector<std::string> m_comment, m_ignore, m_seperator, m_filecontent;
     std::vector<int>         m_blank;
 
-    std::fstream *p_file;
-
-    OpenModeID m_openmode;
+    std::string              m_string;
 
     VectorTypeID m_vectortype;
     MatrixTypeID m_matrixtype;
@@ -49,14 +40,12 @@ namespace ATOOLS {
   protected:
 
     const std::vector<std::string> &FileContent() const;
-    std::fstream                   *File();
 
-    bool OpenFile(std::string filename=nullstring,
-		  std::ios_base::openmode omode=std::ios_base::in,
-		  OpenModeID tempomode=Unknown);
-    void CloseFile(bool force=false);
+    bool OpenInFile(const unsigned int i=0);
+    bool OpenOutFile(const unsigned int i=0);
 
-    const OpenModeID OpenMode() const;
+    void CloseInFile(const unsigned int i=0,const bool force=false);
+    void CloseOutFile(const unsigned int i=0,const bool force=false);
 
     template <class ReadWrite_Type >
     ReadWrite_Type NotDefined();
@@ -66,9 +55,13 @@ namespace ATOOLS {
   public:
 
     // constructors
-    Read_Write_Base();
-    Read_Write_Base(std::string _m_cut,std::string _m_seperator,std::string _m_comment);
-    Read_Write_Base(const char *_m_cut,const char *_m_seperator,const char *_m_comment);
+    Read_Write_Base(const unsigned int infiles,
+		    const unsigned int outfiles);
+    Read_Write_Base(const unsigned int infiles,
+		    const unsigned int outfiles,
+		    const std::string _m_cut,
+		    const std::string _m_seperator,
+		    const std::string _m_comment);
 
     // destructor
     ~Read_Write_Base();
@@ -94,7 +87,6 @@ namespace ATOOLS {
     void AddBlank(const int _m_blank);
     void AddBlank(const std::vector<int> &_m_blank);
 
-    void SetFileName(const std::string _m_filename);
     void SetString(const std::string _m_string);
 
     void SetOpenMode(const OpenModeID _m_openmode);
@@ -109,7 +101,6 @@ namespace ATOOLS {
 
     const std::vector<int> &Blank() const;
 
-    const std::string FileName() const;
     const std::string String() const;
 
     const VectorTypeID VectorType() const;
@@ -128,63 +119,98 @@ namespace ATOOLS {
 
   /*!
     \class Read_Write_Base
-    \brief 
+    \brief Reads standard data types from strings or files
+
+    The Read_Write_Base class currently supports the types 
+    int, long int, float, double, and std::string. According to the 
+    specific purpose the data may either be read from an input string
+    or from a file. It is also possible to read multiple inputs, 
+    which have to be seperated by blanks, 
+    or to read arrays where the columns must be seperated 
+    by a chooseable seperator. According to that the output is passed 
+    either as a std::vector<Read_Type> or as a std::vector<std::vector<Read_Type>>.
+    If not indicated otherwise each function using std::string as input parameter type
+    will also exist for const char*.
   */
 
   /*!
     \fn Read_Write_Base::Read_Write_Base()
     \brief Default constructor
 
-    Initializes Read_Write_Base with the default cut "=", the default seperator ";" 
+    Initializes the Read_Write_Base with the default cut "=", the default seperator ";" 
     and the default comment indicator "#".
   */
 
   /*!
-    \fn Read_Write_Base::Read_Write_Base(std::string _m_cut,std::string _m_seperator,std::string _m_comment)
+    \fn Read_Write_Base::Read_Write_Base(std::string,std::string,std::string)
     \brief Special constructor
 
-    Initializes Read_Write_Base with the cut _m_cut, the seperator _m_seperator 
-    and the comment indicator _m_comment. 
+    Initializes the Read_Write_Base with the given cut, the given seperator 
+    and the given comment indicator. 
   */
 
   /*!
-    \fn Read_Write_Base::SetSeperator(std::string _m_seperator)
+    \fn Read_Write_Base::SetSeperator(std::string)
     \brief Sets the seperator
   */
 
   /*!
-    \fn Read_Write_Base::SetComment(std::string _m_comment)
+    \fn Read_Write_Base::SetComment(std::string)
     \brief Sets the comment indicator
   */
 
   /*!
-    \fn Read_Write_Base::SetFileName(std::string _m_filename)
-    \brief Sets the current file name
+    \fn Read_Write_Base::SetString(std::string)
+    \brief Sets the current filename
   */
 
   /*!
-    \fn Read_Write_Base::SetString(std::string _m_string)
+    \fn Read_Write_Base::SetString(std::string)
     \brief Sets the current input string
   */
 
   /*!
+    \fn Read_Write_Base::Cut()
+    \brief Returns the current cut
+  */
+
+  /*!
     \fn Read_Write_Base::Seperator()
-    \brief Returns the current seperators
+    \brief Returns the current seperator
   */
 
   /*!
     \fn Read_Write_Base::Comment()
-    \brief Returns the current comment indicators
+    \brief Returns the current comment indicator
   */
 
   /*!
-    \fn Read_Write_Base::FileName()
+    \fn Read_Write_Base::String()
     \brief Returns the current filename
   */
 
   /*!
     \fn Read_Write_Base::String()
     \brief Returns the current input string
+  */
+
+  /*!
+    \fn Read_Write_Base::NotDefined()
+    \brief Identifies unreadable input 
+
+    This template is used to decide whether the input parameter
+    is defined or not. In principle it should return the value 
+    std::stringstream returns when a null argument has been passed 
+  */
+
+  /*!
+    \fn Read_Write_Base::Default()
+    \brief Returns default values
+
+    This template passes a default value to the user routine
+    in the case that reading the input string resulted in an error. 
+    On the basis of a comparison to Read_Write_Base::Default() one is thus able to decide
+    whether the reading has been succesful.
   */
 
 } // end of namespace ATOOLS

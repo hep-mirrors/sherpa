@@ -90,7 +90,7 @@ namespace AMISIC {
     }
     std::string gridxscaling, gridyscaling, gridxvariable, gridyvariable;
     ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","#");
-    reader->SetFileName(m_streamname);
+    reader->SetInputFile(m_streamname);
     reader->AddIgnore("!");
     if (!reader->ReadFromFile(gridxscaling,"x scale :")) {
       ATOOLS::msg.Error()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
@@ -160,7 +160,7 @@ namespace AMISIC {
       m_streamname=std::string("last_grid.dat");
     }
     ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer(":",";","!");
-    writer->SetFileName(m_streamname);
+    writer->SetOutputFile(m_streamname);
     writer->SetBlank(ATOOLS::defaultblank);
     writer->WriteComment("===================="); 
     writer->WriteComment(" AMISIC++ grid file "); 

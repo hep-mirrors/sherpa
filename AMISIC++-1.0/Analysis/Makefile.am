@@ -10,7 +10,7 @@ libAmisicAnalysis_la_SOURCES  = \
 				Jet_Y.C \
 				Jet_Multiplicity.C \
 				Jet_Observables.C
-CXXFLAGS      =	-pedantic -Wall -Winline -g
+AM_CXXFLAGS   =	-pedantic -Wall -Winline -g
 INCLUDES      = \
 		-I../Tools \
 		-I$(MODELINC)/Main \

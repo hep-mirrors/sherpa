@@ -53,8 +53,8 @@ void Jet_Y::Evaluate(const ATOOLS::Particle_List &particles,double weight)
 {
   std::vector<ATOOLS::Vec4D> jetmomenta;
   if (m_mode>0) {
-    p_jetfinder->ConstructJets(&particles,(*p_jets),(*p_ys));
-    jetmomenta=p_jetfinder->JetMomenta();
+//     p_jetfinder->ConstructJets(&particles,(*p_jets),(*p_ys));
+//     jetmomenta=p_jetfinder->JetMomenta();
   }
   else {
     jetmomenta.resize(particles.size());

@@ -34,17 +34,17 @@ bool Amisic::Initialize()
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  reader->SetFileName(InputFile());
+  reader->SetInputFile(InputFile());
   std::vector<std::string> model;
   if (!reader->VectorFromFile(model,"HARD_MODEL_NAME",ATOOLS::noinputtag,reader->VHorizontal)) {
     model.push_back("None");
   }
-  for (unsigned int i=1;i<model.size();++i) model[0]+=std::string(" ")+model[i];
+  for (size_t i=1;i<model.size();++i) model[0]+=std::string(" ")+model[i];
   SelectHardModel(StringToModelID(model[0]));
   if (!reader->VectorFromFile(model,"SOFT_MODEL_NAME",ATOOLS::noinputtag,reader->VHorizontal)) {
     model.push_back("None");
   }
-  for (unsigned int i=1;i<model.size();++i) model[0]+=std::string(" ")+model[i];
+  for (size_t i=1;i<model.size();++i) model[0]+=std::string(" ")+model[i];
   SelectSoftModel(StringToModelID(model[0]));
   std::string file;
   reader->ReadFromFile(file,"HARD_MODEL_FILE");
@@ -73,6 +73,7 @@ bool Amisic::GenerateHardProcess(ATOOLS::Blob *blob)
 {
   if (!p_hardbase->DiceOrderingParameter()) return false;
   if (!p_hardbase->DiceProcess()) return false;
+  p_hardbase->UpdateAll(p_hardbase);
   return p_hardbase->CreateBlob(blob);
 }
 
@@ -80,6 +81,7 @@ bool Amisic::GenerateSoftProcess(ATOOLS::Blob *blob)
 {
   if (!p_softbase->DiceOrderingParameter()) return false;
   if (!p_softbase->DiceProcess()) return false;
+  p_softbase->UpdateAll(p_softbase);
   return p_softbase->CreateBlob(blob);
 }
 
@@ -162,9 +164,9 @@ bool Amisic::SelectHardModel(ModelID _m_hardmodel)
     p_hardbase = new MI_None(MI_Base::HardEvent);
     break;
   }
-  p_hardbase->SetInputPath(m_inputpath);
-  p_hardbase->SetOutputPath(m_outputpath);
-  p_hardbase->SetInputFile(m_inputfile);
+  p_hardbase->SetInputPath(InputPath());
+  p_hardbase->SetOutputPath(OutputPath());
+  p_hardbase->SetInputFile(InputFile());
   return true;
 }
 
@@ -192,9 +194,9 @@ bool Amisic::SelectSoftModel(ModelID _m_softmodel)
     p_softbase = new MI_None(MI_Base::SoftEvent);
     break;
   }
-  p_softbase->SetInputPath(m_inputpath);
-  p_softbase->SetOutputPath(m_outputpath);
-  p_softbase->SetInputFile(m_inputfile);
+  p_softbase->SetInputPath(InputPath());
+  p_softbase->SetOutputPath(OutputPath());
+  p_softbase->SetInputFile(InputFile());
   return true;
 }
 

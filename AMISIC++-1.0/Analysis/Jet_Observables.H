@@ -11,7 +11,7 @@ namespace AMISIC {
   class Jet_Observables: public ATOOLS::Primitive_Observable_Base {
   private:
 
-    ATOOLS::Jet_Algorithm *p_jetfinder;
+//     ATOOLS::Jet_Algorithm *p_jetfinder;
 
     Primordial_KT    *p_primkt;
     Jet_Multiplicity *p_jetmulti;

@@ -13,32 +13,23 @@
 
 namespace ATOOLS {
 
-  Data_Writer::Data_Writer(): Read_Write_Base() 
-  {
-    SetOpenMode(Permanent);
-  }
+  Data_Writer::Data_Writer(): 
+    Read_Write_Base(0,1) {}
 
-  Data_Writer::Data_Writer(std::string _m_cut, std::string _m_seperator, std::string _m_comment):
-    Read_Write_Base(_m_cut,_m_seperator,_m_comment) 
-  {
-    SetOpenMode(Permanent);
-  }
-  
-  Data_Writer::Data_Writer(const char *_m_cut, const char *_m_seperator, const char *_m_comment):
-    Read_Write_Base(_m_cut,_m_seperator,_m_comment) 
-  {
-    SetOpenMode(Permanent);
-  }
+  Data_Writer::Data_Writer(const std::string _m_cut,
+			   const std::string _m_seperator,
+			   const  std::string _m_comment):
+    Read_Write_Base(0,1,_m_cut,_m_seperator,_m_comment) {}
   
   bool Data_Writer::InitFile(std::string tempfname) 
   {
-    if (tempfname!=nullstring) SetFileName(tempfname);
-    if (FileName()==nullstring) {
+    if (tempfname!=nullstring) SetOutputFile(tempfname);
+    if (OutputFile()==nullstring) {
       ATOOLS::msg.Error()<<"Data_Writer: Error in InitFile(..)! No output file specified."<<std::endl
 			 <<"             Ignore command."<<std::endl;
       return false;
     }
-    if (!OpenFile(FileName(),std::ios_base::out)) {
+    if (!OpenOutFile()) {
       ATOOLS::msg.Error()<<"Data_Writer: Error in WriteComment(..)! Could not open output file."<<std::endl
 			 <<"             Ignore command."<<std::endl;
       return false;
@@ -50,7 +41,6 @@ namespace ATOOLS {
 				 bool endline,std::string tempfname)
   {
     std::string tag;
-    int blank=defaultblank;
 #ifdef DEBUG__Data_Writer
     std::cout<<"Data_Writer::WriteComment("<<comment<<","<<tagreference<<","<<tempfname<<")"<<std::endl;
     std::cout<<"   comment tags are ";
@@ -60,10 +50,15 @@ namespace ATOOLS {
     if (tagreference>=Comment().size()) tag=defaultcom;
     else tag=Comment()[tagreference];
     if (!InitFile(tempfname)) return false;
-    if (Blank().size()>0) blank=Blank()[0];
-    *File()<<tag<<(char)blank<<comment;
-    if (endline) *File()<<std::endl;
-    CloseFile();
+    if (tag!=nullstring) {
+      if (Blank().size()>0) *OutFile()<<tag<<(char)Blank()[0]<<comment;
+      else *OutFile()<<tag<<comment;
+    }
+    else {
+      *OutFile()<<comment;
+    }
+    if (endline) *OutFile()<<std::endl;
+    CloseOutFile();
     return true;
   }
   
@@ -81,14 +76,18 @@ namespace ATOOLS {
 				  std::string tempfname,int precision)
   {
     if (!InitFile(tempfname)) return false;
-    const std::ios_base::fmtflags defaultflags=File()->flags();
-    File()->precision(precision);
-    int blank=defaultblank;
-    if (Blank().size()>0) blank=Blank()[0];
-    *File()<<tag<<(char)blank<<value;
-    if (endline) *File()<<std::endl;
-    File()->flags(defaultflags);
-    CloseFile();
+    const std::ios_base::fmtflags defaultflags=OutFile()->flags();
+    OutFile()->precision(precision);
+    if (tag!=nullstring) {
+      if (Blank().size()>0) *OutFile()<<tag<<(char)Blank()[0]<<value;
+      else *OutFile()<<tag<<value;
+    }
+    else {
+      *OutFile()<<value;
+    }
+    if (endline) *OutFile()<<std::endl;
+    OutFile()->flags(defaultflags);
+    CloseOutFile();
     return true;    
   }
 
@@ -97,18 +96,16 @@ namespace ATOOLS {
 				   bool endline,std::string tempfname,
 				   VectorTypeID tempvtype,int precision)
   {
-    int blank=defaultblank;
     if (!InitFile(tempfname)) return false;
     if (tempvtype==VUnknown) tempvtype=VectorType();
-    if (Blank().size()>0) blank=Blank()[0];
     switch (tempvtype) {
     case VHorizontal:
       if (values.size()>0) M_WriteToFile<Write_Type>(values[0],tag,false,tempfname,precision);
       for (unsigned int i=1;i<values.size();++i) {
 	M_WriteToFile<Write_Type>(values[i],"",false,tempfname,precision);
-	*File()<<(char)blank;
+	if (Blank().size()>0) *OutFile()<<(char)Blank()[0];
       }
-      if (endline) *File()<<std::endl;
+      if (endline) *OutFile()<<std::endl;
       break;
     case VVertical:
     default:
@@ -116,7 +113,7 @@ namespace ATOOLS {
 									   tempfname,precision);
       break;
     }
-    CloseFile();
+    CloseOutFile();
     return true;    
   }
 
@@ -151,7 +148,7 @@ namespace ATOOLS {
       }
       break;
     }
-    CloseFile();
+    CloseOutFile();
     return true;    
   }
 

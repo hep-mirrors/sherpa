@@ -2,6 +2,10 @@
 #include "Message.H"
 #include "Particle.H"
 
+#ifdef PROFILE__MI_Base
+#include "prof.hh"
+#endif
+
 using namespace AMISIC;
 
 MI_Base::NameMIBaseMap MI_Base::m_bases=MI_Base::NameMIBaseMap();
@@ -11,10 +15,12 @@ long int MI_Base::m_particlecounter=0;
 bool MI_Base::m_stophard=true;
 bool MI_Base::m_stopsoft=true;
 
-MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _n_parameter):
+MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
+		 unsigned int infiles,unsigned int outfiles):
+  File_IO_Base(infiles,outfiles),
   m_name(_m_name),
   m_type(_m_type),
-  n_parameter(_n_parameter),
+  m_nparameter(_m_nparameter),
   p_blob(NULL),
   p_xs(NULL)
 {
@@ -32,9 +38,9 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _n_parameter):
 		       <<"   Run cannot continue."<<std::endl;
     exit(121);
   }
-  m_start = new double[n_parameter];
-  m_stop = new double[n_parameter];
-  m_last = new double[n_parameter];
+  m_start = new double[m_nparameter];
+  m_stop = new double[m_nparameter];
+  m_last = new double[m_nparameter];
   p_blob = new ATOOLS::Blob();
   m_bases[m_name]=this;
 }
@@ -55,6 +61,9 @@ MI_Base::~MI_Base()
 
 void MI_Base::UpdateAll(const MI_Base *mibase)
 {
+#ifdef PROFILE__MI_Base
+  PROFILE_HERE;
+#endif
   for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
     nbit->second->Update(mibase);
   }  
@@ -97,6 +106,9 @@ bool MI_Base::DiceProcess()
 
 void MI_Base::ResetAll()
 {
+#ifdef PROFILE__MI_Base
+  PROFILE_HERE;
+#endif
   m_particlecounter=0;
   for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
     nbit->second->Reset();
@@ -105,6 +117,9 @@ void MI_Base::ResetAll()
 
 bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
 {
+#ifdef PROFILE__MI_Base
+  PROFILE_HERE;
+#endif
   if (blob==NULL) {
     ATOOLS::msg.Error()<<"MI_Base::CreateBlob(..): "
 		       <<"Blob is not initialized!"<<std::endl

@@ -82,6 +82,6 @@ namespace ATOOLS {
 
 } // end of namespace ATOOLS
 
-#include "Variable.IC"
+// #include "Variable.IC"
 
 #endif

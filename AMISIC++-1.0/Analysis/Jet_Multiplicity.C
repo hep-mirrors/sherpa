@@ -26,7 +26,7 @@ Jet_Multiplicity::~Jet_Multiplicity()
 void Jet_Multiplicity::Evaluate(const ATOOLS::Particle_List &particles,double weight) 
 {
   if (m_mode>0) {
-    p_jetfinder->ConstructJets(&particles,(*p_jets),(*p_ys));
+//     p_jetfinder->ConstructJets(&particles,(*p_jets),(*p_ys));
     for (unsigned int i=0;i<p_ys->size();++i) {
       if ((*p_ys)[i]>=m_ycut) {
 	histo->Insert((*p_jets)[i],weight);

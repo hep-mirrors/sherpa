@@ -13,28 +13,32 @@ BEAMLIB    = $(SHERPASYS)/lib
 PHASICLIB  = $(SHERPASYS)/lib
 MODELLIB   = $(SHERPASYS)/lib
 EXTRAXSLIB = $(SHERPASYS)/lib
+SHERPALIB  = $(SHERPASYS)/lib
+
+AMISICLIB  = @libdir@
 
 ROOTINC    = $(ROOTSYS)/include
 ROOTLIB    = $(ROOTSYS)/lib
 
-bin_PROGRAMS  =	Amisic
-Amisic_SOURCES	      =	\
-			Main.C 
-Amisic_LDADD  =	\
-		@libdir@/libAmisic.la \
-		@libdir@/libAmisicHelpers.la \
-		@libdir@/libAmisicTools.la \
-		-L$(EXTRAXSLIB) -lExtraXS -lExtraXS2_2 \
-		-L$(PHASICLIB) -lPhasespace \
-		-L$(MODELLIB) -lModelMain -lIsajet -lHdecay \
-		-L$(PDFLIB) -lPDF -lLHAPDF \
-		-L$(BEAMLIB) -lBeam \
-		-L$(ATOOLSLIB) -lToolsPhys -lToolsMath -lToolsOrg \
-		-L$(ROOTLIB) -lCint -lCore -lHist -lGraf \
-		-lGraf3d -lGpad -lTree -lRint -lPostscript \
-		-lMatrix -lPhysics -lGui -ldl \
-		-lg2c -lm 
-CXXFLAGS      =	-pedantic -Wall -Winline -Wno-long-long
+# ifndef USING_SHERPA
+# bin_PROGRAMS  =	Amisic
+# Amisic_SOURCES	      =	\
+#			Main.C 
+# Amisic_LDADD  =	\
+#		-L$(AMISICLIB) -lAmisic -lAmisicHelpers -lAmisicTools \
+#		-L$(SHERPALIB) -lLundInterface -lLundTools \
+#		-L$(EXTRAXSLIB) -lExtraXS -lExtraXS2_2 \
+#		-L$(PHASICLIB) -lPhasespace \
+#		-L$(MODELLIB) -lModelMain -lIsajet -lHdecay \
+#		-L$(PDFLIB) -lPDF -lLHAPDF \
+#		-L$(BEAMLIB) -lBeam \
+#		-L$(ATOOLSLIB) -lToolsPhys -lToolsMath -lToolsOrg \
+#		-L$(ROOTLIB) -lCint -lCore -lHist -lGraf \
+#		-lGraf3d -lGpad -lTree -lRint -lPostscript \
+#		-lMatrix -lPhysics -lGui -ldl \
+#		-lg2c -lm 
+# endif
+AM_CXXFLAGS   =	-pedantic -Wall -Winline -Wno-long-long
 INCLUDES      = \
 		-I../Main \
 		-I../Tools \
@@ -50,6 +54,7 @@ INCLUDES      = \
 		-I$(ATOOLSINC)/Org \
 		-I$(ROOTINC) 
 EXTRA_DIST    =	\
+		Main.C \
 		Run.dat \
 		Beam.dat \
 		ISR.dat \
@@ -60,4 +65,7 @@ EXTRA_DIST    =	\
 		Processes.dat \
 		XS.dat \
 		XSSelector.dat \
-		MI.dat 
+		MI.dat \
+		simplechain.dat
+
+

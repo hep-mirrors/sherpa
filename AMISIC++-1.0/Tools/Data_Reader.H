@@ -38,8 +38,9 @@ namespace ATOOLS {
 
     // constructors
     Data_Reader();
-    Data_Reader(std::string _m_cut,std::string _m_seperator,std::string _m_comment);
-    Data_Reader(const char *_m_cut,const char *_m_seperator,const char *_m_comment);
+    Data_Reader(const std::string _m_cut,
+		const std::string _m_seperator,
+		const std::string _m_comment);
 
     // member functions
     bool ReadFromFile(int& value,std::string parameter=nullstring,std::string filename=noinputtag);

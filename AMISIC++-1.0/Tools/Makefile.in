@@ -53,7 +53,7 @@ CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = -pedantic -Wall -Winline
+CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -141,6 +141,7 @@ libAmisicTools_la_SOURCES = \
 				Data_Writer.C \
 				Variable.C 
 
+AM_CXXFLAGS = -pedantic -Wall -Winline
 INCLUDES = \
 		-I$(ATOOLSINC)/Phys \
 		-I$(ATOOLSINC)/Math \
@@ -164,7 +165,6 @@ noinst_HEADERS = \
 			Data_Reader.H \
 			Data_Writer.H \
 			Variable.H \
-			Variable.IC \
 			Scaling.H \
 			Scaling.C \
 			Axis.H \

@@ -9,7 +9,7 @@ libAmisicTools_la_SOURCES     = \
 				Data_Reader.C \
 				Data_Writer.C \
 				Variable.C 
-CXXFLAGS      =	-pedantic -Wall -Winline
+AM_CXXFLAGS   =	-pedantic -Wall -Winline
 INCLUDES      = \
 		-I$(ATOOLSINC)/Phys \
 		-I$(ATOOLSINC)/Math \
@@ -32,7 +32,6 @@ noinst_HEADERS        =	\
 			Data_Reader.H \
 			Data_Writer.H \
 			Variable.H \
-			Variable.IC \
 			Scaling.H \
 			Scaling.C \
 			Axis.H \

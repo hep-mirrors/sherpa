@@ -28,8 +28,9 @@ namespace ATOOLS {
 
     // constructors
     Data_Writer();
-    Data_Writer(std::string _m_cut,std::string _m_seperator,std::string _m_comment);
-    Data_Writer(const char *_m_cut,const char *_m_seperator,const char *_m_comment);
+    Data_Writer(const std::string _m_cut,
+		const std::string _m_seperator,
+		const std::string _m_comment);
 
     // member functions
     bool WriteComment(std::string comment=nullstring,unsigned int tagreference=0,
@@ -50,31 +51,31 @@ namespace ATOOLS {
 		     std::string tempfname=nullstring,int precision=6);
 
     bool VectorToFile(std::vector<int>& values,std::string tag=nullstring,bool endline=true,
-		      std::string tempfname=nullstring,VectorTypeID=VVertical,int precision=6);
+		      std::string tempfname=nullstring,VectorTypeID=VUnknown,int precision=6);
     bool VectorToFile(std::vector<long int>& values,std::string tag=nullstring,bool endline=true,
-		      std::string tempfname=nullstring,VectorTypeID=VVertical,int precision=6);
+		      std::string tempfname=nullstring,VectorTypeID=VUnknown,int precision=6);
     bool VectorToFile(std::vector<float>& values,std::string tag=nullstring,bool endline=true,
-		      std::string tempfname=nullstring,VectorTypeID=VVertical,int precision=6);
+		      std::string tempfname=nullstring,VectorTypeID=VUnknown,int precision=6);
     bool VectorToFile(std::vector<double>& values,std::string tag=nullstring,bool endline=true,
-		      std::string tempfname=nullstring,VectorTypeID=VVertical,int precision=6);
+		      std::string tempfname=nullstring,VectorTypeID=VUnknown,int precision=6);
     bool VectorToFile(std::vector<std::string>& values,std::string tag=nullstring,bool endline=true,
-		      std::string tempfname=nullstring,VectorTypeID=VVertical,int precision=6);
+		      std::string tempfname=nullstring,VectorTypeID=VUnknown,int precision=6);
 
     bool MatrixToFile(std::vector<std::vector<int> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
-		     MatrixTypeID=MNormal,int precision=6);
+		     MatrixTypeID=MUnknown,int precision=6);
     bool MatrixToFile(std::vector<std::vector<long int> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
-		     MatrixTypeID=MNormal,int precision=6);
+		     MatrixTypeID=MUnknown,int precision=6);
     bool MatrixToFile(std::vector<std::vector<float> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
-		     MatrixTypeID=MNormal,int precision=6);
+		     MatrixTypeID=MUnknown,int precision=6);
     bool MatrixToFile(std::vector<std::vector<double> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
-		     MatrixTypeID=MNormal,int precision=6);
+		     MatrixTypeID=MUnknown,int precision=6);
     bool MatrixToFile(std::vector<std::vector<std::string> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
-		     MatrixTypeID=MNormal,int precision=6);
+		     MatrixTypeID=MUnknown,int precision=6);
 
   }; // end of class Data_Writer
 

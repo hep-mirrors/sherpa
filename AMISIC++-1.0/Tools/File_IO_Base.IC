@@ -5,65 +5,119 @@
 
 namespace ATOOLS {
 
-  inline void File_IO_Base::SetInputPath(const std::string _m_inputpath)
-  { m_inputpath=_m_inputpath; }
+  inline void File_IO_Base::SetInputPath(const std::string _m_inputpath,
+					 const unsigned int i)
+  { 
+    if (_m_inputpath!=m_inputpath[i]) {
+      CloseInFile(i,true);
+      m_inputpath[i]=_m_inputpath; 
+    }
+  }
 
-  inline const std::string File_IO_Base::InputPath() const
-  { return m_inputpath; }
+  inline const std::string File_IO_Base::InputPath(const unsigned int i) const
+  { if (i<m_inputfile.size()) return m_inputpath[i]; return nullstring; }
 
-  inline void File_IO_Base::SetInputFile(const std::string _m_inputfile)
-  { m_inputfile=_m_inputfile; }
+  inline void File_IO_Base::SetInputFile(const std::string _m_inputfile,
+					 const unsigned int i)
+  { 
+    if (_m_inputfile!=m_inputfile[i]) {
+      CloseInFile(i,true);
+      m_inputfile[i]=_m_inputfile; 
+    }
+  }
 
-  inline const std::string File_IO_Base::InputFile() const
-  { return m_inputfile; }
+  inline const std::string File_IO_Base::InputFile(const unsigned int i) const
+  { if (i<m_inputfile.size()) return m_inputfile[i]; return nullstring; }
 
-  inline void File_IO_Base::SetOutputPath(const std::string _m_outputpath)
-  { m_outputpath=_m_outputpath; }
+  inline void File_IO_Base::SetOutputPath(const std::string _m_outputpath,
+					  const unsigned int i)
+  { 
+    if (_m_outputpath!=m_outputpath[i]) {
+      CloseOutFile(i,true);
+      m_outputpath[i]=_m_outputpath; 
+    }
+  }
 
-  inline const std::string File_IO_Base::OutputPath() const
-  { return m_outputpath; }
+  inline const std::string File_IO_Base::OutputPath(const unsigned int i) const
+  { if (i<m_outputpath.size()) return m_outputpath[i]; return nullstring; }
 
-  inline void File_IO_Base::SetOutputFile(const std::string _m_outputfile)
-  { m_outputfile=_m_outputfile; }
+  inline void File_IO_Base::SetOutputFile(const std::string _m_outputfile,
+					  const unsigned int i)
+  { 
+    if (_m_outputfile!=m_outputfile[i]) {
+      CloseOutFile(i,true);
+      m_outputfile[i]=_m_outputfile; 
+    }
+  }
 
-  inline const std::string File_IO_Base::OutputFile() const
-  { return m_outputfile; }
+  inline const std::string File_IO_Base::OutputFile(const unsigned int i) const
+  { if (i<m_outputfile.size()) return m_outputfile[i]; return nullstring; }
 
-  inline bool File_IO_Base::CheckInputPath()
+  inline void File_IO_Base::SetInFileMode(const OpenModeID _m_infilemode,
+					  const unsigned int i)
+  { 
+    m_infilemode[i]=_m_infilemode; 
+    CloseInFile(i);
+  }
+
+  inline const File_IO_Base::OpenModeID File_IO_Base::InFileMode(const unsigned int i) const
+  { return m_infilemode[i]; }
+
+  inline void File_IO_Base::SetOutFileMode(const OpenModeID _m_outfilemode,
+					   const unsigned int i)
+  { 
+    m_outfilemode[i]=_m_outfilemode; 
+    CloseOutFile(i);
+  }
+
+  inline const File_IO_Base::OpenModeID File_IO_Base::OutFileMode(const unsigned int i) const
+  { return m_outfilemode[i]; }
+
+  inline std::ifstream *File_IO_Base::InFile(const unsigned int i)
+  { return m_infile[i]; }
+
+  inline std::ofstream *File_IO_Base::OutFile(const unsigned int i)
+  { return m_outfile[i]; }
+
+  inline bool File_IO_Base::CheckInputPath(const unsigned int i)
   {	
-    if (m_inputpath==std::string("")) {
-      ATOOLS::msg.Error()<<"File_IO_Base::CheckInputPath(): "
-	  	         <<"No input path specified!"<<std::endl;
+    if (i>=m_inputpath.size()) return false;
+    if (m_inputpath[i]==nullstring) {
+      ATOOLS::msg.Tracking()<<"File_IO_Base::CheckInputPath(): "
+			    <<"No input path specified!"<<std::endl;
       return false;
     }
     return true;
   }
 
-  inline bool File_IO_Base::CheckInputFile()
+  inline bool File_IO_Base::CheckInputFile(const unsigned int i)
   {	
-    if (m_inputfile==std::string("")) {
-      ATOOLS::msg.Error()<<"File_IO_Base::CheckInputFile(): "
-	  	         <<"No input file specified!"<<std::endl;
+    if (i>=m_inputfile.size()) return false;
+    if (m_inputfile[i]==nullstring) {
+      ATOOLS::msg.Tracking()<<"File_IO_Base::CheckInputFile(): "
+			    <<"No input file specified!"<<std::endl;
       return false;
     }
     return true;
   }
 
-  inline bool File_IO_Base::CheckOutputPath()
+  inline bool File_IO_Base::CheckOutputPath(const unsigned int i)
   {	
-    if (m_outputpath==std::string("")) {
-      ATOOLS::msg.Error()<<"File_IO_Base::CheckOutputPath(): "
-	  	         <<"No output path specified!"<<std::endl;
+    if (i>=m_outputpath.size()) return false;
+    if (m_outputpath[i]==nullstring) {
+      ATOOLS::msg.Tracking()<<"File_IO_Base::CheckOutputPath(): "
+			    <<"No output path specified!"<<std::endl;
       return false;
     }
     return true;
   }
 
-  inline bool File_IO_Base::CheckOutputFile()
+  inline bool File_IO_Base::CheckOutputFile(const unsigned int i)
   {	
-    if (m_outputfile==std::string("")) {
-      ATOOLS::msg.Error()<<"File_IO_Base::CheckOutputFile(): "
-	  	         <<"No output file specified!"<<std::endl;
+    if (i>=m_outputpath.size()) return false;
+    if (m_outputfile[i]==nullstring) {
+      ATOOLS::msg.Tracking()<<"File_IO_Base::CheckOutputFile(): "
+			    <<"No output file specified!"<<std::endl;
       return false;
     }
     return true;

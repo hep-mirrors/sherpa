@@ -6,22 +6,22 @@
 namespace AMISIC {
 
   template <class Argument_Type,class Result_Type>
-  inline Grid_Creator_Arguments<Argument_Type,Result_Type> 
+  Grid_Creator_Arguments<Argument_Type,Result_Type> 
   Grid_Creator_Base<Argument_Type,Result_Type>::Arguments()
   { return (ArgumentsType)*this; }
   
   template <class Argument_Type,class Result_Type>
-  inline const Argument_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  const Argument_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridXMin() const
   { if (m_relativexmin) return m_gridxmax+m_gridxmin; else return m_gridxmin; }
   
   template <class Argument_Type,class Result_Type>
-  inline const Argument_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  const Argument_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridXMax() const
   { return m_gridxmax; }
   
   template <class Argument_Type,class Result_Type>
-  inline const Argument_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  const Argument_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridDeltaXMin() const
   { 
     if (m_relativedeltaxmin) return m_griddeltaxmin*m_griddeltaxmax; 
@@ -29,22 +29,22 @@ namespace AMISIC {
   }
   
   template <class Argument_Type,class Result_Type>
-  inline const Argument_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  const Argument_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridDeltaXMax() const
   { return m_griddeltaxmax; }
   
   template <class Argument_Type,class Result_Type>
-  inline const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridYMin() const
   { if (m_relativeymin) return m_gridymax+m_gridymin; else return m_gridymin; }
   
   template <class Argument_Type,class Result_Type>
-  inline const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridYMax() const
   { return m_gridymax; }
   
   template <class Argument_Type,class Result_Type>
-  inline const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridDeltaYMin() const
   { 
     if (m_relativedeltaymin) return m_griddeltaymin*m_griddeltaymax;
@@ -52,47 +52,47 @@ namespace AMISIC {
   }
   
   template <class Argument_Type,class Result_Type>
-  inline const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  const Result_Type Grid_Creator_Arguments<Argument_Type,Result_Type>::
   GridDeltaYMax() const
   { return m_griddeltaymax; }
   
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  void Grid_Creator_Arguments<Argument_Type,Result_Type>::
   SetGridXMin(const GridArgumentType _m_gridxmin)
   { m_gridxmin=_m_gridxmin; }
   
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  void Grid_Creator_Arguments<Argument_Type,Result_Type>::
   SetGridXMax(const GridArgumentType _m_gridxmax)
   { m_gridxmax=_m_gridxmax; }
   
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  void Grid_Creator_Arguments<Argument_Type,Result_Type>::
   SetGridDeltaXMin(const GridArgumentType _m_griddeltaxmin)
   { m_griddeltaxmin=_m_griddeltaxmin; }
   
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  void Grid_Creator_Arguments<Argument_Type,Result_Type>::
   SetGridDeltaXMax(const GridArgumentType _m_griddeltaxmax)
   { m_griddeltaxmax=_m_griddeltaxmax; }
   
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  void Grid_Creator_Arguments<Argument_Type,Result_Type>::
   SetGridYMin(const GridResultType _m_gridymin)
   { m_gridymin=_m_gridymin; }
   
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  void Grid_Creator_Arguments<Argument_Type,Result_Type>::
   SetGridYMax(const GridResultType _m_gridymax)
   { m_gridymax=_m_gridymax; }
   
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  void Grid_Creator_Arguments<Argument_Type,Result_Type>::
   SetGridDeltaYMin(const GridResultType _m_griddeltaymin)
   { m_griddeltaymin=_m_griddeltaymin; }
   
   template <class Argument_Type,class Result_Type>
-  inline void Grid_Creator_Arguments<Argument_Type,Result_Type>::
+  void Grid_Creator_Arguments<Argument_Type,Result_Type>::
   SetGridDeltaYMax(const GridResultType _m_griddeltaymax)
   { m_griddeltaymax=_m_griddeltaymax; }
   

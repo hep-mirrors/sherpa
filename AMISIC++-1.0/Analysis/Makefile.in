@@ -53,7 +53,7 @@ CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = -pedantic -Wall -Winline -g
+CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -137,12 +137,12 @@ MODELINC = $(SHERPASYS)/MODEL-1.0
 lib_LTLIBRARIES = libAmisicAnalysis.la
 libAmisicAnalysis_la_SOURCES = \
 				Primordial_KT.C \
-				Jet_Algorithm.C \
 				Jet_PT.C \
 				Jet_Y.C \
 				Jet_Multiplicity.C \
 				Jet_Observables.C
 
+AM_CXXFLAGS = -pedantic -Wall -Winline -g
 INCLUDES = \
 		-I../Tools \
 		-I$(MODELINC)/Main \
@@ -152,7 +152,6 @@ INCLUDES = \
 
 noinst_HEADERS = \
 			Primordial_KT.H \
-			Jet_Algorithm.H \
 			Jet_PT.H \
 			Jet_Y.H \
 			Jet_Multiplicity.H \
@@ -166,15 +165,14 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libAmisicAnalysis_la_LDFLAGS =
 libAmisicAnalysis_la_LIBADD =
-am_libAmisicAnalysis_la_OBJECTS = Primordial_KT.lo Jet_Algorithm.lo \
-	Jet_PT.lo Jet_Y.lo Jet_Multiplicity.lo Jet_Observables.lo
+am_libAmisicAnalysis_la_OBJECTS = Primordial_KT.lo Jet_PT.lo Jet_Y.lo \
+	Jet_Multiplicity.lo Jet_Observables.lo
 libAmisicAnalysis_la_OBJECTS = $(am_libAmisicAnalysis_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Jet_Algorithm.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/Jet_Multiplicity.Plo \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Jet_Multiplicity.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Jet_Observables.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Jet_PT.Plo ./$(DEPDIR)/Jet_Y.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Primordial_KT.Plo
@@ -238,7 +236,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Jet_Algorithm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Jet_Multiplicity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Jet_Observables.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Jet_PT.Plo@am__quote@

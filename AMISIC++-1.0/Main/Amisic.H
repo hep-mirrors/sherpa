@@ -2,6 +2,7 @@
 #define Amisic_H
 
 #include "Simple_Chain.H"
+#include "XS_Base.H"
 
 namespace AMISIC {
   
@@ -41,6 +42,11 @@ namespace AMISIC {
 
     MI_Base *HardBase();
     MI_Base *SoftBase();
+
+#ifdef USING_SHERPA
+    SHERPA::Matrix_Element_Handler *HardMEHandler();
+    SHERPA::Matrix_Element_Handler *SoftMEHandler();
+#endif
 
     EXTRAXS::XS_Base *HardXS();
     EXTRAXS::XS_Base *SoftXS();

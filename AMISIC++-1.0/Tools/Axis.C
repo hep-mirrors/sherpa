@@ -60,8 +60,14 @@ namespace ATOOLS {
     if (scalename==std::string("Log")) {
       SetScaling(new ATOOLS::Log_Scaling<ValueType>()); 
     }
+    else if (scalename==std::string("Exp")) {
+      SetScaling(new ATOOLS::Exp_Scaling<ValueType>()); 
+    }
     else if (scalename==std::string("Sqr")) {
       SetScaling(new ATOOLS::Sqr_Scaling<ValueType>()); 
+    }
+    else if (scalename==std::string("Sqrt")) {
+      SetScaling(new ATOOLS::Sqrt_Scaling<ValueType>()); 
     }
     else if (reader->ReadFromString(argx,"Log_B_")) { 
       SetScaling(new ATOOLS::Log_B_Scaling<ValueType>(argx)); 

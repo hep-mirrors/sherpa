@@ -6,13 +6,13 @@
 namespace AMISIC {
 
   inline void MI_Base::SetStart(const double _m_start,unsigned int i)
-  { if (i<n_parameter) m_start[i]=_m_start; }
+  { if (i<m_nparameter) m_start[i]=_m_start; }
 
   inline const double MI_Base::Start(unsigned int i) const
   { return m_start[i]; }
 
   inline void MI_Base::SetStop(const double _m_stop,unsigned int i)
-  { if (i<n_parameter) m_stop[i]=_m_stop; }
+  { if (i<m_nparameter) m_stop[i]=_m_stop; }
 
   inline const double MI_Base::Stop(unsigned int i) const
   { return m_stop[i]; }
@@ -31,6 +31,11 @@ namespace AMISIC {
     }
     return true;
   }
+
+#ifdef USING_SHERPA
+  inline SHERPA::Matrix_Element_Handler *MI_Base::MEHandler()
+  { return p_mehandler; }
+#endif
 
   inline EXTRAXS::XS_Base *MI_Base::XS()
   { return p_xs; }

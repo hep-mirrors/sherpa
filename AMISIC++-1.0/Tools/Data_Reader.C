@@ -15,13 +15,12 @@
 namespace ATOOLS {
 
   Data_Reader::Data_Reader(): 
-    Read_Write_Base() {}
+    Read_Write_Base(1,0) {}
 
-  Data_Reader::Data_Reader(std::string _m_cut,std::string _m_seperator,std::string _m_comment):
-    Read_Write_Base(_m_cut,_m_seperator,_m_comment) {}
-  
-  Data_Reader::Data_Reader(const char *_m_cut,const char *_m_seperator,const char *_m_comment):
-    Read_Write_Base(_m_cut,_m_seperator,_m_comment) {}
+  Data_Reader::Data_Reader(const std::string _m_cut,
+			   const std::string _m_seperator,
+			   const std::string _m_comment):
+    Read_Write_Base(1,0,_m_cut,_m_seperator,_m_comment) {}
   
   void Data_Reader::KillComments(std::string& buffer)
   {
@@ -34,15 +33,15 @@ namespace ATOOLS {
     for (unsigned int i=0;i<Ignore().size();std::cout<<"'"<<Ignore()[i++]<<"' ");
     std::cout<<std::endl;
 #endif
-    int pos;
-    for (unsigned int i=0; i<Comment().size(); ++i) {
-      if ((pos = buffer.find(Comment()[i]))!=-1) {
+    size_t pos;
+    for (unsigned int i=0;i<Comment().size();++i) {
+      if ((pos=buffer.find(Comment()[i]))!=std::string::npos) {
 	buffer=buffer.substr(0,pos);
       }
     }
     KillBlanks(buffer);
     for (unsigned int i=0; i<Ignore().size(); ++i) {
-      while ((pos = buffer.find(Ignore()[i]))!=-1) {
+      while ((pos=buffer.find(Ignore()[i]))!=std::string::npos) {
 	buffer=buffer.substr(0,pos)+std::string(" ")+buffer.substr(pos+Ignore()[i].length());
 	KillBlanks(buffer);
       }
@@ -57,20 +56,23 @@ namespace ATOOLS {
 #ifdef DEBUG__Data_Reader
     std::cout<<"Data_Reader::KillBlanks("<<buffer<<")"<<std::endl;
 #endif
-    if (buffer==ATOOLS::nullstring) return buffer;
+    if (buffer==nullstring) return buffer;
     bool hit;
     do { 
-      hit = false;
-      for (unsigned int i=0; i<Blank().size(); ++i) hit = hit || (int(buffer[0])==Blank()[i]);
+      hit=false;
+      for (size_t i=0;i<Blank().size();++i) hit=hit||(int(buffer[0])==Blank()[i]);
       if (hit) {
 	if (buffer.length()>0) buffer=buffer.substr(1); 
 	else break;
       }
     } while (hit);
     do { 
-      hit = false;
-      for (unsigned int i=0; i<Blank().size(); ++i) hit = hit || (int(buffer[buffer.length()-1])==Blank()[i]);
-      if (hit) buffer=buffer.substr(0,buffer.length()-1);
+      hit=false;
+      for (size_t i=0;i<Blank().size();++i) hit=hit||(int(buffer[buffer.length()-1])==Blank()[i]);
+      if (hit) {
+	if (buffer.length()>0) buffer=buffer.substr(0,buffer.length()-1);
+	else break;
+      }
     } while (hit);
 #ifdef DEBUG__Data_Reader
     std::cout<<"   returning '"<<buffer<<"'"<<std::endl;
@@ -83,10 +85,10 @@ namespace ATOOLS {
 #ifdef DEBUG__Data_Reader
     std::cout<<"Data_Reader::HighlightSeperator("<<buffer<<")"<<std::endl;
 #endif
-    unsigned int pos;
-    if (buffer==ATOOLS::nullstring) return buffer;
+    size_t pos;
+    if (buffer==nullstring) return buffer;
     for (unsigned int j=0; j<Seperator().size(); ++j) {
-      if ((pos = buffer.find(Seperator()[j])) != std::string::npos) {
+      if ((pos=buffer.find(Seperator()[j]))!=std::string::npos) {
 	buffer.insert(pos+1," ",1);
 	buffer.insert(pos," ",1);
       }
@@ -100,7 +102,7 @@ namespace ATOOLS {
   template <class Read_Type>
   Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &inputstring)
   {
-    int pos;
+    size_t pos;
     Read_Type value;
 #ifdef DEBUG__Data_Reader
     std::cout<<"Data_Reader::M_ReadFromString("<<parameter<<","<<inputstring<<")"<<std::endl;
@@ -116,11 +118,11 @@ namespace ATOOLS {
       }
     }
     KillComments(inputstring);
-    if (parameter==ATOOLS::nullstring) { 
+    if (parameter==nullstring) { 
       parameter=std::string("DUMMY_PARAMETER");
       inputstring=parameter+inputstring;
     }
-    if(((pos=inputstring.find(parameter))!=-1)&&
+    if(((pos=inputstring.find(parameter))!=std::string::npos)&&
        ((inputstring=inputstring.substr(pos+parameter.length())).length()>0)) {
       std::stringstream converter;
       converter<<HighlightSeperator(inputstring);
@@ -147,8 +149,8 @@ namespace ATOOLS {
     std::string buffer;
     value=Default<Read_Type>();
     if (filename==noinputtag) {
-      if (FileName()!=nullstring) {
-	filename=FileName();
+      if (InputFile()!=nullstring) {
+	filename=InputFile();
       }
       else {
 	ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
@@ -156,7 +158,7 @@ namespace ATOOLS {
 	return value;
       }
     }
-    if(!OpenFile(filename,std::ios_base::in)) {
+    if(!OpenInFile()) {
       ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
       return value;
     }
@@ -164,7 +166,7 @@ namespace ATOOLS {
       buffer=FileContent()[i];
       if((temp=M_ReadFromString<Read_Type>(parameter,buffer))!=Default<Read_Type>()) value=temp;
     }
-    CloseFile();
+    CloseInFile();
     if (value==Default<Read_Type>()) {
       ATOOLS::msg.Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
     }
@@ -182,7 +184,7 @@ namespace ATOOLS {
     Read_Type readtype;
     Type::ID type = typeinfo.GetType(readtype);
     std::vector<Read_Type> values;
-    unsigned int pos;
+    size_t pos;
 #ifdef DEBUG__Data_Reader
     std::cout<<"Data_Reader::M_VectorFromString("<<parameter<<","
 	     <<inputstring<<","<<tempvtype<<")"<<std::endl;
@@ -235,8 +237,8 @@ namespace ATOOLS {
     if (tempvtype==VUnknown) tempvtype=VVertical;
     std::vector<Read_Type> values, temp;
     if (filename==noinputtag) {
-      if (FileName()!=nullstring) {
-	filename=FileName();
+      if (InputFile()!=nullstring) {
+	filename=InputFile();
       }
       else {
 	ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
@@ -244,7 +246,7 @@ namespace ATOOLS {
 	return values;
       }
     }
-    if (!OpenFile(filename,std::ios_base::in)) {
+    if (!OpenInFile()) {
       ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
       return values;
     }
@@ -260,7 +262,7 @@ namespace ATOOLS {
 	break;
       }
     }
-    CloseFile();
+    CloseInFile();
     if (values.size() != 0) return values;
     ATOOLS::msg.Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
     return values;
@@ -275,7 +277,6 @@ namespace ATOOLS {
     std::vector<Read_Type> value;
     std::vector< std::vector<Read_Type> > transposedvalues;
     std::string name;
-    int sep, i = 0;
     if (inputstring==noinputtag) {
       if (String()!=nullstring) {
 	inputstring=String();
@@ -287,11 +288,12 @@ namespace ATOOLS {
       }
     }
     value=M_VectorFromString<Read_Type>(parameter,inputstring,VHorizontal);
-    for(;value.size()!=0;++i) {
+    for(unsigned int i=0;value.size()!=0;++i) {
       transposedvalues.push_back(value);
       bool foundseperator=false;
+      size_t sep=std::string::npos;
       for (unsigned int i=0;i<Seperator().size();++i) {
-	if ((sep=inputstring.find(Seperator()[i]))!=-1) foundseperator=true;
+	if ((sep=inputstring.find(Seperator()[i]))!=std::string::npos) foundseperator=true;
       }
       if(foundseperator) inputstring=inputstring.substr(sep+1);
       else inputstring=nullstring;
@@ -327,8 +329,8 @@ namespace ATOOLS {
     if (tempmtype==MUnknown) tempmtype=MNormal;
     std::vector< std::vector<Read_Type> > transposedvalues, temp;
     if (filename==noinputtag) {
-      if (FileName()!=nullstring) {
-	filename=FileName();
+      if (InputFile()!=nullstring) {
+	filename=InputFile();
       }
       else {
 	ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
@@ -336,7 +338,7 @@ namespace ATOOLS {
 	return transposedvalues;
       }
     }
-    if (!OpenFile(filename,std::ios_base::in)) {
+    if (!OpenInFile()) {
       ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
       return transposedvalues;
     }
@@ -346,7 +348,7 @@ namespace ATOOLS {
 	transposedvalues.push_back(temp[j]);
       }
     }
-    CloseFile();
+    CloseInFile();
     if (transposedvalues.size()!=0) {
       if (tempmtype==MNormal) {
 	std::vector< std::vector<Read_Type> > normalvalues;     

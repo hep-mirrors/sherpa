@@ -7,4 +7,10 @@
 #include <string>
 #endif
 
+namespace ATOOLS {
+
+  const std::string nullstring = std::string("");
+
+}
+
 #endif

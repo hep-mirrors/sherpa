@@ -2,7 +2,7 @@
 #define Jet_PT_H
 
 #include "Primitive_Observable_Base.H"
-#include "Jet_Algorithm.H"
+// #include "Jet_Algorithm.H"
 
 namespace AMISIC {
 
@@ -10,7 +10,7 @@ namespace AMISIC {
   private:
 
     std::vector<ATOOLS::Histogram*> *p_histogram;
-    ATOOLS::Jet_Algorithm           *p_jetfinder;
+//     ATOOLS::Jet_Algorithm           *p_jetfinder;
 
     std::vector<int>    *p_jets;
     std::vector<double> *p_ys;
@@ -28,11 +28,11 @@ namespace AMISIC {
     ~Jet_PT();
 
     // setters
-    void SetJetFinder(ATOOLS::Jet_Algorithm *_p_jetfinder) { p_jetfinder=_p_jetfinder; }
+//     void SetJetFinder(ATOOLS::Jet_Algorithm *_p_jetfinder) { p_jetfinder=_p_jetfinder; }
     void SetMode(unsigned int _m_mode)                     { m_mode=_m_mode;           }
 
     // getters
-    ATOOLS::Jet_Algorithm *JetFinder() { return p_jetfinder; }
+//     ATOOLS::Jet_Algorithm *JetFinder() { return p_jetfinder; }
     unsigned int           Mode()      { return m_mode;      }
 
     // member functions

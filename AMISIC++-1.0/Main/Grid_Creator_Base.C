@@ -71,7 +71,8 @@ namespace AMISIC {
     if (!CheckInputFile()) return false;
     std::vector<std::string> temp;
     ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-    reader->SetFileName(m_inputpath+m_inputfile);
+    reader->SetInputPath(InputPath());
+    reader->SetInputFile(InputFile());
     if (!reader->VectorFromFile(temp,"X_VAR",ATOOLS::noinputtag,reader->VHorizontal)) {
       m_gridxvariable=std::string("");
     }
@@ -156,10 +157,10 @@ namespace AMISIC {
     }
     if (!WriteOutGrid()) {
       ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
-		       <<"Sorry, grid cannot be written to '"<<m_outputfile<<"'"<<std::endl;
+		       <<"Sorry, grid cannot be written to '"<<OutputFile()<<"'"<<std::endl;
       success=false;
     }
-    ATOOLS::msg.Out()<<"Grid_Creator_Base: Wrote grid to '"<<m_outputfile<<"'"<<std::endl;
+    ATOOLS::msg.Out()<<"Grid_Creator_Base: Wrote grid to '"<<OutputFile()<<"'"<<std::endl;
     ATOOLS::msg.SetLevel(formerlevel);
     return success;
   }
@@ -186,7 +187,7 @@ namespace AMISIC {
   {
     if ((GridXMin()>=GridXMax())||
 	((int)((GridXMax()-GridXMin())/GridDeltaXMax())<2)) {
-      ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid("<<m_inputfile<<"): "
+      ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid("<<InputFile()<<"): "
 			 <<"Argument boundaries improperly specified!"<<std::endl
 			 <<"   Abort grid creation."<<std::endl;
       return false;
@@ -351,7 +352,7 @@ namespace AMISIC {
     comments.push_back("--------------------");
     comments.push_back("  Data Set follows  ");
     comments.push_back("--------------------");
-    return grid->WriteOut(ATOOLS::Type::TFStream,m_outputpath+m_outputfile,comments);
+    return grid->WriteOut(ATOOLS::Type::TFStream,OutputPath()+OutputFile(),comments);
   }
 
 } // end of namespace AMISIC

@@ -53,14 +53,8 @@ namespace ATOOLS {
   inline void Read_Write_Base::AddBlank(const std::vector<int> &_m_blank)    
   { for (unsigned int i=0; i<_m_blank.size();m_blank.push_back(_m_blank[i++])); }
 
-  inline void Read_Write_Base::SetFileName(const std::string _m_filename)   
-  { if ((_m_filename!=m_filename)&&(p_file!=NULL)) CloseFile(true); m_filename=_m_filename; }
-
   inline void Read_Write_Base::SetString(const std::string _m_string)       
   { m_string = _m_string; }
-
-  inline void Read_Write_Base::SetOpenMode(const OpenModeID _m_openmode)
-  { if ((_m_openmode==Temporary)&&(p_file!=NULL)) CloseFile(true); m_openmode=_m_openmode; }
 
   inline void Read_Write_Base::SetVectorType(const VectorTypeID _m_vectortype)
   { m_vectortype=_m_vectortype; }
@@ -80,9 +74,6 @@ namespace ATOOLS {
   inline const std::vector<int> &Read_Write_Base::Blank() const            
   { return m_blank; }
   
-  inline const std::string Read_Write_Base::FileName() const 
-  { return m_filename; }
-  
   inline const std::string Read_Write_Base::String() const           
   { return m_string; }
   
@@ -92,12 +83,6 @@ namespace ATOOLS {
   inline const Read_Write_Base::MatrixTypeID Read_Write_Base::MatrixType() const       
   { return m_matrixtype; }
   
-  inline const Read_Write_Base::OpenModeID Read_Write_Base::OpenMode() const         
-  { return m_openmode; }
-  
-  inline std::fstream *Read_Write_Base::File()
-  { return p_file; }
-
   template <class Read_Type>
   inline Read_Type Read_Write_Base::NotDefined() 
   { return (Read_Type)0; }

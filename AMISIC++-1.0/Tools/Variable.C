@@ -135,6 +135,24 @@ Variable::TypeID Variable::SelectorIDToType(const int selectorid)
   return Unknown;
 }
 
+void Variable::SetName(const std::string _m_name)
+{ m_name=_m_name; }
+
+const std::string Variable::Name() const
+{ return m_name; }
+
+void Variable::SetType(const TypeID _m_type)
+{ SetName(TypeToString(m_type=_m_type)); }
+
+const Variable::TypeID Variable::Type() const
+{ return m_type; }
+  
+unsigned int Variable::TypeToInt(const TypeID type)
+{ return (int)type; }
+
+Variable::TypeID Variable::IntToType(const unsigned int type)
+{ return (TypeID)type; }
+
 
 
 
