@@ -6,6 +6,8 @@
 
 
 #include "Vector.H"
+#include "Run_Parameter.H"
+
 
 
 using namespace ATOOLS;
@@ -34,5 +36,13 @@ std::ostream& ATOOLS::operator<< (std::ostream& s, const Vec3D& vec)
   return s<<'('<<vec[1]<<','<<vec[2]<<','<<vec[3]<<')';
 }
 
-
-
+bool ATOOLS::operator==(const Vec4D& v1, const Vec4D& v2) 
+{
+  double maxp=Max(v1[0],Max(v1[1],Max(v1[2],v1[3]))); 
+  double q=1.;
+  if (!IsZero(maxp)) q=1./maxp;
+  for(short int i=0;i<4;i++) {
+    if (dabs(q*(v1[i]-v2[i]))>ATOOLS::rpa.gen.Accu()) return false;
+  }
+  return true;
+}

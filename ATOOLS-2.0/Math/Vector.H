@@ -303,16 +303,7 @@ namespace ATOOLS {
     return v1[0]*v2[0]-v1[1]*v2[1]-v1[2]*v2[2]-v1[3]*v2[3];
   }
 
-  inline bool operator==(const Vec4D& v1, const Vec4D& v2) 
-  {
-    double maxp=Max(v1[0],Max(v1[1],Max(v1[2],v1[3]))); 
-    double q=1.;
-    if (!IsZero(maxp)) q=1./maxp;
-    for(short int i=0;i<4;i++) {
-      if (!IsZero(q*(v1[i]-v2[i]))) return false;
-    }
-    return true;
-  }
+  bool operator==(const Vec4D& v1, const Vec4D& v2);
 
   inline bool operator!=(const Vec4D& v1, const Vec4D& v2) 
   {
