@@ -20,7 +20,7 @@ namespace ATOOLS {
 			bool endline,std::string tempfname,
 			VectorTypeID tempvtype,int precision);
     template <class Write_Type >
-    bool M_ArrayToFile(std::vector<std::vector<Write_Type> > values,std::string tag,
+    bool M_MatrixToFile(std::vector<std::vector<Write_Type> > values,std::string tag,
 		       bool endline,std::string tempfname,
 		       MatrixTypeID tempmtype,int precision);
 
@@ -28,8 +28,8 @@ namespace ATOOLS {
 
     // constructors
     Data_Writer();
-    Data_Writer(const char*,const char*,const char*);
-    Data_Writer(std::string,std::string,std::string);
+    Data_Writer(std::string _m_cut,std::string _m_seperator,std::string _m_comment);
+    Data_Writer(const char *_m_cut,const char *_m_seperator,const char *_m_comment);
 
     // member functions
     bool WriteComment(std::string comment=nullstring,unsigned int tagreference=0,
@@ -60,19 +60,19 @@ namespace ATOOLS {
     bool VectorToFile(std::vector<std::string>& values,std::string tag=nullstring,bool endline=true,
 		      std::string tempfname=nullstring,VectorTypeID=VVertical,int precision=6);
 
-    bool ArrayToFile(std::vector<std::vector<int> >& values,std::string tag=nullstring,
+    bool MatrixToFile(std::vector<std::vector<int> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
 		     MatrixTypeID=MNormal,int precision=6);
-    bool ArrayToFile(std::vector<std::vector<long int> >& values,std::string tag=nullstring,
+    bool MatrixToFile(std::vector<std::vector<long int> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
 		     MatrixTypeID=MNormal,int precision=6);
-    bool ArrayToFile(std::vector<std::vector<float> >& values,std::string tag=nullstring,
+    bool MatrixToFile(std::vector<std::vector<float> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
 		     MatrixTypeID=MNormal,int precision=6);
-    bool ArrayToFile(std::vector<std::vector<double> >& values,std::string tag=nullstring,
+    bool MatrixToFile(std::vector<std::vector<double> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
 		     MatrixTypeID=MNormal,int precision=6);
-    bool ArrayToFile(std::vector<std::vector<std::string> >& values,std::string tag=nullstring,
+    bool MatrixToFile(std::vector<std::vector<std::string> >& values,std::string tag=nullstring,
 		     bool endline=true,std::string tempfname=nullstring,
 		     MatrixTypeID=MNormal,int precision=6);
 
@@ -83,7 +83,5 @@ namespace ATOOLS {
   //////////////////
 
 } // end of namespace ATOOLS
-
-// #include "Data_Writer.IC"
 
 #endif

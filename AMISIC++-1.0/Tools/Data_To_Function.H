@@ -116,22 +116,22 @@ namespace ATOOLS {
 
     // constructors
     Data_To_Function();
-    Data_To_Function(DataToFunctionType &reference,bool adoptscaling=true);
-    Data_To_Function(XYMap *_m_xydata);
-    Data_To_Function(ArgumentVector *_m_xdata,ResultVector *_m_ydata);
+    Data_To_Function(const DataToFunctionType &reference,bool adoptscaling=true);
+    Data_To_Function(const XYMap *_m_xydata);
+    Data_To_Function(const ArgumentVector *_m_xdata,const ResultVector *_m_ydata);
 
     // destructor
     ~Data_To_Function();
 
     // setters
-    void SetMonotony(MonotonyID _m_monotony);
-    void SetAcquisitionMode(AcquisitionModeID _m_acquisitionmode);
-    void SetInterpolationMode(InterpolationModeID _m_interpolationmode);
+    void SetMonotony(const MonotonyID _m_monotony);
+    void SetAcquisitionMode(const AcquisitionModeID _m_acquisitionmode);
+    void SetInterpolationMode(const InterpolationModeID _m_interpolationmode);
 
     // getters
-    MonotonyID          Monotony();
-    AcquisitionModeID   AcquisitionMode();
-    InterpolationModeID InterpolationMode();
+    const MonotonyID          Monotony() const;
+    const AcquisitionModeID   AcquisitionMode() const;
+    const InterpolationModeID InterpolationMode() const;
 
     ArgumentType XMin();
     ArgumentType XMax();
@@ -153,9 +153,9 @@ namespace ATOOLS {
     ATOOLS::Axis<ResultType>   *YAxis();
 
     // member functions
-    bool Import(DataToFunctionType &reference,bool adoptscaling=true);
-    bool Import(XYMap *_p_xydata,bool normal=true);
-    bool Import(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal=true);
+    bool Import(const DataToFunctionType &reference,bool adoptscaling=true);
+    bool Import(const XYMap *_p_xydata,bool normal=true);
+    bool Import(const ArgumentVector *_p_xdata,const ResultVector *_p_ydata,bool normal=true);
 
     void Export(XYMap *_p_xydata,bool normal=true);
     void Export(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal=true);

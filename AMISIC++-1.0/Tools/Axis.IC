@@ -6,19 +6,19 @@
 namespace ATOOLS {
 
   template <class Value_Type>
-  inline void Axis<Value_Type>::SetVariable(ATOOLS::Variable _m_variable)
+  inline void Axis<Value_Type>::SetVariable(const ATOOLS::Variable _m_variable)
   { m_variable=_m_variable; }
 
   template <class Value_Type>
-  inline ATOOLS::Variable Axis<Value_Type>::Variable()
+  inline const ATOOLS::Variable Axis<Value_Type>::Variable() const
   { return m_variable; }
 
   template <class Value_Type>
-  inline void Axis<Value_Type>::SetScalingMode(ScalingModeID _m_scalingmode)
+  inline void Axis<Value_Type>::SetScalingMode(const ScalingModeID _m_scalingmode)
   { m_scalingmode=_m_scalingmode; }
 
   template <class Value_Type>
-  inline typename ATOOLS::Axis<Value_Type>::ScalingModeID Axis<Value_Type>::ScalingMode()
+  inline const typename ATOOLS::Axis<Value_Type>::ScalingModeID Axis<Value_Type>::ScalingMode() const
   { return m_scalingmode; }
 
   template <class Value_Type>

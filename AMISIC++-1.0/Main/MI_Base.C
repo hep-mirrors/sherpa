@@ -21,16 +21,16 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _n_parameter):
   for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
     if (nbit->first==m_name) {
       ATOOLS::msg.Error()<<"MI_Base::MI_Base("<<m_name<<","<<m_type<<"): "
-			 <<"Base already exists!"<<std::endl
+			 <<"MI_Base already exists!"<<std::endl
 			 <<"   Run cannot continue."<<std::endl;
-      abort();
+      exit(120);
     }
   }
   if (m_type==Unknown) {
     ATOOLS::msg.Error()<<"MI_Base::MI_Base("<<m_name<<","<<m_type<<"): "
 		       <<"Base has no type!"<<std::endl
 		       <<"   Run cannot continue."<<std::endl;
-    abort();
+    exit(121);
   }
   m_start = new double[n_parameter];
   m_stop = new double[n_parameter];
@@ -53,14 +53,14 @@ MI_Base::~MI_Base()
   delete [] m_last;
 }
 
-void MI_Base::UpdateAll(MI_Base *mibase)
+void MI_Base::UpdateAll(const MI_Base *mibase)
 {
   for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
     nbit->second->Update(mibase);
   }  
 }
 
-void MI_Base::Update(MI_Base *mibase)
+void MI_Base::Update(const MI_Base *mibase)
 {
   ATOOLS::msg.Error()<<"MI_Base::Update("<<mibase<<"): "
 		     <<"Virtual method called!"<<std::endl;
@@ -164,7 +164,7 @@ MI_None::MI_None(TypeID _m_type):
 
 MI_None::~MI_None() {}
 
-void MI_None::Update(MI_Base *mibase) 
+void MI_None::Update(const MI_Base *mibase) 
 {
   return;
 }

@@ -39,6 +39,8 @@ namespace AMISIC {
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
 
+    int m_scalescheme, m_kfactorscheme;
+
     bool m_external;
 
     unsigned int m_selected;
@@ -75,7 +77,7 @@ namespace AMISIC {
 
     // member functions
     bool Initialize();
-    void Update(MI_Base *mibase);
+    void Update(const MI_Base *mibase);
     void Reset();
 
     bool DiceOrderingParameter();

@@ -182,7 +182,7 @@ namespace AMISIC {
     std::vector<std::vector<GridArgumentType> > _m_xydata;
     _m_xydata.push_back(_m_xdata);
     _m_xydata.push_back(_m_ydata);
-    writer->ArrayToFile(_m_xydata,m_datatag,true,ATOOLS::nullstring,writer->MNormal,12);
+    writer->MatrixToFile(_m_xydata,m_datatag,true,ATOOLS::nullstring,writer->MNormal,12);
     delete writer;
     _m_xdata.clear();
     _m_ydata.clear();

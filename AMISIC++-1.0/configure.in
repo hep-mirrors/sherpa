@@ -25,6 +25,7 @@ AC_OUTPUT(Tools/Makefile \
 	  Other/Makefile \
 	  Main/Makefile \
 	  Run/Makefile \
+	  Analysis/Makefile \
           Makefile )
 
 

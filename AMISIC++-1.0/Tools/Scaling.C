@@ -23,7 +23,7 @@ namespace ATOOLS {
   }
   
   template <class Value_Type>
-  std::string Scaling_Base<Value_Type>::Name()
+  const std::string Scaling_Base<Value_Type>::Name() const
   { 
     ATOOLS::msg.Error()<<"Scaling_Base::Name(): "
 		       <<"Virtual method called!"<<std::endl; 

@@ -113,7 +113,6 @@ noinst_HEADERS = \
 			Read_Write_Base.H \
 			Read_Write_Base.IC \
 			Data_Reader.H \
-			Data_Reader.IC \
 			Data_Writer.H \
 			Variable.H \
 			Variable.IC \

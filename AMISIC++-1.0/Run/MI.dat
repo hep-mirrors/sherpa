@@ -1,5 +1,5 @@
 !=================================================!
-!               AMISIC Setup file                 !
+!          Underlying Event Setup file            !
 !=================================================!
 MI_HANDLER	= Amisic
 !

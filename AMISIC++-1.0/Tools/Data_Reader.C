@@ -17,10 +17,10 @@ namespace ATOOLS {
   Data_Reader::Data_Reader(): 
     Read_Write_Base() {}
 
-  Data_Reader::Data_Reader(std::string _m_cut, std::string _m_seperator, std::string _m_comment):
+  Data_Reader::Data_Reader(std::string _m_cut,std::string _m_seperator,std::string _m_comment):
     Read_Write_Base(_m_cut,_m_seperator,_m_comment) {}
   
-  Data_Reader::Data_Reader(const char *_m_cut, const char *_m_seperator, const char *_m_comment):
+  Data_Reader::Data_Reader(const char *_m_cut,const char *_m_seperator,const char *_m_comment):
     Read_Write_Base(_m_cut,_m_seperator,_m_comment) {}
   
   void Data_Reader::KillComments(std::string& buffer)
@@ -43,7 +43,7 @@ namespace ATOOLS {
     KillBlanks(buffer);
     for (unsigned int i=0; i<Ignore().size(); ++i) {
       while ((pos = buffer.find(Ignore()[i]))!=-1) {
-	buffer=buffer.substr(0,pos)+buffer.substr(pos+Ignore()[i].length());
+	buffer=buffer.substr(0,pos)+std::string(" ")+buffer.substr(pos+Ignore()[i].length());
 	KillBlanks(buffer);
       }
     }
@@ -63,7 +63,8 @@ namespace ATOOLS {
       hit = false;
       for (unsigned int i=0; i<Blank().size(); ++i) hit = hit || (int(buffer[0])==Blank()[i]);
       if (hit) {
-	buffer=buffer.substr(1);
+	if (buffer.length()>0) buffer=buffer.substr(1); 
+	else break;
       }
     } while (hit);
     do { 
@@ -76,9 +77,28 @@ namespace ATOOLS {
 #endif
     return buffer;
   }
+
+  std::string Data_Reader::HighlightSeperator(std::string& buffer)
+  {
+#ifdef DEBUG__Data_Reader
+    std::cout<<"Data_Reader::HighlightSeperator("<<buffer<<")"<<std::endl;
+#endif
+    unsigned int pos;
+    if (buffer==ATOOLS::nullstring) return buffer;
+    for (unsigned int j=0; j<Seperator().size(); ++j) {
+      if ((pos = buffer.find(Seperator()[j])) != std::string::npos) {
+	buffer.insert(pos+1," ",1);
+	buffer.insert(pos," ",1);
+      }
+    }
+#ifdef DEBUG__Data_Reader
+    std::cout<<"   returning '"<<buffer<<"'"<<std::endl;
+#endif
+    return buffer;
+  }
   
   template <class Read_Type>
-  Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string inputstring)
+  Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &inputstring)
   {
     int pos;
     Read_Type value;
@@ -90,7 +110,7 @@ namespace ATOOLS {
 	inputstring=String();
       }
       else {
-	ATOOLS::msg.Error()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
+	ATOOLS::msg.Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
 			   <<"   Abort reading."<<std::endl;
 	return Default<Read_Type>();
       }
@@ -103,7 +123,7 @@ namespace ATOOLS {
     if(((pos=inputstring.find(parameter))!=-1)&&
        ((inputstring=inputstring.substr(pos+parameter.length())).length()>0)) {
       std::stringstream converter;
-      converter<<inputstring;
+      converter<<HighlightSeperator(inputstring);
       converter>>value;
 #ifdef DEBUG__Data_Reader
       Type typeinfo;
@@ -125,15 +145,14 @@ namespace ATOOLS {
   {
     Read_Type value, temp;
     std::string buffer;
-    
     value=Default<Read_Type>();
     if (filename==noinputtag) {
       if (FileName()!=nullstring) {
 	filename=FileName();
       }
       else {
-	ATOOLS::msg.Error()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
-			   <<"   Abort reading."<<std::endl;
+	ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
+			      <<"   Abort reading."<<std::endl;
 	return value;
       }
     }
@@ -141,13 +160,13 @@ namespace ATOOLS {
       ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
       return value;
     }
-    while (*File()) {
-      getline(*File(),buffer);
+    for (unsigned int i=0;i<FileContent().size();++i) {
+      buffer=FileContent()[i];
       if((temp=M_ReadFromString<Read_Type>(parameter,buffer))!=Default<Read_Type>()) value=temp;
     }
     CloseFile();
     if (value==Default<Read_Type>()) {
-      ATOOLS::msg.Out()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+      ATOOLS::msg.Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
     }
     return value;
   }
@@ -160,8 +179,10 @@ namespace ATOOLS {
     if (tempvtype==VUnknown) tempvtype=VVertical;
     std::string value;
     Type typeinfo;
+    Read_Type readtype;
+    Type::ID type = typeinfo.GetType(readtype);
     std::vector<Read_Type> values;
-    int i = 0;
+    unsigned int pos;
 #ifdef DEBUG__Data_Reader
     std::cout<<"Data_Reader::M_VectorFromString("<<parameter<<","
 	     <<inputstring<<","<<tempvtype<<")"<<std::endl;
@@ -171,13 +192,13 @@ namespace ATOOLS {
 	inputstring=String();
       }
       else {
-	ATOOLS::msg.Error()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
-			   <<"   Abort reading."<<std::endl;
+	ATOOLS::msg.Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
+			      <<"   Abort reading."<<std::endl;
 	return values;
       }
     }
     value = M_ReadFromString<std::string>(parameter,inputstring);
-    for(;value != Default<std::string>();++i) {
+    while (value != Default<std::string>()) {
 #ifdef DEBUG__Data_Reader
       std::cout<<"   newline tags are ";
       for (unsigned int j=0;j<Seperator().size();std::cout<<"'"<<Seperator()[j++]<<"' ");
@@ -189,14 +210,11 @@ namespace ATOOLS {
       values.push_back(M_ReadFromString<Read_Type>(nullstring,value));
       if (tempvtype==VVertical) break;
       inputstring=inputstring.substr(inputstring.find(value)+value.length());
-      if ((typeinfo.GetType(value)!=Type::TChar) &&
-	  (typeinfo.GetType(value)!=Type::TString)) {
-	if ((inputstring.find(std::string("."))==0) ||
-	    (inputstring.find(std::string("0"))==0)) {
-	  inputstring = inputstring.substr(1);
-	  for (;inputstring.find(std::string("0"))==0;
-	       inputstring = inputstring.substr(1));
-	}  
+      if ((type!=Type::TChar)&&(type!=Type::TString)) {
+	if (((pos=inputstring.find(std::string("nan")))!=std::string::npos)||
+	    ((pos=inputstring.find(std::string("inf")))!=std::string::npos)) {
+	  inputstring.replace(pos,3,"0");
+	}
       }
       value=M_ReadFromString<std::string>(nullstring,inputstring);
     }
@@ -216,14 +234,13 @@ namespace ATOOLS {
     if (tempvtype==VUnknown) tempvtype=VectorType();
     if (tempvtype==VUnknown) tempvtype=VVertical;
     std::vector<Read_Type> values, temp;
-    std::string buffer;
     if (filename==noinputtag) {
       if (FileName()!=nullstring) {
 	filename=FileName();
       }
       else {
-	ATOOLS::msg.Error()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
-			   <<"   Abort reading."<<std::endl;
+	ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
+			      <<"   Abort reading."<<std::endl;
 	return values;
       }
     }
@@ -231,22 +248,21 @@ namespace ATOOLS {
       ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
       return values;
     }
-    while (*File()) {
-      getline(*File(),buffer);
-      temp = M_VectorFromString<Read_Type>(parameter,buffer,tempvtype);
+    for (unsigned int i=0;i<FileContent().size();++i) {
+      temp = M_VectorFromString<Read_Type>(parameter,FileContent()[i],tempvtype);
       switch (tempvtype) {
       case VHorizontal:
 	if (temp.size()!=0) values=temp;
 	break;
       case VUnknown:
       case VVertical:
-	for (unsigned int i=0; i<temp.size(); ++i) values.push_back(temp[i]);
+	for (unsigned int j=0; j<temp.size(); ++j) values.push_back(temp[j]);
 	break;
       }
     }
     CloseFile();
     if (values.size() != 0) return values;
-    ATOOLS::msg.Out()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+    ATOOLS::msg.Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
     return values;
   }
 
@@ -265,8 +281,8 @@ namespace ATOOLS {
 	inputstring=String();
       }
       else {
-	ATOOLS::msg.Error()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
-			   <<"   Abort reading."<<std::endl;
+	ATOOLS::msg.Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
+			      <<"   Abort reading."<<std::endl;
 	return transposedvalues;
       }
     }
@@ -310,14 +326,13 @@ namespace ATOOLS {
     if (tempmtype==MUnknown) tempmtype=MatrixType();
     if (tempmtype==MUnknown) tempmtype=MNormal;
     std::vector< std::vector<Read_Type> > transposedvalues, temp;
-    std::string buffer;
     if (filename==noinputtag) {
       if (FileName()!=nullstring) {
 	filename=FileName();
       }
       else {
-	ATOOLS::msg.Error()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
-			  <<"    Abort reading."<<std::endl;
+	ATOOLS::msg.Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
+			      <<"    Abort reading."<<std::endl;
 	return transposedvalues;
       }
     }
@@ -325,11 +340,10 @@ namespace ATOOLS {
       ATOOLS::msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
       return transposedvalues;
     }
-    while (*File()) {
-      getline(*File(),buffer);
-      temp = M_MatrixFromString<Read_Type>(parameter,buffer,MTransposed);
-      for (unsigned int i=0; i<temp.size(); ++i) {
-	transposedvalues.push_back(temp[i]);
+    for (unsigned int i=0;i<FileContent().size();++i) {
+      temp = M_MatrixFromString<Read_Type>(parameter,FileContent()[i],MTransposed);
+      for (unsigned int j=0; j<temp.size(); ++j) {
+	transposedvalues.push_back(temp[j]);
       }
     }
     CloseFile();
@@ -352,7 +366,7 @@ namespace ATOOLS {
       }
       else return transposedvalues;
     }
-    ATOOLS::msg.Out()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+    ATOOLS::msg.Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
     return transposedvalues;
   }
   

@@ -2,12 +2,12 @@
 !-- Beam parameters ------------------------------------
 !-------------------------------------------------------
 BEAM_1          = 2212                 ! possible beam particles:  P+, P-, e+, e-
-BEAM_ENERGY_1   = 900.                 ! in GeV
+BEAM_ENERGY_1   = 270.                 ! in GeV
 BEAM_POL_1      = 0.                   ! Polarization degree -1 ... 1
 BEAM_SPECTRUM_1 = Monochromatic        ! Monochromatic,Laser_Backscattering
 !
 BEAM_2          = 2212                 ! possible beam particles:  P+, P-, e+, e- 
-BEAM_ENERGY_2   = 900.                 ! in GeV
+BEAM_ENERGY_2   = 270.                 ! in GeV
 BEAM_POL_2      = 0.                   ! Polarization degree -1 ... 1
 BEAM_SPECTRUM_2 = Monochromatic        ! Monochromatic,Laser_Backscattering,Simple_Compton
 !

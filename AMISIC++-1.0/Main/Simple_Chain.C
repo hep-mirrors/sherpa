@@ -24,6 +24,8 @@ Simple_Chain::Simple_Chain():
   p_model(NULL),
   p_beam(NULL),
   p_isr(NULL),
+  m_scalescheme(2),
+  m_kfactorscheme(1),
   m_external(false) 
 {
   SetInputFile("MI.dat");
@@ -49,6 +51,8 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   p_model(_p_model),
   p_beam(_p_beam),
   p_isr(_p_isr),
+  m_scalescheme(2),
+  m_kfactorscheme(1),
   m_external(true)
 {
   SetInputFile("MI.dat");
@@ -286,18 +290,20 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 
 bool Simple_Chain::ReadInData()
 {
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  reader->SetFileName(m_inputpath+m_inputfile);
+  reader->SetMatrixType(reader->MTransposed);
+  reader->ReadFromFile(m_scalescheme,"SCALE_SCHEME");
+  reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME");
+  std::string outputpath;
+  reader->ReadFromFile(outputpath,"GRID DIRECTORY");
+  m_outputpath+=outputpath;
   std::vector<std::string> comments;
   comments.push_back("->");
   comments.push_back("FOR");
   comments.push_back("INTO");
   comments.push_back("IN");
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  reader->SetFileName(m_inputpath+m_inputfile);
-  reader->SetMatrixType(reader->MTransposed);
   reader->AddIgnore(comments);
-  std::string outputpath;
-  reader->ReadFromFile(outputpath,"GRID DIRECTORY");
-  m_outputpath+=outputpath;
   std::vector<std::vector<std::string> > temp;
   reader->MatrixFromFile(temp,"CREATE GRID");
   for (unsigned int i=0;i<temp.size();++i) {
@@ -413,6 +419,8 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
     p_processes->Clear();
   }
   p_processes->InitializeProcesses(p_beam,p_isr);  
+  p_processes->SetScaleScheme(m_scalescheme);
+  p_processes->SetKFactorScheme(m_kfactorscheme);
   ATOOLS::Flavour flavour[4];
   flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
   EXTRAXS::QCD_Processes_C *group;
@@ -437,9 +445,13 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
       }
       return false;
     }
+    newxs->SetScaleScheme(m_scalescheme);
+    newxs->SetKFactorScheme(m_kfactorscheme);
     group->Add(newxs);
   }
   group->SetName(processname);
+  group->SetScaleScheme(m_scalescheme);
+  group->SetKFactorScheme(m_kfactorscheme);
   p_processes->PushBack(group);
   std::vector<std::string> comments;
   comments.push_back(std::string("processes : ")+processname);
@@ -490,6 +502,8 @@ bool Simple_Chain::InitializeBlobList()
     p_processes->Clear();
   }
   p_processes->InitializeProcesses(p_beam,p_isr);  
+  p_processes->SetScaleScheme(m_scalescheme);
+  p_processes->SetKFactorScheme(m_kfactorscheme);
   std::vector<EXTRAXS::QCD_Processes_C*> group=std::vector<EXTRAXS::QCD_Processes_C*>(m_blobs.size());
   ATOOLS::Flavour flavour[4];
   ATOOLS::Flow::ResetCounter();
@@ -517,9 +531,13 @@ bool Simple_Chain::InitializeBlobList()
 	}
 	return false;
       }
+      newxs->SetScaleScheme(m_scalescheme);
+      newxs->SetKFactorScheme(m_kfactorscheme);
       group[i]->Add(newxs);
     }
     group[i]->SetName(m_processname[i]);
+    group[i]->SetScaleScheme(m_scalescheme);
+    group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
   }
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
@@ -593,7 +611,7 @@ bool Simple_Chain::Initialize()
     ATOOLS::rpa.Init(m_inputpath,initfile);
   }
   if (!ReadInData()) return false;
-  reader->SetFileName(m_inputpath+m_environmentfile);
+  reader->SetFileName(m_inputpath+m_inputfile);
   if (!reader->ReadFromFile(m_xsfile,"XS_FILE")) m_xsfile=std::string("XS.dat");
   delete reader;
   ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer("=",";","!");
@@ -602,6 +620,8 @@ bool Simple_Chain::Initialize()
   writer->WriteComment("========================");
   writer->WriteComment("     Dummy XS File      ");
   writer->WriteComment("========================");
+  writer->WriteToFile(std::string(" "));
+  writer->WriteToFile(std::string(" XS_FILE = ")+m_xsfile);
   writer->WriteToFile(std::string(" "));
   writer->WriteToFile(std::string(" Init QCD 2->2"));
   delete writer;
@@ -797,7 +817,7 @@ void Simple_Chain::Reset()
   m_last[1]=m_start[1];
 }
 
-void Simple_Chain::Update(MI_Base *mibase)
+void Simple_Chain::Update(const MI_Base *mibase)
 {
   UpdateAll(this);
   return;

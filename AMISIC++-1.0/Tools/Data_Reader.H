@@ -8,21 +8,25 @@ namespace ATOOLS {
   class Data_Reader: public Read_Write_Base {
   private:
 
-    std::string KillBlanks(std::string&);
-    void KillComments(std::string&);
+    void KillComments(std::string& buffer);
+
+    std::string KillBlanks(std::string& buffer);
+    std::string HighlightSeperator(std::string& buffer);
 
   protected:
 
     template <class Read_Type >
     Read_Type M_ReadFromFile(std::string parameter,std::string filename);
     template <class Read_Type >
-    Read_Type M_ReadFromString(std::string parameter,std::string inputstring);
+    Read_Type M_ReadFromString(std::string parameter,std::string &inputstring);
+
     template <class Read_Type >
     std::vector<Read_Type> 
     M_VectorFromFile(std::string parameter,std::string filename,VectorTypeID tempvtype);
     template <class Read_Type >
     std::vector<Read_Type>
     M_VectorFromString(std::string parameter,std::string inputstring,VectorTypeID tempvtype);
+
     template <class Read_Type >
     std::vector< std::vector<Read_Type> > 
     M_MatrixFromFile(std::string parameter,std::string filename,MatrixTypeID tempmtype);
@@ -34,8 +38,8 @@ namespace ATOOLS {
 
     // constructors
     Data_Reader();
-    Data_Reader(const char*,const char*,const char*);
-    Data_Reader(std::string,std::string,std::string);
+    Data_Reader(std::string _m_cut,std::string _m_seperator,std::string _m_comment);
+    Data_Reader(const char *_m_cut,const char *_m_seperator,const char *_m_comment);
 
     // member functions
     bool ReadFromFile(int& value,std::string parameter=nullstring,std::string filename=noinputtag);

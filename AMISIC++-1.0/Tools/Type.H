@@ -28,18 +28,18 @@ namespace ATOOLS {
 
     // member functions
     ID GetType();
-    ID GetType(char&);
-    ID GetType(short int&);
-    ID GetType(int&);
-    ID GetType(long int&);
-    ID GetType(float&);
-    ID GetType(double&);
-    ID GetType(std::string&);
-    ID GetType(std::istream&);
-    ID GetType(std::ostream&);
-    ID GetType(std::ifstream&);
-    ID GetType(std::ofstream&);
-    ID GetType(std::fstream&);
+    ID GetType(const char&);
+    ID GetType(const short int&);
+    ID GetType(const int&);
+    ID GetType(const long int&);
+    ID GetType(const float&);
+    ID GetType(const double&);
+    ID GetType(const std::string&);
+    ID GetType(const std::istream&);
+    ID GetType(const std::ostream&);
+    ID GetType(const std::ifstream&);
+    ID GetType(const std::ofstream&);
+    ID GetType(const std::fstream&);
 
   }; // end of class Type
 

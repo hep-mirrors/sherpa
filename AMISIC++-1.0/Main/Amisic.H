@@ -36,8 +36,8 @@ namespace AMISIC {
     ~Amisic();
 
     // getters
-    ModelID HardModel();
-    ModelID SoftModel();
+    const ModelID HardModel() const;
+    const ModelID SoftModel() const;
 
     MI_Base *HardBase();
     MI_Base *SoftBase();

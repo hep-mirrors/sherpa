@@ -144,10 +144,14 @@ bool Amisic::SelectHardModel(ModelID _m_hardmodel)
   if (p_hardbase!=NULL) delete p_hardbase;
   switch (m_hardmodel) {
   case SimpleChain:
+    ATOOLS::msg.Tracking()<<"Amisic::SelectHardModel("<<_m_hardmodel<<"): "
+			  <<"Initialize simple hard underlying event model."<<std::endl;
     if (m_external) p_hardbase = new Simple_Chain(p_model,p_beam,p_isr);
     else p_hardbase = new Simple_Chain();
     break;
   case None:
+    ATOOLS::msg.Tracking()<<"Amisic::SelectHardModel("<<_m_hardmodel<<"): "
+			  <<"Initialize no hard underlying event handler."<<std::endl;
     p_hardbase = new MI_None(MI_Base::HardEvent);
     break;
   default:
@@ -170,10 +174,14 @@ bool Amisic::SelectSoftModel(ModelID _m_softmodel)
   if (p_softbase!=NULL) delete p_softbase;
   switch (m_softmodel) {
   case SimpleChain:
-    if (m_external) p_hardbase = new Simple_Chain(p_model,p_beam,p_isr);
-    else p_hardbase = new Simple_Chain();
+    ATOOLS::msg.Tracking()<<"Amisic::SelectSoftModel("<<_m_softmodel<<"): "
+			  <<"Initialize simple hard underlying event model."<<std::endl;
+    if (m_external) p_softbase = new Simple_Chain(p_model,p_beam,p_isr);
+    else p_softbase = new Simple_Chain();
     break;
   case None:
+    ATOOLS::msg.Tracking()<<"Amisic::SelectSoftModel("<<_m_softmodel<<"): "
+			  <<"Initialize no soft underlying event handler."<<std::endl;
     p_softbase = new MI_None(MI_Base::SoftEvent);
     break;
   default:

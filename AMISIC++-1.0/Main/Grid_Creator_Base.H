@@ -39,24 +39,24 @@ namespace AMISIC {
     Grid_Creator_Arguments();
     
     // setters
-    void SetGridXMin(GridArgumentType _m_gridxmin);
-    void SetGridXMax(GridArgumentType _m_gridxmax);
-    void SetGridDeltaXMin(GridArgumentType _m_griddeltaxmin);
-    void SetGridDeltaXMax(GridArgumentType _m_griddeltaxmax);
-    void SetGridYMin(GridResultType _m_gridymin);
-    void SetGridYMax(GridResultType _m_gridymax);
-    void SetGridDeltaYMin(GridResultType _m_griddeltaymin);
-    void SetGridDeltaYMax(GridResultType _m_griddeltaymax);
+    void SetGridXMin(const GridArgumentType _m_gridxmin);
+    void SetGridXMax(const GridArgumentType _m_gridxmax);
+    void SetGridDeltaXMin(const GridArgumentType _m_griddeltaxmin);
+    void SetGridDeltaXMax(const GridArgumentType _m_griddeltaxmax);
+    void SetGridYMin(const GridResultType _m_gridymin);
+    void SetGridYMax(const GridResultType _m_gridymax);
+    void SetGridDeltaYMin(const GridResultType _m_griddeltaymin);
+    void SetGridDeltaYMax(const GridResultType _m_griddeltaymax);
     
     // getters
-    GridArgumentType GridXMin();
-    GridArgumentType GridXMax();
-    GridArgumentType GridDeltaXMin();
-    GridArgumentType GridDeltaXMax();
-    GridResultType   GridYMin();
-    GridResultType   GridYMax();
-    GridResultType   GridDeltaYMin();
-    GridResultType   GridDeltaYMax();
+    const GridArgumentType GridXMin() const;
+    const GridArgumentType GridXMax() const;
+    const GridArgumentType GridDeltaXMin() const;
+    const GridArgumentType GridDeltaXMax() const;
+    const GridResultType   GridYMin() const;
+    const GridResultType   GridYMax() const;
+    const GridResultType   GridDeltaYMin() const;
+    const GridResultType   GridDeltaYMax() const;
     
   }; // end of class Arguments
 

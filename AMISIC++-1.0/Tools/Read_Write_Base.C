@@ -55,6 +55,13 @@ namespace ATOOLS {
     if (p_file==NULL) {
       p_file=new std::fstream();	
       p_file->open(m_filename.c_str(),omode); 
+      m_filecontent.clear();
+      if (omode==std::ios_base::in) {
+	while (*p_file) {
+	  m_filecontent.push_back(std::string(""));
+	  getline(*p_file,m_filecontent.back());
+	}
+      }
     }
     return !p_file->bad();
   }
@@ -62,6 +69,7 @@ namespace ATOOLS {
   void Read_Write_Base::CloseFile(bool force)
   { 
     if ((m_openmode==Permanent)&&(!force)) return;
+    m_filecontent.clear();
     p_file->close(); 
     delete p_file; 
     p_file=NULL;

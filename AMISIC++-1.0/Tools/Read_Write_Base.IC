@@ -5,76 +5,120 @@
 
 namespace ATOOLS {
 
-    inline void Read_Write_Base::SetComment(std::string _m_comment)       
-    { m_comment.clear(); m_comment.push_back(_m_comment); }
-    inline void Read_Write_Base::SetComment(std::vector<std::string> _m_comment)       
-    { m_comment.clear(); m_comment=_m_comment; }
-    inline void Read_Write_Base::AddComment(std::string _m_comment)       
-    { m_comment.push_back(_m_comment); }
-    inline void Read_Write_Base::AddComment(std::vector<std::string> _m_comment)       
-    { for (unsigned int i=0;i<_m_comment.size();m_comment.push_back(_m_comment[i++])); }
-    inline void Read_Write_Base::SetIgnore(std::string _m_ignore)       
-    { m_ignore.clear(); m_ignore.push_back(_m_ignore); }
-    inline void Read_Write_Base::SetIgnore(std::vector<std::string> _m_ignore)       
-    { m_ignore.clear(); m_ignore=_m_ignore; }
-    inline void Read_Write_Base::AddIgnore(std::string _m_ignore)       
-    { m_ignore.push_back(_m_ignore); }
-    inline void Read_Write_Base::AddIgnore(std::vector<std::string> _m_ignore)       
-    { for (unsigned int i=0;i<_m_ignore.size();m_ignore.push_back(_m_ignore[i++])); }
-    inline void Read_Write_Base::SetSeperator(std::string _m_seperator) 
-    { m_seperator.clear(); m_seperator.push_back(_m_seperator); }
-    inline void Read_Write_Base::SetSeperator(std::vector<std::string> _m_seperator) 
-    { m_seperator.clear(); m_seperator=_m_seperator; }
-    inline void Read_Write_Base::AddSeperator(std::string _m_seperator) 
-    { m_seperator.push_back(_m_seperator); }
-    inline void Read_Write_Base::AddSeperator(std::vector<std::string> _m_seperator) 
-    { for (unsigned int i=0;i<_m_seperator.size();m_seperator.push_back(_m_seperator[i++])); }
-    inline void Read_Write_Base::SetBlank(int _m_blank)                 
-    { m_blank.clear(); m_blank.push_back(_m_blank); }
-    inline void Read_Write_Base::SetBlank(std::vector<int> _m_blank)    
-    { m_blank.clear(); m_blank = _m_blank; }
-    inline void Read_Write_Base::AddBlank(int _m_blank)                 
-    { m_blank.push_back(_m_blank); }
-    inline void Read_Write_Base::AddBlank(std::vector<int> _m_blank)    
-    { for (unsigned int i=0; i<_m_blank.size();m_blank.push_back(_m_blank[i++])); }
-    inline void Read_Write_Base::SetFileName(std::string _m_filename)   
-    { if ((_m_filename!=m_filename)&&(p_file!=NULL)) CloseFile(true); m_filename=_m_filename; }
-    inline void Read_Write_Base::SetOpenMode(OpenModeID _m_openmode)
-    { if ((_m_openmode==Temporary)&&(p_file!=NULL)) CloseFile(true); m_openmode=_m_openmode; }
-    inline void Read_Write_Base::SetString(std::string _m_string)       
-    { m_string = _m_string; }
-    inline void Read_Write_Base::SetVectorType(VectorTypeID _m_vectortype)
-    { m_vectortype=_m_vectortype; }
-    inline void Read_Write_Base::SetMatrixType(MatrixTypeID _m_matrixtype)
-    { m_matrixtype=_m_matrixtype; }
+  inline void Read_Write_Base::SetSeperator(const std::string _m_seperator) 
+  { m_seperator.clear(); m_seperator.push_back(_m_seperator); }
+  
+  inline void Read_Write_Base::SetSeperator(const std::vector<std::string> &_m_seperator) 
+  { m_seperator.clear(); m_seperator=_m_seperator; }
+  
+  inline void Read_Write_Base::AddSeperator(const std::string _m_seperator) 
+  { m_seperator.push_back(_m_seperator); }
+  
+  inline void Read_Write_Base::AddSeperator(const std::vector<std::string> &_m_seperator) 
+  { for (unsigned int i=0;i<_m_seperator.size();m_seperator.push_back(_m_seperator[i++])); }
+  
+  inline void Read_Write_Base::SetComment(const std::string _m_comment)       
+  { m_comment.clear(); m_comment.push_back(_m_comment); }
 
-    inline std::vector<std::string>      Read_Write_Base::Comment()          { return m_comment;    }
-    inline std::vector<std::string>      Read_Write_Base::Ignore()           { return m_ignore;     }
-    inline std::vector<std::string>      Read_Write_Base::Seperator()        { return m_seperator;  }
-    inline std::vector<int>              Read_Write_Base::Blank()            { return m_blank;      }
-    inline std::string                   Read_Write_Base::FileName()         { return m_filename;   }
-    inline std::string                   Read_Write_Base::String()           { return m_string;     }
-    inline Read_Write_Base::VectorTypeID Read_Write_Base::VectorType()       { return m_vectortype; }
-    inline Read_Write_Base::MatrixTypeID Read_Write_Base::MatrixType()       { return m_matrixtype; }
-    inline Read_Write_Base::OpenModeID   Read_Write_Base::OpenMode()         { return m_openmode;   }
-    inline std::fstream                 *Read_Write_Base::File()             { return p_file;       }
+  inline void Read_Write_Base::SetComment(const std::vector<std::string> &_m_comment)       
+  { m_comment.clear(); m_comment=_m_comment; }
+  
+  inline void Read_Write_Base::AddComment(const std::string _m_comment)       
+  { m_comment.push_back(_m_comment); }
+  
+  inline void Read_Write_Base::AddComment(const std::vector<std::string> &_m_comment)       
+  { for (unsigned int i=0;i<_m_comment.size();m_comment.push_back(_m_comment[i++])); }
+  
+  inline void Read_Write_Base::SetIgnore(const std::string _m_ignore)       
+  { m_ignore.clear(); m_ignore.push_back(_m_ignore); }
 
-    template <class Read_Type>
-    inline Read_Type Read_Write_Base::NotDefined() { return (Read_Type)0; }
-    template <class Read_Type>
-    inline Read_Type Read_Write_Base::Default() { return (Read_Type)0; }
+  inline void Read_Write_Base::SetIgnore(const std::vector<std::string> &_m_ignore)       
+  { m_ignore.clear(); m_ignore=_m_ignore; }
+  
+  inline void Read_Write_Base::AddIgnore(const std::string _m_ignore)       
+  { m_ignore.push_back(_m_ignore); }
 
-    template <> inline int         Read_Write_Base::NotDefined<int>()         { return -32767;          } 
-    template <> inline long        Read_Write_Base::NotDefined<long>()        { return -32767;          } 
-    template <> inline float       Read_Write_Base::NotDefined<float>()       { return 1.0e-37;         } 
-    template <> inline double      Read_Write_Base::NotDefined<double>()      { return 1.0e-37;         } 
-    template <> inline std::string Read_Write_Base::NotDefined<std::string>() { return nullstring; } 
+  inline void Read_Write_Base::AddIgnore(const std::vector<std::string> &_m_ignore)       
+  { for (unsigned int i=0;i<_m_ignore.size();m_ignore.push_back(_m_ignore[i++])); }
 
-    template <> inline int         Read_Write_Base::Default<int>()         { return -32767;          } 
-    template <> inline long        Read_Write_Base::Default<long>()        { return -32767;          } 
-    template <> inline float       Read_Write_Base::Default<float>()       { return 1.0e-37;         } 
-    template <> inline double      Read_Write_Base::Default<double>()      { return 1.0e-37;         } 
-    template <> inline std::string Read_Write_Base::Default<std::string>() { return nullstring; } 
+  inline void Read_Write_Base::SetBlank(const int _m_blank)                 
+  { m_blank.clear(); m_blank.push_back(_m_blank); }
+  
+  inline void Read_Write_Base::SetBlank(const std::vector<int> &_m_blank)    
+  { m_blank.clear(); m_blank = _m_blank; }
+
+  inline void Read_Write_Base::AddBlank(const int _m_blank)                 
+  { m_blank.push_back(_m_blank); }
+
+  inline void Read_Write_Base::AddBlank(const std::vector<int> &_m_blank)    
+  { for (unsigned int i=0; i<_m_blank.size();m_blank.push_back(_m_blank[i++])); }
+
+  inline void Read_Write_Base::SetFileName(const std::string _m_filename)   
+  { if ((_m_filename!=m_filename)&&(p_file!=NULL)) CloseFile(true); m_filename=_m_filename; }
+
+  inline void Read_Write_Base::SetString(const std::string _m_string)       
+  { m_string = _m_string; }
+
+  inline void Read_Write_Base::SetOpenMode(const OpenModeID _m_openmode)
+  { if ((_m_openmode==Temporary)&&(p_file!=NULL)) CloseFile(true); m_openmode=_m_openmode; }
+
+  inline void Read_Write_Base::SetVectorType(const VectorTypeID _m_vectortype)
+  { m_vectortype=_m_vectortype; }
+
+  inline void Read_Write_Base::SetMatrixType(const MatrixTypeID _m_matrixtype)
+  { m_matrixtype=_m_matrixtype; }
+
+  inline const std::vector<std::string> &Read_Write_Base::Comment() const           
+  { return m_comment; }
+  
+  inline const std::vector<std::string> &Read_Write_Base::Ignore() const           
+  { return m_ignore;     }
+  
+  inline const std::vector<std::string> &Read_Write_Base::Seperator() const         
+  { return m_seperator; }
+  
+  inline const std::vector<int> &Read_Write_Base::Blank() const            
+  { return m_blank; }
+  
+  inline const std::string Read_Write_Base::FileName() const 
+  { return m_filename; }
+  
+  inline const std::string Read_Write_Base::String() const           
+  { return m_string; }
+  
+  inline const Read_Write_Base::VectorTypeID Read_Write_Base::VectorType() const       
+  { return m_vectortype; }
+  
+  inline const Read_Write_Base::MatrixTypeID Read_Write_Base::MatrixType() const       
+  { return m_matrixtype; }
+  
+  inline const Read_Write_Base::OpenModeID Read_Write_Base::OpenMode() const         
+  { return m_openmode; }
+  
+  inline std::fstream *Read_Write_Base::File()
+  { return p_file; }
+
+  template <class Read_Type>
+  inline Read_Type Read_Write_Base::NotDefined() 
+  { return (Read_Type)0; }
+  
+  template <class Read_Type>
+  inline Read_Type Read_Write_Base::Default() 
+  { return (Read_Type)0; }
+
+  inline const std::vector<std::string> &Read_Write_Base::FileContent() const { return m_filecontent; }
+
+  template <> inline int         Read_Write_Base::NotDefined<int>()         { return -32767;     } 
+  template <> inline long        Read_Write_Base::NotDefined<long>()        { return -32767;     } 
+  template <> inline float       Read_Write_Base::NotDefined<float>()       { return 1.0e-37;    } 
+  template <> inline double      Read_Write_Base::NotDefined<double>()      { return 1.0e-37;    } 
+  template <> inline std::string Read_Write_Base::NotDefined<std::string>() { return nullstring; } 
+
+  template <> inline int         Read_Write_Base::Default<int>()         { return -32767;     } 
+  template <> inline long        Read_Write_Base::Default<long>()        { return -32767;     } 
+  template <> inline float       Read_Write_Base::Default<float>()       { return 1.0e-37;    } 
+  template <> inline double      Read_Write_Base::Default<double>()      { return 1.0e-37;    } 
+  template <> inline std::string Read_Write_Base::Default<std::string>() { return nullstring; } 
 
 } // end of namespace ATOOLS
 

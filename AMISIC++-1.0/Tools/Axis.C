@@ -54,6 +54,9 @@ namespace ATOOLS {
     ValueType argx;
     ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
     reader->SetString(scalename);
+    if (scalename==std::string("Id")) {
+      SetScaling(new ATOOLS::Id_Scaling<ValueType>()); 
+    }
     if (scalename==std::string("Log")) {
       SetScaling(new ATOOLS::Log_Scaling<ValueType>()); 
     }

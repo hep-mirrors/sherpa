@@ -33,11 +33,9 @@ namespace ATOOLS {
 
   private:
 
-    std::vector<std::string> m_comment, m_ignore, m_seperator;
-
-    std::vector<int> m_blank;
-
-    std::string m_filename, m_string;
+    std::string              m_filename, m_string;
+    std::vector<std::string> m_comment, m_ignore, m_seperator, m_filecontent;
+    std::vector<int>         m_blank;
 
     std::fstream *p_file;
 
@@ -50,14 +48,15 @@ namespace ATOOLS {
 
   protected:
 
-    OpenModeID OpenMode();
-
-    std::fstream *File();
+    const std::vector<std::string> &FileContent() const;
+    std::fstream                   *File();
 
     bool OpenFile(std::string filename=nullstring,
 		  std::ios_base::openmode omode=std::ios_base::in,
 		  OpenModeID tempomode=Unknown);
     void CloseFile(bool force=false);
+
+    const OpenModeID OpenMode() const;
 
     template <class ReadWrite_Type >
     ReadWrite_Type NotDefined();
@@ -68,52 +67,53 @@ namespace ATOOLS {
 
     // constructors
     Read_Write_Base();
-    Read_Write_Base(const char*,const char*,const char*);
-    Read_Write_Base(std::string,std::string,std::string);
+    Read_Write_Base(std::string _m_cut,std::string _m_seperator,std::string _m_comment);
+    Read_Write_Base(const char *_m_cut,const char *_m_seperator,const char *_m_comment);
 
     // destructor
     ~Read_Write_Base();
 
     // setters
-    void SetCut(std::string);
-    void SetSeperator(std::string);
-    void SetSeperator(std::vector<std::string>);
-    void AddSeperator(std::string);
-    void AddSeperator(std::vector<std::string>);
-    void SetComment(std::string);
-    void SetComment(std::vector<std::string>);
-    void AddComment(std::string);
-    void AddComment(std::vector<std::string>);
-    void SetIgnore(std::string);
-    void SetIgnore(std::vector<std::string>);
-    void AddIgnore(std::string);
-    void AddIgnore(std::vector<std::string>);
+    void SetSeperator(const std::string _m_seperator);
+    void SetSeperator(const std::vector<std::string> &_m_seperator);
+    void AddSeperator(const std::string _m_seperator);
+    void AddSeperator(const std::vector<std::string> &_m_seperator);
 
-    void SetBlank(int);
-    void SetBlank(std::vector<int>);
-    void AddBlank(int);
-    void AddBlank(std::vector<int>);
+    void SetComment(const std::string _m_comment);
+    void SetComment(const std::vector<std::string> &_m_comment);
+    void AddComment(const std::string _m_comment);
+    void AddComment(const std::vector<std::string> &_m_comment);
 
-    void SetFileName(std::string);
-    void SetString(std::string);
+    void SetIgnore(const std::string _m_ignore);
+    void SetIgnore(const std::vector<std::string> &_m_ignore);
+    void AddIgnore(const std::string _m_ignore);
+    void AddIgnore(const std::vector<std::string> &_m_ignore);
 
-    void SetOpenMode(OpenModeID _m_openmode);
+    void SetBlank(const int _m_blank);
+    void SetBlank(const std::vector<int> &_m_blank);
+    void AddBlank(const int _m_blank);
+    void AddBlank(const std::vector<int> &_m_blank);
 
-    void SetVectorType(VectorTypeID _m_vectortype);
-    void SetMatrixType(MatrixTypeID _m_matrixtype);
+    void SetFileName(const std::string _m_filename);
+    void SetString(const std::string _m_string);
+
+    void SetOpenMode(const OpenModeID _m_openmode);
+
+    void SetVectorType(const VectorTypeID _m_vectortype);
+    void SetMatrixType(const MatrixTypeID _m_matrixtype);
 
     // getters
-    std::vector<std::string> Comment();
-    std::vector<std::string> Ignore();
-    std::vector<std::string> Seperator();
+    const std::vector<std::string> &Comment() const;
+    const std::vector<std::string> &Ignore() const;
+    const std::vector<std::string> &Seperator() const;
 
-    std::vector<int>         Blank();
+    const std::vector<int> &Blank() const;
 
-    std::string              FileName();
-    std::string              String();
+    const std::string FileName() const;
+    const std::string String() const;
 
-    VectorTypeID             VectorType();
-    MatrixTypeID             MatrixType();
+    const VectorTypeID VectorType() const;
+    const MatrixTypeID MatrixType() const;
 
   }; // end of class Read_Write_Base
 
@@ -128,103 +128,63 @@ namespace ATOOLS {
 
   /*!
     \class Read_Write_Base
-    \brief Reads standard data types from strings or files
-
-    The Read_Write_Base class currently supports the types 
-    int, long int, float, double, and std::string. According to the 
-    specific purpose the data may either be read from an input string
-    or from a file. It is also possible to read multiple inputs, 
-    which have to be seperated by blanks, 
-    or to read arrays where the columns must be seperated 
-    by a chooseable seperator. According to that the output is passed 
-    either as a std::vector<Read_Type> or as a std::vector<std::vector<Read_Type>>.
-    If not indicated otherwise each function using std::string as input parameter type
-    will also exist for const char*.
+    \brief 
   */
 
   /*!
     \fn Read_Write_Base::Read_Write_Base()
     \brief Default constructor
 
-    Initializes the Read_Write_Base with the default cut "=", the default seperator ";" 
+    Initializes Read_Write_Base with the default cut "=", the default seperator ";" 
     and the default comment indicator "#".
   */
 
   /*!
-    \fn Read_Write_Base::Read_Write_Base(std::string,std::string,std::string)
+    \fn Read_Write_Base::Read_Write_Base(std::string _m_cut,std::string _m_seperator,std::string _m_comment)
     \brief Special constructor
 
-    Initializes the Read_Write_Base with the given cut, the given seperator 
-    and the given comment indicator. 
+    Initializes Read_Write_Base with the cut _m_cut, the seperator _m_seperator 
+    and the comment indicator _m_comment. 
   */
 
   /*!
-    \fn Read_Write_Base::SetCut(std::string)
-    \brief Sets the cut
-  */
-
-  /*!
-    \fn Read_Write_Base::SetSeperator(std::string)
+    \fn Read_Write_Base::SetSeperator(std::string _m_seperator)
     \brief Sets the seperator
   */
 
   /*!
-    \fn Read_Write_Base::SetComment(std::string)
+    \fn Read_Write_Base::SetComment(std::string _m_comment)
     \brief Sets the comment indicator
   */
 
   /*!
-    \fn Read_Write_Base::SetString(std::string)
-    \brief Sets the current filename
+    \fn Read_Write_Base::SetFileName(std::string _m_filename)
+    \brief Sets the current file name
   */
 
   /*!
-    \fn Read_Write_Base::SetString(std::string)
+    \fn Read_Write_Base::SetString(std::string _m_string)
     \brief Sets the current input string
   */
 
   /*!
-    \fn Read_Write_Base::Cut()
-    \brief Returns the current cut
-  */
-
-  /*!
     \fn Read_Write_Base::Seperator()
-    \brief Returns the current seperator
+    \brief Returns the current seperators
   */
 
   /*!
     \fn Read_Write_Base::Comment()
-    \brief Returns the current comment indicator
+    \brief Returns the current comment indicators
   */
 
   /*!
-    \fn Read_Write_Base::String()
+    \fn Read_Write_Base::FileName()
     \brief Returns the current filename
   */
 
   /*!
     \fn Read_Write_Base::String()
     \brief Returns the current input string
-  */
-
-  /*!
-    \fn Read_Write_Base::NotDefined()
-    \brief Identifies unreadable input 
-
-    This template is used to decide whether the input parameter
-    is defined or not. In principle it should return the value 
-    std::stringstream returns when a null argument has been passed 
-  */
-
-  /*!
-    \fn Read_Write_Base::Default()
-    \brief Returns default values
-
-    This template passes a default value to the user routine
-    in the case that reading the input string resulted in an error. 
-    On the basis of a comparison to Read_Write_Base::Default() one is thus able to decide
-    whether the reading has been succesful.
   */
 
 } // end of namespace ATOOLS

@@ -5,28 +5,28 @@
 
 namespace ATOOLS {
 
-  inline void File_IO_Base::SetInputPath(std::string _m_inputpath)
+  inline void File_IO_Base::SetInputPath(const std::string _m_inputpath)
   { m_inputpath=_m_inputpath; }
 
-  inline std::string File_IO_Base::InputPath()
+  inline const std::string File_IO_Base::InputPath() const
   { return m_inputpath; }
 
-  inline void File_IO_Base::SetInputFile(std::string _m_inputfile)
+  inline void File_IO_Base::SetInputFile(const std::string _m_inputfile)
   { m_inputfile=_m_inputfile; }
 
-  inline std::string File_IO_Base::InputFile()
+  inline const std::string File_IO_Base::InputFile() const
   { return m_inputfile; }
 
-  inline void File_IO_Base::SetOutputPath(std::string _m_outputpath)
+  inline void File_IO_Base::SetOutputPath(const std::string _m_outputpath)
   { m_outputpath=_m_outputpath; }
 
-  inline std::string File_IO_Base::OutputPath()
+  inline const std::string File_IO_Base::OutputPath() const
   { return m_outputpath; }
 
-  inline void File_IO_Base::SetOutputFile(std::string _m_outputfile)
+  inline void File_IO_Base::SetOutputFile(const std::string _m_outputfile)
   { m_outputfile=_m_outputfile; }
 
-  inline std::string File_IO_Base::OutputFile()
+  inline const std::string File_IO_Base::OutputFile() const
   { return m_outputfile; }
 
   inline bool File_IO_Base::CheckInputPath()

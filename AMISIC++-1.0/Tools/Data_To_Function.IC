@@ -9,32 +9,32 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   inline void Data_To_Function<Argument_Type,Result_Type>::
-  SetMonotony(MonotonyID _m_monotony)
+  SetMonotony(const MonotonyID _m_monotony)
   { if (m_monotony==MUnknown) m_monotony = _m_monotony; }
 
   template <class Argument_Type,class Result_Type>
-  inline typename Data_To_Function<Argument_Type,Result_Type>::MonotonyID
-  Data_To_Function<Argument_Type,Result_Type>::Monotony()
+  inline const typename Data_To_Function<Argument_Type,Result_Type>::MonotonyID
+  Data_To_Function<Argument_Type,Result_Type>::Monotony() const
   { return m_monotony; }
 
   template <class Argument_Type,class Result_Type>
   inline void Data_To_Function<Argument_Type,Result_Type>::
-  SetAcquisitionMode(AcquisitionModeID _m_acquisitionmode)
+  SetAcquisitionMode(const AcquisitionModeID _m_acquisitionmode)
   { m_acquisitionmode = _m_acquisitionmode; }
 
   template <class Argument_Type,class Result_Type>
-  inline typename Data_To_Function<Argument_Type,Result_Type>::AcquisitionModeID
-  Data_To_Function<Argument_Type,Result_Type>::AcquisitionMode()
+  inline const typename Data_To_Function<Argument_Type,Result_Type>::AcquisitionModeID
+  Data_To_Function<Argument_Type,Result_Type>::AcquisitionMode() const
   { return m_acquisitionmode; }
 
   template <class Argument_Type,class Result_Type>
   inline void Data_To_Function<Argument_Type,Result_Type>::
-  SetInterpolationMode(InterpolationModeID _m_interpolationmode)
+  SetInterpolationMode(const InterpolationModeID _m_interpolationmode)
   { m_interpolationmode = _m_interpolationmode; }
 
   template <class Argument_Type,class Result_Type>
-  inline typename Data_To_Function<Argument_Type,Result_Type>::InterpolationModeID 
-  Data_To_Function<Argument_Type,Result_Type>::InterpolationMode()
+  inline const typename Data_To_Function<Argument_Type,Result_Type>::InterpolationModeID 
+  Data_To_Function<Argument_Type,Result_Type>::InterpolationMode() const
   { return m_interpolationmode; }
 
   template <class Argument_Type,class Result_Type>

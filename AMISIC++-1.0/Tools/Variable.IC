@@ -5,22 +5,22 @@
 
 namespace ATOOLS {
 
-  inline void Variable::SetType(TypeID _m_type)
+  inline void Variable::SetType(const TypeID _m_type)
   { SetName(TypeToString(m_type=_m_type)); }
 
-  inline Variable::TypeID Variable::Type()
+  inline const Variable::TypeID Variable::Type() const
   { return m_type; }
   
-  inline void Variable::SetName(std::string _m_name)
+  inline void Variable::SetName(const std::string _m_name)
   { m_name=_m_name; }
 
-  inline std::string Variable::Name()
+  inline const std::string Variable::Name() const
   { return m_name; }
 
-  inline unsigned int Variable::TypeToInt(TypeID type)
+  inline unsigned int Variable::TypeToInt(const TypeID type)
   { return (int)type; }
 
-  inline Variable::TypeID Variable::IntToType(unsigned int type)
+  inline Variable::TypeID Variable::IntToType(const unsigned int type)
   { return (TypeID)type; }
 
 } // end of namespace ATOOLS

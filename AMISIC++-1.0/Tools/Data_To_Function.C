@@ -16,17 +16,17 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type>::
-  Data_To_Function(DataToFunctionType &reference,bool adoptscaling)
+  Data_To_Function(const DataToFunctionType &reference,bool adoptscaling)
   { Init(); Import(reference,adoptscaling); }
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type>::
-  Data_To_Function(ArgumentVector *_p_xdata,ResultVector *_p_ydata)
+  Data_To_Function(const ArgumentVector *_p_xdata,const ResultVector *_p_ydata)
   { Init(); Import(_p_xdata,_p_ydata); }
   
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type>::
-  Data_To_Function(XYMap *_p_xydata)
+  Data_To_Function(const XYMap *_p_xydata)
   { Init(); Import(_p_xydata); }
 
   template <class Argument_Type,class Result_Type>
@@ -52,7 +52,7 @@ namespace ATOOLS {
   
   template <class Argument_Type,class Result_Type>
   bool Data_To_Function<Argument_Type,Result_Type>::
-  Import(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal)
+  Import(const ArgumentVector *_p_xdata,const ResultVector *_p_ydata,bool normal)
   { 
     if (_p_xdata->size()==_p_ydata->size()) {
       Resize(_p_xdata->size());
@@ -77,7 +77,7 @@ namespace ATOOLS {
   
   template <class Argument_Type,class Result_Type>
   bool Data_To_Function<Argument_Type,Result_Type>::
-  Import(XYMap *_p_xydata,bool normal)
+  Import(const XYMap *_p_xydata,bool normal)
   { 
     unsigned int i=-1;
     Resize(_p_xydata->size());
@@ -103,7 +103,7 @@ namespace ATOOLS {
   
   template <class Argument_Type,class Result_Type>
   bool Data_To_Function<Argument_Type,Result_Type>::
-  Import(DataToFunctionType &reference,bool adoptscaling)
+  Import(const DataToFunctionType &reference,bool adoptscaling)
   { 
     if (adoptscaling) {
       p_xaxis->SetScaling(reference.p_xaxis->Scaling()->Name());

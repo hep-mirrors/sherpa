@@ -54,19 +54,19 @@ namespace AMISIC {
     virtual ~MI_Base();
 
     // setters 
-    void SetStart(double _m_start,unsigned int i=0);
-    void SetStop(double _m_stop,unsigned int i=0);
+    void SetStart(const double _m_start,unsigned int i=0);
+    void SetStop(const double _m_stop,unsigned int i=0);
 
     // getters
-    double Start(unsigned int i=0);
-    double Stop(unsigned int i=0);
+    const double Start(unsigned int i=0) const;
+    const double Stop(unsigned int i=0) const;
 
     EXTRAXS::XS_Base *XS();
 
     // member functions
     virtual bool Initialize();
 
-    virtual void Update(MI_Base *mibase);
+    virtual void Update(const MI_Base *mibase);
     virtual void Reset();
 
     virtual bool DiceOrderingParameter();
@@ -76,7 +76,7 @@ namespace AMISIC {
 
     static bool StopGeneration(TypeID type=Unknown);
 
-    static void UpdateAll(MI_Base *mibase);
+    static void UpdateAll(const MI_Base *mibase);
     static void ResetAll();  
 
     static std::string TypeToString(TypeID type);
@@ -87,7 +87,7 @@ namespace AMISIC {
   class MI_None: public MI_Base {
   protected:
 
-    void Update(MI_Base *mibase);
+    void Update(const MI_Base *mibase);
 
   public:
 

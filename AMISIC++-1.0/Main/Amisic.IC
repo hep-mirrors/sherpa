@@ -17,10 +17,10 @@ namespace AMISIC {
   inline EXTRAXS::XS_Base *Amisic::SoftXS()
   { return p_softbase->XS(); }
 
-  inline Amisic::ModelID Amisic::HardModel()
+  inline const Amisic::ModelID Amisic::HardModel() const
   { return m_hardmodel; }
 
-  inline Amisic::ModelID Amisic::SoftModel()
+  inline const Amisic::ModelID Amisic::SoftModel() const
   { return m_softmodel; }
 
 } // end of namespace AMISIC

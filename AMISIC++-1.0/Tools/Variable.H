@@ -56,27 +56,27 @@ namespace ATOOLS {
 
     //constructors
     Variable();
-    Variable(TypeID _m_type);
-    Variable(unsigned int _m_type);
-    Variable(std::string _m_type);
+    Variable(const TypeID _m_type);
+    Variable(const unsigned int _m_type);
+    Variable(const std::string _m_type);
 
     // setters
-    void SetType(TypeID _m_type);
-    void SetName(std::string _m_name);
+    void SetType(const TypeID _m_type);
+    void SetName(const std::string _m_name);
 
     // getters
-    TypeID      Type();
-    std::string Name();
+    const TypeID      Type() const;
+    const std::string Name() const;
 
     // member functions
-    unsigned int TypeToInt(TypeID type);
-    std::string  TypeToString(TypeID type);
+    unsigned int TypeToInt(const TypeID type);
+    std::string  TypeToString(const TypeID type);
 
-    TypeID IntToType(unsigned int type);
-    TypeID StringToType(std::string type);
+    TypeID IntToType(const unsigned int type);
+    TypeID StringToType(const std::string type);
 
-    static int    TypeToSelectorID(TypeID type);
-    static TypeID SelectorIDToType(int selectorid);
+    static int    TypeToSelectorID(const TypeID type);
+    static TypeID SelectorIDToType(const int selectorid);
 
   };
 

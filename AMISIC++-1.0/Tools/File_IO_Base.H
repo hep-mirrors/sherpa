@@ -19,16 +19,16 @@ namespace ATOOLS {
     ~File_IO_Base();
 
     // setters
-    void SetInputPath(std::string _m_inputpath);
-    void SetInputFile(std::string _m_inputfile);
-    void SetOutputPath(std::string _m_outputpath);
-    void SetOutputFile(std::string _m_outputfile);
+    void SetInputPath(const std::string _m_inputpath);
+    void SetInputFile(const std::string _m_inputfile);
+    void SetOutputPath(const std::string _m_outputpath);
+    void SetOutputFile(const std::string _m_outputfile);
 
     // getters
-    std::string InputPath();
-    std::string InputFile();
-    std::string OutputPath();
-    std::string OutputFile();
+    const std::string InputPath() const;
+    const std::string InputFile() const;
+    const std::string OutputPath() const;
+    const std::string OutputFile() const;
 
     // member functions
     bool CheckInputPath();

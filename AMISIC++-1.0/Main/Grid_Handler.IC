@@ -7,23 +7,33 @@ namespace AMISIC {
 
   template <class Argument_Type,class Result_Type>
   inline void Grid_Handler<Argument_Type,Result_Type>::
-  SetStreamType(ATOOLS::Type::ID _m_streamtype)
+  SetStreamType(const ATOOLS::Type::ID _m_streamtype)
   { m_streamtype=_m_streamtype; }
   
   template <class Argument_Type,class Result_Type>
-  inline ATOOLS::Type::ID Grid_Handler<Argument_Type,Result_Type>::
-  StreamType()
+  inline const ATOOLS::Type::ID Grid_Handler<Argument_Type,Result_Type>::
+  StreamType() const 
   { return m_streamtype; }
   
   template <class Argument_Type,class Result_Type>
   inline void Grid_Handler<Argument_Type,Result_Type>::
-  SetStreamName(std::string _m_streamname)
+  SetStreamName(const std::string _m_streamname)
   { m_streamname=_m_streamname; }
   
   template <class Argument_Type,class Result_Type>
-  inline std::string Grid_Handler<Argument_Type,Result_Type>::
-  StreamName()
+  inline const std::string Grid_Handler<Argument_Type,Result_Type>::
+  StreamName() const 
   { return m_streamname; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline void Grid_Handler<Argument_Type,Result_Type>::
+  SetDataTag(const std::string _m_datatag)
+  { m_datatag=_m_datatag; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline const std::string Grid_Handler<Argument_Type,Result_Type>::
+  DataTag() const 
+  { return m_datatag; }
   
   template <class Argument_Type,class Result_Type>
   inline ATOOLS::Data_To_Function<Argument_Type,Result_Type> 

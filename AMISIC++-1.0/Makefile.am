@@ -3,4 +3,5 @@ SUBDIRS       =	\
 		Tools \
 		Other \
 		Main \
-		Run
+		Run \
+		Analysis

@@ -48,12 +48,12 @@ namespace AMISIC {
     Grid_Creator(GridHandlerVector _p_gridhandler,EXTRAXS::SimpleXSecs *_p_processes);
     
     // setters
-    void SetXSExtension(std::string _m_xsextension);
-    void SetMaxExtension(std::string _m_maxextension);
+    void SetXSExtension(const std::string _m_xsextension);
+    void SetMaxExtension(const std::string _m_maxextension);
     
     // getters
-    std::string XSExtension();
-    std::string MaxExtension();
+    const std::string XSExtension() const;
+    const std::string MaxExtension() const;
     
     // member functions
     bool InitializeCalculation();

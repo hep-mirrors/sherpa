@@ -48,17 +48,15 @@ namespace AMISIC {
     ~Grid_Handler();
 
     // setters
-    void SetStreamType(ATOOLS::Type::ID _m_streamtype);
-    void SetStreamName(std::string _m_streamname);
-    void SetXDataTag(std::string _m_xdatatag);
-    void SetYDataTag(std::string _m_ydatatag);
+    void SetStreamType(const ATOOLS::Type::ID _m_streamtype);
+    void SetStreamName(const std::string _m_streamname);
+    void SetDataTag(const std::string _m_datatag);
 
     // getters
-    ATOOLS::Type::ID         StreamType();
-    std::string              StreamName();
-    std::string              XDataTag();
-    std::string              YDataTag();
-    std::vector<std::string> Comment();
+    const ATOOLS::Type::ID         StreamType() const;
+    const std::string              StreamName() const;
+    const std::string              DataTag() const;
+    const std::vector<std::string> Comment() const;
 
     // member functions
     bool ReadIn(ATOOLS::Type::ID temptype=ATOOLS::Type::TUnknown,std::string tempname=std::string());

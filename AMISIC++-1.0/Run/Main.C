@@ -21,7 +21,12 @@ int main(int argc, const char *argv[])
   for (int i=0;i<argc;++i) arguments+=std::string(argv[i])+std::string(" ");
   reader->SetString(arguments);
   std::string inputpath, inputfile, outputfile;
-  int testevents;
+  int testevents, outputlevel;
+  ATOOLS::msg.SetLevel(0);
+  if (reader->ReadFromString(outputlevel,"--message-level")) { 
+    std::cout<<"main: Switching to output level "<<outputlevel<<"."<<std::endl;
+    ATOOLS::msg.SetLevel(outputlevel);
+  }
   if (!reader->ReadFromString(inputpath,"-p")) { 
     ATOOLS::msg.Out()<<"main: No input path specified. Using default value './'"<<std::endl;
     inputpath=std::string("./");

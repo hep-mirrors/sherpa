@@ -3,7 +3,6 @@
 
 #include "Data_Writer.H"
 #include "Message.H"
-#include "Type.H"
 
 #include "My_Filestream.H"
 #include "My_Stringstream.H"
@@ -122,7 +121,7 @@ namespace ATOOLS {
   }
 
   template <class Write_Type>  
-  bool Data_Writer::M_ArrayToFile(std::vector<std::vector<Write_Type> > values,std::string tag,
+  bool Data_Writer::M_MatrixToFile(std::vector<std::vector<Write_Type> > values,std::string tag,
 				  bool endline,std::string tempfname,
 				  MatrixTypeID tempmtype,int precision)
   {
@@ -193,26 +192,26 @@ namespace ATOOLS {
 				 VectorTypeID tempvtype,int precision)
   { return M_VectorToFile<std::string>(values,tag,endline,tempfname,tempvtype,precision); }
 
-  bool Data_Writer::ArrayToFile(std::vector<std::vector<int> >& values,std::string tag,
+  bool Data_Writer::MatrixToFile(std::vector<std::vector<int> >& values,std::string tag,
 				bool endline,std::string tempfname,
 				MatrixTypeID tempmtype,int precision)
-  { return M_ArrayToFile<int>(values,tag,endline,tempfname,tempmtype,precision); }
-  bool Data_Writer::ArrayToFile(std::vector<std::vector<long int> >& values,std::string tag,
+  { return M_MatrixToFile<int>(values,tag,endline,tempfname,tempmtype,precision); }
+  bool Data_Writer::MatrixToFile(std::vector<std::vector<long int> >& values,std::string tag,
 				bool endline,std::string tempfname,
 				MatrixTypeID tempmtype,int precision)
-  { return M_ArrayToFile<long int>(values,tag,endline,tempfname,tempmtype,precision); }
-  bool Data_Writer::ArrayToFile(std::vector<std::vector<float> >& values,std::string tag,
+  { return M_MatrixToFile<long int>(values,tag,endline,tempfname,tempmtype,precision); }
+  bool Data_Writer::MatrixToFile(std::vector<std::vector<float> >& values,std::string tag,
 				bool endline,std::string tempfname,
 				MatrixTypeID tempmtype,int precision)
-  { return M_ArrayToFile<float>(values,tag,endline,tempfname,tempmtype,precision); }
-  bool Data_Writer::ArrayToFile(std::vector<std::vector<double> >& values,std::string tag,
+  { return M_MatrixToFile<float>(values,tag,endline,tempfname,tempmtype,precision); }
+  bool Data_Writer::MatrixToFile(std::vector<std::vector<double> >& values,std::string tag,
 				bool endline,std::string tempfname,
 				MatrixTypeID tempmtype,int precision)
-  { return M_ArrayToFile<double>(values,tag,endline,tempfname,tempmtype,precision); }
-  bool Data_Writer::ArrayToFile(std::vector<std::vector<std::string> >& values,std::string tag,
+  { return M_MatrixToFile<double>(values,tag,endline,tempfname,tempmtype,precision); }
+  bool Data_Writer::MatrixToFile(std::vector<std::vector<std::string> >& values,std::string tag,
 				bool endline,std::string tempfname,
 				MatrixTypeID tempmtype,int precision)
-  { return M_ArrayToFile<std::string>(values,tag,endline,tempfname,tempmtype,precision); }
+  { return M_MatrixToFile<std::string>(values,tag,endline,tempfname,tempmtype,precision); }
 
 } // end of namespace ATOOLS
 

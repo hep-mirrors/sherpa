@@ -23,12 +23,12 @@ namespace PHASIC {
 			     ATOOLS::Variable _m_variable);
 
       // setter
-      void SetVariable(ATOOLS::Variable _m_variable);
-      void SetValue(ValueType _m_value);
+      void SetVariable(const ATOOLS::Variable _m_variable);
+      void SetValue(const ValueType _m_value);
 
       // getter
-      ATOOLS::Variable Variable();
-      ValueType        Value();
+      const ATOOLS::Variable Variable() const;
+      const ValueType        Value() const;
 
       // member functions
       void GeneratePoint(ATOOLS::Vec4D *_p,double *_ran);
