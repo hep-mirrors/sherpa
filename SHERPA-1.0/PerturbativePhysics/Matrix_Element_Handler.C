@@ -3,6 +3,7 @@
 #include "Message.H"
 #include "Amegic.H"
 #include "SimpleXSecs.H"
+#include "Random.H"
 #include <iomanip>
 
 using namespace SHERPA;
@@ -12,17 +13,73 @@ using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
+// ============================================================
+//                Particle_Map
+// ============================================================
+
+Particle_Map::Particle_Map():
+  m_flip_anti(false), m_change_flavs(false)
+{
+}
+
+bool Particle_Map::Unity() 
+{
+  return !(m_flip_anti || m_change_flavs);
+}
+
+void Particle_Map::SetFlipAnti() 
+{
+  m_flip_anti=true;
+}
+
+void Particle_Map::Add(const ATOOLS::Flavour & a,const ATOOLS::Flavour & b)
+{
+  m_flmap[a]=b;
+}
+
+bool Particle_Map::Apply(int n, ATOOLS::Flavour * flavs, ATOOLS::Vec4D * moms)
+{
+  for (int i=0; i<n; ++i) {
+    Flavour_Map::iterator it = m_flmap.find(flavs[i]);
+    if (it!=m_flmap.end()) {
+      flavs[i] = it->second;
+    }
+  }
+
+  if (m_flip_anti) {
+    for (int i=0; i<n; ++i) {
+      flavs[i] = flavs[i].Bar();
+      moms[i]  = Vec4D(moms[i][0],-1.*Vec3D(moms[i]));
+      // check that momenta in lab system !!
+      
+    }
+    Flavour help = flavs[0];
+    flavs[0] = flavs[1];
+    flavs[1] = help;
+    Vec4D mom = moms[0];
+    moms[0] = moms[1];
+    moms[1] = mom;
+  }
+  return m_flip_anti;
+}
+
+
+
+// ============================================================
+//               Matrix_Element_Handler
+// ============================================================
+
 Matrix_Element_Handler::Matrix_Element_Handler() :
   m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_name(""), m_eventmode(1),
-  p_dataread(NULL) {}
+  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_name(""), m_eventmode(1), 
+  m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) {}
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
 					       Matrix_Element_Handler * _me) :
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_name(""), m_eventmode(1),
-  p_dataread(NULL) 
+  m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) 
 {
   if (_me) p_amegic = _me->GetAmegic(); 
   m_mode      = InitializeAmegic(_model,NULL,NULL);
@@ -42,11 +99,13 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       PDF::ISR_Handler * _isr,
 					       Matrix_Element_Handler * _me) :
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1) 
+  p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1), m_sudakovon(0), m_apply_hhmf(0),
+  m_ini_swaped(0), p_flavs(NULL), p_moms(NULL)
 {
   p_dataread        = new Data_Read(m_dir+m_file);
   m_signalgenerator = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
   m_sudakovon       = p_dataread->GetValue<int>("SUDAKOV WEIGHT",0);
+  m_apply_hhmf      = p_dataread->GetValue<int>("TEVATRON_WpWm",0);
   if (m_signalgenerator==string("Amegic")) {
     if (_me) p_amegic = _me->GetAmegic(); 
     m_mode = InitializeAmegic(_model,_beam,_isr);
@@ -57,6 +116,10 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
     m_eventmode=1;
   else
     m_eventmode=0;
+
+  p_flavs = new Flavour[MaxJets()+2];
+  p_moms  = new Vec4D[MaxJets()+2];
+  if (m_apply_hhmf) SetupHHMF();
 
   msg.Debugging()<<"Run Matrix_Element_Handler in mode :"<<m_mode
 		 <<" and event generation mode : "<<m_eventmode<<endl;
@@ -70,6 +133,8 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 
 Matrix_Element_Handler::~Matrix_Element_Handler()
 {
+  if (p_moms)  delete [] p_moms;
+  if (p_flavs) delete [] p_flavs;
   if (p_dataread) { delete p_dataread; p_dataread = NULL; }
   if (p_amegic)   { delete p_amegic;   p_amegic   = NULL; }
   if (p_simplexs) { delete p_simplexs; p_simplexs = NULL; }
@@ -262,8 +327,16 @@ bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) { return true; 
 
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
-  if (m_eventmode) return UnweightedEvent();
+  if (m_eventmode) {
+    bool stat = UnweightedEvent();
+    if (!stat) return stat;
+    GetMomentaNFlavours();
+    ApplyHHMF();
+    return stat;
+  }
   Blob_Data_Base * message = WeightedEvent();
+  GetMomentaNFlavours();
+  ApplyHHMF();
   if (message) {
     PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
     m_weight =  winfo.weight * rpa.Picobarn();
@@ -293,8 +366,16 @@ double Matrix_Element_Handler::FactorisationScale()
 
 bool Matrix_Element_Handler::GenerateSameEvent() 
 {
-  if (m_eventmode) return UnweightedSameEvent();
+  if (m_eventmode) {
+    bool stat = UnweightedSameEvent();
+    if (!stat) return stat;
+    GetMomentaNFlavours();
+    ApplyHHMF();
+    return stat;
+  }
   Blob_Data_Base * message = WeightedSameEvent();
+  GetMomentaNFlavours();
+  ApplyHHMF();
   if (message) {
     PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
     m_weight =  winfo.weight * rpa.Picobarn();
@@ -306,7 +387,30 @@ bool Matrix_Element_Handler::GenerateSameEvent()
   }
   return (m_weight>0.);
 }
-    
+
+void Matrix_Element_Handler::GetMomentaNFlavours() {    
+  switch (m_mode) {
+  case 1: 
+    m_nmoms = p_amegic->Nin()+p_amegic->Nout();
+    if (p_amegic->Flavs() && p_amegic->Momenta()) {
+      for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_amegic->Flavs()[i];
+      for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_amegic->Momenta()[i];
+      return;
+    }
+    break;
+  case 2: 
+    m_nmoms = p_simplexs->Nin()+p_simplexs->Nout();
+    if (p_simplexs->Flavs() && p_simplexs->Momenta()) {
+      for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_simplexs->Flavs()[i];
+      for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_simplexs->Momenta()[i];
+      return;
+    }
+  }
+  msg.Error()<<"Warning in Matrix_Element_Handler::SetMomenta()"<<endl
+	     <<"   No ME generator available to get momenta from."<<endl
+	     <<"   Continue run and hope for the best."<<endl;
+}
+
 
 bool Matrix_Element_Handler::UnweightedSameEvent() 
 {
@@ -401,28 +505,55 @@ ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
 
 
 ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
-  switch (m_mode) {
-  case 1: return p_amegic->Momenta();
-  case 2: return p_simplexs->Momenta();
-  }
-  msg.Error()<<"Warning in Matrix_Element_Handler::SetMomenta()"<<endl
-	     <<"   No ME generator available to get momenta from."<<endl
-	     <<"   Continue run and hope for the best."<<endl;
-  return NULL;
+  return p_moms;
 }
 
 ATOOLS::Flavour * Matrix_Element_Handler::Flavs() {
-  switch (m_mode) {
-  case 1: return p_amegic->Flavs();
-  case 2: return p_simplexs->Flavs();
-  }
-  return NULL;
+  return p_flavs;
 }
+
+void  Matrix_Element_Handler::SetupHHMF() 
+{
+  // Tevatron :
+  //   starting with   W- -> e- neb
+  //   generate  W- -> e- nueb
+  //             W+ -> e+ nue
+  //             W- -> mu- nmub
+  //             W+ -> mu+ nmu
+
+  Particle_Map  unity;
+  m_particle_maps.push_back(unity);
+
+  Particle_Map  chargeconj;
+  chargeconj.SetFlipAnti();
+  m_particle_maps.push_back(chargeconj);
+
+  Particle_Map  muon;
+  muon.Add(Flavour(kf::e),Flavour(kf::mu));
+  muon.Add(Flavour(kf::nue).Bar(),Flavour(kf::numu).Bar());
+  m_particle_maps.push_back(muon);
+
+  muon.SetFlipAnti();
+  m_particle_maps.push_back(muon);
+}
+
+bool  Matrix_Element_Handler::ApplyHHMF()
+{
+  if (!m_apply_hhmf || m_particle_maps.size()==0) return 1;
+
+  size_t no=(size_t)(m_particle_maps.size()*ran.Get());
+  if (no==m_particle_maps.size()) no=0;
+
+  m_ini_swaped=m_particle_maps[no].Apply(m_nmoms,p_flavs,p_moms);
+
+  return 1;
+}
+
 
 int Matrix_Element_Handler::InSwaped() {
   switch (m_mode) {
-  case 1: return p_amegic->InSwaped();
-  case 2: return p_simplexs->InSwaped();
+  case 1: return m_ini_swaped^p_amegic->InSwaped();
+  case 2: return m_ini_swaped^p_simplexs->InSwaped();
   }
   return 0;
 }

@@ -1123,15 +1123,18 @@ void Cluster_Partons::DetermineColourAngles(const std::vector<APACIC::Knot *> & 
 
 
 void Cluster_Partons::CreateFlavourMap() {
-  if (p_me->GetAmegic()->GetProcess()!=p_me->GetAmegic()->GetProcess()->Partner()) {
+  //  if (p_me->GetAmegic()->GetProcess()!=p_me->GetAmegic()->GetProcess()->Partner()) {
+  if (1)  {
 
     Process_Base * proc=p_me->GetAmegic()->GetProcess();
     Process_Base * partner=proc->Partner();
-    Flavour * flavs=proc->Flavs();
+    //    Flavour * flavs=proc->Flavs();
+    Flavour * flavs=p_me->Flavs();
     Flavour * partner_flavs=partner->Flavs();
 
     int n[2]={0,1};
-    if (proc->InSwaped()^partner->InSwaped()) {
+    //    if (proc->InSwaped()^partner->InSwaped()) {
+    if (p_me->InSwaped()^partner->InSwaped()) {
       n[0]=1;
       n[1]=0;
     }
@@ -1139,6 +1142,7 @@ void Cluster_Partons::CreateFlavourMap() {
     // create new map
     m_flmap.clear();
     for (int i=0;i<proc->Nin();++i) {
+      //      std::cout<<" flinmap "<<partner_flavs[i]<<" -> "<<flavs[n[i]]<<std::endl;
       if (partner_flavs[i]!=flavs[n[i]]) {
 	m_flmap[partner_flavs[i]]=flavs[n[i]];
 	if (partner_flavs[i]!=partner_flavs[i].Bar()) {
@@ -1147,6 +1151,7 @@ void Cluster_Partons::CreateFlavourMap() {
       }
     }
     for (int i=proc->Nin();i<proc->Nin()+proc->Nout();++i) {
+      //      std::cout<<" floutmap "<<partner_flavs[i]<<" -> "<<flavs[i]<<std::endl;
       if (partner_flavs[i]!=flavs[i]) {
 	m_flmap[partner_flavs[i]]=flavs[i];
 	if (partner_flavs[i]!=partner_flavs[i].Bar()) {

@@ -1,8 +1,7 @@
-#ifndef Matrix_Element_Handler_h
-#define Matrix_Element_Handler_h
+#ifndef Matrix_Element_Handler_H
+#define Matrix_Element_Handler_H
 
-#include <set> 
-#include <iterator> 
+#include <map> 
 #include <iostream> 
 
 #include "Model_Base.H"
@@ -21,6 +20,20 @@ namespace EXTRAXS { class SimpleXSecs;
                     class XS_Base;     }
 
 namespace SHERPA {
+  typedef std::map<ATOOLS::Flavour,ATOOLS::Flavour> Flavour_Map;
+
+  class Particle_Map {
+    bool m_flip_anti;
+    bool m_change_flavs;
+    Flavour_Map m_flmap;
+  public:
+    Particle_Map();
+    bool Unity();
+    void SetFlipAnti();
+    void Add(const ATOOLS::Flavour & ,const ATOOLS::Flavour &);
+    bool Apply(int n, ATOOLS::Flavour *, ATOOLS::Vec4D *);
+  };
+
 
   class Matrix_Element_Handler {
   private :
@@ -33,21 +46,36 @@ namespace SHERPA {
     unsigned long          m_ntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
-    bool                   m_eventmode;
-    int                    m_sudakovon;
+ 
+    bool m_eventmode;
+    int  m_sudakovon;
+    bool m_apply_hhmf;
+    bool m_ini_swaped;
+    int  m_nmoms;
 
     ATOOLS::Data_Read    * p_dataread;
 
-    bool   RescaleJetrates() ;
-    int    InitializeSimpleXS(MODEL::Model_Base *,
+    ATOOLS::Flavour *  p_flavs;
+    ATOOLS::Vec4D   *  p_moms;
+
+    std::vector<Particle_Map> m_particle_maps;
+
+    bool  RescaleJetrates() ;
+    int   InitializeSimpleXS(MODEL::Model_Base *,
 			      BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
-    int    InitializeAmegic(MODEL::Model_Base *,
+    int   InitializeAmegic(MODEL::Model_Base *,
 			    BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
-    bool   UnweightedEvent();
+
+    void  SetupHHMF();
+    bool  ApplyHHMF();
+    void  GetMomentaNFlavours();
+    bool  UnweightedEvent();
+    bool  UnweightedSameEvent();
+
     ATOOLS::Blob_Data_Base * WeightedEvent();
-    bool   UnweightedSameEvent();
     ATOOLS::Blob_Data_Base * WeightedSameEvent();
 
+    
   public :
 
     Matrix_Element_Handler();
