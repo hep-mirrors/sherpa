@@ -63,10 +63,8 @@ void Run_Parameter::AnalyseEnvironment()
 	s_variables["SHERPA_BIN_PATH"]=cur;
 	break;
       }
-      if (pos<paths.length())
-	paths=paths.substr(pos+1);
-      else 
-	paths="";
+      if (pos<paths.length()) paths=paths.substr(pos+1);
+      else paths="";
     } while (paths.length()>0);
   }
   else {
@@ -109,6 +107,11 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg.Init(gen.m_output,logfile);
+  if (argc>0) {
+    if (!system((std::string("test -f ")+std::string(argv[0])+std::string("/Sherpa")).c_str())) {
+      s_variables["SHERPA_BIN_PATH"]=argv[0];
+    }
+  }
   s_variables["SHERPA_CPP_PATH"] = dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
   s_variables["SHERPA_LIB_PATH"] = dr.GetValue<std::string>("SHERPA_LIB_PATH",std::string(""));
   if (s_variables["SHERPA_CPP_PATH"]=="") s_variables["SHERPA_CPP_PATH"]=m_path;
