@@ -1,5 +1,9 @@
 #include "Read_Write_Base.H"
 
+#ifdef DEBUG__Read_Write_Base
+#include <iostream>
+#endif
+
 using namespace ATOOLS;
 
 std::vector<std::string> Read_Write_Base::s_commandline;
@@ -88,7 +92,7 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
   }
 #ifdef DEBUG__Read_Write_Base
   std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
-	   <<"   parameter = '"<<parameter<<"'("<<cutparameterblanks<<")"<<std::endl;
+	   <<"   parameter = '"<<parameter<<"'"<<std::endl;
 #endif
   length=parameter.length()+cutinputblanks;
   size_t pos=input.find(parameter);
