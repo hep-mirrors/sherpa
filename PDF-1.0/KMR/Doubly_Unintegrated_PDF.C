@@ -157,18 +157,56 @@ double Doubly_Unintegrated_PDF::SmoothIntegrated(ATOOLS::Flavour flavour)
   switch (m_kperpscheme) {
   case kps::function: {
     double savekp2=m_kperp2;
+    this->Calculate(m_x,m_z,m_mu02*(1.+m_epsilon),m_mu2);
+    double fprime=this->GetXPDF(flavour)*m_mu02;
     this->Calculate(m_x,m_z,m_mu02,m_mu2);
     double f=this->GetXPDF(flavour)*m_mu02;
+    fprime-=f;
+    fprime/=m_mu02*m_epsilon;
     m_unintegrated=0.;
     m_kperp2=savekp2;
     p_pdf->Calculate(m_x,0.,0.,m_mu02);
     m_integrated=p_pdf->GetXPDF(flavour);
     m_integrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_mu02));
     m_integrated/=(1.-m_x);
-    double m=m_fixedktexponent;
+// #define USING__Variable_Exponent
+#ifdef USING__Variable_Exponent
+    double m1=1.+m_fixedktexponent, m2=m1*2.;
+    double b=(m1+1)*(f-m1*m_integrated);
+    double a=(f-b);
+    double d1=(m1*(a+b)+b)/m_mu02, d2=d1;
+    double accuracy=ATOOLS::Max(ATOOLS::rpa.gen.Accu(),1.0e-6*fprime);
+    int step=0;
+    do {
+      b=(m2+1)*(f-m2*m_integrated);
+      a=(f-b);
+      d2=(m2*(a+b)+b)/m_mu02;
+      double d=(d2-d1)/(m2-m1);
+      m1=m2;
+      d1=d2;
+      m2=m2-(d2-fprime)/d;
+      if (++step>100 || (!(d2>=0.) && !(d2<0.))) {
+	ATOOLS::msg.Error()<<"Doubly_Unintegrated_PDF::SmoothIntegrated(..): "
+			   <<"Integrate failed.\n   x = "<<m_x<<", z = "<<m_z
+			   <<" k_\\perp^2 = "<<m_kperp2<<" \\mu^2 = "<<m_mu2
+			   <<"( "<<step<<" steps m = "<<m2<<" )"<<std::endl;
+	return 0.;
+      }
+    } while (ATOOLS::dabs(d2-fprime)>accuracy);
+    if (m2<=ATOOLS::rpa.gen.Accu()) {
+      ATOOLS::msg.Error()<<"Doubly_Unintegrated_PDF::SmoothIntegrated(..): "
+			 <<"Integrate failed.\n   x = "<<m_x<<", z = "<<m_z
+			 <<" k_\\perp^2 = "<<m_kperp2<<" \\mu^2 = "<<m_mu2
+			 <<"( "<<step<<" steps m = "<<m2<<" )"<<std::endl;
+      return 0.;
+    }
+    return (a+b*m_kperp2/m_mu02)*pow(m_kperp2/m_mu02,m2-1)/m_mu02;
+#else
+    double m=1.+m_fixedktexponent;
     double b=(m+1)*(f-m*m_integrated);
     double a=(f-b);
     return (a+b*m_kperp2/m_mu02)*pow(m_kperp2/m_mu02,m-1)/m_mu02;
+#endif
   }
   case kps::derivative: {
     double savekp2=m_kperp2;
@@ -184,13 +222,16 @@ double Doubly_Unintegrated_PDF::SmoothIntegrated(ATOOLS::Flavour flavour)
     m_integrated=p_pdf->GetXPDF(flavour);
     m_integrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_mu02));
     m_integrated/=(1.-m_x);
-    double c=3.*(fprime+(2.*m_integrated-3.*f)/m_mu02);
-    double b=fprime-f/m_mu02-c;
+    double m=1.+m_fixedktexponent;
+    double Ft=m_integrated/pow(m_mu02,m), ft=f/pow(m_mu02,m);
+    double fpt=fprime/pow(m_mu02,m-1.);
+    double c=(m+2.)*(m*(m+1.)*Ft-(2.*m+1.)*ft+fpt);
+    double b=fpt-m*ft-c;
     c/=2.;
-    double a=f/m_mu02-b-c;
+    double a=ft-b-c;
     c/=m_mu02*m_mu02;
     b/=m_mu02;
-    return a+b*m_kperp2+c*m_kperp2*m_kperp2;
+    return (a+b*m_kperp2+c*m_kperp2*m_kperp2)*pow(m_kperp2,m-1.);
   }
   default: return 0.;
   }
