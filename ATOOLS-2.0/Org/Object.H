@@ -25,23 +25,29 @@ namespace ATOOLS {
     virtual ~Object();
 
     // member functions
-    template <class Type> static Type *const GetObject(const std::string name)
-    { 
-      String_Object_Map::const_iterator pos=s_objects.find(name);
-      if (pos!=s_objects.end())	return static_cast<Type *const>(pos->second); 
-      return NULL;
-    }
-
-    template <class Type> static std::string &Name(const Type *object)
-    { 
-      for (String_Object_Map::const_iterator oit=s_objects.begin();
-	   oit!=s_objects.end();++oit) if (oit->second==object) return oit->first;
-      return "";
-    }
+    template <class Type> 
+    static Type *const  GetObject(const std::string name);
+    template <class Type> 
+    static std::string &Name(const Type *object);
 
   };//end of class Object
 
 #define GET_OBJECT(TYPE,NAME) ATOOLS::Object::GetObject<TYPE>(NAME)
+
+  template <class Type> Type *const Object::GetObject(const std::string name)
+  { 
+    String_Object_Map::const_iterator pos=s_objects.find(name);
+    if (pos!=s_objects.end())	return static_cast<Type *const>(pos->second); 
+    return NULL;
+  }
+
+  template <class Type> std::string &Object::Name(const Type *object)
+  { 
+    for (String_Object_Map::const_iterator oit=s_objects.begin();
+	 oit!=s_objects.end();++oit) if (oit->second==object) 
+	   return oit->first;
+    return "";
+  }
 
   /*!
     \class Object
