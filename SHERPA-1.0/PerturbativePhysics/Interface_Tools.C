@@ -8,12 +8,12 @@ using namespace ATOOLS;
 
 Interface_Tools::Interface_Tools(Tree **ini_trees,Tree *fin_tree):
   p_initrees(ini_trees), 
-  p_fintree(fin_tree), 
-  p_dummy(new Particle(0,Flavour(kf::none),ATOOLS::Vec4D())) {}
+  p_fintree(fin_tree) 
+{
+}
 	  
 Interface_Tools::~Interface_Tools() 
 { 
-  delete p_dummy;
 }
 
 void Interface_Tools::InitializeIncoming(Blob *blob,double scale,double E,
@@ -54,10 +54,10 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,double scale,double E,
   blob->BoostInCMS();
   ATOOLS::Particle *part1=blob->OutParticle(0);
   ATOOLS::Particle *part2=blob->OutParticle(1);
-  p_dummy->SetMomentum(part1->Momentum()+part2->Momentum());
-  Knot * dummy   = p_fintree->NewKnot(p_dummy);
+  Knot * dummy   = p_fintree->NewKnot();
   dummy->part->SetInfo('M');
   dummy->part->SetStatus(2);
+  dummy->part->SetMomentum(part1->Momentum()+part2->Momentum());
   dummy->t       = dummy->part->Momentum().Abs2();
   dummy->maxpt2  = dummy->t;
   dummy->costh   = -1;

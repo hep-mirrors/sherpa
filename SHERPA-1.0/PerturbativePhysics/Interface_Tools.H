@@ -12,8 +12,6 @@ namespace SHERPA {
     APACIC::Tree **p_initrees; 
     APACIC::Tree  *p_fintree; 
 
-    ATOOLS::Particle *p_dummy;
-
     bool IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *) ;
 
   public :
