@@ -47,7 +47,7 @@ namespace SHERPA {
 
     NLL_Sudakov    * p_sud;
 
-    //    AMEGIC::Process_Base   * p_lastproc;
+    AMEGIC::Process_Base   * p_lastproc;
     Matrix_Element_Handler * p_me;
     ATOOLS::Jet_Finder     * p_jf;
     ATOOLS::Blob           * p_blob;

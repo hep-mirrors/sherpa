@@ -529,6 +529,10 @@ XS_Base * Cluster_Partons::GetXS(EXTRAXS::XS_Group * group, ATOOLS::Flavour * fl
   XS_Base * xs = NULL;  
   const size_t nin=2, nout=2;
   const size_t n=nin+nout;
+
+  Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
+  p_lastproc=proc;
+
   if (group->XSSelector()->FindInGroup(group,xs,nin,nout,fl)==std::string::npos) {
     if (m_mode&1) {
       xs = group->XSSelector()->GetXS(nin,nout,fl,true);
@@ -1030,6 +1034,11 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree)
 
    scale = 4.*(m_qmin_i*m_qmin_i);
    scale = Max(scale,mo->t);
+
+   double s=sum.Abs2();
+   double t=dabs((p_ct->Momentum(0)-p_ct->Momentum(2)).Abs2());
+   double u=dabs((p_ct->Momentum(1)-p_ct->Momentum(2)).Abs2());
+   if (p_lastproc->OrderEWeak()==0) scale=2.0*s*t*u/(s*s+t*t+u*u);
 
 //   std::cout<<" ew:"<<p_me->OrderEWeak()
 //   	     <<" strong:"<<p_me->OrderStrong()<<"\n";
