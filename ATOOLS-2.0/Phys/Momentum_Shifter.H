@@ -38,7 +38,7 @@ namespace ATOOLS {
     std::set<Particle*> m_boosted;
 
     size_t m_maxdepth;
-    double m_sp[3], m_accuracy;
+    double m_sp[3];
     bool   m_setshift, m_setdirection, m_setsp[3];
     bool   m_initboost, m_initscale;
 
@@ -69,7 +69,6 @@ namespace ATOOLS {
     void Reset();
 
     // inline functions
-    inline void SetAccuracy(const double accuracy) { m_accuracy=accuracy; }
     inline void SetMaxDepth(const size_t depth)    { m_maxdepth=depth;    }
 
     inline void SetSPerp(const double sp,const size_t i) { m_sp[i]=sp; m_setsp[i]=true; }
@@ -77,7 +76,6 @@ namespace ATOOLS {
     inline void SetShift(const Vec4D &shift)   { m_shift=shift; m_setshift=true;       }
     inline void SetDirection(const Vec4D &dir) { m_direction=dir; m_setdirection=true; }
 
-    inline double Accuracy() const { return m_accuracy; }
     inline size_t MaxDepth() const { return m_maxdepth; }
 
     inline double SPerp(const size_t i) const { return m_sp[i]; }

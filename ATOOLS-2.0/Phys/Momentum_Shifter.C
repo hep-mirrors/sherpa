@@ -124,19 +124,14 @@ bool Momentum_Shifter::ConstructMomenta()
     E2=m_pnew[0][0]-E1;
     plong1=-Sign(m_pold[1]*m_direction)*sqrt(E1*E1-m_sp[1]);
     plong2=-Sign(m_pold[2]*m_direction)*sqrt(E2*E2-m_sp[2]);
-    double spn=sqr(m_pnew[0][0])-sqr(plong1+plong2);
-    if (ATOOLS::dabs((spn-m_sp[0])/(spn+m_sp[0]))>m_accuracy) { 
-      plong1*=-1.0; 
-      spn=ATOOLS::sqr(E1+E2)-ATOOLS::sqr(plong1+plong2); 
-    }
-    if (ATOOLS::dabs((spn-m_sp[0])/(spn+m_sp[0]))>m_accuracy) continue;
+    double spn1=sqr(m_pnew[0][0])-sqr(plong1+plong2);
+    double spn2=sqr(m_pnew[0][0])-sqr(-plong1+plong2);
+    if (dabs(spn1-m_sp[0])>dabs(spn2-m_sp[0])) plong1*=-1.0; 
     double ytn=(m_pnew[0][0]+plong1+plong2)/(m_pnew[0][0]-plong1-plong2);
-    if (ATOOLS::dabs((ytn-yto)/(ytn+yto))>m_accuracy) { 
+    if (dabs(ytn-yto)>dabs(1.0/ytn-yto)) { 
       plong1*=-1.0; 
       plong2*=-1.0; 
-      ytn=(m_pnew[0][0]+plong1+plong2)/(m_pnew[0][0]-plong1-plong2); 
     }
-    if (ATOOLS::dabs((ytn-yto)/(ytn+yto))>m_accuracy) continue;
     if (dabs(plong1)>dabs(plong2)) { 
       if (Sign(plong1)==-Sign(m_pold[1]*m_direction)) break; 
     }
@@ -266,7 +261,6 @@ void Momentum_Shifter::Reset()
   m_maxdepth=100;
   m_initboost=false;
   m_initscale=false;
-  m_accuracy=rpa.gen.Accu();
   m_setshift=false;
   m_setdirection=false;
   for (short unsigned int i=0;i<3;++i) m_setsp[i]=false; 
