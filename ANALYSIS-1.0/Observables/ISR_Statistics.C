@@ -150,8 +150,10 @@ Sprime_Y_Distribution(const double spmin,const double spmax,const size_t spbins,
   m_xmin=spmin;
   m_xmax=spmax;
   m_nbins=spbins;
-  (*MYROOT::myroot)(new TH2D(ATOOLS::ToString((long int)this).c_str(),"Sprime_Y",
-			     m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),"Sprime_Y");
+  (*MYROOT::myroot)(new TH2D(ATOOLS::ToString((long int)this).c_str(),"Sprime_Y_ME",
+			     m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),"Sprime_Y_ME");
+  (*MYROOT::myroot)(new TH2D(ATOOLS::ToString((long int)this).c_str(),"Sprime_Y_PS",
+			     m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),"Sprime_Y_PS");
 }
 
 void Sprime_Y_Distribution::Evaluate(const Blob_List &  blobs,double weight,int ncount)
@@ -163,7 +165,8 @@ void Sprime_Y_Distribution::Evaluate(const Blob_List &  blobs,double weight,int 
 	std::vector<double> isrinfo=info->Get<std::vector<double> >();
 	double tau=isrinfo[PDF::iic::E_1]*isrinfo[PDF::iic::E_2];
 	double y=0.5*log(isrinfo[PDF::iic::E_1]/isrinfo[PDF::iic::E_2]);
-	((TH2D*)(*MYROOT::myroot)["Sprime_Y"])->Fill(tau,y,weight);
+	((TH2D*)(*MYROOT::myroot)["Sprime_Y_ME"])->Fill(tau,y,weight);
+	((TH2D*)(*MYROOT::myroot)["Sprime_Y_PS"])->Fill(tau,y,1.0);
       }
     }
   }
