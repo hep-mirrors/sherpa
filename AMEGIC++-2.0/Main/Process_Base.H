@@ -31,9 +31,9 @@ namespace AMEGIC {
     int                              m_gen_str;
 
     int m_nex;
+    int                            * p_b;
     ATOOLS::Flavour                * p_flin, * p_flout, * p_ex_fl;
     AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
-    int                            * p_b;
 
     bool    m_atoms, m_analyse, m_tables;
     double  m_rfactor, m_enhancefac, m_maxfac;
