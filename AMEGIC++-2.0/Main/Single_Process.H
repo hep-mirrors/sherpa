@@ -109,6 +109,7 @@ namespace AMEGIC {
     bool           OneEvent();
     bool           SameEvent();
     double         WeightedEvent();
+    double         SameWeightedEvent();
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 

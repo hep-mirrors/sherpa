@@ -536,6 +536,12 @@ void Process_Group::SetMax(double max) {
   }
 }
 
+void Process_Group::SetMaxJetNumber(int max) {
+  for (int i=0;i<m_procs.size();i++) {
+    m_procs[i]->SetMaxJetNumber(max);
+  }  
+  m_maxjetnumber = max;
+}
 
 void Process_Group::SetAtoms(bool _atoms) { m_atoms = _atoms; }
 
@@ -586,6 +592,8 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
     if (flag) {
       delete m_procs[i];
       for (int j=i;j<m_procs.size()-1;j++) m_procs[j] = m_procs[j+1];
+      //just to continue at position i in the next try
+      i--;
       m_procs.pop_back();
     }
   }
@@ -933,6 +941,14 @@ double Process_Group::WeightedEvent() {
     return p_selected->WeightedEvent();
   }
   return p_ps->WeightedEvent();
+}
+
+double Process_Group::SameWeightedEvent() {
+  if (m_atoms) {
+    SelectOne();
+    return p_selected->SameWeightedEvent();
+  }
+  return p_ps->SameWeightedEvent();
 }
 
 

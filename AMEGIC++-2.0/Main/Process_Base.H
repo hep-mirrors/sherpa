@@ -60,6 +60,7 @@ namespace AMEGIC {
 
     AMEGIC::Process_Base           * p_selected;
     
+    int m_maxjetnumber;
     /*------------------------------------------------------------------------------
 
       Naming
@@ -133,6 +134,7 @@ namespace AMEGIC {
     virtual void             SetISRThreshold(double)                               =0;
     virtual void             SetTotal(double);
     virtual void             SetMax(double);
+    virtual void             SetMaxJetNumber(int);
 
 
     /*------------------------------------------------------------------------------
@@ -155,6 +157,7 @@ namespace AMEGIC {
     virtual bool   OneEvent()                                                      =0;
     virtual bool   SameEvent()                                                     =0;
     virtual double WeightedEvent()                                                 =0;
+    virtual double SameWeightedEvent()                                             =0;
 
     /*------------------------------------------------------------------------------
 

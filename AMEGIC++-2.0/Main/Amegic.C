@@ -306,6 +306,8 @@ void Amegic::ReadInProcessfile(string file)
       }
     }
   }
+
+  p_procs->SetMaxJetNumber(m_maxjet);
 }
 
 
@@ -557,6 +559,37 @@ void Amegic::SingleEvents() {
 	  (*p_fifo)<<" conti"<<endl;
 	}
       }
+      if (rpa.gen.Debugging()) {
+	msg.Debugging()<<"OneEvent for "<<p_procs->Name()<<" successful !"<<endl
+		       <<"    Selected "<<p_procs->Selected()->Name()<<" as subprocess."<<endl
+		       <<"    Found "<<p_procs->Selected()->NumberOfDiagrams()
+		       <<" Feynman diagrams."<<endl;
+	for (int j = 0;j<p_procs->Selected()->Nin(); j++) {
+	  msg.Debugging()<<p_procs->Selected()->Flavs()[j]<<" : "
+			 <<p_procs->Selected()->Momenta()[j]<<endl;
+	}
+	msg.Debugging()<<"                      -> "<<endl;
+	for (int j = 0;j<p_procs->Selected()->Nout(); j++) {
+	  msg.Debugging()<<p_procs->Selected()->Flavs()[j+p_procs->Selected()->Nin()]<<" : "
+			 <<p_procs->Selected()->Momenta()[j+p_procs->Selected()->Nin()]<<endl;
+	}
+	msg.Debugging()<<endl;
+      }
+    }
+  }
+}
+
+
+double  Amegic::SameWeightedEvent()
+{
+  return p_procs->SameWeightedEvent();
+}
+
+double Amegic::WeightedEvent()
+{
+  double weight=p_procs->WeightedEvent();
+  if (weight>0.) {
+    if (rpa.gen.Debugging()) {
       msg.Debugging()<<"OneEvent for "<<p_procs->Name()<<" successful !"<<endl
 		     <<"    Selected "<<p_procs->Selected()->Name()<<" as subprocess."<<endl
 		     <<"    Found "<<p_procs->Selected()->NumberOfDiagrams()
@@ -572,5 +605,7 @@ void Amegic::SingleEvents() {
       }
       msg.Debugging()<<endl;
     }
+    return weight;
   }
+  return 0.;
 }

@@ -47,6 +47,7 @@ namespace AMEGIC {
     void           SetTables(bool);
     void           SetTotalXS(int);
     void           SetMax(double);
+    void           SetMaxJetNumber(int max);
     void           SetAtoms(bool);
     void           SetPartner(Single_Process * _p) { }
     Process_Base * Partner()                       { return 0; }
@@ -80,6 +81,7 @@ namespace AMEGIC {
     bool           OneEvent();
     bool           SameEvent();
     double         WeightedEvent();
+    double         SameWeightedEvent();
     /*------------------------------------------------------------------------------
 
       Helpers

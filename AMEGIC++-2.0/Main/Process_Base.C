@@ -6,6 +6,8 @@
 #include "Running_AlphaS.H"
 #include "Running_AlphaQED.H"
 
+#include <algorithm>
+
 using namespace AMEGIC;
 using namespace PHASIC;
 using namespace MODEL;
@@ -217,8 +219,105 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   return &_name;
 }
 
+
+class S_Data {
+public:
+  S_Data(const int _i, Flavour _fl, Pol_Info _pl) :
+  i(_i),fl(_fl),pl(_pl) {}
+  int      i;
+  Flavour  fl;
+  Pol_Info pl;
+};
+
+class Order_FVST {
+public:
+  int operator()(const S_Data & a, const S_Data & b) {
+    //    if "a < b" return 1  else 0;
+    //  sort FVST
+    if (a.fl.IsFermion() && !b.fl.IsFermion()) return 1;
+    if (a.fl.IsVector() && !b.fl.IsFermion() && !b.fl.IsVector()) return 1;
+    if (a.fl.IsScalar() && !b.fl.IsScalar() && 
+	 !b.fl.IsFermion() && !b.fl.IsVector()) return 1;
+    /*
+    //  sort SVFT lead to problems: with jj -> W- j !!!
+    if (a.fl.IsScalar() && !b.fl.IsScalar()) return 1;
+    if (a.fl.IsVector() && !b.fl.IsScalar() && !b.fl.IsVector()) return 1;
+    if (a.fl.IsFermion() && !b.fl.IsFermion() && 
+	 !b.fl.IsScalar() && !b.fl.IsVector()) return 1;
+    // redundant    if (!a.fl.IsTensor() && b.fl.Tensor()) return 1;
+    */
+    return 0;
+  }
+};
+
+class Order_Mass {
+public:
+  int operator()(const S_Data & a, const S_Data & b) {
+    //    if "a < b" return 1  else 0;
+    if (a.fl.Mass() < b.fl.Mass()) return 1;
+    return 0;
+  }
+};
+
+
+class Order_Kfc {
+public:
+  int operator()(const S_Data & a, const S_Data & b) {
+    //    if "a < b" return 1  else 0;
+    if (a.fl.Kfcode() < b.fl.Kfcode()) return 1;
+    return 0;
+  }
+};
+
+
+class Order_Anti {
+public:
+  int operator()(const S_Data & a, const S_Data & b) {
+    //    if "a < b" return 1  else 0;
+    if ((a.fl.IsFermion() && b.fl.IsFermion())
+	&& (!a.fl.IsAnti() && b.fl.IsAnti())) return 1;
+    return 0;
+
+//     if ((a.fl.Kfcode()== b.fl.Kfcode())
+// 	&& (!a.fl.IsAnti() && b.fl.IsAnti())) return 1;
+//     return 0;
+  }
+};
+
+
+class Order_Coupling {
+public:
+  int operator()(const S_Data & a, const S_Data & b) {
+    //    if "a < b" return 1  else 0;
+    if (!a.fl.Strong() && b.fl.Strong()) return 1;
+    return 0;
+  }
+};
+
+//    std::stable_sort(prea_table.begin(),prea_table.end(),Compare_Pre_Amplitudes());
+
+
 void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 {
+  std::vector<S_Data> sd;
+  for (int i=0;i<n;++i) sd.push_back(S_Data(i,flav[i],plav[i]));
+
+  std::stable_sort(sd.begin(),sd.end(),Order_Kfc());
+  std::stable_sort(sd.begin(),sd.end(),Order_Mass());
+  std::stable_sort(sd.begin(),sd.end(),Order_FVST());
+  std::stable_sort(sd.begin(),sd.end(),Order_Anti());
+  std::stable_sort(sd.begin(),sd.end(),Order_Coupling());
+
+
+
+  for (int i=0;i<n;++i) {
+    flav[i]=sd[i].fl;
+    plav[i]=sd[i].pl;
+  }
+
+  
+// old method
+/*
   Flavour flhelp;
   Pol_Info plhelp;
   bool hit,shuffle;
@@ -247,7 +346,8 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
       }
     }
     if (!hit) break;
-  }                                                                          
+  }          
+*/
 }
 
 bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
@@ -447,6 +547,7 @@ void Process_Base::SetNStrong(int _nstrong)             { m_nstrong = _nstrong;}
 void Process_Base::SetNEWeak(int _neweak)               { m_neweak  = _neweak; }
 void Process_Base::SetTotal(double _total)              { m_totalxs = _total;  } 
 void Process_Base::SetMax(double _max)                  { m_max     = _max;    } 
+void Process_Base::SetMaxJetNumber(int max)             { m_maxjetnumber  = max;    } 
 void Process_Base::SetScale(double _scale)              { m_scale   = _scale;  } 
 void Process_Base::SetISRThreshold(double _isrthreshold){ m_isrthreshold  = _isrthreshold;}
 
@@ -507,6 +608,38 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
     break;
   case 4  :
     pt2 = AMATOOLS::sqr(175.);
+    break;
+  case 5  :
+    pt2 = AMATOOLS::sqr(10.);
+    break;
+  case 6  :
+    pt2 = AMATOOLS::sqr(91.188);
+    break;
+  case  8 :
+    pt2 = AMATOOLS::sqr(3.162);
+    break;
+  case 42 :
+    pt2 = m_scale;
+    break;
+  case 63 :
+    if (m_nout!=m_maxjetnumber) {
+     pt2 = m_scale;
+    }
+    else {
+      pt2 = AMATOOLS::sqr(_p[m_nin][1])+AMATOOLS::sqr(_p[m_nin][2]);
+      for (int i=m_nin+1;i<m_nin+m_nout;++i) {
+	// better would be probably min yij*s with yij given by the covariant E scheme clustering algorithm
+	if (p_fl[i].Strong())
+	  pt2 =  AMATOOLS::Min(pt2,AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]));
+      }
+    }
+    break;
+  case 64 :
+    pt2 = AMATOOLS::sqr(_p[m_nin][1])+AMATOOLS::sqr(_p[m_nin][2]);
+    for (int i=m_nin+1;i<m_nin+m_nout;++i) {
+      // better would be min yij*s with yij given by the covariant E scheme clustering algorithm
+      pt2 =  AMATOOLS::Min(pt2,AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]));
+    }
     break;
   default :
     pt2 = s;

@@ -752,6 +752,11 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
       from.close();
+      p_ps->ReadIn(m_resdir+string("/MC_")+m_name);
+      if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
+      if (p_ps->ISRIntegrator()  != 0) p_ps->ISRIntegrator()->Print();
+      if (p_ps->FSRIntegrator()  != 0) p_ps->FSRIntegrator()->Print();
+
       if (m_totalxs>0.) return 1;
       return 0;
     }
@@ -772,6 +777,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 		  <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
 		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
+      p_ps->WriteOut(_resdir+string("/MC_")+m_name);
       to.close();
     }
     return 1;
@@ -852,10 +858,11 @@ void Single_Process::AddPoint(const double value) {
   int iter=1;
   if (m_n<200000)        iter =  40000;
   else if  (m_n<400000)  iter = 200000;
-  if (iter!=1 && m_n%iter==0) {
-    m_max = m_save_max;
-    m_save_max = 0.;
-  }
+  // ==== uncomment for better unweighting efficiency ===
+//   if (iter!=1 && m_n%iter==0) {
+//     m_max = m_save_max;
+//     m_save_max = 0.;
+//   }
   if (value>m_save_max) m_save_max = value;
   if (m_analyse) p_analysis->DoAnalysis(value*rpa.Picobarn());
 }
@@ -932,6 +939,7 @@ double Single_Process::operator()(AMATOOLS::Vec4D * mom)
 bool Single_Process::OneEvent()        { return (p_ps->OneEvent()); }
 bool Single_Process::SameEvent()       { return (p_ps->SameEvent()); }
 double Single_Process::WeightedEvent() { return (p_ps->WeightedEvent()); }
+double Single_Process::SameWeightedEvent() { return (p_ps->SameWeightedEvent()); }
 
 
 
@@ -953,7 +961,7 @@ Point * Single_Process::Diagram(int i) { return p_ampl->GetPointlist(i); }
 
 void Single_Process::PrintDifferential()
 {
-  if (!(AORGTOOLS::rpa.gen.Debugging())) return;
+  if (!(AORGTOOLS::rpa.gen.Tracking())) return;
   AORGTOOLS::msg.Out()<<m_name<<" : "<<m_last<<" -> "
 		      <<m_lastdxs<<" @ "<<m_lastlumi<<", "<<endl;
 }

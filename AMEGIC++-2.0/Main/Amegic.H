@@ -51,8 +51,9 @@ namespace AMEGIC {
     void        SetResDir(std::string);
 
     bool        UnweightedEvent();
-    bool        WeightedEvent();
+    double      WeightedEvent();
     bool        SameEvent();
+    double      SameWeightedEvent();
     Process_Base       * GetProcess()       { return p_procs->Selected(); }
     Process_Base * Processes();
     std::string          ProcessName()      { return p_procs->Selected()->Name(); }
