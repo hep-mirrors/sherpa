@@ -6,4 +6,5 @@ endif
 
 EXTRA_DIST    = $(CVSINCLUDE)
 SUBDIRS       =	\
-		Main 
+		Main\
+		Run

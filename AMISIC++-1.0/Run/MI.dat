@@ -1,0 +1,10 @@
+!=================================================!
+!               AMISIC Setup file                 !
+!=================================================!
+HARD_MODEL_NAME	= Simple Chain
+HARD_MODEL_FILE = simplechain.dat
+SOFT_MODEL_NAME = None
+SOFT_MODEL_FILE = dummy.dat
+
+
+

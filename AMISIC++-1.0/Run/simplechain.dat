@@ -1,0 +1,36 @@
+!=================================================!
+!               AMISIC Setup file                 !
+!=================================================!
+
+GENERATION_MODE	= Unweighted
+
+CREATE_GRID 93 93 -> 93 93
+
+HISTO_X_SCALING	= Log_B_10
+HISTO_Y_SCALING	= Id
+
+INITIAL_EVENTS	= 0
+MAX_EVENTS	= 10000
+
+GRID_X_MIN	= 2.5 
+GRID_DELTA_X	= .02
+
+SCALE_SCHEME	= 2
+K_FACTOR_SCHEME	= 1
+ERROR		= 5.e-2 
+
+EVENT_X_MIN	= 2.5
+
+!REGULATE_XS	= 1
+XS_REGULATOR	= Massive_Propagator
+XS_REGULATION	= 2.5
+
+!PROFILE_FUNCTION	= Gaussian
+PROFILE_PARAMETERS	= 1. .2 .5 
+
+CHECK_CONSISTENCY	= 0
+
+GRID_CREATOR_OUTPUT 	= 2
+
+
+
