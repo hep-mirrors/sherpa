@@ -24,13 +24,7 @@ Jet_Evolution::Jet_Evolution(Matrix_Element_Handler * _mehandler,
     p_interface = new SimpleXS_Apacic_Interface(p_mehandler,p_showerhandler);
 }
 
-Jet_Evolution::~Jet_Evolution()
-{
-  cout<<"in  Jet_Evolution::~Jet_Evolution() "<<endl;
-  // p_showerhandler and p_mehandler are deleted in Initialization_Handler
-  //    if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
-  cout<<"out  Jet_Evolution::~Jet_Evolution() "<<endl;
-}
+Jet_Evolution::~Jet_Evolution() { }
 
 
 bool Jet_Evolution::Treat(Blob_List * _bloblist)
@@ -49,14 +43,16 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist)
   while (found) {
     found = 0;
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
+      cout<<"Still in loop "<<(*blit)->Id()<<endl;
       pos = (*blit)->Type().find(string("Signal Process :"));
-      msg.Debugging()<<"Found blob to deal with "<<(*blit)->Type()<<" "<<pos<<" "<<(*blit)->Status()<<endl; 
+      msg.Debugging()<<"Found blob to deal with "<<(*blit)->Type()<<" "<<pos<<" "<<(*blit)->Status()
+		     <<"  ("<<_bloblist->size()<<")"<<endl; 
       if ((*blit)->Status()==1 && pos>-1) {
-	msg.Debugging()<<"Found blob to deal with "<<(*blit)<<endl; 
+	msg.Debugging()<<"Found blob to deal with "<<(*blit)<<" -> "<<_bloblist->size()<<endl<<(*blit)<<endl; 
 	myblob = (*blit);
 	int stat = p_interface->DefineInitialConditions(myblob);
 	if (stat) {
-	  //	  cout<<" jetmax = "<<p_showerhandler->MaxJetNumber()<<"  nout="<<p_mehandler->Nout()<<endl;
+	  cout<<" jetmax = "<<p_showerhandler->MaxJetNumber()<<"  nout="<<p_mehandler->Nout()<<endl;
 	  shower = p_showerhandler->PerformShowers(p_showerhandler->MaxJetNumber()!=p_mehandler->Nout());
 	  if (shower==1) {
 	    p_showerhandler->FillBlobs(_bloblist);
@@ -70,7 +66,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist)
 		myblob->AddToInPartons((*blit)->InParton(i));
 		myblob->AddToOutPartons((*blit)->InParton(i));
 		myblob->SetId(_bloblist->size());
-		_bloblist->insert(_bloblist->begin(),myblob);
+		blit = _bloblist->insert(_bloblist->begin(),myblob);
 	      }
 	    }
 	    if (!(p_showerhandler->FSROn())) {
@@ -108,8 +104,10 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist)
 	  p_showerhandler->CleanUp();
 	}
       }
+      cout<<"Else for found blob and status/pos are good ..."<<endl;
     }
   }
+  cout<<"Return "<<hit<<endl;
   return hit;
 }
 

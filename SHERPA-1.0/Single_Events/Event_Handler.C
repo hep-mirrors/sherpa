@@ -134,7 +134,7 @@ void Event_Handler::PrintBlobs() {
 
 
 void Event_Handler::PerformAnalysis() {
-  if (p_analysis) p_analysis->DoAnalysis(&m_partons);
+  //if (p_analysis) p_analysis->DoAnalysis(&m_partons);
 }
 
 void Event_Handler::SetAnalysis(Sample_Analysis * _analysis) { _analysis = p_analysis; }

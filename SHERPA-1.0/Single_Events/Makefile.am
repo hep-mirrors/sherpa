@@ -17,14 +17,12 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../EXTRA_XS-1.0/Two2Two \
            -I../../AMEGIC++-2.0/Model \
            -I../../PHASIC++-1.0/Main \
-           -I../../PHASIC++-1.0/Beam \
-           -I../../PHASIC++-1.0/ISR \
-           -I../../APACIC++-2.0/Hard_Interface \
            -I../../APACIC++-2.0/Main \
 	   -I../../APACIC++-2.0/Showers \
+           -I../../MODEL-1.0/Main \
+           -I../../BEAM-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
            -I../../PDF-1.0/Main \
-           -I../../MODEL-1.0/Main \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org 
