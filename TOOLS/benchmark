@@ -89,7 +89,7 @@ done
 LOGFILE=$LOGFILE"_"$DATE
 OUTPUTFILE=$LOGFILE"_full_output"
 echo "" > $LOGFILE
-echo "" > $OUTPUTFILE
+#echo "" > $OUTPUTFILE
 
 echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n" >> $LOGFILE
 echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n" >> $OUTPUTFILE
