@@ -52,8 +52,20 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
       if (!m_diced) {
+	ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
+	double test=1.e37;
 	for (int i=0;i<(*bit)->NInP();++i) 
-	  m_ptmax=ATOOLS::Min(m_ptmax,(*bit)->InParticle(i)->Momentum().PPerp());
+	  test=ATOOLS::Min(test,(*bit)->InParticle(i)->Momentum().PPerp());
+	if (info==NULL) {
+	  ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
+			     <<"No scale information in merging blob. "
+			     <<"Taking P_\\perp."<<std::endl;
+	  for (int i=0;i<(*bit)->NInP();++i) 
+	    m_ptmax=ATOOLS::Min(m_ptmax,(*bit)->InParticle(i)->Momentum().PPerp());
+	}
+	else {
+	  m_ptmax=ATOOLS::Min(m_ptmax,info->Get<double>());
+	}
 	if (VetoHardProcess(*bit)) {
 	  m_ptmax=0.0;
 	  break;
