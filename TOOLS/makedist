@@ -52,18 +52,23 @@ do
     if test "$ALLCLEAN" = "TRUE" ; then 
       make clean 
     fi
-    if ! make dist ; then 
-      echo "makedist: error: cannot create distribution of $I"
-      if test "$I" = "SHERPA-1.0" ; then
-        echo "                 try the '-c' option or get help with '-h'"
-      fi 
-      until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" ; do
-	read -t 300 -p "continue anyway (y/n) ? " CONTINUE 
-	if test "$CONTINUE" = "n" ; then
-          exit 1
-	fi
-      done
-    fi
+    CONTINUE="r"
+    while test "$CONTINUE" = "r" ; do 
+      CONTINUE=""
+      if ! make dist ; then 
+	echo "makeinstall: error: \"make install\" in $I failed"
+        if test ! "$NOABORT" = "TRUE" ; then
+          until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
+    	    if ! read -t 60 -p "continue anyway (y/n/r) ? " CONTINUE ; then
+	      CONTINUE="n"
+	    fi
+	    if test "$CONTINUE" = "n" ; then
+              exit 1
+	    fi
+	  done
+        fi
+      fi
+    done
     mv $I.tar.gz ../$I.tar.gz
     cd ..
   fi
