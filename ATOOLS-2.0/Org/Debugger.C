@@ -4,9 +4,13 @@
 
 #include "Data_Reader.H"
 #include "Message.H"
-#include "Type.H"
 
 using namespace ATOOLS;
+
+Value_Carrier_Base::Value_Carrier_Base():
+  m_type("") {}
+
+Value_Carrier_Base::~Value_Carrier_Base() {}
 
 std::vector<Debugger*> Debugger::s_objects=std::vector<Debugger*>();
 std::ostream *Debugger::s_output=&std::cout;

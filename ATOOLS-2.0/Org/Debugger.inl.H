@@ -2,7 +2,6 @@
 #define Debugger_inl_H
 
 #include "Debugger.H"
-#include "Type.H"
 
 namespace ATOOLS {
 
@@ -28,8 +27,7 @@ namespace ATOOLS {
   Value_Carrier<ValueType>::Value_Carrier(Value_Type &address): 
     p_address(&address) 
   { 
-    Value_Type *value;
-    m_type=Type::GetType(*value);
+    m_type=typeid(address).name();
   }
   
   template <typename ValueType>

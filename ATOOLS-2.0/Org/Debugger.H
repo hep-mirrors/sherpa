@@ -15,9 +15,15 @@ namespace ATOOLS {
   class Value_Carrier_Base {
   protected:
 
-    unsigned int m_type;
+    std::string m_type;
 
   public:
+
+    // constructor
+    Value_Carrier_Base();
+  
+    // destructor
+    virtual ~Value_Carrier_Base();
   
     // member functions
     template <typename ValueType>
@@ -29,7 +35,7 @@ namespace ATOOLS {
     virtual void PrintAddress(std::ostream &ostr) const = 0;
     virtual void PrintValue(std::ostream &ostr) const = 0;
 
-    unsigned int Type() const { return m_type; }
+    const std::string &Type() const { return m_type; }
 
   };// end of class Value_Carrier_Base
 
