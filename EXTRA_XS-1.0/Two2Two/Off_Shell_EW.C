@@ -72,7 +72,7 @@ double Off_Shell_qqb_llb::operator()(double s,double t,double u)
 
 bool Off_Shell_qqb_llb::SetColours(double s,double t,double u) 
 { 
-  m_scale=s;
+  m_scale[PHASIC::stp::fac]=s;
   return true; 
 }
 
@@ -83,13 +83,13 @@ double Off_Shell_qqb_llb::Scale(const ATOOLS::Vec4D *momenta)
   const double MZ2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
   switch (m_scalescheme) {
   case -1:
-    return m_scale=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
   case 10:
-    m_scale=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale=pow(m_scale,2./3.)*pow(MZ2,1./3.);
+    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MZ2,1./3.);
   default:
-    m_scale=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale=pow(m_scale,2./3.)*pow(MZ2,1./3.);
+    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MZ2,1./3.);
   }
 }
 
@@ -160,7 +160,7 @@ double Off_Shell_q1q2b_lnulb::operator()(double s,double t,double u)
 
 bool Off_Shell_q1q2b_lnulb::SetColours(double s,double t,double u) 
 { 
-  m_scale=s;
+  m_scale[PHASIC::stp::fac]=s;
   return true; 
 }
 
@@ -171,13 +171,13 @@ double Off_Shell_q1q2b_lnulb::Scale(const ATOOLS::Vec4D *momenta)
   const double MW2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
   switch (m_scalescheme) {
   case -1:
-    return m_scale=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
   case 10:
-    m_scale=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale=pow(m_scale,2./3.)*pow(MW2,1./3.);
+    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MW2,1./3.);
   default:
-    m_scale=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale=pow(m_scale,2./3.)*pow(MW2,1./3.);
+    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MW2,1./3.);
   }
 }
 
@@ -250,7 +250,7 @@ double Off_Shell_q1q2b_q3q4b::operator()(double s,double t,double u)
 
 bool Off_Shell_q1q2b_q3q4b::SetColours(double s,double t,double u) 
 { 
-  m_scale=s;
+  m_scale[PHASIC::stp::fac]=s;
   return true; 
 }
 
@@ -261,13 +261,13 @@ double Off_Shell_q1q2b_q3q4b::Scale(const ATOOLS::Vec4D *momenta)
   const double MW2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
   switch (m_scalescheme) {
   case -1:
-    return m_scale=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
   case 10:
-    m_scale=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale=pow(m_scale,2./3.)*pow(MW2,1./3.);
+    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MW2,1./3.);
   default:
-    m_scale=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale=pow(m_scale,2./3.)*pow(MW2,1./3.);
+    m_scale[PHASIC::stp::fac]=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale[PHASIC::stp::fac]=pow(m_scale[PHASIC::stp::fac],2./3.)*pow(MW2,1./3.);
   }
 }
 

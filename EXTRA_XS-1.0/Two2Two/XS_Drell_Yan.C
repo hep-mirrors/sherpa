@@ -32,7 +32,7 @@ double XS_qqbar_pg::operator()(double s,double t,double u) {
 } 
 
 bool XS_qqbar_pg::SetColours(double s,double t,double u) { 
-  m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 
@@ -56,7 +56,7 @@ double XS_qg_qp::operator()(double s,double t,double u) {
 } 
 
 bool XS_qg_qp::SetColours(double s,double t,double u) { 
-  m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac] = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 
@@ -130,7 +130,7 @@ double XS_ee_ffbar::operator()(double s,double t,double u) {
 }
 
 bool XS_ee_ffbar::SetColours(double s,double t,double u) { 
-  m_scale = s;
+  m_scale[PHASIC::stp::fac] = s;
   return 1; 
 }
 

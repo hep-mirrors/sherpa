@@ -61,7 +61,7 @@ double XS_q1q2b_q3q4b::operator()(double s,double t,double u)
 
 bool XS_q1q2b_q3q4b::SetColours(double s,double t,double u) 
 { 
-  m_scale=s;
+  m_scale[PHASIC::stp::fac]=s;
   return true; 
 }
 

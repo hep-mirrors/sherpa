@@ -4,7 +4,6 @@
 #include "Running_AlphaS.H"
 #include "Random.H"
 #include "Flow.H"
-#include "gggg.H"
 
 #define NC 3
 
@@ -52,7 +51,7 @@ bool Off_Shell_gg_qqb::SetColours(double s,double t,double u)
   int r=(int)p_flavours[2].IsAnti();
   double Mt=u/t;
   double Mu=t/u;
-  m_scale=(2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale[PHASIC::stp::fac]=(2.*s*t*u)/(s*s+t*t+u*u);
   p_colours[0][0]=ATOOLS::Flow::Counter();
   p_colours[0][1]=ATOOLS::Flow::Counter();
   if (Mt*(1-r)+Mu*r>(Mt+Mu)*ATOOLS::ran.Get()) {
@@ -88,18 +87,30 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
   CreateMomenta(m_nvector);
 }
 
+static double res, num;
+
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
 {
-  ATOOLS::Vec4D *p=p_momenta;
-  double S=p[4]*p[5]; //M2=p[2].Abs2();
-  double z1=p[5]*p[0]/S, z2=p[4]*p[1]/S;
-  //double a3=p[5]*p[2]/(z1*S), 
-  double a4=p[5]*p[3]/(z1*S);
-  //double b3=p[4]*p[2]/(z2*S), 
-  double b4=p[4]*p[3]/(z2*S);
-  double k12=p[0].Abs2(), k22=p[1].Abs2();
-  return ATOOLS::sqr(4.*M_PI*m_alphas)/(k12*k22)*
-    ggggosmec(S,s,t,u,k12,k22,z1,z2,a4,b4)*(NC*NC)/(NC*NC-1.)/8.;
+  const ATOOLS::Vec4D *p=p_momenta;
+  const ATOOLS::Vec4D &p1=p[4], &p2=p[5];
+  const ATOOLS::Vec4D &k1=p[0], &k2=p[1], &p3=p[2], &p4=p[3];
+  ATOOLS::Vec4D k=k1-p3;
+  double S=2.*p1*p2, S2=2./S;
+  double a=p2*k*S2, b=p1*k*S2;
+  double a1=p2*k1*S2, b2=p1*k2*S2;
+  ATOOLS::Vec4D A1=
+    (k1.Perp()*k.Perp())*(2.*k1-p3)
+    +((2.*p3-k1)*k1.Perp())*k.Perp()
+    -((k1+p3)*k.Perp())*k1.Perp();
+  ATOOLS::Vec4D A2=
+    (k2.Perp()*k.Perp())*(p4-2.*k2)
+    +((k2+p4)*k.Perp())*k2.Perp()
+    -((k2-2.*p4)*k2.Perp())*k.Perp();
+  double M11=2*(A1*p3)*(A1*p4)/(p3*p4)-A1*A1;
+  double M22=2*(A2*p4)*(A2*p3)/(p4*p3)-A2*A2;
+  double result=M11*M22*
+    ATOOLS::sqr(4./(S*S*k.PPerp2()*a1*a*b*b2));
+  return ATOOLS::sqr(4.*M_PI*m_alphas)*(NC*NC)/(NC*NC-1)/(2.*4.)*result;
 }
 
 bool Off_Shell_gg_gg::SetColours(double s,double t,double u) 
