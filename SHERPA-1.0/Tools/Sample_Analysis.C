@@ -116,7 +116,7 @@ void Sample_Analysis::Finish() {
     s1>>salf;
 
     MyStrStream s2;
-    int   yf = int(1000.*rpa.test.FactorYcut()+0.5);
+    int   yf = int(100.*rpa.test.FactorYcut()+0.5);
     string syf;
     s2<<yf;
     s2>>syf;
@@ -180,9 +180,6 @@ Analysis_Phase::Analysis_Phase(Sample_Analysis * ana, int mode) :
 
 bool  Analysis_Phase::Treat(APHYTOOLS::Blob_List * bl) 
 {
-
-  //  cout<<" in  Analysis_Phase::Treat "<<bl->size()<<" ("<<m_mode<<")"<<endl;
-
   switch (m_mode) {
   case 1:
     if (bl->size()==1 && bl->back()->Status()==1) {
@@ -206,7 +203,7 @@ bool  Analysis_Phase::Treat(APHYTOOLS::Blob_List * bl)
     msg.Out()<<" Unknow Analysis_Phase "<<m_mode<<endl;
   }
 
-  return 0; // analysis does not create any new blobs!!!
+  return 0; // analysis does not create any new blobs.
 }
 
 void  Analysis_Phase::CleanUp() 
