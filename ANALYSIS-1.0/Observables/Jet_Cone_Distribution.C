@@ -1,5 +1,7 @@
 #include "Jet_Cone_Distribution.H"
+
 #include "MyStrStream.H"
+#include "Shell_Tools.H"
 
 using namespace ANALYSIS;
 
@@ -76,7 +78,7 @@ void Jet_Cone_Distribution::Reset()
 
 void Jet_Cone_Distribution::Output(const std::string & pname) {
   int  mode_dir = 448;
-  mkdir((pname).c_str(),mode_dir); 
+  ATOOLS::MakeDir((pname).c_str(),mode_dir); 
   for (size_t i=0; i<m_histos.size();i++) {
     std::string fname;
     MyStrStream s;
@@ -185,7 +187,7 @@ void Jet_Cone_Dependence::Reset()
 
 void Jet_Cone_Dependence::Output(const std::string & pname) {
   int  mode_dir = 448;
-  mkdir((pname).c_str(),mode_dir); 
+  ATOOLS::MakeDir((pname).c_str(),mode_dir); 
   for (size_t i=0; i<m_histos.size();++i) {
     std::string fname;
     MyStrStream s;
@@ -260,7 +262,7 @@ void Jet_Cone_Shape::Reset()
 void Jet_Cone_Shape::Output(const std::string & pname)
 {
   int  mode_dir = 448;
-  mkdir((pname).c_str(),mode_dir); 
+  ATOOLS::MakeDir((pname).c_str(),mode_dir); 
   for (size_t i=0; i<m_histos.size();++i) {
     std::string fname;
     MyStrStream s;

@@ -3,6 +3,7 @@
 #include "Particle_Selector.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "Shell_Tools.H"
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
@@ -105,7 +106,7 @@ Primitive_Analysis * Primitive_Analysis::GetSubAnalysis(const std::string & key,
   return ana;
 }
 
-void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value) 
+void Primitive_Analysis::CallSubAnalysis(const Blob_List * const bl, double value) 
 {
   int nout=-1;
   std::string name;
@@ -156,7 +157,7 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
 }
 
 
-void Primitive_Analysis::DoAnalysis(Blob_List * const bl, double value) {
+void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double value) {
   ++m_nevt;
 
   if (m_mode&ANALYSIS::splitt_phase) {
@@ -235,12 +236,12 @@ void Primitive_Analysis::DoAnalysis(Blob_List * const bl, double value) {
 void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, double xs) 
 {
   if (ntotal==0) ntotal=m_nevt;
-  int  mode_dir = 448;
-  if (m_mode&ANALYSIS::output_this) mkdir(resdir.c_str(),mode_dir); 
+  if (m_mode&ANALYSIS::output_this) 
+    ATOOLS::MakeDir(resdir+OutputPath(),448); 
 
   for (Analysis_List::iterator it=m_subanalyses.begin();
        it!=m_subanalyses.end();++it) {
-    std::string dir=resdir+std::string("/")+it->first;
+    std::string dir=resdir+OutputPath()+std::string("/")+it->first;
     it->second->FinishAnalysis(dir,ntotal,xs);
   }
 
@@ -273,7 +274,8 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
 	  }
 	}
       }
-      if (m_mode&ANALYSIS::output_this) m_observables[i]->Output(resdir);
+      if (m_mode&ANALYSIS::output_this) 
+	m_observables[i]->Output(resdir+OutputPath());
     }
   }
 }
@@ -289,7 +291,9 @@ bool Primitive_Analysis::SelectBlob(const ATOOLS::Blob *blob)
   if (m_mode&ANALYSIS::do_hadron) return true;
   if (m_mode&ANALYSIS::do_shower && 
       (blob->Type()==btp::IS_Shower || blob->Type()==btp::FS_Shower)) return true;
-  if (m_mode&ANALYSIS::do_mi && blob->Type()==btp::Hard_Collision) return true;
+  if (m_mode&ANALYSIS::do_mi && 
+      (blob->Type()==btp::Hard_Collision ||
+       blob->Type()==btp::Signal_Process)) return true;
   if (m_mode&ANALYSIS::do_me && blob->Type()==btp::Signal_Process) return true;
   return false;
 }

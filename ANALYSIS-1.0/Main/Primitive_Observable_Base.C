@@ -1,9 +1,16 @@
 #include "Primitive_Observable_Base.H"
+
 #include "Primitive_Analysis.H"
+#include "Shell_Tools.H"
 
 using namespace ANALYSIS;
+
+#define COMPILE__Getter_Function
+#define OBJECT_TYPE Primitive_Observable_Base
+#define PARAMETER_TYPE String_Matrix
+#include "Getter_Function.C"
+
 using namespace ATOOLS;
-using namespace std;
 
 Primitive_Observable_Base::Primitive_Observable_Base() :
   m_type(0), m_nbins(0), m_xmin(0.), m_xmax(0.),
@@ -87,7 +94,7 @@ void Primitive_Observable_Base::SetFlavInfo(int _nout,const Vec4D * _moms,const 
 void Primitive_Observable_Base::Output(const std::string & _pname) {
   if (p_histo) {
     int  mode_dir = 448;
-    mkdir((_pname).c_str(),mode_dir); 
+    ATOOLS::MakeDir((_pname).c_str(),mode_dir); 
     p_histo->Output((_pname+std::string("/")+m_name).c_str());
   }
 }
@@ -113,3 +120,4 @@ Primitive_Observable_Base & Primitive_Observable_Base::operator+=(const Primitiv
   }
   return *this;
 }
+

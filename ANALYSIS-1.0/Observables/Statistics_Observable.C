@@ -1,9 +1,29 @@
 #include "Statistics_Observable.H"
+
+using namespace ANALYSIS;
+
+DECLARE_GETTER(Statistics_Observable_Getter,"Statistics",
+	       Primitive_Observable_Base,String_Matrix);
+
+Primitive_Observable_Base *const 
+Statistics_Observable_Getter::operator()(const String_Matrix &parameters) const
+{
+  std::string listname="Analysed";
+  if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
+  return new Statistics_Observable(listname);
+}
+
+void Statistics_Observable_Getter::PrintInfo(std::ostream &str,
+					     const size_t width) const
+{ 
+  str<<"[list]"; 
+}
+
 #include "Primitive_Analysis.H"
+#include "Shell_Tools.H"
 
 #include <fstream>
 
-using namespace ANALYSIS;
 using namespace ATOOLS;
 
 Statistics_Observable::Statistics_Observable(const std::string & listname, int mode)
@@ -53,7 +73,7 @@ void Statistics_Observable::EndEvaluation(double scale) {
 
 void Statistics_Observable::Output(const std::string & pname) {
   int  mode_dir = 448;
-  mkdir((pname).c_str(),mode_dir); 
+  ATOOLS::MakeDir((pname).c_str(),mode_dir); 
   std::ofstream file((pname+std::string("/")+m_name).c_str());
 
 

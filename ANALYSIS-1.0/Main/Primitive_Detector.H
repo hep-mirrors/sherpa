@@ -1,10 +1,7 @@
 #ifndef Primitive_Detector_H
 #define Primitive_Detector_H
 
-#include "Blob_List.H"
-#include "Particle_List.H"
-#include "Vector.H"
-#include "Message.H"
+#include "Primitive_Observable_Base.H"
 
 namespace ANALYSIS {
   class Primitive_Detector_Element {
@@ -37,12 +34,18 @@ namespace ANALYSIS {
   typedef String_DetectorElement_Map::iterator               String_DetectorElement_Iter;
 
 
-  class Primitive_Detector {
-    std::string                m_name;
+  class Primitive_Detector: public Primitive_Observable_Base {
+    std::string                m_name,m_inlistname,m_outlistname;
     String_DetectorElement_Map m_elements;
   public:
-    Primitive_Detector();
+    Primitive_Detector(const std::string &inlist,const std::string &outlist);
     ~Primitive_Detector();
+
+    Primitive_Observable_Base* Copy() const;
+    
+    void Evaluate(const ATOOLS::Blob_List &,double=1.,int=1);
+    
+    void Reset();
 
     void Add(Primitive_Detector_Element *);
     void Fill(const ATOOLS::Blob_List *);
@@ -51,7 +54,11 @@ namespace ANALYSIS {
 
     std::string Name() const;
     void        Print();
-    void        Reset();
+
+    void AddSelector(const double etmin,const double etamin,
+		     const double etamax,const double rmin,
+		     const int bjets);
+
   };
 
   inline std::string Primitive_Detector::Name() const { return m_name; }

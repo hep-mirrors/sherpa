@@ -1,6 +1,59 @@
 #include "One_Particle_Observables.H"
 
 using namespace ANALYSIS;
+
+#include "MyStrStream.H"
+
+template <class Class>
+Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+{									
+  if (parameters.size()<1) return NULL;
+  if (parameters.size()==1) {
+    if (parameters[0].size()<5) return NULL;
+    int kf=ATOOLS::ToType<int>(parameters[0][0]);
+    ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
+    if (kf<0) flavour=flavour.Bar();
+    std::string list=parameters[0].size()>5?parameters[0][5]:"Analysed";
+    return new Class(flavour,10*(int)(parameters[0][4]=="Log"),
+		     ATOOLS::ToType<double>(parameters[0][1]),
+		     ATOOLS::ToType<double>(parameters[0][2]),
+		     ATOOLS::ToType<int>(parameters[0][3]),list);
+  }
+  else if (parameters.size()<5) return NULL;
+  double min=0.0, max=1.0;
+  size_t bins=100, scale=0;
+  std::string list="Analysed";
+  ATOOLS::Flavour flavour;
+  for (size_t i=0;i<parameters.size();++i) {
+    if (parameters[i].size()<2) continue;
+    if (parameters[i][0]=="FLAV") {
+      int kf=ATOOLS::ToType<int>(parameters[i][1]);
+      flavour=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) flavour=flavour.Bar();
+    }
+    else if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+  }
+  return new Class(flavour,scale,min,max,bins,list);
+}									
+
+#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+  Primitive_Observable_Base *const					\
+  NAME::operator()(const String_Matrix &parameters) const		\
+  { return GetObservable<CLASS>(parameters); }
+
+#define DEFINE_PRINT_METHOD(NAME)					\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<"kf min max bins Lin|Log [list]"; }
+
+#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_PRINT_METHOD(NAME)
+
 using namespace ATOOLS;
 using namespace std;
 
@@ -44,6 +97,7 @@ void One_Particle_Observable_Base::Evaluate(const Particle_List & plist,double w
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(One_Particle_ET,One_Particle_ET_Getter,"ET");
 
 One_Particle_ET::One_Particle_ET(const Flavour & _flav,
 				 int _type,double _xmin,double _xmax,int _nbins,
@@ -67,6 +121,8 @@ Primitive_Observable_Base * One_Particle_ET::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(One_Particle_PT,One_Particle_PT_Getter,"PT");
+
 One_Particle_PT::One_Particle_PT(const Flavour & _flav,
 				 int _type,double _xmin,double _xmax,int _nbins,
 				 const std::string & _name) :
@@ -85,6 +141,8 @@ Primitive_Observable_Base * One_Particle_PT::Copy() const
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(One_Particle_Eta,One_Particle_Eta_Getter,"Eta");
 
 One_Particle_Eta::One_Particle_Eta(const Flavour & _flav,
 				   int _type,double _xmin,double _xmax,int _nbins,
@@ -112,6 +170,8 @@ Primitive_Observable_Base * One_Particle_Eta::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(One_Particle_E,One_Particle_E_Getter,"E");
+
 One_Particle_E::One_Particle_E(const Flavour & _flav,
 			       int _type,double _xmin,double _xmax,int _nbins,
 			       const std::string & _name) :
@@ -130,6 +190,8 @@ Primitive_Observable_Base * One_Particle_E::Copy() const
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(One_Particle_EVis,One_Particle_EVis_Getter,"EVis");
 
 One_Particle_EVis::One_Particle_EVis(const Flavour & _flav,
 			       int _type,double _xmin,double _xmax,int _nbins,

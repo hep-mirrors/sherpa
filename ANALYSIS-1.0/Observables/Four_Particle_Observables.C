@@ -1,6 +1,64 @@
 #include "Four_Particle_Observables.H"
 
 using namespace ANALYSIS;
+
+#include "MyStrStream.H"
+
+template <class Class>
+Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+{									
+  if (parameters.size()<1) return NULL;
+  if (parameters.size()==1) {
+    if (parameters[0].size()<8) return NULL;
+    std::vector<ATOOLS::Flavour> f(4);
+    for (short unsigned int i=0;i<4;++i) {
+      int kf=ATOOLS::ToType<int>(parameters[0][i]);
+      f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) f[i]=f[i].Bar();
+    }
+    std::string list=parameters[0].size()>8?parameters[0][8]:"Analysed";
+    return new Class(f,10*(int)(parameters[0][7]=="Log"),
+		     ATOOLS::ToType<double>(parameters[0][4]),
+		     ATOOLS::ToType<double>(parameters[0][5]),
+		     ATOOLS::ToType<int>(parameters[0][6]),list);
+  }
+  else if (parameters.size()<8) return NULL;
+  double min=0.0, max=1.0;
+  size_t bins=100, scale=0;
+  std::vector<ATOOLS::Flavour> f(4);
+  std::string list="Analysed";
+  for (size_t i=0;i<parameters.size();++i) {
+    if (parameters[i].size()<2) continue;
+    for (short unsigned int j=0;j<4;++j) {
+      if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
+	int kf=ATOOLS::ToType<int>(parameters[i][1]);
+	f[j]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+	if (kf<0) f[j]=f[j].Bar();
+      }
+    }
+    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+  }
+  return new Class(f,scale,min,max,bins,list);
+}									
+
+#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+  Primitive_Observable_Base *const					\
+  NAME::operator()(const String_Matrix &parameters) const		\
+  { return GetObservable<CLASS>(parameters); }
+
+#define DEFINE_PRINT_METHOD(NAME)					\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<"kf1 kf2 kf3 kf4 min max bins Lin|Log [list]"; }
+
+#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_PRINT_METHOD(NAME)
+
 using namespace ATOOLS;
 using namespace std;
 
@@ -78,6 +136,8 @@ void Four_Particle_Observable_Base::Evaluate(const Particle_List & plist,double 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Four_Particle_PlaneAngle,
+			 Four_Particle_PlaneAngle_Getter,"4PPlanePhi");
 
 void Four_Particle_PlaneAngle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
 					const Vec4D & mom3,const Vec4D & mom4,

@@ -6,6 +6,7 @@
 #include "Particle_List.H"
 #include "Blob_List.H"
 #include "Blob.H"
+#include "File_IO_Base.H"
 
 namespace ANALYSIS {
   enum code {
@@ -50,7 +51,7 @@ namespace ANALYSIS {
   };
 
 
-  class Primitive_Analysis {
+  class Primitive_Analysis: public ATOOLS::File_IO_Base {
   private:
     int                    m_mode;
     long                   m_nevt;
@@ -63,7 +64,7 @@ namespace ANALYSIS {
     Analysis_List          m_subanalyses;
 
     // reference to the event record
-    ATOOLS::Blob_List    * p_blobs;
+    const ATOOLS::Blob_List    * p_blobs;
 
     Primitive_Analysis   * p_partner;
 
@@ -75,7 +76,7 @@ namespace ANALYSIS {
     void CreateChargedParticleList();
 
     Primitive_Analysis * GetSubAnalysis(const std::string & key, int mode);
-    void CallSubAnalysis(ATOOLS::Blob_List * const bl, double value);
+    void CallSubAnalysis(const ATOOLS::Blob_List * const bl, double value);
 
     void PrintStatus();
   public :
@@ -86,9 +87,9 @@ namespace ANALYSIS {
     void AddObservable(Primitive_Observable_Base *);
     void AddSubAnalysis(const std::string &,Primitive_Analysis *);
     // most simple analysis, assume the observables a know how to handle a single value
-    void DoAnalysis(const ATOOLS::Particle_List &, double);
+    void DoAnalysis(const ATOOLS::Particle_List &, const double);
     // advanced analysis, working with a bloblist, thus event generation properties can be exploited
-    void DoAnalysis(ATOOLS::Blob_List * const , double);
+    void DoAnalysis(const ATOOLS::Blob_List * const , const double);
     // finalise and write out results of analysis
     void FinishAnalysis(const std::string &, long=0, double =1.);
     

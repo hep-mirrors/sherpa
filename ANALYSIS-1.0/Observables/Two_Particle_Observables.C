@@ -1,5 +1,63 @@
 #include "Two_Particle_Observables.H"
+
+using namespace ANALYSIS;
+
 #include "MyStrStream.H"
+
+template <class Class>
+Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+{									
+  if (parameters.size()<1) return NULL;
+  if (parameters.size()==1) {
+    if (parameters[0].size()<6) return NULL;
+    ATOOLS::Flavour f[2];
+    for (short unsigned int i=0;i<2;++i) {
+      int kf=ATOOLS::ToType<int>(parameters[0][i]);
+      f[i]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) f[i]=f[i].Bar();
+    }
+    std::string list=parameters[0].size()>6?parameters[0][6]:"Analysed";
+    return new Class(f[0],f[1],10*(int)(parameters[0][5]=="Log"),
+		     ATOOLS::ToType<double>(parameters[0][2]),
+		     ATOOLS::ToType<double>(parameters[0][3]),
+		     ATOOLS::ToType<int>(parameters[0][4]),list);
+  }
+  else if (parameters.size()<6) return NULL;
+  double min=0.0, max=1.0;
+  size_t bins=100, scale=0;
+  ATOOLS::Flavour f[2];
+  std::string list="Analysed";
+  for (size_t i=0;i<parameters.size();++i) {
+    if (parameters[i].size()<2) continue;
+    for (short unsigned int j=0;j<2;++j) {
+      if (parameters[i][0]==std::string("FLAV")+ATOOLS::ToString(j+1)) {
+	int kf=ATOOLS::ToType<int>(parameters[i][1]);
+	f[j]=ATOOLS::Flavour((ATOOLS::kf::code)abs(kf));
+	if (kf<0) f[j]=f[j].Bar();
+      }
+    }
+    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+  }
+  return new Class(f[0],f[1],scale,min,max,bins,list);
+}									
+
+#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+  Primitive_Observable_Base *const					\
+  NAME::operator()(const String_Matrix &parameters) const		\
+  { return GetObservable<CLASS>(parameters); }
+
+#define DEFINE_PRINT_METHOD(NAME)					\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<"kf1 kf2 min max bins Lin|Log [list]"; }
+
+#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_PRINT_METHOD(NAME)
 
 #ifdef ROOT_SUPPORT
 #include "Scaling.H"
@@ -7,7 +65,6 @@
 #include "TH2D.h"
 #endif 
 
-using namespace ANALYSIS;
 using namespace ATOOLS;
 using namespace std;
 
@@ -64,6 +121,7 @@ void Two_Particle_Observable_Base::Evaluate(const Particle_List & plist,double w
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Mass,Two_Particle_Mass_Getter,"Mass");
 
 Two_Particle_Mass::Two_Particle_Mass(const Flavour & _flav1,const Flavour & _flav2,
 				     int _type,double _xmin,double _xmax,int _nbins,
@@ -84,6 +142,7 @@ Primitive_Observable_Base * Two_Particle_Mass::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_PT,Two_Particle_PT_Getter,"PT2");
 
 Two_Particle_PT::Two_Particle_PT(const Flavour & _flav1,const Flavour & _flav2,
 				 int _type,double _xmin,double _xmax,int _nbins,
@@ -102,6 +161,9 @@ Primitive_Observable_Base * Two_Particle_PT::Copy() const
   return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
 }
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Scalar_PT,
+			 Two_Particle_Scalar_PT_Getter,"SPT2");
+
 Two_Particle_Scalar_PT::Two_Particle_Scalar_PT(const Flavour & _flav1,const Flavour & _flav2,
 				 int _type,double _xmin,double _xmax,int _nbins,
 				 const std::string & _name, const std::string & _lname) :
@@ -118,6 +180,9 @@ Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const
 }
 
 #ifdef ROOT_SUPPORT
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Angles,
+			 Two_Particle_Angles_Getter,"Theta_2D");
+
 Two_Particle_Angles::Two_Particle_Angles(const Flavour & _flav1,const Flavour & _flav2,
 					 int _type,double _xmin,double _xmax,int _nbins,
 					 const std::string & _name, const std::string & _lname) :
@@ -143,6 +208,8 @@ Primitive_Observable_Base * Two_Particle_Angles::Copy() const
 }
 #endif
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_Eta,Two_Particle_Eta_Getter,"Eta2");
+
 Two_Particle_Eta::Two_Particle_Eta(const Flavour & _flav1,const Flavour & _flav2,
 				 int _type,double _xmin,double _xmax,int _nbins,
 				 const std::string & _name,const std::string & _lname) :
@@ -164,6 +231,8 @@ Primitive_Observable_Base * Two_Particle_Eta::Copy() const
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DEta,Two_Particle_DEta_Getter,"DEta");
 
 Two_Particle_DEta::Two_Particle_DEta(const Flavour & _flav1,const Flavour & _flav2,
 				     int _type,double _xmin,double _xmax,int _nbins,
@@ -187,6 +256,8 @@ Primitive_Observable_Base * Two_Particle_DEta::Copy() const
     
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DPhi,Two_Particle_DPhi_Getter,"DPhi");
+
 Two_Particle_DPhi::Two_Particle_DPhi(const Flavour & _flav1,const Flavour & _flav2,
 				       int _type,double _xmin,double _xmax,int _nbins,
 				     const std::string & _name,const std::string & _lname) :
@@ -209,6 +280,8 @@ Primitive_Observable_Base * Two_Particle_DPhi::Copy() const
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Two_Particle_DR,Two_Particle_DR_Getter,"DR");
 
 Two_Particle_DR::Two_Particle_DR(const Flavour & _flav1,const Flavour & _flav2,
 				       int _type,double _xmin,double _xmax,int _nbins,

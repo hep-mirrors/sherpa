@@ -1,13 +1,94 @@
 #include "Final_Selector.H"
+
+using namespace ANALYSIS;
+
+#include "MyStrStream.H"
+#include "Run_Parameter.H"
+#include <iomanip>
+
+DECLARE_GETTER(Final_Selector_Getter,"Trigger",
+ 	       Primitive_Observable_Base,String_Matrix);
+
+void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{
+  str<<"{\n"
+     <<std::setw(width+7)<<" "<<"InList  list\n"
+     <<std::setw(width+7)<<" "<<"OutList list\n"
+     <<std::setw(width+7)<<" "<<"JetMode mode\n"
+     <<std::setw(width+7)<<" "<<"Finder  kf [ptmin etamin etamax rmin bjets]\n"
+     <<std::setw(width+7)<<" "<<"DRMin   kf1 kf2 drmin\n"
+     <<std::setw(width+7)<<" "<<"Counts  kf min max\n"
+     <<std::setw(width+7)<<" "<<"Keep    kf\n"
+     <<std::setw(width+4)<<" "<<"}";
+}
+
+Primitive_Observable_Base *const 
+Final_Selector_Getter::operator()(const String_Matrix &parameters) const
+{
+  Final_Selector_Data data;
+  int jetmode=0;
+  if (ATOOLS::rpa.gen.Beam1().Kfcode()==ATOOLS::kf::e && 
+      ATOOLS::rpa.gen.Beam2().Kfcode()==ATOOLS::kf::e) jetmode=1;
+  std::string inlist="FinalState", outlist="Analysed";
+  for (size_t i=0;i<parameters.size();++i) {
+    const std::vector<std::string> &cur=parameters[i];
+    if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
+    else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
+    else if (cur[0]=="JetMode" && cur.size()>1) jetmode=ATOOLS::ToType<int>(cur[1]);
+  }
+  Final_Selector *selector = new Final_Selector(inlist,outlist,jetmode);
+  for (size_t i=0;i<parameters.size();++i) {
+    const std::vector<std::string> &cur=parameters[i];
+    if (cur[0]=="Finder" && cur.size()>1) {
+      int kf=ATOOLS::ToType<int>(cur[1]);
+      if (kf!=ATOOLS::kf::jet || kf==ATOOLS::kf::bjet) continue;
+      ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) flavour=flavour.Bar();
+      data.pt_min=0.;
+      data.eta_min=-20.;
+      data.eta_max=+20.;
+      if (cur.size()>2) data.pt_min=ATOOLS::ToType<double>(cur[2]);
+      if (cur.size()>3) data.eta_min=ATOOLS::ToType<double>(cur[3]);
+      if (cur.size()>4) data.eta_max=ATOOLS::ToType<double>(cur[4]);
+      if (cur.size()>5 && kf==93) data.r_min=ATOOLS::ToType<double>(cur[5]);
+      if (cur.size()>6 && kf==93) data.bf=ATOOLS::ToType<bool>(cur[6]);
+      selector->AddSelector(flavour,data);
+    }
+    else if (cur[0]=="DRMin" && cur.size()>3) {
+      int kf=ATOOLS::ToType<int>(cur[1]);
+      ATOOLS::Flavour f1((ATOOLS::kf::code)abs(kf));
+      if (kf<0) f1=f1.Bar();
+      kf=ATOOLS::ToType<int>(cur[2]);
+      ATOOLS::Flavour f2((ATOOLS::kf::code)abs(kf));
+      if (kf<0) f2=f2.Bar();
+      data.r_min=0.;
+      if (cur.size()>3) data.r_min=ATOOLS::ToType<double>(cur[3]);
+      selector->AddSelector(f1,f2,data);
+    }
+    else if (cur[0]=="Counts" && cur.size()>3) {
+      int kf=ATOOLS::ToType<int>(cur[1]);
+      ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) flavour=flavour.Bar();
+      selector->AddSelector(flavour,ATOOLS::ToType<int>(cur[2]),
+			    ATOOLS::ToType<int>(cur[3]));
+    }
+    else if (cur[0]=="Keep" && cur.size()>1) {
+      int kf=ATOOLS::ToType<int>(cur[1]);
+      ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
+      if (kf<0) flavour=flavour.Bar();
+      selector->AddKeepFlavour(flavour);
+    }
+  }
+  return selector;
+}
+
 #include "Primitive_Analysis.H"
 #include "Message.H"
-#include "MyStrStream.H"
 #include "Durham_Algorithm.H"
 #include "Calorimeter_Cone.H"
 
 #include <algorithm>
 
-using namespace ANALYSIS;
 using namespace ATOOLS;
 
 namespace ANALYSIS {
@@ -26,6 +107,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
   m_mode(-1), p_jetalg(NULL)
 {
   m_splitt_flag = false;
+  m_name="Trigger";
 }
 
 Final_Selector::Final_Selector(const std::string & inlistname,
