@@ -76,17 +76,7 @@ namespace ATOOLS {
     Multiplicity * partner;
   public:
     Multiplicity(int _type,double _xmin,double _xmax,int _nbins, int mode);
-    Multiplicity(Multiplicity * old) {
-      type  = old->Type();
-      sel   = old->Sel();
-      xmin  = old->Xmin();
-      xmax  = old->Xmax();
-      nbins = old->Nbins();
-      name  = old->Name();
-      histo = new Histogram(old->Histo());
-      histo -> Reset();
-    }
-
+    Multiplicity(Multiplicity * old);
     Multiplicity(Multiplicity * _partner, std::string _prefix);
 
     void Evaluate(const Particle_List & pl,double);
@@ -109,25 +99,8 @@ namespace ATOOLS {
     std::vector<ME_Data> all_rates;
     double sum;
   public:
-    ME_Rate(int _type,double _xmin,double _xmax,int _nbins,std::string prefix)
-    {
-      type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = 0;
-      name  = prefix+std::string("_rates.dat");
-      histo = new Histogram(type,xmin,xmax,nbins);
-      sum =0.;
-    };
-
-    ME_Rate(ME_Rate * old) {
-      type  = old->Type();
-      sel   = old->Sel();
-      xmin  = old->Xmin();
-      xmax  = old->Xmax();
-      nbins = old->Nbins();
-      name  = old->Name();
-      histo = new Histogram(old->Histo());
-      histo -> Reset();
-    }
-
+    ME_Rate(int _type,double _xmin,double _xmax,int _nbins,std::string prefix);
+    ME_Rate(ME_Rate * old);
     void Evaluate(const Blob_List & bl,double);
 
     void EndEvaluation();

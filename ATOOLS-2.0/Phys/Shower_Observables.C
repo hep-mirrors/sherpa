@@ -28,10 +28,10 @@ bool ParticleIsInList(const Particle * const p,  const Particle_List & pl)
 void Shower_Observables::InitObservables() {
   all_obs.flav     = Flavour(kf::none);
   all_obs.jet_ini  = 0;
-  all_obs.jetrates = new Jetrates(11,1.e-6,1.,120,0);
+  all_obs.jetrates = new Jetrates(11,1.e-6,1.,80,0);
   all_obs.multi    = new Multiplicity(00,-0.5,50.5,51,0);
-  all_obs.wz_pt    = new PT_Distribution(00,0.,200.,40,1,Flavour(kf::W));
-  all_obs.jet_pt   = new PT_Distribution(00,0.,200.,40,6,Flavour(kf::jet));
+  all_obs.wz_pt    = new PT_Distribution(00,0.,200.,100,1,Flavour(kf::W));
+  all_obs.jet_pt   = new PT_Distribution(00,0.,200.,100,6,Flavour(kf::jet));
   all_obs.sum      =0.;
 }
 
@@ -373,6 +373,17 @@ Multiplicity::Multiplicity(int _type,double _xmin,double _xmax,int _nbins, int m
   histo = new Histogram(type,xmin,xmax,nbins);
 };
 
+Multiplicity::Multiplicity(Multiplicity * old) {
+  type  = old->Type();
+  sel   = old->Sel();
+  xmin  = old->Xmin();
+  xmax  = old->Xmax();
+  nbins = old->Nbins();
+  name  = old->Name();
+  histo = new Histogram(old->Histo());
+  histo -> Reset();
+}
+
 
 Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix)
 {
@@ -438,6 +449,24 @@ void  Multiplicity::Evaluate(const Blob_List & blobs,double value) {
 
 
 
+ME_Rate::ME_Rate(int _type,double _xmin,double _xmax,int _nbins,std::string prefix)
+{
+  type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = 0;
+  name  = prefix+std::string("_rates.dat");
+  histo = new Histogram(type,xmin,xmax,nbins);
+  sum =0.;
+}
+
+ME_Rate::ME_Rate(ME_Rate * old) {
+  type  = old->Type();
+  sel   = old->Sel();
+  xmin  = old->Xmin();
+  xmax  = old->Xmax();
+  nbins = old->Nbins();
+  name  = old->Name();
+  histo = new Histogram(old->Histo());
+  histo -> Reset();
+}
 
 
 void ME_Rate::Evaluate(const Blob_List & blobs,double value) {
