@@ -122,11 +122,11 @@ namespace ATOOLS {
 #define msg_Debugging() if (ATOOLS::msg.LevelIsDebugging()) ATOOLS::msg.Out()
 
 #define PRINT_METHOD \
-  std::cout<<om::blue<<method<<om::reset<<std::endl
+  std::cout<<ATOOLS::om::blue<<__FUNCTION__<<ATOOLS::om::reset<<std::endl
 
 #define PRINT_INFO(INFO) \
-  std::cout<<om::blue<<__FUNCTION__<<om::reset<<":(" \
-	   <<om::green<<"\""<<INFO<<"\""<<om::reset<<")"<<std::endl
+  std::cout<<ATOOLS::om::blue<<__FUNCTION__<<ATOOLS::om::reset<<":(" \
+	   <<ATOOLS::om::green<<"\""<<INFO<<"\""<<ATOOLS::om::reset<<")"<<std::endl
 
 #endif
 

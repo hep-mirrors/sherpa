@@ -22,7 +22,7 @@ namespace SHERPA {
     void Output();
   };
 
-  class Analysis_Handler { //: public ATOOLS::Terminator_Object  {
+  class Analysis_Handler: public ATOOLS::Terminator_Object  {
     std::string  m_phase, m_outputpath;
     std::string  m_prefix;
 
