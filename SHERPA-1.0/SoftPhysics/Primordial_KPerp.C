@@ -110,11 +110,13 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
       	ATOOLS::Particle *cur2, *cur1=blob[0]->OutParticle(i);
 	if (FindConnected(cur1,cur2,true,0)) {
 	  Vec3D kp1=(*p_kperp[0])[i], kp2=(*p_kperp[1])[i];
-	  double sp, sp1, sp2;
+	  double s, sp, sp1, sp2;
+	  s=(cur1->Momentum()+cur2->Momentum()).Abs2();
+	  sp=s+sqr((kp1+kp2).Abs());
 	  sp1=cur1->Momentum().Abs2()+sqr(kp1.Abs()); 
 	  sp2=cur2->Momentum().Abs2()+sqr(kp2.Abs());
-	  sp=(cur1->Momentum()+cur2->Momentum()).Abs2()+sqr((kp1+kp2).Abs());
-	  if ((sp-sp1-sp2)*(sp-sp1-sp2)<4.0*sp1*sp2) success=false;
+	  if (((sp-sp1-sp2)*(sp-sp1-sp2)<4.0*sp1*sp2)||
+	      (s<sp1)||(s<sp2)) success=false;
 	}
       }
       if ((++trials)==m_maxtrials) {
