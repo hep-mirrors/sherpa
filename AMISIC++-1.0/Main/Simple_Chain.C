@@ -480,6 +480,8 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
   m_comments.push_back(std::string("processes : ")+processname);
   GridHandlerVector gridhandler=GridHandlerVector(2);
   for (unsigned int i=0;i<gridhandler.size();++i) gridhandler[i] = new GridHandlerType();
+  gridhandler[0]->ReadIn(ATOOLS::Type::TFStream,OutputPath()+filename+m_xsextension);
+  gridhandler[1]->ReadIn(ATOOLS::Type::TFStream,OutputPath()+filename+m_maxextension);
   p_gridcreator = new GridCreatorType(gridhandler,p_processes);
   p_gridcreator->ReadInArguments(InputFile(),InputPath());
   if (mkdir(OutputPath().c_str(),448)==0) {
@@ -710,6 +712,15 @@ bool Simple_Chain::Initialize()
   for (unsigned int i=0;i<m_blobs.size();++i) {
     GridHandlerType *xsgridhandler = new GridHandlerType();
     GridHandlerType *maxgridhandler = new GridHandlerType();
+    if (!CreateGrid(m_blobs[i],m_filename[i])) {
+      ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
+			 <<"Grid creation for "<<m_filename[i]<<" failed! "<<std::endl
+			 <<"   Abort initialization."<<std::endl;
+      CleanUp();
+      delete xsgridhandler;
+      delete maxgridhandler;
+      return false;
+    }
     if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_xsextension)&&
 	maxgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_maxextension)) {
       m_differential.push_back(new GridFunctionType(*xsgridhandler->Grid()));
@@ -718,34 +729,9 @@ bool Simple_Chain::Initialize()
       delete maxgridhandler;
     }
     else {
-      ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
-			 <<"File "<<m_filename[i]+m_xsextension<<" does not exist "<<std::endl
-			 <<"   or does not contain any grid information."<<std::endl
-			 <<"   Scheduling corresponding blob for grid creation."<<std::endl;
-      m_create[i]=true;
-    }
-    if (m_create[i]) {
-      if (!CreateGrid(m_blobs[i],m_filename[i])) {
-	ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
-			   <<"Grid creation for "<<m_filename[i]<<" failed! "<<std::endl
-			   <<"   Abort initialization."<<std::endl;
-	CleanUp();
-	delete xsgridhandler;
-	delete maxgridhandler;
-	return false;
-      }
-      if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_xsextension)&&
-	  maxgridhandler->ReadIn(ATOOLS::Type::TFStream,OutputPath()+m_filename[i]+m_maxextension)) {
-	m_differential.push_back(new GridFunctionType(*xsgridhandler->Grid()));
-	m_maximum.push_back(new GridFunctionType(*maxgridhandler->Grid()));
-	delete xsgridhandler;
-	delete maxgridhandler;
-      }
-      else {
-	throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-				std::string("Grid creation failed for ")+OutputPath()+m_filename[i],
-				"Simple_Chain","Initialize"));
-      }
+      throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
+			      std::string("Grid creation failed for ")+OutputPath()+m_filename[i],
+			      "Simple_Chain","Initialize"));
     }
   }
   if (!CalculateTotal()) {
