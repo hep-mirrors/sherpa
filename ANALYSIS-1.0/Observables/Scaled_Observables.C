@@ -3,6 +3,7 @@
 using namespace ANALYSIS;
 
 #include "MyStrStream.H"
+#include "Run_Parameter.H"
 
 template <class Class>
 Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
@@ -19,7 +20,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 		     ATOOLS::ToType<int>(parameters[0][2]),list,ref);
   }
   else if (parameters.size()<4) return NULL;
-  double min=0.0, max=1.0;
+  double min=0.0, max=1.0, ref=ATOOLS::rpa.gen.Ecms();
   size_t bins=100;
   std::string list="Analysed", scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
@@ -89,6 +90,7 @@ void Scaled_Observable_Base::Evaluate(const Particle_List & plist,double weight,
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Scaled_Momentum,Scaled_Momentum_Getter,"XP");
 
 Scaled_Momentum::Scaled_Momentum(int type,double xmin,double xmax,int nbins,
 				 const std::string & listname, double ecms) :
@@ -109,8 +111,10 @@ Primitive_Observable_Base * Scaled_Momentum::Copy() const
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+DEFINE_OBSERVABLE_GETTER(Log_Scaled_Momentum,Log_Scaled_Momentum_Getter,"LogXP");
+
 Log_Scaled_Momentum::Log_Scaled_Momentum(int type,double xmin,double xmax,int nbins,
-				 const std::string & listname, double ecms) :
+					 const std::string & listname, double ecms) :
   Scaled_Observable_Base(type,xmin,xmax,nbins,listname,"LogScaledMomentum", ecms) { }
 
 
@@ -128,6 +132,8 @@ Primitive_Observable_Base * Log_Scaled_Momentum::Copy() const
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Scaled_Energy,Scaled_Energy_Getter,"XE");
 
 Scaled_Energy::Scaled_Energy(int type,double xmin,double xmax,int nbins,
 			     const std::string & listname, double ecms) :
