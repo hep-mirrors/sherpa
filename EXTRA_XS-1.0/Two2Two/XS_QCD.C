@@ -73,7 +73,7 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Fla
   p = fl[1].IsAnti();
   aS = (*as)(sqr(rpa.gen.Ecms()));
 
-
+  m_nstrong=4;
 //   int ints[4];
 //   for (short int i=0;i<4;++i) ints[i]=ATOOLS::kf_table.ToInt(fl[i].Kfcode());
 //   std::cout<<"Flavours/ints : "<<std::endl;
@@ -150,6 +150,7 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const size_t nin,const size_t nout,
   p = 1-a;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_nstrong=4;
 }
 
 double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
@@ -197,6 +198,7 @@ XS_q1q1_q1q1::XS_q1q1_q1q1(const size_t nin,const size_t nout, const ATOOLS::Fla
   a  = fl[0].IsAnti();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_nstrong=4;
 }
 
 double XS_q1q1_q1q1::operator()(double s,double t,double u) {
@@ -262,6 +264,7 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const size_t nin,const size_t nout,
   r = !(fl[0] == fl[2]);
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_nstrong=4;
 }
 
 double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
@@ -325,6 +328,7 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(const size_t nin,const size_t nout,
   p = 1-a;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_nstrong=4;
 }
 
 double XS_q1qbar1_gg::operator()(double s,double t,double u) {
@@ -390,6 +394,7 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(const size_t nin,const size_t nout, const ATOOLS::F
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_nstrong=4;
 }
 
 double XS_gg_q1qbar1::operator()(double s,double t,double u) {
@@ -472,6 +477,7 @@ XS_q1g_q1g::XS_q1g_q1g(const size_t nin,const size_t nout, const ATOOLS::Flavour
   p = 1-a;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_nstrong=4;
 }
 
 double XS_q1g_q1g::operator()(double s,double t,double u) {
@@ -546,6 +552,7 @@ XS_gg_gg::XS_gg_gg(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
+  m_nstrong=4;
 }
 
 double XS_gg_gg::operator()(double s,double t,double u) {
