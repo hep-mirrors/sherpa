@@ -53,7 +53,7 @@ int Observable_Data::Specify() {
       type==std::string("Eta") || type==std::string("E") ||
       type==std::string("EVis"))                                 return 1;
   if (type==std::string("Mass") || type==std::string("PT2") ||
-      type==std::string("Eta2"))                                 return 2;
+      type==std::string("Eta2") || type==std::string("SPT2")) return 2;
   if (type==std::string("JetPT") || type==std::string("JetEta") || 
       type==std::string("JetE") || type==std::string("JetDR")) return 10;
   return -1;
@@ -348,6 +348,10 @@ void Sample_Analysis::SetUpObservables()
       }
       if (type==std::string("PT2")) { 
 	obs = new Two_Particle_PT(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
+	break; 
+      }
+      if (type==std::string("SPT2")) { 
+	obs = new Two_Particle_Scalar_PT(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
 	break; 
       }
       if (type==std::string("Eta2"))  { 
