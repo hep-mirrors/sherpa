@@ -1,5 +1,6 @@
 #include "LDL_KPerp.H"
 
+#include "Scaling.H"
 #include <stdio.h>
 
 using namespace PHASIC;
@@ -9,9 +10,7 @@ LDL_KPerp::LDL_KPerp(const double lambda2,const std::string cinfo,
   m_lambda2(lambda2),
   m_calculated(false)
 {
-  char lambda[3];
-  sprintf(lambda,"%i",int(m_lambda2*10000.));
-  name=std::string("LDL_KPerp_")+std::string(lambda);
+  name=std::string("LDL_KPerp_")+ATOOLS::ToString(lambda2);
   m_kp1key.SetInfo(name+cinfo);
   m_kp2key.SetInfo(name+cinfo);
   m_kp1key.Assign("k_perp_1",4,0,info);
@@ -54,7 +53,6 @@ void LDL_KPerp::GenerateWeight(const int mode)
     }
   }
   weight=m_kp1key.Weight()*m_kp2key.Weight();
-  // m_calculated=false;
 }
 
 void LDL_KPerp::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
@@ -73,8 +71,6 @@ void LDL_KPerp::CalculateLimits()
   m_integral[1]=m_firstintegral[1]+log(log(m_kp2key[2]/m_lambda2)/log(m_kp2key[1]/m_lambda2));
   m_rancut[0]=m_firstintegral[0]/m_integral[0];
   m_rancut[1]=m_firstintegral[1]/m_integral[1];
-  ATOOLS::msg.Debugging()<<" cuts1 "<<m_rancut[0]<<" "<<m_firstintegral[0]<<" "<<m_integral[0]<<std::endl;
-  ATOOLS::msg.Debugging()<<" cuts2 "<<m_rancut[1]<<" "<<m_firstintegral[1]<<" "<<m_integral[1]<<std::endl;
   m_calculated=true;
 }
 

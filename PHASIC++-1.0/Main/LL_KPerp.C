@@ -1,6 +1,7 @@
 #include "LL_KPerp.H"
 
 #include "Channel_Elements.H"
+#include "Scaling.H"
 
 #include <stdio.h>
 
@@ -11,9 +12,7 @@ LL_KPerp::LL_KPerp(double beta,const std::string cinfo,
   m_beta(beta),
   m_calculated(false)
 {
-  char pbeta[3];
-  sprintf(pbeta,"%i",int(m_beta*100.));
-  name=std::string("LL_KPerp_")+std::string(pbeta);
+  name=std::string("LL_KPerp_")+ATOOLS::ToString(beta);
   m_kp1key.SetInfo(name+cinfo);
   m_kp2key.SetInfo(name+cinfo);
   m_kp1key.Assign("k_perp_1",4,0,info);

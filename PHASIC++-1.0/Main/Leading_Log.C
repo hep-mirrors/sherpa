@@ -2,6 +2,7 @@
 
 #include "Channel_Elements.H"
 #include "Message.H"
+#include "Scaling.C"
 
 #include <stdio.h>
 
@@ -12,10 +13,8 @@ Leading_Log_Uniform::Leading_Log_Uniform(const double beta,const double factor,
   m_beta(beta),
   m_factor(factor)
 {
-  char help[3];
-  sprintf(help,"%i",int(beta*100.));
-  name=std::string("Leading_Log_Uniform_")+std::string(help);
-  m_spkey.SetInfo(std::string("Leading_Log_")+std::string(help));
+  name=std::string("Leading_Log_Uniform_")+ATOOLS::ToString(beta);
+  m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
@@ -57,12 +56,10 @@ Leading_Log_Forward::Leading_Log_Forward(const double beta,const double factor,c
   m_factor(factor),
   m_yexponent(yexponent)
 {
-  char help[3];
-  sprintf(help,"%i",int(beta*100.));
-  name=std::string("Leading_Log_Forward_")+std::string(help);
-  m_spkey.SetInfo(std::string("Leading_Log_")+std::string(help));
-  sprintf(help,"%i",int(100.*yexponent));
-  m_ykey.SetInfo(std::string("Forward_")+std::string(help));
+  name=std::string("Leading_Log_Forward_")+ATOOLS::ToString(beta);
+  m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta)+
+		  std::string("_")+ATOOLS::ToString(yexponent));
+  m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
   m_xkey.Assign(std::string("x")+cinfo,5,0,info);
@@ -105,12 +102,10 @@ Leading_Log_Backward::Leading_Log_Backward(const double beta,const double factor
   m_factor(factor),
   m_yexponent(yexponent)
 {
-  char help[3];
-  sprintf(help,"%i",int(beta*100.));
-  name=std::string("Leading_Log_Backward_")+std::string(help);
-  m_spkey.SetInfo(std::string("Leading_Log_")+std::string(help));
-  sprintf(help,"%i",int(100.*yexponent));
-  m_ykey.SetInfo(std::string("Backward_")+std::string(help));
+  name=std::string("Leading_Log_Backward_")+ATOOLS::ToString(beta);
+  m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta)+
+		  std::string("_")+ATOOLS::ToString(yexponent));
+  m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
   m_xkey.Assign(std::string("x")+cinfo,5,0,info);
@@ -152,10 +147,8 @@ Leading_Log_Central::Leading_Log_Central(const double beta,const double factor,
   m_beta(beta),
   m_factor(factor)
 {
-  char help[3];
-  sprintf(help,"%i",int(beta*100.));
-  name=std::string("Leading_Log_Central_")+std::string(help);
-  m_spkey.SetInfo(std::string("Leading_Log_")+std::string(help));
+  name=std::string("Leading_Log_Central_")+ATOOLS::ToString(beta);
+  m_spkey.SetInfo(std::string("Leading_Log_")+ATOOLS::ToString(beta));
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);

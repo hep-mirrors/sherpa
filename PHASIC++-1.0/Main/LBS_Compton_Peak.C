@@ -2,6 +2,7 @@
 
 #include "Channel_Elements.H"
 #include "Message.H"
+#include "Scaling.H"
 
 #include <stdio.h>
 
@@ -12,13 +13,10 @@ LBS_Compton_Peak_Uniform::LBS_Compton_Peak_Uniform(const double exponent,const d
   m_exponent(exponent),
   m_pole(pole)
 {
-  char help[3];
-  sprintf(help,"%i",int(exponent*1000.));
-  name=std::string(help);
-  sprintf(help,"%i",int(pole*1000.));
-  name+=std::string(help);
-  m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+std::string(help));
-  name=std::string("LBS_Compton_Peak_Uniform");
+  std::string help=ATOOLS::ToString(exponent)+
+    std::string("_")+ATOOLS::ToString(pole);
+  m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+help);
+  name=std::string("LBS_Compton_Peak_Uniform_")+help;
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
@@ -68,15 +66,11 @@ LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(const double exponent,const d
   m_pole(pole),
   m_yexponent(yexponent)
 {
-  char help[3];
-  sprintf(help,"%i",int(exponent*1000.));
-  name=std::string(help);
-  sprintf(help,"%i",int(pole*1000.));
-  name+=std::string(help);
-  m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+std::string(help));
-  name=std::string("LBS_Compton_Peak_Forward");
-  sprintf(help,"%i",int(100.*yexponent));
-  m_ykey.SetInfo(std::string("Forward_")+std::string(help));
+  std::string help=ATOOLS::ToString(exponent)+
+    std::string("_")+ATOOLS::ToString(pole);
+  m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+help);
+  name=std::string("LBS_Compton_Peak_Forward")+help+ATOOLS::ToString(yexponent);
+  m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
   m_xkey.Assign(std::string("x")+cinfo,5,0,info);
@@ -127,15 +121,11 @@ LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(const double exponent,const
   m_pole(pole),
   m_yexponent(yexponent)
 {
-  char help[3];
-  sprintf(help,"%i",int(exponent*1000.));
-  name=std::string(help);
-  sprintf(help,"%i",int(pole*1000.));
-  name+=std::string(help);
-  m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+std::string(help));
-  name=std::string("LBS_Compton_Peak_Backward");
-  sprintf(help,"%i",int(100.*yexponent));
-  m_ykey.SetInfo(std::string("Backward_")+std::string(help));
+  std::string help=ATOOLS::ToString(exponent)+
+    std::string("_")+ATOOLS::ToString(pole);
+  m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+help);
+  name=std::string("LBS_Compton_Peak_Backward_")+help+ATOOLS::ToString(yexponent);
+  m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
   m_xkey.Assign(std::string("x")+cinfo,5,0,info);
@@ -184,13 +174,10 @@ LBS_Compton_Peak_Central::LBS_Compton_Peak_Central(const double exponent,const d
   m_exponent(exponent),
   m_pole(pole)
 {
-  char help[3];
-  sprintf(help,"%i",int(exponent*1000.));
-  name=std::string(help);
-  sprintf(help,"%i",int(pole*1000.));
-  name+=std::string(help);
-  m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+std::string(help));
-  name=std::string("LBS_Compton_Peak_Central");
+  std::string help=ATOOLS::ToString(exponent)+
+    std::string("_")+ATOOLS::ToString(pole);
+  m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+help);
+  name=std::string("LBS_Compton_Peak_Central_")+help;
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
