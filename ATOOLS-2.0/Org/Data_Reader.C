@@ -2,7 +2,6 @@
 
 #include "Primitive_Interpreter.H"
 #include "Message.H"
-#include "Type.H"
 #include "MyStrStream.H"
 #include <ctype.h>
 #ifdef DEBUG__Data_Reader
@@ -185,20 +184,19 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
   if(((pos=Find(inputstring,parameter,length))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+length)).length()>0)) {
     inputstring=ReplaceTags(HighlightSeparator(inputstring));
-    Type typeinfo;
-    Type::ID type = typeinfo.GetType(value);
-    if (Interprete() && type!=Type::TChar && type!=Type::TString)
+    if (Interprete() && 
+	typeid(value)!=typeid(char) &&
+	typeid(value)!=typeid(std::string))
       inputstring=Interpreter()->Interprete(inputstring);
     value=ATOOLS::ToType<Read_Type>(inputstring);
 #ifdef DEBUG__Data_Reader
-    std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<Type::GetType(value)<<" )"<<std::endl;
+    std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<typeid(value).name()<<" )"<<std::endl;
 #endif
     return value;
   }
 #ifdef DEBUG__Data_Reader
-  Type typeinfo;
   std::cout<<"   returning default value '"<<Default<Read_Type>()<<"'"
-	   <<" ( type "<<typeinfo.GetType(value)<<" )"<<std::endl;
+	   <<" ( type "<<typeid(value).name()<<" )"<<std::endl;
 #endif
   return Default<Read_Type>();
 }
@@ -243,9 +241,6 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
   if (tempvtype==VUnknown) tempvtype=VectorType();
   if (tempvtype==VUnknown) tempvtype=VVertical;
   std::string value;
-  Type typeinfo;
-  Read_Type readtype;
-  Type::ID type = typeinfo.GetType(readtype);
   std::vector<Read_Type> values;
   inputstring = ReplaceTags(inputstring);
   size_t pos;
@@ -276,12 +271,12 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
     values.push_back(M_ReadFromString<Read_Type>(nullstring,value));
     if (tempvtype==VVertical) break;
     inputstring=inputstring.substr(inputstring.find(value)+value.length());
-    if (!m_allownans){    
-      if ((type!=Type::TChar)&&(type!=Type::TString)) {
-	if (((pos=inputstring.find(std::string("nan")))!=std::string::npos)||
-	    ((pos=inputstring.find(std::string("inf")))!=std::string::npos)) {
-	  inputstring.replace(pos,3,"0");
-	}
+    if (!m_allownans &&
+	typeid(value)!=typeid(char) && 
+	typeid(value)!=typeid(std::string)) {
+      if (((pos=inputstring.find(std::string("nan")))!=std::string::npos)||
+	  ((pos=inputstring.find(std::string("inf")))!=std::string::npos)) {
+	inputstring.replace(pos,3,"0");
       }
     }
     value=M_ReadFromString<std::string>(nullstring,inputstring);
