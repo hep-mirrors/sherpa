@@ -26,8 +26,8 @@ namespace HepMC {
 #include <set>
 
 namespace SHERPA {
-  typedef std::map<ATOOLS::Flavour,HepMC::ParticleData *>           Flavour2Particle;
-  typedef std::map<ATOOLS::Flavour,HepMC::ParticleData *>::iterator FlavsParts;
+  typedef std::map<ATOOLS::Flavour,HepMC::ParticleData *>              Flavour2Particle;
+  typedef std::map<ATOOLS::Flavour,HepMC::ParticleData *>::iterator    FlavsParts;
   typedef std::map<long int,HepMC::GenVertex *>                        Blob2Vertex;
   typedef std::map<long int,HepMC::GenVertex *>::iterator              BlobsVertices;
   typedef std::map<long int,HepMC::GenParticle *>                      Parton2Particle;
