@@ -138,13 +138,32 @@ double XS_Base::Scale(const ATOOLS::Vec4D *momenta)
     m_scale[PHASIC::stp::fac]=ATOOLS::sqr((p[2].PPerp(p[0])+p[3].PPerp(p[1]))/2);
     break;
   }
-  case 22: {// dis scheme
+  case 22: {// hadron scheme
+    const ATOOLS::Vec4D *p=momenta;
+    double S2=p[4]*p[5];
+    double a1=p[5]*p[0]/S2;
+    double b2=p[4]*p[1]/S2;
+    m_scale[PHASIC::stp::kp21]=a1*a1*2.*S2*p[2].PMinus()/p[2].PPlus();
+    m_scale[PHASIC::stp::kp22]=b2*b2*2.*S2*p[3].PPlus()/p[3].PMinus();
+    // average of transverse momenta 
+    m_scale[PHASIC::stp::fac]=ATOOLS::sqr((p[2].PPerp()+p[3].PPerp())/2);
+    break;
+  }
+  case 23: {// dis scheme
     const ATOOLS::Vec4D *p=momenta;
     ATOOLS::Vec4D k=p[0]-p[2];
     double z1=p[5]*k/(p[5]*p[0]);
     double z2=p[4]*k/(p[4]*p[1]);
     m_scale[PHASIC::stp::kp21]=p[2].PPerp2()/ATOOLS::sqr(1.-z1);
     m_scale[PHASIC::stp::kp22]=p[3].PPerp2()/ATOOLS::sqr(1.+z2);
+    // average of transverse momenta w.r.t. incoming
+    m_scale[PHASIC::stp::fac]=ATOOLS::sqr((p[2].PPerp(p[0])+p[3].PPerp(p[1]))/2);
+    break;
+  }
+  case 24: {// dis scheme
+    const ATOOLS::Vec4D *p=momenta;
+    m_scale[PHASIC::stp::kp21]=p[2].PPerp2();
+    m_scale[PHASIC::stp::kp22]=p[3].PPerp2();
     // average of transverse momenta w.r.t. incoming
     m_scale[PHASIC::stp::fac]=ATOOLS::sqr((p[2].PPerp(p[0])+p[3].PPerp(p[1]))/2);
     break;
