@@ -8,6 +8,7 @@ using namespace SHERPA;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
+using namespace std;
 
 extern "C" {
   void fhawface_(int&, int*, double*);

@@ -69,12 +69,12 @@ c *as*      MSTJ(101) = 1
 C...Hadronization off
 c *as*      MSTJ(105) = IHADR
 c no hadronisation
-      MSTJ(105) = 0; 
-      MSTP(111) = 0;
+      MSTJ(105) = 0 
+      MSTP(111) = 0
 c no photon radiation
-      MSTJ(41)  = 1;
+      MSTJ(41)  = 1
 c no matrix element corrections in shower
-c      MSTJ(47)  = 0;
+c      MSTJ(47)  = 0
   
 c no isr
       MSTP(11) = 0
@@ -209,7 +209,7 @@ cc      CALL PYLIST(1)
       COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
 
 c no photon radiation
-      MSTJ(41)  = 1;  
+      MSTJ(41)  = 1  
 
 c     do a pythia event      
       call pyevnt

@@ -10,7 +10,7 @@ using namespace ISR;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
-
+using namespace std;
 
 
 ME_PS_Interface::ME_PS_Interface(ISR_Handler * _isr,int _number) :

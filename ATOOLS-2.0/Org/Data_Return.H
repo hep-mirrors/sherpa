@@ -21,7 +21,7 @@ namespace AORGTOOLS {
       std::cerr<<"*Error: "<<name<<" not defined in parameter file!!"<<std::endl;
       abort();
     } 
-    else return d;
+    return d;
   }
 
   template <> inline double             NotDefined<double>() { return UNDEF_DOUBLE; } 

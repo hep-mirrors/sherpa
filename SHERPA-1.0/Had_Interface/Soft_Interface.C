@@ -9,7 +9,7 @@ using namespace SHERPA;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
-
+using namespace std;
 
 Soft_Interface::Soft_Interface() {
   mypartons = new Parton_List;

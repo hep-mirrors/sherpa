@@ -7,6 +7,7 @@
 using namespace SHERPA;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
+using namespace std;
 
 extern "C" {
   void pyhepc_(int&);

@@ -53,7 +53,7 @@ using namespace AMEGIC;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
-
+using namespace std;
 
 //const double facycut=.125;
 const double facycut=.125;

@@ -6,6 +6,7 @@
 
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
+using namespace std;
 
 /*--------------------------------------------------------------------
 

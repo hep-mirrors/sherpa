@@ -4,6 +4,7 @@
 using namespace SHERPA;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
+using namespace std;
 
 extern "C" {
   void f2parton_(int&, int*, double*);
