@@ -23,7 +23,7 @@ namespace ATOOLS {
   public:
     Random(long nid): m_outstream(NULL) {SetSeed(nid);}
     
-    inline double Get() {return Ran3();}
+    inline double Get() {return Ran2(&m_id);}
     inline double GetNZ() {      // not zero random number
       double ran1;
       do {
