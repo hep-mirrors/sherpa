@@ -476,8 +476,8 @@ bool Timelike_Kinematics::ArrangeColourPartners(Particle * aup,Knot * d1,Knot * 
   if (!aup) return 0;
   if (!d1) return 0;
   if (!d2) return 0;
-  if (jf->PTij(aup->Momentum(),d1->part->Momentum()) <
-      jf->PTij(aup->Momentum(),d2->part->Momentum()) ) {
+  if (jf->MTij2(aup->Momentum(),d1->part->Momentum()) <
+      jf->MTij2(aup->Momentum(),d2->part->Momentum()) ) {
     return 0;
   }
   return 1;
