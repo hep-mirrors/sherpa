@@ -49,11 +49,13 @@ namespace PHASIC {
 
     long unsigned int m_n;
 
-    double   m_last, m_lastlumi, m_lastdxs, m_max;
-    double   m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
-    double   m_ssum, m_ssumsqr,m_smax,m_ssigma2;
+    double m_last, m_lastlumi, m_lastdxs, m_max;
+    double m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
+    double m_ssum, m_ssumsqr,m_smax,m_ssigma2;
+
     std::vector<double> m_vsmax;
     std::vector<long unsigned int> m_vsn;
+
     long unsigned int m_sn;
 
     bool m_swaped;
@@ -68,15 +70,19 @@ namespace PHASIC {
     ATOOLS::Cut_Data            *p_cuts;
 
     bool m_ownselector;
+
   protected:
-    double         TotalResult();
-    double         TotalVar();
+
+    double TotalResult();
+    double TotalVar();
 
   public:
 
     // constructor
-    Integrable_Base(const size_t nin=0,const size_t nout=0,const ATOOLS::Flavour *flavours=NULL,
-		    const int scalescheme=0,const int kfactorscheme=0,const double scalefactor=1.,
+    Integrable_Base(const size_t nin=0,const size_t nout=0,
+		    const ATOOLS::Flavour *flavours=NULL,
+		    const int scalescheme=0,const int kfactorscheme=0,
+		    const double scalefactor=1.,
 		    BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL,
 		    ATOOLS::Selector_Data *const selectordata=NULL);
@@ -121,9 +127,12 @@ namespace PHASIC {
     // inline functions
     inline void SetName(const std::string &name) { m_name=name; }
 
-    inline void SetScaleScheme(const int scalescheme)     { m_scalescheme=scalescheme;     }
-    inline void SetKFactorScheme(const int kfactorscheme) { m_kfactorscheme=kfactorscheme; }
-    inline void SetScaleFactor(const double scalefactor)  { m_scalefactor=scalefactor;     }
+    inline void SetScaleScheme(const int scalescheme)     
+    { m_scalescheme=scalescheme;     }
+    inline void SetKFactorScheme(const int kfactorscheme) 
+    { m_kfactorscheme=kfactorscheme; }
+    inline void SetScaleFactor(const double scalefactor)  
+    { m_scalefactor=scalefactor;     }
 
     inline void SetTotalXS(const double totalxs)   { m_totalxs=totalxs;    }
     inline void SetTotalError(const double error)  { m_totalerr=error;     }
@@ -137,9 +146,11 @@ namespace PHASIC {
 
     inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
 
-    inline void SetScale(const double scale,const stp::id type) { m_scale[type]=scale; }
+    inline void SetScale(const double scale,const stp::id type) 
+    { m_scale[type]=scale; }
 
-    inline void SetSelected(Integrable_Base *const selected) { p_selected=selected; }
+    inline void SetSelected(Integrable_Base *const selected) 
+    { p_selected=selected; }
     
     inline size_t NIn() const     { return m_nin;     }
     inline size_t NOut() const    { return m_nout;    }
@@ -168,7 +179,8 @@ namespace PHASIC {
     inline int    ScaleScheme() const   { return m_scalescheme;   }
     inline double ScaleFactor() const   { return m_scalefactor;   }
 
-    inline const double Scale(const stp::id type=stp::as) { return m_scale[type]; }
+    inline const double Scale(const stp::id type=stp::as) 
+    { return m_scale[type]; }
 
     inline int InSwaped() const { return m_swaped; }
 
@@ -177,8 +189,10 @@ namespace PHASIC {
     inline ATOOLS::Cut_Data      *const Cuts() const     { return p_cuts;     }
     inline ATOOLS::Selector_Base *const Selector() const { return p_selector; }
 
-    inline BEAM::Beam_Spectra_Handler *const Beam() const { return p_beamhandler; }
-    inline PDF::ISR_Handler           *const ISR() const  { return p_isrhandler;  }
+    inline BEAM::Beam_Spectra_Handler *const Beam() const 
+    { return p_beamhandler; }
+    inline PDF::ISR_Handler           *const ISR() const  
+    { return p_isrhandler;  }
 
     inline Phase_Space_Handler *const PSHandler(const bool own=true) 
     { if (own) return p_pshandler; return p_activepshandler; }

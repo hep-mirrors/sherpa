@@ -16,7 +16,8 @@ namespace PHASIC {
     unsigned long ntrial;
     
     // constructor
-    Weight_Info(const double _weight, const unsigned long _ntrial):
+    Weight_Info(const double _weight, 
+		const unsigned long _ntrial):
       weight(_weight), 
       ntrial(_ntrial) {}
 
@@ -55,7 +56,7 @@ namespace PHASIC {
 
     long int m_trials, m_maxtrials, m_sumtrials, m_events;
 
-    double m_E, m_m[2], m_m2[2], m_s, m_smin;
+    double m_E, m_m[2], m_m2[2], m_s, m_smin, m_psweight;
     double m_result_1, m_result_2, m_flux, m_weight, m_error; 
 
     bool MakeIncoming(ATOOLS::Vec4D *const p,const double mass=-1.);
@@ -82,13 +83,15 @@ namespace PHASIC {
   public:
 
     //constructor
-    Phase_Space_Handler(Integrable_Base *,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
+    Phase_Space_Handler(Integrable_Base *,PDF::ISR_Handler *,
+			BEAM::Beam_Spectra_Handler *);
 
     //destructor
     ~Phase_Space_Handler();
 
     // member functions
-    Single_Channel * SetChannel(int,int,ATOOLS::Flavour* fl,std::string&,ATOOLS::Integration_Info * const);
+    Single_Channel * SetChannel(int,int,ATOOLS::Flavour *fl,
+				std::string&,ATOOLS::Integration_Info *const);
     void WriteOut(const std::string &path);
     bool ReadIn(const std::string &path,const size_t exclude=0);
     bool InitIncoming(const double mass=-1.);
@@ -108,6 +111,13 @@ namespace PHASIC {
     void AddPoint(const double xs);
     void TestPoint(ATOOLS::Vec4D *const p);
 
+    void ISRChannels(const int i,Channel_Info &ci) const; 
+    void BeamChannels(const int i,Channel_Info &ci) const;
+
+    static ATOOLS::Integration_Info *const GetInfo();
+
+    static void DeleteInfo();
+
     // inline functions
     inline ATOOLS::Vec4D *const    Point() const { return p_lab;      }
     inline ATOOLS::Flavour *const  Flavs() const { return p_flavours; }
@@ -116,20 +126,32 @@ namespace PHASIC {
     inline double Weight() const { return m_weight;   }
     inline double Error() const  { return m_error;    }
  
-    inline Multi_Channel *const BeamIntegrator() const  { return p_beamchannels; }
-    inline Multi_Channel *const KMRKPIntegrator() const { return p_kpchannels;   }
-    inline Multi_Channel *const KMRZIntegrator() const  { return p_zchannels;    }
-    inline Multi_Channel *const ISRIntegrator() const   { return p_isrchannels;  }
-    inline Multi_Channel *const FSRIntegrator() const   { return p_fsrchannels;  }
+    inline Multi_Channel *const BeamIntegrator() const  
+    { return p_beamchannels; }
+    inline Multi_Channel *const KMRKPIntegrator() const 
+    { return p_kpchannels;   }
+    inline Multi_Channel *const KMRZIntegrator() const  
+    { return p_zchannels;    }
+    inline Multi_Channel *const ISRIntegrator() const   
+    { return p_isrchannels;  }
+    inline Multi_Channel *const FSRIntegrator() const   
+    { return p_fsrchannels;  }
 
-    inline Single_Channel *const FSRIntegrator(const int i) { return p_fsrchannels->Channel(i); }
-    std::list<std::string>* GetChannelLibNames() {return p_channellibnames;}
+    inline Single_Channel *const FSRIntegrator(const int i) 
+    { return p_fsrchannels->Channel(i); }
+    std::list<std::string>* GetChannelLibNames() 
+    {return p_channellibnames;}
 
-    inline int NumberOfBeamIntegrators() const  { return p_beamchannels->Number(); }
-    inline int NumberOfISRIntegrators() const   { return p_isrchannels->Number();  }
-    inline int NumberOfKMRKPIntegrators() const { return p_kpchannels->Number();   }
-    inline int NumberOfKMRZIntegrators() const  { return p_zchannels->Number();    }
-    inline int NumberOfFSRIntegrators() const   { return p_fsrchannels->Number();  }
+    inline int NumberOfBeamIntegrators() const  
+    { return p_beamchannels->Number(); }
+    inline int NumberOfISRIntegrators() const   
+    { return p_isrchannels->Number();  }
+    inline int NumberOfKMRKPIntegrators() const 
+    { return p_kpchannels->Number();   }
+    inline int NumberOfKMRZIntegrators() const  
+    { return p_zchannels->Number();    }
+    inline int NumberOfFSRIntegrators() const   
+    { return p_fsrchannels->Number();  }
 
     inline channelinfos &BeamParameters() { return m_beamparams; } 
     inline channelinfos &ISRParameters()  { return m_isrparams;  } 
@@ -140,12 +162,7 @@ namespace PHASIC {
 
     inline void SetError(const double error) { m_error=error; }
 
-    void ISRChannels(const int i,Channel_Info &ci) const; 
-    void BeamChannels(const int i,Channel_Info &ci) const;
-
-    static ATOOLS::Integration_Info *const GetInfo();
-
-    static void DeleteInfo();
+    inline double PSWeight() const { return m_psweight; }
 
   };// end of class Phase_Space_Handler
 
