@@ -24,8 +24,8 @@ namespace ATOOLS {
     bool            m_io;
     int             m_mode;
     std::string     m_path, m_file;
-    std::ofstream * p_outstream;
     std::ifstream * p_instream;
+    std::ofstream * p_outstream;
 
     ATOOLS::Particle_Int_Map m_convertS2H;
     Translation_Map          m_convertH2S;
