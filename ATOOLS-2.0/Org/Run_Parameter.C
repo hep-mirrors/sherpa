@@ -18,10 +18,10 @@ Run_Parameter::Run_Parameter()
   gen.p_model     = NULL;
 } 
 
-void Run_Parameter::Init(std::string _path,int argc,char* argv[])
+void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
 {
-  path        = _path;
-  Data_Read dr(path+std::string("/Run.dat"));
+  m_path        = path;
+  Data_Read dr(m_path+file);
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);

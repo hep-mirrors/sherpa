@@ -87,12 +87,13 @@ namespace ATOOLS {
 
   class Data_Read {
     //associative map (parameter name and coresponding value)
-    Parameter_Map parameters;
-    
-    void FillIn(char * dummy) ;
+    Parameter_Map m_parameters;
+    static Parameter_Map s_commandlineparameters;
+    void FillIn(std::string buffer) ;
     void Shorten(std::string& str);
     // returns sum of digits
     int Crossfoot(std::string name);
+    void AddCommandLine();
   public:
     Data_Read(std::string filename);
     void ReadIn(std::string filename);
@@ -105,8 +106,10 @@ namespace ATOOLS {
       Type GetValue(std::string name,Type default_value);
 
     //    template <class Type> 
-      void SetValue(std::string name, std::string value);
-  
+    void SetValue(std::string name, std::string value);
+
+    static void SetCommandLine(std::string name, std::string value);
+
     std::string GenerateKey();
   };  
 

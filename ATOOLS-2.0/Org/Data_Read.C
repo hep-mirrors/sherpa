@@ -5,11 +5,13 @@
 
 using namespace ATOOLS;
 using namespace std;
+// static
+Parameter_Map ATOOLS::Data_Read::s_commandlineparameters;
 
 void Data_Read::SetValue(std::string name, std::string value) {
   Shorten(name);
   Shorten(value);
-  parameters[name]=value;
+  m_parameters[name]=value;
 }
 
 // definition
@@ -28,7 +30,7 @@ Type  Data_Read::GetValue(std::string name, Type default_value) {
   str<<default_value;
   str>>default_value_str;
 
-  parameters[name]=default_value_str;
+  m_parameters[name]=default_value_str;
   return default_value;
 }
 
@@ -38,10 +40,10 @@ Type  Data_Read::GetValue(std::string name) {
   Type invar;
   if (name.length()==0) return NotDefined<Type>();
 
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<Type>();
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<Type>();
 
-  std::string value = parameters[name];
+  std::string value = m_parameters[name];
   if (value.length()==0) return NotDefined<Type>();
   
   MyStrStream str;      
@@ -55,9 +57,8 @@ Data_Read::Data_Read(std::string filename) {
 }
 
 
-void Data_Read::FillIn(char * dummy) {
-  if (dummy[0]!='!' && strlen(dummy)>0) {
-    std::string buffer(dummy);
+void Data_Read::FillIn(std::string buffer) {
+  if (buffer.length()>0 && buffer[0]!='!') {
     int hit = buffer.find(std::string("="));
     if (hit!=-1) {
       std::string name = buffer.substr(0,hit);
@@ -66,38 +67,52 @@ void Data_Read::FillIn(char * dummy) {
       int hit = value.find(std::string("!"));
       if (hit!=-1) value = value.substr(0,hit);
       Shorten(value);
-      parameters[name]=value;
+      m_parameters[name]=value;
     }
   }
 }
 
 void Data_Read::ReadIn(std::string filename) {
+  msg.Debugging()<<"reading "<<filename<<endl;
   std::ifstream file;
   file.open(filename.c_str());
   if (!file.good()) {
     msg.Error()<< " ERROR: opening " << filename <<endl;
     exit (-1);
   }
-  char dummy[256];
+  std::string dummy;
       
   for (;file;) {
-    file.getline(dummy,256);
+    getline(file,dummy);
     FillIn(dummy); 
   }
   file.close();
+
+  AddCommandLine();
 }
 
+void Data_Read::SetCommandLine(std::string name, std::string value)
+{
+  s_commandlineparameters[name]=value;
+}
 
+void Data_Read::AddCommandLine()
+{
+  for (Parameter_Iterator it = s_commandlineparameters.begin(); it!=s_commandlineparameters.end() ; ++it) {
+    msg.Debugging()<<" adding command line parameter : "<<it->first<<" = "<<it->second<<endl;
+    m_parameters[it->first]=it->second;
+  }
+}
 
 
 
 // definition  (specialisation), explicit instanciation
 template <> std::string Data_Read::GetValue<std::string>(std::string name) {
   Shorten(name);
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<std::string>();
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<std::string>();
 
-  std::string value = parameters[name];
+  std::string value = m_parameters[name];
   std::string invar;
 
   if (value.length()==0)         return NotDefined<std::string>();
@@ -107,10 +122,10 @@ template <> std::string Data_Read::GetValue<std::string>(std::string name) {
 
 template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   Shorten(name);
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<Switch::code>();
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<Switch::code>();
 
-  std::string value = parameters[name];
+  std::string value = m_parameters[name];
 
   if (value.length()==0)         return NotDefined<Switch::code>();
   if (value==std::string("On"))  return Switch::On;
@@ -124,9 +139,9 @@ template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
 // Beams
 template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string name) {
   Shorten(name);
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<Beam_Type::code>();
-  std::string value = parameters[name];
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<Beam_Type::code>();
+  std::string value = m_parameters[name];
   
   if (value==std::string("Monochromatic"))        return Beam_Type::Monochromatic;    
   if (value==std::string("Gaussian"))             return Beam_Type::Gaussian;    
@@ -140,9 +155,9 @@ template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string nam
 
 template <> Beam_Generator::code Data_Read::GetValue<Beam_Generator::code>(std::string name) {
   Shorten(name);
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<Beam_Generator::code>();
-  std::string value = parameters[name];
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<Beam_Generator::code>();
+  std::string value = m_parameters[name];
   
   if (value==std::string("Internal"))  return Beam_Generator::Internal;
     
@@ -156,9 +171,9 @@ template <> Beam_Generator::code Data_Read::GetValue<Beam_Generator::code>(std::
 
 template <> Beam_Shape::code Data_Read::GetValue<Beam_Shape::code>(std::string name) {
   Shorten(name);
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<Beam_Shape::code>();
-  std::string value = parameters[name];
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<Beam_Shape::code>();
+  std::string value = m_parameters[name];
   
   if (value==std::string("Cylinder"))          return Beam_Shape::Cylinder;
   if (value==std::string("Gaussian_Cylinder")) return Beam_Shape::Gaussian_Cylinder;
@@ -172,10 +187,10 @@ template <> Beam_Shape::code Data_Read::GetValue<Beam_Shape::code>(std::string n
 
 template <> ISR_Type::code Data_Read::GetValue<ISR_Type::code>(std::string name) {
   Shorten(name);
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<ISR_Type::code>();
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<ISR_Type::code>();
 
-  std::string value = parameters[name];
+  std::string value = m_parameters[name];
   
   if (value==std::string("No"))                   return ISR_Type::No;    
   if (value==std::string("simple Struct"))        return ISR_Type::Simple_Struc;    
@@ -195,10 +210,10 @@ template <> ISR_Type::code Data_Read::GetValue<ISR_Type::code>(std::string name)
 
 template <> String_Type::code Data_Read::GetValue<String_Type::code>(std::string name) {
   Shorten(name);
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<String_Type::code>();
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<String_Type::code>();
 
-  std::string value = parameters[name];
+  std::string value = m_parameters[name];
 
   if (value==std::string("NoString")) return String_Type::NoString;    
   if (value==std::string("String"))   return String_Type::String;    
@@ -212,10 +227,10 @@ template <> String_Type::code Data_Read::GetValue<String_Type::code>(std::string
 // definition (specialisation), explicit instanciation
 template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string name) {
   Shorten(name);
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<Model_Type::code>();
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<Model_Type::code>();
 
-  std::string value = parameters[name];
+  std::string value = m_parameters[name];
   if (value==std::string("pure_QCD")) return Model_Type::pure_QCD;
   if (value==std::string("QCD"))      return Model_Type::QCD;
   if (value==std::string("pure_EW"))  return Model_Type::pure_EW;
@@ -232,15 +247,15 @@ template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string n
 template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   Shorten(name);
   
-  Parameter_Map::const_iterator cit=parameters.find(name);
-  if (cit==parameters.end()) return  NotDefined<Flavour>();
+  Parameter_Map::const_iterator cit=m_parameters.find(name);
+  if (cit==m_parameters.end()) return  NotDefined<Flavour>();
   if (!kf_table.IsInitialised()) {
     msg.Error()<<"Warning in Flavour Data_Read::GetValue."<<endl
 	       <<"   kf table not initialized yet. Return undefined flavour."<<endl;
     return NotDefined<Flavour>();
   }
 
-  std::string value = parameters[name];
+  std::string value = m_parameters[name];
   bool anti= 0;  // 0 = particle;  1 = anti-particle
                  // looking for "anti-" statement
   int hit = value.find(std::string("anti-"));
@@ -299,7 +314,7 @@ string Data_Read::GenerateKey() {
   // * make partitions of parameters that have been used and those that have not been used.
 
   int sum=0;
-  for (Parameter_Iterator it = parameters.begin(); it!=parameters.end() ; ++it) {
+  for (Parameter_Iterator it = m_parameters.begin(); it!=m_parameters.end() ; ++it) {
     int id= ((Crossfoot(it->first)&0xff)*Crossfoot(it->second))&0xffffff;
     sum^=id;
   }
@@ -308,7 +323,7 @@ string Data_Read::GenerateKey() {
   MyStrStream str;  
   string key;
   str.setf(ios::hex, ios::basefield);
-  str<<(parameters.size() & 255);
+  str<<(m_parameters.size() & 255);
   Model_Type::code m = GetValue<Model_Type::code>("MODEL");
   str<<"_";
   if (m!=Model_Type::Unknown) {
@@ -347,7 +362,7 @@ void Data_Read::WriteOut(std::string filename,int flag) {
   file<<"!======================================== "<<endl;
   
   // write out map content
-  for (Parameter_Iterator it = parameters.begin(); it!=parameters.end() ; ++it) {
+  for (Parameter_Iterator it = m_parameters.begin(); it!=m_parameters.end() ; ++it) {
     file<<" "<<it->first<<" = "<<it->second<<endl;
   }
   file.close();

@@ -20,11 +20,11 @@
 namespace ATOOLS {  
 
   class Run_Parameter {
-    std::string         path;
+    std::string         m_path, m_file;
   public:
     Run_Parameter();
     ~Run_Parameter();
-    void Init(std::string,int argc=0,char* argv[]=0);
+    void Init(std::string,std::string,int argc=0,char* argv[]=0);
     
     class Gen {  // general parameters
       int                 m_output, m_analysis, m_cutscheme;
@@ -87,8 +87,8 @@ namespace ATOOLS {
     double Picobarn()                       { return 3.89379656e8;} // pb/GeV^2
     double c()                              { return 299792458.e3;} // mm/s
     double hBar()                           { return 6.58211889e-25;} // GeV s
-    std::string GetPath()                   { return path;} 
-    std::string SetPath(std::string _path)  { return path = _path;} 
+    std::string GetPath()                   { return m_path;} 
+    std::string SetPath(std::string path)   { return m_path = path;} 
   };
 
   extern Run_Parameter rpa;
