@@ -5,23 +5,33 @@
 #include "Particle.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#ifdef EXPORT__AlphaS
+#include "Running_AlphaS.H"
+#endif
+
 
 using namespace SHERPA;
-
-inline void MakeFortranString(char *output,std::string input,unsigned int length)
-{
-  for (unsigned int i=0;i<length;++i) output[i]=(char)32;
-  for (size_t j=0;j<input.length();++j) output[j]=(char)input[j];
-}
 
 Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   m_path(_m_path),
   m_file(_m_file)
 {
-  SetType("Perturbative");
-  SetName("The Lund Monte Carlo");
   double win;
-  std::string frame, beam, target;
+  std::string beam[2], frame("CMS");
+  for (size_t i=0;i<2;++i) {
+    ATOOLS::Flavour flav;
+    if (i==0) flav=ATOOLS::rpa.gen.Beam1();
+    else flav=ATOOLS::rpa.gen.Beam1();
+    if (flav==ATOOLS::kf::e) {
+      if (flav.IsAnti()) beam[i]=std::string("e-");
+      else beam[i]=std::string("e+");
+    }
+    else {
+      if (flav.IsAnti()) beam[i]=std::string("p-");
+      else beam[i]=std::string("p+");
+    }
+  }
+  win=ATOOLS::rpa.gen.Ecms();
   std::vector<std::vector<double> > help;
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetMatrixType(reader->MTransposed);
@@ -30,11 +40,6 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   reader->AddIgnore("(");
   reader->AddIgnore(")");
   reader->AddIgnore(",");
-  if (!reader->ReadFromFile(frame,"FRAME")) frame=std::string("CMS");
-  if (!reader->ReadFromFile(beam,"BEAM")) beam=std::string("P+");
-  if (!reader->ReadFromFile(target,"TARGET")) target=std::string("PBAR-");
-  if (!reader->ReadFromFile(win,"WIN")) win=1800.0;
-  ATOOLS::rpa.gen.SetEcms(win);
   if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
   reader->MatrixFromFile(help,"MSUB");
   for (size_t i=0;i<help.size();++i) {
@@ -76,16 +81,18 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.paru[(int)help[i][0]-1]=help[i][1];
   }
-  pyinit(frame.c_str(),beam.c_str(),target.c_str(),win);
+  // the next lines replace the apyinit_ call
+  hepevt.nhep=100;
+  for (int i=pydat3.mdcy[23-1][2-1];i<pydat3.mdcy[23-1][2-1]+pydat3.mdcy[23-1][3-1];++i) {
+    if (abs(pydat3.kfdp[i-1][1-1])>=2) pydat3.mdme[i-1][1-1]=ATOOLS::Min(0,pydat3.mdme[i-1][1-1]);
+  }
+  // replacement ends here
+  pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
   if (ATOOLS::msg.Level()>2) ListLundParameters();
   delete reader;
 }
 
 Lund_Interface::~Lund_Interface()
-{
-}
-
-void Lund_Interface::CleanUp()
 {
 }
 
@@ -172,24 +179,165 @@ bool Lund_Interface::DeleteObsolete(std::map<int,ATOOLS::Particle*> &converted)
   return true;
 }
 
-bool Lund_Interface::ConvertEvent(ATOOLS::Blob_List *blobs)
+bool Lund_Interface::ConvertEvent(ATOOLS::Blob_List *bloblist)
 {
   if (ATOOLS::msg.Level()>2) pylist(1);
   bool success=true;
   std::map<int,ATOOLS::Particle*> converted;
-  blobs->clear();
+  bloblist->clear();
   success=success&&ConvertParticles(converted);
-  success=success&&ConstructBlobs(blobs,converted);
-  success=success&&SetTypes(blobs);
+  success=success&&ConstructBlobs(bloblist,converted);
+  success=success&&SetTypes(bloblist);
   success=success&&DeleteObsolete(converted);
   return success;
 }
 
-bool Lund_Interface::Treat(ATOOLS::Blob_List *blobs,double &weight)
+bool Lund_Interface::Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
+			       ATOOLS::Particle_List *pl) 
 {
-  pyevnt();
+  int nhep = 0;
+  blob->SetType("Fragmentation (Lund : Pythia 6.214)");
+  if (nhep==0) {
+    hepevt.idhep[nhep]=ATOOLS::Flavour(ATOOLS::kf::photon).HepEvt();
+    for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=blob->CMS()[j];
+    hepevt.phep[nhep][3]=blob->CMS()[0];
+    double pabs=(blob->CMS()).Abs2();
+    if (pabs<0) hepevt.phep[nhep][4]=0.0;
+    else hepevt.phep[nhep][4]=sqrt(pabs);
+    for (short int j=0;j<4;++j) hepevt.vhep[nhep][j]=0.0;
+    hepevt.isthep[nhep]=1;
+    hepevt.jmohep[nhep][0]=0;
+    hepevt.jmohep[nhep][1]=0;
+    hepevt.jdahep[nhep][0]=0;
+    hepevt.jdahep[nhep][1]=0;
+  }
+  for (int i=0;i<blob->NInP();++i) {
+    AddPartonToString(blob->InParticle(i),nhep);
+  }
+  int dummy=2;
+  // the next lines replace the finterf_ call
+  hepevt.nevhep=0;
+  hepevt.nhep=nhep;
+  pyhepc(2);
+  pydat1.mstu[70-1]=1;
+  pydat1.mstu[71-1]=hepevt.nhep;
+  pyexec();
   pyhepc(1);
-  weight*=pypars.pari[10];
-  bool success=!ConvertEvent(blobs);
-  return success;
-} 
+  pydat1.mstu[70-1]=2;
+  pydat1.mstu[72-1]=hepevt.nhep;
+  // replacement ends here
+  if (ATOOLS::rpa.gen.Debugging()) {
+    ATOOLS::msg.Tracking()<<"Lund_Interface::Hadronize(..): Passed hadronisation (pythia 6.214)."<<std::endl;
+    pylist(dummy);
+    ATOOLS::msg.Out()<<std::endl<<std::endl;
+  }
+  FillPrimaryHadronsInBlob(blob,bloblist,pl);
+  return true;
+}
+
+void Lund_Interface::AddPartonToString(ATOOLS::Particle *parton,int &nhep)
+{
+  hepevt.idhep[nhep]=parton->Flav().HepEvt();
+  for (short int j=1; j<4; ++j) hepevt.phep[nhep][j-1]=parton->Momentum()[j];
+  hepevt.phep[nhep][3]=parton->Momentum()[0];
+  double pabs=(parton->Momentum()).Abs2();
+  if (pabs<0) hepevt.phep[nhep][4]=0.0;
+  else hepevt.phep[nhep][4]=sqrt(pabs);
+  for (short int j=1;j<4;++j) {
+    hepevt.vhep[nhep][j-1]=parton->XProd()[j];
+    hepevt.vhep[nhep][3]=parton->XProd()[j];
+  }
+  hepevt.isthep[nhep]=1;
+  hepevt.jmohep[nhep][0]=0;
+  hepevt.jmohep[nhep][1]=0;
+  hepevt.jdahep[nhep][0]=0;
+  hepevt.jdahep[nhep][1]=0;
+  nhep++;
+}
+
+void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
+					      ATOOLS::Particle_List *pl)
+{
+  ATOOLS::Blob *decay;
+  ATOOLS::Particle *particle;
+  ATOOLS::Flavour flav;
+  ATOOLS::Vec4D momentum, position;
+  int number;
+  for (int i=0;i<hepevt.nhep;++i) {
+    if ((hepevt.isthep[i]!=2)&&(hepevt.isthep[i]!=1)&&(hepevt.isthep[i]!=149)) continue;
+    flav.FromHepEvt(hepevt.idhep[i]);
+    if (flav==ATOOLS::Flavour(ATOOLS::kf::string) || 
+	flav==ATOOLS::Flavour(ATOOLS::kf::cluster)) {
+      for (int j=hepevt.jdahep[i][0]-1;j<hepevt.jdahep[i][1];j++) {
+	// flav=Flavour(ATOOLS::kf::code(abs(hepevt.idhep[j])));
+	// if (hepevt.idhep[j]<0) flav=flav.Bar();
+	flav.FromHepEvt(hepevt.idhep[j]);
+	if (!flav.IsHadron()) continue;
+	momentum=ATOOLS::Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
+			       hepevt.phep[j][1],hepevt.phep[j][2]);
+	position=ATOOLS::Vec4D(hepevt.vhep[j][3],hepevt.vhep[j][0],
+			       hepevt.vhep[j][1],hepevt.vhep[j][2]);
+	particle = new ATOOLS::Particle(-1,flav,momentum);
+	if (pl) number=pl->size();
+	else number=(long int)(particle);
+	particle->SetNumber(number);
+	particle->SetStatus(1);
+	particle->SetInfo('P');
+	blob->SetPosition(position);
+	if (pl) pl->push_back(particle);
+	blob->AddToOutParticles(particle);
+	if (hepevt.jdahep[j][0]!=0 && hepevt.jdahep[j][1]!=0) {
+	  decay = new ATOOLS::Blob();
+	  decay->SetStatus(1);
+	  decay->SetType(std::string("Hadron decay"));
+	  decay->SetId(bloblist->size());
+	  decay->AddToInParticles(particle);
+	  if (particle->Info()=='P') particle->SetInfo('p');
+	  if (particle->Info()=='D') particle->SetInfo('d');
+	  bloblist->push_back(decay);
+	  FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[j][0]-1,hepevt.jdahep[j][1],pl);
+	}
+      }
+    }
+  }
+  blob->SetStatus(0);
+}
+
+void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
+						int daughter1,int daughter2,ATOOLS::Particle_List *pl) 
+{
+  ATOOLS::Blob *decay;
+  ATOOLS::Particle *particle;
+  ATOOLS::Flavour flav;
+  ATOOLS::Vec4D momentum, position;
+  int number;
+  for (int i=daughter1;i<daughter2;++i) {
+    //flav=Flavour(ATOOLS::kf::code(abs(hepevt.idhep[i])));
+    //if ((*(kfjet+i))<0) flav=flav.Bar();
+    flav.FromHepEvt(hepevt.idhep[i]);
+    momentum=ATOOLS::Vec4D(hepevt.phep[i][3],hepevt.phep[i][0],
+			   hepevt.phep[i][1],hepevt.phep[i][2]);
+    position=ATOOLS::Vec4D(hepevt.vhep[i][3],hepevt.vhep[i][0],
+			   hepevt.vhep[i][1],hepevt.vhep[i][2]);
+    particle = new ATOOLS::Particle(-1,flav,momentum);
+    if (pl) number=pl->size();
+    else number=(long int)(particle);
+    particle->SetNumber(number);
+    particle->SetStatus(1);
+    particle->SetInfo('D');
+    blob->SetPosition(position);
+    if (pl) pl->push_back(particle);
+    blob->AddToOutParticles(particle);
+    if (hepevt.jdahep[i][0]!=0 && hepevt.jdahep[i][1]!=0) {
+      decay = new ATOOLS::Blob();
+      decay->SetStatus(1);
+      decay->SetType(std::string("Hadron decay"));
+      decay->SetId(bloblist->size());
+      decay->AddToInParticles(particle);
+      if (particle->Info()=='P') particle->SetInfo('p');
+      if (particle->Info()=='D') particle->SetInfo('d');
+      bloblist->push_back(decay);
+      FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[i][0]-1,hepevt.jdahep[i][1],pl);
+    }
+  }
+}

@@ -1,16 +1,24 @@
 #ifndef Lund_Wrapper_H
 #define Lund_Wrapper_H
 
+#ifdef EXPORT__AlphaS
+#include "Running_AlphaS.H"
+#endif
+
 extern "C" {
   void pyhepc_(int*);
   void pyinit_(const char*,const char*,const char*,double*,int,int,int);
   void pyevnt_();
+  void pyexec_();
   void pyinki_(int*);
   void pyinpr_();
   void pylist_(int*);
   void pyplst_();
   void pymult_(int*);
   double pyalps_(double*);
+#ifdef EXPORT__AlphaS
+  double shalps_(double*);
+#endif
 }
 
 extern struct {
@@ -28,6 +36,10 @@ void pyinit(const char *frame,const char *beam,const char *target,double win) {
 
 void pyevnt() { 
   pyevnt_(); 
+}
+
+void pyexec() { 
+  pyexec_(); 
 }
 
 void pyinki(int modki) { 
@@ -49,6 +61,12 @@ void pymult(int mmul) {
 double pyalps(double q2) {
   return pyalps_(&q2);
 }
+
+#ifdef EXPORT__AlphaS
+double shalps_(double *q2) {
+  return (*MODEL::as)(*q2);
+}
+#endif
 
 void ListLundParameters() { 
   pyplst_(); 
