@@ -488,23 +488,26 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
   group->SetScaleScheme(m_scalescheme);
   group->SetKFactorScheme(m_kfactorscheme);
   p_processes->PushBack(group);
-  std::vector<std::string> comments;
-  comments.push_back(std::string("processes : ")+processname);
+  m_comments.clear();
+  m_comments.push_back(std::string("processes : ")+processname);
   GridHandlerVector gridhandler=GridHandlerVector(2);
   for (unsigned int i=0;i<gridhandler.size();++i) gridhandler[i] = new GridHandlerType();
-  GridCreatorType *gridcreator = new GridCreatorType(gridhandler,p_processes);
-  gridcreator->ReadInArguments(InputFile(),InputPath());
+  p_gridcreator = new GridCreatorType(gridhandler,p_processes);
+  p_gridcreator->ReadInArguments(InputFile(),InputPath());
   if (mkdir(OutputPath().c_str(),448)==0) {
     ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
 		     <<"Created output directory "<<OutputPath()<<"."<<std::endl;
   }
-  gridcreator->SetXSExtension(m_xsextension);
-  gridcreator->SetMaxExtension(m_maxextension);
-  gridcreator->SetOutputPath(OutputPath());
-  gridcreator->SetOutputFile(filename);
-  gridcreator->CreateGrid();
-  gridcreator->WriteOutGrid(comments);
-  delete gridcreator;
+  p_gridcreator->SetXSExtension(m_xsextension);
+  p_gridcreator->SetMaxExtension(m_maxextension);
+  p_gridcreator->SetOutputPath(OutputPath());
+  p_gridcreator->SetOutputFile(filename);
+  ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  p_gridcreator->CreateGrid();
+  p_gridcreator->WriteOutGrid(m_comments);
+  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+  m_comments.clear();
+  delete p_gridcreator;
   for (unsigned int i=0;i<gridhandler.size();++i) delete gridhandler[i];
   delete p_processes;
   p_processes=NULL;
@@ -951,3 +954,9 @@ void Simple_Chain::Update(const MI_Base *mibase)
 {
   return;
 }
+
+void Simple_Chain::PrepareTerminate() 
+{
+  p_gridcreator->WriteOutGrid(m_comments);
+}
+

@@ -24,11 +24,13 @@ namespace AMISIC {
   private:
 
     std::vector<ATOOLS::Blob_List>  m_blobs;
-    std::vector<std::string>        m_filename, m_processname;
+    std::vector<std::string>        m_filename, m_processname, m_comments;
     std::vector<bool>               m_create;
     std::vector<GridFunctionType*>  m_differential, m_maximum;
     GridResultType                  m_norm;
     GridFunctionType               *p_total;
+
+    GridCreatorType *p_gridcreator;
 
     std::string m_environmentfile, m_xsfile;
     std::string m_xsextension, m_maxextension;
@@ -59,6 +61,7 @@ namespace AMISIC {
     bool InitializeBlobList();
 
     bool FillBlob(ATOOLS::Blob *blob);
+    void PrepareTerminate();
 
   public:
 

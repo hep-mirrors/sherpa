@@ -3,6 +3,7 @@
 
 #include "File_IO_Base.H"
 #include "Blob_List.H"
+#include "Exception.H"
 #include <map>
 
 #ifdef USING__SHERPA
@@ -13,7 +14,7 @@ namespace EXTRAXS { class XS_Base; }
 
 namespace AMISIC {
 
-  class MI_Base: public ATOOLS::File_IO_Base {
+  class MI_Base: public ATOOLS::File_IO_Base, public ATOOLS::Terminator_Object {
   public:
 
     enum TypeID { HardEvent =  1,
