@@ -2,6 +2,7 @@
 #include "SimpleXS_Apacic_Interface.H"
 #include "SimpleXS_Adicic_Interface.H"
 #include "Amegic_Apacic_Interface.H"
+#include "MI_Base.H"
 
 #ifdef PROFILE__Jet_Evolution
 #include "prof.hh"
@@ -217,8 +218,8 @@ bool Jet_Evolution::DefineInitialConditions(const ATOOLS::Blob *blob,
 { 
   ResetInterfaces();
   // fetch maximum remnant energy from mi handler
-  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),2.,0);
-  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),2.,1);
+  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),AMISIC::MI_Base::StopScale(),0);
+  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),AMISIC::MI_Base::StopScale(),1);
   for (ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
        blit!=bloblist->end();++blit) {
     if (((*blit)->Type()==ATOOLS::btp::Signal_Process ||
