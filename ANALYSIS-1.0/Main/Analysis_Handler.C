@@ -141,7 +141,7 @@ bool Analysis_Handler::ReadIn()
     }
     success=true;
     msg_Info()<<"   new Primitive_Analysis(\""<<helpsv[0];
-    for (size_t j=1;j<helpsvv.size();++j) msg_Info()<<","<<helpsv[j];
+    for (size_t j=1;j<helpsv.size();++j) msg_Info()<<","<<helpsv[j];
     msg_Info()<<"\")\n";
     msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
     m_analyses.push_back(new ANALYSIS::Primitive_Analysis(ATOOLS::ToString(i),mode));
