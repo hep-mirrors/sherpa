@@ -31,7 +31,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
   for (int i=0;i<_seldata->Size();i++) {
     _seldata->Data(i,type,critflavs,help,rmin,rmax);
     init = 1;
-    for (int j=0;j<activetypes.size();j++) {
+    for (size_t j=0;j<activetypes.size();j++) {
       if (type==activetypes[j]) {
 	  if (type!=14) m_sels[j]->SetRange(critflavs,rmin,rmax);
 	  else          m_sels[j]->SetRange(critflavs,help,rmin,rmax);
@@ -137,7 +137,7 @@ bool Combined_Selector::Trigger(const Vec4D* p)
 {
   m_count++;
   if (!(m_count%1000000)) Output(); 
-  for (short int i=0; i<m_sels.size(); ++i) {
+  for (size_t i=0; i<m_sels.size(); ++i) {
     if (!(m_sels[i]->Trigger(p))) return 0;
   }
   return 1;
@@ -145,14 +145,14 @@ bool Combined_Selector::Trigger(const Vec4D* p)
 
 void Combined_Selector::BuildCuts(Cut_Data * cuts)
 {
-  for (short int i=0; i<m_sels.size(); ++i) 
+  for (size_t i=0; i<m_sels.size(); ++i) 
     if (!m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
 
   //smin update!!!
 
-  for (short int i=0; i<m_sels.size(); ++i) 
+  for (size_t i=0; i<m_sels.size(); ++i) 
     if (m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
-  for (short int i=0; i<m_sels.size(); ++i) 
+  for (size_t i=0; i<m_sels.size(); ++i) 
     if (m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
   cuts->Complete();
 }
@@ -161,7 +161,7 @@ void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 {
   cuts->Reset(NeedUpdate());
   if (NeedUpdate()) 
-    for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->UpdateCuts(sprime,y,cuts);
+    for (size_t i=0; i<m_sels.size(); ++i) m_sels[i]->UpdateCuts(sprime,y,cuts);
   cuts->Update(sprime,y);      
 }
 
@@ -169,7 +169,7 @@ void Combined_Selector::Output()
 {
   msg.Debugging()<<"========================================="<<std::endl
 			    <<"Efficiency of the Selector : "<<m_name<<std::endl;
-  for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->Output();
+  for (size_t i=0; i<m_sels.size(); ++i) m_sels[i]->Output();
   msg.Debugging()<<"========================================="<<std::endl;
 }
 
