@@ -148,3 +148,11 @@ void Combined_Selector::Output()
   for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->Output();
   msg.Debugging()<<"========================================="<<std::endl;
 }
+
+Selector_Base * Combined_Selector::GetSelector(std::string name)
+{
+  for (size_t i=0; i<m_sels.size(); ++i) 
+    if (m_sels[i]->Name()==name) return m_sels[i];
+  return 0;
+  
+}

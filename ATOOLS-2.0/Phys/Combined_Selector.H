@@ -18,6 +18,9 @@ namespace ATOOLS {
     void BuildCuts(Cut_Data *);
     void UpdateCuts(double,double,Cut_Data *);
     void Output();
+    size_t Size();
+    Selector_Base * operator[](size_t);
+    Selector_Base * GetSelector(std::string);
   };
 
 
@@ -33,6 +36,11 @@ namespace ATOOLS {
   play jointly. All methods have the same functionality as in the
   Selector_Base from which it is derived.
 */
+
+  inline size_t Combined_Selector::Size() { return m_sels.size(); }
+  inline Selector_Base * Combined_Selector::operator[](size_t i) { return m_sels[i]; }
+
+
 }
 
 #endif
