@@ -30,6 +30,15 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
 namespace ATOOLS {
 
   std::ostream& operator<<( std::ostream& ostr, const Blob & bl) {
+#ifdef __GNUC__
+#if __GNUC__ > 2
+  std::ios_base::fmtflags flags=ostr.flags();
+#else
+  std::ios::fmtflags flags=ostr.flags();
+#endif
+#else
+  std::ios::fmtflags flags=ostr.flags();
+#endif
     ostr<<std::setw(4)<<std::setprecision(4);
     ostr<<"Blob ["<<bl.Status()<<"]( "<<bl.Id()<<", "<<bl.Type()<<", ";
     //    ostr<<"Blob ( "<<bl.Id()<<", "<<bl.Type()<<", ";
@@ -47,11 +56,21 @@ namespace ATOOLS {
 	 part != bl.m_outparticles.end(); ++part) {
       ostr<<*part<<std::endl;
     }
+    ostr.setf(flags);
     return ostr;
   }
 
 
   std::ostream& operator<<( std::ostream& ostr,const  Blob * bl) {
+#ifdef __GNUC__
+#if __GNUC__ > 2
+  std::ios_base::fmtflags flags=ostr.flags();
+#else
+  std::ios::fmtflags flags=ostr.flags();
+#endif
+#else
+  std::ios::fmtflags flags=ostr.flags();
+#endif
     ostr<<std::setw(4)<<std::setprecision(4);
     ostr<<"Blob ["<<bl->Status()<<"]( "<<bl->Id()<<", "<<bl->Type()<<", ";
     if (bl->Beam() != -1) {
@@ -68,6 +87,7 @@ namespace ATOOLS {
 	 part != bl->m_outparticles.end(); ++part) {
       ostr<<*part<<std::endl;
     }
+    ostr.setf(flags);
     return ostr;
   }
 }

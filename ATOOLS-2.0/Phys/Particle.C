@@ -25,9 +25,19 @@ bool ATOOLS::Particle::operator==(Particle part)
 }
 
 std::ostream& ATOOLS::operator<<(std::ostream& str,Particle* part) {
+#ifdef __GNUC__
+#if __GNUC__ > 2
+  std::ios_base::fmtflags flags=str.flags();
+#else
+  std::ios::fmtflags flags=str.flags();
+#endif
+#else
+  std::ios::fmtflags flags=str.flags();
+#endif
   str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
   switch (part->Status()) {
   case 0 : // null entry
+    str.setf(flags);
     return str<<"--- empty entry ---"<<std::endl;
   case 1 : // active (final state) particle
   case 2 : // decayed or fragmented
@@ -41,17 +51,20 @@ std::ostream& ATOOLS::operator<<(std::ostream& str,Particle* part) {
     str<<std::setw(1)<<") ";
     break;
   case 3 : // documentation line
+    str.setf(flags);
     return     str<<"============================================================"<<std::endl
 		  <<"  "<<std::setw(3)<<part->Info()<<"  "<<std::setw(3)<<part->Status()<<std::setw(1)<<" "
 		  <<std::setw(22)<<part->Flav()<<std::setw(1)<<" "
 		  <<std::setw(10)<<part->Number()<<std::endl
 		  <<"============================================================"<<std::endl;
   default : // user defined or reserved
+    str.setf(flags);
     return str<<"--- unrecognized status:"<<part->Status()<<" ---"<<std::endl;
   }
   str<<std::setiosflags(std::ios::scientific)
      <<" ["<<part->Momentum()<<", "<<part->Momentum().Abs2()<<"]"
      <<" ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")";
+  str.setf(flags);
   return str;
 }
 
