@@ -13,6 +13,7 @@ namespace SHERPA {
     Sample_Analysis * p_analysis;
     int m_mode;
     int m_status;
+
   public:
     Analysis_Phase(Sample_Analysis *,int);
     bool Treat(ATOOLS::Blob_List *, double &);
@@ -27,7 +28,10 @@ namespace SHERPA {
     std::string m_path, m_file;
     ATOOLS::Primitive_Analysis * ana;
     std::vector<ATOOLS::Primitive_Observable_Base *> obs;
+    // ----- test only
   public:
+    static int m_njet;
+    static double m_pt_W;
     Sample_Analysis(std::string,std::string);
     ~Sample_Analysis();
     void Init();
