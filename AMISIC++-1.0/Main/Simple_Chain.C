@@ -391,10 +391,10 @@ bool Simple_Chain::ReadInData()
   SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
   comments.push_back("->");
-  comments.push_back("FOR");
+  comments.push_back("for");
   reader->AddIgnore(comments);
   std::vector<std::vector<std::string> > temp;
-  reader->MatrixFromFile(temp,"CREATE GRID");
+  reader->MatrixFromFile(temp,"CREATE_GRID");
   for (unsigned int i=0;i<temp.size();++i) {
     if (temp[i].size()>3) {
       if ((temp[i][0]==std::string("all"))&&
@@ -742,10 +742,6 @@ void Simple_Chain::CalculateSigmaND()
   SetNorm((xstot-xsel-2.0*xssd-xsdd)*1.0e9/ATOOLS::rpa.Picobarn());
 }
 
-#ifdef COMPARE__Pythia
-static double xsfudge=1.0;
-#endif
-
 bool Simple_Chain::CalculateTotal()
 {
   PROFILE_HERE;
@@ -797,12 +793,6 @@ bool Simple_Chain::CalculateTotal()
 		       <<" mb !"<<ATOOLS::om::reset<<std::endl;
   }
   p_total->ScaleY(1.0/m_norm);
-#ifdef COMPARE__Pythia
-  ATOOLS::msg.Error()<<"Simple_Chain::CalculateTotal(): "<<ATOOLS::om::red
-		     <<"Fudge factor is "<<xsfudge<<"."<<ATOOLS::om::reset<<std::endl;
-  m_sigmahard*=xsfudge;
-  p_total->ScaleY(xsfudge);
-#endif
 #ifdef DEBUG__Simple_Chain
   comments.clear();
   comments.push_back("   Integrated XS    "); 
@@ -844,9 +834,6 @@ bool Simple_Chain::Initialize()
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
-#ifdef COMPARE__Pythia
-  if (!reader->ReadFromFile(xsfudge,"FUDGE_FACTOR")) xsfudge=1.0;
-#endif
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
   SetStop(stop,0);
