@@ -156,7 +156,7 @@ bool Analysis_Handler::ReadIn()
     }
   }
   msg_Info()<<"}"<<std::endl;
-  ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  if (success) ATOOLS::Exception_Handler::AddTerminatorObject(this);
   return success;
 }
 
@@ -201,6 +201,6 @@ void Analysis_Handler::Finish(const std::string &path)
     (*ait)->FinishAnalysis(OutputPath()); 
   }
   msg_Info()<<"}"<<std::endl;
-  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+  if (m_analyses.size()) ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
 }
 
