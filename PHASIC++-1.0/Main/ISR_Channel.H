@@ -16,9 +16,27 @@
 namespace PHASIC {
   class SimplePoleUniform : public Single_Channel {
   protected :
+
+    double m_exponent;
+    bool   m_zchannel;
+  
+    Info_Key m_spkey, m_xkey, m_ykey;
+
+    // old
     double sprimeexp;
     double deltay[2];
   public :
+
+    // constructor
+    SimplePoleUniform(const double exponent,const std::string cinfo,Integration_Info *info);
+
+    // member functions
+    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GenerateWeight(const int mode=0);
+
+    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+
+    // old
     SimplePoleUniform(double _sprimeexp,double _deltay1, double _deltay2);
     void GenerateWeight(double,double,int); 
     void GeneratePoint(double &,double &,int,double *);

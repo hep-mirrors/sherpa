@@ -3,6 +3,7 @@
 
 #include "Vector.H"
 #include "Channel_Basics.H"
+#include "Integration_Info.H"
 
 namespace PHASIC {
   class  Channel_Elements;
@@ -36,6 +37,12 @@ namespace PHASIC {
     double LLPropMomenta(double,double,double,double,double);
     double ThresholdMomenta(double,double,double,double);
     double ThresholdWeight(double,double,double,double);
+    // new
+    double DiceYUniform(const double tau,const Double_Container &xinfo,
+			Double_Container &yinfo,const double ran,const int mode) const;
+    double WeightYUniform(const double tau,const Double_Container &xinfo,
+			  Double_Container &yinfo,const int mode) const;
+    // old
     double DiceYUniform(double, double *, double *, int, double);
     double WeightYUniform(double, double *, double *, int, double);
     double DiceYCentral(double, double *, double *, int, double);

@@ -10,6 +10,64 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
+SimplePoleUniform::SimplePoleUniform(const double exponent,const std::string cinfo,
+				     Integration_Info *info):
+  m_exponent(exponent)
+{
+  char help[3];
+  sprintf(help,"%i",int(100.*exponent));
+  name=std::string("Simple_Pole_Uniform_")+std::string(help);
+  m_spkey.SetInfo(std::string("Simple_Pole_")+std::string(help));
+  m_ykey.SetInfo("Uniform");
+  m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
+  m_ykey.Assign(std::string("y")+cinfo,3,0,info);
+  m_xkey.Assign(std::string("x")+cinfo,5,0,info);
+  m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
+}
+  
+void SimplePoleUniform::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode) 
+{
+  CalculateLimits(spkey,ykey);
+  m_spkey[3]=CE.MasslessPropMomenta(m_exponent,m_spkey[0],m_spkey[1],rans[0]);
+  m_ykey[2]+=CE.DiceYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),rans[1],mode);
+}
+  
+void SimplePoleUniform::GenerateWeight(const int mode) 
+  {
+  if (m_spkey.Weight()==UNDEFINED_WEIGHT) {
+    if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
+      m_spkey<<1./CE.MasslessPropWeight(m_exponent,m_spkey[0],m_spkey[1],m_spkey[3]);
+      }
+    }
+  if (m_ykey.Weight()==UNDEFINED_WEIGHT) {
+    if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
+      m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),mode);
+      }
+    }
+  weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
+  }
+  
+bool SimplePoleUniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+  {
+  m_spkey[2]=spkey[2];
+  if (!m_zchannel) {
+    m_spkey[0]=spkey[0];
+    m_spkey[1]=spkey[3];
+    }
+    else {
+    m_spkey[0]=spkey[3];
+    m_spkey[1]=spkey[1];
+    m_ykey[0]=ykey[0];
+    m_ykey[1]=ykey[1];
+    double logtau=.5*log(spkey[3]/spkey[2]);
+    m_xkey[0]=logtau+ykey[2];
+    m_xkey[2]=logtau-ykey[2];
+    m_xkey[1]=0.;
+    m_xkey[3]=0.;
+  }
+  return true;
+}
+
 SimplePoleUniform::SimplePoleUniform(double _sprimeexp, double _deltay1, double _deltay2) :
   sprimeexp(_sprimeexp)
 {

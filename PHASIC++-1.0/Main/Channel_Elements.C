@@ -396,6 +396,28 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   s2out = Max(0.,p2out.Abs2());
 }
 
+// new
+double Channel_Elements::DiceYUniform(const double tau,const Double_Container &xinfo,
+				      Double_Container &yinfo,const double ran,const int mode) const
+{
+  double logtau=0.5*log(tau);
+  if (mode==1) return logtau;
+  if (mode==2) return -logtau;
+  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
+  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
+  double y=ymin+(ymax-ymin)*ran;
+  if (ATOOLS::IsZero(y)) y=0.;
+  if (y<ymin || y>ymax){
+    ATOOLS::msg.Error()<<"Channel_Elements::DiceYUniform("<<tau<<","<<xinfo<<","
+                     <<yinfo<<"): "<<" Y out of bounds "<<std::endl<<"   ymin, ymax vs. y : "
+                     <<ymin<<" "<<ymax<<" vs. "<<y<<endl;
+  }
+  return y;
+}
+
+// old
 double Channel_Elements::DiceYUniform(double tau, double * yrange, double * deltay, 
 				      int fixed, double ran)
 {
@@ -412,6 +434,21 @@ double Channel_Elements::DiceYUniform(double tau, double * yrange, double * delt
   return y;
 }
 
+// new 
+double Channel_Elements::WeightYUniform(const double tau,const Double_Container &xinfo,
+                                      Double_Container &yinfo,const int mode) const
+{
+  if (mode!=3) return 1.;
+  double logtau=0.5*log(tau);
+  double ymin=ATOOLS::Max(xinfo[0]-logtau,logtau-xinfo[3]);
+  double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
+  ymax=ATOOLS::Min(yinfo[1],ymax);
+  ymin=ATOOLS::Max(yinfo[0],ymin);
+  return (ymax-ymin);
+}
+
+
+// old
 double Channel_Elements::WeightYUniform(double tau, double * yrange, 
 					double * deltay, int fixed,double y)
 {
