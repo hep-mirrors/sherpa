@@ -43,9 +43,9 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   std::string selectorfile=p_dataread->GetValue<std::string>("SELECTOR_FILE",
 							       std::string("Selector.dat"));
   p_selectordata = new Selector_Data(m_path+selectorfile);
-  int scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
-  int kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
-  double scalefactor=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
+  m_scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
+  m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
+  m_scalefactor=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
   if (!construct) return true;
   ifstream from((m_path+processfile).c_str());
   if (!from) {
@@ -118,7 +118,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    for (int i=0;i<nFS;i++) summass += flavs[i+nIS].Mass();
 	    if (summass<rpa.gen.Ecms()) {
 	      if (single) {
- 		XS_Group *group=FindGroup(nIS,nFS,flavs,scalescheme,kfactorscheme,scalefactor);
+ 		XS_Group *group=FindGroup(nIS,nFS,flavs,m_scalescheme,m_kfactorscheme,m_scalefactor);
 		group->Add(group->XSSelector()->GetXS(nIS,nFS,flavs,p_isrhandler->KMROn()));
 		p_selected=group;
 	      }
