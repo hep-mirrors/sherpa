@@ -31,8 +31,8 @@ for I in $* ; do
   elif [ "$I" = "-e" ]; then DEVENTS=TRUE 
   elif [ "$I" = "-o" ]; then DOPTIONS=TRUE 
   elif [ "$I" = "-n" ]; then DBASENAME=TRUE 
-  elif [ "$I" = "-q" ]; then QUEUE=TRUE 
   elif [ "$I" = "-P" ]; then DPYTHIA=TRUE 
+  elif [ "$I" = "-q" ]; then QUEUE=TRUE 
   elif [ "$I" = "-h" ]; then echo && \
     echo "run version 1.0" && echo && \
     echo "options: -p <path>      read configuration from path <path>" && \
@@ -42,8 +42,9 @@ for I in $* ; do
     echo "         -e <events>    generate <events> events" && \
     echo "         -a <analysis>  write analysis output to path <path>/<analysis>" && \
     echo "         -n <name>      set basic filename to <name>" && \
-    echo "         -q             submit job to batch system" && \
+    echo "         -o <option>    define option <option> for Sherpa" && \
     echo "         -P <file>      generate pythia events according to <file>" && \
+    echo "         -q             submit job to batch system" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DRUNPATH" = "TRUE" ]; then DRUNPATH="" && RUNPATH=$I
