@@ -58,6 +58,7 @@ namespace SHERPA {
     double  m_weight;
 
     double  m_qmin_i,m_qmin_f;
+    double  m_ycut;
 
     double  m_scale,m_asscale;
     int     m_colors[4][2];
@@ -116,6 +117,7 @@ namespace SHERPA {
     inline double  Weight() const;
     inline double  Scale() const;
     inline double  AsScale() const;
+    inline double  Ycut() const;
     inline int  OrderStrong() const;
     inline int  OrderEWeak()  const;
 
@@ -128,6 +130,7 @@ namespace SHERPA {
   inline double  Cluster_Partons::Weight()  const { return m_weight; }
   inline double  Cluster_Partons::Scale()   const { return m_scale; }
   inline double  Cluster_Partons::AsScale() const { return m_asscale; }
+  inline double  Cluster_Partons::Ycut()    const { return m_ycut; }
 
   inline int  Cluster_Partons::OrderStrong() const { return m_hard_nqcd; }
   inline int  Cluster_Partons::OrderEWeak()  const { return m_hard_nqed; }

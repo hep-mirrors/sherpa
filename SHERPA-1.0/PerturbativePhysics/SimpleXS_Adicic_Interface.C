@@ -1,6 +1,7 @@
 #include "SimpleXS_Adicic_Interface.H"
 
 #include "Adicic.H"
+#include "Run_Parameter.H"
 #include "XS_Base.H"
 #include "Exception.H"
 
@@ -75,7 +76,7 @@ bool SimpleXS_Adicic_Interface::FillBlobs(Blob_List * blobs)
 
 int SimpleXS_Adicic_Interface::PerformShowers()
 {
-  return p_shower->PerformShowers(false,1.,1.);
+  return p_shower->PerformShowers(false,1.,1.,rpa.gen.Ycut());
 }
 
 

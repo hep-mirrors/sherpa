@@ -1,5 +1,6 @@
 #include "Cluster_Partons.H"
 #include "Message.H"
+#include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "Flow.H"
 #include "XS_Selector.H"
@@ -277,8 +278,8 @@ bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
 
 void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double jetscale,double qm_i,double qm_f) 
 {
-//   std::cout<<" CalculateWeight("<<hardscale<<","<<asscale<<","<<jetscale<<","
-//   	   <<qm_i<<","<<qm_f<<") called \n";
+//      std::cout<<" CalculateWeight("<<hardscale<<","<<asscale<<","<<jetscale<<","
+//      	   <<qm_i*qm_i<<","<<qm_f*qm_f<<") called \n";
 
   m_qmin_i = qm_i;
   m_qmin_f = qm_f;
@@ -320,8 +321,8 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   // weight with correct alphas at hard scale (if needed).
   if (m_hard_nqcd>0 && m_sud_mode%10>0) {
     m_weight *= pow(as_hard/as_jet,m_hard_nqcd);
-//     std::cout<<" qcd_count="<<m_hard_nqcd<<" ("<<(strong-2)<<")\n";
-//     std::cout<<" hard As : "<<asscale<<"\n";
+//        std::cout<<" qcd_count="<<m_hard_nqcd<<" ("<<(strong-2)<<")\n";
+//        std::cout<<" hard As : "<<asscale<<"\n";
   }
 
   int count_startscale=-10;
@@ -364,7 +365,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       double w_in =  p_sud->Delta(ct_down->GetLeg(i)->fl)(last_q[i],qmin)/
 	             p_sud->Delta(ct_down->GetLeg(i)->fl)(ptij,qmin);
       m_weight *= w_in;
-//       std::cout<<" in  Delta("<<ct_down->GetLeg(i)->fl<<") : "<<last_q[i]<<","<<ptij<<","<<qmin<<"\n";
+//         std::cout<<" in  Delta("<<ct_down->GetLeg(i)->fl<<") : "<<last_q[i]<<","<<ptij<<","<<qmin<<"\n";
       ++count_startscale;
     }
 
@@ -375,8 +376,8 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       if (m_kfac!=0.) 	w_in_as *= 1. + a/(2. * M_PI)*m_kfac;
       m_weight *= w_in_as;
       ++m_hard_nqcd;
-//       std::cout<<" qcd_count="<<m_hard_nqcd<<"\n";
-//       std::cout<<" in  As : "<<ptij<<"\n";
+//          std::cout<<" qcd_count="<<m_hard_nqcd<<"\n";
+//          std::cout<<" in  As : "<<ptij<<"\n";
     }
 
     // store old q values
@@ -408,7 +409,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       if (p_ct->GetLeg(l)->fl.Strong() && last_q[l]>qmin) {//  sudakov form factor
 	double w_out = p_sud->Delta(p_ct->GetLeg(l)->fl)(last_q[l],qmin);
 	m_weight *= w_out;
-// 	std::cout<<" out Delta("<<p_ct->GetLeg(l)->fl<<") : "<<last_q[l]<<","<<qmin<<"\n";
+//   	std::cout<<" out Delta("<<p_ct->GetLeg(l)->fl<<") : "<<last_q[l]<<","<<qmin<<"\n";
       }    
 
       // check that not too many hardscales are present!
@@ -426,11 +427,11 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   }
 
   // replace remaning strong couplings
-//   std::cout<<" remaining strong couplings ( "<<m_hard_nqed<<","<<m_hard_nqcd<<") vs "<<m_nstrong-2<<std::endl;
+//    std::cout<<" remaining strong couplings ( "<<m_hard_nqed<<","<<m_hard_nqcd<<") vs "<<m_nstrong-2<<std::endl;
   m_hard_nqed = m_nstrong-m_hard_nqcd-2;    
   if (m_nstrong-m_hard_nqcd>2) {
     m_weight *= pow(as_amegic/as_jet,m_hard_nqed);
-    //    std::cout<<" cancel As : "<<as_amegic<<" ("<<m_hard_nqed<<" ) \n";
+//           std::cout<<" cancel As : "<<as_amegic<<" ("<<m_hard_nqed<<" ) \n";
   }
 
 
@@ -976,15 +977,15 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree)
   mo->t = mo->part->Momentum().Abs2();
 
   double scale = Scale();
-  if (p_xs) scale = p_xs->Scale(PHASIC::stp::fac);
+   if (p_xs) scale = p_xs->Selected()->Scale(PHASIC::stp::as);
 
-  scale = 4.*(m_qmin_i*m_qmin_i);
-  scale = Max(scale,mo->t);
+   scale = 4.*(m_qmin_i*m_qmin_i);
+   scale = Max(scale,mo->t);
 
-  //std::cout<<" ew:"<<p_me->OrderEWeak()
-  //	     <<" strong:"<<p_me->OrderStrong()<<"\n";
+//   std::cout<<" ew:"<<p_me->OrderEWeak()
+//   	     <<" strong:"<<p_me->OrderStrong()<<"\n";
   if(p_me->OrderStrong()==0 && njet==m_maxjetnumber) scale=mo->t;
-
+//  std::cout<<"scale="<<scale<<std::endl;
   EstablishRelations(mo,knots[0],knots[1],0,scale);
   EstablishRelations(mo,knots[2],knots[3],1);      
 
@@ -1349,45 +1350,48 @@ void Cluster_Partons::CreateFlavourMap() {
   //    process != partner process
   //    if HHMF is turned on (me_handler->Flavour =! proc->Flavour)
   //
-
-  if (1)  {
-    Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
-    Process_Base * partner=proc->Partner();
-    m_nstrong   = proc->NStrong();
-    const Flavour * flavs=proc->Flavours();
-    const Flavour * partner_flavs=partner->Flavours();
-
-    int n[2]={0,1};
-    //    if (proc->InSwaped()^partner->InSwaped()) {
-    if (p_me->InSwaped()^partner->InSwaped()) {
-      n[0]=1;
-      n[1]=0;
-    }
-
-    // create new map
-    m_flmap.clear();
-    for (size_t i=0;i<proc->NIn();++i) {
-      if (partner_flavs[i]!=flavs[n[i]]) {
-	m_flmap[partner_flavs[i]]=flavs[n[i]];
-	if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
-	  m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[n[i]])).Bar();
-	}
-      }
-    }
-    for (size_t i=proc->NIn();i<proc->NIn()+proc->NOut();++i) {
-      if (partner_flavs[i]!=flavs[i]) {
-	m_flmap[partner_flavs[i]]=flavs[i];
-	if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
-	  m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();	  
-	}
-      }
-    }
-
+  
+  Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
+  Process_Base * partner=proc->Partner();
+  m_nstrong   = proc->NStrong();
+  const Flavour * flavs=proc->Flavours();
+  double ycut= proc->Ycut();
+  if (ycut!=-1.) {
+//     std::cout<<" selector ycut= "<<ycut<<" \n"<<std::endl;
+    m_ycut=ycut;
   }
   else {
-    // delete old map
-    m_flmap.clear();
+    m_ycut=ATOOLS::rpa.gen.Ycut();
   }
+
+  const Flavour * partner_flavs=partner->Flavours();
+
+  int n[2]={0,1};
+  //    if (proc->InSwaped()^partner->InSwaped()) {
+  if (p_me->InSwaped()^partner->InSwaped()) {
+    n[0]=1;
+    n[1]=0;
+  }
+
+  // create new map
+  m_flmap.clear();
+  for (size_t i=0;i<proc->NIn();++i) {
+    if (partner_flavs[i]!=flavs[n[i]]) {
+      m_flmap[partner_flavs[i]]=flavs[n[i]];
+      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
+	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[n[i]])).Bar();
+      }
+    }
+  }
+  for (size_t i=proc->NIn();i<proc->NIn()+proc->NOut();++i) {
+    if (partner_flavs[i]!=flavs[i]) {
+      m_flmap[partner_flavs[i]]=flavs[i];
+      if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
+	m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();	  
+      }
+    }
+  }
+
 }
 
 void   Cluster_Partons::JetvetoPt2(double & q2i, double & q2f) 

@@ -63,8 +63,8 @@ Shower_Handler::~Shower_Handler()
 }
 
 
-int Shower_Handler::PerformShowers(int jetveto,double _x1,double _x2) {
-  if (p_apacic) return p_apacic->PerformShowers(m_isrshowerswitch,m_fsrshowerswitch,jetveto,_x1,_x2);
+int Shower_Handler::PerformShowers(int jetveto,double _x1,double _x2,double ycut) {
+  if (p_apacic) return p_apacic->PerformShowers(m_isrshowerswitch,m_fsrshowerswitch,jetveto,_x1,_x2, ycut);
 #ifdef USING__Adicic    
   if (p_adicic) return p_adicic->PerformShowers();
 #endif
@@ -72,7 +72,7 @@ int Shower_Handler::PerformShowers(int jetveto,double _x1,double _x2) {
 }
 
 int Shower_Handler::PerformDecayShowers(bool jetveto) {
-  if (p_apacic) return p_apacic->PerformShowers(0,m_fsrshowerswitch,jetveto,1.,1.);
+  if (p_apacic) return p_apacic->PerformShowers(0,m_fsrshowerswitch,jetveto,1.,1.,rpa.gen.Ycut());
   return 0;
 }
 

@@ -261,9 +261,15 @@ int Amegic_Apacic_Interface::PerformShowers()
   int jetveto=-1;
   if (p_mehandler->UseSudakovWeight()) {
     double qmin2i,qmin2f; 
-    p_cluster->JetvetoPt2(qmin2i,qmin2f);
-    p_shower->SetJetvetoPt2(qmin2i,qmin2f);
     double scale = p_mehandler->FactorisationScale();
+    double ycut=p_cluster->Ycut();
+    if (ycut==rpa.gen.Ycut()) {
+      p_cluster->JetvetoPt2(qmin2i,qmin2f);
+    }
+    else {
+      qmin2i=qmin2f=scale;
+    }
+    p_shower->SetJetvetoPt2(qmin2i,qmin2f);
     p_shower->SetFactorisationScale(scale);
     jetveto=1;
     if (m_maxjetnumber==m_nout && p_mehandler->OrderStrong()==0) {
@@ -273,7 +279,8 @@ int Amegic_Apacic_Interface::PerformShowers()
   }
   return m_lastshowerveto = p_shower->PerformShowers(jetveto,
 						     p_mehandler->GetISR_Handler()->X1(),
-						     p_mehandler->GetISR_Handler()->X2());
+						     p_mehandler->GetISR_Handler()->X2(),
+						     p_cluster->Ycut());
 }
 
 

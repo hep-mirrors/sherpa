@@ -1,10 +1,12 @@
 #include "SimpleXS_Apacic_Interface.H"
 
 #include "Interface_Tools.H"
+#include "Run_Parameter.H"
 #include "XS_Selector.H"
 #include "Exception.H"
 
 using namespace SHERPA;
+using namespace ATOOLS;
 
 SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *mehandler,
 						     Shower_Handler *showerhandler):
@@ -123,7 +125,7 @@ int SimpleXS_Apacic_Interface::PerformShowers()
 		 <<" vs. "<<p_hard->OutParticle(0)->Momentum().PPerp2()
 		 <<"\n}"<<std::endl;
   return p_shower->PerformShowers(jetveto,p_mehandler->GetISR_Handler()->X1(),
-				  p_mehandler->GetISR_Handler()->X2());
+				  p_mehandler->GetISR_Handler()->X2(),rpa.gen.Ycut());
 }
 
 int SimpleXS_Apacic_Interface::PerformDecayShowers()
