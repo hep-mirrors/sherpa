@@ -28,7 +28,7 @@ bool Sherpa::InitializeTheRun(std::string _path) {
 
   bool okay;
   if (p_inithandler->InitializeTheFramework()) {
-    p_output = new Output_Handler(0);
+    p_output = new Output_Handler(2);
     okay     =  p_inithandler->CalculateTheHardProcesses();
     if (rpa.gen.NumberOfEvents()>0)
       okay   = okay && p_inithandler->InitializeAllHardDecays();
