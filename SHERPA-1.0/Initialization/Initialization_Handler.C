@@ -69,6 +69,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   if (m_mode>8999) {
     p_dataread         = new Data_Read(m_path+m_file);
     m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
+    rpa.Init(m_path,m_file);
     return;
   }
   p_dataread         = new Data_Read(m_path+m_file);
