@@ -35,7 +35,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_accu               = dr.GetValue<double>("Num. Accuracy",1.e-10);
   //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
 
+  Switch::code color=dr.GetValue<Switch::code>("PRETTY_PRINT");
+
   msg.Init(gen.Output());
+  if (color==Switch::On) msg.SetModifiable(true);
   gen.m_rpa_id = dr.GenerateKey();
   if (gen.m_seed!=1234) ran.SetSeed(gen.m_seed);
 }

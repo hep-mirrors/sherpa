@@ -2,87 +2,69 @@
 #include "Run_Parameter.H"
 
 namespace ATOOLS {
-
-  namespace om {
-
-#ifdef USING__COLOUR
-    const char *reset  = "\e[0m";
-    const char *bold   = "\e[1m";
-    const char *blink  = "\e[5m";
-    const char *backgd = "\e[6m";
-    const char *red    = "\e[31m";
-    const char *green  = "\e[32m";
-    const char *brown  = "\e[33m";
-    const char *blue   = "\e[34m";
-    const char *violet = "\e[35m";
-    const char *lblue  = "\e[36m";
-    const char *grey   = "\e[37m";
-#else
-    const char *reset  = "";
-    const char *bold   = "";
-    const char *blink  = "";
-    const char *backgd = "";
-    const char *red    = "";
-    const char *green  = "";
-    const char *brown  = "";
-    const char *blue   = "";
-    const char *violet = "";
-    const char *lblue  = "";
-    const char *grey   = "";
-#endif
-    
-  }
-
   Message msg;
 }
 
 using namespace ATOOLS;
 
-
-Message::Message() {      
-  output = &std::cout;
-  error  = &std::cerr;
-  no     = new std::ofstream("/dev/null",std::ios::app);
-  file   = 0;
-  level  = 0;
-}
-
-void Message::SetNoStream(std::ostream * _no) 
+std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier) 
 {
-  no     = (std::ofstream*)_no;
-};
-
-void Message::SetOutStream(std::ostream * _output) {
-  output = _output;
-};
-
-void Message::SetErrStream(std::ostream * _error) {
-  error  = _error;
-};
-
-
-
-void Message::Init(int _level) { 
-  level = _level; 
-  if (level>2) (*output)<<"Initialize output module Message. Level "<<_level<<std::endl;
-}
-
-void Message::SetFile(char* name="Amegic.log") {
-  if (file==0) {
-    output = new std::ofstream(name);
-    error  = output;
+  if (!msg.Modifiable()) return str;
+  switch (modifier) {
+#ifdef USING__COLOUR
+  case om::reset:   return str<<"\e[0m";
+  case om::bold:    return str<<"\e[1m";
+  case om::blink:   return str<<"\e[5m";
+  case om::backgnd: return str<<"\e[6m";
+  case om::red:     return str<<"\e[31m";
+  case om::green:   return str<<"\e[32m";
+  case om::brown:   return str<<"\e[33m";
+  case om::blue:    return str<<"\e[34m";
+  case om::violet:  return str<<"\e[35m";
+  case om::lblue:   return str<<"\e[36m";
+  case om::grey:    return str<<"\e[37m";
+  case om::none:    return str;
+#else
+  default: return str;
+#endif
   }
-  file = 1;
+}
+ 
+Message::Message() 
+{      
+  m_output = &std::cout;
+  m_error = &std::cerr;
+  m_no = new std::ofstream("/dev/null",std::ios::app);
+  m_file = 0;
+  m_level = 0;
+  m_modifiable = false;
 }
 
-void Message::SetStandard() {
-  if (file==1) delete output;
-  
-  output = &std::cout;
-  error  = &std::cerr;
-  file   = 0;
+void Message::Init(const int level) 
+{ 
+  m_level = level; 
+  if (m_level>2) (*m_output)<<"Initialize output module Message. Level "<<m_level<<std::endl;
 }
 
-void Message::SetPrecision(int prec) {
-  if (output) output->precision(prec);
+void Message::SetFile(const char *file="Amegic.log") 
+{
+  if (m_file==0) {
+    m_output = new std::ofstream(file);
+    m_error = m_output;
+  }
+  m_file = 1;
 }
+
+void Message::SetStandard() 
+{
+  if (m_file==1) delete m_output;
+  m_output = &std::cout;
+  m_error = &std::cerr;
+  m_file = 0;
+}
+
+void Message::SetPrecision(const int precision) 
+{
+  if (m_output) m_output->precision(precision);
+}
+

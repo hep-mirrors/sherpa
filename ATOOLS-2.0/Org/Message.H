@@ -7,61 +7,67 @@
 
 namespace ATOOLS {
 
-  namespace om {
+  struct om {
 
-    extern const char *reset;
-    extern const char *bold;
-    extern const char *blink;
-    extern const char *backgd;
-    extern const char *red;
-    extern const char *green;
-    extern const char *blue;
-    extern const char *brown;
-    extern const char *violet;
-    extern const char *lblue;
-    extern const char *grey;
-    
-  }// end of namespace om
+    enum code {
+      none    =    0,
+      reset   =    1,
+      bold    =    2,
+      blink   =    4,
+      backgnd =    8,
+      red     =   16,
+      green   =   32,
+      blue    =   64,
+      brown   =  128,
+      violet  =  256,
+      lblue   =  512,
+      grey    = 1024  };
+
+  };// end of struct om
+
+  std::ostream &operator<<(std::ostream &str,const om::code modifier);
 
   class Message {
-    std::ofstream * no; 
-    std::ostream  * output;
-    std::ostream  * error;
-    int file;
-    int level;
+  private:
+
+    std::ofstream *m_no; 
+    std::ostream  *m_output, *m_error;
+
+    int m_file, m_level;
+
+    bool m_modifiable;
+
   public:
-    //Standard-output
+
+    // constructor
     Message();
-    void Init(int _level);
 
-    int  Level() { return level; }
-
-    void SetLevel(int _level) { level = _level; }
-    void SetFile(char *);
+    // member functions
+    void Init(const int level);
     void SetStandard();
-    void SetNoStream(std::ostream *);
-    void SetOutStream(std::ostream *);
-    void SetErrStream(std::ostream *);
-    void SetPrecision(int);
+    void SetFile(const char *file);
+    void SetPrecision(const int precision);
 
-    std::ostream & Out() { return * output; }
-    std::ostream & Error() { 
-      if (level >= 0) return * output;
-      return * no;
-    }
-    std::ostream & Events() { 
-      if (level >= 1)  return * output;
-      return * no;
-    }
-    std::ostream & Tracking() { 
-      if (level >= 2)  return * output;
-      return * no;
-    }
-    std::ostream & Debugging()  { 
-      if (level >= 3)  return * output;
-      return * no;
-    }
-  };
+    // inline functions
+    inline void SetLevel(const int level)     { m_level = level;    }
+    inline void SetModifiable(const bool mod) { m_modifiable = mod; }
+
+    inline int  Level()      { return m_level;      }
+    inline bool Modifiable() { return m_modifiable; }
+
+    inline void SetNoStream(std::ostream *no)      { m_no = (std::ofstream*)no; }
+    inline void SetOutStream(std::ostream *output) { m_output = output;         }
+    inline void SetErrStream(std::ostream *error)  { m_error = error;           }
+
+    inline std::ostream &Out()       { return *m_output; }
+
+    inline std::ostream &Error()     { if (m_level >= 0) return *m_output; return *m_no; }
+    inline std::ostream &Events()    { if (m_level & 1)  return *m_output; return *m_no; }
+    inline std::ostream &Info()      { if (m_level >= 2) return *m_output; return *m_no; }
+    inline std::ostream &Tracking()  { if (m_level >= 3) return *m_output; return *m_no; }
+    inline std::ostream &Debugging() { if (m_level >= 4) return *m_output; return *m_no; }
+
+  };// end of class Message
 
   extern Message msg;
 
