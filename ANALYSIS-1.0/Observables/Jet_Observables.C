@@ -24,8 +24,8 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   }
   else if (parameters.size()<7) return NULL;
   double min=0.0, max=1.0;
-  size_t bins=100, scale=0, nmin=1, nmax=10, mode=1;
-  std::string list="Analysed";
+  size_t bins=100, nmin=1, nmax=10, mode=1;
+  std::string list="Analysed", scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
@@ -35,10 +35,10 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
     else if (parameters[i][0]=="MODE") mode=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="NMIN") nmin=ATOOLS::ToType<int>(parameters[i][1]);
     else if (parameters[i][0]=="NMAX") nmax=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class(scale,min,max,bins,mode,nmin,nmax,list);
+  return new Class((scale=="Log")*10,min,max,bins,mode,nmin,nmax,list);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME,TAG)				\
