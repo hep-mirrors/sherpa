@@ -1,18 +1,16 @@
 #ifndef QED_Process_H
 #define QED_Process_H
 
+#include "Multi_Channel.H"
 #include "XS_Group.H"
-
-namespace AMEGIC { class  Process_Group; }
 
 namespace EXTRAXS {
 
   class QED_Processes: public XS_Group {
+    void CreateFSRChannels();
   public:
-    QED_Processes();
-    QED_Processes(int);
-    void Initialize(ISR::ISR_Handler *, BEAM::Beam_Handler *,
-		    APHYTOOLS::Selector_Data *, AMEGIC::Process_Group *);
+    QED_Processes(ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+		  APHYTOOLS::Flavour *,APHYTOOLS::Selector_Data *,int,int,double);
   };
 }
 

@@ -3,29 +3,17 @@
 
 #include "XS_Group.H"
 
-namespace AMEGIC { class  Process_Group; }
-
 namespace EXTRAXS {
 
   class QCD_Processes: public XS_Group {
     double aS;
-    double ycut;
-    int    jetfinder;
-
     void Fill4qmodes();
     void Fill2q2gmodes();
     void Fill4gmodes();
-
-    void CreateSelector();
+    void CreateFSRChannels();
   public:
-    QCD_Processes();
-    
-    double Scale(AMATOOLS::Vec4D *);
-    double KFactor(double);
-
-    void Initialize(APHYTOOLS::Flavour *) { }
-    void Initialize(ISR::ISR_Handler *, BEAM::Beam_Handler *,
-		    APHYTOOLS::Selector_Data *, AMEGIC::Process_Group *);
+    QCD_Processes(ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+		  APHYTOOLS::Flavour *,APHYTOOLS::Selector_Data *,int,int,double);
   };
 }
 

@@ -3,9 +3,12 @@
 
 
 #include "Phase_Space_Handler.H"
+#include "Integrable_Base.H"
+
 #include "ISR_Handler.H"
-#include "Beam_Handler.H"
+#include "Beam_Spectra_Handler.H"
 #include "Selector.H"
+#include "Combined_Selector.H"
 #include "Standard_Selector.H"
 
 #include "Flavour.H"
@@ -14,79 +17,110 @@
 
 #include <string>
 
-namespace AMEGIC { class Process_Group; }
+namespace EXTRAXS { class XS_Base; }
 
 namespace EXTRAXS {
-
-  class Single_XS;
-
-  class XS_Base {
+  class XS_Base : public PHASIC::Integrable_Base {
   protected:
+    int                    m_nin, m_nout;
+    APHYTOOLS::Flavour   * p_fl;
+    AMATOOLS::Vec4D      * p_moms;
+    std::string            m_name;
 
-    int                    nin, nout;
+    double                 m_s, m_t, m_u;
+    double                 m_scale,m_scalefactor,m_thres;
 
-    APHYTOOLS::Flavour   * fl;
-    std::string            name;
+    int                    m_scalescheme,m_kfactorscheme;
+    long int               m_n;
+    double                 m_last,m_lastlumi,m_lastdxs;
+    double                 m_totalxs,m_totalsum,m_totalsumsqr,m_totalerr, m_max;
 
-    int                    massive;         
+    int                 ** p_colours;
+    XS_Base              * p_selected;
 
-    double                 s, t, u;
-    double                 scale;
+    PHASIC::Phase_Space_Handler    * p_ps; 
+    BEAM::Beam_Spectra_Handler     * p_beam;
+    ISR::ISR_Handler               * p_isr;
+    APHYTOOLS::Selector_Base       * p_sel;
 
-    int                 ** colours;
+    void                             Init(APHYTOOLS::Flavour *);
+    void                             GenerateName();
+   public:
+    XS_Base(int,int,APHYTOOLS::Flavour *,
+	    ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+	    int,int,double);
+    XS_Base(int,int,APHYTOOLS::Flavour *);
+    XS_Base() {   m_name     = std::string("Empty XS"); }
 
-    XS_Base              * selected;
-
-    std::vector<int>    isr_types;
-    std::vector<double> isr_masses;
-    std::vector<double> isr_widths;
-
-    void Init(int,int,APHYTOOLS::Flavour * =0);
-
-  public:
-
-    XS_Base():fl(0),colours(0),selected(0) {};
+    
     virtual ~XS_Base();
 
-    virtual double operator()(double,double,double);
+    virtual int    Size() { return 0; }
+    virtual double Differential(AMATOOLS::Vec4D *);
+    virtual double Differential2()                              = 0;
+    virtual double Scale(AMATOOLS::Vec4D *);
+    virtual bool   SetColours(AMATOOLS::Vec4D *);
+    virtual double KFactor(double);
 
-    virtual bool SetColours(AMATOOLS::Vec4D *);
-    virtual bool SetColours(double, double, double);
-
-    virtual XS_Base * Selected();
-
-    virtual int Size() { return 1; }
-    virtual XS_Base * operator[](int idx) { return this; }
-
-    int                  Nin();
-    int                  Nout();
-    std::string          Name();
-    APHYTOOLS::Flavour * Flavs();
-    void                 SetFlav(int,APHYTOOLS::Flavour);
-    int               ** Colours();
-    double               Scale();
-    virtual double       KFactor(double _scale) { return 1; }
-
-    int  ISRNumber() { return isr_types.size(); }
-    void ISRInfo(int,int &,double &,double &);
-    void SetISRTypes(APHYTOOLS::Flavour *);
-
-    virtual void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Handler *,
-			    APHYTOOLS::Selector_Data *,AMEGIC::Process_Group *) { }
-    virtual void Initialize(ISR::ISR_Handler *, BEAM::Beam_Handler *,
-			    APHYTOOLS::Selector_Data *, AMEGIC::Process_Group *) { }
+    int                        Nin();
+    int                        Nout();
+    int                        Nvec();
+    std::string                Name();
+    APHYTOOLS::Flavour       * Flavs();
+    double                     ISRThreshold();
+    double                     Max();
+    double                     Total();
+    double                     Last();
+    double                     LastXS();
+    double                     LastLumi();
+    double                     Scale();
+    AMATOOLS::Vec4D          * Momenta(); 
+    int                     ** Colours();
+    XS_Base                  * Selected();
+    APHYTOOLS::Cut_Data      * Cuts();
+    APHYTOOLS::Selector_Base * Selector();
+    void                       UpdateCuts(double,double)  {};
+    void                       SetMax(double);
+    void                       SetTotal(double);
+    void                       SetName(std::string);
+    virtual void               SetISR(ISR::ISR_Handler *)          = 0;
+    virtual void               SetTotalXS()                        = 0;
+    virtual double             Differential(double,double,double)  = 0;
+    virtual double             operator()(double,double,double)    = 0;
+    virtual bool               SetColours(double, double, double)  = 0;
+    virtual XS_Base          * operator[](int idx)                 = 0;
+    virtual bool               CalculateTotalXSec()                =0;
+    virtual void               AddPoint(double)                    = 0;
+    virtual void               DeSelect()                          = 0;
+    virtual void               SelectOne()                         = 0;
+    virtual void               SetMomenta(AMATOOLS::Vec4D *) {} //      = 0;
+    virtual bool               OneEvent()                          = 0;
+    //virtual bool               SameEvent()                         = 0;
+    //virtual double             WeightedEvent()                     = 0;
 
   };
 
-  inline int                    XS_Base::Nin()     { return nin;     }
-  inline int                    XS_Base::Nout()    { return nout;    }  
-  inline std::string            XS_Base::Name()    { return name;    }
-  inline APHYTOOLS::Flavour   * XS_Base::Flavs()   { return fl;      }
-  inline int                 ** XS_Base::Colours() { return colours; }
-  inline double                 XS_Base::Scale()   { return scale;   }
+  inline int                        XS_Base::Nin()                   { return m_nin; }
+  inline int                        XS_Base::Nout()                  { return m_nout; }  
+  inline int                        XS_Base::Nvec()                  { return m_nin+m_nout; }  
+  inline std::string                XS_Base::Name()                  { return m_name; }
+  inline APHYTOOLS::Flavour       * XS_Base::Flavs()                 { return p_fl; }
+  inline double                     XS_Base::ISRThreshold()          { return m_thres; }
+  inline double                     XS_Base::Max()                   { return m_max; }
+  inline double                     XS_Base::Total()                 { return m_totalxs; }
+  inline double                     XS_Base::Last()                  { return m_last; }
+  inline double                     XS_Base::LastXS()                { return m_lastdxs; }
+  inline double                     XS_Base::LastLumi()              { return m_lastlumi; }
+  inline double                     XS_Base::Scale()                 { return m_scale; }   
+  inline AMATOOLS::Vec4D          * XS_Base::Momenta()               { return p_moms; } 
+  inline int                     ** XS_Base::Colours()               { return p_colours; }
+  inline XS_Base                  * XS_Base::Selected()              { return p_selected; }
+  inline APHYTOOLS::Cut_Data      * XS_Base::Cuts()                  { return NULL; }
+  inline APHYTOOLS::Selector_Base * XS_Base::Selector()              { return p_sel; }
 
-  inline void                   XS_Base::SetFlav(int i,APHYTOOLS::Flavour _fl) { fl[i] = _fl; }
-
+  inline void                       XS_Base::SetMax(double _max)             { m_max     = _max;   }
+  inline void                       XS_Base::SetTotal(double _total)         { m_totalxs = _total; }
+  inline void                       XS_Base::SetName(std::string _name)      { m_name    = _name; }
 }
 
 #endif

@@ -3,7 +3,6 @@
 #include "Message.H"
 #include "Random.H"
 #include "MathTools.H"
-#include "Process_Group.H"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -11,61 +10,230 @@
 
 using namespace EXTRAXS;
 using namespace PHASIC;
-using namespace AMEGIC;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace std;
 
-XS_Group::XS_Group(int _nin,int _nout, string _name) 
+XS_Group::XS_Group(int _nin,int _nout,Flavour * _fl,
+		   ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+		   APHYTOOLS::Selector_Data * _seldata,
+		   int _scalescheme,int _kfactorscheme,double _scalefactor) :
+  XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor),
+  p_xsselector(NULL), m_atoms(0)
 {
-  Init(_nin,_nout,0);
-  name = _name; 
+  p_selected = NULL;
+}
+
+XS_Group::XS_Group(int _nin,int _nout,Flavour * _fl) :
+  XS_Base(_nin,_nout,_fl), p_xsselector(NULL), m_atoms(0)
+{
+  p_selected = NULL;
+}
+
+XS_Group::XS_Group(int _nin,int _nout,std::string _name) :
+  XS_Base(_nin,_nout,NULL), p_xsselector(NULL), m_atoms(0)
+{
+  m_name     = _name;
+  p_selected = NULL;
+}
+
+XS_Group::XS_Group() : p_xsselector(NULL), m_atoms(0)
+{
+  p_selected = NULL;
 }
 
 XS_Group::~XS_Group()
 {
-  for(int i=xsecs.size();i>0;i--) {
-    if (xsecs[i-1]) delete xsecs[i-1];
+  for(int i=m_xsecs.size();i>0;i--) {
+    if (m_xsecs[i-1]) delete m_xsecs[i-1];
   }
+  if (p_xsselector) { delete p_xsselector; p_xsselector = NULL; }
 }
 
-void XS_Group::Add(XS_Base * _xsec, bool createbroker) 
+void XS_Group::Add(XS_Base * _xsec) 
 {
-  if (xsecs.size()==0) {
-    nin  = _xsec->Nin();
-    nout = _xsec->Nout();
-
-    fl  = new Flavour[nin+nout];
-    for (short int i=0;i<nin+nout;i++) {
-      fl[i]  = _xsec->Flavs()[i];
+  if (m_xsecs.size()==0) {
+    m_nin  = _xsec->Nin();
+    m_nout = _xsec->Nout();
+    
+    p_fl  = new Flavour[m_nin+m_nout];
+    for (short int i=0;i<m_nin+m_nout;i++) {
+      p_fl[i]  = _xsec->Flavs()[i];
     }
   }
   else {
-    if ( (nin != _xsec->Nin()) || (nout != _xsec->Nout())) {
+    if ( (m_nin!=_xsec->Nin()) || (m_nout!=_xsec->Nout())) {
       AORGTOOLS::msg.Error()<<"Error : Cannot add Process "<<_xsec->Name()
-			    <<" to group "<<name<<" ! "<<endl
+			    <<" to group "<<m_name<<" ! "<<endl
 			    <<"   Inconsistent number of external legs."<<endl 
-			    <<"  Before : ("<<nin<<" -> "<<nout<<" )"<<endl
+			    <<"  Before : ("<<m_nin<<" -> "<<m_nout<<" )"<<endl
 			    <<"  Now    : ("<<_xsec->Nin()<<" -> "<<_xsec->Nout()<<" )"<<endl;
       return;
     }
   }  
-  AORGTOOLS::msg.Tracking()<<"Add xs "<<_xsec->Name()<<" to group "<<name<<" ! "<<endl; 
-  if (createbroker) _xsec->MakeBroker(broker->ISR(),broker->Beam(),seldata,broker);
-  xsecs.push_back(_xsec);
-};
-
-void XS_Group::MakeBroker(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
-			  APHYTOOLS::Selector_Data * _seldata, AMEGIC::Process_Group * _broker) 
-{
-  seldata = _seldata;
-  Pol_Info * _plavs = 0;
-  Flavour * _fl = new Flavour[Nin()+Nout()];
-  for (int i=0; i<(Nin()+Nout()); i++) _fl[i] = Flavs()[i];
-  broker = new Process_Group(Nin(),Nout(),_fl,isr,beam,seldata,2,
-			     rpa.me.KFactorScheme(),rpa.me.ScaleScheme(),
-			     _plavs,AMEGIC::FORCED_MODE);
-  _broker->Add(broker);
-  delete [] _fl;
+  AORGTOOLS::msg.Tracking()<<"Add xs "<<_xsec->Name()<<" to group "<<m_name<<" ! "<<endl; 
+  m_xsecs.push_back(_xsec);
 }
+
+void XS_Group::SelectOne()
+{
+  DeSelect();
+  if (m_totalxs==0) p_selected = m_xsecs[int(ran.Get()*m_xsecs.size())];
+  else {
+    double disc;
+    if (m_atoms) {
+      // select according to total xsecs.
+      disc = m_totalxs * ran.Get();
+      for (int i=0;i<m_xsecs.size();i++) {
+	disc -= m_xsecs[i]->Total();
+	if (disc<0.) {
+	  p_selected = m_xsecs[i];
+	  //msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
+	  p_selected->SelectOne();
+	  return;
+	}
+      }
+      if (disc>0.) { 
+	msg.Error()<<"Error in Process_Group::SelectOne() : ";
+	msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	return;
+      }
+    }
+    else {
+      disc = m_max * ran.Get();
+      for (int i=0;i<m_xsecs.size();i++) {
+	disc -= m_xsecs[i]->Max();
+	if (disc<0.) {
+	  p_selected = m_xsecs[i];
+	  //msg.Tracking()<<"Selected Process(_Group) : "<<p_selected->Name()<<endl;	
+	  p_selected->SelectOne();
+	  return;
+	}
+      }
+      if (disc>0.) { 
+	msg.Error()<<"Error in Process_Group::SelectOne() : ";
+	msg.Error()<<"Total xsec, max = "<<m_totalxs<<", "<<m_max<<endl;
+	return;
+      }
+    }
+  }
+}
+
+
+
+void XS_Group::DeSelect() {
+  p_selected = 0;
+  for (int i=0;i<m_xsecs.size();i++) m_xsecs[i]->DeSelect();
+}
+
+
+
+XS_Base * XS_Group::Selected() { 
+  if (p_selected==this) return this;
+  return p_selected->Selected(); 
+}    
+
+void XS_Group::SetISR(ISR::ISR_Handler * _isr) {
+  p_isr = _isr;
+  for (int i=0;i<m_xsecs.size();i++) m_xsecs[i]->SetISR(_isr);
+}
+
+bool XS_Group::CalculateTotalXSec()
+{
+  msg.Tracking()<<"X_Group::CalculateTotalXSec() "<<m_nin<<" / "<<p_isr<<endl;
+
+  if (p_isr) {
+    if (m_nin==2) {
+      if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
+	   (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
+    }
+    for (int i=0;i<m_xsecs.size();i++) m_xsecs[i]->SetISR(p_isr);
+  }
+
+  CreateFSRChannels();
+  p_ps->CreateIntegrators();
+
+  m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
+  if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+    msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl
+	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+  }
+  SetTotalXS();
+  if (m_totalxs>0.) return 1;
+  return 0;
+}
+
+
+void XS_Group::SetTotalXS()  { 
+  m_totalxs  = m_totalsum/m_n; 
+  m_totalerr = sqrt( (m_n*m_totalsumsqr-AMATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
+  if (p_sel) p_sel->Output();
+
+  m_max = 0.;
+  for (int i=0;i<m_xsecs.size();i++) {
+    m_xsecs[i]->SetTotalXS();
+    m_max += m_xsecs[i]->Max();
+  }
+  msg.Events()<<"-----------------------------------------------------------------------"<<endl
+	      <<"Total XS for "<<m_name<<"("<<m_xsecs.size()<<") : "<<m_totalxs*rpa.Picobarn()<<" pb"
+	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+	      <<"      max = "<<m_max<<endl;
+}
+
+
+bool XS_Group::OneEvent() {
+  if (m_atoms) {
+    SelectOne();
+    return p_selected->OneEvent();
+  }
+  return p_ps->OneEvent();
+}
+
+
+
+void XS_Group::AddPoint(const double value) 
+{
+  m_n++;
+  m_totalsum    += value;
+  m_totalsumsqr += value*value;
+  if (value>m_max) m_max = value;
+
+  for (int i=0;i<m_xsecs.size();i++) {
+    if (dabs(m_last)>0.) {
+      m_xsecs[i]->AddPoint(value*m_xsecs[i]->Last()/m_last);
+    }
+    else {
+      m_xsecs[i]->AddPoint(0.);
+    }  
+  }
+}
+
+double XS_Group::Differential(double s,double t,double u)
+{
+  m_last = 0;
+  for (int i=0;i<m_xsecs.size();i++) m_last += m_xsecs[i]->Differential(s,t,u);
+  if ((!(m_last<=0)) && (!(m_last>0))) {
+    msg.Error()<<"---- X_Group::Differential -------------------"<<endl;
+  }
+  return m_last;
+}
+
+
+
+double XS_Group::Differential2()
+{
+  if (p_isr) {
+    if (p_isr->On()==0) return 0.;
+    double tmp = 0.;
+    for (int i=0;i<m_xsecs.size();i++) tmp += m_xsecs[i]->Differential2();
+
+    if ((!(tmp<=0)) && (!(tmp>0))) {
+      msg.Error()<<"---- X_Group::Differential -------------------"<<endl;
+    }
+    m_last += tmp;
+    return tmp;
+  }
+  return 0.;
+}
+

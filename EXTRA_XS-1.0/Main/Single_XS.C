@@ -1,6 +1,4 @@
 #include "Single_XS.H"
-#include "Single_Process.H"
-#include "Process_Group.H"
 #include "Run_Parameter.H"
 #include "ISR_Base.H"
 #include "Running_AlphaS.H"
@@ -12,7 +10,6 @@
 
 using namespace EXTRAXS;
 using namespace PHASIC;
-using namespace AMEGIC;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
@@ -27,84 +24,88 @@ int fak(int N)
   return res;
 }
 
-Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl)
+Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl,
+		     ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+		     APHYTOOLS::Selector_Data * _seldata,
+		     int _scalescheme,int _kfactorscheme,double _scalefactor) :
+  XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor)
 {
-  Init(_nin,_nout,_fl);
-  GenerateName();
-  SetThres(sqr(_fl[2].Mass()+_fl[3].Mass()));
+  double mass = 0.;
+  for (int i=0;i<m_nin;i++)   mass += _fl[i].PSMass();
+  m_thres     = AMATOOLS::sqr(mass);
+  mass        = 0.;
+  for (int i=2;i<2+m_nout;i++) mass += _fl[i].PSMass();
+  m_thres     = AMATOOLS::Max(m_thres,sqr(mass));
+
+  p_selected = this;
 }
 
-void Single_XS::GenerateName() {
-  char help[20];
-  sprintf(help,"%i",nin);
-  name       = string(help);
-  name      += string("_");
-  sprintf(help,"%i",nout);
-  name      += string(help);
-  name      += string("_");
-
-  for (int i=0;i<nin;i++) {
-    name    += string(fl[i].Name());
-    if ((fl[i].Kfcode()==kf::e)   ||
-	(fl[i].Kfcode()==kf::mu)  ||
-	(fl[i].Kfcode()==kf::tau) ||
-	(fl[i].Kfcode()==kf::Hmin)) {
-      //kill last
-      name.erase(name.length()-1,1);
-      if (fl[i].IsAnti()) name += string("+");
-                     else name += string("-");      
-    }
-    else {
-      if (fl[i].IsAnti()) name += string("b"); 
-    }
-    name += string("_");
-  }
-  name.erase(name.length()-1,1);
-
-  name      += string(" -> ");
-  for (int i=nin;i<nin+nout;i++) {
-    name    += string(fl[i].Name());
-    if ((fl[i].Kfcode()==kf::e)   ||
-	(fl[i].Kfcode()==kf::mu)  ||
-	(fl[i].Kfcode()==kf::tau) ||
-	(fl[i].Kfcode()==kf::Hmin)) {
-      //kill last
-      name.erase(name.length()-1,1);
-      if (fl[i].IsAnti()) name += string("+");
-                       else name += string("-");      
-    }
-    else {
-      if (fl[i].IsAnti()) name += string("b"); 
-    }
-    name += string("_");
-  }
-  name.erase(name.length()-1,1);
-}
-
-double Single_XS::operator()(AMATOOLS::Vec4D * _p) {
-  double _s, _t, _u;
-  _s = (_p[0]+_p[1]).Abs2();
-  _t = (_p[0]-_p[2]).Abs2();
-  _u = (_p[0]-_p[3]).Abs2();
-  return this->operator()(_s, _t, _u); 
-}
-
-double Single_XS::operator()(double s,double t,double u) {
-  AORGTOOLS::msg.Error()<<"Virtual Method : Single_XS::operator()."<<std::endl; 
-  return 0.; 
-}
-
-void Single_XS::MakeBroker(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
-			   APHYTOOLS::Selector_Data * _seldata,AMEGIC::Process_Group * _broker) 
+Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl) :
+  XS_Base(_nin,_nout,_fl)
 {
-  Pol_Info * _plavs   = 0;
-  Flavour *  _fl      = new Flavour[Nin()+Nout()];
-  for (int i=0; i<(Nin()+Nout()); i++) _fl[i] = Flavs()[i];
-  broker = new Single_Process(Nin(),Nout(),Flavs(),isr,beam,_seldata,2,
-			      rpa.me.KFactorScheme(),rpa.me.ScaleScheme(),
-			      _plavs, AMEGIC::XS_MODE);
-  broker->SetXS(this);
-  _broker->Add(broker);
-  delete [] _fl;
+  p_selected = this;
 }
+
+
+bool Single_XS::CalculateTotalXSec() { 
+  if (p_ps) {
+    msg.Events()<<"In Single_X::CalculateTotalXSec() for "<<m_name<<endl; 
+    m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn();
+    if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+      msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
+		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+    }
+    if (m_totalxs>0.) return 1;
+    return 0;
+  }
+  msg.Error()<<"Error in Single_Process::CalculateTotalXSec()."<<endl
+	     <<"   No pointer to Phase_Space_Handler, implies abuse of this Single_XS."<<endl;
+  return 0;
+}
+
+bool Single_XS::OneEvent()        { return (p_ps->OneEvent()); }
+
+void Single_XS::SetTotalXS() {
+  m_totalxs  = m_totalsum/m_n; 
+  m_totalerr = sqrt( (m_n*m_totalsumsqr-AMATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
+  AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
+			 <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+			 <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+			 <<"       max : "<<m_max<<endl;
+  if (m_totalerr<0. && m_totalerr>0.) msg.Debugging()<<" Error : "<<m_totalsum<<" / "<<m_totalsumsqr<<endl;
+}
+
+void Single_XS::AddPoint(const double value) {
+  //msg.Debugging()<<"In Single_Process::AddPoint("<<value<<")"<<m_name<<endl;  
+  m_n++;
+  m_totalsum             += value;
+  m_totalsumsqr          += value*value;
+  if (value>m_max) m_max  = value;
+}
+
+double Single_XS::Differential(double s,double t,double u)
+{
+  m_lastdxs = operator()(s,t,u);
+  if (m_lastdxs <= 0.) return m_lastdxs = m_last = 0.;
+  if ((p_isr) && m_nin==2) m_lastlumi = p_isr->Weight(p_fl);
+                     else  m_lastlumi = 1.;
+
+  //msg.Debugging()<<"XS Diff1 : "<<m_lastdxs<<" @ "<<m_lastlumi<<" "<<p_isr<<" "<<m_nin<<" for "<<m_name<<endl;
+
+  return m_last = m_lastdxs * m_lastlumi;
+}
+
+
+
+double Single_XS::Differential2() {
+  if ((p_isr) && m_nin==2) {
+    if ((p_fl[0]==p_fl[1]) || (p_isr->On()==0) ) return 0.;
+    double tmp = m_lastdxs * p_isr->Weight2(p_fl); 
+    //msg.Debugging()<<"XS Diff2 : "<<m_lastdxs<<" @ "<<p_isr->Weight2(p_fl)<<" "<<p_isr<<" "<<m_nin<<" for "<<m_name<<endl;
+    m_last    += tmp;
+    return tmp;
+  }
+  return 0;
+}
+
 

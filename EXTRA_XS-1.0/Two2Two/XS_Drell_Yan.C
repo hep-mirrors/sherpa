@@ -4,6 +4,7 @@
 #include "Running_AlphaS.H"
 
 using namespace EXTRAXS;
+using namespace MODEL;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
@@ -17,24 +18,22 @@ using namespace AORGTOOLS;
 XS_qqbar_pg::XS_qqbar_pg(int _nin,int _nout,APHYTOOLS::Flavour * _fl)
   : Single_XS(_nin,_nout,_fl) 
 { 
-  for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0; 
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0; 
 
   barred = _fl[0].IsAnti();
 
-  colours[0][barred] = colours[2][barred] = 500; 
-  colours[1][1-barred] = colours[2][1-barred] = 501;
-  name=" q qbar -> g  photon ";
-
-  SetISRTypes(_fl);
+  p_colours[0][barred]   = p_colours[2][barred]   = 500; 
+  p_colours[1][1-barred] = p_colours[2][1-barred] = 501;
+  m_name=" q qbar -> g  photon ";
 } 
 
 double XS_qqbar_pg::operator()(double s,double t,double u) {  
-  if (s<Thres()) return 0.;
+  if (s<m_thres) return 0.;
   return 8. * (t*t + u*u + 2. * s * ( s + t + u)) / ( 9. * t*u);
 } 
 
 bool XS_qqbar_pg::SetColours(double s,double t,double u) { 
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 
@@ -43,24 +42,22 @@ bool XS_qqbar_pg::SetColours(double s,double t,double u) {
 XS_qg_qp::XS_qg_qp (int _nin,int _nout,APHYTOOLS::Flavour * _fl)
   : Single_XS(_nin,_nout,_fl) 
 { 
-  for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0; 
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0; 
 
   barred = _fl[0].IsAnti();
 
-  colours[0][barred] = colours[1][1-barred] = 500; 
-  colours[1][barred] = colours[2][barred] = 501; 
-  name=" q g -> q  photon ";
-
-  SetISRTypes(_fl);
+  p_colours[0][barred] = p_colours[1][1-barred] = 500; 
+  p_colours[1][barred] = p_colours[2][barred] = 501; 
+  m_name=" q g -> q  photon ";
 }
  
 double XS_qg_qp::operator()(double s,double t,double u) { 
-  if (s<Thres()) return 0.;
+  if (s<m_thres) return 0.;
   return (-1.) * (t*t + u*u + 2. * s * ( s + t + u)) / ( 3. * s*u);
 } 
 
 bool XS_qg_qp::SetColours(double s,double t,double u) { 
-  scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return 1; 
 }
 
@@ -94,25 +91,23 @@ XS_ee_ffbar::XS_ee_ffbar(int _nin,int _nout,APHYTOOLS::Flavour * _fl)
   fac      = 2./(3.*M_PI);
   fin      = 2.*M_PI/9. - 7./(3.*M_PI) + 9./(3.*M_PI);
 
-  for (short int i=0;i<4;i++) colours[i][0] = colours[i][1] = 0;
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   if (_fl[2].IsQuark()) {
     barred = _fl[2].IsAnti();
-    colours[2][barred] = colours[3][1-barred] = 500;
+    p_colours[2][barred] = p_colours[3][1-barred] = 500;
     colfac = 3.;
   }
 
   if (_fl[0].IsQuark())  {
     barred = _fl[0].IsAnti();
-    colours[0][barred] = colours[1][1-barred] = 500;
+    p_colours[0][barred] = p_colours[1][1-barred] = 500;
     colfac  = 1./3.;
     kswitch = 1;
   }
-
-  SetISRTypes(_fl);
 }
 
 double XS_ee_ffbar::operator()(double s,double t,double u) {
-  if (s<Thres()) return 0.;
+  if (s<m_thres) return 0.;
   chi1  = kappa * s * (s-MZ2)/(sqr(s-MZ2) + GZ2*MZ2);
   chi2  = sqr(kappa * s)/(sqr(s-MZ2) + GZ2*MZ2);
 
@@ -125,7 +120,7 @@ double XS_ee_ffbar::operator()(double s,double t,double u) {
 }
 
 bool XS_ee_ffbar::SetColours(double s,double t,double u) { 
-  scale = s;
+  m_scale = s;
   return 1; 
 }
 

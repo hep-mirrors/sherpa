@@ -1,100 +1,181 @@
 #include "XS_Base.H"
+
 #include "Run_Parameter.H"
+#include "Running_AlphaS.H"
 #include "Message.H"
+#include <stdio.h>
 
 using namespace EXTRAXS;
-using namespace PHASIC;
+using namespace MODEL;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 using namespace AORGTOOLS;
-using namespace BEAM;
-using namespace ISR;
 using namespace std;
 
+
+XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
+		 ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+		 APHYTOOLS::Selector_Data * _seldata,
+		 int _scalescheme,int _kfactorscheme,double _scalefactor) :
+  m_nin(_nin), m_nout(_nout),m_name(std::string("")),
+  m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),
+  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.),
+  m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.),
+  p_selected(NULL), p_beam(_beam), p_isr(_isr), p_sel(NULL), p_ps(NULL), 
+  p_fl(NULL), p_colours(NULL), p_moms(NULL)
+{
+  Init(_fl);
+  if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
+  else {
+    msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
+	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
+    p_sel = new No_Selector();
+  }
+
+  p_ps   = new PHASIC::Phase_Space_Handler(this,p_isr,p_beam);
+  p_moms = new AMATOOLS::Vec4D[m_nin+m_nout];
+}
+
+XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl) :
+  m_nin(_nin), m_nout(_nout),m_name(std::string("")),
+  m_scalescheme(0), m_kfactorscheme(0), m_scalefactor(1.),
+  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.),
+  m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.),
+  p_selected(NULL), p_sel(NULL), p_beam(NULL), p_isr(NULL), p_ps(NULL), 
+  p_fl(NULL), p_colours(NULL), p_moms(NULL)
+{
+  Init(_fl);
+  p_sel = new No_Selector();
+  p_moms = new AMATOOLS::Vec4D[m_nin+m_nout];
+}
+
 XS_Base::~XS_Base() {
-  if (fl)      { delete [] fl; fl = 0; }
-  if (colours) { 
-    for (int i=0;i<nin+nout;i++) delete colours[i];
-    delete [] colours; colours = 0;
+  if (p_fl)      { delete [] p_fl;   p_fl   = 0; }
+  if (p_moms)    { delete [] p_moms; p_moms = 0; }
+  if (p_sel)     { delete    p_sel;  p_sel  = 0; }
+  if (p_colours) { 
+    for (int i=0;i<m_nin+m_nout;i++) delete p_colours[i];
+    delete [] p_colours; p_colours = 0;
   }
-};
+}
 
-void XS_Base::Init(int _nin,int _nout,Flavour * _fl) {
-  msg.Debugging()<<"In XS_Base::Init("<<_nin<<","<<_nout<<")"<<endl;
-  nin     = _nin; nout = _nout;
-  fl      = new Flavour[nin+nout];
+void XS_Base::Init(Flavour * _fl)
+{
+  p_fl = new Flavour[m_nin+m_nout];
   if (_fl) {
-    for (short int i=0;i<nin+nout;i++) {
-      fl[i]  = _fl[i];
-      msg.Debugging()<<fl[i]<<" ";
-    }
+    for (short int i=0;i<m_nin+m_nout;i++) p_fl[i]  = _fl[i];
+    GenerateName();
   }
-  msg.Debugging()<<endl;
+  p_colours = new int*[m_nin+m_nout];
+  for (int i=0;i<m_nin+m_nout;i++) { 
+    p_colours[i]    = new int[2]; 
+    p_colours[i][0] = p_colours[i][1] = 0; 
+  }  
 
-  colours = new int*[nin+nout];
-  for (int i=0;i<nin+nout;i++) colours[i] = new int[2];
+  double massin = 0., massout =0.;
+  for (int i=0;i<m_nin;i++)      massin  += p_fl[i].Mass();
+  for (int i=m_nin;i<m_nout;i++) massout += p_fl[i].Mass();
+  if (massin>massout) m_thres = AMATOOLS::sqr(massin);
+                 else m_thres = AMATOOLS::sqr(massout);
+  msg.Debugging()<<"Initialised XS_Base : "<<m_nin<<" -> "<<m_nout<<" : "<<m_name<<endl;
 }
 
-double XS_Base::operator()(double,double,double) {
-  AORGTOOLS::msg.Error()<<"Virtual Method : XS_Base::operator()."<<std::endl; 
-  return 0.;
+void XS_Base::GenerateName() {
+  char help[20];
+  sprintf(help,"%i",m_nin);
+  m_name       = string(help);
+  m_name      += string("_");
+  sprintf(help,"%i",m_nout);
+  m_name      += string(help);
+  m_name      += string("_");
+
+  for (int i=0;i<m_nin;i++) {
+    m_name    += string(p_fl[i].Name());
+    if ((p_fl[i].Kfcode()==kf::e)   ||
+	(p_fl[i].Kfcode()==kf::mu)  ||
+	(p_fl[i].Kfcode()==kf::tau) ||
+	(p_fl[i].Kfcode()==kf::Hmin)) {
+      //kill last
+      m_name.erase(m_name.length()-1,1);
+      if (p_fl[i].IsAnti()) m_name += string("+");
+                       else m_name += string("-");      
+    }
+    else {
+      if (p_fl[i].IsAnti()) m_name += string("b"); 
+    }
+    m_name += string("_");
+  }
+  m_name.erase(m_name.length()-1,1);
+
+  m_name      += string(" -> ");
+  for (int i=m_nin;i<m_nin+m_nout;i++) {
+    m_name    += string(p_fl[i].Name());
+    if ((p_fl[i].Kfcode()==kf::e)   ||
+	(p_fl[i].Kfcode()==kf::mu)  ||
+	(p_fl[i].Kfcode()==kf::tau) ||
+	(p_fl[i].Kfcode()==kf::Hmin)) {
+      //kill last
+      m_name.erase(m_name.length()-1,1);
+      if (p_fl[i].IsAnti()) m_name += string("+");
+                       else m_name += string("-");      
+    }
+    else {
+      if (p_fl[i].IsAnti()) m_name += string("b"); 
+    }
+    m_name += string("_");
+  }
+  m_name.erase(m_name.length()-1,1);
 }
 
-bool XS_Base::SetColours(double,double,double) {
-  AORGTOOLS::msg.Error()<<"Virtual Method : XS_Base::SetColours()."<<std::endl; 
-  return 0.; 
+double XS_Base::Differential(AMATOOLS::Vec4D * p) {
+  for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
+  m_s = (p[0]+p[1]).Abs2();
+  m_t = (p[0]-p[2]).Abs2();
+  m_u = (p[0]-p[3]).Abs2();
+  return Differential(m_s,m_t,m_u);
 }
 
 bool XS_Base::SetColours(AMATOOLS::Vec4D * p) {
-  s = (p[0]+p[1]).Abs2();
-  t = (p[0]-p[2]).Abs2();
-  u = (p[0]-p[3]).Abs2();
-  return SetColours(s,t,u);
+  for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
+  m_s = (p[0]+p[1]).Abs2();
+  m_t = (p[0]-p[2]).Abs2();
+  m_u = (p[0]-p[3]).Abs2();
+  return SetColours(m_s,m_t,m_u);
 }
 
-XS_Base * XS_Base::Selected()  { 
-  msg.Debugging()<<"Error : Virtual method XS_Base::Selected()"<<endl;
-}
+double XS_Base::Scale(AMATOOLS::Vec4D * p) {
+  for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
+  if (m_nin==1) return p[0].Abs2();
+  m_s = (p[0]+p[1]).Abs2();
+  m_t = (p[0]-p[2]).Abs2();
+  m_u = (p[0]-p[3]).Abs2();
 
-void XS_Base::ISRInfo(int i,int & type,double & mass,double & width) 
-{
-  type  = isr_types[i];
-  mass  = isr_masses[i];
-  width = isr_widths[i];
-}
-
-void XS_Base::SetISRTypes(APHYTOOLS::Flavour * _beams)
-{
-  if ((_beams[0] == APHYTOOLS::Flavour(APHYTOOLS::kf::e) &&
-      _beams[1] == APHYTOOLS::Flavour(APHYTOOLS::kf::e).Bar())
-      || (_beams[0] == APHYTOOLS::Flavour(APHYTOOLS::kf::e).Bar() &&
-	  _beams[1] == APHYTOOLS::Flavour(APHYTOOLS::kf::e))) {
-    isr_types.push_back(0);
-    isr_masses.push_back(Flavour(APHYTOOLS::kf::photon).Mass());
-    isr_widths.push_back(Flavour(APHYTOOLS::kf::photon).Width());
-    
-    isr_types.push_back(3);
-    isr_masses.push_back(Flavour(APHYTOOLS::kf::photon).Mass());
-    isr_widths.push_back(Flavour(APHYTOOLS::kf::photon).Width());
-    
-    if (Flavour(kf::Z).IsOn()) {
-      isr_types.push_back(1);
-      isr_masses.push_back(Flavour(kf::Z).Mass());
-      isr_widths.push_back(Flavour(kf::Z).Width());
+  double pt2;
+  switch (m_scalescheme) {
+  case 1  :
+    if (m_nin+m_nout==4) {
+      pt2 = AMATOOLS::sqr(p[2][1])+AMATOOLS::sqr(p[2][2]);
+      //pt2 = 2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
     }
-  }
-  if ((_beams[0] == Flavour(kf::p_plus) &&
-       _beams[1] == Flavour(kf::p_plus).Bar())
-      ||(_beams[0] == Flavour(kf::p_plus).Bar() &&
-	 _beams[1] == Flavour(kf::p_plus))
-      || ((iabs((_beams[0]).HepEvt())>0 && iabs((_beams[0]).HepEvt())<7) &&
-         (iabs((_beams[0]).HepEvt())>0 && iabs((_beams[0]).HepEvt())<7))) {
-    isr_types.push_back(0);
-    isr_masses.push_back(Flavour(APHYTOOLS::kf::gluon).Mass());
-    isr_widths.push_back(Flavour(APHYTOOLS::kf::gluon).Width());
-    
-    isr_types.push_back(3);
-    isr_masses.push_back(Flavour(APHYTOOLS::kf::gluon).Mass());
-    isr_widths.push_back(Flavour(APHYTOOLS::kf::gluon).Width());
+    return m_scale = pt2;
+  case 2  :
+    return m_scale;
+  default :
+    return m_scale = m_s;
   }
 }
+
+double XS_Base::KFactor(double _scale) {
+  switch (m_kfactorscheme) {
+  case 1  :
+    return pow(as->AlphaS(_scale * m_scalefactor)/
+	       as->AlphaS(AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms())),m_nin+m_nout-2);
+  default :
+    return 1.;
+  }
+}
+
+
+
+
+

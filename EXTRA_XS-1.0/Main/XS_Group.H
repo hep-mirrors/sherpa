@@ -3,7 +3,6 @@
 
 #include "XS_Selector.H"
 #include "XS_Base.H"
-#include "Selector.H"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -12,40 +11,46 @@
 #include <string>
 #include <vector>
 
-namespace EXTRAXS   { class XS_Selector;   }
-namespace AMEGIC    { class Process_Group; }
-namespace ISR       { class ISR_Handler;   }
-namespace BEAM      { class Beam_Handler;  }
-
-using namespace APHYTOOLS;
+namespace EXTRAXS { class XS_Selector; }
 
 namespace EXTRAXS {
   class XS_Group : public XS_Base {
   protected:
-
-    AMEGIC::Process_Group * broker;
-    APHYTOOLS::Selector_Data * seldata;
-
-    std::vector<XS_Base *> xsecs;
-    XS_Selector * xsselector;
-
+    bool                     m_atoms;
+    XS_Selector            * p_xsselector;
+    std::vector<XS_Base *>   m_xsecs;
+  private :
+    virtual void CreateFSRChannels() {}
   public :
-
+    XS_Group(int,int,APHYTOOLS::Flavour *,
+	     ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+	     int,int,double);
+    XS_Group(int,int,APHYTOOLS::Flavour *);
     XS_Group(int,int,std::string);
-    XS_Group() {};
+    XS_Group();
     ~XS_Group();
 
-    virtual void       Add(XS_Base *,bool);
-    virtual int        Size() { return xsecs.size(); }
-    virtual XS_Base *  operator[] (int idx) { 
-      if ((idx<xsecs.size()) && (idx>=0)) return xsecs[idx];
+    void      Add(XS_Base *);
+    int       Size() { return m_xsecs.size(); }
+    XS_Base * operator[] (int idx) { 
+      if ((idx<m_xsecs.size()) && (idx>=0)) return m_xsecs[idx];
       return 0;
     } 
-    
-    void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Handler *,
-		    APHYTOOLS::Selector_Data *,AMEGIC::Process_Group *);
-    AMEGIC::Process_Group * Broker() { return broker; }
+    virtual XS_Base * Selected();
+    virtual bool      CalculateTotalXSec();
+    virtual bool      OneEvent();
+    virtual void      SetAtoms(bool _atoms) { m_atoms = _atoms; }
 
+    void      SetTotalXS();
+    void      AddPoint(const double);
+    double    Differential2();
+    double    Differential(double,double,double);
+    double    operator()(double,double,double)    {}
+    bool      SetColours(double, double, double)  {}
+    void      UpdateCuts(double,double)           {}
+    void      DeSelect();
+    void      SelectOne();
+    void      SetISR(ISR::ISR_Handler *);
   };
 }
 
