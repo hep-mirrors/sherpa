@@ -404,7 +404,8 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
     p_process->Selected()->RestoreInOrder();
     value = Differential(p_process->Selected());
     if (value > 0.) {
-      m_sumtrials += i;m_events ++;
+      m_sumtrials+=i;
+      ++m_events;
       if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	Rotate(p_lab);
 	p_process->Selected()->SetMomenta(p_lab);
@@ -414,6 +415,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
 	p_process->Selected()->SetMomenta(p_lab);
       }
       m_weight=value;
+      m_trials=i;
       return new Blob_Data<Weight_Info>(Weight_Info(m_weight,m_trials));
     }
   }
