@@ -63,8 +63,9 @@ Type  Data_Read::GetValue(std::string name) {
   return ReturnData(name,invar);
 }
 
-Data_Read::Data_Read(std::string filename) { 
-  ReadIn(filename); 
+Data_Read::Data_Read(std::string filename, bool ignoremissingfile) { 
+  m_fileexists=true;
+  ReadIn(filename,ignoremissingfile); 
 }
 
 
@@ -83,12 +84,18 @@ void Data_Read::FillIn(std::string buffer) {
   }
 }
 
-void Data_Read::ReadIn(std::string filename) {
+void Data_Read::ReadIn(std::string filename, bool ignoremissingfile) {
   std::ifstream file;
   file.open(filename.c_str());
   if (!file.good()) {
+    if (ignoremissingfile) {
+      msg.Tracking()<<" WARNING parameter file "<<filename<<" does not exist ! "<<std::endl;
+      m_fileexists=false;
+    }
+    else {
     throw(Exception(ex::critical_error,std::string("Cannot open file '")+filename+std::string("'"),
 		    "Data_Read","ReadIn"));
+    }
   }
   std::string dummy;
       

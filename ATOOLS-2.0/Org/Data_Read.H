@@ -91,6 +91,9 @@ namespace ATOOLS {
     //associative map (parameter name and coresponding value)
     Parameter_Map m_parameters;
     static Parameter_Map s_commandlineparameters;
+
+    bool m_fileexists;
+
     void FillIn(std::string buffer) ;
     static void Shorten(std::string& str);
     // returns sum of digits
@@ -99,8 +102,8 @@ namespace ATOOLS {
     template <class Type>
     const Type ReturnData(const std::string &name,const Type type);
   public:
-    Data_Read(std::string filename);
-    void ReadIn(std::string filename);
+    Data_Read(std::string filename, bool ignoremissingfile=false);
+    void ReadIn(std::string filename, bool ignoremissingfile=false);
     void WriteOut(std::string filename,int flag=std::ios::out);
 
     template <class Type> 
@@ -115,6 +118,8 @@ namespace ATOOLS {
     static void SetCommandLine(std::string name, std::string value);
 
     std::string GenerateKey();
+    
+    bool FileExists() { return m_fileexists; }
   };  
 
   // specialisation

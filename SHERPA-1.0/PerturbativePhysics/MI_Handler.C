@@ -12,11 +12,14 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   m_type(None)
 {
   std::string mihandler, beamfile;
-  ATOOLS::Data_Read *read = new ATOOLS::Data_Read(path+file);
-  mihandler=read->GetValue<std::string>("MI_HANDLER",std::string("Amisic"));
-  path+=read->GetValue<std::string>("INPUT_PATH",std::string(""));
-  file=read->GetValue<std::string>("INPUT_FILE",file);
-  beamfile=read->GetValue<std::string>("BEAM_DATA_FILE","Beam.dat");
+  ATOOLS::Data_Read *read = new ATOOLS::Data_Read(path+file,true);
+  mihandler="None";
+  if (read->FileExists()) {
+    mihandler=read->GetValue<std::string>("MI_HANDLER",std::string("Amisic"));
+    path+=read->GetValue<std::string>("INPUT_PATH",std::string(""));
+    file=read->GetValue<std::string>("INPUT_FILE",file);
+    beamfile=read->GetValue<std::string>("BEAM_DATA_FILE","Beam.dat");
+  }
   delete read;
   if (mihandler==std::string("Amisic")) {
     p_amisic = new AMISIC::Amisic(model,beam,isr);
