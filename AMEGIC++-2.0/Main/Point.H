@@ -42,7 +42,7 @@ public:
     middle  = 0;
     ncpl = 4;
     cpl = new Complex[4];
-    if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
+    nextra = 0;
 
     *this = copy;
   } 
