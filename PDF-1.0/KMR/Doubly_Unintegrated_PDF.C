@@ -36,7 +36,7 @@ Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running_AlphaS *_p_alphas,
   m_mu02(mu02),
   m_epsilon(1.e-2),
   m_kperpscheme(kps::function),
-  m_cutrescale(1.0)
+  m_fixedktexponent(0.125)
 {
   m_type=std::string("DUPDF(")+p_pdf->Type()+std::string(")");
   m_xmin=m_xmax=0.0;
@@ -165,9 +165,10 @@ double Doubly_Unintegrated_PDF::SmoothIntegrated(ATOOLS::Flavour flavour)
     m_integrated=p_pdf->GetXPDF(flavour);
     m_integrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_mu02));
     m_integrated/=(1.-m_x);
-    double b=2.*(f-m_integrated);
-    double a=-f+2.*m_integrated;
-    return (a+b*m_kperp2/m_mu02)/m_mu02;
+    double m=m_fixedktexponent;
+    double b=(m+1)*(f-m*m_integrated);
+    double a=(f-b);
+    return (a+b*m_kperp2/m_mu02)*pow(m_kperp2/m_mu02,m-1)/m_mu02;
   }
   case kps::derivative: {
     double savekp2=m_kperp2;

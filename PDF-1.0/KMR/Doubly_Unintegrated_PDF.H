@@ -31,7 +31,7 @@ namespace PDF {
     double m_integrated, m_unintegrated;
 
     kps::type m_kperpscheme;
-    double    m_cutrescale;
+    double    m_fixedktexponent;
     bool      m_calculate;
 
     double SmoothIntegrated(const ATOOLS::Flavour flavour);
@@ -64,13 +64,13 @@ namespace PDF {
     PDF_Base *GetBasicPDF();
 
     // inline functions
-    inline kps::type KPerpScheme() const { return m_kperpscheme; }
-    inline double    CutRescale() const  { return m_cutrescale;  }
+    inline kps::type KPerpScheme() const      { return m_kperpscheme;     }
+    inline double    FixedKtExponent() const  { return m_fixedktexponent; }
 
     inline void SetKPerpScheme(const kps::type scheme) 
     { m_kperpscheme=scheme; }
-    inline void SetCutRescale(const double rescale) 
-    { m_cutrescale=rescale; }
+    inline void SetFixedKtExponent(const double exponent) 
+    { m_fixedktexponent=exponent; }
 
   };// end of class Doubly_Unintegrated_PDF
 

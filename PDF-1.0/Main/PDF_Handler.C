@@ -85,8 +85,8 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	    new Doubly_Unintegrated_PDF(pdfbase,MODEL::as,mu0*mu0);
 	  int kpscheme=dataread->GetValue("KMR_KPERP_SCHEME",(int)0);
 	  dupdf->SetKPerpScheme((kps::type)kpscheme);
-	  double rescale=dataread->GetValue("KMR_CUT_RESCALE",(double)0.0);
-	  dupdf->SetCutRescale(rescale);
+	  double exponent=dataread->GetValue("KMR_FIXED_EXPONENT",(double)0.0);
+	  dupdf->SetFixedKtExponent(exponent);
 	  return dupdf;
 	}
  	if (cont==Switch::On) {
