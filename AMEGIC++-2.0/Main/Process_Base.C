@@ -346,7 +346,7 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   for (int i=0;i<_nin;i++)  { if (_in[i].Size()>1)  return 1; }
   for (int i=0;i<_nout;i++) { if (_out[i].Size()>1) return 1; }
   
-  int    cin  = 0, cout  = 0;
+  int    chin  = 0, chout  = 0;
   int    sin  = 0, sout  = 0;
   int    qin  = 0, qout  = 0;
   int    lin  = 0, lout  = 0;
@@ -354,7 +354,7 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   int    lfin = 0, lfout = 0;  
   double bin  = 0, bout  = 0;
   for (int i=0;i<_nin;i++) {
-    cin   += _in[i].IntCharge();
+    chin   += _in[i].IntCharge();
     sin   += _in[i].IntSpin();
     bin   += _in[i].BaryonNumber();
     lin   += _in[i].LeptonNumber();
@@ -363,7 +363,7 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
     lfin  += int(pow(-1.,_in[i].IsAnti())*pow(10.,_in[i].LeptonFamily()-1));
   }
   for (int i=0;i<_nout;i++) {
-    cout  += _out[i].IntCharge();
+    chout  += _out[i].IntCharge();
     sout  += _out[i].IntSpin();
     bout  += _out[i].BaryonNumber();
     lout  += _out[i].LeptonNumber();
@@ -377,7 +377,7 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   /*
     ATOOLS::msg.Debugging()<<"Check "<<_in[0]<<" "<<_in[1]<<" -> "
     <<_out[0]<<" "<<_out[1]<<"  "
-    <<cin<<" <-> "<<cout<<"  "
+    <<chin<<" <-> "<<chout<<"  "
     <<sin<<" <-> "<<sout<<"  "
     <<bin<<" <-> "<<bout<<"  "
     <<lin<<" <-> "<<lout<<"  "
@@ -386,7 +386,7 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
     <<lfin<<" <-> "<<lfout<<endl;
   */
 
-  if (cin  != cout) return 0;    // electric charge violation
+  if (chin  != chout) return 0;    // electric charge violation
   if (sin  != sout) return 0;    // spin/fermion number violation
   if (bin  != bout) return 0;    // baryon number violation
   //if (lin  != lout) return 0;    // lepton number violation
@@ -594,6 +594,19 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
     pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
     for (int i=m_nin+1;i<m_nin+m_nout;++i) {
       pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
+    }
+    break;
+  case 21 :
+    if (m_nin+m_nout==4) {
+      double t = (_p[0]-_p[2]).Abs2();
+      double u = (_p[0]-_p[3]).Abs2();
+      pt2 = 2.*s*t*u/(s*s+t*t+u*u);
+    }
+    else {
+      pt2 = 0.;
+      for (int i=m_nin;i<m_nin+m_nout;i++) {
+	pt2 += ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
+      }
     }
     break;
   default :
