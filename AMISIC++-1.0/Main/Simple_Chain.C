@@ -512,22 +512,8 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
     m_maxima[(*group)[i-1]->Name()] = new GridFunctionType(*gridhandler[i]->Grid());
     delete gridhandler[i];
   }
-  if (ATOOLS::msg.LevelIsDebugging()) {
-    p_processes->CalculateTotalXSec("");
-    double total=p_processes->TotalXS();
-    double result=m_differential[m_differential.size()-1]->IntegrateY();
-    ATOOLS::msg.Debugging()<<"Simple_Chain::CreateGrid(): \\sigma_{hard} = "
-			  <<total*ATOOLS::rpa.Picobarn()<<" pb vs."
-			  <<result*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
- 			  <<"   Relative error : "
- 			  <<ATOOLS::dabs((total-result)/(total))*100.0
- 			  <<"%."<<std::endl;
-    if (ATOOLS::dabs((total-result)/total)>5.0e-2) {
-      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			      "Result of grid integration and total cross section do not coincide",
-			      "Simple_Chain","CreateGrid"));
-    }
-  }
+  if (ATOOLS::msg.LevelIsTracking()) CheckConsistency(group,m_differential.back(),
+						      m_differential.back()->IntegrateY());
   delete p_processes;
   p_processes=NULL;
   if (!m_external) {
@@ -536,6 +522,32 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
     p_model=NULL;
     p_beam=NULL;
     p_isr=NULL;
+  }
+  return true;
+}
+
+bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,GridFunctionType *const grid,
+				    const double integral)
+{  
+  int criterion=ATOOLS::Variable::TypeToSelectorID(grid->XAxis()->Variable().Type());
+  ATOOLS::Mom_Data initialdata=group->SelectorData()->RemoveData(criterion);
+  double min=grid->XMin(), max=grid->XMax();
+  std::cout<<"CC: "<<min<<" "<<max<<std::endl;
+  if (initialdata.flavs.empty()) initialdata.flavs.push_back(ATOOLS::Flavour(ATOOLS::kf::jet));
+  group->SelectorData()->AddData(criterion,initialdata.flavs,initialdata.help,min,max);
+  group->ResetSelector(group->SelectorData());
+  group->CalculateTotalXSec("");
+  double total=group->TotalXS();
+  ATOOLS::msg.Tracking()<<"Simple_Chain::CheckConsistency(): \\sigma_{hard} = "
+			<<total*ATOOLS::rpa.Picobarn()<<" pb vs. "
+			<<integral*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
+			<<"   Relative error : "
+			<<ATOOLS::dabs((total-integral)/(total))*100.0
+			<<"%."<<std::endl;
+  if (ATOOLS::dabs((total-integral)/total)>2.*m_error) {
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
+			    "Result of grid integration and total cross section do not coincide.",
+			    "Simple_Chain","CheckConsistency"));
   }
   return true;
 }
@@ -599,6 +611,7 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
   }
+  if (ATOOLS::msg.LevelIsTracking()) CheckConsistency(p_processes,p_total,m_sigmahard);
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
   p_fsrinterface->SetAlphaSave(1.0);
@@ -706,22 +719,6 @@ bool Simple_Chain::CalculateTotal()
   delete gridhandler;
 #endif
   delete differential;
-  if (ATOOLS::msg.LevelIsDebugging()) {
-    p_processes->CalculateTotalXSec("");
-    double total=p_processes->TotalXS();
-    double result=m_sigmahard;
-    ATOOLS::msg.Debugging()<<"Simple_Chain::InitializeBlobList(): \\sigma_{hard} = "
-			   <<total*ATOOLS::rpa.Picobarn()<<" pb vs."
-			   <<result*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
-			   <<"   Relative error : "
-			   <<ATOOLS::dabs((total-result)/(total))*100.0
-			   <<"%."<<std::endl;
-    if (ATOOLS::dabs((total-result)/total)>5.0e-2) {
-      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			      "Result of grid integration and total cross section do not coincide",
-			      "Simple_Chain","CreateGrid"));
-    }
-  }
   return true;
 }
 
