@@ -128,7 +128,7 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
   int number;
   for (int i=0; i<nk; ++i) {
     flav.FromHepEvt((*(kfjet+i)));
-    if (flav==Flavour(kf::string)) {
+    if (flav==Flavour(kf::string) || flav==Flavour(kf::cluster)) {
       for (int j=(*(daughters+2*i))-1;j<(*(daughters+2*i+1));j++) {
 	//	flav = Flavour(kf::code(abs(*(kfjet+j))));
 	flav.FromHepEvt((*(kfjet+j)));
