@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/09
+//Version: 2 ADICIC++-0.0/2005/01/31
 
 //Inline methods of Chain_Handler.H.
 
