@@ -1,0 +1,26 @@
+SHERPASYS     =	../..
+
+ANALYSISFLAGS =	-pedantic -Wall -Winline
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+ANALYSISINCS  =	-I../Main
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
+lib_LTLIBRARIES           = libObservables.la
+libObservables_la_SOURCES = \
+			    One_Particle_Observables.C \
+			    Two_Particle_Observables.C \
+			    Four_Particle_Observables.C \
+			    Jet_Observables.C
+noinst_HEADERS            = \
+			    One_Particle_Observables.H \
+			    Two_Particle_Observables.H \
+			    Four_Particle_Observables.H \
+			    Jet_Observables.H
+EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(ANALYSISFLAGS)
+INCLUDES      =	$(ANALYSISINCS) $(ATOOLSINCS)
