@@ -61,7 +61,7 @@ namespace EXTRAXS {
   };
 
   class XS_q1qbar1_q1qbar1 : public Single_XS {
-    int a,p;
+    int a,p,r;
     double Ms,Mt,Mu,aS;
   public:
     XS_q1qbar1_q1qbar1(int _nin,int _nout, 
@@ -83,6 +83,7 @@ namespace EXTRAXS {
   };
   
   class XS_gg_q1qbar1 : public Single_XS {
+    int r;
     double Ms,Mt,Mu,aS;
   public:
     XS_gg_q1qbar1(int _nin,int _nout, 
