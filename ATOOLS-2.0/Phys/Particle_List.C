@@ -1,4 +1,5 @@
 #include "Particle_List.H"
+#include "Particle_Qualifier.H"
 //#include <iostream>
 
 using namespace ATOOLS;
@@ -9,7 +10,7 @@ template class std::back_insert_iterator<Particle_List>;
 
 namespace ATOOLS {
   template void copy_if<>( Particle_Iterator, Particle_Iterator , 
-				      std::back_insert_iterator<Particle_List> ,const Is_Gluon &);
+			   std::back_insert_iterator<Particle_List> ,const Is_Gluon &);
   template void copy_if<>( Particle_Iterator, Particle_Iterator , 
 				      std::back_insert_iterator<Particle_List> ,const Is_Photon &);
   template void copy_if<>( Particle_Iterator, Particle_Iterator , 

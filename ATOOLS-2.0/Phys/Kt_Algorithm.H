@@ -3,6 +3,7 @@
 
 #include "Vector.H"
 #include "Particle_List.H"
+#include "Particle_Qualifier.H"
 #include <vector>
 
 namespace ATOOLS {

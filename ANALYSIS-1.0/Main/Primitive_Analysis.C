@@ -4,6 +4,7 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Shell_Tools.H"
+#include "Particle_Qualifier.H"
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"

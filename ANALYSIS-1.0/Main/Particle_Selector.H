@@ -3,6 +3,8 @@
 
 #include "Primitive_Observable_Base.H"
 
+namespace ATOOLS {  class Particle_Qualifier_Base; }
+
 namespace ANALYSIS {
 
 

@@ -4,6 +4,7 @@ using namespace ANALYSIS;
 
 #include "MyStrStream.H"
 #include "Run_Parameter.H"
+#include "Particle_Qualifier.H"
 #include <iomanip>
 
 DECLARE_GETTER(Final_Selector_Getter,"Trigger",
@@ -38,27 +39,13 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
     else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
     else if (cur[0]=="JetMode" && cur.size()>1) jetmode=ATOOLS::ToType<int>(cur[1]);
     else if (cur[0]=="Qual" && cur.size()>1) {
-      int code=ATOOLS::ToType<int>(cur[1]);
       if (ATOOLS::rpa.gen.Beam1().IsLepton() && 
 	  ATOOLS::rpa.gen.Beam2().IsLepton()) {
-	switch (code) {
-	case  0: qualifier=new ATOOLS::Is_There(); break; 
-	case  1: qualifier=new ATOOLS::Is_Charged_Hadron(); break;
-	case  2: qualifier=new ATOOLS::Is_Neutral_Hadron(); break;
-	case  3: qualifier=new ATOOLS::Is_Hadron(); break;
-	case  4: qualifier=new ATOOLS::Is_Charged(); break;
-	case  5: qualifier=new ATOOLS::Is_Charged_Pion(); break;
-	case  6: qualifier=new ATOOLS::Is_Charged_Kaon(); break;
-	case  7: qualifier=new ATOOLS::Is_Proton_Antiproton(); break;
-	case  9: qualifier=new ATOOLS::Is_Parton(); break;
-	case 42: qualifier=new ATOOLS::Is_Not_Lepton(); break;
-	case 43: qualifier=new ATOOLS::Is_Not_Neutrino(); break;
-	default: qualifier=new ATOOLS::Is_Charged();
-	}
+	qualifier = ATOOLS::Particle_Qualifier_Getter::GetObject(cur[1],cur[1]);
       }
     }
   }
-  if (!qualifier) qualifier=new ATOOLS::Is_Not_Lepton(); 
+  if (!qualifier) qualifier = new ATOOLS::Is_Not_Lepton(); 
   Final_Selector *selector = new Final_Selector(inlist,outlist,jetmode,qualifier);
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];

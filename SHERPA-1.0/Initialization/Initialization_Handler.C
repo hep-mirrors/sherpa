@@ -13,6 +13,7 @@
 #include "Message.H"
 #include "Scaling.H"
 #include "MCatNLO_Wrapper.H"
+#include "Particle_Qualifier.H"
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -427,6 +428,12 @@ bool Initialization_Handler::InitializeTheAnalyses()
   helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
   if (helpi>0) {
     ANALYSIS::Analysis_Handler::ShowSyntax(helpi);
+    throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"Syntax shown.",
+			    "Initialization_Handler","InitializeTheAnalyses"));
+  }
+  helpi=p_dataread->GetValue<int>("SHOW_QUALIFIER_SYNTAX",0);
+  if (helpi>0) {
+    ATOOLS::Particle_Qualifier_Base::ShowQualifiers(helpi);
     throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"Syntax shown.",
 			    "Initialization_Handler","InitializeTheAnalyses"));
   }
