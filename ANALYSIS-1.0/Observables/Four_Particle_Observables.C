@@ -1,10 +1,9 @@
 #include "Four_Particle_Observables.H"
 #include "Primitive_Analysis.H"
+#include "MyStrStream.H"
 
 using namespace ANALYSIS;
 using namespace ATOOLS;
-
-#include "MyStrStream.H"
 
 template <class Class>
 Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
