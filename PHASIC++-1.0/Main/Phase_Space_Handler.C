@@ -40,21 +40,22 @@
 #ifdef ANALYSE__Phase_Space_Handler
 #include "My_Root.H"
 #include "TH2D.h"
+#include "TH3D.h"
 static ATOOLS::Info_Key m_isrzkey[2], m_isrkpkey[2];
-class PS_Histogram: public TH2D {
+class PS_Histogram_2D: public TH2D {
 private:
   TH2D *p_ps;
 public:
   // constructor
-  PS_Histogram(const char *name,const char *title,
-	       const size_t nbinsx,const double xmin,const double xmax,
-	       const size_t nbinsy,const double ymin,const double ymax):
+  PS_Histogram_2D(const char *name,const char *title,
+		  const size_t nbinsx,const double xmin,const double xmax,
+		  const size_t nbinsy,const double ymin,const double ymax):
     TH2D(name,title,nbinsx,xmin,xmax,nbinsy,ymin,ymax),
     p_ps(new TH2D((std::string(name)+"_ps").c_str(),
 		  (std::string(title)+"_ps").c_str(),
 		  nbinsx,xmin,xmax,nbinsy,ymin,ymax)) {}
   // destructor
-  ~PS_Histogram() {}
+  ~PS_Histogram_2D() {}
   // member functions
   Int_t Fill(const Double_t x,const Double_t y,
 	     const Double_t weight)
@@ -69,18 +70,6 @@ public:
 	SetBinContent(i,j,p_ps->GetBinContent(i,j)==0.0?0.0:
 		      GetBinContent(i,j)/
 		      p_ps->GetBinContent(i,j));
-#ifdef USING__Distinct_Canvas
-    TH2D::Draw(option);
-    Int_t logx=gPad->GetLogx();
-    Int_t logy=gPad->GetLogy();
-    Int_t logz=gPad->GetLogz();
-    TCanvas *psc = new TCanvas(p_ps->GetName(),
-			       p_ps->GetTitle());
-    psc->SetLogx(logx);
-    psc->SetLogy(logy);
-    psc->SetLogz(logz);
-    p_ps->Draw(option);
-#else
     TVirtualPad *psc=gPad;
     Int_t logx=psc->GetLogx();
     Int_t logy=psc->GetLogy();
@@ -96,11 +85,57 @@ public:
     gPad->SetLogy(logy);
     gPad->SetLogz(logz);
     p_ps->Draw(option);
-#endif
   }
-};// end of class PS_Histogram
+};// end of class PS_Histogram_2D
+class PS_Histogram_3D: public TH3D {
+private:
+  TH3D *p_ps;
+public:
+  // constructor
+  PS_Histogram_3D(const char *name,const char *title,
+	       const size_t nbinsx,const double xmin,const double xmax,
+	       const size_t nbinsy,const double ymin,const double ymax,
+	       const size_t nbinsz,const double zmin,const double zmax):
+    TH3D(name,title,nbinsx,xmin,xmax,nbinsy,ymin,ymax,nbinsz,zmin,zmax),
+    p_ps(new TH3D((std::string(name)+"_ps").c_str(),
+		  (std::string(title)+"_ps").c_str(),
+		  nbinsx,xmin,xmax,nbinsy,ymin,ymax,nbinsz,zmin,zmax)) {}
+  // destructor
+  ~PS_Histogram_3D() {}
+  // member functions
+  Int_t Fill(const Double_t x,const Double_t y,const Double_t z,
+	     const Double_t weight)
+  {
+    p_ps->Fill(x,y,z,1.0);
+    return TH3D::Fill(x,y,z,weight);
+  }
+  void Draw(Option_t *option="")
+  {
+    for (Int_t i=0;i<GetNbinsX();++i)
+      for (Int_t j=0;j<GetNbinsY();++j)
+	for (Int_t k=0;k<GetNbinsZ();++k)
+	  SetBinContent(i,j,k,p_ps->GetBinContent(i,j,k)==0.0?0.0:
+			GetBinContent(i,j,k)/
+			p_ps->GetBinContent(i,j,k));
+    TVirtualPad *psc=gPad;
+    Int_t logx=psc->GetLogx();
+    Int_t logy=psc->GetLogy();
+    Int_t logz=psc->GetLogz();
+    psc->Divide(2,1);
+    psc->cd(1);
+    gPad->SetLogx(logx);
+    gPad->SetLogy(logy);
+    gPad->SetLogz(logz);
+    TH3D::Draw(option);
+    psc->cd(2);
+    gPad->SetLogx(logx);
+    gPad->SetLogy(logy);
+    gPad->SetLogz(logz);
+    p_ps->Draw(option);
+  }
+};// end of class PS_Histogram_3D
 typedef std::map<PHASIC::Integrable_Base*,
-		 PS_Histogram*> Analysis_Map;
+		 PS_Histogram_2D*> Analysis_Map;
 static Analysis_Map s_psspy, s_psz, s_pskp;
 #endif
 
@@ -285,6 +320,19 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   if (!(mode&psm::pi_call) && p_pi!=NULL) {
     p_active=process;
     p_pi->GeneratePoint(mode);
+#ifdef ANALYSE__Phase_Space_Handler
+    static PS_Histogram_3D *three=NULL;
+    if (three==NULL) {
+      const char *name=(process->Name()+"_sprime_y_pt").c_str();
+      three = new PS_Histogram_3D(name,name,100,0.0,10.0,
+				  100,-10.0,10.0,100,0.0,10.0);
+      MYROOT::myroot->AddObject(three,name);
+    }
+    three->Fill(-log10(m_isrspkey[3]/m_isrspkey[2]),
+		m_isrykey[2],-log10(p_lab[2].PPerp2()/m_isrspkey[2]),
+		m_psweight==0.0?0.0:m_flux*(m_result_1+m_result_2)*
+		p_pi->GenerateWeight());
+#endif
     return p_pi->Value()*p_pi->GenerateWeight();
   }
   p_info->ResetAll();
@@ -406,10 +454,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   Analysis_Map::const_iterator ait=s_psspy.find(process);
   if (ait==s_psspy.end()) {
     const char *name=(process->Name()+"_sprime_y").c_str();
-    PS_Histogram *psh = 
-      new PS_Histogram(name,name,100,0.0,10.0,100,-10.0,10.0);
+    PS_Histogram_2D *psh = 
+      new PS_Histogram_2D(name,name,100,0.0,10.0,100,-10.0,10.0);
     ait=s_psspy.insert(std::pair<Integrable_Base*,
-		       PS_Histogram*>(process,psh)).first;
+		       PS_Histogram_2D*>(process,psh)).first;
     MYROOT::myroot->AddObject(psh,name);
     MYROOT::myroot->SetDrawOption("lego2");
   }
@@ -420,14 +468,26 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 			 m_isrykey[2],m_psweight==0.0?0.0:
 			 m_flux*(m_result_1+m_result_2)*
 			 p_pi->GenerateWeight());
+  if (p_pi==NULL) {
+    static PS_Histogram_3D *three=NULL;
+    if (three==NULL) {
+      const char *name=(process->Name()+"_sprime_y_pt").c_str();
+      three = new PS_Histogram_3D(name,name,100,0.0,10.0,
+				  100,-10.0,10.0,100,0.0,10.0);
+      MYROOT::myroot->AddObject(three,name);
+    }
+    three->Fill(-log10(m_isrspkey[3]/m_isrspkey[2]),m_isrykey[2],
+		-log10(p_lab[2].PPerp2()/m_isrspkey[2]),
+		m_psweight==0.0?0.0:m_flux*(m_result_1+m_result_2));
+  }
   if (p_isrhandler->KMROn()>0) {
     Analysis_Map::const_iterator ait=s_psz.find(process);
     if (ait==s_psz.end()) {
       const char *name=(process->Name()+"_z1_z2").c_str();
-      PS_Histogram *psh = 
-	new PS_Histogram(name,name,100,0.0,10.0,100,10.0,10.0);
+      PS_Histogram_2D *psh = 
+	new PS_Histogram_2D(name,name,100,0.0,10.0,100,10.0,10.0);
       ait=s_psz.insert(std::pair<Integrable_Base*,
-		       PS_Histogram*>(process,psh)).first;
+		       PS_Histogram_2D*>(process,psh)).first;
       MYROOT::myroot->AddObject(psh,name);
       MYROOT::myroot->SetDrawOption("lego2");
     }
@@ -438,10 +498,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     ait=s_pskp.find(process);
     if (ait==s_pskp.end()) {
       const char *name=(process->Name()+"_kp1_kp2").c_str();
-      PS_Histogram *psh = 
-	new PS_Histogram(name,name,100,0.0,10.0,100,-10.0,10.0);
+      PS_Histogram_2D *psh = 
+	new PS_Histogram_2D(name,name,100,0.0,10.0,100,-10.0,10.0);
       ait=s_pskp.insert(std::pair<Integrable_Base*,
-			PS_Histogram*>(process,psh)).first;
+			PS_Histogram_2D*>(process,psh)).first;
       MYROOT::myroot->AddObject(psh,name);
       MYROOT::myroot->SetDrawOption("lego2");
     }
