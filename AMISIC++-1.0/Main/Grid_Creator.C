@@ -123,7 +123,8 @@ namespace AMISIC {
     }
     ATOOLS::msg.Out()<<"Grid_Creator::CalculateSingleValue(): Got value for "<<boundary[0]<<" GeV"<<std::endl
 		     <<"   Calculation for "<<lower<<" GeV < "<<p_xaxis->Variable().Name()
-		     <<" < "<<upper<<" GeV yielded "<<newxs*rpa.Picobarn()<<" pb/GeV"<<std::endl;
+		     <<" < "<<upper<<" GeV yielded "<<newxs*rpa.Picobarn()<<" pb/GeV ( max = "
+		     <<newmax*rpa.Picobarn()<<" pb/GeV )"<<std::endl;
     return success;
   }
   
