@@ -80,8 +80,7 @@ namespace SHERPA {
 
     inline void ClearErrors() { m_errors=0; }
 
-    inline void ExtractParton(ATOOLS::Particle *parton) 
-    { if (parton!=NULL) m_parton[1].push_back(parton); }
+    inline void ExtractParton(ATOOLS::Particle *parton) { m_parton[1].push_back(parton); }
 
   };// end of class Remnant_Base
 
