@@ -66,6 +66,8 @@ namespace ATOOLS {
     // constructors
     Exception(const ex::type type,const std::string info);
     Exception(const ex::type type,const std::string info,
+	      std::string cmethod);
+    Exception(const ex::type type,const std::string info,
 	      const std::string cclass,const std::string cmethod);
 
     // destructor
@@ -84,7 +86,8 @@ namespace ATOOLS {
     inline const std::string &Info() const { return m_info; }
     inline ex::type           Type() const { return m_type; }
 
-    friend std::ostream &operator<<(std::ostream &str,const Exception &exception);
+    friend std::ostream &operator<<(std::ostream &str,
+				    const Exception &exception);
 
   };// end of class Exception
   
@@ -94,22 +97,31 @@ namespace ATOOLS {
     \class Exception
     \brief Provides exception handling
 
-    This class provides exception handling. Each exception thrown within Sherpa is caught
-    by a catch (Exception exception) in Main.C.
-    The appropriate way to include exception throwing into the code is as follows
+    This class provides exception handling. Each exception thrown 
+    within Sherpa is caught by a catch (Exception exception) in Main.C.
+    The appropriate way to include exception throwing into the code 
+    is as follows
     \code
        using namespace ATOOLS;
        ...
-       void Example_Class::Example_Function
+       void Example_Class::Example_Function()
        {
          ...
-	 throw(ex::normal_exit,"normal abort","Example_Class","Example_Function");
+	 // explicit call of constructor
+	 throw(ex::normal_exit,"normal abort",
+	       "Example_Class","Example_Function");
+	 // call of constructor through #define directive 
+	 THROW(normal_exit,"normal abort");
          ...
        }
     \endcode
   */
 
 }// end of namespace ATOOLS
+
+#define THROW(exception,message)			\
+  throw(ATOOLS::Exception(ATOOLS::ex::exception,	\
+			  message,__PRETTY_FUNCTION__));
 
 #include "Exception_Handler.H"
 

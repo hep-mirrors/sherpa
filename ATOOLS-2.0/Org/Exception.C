@@ -1,5 +1,6 @@
 #include "Exception.H"
 
+#include "MathTools.H"
 #include <iostream>
 
 using namespace ATOOLS;
@@ -43,6 +44,25 @@ Exception::Exception(const ex::type type,const std::string info):
   m_type(type),
   m_info(info)
 {
+  Exception_Handler::s_exception=this;
+}
+
+Exception::Exception(const ex::type type,const std::string info,
+		     std::string cmethod):
+  m_type(type),
+  m_info(info)
+{
+  cmethod=cmethod.substr(0,ATOOLS::Min(cmethod.length(),cmethod.find("(")));
+  size_t pos;
+  while ((pos=cmethod.find(" "))!=std::string::npos) 
+    cmethod=cmethod.substr(pos+1);
+  pos=cmethod.find("::");
+  while (pos!=std::string::npos) {
+    m_class=cmethod.substr(0,pos);
+    cmethod=cmethod.substr(pos+2);
+    pos=cmethod.find("::");
+    m_method=cmethod.substr(0,ATOOLS::Min(cmethod.length(),pos));
+  }
   Exception_Handler::s_exception=this;
 }
 
