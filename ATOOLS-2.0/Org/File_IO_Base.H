@@ -68,8 +68,6 @@ namespace ATOOLS {
     inline std::ifstream *InFile(const unsigned int i=0)  { return m_infile[i];  }
     inline std::ofstream *OutFile(const unsigned int i=0) { return m_outfile[i]; }
 
-    inline bool RereadInFile(const unsigned int i=0) { CloseInFile(i,true); return OpenInFile(i); }
-
   }; // end of class File_IO_Base
 
 } // end of namespace ATOOLS
