@@ -20,7 +20,7 @@ using namespace std;
 
 
 Simple_XS::Simple_XS(const std::string &path,const std::string &file,
-			 MODEL::Model_Base *const model):
+		     MODEL::Model_Base *const model):
   XS_Group(0,0,NULL),
   m_path(path), 
   m_file(file),
@@ -58,6 +58,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 {
   p_beamhandler=beamhandler; 
   p_isrhandler=isrhandler;
+  XSSelector()->SetOffShell(p_isrhandler->KMROn());
   std::string processfile=
     p_dataread->GetValue<std::string>("PROCESS_FILE",
 				      std::string("Processes.dat"));
@@ -172,7 +173,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		  }
 		}
 	      }
-	      p_selected=m_xsecs.back();
+	      if (m_xsecs.size()>0) p_selected=m_xsecs.back();
 	    }
 	    delete [] flavs;
 	  }
