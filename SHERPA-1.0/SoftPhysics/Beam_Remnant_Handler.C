@@ -51,8 +51,8 @@ bool SumMomenta(ATOOLS::Blob *bl)
   SumMomenta(bl,inisum,finsum);
   bool test=inisum==finsum;
   if (!test) {
-    ATOOLS::msg.Error()<<"SumMomenta(..): Summation does not agree."<<std::endl
-		       <<"initial = "<<inisum<<" vs. final = "<<finsum<<std::endl;
+    msg_Tracking()<<"SumMomenta(..): Summation does not agree."<<std::endl
+		  <<"initial = "<<inisum<<" vs. final = "<<finsum<<std::endl;
   }
   return test;
 }
@@ -203,6 +203,7 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   }
   for (short unsigned int i=0;i<2;++i) 
     if (p_beamblob[i]) if (!p_beampart[i]->FillBlob(p_beamblob[i],particlelist)) {
+      if (i==0) p_beampart[1]->FillBlob(p_beamblob[i],particlelist);
       while (bloblist->size()>0) {
 	delete *bloblist->begin();
 	bloblist->erase(bloblist->begin());
