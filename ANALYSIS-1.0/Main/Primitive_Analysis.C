@@ -370,7 +370,7 @@ void Primitive_Analysis::ClearAllData()
 
 void Primitive_Analysis::PrintStatus() 
 {
-  if (msg.Level()<2) return; // Tracking
+  if (!msg.LevelIsTracking()) return; 
   //  std::cout<<" ana name: "<<m_name<<" "<<m_mode<<std::endl;
 
   msg.Out()<<"Particle_Lists:"<<std::endl;
