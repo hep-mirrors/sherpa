@@ -10,6 +10,13 @@ namespace EXTRAXS {
   class Single_XS: public XS_Base {
   public:
 
+    typedef Single_XS *(*Getter_Function)(const size_t nin,const size_t nout,
+					  const ATOOLS::Flavour *flavours,
+					  const size_t nqed,const size_t nqcd);
+
+
+  public:
+
     // constructors
     Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
     Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
