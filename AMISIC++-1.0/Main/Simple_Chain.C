@@ -620,6 +620,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	if (data==NULL) return false;
 	weight=data->Get<PHASIC::Weight_Info>().weight;
 	trials=data->Get<PHASIC::Weight_Info>().ntrial;
+	delete data;
 	if (weight>max) {
 	  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
 			     <<"Weight exceeded maximum.\n   Setting new maximum "
