@@ -32,7 +32,7 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
     return xs;
   }
   if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours))!=NULL);
-  //else if ((xs=Single_XS::GetProcess<XS_q1q2b_q3q4b>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1q2b_q3q4b>(nin,nout,flavours))!=NULL);
   else if ((xs=Single_XS::GetProcess<XS_gg_gg>(nin,nout,flavours))!=NULL);
   else if ((xs=Single_XS::GetProcess<XS_q1g_q1g>(nin,nout,flavours))!=NULL);
   else if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>(nin,nout,flavours))!=NULL);
