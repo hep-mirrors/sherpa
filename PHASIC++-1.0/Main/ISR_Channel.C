@@ -117,7 +117,7 @@ SimplePoleBackward::SimplePoleBackward(double _sprimeexp,double _yexp,double _de
   deltay[0] = _deltay1;
   deltay[1] = _deltay2;
   char help[3];
-  sprintf(help,"%i",int(100.*sprimeexp));
+  sprintf(help,"%i",int(100.*sprimeexp)); 
   name     = std::string("SimplePoleBackward"+std::string(help));
   ms = rans = 0;
 };

@@ -49,8 +49,11 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   numberofchannels *= psh->NumberOfFSRIntegrators();
   msg.Tracking()<<"   found "<<psh->NumberOfFSRIntegrators()<<" fsr integrators."<<endl;
 
-  iter      = Max(1+int(numberofchannels/maxerror),20000);
-  nopt      = Max(1+int(numberofchannels/maxerror),10);
+  //iter      = Max(1+int(numberofchannels/maxerror),20000);
+  //nopt      = Max(1+int(numberofchannels/maxerror),10);
+
+  iter      = Max(1+10*int(numberofchannels),20000);
+  nopt      = 10; 
 
   maxopt    = iter*nopt;
 

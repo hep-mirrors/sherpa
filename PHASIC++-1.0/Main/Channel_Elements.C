@@ -532,11 +532,11 @@ double Channel_Elements::WeightYCentral(double tau, double * yrange,
   double y0   = 0.5 * log(tau);
   double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
   double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
-  if ((y0<yrange[0]) || (y0>yrange[1])) {
+  if ((y<yrange[0]) || (y>yrange[1])) {
     AORGTOOLS::msg.Error()<<"y out of trivial bounds in CE.WeightYCentral : "
-			  <<yrange[0]<<" < "<<y0<<" < "<<yrange[1]<<endl;
+			  <<yrange[0]<<" < "<<y<<" < "<<yrange[1]<<endl;
   }
-  return 2.*(atan(exp(ymax))-atan(exp(ymin)));
+  return (atan(exp(ymax))-atan(exp(ymin)))*2.*cosh(y);
 }
 
 double Channel_Elements::DiceYForward(double tau, double * yrange, double * deltay, double yexp, 

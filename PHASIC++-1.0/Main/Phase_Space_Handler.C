@@ -20,7 +20,7 @@ using namespace EXTRAXS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
-using namespace BEAM;
+using namespace BEAM; 
 using namespace ISR;
 using namespace std;
 
@@ -632,15 +632,28 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     result1 *= d1 = process->Differential(p);
   }
   // Second part : flin[0] coming from Beam[1] and flin[1] coming from Beam[0]
-  if (ih->On()==3) {
-    Rotate(p);
-    if ( (proc->Selector())->Trigger(p)) {
-      ih->CalculateWeight2(Q2);
-      if (result2 > 0.) result2 *= process->Differential2();
-      else              result2  = 0.;
-    }
-    else                result2  = 0.;
-    Rotate(p);
+  if (ih->On()==3 && trigger==1) {
+    //Rotate(p);
+    // boost in LAB missing !!!
+    // further we have to guaranty that Trigger A has been passed
+    
+    //if ( (proc->Selector())->Trigger(p)) {            // Trigger B
+      // boost from LAB in CMS missing !!!
+          
+    ih->CalculateWeight2(Q2);
+    msg.Debugging()<<"Before Differential B moms:"<<endl;
+    for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
+    
+    if (result2 > 0.) result2 *= process->Differential2();
+    else              result2  = 0.;
+    //}
+    /*
+      else {
+      msg.Debugging()<<" Trigger B killed Differential B "<<endl;
+      result2  = 0.;
+      }*/
+    
+    //Rotate(p);
   }
   if ( (ih->On()>0) || (bh->On()>0) ) 
     flux = 1./(2.*sqrt(sqr(sprime-m12-m22)-4.*m12*m22));
