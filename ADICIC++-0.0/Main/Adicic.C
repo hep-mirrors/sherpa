@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/05
+//Version: 1 ADICIC++-0.0/2004/07/13
 
 //Implementation of Adicic.H.
 
@@ -165,10 +165,10 @@ bool Adicic::ExtractPartons(ATOOLS::Blob_List* blobs, ATOOLS::Particle_List*) {
 	(*piter)->SetInfo('F');
 	(*piter)->SetNumber((*piter)->Number()+num);
       }
-      cout<<om::greenbg<<"Final Blob:"<<om::reset<<" "<<endl<<blob<<endl;//////
+      cout<<om::greenbg<<"Final Blob:"<<om::reset<<" "<<endl<<*blob<<endl;/////
       return true;
     }
-    cout<<om::brownbg<<"First Blob:"<<om::reset<<" "<<endl<<*blit<<endl;///////
+    cout<<om::brownbg<<"First Blob:"<<om::reset<<" "<<endl<<**blit<<endl;//////
   }
   return false;
 }

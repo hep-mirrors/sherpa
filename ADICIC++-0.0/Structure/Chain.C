@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/05
+//Version: 1 ADICIC++-0.0/2004/07/13
 
 //Implementation of Chain.H.
 
@@ -423,16 +423,16 @@ Chain& Chain::operator=(const Chain& cha) {
 void Chain::Print() const {
   cout<<(*this)<<endl;
   if(varset.p_quab) cout<<om::bold<<"Branch:"<<om::reset<<endl
-			<<&(varset.p_quab->Parton)<<endl;
+			<<varset.p_quab->Parton<<endl;
   if(varset.p_atib) cout<<om::bold<<"Antibranch:"<<om::reset<<endl
-			<<&(varset.p_atib->Parton)<<endl;
+			<<varset.p_atib->Parton<<endl;
   if(!varset.l_glub.empty()) cout<<om::bold<<"Glubranches:"<<om::reset<<endl;
   for(list<Dipole::Glubranch*>::const_iterator gut=varset.l_glub.begin();
       gut!=varset.l_glub.end(); ++gut) {
     if(*gut==varset.p_1glu)
-      cout<<&((*gut)->Parton)<<"  "<<om::red<<"g_root"<<om::reset<<endl;
+      cout<<(*gut)->Parton<<"  "<<om::red<<"g_root"<<om::reset<<endl;
     else
-      cout<<&((*gut)->Parton)<<endl;
+      cout<<(*gut)->Parton<<endl;
   }
   cout<<om::bold<<string(80,'o')<<om::reset<<endl;
   cout<<"Number of branches = "<<ParticleNumber()<<endl;
