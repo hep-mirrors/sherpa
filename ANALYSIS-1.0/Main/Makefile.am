@@ -22,7 +22,7 @@ libAnalysis_la_SOURCES        =	\
 				Analysis_Handler.C
 noinst_HEADERS        =	\
 			Final_Selector.H \
-	 		Particle_Selector.H
+	 		Particle_Selector.H \
 			Primitive_Observable_Base.H \
 			Primitive_Calorimeter.H \
 			Primitive_Detector.H \
