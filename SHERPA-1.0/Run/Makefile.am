@@ -66,7 +66,7 @@ endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
-HADRONSLIBS   =	-L@libdir@ -lHadronsMain 
+HADRONSLIBS   =	-L@libdir@ -lHadronsMain -lHadronsMEs -lHadronsPSs
 if ADICIC_SUPPORT
 ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct \
 		-lAdicicTool -lAdicicInput
