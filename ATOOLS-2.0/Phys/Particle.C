@@ -34,7 +34,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
   case 2 : // decayed or fragmented
     str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
     str<<"["<<part.Info()<<"] "<<part.Status()<<" "
-       <<std::setw(15)<<part.Flav()<<" "<<std::setiosflags(std::ios::right)
+       <<std::setw(22)<<part.Flav()<<" "<<std::setiosflags(std::ios::right)
        <<std::setw(6)<<part.Number()<<" (";
     if (part.ProductionBlob()) str<<std::setw(5)<<part.ProductionBlob()->Id();
     else str<<"     ";
