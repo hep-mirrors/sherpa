@@ -31,7 +31,8 @@ namespace ATOOLS {
     std::vector<std::string> m_comment, m_ignore, m_separator, m_filecontent;
     std::vector<int>         m_blank;
 
-    std::string              m_string, m_filebegin, m_fileend;
+    std::string              m_string;
+    std::vector<std::string> m_filebegin, m_fileend;
 
     VectorTypeID m_vectortype;
     MatrixTypeID m_matrixtype;
@@ -93,7 +94,14 @@ namespace ATOOLS {
     inline void AddBlank(const std::vector<int> &_m_blank);
 
     inline void SetFileBegin(const std::string _m_filebegin);
+    inline void SetFileBegin(const std::vector<std::string> &_m_filebegin);
+    inline void AddFileBegin(const std::string _m_filebegin);
+    inline void AddFileBegin(const std::vector<std::string> &_m_filebegin);
+
     inline void SetFileEnd(const std::string _m_fileend);
+    inline void SetFileEnd(const std::vector<std::string> &_m_fileend);
+    inline void AddFileEnd(const std::string _m_fileend);
+    inline void AddFileEnd(const std::vector<std::string> &_m_fileend);
 
     inline void SetString(const std::string _m_string);
 
@@ -124,8 +132,8 @@ namespace ATOOLS {
 
     inline const std::vector<int> &Blank() const;
 
-    inline const std::string FileBegin() const;
-    inline const std::string FileEnd() const;
+    inline const std::vector<std::string> &FileBegin() const;
+    inline const std::vector<std::string> &FileEnd() const;
 
     inline const std::string String() const;
 

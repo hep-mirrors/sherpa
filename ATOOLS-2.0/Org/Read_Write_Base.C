@@ -52,27 +52,31 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
     m_infile[i]->open((m_inputpath[i]+m_inputfile[i]).c_str()); 
     m_filecontent.clear();
     std::string lastline;
-    bool checkbegin=(bool)(m_filebegin!=ATOOLS::nullstring);
-    bool checkend=(bool)(m_fileend!=ATOOLS::nullstring);
+    bool checkbegin=(bool)(m_filebegin.size()>0);
+    bool checkend=(bool)(m_fileend.size()>0);
     int filebegin=0;
     if (*m_infile[i]) {
       getline(*m_infile[i],lastline);
       do {
 	if (checkbegin) {
-	  if (lastline.find(m_filebegin)!=std::string::npos) {
-	    if (filebegin==0) {
-	      lastline=lastline.substr(lastline.find(m_filebegin)+m_filebegin.length());
-	    }
-	    ++filebegin;
-	  }
-	  else {
-	    if (filebegin==0) lastline=ATOOLS::nullstring;
-	  }
-	  if (checkend && filebegin>0) {
-	    if (lastline.find(m_fileend)!=std::string::npos) {
-	      --filebegin;
+	  for (size_t j=0;j<m_filebegin.size();++j) {
+	    if (lastline.find(m_filebegin[j])!=std::string::npos) {
 	      if (filebegin==0) {
-		lastline=lastline.substr(0,lastline.find(m_fileend));
+		lastline=lastline.substr(lastline.find(m_filebegin[j])+m_filebegin[j].length());
+	      }
+	      ++filebegin;
+	      break;
+	    }
+	  }
+	  if (filebegin==0) lastline=ATOOLS::nullstring;
+	  if (checkend && filebegin>0) {
+	    for (size_t j=0;j<m_fileend.size();++j) {
+	      if (lastline.find(m_fileend[j])!=std::string::npos) {
+		--filebegin;
+		if (filebegin==0) {
+		  lastline=lastline.substr(0,lastline.find(m_fileend[j]));
+		}
+		break;
 	      }
 	    }
 	  }
@@ -100,8 +104,8 @@ bool Read_Write_Base::OpenOutFile(const unsigned int i)
 #endif
     m_outfile[i]=new std::ofstream();	
     m_outfile[i]->open((m_outputpath[i]+m_outputfile[i]).c_str());
-    if (m_filebegin!=std::string("") && !m_outfile[i]->bad()) {
-      (*m_outfile[i])<<m_filebegin<<std::endl;
+    if (m_filebegin.size()>0 && !m_outfile[i]->bad()) {
+      (*m_outfile[i])<<m_filebegin[0]<<std::endl;
     }
   }
   return !m_outfile[i]->bad();
@@ -129,8 +133,8 @@ void Read_Write_Base::CloseOutFile(const unsigned int i,const bool force)
   std::cout<<"Read_Write_Base::CloseOutFile("<<i<<","<<force<<"): "
 	   <<"Closing file '"<<m_outputpath[i]+m_outputfile[i]<<"'."<<std::endl;
 #endif
-  if (m_fileend!=std::string("") && !m_outfile[i]->bad()) {
-    (*m_outfile[i])<<m_fileend<<std::endl;
+  if (m_fileend.size()>0 && !m_outfile[i]->bad()) {
+    (*m_outfile[i])<<m_fileend[0]<<std::endl;
   }
   m_outfile[i]->close(); 
   delete m_outfile[i]; 

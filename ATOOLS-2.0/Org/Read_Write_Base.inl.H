@@ -140,12 +140,44 @@ namespace ATOOLS {
 
   inline void Read_Write_Base::SetFileBegin(const std::string _m_filebegin)       
   { 
+    m_filebegin.clear();
+    m_filebegin.push_back(_m_filebegin); 
+  }
+
+  inline void Read_Write_Base::AddFileBegin(const std::string _m_filebegin)       
+  { 
+    m_filebegin.push_back(_m_filebegin); 
+  }
+
+  inline void Read_Write_Base::SetFileBegin(const std::vector<std::string> &_m_filebegin)       
+  { 
     m_filebegin = _m_filebegin; 
+  }
+
+  inline void Read_Write_Base::AddFileBegin(const std::vector<std::string> &_m_filebegin)       
+  { 
+    for (unsigned int i=0;i<_m_filebegin.size();m_filebegin.push_back(_m_filebegin[i++])); 
   }
 
   inline void Read_Write_Base::SetFileEnd(const std::string _m_fileend)       
   { 
+    m_fileend.clear();
+    m_fileend.push_back(_m_fileend); 
+  }
+
+  inline void Read_Write_Base::AddFileEnd(const std::string _m_fileend)       
+  { 
+    m_fileend.push_back(_m_fileend); 
+  }
+
+  inline void Read_Write_Base::SetFileEnd(const std::vector<std::string> &_m_fileend)       
+  { 
     m_fileend = _m_fileend; 
+  }
+
+  inline void Read_Write_Base::AddFileEnd(const std::vector<std::string> &_m_fileend)       
+  { 
+    for (unsigned int i=0;i<_m_fileend.size();m_fileend.push_back(_m_fileend[i++])); 
   }
 
   inline void Read_Write_Base::SetString(const std::string _m_string)       
@@ -183,12 +215,12 @@ namespace ATOOLS {
     return m_blank; 
   }
   
-  inline const std::string Read_Write_Base::FileBegin() const           
+  inline const std::vector<std::string> &Read_Write_Base::FileBegin() const           
   { 
     return m_filebegin; 
   }
   
-  inline const std::string Read_Write_Base::FileEnd() const           
+  inline const std::vector<std::string> &Read_Write_Base::FileEnd() const           
   { 
     return m_fileend; 
   }
