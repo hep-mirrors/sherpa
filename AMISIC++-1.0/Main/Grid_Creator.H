@@ -17,10 +17,7 @@ namespace AMISIC {
   private:
     
     Amisic_Histogram_Map *p_histograms;
-
-    EXTRAXS::XS_Group *p_processes;
-    ATOOLS::Mom_Data   m_momdata;
-   
+    EXTRAXS::XS_Group    *p_processes;
     ATOOLS::Axis<double> *p_xaxis, *p_yaxis;
     
     double m_gridxmin, m_gridxmax, m_griddeltax, m_binerror;
