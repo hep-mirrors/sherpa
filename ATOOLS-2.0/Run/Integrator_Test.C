@@ -209,10 +209,10 @@ int main(int argc,char **argv)
     Primitive_Integrator integrator;
     integrator.SetShuffleMode(1);
     integrator.SetDimension(2);
-    integrator.SetNCells(500);
+    integrator.SetNCells(1000);
     integrator.SetNOpt(1000);
     integrator.SetNMax(1000000);
-    integrator.SetError(1.e-3);
+    integrator.SetError(5.0e-4);
     // set default mode for
     // variance optimization
     integrator.SetMode(0);
