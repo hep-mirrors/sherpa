@@ -137,7 +137,7 @@ void Calorimeter_Cone::SortPT()
 }
 
 void Calorimeter_Cone::FillShape(int jetno,ATOOLS::Histogram * histo,
-				 double weight=1.,int ncount=1)
+				 double weight,int ncount)
 {
   if (jetno>m_jets.size()) return;
 
