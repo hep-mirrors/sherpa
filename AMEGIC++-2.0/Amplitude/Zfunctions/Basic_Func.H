@@ -4,7 +4,6 @@
 #include "Kabbala.H"
 #include "Basic_Sfuncs.H"
  
-
 namespace AMEGIC {
 
   class Pfunc;
@@ -163,8 +162,11 @@ namespace AMEGIC {
   };
 
   class Basic_Pfunc : public virtual Basic_Func {
+    double Ifunc(double,int);
+    double IEfunc(double,int);
+    Complex KKProp(double);
   public:
-    Basic_Pfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
+    Basic_Pfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {} 
     Complex Propagator(double,APHYTOOLS::Flavour);
     Complex Pcalc(const int,const int);
     Complex Pcalc(const APHYTOOLS::Flavour&,const int);

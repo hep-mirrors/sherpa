@@ -12,6 +12,7 @@ INCLUDES = -I../../Amplitude \
 	   -I../../Amplitude/Zfunctions \
 	   -I../../Main \
 	   -I../../Model \
+	   -I../../../MODEL-1.0/Main \
 	   -I../../String \
 	   -I../../../ATOOLS-2.0/Phys \
 	   -I../../../ATOOLS-2.0/Math \
