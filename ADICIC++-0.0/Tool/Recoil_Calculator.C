@@ -1,12 +1,11 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/11
+//Version: 2 ADICIC++-0.0/2004/08/06
 
 //Implementation of Recoil_Calculator.H.
 
 
 
 #include "Recoil_Calculator.H"
-//#include "Recoil_Calculator.dat.cc"
 
 
 
@@ -42,21 +41,16 @@ const Vec4D& Recoil_Calculator::ZAxis=Recoil_Calculator::s_zaxis;
 
 
 
-template class Recoil<Kleiss_Strategy>;
-template class Recoil<FixDir1_Strategy>;
-template class Recoil<FixDir3_Strategy>;
-template class Recoil<MinimizePt_Strategy>;
-template class Recoil<Lonnblad_Strategy>;
-template class Recoil<OldAdicic_Strategy>;
-template class Recoil<Test_Strategy>;
+//If a compiler crash is preferred then comment it out.
+template class Recoil<Recoil_Strategy::Unknown>;
 
-
-
-//=============================================================================
-
-
-
-bool TEMP::CPTEST=false;
+template class Recoil<Recoil_Strategy::Kleiss>;
+template class Recoil<Recoil_Strategy::FixDir1>;
+template class Recoil<Recoil_Strategy::FixDir3>;
+template class Recoil<Recoil_Strategy::MinimizePt>;
+template class Recoil<Recoil_Strategy::Lonnblad>;
+template class Recoil<Recoil_Strategy::OldAdicic>;
+template class Recoil<Recoil_Strategy::Test>;
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/08/06    (surely preliminarily)
 
 //Classes are provided, which manage the calculation of the kinematics
 //according to given recoil strategies.
@@ -12,7 +12,6 @@
 
 #include <enumextra>
 #include "Vector.H"
-//#include "Recoil_Calculator.dat.hh"
 
 
 #define RECOIL_CALCULATOR_OUTPUT RECOIL_CALCULATOR_OUTPUT
@@ -26,16 +25,6 @@ namespace ADICIC {
 
 
 
-  struct Kleiss_Strategy {};
-  struct FixDir1_Strategy {};
-  struct FixDir3_Strategy {};
-  struct MinimizePt_Strategy {};
-  struct Lonnblad_Strategy {};
-  struct OldAdicic_Strategy {};
-  struct Test_Strategy {};
-
-
- 
   struct Recoil_Setup;
 
 
@@ -150,14 +139,6 @@ namespace ADICIC {
     inline const double GetQ1() const;
     inline const double GetQ2() const;
     inline const double GetQ3() const;
-  };
-
-
-
-
-
-  struct TEMP {
-    static bool CPTEST;
   };
 
 

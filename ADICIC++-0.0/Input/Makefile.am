@@ -16,8 +16,9 @@ endif
 
 
 
-lib_LTLIBRARIES = libAdicicMain.la
-libAdicicMain_la_SOURCES = Adicic.C 
+lib_LTLIBRARIES = libAdicicInput.la
+libAdicicInput_la_SOURCES = Dipole_Flavour.C Information.cpp \
+                            Recoil_Strategy.cpp
 
 
 
@@ -27,21 +28,20 @@ AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 INCLUDES = -I../Tool \
-           -I../Input \
-           -I../Structure \
-           -I../Handler \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
            -I$(ATOOLSINC)/Org \
            -I$(MODELINC)/Main
 
 
+  
+noinst_HEADERS = Dipole_Flavour.H Information.hpp \
+                 Recoil_Strategy.hpp Evolution_Strategy.hpp
 
-noinst_HEADERS = Adicic.H
 
 
+EXTRA_DIST = $(CVSINCLUDE)
 
-EXTRA_DIST = $(CVSINCLUDE) 
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12
+//Version: 2 ADICIC++-0.0/2004/08/06
 
 //Implementation of template structures of Recoil_Calculator.H.
 
@@ -70,7 +70,20 @@ void Recoil<ST>::Rotate(const ATOOLS::Vec4D& axis,
 
 
 template<class ST>
-const bool Recoil<ST>::Calculate() {    //Kleiss prescription.
+const bool Recoil<ST>::Calculate() {
+  cerr<<"\nMethod: const bool ADICIC::Recoil<ST>::Calculate(): "
+      <<"Warning: Recoil strategy has not been specified!\n"<<endl;
+  return false;
+}
+
+
+
+//-----------------------------------------------------------------------------
+
+
+
+template<>
+const bool Recoil<Recoil_Strategy::Kleiss>::Calculate() {
   if(TEMP::CPTEST) cout<<"Kleiss strategy."<<endl;/////////////////////////////
   const double& E1=p_ini->GetE1();
   const double& E3=p_ini->GetE3();
@@ -105,12 +118,10 @@ const bool Recoil<ST>::Calculate() {    //Kleiss prescription.
 
 
 
-//-----------------------------------------------------------------------------
-
 
 
 template<>
-const bool Recoil<FixDir1_Strategy>::Calculate() {    //FixDir1 prescription.
+const bool Recoil<Recoil_Strategy::FixDir1>::Calculate() {
   if(TEMP::CPTEST) cout<<"1fix strategy."<<endl;///////////////////////////////
   const double& E1=p_ini->GetE1();
   const double& E3=p_ini->GetE3();
@@ -140,7 +151,7 @@ const bool Recoil<FixDir1_Strategy>::Calculate() {    //FixDir1 prescription.
 
 
 template<>
-const bool Recoil<FixDir3_Strategy>::Calculate() {    //FixDir3 prescription.
+const bool Recoil<Recoil_Strategy::FixDir3>::Calculate() {
   if(TEMP::CPTEST) cout<<"3fix strategy."<<endl;///////////////////////////////
   const double& E1=p_ini->GetE1();
   const double& E3=p_ini->GetE3();
@@ -170,8 +181,7 @@ const bool Recoil<FixDir3_Strategy>::Calculate() {    //FixDir3 prescription.
 
 
 template<>
-const bool Recoil<MinimizePt_Strategy>::Calculate() {    //MinimizePt
-                                                         //prescription.
+const bool Recoil<Recoil_Strategy::MinimizePt>::Calculate() {
   if(TEMP::CPTEST) cout<<"Minimize strategy."<<endl;///////////////////////////
   double psi;
   const double theta=acos(m_costheta);
@@ -217,7 +227,7 @@ const bool Recoil<MinimizePt_Strategy>::Calculate() {    //MinimizePt
 
 
 template<>
-const bool Recoil<Lonnblad_Strategy>::Calculate() {    //Lonnblad prescription.
+const bool Recoil<Recoil_Strategy::Lonnblad>::Calculate() {
   if(TEMP::CPTEST) cout<<"Lonnblad strategy."<<endl;///////////////////////////
   const double& E1=p_ini->GetE1();
   const double& E3=p_ini->GetE3();
@@ -252,8 +262,7 @@ const bool Recoil<Lonnblad_Strategy>::Calculate() {    //Lonnblad prescription.
 
 
 template<>
-const bool Recoil<OldAdicic_Strategy>::Calculate() {    //OldAdicic
-                                                        //prescription.
+const bool Recoil<Recoil_Strategy::OldAdicic>::Calculate() {
   if(TEMP::CPTEST) cout<<"OldAdicic strategy."<<endl;//////////////////////////
   double psi;
   const double theta=acos(m_costheta);
@@ -291,7 +300,7 @@ const bool Recoil<OldAdicic_Strategy>::Calculate() {    //OldAdicic
 
 
 template<>
-const bool Recoil<Test_Strategy>::Calculate() {    //Test prescription.
+const bool Recoil<Recoil_Strategy::Test>::Calculate() {
   if(TEMP::CPTEST) cout<<"Test strategy."<<endl;///////////////////////////////
   double psi, eta, f, g;
   const double theta=acos(m_costheta);

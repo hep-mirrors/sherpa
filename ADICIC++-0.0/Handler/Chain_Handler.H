@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/07    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/08/06    (surely preliminarily)
 
 //Only the Chain_Handler structure can reasonably modify the state of a Chain.
 
@@ -13,7 +13,7 @@
 
 
 //#include <map>
-#include "Chain_Handler.dat.hh"
+#include "Evolution_Strategy.hpp"
 
 
 #define CHAIN_HANDLER_OUTPUT CHAIN_HANDLER_OUTPUT

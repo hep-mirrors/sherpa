@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/08/06    (surely preliminarily)
 
 //Classes are provided, which manage the Sudakov calculation needed for the
 //gluon emission or splitting of a specific dipole.
@@ -14,7 +14,6 @@
 #include "Model_Base.H"
 #include "Function_Base.H"
 #include "Dipole.H"
-#include "Sudakov_Calculator.dat.hh"
 
 
 #define SUDAKOV_CALCULATOR_OUTPUT SUDAKOV_CALCULATOR_OUTPUT
@@ -25,6 +24,19 @@
 
 
 namespace ADICIC {
+
+
+
+  //Possibility of having information at compile time.
+  //Some globally defined parameter sets.
+  template<Dipole::Type _DipType> struct Sudakov_Info {
+    static const Dipole::Type  Dipoletype;
+    static const short         X1power;
+    static const short         X3power;
+    static const double        Colourfactor;
+  };
+
+
 
 
 
@@ -42,13 +54,13 @@ namespace ADICIC {
 
   private:
 
-    static const bool s_isalphasrun;
+    static int s_count;
 
-    static const double s_k2tmin;
-    static const double s_k2tmax;
-    static const double s_alphasfix;
+    static bool   s_isalphasrun;
+    static double s_k2tmin;
+    static double s_k2tmax;
+    static double s_alphasfix;
 
-    static int    s_count;
     static double s_approx;
 
     static ATOOLS::Function_Base* s_pas;

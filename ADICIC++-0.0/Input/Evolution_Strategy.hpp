@@ -1,8 +1,13 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/03
+//Version: 2 ADICIC++-0.0/2004/08/06
 
 //Possibility of having information at compile time.
-//Globally defined parameter sets belonging to Chain_Handler.H.
+//Globally defined parameters influencing Chain_Handler.H.
+
+
+
+#ifndef _Evolution_Strategy_hpp_
+#define _Evolution_Strategy_hpp_ _Evolution_Strategy_hpp_
 
 
 
@@ -47,13 +52,17 @@ namespace ADICIC {
 
 
 
-  };
+  };    //eo namespace Chain_Evolution_Strategy
 
 
 
-}
+}    //eo namespace ADICIC
 
 
+
+
+
+#endif    //eo _Evolution_Strategy_hpp_
 
 
 

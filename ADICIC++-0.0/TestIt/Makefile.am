@@ -25,6 +25,7 @@ bin_PROGRAMS = Flavtest Emissiontest Chaintest
 
 Flavtest_SOURCES = Flavtest.C
 Flavtest_LDADD = @libdir@/libAdicicTool.la \
+                 @libdir@/libAdicicInput.la \
                  @libdir@/libAdicicStruct.la \
                  @libdir@/libAdicicHdl.la \
                  @libdir@/libToolsPhys.la \
@@ -46,6 +47,7 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
 
 Emissiontest_SOURCES = Emissiontest.C
 Emissiontest_LDADD = @libdir@/libAdicicTool.la \
+                     @libdir@/libAdicicInput.la \
                      @libdir@/libAdicicStruct.la \
                      @libdir@/libAdicicHdl.la \
                      @libdir@/libToolsPhys.la \
@@ -60,6 +62,7 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
 
 Chaintest_SOURCES = Chaintest.C
 Chaintest_LDADD = @libdir@/libAdicicTool.la \
+                  @libdir@/libAdicicInput.la \
                   @libdir@/libAdicicStruct.la \
                   @libdir@/libAdicicHdl.la \
                   @libdir@/libToolsPhys.la \
@@ -73,6 +76,7 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
 
 
 INCLUDES = -I../Tool \
+           -I../Input \
            -I../Structure \
            -I../Handler \
            -I../../ATOOLS-2.0/Phys \
@@ -88,10 +92,6 @@ INCLUDES = -I../Tool \
 
 EXTRA_DIST = $(CVSINCLUDE)
 #EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat
-
-
-
-
 
 
 

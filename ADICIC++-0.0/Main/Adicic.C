@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/13
+//Version: 2 ADICIC++-0.0/2004/08/04
 
 //Implementation of Adicic.H.
 
@@ -146,31 +146,66 @@ int Adicic::PerformShowers() {
 
 
 bool Adicic::ExtractPartons(ATOOLS::Blob_List* blobs, ATOOLS::Particle_List*) {
+
+  static unsigned count=0;
+  ++count;
+  if(count==1 || count%1000==0) {
+    cout<<om::redbg<<count<<om::reset<<endl;
+    for(int i=0; i<100000000; ++i);
+  }
+
   int num;
   Blob* blob;
   Particle_List plist;
-  cout<<"Blob list:"<<" "<<blobs->size()<<endl;////////////////////////////////
+
+#ifdef ADICIC_OUTPUT
+  cout<<"Blob list......: "<<blobs->size()<<endl;//////////////////////////////
+  cout<<"Particle number: "<<ATOOLS::Particle::Counter()<<endl;////////////////
+  cout<<"Current  number: "<<ATOOLS::Particle::CurrentNumber()<<"\n"<<endl;////
+#endif
+
   for(Blob_Iterator blit=blobs->begin(); blit!=blobs->end(); ++blit) {
+
     if((*blit)->Type()==btp::FS_Shower) {
       if(!p_chain->ExtractPartons(plist)) {
 	msg.Error()<<"Error in Adicic::ExtractPartons."<<endl;
 	return false;
       }
       blob=*blit;
+#ifdef ADICIC_OUTPUT
+      cout<<om::greenbg<<"Initial 2nd blob:"<<om::reset<<" \n"<<*blob<<endl;///
+#endif
       for(int i=0; i<blob->NInP(); ++i) blob->InParticle(i)->SetStatus(2);
       num=Max(blob->InParticle(0)->Number(),blob->InParticle(1)->Number());
       num=num+1-plist.front()->Number();
       for(Particle_Iterator piter=plist.begin(); piter!=plist.end(); ++piter) {
 	blob->AddToOutParticles(*piter);
 	(*piter)->SetInfo('F');
-	(*piter)->SetNumber((*piter)->Number()+num);
+	(*piter)->SetNumber(-((*piter)->Number()+num/*-2*/));
       }
-      cout<<om::greenbg<<"Final Blob:"<<om::reset<<" "<<endl<<*blob<<endl;/////
+#ifdef ADICIC_OUTPUT
+      cout<<om::greenbg<<"Final 2nd blob:"<<om::reset<<" \n"<<*blob<<endl;/////
+      cout<<"Particle number: "<<ATOOLS::Particle::Counter()<<endl;////////////
+      cout<<"Current  number: "<<ATOOLS::Particle::CurrentNumber()<<"\n"<<endl;
+#endif
       return true;
     }
-    cout<<om::brownbg<<"First Blob:"<<om::reset<<" "<<endl<<**blit<<endl;//////
+
+#ifdef ADICIC_OUTPUT
+    cout<<om::brownbg<<"Initial 1st blob:"<<om::reset<<" \n"<<**blit<<endl;////
+#endif
+    blob=*blit;
+    for(int i=0; i<blob->NInP(); ++i)
+      blob->InParticle(i)->SetNumber(-(1+i));
+    for(int i=0; i<blob->NOutP(); ++i)
+      blob->OutParticle(i)->SetNumber(-(blob->NInP()+1+i));
+#ifdef ADICIC_OUTPUT
+    cout<<om::brownbg<<"Final 1st blob:"<<om::reset<<" \n"<<**blit<<endl;//////
+#endif
   }
+
   return false;
+
 }
 
 

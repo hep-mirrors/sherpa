@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/13
+//Version: 2 ADICIC++-0.0/2004/08/04
 
 //Implementation of Chain.H.
 
@@ -515,9 +515,9 @@ const bool Chain::ExtractPartons(Particle_List& parlist) const {
 
   //else ... type==ring ... No flow setting so far.
 
-#ifdef CHAIN_OUTPUT
+#ifdef CHAIN_OUTPUT    //For testing, it is suitable to comment it out.
   cout<<parlist<<endl;
-#endif
+#endif    //For testing, it is suitable to comment it out.
 
   return true;
 
@@ -614,7 +614,7 @@ const bool Chain::FinishInitChain(const Dipole::Glubranch&, const double&) {///
 const ATOOLS::Vec4D& Chain::UpdateMomentum(double k, const ATOOLS::Vec4D& p) {
   varset.m_momentum+=k*p;
   varset.m_invmass=varset.m_momentum.Abs2();
-  if(varset.m_invmass<0.0) {
+  if(varset.m_invmass<-1.0e-12/*0.0*/) {
     cerr<<"\nMethod: const ATOOLS::Vec4D& ADICIC::Chain::UpdateMomentum("
 	<<"double, const ATOOLS::Vec4D&): "
 	<<"Warning: Negative invariant mass ("<<varset.m_invmass<<") !\n"

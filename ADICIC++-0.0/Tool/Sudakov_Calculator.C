@@ -1,14 +1,12 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12
+//Version: 2 ADICIC++-0.0/2004/08/06
 
 //Implementation of Sudakov_Calculator.H.
 
 
 
-#include "Sudakov_Calculator.H"
-#include "Sudakov_Calculator.dat.cc"
-
 #include "Running_AlphaS.H"////////////////////////////////////////////////////
+#include "Sudakov_Calculator.H"
 
 
 
@@ -76,6 +74,11 @@ const double Sudakov_Info<Dipole::gg>::Colourfactor=4.0/*2.0*/*M_PI/3.0;
 //So far there is no static Sudakov_Calculator.
 int Sudakov_Calculator::s_count=0;
 const int& Sudakov_Calculator::InStore=Sudakov_Calculator::s_count;
+
+bool   Sudakov_Calculator::s_isalphasrun=true;    //AlphaS treatment flag
+double Sudakov_Calculator::s_k2tmin=1.0;          //GeV^2
+double Sudakov_Calculator::s_k2tmax=8100.0;       //GeV^2
+double Sudakov_Calculator::s_alphasfix=0.12;      //coupling
 
 double Sudakov_Calculator::s_approx=Sudakov_Calculator::s_alphasfix;
 

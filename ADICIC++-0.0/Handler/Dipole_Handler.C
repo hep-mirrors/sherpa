@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12
+//Version: 2 ADICIC++-0.0/2004/08/06
 
 //Implementation of Dipole_Handler.H.
 
@@ -344,14 +344,10 @@ const bool Dipole_Handler::InitCalcBox() {    //Static.
   assert(ggpa.p_sud);
 
   //Establish the overall recoil strategy right now and here.
-  qqpa.p_rec=new Recoil<Kleiss_Strategy>;
-  qgpa.p_rec=new Recoil<FixDir3_Strategy>;
-  gqpa.p_rec=new Recoil<FixDir1_Strategy>;
-  ggpa.p_rec=
-    new Recoil<MinimizePt_Strategy>;
-    //new Recoil<Lonnblad_Strategy>;
-    //new Recoil<OldAdicic_Strategy>;
-    //new Recoil<Test_Strategy>;
+  qqpa.p_rec=new Recoil<Recoil_Strategy::Ret_qqbar>;
+  qgpa.p_rec=new Recoil<Recoil_Strategy::Ret_qg>;
+  gqpa.p_rec=new Recoil<Recoil_Strategy::Ret_gqbar>;
+  ggpa.p_rec=new Recoil<Recoil_Strategy::Ret_gg>;
   assert(qqpa.p_rec);
   assert(qgpa.p_rec);
   assert(gqpa.p_rec);

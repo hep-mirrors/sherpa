@@ -30,7 +30,8 @@ AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 
-INCLUDES = -I../Handler \
+INCLUDES = -I../Input \
+           -I../Handler \
            -I../Structure \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
@@ -45,8 +46,7 @@ noinst_HEADERS = Xenum.H Xio.H Xmath.H defextra enumextra ioextra mathextra \
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
-             Sudakov_Calculator.dat.hh Sudakov_Calculator.inl.hh \
-             Sudakov_Calculator.dat.cc Sudakov_Calculator.tpt.cc \
+             Sudakov_Calculator.inl.hh Sudakov_Calculator.tpt.cc \
              Recoil_Calculator.inl.hh Recoil_Calculator.tpt.cc
 
 

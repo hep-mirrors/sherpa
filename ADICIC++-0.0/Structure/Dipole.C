@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/05
+//Version: 2 ADICIC++-0.0/2004/08/04
 
 //Implementation of Dipole.H.
 
@@ -58,9 +58,9 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
   string st1, st2, st3, st4; stringstream cv1, cv2, cv3, cv4;
   cv1<<dip.m_memory; cv2<<dip.m_copy; cv1>>st1; cv2>>st2;
   cv3<<dip.p_top->Name; cv4<<dip.p_bot->Name; cv3>>st3; cv4>>st4;
-  st1=string("(memo:")+st1+string(")");
-  st2=string("[copy:")+st2+string("]");
-  st3+=string("]"); st4+=string("]");
+  st1="(memo:"+st1+")";
+  st2="[copy:"+st2+"]";
+  st3+="]"; st4+="]";
   ost<<endl<<"  pscal:"<<setw(12)<<dip.m_p2t
      <<"sscal:"<<setw(12)<<dip.m_k2t
      <<"escal:"<<setw(12)<<dip.m_l2t
@@ -352,7 +352,7 @@ Dipole::~Dipole() {
     list<Dipole*>& toptow=AccessTopBranch();
     if(toptow.empty()) { if(p_top) delete p_top;}
     else {
-      Test(toptow,this->p_top,string("Top"));
+      Test(toptow,this->p_top,"Top");
       Dipole* payee=toptow.front();
       if(payee->p_top==this->p_top) payee->f_top=true;
       else payee->f_bot=true;
@@ -363,7 +363,7 @@ Dipole::~Dipole() {
     list<Dipole*>& bottow=AccessBotBranch();
     if(bottow.empty()) { if(p_bot) delete p_bot;}
     else {
-      Test(bottow,this->p_bot,string("Bot"));
+      Test(bottow,this->p_bot,"Bot");
       Dipole* payee=bottow.front();
       if(payee->p_top==this->p_bot) payee->f_top=true;
       else payee->f_bot=true;
@@ -405,7 +405,7 @@ Dipole& Dipole::operator=(const Dipole& dip) {
     list<Dipole*>& totow=AccessTopBranch();
     if(totow.empty()) { if(p_top) { delete p_top; p_top=NULL;}}
     else {
-      Test(totow,this->p_top,string("Top"));
+      Test(totow,this->p_top,"Top");
       Dipole* payee=totow.front();
       if(payee->p_top==this->p_top) payee->f_top=true; else payee->f_bot=true;
     }
@@ -423,7 +423,7 @@ Dipole& Dipole::operator=(const Dipole& dip) {
     list<Dipole*>& botow=AccessBotBranch();
     if(botow.empty()) { if(p_bot) { delete p_bot; p_bot=NULL;}}
     else {
-      Test(botow,this->p_bot,string("Bot"));
+      Test(botow,this->p_bot,"Bot");
       Dipole* payee=botow.front();
       if(payee->p_top==this->p_bot) payee->f_top=true; else payee->f_bot=true;
     }
@@ -526,7 +526,7 @@ void Dipole::RenewBranch(Branch& ban) {
   if(f_top) {
     if(oldtow.empty()) { if(p_top) { delete p_top; p_top=NULL;}}
     else {
-      Test(oldtow,this->p_top,string("Top"));
+      Test(oldtow,this->p_top,"Top");
       Dipole* payee=oldtow.front();
       if(payee->p_top==this->p_top) payee->f_top=true; else payee->f_bot=true;
     }
@@ -560,7 +560,7 @@ void Dipole::RenewBranch(Antibranch& ati) {
   if(f_bot) {
     if(oldtow.empty()) { if(p_bot) { delete p_bot; p_bot=NULL;}}
     else {
-      Test(oldtow,this->p_bot,string("Bot"));
+      Test(oldtow,this->p_bot,"Bot");
       Dipole* payee=oldtow.front();
       if(payee->p_top==this->p_bot) payee->f_top=true; else payee->f_bot=true;
     }
@@ -594,7 +594,7 @@ void Dipole::RenewBranch(bool top, Glubranch& glu) {
     if(f_top) {
       if(oldtow.empty()) { if(p_top) { delete p_top; p_top=NULL;}}
       else {
-	Test(oldtow,this->p_top,string("Top"));
+	Test(oldtow,this->p_top,"Top");
 	Dipole* payee=oldtow.front();
 	if(payee->p_top==this->p_top) payee->f_top=true;
 	else payee->f_bot=true;
@@ -618,7 +618,7 @@ void Dipole::RenewBranch(bool top, Glubranch& glu) {
     if(f_bot) {
       if(oldtow.empty()) { if(p_bot) { delete p_bot; p_bot=NULL;}}
       else {
-	Test(oldtow,this->p_bot,string("Bot"));
+	Test(oldtow,this->p_bot,"Bot");
 	Dipole* payee=oldtow.front();
 	if(payee->p_top==this->p_bot) payee->f_top=true;
 	else payee->f_bot=true;

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12
+//Version: 2 ADICIC++-0.0/2004/08/06
 
 //Inline methods of Recoil_Calculator.H.
 
@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include "Random.H"
 #include "Poincare.H"
+#include "Recoil_Strategy.hpp"
 
 
 
@@ -55,28 +56,28 @@ namespace ADICIC {
 
 
   template<class ST> inline void Recoil<ST>::Which() const {
-    std::cout<<"This is a default Recoil_Calculator!\n";
+    std::cout<<"This is a non-specified Recoil_Calculator!\n";
   }
-  template<> inline void Recoil<Kleiss_Strategy>::Which() const {
+  template<> inline void Recoil<Recoil_Strategy::Kleiss>::Which() const {
     std::cout<<"Recoil_Calculator implementing the Kleiss prescription.\n";
   }
-  template<> inline void Recoil<FixDir1_Strategy>::Which() const {
+  template<> inline void Recoil<Recoil_Strategy::FixDir1>::Which() const {
     std::cout<<"Recoil_Calculator implementing the fixed-direction-1 idea.\n";
   }
-  template<> inline void Recoil<FixDir3_Strategy>::Which() const {
+  template<> inline void Recoil<Recoil_Strategy::FixDir3>::Which() const {
     std::cout<<"Recoil_Calculator implementing the fixed-direction-3 idea.\n";
   }
-  template<> inline void Recoil<MinimizePt_Strategy>::Which() const {
+  template<> inline void Recoil<Recoil_Strategy::MinimizePt>::Which() const {
     std::cout<<"Recoil_Calculator implementing the original Pt minimization "
 	     <<"strategy.\n";
   }
-  template<> inline void Recoil<Lonnblad_Strategy>::Which() const {
+  template<> inline void Recoil<Recoil_Strategy::Lonnblad>::Which() const {
     std::cout<<"Recoil_Calculator implementing a Lonnblad idea.\n";
   }
-  template<> inline void Recoil<OldAdicic_Strategy>::Which() const {
+  template<> inline void Recoil<Recoil_Strategy::OldAdicic>::Which() const {
     std::cout<<"Recoil_Calculator implementing the old Adicic approach.\n";
   }
-  template<> inline void Recoil<Test_Strategy>::Which() const {
+  template<> inline void Recoil<Recoil_Strategy::Test>::Which() const {
     std::cout<<"Recoil_Calculator implementing a test strategy.\n";
   }
 

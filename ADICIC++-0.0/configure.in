@@ -38,6 +38,7 @@ AC_CHECK_FUNCS(mkdir)
 
 AC_OUTPUT(Tool/Makefile \
 	  Tool/savemaketool/Makefile \
+	  Input/Makefile \
 	  Structure/Makefile \
 	  Handler/Makefile \
 	  Main/Makefile \
@@ -45,5 +46,4 @@ AC_OUTPUT(Tool/Makefile \
 	  TestIt/data/Makefile \
 	  RunIt/Makefile \
           Makefile)
-
 

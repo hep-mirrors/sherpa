@@ -27,6 +27,7 @@ AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 INCLUDES = -I../Tool \
+           -I../Input \
            -I../Structure \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
@@ -40,8 +41,7 @@ noinst_HEADERS = Dipole_Handler.H Chain_Handler.H
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
-             Dipole_Handler.inl.hh \
-             Chain_Handler.dat.hh Chain_Handler.inl.hh
+             Dipole_Handler.inl.hh Chain_Handler.inl.hh
 
 
 

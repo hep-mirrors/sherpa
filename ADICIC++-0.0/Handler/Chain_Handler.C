@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/07
+//Version: 2 ADICIC++-0.0/2004/08/06
 
 //Implementation of Chain_Handler.H.
 

@@ -17,8 +17,7 @@ endif
 
 
 lib_LTLIBRARIES = libAdicicStruct.la
-libAdicicStruct_la_SOURCES = Dipole_Flavour.C Information.cpp \
-                             Dipole.C Chain.C
+libAdicicStruct_la_SOURCES = Dipole.C Chain.C
 
 
 
@@ -28,6 +27,7 @@ AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 INCLUDES = -I../Tool \
+           -I../Input \
            -I../Handler \
            -I$(ATOOLSINC)/Phys \
            -I$(ATOOLSINC)/Math \
@@ -35,14 +35,14 @@ INCLUDES = -I../Tool \
            -I$(MODELINC)/Main
 
 
-  
-noinst_HEADERS = Dipole_Flavour.H Information.hpp \
-                 Dipole.H Chain.H
+
+noinst_HEADERS = Dipole.H Chain.H
 
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
              Dipole.inl.hh Dipole.exa.cc Chain.inl.hh
+
 
 
 

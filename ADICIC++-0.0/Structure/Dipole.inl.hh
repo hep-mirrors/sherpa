@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/05
+//Version: 2 ADICIC++-0.0/2004/08/04
 
 //Inline methods of Dipole.H.
 
@@ -195,7 +195,7 @@ namespace ADICIC {
 
 
   inline void Dipole_Particle::SetPacNum() {
-    m_pac.SetNumber(m_num);
+    m_pac.SetNumber(-m_num);
   }
 
 
@@ -245,7 +245,7 @@ namespace ADICIC {
       m_tow(std::list<Dipole*>()),
       Name(m_num), Parton(m_pac) {
 
-    ++s_count; this->SetPacNum(); this->if_info();
+    ++s_count; this->SetPacNum(); m_pac.SetInfo('a'); this->if_info();
   }
 
 
