@@ -13,7 +13,26 @@ namespace PHASIC {
     long int        maxopt;
     static long int nmax;
 
-    Phase_Space_Handler *p_psh;
+    double starttime, lotime, totalopt;
+    double value, maxerror;
+    int ncontrib, endopt, nlo, fin_opt;
+    long int  n;
+
+#ifdef _USE_MPI_
+    long int alln;
+    int iterall;
+    double allsum;
+    double allsum2;
+#endif
+    struct {
+      int    id;
+      int    n;
+      double sum;
+      double sum2;
+      double max;
+    } local, message;
+
+    Phase_Space_Handler *psh;
 
   public:
 
@@ -26,6 +45,8 @@ namespace PHASIC {
 
     static long int MaxPoints();
     static void     SetMaxPoints(long int _nmax);
+
+    bool AddPoint(const double value);
 
   };
   /*!

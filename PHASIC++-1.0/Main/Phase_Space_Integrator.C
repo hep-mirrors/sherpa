@@ -19,9 +19,11 @@ using namespace std;
 
 long int Phase_Space_Integrator::nmax=10000000;                  
 
-double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerror, int fin_opt) 
+double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxerror, int _fin_opt) 
 {
-  p_psh=psh;
+  maxerror=_maxerror;
+  fin_opt=_fin_opt;
+  psh=_psh;
   msg_Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
 
@@ -83,35 +85,23 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   nopt      = 25; 
 
   maxopt    = (5/hlp+21)*iter1;
-  int ncontrib = psh->FSRIntegrator()->ValidN();
+  ncontrib = psh->FSRIntegrator()->ValidN();
   if (ncontrib/iter0>=5) iter=iter1;
 
-  long int  n;
-  int       endopt = 1;
-  double    value;
-  int nlo=0;
+  endopt = 1;
+  nlo=0;
   if (ncontrib>maxopt) endopt=2;
 
-  double starttime = ATOOLS::rpa.gen.Timer().UserTime();
-  double lotime    = ATOOLS::rpa.gen.Timer().UserTime();
-  double totalopt  = maxopt+8.*iter1;
+  starttime = ATOOLS::rpa.gen.Timer().UserTime();
+  lotime    = ATOOLS::rpa.gen.Timer().UserTime();
+  totalopt  = maxopt+8.*iter1;
   
 #ifdef _USE_MPI_
   // ------ total sums for MPI ---
   ran.SetSeed(-100*rank);
-  long int alln;
-  int iterall;
-  double allsum  = 0.;
-  double allsum2 = 0.;
+  allsum  = 0.;
+  allsum2 = 0.;
 #endif
-  // ------- local sums ------
-  struct {
-    int    id;
-    int    n;
-    double sum;
-    double sum2;
-    double max;
-  } local, message;
   
 #ifdef _USE_MPI_
   
@@ -165,6 +155,17 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
     value = psh->Differential();
 
+    if (AddPoint(value)) break;
+
+  }
+
+  result = (psh->Process())->TotalResult() * rpa.Picobarn();
+  return result;
+  
+}
+
+bool Phase_Space_Integrator::AddPoint(const double value)
+{
     if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value);    
     if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->AddPoint(value);    
     if ((psh->KMRZIntegrator()))  (psh->KMRZIntegrator())->AddPoint(value);    
@@ -204,7 +205,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	MPI::COMM_WORLD.Recv(&iterall, 1, MPI::INT, 0, 10);
 	if (iterall<=n/olditerall)   iterall=n/olditerall+1;
 	msg.Out()<<"Slave "<<rank<<" changed iteration steps to "<<iterall<<endl; 
-	if (iterall==0) break;  
+	if (iterall==0) return true;  
       }
       // check for optimizations
       if (MPI::COMM_WORLD.Iprobe(0, 5)) {
@@ -286,7 +287,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	  for (short int i=1;i<size;i++) MPI::COMM_WORLD.Isend(&iterall, 1, MPI::INT, i, 10);   
 	}
       }     
-      if (over) break;
+      if (over) return true;
     }
 #endif
     ncontrib = psh->FSRIntegrator()->ValidN();
@@ -327,7 +328,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)
 	  && !((psh->Process())->TotalResult()==0.)) {
 	msg.Error()<<"FS - Channel result is a NaN. Knockout!!!!"<<endl;
-	break;
+	return true;
       }
       
       double time = ATOOLS::rpa.gen.Timer().UserTime();
@@ -345,7 +346,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 		<<(psh->Process())->TotalResult()*rpa.Picobarn()
 		<<" pb"<<om::reset<<" +- ( "<<om::red
 		<<(psh->Process())->TotalVar()*rpa.Picobarn()
-		<<" pb = "<<error*100<<" %"<<om::reset<<" )."<<endl;
+		<<" pb = "<<error*100<<" %"<<om::reset<<" ) "<<ncontrib<<endl;
       if (fotime) {
 	msg_Info()<<"full optimization: ";
       }
@@ -357,25 +358,21 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
-      if (p_psh->UsePI()>0 && p_psh->PI()==NULL) {
+      if (psh->UsePI()>0 && psh->PI()==NULL) {
 	if (ncontrib/iter0==5) {
-	  p_psh->CreatePI();
-	  if (p_psh->PI()==NULL) THROW(fatal_error,"Cannot initialize PI.");
-	  p_psh->PI()->Initialize();
+	  psh->CreatePI();
+	  if (psh->PI()==NULL) THROW(fatal_error,"Cannot initialize PI.");
+	  psh->PI()->Initialize();
 	}
 	allowbreak=false;
       }
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
-      if (p_psh->PI()!=NULL && ncontrib/iter<10) allowbreak = false;
-      if (error<maxerror && allowbreak) break;
+      if (psh->PI()!=NULL && ncontrib/iter<10) allowbreak = false;
+      if (error<maxerror && allowbreak) return true;
 #endif
 
     }
-  }
-
-  result = (psh->Process())->TotalResult() * rpa.Picobarn();
-  return result;
-  
+    return false;
 }
 
 double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double mass, double maxerror) 

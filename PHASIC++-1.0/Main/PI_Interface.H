@@ -37,7 +37,9 @@ namespace PHASIC {
     void   GeneratePoint(const psm::code &mode=psm::normal_call);
     double GenerateWeight();
 
-    double operator()(const std::vector<double> &x) const;
+    double operator()(const std::vector<double> &x);
+    void   AddPoint(const double weight);
+    void   FinishConstruction(const double apweight);
 
     bool WriteOut(const std::string &path) const;
     bool ReadIn(const std::string &path);
