@@ -72,6 +72,7 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
 #ifdef CLHEP_SUPPORT
   case iotype::HepMC: 
     p_hepmc = new HepMC_Interface();
+    break;
 #endif
   case iotype::HepEvt:
     p_hepevt = new HepEvt_Interface(true,1,m_path,outfiles[2]);
@@ -165,9 +166,11 @@ bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weig
       case iotype::HepMC: 
 	p_hepmc->Sherpa2HepMC(blobs,p_event);
 	if (ATOOLS::msg.LevelIsEvents()) p_event->print();
+	return true;
 #endif
       case iotype::HepEvt: 
-	p_hepevt->Sherpa2HepEvt(blobs); return true;
+	p_hepevt->Sherpa2HepEvt(blobs); 
+	return true;
       default:
 	msg.Error()<<"Error in IO_Handler::OutputToFormat."<<std::endl
 		   <<"   Unknown Output format : "<<m_outtype<<std::endl
