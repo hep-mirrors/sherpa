@@ -1,5 +1,5 @@
 EVENTS         = 0      ! Number of Events
-CMSENERGY      = 1000.  ! cms-Energy in GeV
+CMSENERGY      = 91.2   ! cms-Energy in GeV
 BEAM1          = e+     ! possible beam particle:  P+, P-, e+, e-
 BEAM2          = e-     ! possible beam particle:  P+, P-, e+, e- 
 !
@@ -7,7 +7,7 @@ MASSES         = On    ! Include effect of quark masses
 ANALYSIS       = 1     ! Analysis :
 !                      ! 0=none, 1=parton-level only, 
 !                      ! 2=hadron-level only, 3=both
-OUTPUT         = 4     ! Output level :
+OUTPUT         = 2     ! Output level :
 !                      ! 0=errors,1=events,2=tracking,3=debug,4=everything
 KFACTORSCHEME  = 0      !
 SCALESCHEME    = 0      !
@@ -16,7 +16,7 @@ Jet_Scheme     = 1     ! Jet-Scheme : 1=Durham,2=Jade,3=Geneva
 LAMBDA_QCD     = 0.4            ! Lambda_QCD used for running alpha_s l^2=0.16
 FINAL_Q02      = 0.50           ! minimal virtuality in parton shower
 INITIAL_Q02    = 4.             ! initial state shower end virtuality         
-MODEL          = MSSM           ! Standard Model
+MODEL          = SM           ! Standard Model
 !MODEL          = pure QCD       ! QCD only.
 MODELFILE      = Const.dat      ! Model File
 MODELMASS      = Off            ! uses masses in Model File
