@@ -85,6 +85,27 @@ namespace AMISIC {
 
   }; // end of class Amisic
 
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file Amisic.H
+    \brief Declares the class Amisic
+  */
+
+  /*!
+    \class Amisic
+    \brief The overall steering of the AMISIC package
+    
+    This class implements the overall steering of the 
+    underlying event generation. It is interfaced by the Sherpa
+    framework but it may also act as a stand-alone underlying event 
+    generator. It updates the MI_Base instances with the information 
+    which is necessary for the next event generation and delivers 
+    the created underlying event as a blob to the outside world.
+  */
+
 } // end of namespace AMISIC
 
 #endif

@@ -122,6 +122,28 @@ namespace AMISIC {
 
   }; // end of class MI_None
 
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file MI_Base.H
+    \brief Declares the class MI_Base
+  */
+
+  /*!
+    \class MI_Base
+    \brief The base class for all underlying event simulation classes
+
+    This class is the base class for all underlying event 
+    simulation classes. It is an interface to the overall steering of 
+    the package, which is provided by the class Amisic.<br>
+    It keeps track of the initialized models and checks the consistency 
+    of the underlying event generation procedure. During the 
+    event generation step it handles the filling of underlying event 
+    blobs and updates the generator.
+  */
+
 } // end of namespace AMISIC
 
 #endif

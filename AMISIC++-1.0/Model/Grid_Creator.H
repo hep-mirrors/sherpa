@@ -87,6 +87,26 @@ namespace AMISIC {
 
   }; // end of class Grid_Creator
 
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file Grid_Creator.H
+    \brief Declares the class Grid_Creator
+  */
+
+  /*!
+    \class Grid_Creator
+    \brief Creates histograms of variable spectra
+    
+    This class is employed to create histograms of variable 
+    spectra, with special emphasis on transverse momenta. 
+    It receives a list of processes from the internal process 
+    library which is initialized and used to generate weighted events.
+    During the event generation the corresponding histograms are filled.
+  */
+
 } // end of namespace AMISIC
 
 #endif
