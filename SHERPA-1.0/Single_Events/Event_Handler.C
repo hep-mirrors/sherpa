@@ -195,7 +195,7 @@ void Event_Handler::PrintBlobs() {
   msg.Out()<<"  -------------------------------------------------  "<<std::endl;
   if (!m_blobs.empty()) {
     for (Blob_Iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) {
-      msg.Out()<<(*blit)<<std::endl;
+      msg.Out()<<*(*blit)<<std::endl;
     }
   }
   else {
