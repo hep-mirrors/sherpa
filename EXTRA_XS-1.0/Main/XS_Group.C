@@ -68,7 +68,11 @@ void XS_Group::Add(XS_Base *const xsec)
     m_nout=xsec->NOut();
     p_flavours=new ATOOLS::Flavour[m_nin+m_nout];
     for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=xsec->Flavours()[i];
+    m_neweak=xsec->m_neweak;
+    m_nstrong=xsec->m_nstrong;
   }
+  if (m_neweak!=xsec->m_neweak) m_neweak=0;
+  if (m_nstrong!=xsec->m_nstrong) m_nstrong=0;
   if (xsec->NVector()>m_nvector) CreateMomenta(xsec->NVector());
   if (xsec->NAddIn()>m_naddin || xsec->NAddOut()>m_naddout) {
     if (p_addmomenta!=NULL) delete [] p_addmomenta;
