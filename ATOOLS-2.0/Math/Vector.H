@@ -363,7 +363,7 @@ namespace ATOOLS {
   
   inline const double Vec4D::PPerp() const 
   { 
-    return sqrt(PPerp()); 
+    return sqrt(PPerp2()); 
   }
   
   inline const double Vec4D::EPerp2() const 
