@@ -40,6 +40,11 @@ Parton_Finder::Parton_Finder(Parton_Tester &criterion):
 const Particle *Parton_Finder::
 FindConstConnectedForward(const Particle *start)
 {
+  if (m_track.size()>200) {
+    std::cout<<" caught in infinite loop in Parton_Finder::FindConstConnectedForward \n";
+    THROW(critical_error,"Parton_Finder::FindConstConnectedForward :caught in infinite loop in");
+    return start;
+  }
   if (!Test(start) ||
       m_excludeflavours.find(start->Flav().Kfcode())!=m_excludeflavours.end())
     return NULL;
@@ -67,6 +72,11 @@ FindConstConnectedForward(const Particle *start)
 const Particle *Parton_Finder::
 FindConstConnectedBackward(const Particle *start)
 {
+  if (m_track.size()>200) {
+    std::cout<<" Parton_Finder::FindConstConnectedBackward :caught in infinite loop in  \n";
+    THROW(critical_error,"Parton_Finder::FindConstConnectedBackward :caught in infinite loop in");
+    return start;
+  }
   if (!Test(start) ||
       m_excludeflavours.find(start->Flav().Kfcode())!=m_excludeflavours.end())
     return NULL;
