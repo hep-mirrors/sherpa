@@ -10,7 +10,8 @@ namespace EXTRAXS {
   struct rf {
     
     enum code {
-      none               = 1,
+      none               = 0,
+      identity           = 1,
       massive_propagator = 2
     };
     
@@ -28,12 +29,13 @@ namespace EXTRAXS {
     EXTRAXS::XS_Base *const p_xs;
 
     // constructor
-    Regulator_Base(XS_Base *const xs,const std::vector<double> &parameters);
+    Regulator_Base(XS_Base *const xs,const std::vector<double> &parameters,
+		   const rf::code type);
 
     template <class Type>
     static Regulator_Base *SelectRegulator(XS_Base *const xs,const std::string &regulator,
 					   const std::vector<double> &parameters);
-
+    
   public:
 
     // destructor

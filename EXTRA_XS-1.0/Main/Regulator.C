@@ -13,7 +13,7 @@ Regulator_Base::SelectRegulator<Identity>(XS_Base *const xs,const std::string &r
 }
 
 Identity::Identity(XS_Base *const xs,const std::vector<double> &parameters):
-  Regulator_Base(xs,parameters) {}
+  Regulator_Base(xs,parameters,rf::identity) {}
 
 double Identity::operator()(const double dsigma) const
 {
@@ -37,7 +37,7 @@ Regulator_Base::SelectRegulator<Massive_Propagator>(XS_Base *const xs,const std:
 
 Massive_Propagator::Massive_Propagator(XS_Base *const xs,
 				       const std::vector<double> &parameters):
-  Regulator_Base(xs,parameters) {}
+  Regulator_Base(xs,parameters,rf::massive_propagator) {}
 
 double Massive_Propagator::operator()(const double dsigma) const
 {

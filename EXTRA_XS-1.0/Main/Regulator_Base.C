@@ -5,16 +5,19 @@
 
 using namespace EXTRAXS;
 
-std::ostream &operator<<(std::ostream &ostr,const rf::code code)
+std::ostream &EXTRAXS::operator<<(std::ostream &ostr,const rf::code code)
 {
   switch (code) {
   case rf::none:               return ostr<<"None";
+  case rf::identity:           return ostr<<"Identity";
   case rf::massive_propagator: return ostr<<"Massive Propagator";
   }
   return ostr;
 }
 
-Regulator_Base::Regulator_Base(XS_Base *const xs,const std::vector<double> &parameters):
+Regulator_Base::Regulator_Base(XS_Base *const xs,const std::vector<double> &parameters,
+			       const rf::code type):
+  m_type(type),
   m_parameters(parameters),
   p_xs(xs) {}
 
