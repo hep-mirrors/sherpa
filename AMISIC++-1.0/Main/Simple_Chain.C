@@ -374,7 +374,12 @@ bool Simple_Chain::ReadInData()
   converter>>help[1];
   outputpath=std::string("MI-Grid__")+help[0]+std::string("_")+help[1]+
     std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV_");
-  if (m_regulate) outputpath+="(r)_";
+  if (m_regulate) {
+    outputpath+=m_regulator;
+    for (size_t i=0;i<m_regulation.size();++i) {
+      outputpath+=std::string("_")+ATOOLS::ToString(m_regulation[i]);
+    }
+  }
   outputpath+=std::string("_")+p_isr->PDF(0)->Type()+std::string("_")+p_isr->PDF(1)->Type()+
     std::string("__as_")+ATOOLS::ToString(static_cast<MODEL::Running_AlphaS*>
 					  (p_model->GetScalarFunction("alpha_S"))->Order())+
