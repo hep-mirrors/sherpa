@@ -8,5 +8,6 @@ ERROR = 1.e-3     ! Error by calculating matrix-elements
 INTEGRATOR = 4     ! Phasespace : Rambo=0, Sarge=1, Rambo+Sarge=2
 	           !              Multichannel+Rambo=3,
 		   !              pure Multichannel=4
+	           !              RamboKK=5	
 JETFINDER  = 1     ! Jet initial:  DURHAM=1,JADE=2,
 !                    GENEVA=3

@@ -3,17 +3,15 @@
 !-------------------------------------------------------
 ME_SIGNAL_GENERATOR   = Amegic
 ME_2->2_GENERATOR     = Internal
-SIGNAL_MODEL          = MSSM
+SIGNAL_MODEL          = SM
 COUPLING SCHEME       = Running     ! Fixed   (default value) or 
                                     ! Running (s for ME generators, pt for 2->2)
 COUPLING SCALE FACTOR = 1.          ! Additional prefactor for ME's scale.
 YUKAWA MASSES         = Running     ! Fixed   (polemass) or 
                                     ! Running (higgs mass)
 YUKAWA MASSES FACTOR  = 1.          ! Additional prefactor for yukawas
-WIDTH SCHEME          = Complex     ! Fixed or complex width for internal propagators
+WIDTH SCHEME          = Complex     ! Fixed or Complex width for internal propagators
                                     ! of unstable particles.
 SCALE SCHEME          = 0           ! 1 = pt^2, 2 = fixed scale, default = s_hat 
 KFACTOR SCHEME        = 1           ! 1 = as(scale)/as(default)^n_strong-2, default = 1
 SCALE FACTOR          = 1.          ! extra factor on scale
-OrderAlpha12   = 2                  ! Order of g1/g2 for the process default 99 
-OrderAlphaS    = 4                  ! Order of alphas for the process default 99 
