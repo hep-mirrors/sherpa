@@ -5,6 +5,9 @@
 #include <iomanip>
 #include <algorithm>
 
+#ifdef PROFILE__all
+#define PROFILE__Analysis_Phase
+#endif
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
 #else 
@@ -135,7 +138,12 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
   //cal first matrix
   int ii=0, jj=0;
   double dmin=Kt2(p[0]);
+#ifdef USING__rmin
+#undef USING__rmin
+#endif
+#ifdef USING__rmin
   double rmin=R2(p[0],p[1]);
+#endif
   {
     PROFILE_LOCAL(" first loop ");
     
@@ -145,9 +153,11 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
       for (int j=0;j<i;++j) {
 	double dj  = p_ktij[j][j]; 
 	double rij = p_ktij[i][j] = R2(p[i],p[j]);
-	double dij = Min(di,dj)* rij /m_r2min;
+ 	double dij = Min(di,dj)* rij /m_r2min;
 	if (dij<dmin) {dmin=dij; ii=i; jj=j;}
+#ifdef USING__rmin
 	if (rij<rmin) rmin=rij;
+#endif
       }
     }
   }
@@ -189,19 +199,22 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
       PROFILE_LOCAL(" second loop ");
 
     dmin=p_ktij[p_imap[0]][p_imap[0]];
+#ifdef USING__rmin
     rmin=p_ktij[p_imap[1]][p_imap[0]];
+#endif
     for (int i=0;i<n;++i) {
       int ix=p_imap[i];
       double di = p_ktij[ix][ix];
-      if (di<dmin) { dmin=di; ii=i; jj=i;}
+      if (di<dmin) { dmin=di; ii=jj=i;}
       for (int j=0;j<i;++j) {
 	int jx=p_imap[j];
 	double dj  = p_ktij[jx][jx];
 	double rij = p_ktij[ix][jx];
 	double dij = Min(di,dj)* rij/m_r2min;
-	if (dij<dmin) {
-	  dmin=dij; ii=i; jj=j;}
+	if (dij<dmin) { dmin=dij; ii=i; jj=j;}
+#ifdef USING__rmin
 	if (rij<rmin) rmin=rij;
+#endif
       }
     }
     }
