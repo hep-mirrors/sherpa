@@ -13,7 +13,9 @@ typedef std::stringstream MyStrStream;
 #else
 // GNU gcc 2.95.x C++ Compiler
 #include <strstream>
-typedef std::strstream std::stringstream;
+// namespace std {
+//   typedef strstream stringstream;
+// }
 typedef std::strstream MyStrStream;
 #endif
 #endif
