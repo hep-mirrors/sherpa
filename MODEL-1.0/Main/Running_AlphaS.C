@@ -34,7 +34,7 @@ Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ) :
   //------------------------------------------------------------
   // SM thresholds for strong interactions, i.e. QCD
   //------------------------------------------------------------
-  m_nth = 0;   // count strong flavours
+  m_nth = 0;
   Fl_Iter fli;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) 
     if (flav.Strong() && flav.IsOn() && flav.Kfcode()<30) m_nth++;
@@ -42,19 +42,16 @@ Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ) :
   p_thresh        = new AsDataSet[m_nth+1]; 
   double * masses = new double[m_nth];
   
-  // fill heavy quark thresholds
   short int count = 0;
   for (Flavour flav=fli.first();flav!=Flavour(kf::none);flav = fli.next()) {
     if (flav.Strong() && flav.IsOn() && flav.Kfcode()<30) {
-      masses[count] = sqr(flav.PSMass());  // on shell masses
+      masses[count] = sqr(flav.PSMass());
       count++;
     }
   }
 
-  // sort thresholds with sort-tool 
   Bubble_Sort::Down<double>(masses,m_nth);
 
-  // fill container (assuming one gluon and nth-1 quarks)
   int j   = 0; 
   m_mzset = 0;
   for (int i=0; i<m_nth; ++j) {
@@ -110,8 +107,7 @@ Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ) :
     }
   }
 
-  // --- print status so far ---
-  if (rpa.gen.Tracking()) {
+  if (rpa.gen.Debugging()) {
     msg.Out()<<" Init (3) "<<endl;
     for (int i=0; i<=m_nth; ++i) {
       msg.Out()<<"  s_low ="<<p_thresh[i].low_scale
@@ -208,23 +204,20 @@ double Running_AlphaS::AlphaSLam(const double Q2,const int nr)
   double L         = log(Q2/lambda2);
   double pref      = 1./(beta0*L);
 
-  // 0th order (one loop)   Check: OK!
   double a         = pref;
   if (m_order==0) return M_PI*a;
 
-  // 1st order (two loop)   Check: OK!
   double logL     = log(L);
   pref           *=1./(beta0*L);
   a              += -pref*(b[1] * logL);
   if (m_order==1) return M_PI*a;
 
-  // 2nd order (three loop)  Check: OK!
   double log2L    = logL*logL;
   pref           *= 1./(beta0*L);
   a              += pref*(b[1]*b[1]*(log2L-logL-1.) + b[2]);
   if (m_order==2) return M_PI*a;
 
-  // 3rd order (four loop)
+  // 3rd order (four loop) to be checked.
   double log3L    = logL*log2L;
   pref           *= 1./(beta0*L);
   a              += pref*(b[1]*b[1]*b[1]*(-log3L+2.5*log2L+2.*logL-0.5) 

@@ -152,7 +152,7 @@ void MSSM::ReadInFile() {
 					 p_dataread->GetValue<double>("SCALE(SUSY)",0.)));
       p_numbers->insert(std::make_pair(std::string("sign(mu)"),    
 				       p_dataread->GetValue<int>("SIGN(MU)",1)));
-      if (m_SUSYScale>0.) m_scales = 1;
+      //if (m_SUSYScale>0.) m_scales = 1;
     }
     else if (m_scenario==std::string("SUGRA with enforced unification")) {
       m_unification = 1;
@@ -187,16 +187,9 @@ bool MSSM::RunSpectrumGenerator() {
   if (m_spectrum) {
     m_generator = p_dataread->GetValue<std::string>("SUSY_GENERATOR",std::string("Isajet"));
     if (m_generator==std::string("Isajet")) {
-      msg.Debugging()<<"Initialize & run Isajet"<<std::endl;
       p_spectrumgenerator = new ISAJET::Isajet_Fortran_Interface(p_dataread,this);
       p_spectrumgenerator->Run(std::string(m_scenario));
-
-      msg.Debugging()<<"Fill SUSY masses through Isajet"<<std::endl;
       p_spectrumgenerator->FillMasses();
-
-      msg.Debugging()<<"After filling in masses : "
-		     <<p_numbers->size()<<"/"<<p_constants->size()<<"/"
-		     <<p_functions->size()<<"/"<<p_matrices->size()<<std::endl;
       return 1;
     }
     

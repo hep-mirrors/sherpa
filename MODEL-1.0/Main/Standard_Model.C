@@ -101,7 +101,7 @@ void Standard_Model::FixEWParameters() {
     lambdaH    = 2.*sqr(MH/vev);
     break;
   case 2:
-    // SM parameters given by alphaQED, sinthetaW, v, H
+    // SM parameters given by alphaQED, sinthetaW, v, M_H
     alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED",137.03599976);
     vev        = p_dataread->GetValue<double>("VEV",246.);
     sin2thetaW = p_dataread->GetValue<double>("SIN2THETAW",0.23);
@@ -180,10 +180,8 @@ bool Standard_Model::RunSpectrumGenerator() {
   if (m_spectrum) {
     m_generator = p_dataread->GetValue<std::string>("HIGGS_GENERATOR",std::string("Hdecay"));
     if (m_generator==std::string("Hdecay")) {
-      msg.Debugging()<<"Initialize & run Hdecay .... "<<std::endl;
       p_spectrumgenerator = new HDECAY::Hdecay_Fortran_Interface(p_dataread,this);
       p_spectrumgenerator->Run(std::string("SM"));
-      msg.Debugging()<<" .... done."<<std::endl;
       return 1;
     }
     
