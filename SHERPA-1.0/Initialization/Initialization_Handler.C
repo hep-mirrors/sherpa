@@ -79,6 +79,14 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   ExtractCommandLineParameters(argc, argv);
 
+  if (m_mode==9999) {
+    p_evtreader   = new Event_Reader(m_path,m_evtfile);
+    p_dataread    = new Data_Read(m_path+m_file);
+    m_analysisdat = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
+    rpa.Init(m_path,m_file,argc,argv);
+    return;
+  }
+  
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
@@ -102,6 +110,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
 Initialization_Handler::~Initialization_Handler()
 {
+  if (p_evtreader)     { delete p_evtreader;     p_evtreader     = NULL; }
   if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
   if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
@@ -133,15 +142,21 @@ Initialization_Handler::~Initialization_Handler()
   PHASIC::Phase_Space_Handler::DeleteInfo();
 }
 
-
 bool Initialization_Handler::InitializeTheFramework(int nr)
 {
   if (nr<=0) {
     ATOOLS::ParticleInit(m_path); 
   }
-
+  
+  if (m_mode==9999) {
+    msg.Out()<<"SHERPA will read in the events."<<std::endl
+	     <<"   The full framework is not needed."<<std::endl;
+    InitializeTheAnalyses();
+    return true;
+  }
+  
   bool okay = InitializeTheIO();
-
+  
   okay = okay && InitializeTheModel();  
 
   //  set masses and widths from command line
@@ -582,11 +597,12 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["RUNDATA"]=102;
   special_options["ECMS"]=103;
   special_options["PYTHIA"]=9000;
+  special_options["EVTDATA"]=9999;
 #ifdef USING__MCatNLO
   special_options["HERWIG"]=9001;
   special_options["MCatNLO"]=9002;
 #endif
-  special_options["EVTDATA"]=9999;
+  
 
   
 

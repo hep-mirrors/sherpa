@@ -13,6 +13,7 @@
 #include "MI_Handler.H"
 #include "Analysis_Handler.H"
 #include "Lund_Interface.H"
+#include "Event_Reader.H"
 #ifdef USING__MCatNLO
 #include "Herwig_Interface.H"
 #include "MCatNLO_Interface.H"
@@ -70,6 +71,7 @@ namespace SHERPA {
     MI_Handler                 * p_mihandler; 
     IO_Handler                 * p_iohandler;
     Lund_Interface             * p_pythia;
+    Event_Reader               * p_evtreader;
 #ifdef USING__MCatNLO
     Herwig_Interface           * p_herwig;
     MCatNLO_Interface          * p_mcatnlo;
@@ -127,6 +129,7 @@ namespace SHERPA {
     MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
     IO_Handler                  * GetIOHandler()             { return p_iohandler;       }
     Lund_Interface              * GetPythiaInterface()       { return p_pythia;          }
+    Event_Reader                * GetEventReader()           { return p_evtreader;       }
 #ifdef USING__MCatNLO
     Herwig_Interface            * GetHerwigInterface()       { return p_herwig;          }
     MCatNLO_Interface           * GetMCatNLOInterface()      { return p_mcatnlo;         }
