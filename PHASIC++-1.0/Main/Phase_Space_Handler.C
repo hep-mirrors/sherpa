@@ -108,7 +108,7 @@ bool Phase_Space_Handler::InitIncoming(double _mass)
     }
     if (ih) {
       if (ih->On()>0) {
-	ih->SetFixedSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
+	ih->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
 	msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
 		       <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
 		       <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
