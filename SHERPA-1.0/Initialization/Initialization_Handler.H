@@ -102,6 +102,11 @@ namespace SHERPA {
   };
 
   /*!
+    \file 
+    \brief Contains the class SHERPA::Initialization_Handler
+  */                                  
+
+  /*!
     \class Initialization_Handler
     \brief It is in charge of initialising and deleting all physics modules used during a run.
     
