@@ -27,7 +27,6 @@ libToolsMath_la_SOURCES       =	\
 				Gauss_Integrator.C \
 				Scaling.C \
 				Axis.C \
-				Data_To_Function.C \
 				Histogram.C \
 				Variable.C \
 				Permutation.C \
@@ -48,8 +47,6 @@ noinst_HEADERS        =	\
 			Variable.H \
 			Scaling.H \
 			Axis.H \
-			Data_To_Function.H \
-			Data_To_Function.inl.H \
 			Histogram.H \
 			Permutation.H \
 			Grid.H \
