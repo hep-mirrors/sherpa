@@ -21,11 +21,11 @@ namespace SHERPA {
 
     AORGTOOLS::Data_Read       * p_dataread;
     MODEL::Model_Base          * p_model;
-    ISR::ISR_Handler           * p_isr;
+    PDF::ISR_Handler           * p_isr;
     APACIC::Hard_Interface     * p_apacic;
   public :
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
-		   ISR::ISR_Handler *,int);
+		   PDF::ISR_Handler *,int);
     ~Shower_Handler();
     int             PerformShowers(bool);
     void            FillBlobs(APHYTOOLS::Blob_List *);

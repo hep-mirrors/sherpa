@@ -64,8 +64,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,
 {
   msg.Debugging()<<"In Interface_Tools::InitializeOutGoing :"<<scale<<std::endl;
   
-  Knot * dummy   = p_fintree->NewKnot();
-  *(dummy->part) = Parton(0,Flavour(kf::none),blob->CMS());
+  Knot * dummy   = p_fintree->NewKnot(new Parton(0,Flavour(kf::none),blob->CMS()));
   dummy->part->SetInfo('M');
   dummy->part->SetStatus(2);
   dummy->t       = scale;
@@ -74,8 +73,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,
   dummy->thcrit  = M_PI;
   dummy->stat    = 1;
     
-  Knot * d1      = p_fintree->NewKnot();
-  *(d1->part)    = blob->OutParton(0);
+  Knot * d1      = p_fintree->NewKnot(blob->OutParton(0));
   d1->part->SetInfo('H');
   d1->part->SetStatus(1);
   d1->t          = scale;
@@ -86,8 +84,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,
   d1->E2         = sqr(d1->part->Momentum()[0]);
   d1->stat       = 1;
 
-  Knot * d2      = p_fintree->NewKnot();
-  *(d2->part)    = blob->OutParton(1);
+  Knot * d2      = p_fintree->NewKnot(blob->OutParton(1));
   d2->part->SetInfo('H');
   d2->part->SetStatus(1);
   d2->t          = scale;

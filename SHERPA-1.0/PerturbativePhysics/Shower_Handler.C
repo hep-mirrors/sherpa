@@ -9,7 +9,7 @@ using namespace AMATOOLS;
 
 Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 			       MODEL::Model_Base * _model,
-			       ISR::ISR_Handler * _isr,int _maxjet) :
+			       PDF::ISR_Handler * _isr,int _maxjet) :
   m_dir(_dir), m_file(_file), p_isr(_isr), m_maxjetnumber(_maxjet),
   p_apacic(NULL)
 {
@@ -26,7 +26,8 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
   m_fsrshowerswitch = p_dataread->GetValue<int>("FSR_SHOWER",1);
   
   if (m_showergenerator==std::string("Apacic")) {
-    p_apacic = new APACIC::Hard_Interface(p_isr,m_maxjetnumber,m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
+    p_apacic = new APACIC::Hard_Interface(p_isr,_model,
+					  m_maxjetnumber,m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
   }
   else {
     msg.Error()<<"Error in Shower_Handler::ReadInFile()."<<endl

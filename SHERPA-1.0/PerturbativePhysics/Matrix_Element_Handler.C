@@ -6,7 +6,6 @@
 using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
-using namespace ISR;
 using namespace PDF;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
@@ -16,7 +15,7 @@ using namespace std;
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
 					       BEAM::Beam_Spectra_Handler * _beam,
-					       ISR::ISR_Handler * _isr) :
+					       PDF::ISR_Handler * _isr) :
   p_amegic(NULL), p_simplexs(NULL), m_dir(_dir), m_file(_file), m_mode(0)
 {
   p_dataread = new Data_Read(m_dir+m_file);
@@ -47,7 +46,7 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
 
 int Matrix_Element_Handler::InitializeAmegic(MODEL::Model_Base * _model,
 					      BEAM::Beam_Spectra_Handler * _beam,
-					      ISR::ISR_Handler * _isr) 
+					      PDF::ISR_Handler * _isr) 
 {
   m_name    = string("Amegic");
   p_amegic  = new AMEGIC::Amegic(m_dir,m_file,_model);
@@ -57,7 +56,7 @@ int Matrix_Element_Handler::InitializeAmegic(MODEL::Model_Base * _model,
 
 int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
 						BEAM::Beam_Spectra_Handler * _beam,
-						ISR::ISR_Handler * _isr) 
+						PDF::ISR_Handler * _isr) 
 {
   m_name    = string("Simple X-section");
   p_simplexs = new EXTRAXS::SimpleXSecs(m_dir,m_file,_model);

@@ -35,17 +35,17 @@ namespace SHERPA {
     bool RescaleJetrates() ;
 
     int InitializeSimpleXS(MODEL::Model_Base *,
-			   BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
+			   BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     int InitializeAmegic(MODEL::Model_Base *,
-			 BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
+			 BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     bool UnweightedEvent();
     bool WeightedEvent();
   public :
     Matrix_Element_Handler(std::string,std::string,MODEL::Model_Base *,
-			   BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
+			   BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     ~Matrix_Element_Handler();
 
-    bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
+    bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     bool CalculateTotalXSecs();
     bool PrepareXSecTables();
     bool LookUpXSec(double,bool,std::string);
