@@ -31,7 +31,7 @@ namespace SHERPA {
     
     bool     PerformScan();
 
-    IO_Handler *GetIOHandler() { return p_iohandler; }
+    inline IO_Handler *const GetIOHandler() const { return p_iohandler; }
   };
 
   /*!
