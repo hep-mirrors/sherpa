@@ -47,7 +47,7 @@ namespace SHERPA {
   class Combine_Data;
   class Combine_Table;
 
-  std::ostream & operator<<(std::ostream &,Combine_Data &);
+  std::ostream & operator<<(std::ostream &,const Combine_Data &);
 
   /*---------------------------------------------------------------------------
 

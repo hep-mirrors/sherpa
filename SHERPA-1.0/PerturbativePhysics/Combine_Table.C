@@ -383,11 +383,14 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
   // calculate pt2ij and determine "best" combination
   double pt2max   = sqr(rpa.gen.Ecms());
   double pt2min   = pt2max;
+  double pt2min2  = 4.*pt2max;
   double prop_max = 0.;
   double ewpt2min = pt2max;
 
   CD_Iterator ewcit=cl.end();
   CD_Iterator pwcit=cl.end();
+  CD_Iterator cwin2=cl.end();
+  m_cwin=cl.end();
   for (CD_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
     CD_Iterator tit = CalcPropagator(cit);
     // if flav==none calc  s, pt2ij
@@ -408,6 +411,10 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
 	  pt2ij*=1.001;
 	  cit->second.pt2ij = pt2ij;
 	} 
+	if (pt2ij<pt2min2) {
+	  pt2min2 = pt2ij;
+	  cwin2   = cit;
+	}
       
 	// check if combined momenta is physical even in LAB frame
 	double e = save_moms[cit->first.i][0] - save_moms[cit->first.j][0];
@@ -443,11 +450,18 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
       pt2min = pt2ij;
       m_cwin = cit;
     }
+    if (pt2ij<pt2min2) {
+      pt2min2 = pt2ij;
+      cwin2   = cit;
+    }
+
     if (cit->second.strong==0 && pt2ij<ewpt2min) {
       ewpt2min = pt2ij;
       ewcit=cit;
     }
   }
+  if (m_cwin==cl.end()) 
+    m_cwin=cwin2;
 
 
   if (m_mode==1) {
