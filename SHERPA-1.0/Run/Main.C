@@ -15,6 +15,7 @@ using namespace SHERPA;
 int main(int argc,char* argv[]) {  
 
   Sherpa Generator;
+  ATOOLS::msg.Out()<<" Process initialization started "<<std::endl;
   Generator.InitializeTheRun(std::string("./"));
   ATOOLS::msg.Out()<<"generate "<<ATOOLS::rpa.gen.NumberOfEvents()<<" events"<<std::endl;
   Generator.InitializeTheEventHandler();
@@ -29,6 +30,7 @@ int main(int argc,char* argv[]) {
   }
   Generator.SummarizeRun();
   ATOOLS::msg.Events()<<"Sherpa did "<<nevt<<" with "<<Generator.NumberOfErrors()<<" errors."<<std::endl;
+  ATOOLS::msg.Out()<<" Simmulation finished "<<std::endl;
 }
 
 
