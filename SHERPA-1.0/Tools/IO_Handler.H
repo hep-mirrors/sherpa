@@ -33,7 +33,6 @@ namespace SHERPA {
 
 #ifdef CLHEP_SUPPORT
     HepMC_Interface          * p_hepmc;
-    HepMC::GenEvent          * p_event;
 #endif
     ATOOLS::HepEvt_Interface * p_hepevt;
     std::ofstream              m_outstream;
@@ -65,8 +64,10 @@ namespace SHERPA {
     inline bool OutputOn() const { return m_io&1; }
 
 #ifdef CLHEP_SUPPORT
-    HepMC::GenEvent *GetGenEvent() { return p_event; }
+    inline HepMC_Interface *const GetHepMCInterface() const 
+    { return p_hepmc; }
 #endif
+
   };
 
   /*!

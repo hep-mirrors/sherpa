@@ -10,8 +10,10 @@ using namespace SHERPA;
 using namespace HepMC;
 using namespace HepPDT;
 
-HepMC_Interface::HepMC_Interface()
+HepMC_Interface::HepMC_Interface():
+  p_event(NULL)
 {
+  std::cout<<__PRETTY_FUNCTION__<<std::endl;
   InitTheMap();
 }
 
@@ -53,7 +55,7 @@ void HepMC_Interface::InitTheMap()
 #endif
 }
 
-bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List * blobs,HepMC::GenEvent *& event)
+bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 {
 #ifdef CLHEP_SUPPORT
   if (blobs->empty()) {
@@ -62,18 +64,18 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List * blobs,HepMC::GenEvent *& 
 		       <<"   Continue run ... ."<<std::endl;
     return true;
   }
-  if (event!=NULL) delete event;
-  event = new GenEvent();
+  if (p_event!=NULL) delete p_event;
+  p_event = new HepMC::GenEvent();
   m_blob2vertex.clear();
   m_parton2particle.clear();
   GenVertex * vertex;
   std::string type;
   for (ATOOLS::Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) {
     Sherpa2HepMC(*(blit),vertex);
-    event->add_vertex(vertex);
+    p_event->add_vertex(vertex);
     type = (*blit)->Type();
     if (type.find(std::string("Signal Process"))!=std::string::npos) 
-      event->set_signal_process_vertex(vertex);
+      p_event->set_signal_process_vertex(vertex);
   }
 #endif
   return true;

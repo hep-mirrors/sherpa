@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 #include "Data_Read.H"
+#include "Exception.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -24,7 +25,6 @@ IO_Handler::IO_Handler():
   m_io(0), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
 #ifdef CLHEP_SUPPORT
   p_hepmc(NULL), 
-  p_event(NULL),  
 #endif
   p_hepevt(NULL), 
   p_instream(NULL) {}
@@ -35,7 +35,6 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
   m_on(true), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
 #ifdef CLHEP_SUPPORT
   p_hepmc(NULL), 
-  p_event(NULL),
 #endif
   p_hepevt(NULL), 
   p_instream(NULL),
@@ -44,6 +43,7 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
   m_evtnumber(0), 
   m_evtcount(0)
 {
+  std::cout<<__PRETTY_FUNCTION__<<std::endl;
   for (size_t i=0;i<infiles.size();++i) {
     m_intype=m_intype|(iotype::code)(pow(2,i)*(infiles[i]!=std::string("")));
   }
@@ -163,10 +163,9 @@ bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weig
 	  break;
 	}
 #ifdef CLHEP_SUPPORT
-      case iotype::HepMC: 
-	p_hepmc->Sherpa2HepMC(blobs,p_event);
-	if (ATOOLS::msg.LevelIsEvents()) p_event->print();
-	return true;
+      case iotype::HepMC: {
+	p_hepmc->Sherpa2HepMC(blobs);
+	return true;}
 #endif
       case iotype::HepEvt: 
 	p_hepevt->Sherpa2HepEvt(blobs); 
@@ -188,9 +187,11 @@ bool IO_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
   if (!(m_io&2)) return false;
   switch (m_intype) {
   case iotype::Sherpa: return SherpaInput(blobs); 
-#ifdef _USE_HEPMC_
+#ifdef CLHEP_SUPPORT
   case iotype::HepMC: 
-    //return p_hepmc->Ouput(blobs); 
+    throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,
+			    "Reading input from HepMC is not yet possible.",
+			    "IO_Handler","InputFromFormat"));
 #endif
   case iotype::HepEvt: return p_hepevt->HepEvt2Sherpa(blobs); 
   default:
