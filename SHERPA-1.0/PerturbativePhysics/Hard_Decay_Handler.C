@@ -23,7 +23,7 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string _path,std::string _file,std::
   if (m_decaytables.size()>0) {
     m_on = 1;
     EvaluateWidths(_pfile,_model);
-    SetWidths(0);
+    SetWidths();
   }
 }
 
@@ -129,35 +129,29 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
 	abort();
       }
     }
+    else {
+      if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
+      flav = (*dit)->Flav();
+      if (!p_mehandler->AddToDecays(flav)) {
+	msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
+		   <<"   Could not add "<<flav
+		   <<" to list of decays treated by ME_Handler. Abort run."<<endl;
+	abort();
+      }
+    }
   }
   if (p_mehandler->InitializeDecayTables()) p_mehandler->CalculateWidths();
 }
 
 
-void Hard_Decay_Handler::SetWidths(bool flag)
+void Hard_Decay_Handler::SetWidths()
 {
   for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
-    if (!flag && (*dit)->Overwrite()) p_mehandler->FillDecayTable((*dit),true);
-    if (flag && !(*dit)->Overwrite()) p_mehandler->FillDecayTable((*dit),false);
+    p_mehandler->FillDecayTable((*dit),(*dit)->Overwrite());
+    //if (!flag && (*dit)->Overwrite()) p_mehandler->FillDecayTable((*dit),true);
+    //if (flag && !(*dit)->Overwrite()) p_mehandler->FillDecayTable((*dit),false);
   }
 } 
-
-bool Hard_Decay_Handler::InitializeAllHardDecays(std::string _pfile,MODEL::Model_Base * _model) 
-{
-  bool newones = 0;
-  Flavour flav;
-  for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
-    flav = (*dit)->Flav();
-    if (p_mehandler->AddToDecays(flav)) newones = 1;
-  }
-  if (newones) {
-    p_mehandler->InitializeDecayTables();
-    p_mehandler->CalculateWidths();
-  }
-  SetWidths(1);
-
-  return 1;
-}
 
 double Hard_Decay_Handler::DefineSecondaryDecays(ATOOLS::Blob * _blob,bool _add) 
 {
@@ -170,7 +164,7 @@ double Hard_Decay_Handler::DefineSecondaryDecays(ATOOLS::Blob * _blob,bool _add)
     particle       = _blob->OutParticle(i);
     if (_add) rest += particle->Momentum()[0];
     if (particle->Flav().IsStable()) Mmin+=particle->Flav().Mass();
-    else dptable.insert(make_pair(particle,dc));
+                                else dptable.insert(make_pair(particle,dc));
   }
   rest       -= Mmin; 
   for (DPTIt dptit=dptable.begin();dptit!=dptable.end();++dptit) {
