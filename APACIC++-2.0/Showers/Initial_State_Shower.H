@@ -37,7 +37,7 @@ namespace APACIC {
     Initial_State_Shower(PDF::ISR_Handler *,Final_State_Shower *,
 			 MODEL::Model_Base *,ATOOLS::Data_Read * const );
     ~Initial_State_Shower();
-    bool PerformShower(Tree **,bool);
+    bool PerformShower(Tree **,int);
     void InitShowerPT(double pt2max);
     void ExtractPartons(Knot *,int,ATOOLS::Blob *,
 			ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
@@ -82,12 +82,6 @@ namespace APACIC {
     return tree->GetInitiator();
   }
 
-  inline ATOOLS::Vec4D Initial_State_Shower::GetMomentum(Knot * mo,int & number) 
-  {
-    if (mo->left) return GetMomentum(mo->left,number) + GetMomentum(mo->right,number);
-    ++number;
-    return mo->part->Momentum();
-  }
 
   /*!
     \file 
@@ -110,7 +104,7 @@ namespace APACIC {
   */  
 
   /*!
-    \fn    bool Initial_State_Shower::PerformShower(Tree **, bool)
+    \fn    bool Initial_State_Shower::PerformShower(Tree **, int)
     \brief Performs the Initial State Shower.
     
     This routine is called in order to start the shower evolution, employing

@@ -90,7 +90,7 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
   if (stat) {
     interface->FillBlobs(_bloblist);
     if (!decayblob) {
-      shower = p_showerhandler->PerformShowers(p_showerhandler->MaxJetNumber()!=mehandler->Nout(),
+      shower = p_showerhandler->PerformShowers(interface->DoJetVeto(),
 					       mehandler->GetISR_Handler()->X1(),
 					       mehandler->GetISR_Handler()->X2());
     }

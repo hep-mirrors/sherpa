@@ -688,6 +688,7 @@ Knot * Cluster_Partons::Point2Knot(Tree * tree, const Leg & po,
   k->part->SetInfo(info);
   k->part->SetStatus(1);  //final
   k->tout      = sqr(flav.PSMass());
+  if (flav.IsKK()) k->tout=mom.Abs2();
   k->E2        = scale;
   k->costh     = 0; 
   k->stat      = 3;

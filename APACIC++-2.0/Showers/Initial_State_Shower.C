@@ -61,8 +61,16 @@ Initial_State_Shower::~Initial_State_Shower()
 //----------------------- Performing the Shower -------------------------
 //----------------------------------------------------------------------- 
 
-bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
-  m_jetveto = _jetveto;
+bool Initial_State_Shower::PerformShower(Tree ** trees,int _jetveto) {
+  m_jetveto = (_jetveto>0);
+  if (_jetveto<0) {
+    m_extra_pdf[0]    = 0;
+    m_extra_pdf[1]    = 0;
+  }
+  else {
+    m_extra_pdf[0]    = 1;
+    m_extra_pdf[1]    = 1;
+  }
 
   if (InitializeSystem(trees,trees[0]->GetRoot(),trees[1]->GetRoot())) {
     double x1,x2;
@@ -258,8 +266,6 @@ bool Initial_State_Shower::TestShower(Tree ** trees)
 //----------------------------------------------------------------------- 
 
 bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
-  m_extra_pdf[0]    = 1;
-  m_extra_pdf[1]    = 1;
   m_to_be_diced[0]  = 1;
   m_to_be_diced[1]  = 1;
 
@@ -418,7 +424,15 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
     if (caught_jetveto==0) {
       if (k1->prev->stat!=2) { 
-	p_fin->FirstTimelikeFromSpacelike(trees[ntree0],k1->prev->left,m_jetveto,sprime_a,k1->z);
+	if (p_fin) {
+	  p_fin->FirstTimelikeFromSpacelike(trees[ntree0],k1->prev->left,m_jetveto,sprime_a,k1->z);
+	}
+	else {
+	  Knot * mo = k1->prev->left;
+	  mo->t     = mo->tout;
+	  mo->stat  = 0;
+	  mo->part->SetStatus(1);
+	}
       }
     }
 
@@ -434,7 +448,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       return (ntree0+2);
     }
 
-    p_fin->SetAllColours(k1->prev->left);
+    if (p_fin) p_fin->SetAllColours(k1->prev->left);
   
     if (k1->prev->z>0.) m_sprime = m_sprime/k1->prev->z;
 
@@ -734,6 +748,14 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   d2->thcrit  = M_PI;
   d2->stat    = 1;
 }
+
+ATOOLS::Vec4D Initial_State_Shower::GetMomentum(Knot * mo,int & number) 
+{
+  if (mo->left) return GetMomentum(mo->left,number) + GetMomentum(mo->right,number);
+  ++number;
+  return mo->part->Momentum();
+}
+
 
 void Initial_State_Shower::OutputTree(Tree * tree) 
 {

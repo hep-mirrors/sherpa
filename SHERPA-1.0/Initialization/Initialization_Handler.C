@@ -101,7 +101,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
 
   if (!CheckBeamISRConsistency()) return 0.;
   
-  okay = okay && InitializeTheHardDecays();
+  //  okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   //  only if events:
   if (rpa.gen.NumberOfEvents()>0) {

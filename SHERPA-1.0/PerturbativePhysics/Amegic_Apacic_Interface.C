@@ -185,3 +185,12 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
   }
   return 1;
 }
+
+int Amegic_Apacic_Interface::DoJetVeto() {
+  int jetveto=-1;
+  if (p_me->UseSudakovWeight()) {
+    jetveto=0;
+    if (p_shower->MaxJetNumber()!=p_me->Nout()) jetveto=1;
+  }
+  return jetveto;
+}

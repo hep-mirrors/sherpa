@@ -30,7 +30,7 @@ namespace APACIC {
     Final_State_Shower(MODEL::Model_Base *,ATOOLS::Data_Read * const);
     ~Final_State_Shower();
 
-    int PerformShower(Tree *,bool);
+    int PerformShower(Tree *,int);
     void FirstTimelikeFromSpacelike(Tree *,Knot *,bool,double,double);
     bool SetAllColours(Knot *);
     static bool SetColours(Knot *,Timelike_Kinematics *);

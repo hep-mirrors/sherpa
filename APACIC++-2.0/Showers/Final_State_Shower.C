@@ -37,8 +37,10 @@ Final_State_Shower::~Final_State_Shower()
 //----------------------- Performing the Shower -------------------------
 //----------------------------------------------------------------------- 
 
-int Final_State_Shower::PerformShower(Tree * tree,bool jetveto) 
+int Final_State_Shower::PerformShower(Tree * tree,int _jetveto) 
 {
+  bool jetveto = (_jetveto>0);
+
   p_kin->SetJetVeto(jetveto);
 
   m_ini_partons.clear();

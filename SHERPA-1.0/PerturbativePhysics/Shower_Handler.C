@@ -18,7 +18,11 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
      if (_isr->On()>0) m_isrshowerswitch = p_dataread->GetValue<int>("ISR_SHOWER",1);
   }
   m_fsrshowerswitch = p_dataread->GetValue<int>("FSR_SHOWER",1);
-  
+  if (m_isrshowerswitch && !m_fsrshowerswitch) {
+    msg.Out()<<"WARNING: final state shower is switch on, since initial state shower is turned on as well."<<endl;
+    m_fsrshowerswitch=true;
+  }
+
   if (m_showergenerator==std::string("Apacic")) {
     p_apacic = new APACIC::Hard_Interface(_isr,_model,m_maxjetnumber,
 					  m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
@@ -41,7 +45,7 @@ Shower_Handler::~Shower_Handler()
 }
 
 
-int Shower_Handler::PerformShowers(bool jetveto,double _x1,double _x2) {
+int Shower_Handler::PerformShowers(int jetveto,double _x1,double _x2) {
   if (p_apacic) return p_apacic->PerformShowers(m_isrshowerswitch,m_fsrshowerswitch,jetveto,_x1,_x2);
   return 0;
 }

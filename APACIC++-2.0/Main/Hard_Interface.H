@@ -29,7 +29,7 @@ namespace APACIC {
     Hard_Interface(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,ATOOLS::Data_Read *); 
     ~Hard_Interface(); 
     void PrepareTrees();
-    int  PerformShowers(bool,bool,bool,double,double);
+    int  PerformShowers(bool,bool,int,double,double);
     bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
 
     Tree             * FinTree()  { return p_fintree; }

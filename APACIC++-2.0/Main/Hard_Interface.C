@@ -45,7 +45,7 @@ void Hard_Interface::PrepareTrees() {
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
-int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,double x2) {
+int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
   if (!m_showers) return 1;
   if (m_fsron) {
     Vec4D sum=p_fintree->GetRoot()->part->Momentum();
@@ -92,10 +92,10 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,doub
     if (fin) {
       p_fintree->BoRo(rot);
       p_fintree->BoRo(lab);
-    }
 
-    // check ME if still njet ME!
-    if (!p_finshower->ExtraJetCheck()) return 3;
+      // check ME if still njet ME!
+      if (!p_finshower->ExtraJetCheck()) return 3;
+    }
 
     msg.Debugging()<<"Initial State Shower successful !"<<std::endl;
   }

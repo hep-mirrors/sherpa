@@ -1,7 +1,7 @@
 SUBDIRS = Lund
 lib_LTLIBRARIES = libSherpaSoftPhysics.la
 libSherpaSoftPhysics_la_SOURCES  = Beam_Remnant_Handler.C Fragmentation_Handler.C \
-				   Hadron_Decay_Handler.C
+				   Hadron_Decay_Handler.C  Primordial_KPerp.C
 INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../SHERPA-1.0/SoftPhysics/Lund \
            -I../../PHASIC++-1.0/Beam \
@@ -16,7 +16,7 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Beam_Remnant_Handler.H Fragmentation_Handler.H \
-		 Hadron_Decay_Handler.H
+		 Hadron_Decay_Handler.H Primordial_KPerp.IC Primordial_KPerp.H
 
 
 

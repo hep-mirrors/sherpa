@@ -275,8 +275,33 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
 
   double np1  = sqrt(l1);
   double np3  = sqrt(l3);
-  double maxt;
-  if (dabs(t2)>rpa.gen.Accu()) maxt = (t1 + t3 + (np1*np3 - s1*s3)/(2.*t2));
-                          else maxt = (-(t1/active->z - t3)*(s/(s-t1)-s/(s/active->z-t3))); 
-  return maxt;
+
+  double maxt0 =(-(t1/active->z - t3)*(s/(s-t1)-s/(s/active->z-t3))); 
+
+  double qa =  - s1*s3;
+  double qb = np1*np3;
+  double q = qa + qb;
+  if (dabs(q/qb)<1.e-8)  {
+    double z = active->z;
+    double sprime  = s;
+    double sprime2 = sqr(sprime);
+    double sprime3 = sprime*sprime2;
+    double sprime4 = sqr(sprime2);
+    double t12 = sqr(t1);
+    double t13 = t1*t12;
+    double t32 = sqr(t3);
+    double t33 = t3*t32;
+    double z2 = sqr(z);
+    double z3 = z*z2;
+
+    double maxt1 = (sprime*t2*(-(t1*(t1 - t3)*t3*z3*(t12 - t32*z)) + sprime4*(-1 + z)*(t1 - t3*z2) + 
+		2*sprime*t1*t3*z2*(-2*t1*t3*z - t32*(-2 + z)*z + t12*(-1 + 2*z)) + 
+		sprime2*z*(t13 + t12*t3*(5 - 6*z)*z + t33*z3 + t1*t32*z*(-6 + 5*z)) - 
+		2*sprime3*z*(t12 + t32*z2 - 2*t1*t3*(1 - z + z2))))/
+      (pow((sprime - t1)*(sprime - t3*z),3.)*z);
+    return maxt0+maxt1;
+  }
+
+  if (dabs(t2)>rpa.gen.Accu()) return  (t1 + t3 + (np1*np3 - s1*s3)/(2.*t2));
+  return maxt0;
 }

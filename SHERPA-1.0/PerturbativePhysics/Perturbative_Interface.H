@@ -32,6 +32,7 @@ namespace SHERPA {
     virtual bool DefineInitialConditions(ATOOLS::Blob *) = 0;
     virtual bool FillBlobs(ATOOLS::Blob_List *)          = 0; 
     double                   GetWeight()    { return m_weight; }
+    virtual int DoJetVeto() { return 1; }
     Matrix_Element_Handler * GetMEHandler() { return p_me; }
   };
 
