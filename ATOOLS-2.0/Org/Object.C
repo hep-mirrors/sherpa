@@ -1,6 +1,6 @@
 #include "Object.H"
 
-#include "Scaling.H"
+#include "MyStrStream.H"
 
 using namespace ATOOLS;
 

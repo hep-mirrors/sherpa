@@ -26,27 +26,13 @@ namespace ATOOLS {
 
     // member functions
     template <class Type> 
-    inline static Type *const GetObject(const std::string name)
-    { 
-      String_Object_Map::const_iterator pos=s_objects.find(name);
-      if (pos!=s_objects.end())	return static_cast<Type *const>(pos->second); 
-      return NULL;
-    }
-
+    static Type *const GetObject(const std::string name);
     template <class Type> 
-    inline static std::string &Name(const Type *object)
-    { 
-      for (String_Object_Map::const_iterator oit=s_objects.begin();
-	   oit!=s_objects.end();++oit) if (oit->second==object) 
-	     return oit->first;
-      return "";
-    }
+    static const std::string Name(const Type *object);
 
     static void PrintObjects(std::ostream &str);
 
   };//end of class Object
-
-#define GET_OBJECT(TYPE,NAME) ATOOLS::Object::GetObject<TYPE>(NAME)
 
   /*!
     \class Object
@@ -102,8 +88,35 @@ namespace ATOOLS {
 
     }
     \endcode
+
+    To avoid inlining problems, each class derived from Object
+    must have the INSTANTIATE_OBJECT(Class_Name) statement 
+    in its C-file in order to instantiate the appropriate 
+    getter methods.
   */
 
 }// end of namespace ATOOLS
 
+#define GET_OBJECT(Type,Name) ATOOLS::Object::GetObject<Type>(Name)
+
+#define INSTANTIATE_OBJECT(Type)					\
+  									\
+  template <>								\
+  Type *const ATOOLS::Object::GetObject<Type>(const std::string name)	\
+  {									\
+    String_Object_Map::const_iterator pos=s_objects.find(name);		\
+    if (pos!=s_objects.end())						\
+      return dynamic_cast<Type *const>(pos->second);			\
+    return NULL;							\
+  }									\
+    									\
+  template <>								\
+  const std::string ATOOLS::Object::Name<Type>(const Type *object)	\
+  {									\
+    for (String_Object_Map::const_iterator oit=s_objects.begin();	\
+	 oit!=s_objects.end();++oit) if (oit->second==object)		\
+				       return oit->first;		\
+    return "";								\
+  }									
+  
 #endif
