@@ -33,6 +33,7 @@ libAmisic_la_SOURCES  = \
 			Fixed_Variable_Channel.C \
 			Semihard_QCD.C \
 			Simple_Chain.C \
+			Reggeon_Trajectory.C \
 			Simple_String.C \
 			Amisic.C 
 noinst_HEADERS        = \
@@ -47,6 +48,7 @@ noinst_HEADERS        = \
 			Fixed_Variable_Channel.H \
 			Semihard_QCD.H \
 			Simple_Chain.H \
+			Reggeon_Trajectory.H \
 			Simple_String.H \
 			Amisic.H 
 EXTRA_DIST    = $(CVSINCLUDE)
