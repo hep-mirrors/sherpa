@@ -1,5 +1,8 @@
 #include "Signal_Processes.H"
 
+#ifdef PROFILE__Signal_Processes
+#include "prof.hh"
+#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -22,6 +25,9 @@ Signal_Processes::~Signal_Processes()
 
 bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
 {
+#ifdef PROFILE__Signal_Processes
+  PROFILE_HERE;
+#endif
   if (_bloblist->size()>1) return 0;
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Signal_Processes::Treat."<<endl
@@ -64,12 +70,15 @@ void Signal_Processes::CleanUp() { return; }
 
 void Signal_Processes::FillBlob(Blob * _blob)
 {
+#ifdef PROFILE__Signal_Processes
+  PROFILE_HERE;
+#endif
   _blob->SetPosition(Vec4D(0.,0.,0.,0.));
   _blob->SetType(_blob->Type()+p_mehandler->ProcessName());
   _blob->SetStatus(1);
 
   Vec4D cms = Vec4D(0.,0.,0.,0.);
-  for (int i=0;i<p_mehandler->Nin();i++) cms += p_mehandler->Momenta()[i];
+  for (size_t i=0;i<p_mehandler->NIn();i++) cms += p_mehandler->Momenta()[i];
   _blob->SetCMS(cms);
   _blob->SetBeam(-1);
 
@@ -77,21 +86,19 @@ void Signal_Processes::FillBlob(Blob * _blob)
   _blob->DeleteOwnedParticles();
 
   Particle * particle;
-  for (int i=0;i<p_mehandler->Nin();i++) {
+  for (unsigned int i=0;i<p_mehandler->NIn();i++) {
     particle = new Particle(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
-    particle->SetNumber(int(particle));
+    particle->SetNumber((long int)particle);
     particle->SetStatus(2);
     particle->SetInfo('G');
-    particle->SetDecayBlob(_blob);
     _blob->AddToInParticles(particle);
   }
   bool unstable = false; 
-  for (int i=p_mehandler->Nin();i<p_mehandler->Nin()+p_mehandler->Nout();i++) {
+  for (unsigned int i=p_mehandler->NIn();i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
     particle = new Particle(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
     if (!(particle->Flav().IsStable())) unstable = true;
     particle->SetStatus(1);
     particle->SetInfo('H');
-    particle->SetProductionBlob(_blob);
     _blob->AddToOutParticles(particle);
   }
   if (unstable) {

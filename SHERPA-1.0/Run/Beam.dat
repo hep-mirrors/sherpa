@@ -4,9 +4,9 @@
 BEAM_1          = 11                   ! possible beam particles:  P+, P-, e+, e-
 BEAM_ENERGY_1   = 250.                 ! in GeV
 BEAM_POL_1      = 0.                   ! Polarization degree -1 ... 1
-BEAM_SPECTRUM_1 = Monochromatic        ! Monochromatic,Laser_Backscattering,Simple_Compton
+BEAM_SPECTRUM_1 = Laser_Backscattering ! Monochromatic,Laser_Backscattering,Simple_Compton
 !
-BEAM_2          = -11                  ! possible beam particles:  P+, P-, e+, e- 
+BEAM_2          = 11                   ! possible beam particles:  P+, P-, e+, e- 
 BEAM_ENERGY_2   = 250.                 ! in GeV
 BEAM_POL_2      = 0.                   ! Polarization degree -1 ... 1
 BEAM_SPECTRUM_2 = Monochromatic        ! Monochromatic,Laser_Backscattering,Simple_Compton

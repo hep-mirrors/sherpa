@@ -2,13 +2,11 @@
 #include "SimpleXS_Apacic_Interface.H"
 #include "Amegic_Apacic_Interface.H"
 
-
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Jet_Evolution::Jet_Evolution(MEHandlersMap * _mehandlers,
-			     Shower_Handler * _showerhandler) :
+Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerhandler) :
   p_showerhandler(_showerhandler)
 {
   m_name      = string("Jet_Evolution : ")+p_showerhandler->ShowerGenerator();
@@ -17,10 +15,11 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap * _mehandlers,
   Perturbative_Interface * interface;
   MEHandlerIter            meIter;
   for (meIter=_mehandlers->begin();meIter!=_mehandlers->end();++meIter) {
+    interface=NULL;
     if (meIter->second->Name()==string("Amegic") &&
 	p_showerhandler->ShowerGenerator()==string("Apacic")) 
       interface = new Amegic_Apacic_Interface(meIter->second,p_showerhandler);
-    if (meIter->second->Name()==string("Simple X-section") &&
+    if (meIter->second->Name()==string("SimpleXS") &&
 	p_showerhandler->ShowerGenerator()==string("Apacic")) 
       interface = new SimpleXS_Apacic_Interface(meIter->second,p_showerhandler);
     m_interfaces.insert(make_pair(meIter->first,interface));
@@ -29,7 +28,10 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap * _mehandlers,
 
 Jet_Evolution::~Jet_Evolution() 
 { 
-  m_interfaces.clear();
+  while (m_interfaces.size()>0) {
+    if (m_interfaces.begin()->second!=NULL) delete m_interfaces.begin()->second;
+    m_interfaces.erase(m_interfaces.begin());
+  }
 }
 
 
@@ -42,15 +44,17 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
     return 0;
   }
   
-  PertInterfaceIter        piIter;
-
-  bool hit = 0,found = 1;
-  int  pos;
+  PertInterfaceIter piIter;
+  std::string tag;
+  bool found = 1;
+  bool hit   = 0;
+  size_t pos;
   while (found) {
+  int b=0;
     found = 0;
-    for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      pos = (*blit)->Type().find(string("Signal Process :"));
-      if ((*blit)->Status()==1 && pos>-1) {
+    for (size_t i=0;i<_bloblist->size();++i) {
+      pos = (*_bloblist)[i]->Type().find(std::string("Signal Process :"));
+      if ((*_bloblist)[i]->Status()==1 && pos!=std::string::npos) {
 	piIter = m_interfaces.find(string("SignalMEs"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -58,11 +62,23 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}	
-	found   = AttachShowers((*blit),_bloblist,piIter->second);
+	found   = AttachShowers((*_bloblist)[i],_bloblist,piIter->second);
 	weight *= piIter->second->GetWeight();
       }  // Search for active blobs of type "Signal Process :"
-      pos = (*blit)->Type().find(string("Hard decay :"));
-      if ((*blit)->Status()==1 && pos>-1) {
+      pos = (*_bloblist)[i]->Type().find(std::string("Hard Subprocess :"));
+      if ((*_bloblist)[i]->Status()==1 && pos!=std::string::npos) {
+	piIter = m_interfaces.find(string("MIMEs"));
+	if (piIter==m_interfaces.end()) {
+	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
+		     <<"   No Perturbative_Interface found for type : MIMEs."<<endl
+		     <<"   Abort the run."<<endl;
+	  abort();
+	}	
+	found   = AttachShowers((*_bloblist)[i],_bloblist,piIter->second);
+	weight *= piIter->second->GetWeight();
+      }  // Search for active blobs of type "Hard Subprocess :"
+      pos = (*_bloblist)[i]->Type().find(std::string("Hard decay :"));
+      if ((*_bloblist)[i]->Status()==1 && pos!=std::string::npos) {
 	piIter = m_interfaces.find(string("HardDecays"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -70,7 +86,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		     <<"   Abort the run."<<endl;
 	  abort();
 	}
-	found   = AttachShowers((*blit),_bloblist,piIter->second);
+	found   = AttachShowers((*_bloblist)[i],_bloblist,piIter->second);
 	weight *= piIter->second->GetWeight();
       } // Search for active blobs of type "Hard Decay :"
     }
@@ -84,20 +100,15 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 {
   std::string type = _blob->Type();
   bool decayblob   = (_blob->NInP()==1);
-  Matrix_Element_Handler * mehandler = interface->GetMEHandler();
-
   int shower,stat = interface->DefineInitialConditions(_blob);
   if (stat) {
     interface->FillBlobs(_bloblist);
     if (!decayblob) {
-      shower = p_showerhandler->PerformShowers(interface->DoJetVeto(),
-					       mehandler->GetISR_Handler()->X1(),
-					       mehandler->GetISR_Handler()->X2());
+      shower = interface->PerformShowers();
     }
     else {
       shower = p_showerhandler->PerformDecayShowers(0);
     }      
-
     if (shower==1) {
       Blob * myblob;
       p_showerhandler->FillBlobs(_bloblist); // BUG !!!!
@@ -107,15 +118,13 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  // new ISR Blob
 	  myblob = new Blob();
 	  myblob->SetType(string("IS Shower (none)"));
-	  myblob->SetBeam(i);
+	  if (Sign(_blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
+	  else myblob->SetBeam(1-i);
 	  myblob->SetStatus(1);
 	  Particle * p = new Particle(_blob->InParticle(i));
-	  p->SetProductionBlob(NULL);
-	  p->SetDecayBlob(myblob);
 	  p->SetStatus(2);
 	  myblob->AddToInParticles(p);
 	  myblob->AddToOutParticles(_blob->InParticle(i));
-	  _blob->InParticle(i)->SetProductionBlob(myblob);
 	  _blob->InParticle(i)->SetStatus(2);
 	  myblob->SetId(_bloblist->size());
 	  _bloblist->insert(_bloblist->begin(),myblob);
@@ -125,16 +134,13 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	for (int i=0;i<_blob->NOutP();i++) {
 	  myblob = new Blob();
 	  myblob->SetType(string("FS Shower (none)"));
-	  myblob->SetBeam(-1);
+	  myblob->SetBeam(i);
 	  myblob->SetStatus(1);
-	  myblob->SetId(_bloblist->size());
-	  myblob->AddToInParticles(_blob->OutParticle(i));
 	  Particle * p = new Particle(_blob->OutParticle(i));
-	  p->SetProductionBlob(myblob);
-	  p->SetDecayBlob(_blob->OutParticle(i)->DecayBlob());
-	  _blob->OutParticle(i)->SetDecayBlob(myblob);
+	  myblob->AddToInParticles(_blob->OutParticle(i));
 	  _blob->OutParticle(i)->SetStatus(2);
 	  myblob->AddToOutParticles(p);
+	  myblob->SetId(_bloblist->size());
 	  _bloblist->push_back(myblob);
 	}
       }

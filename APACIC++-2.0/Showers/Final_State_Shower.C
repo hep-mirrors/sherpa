@@ -407,7 +407,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       p=new Particle(kn->part);
       jet->AddToOutParticles(p);
       if (pl) number = pl->size();
-      else number = int(kn->part);
+      else number = (long int)(kn->part);
       p->SetNumber(number);
 
       kn->part->SetNumber(number);
@@ -430,7 +430,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 	  bl_meps->SetStatus(0);
 	}
 	if (pl) number = pl->size();
-	else number = int(kn->part);
+	else number = (long int)(kn->part);
 	p->SetNumber(number);
 	kn->part->SetNumber(number);
 	jet->SetId(bl->size());
@@ -448,7 +448,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 	abort();
       }
       if (pl) number = pl->size();
-         else number = int(kn->part);
+         else number = (long int)(kn->part);
       kn->part->SetNumber(number);
       kn->part->SetStatus(1);
       if (pl) pl->push_back(kn->part);

@@ -1,6 +1,10 @@
 #include "Hard_Decays.H"
 #include "Message.H"
 
+#ifdef PROFILE__Hard_Decays
+#include "prof.hh"
+#endif
+
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
@@ -18,6 +22,9 @@ Hard_Decays::~Hard_Decays()
 
 bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
 {
+#ifdef PROFILE__Hard_Decays
+  PROFILE_HERE;
+#endif
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Hard_Decays::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
@@ -76,6 +83,5 @@ void Hard_Decays::FillBlob(Particle * _orig,Blob * _blob)
   Particle * decayer = _blob->InParticle(0);
   double lifetime    = decayer->LifeTime();
   _blob->SetPosition(decayer->XProd()+Vec4D(lifetime,decayer->Distance(lifetime)));
-  Vec4D cms = Vec4D(decayer->Momentum());
   p_dechandler->PerformDecay(_blob);
 }

@@ -1,5 +1,6 @@
 #include "String_Handler.H"
 
+#include "Message.H"
 #include <dlfcn.h>
 
 using namespace AMEGIC;
@@ -20,16 +21,16 @@ Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
   module = dlopen(libname.c_str(),RTLD_LAZY);
   error  = dlerror();
   if (module==NULL) {
-    cout<<" Error in loading library "<<libname<<endl;
-    cout<<error<<endl;
+    ATOOLS::msg.Error()<<"String_Handler::Set_Values("<<pID<<","<<BS<<"): "
+		       <<"Error "<<error<<" while loading library "<<libname<<std::endl;
     return 0;
   }
 
   GetterFunction = (Getter_Function)dlsym(module,gettername.c_str());
   error  = dlerror();
   if (error!=NULL) {
-    cout<<" Error in loading symbol from library "<<endl;
-    cout<<error<<endl;
+    ATOOLS::msg.Error()<<"String_Handler::Set_Values("<<pID<<","<<BS<<"): "
+		       <<"Error "<<error<<" while loading symbol from library "<<libname<<std::endl;
     return 0;
   }
 

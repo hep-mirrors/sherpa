@@ -43,8 +43,10 @@ namespace SHERPA {
     unsigned int Scheme() const;
 
     // member functions
-    bool CreateKPerp(ATOOLS::Blob *blob,unsigned int nparticle);
-    bool FillKPerp(ATOOLS::Particle *particle,unsigned int beam);
+    bool CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2);
+
+    void FillKPerp(ATOOLS::Particle *particle,unsigned int beam);
+    void FillKPerp(ATOOLS::Blob *blob);
 
   };// end of class Primordial_KPerp
 

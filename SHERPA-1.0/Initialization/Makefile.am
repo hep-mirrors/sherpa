@@ -12,6 +12,9 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../AMEGIC++-2.0/Phasespace \
            -I../../AMEGIC++-2.0/String \
            -I../../AMEGIC++-2.0/Model \
+	   -I../../AMISIC++-1.0/Main \
+	   -I../../AMISIC++-1.0/Other \
+	   -I../../AMISIC++-1.0/Tools \
            -I../../PHASIC++-1.0/Main \
            -I../../APACIC++-2.0/Hard_Interface \
            -I../../APACIC++-2.0/Main \

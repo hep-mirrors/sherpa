@@ -19,7 +19,7 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
   }
   m_fsrshowerswitch = p_dataread->GetValue<int>("FSR_SHOWER",1);
   if (m_isrshowerswitch && !m_fsrshowerswitch) {
-    msg.Out()<<"WARNING: final state shower is switch on, since initial state shower is turned on as well."<<endl;
+    msg.Out()<<"WARNING: final state shower is switch on, since initial state shower is turned on as well."<<std::endl;
     m_fsrshowerswitch=true;
   }
 

@@ -35,9 +35,11 @@ namespace SHERPA {
   public :
     Amegic_Apacic_Interface(Matrix_Element_Handler *,Shower_Handler *);
     ~Amegic_Apacic_Interface(); 
-    bool   DefineInitialConditions(ATOOLS::Blob *);
-    bool   FillBlobs(ATOOLS::Blob_List *); 
-    int DoJetVeto();
+    bool DefineInitialConditions(ATOOLS::Blob *);
+    bool FillBlobs(ATOOLS::Blob_List *); 
+
+    int  PerformShowers();
+
   };
 
   /*!

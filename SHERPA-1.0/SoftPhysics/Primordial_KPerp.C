@@ -16,21 +16,12 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
 {
   p_kperp[0] = new std::vector<Vec3D>();
   p_kperp[1] = new std::vector<Vec3D>();
-  m_current[1]=m_current[0]=1;
   Data_Read *dataread = new Data_Read(_m_path+_m_file);
   m_scheme=dataread->GetValue<int>("K_PERP_SCHEME",0);
-  if (rpa.gen.Beam1().IsHadron() && rpa.gen.Beam2().IsHadron()) { 
-    cout<<"Beam1 is hadron"<<endl; 
-    m_kperpmean[0]=dataread->GetValue<double>("K_PERP_MEAN_1",0.8);
-    m_kperpmean[1]=dataread->GetValue<double>("K_PERP_MEAN_2",0.8);
-    m_kperpsigma[0]=dataread->GetValue<double>("K_PERP_SIGMA_1",m_kperpmean[0]);
-    m_kperpsigma[1]=dataread->GetValue<double>("K_PERP_SIGMA_2",m_kperpmean[1]);
-  }
-  else { 
-    cout<<"Beam1 is not a hadron"<<endl; 
-    m_kperpmean[0]=m_kperpmean[1]=0.0; 
-    m_kperpsigma[0]=m_kperpsigma[1]=0.0;
-  }
+  m_kperpmean[0]=dataread->GetValue<double>("K_PERP_MEAN_1",0.0);
+  m_kperpmean[1]=dataread->GetValue<double>("K_PERP_MEAN_2",0.0);
+  m_kperpsigma[0]=dataread->GetValue<double>("K_PERP_SIGMA_1",m_kperpmean[0]);
+  m_kperpsigma[1]=dataread->GetValue<double>("K_PERP_SIGMA_2",m_kperpmean[1]);
   delete dataread;
 }
 
@@ -42,79 +33,99 @@ Primordial_KPerp::~Primordial_KPerp()
   delete p_kperp[0];
 }
 
-bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob,unsigned int nparticle)
+bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 {
-  unsigned int beam=blob->Beam();
-  //   if (m_kperpmean[beam]==0.0) return true;
-  double m_cut=10.0;
-  p_kperp[beam]->resize(nparticle);
-  if (beam==0) {
-    p_filled->clear();
-    p_boosted->clear();
-    p_kperp[1-beam]->clear();
-  }
-  std::vector<std::pair<Vec4D,Vec4D> > connected;
+  size_t m_maxtrials=1000;
+  ATOOLS::Blob *blob[2];
+  if (blob1->Beam()==0) { blob[0]=blob1; blob[1]=blob2; }
+  else { blob[0]=blob2; blob[1]=blob1; }
+  p_kperp[0]->resize(blob[0]->NOutP()); 
+  p_kperp[1]->resize(blob[1]->NOutP());
+  p_filled->clear();
+  p_boosted->clear();
   if (m_scheme==0) {
     bool success;
-    connected.clear();
-    for (int i=0;i<blob->NOutP();++i) {
-      ATOOLS::Particle *cur2, *cur1=blob->OutParticle(i);
-      FindConnected(cur1,cur2,true,0);
-      connected.push_back(std::pair<Vec4D,Vec4D>(cur1->Momentum(),cur2->Momentum())); 
-      if (beam==0) p_kperp[1-beam]->push_back(ATOOLS::Vec3D());
-    }
-    Vec3D sum, res;
+    Vec3D sum[2];
+    size_t trials=0;
     do {
-      success=true;
+      size_t min[2];
       do {
-	sum=Vec3D();
-	double ran1, ran2, ran3, ran4, r122, r342, kperp, next, min=1.0e37;
-	for (unsigned int i=0;i<nparticle-1;++i) {
-	  next=0.0;
-	  do { 
-	    if (m_kperpmean[beam]!=0.0) {
-	      if (next==0.0) {
-		do {
-		  ran1=2.0*ran.Get()-1.0; ran2=2.0*ran.Get()-1.0;
-		  r122=ran1*ran1+ran2*ran2;
-	      } while (r122>1);
-		r122=sqrt(-2.0*log(r122)/r122);
-		kperp=m_kperpmean[beam]+Sign(0.5-ran.Get())*m_kperpsigma[beam]*ran1*r122;
-		next=m_kperpmean[beam]+Sign(0.5-ran.Get())*m_kperpsigma[beam]*ran2*r122;
-	      }
-	      else {
-		kperp=next;
-		next=0.0;
-	      }
-	    }
-	    else kperp=0.0;
+	double ran1, ran2, r12, kperp[2], minimum[2];
+	min[1]=min[0]=0; minimum[1]=minimum[0]=1.0e37; sum[1]=sum[0]=Vec3D();
+	for (int i=0;i<ATOOLS::Max(blob1->NOutP(),blob2->NOutP())-1;++i) {
+	  // dice gaussian numbers
+	  do {
+	    ran1=2.0*ran.Get()-1.0; ran2=2.0*ran.Get()-1.0;
+	    r12=ran1*ran1+ran2*ran2;
+	  } while (r12>1.0);
+	  r12=sqrt(-2.0*log(r12)/r12);
+	  // calculate k_\perp
+	  kperp[0]=m_kperpmean[0]+Sign(0.5-ran.Get())*m_kperpsigma[0]*ran1*r12;
+	  kperp[1]=m_kperpmean[1]+Sign(0.5-ran.Get())*m_kperpsigma[1]*ran2*r12;
+	  for (size_t j=0;j<2;++j) {
+	    // dice angle
 	    do {
-	      ran3=2.0*ran.Get()-1.0; ran4=2.0*ran.Get()-1.0;
-	      r342=ran3*ran3+ran4*ran4;
-	    } while (r342>1);
-	    (*p_kperp[beam])[i]=res=Vec3D(kperp*(ran3*ran3-ran4*ran4)/r342,
-					  kperp*2.0*ran3*ran4/r342,0.0);
-	    if (min>dabs(kperp)) {
-	      min=dabs(kperp);
-	      (*p_kperp[beam])[i]=(*p_kperp[beam])[0];
-	      (*p_kperp[beam])[0]=res;
+	      ran1=2.0*ran.Get()-1.0; ran2=2.0*ran.Get()-1.0;
+	      r12=ran1*ran1+ran2*ran2;
+	    } while (r12>1.0);
+	    if (i<blob[j]->NOutP()-1) { 
+	      (*p_kperp[j])[i]=Vec3D(kperp[j]*(ran1*ran1-ran2*ran2)/r12,kperp[j]*2.0*ran1*ran2/r12,0.0);
+	      sum[j]=sum[j]-(*p_kperp[j])[i];
+	      if (minimum[j]>dabs(kperp[j])) {
+		minimum[j]=dabs(kperp[j]); 
+		min[j]=i;
+	      }
 	    }
-	  } while (kperp>m_cut);
-	  sum=sum-res;
-	  if ((i<connected.size())&&(m_current[1-beam]==0)) {
-	    Vec3D kp1=(*p_kperp[beam])[i], kp2=(*p_kperp[1-beam])[i];
-	    double sp, sp1, sp2;
-	    sp1=connected[i].first.Abs2()+sqr(kp1.Abs()); 
-	    sp2=connected[i].second.Abs2()+sqr(kp2.Abs());
-	    sp=(connected[i].first+connected[i].second).Abs2()+sqr((kp1+kp2).Abs());
-	    if (((sp-sp1-sp2)*(sp-sp1-sp2)-4.0*sp1*sp2)<0.0) success=false;
 	  }
 	}
-	(*p_kperp[beam])[nparticle-1]=sum;
-      } while (exp(-0.5*sqr((m_kperpmean[beam]-sum.Abs())/m_kperpsigma[beam]))<ran.Get());
-      m_current[beam]=0;
+	for (size_t j=0;j<2;++j) (*p_kperp[j])[blob[j]->NOutP()-1]=sum[j];
+	// test whether last k_\perp is reasonable
+      } while ((exp(-0.5*sqr((m_kperpmean[0]-sum[0].Abs())/m_kperpsigma[0]))<ran.Get())||
+	       (exp(-0.5*sqr((m_kperpmean[1]-sum[1].Abs())/m_kperpsigma[1]))<ran.Get()));
+      success=true;
+      // sort k_\perp values
+      for (size_t i=0;i<2;++i) {
+	Vec3D copy=(*p_kperp[i])[blob[i]->NOutP()-1];
+	(*p_kperp[i])[blob[i]->NOutP()-1]=(*p_kperp[i])[min[i]];
+	(*p_kperp[i])[min[i]]=copy;
+	for (int j=0;j<blob[i]->NOutP();++j) {
+	  double cur=dabs(blob[i]->OutParticle(j)->Momentum()[3]);
+	  for (int k=j;k<blob[i]->NOutP();++k) {
+	    if (cur>(*p_kperp[i])[k].Abs()) {
+	      copy=(*p_kperp[i])[j]; (*p_kperp[i])[j]=(*p_kperp[i])[k]; (*p_kperp[i])[j]=copy;
+	      break;
+	    }
+	    else {
+	      if (j==blob[i]->NOutP()-1) success=false;
+	    }
+	  }
+	}
+      }
+      // test whether Energy and momentum of hard scatterings can be preserved
+      for (int i=0;i<blob[0]->NOutP();++i) {
+      	ATOOLS::Particle *cur2, *cur1=blob[0]->OutParticle(i);
+	if (FindConnected(cur1,cur2,true,0)) {
+	  Vec3D kp1=(*p_kperp[0])[i], kp2=(*p_kperp[1])[i];
+	  double sp, sp1, sp2;
+	  sp1=cur1->Momentum().Abs2()+sqr(kp1.Abs()); 
+	  sp2=cur2->Momentum().Abs2()+sqr(kp2.Abs());
+	  sp=(cur1->Momentum()+cur2->Momentum()).Abs2()+sqr((kp1+kp2).Abs());
+	  if ((sp-sp1-sp2)*(sp-sp1-sp2)<4.0*sp1*sp2) success=false;
+	}
+      }
+      if ((++trials)==m_maxtrials) {
+	for(size_t i=0;i<2;++i) {
+	  m_kperpmean[i]/=10.0;
+	  m_kperpsigma[i]/=10.0;
+	  if (ATOOLS::IsZero(m_kperpmean[i])) m_kperpmean[i]=0.0;
+	  if (ATOOLS::IsZero(m_kperpsigma[i])) m_kperpsigma[i]=0.0;
+	}
+	trials=0;
+      }
+      // accept or reject
     } while (!success);
   }
+  m_current[1]=m_current[0]=-1;
   return true;
 }
 
@@ -180,32 +191,17 @@ bool Primordial_KPerp::FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle
   return false;
 }
 
-bool Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
+void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
 {
-  if ((m_kperpmean[0]==0.0)&&(m_kperpmean[1]==0.0)) return true;
-  if (p_filled->find(cur1)!=p_filled->end()) return true;
+  if ((m_kperpmean[0]==0.0)&&(m_kperpmean[1]==0.0)) return;
+  if (p_filled->find(cur1)!=p_filled->end()) return;
   ++m_current[beam];
-  Vec3D kp1; 
+  Vec3D kp1;
   Vec4D mom1, old1=cur1->Momentum();
-  size_t i=0;
+  kp1=(*p_kperp[beam])[m_current[beam]];
   if (cur1->Flav().IsDiQuark()) {
-    kp1=(*p_kperp[beam])[0];
-    if (dabs(old1[3])>kp1.Abs()) --m_current[beam];
-    else i=p_kperp[beam]->size();
-  }
-  else {
-    for (i=m_current[beam];i<p_kperp[beam]->size();++i) {
-      kp1=(*p_kperp[beam])[i];
-      if (dabs(old1[3])>kp1.Abs()) {
-	(*p_kperp[beam])[i]=(*p_kperp[beam])[m_current[beam]];
-	break; 
-      }
-    }
-  }
-  if (i==p_kperp[beam]->size()) {
-    ATOOLS::msg.Out()<<"Primordial_KPerp::FillKPerp(..): "
-		     <<"Cannot assign k_\\perp to particle! Reject k_\\perp set."<<std::endl;
-    return false;
+    kp1=p_kperp[beam]->back();
+    --m_current[beam];
   }
   Particle *cur2;
   if (!FindConnected(cur1,cur2,true,0)) {
@@ -213,23 +209,11 @@ bool Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
 	       Sign(old1[3])*sqrt(old1[3]*old1[3]-kp1[1]*kp1[1]-kp1[2]*kp1[2])); 
     cur1->SetMomentum(mom1); 
     p_filled->insert(cur1);
-    return true;
+    return;
   }
   ++m_current[1-beam];
-  Vec3D kp2;
+  Vec3D kp2=(*p_kperp[1-beam])[m_current[1-beam]];
   Vec4D mom2, old2=cur2->Momentum(), oldcms=old1+old2;
-  for (i=m_current[1-beam];i<p_kperp[1-beam]->size();++i) {
-    kp2=(*p_kperp[1-beam])[i];
-    if (dabs(old2[3])>kp2.Abs()) {
-      (*p_kperp[1-beam])[i]=(*p_kperp[1-beam])[m_current[1-beam]];
-      break; 
-    }
-  }
-  if (i==p_kperp[1-beam]->size()) {
-    ATOOLS::msg.Tracking()<<"Primordial_KPerp::FillKPerp(..): "
-			  <<"Cannot assign k_\\perp to particle! Reject k_\\perp set."<<std::endl;
-    return false;
-  }
   m_oldcms=Poincare(oldcms);
   double sp, sp1, sp2, lam, pf2, E1, E2, pz1, pz2;
   sp1=old1.Abs2()+sqr(kp1.Abs());
@@ -264,6 +248,11 @@ bool Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   BoostConnected(cur2->DecayBlob(),0);
   p_filled->insert(cur2);
   p_filled->insert(cur1);
-  return true;
+  return;
 }
 
+void Primordial_KPerp::FillKPerp(ATOOLS::Blob *blob)
+{
+  unsigned int beam=blob->Beam();
+  for (int i=0;i<blob->NOutP();++i) FillKPerp(blob->OutParticle(i),beam);
+}

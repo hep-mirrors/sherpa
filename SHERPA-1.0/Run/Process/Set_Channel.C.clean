@@ -23,16 +23,18 @@ Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flav
   module = dlopen(libname.c_str(),RTLD_LAZY);
   error  = dlerror();
   if (module==NULL) {
-    cout<<" Error in loading library "<<libname<<endl;
-    cout<<error<<endl;
+    ATOOLS::msg.Error()<<"Phase_Space_Generator::SetChannel("
+		       <<nin<<","<<nout<<","<<fl<<","<<chn<<","<<pID<<"): "
+		       <<"Error "<<error<<" in loading library "<<libname<<std::endl;
     return 0;
   }
 
   GetterFunction = (Getter_Function)dlsym(module,gettername.c_str());
   error  = dlerror();
   if (error!=NULL) {
-    cout<<" Error in loading symbol from library "<<endl;
-    cout<<error<<endl;
+    ATOOLS::msg.Error()<<"Phase_Space_Generator::SetChannel("
+		       <<nin<<","<<nout<<","<<fl<<","<<chn<<","<<pID<<"): "
+		       <<"Error "<<error<<" while loading symbol from library "<<libname<<std::endl;
     return 0;
   }
 

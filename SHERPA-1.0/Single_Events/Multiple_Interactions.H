@@ -1,0 +1,37 @@
+#ifndef Multiple_Interactions_H
+#define Multiple_Interactions_H
+
+#include "Event_Phase_Handler.H"
+#include "Sample_Analysis.H"
+#include "MI_Handler.H"
+
+namespace SHERPA {
+
+  class Multiple_Interactions : public Event_Phase_Handler {
+  private :
+
+    bool m_one;
+    double m_pperpmax, m_ecmsmax, m_xmax[2];
+
+    MI_Handler *p_mihandler;
+
+    void CompleteBlob(ATOOLS::Blob *);
+
+  public :
+
+    // constructor
+    Multiple_Interactions(MI_Handler *_p_mihandler);
+
+    // destructor
+    ~Multiple_Interactions();
+
+    // member functions
+    bool Treat(ATOOLS::Blob_List *, double &);
+    void CleanUp();
+
+  }; // end of class Hard Subprocesses
+
+} // end of namespace SHERPA
+
+#endif
+

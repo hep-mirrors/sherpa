@@ -151,7 +151,6 @@ void HepEvt_Interface::FSBlobs2HepEvt(Blob_List * _blobs,int & _nhep) {
 }
 
 void HepEvt_Interface::FragmentationBlob2HepEvt(Blob_List * _blobs,int & _nhep) {
-  Blob * fragmentation;
   for (Blob_List::const_iterator bit=_blobs->begin(); bit!=_blobs->end();++bit) {
     if ((*bit)->Type()==std::string("Fragmentation (Lund : Pythia 6.163)")) {
       String2HepEvt((*bit),_nhep);;

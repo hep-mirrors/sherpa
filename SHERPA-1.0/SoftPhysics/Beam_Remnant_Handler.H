@@ -4,8 +4,9 @@
 #include "Beam_Spectra_Handler.H"
 #include "Primordial_KPerp.H"
 #include "ISR_Handler.H"
-#include "Particle_List.H"
 #include "Blob_List.H"
+#include "Primordial_KPerp.H"
+#include "Remnant_Base.H"
 
 namespace SHERPA {
 
@@ -15,48 +16,19 @@ namespace SHERPA {
     PDF::ISR_Handler            * p_isr;
     BEAM::Beam_Spectra_Handler  * p_beam;
 
+    SHERPA::Remnant_Base        * p_beampart[2];
     Primordial_KPerp            * p_kperp;
 
-    ATOOLS::Flavour            ** p_constituents;
-    int                         * p_numberofconstituents;
-    ATOOLS::Particle_List       * p_particle[2];
+    ATOOLS::Blob                * p_beamblob[2];
 
-    ATOOLS::Particle            * p_last[2];
-    ATOOLS::Blob                * p_blob[2];
-
-    std::map<ATOOLS::Particle*,double> * p_x;
-
-    std::string m_path, m_file;
-
+    std::string  m_path, m_file;
     bool         m_fill;
-    double       m_q2min, m_deltax, m_scale, m_xtot, m_Erem, m_pzrem;
-    unsigned int m_xscheme, m_maxtrials, m_beam;
-
-    int Constituents(ATOOLS::Flavour,ATOOLS::Flavour *&); 
-
-    ATOOLS::Particle *FindConnected(ATOOLS::Particle*,bool=false,int=1); 
-    ATOOLS::Particle *SelectCompanion(ATOOLS::Particle*);
-
-    bool AdjustColours(ATOOLS::Particle*,unsigned int,unsigned int,unsigned int,bool=true);
-
-    double GetXPDF(ATOOLS::Flavour,double,int);
-
-    bool TreatFirstQuark(ATOOLS::Particle*,unsigned int);
-    bool TreatFirstGluon(ATOOLS::Particle*,unsigned int);
-    bool TreatQuark(ATOOLS::Particle*,unsigned int);
-    bool TreatGluon(ATOOLS::Particle*,unsigned int);
-
-    bool FillHadron(ATOOLS::Blob *);
-    bool FillHadron();
-
-    void FillHadronBlob(ATOOLS::Particle_List *,unsigned int);
-    bool FillLastPartons();
 
   public :
 
     // constructor
     Beam_Remnant_Handler(std::string,std::string,
-			 PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,double=-4.0);
+			 PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,double);
 
     // destructor
     ~Beam_Remnant_Handler();

@@ -58,9 +58,9 @@ Cluster_Partons::~Cluster_Partons()
 
 bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
   p_blob          = _blob;
-  int    nin      = p_me->Nin();
-  int    nout     = p_me->Nout();
-  int    nampl    = p_me->NumberOfDiagrams();
+  int nin         = p_me->NIn();
+  int nout        = p_me->NOut();
+  int nampl       = p_me->NumberOfDiagrams();
   int    nlegs    = nin + nout;
   Leg ** legs     = 0;
   bool reuse      = 0;
@@ -606,7 +606,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     if (i>=2) tree = fin_tree; 
     else      tree = ini_trees[n[i]];
 
-    Knot * d1, * d2, * mo1, * mo2;
+    Knot * d1, * d2;
     if (i>=2) {
       d1 = Point2Knot(tree, p_ct->GetLeg(i), p_ct->Momentum(i),'H');
       d2 = Point2Knot(tree, p_ct->GetLeg(j), p_ct->Momentum(j),'H');
@@ -810,7 +810,7 @@ double Cluster_Partons::ColourAngle(const std::vector<Knot *> & knots, const int
   double x1=1.;
   double x2=1.;
   Vec4D sum(0.,0.,0.,0.);
-  for (int l=2;l<knots.size();++l)
+  for (size_t l=2;l<knots.size();++l)
     sum += knots[l]->part->Momentum();
 
   double sprime = sum.Abs2();
@@ -822,7 +822,7 @@ double Cluster_Partons::ColourAngle(const std::vector<Knot *> & knots, const int
 
   double angle = 0.;
   int start = 0;
-  for (int j=start;j<knots.size();++j) {
+  for (int j=start;j<(int)knots.size();++j) {
     if (j!=i) {
       if (IsColourConnected(knots[i]->part,knots[j]->part)) {
 	Vec3D ivec, jvec;
@@ -879,7 +879,7 @@ void Cluster_Partons::DetermineColourAngles(const std::vector<APACIC::Knot *> & 
     knots[i]->part->SetMomentum(zaxis*knots[i]->part->Momentum());
   }
   
-  for (int i=0;i<knots.size();++i) {
+  for (size_t i=0;i<knots.size();++i) {
     double th= ColourAngle(knots,i);
     knots[i]->thcrit=th;
   }

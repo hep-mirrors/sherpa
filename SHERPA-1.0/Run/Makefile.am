@@ -1,78 +1,90 @@
-rootdir    = $(ROOTSYS)
-rootincdir = $(rootdir)/include
-rootlibdir = $(rootdir)/lib
-CLHEPlibdir   = $(CLHEPDIR)/lib
-CLHEPincdir   = $(CLHEPDIR)/include
-bin_PROGRAMS   = Sherpa
-Sherpa_SOURCES = Main.C
-Sherpa_LDADD =  \
-         @libdir@/libSherpaMain.la \
-         @libdir@/libSherpaTools.la \
-         @libdir@/libSherpaInitialization.la \
-         @libdir@/libSherpaPerturbativePhysics.la \
-         @libdir@/libSherpaSoftPhysics.la \
-         @libdir@/libLundInterface.la \
-         @libdir@/libSherpaSingleEvents.la \
-	 @libdir@/libModelMain.la \
-	 @libdir@/libHdecay.la \
-	 @libdir@/libIsajet.la \
-	 @libdir@/libAmegic.la \
-	 @libdir@/libAmplitude.la \
-	 @libdir@/libAmegicPSGen.la \
-	 @libdir@/libPhasespace.la \
-	 @libdir@/libZfunctions.la \
-	 @libdir@/libAmplTools.la \
-	 @libdir@/libModel.la \
-	 @libdir@/libProcess.la \
-	 @libdir@/libString.la \
-	 @libdir@/libApacicShowers.la \
-	 @libdir@/libApacicMain.la \
-	 @libdir@/libBeam.la \
-	 @libdir@/libLHAPDF.la \
-	 @libdir@/libPDF.la \
-	 @libdir@/libExtraXS.la \
-	 @libdir@/libExtraXS2_2.la \
-	 @libdir@/libToolsPhys.la \
-	 @libdir@/libToolsMath.la \
-	 @libdir@/libToolsOrg.la \
-	 ${HEPMC_shared_object} \
-	 -lg2c -lm -ldl
-#	 -L$(rootlibdir) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
-Sherpa_LDFLAGS =  -rdynamic
-INCLUDES = -I../../SHERPA-1.0/Main \
-	   -I../../SHERPA-1.0/Tools \
-	   -I../../SHERPA-1.0/PerturbativePhysics \
-           -I../../SHERPA-1.0/SoftPhysics \
-           -I../../SHERPA-1.0/SoftPhysics/Lund \
-	   -I../../SHERPA-1.0/Initialization \
-	   -I../../SHERPA-1.0/Single_Events \
-	   -I../../AMEGIC++-2.0/Amplitude \
-	   -I../../AMEGIC++-2.0/Amplitude/AmplTools \
-	   -I../../AMEGIC++-2.0/Amplitude/Zfunctions \
-           -I../../AMEGIC++-2.0/Phasespace \
-	   -I../../AMEGIC++-2.0/Main \
-	   -I../../AMEGIC++-2.0/Model \
-	   -I../../AMEGIC++-2.0/String \
-	   -I../../APACIC++-2.0/Main \
-	   -I../../APACIC++-2.0/Hard_Interface \
-	   -I../../APACIC++-2.0/Showers \
-	   -I../../EXTRA_XS-1.0/Main \
-	   -I../../BEAM-1.0/Main \
-	   -I../../MODEL-1.0/Main \
-	   -I../../MODEL-1.0/Hdecay \
-	   -I../../PDF-1.0/Main \
-	   -I../../PDF-1.0/LHAPDF \
-	   -I../../BEAM-1.0/Main \
-	   -I../../PHASIC++-1.0/Main \
-           -I../../ATOOLS-2.0/Phys \
-           -I../../ATOOLS-2.0/Math \
-           -I../../ATOOLS-2.0/Org \
-	   -I$(HEPMCINCDIR) \
-	   -I$(CLHEPincdir)
-SUBDIRS    = Process
-EXTRA_DIST = Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
-	     Particle.dat Hadron.dat Run.dat ISR.dat ME.dat Decays.dat \
-	     Shower.dat Fragmentation.dat \
-	     makeclean \
-	     PDFsets.tar.gz MRST99Grid.tar.gz
+SHERPASYS  = ../..
+
+ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
+PDFINC     = $(SHERPASYS)/PDF-1.0
+BEAMINC    = $(SHERPASYS)/BEAM-1.0
+PHASICINC  = $(SHERPASYS)/PHASIC++-1.0
+MODELINC   = $(SHERPASYS)/MODEL-1.0
+EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
+AMISICINC  = $(SHERPASYS)/AMISIC++-1.0
+AMEGICINC  = $(SHERPASYS)/AMEGIC++-2.0
+APACICINC  = $(SHERPASYS)/APACIC++-2.0
+
+ATOOLSLIB  = @libdir@
+PDFLIB     = @libdir@
+BEAMLIB    = @libdir@
+PHASICLIB  = @libdir@
+MODELLIB   = @libdir@
+EXTRAXSLIB = @libdir@
+AMISICLIB  = @libdir@
+AMEGICLIB  = @libdir@
+APACICLIB  = @libdir@
+SHERPALIB  = @libdir@
+
+ROOTINC    = $(ROOTSYS)/include
+ROOTLIB    = $(ROOTSYS)/lib
+
+CLHEPLIB   = $(CLHEPSYS)/lib
+CLHEPINC   = $(CLHEPSYS)/include
+
+bin_PROGRAMS  =	Sherpa
+Sherpa_SOURCES        =	Main.C 
+Sherpa_LDADD  =	\
+		-L$(SHERPALIB) -lLundTools -lSherpaMain \
+		-lSherpaInitialization -lSherpaSingleEvents \
+		-lSherpaPerturbativePhysics -lSherpaSoftPhysics \
+		-lLundInterface -lSherpaTools \
+		-L$(AMEGICLIB) -lAmegic -lAmplitude -lAmegicPSGen \
+		-lZfunctions -lAmplTools -lModel -lProcess -lString \
+		-L$(APACICLIB) -lApacicShowers -lApacicMain \
+		-L$(AMISICLIB) -lAmisicTools -lAmisicHelpers \
+		-lAmisic -lAmisicAnalysis \
+		-L$(EXTRAXSLIB) -lExtraXS -lExtraXS2_2 \
+		-L$(PHASICLIB) -lPhasespace \
+		-L$(MODELLIB) -lModelMain -lIsajet -lHdecay \
+		-L$(PDFLIB) -lPDF -lLHAPDF \
+		-L$(BEAMLIB) -lBeam \
+		-L$(ATOOLSLIB) -lToolsPhys -lToolsMath -lToolsOrg \
+		-lg2c -lm -ldl
+#		-L$(ROOTLIB) -lCint -lCore -lHist -lGraf \
+#		-lGraf3d -lGpad -lTree -lRint -lPostscript \
+#		-lMatrix -lPhysics -lGui -ldl \
+Sherpa_LDFLAGS        =	-rdynamic
+INCLUDES      = \
+		-I../Main \
+		-I../Initialization \
+		-I../PerturbativePhysics \
+		-I../SoftPhysics \
+		-I../SoftPhysics/Lund \
+		-I../Single_Events \
+		-I../Tools \
+		-I$(APACICINC)/Main \
+		-I$(APACICINC)/Showers \
+		-I$(AMEGICINC)/Amplitude \
+		-I$(AMEGICINC)/Amplitude/AmplTools \
+		-I$(AMEGICINC)/Amplitude/Zfunctions \
+		-I$(AMEGICINC)/Phasespace \
+		-I$(AMEGICINC)/Main \
+		-I$(AMEGICINC)/Model \
+		-I$(AMEGICINC)/String \
+		-I$(AMISICINC)/Main \
+		-I$(AMISICINC)/Other \
+		-I$(AMISICINC)/Tools \
+		-I$(AMISICINC)/Tools \
+		-I$(EXTRAXSINC)/Two2Two \
+		-I$(EXTRAXSINC)/Main \
+		-I$(PHASICINC)/Main \
+		-I$(MODELINC)/Main \
+		-I$(PDFINC)/Main \
+		-I$(BEAMINC)/Main \
+		-I$(ATOOLSINC)/Phys \
+		-I$(ATOOLSINC)/Math \
+		-I$(ATOOLSINC)/Org \
+		-I$(ROOTINC) 
+SUBDIRS       =	Process
+EXTRA_DIST    =	\
+		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
+	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat simplechain.dat \
+		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs Lund.dat
+#	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
 

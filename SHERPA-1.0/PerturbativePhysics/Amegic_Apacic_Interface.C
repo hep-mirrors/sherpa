@@ -49,7 +49,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   }
 
   p_jf       = new ATOOLS::Jet_Finder(m_ycut,m_type);
-  p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber,
+  p_cluster  = new Cluster_Partons(p_mehandler,p_jf,m_maxjetnumber,
 				   p_shower->GetISRHandler()->On(),p_shower->ISROn(),p_shower->FSROn());
   m_jetscale = m_ycut * sqr(rpa.gen.Ecms());
 }  
@@ -60,7 +60,7 @@ Amegic_Apacic_Interface::~Amegic_Apacic_Interface()
   if (p_jf)      { delete p_jf; p_jf = NULL; }
   if (p_cluster) { delete p_cluster; p_cluster = NULL; }
   // note :
-  //  p_shower and p_me are deleted in Jet_Evolution
+  //  p_shower and p_mehandler are deleted in Jet_Evolution
   //  p_fl an p_moms are deleted in Perturbative_Interface
 }
 
@@ -71,7 +71,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     if (!(p_cluster->ClusterConfiguration(blob))) return 0; 
   }
   else {
-    if (!(p_cluster->ClusterConfiguration(blob,p_me->GetISR_Handler()->X1(),p_me->GetISR_Handler()->X2()))) {
+    if (!(p_cluster->ClusterConfiguration(blob,p_mehandler->GetISR_Handler()->X1(),p_mehandler->GetISR_Handler()->X2()))) {
       return 0; // Failure!
     }
   }
@@ -93,7 +93,6 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     p_blob_psme_IS->SetStatus(1);
     for (int i=0;i<blob->NInP();++i) {
       p_blob_psme_IS->AddToOutParticles(blob->InParticle(i));
-      blob->InParticle(i)->SetProductionBlob(p_blob_psme_IS);
       p_blob_psme_IS->SetId(-1);
     }
   }
@@ -103,7 +102,6 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     p_blob_psme_FS->SetStatus(1);
     for (int i=0;i<blob->NOutP();++i) {
       p_blob_psme_FS->AddToInParticles(blob->OutParticle(i));
-      blob->OutParticle(i)->SetDecayBlob(p_blob_psme_FS);
       p_blob_psme_FS->SetId(-2);
     }
   }
@@ -130,7 +128,7 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     else { if (!(p_xs->SetColours(p_moms))) return 0; }
     
     if (m_type==1) { // e+ e-
-      double sprime = (p_me->Momenta()[0]+p_me->Momenta()[1]).Abs2();
+      double sprime = (p_mehandler->Momenta()[0]+p_mehandler->Momenta()[1]).Abs2();
       m_jetscale    = m_ycut * sprime;
     }
     
@@ -143,7 +141,7 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     p_cluster->CalculateWeight(scale,m_jetscale);
     
     m_weight = p_cluster->Weight();
-    if (p_me->Weight()==1. && p_me->UseSudakovWeight()) {
+    if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
 	p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
 	m_weight=1.;
@@ -152,7 +150,7 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
       m_weight=1.;
     }
     else {
-      if (!(p_me->UseSudakovWeight())) m_weight=1.;
+      if (!(p_mehandler->UseSudakovWeight())) m_weight=1.;
       p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
       return 1;
     }
@@ -186,11 +184,12 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
   return 1;
 }
 
-int Amegic_Apacic_Interface::DoJetVeto() {
+int Amegic_Apacic_Interface::PerformShowers()
+{
   int jetveto=-1;
-  if (p_me->UseSudakovWeight()) {
+  if (p_mehandler->UseSudakovWeight()) {
     jetveto=0;
-    if (p_shower->MaxJetNumber()!=p_me->Nout()) jetveto=1;
+    if (p_shower->MaxJetNumber()!=p_mehandler->NOut()) jetveto=1;
   }
-  return jetveto;
+  return p_shower->PerformShowers(jetveto,p_mehandler->GetISR_Handler()->X1(),p_mehandler->GetISR_Handler()->X2());
 }

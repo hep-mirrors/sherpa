@@ -5,11 +5,6 @@
 #include <iterator> 
 #include <iostream> 
 
-#include "Amegic.H"
-#include "Process_Base.H"
-#include "SimpleXSecs.H"
-#include "XS_Base.H"
-
 #include "Model_Base.H"
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
@@ -19,7 +14,14 @@
 #include "Blob_List.H"
 #include "Blob.H"
 
+namespace AMEGIC { class Amegic; 
+                   class Point;  }
+
+namespace EXTRAXS { class SimpleXSecs; 
+                    class XS_Base;     }
+
 namespace SHERPA {
+
   class Matrix_Element_Handler {
   private :
     std::string            m_dir,m_file;
@@ -42,12 +44,16 @@ namespace SHERPA {
 			    BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     bool   UnweightedEvent();
     double WeightedEvent();
+
   public :
+
+    Matrix_Element_Handler();
     Matrix_Element_Handler(std::string,std::string,MODEL::Model_Base *,
 			   Matrix_Element_Handler *);
     Matrix_Element_Handler(std::string,std::string,MODEL::Model_Base *,
 			   BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *,
 			   Matrix_Element_Handler *);
+
     ~Matrix_Element_Handler();
 
     bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
@@ -64,19 +70,22 @@ namespace SHERPA {
     bool GenerateOneEvent(ATOOLS::Decay_Channel *,double);
     bool GenerateSameEvent();
 
+    void SetAmegic(AMEGIC::Amegic *);
+    void SetXS(EXTRAXS::SimpleXSecs *);
+
     std::string          SignalGenerator();
     std::string          ProcessName();
     std::string          Name();
-    int                  Nin();
-    int                  Nout();
-    int                  NDecOut();
-    int                  MaxJets();
+    unsigned int         NIn();
+    unsigned int         NOut();
+    unsigned int         NDecOut();
+    unsigned int         MaxJets();
     ATOOLS::Vec4D      * Momenta();
     ATOOLS::Vec4D      * DecMomenta();
     ATOOLS::Flavour    * Flavs();
     int                  InSwaped();
 
-    int                  NumberOfDiagrams();
+    unsigned int         NumberOfDiagrams();
     AMEGIC::Amegic     * GetAmegic();
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS();

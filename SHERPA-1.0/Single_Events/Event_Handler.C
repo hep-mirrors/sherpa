@@ -2,6 +2,8 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 
+#include "Random.H"
+
 using namespace SHERPA;
 using namespace ATOOLS;
 
@@ -69,7 +71,9 @@ bool Event_Handler::GenerateEvent()
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==std::string("Perturbative")) {
-	if ((*pit)->Treat(&m_blobs,weight)) flag = 1;
+	bool result=(*pit)->Treat(&m_blobs,weight);
+ 	ATOOLS::msg.Tracking()<<(*pit)->Name()<<" yields "<<result<<std::endl;
+ 	if (result) flag = 1;
       }
     }
   }

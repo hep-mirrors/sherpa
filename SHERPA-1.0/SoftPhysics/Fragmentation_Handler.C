@@ -96,7 +96,6 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List 
 		_bloblist->push_back(newb);
 	      }
 	      part->SetStatus(2);
-	      part->SetDecayBlob(newb);
 	      newb->AddToInParticles(part);
 	      foundatall = found = 1;
 	      if (!(FindConnected(_bloblist,part,newb))) {
@@ -143,15 +142,12 @@ bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
 					  Particle * compare,Blob * blob) {
   Particle * part;
   for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-    if ((*blit)->Status()==1 || (*blit)->Status()==2) {
-      for (int i=0;i<(*blit)->NOutP();i++) {
-	part = (*blit)->OutParticle(i);
-	if (part==compare) continue;
-	if (part->Info()!='F' && part->Info() != 'H') continue;
-	if (part->Status()!=1) continue; 
+    for (int i=0;i<(*blit)->NOutP();i++) {
+      part = (*blit)->OutParticle(i);
+      if (part==compare || part->Status()!=1 || part->DecayBlob()!=NULL) continue;
+      if (part->Info()=='F' || part->Info() == 'H') {
 	if (part->GetFlow(2)==compare->GetFlow(1)) {
 	  part->SetStatus(2);
-	  part->SetDecayBlob(blob);
 	  blob->AddToInParticles(part);
 	  if (part->GetFlow(1)==0) {
 	    if ( part->Flav().IsQuark() && part->Flav().IsAnti()) {

@@ -2,6 +2,8 @@
 
 #include "Data_Read.H"
 #include "Message.H"
+#include "Amegic.H"
+#include "SimpleXSecs.H"
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -10,11 +12,17 @@ using namespace PDF;
 using namespace ATOOLS;
 using namespace std;
 
+Matrix_Element_Handler::Matrix_Element_Handler() :
+  m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
+  p_isr(NULL), m_mode(0), m_weight(1.), m_name(""), m_eventmode(1),
+  p_dataread(NULL) {}
+
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
 					       Matrix_Element_Handler * _me) :
-  m_dir(_dir), m_file(_file), p_simplexs(NULL), p_amegic(NULL),
-  p_isr(NULL), m_mode(0), m_weight(1.), m_eventmode(1)
+  m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
+  p_isr(NULL), m_mode(0), m_weight(1.), m_name(""), m_eventmode(1),
+  p_dataread(NULL) 
 {
   if (_me) p_amegic = _me->GetAmegic(); 
   m_mode      = InitializeAmegic(_model,NULL,NULL);
@@ -33,7 +41,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       BEAM::Beam_Spectra_Handler * _beam,
 					       PDF::ISR_Handler * _isr,
 					       Matrix_Element_Handler * _me) :
-  m_dir(_dir), m_file(_file), p_simplexs(NULL), p_amegic(NULL),
+  m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
   p_isr(_isr), m_mode(0), m_weight(1.)
 {
   p_dataread        = new Data_Read(m_dir+m_file);
@@ -87,7 +95,7 @@ int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
 					       BEAM::Beam_Spectra_Handler * _beam,
 					       PDF::ISR_Handler * _isr) 
 {
-  m_name     = string("Simple X-section");
+  m_name     = string("SimpleXS");
   p_simplexs = new EXTRAXS::SimpleXSecs(m_dir,m_file,_model);
   if (p_simplexs->InitializeProcesses(_beam,_isr)) return 2;
   return 0;
@@ -170,13 +178,14 @@ bool Matrix_Element_Handler::RescaleJetrates()
   // processes not rescaled in the moment only status printed
   AMEGIC::Process_Base * procs = p_amegic->Processes();
   for (int i=0; i<procs->Size();++i) {
-    double xstot = (*procs)[i]->Total()*rpa.Picobarn();
-    double njet  = (*procs)[i]->Nout();
+//     double xstot = (*procs)[i]->Total()*rpa.Picobarn();
+//     double njet  = (*procs)[i]->Nout();
   }
+  return true;
 }
 
-bool Matrix_Element_Handler::PrepareXSecTables() {};
-bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) {};
+bool Matrix_Element_Handler::PrepareXSecTables() { return true; };
+bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) { return true; };
 
 
 bool Matrix_Element_Handler::GenerateOneEvent() 
@@ -191,6 +200,7 @@ bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double
   switch (m_mode) {
   case 1: return p_amegic->GetAllDecays()->UnweightedEvent(_dc,_mass);
   }
+  return false;
 }
 
 bool Matrix_Element_Handler::GenerateSameEvent() 
@@ -207,6 +217,7 @@ bool Matrix_Element_Handler::GenerateSameEvent()
     case 2: return p_simplexs->WeightedEvent();
     }
   }
+  return false;
 }
 
 bool Matrix_Element_Handler::UnweightedEvent() 
@@ -229,7 +240,7 @@ double Matrix_Element_Handler::WeightedEvent()
   return 0;
 }
 
-int Matrix_Element_Handler::MaxJets() {
+unsigned int Matrix_Element_Handler::MaxJets() {
   switch (m_mode) {
   case 1: return p_amegic->MaxJets();
   case 2: return p_simplexs->MaxJets();
@@ -240,7 +251,7 @@ int Matrix_Element_Handler::MaxJets() {
 
 std::string Matrix_Element_Handler::Name() { return m_name; }
 
-int Matrix_Element_Handler::Nin() {
+unsigned int Matrix_Element_Handler::NIn() {
   switch (m_mode) {
   case 1: return p_amegic->Nin();
   case 2: return p_simplexs->Nin();
@@ -248,7 +259,7 @@ int Matrix_Element_Handler::Nin() {
   return 0;
 }
 
-int Matrix_Element_Handler::Nout() {
+unsigned int Matrix_Element_Handler::NOut() {
   switch (m_mode) {
   case 1: return p_amegic->Nout();
   case 2: return p_simplexs->Nout();
@@ -256,7 +267,7 @@ int Matrix_Element_Handler::Nout() {
   return 0;
 }
 
-int Matrix_Element_Handler::NDecOut() {
+unsigned int Matrix_Element_Handler::NDecOut() {
   switch (m_mode) {
   case 1: return p_amegic->GetAllDecays()->Nout();
   }
@@ -305,12 +316,11 @@ int Matrix_Element_Handler::InSwaped() {
   return 0;
 }
 
-
-int Matrix_Element_Handler::NumberOfDiagrams() 
+unsigned int Matrix_Element_Handler::NumberOfDiagrams() 
 {
   if (m_mode==1) return p_amegic->NumberOfDiagrams();
   msg.Error()<<"Error in Matrix_Element_Handler::NumberOfDiagrams()."<<endl
-	     <<"   Run in mode for "<<m_signalgenerator<<", abort."<<endl;
+	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
 
@@ -324,7 +334,7 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 {
   if (m_mode==1) return p_amegic->Diagram(_diag);
   msg.Error()<<"Error in Matrix_Element_Handler::GetDiagram("<<_diag<<")."<<endl
-	     <<"   Run in mode for "<<m_signalgenerator<<", abort."<<endl;
+	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
 
@@ -333,12 +343,31 @@ EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS()
 {
   if (m_mode==2) return p_simplexs->Selected();
   msg.Error()<<"Error in Matrix_Element_Handler::GetXS()."<<endl
-	     <<"   Run in mode for "<<m_signalgenerator<<", abort."<<endl;
+	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
+  std::cout<<p_simplexs<<std::endl;
   abort();
 }
 
 double  Matrix_Element_Handler::Weight() 
 {
   return m_weight;
+}
+
+void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *_p_amegic)
+{
+  if ((p_amegic!=NULL)||(p_simplexs!=NULL)) return;
+  p_amegic=_p_amegic;
+  p_isr=p_amegic->Processes()->ISR();
+  m_name=string("Amegic");
+  m_mode=1;
+}
+
+void Matrix_Element_Handler::SetXS(EXTRAXS::SimpleXSecs *_p_simplexs)
+{
+  if ((p_amegic!=NULL)||(p_simplexs!=NULL)) return;
+  p_simplexs=_p_simplexs;
+  p_isr=p_simplexs->ISR();
+  m_name=string("SimpleXS");
+  m_mode=2;
 }
 

@@ -5,6 +5,7 @@
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
 #include "Matrix_Element_Handler.H"
+#include "MI_Handler.H"
 #include "Hard_Decay_Handler.H"
 #include "Shower_Handler.H"
 #include "Beam_Remnant_Handler.H"
@@ -21,8 +22,8 @@ namespace SHERPA {
   class Initialization_Handler {
   private :
     std::string m_path,m_file;
-    std::string m_modeldat, m_beamdat, m_isrdat, m_medat, m_decaydat, m_showerdat;
-    std::string m_beamremnantdat, m_fragmentationdat,m_hadrondecaysdat;
+    std::string m_modeldat, m_beamdat, m_isrdat, m_medat, m_midat, m_decaydat, m_showerdat;
+    std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat;
 
     double              m_bunch_splimits[2];
     ATOOLS::Flavour     m_bunch_particles[2];
@@ -45,11 +46,15 @@ namespace SHERPA {
     Beam_Remnant_Handler       * p_beamremnants;
     Fragmentation_Handler      * p_fragmentation;
     Hadron_Decay_Handler       * p_hadrondecays;
+    MI_Handler                 * p_mihandler; 
+
   private :
+
     bool InitializeTheModel();
     bool InitializeTheBeams();
     bool InitializeThePDFs();
     bool InitializeTheMatrixElements();
+    bool InitializeTheUnderlyingEvents();
     bool InitializeTheHardDecays();
     bool InitializeTheShowers();
     bool InitializeTheBeamRemnants();
@@ -60,7 +65,9 @@ namespace SHERPA {
     int  ExtractCommandLineParameters(int argc,char * argv[]);
     bool CheckBeamISRConsistency();
     void SetParameter(int nr);
+
   public :
+
     Initialization_Handler(int argc,char * argv[]);
     Initialization_Handler(std::string=std::string("./"),
 			   std::string=std::string("Run.dat"));
@@ -70,9 +77,12 @@ namespace SHERPA {
     bool CalculateTheHardProcesses();
     bool InitializeAllHardDecays();
 
+    const std::string Path() const { return m_path; }
+    const std::string File() const { return m_file; }
+
     Matrix_Element_Handler      * GetMatrixElementHandler(std::string _key);
 
-    MEHandlersMap               * GetMatrixElementHandlers() { return &m_mehandlers;      }
+    MEHandlersMap               * GetMatrixElementHandlers() { return &m_mehandlers;     }
     MODEL::Model_Base           * GetModel()                 { return p_model;           }
     PDF::ISR_Handler            * GetISRHandler()            { return p_isrhandler;      }
     BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()    { return p_beamspectra;     }
@@ -82,6 +92,7 @@ namespace SHERPA {
     Fragmentation_Handler       * GetFragmentationHandler()  { return p_fragmentation;   }
     Hadron_Decay_Handler        * GetHadronDecayHandler()    { return p_hadrondecays;    }
     ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
+    MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

@@ -25,10 +25,4 @@ namespace SHERPA {
 
 }// end of namespace SHERPA
 
-namespace ATOOLS {
-
-  inline double Sign(const double& a) {return (a<0) ? -1.0 : 1.0;}
-
-}
-
 #endif

@@ -15,6 +15,8 @@ Interface_Tools::~Interface_Tools() { }
 void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
 					 double th1,double th2,double x1,double x2)
 {
+  p_initrees[0]->Reset();  
+
   Knot * m1      = p_initrees[0]->NewKnot();
   *(m1->part)    = blob->InParticle(0);
   m1->part->SetInfo('G');
@@ -27,6 +29,8 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
   m1->x          = x1;
   m1->E2         = sqr(x1*E);
   m1->stat       = 1;
+
+  p_initrees[1]->Reset();  
 
   Knot * m2      = p_initrees[1]->NewKnot();
   *(m2->part)    = blob->InParticle(1);
@@ -45,14 +49,18 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
 void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
 					 double th1,double th2)
 {
-  Knot * dummy   = p_fintree->NewKnot(new Particle(0,Flavour(kf::none),blob->CMS()));
+  p_fintree->Reset();
+
+  Knot * dummy   = p_fintree->NewKnot(new Particle(0,Flavour(kf::none),
+						   blob->OutParticle(0)->Momentum()+blob->OutParticle(1)->Momentum()));
   dummy->part->SetInfo('M');
   dummy->part->SetStatus(2);
   dummy->t       = scale;
   dummy->maxpt2  = scale;
   dummy->costh   = -1;
   dummy->thcrit  = M_PI;
-  dummy->stat    = 1;
+  dummy->stat    = 0;
+  dummy->E2      = sqr(dummy->part->Momentum()[0]);
     
   Knot * d1      = p_fintree->NewKnot(blob->OutParticle(0));
   d1->part->SetInfo('H');
@@ -63,7 +71,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   d1->thcrit     = 1.e50;
   d1->tout       = sqr((d1->part->Flav()).PSMass());
   d1->E2         = sqr(d1->part->Momentum()[0]);
-  d1->stat       = 1;
+  d1->stat       = 3;
 
   Knot * d2      = p_fintree->NewKnot(blob->OutParticle(1));
   d2->part->SetInfo('H');
@@ -74,11 +82,11 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   d2->thcrit     = 1.e50;
   d2->tout       = sqr((d2->part->Flav()).PSMass());
   d2->E2         = sqr(d2->part->Momentum()[0]);
-  d2->stat       = 1;
+  d2->stat       = 3;
   
   dummy->E2      = sqr(sqrt(d1->E2)+sqrt(d2->E2));
   dummy->z       = sqrt(d1->E2/dummy->E2);
-  
+
   d1->prev       = dummy;
   dummy->left    = d1;
   d2->prev       = dummy;

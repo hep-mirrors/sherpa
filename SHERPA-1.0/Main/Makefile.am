@@ -1,7 +1,7 @@
 lib_LTLIBRARIES = libSherpaMain.la
 CLHEPlibdir   = $(CLHEPDIR)/lib
 CLHEPincdir   = $(CLHEPDIR)/include
-libSherpaMain_la_SOURCES = Sherpa.C 
+libSherpaMain_la_SOURCES      =	Sherpa.C 
 INCLUDES = -I../../SHERPA-1.0/Tools \
 	   -I../../SHERPA-1.0/Initialization \
 	   -I../../SHERPA-1.0/PerturbativePhysics \
@@ -15,6 +15,9 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
 	   -I../../AMEGIC++-2.0/Main \
 	   -I../../AMEGIC++-2.0/Model \
 	   -I../../AMEGIC++-2.0/String \
+	   -I../../AMISIC++-1.0/Main \
+	   -I../../AMISIC++-1.0/Other \
+	   -I../../AMISIC++-1.0/Tools \
 	   -I../../APACIC++-2.0/Main \
 	   -I../../APACIC++-2.0/Hard_Interface \
 	   -I../../APACIC++-2.0/Showers \
@@ -29,7 +32,7 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../ATOOLS-2.0/Org \
 	   -I$(HEPMCINCDIR) \
 	   -I$(CLHEPincdir)
-noinst_HEADERS = Sherpa.H
+noinst_HEADERS        =	Sherpa.H 
 
 
 

@@ -9,11 +9,13 @@ extern "C" {
 }
 
 Output_Handler::Output_Handler(int type) :
-  m_type(type), 
 #ifdef _USE_HEPMC_
-  p_hepmc(NULL), p_event(NULL),  
+  p_hepmc(NULL), 
+  p_event(NULL),  
 #endif
-  p_hepevt(NULL), m_active(0)
+  p_hepevt(NULL), 
+  m_active(0),
+  m_type(type)
 {
   switch (m_type) {
   case 1: 
@@ -53,7 +55,7 @@ void Output_Handler::OutputToFormat(Blob_List * _blobs)
     return;
   case 2:
     p_hepevt->Sherpa2HepEvt(_blobs);
-    if (msg.Level()>0)        outhepevt_();
+    if (ATOOLS::msg.Level()>=1) outhepevt_();
     return;
   default:
     msg.Error()<<"Potential Error in Output_Handler::OutputToFormat("<<m_type<<")"<<std::endl

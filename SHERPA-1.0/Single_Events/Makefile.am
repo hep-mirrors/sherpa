@@ -1,34 +1,61 @@
-lib_LTLIBRARIES = libSherpaSingleEvents.la
-libSherpaSingleEvents_la_SOURCES = Event_Handler.C Event_Phase_Handler.C \
-				   Signal_Processes.C Jet_Evolution.C Hard_Decays.C \
-				   Hadronization.C
-INCLUDES = -I../../SHERPA-1.0/Tools \
-           -I../../SHERPA-1.0/PerturbativePhysics \
-           -I../../SHERPA-1.0/SoftPhysics \
-           -I../../SHERPA-1.0/SoftPhysics/Lund \
-           -I../../AMEGIC++-2.0/Main \
-           -I../../AMEGIC++-2.0/Amplitude \
-           -I../../AMEGIC++-2.0/Phasespace \
-           -I../../AMEGIC++-2.0/Amplitude/AmplTools \
-           -I../../AMEGIC++-2.0/Amplitude/Zfunctions \
-           -I../../AMEGIC++-2.0/Phasespace \
-           -I../../AMEGIC++-2.0/String \
-           -I../../EXTRA_XS-1.0/Main \
-           -I../../EXTRA_XS-1.0/Two2Two \
-           -I../../AMEGIC++-2.0/Model \
-           -I../../PHASIC++-1.0/Main \
-           -I../../APACIC++-2.0/Main \
-	   -I../../APACIC++-2.0/Showers \
-           -I../../MODEL-1.0/Main \
-           -I../../BEAM-1.0/Main \
-	   -I../../PDF-1.0/LHAPDF \
-           -I../../PDF-1.0/Main \
-           -I../../ATOOLS-2.0/Phys \
-           -I../../ATOOLS-2.0/Math \
-           -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Event_Handler.H Event_Phase_Handler.H \
-		 Signal_Processes.H Jet_Evolution.H Hard_Decays.H \
-		 Hadronization.H
+SHERPASYS  = ../..
+
+ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
+PDFINC     = $(SHERPASYS)/PDF-1.0
+BEAMINC    = $(SHERPASYS)/BEAM-1.0
+PHASICINC  = $(SHERPASYS)/PHASIC++-1.0
+MODELINC   = $(SHERPASYS)/MODEL-1.0
+EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
+AMEGICINC  = $(SHERPASYS)/AMEGIC++-2.0
+APACICINC  = $(SHERPASYS)/APACIC++-2.0
+AMISICINC  = $(SHERPASYS)/AMISIC++-1.0
+
+lib_LTLIBRARIES	      =	libSherpaSingleEvents.la
+libSherpaSingleEvents_la_SOURCES      =	\
+					Event_Handler.C \
+					Event_Phase_Handler.C \
+				   	Signal_Processes.C \
+					Multiple_Interactions.C \
+					Jet_Evolution.C \
+					Hard_Decays.C \
+					Hadronization.C
+#CXXFLAGS      =	-pedantic -Wall -Winline
+INCLUDES      =	\
+		-I../../SHERPA-1.0/Tools \
+		-I../../SHERPA-1.0/PerturbativePhysics \
+		-I../../SHERPA-1.0/SoftPhysics \
+		-I../../SHERPA-1.0/SoftPhysics/Lund \
+		-I$(AMEGICINC)/Main \
+		-I$(AMEGICINC)/Amplitude \
+		-I$(AMEGICINC)/Phasespace \
+		-I$(AMEGICINC)/Amplitude/AmplTools \
+		-I$(AMEGICINC)/Amplitude/Zfunctions \
+		-I$(AMEGICINC)/Phasespace \
+		-I$(AMEGICINC)/String \
+		-I$(AMEGICINC)/Model \
+		-I$(APACICINC)/Main \
+		-I$(APACICINC)/Showers \
+		-I$(AMISICINC)/Main \
+		-I$(AMISICINC)/Other \
+		-I$(AMISICINC)/Tools \
+		-I$(EXTRAXSINC)/Main \
+		-I$(EXTRAXSINC)/Two2Two \
+		-I$(MODELINC)/Main \
+		-I$(PHASICINC)/Main \
+		-I$(BEAMINC)/Main \
+		-I$(PDFINC)/LHAPDF \
+		-I$(PDFINC)/Main \
+		-I$(ATOOLSINC)/Phys \
+		-I$(ATOOLSINC)/Math \
+		-I$(ATOOLSINC)/Org 
+noinst_HEADERS        =	\
+			Event_Handler.H \
+			Event_Phase_Handler.H \
+		 	Signal_Processes.H \
+			Multiple_Interactions.H \
+			Jet_Evolution.H \
+			Hard_Decays.H \
+		 	Hadronization.H
 
 
 

@@ -2,25 +2,30 @@
 #define Perturbative_Interface_h
 
 #include "Matrix_Element_Handler.H"
+#include "MI_Handler.H"
 #include "Shower_Handler.H"
 #include "Blob.H"
 #include "Blob_List.H"
 
 namespace SHERPA {
+
   class Perturbative_Interface {
   protected :
-    Matrix_Element_Handler * p_me;
+
+    Matrix_Element_Handler * p_mehandler;
     Shower_Handler         * p_shower;        
     bool                     m_ini,m_fin;
     int                      m_maxjetnumber;
-    double                   m_weight;
+    double                   m_weight,m_scale;
     ATOOLS::Flavour        * p_fl;
     ATOOLS::Vec4D          * p_moms;
 
     int                      m_nin,m_nout;
+
   public :
+
     Perturbative_Interface(Matrix_Element_Handler * _me,Shower_Handler * _shower) :
-      p_me(_me), p_shower(_shower), 
+      p_mehandler(_me), p_shower(_shower), 
       m_ini(_shower->ISROn()), m_fin(_shower->FSROn()), m_maxjetnumber(_me->MaxJets()), m_weight(1.),
       p_fl(NULL), p_moms(NULL) {}
 
@@ -30,10 +35,15 @@ namespace SHERPA {
       if (p_moms) { delete p_moms; p_moms = NULL; }
     }
     virtual bool DefineInitialConditions(ATOOLS::Blob *) = 0;
-    virtual bool FillBlobs(ATOOLS::Blob_List *)          = 0; 
-    double                   GetWeight()    { return m_weight; }
-    virtual int DoJetVeto() { return 1; }
-    Matrix_Element_Handler * GetMEHandler() { return p_me; }
+    virtual bool FillBlobs(ATOOLS::Blob_List *) = 0; 
+
+    virtual int  PerformShowers() = 0;
+
+    double GetWeight() { return m_weight; }
+    double GetScale()  { return m_scale;  }
+
+    Matrix_Element_Handler * GetMEHandler() { return p_mehandler; }
+
   };
 
   typedef std::map<std::string,Perturbative_Interface *> PertInterfaceMap;
@@ -45,7 +55,7 @@ namespace SHERPA {
 
   */
   /*!
-    \var Matrix_Element_Handler * Perturbative_Interface::p_me
+    \var Matrix_Element_Handler * Perturbative_Interface::p_mehandler
     A pointer to the Matrix_Element_Handler. It ensures that the information from there,
     like flavours and momenta of the partons involved as well as Feynman diagrams for the
     eventual reconstruction of parton shower histories is passed into the interface.

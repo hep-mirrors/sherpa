@@ -6,6 +6,8 @@
 #include "PDF_Handler.H"
 #include "PDF_Base.H"
 
+#include "Initial_State_Shower.H"
+
 #include "Data_Read.H"
 #include "Message.H"
 
@@ -26,9 +28,9 @@ extern "C" {
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file),
-  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), //p_mehandler(NULL),
+  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL),
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_hadrondecays(NULL)
+  p_fragmentation(NULL), p_hadrondecays(NULL),  p_mihandler(NULL)
 {
   m_scan_istep=-1;  
 
@@ -37,6 +39,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
   m_isrdat           = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
   m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
+  m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
   m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
   m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
@@ -46,22 +49,23 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
-  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), //p_mehandler(NULL),
+  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL),
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_hadrondecays(NULL)
+  p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL)
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
 
   m_scan_istep=-1;
 
-  // ExtractCommandLineParameters(argc, argv);
+  ExtractCommandLineParameters(argc, argv);
 
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
   m_isrdat           = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
   m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
+  m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
   m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
   m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
@@ -77,7 +81,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
-  //  if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
+  if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
   if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
@@ -93,8 +97,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   bool okay = InitializeTheModel();  
 
   //  set masses and widths from command line
-  //  SetParameter(nr);
-  //  UpdateParameters();
+  SetParameter(nr);
+  UpdateParameters();
     
   okay      = okay && InitializeTheBeams();
   okay      = okay && InitializeThePDFs();
@@ -106,9 +110,10 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   //  only if events:
   if (rpa.gen.NumberOfEvents()>0) {
     okay = okay && InitializeTheShowers();
-    okay = okay && InitializeTheBeamRemnants();
     okay = okay && InitializeTheFragmentation();
+    okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheHadronDecays();
+    okay = okay && InitializeTheBeamRemnants();
   }
   return okay;
 }
@@ -242,9 +247,12 @@ bool Initialization_Handler::InitializeTheHardDecays()
 {
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   p_harddecays = new Hard_Decay_Handler(m_path,m_decaydat,m_medat,p_model);
-  cout<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
-      <<p_harddecays->GetMEHandler()->Name()<<"/"<<p_harddecays->GetMEHandler()<<endl;
-  m_mehandlers.insert(std::make_pair(std::string("HardDecays"),p_harddecays->GetMEHandler()));
+  if (p_harddecays->GetMEHandler()!=NULL) {
+    ATOOLS::msg.Tracking()<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
+			  <<p_harddecays->GetMEHandler()->Name()<<"/"
+			  <<p_harddecays->GetMEHandler()<<std::endl;
+    m_mehandlers.insert(std::make_pair(std::string("HardDecays"),p_harddecays->GetMEHandler()));
+  }
   return 1;
 }
 
@@ -258,10 +266,9 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   else {
     me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,p_isrhandler,NULL);
   }
-
   m_mehandlers.insert(std::make_pair(std::string("SignalMEs"),me)); 
-  cout<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
-      <<me->Name()<<"/"<<me<<endl;
+  ATOOLS::msg.Tracking()<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
+			<<me->Name()<<"/"<<me<<endl;
   return 1;
 }
 
@@ -273,6 +280,16 @@ Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::st
   return NULL;
 }
 
+
+bool Initialization_Handler::InitializeTheUnderlyingEvents()
+{
+  p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,p_isrhandler);
+  Matrix_Element_Handler *mehandler;
+  if ((mehandler=p_mihandler->HardMEHandler())!=NULL) {
+    m_mehandlers.insert(std::make_pair(std::string("MIMEs"),mehandler)); 
+  }
+  return true;
+}
 
 bool Initialization_Handler::InitializeTheShowers()
 {
@@ -286,8 +303,14 @@ bool Initialization_Handler::InitializeTheShowers()
 bool Initialization_Handler::InitializeTheBeamRemnants() 
 {
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
+  double scale=-4.0;
+  if (p_showerhandler!=NULL) {
+    if (p_showerhandler->GetApacic()->IniShower()) {
+      scale=p_showerhandler->GetApacic()->IniShower()->CutOff();
+    }
+  }
   p_beamremnants = new Beam_Remnant_Handler(m_path,m_beamremnantdat,
-					    p_isrhandler,p_beamspectra);
+					    p_isrhandler,p_beamspectra,scale);
   return 1;
 }
 
@@ -335,22 +358,6 @@ bool Initialization_Handler::InitializeAllHardDecays()
   return 1;
   return p_harddecays->InitializeAllHardDecays(m_medat,p_model);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void Initialization_Handler::SetParameter(int nr) {
   if (nr<0) return;

@@ -13,12 +13,13 @@ Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_H
 
 Hadronization::~Hadronization() {}
 
-bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &) {
+bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &) 
+{
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Hadronization::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
 	       <<"   Continue and hope for the best."<<endl;
-    return 0;
+    return false;
   }
   p_beamremnanthandler->FillBeamBlobs(_bloblist);
   p_beamremnanthandler->FillBunchBlobs(_bloblist);
@@ -26,7 +27,8 @@ bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &) {
   // Here we should boost -> It's only here we have the full beam information.
 
   p_fragmentationhandler->PerformFragmentation(_bloblist);
-  return 0;
+
+  return false;
 }
 
 

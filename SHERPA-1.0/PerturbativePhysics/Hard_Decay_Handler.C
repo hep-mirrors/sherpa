@@ -16,7 +16,7 @@ using namespace std;
 
 Hard_Decay_Handler::Hard_Decay_Handler(std::string _path,std::string _file,std::string _pfile,
 				       MODEL::Model_Base * _model) :
-  m_path(_path), m_file(_file), p_amegic(NULL), m_meflag(0), m_on(0)
+   m_on(0), m_path(_path), m_file(_file), p_mehandler(NULL), m_meflag(0), p_amegic(NULL)
 {
   ReadInDecays();
 
@@ -45,10 +45,10 @@ void Hard_Decay_Handler::ReadInDecays()
   Flavour flav;
   for(;from;) {
     from.getline(buffer,100);
-    if (buffer[0] != '\%' && strlen(buffer)>0) {
+    if (buffer[0] != '%' && strlen(buffer)>0) {
       buf    = string(buffer);
       pos    = buf.find(string("Decays :")); 
-      if (pos>-1 && pos<buf.length()) {
+      if (pos>-1 && pos<(int)buf.length()) {
 	buf  = buf.substr(pos+8);
 	while(buf.length()>0) {
 	  if (buf[0]==' ') buf = buf.substr(1);
@@ -66,7 +66,7 @@ void Hard_Decay_Handler::ReadInDecays()
 	m_decaytables.insert(dt);
       }
       pos     = buf.find(string("overwrite"));  
-      if (pos>-1 && pos<buf.length() && (dt)) dt->SetOverwrite(); 
+      if (pos>-1 && pos<(int)buf.length() && (dt)) dt->SetOverwrite(); 
     }
   }
 }
@@ -166,11 +166,12 @@ bool Hard_Decay_Handler::PerformDecay(ATOOLS::Blob * _blob) {
   //if (rpa.gen.Tracking()) dc->Output();
   p_mehandler->GenerateOneEvent(dc,part->FinalMass());
   bool shuffle = false;
-  for (int i=0;i<p_mehandler->NDecOut();i++) {
+  for (unsigned int i=0;i<p_mehandler->NDecOut();i++) {
     _blob->OutParticle(i)->SetMomentum(p_mehandler->DecMomenta()[i+1]);
     if (!_blob->OutParticle(i)->Flav().IsStable()) shuffle = true;
   }
   if (shuffle) p_tools->ShuffleMomenta(_blob->GetOutParticles());
+  return true;
 }
 
 Decay_Channel * Hard_Decay_Handler::SpecifyHardDecay(ATOOLS::Particle * _part,double & _mmax) 

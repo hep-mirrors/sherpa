@@ -144,10 +144,9 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 	for(int k=0; k<4; ++k) position[k] = *(xjet+j+k*2000);
 	particle         = new Particle(-1,flav,momentum);
 	if (pl) number = pl->size();
-	else number    = int(particle);
+	else number    = (long int)(particle);
 	particle->SetNumber(number);
 	particle->SetStatus(1);
-	particle->SetProductionBlob(blob);      
 	particle->SetInfo('P');
 	blob->SetPosition(position);
 	if (pl) pl->push_back(particle);
@@ -160,7 +159,6 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 	  decay->AddToInParticles(particle);
 	  if (particle->Info()=='P') particle->SetInfo('p');
 	  if (particle->Info()=='D') particle->SetInfo('d');
-	  particle->SetDecayBlob(decay);
 	  bloblist->push_back(decay);
 	  FillSecondaryHadronsInBlob(decay,bloblist,(*(daughters+2*j))-1,(*(daughters+2*j+1)),pl);
 	}
@@ -190,10 +188,9 @@ void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
 
     particle         = new Particle(-1,flav,momentum);
     if (pl) number = pl->size();
-    else number    = int(particle);
+    else number    = (long int)(particle);
     particle->SetNumber(number);
     particle->SetStatus(1);
-    particle->SetProductionBlob(blob);  
     particle->SetInfo('D');
     blob->SetPosition(position);
     if (pl) pl->push_back(particle);
@@ -206,7 +203,6 @@ void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
       decay->AddToInParticles(particle);
       if (particle->Info()=='P') particle->SetInfo('p');
       if (particle->Info()=='D') particle->SetInfo('d');
-      particle->SetDecayBlob(decay);
       bloblist->push_back(decay);
       FillSecondaryHadronsInBlob(decay,bloblist,(*(daughters+2*i))-1,(*(daughters+2*i+1)),pl);
     }
