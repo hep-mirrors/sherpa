@@ -130,8 +130,6 @@ Particle& Particle::operator=(const Particle &in)
     m_finalmass = in.m_finalmass;
     p_startblob = NULL;
     p_endblob   = NULL;
-    if (p_flow) delete p_flow;
-    p_flow      = new Flow(this);
     p_flow->SetCode(1,in.GetFlow(1));
     p_flow->SetCode(2,in.GetFlow(2));
   }
