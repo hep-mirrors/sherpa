@@ -20,8 +20,8 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spac
 				     double _pt2min,ATOOLS::Data_Read * _dataread) : 
   Backward_Splitting_Group(0,0), p_tools(_tools), p_kin(_kin), m_pt2min(dabs(_pt2min)), m_last_veto(0)
 {
-  p_pdf             = _pdf; 
-  p_pdfa            = p_pdf->GetCopy();
+  p_pdf             = _pdf->GetBasicPDF(); 
+  p_pdfa            = p_pdf->GetBasicPDF()->GetCopy();
   m_ordering_scheme = _dataread->GetValue<int>("IS ORDERING",0);  /* Switch for ordering due to coherence:  
                                                                      0 = none, 1 = pt^2, 2 = pt^2/E^2     */
   m_cpl_scheme      = _dataread->GetValue<int>("IS COUPLINGS",3); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
@@ -93,7 +93,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
   p_pdf->Calculate(m_x,0.,0.,sqrt(-m_t));
   
   while (m_t<m_t0) {
-    CrudeInt(m_zmin,m_zmax); 
+    CrudeInt(m_zmin,m_zmax);
     ProduceT();
     if (m_t>m_t0) {
       mo->t    = mo->tout;
@@ -174,8 +174,6 @@ bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf)
   }
   return 0;
 }
-
-
 
 bool Spacelike_Sudakov::MassVeto(int extra_pdf) 
 {

@@ -184,7 +184,6 @@ void Initial_State_Shower::SingleExtract(Knot * kn,int beam,Blob * jet,
     bl->insert(bl->begin(),jet);
 
     if (!kn->prev) jet->SetBeam(beam);
-
     p = new Particle(kn->part);
     p->SetStatus(2);
     jet->AddToInParticles(p);
@@ -421,8 +420,8 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 	cout<<" sa, sb, z, x "<<sprime_a<<","<<sprime_b<<"  ,"<<k1->z<<","<<k1->prev->x<<endl;
       }
 
-      double pt2max = sqr(rpa.gen.Ecms());
-      double th     = 4.*k1->z*k1->z*k1->t/(4.*k1->z*k1->z*k1->t-(1.-k1->z)*k1->x*k1->x*pt2max);
+      //double pt2max = sqr(rpa.gen.Ecms());
+      //double th     = 4.*k1->z*k1->z*k1->t/(4.*k1->z*k1->z*k1->t-(1.-k1->z)*k1->x*k1->x*pt2max);
 
       /*  // *AS*
       if (m_to_be_diced[ntree0]) {

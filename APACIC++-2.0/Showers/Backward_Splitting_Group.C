@@ -12,7 +12,7 @@ double Backward_Splitting_Group::CrudeInt(double _zmin, double _zmax) {
   int i     = 0;
   for (SplFunIter iter(m_group);iter();++iter,++i) {
     if (p_pdf->GetXPDF(iter()->GetFlB())==0.) {
-      p_partsums[i]=0;
+      p_partsums[i]=0.;
     } 
     else {
       p_partsums[i] = m_lastint += 
