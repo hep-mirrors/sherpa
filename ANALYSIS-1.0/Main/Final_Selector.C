@@ -33,6 +33,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
   m_inlistname(inlistname),m_outlistname(outlistname),m_ownlist(false), m_extract(false),
   m_mode(mode), p_jetalg(NULL)
 {
+  msg.Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<")"<<std::endl;
   m_splitt_flag = false;
   switch (mode) {
     case 1: p_jetalg = new Durham_Algorithm(); break;
@@ -45,6 +46,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 
 void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data & fs) 
 {
+  msg.Tracking()<<" AddSelector("<<fl<<","<<fs<<")"<<std::endl;
   Final_Data_Map::iterator it = m_fmap.find(fl);
   if (it==m_fmap.end()) {
     m_fmap.insert(std::make_pair(fl,fs));
@@ -63,6 +65,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
 void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2, 
 				 const Final_Selector_Data & fs) 
 {
+  msg.Tracking()<<" AddSelector("<<flav1<<","<<flav2<<","<<fs<<")"<<std::endl;
   std::pair<Flavour,Flavour> flavs(flav1,flav2);
   Final_Correlator_Map::iterator it = m_cmap.find(flavs);
   if (it==m_cmap.end()) {
@@ -86,6 +89,7 @@ void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2,
 
 void Final_Selector::AddSelector(const Flavour & fl, int min, int max) 
 {
+  msg.Tracking()<<" AddSelector("<<fl<<", n("<<min<<","<<max<<") )"<<std::endl;
   Final_Data_Map::iterator it = m_fmap.find(fl);
   if (it==m_fmap.end()) {
     Final_Selector_Data fs;
@@ -102,6 +106,7 @@ void Final_Selector::AddSelector(const Flavour & fl, int min, int max)
 
 void Final_Selector::AddKeepFlavour(const Flavour & fl) 
 {
+  msg.Tracking()<<" AddKeepFlavour("<<fl<<")"<<std::endl;
   if (fl==Flavour(kf::lepton)) {
     for (int i=0;i<fl.Size();++i) AddKeepFlavour(fl[i]);
   }
@@ -277,7 +282,7 @@ void Final_Selector::Extract(Particle_List * pl)
 void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   Particle_List * pl_in = p_ana->GetParticleList(m_inlistname);
   if (pl_in==NULL) {
-    msg.Error()<<"WARNING in Final_Selector::Evaluate : particle list "<<m_inlistname<<" not found "<<std::endl;
+    msg.Out()<<"WARNING in Final_Selector::Evaluate : particle list "<<m_inlistname<<" not found "<<std::endl;
     return;
   }
   Particle_List * pl_out = new Particle_List;
@@ -294,10 +299,13 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
 	if ((*pit)->Flav().IsLepton()) pl_out->push_back(new Particle(*pit));
       }
       m_ownlist=true;
+      std::string key;
+      /*
       MyStrStream str;
       str<<"KtJetrates("<<it->second.r_min<<")"<<m_listname;
-      std::string key;
       str>>key;
+      */
+      key="KtJetrates(1)"+m_listname;
       p_ana->AddData(key,new Blob_Data<std::vector<double> *>(diffrates));
 
       Blob_Data_Base * ktdrs=(*p_ana)["KtDeltaRs"];
