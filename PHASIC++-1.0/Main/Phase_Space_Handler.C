@@ -352,7 +352,7 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
     if (value > 0.) {
       double disc = 0.;
       if (value > max) {
-	if (use_overflow) {
+	if (!use_overflow) {
 	  // don't use overflow
 	  msg.Out()<<"WARNING in Phase_Space_Handler::OneEvent :"<<std::endl
 		   <<"   Shifted maximum in "<<p_process->Selected()->Name()<<" : "
