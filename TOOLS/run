@@ -32,7 +32,9 @@ for I in $* ; do
   elif [ "$I" = "-o" ]; then DSOPTIONS=TRUE 
   elif [ "$I" = "-B" ]; then DBATCH=TRUE 
   elif [ "$I" = "-O" ]; then DBOPTIONS=TRUE 
+  elif [ "$I" = "-H" ]; then DHOST=TRUE
   elif [ "$I" = "-S" ]; then SUBMIT=TRUE 
+  elif [ "$I" = "-R" ]; then RUN=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "run version 1.0" && echo && \
     echo "options: -p <path>      read configuration from path <path>" && \
@@ -44,7 +46,9 @@ for I in $* ; do
     echo "         -o <option>    define commandline option <option>" && \
     echo "         -B <system>    select batch system <system>" && \
     echo "         -O <option>    define batch system option <option>" && \
+    echo "         -H <host>      run job locally on <host>" && \
     echo "         -S             submit job to batch system" && \
+    echo "         -R             run job via nohup" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DRUNPATH" = "TRUE" ]; then DRUNPATH="" && RUNPATH=$I
@@ -56,6 +60,7 @@ for I in $* ; do
   elif [ "$DSOPTIONS" = "TRUE" ]; then DSOPTIONS="" && SOPTIONS=$SOPTIONS" "$I
   elif [ "$DBATCH" = "TRUE" ]; then DBATCH="" && BATCH=$I
   elif [ "$DBOPTIONS" = "TRUE" ]; then DBOPTIONS="" && BOPTIONS=$BOPTIONS" "$I
+  elif [ "$DHOST" = "TRUE" ]; then DHOST="" && RHOST=$I
   else echo "run: error: unrecognized option '$I'. try '-h'" && \
     exit 1 
   fi
@@ -158,8 +163,23 @@ echo -e ">> \$LOGFILE 2>&1 \n\n" >> $FILE
 chmod 777 $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then
   qsub $FILE $BOPTIONS
-else
-  ( nohup $FILE > /dev/null & ) 
+elif [ "$RUN" = "TRUE" ] ; then
+  COUNTER=0
+  ssh -q $RHOST exit 
+  while (( $? != 0 )) && (( $COUNTER < 5 )) ; do
+    (( ++COUNTER ))
+    if (( COUNTER > 1 )) ; then
+      echo "run: host '"$RHOST"' not available."
+    fi
+    read -p "run: where shall your job '"$SETUPPATH"' be run ? " RHOST
+    ssh -q $RHOST exit 
+  done
+  ssh -q $RHOST exit 
+  if (( $? ==0 )) ; then
+    ssh $RHOST ( nohup $FILE > /dev/null & )
+  else 
+    echo "run: error: cannot submit job '"$SETUPPATH"'"
+  fi 
 fi
 mv $FILE $SETUPPATH
 
