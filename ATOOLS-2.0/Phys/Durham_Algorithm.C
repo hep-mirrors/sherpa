@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <algorithm>
 
+//#define PROFILE__Analysis_Phase
+
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
 #else 
@@ -17,15 +19,23 @@ using namespace std;
 
 
 Durham_Algorithm::Durham_Algorithm(ATOOLS::Particle_Qualifier_Base * const qualifier) : 
-  Jet_Algorithm_Base(qualifier), m_matrixsize(0), p_imap(NULL), p_jets(NULL)
+  Jet_Algorithm_Base(qualifier), m_matrixsize(0), p_yij(NULL), p_imap(NULL), m_vectorsize(0), p_moms(NULL), 
+  p_bflag(NULL), p_jets(NULL)
 {
 
 }
 
 Durham_Algorithm::~Durham_Algorithm()
 {
+  if (p_moms)  delete [] p_moms;
+  if (p_bflag) delete [] p_bflag;
+
   if (p_imap) {
     delete [] p_imap;
+  }
+  if (p_yij) {
+    for (int i=0;i<m_matrixsize;++i) delete [] p_yij[i];
+    delete [] p_yij;
   }
 }
 
@@ -47,6 +57,7 @@ void Durham_Algorithm::AddToJetlist(const Vec4D & mom, bool bf) {
 
 bool Durham_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets, 
 				     std::vector<double> * kts, double ycut) {
+  PROFILE_HERE;
   p_jets = jets;
   p_kts  = kts;
   m_ycut = ycut;
@@ -55,23 +66,22 @@ bool Durham_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * j
   Vec4D momsum=Vec4D(0.,0.,0.,0.);
   // create vector list from particle list
   int n=0;
-  Vec4D * moms = new Vec4D[pl->size()];
-  bool * bflag = new bool[pl->size()];
+
+  // avoid new !!!!!!!!!!!!!!!!!!!!!!!!1
+  InitMoms(pl->size());
+
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
     momsum+=(*it)->Momentum();
     if ((*p_qualifier)(*it)) {
-      //    if (!(*it)->Flav().IsLepton()) {
-      moms[n]  = ((*it)->Momentum()); 
-      bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
+      p_moms[n]  = ((*it)->Momentum()); 
+      p_bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
       ++n;
     }
   }
   m_sprime = momsum.Abs2();
 
   // cluster
-  Ymin(moms,bflag,n);
-  delete [] moms;
-  delete [] bflag;
+  Ymin(p_moms,p_bflag,n);
   // finalize (sort and release used containers)
 
   SortE(p_jets);
@@ -83,15 +93,30 @@ bool Durham_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * j
 }
 
 
+void Durham_Algorithm::InitMoms(int size) 
+{
+  if (2*size>m_vectorsize ) {
+    m_vectorsize=2*size;
+    if (p_moms)  delete [] p_moms;
+    if (p_bflag) delete [] p_bflag;
+    p_moms = new Vec4D[size*2];
+    p_bflag = new bool[size*2];
+  }
+}
+
 void Durham_Algorithm::Init(int size) 
 {
   PROFILE_HERE;
   if (size>m_matrixsize ) {
-    if (p_imap) {
+    if (p_yij) {
+      for (int i=0;i<m_matrixsize;++i) delete [] p_yij[i];
+      delete [] p_yij;
       delete [] p_imap;
     }
     m_matrixsize = size;
     p_imap = new int[size];
+    p_yij = new double*[size];
+    for (int i=0;i<size;++i) p_yij[i] = new double[size];
   }
   for (int i=0;i<size;++i) p_imap[i] = i;
 }
@@ -99,35 +124,71 @@ void Durham_Algorithm::Init(int size)
 
 void Durham_Algorithm::Ymin(Vec4D * p, bool * bf, int n)
 {
+  PROFILE_HERE;
   if (n==0) return;
   if (n==1) {
     AddToJetlist(p[0],bf[0]);
-    return;// dmin;
+    return;
   }
 
   Init(n);
 
-  int hit = 0;
-
-  while (n>1) {
-    int ii=0, jj=0;
-    double ymin = 1.;//m_ycut;  
+  //cal first matrix
+  int ii=0, jj=0;
+  double ymin=1.;
+  {
+    //    PROFILE_LOCAL(" first loop ");
+    
     for (int i=1;i<n;++i) {
       for (int j=0;j<i;++j) {
-	double y = Y12(p[p_imap[i]],p[p_imap[j]]);
+	double y = p_yij[i][j] =Y12(p[i],p[j]);
 	if (y<ymin) { ymin=y; ii=i; jj=j;}
       }
     }
+  }
+
+  // recalc matrix
+  int hit = 0;
+  while (n>1) {
+    //    PROFILE_LOCAL(" main loop ");
+
     if (!hit && ymin>=m_ycut) {
       hit = 1;
       for (int i=0;i<n;++i) AddToJetlist(p[p_imap[i]],bf[p_imap[i]]);
     }
+
     // combine precluster
-    AddToKtlist(ymin);
     p[p_imap[jj]]+=p[p_imap[ii]];
     bf[p_imap[jj]] = bf[p_imap[jj]]||bf[p_imap[ii]];      
+    AddToKtlist(ymin);
     --n;
     for (int i=ii;i<n;++i) p_imap[i]=p_imap[i+1];
+
+    if (n==1) break;
+    // update map (remove precluster)
+    {
+      //      PROFILE_LOCAL(" update loop ");
+
+      // update matrix (only what is necessary)
+      int jjx=p_imap[jj];
+      for (int j=0;j<jj;++j)   p_yij[jjx][p_imap[j]] = Y12(p[jjx],p[p_imap[j]]);
+      for (int i=jj+1;i<n;++i) p_yij[p_imap[i]][jjx] = Y12(p[p_imap[i]],p[jjx]);
+    }
+    // redetermine rmin and dmin
+    ii=jj=0;
+    ymin=1.;
+    {
+      //      PROFILE_LOCAL(" second loop ");
+
+      for (int i=1;i<n;++i) {
+	int ix=p_imap[i];
+	for (int j=0;j<i;++j) {
+	  int jx=p_imap[j];
+	  double y = p_yij[ix][jx];
+	  if (y<ymin) { ymin=y; ii=i; jj=j;}
+	}
+      }
+    }
   }
 }
 
@@ -149,11 +210,11 @@ public:
 
 double Durham_Algorithm::DCos12(const Vec4D & p1,const Vec4D & p2) const
 {
-  return Vec3D(p1)*Vec3D(p2)/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
+  double s  = p1[1]*p2[1]+p1[2]*p2[2]+p1[3]*p2[3];
+  double b1 = p1[1]*p1[1]+p1[2]*p1[2]+p1[3]*p1[3];
+  double b2 = p2[1]*p2[1]+p2[2]*p2[2]+p2[3]*p2[3];
+  return s/sqrt(b1*b2);
+  //  return Vec3D(p1)*Vec3D(p2)/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
 
-double Durham_Algorithm::Y12(const Vec4D & p1, const Vec4D & p2) const
-{
-  return 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2))/m_sprime;
-}
 

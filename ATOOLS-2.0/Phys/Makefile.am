@@ -30,6 +30,7 @@ libToolsPhys_la_SOURCES       =	\
 				Jet_Finder.C \
 				Cone_Finder.C \
 				Durham_Algorithm.C \
+				Cambridge_Algorithm.C \
 				Kt_Algorithm.C \
 				Standard_Selector.C \
 				Blob.C \
@@ -52,6 +53,7 @@ noinst_HEADERS        =	\
 			Jet_Finder.H \
 			Cone_Finder.H \
 			Durham_Algorithm.H \
+			Cambridge_Algorithm.H \
 			Kt_Algorithm.H \
 			Combined_Selector.H \
 			Standard_Selector.H \

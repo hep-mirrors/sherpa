@@ -42,6 +42,7 @@ namespace ATOOLS {
   class Jet_Algorithm_Base {
   protected:
     ATOOLS::Particle_Qualifier_Base * p_qualifier;
+    std::vector<double> m_jetnumbers;
     bool   m_bflag;
   public:
     Jet_Algorithm_Base(ATOOLS::Particle_Qualifier_Base * const qualifier) : 
@@ -54,6 +55,7 @@ namespace ATOOLS {
     void SortPT(Particle_List *);
     
     virtual ~Jet_Algorithm_Base();
+    std::vector<double> & JetNumbers() { return m_jetnumbers; }
   };
 
   class Kt_Algorithm : public Jet_Algorithm_Base  {
