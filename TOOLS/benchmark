@@ -60,7 +60,7 @@ for I in $* ; do
     echo "         -l <logfile>   write benchmarking output to <logfile>" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
-  elif [ "$DFILE" = "TRUE" ]; then DFILE="" && FILE=$FILE" "$I
+  elif [ "$DFILE" = "TRUE" ]; then DFILE="" && FILE=$I
   elif [ "$DLOGFILE" = "TRUE" ]; then DLOGFILE="" && LOGFILE=$I
   else echo "benchmark: error: unrecognized option '$I'. try '-h'" && \
     exit 1 
