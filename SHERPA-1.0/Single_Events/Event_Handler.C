@@ -123,7 +123,7 @@ bool Event_Handler::GenerateEvent(int mode)
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
-    //PrintBlobs();
+    PrintBlobs();
     return 1;
   case 9000:
     while (flag) {
