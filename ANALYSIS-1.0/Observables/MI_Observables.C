@@ -152,7 +152,6 @@ Forward_Backward_Eta_Correlation(const int type,
 {
   m_name="FwBwEtaCorr.dat";
   m_listname=listname;
-  m_splitt_flag=false;
   m_etafw.Initialize(detamin,detamax,nbins);
   m_etafwsq.Initialize(detamin,detamax,nbins);
   m_etafwbw.Initialize(detamin,detamax,nbins);
