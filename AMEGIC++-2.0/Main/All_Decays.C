@@ -31,21 +31,21 @@ bool All_Decays::AddToDecays(const Flavour & flav)
 
 bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec) 
 {
-  Flavour flav = _dec->GetDecaying();
+  Flavour flav   = _dec->GetDecaying();
   DMIterator dit = m_decays.find(flav);
-  if (dit->first==flav) {
-    msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
-	       <<"   could not add flavour to list of all_decays with specfied decay."<<endl
-	       <<"   Already booked for unspecified decays. Will continue."<<endl;
-    return 0;
+  Full_Decay_Table * dt;
+  if (dit==m_decays.end()) {
+    dt = new Full_Decay_Table(flav,false);
+    m_decays.insert(std::make_pair(flav,dt));
+  }
+  else {
+    dt = dit->second;
   }
   if (CheckInVertex(flav)) {
     Full_Decay_Channel * dc = new Full_Decay_Channel(_dec);
     if (dc->CreateDecay()) {
-      Full_Decay_Table * dt = new Full_Decay_Table(flav,false);
       dt->AddDecayChannel(dc);
       if (msg.LevelIsTracking()) dc->Output();
-      m_decays.insert(std::make_pair(flav,dt));
       return 1;
     }
     msg.Error()<<"ERROR in All_Decays::AddToDecays("<<flav<<") :"<<endl
@@ -59,6 +59,7 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec)
   abort();
   return 0;
 }
+
 
 void All_Decays::PrintDecayings()
 {
@@ -110,7 +111,7 @@ bool All_Decays::UnweightedEvent(ATOOLS::Decay_Channel * _dec,double _mass)
       return p_decay->OneEvent(_mass);
     } 
   }
-  return true;
+  return false;
 }
 
 bool All_Decays::InitializeDecayTables() 
