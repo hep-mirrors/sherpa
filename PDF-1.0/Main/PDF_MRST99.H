@@ -15,6 +15,7 @@ namespace PDF {
     int             m_set;
     std::string     m_path;
     int             m_anti;
+    bool            m_overscaled;
 
   public:
 

@@ -24,12 +24,15 @@ namespace PDF {
     // destructor
     virtual ~ISR_Base();
 
-    // getters
-    inline const std::string     Type() const    { return m_type;  }
-    inline const ATOOLS::Flavour Flavour() const { return m_bunch; }
-
+    // member functions
     bool On() const  { return m_on;  }
     bool KMR() const { return m_kmr; }
+
+    void AssignKeys(ATOOLS::Integration_Info *const info) { p_pdf->AssignKeys(info); }
+
+    // inline functions
+    inline const std::string     Type() const    { return m_type;  }
+    inline const ATOOLS::Flavour Flavour() const { return m_bunch; }
 
     inline bool Collinear(const double kp2) const { return p_pdf->Collinear(kp2); }
 
@@ -40,7 +43,10 @@ namespace PDF {
 
     inline PDF_Base *PDF() { return p_pdf; }
 
-    void AssignKeys(ATOOLS::Integration_Info *const info) { p_pdf->AssignKeys(info); }
+    inline void Extract(const ATOOLS::Flavour flavour,const double x) const 
+    { p_pdf->Extract(flavour,x); }
+    inline void Reset() const                 
+    { p_pdf->Reset();    }
 
     // member functions
     virtual bool   CalculateWeight(double x,double z,double kp2,double Q2) = 0;

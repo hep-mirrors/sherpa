@@ -14,13 +14,17 @@ namespace PDF {
   class PDF_Base {
   protected :
 
+    std::vector<PDF_Base*> m_copies;
+
     std::vector<ATOOLS::Flavour> m_partons;    
     ATOOLS::Flavour              m_bunch;
 
     std::string m_type;    
 
-    double m_exponent;
+    double m_exponent, m_rescale;
     double m_xmin, m_xmax, m_q2min, m_q2max;
+
+    std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
   public:
 
@@ -30,23 +34,11 @@ namespace PDF {
     // destructor
     virtual ~PDF_Base();
 
-    // getters
-    inline double XMin() const  { return m_xmin;  }
-    inline double XMax() const  { return m_xmax;  }
-    inline double Q2Min() const { return m_q2min; }
-    inline double Q2Max() const { return m_q2max; }
-
-    virtual double Cut(const std::string &type);
-
-    inline const std::vector<ATOOLS::Flavour> &Partons() const { return m_partons; }
-    inline const ATOOLS::Flavour               Bunch() const   { return m_bunch;   }
-
-    inline const std::string &Type() const     { return m_type;     }  
-    inline double             Exponent() const { return m_exponent; }
-
     // member functions
     virtual void AssignKeys(ATOOLS::Integration_Info *const info) = 0;
-    virtual bool Collinear(const double kp2) const;
+
+    virtual bool   Collinear(const double kp2) const;
+    virtual double Cut(const std::string &type);
     
     virtual void   Calculate(double x,double z,double kp,double Q2) = 0;
     virtual double GetXPDF(const ATOOLS::Flavour flavour) = 0;
@@ -55,6 +47,23 @@ namespace PDF {
     virtual PDF_Base *GetCopy() = 0;
 
     virtual PDF_Base *GetBasicPDF();
+
+    void Extract(const ATOOLS::Flavour flavour,const double x);
+    void Reset();
+
+    // inline functions
+    inline double XMin() const  { return m_xmin;  }
+    inline double XMax() const  { return m_xmax;  }
+    inline double Q2Min() const { return m_q2min; }
+    inline double Q2Max() const { return m_q2max; }
+
+    inline const std::vector<ATOOLS::Flavour> &Partons() const { return m_partons; }
+    inline const ATOOLS::Flavour               Bunch() const   { return m_bunch;   }
+
+    inline const std::string &Type() const     { return m_type;     }  
+    inline double             Exponent() const { return m_exponent; }
+
+    inline PDF_Base *operator->() { return GetBasicPDF(); }
 
   };
   

@@ -479,3 +479,17 @@ bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour & fl,double x,int
   if (erem < mf + msum) return false;
   return true;
 }
+
+void ISR_Handler::Extract(const ATOOLS::Flavour flavour,const double energy,
+			  const size_t i) const 
+{ 
+  if (p_isrbase[i]->PDF()!=NULL) {
+    p_isrbase[i]->Extract(flavour,2.*energy/sqrt(Pole())); 
+  }
+}
+
+void ISR_Handler::Reset(const size_t i) const 
+{ 
+  if (p_isrbase[i]->PDF()!=NULL) p_isrbase[i]->Reset(); 
+}
+

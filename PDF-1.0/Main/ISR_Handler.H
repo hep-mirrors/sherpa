@@ -65,6 +65,10 @@ namespace PDF {
     void SetLimits();
     void Reset();
 
+    void Extract(const ATOOLS::Flavour flavour,const double energy,
+		 const size_t i) const; 
+    void Reset(const size_t i) const; 
+
     // inline functions 
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
     inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
@@ -86,19 +90,19 @@ namespace PDF {
     inline double *KMRKpRange()          { return m_kplimits;    }
     inline double  Exponent(const int i) { return m_exponent[i]; }
 
-    inline double SprimeMin() { return m_splimits[0]; }
-    inline double SprimeMax() { return m_splimits[1]; }
-    inline double Pole()      { return m_splimits[2]; }
-    inline double YMin()      { return m_ylimits[0];  }
-    inline double YMax()      { return m_ylimits[1];  }
+    inline double SprimeMin() const { return m_splimits[0]; }
+    inline double SprimeMax() const { return m_splimits[1]; }
+    inline double Pole() const      { return m_splimits[2]; }
+    inline double YMin() const      { return m_ylimits[0];  }
+    inline double YMax() const      { return m_ylimits[1];  }
     
-    inline double Upper1() { return p_isrbase[0]->XMax(); }
-    inline double Upper2() { return p_isrbase[1]->XMax(); }
+    inline double Upper1() const { return p_isrbase[0]->XMax(); }
+    inline double Upper2() const { return p_isrbase[1]->XMax(); }
 
-    inline double X1() { return m_x[0]; }
-    inline double X2() { return m_x[1]; }
+    inline double X1() const { return m_x[0]; }
+    inline double X2() const { return m_x[1]; }
 
-    inline double Flux() { return m_flux; }
+    inline double Flux() const { return m_flux; }
 
   };// end of class ISR_Handler
   

@@ -78,6 +78,8 @@ namespace ATOOLS {
     Particle_Vector GetInParticles()  { return m_inparticles;  }
     Particle * OutParticle(int);
     Particle * InParticle(int);
+    const Particle *ConstOutParticle(const size_t i) const;
+    const Particle *ConstInParticle(const size_t i) const;
     Particle * RemoveInParticle(int,bool = true);
     Particle * RemoveInParticle(Particle *,bool = true);
     Particle * RemoveOutParticle(int,bool = true);

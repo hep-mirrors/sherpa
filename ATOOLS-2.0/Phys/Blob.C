@@ -124,6 +124,18 @@ Particle * Blob::OutParticle(int _pos) {
   return m_outparticles[_pos];
 }
 
+const Particle *Blob::ConstInParticle(const size_t i) const
+{
+  if (i>m_inparticles.size()-1 || i<0) return NULL;
+  return m_inparticles[i];
+}
+
+const Particle *Blob::ConstOutParticle(const size_t i) const 
+{
+  if (i>m_outparticles.size()-1 || i<0) return NULL; 
+  return m_outparticles[i];
+}
+
 Particle * Blob::RemoveInParticle(int _pos,bool setit) {
   if (_pos>m_inparticles.size()-1 || _pos<0) { return NULL; }
   for (Particle_Vector::iterator part = m_inparticles.begin();

@@ -41,8 +41,11 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
 };
 
 
-PDF_Base * PDF_MRST99::GetCopy() {
-  return new PDF_MRST99(m_bunch,m_set,m_path);
+PDF_Base *PDF_MRST99::GetCopy() 
+{
+  PDF_Base *copy = new PDF_MRST99(m_bunch,m_set,m_path);
+  m_copies.push_back(copy);
+  return copy;
 }
 
 void PDF_MRST99::Output() {
@@ -64,27 +67,36 @@ void PDF_MRST99::Output() {
   }
 }
 
-void PDF_MRST99::Calculate(double x,double z,double kp2,double Q2) {
-  p_proton->mrst99(x,Q2,m_set);
+void PDF_MRST99::Calculate(double x,double z,double kp2,double Q2) 
+{
+  m_overscaled=false;
+  if (x/m_rescale>m_xmax) {
+    m_overscaled=true;
+    return;
+  }
+  p_proton->mrst99(x/m_rescale,Q2,m_set);
   m_content = p_proton->cont;
 }
 
 
-double PDF_MRST99::GetXPDF(const ATOOLS::Flavour infl) {
+double PDF_MRST99::GetXPDF(const ATOOLS::Flavour infl) 
+{
+  if (m_overscaled) return 0.;
   int kfc=m_anti*int(infl);
   switch (kfc) {
-  case  ATOOLS::kf::d : return (m_content.dnv + m_content.dsea);
-  case -ATOOLS::kf::d : return m_content.dsea; 
-  case  ATOOLS::kf::u : return (m_content.upv + m_content.usea);
-  case -ATOOLS::kf::u : return m_content.usea; 
+  case  ATOOLS::kf::d : return m_rescale*(m_content.dnv + m_content.dsea);
+  case -ATOOLS::kf::d : return m_rescale*m_content.dsea; 
+  case  ATOOLS::kf::u : return m_rescale*(m_content.upv + m_content.usea);
+  case -ATOOLS::kf::u : return m_rescale*m_content.usea; 
   case  ATOOLS::kf::s :
-  case -ATOOLS::kf::s : return m_content.str;
+  case -ATOOLS::kf::s : return m_rescale*m_content.str;
   case  ATOOLS::kf::c : 
-  case -ATOOLS::kf::c : return m_content.chm;
+  case -ATOOLS::kf::c : return m_rescale*m_content.chm;
   case  ATOOLS::kf::b : 
-  case -ATOOLS::kf::b : return m_content.bot;
+  case -ATOOLS::kf::b : return m_rescale*m_content.bot;
   case ATOOLS::kf::gluon : 
-  case -ATOOLS::kf::gluon :return m_content.glu; // pseudo anti gluon for anti-proton
+  // pseudo anti gluon for anti-proton
+  case -ATOOLS::kf::gluon :return m_rescale*m_content.glu; 
   default: return 0.;
   }
 }

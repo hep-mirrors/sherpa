@@ -56,9 +56,11 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_partons.push_back(Flavour(kf::quark).Bar());                               
 }
 
-PDF_Base * CTEQ6_Fortran_Interface::GetCopy()
+PDF_Base *CTEQ6_Fortran_Interface::GetCopy()
 {
-  return new CTEQ6_Fortran_Interface(m_bunch,m_set,m_member,m_path);
+  PDF_Base *copy = new CTEQ6_Fortran_Interface(m_bunch,m_set,m_member,m_path);
+  m_copies.push_back(copy);
+  return copy;
 }
 
 
@@ -80,15 +82,16 @@ double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2)
 
 void CTEQ6_Fortran_Interface::Output() {}
 
-void CTEQ6_Fortran_Interface::Calculate(double _x,double z,double kp2,double _Q2) 
+void CTEQ6_Fortran_Interface::Calculate(double x,double z,double kp2,double _Q2) 
 {
   for (size_t i=0;i<11;++i) m_calculated[i]=false;
-  m_x=_x;
+  m_x=x/m_rescale;
   m_Q=sqrt(_Q2);
 }
 
 double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) 
 {
+  if ((m_x>m_xmax && m_rescale<1.) || m_rescale<0.) return 0.;
   int cteqindex;
   switch (infl.Kfcode()) {
   case ATOOLS::kf::gluon: cteqindex=0;                  break;
@@ -100,7 +103,7 @@ double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
     m_f[5-cteqindex]=ctq6evolve_(cteqindex,m_x,m_Q)*m_x; 
     m_calculated[5-cteqindex]=true;
   }
-  return m_f[5-cteqindex];     
+  return m_rescale*m_f[5-cteqindex];     
 }
 
 void CTEQ6_Fortran_Interface::AssignKeys(ATOOLS::Integration_Info *const info)
