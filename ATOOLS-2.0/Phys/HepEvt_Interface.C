@@ -550,6 +550,7 @@ void HepEvt_Interface::OpenNewHepEvtFile()
 
 void HepEvt_Interface::HepEvt2Particle(const int pos)
 {
+  if (abs(p_idhep[pos])==9902210) return;
   /*
     std::cout<<pos<<": stat,id "<<p_isthep[pos]<<","<<p_idhep[pos]
     <<"; mos : "<<p_jmohep[2*pos]<<","<<p_jmohep[2*pos+1]
@@ -564,7 +565,7 @@ void HepEvt_Interface::HepEvt2Particle(const int pos)
   Vec4D momentum     = Vec4D(p_phep[3+pos*5],p_phep[0+pos*5],p_phep[1+pos*5],p_phep[2+pos*5]);
   Particle * newpart = new Particle(pos+1,flav,momentum);
   newpart->SetStatus(p_isthep[pos]);
-  m_convertH2S.insert(std::make_pair(pos,std::make_pair(newpart,true)));
+  m_convertH2S[pos]=std::pair<Particle*,bool>(newpart,true);
 }
 
 bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
@@ -1306,11 +1307,44 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
     }
   }
   if (beam1==NULL || beam2==NULL) {
-    msg.Error()<<"WARNING : Error in HepEvt_Interface::ConstructBlobsFromPythia."<<std::endl
-	       <<"    too little transition blobs (1/2) found for hadron->partons for u.e. "
-	       <<"("<<(beam1==NULL)<<"/"<<(beam2==NULL)<<")"<<std::endl
-	       <<"    Will return .false. and hope that event is discarded."<<std::endl;
-    return false;
+    blobs->Clear();
+    Blob *signal = new Blob();
+    signal->AddData("ME_Weight",new Blob_Data<double>(1));
+    signal->AddData("ME_NumberOfTrials",new Blob_Data<int>(1));
+    signal->SetStatus(0);
+    signal->SetType(btp::Signal_Process);
+    blobs->push_back(signal);
+    Particle *dummy = new Particle(-1,kf::jet,Vec4D());
+    dummy->SetNumber();
+    signal->AddToOutParticles(dummy);
+    Blob *frag = new Blob();
+    frag->SetStatus(0);
+    frag->SetType(btp::Fragmentation);
+    blobs->push_back(frag);
+    frag->AddToInParticles(dummy);
+    size_t i=0;
+    for (Translation_Map::iterator tit=m_convertH2S.begin();
+	 tit!=m_convertH2S.end();++tit) {
+      if (i++<2) {
+	signal->AddToInParticles(tit->second.first);
+	tit->second.first->SetStatus(1);
+      }
+      else if (tit->second.first->Status()==1) {
+	Particle *part = new Particle(-1,tit->second.first->Flav(),
+				      tit->second.first->Momentum());
+	frag->AddToOutParticles(part);
+	Blob *dec = new Blob();
+	dec->SetStatus(0);
+	dec->SetType(btp::Hadron_Decay);
+	blobs->push_back(dec);
+	dec->AddToInParticles(part);
+	dec->AddToOutParticles(tit->second.first);
+      }
+      else delete tit->second.first;
+    }
+    dummy->SetMomentum(signal->CheckMomentumConservation());
+    m_convertH2S.clear();
+    return true;
   }
   int ueadd = m_nhep;
   double pt2, E, pl, omega1,omega2;
@@ -1547,6 +1581,7 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
 
   // Beams and bunches
   for (biter=blobs->begin();biter!=blobs->end();biter++) {
+    if ((*biter)->Type()!=btp::Unspecified) continue;
     if ((*biter)->NInP()==0 && (*biter)->NOutP()==1) {
       ATOOLS::Particle *incoming=(*biter)->OutParticle(0);
       (*biter)->RemoveOutParticle(incoming);
