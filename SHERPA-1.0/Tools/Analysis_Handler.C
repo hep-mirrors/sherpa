@@ -9,6 +9,7 @@
 #include "Final_Selector.H"
 #include "Primitive_Calorimeter.H"
 #include "Primitive_Observable.H"
+#include "Jet_Cone_Distribution.H"
 #include "Jet_Observables.H"
 #include "One_Particle_Observables.H"
 #include "Two_Particle_Observables.H"
@@ -50,6 +51,13 @@ void Observable_Data::Output() {
 	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[1]<<" bins,"
 	     <<" extra : "<<keywords[0]<<std::endl;
   }
+  if (Specify()==20) {
+    flav1 = Flavour(kf::code(abs(ints[0])));
+    if (ints[0]<0) flav1=flav1.Bar();
+    msg.Out()<<"Obs : "<<type<<" for "<<flav1<<" : "
+	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[1]<<" bins,"
+	     <<" extra : "<<keywords[0]<<std::endl;
+  }
 }
 
 int Observable_Data::Specify() {
@@ -63,6 +71,8 @@ int Observable_Data::Specify() {
       type==std::string("JetE") || type==std::string("DiffJet") || 
       type==std::string("JetDR") || type==std::string("JetDEta") || 
       type==std::string("JetDPhi"))                              return 10;
+  if (type==std::string("JetCone") || type==std::string("JetConeShape") ||
+      type==std::string("JetConeDep"))                           return 20; 
   return -1;
 }
 
@@ -146,6 +156,7 @@ void Analysis_Handler::DoAnalysis(ATOOLS::Blob_List * const blist, double weight
 {
   if (p_detector) p_detector->Fill(blist);
   p_analysis->DoAnalysis(blist,weight);
+  if (p_detector) p_detector->Reset();
 }
 
 void Analysis_Handler::Finish() 
@@ -192,7 +203,6 @@ void Analysis_Handler::ReadInDetector(std::ifstream * readin)
 	return;
       }
       if (buffer.find("DETECTOR")!=std::string::npos) {
-	std::cout<<"Found DETECTOR keyword."<<std::endl;
 	detector_on = true;
 	continue;
       }
@@ -303,7 +313,7 @@ void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
 	      (p_detector->GetElement(std::string("Hadronic Calorimeter")));
 	    Calorimeter_Cone * Hcal_jetfinder = 
 	      new Calorimeter_Cone(numbers[0],numbers[3],Hcal);
-	    Hcal_jetfinder->SetEtaRangeForJets(numbers[1],numbers[2],int(numbers[4]>0));
+	    Hcal_jetfinder->SetEtaRangeForJets(numbers[1],numbers[2],int(numbers[4]>0.));
 	    fd.eta_min = numbers[1];
 	    fd.eta_max = numbers[2];
 	    fd.pt_min  = numbers[0];
@@ -366,8 +376,6 @@ void Analysis_Handler::ReadInObservables(std::ifstream * readin)
 	}
       }
       else {
-	std::cout<<"|"<<buffer<<"|"<<buffer.size()<<std::endl;
-	if (p_detector) p_detector->Print();
 	obs = new Observable_Data();
 	while(buffer.length()>0) {
 	  if (buffer[0]==' ') buffer = buffer.substr(1);
@@ -506,7 +514,7 @@ void Analysis_Handler::SetUpObservables()
 	if (od->keywords[0]==std::string("Log")) linlog = 10;
 
 	if (type!="DiffJet") {
-	  // jet observables have get a "particle list" containing only "jets"
+	  // jet observables have a "particle list" containing only "jets"
 	  if (flav==Flavour(kf::jet)) listname = std::string("AnalysedJets");
 	  else listname = std::string("Analysed")+flav.Name();
 	  //type,  xmin,xmax,nbins,mode,minn,maxn,listname 
@@ -565,6 +573,88 @@ void Analysis_Handler::SetUpObservables()
 	  obs = new Jet_DeltaPhi_Distribution(linlog,od->numbers[0],od->numbers[1],
 					   od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
 	  break; 
+	}
+      }
+    case 20:
+      {
+ 	if (!(od->ints.size()==2 && od->numbers.size()==3 && od->keywords.size()==1) ||
+	    !(od->ints.size()==2 && od->numbers.size()==5 && od->keywords.size()==1) ||
+	    !(od->ints.size()==4 && od->numbers.size()==6 && od->keywords.size()==1) ||
+	    !(od->ints.size()==4 && od->numbers.size()==3 && od->keywords.size()==1) ||
+	    !(od->ints.size()==4 && od->numbers.size()==5 && od->keywords.size()==1) ) {
+	  msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+		     <<"   Detector observable with "
+		     <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
+		     <<". Continue and hope for the best."<<std::endl;
+	}
+	
+	flav   = Flavour(kf::code(abs(od->ints[0])));
+	if (od->ints[0]<0) flav = flav.Bar();
+	
+	linlog = 0;
+	if (od->keywords[0]==std::string("Log")) linlog = 10;
+	if (type==std::string("JetConeShape"))  {
+	  if (flav!=Flavour(kf::jet)) {
+	    msg.Error()<<"Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+		       <<"   Jet cone number not defined for non-jets."<<std::endl
+		       <<"   Don't initialize an observable."<<std::endl;
+	    continue;
+	  }
+	  Primitive_Calorimeter * Hcal = 
+	    dynamic_cast<Primitive_Calorimeter * >
+	    (p_detector->GetElement(std::string("Hadronic Calorimeter")));
+	  Calorimeter_Cone * Hcal_jetfinder = 
+	    new Calorimeter_Cone(od->numbers[0],od->numbers[3],Hcal);
+	  Hcal_jetfinder->SetEtaRangeForJets(od->numbers[1],od->numbers[2],1);
+	  obs = new Jet_Cone_Shape(linlog,od->numbers[4],od->numbers[5],
+				   od->ints[1],od->ints[2],od->ints[3],Hcal_jetfinder);
+	  break; 
+	}
+	if (type==std::string("JetConeDep"))  {
+	  if (flav!=Flavour(kf::jet)) {
+	    msg.Error()<<"Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+		       <<"   Jet cone dependence not defined for non-jets."<<std::endl
+		       <<"   Don't initialize an observable."<<std::endl;
+	    continue;
+	  }
+	  Primitive_Calorimeter * Hcal = 
+	    dynamic_cast<Primitive_Calorimeter * >
+	    (p_detector->GetElement(std::string("Hadronic Calorimeter")));
+	  if (od->numbers.size()==3) {
+	    obs = new Jet_Cone_Dependence(linlog,od->numbers[0],
+					  od->numbers[1],od->numbers[2],
+					  od->ints[1],od->ints[2],od->ints[3],Hcal);
+	  }
+	  else if (od->numbers.size()==5) {
+	    obs = new Jet_Cone_Dependence(linlog,od->numbers[0],
+					  od->numbers[1],od->numbers[2],
+					  od->numbers[3],od->numbers[4],
+					  od->ints[1],od->ints[2],od->ints[3],Hcal);
+	  }
+	  break;
+	}
+	if (type==std::string("JetCone"))  {
+	  if (flav!=Flavour(kf::jet)) {
+	    msg.Error()<<"Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
+		       <<"   Jet cone number not defined for non-jets."<<std::endl
+		       <<"   Don't initialize an observable."<<std::endl;
+	    continue;
+	  }
+	  Primitive_Calorimeter * Hcal = 
+	    dynamic_cast<Primitive_Calorimeter * >
+	    (p_detector->GetElement(std::string("Hadronic Calorimeter")));
+	  if (od->numbers.size()==3) {
+	    obs = new Jet_Cone_Distribution(linlog,od->numbers[0],
+					    od->numbers[1],od->numbers[2],
+					    od->ints[1],Hcal);
+	  }
+	  else if (od->numbers.size()==5) {
+	    obs = new Jet_Cone_Distribution(linlog,od->numbers[0],
+					    od->numbers[1],od->numbers[2],
+					    od->numbers[3],od->numbers[4],
+					    od->ints[1],Hcal);
+	  }
+	  break;
 	}
       }
     default:
