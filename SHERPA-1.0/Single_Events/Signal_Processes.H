@@ -13,7 +13,7 @@ namespace SHERPA {
     Hard_Decay_Handler     * p_hdhandler;
     Remnant_Base           * p_remnants[2];
     bool   m_addedxs;
-    bool FillBlob(ATOOLS::Blob * blob,const bool sameevent=false);
+    bool FillBlob(ATOOLS::Blob * blob,const bool sameevent=false,const bool extract=true);
   public :
     Signal_Processes(Matrix_Element_Handler * mehandler,Hard_Decay_Handler * hdhandler = NULL);
     ~Signal_Processes();

@@ -47,7 +47,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
   Blob * myblob;
   bool found = 1;
   bool hit   = 0;
-  
+
   while (found) {
     found = 0;
     for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
@@ -102,8 +102,9 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		blit=bloblist->begin();
 	      }
 	      if (success) {
-		if (!FillBlob(myblob)) success=false;
-		else p_mehandler->ResetNumberOfTrials();
+		if (!FillBlob(myblob,false,false)) success=false;
+		// moved to Beam_Remnant_Handler
+		// else p_mehandler->ResetNumberOfTrials();
 		weight = p_mehandler->Weight();
 		if (isr[0]!=NULL && isr[1]!=NULL) {
 		  for (short unsigned int i=0;i<2;++i) {
@@ -151,7 +152,7 @@ void Signal_Processes::CleanUp()
   m_addedxs=false;
 }
 
-bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent)
+bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extract)
 {
   PROFILE_HERE; 
 
@@ -200,11 +201,12 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent)
     particle->SetStatus(2);
     particle->SetInfo('G');
     blob->AddToInParticles(particle);
-    if (p_remnants[i]!=NULL) {
-      p_remnants[i]->QuickClear();
-      if (!p_remnants[i]->Extract(particle)) success=false;
-    }
-    else THROW(fatal_error,"No remnant found.");
+    if (extract)
+      if (p_remnants[i]!=NULL) {
+	p_remnants[i]->QuickClear();
+	if (!p_remnants[i]->Extract(particle)) success=false;
+      }
+      else THROW(fatal_error,"No remnant found.");
   }
   bool unstable = false; 
   for (unsigned int i=p_mehandler->NIn();i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
