@@ -8,39 +8,38 @@ using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
 
-Structure_Function::Structure_Function(Flavour beam)
+Structure_Function::Structure_Function(PDF::PDF_Base * _pdf,Flavour _bunch) :
+  p_pdf(_pdf)
 {
-  type = std::string("(SF)");
-
-  PDF_Handler pdf_hdl;
-  pdf  = pdf_hdl.GetPDFLib(beam);
-
-  msg.Tracking()<<"Initialised structure function for beam "<<beam<<std::endl;
+  m_bunch = _bunch;
+  m_type  = std::string("(SF)");
+  msg.Tracking()<<"Initialised structure function for bunch "<<m_bunch<<" with  :"<<endl;
+  p_pdf->Output();
 }
 
 Structure_Function::~Structure_Function() {
-  if (pdf) { delete pdf; pdf = NULL; }   
+  if (p_pdf) { delete p_pdf; p_pdf = NULL; }   
 }
 
 bool Structure_Function::CalculateWeight(double x,double q2) 
 {
-  if ( (x  > pdf->GetXMax()) || (x<= pdf->GetXMin()) ) {
+  if ( (x  > p_pdf->GetXMax()) || (x<= p_pdf->GetXMin()) ) {
     msg.Error()<<"SF : x out of bounds "<<x<<" at "<<q2<<", "
-	       <<"xrange = "<<pdf->GetXMin()<<" ... "<<pdf->GetXMax()<<std::endl;
+	       <<"xrange = "<<p_pdf->GetXMin()<<" ... "<<p_pdf->GetXMax()<<std::endl;
     return 0; 
   }
-  if ( (q2 >= pdf->GetQ2Max()) || (q2<= pdf->GetQ2Min()) ) { 
+  if ( (q2 >= p_pdf->GetQ2Max()) || (q2<= p_pdf->GetQ2Min()) ) { 
     msg.Error()<<"SF : q2 out of bounds "<<x<<" at "<<q2<<", "
-	       <<"q2range = "<<pdf->GetQ2Min()<<" ... "<<pdf->GetQ2Max()<<std::endl;
+	       <<"q2range = "<<p_pdf->GetQ2Min()<<" ... "<<p_pdf->GetQ2Max()<<std::endl;
     return 0; 
   }
   
-  pdf->Calculate(x,q2);
-  weight = 1./x;
+  p_pdf->Calculate(x,q2);
+  m_weight = 1./x;
   return 1;
 };
 
 double Structure_Function::Weight(Flavour flin)
 {
-  return weight * pdf->GetXPDF(flin); 
+  return m_weight * p_pdf->GetXPDF(flin); 
 }
