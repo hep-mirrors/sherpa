@@ -18,7 +18,6 @@ namespace ANALYSIS {
 
   class Event_Shapes_EE : public Final_Selector {
   private:
-    ATOOLS::Particle_Qualifier_Base * p_qualifier;
     unsigned int                      m_startaxes,m_maxidentaxes;
     double                            m_accuracy;
     std::string                       m_key;

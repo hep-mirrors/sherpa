@@ -35,7 +35,7 @@ template class Blob_Data<Event_Shape_EE_Data>;
 Event_Shapes_EE::Event_Shapes_EE(const std::string & _inlistname,
 				 const std::string & _outlistname,
 				 Particle_Qualifier_Base * const _quali) :
-  Final_Selector(_inlistname,_outlistname,-1), p_qualifier(_quali),
+  Final_Selector(_inlistname,_outlistname,-1,_quali),
   m_startaxes(4), m_maxidentaxes(2), m_accuracy(1.e-4),
   m_key(std::string("EvtShapeData"))
 { 

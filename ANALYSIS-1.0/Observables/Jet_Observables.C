@@ -258,7 +258,7 @@ void Two_Jet_Observable_Base::Reset()
   }  
 }
 
-void Two_Jet_Observable_Base::SetPTRange(const int jetno,const double minpt,const double maxpt)
+void Two_Jet_Observable_Base::SetPTRange(const unsigned int jetno,const double minpt,const double maxpt)
 {
   if (!(jetno>=(int)m_minn&&jetno<=(int)m_maxn)) {
     msg.Error()<<"Potential Error in Two_Jet_Observable_Base::SetMinPT("<<jetno<<")"<<std::endl

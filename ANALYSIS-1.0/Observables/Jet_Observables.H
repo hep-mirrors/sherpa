@@ -57,7 +57,7 @@ namespace ANALYSIS {
     void Reset();
 
     virtual double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *,const int,const int) = 0;
-    virtual void   SetPTRange(const int jetno,const double minpt,const double maxpt=1.e12);
+    virtual void   SetPTRange(const unsigned int jetno,const double minpt,const double maxpt=1.e12);
   };
 
   class Jet_Eta_Distribution : public Jet_Observable_Base {
@@ -138,8 +138,5 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
     double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *,const int,const int);
   };
-
-
-
 }
 #endif

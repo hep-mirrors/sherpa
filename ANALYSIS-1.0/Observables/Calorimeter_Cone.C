@@ -8,7 +8,7 @@ using namespace ATOOLS;
 
 Calorimeter_Cone::Calorimeter_Cone(const double Etcut,const double dR,
 				   Primitive_Calorimeter * const calorimeter) : 
-  m_dR(dR), m_dR2(dR*dR), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1), 
+  Jet_Algorithm_Base(NULL), m_dR(dR), m_dR2(dR*dR), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1), 
   p_calorimeter(calorimeter)
 {
   p_calorimeter->GetDimensions(m_neta,m_nphi,m_mineta,m_maxeta);
