@@ -413,8 +413,14 @@ void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 	zf<<"Vcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
 	break;
       case 4: 
+#ifdef use_templates
+	zf<<"YT<"<<arg[1]<<","<<arg[3]<<">";
+	zf<<"("<<arg[0]<<","<<arg[2];
+	zf<<",c["<<arg[4]<<"],c["<<arg[5]<<"]);"<<endl;
+#else
 	zf<<"Ycalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3];
 	zf<<",c["<<arg[4]<<"],c["<<arg[5]<<"]);"<<endl;
+#endif
 	break;
       case 5: 
 	zf<<"Pcalc(f["<<arg[0]<<"],"<<arg[1]<<");"<<endl;
