@@ -463,39 +463,39 @@ void NLL_Sudakov::CheckSudakovs()
   double Q  = 91.2;
   double q0 = 0.1*Q;
   R4(q0,Q);
-  cout<<"============================================================"<<endl;
-  cout<<"   Selftest in NLL_Sudakov"<<endl;
-  cout<<"------------------------------------------------------------"<<endl;
-  cout<<"     q0     Q   sudq(q0,Q) sudg(q0,Q)    R2       R3       "<<endl;
+  std::cout<<"============================================================"<<std::endl;
+  std::cout<<"   Selftest in NLL_Sudakov"<<std::endl;
+  std::cout<<"------------------------------------------------------------"<<std::endl;
+  std::cout<<"     q0     Q   sudq(q0,Q) sudg(q0,Q)    R2       R3       "<<std::endl;
   for (int i=0; i<13;++i) {
     q0=Q*exp(-i/3.*log(10.));
-    cout.precision(4);
-    cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
-    cout.precision(6);
-    cout<<" "<<setw(10)<<DeltaQ(Q,q0)
+    std::cout.precision(4);
+    std::cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
+    std::cout.precision(6);
+    std::cout<<" "<<setw(10)<<DeltaQ(Q,q0)
 	<<" "<<setw(11)<<DeltaG(Q,q0)
 	<<" "<<setw(10)<<R2(q0,Q)
 	<<" "<<setw(19)<<R3(q0,Q)
       //	<<" "<<setw(8)<<R4(q0,Q)
-	<<endl;
+	<<std::endl;
   }
-  cout<<"------------------------------------------------------------"<<endl;
+  std::cout<<"------------------------------------------------------------"<<std::endl;
   Q  = 2000.;
   q0 = 6.32455532;
   for (int i=0; i<13;++i) {
     Q=q0*exp(i/6.*log(10.));
-    cout.precision(4);
-    cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
-    cout.precision(6);
-    cout<<" "<<setw(10)<<DeltaQ(Q,q0)
+    std::cout.precision(4);
+    std::cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
+    std::cout.precision(6);
+    std::cout<<" "<<setw(10)<<DeltaQ(Q,q0)
 	<<" "<<setw(11)<<DeltaG(Q,q0)
 // 	<<" "<<setw(10)<<R2(q0,Q)
 // 	<<" "<<setw(19)<<R3(q0,Q)
       //	<<" "<<setw(8)<<R4(q0,Q)
-	<<endl;
+	<<std::endl;
   }
 
-  cout<<"============================================================"<<endl;
+  std::cout<<"============================================================"<<std::endl;
 }
 
 

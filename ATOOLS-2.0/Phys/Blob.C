@@ -151,7 +151,7 @@ void Blob::DeleteInParton(Parton * _part) {
 	}
 	delete _part;
       }
-      else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<endl;
+      else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<std::endl;
       _part = NULL;
       return ;
     }
@@ -170,7 +170,7 @@ void Blob::DeleteOutParton(Parton * _part) {
 	}
 	delete _part;
       }
-      else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<endl;
+      else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<std::endl;
       
       _part = NULL;
       return ;
