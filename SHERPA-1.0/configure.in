@@ -110,7 +110,8 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
 dnl Produce makefiles
-AC_OUTPUT(Tools/Makefile \
+AC_OUTPUT(HerwigTools/Makefile \
+	  Tools/Makefile \
 	  LundTools/Makefile \
           Initialization/Makefile \
           PerturbativePhysics/Makefile \

@@ -33,11 +33,15 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+if MCATNLO_SUPPORT
+MCATNLOFLAGS  = -DUSING__MCatNLO
+endif
+
 lib_LTLIBRARIES       =	libSherpaInitialization.la
 libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C 
 noinst_HEADERS        =	Initialization_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS) $(MCATNLOFLAGS)
 INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) \
 		$(AMEGICINCS) $(AMISICINCS) $(EXTRAXSINCS) \
 		$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) \
