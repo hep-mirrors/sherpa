@@ -87,12 +87,25 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       return true;
     } 
   }
+  if (!m_diced) m_ptmax=ATOOLS::rpa.gen.Ecms()/2.0;
   Blob *signal=bloblist->FindFirst(btp::Signal_Process);
-//     if (!m_diced && VetoHardProcess(signal)) {
-//       m_ptmax=0.0;
-//       return true;
-//     }
+  if (!m_diced && VetoHardProcess(signal)) {
+    m_ptmax=0.0;
+    return true;
+  }
   switch (p_mihandler->ScaleScheme()) {
+  case 3: {
+    Blob_Data_Base *xsinfo=
+      (*bloblist->FindLast(btp::ME_PS_Interface_FS))["Core_Process"];
+    if (xsinfo==NULL) THROW(critical_error,"No merging information.");
+    XS_Base *xs=xsinfo->Get<XS_Base*>();
+    if (xs==NULL) THROW(critical_error,"No merging information.");
+    m_ptmax=std::numeric_limits<double>::max();
+    for (short unsigned int i=2;i<4;++i) 
+      if (xs->Flavours()[i].Strong()) 
+	m_ptmax=Min(m_ptmax,xs->Momenta()[i].PPerp());
+    break;
+  }
   case 2: {
     Blob_List shower=bloblist->
       FindConnected(m_diced?bloblist->FindLast(btp::Hard_Collision):
@@ -102,12 +115,13 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     Kt_Algorithm finder(&qualifier);
     std::vector<double> kts;
     finder.ConstructJets(&partons,&jets,&kts,0.7);
-    double ptmax=0.0;
-    for (Particle_List::const_iterator pit=jets.begin();
-	 pit!=jets.end();++pit)
-      ptmax=Max(ptmax,(*pit)->Momentum().PPerp());
+    if (jets.size()>0) {
+      m_ptmax=0.0;
+      for (size_t i=0;i<jets.size();++i) 
+	m_ptmax+=jets[i]->Momentum().PPerp();
+      m_ptmax/=jets.size();
+    }
     jets.Clear();
-    m_ptmax=Min(m_ptmax,ptmax);
     break;
   }
   case 1: {
@@ -125,21 +139,29 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     Particle_List jets=shower.ExtractLooseParticles(1);
     Jet_Finder finder(p_mihandler->YCut(),4);
     finder.ConstructJets(&jets,njets,true);
-    double ptmax=0.0;
-    for (Particle_List::const_iterator pit=jets.begin();
-	 pit!=jets.end();++pit)
-      ptmax=Max(ptmax,(*pit)->Momentum().PPerp());
+    if (jets.size()>0) {
+      m_ptmax=0.0;
+      for (size_t i=0;i<jets.size();++i) 
+	m_ptmax+=jets[i]->Momentum().PPerp();
+      m_ptmax/=jets.size();
+    }
     jets.Clear();
-    m_ptmax=Min(m_ptmax,ptmax);
     break;
   }
   case 0: {
-    if (!m_diced) {
-      Blob_Data_Base *miinfo=
-	(*bloblist->FindLast(btp::ME_PS_Interface_FS))["MI_Scale"];
-      if (miinfo==NULL) THROW(fatal_error,"No mi scale information.");
-      m_ptmax=Min(m_ptmax,miinfo->Get<double>());
-    }
+    Blob_Data_Base *xsinfo=
+      (*bloblist->FindLast(btp::ME_PS_Interface_FS))["Core_Process"];
+    if (xsinfo==NULL) THROW(critical_error,"No merging information.");
+    XS_Base *xs=xsinfo->Get<XS_Base*>();
+    if (xs==NULL) THROW(critical_error,"No merging information.");
+    m_ptmax=0.0;
+    double nstrong=0.0;
+    for (short unsigned int i=2;i<4;++i) 
+      if (xs->Flavours()[i].Strong()) {
+	m_ptmax+=xs->Momenta()[i].PPerp();
+	++nstrong;
+      }
+    m_ptmax/=nstrong;
     break;
   }
   default: THROW(not_implemented,"Wrong mi scale scheme.");
@@ -192,18 +214,19 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   }
   else if (m_vetoed) {
     success=p_mihandler->GenerateSoftProcess(blob);
-    // dummy settings for unweighted analysis
+    // dummy settings for analysis
     blob->SetType(btp::Signal_Process);
     blob->SetTypeSpec("Soft UE");
     blob->SetStatus(5);
-    blob->AddData("ME_Weight",new Blob_Data<double>(1.0));
-    blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(1));
+    blob->AddData("ME_Weight",new Blob_Data<double>(m_weight));
+    blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(m_ntrials));
   }
   if (success) {
     blob->SetId(bloblist->size());
     m_ptmax=blob->OutParticle(0)->Momentum().PPerp();
     for (size_t i=0;i<(size_t)blob->NInP();++i) {
       p_mihandler->ISRHandler()->Reset(i);
+      p_remnants[i]->QuickClear();
       if (!p_remnants[i]->Extract(blob->InParticle(i))) {
 	msg_Tracking()<<"Multiple_Interactions::Treat(..): "
 		      <<"Cannot extract parton from hadron. \n"
@@ -224,6 +247,8 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 bool Multiple_Interactions::VetoHardProcess(ATOOLS::Blob *const blob)
 {
   if (p_mihandler->VetoHardProcess(blob)) {
+    m_weight=(*blob)["ME_Weight"]->Get<double>();
+    m_ntrials=(*blob)["ME_NumberOfTrials"]->Get<int>();
     p_bloblist->DeleteConnected(blob);
     return m_vetoed=true;
   }
