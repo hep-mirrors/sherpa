@@ -168,10 +168,10 @@ bool Hadron_Remnant::DiceKinematics()
     m_parton[0][j]->SetMomentum(p);
     if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
       if (!m_dupdf) {
-	ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 
-			   <<"Parton ("<<m_parton[0][j]<<") has non-positive momentum: p = "
-			   <<m_parton[0][j]->Momentum()<<" m_{"<<m_parton[0][j]->Flav()<<"} = "
-			   <<m_parton[0][j]->Flav().PSMass()<<" <- "<<m_xscheme<<std::endl;
+	msg_Tracking()<<"Hadron_Remnant::DiceKinematics(): "                 
+		      <<"Parton ("<<m_parton[0][j]<<") has non-positive momentum: p = "
+		      <<m_parton[0][j]->Momentum()<<" m_{"<<m_parton[0][j]->Flav()<<"} = "
+		      <<m_parton[0][j]->Flav().PSMass()<<" <- "<<m_xscheme<<std::endl;
       }
       return false;
     }
