@@ -141,7 +141,7 @@ Primitive_Observable_Base *Forward_Backward_Eta_Correlation::Copy() const
 
 void Forward_Backward_Eta_Correlation::EndEvaluation(double scale) 
 {
-  for (unsigned int i=1;i<=(unsigned int)p_histo->Nbin();++i) {
+  for (size_t i=1;i<=(size_t)p_histo->Nbin();++i) {
     double nfwm=m_etafw.BinContent(i)/m_etafw.BinEntries(i);
     p_histo->Bin((int)i)[0]=
       (m_etafwbw.BinContent(i)/m_etafwbw.BinEntries(i)-nfwm*nfwm)/
