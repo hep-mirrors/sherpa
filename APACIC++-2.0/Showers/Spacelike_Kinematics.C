@@ -116,7 +116,6 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
 	     <<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
 	     <<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
 	     <<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<endl;
-    abort();
   }
 
 
