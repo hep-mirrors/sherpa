@@ -8,7 +8,7 @@ Running_Fermion_Mass::Running_Fermion_Mass(APHYTOOLS::Flavour _flav,double _pole
 					   Running_AlphaS * _as) :
   m_polemass(_polemass), p_as(as)
 {
-  m_type    = string("Running Mass");
+  m_type    = std::string("Running Mass");
   m_defval  = m_polemass;
   if (_flav.PSMass()<1.||(!_flav.IsQuark())||m_polemass<1.) {
     m_order = 0;
@@ -34,7 +34,7 @@ double Running_Fermion_Mass::operator()(double t) {
 void Running_Fermion_Mass::SelfTest() {
   double m_test = m_polemass/2.;
   for (int i=0;i<100;i++) {
-    cout<<m_test<<" : "<<(*this)(sqr(m_test))<<" ("<<m_polemass<<")"<<endl;
+    std::cout<<m_test<<" : "<<(*this)(sqr(m_test))<<" ("<<m_polemass<<")"<<std::endl;
     m_test += m_polemass/20.*i;
   }
 }

@@ -9,7 +9,7 @@ using namespace AMATOOLS;
 DecayChannel::DecayChannel(const Flavour _flin) : 
   m_flin(_flin), m_width(0.) 
 {
-  msg.Debugging()<<"Initialize new decay channel for "<<m_flin<<endl;
+  msg.Debugging()<<"Initialize new decay channel for "<<m_flin<<std::endl;
 }
 
 void DecayChannel::AddDecayProduct(const Flavour _flout) {
@@ -25,7 +25,7 @@ void DecayChannel::Output()
 {
   msg.Out()<<" "<<m_flin<<" -> ";
   for (int i=0;i<m_flouts.size();++i) msg.Out()<<m_flouts[i]<<" ";
-  msg.Out()<<" : "<<m_width<<" GeV."<<endl;
+  msg.Out()<<" : "<<m_width<<" GeV."<<std::endl;
 }
 
 int DecayChannel::Nout() {
@@ -38,8 +38,8 @@ Flavour DecayChannel::Flin() {
 
 Flavour DecayChannel::Flout(const int i) {
   if (i>-1 && i<m_flouts.size()) return m_flouts[i];
-  msg.Error()<<"Error in DecayChannel::Flout("<<i<<")"<<endl
-	     <<"   Try to access out flavour for "<<m_flin<<". Return none. "<<endl;
+  msg.Error()<<"Error in DecayChannel::Flout("<<i<<")"<<std::endl
+	     <<"   Try to access out flavour for "<<m_flin<<". Return none. "<<std::endl;
   return Flavour(kf::none);
 }
 

@@ -14,8 +14,8 @@ Output_Handler::Output_Handler(int type) :
     m_active = 1;
     return;
   default :
-    msg.Error()<<"Potential Error in Output_Handler::Output_Handler("<<type<<")"<<endl
-	       <<"   No output format specified. Continue run."<<endl;
+    msg.Error()<<"Potential Error in Output_Handler::Output_Handler("<<type<<")"<<std::endl
+	       <<"   No output format specified. Continue run."<<std::endl;
   }
 }
 
@@ -25,16 +25,20 @@ Output_Handler::~Output_Handler() {
 
 void Output_Handler::OutputToFormat(Blob_List * _blobs)
 {
-  if (!m_active) return;
-  switch (m_type) {
-  case 1: 
-    if (p_event) { delete p_event; p_event = NULL; }
-    p_event = new HepMC::GenEvent();
-    p_hepmc->Sherpa2HepMC(_blobs,p_event);
-    p_event->print();
-    return;
-  default:
-    msg.Error()<<"Potential Error in Output_Handler::OutputToFormat("<<m_type<<")"<<endl
-	       <<"   No output format specified. Continue run."<<endl;
+  if (p_hepmc) {
+    if (!m_active) return;
+    switch (m_type) {
+    case 1: 
+#ifdef _USE_HEPMC_
+      if (p_event) { delete p_event; p_event = NULL; }
+      p_event = new HepMC::GenEvent();
+      p_hepmc->Sherpa2HepMC(_blobs,p_event);
+      p_event->print();
+#endif
+      return;
+    default:
+      msg.Error()<<"Potential Error in Output_Handler::OutputToFormat("<<m_type<<")"<<std::endl
+		 <<"   No output format specified. Continue run."<<std::endl;
+    }
   }
 }

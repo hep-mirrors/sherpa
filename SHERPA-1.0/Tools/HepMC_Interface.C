@@ -2,7 +2,9 @@
 #include "Vector.H"
 #include "Message.H"
 
+#ifdef _USE_HEPMC_
 #include "CLHEP/Vector/LorentzVector.h"
+#endif
 
 using namespace SHERPA;
 using namespace APHYTOOLS;
@@ -17,6 +19,7 @@ HepMC_Interface::HepMC_Interface()
 
 void HepMC_Interface::InitTheMap() 
 {
+#ifdef _USE_HEPMC_
   p_particledatatable = new ParticleDataTable;
   ParticleData * pdata;
   Fl_Iter fli;
@@ -46,10 +49,12 @@ void HepMC_Interface::InitTheMap()
   msg.Debugging()<<"#######################################################"<<endl;
   p_particledatatable->print();
   msg.Debugging()<<"#######################################################"<<endl;
+#endif
 }
 
 bool HepMC_Interface::Sherpa2HepMC(Blob_List * _blobs,GenEvent *& _event)
 {
+#ifdef _USE_HEPMC_
   if (_blobs->empty()) {
     msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob_List)."<<endl
 	       <<"   Empty list - nothing to translate into HepMC standard."<<endl
@@ -66,10 +71,12 @@ bool HepMC_Interface::Sherpa2HepMC(Blob_List * _blobs,GenEvent *& _event)
     type = (*blit)->Type();
     if (type.find(string("Signal Process"))>-1) _event->set_signal_process_vertex(vertex);
   }
+#endif
 }
 
 bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex) 
 {
+#ifdef _USE_HEPMC_
   int count = m_blob2vertex.count(_blob->Id());
   if (count>0) {
     _vertex = m_blob2vertex[_blob->Id()];
@@ -101,10 +108,14 @@ bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex)
 	       <<"   Continue event generation with new event."<<endl;
   }
   return okay;
+#else
+  return 1;
+#endif
 }
 
 bool HepMC_Interface::Sherpa2HepMC(Parton * _parton,GenParticle *& _particle) 
 {
+#ifdef _USE_HEPMC_
   int count = m_parton2particle.count(_parton->Number());
   if (count>0) {
     _particle = m_parton2particle[_parton->Number()];
@@ -120,6 +131,7 @@ bool HepMC_Interface::Sherpa2HepMC(Parton * _parton,GenParticle *& _particle)
     if (_parton->GetFlow(i)>0) _particle->set_flow(i,_parton->GetFlow(i));
   }
   m_parton2particle.insert(std::make_pair(_parton->Number(),_particle));
+#endif
   return 1;
 }
 

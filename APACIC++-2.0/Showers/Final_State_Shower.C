@@ -16,6 +16,8 @@ using namespace APACIC;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
+using std::endl;
+using std::cout;
 
 //-----------------------------------------------------------------------
 //--------------------------- Constructors ------------------------------

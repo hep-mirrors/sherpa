@@ -47,92 +47,92 @@ Model_Base::~Model_Base()
 
 int Model_Base::ScalarNumber(const std::string _name) {
   if (p_numbers->empty()) {
-    msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<endl
-	       <<"   No numbers stored in model "<<m_name<<". Return 0."<<endl;
+    msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
+	       <<"   No numbers stored in model "<<m_name<<". Return 0."<<std::endl;
     return 0;
   }
   if (p_numbers->count(_name)>0) return (*p_numbers)[_name];
 
-  msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<endl;
+  msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
+	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0;
 }
 
 
 double Model_Base::ScalarConstant(const std::string _name) {
   if (p_constants->empty()) {
-    msg.Error()<<"Error in Model_Base::ScalarConstant("<<_name<<") : "<<endl
-	       <<"   No constants stored in model "<<m_name<<". Return 0."<<endl;
+    msg.Error()<<"Error in Model_Base::ScalarConstant("<<_name<<") : "<<std::endl
+	       <<"   No constants stored in model "<<m_name<<". Return 0."<<std::endl;
     return 0.;
   }
   if (p_constants->count(_name)>0) return (*p_constants)[_name];
 
-  msg.Error()<<"Error in Model_Base::ScalarConstant("<<_name<<") : "<<endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<endl;
+  msg.Error()<<"Error in Model_Base::ScalarConstant("<<_name<<") : "<<std::endl
+	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0.;
 }
 
 
 Function_Base * Model_Base::GetScalarFunction(const std::string _name) {
   if (p_functions->empty()) {
-    msg.Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<endl
-	       <<"   No functions stored in model "<<m_name<<". Return 0."<<endl;
+    msg.Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<std::endl
+	       <<"   No functions stored in model "<<m_name<<". Return 0."<<std::endl;
     return NULL;
   }
   if (p_functions->count(_name)>0) return (*p_functions)[_name];
 
-  msg.Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<endl;
+  msg.Error()<<"Error in Model_Base::ScalarFunction("<<_name<<") : "<<std::endl
+	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return NULL;
 }
 
 
 double Model_Base::ScalarFunction(const std::string _name,double _t) {
   if (p_functions->empty()) {
-    msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<endl
-	       <<"   No functions stored in model "<<m_name<<". Return 0."<<endl;
+    msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
+	       <<"   No functions stored in model "<<m_name<<". Return 0."<<std::endl;
     return 0.;
   }
   if (p_functions->count(_name)>0) return (*(*p_functions)[_name])(_t);
 
-  msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<endl;
+  msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
+	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0.;
 }
 
 
 double Model_Base::ScalarFunction(const std::string _name) {
   if (p_functions->empty()) {
-    msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<endl
-	       <<"   No functions stored in model "<<m_name<<". Return 0."<<endl;
+    msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
+	       <<"   No functions stored in model "<<m_name<<". Return 0."<<std::endl;
     return 0.;
   }
   if (p_functions->count(_name)>0) return (*(*p_functions)[_name])();
 
-  msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<endl;
+  msg.Error()<<"Error in Model_Base::ScalarNumber("<<_name<<") : "<<std::endl
+	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0.;
 }
 
 
 CMatrix Model_Base::ComplexMatrix(const std::string _name) {
   if (p_matrices->empty()) {
-    msg.Error()<<"Error in Model_Base::ComplexMatrix("<<_name<<") : "<<endl
-	       <<"   No matrices stored in model "<<m_name<<". Return 0."<<endl;
+    msg.Error()<<"Error in Model_Base::ComplexMatrix("<<_name<<") : "<<std::endl
+	       <<"   No matrices stored in model "<<m_name<<". Return 0."<<std::endl;
     return CMatrix(1);
   }
   if (p_matrices->count(_name)>0) return (*p_matrices)[_name];
 
-  msg.Error()<<"Error in Model_Base::ComplexMatrix("<<_name<<") : "<<endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<endl;
+  msg.Error()<<"Error in Model_Base::ComplexMatrix("<<_name<<") : "<<std::endl
+	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return CMatrix(1);
 }
 
 
 Complex Model_Base::ComplexMatrixElement(const std::string _name,const int _i,const int _j) {
   if (p_matrices->empty()) {
-    msg.Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<") : "<<endl
-	       <<"   No matrices stored in model "<<m_name<<". Return 0."<<endl;
+    msg.Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<") : "<<std::endl
+	       <<"   No matrices stored in model "<<m_name<<". Return 0."<<std::endl;
     return 0;
   }
   if (p_matrices->count(_name)>0) {
@@ -140,8 +140,8 @@ Complex Model_Base::ComplexMatrixElement(const std::string _name,const int _i,co
     if (_i<rank && _j<rank) return (*p_matrices)[_name][_i][_j];
   }
 
-  msg.Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<") : "<<endl
-	     <<"   Key not found in model "<<m_name<<". Return 0."<<endl;
+  msg.Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<") : "<<std::endl
+	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0;
 }
 

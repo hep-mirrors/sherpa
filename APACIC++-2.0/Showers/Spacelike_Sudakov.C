@@ -300,8 +300,8 @@ double Spacelike_Sudakov::CrudeInt(double _zmin, double _zmax)
   for (;iter();++iter)
     if (iter()->GetFlB()==m_inflav) { p_selected=iter(); break; }
   if (!iter()) {
-    msg.Tracking()<<"Timelike_Sudakov::CrudeInt : "<<endl;
-    msg.Tracking()<<"WARNING : splitting function missing for "<<m_inflav<<endl;
+    msg.Tracking()<<"Timelike_Sudakov::CrudeInt : "<<std::endl;
+    msg.Tracking()<<"WARNING : splitting function missing for "<<m_inflav<<std::endl;
     return m_lastint = -1.;
   }
   return m_lastint = p_selected->CrudeInt(_zmin,_zmax);

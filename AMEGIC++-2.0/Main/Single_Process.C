@@ -1,4 +1,4 @@
-#include <stdio.h>
+//#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -606,7 +606,7 @@ void Single_Process::CreateMappingFile() {
   }
   msg.Debugging()<<" Write Mapping Information to : "<<outname<<endl;
 
-  ofstream to;
+  std::ofstream to;
   to.open(outname,ios::out);
   to<<m_libname<<endl;
   to.close();
@@ -758,7 +758,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   SetTotalXS(0);
   if (m_totalxs>0.) {
     if (_resdir!=string("")) {
-      ofstream to;
+      std::ofstream to;
       to.open(filename,ios::out);
       WriteOutXSecs(to);
       msg.Events()<<"Store result : xs for "<<m_name<<" : "
@@ -772,7 +772,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   return 0;      
 }
 
-void Single_Process::WriteOutXSecs(ofstream & _to)    
+void Single_Process::WriteOutXSecs(std::ofstream & _to)    
 { 
   msg.Debugging()<<"Write out xsec for "<<m_name<<endl;
   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl; 

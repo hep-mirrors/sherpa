@@ -13,6 +13,10 @@ using namespace AMATOOLS;
 using namespace AORGTOOLS;
 using namespace MODEL;
 
+using std::cerr;
+using std::cout;
+using std::endl;
+
 bool Cluster_Partons::ClusterConfiguration(Blob * _blob) {
   msg.Debugging()<<"In Cluster_Partons::ClusterConfiguration("<<p_me->ProcessName()<<")"<<std::endl;
 

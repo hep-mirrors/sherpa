@@ -14,15 +14,15 @@ using namespace AMATOOLS;
 
 Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * _model) {
   scalefac = 1.;
-  p_as     = _model->GetScalarFunction(string("alpha_S"));
-  p_aqed   = _model->GetScalarFunction(string("alpha_QED"));
+  p_as     = _model->GetScalarFunction(std::string("alpha_S"));
+  p_aqed   = _model->GetScalarFunction(std::string("alpha_QED"));
   FixLambda2(sqr((Flavour(kf::Z)).Mass()));
   if (rpa.gen.Debugging()) Output();
 }
 
 Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin, double tmax) {
-  p_as   = _model->GetScalarFunction(string("alpha_S"));
-  p_aqed = _model->GetScalarFunction(string("alpha_QED"));
+  p_as   = _model->GetScalarFunction(std::string("alpha_S"));
+  p_aqed = _model->GetScalarFunction(std::string("alpha_QED"));
   scheme = _scheme;
   if (scheme>0) {
     alphaQEDmax = (*p_aqed)(tmax);    // max alpha_S 
@@ -39,16 +39,16 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin,
     scalefac        = 1.;           // won't be used ....
   }
   if (rpa.gen.Debugging()) { 
-    cout<<" tmin= "<< tmin<<endl;
-    cout<<" alpha_max="<< alphaSmax <<endl;
-    cout<<" Checking alphaS "<<endl;
+    msg.Out()<<" tmin= "<< tmin<<std::endl;
+    msg.Out()<<" alpha_max="<< alphaSmax <<std::endl;
+    msg.Out()<<" Checking alphaS "<<std::endl;
     Output();
     double q2_max=sqr(91.2);
     double q2_min=sqr(.912);
     int    n =10;
     for (int i=0;i<=n;++i) {
       double q2=q2_min*pow((q2_max/q2_min),double(i)/double(n));
-      cout<<" "<<q2<<" \t"<<CrudeAlphaS(q2)<<" \t"<<AlphaS(q2)<<" \t"<<(*p_as)(q2)<<endl;
+      msg.Out()<<" "<<q2<<" \t"<<CrudeAlphaS(q2)<<" \t"<<AlphaS(q2)<<" \t"<<(*p_as)(q2)<<std::endl;
     }
   }
 }
@@ -80,7 +80,7 @@ double Sudakov_Tools::AlphaS(double t){
 
 
   if (t<=0.25) {
-    cout<<" small q2 in alphas ="<<t<<endl;
+    msg.Out()<<" small q2 in alphas ="<<t<<std::endl;
   }
 
   return alp;
@@ -131,5 +131,5 @@ void Sudakov_Tools::Output() {
 		 <<"alphaS(MZ) = "
 		 <<AlphaS(sqr((Flavour(kf::Z)).Mass()))
 		 <<"  (exact)"<<std::endl;
-  msg.Debugging()<<" scalefac="<<scalefac<<endl;
+  msg.Debugging()<<" scalefac="<<scalefac<<std::endl;
 }

@@ -60,7 +60,7 @@ void IO_HepEvt::Blobs2HepEvt(Blob_List * blobs, std::string type, int & _nhep) {
 
 
 void IO_HepEvt::Blob2HepEvt(Blob * blob, int mode) {
-  msg.Debugging()<<"In Blob2HepEvt("<<blob->Type()<<","<<mode<<")  nhep = "<<nhep<<endl;
+  msg.Debugging()<<"In Blob2HepEvt("<<blob->Type()<<","<<mode<<")  nhep = "<<nhep<<std::endl;
 
   int * mohep = new int[2];
   mohep[0] = mohep[1] = 0;
@@ -94,7 +94,7 @@ void IO_HepEvt::Blob2HepEvt(Blob * blob, int mode) {
   if (blob->NInP() < 2) mohep[1] = mohep[0];
 
   dahep[0] = dahep[1] = -1;
-  msg.Debugging()<<blob->Type()<<" "<<mode<<" "<<mohep[0]<<" "<<mohep[1]<<endl;
+  msg.Debugging()<<blob->Type()<<" "<<mode<<" "<<mohep[0]<<" "<<mohep[1]<<std::endl;
   for (int i=0;i<blob->NOutP();++i) Parton2HepEvt(blob->OutParton(i),mohep,dahep,mode);
 
   delete [] mohep;
@@ -105,8 +105,8 @@ void IO_HepEvt::Blob2HepEvt(Blob * blob, int mode) {
 void IO_HepEvt::Parton2HepEvt(Parton * parton,int mode) { 
   if (nhep >= maxentries) {
     --nhep;
-    msg.Error()<<" ERROR :in void IO_HepEvt::Parton2HepEvt()"<<endl
-	       <<"   nehp>=maxentries "<<endl;
+    msg.Error()<<" ERROR :in void IO_HepEvt::Parton2HepEvt()"<<std::endl
+	       <<"   nehp>=maxentries "<<std::endl;
     abort();
   }
         
@@ -141,8 +141,8 @@ void IO_HepEvt::Parton2HepEvt(Parton * parton,int mode) {
 void IO_HepEvt::Parton2HepEvt(Parton * parton,int * mohep,int * dahep,int mode) { 
   if (nhep >= maxentries) {
     --nhep;
-    msg.Error()<<" ERROR :in void IO_HepEvt::Parton2HepEvt()"<<endl
-	       <<"   nehp>=maxentries "<<endl;
+    msg.Error()<<" ERROR :in void IO_HepEvt::Parton2HepEvt()"<<std::endl
+	       <<"   nehp>=maxentries "<<std::endl;
     abort();
   }
   Parton2HepEvt(parton,0);

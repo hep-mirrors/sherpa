@@ -8,10 +8,10 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
-ADD::ADD(string _dir,string _file) :
+ADD::ADD(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)
 {
-  msg.Events()<<"Initialize the ADD from "<<m_dir<<" / "<<m_file<<endl;
+  msg.Events()<<"Initialize the ADD from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("ADD");
 
   Model_Base * SM = new Standard_Model(m_dir,m_file);

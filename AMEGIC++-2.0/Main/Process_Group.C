@@ -374,7 +374,7 @@ bool Process_Group::Find(string _name,Process_Base *& _proc)
   return 0;
 }
 
-void Process_Group::WriteOutXSecs(ofstream & _to)
+void Process_Group::WriteOutXSecs(std::ofstream & _to)
 {
   msg.Debugging()<<"Write out xsec for "<<m_name<<endl;
   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl;
@@ -678,7 +678,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     SetTotalXS(0);
     if (m_totalxs>0.) {
       if (_resdir!=string("")) {
-	ofstream to;
+	std::ofstream to;
 	to.open(filename,ios::out);
 	msg.Events()<<"Store result : xs for "<<m_name<<" : "
 		    <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"

@@ -95,7 +95,7 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _p
   for (int i=0;i<2;i++) {
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
       match = 1;
-      if (m_fill) match = ((*biter)->Type()==string("Beam Remnant"));
+      if (m_fill) match = ((*biter)->Type()==std::string("Beam Remnant"));
       if ((*biter)->Status()==1 && (*biter)->Beam()==i && match) {
 	blob = new APHYTOOLS::Blob();
 	blob->SetId(_bloblist->size());
@@ -154,8 +154,8 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Parton_List * _pa
 bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
 {
   if (blob->NOutP()!=1) {
-    msg.Error()<<"Error in Beam_Remnant_Handler::FillHadron("<<blob->NOutP()<<")"<<endl
-	       <<"   This case is not implemented yet ! Abort."<<endl;
+    msg.Error()<<"Error in Beam_Remnant_Handler::FillHadron("<<blob->NOutP()<<")"<<std::endl
+	       <<"   This case is not implemented yet ! Abort."<<std::endl;
     abort();
   }
   msg.Tracking()<<"Beam_Remnant_Handler::FillHadron : "

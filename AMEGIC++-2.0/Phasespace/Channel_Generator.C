@@ -2,6 +2,7 @@
 #include "Topology.H"
 #include "Message.H"
 #include "MathTools.H"
+#include "MyStrStream.H"
 
 #include <stdio.h>
 
@@ -358,10 +359,10 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 
       if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==0) {
 	//check for extra LL-Channel
-        std::strstream sstream;
-	sstream<<pout1[0];
+        MyStrStream sstr;
+	sstr<<pout1[0];
 	int i;
-	sstream>>i;
+	sstr>>i;
 	/*
 	  fl not filled!!! // deactivated!!!! *AS*
 	  if (fl[i].IsVector() && AMATOOLS::IsZero(fl[i].Mass())) {
@@ -836,10 +837,10 @@ void Channel_Generator::InitT(Point* p)
 
 string Channel_Generator::IString(int i)
 {
-  std::strstream sstream;
-  sstream<<i;
+  MyStrStream sstr;
+  sstr<<i;
   string istr;
-  sstream>>istr;
+  sstr>>istr;
   return istr;
 }
 

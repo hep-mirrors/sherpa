@@ -1,7 +1,6 @@
 #ifndef Zfunc_Calc_h
 #define Zfunc_Calc_h
 
-#include <strstream>
 #include <vector>
 #include "Basic_Func.H"
 #include "Lorentz_Function.H"

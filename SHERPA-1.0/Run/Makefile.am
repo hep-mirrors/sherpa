@@ -27,7 +27,6 @@ Sherpa_LDADD =  \
 	 @libdir@/libString.la \
 	 @libdir@/libApacicShowers.la \
 	 @libdir@/libApacicMain.la \
-	 @libdir@/libISR.la \
 	 @libdir@/libBeam.la \
 	 @libdir@/libLHAPDF.la \
 	 @libdir@/libPDF.la \
@@ -57,13 +56,12 @@ INCLUDES = -I../../SHERPA-1.0/Main \
 	   -I../../APACIC++-2.0/Hard_Interface \
 	   -I../../APACIC++-2.0/Showers \
 	   -I../../EXTRA_XS-1.0/Main \
+	   -I../../BEAM-1.0/Main \
 	   -I../../MODEL-1.0/Main \
 	   -I../../MODEL-1.0/Hdecay \
 	   -I../../PDF-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
 	   -I../../PHASIC++-1.0/Main \
-	   -I../../PHASIC++-1.0/ISR \
-	   -I../../PHASIC++-1.0/Beam \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org 

@@ -27,7 +27,7 @@ extern "C" {
 Isajet_Fortran_Interface::Isajet_Fortran_Interface(Data_Read * _dataread,
 						   Model_Base * _model) :
   Spectrum_Generator_Base(_dataread,_model) {
-  msg.Debugging()<<"Initialize Isajet_Fortran_Interface."<<endl;
+  msg.Debugging()<<"Initialize Isajet_Fortran_Interface."<<std::endl;
 }
 
 
@@ -135,11 +135,11 @@ void Isajet_Fortran_Interface::Run(std::string _model) {
   std::string full = p_dataread->GetValue<std::string>("OUTPUTFILE",std::string("Isajet.out"));
   help = full.c_str();
 
-  msg.Debugging()<<"Try isasusy with : "<<_model<<" -> "<<model<<" and "<<help<<endl;
+  msg.Debugging()<<"Try isasusy with : "<<_model<<" -> "<<model<<" and "<<help<<std::endl;
 
   isasusyinter_(xsugin,xnusug,xgmin,xxsm,model,help);
 
-  msg.Debugging()<<"Out Isajet_Fortran_Interface::Run()"<<endl;
+  msg.Debugging()<<"Out Isajet_Fortran_Interface::Run()"<<std::endl;
 
   delete [] xxsm;
   delete [] xgmin;
@@ -149,7 +149,7 @@ void Isajet_Fortran_Interface::Run(std::string _model) {
 
 
 void Isajet_Fortran_Interface::FillMasses() {
-  msg.Out()<<"In Isajet_Fortran_Interface::FillMasses()"<<endl;
+  msg.Out()<<"In Isajet_Fortran_Interface::FillMasses()"<<std::endl;
   CharginoMasses();
   NeutralinoMasses();
   GluinoMasses();

@@ -34,17 +34,17 @@ AMATOOLS::Function_Base * Interaction_Model_Base::ScalarFunction(const std::stri
 }
 
 double Interaction_Model_Base::ScalarFunction(const std::string _name,double _t) {
-  if (p_model->GetScalarFunction(_name)->Type()==string("Running Coupling")) {
-    AORGTOOLS::msg.Out()<<"Match for Running Coupling : "<<_name<<endl;
+  if (p_model->GetScalarFunction(_name)->Type()==std::string("Running Coupling")) {
+    AORGTOOLS::msg.Out()<<"Match for Running Coupling : "<<_name<<std::endl;
     if (m_cplscheme==std::string("Running")) return p_model->ScalarFunction(_name,_t);
     return p_model->ScalarFunction(_name);
   }
-  if (p_model->GetScalarFunction(_name)->Type()==string("Running Mass")) {
-    AORGTOOLS::msg.Out()<<"Match for Running Mass : "<<_name<<endl;
+  if (p_model->GetScalarFunction(_name)->Type()==std::string("Running Mass")) {
+    AORGTOOLS::msg.Out()<<"Match for Running Mass : "<<_name<<std::endl;
     if (m_yukscheme==std::string("Running")) return p_model->ScalarFunction(_name,_t);
     return p_model->ScalarFunction(_name);
   }
-  AORGTOOLS::msg.Out()<<"Miss : "<<_name<<endl;
+  AORGTOOLS::msg.Out()<<"Miss : "<<_name<<std::endl;
 }
 
 

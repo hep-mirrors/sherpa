@@ -10,10 +10,10 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
-Standard_Model::Standard_Model(string _dir,string _file) :
+Standard_Model::Standard_Model(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)
 {
-  msg.Events()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<endl;
+  msg.Events()<<"Initialize the Standard Model from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("SM");
   p_numbers   = new ScalarNumbersMap();
   p_constants = new ScalarConstantsMap();
@@ -180,15 +180,15 @@ bool Standard_Model::RunSpectrumGenerator() {
   if (m_spectrum) {
     m_generator = p_dataread->GetValue<std::string>("HIGGS_GENERATOR",std::string("Hdecay"));
     if (m_generator==std::string("Hdecay")) {
-      msg.Debugging()<<"Initialize & run Hdecay .... "<<endl;
+      msg.Debugging()<<"Initialize & run Hdecay .... "<<std::endl;
       p_spectrumgenerator = new HDECAY::Hdecay_Fortran_Interface(p_dataread,this);
       p_spectrumgenerator->Run(std::string("SM"));
-      msg.Debugging()<<" .... done."<<endl;
+      msg.Debugging()<<" .... done."<<std::endl;
       return 1;
     }
     
-    msg.Error()<<"Error in Standard_Model::RunSpectrumGenerator."<<endl
-	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<endl;
+    msg.Error()<<"Error in Standard_Model::RunSpectrumGenerator."<<std::endl
+	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<std::endl;
     return 0;
   }
   return 1;

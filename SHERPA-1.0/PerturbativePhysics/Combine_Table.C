@@ -9,6 +9,8 @@ using namespace AORGTOOLS;
 
 int Combine_Table::all=0;
 
+using std::cout;
+using std::endl;
 
 // ============================================================
 //    class Combine_Data

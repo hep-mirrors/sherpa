@@ -1,7 +1,8 @@
 #ifndef Lorentz_Function_h
 #define Lorentz_Function_h
 
-#include <strstream>
+#include "MyStrStream.H"
+//#include <strstream>
 //#include <sstream>
 #include <vector>
 #include "MyString.H"
@@ -42,10 +43,10 @@ namespace AMEGIC {
 
     std::string Str(int a) const
     {
-      std::strstream sstream;
-      sstream<<partarg[a];
+      MyStrStream sstr;
+      sstr<<partarg[a];
       std::string help;
-      sstream>>help;
+      sstr>>help;
       return help;
     } 
   public:

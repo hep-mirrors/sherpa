@@ -16,9 +16,9 @@ int main(int argc,char* argv[]) {
   Generator.InitializeTheRun(std::string("./"));
   Generator.InitializeTheEventHandler();
   for (int i=0;i<nevt;i++) {
-    if (Generator.GenerateOneEvent()) AORGTOOLS::msg.Events()<<"Sherpa : Passed "<<i<<" events."<<endl;
+    if (Generator.GenerateOneEvent()) AORGTOOLS::msg.Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
   }
-  AORGTOOLS::msg.Events()<<"Sherpa did "<<nevt<<" with "<<Generator.NumberOfErrors()<<" errors."<<endl;
+  AORGTOOLS::msg.Events()<<"Sherpa did "<<nevt<<" with "<<Generator.NumberOfErrors()<<" errors."<<std::endl;
 }
 
 

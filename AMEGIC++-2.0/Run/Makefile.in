@@ -106,7 +106,6 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libPDF.la \
 	       @libdir@/libLHAPDF.la \
 	       @libdir@/libPhasespace.la \
-	       @libdir@/libISR.la \
 	       @libdir@/libBeam.la \
 	       -lg2c -lm 
 
@@ -122,11 +121,10 @@ INCLUDES = -I../Main \
 	   -I../Model \
 	   -I../String \
 	   -I../../PHASIC++-1.0/Main \
-	   -I../../PHASIC++-1.0/ISR \
-	   -I../../PHASIC++-1.0/Beam \
 	   -I../../MODEL-1.0/Main \
 	   -I../../MODEL-1.0/Hdecay \
 	   -I../../MODEL-1.0/Isajet \
+	   -I../../BEAM-1.0/Main \
 	   -I../../PDF-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
 	   -I../../EXTRA_XS-1.0/Main \
@@ -157,7 +155,7 @@ Amegic_DEPENDENCIES = @libdir@/libProcess.la @libdir@/libAmegic.la \
 	@libdir@/libModelMain.la @libdir@/libHdecay.la \
 	@libdir@/libIsajet.la @libdir@/libModel.la @libdir@/libPDF.la \
 	@libdir@/libLHAPDF.la @libdir@/libPhasespace.la \
-	@libdir@/libISR.la @libdir@/libBeam.la
+	@libdir@/libBeam.la
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir)

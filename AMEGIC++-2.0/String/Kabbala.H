@@ -4,7 +4,7 @@
 #include "MyString.H"
 #include "MyComplex.H"
 #include "MathTools.H" 
-#include <strstream>
+#include "MyStrStream.H"
 
 #define Kabbala_on
 
@@ -77,11 +77,11 @@ namespace AMEGIC {
       std::string save = shem;
       shem  = std::string("(") + save + std::string(")*(");
       
-      std::strstream sstream;  
-      // std::stringstream sstream;
-      sstream<<i;
+      MyStrStream sstr;  
+      // std::stringstream sstr;
+      sstr<<i;
       std::string istr;
-      sstream>>istr;
+      sstr>>istr;
       
       shem += istr;
       shem += std::string(")");
@@ -94,11 +94,11 @@ namespace AMEGIC {
       std::string save = shem;
       shem  = std::string("(") + save + std::string(")*(");
       
-      std::strstream sstream;  
-      // std::stringstream sstream;
-      sstream<<d;
+      std::strstream sstr;  
+      // std::stringstream sstr;
+      sstr<<d;
       std::string dstr;
-      sstream>>dstr;
+      sstr>>dstr;
       
       shem += dstr;
       shem += std::string(")");

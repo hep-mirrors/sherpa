@@ -6,8 +6,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "prof.hh"
-
-//#include "MyTiming.H"
+#include "MyStrStream.H"
 
 using namespace AMEGIC;
 using namespace AORGTOOLS;
@@ -202,10 +201,10 @@ int Amplitude_Handler::CompareZfunc(Amplitude_Base* f1,Zfunc* z1,Amplitude_Base*
 
 string IString(int i)
 {
-  std::strstream sstream;
-  sstream<<i;
+  MyStrStream sstr;
+  sstr<<i;
   string istr;
-  sstream>>istr;
+  sstr>>istr;
   return istr;
 }
 

@@ -341,7 +341,7 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 	    pc[count]='l';
 	    pp[count]='+';
 	    string ha = pn.substr(lh+1,pn.length()-lh);
-	    std::strstream astream;
+	    MyStrStream astream;
 	    astream<<ha;
 	    astream>>angle[count];
 	    msg.Debugging()<<"*****Extract_Flavours:angle:"<<pn<<";"<<ha<<";"<<angle[count]<<endl;
@@ -351,12 +351,12 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 	    pc[count]=pn[pn.length()-2];
 	    pn.erase(pn.length()-2,2);
 	  }
-	  std::strstream pstream;
+	  MyStrStream pstream;
 	  pstream<<pn;
 	  pstream>>pd[count];	  
 	}
       }
-      std::strstream sstream;
+      MyStrStream sstream;
       sstream<<number;
       sstream>>ii[count];
 

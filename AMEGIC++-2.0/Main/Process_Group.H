@@ -70,7 +70,7 @@ namespace AMEGIC {
     bool           LookUpXSec(double,bool,std::string);
     void           RescaleXSec(double);
     bool           PrepareXSecTables();
-    void           WriteOutXSecs(ofstream &);
+    void           WriteOutXSecs(std::ofstream &);
     void           AddPoint(const double value); 
     double         Differential(AMATOOLS::Vec4D *);
     double         Differential2();

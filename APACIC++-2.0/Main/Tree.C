@@ -42,7 +42,7 @@ Tree::Tree(Tree * tree) {
 }
 
 Tree::~Tree() {
-  cout<<" deleting "<<this<<endl;
+  std::cout<<" deleting "<<this<<std::endl;
   Reset();
   Knot * help;
   help = p_save_root;
@@ -293,18 +293,18 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
   //cout<<"a copy back "<<*a<<" from "<<*b;
 
   if (!a || a==b) {
-    cout<<" ERROR: Tree::CopyBackKnot : no knot to copy to! "<<endl;
-    cout<<" from "<<*b<<endl;
-    cout<<"in"<<endl;
+    std::cout<<" ERROR: Tree::CopyBackKnot : no knot to copy to! "<<endl;
+    std::cout<<" from "<<*b<<endl;
+    std::cout<<"in"<<endl;
     Knot * b = p_save_root;
     if (b) {
       while (b->prev) {
 	b = b->prev;
       }
     }
-    StreamTree(cout,b);
-    cout<<"to"<<endl;
-    cout<<this<<endl;
+    StreamTree(std::cout,b);
+    std::cout<<"to"<<endl;
+    std::cout<<this<<endl;
     abort();
   }
 
@@ -315,7 +315,7 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
   else a->right=0;
   if (!(b->prev))
     a->prev=0;
-  //cout<<" to "<<*a<<endl;
+  //std::cout<<" to "<<*a<<endl;
 
 }
 
@@ -324,7 +324,7 @@ void Tree::DeleteKnot(Knot * b) {
   DeleteKnot(b->left);
   DeleteKnot(b->right);
 
-  //cout<<" delete"<< *b<<endl;
+  //std::cout<<" delete"<< *b<<endl;
   delete b;
 }
 
@@ -336,8 +336,8 @@ void Tree::Store()
   DeleteKnot(help);  
 
   p_save_root = CopyKnot(GetInitiator(),0);
-  //cout<<" Stored:"<<endl;
-  //  StreamTree(cout,p_save_root);
+  //std::cout<<" Stored:"<<endl;
+  //  StreamTree(std::cout,p_save_root);
   
 
   while (p_save_root->right) p_save_root = p_save_root->right;
@@ -351,13 +351,13 @@ void Tree::Restore()
     while (b->prev) {
       b = b->prev;
       if (!a) {
-	cout<<"ERROR in Tree::Restore() line 329"<<endl;
+	std::cout<<"ERROR in Tree::Restore() line 354"<<endl;
       }
       a = a->prev;
     }
   }
   if (!a) {
-    cout<<"ERROR in Tree::Restore() line 334"<<endl;
+    std::cout<<"ERROR in Tree::Restore() line 360"<<endl;
   }
   CopyBackKnot(a,b);
 }

@@ -80,7 +80,7 @@ namespace AMEGIC {
     void             DeSelect()                         {                       }
     int              Size()                             { return 1;             }
     bool             Find(std::string,Process_Base *&);
-    void             WriteOutXSecs(ofstream & _to);
+    void             WriteOutXSecs(std::ofstream & _to);
     Process_Base   * operator[] (int idx)               { return this;          }
     std::string      LibName()                          { return m_libname;     }
     //void             SetLibName(std::string _libname) { libname = _libname;   }

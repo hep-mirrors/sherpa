@@ -22,10 +22,10 @@ bool SimpleXS_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
   blob->BoostInCMS();
 
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
-    msg.Error()<<"Error in SimpleXS_Apacic_Interface::DefineInitialConditions."<<endl
+    msg.Error()<<"Error in SimpleXS_Apacic_Interface::DefineInitialConditions."<<std::endl
 	       <<"   No idea how to handle blobs with "
-	       <<blob->NInP()<<" -> "<<blob->NOutP()<<" legs."<<endl
-	       <<"   Abort run. "<<endl;
+	       <<blob->NInP()<<" -> "<<blob->NOutP()<<" legs."<<std::endl
+	       <<"   Abort run. "<<std::endl;
     abort();
   }
   return InitColours(blob);

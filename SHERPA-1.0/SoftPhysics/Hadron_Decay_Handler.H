@@ -19,8 +19,8 @@ namespace SHERPA {
     Lund_Fortran_Interface * p_lund; 
     bool ReconstructLundHadronDecays();
   public :
-    Hadron_Decay_Handler(string,string);
-    Hadron_Decay_Handler(string,string,Lund_Fortran_Interface *);
+    Hadron_Decay_Handler(std::string,std::string);
+    Hadron_Decay_Handler(std::string,std::string,Lund_Fortran_Interface *);
     ~Hadron_Decay_Handler();
     bool FillHadronDecayBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
   };

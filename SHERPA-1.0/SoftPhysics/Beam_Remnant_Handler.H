@@ -28,7 +28,7 @@ namespace SHERPA {
     double GetX_PDF(APHYTOOLS::Flavour,APHYTOOLS::Flavour,double,int);
     double GetPT(APHYTOOLS::Flavour,APHYTOOLS::Flavour,double);
   public :
-    Beam_Remnant_Handler(string,string,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
+    Beam_Remnant_Handler(std::string,std::string,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Beam_Remnant_Handler();
 
     bool FillBunchBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);

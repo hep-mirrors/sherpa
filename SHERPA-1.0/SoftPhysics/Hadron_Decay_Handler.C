@@ -11,16 +11,16 @@ using namespace AORGTOOLS;
 
 
 
-Hadron_Decay_Handler::Hadron_Decay_Handler(string,string) :
+Hadron_Decay_Handler::Hadron_Decay_Handler(std::string,std::string) :
   p_lund(NULL)
 {
-  msg.Error()<<"Error in Hadron_Decay_Handler::Hadron_Decay_Handler(string,string)."<<endl
-	     <<"   This form of the Hadron_Decay_Handler is not yet available."<<endl
-	     <<"   Abort program."<<endl;
+  msg.Error()<<"Error in Hadron_Decay_Handler::Hadron_Decay_Handler(string,string)."<<std::endl
+	     <<"   This form of the Hadron_Decay_Handler is not yet available."<<std::endl
+	     <<"   Abort program."<<std::endl;
   abort();
 }
 
-Hadron_Decay_Handler::Hadron_Decay_Handler(string _dir,string _file,
+Hadron_Decay_Handler::Hadron_Decay_Handler(std::string _dir,std::string _file,
 					   Lund_Fortran_Interface * _lund) :
   m_dir(_dir), m_file(_file), p_lund(_lund)
 {

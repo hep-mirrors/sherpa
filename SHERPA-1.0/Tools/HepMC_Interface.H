@@ -6,11 +6,21 @@
 #include "Parton.H"
 #include "Flavour.H"
 
+#ifdef _USE_HEPMC_
 #include "HepMC/GenEvent.h"
 #include "HepMC/GenVertex.h"
 #include "HepMC/GenParticle.h"
 #include "HepMC/ParticleDataTable.h"
 #include "HepMC/ParticleData.h"
+#else
+namespace HepMC {
+  class GenEvent;
+  class ParticleDataTable;
+  class ParticleData;
+  class GenVertex;
+  class GenParticle;
+}
+#endif
 
 #include <map>
 #include <set>

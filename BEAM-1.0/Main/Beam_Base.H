@@ -22,10 +22,10 @@ namespace BEAM {
     {
       double disc      =  1.-AMATOOLS::sqr(m_beam.PSMass()/m_energy);
       if (disc<0) {
-	AORGTOOLS::msg.Error()<<"Error in Beam_Base :"<<m_type<<endl
+	AORGTOOLS::msg.Error()<<"Error in Beam_Base :"<<m_type<<std::endl
 			      <<"   Mismatch of energy and mass of beam particle : "
-			      <<m_beam<<" / "<<m_energy<<endl
-			      <<"   Will lead to termination of program."<<endl;
+			      <<m_beam<<" / "<<m_energy<<std::endl
+			      <<"   Will lead to termination of program."<<std::endl;
 	abort();
       }
       m_lab    = AMATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));

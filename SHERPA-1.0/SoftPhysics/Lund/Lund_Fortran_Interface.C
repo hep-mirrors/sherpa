@@ -82,15 +82,15 @@ bool Lund_Fortran_Interface::Hadronize(APHYTOOLS::Blob * blob,
   
   int dummy=1;
   if (rpa.gen.Events()) {
-    msg.Out()<<"before hadronisation"<<endl;
+    msg.Out()<<"before hadronisation"<<std::endl;
     pylist_(dummy);
-    msg.Out()<<"~~~~~~~~~~~~~~~~~~~~"<<endl;
+    msg.Out()<<"~~~~~~~~~~~~~~~~~~~~"<<std::endl;
   }
   finterf_(nhep, isthep, idhep, jmohep, jdahep, phep, vhep);
   if (rpa.gen.Events()) {
-    msg.Out()<<"after hadronisation"<<endl;
+    msg.Out()<<"after hadronisation"<<std::endl;
     pylist_(dummy);
-    msg.Out()<<endl<<endl;
+    msg.Out()<<std::endl<<std::endl;
   }
 
 
@@ -144,12 +144,12 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(APHYTOOLS::Blob * blob,
   for (int i=0; i<nk; ++i) {
     flav = Flavour(kf::code(abs(*(kfjet+i))));
     if (flav==Flavour(kf::code(92))) {
-      msg.Debugging()<<"Found string !"<<i<<endl
-		     <<" -> "<<(*(daughters+2*i))<<" / "<<(*(daughters+2*i+1))<<endl;
+      msg.Debugging()<<"Found string !"<<i<<std::endl
+		     <<" -> "<<(*(daughters+2*i))<<" / "<<(*(daughters+2*i+1))<<std::endl;
       for (int j=(*(daughters+2*i))-1;j<(*(daughters+2*i+1));j++) {
-	msg.Debugging()<<"String offspring !"<<j<<endl
-		     <<" -> "<<(*(daughters+2*j))<<" / "<<(*(daughters+2*j+1))<<endl
-		     <<" <- "<<(*(mothers+j))<<endl;
+	msg.Debugging()<<"String offspring !"<<j<<std::endl
+		     <<" -> "<<(*(daughters+2*j))<<" / "<<(*(daughters+2*j+1))<<std::endl
+		     <<" <- "<<(*(mothers+j))<<std::endl;
 	flav = Flavour(kf::code(abs(*(kfjet+j))));
 	if (!flav.IsHadron()) continue;
 
@@ -166,13 +166,13 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(APHYTOOLS::Blob * blob,
 	if (pl) pl->push_back(parton);
 	blob->AddToOutPartons(parton);
 	if (*(daughters+2*j)!=0 && *(daughters+2*j+1)!=0) {
-	  msg.Debugging()<<"Decayed particle : "<<j<<" "<<flav<<" "<<momentum<<endl
-			 <<"                          "<<position<<endl
-			 <<" -> "<<(*(daughters+2*j))<<" / "<<(*(daughters+2*j+1))<<endl
-			 <<" <- "<<(*(mothers+j))<<endl;
+	  msg.Debugging()<<"Decayed particle : "<<j<<" "<<flav<<" "<<momentum<<std::endl
+			 <<"                          "<<position<<std::endl
+			 <<" -> "<<(*(daughters+2*j))<<" / "<<(*(daughters+2*j+1))<<std::endl
+			 <<" <- "<<(*(mothers+j))<<std::endl;
 	  decay = new Blob();
 	  decay->SetStatus(1);
-	  decay->SetType(string("Hadron decay"));
+	  decay->SetType(std::string("Hadron decay"));
 	  decay->SetId(bloblist->size());
 	  decay->AddToInPartons(parton);
 	  parton->SetDecayBlob(decay);
@@ -180,10 +180,10 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(APHYTOOLS::Blob * blob,
 	  FillSecondaryHadronsInBlob(decay,bloblist,(*(daughters+2*j))-1,(*(daughters+2*j+1)),pl);
 	}
 	else {
-	  msg.Debugging()<<"Non - Decayed particle : "<<i<<" "<<flav<<" "<<momentum<<endl
-			 <<"                          "<<position<<endl
-			 <<" -> "<<(*(daughters+i))<<" / "<<(*(daughters+2000+i))<<endl
-			 <<" <- "<<(*(mothers+i))<<endl;
+	  msg.Debugging()<<"Non - Decayed particle : "<<i<<" "<<flav<<" "<<momentum<<std::endl
+			 <<"                          "<<position<<std::endl
+			 <<" -> "<<(*(daughters+i))<<" / "<<(*(daughters+2000+i))<<std::endl
+			 <<" <- "<<(*(mothers+i))<<std::endl;
 	}
       }
     }
@@ -222,13 +222,13 @@ void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(APHYTOOLS::Blob * blob,
     if (pl) pl->push_back(parton);
     blob->AddToOutPartons(parton);
     if (*(daughters+2*i)!=0 && *(daughters+2*i+1)!=0) {
-      msg.Debugging()<<"Decayed particle : "<<i<<" "<<flav<<" "<<momentum<<endl
-		     <<"                          "<<position<<endl
-		     <<" -> "<<(*(daughters+2*i))<<" / "<<(*(daughters+2*i+1))<<endl
-		     <<" <- "<<(*(mothers+i))<<endl;
+      msg.Debugging()<<"Decayed particle : "<<i<<" "<<flav<<" "<<momentum<<std::endl
+		     <<"                          "<<position<<std::endl
+		     <<" -> "<<(*(daughters+2*i))<<" / "<<(*(daughters+2*i+1))<<std::endl
+		     <<" <- "<<(*(mothers+i))<<std::endl;
       decay = new Blob();
       decay->SetStatus(1);
-      decay->SetType(string("Hadron decay"));
+      decay->SetType(std::string("Hadron decay"));
       decay->SetId(bloblist->size());
       decay->AddToInPartons(parton);
       parton->SetDecayBlob(decay);
@@ -236,10 +236,10 @@ void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(APHYTOOLS::Blob * blob,
       FillSecondaryHadronsInBlob(decay,bloblist,(*(daughters+2*i))-1,(*(daughters+2*i+1)),pl);
     }
     else {
-      msg.Debugging()<<"Non - Decayed particle : "<<i<<" "<<flav<<" "<<momentum<<endl
-		     <<"                          "<<position<<endl
-		     <<" -> "<<(*(daughters+2*i))<<" / "<<(*(daughters+2*i+1))<<endl
-		     <<" <- "<<(*(mothers+i))<<endl;
+      msg.Debugging()<<"Non - Decayed particle : "<<i<<" "<<flav<<" "<<momentum<<std::endl
+		     <<"                          "<<position<<std::endl
+		     <<" -> "<<(*(daughters+2*i))<<" / "<<(*(daughters+2*i+1))<<std::endl
+		     <<" <- "<<(*(mothers+i))<<std::endl;
     }
   }
 }

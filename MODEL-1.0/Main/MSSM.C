@@ -8,10 +8,10 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
-MSSM::MSSM(string _dir,string _file) :
+MSSM::MSSM(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)
 {
-  msg.Events()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<endl;
+  msg.Events()<<"Initialize the MSSM from "<<m_dir<<" / "<<m_file<<std::endl;
   m_name      = std::string("MSSM");
 
   Model_Base * SM = new Standard_Model(m_dir,m_file);
@@ -187,21 +187,21 @@ bool MSSM::RunSpectrumGenerator() {
   if (m_spectrum) {
     m_generator = p_dataread->GetValue<std::string>("SUSY_GENERATOR",std::string("Isajet"));
     if (m_generator==std::string("Isajet")) {
-      msg.Debugging()<<"Initialize & run Isajet"<<endl;
+      msg.Debugging()<<"Initialize & run Isajet"<<std::endl;
       p_spectrumgenerator = new ISAJET::Isajet_Fortran_Interface(p_dataread,this);
       p_spectrumgenerator->Run(std::string(m_scenario));
 
-      msg.Debugging()<<"Fill SUSY masses through Isajet"<<endl;
+      msg.Debugging()<<"Fill SUSY masses through Isajet"<<std::endl;
       p_spectrumgenerator->FillMasses();
 
       msg.Debugging()<<"After filling in masses : "
 		     <<p_numbers->size()<<"/"<<p_constants->size()<<"/"
-		     <<p_functions->size()<<"/"<<p_matrices->size()<<endl;
+		     <<p_functions->size()<<"/"<<p_matrices->size()<<std::endl;
       return 1;
     }
     
-    msg.Error()<<"Error in MSSM::RunSpectrumGenerator."<<endl
-	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<endl;
+    msg.Error()<<"Error in MSSM::RunSpectrumGenerator."<<std::endl
+	       <<"   Unknown spectrum generator : "<<m_generator<<" use internal solution."<<std::endl;
     return 0;
   }
   return 1;

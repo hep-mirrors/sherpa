@@ -45,9 +45,9 @@ void Hdecay_Fortran_Interface::Run(std::string _mode) {
 
   if (yukawas[2]==0. || yukawas[3]==0. || yukawas[4]==0. || 
       yukawas[5]==0. || yukawas[7]==0. || yukawas[8]==0.)
-    msg.Error()<<"Potential error in Hdecay : "<<endl
-	       <<"   The yukawas for muon, tau, s, c, b, t MUST be larger than 0. !!!!"<<endl
-	       <<"   Expect nonsense results from Hdecay."<<endl;
+    msg.Error()<<"Potential error in Hdecay : "<<std::endl
+	       <<"   The yukawas for muon, tau, s, c, b, t MUST be larger than 0. !!!!"<<std::endl
+	       <<"   Expect nonsense results from Hdecay."<<std::endl;
 
 
   double * ckms      = new double[3];
@@ -110,14 +110,14 @@ void Hdecay_Fortran_Interface::CalculateEffectiveCouplings(std::string _mode) {
       msg.Debugging()<<"Decay width for "<<decayproducts[i]->Flin()<<" -> ";
       for (int j=0;j<decayproducts[i]->Nout();j++) 
 	msg.Debugging()<<decayproducts[i]->Flout(j)<<" ";
-      msg.Debugging()<<": "<<brff[i]<<" * "<<hwidth<<" GeV."<<endl;
+      msg.Debugging()<<": "<<brff[i]<<" * "<<hwidth<<" GeV."<<std::endl;
 
       /*
 	if (flav1.PSMass()<hmass/2. && p_model->Yukawa(i)>0.) {
 	yukawa = sqrt(ferm_pref*brff[i]/(1.*sqrt(pow(1.-4.*sqr(flav1.PSMass()/hmass),3.))));
 	if (flav1.IsQuark()) yukawa /= 3.;
 	msg.Debugging()<<"Maybe set effective coupling for h -> "<<flav1<<" : "
-		       <<yukawa<<" for mass = "<<flav1.PSMass()<<endl;
+		       <<yukawa<<" for mass = "<<flav1.PSMass()<<std::endl;
 		       }
       */
     }

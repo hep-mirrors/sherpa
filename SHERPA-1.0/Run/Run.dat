@@ -1,7 +1,7 @@
-EVENTS          = 500000    ! Number of Events
+EVENTS          = 10    ! Number of Events
 Num. Accuracy  = 1.e-10     !
 Runtime        = 0          ! maximal runtime (min); 0 means off
-OUTPUT          = 3         ! Output level :
+OUTPUT          = 2         ! Output level :
 !                           ! 0=errors,1=events,2=tracking,3=debug,4=everything
 BEAM_DATA_FILE   = Beam.dat
 ISR_DATA_FILE    = ISR.dat
@@ -12,12 +12,12 @@ SHOWER_DATA_FILE = Shower.dat
 !
 !
 !
-CMSENERGY      = 91.2   ! cms-Energy in GeV
-BEAM1          = e-     ! possible beam particle:  P+, P-, e+, e-
-BEAM2          = e+     ! possible beam particle:  P+, P-, e+, e- 
+CMSENERGY      = 2000.   ! cms-Energy in GeV
+BEAM1          = P+     ! possible beam particle:  P+, P-, e+, e-
+BEAM2          = P-     ! possible beam particle:  P+, P-, e+, e- 
 !
 MASSES         = On    ! Include effect of quark masses
-ANALYSIS       = 1     ! Analysis :
+ANALYSIS       = 0     ! Analysis :
 !                      ! 0=none, 1=parton-level only, 
 !                      ! 2=hadron-level only, 3=both
 K_T_MIN        = 100.  ! Minimum pt for hard process !!!! (differs from ADICIC)

@@ -3,7 +3,7 @@
 
 #include <set> 
 #include <iterator> 
-#include <iostream.h> 
+#include <iostream> 
 
 #include "Parton_List.H"
 #include "Parton.H"

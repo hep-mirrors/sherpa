@@ -5,32 +5,34 @@
 #include "Vector.H"
 #include "Data_Read.H"
 
+#include <stdio.h>
+
 using namespace SHERPA;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
 
-Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file) :
+Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file) :
   m_dir(_dir), m_file(_file)
 {
   Data_Read dr(m_dir+m_file);
-  m_fragmentationmodel = dr.GetValue<string>("FRAGMENTATION",string("Lund"));
+  m_fragmentationmodel = dr.GetValue<std::string>("FRAGMENTATION",std::string("Lund"));
   
-  if (m_fragmentationmodel==string("Lund")) {
+  if (m_fragmentationmodel==std::string("Lund")) {
     m_lund_a     = dr.GetValue<double>("LUND_A",0.4);
     m_lund_b     = dr.GetValue<double>("LUND_B",0.85);
     m_lund_sigma = dr.GetValue<double>("LUND_SIGMA",0.36);
-    msg.Out()<<"Initialize Lund Fragmentation : "<<endl
-	     <<"  LUND_A = "<<m_lund_a<<", LUND_B = "<<m_lund_b<<", LUND_SIGMA = "<<m_lund_sigma<<endl;
+    msg.Out()<<"Initialize Lund Fragmentation : "<<std::endl
+	     <<"  LUND_A = "<<m_lund_a<<", LUND_B = "<<m_lund_b<<", LUND_SIGMA = "<<m_lund_sigma<<std::endl;
     p_lund       = new Lund_Fortran_Interface(m_lund_a,m_lund_b,m_lund_sigma);
     m_mode       = 1;
     return;
   }
 
-  msg.Error()<<"Error in Fragmentation_Handler::Fragmentation_Handler."<<endl
-	     <<"    Fragmentation model "<<m_fragmentationmodel<<" not implemented yet. Abort."<<endl;
-  abort;
+  msg.Error()<<"Error in Fragmentation_Handler::Fragmentation_Handler."<<std::endl
+	     <<"    Fragmentation model "<<m_fragmentationmodel<<" not implemented yet. Abort."<<std::endl;
+  abort();
 }
    
 Fragmentation_Handler::~Fragmentation_Handler() {
@@ -51,7 +53,7 @@ bool Fragmentation_Handler::PerformFragmentation(APHYTOOLS::Blob_List * bl,
   if (!ExtractSinglets(bl,pl)) return 0;
   bool okay = 1;
   for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {
-    msg.Debugging()<<"Take "<<(*biter)->Type()<<" "<<(*biter)->Status()<<endl;
+    msg.Debugging()<<"Take "<<(*biter)->Type()<<" "<<(*biter)->Status()<<std::endl;
     if ( ((*biter)->Type()==std::string("Fragmentation")) && 
 	 ((*biter)->Status()==1) ) {
       (*biter)->BoostInCMS();
@@ -106,7 +108,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
       }
     }
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      if ((*blit)->Type()==string("Fragmentation")) continue;
+      if ((*blit)->Type()==std::string("Fragmentation")) continue;
       active = 0;
       for (int i=0;i<(*blit)->NOutP();i++) {
 	if ((*blit)->OutParton(i)->Status()==1) { active = 1; break; }
@@ -115,14 +117,14 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
     }
   }
   for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-    if ((*blit)->Type()==string("Fragmentation")) continue;
+    if ((*blit)->Type()==std::string("Fragmentation")) continue;
     active = 0;
     for (int i=0;i<(*blit)->NOutP();i++) {
       if ((*blit)->OutParton(i)->Status()==1) { active = 1; break; }
     }
     if (!active) (*blit)->SetStatus(0);
   }
-  msg.Debugging()<<"Out Extract Singlets "<<foundatall<<endl;
+  msg.Debugging()<<"Out Extract Singlets "<<foundatall<<std::endl;
   return foundatall;
 }
 
@@ -165,9 +167,9 @@ bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
 Lund_Fortran_Interface * Fragmentation_Handler::GetLundFortranInterface() 
 { 
   if (p_lund) return p_lund; 
-  msg.Error()<<"Error in Fragmentation_Handler::GetLundFortranInterface()."<<endl
-	     <<"   Not yet initialized. This is an inconsistent option at the moment."<<endl
-	     <<"   Abort program. "<<endl;
+  msg.Error()<<"Error in Fragmentation_Handler::GetLundFortranInterface()."<<std::endl
+	     <<"   Not yet initialized. This is an inconsistent option at the moment."<<std::endl
+	     <<"   Abort program. "<<std::endl;
   abort();
 }
 
