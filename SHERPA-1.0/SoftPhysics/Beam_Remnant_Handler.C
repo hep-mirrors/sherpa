@@ -43,12 +43,12 @@ bool SumMomenta(ATOOLS::Blob *bl)
   ATOOLS::Vec4D inisum,finsum;
   checked_blobs.clear();
   SumMomenta(bl,inisum,finsum);
-  bool test=true;
-  if (!(inisum==finsum)) {
+  bool test=inisum==finsum;
+  if (!test) {
     ATOOLS::msg.Error()<<"SumMomenta(..): Summation does not agree."<<std::endl
 		       <<"initial = "<<inisum<<" vs. final = "<<finsum<<std::endl;
   }
-  return (inisum==finsum);
+  return test;
 }
 #endif
 
@@ -84,24 +84,25 @@ bool Beam_Remnant_Handler::FillBunchBlobs(ATOOLS::Blob_List * bloblist,
 {
   p_bloblist=bloblist;
   p_particlelist=particlelist;
-  ATOOLS::Blob_List::iterator endblob = bloblist->end(); 
-  ATOOLS::Blob * blob;
+  ATOOLS::Blob_List::iterator endblob=bloblist->end(); 
+  ATOOLS::Blob *blob;
   bool flag=false;
-  ATOOLS::Particle * p;
-  for (int i=0;i<2;i++) {
-    for (ATOOLS::Blob_List::iterator biter = bloblist->begin();biter != endblob;++biter) {
+  ATOOLS::Particle *p;
+  for (short unsigned int i=0;i<2;i++) {
+    for (ATOOLS::Blob_List::iterator biter=bloblist->begin();biter!=endblob;++biter) {
       if ((*biter)->Status()==1 && (*biter)->Beam()==i && 
 	  ((*biter)->Type()==ATOOLS::btp::Beam || 
 	   (*biter)->Type()==ATOOLS::btp::IS_Shower)) {
 	(*biter)->SetStatus(2);
 	blob = new ATOOLS::Blob();
 	bloblist->insert(bloblist->begin(),blob);
-	blob->SetId();
 	blob->SetType(ATOOLS::btp::Bunch);
 	blob->SetBeam(i);
+	blob->SetId();
 	blob->AddToOutParticles((*biter)->InParticle(0));
 	if ((*biter)->InParticle(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
-	    ATOOLS::IsEqual((*biter)->InParticle(0)->E(),p_beam->GetBeam(i)->InMomentum()[0])) {
+	    ATOOLS::IsEqual((*biter)->InParticle(0)->E(),
+			    p_beam->GetBeam(i)->InMomentum()[0])) {
 	  p = new ATOOLS::Particle((*biter)->InParticle(0));
 	  if (particlelist!=NULL) p->SetNumber(-particlelist->size());
 	  else p->SetNumber(0);
@@ -114,10 +115,10 @@ bool Beam_Remnant_Handler::FillBunchBlobs(ATOOLS::Blob_List * bloblist,
 	  else p->SetNumber(0);
 	  p->SetStatus(2);
 	  blob->AddToInParticles(p);
-	  ATOOLS::Particle *p = 
-	    new ATOOLS::Particle(-1,p_beam->GetBeam(i)->Remnant(),
-				 p_beam->GetBeam(i)->InMomentum()+
-				 (-1.)*(*biter)->InParticle(0)->Momentum());
+	  ATOOLS::Particle *p = new 
+	    ATOOLS::Particle(-1,p_beam->GetBeam(i)->Remnant(),
+			     p_beam->GetBeam(i)->InMomentum()+
+			     (-1.)*(*biter)->InParticle(0)->Momentum());
 	  if (particlelist!=NULL) p->SetNumber(-particlelist->size());
 	  else p->SetNumber(0);
 	  blob->AddToOutParticles(p);
@@ -126,7 +127,6 @@ bool Beam_Remnant_Handler::FillBunchBlobs(ATOOLS::Blob_List * bloblist,
       }
     }
   }
-  SumMomenta(bloblist->front());
   return flag;
 }
 
@@ -193,20 +193,19 @@ bool Beam_Remnant_Handler::RemoveLast()
 bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 					 ATOOLS::Particle_List *particlelist)
 { 
-  if (!m_fill) return false;
   p_bloblist=bloblist;
   p_particlelist=particlelist;
+  if (!m_fill) return false;
   ATOOLS::Blob_Iterator endblob = bloblist->end(); 
   ATOOLS::Blob * blob;
   bool okay=false, success=true, treat[2];
   for (size_t trials=0;trials<m_maxtrials;++trials) {
     success=false;
-    for (int i=0;i<2;i++) {
+    for (short unsigned int i=0;i<2;++i) {
       p_beampart[i]->Clear();
       okay=false;
       treat[i]=false;
-      for (ATOOLS::Blob_List::iterator biter = bloblist->begin();
-	   biter != endblob;++biter) {
+      for (ATOOLS::Blob_List::iterator biter=bloblist->begin();biter!=endblob;++biter) {
 	if ((*biter)->Beam()==i && (*biter)->Type()==ATOOLS::btp::IS_Shower) { 
 	  if (p_beampart[i]->Type()==Remnant_Base::Hadron) {
 	    if (trials==0 && !okay) {
@@ -217,8 +216,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 	      blob->SetBeam(i);
 	      blob->SetStatus(1);
 	      ATOOLS::Particle *p = new 
-		ATOOLS::Particle(-1,p_isr->Flav(i),
-				 p_beam->GetBeam(i)->OutMomentum());
+		ATOOLS::Particle(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum());
 	      p->SetStatus(2);
 	      blob->AddToInParticles(p);
 	      p_beamblob[i]=blob;
@@ -229,9 +227,8 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 	    (*biter)->SetStatus(2);
 	    treat[i]=true;
 	  }
-	  else if (trials==0 &&
-		   !ATOOLS::IsEqual((*biter)->InParticle(0)->E(),
-				    p_beam->GetBeam(i)->OutMomentum()[0])) {
+	  else if (trials==0 && !ATOOLS::IsEqual((*biter)->InParticle(0)->E(),
+						 p_beam->GetBeam(i)->OutMomentum()[0])) {
 	    (*biter)->SetStatus(2);
 	    blob = new ATOOLS::Blob();
 	    blob->SetType(ATOOLS::btp::Beam);
@@ -268,7 +265,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
     for (size_t i=0;i<2;++i) {
       if (!(success=success&&p_beampart[i]->AdjustKinematics())) {
 	if (!RemoveLast()) empty=true;
-	for (short unsigned int i=0; i<2;++i) p_beampart[i]->DeleteRemnants();
+	else for (short unsigned int i=0; i<2;++i) p_beampart[i]->DeleteRemnants();
 	break;
       }
     }

@@ -3,13 +3,15 @@
 #include "Run_Parameter.H"
 #include "Exception.H"
 #include "Momentum_Shifter.H"
+#include "MI_Handler.H"
 
 using namespace SHERPA;
 
 Remnant_Base::Remnant_Base(const TypeID type,const unsigned int beam):
   m_type(type),
   m_beam(beam),
-  p_partner(NULL) {}
+  p_partner(NULL),
+  p_mihandler(NULL) {}
 
 Remnant_Base::~Remnant_Base() {}
 
@@ -25,7 +27,10 @@ void Remnant_Base::Clear()
 void Remnant_Base::DeleteRemnants()
 {
   while (m_parton[0].size()>0) {
-    delete *m_parton[0].begin();
+    if (m_parton[0].front()->ProductionBlob()!=NULL) {
+      m_parton[0].front()->ProductionBlob()->RemoveOutParticle(m_parton[0].front());
+    }
+    delete m_parton[0].front();
     m_parton[0].erase(m_parton[0].begin());
   }
 }
@@ -102,19 +107,21 @@ double Remnant_Base::MinimalEnergy(const ATOOLS::Flavour &flavour)
   return 0.;
 }
 
-void Remnant_Base::FindHardProcess(ATOOLS::Particle *const initiator,ATOOLS::Blob *&process)
+bool Remnant_Base::FindHardProcess(ATOOLS::Particle *const initiator,ATOOLS::Blob *&process)
 {
   ATOOLS::Blob *cur=initiator->DecayBlob();
   if (cur!=NULL) {
-    if (cur->Type()==ATOOLS::btp::Signal_Process ||
-	cur->Type()==ATOOLS::btp::Hard_Collision) {
+    if (cur->Type()==ATOOLS::btp::Hard_Collision) {
       process=cur;
-      return;
+      return true;
     }
     else {
-      for (size_t i=0;i<(size_t)cur->NOutP();++i) FindHardProcess(cur->OutParticle(i),process);
+      for (size_t i=0;i<(size_t)cur->NOutP();++i) {
+	if (FindHardProcess(cur->OutParticle(i),process)) return true;
+      }
     }
   }
+  return false;
 }
 
 void Remnant_Base::FindIncoming(ATOOLS::Blob *const blob,const size_t beam,
@@ -131,14 +138,16 @@ void Remnant_Base::FindIncoming(ATOOLS::Blob *const blob,const size_t beam,
   }
 }
 
-bool Remnant_Base::AcquireMass(ATOOLS::Blob *const process,const double newsp)
+bool Remnant_Base::AcquireMass(const ATOOLS::Particle *left,
+			       const ATOOLS::Particle *right,const double newsp)
 {
-  ATOOLS::Vec4D P=process->InParticle(0)->Momentum()+process->InParticle(1)->Momentum();
+  ATOOLS::Vec4D P=left->Momentum()+right->Momentum();
   ATOOLS::Vec4D p=p_last[0]->Momentum()+p_last[1]->Momentum();
   double C=(P[0]+p[0])/(P[3]+p[3]), D=0.5*(p.MPerp2()-newsp)/(P[3]+p[3]), E=P[0]-C*(P[3]-D);
   m_deltae=(E-sqrt(E*E+(1.0-C*C)*D*(D-2.0*P[3])))/(1.0-C*C);
-  if (!(m_deltae>0.0) || P[0]<m_deltae || 
-      ATOOLS::Sign(P[3]-m_deltae)!=ATOOLS::Sign(P[3])) return false;
+  if (ATOOLS::Sign(P[3]-m_deltap)!=ATOOLS::Sign(P[3])) m_deltap*=-1.0;
+  if (!(m_deltae>0.0) || P[0]<m_deltae) return false;
+  if (p_mihandler!=NULL) if (m_deltae>p_mihandler->ScaleMin(0)) return false;
   m_deltap=m_deltae*C+D;
   return true;
 }
@@ -150,18 +159,13 @@ bool Remnant_Base::AdjustEnergy()
   double sp2=ATOOLS::sqr(p_last[1]->Flav().PSMass())+p_last[1]->Momentum().PPerp2();
   double spmin=2.*sqrt(sp1*sp2)+sp1+sp2;
   for (size_t i=0;i<m_parton[1].size();++i) {
-    FindHardProcess(m_parton[1][i],process);
-    if (AcquireMass(process,spmin)) {
-      ATOOLS::Particle *in[2];
-      in[0]=process->InParticle(0);
-      in[1]=process->InParticle(1);
+    if (!FindHardProcess(m_parton[1][i],process)) return false;
+    ATOOLS::Particle *in[2];
+    for (short unsigned int i=0;i<2;++i) FindIncoming(process,i,in[i]);
+    if (AcquireMass(in[0],in[1],spmin)) {
       ATOOLS::Momentum_Shifter boost(in[0],in[1]);
       boost.SetShift(ATOOLS::Vec4D(-m_deltae,0.,0.,-m_deltap));
       if (boost.Boost()!=ATOOLS::ms::no_error) continue;
-      FindIncoming(process,0,in[0]);
-      FindIncoming(process,1,in[1]);
-      boost.Boost(in[0]);
-      boost.Boost(in[1]);
       ATOOLS::Vec4D pr1=p_last[0]->Momentum(), pr2=p_last[1]->Momentum();
       ATOOLS::Momentum_Shifter shift(p_last[0],p_last[1]);
       shift.SetSPerp(sp1,1);

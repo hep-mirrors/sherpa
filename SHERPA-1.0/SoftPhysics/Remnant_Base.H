@@ -8,6 +8,8 @@
 
 namespace SHERPA {
 
+  class MI_Handler;
+
   class Remnant_Base: public ATOOLS::Remnant_Info {
   public:
 
@@ -28,6 +30,8 @@ namespace SHERPA {
     ATOOLS::Particle *p_last[2];
     Remnant_Base     *p_partner;
 
+    MI_Handler *p_mihandler;
+
     ATOOLS::Blob  *p_beamblob;
     ATOOLS::Vec4D  m_pbeam;
 
@@ -35,9 +39,10 @@ namespace SHERPA {
 
     bool m_active, m_initialized;
 
-    void FindHardProcess(ATOOLS::Particle *const initiator,ATOOLS::Blob *&process);
+    bool FindHardProcess(ATOOLS::Particle *const initiator,ATOOLS::Blob *&process);
     void FindIncoming(ATOOLS::Blob *const blob,const size_t beam,ATOOLS::Particle *&incoming);
-    bool AcquireMass(ATOOLS::Blob *const process,const double newsp);
+    bool AcquireMass(const ATOOLS::Particle *left,
+		     const ATOOLS::Particle *right,const double newsp);
 
     bool AdjustEnergy();
 
@@ -61,13 +66,16 @@ namespace SHERPA {
     virtual void UnDo(); 
 
     // inline functions 
-    inline void SetPartner(SHERPA::Remnant_Base *_p_partner) { p_partner=_p_partner; }
+    inline void SetPartner(SHERPA::Remnant_Base *partner)   { p_partner=partner;     }
+    inline void SetMIHandler(SHERPA::MI_Handler *mihandler) { p_mihandler=mihandler; }
 
     inline ATOOLS::Particle *Last()     { m_active=false; return p_last[0]; }
     inline ATOOLS::Blob     *BeamBlob() { return p_beamblob;                }
 
     inline TypeID       Type() const { return m_type; }
     inline unsigned int Beam() const { return m_beam; }
+
+    inline MI_Handler *const MIHandler() { return p_mihandler; }
 
     inline unsigned int Errors() const { return m_errors; }
 
