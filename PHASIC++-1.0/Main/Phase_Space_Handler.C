@@ -15,7 +15,7 @@
 #include "Random.H"
 
 #include "Blob.H"
-
+//#define PROFILE__Phase_Space_Handler
 #ifdef PROFILE__Phase_Space_Handler
 #include "prof.hh"
 #endif
@@ -26,6 +26,8 @@ using namespace BEAM;
 using namespace PDF;
 using namespace std;
 
+Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
+
 Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
 					 ISR_Handler * _ih,Beam_Spectra_Handler * _bh): 
   proc(_proc), bh(_bh), ih(_ih), 
@@ -35,7 +37,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
   maxtrials(1000000), sumtrials(0), events(0),    
   E(ATOOLS::rpa.gen.Ecms()), s(E*E), sprime(s), m_weight(1.), 
   p(NULL), psi(NULL), m_initialized(0),
-  p_info(new Integration_Info()), p_cuts(NULL)
+  p_cuts(NULL)
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   
@@ -75,7 +77,7 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (fsrchannels)  { delete fsrchannels;  fsrchannels  = 0; }
   if (beamchannels) { delete beamchannels; beamchannels = 0; }
   if (p_cuts)       { delete p_cuts;       p_cuts       = 0; }
-  delete p_info;
+  //delete p_info;
 }
 
 /* ----------------------------------------------------------------------
@@ -252,6 +254,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
   if ((proc->Selector())->Trigger(p)) {
     result1 = 1.;
     if (nin>1) {
+      //PROFILE_LOCAL("ISRWEIGHT");
       trigger = 1;
       Q2 = proc->Scale(p);
       if (ih && ih->On()>0) {
@@ -268,10 +271,16 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
       }
       KFactor *= process->KFactor(Q2);
     }
+    {  
+      //PROFILE_LOCAL("FSRWEIGHT");
     fsrchannels->GenerateWeight(p,p_cuts);
     result1 *= KFactor * fsrchannels->Weight();
+    }
     if (ih && ih->On()==3) result2 = result1;
-    result1 *= process->Differential(p);
+    {
+      //PROFILE_LOCAL("ME");
+      result1 *= process->Differential(p);
+    }
   }
  
   // Second part : flin[0] coming from Beam[1] and flin[1] coming from Beam[0]
@@ -1066,5 +1075,17 @@ namespace ATOOLS {
 }
 
 template class Blob_Data<Weight_Info>;
+
+Integration_Info *Phase_Space_Handler::GetInfo() 
+{
+  if (p_info==NULL) return p_info = new Integration_Info();
+  return p_info;
+}
+
+void Phase_Space_Handler::DeleteInfo() 
+{
+  delete p_info;
+  p_info=NULL;
+}
 
 

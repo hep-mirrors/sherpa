@@ -129,6 +129,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   okay      = okay && InitializeTheBeams();
   okay      = okay && InitializeThePDFs();
 
+  PHASIC::Phase_Space_Handler::GetInfo();
+
   if (!CheckBeamISRConsistency()) return 0.;
   
   okay = okay && InitializeTheHardDecays();
