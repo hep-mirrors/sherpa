@@ -230,7 +230,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   case 1: 
     if (scalechoice>0) p_amegic->Processes()->SetScale(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
     if (p_amegic->CalculateTotalXSec(m_readin)) {
-      RescaleJetrates();
+      //RescaleJetrates();
       return 1;
     }
     msg.Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
@@ -248,21 +248,30 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
 }
 
 
-void RescaleProcesses(AMEGIC::Process_Base * procs, double fac ) {
-  if (fac==1.) return;
+void RescaleProcesses(AMEGIC::Process_Base * procs, double fac, double mfac ) {
+  if (fac==1. && mfac==1.) return;
   if (!procs) return;
   if ((*procs)[0]==procs) {
-    double xs=procs->TotalXS();
-    procs->SetTotal(xs*fac);
-    std::cout<<" changing xs from "<<xs<<" to "<<procs->TotalXS()<<std::endl;
+    if (fac!=1.) {
+      double xs=procs->TotalXS();
+      procs->SetTotalXS(xs*fac);
+      std::cout<<" changing xs from "<<xs<<" to "<<procs->TotalXS()<<std::endl;
+    }
+    if (mfac!=1.) {
+      double max=procs->Max();
+      procs->SetMax(max*mfac);
+      std::cout<<" changing xs-max from "<<max<<" to "<<procs->Max()<<std::endl;
+    }
   }
   else {
     double xs=procs->TotalXS();
     for (size_t i=0; i<procs->Size();++i) {
-      RescaleProcesses((*procs)[i],fac);
+      RescaleProcesses((*procs)[i],fac,mfac);
     }
-    procs->SetTotal(xs*fac);
-    std::cout<<" changing xs from "<<xs<<" to "<<procs->TotalXS()<<std::endl;
+    if (fac!=1.) {
+      procs->SetTotal(xs*fac);
+      std::cout<<" changing xs from "<<xs<<" to "<<procs->TotalXS()<<std::endl;
+    }
   }
 }
 
@@ -278,12 +287,13 @@ bool Matrix_Element_Handler::RescaleJetrates()
 
   cout<<" rescale Jetrates : "<<endl;
   //vs.facs[10] = { 1., 1., 1. , 0.1, 1., 1.,1., 1., 1., 1.};
-  double facs[10] = { 1., 1., 1. , 1., 1., 1.,1., 1., 1., 1.};
+  double facs[10] = { 1., 1., 1. , 1., 1., 1., 1., 1., 1., 1.};
+  double mfacs[10] = { 1., 1., 1. , 1., .05, .025,.0125, 1., 1., 1.};
   for (size_t i=0; i<procs->Size();++i) {
     //    double xstot = (*procs)[i]->Total()*rpa.Picobarn();
     //    double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
     int njet  = (*procs)[i]->NOut();
-    RescaleProcesses((*procs)[i],facs[njet]);
+    RescaleProcesses((*procs)[i],facs[njet],mfacs[njet]);
   }
   procs->SetMax(0.);
 
