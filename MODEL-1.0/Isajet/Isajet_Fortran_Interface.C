@@ -173,10 +173,10 @@ void Isajet_Fortran_Interface::FillDecays() {
 
   Decays(Flavour(kf::sElectronL));
   Decays(Flavour(kf::sMuL));
-  Decays(Flavour(kf::sTauL));
+  Decays(Flavour(kf::sTau2));
   Decays(Flavour(kf::sElectronR));
   Decays(Flavour(kf::sMuR));
-  Decays(Flavour(kf::sTauR));
+  Decays(Flavour(kf::sTau1));
 
   Decays(Flavour(kf::sNu1));
   Decays(Flavour(kf::sNu2));
@@ -184,20 +184,19 @@ void Isajet_Fortran_Interface::FillDecays() {
   
   Decays(Flavour(kf::sUpL));
   Decays(Flavour(kf::sCharmL));
-  Decays(Flavour(kf::sTopL));
+  Decays(Flavour(kf::sTop2));
   Decays(Flavour(kf::sUpR));
   Decays(Flavour(kf::sCharmR));
-  Decays(Flavour(kf::sTopR));
+  Decays(Flavour(kf::sTop1));
   
   Decays(Flavour(kf::sDownL));
   Decays(Flavour(kf::sStrangeL));
-  Decays(Flavour(kf::sBottomL));
+  Decays(Flavour(kf::sBottom2));
   Decays(Flavour(kf::sDownR));
   Decays(Flavour(kf::sStrangeR));
-  Decays(Flavour(kf::sBottomR));
+  Decays(Flavour(kf::sBottom1));
     
   msg.Tracking()<<"----------------------------------------------------------------"<<endl;
-  abort();
 }
 
 int Isajet_Fortran_Interface::FlavourToIsaID(Flavour flav) {
@@ -245,37 +244,37 @@ int Isajet_Fortran_Interface::FlavourToIsaID(Flavour flav) {
     break;
   case 72 : isaID = 34; //34 equals sMuonL
     break;  
-  case 73 : isaID = 56; //36 equals sTauL
+  case 73 : isaID = 56; //36 equals sTau2
     break;  
   case 74 : isaID = 52; //52 equals sElectronR
     break;  
   case 75 : isaID = 54; //54 equals sMuonR
     break;  
-  case 76 : isaID = 36; //56 equals sTauR
+  case 76 : isaID = 36; //56 equals sTau1
     break;
   case 51 : isaID = 21; //21 equals sUpL
     break;
   case 52 : isaID = 24; //24 equals sCharmL
     break;
-  case 53 : isaID = 46; //26 equals sTopL
+  case 53 : isaID = 46; //26 equals sTop2
     break;
   case 54 : isaID = 41; //41 equals sUpR
     break;
   case 55 : isaID = 44; //44 equals sCharmR
     break;
-  case 56 : isaID = 26; //46 equals sTopR
+  case 56 : isaID = 26; //46 equals sTop1
     break;
   case 61 : isaID = 22; //22 equals sDownL
     break;
   case 62 : isaID = 23; //23 equals sStrangeL
     break;
-  case 63 : isaID = 45; //25 equals sBottomL
+  case 63 : isaID = 45; //25 equals sBottom2
     break;
   case 64 : isaID = 42; //42 equals sDownR
     break;
   case 65 : isaID = 43; //43 equals sStrangeR
     break;
-  case 66 : isaID = 25; //43 equals sBottomR
+  case 66 : isaID = 25; //43 equals sBottom1
     break;
   }
   if (antifl) isaID*=-1;
@@ -357,37 +356,37 @@ Flavour Isajet_Fortran_Interface::IsaIDToFlavour(int isaID) {
     break;
   case 34  : sherpaID = 72; //sMuonL
     break;  
-  case 56  : sherpaID = 73; //sTauL
+  case 56  : sherpaID = 73; //sTau2
     break;  
   case 52  : sherpaID = 74; //sElectronR
     break;  
   case 54  : sherpaID = 75; //sMuonR
     break;  
-  case 36  : sherpaID = 76; //sTauR
+  case 36  : sherpaID = 76; //sTau1
     break;
   case 21  : sherpaID = 51; //sUpL
     break;
   case 24  : sherpaID = 52; //sCharmL
     break;
-  case 46  : sherpaID = 53; //sTopL
+  case 46  : sherpaID = 53; //sTop2
     break;
   case 41  : sherpaID = 54; //sUpR
     break;
   case 44  : sherpaID = 55; //sCharmR
     break;
-  case 26  : sherpaID = 56; //sTopR
+  case 26  : sherpaID = 56; //sTop1
     break;
   case 22  : sherpaID = 61; //sDownL 
     break;
   case 23  : sherpaID = 62; //sStrangeL 
     break;
-  case 45  : sherpaID = 63; //sBottomL 
+  case 45  : sherpaID = 63; //sBottom2 
     break;
   case 42  : sherpaID = 64; //sDownR 
     break;
   case 43  : sherpaID = 65; //sStrangeR 
     break;
-  case 25  : sherpaID = 66; //sBottomR 
+  case 25  : sherpaID = 66; //sBottom1 
     break;
   }
   Flavour flav = Flavour(kf::code(sherpaID));
@@ -611,13 +610,13 @@ void Isajet_Fortran_Interface::sUpMasses()
   if (msups[0]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sCharmL);flav.SetMass(dabs(msups[1]));
   if (msups[1]<0) flav.SetMassSign(-1);
-  flav = Flavour(kf::sTopL);flav.SetMass(dabs(msups[2]));
+  flav = Flavour(kf::sTop2);flav.SetMass(dabs(msups[2]));
   if (msups[2]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sUpR);flav.SetMass(dabs(msups[3]));
   if (msups[3]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sCharmR);flav.SetMass(dabs(msups[4]));
   if (msups[4]<0) flav.SetMassSign(-1);
-  flav = Flavour(kf::sTopR);flav.SetMass(dabs(msups[5]));
+  flav = Flavour(kf::sTop1);flav.SetMass(dabs(msups[5]));
   if (msups[5]<0) flav.SetMassSign(-1);
   
   msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
@@ -671,13 +670,13 @@ void Isajet_Fortran_Interface::sDownMasses()
   if (msdowns[0]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sStrangeL);flav.SetMass(dabs(msdowns[1]));
   if (msdowns[1]<0) flav.SetMassSign(-1);
-  flav = Flavour(kf::sBottomL);flav.SetMass(dabs(msdowns[2]));
+  flav = Flavour(kf::sBottom2);flav.SetMass(dabs(msdowns[2]));
   if (msdowns[2]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sDownR);flav.SetMass(dabs(msdowns[3]));
   if (msdowns[3]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sStrangeR);flav.SetMass(dabs(msdowns[4]));
   if (msdowns[4]<0) flav.SetMassSign(-1);
-  flav = Flavour(kf::sBottomR);flav.SetMass(dabs(msdowns[5]));
+  flav = Flavour(kf::sBottom1);flav.SetMass(dabs(msdowns[5]));
   if (msdowns[5]<0) flav.SetMassSign(-1);
   
   msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
@@ -730,13 +729,13 @@ void Isajet_Fortran_Interface::sLeptonMasses()
   if (msleptons[0]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sMuL);flav.SetMass(dabs(msleptons[1]));
   if (msleptons[1]<0) flav.SetMassSign(-1);
-  flav = Flavour(kf::sTauL);flav.SetMass(dabs(msleptons[2]));
+  flav = Flavour(kf::sTau2);flav.SetMass(dabs(msleptons[2]));
   if (msleptons[2]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sElectronR);flav.SetMass(dabs(msleptons[3]));
   if (msleptons[3]<0) flav.SetMassSign(-1);
   flav = Flavour(kf::sMuR);flav.SetMass(dabs(msleptons[4]));
   if (msleptons[4]<0) flav.SetMassSign(-1);
-  flav = Flavour(kf::sTauR);flav.SetMass(dabs(msleptons[5]));
+  flav = Flavour(kf::sTau1);flav.SetMass(dabs(msleptons[5]));
   if (msleptons[5]<0) flav.SetMassSign(-1);
   
   msg.Tracking()<<"--------------------------------------------------------------"<<std::endl

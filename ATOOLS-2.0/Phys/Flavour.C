@@ -202,24 +202,24 @@ int Flavour::HepEvt() {
     if (kfc==kf::sUpL)                       return 1000002;
     if (kfc==kf::sStrangeL)                  return 1000003;
     if (kfc==kf::sCharmL)                    return 1000004;
-    if (kfc==kf::sBottomR)                   return 1000005;
-    if (kfc==kf::sTopR)                      return 1000006;
+    if (kfc==kf::sBottom1)                   return 1000005;
+    if (kfc==kf::sTop1)                      return 1000006;
     if (kfc==kf::sElectronL)                 return 1000011;
     if (kfc==kf::sNu1)                       return 1000012;
     if (kfc==kf::sMuL)                       return 1000013;
     if (kfc==kf::sNu2)                       return 1000014;
-    if (kfc==kf::sTauR)                      return 1000015;
+    if (kfc==kf::sTau1)                      return 1000015;
     if (kfc==kf::sNu3)                       return 1000016;
     
     if (kfc==kf::sDownR)                     return 2000001;
     if (kfc==kf::sUpR)                       return 2000002;
     if (kfc==kf::sStrangeR)                  return 2000003;
     if (kfc==kf::sCharmR)                    return 2000004;
-    if (kfc==kf::sBottomL)                   return 2000005;
-    if (kfc==kf::sTopL)                      return 2000006;
+    if (kfc==kf::sBottom2)                   return 2000005;
+    if (kfc==kf::sTop2)                      return 2000006;
     if (kfc==kf::sElectronR)                 return 2000011;
     if (kfc==kf::sMuR)                       return 2000013;
-    if (kfc==kf::sTauL)                      return 2000015;
+    if (kfc==kf::sTau2)                      return 2000015;
   }
 
   if (IsGluino())                            return 1000021;
@@ -261,23 +261,23 @@ void Flavour::FromHepEvt(int code) {
   case 1000002: kfc = kf::sUpL; return;
   case 1000003: kfc = kf::sStrangeL; return;
   case 1000004: kfc = kf::sCharmL; return;
-  case 1000005: kfc = kf::sBottomR; return;
-  case 1000006: kfc = kf::sTopR; return;
+  case 1000005: kfc = kf::sBottom1; return;
+  case 1000006: kfc = kf::sTop1; return;
   case 1000011: kfc = kf::sElectronL; return;
   case 1000012: kfc = kf::sNu1; return;
   case 1000013: kfc = kf::sMuL; return;
   case 1000014: kfc = kf::sNu2; return;
-  case 1000015: kfc = kf::sTauR; return;
+  case 1000015: kfc = kf::sTau1; return;
   case 1000016: kfc = kf::sNu3; return;
   case 2000001: kfc = kf::sDownR; return;
   case 2000002: kfc = kf::sUpR; return;
   case 2000003: kfc = kf::sStrangeR; return;
   case 2000004: kfc = kf::sCharmR; return;
-  case 2000005: kfc = kf::sBottomL; return;
-  case 2000006: kfc = kf::sTopL; return;
+  case 2000005: kfc = kf::sBottom2; return;
+  case 2000006: kfc = kf::sTop2; return;
   case 2000011: kfc = kf::sElectronR; return;
   case 2000013: kfc = kf::sMuR; return;
-  case 2000015: kfc = kf::sTauL; return;
+  case 2000015: kfc = kf::sTau2; return;
   case 1000021: kfc = kf::Gluino; return;
   case 1000022: kfc = kf::Neutralino1; return;
   case 1000023: kfc = kf::Neutralino2; return;
@@ -329,20 +329,20 @@ std::string Flavour::TexName()
   case kf::sUpR :{name=std::string("\\tilde u_R");break;}
   case kf::sCharmL :{name=std::string("\\tilde c_L");break;}
   case kf::sCharmR :{name=std::string("\\tilde c_R");break;}
-  case kf::sTopL :{name=std::string("\\tilde t_L");break;}
-  case kf::sTopR :{name=std::string("\\tilde t_R");break;}
+  case kf::sTop2 :{name=std::string("\\tilde t_2");break;}
+  case kf::sTop1 :{name=std::string("\\tilde t_1");break;}
   case kf::sDownL :{name=std::string("\\tilde d_L");break;}
   case kf::sDownR :{name=std::string("\\tilde d_R");break;}
   case kf::sStrangeL :{name=std::string("\\tilde s_L");break;}
   case kf::sStrangeR :{name=std::string("\\tilde s_R");break;}
-  case kf::sBottomL :{name=std::string("\\tilde b_L");break;}
-  case kf::sBottomR :{name=std::string("\\tilde b_R");break;}
+  case kf::sBottom2 :{name=std::string("\\tilde b_2");break;}
+  case kf::sBottom1 :{name=std::string("\\tilde b_1");break;}
   case kf::sElectronL :{name=std::string("\\tilde e_L");break;}
   case kf::sElectronR :{name=std::string("\\tilde e_R");break;}
   case kf::sMuL :{name=std::string("\\tilde\\mu_L");break;}
   case kf::sMuR :{name=std::string("\\tilde\\mu_R");break;}
-  case kf::sTauL :{name=std::string("\\tilde\\tau_L");break;}
-  case kf::sTauR :{name=std::string("\\tilde\\tau_R");break;}
+  case kf::sTau2 :{name=std::string("\\tilde\\tau_2");break;}
+  case kf::sTau1 :{name=std::string("\\tilde\\tau_1");break;}
   case kf::sNu1 :{name=std::string("\\tilde\\nu_1");break;}
   case kf::sNu2 :{name=std::string("\\tilde\\nu_2");break;}
   case kf::sNu3 :{name=std::string("\\tilde\\nu_3");break;}
@@ -370,20 +370,20 @@ std::string Flavour::TexName()
   case kf::sUpR :{name=std::string("\\tilde u_R^\\ti");break;}
   case kf::sCharmL :{name=std::string("\\tilde c_L^\\ti");break;}
   case kf::sCharmR :{name=std::string("\\tilde c_R^\\ti");break;}
-  case kf::sTopL :{name=std::string("\\tilde t_L^\\ti");break;}
-  case kf::sTopR :{name=std::string("\\tilde t_R^\\ti");break;}
+  case kf::sTop2 :{name=std::string("\\tilde t_2^\\ti");break;}
+  case kf::sTop1 :{name=std::string("\\tilde t_1^\\ti");break;}
   case kf::sDownL :{name=std::string("\\tilde d_L^\\ti");break;}
   case kf::sDownR :{name=std::string("\\tilde d_R^\\ti");break;}
   case kf::sStrangeL :{name=std::string("\\tilde s_L^\\ti");break;}
   case kf::sStrangeR :{name=std::string("\\tilde s_R^\\ti");break;}
-  case kf::sBottomL :{name=std::string("\\tilde b_L^\\ti");break;}
-  case kf::sBottomR :{name=std::string("\\tilde b_R^\\ti");break;}
+  case kf::sBottom2 :{name=std::string("\\tilde b_2^\\ti");break;}
+  case kf::sBottom1 :{name=std::string("\\tilde b_1^\\ti");break;}
   case kf::sElectronL :{name=std::string("\\tilde e_L^\\ti");break;}
   case kf::sElectronR :{name=std::string("\\tilde e_R^\\ti");break;}
   case kf::sMuL :{name=std::string("\\tilde\\mu_L^\\ti");break;}
   case kf::sMuR :{name=std::string("\\tilde\\mu_R^\\ti");break;}
-  case kf::sTauL :{name=std::string("\\tilde\\tau_L^\\ti");break;}
-  case kf::sTauR :{name=std::string("\\tilde\\tau_R^\\ti");break;}
+  case kf::sTau2 :{name=std::string("\\tilde\\tau_2^\\ti");break;}
+  case kf::sTau1 :{name=std::string("\\tilde\\tau_1^\\ti");break;}
   case kf::sNu1 :{name=std::string("\\tilde\\nu_1^\\ti");break;}
   case kf::sNu2 :{name=std::string("\\tilde\\nu_2^\\ti");break;}
   case kf::sNu3 :{name=std::string("\\tilde\\nu_^\\ti3");break;}  

@@ -80,24 +80,24 @@ namespace ATOOLS {
       
       sUpL                   = 51,
       sCharmL                = 52,
-      sTopL                  = 53,
+      sTop2                  = 53,
       sUpR                   = 54,
       sCharmR                = 55,
-      sTopR                  = 56,
+      sTop1                  = 56,
       
       sDownL                 = 61,
       sStrangeL              = 62,
-      sBottomL               = 63,
+      sBottom2               = 63,
       sDownR                 = 64,
       sStrangeR              = 65,
-      sBottomR               = 66,
+      sBottom1               = 66,
       
       sElectronL             = 71,
       sMuL                   = 72,
-      sTauL                  = 73,
+      sTau2                  = 73,
       sElectronR             = 74,
       sMuR                   = 75,
-      sTauR                  = 76,
+      sTau1                  = 76,
       
       sNu1                   = 81,
       sNu2                   = 82,
@@ -663,20 +663,20 @@ namespace ATOOLS {
       case kf::sDownR:    return 0;
       case kf::sStrangeL: return 0;
       case kf::sStrangeR: return 0;
-      case kf::sBottomL:  return 0;
-      case kf::sBottomR:  return 0; 
+      case kf::sBottom2:  return 0;
+      case kf::sBottom1:  return 0; 
       case kf::sUpL:      return 1;
       case kf::sUpR:      return 1;
       case kf::sCharmL:   return 1;
       case kf::sCharmR:   return 1;
-      case kf::sTopL:     return 1;
-      case kf::sTopR:     return 1;
+      case kf::sTop2:     return 1;
+      case kf::sTop1:     return 1;
       case kf::sElectronL:return 0;
       case kf::sElectronR:return 0;
       case kf::sMuL:      return 0;
       case kf::sMuR:      return 0;
-      case kf::sTauL:     return 0;
-      case kf::sTauR:     return 0;
+      case kf::sTau2:     return 0;
+      case kf::sTau1:     return 0;
       case kf::sNu1:      return 1;
       case kf::sNu2:      return 1;
       case kf::sNu3:      return 1;
@@ -703,20 +703,20 @@ namespace ATOOLS {
       case kf::sDownR:    return 1;
       case kf::sStrangeL: return 1;
       case kf::sStrangeR: return 1;
-      case kf::sBottomL:  return 1;
-      case kf::sBottomR:  return 1; 
+      case kf::sBottom2:  return 1;
+      case kf::sBottom1:  return 1; 
       case kf::sUpL:      return 0;
       case kf::sUpR:      return 0;
       case kf::sCharmL:   return 0;
       case kf::sCharmR:   return 0;
-      case kf::sTopL:     return 0;
-      case kf::sTopR:     return 0;
+      case kf::sTop2:     return 0;
+      case kf::sTop1:     return 0;
       case kf::sElectronL:return 1;
       case kf::sElectronR:return 1;
       case kf::sMuL:      return 1;
       case kf::sMuR:      return 1;
-      case kf::sTauL:     return 1;
-      case kf::sTauR:     return 1;
+      case kf::sTau2:     return 1;
+      case kf::sTau1:     return 1;
       case kf::sNu1:      return 0;
       case kf::sNu2:      return 0;
       case kf::sNu3:      return 0;
