@@ -15,7 +15,7 @@ Four_Particle_Observable_Base::Four_Particle_Observable_Base(const std::vector<F
   }
   std::string help = std::string("");
   Flavour fl;
-  for (int i=0;i<4;i++) {
+  for (size_t i=0;i<4;i++) {
     if (i<flavs.size()) fl=flavs[i];
     m_flavs.push_back(fl);
     help += fl.Name();

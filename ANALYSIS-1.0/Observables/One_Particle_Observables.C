@@ -99,7 +99,7 @@ One_Particle_Eta::One_Particle_Eta(const Flavour & _flav,
 
 void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, int ncount) 
 {
-  double eta = -log(tan(sqrt(sqr(mom[1])+sqr(mom[2]))/(2.*mom[3])));;
+  //  double eta = -log(tan(sqrt(sqr(mom[1])+sqr(mom[2]))/(2.*mom[3])));;
   //  p_histo->Insert(eta,weight,ncount);
 
   double pt2=sqr(mom[1])+sqr(mom[2]);
