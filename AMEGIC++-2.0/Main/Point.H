@@ -62,18 +62,6 @@ public:
       fl     = p.fl;
       
       *Color = *p.Color;
-      
-      if (p.Color->Next!=0) {
-	
-	Color_Function* cforig = p.Color->Next;
-	Color_Function* cfcopy = Color;
-	while (cforig) {
-	  cfcopy->Next = new Color_Function(*cforig);
-	  cfcopy = cfcopy->Next;
-	  cforig = cforig->Next;
-	}
-      }
-
       *Lorentz = *p.Lorentz;
  
       if (nextra>0) delete[] extrafl;

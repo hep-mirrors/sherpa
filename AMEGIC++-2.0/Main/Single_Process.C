@@ -40,7 +40,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl),
-  p_partner(this)
+  p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
 {
   m_save_max=0.;
   GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,m_ptypename,m_libname);

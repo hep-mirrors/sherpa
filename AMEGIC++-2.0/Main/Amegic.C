@@ -42,6 +42,11 @@ Amegic::Amegic(std::string _path,std::string _file,
 Amegic::~Amegic() {
   if (p_dataread) { delete p_dataread; p_dataread = NULL; }
   if (p_fifo)     { delete p_fifo;     p_fifo     = 0;    }
+  if (p_model)    { delete p_model;    p_model    = 0;    }
+  if (p_procs)    { delete p_procs;    p_procs    = 0;    }
+  if (p_decs)     { delete p_decs;     p_decs     = 0;    }
+  if (p_top)      { delete p_top;      p_top      = 0;    }
+  if (p_seldata)  { delete p_seldata;  p_seldata  = 0;    }
 }
 
 
