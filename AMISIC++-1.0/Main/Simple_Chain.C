@@ -44,7 +44,7 @@ Simple_Chain::Simple_Chain():
   m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
-  m_maxtrials(1),
+  m_maxtrials(100),
   m_external(false)
 {
   SetInputFile("MI.dat");
