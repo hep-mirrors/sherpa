@@ -160,8 +160,8 @@ namespace AMEGIC {
     - two times the same argument for a spin-2 particle
 
     A dummy argument for a scalar is set for Z-functions, describing a vertex with scalars,
-    but where the building block to calculate the Z-function
-    not depends on the scalars momentum. These argument are always at the end of the array.
+    but where the building block to calculate the Z-function does 
+    not depend on the scalars momentum. These arguments are always at the end of the array.
     With the dummys, the whole information about the connection between vertices of an 
     amplitude is contained in the argument structure of Z-functions. This allows a more 
     efficient algorithm to build Super_Amplitude's.
