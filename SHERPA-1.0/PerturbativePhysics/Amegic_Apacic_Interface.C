@@ -77,6 +77,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   }
   for (int i=0;i<4;i++) {
     p_fl[i]   = p_cluster->Flav(i); 
+    //    std::cout<<" hard 2->2 : "<<i<<" : "<<p_fl[i]<<std::endl;
     p_moms[i] = p_cluster->Momentum(i);
   }
 

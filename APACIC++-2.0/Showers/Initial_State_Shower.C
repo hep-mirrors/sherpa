@@ -597,6 +597,12 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   Knot * mother = 0;
   if (k->prev) {
     mother = k->prev;
+    // delete old color informations if flav content changed
+    if (mother->part->Flav()!=k_flavs[0]) {
+      mother->part->SetFlow(1,0);
+      mother->part->SetFlow(2,0);
+      //      cout<<" mo flav changed from "<<mother->part->Flav()<<" to "<<k_flavs[0]<<endl;
+    }
     if (mother->prev) {
       if (rpa.gen.Debugging()) {
 	cout<<" deleting mother tree : "<<endl;
@@ -605,12 +611,6 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
       mother->prev=0;
       // *AS* check sure no 'H' can be lost
 
-      // delete old color informations if flav content changed
-      if (mother->part->Flav()!=k_flavs[0]) {
-	mother->part->SetFlow(1,0);
-	mother->part->SetFlow(2,0);
-	cout<<" mo flav changed from "<<mother->part->Flav()<<" to "<<k_flavs[0]<<endl;
-      }
     }
   }
   else {
@@ -633,17 +633,17 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   Knot * sister = 0;
   if (mother->left) {
     sister = mother->left;
+    // delete old color informations if flav content changed
+    if (sister->part->Flav()!=k_flavs[1]) {
+      sister->part->SetFlow(1,0);
+      sister->part->SetFlow(2,0);
+      //      cout<<" si flav changed from "<<sister->part->Flav()<<" to "<<k_flavs[1]<<endl;
+    }
     if (sister->left) {
       msg.Debugging()<<" deleting sister tree : "<<endl<<*sister<<endl;
       sister->left=0;
       sister->right=0;
 
-      // delete old color informations if flav content changed
-      if (sister->part->Flav()!=k_flavs[1]) {
-	sister->part->SetFlow(1,0);
-	sister->part->SetFlow(2,0);
-	cout<<" si flav changed from "<<sister->part->Flav()<<" to "<<k_flavs[1]<<endl;
-      }
     }
   }
   else {

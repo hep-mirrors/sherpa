@@ -44,8 +44,6 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder
   if (m_as_order!=-1) {
     double mz2 = sqr(Flavour(kf::Z).Mass());
     double as_mz = (*as)(mz2);
-    //    as_mz = 0.13;
-    msg.Out()<<" WARNING alphaS manipulated in Cluster_Partons.C"<<std::endl;
     p_runas = new Running_AlphaS(as_mz,mz2,m_as_order);
   }
 
@@ -195,6 +193,8 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
     p_ct = p_combi->CalcJet(nlegs,_x1,_x2,amoms);
     delete [] amoms;
   }
+
+  CreateFlavourMap();
 
   return 1;
 }
@@ -577,6 +577,10 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
       }
     }
   }
+//   std::cout<<" SetColours()"<<std::endl;
+//   std::cout<<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<std::endl;
+//   for (int i=0;i<4;++i) std::cout<<"   ("<<m_colors[i][0]<<","<<m_colors[i][1]<<")";
+//   std::cout<<std::endl;
   return 0;
 }
 
@@ -666,8 +670,6 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     n[0]=1;
     n[1]=0;
   }
-
-  CreateFlavourMap();
 
   std::vector<Knot *> knots;
   std::vector<Knot *> ini_knots; // production points
@@ -944,7 +946,12 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode
 }
 
 Flavour Cluster_Partons::Flav(int i) {
-  if (p_ct) return p_ct->Flav(i);
+  if (p_ct) {
+    Flavour fl(p_ct->Flav(i));
+    Flavour_Map::const_iterator cit=m_flmap.find(fl);
+    if (cit!=m_flmap.end()) fl=cit->second;
+    return fl;
+  }
   msg.Error()<<"ERROR in Cluster_Partons::Flav. No ct."<<std::endl;
   return 0;
 }
@@ -1068,37 +1075,47 @@ void Cluster_Partons::DetermineColourAngles(const std::vector<APACIC::Knot *> & 
 
 void Cluster_Partons::CreateFlavourMap() {
   if (p_me->GetAmegic()->GetProcess()!=p_me->GetAmegic()->GetProcess()->Partner()) {
-    int n[2]={0,1};
-    if (p_me->InSwaped()) {
-      n[0]=1;
-      n[1]=0;
-    }
 
     Process_Base * proc=p_me->GetAmegic()->GetProcess();
     Process_Base * partner=proc->Partner();
     Flavour * flavs=proc->Flavs();
     Flavour * partner_flavs=partner->Flavs();
 
+    int n[2]={0,1};
+    if (proc->InSwaped()^partner->InSwaped()) {
+      n[0]=1;
+      n[1]=0;
+    }
+
     // create new map
-//     std::cout<<" create new flmap "<<std::endl;
+    //  std::cout<<" create new flmap "<<n[0]<<" a "<<proc->InSwaped()<<" b:"<<partner->InSwaped()<<std::endl;
     m_flmap.clear();
     for (int i=0;i<proc->Nin();++i) {
       if (partner_flavs[i]!=flavs[n[i]]) {
-// 	std::cout<<partner_flavs[i]<<" -> "<<flavs[n[i]]<<std::endl;
+ 	//  std::cout<<partner_flavs[i]<<" -> "<<flavs[n[i]]<<std::endl;
 	m_flmap[partner_flavs[i]]=flavs[n[i]];
+	if (partner_flavs[i]!=partner_flavs[i].Bar()) {
+	  //  std::cout<<partner_flavs[i].Bar()<<" -> "<<flavs[n[i]].Bar()<<std::endl;
+	  m_flmap[partner_flavs[i].Bar()]=flavs[n[i]].Bar();
+	  
+	}
       }
     }
     for (int i=proc->Nin();i<proc->Nin()+proc->Nout();++i) {
       if (partner_flavs[i]!=flavs[i]) {
-// 	std::cout<<partner_flavs[i]<<" -> "<<flavs[i]<<std::endl;
+ 	//  std::cout<<partner_flavs[i]<<" -> "<<flavs[i]<<std::endl;
 	m_flmap[partner_flavs[i]]=flavs[i];
+	if (partner_flavs[i]!=partner_flavs[i].Bar()) {
+	  //  std::cout<<partner_flavs[i].Bar()<<" -> "<<flavs[i].Bar()<<std::endl;
+	  m_flmap[partner_flavs[i].Bar()]=flavs[i].Bar();	  
+	}
       }
     }
 
   }
   else {
     // delete old map
-//     std::cout<<" clear flmap "<<std::endl;
+     //  std::cout<<" clear flmap "<<std::endl;
     m_flmap.clear();
   }
 }
