@@ -1,0 +1,221 @@
+#include "ISR_Handler.H"
+#include "Intact.H"
+#include "Structure_Function.H"
+#include "Run_Parameter.H" 
+#include "Message.H"
+#include <stdio.h>
+
+
+using namespace AORGTOOLS;
+using namespace AMATOOLS;
+using namespace APHYTOOLS;
+using namespace PDF;
+using namespace std;
+
+ISR_Handler::ISR_Handler(ISR_Base ** _ISRBase,double * _splimits) :
+  p_ISRBase(_ISRBase)
+{
+  m_mode = 0;
+  for (short int i=0;i<2;i++) {
+    if (p_ISRBase[i]->On()) m_mode += i+1;
+  }
+  Init(_splimits);
+}
+
+void ISR_Handler::Init(double * _splimits) {
+  m_type = p_ISRBase[0]->Type() + std::string("*") + p_ISRBase[1]->Type();
+
+  double s      = sqr(AORGTOOLS::rpa.gen.Ecms());
+  m_splimits[0] = m_smin = s*_splimits[0];
+  m_splimits[1] = m_smax = AMATOOLS::Min(s*_splimits[1],s*Upper1()*Upper2());
+  m_splimits[2] = s;
+  m_ylimits[0]  = -10.;
+  m_ylimits[1]  = 10.;
+  m_exponent[0] = .5;
+  m_exponent[1] = .98 * p_ISRBase[0]->Exponent() * p_ISRBase[1]->Exponent();
+
+  if (m_mode>0) msg.Debugging()<<"ISR is on:  ";
+           else msg.Debugging()<<"ISR is off: ";
+  msg.Debugging()<<"type = "<<m_type<<" for "
+		 <<p_ISRBase[0]->Flav()<<" / "<<p_ISRBase[1]->Flav()<<endl
+		 <<"            Range = "<<m_splimits[0]<<" ... "<<m_splimits[1]<<" from "<<m_splimits[2]<<endl;
+}
+
+
+ISR_Handler::~ISR_Handler() {
+  if (p_ISRBase) {
+    for (int i=0;i<2;i++) {
+      if (p_ISRBase[i]) delete p_ISRBase[i];  
+    }
+    delete[] p_ISRBase; p_ISRBase = 0;
+  }
+}
+
+bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches,
+				   APHYTOOLS::Flavour * _partons) {
+  
+    bool fit = 1;
+  for (int i=0;i<2;i++) {
+    if (p_ISRBase[i]->On()) {
+      if (_bunches[i] != PDF(i)->Bunch()) { fit = 0; break; }
+      fit = 0;
+      for (int j = 0;j<(PDF(i)->Partons()).size();j++) {
+	if (_partons[i] == (PDF(i)->Partons())[j]) {
+	  fit = 1;
+	  break; 
+	}
+      }
+      if (fit == 0) break;
+    }
+    else {
+      if (_partons[i]!=p_ISRBase[i]->Flav()) {
+	fit = 0;
+	break;
+      }
+    }
+  }
+  return fit;
+}
+
+bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _partons) {
+  bool fit = 1;
+  for (int i=0;i<2;i++) {
+    if (p_ISRBase[i]->On()) {
+      fit = 0;
+      msg.Debugging()<<"ISR_Handler::CheckConsistency : "<<_partons[i]<<" "<<PDF(i)->Bunch()<<endl;
+      for (int j = 0;j<(PDF(i)->Partons()).size();j++) {
+	msg.Debugging()<<"ISR_Handler::CheckConsistency : "<<_partons[i]<<" "<<(PDF(i)->Partons())[j]<<endl;
+	if (_partons[i] == (PDF(i)->Partons())[j]) {
+	  fit = 1;
+	  break; 
+	}
+      }
+      if (fit == 0) break;
+    }
+    else {
+      if (_partons[i]!=p_ISRBase[i]->Flav()) {
+	fit = 0;
+	break;
+      }
+    }
+  }
+  return fit;
+}
+
+void ISR_Handler::SetPartonMasses(Flavour * _fl) { 
+  m_mass12     = sqr(_fl[0].Mass());
+  m_mass22     = sqr(_fl[1].Mass());
+  double E     = AORGTOOLS::rpa.gen.Ecms();
+  double x     = 1./2.+(m_mass12-m_mass22)/(2.*E*E);
+  double E1    = x*E;
+  double E2    = E-E1;
+  m_fiXVECs[0] = Vec4D(E1,0.,0., sqrt(sqr(E1)-m_mass12));
+  m_fiXVECs[1] = Vec4D(E2,0.,0.,-sqrt(sqr(E1)-m_mass12));
+}
+
+
+bool ISR_Handler::MakeISR(Vec4D * p,double sprime,double y) 
+{
+  if (m_mode==0) {
+    m_x1 = m_x2 = 1.;
+    p[0] = m_fiXVECs[0];
+    p[1] = m_fiXVECs[1];
+    return 1;
+  }
+  else {
+    if ( (sprime<m_splimits[0]) || (sprime>m_splimits[1]) ) {
+      msg.Error()<<"MakeISR : sprime out of bounds !!!"<<endl
+		 <<"   "<<m_splimits[0]<<"<"<<sprime<<"<"<<m_splimits[1]<<"<"<<m_splimits[2]<<endl;
+      return 0;
+    }
+
+    double E      = sqrt(m_splimits[2]);
+    double Eprime = sqrt(sprime);
+    double x      = 1./2.+(m_mass12-m_mass22)/(2.*sprime);
+    double E1     = x*Eprime;
+    double E2     = Eprime-E1;
+    p[0]          = Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass12));
+    p[1]          = Vec4D(E2,(-1.)*Vec3D(p[0]));
+
+    E1            = exp(y);  
+    E2            = exp(-y);  
+
+    m_CMSBoost    = Poincare(Vec4D(E1+E2,0.,0.,E1-E2));
+    
+    Vec4D p1      = p[0];
+    Vec4D p2      = p[1];
+    m_CMSBoost.BoostBack(p1);
+    m_CMSBoost.BoostBack(p2);
+    m_x1          = 2.*p1[0]/E;
+    m_x2          = 2.*p2[0]/E;
+
+    if (m_mode==1) m_x2 = 1.;
+    if (m_mode==2) m_x1 = 1.;
+  
+    return 1;
+  }
+}
+
+/* ----------------------------------------------------------------
+
+   Weight calculation 
+
+   ---------------------------------------------------------------- */
+
+
+bool ISR_Handler::CalculateWeight(double scale) 
+{
+  switch (m_mode) {
+  case 3 :
+    if ( (p_ISRBase[0]->CalculateWeight(m_x1,scale)) && 
+	 (p_ISRBase[1]->CalculateWeight(m_x2,scale)) ) return 1;
+    break;
+  case 2 :
+    if (p_ISRBase[1]->CalculateWeight(m_x2,scale))     return 1;
+    break;
+  case 1 :
+    if (p_ISRBase[0]->CalculateWeight(m_x1,scale))     return 1;
+    break;
+  }
+  return 0;
+};
+
+bool ISR_Handler::CalculateWeight2(double scale) 
+{
+  if (m_mode != 3) { 
+    msg.Error()<<"ISR_Handler::CalculateWeight2 called for one ISR only."<<endl;
+    abort();
+  }
+  if ( (p_ISRBase[0]->CalculateWeight(m_x2,scale)) && 
+       (p_ISRBase[1]->CalculateWeight(m_x1,scale)) ) { 
+    return 1;
+  }
+  return 0;
+};
+
+double ISR_Handler::Weight(Flavour * flin)
+{
+  return (p_ISRBase[0]->Weight(flin[0]) * p_ISRBase[1]->Weight(flin[1]));
+}
+
+double ISR_Handler::Weight2(Flavour* flin)
+{
+  return (p_ISRBase[0]->Weight(flin[1]) * p_ISRBase[1]->Weight(flin[0]));
+}
+
+
+
+/* ----------------------------------------------------------------
+
+   Boosts
+
+   ---------------------------------------------------------------- */
+
+
+void  ISR_Handler::BoostInCMS(Vec4D* p,int n) {
+  for (int i=0; i<n; ++i) m_CMSBoost.Boost(p[i]);
+}
+
+void  ISR_Handler::BoostInLab(Vec4D* p,int n) {
+  for (int i=0; i<n; ++i) m_CMSBoost.BoostBack(p[i]);
+}

@@ -51,7 +51,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	       set==std::string("cteq6l")  ||
 	       set==std::string("cteq6ll")) {
 	msg.Tracking()<<"Initialize "<<set<<" : "<<version<<" from "<<grid_path<<endl;
-	return new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path);
+	return new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path,m_initlhapdf);
       }
       msg.Error()<<"Error in PDF_Handler::GetPDFLib :"<<endl
 		 <<"   Combination of set/member/path for proton not properly specified :"<<endl

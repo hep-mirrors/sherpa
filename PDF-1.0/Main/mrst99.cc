@@ -173,14 +173,14 @@ int c_mrst99function::initialise(int mode,string path)
   n0[8]=9.0;
 
   // The name of the file to open is stored in 'filename'
-
-  
   std::cout<<"Initialise MRST99 from "<<path<<"  ("<<path.length()<<")"<<endl;
 
   char filename[200];
   sprintf(filename,(path+string("/cor%02d.dat")).c_str(),mode);
 
-  std::cout<<"Initialise MRST99 from "<<path<<"  ("<<path.length()<<")  -> "<<filename<<endl;
+
+  std::cout<<"Initialise MRST99 from "<<path<<"  ("<<path.length()<<")  -> "
+	   <<filename<<endl;
 
   ifstream data_file;
   data_file.open(filename);

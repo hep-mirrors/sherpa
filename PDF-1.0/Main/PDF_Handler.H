@@ -7,8 +7,9 @@
 
 namespace PDF {
   class PDF_Handler {
+    bool m_initlhapdf;
   public:
-    PDF_Handler() {};
+    PDF_Handler() : m_initlhapdf(0) {};
     PDF_Base * GetPDFLib(AORGTOOLS::Data_Read *,APHYTOOLS::Flavour & flav,const int);
   };
   /*!
