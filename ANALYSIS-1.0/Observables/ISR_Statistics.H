@@ -43,6 +43,40 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
 
   };// end of class Sprime_Y_Distribution
+
+  class Z1_Z2_Distribution : public Primitive_Observable_Base {  
+  private:
+
+    double m_ymin, m_ymax;
+    size_t m_ybins;
+
+  public:
+
+    Z1_Z2_Distribution(const double spmin,const double spmax,const size_t spbins,
+			  const double ymin,const double ymax,const size_t ybins);
+
+    void Evaluate(const ATOOLS::Blob_List & blobs,double weight=1.,int ncount=1);
+
+    Primitive_Observable_Base * Copy() const;
+
+  };// end of class Z1_Z2_Distribution
+
+  class KPerp_Distribution : public Primitive_Observable_Base {  
+  private:
+
+    double m_ymin, m_ymax;
+    size_t m_ybins;
+
+  public:
+
+    KPerp_Distribution(const double spmin,const double spmax,const size_t spbins,
+			  const double ymin,const double ymax,const size_t ybins);
+
+    void Evaluate(const ATOOLS::Blob_List & blobs,double weight=1.,int ncount=1);
+
+    Primitive_Observable_Base * Copy() const;
+
+  };// end of class KPerp_Distribution
 #endif
 
 }// end of namespace ANALYSIS

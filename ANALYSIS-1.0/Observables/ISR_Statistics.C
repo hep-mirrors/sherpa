@@ -182,5 +182,124 @@ Primitive_Observable_Base * Sprime_Y_Distribution::Copy() const
 {
   return new Sprime_Y_Distribution(m_xmin,m_xmax,m_nbins,m_ymin,m_ymax,m_ybins);
 }
+
+
+DECLARE_GETTER(Z1_Z2_Distribution_Getter,"Z1Z2",
+	       Primitive_Observable_Base,String_Matrix);
+
+Primitive_Observable_Base *const 
+Z1_Z2_Distribution_Getter::operator()(const String_Matrix &parameters) const
+{
+  std::string listname="Analysed";
+  if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
+  return new Z1_Z2_Distribution(-8.0,0.0,160,-10.0,10.0,200);
+}
+
+void Z1_Z2_Distribution_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"[list]"; 
+}
+
+Z1_Z2_Distribution::
+Z1_Z2_Distribution(const double spmin,const double spmax,const size_t spbins,
+		      const double ymin,const double ymax,const size_t ybins):
+  m_ymin(ymin),
+  m_ymax(ymax),
+  m_ybins(ybins)
+{ 
+  m_xmin=spmin;
+  m_xmax=spmax;
+  m_nbins=spbins;
+  (*MYROOT::myroot)(new TH2D((ATOOLS::ToString((long int)this)+"ME").c_str(),
+			     "Z1_Z2_ME",m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),
+		    "Z1_Z2_ME");
+  (*MYROOT::myroot)(new TH2D((ATOOLS::ToString((long int)this)+"PS").c_str(),
+ 			     "Z1_Z2_PS",m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),
+ 		    "Z1_Z2_PS");
+}
+
+#define ANALYSE__Phase_Space_Handler
+
+void Z1_Z2_Distribution::Evaluate(const Blob_List &  blobs,double weight,int ncount)
+{
+#ifndef ANALYSE__Phase_Space_Handler
+  for (Blob_List::const_iterator bit=blobs.begin();bit!=blobs.end();++bit) {
+    if ((*bit)->Type()==btp::Signal_Process) {
+      Blob_Data_Base *info=(*(*bit))["ISR_Info_lab"];
+      if (info) {
+	std::vector<double> isrinfo=info->Get<std::vector<double> >();
+	double tau=log(isrinfo[PDF::iic::z_1]*isrinfo[PDF::iic::z_2]);
+	double y=0.5*log(isrinfo[PDF::iic::z_1]/isrinfo[PDF::iic::z_2]);
+	((TH2D*)(*MYROOT::myroot)["Z1_Z2_ME"])->Fill(tau,y,weight);
+	((TH2D*)(*MYROOT::myroot)["Z1_Z2_PS"])->Fill(tau,y,1.0);
+      }
+    }
+  }
+#endif
+} 
+
+Primitive_Observable_Base * Z1_Z2_Distribution::Copy() const 
+{
+  return new Z1_Z2_Distribution(m_xmin,m_xmax,m_nbins,m_ymin,m_ymax,m_ybins);
+}
+
+DECLARE_GETTER(KPerp_Distribution_Getter,"KPerp",
+	       Primitive_Observable_Base,String_Matrix);
+
+Primitive_Observable_Base *const 
+KPerp_Distribution_Getter::operator()(const String_Matrix &parameters) const
+{
+  std::string listname="Analysed";
+  if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
+  return new KPerp_Distribution(-10.0,0.0,100,-10.0,0.0,100);
+}
+
+void KPerp_Distribution_Getter::PrintInfo(std::ostream &str,const size_t width) const
+{ 
+  str<<"[list]"; 
+}
+
+KPerp_Distribution::
+KPerp_Distribution(const double spmin,const double spmax,const size_t spbins,
+		      const double ymin,const double ymax,const size_t ybins):
+  m_ymin(ymin),
+  m_ymax(ymax),
+  m_ybins(ybins)
+{ 
+  m_xmin=spmin;
+  m_xmax=spmax;
+  m_nbins=spbins;
+  (*MYROOT::myroot)(new TH2D((ATOOLS::ToString((long int)this)+"ME").c_str(),
+			     "KPerp_ME",m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),
+		    "KPerp_ME");
+  (*MYROOT::myroot)(new TH2D((ATOOLS::ToString((long int)this)+"PS").c_str(),
+ 			     "KPerp_PS",m_nbins,m_xmin,m_xmax,m_ybins,m_ymin,m_ymax),
+ 		    "KPerp_PS");
+}
+
+#define ANALYSE__Phase_Space_Handler
+
+void KPerp_Distribution::Evaluate(const Blob_List &  blobs,double weight,int ncount)
+{
+#ifndef ANALYSE__Phase_Space_Handler
+  for (Blob_List::const_iterator bit=blobs.begin();bit!=blobs.end();++bit) {
+    if ((*bit)->Type()==btp::Signal_Process) {
+      Blob_Data_Base *info=(*(*bit))["ISR_Info_lab"];
+      if (info) {
+	std::vector<double> isrinfo=info->Get<std::vector<double> >();
+	double tau=log(isrinfo[PDF::iic::kp_1]*isrinfo[PDF::iic::kp_2]);
+	double y=0.5*log(isrinfo[PDF::iic::kp_1]/isrinfo[PDF::iic::kp_2]);
+	((TH2D*)(*MYROOT::myroot)["KPerp_ME"])->Fill(tau,y,weight);
+	((TH2D*)(*MYROOT::myroot)["KPerp_PS"])->Fill(tau,y,1.0);
+      }
+    }
+  }
+#endif
+} 
+
+Primitive_Observable_Base * KPerp_Distribution::Copy() const 
+{
+  return new KPerp_Distribution(m_xmin,m_xmax,m_nbins,m_ymin,m_ymax,m_ybins);
+}
 #endif
 
