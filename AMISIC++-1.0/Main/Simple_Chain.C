@@ -394,7 +394,6 @@ bool Simple_Chain::SetUpInterface()
     group->SetFSRInterface(p_fsrinterface);
     group->SetFSRMode(2);
     group->CreateFSRChannels();
-    group->InitIntegrators();
   }
 #ifdef USING__Sherpa
   p_mehandler = new SHERPA::Matrix_Element_Handler();
