@@ -13,6 +13,8 @@ namespace EXTRAXS {
 
     XS_Base *p_owner;
 
+    bool m_offshell;
+
   public:
 
     // constructor
@@ -20,12 +22,17 @@ namespace EXTRAXS {
     
     // member functions
     Single_XS *GetXS(const size_t nin,const size_t nout,
-		     const ATOOLS::Flavour *flavours,const bool offshell);
+		     const ATOOLS::Flavour *flavours);
     
     static size_t FindInGroup(XS_Group *const group,XS_Base *&base,
 			      const size_t nin,const size_t nout,
 			      const ATOOLS::Flavour *flavours);
     
+    // inline functions
+    inline void SetOffShell(const bool offshell)   { m_offshell=offshell;   }
+
+    inline bool OffShell() const  { return m_offshell;  }
+
   };// end of class XS_Selector
 
 }//end of namespace EXTRAXS
