@@ -8,7 +8,7 @@ DESCRIPTIONS="C-Files cpp-Files cc-Files"
 DESCRIPTIONS=$DESCRIPTIONS" H-Files hpp-Files hh-Files"
 DESCRIPTIONS=$DESCRIPTIONS" Makefiles configures"
 DESCRIPTIONS=$DESCRIPTIONS" Manpages Manpages TeXinfos TeXinfos"
-COLOURS="4 4 4 4 2 2 2 1 1 6 6 6 6"
+COLOURS="4 4 4 2 2 2 1 1 6 6 6 6"
 
 OPTIONS=
 for I in $* ; do
