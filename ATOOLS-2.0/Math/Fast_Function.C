@@ -46,8 +46,8 @@ void Fast_Function::Init(Function_Base & fun, double xmin, double xmax, int min_
     for (int i=3; i<min_points; i=i+2) {
 
       // loop over testpoints, tries to find worst point
-      double diff=0;
-      std::list<Pair>::iterator it=testpoints.begin(), win;
+      double diff=0.;
+      std::list<Pair>::iterator it=testpoints.begin(), win=testpoints.begin();
       for (;it!=testpoints.end();++it) {
 	y=(*this)(it->x);  // interpolation
 	double newdiff=dabs(1.-y/it->y);
