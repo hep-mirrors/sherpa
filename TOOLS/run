@@ -94,32 +94,34 @@ if [ "$SUBMIT" = "TRUE" ] ; then
     echo "#"$BATCH" -m ae" >> $FILE
   fi
   echo "" >> $FILE
-  echo "RUNPATH=$SETUPPATH" >> $FILE
+  echo "RUNPATH=\"$SETUPPATH\"" >> $FILE
   echo "LOGFILE=\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
-  echo "echo \"\" > \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-  echo "echo \"HOME        = \$HOME\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-  echo "echo \"USER        = \$USER\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-  echo "echo \"\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "cd \$RUNPATH" >> $FILE
+  echo "" >> $FILE
+  echo "echo \"\" > \$LOGFILE" >> $FILE
+  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$LOGFILE" >> $FILE
+  echo "echo \"HOME        = \$HOME\" >> \$LOGFILE" >> $FILE
+  echo "echo \"USER        = \$USER\" >> \$LOGFILE" >> $FILE
+  echo "echo \"\" >> \$LOGFILE" >> $FILE
   if [ "$BATCH" = "SGE" ] ; then
-    echo "echo \"JOB_ID      = \$JOB_ID\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-    echo "echo \"JOB_NAME    = \$JOB_NAME\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_TASK_ID = \$"$BATCH"_TASK_ID\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-    echo "echo \"QUEUE       = \$QUEUE\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-    echo "echo \"TMPDIR      = \$TMPDIR\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \"JOB_ID      = \$JOB_ID\" >> \$LOGFILE" >> $FILE
+    echo "echo \"JOB_NAME    = \$JOB_NAME\" >> \$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_TASK_ID = \$"$BATCH"_TASK_ID\" >> \$LOGFILE" >> $FILE
+    echo "echo \"QUEUE       = \$QUEUE\" >> \$LOGFILE" >> $FILE
+    echo "echo \"TMPDIR      = \$TMPDIR\" >> \$LOGFILE" >> $FILE
   else
-    echo "echo \""$BATCH"_JOBID     = \$"$BATCH"_JOBID\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_JOBNAME   = \$"$BATCH"_JOBNAME\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_O_QUEUE   = \$"$BATCH"_O_QUEUE\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_O_WORKDIR = \$"$BATCH"_O_WORKDIR\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_JOBID     = \$"$BATCH"_JOBID\" >> \$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_JOBNAME   = \$"$BATCH"_JOBNAME\" >> \$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_O_QUEUE   = \$"$BATCH"_O_QUEUE\" >> \$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_O_WORKDIR = \$"$BATCH"_O_WORKDIR\" >> \$LOGFILE" >> $FILE
   fi
-  echo "echo \"\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "echo \"\" >> \$LOGFILE" >> $FILE
   echo "" >> $FILE
-  echo "echo \"Submitted on "$TIME"\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
-  echo "echo \"Started on   \`date\`\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "echo \"Submitted on "$TIME"\" >> \$LOGFILE" >> $FILE
+  echo "echo \"Started on   \`date\`\" >> \$LOGFILE" >> $FILE
   echo "" >> $FILE
-  echo "echo \"\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "echo \"\" >> \$LOGFILE" >> $FILE
   echo "" >> $FILE
 else
   echo "#!/bin/bash" >> $FILE
@@ -128,13 +130,15 @@ else
   echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
 fi
-echo "cd $BINPATH" >> $FILE
-echo -en "./Sherpa PATH=\$RUNPATH " >> $FILE
-if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=\$RUNPATH\"/$RESULTS\" " >> $FILE ; fi
-if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\$RUNPATH\"/$ANALYSIS\" " >> $FILE ; fi
+echo "export PATH=\$PATH:$BINPATH" >> $FILE
+echo "" >> $FILE
+
+echo -en "Sherpa " >> $FILE
+if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=\"$RESULTS\" " >> $FILE ; fi
+if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\"$ANALYSIS\" " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$SOPTIONS" = "" ] ; then echo -en "$SOPTIONS " >> $FILE ; fi
-echo -e ">> \$RUNPATH\"/\"\$LOGFILE 2>&1 \n\n" >> $FILE
+echo -e ">> \$LOGFILE 2>&1 \n\n" >> $FILE
 
 chmod 777 $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then
