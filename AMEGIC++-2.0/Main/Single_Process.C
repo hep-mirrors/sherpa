@@ -158,7 +158,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     if (model_name==string("ADD")) {
       double ms=model->ScalarConstant("M_s");
       double ecms=rpa.gen.Ecms();
-      if (ms>0.95*ecms) {
+      if (ms<0.95*ecms) {
 	rpa.gen.SetEcms(0.5*ms);
 	_testmoms = new Vec4D[m_nvec];
 	p_ps->TestPoint(_testmoms);
