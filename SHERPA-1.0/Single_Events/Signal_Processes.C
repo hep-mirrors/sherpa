@@ -234,7 +234,8 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent)
   if (!success && p_mehandler->Weight()!=1.) {
     p_mehandler->SaveNumberOfTrials();
   }
-  else p_mehandler->ResetNumberOfTrials();
+  //  moved to Beam_Remnant_Handler::FillBeamBlobs(..)
+  //  else p_mehandler->ResetNumberOfTrials();
 
   // store some additional information
   if (sameevent) {
