@@ -351,7 +351,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
     }
     sum += channels[i]->Alpha();
     if (sum>rn) {
-      //      cout<<"Channel number "<<i<<"  rn="<<rn<<" sum="<<sum<<endl;
+      //       cout<<"Channel number "<<i<<"  rn="<<rn<<" sum="<<sum<<endl;
       channels[i]->GeneratePoint(p,cuts);
       break;
     }
@@ -389,7 +389,6 @@ void Multi_Channel::GenerateWeight(Vec4D * p)
 
 void Multi_Channel::GeneratePoint(int n,Vec4D * p,double * rn)
 {
-  msg.Debugging()<<"Multi_Channel::GeneratePoint("<<name<<", "<<n<<")"<<endl;
   channels[n]->GeneratePoint(p,rn);
 }
 

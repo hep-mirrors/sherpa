@@ -29,7 +29,8 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
     maxtrials(100000), sumtrials(0),
     events(0), psi(NULL), p(NULL),
     beamchannels(NULL), isrchannels(NULL), fsrchannels(NULL), psflavs(NULL),
-    nin(proc->Nin()), nout(proc->Nout()), nvec(proc->Nvec()+1), name(proc->Name())
+    nin(proc->Nin()), nout(proc->Nout()), nvec(proc->Nvec()+1), name(proc->Name()),
+    m_weight(1.)
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   
@@ -254,8 +255,14 @@ bool Phase_Space_Handler::SameEvent() {
   return OneEvent(1);
 }
 
+double Phase_Space_Handler::SameWeightedEvent() {
+  return WeightedEvent(1);
+}
+
 bool Phase_Space_Handler::OneEvent(int mode)
 {
+  m_weight=1.;
+
   double value;
   for (int i=1;i<maxtrials+1;i++) {
     if (mode==0) {
@@ -311,8 +318,40 @@ bool Phase_Space_Handler::OneEvent(int mode)
   return 0;
 }
 
-double Phase_Space_Handler::WeightedEvent()
+double Phase_Space_Handler::WeightedEvent(int mode)
 {
+  double value;
+  for (int i=1;i<maxtrials+1;i++) {
+    if (mode==0) {
+      proc->DeSelect();
+      proc->SelectOne();
+    }
+    else {
+      if (!(proc->Selected())) {
+	msg.Error()<<" ERROR: in Phase_Space_Handler::WeightedEvent() "<<endl;
+	return 0;
+      }
+    }
+    ih->SetSprimeMin(sqr(proc->ISRThreshold()));
+    
+    if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
+    value = Differential(proc->Selected());
+
+    if (value > 0.) {
+      sumtrials += i;events ++;
+      if (result1 < (result1+result2)*AMATOOLS::ran.Get()) Rotate(p);
+      proc->Selected()->SetMomenta(p);
+      for (int i=0;i<nin+nout;i++) {
+	msg.Debugging()<<"  "<<proc->Selected()->Flavs()[i]<<" : "<<p[i]<<endl; 
+      } 
+      m_weight=value;
+      return m_weight;
+    }
+  }
+
+  msg.Out()<<"Phase_Space_Handler::WeightedEvent() : "
+	   <<" too many trials for "<<proc->Selected()->Name()<<endl;
+  m_weight=0.;
   return 0.;
 } 
 

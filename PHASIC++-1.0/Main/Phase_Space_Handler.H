@@ -29,6 +29,7 @@ namespace PHASIC {
     double                       E,m1,m2,m12,m22,s,sprime,y;
     double                       sprimeB,yB,sprimeI,yI;
     double                       result1,result2,flux;
+    double                       m_weight; 
     AMATOOLS::Vec4D            * p;
     Phase_Space_Integrator     * psi;    
 
@@ -56,7 +57,8 @@ namespace PHASIC {
     double Differential(Integrable_Base *);
     bool   OneEvent(int mode =0);
     bool   SameEvent();
-    double WeightedEvent();
+    double WeightedEvent(int mode =0);
+    double SameWeightedEvent();
     void   AddPoint(double);
     void   TestPoint(AMATOOLS::Vec4D *);
 
@@ -64,6 +66,7 @@ namespace PHASIC {
 
     inline AMATOOLS::Vec4D *     Point()        { return p; }
     inline APHYTOOLS::Flavour *  Flavs()        { return psflavs; }
+    inline double                Weight()       { return m_weight; }
 
 
     inline Multi_Channel  * BeamIntegrator()          { return beamchannels; }
