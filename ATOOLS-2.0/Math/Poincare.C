@@ -114,3 +114,16 @@ void Poincare::RotateBack(Vec4D& v)         // rotate back
       v[i] += m_mat[i][j]*p2[j];
   }
 }
+
+void Poincare::Invert() 
+{
+  for (int i=1;i<4;++i) m_beta[i]=-m_beta[i];
+
+  for (int i=1;i<4;i++) {
+    for (int j=i+1;j<4;j++) {
+      double help=m_mat[i][j];
+      m_mat[i][j]=m_mat[j][i];
+      m_mat[j][i]=help;
+    }
+  }
+}

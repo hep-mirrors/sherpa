@@ -18,6 +18,8 @@ namespace ATOOLS {
     void Rotate(Vec4D& v);         // rotate
     void RotateBack(Vec4D& v);     // rotate back
 
+    void Invert();  
+
     Vec4D operator*(const Vec4D& vin) {
       Vec4D v(vin);
       if ((m_status)&(1)) Boost(v);
