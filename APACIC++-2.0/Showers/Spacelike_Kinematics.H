@@ -17,7 +17,6 @@ namespace APACIC {
     //! For vetos on extra jet from Shower.
     APHYTOOLS::Jet_Finder* jf;
     AMATOOLS::Poincare     boost,rot;
-    AMATOOLS::Vec4D        ZVEC;
     /*!
       Starting from a Knot with given energy E all energies of the subsequent
       knots are reset recursively as z*E and (1-z)*E, respectively. 
@@ -36,7 +35,6 @@ namespace APACIC {
       double ycut   = AORGTOOLS::rpa.integ.Ycut();
       jf            = new APHYTOOLS::Jet_Finder(ycut,1);
       kink          = new Timelike_Kinematics(pt2minFS);
-      ZVEC          = AMATOOLS::Vec4D(1.,0.,0.,1.);
     }
     //! Destructor to delete the Jet_Finder and the Timelike_Kinematics
     ~Spacelike_Kinematics() {

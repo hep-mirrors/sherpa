@@ -86,12 +86,31 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   p_kin->SetJetVeto(jetveto);
 
   // *AS* no fs interf.
-  //   Reset(mo);
-  //   return;
+//   Reset(mo);
+//   return;
+
+
+  msg.Tracking()<<" in Final_State_Shower::FirstTimelikeFromSpacelike for Knot ("<<mo->kn_no<<")"<<endl;
+  Knot * gr = mo ->prev;
+  Knot * si = gr ->right;
+  msg.Tracking()<<"("<<si->kn_no<<")  : "<<si->part->Momentum()<<endl;
+  if (mo->thcrit!=M_PI) {
+    double th1c   = sqrt( dabs(si->t)/((1.- si->z)*si->E2));
+    msg.Tracking()<<" setting thcrit from "<<mo->thcrit<<" to "<<th1c<<endl;
+    mo->thcrit=th1c;
+  }
+
+  //  mo->thcrit=M_PI;   // *AS* HACK!!!!
+
+
+// // if hard part angles should be correct!!!
+  
 
   if (mo->left && mo->right) {
     m_ini_partons.clear();
-    int stat=InitializeJets(tree,mo);
+    EstablishRelations(mo,mo->left,mo->right);
+
+    int stat=InitializeJets(tree,mo,1);
   }
   else {
 
@@ -123,7 +142,12 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
 //---------------------------- After the Shower -------------------------
 //----------------------------------------------------------------------- 
 
-bool Final_State_Shower::SetColours(Knot * mo)
+bool Final_State_Shower::SetAllColours(Knot * mo) {
+  SetColours(mo,p_kin);
+}
+
+
+bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 {
   msg.Debugging()<<"Test :"<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
   if (!mo) {
@@ -185,7 +209,7 @@ bool Final_State_Shower::SetColours(Knot * mo)
 		  <<"    all colors known for "<<mo->part->Flav()<<" -> "
 		  <<d1->part->Flav()<<" + "<<d2->part->Flav()<<std::endl;
     
-    return ( SetColours(d1) && SetColours(d2) );
+    return ( SetColours(d1,kin) && SetColours(d2,kin) );
   }
 
   Knot * partner, * nopart;
@@ -232,8 +256,8 @@ bool Final_State_Shower::SetColours(Knot * mo)
 	  if (au == mo) au = mo->prev->right;
 
 	  partner = d1; nopart = d2;
-	  if (au->part->Flav().Strong()) {
-	    if (p_kin->ArrangeColourPartners(au,d1,d2)) { partner = d2; nopart = d1; }
+	  if (au->part->Flav().Strong() && kin) {
+	    if (kin->ArrangeColourPartners(au,d1,d2)) { partner = d2; nopart = d1; }
 	    for (int i=1;i<3;i++) {
 	      if (au->part->GetFlow(i) == mo->part->GetFlow(3-i)) {
  		partner->part->SetFlow(3-i,mo->part->GetFlow(3-i));
@@ -304,7 +328,72 @@ bool Final_State_Shower::SetColours(Knot * mo)
 	      <<mo->part->Flav()<<" ("<<mo->part->GetFlow(1)<<" "<<mo->part->GetFlow(2)<<")"
 	      <<d1->part->Flav()<<" ("<<d1->part->GetFlow(1)<<" "<<d1->part->GetFlow(2)<<")"
 	      <<d2->part->Flav()<<" ("<<d2->part->GetFlow(1)<<" "<<d2->part->GetFlow(2)<<")"<<std::endl;
-  return ( SetColours(d1) && SetColours(d2) );
+
+  return ( SetColours(d1,kin) && SetColours(d2,kin) );
+}
+
+
+void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
+    // set color conections (if not jet known)
+    APACIC::Final_State_Shower::SetColours(mo,0);
+
+    Vec3D vec1 = Vec3D(d1->part->Momentum());
+    Vec3D vec2 = Vec3D(d2->part->Momentum());
+    //    double th_old  = acos(vec1*vec2/(vec1.Abs()*vec2.Abs()));
+    double t_mo = mo->part->Momentum().Abs2();
+    double E_mo= mo->part->Momentum()[0];
+
+    // using shower variables
+    //    double th  = 
+    //    cout<<" th_old "<<th_old<<std::endl;
+    //    cout<<" th="<<sqrt( t_mo/(mo->z*(1.- mo->z)*sqr(E_mo) ))<<std::endl;
+    double th  = sqrt( t_mo/(mo->z*(1.- mo->z)))/E_mo;
+
+    // thcrit : approximation (for small t):
+    if (mo->part->Flav().Strong()) {
+      if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
+	if ((d1->E2) > (d2->E2)) {
+	  d1->t      = mo->t;
+	  d1->thcrit = mo->thcrit;
+	  d2->t      = t_mo;
+	  d2->thcrit = th;
+	}
+	else {
+	  d1->t      = t_mo;
+	  d1->thcrit = th;
+	  d2->t      = mo->t;
+	  d2->thcrit = mo->thcrit;
+	}
+      }
+      else if (!(d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
+	d1->t      = t_mo;
+	d1->thcrit = M_PI;
+	d2->t      = mo->t;
+	d2->thcrit = mo->thcrit;
+      }
+      else if ((d1->part->Flav().Strong()) && !(d2->part->Flav().Strong())) {
+	d1->t      = mo->t;
+	d1->thcrit = mo->thcrit;
+	d2->t      = t_mo;
+	d2->thcrit = M_PI;
+      }
+    }
+    else {
+      if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
+	d1->t      = t_mo;
+	d1->thcrit = th;
+	d2->t      = t_mo;
+	d2->thcrit = th;
+      }
+      else {
+	d1->t      = t_mo;
+	d1->thcrit = M_PI;
+	d2->t      = t_mo;
+	d2->thcrit = M_PI;
+      }
+    }
+    mo->t = t_mo;
+
 }
 
 
@@ -424,7 +513,7 @@ bool Final_State_Shower::TestShower(Tree * tree)
   //  Ran.ReadInStatus("RandomE.dat",339); // ycut!
   for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
     if (i%2500==0) {
-      //msg.Out()<<" "<<i<<" th event "<<std::endl;
+      msg.Out()<<" "<<i<<" th event "<<std::endl;
       //      msg.Out()<<" ran"<<Ran.WriteOutStatus("RandomE.dat")<<std::endl;
     }
     
@@ -473,7 +562,7 @@ bool Final_State_Shower::TestShower(Tree * tree)
 //------------------- Initialisation of the Shower ----------------------
 //----------------------------------------------------------------------- 
 
-int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo)
+int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
 {
   if (!mo) {
     msg.Error()<<"Error in Final_State_Shower : "<<std::endl
@@ -527,7 +616,14 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo)
   }
 
   int ok=1; int ej=0;
-  if (!decay1) { 
+  if (!decay1) {
+    if (init_rel) EstablishRelations(d1,d1->left,d1->right);
+
+    if (init_rel) {
+      cout<<" rel set : "<<endl;
+      OutputTree(tree);
+    }
+
     int ok1=InitializeJets(tree,d1);
     if (ok1==3) ej=3;
     ok = ok && ok1;
@@ -537,6 +633,13 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo)
       m_ini_partons.push_back(d1);
   }
   if (!decay2) {
+    if (init_rel) EstablishRelations(d2,d2->left,d2->right);
+
+    if (init_rel) {
+      cout<<" rel set : "<<endl;
+      OutputTree(tree);
+    }
+
     int ok2=InitializeJets(tree,d2);
     if (ok2==3) ej=3;
     ok = ok && ok2;
@@ -681,7 +784,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->left->t          = mo->t;
   mo->left->tout       = sqr(mo_flavs[0].PSMass());
   mo->left->maxpt2     = 0.;
-  //  std::cout<<" da set on="<<mo->left->tout<<std::endl;
+
 
   mo->left->E2         = E*E;
   mo->left->thcrit     = start_th;
@@ -696,7 +799,6 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->right->t         = mo->t;
   mo->right->tout      = sqr(mo_flavs[1].PSMass());
   mo->right->maxpt2    = 0.;
-  //  std::cout<<" da set on="<<mo->right->tout<<std::endl;
   mo->right->E2        = E*E;
   mo->right->thcrit    = start_th;
 };
@@ -812,9 +914,7 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
     // check zrange first
     if (first==2) 
       p_kin->CheckZRange(mo);
-    //    std::cout<<"b st"<<d1->stat<<" st"<<d2->stat<<std::endl;
 
-      //    std::cout<<"a st"<<d1->stat<<" st"<<d2->stat<<std::endl;
     if ((d1->stat != 3) && (d2->stat != 3)) { // *AS*
       if (p_kin->Shuffle(mo,first)) { // check (and adjust) kinematics 
 	//  (usually both children have to be diced atleast once)
@@ -839,16 +939,16 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
 	}
 	return 1;  // successfull
       }
-      else 
-	//msg.Debugging()<<"Shuffle for "<<mo->kn_no<<" failed."<<std::endl;
-	
-	//msg.Debugging()<<"Final_State_Shower::FillBranch"<<std::endl
-	//	   <<"      Daughters did not fit, "<<d1->t<<"("<<d1->tout<<")"
-	//	   <<" / "<<d2->t<<"("<<d2->tout<<")"<<std::endl;
-	
-	// exit if both daughters can not be diced down further
-	if (!(d1->stat) && !(d2->stat)) return 0; 
+      else {
+// 	msg.Debugging()<<"Shuffle for "<<mo->kn_no<<" failed."<<std::endl;
+      }
     }
+//     msg.Debugging()<<"Final_State_Shower::FillBranch"<<std::endl
+// 		   <<"      Daughters did not fit, "<<d1->t<<"("<<d1->tout<<")"
+// 		   <<" / "<<d2->t<<"("<<d2->tout<<")"<<std::endl;
+ 
+    // exit if both daughters can not be diced down further
+    if (!(d1->stat) && !(d2->stat)) return 0; 
   }
 }
 
@@ -889,16 +989,14 @@ void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
     mo->left->part->SetInfo('F');
     mo->left->part->SetStatus(1);
     mo->left->tout    = sqr(mo_flavs[0].PSMass());
-    //    std::cout<<" res da set on="<<mo->left->tout<<std::endl;
-    mo->left->stat    = 3;  // *AS*
+    mo->left->stat    = 3;  
 
     mo->right->prev = mo;
     mo->right->part->SetFlav(mo_flavs[1]);
     mo->right->part->SetInfo('F');
     mo->right->part->SetStatus(1);
     mo->right->tout   = sqr(mo_flavs[1].PSMass());
-    //    std::cout<<" res da set on="<<mo->left->tout<<std::endl;
-    mo->right->stat   = 3;  // *AS*
+    mo->right->stat   = 3;  
 
     if (mo->part->Info() != 'H') mo->part->SetInfo('f');
     mo->part->SetStatus(2);
@@ -955,8 +1053,10 @@ void Final_State_Shower::OutputTree(Tree * tree)
 {
   int number = 0;
   msg.Out()<<"final Tree:"<<std::endl<<tree<<std::endl
-	   <<"Total 4 Mom = "<<GetMomentum(tree->GetRoot(),number)
-	   <<" for "<<number<<" FS particles."<<std::endl;
+	   <<"Total 4 Mom = "<<GetMomentum(tree->GetRoot(),number);
+  msg.Out()<<" for "<<number<<" FS particles."<<std::endl;
+  // Note: we NEED two "msg.Out()" since otherwise "number" is print
+  //       before it is calculated!!
 }
 
 

@@ -125,11 +125,13 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
       */
     }
 
+    /*
     if (rpa.gen.Events()) {
       OutputTree(trees[0]);
       OutputTree(trees[1]);
     }
     msg.Events()<<" s after shower : "<<cms.Abs2()<<" == "<<x1*x2*E2<<", "<<"Internally : "<<m_sprime<<std::endl;
+    */
     return 1;
   }
     
@@ -311,37 +313,37 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     accepted = 1;  
     // Parton 1/Tree 1 is the one to decay.
     if (decay1) {
-      for (;;) {
+      //      for (;;) {  // *AS* angle and pt vetos only done in dice!!!
 	msg.Debugging()<<"------------------------------"<<endl;
 	msg.Debugging()<<"  * calling FillBranch  I ("<<k1->kn_no<<")"<<endl;
 	if (FillBranch(trees,k1,k2,0)) {
 	  if (k1->z>0.) m_sprime = m_sprime/k1->z;
 
-	  if ((k1->maxpt2 < m_pt2_1) && (k1->thcrit < m_th_1)) break;   // *AS* !!!!?
-	  if (k1->stat==0) break;
+	  //	  if ((k1->maxpt2 < m_pt2_1) && (k1->thcrit < m_th_1)) break;   // *AS* !!!!?
+	  //	  if (k1->stat==0) break;
 	}
 	else {
 	  accepted = 0;
-	  break;
+	  //	  break;
 	}
-      }
+	//      }
     }
     // Parton 2/Tree 2 is the one to decay.    
     if (decay2) {
-      for (;;) {
+      //      for (;;) {
 	msg.Debugging()<<"------------------------------"<<endl;
 	msg.Debugging()<<"  * calling FillBranch II ("<<k2->kn_no<<")"<<endl;
 	if (FillBranch(trees,k2,k1,1)) {
 	  if (k2->z > 0.) m_sprime = m_sprime/k2->z;
 
-	  if ((k2->maxpt2 < m_pt2_2) && (k2->thcrit < m_th_2)) break;   // *AS* !!!!?
-	  if (k2->stat==0) break;
+	  //	  if ((k2->maxpt2 < m_pt2_2) && (k2->thcrit < m_th_2)) break;   // *AS* !!!!?
+	  //	  if (k2->stat==0) break;
 	}
 	else {
 	  accepted = 0;
-	  break;
+	  //	  break;
 	}
-      }
+	//    }
     }
     
     if (accepted) {
@@ -350,8 +352,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
       if (!decay1) SetColours(k1);
       if (!decay2) SetColours(k2);
 
-//       OutputTree(trees[0]);
-//       OutputTree(trees[1]);
       msg.Debugging()<<"------------------------------"<<endl;
       msg.Debugging()<<"  * calling EvolveSystem ("<<k1->kn_no<<")  ("<<k2->kn_no<<")"<<endl;
 	
@@ -462,6 +462,14 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 //     cout<<" z,x fac = "<<k1->z<<","<<k1->prev->x<<endl;
     m_sprime/=k1->z;
 
+
+    double pt2max = sqr(rpa.gen.Ecms());
+    double th     = 4.*k1->z*k1->z*k1->t/(4.*k1->z*k1->z*k1->t-(1.-k1->z)*k1->x*k1->x*pt2max);
+
+    k1->prev->thcrit       = k1->thcrit;
+    k1->prev->t            = k1->t;
+    k1->prev->left->thcrit = th;  // will be updated in FirstTimelike...
+    k1->prev->left->t      = k1->prev->part->Momentum().Abs2();
   }
 
   if (k1->prev->stat>0) {
@@ -478,7 +486,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     if (k1->prev->left->stat>0)
       k1->prev->left->t = maxt;
     else {
-      msg.Tracking()<<" timelike daughter already known "<<endl;
+      msg.Debugging()<<" timelike daughter already known "<<endl;
     }
   } 
   
@@ -496,7 +504,7 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 //   OutputTree(trees[1]);
 
   /* *AS* calling Color routine should be called with (k1->prev) */
-  p_fin->SetColours(k1->prev->left);
+  p_fin->SetAllColours(k1->prev->left);
   
   if (k1->prev->z>0.) m_sprime = m_sprime/k1->prev->z;
 
@@ -529,6 +537,7 @@ bool Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner
 
     return 1;
   }
+  active->prev   = 0;
   active->stat   = 0;
   active->t      = active->tout;
   active->thcrit = 0.;
@@ -544,11 +553,11 @@ bool Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner
 void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_flavs)
 {
   msg.Debugging()<<"Initial_State_Shower::FillMotherAndSister(";
-  // if (tree==trees[0]) msg.Debugging()<<" I ,"; else msg.Debugging()<<" II ,";
-  msg.Debugging()<<" ("<<k->kn_no<<") )"<<endl;
+  msg.Debugging()<<" ("<<k->kn_no<<") )   t="<<k->t<<endl;
 
   Knot * mother  = tree->NewKnot();
   k->prev        = mother;
+
   mother->right  = k;
   mother->part->SetFlav(k_flavs[0]);
   mother->part->SetInfo('I');
@@ -573,7 +582,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   sister->x      = (mother->x)*(1.-k->z);
   sister->stat   = 1;
   sister->E2     = 0.;
-  sister->thcrit = k->thcrit;
+  sister->thcrit = k->thcrit; 
   //  sister->E2     = sqr(1./k->z -1.) * k->E2;
   
 //   msg.Debugging()<<"      mother : ("<<mother->kn_no<<") E2="<<mother->E2<<endl;
@@ -586,8 +595,51 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
 
 void Initial_State_Shower::SetColours(Knot * k)
 {
+
+  if (!k) return;
   Knot * mother = k->prev;
+  if (!mother) return;
   Knot * sister = mother->left;
+  if (!sister) return;
+
+    //  check if already enough colours
+  Knot * test=0;
+  
+  int all_colors_known=1;
+  for (int i=0;i<3;++i) {
+    if (i==0) test = k;
+    if (i==1) test = mother;
+    if (i==2) test = sister;
+    
+    if (test->part->Flav().Strong()) {
+      int nc=0;
+      if (test->part->GetFlow(1)) ++nc;
+      if (test->part->GetFlow(2)) ++nc;
+      if (test->part->Flav().IsQuark()) {
+	if (nc!=1) {
+	  all_colors_known=0;
+	  break;
+	  // NO
+	}
+      }
+      else if (test->part->Flav().IsGluon()) {
+	if (nc!=2) {
+	  all_colors_known=0;
+	  break;
+	  // NO
+	}
+      }
+      else {
+	cout<<" ERROR: strong particle "<<test->part->Flav()<<" not covered by SetColours "<<endl;
+      }
+    }      
+  }
+
+  if (all_colors_known) {
+    return;
+  }
+
+  // set colors
   if (mother->part->Flav().IsQuark()) {
     if (mother->part->Flav().IsAnti()) {
       if (k->part->Flav().IsQuark()) {

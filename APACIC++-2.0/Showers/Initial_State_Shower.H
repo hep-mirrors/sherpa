@@ -46,6 +46,7 @@ namespace APACIC {
     Knot * GetInitiator(Tree *);
 
     void OutputTree(Tree *);
+    static void SetColours(Knot *);
   private:
     bool InitializeSystem(Tree **,Knot *,Knot *);
     void InitTwoTrees(Tree **,double);
@@ -53,7 +54,6 @@ namespace APACIC {
     bool FillBranch(Tree **,Knot *,Knot *,int);
 
     void FillMotherAndSister(Tree *,Knot *,APHYTOOLS::Flavour *);
-    void SetColours(Knot *);
     void SetStartingConditions(double,double,int) ;
 
   };

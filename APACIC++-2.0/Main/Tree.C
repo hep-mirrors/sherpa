@@ -18,7 +18,7 @@ std::ostream & operator<<(std::ostream & s, Tree * tree)
 {
   s<<"-------------------"<<endl;
   Knot * mo = tree->GetRoot();
-  while (mo->prev) mo=mo->prev;
+  if (mo) while (mo->prev) mo=mo->prev;
   if (mo) StreamTree(s, mo);
   s<<"-------------------"<<endl;
   return s;
@@ -42,10 +42,11 @@ Tree::Tree(Tree * tree) {
 }
 
 Tree::~Tree() {
+  cout<<" deleting "<<this<<endl;
   Reset();
   Knot * help;
   help = p_save_root;
-  while (help->prev) help = help->prev;
+  if (help) while (help->prev) help = help->prev;
   DeleteKnot(help);
 }
 
@@ -226,7 +227,7 @@ void Tree::Restore() {
 Knot * Tree::GetInitiator() {
   Knot * help;
   help = p_root;
-  while (help->prev) help = help->prev;
+  if (help)  while (help->prev) help = help->prev;
   return help;
 }
 
@@ -241,7 +242,7 @@ Knot * Tree::GetRoot() { return p_root; } ;
 void Tree::BoRo(AMATOOLS::Poincare & lorenz) 
 {
   Knot * mo= GetRoot();
-  while (mo->prev) mo = mo->prev;
+  if (mo)  while (mo->prev) mo = mo->prev;
   // msg.Debugging()<<"changing Knot "<<mo->kn_no<<" from "<<mo->part->Momentum()<<endl;
   mo->part->SetMomentum(lorenz*mo->part->Momentum());
   // msg.Debugging()<<"                to "<<mo->part->Momentum()<<endl;
@@ -328,11 +329,7 @@ void Tree::Store()
 {
   Knot * help;
   help = p_save_root;
-  if (help) {
-    while (help->prev) {
-      help = help->prev;
-    }
-  }
+  if (help)  while (help->prev)  help = help->prev;
   DeleteKnot(help);  
 
   p_save_root = CopyKnot(GetInitiator(),0);

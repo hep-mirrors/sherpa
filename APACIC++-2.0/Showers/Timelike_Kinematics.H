@@ -18,12 +18,7 @@ namespace APACIC {
     //----------------------- Constructors ----------------------------------
     //----------------------------------------------------------------------- 
     //! Constructor to initialise the Jet_Finder
-    Timelike_Kinematics(double _pt2min) : 
-      pt2min(_pt2min), t0(4.*pt2min),pt_scheme(1),mass_scheme(1) 
-    {
-      double ycut   = AORGTOOLS::rpa.integ.Ycut();
-      jf            = new APHYTOOLS::Jet_Finder(ycut,1);
-    };
+     Timelike_Kinematics(double _pt2min);
     //! Destructor to delete the Jet_Finder
     ~Timelike_Kinematics() {
       if (jf)   delete jf;

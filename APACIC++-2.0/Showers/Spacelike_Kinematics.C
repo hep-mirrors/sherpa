@@ -208,7 +208,7 @@ double Spacelike_Kinematics::BoostInCMS(Tree ** trees,Knot * active, Knot * part
   boost     = Poincare(cms);
   trees[0]->BoRo(boost);
   trees[1]->BoRo(boost);
-  rot       = Poincare(active->part->Momentum(),ZVEC);
+  rot       = Poincare(active->part->Momentum(),Vec4D::ZVEC);
   trees[0]->BoRo(rot);
   trees[1]->BoRo(rot);
 

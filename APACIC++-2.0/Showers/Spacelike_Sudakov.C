@@ -34,15 +34,16 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spac
   if (p_pdf->Bunch().IsHadron()) {
     // -- initialise QCD Splittingfunctions --
     for (int i=1;i<6;++i) {
-      msg.Debugging()<<"   ... : "<<Flavour(i)<<" -> "<<Flavour(i)<<std::endl;
+      Flavour fl = Flavour(kf::code(i));
+      msg.Debugging()<<"   ... : "<<fl<<" -> "<<fl<<std::endl;
       // add gluon quark & quark gluon (loop over active Flavours)
-      Add(new q_qg(Flavour(kf::code(i)),p_tools));
-      Add(new q_qg(Flavour(i).Bar(),p_tools));
-      Add(new q_gq(Flavour(i),p_tools));
-      Add(new q_gq(Flavour(i).Bar(),p_tools));
+      Add(new q_qg(fl,p_tools));
+      Add(new q_qg(fl.Bar(),p_tools));
+      Add(new q_gq(fl,p_tools));
+      Add(new q_gq(fl.Bar(),p_tools));
       // add q qbar & qbar q (loop over active Flavours)
-      Add(new g_qq(Flavour(i),p_tools));
-      Add(new g_qq(Flavour(i).Bar(),p_tools));
+      Add(new g_qq(fl,p_tools));
+      Add(new g_qq(fl.Bar(),p_tools));
     }
     // add gluon gluon twice!
     Add(new g_gg(p_tools));
@@ -69,7 +70,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto) {
   m_x      = mo->x;
   m_t0     = m_pt2min;
   
-  msg.Tracking()<<"Spacelike_Sudakov::Dice (t,x): "<<m_t<<" / "<<m_x<<" / for ("<<mo->kn_no
+  msg.Debugging()<<"Spacelike_Sudakov::Dice (t,x): "<<m_t<<" / "<<m_x<<" / for ("<<mo->kn_no
 		 <<"), "<<m_inflav<<std::endl;
   
   if (!((m_t-m_t0)<rpa.gen.Accu())) {
@@ -140,7 +141,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto) {
     double uhat = -m_t - sprime* (1.-m_z)/m_z;
 
     if (uhat<0. && !Veto(mo,jetveto)) {
-      msg.Tracking()<<"Spacelike_Sudakov::Dice Branch with t="
+      msg.Debugging()<<"Spacelike_Sudakov::Dice Branch with t="
 		     <<m_t<<", z="<<m_z<<", "<<m_inflav<<" for "<<m_lastint<<std::endl;
       UniformPhi();
       mo->z      = m_z;
@@ -247,17 +248,15 @@ bool Spacelike_Sudakov::PTVeto(Knot * mo)
 
 
   double th = 4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_pt2max);
-//   cout<<"in angle veto : "<<th<<"   knot ("<<mo->kn_no<<")  "<<endl;
-//   cout<<"      th_crit = "<<mo->thcrit<<"     mode = "<<m_ordering_scheme<<endl;
   if (!m_inflav.Strong()) {
-    mo->thcrit = th;
+    //    mo->thcrit = th;
     mo->maxpt2 = m_pt2;
     return 0;
   }
 
   switch (m_ordering_scheme) {
   case 0 : 
-    mo->thcrit = th;
+    //    mo->thcrit = th;
     mo->maxpt2 = m_pt2;
     return 0;
   case 2 : 

@@ -30,7 +30,11 @@ namespace APACIC {
 
     int PerformShower(Tree *,bool);
     void FirstTimelikeFromSpacelike(Tree *,Knot *,bool,double,double);
-    bool SetColours(Knot *);
+    bool SetAllColours(Knot *);
+    static bool SetColours(Knot *,Timelike_Kinematics *);
+    static void EstablishRelations(Knot * mo, Knot * d1,Knot * d2);
+
+
     void ExtractPartons(Knot *,APHYTOOLS::Blob *,
 			APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
     void ExtractPartons(Knot *,APHYTOOLS::Parton_List * = NULL);
@@ -40,7 +44,7 @@ namespace APACIC {
     void OutputTree(Tree *);
     double PT2Min() { return m_pt2min; }
   private:
-    int InitializeJets(Tree *,Knot *);
+    int InitializeJets(Tree *,Knot *,int =0);
     bool SmearDaughters(Knot * mo);
 
     void InitTwojetTree(Tree *,double);

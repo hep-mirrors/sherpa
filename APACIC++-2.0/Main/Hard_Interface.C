@@ -60,7 +60,7 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
     if (fsrstatus!=1) return fsrstatus;
     msg.Tracking()<<"Final State Shower successful !"<<std::endl
 		  <<"Has to be boosted into lab frame !"<<std::endl;
-    p_finshower->SetColours(p_fintree->GetRoot());
+    p_finshower->SetAllColours(p_fintree->GetRoot());
     if (rpa.gen.Tracking()) p_finshower->OutputTree(p_fintree);
   }
   if (m_isron) {

@@ -376,8 +376,8 @@ double Timelike_Sudakov::CrudeInt(double _zmin, double _zmax)
   for (;iter();++iter)
     if (iter()->GetFlA()==m_inflav) {p_selected=iter();break;}
   if (!iter()) {
-    msg.Error()<<"Timelike_Sudakov::CrudeInt : "<<endl
-	       <<"WARNING : splitting function missing for "<<m_inflav<<endl;
+    msg.Tracking()<<"Timelike_Sudakov::CrudeInt : "<<endl;
+    msg.Tracking()<<"WARNING : splitting function missing for "<<m_inflav<<endl;
     return m_lastint = -1.;
   }
   return m_lastint=p_selected->CrudeInt(_zmin,_zmax);
