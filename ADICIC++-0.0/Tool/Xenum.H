@@ -1,5 +1,5 @@
 //bof
-//Version: ADICIC++-0.0/2004/01/29
+//Version: 1 ADICIC++-0.0/2004/03/11
 
 //A collection of specific enum structures.
 
