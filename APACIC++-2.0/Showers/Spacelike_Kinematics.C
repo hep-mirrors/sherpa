@@ -66,6 +66,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       double eboo1 = sgn2*(dabs(E1) * s1 - pz*sqrt(s1*(s1-4.*t1))); // / -(2. * t1);
       double pboo1 = -sgn2*sgn1 * (pz * s1 - dabs(E1)*sqrt(s1*(s1-4.*t1))); // /-(2. * t1);
       Vec4D b1(eboo1,0.,0.,pboo1);
+      //      std::cout<<" boost vector b1="<<b1<<" ("<<b1.Abs2()<<")\n";
       boost = Poincare(b1);
       boost.Boost(o1);
       if (!(o1==v1)) {
@@ -90,6 +91,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       double eboo2 = sgn2 * (dabs(E2) * s2 - pz*sqrt(s2*(s2-4.*t2))); // /-(2. * t2);
       double pboo2 = sgn2 * (pz * s2 - dabs(E2)*sqrt(s2*(s2-4.*t2))); // /-/(2. * t2);
       Vec4D b2(eboo2,0.,0.,pboo2);
+      //      std::cout<<" boost vector b2="<<b2<<" ("<<b2.Abs2()<<")\n";
       boost = Poincare(b2);
       boost.Boost(o2);
       trees[1]->BoRo(boost);
@@ -165,10 +167,10 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
     double sprime  = cms.Abs2();
 
 
-    double s1      = sprime           - (partner->t) - (active->t);    
+    //    double s1      = sprime           - (partner->t) - (active->t);    
     double s3      = sprime/active->z - (partner->t) - (mother->t);
-    double np1     = sqrt(s1*s1-4.*(partner->t)*(active->t));
-    double np3     = sqrt(s3*s3-4.*(partner->t)*(mother->t));
+    //    double np1     = sqrt(s1*s1-4.*(partner->t)*(active->t));
+    //    double np3     = sqrt(s3*s3-4.*(partner->t)*(mother->t));
     double maxt_d2 = CalculateMaxT(active,partner);
 
     if (maxt_d2 < sister->t) {
@@ -179,9 +181,12 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
       (sprime/active->z - partner->t + active->t - sister->t);
     double pz_mo     = 1./(2.*active->part->Momentum()[3]) * 
       (s3 - 2. * partner->part->E() * E_mo);
-    double pt_mo     = sqrt((maxt_d2-sister->t)/(np1*np1) *
-			    (0.5*(s1*s3 + np1*np3) + partner->t * (sister->t - active->t - mother->t)));
- 
+//     double pt_alt     = sqrt((maxt_d2-sister->t)/(np1*np1) *
+// 			    (0.5*(s1*s3 + np1*np3) + partner->t * (sister->t - active->t - mother->t)));
+    double pt_mo = sqrt(sqr(E_mo)-sqr(pz_mo)-mother->t);
+//    std::cout<<" pt_mo="<<pt_mo<<"  pt_alt="<<pt_alt<<"\n";
+    
+    
     double cph=cos(active->phi), sph=sin(active->phi);
 
     if (mode>0) {
@@ -214,6 +219,20 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
 		 <<(v_mo+partner->part->Momentum()).Abs2()<<endl
 		 <<" (spr,z,t4) : " <<sprime<<","<<active->z<<","<<sister->t<<endl;
     }
+    /*
+    else {
+      //      Vec4D v_mo_alt(E_mo,pt_alt,0.,pz_mo);
+      int po = std::cout.precision(12);
+      std::cout<<"  Act : "<<active->part->Momentum()<<" : "<<active->part->Momentum().Abs2()
+	       <<" / "<<active->t<<"\n"
+	       <<"  Par : "<<partner->part->Momentum()<<" : "<<partner->part->Momentum().Abs2()
+	       <<" / "<<partner->t<<"\n"
+	       <<"  Mom : "<<v_mo<<" : "<<v_mo.Abs2()<<" / "<<mother->t<<"\n"
+      //	       <<"  Mom (alt) : "<<v_mo_alt<<" : "<<v_mo_alt.Abs2()<<" / "<<mother->t<<"\n"
+	       <<"  Sis : "<<v_si<<" : "<<v_si.Abs2()<<" / "<<sister->t<<"\n";
+      std::cout.precision(po);
+    }
+    */
   
     BoostPartial(mode,mother,sister,v_mo,v_si);
   }
@@ -269,7 +288,7 @@ void Spacelike_Kinematics::BoostPartial(const int mode, Knot * si, const Vec4D &
   Vec4D b1(eboo1,pboo1*np_si);
   boost = Poincare(b1);
   boost.Boost(p_si);
-
+  //  std::cout<<" boost vector="<<b1<<" ("<<b1.Abs2()<<")\n";
 
   // apply rotation and boost on tree rest (sequence depending on mode)
   if (mode==3) RoBoIni(si,rot,boost);
@@ -309,7 +328,7 @@ void Spacelike_Kinematics::RoBoFin(Knot * k, Poincare & rot, Poincare & boost)
 void Spacelike_Kinematics::BoostPartial(const int mode, Knot * mo, Knot * si, const Vec4D & v_mo, const Vec4D & v_si) 
 {
   msg_Tracking()<<"Spacelike_Kinematics::BoostPartial("<<mode<<", ["<<mo->kn_no<<"], ["<<si->kn_no<<"],\n"
-		<<v_mo<<", "<<v_si<<") \n"; 
+		<<v_mo<<"("<<v_mo.Abs2()<<"), "<<v_si<<"("<<v_si.Abs2()<<")) \n"; 
   if (mode==3) {
     // boost mother and the rest
     BoostPartial(mode,mo,v_mo);
@@ -324,6 +343,12 @@ void Spacelike_Kinematics::BoostPartial(const int mode, Knot * mo, Knot * si, co
     si->E2 = sqr(si->part->Momentum()[0]);
   }
   else {
+    if (si->t!=si->tout) {
+      double tnew=v_si.Abs2();
+      if (dabs(tnew/si->t-1.)>1.e-7)  
+	msg.Out()<<"WARNING in Spacelike_Kinematics::BoostPartial t="<<si->t<<" diff="<<si->t-tnew<<std::endl;
+      si->t=tnew;
+    }
     mo->part->SetMomentum(v_mo);
     si->part->SetMomentum(v_si);
     si->E2 = sqr(v_si[0]);
@@ -475,7 +500,8 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
   double q = qa + qb;
   if (dabs(q/qb)<1.e-8)  {
     double z = active->z;
-    double sprime  = s;
+    //    std::cout<<" using series t2="<<t2<<" sprime="<<s<<"  sprime/z"<<s/z<<"\n";
+    double sprime  = s; 
     double sprime2 = sqr(sprime);
     double sprime3 = sprime*sprime2;
     double sprime4 = sqr(sprime2);
@@ -491,6 +517,8 @@ double Spacelike_Kinematics::CalculateMaxT(Knot * active,Knot * partner) {
 		sprime2*z*(t13 + t12*t3*(5 - 6*z)*z + t33*z3 + t1*t32*z*(-6 + 5*z)) - 
 		2*sprime3*z*(t12 + t32*z2 - 2*t1*t3*(1 - z + z2))))/
       (pow((sprime - t1)*(sprime - t3*z),3.)*z);
+//     std::cout<<" maxt0="<<maxt0<<"\n";
+//     std::cout<<" maxt1="<<maxt1<<"\n";
     return maxt0+maxt1;
   }
 

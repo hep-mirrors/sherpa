@@ -44,7 +44,7 @@ namespace APACIC {
     void ExtractPartons(Knot *,ATOOLS::Particle_List * = NULL);
 
     bool TestShower(Tree * tree) ;
-    ATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
+    static ATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
     void OutputTree(Tree * tree);
     bool ExtraJetCheck() const;
     double                PT2Min()        { return m_pt2min; }

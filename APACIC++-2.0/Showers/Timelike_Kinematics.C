@@ -5,6 +5,7 @@
 #include "Data_Read.H"
 #include "Exception.H"
 #include <iomanip>
+#include "Final_State_Shower.H"
 
 using namespace APACIC;
 using namespace ATOOLS;
@@ -178,14 +179,17 @@ int Timelike_Kinematics::ShuffleMoms(Knot * const mo) const
   Knot * d1       = mo->left;
   Knot * d2       = mo->right;
 
-  double t        = mo->t;
   double t1       = d1->t;
   double t2       = d2->t;
 
-  if (dabs(t - mo->part->Momentum().Abs2())>rpa.gen.Accu()) {
+  double newt = mo->part->Momentum().Abs2();
+  if (dabs((mo->t - newt)/mo->t)>1.e-7) {
     msg.Out()<<" WARNING Timelike_Kinematics::ShuffleMoms : \n"
-	     <<"    strong mass deviation "<<t<<" vs. "<<mo->part->Momentum().Abs2()<<std::endl;
+	     <<"    strong mass deviation "<<mo->t<<" vs. "<<newt<<std::endl;
   }
+  mo->t = newt;
+
+  double t        = mo->t;
 
   if (t - (t1+t2+2.*sqrt(t1*t2)) < rpa.gen.Accu()) {
     msg_Debugging()<<" WARNING Timelike_Kinematics::ShuffleMoms() : not enough virtuality: "<<sqrt(t)<<" < "<<sqrt(t1)<<" + "<<sqrt(t2)<<std::endl;
@@ -248,8 +252,16 @@ int Timelike_Kinematics::ShuffleMoms(Knot * const mo) const
   msg_Debugging()<<" d2 : "<<sqr(d2->part->Momentum()[0])<<" == "<<d2->E2<<std::endl;
 
   // boost daughters if existent
+  //  std::cout<<" before boostdaughters  \n";
+  int number=0;
+//   Vec4D sum_fs=Final_State_Shower::GetMomentum(mo,number);
+//   std::cout<<" sum_fs:"<<sum_fs<<"("<<number<<")\n";
   BoostDaughters(mo);
-
+//   std::cout<<" after boostdaughters  \n";
+//   number=0;
+//   sum_fs=Final_State_Shower::GetMomentum(mo,number);
+//   std::cout<<" sum_fs:"<<sum_fs<<"("<<number<<")\n";
+//   std::cout<<"----------------------------------------\n";
   // update daughter E2,z 
   Tree::UpdateDaughters(mo);
 
@@ -498,8 +510,16 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
                   CheckVector(mo->left->part->Momentum()) || 
                   CheckVector(mo->right->part->Momentum()));
     if (error) msg.Error()<<"Error after CheckVector() !"<<std::endl;
-    if ( dabs((mo->part->Momentum()-mo->left->part->Momentum()-
-	       mo->right->part->Momentum()).Abs2()) > rpa.gen.Accu()) error = 1;
+    Vec4D a = mo->left->part->Momentum() + mo->right->part->Momentum();
+    Vec4D b = mo->part->Momentum();
+    if (!(a==b)) {
+      msg.Out()<<" Momentum Conservation in Timelike Kinematics check failed \n";
+      int op=msg.Out().precision(12);
+      msg.Out()<<a<<" ("<<a.Abs2()<<")\n";
+      msg.Out()<<b<<" ("<<a.Abs2()<<")\n";
+      msg.Out().precision(op);
+      error = 1;
+    }
 
     double py=mo->left->part->Momentum()[2];
     if (!(py<0) && !(py>0)) error =1;
@@ -594,7 +614,9 @@ void Timelike_Kinematics::BoostDaughters(Vec4D pold, Vec4D pnew,
   Vec3D prot = cross(Vec3D(pnew),Vec3D(pold));
 
   Poincare bmom;  
-  if (prot.Abs()>rpa.gen.Accu()) { 
+  if (prot.Abs()/Vec3D(pnew).Abs()>100.*rpa.gen.Accu()) { 
+//     std::cout<<" bigboost :"<<pmom<<std::endl;
+//     std::cout<<" rem="<<cross(Vec3D(pnew),Vec3D(pold)).Abs()/Vec3D(pnew).Abs()<<"\n";
     bigboost = 1;
     bmom = Poincare(pmom);
 
@@ -602,17 +624,37 @@ void Timelike_Kinematics::BoostDaughters(Vec4D pold, Vec4D pnew,
     Tree::BoRo(bmom,mo->right);
     bmom.Boost(pold);
     bmom.Boost(pnew);
+    Vec4D dummy(pmom[0],-1.*Vec3D(pmom));
+//     std::cout<<" backboost:"<<dummy<<std::endl;
+//     std::cout<<" rem="<<cross(Vec3D(pnew),Vec3D(pold)).Abs()/Vec3D(pnew).Abs()<<"\n";
 
     bmom=Poincare(Vec4D(pmom[0],-1.*Vec3D(pmom)));
   }
+  Vec3D na(pold);
+  na=1./na.Abs() * na;
+
   Poincare bos1(pnew);
+//   std::cout<<" Boost: "<<bos1*pold<<std::endl;
   Poincare bos(bos1*pold);
   Tree::BoRo(bos,mo->left);
   Tree::BoRo(bos,mo->right);
   
+  pnew=mo->left->part->Momentum()+mo->right->part->Momentum();
+
+  Vec3D nb(pnew);
+  nb=1./nb.Abs() * nb;
+
   if (bigboost) {
     Tree::BoRo(bmom,mo->left);
     Tree::BoRo(bmom,mo->right);
+  }
+  else {
+    if (!(na==nb)) {
+//       std::cout<<" boost was a rotation! \n";
+      Poincare rot(pnew,pold);
+      Tree::BoRo(rot,mo->left);
+      Tree::BoRo(rot,mo->right);
+    }
   }
 }
 
@@ -625,14 +667,32 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
     Vec4D p1old = d1->left->part->Momentum() + d1->right->part->Momentum();
     Vec4D p1new = d1->part->Momentum();
     if (p1new!=p1old && p1old!=Vec4D(0.,0.,0.,0.)) {
+//       int po = std::cout.precision(12);
+//       std::cout<<" boost "<<d1->kn_no<<"\n";
+//       Vec3D na(p1old);
+//       na=1./na.Abs() * na;
+//       std::cout<<" p_old (normed) ="<<na<<"\n";
+//       std::cout<<" p_old = "<<p1old<<" ("<<p1old.Abs2()<<")\n";
+//       std::cout<<" p_soll= "<<p1new<<" ("<<p1new.Abs2()<<")\n";
       BoostDaughters(p1old,p1new,p,d1);
+//       p1new=d1->left->part->Momentum() + d1->right->part->Momentum();
+//       na=Vec3D(p1new);
+//       na=1./na.Abs() * na;
+//       std::cout<<" p_new (normed) ="<<na<<"\n";
+//       std::cout<<" p_ist = "<<p1new<<" ("<<p1new.Abs2()<<")\n";
+//       std::cout.precision(po);
     }
   }
   if (d2->left) {
     Vec4D p2old = d2->left->part->Momentum() + d2->right->part->Momentum();
     Vec4D p2new = d2->part->Momentum();
     if (p2new!=p2old && p2old!=Vec4D(0.,0.,0.,0.)) {
+//       std::cout<<" boost "<<d2->kn_no<<"\n";
+//       std::cout<<" p_old = "<<p2old<<" ("<<p2old.Abs2()<<")\n";
+//       std::cout<<" p_soll= "<<p2new<<" ("<<p2new.Abs2()<<")\n";
       BoostDaughters(p2old,p2new,p,d2);
+//       p2new = d2->left->part->Momentum() + d2->right->part->Momentum();
+//       std::cout<<" p_ist = "<<p2new<<" ("<<p2new.Abs2()<<")\n";
     }
   }
 
