@@ -163,10 +163,11 @@ C...Store some results for subsequent use.
         VINT(145)=SIGSUM
         VINT(146)=SOP/SO
         VINT(147)=SOP/SP
-        WRITE(*,*) '<\\tilde{O}>  = ',PARU(2)*VINT(147),' -> ',
-     &       PARU(2)*VINT(147)/VINT(146)
-        WRITE(*,*) 'k            = ',XK
-        WRITE(*,*) 'f_c          = ',VINT(146)
+        WRITE(*,*) 'ratio         = ',SIGSUM/MAX(1D-10,SIGT(0,0,5))
+        WRITE(*,*) '<\\tilde{O}>   = ',PARU(1)*VINT(147),' -> ',
+     &       PARU(1)*VINT(147)/VINT(146)
+        WRITE(*,*) 'k             = ',XK
+        WRITE(*,*) 'f_c           = ',VINT(146)
         IF (MFUDGE(4).EQ.1) STOP
  
 C...Initialize iteration in xT2 for hardest interaction.
