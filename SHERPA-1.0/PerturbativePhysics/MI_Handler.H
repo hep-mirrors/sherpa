@@ -1,8 +1,15 @@
 #ifndef MI_Handler_H
 #define MI_Handler_H
-#define USING_SHERPA
 
+#ifdef USING__Amisic
+#define USING__SHERPA
 #include "Amisic.H"
+#else
+#include "Beam_Spectra_Handler.H"
+#include "ISR_Handler.H"
+#include "Model_Base.H"
+#include "Blob.H"
+#endif
 
 namespace SHERPA {
 
@@ -16,12 +23,16 @@ namespace SHERPA {
   public:
     
     enum TypeID { None    =  0,
+#ifdef USING__Amisic
 		  Amisic  =  1,
+#endif
 		  Unknown = 99 };
 
   private:
 
+#ifdef USING__Amisic
     AMISIC::Amisic   *p_amisic;
+#endif
 
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
