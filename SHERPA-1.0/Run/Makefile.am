@@ -35,6 +35,7 @@ Sherpa_LDADD =  \
 	 @libdir@/libToolsPhys.la \
 	 @libdir@/libToolsMath.la \
 	 @libdir@/libToolsOrg.la \
+	 @libdir@/libHepMC.so \
 	 -lg2c -lm 
 #	 -L$(rootlibdir) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
 Sherpa_LDFLAGS =  -rdynamic
@@ -61,10 +62,13 @@ INCLUDES = -I../../SHERPA-1.0/Main \
 	   -I../../MODEL-1.0/Hdecay \
 	   -I../../PDF-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
+	   -I../../BEAM-1.0/Main \
 	   -I../../PHASIC++-1.0/Main \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
-           -I../../ATOOLS-2.0/Org 
+           -I../../ATOOLS-2.0/Org \
+	   -I../../HepMC_Version1.23 \
+	   -I$(CLHEPincdir)
 SUBDIRS    = Process
 EXTRA_DIST = Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
 	     Particle.dat Hadron.dat Const.dat Run.dat ISR.dat ME.dat makeclean

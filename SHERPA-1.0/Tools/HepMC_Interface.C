@@ -102,7 +102,7 @@ bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex)
     }
     else okay = 0;
   }
-  m_blob2vertex[_blob->Id()] = _vertex;
+  m_blob2vertex.insert(std::make_pair(_blob->Id(),_vertex));
   if (!okay) {
     msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob,Vertex)."<<endl
 	       <<"   Continue event generation with new event."<<endl;
