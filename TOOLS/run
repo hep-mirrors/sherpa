@@ -57,18 +57,19 @@ for I in $* ; do
   fi
 done
 if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
-#if [ "$RUNFILE" = "" ]; then RUNFILE="Run.dat" ; fi
+if [ "$RUNFILE" = "" ]; then RUNFILE="Run.dat" ; fi
 if [ "$BINPATH" = "" ]; then BINPATH="./" ; fi
-#if [ "$RESULTS" = "" ]; then RESULTS="results/" ; fi
-#if [ "$ANALYSIS" = "" ]; then ANALYSIS="analysis/" ; fi
+if [ "$RESULTS" = "" ]; then RESULTS="results/" ; fi
+if [ "$ANALYSIS" = "" ]; then ANALYSIS="analysis/" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
-if [ ! "$RESULTS" = "" ]; then RESULTS=$RUNPATH$RESULTS ; fi
-if [ ! "$ANALYSIS" = "" ]; then ANALYSIS=$RUNPATH$ANALYSIS ; fi
 
 LOGPATH=$PWD
 SETUPPATH=$LOGPATH"/"$BASENAME"_"$TIME"/"
 LOGFILE=$SETUPPATH"run.log"
 FILE=$BASENAME"_"$TIME".sh"
+
+if [ ! "$RESULTS" = "" ]; then RESULTS=$SETUPPATH$RESULTS ; fi
+if [ ! "$ANALYSIS" = "" ]; then ANALYSIS=$SETUPPATH$ANALYSIS ; fi
 
 cp -r $RUNPATH $SETUPPATH
 echo "" > $FILE
