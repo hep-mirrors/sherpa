@@ -24,3 +24,4 @@ noinst_HEADERS = Single_Amplitude.H \
 		 Amplitude_Group.H \
 		 Color_Group.H Super_Amplitude.H Single_Amplitude_Base.H \
 		 Super_Amplitude.H
+CXXFLAGS=-g
