@@ -84,7 +84,6 @@ namespace AORGTOOLS {
       int               scalescheme;
       int               orderalpha12;
       int               orderalphas;
-      AMATOOLS::Matrix<4>        Theta; // NC QED
     public:
       inline std::string ModelFile()         { SAVE_RETURN(model_file,"model_file");}
       inline Model_Type::code Model()        { SAVE_RETURN(the_model,"the_model");}
@@ -98,7 +97,6 @@ namespace AORGTOOLS {
       inline int    ScaleScheme()           { SAVE_RETURN(scalescheme,"scalescheme"); }
       inline int    OrderAlpha12()          { SAVE_RETURN(orderalpha12,"orderalpha12"); }
       inline int    OrderAlphaS()           { SAVE_RETURN(orderalphas,"orderalpha12"); }
-      AMATOOLS::Matrix<4>* GetTheta()       { return &Theta;}
       friend class Run_Parameter;
     } me;
 

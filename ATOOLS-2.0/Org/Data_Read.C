@@ -163,7 +163,6 @@ template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string n
   if (value==std::string("SM"))       return Model_Type::SM;
   if (value==std::string("MSSM"))     return Model_Type::MSSM;
   if (value==std::string("THDM"))     return Model_Type::THDM;
-  if (value==std::string("NCQED"))    return Model_Type::NCQED;
   if (value==std::string("LED"))      return Model_Type::LED;
 
   msg.Error()<<"Unknown Model "<<name<<" = "<<value<<" !!!"<<endl;

@@ -36,7 +36,6 @@ namespace AORGTOOLS {
 	       SM       = 3, 
 	       MSSM     = 4, 
 	       THDM     = 5,
-               NCQED    = 6,
 	       LED      = 7,
 	       Unknown  = 99
     };
