@@ -13,7 +13,7 @@ namespace PDF {
     double      m_f[11];
   public:
     CTEQ6_Fortran_Interface(const APHYTOOLS::Flavour,std::string,int,std::string);
-    PDF_Base * GetCopy() {};
+    PDF_Base * GetCopy();
     void   Output();
 
     void   Calculate(const double, const double);

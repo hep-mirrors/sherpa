@@ -55,14 +55,36 @@ CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const APHYTOOLS::Flavour _bunch
     m_partons.push_back(Flavour(kf::quark).Bar());                               
 }
 
+PDF_Base * CTEQ6_Fortran_Interface::GetCopy()
+{
+  return new CTEQ6_Fortran_Interface(m_bunch,m_set,m_member,m_path);
+}
 
 
-double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2) {}
+
+double CTEQ6_Fortran_Interface::AlphaSPDF(double scale2) 
+{
+  //  ** ALL fits are obtained by using the same coupling strength
+  //   \alpha_s(Mz)=0.118 and the NLO running \alpha_s formula, except CTEQ6L1
+  //   which uses the LO running \alpha_s and its value determined from the fit.
+
+  double asmz = 0.;
+  if (m_set==std::string("cteq6m"))  asmz = 0.118;
+  if (m_set==std::string("cteq6d"))  asmz = 0.118;
+  if (m_set==std::string("cteq6l"))  asmz = 0.118;
+  if (m_set==std::string("cteq6l1")) asmz = 0.130;
+
+
+  //
+  cout<<" WARNING: call Running method! "<<endl;
+  return asmz;
+}
 
 
 void CTEQ6_Fortran_Interface::Output() {}
 
-void CTEQ6_Fortran_Interface::Calculate(const double _x, const double _Q2) {
+void CTEQ6_Fortran_Interface::Calculate(const double _x, const double _Q2) 
+{
   
     //std::cout<<"In Calculate "<<_x<<" "<<_Q2<<std::endl;
 
