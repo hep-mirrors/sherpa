@@ -105,6 +105,20 @@ DEFINE_BINARY_OPERATOR(Binary_Greater_Equal,">=",10)
   return arg0>=arg1?"1":"0";
 }
 
+DEFINE_BINARY_OPERATOR(Binary_Logical_And,"&&",5)
+{
+  int arg0=ToType<int>(args[0]);
+  int arg1=ToType<int>(args[1]);
+  return ToString(arg0&&arg1);
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Logical_Or,"||",4)
+{
+  int arg0=ToType<int>(args[0]);
+  int arg1=ToType<int>(args[1]);
+  return ToString(arg0||arg1);
+}
+
 DEFINE_UNARY_OPERATOR(Unary_Not,"!",14)
 {
   double arg0=ToType<int>(args[0]);
