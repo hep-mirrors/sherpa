@@ -5,6 +5,7 @@
 #include "Particle.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include "Exception.H"
 #ifndef NO_EXPORT__AlphaS
 #include "Running_AlphaS.H"
 #endif
@@ -17,21 +18,45 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
 {
   double win;
   std::string beam[2], frame("CMS");
-  for (size_t i=0;i<2;++i) {
-    // ATOOLS::Flavour flav=ATOOLS::rpa.gen.Beam1();
-    // if (i==1) flav=ATOOLS::rpa.gen.Beam2();
-    ATOOLS::Flavour flav=ATOOLS::rpa.gen.Bunch(i);
-    if (flav==ATOOLS::kf::e) {
-      if (flav.IsAnti()) beam[i]=std::string("e+");
-      else beam[i]=std::string("e-");
-    }
-    else if (flav==ATOOLS::kf::photon) {
-      beam[i]=std::string("gamma");
-    }
-    else {
-      if (flav.IsAnti()) beam[i]=std::string("p-");
-      else beam[i]=std::string("p+");
-    }
+  ATOOLS::Flavour flav[2];
+  for (size_t i=0;i<2;++i) flav[i]=ATOOLS::rpa.gen.Bunch(i);
+  if (flav[0]==ATOOLS::kf::e && flav[1]==ATOOLS::kf::p_plus) {
+    beam[0]="e-";
+    beam[1]="p+";
+    throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"DIS is not implemented yet",
+			    "Lund_Interface","Lund_Interface"));
+  }
+  else if (flav[0]==ATOOLS::kf::p_plus && flav[1]==ATOOLS::kf::e) {
+    beam[0]="p+";
+    beam[1]="e-";
+    throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"DIS is not implemented yet",
+			    "Lund_Interface","Lund_Interface"));
+  }
+  else if (flav[0]==ATOOLS::kf::e && flav[1]==ATOOLS::kf::photon) {
+    if (flav[0].IsAnti()) beam[0]="e+"; else beam[0]="e-";
+    beam[1]="gamma";
+    pysubs.msub[33]=1;    
+  }
+  else if (flav[0]==ATOOLS::kf::photon && flav[1]==ATOOLS::kf::e) {
+    beam[0]="gamma";
+    if (flav[1].IsAnti()) beam[1]="e+"; else beam[1]="e-";
+    pysubs.msub[33]=1;    
+  }
+  else if (flav[0]==ATOOLS::kf::photon && flav[1]==ATOOLS::kf::photon) {
+    for (size_t i=0;i<2;++i) beam[i]="gamma";
+    pysubs.msub[57]=1;    
+  }
+  else if (flav[0]==ATOOLS::kf::e && flav[1]==ATOOLS::kf::e) {
+    for (size_t i=0;i<2;++i) if (flav[i].IsAnti()) beam[i]="e+"; else beam[i]="e-";
+    pysubs.msub[0]=1;    
+    pypars.mstp[47]=1;
+    pydat1.mstj[100]=5;
+  }
+  else {
+    for (size_t i=0;i<2;++i) if (flav[i].IsAnti()) beam[i]="p-"; else beam[i]="p+";
+    pysubs.msub[0]=1;    
+    pypars.mstp[47]=1;
+    pydat1.mstj[100]=5;
   }
   win=ATOOLS::rpa.gen.Ecms();
   std::vector<std::vector<double> > help;
@@ -43,7 +68,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   reader->AddIgnore(")");
   reader->AddIgnore(",");
   // if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
-  pysubs.msel=1;
+  pysubs.msel=0;
   reader->MatrixFromFile(help,"MSUB");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.msub[(int)help[i][0]-1]=(int)help[i][1];
@@ -90,8 +115,8 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
     if (abs(pydat3.kfdp[i-1][1-1])>=2) pydat3.mdme[i-1][1-1]=ATOOLS::Min(0,pydat3.mdme[i-1][1-1]);
   }
   // replacement ends here
-  pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
   if (ATOOLS::msg.Level()&8) ListLundParameters();
+  pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
   delete reader;
 }
 
