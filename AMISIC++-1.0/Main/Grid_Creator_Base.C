@@ -140,7 +140,7 @@ namespace AMISIC {
       m_griddeltaymin=(GridResultType)1.0e-6;
       m_relativedeltaymin=true;
     }
-    if (!reader->ReadFromFile(m_outputlevel,"OUTPUT")) m_outputlevel=ATOOLS::msg.GetLevel();
+    if (!reader->ReadFromFile(m_outputlevel,"OUTPUT")) m_outputlevel=ATOOLS::msg.Level();
     delete reader;
     p_gridhandler->Grid()->XAxis()->SetVariable(m_gridxvariable);
     p_gridhandler->Grid()->YAxis()->SetVariable(m_gridyvariable);
@@ -152,7 +152,7 @@ namespace AMISIC {
   bool Grid_Creator_Base<Argument_Type,Result_Type>::CreateGrid(std::string tempofile)
   {
     bool success=true;
-    int formerlevel=ATOOLS::msg.GetLevel();
+    int formerlevel=ATOOLS::msg.Level();
     ATOOLS::msg.SetLevel(m_outputlevel);
     if (!CreateInitialGrid()) {
       ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateGrid(..): Initial grid creation failed! Abort."<<std::endl;
