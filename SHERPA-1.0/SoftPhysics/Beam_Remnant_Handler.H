@@ -13,17 +13,27 @@ namespace SHERPA {
   class Beam_Remnant_Handler {
   private:
 
-    PDF::ISR_Handler            * p_isr;
-    BEAM::Beam_Spectra_Handler  * p_beam;
+    PDF::ISR_Handler            *p_isr;
+    BEAM::Beam_Spectra_Handler  *p_beam;
 
-    SHERPA::Remnant_Base        * p_beampart[2];
-    Primordial_KPerp            * p_kperp;
+    SHERPA::Remnant_Base        *p_beampart[2];
+    Primordial_KPerp            *p_kperp;
 
-    ATOOLS::Blob                * p_beamblob[2];
+    ATOOLS::Blob                *p_beamblob[2];
+
+    ATOOLS::Blob_List     *p_bloblist;
+    ATOOLS::Particle_List *p_particlelist;
+
+    std::set<ATOOLS::Blob*> m_removed;
 
     std::string  m_path, m_file;
     size_t       m_maxtrials;
     bool         m_fill;
+
+    void RemoveFromList(ATOOLS::Blob *cur);
+    void RemoveFromList(ATOOLS::Particle *cur);
+    bool RemoveConnected(ATOOLS::Blob *blob);
+    bool RemoveLast();
 
   public :
 
