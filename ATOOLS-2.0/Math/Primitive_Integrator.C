@@ -42,12 +42,12 @@ Primitive_Channel::Primitive_Channel():
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), m_pos(0) {}
 
 Primitive_Channel::
-Primitive_Channel(const std::vector<Primitive_Channel*> &all,
-		  Primitive_Channel *const prev,const size_t i):
+Primitive_Channel(Primitive_Channel *const prev,const size_t i,
+		  const double &pos):
   m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), m_pos(0)
 {
-  if (all.empty()) THROW(fatal_error,"No cells.");
+  if (prev->Boundary()) THROW(fatal_error,"Attempt to split boundary cell.");
   if (i>=prev->m_this.size()) THROW(fatal_error,"Inconsistent dimensions.");
   m_this.resize(prev->m_this.size());
   m_next.resize(prev->m_next.size());
@@ -55,7 +55,8 @@ Primitive_Channel(const std::vector<Primitive_Channel*> &all,
     m_this[j]=prev->m_this[j];
     m_next[j]=prev->m_next[j];
   }
-  m_this[i]=(m_next[i]->m_this[i]+m_this[i])/2.0;
+  if (pos!=std::numeric_limits<double>::max()) m_this[i]=pos;
+  else m_this[i]=(m_next[i]->m_this[i]+m_this[i])/2.0;
   m_next[i]=prev->m_next[i];
   prev->m_next[i]=this;
   prev->SetWeight();
@@ -131,6 +132,7 @@ void Primitive_Channel::SetWeight()
 
 void Primitive_Channel::SetAlpha(const double &alpha)
 { 
+  if (Boundary()) return;
   m_oldalpha=m_alpha;
   m_alpha=alpha;
   if (m_oldalpha==0.0) m_oldalpha=m_alpha;
@@ -214,15 +216,20 @@ void Primitive_Integrator::SetDimension(const size_t dim)
   for (size_t i=0;i<dim;++i) m_nosplit[i]=false;
 }
 
-double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
+void Primitive_Integrator::Initialize()
 {
   if (m_rmin.empty() || m_rmax.empty())
     THROW(fatal_error,"Zero dimensional integral request.");
   if (m_rmin.size()!=m_rmax.size())
     THROW(fatal_error,"Inconsistent dimensions.");
   m_point.resize(m_rmin.size());
-  p_function=function;
   Primitive_Channel::CreateRoot(m_rmin,m_rmax,m_channels);
+}
+
+double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
+{
+  if (m_channels.empty()) Initialize();
+  p_function=function;
   if (msg.LevelIsDebugging()) {
     msg_Debugging()<<"Primitive_Integrator::Integrate("<<function<<"): {\n";
     for (size_t i=0;i<m_channels.size();++i) msg_Debugging()<<*m_channels[i];
@@ -244,8 +251,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   }
   m_opt.clear();
   double alpha=1.0/(m_channels.size()-m_point.size());
-  for (size_t i=0;i<m_channels.size();++i) 
-    if (!m_channels[i]->Boundary()) m_channels[i]->SetAlpha(alpha);
+  for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
   while (((long unsigned int)m_np)<m_nmax && error>m_error) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
     Update();
@@ -266,11 +272,11 @@ void Primitive_Integrator::Update()
     if (!m_channels[i]->Boundary()) {
       m_np+=m_channels[i]->Points();
       m_sum+=m_channels[i]->Mean();
-      m_sum2+=m_channels[i]->Variance();
+      m_sum2+=sqrt(m_channels[i]->Variance());
       m_max=ATOOLS::Max(m_max,m_channels[i]->Max());
     }
   }
-  m_sum2=(m_np-1.0)*m_sum2+m_sum*m_sum*m_np;
+  m_sum2=(m_np-1.0)*sqr(m_sum2)+m_sum*m_sum*m_np;
   m_sum*=m_np;
 }
 
@@ -342,8 +348,7 @@ void Primitive_Integrator::Split()
   for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(0.0);
   SelectDimension(selected->Position());
   for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
-  Primitive_Channel *next = 
-    new Primitive_Channel(m_channels,selected,m_lastdim);
+  Primitive_Channel *next = new Primitive_Channel(selected,m_lastdim);
   m_channels.push_back(next);
   next->SetAlpha(0.5);
   next->SetPosition(1);
@@ -458,7 +463,7 @@ bool Primitive_Integrator::ReadIn(const std::string &filename)
     }
     else {
       if (i<size-1) m_channels.
-	push_back(new Primitive_Channel(m_channels,m_channels[0],m_lastdim));
+	push_back(new Primitive_Channel(m_channels[0],m_lastdim));
       pmap[i+1]=m_channels[i];
     }
   }
@@ -513,6 +518,30 @@ Reserved(const std::string &key) const
   Position_Map::const_iterator rit=m_reserved.find(key);
   if (rit==m_reserved.end()) THROW(critical_error,"Key not found.");
   return &m_point[rit->second.first];
+}
+
+void Primitive_Integrator::
+Split(const std::string &key,
+      const size_t nprev,const std::vector<double> &pos)
+{
+  if (m_channels.empty()) 
+    THROW(fatal_error,"No cells. Call Initialize() first.");
+  Position_Map::const_iterator rit=m_reserved.find(key);
+  if (rit==m_reserved.end()) THROW(critical_error,"Key not found.");
+  if (nprev>=rit->second.second.first)
+    THROW(critical_error,"Inconsistent dimension.");
+  size_t dim=rit->second.first+nprev;
+  const std::vector<Primitive_Channel*> channels(m_channels);
+  for (size_t i=0;i<pos.size();++i) {
+    for (size_t j=0;j<channels.size();++j) {
+      if (channels[j]->Boundary()) continue;
+      Primitive_Channel *next = 
+	new Primitive_Channel(channels[j],dim,pos[i]);
+      m_channels.push_back(next);    
+    }
+  }
+  const double alpha=1.0/(m_channels.size()-m_point.size());
+  for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
 }
 
 void Primitive_Integrator::SetMin(const std::vector<double> &min) 

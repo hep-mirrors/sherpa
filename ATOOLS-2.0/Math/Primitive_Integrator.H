@@ -37,8 +37,8 @@ namespace ATOOLS {
   public:
     
     // constructor
-    Primitive_Channel(const std::vector<Primitive_Channel*> &all,
-		      Primitive_Channel *const prev,const size_t i);
+    Primitive_Channel(Primitive_Channel *const prev,const size_t i,
+		      const double &pos=std::numeric_limits<double>::max());
     
     // destructor
     ~Primitive_Channel();
@@ -134,6 +134,7 @@ namespace ATOOLS {
     void SetMin(const std::vector<double> &min);
     void SetMax(const std::vector<double> &max);
 
+    void   Initialize();
     double Integrate(const Primitive_Integrand *function);
 
     void   Point(std::vector<double> &x);
@@ -144,6 +145,8 @@ namespace ATOOLS {
 
     void Reserve(const std::string &key,
 		 const size_t n,const size_t nprev=0);
+    void Split(const std::string &key,
+	       const size_t nprev,const std::vector<double> &pos);
     const double *const Reserved(const std::string &key) const;
 
     // inline functions
