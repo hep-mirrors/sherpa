@@ -104,6 +104,7 @@ namespace PHASIC {
 
     inline void SetScaleScheme(const int scalescheme)     { m_scalescheme=scalescheme;     }
     inline void SetKFactorScheme(const int kfactorscheme) { m_kfactorscheme=kfactorscheme; }
+    inline void SetScaleFactor(const double scalefactor)  { m_scalefactor=scalefactor;     }
 
     inline void SetTotalXS(const double totalxs)   { m_totalxs=totalxs;    }
     inline void SetTotalError(const double error)  { m_totalerr=error;     }
