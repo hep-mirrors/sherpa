@@ -30,6 +30,7 @@ SendMail() {
   elif [ "$BENCHMARK_ERROR" = "TRUE" ] ; then SetStatus "Benchmark error " 
   else 
    SetStatus "Benchmarking succeeded "
+   nail -s "$STATUS" $MAILADDRESS < $LOGFILE
    exit 0 
   fi
   nail -s "$STATUS" $MAILADDRESS < $LOGFILE
