@@ -37,7 +37,6 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Hadron_Decay_Handler.C
 noinst_HEADERS        =	\
 			Primordial_KPerp.H \
-			Primordial_KPerp.IC \
 			Remnant_Base.H \
 			No_Remnant.H \
 			Color_Dipole.H \
