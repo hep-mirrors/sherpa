@@ -14,6 +14,7 @@ using namespace ATOOLS;
 bool Exception_Handler::s_active=true;
 bool Exception_Handler::s_prepared=false;
 bool Exception_Handler::s_stacktrace=true;
+bool Exception_Handler::s_print=true;
 
 unsigned int Exception_Handler::s_exitcode=0;
 Exception *Exception_Handler::s_exception=0;
@@ -32,42 +33,42 @@ Exception_Handler::s_terminatorobjects=std::vector<Terminator_Object*>();
 
 bool Exception_Handler::ApproveTerminate()
 {
-  msg.Error()<<"Exception_Handler::ApproveTerminate(): Asking for termination ..."<<std::endl;
+  if (s_print) msg.Error()<<"Exception_Handler::ApproveTerminate(): Asking for termination ..."<<std::endl;
   if (s_testerfunctions.size()==0 && s_testerobjects.size()==0) {
-      msg.Error()<<"... approved."<<std::endl;
-      return true;
+    if (s_print) msg.Error()<<"... approved."<<std::endl;
+    return true;
   }
   if (s_testerfunctions.size()>0) {
     for (size_t i=0;i<s_testerobjects.size();++i) if (s_testerfunctions[i]()) {
-      msg.Error()<<"... approved."<<std::endl;
+      if (s_print) msg.Error()<<"... approved."<<std::endl;
       return true;
     }
   }
   if (s_testerobjects.size()>0) {
     for (size_t i=0;i<s_testerobjects.size();++i) if (s_testerobjects[i]->ApproveTerminate()) {
-      msg.Error()<<"... approved."<<std::endl;
+      if (s_print) msg.Error()<<"... approved."<<std::endl;
       return true;
     }
   }
-  msg.Error()<<"... refused."<<std::endl;
+  if (s_print) msg.Error()<<"... refused."<<std::endl;
   return false;
 }
 
 void Exception_Handler::PrepareTerminate()
 {
-  msg.Error()<<"Exception_Handler::PrepareTerminate(): Preparing termination ..."<<std::endl;
+  if (s_print) msg.Error()<<"Exception_Handler::PrepareTerminate(): Preparing termination ..."<<std::endl;
   for (size_t i=0;i<s_terminatorobjects.size();++i) s_terminatorobjects[i]->PrepareTerminate(); 
   for (size_t i=0;i<s_terminatorfunctions.size();++i) s_terminatorfunctions[i](); 
-  msg.Error()<<"... prepared."<<std::endl;
+  if (s_print) msg.Error()<<"... prepared."<<std::endl;
 }
 
 void Exception_Handler::Exit(int exitcode)
 {
-  msg.Error()<<om::bold<<"Exception_Handler::Exit: "<<om::reset<<om::blue
-	     <<"Exiting Sherpa with code "<<om::reset<<om::bold<<"("<<om::red<<exitcode
-	     <<om::reset<<om::bold<<")"<<om::reset<<std::endl;
-  msg.LogFile()<<"Exception_Handler::Exit: Exiting Sherpa with code ("
-	       <<exitcode<<")"<<std::endl;
+  if (s_print) msg.Error()<<om::bold<<"Exception_Handler::Exit: "<<om::reset<<om::blue
+			  <<"Exiting Sherpa with code "<<om::reset<<om::bold<<"("<<om::red<<exitcode
+			  <<om::reset<<om::bold<<")"<<om::reset<<std::endl;
+  if (s_print) msg.LogFile()<<"Exception_Handler::Exit: Exiting Sherpa with code ("
+			    <<exitcode<<")"<<std::endl;
   exit(exitcode);
 }
 

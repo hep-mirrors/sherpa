@@ -18,7 +18,7 @@ namespace ATOOLS {
     
   private:
 
-    static bool          s_active, s_prepared, s_stacktrace;
+    static bool          s_active, s_prepared, s_stacktrace, s_print;
     static unsigned int  s_exitcode;
     static Exception    *s_exception;
     
