@@ -109,6 +109,9 @@ namespace ATOOLS {
       ------------------------------------------ */
       isrphoton              = 26,
       pol                    = 70,
+      // dummy for shrinked gluon in 4gluon-higgs vertex
+      shgluon                = 85,
+
       /* ------------------------------------------
 	containers
       ------------------------------------------ */
@@ -383,9 +386,6 @@ namespace ATOOLS {
       f_J_1710               = 9030221,
       f_2_2300               = 9050225,
       f_2_2340               = 9060225,
-
-      // dummy for shrinked gluon in 4gluon-higgs vertex
-      shgluon                = 999,
 
       none                   = 99999
     };
