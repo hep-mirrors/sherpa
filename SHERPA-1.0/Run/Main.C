@@ -30,7 +30,7 @@ int main(int argc,char* argv[]) {
   }
   Generator.SummarizeRun();
   ATOOLS::msg.Events()<<"Sherpa did "<<nevt<<" with "<<Generator.NumberOfErrors()<<" errors."<<std::endl;
-  ATOOLS::msg.Out()<<" Simmulation finished "<<std::endl;
+  ATOOLS::msg.Out()<<" Simulation finished "<<std::endl;
 }
 
 
