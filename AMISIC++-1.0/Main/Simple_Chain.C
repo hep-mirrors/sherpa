@@ -782,11 +782,11 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
   blob->DeleteOwnedParticles();
   if (m_selected<(unsigned int)p_processes->Size()) {
 #ifdef DEBUG__Simple_Chain
-    std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
+    // std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
 #endif
     if ((*p_processes)[m_selected]->OneEvent(-1.,1)) {
 #ifdef DEBUG__Simple_Chain
-      std::cout<<"   Completed one event."<<std::endl;
+      // std::cout<<"   Completed one event."<<std::endl;
 #endif
       p_xs=dynamic_cast<EXTRAXS::XS_Base*>((*p_processes)[m_selected]->Selected());
       ATOOLS::Vec4D ptot;
