@@ -24,9 +24,8 @@ Basic_Sfuncs::~Basic_Sfuncs()
 {
   if (_eta) delete[] _eta;
   if (_mu) delete[] _mu;
-  short int i;
   if (_S0) {
-    for (i=0;i<momcount;i++) {
+    for (int i=0;i<momcount;i++) {
       delete[] _S0[i];
       delete[] _S1[i];
       delete[] calc_st[i];
@@ -46,7 +45,7 @@ void Basic_Sfuncs::Initialize()
   _S0  = new Complex*[momcount];
   _S1  = new Complex*[momcount];
   calc_st = new int*[momcount];
-  for (short int i=0;i<momcount;i++) {
+  for (int i=0;i<momcount;i++) {
     _S0[i] = new Complex[momcount];
     _S1[i] = new Complex[momcount];   
     calc_st[i] = new int[momcount];
@@ -57,7 +56,7 @@ void Basic_Sfuncs::Initialize()
 
 int Basic_Sfuncs::InitializeMomlist()
 {
-  for (short int i=0;i<nvec;i++) {
+  for (int i=0;i<nvec;i++) {
     Momfunc Mom;
     Mom.argnum = 1;
     Mom.arg    = new int[Mom.argnum];
@@ -71,12 +70,12 @@ int Basic_Sfuncs::InitializeMomlist()
 
 int Basic_Sfuncs::GetMomNumber(Pfunc* p)
 {
-  for(short int k=0;k<Momlist.size();k++) {
+  for(size_t k=0;k<Momlist.size();k++) {
     if (Momlist[k].argnum==p->argnum) {
       int hit = 0;
-      for (short int i=1;i<Momlist[k].argnum;i++) { 
+      for (int i=1;i<Momlist[k].argnum;i++) { 
 	hit = 0;
-	for (short int j=1;j<p->argnum;j++) {
+	for (int j=1;j<p->argnum;j++) {
 	  if (Momlist[k].arg[i]==p->arg[j]) {
 	    hit = 1;
 	    break;
@@ -104,12 +103,12 @@ int Basic_Sfuncs::BuildMomlist(Pfunc_List& pl)
       Mom->arg[0] = momcount;
       Mom->type=mt::prop;
       p->momnum   = momcount;
-      for (short int i=1;i<p->argnum;i++) 
+      for (int i=1;i<p->argnum;i++) 
 	Mom->arg[i] = p->arg[i];
 
       if(p->argnum==(nmom-1) && b[1]==-1){
         int hit=1;
-        for(short int i=1;i<p->argnum;i++) if(p->arg[i]<2)hit=0;
+        for(int i=1;i<p->argnum;i++) if(p->arg[i]<2)hit=0;
 	if(hit==1) Mom->type=mt::cmprop;
       }
       Momlist.push_back(*Mom);
@@ -145,7 +144,7 @@ void Basic_Sfuncs::PropPolarisation(int pindex,Pfunc_List& pl,vector<int>& iargs
   }
 
   if(!momfl.IsScalar()){
-    for(short int k=nmom;k<Momlist.size();k++) {
+    for(size_t k=nmom;k<Momlist.size();k++) {
       if (Momlist[k].arg[1]==momindex) {
 	switch(Momlist[k].type)
 	  {
@@ -167,7 +166,7 @@ void Basic_Sfuncs::PropPolarisation(int pindex,Pfunc_List& pl,vector<int>& iargs
 
 int Basic_Sfuncs::GetPolNumber(int momindex, int sign,double mass,int check)
 {
-  for(short int k=nmom;k<Momlist.size();k++) 
+  for(size_t k=nmom;k<Momlist.size();k++) 
     if (Momlist[k].type==sign) 
       if (Momlist[k].arg[1]==momindex && (sign!=mt::p_s || Momlist[k].mass==mass)) return k;
 
@@ -183,9 +182,9 @@ void Basic_Sfuncs::PrintMomlist()
   return;
 
   ATOOLS::msg.Out()<<"Momlist: "<<endl;
-  for(short int k=0;k<Momlist.size();k++) {
+  for(size_t k=0;k<Momlist.size();k++) {
     ATOOLS::msg.Out()<<Momlist[k].arg[0]<<" --> ";
-    for (short int i=1;i<Momlist[k].argnum;i++) ATOOLS::msg.Out()<<Momlist[k].arg[i]<<",";
+    for (int i=1;i<Momlist[k].argnum;i++) ATOOLS::msg.Out()<<Momlist[k].arg[i]<<",";
     ATOOLS::msg.Out()<<" type = "<<Momlist[k].type<<endl;
   }
 }
@@ -352,14 +351,14 @@ void Basic_Sfuncs::CalcMomlist()
   double ps,pt;
   Vec4D mom,vh1,vh2;
   Complex help;
-  for(short int j=0;j<Momlist.size();j++){
+  for(size_t j=0;j<Momlist.size();j++){
     Momlist[j].mom_img=Vec4D(0.,0.,0.,0.);
     switch(Momlist[j].type){
     case mt::p_none : break;
     case mt::mom :    Momlist[j].mom = p[j];break;
     case mt::prop : 
       Momlist[j].mom = Vec4D(0.,0.,0.,0.);
-      for (short int i=1;i<Momlist[j].argnum;i++) {
+      for (int i=1;i<Momlist[j].argnum;i++) {
 	Momlist[j].mom += b[Momlist[j].arg[i]]*p[Momlist[j].arg[i]];
       }
       break;
@@ -460,7 +459,7 @@ void Basic_Sfuncs::InitGaugeTest(double theta)
   double s,c,s0,c0,sf,cf;
   Momfunc* m;
   Vec4D mom;
-  for(short int j=0;j<Momlist.size();j++){
+  for(size_t j=0;j<Momlist.size();j++){
     if(Momlist[j].type==mt::p_m&&ATOOLS::IsZero(Momlist[j].mass)){
       if (Momlist[j].arg[2]==+1 || Momlist[j].arg[2]==-1) {
 	// do nothing
@@ -528,7 +527,7 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
   double zchk;
 
   if (m_precalc) k0_n = 1;
-  for(short int i=0;i<Momlist.size();i++) {
+  for(size_t i=0;i<Momlist.size();i++) {
     m=&Momlist[i];
 
     switch(k0_n){
@@ -551,7 +550,7 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
 				  2.*(m->mom_img[0]-(m->mom_img[1]+m->mom_img[3])*SQRT_05)));
     }
     if(ATOOLS::IsZero(_eta[i]))etachk=0;
-    if (i<nmom) {
+    if ((int)i<nmom) {
       if ((i==0)) _mu[0]  = sqrt(dabs(Momlist[i].mom.Abs2()))/_eta[0];
       else _mu[i]  = Momlist[i].mass/_eta[i];
       //if (b[i]==1 && 
@@ -584,8 +583,8 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
     }
   }
   if (!m_precalc){
-    for(short int i=0;i<momcount;i++)
-      for(short int j=0;j<momcount;j++)
+    for(int i=0;i<momcount;i++)
+      for(int j=0;j<momcount;j++)
 	calc_st[i][j]=0;
   }
   else PrecalcS();
@@ -594,8 +593,8 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
 
 void Basic_Sfuncs::PrecalcS()
 {
-  for(short int i=1;i<momcount;i++)
-    for(short int j=0;j<i;j++)
+  for(int i=1;i<momcount;i++)
+    for(int j=0;j<i;j++)
       if (calc_st[i][j]) {
 	Momfunc* m = &Momlist[i];
 	Momfunc* m1 = &Momlist[j];
@@ -700,8 +699,8 @@ void Basic_Sfuncs::StartPrecalc()
 { 
   m_precalc=1; 
   int cnt=0;
-  for(short int i=0;i<momcount;i++)
-    for(short int j=0;j<momcount;j++)
+  for(int i=0;i<momcount;i++)
+    for(int j=0;j<momcount;j++)
       if (calc_st[i][j]){
 	if (_S0[i][j]==Complex(0.,0.) && _S1[i][j]==Complex(0.,0.)) calc_st[i][j]=0;
 	else if(i>j) ++cnt;
