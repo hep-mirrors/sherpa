@@ -55,7 +55,8 @@ void Primitive_Observable_Base::Evaluate(int,const Vec4D *,const Flavour *,doubl
 void Primitive_Observable_Base::Evaluate(const Particle_List & pl,double weight,int ncount) 
 {
   if (ncount>1) {
-    msg.Out()<<" WARNING: "<<Name()<<"::Evaluate(const Particle_List & pl,const double weight,"<<ncount<<") "<<std::endl;
+    msg.Out()<<" WARNING: "<<Name()
+	     <<"::Evaluate(const Particle_List & pl,const double weight,"<<ncount<<") "<<std::endl;
     Evaluate(pl,weight);
     for (int i=2;i<=ncount;++i) {
       Evaluate(pl,0.);

@@ -133,13 +133,8 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
   }
   else {
     mode=m_mode^ANALYSIS::splitt_process;
-//     if (m_mode&ANALYSIS::output_process) mode=mode|ANALYSIS::output_this;
-//     else 
-      if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
-      //      mode=mode|ANALYSIS::output_this;
-
-      // orig:    key=name.substr(17);
-      key=name;
+    if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
+    key=name;
   }
   
   Primitive_Analysis * ana=GetSubAnalysis(key,mode);
