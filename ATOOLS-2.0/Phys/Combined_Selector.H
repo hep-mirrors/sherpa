@@ -6,7 +6,7 @@
 
 namespace APHYTOOLS {
   class Combined_Selector : public Selector_Base {
-  protected:
+  protected: 
     long int       m_count;
     std::vector<Selector_Base *> m_sels;
   public:

@@ -66,6 +66,12 @@ bool Selector_Data::ReadInData(std::string filename) {
       }
       data.push_back(dat);
     }
+    if (keyword == string("ConeFinder")) {
+      dat.type = 2;
+      from>>dat.min;
+      msg.Out()<<" Rmin in Selector.dat = "<<dat.min<<endl;
+      data.push_back(dat);
+    }
     if (keyword == string("Energy")) {
       dat.type = 11;
       from>>crit1>>dat.min>>dat.max;
@@ -143,6 +149,7 @@ void Selector_Data::ControlOutput() {
   for (int i=0;i<data.size();i++) {
     switch (data[i].type) {
     case 1:  AORGTOOLS::msg.Debugging()<<"Jet_Finder : "; break;
+    case 2:  AORGTOOLS::msg.Debugging()<<"Cone_Finder: "; break;
     case 11: AORGTOOLS::msg.Debugging()<<"Energies   : "; break;
     case 12: AORGTOOLS::msg.Debugging()<<"PTs        : "; break;
     case 13: AORGTOOLS::msg.Debugging()<<"Rapidities : "; break;

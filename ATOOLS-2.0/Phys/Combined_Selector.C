@@ -1,6 +1,7 @@
 #include "Combined_Selector.H"
 #include "Standard_Selector.H"
 #include "Jet_Finder.H"
+#include "Cone_Finder.H"
 #include "Message.H"
 
 using namespace APHYTOOLS;
@@ -44,6 +45,9 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	  if (instrong==2) jettype = 4;
 	}
 	sel = new Jet_Finder(_nin+_nout,_fl,rmin,1,jettype);
+	break;
+      case 2 :
+	sel = new Cone_Finder(_nin+_nout,rmin);
 	break;
       case 11 :
 	sel = new Energy_Selector(_nin,_nout,_fl);

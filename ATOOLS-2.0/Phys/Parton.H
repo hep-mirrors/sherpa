@@ -15,8 +15,8 @@ namespace APHYTOOLS {
   class Blob;
    
   class Parton {
-  private :
-    int     m_number;     
+  private : 
+    int     m_number;       
     int     m_status;         
     char    m_info;   
     int     m_jetnumber; 
