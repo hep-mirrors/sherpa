@@ -22,6 +22,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 		 ATOOLS::Selector_Data *const selectordata):
   Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,scalefactor,
 		  beamhandler,isrhandler,selectordata),
+  p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_colours(NULL)
 {
   Init(flavours);
@@ -32,6 +33,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
   Integrable_Base(nin,nout,flavours),
+  p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_colours(NULL)
 {
   Init(flavours);
@@ -115,30 +117,29 @@ double XS_Base::Scale(const ATOOLS::Vec4D *momenta)
   SetMomenta(momenta);
   if (m_nin==1) return momenta[0].Abs2();
   SetSTU(momenta);
-  double pt2;
   double MZ=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
   switch (m_scalescheme) {
   case 1:
-    if (m_nin+m_nout==4) m_scale=momenta[2].PPerp2();
-    return m_scale;
+    m_scale=momenta[2].PPerp2();
+    break;
   case 2:
-    return m_scale;
-  case 9:
-    m_scale=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale=pow(pow(m_scale,6.)*pow(MZ,1.),2./(12.+1.));
+    m_scale=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
+    break;
   case 10:
     m_scale=(momenta[0]+momenta[1]).PPerp2();
-    return m_scale=pow(m_scale,2./3.)*pow(MZ,1./3.);
+    m_scale=pow(m_scale,2./3.)*pow(MZ,1./3.);
+    break;
   case 11:
-    pt2=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
-    return m_scale=pt2;
-  case 12:
-    return m_scale=(momenta[0]+momenta[1]).PPerp2();
+    m_scale=(momenta[0]+momenta[1]).PPerp2();
+    break;
   case 20:
-    return 1.;
+    m_scale=1.;
+    break;
   default:
-    return m_scale=m_s;
+    m_scale=m_s;
+    break;
   }
+  return (*p_regulator)[m_scale];
 }
 
 double XS_Base::KFactor(const double scale) 
@@ -229,4 +230,14 @@ void XS_Base::Reset()
 ATOOLS::Blob_Data_Base *XS_Base::SameWeightedEvent()
 {
   return p_activepshandler->SameWeightedEvent();
+}
+
+void XS_Base::AssignRegulator(const std::string &regulator,
+			      const std::vector<double> &parameters)
+{
+  Regulator_Base *function=NULL;
+  if ((function=Regulator_Base::GetRegulator(this,regulator,parameters))!=NULL) {
+    delete p_regulator;
+    p_regulator=function;
+  }
 }

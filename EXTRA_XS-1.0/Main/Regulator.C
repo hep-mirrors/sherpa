@@ -3,7 +3,7 @@
 using namespace EXTRAXS;
 
 template <> Regulator_Base*
-Regulator_Base::SelectRegulator<Identity>(Single_XS *const xs,const std::string &regulator,
+Regulator_Base::SelectRegulator<Identity>(XS_Base *const xs,const std::string &regulator,
 					  const std::vector<double> &parameters)
 {
   if (regulator==std::string("Identity")) {
@@ -12,7 +12,7 @@ Regulator_Base::SelectRegulator<Identity>(Single_XS *const xs,const std::string 
   return NULL;
 }
 
-Identity::Identity(Single_XS *const xs,const std::vector<double> &parameters):
+Identity::Identity(XS_Base *const xs,const std::vector<double> &parameters):
   Regulator_Base(xs,parameters) {}
 
 double Identity::operator()(const double dsigma) const
@@ -26,7 +26,7 @@ double Identity::operator[](const double scale) const
 }
 
 template <> Regulator_Base*
-Regulator_Base::SelectRegulator<Massive_Propagator>(Single_XS *const xs,const std::string &regulator,
+Regulator_Base::SelectRegulator<Massive_Propagator>(XS_Base *const xs,const std::string &regulator,
 						    const std::vector<double> &parameters)
 {
   if (regulator==std::string("Massive_Propagator") && parameters.size()>0) {
@@ -35,15 +35,14 @@ Regulator_Base::SelectRegulator<Massive_Propagator>(Single_XS *const xs,const st
   return NULL;
 }
 
-Massive_Propagator::Massive_Propagator(Single_XS *const xs,
+Massive_Propagator::Massive_Propagator(XS_Base *const xs,
 				       const std::vector<double> &parameters):
   Regulator_Base(xs,parameters) {}
 
 double Massive_Propagator::operator()(const double dsigma) const
 {
   double pperp2=p_xs->Momenta()[2].PPerp2();
-  return dsigma*ATOOLS::sqr(pperp2)/
-    (pperp2+ATOOLS::sqr(m_parameters[0]));
+  return dsigma*ATOOLS::sqr(pperp2)/ATOOLS::sqr(pperp2+ATOOLS::sqr(m_parameters[0]));
 }
 
 double Massive_Propagator::operator[](const double scale) const
@@ -51,15 +50,15 @@ double Massive_Propagator::operator[](const double scale) const
   const ATOOLS::Vec4D *p=p_xs->Momenta();
   double pperp2=p[2].PPerp2(), oldscale=pperp2, s=0.0, t=0.0, u=0.0;
   switch (p_xs->ScaleScheme()) {
-  case 11:
+  case 2:
     s=(p[0]+p[1]).Abs2();
-    s=(p[0]-p[2]).Abs2();
-    s=(p[0]-p[3]).Abs2();
+    t=(p[0]-p[2]).Abs2();
+    u=(p[0]-p[3]).Abs2();
     oldscale=2.*s*t*u/(s*s+t*t+u*u);
     break;
   default:
     oldscale=pperp2;
     break;
   }
-  return scale*(pperp2+ATOOLS::sqr(m_parameters[0]))/oldscale;
+  return scale*(oldscale+ATOOLS::sqr(m_parameters[0]))/oldscale;
 }

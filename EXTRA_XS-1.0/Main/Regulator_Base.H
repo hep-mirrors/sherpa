@@ -3,7 +3,7 @@
 
 namespace EXTRAXS { class Regulator_Base; }
 
-#include "Single_XS.H"
+#include "XS_Base.H"
 
 namespace EXTRAXS {
 
@@ -25,13 +25,13 @@ namespace EXTRAXS {
 
     std::vector<double> m_parameters;
 
-    EXTRAXS::Single_XS *const p_xs;
+    EXTRAXS::XS_Base *const p_xs;
 
     // constructor
-    Regulator_Base(Single_XS *const xs,const std::vector<double> &parameters);
+    Regulator_Base(XS_Base *const xs,const std::vector<double> &parameters);
 
     template <class Type>
-    static Regulator_Base *SelectRegulator(Single_XS *const xs,const std::string &regulator,
+    static Regulator_Base *SelectRegulator(XS_Base *const xs,const std::string &regulator,
 					   const std::vector<double> &parameters);
 
   public:
@@ -43,7 +43,7 @@ namespace EXTRAXS {
     virtual double operator()(const double dsigma) const;
     virtual double operator[](const double scale) const;
     
-    static Regulator_Base *GetRegulator(Single_XS *const xs,const std::string &regulator,
+    static Regulator_Base *GetRegulator(XS_Base *const xs,const std::string &regulator,
 					const std::vector<double> &parameters);
 
     // inline functions

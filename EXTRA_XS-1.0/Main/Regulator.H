@@ -9,7 +9,7 @@ namespace EXTRAXS {
   protected:
 
     // constructor
-    Identity(Single_XS *const xs,const std::vector<double> &parameters);
+    Identity(XS_Base *const xs,const std::vector<double> &parameters);
     
     // member functions
     double operator()(const double dsigma) const;
@@ -23,7 +23,7 @@ namespace EXTRAXS {
   protected:
 
     // constructor
-    Massive_Propagator(Single_XS *const xs,
+    Massive_Propagator(XS_Base *const xs,
 		       const std::vector<double> &parameters);
 
     // member functions

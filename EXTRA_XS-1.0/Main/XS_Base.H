@@ -1,12 +1,17 @@
 #ifndef XS_Base_H
 #define XS_Base_H
 
+namespace EXTRAXS { class XS_Base; }
+
 #include "Integrable_Base.H"
+#include "Regulator_Base.H"
 
 namespace EXTRAXS {
 
   class XS_Base: public PHASIC::Integrable_Base {
   protected:
+
+    Regulator_Base *p_regulator;
 
     int **p_colours;
 
@@ -31,6 +36,9 @@ namespace EXTRAXS {
     ~XS_Base();
 
     // member functions
+    void AssignRegulator(const std::string &regulator,
+			 const std::vector<double> &parameters);
+
     virtual size_t Size() const;
 
     virtual XS_Base *const operator[](const size_t i) const;

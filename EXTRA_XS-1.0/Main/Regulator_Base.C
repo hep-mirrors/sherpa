@@ -14,7 +14,7 @@ std::ostream &operator<<(std::ostream &ostr,const rf::code code)
   return ostr;
 }
 
-Regulator_Base::Regulator_Base(Single_XS *const xs,const std::vector<double> &parameters):
+Regulator_Base::Regulator_Base(XS_Base *const xs,const std::vector<double> &parameters):
   m_parameters(parameters),
   p_xs(xs) {}
 
@@ -34,7 +34,7 @@ double Regulator_Base::operator[](const double scale) const
   return scale;
 }
 
-Regulator_Base *Regulator_Base::GetRegulator(Single_XS *const xs,const std::string &regulator,
+Regulator_Base *Regulator_Base::GetRegulator(XS_Base *const xs,const std::string &regulator,
 					     const std::vector<double> &parameters)
 {
   Regulator_Base *function=NULL;

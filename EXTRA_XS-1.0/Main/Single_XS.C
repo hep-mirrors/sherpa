@@ -12,15 +12,13 @@ Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *f
 		     PDF::ISR_Handler *const isrhandler,
 		     ATOOLS::Selector_Data *const selectordata):
   XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,scalefactor,
-	  beamhandler,isrhandler,selectordata),
-  p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>()))
+	  beamhandler,isrhandler,selectordata)
 {
   p_selected=this;
 }
 
 Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
-  XS_Base(nin,nout,flavours),
-  p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>()))
+  XS_Base(nin,nout,flavours)
 {
   p_selected=this;
 }
@@ -111,11 +109,6 @@ double Single_XS::operator()(const double s,const double t,const double u)
   return 0.;
 }
 
-double Single_XS::Scale(const ATOOLS::Vec4D *momenta)
-{
-  return (*p_regulator)[XS_Base::Scale(momenta)];
-}
-
 size_t Single_XS::Size() 
 { 
   return 1; 
@@ -126,12 +119,3 @@ void Single_XS::SetISR(PDF::ISR_Handler *const isrhandler)
   p_isrhandler=isrhandler; 
 }
 
-void Single_XS::AssignRegulator(const std::string &regulator,
-				const std::vector<double> &parameters)
-{
-  Regulator_Base *function=NULL;
-  if ((function=Regulator_Base::GetRegulator(this,regulator,parameters))!=NULL) {
-    delete p_regulator;
-    p_regulator=function;
-  }
-}
