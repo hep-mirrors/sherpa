@@ -9,7 +9,6 @@ EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
 
 lib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
-			Channel_Interface.C \
 			Environment.C \
 			Amisic.C 
 CXXFLAGS      =	-pedantic -Wall -Winline
@@ -35,7 +34,6 @@ noinst_HEADERS        = \
 			Fixed_Variable_Channel.H \
 			Fixed_Variable_Channel.IC \
 			Fixed_Variable_Channel.C \
-			Channel_Interface.H \
 			Environment.H \
 			Amisic.H \
 			Amisic.IC 

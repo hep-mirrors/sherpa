@@ -1,2 +1,6 @@
-MAKE    = make
-SUBDIRS = Tools Other Main Run
+MAKE  =	make
+SUBDIRS       =	\
+		Tools \
+		Other \
+		Main \
+		Run

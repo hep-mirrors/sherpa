@@ -206,30 +206,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	}
       }
     }
-  case EXTRAXS::QCD_Processes_C::q1q1q1q1:
-    if (mode==EXTRAXS::QCD_Processes_C::q1q1q1q1) m_blobs.push_back(ATOOLS::Blob_List(0));
-    for (i=1;i<=nflavour;++i) {
-      temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
-      if ((newblob=GetBlob(temp))!=NULL) {
-	m_blobs[m_blobs.size()-1].push_back(newblob);
-      }
-      temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
-      if ((newblob=GetBlob(temp))!=NULL) {
-	m_blobs[m_blobs.size()-1].push_back(newblob);
-      }
-    }
-    if (mode==EXTRAXS::QCD_Processes_C::q1q1q1q1) {
-      m_filename.push_back("q1q1_to_q1q1__grid.dat");
-      m_processname.push_back("q1 q1 -> q1 q1");
-      m_create.push_back(false);
-      break;
-    }
-    m_filename.push_back("q1q2_to_q1q2__grid.dat");
-    m_processname.push_back("q1 q2 -> q1 q2");
-    m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::q1q2q1q2) break;
   case EXTRAXS::QCD_Processes_C::q1q2bq1q2b:
-    m_blobs.push_back(ATOOLS::Blob_List(0));
+    if (mode==EXTRAXS::QCD_Processes_C::q1q2bq1q2b) m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=1;i<=nflavour;++i) {
       for (j=i+1;j<=nflavour;++j) {
 	temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
@@ -244,10 +222,32 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	}
       }
     }
-    m_filename.push_back("q1q2b_to_q1q2b__grid.dat");
-    m_processname.push_back("q1 q2b -> q1 q2b");
+    if (mode==EXTRAXS::QCD_Processes_C::q1q2bq1q2b) {
+      m_filename.push_back("q1q2b_to_q1q2b__grid.dat");
+      m_processname.push_back("q1 q2b -> q1 q2b");
+      m_create.push_back(false);
+      break;
+    }
+    m_filename.push_back("q1q2_to_q1q2__grid.dat");
+    m_processname.push_back("q1 q2 -> q1 q2");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::q1q2bq1q2b) break;
+    if (mode==EXTRAXS::QCD_Processes_C::q1q2q1q2) break;
+  case EXTRAXS::QCD_Processes_C::q1q1q1q1:
+    m_blobs.push_back(ATOOLS::Blob_List(0));
+    for (i=1;i<=nflavour;++i) {
+      temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
+      if ((newblob=GetBlob(temp))!=NULL) {
+	m_blobs[m_blobs.size()-1].push_back(newblob);
+      }
+      temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
+      if ((newblob=GetBlob(temp))!=NULL) {
+	m_blobs[m_blobs.size()-1].push_back(newblob);
+      }
+    }
+    m_filename.push_back("q1q1_to_q1q1__grid.dat");
+    m_processname.push_back("q1 q1 -> q1 q1");
+    m_create.push_back(false);
+    if (mode==EXTRAXS::QCD_Processes_C::q1q1q1q1) break;
   case EXTRAXS::QCD_Processes_C::q1q1bq1q1b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=1;i<=nflavour;++i) {
