@@ -375,6 +375,7 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
 
   if (key=="FinalState") CreateFinalStateParticleList();
   //  else if (key=="ChargedParticle") CreateChargedParticleList();
+  if (key=="Analysed") return 0;
 
   cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
