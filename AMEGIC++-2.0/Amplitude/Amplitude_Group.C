@@ -30,8 +30,8 @@ public:
 
 Amplitude_Group::~Amplitude_Group()
 {
-  for (int i=0;i<graphs.size();i++) delete graphs[i];
-  graphs.clear();
+  //for (int i=0;i<graphs.size();i++) delete graphs[i];
+  //graphs.clear();
 }
 
 Graph_Family *  Amplitude_Group::FindFamily(int zn, int tn, int pn) {
@@ -281,4 +281,28 @@ Amplitude_Base* Amplitude_Group::GetSingleGraph(list<sknot*>& zfunclist)
   abort();
   
   return 0;
+}
+   
+Complex Amplitude_Group::Zvalue(int ihel) {
+  Complex M(0.,0.);
+  for (size_t i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(ihel);
+  return M;
+}
+
+Complex Amplitude_Group::Zvalue(String_Handler * sh,int ihel) {
+  Complex M(0.,0.);
+  for (size_t i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(sh, ihel);
+  return M;
+}
+
+Complex Amplitude_Group::Zvalue(int ihel,int* signlist) {
+  Complex mcm,M(0.,0.);
+  double max = 0.;
+  for (size_t i=0;i<graphs.size();i++) {
+    mcm = graphs[i]->Zvalue(ihel,signlist);
+    M+=mcm;
+    max = ATOOLS::Max(max,abs(mcm));
+  }
+  if (abs(M)/max<(ATOOLS::Accu()*1.e-2)) return Complex(0.,0.); 
+  return M;
 }

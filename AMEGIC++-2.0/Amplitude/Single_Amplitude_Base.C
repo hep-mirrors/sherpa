@@ -508,6 +508,11 @@ Complex Single_Amplitude_Base::Zvalue(String_Handler * sh, int ihel)
   return Complex(0.,0.);
 }
 
+Complex Single_Amplitude_Base::Zvalue(int ihel) 
+{
+  return shand->Zvalue(amplnumber,ihel);
+}
+
 Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist) 
 {
   if (signlist==0) return shand->Zvalue(amplnumber,ihel);

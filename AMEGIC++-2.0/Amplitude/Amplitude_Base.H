@@ -19,6 +19,7 @@ namespace AMEGIC {
     int     topnum, permnum;
     virtual ~Amplitude_Base() {} 
     virtual void    PrintGraph() = 0; 
+    virtual Complex Zvalue(int) = 0;
     virtual Complex Zvalue(int,int*) = 0;
     virtual Complex Zvalue(String_Handler * sh,int ihel) =0;
     virtual void    ClearCalcList() = 0;

@@ -256,3 +256,6 @@ Complex Super_Amplitude::Zvalue(int ihel,int * signlist)
 
 Complex Super_Amplitude::Zvalue(String_Handler * sh,int ihel)   
   {return Single_Amplitude_Base::Zvalue(sh,ihel);}
+
+Complex Super_Amplitude::Zvalue(int ihel)   
+  {return Single_Amplitude_Base::Zvalue(ihel);}

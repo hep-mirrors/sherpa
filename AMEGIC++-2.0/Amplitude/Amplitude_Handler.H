@@ -15,11 +15,12 @@ namespace AMEGIC {
   //! This is the master class for the generation and calculation of an amplitude.
   class Amplitude_Handler : public Amplitude_Group {
     CFColor              * CFCol_Matrix;   
-    int       ngraph,namplitude;
+    int       ngraph,namplitude,ntotal;
     int       sw_probabs;
     double  * probabs;
     Complex * Mi;
     int probs;
+    Single_Amplitude* firstgraph;
     String_Handler* shand;
     std::vector<Point*> pointlist;
     int  PropProject(Amplitude_Base*,int);
@@ -30,24 +31,33 @@ namespace AMEGIC {
     void PreCluster(Single_Amplitude* firstgraph);
     void OptimizeProps(int,Single_Amplitude*);
     int  TOrder(Single_Amplitude* a);
+    int  SingleCompare(Point* p1,Point* p2);
   public:
-    Amplitude_Handler(int,ATOOLS::Flavour *,int *,Polarisation *,
+    Amplitude_Handler(int,ATOOLS::Flavour *,int *,
 		      Interaction_Model_Base *,Topology *,int,int,
-		      Basic_Sfuncs *,String_Handler *,std::string);
+		      Basic_Sfuncs *,String_Handler *);
     ~Amplitude_Handler();
+    void CompleteAmplitudes(int,ATOOLS::Flavour*,int*,Polarisation*,
+			    Topology*,Basic_Sfuncs*,std::string);
     void Kicker(int*,int,std::string);
     Complex Zvalue(int,int*);
+    Complex Zvalue(int);
     Complex Zvalue(String_Handler*,int);
-    double Differential(int ihel,int* signlist=0)      { return (Zvalue(ihel,signlist)).real();}
+    double Differential(int ihel,int* signlist)      { return (Zvalue(ihel,signlist)).real();}
+    double Differential(int ihel)                    { return (Zvalue(ihel)).real();}
     double Differential(String_Handler * sh,int ihel)  { return (Zvalue(sh,ihel)).real(); }
 
     inline int GetGraphNumber() {return ngraph;}  
     inline int GetRealGraphNumber() {return namplitude;}  
+    inline int GetTotalGraphNumber() {return ntotal;}
+
+    Single_Amplitude* GetFirstGraph() {return firstgraph;}
     Point* GetPointlist(int);
-    void Reset_ProbAbs();
+    void   Reset_ProbAbs();
     double Get_Probab(int);
-    int  FourVertex(int i) { return ExistFourVertex(GetPointlist(i)); } 
-    bool  ExistFourVertex(Point *);
+    int    FourVertex(int i) { return ExistFourVertex(GetPointlist(i)); } 
+    bool   ExistFourVertex(Point *);
+    int    CompareAmplitudes(Amplitude_Handler* c_ampl);
   };
 
     //! The alternative color matrix, for more details see CFColor.

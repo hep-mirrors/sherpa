@@ -189,20 +189,41 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvec,p_fl,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS);
 
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,&m_pol,model,top,m_orderQCD,m_orderEW,
-				   p_BS,p_shand,m_ptypename+string("/")+m_name);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,model,top,m_orderQCD,m_orderEW,
+				   p_BS,p_shand);
   if (p_ampl->GetGraphNumber()==0) {
     msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
   procs++;
+  for (int j=0;j<links.size();j++) {
+    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler())) {
+      if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
+	msg.Tracking()<<"Found compatible Process: "<<links[j]->Name()<<endl;
+
+	if (!FoundMappingFile(m_libname,m_pslibname)) {
+	  system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map ")
+		  +string("Process/")+m_ptypename+string("/")+Name()+string(".map")).c_str());
+	  system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".col ")
+		  +string("Process/")+m_ptypename+string("/")+Name()+string(".col")).c_str());
+	}
+	
+	p_partner = links[j];
+	Minimize();
+	return 1;
+      }
+    }
+  }
+  p_ampl->CompleteAmplitudes(m_nin+m_nout,p_fl,p_b,&m_pol,
+			     top,p_BS,m_ptypename+string("/")+m_name);
+
   m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
   p_BS->Initialize();
 
   switch (Tests()) {
   case 2 : 
     for (int j=0;j<links.size();j++) {
-      if (ATOOLS::IsZero((links[j]->Result()-Result())/(links[j]->Result()+Result()))) {
+      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	msg.Tracking()<<"Test : 2.  Can map "<<m_name<<" on "<<links[j]->Name()<<endl;
 	p_partner = links[j];
 	break;
@@ -216,7 +237,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     return 1;
   case 1 :
     for (int j=0;j<links.size();j++) {
-      if (ATOOLS::IsZero((links[j]->Result()-Result())/(links[j]->Result()+Result()))) {
+      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	msg.Tracking()<<"Test : 1.  Can map "<<m_name<<" on "<<links[j]->Name()<<endl;
 	p_partner = links[j];
 	m_pslibname = links[j]->PSLibName();
@@ -229,7 +250,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     }
     if (CheckLibraries()) return 1;
     for (int j=0;j<links.size();j++) {
-      if (ATOOLS::IsZero((links[j]->Result()-Result())/(links[j]->Result()+Result()))) {
+      if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	if (links[j]->NewLibs()) {
 	  if (CheckStrings(links[j])) return 1;
 	}
@@ -241,8 +262,9 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     }
     if (m_gen_str<2) return 1;
     WriteLibrary();
-    if (p_partner==this) SetUpIntegrator();
+    if (p_partner==this && Result()>0.) SetUpIntegrator();
     return 0;
+  case -3: return -3;
   default :
     msg.Error()<<"Error in Single_Process::InitAmplitude : Failed for "<<m_name<<"."<<endl;
     errs.push_back(this);
@@ -260,12 +282,15 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
   p_hel    = new Helicity(m_nin,m_nout,p_fl,p_pl);
   p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvec,p_fl,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,&m_pol,model,top,m_orderQCD,m_orderEW,
-				   p_BS,p_shand,m_ptypename+string("/")+m_name);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,model,top,m_orderQCD,m_orderEW,
+				   p_BS,p_shand);
   if (p_ampl->GetGraphNumber()==0) {
     msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
+  p_ampl->CompleteAmplitudes(m_nin+m_nout,p_fl,p_b,&m_pol,
+			     top,p_BS,m_ptypename+string("/")+m_name);
+
   m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
   p_BS->Initialize();
 
@@ -330,7 +355,6 @@ int Single_Process::Tests() {
     M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
     m_iresult  = M2;
   }
-
   p_ampl->ClearCalcList();
   // To prepare for the string test.
   p_ampl->SetStringOn();
@@ -350,7 +374,6 @@ int Single_Process::Tests() {
 #else
   p_BS->Setk0(1);
 #endif
-
   p_BS->CalcEtaMu(p_moms);
   number++;
   msg.Debugging()<<number<<" :";
@@ -372,7 +395,7 @@ int Single_Process::Tests() {
 
   //shorten helicities
   for (short int i=0;i<p_hel->MaxHel();i++) {
-    if (M_doub[i]/M2g<(ATOOLS::Accu()*1.e-2)) {
+    if (M_doub[i]==0. || M_doub[i]/M2g<(ATOOLS::Accu()*1.e-2)) {
       p_hel->SwitchOff(i);
       msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
 		     <<M_doub[i]<<"/"<<M_doub[i]/M2g<<endl;
@@ -427,8 +450,11 @@ int Single_Process::Tests() {
 		     <<"Original    (2) : "<<abs(M2g)<<endl;
       if (M2g!=0.)
 	msg.Debugging()<<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-      else
+      else {
 	msg.Debugging()<<"Cross check (T) : "<<0.<<"%"<<endl;
+	m_libname    = testname;
+	return -3;
+      }
     }
 
     m_libname    = testname;
@@ -526,9 +552,11 @@ int Single_Process::CheckLibraries() {
       }
       msg.Debugging()<<endl;
       M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
-      msg.Debugging()<<"Cross check (1): "<<abs(M2s/Result()-1.)*100.<<"%"<<"  : "
-		     <<M2s<<"/"<<Result()<<endl;
-      if (ATOOLS::IsZero(abs((M2s-Result())/(M2s+Result())))) {
+      if (Result()!=0.)
+	msg.Debugging()<<"Cross check (1): "<<abs(M2s/Result()-1.)*100.<<"%"<<"  : "
+		       <<M2s<<"/"<<Result()<<endl;
+      else msg.Debugging()<<"Cross check (1): "<<M2s<<"/"<<Result()<<endl;
+      if (ATOOLS::IsEqual(M2s,Result())) {
 	msg.Tracking()<<"Found a suitable Library."<<endl;
 	m_libname = testname;
 	if (shand1) { delete shand1; shand1 = 0; }
@@ -563,12 +591,14 @@ int Single_Process::CheckStrings(Single_Process* tproc)
   }
   msg.Debugging()<<endl;
   M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
-  msg.Debugging()<<"Cross check (2): "<<abs(M2s/Result()-1.)*100.<<"%"<<"  : "
-		 <<M2s<<"/"<<Result()<<endl;
+  if (Result()!=0.)
+    msg.Debugging()<<"Cross check (2): "<<abs(M2s/Result()-1.)*100.<<"%"<<"  : "
+		   <<M2s<<"/"<<Result()<<endl;
+  else msg.Debugging()<<"Cross check (2): "<<M2s<<"/"<<Result()<<endl;  
   (shand1->Get_Generator())->ReStore();
   delete shand1;
 
-  if (ATOOLS::IsZero(abs((M2s-Result())/(M2s+Result())))) {
+  if (ATOOLS::IsEqual(M2s,Result())) {
     msg.Tracking()<<"Found a suitable string."<<endl;
     m_libname = tproc->LibName();
     Minimize();

@@ -25,6 +25,7 @@ namespace AMEGIC {
 
     Complex Zvalue(String_Handler * sh,int ihel);
     Complex Zvalue(int ihel,int * signlist);
+    Complex Zvalue(int ihel);
     void    ClearCalcList()                   {Single_Amplitude_Base::ClearCalcList();}
     void    KillZList()                       {Amplitude_Group::KillZList();}
     void    SetNumber(int & n)                {Single_Amplitude_Base::SetNumber(n);}

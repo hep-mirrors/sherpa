@@ -40,6 +40,7 @@ namespace AMEGIC {
 
     virtual ~Single_Amplitude_Base();
 
+    Complex Zvalue(int);
     Complex Zvalue(int,int*);
     Complex Zvalue(String_Handler * sh,int ihel);
 

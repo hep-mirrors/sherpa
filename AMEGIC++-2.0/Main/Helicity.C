@@ -101,5 +101,13 @@ bool Helicity::IsContrib(int i,int* pm,int length)
   return 1;
 }
 
-
+int Helicity::Compare(Helicity* h_cmp, int N)
+{
+  if (MaxHel() != h_cmp->MaxHel()) return 0;
+  for (int i=0;i<MaxHel();i++) {
+    for (int j=0;j<N;j++) 
+      if (p_slist[i].s[j] != (*h_cmp)[i][j]) return 0;
+  }
+  return 1;
+}
 

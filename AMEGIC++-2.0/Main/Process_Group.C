@@ -595,6 +595,11 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
     if (m_atoms) { delete [] testmoms; testmoms = 0; }
 
     switch (m_procs[i]->InitAmplitude(model,top,testmoms,links,errs,totalsize,procs)) {
+    case -3 :
+      msg.Debugging()<<"Amplitude is zero: "<<m_procs[i]->Name()<<endl
+		     <<"   delete it."<<endl;
+      deletethem.push_back(m_procs[i]->Name());
+      break;
     case -2 : 
       msg.Error()<<"Error in creation of amplitude "<<m_procs[i]->Name()<<endl;
       return -2;

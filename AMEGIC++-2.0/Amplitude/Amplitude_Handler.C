@@ -19,20 +19,32 @@ void out_pfunc(Pfunc & pf) {
 }
 
 
-Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
+Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,
 				     Interaction_Model_Base * model,Topology* top,
-				     int _orderQCD,int _orderEW,
-				     Basic_Sfuncs* BS,String_Handler* _shand,
-				     std::string pID) : shand(_shand)
+				     int _orderQCD,int _orderEW,Basic_Sfuncs* BS,
+				     String_Handler* _shand) 
+  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0)
 {
   groupname = string("All Amplitudes");
 
   Amplitude_Generator * gen = 
     new Amplitude_Generator(N,fl,b,model,top,_orderQCD,_orderEW,BS,shand);
 
-  Single_Amplitude* firstgraph = gen->Matching();
+  firstgraph = gen->Matching();
   delete gen;
 
+  Single_Amplitude* n = firstgraph;
+  ntotal = 0;
+  while (n){ 
+    ++ntotal;
+    n = n->Next;
+  }
+  ngraph = ntotal;
+}
+
+void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation* pol,
+				      Topology* top,Basic_Sfuncs* BS,std::string pID)
+{
   bool gen_colors=true;
   // look for file
   char name[100];
@@ -44,11 +56,9 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
     gen_colors=false;
   }
 
-  Single_Amplitude* n;
-  n = firstgraph;
+  Single_Amplitude* n = firstgraph;
   ngraph = 0;
-
-  while (n){ 
+  while (n) { 
     ++ngraph;
     n->Zprojecting(fl,ngraph,gen_colors);
     //n->FillCoupling(shand); 
@@ -90,7 +100,6 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 
   // fill color groups
   int ncount = 0;
-
   int maxorder = 1;
   for(int i=0; i<N; i++) if (fl[i].IsKK()) maxorder--;
   if (maxorder<0) 
@@ -143,10 +152,16 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 
 Amplitude_Handler::~Amplitude_Handler() 
 {
+  if (CFCol_Matrix) delete CFCol_Matrix;
+  if (probabs)      delete[] probabs;
+  if (Mi)           delete[] Mi;
   if (ngraph>0) {
-    delete CFCol_Matrix;
-    delete[] probabs;
-    delete[] Mi;
+    Single_Amplitude * n; 
+    while (firstgraph) {
+      n = firstgraph->Next;
+      delete firstgraph;
+      firstgraph = n;
+    }
   }
 }
 
@@ -507,31 +522,47 @@ double Amplitude_Handler::Get_Probab(int i) {return probabs[i];}
 
 Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 {
-  for (int i=0;i<graphs.size();i++) Mi[i] = graphs[i]->Zvalue(sh, ihel);
-
+  for (int i=0;i<graphs.size();i++){
+    Mi[i] = graphs[i]->Zvalue(sh, ihel);
+  }
   Complex M(0.,0.);
   for (short int i=0;i<graphs.size();i++) {
     for (short int j=0;j<graphs.size();j++) {
       M += Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
     }
   }
+  return M;
+}
 
+Complex Amplitude_Handler::Zvalue(int ihel)
+{ 
+  for (int i=0;i<graphs.size();i++) {
+    Mi[i] = graphs[i]->Zvalue(ihel);
+  }
+
+  Complex M(0.,0.);
+  for (short int i=0;i<graphs.size();i++) {
+    for (short int j=0;j<graphs.size();j++) {
+      M+= Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
+    }
+  }
   return M;
 }
 
 Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 { 
-  for (int i=0;i<graphs.size();i++) {
-    Mi[i] = graphs[i]->Zvalue(ihel,sign);
-  }
+  for (int i=0;i<graphs.size();i++) Mi[i] = graphs[i]->Zvalue(ihel,sign);
 
-  Complex M(0.,0.);
+  Complex mcm,M(0.,0.);
+  double max = 0.;
   for (short int i=0;i<graphs.size();i++) {
     for (short int j=0;j<graphs.size();j++) {
-      M += Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
+      mcm = Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
+      M+=mcm;
+      max = ATOOLS::Max(max,abs(mcm));
     }
   }
-   
+  if (abs(M)/max<(ATOOLS::Accu()*1.e-2)) return Complex(0.,0.); 
   return M;
 }
 
@@ -545,7 +576,59 @@ int Amplitude_Handler::TOrder(Single_Amplitude* a)
   return cnt;
 } 
 
+int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl)
+{
+  if (GetTotalGraphNumber()!=c_ampl->GetTotalGraphNumber()) return 0;
 
+  Single_Amplitude * n = firstgraph;
+  Single_Amplitude * n_cmp = c_ampl->GetFirstGraph();
+  for (int i=0;i<GetTotalGraphNumber();i++) {
+    if (!SingleCompare(n->GetPointlist(),n_cmp->GetPointlist())) return 0;
+    n     = n->Next;
+    n_cmp = n_cmp->Next;
+  }
+  return 1;
+}
+
+int Amplitude_Handler::SingleCompare(Point* p1,Point* p2)
+{
+  //zero check
+  if (p1==0) {
+    if (p2==0) return 1;
+    else return 0;
+  }
+  else {
+    if (p2==0) return 0;
+  }
+  //Flavour equal....
+  if (p1->fl.Mass()!=p2->fl.Mass()) return 0;
+  if (p1->fl.Spin()!=p2->fl.Spin()) return 0;
+
+  //Couplings equal
+  if (p1->ncpl!=p2->ncpl) return 0;
+  for (int i=0;i<p1->ncpl;i++) if (p1->cpl[i]!=p2->cpl[i]) return 0;
+
+  //outgoing number equal
+  if ((p1->left==0) && (p2->left==0)) {
+    if (p1->number!=p2->number) return 0;
+                           else return 1;
+  }
+
+  if ((p1->left==0) && (p2->left!=0)) return 0;
+  if ((p1->left!=0) && (p2->left==0)) return 0;
+
+  //Check extended Color_Functions
+  if (p1->Color->Type()!=p2->Color->Type()) return 0;
+  
+  // return 1 if equal and 0 if different
+  
+  if (SingleCompare(p1->middle,p2->middle)) {
+    int sw1 = SingleCompare(p1->left,p2->left);
+    if (sw1) sw1 = SingleCompare(p1->right,p2->right);
+    return sw1;
+  }
+  return 0;
+}
 
 
 

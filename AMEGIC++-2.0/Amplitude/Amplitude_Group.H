@@ -34,16 +34,9 @@ namespace AMEGIC {
     std::string             groupname;          
   public:
     ~Amplitude_Group();
-    Complex Zvalue(String_Handler * sh,int ihel) {
-      Complex M(0.,0.);
-      for (size_t i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(sh, ihel);
-      return M;
-    }
-    Complex Zvalue(int ihel,int* signlist) {
-      Complex M(0.,0.);
-      for (size_t i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(ihel,signlist);
-      return M;
-    }
+    Complex Zvalue(String_Handler*,int);
+    Complex Zvalue(int);
+    Complex Zvalue(int,int*);
     void    PrintGraph() {
       if (!ATOOLS::rpa.gen.Tracking()) return;
       ATOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;

@@ -75,6 +75,8 @@ namespace AMEGIC {
     bool             SetUpIntegrator();
     bool             IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); }
     String_Handler * GetStringHandler()             { return p_shand;}
+    Amplitude_Handler * GetAmplitudeHandler()       { return p_ampl;}
+    Helicity *       GetHelicity()                  { return p_hel; }    
     double           Result()                       { return m_iresult; } 
 
     /*------------------------------------------------------------------------------

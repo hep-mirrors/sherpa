@@ -1104,26 +1104,28 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
   Point* p1;
   Point* p2;  
 
-  int ncomps=0;
-  int noffs=0;
+  //int ncomps=0;
+  //int noffs=0;
   f1 = start_ampl;
   while (f1) { 
-    p1 = f1->GetPointlist();
-    f2 = f1->Next;
-    while (f2) {
-      p2 = f2->GetPointlist();
-      ++ncomps;
-      int sw1 = SingleCompare(p1,p2);
-      if (sw1==1) {
-	if (f2->on) ++noffs;
-	f2->on = 0;
+    if (f1->on) {
+      p1 = f1->GetPointlist();
+      f2 = f1->Next;
+      while (f2) {
+	if (f2->on) {
+	  p2 = f2->GetPointlist();
+	  //++ncomps;
+	  if (SingleCompare(p1,p2)) {
+	    //++noffs;
+	    f2->on = 0;
+	  }
+	}
+	f2 = f2->Next;
       }
-      f2 = f2->Next;
     }
     f1 = f1->Next;
     if (f1==stop_ampl) break;
   }
-
 
 #ifdef _USE_MPI_
   // collect off-switches

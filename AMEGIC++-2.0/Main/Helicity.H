@@ -74,6 +74,7 @@ namespace AMEGIC {
     char   * PolTypes()  { return p_pol_types; }
     double * PolAngles() { return p_angles; }
     bool IsContrib(int,int*,int);
+    int  Compare(Helicity*,int);
 
     ~Helicity();
   };
