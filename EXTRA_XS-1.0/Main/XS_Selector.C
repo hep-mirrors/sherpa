@@ -18,7 +18,6 @@ XS_Selector::XS_Selector(XS_Base *const owner):
 Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
 			      const ATOOLS::Flavour *flavours,const bool offshell)
 { 
-  Single_XS * xs = 0;
   if (offshell) {
     if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && 
 	 flavours[0].IsQuark() && flavours[1]==flavours[0].Bar()) ||
@@ -90,6 +89,8 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
 	 ((flavours[3]==flavours[0]) && (flavours[2]==flavours[1]))) ) { 
     return new XS_q1q2_q1q2(nin,nout,flavours); 
   }
+
+  return 0;
     ATOOLS::msg.Error()<<"XS_Selector::GetXS("<<nin<<","<<nout<<",["
 		       <<flavours[0]<<","<<flavours[1]<<","
 		       <<flavours[2]<<","<<flavours[3]<<"]):"<<std::endl
