@@ -331,11 +331,19 @@ Blob_Data<Type>::~Blob_Data()
 
 
 template int Blob_Data_Base::Get<int>();
+template size_t Blob_Data_Base::Get<size_t>();
 template long Blob_Data_Base::Get<long>();
 template double Blob_Data_Base::Get<double>();
 template std::string Blob_Data_Base::Get<std::string>();
 
+template void Blob_Data_Base::Set<int>(const int &data);
+template void Blob_Data_Base::Set<size_t>(const size_t &data);
+template void Blob_Data_Base::Set<long>(const long &data);
+template void Blob_Data_Base::Set<double>(const double &data);
+template void Blob_Data_Base::Set<std::string>(const std::string &data);
+
 template class Blob_Data<int>;
+template class Blob_Data<size_t>;
 template class Blob_Data<long>;
 template class Blob_Data<double>;
 template class Blob_Data<std::string>;

@@ -13,6 +13,7 @@ namespace ATOOLS {
   class Blob_Data_Base {
   public:
     template <class Type> Type Get();
+    template <class Type> void Set(const Type &data);
     virtual ~Blob_Data_Base();
     virtual std::ostream & operator>>(std::ostream &) const =0;
   };
@@ -158,6 +159,12 @@ namespace ATOOLS {
   Type Blob_Data_Base::Get() 
   {
     return ((Blob_Data<Type>*)this)->Get();
+  }
+
+  template <class Type>
+  void Blob_Data_Base::Set(const Type &data) 
+  {
+    return ((Blob_Data<Type>*)this)->Set(data);
   }
 
   /*!
