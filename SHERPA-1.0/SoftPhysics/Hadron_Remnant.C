@@ -141,7 +141,7 @@ void Hadron_Remnant::DiceKinematics()
     for (unsigned int i=0;i<m_parton[0].size();++i) {
       if (!m_parton[0][i]->Flav().IsDiQuark()) {
 	double value=1.0;
-	for (unsigned int j=0;(xtot-value<m_deltax)&&(j<m_maxtrials/100);++j) { 
+	for (unsigned int j=0;(xtot-value<m_deltax)&&(j<m_maxtrials/10);++j) { 
 	  value=GetXPDF(m_parton[0][i]->Flav(),m_scale); 
       	}
 	p_pdfbase->Extract(m_parton[0][i]->Flav(),value);
@@ -159,25 +159,32 @@ void Hadron_Remnant::DiceKinematics()
 			    <<"   Using naive distribution instead."<<std::endl;
       m_xscheme=0;
     }
-  } while ((xtot<m_deltax)&&(m_xscheme!=0));
+  } while ((xtot<m_deltax)&&(m_xscheme!=0)&&(xmap[p_last[0]]<p_last[0]->Flav().PSMass()));
   p_pdfbase->Reset();
   if (m_xscheme==0) {
+    xtot=0.;
     for (std::map<ATOOLS::Particle*,double>::iterator it=xmap.begin();it!=xmap.end(); ++it) {
-      it->second=m_xtot/xmap.size();
+      xtot+=it->second=it->first->Flav().PSMass()/m_pbeam[0];
+    }
+    for (std::map<ATOOLS::Particle*,double>::iterator it=xmap.begin();it!=xmap.end(); ++it) {
+      it->second*=m_xtot/xtot;
     }
   }
   for (unsigned int i=0;i<m_parton[1].size();++i) ptot-=m_parton[1][i]->Momentum();
   for (unsigned int j=0;j<m_parton[0].size();++j) {
     double E=xmap[m_parton[0][j]]*m_pbeam[0];
-    double pz=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-ATOOLS::sqr(m_parton[0][j]->Flav().PSMass())
-					    -m_hardpt.PPerp2()/ATOOLS::sqr(m_parton[0].size()));
+    double m=m_parton[0][j]->Flav().PSMass();
+    // crude, to be changed soon ...
+    if (m>E) m=0.;
+    double pz=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-ATOOLS::sqr(m)-m_hardpt.PPerp2()/ATOOLS::sqr(m_parton[0].size()));
     m_parton[0][j]->SetMomentum(ATOOLS::Vec4D(E,-m_hardpt[1]/m_parton[0].size(),
 					      -m_hardpt[2]/m_parton[0].size(),pz));
     // the brackets are necessary for 'nan'-values
     if (!(E>0.) || (!(pz>0.) && !(pz<=0.))) {
-      ATOOLS::msg.Tracking()<<"Hadron_Remnant::DiceKinematics(): "
-			    <<"Parton ("<<(long int)m_parton[0][j]<<") has non-positive momentum "
-			    <<m_parton[0][j]->Momentum()<<std::endl;
+      ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 
+                         <<"Parton ("<<(long int)m_parton[0][j]<<") has non-positive momentum: p = "
+                         <<m_parton[0][j]->Momentum()<<" m_{"<<m_parton[0][j]->Flav()<<"} = "
+                         <<m_parton[0][j]->Flav().PSMass()<<" <- "<<m_xscheme<<std::endl;
     }
   }
 }
