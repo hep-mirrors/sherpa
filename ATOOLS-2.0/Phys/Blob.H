@@ -37,16 +37,17 @@ namespace ATOOLS {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
     friend std::ostream& operator<<( std::ostream&, const Blob *);
   private:
-    Vec4D     m_position;
+    Vec4D               m_position;
     int                 m_id;
     double              m_weight;
     int                 m_status,m_beam;
+    bool                m_hasboost;
     std::string         m_type;
     std::vector<double> m_weightcontainer;
     Data_Container      m_datacontainer;
-    Particle_Queue        m_inparticles, m_outparticles;
-    Vec4D     m_cms_vec;
-    Poincare  m_cms_boost;
+    Particle_Queue      m_inparticles, m_outparticles;
+    Vec4D               m_cms_vec;
+    Poincare            m_cms_boost;
   public:
     Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=-1);
     ~Blob();

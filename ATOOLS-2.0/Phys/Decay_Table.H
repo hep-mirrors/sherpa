@@ -17,6 +17,7 @@ namespace ATOOLS {
 
   typedef std::set<Flavour,Flavour_Sorting_Criterion> FlavourSet;
   typedef FlavourSet::iterator FlSetIter;
+  typedef const FlavourSet::iterator FlSetConstIter;
 
   class Decay_Channel {
   protected :
@@ -30,16 +31,16 @@ namespace ATOOLS {
     Decay_Channel(const Decay_Channel &);
     void AddDecayProduct(const Flavour &);
     void SetWidth(const double &);
-    void Output();
+    void Output() const;
     void SetProcessName(const std::string &);
 
-    std::string ProcessName();
-    double      Width();
-    Flavour     GetDecaying();
-    int         NumberOfDecayProducts();
-    FlavourSet  GetDecayProducts();
-    Flavour     GetDecayProduct(int);
-    double      MinimalMass();
+    std::string ProcessName() const;
+    double      Width() const;
+    Flavour     GetDecaying() const;
+    int         NumberOfDecayProducts() const;
+    FlavourSet  GetDecayProducts() const;
+    Flavour     GetDecayProduct(int) const;
+    double      MinimalMass() const;
   };
 
   inline void Decay_Channel::AddDecayProduct(const Flavour & _flout) { 
@@ -47,14 +48,14 @@ namespace ATOOLS {
     m_minmass += _flout.Mass();
   }
   inline void        Decay_Channel::SetWidth(const double & _width)           { m_width = _width; }
-  inline double      Decay_Channel::Width()                                   { return m_width;   }
+  inline double      Decay_Channel::Width() const                             { return m_width;   }
   inline void        Decay_Channel::SetProcessName(const std::string & _name) { m_processname = _name; }
-  inline std::string Decay_Channel::ProcessName()                             { return m_processname; }
-  inline Flavour     Decay_Channel::GetDecaying()                             { return m_flin;    }
-  inline int         Decay_Channel::NumberOfDecayProducts()                   { return m_flouts.size();  }
-  inline double      Decay_Channel::MinimalMass()                             { return m_minmass; }
-  inline FlavourSet  Decay_Channel::GetDecayProducts()                        { return m_flouts;  }
-  inline Flavour     Decay_Channel::GetDecayProduct(int i) {
+  inline std::string Decay_Channel::ProcessName() const                       { return m_processname; }
+  inline Flavour     Decay_Channel::GetDecaying() const                       { return m_flin;    }
+  inline int         Decay_Channel::NumberOfDecayProducts() const             { return m_flouts.size();  }
+  inline double      Decay_Channel::MinimalMass() const                       { return m_minmass; }
+  inline FlavourSet  Decay_Channel::GetDecayProducts() const                  { return m_flouts;  }
+  inline Flavour     Decay_Channel::GetDecayProduct(int i) const {
     if (i<0 || i>(int)m_flouts.size()) {
       std::cout<<"Error in Decay_Channel::GetDecayProduct("<<i<<") :"<<std::endl
 	       <<"   out of bounds, return no flavour."<<std::endl;
@@ -70,10 +71,11 @@ namespace ATOOLS {
 
   class Decay_Table {
   protected :
-    bool                          m_overwrite;
+    bool                          m_overwrite, m_smearing, m_fixdecay;
     std::string                   m_generator;
     double                        m_width;
     Flavour                       m_flin;
+    FlavourSet                    m_flouts;
   private :
     std::vector <Decay_Channel *> m_channels;
     Decay_Channel *               p_selected;
@@ -81,13 +83,19 @@ namespace ATOOLS {
     Decay_Table(const Flavour);
     void AddDecayChannel(Decay_Channel *);
     void Select();
-    void Output();
+    void SetSelectedChannel(const FlavourSet &);
     void SetOverwrite()                      { m_overwrite = 1; }
+    void SetSmearing()                       { m_smearing  = 1; }
     void SetWidthGenerator(std::string _gen) { m_generator = _gen; }
 
+    void Output();
+
     bool            Overwrite()              { return m_overwrite; }
-    Flavour         Flav()                   { return m_flin; }
-    double          TotalWidth()             { return m_width; }
+    bool            Smearing()               { return m_smearing; }
+    bool            FixedDecay()             { return m_fixdecay;  }
+    Flavour         Flav()                   { return m_flin;      }
+    FlavourSet      GetDecayFlavs()          { return m_flouts;    }
+    double          TotalWidth()             { return m_width;     }
     int             NumberOfDecayChannels()  { return m_channels.size(); } 
     double          Width(const int);
     double          Width(const FlavourSet);

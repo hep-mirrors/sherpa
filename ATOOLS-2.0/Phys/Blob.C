@@ -50,7 +50,7 @@ namespace ATOOLS {
 }
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
-  m_position(_pos), m_id(_id), m_weight(1.) { m_beam = -1; m_status = 0; };
+  m_position(_pos), m_id(_id), m_weight(1.), m_hasboost(false) { m_beam = -1; m_status = 0; };
 
 Blob::~Blob() {
   DeleteOwnedParticles();
@@ -202,15 +202,35 @@ Vec4D Blob::CheckMomentumConservation() {
 }
 
 void Blob::BoostInCMS() {
-  Vec4D cm       = Vec4D(0.,0.,0.,0.);
-  for (int i=0;i<NInP();i++) cm = cm + InParticle(i)->Momentum();
-  m_cms_boost = Poincare(cm);
-
-  m_cms_vec                      = cm;
+  if (!m_hasboost) {
+    Vec4D cm       = Vec4D(0.,0.,0.,0.);
+    for (int i=0;i<NInP();i++) cm = cm + InParticle(i)->Momentum();
+    m_cms_boost = Poincare(cm);
+    m_cms_vec   = cm;
+  }
   for (int i=0;i<NInP();i++) 
     InParticle(i)->SetMomentum(m_cms_boost*InParticle(i)->Momentum());
   for (int i=0;i<NOutP();i++) 
     OutParticle(i)->SetMomentum(m_cms_boost*OutParticle(i)->Momentum());
+  m_hasboost = true;
+}
+
+void Blob::BoostInLab() {
+  if (!m_hasboost) {
+    msg.Error()<<"Error in Blob::BoostInLab()."<<std::endl
+	       <<"   Tried to boost back into unspecified system. Will just continue."<<std::endl;
+  }
+  Vec4D dummy;
+  for (int i=0;i<NInP();i++) {
+    dummy = InParticle(i)->Momentum();
+    m_cms_boost.BoostBack(dummy);
+    InParticle(i)->SetMomentum(dummy);
+  }
+  for (int i=0;i<NOutP();i++) { 
+    dummy = OutParticle(i)->Momentum();
+    m_cms_boost.BoostBack(dummy);
+    OutParticle(i)->SetMomentum(dummy);
+  }
 }
 
 void Blob::SetCMS() {
@@ -231,9 +251,6 @@ void Blob::SetVecs() {
   m_position = 1./(NInP()+NOutP()) * pos;
 }
 
-void Blob::BoostInLab() {
-
-}
 
 void  Blob::AddData(const std::string name, Blob_Data_Base * data) 
 {

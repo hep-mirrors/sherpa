@@ -2,7 +2,6 @@
 #define Primitive_Observable_h
 
 #include "Primitive_Observable_Base.H"
-
 #include "Jet_Finder.H"
 
 namespace ATOOLS {
