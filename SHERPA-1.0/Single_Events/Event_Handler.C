@@ -2,6 +2,7 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 #include "My_Limits.H"
+#include <unistd.h>
 
 #include "Random.H"
 
