@@ -32,7 +32,7 @@ Integrable_Base::~Integrable_Base()
 
 Integrable_Base *const Integrable_Base::Selected()
 { 
-  if (p_selected!=this) return p_selected->Selected(); 
+  if (p_selected!=this && p_selected!=NULL) return p_selected->Selected();
   return this; 
 }
 
