@@ -93,11 +93,6 @@ namespace ATOOLS {
 
   extern Message msg;
 
-#define msg_Events() if (msg.LevelIsEvents()) msg.Out()
-#define msg_Info() if (msg.LevelIsInfo()) msg.Out()
-#define msg_Tracking() if (msg.LevelIsTracking()) msg.Out()
-#define msg_Debugging() if (msg.LevelIsDebugging()) msg.Out()
-
   /*!
     \file
     \brief contains the class Message
@@ -120,6 +115,11 @@ namespace ATOOLS {
     .
   */
 }
+
+#define msg_Events() if (ATOOLS::msg.LevelIsEvents()) ATOOLS::msg.Out()
+#define msg_Info() if (ATOOLS::msg.LevelIsInfo()) ATOOLS::msg.Out()
+#define msg_Tracking() if (ATOOLS::msg.LevelIsTracking()) ATOOLS::msg.Out()
+#define msg_Debugging() if (ATOOLS::msg.LevelIsDebugging()) ATOOLS::msg.Out()
 
 #endif
 
