@@ -82,11 +82,10 @@ void Remnant_Base::UnDo()
   while (p_beamblob->NOutP()>0) {
     p_beamblob->RemoveOutParticle(p_beamblob->OutParticle(0));
   }
-  for (ATOOLS::Particle_List::iterator pit=m_parton[0].begin();
-       pit!=m_parton[0].end();++pit) {
-    delete *pit;
+  while (m_parton[0].size()>0) {
+    delete *m_parton[0].begin();
+    m_parton[0].erase(m_parton[0].begin());
   }
-  m_parton[0].clear();
   m_parton[2].clear();
   ++m_errors;
 }
