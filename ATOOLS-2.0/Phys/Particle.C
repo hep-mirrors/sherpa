@@ -25,27 +25,30 @@ bool ATOOLS::Particle::operator==(Particle part)
 }
 
 std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle* part) {
-  str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
   switch (part->Status()) {
   case 0 : // null entry
     return str<<"--- empty entry ---"<<std::endl;
   case 1 : // active (final state) particle
   case 2 : // decayed or fragmented
+    str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
     str<<"  "<<std::setw(3)<<part->Info()<<"  "<<std::setw(3)<<part->Status()<<std::setw(1)<<" "
        <<std::setw(22)<<part->Flav()<<std::setw(1)<<" "
        <<std::setw(10)<<part->Number()<<std::setw(1)<<" (";
     if (part->ProductionBlob()) str<<std::setw(5)<<part->ProductionBlob()->Id();
-                           else str<<"     ";
+    else str<<"     ";
     if (part->DecayBlob()) str<<" -> "<<std::setw(5)<<part->DecayBlob()->Id();
-                      else str<<" ->      ";
+    else str<<" ->      ";
     str<<std::setw(1)<<") ";
+    str<<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
     break;
   case 3 : // documentation line
+    str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
     return     str<<"============================================================"<<std::endl
 		  <<"  "<<std::setw(3)<<part->Info()<<"  "<<std::setw(3)<<part->Status()<<std::setw(1)<<" "
 		  <<std::setw(22)<<part->Flav()<<std::setw(1)<<" "
 		  <<std::setw(10)<<part->Number()<<std::endl
-		  <<"============================================================"<<std::endl;
+		  <<"============================================================"
+		  <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
   default : // user defined or reserved
     return str<<"--- unrecognized status:"<<part->Status()<<" ---"<<std::endl;
   }
