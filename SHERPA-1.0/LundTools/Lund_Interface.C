@@ -140,6 +140,17 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
       }
     }
   }
+  reader->MatrixFromFile(help,"MDCYKF");
+  for (size_t i=0;i<help.size();++i) {
+    if (help[i].size()>2) {
+      if ((int)help[i][0]>0 && abs((int)help[i][1]<2)) {
+	msg_Tracking()<<"Lund_Interface::Lund_Interface(..): "
+		      <<"Set MDCY("<<pycomp((int)help[i][0])<<","<<(int)help[i][1]
+		      <<") ( from KF code "<<(int)help[i][0]<<" )"<<std::endl;
+	pydat3.mdcy[(int)help[i][1]-1][pycomp((int)help[i][0])-1]=(int)help[i][2];
+      }
+    }
+  }
   // the next lines replace the apyinit_ call
   if (sherpa) {
     hepevt.nhep=100;

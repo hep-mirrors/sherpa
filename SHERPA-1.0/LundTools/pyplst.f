@@ -45,6 +45,10 @@ C
          WRITE(*,*) 'MINT(',ITEST,') = ',MSTI(ITEST),
      &        ' VINT(',ITEST,') = ',PARI(ITEST)
 10005 CONTINUE
+      DO 10006 ITEST=1,250
+         WRITE(*,*) 'MDCY(',ITEST,',1) = ',MDCY(ITEST,1),
+     &        ' MDCY(',ITEST+250,',1) = ',MDCY(ITEST+250,1)
+10006 CONTINUE
       RETURN
       END
 

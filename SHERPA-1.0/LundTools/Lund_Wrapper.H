@@ -18,6 +18,7 @@ extern "C" {
   void pymult_(int*);
   double pyalp_(double*);
   double shalps_(double*);
+  int pycomp_(int*);
   void pypdpr_(double*,double*,double*);
   void shpdpr_(double*,double*,double*);
   void sherrm_(int*);
@@ -25,6 +26,10 @@ extern "C" {
 
 void pyhepc(int mconv) { 
   pyhepc_(&mconv); 
+}
+
+int pycomp(int kfcode) { 
+  return pycomp_(&kfcode); 
 }
 
 void pyinit(const char *frame,const char *beam,const char *target,double win) {
