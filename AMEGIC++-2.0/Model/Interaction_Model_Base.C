@@ -47,6 +47,7 @@ double Interaction_Model_Base::ScalarFunction(const std::string _name,double _t)
     if (m_yukscheme==std::string("Running")) return p_model->ScalarFunction(_name,_t);
     return p_model->ScalarFunction(_name);
   }
+  return 0.0;
 }
 
 Interaction_Model_Base::~Interaction_Model_Base()

@@ -18,6 +18,7 @@ Beam_Base * Monochromatic::Copy()
 
 bool Monochromatic::CalculateWeight(double x,double q2) { return 1; }
 double Monochromatic::Weight(Flavour fl)                { return m_weight; }
+ATOOLS::Flavour Monochromatic::Remnant()                { return kf::photon; }
 
 
 

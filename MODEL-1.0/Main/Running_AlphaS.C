@@ -5,7 +5,6 @@
 #include "MathTools.H"
 // #include "Model.H"
 // #include "Distribution_Functions.H"
-#include <iostream>
 
 namespace MODEL {
   Running_AlphaS * as =0;

@@ -224,7 +224,7 @@ double Fast_Function::LinInter(int i, double x)
   double x1 = m_data[i].x;
   double y1 = m_data[i].y;
 
-  if (i<m_data.size()-1) ++i; else --i;
+  if (i<(int)m_data.size()-1) ++i; else --i;
   double x2 = m_data[i].x;
   double y2 = m_data[i].y;
 

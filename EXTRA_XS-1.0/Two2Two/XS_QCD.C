@@ -18,16 +18,7 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) :
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   a  = _fl[0].IsAnti();
-  int p = _fl[1].IsAnti();
-  int r = !(_fl[0] == _fl[2]);
-  if (a==p) {
-    p_colours[0][a] = p_colours[3-r][a] = Flow::Counter();
-    p_colours[1][a] = p_colours[2+r][a] = Flow::Counter();
-  }
-  else {
-    p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
-    p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
-  }
+  p = _fl[1].IsAnti();
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
@@ -36,8 +27,21 @@ double XS_q1q2_q1q2::operator()(double s,double t,double u) {
   return sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
 }
 
-bool XS_q1q2_q1q2::SetColours(double s,double t,double u) { 
+bool XS_q1q2_q1q2::SetColours(double s,double t,double u) 
+{ 
+  bool swap=m_swaped;
+  RestoreInOrder();
+  int r = !(p_fl[0] == p_fl[2]);
+  if (a==p) {
+    p_colours[0][a] = p_colours[3-r][a] = Flow::Counter();
+    p_colours[1][a] = p_colours[2+r][a] = Flow::Counter();
+  }
+  else {
+    p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
+    p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
+  }
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  if (swap) SwapInOrder();
   return 1; 
 }
 bool XS_q1q2_q1q2::SetColours()                           { return 1; }
@@ -52,9 +56,6 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(int _nin,int _nout,
 
   a = _fl[0].IsAnti();
   p = 1-a;
-  int r = !(_fl[0] == _fl[2]);
-  p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
-  p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
@@ -64,8 +65,16 @@ double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
   return sqr(4.*M_PI*aS)* 4. * (t*t + u*u) / ( 9. * s*s); 
 }
 
-bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u) { 
+bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u) 
+{ 
+  bool swap=m_swaped;
+  RestoreInOrder();
+  int r = !(p_fl[0] == p_fl[2]);
+  p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
+  p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
+
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
+  if (swap) SwapInOrder();
   return 1; 
 }
 bool XS_q1qbar1_q2qbar2::SetColours()                           { return 1; }
@@ -92,16 +101,21 @@ double XS_q1q1_q1q1::operator()(double s,double t,double u) {
 
 bool XS_q1q1_q1q1::SetColours(double s, double t, double u) 
 {
+  bool swap=m_swaped;
+  RestoreInOrder();
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
   
   Mt      = 1. - 2.*(u*s) / (t*t);
   Mu      = 1. - 2.*(s*t) / (u*u);
   
-  return SetColours();
+  bool result=SetColours();
+  if (swap) SwapInOrder();
+  return result;
 }
 
 
-bool XS_q1q1_q1q1::SetColours() {
+bool XS_q1q1_q1q1::SetColours() 
+{
   if (Mt > (Mt+Mu) * ran.Get()) {
     p_colours[3][a] = p_colours[0][a] = Flow::Counter();
     p_colours[2][a] = p_colours[1][a] = Flow::Counter();
@@ -137,15 +151,20 @@ double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
 
 
 bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
+  bool swap=m_swaped;
+  RestoreInOrder();
 
   Mt = 1. - 2.*(u*s)/(t*t); 
   Ms = 1. - 2.*(t*u)/(s*s); 
 
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
-  return SetColours();
+  bool result=SetColours();
+  if (swap) SwapInOrder();
+  return result;
 }
 
-bool XS_q1qbar1_q1qbar1::SetColours() {
+bool XS_q1qbar1_q1qbar1::SetColours() 
+{
   if (Ms >  (Mt+Ms) * ran.Get()) {
     p_colours[0][a] = p_colours[2+r][a] = Flow::Counter();	
     p_colours[1][p] = p_colours[3-r][p] = Flow::Counter();
@@ -169,9 +188,6 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(int _nin,int _nout,
   a = _fl[0].IsAnti();
   p = 1-a;
 
-  p_colours[0][a] = Flow::Counter();
-  p_colours[1][p] = Flow::Counter();
-
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
@@ -184,14 +200,22 @@ double XS_q1qbar1_gg::operator()(double s,double t,double u) {
 
 
 bool XS_q1qbar1_gg::SetColours(double s, double t, double u) {
+  bool swap=m_swaped;
+  RestoreInOrder();
   Mt    = u/t;
   Mu    = t/u;
   // *AS* set to pt2 in as set in BASE .by commenting out the next line  
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
-  return SetColours();
+  bool result=SetColours();
+  if (swap) SwapInOrder();
+  return result;
 }
 
-bool XS_q1qbar1_gg::SetColours() {
+bool XS_q1qbar1_gg::SetColours() 
+{
+  p_colours[0][a] = Flow::Counter();
+  p_colours[1][p] = Flow::Counter();
+
   if (Mt > (Mt+Mu) * ran.Get()) {
     p_colours[2][a] = p_colours[0][a];
     p_colours[3][p] = p_colours[1][p];
@@ -214,9 +238,6 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(int _nin,int _nout, Flavour * _fl) :
 
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
-  p_colours[0][0] = Flow::Counter();
-  p_colours[0][1] = Flow::Counter();
-
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
@@ -229,13 +250,21 @@ double XS_gg_q1qbar1::operator()(double s,double t,double u) {
 
 
 bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
+  bool swap=m_swaped;
+  RestoreInOrder();
   Mt      = u/t;
   Mu      = t/u;
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
-  return SetColours();
+  bool result=SetColours();
+  if (swap) SwapInOrder();
+  return result;
 }
 
-bool XS_gg_q1qbar1::SetColours() {
+bool XS_gg_q1qbar1::SetColours() 
+{
+  p_colours[0][0] = Flow::Counter();
+  p_colours[0][1] = Flow::Counter();
+
   if (Mt*(1-r) +Mu*r > (Mt+Mu) * ran.Get()) {
     p_colours[2+r][0] = p_colours[0][0];
     p_colours[3-r][1] = p_colours[1][1] = Flow::Counter();
@@ -264,16 +293,13 @@ XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) :
 
   fin_q=2;
   if (_fl[3].IsQuark()) {
-    fin_q=3;  
+    fin_q=3;
     if (swap_ut) swap_ut=0;
     else swap_ut=1;
   }
 
   a = _fl[ini_q].IsAnti();
   p = 1-a;
-
-  p_colours[ini_q][a] = Flow::Counter();
-  p_colours[fin_q][a] = Flow::Counter();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
@@ -290,7 +316,10 @@ double XS_q1g_q1g::operator()(double s,double t,double u) {
   return  sqr(4.*M_PI*aS)*(-4./9. * (Ms + Mu) +  (s*s + u*u)/(t*t));
 }
 
-bool XS_q1g_q1g::SetColours(double s, double t, double u) {
+bool XS_q1g_q1g::SetColours(double s, double t, double u) 
+{
+  bool swap=m_swaped;
+  RestoreInOrder();
   if (swap_ut) {
     Ms      = t/s;
     Mu      = s/t;
@@ -300,10 +329,16 @@ bool XS_q1g_q1g::SetColours(double s, double t, double u) {
     Mu      = s/u;
   }
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
-  return SetColours();
+  bool result=SetColours();
+  if (swap) SwapInOrder();
+  return result;
 }
       
-bool XS_q1g_q1g::SetColours() {
+bool XS_q1g_q1g::SetColours() 
+{
+  p_colours[ini_q][a] = Flow::Counter();
+  p_colours[fin_q][a] = Flow::Counter();
+
   if (Mu > (Ms+Mu) * ran.Get()) {
     p_colours[5-fin_q][a] = p_colours[ini_q][a];
     p_colours[5-fin_q][p] = p_colours[1-ini_q][p] = Flow::Counter();
@@ -314,6 +349,7 @@ bool XS_q1g_q1g::SetColours() {
     p_colours[1-ini_q][a] = p_colours[5-fin_q][a] = Flow::Counter();
     p_colours[1-ini_q][p] = p_colours[ini_q][a];
   }
+
   return 1;
 }
 
@@ -324,8 +360,6 @@ XS_gg_gg::XS_gg_gg(int _nin,int _nout, Flavour * _fl) :
   Single_XS(_nin,_nout,_fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  p_colours[0][0] = Flow::Counter();
-  p_colours[1][1] = Flow::Counter();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
@@ -339,16 +373,24 @@ double XS_gg_gg::operator()(double s,double t,double u) {
 }
   
 bool XS_gg_gg::SetColours(double s, double t, double u) {
+  bool swap=m_swaped;
+  RestoreInOrder();
   
   Mu      = 1 + t*t/(u*s) - s*t/(u*u) - t*u/(s*s);
   Ms      = 1 + s*s/(t*u) - s*t/(u*u) - u*s/(t*t);
   Mt      = 1 + u*u/(s*t) - u*s/(t*t) - t*u/(s*s);
 
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
-  return SetColours();
+  bool result=SetColours();
+  if (swap) SwapInOrder();
+  return result;
 }
     
-bool XS_gg_gg::SetColours() {
+bool XS_gg_gg::SetColours() 
+{
+  p_colours[0][0] = Flow::Counter();
+  p_colours[1][1] = Flow::Counter();
+
   double rr = ran.Get() * (Ms+Mt+Mu);
   if (rr-Mt < 0.) {
     p_colours[2][0] = p_colours[0][0];

@@ -25,11 +25,11 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
 							     std::string cplscheme,
 							     std::string yukscheme)
 { 
-  if (modeltype==std::string("pure_QCD")) {
+  if (modeltype==std::string("pure_QCD")||modeltype==std::string("QCD")) {
     rpa.gen.SetModelType(ATOOLS::Model_Type::pure_QCD);
     return new Interaction_Model_QCD(p_model,cplscheme,yukscheme);
   }
-  if (modeltype==std::string("pure_EW")) {
+  if (modeltype==std::string("pure_EW")||modeltype==std::string("EW")) {
     rpa.gen.SetModelType(ATOOLS::Model_Type::pure_EW);
     return new Interaction_Model_EW(p_model,cplscheme,yukscheme); 
   }

@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <map>
+#include <vector>
 
 namespace ATOOLS {  
 
@@ -12,11 +13,15 @@ namespace ATOOLS {
 
   //! responsible for writing out whole classes
   class IO_Handler {
-    std::fstream   file;
-    std::string    filename;
+    std::fstream   m_file;
+    std::string    m_filename;
 
-    std::string    buffer;
-    Variable_Map   vars;
+    std::string    m_buffer;
+    Variable_Map   m_vars;
+
+    std::vector<char> m_seps, m_coms;
+
+    unsigned long m_nx, m_ny;
   public:
     IO_Handler();
 
@@ -25,6 +30,12 @@ namespace ATOOLS {
     // set output filename
     int SetFileName(std::string);
     int SetFileNameRO(std::string);
+
+
+    void SetSeparator(char);
+    void AddSeparator(char);
+    void SetComment(char);
+    void AddComment(char);
 
     template <class Type> 
     int ValueInput(std::string name, Type &);
@@ -55,17 +66,21 @@ namespace ATOOLS {
     //
 
     template <class Type> 
-    Type ** MatrixInput(const std::string name, int nx=-1, int ny=-1);
+    Type ** MatrixInput(const std::string name=std::string(""), int nx=-1, int ny=-1);
 
     template <class Type> 
     Type * ArrayInput(const std::string name=std::string(""), int nx=-1);
 
     template <class Type> 
-    Type Input(const std::string name);
+    Type Input(const std::string name=std::string(""));
 
 
     // access
-    std::fstream & GetFstream() { return file; }
+    std::fstream & GetFstream() { return m_file; }
+    
+    unsigned long Nx() const { return m_nx; }
+    unsigned long Ny() const { return m_ny; }
+
 
     // helpers
     void FillIn(const std::string &);

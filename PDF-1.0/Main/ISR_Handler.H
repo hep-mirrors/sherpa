@@ -14,7 +14,7 @@ namespace PDF {
     double                m_mass12, m_mass22, m_x1, m_x2;
     double                m_exponent[2];
     double                m_splimits[3],m_ylimits[2];
-    double                m_fixed_smax;
+    double                m_fixed_smin, m_fixed_smax;
     ATOOLS::Vec4D       m_fiXVECs[2];
     std::string           m_name, m_type;
   public:
@@ -37,6 +37,7 @@ namespace PDF {
     void   SetName(std::string _name) { m_name = _name; }
     void   SetSprimeMin(double _spl);
     void   SetSprimeMax(double _spl);
+    void   SetFixedSprimeMin(double _spl);
     void   SetFixedSprimeMax(double _spl);
     void   SetPole(double _spl)       { m_splimits[2] = _spl; }
     void   SetYMin(double _yl)        { m_ylimits[0]  = _yl; }

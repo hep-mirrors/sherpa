@@ -208,7 +208,7 @@ Mom_Data Selector_Data::RemoveData(int & _type)
   Mom_Data last;
   for (std::vector<Mom_Data>::iterator it=data.begin();it!=data.end();++it) {
     if (it->type==_type) {
-      last=*it; 
+      last=*it;
       data.erase(it--);
     }
   }

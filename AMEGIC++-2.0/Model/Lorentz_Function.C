@@ -17,7 +17,7 @@ void Lorentz_Function::AddPermutation(int sign,int a,int b=-1,int c=-1,int d=-1)
 void Lorentz_Function::InitPermutation()
 {
   if (!m_permlist.empty()) {
-    for (short int i=0;i<m_permlist.size();i++) delete[] m_permlist[i]; 
+    for (size_t i=0;i<m_permlist.size();i++) delete[] m_permlist[i]; 
     m_permlist.clear();
     m_signlist.clear();
   }
@@ -103,7 +103,7 @@ int Lorentz_Function::NextPermutation()
 {
   if (NofIndex()<2) return 0;
   m_permcount++;
-  if (m_permcount==m_permlist.size()) return 0;
+  if (m_permcount==(int)m_permlist.size()) return 0;
   
   for (short int i=0;i<NofIndex();i++) m_partarg[i]  = m_permlist[m_permcount][i];
   return 1;

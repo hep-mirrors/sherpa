@@ -1,17 +1,34 @@
-lib_LTLIBRARIES = libPDF.la
-libPDF_la_SOURCES = ISR_Handler.C \
-		    Intact.C Structure_Function.C \
-		    mrst99.cc PDF_Base.C PDF_MRST99.C \
-		    PDF_Electron.C PDF_Handler.C \
-                    CTEQ6_Fortran_Interface.C \
-		    Cteq61Pdf.f cteq6_inter.f
-INCLUDES = -I../LHAPDF \
-	   -I../../MODEL-1.0/Main \
-	   -I../../ATOOLS-2.0/Phys \
-	   -I../../ATOOLS-2.0/Org \
-	   -I../../ATOOLS-2.0/Math
-noinst_HEADERS = ISR_Handler.H ISR_Base.H \
-		 Intact.H Structure_Function.H\
-	         mrst99.h PDF_Base.H PDF_MRST99.H \
-		 PDF_Electron.H PDF_Handler.H \
-		 CTEQ6_Fortran_Interface.H 
+SHERPASYS  = ../..
+
+ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
+MODELINC   = $(SHERPASYS)/MODEL-1.0
+
+lib_LTLIBRARIES       =	libPDF.la
+libPDF_la_SOURCES     =	ISR_Handler.C \
+		    	Intact.C \
+			Structure_Function.C \
+		    	PDF_Base.C \
+			mrst99.cc \
+			PDF_MRST99.C \
+		    	PDF_Electron.C \
+			Cteq61Pdf.f \
+			cteq6_inter.f \
+		    	CTEQ6_Fortran_Interface.C \
+		    	PDF_Handler.C 
+CXXFLAGS      =	-pedantic -Wall -Winline
+INCLUDES      =	-I../LHAPDF \
+	   	-I$(MODELINC)/Main \
+	   	-I$(ATOOLSINC)/Phys \
+	   	-I$(ATOOLSINC)/Org \
+	   	-I$(ATOOLSINC)/Math
+noinst_HEADERS        =	ISR_Base.H \
+		 	ISR_Handler.H \
+			Intact.H \
+			Structure_Function.H\
+	         	PDF_Base.H \
+			mrst99.h \
+			PDF_MRST99.H \
+		 	PDF_Electron.H \
+			CTEQ6_Fortran_Interface.H \
+			PDF_Handler.H 
+

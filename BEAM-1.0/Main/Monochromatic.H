@@ -9,6 +9,7 @@ namespace BEAM {
   public:
     Monochromatic(const ATOOLS::Flavour,const double,const double,const int);
     Beam_Base * Copy();     
+    ATOOLS::Flavour Remnant();
     bool        CalculateWeight(const double,const double);
     double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
     bool        On() { return 0; }

@@ -257,8 +257,10 @@ double XS_Group::Differential2()
   return 0.;
 }
 
-void XS_Group::SetMax(double max) {
-  if (max>0.) {
+void XS_Group::SetMax(double max,int flag) 
+{
+  if (flag==1) {
+    for (int i=0;i<m_xsecs.size();++i) m_xsecs[i]->SetMax(max/(double)Size(),flag);
     m_max=max;
     return;
   }

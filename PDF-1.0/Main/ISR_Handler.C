@@ -29,6 +29,7 @@ void ISR_Handler::Init(double * _splimits) {
   m_splimits[0] = s*_splimits[0];
   m_splimits[1] = ATOOLS::Min(s*_splimits[1],s*Upper1()*Upper2());
   m_splimits[2] = s;
+  m_fixed_smin = m_splimits[0];
   m_fixed_smax = m_splimits[1];
   m_ylimits[0]  = -10.;
   m_ylimits[1]  = 10.;
@@ -43,11 +44,16 @@ void ISR_Handler::Init(double * _splimits) {
 }
 
 
-void   ISR_Handler::SetSprimeMin(double _spl)       { m_splimits[0]  = Max(m_splimits[0],_spl); }
+void   ISR_Handler::SetSprimeMin(double _spl)       { m_splimits[0]  = Max(m_fixed_smin,_spl); }
 void   ISR_Handler::SetSprimeMax(double _spl)       { m_splimits[1]  = Min(m_fixed_smax,_spl); }
-void   ISR_Handler::SetFixedSprimeMax(double _spl)  { 
-  m_fixed_smax  = Min(m_fixed_smax,_spl); 
-  m_splimits[1] = Min(m_splimits[1],_spl); 
+void   ISR_Handler::SetFixedSprimeMin(double _spl)  
+{ 
+  m_fixed_smin  = Max(m_fixed_smin,_spl); 
+  m_splimits[0] = Max(m_splimits[0],_spl);
+}
+void   ISR_Handler::SetFixedSprimeMax(double _spl)  {
+  m_fixed_smax  = Min(m_fixed_smax,_spl);
+  m_splimits[1] = Min(m_splimits[1],_spl);
 }
 
 
@@ -63,12 +69,12 @@ ISR_Handler::~ISR_Handler() {
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour * _bunches,
 				   ATOOLS::Flavour * _partons) {
   
-  bool fit = 1;
+    bool fit = 1;
   for (int i=0;i<2;i++) {
     if (p_ISRBase[i]->On()) {
       if (_bunches[i] != PDF(i)->Bunch()) { fit = 0; break; }
       fit = 0;
-      for (int j = 0;j<(PDF(i)->Partons()).size();j++) {
+      for (unsigned int j = 0;j<(PDF(i)->Partons()).size();j++) {
 	if (_partons[i] == (PDF(i)->Partons())[j]) {
 	  fit = 1;
 	  break; 
@@ -91,7 +97,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour * _partons) {
   for (int i=0;i<2;i++) {
     if (p_ISRBase[i]->On()) {
       fit = 0;
-      for (int j = 0;j<(PDF(i)->Partons()).size();j++) {
+      for (unsigned int j = 0;j<(PDF(i)->Partons()).size();j++) {
 	if (_partons[i] == (PDF(i)->Partons())[j]) {
 	  fit = 1;
 	  break; 
@@ -109,7 +115,7 @@ bool ISR_Handler::CheckConsistency(ATOOLS::Flavour * _partons) {
   return fit;
 }
 
-void ISR_Handler::SetPartonMasses(Flavour * fl) { 
+void ISR_Handler::SetPartonMasses(Flavour * fl) {
   m_mass12     = sqr(fl[0].Mass());
   m_mass22     = sqr(fl[1].Mass());
   double E     = ATOOLS::rpa.gen.Ecms();

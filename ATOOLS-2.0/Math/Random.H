@@ -21,7 +21,7 @@ namespace ATOOLS {
     void     InitRan3(long*);
 
   public:
-    Random(long nid) {SetSeed(nid);}
+    Random(long nid): m_outstream(NULL) {SetSeed(nid);}
     
     inline double Get() {return Ran3();}
     inline double GetNZ() {      // not zero random number

@@ -59,6 +59,9 @@ namespace EXTRAXS {
     
     virtual ~XS_Base();
 
+    void SetScaleScheme(const int _m_scalescheme)     { m_scalescheme=_m_scalescheme;     }
+    void SetKFactorScheme(const int _m_kfactorscheme) { m_kfactorscheme=_m_kfactorscheme; }
+
     double ScaleFactor()   { return m_scalefactor;   }
     int    KFactorScheme() { return m_kfactorscheme; }
     int    ScaleScheme()   { return m_scalescheme;   }
@@ -87,10 +90,13 @@ namespace EXTRAXS {
     XS_Base                  * Selected();
     ATOOLS::Cut_Data      * Cuts();
     ATOOLS::Selector_Base * Selector();
+    PDF::ISR_Handler      * ISR();
     void                       UpdateCuts(double,double)  {};
+    virtual void               SetMax(double,int);
     virtual void               SetMax(double);
     void                       SetTotal(double);
     void                       SetName(std::string);
+    void                       SetSelected(XS_Base *);
     virtual void               SetISR(PDF::ISR_Handler *)          = 0;
     virtual void               SetTotalXS()                        = 0;
     virtual double             Differential(double,double,double)  = 0;
@@ -115,7 +121,7 @@ namespace EXTRAXS {
   inline int                        XS_Base::Nout()                  { return m_nout; }  
   inline int                        XS_Base::Nvec()                  { return m_nin+m_nout; }  
   inline std::string                XS_Base::Name()                  { return m_name; }
-  inline ATOOLS::Flavour       * XS_Base::Flavs()                 { return p_fl; }
+  inline ATOOLS::Flavour          * XS_Base::Flavs()                 { return p_fl; }
   inline double                     XS_Base::ISRThreshold()          { return m_thres; }
   inline double                     XS_Base::Max()                   { return m_max; }
   inline double                     XS_Base::Total()                 { return m_totalxs; }
@@ -123,15 +129,17 @@ namespace EXTRAXS {
   inline double                     XS_Base::LastXS()                { return m_lastdxs; }
   inline double                     XS_Base::LastLumi()              { return m_lastlumi; }
   inline double                     XS_Base::Scale()                 { return m_scale; }   
-  inline ATOOLS::Vec4D          * XS_Base::Momenta()               { return p_moms; } 
+  inline ATOOLS::Vec4D            * XS_Base::Momenta()               { return p_moms; } 
   inline int                     ** XS_Base::Colours()               { return p_colours; }
+  inline int                        XS_Base::InSwaped()              { return m_swaped; }
   inline XS_Base                  * XS_Base::Selected()              { return p_selected; }
-  inline ATOOLS::Cut_Data      * XS_Base::Cuts()                  { return NULL; }
-  inline ATOOLS::Selector_Base * XS_Base::Selector()              { return p_sel; }
+  inline ATOOLS::Cut_Data         * XS_Base::Cuts()                  { return NULL; }
+  inline ATOOLS::Selector_Base    * XS_Base::Selector()              { return p_sel; }
+  inline PDF::ISR_Handler         * XS_Base::ISR()                   { return p_isr; }
 
-  inline void                       XS_Base::SetTotal(double _total)         { m_totalxs = _total; }
-  inline void                       XS_Base::SetName(std::string _name)      { m_name    = _name; }
-  inline int XS_Base::InSwaped() { return m_swaped; }
+  inline void XS_Base::SetTotal(double _total)           { m_totalxs = _total;       }
+  inline void XS_Base::SetName(std::string _name)        { m_name    = _name;        }
+  inline void XS_Base::SetSelected(XS_Base *_p_selected) { p_selected = _p_selected; }
 }
 
 #endif

@@ -366,22 +366,23 @@ void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
 
 void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Particle_List * pl) 
 {
-  // fetch PSME blob
-  Blob * bl_meps=0;
+  // fetch last ME PS blob
+  Blob *bl_meps=NULL;
   for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
-    int pos = (*blit)->Type().find(string("ME PS Interface (Sherpa, FS)"));
-    if (pos>-1) {
-      bl_meps=(*blit);
-      // deactivate in partons!
-      for (int i=0;i<bl_meps->NInP();++i) {
-	bl_meps->InParticle(i)->SetStatus(2);
-      }
-      break;
+    if((*blit)->Type().find(string("ME PS Interface (Sherpa, FS)"))!=-1) {
+      bl_meps=*blit;
     }
   }
-
-
-
+  if (bl_meps==NULL) {
+    ATOOLS::msg.Error()<<"Final_State_Shower::ExtractPartons(..): "
+		       <<"No ME PS Interface found!"<<std::endl
+		       <<"   Cannot proceed. Abort."<<std::endl;
+    exit(127);
+  }
+  // deactivate in partons!
+  for (int i=0;i<bl_meps->NInP();++i) {
+    bl_meps->InParticle(i)->SetStatus(2);
+  }
 
   if (!kn) return;
   int number;
@@ -398,25 +399,21 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       jet->SetStatus(1);
       p=new Particle(kn->part);
       jet->AddToInParticles(p);
-      p->SetDecayBlob(jet);
       if (bl_meps) {
 	bl_meps->AddToOutParticles(p);
-	p->SetProductionBlob(bl_meps);
 	bl_meps->SetStatus(0);
       }
 
       p=new Particle(kn->part);
       jet->AddToOutParticles(p);
       if (pl) number = pl->size();
-         else number = int(kn->part);
+      else number = int(kn->part);
       p->SetNumber(number);
-      p->SetProductionBlob(jet);
-      p->SetDecayBlob(NULL);
 
       kn->part->SetNumber(number);
       jet->SetId(bl->size());
       jet->SetType(std::string("FS Shower (APACIC++2.0)"));
-      jet->SetPosition(kn->part->XProd() + Vec4D(kn->part->LifeTime(),kn->part->Distance()));
+      jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
       bl->push_back(jet);
       return;
     }
@@ -425,22 +422,20 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 	jet = new Blob();
 	jet->SetStatus(1);
 	p = new Particle(kn->part);
-      	p->SetDecayBlob(jet);
       	p->SetStatus(2);
 	if (pl) pl->push_back(p);
 	jet->AddToInParticles(p);
 	if (bl_meps) {
 	  bl_meps->AddToOutParticles(p);
-	  p->SetProductionBlob(bl_meps);
 	  bl_meps->SetStatus(0);
 	}
 	if (pl) number = pl->size();
-		  else number = int(kn->part);
+	else number = int(kn->part);
 	p->SetNumber(number);
 	kn->part->SetNumber(number);
 	jet->SetId(bl->size());
 	jet->SetType(std::string("FS Shower (APACIC++2.0)"));
-	jet->SetPosition(kn->part->XProd() + Vec4D(kn->part->LifeTime(),kn->part->Distance()));
+	jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
 	bl->push_back(jet);
       }
     }
@@ -455,7 +450,6 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       if (pl) number = pl->size();
          else number = int(kn->part);
       kn->part->SetNumber(number);
-      kn->part->SetProductionBlob(jet);
       kn->part->SetStatus(1);
       if (pl) pl->push_back(kn->part);
       jet->AddToOutParticles(new Particle(kn->part));

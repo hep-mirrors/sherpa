@@ -153,7 +153,6 @@ void Color_Generator::CFKill()
   c = CFlist;
   int replace,with;
   replace = with  = 0;
-  short int i;
   while (c) {
     if (c->Type() == cf::D || c->Type() == cf::G) {
       replace = -1;

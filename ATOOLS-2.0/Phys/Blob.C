@@ -49,6 +49,9 @@ namespace ATOOLS {
   }
 }
 
+Blob::Blob(const Vec4D _pos, const int _id) : 
+  m_position(_pos), m_id(_id), m_weight(1.) { m_beam = -1; m_status = 0; };
+
 Blob::~Blob() {
   DeleteOwnedParticles();
 }
@@ -56,11 +59,13 @@ Blob::~Blob() {
 void Blob::AddToInParticles(Particle * Newp) {
   if (!Newp) return;
   m_inparticles.push_back( Newp );
+  Newp->SetDecayBlob(this);
 }
 
 void Blob::AddToOutParticles(Particle * Newp) {
   if (!Newp) return;
   m_outparticles.push_back( Newp );
+  Newp->SetProductionBlob(this);
 }
 
 Particle * Blob::InParticle(int _pos) {
@@ -142,7 +147,7 @@ void Blob::DeleteInParticle(Particle * _part) {
 	delete _part;
 	_part = NULL;
       }
-      // else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
       return ;
     }
   }
@@ -161,7 +166,7 @@ void Blob::DeleteOutParticle(Particle * _part) {
 	delete _part;
 	_part = NULL;
       }
-      // else msg.Out()<<"WARNING: particle not owned by the Blob ask to delete it"<<std::endl;
+      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
       return ;
     }
   }

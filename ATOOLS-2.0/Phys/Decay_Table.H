@@ -55,7 +55,7 @@ namespace ATOOLS {
   inline double      Decay_Channel::MinimalMass()                             { return m_minmass; }
   inline FlavourSet  Decay_Channel::GetDecayProducts()                        { return m_flouts;  }
   inline Flavour     Decay_Channel::GetDecayProduct(int i) {
-    if (i<0 || i>m_flouts.size()) {
+    if (i<0 || i>(int)m_flouts.size()) {
       std::cout<<"Error in Decay_Channel::GetDecayProduct("<<i<<") :"<<std::endl
 	       <<"   out of bounds, return no flavour."<<std::endl;
       return Flavour(kf::none);

@@ -12,6 +12,7 @@ namespace ATOOLS {
 
   typedef std::deque<Particle*> Particle_List;
   typedef Particle_List::iterator Particle_Iterator;
+  typedef Particle_List::const_iterator Particle_Const_Iterator;
 
   std::ostream & operator<<(std::ostream & s, Particle_List & pl);
 

@@ -2,7 +2,8 @@
 #include <iostream>
 
 namespace ATOOLS {
-// calculates the logarithm of the Gammafunction
+
+  // calculates the logarithm of the Gammafunction
   double Gammln(double xx)
   {
     double x,y,tmp,ser;

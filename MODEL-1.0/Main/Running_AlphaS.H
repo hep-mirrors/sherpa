@@ -1,5 +1,5 @@
-#ifndef running_alphas_h
-#define running_alphas_h
+#ifndef Running_Alphas_H
+#define Running_Alphas_H
 
 #include "Flavour.H"
 #include "Function_Base.H"

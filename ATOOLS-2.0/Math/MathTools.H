@@ -35,9 +35,9 @@
 namespace ATOOLS {
 
   template <class Type>
-  inline Type Min(Type a, Type b) { return a<b ? a : b; }
+  Type Min(Type a, Type b);
   template <class Type>
-  inline Type Max(Type a, Type b) { return a>b ? a : b; }
+  Type Max(Type a, Type b);
 
   /*
   inline int Min(int a, int b) { return a<b ? a : b; }
@@ -52,6 +52,7 @@ namespace ATOOLS {
   */
 
   inline int         Sign(const int& a) {return (a<0) ? -1 : 1;}
+  inline double      Sign(const double& a) {return (a<0) ? -1.0 : 1.0;}
   inline int         iabs(const int& a) {return a>0 ? a : -a;} 
   inline double      dabs(const double& a) {return a>0 ? a : -a;} 
   inline double      sqr(double x) {return x*x;} 
@@ -82,6 +83,12 @@ namespace ATOOLS {
   double Gammln(double xx);
 
   double ReIncompleteGamma0(double x,double prec=1.e-6);
+
+  template <class Type>
+  Type Min(Type a, Type b) { return a<b ? a : b; }
+  
+  template <class Type>
+  Type Max(Type a, Type b) { return a>b ? a : b; }
 
   /*!
     \file

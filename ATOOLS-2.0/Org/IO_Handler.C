@@ -8,56 +8,85 @@
 using namespace ATOOLS;
 using namespace std;
 
-IO_Handler::IO_Handler() { filename=std::string(""); };
+IO_Handler::IO_Handler() 
+{
+  m_seps.push_back(';');
+  m_coms.push_back('#');
+  m_filename=std::string(""); 
+};
 
 IO_Handler::~IO_Handler() { 
-  if (!(filename==std::string(""))) {
-    file.close();
+  if (!(m_filename==std::string(""))) {
+    m_file.close();
   }
 };
     
 // set output filename
 int IO_Handler::SetFileName(std::string _name) {
-  if (!(filename==std::string(""))) {
-    file.close();
+  if (!(m_filename==std::string(""))) {
+    m_file.close();
   }
-  filename=_name;
-  msg.Tracking()<<" opened file "<<filename<<endl;
-  file.open(filename.c_str(),ios::out);
+  m_filename=_name;
+  msg.Tracking()<<" opened file "<<m_filename<<endl;
+  m_file.open(m_filename.c_str(),ios::out);
 
-  if (!(file.good())) {
-    msg.Tracking()<<" ERROR: opening "<<filename<<endl;
+  if (!(m_file.good())) {
+    msg.Tracking()<<" ERROR: opening "<<m_filename<<endl;
     return 0;
   }
-  file.precision(15);
+  m_file.precision(15);
   msg.Tracking()<<" done "<<endl;
   return 1;
 }
     
 // set input filename
 int IO_Handler::SetFileNameRO(string _name) {
-  if (!(filename==std::string(""))) {
+  if (!(m_filename==std::string(""))) {
     msg.Tracking()<<"before closing"<<endl;
-    msg.Tracking()<<file;
-    file.close();
+    msg.Tracking()<<m_file;
+    m_file.close();
   }
-  filename=_name;
-  msg.Tracking()<<" opened file "<<filename<<endl;
-  file.open(filename.c_str(),ios::in);
+  m_filename=_name;
+  msg.Tracking()<<" opened file "<<m_filename<<endl;
+  m_file.open(m_filename.c_str(),ios::in);
 
-  if (!(file.good())) {
-    msg.Error()<<" ERROR: opening "<<filename<<endl;
+  if (!(m_file.good())) {
+    msg.Error()<<" ERROR: opening "<<m_filename<<endl;
     return 0;
   }
   msg.Tracking()<<" done "<<endl;
   return 1;
 }
+
+
+void IO_Handler::SetSeparator(char c)
+{
+  m_seps.clear();
+  m_seps.push_back(c);
+}
+
+void IO_Handler::AddSeparator(char c)
+{
+  m_seps.push_back(c);
+}
+
+void IO_Handler::SetComment(char c)
+{
+  m_coms.clear();
+  m_coms.push_back(c);
+}
+
+void IO_Handler::AddComment(char c)
+{
+  m_coms.push_back(c);
+}
+
     
 // output file (compare rpa, etc.)
 template <class Type> 
 IO_Handler & IO_Handler::operator<<(const Type & value) {
-  file<<" filename = "<<filename<<endl;
-  file<<value;
+  m_file<<" filename = "<<m_filename<<endl;
+  m_file<<value;
 
   return *this;
 }
@@ -66,55 +95,69 @@ template <class Type>
 void IO_Handler::MatrixOutput(const std::string name,Type ** const  values,const int nx, const int ny) {
   msg.Tracking()<<" output "<<name<<endl;
   if (name!=std::string("")) 
-    file<<" "<<name<<" = "<<endl;
+    m_file<<" "<<name<<" = "<<endl;
 
-  file<<"["<<nx<<";"<<ny<<"]";
-  file<<"{";
+  m_file<<"["<<nx<<";"<<ny<<"]";
+  m_file<<"{";
   if (nx>0) ArrayOutput("", values[0],ny,0);
   for (int i=1;i<nx;++i) {
-    file<<";"<<endl;
+    m_file<<";"<<endl;
     ArrayOutput("", values[i],ny,0);
   }
-  file<<"}"<<endl;
-  
+  m_file<<"}"<<endl;
+  m_nx=nx;
+  m_ny=ny;  
 }
 
 template <class Type> 
 void IO_Handler::ArrayOutput(const std::string name,const Type * values,const int nx, bool writesize) {
   if (name!=std::string("")) 
-    file<<" "<<name<<" = "<<endl;
+    m_file<<" "<<name<<" = "<<endl;
 
-  if (writesize) file<<"["<<nx<<"]";
-  file<<"{";
-  if (nx>0) file<<values[0];
+  if (writesize) m_file<<"["<<nx<<"]";
+  m_file<<"{";
+  if (nx>0) m_file<<values[0];
   for (int i=1;i<nx;++i) {
     if (i%10==0)
-      file<<";"<<endl<<values[i];
+      m_file<<";"<<endl<<values[i];
     else
-      file<<";"<<values[i];
+      m_file<<";"<<values[i];
   }
-  file<<"}";
-  if (writesize) file<<endl;
-  
+  m_file<<"}";
+  if (writesize) {
+    m_file<<endl;
+    m_nx=nx;
+  }
 }
 template <class Type> 
 Type * IO_Handler::ArrayInput(const std::string name,int nx) {
   MyStrStream str; 
-  if (buffer.length()==0) {
-    getline(file,buffer); 
-    if (buffer.length()==0) {
-      getline(file,buffer); 
+//   if (m_buffer.length()==0) {
+//     getline(m_file,m_buffer); 
+//     if (m_buffer.length()==0) {
+//       getline(m_file,m_buffer); 
+//     }
+//   }
+  do {
+    if (m_buffer.length()==0) 
+      getline(m_file,m_buffer); 
+    for (unsigned int i=0; i<m_coms.size();++i) {
+      int beg = m_buffer.find(m_coms[i]);
+      if (beg >=0) {
+	m_buffer=m_buffer.substr(0,beg);
+      }
     }
-  }
+  } while (m_buffer.length()==0);
+
   if (nx<0) {
-    int beg = buffer.find("[");
-    int end = buffer.find("]");
+    int beg = m_buffer.find("[");
+    int end = m_buffer.find("]");
     if (beg==-1 || end==-1) {
-      msg.Tracking()<<" Error size not fount "<<endl;
+      msg.Tracking()<<" Error size not found "<<endl;
       nx=0;
     }
     else {
-      string ssize = buffer.substr(beg+1,end-1);
+      string ssize = m_buffer.substr(beg+1,end-1);
       msg.Tracking()<<" ssize="<<ssize<<endl;
       str<<ssize;
       str>>nx;
@@ -124,11 +167,15 @@ Type * IO_Handler::ArrayInput(const std::string name,int nx) {
   Type * values = new Type[nx];
 
   int x=0;
-  string::iterator sit1=buffer.begin();
-  string::iterator sit2=find(sit1,buffer.end(),'{');
-  string::iterator send=find(sit1,buffer.end(),'}');
+  string::iterator sit1=m_buffer.begin();
+  string::iterator sit2=find(sit1,m_buffer.end(),'{');
+  string::iterator send=find(sit1,m_buffer.end(),'}');
   sit1=++sit2;
-  sit2=find(sit1,send,';');
+  sit2=send;
+  for (unsigned int i=0;i<m_seps.size();++i) {
+    string::iterator si=find(sit1,send,m_seps[i]);
+    if (si<sit2) sit2=si;
+  }
   for (;x<nx ;++x) {
     MyStrStream helpstr;
     string value(sit1,sit2);
@@ -137,59 +184,76 @@ Type * IO_Handler::ArrayInput(const std::string name,int nx) {
 
     sit1=++sit2;
     if ((sit1==send)) {
-      getline(file,buffer); 
-      sit1=buffer.begin();
-      send=find(sit1,buffer.end(),'}');
+      getline(m_file,m_buffer); 
+      sit1=m_buffer.begin();
+      send=find(sit1,m_buffer.end(),'}');
     }
-    sit2=find(sit1,send,';');
+    sit2=send;
+    for (unsigned int i=0;i<m_seps.size();++i) {
+      string::iterator si=find(sit1,send,m_seps[i]);
+      if (si<sit2) sit2=si;
+    }
   }
-  buffer=string(++sit2,buffer.end());
+  m_buffer=string(++sit2,m_buffer.end());
+
+  m_nx=nx;  
+
   return values;
 }
 
 template <class Type> 
 Type ** IO_Handler::MatrixInput(const std::string name,int nx, int ny) {
-  MyStrStream str;  
-  getline(file,buffer); 
+  MyStrStream str; 
+  do {
+    if (m_buffer.length()==0) 
+      getline(m_file,m_buffer); 
+    for (unsigned int i=0; i<m_coms.size();++i) {
+      int beg = m_buffer.find(m_coms[i]);
+      if (beg >=0) {
+	m_buffer=m_buffer.substr(0,beg);
+      }
+    }
+  } while (m_buffer.length()==0);
   if (nx<0) {
-    int beg = buffer.find("[");
-    int end = buffer.find("]");
+    int beg = m_buffer.find("[");
+    int end = m_buffer.find("]");
     if (beg==-1 || end==-1) {
-      msg.Tracking()<<" Error size not found "<<endl;
+      cout<<" Error size not found "<<endl;
       nx=0; ny=0;
     }
     else {
-      string ssize = buffer.substr(beg+1,end-1);
-      msg.Tracking()<<" ssize="<<ssize<<endl;
+      string ssize = m_buffer.substr(beg+1,end-1);
       int hit = ssize.find(";");
-      msg.Tracking()<<" hit="<<hit<<endl;
       str<<ssize.substr(0,hit);
       str>>nx;
       str<<ssize.substr(hit+1);
       str>>ny;
-      msg.Tracking()<<" nx="<<nx<<" ny="<<ny<<endl;
     }
   }
 
-  int  hit=buffer.find('{');
-  buffer=buffer.substr(hit+1);
+  int  hit=m_buffer.find('{');
+  m_buffer=m_buffer.substr(hit+1);
 
   Type ** m = new Type*[nx];
   for(int i=0;i<nx;++i) {
     m[i]=ArrayInput<Type>("",ny);
-    if (i<nx-1) getline(file,buffer);
+    if (i<nx-1) getline(m_file,m_buffer);
   }
 
-  buffer=string("");
+  m_buffer=string("");
+
+  m_nx=nx;  
+  m_ny=ny;  
+
   return m;
 }
 
 template <class Type> 
 void IO_Handler::Output(const std::string name,const Type & value) {
  if (name!=std::string("")) 
-   file<<" "<<name<<" = "<<value<<endl;
+   m_file<<" "<<name<<" = "<<value<<endl;
  else
-   file<<value<<endl;
+   m_file<<value<<endl;
 }
 
 template <class Type> 
@@ -197,32 +261,52 @@ Type IO_Handler::Input(const std::string name) {
  if (name!=std::string("")) 
    msg.Tracking()<<" "<<name<<" =  ?????????"<<endl;
  else {
+  MyStrStream str; 
+  do {
+    if (m_buffer.length()==0) 
+      getline(m_file,m_buffer); 
+    for (unsigned int i=0; i<m_coms.size();++i) {
+      int beg = m_buffer.find(m_coms[i]);
+      if (beg >=0) {
+	m_buffer=m_buffer.substr(0,beg);
+      }
+    }
+  } while (m_buffer.length()==0);
+
+  str<<m_buffer;
+  m_buffer=std::string("");
+  Type value;
+  str>>value;
+  return value;
+
+  /*
    Type value;
-   file>>value;
+   m_file>>value;
    return value;
+  */
  }
 }
 
 template <class Type> 
 int IO_Handler::ValueInput(std::string name, Type & value) {
-  if (vars.size()==0) {
+  if (m_vars.size()==0) {
     // create variable map
-    msg.Tracking()<<file.gcount()<<endl;
-    for (int i=0;file;++i) {       
-      getline(file,buffer);
-      msg.Tracking()<<i<<"## "<<buffer<<" ##"<<endl;
-      FillIn(buffer);
+    msg.Tracking()<<m_file.gcount()<<endl;
+    for (int i=0;m_file;++i) {       
+      getline(m_file,m_buffer);
+      msg.Tracking()<<i<<"## "<<m_buffer<<" ##"<<endl;
+      FillIn(m_buffer);
     }
   } 
 
   // looking for name
-  Variable_Map::const_iterator cit=vars.find(name);
-  if (cit==vars.end()) {
+  Variable_Map::const_iterator cit=m_vars.find(name);
+  if (cit==m_vars.end()) {
     value =  NotDefined<Type>();
     return 0;
   } 
   else {
-    std::string svalue = vars[name];
+    std::string svalue = m_vars[name];
     if (svalue.length()==0) {
       value=NotDefined<Type>();
       return 0;
@@ -237,14 +321,14 @@ int IO_Handler::ValueInput(std::string name, Type & value) {
   value=0;
 }
 		      
-void IO_Handler::FillIn(const std::string & buffer) {
-  int hit = buffer.find(std::string("="));
+void IO_Handler::FillIn(const std::string & m_buffer) {
+  int hit = m_buffer.find(std::string("="));
   if (hit!=-1) {
-    std::string name = buffer.substr(0,hit);
+    std::string name = m_buffer.substr(0,hit);
     Shorten(name);
-    std::string value = buffer.substr(hit+1);
+    std::string value = m_buffer.substr(hit+1);
     Shorten(value);
-    vars[name]=value;
+    m_vars[name]=value;
   } 
 };
 
@@ -266,7 +350,7 @@ void IO_Handler::Shorten(std::string& str) {
 // read in class from file 
 template <class Type> 
 IO_Handler & IO_Handler::operator>>(Type & value) {
-  file>>value;
+  m_file>>value;
 }
 
 template IO_Handler & IO_Handler::operator<< (const double &);

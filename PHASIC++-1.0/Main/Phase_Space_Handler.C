@@ -14,6 +14,10 @@
 #include "Message.H"  
 #include "Random.H"
 
+#ifdef PROFILE__Phase_Space_Handler
+#include "prof.hh"
+#endif
+
 using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
@@ -21,14 +25,14 @@ using namespace PDF;
 using namespace std;
 
 Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
-					 ISR_Handler * _ih,Beam_Spectra_Handler * _bh) 
-  : proc(_proc), ih(_ih), bh(_bh),
-    E(ATOOLS::rpa.gen.Ecms()), s(E*E), sprime(s),
-    maxtrials(100000), sumtrials(0),
-    events(0), psi(NULL), p(NULL),
-    beamchannels(NULL), isrchannels(NULL), fsrchannels(NULL), psflavs(NULL),
-    nin(proc->Nin()), nout(proc->Nout()), nvec(proc->Nvec()+1), name(proc->Name()),
-    m_weight(1.), m_initialized(0)
+					 ISR_Handler * _ih,Beam_Spectra_Handler * _bh): 
+  proc(_proc), bh(_bh), ih(_ih), 
+  fsrchannels(NULL), isrchannels(NULL), beamchannels(NULL),
+  nin(proc->Nin()), nout(proc->Nout()), nvec(proc->Nvec()+1),
+  psflavs(NULL), name(proc->Name()),
+  maxtrials(100000), sumtrials(0), events(0),    
+  E(ATOOLS::rpa.gen.Ecms()), s(E*E), sprime(s), m_weight(1.), 
+  p(NULL), psi(NULL), m_initialized(0)
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   
@@ -104,7 +108,7 @@ bool Phase_Space_Handler::InitIncoming(double _mass)
     }
     if (ih) {
       if (ih->On()>0) {
-	ih->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
+	ih->SetFixedSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
 	msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
 		       <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
 		       <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
@@ -170,6 +174,9 @@ double Phase_Space_Handler::Differential() {
 }
 
 double Phase_Space_Handler::Differential(Integrable_Base * process) { 
+#ifdef PROFILE__Phase_Space_Handler
+  PROFILE_HERE;
+#endif
   y = 0;
   if (nin>1) {
     if (bh && bh->On()>0) { 
@@ -277,6 +284,9 @@ double Phase_Space_Handler::SameWeightedEvent() {
 
 bool Phase_Space_Handler::OneEvent(double _mass,int _mode)
 {
+#ifdef PROFILE__Phase_Space_Handler
+  PROFILE_HERE;
+#endif
   if ((_mass<0) && (!m_initialized)) InitIncoming();
   if ((_mass>0) && (nin==1))         InitIncoming(_mass);
 
@@ -411,7 +421,7 @@ void Phase_Space_Handler::WriteOut(string pID) {
   if (fsrchannels  != 0) fsrchannels->WriteOut(pID+string("/MC_FSR"));
 
   string help     = (pID+string("/Random")).c_str();
-  int nran = ran.WriteOutStatus(help.c_str());
+  ran.WriteOutStatus(help.c_str());
 }
 
 bool Phase_Space_Handler::ReadIn(string pID) {
@@ -715,7 +725,7 @@ bool Phase_Space_Handler::MakeBeamChannels()
     (ci.parameters).push_back(deltay[1]);
 
     addit = 1;
-    for (int j=0;j<beam_params.size();j++) {
+    for (size_t j=0;j<beam_params.size();j++) {
       if (beam_params[j]==ci) { addit = 0; break; }
     }
     if (addit) beam_params.push_back(ci);
@@ -812,7 +822,7 @@ bool Phase_Space_Handler::MakeISRChannels()
     (ci.parameters).push_back(deltay[1]);
 
     addit = 1;
-    for (int j=0;j<isr_params.size();j++) {
+    for (size_t j=0;j<isr_params.size();j++) {
       if (isr_params[j]==ci) { addit = 0; break; }
     }
     if (addit) isr_params.push_back(ci);
@@ -828,7 +838,7 @@ bool Phase_Space_Handler::CreateBeamChannels()
 
   Single_Channel * channel;   
 
-  for (int i=0;i<beam_params.size();i++) {
+  for (size_t i=0;i<beam_params.size();i++) {
     if ((beam_params[i]).type==0) {
       channel = new SimplePoleCentral(beam_params[i].parameters[0],
 				      beam_params[i].parameters[2],

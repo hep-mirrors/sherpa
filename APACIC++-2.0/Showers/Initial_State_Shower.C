@@ -113,16 +113,20 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
 {
   if (!kn) return;
 
-  // fetch PSME blob
+  // fetch last PSME blob
   Blob * bl_meps=0;
   for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
-    int pos = (*blit)->Type().find(string("ME PS Interface (Sherpa, IS)"));
-    if (pos>-1) {
+    if ((*blit)->Type().find(string("ME PS Interface (Sherpa, IS)"))!=-1) {
       bl_meps=(*blit);
-      bl_meps->SetStatus(0);
-      break;
     }
   }
+  if (bl_meps==NULL) {
+    ATOOLS::msg.Error()<<"Initial_State_Shower::ExtractPartons(..): "
+		       <<"No ME PS Interface found!"<<std::endl
+		       <<"   Cannot proceed. Abort."<<std::endl;
+    exit(126);
+  }
+  bl_meps->SetStatus(0);
 
   int number;
   Particle * p;
@@ -140,13 +144,11 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
     jet = new Blob();
     jet->SetStatus(1);
     p = new Particle(kn->part);
-    p->SetDecayBlob(jet);
     p->SetStatus(2);
     jet->AddToInParticles(p);
     jet->SetId(bl->size());
     jet->SetType(std::string("IS Shower (APACIC++2.0)"));
     jet->SetBeam(beam);
-    kn->part->SetDecayBlob(jet);
     bl->insert(bl->begin(),jet);
     if (!(kn->left)) {
       if (kn->part->Info() != 'G') {
@@ -160,9 +162,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
       p = new Particle(kn->part);
       p->SetStatus(2);
       jet->AddToOutParticles(p);
-      p->SetProductionBlob(jet);
       if (bl_meps) {
-	p->SetDecayBlob(bl_meps);
 	bl_meps->AddToInParticles(p);
       }
       jet->SetStatus(1);
@@ -180,23 +180,18 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
     p = new Particle(kn->part);
     p->SetStatus(2);
     jet->AddToInParticles(p);
-    p -> SetDecayBlob(jet);
     if (bl_meps) {
-      p -> SetProductionBlob(bl_meps);
       bl_meps->AddToOutParticles(p);
     }
     jet->SetId(bl->size());
     jet->SetType(std::string("IS Shower (APACIC++2.0)"));
     bl->insert(bl->begin(),jet);
     if (kn->left) {
-      kn->part->SetDecayBlob(jet);
       kn->part->SetStatus(2);
     }
     else {
       kn->part->SetStatus(1);
       p = new Particle(kn->part);
-      p->SetProductionBlob(jet);
-      p->SetDecayBlob(NULL);
       jet->AddToOutParticles(p);
       jet->SetStatus(1);
       return;
@@ -219,12 +214,9 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
       else {
 	p = new Particle(kn->part);
 	if (bl_meps) {
-	  p -> SetDecayBlob(bl_meps);
 	  bl_meps->AddToInParticles(p);
 	}
-	else p -> SetDecayBlob(NULL);
       }
-      p->SetProductionBlob(jet);
       if (p->Info() == 'G') p->SetStatus(2);
                        else p->SetStatus(1);
       jet->AddToOutParticles(p);

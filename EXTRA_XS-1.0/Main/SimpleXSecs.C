@@ -30,7 +30,6 @@ bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
 				      PDF::ISR_Handler * _isr) {
   p_beam         = _beam; 
   p_isr          = _isr;
-  
   string xsfile  = p_dataread->GetValue<string>("XS_FILE",string("XS.dat"));
   string selfile = p_dataread->GetValue<string>("XS_SELECTOR_FILE",string("XSSelector.dat"));
   p_seldata      = new Selector_Data(m_path+selfile);

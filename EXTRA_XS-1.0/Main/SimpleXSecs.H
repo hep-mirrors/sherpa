@@ -27,9 +27,6 @@ namespace EXTRAXS {
     ATOOLS::Data_Read       * p_dataread;
     ATOOLS::Selector_Data   * p_seldata;
 
-    BEAM::Beam_Spectra_Handler * p_beam;
-    PDF::ISR_Handler           * p_isr;
-
   public :
 
     // constructor

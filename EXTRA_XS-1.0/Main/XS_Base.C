@@ -20,7 +20,7 @@ XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.),
   p_selected(NULL), p_beam(_beam), p_isr(_isr), p_sel(NULL), p_ps(NULL), 
-  p_fl(NULL), p_colours(NULL), p_moms(NULL)
+  p_fl(NULL), p_colours(NULL), p_moms(NULL), m_swaped(false)
 {
   Init(_fl);
   ResetSelector(_seldata);
@@ -34,7 +34,7 @@ XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl) :
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.),
   p_selected(NULL), p_sel(NULL), p_beam(NULL), p_isr(NULL), p_ps(NULL), 
-  p_fl(NULL), p_colours(NULL), p_moms(NULL)
+  p_fl(NULL), p_colours(NULL), p_moms(NULL), m_swaped(false)
 {
   Init(_fl);
   p_sel = new No_Selector();
@@ -153,6 +153,9 @@ double XS_Base::Scale(ATOOLS::Vec4D * p) {
     return m_scale = pt2;
   case 2  :
     return m_scale;
+  case 11:
+    pt2 = 4.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
+    return m_scale = pt2;
   default :
     return m_scale = m_s;
   }
@@ -168,8 +171,6 @@ double XS_Base::KFactor(double _scale) {
   }
 }
 
-
-
 void XS_Base::SwapInOrder() {
   Flavour help = p_fl[0];
   p_fl[0] = p_fl[1];
@@ -177,7 +178,10 @@ void XS_Base::SwapInOrder() {
   Vec4D mom = p_moms[0];
   p_moms[0] = p_moms[1];
   p_moms[1] = mom;
-  m_swaped = 1;
+  int *col = p_colours[0];
+  p_colours[0] = p_colours[1];
+  p_colours[1] = col;
+  m_swaped = true;
 }
 
 void XS_Base::RestoreInOrder() {
@@ -185,7 +189,10 @@ void XS_Base::RestoreInOrder() {
     Flavour help = p_fl[0];
     p_fl[0] = p_fl[1];
     p_fl[1] = help;
-    m_swaped = 0;
+    int *col = p_colours[0];
+    p_colours[0] = p_colours[1];
+    p_colours[1] = col;
+    m_swaped = false;
   }
 }
 
@@ -203,6 +210,11 @@ void XS_Base::ResetSelector(ATOOLS::Selector_Data *_seldata)
 void XS_Base::SetMomenta(ATOOLS::Vec4D *_p_moms)
 {
   for (unsigned int i=0;i<m_nin+m_nout;++i) p_moms[i]=_p_moms[i];
+}
+
+void XS_Base::SetMax(double _max,int flag)             
+{ 
+  SetMax(_max);
 }
 
 void XS_Base::SetMax(double _max)             

@@ -35,40 +35,40 @@ namespace AMEGIC {
   public:
     Complex Zvalue(String_Handler * sh,int ihel) {
       Complex M(0.,0.);
-      for (int i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(sh, ihel);
+      for (size_t i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(sh, ihel);
       return M;
     }
     Complex Zvalue(int ihel,int* signlist) {
       Complex M(0.,0.);
-      for (int i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(ihel,signlist);
+      for (size_t i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(ihel,signlist);
       return M;
     }
     void    PrintGraph() {
       if (!ATOOLS::rpa.gen.Tracking()) return;
       ATOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;
-      for (int i=0;i<graphs.size();i++) graphs[i]->PrintGraph();
+      for (size_t i=0;i<graphs.size();i++) graphs[i]->PrintGraph();
     }
     void FillCoupling(String_Handler* shand) 
     { 
-      for (int i=0;i<graphs.size();i++) graphs[i]->FillCoupling(shand);
+      for (size_t i=0;i<graphs.size();i++) graphs[i]->FillCoupling(shand);
     }
     void ClearCalcList() 
     {
-      for (int i=0;i<graphs.size();i++) graphs[i]->ClearCalcList();
+      for (size_t i=0;i<graphs.size();i++) graphs[i]->ClearCalcList();
     }
     void SetStringOn()   
     {
       buildstring=1;
-      for (int i=0;i<graphs.size();i++) graphs[i]->SetStringOn();
+      for (size_t i=0;i<graphs.size();i++) graphs[i]->SetStringOn();
     }
     void SetStringOff()  
     {
       buildstring=0;
-      for (int i=0;i<graphs.size();i++) graphs[i]->SetStringOff();
+      for (size_t i=0;i<graphs.size();i++) graphs[i]->SetStringOff();
     }
     void SetNumber(int& n) 
     {
-      for (int i=0;i<graphs.size();i++) graphs[i]->SetNumber(n);
+      for (size_t i=0;i<graphs.size();i++) graphs[i]->SetNumber(n);
     }
     void Add(Amplitude_Base* ab, int sign =1) {
       if (sign==-1)
@@ -76,10 +76,10 @@ namespace AMEGIC {
       graphs.push_back(ab);
     }
     int  Size()                             { return graphs.size(); }
-    Amplitude_Base* operator[](const int i) { return (i<graphs.size()) ? graphs[i] : 0; }
+    Amplitude_Base* operator[](const int i) { return (i<(int)graphs.size()) ? graphs[i] : 0; }
 
     Amplitude_Base* GetAmplitude(const int n) {
-      for (int i=0;i<graphs.size();i++) {
+      for (size_t i=0;i<graphs.size();i++) {
 	Amplitude_Base* help = graphs[i]->GetAmplitude(n);
 	if (help!=0) return help;
       }

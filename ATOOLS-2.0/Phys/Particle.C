@@ -2,6 +2,7 @@
 #include "Blob.H"
 #include "Random.H"
 #include "Run_Parameter.H"
+#include "Message.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -49,19 +50,23 @@ Particle::~Particle() {
   if (p_flow) { delete p_flow; p_flow = NULL; } 
 }
 
-Particle::Particle() {
+Particle::Particle():
+  p_startblob(NULL),
+  p_endblob(NULL)
+{
   m_number    = -1;
   m_info      = ' ';
   m_status    = 1;
   m_fl        = Flavour(kf::none);
   m_momentum  = Vec4D(0,0,0,0); 
   m_dec_time  = 0.;
-  p_startblob = NULL;
-  p_endblob   = NULL;
   p_flow      = new Flow(this);
 }
 
-Particle::Particle(const Particle * in)  {
+Particle::Particle(const Particle * in):
+  p_startblob(NULL),
+  p_endblob(NULL)
+{
   m_number    = in->m_number;
   m_info      = in->m_info;
   m_status    = in->Status();
@@ -69,8 +74,8 @@ Particle::Particle(const Particle * in)  {
   m_momentum  = in->m_momentum;
   m_dec_time  = in->m_dec_time;
   m_finalmass = in->m_finalmass;
-  p_startblob = in->p_startblob;
-  p_endblob   = in->p_endblob;
+//   p_startblob = in->p_startblob;
+//   p_endblob   = in->p_endblob;
   p_flow      = new Flow(this);
   p_flow->SetCode(1,in->GetFlow(1));
   p_flow->SetCode(2,in->GetFlow(2));
@@ -92,8 +97,10 @@ Particle& Particle::operator=(const Particle & in)
     m_momentum  = in.m_momentum;
     m_dec_time  = in.m_dec_time;
     m_finalmass = in.m_finalmass;
-    p_startblob = in.p_startblob;
-    p_endblob   = in.p_endblob;
+//     p_startblob = in.p_startblob;
+//     p_endblob   = in.p_endblob;
+    p_startblob = NULL;
+    p_endblob   = NULL;
     if (p_flow) delete p_flow;
     p_flow      = new Flow(this);
     p_flow->SetCode(1,in.GetFlow(1));
@@ -168,6 +175,24 @@ Vec3D Particle::Distance(double _lifetime) {
   return v*_lifetime;
 }
 
+void   Particle::SetProductionBlob(Blob * _blob)  
+{ 
+  if ((p_startblob!=NULL)&&(_blob!=NULL)) {
+    ATOOLS::msg.Error()<<this<<"Particle::SetProductionBlob(..): "
+ 		       <<"Particle already has a production blob!"<<std::endl;
+  }
+  p_startblob = _blob; 
+}
+
+void   Particle::SetDecayBlob(Blob * _blob)       
+{ 
+  if ((p_endblob!=NULL)&&(_blob!=NULL)) {
+    ATOOLS::msg.Error()<<this<<"Particle::SetDecayBlob(..): "
+ 		       <<"Particle already has a decay blob!"<<std::endl;
+  }
+  p_endblob = _blob; 
+}
+
 // Numbers etc.
 int    Particle::Number()   const                 { return m_number; }
 void   Particle::SetNumber(const int n)           { m_number    = n; }
@@ -192,10 +217,8 @@ void   Particle::SetTime()                        { m_dec_time = LifeTime(); }
 // Production and decay vertices
 Vec4D  Particle::XProd()                          { return p_startblob->Position(); }
 Blob * Particle::ProductionBlob()                 { return p_startblob; }
-void   Particle::SetProductionBlob(Blob * _blob)  { p_startblob = _blob; }
 Vec4D  Particle::XDec()                           { return p_endblob->Position(); }
 Blob * Particle::DecayBlob()                      { return p_endblob; }
-void   Particle::SetDecayBlob(Blob * _blob)       { p_endblob = _blob; }
 
 // Flavour and flow
 Flavour   Particle::Flav() const                     { return m_fl; }

@@ -46,7 +46,7 @@ namespace EXTRAXS {
     virtual void      CreateFSRChannels() {}
 
     void      SetTotalXS();
-    void      SetMax(double);
+    void      SetMax(double,int);
     void      AddPoint(const double);
     double    Differential2();
     double    Differential(double,double,double);

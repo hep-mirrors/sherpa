@@ -179,20 +179,21 @@ int Random::WriteOutStatus(const char * filename){
   if (m_outstream == 0){
     msg.Events()<<" Saving Random Number Generator Status to "<<filename<<endl;
     long int count=0;
-    std::ifstream myinstream(filename);
-    if (myinstream.good()) {
+    std::ifstream *myinstream = new std::ifstream(filename);
+    if (myinstream->good()) {
       char * buffer[600];
-      while (!myinstream.eof()) {
-	myinstream>>count;
-	myinstream.getline((char*)buffer,600);
+      while (!myinstream->eof()) {
+	(*myinstream)>>count;
+	myinstream->getline((char*)buffer,600);
       }
       ++count;
-      myinstream.close();
+      myinstream->close();
+      delete myinstream;
     }
 #ifdef _IOS_BAD
-    m_outstream = new std::fstream(filename,ios::app);
+    m_outstream = new std::fstream(filename,ios::app | ios::out);
 #else
-    m_outstream = new std::fstream(filename,std::ios_base::app);
+    m_outstream = new std::fstream(filename,std::ios_base::app | std::ios_base::out);
 #endif
     std::strcpy(m_outname,filename);
     m_written=count;

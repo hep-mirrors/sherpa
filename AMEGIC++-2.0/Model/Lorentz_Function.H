@@ -60,12 +60,12 @@ namespace AMEGIC {
 	m_permcount=l.m_permcount;
 	int noi=l.NofIndex();
 
-	for (int i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
+	for (size_t i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
 	m_permlist.clear();
 	m_signlist.clear();
 	if (p_next) delete p_next;
 
-	for (int i=0; i<l.m_permlist.size();++i) {
+	for (size_t i=0; i<l.m_permlist.size();++i) {
 	  m_signlist[i]=l.m_signlist[i];
 	  m_permlist.push_back(new int[noi]);
 	  for (int j=0; j<noi;++j) {
@@ -79,10 +79,11 @@ namespace AMEGIC {
 	else
 	  p_next = 0;
       }
+      return *this;
     }
 
     ~Lorentz_Function() {
-      for (int i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
+      for (size_t i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
       if (p_next) delete p_next;
     }
 

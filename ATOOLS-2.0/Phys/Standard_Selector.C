@@ -33,6 +33,7 @@ Energy_Selector::~Energy_Selector()
   delete [] emin;
   delete [] emax;
   delete [] value;
+  delete m_sel_log;
 }
 
 
@@ -120,6 +121,7 @@ ET_Selector::~ET_Selector()
   delete [] etmin;
   delete [] etmax;
   delete [] value;
+  delete m_sel_log;
 }
 
 bool ET_Selector::Trigger(const Vec4D * mom) 
@@ -199,6 +201,7 @@ PT_Selector::~PT_Selector() {
   delete [] ptmin;
   delete [] ptmax;
   delete [] value;
+  delete m_sel_log;
 }
 
 
@@ -290,6 +293,7 @@ Rapidity_Selector::~Rapidity_Selector() {
   delete [] ymin;
   delete [] ymax;
   delete [] value;
+  delete m_sel_log;
 }
 
 
@@ -362,6 +366,7 @@ PseudoRapidity_Selector::~PseudoRapidity_Selector() {
   delete [] etamin;
   delete [] etamax;
   delete [] value;
+  delete m_sel_log;
 }
 
 
@@ -439,6 +444,7 @@ Angle_Selector::~Angle_Selector() {
   delete [] cosmin;
   delete [] cosmax;
   delete [] value;
+  delete m_sel_log;
 }
 
 bool Angle_Selector::Trigger(const Vec4D * mom) 
@@ -565,6 +571,7 @@ Mass_Selector::~Mass_Selector() {
   delete [] massmin;
   delete [] massmax;
   delete [] value;
+  delete m_sel_log;
 }
 
 bool Mass_Selector::Trigger(const Vec4D * mom) 

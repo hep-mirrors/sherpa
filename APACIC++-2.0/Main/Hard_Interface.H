@@ -14,6 +14,7 @@ namespace PDF {
 }
 
 namespace APACIC {
+
   class Initial_State_Shower;
   class Final_State_Shower;
   class Tree;
@@ -32,9 +33,20 @@ namespace APACIC {
     int  PerformShowers(bool,bool,int,double,double);
     bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
 
-    Tree             * FinTree()  { return p_fintree; }
-    Tree            ** IniTrees() { return p_initrees; }
+    Tree  * FinTree();
+    Tree ** IniTrees();
+
+    Final_State_Shower   * FinShower();
+    Initial_State_Shower * IniShower();
+
   };
+
+  inline Tree  *Hard_Interface::FinTree()  { return p_fintree; }
+  inline Tree **Hard_Interface::IniTrees() { return p_initrees; }
+
+  inline Final_State_Shower   *Hard_Interface::FinShower() { return p_finshower; }
+  inline Initial_State_Shower *Hard_Interface::IniShower() { return p_inishower; }
+
 }
 #endif
 

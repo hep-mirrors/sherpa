@@ -1,22 +1,35 @@
 #ifndef Function_Base_H
 #define Function_Base_H
 
-#include<string>
+#include <string>
 
 namespace ATOOLS {
+
   class Function_Base {
   protected :
+
     double      m_defval;
+
     std::string m_type;
+
   public:
-    virtual ~Function_Base() {}
-    virtual void        SetDefault(double _def)    { m_defval = _def; }
-    virtual void        SetType(std::string _type) { m_type   = _type; }
-    virtual void        SetParameters(double *)    { }
-    virtual double      GetValue(double xx)        { return (*this)(xx); }   
-    virtual double      operator()(double)         { return m_defval; }
-    virtual double      operator()()               { return m_defval; }
-    virtual std::string Type()                     { return m_type; }
+
+    // destructor
+    virtual ~Function_Base();
+
+    // setters
+    virtual void SetDefault(double _m_defvalue);
+    virtual void SetType(std::string _m_type);
+    virtual void SetParameters(double *parameters);
+
+    // getters
+    virtual std::string Type();
+
+    // member functions
+    virtual double GetValue(double x);
+    virtual double operator()(double x);
+    virtual double operator()();
+
   };
 
 // --------------------------------------------------
@@ -35,7 +48,7 @@ namespace ATOOLS {
  \brief this is a pure virtual base class for any function \f$y=f(x)\f$.
 
  This class provides an common interface to all function that 
- are only dipendent on one parameter. All classes derived
+ are only dependent on one parameter. All classes derived
  from this class might e.g. be itegrated by Gauss_Integrater.
 */
 

@@ -45,10 +45,12 @@ void Standard_Model::ReadInFile() {
   p_constants->insert(std::make_pair(std::string("Yukawa_t"), 
 				     p_dataread->GetValue<double>("YUKAWA_T",Flavour(kf::t).PSMass())));
 
+  int    order_alphaS	= p_dataread->GetValue<int>("ORDER_ALPHAS",0);
   double alphaS         = p_dataread->GetValue<double>("ALPHAS(MZ)",0.1188);
   double alphaS_default = p_dataread->GetValue<double>("ALPHAS(default)",alphaS);
   double MZ2            = sqr((*p_constants)[std::string("MZ")]);
-  as                    = new Running_AlphaS(alphaS,MZ2);
+
+  as = new Running_AlphaS(alphaS,MZ2,order_alphaS);
   as->SetDefault(alphaS_default);
 
   p_constants->insert(std::make_pair(std::string("alpha_S(MZ)"),alphaS));

@@ -46,6 +46,8 @@ namespace APACIC {
     ATOOLS::Vec4D GetLab();
     ATOOLS::Vec4D GetMomentum(Knot * mo,int & number);
 
+    double CutOff();
+
     Knot * GetInitiator(int);
     Knot * GetInitiator(Tree *);
 
@@ -66,6 +68,7 @@ namespace APACIC {
   //    inline functions
   //----------------------------------------------------------------------
 
+  inline double Initial_State_Shower::CutOff() { return m_t0; }
 
   inline void Initial_State_Shower::SetStartingConditions(double k1,double k2,int flag) 
   {

@@ -15,7 +15,7 @@ extern "C" {
 CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						   const std::string _set,const int _member,
 						   const std::string _path) :
-  m_set(_set), m_member(_member), m_path(_path), m_anti(1) 
+  m_set(_set), m_path(_path), m_member(_member), m_anti(1) 
 {
 
     m_bunch = _bunch;
