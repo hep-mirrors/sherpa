@@ -173,6 +173,8 @@ if [ "$RUNCLEAN" = "TRUE" ] ; then
     cd ../..
   fi
 fi
+
+if [ "$SED" = "" ] ; then export SED="sed" ; fi
 for I in $DIRS;
 do
   if test -d $I; then
@@ -182,6 +184,12 @@ do
         echo " removing libraries in $I"
         echo "======================================"
         rmr "*.la *.so *.so.0 *.so.0.0.0"
+      fi
+      if [ "$CLEANUP" = "TRUE" ] ; then 
+        echo "======================================"
+        echo " making clean in $I"
+        echo "======================================"
+        make clean
       fi
       if [ "$TOTAL" = "TRUE" ] ; then
         echo "======================================"
@@ -197,26 +205,8 @@ do
     echo "makeinstall: warning: directory $I not found"
   fi
 done
-if [ "$RMLIBS" = "TRUE" ] ; then
+if test "$RMLIBS" = "TRUE" || test "$CLEANUP" = "TRUE" ; then
   exit 0;
-fi
-
-if [ "$SED" = "" ] ; then export SED="sed" ; fi
-if [ "$CLEANUP" = "TRUE" ] ; then 
-  for I in $DIRS;
-  do
-    if test -d $I; then
-      echo "======================================"
-      echo " making clean in $I"
-      echo "======================================"
-      cd $I
-      make clean
-      cd ..
-    else 
-      echo "makeinstall: warning: directory $I not found"
-    fi
-  done
-  exit 0
 fi
 
 for I in $DIRS;
