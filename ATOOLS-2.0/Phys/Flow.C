@@ -15,7 +15,7 @@ std::ostream& ATOOLS::operator<<(std::ostream &ostr,const Flow &flow)
 Flow::Flow(Particle *owner): 
   p_owner(owner) 
 { 
-  for (short unsigned int i=0;i<2;++i) m_code[i]=0;
+  for (short unsigned int i=1;i<3;++i) m_code[i]=0;
 }
 
 Flow::~Flow() 
