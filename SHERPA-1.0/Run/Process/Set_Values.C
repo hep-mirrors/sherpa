@@ -22,7 +22,7 @@ Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
   error  = dlerror();
   if (module==NULL) {
     ATOOLS::msg.Error()<<"String_Handler::Set_Values("<<pID<<","<<BS<<"): "
-		       <<"Error "<<error<<" while loading library "<<libname<<std::endl;
+		       <<"Error while loading library "<<libname<<std::endl<<error<<std::endl;
     return 0;
   }
 
@@ -30,10 +30,10 @@ Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
   error  = dlerror();
   if (error!=NULL) {
     ATOOLS::msg.Error()<<"String_Handler::Set_Values("<<pID<<","<<BS<<"): "
-		       <<"Error "<<error<<" while loading symbol from library "<<libname<<std::endl;
+		       <<"Error while loading symbol from library "<<libname<<std::endl<<error<<std::endl;
     return 0;
   }
 
-  cout<<" calling Getter for library"<<endl;
+  ATOOLS::msg.Tracking()<<" calling Getter for library"<<endl;
   return GetterFunction(BS);
 }

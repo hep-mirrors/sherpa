@@ -25,7 +25,7 @@ Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flav
   if (module==NULL) {
     ATOOLS::msg.Error()<<"Phase_Space_Generator::SetChannel("
 		       <<nin<<","<<nout<<","<<fl<<","<<chn<<","<<pID<<"): "
-		       <<"Error "<<error<<" in loading library "<<libname<<std::endl;
+		       <<"Error in loading library "<<libname<<std::endl<<error<<std::endl;
     return 0;
   }
 
@@ -34,11 +34,11 @@ Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flav
   if (error!=NULL) {
     ATOOLS::msg.Error()<<"Phase_Space_Generator::SetChannel("
 		       <<nin<<","<<nout<<","<<fl<<","<<chn<<","<<pID<<"): "
-		       <<"Error "<<error<<" while loading symbol from library "<<libname<<std::endl;
+		       <<"Error while loading symbol from library "<<libname<<std::endl<<error<<std::endl;
     return 0;
   }
 
-  cout<<" calling Getter for library"<<endl;
+  ATOOLS::msg.Tracking()<<" calling Getter for library"<<endl;
   return GetterFunction(nin,nout,fl,chn);
 }
 
