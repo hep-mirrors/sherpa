@@ -39,6 +39,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   p_model(NULL), p_beamspectra(NULL), p_harddecays(NULL), 
   p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL), 
   p_hadrondecays(NULL), p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
+  p_evtreader(NULL),
 #ifdef USING__MCatNLO
   p_herwig(NULL), p_mcatnlo(NULL),
 #endif
@@ -66,7 +67,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_mode(0), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
-  p_iohandler(NULL), p_pythia(NULL), 
+  p_iohandler(NULL), p_pythia(NULL), p_evtreader(NULL), 
 #ifdef USING__MCatNLO
   p_herwig(NULL), p_mcatnlo(NULL),
 #endif
