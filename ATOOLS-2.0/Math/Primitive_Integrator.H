@@ -139,7 +139,7 @@ namespace ATOOLS {
 		std::map<size_t,Primitive_Channel*> &pmap);
     /*!
       \fn bool ReadIn(std::fstream *const file,
-      std::map<size_t,Primitive_Channel*> &pmap) const
+      std::map<size_t,Primitive_Channel*> &pmap)
       \brief Reads in the channel from the given file.
     */
 
