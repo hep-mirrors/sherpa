@@ -149,8 +149,6 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
 		     <<" ... "<<p_isrhandler->Pole()<<endl
 		     <<"  for Threshold = "<<p_process->ISRThreshold()<<"  "
 		     <<p_process->Name()<<endl;
-      p_isrchannels->SetRange(p_isrhandler->SprimeRange(),p_isrhandler->YRange());
-      p_isrchannels->GetRange();
     }
     msg.SetPrecision(6);
   }
