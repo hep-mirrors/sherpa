@@ -137,7 +137,7 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
     file<<"\t-I../../../../../ATOOLS-2.0/Math "<<'\\'<<endl;
     file<<"\t-I../../../../../ATOOLS-2.0/Org "<<'\\'<<endl;
     file<<"\t-I../../../../../MODEL-1.0/Main "<<endl;
-    file<<"noinst_HEADERS = P.H  V.H"<<endl;
+    file<<"noinst_HEADERS = V.H"<<endl;
   }
   else {
     ifstream from(makefilename.c_str());

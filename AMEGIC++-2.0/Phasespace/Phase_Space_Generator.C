@@ -300,9 +300,20 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
 
   string buffer;
   string key=string("libProc_"+subdirname+"_la_SOURCES");
+  string key_h=string("noinst_HEADERS");
   for (;from;) {
     getline(from,buffer);
-    to<<buffer<<endl;
+    if (buffer.find(key_h)!=string::npos) {
+      if (!(buffer.find("P.H")!=string::npos)) {
+	to<<buffer<<" P.H"<<endl;
+      }
+      else {
+	to<<buffer<<endl;
+      }
+    }
+    else {
+      to<<buffer<<endl;
+    }
     if (buffer.find(key)!=string::npos) {
       to<<"\t"<<fileID<<".C"<<'\\'<<endl;
     }
