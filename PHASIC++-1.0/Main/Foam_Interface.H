@@ -20,6 +20,7 @@ namespace PHASIC {
 
     std::string m_key;
     bool        m_initialize;
+    int         m_mode;
 
     std::vector<double> m_values;
     double              m_integral;
@@ -47,6 +48,9 @@ namespace PHASIC {
     inline const std::string &Key() const { return m_key; }
 
     inline const std::vector<double> &Values() const { return m_values; }
+
+    inline void SetMode(const int mode) { m_mode=mode;   }
+    inline int  Mode() const            { return m_mode; }
 
   };// end of class Foam_Interface
 

@@ -289,6 +289,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       nlo=ncontrib;
 #ifndef _USE_MPI_ // non MPI mode
       msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
+      if (ncontrib/iter1==4 && p_psh->Foams().size()>0) break;
       if ((ncontrib<=maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->Optimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->Optimize(maxerror);
@@ -301,7 +302,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       else {
 	(psh->Process())->ResetMax(0);
       }
-      if (ncontrib/iter1==5) CreateFoamChannels();
       if ((ncontrib==maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->EndOptimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->EndOptimize(maxerror);
@@ -330,6 +330,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
       if (error<maxerror && allowbreak) break;
+      if (ncontrib/iter1==3) CreateFoamChannels();
 #endif
 
     }
@@ -411,32 +412,43 @@ void     Phase_Space_Integrator::SetMaxPoints(long int _nmax)
 
 void Phase_Space_Integrator::CreateFoamChannels()
 {
-  if (p_psh->ISRIntegrator()==NULL) return;
+  if (p_psh->UseFoam()==0) return;
   msg_Tracking()<<"Phase_Space_Integrator::CreateFoamChannels(): {\n";
   {
     msg_Indentation(3);
     const std::vector<Single_Channel*> &bestisr=p_psh->ISRIntegrator()->Best();
     const std::vector<Single_Channel*> &bestfsr=p_psh->FSRIntegrator()->Best();
-    std::vector<Single_Channel*> channels(2);
+    std::vector<Single_Channel*> channels(1);
     for (size_t i=0;i<bestisr.size();++i) {
       msg_Tracking()<<bestisr[i]->Name()<<" {\n";
       channels[0]=bestisr[i];
       {
 	msg_Indent();
-	for (size_t j=0;j<bestfsr.size();++j) {
-	  msg_Tracking()<<bestfsr[j]->Name()<<" {\n";
-	  {
-	    msg_Indent();
-	    channels[1]=bestfsr[j];
-	    p_psh->CreateFoamChannel(channels);
-	    // for testing purposes
-	    if (p_psh->Foams().size()>0) {
-	      p_psh->SetActive(p_psh->Foams().back());
-	      p_psh->Foams().back()->Initialize();
-	      p_psh->Active()->ResetMax(3);
+	if (p_psh->UseFoam()>1 && p_psh->ISRIntegrator()!=NULL) {
+	  channels.resize(2);
+	  for (size_t j=0;j<bestfsr.size();++j) {
+	    msg_Tracking()<<bestfsr[j]->Name()<<" {\n";
+	    {
+	      msg_Indent();
+	      channels[1]=bestfsr[j];
+	      p_psh->CreateFoamChannel(channels);
+	      // for testing purposes
+	      if (p_psh->Foams().size()>0) {
+		p_psh->SetActive(p_psh->Foams().back());
+		p_psh->Foams().back()->Initialize();
+		p_psh->Active()->ResetMax(3);
+	      }
 	    }
-	  }
 	  msg_Tracking()<<"}\n";
+	  }
+	}
+	else {
+	  p_psh->CreateFoamChannel(channels);
+	  if (p_psh->Foams().size()>0) {
+	    p_psh->SetActive(p_psh->Foams().back());
+	    p_psh->Foams().back()->Initialize();
+	    p_psh->Active()->ResetMax(3);
+	  }
 	}
       }
       msg_Tracking()<<"}\n";

@@ -39,7 +39,7 @@ double Foam_Interface::MCEvent()
 double Foam_Interface::Density(int ndim,double *val)
 {
   SetValues(val);
-  return p_pshandler->Differential(p_pshandler->Active(),-1);
+  return p_pshandler->Differential(p_pshandler->Active(),-m_mode);
 }
 
 void Foam_Interface::SetValues(double *val)
