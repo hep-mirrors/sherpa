@@ -97,7 +97,13 @@ namespace ATOOLS {
   
     inline double& operator[] (int i);
     inline const double operator[] (int i) const;
-    const double Abs2() const {return m_x[0]*m_x[0]-m_x[1]*m_x[1]-m_x[2]*m_x[2]-m_x[3]*m_x[3];};
+    inline const double Abs2() const; 
+    inline const double Abs() const; 
+    inline const double Y() const; 
+    inline const double PPerp2() const; 
+    inline const double PPerp() const; 
+    inline const double EPerp2() const;
+    inline const double EPerp() const; 
 
     Vec4D& operator+= (const Vec4D& v);
     Vec4D& operator-= (const Vec4D& v);
@@ -335,6 +341,40 @@ namespace ATOOLS {
     return Vec4D(v1,v2,Tag::diff);
   }
 
+  inline const double Vec4D::Abs2() const 
+  { 
+    return m_x[0]*m_x[0]-m_x[1]*m_x[1]-m_x[2]*m_x[2]-m_x[3]*m_x[3]; 
+  }
+  
+  inline const double Vec4D::Abs() const 
+  { 
+    return sqrt(Abs2()); 
+  }
+
+  inline const double Vec4D::Y() const 
+  { 
+    return 0.5*log((m_x[0]+m_x[3])/(m_x[0]-m_x[3])); 
+  }
+  
+  inline const double Vec4D::PPerp2() const 
+  { 
+    return m_x[1]*m_x[1]+m_x[2]*m_x[2]; 
+  }
+  
+  inline const double Vec4D::PPerp() const 
+  { 
+    return sqrt(PPerp()); 
+  }
+  
+  inline const double Vec4D::EPerp2() const 
+  { 
+    return m_x[0]*m_x[0]*(m_x[1]*m_x[1]+m_x[2]*m_x[2])/(m_x[1]*m_x[1]+m_x[2]*m_x[2]+m_x[3]*m_x[3]); 
+  }
+  
+  inline const double Vec4D::EPerp() const 
+  { 
+    return sqrt(EPerp2()); 
+  }
 
   // output streams:
   std::ostream& operator<<(std::ostream& s, const Vec4D& vec);
