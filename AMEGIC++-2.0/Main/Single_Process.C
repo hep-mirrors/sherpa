@@ -433,7 +433,7 @@ int Single_Process::Tests() {
   //shorten helicities
   int switchhit = 0;
   for (short int i=0;i<p_hel->MaxHel();i++) {
-    if (M_doub[i]==0. || M_doub[i]/M2g<(ATOOLS::Accu()*1.e-2)) {
+    if (M_doub[i]==0. || dabs(M_doub[i]/M2g)<(ATOOLS::Accu()*1.e-2)) {
       p_hel->SwitchOff(i);
       switchhit++;
     }
