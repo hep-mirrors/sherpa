@@ -113,7 +113,8 @@ double Phase_Space_Handler::Integrate()
       ih->SetSprimeMin(AMATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
       isrchannels->GetRange();
       msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
-		     <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl;
+		     <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
+		     <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
       isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
       isrchannels->GetRange();
     }
