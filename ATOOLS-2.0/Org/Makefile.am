@@ -11,6 +11,7 @@ endif
 
 lib_LTLIBRARIES = libToolsOrg.la
 libToolsOrg_la_SOURCES        = \
+				Type.C \
 				Exception.C \
 				Exception_Handler.C \
 				File_IO_Base.C \

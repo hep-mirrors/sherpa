@@ -38,33 +38,11 @@ namespace ATOOLS {
   public:
 
     // member functions
-    static ID GetType();
-    static ID GetType(const char&);
-    static ID GetType(const short int&);
-    static ID GetType(const int&);
-    static ID GetType(const unsigned int&);
-    static ID GetType(const long int&);
-    static ID GetType(const float&);
-    static ID GetType(const double&);
-    static ID GetType(const std::string&);
-    static ID GetType(const std::istream&);
-    static ID GetType(const std::ostream&);
-    static ID GetType(const std::ifstream&);
-    static ID GetType(const std::ofstream&);
-    static ID GetType(const std::fstream&);
-    static ID GetType(const Switch::code);
-    static ID GetType(const Beam_Type::code);
-    static ID GetType(const Beam_Shape::code);
-    static ID GetType(const Beam_Generator::code);
-    static ID GetType(const String_Type::code);
-    static ID GetType(const Model_Type::code);
-    static ID GetType(const ISR_Type::code);
-    static ID GetType(const Flavour &);
+    template <class ValueType>
+    static ID GetType(const ValueType &) { return Type::TUnknown; }
 
   }; // end of class Type
 
 } // end of namespace ATOOLS
-
-#include "Type.inl.H"
 
 #endif
