@@ -2,6 +2,7 @@
 
 #include "Random.H"
 #include "Exception.H"
+#include "Run_Parameter.H"
 #include <iomanip>
 
 using namespace ATOOLS;
@@ -16,7 +17,8 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
 				 const Primitive_Channel &channel)
 {
   str<<"("<<&channel<<"): {\n"
-     <<"   m_alpha  = "<<DFORMAT<<channel.Alpha()<<"\n"
+     <<"   m_alpha  = "<<DFORMAT<<channel.Alpha()
+     <<" <- oldalpha   = "<<DFORMAT<<channel.OldAlpha()<<"\n"
      <<"   m_weight = "<<DFORMAT<<channel.Weight()<<"\n"
      <<"   m_sum    = "<<DFORMAT<<channel.Sum()
      <<" -> integral   = "<<DFORMAT<<channel.Mean()<<"\n"
@@ -80,9 +82,10 @@ Point(const Primitive_Integrand *function,
   for (size_t i=0;i<m_this.size();++i) {
     double mid=(m_this[i]+m_next[i]->m_this[i])/2.0;
     size_t pos=8*(m_this.size()*m_pos+i)+4*(size_t)(point[i]<mid);
+    cur*=m_weight;
     ++opt[pos];
-    opt[pos+1]+=cur*m_weight;
-    opt[pos+2]+=sqr(cur*m_weight);
+    opt[pos+1]+=cur;
+    opt[pos+2]+=sqr(cur);
     opt[pos+3]=ATOOLS::Max(opt[pos+3],cur);
   }
   return cur;
@@ -96,11 +99,12 @@ double Primitive_Channel::Point(const Primitive_Integrand *function,
   if (Boundary()) THROW(fatal_error,"Boundary cell selected.");
   for (size_t i=0;i<m_this.size();++i) 
     point[i]=m_this[i]+ran.Get()*(m_next[i]->m_this[i]-m_this[i]);
-  double cur=(*function)(point);
+  double cur=(*function)(point), weight=cur*m_weight;
+  if (!(cur<0.0) && !(cur>=0.0)) THROW(critical_error,"Integrand is nan.");
   ++m_np;
-  m_sum+=cur*m_weight;
-  m_sum2+=sqr(cur*m_weight);
-  m_max=ATOOLS::Max(m_max,cur);
+  m_sum+=weight;
+  m_sum2+=sqr(weight);
+  m_max=ATOOLS::Max(m_max,weight);
   return cur;
 }
 
@@ -133,9 +137,7 @@ void Primitive_Channel::SetWeight()
 void Primitive_Channel::SetAlpha(const double &alpha)
 { 
   if (Boundary()) return;
-  m_oldalpha=m_alpha;
   m_alpha=alpha;
-  if (m_oldalpha==0.0) m_oldalpha=m_alpha;
 }
 
 bool Primitive_Channel::
@@ -192,14 +194,14 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
     root->m_next[i]=next;
   }
   root->SetAlpha(1.0);
+  root->SaveAlpha();
   root->SetWeight();
 }
 
 Primitive_Integrator::Primitive_Integrator():
-  m_nopt(10000), m_nmax(1000000), m_nmaxopt(250000), 
-  m_nfirst(100000), m_error(0.01), m_scale (1.0), 
+  m_nopt(10000), m_nmax(1000000), m_error(0.01), m_scale (1.0), 
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
-  m_lastdim(0), m_mode(0), m_vname("I") {}
+  m_ncells(1000), m_lastdim(0), m_mode(0), m_vname("I") {}
 
 Primitive_Integrator::~Primitive_Integrator()
 {
@@ -236,12 +238,26 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
     for (size_t i=0;i<m_channels.size();++i) msg_Debugging()<<*m_channels[i];
     msg_Debugging()<<"}"<<std::endl;
   }
-  double error=1.0;
   m_opt.resize(16*m_point.size());
   for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
-  while (((long unsigned int)m_np)<Min(m_nmaxopt,m_nmax) && error>m_error) {
-    for (long unsigned int n=0;n<(error==1.0?m_nfirst:m_nopt);++n) Point();
-    Update();
+  long unsigned int nfirst=(m_channels.size()-m_point.size())*m_nopt/2;
+  for (long unsigned int n=0;n<nfirst;++n) Point();
+  Split();
+  for (size_t i=0;i<m_channels.size();++i) 
+    if (m_channels[i]->Alpha()!=0.5) m_channels[i]->SetAlpha(0.0);
+  double error=1.0;
+  while (((long unsigned int)m_np)<m_nmax && error>m_error &&
+	 m_channels.size()-m_point.size()<m_ncells) {
+    for (long unsigned int n=0;n<m_nopt;++n) Point();
+    double alpha=1.0/(m_channels.size()-m_point.size());
+    for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
+    if (!Update()) continue;
+    if (!rpa.gen.CheckTime()) {
+      msg.Error()<<om::bold<<"Primitive_Integrator::Integrate(..): "
+		 <<om::reset<<om::red<<"Timeout. Interrupt integration."
+		 <<om::reset<<std::endl;
+      kill(getpid(),SIGINT);
+    }
     error=dabs(Sigma()/Mean());
     msg_Info()<<om::bold<<m_vname<<om::reset<<" = "<<om::blue<<Mean()*m_scale
 	      <<" "<<m_uname<<om::reset<<" +- ( "<<error*Mean()*m_scale
@@ -252,10 +268,20 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   }
   m_opt.clear();
   double alpha=1.0/(m_channels.size()-m_point.size());
-  for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
+  for (size_t i=0;i<m_channels.size();++i) {
+    m_channels[i]->SetAlpha(alpha);
+    m_channels[i]->SaveAlpha();
+    m_channels[i]->Reset();
+  }
   while (((long unsigned int)m_np)<m_nmax && error>m_error) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
-    Update();
+    if (!Update()) continue;
+    if (!rpa.gen.CheckTime()) {
+      msg.Error()<<om::bold<<"Primitive_Integrator::Integrate(..): "
+		 <<om::reset<<om::red<<"Timeout. Interrupt integration."
+		 <<om::reset<<std::endl;
+      kill(getpid(),SIGINT);
+    }
     error=dabs(Sigma()/Mean());
     msg_Info()<<om::bold<<m_vname<<om::reset<<" = "<<om::blue<<Mean()*m_scale
 	      <<" "<<m_uname<<om::reset<<" +- ( "<<error*Mean()*m_scale
@@ -266,19 +292,27 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   return m_sum/m_np;
 }
 
-void Primitive_Integrator::Update()
+bool Primitive_Integrator::Update()
 {
+  double sum=0.0;
   m_sum=m_sum2=m_max=m_np=0.0;
   for (size_t i=0;i<m_channels.size();++i) {
     if (!m_channels[i]->Boundary()) {
+      // test for bad statistics
+      if (m_channels[i]->Points()<m_nopt/3)
+ 	msg.Error()<<"Primitive_Integrator::Update(): "
+		   <<"Few points in cell. Increase NOpt."<<std::endl;
+      double alpha=m_channels[i]->Alpha();
+      sum+=alpha;
       m_np+=m_channels[i]->Points();
-      m_sum+=m_channels[i]->Mean();
-      m_sum2+=sqrt(m_channels[i]->Variance());
+      m_sum+=m_channels[i]->Sum()/alpha;
+      m_sum2+=m_channels[i]->Sum2()/sqr(alpha);
       m_max=ATOOLS::Max(m_max,m_channels[i]->Max());
     }
   }
-  m_sum2=(m_np-1.0)*sqr(m_sum2)+m_sum*m_sum*m_np;
-  m_sum*=m_np;
+  if (!IsEqual(sum,1.0)) 
+    THROW(critical_error,"Summation does not agree.");
+  return true;
 }
 
 void Primitive_Integrator::Point()
@@ -308,8 +342,9 @@ void Primitive_Integrator::Point(std::vector<double> &x)
 double Primitive_Integrator::Weight(const std::vector<double> &x) const
 {
   for (size_t i=0;i<m_channels.size();++i) {
-    if (m_channels[i]->Find(x)) 
+    if (m_channels[i]->Find(x)) {
       return m_channels[i]->Weight()/m_channels[i]->Alpha();
+    }
   }
   msg.Error()<<"Primitive_Integrator::Weight(..): "
 	     <<"Point out of range."<<std::endl;
@@ -322,13 +357,15 @@ void Primitive_Integrator::Split()
     msg_Debugging()<<"Primitive_Integrator::Split(): {\n";
     {
       msg_Indent();
-      for (size_t i=0;i<m_channels.size();++i) msg_Debugging()<<*m_channels[i];
+      for (size_t i=0;i<m_channels.size();++i) 
+	msg_Debugging()<<*m_channels[i];
     }
     msg_Debugging()<<"}"<<std::endl;
   }
   double max=-std::numeric_limits<double>::max(), cur=0.0;
   Primitive_Channel *selected=NULL;
   for (size_t i=0;i<m_channels.size();++i) {
+    m_channels[i]->SetAlpha(0.0);
     switch (m_mode) {
     case 1:
       if ((cur=m_channels[i]->Max())>max) {
@@ -346,15 +383,17 @@ void Primitive_Integrator::Split()
     }
   }
   if (selected==NULL) THROW(fatal_error,"Internal error.");
-  for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(0.0);
   SelectDimension(selected->Position());
   for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
+  selected->SetAlpha(selected->OldAlpha());
   Primitive_Channel *next = new Primitive_Channel(selected,m_lastdim);
   m_channels.push_back(next);
+  next->SaveAlpha();
   next->SetAlpha(0.5);
   next->SetPosition(1);
-  selected->SetPosition(0);
+  selected->SaveAlpha();
   selected->SetAlpha(0.5);
+  selected->SetPosition(0);
   selected->Reset();
 }
 
@@ -397,7 +436,7 @@ bool Primitive_Integrator::WriteOut(const std::string &filename) const
   }
   bool result=true;
   file->precision(14);
-  (*file)<<m_nopt<<" "<<m_nmax<<" "<<m_nmaxopt<<" "<<m_nfirst<<"\n";
+  (*file)<<m_nopt<<" "<<m_nmax<<" "<<m_ncells<<"\n";
   (*file)<<m_error<<" "<<m_scale<<"\n";
   (*file)<<m_sum<<" "<<m_sum2<<" "<<m_max<<" "<<m_np<<"\n";
   (*file)<<m_rmin.size()<<" ";
@@ -434,7 +473,7 @@ bool Primitive_Integrator::ReadIn(const std::string &filename)
   }
   std::string dummy;
   file->precision(14);
-  (*file)>>m_nopt>>m_nmax>>m_nmaxopt>>m_nfirst;
+  (*file)>>m_nopt>>m_nmax>>m_ncells;
   (*file)>>m_error>>m_scale;
   (*file)>>m_sum>>m_sum2>>m_max>>m_np;
   if (file->eof()) {
@@ -533,16 +572,19 @@ Split(const std::string &key,
     THROW(critical_error,"Inconsistent dimension.");
   size_t dim=rit->second.first+nprev;
   const std::vector<Primitive_Channel*> channels(m_channels);
-  for (size_t i=0;i<pos.size();++i) {
+  for (size_t i=pos.size();i>0;--i) {
     for (size_t j=0;j<channels.size();++j) {
       if (channels[j]->Boundary()) continue;
       Primitive_Channel *next = 
-	new Primitive_Channel(channels[j],dim,pos[i]);
+	new Primitive_Channel(channels[j],dim,pos[i-1]);
       m_channels.push_back(next);    
     }
   }
   const double alpha=1.0/(m_channels.size()-m_point.size());
-  for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
+  for (size_t i=0;i<m_channels.size();++i) {
+    m_channels[i]->SetAlpha(alpha);
+    m_channels[i]->SaveAlpha();
+  }
 }
 
 void Primitive_Integrator::SetMin(const std::vector<double> &min) 

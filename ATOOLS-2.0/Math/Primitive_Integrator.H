@@ -84,6 +84,7 @@ namespace ATOOLS {
     { return sqrt(Variance()/m_np); }
 
     inline bool Boundary() const { return m_next[0]==NULL; }
+    inline void SaveAlpha()      { m_oldalpha=m_alpha;     }
 
   };// end of class Primitive_Channel
 
@@ -98,7 +99,7 @@ namespace ATOOLS {
 
   private:
 
-    long unsigned int m_nopt, m_nmax, m_nmaxopt, m_nfirst;
+    long unsigned int m_nopt, m_nmax;
 
     double m_error, m_scale;
     double m_sum, m_sum2, m_max, m_np;
@@ -110,7 +111,7 @@ namespace ATOOLS {
 
     const Primitive_Integrand *p_function;
 
-    size_t m_lastdim, m_mode;
+    size_t m_ncells, m_lastdim, m_mode;
 
     std::string  m_vname, m_uname;
     Position_Map m_reserved;
@@ -119,7 +120,7 @@ namespace ATOOLS {
 
     void Point();
     void Split();
-    void Update();
+    bool Update();
 
   public:
 
@@ -152,10 +153,8 @@ namespace ATOOLS {
     // inline functions
     inline void SetNOpt(const long unsigned int &nopt) { m_nopt=nopt; }
     inline void SetNMax(const long unsigned int &nmax) { m_nmax=nmax; }
-    inline void SetNMaxOpt(const long unsigned int &nmaxopt) 
-    { m_nmaxopt=nmaxopt; }
-    inline void SetNFirst(const long unsigned int &nfirst) 
-    { m_nfirst=nfirst; }
+
+    inline void SetNCells(const size_t &ncells) { m_ncells=ncells; }
 
     inline void SetError(const double &error) { m_error=error; }
     inline void SetScale(const double &scale) { m_scale=scale; }
@@ -169,6 +168,7 @@ namespace ATOOLS {
 
     inline double Mean() const     { return m_sum/m_np; }
     inline double Max() const      { return m_max;      }
+    inline double Points() const   { return m_np;       }
     inline double Variance() const    
     { return (m_sum2-m_sum*m_sum/m_np)/(m_np-1.0); }
     inline double Sigma() const  
