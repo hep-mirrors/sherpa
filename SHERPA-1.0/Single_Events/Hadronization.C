@@ -30,19 +30,9 @@ bool Hadronization::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 	       <<"   Continue and hope for the best."<<endl;
     return false;
   }
-  bool showered=true;
-  if (p_beamremnanthandler->BeamParticle(0)->Type()==Remnant_Base::Hadron ||
-      p_beamremnanthandler->BeamParticle(1)->Type()==Remnant_Base::Hadron) {
-    showered=false;
-    for (ATOOLS::Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
-      if ((*blit)->Type()==btp::IS_Shower) showered=true;
-    }
-  }
-  if (showered) {
-    p_beamremnanthandler->FillBeamBlobs(bloblist);
-    p_beamremnanthandler->FillBunchBlobs(bloblist);
-    p_fragmentationhandler->PerformFragmentation(bloblist);
-  }
+  p_beamremnanthandler->FillBeamBlobs(bloblist);
+  p_beamremnanthandler->FillBunchBlobs(bloblist);
+  p_fragmentationhandler->PerformFragmentation(bloblist);
   return false;
 }
 
