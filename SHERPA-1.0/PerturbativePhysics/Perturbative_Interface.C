@@ -19,22 +19,45 @@ Perturbative_Interface::~Perturbative_Interface()
   if (p_moms) { delete p_moms; p_moms = NULL; }
 }
 
-void Perturbative_Interface::RemoveConnected(ATOOLS::Blob *const blob,
-					     const bool forward)
+void Perturbative_Interface::RemoveBackward(ATOOLS::Blob *const blob,
+					    ATOOLS::Blob_List *const bloblist)
 { 
-  for (size_t i=0;!forward && i<(size_t)blob->NInP();++i) {
-    ATOOLS::Particle *cur=blob->InParticle(i);
+  while (blob->NInP()>0) {
+    ATOOLS::Particle *cur=blob->InParticle(0);
     if (cur->ProductionBlob()!=NULL) {
-      RemoveConnected(cur->ProductionBlob(),false);
-      delete cur->ProductionBlob();
+      ATOOLS::Blob *prod=cur->ProductionBlob();
+      RemoveBackward(prod,bloblist);
+      for (ATOOLS::Blob_List::iterator bit=bloblist->begin();
+	   bit!=bloblist->end();++bit) {
+	if (*bit==prod) {
+	  bloblist->erase(bit);
+	  break;
+	}
+      }
+      delete prod;
     }
+    else blob->DeleteInParticle(0);
   } 
-  for (size_t i=0;forward && i<(size_t)blob->NOutP();++i) {
-    ATOOLS::Particle *cur=blob->OutParticle(i);
+}
+
+void Perturbative_Interface::RemoveForward(ATOOLS::Blob *const blob,
+					    ATOOLS::Blob_List *const bloblist)
+{
+  while (blob->NOutP()>0) {
+    ATOOLS::Particle *cur=blob->OutParticle(0);
     if (cur->DecayBlob()!=NULL) {
-      RemoveConnected(cur->DecayBlob(),true);
-      delete cur->DecayBlob();
+      ATOOLS::Blob *dec=cur->DecayBlob();
+      RemoveForward(dec,bloblist);
+      for (ATOOLS::Blob_List::iterator bit=bloblist->begin();
+	   bit!=bloblist->end();++bit) {
+	if (*bit==dec) {
+	  bloblist->erase(bit);
+	  break;
+	}
+      }
+      delete dec;
     }
+    else blob->DeleteOutParticle(0);
   } 
 }
 
@@ -43,8 +66,9 @@ void Perturbative_Interface::CleanBlobList(ATOOLS::Blob_List *const bloblist,
 {
   for (ATOOLS::Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Type()==type) {
-      RemoveConnected(*blit,true);
-      RemoveConnected(*blit,false);
+      ATOOLS::Blob *blob=*blit;
+      RemoveForward(blob,bloblist);
+      RemoveBackward(blob,bloblist);
       blit=bloblist->begin();
     }
   }

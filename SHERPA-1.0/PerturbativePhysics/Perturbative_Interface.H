@@ -20,7 +20,10 @@ namespace SHERPA {
     ATOOLS::Flavour *p_fl;
     ATOOLS::Vec4D   *p_moms;
 
-    void RemoveConnected(ATOOLS::Blob *const blob,const bool forward);
+    void RemoveBackward(ATOOLS::Blob *const blob,
+			ATOOLS::Blob_List *const bloblist);
+    void RemoveForward(ATOOLS::Blob *const blob,
+		       ATOOLS::Blob_List *const bloblist);
 
   public :
 
