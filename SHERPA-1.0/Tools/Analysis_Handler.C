@@ -5,11 +5,13 @@
 
 
 #include "Final_Selector.H"
+#include "Primitive_Observable.H"
 #include "Primitive_Detector.H"
 #include "Jet_Observables.H"
 #include "One_Particle_Observables.H"
 #include "Two_Particle_Observables.H"
 #include "Four_Particle_Observables.H"
+#include "Scaled_Observables.H"
 #include "Event_Shapes_EE.H"
 #include "Shape_Observables_EE.H"
 #include "Statistics_Observable.H"
@@ -91,39 +93,39 @@ Analysis_Handler::Analysis_Handler(std::ifstream * readin, std::string _phase, c
 {  
   msg_Info()<<"Initialize new Analysis_Handler for "<<_phase<<std::endl;
   std::string phasemode;
-  int  mode  = ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
+  m_mode = ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
   bool split = false;
   while (_phase.length()>0) {
     if (_phase[0]==' ' || _phase[0]=='+') _phase = _phase.substr(1);
     else { 
       phasemode = _phase.substr(0,_phase.find(std::string("+")));
       if (phasemode==std::string("ME")) {
-	mode  = mode|ANALYSIS::do_me;
-	if (split) mode = mode|ANALYSIS::splitt_phase;
+	m_mode  = m_mode|ANALYSIS::do_me;
+	if (split) m_mode = m_mode|ANALYSIS::splitt_phase;
 	else split = true;
 	_phase = _phase.substr(2);
       }
       if (phasemode==std::string("MI")) {
-	mode  = mode|ANALYSIS::do_mi;
-	if (split) mode = mode|ANALYSIS::splitt_phase;
+	m_mode  = m_mode|ANALYSIS::do_mi;
+	if (split) m_mode = m_mode|ANALYSIS::splitt_phase;
 	else split = true;
 	_phase = _phase.substr(2);
       }
       if (phasemode==std::string("Showers")) {
-	mode = mode|ANALYSIS::do_shower;
-	if (split) mode = mode|ANALYSIS::splitt_phase;
+	m_mode = m_mode|ANALYSIS::do_shower;
+	if (split) m_mode = m_mode|ANALYSIS::splitt_phase;
 	else split = true;
 	_phase = _phase.substr(7);
       }
       if (phasemode==std::string("Hadrons"))  {
-	mode = mode|ANALYSIS::do_hadron;
-	if (split) mode = mode|ANALYSIS::splitt_phase;
+	m_mode = m_mode|ANALYSIS::do_hadron;
+	if (split) m_mode = m_mode|ANALYSIS::splitt_phase;
 	else split = true;
 	_phase = _phase.substr(7);
       }
     }
   }
-  p_analysis            = new Primitive_Analysis(m_phase,mode);
+  p_analysis            = new Primitive_Analysis(m_phase,m_mode);
   Final_Selector * fsel = NULL;
   ReadInFinalSelectors(readin,fsel);
   p_analysis->AddObservable(fsel);
@@ -131,7 +133,7 @@ Analysis_Handler::Analysis_Handler(std::ifstream * readin, std::string _phase, c
   SetUpObservables();
 
   if (msg.LevelIsInfo()) {
-    msg.Out()<<"Initialized new Analysis_Handler for "<<m_phase<<","<<mode<<std::endl;
+    msg.Out()<<"Initialized new Analysis_Handler for "<<m_phase<<","<<m_mode<<std::endl;
     fsel->Output();
   }
   ATOOLS::Exception_Handler::AddTerminatorObject(this);
@@ -225,15 +227,19 @@ void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
 	      arg         = buffer.substr(0,pos);
 	      m_qualifier = std::atoi(arg.c_str());
 	    }
-	    if (m_qualifier>0) {
+	    if (m_qualifier>=0) {
 	      if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
 		switch (m_qualifier) {
-		case 1:  qualifier = new Is_Charged_Hadron(); break;
-		case 2:  qualifier = new Is_Neutral_Hadron(); break;
-		case 3:  qualifier = new Is_Hadron(); break;
+		case  0: qualifier=new Is_There; break; 
+		case  1: qualifier=new Is_Charged_Hadron(); break;
+		case  2: qualifier=new Is_Neutral_Hadron(); break;
+		case  3: qualifier=new Is_Hadron(); break;
+		case  4: qualifier=new Is_Charged(); break;
+		case  9: qualifier=new Is_Parton(); break;
+		default: qualifier=new Is_Charged;
 		}
-		fsel     = new Event_Shapes_EE("FinalState","EvtShapes",qualifier);
-		ini_fsel = true;
+		fsel=new Event_Shapes_EE("FinalState","EvtShapes",qualifier);
+		ini_fsel=true;
 	      }
 	      else {
 		msg.Error()<<"ERROR in Analysis_Handler::ReadInFinalSelectors"<<std::endl
@@ -564,6 +570,19 @@ void Analysis_Handler::SetUpObservables()
 void Analysis_Handler::SetUpSubSamples()
 {
   // This is the place to add specific observables ....
+
+  if (m_mode&ANALYSIS::do_hadron) {
+
+  }
+
+  if (m_mode&ANALYSIS::do_shower) {
+
+  }
+
+  if (m_mode&ANALYSIS::do_me) {
+
+  }
+
 } 
 
 

@@ -30,6 +30,7 @@ namespace SHERPA {
     std::multimap<ATOOLS::Flavour,std::string> m_subsamples;
 
     int  m_qualifier;
+    int  m_mode;
 
     void ReadInFinalSelectors(std::ifstream *,ANALYSIS::Final_Selector *&);
     void ReadInObservables(std::ifstream *);
