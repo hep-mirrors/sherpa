@@ -687,8 +687,3 @@ void Process_Base::RestoreInOrder() {
   }
 }
 
-long int Process_Base::Points()
-{ 
-  return m_n; 
-}
-

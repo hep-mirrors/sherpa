@@ -714,7 +714,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	    _proc->SetTotal(_totalxs);
 	    _proc->SetMax(_max);
 	    _proc->SetSum(sum);
-	    _proc->SetSqrSum(sqrsum);
+	    _proc->SetSumSqr(sqrsum);
 	    _proc->SetPoints(n);
 	  }
 	  else {

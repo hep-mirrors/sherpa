@@ -82,6 +82,7 @@ namespace PHASIC {
     virtual void DeSelect() = 0;
     virtual void SelectOne() = 0;
 
+    virtual void SetMax(const double max);
     virtual void SetMax();  
     virtual bool OneEvent();
     virtual bool SameEvent();
@@ -97,11 +98,12 @@ namespace PHASIC {
     inline void SetScaleScheme(const int scalescheme)     { m_scalescheme=scalescheme;     }
     inline void SetKFactorScheme(const int kfactorscheme) { m_kfactorscheme=kfactorscheme; }
 
-    inline void SetTotalXS(const double totalxs)   { m_totalxs=totalxs;   }
-    inline void SetTotalError(const double error)  { m_totalerr=error;    }
-    inline void SetMax(const double max)           { m_max=max;           }
-    inline void SetPoints(const long int points)   { m_n=points;          }
-    inline void SetOverflow(const double overflow) { m_overflow=overflow; }
+    inline void SetTotalXS(const double totalxs)   { m_totalxs=totalxs;    }
+    inline void SetTotalError(const double error)  { m_totalerr=error;     }
+    inline void SetSum(const double sum)           { m_totalsum=sum;       }
+    inline void SetSumSqr(const double sumsqr)     { m_totalsumsqr=sumsqr; }
+    inline void SetPoints(const long int points)   { m_n=points;           }
+    inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
 
     inline void SetScale(const double scale) { m_scale=scale; }
 

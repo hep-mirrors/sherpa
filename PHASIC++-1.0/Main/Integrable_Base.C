@@ -35,6 +35,11 @@ void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta)
   for (size_t i=0;i<NVector();++i) p_momenta[i]=momenta[i];
 }
 
+void Integrable_Base::SetMax(const double max) 
+{
+  m_max=max;
+} 
+
 void Integrable_Base::SetMax() 
 {
   ATOOLS::msg.Error()<<"Integrable_Base::SetMax(): Virtual function called !"<<std::endl;
