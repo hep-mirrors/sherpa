@@ -4,7 +4,9 @@ using namespace ANALYSIS;
 
 #include "MyStrStream.H"
 #include "Run_Parameter.H"
+#include <algorithm>
 #include <iomanip>
+
 
 DECLARE_GETTER(Event_Shapes_EE_Getter,"EEShapes",
 	       Primitive_Observable_Base,String_Matrix);
@@ -18,7 +20,7 @@ void Event_Shapes_EE_Getter::PrintInfo(std::ostream &str,const size_t width) con
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 Event_Shapes_EE_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="EEShapes";

@@ -20,10 +20,10 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 		 const int scalescheme,const int kfactorscheme,const double scalefactor,
 		 BEAM::Beam_Spectra_Handler *const beamhandler,PDF::ISR_Handler *const isrhandler,
 		 ATOOLS::Selector_Data *const selectordata):
-  Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,scalefactor,
+  Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
-  p_colours(NULL)
+  p_colours(NULL),m_scalefactor(scalefactor)
 {
   Init(flavours);
   ResetSelector(selectordata);
@@ -175,7 +175,7 @@ double XS_Base::KFactor(const double scale)
   case 1:
     return pow(MODEL::as->AlphaS(scale*m_scalefactor)/
 	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),
-	       m_nin+m_nout-2);
+	       double(m_nin+m_nout-2));
   case 11:{
     const double CF=4./3.;
     return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
@@ -183,11 +183,11 @@ double XS_Base::KFactor(const double scale)
   case 12:
     return pow(MODEL::as->AlphaS(scale)/
 	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),
-	       m_nin+m_nout-2);
+	       double(m_nin+m_nout-2));
   case 13:
     return pow(MODEL::as->AlphaS(scale)/
 	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),
-	       m_nin+m_nout-2);
+	       double(m_nin+m_nout-2));
   default:
     return 1.;
   }

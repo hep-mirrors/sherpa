@@ -48,7 +48,7 @@ namespace ATOOLS {
 	       <<"   out of bounds, return no flavour."<<std::endl;
       return Flavour(kf::none);
     }
-    for (FlSetIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
+    for (FlSetConstIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) {
       if (i==0) return (*flit);
       --i;
     }

@@ -1,6 +1,7 @@
 #include "HepMC_Interface.H"
 #include "Vector.H"
 #include "Message.H"
+#include "Run_Parameter.H"
 
 #ifdef CLHEP_SUPPORT
 #include "CLHEP/Vector/LorentzVector.h"
@@ -70,11 +71,23 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
   GenVertex * vertex;
   std::string type;
   for (ATOOLS::Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) {
-    Sherpa2HepMC(*(blit),vertex);
-    p_event->add_vertex(vertex);
-    type = (*blit)->Type();
-    if (type.find(std::string("Signal Process"))!=std::string::npos) 
-      p_event->set_signal_process_vertex(vertex);
+    if (Sherpa2HepMC(*(blit),vertex)) {
+      p_event->add_vertex(vertex);
+      type = (*blit)->Type();
+      if (type.find(std::string("Signal Process"))!=std::string::npos) 
+	p_event->set_signal_process_vertex(vertex);
+    }
+  }
+  if (ATOOLS::msg.Debugging()) {
+    int charge = 0;
+    for ( GenEvent::particle_const_iterator p = p_event->particles_begin();
+	  p != p_event->particles_end(); ++p ) {
+      if ((*p)->status()==1) charge += (*p)->particleID().threeCharge();
+    }
+    if (charge!=(ATOOLS::rpa.gen.Beam1().IntCharge()+ATOOLS::rpa.gen.Beam2().IntCharge())) {
+      ATOOLS::msg.Error()<<"ERROR in HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *):"<<std::endl
+			 <<"   Charge not conserved. Continue."<<std::endl;
+    }
   }
 #endif
   return true;
@@ -83,6 +96,7 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *const blobs)
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& vertex) 
 {
 #ifdef CLHEP_SUPPORT
+  if (blob->Type()==ATOOLS::btp::Bunch) return false;
   int count = m_blob2vertex.count(blob->Id());
   if (count>0) {
     vertex = m_blob2vertex[blob->Id()];
@@ -113,6 +127,21 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& verte
     ATOOLS::msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob,Vertex)."<<std::endl
 		       <<"   Continue event generation with new event."<<std::endl;
   }
+  if (ATOOLS::msg.Debugging()) {
+    ATOOLS::Vec4D check = blob->CheckMomentumConservation();
+    double test         = ATOOLS::Vec3D(check).Abs();
+    if (ATOOLS::dabs(1.-vertex->check_momentum_conservation()/test)>1.e-6 &&
+	ATOOLS::dabs(test)>1.e-6)
+      {
+	ATOOLS::msg.Error()<<"ERROR in HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob_List *):"<<std::endl
+			   <<"   Momentum not conserved. Continue."<<std::endl
+			   <<"ERROR in Blob -> Vertex : "<<vertex->check_momentum_conservation()
+			   <<" <- "<<test<<" "<<check
+			   <<std::endl<<(*blob)<<std::endl;
+	vertex->print(std::cout);
+	std::cout<<"--------------------------------------------------------"<<std::endl;
+      }
+  }
   return okay;
 #endif
   return true;
@@ -121,20 +150,25 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Blob * blob,HepMC::GenVertex *& verte
 bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle *& particle) 
 {
 #ifdef CLHEP_SUPPORT
-  int count = m_parton2particle.count(parton->Number());
+  long int number = (long int)(parton), count = m_parton2particle.count(number);
   if (count>0) {
-    particle = m_parton2particle[parton->Number()];
+    particle = m_parton2particle[number];
     return true;
   }
 
   ATOOLS::Vec4D mom  = parton->Momentum();
   HepLorentzVector momentum(mom[1],mom[2],mom[3],mom[0]);
-  particle  = new GenParticle(momentum,parton->Flav(),parton->Status());
-  if (parton->Number()>0) particle->suggest_barcode(parton->Number());
+  int stat = parton->Status();
+  if (parton->DecayBlob()!=NULL) stat = 2;
+  if (stat==2) {
+    if (parton->DecayBlob()->Type()==ATOOLS::btp::Signal_Process ||
+	parton->ProductionBlob()->Type()==ATOOLS::btp::Signal_Process) stat = 3;
+  }
+  particle = new GenParticle(momentum,parton->Flav(),stat);
   for (int i=1;i<3;i++) {
     if (parton->GetFlow(i)>0) particle->set_flow(i,parton->GetFlow(i));
   }
-  m_parton2particle.insert(std::make_pair(parton->Number(),particle));
+  m_parton2particle.insert(std::make_pair(number,particle));
 #endif
   return true;
 }

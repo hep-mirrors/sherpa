@@ -5,7 +5,7 @@ using namespace ANALYSIS;
 DECLARE_GETTER(Shower_Statistics_Getter,"PSStats",
 	       Primitive_Observable_Base,String_Matrix);
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 Shower_Statistics_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string listname="Analysed";

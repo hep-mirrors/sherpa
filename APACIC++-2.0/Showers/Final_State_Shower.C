@@ -43,6 +43,7 @@ int Final_State_Shower::PerformShower(Tree * tree,int jetvetoflag)
   bool jetveto = (jetvetoflag>0);
 
   p_kin->SetJetVeto(jetveto);
+  p_kin->SetNoLoseJetVeto(jetvetoflag<0);
 
   m_ini_partons.clear();
   int stat=InitializeJets(tree,tree->GetRoot());
@@ -403,9 +404,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
   for (int i=0;i<bl_meps->NInP();++i) {
     bl_meps->InParticle(i)->SetStatus(2);
   }
-
   if (!kn) return;
-  int number;
   Particle * p = 0;
   if (kn->part->Info()=='H') {
     /* 
@@ -426,10 +425,9 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 
       p = new Particle(*kn->part);
       jet->AddToOutParticles(p);
-      if (pl) number = pl->size();
-      else number = (long int)(kn->part);
-      p->SetNumber(number);
-      kn->part->SetNumber(number);
+      if (pl) p->SetNumber(pl->size());
+         else p->SetNumber(0);
+      kn->part->SetNumber(p->Number());
       jet->SetId();
       jet->SetType(btp::FS_Shower);
       jet->SetTypeSpec("APACIC++2.0");
@@ -449,10 +447,9 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 	  bl_meps->AddToOutParticles(p);
 	  bl_meps->SetStatus(0);
 	}
-	if (pl) number = pl->size();
-	else number = (long int)(kn->part);
-	p->SetNumber(number);
-	kn->part->SetNumber(number);
+	if (pl) p->SetNumber(pl->size());
+	   else p->SetNumber(0);
+        kn->part->SetNumber(p->Number());
 	jet->SetId();
 	jet->SetType(btp::FS_Shower);
 	jet->SetTypeSpec("APACIC++2.0");
@@ -468,9 +465,8 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 		   <<"    No jet for Parton : "<<kn->part->Number()<<std::endl;
 	abort();
       }
-      if (pl) number = pl->size();
-         else number = (long int)(kn->part);
-      kn->part->SetNumber(number);
+      if (pl) kn->part->SetNumber(pl->size());
+	 else kn->part->SetNumber(0);
       kn->part->SetStatus(1);
       if (pl) pl->push_back(kn->part);
       jet->AddToOutParticles(new Particle(*kn->part));

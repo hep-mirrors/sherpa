@@ -328,7 +328,7 @@ void Single_Amplitude_Base::SetLoopVar(vector<int>& iz,vector<vector<int> >& iar
   for (size_t i=0;i<iz.size();i++) if(iz[i]>99){
     if (iz[i]<199) {
 #ifdef Cut_Fermion_Prop
-      Pfunc* p;
+      Pfunc* p = 0;
       for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) {
 	p = *pit;
 	if (p->arg[0]==iz[i]) break;	
@@ -477,7 +477,7 @@ void Single_Amplitude_Base::GroupZfuncs()
   do{
     over=1;
     int min=1000000;
-    int imin;
+    int imin=0;
     for(int i=0;i<(int)iz.size();i++){
       int adds=0;
       for(cnt=0;cnt<(int)indexlist.size();cnt++)

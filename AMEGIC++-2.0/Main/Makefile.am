@@ -4,7 +4,9 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-libAmegic_la_SOURCES = Helicity.C Topology.C Polarisation.C Pol_Info.C\
+AMEGICFLAGS  =	-pedantic -Wall -Winline
+
+libAmegic_la_SOURCES = Helicity.C Topology.C Polarisation.C Pol_Info.C Point.C \
 		       Process_Base.C Single_Process.C Process_Group.C \
 		       All_Processes.C Full_Decay_Table.C All_Decays.C Amegic.C
 INCLUDES = -I../Amplitude \
@@ -28,3 +30,4 @@ noinst_HEADERS = Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H \
 		 All_Processes.H Full_Decay_Table.H All_Decays.H Amegic.H 
 
 EXTRA_DIST    = $(CVSINCLUDE) 
+AM_CXXFLAGS   =	$(AMEGICFLAGS)

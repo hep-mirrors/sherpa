@@ -1,7 +1,9 @@
 #include "Jet_Evolution.H"
 #include "SimpleXS_Apacic_Interface.H"
-#include "SimpleXS_Adicic_Interface.H"
 #include "Amegic_Apacic_Interface.H"
+#ifdef USING__Adicic    
+#include "SimpleXS_Adicic_Interface.H"
+#endif
 #include "MI_Base.H"
 
 #ifdef PROFILE__all
@@ -35,9 +37,11 @@ Jet_Evolution::Jet_Evolution(MEHandlersMap *_mehandlers,Shower_Handler *_showerh
     if (meIter->second->Name()==string("SimpleXS") &&
 	p_showerhandler->ShowerGenerator()==string("Apacic")) 
       interface = new SimpleXS_Apacic_Interface(meIter->second,p_showerhandler);
+#ifdef USING__Adicic    
     if (meIter->second->Name()==string("SimpleXS") &&
-	p_showerhandler->ShowerGenerator()==string("Adicic")) 
+      p_showerhandler->ShowerGenerator()==string("Adicic")) 
       interface = new SimpleXS_Adicic_Interface(meIter->second,p_showerhandler);
+#endif
     if (interface!=NULL) m_interfaces.insert(make_pair(meIter->first,interface));
   }
 }
@@ -160,13 +164,13 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
     return 1;
   }
   if (stat==1) {
-    interface->FillBlobs(_bloblist);
     DefineInitialConditions(_blob,_bloblist);
     if (!decayblob) shower = interface->PerformShowers();
                else shower = interface->PerformDecayShowers();  
     if (shower==1) {
       Blob * myblob;
       if (decayblob) _blob->InParticle(0)->SetInfo('h');
+      interface->FillBlobs(_bloblist);
       p_showerhandler->FillBlobs(_bloblist); // BUG !!!!
       _blob->SetStatus(0);
       if ((!decayblob) && (!p_showerhandler->ISROn())) {
@@ -213,7 +217,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       _blob->SetStatus(-1);
       p_showerhandler->CleanUp();
       // delete all meps blobs
-      interface->CleanBlobList(_bloblist,_blob->Type());
+      //      interface->CleanBlobList(_bloblist,_blob->Type());
     }
     else {
       _blob->SetStatus(2);

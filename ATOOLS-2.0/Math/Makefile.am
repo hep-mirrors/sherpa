@@ -1,6 +1,6 @@
 SHERPASYS = ../..
 
-ATOOLSFLAGS   =	# -pedantic -Wall -Winline
+ATOOLSFLAGS   =	-pedantic -Wall -Winline
 
 ATOOLSINCS    =	-I../Org -I../Phys
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
@@ -22,7 +22,6 @@ libToolsMath_la_SOURCES       =	\
 				Function_Base.C \
 				Poincare.C \
 				Vector.C \
-				Vegas.C \
 				Matrix.C \
 				Fast_Function.C \
 				Gauss_Integrator.C \
@@ -37,7 +36,6 @@ noinst_HEADERS        =	\
 			Vector.H \
 			MyComplex.H \
 			Matrix.H \
-			Vegas.H \
 			Fast_Function.H \
 			Gauss_Integrator.H \
 			Histogram.H \

@@ -24,7 +24,7 @@ void Final_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) cons
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 Final_Selector_Getter::operator()(const String_Matrix &parameters) const
 {
   Final_Selector_Data data;
@@ -148,9 +148,11 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.et_min  = fs.et_min;
     it->second.pt_min  = fs.pt_min;
     it->second.r_min   = fs.r_min;
+    it->second.bf      = fs.bf;
   }
   if (m_mode==2 && fl==kf::jet) 
     p_jetalg = new Calorimeter_Cone(fs.pt_min,p_ana);
+  if (p_jetalg) p_jetalg->Setbflag(fs.bf);
 }
 
 void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2, 
@@ -415,10 +417,10 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
       std::string key;
       /*
       MyStrStream str;
-      str<<"KtJetrates("<<it->second.r_min<<")"<<m_listname;
+      str<<"KtJetrates("<<it->second.r_min<<")"<<m_outlistname;
       str>>key;
       */
-      key="KtJetrates(1)"+m_listname;
+      key="KtJetrates(1)"+m_outlistname;
       p_ana->AddData(key,new Blob_Data<std::vector<double> *>(diffrates));
 
       Blob_Data_Base * ktdrs=(*p_ana)["KtDeltaRs"];

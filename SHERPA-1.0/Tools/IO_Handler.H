@@ -31,6 +31,7 @@ namespace SHERPA {
     int             m_io;
     iotype::code    m_outtype, m_intype;
 
+    ATOOLS::Blob_List        * p_blobs;        
 #ifdef CLHEP_SUPPORT
     HepMC_Interface          * p_hepmc;
 #endif
@@ -45,10 +46,11 @@ namespace SHERPA {
   public :
 
     // constructors
-    IO_Handler();
+    IO_Handler(const std::string=std::string("Sherpa"));
     IO_Handler(const std::vector<std::string> &outfiles,
 	       const std::vector<std::string> &infiles,
-	       const std::string=std::string("."));
+	       const std::string _path=std::string("./"), 
+	       const int _filesize=1000);
 
     // destructor
     ~IO_Handler();
@@ -59,9 +61,10 @@ namespace SHERPA {
 
     bool OutputToFormat(ATOOLS::Blob_List * const,const double=1.);
     bool InputFromFormat(ATOOLS::Blob_List * const);
-    
+
+    void PrintEvent();
     // inline functions
-    inline bool OutputOn() const { return m_io&1; }
+    inline bool OutputOn() const { return (m_io&1 || m_io&2); }
 
 #ifdef CLHEP_SUPPORT
     inline HepMC_Interface *const GetHepMCInterface() const 

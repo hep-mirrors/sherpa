@@ -38,18 +38,18 @@ int fak(int N)
 Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       ISR_Handler * _isr,Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			       int _gen_str,int _orderQCD, int _orderEW,
-			       int _kfactorscheme, int _scalescheme,double _scalefactor,double _scale,
+			       int _kfactorscheme, int _scalescheme,double _scale,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl),
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl),
   m_sfactor(1.), p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
-  ATOOLS::MakeDir(newpath.c_str(),448);
+  ATOOLS::MakeDir(newpath.c_str(),493);
   if (system((string("test -d ")+newpath+string("/Process")).c_str())) {
-    system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
-	    string("/Process/Dummy ")+newpath+string("/Process")).c_str());
+//     system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+// 	    string("/Process/Dummy ")+newpath+string("/Process")).c_str());
     system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
 	    string("/makelibs ")+newpath).c_str());
   }
@@ -86,7 +86,6 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   if (m_scalescheme==65 && m_updatescales) {
     double dr   = rpa.gen.DeltaR();
     double ycut = rpa.gen.Ycut();
-    std::cout<<" ycut="<<ycut<<std::endl;
     m_scale[stp::fac] = ycut*sqr(rpa.gen.Ecms());
     ycut=Min(ycut,ycut*sqr(dr));
     m_scale[stp::as] = ycut*sqr(rpa.gen.Ecms());
@@ -189,7 +188,7 @@ void Single_Process::FixISRThreshold()
 
 int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,Vec4D *& _testmoms,
 				  vector<Single_Process *> & links,vector<Single_Process *> & errs,
-				  int & totalsize, int & procs)
+				  int & totalsize, int & procs, int & current_atom)
 {
  if (_testmoms==0) {
     string model_name = model->Name();
@@ -230,7 +229,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     return -1;
   }
   procs++;
-  for (size_t j=0;j<links.size();j++) {
+  for (size_t j=current_atom;j<links.size();j++) {
     if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
 	m_sfactor = sqr(m_sfactor);
@@ -260,7 +259,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 
   switch (Tests()) {
   case 2 : 
-    for (size_t j=0;j<links.size();j++) {
+    for (size_t j=current_atom;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	if (CheckMapping(links[j])) {
 	  msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
@@ -278,7 +277,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     Minimize();
     return 1;
   case 1 :
-    for (size_t j=0;j<links.size();j++) {
+    for (size_t j=current_atom;j<links.size();j++) {
       if (ATOOLS::IsEqual(links[j]->Result(),Result())) {
 	msg_Tracking()<<"Single_Process::InitAmplitude : "<<std::endl
 		      <<"   Found a partner for process "<<m_name<<" : "<<links[j]->Name()<<std::endl;
@@ -666,7 +665,7 @@ void Single_Process::WriteLibrary()
     ++m_libnumb;
   }
   m_libname = testname;
-  int  mode_dir = 448;
+  int  mode_dir = 493;
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
   ATOOLS::MakeDir((newpath+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
@@ -840,6 +839,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2,wmin;
   long int n,sn,son;
   std::string filename = _resdir+"/"+m_name+".xstotal";
+  std::string histofile =_resdir+string("/WD_")+m_name+"/";
   if (_resdir!=string("")) {
     if (IsFile(filename)) {
       ifstream from;
@@ -872,12 +872,14 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       if (p_pshandler->ISRIntegrator()  != 0) p_pshandler->ISRIntegrator()->Print();
       if (p_pshandler->FSRIntegrator()  != 0) p_pshandler->FSRIntegrator()->Print();
       p_pshandler->InitIncoming();
+      ReadInHistogram(histofile);
     }
   }
   m_resultpath=_resdir;
   m_resultfile=filename;
+  m_histofile=histofile;
   ATOOLS::Exception_Handler::AddTerminatorObject(this);
-  double var=TotalVar();
+  long unsigned int points=m_n;
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
   if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
@@ -887,7 +889,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   }
   SetTotal(0);
   if (m_totalxs>=0.) {
-    if (TotalVar()==var) {
+    if (points==m_n) {
       ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
       return 1;
     }
@@ -895,6 +897,9 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       std::ofstream to;
       to.open(filename.c_str(),ios::out);
       WriteOutXSecs(to);
+      int  mode_dir = 493;
+      ATOOLS::MakeDir(histofile.c_str(),mode_dir,0); 
+      WriteOutHistogram(histofile);
       msg_Info()<<"Store result : xs for "<<m_name<<" : "
 		<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
@@ -916,6 +921,9 @@ void Single_Process::PrepareTerminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),ios::out);
   WriteOutXSecs(to);
+  int  mode_dir = 493;
+  ATOOLS::MakeDir(m_histofile.c_str(),mode_dir,0); 
+  WriteOutHistogram(m_histofile);
   msg_Info()<<"Store result : xs for "<<m_name<<" : "
 	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 	    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
@@ -990,12 +998,8 @@ bool Single_Process::PrepareXSecTables() {
 }
 
 void Single_Process::AddPoint(const double value) {
-  m_n++;
-  m_sn++;
-  m_ssum    += value;
-  m_ssumsqr += value*value;
-  if (value>m_max)  m_max  = value;
-  if (value>m_smax) m_smax = value;
+  Integrable_Base::AddPoint(value);
+
   int iter=1;
   if (m_n<200000)        iter =  40000;
   else if  (m_n<400000)  iter = 200000;
@@ -1024,7 +1028,6 @@ void Single_Process::OptimizeResult()
     if (ssigma2/m_son>m_wmin) m_wmin = ssigma2/m_son;
     m_son      = 0;
   }
-//   cout<<"Weights (actual/min) "<<ssigma2<<" "<<m_wmin<<endl;
   m_son++;
 }
 
@@ -1034,6 +1037,10 @@ void Single_Process::ResetMax(int flag)
     if (m_vsmax.size()>1) {
       m_vsmax.erase(m_vsmax.begin());
       m_vsn.erase(m_vsn.begin());
+    }
+    if (m_vsmax.empty()) {
+      m_vsmax.push_back(m_max);
+      m_vsn.push_back(m_n);
     }
     m_vsmax.back() = ATOOLS::Max(m_smax,m_vsmax.back());
     m_vsn.back()   = m_n;
@@ -1048,8 +1055,6 @@ void Single_Process::ResetMax(int flag)
     if (flag==2) m_smax = 0.;
   }
   m_max  = 0.;
-//   cout<<"Single_Process::ResetMax "<<flag<<": "<<endl;
-//   for (size_t i=0;i<m_vsmax.size();i++) cout<<m_vsmax[i]<<" "<<m_vsn[i]<<endl;
   for (size_t i=0;i<m_vsmax.size();i++) m_max=ATOOLS::Max(m_max,m_vsmax[i]);
 }
 

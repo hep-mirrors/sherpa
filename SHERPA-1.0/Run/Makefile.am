@@ -7,11 +7,17 @@ ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+if ADICIC_SUPPORT
 ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
+ADICICFLAGS   = -DUSING__Adicic
+endif
+if AHADIC_SUPPORT
 AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
+AHADICFLAGS   = -DUSING__Ahadic
+endif
 
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
-		-I../SoftPhysics -I../LundTools -I../HerwigTools -I../Single_Events \
+		-I../SoftPhysics -I../LundTools -I../Single_Events \
 		-I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
@@ -28,10 +34,14 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
+if ADICIC_SUPPORT
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
                 -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
+endif
+if AHADIC_SUPPORT
 AHADICINCS    =	-I$(AHADICDIR)/Main -I$(AHADICDIR)/ClusterFormation \
 		-I$(AHADICDIR)/ClusterDecays
+endif
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
@@ -45,13 +55,17 @@ if AMISIC_SUPPORT
 AMISICLIBS    =	-L@libdir@ -lAmisic
 endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
-		-lZfunctions -lAmplTools -lModel -lProcess -lString 
+		-lZfunctions -lAmplTools -lModel -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
+if ADICIC_SUPPORT
 ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct -lAdicicTool -lAdicicInput
+endif
+if AHADIC_SUPPORT
 AHADICLIBS    =	-L@libdir@ -lAhadicMain -lClusterFormation -lClusterDecays
+endif
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundTools -lHerwigTools -lSherpaTools 
+		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
 
 if AMISIC_SUPPORT
 AMISICFLAGS   =	-DUSING__Amisic
@@ -81,11 +95,11 @@ Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(ADIC
 		$(AMISICLIBS) $(AHADICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
 		$(PDFLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
 Sherpa_LDFLAGS        =	-rdynamic
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(CLHEPFLAGS) $(ROOTFLAGS)
-INCLUDES      = $(ANALYSISINCS) $(SHERPAINCS) $(APACICINCS) $(ADICICINCS) $(AMEGICINCS) \
-		$(AMISICINCS) $(AHADICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AHADICFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) \
+		$(CLHEPFLAGS) $(ROOTFLAGS) 
+INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(AHADICINCS) $(APACICINCS) $(ADICICINCS) \
+		$(AMISICINCS) $(AMEGICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \
 		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) 
-SUBDIRS       =	Process
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \

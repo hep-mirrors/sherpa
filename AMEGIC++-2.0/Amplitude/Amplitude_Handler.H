@@ -35,7 +35,7 @@ namespace AMEGIC {
     int  SingleCompare(Point*,Point*,double &);
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,
-		      Interaction_Model_Base *,Topology *,int,int,
+		      Interaction_Model_Base *,Topology *,int &,int &,
 		      Basic_Sfuncs *,String_Handler *, bool print_graph=false);
     ~Amplitude_Handler();
     void CompleteAmplitudes(int,ATOOLS::Flavour*,int*,Polarisation*,

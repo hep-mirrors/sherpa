@@ -18,7 +18,7 @@ namespace AMEGIC {
     Process_Group(int,int,ATOOLS::Flavour *&,
 		  PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
 		  ATOOLS::Selector_Data * =NULL,
-		  int=0,int=99,int=99,int=0,int=0,double=1.,double=-1.,
+		  int=0,int=99,int=99,int=0,int=0,double=-1.,
 		  Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0);
     Process_Group();
     ~Process_Group();
@@ -61,9 +61,10 @@ namespace AMEGIC {
   public:
     int            InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
 				 std::vector<Single_Process *> &,
-				 std::vector<Single_Process *> &, int &, int &);
+				 std::vector<Single_Process *> &, int &, int &, int &);
     int            InitAmplitude(Interaction_Model_Base *,Topology *) { return 1; }
     bool           SetUpIntegrator();
+    void           InitWeightHistogram();
     /*------------------------------------------------------------------------------
 
       Calculating total cross sections and single event generation
@@ -77,6 +78,7 @@ namespace AMEGIC {
 
     bool           PrepareXSecTables();
     void           WriteOutXSecs(std::ofstream &);
+    void           WriteOutHistogram(std::string);
     void           AddPoint(const double value); 
     double         Differential(const ATOOLS::Vec4D *);
     double         Differential2();

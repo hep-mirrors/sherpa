@@ -14,9 +14,9 @@ namespace ANALYSIS {
     Primitive_Detector_Element(std::string name);
     Primitive_Detector_Element(int neta,int nphi,std::string name);
     virtual ~Primitive_Detector_Element();
-    virtual void Fill(const ATOOLS::Particle_List *) = NULL;
-    virtual void Reset()                             = NULL;
-    virtual Primitive_Detector_Element * Copy() const = NULL;
+    virtual void Fill(const ATOOLS::Particle_List *) = 0;
+    virtual void Reset()                             = 0;
+    virtual Primitive_Detector_Element * Copy() const = 0;
     double       Cell(const int i,const int j);
     std::string  Name() const;
   };

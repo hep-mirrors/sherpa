@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(Run/main.C)
+AC_INIT
 AM_INIT_AUTOMAKE(AMEGIC++, 2.0)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD}/..)
@@ -72,9 +72,6 @@ AC_OUTPUT(Main/Makefile \
 	  Phasespace/Makefile \
 	  String/Makefile \
 	  Model/Makefile \
-	  Run/Makefile \
-          Run/Process/Makefile \
-          Run/Process/Dummy/Makefile \
 	  Makefile )
 
 

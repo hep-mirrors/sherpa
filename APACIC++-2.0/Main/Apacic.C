@@ -54,6 +54,8 @@ void Apacic::PrepareTrees() {
 
 void Apacic::SetJetvetoPt2(const double q2i, const double q2f)
 { 
+  //  std::cout<<" Apacic::SetJetvetoPt2("<<q2i<<","<<q2f<<")\n";
+  
   if (m_fsron) 
     p_finshower->SetJetvetoPt2(q2f); 
   if (m_isron)

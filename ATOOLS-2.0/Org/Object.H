@@ -6,9 +6,9 @@
 namespace ATOOLS {
 
   class Object {
-  public:
-    
-    typedef std::map<const std::string,Object *const> String_Object_Map;
+  public:  
+
+    typedef std::map<std::string,Object *const> String_Object_Map;
 
   private:
     

@@ -7,6 +7,7 @@
 #include "Final_State_Shower.H"
 #include "Running_AlphaS.H"
 #include "Amegic.H"
+#include <cassert>
 #include <iomanip>
 
 using namespace SHERPA;
@@ -15,8 +16,6 @@ using namespace EXTRAXS;
 using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace MODEL;
-
-using std::endl;
 
 Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf,
 				 int maxjetnumber, int isrmode,int isrshoweron, int fsrshoweron) :
@@ -29,17 +28,19 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder
 
   m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",0);
   m_as_order = dr.GetValue<int>("SUDAKOVASORDER",0);
-  double as_fac = dr.GetValue<double>("SUDAKOVASFAC",1.);
+  //  double as_fac = dr.GetValue<double>("SUDAKOVASFAC",1.);
+  double as_fac = rpa.gen.RenormalizationScaleFactor();
+
   int jetratemode = dr.GetValue<int>("CALCJETRATE",-1);
   if ((m_bp_mode&(7+8+16+32+64))!=m_bp_mode) {
-    msg.Error()<<"WARNING in Cluster_Partons :"<<endl
+    msg.Error()<<"WARNING in Cluster_Partons :"<<std::endl
 	       <<"   Wrong mode for NLL_Sudakovs: "<<m_bp_mode<<" vs "<<(m_bp_mode&127)<<std::endl
-	       <<"   Set it to 0 = ordinary NLL_Sudakovs."<<endl;
+	       <<"   Set it to 0 = ordinary NLL_Sudakovs."<<std::endl;
     m_bp_mode=0;
   }
   //    m_kfac=  CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;  == 3.45409 (for Nf=5)
   if (m_bp_mode&16) m_kfac = 3.45409;
-  msg_Tracking()<<"Cluster_Partons runs in mode : "<<endl
+  msg_Tracking()<<"Cluster_Partons runs in mode : "<<std::endl
 		<<"   SUDAKOVTYPE    = "<<m_bp_mode<<std::endl
 		<<"   SUDAKOVASORDER = "<<m_as_order<<std::endl
 		<<"   SUDAKOVASFAC   = "<<as_fac<<std::endl
@@ -735,6 +736,14 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   knots.reserve(10);
   ini_knots.reserve(10);
 
+  // count jets
+  int njet=p_ct->NLegs()-2;
+  Combine_Table * ct_test = p_ct;
+  while (ct_test->Up()) {
+    ct_test=ct_test->Up();
+    ++njet;
+  }
+
   // generate knotlist from pointlist in Combine_Table
 
   // start initial state
@@ -769,30 +778,35 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     }
   }
 
-  if (mo) {
-    Vec4D sum=p_ct->Momentum(2)+p_ct->Momentum(3);
-    m_cms_boost=Poincare(sum);
-    Vec4D p1   =m_cms_boost*sum;
-    Vec4D p2   =m_cms_boost*p_ct->Momentum(2);
-    Vec4D p3   =m_cms_boost*p_ct->Momentum(3);
+  assert(mo);
+  Vec4D sum=p_ct->Momentum(2)+p_ct->Momentum(3);
+  m_cms_boost=Poincare(sum);
+  Vec4D p1   =m_cms_boost*sum;
+  Vec4D p2   =m_cms_boost*p_ct->Momentum(2);
+  Vec4D p3   =m_cms_boost*p_ct->Momentum(3);
 
-    *(mo->part) = Particle(0,Flavour(kf::none),sum);
-    mo->part->SetInfo('M');
-    mo->part->SetStatus(2);
-    mo->stat   = 0;
-    mo->z      = p2[0]/p1[0];
-    mo->E2     = sqr(p1[0]);
-    mo->thcrit = M_PI;
+  *(mo->part) = Particle(0,Flavour(kf::none),sum);
+  mo->part->SetInfo('M');
+  mo->part->SetStatus(2);
+  mo->stat   = 0;
+  mo->z      = p2[0]/p1[0];
+  mo->E2     = sqr(p1[0]);
+  mo->thcrit = M_PI;
 
-    double scale = Scale();
-    if (xs) scale = 
-      xs->Scale(PHASIC::stp::fac);
-    mo->t      = scale;                   // s for drell-yan and e+e- seems fine
-    // we have a virtuality ordered shower, therefore:
-    mo->t      = mo->part->Momentum().Abs2();  // ????? *FK* 
-  }
+  //we have a virtuality ordered shower, therefore:
+  mo->t = mo->part->Momentum().Abs2();
 
-  EstablishRelations(mo,knots[0],knots[1],0);
+  double scale = Scale();
+  if (xs) scale = xs->Scale(PHASIC::stp::fac);
+
+  scale = 4.*(m_qmin_i*m_qmin_i);
+  scale = Max(scale,mo->t);
+
+  //std::cout<<" ew:"<<p_me->OrderEWeak()
+  //	     <<" strong:"<<p_me->OrderStrong()<<"\n";
+  if(p_me->OrderStrong()==0 && njet==m_maxjetnumber) scale=mo->t;
+
+  EstablishRelations(mo,knots[0],knots[1],0,scale);
   EstablishRelations(mo,knots[2],knots[3],1);      
 
   // determine starting conditions for showers
@@ -868,13 +882,13 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
 
   if (msg.LevelIsDebugging()) {
     msg.Out()<<" in Cluster_Partons::FillTrees("<<m_isrshoweron<<","
-	     <<m_fsrshoweron<<")"<<endl;
+	     <<m_fsrshoweron<<")"<<std::endl;
     if (ini_trees) {
-      msg.Out()<<"initree[0]:"<<endl<<ini_trees[0]
-	       <<"initree[1]:"<<endl<<ini_trees[1];
+      msg.Out()<<"initree[0]:"<<std::endl<<ini_trees[0]
+	       <<"initree[1]:"<<std::endl<<ini_trees[1];
     }
-    msg.Out()<<"fin_tree:"<<endl<<fin_tree
-	     <<"****************************************"<<endl;
+    msg.Out()<<"fin_tree:"<<std::endl<<fin_tree
+	     <<"****************************************"<<std::endl;
   }
 }
 
@@ -930,7 +944,7 @@ Knot * Cluster_Partons::Point2Knot(Tree * tree, const Leg & po,
   return k;
 }
 
-void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode)
+void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode,double scale)
 {
   if (mode==1) {
     Vec4D p1   =m_cms_boost*mo->part->Momentum();
@@ -962,8 +976,6 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode
     //  d1->part->Momentum() - in the moment also in LAB system
     //  p_blob->InParticle(0)->Momentum() - in CMS system
 
-    double q2 = 4.*(m_qmin_i*m_qmin_i);
-    q2= Max(q2,mo->t);
     // set x1 and x2
     double x1,x2;
     p_ct->GetX1X2(x1,x2);
@@ -971,8 +983,8 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode
     d2->x=x2;
 
     // set start t
-    d1->t = -q2;
-    d2->t = -q2;
+    d1->t = -scale;
+    d2->t = -scale;
 
     // angle condition set via DetermineColourAngles called in FillTrees
   }

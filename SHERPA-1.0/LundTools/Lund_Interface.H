@@ -5,7 +5,7 @@
 #include "Particle_List.H"
 #include "Blob_List.H"
 #include "ISR_Handler.H"
-#include <map>
+#include <list>
 
 namespace SHERPA {
 
@@ -23,8 +23,7 @@ namespace SHERPA {
     long int m_events, m_curfile, m_evtsperfile;
     bool     m_compress, m_writeout;
 
-    std::set<ATOOLS::Particle*> m_used;
-
+    std::list<ATOOLS::Particle_List *> m_partlists;
     double *p_phep, *p_vhep;
     int    *p_jmohep, *p_jdahep;
 
@@ -35,10 +34,11 @@ namespace SHERPA {
     void NextFile(const bool newfile);
 
     // preparing and doing the fragmentation
-    bool PrepareFragmentationBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-				  ATOOLS::Particle_List *pl); 
+    void Reset();
+    bool ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl);
+    int  PrepareFragmentationBlob(ATOOLS::Blob *blob);
     bool StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-			     ATOOLS::Particle_List *pl); 
+			     ATOOLS::Particle_List *pl,int nhep); 
     // tools for extracting hadrons
     void AddPartonToString(ATOOLS::Particle *particle,int &nhep);
     void FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,

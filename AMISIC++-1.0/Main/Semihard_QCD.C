@@ -28,7 +28,7 @@ Semihard_QCD::~Semihard_QCD()
 
 void Semihard_QCD::CreateFSRChannels() 
 {
-  if ((m_fsrmode==0)||(p_fsrinterface==NULL)) {
+  if (m_fsrmode==0 || p_fsrinterface==NULL) {
     p_pshandler->FSRIntegrator()->DropAllChannels();
     p_pshandler->FSRIntegrator()->
       Add(new PHASIC::S1Channel(2,2,p_flavours,
@@ -65,5 +65,6 @@ void Semihard_QCD::InitIntegrators()
     p_pshandler->KMRKPIntegrator()->Reset();
   }
   p_pshandler->FSRIntegrator()->Reset();
+  m_channels=true;
 }
       

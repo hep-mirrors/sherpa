@@ -12,8 +12,10 @@
 #include "Data_Reader.H"
 #include "Message.H"
 #include "Scaling.H"
-#include "MCatNLO_Wrapper.H"
 #include "Particle_Qualifier.H"
+#ifdef USING__MCatNLO
+#include "MCatNLO_Wrapper.H"
+#endif
 #include "Data_Collector.H"
 
 using namespace SHERPA;
@@ -36,7 +38,10 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   p_model(NULL), p_beamspectra(NULL), p_harddecays(NULL), 
   p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL), 
   p_hadrondecays(NULL), p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
-  p_herwig(NULL), p_mcatnlo(NULL), p_analysis(NULL) 
+#ifdef USING__MCatNLO
+  p_herwig(NULL), p_mcatnlo(NULL),
+#endif
+  p_analysis(NULL) 
 {
   m_scan_istep=-1;  
 
@@ -60,7 +65,11 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_mode(0), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
-  p_iohandler(NULL), p_pythia(NULL), p_herwig(NULL), p_mcatnlo(NULL)
+  p_iohandler(NULL), p_pythia(NULL), 
+#ifdef USING__MCatNLO
+  p_herwig(NULL), p_mcatnlo(NULL),
+#endif
+  p_analysis(NULL)
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
@@ -86,6 +95,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   CheckFlagConsitency();
 
   rpa.Init(m_path,m_file,argc,argv);
+
 }
 
 
@@ -101,8 +111,10 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
+#ifdef USING__MCatNLO
   if (p_herwig)        { delete p_herwig;        p_herwig        = NULL; }
   if (p_mcatnlo)       { delete p_mcatnlo;       p_mcatnlo       = NULL; }
+#endif
   if (p_analysis)      { delete p_analysis;      p_analysis      = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   std::set<Matrix_Element_Handler*> deleted;
@@ -220,7 +232,6 @@ bool Initialization_Handler::CheckBeamISRConsistency()
 
 bool Initialization_Handler::InitializeTheIO()
 {  
-  int filesize;
   std::vector<std::string> infiles, outfiles;
   infiles.push_back(p_dataread->GetValue<string>("SHERPA_INPUT",string("")));
   infiles.push_back(p_dataread->GetValue<string>("HEPMC_INPUT",string("")));
@@ -228,8 +239,16 @@ bool Initialization_Handler::InitializeTheIO()
   outfiles.push_back(p_dataread->GetValue<string>("SHERPA_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("HEPMC_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("HEPEVT_OUTPUT",string("")));
-  filesize  = p_dataread->GetValue<int>("FILE_SIZE",1000);
-  p_iohandler = new IO_Handler(outfiles,infiles);
+  std::string evtpath = p_dataread->GetValue<string>("EVT_FILE_PATH",m_path);
+  int filesize        = p_dataread->GetValue<int>("FILE_SIZE",1000);
+  for (int i=0;i<3;i++) {
+    if (infiles[i]!=string("") || outfiles[i]!=string("")) {
+      p_iohandler     = new IO_Handler(outfiles,infiles,evtpath,filesize);
+      return true;
+    }
+  }
+  std::string outmode = p_dataread->GetValue<string>("EVENT_MODE",string("Sherpa"));
+  p_iohandler         = new IO_Handler(outmode);
   return true;
 }
 
@@ -240,12 +259,14 @@ bool Initialization_Handler::InitializeTheExternalMC()
   case 9000: 
     p_pythia  = new Lund_Interface(m_path,m_evtfile,false);
     return true;
+#ifdef USING__MCatNLO
   case 9001: 
     p_herwig  = new Herwig_Interface(m_path,m_evtfile,false);
     return true;
   case 9002: 
     p_mcatnlo = new MCatNLO_Interface(m_path,m_evtfile,false);
     return true;
+#endif
   default: 
     m_mode = 9999;
     msg_Info()<<"Initialization_Handler::InitializeTheExternalMC :"<<std::endl
@@ -438,10 +459,10 @@ bool Initialization_Handler::InitializeTheAnalyses()
 			    "Initialization_Handler","InitializeTheAnalyses"));
   }
   helpi=p_dataread->GetValue<int>("ANALYSIS",0);
+  if (!helpi) return true;
   std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","./");
   if (outpath==NotDefined<std::string>()) outpath="";
   p_analysis = new ANALYSIS::Analysis_Handler();
-  if (!helpi) return true;
   p_analysis->SetInputPath(m_path);
   p_analysis->SetInputFile(m_analysisdat);
   p_analysis->SetOutputPath(outpath);
@@ -457,15 +478,17 @@ bool Initialization_Handler::CalculateTheHardProcesses()
       msg.Out()<<"SHERPA will generate the events through Pythia."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
       return true;
+#ifdef USING__MCatNLO
     case 9001:
       msg.Out()<<"SHERPA will generate the events through Herwig."<<std::endl
-	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
+             <<"   No cross sections for hard processes to be calculated."<<std::endl;
       p_herwig->Initialize();
       return true;
     case 9002:
       msg.Out()<<"SHERPA will generate the events through MCatNLO."<<std::endl;
       p_mcatnlo->Initialize();
       return true;
+#endif
     case 9999:
       msg.Out()<<"SHERPA will read in the events."<<std::endl
 	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
@@ -481,9 +504,6 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   msg.Out()<<"=========================================================================="<<std::endl
 	   <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
   int ok = me->CalculateTotalXSecs(scalechoice);
-
-  //  Data_Collector::Print();
-
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
     msg.Out()<<ParameterValue()<<" ";
@@ -557,8 +577,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["RUNDATA"]=102;
   special_options["ECMS"]=103;
   special_options["PYTHIA"]=9000;
+#ifdef USING__MCatNLO
   special_options["HERWIG"]=9001;
   special_options["MCatNLO"]=9002;
+#endif
   special_options["EVTDATA"]=9999;
 
   
@@ -639,10 +661,10 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 12:
 	{
 	  // should call a version roution
-	  msg.Out()<<" Sherpa Version 1.0.4"<<endl;
+	  msg.Out()<<" Sherpa Version 1.0.5"<<endl;
 	  msg.Out()<<"   employing: "<<endl;
-	  msg.Out()<<"    * AMEGIC++ Version 2.0.4 "<<endl;
-	  msg.Out()<<"    * APACIC++ Version 2.0.4 "<<endl;
+	  msg.Out()<<"    * AMEGIC++ Version 2.0.5 "<<endl;
+	  msg.Out()<<"    * APACIC++ Version 2.0.5 "<<endl;
 
 	  string pyver("6.214");
 	  msg.Out()<<"    * Pythia Version "<<pyver<<endl;
@@ -730,7 +752,7 @@ void Initialization_Handler::CheckFlagConsitency()
     Data_Read::SetCommandLine("FSR_SHOWER","1");
     Data_Read::SetCommandLine("FS_LOSEJETVETO","1");
     Read_Write_Base::AddCommandLine("FSR_SHOWER = 1");
-    Read_Write_Base::AddCommandLine("FSR_LOSEJETVETO = 1");
+    Read_Write_Base::AddCommandLine("FS_LOSEJETVETO = 1");
   }
 
 

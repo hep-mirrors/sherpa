@@ -43,7 +43,7 @@ GetOneParticleSelector(const String_Matrix &parameters)
 }									
 
 #define DEFINE_ONE_EXTRACTOR_GETTER_METHOD(CLASS,NAME)	\
-  Primitive_Observable_Base *const				\
+  Primitive_Observable_Base *				\
   NAME::operator()(const String_Matrix &parameters) const	\
   { return GetOneParticleSelector<CLASS>(parameters); }
 

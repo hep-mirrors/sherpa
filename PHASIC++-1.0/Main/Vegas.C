@@ -33,7 +33,7 @@ Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
     p_bestxi = new double*[m_dim];
     p_d  = new double*[m_dim];
     p_di  = new double*[m_dim];
-    p_hit= new int*[m_nd]; 
+    p_hit= new int*[m_dim]; 
     for(int i=0;i<m_dim;i++) {
       p_xi[i] = new double[m_nd];
       p_bestxi[i] = new double[m_nd];
@@ -120,6 +120,11 @@ double* Vegas::GeneratePoint(const double * ran)
   for (int i=0;i<m_dim;i++) {
     xx = ran[i]*(double)m_nd;
     ia = (int)xx;
+    if (ia>=m_nd) {
+      msg.Out()<<" WARNING Vegas::GeneratePoint(const double* ran)"
+	       <<" called with ran["<<i<<"]="<<ran[i]<<"\n";
+      ia=m_nd-1;
+    }
     if (ia==0) {
       p_x[i] = xx*p_xi[i][0];
     }
@@ -136,7 +141,12 @@ double Vegas::GenerateWeight(double* xy)
   m_weight = m_nc;
   for (int i=0;i<m_dim;i++) {
     int k=0;
-    while (xy[i]>p_xi[i][k]) k++;
+    while (xy[i]>p_xi[i][k]&&k<m_nd) k++;
+    if (k>=m_nd) {
+      msg.Out()<<" WARNING Vegas::GenerateWeight(double* xy) called with"
+	       <<" xy["<<i<<"]="<<xy[i]<<"\n";
+      k=m_nd-1;
+    }
     p_ia[i] = k;
     if (k==0) {
       m_weight *= p_xi[i][k];
@@ -162,7 +172,12 @@ void Vegas::AddPoint(double value,double *xy)
   }
   for (int i=0;i<m_dim;i++) {
     int k=0;
-    while (xy[i]>p_xi[i][k]) k++;
+    while (xy[i]>p_xi[i][k]&&k<m_nd) k++;
+    if (k>=m_nd) {
+      msg.Out()<<" WARNING Vegas::AddPoint(double value,double* xy) called with"
+	       <<" xy["<<i<<"]="<<xy[i]<<"\n";
+      k=m_nd-1;
+    }
     p_ia[i] = k;
   }
   ++m_nevt;

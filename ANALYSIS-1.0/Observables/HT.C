@@ -32,7 +32,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
@@ -61,16 +61,20 @@ HT::HT(int type,double xmin,double xmax,int nbins,
     m_name = "HT.dat";
 }
 
-void HT::Evaluate(const ATOOLS::Particle_List & pl,
+void HT::Evaluate(const ATOOLS::Particle_List& pl,
 		  double weight, int ncount)
 {
-  ATOOLS::Particle_List *jets=p_ana->GetParticleList(m_listname);
+  ATOOLS::Particle_List* jets=p_ana->GetParticleList(m_listname);
   double HT=0.0;
+  if(jets->size()==0) {
+    p_histo->Insert(0.0,0.0,ncount);
+    return;
+  }
   for (ATOOLS::Particle_List::const_iterator pit=jets->begin();
        pit!=jets->end();++pit) {
     HT+=(*pit)->Momentum().PPerp();
   }
-  p_histo->Insert(HT,weight,ncount); 
+  p_histo->Insert(HT,weight,ncount);
 }
 
 

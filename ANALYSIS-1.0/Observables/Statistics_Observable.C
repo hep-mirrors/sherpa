@@ -5,7 +5,7 @@ using namespace ANALYSIS;
 DECLARE_GETTER(Statistics_Observable_Getter,"Statistics",
 	       Primitive_Observable_Base,String_Matrix);
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 Statistics_Observable_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string listname="Analysed";

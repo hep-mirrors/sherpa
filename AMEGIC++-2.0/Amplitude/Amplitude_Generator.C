@@ -25,6 +25,9 @@ MPI::Datatype   mpi_point_type;
 
 std::ostream & AMEGIC::operator<<(std::ostream & s, const Point * p)
 {
+//   s<<p;
+//   return s;
+  s<<" t="<<p->t<<" ";
   if ((p->left==0) && (p->right==0)) {
     s<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<std::endl;
     return s;
@@ -1031,18 +1034,22 @@ int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
   return countQCD;
 }
 
-void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first)
+void Amplitude_Generator::CountOrders(Single_Amplitude * & first)
 {
   Single_Amplitude* last;
   last = first;
   Single_Amplitude* f1 = first;
   Single_Amplitude* f2;
   int count=0;
+  int QEDmax = 0;
+  int QCDmax = 0;
   while (f1) {
     int hitQED = 0;
     int hitQCD = 0;
     hitQED = FindQEDOrder(f1->GetPointlist(),hitQED);
     hitQCD = FindQCDOrder(f1->GetPointlist(),hitQCD);
+    if (hitQED>QEDmax) QEDmax=hitQED;
+    if (hitQCD>QCDmax) QCDmax=hitQCD;
     if (hitQED > nEW || hitQCD > nQCD) {
       ++count;
       if (f1==first) {
@@ -1063,7 +1070,9 @@ void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first)
       f1 = f1->Next;
     }
   }
-  msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::KillHigherOrders()) "<<count<<endl;
+  if (nEW==99)  nEW = QEDmax;
+  if (nQCD==99) nQCD = QCDmax;
+  msg_Tracking()<<"Kicked number of diagrams (Amplitude_Generator::CountOrders()) "<<count<<endl;
 }
 
 
@@ -1461,6 +1470,7 @@ void Amplitude_Generator::Kill5VertexArtefacts(Single_Amplitude* first)
 int Amplitude_Generator::Is5VertexArtefact(Point* p, int &tcnt)
 {
   if (!p) return 0;
+  if (!p->left) return 0;
   switch(p->t) {
   case 0:
     break;
@@ -1690,7 +1700,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
 #endif
   CreateSingleAmplitudes(first_amp);
   
-  if (nEW != 99 || nQCD != 99) KillHigherOrders(first_amp);
+  CountOrders(first_amp);
   
   CheckFor4Vertices(first_amp);
   Kill5VertexArtefacts(first_amp);

@@ -35,7 +35,8 @@ Remnant_Base::Remnant_Base(const rtp::code type,const unsigned int beam):
   Object("Remnant_Base_"+ATOOLS::ToString(beam)),
   m_type(type),
   m_beam(beam),
-  p_partner(NULL) {}
+  p_partner(NULL),
+  m_emin(0.0) {}
 
 Remnant_Base::~Remnant_Base() {}
 
@@ -154,9 +155,15 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton)
   }
   m_erem-=parton->Momentum()[0]+MinimalEnergy(parton->Flav());
   if (m_erem<=0.0) {
-    msg_Tracking()<<"Remnant_Base::Extract(..): No remaining energy for "<<parton->Flav()
-		  <<", p = "<<parton->Momentum()<<" -> E_min = "
+    msg_Tracking()<<"Remnant_Base::Extract(..): No remaining energy for "
+		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" -> E_min = "
 		  <<(parton->Momentum()[0]+MinimalEnergy(parton->Flav()))<<std::endl;
+    return false;
+  }
+  if (parton->Momentum()[0]<=m_emin) {
+    msg_Tracking()<<"Remnant_Base::Extract(..): Energy exceeds minimum for "
+		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" <- E_min = "
+		  <<m_emin<<std::endl;
     return false;
   }
   return true;

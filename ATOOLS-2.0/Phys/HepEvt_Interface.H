@@ -54,7 +54,8 @@ namespace ATOOLS {
     void String2HepEvt(ATOOLS::Blob * const,int &);
     
     
-    
+    void ChangeOutStream();
+
     void ReadHepEvt(ATOOLS::Blob_List * const);
     void OpenNewHepEvtFile();
     void HepEvt2Particle(const int);
@@ -69,7 +70,8 @@ namespace ATOOLS {
     HepEvt_Interface(gtp::code=gtp::Unspecified);
     HepEvt_Interface(bool=true,int=11,
 		     const std::string & =std::string(""),
-		     const std::string & =std::string(""));
+		     const std::string & =std::string(""),
+		     const int _filesize=1000);
     ~HepEvt_Interface();
     
     int                  Nhep() const   { return m_nhep;   }
@@ -90,8 +92,8 @@ namespace ATOOLS {
     void SetIdhep(int   * _idhep)  { p_idhep = _idhep; }
 
     std::ofstream * GetOutStream() { return p_outstream; }
-    void  ChangeOutStream(std::string &,long int=1000);
-
+    void ChangeOutStream(std::string &,long int=-1);
+    void PrintHepEvtEvent(const int=0);
 
     bool Sherpa2HepEvt(ATOOLS::Blob_List * const);
     bool HepEvt2Sherpa(ATOOLS::Blob_List * const);

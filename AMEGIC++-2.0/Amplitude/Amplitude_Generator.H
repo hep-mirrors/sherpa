@@ -84,7 +84,7 @@ namespace AMEGIC {
     int  SingleCompare(Point*,Point*);
     int  FindQEDOrder(Point*,int&);
     int  FindQCDOrder(Point*,int&);
-    void KillHigherOrders(Single_Amplitude* &);
+    void CountOrders(Single_Amplitude* &);
     void Compare(Single_Amplitude* &);
     void Unite(Point*,Point*);
     int  CompareColors(Point*,Point*);
@@ -116,6 +116,7 @@ namespace AMEGIC {
 			int,int,Basic_Sfuncs *,String_Handler *);
     ~Amplitude_Generator(); 
     Single_Amplitude* Matching();
+    void GetOrders(int& qed,int& qcd) {qed=nEW;qcd=nQCD;}
   };
 }
 #endif

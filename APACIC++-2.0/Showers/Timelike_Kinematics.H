@@ -11,7 +11,7 @@ namespace ATOOLS {
 namespace APACIC {
   class Timelike_Kinematics {
     double m_pt2min;
-    bool   m_jetveto;
+    bool   m_jetveto, m_nolosejetveto;
     int    m_pt_scheme; 
     int    m_zrange_scheme; 
     int    m_mass_scheme;
@@ -54,6 +54,7 @@ namespace APACIC {
     bool DoKinematics(Knot * const mo) const;
 
     void SetJetVeto(bool jetveto) { m_jetveto = jetveto; }
+    void SetNoLoseJetVeto(bool nolosejetveto) { m_nolosejetveto = nolosejetveto; }
 
     bool ExtraJetCheck(Knot const * const mo, Knot const * const d1, Knot const * const d2) const;
 

@@ -50,7 +50,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   double ycut = rpa.gen.Ycut();
   m_qmin_i = sqrt(ycut)*rpa.gen.Ecms();
   m_qmin_f = sqrt(ycut)*dr*rpa.gen.Ecms();
-  m_jetscale = sqr(Min(m_qmin_i,m_qmin_f));
+  m_jetscale = rpa.gen.RenormalizationScaleFactor() * sqr(Min(m_qmin_i,m_qmin_f));
 }  
 
 Amegic_Apacic_Interface::~Amegic_Apacic_Interface() 
@@ -139,15 +139,15 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   }
 
   //  PROFILE_LOCAL("Amegic_Apacic_Interface::DefineInitialConditions");
-  int nin  = blob->NInP();
-  int nout = blob->NOutP();
+  m_nin  = blob->NInP();
+  m_nout = blob->NOutP();
 
   ClusterConfiguration(blob);
 
   if (!m_isdecay) {
     p_xs = 0;
-    if (p_two2two->XSSelector()->FindInGroup(p_two2two,p_xs,nin,2,p_fl)==std::string::npos) {
-      p_xs = p_two2two->XSSelector()->GetXS(nin,2,p_fl);
+    if (p_two2two->XSSelector()->FindInGroup(p_two2two,p_xs,m_nin,2,p_fl)==std::string::npos) {
+      p_xs = p_two2two->XSSelector()->GetXS(m_nin,2,p_fl);
       if (p_xs) p_two2two->Add(p_xs);
     }
 
@@ -159,12 +159,12 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     
     if (m_type==1) { // e+ e-
       double sprime = (p_mehandler->Momenta()[0]+p_mehandler->Momenta()[1]).Abs2();
-      m_jetscale    = m_ycut * sprime;
+      m_jetscale    = rpa.gen.RenormalizationScaleFactor() * m_ycut * sprime;
     }
     
     double asscale;
     if (p_xs) {
-      p_xs->CalculateScale(p_moms);
+      //      p_xs->CalculateScale(p_moms);
       asscale=m_scale = p_xs->Scale(PHASIC::stp::as);
     }
     else {
@@ -179,6 +179,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     m_weight = p_cluster->Weight();
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
+	p_shower->CleanUp();
 	p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
 	m_weight=1.;
 	return 1;
@@ -212,9 +213,9 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   }
   else {
     p_xs = 0;
-    if (XS_Selector::FindInGroup(p_one2N,p_xs,nin,nout,p_fl)==std::string::npos) {
+    if (XS_Selector::FindInGroup(p_one2N,p_xs,m_nin,m_nout,p_fl)==std::string::npos) {
       EXTRAXS::XS_Selector selector(p_xs);
-      p_xs = selector.GetXS(nin,nout,p_fl);
+      p_xs = selector.GetXS(m_nin,m_nout,p_fl);
       if (p_xs) p_one2N->Add(p_xs);
     }
     if (p_xs) {
@@ -270,6 +271,10 @@ int Amegic_Apacic_Interface::PerformShowers()
     double scale = p_mehandler->FactorisationScale();
     p_shower->SetFactorisationScale(scale);
     jetveto=1;
+    if (m_maxjetnumber==m_nout && p_mehandler->OrderStrong()==0) {
+      //      std::cout<<" no jetveto mu_f="<<scale<<std::endl;
+      jetveto=0;
+    }
   }
   return m_lastshowerveto = p_shower->PerformShowers(jetveto,
 						     p_mehandler->GetISR_Handler()->X1(),

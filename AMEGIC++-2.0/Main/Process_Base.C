@@ -2,8 +2,8 @@
 #include "Run_Parameter.H"
 //#include "Standard_Selector.H"
 #include "Combined_Selector.H"
-#include "Message.H"
 #include "Data_Collector.H"
+#include "Message.H"
 
 #include "Running_AlphaS.H"
 #include "Running_AlphaQED.H"
@@ -43,7 +43,6 @@ Process_Base::Process_Base():
   m_lastlumi=1.;
   m_scale[stp::as]=sqr(rpa.gen.Ecms());
   m_scale[stp::fac]=sqr(rpa.gen.Ecms());
-  m_scalefactor=1.;
   m_threshold=0.;
   m_updatescales=false;
 }
@@ -53,10 +52,10 @@ Process_Base::Process_Base():
 Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			   int _gen_str, int _orderQCD, int _orderEW,
-			   int _scalescheme,int _kfactorscheme,double _scalefactor,double _scale,
+			   int _scalescheme,int _kfactorscheme,double _scale,
 			   Pol_Info * _pl,
 			   int _nex,ATOOLS::Flavour * _ex_fl) :
-  Integrable_Base(_nin,_nout,_fl,_scalescheme,_kfactorscheme,_scalefactor,_beam,_isr),
+  Integrable_Base(_nin,_nout,_fl,_scalescheme,_kfactorscheme,_beam,_isr),
   m_gen_str(_gen_str),m_nex(_nex),
   p_ex_fl(_ex_fl),
   m_atoms(0), m_analyse(0), m_tables(0), 
@@ -522,8 +521,8 @@ void Process_Base::SetScales(double q2_fac, double q2_ren)
 { 
   //  std::cout<<"Process_Base::SetScales("<<q2_fac<<","<<q2_ren<<") : "<<Name()<<std::endl;
 
-  m_scale[stp::fac] = q2_fac;  
-  m_scale[stp::as]  = q2_ren;
+  m_scale[stp::fac] = rpa.gen.RenormalizationScaleFactor() * q2_fac;  
+  m_scale[stp::as]  = rpa.gen.FactorizationScaleFactor() * q2_ren;
 } 
 void Process_Base::SetISRThreshold(double threshold)    { m_threshold  = threshold;}
 
@@ -553,12 +552,17 @@ void Process_Base::RescaleXSec(double fac) {
 }
 
 void Process_Base::SetupEnhance() {
-  if (m_enhancefac==1. && m_maxfac==1.) return;
+  if (m_enhancefac==1. && m_maxfac==1. && m_maxeps==0.) return;
   if (m_enhancefac!=1.) {
     double xs=TotalXS();
     SetTotalXS(xs*m_enhancefac);
   }
-  if (m_maxfac!=1.) {
+  if (m_maxeps>0.) {
+    double max = GetMaxEps(m_maxeps);
+    msg.Info()<<"Maximum reduction factor for "<<m_name<<": "<<Max()/max<<" (epsilon="<<m_maxeps<<")"<<endl;
+    SetMax(max);
+  }
+  else if (m_maxfac!=1.) {
     double max=Max();
     SetMax(max*m_maxfac);
   }
@@ -630,7 +634,14 @@ double Process_Base::CalculateScale(const ATOOLS::Vec4D * _p) {
       if (p_selector->Name()=="Combined_Selector") {
 	Selector_Base * jf = ((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
 	if (jf) {
-	  pt2=jf->ActualValue()[0]*sqr(rpa.gen.Ecms());
+	  double y=jf->ActualValue()[0];
+	  if (y==2.) {
+	    pt2=s;
+	    //	    std::cout<<" pt2="<<pt2<<std::endl;
+	  }
+	  else {
+	    pt2=y*sqr(rpa.gen.Ecms());
+	  }
 	}
 	else {
 	  msg.Out()<<"WARNING in Process_Base::Scale : "<<std::endl
@@ -658,12 +669,13 @@ double Process_Base::CalculateScale(const ATOOLS::Vec4D * _p) {
   default :
     pt2 = s;
   }
-  m_scale[stp::fac]=m_scalefactor * pt2;
+  m_scale[stp::fac]= pt2;
   FactorisationScale();
   return m_scale[stp::fac];
 }
 
 double Process_Base::KFactor(double _scale) {
+  //std::cout<<"Scale: "<<_scale<<std::endl;
   switch (m_kfactorscheme) {
   case 1  :
     if (m_nstrong>2) {
@@ -688,10 +700,11 @@ double Process_Base::KFactor(double _scale) {
   }
 }
 
-void Process_Base::SetEnhance(double enhancefac, double maxfac) 
+void Process_Base::SetEnhance(double enhancefac, double maxfac, double epsilon) 
 {
   m_enhancefac = enhancefac;
   m_maxfac     = maxfac;
+  m_maxeps     = epsilon;
 }
 
 

@@ -16,9 +16,9 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Signal_Processes::Signal_Processes(Matrix_Element_Handler * _mehandler,
-				   Hard_Decay_Handler * _hdhandler) :
-  p_mehandler(_mehandler), p_hdhandler(_hdhandler)
+Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
+				   Hard_Decay_Handler * hdhandler) :
+  p_mehandler(mehandler), p_hdhandler(hdhandler)
 {
   m_name      = string("Signal_Processes:")+p_mehandler->Name();
   m_type      = eph::Perturbative;
@@ -70,16 +70,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		isr[i]->SetTypeSpec("KMR DUPDF");
 		isr[i]->SetId();
 		isr[i]->SetStatus(1);
-// 		std::cout<<"SP: "<<xs->AddMomenta()[i]<<" "
-// 			 <<xs->Momenta()[i]<<" "
-// 			 <<(xs->AddMomenta()[i].Perp()==
-// 			    -1.0*xs->Momenta()[i].Perp())<<" -> "
-// 			 <<((xs->AddMomenta()[i].Perp()==
-// 			     -1.0*xs->Momenta()[i].Perp())?i:1-i)
-// 			 <<" "<<i<<std::endl;
 		size_t j=i;
-// 		if (!(xs->AddMomenta()[i].Perp()
-// 		      ==-1.0*xs->Momenta()[i].Perp())) j=1-i;
 		ATOOLS::Particle *parton = 
 		  new ATOOLS::Particle(-1,xs->AddFlavours()[j],
 				       xs->AddMomenta()[j]);
@@ -127,9 +118,27 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 	myblob = (*blit);
 	found  = 1;
 	if (p_mehandler->GenerateSameEvent()) {
-	  weight=p_mehandler->Weight();
-	  int  ntrial =p_mehandler->NumberOfTrials();
-	  FillBlob(myblob,weight,ntrial);
+	  weight = p_mehandler->Weight();
+	  int  ntrial = p_mehandler->NumberOfTrials();
+	  Blob_Data_Base * info=(*myblob)["ME_Weight_One"];
+	  double weight_one=0.;
+	  int ntrail_one=0;
+	  if (info) {
+	    weight_one = info->Get<double>();
+	    ntrail_one = (*myblob)["ME_NumberOfTrials_One"]->Get<int>();
+	  }
+	  else {
+	    info=(*myblob)["ME_Weight"];
+	    if (info) {
+	      weight_one = info->Get<double>();
+	      ntrail_one = (*myblob)["ME_NumberOfTrials"]->Get<int>();
+	    }
+	    else {
+	      std::cout<<" ERROR missing call to OneEvent() before SameEvent() !! "<<std::endl;
+	    }
+	  }
+
+	  FillBlob(myblob,weight,ntrial,weight_one,ntrail_one);
 	  hit = 1;
 	}
       }
@@ -140,7 +149,8 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 
 void Signal_Processes::CleanUp() { return; }
 
-void Signal_Processes::FillBlob(Blob * blob, const double, const int)
+void Signal_Processes::FillBlob(Blob * blob, const double weight, const int ntrial, 
+				const double weight_one, const int ntrial_one)
 {
   PROFILE_HERE;
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
@@ -159,7 +169,7 @@ void Signal_Processes::FillBlob(Blob * blob, const double, const int)
   Particle * particle;
   for (unsigned int i=0;i<p_mehandler->NIn();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],p_mehandler->Momenta()[i]);
-    particle->SetNumber((long int)particle);
+    particle->SetNumber(0);
     particle->SetStatus(2);
     particle->SetInfo('G');
     blob->AddToInParticles(particle);
@@ -168,6 +178,7 @@ void Signal_Processes::FillBlob(Blob * blob, const double, const int)
   for (unsigned int i=p_mehandler->NIn();i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],p_mehandler->Momenta()[i]);
     if (!(particle->Flav().IsStable())) unstable = true;
+    particle->SetNumber(0);
     particle->SetStatus(1);
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
@@ -187,8 +198,12 @@ void Signal_Processes::FillBlob(Blob * blob, const double, const int)
   }
 
   // store some additional information
-  blob->AddData("ME_Weight",new Blob_Data<double>(p_mehandler->Weight()));
-  blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(p_mehandler->NumberOfTrials()));
+  blob->AddData("ME_Weight",new Blob_Data<double>(weight));
+  blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
+  if (ntrial_one!=-1) {
+    blob->AddData("ME_Weight_One",new Blob_Data<double>(weight_one));
+    blob->AddData("ME_NumberOfTrials_One",new Blob_Data<int>(ntrial_one));
+  }
   blob->AddData("ISR_Info_cms",p_mehandler->GetISR_Handler()->Info(0));
   blob->AddData("ISR_Info_lab",p_mehandler->GetISR_Handler()->Info(1));
 }

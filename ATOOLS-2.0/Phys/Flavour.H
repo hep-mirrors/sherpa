@@ -815,7 +815,7 @@ namespace ATOOLS {
 
   typedef std::set<Flavour,Flavour_Sorting_Criterion> FlavourSet;
   typedef FlavourSet::iterator FlSetIter;
-  typedef const FlavourSet::iterator FlSetConstIter;
+  typedef FlavourSet::const_iterator FlSetConstIter;
 
   /*!
     \file 

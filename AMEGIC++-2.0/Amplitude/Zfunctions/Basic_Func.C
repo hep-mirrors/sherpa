@@ -20,7 +20,7 @@ void Basic_Func::SetArgCouplProp(int narg,int* _arg,Complex* _coupl,
 void Basic_Func::Map(int& numb) 
 {
   if (iabs(numb)>99) {
-    Pfunc* p;
+    Pfunc* p = NULL;
     for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
       p = *pit;
       if (p->arg[0]==ATOOLS::iabs(numb)) break;
@@ -40,7 +40,7 @@ void Basic_Func::Map(int& numb,bool& maped)
     abort();
   }
   if (numb>99) {
-    Pfunc* p;
+    Pfunc* p = NULL;
     for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
       p = *pit;
       if (p->arg[0]==numb) break;
@@ -54,7 +54,7 @@ double Basic_Func::GetPMass(int a,int sign)
   if (sign!=mt::p_s)return 0.;
   int b;
   for(b=0;b<pn;b++)if(ps[b].numb==ATOOLS::iabs(a))break;
-  Pfunc* p1;
+  Pfunc* p1 = NULL;
   int hit = 0;
   for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
     p1 = *pit;

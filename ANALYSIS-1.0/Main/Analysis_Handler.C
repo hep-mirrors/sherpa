@@ -25,6 +25,7 @@ Analysis_Handler::Analysis_Handler() {}
 Analysis_Handler::~Analysis_Handler()
 {
   Clean();
+  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
 }
 
 void Analysis_Handler::Clean()
@@ -95,7 +96,7 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 		   <<"             (i.e. the 'Charged' qualifier "
 		   <<"creates the 'Charged' list)\n\n"
 		   <<"   BEGIN_ANALYSIS {\n\n"
-		   <<"   LEVEL      [ME]|[MI]|[Shower]|[Hadron]\n\n"
+		   <<"   LEVEL      [ME]|[Shower]|[Hadron]\n\n"
 		   <<"   PATH_PIECE path\n\n";
   Getter_Function::PrintGetterInfo(ATOOLS::msg.Out(),15);
   ATOOLS::msg.Out()<<"\n   } END_ANALYSIS\n\n"
@@ -113,7 +114,7 @@ bool Analysis_Handler::ReadIn()
   reader.SetMatrixType(reader.MTransposed);
   reader.SetInputPath(InputPath());
   reader.SetInputFile(InputFile());
-  //  reader.AddComment("!");
+  reader.AddComment("!");
   reader.AddComment("%");
   reader.AddComment("//");
   reader.AddIgnore("+");

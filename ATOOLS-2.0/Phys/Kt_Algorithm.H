@@ -19,18 +19,6 @@ namespace ATOOLS {
     }
   };
   
-  class Order_ET {
-  public:
-    int operator()(ATOOLS::Particle * a, ATOOLS::Particle * b) {
-      if (a->Momentum().EPerp2() > b->Momentum().EPerp2()) return 1;
-      return 0;
-    }
-    int operator()(ATOOLS::Vec4D & a, ATOOLS::Vec4D & b) {
-      if (a.EPerp2() > b.EPerp2()) return 1;
-      return 0;
-    }
-  };
-  
   class Order_E {
   public:
     int operator()(ATOOLS::Particle * a, ATOOLS::Particle * b) {
@@ -41,11 +29,11 @@ namespace ATOOLS {
 
   class Jet_Algorithm_Base {
   protected:
-    bool   m_bflag;
     ATOOLS::Particle_Qualifier_Base * p_qualifier;
+    bool   m_bflag;
   public:
     Jet_Algorithm_Base(ATOOLS::Particle_Qualifier_Base * const qualifier) : 
-      p_qualifier(qualifier) {}
+      p_qualifier(qualifier), m_bflag(true) {}
 
     virtual bool ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double)=0;
 

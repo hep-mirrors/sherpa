@@ -18,7 +18,7 @@ void Particle_Selector_Getter::PrintInfo(std::ostream &str,const size_t width) c
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base *
 Particle_Selector_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="Selected";

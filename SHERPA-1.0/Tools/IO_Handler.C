@@ -3,6 +3,8 @@
 #include "Run_Parameter.H"
 #include "Data_Read.H"
 #include "Exception.H"
+#include "MyStrStream.H"
+#include <stdio.h>
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -21,17 +23,40 @@ const iotype::code SHERPA::operator&(const iotype::code code1,const iotype::code
   return (iotype::code)((int)code1&(int)code2);
 }  
 
-IO_Handler::IO_Handler():
-  m_io(0), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
+IO_Handler::IO_Handler(const std::string _mode):
+  m_on(true), m_io(1), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
 #ifdef CLHEP_SUPPORT
   p_hepmc(NULL), 
 #endif
   p_hepevt(NULL), 
-  p_instream(NULL) {}
+  p_instream(NULL) 
+{
+  if (_mode==std::string("Sherpa")) {
+    m_outtype = iotype::Sherpa;
+  }
+  else if (_mode==std::string("HepEvt")) {
+    m_outtype = iotype::HepEvt;
+    p_hepevt  = new HepEvt_Interface(true,10);
+  }    
+#ifdef CLHEP_SUPPORT
+  else if (_mode==std::string("HepMC")) {
+    m_outtype = iotype::HepMC; 
+    p_hepmc   = new HepMC_Interface();
+  }
+#endif
+  else {
+    msg.Events()<<"Potential Error in IO_Handler::IO_Handler("<<m_outtype<<")"<<std::endl
+		<<"   No output format specified. Continue run."<<std::endl;
+    msg.LogFile()<<"Potential Error in IO_Handler::IO_Handler("<<m_outtype<<")"<<std::endl
+		 <<"   No output format specified. Continue run."<<std::endl;
+    m_on = false;
+    m_io = 0;
+  }
+}
 
 IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
 		       const std::vector<std::string> & infiles,
-		       const std::string _path):
+		       const std::string _path, const int _filesize):
   m_on(true), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
 #ifdef CLHEP_SUPPORT
   p_hepmc(NULL), 
@@ -39,15 +64,15 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
   p_hepevt(NULL), 
   p_instream(NULL),
   m_path(_path), 
-  m_filesize(1000), 
+  m_filesize(_filesize), 
   m_evtnumber(0), 
   m_evtcount(0)
 {
   for (size_t i=0;i<infiles.size();++i) {
-    m_intype=m_intype|(iotype::code)(pow(2,i)*(infiles[i]!=std::string("")));
+    m_intype=m_intype|(iotype::code)(pow(2.,int(i))*(infiles[i]!=std::string("")));
   }
   for (size_t i=0;i<outfiles.size();++i) {
-    m_outtype=m_outtype|(iotype::code)(pow(2,i)*(outfiles[i]!=std::string("")));
+    m_outtype=m_outtype|(iotype::code)(pow(2.,int(i))*(outfiles[i]!=std::string("")));
   }
 
   if (m_outtype!=iotype::Unknown && m_intype!=iotype::Unknown) {
@@ -55,11 +80,11 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
     return; 
   }
 
-  m_io=(m_outtype>0)+2*(m_intype>0);
+  m_io=2*(m_outtype>0)+4*(m_intype>0);
   switch (m_outtype) {
   case iotype::Sherpa:
     m_file     = outfiles[0];
-    m_filename = m_path+std::string("/")+m_file+std::string(".evts"); 
+    m_filename = m_path+std::string("/")+m_file+std::string(".evts");
     m_outstream.open(m_filename.c_str());
     if (!m_outstream.good()) { 
       msg.Error()<<"ERROR in IO_Handler."<<std::endl
@@ -74,7 +99,7 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
     break;
 #endif
   case iotype::HepEvt:
-    p_hepevt = new HepEvt_Interface(true,1,m_path,outfiles[2]);
+    p_hepevt = new HepEvt_Interface(true,1,m_path,outfiles[2],m_filesize);
     break;
   default :
     msg.LogFile()<<"Potential Error in IO_Handler::IO_Handler("<<m_outtype<<")"<<std::endl
@@ -142,32 +167,63 @@ void IO_Handler::AddInputMode(const iotype::code c1)
 	     <<"   Method not yet implemented. Continue run."<<std::endl;
 }
 
+void IO_Handler::PrintEvent() {
+  if (m_on==false) return;
+  switch (m_outtype) {
+  case iotype::Sherpa:
+    break;
+#ifdef CLHEP_SUPPORT
+  case iotype::HepMC: 
+    p_hepmc->PrintHepMCEvent();
+    break;
+#endif 
+  case iotype::HepEvt: 
+    break;
+  default:
+    msg.Error()<<"Error in IO_Handler::OutputToFormat."<<std::endl
+	       <<"   Unknown Output format : "<<m_outtype<<std::endl
+	       <<"   No output, continue run ..."<<std::endl;
+    break;
+  }
+}
 
 bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weight) 
 {
-  if (m_on==false) return false;
-  if (!(m_io&1)) return false;
+  //std::cout<<"Output : "<<m_io<<" : "<<m_outtype<<std::endl;
+  if (m_on==false)          return false;
+  if (!(m_io&1)&&!(m_io&2)) return false;
+  if (m_io&1 && msg.LevelIsEvents()) {
+    if (!blobs->empty()) {
+      msg.Out()<<"  -------------------------------------------------  "<<std::endl;
+      for (Blob_Iterator blit=blobs->begin();blit!=blobs->end();++blit) 
+	msg.Out()<<*(*blit)<<std::endl;
+      msg.Out()<<"  -------------------------------------------------  "<<std::endl;
+    }
+    else {
+      msg.Out()<<"  ******** Empty event ********  "<<std::endl;
+      return false;
+    }
+  }
+
   for (int i=1;i<(int)iotype::size;i*=2) {
     if (m_outtype&i) {
       switch (m_outtype) {
       case iotype::Sherpa:
-	if (m_evtcount%m_filesize==0) {
-	  m_outstream<<"Sherpa"<<"  "<<m_filesize<<" \n";
-	}
-	if (!blobs->empty()) { SherpaOutput(blobs,weight); return true; }
-	else { 
-	  msg.Error()<<"Error in IO_Handler::OutputToFormat."<<std::endl
-		     <<"   empty bloblist."<<std::endl
-		     <<"   No output, continue run ..."<<std::endl;
-	  break;
-	}
+	if (m_io&2) SherpaOutput(blobs,weight); 
+	break;
 #ifdef CLHEP_SUPPORT
       case iotype::HepMC: 
 	p_hepmc->Sherpa2HepMC(blobs);
+	if (m_io&1 && msg.LevelIsDebugging()) {
+	  p_hepmc->PrintHepMCEvent();
+	}
 	break;
-#endif
+#endif 
       case iotype::HepEvt: 
 	p_hepevt->Sherpa2HepEvt(blobs); 
+	if (m_io&1 && msg.LevelIsDebugging()) {
+	  p_hepevt->PrintHepEvtEvent(p_hepevt->Nhep());
+	}
 	break;
       default:
 	msg.Error()<<"Error in IO_Handler::OutputToFormat."<<std::endl
@@ -183,7 +239,7 @@ bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weig
 bool IO_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs) 
 {
   if (m_on==false) return false;
-  if (!(m_io&2)) return false;
+  if (!(m_io&4)) return false;
   switch (m_intype) {
   case iotype::Sherpa: return SherpaInput(blobs); 
 #ifdef CLHEP_SUPPORT
@@ -245,9 +301,7 @@ void IO_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double weight
   }
   if (m_evtcount%m_filesize==0) {
     m_evtcount = 0;
-    char hlp[6];
-    sprintf(hlp,"%i",(int)(m_evtnumber/m_filesize));
-    m_filename = m_file+std::string(hlp);
+    m_filename = m_file+ToString(int(m_evtnumber/m_filesize));
     m_outstream<<m_filename<<" \n";
     m_outstream.close();
     m_filename = m_path+std::string("/")+m_filename+std::string(".evts");

@@ -5,10 +5,12 @@
 #include "Data_Reader.H"
 #include "Particle.H"
 #include "Run_Parameter.H"
+#include "Random.H"
 #include "Message.H"
 #include "Exception.H"
 #include "Running_AlphaS.H"
 #include "Scaling.H"
+#include <list>
 
 using namespace SHERPA;
 
@@ -219,20 +221,23 @@ Lund_Interface::~Lund_Interface()
 bool Lund_Interface::Hadronize(ATOOLS::Blob_List *bloblist,
 			       ATOOLS::Particle_List *particlelist) 
 {
-  ATOOLS::Blob * blob = new ATOOLS::Blob();
-  blob->SetId();
-  blob->SetType(ATOOLS::btp::Fragmentation);
-  blob->SetTypeSpec("Pythia_v6.214");
-  bloblist->push_back(blob);
-
-  if (PrepareFragmentationBlob(blob,bloblist,particlelist)) {
+  if (ExtractSinglets(bloblist,particlelist)) {
+    if (m_partlists.size()==0) return true; // no colours in event
+    ATOOLS::Blob * blob = new ATOOLS::Blob();
+    blob->SetId();
+    blob->SetType(ATOOLS::btp::Fragmentation);
+    blob->SetTypeSpec("Pythia_v6.214");
+    bloblist->push_back(blob);
+    
+    int nhep = PrepareFragmentationBlob(blob);
     for (size_t trials=0;trials<m_maxtrials;++trials) {
-      if (StringFragmentation(blob,bloblist,particlelist)) return true;
+      if (StringFragmentation(blob,bloblist,particlelist,nhep)) return true;
       if (m_maxtrials>1) 
 	ATOOLS::msg.Error()<<"Error in Lund_Interface::Hadronize ."<<std::endl
 			   <<"   Hadronization failed. Retry event."<<std::endl;
     }
   }
+
   ATOOLS::msg.Error()<<"Error in Lund_Interface::Hadronize ."<<std::endl
 		     <<"   Hadronization failed. Retry event."<<std::endl;
   while (bloblist->size()>0) {
@@ -242,72 +247,142 @@ bool Lund_Interface::Hadronize(ATOOLS::Blob_List *bloblist,
   return false;
 }
 
-
-bool Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-					      ATOOLS::Particle_List *pl) 
+void Lund_Interface::Reset()
 {
-  std::set<ATOOLS::Particle*> startpoints;
-  for (ATOOLS::Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-    for (size_t i=0;i<(size_t)(*bit)->NOutP();++i) {
-      ATOOLS::Particle *cur=(*bit)->OutParticle(i);
-      if (cur->DecayBlob()==NULL && cur->Status()==1 && 
-	  (cur->Info()=='F' || cur->Info()=='H') &&
-	  cur->GetFlow(1)!=0 && cur->GetFlow(2)==0) {
-	startpoints.insert(cur);
-      }
+  if (m_partlists.size()>0) {
+    for (std::list<ATOOLS::Particle_List *>::iterator plit=m_partlists.begin();
+	 plit!=m_partlists.end();plit++) {
+      do { (*plit)->pop_back(); } while (!(*plit)->empty());
+      delete (*plit); 
     }
   }
-  m_used.clear();
-  for (std::set<ATOOLS::Particle*>::iterator sit=startpoints.begin();
-       sit!=startpoints.end();++sit) {
-    ATOOLS::Particle *cur=*sit, *comp;  
-    blob->AddToInParticles(cur);
-    m_used.insert(cur);
-    do {
-      bool found=false;
-      for (ATOOLS::Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-	for (size_t i=0;i<(size_t)(*bit)->NOutP();++i) {
-	  comp=(*bit)->OutParticle(i);
-	  bool test=false;
-	  if (comp->DecayBlob()==NULL) test=true;
-	  else if (comp->DecayBlob()->Type()==ATOOLS::btp::Fragmentation) test=true;
-	  if (test && comp->Status()==1 && comp->GetFlow(2)==cur->GetFlow(1) &&
-	      (comp->Info()=='F' || comp->Info()=='H')) {
-	    if (m_used.find(comp)==m_used.end()) {
-	      blob->AddToInParticles(comp);
-	      m_used.insert(comp);
-	      found=true;
-	      break;
-	    }
-	  }
-	}
-	if (found) break;
-      }
-      if (!found) {
-	ATOOLS::msg.Error()<<"Fragmentation_Handler::PerformFragmentation(..): "
-			   <<"Cannot find connected parton for parton ("
-			   <<cur->Number()<<") in event ["
-			   <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]"<<std::endl;
-	msg_Tracking()<<"   Empty blob list and retry event. {\n"<<*bloblist<<"   }"<<std::endl;
-	while (bloblist->size()>0) {
-	  delete *bloblist->begin();
-	  bloblist->erase(bloblist->begin());
-	}
-	return false;
-      }
-    } while ((cur=comp)->Flav().IsGluon());
-  }
-  return true;
+  m_partlists.clear();
 }
 
 
-bool Lund_Interface::StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-					 ATOOLS::Particle_List *pl) 
+bool Lund_Interface::ExtractSinglets(ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl) 
+{
+  Reset();
+  std::list<ATOOLS::Particle *> plist;
+  ATOOLS::Particle * part;
+  for (ATOOLS::Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
+    if ((*blit)->Type()==ATOOLS::btp::FS_Shower || 
+	(*blit)->Type()==ATOOLS::btp::IS_Shower ||
+	(*blit)->Type()==ATOOLS::btp::Hard_Collision ||
+	(*blit)->Type()==ATOOLS::btp::Beam) {
+      for (int i=0;i<(*blit)->NOutP();i++) {
+	part = (*blit)->OutParticle(i); 
+	if (part->Status()==1 && part->DecayBlob()==NULL && 
+	    (part->GetFlow(1)!=0 || part->GetFlow(2)!=0)) {
+	  plist.push_back(part);
+	}
+      }
+    }
+  }
+  if (plist.empty()) {
+    ATOOLS::msg.Debugging()<<"WARNING in Lund_Interface::PrepareFragmentationBlob:"<<std::endl
+			   <<"   No coloured particle found leaving shower blobs."<<std::endl;
+    return true;
+  }
+
+  int  col1, col2;
+  bool hit1, hit2;
+  size_t actsize;
+  ATOOLS::Particle_List * pli;
+  do {
+    actsize = plist.size();
+    hit1    = false;
+    //std::cout<<"1st round : "<<plist.size()<<std::endl; 
+    for (std::list<ATOOLS::Particle *>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) {
+      col1 = (*pit1)->GetFlow(1);
+      col2 = (*pit1)->GetFlow(2);
+      //std::cout<<"Test : "<<col1<<" "<<col2<<std::endl;
+      if (col1!=0 && col2==0) {
+	hit1 = true;
+	pli  = new ATOOLS::Particle_List;
+	pli->push_back((*pit1));
+	pit1 = plist.erase(pit1);
+	//std::cout<<"Part_List "<<m_partlists.size()+1<<" : "<<pli->size()<<std::endl;
+	m_partlists.push_back(pli);
+	do {
+	  hit2 = false;
+	  for (std::list<ATOOLS::Particle *>::iterator pit2=plist.begin();pit2!=plist.end();++pit2) {
+	    if ((int)((*pit2)->GetFlow(2))==col1) {
+	      col1 = (*pit2)->GetFlow(1);
+	      pli->push_back((*pit2));
+	      //std::cout<<"Part_List "<<m_partlists.size()<<" : "<<pli->size()<<std::endl;
+	      plist.erase(pit2);
+	      hit2 = true;
+	      break;
+	    }
+	  }
+	} while (hit2);
+      }
+      if (hit1) break;
+    } 
+  } while (actsize!=plist.size());
+
+
+  do {
+    actsize = plist.size();
+    hit1    = false;
+    //std::cout<<"2nd round : "<<plist.size()<<std::endl; 
+    for (std::list<ATOOLS::Particle*>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) {
+      col1 = (*pit1)->GetFlow(1);
+      col2 = (*pit1)->GetFlow(2);
+      if (col1!=0 && col2!=0) {
+	hit1 = true;
+	pli  = new ATOOLS::Particle_List;
+	pli->push_back((*pit1));
+	pit1 = plist.erase(pit1);
+	//std::cout<<"New Part_List "<<m_partlists.size()+1<<" : "<<pli->size()<<" : "<<col1<<" "<<col2<<std::endl;
+	m_partlists.push_back(pli);
+	do {
+	  hit2 = false;
+	  for (std::list<ATOOLS::Particle *>::iterator pit2=plist.begin();pit2!=plist.end();++pit2) {
+	    if ((int)((*pit2)->GetFlow(2))==col1) {
+	      col1 = (*pit2)->GetFlow(1);
+	      col2 = (*pit2)->GetFlow(2);
+	      pli->push_back((*pit2));
+	      //std::cout<<"New particle "<<col1<<" "<<col2<<std::endl;
+	      //std::cout<<"Part_List "<<m_partlists.size()<<" : "<<pli->size()<<std::endl;
+	      pit2 = plist.erase(pit2);
+	      hit2 = true;
+	      break;
+	    }
+	  }
+	} while (hit2);
+      }
+      if (hit1) break;
+    }
+  } while (actsize!=plist.size());
+
+
+  if (!plist.empty()) {
+    ATOOLS::msg.Error()<<"ERROR in Lund_Interface::ExtractSinglets : "<<std::endl
+		       <<"   Failed to arrange all particles leaving shower blobs in colour singlets."<<std::endl
+		       <<"   Remaining particles are : "<<std::endl;
+    for (std::list<ATOOLS::Particle*>::iterator pit1=plist.begin();pit1!=plist.end();++pit1) 
+      ATOOLS::msg.Error()<<"   "<<(*pit1)<<std::endl;
+    ATOOLS::msg.Error()<<"   Reset, return false and hope for the best."<<std::endl;
+    Reset();
+    return false;
+  }
+
+  /*  
+  std::cout<<"===================="<<m_partlists.size()<<" Lists : "<<std::endl;
+  for (std::list<ATOOLS::Particle_List *>::iterator plit=m_partlists.begin();
+       plit!=m_partlists.end();plit++) {
+    std::cout<<(**plit)<<std::endl;
+    std::cout<<"-----------------------------------------------------"<<std::endl;
+  }
+  */
+  return true;
+}
+
+int Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob) 
 {
   int nhep = 0;
-  s_bloblist=bloblist;
-  blob->SetType(ATOOLS::btp::Fragmentation);
-  blob->SetTypeSpec("Pythia_v6.214");
   if (nhep==0) {
     hepevt.idhep[nhep]=ATOOLS::Flavour(ATOOLS::kf::photon).HepEvt();
     for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=blob->CMS()[j];
@@ -322,10 +397,72 @@ bool Lund_Interface::StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *b
     hepevt.jdahep[nhep][0]=0;
     hepevt.jdahep[nhep][1]=0;
   }
-  for (int i=0;i<blob->NInP();++i) {
-    AddPartonToString(blob->InParticle(i),nhep);
-  }
-  int dummy=2;
+
+  ATOOLS::Particle * part;
+  std::list<ATOOLS::Particle_List *>::iterator plit=m_partlists.begin();
+  do {
+    part = *(*plit)->begin();
+    if (part->GetFlow(1)!=0 && part->GetFlow(2)==0) {
+      while ((*plit)->size()>0) {
+	part = *(*plit)->begin();
+	blob->AddToInParticles(part);
+	AddPartonToString(part,nhep);
+	(*plit)->pop_front();
+      }
+      delete (*plit);
+      plit = m_partlists.erase(plit);
+    }
+    else plit++;
+  } while (plit!=m_partlists.end());
+
+  if (m_partlists.size()==0) return nhep;
+  ATOOLS::Particle * help,* help1;
+  plit=m_partlists.begin();
+  do {
+    part = *(*plit)->begin();
+    if (part->GetFlow(1)!=0 && part->GetFlow(2)!=0) {
+      blob->AddToInParticles(part);
+      ATOOLS::Flavour            flav = ATOOLS::Flavour(ATOOLS::kf::d);
+      if (ATOOLS::ran.Get()<0.5) flav = ATOOLS::Flavour(ATOOLS::kf::u);
+      help = new ATOOLS::Particle(-1,flav,0.5*part->Momentum());
+      help->SetProductionBlob(part->ProductionBlob());
+      AddPartonToString(help,nhep);
+      delete help;
+      help1 = part;
+      (*plit)->pop_front();
+
+      while ((*plit)->size()>0) {
+	part = *(*plit)->begin();
+	blob->AddToInParticles(part);
+	AddPartonToString(part,nhep);
+	(*plit)->pop_front();
+      }
+      help = new ATOOLS::Particle(-1,flav.Bar(),0.5*help1->Momentum());
+      help->SetProductionBlob(help1->ProductionBlob());
+      AddPartonToString(help,nhep);
+      delete help;
+
+      delete (*plit);
+      plit = m_partlists.erase(plit);
+    }      
+    else {
+      ATOOLS::msg.Error()<<"ERROR in Lund_Interface::PrepareFragmentationBlob : "<<std::endl
+			 <<"   No octet found although expected, particle is : "<<std::endl
+			 <<(*plit)<<std::endl
+			 <<"   will abort."<<std::endl;
+      abort();
+    }
+  } while (plit!=m_partlists.end());
+
+  Reset();
+  return nhep;
+}
+
+
+
+bool Lund_Interface::StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
+					 ATOOLS::Particle_List *pl,int nhep) 
+{
   hepevt.nevhep=0;
   hepevt.nhep=nhep;
   pyhepc(2);
@@ -336,8 +473,9 @@ bool Lund_Interface::StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *b
   pyhepc(1);
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;
+  int dummy=2;
+  //pylist(dummy);
   if (ATOOLS::msg.LevelIsDebugging()) {
-    pylist(dummy);
     ATOOLS::msg.Out()<<std::endl<<std::endl;
   }
   FillPrimaryHadronsInBlob(blob,bloblist,pl);
@@ -352,10 +490,8 @@ void Lund_Interface::AddPartonToString(ATOOLS::Particle *parton,int &nhep)
   double pabs=(parton->Momentum()).Abs2();
   if (pabs<0) hepevt.phep[nhep][4]=0.0;
   else hepevt.phep[nhep][4]=sqrt(pabs);
-  for (short int j=1;j<4;++j) {
-    hepevt.vhep[nhep][j-1]=parton->XProd()[j];
-    hepevt.vhep[nhep][3]=parton->XProd()[j];
-  }
+  for (short int j=1;j<4;++j) hepevt.vhep[nhep][j-1]=parton->XProd()[j];
+  hepevt.vhep[nhep][3]=parton->XProd()[0];
   hepevt.isthep[nhep]=1;
   hepevt.jmohep[nhep][0]=0;
   hepevt.jmohep[nhep][1]=0;
@@ -371,10 +507,10 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
   ATOOLS::Particle *particle;
   ATOOLS::Flavour flav;
   ATOOLS::Vec4D momentum, position;
-  int number;
   for (int i=0;i<hepevt.nhep;++i) {
     if ((hepevt.isthep[i]!=2)&&(hepevt.isthep[i]!=1)&&(hepevt.isthep[i]!=149)) continue;
-    flav.FromHepEvt(hepevt.idhep[i]);
+    if (hepevt.idhep[i]==93) flav=ATOOLS::Flavour(ATOOLS::kf::cluster);
+    else flav.FromHepEvt(hepevt.idhep[i]);
     if (flav==ATOOLS::Flavour(ATOOLS::kf::string) || 
 	flav==ATOOLS::Flavour(ATOOLS::kf::cluster)) {
       for (int j=hepevt.jdahep[i][0]-1;j<hepevt.jdahep[i][1];j++) {
@@ -385,9 +521,8 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
 	position=ATOOLS::Vec4D(hepevt.vhep[j][3],hepevt.vhep[j][0],
 			       hepevt.vhep[j][1],hepevt.vhep[j][2]);
 	particle = new ATOOLS::Particle(-1,flav,momentum);
-	if (pl) number=pl->size();
-	else number=(long int)(particle);
-	particle->SetNumber(number);
+	if (pl) particle->SetNumber(pl->size());
+	   else particle->SetNumber(0);
 	particle->SetStatus(1);
 	particle->SetInfo('P');
 	blob->SetPosition(position);
@@ -419,7 +554,6 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
   ATOOLS::Particle *particle;
   ATOOLS::Flavour flav;
   ATOOLS::Vec4D momentum, position;
-  int number;
   for (int i=daughter1;i<daughter2;++i) {
     flav.FromHepEvt(hepevt.idhep[i]);
     momentum=ATOOLS::Vec4D(hepevt.phep[i][3],hepevt.phep[i][0],
@@ -427,9 +561,8 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
     position=ATOOLS::Vec4D(hepevt.vhep[i][3],hepevt.vhep[i][0],
 			   hepevt.vhep[i][1],hepevt.vhep[i][2]);
     particle = new ATOOLS::Particle(-1,flav,momentum);
-    if (pl) number=pl->size();
-    else number=(long int)(particle);
-    particle->SetNumber(number);
+    if (pl) particle->SetNumber(pl->size());
+       else particle->SetNumber(0);
     particle->SetStatus(1);
     particle->SetInfo('D');
     blob->SetPosition(position);

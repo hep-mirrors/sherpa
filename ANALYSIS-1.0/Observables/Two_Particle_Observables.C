@@ -46,7 +46,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
@@ -296,7 +296,7 @@ void Two_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weig
     double c2=mom2[3]/Vec3D(mom2).Abs();
     double deta=0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
     double dr= sqrt(sqr(deta) + sqr(dphi)); 
-    cout<<"Deat in DR "<<deta<<" DR is :  "<<dr<<endl;
+    //cout<<"Deat in DR "<<deta<<" DR is :  "<<dr<<endl;
     p_histo->Insert(dr,weight,ncount); 
 } 
 

@@ -42,7 +42,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
@@ -192,6 +192,27 @@ void One_Particle_E::Evaluate(const Vec4D & mom,double weight, int ncount)
 Primitive_Observable_Base * One_Particle_E::Copy() const
 {
   return new One_Particle_E(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(One_Particle_BeamAngle,One_Particle_BeamAngle_Getter,"BeamAngle");
+
+One_Particle_BeamAngle::One_Particle_BeamAngle(const Flavour & flav,
+					       int type,double xmin,double xmax,int nbins,
+					       const std::string & listname) :
+  One_Particle_Observable_Base(flav,type,xmin,xmax,nbins,listname,"BeamAngle") { }
+
+
+void One_Particle_BeamAngle::Evaluate(const Vec4D & mom,double weight, int ncount) 
+{
+  double ct = mom.CosTheta();
+  p_histo->Insert(ct,weight,ncount); 
+} 
+
+Primitive_Observable_Base * One_Particle_BeamAngle::Copy() const
+{
+  return new One_Particle_BeamAngle(m_flav,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

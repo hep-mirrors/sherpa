@@ -25,7 +25,7 @@ void Primitive_Detector_Getter::PrintInfo(std::ostream &str,const size_t width) 
      <<std::setw(width+4)<<" "<<"}";
 }
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base *
 Primitive_Detector_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string inlist="FinalState", outlist="Detected";

@@ -230,7 +230,7 @@ void Gauss_Integrator::GauJac(double * x, double * w, int n, double alf, double 
   // calculate Gauss Jacobi weights and abscissas
   int i,its,j;
   double alfbet,an,bn,r1,r2,r3;
-  double a,b,c,p1,p2,p3,pp,temp,z,z1;
+  double a,b,c,p1,p2,p3,pp,temp,z=1.,z1;
 
   for (i=1;i<=n;i++) {
     if (i == 1) {

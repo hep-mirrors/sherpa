@@ -167,6 +167,9 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
 
 void String_Library::InitMakefile(string pathID)
 {
+  UpdateConfigure(pathID);
+  return;
+
   string newMakefile = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/Makefile");
 
   if (IsFile(newMakefile)) return;
@@ -347,6 +350,7 @@ void String_Library::AddToMakefile(string makefilename,string pathID,string file
   // add also to makefile am!
   AddToMakefileAM(makefilename+string(".am"),pathID,fileID);
 
+  return;
   if (IsFile(makefilename)==0) {
     cerr<<makefilename.c_str()<<" is not available !"<<endl;
     return;

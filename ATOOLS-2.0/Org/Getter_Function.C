@@ -11,7 +11,7 @@
 #include "Getter_Function.H"
 #include "Exception.H"
 #include "Message.H"
-#include <iomanip>
+#include "MyStrStream.H"
 
 using namespace ATOOLS;
 
@@ -63,7 +63,7 @@ PrintInfo(std::ostream &str,const size_t width) const
 }
 
 template<class ObjectType,class ParameterType>
-ObjectType *const Getter_Function<ObjectType,ParameterType>::
+ObjectType * Getter_Function<ObjectType,ParameterType>::
 operator()(const Parameter_Type &parameters) const
 {
   std::cout<<"Getter_Function::operator(): "
@@ -75,8 +75,8 @@ template<class ObjectType,class ParameterType>
 void Getter_Function<ObjectType,ParameterType>::
 PrintGetterInfo(std::ostream &str,const size_t width)
 {
-  const std::ios_base::fmtflags def=str.flags();
-  str.setf(std::ios_base::left,std::ios_base::adjustfield);
+  const IOS_BASE::fmtflags def=str.flags();
+  str.setf(IOS_BASE::left,IOS_BASE::adjustfield);
   for (typename String_Getter_Map::const_iterator git=s_getters->begin();
        git!=s_getters->end();++git) {
     str<<"   "<<std::setw(width)<<git->first<<" ";
@@ -95,6 +95,6 @@ GetObject(const std::string &name,const Parameter_Type &parameters)
   return NULL;
 }
 
-template Getter_Function<OBJECT_TYPE,PARAMETER_TYPE>;
+template class Getter_Function<OBJECT_TYPE,PARAMETER_TYPE>;
 
 #endif

@@ -26,7 +26,7 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   ATOOLS::Data_Read *read = new ATOOLS::Data_Read(path+file,true);
   mihandler="None";
   if (read->FileExists()) {
-    mihandler=read->GetValue<std::string>("MI_HANDLER",std::string("Amisic"));
+    mihandler=read->GetValue<std::string>("MI_HANDLER",std::string("None"));
     path+=read->GetValue<std::string>("INPUT_PATH",std::string(""));
     file=read->GetValue<std::string>("INPUT_FILE",file);
   }

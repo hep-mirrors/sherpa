@@ -5,6 +5,30 @@ AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD}/..)
 
 dnl Conditional compiling and linking
+AC_ARG_ENABLE(mcatnlo,
+[  --enable-mcatnlo        Enable MCatNLO support ],
+[ mcatnlo=false
+  case "${enableval}" in 
+    yes) mcatnlo=true && echo "checking for MC@NLO support... yes" ;;
+    *) echo "checking for MC@NLO support... no" ;;
+  esac ],[ mcatnlo=false ])
+AM_CONDITIONAL(MCATNLO_SUPPORT, test $mcatnlo = true)
+AC_ARG_ENABLE(adicic,
+[  --enable-adicic        Enable Adicic support ],
+[ adicic=false
+  case "${enableval}" in 
+    yes) adicic=true && echo "checking for ADICIC support... yes" ;;
+    *) echo "checking for ADICIC support... no" ;;
+  esac ],[ adicic=true ])
+AM_CONDITIONAL(ADICIC_SUPPORT, test $adicic = true)
+AC_ARG_ENABLE(ahadic,
+[  --enable-ahadic        Enable Ahadic support ],
+[ ahadic=false
+  case "${enableval}" in 
+    yes) ahadic=true && echo "checking for AHADIC support... yes" ;;
+    *) echo "checking for AHADIC support... no" ;;
+  esac ],[ ahadic=false ])
+AM_CONDITIONAL(AHADIC_SUPPORT, test $ahadic = true)
 AC_ARG_ENABLE(clhep,
 [  --enable-clhep          Enable CLHEP support ],
 [ clhep=false
@@ -71,15 +95,12 @@ AC_CHECK_FUNCS(mkdir)
 dnl Produce makefiles
 AC_OUTPUT(Tools/Makefile \
 	  LundTools/Makefile \
-	  HerwigTools/Makefile \
           Initialization/Makefile \
           PerturbativePhysics/Makefile \
           SoftPhysics/Makefile \
           Single_Events/Makefile \
           Main/Makefile \
           Run/Makefile \
-          Run/Process/Makefile \
-          Run/Process/Dummy/Makefile \
 	  Makefile )
 
 

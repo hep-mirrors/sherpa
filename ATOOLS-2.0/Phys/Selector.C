@@ -231,15 +231,15 @@ void Selector_Data::Data(int i,int & type,std::vector<Flavour> & flavs,
   help  = data[i].help;
 }
 
-void Selector_Data::SetData(int & _type,std::vector<Flavour> & _flavs,
-			    int & _help,double & _min,double & _max) 
+void Selector_Data::SetData(int  _type,const std::vector<Flavour> & _flavs,
+			    int  _help,double  _min,double  _max) 
 {
   RemoveData(_type);
   AddData(_type,_flavs,_help,_min,_max);
 }
 
-void Selector_Data::AddData(int & _type,std::vector<Flavour> & _flavs,
-			    int & _help,double & _min,double & _max) 
+void Selector_Data::AddData(int _type,const std::vector<Flavour> & _flavs,
+			    int _help,double _min,double _max) 
 {
   Mom_Data dat;
   dat.type  = _type;
@@ -260,4 +260,11 @@ Mom_Data Selector_Data::RemoveData(int & _type)
     }
   }
   return last;
+}
+
+
+void Selector_Log::Output() { 
+  msg_Info()<<"  Selector "<<m_name<<" rejection quota  : "
+	    <<double(m_rejected)/double(m_rejected+m_passed)
+	    <<"  ("<<m_rejected<<" / "<<m_passed+m_rejected<<")"<<std::endl;
 }

@@ -75,16 +75,6 @@ void Single_XS::SetTotal()
 		<<"       max : "<<m_max<<std::endl;
 }
 
-void Single_XS::AddPoint(const double value) 
-{
-  m_n++;
-  m_sn++;
-  m_ssum    += value;
-  m_ssumsqr += value*value;
-  if (value>m_max)  m_max  = value;
-  if (value>m_smax) m_smax = value;
-}
-
 void Single_XS::OptimizeResult()
 {
   double ssigma2 = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
@@ -114,6 +104,10 @@ void Single_XS::ResetMax(int flag)
     if (m_vsmax.size()>1) {
       m_vsmax.erase(m_vsmax.begin());
       m_vsn.erase(m_vsn.begin());
+    }
+    if (m_vsmax.empty()) {
+      m_vsmax.push_back(m_max);
+      m_vsn.push_back(m_n);
     }
     m_vsmax.back() = ATOOLS::Max(m_smax,m_vsmax.back());
     m_vsn.back()   = m_n;

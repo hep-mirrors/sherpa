@@ -33,6 +33,7 @@ libToolsOrg_la_SOURCES        = \
 				Data_Writer.C \
 				Data_Return.C \
 				Data_Read.C \
+				Data_Collector.C \
 				Run_Parameter.C \
 				FastList.C \
 				MyTiming.C \
@@ -41,7 +42,6 @@ libToolsOrg_la_SOURCES        = \
 				prof.cc \
 				IO_Handler.C \
 				Type.C \
-                                Data_Collector.C \
 				Info_Key.C \
 				Integration_Info.C \
 				Debugger.C \
@@ -61,6 +61,7 @@ noinst_HEADERS        =	\
 			Data_Read.H \
 			My_Limits.H \
 			Data_Return.H \
+			Data_Collector.H \
 			Run_Parameter.H \
 			Message.H \
 			FastList.H \
@@ -72,7 +73,6 @@ noinst_HEADERS        =	\
 			IO_Handler.H \
 			MyStrStream.H \
 			Type.H \
-                        Data_Collector.H \
 			Info_Key.H \
 			Info_Key.inl.H \
 			Integration_Info.H \

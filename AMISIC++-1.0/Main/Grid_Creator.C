@@ -194,11 +194,11 @@ bool Grid_Creator::CreateOptimizedGrid()
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_maxevents/100))==0) {
       double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
-      msg_Tracking()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
-		    <<int(diff)<<" s elapsed / "
-		    <<int((m_maxevents-m_events)/(double)m_events*diff)
-		    <<" s left / "<<int(m_maxevents/(double)m_events*diff)
-		    <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
+      msg_Info()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
+		<<int(diff)<<" s elapsed / "
+		<<int((m_maxevents-m_events)/(double)m_events*diff)
+		<<" s left / "<<int(m_maxevents/(double)m_events*diff)
+		<<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
   return true;
@@ -212,11 +212,11 @@ bool Grid_Creator::CreateInitialGrid()
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_initevents/100))==0) {
       double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
-      msg_Tracking()<<"   "<<((100*m_events)/m_initevents)<<" % ( "
-		    <<int(diff)<<" s elapsed / "
-		    <<int((m_initevents-m_events)/(double)m_events*diff)
-		    <<" s left / "<<int(m_initevents/(double)m_events*diff)
-		    <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
+      msg_Info()<<"   "<<((100*m_events)/m_initevents)<<" % ( "
+		<<int(diff)<<" s elapsed / "
+		<<int((m_initevents-m_events)/(double)m_events*diff)
+		<<" s left / "<<int(m_initevents/(double)m_events*diff)
+		<<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
   return true;

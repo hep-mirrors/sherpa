@@ -55,6 +55,8 @@ namespace ATOOLS {
       double m_timeout;
       bool m_batchmode;
       std::string m_username;
+      double m_fac_scale_fac;
+      double m_ren_scale_fac;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   NumberOfDicedEvents()                 { return m_ndicedevents; }
@@ -83,6 +85,12 @@ namespace ATOOLS {
       inline const std::string &UserName() { return m_username; }
       inline const std::string &Variable(const std::string &key) { return s_variables[key]; }
 #ifndef USING__ATOOLS_only
+      void SetScaleFactors(double f, double r) {
+	m_fac_scale_fac = f;
+	m_ren_scale_fac = r;
+      }
+      inline double FactorizationScaleFactor() { return m_fac_scale_fac; }
+      inline double RenormalizationScaleFactor() { return m_ren_scale_fac; }
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
       inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }
       inline Model_Type::code Model()                     { return m_modelcode; }

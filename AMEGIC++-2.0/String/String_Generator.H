@@ -24,19 +24,7 @@ namespace AMEGIC {
     ZXlist(const ZXlist & copy) { arg = 0;*this = copy; }
     ~ZXlist()                   { if (arg!=0) delete[] arg; } 
 
-    ZXlist& operator=(const ZXlist& copy) {
-      if (this!=&copy) {
-	narg  = copy.narg;
-	value = copy.value;
-	zlist = copy.zlist;
-	on    = copy.on;
-	sk    = copy.sk;
-	if (arg!=0) delete[] arg;
-	arg = new int[narg];
-	for (short int i=0;i<narg;i++) arg[i] = copy.arg[i];
-      }
-      return *this;
-    }
+    ZXlist& operator=(const ZXlist& copy);
   };
 
   class Virtual_String_Generator {

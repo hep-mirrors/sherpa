@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-ANALYSISFLAGS =	-pedantic -Wall -Winline
+ANALYSISFLAGS =	-pedantic -Wall #-Winline
 
 ANALYSISINCS  =	-I../Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main

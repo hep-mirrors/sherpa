@@ -515,7 +515,7 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
       sknot* s1 = m;
       
       int winner = 0;
-      sknot* winknot1,*winknot2;
+      sknot* winknot1=0,*winknot2=0;
 
       vector<sknot*>* winnerlist1 = 0; 
       vector<sknot*>* winnerlist2 = 0; 
@@ -600,7 +600,7 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 
 	sknot* si = leaf2;
 	sknot* sj = leaf1;
-	sknot* sprev;
+	sknot* sprev = 0;
 	if (winner<(int)(winnerlist1->size())) {
 	  for (int i=0;i<winner;i++) {
 	    si->right = (*winnerlist1)[i];    

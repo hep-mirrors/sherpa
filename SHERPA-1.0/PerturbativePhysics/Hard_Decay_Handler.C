@@ -264,7 +264,7 @@ Decay_Channel * Hard_Decay_Handler::SpecifyHardDecay(ATOOLS::Particle * _part,do
 	particle->SetFlav(flav);
 	particle->SetInfo('H');
 	particle->SetProductionBlob(blob);
-	particle->SetNumber((long int)particle);
+	particle->SetNumber(0);
 	blob->AddToOutParticles(particle);
       }
       double decmass;

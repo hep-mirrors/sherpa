@@ -21,6 +21,8 @@ namespace SHERPA {
     double m_ycut,m_jetscale;
     double m_qmin_i, m_qmin_f, m_scale;
 
+    int    m_nin, m_nout;
+
     ATOOLS::Jet_Finder * p_jf;
     Cluster_Partons    * p_cluster;
     /*! 

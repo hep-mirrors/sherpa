@@ -541,6 +541,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     if (m_jetveto && m_jetveto_scheme==2 && k1->prev->left->part->Info()!='H') {
     //      if (p_kin->JetVeto(k1->prev->left->part->Momentum()) {
       if (p_kin->JetVeto(k1,k2)) {
+	// std::cout<<" JETVETO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
 	//	if (k2->stat==1) k2->stat=2; 
 	// caught_jetveto=ntree0+2;
 	m_to_be_diced[ntree0]=1;

@@ -17,6 +17,8 @@
 
 using namespace SHERPA;
 
+std::set<ATOOLS::Particle*> SHERPA::Color_Dipole::s_partons;
+
 std::ostream &SHERPA::operator<<(std::ostream &str,const qri::type type)
 {
   switch (type) {
@@ -39,11 +41,11 @@ std::ostream &SHERPA::operator<<(std::ostream &str,
     str<<"\n   p_end["<<type<<"]      = ";
     if (info.p_end[type]!=NULL) str<<*info.p_end[type];
     else str<<"NULL";
-    size_t i=0;
+    size_t j=0;
     for (Color_Dipole::Particle_Flow_Map::const_iterator 
 	   fit=info.m_flows[type].begin();
 	 fit!=info.m_flows[type].end();++fit) {
-      str<<"\n   m_flows["<<type<<"]["<<i++<<"] = "<<*fit->first<<" -> ("
+      str<<"\n   m_flows["<<type<<"]["<<j++<<"] = "<<*fit->first<<" -> ("
 	 <<std::setw(3)<<fit->second->Code(COLOR(qri::real))<<","
 	 <<std::setw(3)<<fit->second->Code(COLOR(qri::anti))<<")";
     }
@@ -65,7 +67,7 @@ Color_Dipole::Color_Dipole(ATOOLS::Particle *const begin,
   SelectCompanion(begin);
   CollectString(qri::real);
   CollectString(qri::anti);
-//   msg_Tracking()<<*this<<std::endl;
+//  msg_Tracking()<<*this<<std::endl;
 }
 
 Color_Dipole::~Color_Dipole()
@@ -100,6 +102,7 @@ void Color_Dipole::SelectCompanion(ATOOLS::Particle *const begin)
     p_begin[ANTI(anti)] = 
       new ATOOLS::Particle(-1,p_begin[anti]->Flav().Bar());
     p_begin[ANTI(anti)]->SetNumber(0);
+    p_begin[ANTI(anti)]->SetInfo('F');
     ATOOLS::Flow *flow=p_begin[ANTI(anti)]->GetFlow();
     flow->SetCode(COLOR(ANTI(anti)),
 		  p_begin[anti]->GetFlow()->Code(COLOR(anti)));
@@ -119,6 +122,7 @@ void Color_Dipole::CollectString(const qri::type type)
 	 pit=finder.Track().begin(); pit!=finder.Track().end();++pit) {
     m_flows[type][(ATOOLS::Particle*)*pit] = 
       new ATOOLS::Flow(*(*pit)->GetFlow());
+    if ((*pit)->DecayBlob()==NULL) s_partons.insert((ATOOLS::Particle*)*pit);
   }
 }
 
@@ -184,8 +188,8 @@ bool Color_Dipole::Includes(ATOOLS::Particle *const part)
 }
 
 bool Color_Dipole::AssignColor(Particle_Flow_Map::iterator fit,
-				   const unsigned int oldc,
-				   const unsigned int newc)
+			       const unsigned int oldc,
+			       const unsigned int newc)
 {
   if (fit==m_flows[qri::real].end() ||
       fit==m_flows[qri::anti].end()) return true;
@@ -228,10 +232,10 @@ void Color_Dipole::UnDo()
 
 void Color_Dipole::SetColors(const qri::type type)
 {
-  unsigned int color=p_begin[type]->GetFlow()->Code(COLOR(type));
+  unsigned int newcolor=m_flows[type][p_begin[type]]->Code(COLOR(type));
   for (Particle_Flow_Map::iterator fit=m_flows[type].begin();
        fit!=m_flows[type].end();++fit) {
-    unsigned int index=fit->first->GetFlow()->Index(color);
+    unsigned int index=fit->second->Index(newcolor);
     fit->first->GetFlow()->SetCode(index,fit->second->Code(index));
   }
 }
@@ -244,6 +248,7 @@ void Color_Dipole::SetColors()
 void Color_Dipole::Split(const qri::type type)
 {
   ATOOLS::Particle *gluon = new ATOOLS::Particle(-1,ATOOLS::kf::gluon);
+  s_partons.insert(gluon);
   gluon->SetNumber(0);
   unsigned int color=ATOOLS::Flow::Counter();
   gluon->GetFlow()->SetCode(COLOR(type),p_begin[ANTI(type)]->
@@ -256,7 +261,7 @@ void Color_Dipole::Split(const qri::type type)
   p_end[type]=p_begin[type]=gluon;
   m_flows[type][gluon] = new ATOOLS::Flow(*gluon->GetFlow());
 //   msg_Debugging()<<"Color_Dipole::Split("<<type<<"): "
-//  		 <<*this<<std::endl;
+//   		 <<*this<<std::endl;
 }
 
 bool Color_Dipole::Insert(Color_Dipole *const info,const qri::type type)
@@ -264,6 +269,10 @@ bool Color_Dipole::Insert(Color_Dipole *const info,const qri::type type)
   qri::type anti=ANTI(type);
   int oldc=m_flows[type][Begin(type)]->Code(COLOR(type));
   int newc=info->m_flows[anti][info->Begin(anti)]->Code(COLOR(anti));
+  msg_Debugging()<<"Color_Dipole::Insert(..): ["<<type<<"] => ("
+		 <<oldc<<","<<newc<<") -> ("<<") { "
+		 <<*m_flows[type][Begin(type)]<<" "
+		 <<*info->m_flows[anti][info->Begin(anti)]<<"\n   /";
   if (!AssignColors(type,newc)) {
     Split(type);
     AssignColors(type,newc);
@@ -272,25 +281,45 @@ bool Color_Dipole::Insert(Color_Dipole *const info,const qri::type type)
     info->Split(type);
     info->AssignColors(type,oldc);
   }
-//   msg_Debugging()<<"Color_Dipole::Insert(..): ["<<type<<"] => ("
-// 		 <<oldc<<","<<newc<<") -> ("<<") {\n   /"
-// 		 <<*info->Begin(type)
-// 		 <<" -> ("<<std::setw(3)
-// 		 <<info->m_flows[type][info->Begin(type)]->Code(1)
-// 		 <<","<<std::setw(3)
-// 		 <<info->m_flows[type][info->Begin(type)]->Code(2)<<")"
-// 		 <<"\n   \\"<<*info->Begin(anti)
-// 		 <<" -> ("<<std::setw(3)
-// 		 <<info->m_flows[anti][info->Begin(anti)]->Code(1)
-// 		 <<","<<std::setw(3)
-// 		 <<info->m_flows[anti][info->Begin(anti)]->Code(2)<<")"
-// 		 <<"\n   /"<<*Begin(type)
-// 		 <<" -> ("<<std::setw(3)<<m_flows[type][Begin(type)]->Code(1)
-// 		 <<","<<std::setw(3)<<m_flows[type][Begin(type)]->Code(2)<<")"
-// 		 <<"\n   \\"<<*Begin(anti)
-// 		 <<" -> ("<<std::setw(3)<<m_flows[anti][Begin(anti)]->Code(1)
-// 		 <<","<<std::setw(3)<<m_flows[anti][Begin(anti)]->Code(2)<<")"
-// 		 <<"\n}"<<std::endl;
+  msg_Debugging()<<*info->Begin(type)
+		 <<" -> ("<<std::setw(3)
+		 <<info->m_flows[type][info->Begin(type)]->Code(1)
+		 <<","<<std::setw(3)
+		 <<info->m_flows[type][info->Begin(type)]->Code(2)<<")"
+		 <<"\\\n   \\"<<*info->Begin(anti)
+		 <<" -> ("<<std::setw(3)
+		 <<info->m_flows[anti][info->Begin(anti)]->Code(1)
+		 <<","<<std::setw(3)
+		 <<info->m_flows[anti][info->Begin(anti)]->Code(2)<<")"
+		 <<"\\\\\n   /"<<*Begin(type)
+		 <<" -> ("<<std::setw(3)<<m_flows[type][Begin(type)]->Code(1)
+		 <<","<<std::setw(3)<<m_flows[type][Begin(type)]->Code(2)<<")"
+		 <<"//\n   \\"<<*Begin(anti)
+		 <<" -> ("<<std::setw(3)<<m_flows[anti][Begin(anti)]->Code(1)
+		 <<","<<std::setw(3)<<m_flows[anti][Begin(anti)]->Code(2)<<")"
+		 <<"/\n}"<<std::endl;
+  return true;
+}
+
+bool Color_Dipole::Singlet(const qri::type type) const 
+{
+  for (Particle_Flow_Map::const_iterator fit=m_flows[type].begin();
+       fit!=m_flows[type].end();++fit) {
+    if (fit->first->GetFlow(1)==fit->first->GetFlow(2)) return true;
+  }
+  return false;
+}
+
+bool Color_Dipole::Cross(Color_Dipole *const info,
+			 const qri::type type)
+{
+  int oldc=m_flows[type][Begin(type)]->Code(COLOR(type));
+  int newc=info->m_flows[type][info->Begin(type)]->Code(COLOR(type));
+  if (!AssignColors(type,newc)) return false;
+  if (!info->AssignColors(type,oldc)) {
+    AssignColors(type,oldc);
+    return false;
+  }
   return true;
 }
 

@@ -21,7 +21,7 @@ void out_pfunc(Pfunc & pf) {
 
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,
 				     Interaction_Model_Base * model,Topology* top,
-				     int _orderQCD,int _orderEW,Basic_Sfuncs* BS,
+				     int & _orderQCD,int & _orderEW,Basic_Sfuncs* BS,
 				     String_Handler* _shand, bool print_graph) 
   : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph)
 {
@@ -31,6 +31,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,
     new Amplitude_Generator(N,fl,b,model,top,_orderQCD,_orderEW,BS,shand);
 
   firstgraph = gen->Matching();
+  gen->GetOrders(_orderEW,_orderQCD);
   delete gen;
 
   Single_Amplitude* n = firstgraph;

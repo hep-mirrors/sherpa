@@ -63,7 +63,6 @@ XS_Group::~XS_Group()
 void XS_Group::Add(XS_Base *const xsec) 
 {
   if (xsec==NULL) return;
-  for (size_t i=0;i<m_xsecs.size();++i) if (m_xsecs[i]==xsec) return;
   if (m_xsecs.size()==0) {
     m_nin=xsec->NIn();
     m_nout=xsec->NOut();
@@ -362,12 +361,7 @@ ATOOLS::Blob_Data_Base *XS_Group::WeightedEvent(const int mode)
 
 void XS_Group::AddPoint(const double value) 
 {
-  m_n++;
-  m_sn++;
-  m_ssum    += value;
-  m_ssumsqr += value*value;
-  if (value>m_max)  m_max  = value;
-  if (value>m_smax) m_smax = value;
+  Integrable_Base::AddPoint(value);
   for (size_t i=0;i<m_xsecs.size();++i) {
     if (ATOOLS::dabs(m_last)>0.) {
       m_xsecs[i]->AddPoint(value*m_xsecs[i]->Last()/m_last);

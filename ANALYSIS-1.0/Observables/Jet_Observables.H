@@ -102,10 +102,12 @@ namespace ANALYSIS {
   };
 
   class Jet_Differential_Rates : public Jet_Observable_Base {
+    std::string m_reflistname;
   public:
     Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,
 			   unsigned int mode, unsigned int minn,unsigned int maxn, 
-			   const std::string & =std::string("FinalState"));
+			   const std::string & =std::string("FinalState"),
+			   const std::string & =std::string(""));
     double Calc(const ATOOLS::Particle * p);
     void Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount);
 

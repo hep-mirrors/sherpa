@@ -75,13 +75,15 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
   bool okay     = 1;
   int totalsize = 0;
   int procs     = 0;
+  int current_atom = 0;
   for (size_t i=0;i<m_procs.size();i++) {
     msg_Tracking()<<"========================================================="<<endl
 		  <<"========================================================="<<endl
 		  <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
     if (moms) { delete [] moms; moms = 0; }
+    if (m_atoms) current_atom = links.size();
 
-    switch(m_procs[i]->InitAmplitude(model,top,moms,links,errs,totalsize,procs)) {
+    switch(m_procs[i]->InitAmplitude(model,top,moms,links,errs,totalsize,procs,current_atom)) {
     case 1:break;
     case 0:okay = 0;break;
     default:

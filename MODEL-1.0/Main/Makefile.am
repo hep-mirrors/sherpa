@@ -2,6 +2,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+MODELFLAGS  =	-pedantic -Wall -Winline
+
 lib_LTLIBRARIES = libModelMain.la
 libModelMain_la_SOURCES = Model_Handler.C Model_Base.C \
 			  Standard_Model.C MSSM.C ADD.C\
@@ -19,3 +21,5 @@ noinst_HEADERS = Model_Handler.H Model_Base.H \
 	         Effective_Higgs_Coupling.H \
 		 Spectrum_Generator_Base.H
 EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(MODELFLAGS)
+

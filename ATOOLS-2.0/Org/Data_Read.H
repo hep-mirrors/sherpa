@@ -135,13 +135,14 @@ namespace ATOOLS {
 
 
   // do we need those:  
+  /*
   template <>  Switch::code       Data_Read::GetValue<Switch::code>(std::string,Switch::code);
   template <>  Model_Type::code   Data_Read::GetValue<Model_Type::code>(std::string,Model_Type::code);
   template <>  Flavour Data_Read::GetValue<Flavour>(std::string,Flavour);
   template <>  Beam_Type::code    Data_Read::GetValue<Beam_Type::code>(std::string,Beam_Type::code);
   template <>  ISR_Type::code     Data_Read::GetValue<ISR_Type::code>(std::string,ISR_Type::code);
   template <>  String_Type::code  Data_Read::GetValue<String_Type::code>(std::string,String_Type::code);
-  
+  */
 
   /*!
     \file contains the class Data_Read

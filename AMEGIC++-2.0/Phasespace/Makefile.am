@@ -4,6 +4,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+AMEGICFLAGS  =	-pedantic -Wall #-Winline
+
 libAmegicPSGen_la_SOURCES = Phase_Space_Generator.C Channel_Generator_Base.C \
 			    Channel_Generator.C Channel_Generator_NPV.C \
                             Channel_Generator3V.C Channel_Generator3_NPV.C \
@@ -31,3 +33,4 @@ noinst_HEADERS = Phase_Space_Generator.H Channel_Generator_Base.H \
 		 Channel_Generator_Decays.H
 
 EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(AMEGICFLAGS)

@@ -13,8 +13,10 @@
 #include "MI_Handler.H"
 #include "Analysis_Handler.H"
 #include "Lund_Interface.H"
+#ifdef USING__MCatNLO
 #include "Herwig_Interface.H"
 #include "MCatNLO_Interface.H"
+#endif
 #include "Data_Read.H"
 
 #include <map>
@@ -68,8 +70,10 @@ namespace SHERPA {
     MI_Handler                 * p_mihandler; 
     IO_Handler                 * p_iohandler;
     Lund_Interface             * p_pythia;
+#ifdef USING__MCatNLO
     Herwig_Interface           * p_herwig;
     MCatNLO_Interface          * p_mcatnlo;
+#endif
     ANALYSIS::Analysis_Handler * p_analysis;
   private :
     bool InitializeTheIO();
@@ -123,8 +127,10 @@ namespace SHERPA {
     MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
     IO_Handler                  * GetIOHandler()             { return p_iohandler;       }
     Lund_Interface              * GetPythiaInterface()       { return p_pythia;          }
+#ifdef USING__MCatNLO
     Herwig_Interface            * GetHerwigInterface()       { return p_herwig;          }
     MCatNLO_Interface           * GetMCatNLOInterface()      { return p_mcatnlo;         }
+#endif
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

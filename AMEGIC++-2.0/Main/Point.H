@@ -25,66 +25,16 @@ public:
   Color_Function     * Color;
   Lorentz_Function   * Lorentz;
 
-  Point(int _extra = 0) : nextra(_extra)  { 
-    extrafl = 0;
-    v       = 0;
-    Color   = new Color_Function;
-    Lorentz = new Lorentz_Function;
-    middle  = 0;
-    ncpl = 4;
-    cpl = new Complex[4];
-    if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
-  }
-  Point(const Point& copy) { 
-    extrafl = 0;
-    Color   = new Color_Function;
-    Lorentz = new Lorentz_Function;
-    middle  = 0;
-    ncpl = 4;
-    cpl = new Complex[4];
-    nextra = 0;
+  Point(int extra = 0);
+  Point(const Point& copy);
 
-    *this = copy;
-  } 
+  Point& operator=(const Point& p);
 
   ~Point() {
     if (nextra>0) delete[] extrafl;
     delete[] cpl; 
     delete Color;
     delete Lorentz;
-  }
-  Point& operator=(const Point& p) {
-    if (this!=&p) {
-      number = p.number;
-      b      = p.b;
-      t      = p.t;
-      m      = p.m;
-      fl     = p.fl;
-      
-      *Color = *p.Color;
-      *Lorentz = *p.Lorentz;
- 
-      if (nextra>0) delete[] extrafl;
-      nextra = p.nextra;
-      if (nextra>0) {
-	extrafl = new ATOOLS::Flavour[nextra]; 
-	for(short int i=0;i<nextra;i++) extrafl[i] = p.extrafl[i];
-      }
-      left   = p.left;
-      right  = p.right;
-      middle = p.middle;
-      prev  = p.prev;
-      v = p.v;
-      //cpl's
-      if (ncpl!=p.ncpl) {
-	delete[] cpl;
-	ncpl = p.ncpl;
-	cpl = new Complex[ncpl];
-      } 
-
-      for(short int i=0;i<ncpl;i++) cpl[i] = p.cpl[i];
-    }
-    return *this;
   }
 };
 

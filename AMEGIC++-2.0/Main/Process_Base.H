@@ -11,7 +11,6 @@
 
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
-#include "Selector.H"
 #include "Flavour.H"
 #include "Vector.H"
 
@@ -36,7 +35,7 @@ namespace AMEGIC {
     AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
 
     bool    m_atoms, m_analyse, m_tables;
-    double  m_rfactor, m_enhancefac, m_maxfac;
+    double  m_rfactor, m_enhancefac, m_maxfac, m_maxeps;
     int     m_orderQCD, m_orderEW,m_nstrong,m_neweak;
 
     Phase_Space_Generator          * p_psgen;
@@ -64,15 +63,17 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     Process_Base();
-    Process_Base(int,int,ATOOLS::Flavour *,
-		 PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
-		 int,int,int,int,int,double,double,Pol_Info * _pl = 0,
-		 int _nex = 0,ATOOLS::Flavour * _ex_fl = 0);
+    Process_Base(int nin,int nout,ATOOLS::Flavour * fl,
+		 PDF::ISR_Handler * isr,BEAM::Beam_Spectra_Handler * beam,
+		 int gen_str, int orderQCD, int orderEW,
+		 int scalescheme,int kfactorscheme,double scale,
+		 Pol_Info * pl = 0,
+		 int nex = 0,ATOOLS::Flavour * ex_fl = 0);
     virtual ~Process_Base();
 
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,
 				 ATOOLS::Vec4D *&,std::vector<AMEGIC::Single_Process *> &,
-				 std::vector<AMEGIC::Single_Process *> &,int &,int &)=0;
+				 std::vector<AMEGIC::Single_Process *> &,int &,int &,int &)=0;
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
 //     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
@@ -90,7 +91,7 @@ namespace AMEGIC {
     virtual void             SetAtoms(bool);
     virtual void             SetTables(bool);
 
-    void                     SetEnhance(double,double);
+    void                     SetEnhance(double,double,double);
     virtual void             SetupEnhance();
 
     virtual Process_Base  *  Partner()                                             =0;
@@ -107,8 +108,6 @@ namespace AMEGIC {
     virtual void             SetSelector(ATOOLS::Selector_Base *);
     virtual void             SetMomenta(ATOOLS::Vec4D *);
 
-    virtual void             SetNStrong(int);
-    virtual void             SetNEWeak(int);
 
     virtual void             Empty()                                               =0;
     virtual void             SetTotal(int flag, int depth=0)                       =0;
@@ -118,11 +117,14 @@ namespace AMEGIC {
     virtual void             SetMax(const double max, int depth=0);
     virtual void             SetMaxJetNumber(int);
 
+    void SetNStrong(int);
+    void SetNEWeak(int);
+
     void SetSSum(const double sum)           { m_ssum=sum;       }
     void SetSSumSqr(const double sumsqr)     { m_ssumsqr=sumsqr; }
     void SetSigmaSum(const double sigma2)    { m_ssigma2=sigma2; }
     void SetSPoints(const long int points)   { m_sn=points;           }
-    
+
     void AddToDataCollector(int i);
 
 
@@ -155,8 +157,10 @@ namespace AMEGIC {
       Access methods
 
       ------------------------------------------------------------------------------*/
-    inline int          NStrong();
-    inline int          NEWeak();
+    inline int NStrong();
+    inline int NEWeak();
+    inline int OrderStrong();
+    inline int OrderEWeak();
 
     inline bool         Atoms();
     inline bool         Tables();
@@ -198,6 +202,9 @@ namespace AMEGIC {
     virtual void               PrintDifferential() = 0;
 
   };
+
+  inline int  Process_Base::OrderStrong()  { return m_orderQCD; }
+  inline int  Process_Base::OrderEWeak()   { return m_orderEW; }
 
   inline int         Process_Base::NStrong() { return m_nstrong; }
   inline int         Process_Base::NEWeak()  { return m_neweak; }

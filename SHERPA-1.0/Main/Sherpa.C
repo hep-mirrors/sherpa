@@ -94,12 +94,14 @@ bool Sherpa::InitializeTheEventHandler()
   case 9000:
     p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetPythiaInterface())); 
     break;
+#ifdef USING__MCatNLO
   case 9001:
     p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetHerwigInterface())); 
     break;
   case 9002:
     p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetMCatNLOInterface())); 
     break;
+#endif
   case 9999: 
     p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_iohandler)); 
     break;
@@ -130,7 +132,6 @@ bool Sherpa::GenerateOneEvent()
       if (p_iohandler->OutputOn()) {
 	p_iohandler->OutputToFormat(p_eventhandler->GetBlobs());
       }
-      p_eventhandler->PrintEvent(1);
       return 1;
     }
     m_errors++;
@@ -175,10 +176,10 @@ void Sherpa::DrawLogo()
 	    <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
 	    <<"....................... /TT\\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
 	    <<"......................./TTT/T\\ ... /TT\\/\\\\\\ / + + + + + + +/   \\         +   "<<std::endl
-	    <<"version 1.0.4 ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /                  "<<std::endl
+	    <<"version 1.0.5 ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /                  "<<std::endl
 	    <<"-----------------------------------------------------------------------------"<<std::endl
 	    <<std::endl
-	    <<"          SHERPA version 1.0.4.                                              "<<std::endl
+	    <<"          SHERPA version 1.0.5.                                              "<<std::endl
 	    <<"                                                                             "<<std::endl
 	    <<"          AUTHORS: Tanju Gleisberg, Stefan Hoeche, Frank Krauss,             "<<std::endl
 	    <<"               Andreas Schaelicke, Steffen Schumann, Jan Winter              "<<std::endl

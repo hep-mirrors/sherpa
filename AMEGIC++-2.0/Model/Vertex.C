@@ -7,6 +7,7 @@
 #include "Shell_Tools.H"
 #include <iomanip>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 using namespace AMEGIC;
@@ -496,7 +497,7 @@ Vertex::~Vertex() {delete[] m_v;delete[] m_v4;}
 
 void Vertex::TexOutput()
 {
-  ATOOLS::MakeDir("./tex",448);
+  ATOOLS::MakeDir("./tex",493);
   
   system("rm ./tex/Vertex_*");  
 

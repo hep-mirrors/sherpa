@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-EXTRAXSFLAGS  =	# -pedantic -Wall -Winline
+EXTRAXSFLAGS  =	-pedantic -Wall -Winline
 
 SHERPAINCS    =	-I$(SHERPASYS)/SHERPA-1.0/SoftPhysics
 EXTRAXSINCS   =	-I../Two2Two

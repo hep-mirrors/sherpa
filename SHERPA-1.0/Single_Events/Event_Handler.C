@@ -91,10 +91,10 @@ bool Event_Handler::GenerateEvent(int mode)
   PROFILE_LOCAL("Event_Handler::GenerateEvent");
   if (!rpa.gen.CheckTime()) {
     ATOOLS::msg.Error()<<ATOOLS::om::bold
-		       <<"\n\nEvent_Handler::GenerateEvent("<<mode<<"): "
-		       <<ATOOLS::om::reset<<ATOOLS::om::red
-		       <<"Timeout. Interrupt event generation."
-		       <<ATOOLS::om::reset<<std::endl;
+                     <<"\n\nEvent_Handler::GenerateEvent("<<mode<<"): "
+                     <<ATOOLS::om::reset<<ATOOLS::om::red
+                     <<"Timeout. Interrupt event generation."
+                     <<ATOOLS::om::reset<<std::endl;
     kill(getpid(),SIGINT);
   }
   bool   flag   = true;
@@ -164,7 +164,6 @@ bool Event_Handler::GenerateEvent(int mode)
 	       <<"   Empty bloblist would go into analysis !"<<std::endl;
       return false;
     }
-    PrintBlobs();
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
@@ -213,27 +212,6 @@ void Event_Handler::CleanUpEvent()
   Blob::Reset();
   Particle::Reset();
   Flow::ResetCounter();
-}
-
-
-void Event_Handler::PrintEvent(int mode) {
-  switch (mode) {
-    case 1:  PrintBlobs();   return;
-  }
-}
-
-void Event_Handler::PrintBlobs() {
-  if (!msg.LevelIsEvents()) return;
-  msg.Out()<<"  -------------------------------------------------  "<<std::endl;
-  if (!m_blobs.empty()) {
-    for (Blob_Iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) {
-      msg.Out()<<*(*blit)<<std::endl;
-    }
-  }
-  else {
-    msg.Out()<<"  ***** Empty Event *****  "<<std::endl;
-  }
-  msg.Out()<<"  -------------------------------------------------  "<<std::endl;
 }
 
 

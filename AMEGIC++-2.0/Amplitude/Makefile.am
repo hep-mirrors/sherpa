@@ -5,6 +5,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+AMEGICFLAGS  =	-pedantic -Wall -Winline
+
 libAmplitude_la_SOURCES = Amplitude_Base.C \
 			  Single_Amplitude.C Amplitude_Manipulator.C \
                           Amplitude_Generator.C Color_Generator.C \
@@ -33,3 +35,4 @@ noinst_HEADERS = Single_Amplitude.H \
 		 Super_Amplitude.H Amplitude_Output.H
 
 EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(AMEGICFLAGS)

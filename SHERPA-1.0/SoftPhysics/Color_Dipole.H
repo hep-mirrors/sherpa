@@ -25,6 +25,8 @@ namespace SHERPA {
     typedef std::map<ATOOLS::Particle *const,
 		     ATOOLS::Flow *> Particle_Flow_Map;
 
+    static std::set<ATOOLS::Particle*> s_partons;
+
   private:
    
     Particle_Flow_Map      m_flows[qri::size];
@@ -63,6 +65,7 @@ namespace SHERPA {
 
     // member functions
     bool Insert(Color_Dipole *const info,const qri::type type);
+    bool Cross(Color_Dipole *const info,const qri::type type);
 
     bool AssignColors(const qri::type type,const int color);
     void SetColors();
@@ -78,6 +81,8 @@ namespace SHERPA {
 
     bool Cat(Color_Dipole *const dipole);
 
+    bool Singlet(const qri::type type) const;
+    
     // inline functions
     inline ATOOLS::Particle *const Begin(const qri::type type) const     
     { return p_begin[type]; }

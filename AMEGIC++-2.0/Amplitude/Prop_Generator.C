@@ -66,7 +66,7 @@ void Prop_Generator::Fill()
 	  int* harg;
 	  harg = new int[p->argnum];
 	  for (int j=0;j<p->argnum;j++) harg[j] = p->arg[j];
-	  Pfunc* ph;
+	  Pfunc* ph = NULL;
 	  for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) {
 	    ph = *pit;
 	    if (ph->arg[0]==harg[i]) break;

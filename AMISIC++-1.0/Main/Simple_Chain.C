@@ -844,9 +844,6 @@ void Simple_Chain::Update(const MI_Base *mibase)
 void Simple_Chain::PrepareTerminate() 
 {
   p_gridcreator->WriteOutGrid();
-  for (size_t i=0;i<p_processes->Size();++i)
-    (*p_processes)[i]->PSHandler(false)->
-      WriteOut(OutputPath()+m_mcextension,true);
 }
 
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)

@@ -141,7 +141,16 @@ void Zfunc_Generator::Convert(Point* p)
       pb = p;
     }
     if(!LFDetermine_Zfunc(Zh,p,pf,pb)){
-      Point* ph=pb->right;
+      Point* ph1 = pb;
+      if (ph1->left->fl.Is5VDummy()) { 
+	if (ph1->right->fl.IsScalar() || ph1->right->m==1 || !ph1->right->left) ph1=ph1->left;
+	else if (ph1->right->left->fl.IsFermion()) ph1=ph1->left;
+      }
+      if (ph1->right->fl.Is5VDummy()) { 
+	if (ph1->left->fl.IsScalar() || ph1->left->m==1 || !ph1->left->left) ph1=ph1->right;
+	else if (ph1->left->left->fl.IsFermion()) ph1=ph1->right;
+      }
+      Point* ph=ph1->right;
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	     (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
 	  &&ph->left)
@@ -150,7 +159,7 @@ void Zfunc_Generator::Convert(Point* p)
 	  Convert(p); 
 	  return;
 	}
-      ph=pb->left;
+      ph=ph1->left;
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	     (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
 	  &&ph->left)
@@ -159,8 +168,8 @@ void Zfunc_Generator::Convert(Point* p)
 	  Convert(p); 
 	  return;
 	}
-      if(pb->middle){
-	ph=pb->middle;
+      if(ph1->middle){
+	ph=ph1->middle;
 	if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	       (ph->fl.IsVector() && ph->number<99) || ph->m==1 || ph->fl.Is5VDummy())
 	    &&ph->left)
@@ -899,7 +908,7 @@ void Zfunc_Generator::SetDirection(int N,SpinorDirection* spind)
     for (int pos=0;pos<(z->m_narg - z->p_calculator->GetScalarNumb());pos+=2) {
       int swchange = 0;
       i = pos;
-      int first;
+      int first = 0;
       if (z->p_arguments[i]<N) {
 	SpinorDirection* sd = spind;
 	while (sd) {
@@ -942,7 +951,7 @@ void Zfunc_Generator::SetDirection(int N,SpinorDirection* spind)
 	if (partner>99) {
 	  //Fermionline
 	  for (;;) {
-	    int end;
+	    int end = 0;
 	    for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
 	      Zfunc* zh = (*zit);
 	      if (zh!=z) {

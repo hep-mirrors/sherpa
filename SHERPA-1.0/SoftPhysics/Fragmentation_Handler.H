@@ -2,7 +2,6 @@
 #define Fragmentation_Handler_H
 
 #include "Lund_Interface.H"
-#include "Ahadic.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
 
@@ -17,7 +16,6 @@ namespace SHERPA {
     int    m_mode;
 
     Lund_Interface * p_lund;
-    AHADIC::Ahadic * p_ahadic;
   public:
     Fragmentation_Handler(std::string,std::string);
     ~Fragmentation_Handler();

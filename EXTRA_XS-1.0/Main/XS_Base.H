@@ -16,6 +16,7 @@ namespace EXTRAXS {
     int **p_colours;
 
     double m_s, m_t, m_u;
+    double m_scalefactor;
 
     std::vector<ATOOLS::Flavour> m_resonances;
 
@@ -85,6 +86,9 @@ namespace EXTRAXS {
 
     inline const std::vector<ATOOLS::Flavour> &Resonances() const { return m_resonances; }
 
+    inline double ScaleFactor() const   { return m_scalefactor;   }
+    inline void SetScaleFactor(const double scalefactor)  
+    { m_scalefactor=scalefactor;     }
   };// end of class XS_Base
 
 }// end of namespace EXTRAXS

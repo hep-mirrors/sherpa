@@ -5,7 +5,6 @@ endif
 SUBDIRS       =	\
 		Tools \
 		LundTools \
-		HerwigTools \
 		Initialization \
 		PerturbativePhysics \
 		SoftPhysics \

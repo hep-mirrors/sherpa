@@ -57,39 +57,9 @@ namespace AMEGIC {
       *this=l;
     }
 
-    Lorentz_Function & operator=(const Lorentz_Function & l)
-    {
-      if (this!=&l) {
-	m_type     =l.m_type;
-	m_permcount=l.m_permcount;
-	int noi=l.NofIndex();
+    Lorentz_Function & operator=(const Lorentz_Function & l);
 
-	for (size_t i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
-	m_permlist.clear();
-	m_signlist.clear();
-	if (p_next) delete p_next;
-
-	for (size_t i=0; i<l.m_permlist.size();++i) {
-	  m_signlist[i]=l.m_signlist[i];
-	  m_permlist.push_back(new int[noi]);
-	  for (int j=0; j<noi;++j) {
-	    m_permlist[i][j]=l.m_permlist[i][j];
-	  }
-	}
-	for (int i=0; i<4;++i) 
-	  m_partarg[i]=l.m_partarg[i];
-	if (l.p_next!=0) 
-	  p_next = new Lorentz_Function(*(l.p_next));
-	else
-	  p_next = 0;
-      }
-      return *this;
-    }
-
-    ~Lorentz_Function() {
-      for (size_t i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
-      if (p_next) delete p_next;
-    }
+    ~Lorentz_Function();
 
 
     int NofIndex() const {

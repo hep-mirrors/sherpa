@@ -51,6 +51,29 @@ namespace ANALYSIS {
 
   };// end of class One_ET_Selector
 
+  class One_Eta_Selector: public Primitive_Observable_Base {  
+  private:
+
+    std::string     m_outlist;
+    ATOOLS::Flavour m_flavour;
+
+    size_t m_item;
+
+  public:
+
+    One_Eta_Selector(const ATOOLS::Flavour flav,
+		    const size_t item,const double min,const double max,
+		    const std::string &inlist,const std::string &outlist);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+    
+    void EndEvaluation(double scale);
+
+  };// end of class One_Eta_Selector
+
   class One_DPhi_Selector: public Primitive_Observable_Base {  
   private:
 

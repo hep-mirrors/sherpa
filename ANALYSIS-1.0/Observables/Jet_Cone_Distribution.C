@@ -11,7 +11,7 @@ using namespace ATOOLS;
 DECLARE_GETTER(Jet_Cone_Distribution_Getter,"JetConeDist",
 	       Primitive_Observable_Base,String_Matrix);
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 Jet_Cone_Distribution_Getter::operator()(const String_Matrix &parameters) const
 {									
   if (parameters.size()<1) return NULL;
@@ -137,7 +137,7 @@ void Jet_Cone_Distribution::Fill(double weight, int ncount)
 DECLARE_GETTER(Jet_Cone_Dependence_Getter,"JetConeDep",
 	       Primitive_Observable_Base,String_Matrix);
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 Jet_Cone_Dependence_Getter::operator()(const String_Matrix &parameters) const
 {									
   if (parameters.size()<1) return NULL;
@@ -277,7 +277,7 @@ void Jet_Cone_Dependence::Fill(double weight, int ncount)
 DECLARE_GETTER(Jet_Cone_Shape_Getter,"JetConeShape",
 	       Primitive_Observable_Base,String_Matrix);
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 Jet_Cone_Shape_Getter::operator()(const String_Matrix &parameters) const
 {									
   if (parameters.size()<1) return NULL;

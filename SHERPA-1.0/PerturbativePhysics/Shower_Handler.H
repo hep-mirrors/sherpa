@@ -3,8 +3,10 @@
 
 #include "Model_Base.H"
 #include "ISR_Handler.H"
-#include "Adicic.H"
 #include "Apacic.H"
+#ifdef USING__Adicic    
+#include "Adicic.H"
+#endif
 #include "Data_Read.H"
 
 #include <string>
@@ -23,7 +25,9 @@ namespace SHERPA {
     bool                 m_isrshowerswitch,m_fsrshowerswitch,m_showermi;
     ATOOLS::Data_Read  * p_dataread;
     APACIC::Apacic     * p_apacic;
+#ifdef USING__Adicic    
     ADICIC::Adicic     * p_adicic;
+#endif
     PDF::ISR_Handler   * p_isr_handler;       
   public :
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
@@ -41,8 +45,10 @@ namespace SHERPA {
     PDF::ISR_Handler * GetISRHandler() { return p_isr_handler; }
     APACIC::Tree     * GetFinTree(); 
     APACIC::Tree    ** GetIniTrees();
-    APACIC::Apacic   * GetApacic() { return p_apacic; }
+#ifdef USING__Adicic    
     ADICIC::Cascade&   GetCascade();
+#endif
+    APACIC::Apacic   * GetApacic() { return p_apacic; }
     void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
     void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
     inline bool ShowerMI() const { return m_showermi; }

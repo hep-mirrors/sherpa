@@ -138,8 +138,11 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 		<<"   SHERPA_LIB_PATH = "<<s_variables["SHERPA_LIB_PATH"]<<"\n"
 		<<"}"<<std::endl;
   s_variables["CURRENT_SHERPASYS"]=s_variables["SHERPA_BIN_PATH"]+std::string("/../..");
+
+#ifndef __sgi
   setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
 			    s_variables["SHERPA_LIB_PATH"]).c_str(),1);
+#endif
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)
@@ -179,8 +182,6 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
   return false;
 }
 
-
-
 void  Run_Parameter::Gen::SetEcms(double _ecms)     { 
   m_ecms    = _ecms;
   Data_Collector::AddData("ECMS",new Blob_Data<double>(m_ecms));
@@ -193,3 +194,4 @@ void  Run_Parameter::Gen::SetBeam2(const Flavour b) {
   m_beam2  = b;   
   Data_Collector::AddData("BEAM2",new Blob_Data<std::string>(m_beam2.TexName()));
 }
+

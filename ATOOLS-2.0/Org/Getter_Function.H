@@ -20,7 +20,7 @@ namespace ATOOLS {
 
   protected:
 
-    virtual Object_Type *const 
+    virtual Object_Type * 
     operator()(const Parameter_Type &parameters) const;
 
     virtual void PrintInfo(std::ostream &str,const size_t width) const;
@@ -54,7 +54,7 @@ namespace ATOOLS {
     									\
     void PrintInfo(std::ostream &str,const size_t width) const;		\
     									\
-    Object_Type *const							\
+    Object_Type *							\
     operator()(const Parameter_Type &parameters) const;	                \
     									\
   public:								\

@@ -58,6 +58,7 @@ namespace SHERPA {
     // inline functions 
 #ifdef CLHEP_SUPPORT
     inline HepMC::GenEvent *const GenEvent() { return p_event; }
+    inline void PrintHepMCEvent() { p_event->print(); }
 #endif
 
   };// end of class HepMC_Interface

@@ -122,6 +122,7 @@ FillBunchBlobs(ATOOLS::Blob_List *const  bloblist,
 	blob->SetBeam(i);
 	blob->SetId();
 	blob->AddToOutParticles((*biter)->InParticle(0));
+	if ((*biter)->InParticle(0)->Number()<0) (*biter)->InParticle(0)->SetNumber(0);
 	if ((*biter)->InParticle(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
 	    ATOOLS::IsEqual((*biter)->InParticle(0)->E(),
 			    p_beam->GetBeam(i)->InMomentum()[0])) {
@@ -218,8 +219,7 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   }
   for (short unsigned int i=0;i<2;++i) 
     if (p_beamblob[i]) if (!p_beampart[i]->FillBlob(p_beamblob[i],particlelist)) {
-      msg_Tracking()<<"Beam_Remnant_Handler::FillBeamBlobs(..): {\n"
-		    <<*bloblist<<"}"<<std::endl;
+      ATOOLS::msg.Error()<<*bloblist<<std::endl;
       if (i==0) p_beampart[1]->FillBlob(p_beamblob[i],particlelist);
       while (bloblist->size()>0) {
 	delete *bloblist->begin();
@@ -234,7 +234,7 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   }
   for (short unsigned int i=0;i<2;++i) p_beampart[i]->AdjustKinematics();
   if (!SumMomenta(bloblist->front())) {
-    msg_Info()<<ATOOLS::rpa.gen.NumberOfDicedEvents()<<" "<<*bloblist<<std::endl;
+    // msg_Info()<<ATOOLS::rpa.gen.NumberOfDicedEvents()<<" "<<*bloblist<<std::endl;
     while (bloblist->size()>0) {
       delete bloblist->back();
       bloblist->pop_back();

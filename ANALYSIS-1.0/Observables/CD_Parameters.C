@@ -16,7 +16,7 @@ using namespace ATOOLS;
 DECLARE_GETTER(CD_Parameter_Calculator_Getter,"CDCalc",
 	       Primitive_Observable_Base,String_Matrix);
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 CD_Parameter_Calculator_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string listname="Analysed";
@@ -57,7 +57,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 

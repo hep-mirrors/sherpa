@@ -27,7 +27,7 @@ Channel_Generator_NPV::Channel_Generator_NPV(int _nin,int _nout,Flavour * _fl,
 
 Channel_Generator_NPV::~Channel_Generator_NPV() 
 { 
-  for (int i=0;i<m_pclist.size();i++) delete m_pclist[i];
+  for (size_t i=0;i<m_pclist.size();++i) delete m_pclist[i];
 }
 
 void Channel_Generator_NPV::GenerateTopos(Point* p)
@@ -225,8 +225,8 @@ int Channel_Generator_NPV::MakeChannel(int& echflag,int n,string& path,string& p
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
     bool first=true;
-    for (int i=0; i<m_idc.size();i++) {
-      if (m_idc[i].find("M")==-1) {
+    for (size_t i=0; i<m_idc.size();++i) {
+      if (m_idc[i].find("M")==string::npos) {
 	if (!first) chf<<",";
 	chf <<"m_k"<<m_idc[i];
 	first=false;
@@ -303,7 +303,7 @@ int Channel_Generator_NPV::MakeChannel(int& echflag,int n,string& path,string& p
 	<<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
-  for (int i=0; i<m_idc.size();i++) {
+  for (size_t i=0; i<m_idc.size();++i) {
     if (m_idc[i].find("M")==string::npos) {
       chf <<"  m_k"<<m_idc[i]<<".Assign(std::string(\""<<m_idc[i]<<"\"),2,0,info);"<<endl;
     }
@@ -419,10 +419,10 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
     else tmstr = string("0.");
     string pin0sum(""),pin1sum("");
     if (pin0.size()>0) {
-      for (int i=0;i<pin0.size();i++) pin0sum+=pin0[i];
+      for (size_t i=0;i<pin0.size();++i) pin0sum+=pin0[i];
       pin0sum = Order(pin0sum);
       string help1(""),help2 = pin0[pin0.size()-1];
-      for (int i=0;i<pin0.size()-1;i++) help1+=pin0[i];
+      for (size_t i=0;i<pin0.size()-1;++i) help1+=pin0[i];
       if (help1.length()>0) help1 = string("p0_") + help1;
       else help1 = string("p[0]");
 
@@ -434,10 +434,10 @@ void Channel_Generator_NPV::GenerateDecayChain(int flag,Point* p,int& rannum,ofs
 //       else AddToVariables(flag,string("0_")+pin0sum,string("p[0]-p[")+pin0sum+string("]"),1,sf);
     }
     if (pin1.size()>0) {
-      for (int i=0;i<pin1.size();i++) pin1sum+=pin1[i];
+      for (size_t i=0;i<pin1.size();++i) pin1sum+=pin1[i];
       pin1sum = Order(pin1sum);
       string help1(""),help2 = pin1[pin1.size()-1];
-      for (int i=0;i<pin1.size()-1;i++) help1+=pin1[i];
+      for (size_t i=0;i<pin1.size()-1;++i) help1+=pin1[i];
       if (help1.length()>0) help1 = string("p1_") + help1;
       else help1 = string("p[1]");
 
@@ -658,8 +658,8 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
   rm = Order(LinkedMasses(p->right));
 
   mummy = Order(lm+rm);
-  for (int i=0;i<clm.length();i++) {
-    if (mummy.find(clm[i])==-1) prt+=clm[i];
+  for (size_t i=0;i<clm.length();++i) {
+    if (mummy.find(clm[i])==std::string::npos) prt+=clm[i];
   }
 
   Point* sclmp = clmp;
@@ -745,10 +745,11 @@ void Channel_Generator_NPV::GenerateMassChain(int flag,Point* p,Point* clmp,int&
     rannum++;
     break;
   default:
-    string s(""); 
-    for (short int i=0;i<mummy.length()-1;i++) s += string("p[")+mummy[i]+string("]+");
-    s += string("p[")+mummy[mummy.length()-1]+string("]");
-    
+    string s; 
+    if (mummy.length()>0) {
+      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+mummy[i]+string("]+");
+      s += string("p[")+mummy[mummy.length()-1]+string("]");
+    }
     AddToVariables(flag,mummy,s,1,sf);
     AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
     if (maxpole>0.) {
@@ -830,10 +831,11 @@ void Channel_Generator_NPV::GenerateMassFwd(int flag,Point* p,int& rannum,ofstre
     rannum++;
     break;
   default:
-    string s(""); 
-    for (short int i=0;i<mummy.length()-1;i++) s += string("p[")+mummy[i]+string("]+");
-    s += string("p[")+mummy[mummy.length()-1]+string("]");
-    
+    string s; 
+    if (mummy.length()>0) {
+      for (size_t i=0;i<mummy.length()-1;++i) s += string("p[")+mummy[i]+string("]+");
+      s += string("p[")+mummy[mummy.length()-1]+string("]");
+    }
     AddToVariables(flag,mummy,s,1,sf);
     AddToVariables(flag,mummy,string("dabs(p")+mummy+string(".Abs2())"),0,sf);
     if (maxpole>0.) {
@@ -901,12 +903,12 @@ void Channel_Generator_NPV::SetProps(Point* p,Point** props,Point** propt, int& 
 void Channel_Generator_NPV::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
 {
   string help;
-  for (short int i=0;i<p.size();i++) {
+  for (size_t i=0;i<p.size();++i) {
     if (p[i].length()==1) help += p[i];
   }
 
   string psum;
-  for (short int i=0;i<p.size();i++) psum += p[i];
+  for (size_t i=0;i<p.size();++i) psum += p[i];
 
 
   string s;
@@ -922,7 +924,7 @@ void Channel_Generator_NPV::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
   else s = string("sqr(");
 
 
-  for (short int i=0;i<p.size();i++) {
+  for (size_t i=0;i<p.size();++i) {
     if (p[i].length()>1) s += string("+sqrt(s") + Order(p[i]) + string(")");
   }
   s += string(")");
@@ -1048,10 +1050,10 @@ string Channel_Generator_NPV::Order(string s)
   if (beg!=-1) {
     return Order(s.substr(0,beg)) + string("_") + Order(s.substr(beg+1));
   }
-  if (s[0]>='9' || s[0]<='0') return s;
+  if (s[0]>'9' || s[0]<='0') return s;
 
-  for (short i=0;i<s.length();i++) 
-    for (short j=i+1;j<s.length();j++) {
+  for (size_t i=0;i<s.length();++i) 
+    for (size_t j=i+1;j<s.length();++j) {
       if (s[i]>s[j]) {
 	char help = s[i];
 	s[i] = s[j];
@@ -1128,7 +1130,6 @@ std::string Channel_Generator_NPV::CreateChannelID(int echflag)
   m_idc.clear();
   extrachannelflag = echflag;
   int    rannum = 1;
-  int   maxnumb = 0;
   ofstream chf;
   Step0(-11,m_topos[echflag],rannum,chf);
 

@@ -5,7 +5,11 @@ SHERPAFLAGS   =	-pedantic -Wall -Winline
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
+if ADICIC_SUPPORT
 ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
+ADICICCFILES  = SimpleXS_Adicic_Interface.C 
+ADICICFLAGS   = -DUSING__Adicic
+endif
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 SHERPAINCS    =	-I../SingleEvents -I../SoftPhysics -I../Tools
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
@@ -20,8 +24,10 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
+if ADICIC_SUPPORT
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
                 -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
+endif
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 if AMISIC_SUPPORT
@@ -41,7 +47,7 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 					   	Cluster_Partons.C \
 					 	Perturbative_Interface.C \
 					   	SimpleXS_Apacic_Interface.C \
-					   	SimpleXS_Adicic_Interface.C \
+					   	$(ADICICCFILES) \
 						Amegic_Apacic_Interface.C \
 						Combine_Table.C 
 noinst_HEADERS        =	\
@@ -57,7 +63,7 @@ noinst_HEADERS        =	\
 			Amegic_Apacic_Interface.H \
 			Combine_Table.H 
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(ADICICFLAGS)
 INCLUDES      = $(SHERPAINCS) $(ADICICINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS)

@@ -4,9 +4,11 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+AMEGICFLAGS  =	-pedantic -Wall -Winline
+
 libString_la_SOURCES = String_Handler.C String_Generator.C \
                        String_Tree.C String_Output.C \
-	               MyString.C String_Library.C
+	               MyString.C Kabbala.C String_Library.C
 INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \
 	   -I../Amplitude/Zfunctions \
@@ -22,3 +24,4 @@ noinst_HEADERS = String_Handler.H String_Generator.H \
 	         MyString.H Kabbala.H Values.H String_Library.H
 
 EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(AMEGICFLAGS)

@@ -33,7 +33,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 

@@ -7,11 +7,9 @@ ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
-AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
 SHERPAINCS    =	-I../Initialization -I../PerturbativePhysics \
 		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
-		-I../LundTools -I../HerwigTools -I../Tools 
+		-I../LundTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
@@ -25,10 +23,6 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
-ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
-AHADICINCS    =	-I$(AHADICDIR)/Main -I$(AHADICDIR)/ClusterFormation \
-		-I$(AHADICDIR)/ClusterDecays
 
 if CLHEP_SUPPORT
 CLHEPINCS     =	-I$(CLHEPDIR)/include
@@ -43,9 +37,10 @@ libSherpaMain_la_SOURCES      =	Sherpa.C
 noinst_HEADERS        =	Sherpa.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
-INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(ADICICINCS) $(AMEGICINCS) $(AMISICINCS) \
-		$(AHADICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
-		$(BEAMINCS) $(ATOOLSINCS) $(ANALYSISINCS) $(CLHEPINCS) 
+INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) \
+		$(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \
+		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(ANALYSISINCS) \
+		$(CLHEPINCS) 
 
 
 

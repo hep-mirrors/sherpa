@@ -89,6 +89,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   int       endopt = 1;
   double    value;
   int nlo=0;
+  if (ncontrib>maxopt) endopt=2;
   
 #ifdef _USE_MPI_
   // ------ total sums for MPI ---
@@ -311,6 +312,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	maxopt += 4*iter;
 	endopt++;
 	(psh->Process())->ResetMax(1);
+	(psh->Process())->InitWeightHistogram();
       }
 
       if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)
@@ -409,6 +411,7 @@ void     Phase_Space_Integrator::SetMaxPoints(long int _nmax)
 
 void Phase_Space_Integrator::CreateFoamChannels()
 {
+  if (p_psh->ISRIntegrator()==NULL) return;
   msg_Tracking()<<"Phase_Space_Integrator::CreateFoamChannels(): {\n";
   {
     msg_Indentation(3);

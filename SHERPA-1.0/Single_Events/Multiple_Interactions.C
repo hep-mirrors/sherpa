@@ -48,8 +48,8 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 	(*bit)->Type()==ATOOLS::btp::Signal_Process) 
       if ((*bit)->Status()!=0) return false;
   }
-  for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
-       bit!=bloblist->end();++bit) {
+  for (ATOOLS::Blob_List::const_iterator bit=bloblist->end();bit!=bloblist->begin();) {
+    --bit;
     if ((*bit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
       if (!m_diced) {
 	ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
@@ -74,7 +74,22 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       p_mihandler->ISRHandler()->
 	Extract((*bit)->InParticle(0)->Flav(),
 		(*bit)->InParticle(0)->Momentum()[0],(*bit)->Beam());
-      p_remnants[(*bit)->Beam()]->Extract((*bit)->InParticle(0)); 
+      if (!p_remnants[(*bit)->Beam()]->Extract((*bit)->InParticle(0))) {
+	msg_Tracking()<<"Multiple_Interactions::CheckBlobList(..): "
+		      <<"Cannot extract parton from hadron. \n"
+		      <<*(*bit)->InParticle(0)<<std::endl;
+	m_deleted.clear();
+	DeleteConnected(*bit);
+	if (bloblist->empty()) {
+	  ATOOLS::Blob *blob = new ATOOLS::Blob();
+	  blob->SetType(ATOOLS::btp::Signal_Process);
+	  blob->SetStatus(-1);
+	  blob->SetId();
+	  blob->SetStatus(2);
+	  bloblist->push_back(blob);	  
+	}
+	return true; // blob-list changed
+      } 
     }
   }
   if (m_ptmax==std::numeric_limits<double>::max()) {
@@ -136,6 +151,9 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
     for (size_t i=0;i<(size_t)blob->NInP();++i) {
       p_mihandler->ISRHandler()->Reset(i);
       if (!p_remnants[i]->Extract(blob->InParticle(i))) {
+	msg_Tracking()<<"Multiple_Interactions::Treat(..): "
+		      <<"Cannot extract parton from hadron. \n"
+		      <<*blob->InParticle(0)<<std::endl;
 	delete blob;
 	return true;
       }

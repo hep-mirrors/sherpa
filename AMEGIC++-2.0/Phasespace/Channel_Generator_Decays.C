@@ -63,8 +63,8 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
     bool first=true;
-    for (int i=0; i<m_idc.size();i++) {
-      if (m_idc[i].find("M")==-1) {
+    for (size_t i=0; i<m_idc.size();++i) {
+      if (m_idc[i].find("M")==std::string::npos) {
 	if (!first) chf<<",";
 	chf <<"m_k"<<m_idc[i];
 	first=false;
@@ -137,7 +137,7 @@ int Channel_Generator_Decays::MakeChannel(int& echflag,int n,string& path,string
 	<<"  name = std::string(\""<<name<<"\");"<<endl
 	<<"  rannum = "<<rannumber<<";"<<endl
 	<<"  rans  = new double[rannum];"<<endl;
-  for (int i=0; i<m_idc.size();i++) {
+  for (size_t i=0; i<m_idc.size();++i) {
     if (m_idc[i].find("M")==string::npos) {
       chf <<"  m_k"<<m_idc[i]<<".Assign(std::string(\""<<m_idc[i]<<"\"),2,0,info);"<<endl;
     }

@@ -22,6 +22,8 @@
 #include "Shell_Tools.H"
 #include "MyStrStream.H"
 
+#include <dlfcn.h>
+
 #ifdef PROFILE__all
 #define PROFILE__Phase_Space_Handler
 #endif
@@ -1141,28 +1143,22 @@ bool Phase_Space_Handler::CreateISRChannels()
 	// these channels are slower than the usual isr channels
 	// however they perform better for hadron pdf's due to 
 	// a more realistic x1 / x2 - mapping
- 	channel = 
-	  new Simple_Pole_PDF_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
+ 	channel = new Simple_Pole_PDF_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
  	p_isrchannels->Add(channel);
-	channel = 
-	  new Simple_Pole_PDF_Forward_V(m_isrparams[i].parameters[0],
-					m_isrparams[i].parameters[1]," isr",p_info);
+	channel = new Simple_Pole_PDF_Forward_V(m_isrparams[i].parameters[0],
+						m_isrparams[i].parameters[1]," isr",p_info);
 	p_isrchannels->Add(channel);
-	channel = 
-	  new Simple_Pole_PDF_Backward_V(m_isrparams[i].parameters[0],
-					 m_isrparams[i].parameters[1]," isr",p_info);
+	channel = new Simple_Pole_PDF_Backward_V(m_isrparams[i].parameters[0],
+						 m_isrparams[i].parameters[1]," isr",p_info);
 	p_isrchannels->Add(channel);
 #else
- 	channel = 
-	  new Simple_Pole_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
+ 	channel = new Simple_Pole_Uniform_V(m_isrparams[i].parameters[0]," isr",p_info);
  	p_isrchannels->Add(channel);
-	channel = 
-	  new Simple_Pole_Forward_V(m_isrparams[i].parameters[0],
-				    m_isrparams[i].parameters[1]," isr",p_info);
+	channel = new Simple_Pole_Forward_V(m_isrparams[i].parameters[0],
+					    m_isrparams[i].parameters[1]," isr",p_info);
 	p_isrchannels->Add(channel);
-	channel = 
-	  new Simple_Pole_Backward_V(m_isrparams[i].parameters[0],
-				     m_isrparams[i].parameters[1]," isr",p_info);
+	channel = new Simple_Pole_Backward_V(m_isrparams[i].parameters[0],
+					     m_isrparams[i].parameters[1]," isr",p_info);
 	p_isrchannels->Add(channel);
 #endif
       }
@@ -1318,6 +1314,33 @@ CreateFoamChannel(const std::vector<Single_Channel *> &channels)
   msg_Info()<<"   '"<<key<<"'\n";
   m_foams.push_back(new Foam_Interface(this,key,dim));
   return true;
+}
+
+typedef Single_Channel * (*Getter_Function)(int nin,int nout,ATOOLS::Flavour* fl
+					    , ATOOLS::Integration_Info * const info,Phase_Space_Handler *psh);
+
+Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavour* fl,
+						   string& pID, ATOOLS::Integration_Info * const info)
+{
+  int pos=pID.find(string("/"));
+  string libname=ATOOLS::rpa.gen.Variable("SHERPA_LIB_PATH")+
+    string("/libProc_")+pID.substr(0,pos)+string(LIB_SUFFIX);
+  string gettername=string("Getter_")+pID.substr(pos+1); 
+
+  char * error;
+  void * module;
+  Getter_Function GetterFunction;
+
+  // try loading library
+  module = dlopen(libname.c_str(),RTLD_LAZY);
+  error  = dlerror();
+  if (module==NULL) return 0;
+
+  GetterFunction = (Getter_Function)dlsym(module,gettername.c_str());
+  error  = dlerror();
+  if (error!=NULL) return 0;
+
+  return GetterFunction(nin,nout,fl,info,this);
 }
 
 template Weight_Info ATOOLS::Blob_Data_Base::Get<Weight_Info>();

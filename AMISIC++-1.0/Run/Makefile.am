@@ -19,7 +19,7 @@ SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
 PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lLHAPDF -lCTEQ -lMRST -lGRV
 BEAMLIBS      =	-L@libdir@ -lBeam 
-PHASICLIBS    =	-L@libdir@ -lPhasespace -lFoam
+PHASICLIBS    =	-L@libdir@ -lPhasespace 
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicProcess
@@ -37,11 +37,11 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-if SHERPA_SUPPORT
-SOURCE	      = Main.C 
-else
+if ROOT_SUPPORT
 bin_PROGRAMS  =	Amisic
-Amisic_SOURCES        =	Main.C 
+Amisic_SOURCES        =	Main.C \
+			Set_Channel.C \
+			Set_Values.C
 Amisic_LDADD  =	$(AMISICLIBS) $(APACICLIBS) $(EXTRAXSLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
@@ -50,9 +50,11 @@ AM_CXXFLAGS   =	$(AMISICFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(AMISICINCS) $(APACICINCS) $(EXTRAXSINCS) \
 		$(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) 
+else
+SOURCE	      = Main.C Set_Channel.C Set_Values.C
 endif
 
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) $(SOURCE) \
-		Particle.dat Hadron.dat Integration.dat Model.dat 
-		Beam.dat ISR.dat MI.dat Run.dat 
+		Particle.dat Hadron.dat Integration.dat Model.dat Beam.dat \
+		ISR.dat MI.dat simplechain.dat Run.dat 

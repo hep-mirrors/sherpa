@@ -65,8 +65,8 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   if (m_idc.size()>0) {
     chf <<"    Info_Key ";
     bool first=true;
-    for (int i=0; i<m_idc.size();i++) {
-      if (m_idc[i].find("M")==-1) {
+    for (size_t i=0; i<m_idc.size();++i) {
+      if (m_idc[i].find("M")==std::string::npos) {
 	if (!first) chf<<",";
 	chf <<"m_k"<<m_idc[i];
 	first=false;
@@ -146,7 +146,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 	<<"  m_ctmax = 1.;"<<endl
 	<<"  m_ctmin = -1.;"<<endl;
   }
-  for (int i=0; i<m_idc.size();i++) {
+  for (size_t i=0; i<m_idc.size();i++) {
     if (m_idc[i].find("M")==string::npos) {
       chf <<"  m_k"<<m_idc[i]<<".Assign(std::string(\""<<m_idc[i]<<"\"),2,0,info);"<<endl;
     }
@@ -1025,7 +1025,7 @@ string Channel_Generator::Order(string s)
   if (beg!=-1) {
     return Order(s.substr(0,beg)) + string("_") + Order(s.substr(beg+1));
   }
-  if (s[0]>='9' || s[0]<='0') return s;
+  if (s[0]>'9' || s[0]<='0') return s;
 
   for (size_t i=0;i<s.length();i++) 
     for (size_t j=i+1;j<s.length();j++) {

@@ -7,7 +7,6 @@
 #include "MyStrStream.H"
 #include "Random.H"
 #include "Object.H"
-#include <iomanip>
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_String
@@ -72,19 +71,17 @@ bool Simple_String::Initialize()
 			 (ATOOLS::ToType<double>(helpsvv[i][1]),
 			  ATOOLS::ToType<double>(helpsvv[i][2])));
     m_reggeons.back()->SetS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
-    msg_Tracking()<<"   "<<std::setw(10)<<std::left<<helpsvv[i][0]
+    msg_Tracking()<<"   "<<std::setw(10)<<IOS_BASE::left<<helpsvv[i][0]
 		  <<" "<<std::setw(8)<<helpsvv[i][1]
 		  <<" "<<std::setw(8)<<helpsvv[i][2]<<"\n";
   }
   msg_Tracking()<<"}"<<std::endl;
-#ifdef USING__Sherpa
   p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
   p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"No beam remnant handler found.",
 			    "Simple_String","Initialize"));
   }
-#endif
   return true;
 }
 
@@ -92,20 +89,17 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   m_filledblob=false;
-#ifdef USING__Sherpa
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
     ATOOLS::msg.Error()<<"Simple_String::FillBlob(..): "
 		       <<"No remnant found."<<std::endl;
     return false;
   }
-#endif
   m_reggeons[0]->Fit(m_start[0]*m_start[0],m_start[2]);
   m_start[1]=sqrt(m_reggeons[0]->GetT(0.0,m_start[0]*m_start[0],ATOOLS::ran.Get()));
   blob->DeleteOwnedParticles();
   const unsigned int flow=ATOOLS::Flow::Counter();
-  const double type=ATOOLS::ran.Get();
+  //  const double type=ATOOLS::ran.Get();
   for (short unsigned int i=0;i<2;++i) {
-#ifdef USING__Sherpa
     SHERPA::Hadron_Remnant *hadron=dynamic_cast<SHERPA::Hadron_Remnant*>(p_remnants[i]);
     if (hadron==NULL) {
       ATOOLS::msg.Error()<<"Simple_String::FillBlob(..): "
@@ -114,20 +108,13 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
     }
     const std::vector<ATOOLS::Flavour> &constit=
       hadron->GetConstituents(ATOOLS::kf::none);
-#else
-    const std::vector<ATOOLS::Flavour> constit;
-#endif
     double pz=0.0, phi=ATOOLS::ran.Get()*2.0*M_PI;
     for (size_t j=0;j<constit.size();++j) {
       if (constit[j].IsQuark() && constit[j].IsAnti()==i) {
 	ATOOLS::Particle *particle = new ATOOLS::Particle(0,constit[j]);
 	do {
-#ifdef USING__Sherpa
 	  double E=hadron->BeamEnergy()*
 	    hadron->GetXPDF(constit[j],m_start[0]*m_start[0]);
-#else
-	  double E=0.0;
-#endif
 	  pz=sqrt(E*E-ATOOLS::sqr(constit[j].Mass())-m_start[1]*m_start[1]);
 	  if (i==1) pz*=-1.0;
 	  particle->SetMomentum(ATOOLS::Vec4D(E,(i==0?1.0:-1.0)*m_start[1]*cos(phi),

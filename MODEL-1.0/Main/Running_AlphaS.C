@@ -16,7 +16,7 @@ using namespace std;
 
 namespace MODEL {
 
-  std::ostream &MODEL::operator<<(std::ostream &str,AsDataSet &set)
+  std::ostream &operator<<(std::ostream &str,AsDataSet &set)
   {
     str<<"scale->["<<set.low_scale<<","<<set.high_scale<<"]";
     str<<" as->["<<set.as_low<<","<<set.as_high<<"]";

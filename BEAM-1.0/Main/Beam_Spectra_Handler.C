@@ -102,7 +102,7 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,in
   double Laser_energy       = dataread->GetValue<double>("E_LASER_"+number);
   double Laser_polarization = dataread->GetValue<double>("P_LASER_"+number);
   int mode                  = dataread->GetValue<int>("LASER_MODE");
-  int angles                = dataread->GetValue<Switch::code>("LASER_ANGLES");
+  int angles                = dataread->GetValue<Switch::code>("LASER_ANGLES",Switch::Off);
   int nonlin                = dataread->GetValue<Switch::code>("LASER_NONLINEARITY");
 
   p_BeamBase[num]          = new Laser_Backscattering(beam_particle,beam_energy,beam_polarization,

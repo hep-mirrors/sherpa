@@ -96,13 +96,14 @@ bool Full_Decay_Table::InitAllDecays(Interaction_Model_Base * _model,Topology * 
   vector<Single_Process *> links,errs;
   int totalsize = 0;
   int procs     = 0;
+  int current_atom = 0;
 
   bool okay = 1;
   for (size_t i=0;i<m_decaymodes.size();i++) {
     msg_Tracking()<<"============================================================"<<endl;
     if (moms) { delete [] moms; moms = NULL; }
     links.clear();
-    okay = okay && m_decaymodes[i]->InitAmplitude(_model,_top,moms,links,errs,totalsize,procs);
+    okay = okay && m_decaymodes[i]->InitAmplitude(_model,_top,moms,links,errs,totalsize,procs,current_atom);
     for (size_t j=0;j<links.size();j++) {
       msg_Tracking()<<"Set up integrator of "<<j<<" : "<<links[j]->Name()<<endl;
       if (!(links[j]->SetUpIntegrator())) okay = 0;

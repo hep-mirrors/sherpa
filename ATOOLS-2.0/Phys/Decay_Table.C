@@ -6,7 +6,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Decay_Channel::Decay_Channel(const Flavour & _flin) :
-  m_flin(_flin), m_width(0.), m_minmass(0.), m_processname(string("")) { }
+  m_width(0.), m_minmass(0.), m_flin(_flin) { }
 
 Decay_Channel::Decay_Channel(const Decay_Channel & _dec) :
   m_processname(_dec.m_processname),
@@ -16,7 +16,7 @@ Decay_Channel::Decay_Channel(const Decay_Channel & _dec) :
 void Decay_Channel::Output() const
 {
   msg.Out()<<m_flin<<" -> ";
-  for (FlSetIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) msg.Out()<<(*fl)<<" ";
+  for (FlSetConstIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) msg.Out()<<(*fl)<<" ";
   msg.Out()<<" : "<<m_width<<" GeV."<<endl;
 }
 
@@ -26,8 +26,8 @@ void Decay_Channel::Output() const
 
 
 Decay_Table::Decay_Table(const Flavour _flin) :
-  m_flin(_flin), m_width(0.), m_overwrite(0), m_smearing(0), m_fixdecay(0),
-  m_generator(std::string("")) { }
+  m_overwrite(0), m_smearing(0), m_fixdecay(0), m_width(0.), m_flin(_flin)
+{ }
 
 void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
 {
@@ -40,7 +40,7 @@ void Decay_Table::SetSelectedChannel(const FlavourSet & _flouts,const bool bar)
   m_fixdecay         = true;
   Decay_Channel * dc = new Decay_Channel(m_flin);
   dc->SetWidth(0.);
-  for (FlSetIter flit=_flouts.begin();flit!=_flouts.end();++flit) {
+  for (FlSetConstIter flit=_flouts.begin();flit!=_flouts.end();++flit) {
     if (bar) dc->AddDecayProduct((*flit).Bar());
         else dc->AddDecayProduct((*flit));
   }
@@ -76,7 +76,7 @@ void Decay_Table::Select(const int flag) {
     return;
   }
   double disc = m_width*ran.Get();
-  for (int i=0;i<m_channels.size();i++) {
+  for (size_t i=0;i<m_channels.size();++i) {
     disc -= m_channels[i]->Width();
     if (disc<0) {
       p_selected = m_channels[i];
@@ -125,6 +125,7 @@ Decay_Channel * Decay_Table::GetDecayChannel(const int i)
 Decay_Channel * Decay_Table::GetOneDecayChannel()     
 { 
   if (p_selected) return p_selected; 
+  return NULL;
 }
 
 

@@ -2,6 +2,7 @@
 #include "Primitive_Analysis.H"
 #include "Particle_List.H"
 #include "MathTools.H"
+#include <algorithm>
 
 using namespace ANALYSIS;
 using namespace ATOOLS;

@@ -4,6 +4,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+AMEGICFLAGS  =	-pedantic -Wall #-Winline
+
 libModel_la_SOURCES = Interaction_Model_Base.C Interaction_Model_Handler.C \
 		      Interaction_Model_QCD.C Interaction_Model_EW.C \
 		      Interaction_Model_SM.C \
@@ -15,7 +17,7 @@ libModel_la_SOURCES = Interaction_Model_Base.C Interaction_Model_Handler.C \
 		      Interaction_Model_QCD_Grav.C Interaction_Model_EW_Grav.C \
 		      Interaction_Model_ADD.C \
 		      Interaction_Model_EHC.C Interaction_Model_SMEHC.C \
-		      Vertex.C Lorentz_Function.C
+		      Vertex.C Lorentz_Function.C Color_Function.C
 INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \
 	   -I../Amplitude/Zfunctions \
@@ -37,5 +39,7 @@ noinst_HEADERS = Interaction_Model_Base.H Interaction_Model_Handler.H \
 		 Interaction_Model_ADD.H \
 	         Interaction_Model_EHC.H Interaction_Model_SMEHC.H \
 	         Vertex.H Lorentz_Function.H Color_Function.H 
-CXXFLAGS=-g
+AM_CXXFLAGS   =	$(AMEGICFLAGS)
+CXXFLAGS=-g $(AMEGICFLAGS)
+
 EXTRA_DIST    = $(CVSINCLUDE)

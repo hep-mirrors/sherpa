@@ -17,7 +17,7 @@ Kabbala Basic_MassTermfunc::MassTerm(int a)
     abort();
   }
 
-  Pfunc* p1;
+  Pfunc* p1 = NULL;
   for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
     p1 = *pit;
     if (p1->arg[0]==iabs(a)) break;

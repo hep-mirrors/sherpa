@@ -7,7 +7,6 @@
 #include "Hdecay_Fortran_Interface.H"
 #include "Data_Collector.H"
 
-
 using namespace MODEL;
 using namespace ATOOLS;
 
@@ -167,7 +166,7 @@ void Standard_Model::FixCKM() {
     CKM[i][i] = Complex(1.,0.);
   }
   
-  double Cabibbo,A,rho,eta;
+  double Cabibbo,A=.8,rho,eta;
   m_ckmorder     = p_dataread->GetValue<int>("CKMORDER",0);  
   if (m_ckmorder>0) {
     Cabibbo    = p_dataread->GetValue<double>("CABIBBO",0.22);

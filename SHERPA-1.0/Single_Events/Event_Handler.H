@@ -18,7 +18,6 @@ namespace SHERPA {
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs;
 
-    void PrintBlobs();
     void CleanUpEvent();
 
   public:
@@ -34,7 +33,6 @@ namespace SHERPA {
     void PrintGenericEventStructure();
 
     bool GenerateEvent(int=0);
-    void PrintEvent(int);
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }

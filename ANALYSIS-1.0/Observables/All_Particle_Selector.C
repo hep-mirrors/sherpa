@@ -30,7 +30,7 @@ GetParticleSelector(const String_Matrix &parameters)
 }									
 
 #define DEFINE_SELECTOR_GETTER_METHOD(CLASS,NAME)		\
-  Primitive_Observable_Base *const				\
+  Primitive_Observable_Base *				\
   NAME::operator()(const String_Matrix &parameters) const	\
   { return GetParticleSelector<CLASS>(parameters); }
 
@@ -83,7 +83,7 @@ GetParticleDSelector(const String_Matrix &parameters)
 }									
 
 #define DEFINE_SELECTOR_D_GETTER_METHOD(CLASS,NAME)		\
-  Primitive_Observable_Base *const				\
+  Primitive_Observable_Base *				\
   NAME::operator()(const String_Matrix &parameters) const	\
   { return GetParticleDSelector<CLASS>(parameters); }
 
@@ -106,6 +106,7 @@ PT_Selector(const double min,const double max,
   m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<PT<"+
 	    ATOOLS::ToString(max)+inlist)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;
@@ -140,6 +141,7 @@ ET_Selector(const double min,const double max,
   m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<ET<"+
 	    ATOOLS::ToString(max)+inlist)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;
@@ -174,6 +176,7 @@ Eta_Selector(const double min,const double max,
   m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<Eta<"+
 	    ATOOLS::ToString(max)+inlist)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;
@@ -200,6 +203,41 @@ void Eta_Selector::EndEvaluation(double scale)
 {
 }
 
+DEFINE_SELECTOR_GETTER(Y_Selector,Y_Selector_Getter,"YSel");
+
+Y_Selector::
+Y_Selector(const double min,const double max,
+	    const std::string &inlist,const std::string &outlist):
+  m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<Y<"+
+	    ATOOLS::ToString(max)+inlist)
+{
+  m_splitt_flag = false;
+  m_xmin=min;
+  m_xmax=max;
+  m_listname=inlist;
+}
+
+void Y_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
+					  double weight,int ncount)
+{
+  ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
+  p_ana->AddParticleList(m_outlist,outlist);
+  for (size_t i=0;i<particlelist.size();++i) {
+    double et=particlelist[i]->Momentum().Y();
+    if (et>m_xmin && et<m_xmax) 
+      outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
+  }
+}
+
+Primitive_Observable_Base *Y_Selector::Copy() const
+{
+  return new Eta_Selector(m_xmin,m_xmax,m_listname,m_outlist);
+}
+
+void Y_Selector::EndEvaluation(double scale)
+{
+}
+
 DEFINE_SELECTOR_GETTER(Phi_Selector,Phi_Selector_Getter,"PhiSel");
 
 Phi_Selector::
@@ -208,6 +246,7 @@ Phi_Selector(const double min,const double max,
   m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<Phi<"+
 	    ATOOLS::ToString(max)+inlist)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;
@@ -247,6 +286,7 @@ DPhi_Selector(const double min,const double max,
   m_item(item),
   m_flavour(flav)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;

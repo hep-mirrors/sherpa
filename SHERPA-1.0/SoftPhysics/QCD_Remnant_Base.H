@@ -38,6 +38,7 @@ namespace SHERPA {
 		       const qri::type type);
 
     bool Connect(const bool sorted); 
+    void SplitSinglet(Color_Dipole *const singlet);
 
     void AssignRemnants();
     bool ConnectRemnants();

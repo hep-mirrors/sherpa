@@ -143,19 +143,7 @@ int Timelike_Kinematics::ShuffleZ(Knot * const mo) const
 
   //  double  pt2 = mo->z*(1.-mo->z)*t - (1.-mo->z)*t1 - mo->z*t2;
   double  pt2 = 0.25*CalcKt2(mo->z,mo->E2,t,t1,t2);
-  /*
-  double pt2 = z*(1.-z)*t;
-  if (m_pt_scheme==1) pt2 = mo->z*(1.-mo->z)*t - (1.-mo->z)*t1 - mo->z*t2;
- //       pt2 -= (1.-z)*t1 + z*t2;
-  else if (m_pt_scheme==2)  {
-    pt2 = 0.25*Min((1.-z)/z,z/(1.-z))*t;
-    double kt2 = 0.25*CalcKt2(mo->z,mo->E2,t,t1,t2);
-    double pt2a = z*(1.-z)*t;
-    double pt2b = mo->z*(1.-mo->z)*t - (1.-mo->z)*t1 - mo->z*t2;
-    std::cout<<" pt2="<<pt2<<"   kt2="<<kt2<<std::endl;
-    std::cout<<" at2="<<pt2a<<"   bt2="<<pt2b<<std::endl;
-  }
-  */
+
   if (pt2<m_pt2min) {
     msg_Debugging()<<" WARNING Timelike_Kinematics::ShuffleZ() pt2 limit"<<std::endl;
     mo->z = z;
@@ -252,16 +240,7 @@ int Timelike_Kinematics::ShuffleMoms(Knot * const mo) const
   msg_Debugging()<<" d2 : "<<sqr(d2->part->Momentum()[0])<<" == "<<d2->E2<<std::endl;
 
   // boost daughters if existent
-  //  std::cout<<" before boostdaughters  \n";
-  int number=0;
-//   Vec4D sum_fs=Final_State_Shower::GetMomentum(mo,number);
-//   std::cout<<" sum_fs:"<<sum_fs<<"("<<number<<")\n";
   BoostDaughters(mo);
-//   std::cout<<" after boostdaughters  \n";
-//   number=0;
-//   sum_fs=Final_State_Shower::GetMomentum(mo,number);
-//   std::cout<<" sum_fs:"<<sum_fs<<"("<<number<<")\n";
-//   std::cout<<"----------------------------------------\n";
   // update daughter E2,z 
   Tree::UpdateDaughters(mo);
 
@@ -333,7 +312,7 @@ int Timelike_Kinematics::KinCheck(const int first,Knot * const mo) const
 
 bool Timelike_Kinematics::ExtraJetCheck(Knot const * const mo, Knot const * const d1, Knot const * const d2) const 
 {
-  if (!m_losejet_veto) return 1;
+  if (!m_losejet_veto || m_nolosejetveto) return 1;
 
   if (m_type==4) {
     if (d1==0) {
@@ -615,8 +594,6 @@ void Timelike_Kinematics::BoostDaughters(Vec4D pold, Vec4D pnew,
 
   Poincare bmom;  
   if (prot.Abs()/Vec3D(pnew).Abs()>100.*rpa.gen.Accu()) { 
-//     std::cout<<" bigboost :"<<pmom<<std::endl;
-//     std::cout<<" rem="<<cross(Vec3D(pnew),Vec3D(pold)).Abs()/Vec3D(pnew).Abs()<<"\n";
     bigboost = 1;
     bmom = Poincare(pmom);
 
@@ -625,16 +602,12 @@ void Timelike_Kinematics::BoostDaughters(Vec4D pold, Vec4D pnew,
     bmom.Boost(pold);
     bmom.Boost(pnew);
     Vec4D dummy(pmom[0],-1.*Vec3D(pmom));
-//     std::cout<<" backboost:"<<dummy<<std::endl;
-//     std::cout<<" rem="<<cross(Vec3D(pnew),Vec3D(pold)).Abs()/Vec3D(pnew).Abs()<<"\n";
-
     bmom=Poincare(Vec4D(pmom[0],-1.*Vec3D(pmom)));
   }
   Vec3D na(pold);
   na=1./na.Abs() * na;
 
   Poincare bos1(pnew);
-//   std::cout<<" Boost: "<<bos1*pold<<std::endl;
   Poincare bos(bos1*pold);
   Tree::BoRo(bos,mo->left);
   Tree::BoRo(bos,mo->right);
@@ -650,7 +623,6 @@ void Timelike_Kinematics::BoostDaughters(Vec4D pold, Vec4D pnew,
   }
   else {
     if (!(na==nb)) {
-//       std::cout<<" boost was a rotation! \n";
       Poincare rot(pnew,pold);
       Tree::BoRo(rot,mo->left);
       Tree::BoRo(rot,mo->right);
@@ -667,32 +639,14 @@ void Timelike_Kinematics::BoostDaughters(Knot * const mo) const
     Vec4D p1old = d1->left->part->Momentum() + d1->right->part->Momentum();
     Vec4D p1new = d1->part->Momentum();
     if (p1new!=p1old && p1old!=Vec4D(0.,0.,0.,0.)) {
-//       int po = std::cout.precision(12);
-//       std::cout<<" boost "<<d1->kn_no<<"\n";
-//       Vec3D na(p1old);
-//       na=1./na.Abs() * na;
-//       std::cout<<" p_old (normed) ="<<na<<"\n";
-//       std::cout<<" p_old = "<<p1old<<" ("<<p1old.Abs2()<<")\n";
-//       std::cout<<" p_soll= "<<p1new<<" ("<<p1new.Abs2()<<")\n";
       BoostDaughters(p1old,p1new,p,d1);
-//       p1new=d1->left->part->Momentum() + d1->right->part->Momentum();
-//       na=Vec3D(p1new);
-//       na=1./na.Abs() * na;
-//       std::cout<<" p_new (normed) ="<<na<<"\n";
-//       std::cout<<" p_ist = "<<p1new<<" ("<<p1new.Abs2()<<")\n";
-//       std::cout.precision(po);
     }
   }
   if (d2->left) {
     Vec4D p2old = d2->left->part->Momentum() + d2->right->part->Momentum();
     Vec4D p2new = d2->part->Momentum();
     if (p2new!=p2old && p2old!=Vec4D(0.,0.,0.,0.)) {
-//       std::cout<<" boost "<<d2->kn_no<<"\n";
-//       std::cout<<" p_old = "<<p2old<<" ("<<p2old.Abs2()<<")\n";
-//       std::cout<<" p_soll= "<<p2new<<" ("<<p2new.Abs2()<<")\n";
       BoostDaughters(p2old,p2new,p,d2);
-//       p2new = d2->left->part->Momentum() + d2->right->part->Momentum();
-//       std::cout<<" p_ist = "<<p2new<<" ("<<p2new.Abs2()<<")\n";
     }
   }
 

@@ -3,6 +3,7 @@
 #include "Exception.H"
 #include "Random.H"
 #include "Run_Parameter.H"
+#include <algorithm>
 #include <iomanip>
 
 #ifdef PROFILE__all
@@ -43,6 +44,7 @@ void QCD_Remnant_Base::Clear()
     m_connected.erase(m_connected.begin());
   }
   if (p_start!=NULL) delete p_start;
+  Color_Dipole::s_partons.clear();
   Remnant_Base::Clear();
 }
 
@@ -160,6 +162,31 @@ bool QCD_Remnant_Base::ConnectRemnants()
   return false;
 }
 
+void QCD_Remnant_Base::SplitSinglet(Color_Dipole *const singlet)
+{
+  for (int i=0;i<2;++i) {
+    qri::type type=(qri::type)i;
+    if (!singlet->Singlet(type)) continue;
+    msg_Debugging()<<"QCD_Remnant_Base::SplitSinglet(..): {\n"
+		   <<*singlet<<"\n";
+    m_attached.clear();
+    Color_Dipole *dipole=Find(singlet,type);
+    if (dipole!=NULL) {
+      singlet->Cross(dipole,type);
+    }
+    else {
+      for (size_t i=0;i<m_connected.size();++i) {
+	dipole=m_connected[i];
+	if (singlet->Cross(dipole,type)) break;
+      }
+    }
+    if (dipole==NULL) return;
+    dipole->SetColors();
+    singlet->SetColors();
+    msg_Debugging()<<*singlet<<*dipole<<"}"<<std::endl;
+  }
+}
+
 void QCD_Remnant_Base::FillRemnants()
 {
   PROFILE_HERE;
@@ -168,6 +195,7 @@ void QCD_Remnant_Base::FillRemnants()
     (*rit)->SetColors();
   }
   p_start->SetColors();
+  for (size_t i=0;i<m_connected.size();++i) SplitSinglet(m_connected[i]);
   for (ATOOLS::Particle_List::iterator pit=m_extracted.begin();
        pit!=m_extracted.end();++pit) {
     p_beamblob->AddToOutParticles(*pit);

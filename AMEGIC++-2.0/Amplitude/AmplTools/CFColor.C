@@ -341,7 +341,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		  //lookup string key in map 
 		  TF_Iterator tit = t_table.find(newaddend);
 		  if (tit!=t_table.end()) value = total*t_table[newaddend];
-		  else {
+		    else {
 		    st.Sort(*it);
 		    ReplaceT(*it);
 		    st.Expand(*it);
@@ -495,8 +495,8 @@ string CFColor::MapFChain(vector<string> fstring_list)
 }
 
 void CFColor::Output(string & dirname) {
-  char name[100];
-  sprintf(name,"%s.col",(ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+dirname).c_str());
+  std::string name;
+  name=ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+dirname+".col";
   IO_Handler ioh;
   ioh.SetFileName(name);
 

@@ -4,5 +4,5 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-SUBDIRS = Main Amplitude Phasespace String Model Run 
+SUBDIRS = Main Amplitude Phasespace String Model 
 EXTRA_DIST = $(CVSINCLUDE)

@@ -181,9 +181,12 @@ void Amegic::ReadInProcessfile(string file)
 {
   int    _scale_scheme   = p_dataread->GetValue<int>("SCALE_SCHEME",0);
   int    _kfactor_scheme = p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
-  double _scale_factor   = p_dataread->GetValue<double>("SCALE_FACTOR",1.);
   double _scale          = p_dataread->GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
 
+  double scale_factor   = p_dataread->GetValue<double>("SCALE_FACTOR",1.);
+  double factorization_scale_factor   = scale_factor*p_dataread->GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
+  double renormalization_scale_factor = scale_factor*p_dataread->GetValue<double>("RENOMALIZATION_SCALE_FACTOR",1.);
+  rpa.gen.SetScaleFactors(factorization_scale_factor,renormalization_scale_factor);
 
   ifstream from((m_path+file).c_str());
   if (!from) {
@@ -201,8 +204,8 @@ void Amegic::ReadInProcessfile(string file)
   Flavour   * IS,  * FS,   * excluded, * flavs;
   Pol_Info  * plIS,* plFS, * pldummy,  * plavs;
   int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
-  double      scale_factor,fixed_scale;
-  double      enhance_factor=1.,maxreduction_factor=1.;
+  double      fixed_scale;
+  double      enhance_factor=1.,maxreduction_factor=1.,maxredepsilon=0.;
   bool        print_graphs=false;
   string      selectorfile;
   for(;from;) {
@@ -253,7 +256,6 @@ void Amegic::ReadInProcessfile(string file)
 	    order_ew = order_strong = -1;
 	    selectorfile   = string("");
 	    scale_scheme   = _scale_scheme;
-	    scale_factor   = _scale_factor;
 	    kfactor_scheme = _kfactor_scheme;
 	    fixed_scale    = _scale;
 	    order_ew       = 99;
@@ -305,15 +307,6 @@ void Amegic::ReadInProcessfile(string file)
 		  str>>scale_scheme;
 		}
 
-		position       = buf.find(string("Scale factor :"));
-		if (position > -1) {
-		  MyStrStream str;      
-		  buf          = buf.substr(position+14);
-		  Shorten(buf);
-		  str<<buf;
-		  str>>scale_factor;
-		}
-
 		position       = buf.find(string("KFactor scheme :"));
 		if (position > -1) {
 		  MyStrStream str;      
@@ -347,6 +340,14 @@ void Amegic::ReadInProcessfile(string file)
 		  Shorten(buf);
 		  str<<buf;
 		  str>>maxreduction_factor;
+		}
+		position       = buf.find(string("Max_Epsilon :"));
+		if (position > -1) {
+		  MyStrStream str;      
+		  buf          = buf.substr(buf.find(":",position)+1);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>maxredepsilon;
 		}
 
 		position       = buf.find(string("Print_Graphs"));
@@ -405,13 +406,13 @@ void Amegic::ReadInProcessfile(string file)
 	      Process_Base * proc=NULL;
 	      if (single) proc = new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 						     order_strong,order_ew,
-						     -kfactor_scheme,-scale_scheme,scale_factor,fixed_scale,
+						     -kfactor_scheme,-scale_scheme,fixed_scale,
 						     plavs,nex,excluded);
 	      else proc = new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					    order_strong,order_ew,
-					    -kfactor_scheme,-scale_scheme,scale_factor,fixed_scale,
+					    -kfactor_scheme,-scale_scheme,fixed_scale,
 					    plavs,nex,excluded);
-	      proc->SetEnhance(enhance_factor,maxreduction_factor);
+	      proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
 	      if (print_graphs) proc->SetPrintGraphs();
 	      p_procs->Add(proc);
 	      print_graphs=false;

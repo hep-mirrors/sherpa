@@ -14,7 +14,15 @@ GetObject(const std::string &name,const std::string &parameters)
     Particle_Qualifier_Base * qual = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
     if (qual) return new Not_Particle_Qualifier(qual);
   }
-  size_t pos=name.find("&");
+  size_t pos=name.find("|");
+  if (pos!=std::string::npos) {
+    std::string name1=name.substr(0,pos);
+    std::string name2=name.substr(pos+1);
+    Particle_Qualifier_Base * qual1 = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
+    Particle_Qualifier_Base * qual2 = ATOOLS::Particle_Qualifier_Getter::GetObject(name2,name2);
+    if (qual1 && qual2) return new Or_Particle_Qualifier(qual1,qual2);
+  }
+  pos=name.find("&");
   if (pos!=std::string::npos) {
     std::string name1=name.substr(0,pos);
     std::string name2=name.substr(pos+1);
@@ -45,7 +53,7 @@ Particle_Qualifier_Base *const GetQualifier(const std::string &parameter)
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Particle_Qualifier_Base *const					\
+  Particle_Qualifier_Base *					\
   NAME::operator()(const std::string &parameter) const			\
   { return GetQualifier<CLASS>(parameter); }
 
@@ -168,9 +176,11 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter,
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter_,
 			"NeutralXi","neutral xi");
 
+bool Or_Particle_Qualifier::operator() (const Particle * p) const {
+  return ((*p_qual_a)(p) || (*p_qual_b)(p));
+};
 bool And_Particle_Qualifier::operator() (const Particle * p) const {
-  if ((*p_qual_a)(p) && (*p_qual_b)(p)) return 1;
-  return 0;
+  return ((*p_qual_a)(p) && (*p_qual_b)(p));
 };
 bool Not_Particle_Qualifier::operator() (const Particle * p) const {
   return !(*p_qual_a)(p);

@@ -118,6 +118,8 @@ namespace SHERPA {
     const ATOOLS::Flavour    * Flavours();
     int                  InSwaped();
 
+    int                  OrderStrong();
+    int                  OrderEWeak();
     unsigned int         NumberOfDiagrams();
     AMEGIC::Amegic     * GetAmegic();
     AMEGIC::Point      * GetDiagram(int);

@@ -10,6 +10,21 @@ using namespace std;
 #include <stdio.h>
 #endif
 
+
+ZXlist& ZXlist::operator=(const ZXlist& copy) {
+  if (this!=&copy) {
+    narg  = copy.narg;
+    value = copy.value;
+    zlist = copy.zlist;
+    on    = copy.on;
+    sk    = copy.sk;
+    if (arg!=0) delete[] arg;
+    arg = new int[narg];
+    for (short int i=0;i<narg;i++) arg[i] = copy.arg[i];
+  }
+  return *this;
+}
+
 String_Generator::String_Generator(Basic_Sfuncs* _BS) : 
   Basic_Func(this,_BS), Basic_Yfunc(this,_BS), Basic_Zfunc(this,_BS), 
   Basic_Xfunc(this,_BS), Basic_Mfunc(this,_BS), Basic_Vfunc(this,_BS), 

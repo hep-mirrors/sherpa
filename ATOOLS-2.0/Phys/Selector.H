@@ -27,8 +27,8 @@ namespace ATOOLS {
     ~Selector_Data()     {};
     int  Size()          { return data.size(); }
     Mom_Data RemoveData(int &);
-    void SetData(int &,std::vector<Flavour> &,int &,double &,double &);
-    void AddData(int &,std::vector<Flavour> &,int &,double &,double &);
+    void SetData(int ,const std::vector<Flavour> &,int ,double ,double );
+    void AddData(int ,const std::vector<Flavour> &,int ,double ,double );
     void Data(int,int &,std::vector<Flavour> &,int &,double &,double &);
     void ControlOutput();
   };
@@ -95,11 +95,6 @@ namespace ATOOLS {
   }
   inline int  Selector_Log::Rejections() { return m_rejected; }
   inline int  Selector_Log::Passed()     { return m_passed; }
-  inline void Selector_Log::Output() { 
-    msg_Info()<<"  Selector "<<m_name<<" rejection quota  : "
-	      <<double(m_rejected)/double(m_rejected+m_passed)
-	      <<"  ("<<m_rejected<<" / "<<m_passed+m_rejected<<")"<<std::endl;
-  }
 }
 
 

@@ -421,6 +421,8 @@ void Multi_Channel::GeneratePoint(Vec4D * p)
       break;
     }
   }  
+  std::cout<<" ERROR in void Multi_Channel::GeneratePoint(Vec4D * p) \n";
+  channels[0]->GeneratePoint(p);
 }
 
 void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
@@ -462,6 +464,8 @@ void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
       return;
     }
   }  
+  std::cout<<" ERROR in void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) \n";
+  channels[0]->GeneratePoint(sprime,y,mode,rans);
 }
 
 void Multi_Channel::GeneratePoint(int n,double & sprime,double & y,int mode) {

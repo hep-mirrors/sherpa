@@ -42,7 +42,7 @@ GetOneParticleSelector(const String_Matrix &parameters)
 }									
 
 #define DEFINE_ONE_SELECTOR_GETTER_METHOD(CLASS,NAME)	\
-  Primitive_Observable_Base *const				\
+  Primitive_Observable_Base *				\
   NAME::operator()(const String_Matrix &parameters) const	\
   { return GetOneParticleSelector<CLASS>(parameters); }
 
@@ -103,7 +103,7 @@ GetOneParticleDeltaSelector(const String_Matrix &parameters)
 }									
 
 #define DEFINE_ONE_SELECTOR_DELTA_GETTER_METHOD(CLASS,NAME)		\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetOneParticleDeltaSelector<CLASS>(parameters); }
 
@@ -130,6 +130,7 @@ One_PT_Selector(const ATOOLS::Flavour flav,
   m_flavour(flav),
   m_item(item)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;
@@ -180,6 +181,7 @@ One_ET_Selector(const ATOOLS::Flavour flav,
   m_flavour(flav),
   m_item(item)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;
@@ -218,6 +220,57 @@ void One_ET_Selector::EndEvaluation(double scale)
 {
 }
 
+DEFINE_ONE_SELECTOR_GETTER(One_Eta_Selector,
+			   One_Eta_Selector_Getter,"OneEtaSel");
+
+One_Eta_Selector::
+One_Eta_Selector(const ATOOLS::Flavour flav,
+		const size_t item,const double min,const double max,
+		const std::string &inlist,const std::string &outlist):
+  m_outlist(outlist!=""?outlist:ATOOLS::ToString(min)+"<One_Eta<"+
+	    ATOOLS::ToString(max)+inlist),
+  m_flavour(flav),
+  m_item(item)
+{
+  m_splitt_flag = false;
+  m_xmin=min;
+  m_xmax=max;
+  m_listname=inlist;
+}
+
+void One_Eta_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
+					  double weight,int ncount)
+{
+  ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
+  p_ana->AddParticleList(m_outlist,outlist);
+  int no=-1; 
+  size_t pos=std::string::npos;
+  for (size_t i=0;i<particlelist.size();++i) 
+    if (particlelist[i]->Flav()==m_flavour || 
+	m_flavour.Kfcode()==ATOOLS::kf::none) {
+      ++no;
+      if (no==(int)m_item) {
+	pos=i;
+	break;
+      }
+    }
+  if (pos==std::string::npos) return;
+  double et=particlelist[pos]->Momentum().Eta();
+  if (et<m_xmin || et>m_xmax) return;
+  outlist->resize(particlelist.size());
+  for (size_t i=0;i<particlelist.size();++i) 
+    (*outlist)[i] = new ATOOLS::Particle(*particlelist[i]);
+}
+
+Primitive_Observable_Base *One_Eta_Selector::Copy() const
+{
+  return new One_Eta_Selector(m_flavour,m_item,m_xmin,m_xmax,m_listname,m_outlist);
+}
+
+void One_Eta_Selector::EndEvaluation(double scale)
+{
+}
+
 DEFINE_ONE_SELECTOR_DELTA_GETTER(One_DPhi_Selector,
 				 One_DPhi_Selector_Getter,"OneDPhiSel");
 
@@ -235,6 +288,7 @@ One_DPhi_Selector(const ATOOLS::Flavour flav,const size_t item,
   m_item(item),
   m_refitem(refitem)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;
@@ -302,6 +356,7 @@ One_EFrac_Selector(const ATOOLS::Flavour flav,const size_t item,
   m_item(item),
   m_refitem(refitem)
 {
+  m_splitt_flag = false;
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;

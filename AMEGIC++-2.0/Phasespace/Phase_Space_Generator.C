@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "Phase_Space_Generator.H"
 #include "Channel_Generator.H"
@@ -270,8 +271,6 @@ void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,str
 
 bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
 {
-  int  hit;
-
   string chlname   = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
   string chmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
  
@@ -290,7 +289,7 @@ bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
     libname = string(buffer);
     if (chlist && libname[0]!='%') {
       ifstream chmap(chmapname.c_str());
-      if (!RSearch(chmap,libname) || libname.find(string(": "))==-1) {
+      if (!RSearch(chmap,libname) || libname.find(": ")==string::npos) {
 	ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
 			   <<"Mapping for "<<libname<<" not found."<<endl;	
 	return 0;

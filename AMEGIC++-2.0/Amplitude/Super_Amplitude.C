@@ -208,7 +208,7 @@ void Super_Amplitude::ReduceZfuncs(string str)
   for (list<sknot*>::iterator fit=factorlist.begin();fit!=factorlist.end();++fit) {
     list<sknot*> zfunclist;
     st.Addends(*fit,zfunclist);
-    Zfunc_Group* superfunc;
+    Zfunc_Group* superfunc = NULL;
     
     int first = 1;
    

@@ -1,16 +1,14 @@
 SHERPASYS     =	../..
 
-SHERPAFLAGS   =	-pedantic -Wall -Winline
+SHERPAFLAGS   =	-pedantic -Wall #-Winline
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
-AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
 SHERPAINCS    =	-I../Single_Events -I../PerturbativePhysics -I../SoftPhysics \
-		-I../SoftPhysics/Lund  -I../LundTools -I../HerwigTools -I../Tools 
+		-I../SoftPhysics/Lund  -I../LundTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
 PDFDIR        =	$(SHERPASYS)/PDF-1.0
@@ -25,10 +23,11 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
-ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
-AHADICINCS    =	-I$(AHADICDIR)/Main -I$(AHADICDIR)/ClusterFormation \
-		-I$(AHADICDIR)/ClusterDecays
+
+if CLHEP_SUPPORT
+CLHEPINCS     =	-I$(CLHEPDIR)/include
+CLHEPFLAGS    = -DCLHEP_SUPPORT
+endif
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
@@ -38,10 +37,11 @@ lib_LTLIBRARIES       =	libSherpaInitialization.la
 libSherpaInitialization_la_SOURCES    =	Initialization_Handler.C 
 noinst_HEADERS        =	Initialization_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS)
-INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) $(ADICICINCS) \
-		$(AMEGICINCS) $(AMISICINCS) $(AHADICINCS) $(EXTRAXSINCS) \
-		$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) 
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
+INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(APACICINCS) \
+		$(AMEGICINCS) $(AMISICINCS) $(EXTRAXSINCS) \
+		$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) \
+		$(ATOOLSINCS) $(CLHEPINCS) 
 
 
 

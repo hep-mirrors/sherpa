@@ -41,8 +41,45 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   return new Class((scale=="Log")*10,min,max,bins,mode,nmin,nmax,list);
 }									
 
+template <>
+Primitive_Observable_Base *const GetObservable<Jet_Differential_Rates>(const String_Matrix &parameters)
+{									
+  if (parameters.size()<1) return NULL;
+  if (parameters.size()==1) {
+    if (parameters[0].size()<7) return NULL;
+    std::string list=parameters[0].size()>7?parameters[0][7]:"Analysed";
+    std::string reflist=parameters[0].size()>8?parameters[0][8]:"";
+    return new Jet_Differential_Rates(10*(int)(parameters[0][6]=="Log"),
+		     ATOOLS::ToType<double>(parameters[0][0]),
+		     ATOOLS::ToType<double>(parameters[0][1]),
+		     ATOOLS::ToType<int>(parameters[0][2]),
+		     ATOOLS::ToType<int>(parameters[0][3]),
+		     ATOOLS::ToType<int>(parameters[0][4]),
+		     ATOOLS::ToType<int>(parameters[0][5]),list,reflist);
+  }
+  else if (parameters.size()<7) return NULL;
+  double min=0.0, max=1.0;
+  size_t bins=100, nmin=1, nmax=10, mode=1;
+  std::string list="Analysed", scale="Lin";
+  std::string reflist="";
+  for (size_t i=0;i<parameters.size();++i) {
+    if (parameters[i].size()<2) continue;
+    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="MODE") mode=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="NMIN") nmin=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="NMAX") nmax=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
+    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+    else if (parameters[i][0]=="REF")  reflist=parameters[i][1];
+  }
+  return new Jet_Differential_Rates((scale=="Log")*10,min,max,bins,mode,nmin,nmax,list,reflist);
+}									
+
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
@@ -185,8 +222,9 @@ void Two_Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, i
       (m_mode==2 && pl.size()==m_minn)) {
     // fill
     size_t i=1;
-    int jet1=0,jet2=0;
+    int jet1=0;
     for (Particle_List::const_iterator it1=pl.begin();it1!=pl.end();++it1,++jet1) {
+      int jet2=jet1+1;
       for (Particle_List::const_iterator it2=it1+1;it2!=pl.end() && i<=(sqr(m_maxn)-m_maxn)/2;++it2,++i,++jet2) {
 	double value=Calc(*it1,*it2,jet1,jet2);
 	m_histos[0]->Insert(value,weight,ncount);
@@ -260,7 +298,7 @@ void Two_Jet_Observable_Base::Reset()
 
 void Two_Jet_Observable_Base::SetPTRange(const unsigned int jetno,const double minpt,const double maxpt)
 {
-  if (!(jetno>=m_minn && jetno<=m_maxn)) {
+  if (!(/*jetno>=m_minn && */ jetno<=m_maxn)) {
     msg.Error()<<"Potential Error in Two_Jet_Observable_Base::SetMinPT("<<jetno<<")"<<std::endl
 	       <<"   Out of bounds : "<<m_minn<<" ... "<<m_maxn<<", will continue."<<std::endl;
     return;
@@ -387,10 +425,26 @@ void Jet_Differential_Rates_Getter::PrintInfo(std::ostream &str,const size_t wid
 
 Jet_Differential_Rates::Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,
 					       unsigned int mode,unsigned int minn,unsigned int maxn, 
-					       const std::string & listname) :
+					       const std::string & listname,
+					       const std::string & reflistname) :
   Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
 {
-  m_name="KtJetrates(1)"+m_name;
+//   std::cout<<"Jet_Differential_Rates("<<type<<", "<<xmin<<", "<<xmax<<", "<<nbins<<",\n"
+// 	   <<mode<<", "<<minn<<", "<<maxn<<",\n"
+// 	   <<listname<<", "<<reflistname<<")\n";
+  if (reflistname=="") {
+    m_reflistname = listname;
+    m_name=listname+"_KtJetrates(1)jet_";
+  }
+  else {
+    m_reflistname = reflistname;
+    m_name=listname+"_"+reflistname+"_KtJetrates(1)jet_";
+  } 
+  if (m_minn!=0) {
+    MyStrStream str;
+    str<<m_name<<m_mode<<"_"<<m_minn<<"_";
+    str>>m_name;
+  }
 }
 
 
@@ -413,9 +467,18 @@ void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, int
     msg.Out()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<key<<" not found "<<std::endl;
     return;
   }
+  Particle_List * pl=p_ana->GetParticleList(m_reflistname);
+  if (!pl) {
+    msg.Out()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<m_reflistname<<" not found "<<std::endl;
+    return;
+  }
+
   std::vector<double> * jd=rates->Get<std::vector<double> *>();
 
   size_t j=jd->size();
+  // plot only selected events 
+  if (pl->size()==0) j=0;
+
   for (size_t i=0; i<m_histos.size();++i) {
     if (j>0) {
       --j;
@@ -435,7 +498,12 @@ double Jet_Differential_Rates::Calc(const Particle *)
 
 Primitive_Observable_Base * Jet_Differential_Rates::Copy() const 
 {
-  return new Jet_Differential_Rates(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+  if (m_listname==m_reflistname)
+    return new Jet_Differential_Rates(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,
+				      m_listname);
+  else
+    return new Jet_Differential_Rates(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,
+				      m_listname,m_reflistname);
 }
 
 

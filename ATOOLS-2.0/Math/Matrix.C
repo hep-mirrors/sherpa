@@ -85,7 +85,7 @@ Matrix<_rank> Matrix<_rank>::operator*(const Matrix<_rank>& in)
 template<int _rank>
 void Matrix<_rank>::MatrixOut() const 
 {
-  double temp;
+  double temp=0.;
   short int range=0, prcsn=0;
   short int io=msg.Out().precision(9);
   

@@ -4,9 +4,9 @@
 #include "Selector.H"
 #include "Cut_Data.H"
 #include "Flavour.H"
-#include "Selector.H"
 #include "Vector.H"
 #include "Exception.H"
+#include "Histogram.H"
 
 #include <string>
 
@@ -34,14 +34,14 @@ namespace PHASIC {
   class Integrable_Base: public ATOOLS::Terminator_Object {
   protected:
 
-    std::string m_name, m_resultpath, m_resultfile;
+    std::string m_name, m_resultpath, m_resultfile, m_histofile;
     size_t      m_nin, m_nout, m_naddin, m_naddout, m_nvector;
 
     ATOOLS::Flavour *p_flavours, *p_addflavours;
     ATOOLS::Vec4D   *p_momenta, *p_addmomenta;
 
     int    m_scalescheme, m_kfactorscheme;
-    double m_scalefactor, m_threshold, m_overflow;
+    double m_threshold, m_overflow;
     bool   m_updatescales;
 
     std::map<stp::id,double> m_scale;
@@ -69,6 +69,7 @@ namespace PHASIC {
     PHASIC::Phase_Space_Handler *p_pshandler, *p_activepshandler; 
     ATOOLS::Selector_Base       *p_selector;
     ATOOLS::Cut_Data            *p_cuts;
+    ATOOLS::Histogram           *p_whisto;
 
     bool m_ownselector;
 
@@ -83,7 +84,6 @@ namespace PHASIC {
     Integrable_Base(const size_t nin=0,const size_t nout=0,
 		    const ATOOLS::Flavour *flavours=NULL,
 		    const int scalescheme=0,const int kfactorscheme=0,
-		    const double scalefactor=1.,
 		    BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL,
 		    ATOOLS::Selector_Data *const selectordata=NULL);
@@ -106,7 +106,7 @@ namespace PHASIC {
 
     virtual double Differential(const ATOOLS::Vec4D *momenta) = 0;
     virtual double Differential2() = 0;
-    virtual void   AddPoint(const double xs) = 0;
+    virtual void   AddPoint(const double xs);
 
     virtual double CalculateScale(const ATOOLS::Vec4D *momenta) = 0;
     virtual double KFactor(const double scale) = 0;
@@ -127,6 +127,11 @@ namespace PHASIC {
 
     virtual void SetPSHandler(Phase_Space_Handler *const pshandler);
     
+    virtual void InitWeightHistogram();
+    virtual void ReadInHistogram(std::string);
+    virtual void WriteOutHistogram(std::string);
+    double GetMaxEps(double);
+
     Integrable_Base *const Selected();
     Integrable_Base *const Parent();
 
@@ -137,8 +142,6 @@ namespace PHASIC {
     { m_scalescheme=scalescheme;     }
     inline void SetKFactorScheme(const int kfactorscheme) 
     { m_kfactorscheme=kfactorscheme; }
-    inline void SetScaleFactor(const double scalefactor)  
-    { m_scalefactor=scalefactor;     }
 
     inline void SetTotalXS(const double totalxs)   { m_totalxs=totalxs;    }
     inline void SetTotalError(const double error)  { m_totalerr=error;     }
@@ -195,7 +198,6 @@ namespace PHASIC {
 
     inline int    KFactorScheme() const { return m_kfactorscheme; }
     inline int    ScaleScheme() const   { return m_scalescheme;   }
-    inline double ScaleFactor() const   { return m_scalefactor;   }
 
     inline const double Scale(const stp::id type=stp::as) 
     { return m_scale[type]; }

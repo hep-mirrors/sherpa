@@ -1,5 +1,6 @@
 #include "Hadron_Remnant.H"
 
+#include "Running_AlphaS.H"
 #include "Run_Parameter.H"
 #include "Exception.H"
 #include "Random.H"
@@ -25,6 +26,10 @@ Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,
 			    "Hadron_Remnant","Hadron_Remnant"));
   }
   GetConstituents(isrhandler->Flav(m_beam));
+  double mz=ATOOLS::Flavour(ATOOLS::kf::Z).Mass();
+  m_emin=mz*exp(-M_PI/(2.*MODEL::as->Beta0(mz*mz)*(*MODEL::as)(mz*mz)));
+  // default: allow 1/10*lambda
+  m_emin*=0.1;
 }
 
 const std::vector<ATOOLS::Flavour> &Hadron_Remnant::
@@ -85,6 +90,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
       m_extracted[j]->SetNumber(-particlelist->size());
       particlelist->push_back(m_extracted[j]);
     }
+    else m_extracted[j]->SetNumber(0);
   }
   for (size_t j=0;j<m_companions.size();++j) {
     m_companions[j]->SetNumber(1);
@@ -93,6 +99,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
       m_companions[j]->SetNumber(-particlelist->size());
       particlelist->push_back(m_companions[j]);
     }
+    else m_companions[j]->SetNumber(0);
   }
   return success;
 }
@@ -167,13 +174,14 @@ bool Hadron_Remnant::DiceKinematics()
     p[3]=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-ATOOLS::sqr(m));
     m_companions[j]->SetMomentum(p);
     if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
-      ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): " 
-			 <<"Parton ("<<m_companions[j]<<") "
-			 <<" has non-positive momentum: p = "
-			 <<m_companions[j]->Momentum()<<" m_{"
-			 <<m_companions[j]->Flav()<<"} = "
-			 <<m_companions[j]->Flav().PSMass()<<" <- "
-			 <<m_xscheme<<std::endl;
+      if (!m_dupdf) {
+	ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 			   <<"Parton ("<<m_companions[j]<<") "
+			   <<" has non-positive momentum: p = "
+			   <<m_companions[j]->Momentum()<<" m_{"
+			   <<m_companions[j]->Flav()<<"} = "
+			   <<m_companions[j]->Flav().PSMass()<<" <- "
+			   <<m_xscheme<<std::endl;
+      }
       return false;
     }
   }
@@ -183,6 +191,11 @@ bool Hadron_Remnant::DiceKinematics()
 bool Hadron_Remnant::ValenceQuark(ATOOLS::Particle *const quark) 
 {
   double x=quark->Momentum()[0]/m_ebeam;
+  if (x>1.) {
+    ATOOLS::msg.Out()<<" WARNING in Hadron_Remnant::ValenceQuark \n"
+	     <<" (x-1)="<<x-1<<std::endl;
+    x = 1.;
+  }
   p_pdfbase->Calculate(x,0.,0.,m_scale);
   double val=p_pdfbase->GetXPDF(quark->Flav());
   return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ATOOLS::ran.Get();
@@ -250,9 +263,9 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
   cut=2.0*(flavour.PSMass()+m_hardpt.PPerp2()/
 	   ATOOLS::sqr(m_companions.size()))/sqrt(scale);
   if (scale<p_pdfbase->Q2Min()) {
-    ATOOLS::msg.Tracking()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
-			  <<"Scale under-runs minimum given by PDF: "
-			  <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
+    ATOOLS::msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
+		       <<"Scale under-runs minimum given by PDF: "
+		       <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
     return cut;
   } 
   if (cut>0.49) return 0.5;

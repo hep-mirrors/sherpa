@@ -14584,7 +14584,7 @@ c     when necessary we consider the residues:
       real*8 t,mu2,A0,BL,T1,T2,s2t,c2t,cb,sb,q,mu
       real*8 Pi/3.141592654/,Nc/3d0/
       real*8 delt,bdszLi2,phi,ct2,st2,Xt,Yt,At
-      real*8 F3c
+      real*8 F3c, F3c_a, F3c_b
 
       mu2 = mu**2
       if(mu2.eq.0d0) mu2 = 1d-10
@@ -14596,7 +14596,7 @@ c     when necessary we consider the residues:
       ct2 = (1d0+c2t)/2d0
       st2 = (1d0-c2t)/2d0
 
-      F3c =
+      F3c_a =
      $ (2*mu2*t*(mu2+t-T1)/T1/delt(T1,mu2,t)
      $ -(4*mu2*t+2*delt(T1,mu2,t))/T1/(T1-T2)
      $ -(mu2+t-T1)/T1)*phi(mu2,t,T1)
@@ -14664,6 +14664,7 @@ c     when necessary we consider the residues:
      $ +Log(T2*T1/q**2)*(1+c2t**2)*cb**2*Yt**2/4./T1/T2/delt(A0,T1,T2)
      $ *(A0**2*T1+(T1-T2)**3-2*T2*(T1**2-T2**2)
      $ -A0*(2*T1**2+T1*T2+T2**2))
+      F3c_b =
      $ +Log(T1/q)*(2*(mu2+t-T1)**2/delt(T1,mu2,t)
      $ -cb**2*(1+c2t**2)*Yt**2/2./T2/delt(A0,T1,T2)
      $ *(A0**2-4*T2*(T1-T2)-A0*(T1+3*T2))
@@ -14730,6 +14731,7 @@ c     when necessary we consider the residues:
      $ -c2t*((T1+T2)**2+2*T1*T2)/4./(T1-T2)**2
      $ +T2*(2*(1+Nc)*T1+(2-Nc)*T2)/2./(T1-T2)**2)
 
+      F3c = F3c_a + F3c_b
       return
       end
 

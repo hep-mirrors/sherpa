@@ -35,7 +35,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetObservable<CLASS>(parameters); }
 
@@ -80,7 +80,7 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
 }									
 
 #define DEFINE_OFFSET_GETTER_METHOD(CLASS,NAME)				\
-  Primitive_Observable_Base *const					\
+  Primitive_Observable_Base *					\
   NAME::operator()(const String_Matrix &parameters) const		\
   { return GetOffsetObservable<CLASS>(parameters); }
 
@@ -96,7 +96,7 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
 DECLARE_GETTER(MI_Statistics_Getter,"MIStats",
 	       Primitive_Observable_Base,String_Matrix);
 
-Primitive_Observable_Base *const 
+Primitive_Observable_Base * 
 MI_Statistics_Getter::operator()(const String_Matrix &parameters) const
 {
   std::string listname="Analysed";

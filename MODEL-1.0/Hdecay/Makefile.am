@@ -4,6 +4,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+MODELFLAGS  =	-pedantic -Wall #-Winline
+
 libHdecay_la_SOURCES = Hdecay_Fortran_Interface.C hdecay.f \
 		       haber.f feynhiggs.f hdecay_inter.f 
 INCLUDES = -I../../MODEL-1.0/Main \
@@ -14,3 +16,4 @@ noinst_HEADERS = Hdecay_Fortran_Interface.H
 EXTRA_DIST = hdecay.in
 
 EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(MODELFLAGS)

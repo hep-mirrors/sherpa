@@ -558,7 +558,7 @@ EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode)
     }
   }
   if (mode>0) return NULL;
-  msg.Error()<<"Error in Matrix_Element_Handler::GetXS()."<<endl
+  msg.Error()<<"Error in Matrix_Element_Handler::GetXS("<<mode<<")."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
 }
@@ -571,6 +571,22 @@ double  Matrix_Element_Handler::Weight()
 unsigned long Matrix_Element_Handler::NumberOfTrials()
 {
   return m_ntrial;
+}
+
+int Matrix_Element_Handler::OrderStrong()
+{
+  if (m_mode==1) return p_amegic->OrderStrong();
+  msg.Error()<<"Error in Matrix_Element_Handler::OrderStrong()."<<endl
+	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
+  abort();
+}
+
+int Matrix_Element_Handler::OrderEWeak()
+{
+  if (m_mode==1) return p_amegic->OrderEWeak();
+  msg.Error()<<"Error in Matrix_Element_Handler::OrderStrong()."<<endl
+	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
+  abort();
 }
 
 void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *amegic)

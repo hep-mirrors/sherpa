@@ -8,6 +8,7 @@
 #include "Running_AlphaS.H"
 #include "Combined_Selector.H"
 #include "MathTools.H"
+#include "Shell_Tools.H"
 
 
 #include <stdio.h>
@@ -27,7 +28,7 @@ using namespace std;
   ----------------------------------------------------------------------------------*/
 
 Process_Group::Process_Group() :
-  Process_Base(0,0,NULL,NULL,NULL,0,0,0,0,0,1.,-1.)
+  Process_Base(0,0,NULL,NULL,NULL,0,0,0,0,0,-1.)
 { 
   m_name  = "Empty_Group"; 
   p_pl    = 0;
@@ -37,10 +38,10 @@ Process_Group::Process_Group() :
 Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
-			     int _kfactorscheme,int _scalescheme,double _scalefactor,double _scale,
+			     int _kfactorscheme,int _scalescheme,double _scale,
 			     Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
-	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl)
+	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl)
 {
   p_selected  = NULL;
 
@@ -155,7 +156,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
     if (take) {
       if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
 	Add(new Single_Process(m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			       m_kfactorscheme,m_scalescheme,m_scalefactor,m_scale[stp::as],_pl,m_nex,p_ex_fl));
+			       m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl));
       }
       else {
 	take=0;
@@ -417,6 +418,11 @@ void Process_Group::WriteOutXSecs(std::ofstream & _to)
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->WriteOutXSecs(_to);
 }
 
+void Process_Group::WriteOutHistogram(std::string filename)
+{
+  Integrable_Base::WriteOutHistogram(filename);
+  for (size_t i=0;i<m_procs.size();i++) m_procs[i]->WriteOutHistogram(filename);
+}
 
 void Process_Group::SelectOne()
 {
@@ -548,7 +554,7 @@ void Process_Group::SetTotal(int flag, int depth)  {
     SetMax(0., depth+1);
   }
 
-  RescaleXSec(1.);
+  //  RescaleXSec(1.);
   
   if (m_nin==2 && flag==0) {
     if ( (depth<=0 && msg.LevelIsInfo()) || msg.LevelIsTracking()) {
@@ -590,13 +596,13 @@ void Process_Group::SetMax(const double max, int depth) {
       */
       msg.Out().precision(io);
     }
-    m_totalxs=sum;
+    if (m_atoms) m_totalxs=sum;
   }
 }
 
 void Process_Group::ResetMax(int flag) {
   m_max = 0.;
-  for (int i=0;i<m_procs.size();i++) {
+  for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->ResetMax(flag);
   }
 }
@@ -615,7 +621,12 @@ void Process_Group::OptimizeResult()
   }
 //   cout<<"Weights (actual/min) "<<ssigma2<<" "<<m_wmin<<endl;
   m_son++;
-  for (int i=0;i<m_procs.size();i++) m_procs[i]->OptimizeResult();
+  for (size_t i=0;i<m_procs.size();++i) m_procs[i]->OptimizeResult();
+}
+
+void Process_Group::InitWeightHistogram() {
+  Integrable_Base::InitWeightHistogram();
+  for (size_t i=0;i<m_procs.size();++i) m_procs[i]->InitWeightHistogram();
 }
 
 void Process_Group::SetMaxJetNumber(int max) {
@@ -636,15 +647,17 @@ void Process_Group::SetAtoms(bool _atoms) { m_atoms = _atoms; }
 
 int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,Vec4D *& testmoms,
 				 vector<Single_Process *> & links,vector<Single_Process *> & errs,
-				 int & totalsize, int & procs)
+				 int & totalsize, int & procs, int & current_atom)
 {
   int okay = 1;
   vector <string> deletethem;
 
   for (size_t i=0;i<m_procs.size();i++) {
-    if (m_atoms) { delete [] testmoms; testmoms = 0; }
-
-    switch (m_procs[i]->InitAmplitude(model,top,testmoms,links,errs,totalsize,procs)) {
+    if (m_atoms) { 
+      delete [] testmoms; testmoms = 0; 
+      current_atom = links.size();
+    }
+    switch (m_procs[i]->InitAmplitude(model,top,testmoms,links,errs,totalsize,procs,current_atom)) {
     case -3 :
       msg_Tracking()<<"Amplitude is zero for "<<m_procs[i]->Name()<<endl
 		     <<"   delete it."<<endl;
@@ -731,6 +744,7 @@ bool Process_Group::SetUpIntegrator()
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
   }
   p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
+
   //  if (m_nin==2 ) 
   AddChannels(this);
 //  if (m_nin==2) 
@@ -759,6 +773,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
   }
   else {
     std::string filename =_resdir+"/"+m_name+".xs_tot";
+    std::string histofile =_resdir+string("/WD_")+m_name;
     string _name;
     double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2,wmin;
     long int n,sn,son;
@@ -770,24 +785,21 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	while (from) {
 	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn
 	      >>wmin>>son;
-	  if (_name==m_name) m_totalxs += _totalxs;
-// 	  msg_Tracking()<<"Found result : xs for "<<_name<<" : "
-// 			<<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-// 			<<" +/- "<<_totalerr/_totalxs*100.<<"%, max : "<<_max<<endl;
-	  Process_Base * _proc = NULL;
-	  if (Find(_name,_proc)) {
-	    _proc->SetTotalXS(_totalxs);
-	    _proc->SetTotalError(_totalerr);
-	    _proc->SetMax(_max);
-	    _proc->SetSum(sum);
-	    _proc->SetSumSqr(sqrsum);
-	    _proc->SetPoints(n);
-	    _proc->SetSSum(ssum);
-	    _proc->SetSSumSqr(ssqrsum);
-	    _proc->SetSigmaSum(ss2);
-	    _proc->SetSPoints(sn);
-	    _proc->SetWMin(wmin);
-	    _proc->SetOptCounter(son);
+	  Process_Base * proc = NULL;
+	  if (Find(_name,proc)) {
+	    proc->SetTotalXS(_totalxs);
+	    proc->SetTotalError(_totalerr);
+	    proc->SetMax(_max);
+	    proc->SetSum(sum);
+	    proc->SetSumSqr(sqrsum);
+	    proc->SetPoints(n);
+	    proc->SetSSum(ssum);
+	    proc->SetSSumSqr(ssqrsum);
+	    proc->SetSigmaSum(ss2);
+	    proc->SetSPoints(sn);
+	    proc->SetWMin(wmin);
+	    proc->SetOptCounter(son);
+	    proc->ReadInHistogram(histofile);
 	  }
 	  else {
 	    okay = 0;
@@ -799,6 +811,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	if (p_pshandler->ISRIntegrator() != 0)  p_pshandler->ISRIntegrator()->Print();
 	if (p_pshandler->FSRIntegrator() != 0)  p_pshandler->FSRIntegrator()->Print();
 	p_pshandler->InitIncoming();
+	ReadInHistogram(histofile);
 	if (m_totalxs<=0.) {
 	  msg.Error()<<"ERROR in Process_Group::CalculateTotalXSec :"
 		     <<"   In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
@@ -822,12 +835,14 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     m_tables = 0;
     m_resultpath=_resdir;
     m_resultfile=filename;
+    m_histofile=histofile;
     ATOOLS::Exception_Handler::AddTerminatorObject(this);
     double var=TotalVar();
     m_totalxs = p_pshandler->Integrate();
     
     if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn(); 
     
+    SetTotal(0);
         
     if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
       msg.Error()<<"ERROR in Process_Group::CalculateTotalXSec :"
@@ -835,10 +850,9 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
     }
 
-    SetTotal(0);
     //RescaleXSec(1.);
     if (m_totalxs>0.) {
-      if (TotalVar()==var) {
+      if (var==TotalVar()) {
 	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
 	return 1;
       }
@@ -852,6 +866,9 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
 	WriteOutXSecs(to);
+	int  mode_dir = 493;
+	ATOOLS::MakeDir(histofile.c_str(),mode_dir,0); 
+	WriteOutHistogram(histofile);
 	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
 	to.close();
       }
@@ -877,6 +894,9 @@ void Process_Group::PrepareTerminate()
   msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 	    <<"       max : "<<m_max<<endl;
   WriteOutXSecs(to);
+  int  mode_dir = 493;
+  ATOOLS::MakeDir(m_histofile.c_str(),mode_dir,0); 
+  WriteOutHistogram(m_histofile);
   p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
   to.close();
 }
@@ -893,11 +913,11 @@ void  Process_Group::RescaleXSec(double fac) {
 }
 
 void Process_Group::SetupEnhance() {
-  if (m_enhancefac==1. && m_maxfac==1.) return;
+  if (m_enhancefac==1. && m_maxfac==1. && m_maxeps==0.) return;
 
   double xs=TotalXS();
   for (size_t i=0;i<m_procs.size();++i) {
-    m_procs[i]->SetEnhance(m_enhancefac,m_maxfac);
+    m_procs[i]->SetEnhance(m_enhancefac,m_maxfac,m_maxeps);
     m_procs[i]->SetupEnhance();
   }
   if (m_enhancefac!=1.) {
@@ -994,12 +1014,7 @@ bool Process_Group::PrepareXSecTables()
 
 void Process_Group::AddPoint(const double value) 
 {
-  m_n++;
-  m_sn++;
-  m_ssum    += value;
-  m_ssumsqr += value*value;
-  if (value>m_max)  m_max  = value;
-  if (value>m_smax) m_smax = value;
+  Integrable_Base::AddPoint(value);
 
   for (size_t i=0;i<m_procs.size();i++) {
     if (dabs(m_last)>0.) {

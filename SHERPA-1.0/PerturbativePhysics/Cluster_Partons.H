@@ -70,7 +70,7 @@ namespace SHERPA {
 
     bool    IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *);
     double  ColourAngle(const std::vector<APACIC::Knot *> &, const int);
-    void    EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,int);
+    void    EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,int,double scale=0.);
     void    DetermineColourAngles(const std::vector<APACIC::Knot *> &);
 
     void    CreateFlavourMap();
