@@ -29,7 +29,8 @@ namespace ATOOLS {
     class Gen {  // general parameters
       int                 m_output, m_analysis, m_cutscheme;
       //std::string         m_runtime;
-      long                m_nevents;
+      long int            m_nevents;
+      long int            m_seed;
       double              m_ecms, m_ycut;
       double              m_accu;
       Flavour  m_beam1, m_beam2;
@@ -38,6 +39,7 @@ namespace ATOOLS {
       MODEL::Model_Base * p_model;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
+      inline long   RandomSeed()                          { return m_seed;    }
       inline int    Analysis()                            { return m_analysis; }
       inline int    CutScheme()                           { return m_cutscheme; }
       inline void   SetNumberOfEvents(long N)             { m_nevents   = N; }

@@ -2,6 +2,7 @@
 #include "Run_Parameter.H"
 #include "MathTools.H"
 #include "Message.H"
+#include "Random.H"
 
 using namespace ATOOLS;
 
@@ -25,6 +26,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
+  gen.m_seed               = dr.GetValue<long>("RANDOM_SEED",1234);
   // read only if defined (no error message if not defined)
   double ycut=dr.GetValue<double>("YCUT");
   if (ycut!=NotDefined<double>()) gen.m_ycut=ycut;
@@ -34,6 +36,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
   msg.Init(gen.Output());
   gen.m_rpa_id = dr.GenerateKey();
+  ran.SetSeed(gen.m_seed);
 }
 
 Run_Parameter::~Run_Parameter() { }
