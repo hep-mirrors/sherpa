@@ -160,6 +160,23 @@ Knot * Tree::GetInitiator() {
 Knot * Tree::GetRoot() { return p_root; } ;
   
 
+void Tree::UpdateDaughters(Knot * mo)
+{
+  msg.Debugging()<<"Tree::UpdateDaughters("<<mo->kn_no<<")"<<std::endl;
+  if (mo->part->Momentum()==Vec4D(0.,0.,0.,0.)) return;
+
+  mo->E2 = sqr(mo->part->Momentum()[0]);
+  if (mo->left==NULL) return;
+  Knot * d1 = mo->left;
+  Knot * d2 = mo->right;
+
+  if (d1->part->Momentum()==Vec4D(0.,0.,0.,0.)) return;
+  
+  mo->z=d1->part->Momentum()[0]/mo->part->Momentum()[0];
+  UpdateDaughters(d1);
+  UpdateDaughters(d2);
+}
+
 
 //-----------------------------------------------------------------------
 //--------------------------- New frames for the tree -------------------

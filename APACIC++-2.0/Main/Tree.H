@@ -80,6 +80,7 @@ namespace APACIC {
     void BoRo(ATOOLS::Poincare &);
     //! Boost the branch only
     static void BoRo(ATOOLS::Poincare &, Knot * );
+    static void UpdateDaughters(Knot *);
   private:
     static void BoRoDaughters(ATOOLS::Poincare &, Knot *);
 
