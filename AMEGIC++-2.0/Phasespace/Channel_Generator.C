@@ -1,5 +1,7 @@
 #include "Channel_Generator.H"
 #include "Topology.H"
+#include "Flavour.H"
+#include "Point.H"
 #include "Message.H"
 #include "MathTools.H"
 #include "MyStrStream.H"
@@ -14,18 +16,14 @@ using namespace ATOOLS;
 using namespace std;
 
 Channel_Generator::Channel_Generator(int _nin,int _nout,Flavour * _fl,
-                                     Point * _plist) 
-  : nin(_nin), nout(_nout)
+                                     Point * _plist,int) 
+  : Channel_Generator_Base(_nin,_nout,_fl,_plist)
 {
-  Topology top;
-  plist  = new Point[2*(nout+1)];
-  int ll = 0;
-  top.Copy(_plist,plist,ll);
   IdentifyProps(plist);
   m_idstr = string("");
 }
 
-Channel_Generator::~Channel_Generator() { delete[] plist; }
+Channel_Generator::~Channel_Generator() { }
 
 int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 {  
@@ -45,14 +43,15 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   ifstream from;
   from.open((filename).c_str());
   
-  int    rannum = 1;
+  int    rannum = 0;
 
   ofstream chf;
   chf.open((filename).c_str());
 
   chf<<"#include "<<'"'<<"Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"Run_Parameter.H"<<'"'<<endl;
-  chf<<"#include "<<'"'<<"Channel_Elements.H"<<'"'<<endl<<endl;  
+  chf<<"#include "<<'"'<<"Channel_Elements.H"<<'"'<<endl;  
+  chf<<"#include "<<'"'<<"Vegas.H"<<'"'<<endl<<endl;  
 
   chf<<"using namespace PHASIC;"<<endl;  
   chf<<"using namespace ATOOLS;"<<endl<<endl;
@@ -61,28 +60,48 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
      <<"  class "<<name<<" : public Single_Channel {"<<endl;
 
   //actual Channel
-  chf	<<"  public:"<<endl
-	<<"    "<<name<<"(int nin,int nout,ATOOLS::Flavour* fl)"<<endl
-	<<"       : Single_Channel(nin,nout,fl)"<<endl
-	<<"    { name = std::string(\""<<name<<"\"); };"<<endl
-	<<"    void   GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);"<<endl
-	<<"    void   GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);"<<endl
-	<<"    int    CountResonances(ATOOLS::Flavour*&);"<<endl
-	<<"    void   ISRInfo(int &,double &,double &);"<<endl
+  if (tcount>0) chf <<"    double m_amct,m_alpha,m_ctmax,m_ctmin;"<<endl;
+  if (m_idc.size()>0) {
+    chf <<"    Info_Key ";
+    bool first=true;
+    for (int i=0; i<m_idc.size();i++) {
+      if (m_idc[i].find("M")==-1) {
+	if (!first) chf<<",";
+	chf <<"m_k"<<m_idc[i];
+	first=false;
+      }
+    }
+    chf <<";"<<endl;
+  }
+
+  chf	<<"    Vegas* p_vegas;"<<endl
+	<<"  public:"<<endl
+	<<"    "<<name<<"(int,int,Flavour*,Integration_Info * const);"<<endl
+	<<"    ~"<<name<<"();"<<endl
+	<<"    void   GenerateWeight(Vec4D *,Cut_Data *);"<<endl
+	<<"    void   GeneratePoint(Vec4D *,Cut_Data *,double *);"<<endl
+	<<"    void   AddPoint(double);"<<endl
+	<<"    void   Optimize()                { p_vegas->Optimize(); } "<<endl
+	<<"    void   EndOptimize()             { p_vegas->EndOptimize(); } "<<endl
+	<<"    void   WriteOut(std::string pId) { p_vegas->WriteOut(pId); } "<<endl
+	<<"    void   ReadIn(std::string pId)   { p_vegas->ReadIn(pId); } "<<endl
+        <<"    void   ISRInfo(int &,double &,double &);"<<endl
 	<<"    std::string ChID();"<<endl
 	<<"  };"<<endl
 	<<"}"<<endl<<endl;
 
   chf<<"extern "<<'"'<<"C"<<'"'<<" Single_Channel * Getter_"<<name
-     <<"(int nin,int nout,ATOOLS::Flavour* fl) {"<<endl
-     <<"  return new "<<name<<"(nin,nout,fl);"<<endl
+     <<"(int nin,int nout,Flavour* fl,Integration_Info * const info) {"<<endl
+     <<"  return new "<<name<<"(nin,nout,fl,info);"<<endl
      <<"}"<<endl<<endl;
 
   //Momenta
   chf<<"void "<<name<<"::";
-  chf<<"GeneratePoint(Vec4D * p,Cut_Data * cuts,double * ran)"<<endl;
+  chf<<"GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran)"<<endl;
   chf<<"{"<<endl;
-  
+  //chf<<"std::cout<<\""<<name<<"\"<<std::endl;"<<endl;
+  chf<<"  double *ran = p_vegas->GeneratePoint(_ran);"<<endl;
+  chf<<"  for(int i=0;i<rannum;i++) rans[i]=ran[i];"<<endl;
   Flavour * flav    = new Flavour[nout];  
   int       maxnumb = 0;
 
@@ -93,6 +112,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   chf<<"}"<<endl<<endl;
 
   int rannumber = rannum;
+  rannum = 0;
 
   echflag          = extrachannelflag;
   extrachannelflag = oldflag;
@@ -106,25 +126,49 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 
   Step0(1,plist,rannum,chf,flav,maxnumb);
   ClearDeclarations();
-  chf<<"  if (wt!=0.) wt = 1./wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
+  chf<<"  double vw = p_vegas->GenerateWeight(rans);"<<endl;
+  chf<<"  if (wt!=0.) wt = vw/wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
   chf<<endl<<"  weight = wt;"<<endl; 
   chf<<"}"<<endl<<endl;
   
   
-  chf<<"int "<<name<<"::CountResonances(Flavour*& res_fl)"<<endl<<"{"<<endl;  
-  chf<<"  res_fl = new Flavour["<<maxnumb<<"];"<<endl;
-  for (short int i=0;i<maxnumb;i++) {    
-    int hi = flav[i].Kfcode();
-    chf<<"  res_fl["<<i<<"] = Flavour(kf::code("<<hi<<"));"<<endl;
+  //Constructor
+  chf	<<name<<"::"<<name<<"(int nin,int nout,Flavour* fl,Integration_Info * const info)"<<endl
+	<<"       : Single_Channel(nin,nout,fl)"<<endl
+	<<"{"<<endl
+	<<"  name = std::string(\""<<name<<"\");"<<endl
+	<<"  rannum = "<<rannumber<<";"<<endl
+	<<"  rans  = new double[rannum];"<<endl;
+  if (tcount>0) {
+    chf	<<"  m_amct  = 1.;"<<endl
+	<<"  m_alpha = .5;"<<endl
+	<<"  m_ctmax = 1.;"<<endl
+	<<"  m_ctmin = -1.;"<<endl;
   }
-  chf<<"  return "<<maxnumb<<";"<<endl;
-  chf<<"}"<<endl<<endl;
-  
+  for (int i=0; i<m_idc.size();i++) {
+    if (m_idc[i].find("M")==string::npos) {
+      chf <<"  m_k"<<m_idc[i]<<".Assign(std::string(\""<<m_idc[i]<<"\"),2,0,info);"<<endl;
+    }
+  }
+  chf	<<"  p_vegas = new Vegas(rannum,100,name);"<<endl;
+  chf	<<"}"<<endl<<endl;
+
+  //Destructor
+  chf	<<name<<"::~"<<name<<"()"<<endl
+	<<"{"<<endl;
+  chf	<<"  delete p_vegas;"<<endl;
+  chf	<<"}"<<endl<<endl;
+
   chf<<"void "<<name<<"::ISRInfo(int & type,double & mass,double & width)";
   chf<<endl<<"{"<<endl;  
   Step0(2,plist,rannum,chf,flav,maxnumb);
   chf<<"}"<<endl<<endl;
 
+  chf<<"void "<<name<<"::AddPoint(double Value)";
+  chf<<endl<<"{"<<endl;  
+  chf<<"  Single_Channel::AddPoint(Value);"<<endl;
+  chf<<"  p_vegas->AddPoint(Value,rans);"<<endl;  
+  chf<<"}"<<endl;
 
   chf<<"std::string "<<name<<"::ChID()";
   chf<<endl<<"{"<<endl;  
@@ -141,21 +185,33 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 			      Flavour* flav,int& maxnumb) 
 {
-  string m;
+  if (nin != 2) return;
+  Point* ph = p->left;
+  if (ph->left==0) {
+    ph = p->right;
+    if (ph->left==0 && p->middle) ph = p->middle;
+  }
+  if (ph == 0) {
+    msg.Error()<<"This seems to be a 2->1 process !!!"<<endl
+	       <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }"<<endl;
+    abort();
+  }
+
+  string m = Order(LinkedMasses(ph));
+  string help("");
   if (nin == 2) {
     switch (tcount) {
       case 0 : {
 	if (flag==-11) {
-	  Point* ph = p->left;
-	  if (ph->left==0) {
-	    ph = p->right;
-	    if (ph->left==0 && p->middle) ph = p->middle;
-	  }
-	  if (ph && !IsZero(ph->fl.Mass())) {
-	    char hs[4];
+	  char hs[8];
+	  if (!IsZero(ph->fl.Mass())) {
 	    sprintf(hs,"%i",ph->fl.Kfcode());
-	    m_idc.push_back(string("ZR")+string(hs));
+	    help+=string("ZR")+string(hs)+string("_");
 	  }
+	  else help+=string("ZS_");	
+	  sprintf(hs,"%i",(int)PMassSum(ph,0));
+	  help+=string(hs);
+	  m_idc.push_back(help);
 	}
 	if (flag<2) {
 	  m = LinkedMasses(p->left);
@@ -242,7 +298,7 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
 
   // Check for decay type.
   if ((!first) && (l->left==0) && (l->fl.IsVector()) && 
-      (!(l->fl.IsMassive())) && (r->fl.IsFermion()) ) {
+      (!(l->fl.IsMassive())) && (r->fl.IsFermion()) && m_aid) {
     switch (flag) {
     case -11: m_idc.push_back(string("AI_")+Order(lm)+string("_")+Order(rm)); break;
     case 0: 
@@ -251,13 +307,20 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
 	<<"ran["<<rannum<<"],ran["<<rannum+1<<"]);"<<endl;
       break;
     default:
-      sf<<"  wt *= CE.Anisotropic2Weight(1,-1.,1.,"<<moml<<",";
-      sf<<momr<<");"<<endl;
+       string idh = string("AI_")+Order(lm)+string("_")+Order(rm);
+       //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
+        sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
+        sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight(1,-1.,1.,"<<moml<<","<<momr<<");"<<endl;
+        sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
+
+
+	//             sf<<"  wt *= CE.Anisotropic2Weight(1,-1.,1.,"<<moml<<",";
+	//             sf<<momr<<");"<<endl;
     }
   }
   else {
     if ((!first) && (r->left==0) && (r->fl.IsVector()) && 
-	(!(r->fl.IsMassive())) && (l->fl.IsFermion()) ) {
+	(!(r->fl.IsMassive())) && (l->fl.IsFermion())  && m_aid) {
       //anisotropic decay for left outgoing massless vectors
       switch (flag) {
       case -11: m_idc.push_back(string("AI_")+Order(rm)+string("_")+Order(lm)); break;
@@ -267,35 +330,54 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
 	  <<"ran["<<rannum<<"],"<<"ran["<<rannum+1<<"]);"<<endl;
 	break;	
       default:      
-	sf<<"  wt *= CE.Anisotropic2Weight(1.,-1.,1.,"<<momr<<","<<moml<<");"<<endl;
+ 	string idh = string("AI_")+Order(rm)+string("_")+Order(lm);
+	//sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
+  	sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
+  	sf<<"    m_k"<<idh<<"<<CE.Anisotropic2Weight(1,-1.,1.,"<<momr<<","<<moml<<");"<<endl;
+  	sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
+	//	sf<<"  wt *= CE.Anisotropic2Weight(1.,-1.,1.,"<<momr<<","<<moml<<");"<<endl;
       }
     }
     else {
       if ((l->number) < (r->number)) {
 	switch (flag) {
-	case -11: m_idc.push_back(string("I_")+mummy); break;
+	case -11: m_idc.push_back(string("I_")+Order(lm)+string("_")+Order(rm)); break;
 	case 0:
 	  sf<<"  CE.Isotropic2Momenta(p"<<mummy<<",s"<<Order(lm)<<",s"<<Order(rm)
 	    <<","<<moml<<","<<momr<<",ran["<<rannum<<"],"<<"ran["<<rannum+1<<"]);"<<endl;
 	  break;	
 	default:      
-	  sf<<"  wt *= CE.Isotropic2Weight("<<moml<<","<<momr<<");"<<endl;
+ 	  string idh = string("I_")+Order(lm)+string("_")+Order(rm);
+	  //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
+  	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
+  	  sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<moml<<","<<momr<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+  	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
+	  sf<<"  rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
+	  sf<<"  rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
+	  //	  	  sf<<"  wt *= CE.Isotropic2Weight("<<moml<<","<<momr<<");"<<endl;
 	}
       }
       else {
 	switch (flag) {
-	case -11: m_idc.push_back(string("I_")+mummy); break;
+	case -11: m_idc.push_back(string("I_")+Order(rm)+string("_")+Order(lm)); break;
 	case 0:
 	  sf<<"  CE.Isotropic2Momenta(p"<<mummy<<",s"<<Order(rm)<<",s"<<Order(lm)
 	    <<","<<momr<<","<<moml<<",ran["<<rannum<<"],"<<"ran["<<rannum+1<<"]);"<<endl;
 	  break;	
 	default:      
-	  sf<<"  wt *= CE.Isotropic2Weight("<<momr<<","<<moml<<");"<<endl;
+ 	  string idh = string("I_")+Order(rm)+string("_")+Order(lm);
+	  //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
+  	  sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
+  	  sf<<"    m_k"<<idh<<"<<CE.Isotropic2Weight("<<momr<<","<<moml<<",m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+  	  sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
+	  sf<<"  rans["<<rannum<<"]= m_k"<<idh<<"[0];"<<endl;
+	  sf<<"  rans["<<rannum+1<<"]= m_k"<<idh<<"[1];"<<endl;
+	  //	  	  sf<<"  wt *= CE.Isotropic2Weight("<<momr<<","<<moml<<");"<<endl;
 	}
       }
     }
   }
-  if (flag==0) rannum += 2;
+  if (flag==0||flag==1) rannum += 2;
   
   StepS(flag,l,rannum,sf,flav,maxnumb);
   StepS(flag,r,rannum,sf,flav,maxnumb);
@@ -335,15 +417,18 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
     m += s[i];
     flav[maxnumb] = props[i]->fl;maxnumb++;
   }
+  m = Order(m);
 
   AddToVariables(flag,m,string("p[0] + p[1]"),1,sf);
   AddToVariables(flag,m,string("dabs(p")+Order(m)+string(".Abs2())"),0,sf);
 
-  if (flag>=0) {
-    sf<<"  double amct  = 1.;"<<endl;
-    sf<<"  double alpha = .5;"<<endl;
-    sf<<"  double ctmax = 1.;"<<endl;
-    sf<<"  double ctmin = -1.;"<<endl;
+  if (flag==-1||flag==-11) {
+    double sms=0.;
+    for (int i=0;i<tcount+1;i++) sms+=PMassSum(props[i],0);
+    char hs[8];
+    sprintf(hs,"%i",(int)sms);
+    string help=string("ZT_")+string(hs);
+    m_idc.push_back(help);
   }
 
   GenerateMasses(flag,props,tcount+1,rannum,sf);
@@ -386,8 +471,15 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 				    vector<string> pin0, vector<string> pin1,
 				    vector<string> pout0,vector<string> pout1)
 { 
-  int hi = propt[count]->fl.Kfcode(); 
-  if (flag>=0) sf<<"  double tmass"<<count<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
+  int hi = propt[count]->fl.Kfcode();
+  string tmstr;
+  if (flag>=0 && !IsZero(propt[count]->fl.Mass())) {
+    char hs[3];
+    sprintf(hs,"%i",count);
+    tmstr = string("tmass")+string(hs);
+    sf<<"  double "<<tmstr<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
+  }
+  else tmstr = string("0.");
 
   string pout0sum;
   for (size_t i=0;i<pout0.size();i++) pout0sum += pout0[i];
@@ -467,12 +559,13 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 
       if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==1) {
 	sf<<"  wt *= CE.LLPropWeight(0.99,1.001*sqr(rpa.gen.Ecms()),s"<<Order(pout0sum)<<"_min,"
-	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<");"<<endl;
+	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<",rans["<<rannum<<"]);"<<endl;
       }
       else {
 	sf<<"  wt *= CE.MasslessPropWeight(0.5,s"<<Order(pout0sum)<<"_min,"
-	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<");"<<endl;
+	  <<"s"<<Order(pout0sum)<<"_max,s"<<Order(pout0sum)<<",rans["<<rannum<<"]);"<<endl;
       }
+      rannum++;
     }
   } 
   //second dice
@@ -511,30 +604,30 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       AddToVariables(flag,pout1sum,string("dabs(p")+Order(pout1sum)+string(".Abs2())"),0,sf);
 
       sf<<"  wt *= CE.MasslessPropWeight(0.5,s"<<Order(pout1sum)<<"_min,"
-	<<"s"<<Order(pout1sum)<<"_max,s"<<Order(pout1sum)<<");"<<endl;
+	<<"s"<<Order(pout1sum)<<"_max,s"<<Order(pout1sum)<<",rans["<<rannum<<"]);"<<endl;
+      rannum++;
     }
   }
   
-  string sctmax("ctmax");
+  string sctmax("m_ctmax");
   if (flag>=0) {
     if (pin0.size()==1 && pout0sum.length()==1 && pin1.size()==1 && pout1sum.length()==1) {
-      sf<<"  ctmax = Min(cuts->cosmax[0]["<<pout0sum<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
+      sf<<"  m_ctmax = Min(cuts->cosmax[0]["<<pout0sum<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
     }
     else if (pin0.size()==1 && pin1.size()==1 && pout0sum.length()==1) {
-      sf<<"  ctmax = cuts->cosmax[0]["<<pout0sum<<"];"<<endl;
+      sf<<"  m_ctmax = cuts->cosmax[0]["<<pout0sum<<"];"<<endl;
     }
     else if (pin0.size()==1 && pin1.size()==1 && pout1sum.length()==1) {
-      sf<<"  ctmax = cuts->cosmax[1]["<<pout1sum<<"];"<<endl;
+      sf<<"  m_ctmax = cuts->cosmax[1]["<<pout1sum<<"];"<<endl;
     }
     else sctmax = string("1.");
   }
+
+  char hs[4];
   switch (flag) {
   case -11:
-    char hs[4];
-    if (flag<0) {
-      if(!IsZero(propt[count]->fl.Mass())) sprintf(hs,"%i",hi);
-      else sprintf(hs,"");
-    }
+    if(!IsZero(propt[count]->fl.Mass())) sprintf(hs,"%i",hi);
+    else sprintf(hs,"");
     m_idc.push_back(string("TC")+string(hs)+
 		    string("_")+Order(pin0sum)+string("_")+Order(pin1sum)+
 		    string("_")+Order(pout0sum)+string("_")+Order(pout1sum));
@@ -546,16 +639,27 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
     if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<pout1[0]<<"]";
                                             else sf<<",p"<<Order(pout1sum);
     sf<<",s"<<Order(pout0sum)<<",s"<<Order(pout1sum);
-    sf<<",tmass"<<count<<",alpha,"<<sctmax<<",ctmin,amct,0,ran["<<rannum++<<"],ran[";
+    sf<<","<<tmstr<<",m_alpha,"<<sctmax<<",m_ctmin,m_amct,0,ran["<<rannum++<<"],ran[";
     sf<<rannum++<<"]);"<<endl;
     break;
   default:
-    sf<<"  wt *= CE.TChannelWeight(p"<<Order(pin0sum)<<",p"<<Order(pin1sum);
-    if (pout0.size()==1 && pout0[0].length()==1) sf<<",p["<<pout0[0]<<"]";
+     if(!IsZero(propt[count]->fl.Mass())) sprintf(hs,"%i",hi);
+     else sprintf(hs,"");
+     string idh = string("TC")+string(hs)+
+                  string("_")+Order(pin0sum)+string("_")+Order(pin1sum)+
+                  string("_")+Order(pout0sum)+string("_")+Order(pout1sum);
+     //sf<<"  std::cout<<\""<<idh<<"\";"<<endl;
+      sf<<"  if (m_k"<<idh<<".Weight()==ATOOLS::UNDEFINED_WEIGHT)"<<endl; 
+      sf<<"    m_k"<<idh<<"<<CE.TChannelWeight(p"<<Order(pin0sum)<<",p"<<Order(pin1sum);
+      if (pout0.size()==1 && pout0[0].length()==1) sf<<",p["<<pout0[0]<<"]";
                                               else sf<<",p"<<Order(pout0sum);
-    if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<pout1[0]<<"]";
+      if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<pout1[0]<<"]";
                                               else sf<<",p"<<Order(pout1sum);
-    sf<<",tmass"<<count<<",alpha,"<<sctmax<<",ctmin,amct,0);"<<endl;
+    sf<<","<<tmstr<<",m_alpha,"<<sctmax<<",m_ctmin,m_amct,0,m_k"<<idh<<"[0],m_k"<<idh<<"[1]);"<<endl;
+    
+    sf<<"  wt *= m_k"<<idh<<".Weight();"<<endl<<endl;
+    sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[0];"<<endl;
+    sf<<"  rans["<<rannum++<<"]= m_k"<<idh<<"[1];"<<endl;
   }
 
   //dice new
@@ -645,7 +749,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     lm[i] = LinkedMasses(_plist[i]);
     mummy += lm[i];
     if (_plist[i]->left==0) {
-      AddToVariables(flag,lm[i],string("ms[")+lm[i]+string("]"),0,sf);
+      if (flag==0 || flag==10) AddToVariables(flag,lm[i],string("ms[")+lm[i]+string("]"),0,sf);
       //sf<<"  double s"<<lm[i]<<" = ms["<<lm[i]<<"];"<<endl;
       momp[i]  = string("p[") + lm[i] + string("]");
       sflag[i] = 1;
@@ -695,7 +799,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
 	smax  += string("-sqrt(s")+Order(lm[j])+string("_min)");
       }
     }
-    smax += string(");");
+    smax += string(")");
     
     AddToVariables(flag,lm[hit] +string("_max"),smax,0,sf);
     //sf<<"  double s"<<Order(lm[hit])<<"_max = "<<smax<<endl;
@@ -704,7 +808,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     if (maxpole>0.) {
       hi = (_plist[hit]->fl).Kfcode();
       if (flag>=0) sf<<"  Flavour fl"<<lm[hit]<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
-    }
+    } 
     switch (flag) {
     case -11: case -1:
       if (maxpole>0.) {
@@ -712,9 +816,7 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
 	sprintf(hs,"%i",hi);
 	m_idc.push_back(string("MP")+string(hs)+string("_")+Order(lm[hit]));
       }
-      else {
-	m_idc.push_back(string("MlP_")+Order(lm[hit]));
-      }
+      else m_idc.push_back(string("MlP_")+Order(lm[hit]));
       break;
     case 0: case 10:
       sf<<"  Vec4D  "<<momp[hit]<<";"<<endl
@@ -739,12 +841,13 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
       AddToVariables(flag,lm[hit],string("dabs(")+momp[hit]+string(".Abs2())"),0,sf);
       if (maxpole>0.) {
 	sf<<"  wt *= CE.MassivePropWeight(fl"<<lm[hit]<<".Mass(),"<<"fl"<<lm[hit]<<".Width(),1,"
-	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,"<<"s"<<Order(lm[hit])<<");"<<endl;
+	  <<"s"<<Order(lm[hit])<<"_min,s"<<Order(lm[hit])<<"_max,"<<"s"<<Order(lm[hit])<<",rans["<<rannum<<"]);"<<endl;
       }
       else {
 	sf<<"  wt *= CE.MasslessPropWeight(1.,s"<<Order(lm[hit])<<"_min,"
-	  <<"s"<<Order(lm[hit])<<"_max,s"<<Order(lm[hit])<<");"<<endl;
+	  <<"s"<<Order(lm[hit])<<"_max,s"<<Order(lm[hit])<<",rans["<<rannum<<"]);"<<endl;
       }
+      rannum++;
     }
     sum_s_i  += string("-sqrt(s")+Order(lm[hit])+string(")");
     sflag[hit] = 1;
@@ -986,8 +1089,18 @@ std::string Channel_Generator::CreateChannelID(int echflag)
     idstr+=(*it);
     idstr+=string("$");
   }
+  idstr = string("CG0$")+idstr;
   m_idstr = idstr;
   return idstr;
 }
 
-
+double Channel_Generator::PMassSum(Point* p,vector<int>* kfs)
+{
+  if (!p->left) return 0.;
+  double m = 0.;
+  if (p->fl.IsMassive()) {
+    m = p->fl.Mass();
+    if (kfs) kfs->push_back(p->fl.Kfcode());
+  }
+  return m + PMassSum(p->left,kfs) + PMassSum(p->right,kfs); 
+}

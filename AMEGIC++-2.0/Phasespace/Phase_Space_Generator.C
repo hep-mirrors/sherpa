@@ -1,6 +1,9 @@
 #include <stdlib.h>
 #include "Phase_Space_Generator.H"
 #include "Channel_Generator.H"
+#include "Channel_Generator_NPV.H"
+#include "Channel_Generator3V.H"
+#include "Channel_Generator3_NPV.H"
 #include "Process_Base.H"
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -21,7 +24,7 @@ Phase_Space_Generator::Phase_Space_Generator(int _nin,int _nout) : nin(_nin), no
   m_mode=1;
 }
 
-bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _pID,
+bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pathID,string _pID,
 				      ATOOLS::Flavour* fl,Process_Base * proc)
 { 
   path   = _pathID;
@@ -36,11 +39,16 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
 
   string lmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/fsrchannels");
   string mapname  = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/fsrchannels.map");
-  
-  if (IsFile(lmapname)) return 1-LoadChannels(fl,Ch);
+
+  Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
+  int inttype  = dr.GetValue<int>("INTEGRATOR",4);
+  int ng = 2;
+  if (inttype==4) ng=1;
+
+  if (IsFile(lmapname)) return 1-GetLibList(liblist);
 
   int newchannels = 0;
-  int extrachannel = 0;
+  //int extrachannel = 0;
   ofstream lmf;
   lmf.open(lmapname.c_str());
   int cnt=0;
@@ -69,69 +77,69 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
   }
   string fsrp = path+string("/")+fsrpath;
 
-  for (int i=0;i<ngraph;) {
+  for (int i=0;i<ngraph;i++) {
     if (proc->IsFreeOfFourVertex(proc->Diagram(i))) {
-      Channel_Generator * cg = new Channel_Generator(nin,nout,fl,proc->Diagram(i));
-      string chID = cg->CreateChannelID(extrachannel);
-      lmf<<chID<<endl;
-
-      if (!RSearch(mapname,chID)) {
-	bool hit;
-	do {
-	  if (extrachannel) sprintf(procname,"C%ia",cnt);
-	  else              sprintf(procname,"C%i",cnt);
-	  string help = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
-	  hit = IsFile(help);
-	  if (hit) cnt++;
-	} while (hit);
-
-	// making directory
-	if (cnt%maxchannels==0) {
-	  if (cnt>0) {
-	    sprintf(hlp,"_%i",cnt/maxchannels);
-	    fsrpath = fsrpath0 + string(hlp);
-	    fsrp = path+string("/")+fsrpath;
-	  }
-	  unsigned int  mode_dir = 0755;
-	  mkdir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp).c_str(),mode_dir);
-	  String_Library slib(1);
-	  slib.InitMakefile(fsrp);
-	}
-
-
-	int  rannumber;
-	cg->SetName(string(procname));
-	rannumber    = cg->MakeChannel(extrachannel,cnt,fsrp,pID);
-	if (rannumber>0) {
-	  string makefilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
-	  AddToMakefileAM(makefilename,fsrp,procname);
-	  cnt++;
-	  newchannels = 1;;
-	  Ch->Add(cg);
-	}
-	mf.open(mapname.c_str(),ios::out|ios::app);
-	mf<<chID<<": "<<fsrpath<<"/"<<string(procname)<<endl;
-	mf.close();
+    for(int j=0;j<ng;j++){
+      Channel_Generator_Base *cg,*cg2;
+      if (inttype==6) {
+	if (j==0) cg = new Channel_Generator3V(nin,nout,fl,proc->Diagram(i),0);
+	else cg = new Channel_Generator3_NPV(nin,nout,fl,proc->Diagram(i),0);
       }
       else {
-	delete cg;
-	if (!newchannels) {
-	  if (chID[0]!='%') {
-	    int pos = chID.find(string(": "));
-	    chID = chID.substr(pos+2);
-	    
-	    Single_Channel * sc = SetChannel(nin,nout,fl,chID);
-	    if (sc==0) newchannels = 1;
-	    else {
-	      sc->SetName(pID+string("--")+chID);
-	      Ch->Add(sc);
+	if (j==0) cg = new Channel_Generator(nin,nout,fl,proc->Diagram(i),0);
+	else cg = new Channel_Generator_NPV(nin,nout,fl,proc->Diagram(i),0);
+      }
+      for (int k=0;k<cg->NumberOfChannels();k++) {
+	string chID = cg->CreateChannelID(k);
+	lmf<<chID<<endl;
+	if (!RSearch(mapname,chID)) {
+	  bool hit;
+	  do {
+	    sprintf(procname,"C%i",cnt);
+	    string help = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
+	    hit = IsFile(help);
+	    if (hit) cnt++;
+	  } while (hit);
+	  
+	  // making directory
+	  if (cnt%maxchannels==0) {
+	    if (cnt>0) {
+	      sprintf(hlp,"_%i",cnt/maxchannels);
+	      fsrpath = fsrpath0 + string(hlp);
+	      fsrp = path+string("/")+fsrpath;
 	    }
-	  }	
+	    unsigned int  mode_dir = 0755;
+	    mkdir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp).c_str(),mode_dir);
+	    String_Library slib(1);
+	    slib.InitMakefile(fsrp);
+	  }
+	  
+	  int  rannumber;
+	  //cg->SetName(string(procname));
+	  rannumber    = cg->MakeChannel(k,cnt,fsrp,pID);
+	  if (rannumber>0) {
+	    string makefilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
+	    AddToMakefileAM(makefilename,fsrp,procname);
+	    cnt++;
+	    newchannels = 1;
+	  }
+	  mf.open(mapname.c_str(),ios::out|ios::app);
+	  mf<<chID<<": "<<fsrpath<<"/"<<string(procname)<<endl;
+	  mf.close();
+	}
+	else {
+	  if (!newchannels) {
+	    if (chID[0]!='%') {
+	      int pos = chID.find(string(": "));
+	      chID = chID.substr(pos+2);
+	      liblist->push_back(chID);
+	    }	
+	  }
 	}
       }
-      if (!extrachannel) i++;
+      delete cg;
     }
-    else i++;
+    }
   }
   lmf.close();
   return newchannels;
@@ -255,8 +263,47 @@ void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,str
 
 
 
+bool Phase_Space_Generator::GetLibList(std::list<std::string>* liblist)
+{
+  int  hit;
 
-bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch)
+  string chlname   = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
+  string chmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
+ 
+ ifstream chlist;
+  chlist.open(chlname.c_str());
+  if (!IsFile(chmapname)) {
+    ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
+		       <<chmapname<<" not found."<<endl;
+    return 0;
+  }
+
+  char buffer[buffersize];
+  string libname;
+  for(;chlist;) {
+    chlist.getline(buffer,buffersize);    
+    libname = string(buffer);
+    if (chlist && libname[0]!='%') {
+      ifstream chmap(chmapname.c_str());
+      if (!RSearch(chmap,libname) || libname.find(string(": "))==-1) {
+	ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
+			   <<"Mapping for "<<libname<<" not found."<<endl;	
+	return 0;
+      }
+      chmap.close();
+
+      if (libname[0]!='%') {
+	int pos = libname.find(string(": "));
+	libname = libname.substr(pos+2);
+      
+	liblist->push_back(libname);
+      }
+    }
+  }
+  chlist.close();
+  return 1;
+}
+/*bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch,Process_Base * proc)
 {
   string chlname   = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
   string chmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
@@ -303,7 +350,7 @@ bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch
   }
   chlist.close();
   return 1;
-}
+  }*/
 
 bool Phase_Space_Generator::IsFile(string &filename)
 {

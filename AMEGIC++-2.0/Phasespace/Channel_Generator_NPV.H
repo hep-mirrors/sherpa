@@ -1,5 +1,5 @@
-#ifndef Channel_Generator_h
-#define Channel_Generator_h
+#ifndef Channel_Generator_NPV_h
+#define Channel_Generator_NPV_h
 
 #include "Channel_Generator_Base.H"
 
@@ -10,21 +10,23 @@ typedef std::map<std::string,std::string> Decls;
   
   typedef std::vector<std::string> String_List;
 
-  class Channel_Generator : public Channel_Generator_Base {
+  
+
+  class Channel_Generator_NPV : public Channel_Generator_Base {
     Decls declarations;
     
     int         extrachannelflag,newchannel;
     int         tcount,acount,m_aid;
     String_List m_idc;
-    std::string m_idstr;
+    std::string m_idstr,m_mapstr;
+    std::vector<Point *> m_topos,m_pclist;
+    void        Step0(int,Point *,int&,std::ofstream&);
+    bool        QCDAntenna(int,Point*,int&,std::ofstream&,int);
 
-    void        Step0(int,Point *,int&,std::ofstream&,ATOOLS::Flavour*,int&);
-    bool        StepS(int,Point *,int&,std::ofstream&,ATOOLS::Flavour*,int&);
-    void        StepNT(int,int,Point *,int&,std::ofstream& sf,ATOOLS::Flavour*,int&);
-    void        SingleTStep(int,std::string*,Point **,int,int&,std::ofstream&,int,
-			    String_List,String_List,String_List,String_List);
-
-    void        GenerateMasses(int,Point **,int,int&,std::ofstream&);
+    void        GenerateMassChain(int,Point *,Point *,int&,std::ofstream&);
+    void        GenerateMassFwd(int,Point*,int&,std::ofstream&);
+    void        GenerateDecayChain(int flag,Point* p,int& rannum,std::ofstream& sf,
+				   std::vector<std::string>, std::vector<std::string>);
     std::string LinkedMasses(Point *);
     void        SetProps(Point *,Point **,Point **,int&);
     void        CalcSmin(int,char*,std::string,std::ofstream&,Point*);
@@ -33,17 +35,28 @@ typedef std::map<std::string,std::string> Decls;
     void        BackLinks(Point *,Point * &);
     void        InitT(Point *);
     bool        Massive(ATOOLS::Flavour fl) { return (fl.Mass()!=0.) ? 1:0; }
+    int         AntennaS(Point* p);
+    void        GenerateTopos(Point*);
+    Point*      CopyPoints(Point*);
+    Point*      TransformTS(Point*);
+    Point*      GetMirrorTopo(Point*);
+    int         MarkNP(Point*);
+    void        MRPScan();
     std::string Order(std::string);
     std::string IString(int);
     void        AddToVariables(int,const std::string&,const std::string&,const int&,std::ofstream&); 
+    bool        CheckVariables(int flag,const std::string& lhs,const int& type);
     void        ClearDeclarations() { declarations.clear(); } 
     double      PMassSum(Point*,std::vector<int>*);
+    std::string GetFlMass(Point* p);
   public:
-    Channel_Generator(int,int,ATOOLS::Flavour *,Point *,int);
-    ~Channel_Generator();
+    Channel_Generator_NPV(int,int,ATOOLS::Flavour *,Point *,int);
+    ~Channel_Generator_NPV();
     int         MakeChannel(int&,int,std::string&,std::string&);
     Point     * GetPointlist()             { return plist; }
+    //void        SetName(std::string _name) { name = _name; }
     std::string CreateChannelID(int);
+    int         NumberOfChannels() { return m_topos.size(); }
   };
       //! The usual identifiers, number of incoming and outgoing legs.
     /*!

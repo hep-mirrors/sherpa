@@ -9,7 +9,8 @@ namespace ATOOLS {
   private:
 
     int    m_status;               // 0 no operation, 1 boost, 2 rot, 3 boost+rot
-    double m_mat[4][4];               
+    double m_mat[4][4];
+    double m_rsq;
     Vec4D  m_beta;
 
   public:

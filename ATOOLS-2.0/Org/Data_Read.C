@@ -395,5 +395,6 @@ template long             Data_Read::GetValue<long>(std::string,long);
 template float            Data_Read::GetValue<float>(std::string,float);
 template double           Data_Read::GetValue<double>(std::string,double);
 template std::string      Data_Read::GetValue<std::string>(std::string,std::string);
+template Switch::code     Data_Read::GetValue<Switch::code>(std::string,Switch::code);
 
 

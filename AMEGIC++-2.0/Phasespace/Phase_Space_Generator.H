@@ -1,9 +1,10 @@
 #ifndef Phase_Space_Generator_h
 #define Phase_Space_Generator_h
 
-#include "Multi_Channel.H"
+//#include "Multi_Channel.H"
 #include "MyString.H"
 #include "Point.H"
+#include <list>
 
 namespace AMEGIC {
   class Process_Base;
@@ -16,7 +17,8 @@ namespace AMEGIC {
     std::string path,pathID,pID;
     int m_mode;
 
-    bool  LoadChannels(ATOOLS::Flavour *,PHASIC::Multi_Channel *);
+    //bool  LoadChannels(ATOOLS::Flavour *,PHASIC::Multi_Channel *,Process_Base *);
+    bool  GetLibList(std::list<std::string>* liblist);
     bool  IsFile(std::string &);
     bool  Search(std::ifstream &,std::string);
     bool  RSearch(std::ifstream &,std::string &);
@@ -27,69 +29,11 @@ namespace AMEGIC {
     void  AddToMakefileAM(std::string, std::string, std::string);
   public:
     Phase_Space_Generator(int,int);
-    bool Construct(PHASIC::Multi_Channel *,std::string,std::string,ATOOLS::Flavour *, 
+    bool Construct(std::list<std::string>*,std::string,std::string,ATOOLS::Flavour *, 
 		   Process_Base *);
-    PHASIC::Single_Channel * SetChannel(int,int,ATOOLS::Flavour* fl,std::string&);
+    //PHASIC::Single_Channel * SetChannel(int,int,ATOOLS::Flavour* fl,std::string&,ATOOLS::Integration_Info * const);
   };
 
-  //! The numbers of incoming and outgoing momenta.
-  /*!
-    Two identifiers : The path (a name for the subdirectory, like P{nin}_{nout}) and
-    the specific process name, pID.
-  */
-  /*!
-    Two more names for the generation of libraries. Somehow I have the impression, that
-    we do some overcounting here, have to think about it.
-  */
-  /*!
-    Obvious names for specific files.
-  */
-  /*!
-    Checks wether the channels have already been constructed.
-    If there's a mismatch of C and H files the program aborts.
-    If the channel was already constructed, the corresponding Single_Channel is added 
-    to the Multi_Channel and a 1 is returned, otherwise a zero is returned.
-  */
-  /*!
-    Checks, if files with a given name are already existing. If this is the case, 1 is returned.
-  */
-  /*!
-    Checks, if the string is contained in the stream. If so, a 1 is returned.
-  */
-  /*!
-    Copies the ingredients of one file to another.
-    The filenames are given by the strings.
-  */
-  /*!
-    Create the H- and the C-file for the Multi_Channel.
-    The basic idea for the Multi_Channel is that each Single_Channel
-    receives a number according to which they will be called. 
-    These numbers are stuffed into a switch-case structure
-    that gets initialized in these methods.
-  */
-  /*!
-    These methods add further channels into the structure of
-    H-, C-, and Makefile as well as to the template SetChannel file. 
-    The trick in all cases is to copy the old file, insert the
-    lines to be included and copy back.
-  */
-  /*!
-    This method constructs new channels for the phase space integrator.
-    It checks, via ChechForOldChannels whether old channels are existing. 
-    If this is the case Construct return a 0. Otherwise it proceeds with the 
-    construction of channels with help of the Channel_Generator. If a channel was
-    generated, i.e. some new files and methods were created, this has to be inserted 
-    into the corresponding Makefiles, a link has to be established and the main headers 
-    and cfiles (which distribute the individual channels) have to be modified. 
-    At the end, if a new channel was created, "true" is returned.
-  */
-  /*!
-    This method is located in an external file to be changed during the usage of AMEGIC. 
-    It basically relates the library files for integration channels and the 
-    Phase_Space_Handler/Phase_Space_Generator complex. Depending on the (name-) string
-    and other chararcteristics it returns specific integration channels out of the
-    channel library.
-  */
 }
 #endif
 

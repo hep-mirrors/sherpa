@@ -4,7 +4,9 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-libAmegicPSGen_la_SOURCES = Phase_Space_Generator.C Channel_Generator.C
+libAmegicPSGen_la_SOURCES = Phase_Space_Generator.C Channel_Generator_Base.C \
+			    Channel_Generator.C Channel_Generator_NPV.C \
+                            Channel_Generator3V.C Channel_Generator3_NPV.C 
 INCLUDES = -I../Main \
 	   -I../Amplitude \
 	   -I../Amplitude/AmplTools \
@@ -21,6 +23,8 @@ INCLUDES = -I../Main \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Phase_Space_Generator.H Channel_Generator.H
+noinst_HEADERS = Phase_Space_Generator.H Channel_Generator_Base.H \
+		 Channel_Generator.H Channel_Generator_NPV.H \
+		 Channel_Generator3V.H Channel_Generator3_NPV.H 
 
 EXTRA_DIST    = $(CVSINCLUDE)

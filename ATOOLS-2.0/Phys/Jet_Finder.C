@@ -483,10 +483,11 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	cuts->energymin[i] = Max(sqrt(1. * m_ycut * m_s),cuts->energymin[i]);
 	if (m_type==4) {
 	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
-	    sqrt(1.-2.* 1.* m_ycut);
-	  cuts->etmin[i] = Max(sqrt(1.* m_ycut * m_s),cuts->etmin[i]);
+	    Min(cuts->cosmax[0][i],sqrt(1.-4.*m_ycut));
+	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
 	}
       }
+      else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
 
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong()) {                
@@ -499,7 +500,9 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
                	         (hadron-hadron collisions)
  
 	  */
-	  if (m_type>=2) cuts->scut[j][i] = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
+	  if (m_type>=2) cuts->scut[j][i] = cuts->scut[i][j] 
+			   = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
+	  else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_smin);
 	}
       }
     }

@@ -7,7 +7,7 @@
 
 using namespace ATOOLS;
 
-Poincare::Poincare(): m_status(0),m_beta(1.,0.,0.,0.)        // standard constructor Unity
+Poincare::Poincare(): m_status(0),m_beta(1.,0.,0.,0.),m_rsq(1.)        // standard constructor Unity
 {
   for (int i=0;i<4;i++)       // unitary
     for (int j=0;j<4;j++) {
@@ -85,24 +85,21 @@ Poincare::Poincare(Vec4D v)              // boost constuctor
 {
   m_status = 1;
   m_beta   = v; 
+  m_rsq    = sqrt(m_beta.Abs2());
 }
  
 void Poincare::Boost(Vec4D& v)          // boosts vectors in CMS
 {
-  Vec4D ph   = v;
-  double rsq = sqrt(m_beta.Abs2());
-  v[0]       = (m_beta[0]*ph[0]-Vec3D(m_beta)*Vec3D(ph))/rsq;   // was m_beta*p/rsq before.
-  double c1  = (ph[0]+v[0])/(rsq+m_beta[0]);
-  v          = Vec4D(v[0],Vec3D(ph)-c1*Vec3D(m_beta));  
+  double v0  = (m_beta[0]*v[0]-Vec3D(m_beta)*Vec3D(v))/m_rsq;   // was m_beta*p/rsq before.
+  double c1  = (v[0]+v0)/(m_rsq+m_beta[0]);
+  v          = Vec4D(v0,Vec3D(v)-c1*Vec3D(m_beta)); 
 }
 
 void Poincare::BoostBack(Vec4D& v)      // boost back to LAB Frame
 {
-  Vec4D ph   = v;
-  double rsq = sqrt(m_beta.Abs2());
-  v[0]       = (m_beta[0]*ph[0]+Vec3D(m_beta)*Vec3D(ph))/rsq;
-  double c1  = (ph[0]+v[0])/(rsq+m_beta[0]);
-  v          = Vec4D(v[0],Vec3D(ph)+c1*Vec3D(m_beta));  
+  double v0  = (m_beta[0]*v[0]+Vec3D(m_beta)*Vec3D(v))/m_rsq;
+  double c1  = (v[0]+v0)/(m_rsq+m_beta[0]);
+  v          = Vec4D(v0,Vec3D(v)+c1*Vec3D(m_beta));  
 }
 
 

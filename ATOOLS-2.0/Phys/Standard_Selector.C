@@ -51,7 +51,7 @@ double * Energy_Selector::ActualValue() { return value; }
 
 void Energy_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=0;i<m_n-1;i++) {
+  for (int i=0;i<m_n;i++) {
     cuts->energymin[i] = Max(emin[i],cuts->energymin[i]);
     cuts->energymax[i] = Min(emax[i],cuts->energymax[i]);
   }
@@ -127,10 +127,10 @@ double * ET_Selector::ActualValue() { return value; }
 
 void ET_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=m_nin;i<m_n-1;i++) {
+  for (int i=m_nin;i<m_n;i++) {
     cuts->energymin[i] = Max(etmin[i],cuts->energymin[i]);
     cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
-      sqrt(1.-2.*sqr(etmin[i])/m_smax);
+      Min(cuts->cosmax[0][i],sqrt(1.-4.*sqr(etmin[i])/m_smax));
     cuts->etmin[i] = Max(etmin[i],cuts->etmin[i]);
   }
 }
@@ -203,10 +203,10 @@ double * PT_Selector::ActualValue() { return value; }
 
 void PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=m_nin;i<m_n-1;i++) {
+  for (int i=m_nin;i<m_n;i++) {
     cuts->energymin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].Mass())),cuts->energymin[i]);
     cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
-      sqrt(1.-sqr(ptmin[i])/(0.5*m_smax-sqr(m_fl[i].Mass())));
+      Min(cuts->cosmax[0][i],sqrt(1.-sqr(ptmin[i])/(0.25*m_smax-sqr(m_fl[i].Mass()))));
     cuts->etmin[i] = Max(ptmin[i],cuts->etmin[i]);
   }
 }
@@ -284,11 +284,11 @@ double * Rapidity_Selector::ActualValue() { return value; }
 
 void Rapidity_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=m_nin;i<m_n-1;i++) {
+  for (int i=m_nin;i<m_n;i++) {
     cuts->cosmax[0][i] = cuts->cosmax[i][0] =  
-      1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(ymax[i]);
+      Min(cuts->cosmax[0][i],1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(ymax[i]));
     cuts->cosmax[1][i] = cuts->cosmax[i][1] = 
-      1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]);
+      Min(cuts->cosmax[0][i],1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]));
   }
 }
 
@@ -378,9 +378,9 @@ double * PseudoRapidity_Selector::ActualValue() { return value; }
 
 void PseudoRapidity_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=m_nin;i<m_n-1;i++) {
-    cuts->cosmax[0][i] = cuts->cosmax[i][0] = tanh(etamax[i]);
-    cuts->cosmax[1][i] = cuts->cosmax[i][1] = tanh(-etamin[i]);
+  for (int i=m_nin;i<m_n;i++) {
+    cuts->cosmax[0][i] = cuts->cosmax[i][0] = Min(cuts->cosmax[0][i],tanh(etamax[i]));
+    cuts->cosmax[1][i] = cuts->cosmax[i][1] = Min(cuts->cosmax[0][i],tanh(-etamin[i]));
   }
 }
 
