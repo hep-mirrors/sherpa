@@ -787,12 +787,18 @@ int Amplitude_Generator::CompareColors(Color_Function* c1,vector<int> blindlist1
   for (int i=0;i<blindlist1.size();i++){
     for (int j=0;j<3;j++)
       {
-	if (l1[j]>blindlist1[i]) l1[j]--;
-	if (l2[j]>blindlist2[i]) l2[j]--;
+	if (l1[j]>=blindlist1[i]) l1[j]--;
+	if (l2[j]>=blindlist2[i]) l2[j]--;
       }
   }
-  for (int i=0;i<3;i++) if(l1[i]!=l2[i]) return 0;
-  
+  if (c1->type!=cf::D && c1->type!=cf::G) {
+    for (int i=0;i<3;i++) {
+      if (l1[i]!=l2[i]) return 0;
+    }
+  }
+  else {
+    if (l1[0]!=l2[1] && l1[1]!=l2[0]) return 0; 
+  }
   return 1;  
 }
 
@@ -821,14 +827,16 @@ int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
 
   std::vector<int> blindlist1;
   std::vector<int> blindlist2;
+  
   if(!(p1->fl.Strong())) blindlist1.push_back(0);
   if(!(p1->left->fl.Strong())) blindlist1.push_back(1);
   if(!(p1->right->fl.Strong())) blindlist1.push_back(2);
-  if(p1->middle) if(!(p1->middle->fl.Strong())) blindlist1.push_back(3);
+  if (p1->middle) if(!(p1->middle->fl.Strong())) blindlist1.push_back(3);
+  
   if(!(p2->fl.Strong())) blindlist2.push_back(0);
   if(!(p2->left->fl.Strong())) blindlist2.push_back(1);
   if(!(p2->right->fl.Strong())) blindlist2.push_back(2);
-  if(p2->middle) if(!(p2->middle->fl.Strong())) blindlist2.push_back(3);
+  if (p2->middle) if(!(p2->middle->fl.Strong())) blindlist2.push_back(3);
   if(blindlist1.size()!=blindlist2.size()) return 0;
 
   if (CompareColors(p1->Color,blindlist1,p2->Color,blindlist2)) {
