@@ -64,10 +64,10 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier)
  
 Message::Message() 
 {      
-  p_logfile = NULL;
   p_output = &std::cout;
   p_error = &std::cerr;
   p_no = new std::ofstream("/dev/null",std::ios::app);
+  p_logfile = p_no;
   m_file = 0;
   m_level = 0;
   m_modifiable = false;
@@ -76,13 +76,13 @@ Message::Message()
 
 Message::~Message() 
 {      
-  if (p_logfile!=NULL) delete p_logfile;
+  if (p_logfile!=p_no) delete p_logfile;
 }
 
 void Message::Init(const int level,const std::string &logfile) 
 { 
   m_level = level; 
-  if (m_level&4) {
+  if ((m_level&4)||(m_level&16)) {
     InitLogFile(logfile);
     Out()<<"Initialize output module Message. Level "<<m_level<<std::endl;
   }
@@ -90,7 +90,7 @@ void Message::Init(const int level,const std::string &logfile)
 
 void Message::InitLogFile(const std::string &logfile) 
 {
-  if (p_logfile!=NULL) return;
+  if (p_logfile!=p_no) return;
   std::string name=logfile;
   if (name==std::string("")) {
     int i=0;
