@@ -62,7 +62,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 	  if (p_mehandler->GenerateOneEvent()) {
 	    weight=p_mehandler->Weight();
 	    int  ntrial =p_mehandler->NumberOfTrials();
-	    EXTRAXS::XS_Base *xs=p_mehandler->GetXS();
+	    EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
 	    if (xs!=NULL && xs->NAddOut()!=0) {
 	      for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
 		isr[i] = new ATOOLS::Blob();

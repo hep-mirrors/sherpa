@@ -547,7 +547,7 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 }
 
 
-EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS() 
+EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode) 
 {
   if (m_mode==2) {
     if (p_simplexs->Selected()!=NULL) {
@@ -557,6 +557,7 @@ EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS()
       return p_simplexs;
     }
   }
+  if (mode>0) return NULL;
   msg.Error()<<"Error in Matrix_Element_Handler::GetXS()."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();

@@ -121,7 +121,7 @@ namespace SHERPA {
     unsigned int         NumberOfDiagrams();
     AMEGIC::Amegic     * GetAmegic();
     AMEGIC::Point      * GetDiagram(int);
-    EXTRAXS::XS_Base   * GetXS();
+    EXTRAXS::XS_Base   * GetXS(const int mode=0);
     double               Weight();
     unsigned long        NumberOfTrials();
 
