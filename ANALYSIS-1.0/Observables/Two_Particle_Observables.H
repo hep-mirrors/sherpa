@@ -11,7 +11,7 @@ namespace ANALYSIS {
     void virtual Evaluate(double,double=1.,int=1); 
   public:
     Two_Particle_Observable_Base(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
-				 int,double,double,int,const std::string & =std::string(""));
+				 int,double,double,int,const std::string & =std::string(""),const std::string & =std::string("FinalState"));
     void virtual Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double=1., int=1);
     void virtual Evaluate(const ATOOLS::Particle_List &,double=1., int=1);
   };
@@ -20,7 +20,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Vec4D & ,const ATOOLS::Vec4D &,double=1.,int=1); 
   public:
     Two_Particle_Mass(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
-		      int,double,double,int,const std::string & =std::string("Mass:"));
+		      int,double,double,int,const std::string & =std::string("Mass:"),const std::string & =std::string("FinalState"));
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -28,7 +28,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
   public:
     Two_Particle_PT(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
-		    int,double,double,int,const std::string & =std::string("P_T:"));
+		    int,double,double,int,const std::string & =std::string("P_T:"),const std::string & =std::string("FinalState"));
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -36,7 +36,7 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
   public:
     Two_Particle_Scalar_PT(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
-			   int,double,double,int,const std::string & =std::string("SP_T:"));
+			   int,double,double,int,const std::string & =std::string("SP_T:"),const std::string & =std::string("FinalState"));
     Primitive_Observable_Base * Copy() const;
   };
 
@@ -44,7 +44,31 @@ namespace ANALYSIS {
     void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
   public:
     Two_Particle_Eta(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
-		    int,double,double,int,const std::string & =std::string("P_T:"));
+		    int,double,double,int,const std::string & =std::string("P_T:"),const std::string & =std::string("FinalState"));
+    Primitive_Observable_Base * Copy() const;
+  };
+
+class Two_Particle_DEta : public Two_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
+  public:
+    Two_Particle_DEta(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
+		      int,double,double,int,const std::string & =std::string("DEta:"),const std::string & =std::string("FinalState"));
+    Primitive_Observable_Base * Copy() const;
+  };
+
+  class Two_Particle_DPhi : public Two_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
+  public:
+    Two_Particle_DPhi(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
+		      int,double,double,int,const std::string & =std::string("DPhi:"),const std::string & =std::string("FinalState"));
+    Primitive_Observable_Base * Copy() const;
+  };
+
+  class Two_Particle_DR : public Two_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
+  public:
+    Two_Particle_DR(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
+		    int,double,double,int,const std::string & =std::string("DR:"),const std::string & =std::string("FinalState"));
     Primitive_Observable_Base * Copy() const;
   };
 }

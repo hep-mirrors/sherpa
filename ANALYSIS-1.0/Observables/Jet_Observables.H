@@ -79,5 +79,55 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const ;
   };
 
+  //////////////////////////////////////////////////////////////////////
+
+  class Jet_DeltaR_Distribution : public Primitive_Observable_Base {
+  protected:
+    unsigned int  m_mode;
+    unsigned int  m_minn, m_maxn;
+    std::vector<ATOOLS::Histogram*>  m_histos;
+  public:
+
+    Jet_DeltaR_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+			    unsigned int mode, unsigned int minn, unsigned int maxn, 
+			    const std::string & =std::string("Jets"));
+
+    void Evaluate(const ATOOLS::Particle_List &,double, int);
+    void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
+    
+    void EndEvaluation(double);
+    virtual void Output(const std::string & pname);
+
+    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);
+    Primitive_Observable_Base * Copy() const;
+    void Reset();
+
+    virtual double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *);
+  };
+
+  class Jet_DeltaEta_Distribution : public Jet_DeltaR_Distribution {
+  protected:
+  public:
+    Jet_DeltaEta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+			      unsigned int mode, unsigned int minn, unsigned int maxn, 
+			      const std::string & =std::string("Jets"));
+    
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *);
+  };
+
+  class Jet_DeltaPhi_Distribution : public Jet_DeltaR_Distribution {
+  protected:
+  public:
+    Jet_DeltaPhi_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+			      unsigned int mode, unsigned int minn, unsigned int maxn, 
+			      const std::string & =std::string("Jets"));
+    
+    Primitive_Observable_Base * Copy() const;
+    double Calc(const ATOOLS::Particle *,const ATOOLS::Particle *);
+  };
+
+
+
 }
 #endif

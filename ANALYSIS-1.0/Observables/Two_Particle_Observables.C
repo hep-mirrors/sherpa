@@ -7,10 +7,11 @@ using namespace std;
 
 Two_Particle_Observable_Base::Two_Particle_Observable_Base(const Flavour & _flav1,const Flavour & _flav2,
 							   int _type,double _xmin,double _xmax,int _nbins,
-							   const std::string & _name) :
+							   const std::string & _name,const std::string & _lname) :
   Primitive_Observable_Base(_type,_xmin,_xmax,_nbins,NULL), 
   m_flav1(_flav1), m_flav2(_flav2)
 {
+  m_listname=_lname;
   MyStrStream str;
   str<<_name<<m_flav1<<m_flav2<<".dat";
   str>>m_name;
@@ -60,8 +61,8 @@ void Two_Particle_Observable_Base::Evaluate(const Particle_List & plist,double w
 
 Two_Particle_Mass::Two_Particle_Mass(const Flavour & _flav1,const Flavour & _flav2,
 				     int _type,double _xmin,double _xmax,int _nbins,
-				     const std::string & _name) :
-  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"Mass") { }
+				     const std::string & _name, const std::string & _lname) :
+  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"Mass",_lname) { }
 
 
 void Two_Particle_Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
@@ -72,7 +73,7 @@ void Two_Particle_Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
 
 Primitive_Observable_Base * Two_Particle_Mass::Copy() const
 {
-  return new Two_Particle_Mass(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new Two_Particle_Mass(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,8 +81,8 @@ Primitive_Observable_Base * Two_Particle_Mass::Copy() const
 
 Two_Particle_PT::Two_Particle_PT(const Flavour & _flav1,const Flavour & _flav2,
 				 int _type,double _xmin,double _xmax,int _nbins,
-				 const std::string & _name) :
-  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"PT") { }
+				 const std::string & _name, const std::string & _lname) :
+  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"PT",_lname) { }
 
 
 void Two_Particle_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
@@ -92,14 +93,13 @@ void Two_Particle_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weig
 
 Primitive_Observable_Base * Two_Particle_PT::Copy() const 
 {
-  return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
 }
-
 
 Two_Particle_Scalar_PT::Two_Particle_Scalar_PT(const Flavour & _flav1,const Flavour & _flav2,
 				 int _type,double _xmin,double _xmax,int _nbins,
-				 const std::string & _name) :
-  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"SPT") { }
+				 const std::string & _name, const std::string & _lname) :
+  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"SPT",_lname) { }
 
 
 void Two_Particle_Scalar_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
@@ -109,13 +109,16 @@ void Two_Particle_Scalar_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,doub
 
 Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const 
 {
-  return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
 }
 
 Two_Particle_Eta::Two_Particle_Eta(const Flavour & _flav1,const Flavour & _flav2,
 				 int _type,double _xmin,double _xmax,int _nbins,
-				 const std::string & _name) :
-  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"Eta") { }
+				 const std::string & _name,const std::string & _lname) :
+    Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"Eta",_lname) 
+
+{
+}
 
 
 void Two_Particle_Eta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
@@ -126,5 +129,80 @@ void Two_Particle_Eta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double wei
 
 Primitive_Observable_Base * Two_Particle_Eta::Copy() const 
 {
-  return new Two_Particle_Eta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new Two_Particle_Eta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
 }
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Two_Particle_DEta::Two_Particle_DEta(const Flavour & _flav1,const Flavour & _flav2,
+				     int _type,double _xmin,double _xmax,int _nbins,
+				     const std::string & _name,const std::string & _lname) :
+    Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"deta",_lname) 
+
+{ 
+}
+
+
+void Two_Particle_DEta::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{    
+    double deta = abs((mom1.Eta()-mom2.Eta()));
+    p_histo->Insert(deta,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Two_Particle_DEta::Copy() const 
+{
+    return new Two_Particle_DEta(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
+}
+    
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Two_Particle_DPhi::Two_Particle_DPhi(const Flavour & _flav1,const Flavour & _flav2,
+				       int _type,double _xmin,double _xmax,int _nbins,
+				     const std::string & _name,const std::string & _lname) :
+    Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"dphi",_lname) 
+{ 
+}
+
+
+void Two_Particle_DPhi::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{ 
+    double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]);
+    double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
+    double dphi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+    p_histo->Insert(dphi,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Two_Particle_DPhi::Copy() const 
+{
+    return new Two_Particle_DPhi(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Two_Particle_DR::Two_Particle_DR(const Flavour & _flav1,const Flavour & _flav2,
+				       int _type,double _xmin,double _xmax,int _nbins,
+				     const std::string & _name,const std::string & _lname) :
+    Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"dr",_lname) 
+
+{
+ }
+
+
+void Two_Particle_DR::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{ 
+    double pt1=sqrt(mom1[1]*mom1[1]+mom1[2]*mom1[2]);
+    double pt2=sqrt(mom2[1]*mom2[1]+mom2[2]*mom2[2]);
+    double dphi=acos((mom1[1]*mom2[1]+mom1[2]*mom2[2])/(pt1*pt2));
+    double c1=mom1[3]/Vec3D(mom1).Abs();
+    double c2=mom2[3]/Vec3D(mom2).Abs();
+    double deta=0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
+    double dr= sqrt(sqr(deta) + sqr(dphi)); 
+    cout<<"Deat in DR "<<deta<<" DR is :  "<<dr<<endl;
+    p_histo->Insert(dr,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Two_Particle_DR::Copy() const 
+{
+    return new Two_Particle_DR(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
+}
+
