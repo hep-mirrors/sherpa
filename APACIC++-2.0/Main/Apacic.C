@@ -76,6 +76,9 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
     p_fintree->BoRo(cms);
 
     int fsrstatus = p_finshower->PerformShower(p_fintree,jetveto);
+    int number=0;
+    p_finshower->GetMomentum(p_fintree->GetRoot(),number);
+
     if (fsrstatus==0) return fsrstatus;
     // check ME if still njet ME!
     // if isr is on, this check will be performed after the initial state shower
