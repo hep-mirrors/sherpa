@@ -10,10 +10,13 @@ namespace ATOOLS {
   struct ex {
     
     enum type {
-      normal_exit    = 1,
-      critical_error = 2,
-      fatal_error    = 3,
-      unknown        = 0 
+      normal_exit         = 1,
+      unknown_option      = 2,
+      inconsistent_option = 3,
+      not_implemented     = 4,
+      critical_error      = 5,
+      fatal_error         = 6,
+      unknown             = 0 
     };
     
     friend std::ostream &operator<<(std::ostream &str,const ex::type &type);
