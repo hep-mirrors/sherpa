@@ -423,8 +423,6 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {
-  int helpi=p_dataread->GetValue<int>("ANALYSIS",0);
-  if (!helpi) return true;
   helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
   if (helpi>0) {
     ATOOLS::msg.SetLevel(2);
@@ -440,6 +438,8 @@ bool Initialization_Handler::InitializeTheAnalyses()
     throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"Syntax shown.",
 			    "Initialization_Handler","InitializeTheAnalyses"));
   }
+  int helpi=p_dataread->GetValue<int>("ANALYSIS",0);
+  if (!helpi) return true;
   std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","./");
   if (outpath==NotDefined<std::string>()) outpath="";
   p_analysis = new ANALYSIS::Analysis_Handler();
