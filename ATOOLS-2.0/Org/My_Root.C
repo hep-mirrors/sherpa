@@ -4,7 +4,8 @@
 using namespace MYROOT;
 
 My_Root::My_Root(const int argc,char **const argv):
-  p_file(NULL)
+  p_file(NULL),
+  m_draw(false)
 {
   std::string path, file;
 #ifndef USING__My_Root_only
@@ -12,8 +13,8 @@ My_Root::My_Root(const int argc,char **const argv):
   for (int i=0;i<argc;++i) inputstring+=std::string(argv[i])+std::string("; ");
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
   reader->SetString(inputstring);
-  if (!reader->ReadFromString("ROOT_PATH",path)) path="./";
-  if (!reader->ReadFromString("ROOT_FILE",path)) file="output.root";
+  if (!reader->ReadFromString(path,"ROOT_PATH")) path="./";
+  if (!reader->ReadFromString(file,"ROOT_FILE")) file="output.root";
   delete reader;
 #else
   path="./";
@@ -45,6 +46,7 @@ My_Root::~My_Root()
 
 void My_Root::Draw() 
 {
+  if (!m_draw) return;
   for (String_Object_Map::const_iterator oit=m_objects.begin();
        oit!=m_objects.end();++oit) {
     new TCanvas(oit->first.c_str(),oit->first.c_str());

@@ -33,6 +33,8 @@ namespace MYROOT {
     
     TFile *p_file;
 
+    bool m_draw;
+
   public:
 
     // constructor
@@ -58,6 +60,10 @@ namespace MYROOT {
 
     inline TObject *const operator[](const std::string &key) 
     { return GetObject(key); }
+
+    inline void SetDraw(const bool draw) { m_draw=draw; }
+
+    inline bool Draw() const { return m_draw; }
 
   };// end of class My_Root
 
