@@ -93,7 +93,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
     }
     for (int i=0;i<myblob->NOutP();++i) {
       ptot+=cur=myblob->OutParticle(i)->Momentum();
-      val=ATOOLS::Max(val,sqrt(cur[1]*cur[1]+cur[2]*cur[2]));
+      val=ATOOLS::Max(val,cur.PPerp());
     }
     m_ecmsmax-=sqrt(ptot.Abs2());
     m_pperpmax=ATOOLS::Min(m_pperpmax,val);
