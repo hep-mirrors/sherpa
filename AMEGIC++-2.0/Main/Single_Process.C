@@ -10,7 +10,6 @@
 #include "Combined_Selector.H"
 
 #include "prof.hh"
-#include "MyTiming.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -300,15 +299,11 @@ int Single_Process::Tests(double & result) {
   double M2 = 0.;
   double helvalue;
 
-  MyTiming watch;
   if (gauge_test) {
     m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_moms,Vec4D(sqrt(3.),1.,1.,-1.));
     p_BS->Setk0(0);
     p_BS->CalcEtaMu(p_moms);  
     p_BS->InitGaugeTest(.9);
-
-   
-  watch.Start();
 
     msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
     for (short int i=0;i<p_hel->MaxHel();i++) { 
@@ -326,8 +321,6 @@ int Single_Process::Tests(double & result) {
     M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
     result  = M2;
   }
-  watch.Stop();
-  watch.PrintTime();
 
   p_ampl->ClearCalcList();
   // To prepare for the string test.
@@ -359,7 +352,6 @@ int Single_Process::Tests(double & result) {
   double M2g = 0.;
   double * M_doub = new double[p_hel->MaxHel()];
 
-  watch.Start();
   for (short int i=0;i<p_hel->MaxHel();i++) { 
     if (p_hel->On(i)) {
       M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
@@ -369,8 +361,6 @@ int Single_Process::Tests(double & result) {
     }
   }
   msg.Debugging()<<endl;
-  watch.Stop();
-  watch.PrintTime();
 
   //shorten helicities
   for (short int i=0;i<p_hel->MaxHel();i++) {
@@ -442,7 +432,6 @@ int Single_Process::Tests(double & result) {
 
      --------------------------------------------------- */
 
-  watch.Start();
   {
     PROFILE_LOCAL("Shand.Complete()");
     p_shand->Complete(p_hel);
@@ -479,8 +468,6 @@ int Single_Process::Tests(double & result) {
     }
     return 1;
   }
-  watch.Stop();
-  watch.PrintTime();
   return 0;
 }
 
