@@ -90,7 +90,8 @@ template<class ObjectType,class ParameterType>
 ObjectType *const Getter_Function<ObjectType,ParameterType>::
 GetObject(const std::string &name,const Parameter_Type &parameters)
 {
-  if (s_getters->find(name)!=s_getters->end()) return (*(*s_getters)[name])(parameters);
+  typename String_Getter_Map::iterator git=s_getters->find(name);
+  if (git!=s_getters->end()) return (*git->second)(parameters);
   return NULL;
 }
 

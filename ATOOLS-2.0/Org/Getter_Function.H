@@ -43,25 +43,25 @@ namespace ATOOLS {
 
 }// end of namespace ATOOLS
 
-#define DECLARE_GETTER(NAME,TAG,OBJECT,PARAMETER)	 \
-  							 \
-  class NAME: public Getter_Function<OBJECT,PARAMETER> { \
-  private:						 \
-    							 \
-    static NAME s_initializer;				 \
-							 \
-  protected:						 \
-							 \
-    void PrintInfo(std::ostream &str) const;		 \
-    							 \
-    Object_Type *const					 \
-    operator()(const Parameter_Type &parameters) const;	 \
-    							 \
-  public:						 \
-    							 \
-    NAME(): Getter_Function<OBJECT,PARAMETER>(TAG) {}	 \
-      							 \
-  };							 \
+#define DECLARE_GETTER(NAME,TAG,OBJECT,PARAMETER)			\
+  									\
+  class NAME: public ATOOLS::Getter_Function<OBJECT,PARAMETER> {	\
+  private:								\
+    									\
+    static NAME s_initializer;						\
+    									\
+  protected:								\
+    									\
+    void PrintInfo(std::ostream &str) const;				\
+    									\
+    Object_Type *const							\
+      operator()(const Parameter_Type &parameters) const;		\
+    									\
+  public:								\
+    									\
+    NAME(): ATOOLS::Getter_Function<OBJECT,PARAMETER>(TAG) {}		\
+      									\
+  };									\
   NAME NAME::s_initializer				 
 
 #endif
