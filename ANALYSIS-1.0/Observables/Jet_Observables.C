@@ -314,6 +314,32 @@ void Two_Jet_Observable_Base::SetPTRange(const unsigned int jetno,const double m
 //########################################################################################
 //########################################################################################
 
+DEFINE_OBSERVABLE_GETTER(Jet_Rapidity_Distribution,Jet_Rapidity_Distribution_Getter,"JetRap");
+
+Jet_Rapidity_Distribution::Jet_Rapidity_Distribution(unsigned int type,double xmin,double xmax,int nbins,
+					   unsigned int mode,unsigned int minn,unsigned int maxn, 
+					   const std::string & listname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,listname) 
+{
+  m_name+="y_";
+}
+
+
+double Jet_Rapidity_Distribution::Calc(const Particle * p)
+{
+  Vec4D mom=p->Momentum();
+  return mom.Y();
+}
+
+Primitive_Observable_Base * Jet_Rapidity_Distribution::Copy() const 
+{
+  return new Jet_Rapidity_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+}
+
+//########################################################################################
+//########################################################################################
+//########################################################################################
+
 DEFINE_OBSERVABLE_GETTER(Jet_Eta_Distribution,Jet_Eta_Distribution_Getter,"JetEta");
 
 Jet_Eta_Distribution::Jet_Eta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
