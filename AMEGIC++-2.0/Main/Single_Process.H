@@ -123,7 +123,7 @@ namespace AMEGIC {
     double         operator()(const ATOOLS::Vec4D *);
     bool           OneEvent(double = -1.);
     bool           SameEvent();
-    ATOOLS::Blob_Data_Base * WeightedEvent();
+    ATOOLS::Blob_Data_Base * WeightedEvent(const int mode=0);
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
     int            NumberOfDiagrams();
     Point        * Diagram(int i);

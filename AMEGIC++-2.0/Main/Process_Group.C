@@ -1058,12 +1058,12 @@ bool Process_Group::SameEvent() {
   return p_pshandler->SameEvent();
 }
 
-ATOOLS::Blob_Data_Base *  Process_Group::WeightedEvent() {
+ATOOLS::Blob_Data_Base *  Process_Group::WeightedEvent(const int mode) {
   if (m_atoms) {
     SelectOne();
-    return p_selected->WeightedEvent();
+    return p_selected->WeightedEvent(mode);
   }
-  return p_pshandler->WeightedEvent();
+  return p_pshandler->WeightedEvent(mode);
 }
 
 ATOOLS::Blob_Data_Base *  Process_Group::SameWeightedEvent() {

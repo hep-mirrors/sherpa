@@ -84,7 +84,7 @@ namespace AMEGIC {
     double         DSigma2();
     bool           OneEvent(double = -1.);
     bool           SameEvent();
-    ATOOLS::Blob_Data_Base * WeightedEvent();
+    ATOOLS::Blob_Data_Base * WeightedEvent(const int mode=0);
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
     void           OptimizeResult();
     /*------------------------------------------------------------------------------

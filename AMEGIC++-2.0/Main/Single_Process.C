@@ -1170,10 +1170,10 @@ bool    Single_Process::SameEvent() {
   return p_partner->SameEvent(); 
 }
 
-ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent()     
+ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent(const int mode)     
 { 
-  if (p_partner==this) return p_pshandler->WeightedEvent(); 
-  return p_partner->WeightedEvent(); 
+  if (p_partner==this) return p_pshandler->WeightedEvent(mode); 
+  return p_partner->WeightedEvent(mode); 
 }
 
 ATOOLS::Blob_Data_Base * Single_Process::SameWeightedEvent() 
