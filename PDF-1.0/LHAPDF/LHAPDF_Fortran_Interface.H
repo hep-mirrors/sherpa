@@ -12,7 +12,7 @@ namespace PDF {
     int         m_anti;
     double      m_f[13];
   public:
-    LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour,std::string,int,std::string);
+    LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour,std::string,int,std::string,bool &);
     PDF_Base * GetCopy();
     void   Output();
 

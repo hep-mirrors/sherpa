@@ -8,6 +8,7 @@ using namespace AMATOOLS;
 using namespace APHYTOOLS;
 
 extern "C" {
+  void   lhapdreset_();
   void   lhapdfinitset_(const char *);
   void   lhapdfinit_(int &);
   void   lhapdfevolve_(double &,double &,double *);
@@ -16,19 +17,24 @@ extern "C" {
 
 LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour _bunch,
 						   const std::string _set,const int _member,
-						   const std::string _path) :
-  m_set(_set), m_member(_member), m_path(_path), m_anti(1) 
+						   const std::string _path, bool & initlhapdf) :
+  m_set(_set), m_member(_member), m_path(_path), m_anti(1)
 {
-  m_bunch = _bunch;
+  m_bunch = _bunch; 
   if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
   msg.Tracking()<<"Try to initialize PDF set according to the Les Houches Accord."<<endl
-		<<"  Set = "<<m_set<<" v "<<m_member<<" for "<<m_bunch<<endl;
-
-  std::string full = m_path+string("/")+m_set+string(".LHpdf");
-  const char * help;
-  help = full.c_str();
-  lhapdfinitset_(help);
-  lhapdfinit_(m_member);
+		<<"  Set = "<<m_set<<" v "<<m_member<<" for "<<m_bunch<<" "<<"/"<<m_anti<<":"<<initlhapdf<<endl;
+  
+  if (!initlhapdf) {
+    initlhapdf = 1;
+    msg.Tracking()<<"Init fortran piece."<<endl;
+    std::string full = m_path+string("/")+m_set+string(".LHpdf");
+    const char * help;
+    help = full.c_str();
+    lhapdfinitset_(help);
+    lhapdfinit_(m_member);
+  }
+  else msg.Tracking()<<"Fortran piece already initialized."<<endl;
 
   for (int i=1;i<6;i++) {
     m_partons.push_back(Flavour(kf::code(i)));

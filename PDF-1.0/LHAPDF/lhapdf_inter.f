@@ -4,8 +4,6 @@ C     Wrappers around LHAPDF routines
 C
 C******************************************************************
 
-C******************************************************************
-
       SUBROUTINE LHAPDFINITSET(set)
       character*64 set
 
