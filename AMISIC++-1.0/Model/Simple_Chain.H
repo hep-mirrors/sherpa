@@ -56,7 +56,7 @@ namespace AMISIC {
 
     std::string m_selected;
 
-    unsigned int m_nflavour, m_maxtrials, m_check;
+    unsigned int m_nflavour, m_maxtrials, m_check, m_jetveto;
     unsigned int m_scalescheme, m_kfactorscheme, m_vegas, m_foam;
     double       m_sigmahard, m_error, m_ecms;
     bool         m_external, m_regulate;
