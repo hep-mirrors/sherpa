@@ -7,4 +7,3 @@ INCLUDES = -I../../APACIC++-2.0/Showers \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Hard_Interface.H Knot.H Knot_List.H Tree.H
-#CXXFLAGS=-g -O2 -ftemplate-depth-25
