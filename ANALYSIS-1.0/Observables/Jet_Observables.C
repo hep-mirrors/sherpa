@@ -119,20 +119,20 @@ void Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int n
       (m_mode==2 && pl.size()==m_minn)) {
     // fill
     size_t i=1;
-    for (Particle_List::const_iterator it=pl.begin();it!=pl.end() && i<=m_maxn;++it,++i) {
+    m_histos[0]->Insert(0.,0.,ncount);
+    for (Particle_List::const_iterator it=pl.begin();it!=pl.end();++it,++i) {
       double value=Calc(*it);
-      m_histos[0]->Insert(value,weight,ncount);
-      m_histos[i]->Insert(value,weight,ncount);
+      m_histos[0]->Insert(value,weight,0);
+      if (i<=m_maxn) m_histos[i]->Insert(value,weight,ncount);
     }
     for (; i<m_histos.size();++i) { 
-      m_histos[0]->Insert(0.,0.,ncount);
       m_histos[i]->Insert(0.,0.,ncount);
     }
   }
   else {
     // fill with 0
-    for (size_t i=0; i<m_histos.size();++i) {
-      m_histos[0]->Insert(0.,0.,ncount);
+    m_histos[0]->Insert(0.,0.,ncount);
+    for (size_t i=1; i<m_histos.size();++i) {
       m_histos[i]->Insert(0.,0.,ncount);
     }
   }
