@@ -111,9 +111,14 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 {
   bool decayblob   = (_blob->NInP()==1);
   int shower, stat = interface->DefineInitialConditions(_blob);
+  if (stat==3) {
+    _blob->SetStatus(-1);
+    p_showerhandler->CleanUp();
+    return 1;
+  }
   if (stat==1) {
     interface->FillBlobs(_bloblist);
-    //DefineInitialConditions(_blob,_bloblist);
+    DefineInitialConditions(_blob,_bloblist);
     if (!decayblob) shower = interface->PerformShowers();
                else shower = interface->PerformDecayShowers();  
     if (shower==1) {
