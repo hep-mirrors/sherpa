@@ -380,6 +380,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       k1->z=sprime_a/sprime_b;
       k1->prev->x=k1->x/k1->z;
       m_sprime/=k1->z;
+
       /*  // *AS*
       if (m_to_be_diced[ntree0]) {
 	k1->prev->thcrit       = k1->thcrit;
