@@ -70,26 +70,29 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		isr[i]->SetTypeSpec("KMR DUPDF");
 		isr[i]->SetId();
 		isr[i]->SetStatus(1);
+// 		std::cout<<"SP: "<<xs->AddMomenta()[i]<<" "
+// 			 <<xs->Momenta()[i]<<" "
+// 			 <<(xs->AddMomenta()[i].Perp()==
+// 			    -1.0*xs->Momenta()[i].Perp())<<" -> "
+// 			 <<((xs->AddMomenta()[i].Perp()==
+// 			    -1.0*xs->Momenta()[i].Perp())?i:1-i)<<std::endl;
+		size_t j=i;
+		if (!(xs->AddMomenta()[i].Perp()
+		      ==-1.0*xs->Momenta()[i].Perp())) j=1-i;
 		ATOOLS::Particle *parton = 
-		  new ATOOLS::Particle(-1,xs->AddFlavours()[i],
-				       xs->AddMomenta()[i]);
+		  new ATOOLS::Particle(-1,xs->AddFlavours()[j],
+				       xs->AddMomenta()[j]);
 		parton->SetNumber();
 		parton->SetStatus(2);
 		isr[i]->AddToOutParticles(parton);
-		parton = new ATOOLS::Particle(-1,xs->AddFlavours()[i],
-					      xs->AddMomenta()[i]);
+		parton = new ATOOLS::Particle(-1,xs->AddFlavours()[j],
+					      xs->AddMomenta()[j]);
 		parton->SetNumber();
 		parton->SetStatus(2);
 		parton->SetMomentum(parton->Momentum()
 				    +xs->Momenta()[i]);
 		isr[i]->AddToInParticles(parton);
-// 		std::cout<<parton->Momentum()<<" "
-// 			 <<xs->Momenta()[i]<<" "
-// 			 <<(parton->Momentum().Perp()==
-// 			    -1.0*xs->Momenta()[i].Perp())<<std::endl;
-		if (parton->Momentum().Perp()==-1.0*xs->Momenta()[i].Perp())
-		  isr[i]->SetBeam(1-i);
-		else isr[i]->SetBeam(i);
+		isr[i]->SetBeam(i);
 		bloblist->push_back(isr[i]);
  		p_remnants[i]->QuickClear();
  		if (!p_remnants[i]->Extract(parton)) success=false;
