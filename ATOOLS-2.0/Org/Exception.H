@@ -28,7 +28,7 @@ namespace ATOOLS {
   class Exception_Handler;
   
   class Tester_Object {
-  private:
+  protected:
 
     virtual bool ApproveTerminate();
     friend class Exception_Handler;
@@ -41,7 +41,7 @@ namespace ATOOLS {
   };// end of class Tester_Object
 
   class Terminator_Object {
-  private:
+  protected:
 
     virtual void PrepareTerminate();
     friend class Exception_Handler;
