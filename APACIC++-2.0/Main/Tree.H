@@ -61,10 +61,7 @@ namespace APACIC {
     void Store();
     //! Restores the tree down to partons with info = 'H', 'G', or 'M'
     void Restore();
-    void Restore(Knot *);
     void ResetDaughters(Knot *);
-    //! Removes the tree from a to b
-    void Restore(Knot *, Knot *);
     //-----------------------------------------------------------------------
     //--------------------------- Specific knots ----------------------------
     //----------------------------------------------------------------------- 

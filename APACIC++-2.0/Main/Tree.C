@@ -118,7 +118,7 @@ Knot * Tree::NewKnot(Parton * _inpart)
     newk->part    = new Parton(newk->kn_no);
   }
   else {
-    newk->part    = _inpart;
+    newk->part    = new Parton(_inpart);
   }
   newk->left      = 0;
   newk->right     = 0;
@@ -132,46 +132,6 @@ Knot * Tree::NewKnot(Parton * _inpart)
 //-----------------------------------------------------------------------
 //--------------------------- Resetting the tree ------------------------
 //----------------------------------------------------------------------- 
-
-
-void Tree::Restore(Knot * start, Knot * stop) {
-  if (start==stop) return;
-  if (start==0) return;
-
-  if (start->left) start->left->prev=0;
-  if (start->right) start->right->prev=0;
-  Restore(start->left,stop);
-  Restore(start->right,stop);
-  for (Knot_Iterator kit=p_knots->begin(); kit!=p_knots->end(); ++kit) {
-    if ((*kit) == start) {
-      delete (*kit);
-      p_knots->erase(kit);
-      return;
-    }
-  }
-}
-
-
-void Tree::Restore(Knot * in) {
-
-  if (!(in->prev)) return;
-  if (in->prev->left != in)  {
-    ResetDaughters(in->prev->left);
-    in->prev->left=0;
-  }
-  if (in->prev->right != in) {
-    ResetDaughters(in->prev->right);
-    in->prev->right=0;
-  }
-  Restore(in->prev);
-  for (Knot_Iterator kit=p_knots->begin(); kit!=p_knots->end(); ++kit) {
-    if ((*kit) == in->prev) {
-      delete (*kit);
-      p_knots->erase(kit);
-      return;
-    }
-  }
-}
 
 void Tree::ResetDaughters(Knot * in) {
   if (!(in)) return;
