@@ -1,7 +1,8 @@
-#ifndef SimpleXS_Apacic_Interface_h
-#define SimpleXS_Apacic_Interface_h
+#ifndef SimpleXS_Apacic_Interface_H
+#define SimpleXS_Apacic_Interface_H
 
 #include "Perturbative_Interface.H"
+#include "Simple_XS.H"
 #include "Interface_Tools.H"
 
 namespace SHERPA {

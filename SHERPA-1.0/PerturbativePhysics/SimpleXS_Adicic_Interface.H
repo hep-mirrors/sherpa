@@ -6,7 +6,7 @@
 namespace SHERPA {
   class SimpleXS_Adicic_Interface : public Perturbative_Interface {
   private:
-    Blob * myblob;
+    ATOOLS::Blob * myblob;
     bool InitColours(ATOOLS::Blob *);
     bool Valid(ATOOLS::Blob *);
   public :

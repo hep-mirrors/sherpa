@@ -1,14 +1,17 @@
 #ifndef MI_Handler_H
 #define MI_Handler_H
 
-#define USING__Sherpa
-#include "Amisic.H"
-#include "XS_Base.H"
-#include "Model_Base.H"
 #include "Run_Parameter.H"
 #include "Blob_List.H"
 
+namespace BEAM   { class Beam_Spectra_Handler; }
+namespace PDF    { class ISR_Handler;          }
+namespace MODEL  { class Model_Base;           }
+namespace AMISIC { class Amisic;               }
+
 namespace SHERPA {
+
+  class Matrix_Element_Handler;
 
   class MI_Handler {
   public:
@@ -55,6 +58,9 @@ namespace SHERPA {
 
     unsigned int NIn();
     unsigned int NOut();
+
+    double ScaleMin(unsigned int i);
+    double ScaleMax(unsigned int i);
 
     bool GenerateHardProcess(ATOOLS::Blob *blob);
     bool GenerateSoftProcess(ATOOLS::Blob *blob);
