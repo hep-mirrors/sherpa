@@ -25,15 +25,16 @@ namespace APACIC {
     Timelike_Sudakov       * p_sud;
     Timelike_Kinematics    * p_kin;
     std::vector<Knot*> m_ini_partons;
+    std::vector<Knot> m_save_knots;
     static ATOOLS::Particle * FindAuntParton(Knot *);
   public:
-    Final_State_Shower(MODEL::Model_Base *,ATOOLS::Data_Read * const);
+    Final_State_Shower(MODEL::Model_Base * model,ATOOLS::Data_Read * const dataread);
     ~Final_State_Shower();
 
-    int PerformShower(Tree *,int);
-    void FirstTimelikeFromSpacelike(Tree *,Knot *,bool,double,double);
-    bool SetAllColours(Knot *);
-    static bool SetColours(Knot *,Timelike_Kinematics *);
+    int PerformShower(Tree * tree, int jetvetoflag);
+    void FirstTimelikeFromSpacelike(Tree * tree,Knot * mo,bool jetveto,double sprime,double z);
+    bool SetAllColours(Knot * mo);
+    static bool SetColours(Knot * mo,Timelike_Kinematics * kin);
     static void EstablishRelations(Knot * mo, Knot * d1,Knot * d2);
 
 
@@ -41,20 +42,24 @@ namespace APACIC {
 			ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
     void ExtractPartons(Knot *,ATOOLS::Particle_List * = NULL);
 
-    bool TestShower(Tree *) ;
+    bool TestShower(Tree * tree) ;
     ATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
-    void OutputTree(Tree *);
+    void OutputTree(Tree * tree);
     bool ExtraJetCheck() const;
     double                PT2Min()        { return m_pt2min; }
     Timelike_Kinematics * GetKinematics() { return p_kin; }
     void SetJetvetoPt2(const double pt2);
   private:
-    int InitializeJets(Tree *,Knot *,int =0);
+    void SavePartner(size_t no, Knot * di);
+    void ClearPartner(size_t no);
+    void RestorePartner(size_t no, Knot * di);
+
+    int InitializeJets(Tree * tree,Knot * mo,int init_rel=0);
     bool SmearDaughters(Knot * mo);
 
     void InitTwojetTree(Tree *,double);
-    bool EvolveJet(Tree *,Knot *);
-    bool FillBranch(Tree *,Knot *,int);
+    int EvolveJet(Tree *,Knot *);
+    int FillBranch(Tree *,Knot *,int);
 
     bool ChooseDaughter(Knot *);
 

@@ -19,20 +19,20 @@ using namespace PDF;
 using namespace ATOOLS;
 
 
-Apacic::Apacic(ISR_Handler * _isr,MODEL::Model_Base * _model,int _maxjetnumber,
-	       bool _isron,bool _fsron,Data_Read * _dataread):
-  m_isron(_isron), m_fsron(_fsron), m_showers(_isron||_fsron),
+Apacic::Apacic(ISR_Handler * isr,MODEL::Model_Base * model,int maxjetnumber,
+	       bool isron,bool fsron,Data_Read * dataread):
+  m_isron(isron), m_fsron(fsron), m_showers(isron||fsron),
   p_inishower(NULL), p_finshower(NULL), p_initrees(NULL), p_fintree(NULL),
   m_info_cms(8), m_info_lab(8)
 {
   if (m_fsron) {
     p_fintree   = new Tree();
-    p_finshower = new Final_State_Shower(_model,_dataread);
+    p_finshower = new Final_State_Shower(model,dataread);
   }
   if (m_isron) {
     p_initrees  = new Tree*[2];
     for (int i=0;i<2;i++) p_initrees[i] = new Tree();
-    p_inishower = new Initial_State_Shower(_isr,p_finshower,_model,_dataread);
+    p_inishower = new Initial_State_Shower(isr,p_finshower,model,dataread);
   }
 }
   
@@ -84,9 +84,13 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
 
     int fsrstatus = p_finshower->PerformShower(p_fintree,jetveto);
     int number=0;
-    p_finshower->GetMomentum(p_fintree->GetRoot(),number);
 
-    if (fsrstatus==0) return fsrstatus;
+    if (fsrstatus!=1) {
+      if (fsrstatus!=3) msg.Out()<<" "<<fsrstatus<<" FS shower failed !\n";
+      else msg_Debugging()<<" FS shower asks for new event\n";
+      return fsrstatus;
+    }
+ 
     // check ME if still njet ME!
     // if isr is on, this check will be performed after the initial state shower
     if (!m_isron) {
@@ -105,6 +109,8 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
       Vec4D vl =Vec4D(sum[0],-1.*Vec3D(sum));
       Poincare lab(vl);
       p_fintree->BoRo(lab);
+      Vec4D sum_fs=p_finshower->GetMomentum(p_fintree->GetRoot(),number);
+      //      std::cout<<" sum_fs:"<<sum_fs<<"\n";
     }
   }
 
@@ -118,6 +124,8 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
     // determine Boost+Rotate in cms(using moms from root1 und root2)
     Vec4D mom1=p_initrees[0]->GetRoot()->part->Momentum();
     Vec4D mom2=p_initrees[1]->GetRoot()->part->Momentum();
+
+    //    std::cout<<" sum_is:"<<mom1+mom2<<std::endl;
 
     Vec4D vl =Vec4D(mom1[0]+mom2[0], -1.*Vec3D(mom1+mom2));
     Poincare lab(vl);
@@ -164,7 +172,14 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
       double s  = sqr(rpa.gen.Ecms());
       double dr2 = sqr(rpa.gen.DeltaR());
       SetJetvetoPt2(s*ycut,dr2*s*ycut);
+      int number=0;
+      Vec4D sum_fs=p_finshower->GetMomentum(p_fintree->GetRoot(),number);
+      //      std::cout<<" sum_fs:"<<sum_fs<<"\n";
+
+      //      std::cout<<" sum_left : "<<p_finshower->GetMomentum(p_initrees[0]->GetInitiator(),number)<<"\n";
+      //      std::cout<<" sum_right : "<<p_finshower->GetMomentum(p_initrees[1]->GetInitiator(),number)<<"\n";
       if (!p_finshower->ExtraJetCheck()) {
+	//	std::cout<<" extrajetcheck failed"<<std::endl;
 	return 3;
       }
     }
@@ -182,10 +197,13 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
 }
 
 bool Apacic::ExtractPartons(bool ini,bool fin,Blob_List * bl,Particle_List * pl) {
-  if (fin) p_finshower->ExtractPartons(p_fintree->GetRoot(),0,bl,pl);
-
+  if (fin) {
+    p_fintree->CheckStructure(true);
+    p_finshower->ExtractPartons(p_fintree->GetRoot(),0,bl,pl);
+  }
   if (ini) {
     for (int i=0;i<2;i++) {
+      p_initrees[i]->CheckStructure(true);
       p_inishower->ExtractPartons(p_initrees[i]->GetInitiator(),i,0,bl,pl);
     }
   }

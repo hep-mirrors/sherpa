@@ -33,17 +33,3 @@ Primitive_Observable_Base * Multiplicity::Copy() const {
 
 
 
-
-
-void Differential_Jetrate::Evaluate(int,const Vec4D *,
-				    const Flavour *,double value, int ncount) 
-{
-  p_histo->Insert(p_sel->ActualValue()[0],value, ncount);
-}
-
-
-void Differential_Jetrate::Evaluate(const Particle_List &,
-				    double value, int ncount) 
-{
-  p_histo->Insert(p_sel->ActualValue()[0],value, ncount);
-}

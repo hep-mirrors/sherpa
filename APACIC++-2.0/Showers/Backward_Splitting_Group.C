@@ -2,11 +2,11 @@
 
 using namespace APACIC;
 
-Backward_Splitting_Group::Backward_Splitting_Group(Splitting_Function * spl, PDF::PDF_Base * _pdf): 
-  Splitting_Group(spl), p_pdf(_pdf) {
+Backward_Splitting_Group::Backward_Splitting_Group(Splitting_Function * spl, PDF::PDF_Base * pdf): 
+  Splitting_Group(spl), p_pdf(pdf) {
 }
 
-double Backward_Splitting_Group::CrudeInt(double _zmin, double _zmax) {
+double Backward_Splitting_Group::CrudeInt(double zmin, double zmax) {
   if (!p_partsums) p_partsums = new double[m_group.GetLength()];
   m_lastint = 0;
   int i     = 0;
@@ -16,7 +16,7 @@ double Backward_Splitting_Group::CrudeInt(double _zmin, double _zmax) {
     } 
     else {
       p_partsums[i] = m_lastint += 
-	iter()->CrudeInt(_zmin,_zmax) *  
+	iter()->CrudeInt(zmin,zmax) *  
 	p_pdf->GetXPDF(iter()->GetFlA()) /
 	p_pdf->GetXPDF(iter()->GetFlB());
     }

@@ -7,11 +7,6 @@
 
 
 namespace APACIC {
-  /*!
-    This is the class containing all generic helpers needed for the
-    Sudakov form factors and the shower evolution. Inside this
-    class, there're methods for (running) coupling constants.
-  */
   class Sudakov_Tools {
   private :
     ATOOLS::Function_Base * p_as, * p_aqed;
@@ -51,6 +46,22 @@ namespace APACIC {
     const double GetASmax()   const { return alphaSmax; }
     const double GetAQEDmax() const { return alphaQEDmax; }
   };
+
+
+  /*!
+    \file
+    \brief contains the class APACIC::Sudakov_Tools
+  */
+
+  /*!
+    \class Sudakov_Tools 
+    \brief Helper class for the shower evolution, esp. the 
+          evaluation of (running) coupling constants.
+
+    This is the class containing all generic helpers needed for the
+    Sudakov form factors and the shower evolution. Inside this
+    class, there're methods for (running) coupling constants.
+  */
 
 }
 

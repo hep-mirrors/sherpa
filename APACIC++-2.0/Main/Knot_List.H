@@ -8,5 +8,15 @@
 namespace APACIC {
   typedef std::deque<Knot*> Knot_List;
   typedef Knot_List::iterator Knot_Iterator;
+
+  /*!
+    \file
+    \brief contains the typedef APACIC::Knot_List
+  */
+
+  /*
+    \class Knot_List
+    \brief simple container class
+  */
 }
 #endif

@@ -17,33 +17,37 @@ using namespace std;
 //-------------------- Constructors -------------------------------------
 //----------------------------------------------------------------------- 
 
-Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin,double _pt2min,
-				   MODEL::Model_Base * _model,Data_Read * _dataread) :
-  p_kin(_kin), m_pt2min(_pt2min) 
+Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * kin, double pt2min,
+				   MODEL::Model_Base * model, Data_Read * dataread) :
+  p_kin(kin), m_pt2min(pt2min) 
 {
-  m_ordering_scheme = _dataread->GetValue<int>("FS ORDERING",1);       /*  (1=VO+Coherence, 2=VO)                  */ 
-  m_cpl_scheme      = _dataread->GetValue<int>("FS COUPLINGS",1);      /*  (0=fix, 1=pt^2, 2=t/4)                  */ 
-  m_pt_scheme       = _dataread->GetValue<int>("FS PT DEFINITION",2);  /*  (0=> pt^2 = z(1-z)t      
-									   for VO
-			                                                   1=> z(1-z)t - (1-z)*t_0(b) - z*t_0(c)   */
-  m_mass_scheme     = _dataread->GetValue<int>("FS MASS SCHEME",1);    /*  (0=cuts, 1=a la Catani, 2=define t_eff) */
-  m_width_scheme    = _dataread->GetValue<int>("FS WIDTH SCHEME",0);   /*  (0=no width supression,
-	 		                                                   1=cut pt2 always > square of width
-	  		                                                   2=suppressed by pt2/(Gamma^2+pt2)      */
-  if (m_mass_scheme==0) 
-    m_zrange_scheme = _dataread->GetValue<int>("FS Z RANGES",1);       //  (only for mass_scheme = 0: 
-  else                                                                 //   0=constrained z,
-    m_zrange_scheme = 1;                                               //   1=unconstrained z)
-  m_MEcorr_scheme   = _dataread->GetValue<int>("FS ME CORRECTIONS",0); /*  (0=none, 1=hardest so far, 2=first)     */
-  m_angle_scheme    = _dataread->GetValue<int>("FS ANGLE DEF",1);      /*  (1=approximate angles)                  */
-  m_direct_photons  = _dataread->GetValue<int>("FS PHOTONS",0);        /*  (0=no photons in shower,         
-									   1=photons in shower)                    */
-  m_pt2max = sqr(rpa.gen.Ecms());         // this is an obvious choice ....
-  p_tools  = new Sudakov_Tools(m_cpl_scheme,_model,m_pt2min,m_pt2max);
-  m_t0     = 4.*m_pt2min;
-  //      -- initialise QCD splitting functions -- 
-  //      -- initialise QED splitting functions -- 
+  /*  angular ordering (1=VO+Coherence, 2=VO)  */ 
+  m_ordering_scheme = dataread->GetValue<int>("FS_ORDERING",1);       
+  /*  coupling argument (0=fix, 1=pt^2, 2=t/4)  */ 
+  m_cpl_scheme      = dataread->GetValue<int>("FS_COUPLINGS",1);
+  m_pt_scheme       = dataread->GetValue<int>("FS_PT_DEFINITION",2); 
 
+
+  /* treatment of massive quarks (0=cuts, 1=a la Catani, 2=define t_eff) */
+  m_mass_scheme     = dataread->GetValue<int>("FS_MASS_SCHEME",1);   
+  /*  (0=no width supression,  1=cut pt2 always > square of width, 
+       2=suppressed by pt2/(Gamma^2+pt2)      */
+  m_width_scheme    = dataread->GetValue<int>("FS_WIDTH_SCHEME",0);   
+    /*   0=constrained z,  1=unconstrained z)  */
+  m_zrange_scheme = dataread->GetValue<int>("FS_Z_RANGES",1);      
+
+  /*  (0=none, 1=hardest so far, 2=first)     */
+  m_MEcorr_scheme   = dataread->GetValue<int>("FS_ME_CORRECTIONS",0); 
+  /*  (1=approximate angles)  */
+  m_angle_scheme    = dataread->GetValue<int>("FS_ANGLE_DEF",1);  
+  /*  (0=no photons in shower, 1=photons in shower) */
+  m_direct_photons  = dataread->GetValue<int>("FS_PHOTONS",0);        
+
+  m_pt2max = sqr(rpa.gen.Ecms());
+  p_tools  = new Sudakov_Tools(m_cpl_scheme,model,m_pt2min,m_pt2max);
+  m_t0     = 4.*m_pt2min;
+
+  // --- initialise QCD (& QED) splitting functions ---
   for (int i=1;i<17;++i) {
     if (i==7) i=11;
     Flavour fl = Flavour(kf::code(i));
@@ -61,7 +65,6 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin,double _pt2min,
     }
   }
   Add(new g_gg(p_tools));
-  
   
   PrintStat();
 }
@@ -83,16 +86,18 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
   m_ta     = mother->t;                  
   m_wa     = mother->E2;
 
-  double tend = sqr(sqrt(mother->tout+0.25*m_t0) +sqrt(0.25*m_t0));
+  //  double tend = sqr(sqrt(mother->tout+0.25*m_t0) +sqrt(0.25*m_t0));
+  double tend = m_t0;
 
   if ((m_ta-tend)<rpa.gen.Accu()) return 0;
-  double z0; 
 
   while (m_ta>tend) {
-    //    if (last_veto==0 || last_veto==7) {
-    if (m_mass_scheme >= 2) m_ta -= mother->tout;
-    if (m_pt_scheme == 2 ) { z0 = 1. / ( 1. + m_ta/m_t0) ;                                            }
-    else                   { z0 = 0.5 * (1. - sqrt(1.-m_t0/m_ta)) ; /* condition that 4 pt^2 > t0 */  }
+    double z0 = 0.5 * (1. - sqrt(1.-m_t0/m_ta));
+    //     msg_Debugging()<<" z0(2)="<<z0<<std::endl;
+    //     msg_Debugging()<<" z0(1)="<<0.5 * (1. - sqrt(1.-m_t0/m_ta))<<std::endl;
+    //    std::cout<<" InitRange: "<<z0<<", "<<1.-z0<<std::endl;
+    msg_Debugging()<<" ta="<<m_ta<<std::flush;
+
     if (z0<rpa.gen.Accu()) {
       msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl
 		 <<"    Set it on 10^-6 and hope for the best."<<std::endl;
@@ -100,27 +105,43 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
     }
     CrudeInt(z0,1.-z0);
 
-    ProduceT();
+    if (m_mass_scheme >= 2) m_ta -= mother->tout;
+    ProduceT(m_ta,mother->tout);
+
+    double ta_save = m_ta;
+    if (m_mass_scheme >= 2) ta_save = m_ta + mother->tout;
 
     int test_mass=0;
-    if ((m_mass_scheme>=2) && (m_ta+mother->tout<tend)) test_mass=1;
-    if ((m_mass_scheme<2)  && (m_ta<tend))              test_mass=1;
-    if (test_mass) return 0;
+    if ((m_mass_scheme>=2) && (m_ta<m_t0))  test_mass=1;
+    if ((m_mass_scheme<2)  && (m_ta<tend))  test_mass=1;
+    if (test_mass)  return 0;
 
     // determine estimate for energy
     if (granny) m_wa = 0.25*sqr(m_ta+granny->E2)/granny->E2;
-    if (m_ta<m_wa) {
+    double wa_save  = m_wa; 
+    if (granny) wa_save = 0.25*sqr(ta_save+granny->E2)/granny->E2;
+    double pt2_save = -1.;
+    if (ta_save<wa_save) {
       SelectOne();
       m_z   = GetZ();
-      m_pt2 = m_z*(1.-m_z)*m_ta;
+      
       m_tb  = sqr(GetFlB().PSMass());
       m_tc  = sqr(GetFlC().PSMass());
-      if (m_pt_scheme == 1)      m_pt2 -= (1.-m_z)*m_tb + m_z*m_tc;
-      else if (m_pt_scheme == 2) m_pt2 = 0.25*Min((1.-m_z)/m_z,m_z/(1.-m_z))*m_ta;
+      double z = p_kin->CalcZShift(m_z,ta_save,m_tb,m_tc);
+      if (granny) wa_save = 0.25*sqr(ta_save+granny->E2)/granny->E2;
+      pt2_save = m_z*(1.-m_z)*ta_save;
+      //      m_pt2    = 0.25*Min((1.-m_z)/m_z,m_z/(1.-m_z))*m_ta; 
+      //      m_pt2    = 0.25*Min((1.-z)/z,z/(1.-z))*m_ta; 
+      //      std::cout<<" pt2="<<m_pt2<<" ("<<m_tb<<","<<m_tc<<")"<<std::endl;
+      m_pt2 = 0.25*p_kin->CalcKt2(z,wa_save,ta_save,m_tb,m_tc);
+      //      std::cout<<" M pt2="<<m_pt2<<std::endl;
+
       if (m_pt2>m_pt2min) {
-	if (!Veto(mother)) {
-	  if (m_mass_scheme >= 2) m_ta += mother->tout;
+	//      if (pt2_save>m_pt2min) {
+	if (!Veto(mother,ta_save,wa_save)) {
+	  m_ta = ta_save; 
 	  UniformPhi();
+	  msg_Debugging()<<mother->part->Flav()<<" Select: z="<<m_z<<" t="<<m_ta<<" pt2="<<m_pt2<<std::endl;
 	  mother->z      = m_z;
 	  mother->t      = m_ta;
 	  mother->phi    = m_phi;
@@ -128,8 +149,10 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
 	  else                    mother->maxpt2 = m_pt2max;
 	  return 1;
 	}
+	msg_Debugging()<<" last_veto="<<m_last_veto<<std::endl;
       }
     }
+    m_ta = ta_save; 
   }
   return 0; 
 }
@@ -138,40 +161,61 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
 //-------------------- Methods for dicing -------------------------------
 //----------------------------------------------------------------------- 
 
-void Timelike_Sudakov::ProduceT() 
+void Timelike_Sudakov::ProduceT(double ta, double m2) 
 {
   if (m_lastint<0.) m_ta  = -1.;
-               else m_ta *= exp( 2.*M_PI*log(ran.Get()) / m_lastint );
+  else {
+    m_ta *= exp( 2.*M_PI*log(ran.Get()) / m_lastint );
+  }
 }
 
 
-bool Timelike_Sudakov::Veto(Knot * mo) 
+bool Timelike_Sudakov::Veto(Knot * mo, double ta, double wa) 
 {  
   m_last_veto=0;
-  double wb      = m_z*m_z*m_wa;
-  double wc      = (1.-m_z)*(1.-m_z)*m_wa;
+  double z = m_z;
+  if (m_zrange_scheme==1) z = p_kin->CalcZShift(m_z,ta,m_tb,m_tc);
+
+  /* --- to be removed in release version !!! ---
+  double phat   = 0.5*(sqrt(wa)+sqrt(wa-ta));
+  double ztilde = (m_z*phat + ( (1.-m_z)*ta+m_tb-m_tc)/(4.*phat))/sqrt(wa);
+  double ztilde2 = 1.- ((1.-m_z)*phat + ( m_z*ta-m_tb+m_tc)/(4.*phat))/sqrt(wa);
+  std::cout<<" t="<<ta<<",  m_tb="<<m_tb<<", m_tc="<<m_tc<<std::endl; 
+  std::cout<<" z="<<m_z<<", "<<z<<", "<<ztilde<<","<<ztilde2<<std::endl;
+
+  double E=phat+ta/(4.*phat);
+  double E1=m_z*phat+((1-m_z)*ta+m_tb-m_tc)/(4.*phat);
+  double E2=(1.-m_z)*phat+(m_z*ta-m_tb+m_tc)/(4.*phat);
+  std::cout<<" E1="<<E1<<"  E2="<<E2<<"  E="<<E1+E2<<" ("<<E<<", "<<sqrt(wa)<<")"<<std::endl;
+
+  double zdel=lambda/(2.*ta);
+  double z0  =(ta+m_tb-m_tc)/(2.*ta);
+  double zm  = z0-zdel;
+  double zp  = z0+zdel;
+  std::cout<<" zlimits=("<<zm<<","<<zp<<")"<<std::endl;
+  */
+
+  double wb      = z*z*wa;
+  double wc      = (1.-z)*(1.-z)*wa;
   // timelike daughters
-  if ((m_tb>wb) || (m_tc>wc)) {
-    return 1;
-  }
+  if ((m_tb>wb) || (m_tc>wc))    return 1;
   // kincheck for first timelike from spacelike
-  if (mo->tmax!=0 && m_ta>mo->tmax) {
-    return 1;
-  }
+  if (mo->tmax!=0 && m_ta>mo->tmax)  return 1;
+
   // timelike
-  if (m_wa < m_ta) {
+  if (wa < ta) {   // (3)
     m_last_veto=1;
     return 1;
   }
-  //  sum m1 + m2 < sqrt(m_ta)
-  if (m_ta  < m_tb+m_tc+2.*sqrt(m_tb*m_tc)) {
+  //  sum m1 + m2 < sqrt(ta)
+  if (ta  < m_tb+m_tc+2.*sqrt(m_tb*m_tc)) {
     m_last_veto=2;
     return 1;
   }
   // 1. masses, z-range and splitting function
-  if (MassVeto()) {
-    m_last_veto=3;
-    return 1;
+ if (MassVeto(ta,wa)) {  // (2)
+   m_last_veto=3;
+   return 1;
   }
   // 2. alphaS
   if (CplVeto()) {
@@ -179,7 +223,7 @@ bool Timelike_Sudakov::Veto(Knot * mo)
     return 1;
   }
   // 3. angular ordering
-  if (AngleVeto(mo)) {
+  if (AngleVeto(mo,ta,wa,z)) {
     m_last_veto=5;
     return 1;
   }
@@ -189,30 +233,37 @@ bool Timelike_Sudakov::Veto(Knot * mo)
     return 1;
   }
   // 5. JetVeto
-  if (JetVeto(mo)) {
-    m_last_veto=7;
-    return 1;    
-  }
+//    if (JetVeto(ta,wa,z)) {
+//      m_last_veto=7;
+//      return 1;    
+//    }
   return 0;
 }
 
-bool Timelike_Sudakov::MassVeto() 
+bool Timelike_Sudakov::MassVeto(double ta, double wa) 
 {
-  double x_p_mom = sqrt(1.-m_ta/m_wa) ;   
+  double x_p_mom = sqrt(1.-ta/wa) ;   
   double mean_z,delta_z;              
 
   switch (m_zrange_scheme) {
   case 0 :
-    mean_z  = 0.5 *( 1. + (m_tb-m_tc)/m_ta); 
-    delta_z = 0.5 * x_p_mom * sqrt( sqr(m_ta-m_tb-m_tc) - 4.*m_tb*m_tc )/m_ta;
+    //    std::cout<<" MassVeto : "<<x_p_mom<<" "<<ta<<std::endl;
+    mean_z  = 0.5 *( 1. + (m_tb-m_tc)/ta); 
+    delta_z = 0.5 * x_p_mom * sqrt( sqr(ta-m_tb-m_tc) - 4.*m_tb*m_tc )/ta;
     break;
-  default : 
+  case 2 :
+    mean_z  = 0.5 * (1. + (m_tb-m_tc)/ta); 
+    delta_z = 0.5 * sqrt( sqr(ta-m_tb-m_tc) - 4.*m_tb*m_tc )/ta;    
+    break;
+  case 1 : 
+  default:
     mean_z  = 0.5;
     delta_z = 0.5*x_p_mom;
-    break;
   }
-  if ((m_z<mean_z - delta_z) || (m_z>mean_z + delta_z)) return 1;
-
+  if ((m_z<mean_z - delta_z) || (m_z>mean_z + delta_z)) {
+    msg_Debugging()<<" zrange:"<<mean_z - delta_z<<" < "<<m_z<<" < "<<mean_z + delta_z<<std::endl;
+    return 1;
+  }
   double w1 = GetWeight(m_z,m_pt2,(m_mass_scheme==1 || m_mass_scheme==3));
   if (w1<ran.Get()) return 1;
 
@@ -242,19 +293,26 @@ bool Timelike_Sudakov::CplVeto()
   }
 }
 
-bool Timelike_Sudakov::AngleVeto(Knot * mo) 
+bool Timelike_Sudakov::AngleVeto(Knot * mo,double ta, double wa, double z) 
 {
   if (!m_inflav.Strong()) return 0;
   switch (m_ordering_scheme) {
   case 0 : return 0;
   default :
-    double thest;
-    switch (m_angle_scheme) {
-    default:  
-      thest  = sqrt( m_ta/(m_z*(1.- m_z)*m_wa) );
-    }  
-    if (thest < mo->thcrit) return 0;
-    return 1;
+    {
+      double thest = 0.;
+      switch (m_angle_scheme) {
+      default:  
+	thest  = sqrt( ta/(z*(1.- z)*wa) );
+	mo->costh = thest;
+      }  
+      msg_Debugging()<<"check ("<<mo->kn_no<<") th="<<thest<<",   thcrit="<<mo->thcrit<<std::endl;
+      
+      //if (thest < mo->thcrit) return 0;
+      //if (thest < mo->thcrit || (IsEqual(mo->thcrit,M_PI)) ) return 0;
+      if (thest < mo->thcrit || (3.14<mo->thcrit && mo->thcrit<3.15) ) return 0;
+      return 1;
+    }
   }
 }
 
@@ -276,9 +334,12 @@ bool Timelike_Sudakov::MEVeto(Knot * mo)
     twig = gr;
     gr   = gr->prev;
   }
+
+  /*
   bool isleft;
   if (twig==gr->left) isleft=1;
                  else isleft=0;
+  */
 
   /*
      if "first" branch perform ME - Correction for gluon radiation
@@ -307,9 +368,17 @@ bool Timelike_Sudakov::MEVeto(Knot * mo)
 }
 
 
-bool Timelike_Sudakov::JetVeto(Knot * mo) 
+bool Timelike_Sudakov::JetVeto(double ta, double wa, double z) 
 {
-  return p_kin->JetVeto(m_ta,m_wa,m_z,0.,0.);
+  if (p_kin->JetVeto(-ta,wa,z,m_tb,m_tc)) {
+    msg_Debugging()<<" c JetVeto in Timelike_Kinematics::JetVeto "<<std::endl;
+  }
+
+  bool  flag=p_kin->JetVeto(m_ta,m_wa,m_z,0.,0.);
+  if (flag) {
+    msg_Debugging()<<" d JetVeto in Timelike_Kinematics::JetVeto "<<std::endl;
+  }
+  return flag;
 }
 
 
@@ -325,13 +394,13 @@ void Timelike_Sudakov::Add(Splitting_Function * spl)
   p_selected=spl;
 }
 
-double Timelike_Sudakov::CrudeInt(double _zmin, double _zmax) 
+double Timelike_Sudakov::CrudeInt(double zmin, double zmax) 
 {
   SplFunIter iter(m_group);
   for (;iter();++iter)
     if (iter()->GetFlA()==m_inflav) {p_selected=iter();break;}
   if (!iter()) return m_lastint = -1.;
-  return m_lastint=p_selected->CrudeInt(_zmin,_zmax);
+  return m_lastint=p_selected->CrudeInt(zmin,zmax);
 }        
 
 //! Selects one specific mode for the splitting (to be called after CrudeInt)

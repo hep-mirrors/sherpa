@@ -109,9 +109,26 @@ namespace APACIC {
     }
   };
 
+
   /*!
-  \fn void Spacelike_Kinematics::ResetMomenta(Knot*,Tree*,int=0);
-  \brief ResetsMomenta after jetveto
+    \file
+    \brief contains the class APACIC::Spacelike_Kinematics
+  */
+
+  /*!
+    \class Spacelike_Kinematics
+    \brief  Provides all neccessary routines to determine the kinematics of the
+            initial state shower
+
+    Provides all neccessary routines to determine the kinematics of the
+    initial state shower, esp.:
+     - InitKinematics() and
+     - DoKinematics() 
+  */
+
+  /*!
+    \fn void Spacelike_Kinematics::ResetMomenta(Knot*,Tree*,int=0);
+    \brief ResetsMomenta after jetveto
   */
 
 }

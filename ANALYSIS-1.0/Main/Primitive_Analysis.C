@@ -495,16 +495,3 @@ template <> Blob_Data<std::vector<double> *>::~Blob_Data()
 }
 
 template class Blob_Data<std::vector<double> *>;
-
-
-
-
-// ----------------------------------------------------------------------
-// probably obsolete:
-
-
-void Primitive_Analysis::DoAnalysis(const Particle_List & pl, double value) 
-{
-  ++m_nevt;
-  for (size_t i=0;i<m_observables.size();i++) m_observables[i]->Evaluate(pl,value);
-}

@@ -17,8 +17,8 @@ using namespace ATOOLS;
 
 
 Event_Handler::Event_Handler():
-  m_lastparticlecounter(std::numeric_limits<long int>::max()),
-  m_lastblobcounter(std::numeric_limits<long int>::max())
+  m_lastparticlecounter(0),
+  m_lastblobcounter(0)
 {
   p_phases  = new Phase_List;
 }
@@ -199,11 +199,8 @@ void Event_Handler::CleanUpEvent()
 	       <<"   After event : "<<Particle::Counter()<<" / "<<Blob::Counter()
 	       <<" particles / blobs undeleted !"<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
-  }
-  if (ATOOLS::rpa.gen.NumberOfDicedEvents()>1) {
-    m_lastparticlecounter=ATOOLS::Max(m_lastparticlecounter,
-				      (long int)Particle::Counter());
-    m_lastblobcounter=ATOOLS::Max(m_lastblobcounter,(long int)Blob::Counter());
+    m_lastparticlecounter=Particle::Counter();
+    m_lastblobcounter=Blob::Counter();
   }
   Blob::Reset();
   Particle::Reset();

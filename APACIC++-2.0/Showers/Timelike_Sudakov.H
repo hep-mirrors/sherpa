@@ -14,9 +14,10 @@ namespace APACIC {
     // global parameters
     Sudakov_Tools       * p_tools;
     Timelike_Kinematics * p_kin;
-    double                m_pt2min, m_pt2max; 
-    double                m_alphaSmax, m_alphaSfix; 
-    double                m_pt2minQED, m_alphaQED;
+
+    double m_pt2min,    m_pt2max; 
+    double m_alphaSmax, m_alphaSfix; 
+    double m_pt2minQED, m_alphaQED;
 
     // switches:( get in constructor)
     int m_cpl_scheme; 
@@ -36,30 +37,31 @@ namespace APACIC {
     double m_maxpt;
     ATOOLS::Flavour m_inflav;
 
-    // veto
+    // veto statistics
     int m_last_veto;
 
     void CheckSplittings();
   public:
-    Timelike_Sudakov(Timelike_Kinematics *,double,MODEL::Model_Base *,ATOOLS::Data_Read *);
+    Timelike_Sudakov(Timelike_Kinematics * kin, double pt2min, 
+		     MODEL::Model_Base * model, ATOOLS::Data_Read * dataread);
     ~Timelike_Sudakov();
 
     bool Dice(Knot * mother,Knot * granny=0);
   private:
-    double CrudeInt(double _zmin, double _zmax) ;
+    double CrudeInt(double zmin, double zmax) ;
 
     void Add(Splitting_Function * spl);
     void SelectOne();
 
-    void ProduceT();  
+    void ProduceT(double ta, double m2);  
 
-    bool Veto(Knot *); 
+    bool Veto(Knot * mo, double ta, double wa); 
 
     bool CplVeto();
-    bool AngleVeto(Knot *);
-    bool MEVeto(Knot *);
-    bool MassVeto();
-    bool JetVeto(Knot *);
+    bool AngleVeto(Knot * mo,double ta, double wa, double z);
+    bool MEVeto(Knot * mo);
+    bool MassVeto(double ta, double wa);
+    bool JetVeto(double ta, double wa, double z);
 
     void UniformPhi() { m_phi = 2.*M_PI*ATOOLS::ran.Get(); }
     void SetJetvetoPt2(const double pt2);

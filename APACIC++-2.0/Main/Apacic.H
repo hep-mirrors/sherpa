@@ -24,7 +24,8 @@ namespace APACIC {
     Tree                 * p_fintree;
     std::vector<double>    m_info_cms, m_info_lab;
   public :
-    Apacic(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,ATOOLS::Data_Read *); 
+    Apacic(PDF::ISR_Handler * isr,MODEL::Model_Base * model,int maxjetnumber,
+	   bool isron,bool fsron,ATOOLS::Data_Read * dataread);
     ~Apacic(); 
     void PrepareTrees();
     void SetJetvetoPt2(const double q2i, const double q2f);
@@ -49,6 +50,15 @@ namespace APACIC {
   inline Final_State_Shower   *Apacic::FinShower() { return p_finshower; }
   inline Initial_State_Shower *Apacic::IniShower() { return p_inishower; }
 
+  /*!
+    \file
+    \brief contains the interface class APACIC::Apacic
+  */
+
+  // example see Run_Parameter.H
+  /*!
+    \mainpage
+  */
 }
 #endif
 

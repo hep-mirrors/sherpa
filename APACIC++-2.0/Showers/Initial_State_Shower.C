@@ -12,25 +12,25 @@ using namespace std;
 //--------------------------- Constructors ------------------------------
 //----------------------------------------------------------------------- 
 
-Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * _isr, 
-					   Final_State_Shower * _fin,
-					   MODEL::Model_Base * _model,
-					   Data_Read * const _dataread) : 
-  p_fin(_fin), m_fsron(0) 
+Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * isr, 
+					   Final_State_Shower * fin,
+					   MODEL::Model_Base * model,
+					   Data_Read * const dataread) : 
+  p_fin(fin), m_fsron(0) 
 {
   if (p_fin) m_fsron      = 1;
-  if (_isr->On()) {
+  if (isr->On()) {
     double pt2fin     = 0.;
     if (p_fin) pt2fin = p_fin->PT2Min();  
-    m_t0              = _dataread->GetValue<double>("IS PT2MIN",4.);
+    m_t0              = dataread->GetValue<double>("IS_PT2MIN",4.);
     m_t0 = dabs(m_t0);
-    m_jetveto_scheme  = _dataread->GetValue<int>("IS JETVETOSCHEME",2);
+    m_jetveto_scheme  = dataread->GetValue<int>("IS_JETVETOSCHEME",2);
 
-    p_tools           = new Sudakov_Tools(1,_model,m_t0,(rpa.gen.Ecms())*(rpa.gen.Ecms()));
-    p_kin             = new Spacelike_Kinematics(pt2fin, _dataread);
+    p_tools           = new Sudakov_Tools(1,model,m_t0,(rpa.gen.Ecms())*(rpa.gen.Ecms()));
+    p_kin             = new Spacelike_Kinematics(pt2fin, dataread);
     p_suds            = new Spacelike_Sudakov*[2];
-    p_suds[0]         = new Spacelike_Sudakov(_isr->PDF(0),p_tools,p_kin,m_t0,_dataread);
-    p_suds[1]         = new Spacelike_Sudakov(_isr->PDF(1),p_tools,p_kin,m_t0,_dataread);
+    p_suds[0]         = new Spacelike_Sudakov(isr->PDF(0),p_tools,p_kin,m_t0,dataread);
+    p_suds[1]         = new Spacelike_Sudakov(isr->PDF(1),p_tools,p_kin,m_t0,dataread);
 
     m_allowed         = 200;
 
@@ -61,9 +61,9 @@ Initial_State_Shower::~Initial_State_Shower()
 //----------------------- Performing the Shower -------------------------
 //----------------------------------------------------------------------- 
 
-bool Initial_State_Shower::PerformShower(Tree ** trees,int _jetveto) {
-  m_jetveto = (_jetveto>0);
-  if (_jetveto<0) {
+bool Initial_State_Shower::PerformShower(Tree ** trees,int jetvetoflag) {
+  m_jetveto = (jetvetoflag>0);
+  if (jetvetoflag<0) {
     m_extra_pdf[0]    = 0;
     m_extra_pdf[1]    = 0;
   }
@@ -201,8 +201,10 @@ void Initial_State_Shower::SingleExtract(Knot * kn,int beam,Blob * jet,
 	p = new Particle(*kn->part);
 	jet->AddToInParticles(p);
       }
-      p->SetStatus(2);
-      m_bl_meps_fs->AddToOutParticles(p);
+      else {
+      }
+      p->SetStatus(2); 
+      m_bl_meps_fs->AddToOutParticles(p); 
     }
   }
 
@@ -295,7 +297,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 	accepted = 0;
       }
     }
-    
+
     if (accepted) {
 
       p_kin->InitKinematics(trees,k1,k2,first);
@@ -304,6 +306,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 
       int stat=EvolveSystem(trees,k1,k2);
       if (stat==1) {
+	trees[0]->ClearStore();
+	trees[1]->ClearStore();
 	return 1;
       }
       else if (stat==2 || stat==3) {
@@ -326,16 +330,27 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
       if (mismatch > m_allowed) {
 	msg.Out()<<"WARNING in Initial_State_Shower::InitializeSystem failed, "
 		 <<mismatch<<" trials."<<std::endl;
+	trees[0]->ClearStore();
+	trees[1]->ClearStore();
 	return 0;
+      }
+      if (msg.LevelIsTracking()) {
+	msg.Out()<<" Before: Restore "<<std::endl;
+	OutputTree(trees[0]);
+	OutputTree(trees[1]);
       }
       trees[0]->Restore();
       trees[1]->Restore();
       if (msg.LevelIsTracking()) {
+	msg.Out()<<" After: Restore "<<std::endl;
 	OutputTree(trees[0]);
 	OutputTree(trees[1]);
       }
     }
   }
+  trees[0]->ClearStore();
+  trees[1]->ClearStore();
+
 }
 
 //-----------------------------------------------------------------------
@@ -344,7 +359,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 
 int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 {
-  double sprime_aa = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
   if ((k1->t == k1->tout) && (k2->t == k2->tout)) return 1;  
 
   bool decay1 = (k1->stat>=1), decay2 = (k2->stat>=1);
@@ -410,6 +424,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 	}
       }
     }
+
     double maxt = p_kin->CalculateMaxT(k1,k2);
     if (maxt<k1->prev->left->tout) {
       // *AS* what about massless ME and PSMass >0 ? 
@@ -419,16 +434,16 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       return (ntree0+2);
     }
     else {
-      if (k1->prev->left->stat>0) {
+      if (caught_jetveto==0 && k1->prev->left->stat>0) {
 	k1->prev->left->t = dabs(k1->t);
 	k1->prev->left->tmax = maxt;
       }
     } 
   
-    double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
     // *AS* should always be done 
     if (caught_jetveto==0) {
       if (p_fin) {
+	double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
 
 	// in case mass already known from ME:
 	// determine real daughter momenta first!
@@ -511,7 +526,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg) {
   Flavour flavs[2];
   if (p_suds[leg]->Dice(active,m_sprime,m_jetveto && m_jetveto_scheme==1  ,m_extra_pdf[leg])) {
-
     flavs[0] = p_suds[leg]->GetFlA();
     flavs[1] = p_suds[leg]->GetFlC();    
 

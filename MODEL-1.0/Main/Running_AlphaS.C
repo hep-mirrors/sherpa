@@ -27,8 +27,8 @@ namespace MODEL {
 
 }
 
-Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ,const int order) : 
-  m_order(order), m_as_MZ(_as_MZ), m_m2_MZ(_m2_MZ) 
+Running_AlphaS::Running_AlphaS(const double as_MZ,const double m2_MZ,const int order, const double fac) : 
+  m_order(order), m_as_MZ(as_MZ), m_m2_MZ(m2_MZ), m_fac(fac)
 {
   m_type  = std::string("Running Coupling");
   p_thresh  = NULL;
@@ -283,6 +283,7 @@ void Running_AlphaS::ContinueAlphaS(int & nr) {
   //  * to given t0        or
   //  * to alphaS=alphaCut
   double alpha_cut = .999999;   // make parameter
+  // double alpha_cut = M_PI;   // make parameter
   double & beta0   = p_thresh[nr].beta0;
   double & lambda2 = p_thresh[nr].lambda2;
   double t0        = lambda2 * ::exp(M_PI/(alpha_cut*beta0));
@@ -295,6 +296,8 @@ void Running_AlphaS::ContinueAlphaS(int & nr) {
     t0             = t1;
     as             = AlphaSLam(t0,nr);    
   }
+
+  m_cutq2 = t0;
 
   // modify lower domains
   p_thresh[nr].low_scale    = t0;
@@ -313,32 +316,33 @@ void Running_AlphaS::ContinueAlphaS(int & nr) {
 
 
 
-double Running_AlphaS::operator()(double t)
+double Running_AlphaS::operator()(double q2)
 {
   double as;
-  if (t<0.) t=-t;
+  q2=q2*m_fac;
+  if (q2<0.) q2=-q2;
   int i = m_mzset-1;
-  if (t<=m_m2_MZ) {
-    for (;!((p_thresh[i].low_scale<t)&&(t<=p_thresh[i].high_scale));--i) {
+  if (q2<=m_m2_MZ) {
+    for (;!((p_thresh[i].low_scale<q2)&&(q2<=p_thresh[i].high_scale));--i) {
       if (i<=0) break;
     }
     if (p_thresh[i].nf>=0) 
-      as = AlphaSLam(t,i);
+      as = AlphaSLam(q2,i);
     else 
-      as = t/p_thresh[i].high_scale * p_thresh[i].as_high;
+      as = q2/p_thresh[i].high_scale * p_thresh[i].as_high;
   }
   else {
     ++i;
-    for (;!((p_thresh[i].low_scale<t)&&(t<=p_thresh[i].high_scale));++i) {
+    for (;!((p_thresh[i].low_scale<q2)&&(q2<=p_thresh[i].high_scale));++i) {
       if (i>=m_nth) break;
     }
-    as   = AlphaSLam(t,i);
+    as   = AlphaSLam(q2,i);
   }
   return as;
 }  
 
-double  Running_AlphaS::AlphaS(const double t){
-  return operator()(t);
+double  Running_AlphaS::AlphaS(const double q2){
+  return operator()(q2);
 }
 
 

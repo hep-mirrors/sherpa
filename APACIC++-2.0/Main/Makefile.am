@@ -1,8 +1,13 @@
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
+
+SHERPAFLAGS   =	-pedantic -Wall 
+#-Winline 
+
 lib_LTLIBRARIES = libApacicMain.la
 libApacicMain_la_SOURCES = Apacic.C Knot.C Knot_List.C Tree.C
+AM_CXXFLAGS   = $(SHERPAFLAGS)
 INCLUDES = -I../../APACIC++-2.0/Showers \
 	   -I../../PDF-1.0/Main \
 	   -I../../MODEL-1.0/Main \

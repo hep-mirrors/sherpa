@@ -26,6 +26,8 @@ namespace MODEL {
     int         m_nth,m_mzset;
     double      m_CF,m_CA;
     double      m_as_MZ,m_m2_MZ;
+    double      m_fac;
+    double      m_cutq2;
 
     AsDataSet * p_thresh;
 
@@ -42,28 +44,29 @@ namespace MODEL {
   public:
 
     // constructor
-    Running_AlphaS(const double,const double, const int=0);
+    Running_AlphaS(const double as_MZ,const double m2_MZ,const int order=0, const double fac=1.);
     
     // destructor
     ~Running_AlphaS();
 
     // member functions
-    double operator()(double); 
-    double AlphaS(const double);
+    double operator()(double q2); 
+    double AlphaS(const double q2);
     void   SelfTest();
 
     // inline functions
-    inline int    Order()               { return m_order;      }
-    inline double Beta0(const double t) { return Beta0(Nf(t)); }
-    inline double AsMZ()                { return m_as_MZ;      }
-    inline double AsFixed()             { return m_defval;     }
-    inline int    Nf(const double);
+    inline int    Order()                { return m_order;      }
+    inline double Beta0(const double q2) { return Beta0(Nf(q2)); }
+    inline double AsMZ()                 { return m_as_MZ;      }
+    inline double AsFixed()              { return m_defval;     }
+    inline int    Nf(const double q2);
 
+    inline double CutQ2() { return m_cutq2; }    
   };
 
-  inline int Running_AlphaS::Nf(const double t) {
+  inline int Running_AlphaS::Nf(const double q2) {
     for (int i=0;i<=m_nth;++i) {
-      if (t<=p_thresh[i].high_scale && t>p_thresh[i].low_scale )
+      if (q2<=p_thresh[i].high_scale && q2>p_thresh[i].low_scale )
 	return p_thresh[i].nf;
     }
     return m_nth;

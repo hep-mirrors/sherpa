@@ -140,10 +140,14 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
       // boost mother tree appropriate (after momentum determination)  "C1"
       mode+=2;
     }
-    if (sister->left) if (sister->left->part->Info()=='H') {
+    if (sister->left) if (sister->left->part->Momentum()[1]!=0.) {
+      // if (sister->left->part->Info()=='H') {
       // boost sister tree appropriate (after momentum determination)  "C2"
       mode+=4;
     }
+  }
+  if (sister->left && mode==0) if (sister->left->part->Momentum()[1]!=0.) {
+    mode=5;
   }
 
 
@@ -304,6 +308,8 @@ void Spacelike_Kinematics::RoBoFin(Knot * k, Poincare & rot, Poincare & boost)
 
 void Spacelike_Kinematics::BoostPartial(const int mode, Knot * mo, Knot * si, const Vec4D & v_mo, const Vec4D & v_si) 
 {
+  msg_Tracking()<<"Spacelike_Kinematics::BoostPartial("<<mode<<", ["<<mo->kn_no<<"], ["<<si->kn_no<<"],\n"
+		<<v_mo<<", "<<v_si<<") \n"; 
   if (mode==3) {
     // boost mother and the rest
     BoostPartial(mode,mo,v_mo);
@@ -374,10 +380,10 @@ bool Spacelike_Kinematics::ResetEnergies(Knot * in) {
   if (in->E2 < in->t) return 0;
 
   if (in->left) {
-//     if (in->part->Info()=='H' && in->left->part->Info()=='H') {
-//       // update z:
-//       in->z=in->left->part->Momentum()[0]/in->part->Momentum()[0];
-//     }
+    if (in->part->Info()=='H' && in->left->part->Info()=='H') {
+      // update z:
+      in->z=in->left->part->Momentum()[0]/in->part->Momentum()[0];
+    }
 
     in->left->E2  = in->z*in->z*in->E2;
     in->right->E2 = (1.-in->z)*(1.-in->z)*in->E2;
@@ -394,7 +400,9 @@ bool Spacelike_Kinematics::JetCheck(Knot * active)
     sister=sister->prev;
     if (sister->left) {
       sister=sister->left;
-      if (jf->TwoJets(sister->part->Momentum())) return 1;
+      if (jf->TwoJets(sister->part->Momentum())) {
+	return 1;
+      }
     }
   }
   return 0;

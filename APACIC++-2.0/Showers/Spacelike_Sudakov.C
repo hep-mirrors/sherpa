@@ -16,19 +16,19 @@ using namespace PDF;
 using namespace ATOOLS;
 
 
-Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spacelike_Kinematics * _kin,
-				     double _pt2min,ATOOLS::Data_Read * _dataread) : 
-  Backward_Splitting_Group(0,0), p_tools(_tools), p_kin(_kin), m_pt2min(dabs(_pt2min)), 
+Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacelike_Kinematics * kin,
+				     double pt2min,ATOOLS::Data_Read * dataread) : 
+  Backward_Splitting_Group(0,0), p_tools(tools), p_kin(kin), m_pt2min(dabs(pt2min)), 
   m_last_veto(0)
 {
-  p_pdf             = _pdf->GetBasicPDF(); 
+  p_pdf             = pdf->GetBasicPDF(); 
   p_pdfa            = p_pdf->GetBasicPDF()->GetCopy();
-  m_ordering_scheme = _dataread->GetValue<int>("IS ORDERING",0);  /* Switch for ordering due to coherence:  
+  m_ordering_scheme = dataread->GetValue<int>("IS_ORDERING",0);  /* Switch for ordering due to coherence:  
                                                                      0 = none, 1 = pt^2, 2 = pt^2/E^2     */
-  m_cpl_scheme      = _dataread->GetValue<int>("IS COUPLINGS",3); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
-  m_pdf_scheme      = _dataread->GetValue<int>("IS PDF SCALE",1); /*  0 = -Q^2, 1 = -(1-z)*Q^2 */
-  m_pdf_scale_fac   = _dataread->GetValue<double>("IS PDF SCALE FACTOR",1.);
-  m_jetveto_scheme  = _dataread->GetValue<int>("IS JETVETOSCHEME",2);
+  m_cpl_scheme      = dataread->GetValue<int>("IS_COUPLINGS",3); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
+  m_pdf_scheme      = dataread->GetValue<int>("IS_PDF_SCALE",1); /*  0 = -Q^2, 1 = -(1-z)*Q^2 */
+  m_pdf_scale_fac   = dataread->GetValue<double>("IS_PDF_SCALE_FACTOR",1.);
+  m_jetveto_scheme  = dataread->GetValue<int>("IS_JETVETOSCHEME",2);
 
   m_emin            = .5;
   m_pt2max          = sqr(rpa.gen.Ecms());
@@ -181,7 +181,7 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
 
   double q = sqrt(-m_t);
   double firstq = sqrt(m_facscale);
-  double wb_jet;
+  double wb_jet = 0.;
   switch (m_pdf_scheme) {
   case 0:
     firstq/=sqrt(1.-m_z);

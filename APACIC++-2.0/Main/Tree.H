@@ -13,7 +13,7 @@
 namespace APACIC {
   class Tree {
     Knot      * p_root; 
-    Knot_List * p_knots;
+    static Knot_List * s_knots;
 
     Knot      * p_save_root;
   public:
@@ -57,11 +57,13 @@ namespace APACIC {
     void Reset(); 
     //! Resets all knots in a tree.
     void ResetKnots();
+    //! deletes a saved parton status (cf. Store())
+    void ClearStore();
     //! saves a parton status (can be reactivated by Restore())
     void Store();
     //! Restores the tree down to partons with info = 'H', 'G', or 'M'
     void Restore();
-    void ResetDaughters(Knot *);
+    //    void ResetDaughters(Knot *);
     //-----------------------------------------------------------------------
     //--------------------------- Specific knots ----------------------------
     //----------------------------------------------------------------------- 
@@ -72,6 +74,8 @@ namespace APACIC {
     //-----------------------------------------------------------------------
     //--------------------------- Extracting partons ------------------------
     //----------------------------------------------------------------------- 
+    bool CheckStructure(bool fixit);
+    bool SingleCheckStructure(Knot *mo, Knot*gr, bool fixit);
     void ExtractPartons(ATOOLS::Particle_List *);
     //-----------------------------------------------------------------------
     //--------------------------- New frames for the tree -------------------
@@ -96,16 +100,35 @@ namespace APACIC {
   //----------------------------------------------------------------------- 
 
   inline void Tree::ResetKnots() {
-    for (Knot_Iterator kit=p_knots->begin(); kit!=p_knots->end(); ++kit) {
+    for (Knot_Iterator kit=s_knots->begin(); kit!=s_knots->end(); ++kit) {
       delete (*kit); 
     }
-    p_knots->erase(p_knots->begin(),p_knots->end());
+    s_knots->erase(s_knots->begin(),s_knots->end());
     p_root = 0;
   }
 
   inline void Tree::Reset() {
     ResetKnots();    
   }
+
+  /*!
+    \file
+    \brief contains the class APACIC::Tree
+  */
+
+  /*!
+    \class Tree
+    \brief  This class is used as a representation of a parton shower history
+       in terms of binary splittings.
+
+    This class provides all neccessary routines to handle a tree with
+    binary splittings, esp. :
+     - BoRo() ,
+     - Store() ,
+     - Restore() and
+     - Reset()
+  */
+
 
 }
 #endif

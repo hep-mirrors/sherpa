@@ -156,17 +156,18 @@ namespace ATOOLS {
   \mainpage
 
   The ATOOLS package is the basis of the simulation of physics within the SHERPA framework.
+  It provides a collection of basic classes and function within the namespace ATOOLS.
   Three main libraries are defined.
 
   \section amatools Mathematical Tools
-  In the namespace ATOOLS all classes with a pure mathematical meaning are collected.
+  In the directory Math all classes with a pure mathematical meaning are collected.
 
   \section aphytools Physical Tools
-  In the namespace ATOOLS all basic classes needed for physics descriptions are collected.
+  In the directory Phy all basic classes needed for physics descriptions are collected.
   Here you can find Flavour, Blob, etc.
 
   \section aorgtools Organisation Tools
-  In the namespace ATOOLS all basic classes needed organisational purposes are collected.
+  In the directory Org all basic classes needed organisational purposes are collected.
   Here you can find classes for reading in and writing out variables (IO_Handler), accessing
   runtime parameters (Run_Parameter), etc.
 */

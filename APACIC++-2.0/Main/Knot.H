@@ -54,7 +54,7 @@ namespace APACIC {
   };
 
   inline void Knot::CopyData(Knot * ink) {
-    part->Copy(ink->part);
+    if (part && ink->part) part->Copy(ink->part);
     stat   = ink->stat;
 
     t      = ink->t;
@@ -87,6 +87,16 @@ namespace APACIC {
   class Tree;
 
   std::ostream& operator<< (std::ostream&,Knot&);
+
+  /*!
+    \file
+    \brief contains the class APACIC::Knot
+  */
+
+  /*!
+    \class Knot 
+    \brief Defines one parton splitting (basic element of a Tree)
+  */
 }
 
 #endif

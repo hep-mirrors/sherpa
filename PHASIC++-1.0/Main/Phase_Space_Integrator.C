@@ -35,8 +35,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   int size = 1;
 #else
   //MPI off
-  
-  int rank = 0;
 #endif
 
   int numberofchannels = 1;

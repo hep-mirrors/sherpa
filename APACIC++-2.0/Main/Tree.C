@@ -24,17 +24,22 @@ std::ostream & operator<<(std::ostream & s, Tree * tree)
 }
 }
 
+// ------------------ static ----------------
+Knot_List * Tree::s_knots=NULL;
+
 //-----------------------------------------------------------------------
 //--------------------------- Constructors ------------------------------
 //----------------------------------------------------------------------- 
+
+
 Tree::Tree() {
-  p_knots     = new Knot_List;
+  if (!s_knots) s_knots = new Knot_List;
   p_root      = 0;
   p_save_root = 0;
 }
 
 Tree::Tree(Tree * tree) {
-  p_knots = new Knot_List;
+  if (!s_knots) s_knots = new Knot_List;
   p_root  = NewKnot(tree->p_root);
   Links(p_root,tree->p_root);
   p_save_root = 0;
@@ -42,6 +47,11 @@ Tree::Tree(Tree * tree) {
 
 Tree::~Tree() {
   Reset();
+  if (s_knots) {
+    delete s_knots;
+    s_knots=NULL;
+  }
+
   Knot * help;
   help = p_save_root;
   if (help) while (help->prev) help = help->prev;
@@ -69,8 +79,8 @@ void Tree::Links(Knot * act,Knot * ink) {
 
 Knot * Tree::NewKnot(ATOOLS::Flavour fl, ATOOLS::Vec4D p, double t, double x1) {
   Knot * newk = new Knot;
-  p_knots->push_back(newk);
-  newk->kn_no     = p_knots->size();
+  s_knots->push_back(newk);
+  newk->kn_no     = s_knots->size();
   Particle * newp = new Particle(newk->kn_no,fl,p);
   newk->part      = newp;
   newk->t         = t;
@@ -87,8 +97,8 @@ Knot * Tree::NewKnot(ATOOLS::Flavour fl, ATOOLS::Vec4D p, double t, double x1) {
 
 Knot * Tree::NewKnot(Knot * ink) {
   Knot * newk = new Knot;
-  p_knots->push_back(newk);
-  newk->kn_no  = p_knots->size();
+  s_knots->push_back(newk);
+  newk->kn_no  = s_knots->size();
   newk->t      = ink->t;
   newk->tout   = ink->tout;
   newk->maxpt2 = ink->maxpt2;
@@ -111,8 +121,8 @@ Knot * Tree::NewKnot(Knot * ink) {
 Knot * Tree::NewKnot(Particle * _inpart)
 {
   Knot * newk     = new Knot;
-  p_knots->push_back(newk);
-  newk->kn_no     = p_knots->size();
+  s_knots->push_back(newk);
+  newk->kn_no     = s_knots->size();
   if (_inpart==NULL) {
     newk->part    = new Particle(newk->kn_no);
   }
@@ -131,7 +141,7 @@ Knot * Tree::NewKnot(Particle * _inpart)
 //-----------------------------------------------------------------------
 //--------------------------- Resetting the tree ------------------------
 //----------------------------------------------------------------------- 
-
+/*
 void Tree::ResetDaughters(Knot * in) {
   if (!(in)) return;
   
@@ -140,14 +150,15 @@ void Tree::ResetDaughters(Knot * in) {
   if (in->right) ResetDaughters(in->right);
   in->right=0;
 
-  for (Knot_Iterator kit=p_knots->begin(); kit!=p_knots->end(); ++kit) {
+  for (Knot_Iterator kit=s_knots->begin(); kit!=s_knots->end(); ++kit) {
     if ((*kit) == in) {
       delete (in);
-      p_knots->erase(kit);
+      s_knots->erase(kit);
       return;
     }
   }
 }
+*/
 
 
 Knot * Tree::GetInitiator() {
@@ -249,6 +260,15 @@ void Tree::DeleteKnot(Knot * b) {
   delete b;
 }
 
+void Tree::ClearStore()
+{
+  Knot * help;
+  help = p_save_root;
+  if (help)  while (help->prev)  help = help->prev;
+  DeleteKnot(help); 
+  p_save_root = 0;
+}
+
 void Tree::Store()
 {
   Knot * help;
@@ -272,4 +292,28 @@ void Tree::Restore()
     }
   }
   CopyBackKnot(a,b);
+}
+
+bool Tree::SingleCheckStructure(Knot *mo, Knot*gr, bool fixit)
+{
+  if (!mo) return true;
+  bool check0 = (mo->prev==gr);
+  if (!check0) {
+    std::cerr<<" Tree::CheckStructure Error tree of ["<<mo->kn_no<<"]\n";
+    if (fixit) {
+      mo->prev=gr;
+    }
+  }
+  bool check1 = SingleCheckStructure(mo->left,mo,fixit);
+  bool check2 = SingleCheckStructure(mo->right,mo,fixit);
+  return check0 && check1 && check2;
+}
+
+bool Tree::CheckStructure(bool fixit)
+{
+  Knot * mo=GetInitiator();
+  bool check1 = SingleCheckStructure(mo->left,mo,fixit);
+  bool check2 = SingleCheckStructure(mo->right,mo,fixit);
+  if(!check1 || !check2) std::cerr<<"Tree::CheckStructure failed\n";
+  return check1 && check2;
 }

@@ -38,25 +38,25 @@ namespace APACIC {
     void SingleExtract(Knot *,int,ATOOLS::Blob *,
 			ATOOLS::Blob_List *,int &);
   public:
-    Initial_State_Shower(PDF::ISR_Handler *,Final_State_Shower *,
-			 MODEL::Model_Base *,ATOOLS::Data_Read * const );
+    Initial_State_Shower(PDF::ISR_Handler *isr,Final_State_Shower *fin,
+			 MODEL::Model_Base *model,ATOOLS::Data_Read * const dataread);
     ~Initial_State_Shower();
-    bool PerformShower(Tree **,int);
+    bool PerformShower(Tree ** trees, int jetvetoflag);
     void InitShowerPT(double pt2max);
-    void ExtractPartons(Knot *,int,ATOOLS::Blob *,
-			ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
-    bool TestShower(Tree **) ;
+    void ExtractPartons(Knot * kn,int beam,ATOOLS::Blob * jet,
+			ATOOLS::Blob_List *bl,ATOOLS::Particle_List *pl = NULL);
+    bool TestShower(Tree **trees) ;
 
     ATOOLS::Vec4D GetLab();
     ATOOLS::Vec4D GetMomentum(Knot * mo,int & number);
 
     double CutOff();
 
-    Knot * GetInitiator(int);
-    Knot * GetInitiator(Tree *);
+    //    Knot * GetInitiator(int no);
+    Knot * GetInitiator(Tree * tree);
 
-    void OutputTree(Tree *);
-    static void SetColours(Knot *);
+    void OutputTree(Tree * tree);
+    static void SetColours(Knot * k);
     void SetJetvetoPt2(const double q2i, const double q2f) {
       p_kin->SetJetvetoPt2(q2i,q2f); 
     }
@@ -65,13 +65,13 @@ namespace APACIC {
       p_suds[1]->SetFactorisationScale(scale);
     }
   private:
-    bool InitializeSystem(Tree **,Knot *,Knot *);
-    void InitTwoTrees(Tree **,double);
-    int  EvolveSystem(Tree **,Knot *,Knot *);
-    int  FillBranch(Tree **,Knot *,Knot *,int);
+    bool InitializeSystem(Tree **trees,Knot *k1,Knot *k2);
+    void InitTwoTrees(Tree ** trees,double E2);
+    int  EvolveSystem(Tree ** trees,Knot *k1,Knot *k2);
+    int  FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg);
 
-    void FillMotherAndSister(Tree *,Knot *,ATOOLS::Flavour *);
-    void SetStartingConditions(double,double,int) ;
+    void FillMotherAndSister(Tree * tree,Knot * k,ATOOLS::Flavour * k_flavs);
+    void SetStartingConditions(double k1,double k2,int flag);
   };
 
   //----------------------------------------------------------------------

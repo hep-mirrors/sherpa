@@ -24,8 +24,14 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin,
   scheme = _scheme;
   if (scheme>0) {
     alphaQEDmax = (*p_aqed)(tmax);    
-    //    alphaSmax   = AlphaS(tmin);      
-    alphaSmax   = AlphaS(0.25*tmin);      
+    if (.25*tmin<static_cast<Running_AlphaS*>(p_as)->CutQ2()) {
+      double cutq2 = static_cast<Running_AlphaS*>(p_as)->CutQ2();
+      alphaSmax   = AlphaS(cutq2); 
+    }
+    else {
+      //    alphaSmax   = AlphaS(tmin);
+      alphaSmax   = AlphaS(0.25*tmin);      
+    }
     FixLambda2(sqr((Flavour(kf::Z)).Mass())); 
     Setscalefac(tmin);   
   }
