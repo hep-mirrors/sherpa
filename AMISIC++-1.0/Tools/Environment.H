@@ -42,6 +42,21 @@ namespace AMISIC {
 
   };// end of class Environment
 
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file Environment.H
+    \brief Declares the class Environment
+  */
+
+  /*!
+    \class Environment
+    \brief Allows running Amisic as a stand-alone 
+    multiple interaction generator
+  */
+
 }// end of namespace AMISIC
 
 #endif

@@ -44,6 +44,26 @@ namespace PHASIC {
     
   }; // end of class Fixed_Variable_Channel
   
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file Fixed_Variable_Channel.H
+    \brief Declares the class Fixed_Variable_Channel
+  */
+
+  /*!
+    \class Fixed_Variable_Channel
+    \brief Special integration channel
+
+    This class implements a special integration channel, which
+    is designed for holding one phasespace variable fixed, while
+    integrating out others. It is used during the event generation 
+    step with Simple_Chain to generate events with fixed transverse 
+    momenta for the outgoing partons.
+  */
+
 } // end of namespace PHASIC
 
 #endif

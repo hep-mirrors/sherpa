@@ -155,6 +155,27 @@ namespace AMISIC {
   operator<<(std::ostream &str,
 	     const Amisic_Histogram<ArgumentType> &histogram);
 
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file Amisic_Histogram.H
+    \brief Declares the class Amisic_Histogram
+  */
+
+  /*!
+    \class Amisic_Histogram
+    \brief Simple histogram class
+    
+    This class implements a histogram, which stores for each bin
+    the sum of the weights \f$\sum w\f$, the sum of the squared
+    weights \f$\sum w^2\f$, the maximum of the weights \f$max\{w\}\f$ 
+    and the number of entries \f$n\f$.
+    This allows for a determination of the mean, the variance and the 
+    standard deviation for each bin.
+  */
+
 }// end of namespace AMISIC
 
 #endif

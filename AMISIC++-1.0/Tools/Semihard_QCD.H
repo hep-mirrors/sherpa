@@ -43,6 +43,27 @@ namespace AMISIC {
 
   };// end of class Semihard_QCD
 
+  //////////////////
+  // Doxygen part //
+  //////////////////
+
+  /*!
+    \file Semihard_QCD.H
+    \brief Declares the class Semihard_QCD
+  */
+
+  /*!
+    \class Semihard_QCD
+    \brief Container class for processes used in multiple 
+    interaction simulations
+
+    This container is derived from EXTRAXS::XS_Group. It stores 
+    the processes used during multiple interaction simulations.
+    Semihard_QCD implements a special setup for the phasespace, 
+    i.e. it generates only one isr channel, which is suitably 
+    designed.
+  */
+
 }// end of namespace AMISIC
 
 #endif
