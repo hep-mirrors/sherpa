@@ -547,8 +547,8 @@ bool Simple_Chain::Initialize()
     m_stop[3]=m_stop[2]=0.0;
   }
 #ifdef USING__Sherpa
-  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
-  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_2");
+  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
+  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
 #endif
   if (!ReadInData()) return false;
   std::string xsfile=std::string("XS.dat");
@@ -648,7 +648,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	  MinimalEnergy(selected->Flavours()[j])/m_ecms;
 	if (m_last[j+2]-x[j]<xrem[j]) {
 	  test=false;
-	  msg_Tracking()<<"Simple_Chain::FillBlob(..): Remnant_Info ["
+	  msg_Tracking()<<"Simple_Chain::FillBlob(..): Remnant ["
 			<<j<<"] says: "<<"x_{rem min} = "<<xrem[j]
 			<<" vs. x_{old} = "<<m_last[j+2]<<" -> x_{new} = "
 			<<m_last[j+2]-x[j]-xrem[j]<<" from "
