@@ -8,7 +8,6 @@ using namespace AMATOOLS;
 
 
 Jet_Finder::~Jet_Finder() {
-  //  if (sel_log) delete [] sel_log;
   if (m_frame)   delete [] m_frame;
 }
 
