@@ -1,6 +1,7 @@
 #ifndef Fixed_Variable_Channel_H
 #define Fixed_Variable_Channel_H
 
+#include "Variable.H"
 #include "Channel_Interface.H"
 
 namespace PHASIC {
@@ -43,7 +44,5 @@ namespace PHASIC {
     }; // end of class Fixed_Variable_Channel
     
 } // end of namespace PHASIC
-
-#include "Fixed_Variable_Channel.C"
 
 #endif

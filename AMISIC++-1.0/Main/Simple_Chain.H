@@ -3,6 +3,7 @@
 
 #include "MI_Base.H"
 #include "Grid_Creator.H"
+#include "Data_To_Function.H"
 #include "Profile_Function_Base.H"
 #include "Fixed_Variable_Channel.H"
 #include "Simple_XS.H"
@@ -13,11 +14,10 @@ namespace AMISIC {
   class Simple_Chain: public MI_Base {
   public:
 
-    typedef Grid_Handler<double,double>     Grid_Handler_Type;
-    typedef Data_To_Function<double,double> Grid_Function_Type;
+    typedef ATOOLS::Data_To_Function<double,double> Grid_Function_Type;
 
-    typedef std::map<std::string,Grid_Handler_Type*>  Grid_Handler_Map;
-    typedef std::map<std::string,Grid_Function_Type*> Grid_Function_Map;
+    typedef Amisic_Histogram<double> Amisic_Histogram_Type;
+    typedef std::map<std::string,Amisic_Histogram_Type*>  Amisic_Histogram_Map;
 
     typedef PHASIC::Fixed_Variable_Channel<double> FSR_Channel;
 
@@ -29,17 +29,21 @@ namespace AMISIC {
 
   private:
 
-    Grid_Function_Map   m_differential, m_maxima;
-    Grid_Function_Type *p_total, *p_differential;
-    Grid_Creator       *p_gridcreator;
+    Amisic_Histogram_Map   m_differentials;
+    Grid_Function_Type    *p_total;
+    Amisic_Histogram_Type *p_differential;
+    Grid_Creator          *p_gridcreator;
 
     Process_Map m_processmap;
+#ifdef COMPARE__Pythia
+    Process_Map m_kinematics;
+#endif
     Map_Map     m_mapmap;
 
     double m_norm, m_enhance;
 
     std::string m_environmentfile, m_xsfile;
-    std::string m_xsextension, m_maxextension, m_mcextension;
+    std::string m_xsextension, m_mcextension;
 
     EXTRAXS::Simple_XS *p_processes;
     FSR_Channel        *p_fsrinterface;
@@ -73,6 +77,7 @@ namespace AMISIC {
     bool InitializeProcessList();
     void CalculateSigmaND();
     bool CalculateTotal();
+    bool SetUpInterface();
 
     bool CheckConsistency(EXTRAXS::XS_Group *const group,
 			  Grid_Function_Type *const grid,

@@ -99,17 +99,23 @@ namespace AMISIC {
 
     inline double Norm() const { return m_norm; }
 
-    inline double operator()(const double b) const { return Value(b);      }
-    inline double operator[](const double b) const { return MajorValue(b); }
-
-    inline double operator+(const double b) const { return MajorIntegral(b);        }
-    inline double operator-(const double I) const { return InverseMajorIntegral(I); }
-
     inline double KFactor() const { return m_kfactor; }
     inline double OMean() const   { return m_omean;   }
 
-    Differential_Overlap    *const Differential() const { return p_overlap;     }
-    Interaction_Probability *const Probability() const  { return p_probability; }
+    Differential_Overlap *const Differential() const 
+    { return p_overlap; }
+    Interaction_Probability *const Probability() const  
+    { return p_probability; }
+
+    inline double operator()(const double b) const 
+    { return Value(b); }
+    inline double operator[](const double b) const 
+    { return MajorValue(b); }
+
+    inline double operator+(const double b) const 
+    { return MajorIntegral(b); }
+    inline double operator-(const double I) const 
+    { return InverseMajorIntegral(I); }
 
   };// end of class Profile_Function_Base
 

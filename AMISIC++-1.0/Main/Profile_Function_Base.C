@@ -64,17 +64,28 @@ Profile_Function_Base *Profile_Function_Base::SelectProfile(const std::string &t
   return profile;
 }
 
-// class Test_Func: public ATOOLS::Function_Base {
-// private:
-//   Profile_Function_Base *p_owner;
-// public:
-
-//   Test_Func(Profile_Function_Base *profile):p_owner(profile) {}
-//   double operator()(const double b) 
-//   { 
-//     return p_owner->KFactor()*(*p_owner)(b)*(*p_owner->Probability())(b);
-//   }
-// };
+#ifdef DEBUG__Profile_Function_Base
+class Test_Func_O: public ATOOLS::Function_Base {
+private:
+  Profile_Function_Base *p_owner;
+public:
+  Test_Func_O(Profile_Function_Base *profile):p_owner(profile) {}
+  double operator()(const double b) 
+  { 
+    return p_owner->KFactor()*(*p_owner)(b)*(*p_owner->Probability())(b);
+  }
+};
+class Test_Func_F: public ATOOLS::Function_Base {
+private:
+  Profile_Function_Base *p_owner;
+public:
+  Test_Func_F(Profile_Function_Base *profile):p_owner(profile) {}
+  double operator()(const double b) 
+  { 
+    return (*p_owner)(b)/p_owner->OMean()*(*p_owner->Probability())(b);
+  }
+};
+#endif
 
 bool Profile_Function_Base::CalculateOMean(const double ratio)
 {
@@ -102,21 +113,33 @@ bool Profile_Function_Base::CalculateOMean(const double ratio)
       return false;
     }
   } while(ATOOLS::dabs(ratio2-ratio)>1.0e-4);
-//   Test_Func testfunc(this);
-//   ATOOLS::Gauss_Integrator gaussh(&testfunc);
-//   double f_c=gaussh.Integrate(m_bmin,m_bmax,1.e-5);
-//   double om=f_c;
-//   double norm=gausso->Integrate(m_bmin,m_bmax,1.e-5);
-//   f_c/=gausso->Integrate(m_bmin,m_bmax,1.0e-5);
-//   om/=gaussp->Integrate(m_bmin,m_bmax,1.0e-5)*m_kfactor;
-//   norm/=m_kfactor*om*gaussp->Integrate(m_bmin,m_bmax,1.0e-5);
+#ifdef DEBUG__Profile_Function_Base
+  Test_Func_O testfunco(this);
+  ATOOLS::Gauss_Integrator gaussh(&testfunco);
+  double f_c=gaussh.Integrate(m_bmin,m_bmax,1.0e-5);
+  double norm=gausso->Integrate(m_bmin,m_bmax,1.0e-5);
+  double pmean=gaussp->Integrate(m_bmin,m_bmax,1.0e-5);
+  double om=f_c;
+  f_c/=norm;
+  om/=pmean*m_kfactor;
+  norm/=m_kfactor*om*pmean;
+#endif
   delete gausso;
   delete gaussp;
   m_omean=ratio2/m_kfactor;
+#ifdef DEBUG__Profile_Function_Base
+  Test_Func_F testfuncf(this);
+  ATOOLS::Gauss_Integrator gaussf(&testfuncf);
+  double fmean=gaussf.Integrate(m_bmin,m_bmax,1.0e-5);
+  fmean/=pmean;
+#endif
   msg_Info()<<"Profile_Function_Base::CalculateOMean("<<ratio<<"): "
 	    <<"Results are {\n   k           = "<<m_kfactor
-// 		<<"\n   <\\tilde{O}> = "<<om<<" norm = "<<norm
-// 		<<"\n   f_c         = "<<f_c
+#ifdef DEBUG__Profile_Function_Base
+	    <<"\n   <\\tilde{O}> = "<<om<<" norm = "<<norm
+	    <<"\n   f_c         = "<<f_c
+	    <<"\n   <f(b)>      = "<<fmean<<" -> "<<fmean/f_c 
+#endif
 	    <<"\n   <\\tilde{O}> = "<<m_omean<<"\n}"<<std::endl;
   return true;
 }

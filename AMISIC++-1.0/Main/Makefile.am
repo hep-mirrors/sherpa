@@ -25,24 +25,24 @@ lib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
 			MI_Base.C \
 			Environment.C \
+			Amisic_Histogram.C \
 		       	Grid_Creator.C \
 			Profile_Function_Base.C \
 			Profile_Function.C \
+			Fixed_Variable_Channel.C \
 			Semihard_QCD.C \
 			Simple_Chain.C \
 			Amisic.C 
 noinst_HEADERS        = \
 			Amisic_Histogram.H \
-			Amisic_Histogram.C \
 			Grid_Handler.H \
 			Grid_Handler.C \
 			Grid_Creator.H \
-			Fixed_Variable_Channel.H \
-			Fixed_Variable_Channel.C \
 			MI_Base.H \
 			Environment.H \
 			Profile_Function_Base.H \
 			Profile_Function.H \
+			Fixed_Variable_Channel.H \
 			Semihard_QCD.H \
 			Simple_Chain.H \
 			Amisic.H 

@@ -6,19 +6,17 @@
 
 namespace AMISIC {
 
-  template <class Argument_Type,class Result_Type>
-  class Grid_Handler {
+  template <class ArgumentType>
+  class Grid_Handler: public ATOOLS::File_IO_Base {
   public:
 
-    typedef Argument_Type GridArgumentType;
-    typedef Result_Type   GridResultType;
+    typedef ArgumentType Argument_Type;
 
-    typedef ATOOLS::Data_To_Function<GridArgumentType,GridResultType> 
-    GridFunctionType;
+    typedef Amisic_Histogram<Argument_Type> Grid_Function_Type;
 
   private:
 
-    GridFunctionType *p_grid;
+    Grid_Function_Type *p_grid;
 
     ATOOLS::Type::ID m_streamtype;
 

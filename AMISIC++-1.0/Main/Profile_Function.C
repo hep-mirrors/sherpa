@@ -102,7 +102,9 @@ Gaussian_Profile::Gaussian_Profile(const double radius):
 {
   m_omax=Value(m_bmin);
   m_omin=Value(m_bmax);
-  m_norm=M_PI;
+  m_norm=exp(-0.5*ATOOLS::sqr(m_bmin/m_radius));
+  m_norm-=exp(-0.5*ATOOLS::sqr(m_bmax/m_radius));
+  m_norm*=M_PI;
 }
 
 double Gaussian_Profile::Value(const double b) const
@@ -117,12 +119,14 @@ double Gaussian_Profile::MajorValue(const double b) const
 
 double Gaussian_Profile::MajorIntegral(const double b) const
 {
-  return M_PI*(1.0-exp(-0.5*ATOOLS::sqr(b/m_radius)));
+  return M_PI*(exp(-0.5*ATOOLS::sqr(b/m_radius))-
+	       exp(-0.5*ATOOLS::sqr(m_bmax/m_radius)));
 }
 
 double Gaussian_Profile::InverseMajorIntegral(const double I) const
 {
-  return -m_radius*log(1.0-I/M_PI);
+  return m_radius*sqrt(-2.0*log(I/M_PI+
+				exp(-0.5*ATOOLS::sqr(m_bmax/m_radius))));
 }
 
 template <> Profile_Function_Base*

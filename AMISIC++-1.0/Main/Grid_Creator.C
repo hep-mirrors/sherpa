@@ -8,16 +8,14 @@
 
 using namespace AMISIC;
 
-Grid_Creator::Grid_Creator(Grid_Handler_Map *gridhandlers,
-			   Grid_Handler_Map *maxhandlers,
+Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
 			   EXTRAXS::XS_Group *const processes):
-  p_gridhandlers(gridhandlers),
-  p_maxhandlers(maxhandlers),
+  p_histograms(histograms),
   p_processes(processes),
   m_xsextension("_xs.dat"),
-  m_maxextension("_max.dat"),
   m_mcextension("MC"),
-  m_storemax(true)
+  m_datatag("[x,y] ="),
+  m_events(0)
 {
   if (p_processes==NULL) {
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
@@ -33,20 +31,13 @@ Grid_Creator::Grid_Creator(Grid_Handler_Map *gridhandlers,
 
 Grid_Creator::~Grid_Creator()
 {
-  while (m_histograms.size()>0) {
-    delete m_histograms.begin()->second;
-    m_histograms.erase(m_histograms.begin());
-  }
 }
 
 bool Grid_Creator::CollectProcesses(EXTRAXS::XS_Base *const process)
 {
   if (process->Size()==0) return false;
   if ((*process)[0]==process) {
-    m_histograms[process->Name()] = new Amisic_Histogram<double>();
-    (*p_gridhandlers)[process->Name()] = new Grid_Handler_Type();
-    if (m_storemax) 
-      (*p_maxhandlers)[process->Name()] = new Grid_Handler_Type();
+    (*p_histograms)[process->Name()] = new Amisic_Histogram<double>();
     return true;
   }
   for (size_t i=0;i<process->Size();++i) {
@@ -102,8 +93,8 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
 			    "HISTO_X_SCALING")) m_gridxscaling="Log_B_10";
   if (!reader->ReadFromFile(m_gridyscaling,
 			    "HISTO_Y_SCALING")) m_gridyscaling="Id";
-  for (Amisic_Histogram_Map::iterator hit=m_histograms.begin();
-       hit!=m_histograms.end();++hit) {
+  for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
+       hit!=p_histograms->end();++hit) {
     hit->second->XAxis()->SetVariable(m_gridxvariable);
     hit->second->YAxis()->SetVariable(m_gridyvariable);
     hit->second->XAxis()->SetScaling(m_gridxscaling);
@@ -111,54 +102,46 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
     Amisic_Histogram_Type::Axis_Type *axis=hit->second->XAxis();
     if (!hit->second->Initialize(m_gridxmin,m_gridxmax,
 				 abs((int)(((*axis)(m_gridxmax)-
-					    (*axis)(m_gridxmin))/m_griddeltax))))
-      return false;
-  }
-  if (!reader->ReadFromFile(m_gridxscaling,
-			    "GRID_X_SCALING")) m_gridxscaling="Log_B_10";
-  if (!reader->ReadFromFile(m_gridyscaling,
-			    "GRID_Y_SCALING")) m_gridyscaling="Log_B_10";
-  for (Grid_Handler_Map::iterator git=p_gridhandlers->begin();
-       git!=p_gridhandlers->end();++git) {
-    git->second->Grid()->XAxis()->SetVariable(m_gridxvariable);
-    git->second->Grid()->YAxis()->SetVariable(m_gridyvariable);
-    git->second->Grid()->XAxis()->SetScaling(m_gridxscaling);
-    git->second->Grid()->YAxis()->SetScaling(m_gridyscaling);
-  }
-  if (m_storemax) {
-    for (Grid_Handler_Map::iterator mit=p_maxhandlers->begin();
-	 mit!=p_maxhandlers->end();++mit) {
-      mit->second->Grid()->XAxis()->SetVariable(m_gridxvariable);
-      mit->second->Grid()->YAxis()->SetVariable(m_gridyvariable);
-      mit->second->Grid()->XAxis()->SetScaling(m_gridxscaling);
-      mit->second->Grid()->YAxis()->SetScaling(m_gridyscaling);
-    }
+					    (*axis)(m_gridxmin))/
+					   m_griddeltax)))) 
+      throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
+			      "Cannot initialize histogram.",
+			      "Grid_Creator","ReadInArguments"));
   }
   delete reader;
-  p_xaxis=m_histograms.begin()->second->XAxis();
-  p_yaxis=m_histograms.begin()->second->YAxis();
+  p_xaxis=p_histograms->begin()->second->XAxis();
+  p_yaxis=p_histograms->begin()->second->YAxis();
   return true;
+}
+
+void Grid_Creator::Clear()
+{
+  for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
+       hit!=p_histograms->end();++hit) {
+    hit->second->Initialize(m_gridxmin,m_gridxmax,
+			    abs((int)(((*p_xaxis)(m_gridxmax)-
+				       (*p_xaxis)(m_gridxmin))/
+				      m_griddeltax)));
+  }    
 }
 
 bool Grid_Creator::ReadInGrid()
 {
-  Grid_Handler_Map::iterator hit=p_gridhandlers->begin();
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","#");
-  reader->SetInputPath(OutputPath());
-  reader->SetInputFile(hit->first+m_xsextension);
-  double help;
-  if (!reader->ReadFromFile(help,"events")) m_events=0;
-  else m_events=(long unsigned int)help;
-  delete reader;
-  if (m_events<m_maxevents) return false;
-  for (;hit!=p_gridhandlers->end();++hit) {
-    if (!hit->second->ReadIn(ATOOLS::Type::TFStream,OutputPath()+
-			     hit->first+m_xsextension)) return false;
-  }
-  for (Grid_Handler_Map::iterator mit=p_maxhandlers->begin();
-       mit!=p_maxhandlers->end();++mit) {
-    if (!mit->second->ReadIn(ATOOLS::Type::TFStream,OutputPath()+
-			     mit->first+m_xsextension)) return false;
+  for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
+       hit!=p_histograms->end();++hit) {
+    if (hit->second->ReadIn(OutputPath()+hit->first+m_xsextension,
+			    m_datatag)) {
+      if (hit->second->XMin()>m_gridxmin ||
+	  hit->second->XMax()<m_gridxmax ||
+	  hit->second->Entries()<m_initevents) {
+	Clear();
+	return false;
+      }
+    }
+    else {
+      Clear();
+      return false;
+    }
   }
   return true;
 }
@@ -182,7 +165,7 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
     p_processes->SetSelected(process);
     ATOOLS::Blob_Data_Base *xsdata=p_processes->SameWeightedEvent();
     PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
-    Amisic_Histogram_Type *histo=m_histograms[process->Name()];
+    Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
     const ATOOLS::Vec4D *p=process->Momenta();
     double value=p[0].PPerp();
     for (size_t i=1;i<4;++i) value=ATOOLS::Max(value,p[i].PPerp());
@@ -201,9 +184,9 @@ bool Grid_Creator::CreateOptimizedGrid()
   for (;m_events<m_maxevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_maxevents/100))==0) {
-      ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents<<" % ( "
+      ATOOLS::msg.Out()<<"   "<<(100*m_events)/m_maxevents<<" % ( "
 		       <<ATOOLS::rpa.gen.Timer().UserTime()
-		       <<" s )   "<<std::flush;
+		       <<" s )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
   return true;
@@ -212,45 +195,25 @@ bool Grid_Creator::CreateOptimizedGrid()
 bool Grid_Creator::CreateInitialGrid()
 {
   ATOOLS::rpa.gen.Timer().Start();
-  for (;m_events<m_maxevents;++m_events) {
+  for (;m_events<m_initevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
-    if ((m_events%(m_maxevents/100))==0) {
-      ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents<<" % ( "
+    if ((m_events%(m_initevents/100))==0) {
+      ATOOLS::msg.Out()<<"   "<<(100*m_events)/m_initevents<<" % ( "
 		       <<ATOOLS::rpa.gen.Timer().UserTime()
-		       <<" s )   "<<std::flush;
+		       <<" s )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
   return true;
 }
 
-bool Grid_Creator::ExportHistogram(const std::string &name) const
-{
-  Amisic_Histogram_Type *const histo=m_histograms.find(name)->second;
-  std::vector<double> xdata(histo->NBins()-2);
-  std::vector<double> ydata(histo->NBins()-2);
-  std::vector<double> ymax(histo->NBins()-2);
-  for (size_t i=1;i<histo->NBins()-1;++i) {
-    xdata[i-1]=histo->BinXMean(i);
-    ydata[i-1]=histo->BinContent(i);
-    ymax[i-1]=histo->BinMax(i);
-  }
-  Grid_Function_Type *const grid=p_gridhandlers->find(name)->second->Grid();
-  if (!grid->Import(&xdata,&ydata)) return false;
-  if (m_storemax) {
-    Grid_Function_Type *const max=p_maxhandlers->find(name)->second->Grid();
-    max->SetMonotony(max->None);
-    if (!max->Import(&xdata,&ymax)) return false;
-  }
-  return true;
-}
-
-bool Grid_Creator::TranslateGrid() 
+bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments) 
 {
   bool success=true;
-  for (Amisic_Histogram_Map::iterator hit=m_histograms.begin();
-       hit!=m_histograms.end();++hit) {
+  for (Amisic_Histogram_Map::iterator hit=p_histograms->begin();
+       hit!=p_histograms->end();++hit) {
     hit->second->Finish();
-    if (!ExportHistogram(hit->first)) success=false;
+    if (!hit->second->WriteOut(OutputPath()+hit->first+m_xsextension,
+			       m_datatag,addcomments)) success=false;
   }
   return success;
 }
@@ -277,11 +240,6 @@ bool Grid_Creator::CreateGrid()
 		     <<"Sorry, grid cannot be optimized."<<std::endl;
     success=false;
   }
-  if (!TranslateGrid()) {
-    ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
-		     <<"Sorry, grid cannot be translated."<<std::endl;
-    success=false;
-  }
   if (!WriteOutGrid()) {
     ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
 		     <<"Sorry, grid cannot be written to '"
@@ -293,70 +251,3 @@ bool Grid_Creator::CreateGrid()
   return success;
 }
 
-bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments,
-				std::string tempopath)
-{
-  if (tempopath!="") SetOutputPath(tempopath);
-  bool success=true;
-  p_processes->PSHandler(false)->WriteOut(OutputPath()+MCExtension());
-  addcomments.push_back("--------------------");
-  addcomments.push_back("--------------------");
-  for (Grid_Handler_Map::iterator git=p_gridhandlers->begin();
-       git!=p_gridhandlers->end();++git) {
-    SetOutputFile(git->first+m_xsextension);
-    if (m_storemax) {
-      addcomments.back()=std::string("max file : ")+
-	git->first+m_maxextension;
-    }
-    if (!WriteSingleGrid(git->second,addcomments)) success=false;
-    if (m_storemax) {
-      SetOutputFile(git->first+m_maxextension);
-      addcomments.back()=std::string("xs file : ")+
-	git->first+m_xsextension;
-      success=success&&WriteSingleGrid((*p_maxhandlers)[git->first],
-				       addcomments);
-    }
-  }
-  SetOutputFile("");
-  return success;
-}
-
-bool Grid_Creator::WriteSingleGrid(Grid_Handler_Type *grid,
-				   std::vector<std::string> addcomments)
-{
-  if (!CheckOutputFile()) return false;
-  std::vector<std::string> comments;
-  std::string xvar, yvar;
-  xvar=grid->Grid()->XAxis()->Variable().Name();
-  yvar=grid->Grid()->YAxis()->Variable().Name();
-  comments.push_back(std::string("x : ")+xvar);
-  comments.push_back(std::string("y : ")+yvar);
-  comments.push_back("--------------------");
-  comments.push_back(std::string("x scale : ")+
-		     grid->Grid()->XAxis()->Scaling()->Name());
-  comments.push_back(std::string("y scale : ")+
-		     grid->Grid()->YAxis()->Scaling()->Name());
-  comments.push_back("--------------------");
-  comments.push_back("boundary conditions ");
-  comments.push_back("--------------------");
-  comments.push_back(std::string("x_{min} = ")+ATOOLS::ToString(m_gridxmin));
-  comments.push_back(std::string("x_{max} = ")+ATOOLS::ToString(m_gridxmax));
-  comments.push_back("--------------------");
-  comments.push_back(std::string("\\Delta x_{max} = ")+
-		     ATOOLS::ToString(m_griddeltax));
-  comments.push_back("--------------------");
-  comments.push_back(std::string("events = ")+
-		     ATOOLS::ToString(m_events));
-  if (addcomments.size()!=0) {
-    comments.push_back("--------------------");
-    for (unsigned int i=0;i<addcomments.size();++i) 
-      comments.push_back(addcomments[i]);
-  }
-  comments.push_back("--------------------");
-  comments.push_back("  Data Set follows  ");
-  comments.push_back("--------------------");
-  msg_Debugging()<<"Grid_Creator::WriteSingleGrid(..): Writing grid to '"
-		 <<OutputFile()<<"'"<<std::endl;
-  return grid->WriteOut(ATOOLS::Type::TFStream,
-			OutputPath()+OutputFile(),comments);
-}

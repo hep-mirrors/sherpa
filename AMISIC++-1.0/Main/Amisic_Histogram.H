@@ -41,6 +41,11 @@ namespace AMISIC {
 
     bool m_finished;
 
+    std::string m_name;
+
+    size_t FindX(const Argument_Type x) const;
+    size_t FindY(const Argument_Type y) const;
+
   public:
 
     // constructor
@@ -59,25 +64,38 @@ namespace AMISIC {
 
     Argument_Type Norm() const;
 
+    void Scale(const Argument_Type scale);
+
     void Finish(); 
+    void Clear();
       
-    const Argument_Vector operator()(const Argument_Type x,
-				     const hci::column col) const;
+    bool ReadIn(const std::string &filename,const std::string &m_datatag);
+    bool WriteOut(const std::string &filename,const std::string &m_datatag,
+		  const std::vector<std::string> &comments);
+
+    const Argument_Type operator()(const Argument_Type x) const;
 
     // inline functions
     inline Argument_Type XMin() const { return m_xmin; }
     inline Argument_Type XMax() const { return m_xmax; }
 
-    inline size_t NBins() const     { return m_nbins; }
-    inline size_t Dimension() const { return m_dim;   }
+    inline size_t NBins() const { return m_nbins; }
+
+    inline Argument_Type Entries() const { return m_entries; }
+
+    inline const std::string &Name() const { return m_name; }
+
+    inline void SetXMin(const Argument_Type xmin) { m_xmin=xmin; }
+    inline void SetXMax(const Argument_Type xmax) { m_xmax=xmax; }
+
+    inline void SetNBins(const size_t nbins) { m_nbins=nbins; }
+
+    inline void SetName(const std::string &name) { m_name=name; }
+
+    inline void SetFinished(const bool finished) {m_finished=finished; }
 
     inline Axis_Type *const XAxis() const { return p_xaxis; }
     inline Axis_Type *const YAxis() const { return p_yaxis; }
-
-    inline void SetXMin(const Argument_Type min) { m_xmin=xmin; }
-    inline void SetXMax(const Argument_Type max) { m_xmax=xmax; }
-
-    inline void SetNBins(const size_t nbins) { m_nbins=nbins; }
 
     inline Argument_Type BinXMin(const size_t i) 
     { return m_data[hci::x_value][i]; }
@@ -101,10 +119,17 @@ namespace AMISIC {
 			m_data[hci::y_value][i]-
 			m_data[hci::y_value][i]]; }
 
+    inline Argument_Type BinContent(const Argument_Type x)
+    { return BinContent(FindX(x)); }
+    inline Argument_Type BinSumSqr(const Argument_Type x)
+    { return BinSumSqr(FindX(x)); }
+    inline Argument_Type BinMax(const Argument_Type x)
+    { return BinMax(FindX(x)); }
+    inline Argument_Type BinEntries(const Argument_Type x)
+    { return BinEntries(FindX(x)); }
+
   };// end of class Amisic_Histogram
 
 }// end of namespace AMISIC
-
-#include "Amisic_Histogram.C"
 
 #endif

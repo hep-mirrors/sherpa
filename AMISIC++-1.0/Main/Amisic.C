@@ -96,7 +96,7 @@ bool Amisic::GenerateHardEvent(ATOOLS::Blob_List *blobs)
   while (true) {
     ATOOLS::Blob *newblob = new ATOOLS::Blob();
     if (GenerateHardProcess(newblob)) {
-      newblob->SetType(btp::Hard_Collision);
+      newblob->SetType(ATOOLS::btp::Hard_Collision);
       newblob->SetStatus(1);
       newblob->SetId();
       blobs->push_back(newblob);
@@ -119,7 +119,7 @@ bool Amisic::GenerateSoftEvent(ATOOLS::Blob_List *blobs)
   while (true) {
     ATOOLS::Blob *newblob = new ATOOLS::Blob();
     if (GenerateSoftProcess(newblob)) {
-      newblob->SetType(btp::Soft_Collision);
+      newblob->SetType(ATOOLS::btp::Soft_Collision);
       newblob->SetStatus(1);
       newblob->SetId();
       blobs->push_back(newblob);

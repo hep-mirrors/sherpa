@@ -6,7 +6,7 @@
 
 namespace AMISIC {
   
-  class Amisic: public File_IO_Base {
+  class Amisic: public ATOOLS::File_IO_Base {
   public:
 
     enum ModelID { None        =  0,
