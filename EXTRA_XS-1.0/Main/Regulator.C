@@ -26,26 +26,26 @@ double Identity::operator[](const double scale) const
 }
 
 template <> Regulator_Base*
-Regulator_Base::SelectRegulator<Massive_Propagator>(XS_Base *const xs,const std::string &regulator,
+Regulator_Base::SelectRegulator<LO_QCD_Regulator>(XS_Base *const xs,const std::string &regulator,
 						    const std::vector<double> &parameters)
 {
-  if (regulator==std::string("Massive_Propagator") && parameters.size()>0) {
-    return new Massive_Propagator(xs,parameters);
+  if (regulator==std::string("QCD_Trivial") && parameters.size()>0) {
+    return new LO_QCD_Regulator(xs,parameters);
   }
   return NULL;
 }
 
-Massive_Propagator::Massive_Propagator(XS_Base *const xs,
+LO_QCD_Regulator::LO_QCD_Regulator(XS_Base *const xs,
 				       const std::vector<double> &parameters):
   Regulator_Base(xs,parameters,rf::massive_propagator) {}
 
-double Massive_Propagator::operator()(const double dsigma) const
+double LO_QCD_Regulator::operator()(const double dsigma) const
 {
   double pperp2=p_xs->Momenta()[2].PPerp2();
   return dsigma*ATOOLS::sqr(pperp2)/ATOOLS::sqr(pperp2+ATOOLS::sqr(m_parameters[0]));
 }
 
-double Massive_Propagator::operator[](const double scale) const
+double LO_QCD_Regulator::operator[](const double scale) const
 {
   const ATOOLS::Vec4D *p=p_xs->Momenta();
   double pperp2=p[2].PPerp2(), oldscale=pperp2, s=0.0, t=0.0, u=0.0;

@@ -41,7 +41,7 @@ Regulator_Base *Regulator_Base::GetRegulator(XS_Base *const xs,const std::string
 					     const std::vector<double> &parameters)
 {
   Regulator_Base *function=NULL;
-  if ((function=SelectRegulator<Massive_Propagator>(xs,regulator,parameters))!=NULL);
+  if ((function=SelectRegulator<LO_QCD_Regulator>(xs,regulator,parameters))!=NULL);
   else function=SelectRegulator<Identity>(xs,regulator,parameters);
   return function;
 }

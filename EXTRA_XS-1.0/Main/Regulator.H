@@ -19,11 +19,11 @@ namespace EXTRAXS {
 
   };// end of class Identity
 
-  class Massive_Propagator: public Regulator_Base {
+  class LO_QCD_Regulator: public Regulator_Base {
   protected:
 
     // constructor
-    Massive_Propagator(XS_Base *const xs,
+    LO_QCD_Regulator(XS_Base *const xs,
 		       const std::vector<double> &parameters);
 
     // member functions
@@ -32,7 +32,7 @@ namespace EXTRAXS {
     
     friend class Regulator_Base;
 
-  };// end of class Massive_Propagator
+  };// end of class LO_QCD_Regulator
 
 }// end of namespace EXTRAXS
 
