@@ -565,8 +565,6 @@ void XS_Group::SetEvents(const double number)
   for (size_t i=0;i<m_xsecs.size();++i) {
     m_xsecs[i]->SetEvents(number);
     m_expevents+=m_xsecs[i]->ExpectedEvents();
-    PRINT_INFO(m_xsecs[i]->Name()<<" "
-	       <<m_xsecs[i]->ExpectedEvents()<<" "<<m_xsecs[i]->TotalXS());
   }
 }
 
