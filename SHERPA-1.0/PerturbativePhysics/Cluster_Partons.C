@@ -319,7 +319,7 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   if (ncol==3 && nquark==0 && ngluon==3) {
     cols[0]=500;
     cols[1]=501;
-    cols[1]=502;
+    cols[2]=502;
   }
 
 
