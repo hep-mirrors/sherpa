@@ -18,6 +18,8 @@ namespace EXTRAXS {
 
     XS_Selector *p_xsselector;
 
+    ATOOLS::Selector_Data *p_selectordata;
+
     XS_Base *Matching(const std::string &name);
     void     PrepareTerminate();
 
@@ -74,6 +76,8 @@ namespace EXTRAXS {
 
     // inline functions 
     inline void PushBack(XS_Base *const xsec) { m_xsecs.push_back(xsec); }
+
+    inline ATOOLS::Selector_Data *const SelectorData() { return p_selectordata; }
 
     inline XS_Selector *const XSSelector() { return p_xsselector; }
 

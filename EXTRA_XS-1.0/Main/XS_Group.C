@@ -20,6 +20,7 @@ XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *fla
   m_atoms(false), m_channels(false), p_xsselector(new XS_Selector(this)) 
 {
   p_selected=NULL;
+  p_selectordata=selectordata;
 }
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
@@ -97,7 +98,7 @@ void XS_Group::Clear()
 void XS_Group::SelectOne()
 {
   DeSelect();
-  if (m_totalxs==0) p_selected=m_xsecs[int(ATOOLS::ran.Get()*m_xsecs.size())];
+  if (m_totalxs==0.) p_selected=m_xsecs[int(ATOOLS::ran.Get()*m_xsecs.size())];
   else {
     double disc;
     if (m_atoms) disc=m_max*ATOOLS::ran.Get();
