@@ -261,17 +261,18 @@ void XS_Group::SetTotal()
   m_totalerr=sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
   if (p_selector) p_selector->Output();
   m_max=0.;
+  ATOOLS::msg.Events()<<om::bold<<"--------------------------------------------------"<<om::reset<<std::endl;
   for (size_t i=0;i<m_xsecs.size();++i) {
     m_xsecs[i]->SetTotal();
     m_max+=m_xsecs[i]->Max();
   }
-  ATOOLS::msg.Events()<<"--------------------------------------------------"<<std::endl;
+  ATOOLS::msg.Events()<<om::bold<<"--------------------------------------------------"<<om::reset<<std::endl;
   ATOOLS::msg.Events()<<"Total XS for "<<ATOOLS::om::bold<<m_name<<" : "
 		      <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		      <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red<<m_totalerr<<" pb = "
 		      <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl
 		      <<"      max = "<<m_max<<std::endl;
-  ATOOLS::msg.Events()<<"--------------------------------------------------"<<std::endl;
+  ATOOLS::msg.Events()<<om::bold<<"--------------------------------------------------"<<om::reset<<std::endl;
 }
 
 bool XS_Group::OneEvent() 
@@ -409,4 +410,10 @@ bool XS_Group::SetColours(const double s,const double t,const double u)
 double XS_Group::operator()(const double s,const double t,const double u)
 {
   return 0.;
+}
+
+void XS_Group::Reset()
+{
+  for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->Reset();
+  XS_Base::Reset();
 }

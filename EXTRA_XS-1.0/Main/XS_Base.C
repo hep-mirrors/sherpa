@@ -214,3 +214,9 @@ void XS_Base::DeSelect()
 { 
 }
 
+void XS_Base::Reset()
+{
+  m_n=0;
+  m_last=m_lastlumi=m_lastdxs=0.0;
+  m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
+}

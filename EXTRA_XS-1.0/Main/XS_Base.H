@@ -49,6 +49,7 @@ namespace EXTRAXS {
     void SelectOne();
     void DeSelect();
 
+    virtual void Reset();
     virtual void ResetSelector(ATOOLS::Selector_Data *const selectordata);
     
     virtual bool SetColours(const ATOOLS::Vec4D *momenta);

@@ -53,6 +53,7 @@ namespace EXTRAXS {
 
     void SetMax(const double max,const int flag);
     void SetTotal();
+    void Reset();
 
     double Differential(const double s,const double t,const double u);
     bool   SetColours(const double s,const double t,const double u);
