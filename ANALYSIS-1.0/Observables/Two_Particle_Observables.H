@@ -32,6 +32,14 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const;
   };
 
+  class Two_Particle_Scalar_PT : public Two_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
+  public:
+    Two_Particle_Scalar_PT(const ATOOLS::Flavour &,const ATOOLS::Flavour &,
+			   int,double,double,int,const std::string & =std::string("SP_T:"));
+    Primitive_Observable_Base * Copy() const;
+  };
+
   class Two_Particle_Eta : public Two_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D &,const ATOOLS::Vec4D &,double=1., int=1); 
   public:

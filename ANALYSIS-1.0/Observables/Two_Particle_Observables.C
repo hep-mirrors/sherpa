@@ -93,6 +93,23 @@ Primitive_Observable_Base * Two_Particle_PT::Copy() const
   return new Two_Particle_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name);
 }
 
+
+Two_Particle_Scalar_PT::Two_Particle_Scalar_PT(const Flavour & _flav1,const Flavour & _flav2,
+				 int _type,double _xmin,double _xmax,int _nbins,
+				 const std::string & _name) :
+  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"SPT") { }
+
+
+void Two_Particle_Scalar_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{
+  p_histo->Insert((mom1.PPerp()+mom2.PPerp())/2.,weight,ncount); 
+} 
+
+Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const 
+{
+  return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name);
+}
+
 Two_Particle_Eta::Two_Particle_Eta(const Flavour & _flav1,const Flavour & _flav2,
 				 int _type,double _xmin,double _xmax,int _nbins,
 				 const std::string & _name) :
