@@ -17,10 +17,12 @@ Cut_Data::~Cut_Data() {
     delete[] cosmin[i];
     delete[] cosmax[i];
     delete[] scut[i];
+    delete[] scut_save[i];
   }
   delete[] cosmin;
   delete[] cosmax;
   delete[] scut;
+  delete[] scut_save;
   delete[] energymin;
   delete[] energymax;
 }

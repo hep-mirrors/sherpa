@@ -13,7 +13,7 @@ using namespace std;
 
 std::string CFColor::noname=string("noname");
 
-CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
+CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 {
   Single_Amplitude* m1 = first;
 
@@ -29,17 +29,9 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
   
 
   if (pID!=noname) {
-    // look for file
     char name[100];
-    //    sprintf(name,"%s/CFColor.dat",pID.c_str());
     sprintf(name,"%s.col",(string("Process/")+pID).c_str());
-
-    fstream test;
-    test.open(name,ios::in); 
-
-    if (test) { 
-      test.close();
-
+    if (!gc) { 
       IO_Handler ioh;
       ioh.SetFileNameRO(name);
       int model, rmcount;
@@ -70,9 +62,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	}
 	return; 
       }
-    }
-    else {
-      test.close(); 
     }
   }
   Color_Function* cm1;
@@ -319,6 +308,16 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
     m1 = m1->Next;
   }
   
+}
+
+CFColor::~CFColor()
+{
+  if (CFC) {
+    for (int i=0;i<ncount;i++) delete [] CFC[i];
+    delete [] CFC;
+  }
+  if (id)  delete id;
+  if (map) delete map;
 }
 
 void CFColor::Output(string & dirname) {

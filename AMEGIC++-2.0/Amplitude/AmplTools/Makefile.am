@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libAmplTools.la
-libAmplTools_la_SOURCES = CFColor.C Coulomb.C
+libAmplTools_la_SOURCES = CFColor.C
 INCLUDES = -I../../Amplitude \
 	   -I../../Amplitude/AmplTools \
 	   -I../../Amplitude/Zfunctions \
@@ -11,4 +11,4 @@ INCLUDES = -I../../Amplitude \
 	   -I../../../ATOOLS-2.0/Phys \
 	   -I../../../ATOOLS-2.0/Math \
 	   -I../../../ATOOLS-2.0/Org 
-noinst_HEADERS = CFColor.H Coulomb.H
+noinst_HEADERS = CFColor.H
