@@ -107,13 +107,23 @@ namespace AMEGIC {
   
 
   std::ostream & operator<<(std::ostream &, const MPI_Single_Vertex &);
+
+  /*! 
+    \file
+    \brief this file contains the classes AMEGIC::Single_Vertex and
+    AMEGIC::Vertex   
+  */
+  /*! 
+    \class Single_Vertex 
+    \brief Contains all the stuff belonging to one specific interaction
+    vertex 
+  */
+
+  /*! 
+    \class Vertex 
+    \brief This class initializes all the interaction vertices present in a
+    specific Model in a way ready to be used to generate amplitudes.
+  */
+
 }
 #endif
-
-
-
-
-
-
-
-
