@@ -91,7 +91,7 @@ namespace ATOOLS {
          ...
        };
 
-       Example_Channel::Example_Cahnnel(Integration_Info *info)
+       Example_Channel::Example_Channel(Integration_Info *info)
        {
          // <variable_info> is the exponent for s', for example
          m_key.SetInfo("<variable_info>")
@@ -105,7 +105,7 @@ namespace ATOOLS {
     data.
   */
 
-}// end of namespace PHASIC
+}// end of namespace ATOOLS
 
 #include "Integration_Info.inl.H"
 
