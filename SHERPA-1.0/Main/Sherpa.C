@@ -2,6 +2,7 @@
 #include "Signal_Processes.H"
 #include "Jet_Evolution.H"
 #include "Hadronization.H"
+#include "Message.H"
 
 using namespace SHERPA;
 using namespace AORGTOOLS;
@@ -40,10 +41,15 @@ bool Sherpa::InitializeTheRun(std::string _path) {
 
 
 bool Sherpa::InitializeTheEventHandler() {
+  IO_HepEvt * dummy =0;
+  p_analysis= new Sample_Analysis(dummy,0);
+
   p_eventhandler = new Event_Handler();
   p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+  p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,1));
   p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
 						  p_inithandler->GetShowerHandler()));
+  p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));
   //  p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
   //						  p_inithandler->GetFragmentationHandler()));
   return 1;
@@ -51,7 +57,7 @@ bool Sherpa::InitializeTheEventHandler() {
 
 
 bool Sherpa::GenerateOneEvent() {
-  msg.Out()<<"Starting event generation now. "<<std::endl;
+   //  msg.Out()<<"Starting event generation now. "<<std::endl;
   for (int i=0;i<m_trials;i++) {
     if (p_eventhandler->GenerateEvent()) return 1;
     m_errors++;
@@ -62,7 +68,7 @@ bool Sherpa::GenerateOneEvent() {
 
 
 bool Sherpa::SummarizeRun() {
-  // p_analysis->Finish();
+  if (p_analysis) p_analysis->Finish();
 }
 
 void Sherpa::DrawLogo() { }
