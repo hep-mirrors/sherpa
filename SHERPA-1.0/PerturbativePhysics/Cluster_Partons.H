@@ -1,20 +1,32 @@
 #ifndef Cluster_Partons_H
 #define Cluster_Partons_H
 
+#include "Poincare.H"
 
 #include "Combine_Table.H"
 #include "NLL_Sudakov.H"
 
-#include "Tree.H"
-#include "Knot.H"
-
-#include "Process_Base.H"
-#include "XS_Base.H"
-#include "Jet_Finder.H"
-
-#include "Blob.H"
-
 #include <map>
+
+namespace ATOOLS {
+  class Blob;
+  class Particle;
+  class Jet_Finder;
+}
+
+namespace AMEGIC {
+  class Process_Base;
+}
+
+namespace APACIC {
+  class Knot;
+  class Tree;
+}
+
+namespace EXTRAXS {
+  class XS_Base;
+  class XS_Group;
+}
 
 namespace MODEL {
   class Running_AlphaS;
@@ -28,6 +40,8 @@ namespace SHERPA {
   class Matrix_Element_Handler;
 
   class Cluster_Partons {
+    int m_mode;
+
     Combine_Table  * p_ct;
     Combine_Table  * p_combi;
 
@@ -55,6 +69,11 @@ namespace SHERPA {
 
     APACIC::Tree   * p_local_tree; 
 
+    // ew
+    int m_hard_nqed, m_hard_nqcd;
+    int m_nstrong;
+    EXTRAXS::XS_Base * p_xs;
+
     // some statistics:
     long    * p_events;
     double  * p_weight_sum;
@@ -64,44 +83,55 @@ namespace SHERPA {
 
     ATOOLS::Poincare m_cms_boost;
 
-    bool            FillLegs(Leg *, AMEGIC::Point *, int &, int);
-    APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char);
-    ATOOLS::Vec4D Momentum(APACIC::Knot *, int &);
+    bool            FillLegs(Leg * alegs, AMEGIC::Point * root, int & l, int maxl);
+    APACIC::Knot  * Point2Knot(APACIC::Tree * tree,const Leg & leg,const ATOOLS::Vec4D & mom,char info);
+    ATOOLS::Vec4D Momentum(APACIC::Knot * mo, int & number);
 
-    bool    IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *);
-    double  ColourAngle(const std::vector<APACIC::Knot *> &, const int);
-    void    EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,int,double scale=0.);
-    void    DetermineColourAngles(const std::vector<APACIC::Knot *> &);
+    bool    IsColourConnected(ATOOLS::Particle * a,ATOOLS::Particle * b);
+    double  ColourAngle(const std::vector<APACIC::Knot *> & knots, const int i);
+    void    EstablishRelations(APACIC::Knot * mo,APACIC::Knot * d1,APACIC::Knot * d2,int mode,double scale=0.);
+    void    DetermineColourAngles(const std::vector<APACIC::Knot *> & knots);
 
     void    CreateFlavourMap();
 
     void    WriteOutSudakovWeights();
+    
+    int     Init();
+    int     CheckProcess(AMEGIC::Process_Base * proc);
   public :
     void    FixJetvetoPt2(double &);
 
     Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf, 
 		    int maxjetnumber, int isrmode, int isrshoweron, int fsrshoweron) ;
     ~Cluster_Partons();
-    bool ClusterConfiguration(ATOOLS::Blob *,double=1.,double=1.);
-    void CalculateWeight(double,double,double,double,double);
-    void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);
-    void FillDecayTree(APACIC::Tree *,EXTRAXS::XS_Base *);
+    bool ClusterConfiguration(ATOOLS::Blob * blob,double x1=1.,double x2=1.);
+    void CalculateWeight(double hardscale,double asscale,double jetscale,double qm_i,double qm_f);
+    void FillTrees(APACIC::Tree ** ini_trees,APACIC::Tree * fin_tree);
+    void FillDecayTree(APACIC::Tree * fin_tree,EXTRAXS::XS_Base * xs);
 
-    int     SetColours(ATOOLS::Vec4D *, ATOOLS::Flavour *);
-    int     SetDecayColours(ATOOLS::Vec4D *, ATOOLS::Flavour *,int,int);
-    double  Weight();
-    double  Scale();
-    double  AsScale();
-    void  JetvetoPt2(double &, double &);
+    EXTRAXS::XS_Base * GetXS(EXTRAXS::XS_Group * group, ATOOLS::Flavour * fl);
+    int    SetColours(EXTRAXS::XS_Base * xs, ATOOLS::Vec4D * p, ATOOLS::Flavour * fl);
+    int     SetColours(ATOOLS::Vec4D * p, ATOOLS::Flavour * fl);
+    int     SetDecayColours(ATOOLS::Vec4D * p, ATOOLS::Flavour * fl,int col1,int col2);
+    inline double  Weight() const;
+    inline double  Scale() const;
+    inline double  AsScale() const;
+    inline int  OrderStrong() const;
+    inline int  OrderEWeak()  const;
 
-    ATOOLS::Flavour Flav(int);
-    ATOOLS::Vec4D   Momentum(int); 
+    void  JetvetoPt2(double & q2i, double & q2f);
+
+    ATOOLS::Flavour Flav(int i);
+    ATOOLS::Vec4D   Momentum(int i); 
   };
 
-  inline double  Cluster_Partons::Weight()   { return m_weight; }
-  inline double  Cluster_Partons::Scale()    { return m_scale; }
-  inline double  Cluster_Partons::AsScale()  { return m_asscale; }
+  inline double  Cluster_Partons::Weight()  const { return m_weight; }
+  inline double  Cluster_Partons::Scale()   const { return m_scale; }
+  inline double  Cluster_Partons::AsScale() const { return m_asscale; }
 
+  inline int  Cluster_Partons::OrderStrong() const { return m_hard_nqcd; }
+  inline int  Cluster_Partons::OrderEWeak()  const { return m_hard_nqed; }
+  
   /*!
     \file Cluster_Partons.H
     \brief Contains the class SHERPA::Cluster_Partons
@@ -154,7 +184,7 @@ namespace SHERPA {
   */
 
   /*!
-    \fn  void Cluster_Partons::CalculateWeight(double hardscale, double asscale, double jetscale);
+    \fn  void Cluster_Partons::CalculateWeight(double hardscale, double asscale, double jetscale,double qm_i,double qm_f)
     \brief  Evaluates the NLL Sudakov factors
 
     Evaluates the sudakov weight for matching ME to PS. The Matrix Elements
@@ -182,7 +212,7 @@ namespace SHERPA {
   */
 
   /*!
-    \fn  void Cluster_Partons::FillTrees(APACIC::Tree ** ini_trees,APACIC::Tree * fin_tree,EXTRAXS::XS_Base * xs)
+    \fn  void Cluster_Partons::FillTrees(APACIC::Tree ** ini_trees,APACIC::Tree * fin_tree)
     \brief creates tree structures to initialize the initial and final
            state parton showers
 

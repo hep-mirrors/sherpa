@@ -2,11 +2,13 @@
 #define Combine_Table_H
 
 #include <vector>
-#include <list>
-#include "Jet_Finder.H"  
+#include <map>
 #include "Point.H" 
-#include "Particle.H" 
+#include "Vector.H"
 
+namespace ATOOLS {
+  class Jet_Finder;
+}
 
 
 namespace SHERPA {
@@ -136,7 +138,8 @@ namespace SHERPA {
 		       unsigned int mode);
     double Sprime() const;
   public:
-    Combine_Table(ATOOLS::Jet_Finder *, ATOOLS::Vec4D *, Combine_Table *, int, int);
+    Combine_Table(ATOOLS::Jet_Finder * jf, ATOOLS::Vec4D * moms, 
+		  Combine_Table * up, int isrmode, int isrshoweron, int mode);
     ~Combine_Table();
 
 
@@ -154,6 +157,15 @@ namespace SHERPA {
       i = m_cwin->first.i; 
       j = m_cwin->first.j;
       return sqrt(m_cwin->second.pt2ij);
+    }
+    int AddCouplings(int & nqed, int & nqcd) {
+      if (p_up) {
+	int nstrong = p_up->m_cwin->second.strong;
+	nqed+=1-nstrong;
+	nqcd+=nstrong;
+	return p_up->AddCouplings(nqed,nqcd);
+      }
+      return NLegs();
     }
     void GetX1X2(double & x1, double & x2) {
       x1=m_x1;

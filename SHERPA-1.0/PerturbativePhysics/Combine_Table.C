@@ -1,6 +1,8 @@
 #include "Combine_Table.H"
 #include "Run_Parameter.H"
 #include "Random.H"
+#include "Poincare.H"
+#include "Jet_Finder.H"
 #include <iomanip>
 
 using namespace SHERPA;
@@ -8,8 +10,6 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 
 int Combine_Table::s_all=0;
-
-using std::endl;
 
 // ============================================================
 //    class Combine_Data
@@ -86,12 +86,12 @@ std::ostream& SHERPA::operator<< (std::ostream& s,const Combine_Data & cd)
   return s;
 }
 
-Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up,
-			     int isrmode, int isrshoweron):
-  p_up(_up),p_legs(0),m_gwin(0),m_isr1on(isrmode&1),m_isr2on((isrmode&2)/2),
-  m_isrshoweron(isrshoweron),p_jf(_jf),p_moms(_moms)
+Combine_Table::Combine_Table(Jet_Finder * jf,Vec4D * moms, Combine_Table * up,
+			     int isrmode, int isrshoweron, int mode):
+  p_up(up),p_legs(0),m_gwin(0),m_isr1on(isrmode&1),m_isr2on((isrmode&2)/2),
+  m_isrshoweron(isrshoweron),p_jf(jf),p_moms(moms)
 {
-  m_mode=0;
+  m_mode=mode;  // default = 0 !!! ew merging see also Cluster_Partons
   m_no=s_all++;
 }
 
@@ -242,13 +242,13 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 
   // determine possible combinations and corresponding y_ij  if nlegs>4
   if (m_nlegs>4) {
-    if (msg.LevelIsDebugging()) {
+    if (msg.LevelIsTracking()) {
       for (int k=0;k<m_nampl;++k) {
 	msg.Out()<<"Combine_Table for Graph "<<k<<std::endl
-		 <<"=============================="<<endl
+		 <<"=============================="<<std::endl
 		 <<(&p_legs[k][0]);
       }
-      msg.Out()<<"=============================="<<endl;
+      msg.Out()<<"=============================="<<std::endl;
     }
     int start=0;
     // cluster initial state only if isrshower and isr_x is on. 
@@ -274,7 +274,7 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 double Combine_Table::ColorFactor(int i, int j, AMEGIC::Color_Function * const color, 
 				  unsigned int mode)
 {
-  if (!((mode==1) || (mode==4 && i<2))) {
+  if (!((mode==1) || ((mode==4 || mode==5) && i<2))) {
     msg.Out()<<" Combine_Table::ColorFactor("<<i<<","<<j<<") "
 	     <<mode<<"-mode not covered yet\n";
     msg.Out()<<color->String()<<std::endl;
@@ -313,7 +313,8 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info &
   if (cit!=m_combinations.end()) {
     // add graph only ("i&j" row exists already)
     cit->second.graphs.push_back(ngraph);
-    if (vinfo.fl.Strong()) cit->second.strong=true; 
+    if (vinfo.color->Type()==cf::T || vinfo.color->Type()==cf::F) cit->second.strong=true;
+
     //    we should probably only change to strong status if 
     //    strong graph is also to be used in shower initialization !!!
     if (m_mode==1) {
@@ -325,7 +326,7 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info &
 	double cfac = ColorFactor(i,j,vinfo.color,vinfo.mode);
 	//	std::cout<<vinfo.color->String()<<"="<<cfac<<std::endl;
 	Combine_Data cd(0.,ngraph);
-	cd.strong   = vinfo.fl.Strong();
+	cd.strong   = (vinfo.color->Type()==cf::T || vinfo.color->Type()==cf::F);
 	cd.coupling = cfac*(norm(vinfo.cpl[0])+norm(vinfo.cpl[1]));
 	m_combinations[Combine_Key(i,j,vinfo.fl)]=cd;
       }
@@ -333,12 +334,14 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, const Vertex_Info &
   }
   else {
     // add new "i&j" combination 
-    //    std::cout<<vinfo.color->String()<<"="<<cfac<<std::endl;
     Combine_Data cd(0.,ngraph);
-    cd.strong=vinfo.fl.Strong();
+    //    cd.strong=vinfo.fl.Strong();
+    cd.strong=(vinfo.color->Type()==cf::T || vinfo.color->Type()==cf::F);
     m_combinations[Combine_Key(i,j)]=cd;
     if (m_mode==1) {
       double cfac = ColorFactor(i,j,vinfo.color,vinfo.mode);
+      cd.strong   = (vinfo.color->Type()==cf::T || vinfo.color->Type()==cf::F);
+      //      std::cout<<" ngraph="<<ngraph<<" "<<vinfo.color->String()<<"="<<cfac<<std::endl;
       cd.coupling = cfac*(norm(vinfo.cpl[0])+norm(vinfo.cpl[1]));
       m_combinations[Combine_Key(i,j,vinfo.fl)]=cd;
     }
@@ -499,7 +502,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
       }
       Vec4D * amoms;
       CombineMoms(p_moms,m_cwin->first.i,m_cwin->first.j,nl,amoms); // generate new momenta
-      m_cwin->second.down=new Combine_Table(p_jf,amoms,this,m_isr1on+2*m_isr2on,m_isrshoweron);
+      m_cwin->second.down=new Combine_Table(p_jf,amoms,this,m_isr1on+2*m_isr2on,m_isrshoweron, m_mode);
       m_cwin->second.down->FillTable(alegs,nl,m_cwin->second.graphs.size());   // initialise Combine_Table
     } 
     else {
@@ -587,7 +590,7 @@ std::ostream& SHERPA::operator<< (std::ostream& s ,const Combine_Table & ct)
   if (&ct) {
     s<<std::endl<<" Combine_Table "<<ct.m_no<<" (up=";
     if (ct.p_up) s<<ct.p_up->m_no<<")"<<std::endl; else s<<"#)"<<std::endl;
-    s<<" x1="<<ct.m_x1<<" x2="<<ct.m_x2<<endl;
+    s<<" x1="<<ct.m_x1<<" x2="<<ct.m_x2<<std::endl;
     s<<" ==============="<<std::endl;
     s<<"moms="<<ct.p_moms<<std::endl;
     for (int l=0; l<ct.m_nlegs; ++l) 

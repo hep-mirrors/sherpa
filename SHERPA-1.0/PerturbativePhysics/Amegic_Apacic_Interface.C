@@ -2,9 +2,10 @@
 
 #include "XS_Selector.H" 
 #include "Data_Read.H"
-#include "Message.H"
 #include "Random.H"
+#include "Message.H"
 #include "Running_AlphaS.H"
+#include "Run_Parameter.H"
 
 using namespace SHERPA;
 using namespace EXTRAXS;
@@ -12,15 +13,9 @@ using namespace AMEGIC;
 using namespace APACIC;
 using namespace ATOOLS;
 using namespace MODEL;
-using namespace std;
 
 
 using namespace EXTRAXS;
-
-// static -- can be used for consitency plots
-namespace  SHERPA {
-  double amegic_apacic_interface_last_hard_scale=0.;
-}
 
 Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
 						 Shower_Handler * shower) :
@@ -101,7 +96,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   if (!m_isdecay && p_shower->ISROn()) {
     p_blob_psme_IS = new Blob();
     p_blob_psme_IS->SetType(btp::ME_PS_Interface_IS);
-    p_blob_psme_IS->SetTypeSpec(string("Sherpa"));
+    p_blob_psme_IS->SetTypeSpec("Sherpa");
     p_blob_psme_IS->SetStatus(1);
     p_blob_psme_IS->SetId();
     for (int i=0;i<blob->NInP();++i) {
@@ -113,7 +108,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   if (p_shower->FSROn()) {
     p_blob_psme_FS = new Blob();
     p_blob_psme_FS->SetType(btp::ME_PS_Interface_FS);
-    p_blob_psme_FS->SetTypeSpec(string("Sherpa"));
+    p_blob_psme_FS->SetTypeSpec("Sherpa");
     p_blob_psme_FS->SetStatus(1);
     p_blob_psme_FS->SetId();
     for (int i=0;i<blob->NOutP();++i) {
@@ -144,16 +139,9 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   ClusterConfiguration(blob);
 
   if (!m_isdecay) {
-    p_xs = 0;
-    if (p_two2two->XSSelector()->FindInGroup(p_two2two,p_xs,m_nin,2,p_fl)==std::string::npos) {
-      p_xs = p_two2two->XSSelector()->GetXS(m_nin,2,p_fl);
-      if (p_xs) p_two2two->Add(p_xs);
-    }
-
-
-    //if (!p_xs) p_cluster->SetColours(nin,p_moms,p_fl);
-    if (!p_xs) p_cluster->SetColours(p_moms,p_fl);
-    else { if (!(p_xs->SetColours(p_moms))) return 0; }
+    p_xs = p_cluster->GetXS(p_two2two,p_fl);
+    
+    p_cluster->SetColours(p_xs,p_moms,p_fl);
 
     
     if (m_type==1) { // e+ e-
@@ -163,31 +151,30 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     
     double asscale;
     if (p_xs) {
-      //      p_xs->CalculateScale(p_moms);
-      asscale=m_scale = p_xs->Scale(PHASIC::stp::as);
+      //      p_xs->Selected()->CalculateScale(p_moms);
+      //      std::cout<<" scale="<<p_xs->Selected()->Scale(PHASIC::stp::as);
+      asscale=m_scale = p_xs->Selected()->Scale(PHASIC::stp::as);
     }
     else {
       m_scale   = p_cluster->Scale();
       asscale = p_cluster->AsScale();
     }
-    // save hard scale to be used in plots!
-    amegic_apacic_interface_last_hard_scale = m_scale;
     
     p_cluster->CalculateWeight(m_scale,asscale,m_jetscale,m_qmin_i,m_qmin_f);
 
     // try alternative scale for UE
-    //    std::cout<<"ascale="<<m_scale<<","<<asscale;
     m_scale=asscale;
     p_cluster->FixJetvetoPt2(m_scale);
-    //    std::cout<<"  scale="<<    m_scale<<std::endl;
 
     p_blob_psme_FS->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_scale));
+    p_blob_psme_FS->AddData("OrderStrong",new ATOOLS::Blob_Data<double>(double(p_cluster->OrderStrong())));
+    p_blob_psme_FS->AddData("OrderEWeak",new ATOOLS::Blob_Data<double>(double(p_cluster->OrderEWeak())));
 
     m_weight = p_cluster->Weight();
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
 	p_shower->CleanUp();
-	p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
+	p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree());
 	m_weight=1.;
 	return 1;
       }
@@ -215,7 +202,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 
       }
       p_shower->CleanUp();
-      p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
+      p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree());
       return 1;
     }
   }
