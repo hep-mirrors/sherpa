@@ -63,7 +63,6 @@ namespace AMEGIC {
 				 std::vector<Single_Process *> &, int &, int &);
     int            InitAmplitude(Interaction_Model_Base *,Topology *) { return 1; }
     bool           SetUpIntegrator();
-    void           InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>);
     /*------------------------------------------------------------------------------
 
       Calculating total cross sections and single event generation
@@ -82,8 +81,8 @@ namespace AMEGIC {
     double         DSigma2();
     bool           OneEvent(double = -1.);
     bool           SameEvent();
-    double         WeightedEvent();
-    double         SameWeightedEvent();
+    ATOOLS::Blob_Data_Base * WeightedEvent();
+    ATOOLS::Blob_Data_Base * SameWeightedEvent();
     /*------------------------------------------------------------------------------
 
       Helpers

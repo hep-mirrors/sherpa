@@ -27,7 +27,7 @@ using namespace std;
 Process_Base::Process_Base(): 
   m_gen_str(3),p_b(0),m_nvec(0),m_nin(0),m_nout(0),p_fl(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0),p_moms(0),p_ps(0),p_beam(0),p_isr(0),p_cuts(0),
-  p_sel(0),p_analysis(0),p_selected(0),
+  p_sel(0),p_selected(0),
   m_rfactor(1.), m_swaped(0), p_psgen(0)
 {
   m_atoms=1;
@@ -54,7 +54,7 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   int _nex,ATOOLS::Flavour * _ex_fl) :
   m_nin(_nin), m_nout(_nout), m_nvec(_nin+_nout), m_nex(_nex),m_gen_str(_gen_str),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
-  p_isr(_isr), p_beam(_beam), p_cuts(NULL), p_analysis(NULL),
+  p_isr(_isr), p_beam(_beam), p_cuts(NULL), 
   p_selected(this), p_ex_fl(_ex_fl),p_moms(NULL), 
   m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),m_asscale(_scale),
   m_facscale(_scale),m_n(0), m_totalxs(0.), m_totalerr(0.), m_totalsum(0.), m_totalsumsqr(0.), m_rfactor(1.),
@@ -103,7 +103,6 @@ Process_Base::~Process_Base() {
   if (p_sel)      { delete p_sel;      p_sel      = 0; }
   if (p_cuts)     { delete p_cuts;     p_cuts     = 0; }
   if (p_ps)       { delete p_ps;       p_ps       = 0; }
-  if (p_analysis) { delete p_analysis; p_analysis = 0; }
 }
 
 
@@ -616,7 +615,7 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
     pt2 = m_asscale;
 
     // if highest number of jets
-    //    cout<<" Scale : "<<pt2<<" "<<m_nout<<" vs. "<<m_maxjetnumber<<" ("<<p_sel->Name()<<")"<<endl;
+    //cout<<" Scale : "<<pt2<<" "<<m_nout<<" vs. "<<m_maxjetnumber<<" ("<<p_sel->Name()<<")"<<endl;
     if (m_nout==m_maxjetnumber) {
       if (p_sel->Name()=="Combined_Selector") {
 	Selector_Base * jf = ((Combined_Selector*)p_sel)->GetSelector("Jetfinder");
@@ -699,7 +698,6 @@ Beam_Spectra_Handler  * Process_Base::Beam()                         { return p_
 ISR_Handler           * Process_Base::ISR()                          { return p_isr;      }
 Cut_Data              * Process_Base::Cuts()                         { return p_cuts;     }
 Selector_Base         * Process_Base::Selector()                     { return p_sel;      }
-Primitive_Analysis    * Process_Base::Analysis()                     { return p_analysis; }
 Phase_Space_Generator * Process_Base::PSGenerator()                  { return p_psgen; }
 double                  Process_Base::Scale()                        { return m_asscale; }
 double                  Process_Base::FactorisationScale()           { return m_facscale; }

@@ -57,7 +57,6 @@ namespace AMEGIC {
     PDF::ISR_Handler               * p_isr;
     ATOOLS::Cut_Data               * p_cuts;
     ATOOLS::Selector_Base          * p_sel;
-    ATOOLS::Primitive_Analysis     * p_analysis;
 
     AMEGIC::Process_Base           * p_selected;
     
@@ -93,7 +92,6 @@ namespace AMEGIC {
 				 ATOOLS::Vec4D *&,std::vector<AMEGIC::Single_Process *> &,
 				 std::vector<AMEGIC::Single_Process *> &,int &,int &)=0;
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
-    virtual void   InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>)    =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
     			       PHASIC::channelinfos &,PHASIC::channelinfos &);
@@ -159,8 +157,8 @@ namespace AMEGIC {
     virtual double FactorisationScale();
     virtual bool   OneEvent(double = -1.)                                          =0;
     virtual bool   SameEvent()                                                     =0;
-    virtual double WeightedEvent()                                                 =0;
-    virtual double SameWeightedEvent()                                             =0;
+    virtual ATOOLS::Blob_Data_Base * WeightedEvent()                               =0;
+    virtual ATOOLS::Blob_Data_Base * SameWeightedEvent()                           =0;
 
     virtual void SwapInOrder();
     virtual void RestoreInOrder();
@@ -194,7 +192,6 @@ namespace AMEGIC {
     virtual PDF::ISR_Handler              * ISR();
     virtual ATOOLS::Cut_Data              * Cuts();
     virtual ATOOLS::Selector_Base         * Selector();
-    virtual ATOOLS::Primitive_Analysis    * Analysis();
     virtual Phase_Space_Generator         * PSGenerator();
     virtual void                            ISRChannels(int,PHASIC::Channel_Info & );
     virtual void                            BeamChannels(int,PHASIC::Channel_Info & );

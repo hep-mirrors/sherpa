@@ -347,7 +347,10 @@ void Amegic::ReadInProcessfile(string file)
       }
     }
   }
-
+  
+  //trick um highest mult. treatment auszuschalten
+  // !!!!!!!!!!! boeser trick, sagt Ande !!!!!!!!!
+  //m_maxjet++;
   p_procs->SetMaxJetNumber(m_maxjet);
 }
 
@@ -563,14 +566,14 @@ void Amegic::SingleEvents() {
 }
 
 
-double  Amegic::SameWeightedEvent()
+ATOOLS::Blob_Data_Base * Amegic::SameWeightedEvent()
 {
   return p_procs->SameWeightedEvent();
 }
 
-double Amegic::WeightedEvent()
+ATOOLS::Blob_Data_Base *  Amegic::WeightedEvent()
 {
-  double weight=p_procs->WeightedEvent();
-  if (weight>0.) return weight;
-  return 0.;
+  return p_procs->WeightedEvent();
+  //  if (weight>0.) return weight;
+  //  return 0.;
 }

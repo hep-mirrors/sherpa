@@ -51,9 +51,9 @@ namespace AMEGIC {
     void        SetResDir(std::string);
 
     bool              UnweightedEvent();
-    double            WeightedEvent();
+    ATOOLS::Blob_Data_Base * WeightedEvent();
     bool              SameEvent();
-    double            SameWeightedEvent();
+    ATOOLS::Blob_Data_Base * SameWeightedEvent();
     Process_Base    * GetProcess()       { return p_procs->Selected(); }
     Process_Base    * Processes();
     All_Decays      * GetAllDecays()     { return p_decs; }

@@ -38,7 +38,6 @@ Process_Group::Process_Group() :
   p_cuts  = 0;
   p_ps    = 0;
   p_moms  = 0;
-  p_analysis = 0;
   m_procs.clear();
 }
 
@@ -513,8 +512,6 @@ void Process_Group::SetTables(bool _tables)
 
 void Process_Group::SetTotalXS(int tables)  { 
   if (tables!=2) {
-    if (p_analysis) p_analysis->FinishAnalysis(m_resdir+string("/Tab")+m_name,m_tables);
-
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
@@ -693,16 +690,6 @@ bool Process_Group::SetUpIntegrator()
 
 
 
-void Process_Group::InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *> _obs) {
-  p_analysis = new ATOOLS::Primitive_Analysis(this->Name());//check this
-  for (int i=0;i<_obs.size();i++) {
-    p_analysis->AddObservable(_obs[i]->GetCopy());
-  }
-  for (int i=0;i<m_procs.size();i++) m_procs[i]->InitAnalysis(_obs);
-  m_analyse  = 1;
-}
-
-
 
 /*----------------------------------------------------------------------------------
   
@@ -748,6 +735,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	}
 	from.close();
 	p_ps->ReadIn(_resdir+string("/MC_")+m_name);
+
 	if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
 	if (p_ps->ISRIntegrator() != 0)  p_ps->ISRIntegrator()->Print();
 	if (p_ps->FSRIntegrator() != 0)  p_ps->FSRIntegrator()->Print();
@@ -893,7 +881,6 @@ void Process_Group::AddPoint(const double value)
   m_totalsumsqr += value*value;
   if (value>m_max) m_max = value;
 
-  if (m_analyse) p_analysis->DoAnalysis(value*rpa.Picobarn());
   for (int i=0;i<m_procs.size();i++) {
     if (dabs(m_last)>0.) {
       m_procs[i]->AddPoint(value*m_procs[i]->Last()/m_last);
@@ -981,7 +968,7 @@ bool Process_Group::SameEvent() {
   return p_ps->SameEvent();
 }
 
-double Process_Group::WeightedEvent() {
+ATOOLS::Blob_Data_Base *  Process_Group::WeightedEvent() {
   if (m_atoms) {
     SelectOne();
     return p_selected->WeightedEvent();
@@ -989,9 +976,8 @@ double Process_Group::WeightedEvent() {
   return p_ps->WeightedEvent();
 }
 
-double Process_Group::SameWeightedEvent() {
+ATOOLS::Blob_Data_Base *  Process_Group::SameWeightedEvent() {
   if (m_atoms) {
-    SelectOne();
     return p_selected->SameWeightedEvent();
   }
   return p_ps->SameWeightedEvent();
