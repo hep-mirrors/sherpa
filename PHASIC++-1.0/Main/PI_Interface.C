@@ -19,7 +19,7 @@ PI_Interface::~PI_Interface()
 bool PI_Interface::Initialize()
 {
   p_integrator->SetDimension(m_point.size());
-  p_integrator->SetMode(0);
+  p_integrator->SetMode(1);
   p_integrator->SetVariableName("xs");
   p_integrator->SetUnitName("pb");
   p_integrator->SetScale(ATOOLS::rpa.Picobarn());
