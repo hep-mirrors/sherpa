@@ -45,6 +45,16 @@ Tree::Tree(Tree * tree) {
   p_save_root = 0;
 }
 
+void Tree::ResetKnots() {
+  if (!s_knots) return;
+  for (Knot_Iterator kit=s_knots->begin(); kit!=s_knots->end(); ++kit) {
+    delete (*kit); 
+  }
+  s_knots->erase(s_knots->begin(),s_knots->end());
+  p_root = 0;
+}
+
+
 Tree::~Tree() {
   Reset();
   if (s_knots) {
