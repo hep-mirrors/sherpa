@@ -1,7 +1,7 @@
 !-------------------------------------------------------
 !-- Model parameters -----------------------------------
 !-------------------------------------------------------
-MODEL                 = SM     ! Model 
+MODEL                 = SM       ! Model 
 !
 GENERATOR_ON          = 1        ! use external spectrum generator
 !
@@ -58,7 +58,9 @@ N_ED                  = 2         ! Number of extra dimensions in ADD model
 G_NEWTON       	      = 6.707e-39 ! Newton gravity constant
 M_S                   = 2.5e3     ! string scale for ADD model, meaning depends on KK_CONVENTION
 M_CUT                 = 2.5e3     ! cut-off scale for the c.m. energy
-KK_CONVENTION         = 2         ! 0=const mass   
+KK_CONVENTION         = 1         ! 0=const mass   
                                   ! 1=simplified sum(HLZ)   2=exact sum(HLZ)
                                   ! 3=Hewett +1    4=Hewett -1 
-                                  ! 5=GRW (M_s=Lambda_T(GRW))
+                                  ! 5=GRW (Lambda_T(GRW)=M_S for virtual Graviton exchange
+				  !        or M_D=M_S for real Gravtion production)
+				  ! only KK_CONVENTION's 1,2 or 5 are applicable for real Graviton production!
