@@ -179,6 +179,7 @@ void Event_Handler::PrintEvent(int mode) {
 }
 
 void Event_Handler::PrintBlobs() {
+  if (!msg.LevelIsEvents()) return;
   msg.Out()<<"  -------------------------------------------------  "<<std::endl;
   if (!m_blobs.empty()) {
     for (Blob_Iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) {
