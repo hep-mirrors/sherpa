@@ -33,6 +33,7 @@ libAmisic_la_SOURCES  = \
 			Fixed_Variable_Channel.C \
 			Semihard_QCD.C \
 			Simple_Chain.C \
+			Simple_String.C \
 			Amisic.C 
 noinst_HEADERS        = \
 			Amisic_Histogram.H \
@@ -46,6 +47,7 @@ noinst_HEADERS        = \
 			Fixed_Variable_Channel.H \
 			Semihard_QCD.H \
 			Simple_Chain.H \
+			Simple_String.H \
 			Amisic.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(AMISICFLAGS) $(SHERPAFLAGS)
