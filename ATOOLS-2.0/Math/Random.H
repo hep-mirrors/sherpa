@@ -46,9 +46,9 @@ namespace AMATOOLS {
       return acos(2.*Get()-1.);
     }  
 
-    int WriteOutStatus(char*);
+    int WriteOutStatus(const char*);
 
-    void ReadInStatus(char* filename, long int index=0 );
+    void ReadInStatus(const char* filename, long int index=0 );
 
     ~Random() { 
       if (m_outstream!=0) {

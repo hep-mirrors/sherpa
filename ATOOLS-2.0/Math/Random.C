@@ -170,7 +170,7 @@ double Random::Ran3()
 /* (C) Copr. 1986-92 Numerical Recipes Software VsXz&v%120(9p+45$j3D. */
 
 
-int Random::WriteOutStatus(char * filename){
+int Random::WriteOutStatus(const char * filename){
   // write out every Statusregister of Random Number generator
 
   //  sprintf(m_outname,"%s%i.dat",filename,m_written); 
@@ -205,7 +205,7 @@ int Random::WriteOutStatus(char * filename){
   return m_written++;
 }
 
-void Random::ReadInStatus(char * filename, long int index){
+void Random::ReadInStatus(const char * filename, long int index){
   // read in every Statusregister of Random Number generator
   msg.Events()<<"reading file "<<filename<<" index "<<index<<endl;
   std::ifstream myinstream(filename);
