@@ -51,7 +51,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist)
 	myblob = (*blit);
 	int stat = p_interface->DefineInitialConditions(myblob);
 	if (stat) {
-	  cout<<" jetmax = "<<p_showerhandler->MaxJetNumber()<<"  nout="<<p_mehandler->Nout()<<endl;
+	  //	  cout<<" jetmax = "<<p_showerhandler->MaxJetNumber()<<"  nout="<<p_mehandler->Nout()<<endl;
 	  shower = p_showerhandler->PerformShowers(p_showerhandler->MaxJetNumber()!=p_mehandler->Nout());
 	  if (shower==1) {
 	    p_showerhandler->FillBlobs(_bloblist);
