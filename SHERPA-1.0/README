@@ -1,0 +1,74 @@
+Notes about the prerelease Version of "MOCAIC"
+==============================================
+
+1. Installation procedure
+2. Comments to the directory structure
+3. Comments to the Input date files
+4. Using Amegic
+5. Using Mocaic
+
+6. FAQ
+
+
+
+
+
+1. Installation procedures
+==========================
+
+On most systems installation is as simple as doing unpacking 
+and installation as follows.
+
+   1. Unpacking
+      unpack all distribution files one by one
+        ATOOLS-2.0.tar.gz  
+        EXTRA_XS-1.0.tar.gz  
+        PDF-1.0.tar.gz  
+        PHASIC++-1.0.tar.gz
+        AMEGIC++-2.0.tar.gz  
+        APACIC++-2.0.tar.gz  
+        MOCAIC++-0.0.tar.gz  
+      via 
+        "tar -xzf ....tar.gz"
+
+   2. Installation
+      in every directory of (in that order)
+        ATOOLS-2.0 
+	PDF-1.0 
+	EXTRA_XS-1.0 
+	PHASIC++-1.0 
+        AMEGIC++-2.0 
+        APACIC++-2.0 
+        MOCAIC++-0.0"
+      do
+        ./configure
+        make install "CXXFLAGS=-g"
+
+2. Comments on the directory structure
+
+  a) General
+       ATOOLS-2.0   Collection of basic classes used all over the 
+ 		    Program, e.g. four-momentum, Parameter-Input, etc.
+       PDF-1.0      Parton Distribution Functions; in the moment
+                    the Proton PDF MRST99, and an Electron Structure 
+                    Function are provided therein.
+       EXTRA_XS-1.0 Collection of analytic cross sections, used mainly 
+		    for comparison reasons.
+       PHASIC++-1.0 Phase space integraton module. Provides basic integration
+                    routines as Rambo as well as a sufisticated
+       AMEGIC++-2.0 Module for the generation and calculation of Matrix 
+                    Elements. Further a (multi) process integration and
+                    an event generation on Parton level can be used.
+       APACIC++-2.0 Parton Shower Module
+       MOCAIC++-0.0 preliminary Event Generator frame work, i.e. steering
+                    of integration of hard processes and generation of events 
+                    including Parton-Shower and Hadronisation
+                   
+
+   b) The ATOOLS-2.0 module
+   c) The PDF-1.0 module
+   d) The EXTRA_XS-1.0 module
+   e) The PHASIC++-1.0 module
+   f) AMEGIC++-2.0 
+   g) The APACIC++-2.0 module
+   h) MOCAIC++-0.0
