@@ -47,6 +47,7 @@ libToolsOrg_la_SOURCES        = \
 				Debugger.C \
 				My_Root.C
 noinst_HEADERS        =	\
+			Smart_Pointer.H \
 			Shell_Tools.H \
 			Object.H \
 			Getter_Function.H \
