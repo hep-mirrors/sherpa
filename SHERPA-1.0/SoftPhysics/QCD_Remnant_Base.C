@@ -80,10 +80,10 @@ Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
        dit!=m_attached.end();++dit) {
     if (*dit==dipole) continue;
     double cur=(*dit)->End(ANTI(type))->Momentum().PPerp(ref);
+    sorted.insert(std::pair<double,Color_Dipole*>(cur,*dit));
     if (cur<=min) {
       min=cur;
       closest=*dit;
-      sorted.insert(std::pair<double,Color_Dipole*>(cur,*dit));
     }
   }
   if (p_string[0]!=1.0) {
