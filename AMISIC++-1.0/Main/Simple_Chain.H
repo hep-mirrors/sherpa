@@ -23,7 +23,8 @@ namespace AMISIC {
 
     typedef std::map<std::string,EXTRAXS::XS_Base*> Process_Map;
 
-    typedef std::multimap<double,std::string>           Sort_Map;
+    typedef std::multimap<double,std::string,
+			  std::greater<double> >        Sort_Map;
     typedef std::map<ATOOLS::kf::code,ATOOLS::kf::code> Map_Map;
 
   private:
@@ -52,7 +53,7 @@ namespace AMISIC {
 
     std::string m_selected;
 
-    unsigned int m_nflavour, m_maxtrials;
+    unsigned int m_nflavour, m_maxtrials, m_check;
     unsigned int m_scalescheme, m_kfactorscheme;
     double       m_sigmahard, m_error, m_ecms;
     bool         m_external, m_regulate;
