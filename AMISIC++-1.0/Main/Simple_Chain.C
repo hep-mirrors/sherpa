@@ -11,7 +11,7 @@ const std::string integralfile=std::string("integral.dat");
 using namespace AMISIC;
 
 Simple_Chain::Simple_Chain():
-  MI_Base("Simple Chain",MI_Base::HardEvent,1),
+  MI_Base("Simple Chain",MI_Base::HardEvent,2),
   m_differential(std::vector<GridFunctionType*>(0)),
   p_total(NULL),
   m_environmentfile(std::string("Run.dat")),
@@ -28,13 +28,15 @@ Simple_Chain::Simple_Chain():
 {
   SetInputFile("MI.dat");
   SetOutputFile("SC.log");
-  SetStart(0.0);
-  SetStop(1.6);
+  SetStart(0.0,0);
+  SetStop(1.6,0);
+  SetStart(ATOOLS::rpa.gen.Ecms(),1);
+  SetStop(0.0,1);
 }
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 			   BEAM::Beam_Spectra_Handler *_p_beam,PDF::ISR_Handler *_p_isr):
-  MI_Base("Simple Chain",MI_Base::HardEvent,1),
+  MI_Base("Simple Chain",MI_Base::HardEvent,2),
   m_differential(std::vector<GridFunctionType*>(0)),
   p_total(NULL),
   m_environmentfile(std::string("Run.dat")),
@@ -51,8 +53,10 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 {
   SetInputFile("MI.dat");
   SetOutputFile("SC.log");
-  SetStart(0.0);
-  SetStop(1.6);
+  SetStart(0.0,0);
+  SetStop(1.6,0);
+  SetStart(ATOOLS::rpa.gen.Ecms(),1);
+  SetStop(0.0,1);
 }
 
 Simple_Chain::~Simple_Chain()
@@ -473,6 +477,8 @@ bool Simple_Chain::InitializeBlobList()
     p_beam=p_environment->BeamSpectraHandler();
     p_isr=p_environment->ISRHandler();
   }
+  SetStart(sqrt(p_isr->SprimeMax()),1);
+  SetStop(sqrt(p_isr->SprimeMin()),1);
   p_processes = new EXTRAXS::SimpleXSecs(m_inputpath,m_xsfile,p_model);
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::InitializeBlobList(): "
@@ -639,8 +645,8 @@ bool Simple_Chain::Initialize()
 		       <<"   Run cannot continue."<<std::endl;
     abort();
   }
-  SetStart(p_total->XMax());
-  SetStop(p_total->XMin());
+  SetStart(p_total->XMax(),0);
+  SetStop(p_total->XMin(),0);
   if (!InitializeBlobList()) {
     ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 		       <<"Cannot initialize selected processes. "<<std::endl
@@ -653,18 +659,23 @@ bool Simple_Chain::Initialize()
 bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 {
   if (p_processes==NULL) {
-    ATOOLS::msg.Error()<<"Simple_Chain::CreateBlob("<<blob<<"): "
+    ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
 		       <<"Processes are not initialized! Abort."<<std::endl;
     return false;
   }
   if (blob==NULL) {
-    ATOOLS::msg.Error()<<"Simple_Chain::CreateBlob("<<blob<<"): "
+    ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
 		       <<"Blob is not initialized! Abort."<<std::endl;
     return false;
   }
   if (m_selected<(unsigned int)p_processes->Size()) {
     if ((*p_processes)[m_selected]->OneEvent()) {
       p_xs=(*p_processes)[m_selected]->Selected();
+      ATOOLS::Vec4D ptot;
+      for (int j=0;j<p_xs->Nin();++j) {
+	ptot+=p_xs->Momenta()[j];
+      }
+      m_last[1]-=sqrt(ptot.Abs2());
       ATOOLS::Particle *particle;
       for (int j=0;j<p_xs->Nin();++j) {
 	particle = new ATOOLS::Particle(0,p_xs->Flavs()[j]);
@@ -709,6 +720,7 @@ bool Simple_Chain::DiceProcess()
  				       m_last[0],initialdata.max);
   p_processes->ResetSelector(p_processes->SelectorData());
   Data_To_Function<GridResultType,unsigned int> sorter;
+  sorter.SetMonotony(sorter.None);
   GridResultType cur, norm=(GridResultType)0.0;
   for (unsigned int i=0;i<m_differential.size();++i) {
     cur=(*m_differential[i])(m_last[0]);
@@ -720,7 +732,13 @@ bool Simple_Chain::DiceProcess()
   for (int i=sorter.XDataSize()-1;i>=0;--i) {
     if ((cur+=sorter.XData(i)/norm)>rannr) {
       m_selected=sorter.XYData(i).second;
+      if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
+	ATOOLS::msg.Tracking()<<"Simple_Chain::DiceProcess(): s' out of bounds."<<std::endl
+			      <<"   Cannot create any process. Abort."<<std::endl;
+	return false;
+      }
       (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]*0.2),1);
+      (*p_processes)[m_selected]->ISR()->SetSprimeMax(m_last[1]*m_last[1]);
       m_dicedprocess=true;
       return FillBlob(p_blob);
     }
@@ -760,6 +778,7 @@ bool Simple_Chain::DiceOrderingParameter()
 void Simple_Chain::Reset()
 {
   m_last[0]=m_start[0];
+  m_last[1]=m_start[1];
 }
 
 void Simple_Chain::Update(MI_Base *mibase)
