@@ -68,12 +68,7 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 		   <<"   [..]   -  optional variable\n"
 		   <<"   -> ..  -  depends on\n\n"
 		   <<"   BEGIN_ANALYSIS {\n\n"
-		   <<"   LEVEL {\n"
-		   <<"            ME      -  matrix element level\n"
-		   <<"            MI      -  multiple interaction level\n"
-		   <<"            Shower  -  shower level\n"
-		   <<"            Hadron  -  hadron level\n"
-		   <<"         }\n\n"
+		   <<"   LEVEL      [ME]|[MI]|[Shower]|[Hadron]\n\n"
 		   <<"   PATH_PIECE path\n\n";
   Getter_Function::PrintGetterInfo(ATOOLS::msg.Out(),10);
   ATOOLS::msg.Out()<<"\n   } END_ANALYSIS\n"
