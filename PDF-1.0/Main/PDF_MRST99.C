@@ -1,5 +1,7 @@
 #include "PDF_MRST99.H"
+
 #include "Message.H"
+#include "Scaling.H"
 
 using namespace std;
 using namespace PDF;
@@ -16,6 +18,7 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
 	       <<"    will continue with set 1."<<std::endl;
     m_set  = 1;
   }
+  m_type=std::string("MRST99")+ATOOLS::ToString(m_set);
   m_bunch  = _bunch;
   m_anti   = 1;
   if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti = -1;

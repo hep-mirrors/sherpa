@@ -27,7 +27,7 @@ Doubly_Unintegrated_PDF::Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running
   m_epsilon(1.e-2),
   m_kperpscheme(kperpscheme)
 {
-  m_type=std::string("DUPDF");
+  m_type=std::string("DUPDF(")+p_pdf->Type()+std::string(")");
   m_xmin=m_xmax=0.0;
   m_xmax=p_pdf->XMax();
   m_q2min=0.0;
