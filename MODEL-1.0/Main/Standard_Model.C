@@ -66,12 +66,12 @@ void Standard_Model::ReadInFile() {
 							 ScalarConstant(std::string("Yukawa_b")),as);
   Running_Fermion_Mass * mt   = new Running_Fermion_Mass(Flavour(kf::t),
 							 ScalarConstant(std::string("Yukawa_t")),as);
-  Running_Fermion_Mass * me   = new Running_Fermion_Mass(Flavour(kf::d),
-							 ScalarConstant(std::string("Yukawa_d")),as);
-  Running_Fermion_Mass * mmu  = new Running_Fermion_Mass(Flavour(kf::u),
-							 ScalarConstant(std::string("Yukawa_u")),as);
-  Running_Fermion_Mass * mtau = new Running_Fermion_Mass(Flavour(kf::s),
-							 ScalarConstant(std::string("Yukawa_s")),as);
+  Running_Fermion_Mass * me   = new Running_Fermion_Mass(Flavour(kf::e),
+							 ScalarConstant(std::string("Yukawa_e")),as);
+  Running_Fermion_Mass * mmu  = new Running_Fermion_Mass(Flavour(kf::mu),
+							 ScalarConstant(std::string("Yukawa_mu")),as);
+  Running_Fermion_Mass * mtau = new Running_Fermion_Mass(Flavour(kf::tau),
+							 ScalarConstant(std::string("Yukawa_tau")),as);
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::d).Name()),md));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::u).Name()),mu));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::s).Name()),ms));
