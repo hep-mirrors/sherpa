@@ -731,7 +731,7 @@ namespace ATOOLS {
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
   IntegralY(ArgumentType xmin,ArgumentType xmax,std::string xscaling,std::string yscaling,
-	    bool forward,const MonotonyID monotony=None)
+	    bool forward,const MonotonyID monotony)
   { 
 #ifdef PROFILE__Data_To_Function
     PROFILE_HERE;
@@ -817,7 +817,7 @@ namespace ATOOLS {
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
   IntegralX(ResultType ymin,ResultType ymax,std::string yscaling,std::string xscaling,
-	    bool forward,const MonotonyID monotony=None)
+	    bool forward,const MonotonyID monotony)
   { 
 #ifdef PROFILE__Data_To_Function
     PROFILE_HERE;
