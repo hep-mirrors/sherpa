@@ -346,7 +346,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     return 0.;
   }
   double KFactor = 1., Q2 = -1.;
-  m_psweight = m_result_1 = m_result_2 = 0.;
+  m_result_1 = m_result_2 = 0.;
   for (int i=0;i<m_nvec;++i) p_cms[i]=p_lab[i];
   if (m_nin>1) {
     if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(p_lab,m_nvec);
@@ -384,7 +384,8 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       KFactor *= process->KFactor(Q2);
     }
     p_fsrchannels->GenerateWeight(p_cms,p_cuts);
-    m_psweight = m_result_1 *= KFactor * p_fsrchannels->Weight();
+    m_psweight = m_result_1 *= p_fsrchannels->Weight();
+    m_result_1 *= KFactor;
     if (m_nin>1) {
       if (p_isrhandler->On()==3) m_result_2 = m_result_1;
       if (p_isrhandler->KMROn()==0) m_result_1 *= process->Differential(p_cms);
@@ -406,44 +407,48 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   if (ait==s_psspy.end()) {
     const char *name=(process->Name()+"_sprime_y").c_str();
     PS_Histogram *psh = 
-      new PS_Histogram(name,name,100,-10.0,0.0,100,-10.0,10.0);
+      new PS_Histogram(name,name,100,0.0,10.0,100,-10.0,10.0);
     ait=s_psspy.insert(std::pair<Integrable_Base*,
 		       PS_Histogram*>(process,psh)).first;
     MYROOT::myroot->AddObject(psh,name);
     MYROOT::myroot->SetDrawOption("lego2");
   }
-  ait->second->Fill(log(m_isrspkey[3]/m_isrspkey[2])/log(10.),
-		    m_isrykey[2],m_psweight==0.0?0.0:
-		    m_flux*(m_result_1+m_result_2)/m_psweight);
+  if (p_pi==NULL) ait->second->Fill(-log10(m_isrspkey[3]/m_isrspkey[2]),
+				    m_isrykey[2],m_psweight==0.0?0.0:
+				    m_flux*(m_result_1+m_result_2));
+  else ait->second->Fill(-log10(m_isrspkey[3]/m_isrspkey[2]),
+			 m_isrykey[2],m_psweight==0.0?0.0:
+			 m_flux*(m_result_1+m_result_2)*
+			 p_pi->GenerateWeight());
   if (p_isrhandler->KMROn()>0) {
     Analysis_Map::const_iterator ait=s_psz.find(process);
     if (ait==s_psz.end()) {
       const char *name=(process->Name()+"_z1_z2").c_str();
       PS_Histogram *psh = 
-	new PS_Histogram(name,name,100,-10.0,0.0,100,-10.0,10.0);
+	new PS_Histogram(name,name,100,0.0,10.0,100,10.0,10.0);
       ait=s_psz.insert(std::pair<Integrable_Base*,
 		       PS_Histogram*>(process,psh)).first;
       MYROOT::myroot->AddObject(psh,name);
       MYROOT::myroot->SetDrawOption("lego2");
     }
-    ait->second->Fill(log10(m_isrzkey[0][2]*m_isrzkey[1][2]),
+    ait->second->Fill(-log10(m_isrzkey[0][2]*m_isrzkey[1][2]),
 	  	      log10(m_isrzkey[0][2]/m_isrzkey[1][2]),
 		      m_psweight==0.0?0.0:
-		      m_flux*(m_result_1+m_result_2)/m_psweight);
+		      m_flux*(m_result_1+m_result_2));
     ait=s_pskp.find(process);
     if (ait==s_pskp.end()) {
       const char *name=(process->Name()+"_kp1_kp2").c_str();
       PS_Histogram *psh = 
-	new PS_Histogram(name,name,100,-10.0,0.0,100,-10.0,10.0);
+	new PS_Histogram(name,name,100,0.0,10.0,100,-10.0,10.0);
       ait=s_pskp.insert(std::pair<Integrable_Base*,
 			PS_Histogram*>(process,psh)).first;
       MYROOT::myroot->AddObject(psh,name);
       MYROOT::myroot->SetDrawOption("lego2");
     }
-    ait->second->Fill(log10(m_isrkpkey[0][3]/m_isrkpkey[0][2]),
+    ait->second->Fill(-log10(m_isrkpkey[0][3]/m_isrkpkey[0][2]),
 		      log10(m_isrkpkey[1][3]/m_isrkpkey[1][2]),
 		      m_psweight==0.0?0.0:
-		      m_flux*(m_result_1+m_result_2)/m_psweight);
+		      m_flux*(m_result_1+m_result_2));
   }
 #endif
   return m_flux*(m_result_1+m_result_2);
@@ -1231,6 +1236,11 @@ bool Phase_Space_Handler::CreateISRChannels()
   if (m_isrparams.size() < 1) return 0;
   int isr = p_isrhandler->On();
   Single_Channel * channel;   
+  if (m_use_pi&psm::pi_isr && isr==3) {
+    channel = new Flat_ISR_V(1.0," isr",p_info);
+    p_isrchannels->Add(channel);
+    return true;
+  }
   int length = m_isrparams.size();
   for (int i=0;i<length;i++) {
     switch (m_isrparams[i].type) {
