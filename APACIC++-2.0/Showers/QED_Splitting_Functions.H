@@ -8,7 +8,7 @@
 #include "Random.H"
 
 namespace APACIC {
-  //! fermion to fermion + photon  splitting function
+  // fermion to fermion + photon  splitting function
   class f_fp : public Splitting_Function {
     Sudakov_Tools * tools;
     double          alpha;
@@ -44,7 +44,7 @@ namespace APACIC {
     double CrudeInt(double _zmin, double _zmax) {
       zmin = _zmin;
       zmax = _zmax;
-      return 2.*qsqr*alpha*log((1.-zmin)/(1.-zmax));
+ls      return 2.*qsqr*alpha*log((1.-zmin)/(1.-zmax));
     };
   };
 
@@ -126,6 +126,34 @@ namespace APACIC {
       return (zmax-zmin)*alpha*qsqr;
     };
   };
+
+
+  /*! 
+    \file
+    \brief contains the classes APACIC::f_fp, APACIC::f_pf and APACIC::p_ff
+  */
+
+  /*!
+    \class f_fp
+    \brief fermion to fermion + photon  splitting function
+
+
+  */
+
+  /*!
+    \class f_pf
+    \brief
+
+  */
+
+  /*!
+    \class p_ff
+    \brief
+
+  */
+
+
+
 }
 #endif
 

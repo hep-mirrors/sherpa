@@ -13,7 +13,9 @@ using namespace AORGTOOLS;
 //-------------------- Constructors -------------------------------------
 //----------------------------------------------------------------------- 
 
-Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):kin(_kin) {
+Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):
+  kin(_kin),last_veto(0) 
+{
   ordering_scheme = 1; /*  (1=VO+Coherence, 2=VO);                           */ 
   cpl_scheme      = 1; /*  (0=fix, 1=pt^2, 2=t/4)                            */ 
   pt_scheme       = 1; /*  (0=> pt^2 = z(1-z)t      for VO
@@ -56,7 +58,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):kin(_kin) {
   }
   Add(new g_gg());
 
-  //  PrintStat();
+  PrintStat();
   // Check splitting functions
   //CheckSplittings();
 };
@@ -66,6 +68,7 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):kin(_kin) {
 //----------------------------------------------------------------------- 
 
 bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
+  last_veto=0;
   inflav = mother->part->Flav(); 
   ta     = mother->t;                  
   wa     = mother->E2;
@@ -95,29 +98,14 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
   double z0; 
 
   while (ta>tend) {
-    /*
-    if ((inflav.IsQuark()) && (mother->tout>t0)) 
-      z0 = 0.5*((1. + mother->tout/ta) -
-		(1. - mother->tout/ta)*sqrt(1.-(ta*t0)/sqr(ta-mother->tout)));
-    else 
-    */
+    if (last_veto==0 || last_veto==7) {
     z0 = 0.5 * (1. - sqrt(1.-t0/ta)) ; // condition that pt^2 > t0 !!!
-
-    /* simple checks
-       double pa     = 0;
-       if (wa>ta) pa=sqrt(wa-ta);
-       double ea     = sqrt(wa);
-    cout<<" ta =" <<ta<<"\t wa ="<<wa<<"\t z0="<<z0<<endl;
-    if (wa>ta) pa=sqrt(wa-ta);
-    double z0_test = 0.5 *( 1. - pa/ea);
-    cout<<" pa =" <<pa<<"\t ea ="<<ea<<"\t z0="<<z0_test<<endl;
-    z0=z0_test;
-    */
     
-    if (z0<rpa.gen.Accu()) {
-      msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl;
+      if (z0<rpa.gen.Accu()) {
+        msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl;
+      }
+      CrudeInt(z0,1.-z0);
     }
-    CrudeInt(z0,1.-z0);
 
     if (mass_scheme == 2) ta -= mother->tout;
     ProduceT();
@@ -182,6 +170,7 @@ void Timelike_Sudakov::ProduceT() {
 
 bool Timelike_Sudakov::Veto(Knot * mo) 
 {  
+  last_veto=0;
   msg.Debugging()<<std::endl<<"      Enter the vetos with E2, t, z, pt2 = "<<wa<<", "
 		 <<ta<<", "<<z<<", "<<z*(1.-z)*ta<<std::endl;
   
@@ -199,33 +188,44 @@ bool Timelike_Sudakov::Veto(Knot * mo)
   }
 
   // timelike
-  if (wa < ta) return 1;
+  if (wa < ta) {
+    last_veto=1;
+    return 1;
+  }
   //  sum m1 + m2 < sqrt(ta)
-  if (ta  < tb+tc+2.*sqrt(tb*tc)) return 1;
+  if (ta  < tb+tc+2.*sqrt(tb*tc)) {
+    last_veto=2;
+    return 1;
+  }
 
   // 1. masses, z-range and splitting function
   if (MassVeto()) {
     msg.Tracking()<<"MassVeto!"<<endl;
+    last_veto=3;
     return 1;
   }
   // 2. alphaS
   if (CplVeto()) {
     msg.Tracking()<<"CplVeto!"<<endl;
+    last_veto=4;
     return 1;
   }
   // 3. angular ordering
   if (AngleVeto(mo)) {
     msg.Tracking()<<"AngleVeto!"<<endl;
+    last_veto=5;
     return 1;
   }
   // 4. ME
   if (MEVeto(mo))  {
     msg.Tracking()<<"ME!"<<endl;
+    last_veto=6;
     return 1;
   }
 
   // 5. JetVeto *AS*
   if (JetVeto(mo)) {
+    last_veto=7;
     msg.Tracking()<<"JetVeto!"<<endl;
     return 1;    
   }
@@ -417,5 +417,35 @@ void Timelike_Sudakov::CheckSplittings() {
   exit(0);
 }
 
+
+void Timelike_Sudakov::Add(Splitting_Function * spl) 
+{
+  for (SplFunIter iter(group);iter();++iter) {
+    if (iter()->GetFlA()==spl->GetFlA()) {
+      iter()->Add(spl);
+      return ;
+    }
+  }
+  group.Append(new Splitting_Group(spl));
+  selected=spl;
+}
+
+/*!
+  Yields the crude integral of a group.
+*/
+double Timelike_Sudakov::CrudeInt(double _zmin, double _zmax) {
+  SplFunIter iter(group);
+  for (;iter();++iter)
+    if (iter()->GetFlA()==inflav) {selected=iter();break;}
+  if (!iter()) {
+    cout<<"Timelike_Sudakov::CrudeInt : "<<endl;
+    cout<<"ERROR : splitting function missing for "<<inflav<<endl;
+    lastint = -1.;
+  }
+  return lastint=selected->CrudeInt(_zmin,_zmax);
+}        
+
+//! Selects one specific mode for the splitting (to be called after CrudeInt)
+void Timelike_Sudakov::SelectOne() { selected->SelectOne(); }
 
 

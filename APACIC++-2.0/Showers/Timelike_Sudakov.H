@@ -40,6 +40,9 @@ namespace APACIC {
     double maxpt;
     APHYTOOLS::Flavour inflav;
 
+    // veto
+    int last_veto;
+
     void CheckSplittings();
   public:
     //-----------------------------------------------------------------------
@@ -70,32 +73,14 @@ namespace APACIC {
       Initialises lists of splitting functions grouped by the flavour of the
       incoming leg A.
     */
-    void Add(Splitting_Function * spl) {
-      for (SplFunIter iter(group);iter();++iter) {
-	if (iter()->GetFlA()==spl->GetFlA()) {
-	  iter()->Add(spl);
-	  return ;
-	}
-      }
-      group.Append(new Splitting_Group(spl));
-      selected=spl;
-    };
+    void Add(Splitting_Function * spl);
     /*!
       Yields the crude integral of a group.
     */
-    double CrudeInt(double _zmin, double _zmax) {
-      SplFunIter iter(group);
-      for (;iter();++iter)
-	if (iter()->GetFlA()==inflav) {selected=iter();break;}
-      if (!iter()) {
-	//cout<<"Timelike_Sudakov::CrudeInt : "<<endl;
-	//cout<<"Warning : splitting function missing for "<<inflav<<endl;
-	lastint = -1.;
-      }
-      return lastint=selected->CrudeInt(_zmin,_zmax);
-    };        
+    double CrudeInt(double _zmin, double _zmax) ;
+     
     //! Selects one specific mode for the splitting (to be called after CrudeInt)
-    void SelectOne() { selected->SelectOne(); };
+    void SelectOne();
 
     //-----------------------------------------------------------------------
     //-------------------- Methods for dicing -------------------------------
