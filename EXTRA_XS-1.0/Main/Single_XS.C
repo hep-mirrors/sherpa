@@ -66,11 +66,12 @@ void Single_XS::SetTotal()
 {
   m_totalxs=TotalResult();//m_totalsum/m_n; 
   m_totalerr=TotalVar();//sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
-  msg_Info()<<"      xs for "<<ATOOLS::om::bold<<m_name<<" : "
-		    <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		    <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red<<m_totalerr*ATOOLS::rpa.Picobarn()<<" pb = "
-		    <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl
-		    <<"       max : "<<m_max<<std::endl;
+  msg_Tracking()<<"      xs for "<<ATOOLS::om::bold<<m_name<<" : "
+		<<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+		<<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red
+		<<m_totalerr*ATOOLS::rpa.Picobarn()<<" pb = "
+		<<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )\n"
+		<<"       max : "<<m_max<<std::endl;
 }
 
 void Single_XS::AddPoint(const double value) 

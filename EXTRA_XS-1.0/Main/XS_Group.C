@@ -216,10 +216,10 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	      >>singlesum>>singlesumsqr>>singlen
 	      >>ssum>>ssqrsum>>ss2>>sn;
 	do {
-	  msg_Info()<<"Found result: xs for "<<singlename<<" : "
-		    <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
-		    <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
-		    <<"         max : "<<singlemax<<std::endl;
+	  msg_Tracking()<<"Found result: xs for "<<singlename<<" : "
+			<<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
+			<<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
+			<<"         max : "<<singlemax<<std::endl;
 	  XS_Base *xs=Matching(singlename);
 	  if (xs!=NULL) {
 	    xs->SetTotalXS(singlexs);
