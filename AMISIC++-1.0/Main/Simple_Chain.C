@@ -372,19 +372,22 @@ bool Simple_Chain::ReadInData()
   converter.clear();
   converter<<ATOOLS::rpa.gen.Bunch(1);
   converter>>help[1];
-  outputpath=std::string("MI-Grid__")+help[0]+std::string("_")+help[1]+
-    std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV_");
+  outputpath=std::string("MIG_")+help[0]+std::string("_")+help[1]+
+    std::string("_")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms());
   if (m_regulate) {
-    outputpath+=m_regulator;
+    outputpath+=std::string("_")+m_regulator[0];
     for (size_t i=0;i<m_regulation.size();++i) {
       outputpath+=std::string("_")+ATOOLS::ToString(m_regulation[i]);
     }
   }
-  outputpath+=std::string("_")+p_isr->PDF(0)->Type()+std::string("_")+p_isr->PDF(1)->Type()+
-    std::string("__as_")+ATOOLS::ToString(static_cast<MODEL::Running_AlphaS*>
-					  (p_model->GetScalarFunction("alpha_S"))->Order())+
-    std::string("__sc_")+ATOOLS::ToString(m_scalescheme)+
-    std::string("__kf_")+ATOOLS::ToString(m_kfactorscheme)+std::string("/");
+  if (p_isr->PDF(0)->Type()!=p_isr->PDF(1)->Type()) {
+    outputpath+=std::string("_")+p_isr->PDF(0)->Type();
+  }
+  outputpath+=std::string("_")+p_isr->PDF(0)->Type()+std::string("_")+
+    ATOOLS::ToString(static_cast<MODEL::Running_AlphaS*>
+		     (p_model->GetScalarFunction("alpha_S"))->Order())+
+    std::string("_")+ATOOLS::ToString(m_scalescheme)+
+    std::string("_")+ATOOLS::ToString(m_kfactorscheme)+std::string("/");
   SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
   comments.push_back("->");
