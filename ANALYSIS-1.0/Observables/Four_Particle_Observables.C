@@ -65,23 +65,24 @@ using namespace ATOOLS;
 using namespace std;
 
 Four_Particle_Observable_Base::Four_Particle_Observable_Base(const std::vector<Flavour> & flavs,
-							     int type,double xmin,double xmax,
-							     int nbins,const std::string & name) :
+							     int type,double xmin,double xmax,int nbins,
+							     const std::string & listname, const std::string& name) :
   Primitive_Observable_Base(type,xmin,xmax,nbins,NULL)
 {
-  if (flavs.size()<4) {
+  if(flavs.size()<4) {
     msg.Error()<<"Error in Four_Particle_Observable_Base:"<<std::endl
-	       <<"   No four flavours specified, try to copy flavours."<<std::endl;
+	       <<"   No four flavours specified, try to copy flavours."
+	       <<std::endl;
   }
-  std::string help = std::string("");
+  MyStrStream str;
+  str<<name<<flavs[0]<<flavs[1]<<flavs[2]<<flavs[3]<<".dat";
+  str>>m_name;
   Flavour fl;
-  for (size_t i=0;i<4;i++) {
-    if (i<flavs.size()) fl=flavs[i];
+  for(size_t i=0; i<4; i++) {
+    if(i<flavs.size()) fl=flavs[i];
     m_flavs.push_back(fl);
-    help += fl.Name();
-    if (i==1) help+=std::string("--");
   }
-  m_name     = name + std::string(".dat");
+  m_listname = listname;
   m_blobtype = std::string("");
   m_blobdisc = false;
 }
@@ -126,6 +127,7 @@ void Four_Particle_Observable_Base::Evaluate(const Particle_List & plist,double 
 		if ((*plit4)->Flav()==m_flavs[3] && plit4!=plit3 && plit4!=plit2 && plit4!=plit1) {
 		  Evaluate((*plit1)->Momentum(),(*plit2)->Momentum(),
 			   (*plit3)->Momentum(),(*plit4)->Momentum(),weight,ncount);
+		  return;
 		}
 	      }
 	    }
@@ -134,6 +136,7 @@ void Four_Particle_Observable_Base::Evaluate(const Particle_List & plist,double 
       }
     }
   }
+  p_histo->Insert(0.0,0.0,ncount); 
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -153,15 +156,41 @@ void Four_Particle_PlaneAngle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
  
 Four_Particle_PlaneAngle::Four_Particle_PlaneAngle(const std::vector<Flavour> & flavs,
 						   int type,double xmin,double xmax,int nbins,
-						   const std::string & name) :
-  Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,name) { }
+						   const std::string& listname) :
+  Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"NRAngle") { }
 
 Primitive_Observable_Base * Four_Particle_PlaneAngle::Copy() const
 {
-  return new Four_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,m_nbins,m_name);
+  return new Four_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,m_nbins,
+				      m_listname);
 }
 
-// ======================================================================
+//=============================================================================
+
+DEFINE_OBSERVABLE_GETTER(Four_Particle_PT,
+			 Four_Particle_PT_Getter,"PT4");
+
+void Four_Particle_PT::Evaluate(const Vec4D& mom1,const Vec4D& mom2,
+				const Vec4D& mom3,const Vec4D& mom4,
+				double weight, int ncount)
+{
+  double pt = sqrt(sqr(mom1[1]+mom2[1]+mom3[1]+mom4[1]) +
+		   sqr(mom1[2]+mom2[2]+mom3[2]+mom4[2]));
+  p_histo->Insert(pt,weight,ncount);
+}
+ 
+Four_Particle_PT::Four_Particle_PT(const std::vector<Flavour>& flavs,
+				   int type,double xmin,double xmax,int nbins,
+				   const std::string & listname) :
+  Four_Particle_Observable_Base(flavs,type,xmin,xmax,nbins,listname,"PT") { }
+
+Primitive_Observable_Base* Four_Particle_PT::Copy() const
+{
+  return new Four_Particle_PT(m_flavs,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+
+// ============================================================================
+
 template <class Class>
 Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
 {									

@@ -8,22 +8,39 @@ namespace ANALYSIS {
   protected:
     std::vector<ATOOLS::Flavour> m_flavs;
     void virtual Evaluate(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &, 
-			  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,double=1.,int=1) =0; 
+			  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
+			  double=1.,int=1) =0; 
     void virtual Evaluate(double,double=1.,int=1); 
   public:
-    Four_Particle_Observable_Base(const std::vector<ATOOLS::Flavour> &,int,double,double,int,
-				  const std::string & =std::string(""));
-    void virtual Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double=1.,int=1);
-    void virtual Evaluate(const ATOOLS::Particle_List &,double=1.,int=1);
+    Four_Particle_Observable_Base(const std::vector<ATOOLS::Flavour> &,
+				  int,double,double,int,
+				  const std::string& listname,
+				  const std::string& name);
+    void virtual Evaluate(int,const ATOOLS::Vec4D *,
+			  const ATOOLS::Flavour *,double=1.,int=1);
+    void virtual Evaluate(const ATOOLS::Particle_List &,
+			  double=1.,int=1);
   };
 
   class Four_Particle_PlaneAngle : public Four_Particle_Observable_Base {  
     void Evaluate(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &, 
 		  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,double=1.,int=1); 
   public:
-    Four_Particle_PlaneAngle(const std::vector<ATOOLS::Flavour> &,int,double,double,int,
-			     const std::string & =std::string("NRAngle:"));
+    Four_Particle_PlaneAngle(const std::vector<ATOOLS::Flavour>&,
+			     int,double,double,int,
+			     const std::string& listname);//=std::string("NRAngle:"));
     Primitive_Observable_Base * Copy() const;
+  };
+
+  class Four_Particle_PT : public Four_Particle_Observable_Base {  
+    void Evaluate(const ATOOLS::Vec4D &, const ATOOLS::Vec4D &, 
+		  const ATOOLS::Vec4D &, const ATOOLS::Vec4D &,
+		  double=1.,int=1);
+  public:
+    Four_Particle_PT(const std::vector<ATOOLS::Flavour>&,
+		     int,double,double,int,
+		     const std::string& listname);
+    Primitive_Observable_Base* Copy() const;
   };
 
   // ======================================================================
