@@ -15,6 +15,29 @@ namespace ATOOLS {
   typedef Getter_Function<Particle_Qualifier_Base,std::string> 
   Particle_Qualifier_Getter;
   
+  class And_Particle_Qualifier : public Particle_Qualifier_Base {
+    Particle_Qualifier_Base * p_qual_a;
+    Particle_Qualifier_Base * p_qual_b;
+  public:
+    And_Particle_Qualifier(Particle_Qualifier_Base * a,
+			   Particle_Qualifier_Base * b)
+      : p_qual_a(a),p_qual_b(b) {}
+    bool operator()(const Particle *) const;
+  };
+
+  class Not_Particle_Qualifier : public Particle_Qualifier_Base {
+    Particle_Qualifier_Base * p_qual_a;
+  public:
+    Not_Particle_Qualifier(Particle_Qualifier_Base * qual)
+      : p_qual_a(qual) {}
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_ME_Particle : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+
   class Is_Photon : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;

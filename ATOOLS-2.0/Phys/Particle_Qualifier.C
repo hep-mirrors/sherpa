@@ -2,10 +2,40 @@
 
 using namespace ATOOLS;
 
+
+
+
+template<>
+Particle_Qualifier_Base *const Getter_Function<Particle_Qualifier_Base,std::string>::
+GetObject(const std::string &name,const std::string &parameters)
+{
+  std::cout<<" looking for "<<name<<" "<<parameters<<"\n";
+  if (name[0]=='!') {
+    std::string name1=name.substr(1);
+    Particle_Qualifier_Base * qual = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
+    if (qual) return new Not_Particle_Qualifier(qual);
+  }
+  size_t pos=name.find("&");
+  if (pos!=std::string::npos) {
+    std::string name1=name.substr(0,pos);
+    std::string name2=name.substr(pos+1);
+    Particle_Qualifier_Base * qual1 = ATOOLS::Particle_Qualifier_Getter::GetObject(name1,name1);
+    Particle_Qualifier_Base * qual2 = ATOOLS::Particle_Qualifier_Getter::GetObject(name2,name2);
+    if (qual1 && qual2) return new And_Particle_Qualifier(qual1,qual2);
+  }
+
+  String_Getter_Map::iterator git=s_getters->find(name);
+  if (git!=s_getters->end()) return (*git->second)(parameters);
+  std::cout<<" not found "<<std::endl;
+  return NULL;
+}
+
 #define COMPILE__Getter_Function
 #define OBJECT_TYPE Particle_Qualifier_Base
 #define PARAMETER_TYPE std::string
 #include "Getter_Function.C"
+
+
 
 template <class Class>
 Particle_Qualifier_Base *const GetQualifier(const std::string &parameter)
@@ -36,6 +66,13 @@ void Particle_Qualifier_Base::ShowQualifiers(const int mode)
   Particle_Qualifier_Getter::PrintGetterInfo(msg.Out(),20);
   msg.Out()<<"\n}"<<std::endl;
 }
+
+DEFINE_QUALIFIER_GETTER(Is_Photon,Is_Photon_Getter,
+			"kf22","photon");
+DEFINE_QUALIFIER_GETTER(Is_Gluon,Is_Gluon_Getter,
+			"kf21","gluon");
+DEFINE_QUALIFIER_GETTER(Is_ME_Particle,Is_ME_Particle_Getter,
+			"ME","ME particle");
 
 DEFINE_QUALIFIER_GETTER(Is_Charged_Hadron,Is_Charged_Hadron_Getter,
 			"1","charged hadron");
@@ -129,6 +166,19 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter,
 			"113","neutral xi");
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter_,
 			"NeutralXi","neutral xi");
+
+bool And_Particle_Qualifier::operator() (const Particle * p) const {
+  if ((*p_qual_a)(p) && (*p_qual_b)(p)) return 1;
+  return 0;
+};
+bool Not_Particle_Qualifier::operator() (const Particle * p) const {
+  return !(*p_qual_a)(p);
+};
+
+bool Is_ME_Particle::operator() (const Particle * p) const {
+  if ( p && p->Info()=='H' ) return 1;
+  return 0;  
+};
 
 bool Is_Photon::operator() (const Particle * p) const {
   if ( p && p->Flav().IsPhoton() ) return 1;
