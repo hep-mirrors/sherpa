@@ -223,22 +223,20 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 
 void XS_Group::Terminate()  
 {
+  if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotalXS();
-  if (m_totalxs>0.) {
-    if (m_resultpath!=std::string("")) {
-      std::ofstream to;
-      to.open(m_resultfile.c_str(),std::ios::out);
-      to.precision(12);
-      ATOOLS::msg.Events()<<"Store result : xs for "<<m_name<<" : ";
-      WriteOutXSecs(to);
-      if (m_nin==2) ATOOLS::msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-      if (m_nin==1) ATOOLS::msg.Events()<<m_totalxs<<" GeV";
-      ATOOLS::msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
-			  <<"       max : "<<m_max<<std::endl;
-      p_pshandler->WriteOut(m_resultpath+std::string("/MC_")+m_name);
-      to.close();
-    }
-  }
+  if (m_totalxs<=0.) return;
+  std::ofstream to;
+  to.open(m_resultfile.c_str(),std::ios::out);
+  to.precision(12);
+  ATOOLS::msg.Events()<<"Store result : xs for "<<m_name<<" : ";
+  WriteOutXSecs(to);
+  if (m_nin==2) ATOOLS::msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+  if (m_nin==1) ATOOLS::msg.Events()<<m_totalxs<<" GeV";
+  ATOOLS::msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
+		      <<"       max : "<<m_max<<std::endl;
+  p_pshandler->WriteOut(m_resultpath+std::string("/MC_")+m_name);
+  to.close();
 }
 
 void XS_Group::SetTotalXS()  
