@@ -1,0 +1,36 @@
+#ifndef Lund_Fortran_Interface_h
+#define Lund_Fortran_Interface_h
+
+#include "Blob_List.H"
+#include "Parton_List.H"
+#include "Parton.H"
+
+namespace SHERPA {
+  class Lund_Fortran_Interface {
+    bool  pyinit;
+    double a,b,sigma;
+
+    static const int maxentries = 2000;
+    double  * phep, * vhep;
+    int     * jmohep, * jdahep, * isthep, * idhep;
+
+    double  * pjet, * xjet;
+    int       nk, * kfjet, * mothers, * daughters;
+
+    void Init();
+    void AddPartonToString(APHYTOOLS::Parton *,int &);
+    void FillPrimaryHadronsInBlob(APHYTOOLS::Blob *,APHYTOOLS::Blob_List *,
+				  APHYTOOLS::Parton_List * = NULL);
+    void FillSecondaryHadronsInBlob(APHYTOOLS::Blob *,APHYTOOLS::Blob_List *,int,int,
+				    APHYTOOLS::Parton_List * = NULL);
+  public:
+    Lund_Fortran_Interface(double,double,double);
+    ~Lund_Fortran_Interface();
+    bool Hadronize(APHYTOOLS::Blob *,APHYTOOLS::Blob_List *,
+		   APHYTOOLS::Parton_List * = NULL);
+  };
+
+  extern Lund_Fortran_Interface LFInterface;
+}
+
+#endif

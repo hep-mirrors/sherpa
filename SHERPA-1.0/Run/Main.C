@@ -1,10 +1,6 @@
 #include "Sherpa.H"
+#include "Message.H"
 #include "prof.hh"
-
-//#define _USE_MPI_
-#ifdef _USE_MPI_
-#include <mpi++.h>
-#endif
 
 extern "C" {
   void apainit_();
@@ -14,37 +10,13 @@ extern "C" {
 using namespace SHERPA;
 
 int main(int argc,char* argv[]) {  
-  /*
-  // *AS* simple calls:
-  cout<<" apainit "<<endl;
-  apainit_();
-  for (int i=1;i<=20000;++i) {
-    //    if (i%100==0) 
-    cout<<" Event "<<i<<endl;
-    aparun_();
-  }
-  */
-
-  /*
-  set_prof();
-  */
-#ifdef _USE_MPI_
-  MPI::Init(argc, argv);
-#endif
-
   Sherpa Generator;
-  Generator.Init(argc,argv);
-  if (Generator.CrossSections())
-    Generator.GenerateEvents();
-
-#ifdef _USE_MPI_
-  MPI::Finalize();
-#endif
-
-  /*
-  std::ofstream file("profile.out");
-  print_profile( file );
-  */
+  Generator.InitializeTheRun(std::string("./"));
+  Generator.InitializeTheEventHandler();
+  for (int i=0;i<1;i++) {
+    if (Generator.GenerateOneEvent()) AORGTOOLS::msg.Events()<<"Sherpa : Passed "<<i<<" events."<<endl;
+  }
+  AORGTOOLS::msg.Events()<<"Sherpa did "<<10<<" with "<<Generator.NumberOfErrors()<<" errors."<<endl;
 }
 
 

@@ -1,2 +1,2 @@
 MAKE = make 
-SUBDIRS = Main ME_PS_Interface Had_Interface Run
+SUBDIRS = Tools Initialization PerturbativePhysics SoftPhysics Single_Events Main Run

@@ -1,0 +1,40 @@
+#include "Hadron_Decay_Handler.H"
+#include "Message.H"
+#include "Random.H"
+#include "Vector.H"
+#include "Data_Read.H"
+
+using namespace SHERPA;
+using namespace AMATOOLS;
+using namespace APHYTOOLS;
+using namespace AORGTOOLS;
+
+
+
+Hadron_Decay_Handler::Hadron_Decay_Handler(string,string) :
+  p_lund(NULL)
+{
+  msg.Error()<<"Error in Hadron_Decay_Handler::Hadron_Decay_Handler(string,string)."<<endl
+	     <<"   This form of the Hadron_Decay_Handler is not yet available."<<endl
+	     <<"   Abort program."<<endl;
+  abort();
+}
+
+Hadron_Decay_Handler::Hadron_Decay_Handler(string _dir,string _file,
+					   Lund_Fortran_Interface * _lund) :
+  m_dir(_dir), m_file(_file), p_lund(_lund)
+{
+}
+
+
+Hadron_Decay_Handler::~Hadron_Decay_Handler() 
+{
+}
+
+bool Hadron_Decay_Handler::FillHadronDecayBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *)
+{
+}
+
+bool Hadron_Decay_Handler::ReconstructLundHadronDecays() 
+{
+}
