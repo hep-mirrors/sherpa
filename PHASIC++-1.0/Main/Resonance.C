@@ -94,7 +94,7 @@ void Resonance_Forward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const doubl
   CalculateLimits(spkey,ykey);
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
   m_ykey[2]+=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			     m_xkey.Doubles(),rans[1],mode);
+			     m_ykey.Doubles(),rans[1],mode);
 }
 
 void Resonance_Forward::GenerateWeight(int mode)
@@ -159,7 +159,7 @@ void Resonance_Backward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const doub
   CalculateLimits(spkey,ykey);
   m_spkey[3]=CE.MassivePropMomenta(m_mass,m_width,1,m_spkey[0],m_spkey[1],rans[0]);
   m_ykey[2]+=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			      m_xkey.Doubles(),rans[1],mode);
+			      m_ykey.Doubles(),rans[1],mode);
 }
 
 void Resonance_Backward::GenerateWeight(int mode)

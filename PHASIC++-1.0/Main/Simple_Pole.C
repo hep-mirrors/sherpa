@@ -86,7 +86,7 @@ void Simple_Pole_Forward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const dou
   CalculateLimits(spkey,ykey);
   m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],rans[0]);
   m_ykey[2]+=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			     m_xkey.Doubles(),rans[1],mode);
+			     m_ykey.Doubles(),rans[1],mode);
 }
 
 void Simple_Pole_Forward::GenerateWeight(int mode)
@@ -147,7 +147,7 @@ void Simple_Pole_Backward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const do
   CalculateLimits(spkey,ykey);
   m_spkey[3]=CE.MasslessPropMomenta(m_sexponent,m_spkey[0],m_spkey[1],rans[0]);
   m_ykey[2]+=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			      m_xkey.Doubles(),rans[1],mode);
+			      m_ykey.Doubles(),rans[1],mode);
 }
 
 void Simple_Pole_Backward::GenerateWeight(int mode)

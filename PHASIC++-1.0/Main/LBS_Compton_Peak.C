@@ -114,7 +114,7 @@ void LBS_Compton_Peak_Forward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,cons
     m_spkey[3]=help;
   }
   m_ykey[2]+=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			     m_xkey.Doubles(),rans[1],mode);
+			     m_ykey.Doubles(),rans[1],mode);
 }
 
 void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
@@ -192,7 +192,7 @@ void LBS_Compton_Peak_Backward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,con
     m_spkey[3]=help;
   }
   m_ykey[2]+=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			      m_xkey.Doubles(),rans[1],mode);
+			      m_ykey.Doubles(),rans[1],mode);
 }
 
 void LBS_Compton_Peak_Backward::GenerateWeight(int mode)

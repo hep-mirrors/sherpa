@@ -44,7 +44,7 @@ void Threshold_Uniform::GenerateWeight(const int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool Threshold_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Threshold_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -62,7 +62,6 @@ bool Threshold_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Threshold_Forward::Threshold_Forward(const double mass,const double yexponent,
@@ -87,7 +86,7 @@ void Threshold_Forward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const doubl
   CalculateLimits(spkey,ykey);
   m_spkey[3]=CE.ThresholdMomenta(m_mass,m_spkey[0],m_spkey[1],rans[0]);
   m_ykey[2]+=CE.DiceYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			     m_xkey.Doubles(),rans[1],mode);
+			     m_ykey.Doubles(),rans[1],mode);
 }
 
 void Threshold_Forward::GenerateWeight(int mode)
@@ -106,7 +105,7 @@ void Threshold_Forward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool Threshold_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Threshold_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -124,7 +123,6 @@ bool Threshold_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Threshold_Backward::Threshold_Backward(const double mass,const double yexponent,
@@ -149,7 +147,7 @@ void Threshold_Backward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const doub
   CalculateLimits(spkey,ykey);
   m_spkey[3]=CE.ThresholdMomenta(m_mass,m_spkey[0],m_spkey[1],rans[0]);
   m_ykey[2]+=CE.DiceYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
-			      m_xkey.Doubles(),rans[1],mode);
+			      m_ykey.Doubles(),rans[1],mode);
 }
 
 void Threshold_Backward::GenerateWeight(int mode)
@@ -168,7 +166,7 @@ void Threshold_Backward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool Threshold_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Threshold_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -186,7 +184,6 @@ bool Threshold_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Threshold_Central::Threshold_Central(const double mass,const std::string cinfo,
@@ -226,7 +223,7 @@ void Threshold_Central::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool Threshold_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Threshold_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -244,6 +241,5 @@ bool Threshold_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
