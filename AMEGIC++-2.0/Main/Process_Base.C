@@ -279,9 +279,18 @@ public:
 class Order_Mass {
 public:
   int operator()(const S_Data & a, const S_Data & b) {
-    //    if "a < b" return 0  else 1;
+    //    if "a > b" return 1  else 0;
     if (a.fl.Mass() <= b.fl.Mass()) return 0;
     return 1;
+  }
+};
+
+class Order_InvMass {
+public:
+  int operator()(const S_Data & a, const S_Data & b) {
+    //    if "a < b" return 1  else 0;
+    if (a.fl.Mass() < b.fl.Mass()) return 1;
+    return 0;
   }
 };
 
@@ -303,10 +312,6 @@ public:
     if ((a.fl.IsFermion() && b.fl.IsFermion())
 	&& (!a.fl.IsAnti() && b.fl.IsAnti())) return 1;
     return 0;
-
-//     if ((a.fl.Kfcode()== b.fl.Kfcode())
-// 	&& (!a.fl.IsAnti() && b.fl.IsAnti())) return 1;
-//     return 0;
   }
 };
 
@@ -328,14 +333,20 @@ public:
 
 void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 {
-    
   std::vector<S_Data> sd;
-  for (int i=0;i<n;++i) sd.push_back(S_Data(i,flav[i],plav[i]));
+  Flavour heaviest(kf::photon);
+  for (int i=0;i<n;++i) {
+    sd.push_back(S_Data(i,flav[i],plav[i]));
+    if (flav[i].Mass()>heaviest.Mass()) heaviest=flav[i];
+    else if (flav[i].Mass()==heaviest.Mass() &&
+	     !flav[i].IsAnti()) heaviest=flav[i];
+  }
 
   std::stable_sort(sd.begin(),sd.end(),Order_Kfc());
   std::stable_sort(sd.begin(),sd.end(),Order_Anti());
   std::stable_sort(sd.begin(),sd.end(),Order_SVFT());
-  std::stable_sort(sd.begin(),sd.end(),Order_Mass());
+  if (heaviest.IsAnti())  std::stable_sort(sd.begin(),sd.end(),Order_InvMass());
+  else   std::stable_sort(sd.begin(),sd.end(),Order_Mass());
   std::stable_sort(sd.begin(),sd.end(),Order_Coupling());
   
   
