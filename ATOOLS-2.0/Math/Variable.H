@@ -30,8 +30,8 @@ namespace ATOOLS {
     virtual ~Variable_Base();
 
     // member functions
-    virtual Value_Type Value(const Vec3D *vectors);
-    virtual Value_Type Value(const Vec4D *vectors);
+    virtual Value_Type Value(const Vec3D *vectors) const;
+    virtual Value_Type Value(const Vec4D *vectors) const;
 
     static void ShowVariables(const int mode=1);
 
@@ -40,9 +40,9 @@ namespace ATOOLS {
 
     inline int SelectorID() const { return m_selectorid; }
 
-    inline Value_Type operator()(const Vec3D *vectors) 
+    inline Value_Type operator()(const Vec3D *vectors) const
     { return Value(vectors); }
-    inline Value_Type operator()(const Vec4D *vectors) 
+    inline Value_Type operator()(const Vec4D *vectors) const 
     { return Value(vectors); }
 
   };

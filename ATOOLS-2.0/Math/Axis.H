@@ -1,7 +1,6 @@
 #ifndef Axis_H
 #define Axis_H
 
-#include "Smart_Pointer.H"
 #include "Variable.H"
 #include "Scaling.H"
 
@@ -25,8 +24,8 @@ namespace ATOOLS {
     
     ScalingModeID m_scalingmode;
 
-    SP(Variable_Base<Value_Type>) p_variable;
-    SP(Scaling_Base<Value_Type>)  p_scaling;
+    Variable_Base<Value_Type> *p_variable;
+    Scaling_Base<Value_Type>  *p_scaling;
 
   public:
     
@@ -57,8 +56,10 @@ namespace ATOOLS {
 
     inline ScalingModeID ScalingMode() const { return m_scalingmode; }
 
-    inline SP(Scaling_Base<Value_Type>) &Scaling()   { return p_scaling;  }
-    inline SP(Variable_Base<Value_Type>) &Variable() { return p_variable; }
+    inline const Scaling_Base<Value_Type>  *Scaling() const 
+    { return p_scaling;  }
+    inline const Variable_Base<Value_Type> *Variable() const
+    { return p_variable; }
 
     inline Value_Type operator()(const Value_Type &realvalue)
     { return DisplayedValue(realvalue,Unknown); }

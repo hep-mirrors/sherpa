@@ -19,7 +19,11 @@ Axis<ValueType>::Axis(const Axis &ref):
 				      ref.p_scaling->Name())) {}
 
 template <class ValueType>
-Axis<ValueType>::~Axis() {}
+Axis<ValueType>::~Axis() 
+{
+  delete p_variable;
+  delete p_scaling;
+}
 
 template <class ValueType>
 ValueType Axis<ValueType>::DisplayedValue(const Value_Type &realvalue,

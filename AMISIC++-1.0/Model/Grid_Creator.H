@@ -21,7 +21,7 @@ namespace AMISIC {
     EXTRAXS::XS_Group    *p_processes;
     ATOOLS::Axis<double> *p_xaxis, *p_yaxis;
 
-    SP(ATOOLS::Variable_Base<double>) p_variable;
+    const ATOOLS::Variable_Base<double> *p_variable;
     
     double m_gridxmin, m_gridxmax, m_griddeltax, m_binerror;
 

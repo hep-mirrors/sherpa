@@ -2,7 +2,6 @@
 #define ISR_Vegas_H
 
 #include "Single_Channel.H"
-#include "Smart_Pointer.H"
 #include "Vegas.H"
 
 namespace PHASIC {
@@ -11,7 +10,8 @@ namespace PHASIC {
   protected:
 
     ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    SP(Vegas) p_vegas;
+
+    Vegas *p_vegas;
 
   public:
 

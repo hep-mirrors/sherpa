@@ -14,6 +14,7 @@ ISR_Channel_Base::ISR_Channel_Base()
 
 ISR_Channel_Base::~ISR_Channel_Base()
 {
+  delete p_vegas;
 }
 
 std::string ISR_Channel_Base::ChID()

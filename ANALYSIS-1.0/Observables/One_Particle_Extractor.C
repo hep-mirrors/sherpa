@@ -81,6 +81,11 @@ One_Particle_Extractor(const std::string &type,const ATOOLS::Flavour flav,
   m_splitt_flag=false;
 }
 
+One_Particle_Extractor::~One_Particle_Extractor()
+{
+  delete p_variable;
+}
+
 void One_Particle_Extractor::Evaluate(const ATOOLS::Particle_List &particlelist,
 				      double weight,int ncount)
 {
