@@ -14,7 +14,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-long int Phase_Space_Integrator::nmax=1000000;                  
+long int Phase_Space_Integrator::nmax=10000000;                  
 
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerror) 
 {
