@@ -185,7 +185,7 @@ void Amegic::ReadInProcessfile(string file)
   int usepi              = p_dataread->GetValue<int>("PI",0);
   double scale_factor   = p_dataread->GetValue<double>("SCALE_FACTOR",1.);
   double factorization_scale_factor   = scale_factor*p_dataread->GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
-  double renormalization_scale_factor = scale_factor*p_dataread->GetValue<double>("RENOMALIZATION_SCALE_FACTOR",1.);
+  double renormalization_scale_factor = scale_factor*p_dataread->GetValue<double>("RENORMALIZATION_SCALE_FACTOR",1.);
   rpa.gen.SetScaleFactors(factorization_scale_factor,renormalization_scale_factor);
 
   p_procs->SetUsePI(usepi);
