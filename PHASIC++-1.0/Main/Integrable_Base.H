@@ -81,6 +81,8 @@ namespace PHASIC {
     void SetMomenta(const ATOOLS::Vec4D *momenta); 
     bool OneEvent(const double mass,const int mode);
 
+    virtual bool Trigger(const ATOOLS::Vec4D *const momenta);
+
     virtual void SwapInOrder() = 0;
     virtual void RestoreInOrder() = 0;
 

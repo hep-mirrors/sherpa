@@ -244,7 +244,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   }
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
   bool trigger = 0;
-  if ((process->Selector())->Trigger(p_lab)) {
+  if (process->Trigger(p_lab)) {
     m_result_1 = 1.;
     if (m_nin>1) {
       trigger = 1;

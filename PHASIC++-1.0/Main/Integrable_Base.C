@@ -64,6 +64,11 @@ bool Integrable_Base::OneEvent()
   return false;
 } 
 
+bool Integrable_Base::Trigger(const ATOOLS::Vec4D *const momenta)
+{
+  return p_selector->Trigger(momenta);
+} 
+
 bool Integrable_Base::OneEvent(const double mass,const int mode) 
 {
   return p_activepshandler->OneEvent(mass,mode);

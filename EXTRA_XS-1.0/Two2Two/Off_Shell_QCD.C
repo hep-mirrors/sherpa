@@ -2,6 +2,7 @@
 
 #include "Run_Parameter.H"
 #include "Running_AlphaS.H"
+#include "Phase_Space_Handler.H"
 #include "Random.H"
 #include "Flow.H"
 
@@ -85,6 +86,8 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
   m_alphas=(*MODEL::as)(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
   m_nvector=m_nvector+2;
   CreateMomenta(m_nvector);
+  m_zkey[0].Assign("z_1",3,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_zkey[1].Assign("z_2",3,0,PHASIC::Phase_Space_Handler::GetInfo());
 }
 
 static double res, num;
@@ -121,3 +124,22 @@ bool Off_Shell_gg_gg::SetColours(double s,double t,double u)
   return true; 
 }
 
+bool Off_Shell_gg_gg::Trigger(const ATOOLS::Vec4D *const momenta) 
+{
+  ATOOLS::Vec4D *temp = new ATOOLS::Vec4D[6];
+  for (int i=4;i<6;++i) temp[i-4]=momenta[i];
+  for (int i=2;i<4;++i) temp[i+2]=momenta[i];
+  double x1=momenta[0]*momenta[5]/(momenta[4]*momenta[5]);
+  double x2=momenta[1]*momenta[4]/(momenta[4]*momenta[5]);
+  double b1=m_zkey[0][2]/(1.-m_zkey[0][2])*momenta[0].PPerp2()/x1/p_isrhandler->Pole();
+  double b2=m_zkey[1][2]/(1.-m_zkey[1][2])*momenta[1].PPerp2()/x2/p_isrhandler->Pole();
+//   std::cout<<x1<<" "<<m_zkey[0][2]<<" "<<b1<<std::endl;
+//   std::cout<<x2<<" "<<m_zkey[1][2]<<" "<<b2<<std::endl;
+  temp[2]=x1*(1./m_zkey[0][2]-1.)*momenta[4]+b1*momenta[5]-momenta[0].Perp();
+  temp[3]=x2*(1./m_zkey[1][2]-1.)*momenta[5]+b2*momenta[4]-momenta[1].Perp();
+  bool result=p_selector->Trigger(temp);
+  delete temp;
+  p_selector->SetNOut(m_nout);
+  p_selector->SetNTot(m_nin+m_nout);
+  return result;
+}

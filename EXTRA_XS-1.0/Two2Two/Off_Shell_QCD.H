@@ -2,6 +2,7 @@
 #define Off_Shell_QCD_H
 
 #include "Single_XS.H"
+#include "Info_Key.H"
 
 namespace EXTRAXS {
 
@@ -26,6 +27,8 @@ namespace EXTRAXS {
     
     double m_alphas;
 
+    ATOOLS::Info_Key m_zkey[2];
+
   public:
 
     // constructor
@@ -34,6 +37,8 @@ namespace EXTRAXS {
     // member functions
     double operator()(double s,double t,double u);
     bool   SetColours(double s,double t,double u);
+
+    bool Trigger(const ATOOLS::Vec4D *const momenta);
 
   };// end of class Off_Shell_gg_gg
  
