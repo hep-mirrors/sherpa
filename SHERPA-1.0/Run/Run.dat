@@ -13,6 +13,8 @@ ME_DATA_FILE     = ME.dat
 MODEL_DATA_FILE  = Model.dat
 SHOWER_DATA_FILE = Shower.dat
 !
-ANALYSIS       = 0     ! Analysis :
-!                      ! 0=none, 1=parton-level only, 
-!                      ! 2=hadron-level only, 3=both
+ANALYSIS       = 0     	! Analysis :
+!                      	! 0=none, 1=parton-level only, 
+!                      	! 2=hadron-level only, 3=both
+BATCH_MODE	= 1	! interative=0, batch=1
+LOG_FILE	= sherpa_log.log	! log file
