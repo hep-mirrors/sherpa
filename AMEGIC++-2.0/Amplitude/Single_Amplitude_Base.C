@@ -95,7 +95,7 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
     args[2*i] = z->p_arguments[i];
     int hit=0,j;
     if(iz!=0){
-      for(j=0;j<iz->size();j++){
+      for(j=0;j<(int)iz->size();j++){
 	if(iabs((*iz)[j])==z->p_arguments[i]){
 	  hit=1;
 	  break;
@@ -132,7 +132,7 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
     else{
       if (z->p_arguments[i]<20) {                                //old external massless Vector Boson treatment
 	args[2*i] = z->p_arguments[i]-10;
-	for(short int j=0;j<iz->size();j++){
+	for(size_t j=0;j<iz->size();j++){
 	  if(iabs((*iz)[j])==z->p_arguments[i]-10){
 	    args[2*i+1] = (*iargs)[2*j+1];
 	    break;
@@ -167,7 +167,7 @@ Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,vector<int>* iz, vect
   Tensor_Struc ts;
   int tensor_type=(*iargs)[2*k+1];
   ts.GetPolCombos(tensor_type,&pol,&sign);
-  for(int i=0;i<pol.size();i++){
+  for(size_t i=0;i<pol.size();i++){
     (*iargs)[2*k+1]=pol[i][0];
     (*iargs)[2*k+3]=pol[i][1];
     if(sign[i]==-1) value -= SingleZvalue(z,iz,iargs);
@@ -215,8 +215,8 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
     if(tensor) iz->push_back(iz_s[0]);
 
     if(!tensor){                                 //fermions and cutted vector bosons
-      for(int i1=0;i1<iargs_s[0].size();i1++)
-	for(int i2=0;i2<iargs_s[1].size();i2++){
+      for(size_t i1=0;i1<iargs_s[0].size();i1++)
+	for(size_t i2=0;i2<iargs_s[1].size();i2++){
 	  iargs->push_back(iargs_s[0][i1]);
 	  iargs->push_back(iargs_s[1][i2]);
 	  
@@ -230,8 +230,8 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
 	}
     }
     else {                                              //cutted spin2 bosons notation: hep-ph/9811350
-      for(int i1=0;i1<iargs_s[1].size();i1++)
-	for(int i2=i1;i2<iargs_s[1].size();i2++){
+      for(size_t i1=0;i1<iargs_s[1].size();i1++)
+	for(size_t i2=i1;i2<iargs_s[1].size();i2++){
 	  iargs->push_back(iargs_s[0][0]);
 	  iargs->push_back(iargs_s[1][i1]);
 	  iargs->push_back(iargs_s[0][0]);
@@ -247,7 +247,7 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
 	  iargs->pop_back();iargs->pop_back();
 	}
       Kabbala hlp1,hlp2;
-      for(int i1=0;i1<iargs_s[1].size();i1++){
+      for(size_t i1=0;i1<iargs_s[1].size();i1++){
 	  iargs->push_back(iargs_s[0][0]);
 	  iargs->push_back(iargs_s[1][i1]);
 	  iargs->push_back(iargs_s[0][0]);
@@ -308,9 +308,9 @@ Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,vector<int>* iz, vector<int
   }
   
   if (buildstring) {
-    if ( (value.String()).find(string("+"))!=-1 ||
-	 (value.String()).find(string("-"))!=-1 ||
-	 (value.String()).find(string("*"))!=-1 )
+    if ( (value.String()).find(string("+"))!=string::npos ||
+	 (value.String()).find(string("-"))!=string::npos ||
+	 (value.String()).find(string("*"))!=string::npos )
       value = (shand->Get_Generator())->GetCZnumber(value.Value(),value.String());
   }
   else value.SetString("");
@@ -325,7 +325,7 @@ Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,vector<int>* iz, vector<int
 
 void Single_Amplitude_Base::SetLoopVar(vector<int>& iz,vector<vector<int> >& iargs)
 {
-  for (short int i=0;i<iz.size();i++) if(iz[i]>99){
+  for (size_t i=0;i<iz.size();i++) if(iz[i]>99){
     if (iz[i]<199) {
 #ifdef Cut_Fermion_Prop
       Pfunc* p;
@@ -462,7 +462,7 @@ void Single_Amplitude_Base::GroupZfuncs()
     indexlist.push_back(dummy);
     for (short int i=0;i<z->m_narg;i++) {
       if (z->p_arguments[i]>99) {
-	for (short int j=0;j<iz.size();j++) {
+	for (size_t j=0;j<iz.size();j++) {
 	  if (iabs(iz[j])==z->p_arguments[i]) {
 	    indexlist[cnt].push_back(j);
 	    break;
@@ -478,14 +478,14 @@ void Single_Amplitude_Base::GroupZfuncs()
     over=1;
     int min=1000000;
     int imin;
-    for(short int i=0;i<iz.size();i++){
+    for(int i=0;i<(int)iz.size();i++){
       int adds=0;
-      for(cnt=0;cnt<indexlist.size();cnt++)
-	for(short int j=0;j<indexlist[cnt].size();j++) {
+      for(cnt=0;cnt<(int)indexlist.size();cnt++)
+	for(size_t j=0;j<indexlist[cnt].size();j++) {
 	  over=0;
 	  if(indexlist[cnt][j]==i){
 	    if(adds==0)adds=1;
-	    for(short int k=0;k<indexlist[cnt].size();k++)
+	    for(size_t k=0;k<indexlist[cnt].size();k++)
 	      if(indexlist[cnt][k]!=i)
 		{
 		  adds*=iargs[2*indexlist[cnt][k]].size()*iargs[2*indexlist[cnt][k]+1].size();
@@ -503,11 +503,11 @@ void Single_Amplitude_Base::GroupZfuncs()
       vector<vector<int> >::iterator ilt=indexlist.begin();	
       for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();) {
 	int hit=0;
-	for(short int j=0;j<(*ilt).size();j++) {
+	for(size_t j=0;j<(*ilt).size();j++) {
 	  if((*ilt)[j]==imin){
 	    zh[ia]=(*zit);
 	    ia++;
-	    for(short int k=0;k<(*ilt).size();k++)
+	    for(size_t k=0;k<(*ilt).size();k++)
 	      if((*ilt)[k]!=imin)
 		{
 		  indexlist[indexlist.size()-1].push_back((*ilt)[k]);
