@@ -1,5 +1,7 @@
 #include "Signal_Processes.H"
 
+#include "XS_Base.H"
+
 #ifdef PROFILE__all
 #define PROFILE__Signal_Processes
 #endif
@@ -20,6 +22,12 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * _mehandler,
 {
   m_name      = string("Signal_Processes:")+p_mehandler->Name();
   m_type      = eph::Perturbative;
+  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
+  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
+  if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"No beam remnant handler found.",
+			    "Simple_String","Initialize"));
+  }
 }
 
 Signal_Processes::~Signal_Processes()
@@ -46,14 +54,66 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
       if ((*blit)->Type()==btp::Signal_Process && (*blit)->Status()==2) {
 	myblob = (*blit);
 	found  = 1;
-	if (p_mehandler->GenerateOneEvent()) {
-	  weight=p_mehandler->Weight();
-	  int  ntrial =p_mehandler->NumberOfTrials();
-	  FillBlob(myblob,weight,ntrial);
-	  hit = 1;
+	bool success=false;
+	ATOOLS::Blob *isr[2]={NULL,NULL};
+	while (!success) {
+	  success=true;
+	  if (p_mehandler->GenerateOneEvent()) {
+	    weight=p_mehandler->Weight();
+	    int  ntrial =p_mehandler->NumberOfTrials();
+	    EXTRAXS::XS_Base *xs=p_mehandler->GetXS();
+	    if (xs!=NULL && xs->NAddOut()!=0) {
+	      for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
+		isr[i] = new ATOOLS::Blob();
+		isr[i]->SetType(ATOOLS::btp::IS_Shower);
+		isr[i]->SetTypeSpec("KMR DUPDF");
+		isr[i]->SetId();
+		isr[i]->SetStatus(1);
+		ATOOLS::Particle *parton = 
+		  new ATOOLS::Particle(-1,xs->AddFlavours()[i],
+				       xs->AddMomenta()[i]);
+		parton->SetNumber();
+		parton->SetStatus(2);
+		isr[i]->AddToOutParticles(parton);
+		parton = new ATOOLS::Particle(-1,xs->AddFlavours()[i],
+					      xs->AddMomenta()[i]);
+		parton->SetNumber();
+		parton->SetStatus(2);
+		parton->SetMomentum(parton->Momentum()
+				    +xs->Momenta()[i]);
+		isr[i]->AddToInParticles(parton);
+// 		std::cout<<parton->Momentum()<<" "
+// 			 <<xs->Momenta()[i]<<" "
+// 			 <<(parton->Momentum().Perp()==
+// 			    -1.0*xs->Momenta()[i].Perp())<<std::endl;
+		if (parton->Momentum().Perp()==-1.0*xs->Momenta()[i].Perp())
+		  isr[i]->SetBeam(1-i);
+		else isr[i]->SetBeam(i);
+		bloblist->push_back(isr[i]);
+ 		p_remnants[i]->QuickClear();
+ 		if (!p_remnants[i]->Extract(parton)) success=false;
+	      }
+	    }
+	    if (success) {
+	      FillBlob(myblob,weight,ntrial);
+	      if (isr[0]!=NULL && isr[1]!=NULL) {
+		for (size_t stop=myblob->NInP(), i=0;i<stop;++i) {
+		  isr[i]->AddToOutParticles(myblob->InParticle(i));
+		  ATOOLS::Vec4D sum=isr[i]->CheckMomentumConservation();
+		  if (!(sum==ATOOLS::Vec4D()))
+		    ATOOLS::msg.Error()<<"Signal_Processes::Treat(): "
+				       <<"4-momentum not conserved: sum = "
+				       <<sum<<"."<<std::endl;
+		}
+		myblob->SetStatus(0);
+	      }
+	      hit = 1;
+	    }
+	  }
 	}
       }
-      else if (((*blit)->Type()==btp::Signal_Process) && ((*blit)->Status()==-1)) {
+      else if (((*blit)->Type()==btp::Signal_Process) &&
+	       ((*blit)->Status()==-1)) {
 	myblob = (*blit);
 	found  = 1;
 	if (p_mehandler->GenerateSameEvent()) {

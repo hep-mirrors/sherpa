@@ -4,12 +4,14 @@
 #include "Event_Phase_Handler.H"
 #include "Matrix_Element_Handler.H"
 #include "Hard_Decay_Handler.H"
+#include "Remnant_Base.H"
 
 namespace SHERPA {
   class Signal_Processes : public Event_Phase_Handler {
   private :
     Matrix_Element_Handler * p_mehandler;
     Hard_Decay_Handler     * p_hdhandler;
+    Remnant_Base           * p_remnants[2];
     void FillBlob(ATOOLS::Blob *, const double, const int);
   public :
     Signal_Processes(Matrix_Element_Handler *,Hard_Decay_Handler * = NULL);
