@@ -117,7 +117,7 @@ void Exception_Handler::SignalHandler(int signal)
     break;
   case SIGINT:
     if (!rpa.gen.BatchMode()) {
-      msg.Error()<<"   Do you want to stop the program ? "<<om::reset;
+      msg.Error()<<"   Do you want to stop the program (y/n)? "<<om::reset;
       std::cin>>input;
     }
     if (input!="y" && input!="Y") return;
