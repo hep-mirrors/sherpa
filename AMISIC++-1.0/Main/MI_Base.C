@@ -25,6 +25,9 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
   m_type(_m_type),
   m_nparameter(_m_nparameter),
   p_blob(NULL),
+#ifdef USING__Sherpa
+  p_mehandler(NULL),
+#endif
   p_xs(NULL)
 {
   for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
