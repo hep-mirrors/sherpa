@@ -50,6 +50,7 @@ namespace AMEGIC {
     bool        WeightedEvent();
     bool        SameEvent();
     Process_Base       * GetProcess()       { return p_procs->Selected(); }
+    Process_Base * Processes();
     std::string          ProcessName()      { return p_procs->Selected()->Name(); }
     int                  Nin()              { return p_procs->Selected()->Nin(); }
     int                  Nout()             { return p_procs->Selected()->Nout(); }
@@ -70,6 +71,9 @@ namespace AMEGIC {
     bool        LookUpXSec(double,bool,std::string);
     bool        PrepareXSecTables();
  };
+
+  inline Process_Base * Amegic::Processes() { return p_procs; };
+
 }
 
 #endif
