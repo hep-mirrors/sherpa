@@ -38,6 +38,7 @@ namespace PHASIC {
 
     int    m_scalescheme, m_kfactorscheme;
     double m_scale, m_scalefactor, m_threshold, m_overflow;
+    std::vector<double> m_xinfo;
 
     long int m_n;
     double   m_last, m_lastlumi, m_lastdxs, m_max;
@@ -104,6 +105,7 @@ namespace PHASIC {
     inline void SetSumSqr(const double sumsqr)     { m_totalsumsqr=sumsqr; }
     inline void SetPoints(const long int points)   { m_n=points;           }
     inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
+    inline std::vector<double> & XInfo()           { return m_xinfo; }
 
     inline void SetScale(const double scale) { m_scale=scale; }
 
