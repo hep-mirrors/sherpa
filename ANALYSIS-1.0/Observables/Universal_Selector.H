@@ -19,6 +19,18 @@ namespace ANALYSIS {
 
   };// end of class Universal_Selector
 
+  class General_Observable : public Primitive_Observable_Base {  
+    std::string m_key;
+  public:
+
+    General_Observable(int type,double xmin,double xmax,int nbins,
+		 const std::string & key);
+
+    void Evaluate(const ATOOLS::Particle_List & pl, double weight, int ncount);
+    Primitive_Observable_Base * Copy() const;
+
+  };// end of class General_Observable
+
 }// end of namespace ANALYSIS
 
 #endif

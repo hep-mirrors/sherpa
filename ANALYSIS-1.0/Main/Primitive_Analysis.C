@@ -387,6 +387,14 @@ void Primitive_Analysis::CreateFinalStateParticleList(bool markb)
 	}
       }
     }
+    for (String_BlobDataBase_Map::const_iterator it=(*blit)->GetData().begin();
+	   it!=(*blit)->GetData().end(); ++it) {
+      if (it->first.length()>2 && it->first[0]=='d' && it->first[1]=='#') {
+	m_datacontainer[it->first.substr(2)]=new Blob_Data<double>(it->second->Get<double>());
+	m_datacontainer["NULL"+it->first.substr(2)]=new Blob_Data<double>(0.);
+      }
+    }
+
     if (SelectBlob(*blit)) {
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);
