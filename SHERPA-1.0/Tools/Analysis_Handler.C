@@ -12,6 +12,7 @@
 #include "Four_Particle_Observables.H"
 #include "Event_Shapes_EE.H"
 #include "Shape_Observables_EE.H"
+#include "Statistics_Observable.H"
 
 //#include <ctype.h>
 
@@ -543,6 +544,7 @@ void Analysis_Handler::SetUpObservables()
     }
     p_analysis->AddObservable(obs);
   }
+  p_analysis->AddObservable(new Statistics_Observable("Analysed"));
   SetUpSubSamples();
 } 
 
