@@ -24,9 +24,6 @@ namespace ANALYSIS {
 
     Analyses_Vector m_analyses;
 
-    String_Matrix FindArguments(const String_Matrix &strings,
-				const size_t start) const;
-
     void Clean();
     void PrepareTerminate();
 
@@ -46,6 +43,9 @@ namespace ANALYSIS {
     void Clear();
     
     static void ShowSyntax(const size_t i);
+
+    static String_Matrix FindArguments(const String_Matrix &strings,
+				       const size_t starty,const size_t startx);
 
   };// end of class Analysis_Handler   
 

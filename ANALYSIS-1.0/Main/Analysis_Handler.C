@@ -34,29 +34,33 @@ void Analysis_Handler::Clean()
   }
 }
 
-std::vector<std::vector<std::string> >
-Analysis_Handler::FindArguments(const std::vector<std::vector<std::string> > 
-				&strings,const size_t start) const
+String_Matrix
+Analysis_Handler::FindArguments(const String_Matrix &strings,
+				const size_t starty,const size_t startx)
 {
-  size_t begin=1;
-  if (strings[start].size()>begin && strings[start][begin]=="{") ++begin;
-  String_Matrix result=
-    String_Matrix(1,std::vector<std::string>(strings[start].size()-begin));
-  for (size_t i=begin;i<strings[start].size();++i) 
-    result[0][i-begin]=strings[start][i]; 
-  if (result.back().size()==0) result.pop_back();
-  if (begin==1) return result; 
-  for (size_t i=start+1;i<strings.size();++i) {
-    result.push_back(strings[i]);
-    for (size_t j=0;j<result.back().size();++j) {
-      if (result.back()[j]=="}") {
-	result.back().resize(j);
-	if (result.back().size()==0) result.pop_back();
-	return result;
+  size_t j=0, open=0;
+  String_Matrix result;
+  if (strings[starty].size()>startx) j=startx;
+  for (size_t i=starty;i<strings.size();++i) {
+    result.push_back(std::vector<std::string>(strings[i].size()-j));
+    for (size_t k=0;j<strings[i].size();++j,++k) {
+      result.back()[k]=strings[i][j];
+      size_t opos=result.back()[k].find("{");
+      if (opos!=std::string::npos) ++open;
+      if (open>0) {
+	size_t cpos=result.back()[k].find("}");
+	if (cpos!=std::string::npos) --open;
+	if (open==0) {
+	  result.back()[k]=result.back()[k].substr(0,cpos);
+	  result.back().resize(k+1);
+	  return result;
+	}
       }
     }
-  }
-  return String_Matrix();
+    if (open==0) break;
+    j=0;
+  }  
+  return result;
 }
 
 void Analysis_Handler::ShowSyntax(const size_t i)
@@ -124,7 +128,7 @@ bool Analysis_Handler::ReadIn()
       m_analyses.back()->SetOutputPath(outpath);
       reader.MatrixFromFile(helpsvv,"");
       for (size_t k=0;k<helpsvv.size();++k) {
-	String_Matrix mat=FindArguments(helpsvv,k);
+	String_Matrix mat=FindArguments(helpsvv,k,1);
 	ANALYSIS::Primitive_Observable_Base *observable = 
 	  Getter_Function::GetObject(helpsvv[k][0],mat);
 	if (observable!=NULL) {
