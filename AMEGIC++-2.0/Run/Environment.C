@@ -51,7 +51,7 @@ bool Environment::InitializeTheModel()
   msg.Debugging()<<"Initialized Model_Initialization for "<<m_path<<m_modeldat<<std::endl;
   Data_Read     * dataread     = new Data_Read(m_path+m_modeldat);
   Model_Handler * modelhandler = new MODEL::Model_Handler();
-  p_model                      = modelhandler->GetModel(dataread,m_path);
+  p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);
 
   if (!p_model->RunSpectrumGenerator()) {
     msg.Error()<<"Error in Model_Initialization::Model_Initialization."<<std::endl

@@ -403,29 +403,21 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
   
   for (int i=0;i<prea_table.size();i++) {
     int sw1 = 1;
-    if (AORGTOOLS::rpa.me.Model()==AORGTOOLS::Model_Type::QCD ||
-	AORGTOOLS::rpa.me.Model()==AORGTOOLS::Model_Type::pure_QCD) {
-      sw1 = 0;
+    if (AORGTOOLS::rpa.gen.Model()==AORGTOOLS::Model_Type::pure_QCD) {
       for (int j=0;j<dep;j++) {
 	if (((prea_table[i].p[j].fl).IsBoson()) && 
-	    (prea_table[i].p[j].fl!=Flavour(kf::gluon))) sw1++;
+	    (prea_table[i].p[j].fl!=Flavour(kf::gluon))) { sw1 = 0; break; }
       }
-      if (AORGTOOLS::rpa.me.Model()==AORGTOOLS::Model_Type::pure_QCD) {
-	if (sw1>0) sw1 = 0;
-	else  sw1 = 1;
-      }
-      else {
-	if (sw1>1) sw1 = 0;
-	else sw1 = 1;
-      }   
     }
     // test if 3-Vertex
-    for (int j=0;j<dep;j++) {
-      if (prea_table[i].p[j].left!=0) {
-	if ((prea_table[i].p[j].v)->in[1]==(prea_table[i].p[j].v)->in[2]) {
-	  if (prea_table[i].p[j].left->number>prea_table[i].p[j].right->number) {
-	    sw1 = 0;
-	    break;
+    if (sw1) {
+      for (int j=0;j<dep;j++) {
+	if (prea_table[i].p[j].left!=0) {
+	  if ((prea_table[i].p[j].v)->in[1]==(prea_table[i].p[j].v)->in[2]) {
+	    if (prea_table[i].p[j].left->number>prea_table[i].p[j].right->number) {
+	      sw1 = 0;
+	      break;
+	    }
 	  }
 	}
       }
@@ -498,8 +490,6 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
       n = gra;
     }
   }
-
-
 }
 
 

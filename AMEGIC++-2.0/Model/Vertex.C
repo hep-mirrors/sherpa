@@ -177,10 +177,15 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
          else if (i3<99) probe.in[3] = orig.in[i3-1];
   }
     
+  cout<<probe.in[0]<<" "<<probe.in[1]<<" "<<probe.in[2]<<endl;
+
+
   if (CheckExistence(probe)==0) return 0;
   if (probe.nleg==3) {
     if (FermionRule(probe)==0) return 0;}
   
+  cout<<"past : "<<probe.in[0]<<" "<<probe.in[1]<<" "<<probe.in[2]<<endl;
+
   // h.c. ????
   int hc = 0;
 
@@ -225,7 +230,7 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 	if (probehc) break;
       }
     }
-    if (probehc) {
+    //if (probehc) {
       int conjugate = 1;
 
       for (short int i=0;i<orig.nleg;i++) {
@@ -236,9 +241,15 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
       if (orig.Lorentz->type==lf::SSV ||
 	  orig.Lorentz->type==lf::Gauge3) conjugate *= -1;
       
+/*
       if (conjugate==-1) {
 	for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];
       }
+*/
+
+      ///!!!
+      for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];
+
 
       Conjugate(probe.Color);
 
@@ -247,8 +258,8 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 	Complex help = probe.cpl[0];
 	probe.cpl[0] = probe.cpl[1];
 	probe.cpl[1] = help;
-      }
-    }
+	 }
+      //  }
   }
   //Color and Lorentz structure changes....
   int newIndex[4];

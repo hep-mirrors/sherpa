@@ -205,6 +205,7 @@ void Amegic::ReadInProcessfile(string file)
 	    nex            = 0;
 	    do {
 	      from.getline(buffer,100);
+	      cout<<"Check : "<<buffer<<endl;
 	      if (buffer[0] != '\%' && strlen(buffer)>0) {
 		buf      = string(buffer);
 		position = buf.find(string("Excluded particles :"));
@@ -227,6 +228,7 @@ void Amegic::ReadInProcessfile(string file)
 		  Shorten(buf);
 		  str<<buf;
 		  str>>order_strong;
+		  cout<<"Found Order strong : "<<order_strong<<endl;
 		}
 
 		position       = buf.find(string("Selector file :"));

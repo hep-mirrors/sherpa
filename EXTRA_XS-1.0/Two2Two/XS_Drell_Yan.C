@@ -72,7 +72,7 @@ XS_ee_ffbar::XS_ee_ffbar(int _nin,int _nout,APHYTOOLS::Flavour * _fl)
   GZ2    = sqr(APHYTOOLS::Flavour(APHYTOOLS::kf::Z).Width());
  
   alpha  = aqed->Aqed((sqr(rpa.gen.Ecms())));
-  sin2tw = rpa.consts.Sin2TW();
+  sin2tw = rpa.gen.ScalarConstant(string("SIN2THETAW"));
   if (APHYTOOLS::Flavour(APHYTOOLS::kf::Z).IsOn()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
   else

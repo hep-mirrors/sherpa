@@ -9,7 +9,7 @@ namespace MODEL {
   class Model_Handler {
   public:
     Model_Handler() {};
-    Model_Base * GetModel(AORGTOOLS::Data_Read *,std::string);
+    Model_Base * GetModel(AORGTOOLS::Data_Read *,std::string,std::string);
   };
 
   /*!

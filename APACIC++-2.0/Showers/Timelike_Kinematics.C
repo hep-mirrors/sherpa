@@ -16,7 +16,7 @@ using namespace AORGTOOLS;
 Timelike_Kinematics::Timelike_Kinematics(double _pt2min) : 
   pt2min(_pt2min), t0(4.*pt2min),pt_scheme(1),mass_scheme(1)
 {
-  double ycut   = AORGTOOLS::rpa.integ.Ycut();
+  double ycut   = AORGTOOLS::rpa.gen.Ycut();
   jf            = new APHYTOOLS::Jet_Finder(ycut,4);  //// *AS* !!!! fixed to Hadron Hadron
 }
 

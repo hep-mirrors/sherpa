@@ -2,17 +2,13 @@
 #include "Basic_Sfuncs.H"
 #include "String_Generator.H"
 #include "Run_Parameter.H"
-//#include "Couplings_LED.H"
 #include "MathTools.H"
-#include "ADD.H"
 
 using namespace AMEGIC;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace std;
-
-MODEL::ADD* g_add;
 
 Kabbala Basic_Pfunc::P(Pfunc* p1)
 { 
@@ -31,14 +27,8 @@ Complex Basic_Pfunc::Propagator(double p2,Flavour fl)
 {
   Complex value;
   
-  if(fl.IsKK()){
-    //Model dependent, to be improved!!!
-    if(!g_add) {
-      cout<<"Try to init ADD "<<rpa.GetPath()<<endl;
-      g_add = new MODEL::ADD(rpa.GetPath()+std::string("/"),rpa.me.ModelDataFile());
-    }
-    
-    if(g_add->ScalarNumber(std::string("KK_mode"))>0) value=KKProp(p2);
+  if(fl.IsKK()){    
+    if(rpa.gen.ScalarNumber(std::string("KK_mode"))>0) value=KKProp(p2);
     else {
       value = Complex(1.,0.)/
 	Complex(p2-sqr(fl.Mass()),fl.Mass()*fl.Width());
@@ -91,14 +81,13 @@ double Basic_Pfunc::IEfunc(double x,int ed)
 
 Complex Basic_Pfunc::KKProp(double p2)
 {
-
-  int    ed  = g_add->ScalarNumber(std::string("ED"));
-  double gn  = g_add->ScalarConstant(std::string("G_Newton"));
-  double ms  = g_add->ScalarConstant(std::string("M_s"));
-  double msq = g_add->ScalarConstant(std::string("M2_s"));
+  int    ed  = rpa.gen.ScalarNumber(std::string("ED"));
+  double gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
+  double ms  = rpa.gen.ScalarConstant(std::string("M_s"));
+  double msq = rpa.gen.ScalarConstant(std::string("M2_s"));
 
   double vr,vv;
-  switch(g_add->ScalarNumber(std::string("KK_mode"))){
+  switch(rpa.gen.ScalarNumber(std::string("KK_mode"))){
   case 1:
     if(ed==2)vr=log(msq/AMATOOLS::dabs(p2));
     else vr=2./(ed-2);

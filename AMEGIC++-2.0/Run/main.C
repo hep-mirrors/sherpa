@@ -26,10 +26,12 @@ int main(int argc,char* argv[])
   environment.InitializeTheEnvironment();
 
   Amegic generator(path,environment.GetMEFile(),environment.GetModel());
-    
-  if (generator.InitializeDecays()) {
-    generator.CalculateBranchingWidths();
-  }
+
+  /*    
+	if (generator.InitializeDecays()) {
+	generator.CalculateBranchingWidths();
+	}
+  */
 
   if (generator.InitializeProcesses(environment.GetBeamSpectraHandler(),
 				    environment.GetISRHandler())) { 

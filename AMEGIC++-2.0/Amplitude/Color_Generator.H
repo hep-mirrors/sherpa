@@ -39,7 +39,7 @@ namespace AMEGIC {
     Color_Function* Get_CCF(){return CCFlist;}
     //former private
     std::string CF2String(Color_Function*);  
-};
+  };
 }
 #endif
 

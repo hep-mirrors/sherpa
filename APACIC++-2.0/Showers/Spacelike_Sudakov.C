@@ -30,11 +30,8 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spac
 
   m_emin            = .5;
   m_pt2max          = sqr(rpa.gen.Ecms());
-  m_pt2min          = rpa.pshower.InitialQ02();
-  m_qjet            = rpa.integ.Ycut()*sqr(rpa.gen.Ecms());
-  
+  m_qjet            = rpa.gen.Ycut()*sqr(rpa.gen.Ecms());
   m_pdf_fac         = 5.; // save factor to make sure pdf weights are smaler than one;
-
   m_lambda2         = p_tools->GetLambda2(); // from as(pt2max) = 1/(beta_0 * log(pt2max/lambda^2))
   m_b               = p_tools->GetBnorm();   //      2*pi*beta_0*scalefactor
 
@@ -320,12 +317,8 @@ bool Spacelike_Sudakov::PTVeto(Knot * mo)
 
 bool Spacelike_Sudakov::JetVeto(Knot * mo) 
 {
-  // cout<<"pt2="<<m_pt2<<endl;
-  //  if (0.75*m_pt2>m_qjet) return 1;
   if (m_pt2>m_qjet) return 1;
   return 0;
-
-  //return p_kin->JetCheck(mo);
 }
 
 void Spacelike_Sudakov::Add(Splitting_Function * spl) 

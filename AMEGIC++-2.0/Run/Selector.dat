@@ -1,12 +1,13 @@
-ET        11       10.   100000000.
-ET       -11       10.   100000000.
-!ET        93       10.   100000.
-!ET        21       10.   100000.
-Energy     22       10.    10000000.
-BeamAngle  22  0    -0.9   0.9
-ConeFinder        0.4
-Rapidity  11     -2.5      2.5
-Rapidity -11     -2.5      2.5
-!Rapidity  93     -2.5      2.5
-!Rapidity  21     -2.5      2.5
-
+PT          93  10.  10000.
+PT          11  10.  10000.
+PT         -12  10.  10000.
+PT         -11  10.  10000.
+PT          12  10.  10000.
+PT          22  10.  10000.
+Mass        -2 22 10. 100000000000.
+Rapidity    93  -2.5 2.5 
+Rapidity    11  -2.5 2.5 
+Rapidity   -12  -2.5 2.5 
+Rapidity   -11  -2.5 2.5 
+Rapidity    12  -2.5 2.5 
+ConeFinder  0.4

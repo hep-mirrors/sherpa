@@ -12,6 +12,6 @@ YUKAWA MASSES         = Running     ! Fixed   (polemass) or
 YUKAWA MASSES FACTOR  = 1.          ! Additional prefactor for yukawas
 WIDTH SCHEME          = Complex     ! Fixed or Complex width for internal propagators
                                     ! of unstable particles.
-SCALE SCHEME          = 0           ! 1 = pt^2, 2 = fixed scale, default = s_hat 
+SCALE SCHEME          = 4           ! 1 = pt^2 a la Herwig, 2 = pt2^2, 3 = fixed scale, default = s_hat 
 KFACTOR SCHEME        = 1           ! 1 = as(scale)/as(default)^n_strong-2, default = 1
 SCALE FACTOR          = 1.          ! extra factor on scale

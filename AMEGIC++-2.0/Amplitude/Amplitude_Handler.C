@@ -535,9 +535,8 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
 {  
-  if(rpa.me.Model()!=Model_Type::ADD) return 0;
-  Data_Read dr(rpa.GetPath()+std::string("/")+rpa.me.ModelFile());
-  int maxorder = dr.GetValue<int>("Max_KK-Props");
+  if(rpa.gen.Model()!=Model_Type::ADD) return 0;
+  int maxorder = rpa.gen.ScalarNumber(string("Max_KK-Props"));
 
   int cnt=0;
   Pfunc_List* pl = a->GetPlist();

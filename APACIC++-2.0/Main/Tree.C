@@ -118,9 +118,7 @@ Knot * Tree::NewKnot(Parton * _inpart)
   p_knots->push_back(newk);
   newk->kn_no     = p_knots->size();
   if (_inpart==NULL) {
-    Parton * part = new Parton();
-    newk->part    = part; 
-    newk->part->SetNumber(newk->kn_no);
+    newk->part    = new Parton(newk->kn_no);
   }
   else {
     newk->part    = _inpart;

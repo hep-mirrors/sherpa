@@ -354,21 +354,13 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 }
 
 void CFColor::Output(string & dirname) {
-  // check dir!!!!
-
-  // write out
-  //   "pocess name"
-  // new_process name (ie. number of graphs, contributing helicities, max number of Z-functions)
-
   char name[100];
-  //  sprintf(name,"%s/CFColor.dat",(string("Process/")+dirname).c_str());
   sprintf(name,"%s.col",(string("Process/")+dirname).c_str());
   msg.Tracking()<<" Writing Color Information to : "<<name<<endl;
-  //write out
   IO_Handler ioh;
   ioh.SetFileName(name);
 
-  ioh.Output("",int(rpa.me.Model()));  
+  ioh.Output("",int(rpa.gen.Model()));  
   ioh.Output("",mcount);          // no of ampls
   ioh.Output("",ncount);          // size of colormatrix
 

@@ -32,7 +32,7 @@ namespace APACIC {
   public:
     //! Constructor to initialise the Jet_Finder
     Spacelike_Kinematics(double pt2minFS) {
-      double ycut   = AORGTOOLS::rpa.integ.Ycut();
+      double ycut   = AORGTOOLS::rpa.gen.Ycut();
       jf            = new APHYTOOLS::Jet_Finder(ycut,1);
       kink          = new Timelike_Kinematics(pt2minFS);
     }

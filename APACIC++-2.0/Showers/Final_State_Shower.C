@@ -148,7 +148,8 @@ bool Final_State_Shower::SetAllColours(Knot * mo) {
 
 bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 {
-  msg.Debugging()<<"Test :"<<mo->part->Flav()<<"/"<<mo->part->GetFlow()<<endl;
+  msg.Debugging()<<"Test :"<<mo->part->Flav()<<"/"<<mo->part->GetFlow()<<endl
+		 <<"      "<<mo->part->Number()<<" "<<mo->part->Momentum()<<endl;
   msg.Debugging()<<"      "<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
   if (!mo) {
     msg.Error()<<"ERROR in Final_State_Shower::SetColours()"<<std::endl

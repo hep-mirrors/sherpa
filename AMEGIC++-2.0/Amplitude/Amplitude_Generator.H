@@ -57,64 +57,64 @@ namespace AMEGIC {
 
   typedef  std::vector<Prea_Buffer> Prea_Buffers;
   
-class Amplitude_Generator {
-  static int NMAX;
-  int                      N,nEW,nQCD;
-  APHYTOOLS::Flavour     * fl;
-  int                    * b;
-  Interaction_Model_Base * p_model;
-  Topology               * top;
-  Single_Topology        * single_top;
-  int                      prenum;
-  Pre_Amplitude          * prea;
-  Basic_Sfuncs           * BS;
-  String_Handler         * shand;
+  class Amplitude_Generator {
+    static int NMAX;
+    int                      N,nEW,nQCD;
+    APHYTOOLS::Flavour     * fl;
+    int                    * b;
+    Interaction_Model_Base * p_model;
+    Topology               * top;
+    Single_Topology        * single_top;
+    int                      prenum;
+    Pre_Amplitude          * prea;
+    Basic_Sfuncs           * BS;
+    String_Handler         * shand;
+    
+    
+    
+    Vertex_Table     v_table;
+    //exhibits the points, the topology and the permutation number
+    Pre_Ampl_List    prea_table;
+    //  Counter_List     counter_table;
+    
+    void Set_End(Point*,int* &,int&);
+    void Next_P(Point*,Point* &);
+    void Print_P(Point*);
+    int  Match_Vertex(Single_Vertex*,APHYTOOLS::Flavour*,Complex*);
+    int  Check_End(Point*,APHYTOOLS::Flavour);  
+    void Set_Props(Point*,int,Single_Amplitude* &,int*, int, int);
+    int  Kill_Off(Single_Amplitude* &);
+    int  Single_Compare(Point*,Point*);
+    int  FindQEDOrder(Point*,int&);
+    int  FindQCDOrder(Point*,int&);
+    void KillHigherOrders(Single_Amplitude* &);
+    void Compare(Single_Amplitude* &);
+    void Unite(Point*,Point*);
+
+    void CreateSingleAmplitudes(Single_Amplitude* &);
+    void CheckFor4Vertices(Single_Amplitude* &);
+    int  EvalPointlist(Point*&, Point*&,Point*&,std::vector<Point*>&);
+    int  ShrinkProps(Point*&,Point*&,Point*&,Point*&,std::vector<Point*>&);
+    Point* FindNext(Point*);
+    
+
+    MPI_Point *              s_buffer;
+    Prea_Buffers             r_buffers;
+    int *                    s_counter_buffer;
+    void CollectPreAmplitudes();
+    void DistributePreAmplitudes();
+    void CommitMPITypes() ;
+    void ReplaceVertex(Point *);
   
-
-
-  Vertex_Table     v_table;
-  //exhibits the points, the topology and the permutation number
-  Pre_Ampl_List    prea_table;
-  //  Counter_List     counter_table;
-
-  void Set_End(Point*,int* &,int&);
-  void Next_P(Point*,Point* &);
-  void Print_P(Point*);
-  int  Match_Vertex(Single_Vertex*,APHYTOOLS::Flavour*,Complex*);
-  int  Check_End(Point*,APHYTOOLS::Flavour);  
-  void Set_Props(Point*,int,Single_Amplitude* &,int*, int, int);
-  int  Kill_Off(Single_Amplitude* &);
-  int  Single_Compare(Point*,Point*);
-  int  FindQEDOrder(Point*,int&);
-  int  FindQCDOrder(Point*,int&);
-  void KillHigherOrders(Single_Amplitude* &);
-  void Compare(Single_Amplitude* &);
-  void Unite(Point*,Point*);
-
-  void CreateSingleAmplitudes(Single_Amplitude* &);
-  void CheckFor4Vertices(Single_Amplitude* &);
-  int  EvalPointlist(Point*&, Point*&,Point*&,std::vector<Point*>&);
-  int  ShrinkProps(Point*&,Point*&,Point*&,Point*&,std::vector<Point*>&);
-  Point* FindNext(Point*);
-
-
-  MPI_Point *              s_buffer;
-  Prea_Buffers             r_buffers;
-  int *                    s_counter_buffer;
-  void CollectPreAmplitudes();
-  void DistributePreAmplitudes();
-  void CommitMPITypes() ;
-  void ReplaceVertex(Point *);
-  
-  int Count4G(Point * p);
-  int CountRealAmplitudes(Single_Amplitude* first);
-public:
-  static int * DivideComparisons(int cpu_size, int nampl, int rank);
-  Amplitude_Generator(int,APHYTOOLS::Flavour *,int *,Interaction_Model_Base *,Topology *,
-		      int,int,Basic_Sfuncs *,String_Handler *);
-  ~Amplitude_Generator(); 
-  Single_Amplitude* Matching();
-};
+    int Count4G(Point * p);
+    int CountRealAmplitudes(Single_Amplitude* first);
+  public:
+    static int * DivideComparisons(int cpu_size, int nampl, int rank);
+    Amplitude_Generator(int,APHYTOOLS::Flavour *,int *,Interaction_Model_Base *,Topology *,
+			int,int,Basic_Sfuncs *,String_Handler *);
+    ~Amplitude_Generator(); 
+    Single_Amplitude* Matching();
+  };
 }
 #endif
 

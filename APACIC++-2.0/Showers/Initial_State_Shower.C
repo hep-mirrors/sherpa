@@ -528,7 +528,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   mother->part->SetInfo('I');
   mother->part->SetStatus(1);
   mother->t      = k->t;
-  mother->tout   = rpa.pshower.InitialQ02();
+  mother->tout   = m_t0;
   mother->x      = k->x/k->z;
   mother->stat   = 1;
   mother->E2     = 0.;
@@ -746,7 +746,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   d1->part->SetFlow(1,500);
   d1->part->SetFlow(2,501);
   d1->t       = -scale;
-  d1->tout    = rpa.pshower.InitialQ02();
+  d1->tout    = m_t0;
   d1->x       = x1;
   d1->E2      = sqr(x1*E);
   d1->maxpt2  = scale;
@@ -761,7 +761,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   d2->part->SetFlow(1,502);
   d2->part->SetFlow(2,d1->part->GetFlow(1));
   d2->t       = -scale;
-  d2->tout    = rpa.pshower.InitialQ02();
+  d2->tout    = m_t0;
   d2->x       = x2;
   d2->E2      = sqr(x2*E);
   d2->maxpt2  = scale;

@@ -32,7 +32,7 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
   zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
   zcalc.push_back(new SSSS_Calc(_sgen,_BS));
   
-  if(rpa.me.Model()==AORGTOOLS::Model_Type::ADD){
+  if(rpa.gen.Model()==AORGTOOLS::Model_Type::ADD){
     zcalc.push_back(new FFT_Calc(_sgen,_BS));
     zcalc.push_back(new VVT_Calc(_sgen,_BS));
     zcalc.push_back(new SST_Calc(_sgen,_BS));
@@ -94,14 +94,11 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
   if (p->fl.IsTensor() && p->number>99) p->m = 1;
 
   // "new gauge test" cut all massless propagators
-  if (p->fl.IsVector() && p->number>99  && rpa.me.CutScheme()==1) {
-    if(AMATOOLS::IsZero(p->fl.Mass())){
+  if (p->fl.IsVector() && p->number>99  && rpa.gen.CutScheme()==1) {
+    if(AMATOOLS::IsZero(p->fl.Mass())) {
       p->m=1;
-      }	
-
+    }	
   }
-
-
   MarkCut(p->right,notcut,p->fl.IsFermion());
   MarkCut(p->left,notcut,p->fl.IsFermion());
   MarkCut(p->middle,notcut,p->fl.IsFermion()); 

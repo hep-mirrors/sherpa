@@ -25,6 +25,7 @@ Coulomb::Coulomb(Single_Amplitude* _first_ampl) : first_ampl(_first_ampl)
 
 void Coulomb::Build_Matrix()
 {
+  /*
   icoulomb = 0;
   if (AORGTOOLS::rpa.me.UsingCoulombCorr()) {
     Single_Amplitude* m;
@@ -62,10 +63,12 @@ void Coulomb::Build_Matrix()
       c1++;
     }
   }
+  */
 }
 
 void Coulomb::Calculate(int* b,Vec4D* mom)
 {
+  /*
   Single_Amplitude* m;
   short int i;
   m = first_ampl;
@@ -99,6 +102,7 @@ void Coulomb::Calculate(int* b,Vec4D* mom)
   double arg    = 2./M_PI*atan((abs((betam+delta)*conj(betam+delta))-sqr(beta))/
 			       (2*beta*imag(betam)));
   fcoul         = (*MODEL::aqed)(s)*M_PI/(2.*beta)*(1.-arg);
+  */
 }
 
 

@@ -44,12 +44,11 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
       }
       kkp=i;
       
-      MODEL::ADD add(rpa.GetPath()+std::string("/"),rpa.me.ModelDataFile());
-      ed  = add.ScalarNumber(std::string("ED"));
+      ed  = rpa.gen.ScalarNumber(std::string("ED"));
       std::cout<<"ED "<<ed<<std::endl;
-      r2  = sqr(add.ScalarConstant(std::string("Radius")));
-      double gn  = add.ScalarConstant(std::string("G_Newton"));
-      double m_s = add.ScalarConstant(std::string("M_s"));
+      r2  = sqr(rpa.gen.ScalarConstant(std::string("Radius")));
+      double gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
+      double m_s = rpa.gen.ScalarConstant(std::string("M_s"));
       std::cout.precision(20);
       std::cout<<"r2 "<<r2<<std::endl;       
       double mm=rpa.gen.Ecms();

@@ -29,6 +29,8 @@ Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) :
   for (short int i=0;i<2;i++) {
     if (p_BeamBase[i]->On()) m_mode += i+1;
   }
+  AORGTOOLS::rpa.gen.SetBeam1(p_BeamBase[0]->Flav());
+  AORGTOOLS::rpa.gen.SetBeam2(p_BeamBase[1]->Flav());
 }
 
 Beam_Spectra_Handler::~Beam_Spectra_Handler() { 
