@@ -1,0 +1,93 @@
+#ifndef LHAPDF_Fortran_Interface_H
+#define LHAPDF_Fortran_Interface_H
+
+#include "PDF_Base.H"
+#include "Flavour.H"
+
+namespace PDF {
+  class LHAPDF_Fortran_Interface : public PDF_Base {
+  private:
+    std::string m_path,m_set;
+    int         m_member;
+    bool        m_anti;
+    double      m_f[13];
+  public:
+    LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour,std::string,int,std::string);
+    PDF_Base * GetCopy() {};
+    void   Output();
+
+    void   Calculate(const double, const double);
+    double AlphaSPDF(double);
+    double GetXPDF(const APHYTOOLS::Flavour &);
+
+    double GetXMin()   { return 0.; }
+    double GetXMax()   { return 1.; }
+    double GetQ2Min()  { return 1.; }
+    double GetQ2Max()  { return 1.e12; }
+    APHYTOOLS::Flavour Bunch()                { return m_bunch; }
+    std::vector<APHYTOOLS::Flavour> Partons() { return m_partons; }
+  };
+
+
+  /*!
+    \class LHAPDF_Fortran_Interface
+    \brief An interface to the package of various sets of parton distribution functions organized 
+    according to the Les Houches accord.
+
+    This class provides an interface to a package of various parton distribution functions
+    that are accessible according to the standards put down in the Les Houches accord. The
+    underlying idea of this package is to start with sets of pdfs at some scale and to do
+    a numerical evolution to a grid of scales. It therefore has to initialize every set that
+    is called for the first time which might take some time. Further calls to such a set
+    are not so time-consuming, then the grid is already evolved and stored and has just to be
+    read-in.
+
+    The package is in Fortran and is provided by Walter Giele, and it allows for an analysis of
+    pdf uncertainties according to the ideas of Walter Giele, Stephane A. Keller, David A. Kosower. 
+    For more information on their approach, see
+    <A HREF="http://131.169.91.193/cgi-bin/spiface/find/hep/www?eprint=hepph-0104052">this publication</A>
+    and the <A HREF="http://vircol.fnal.gov/theory.htm">theory section of the LHAPDF manual</A>.
+    The package includes the sets:
+    - <A HREF="http://131.169.91.193/cgi-bin/spiface/find/hep/www?eprint=hepph-0201195">cteq6</A>
+    - <A HREF="http://131.169.91.193/cgi-bin/spiface/find/hep/www?eprint=hepph-0110215">MRST2001</A>
+    - <A HREF="http://131.169.91.193/cgi-bin/spiface/find/hep/www?eprint=hepph-0011002">Alekhin</A>
+    - <A HREF="http://131.169.91.193/cgi-bin/spiface/find/hep/www?eprint=hepph-9912439">Botje</A>
+
+    The Fortran package is also downloadable from <A HREF="http://vircol.fnal.gov/">here</A>.
+
+    It should be stressed here that this interface so far does not make full use of all possibilities
+    in the package. For instance, only one of the numerical evolution codes provided has been implemented
+    so far. 
+  */
+  /*!
+    \var std::string LHAPDF_Fortran_Interface::m_path
+    The path from where the initial pdfs and grids are to be loaded in. This will be handed over to
+    the corresponding Fortran subroutine as a char*.
+  */
+  /*!
+    \var std::string LHAPDF_Fortran_Interface::m_set
+    The name of the set to be used. Available are : cteq6, MRST2001, Alekhin10001, Alekhin1000, 
+    Botje100, Botje1000.
+  */
+  /*!
+    \var int LHAPDF_Fortran_Interface::m_member
+    The subset of the set named above. Usually "1" is the optimized version with the best fit to data.
+  */
+  /*!
+    \var double LHAPDF_Fortran_Interface::m_f[13]
+    The array of the 13 pdfs.
+  */
+  /*!
+    \var double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2)
+    Gives the value of \f$\alpha_s\f$ at a given scale squared that is used internally.
+    This might become important to enforce self-consistency of calculations.
+  */
+  /*!
+    void LHAPDF_Fortran_Interface::Calculate(const double, const double)
+    Calculates the initialized set at a given energy fraction and a scale. Note that within the SHERPA
+    package usually scales are handled as squares of scales, whereas within the LHAPDF package 
+    the scales come without squaring.
+  */
+}
+ 
+#endif
