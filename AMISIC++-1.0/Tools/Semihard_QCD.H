@@ -1,5 +1,9 @@
 #ifndef Semihard_QCD_H
 #define Semihard_QCD_H
+/*!
+  \file Semihard_QCD.H
+  \brief Declares the class Semihard_QCD
+*/
 
 #include "XS_Group.H"
 #include "Channel_Interface.H"
@@ -41,16 +45,6 @@ namespace AMISIC {
     { p_fsrinterface=fsr; }
 
   };// end of class Semihard_QCD
-
-  //////////////////
-  // Doxygen part //
-  //////////////////
-
-  /*!
-    \file Semihard_QCD.H
-    \brief Declares the class Semihard_QCD
-  */
-
   /*!
     \class Semihard_QCD
     \brief Container class for processes used in multiple 

@@ -1,5 +1,10 @@
 #ifndef Amisic_Histogram_H
 #define Amisic_Histogram_H
+/*!
+  \file Amisic_Histogram.H
+  \brief Declares the class Amisic_Histogram
+*/
+
 
 #include "Axis.H"
 
@@ -19,6 +24,13 @@ namespace AMISIC {
     };
     
   };// end of struct hci
+  /*!
+    \struct hci
+    \brief Declares abbreviations for histogram column names.
+
+    This struct is employed to declare abbreviations 
+    for histogram column names.
+  */
 
   template <class ArgumentType>
   class Amisic_Histogram {
@@ -150,20 +162,6 @@ namespace AMISIC {
     void SetFinished(const bool finished);
 
   };// end of class Amisic_Histogram
-
-  template <class ArgumentType> std::ostream &
-  operator<<(std::ostream &str,
-	     const Amisic_Histogram<ArgumentType> &histogram);
-
-  //////////////////
-  // Doxygen part //
-  //////////////////
-
-  /*!
-    \file Amisic_Histogram.H
-    \brief Declares the class Amisic_Histogram
-  */
-
   /*!
     \class Amisic_Histogram
     \brief Simple histogram class
@@ -175,6 +173,10 @@ namespace AMISIC {
     This allows for a determination of the mean, the variance and the 
     standard deviation for each bin.
   */
+
+  template <class ArgumentType> std::ostream &
+  operator<<(std::ostream &str,
+	     const Amisic_Histogram<ArgumentType> &histogram);
 
 }// end of namespace AMISIC
 

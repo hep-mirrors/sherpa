@@ -23,12 +23,12 @@ bool MI_Base::s_cleaned=true;
 MI_Base *MI_Base::s_hard=NULL;
 MI_Base *MI_Base::s_soft=NULL;
 
-MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
+MI_Base::MI_Base(std::string name,TypeID type,unsigned int nparameter,
 		 unsigned int infiles,unsigned int outfiles):
   File_IO_Base(infiles,outfiles),
-  m_name(_m_name),
-  m_type(_m_type),
-  m_nparameter(_m_nparameter),
+  m_name(name),
+  m_type(type),
+  m_nparameter(nparameter),
   m_weighted(false),
   p_blob(NULL),
 #ifdef USING__Sherpa
@@ -36,7 +36,8 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 #endif
   p_xs(NULL)
 {
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
+       nbit!=s_bases.end();++nbit) {
     if (nbit->first==m_name) {
       THROW(fatal_error,"MI_Base already exists!");
     }
@@ -53,10 +54,10 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
   s_bases[m_name]=this;
   switch (m_type) {
   case SoftEvent: 
-    if (m_name!=TypeToString(_m_type)+" None") s_soft=this; 
+    if (m_name!=TypeToString(type)+" None") s_soft=this; 
     break;
   case HardEvent: 
-    if (m_name!=TypeToString(_m_type)+" None") s_hard=this; 
+    if (m_name!=TypeToString(type)+" None") s_hard=this; 
     break;
   default: 
     break;
@@ -65,7 +66,8 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 
 MI_Base::~MI_Base()
 {
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
+       nbit!=s_bases.end();++nbit) {
     if (nbit->first==m_name) {
       s_bases.erase(nbit--);
       break;
@@ -80,7 +82,8 @@ MI_Base::~MI_Base()
 void MI_Base::UpdateAll(const MI_Base *mibase)
 {
   PROFILE_HERE;
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
+       nbit!=s_bases.end();++nbit) {
     nbit->second->Update(mibase);
   }  
 }
@@ -130,7 +133,8 @@ bool MI_Base::DiceProcess()
 void MI_Base::ResetAll()
 {
   PROFILE_HERE;
-  for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();
+       nbit!=s_bases.end();++nbit) {
     nbit->second->Reset();
   }  
 }
@@ -150,7 +154,7 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
 		       <<"   Cannot proceed in filling."<<std::endl;
     return false;
   }
-  bool _m_dicedprocess=m_dicedprocess;
+  bool dicedprocess=m_dicedprocess;
   m_dicedprocess=false;
   if (m_type==HardEvent) blob->SetType(ATOOLS::btp::Hard_Collision);
   else blob->SetType(ATOOLS::btp::Soft_Collision);
@@ -176,9 +180,11 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
   }
-  blob->AddData("MI_Weight",new ATOOLS::Blob_Data<double>((*p_blob)["MI_Weight"]->Get<double>()));
-  blob->AddData("MI_Trials",new ATOOLS::Blob_Data<size_t>((*p_blob)["MI_Trials"]->Get<size_t>()));
-  return _m_dicedprocess;
+  blob->AddData("MI_Weight",new ATOOLS::Blob_Data<double>
+		((*p_blob)["MI_Weight"]->Get<double>()));
+  blob->AddData("MI_Trials",new ATOOLS::Blob_Data<size_t>
+		((*p_blob)["MI_Trials"]->Get<size_t>()));
+  return dicedprocess;
 }
 
 std::string MI_Base::TypeToString(TypeID type)
@@ -217,8 +223,8 @@ void MI_Base::SetStopGeneration(TypeID type,const bool stop)
   }
 }
 
-MI_None::MI_None(TypeID _m_type):
-  MI_Base(TypeToString(_m_type)+" None",_m_type) {}
+MI_None::MI_None(TypeID type):
+  MI_Base(TypeToString(type)+" None",type) {}
 
 MI_None::~MI_None() 
 {

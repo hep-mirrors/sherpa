@@ -1,5 +1,10 @@
 #ifndef Fixed_Variable_Channel_H
 #define Fixed_Variable_Channel_H
+/*!
+  \file Fixed_Variable_Channel.H
+  \brief Declares the class Fixed_Variable_Channel
+*/
+
 
 #include "Variable.H"
 #include "Channel_Interface.H"
@@ -43,16 +48,6 @@ namespace PHASIC {
     inline void SetChID(const std::string chid) { m_chid=chid; }
     
   }; // end of class Fixed_Variable_Channel
-  
-  //////////////////
-  // Doxygen part //
-  //////////////////
-
-  /*!
-    \file Fixed_Variable_Channel.H
-    \brief Declares the class Fixed_Variable_Channel
-  */
-
   /*!
     \class Fixed_Variable_Channel
     \brief Special integration channel

@@ -1,5 +1,9 @@
 #ifndef MI_Base_H
 #define MI_Base_H
+/*!
+  \file MI_Base.H
+  \brief Declares the class MI_Base
+*/
 
 #include "File_IO_Base.H"
 #include "Blob_List.H"
@@ -52,40 +56,97 @@ namespace AMISIC {
   public:
 
     // constructor
-    MI_Base(std::string _m_name,TypeID _m_type,
-	    unsigned int _m_nparameter=0,
+    MI_Base(std::string name,TypeID type,unsigned int nparameter=0,
 	    unsigned int infiles=1,unsigned int outfiles=1);
+    /*!
+      \fn MI_Base(std::string name,TypeID type,unsigned int nparameter=0,
+      unsigned int infiles=1,unsigned int outfiles=1)
+      \brief The standard constructor. Each MI_Base informs the system 
+      about its name, its type, the number of its parameters
+      and the number of input and output files.
+     */
 
     // destructor
     virtual ~MI_Base();
 
     // member functions
     static void  CleanUp();
+    /*!
+      \fn static void  CleanUp()
+      \brief Cleans up all MI_Bases.
+    */
     virtual bool Initialize();
+    /*!
+      \fn virtual bool Initialize()
+      \brief Initializes the MI_Base.
+    */
 
     virtual void Update(const MI_Base *mibase);
+    /*!
+      \fn virtual void Update(const MI_Base *mibase)
+      \brief Updates the MI_Base with information 
+      from another MI_Base.
+     */
     virtual void Reset();
+    /*!
+      \fn virtual void Reset()
+      \brief Resets the MI_Base before event generation.
+    */
 
     virtual bool VetoProcess(ATOOLS::Blob *blob);
+    /*!
+      \fn virtual bool VetoProcess(ATOOLS::Blob *blob)
+      \brief Vetoes a given process according to the 
+      probability density used for event generation.
+    */
     virtual bool DiceProcess();
+    /*!
+      \fn virtual bool DiceProcess()
+      \brief Generates one process according to the 
+      specific probability density.
+    */
 
     bool CreateBlob(ATOOLS::Blob *blob);
+    /*!
+      \fn bool CreateBlob(ATOOLS::Blob *blob)
+      \brief Converts the information from the event 
+      generation step into the Sherpa standard format.
+    */
 
     static bool StopGeneration(TypeID type=Unknown);
+    /*!
+      \fn static bool StopGeneration(TypeID type=Unknown)
+      \brief System flag. Indicates that no further interactions
+      of the given type shall be generated.
+    */
 
     static void UpdateAll(const MI_Base *mibase);
+    /*!
+      \fn static void UpdateAll(const MI_Base *mibase)
+      \brief Updates all active MI_Bases with the information from
+      the given MI_Base.
+    */
     static void ResetAll();  
+    /*!
+      \fn static void ResetAll()
+      \brief Resets all MI_Bases.
+    */
 
     static std::string TypeToString(TypeID type);
     static TypeID StringToType(std::string type);
 
     static void SetStopGeneration(TypeID type=Unknown,const bool stop=false);
+    /*!
+      \fn static void SetStopGeneration(TypeID type=Unknown,
+      const bool stop=false)
+      \brief Setter method to force stopping the event generation.
+    */
 
     // inline functions
-    inline void SetStart(const double _m_start,unsigned int i=0)
-    { if (i<m_nparameter) m_start[i]=_m_start; }
-    inline void SetStop(const double _m_stop,unsigned int i=0)
-    { if (i<m_nparameter) m_stop[i]=_m_stop; }
+    inline void SetStart(const double start,unsigned int i=0)
+    { if (i<m_nparameter) m_start[i]=start; }
+    inline void SetStop(const double stop,unsigned int i=0)
+    { if (i<m_nparameter) m_stop[i]=stop; }
 
     inline double Start(unsigned int i=0) const { return m_start[i]; }
     inline double Stop(unsigned int i=0) const  { return m_stop[i];  }
@@ -98,39 +159,6 @@ namespace AMISIC {
     inline EXTRAXS::XS_Base *XS() const { return p_xs; }
 
   }; // end of class MI_Base
-
-  class MI_None: public MI_Base {
-  protected:
-
-    void Update(const MI_Base *mibase);
-
-  public:
-
-    // constructor
-    MI_None(TypeID _m_type);
-
-    // destructor
-    ~MI_None();
-
-    // member functions
-    bool Initialize();
-    void Reset();
-
-    bool DiceOrderingParameter();
-    bool VetoProcess(ATOOLS::Blob *blob);
-    bool DiceProcess();
-
-  }; // end of class MI_None
-
-  //////////////////
-  // Doxygen part //
-  //////////////////
-
-  /*!
-    \file MI_Base.H
-    \brief Declares the class MI_Base
-  */
-
   /*!
     \class MI_Base
     \brief The base class for all underlying event simulation classes
@@ -142,6 +170,66 @@ namespace AMISIC {
     of the underlying event generation procedure. During the 
     event generation step it handles the filling of underlying event 
     blobs and updates the generator.
+  */
+
+  class MI_None: public MI_Base {
+  protected:
+
+    void Update(const MI_Base *mibase);
+    /*!
+      \fn void Update(const MI_Base *mibase)
+      \brief Dummy method
+    */
+
+  public:
+
+    // constructor
+    MI_None(TypeID type);
+    /*!
+      \fn MI_None(TypeID type)
+      \brief The standard constructor.
+    */
+
+    // destructor
+    ~MI_None();
+
+    // member functions
+    bool Initialize();
+    /*!
+      \fn bool Initialize()
+      \brief Dummy method
+    */
+    void Reset();
+    /*!
+      \fn bool Reset()
+      \brief Dummy method
+    */
+
+    bool DiceOrderingParameter();
+    /*!
+      \fn bool DiceOrderingParameter()
+      \brief Dummy method
+    */
+    bool VetoProcess(ATOOLS::Blob *blob);
+    /*!
+      \fn bool VetoProcess(ATOOLS::Blob *blob)
+      \brief Dummy method
+    */
+    bool DiceProcess();
+    /*!
+      \fn bool DiceProcess()
+      \brief Dummy method
+    */
+
+  }; // end of class MI_None
+  /*!
+    \class MI_None
+    \brief Dummy class to represent the absence of underlying events.
+
+    This class represents the absence of underlying events. 
+    It is employed if either no underlying events are 
+    to be generated at all or if e.g. only hard underlying events 
+    are desired and no soft underlying event model is to be used.
   */
 
 } // end of namespace AMISIC

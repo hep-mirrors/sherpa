@@ -1,5 +1,9 @@
 #ifndef Profile_Function_Base_H
 #define Profile_Function_Base_H
+/*!
+  \file Profile_Function_Base.H
+  \brief Declares the class Profile_Function_Base
+*/
 
 #include "Function_Base.H"
 #include "Message.H"
@@ -18,6 +22,13 @@ namespace AMISIC {
     };
 
   };// end of struct pft
+  /*!
+    \struct pft
+    \brief Declares abbreviations for profile function names.
+
+    This struct is employed to declare abbreviations 
+    for profile function names.
+  */
 
   std::ostream &operator<<(std::ostream &ostr,const pft::code code);
 
@@ -32,11 +43,33 @@ namespace AMISIC {
     
     // constructor
     Differential_Overlap(Profile_Function_Base *const owner);
+    /*!
+      \fn Differential_Overlap(Profile_Function_Base *const owner)
+      \brief The standard constructor.
+    */
     
     // member functions
     double operator()(const double b);
+    /*!
+      \fn double operator()(const double b)
+      \brief Returns \f$\tilde{O}(b)\f$.
+    */
     
   };// end of class Differential_Overlap
+  /*!
+    \class Differential_Overlap
+    \brief Employed to determine the differential overlap between 
+    two colliding hadrons in impact parameter space 
+
+    The class Differential_Overlap is employed to calculate the 
+    differential overlap of two hadron profiles in impact parameter 
+    space, which is given by
+    \f[ 
+    \tilde{O}(b)\,=\;\int{\rm d}^3{\bf x}\,{\rm d} t\,
+    \rho_{1\rm b}\left(x-{\textstyle\frac{1}{2}}\,b,y,z-vt\right)\,
+    \rho_{2\rm b}\left(x+{\textstyle\frac{1}{2}}\,b,y,z+vt\right)\;.
+    \f]    
+  */
 
   class Interaction_Probability: public ATOOLS::Function_Base {
   private:
@@ -47,11 +80,31 @@ namespace AMISIC {
     
     // constructor
     Interaction_Probability(Profile_Function_Base *const owner);
+    /*!
+      \fn Interaction_Probability(Profile_Function_Base *const owner)
+      \brief The standard constructor.
+    */
     
     // member functions
     double operator()(const double b);
+    /*!
+      \fn double operator()(const double b)
+      \brief Returns \f$P_{\rm int}(b)\f$.
+    */
     
   };// end of class Interaction_Probability
+  /*!
+    \class Interaction_Probability
+    \brief Employed to determine interaction probabilities.
+
+    The class Interaction_Probability is employed to determine the 
+    probability for an interaction between two colliding hadrons with
+    the differential overlap \f$\tilde{O}(b)\f$ in impact parameter space, 
+    which according to Poissonian statistics is given by
+    \f[ 
+    P_{\rm int}(b)\,=\;1-\exp\left\{\,-\left<\tilde{n}(b)\right>\,\right\}\;.
+    \f]    
+  */
   
   class Profile_Function_Base {
   protected:
@@ -65,28 +118,61 @@ namespace AMISIC {
     double m_kfactor, m_omean, m_norm;
 
     // constructor
-    Profile_Function_Base(const pft::code code,const double bmin,const double bmax);
+    Profile_Function_Base(const pft::code code,
+			  const double bmin,const double bmax);
 
     template <class Profile_Type>
-    static Profile_Function_Base *CreateProfile(const std::string &type,
-						const std::vector<double> &parameters);
+    static Profile_Function_Base *
+    CreateProfile(const std::string &type,
+		  const std::vector<double> &parameters);
 
   public:
   
     // destructor
     virtual ~Profile_Function_Base();
 
-    static Profile_Function_Base *SelectProfile(const std::string &type,
-						const std::vector<double> &parameters);
+    static Profile_Function_Base *
+    SelectProfile(const std::string &type,
+		  const std::vector<double> &parameters);
+    /*!
+      \fn static Profile_Function_Base *
+      SelectProfile(const std::string &type,
+      const std::vector<double> &parameters)
+      \brief Selects a hadron profile according to the given name 
+      and the number of given parameters.
+    */
 
     // member functions
     virtual double Value(const double b) const = 0;
+    /*!
+      \fn virtual double Value(const double b) const
+      \brief Returns the differential overlap \f$\tilde{O}(b)\f$.
+    */
     virtual double MajorValue(const double b) const = 0;
+    /*!
+      \fn virtual double MajorValue(const double b) const
+      \brief Returns the differential overlap \f$\tilde{O}(b)\f$
+      according to the major.
+    */
 
     virtual double MajorIntegral(const double b) const = 0;
+    /*!
+      \fn virtual double MajorIntegral(const double b) const
+      \brief Returns the integral \f$I(b)\,=\;\int_{b_{min}}^{b}
+      {\rm d}b\,\tilde{O}(b)\f$ according to the major.
+    */
     virtual double InverseMajorIntegral(const double I) const = 0;
+    /*!
+      \fn virtual double InverseMajorIntegral(const double I) const
+      \brief Returns the inverse integral \f$I^{-1}(b)\f$ 
+      according to the major.
+    */
 
     bool CalculateOMean(const double ratio);
+    /*!
+      \fn bool CalculateOMean(const double ratio)
+      \brief Calculates the mean overlap \f$\left<\tilde{O}\right>\f$
+    */
 
     double DiceImpactParameter() const;
 
@@ -102,7 +188,15 @@ namespace AMISIC {
     inline double Norm() const { return m_norm; }
 
     inline double KFactor() const { return m_kfactor; }
+    /*!
+      \fn inline double KFactor() const
+      \brief Returns the k factor \f$k\f$.
+    */
     inline double OMean() const   { return m_omean;   }
+    /*!
+      \fn inline double OMean() const
+      \brief Returns the mean Overlap \f$\left<\tilde{O}\right>\f$.
+    */
 
     inline Differential_Overlap *const Differential() const 
     { return p_overlap; }
@@ -115,16 +209,6 @@ namespace AMISIC {
     { return MajorValue(b); }
 
   };// end of class Profile_Function_Base
-
-  //////////////////
-  // Doxygen part //
-  //////////////////
-
-  /*!
-    \file Profile_Function_Base.H
-    \brief Declares the class Profile_Function_Base
-  */
-
   /*!
     \class Profile_Function_Base
     \brief Employed to simulate hadron profiles in impact parameter space
@@ -148,49 +232,6 @@ namespace AMISIC {
     \quad\quad\quad {\rm where}\quad\quad\quad
     f(b)\,=\;\frac{\tilde{O}(b)}{\left<\tilde{O}\right>}
     \f]
-  */
-
-  /*!
-    \fn bool CalculateOMean (const double ratio)
-    \brief Calculates the mean overlap \f$\left<\tilde{O}\right>\f$
-  */
-
-  /*!
-    \fn inline double Profile_Function_Base::OMean() const
-    \brief Returns the mean Overlap \f$\left<\tilde{O}\right>\f$
-  */
-
-  /*!
-    \fn inline double Profile_Function_Base::operator()(const double b) const
-    \brief Returns the overlap \f$\tilde{O}(b)\f$
-  */
-
-  /*!
-    \class Differential_Overlap
-    \brief Employed to determine the differential overlap between 
-    two colliding hadrons in impact parameter space 
-
-    The class Differential_Overlap is employed to calculate the 
-    differential overlap of two hadron profiles in impact parameter 
-    space, which is given by
-    \f[ 
-    \tilde{O}(b)\,=\;\int{\rm d}^3{\bf x}\,{\rm d} t\,
-    \rho_{1\rm b}\left(x-{\textstyle\frac{1}{2}}\,b,y,z-vt\right)\,
-    \rho_{2\rm b}\left(x+{\textstyle\frac{1}{2}}\,b,y,z+vt\right)\;.
-    \f]    
-  */
-
-  /*!
-    \class Interaction_Probability
-    \brief Employed to determine interaction probabilities.
-
-    The class Interaction_Probability is employed to determine the 
-    probability for an interaction between two colliding hadrons with
-    the differential overlap \f$\tilde{O}(b)\f$ in impact parameter space, 
-    which according to Poissonian statistics is given by
-    \f[ 
-    P_{\rm int}(b)\,=\;1-\exp\left\{\,-\left<\tilde{n}(b)\right>\,\right\}\;.
-    \f]    
   */
 
 }// end of namespace AMISIC

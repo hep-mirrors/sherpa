@@ -7,8 +7,8 @@
 using namespace AMISIC;
 
 Amisic::Amisic():
-  m_hardmodel(Unknown),
-  m_softmodel(Unknown),
+  m_hardmodel("Unknown"),
+  m_softmodel("Unknown"),
   p_hardbase(NULL),
   p_softbase(NULL),
   p_model(NULL),
@@ -19,8 +19,8 @@ Amisic::Amisic():
 Amisic::Amisic(MODEL::Model_Base *const model,
 	       BEAM::Beam_Spectra_Handler *const beam,
 	       PDF::ISR_Handler *const isr):
-  m_hardmodel(Unknown),
-  m_softmodel(Unknown),
+  m_hardmodel("Unknown"),
+  m_softmodel("Unknown"),
   p_hardbase(NULL),
   p_softbase(NULL),
   p_model(model),
@@ -42,16 +42,18 @@ bool Amisic::Initialize()
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   std::vector<std::string> model;
-  if (!reader->VectorFromFile(model,"HARD_MODEL_NAME",ATOOLS::noinputtag,reader->VHorizontal)) {
+  if (!reader->VectorFromFile(model,"HARD_MODEL_NAME",
+			      ATOOLS::noinputtag,reader->VHorizontal)) {
     model.push_back("Simple_Chain");
   }
-  for (size_t i=1;i<model.size();++i) model[0]+=std::string(" ")+model[i];
-  SelectHardModel(StringToModelID(model[0]));
-  if (!reader->VectorFromFile(model,"SOFT_MODEL_NAME",ATOOLS::noinputtag,reader->VHorizontal)) {
+  for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
+  SelectHardModel(model[0]);
+  if (!reader->VectorFromFile(model,"SOFT_MODEL_NAME",
+			      ATOOLS::noinputtag,reader->VHorizontal)) {
     model.push_back("None");
   }
-  for (size_t i=1;i<model.size();++i) model[0]+=std::string(" ")+model[i];
-  SelectSoftModel(StringToModelID(model[0]));
+  for (size_t i=1;i<model.size();++i) model[0]+=" "+model[i];
+  SelectSoftModel(model[0]);
   std::string file;
   if (!reader->ReadFromFile(file,"HARD_MODEL_FILE")) file=InputFile();
   p_hardbase->SetInputPath(InputPath());
@@ -79,11 +81,6 @@ void Amisic::SameSoftProcess(ATOOLS::Blob *blob)
 bool Amisic::VetoHardProcess(ATOOLS::Blob *blob)
 {
   return p_hardbase->VetoProcess(blob);
-}
-
-bool Amisic::VetoSoftProcess(ATOOLS::Blob *blob)
-{
-  return p_softbase->VetoProcess(blob);
 }
 
 bool Amisic::GenerateHardProcess(ATOOLS::Blob *blob)
@@ -156,14 +153,6 @@ bool Amisic::GenerateEvent(ATOOLS::Blob_List *blobs)
   return true;
 }
 
-void Amisic::SameHardEvent(ATOOLS::Blob_List *blobs)
-{
-}
-
-void Amisic::SameSoftEvent(ATOOLS::Blob_List *blobs)
-{
-}
-
 void Amisic::Reset()
 {
   MI_Base::ResetAll();
@@ -174,29 +163,21 @@ void Amisic::CleanUp()
   MI_Base::CleanUp();
 }
 
-bool Amisic::SelectHardModel(ModelID _m_hardmodel)
+bool Amisic::SelectHardModel(const std::string &hardmodel)
 { 
-  m_hardmodel=_m_hardmodel; 
+  m_hardmodel=hardmodel; 
   if (p_hardbase!=NULL) delete p_hardbase;
-  switch (m_hardmodel) {
-  case SimpleChain:
-    msg_Tracking()<<"Amisic::SelectHardModel("<<_m_hardmodel<<"): "
-			  <<"Initialize simple hard underlying event model."<<std::endl;
+  msg_Tracking()<<"Amisic::SelectHardModel("<<hardmodel<<"): ";
+  if (m_hardmodel=="Simple_Chain") {
+    msg_Tracking()<<"Initialize simple hard underlying event model."
+		  <<std::endl;
     if (m_external) p_hardbase = new Simple_Chain(p_model,p_beam,p_isr);
     else p_hardbase = new Simple_Chain();
-    break;
-  case None:
-    msg_Tracking()<<"Amisic::SelectHardModel("<<_m_hardmodel<<"): "
-			  <<"Initialize no hard underlying event handler."<<std::endl;
+  }
+  else {
+    msg_Tracking()<<"Initialize no hard underlying event handler."<<std::endl;
     p_hardbase = new MI_None(MI_Base::HardEvent);
-    break;
-  default:
-    ATOOLS::msg.Error()<<"Amisic::SelectHardModel("<<m_hardmodel<<"): "
-		       <<"Model type inconsistent!"<<std::endl
-		       <<"   Initialize no hard underlying event handler."<<std::endl;
-    m_hardmodel=None;
-    p_hardbase = new MI_None(MI_Base::HardEvent);
-    break;
+    m_hardmodel="None";
   }
   p_hardbase->SetInputPath(InputPath());
   p_hardbase->SetOutputPath(OutputPath());
@@ -204,54 +185,24 @@ bool Amisic::SelectHardModel(ModelID _m_hardmodel)
   return true;
 }
 
-bool Amisic::SelectSoftModel(ModelID _m_softmodel)
+bool Amisic::SelectSoftModel(const std::string &softmodel)
 { 
-  m_softmodel=_m_softmodel; 
+  m_softmodel=softmodel; 
   if (p_softbase!=NULL) delete p_softbase;
-  switch (m_softmodel) {
-  case SimpleString:
-    msg_Tracking()<<"Amisic::SelectSoftModel("<<_m_softmodel<<"): "
-			  <<"Initialize simple soft underlying event model."<<std::endl;
+  msg_Tracking()<<"Amisic::SelectSoftModel("<<softmodel<<"): ";
+  if (m_softmodel=="Simple_String") {
+    msg_Tracking()<<"Initialize simple soft underlying event model."
+		  <<std::endl;
     if (m_external) p_softbase = new Simple_String();
     else p_softbase = new Simple_String();
-    break;
-  case None:
-    msg_Tracking()<<"Amisic::SelectSoftModel("<<_m_softmodel<<"): "
-			  <<"Initialize no soft underlying event handler."<<std::endl;
+  }
+  else {
+    msg_Tracking()<<"Initialize no soft underlying event handler."<<std::endl;
     p_softbase = new MI_None(MI_Base::SoftEvent);
-    break;
-  default:
-    ATOOLS::msg.Error()<<"Amisic::SelectSoftModel("<<m_softmodel<<"): "
-		       <<"Model type inconsistent!"<<std::endl
-		       <<"   Initialize no soft underlying event handler."<<std::endl;
-    m_softmodel=None;
-    p_softbase = new MI_None(MI_Base::SoftEvent);
-    break;
+    m_softmodel="None";
   }
   p_softbase->SetInputPath(InputPath());
   p_softbase->SetOutputPath(OutputPath());
   p_softbase->SetInputFile(InputFile());
   return true;
-}
-
-Amisic::ModelID Amisic::StringToModelID(std::string model) 
-{
-  if (model=="Simple_Chain") return SimpleChain;
-  if (model=="Simple_String") return SimpleString;
-  if (model=="None")         return None;
-  ATOOLS::msg.Error()<<"Amisic::StringToModelID("<<model<<"): "
-		     <<"Model type unknown!"<<std::endl
-		     <<"   Returning 'Unknown'."<<std::endl;
-  return Unknown;
-}
-
-std::string Amisic::ModelIDToString(ModelID model) 
-{
-  switch (model) {
-  case SimpleChain : return std::string("Simple_Chain");
-  case SimpleString: return std::string("Simple_String");
-  case None        : return std::string("None");
-  case Unknown     : return std::string("Unknown");
-  }
-  return std::string("Unknown");
 }

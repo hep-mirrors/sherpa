@@ -1,27 +1,32 @@
 #ifndef Amisic_H
 #define Amisic_H
+/*!
+  \file Amisic.H
+  \brief Declares the class Amisic
+*/
 
 #include "MI_Base.H"
 #include "Model_Base.H"
 #include "XS_Base.H"
 
 namespace AMISIC {
+  /*!
+    \namespace AMISIC
+    \brief Houses all classes dedicated to the generation of 
+    the underlying event.
+    
+    AMISIC++ is an accronym for <em>A</em> <em>M</em>ultiple 
+    <em>I</em>nteraction <em>S</em>imulation <em>I</em>n
+    <em>C++</em>. Accordingly the AMISIC namespace houses all 
+    classes which are concerned with the generation of underlying 
+    events.
+  */
   
   class Amisic: public ATOOLS::File_IO_Base {
-  public:
-
-    enum ModelID { None         =  0,
-		   // hard models
-                   SimpleChain  = 11,
-		   // soft models 
-                   SimpleString = 21,
-		   // unknown tag
-		   Unknown      = 99 };
-
   private:
     
-    ModelID m_hardmodel, m_softmodel;
-    MI_Base *p_hardbase, *p_softbase;
+    std::string  m_hardmodel, m_softmodel;
+    MI_Base     *p_hardbase, *p_softbase;
 
     MODEL::Model_Base          *p_model;
     BEAM::Beam_Spectra_Handler *p_beam;
@@ -33,42 +38,110 @@ namespace AMISIC {
 
     // constructors
     Amisic();
+    /*!
+      \fn Amisic()
+      \brief The default constructor. 
+    */
     Amisic(MODEL::Model_Base *const model,
 	   BEAM::Beam_Spectra_Handler *const beam,
 	   PDF::ISR_Handler *const isr);
+    /*!
+      \fn Amisic(MODEL::Model_Base *const model,
+      BEAM::Beam_Spectra_Handler *const beam,
+      PDF::ISR_Handler *const isr)
+      \brief The standard constructor.
+      Creates the underlying event handler employing 
+      external ISR, beam spectra and model handlers.
+    */
 
     // destructor
     ~Amisic();
 
     // member functions
     bool Initialize();
+    /*!
+      \fn bool Initialize()
+      \brief Initializes the underlying event handling.
+    */
     void Reset();
+    /*!
+      \fn void Reset()
+      \brief Resets the underlying event handler.
+      This method is to be called before any event to be generated.
+    */
     void CleanUp();
+    /*!
+      \fn void CleanUp()
+      \brief Cleans the underlying event handler.
+      This method is to be called after any event generated.
+    */
 
     bool GenerateHardProcess(ATOOLS::Blob *blob);
+    /*!
+      \fn bool GenerateHardProcess(ATOOLS::Blob *blob)
+      \brief Generates one hard interaction, which is part of
+      the hard underlying event.
+    */
     bool GenerateHardEvent(ATOOLS::Blob_List *blobs);
+    /*!
+      \fn bool GenerateHardEvent(ATOOLS::Blob_List *blobs)
+      \brief Generates a multitude of hard interactions
+      which taken together form the hard underlying event.
+    */
     void SameHardProcess(ATOOLS::Blob *blob);
-    void SameHardEvent(ATOOLS::Blob_List *blobs);
+    /*!
+      \fn void SameHardProcess(ATOOLS::Blob *blob)
+      \brief Returns last hard intreraction.
+    */
     
     bool GenerateSoftProcess(ATOOLS::Blob *blob);
+    /*!
+      \fn bool GenerateSoftProcess(ATOOLS::Blob *blob)
+      \brief Generates one soft interaction, which is part of
+      the soft underlying event.
+    */
     bool GenerateSoftEvent(ATOOLS::Blob_List *blobs);
+    /*!
+      \fn bool GenerateSoftEvent(ATOOLS::Blob_List *blobs)
+      \brief Generates a multitude of soft interactions
+      which taken together form the soft underlying event.
+    */
     void SameSoftProcess(ATOOLS::Blob *blob);
-    void SameSoftEvent(ATOOLS::Blob_List *blobs);
+    /*!
+      \fn void SameSoftProcess(ATOOLS::Blob *blob)
+      \brief Returns last soft intreraction.
+    */
     
     bool VetoHardProcess(ATOOLS::Blob *blob);
-    bool VetoSoftProcess(ATOOLS::Blob *blob);
+    /*!
+      \fn bool VetoHardProcess(ATOOLS::Blob *blob)
+      \brief Vetoes the hard interaction according to the 
+      probability density employed in the hard underlying event model.
+    */
 
     bool GenerateEvent(ATOOLS::Blob_List *blobs);
+    /*!
+      \fn bool GenerateEvent(ATOOLS::Blob_List *blobs)
+      \brief Generates one underlying event, using the active
+      hard and soft underlying event models.
+    */
 
-    bool SelectHardModel(ModelID _m_hardmodel);
-    bool SelectSoftModel(ModelID _m_softmodel);
-
-    static ModelID StringToModelID(std::string model);
-    static std::string ModelIDToString(ModelID model);
+    bool SelectHardModel(const std::string &hardmodel);
+    /*!
+      \fn bool SelectHardModel(const std::string &hardmodel)
+      \brief Selects the hard underlying event model 
+      according to the given tag.
+    */
+    bool SelectSoftModel(const std::string &softmodel);
+    /*!
+      \fn bool SelectSoftModel(const std::string &softmodel)
+      \brief Selects the soft underlying event model
+      according to the given tag.
+    */
 
     // inline functions
-    inline ModelID HardModel() const { return m_hardmodel; }
-    inline ModelID SoftModel() const { return m_softmodel; }
+    inline const std::string &HardModel() const { return m_hardmodel; }
+    inline const std::string &SoftModel() const { return m_softmodel; }
 
     inline MI_Base *const HardBase() const { return p_hardbase; }
     inline MI_Base *const SoftBase() const { return p_softbase; }
@@ -84,16 +157,6 @@ namespace AMISIC {
     inline EXTRAXS::XS_Base *const SoftXS() { return p_softbase->XS(); }
 
   }; // end of class Amisic
-
-  //////////////////
-  // Doxygen part //
-  //////////////////
-
-  /*!
-    \file Amisic.H
-    \brief Declares the class Amisic
-  */
-
   /*!
     \class Amisic
     \brief The overall steering of the AMISIC package

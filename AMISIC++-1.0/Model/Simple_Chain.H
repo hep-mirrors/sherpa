@@ -1,5 +1,9 @@
 #ifndef Simple_Chain_H
 #define Simple_Chain_H
+/*!
+  \file Simple_Chain.H
+  \brief Declares the class Simple_Chain
+*/
 
 #include "MI_Base.H"
 #include "Grid_Creator.H"
@@ -80,28 +84,84 @@ namespace AMISIC {
     bool CreateGrid();
     bool InitializeProcessList();
     void CalculateSigmaND();
+    /*!
+      \fn void CalculateSigmaND()
+      \brief Calculates the non-diffractive inelastic cross section
+      according to the model by G. A. Schuler and T. Sjostrand 
+      (see Phys. Rev. D <b>49</b> (1994) 2257).
+    */
     bool CalculateTotal();
+    /*!
+      \fn bool CalculateTotal()
+      \brief Determines the total inelastic cross section 
+      according to the parton model from the initialized histograms.
+    */
     bool SetUpInterface();
+    /*!
+      \fn bool SetUpInterface()
+      \brief Sets up the phasespace integrators for event generation.
+    */
 
     bool CheckConsistency(EXTRAXS::XS_Group *const group,
 			  Grid_Function_Type *const grid,
 			  const double min,const double max,
 			  const double integral);
+    /*!
+      \fn bool CheckConsistency(EXTRAXS::XS_Group *const group,
+      Grid_Function_Type *const grid,const double min,const double max,
+      const double integral)
+      \brief Checks for the given process group whether the 
+      grid integral and the standard phasespace integral coincide.
+    */
 
     void SetISRRange();
+    /*!
+      \fn void SetISRRange()
+      \brief Sets the isr range for event generation, which is
+      \f$4p_\perp^2\,\le\,\hat{s}\,\le\,4E_{1, max}E_{2, max}f$,
+      \f$\log(p_\perp/E_{2, max})\,\le\,y\,\le\,\log(E_{1, max}/p_\perp)f$
+    */
     void ResetISRRange();
+    /*!
+      \fn void ResetISRRange()
+      \brief Resets the ISR range to the ISR handler default.
+    */
 
     bool FillBlob(ATOOLS::Blob *blob);
+    /*!
+      \fn bool FillBlob(ATOOLS::Blob *blob)
+      \brief Employs the selected process to determine the kinematics
+      of the interaction. The outgoing transverse momentum is kept fixed. 
+      It is diced in advance by DiceOrderingParameter.      
+    */
 
     void PrepareTerminate();
+    /*!
+      \fn void PrepareTerminate()
+      \brief Stores grid calculations in case of program abort.
+    */
 
   public:
 
     // constructor
     Simple_Chain();
+    /*!
+      \fn Simple_Chain()
+      \brief The default constructor.
+      Creates an ISR handler, a beam spectra handler
+      and a model handler to be used within Simple_Chain.
+    */
     Simple_Chain(MODEL::Model_Base *_p_model,
 		 BEAM::Beam_Spectra_Handler *_p_beam,
 		 PDF::ISR_Handler *_p_isr);
+    /*!
+      \fn Simple_Chain(MODEL::Model_Base *_p_model,
+      BEAM::Beam_Spectra_Handler *_p_beam,
+      PDF::ISR_Handler *_p_isr)
+      \brief The standard constructor.
+      Initializes Simple_Chain with external ISR, beam and 
+      model handlers.
+    */
 
     // destructor
     ~Simple_Chain();
@@ -112,10 +172,32 @@ namespace AMISIC {
     void Reset();
 
     bool DiceEnhanceFactor();
+    /*!
+      \fn bool DiceEnhanceFactor()
+      \brief Generates an enhance factor according to the 
+      hadron profile in impact parameter space. Employs
+      Profile_Function_Base.
+    */
     bool DiceOrderingParameter();
+    /*!
+      \fn bool DiceOrderingParameter()
+      \brief Determines the maximum outgoing transverse momentum 
+      of the next hard interaction.
+    */
 
     bool VetoProcess(ATOOLS::Blob *blob);
+    /*!
+      \fn bool VetoProcess(ATOOLS::Blob *blob)
+      \brief Vetoes the given hard process according to 
+      \f$p(p_\perp)\,\propto\;
+      {\rm d}\sigma\,/\,{\rm d}p_\perp\f$.
+     */
     bool DiceProcess();
+    /*!
+      \fn bool DiceProcess()
+      \brief Selects a process type for the interaction according to 
+      the differential probabilities. Sets and resets the ISR ranges.
+    */
 
     // inline functions
     inline double Norm() { return m_norm; }
@@ -130,16 +212,6 @@ namespace AMISIC {
     { m_environmentfile=environmentfile; }
 
   }; // end of class Simple_Chain
-
-  //////////////////
-  // Doxygen part //
-  //////////////////
-
-  /*!
-    \file Simple_Chain.H
-    \brief Declares the class Simple_Chain
-  */
-  
   /*!
     \class Simple_Chain
     \brief Simulates multiple interactions according to the model
