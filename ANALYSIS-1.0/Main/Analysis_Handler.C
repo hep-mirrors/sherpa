@@ -114,10 +114,8 @@ bool Analysis_Handler::ReadIn()
   reader.SetMatrixType(reader.MTransposed);
   reader.SetInputPath(InputPath());
   reader.SetInputFile(InputFile());
-  reader.AddComment("!");
-  reader.AddComment("%");
+  reader.AddComment("#");
   reader.AddComment("//");
-  reader.AddIgnore("+");
   reader.SetFileBegin("BEGIN_ANALYSIS");
   reader.SetFileEnd("END_ANALYSIS");
   for (size_t i=0;i<s_maxanalyses;++i) {
