@@ -9,6 +9,12 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+if MODEL_INCLUDE
+MODELFLAGS    =
+else
+MODELFLAGS    = -DUSING__ATOOLS_only
+endif
+
 lib_LTLIBRARIES       =	libToolsMath.la
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
@@ -45,5 +51,5 @@ noinst_HEADERS        =	\
 			Data_To_Function.C \
 			Histogram.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ATOOLSFLAGS)
+AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)

@@ -33,6 +33,29 @@ AC_ARG_ENABLE(root,
     esac
   fi ],[ root=false ])
 AM_CONDITIONAL(ROOT_SUPPORT, test $root = true)
+AC_ARG_ENABLE(modelinclude,
+[  --disable-modelinclude  Disable CVS Synchronization ],
+[ modelinclude=true
+  MODELDIR="../MODEL-1.0"
+  if test -d $MODELDIR ; then
+    echo "checking for MODEL package... yes"
+    case "${enableval}" in
+      no) echo "disable MODEL include anyway... yes";
+          modelinclude=false ;;
+    esac
+  else
+    echo "checking for MODEL package... no"
+    modelinclude=false
+  fi ],
+[ MODELDIR="../MODEL-1.0"
+  if test ! -d $MODELDIR ; then
+    echo "configure: warning: $MODELDIR is not a valid path."
+    modelinclude=false
+  else 
+    echo "checking for MODEL package... yes"
+    modelinclude=true 
+  fi ])
+AM_CONDITIONAL(MODEL_INCLUDE, test "$modelinclude" = "true" )
 
 dnl Checks for programs.
 AC_PROG_INSTALL
