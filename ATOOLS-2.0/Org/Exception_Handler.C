@@ -7,6 +7,7 @@
 using namespace ATOOLS;
 
 bool Exception_Handler::s_active=true;
+bool Exception_Handler::s_prepared=false;
 
 unsigned int Exception_Handler::s_exitcode=0;
 Exception *Exception_Handler::s_exception=0;
@@ -69,6 +70,7 @@ void Exception_Handler::Terminate()
     return;
   }
   PrepareTerminate();
+  s_prepared=true;
   if (!s_active) abort();
   SetExitCode();
   Exit(s_exitcode);
@@ -115,6 +117,7 @@ void Exception_Handler::SignalHandler(int signal)
       kill(getpid(),9);
     }
   case SIGABRT:
+    if (!s_active && s_prepared) abort();
   case SIGTERM:
   case SIGXCPU:
     msg.Error()<<om::reset<<"   Cannot continue."<<om::reset<<std::endl;
