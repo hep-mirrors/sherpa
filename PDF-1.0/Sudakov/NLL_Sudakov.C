@@ -204,7 +204,16 @@ NLL_Sudakov::~NLL_Sudakov()
   if (p_jetrate) delete p_jetrate;
 }
 
-
+NLL_Sudakov_Base &  NLL_Sudakov::NLL_Sudakov::Delta(const ATOOLS::Flavour & fl) {
+  //    return *(m_sud_map[fl]);
+  Sudakov_Map::const_iterator sit=m_sud_map.find(fl);
+  if (sit!=m_sud_map.end()) {
+    return *(sit->second);
+  }
+  ATOOLS::msg.Out()<<"ERROR in  NLL_Sudakov::Delta : "<<std::endl
+		   <<"   Did not find sudakov form factor for "<<fl<<", return default."<<std::endl;
+  return *(m_sud_map[ATOOLS::Flavour(ATOOLS::kf::none)]);
+}
 
 
 void NLL_Sudakov::CheckSudakovs(int jetmode)
