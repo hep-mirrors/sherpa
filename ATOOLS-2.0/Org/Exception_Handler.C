@@ -1,8 +1,13 @@
 #include "Exception.H"
 
 #include "Run_Parameter.H"
+#include "Scaling.H"
 #include <sys/types.h>
 #include <unistd.h>
+#include <execinfo.h>
+#include <dlfcn.h>
+
+#define MAX_BACKTRACE_DEPTH 128
 
 using namespace ATOOLS;
 
@@ -58,13 +63,17 @@ void Exception_Handler::PrepareTerminate()
 void Exception_Handler::Exit(int exitcode)
 {
   msg.Error()<<om::bold<<"Exception_Handler::Exit: "<<om::reset<<om::blue
-	     <<"exiting sherpa with code "<<om::reset<<om::bold<<"("<<om::red<<exitcode
+	     <<"Exiting Sherpa with code "<<om::reset<<om::bold<<"("<<om::red<<exitcode
 	     <<om::reset<<om::bold<<")"<<om::reset<<std::endl;
+  msg.LogFile()<<"Exception_Handler::Exit: Exiting Sherpa with code ("
+	       <<exitcode<<")"<<std::endl;
   exit(exitcode);
 }
 
 void Exception_Handler::Terminate() 
 {
+  GenerateStackTrace(msg.LogFile(),true,"! ");
+  GenerateStackTrace(msg.Error());
   if (!ApproveTerminate()) {
     s_exception=NULL;
     return;
@@ -113,6 +122,13 @@ void Exception_Handler::SignalHandler(int signal)
   switch (signal) {
   case SIGSEGV:
     ++s_nsegv;
+    if (!rpa.gen.BatchMode()) {
+      msg.Error()<<"   Do you want to debug the program (y/n)? "<<om::reset;
+      std::cin>>input;
+      if (input=="y" || input=="Y") {
+	system((std::string("gdb Sherpa ")+ATOOLS::ToString(getpid())).c_str());
+      }
+    }
     if (s_nsegv>3) {
       msg.Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
       kill(getpid(),9);
@@ -127,8 +143,17 @@ void Exception_Handler::SignalHandler(int signal)
     break;
   case SIGINT:
     if (!rpa.gen.BatchMode()) {
-      msg.Error()<<"   Do you want to stop the program (y/n)? "<<om::reset;
+      msg.Error()<<"   Do you want to stop the program (y/n/s/d)? "<<om::reset;
       std::cin>>input;
+    }
+    if (input=="d" || input=="D") {
+      system((std::string("gdb Sherpa ")+ATOOLS::ToString(getpid())).c_str());
+    }
+    else if (input=="s" || input=="S") {
+      GenerateStackTrace(std::cout,false);
+      std::cout<<" Hit <return> to continue. ";      
+      std::cin.get();
+      std::cin.get();
     }
     if (input!="y" && input!="Y") return;
     s_exitcode=1;
@@ -154,3 +179,29 @@ void Exception_Handler::SignalHandler(int signal)
   }
 }
 
+void Exception_Handler::GenerateStackTrace(std::ostream &ostr,const bool endline,
+					   const std::string &comment)
+{
+  ostr<<comment<<om::bold<<"Exception_Handler::GenerateStackTrace(..): "
+      <<om::reset<<om::blue<<"Generating stack trace "<<om::reset
+      <<"(adapted from ROOT version 3.10) "<<om::bold<<"{"<<om::reset<<std::endl;
+  // adapted from root version 3.10 TUnixSystem.cxx
+  void *trace[MAX_BACKTRACE_DEPTH];
+  int depth=backtrace(trace,MAX_BACKTRACE_DEPTH);
+  for (int n=0; n<depth;++n) {
+    unsigned long addr=(unsigned long)trace[n];
+    Dl_info info;
+    if (dladdr(trace[n],&info) && info.dli_fname && info.dli_fname[0]) {
+      unsigned long symaddr=(unsigned long)info.dli_saddr;
+      const char *symname=info.dli_sname;
+      if (!info.dli_sname || !info.dli_sname[0]) symname="<unknown>";
+      ostr<<comment<<"   0x"<<std::hex<<symaddr<<std::dec<<" in "
+	  <<symname<<" from "<<info.dli_fname<<std::endl;
+    } 
+    else {
+      ostr<<comment<<"   "<<addr<<" in <unknown function>"<<std::endl;
+    }
+  }
+  ostr<<comment<<om::bold<<"}"<<om::reset;
+  if (endline) ostr<<std::endl;
+}

@@ -22,6 +22,7 @@ Run_Parameter::Run_Parameter()
 #ifndef USING__ATOOLS_only
   gen.p_model     = NULL;
 #endif
+  gen.m_ndicedevents = 0;
 } 
 
 void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])

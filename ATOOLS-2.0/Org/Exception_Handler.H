@@ -48,6 +48,10 @@ namespace ATOOLS {
     static void RemoveTesterObject(Tester_Object *const object);
     static void RemoveTerminatorObject(Terminator_Object *const object);
     
+    static void GenerateStackTrace(std::ostream &ostr,
+				   const bool endline=true,
+				   const std::string &comment="");
+
     // inline functions
     static void AddTesterFunction(bool (*testerfunction)(void)); 
     static void AddTerminatorFunction(void (*terminatorfunction)(void));      

@@ -32,7 +32,7 @@ namespace ATOOLS {
     class Gen {  // general parameters
       int                 m_output, m_analysis, m_cutscheme;
       //std::string         m_runtime;
-      long int            m_nevents;
+      long int            m_nevents, m_ndicedevents;
       long int            m_seed;
       double              m_ecms, m_ycut, m_delta_r;
       double              m_accu;
@@ -48,6 +48,7 @@ namespace ATOOLS {
       std::string m_username;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
+      inline long   NumberOfDicedEvents()                 { return m_ndicedevents; }
       inline long   RandomSeed()                          { return m_seed;    }
       inline int    Analysis()                            { return m_analysis; }
       inline int    CutScheme()                           { return m_cutscheme; }
@@ -69,6 +70,7 @@ namespace ATOOLS {
       inline MyTiming &Timer()                            { return m_timer;     }
       inline bool   BatchMode()                           { return m_batchmode; }
       bool CheckTime(const double limit=0.);
+      inline void   SetNumberOfDicedEvents(const long diced) { m_ndicedevents=diced; }
       inline const std::string &UserName() { return m_username; }
 #ifndef USING__ATOOLS_only
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
