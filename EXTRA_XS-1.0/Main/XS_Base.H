@@ -12,8 +12,6 @@ namespace EXTRAXS {
   class XS_Base: public PHASIC::Integrable_Base {
   protected:
 
-    PHASIC::Regulator_Base *p_regulator;
-
     int **p_colours;
 
     double m_s, m_t, m_u;
