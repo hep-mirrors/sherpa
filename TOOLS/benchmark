@@ -80,7 +80,7 @@ for I in $* ; do
   elif [ "$DDIR" = "TRUE" ]; then DDIR="" && DIR=$I
   elif [ "$DFILE" = "TRUE" ]; then DFILE="" && FILE=$I
   elif [ "$DLOGFILE" = "TRUE" ]; then DLOGFILE="" && LOGFILE=$I
-  elif [ "$DMAILADRESS" = "TRUE" ]; then DMAILADRESS="" && MAILADDRESS=$I
+  elif [ "$DMAILADDRESS" = "TRUE" ]; then DMAILADDRESS="" && MAILADDRESS=$I
   else echo "benchmark: error: unrecognized option '$I'. try '-h'" && \
     exit 1 
   fi
