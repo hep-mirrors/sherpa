@@ -104,7 +104,7 @@ Leg Combine_Table::CombinedLeg(Leg * legs, int i, int j)
   else      icharge = a->fl.IntCharge() + b->fl.IntCharge();
 
   if (icharge!=mo->fl.IntCharge()) {
-    std::cout<<" changing "<<mo->fl<<" to "<<Flavour(mo->fl).Bar()<<", "<<std::endl;
+    //    std::cout<<" changing "<<mo->fl<<" to "<<Flavour(mo->fl).Bar()<<", "<<std::endl;
     mo.SetAnti(-1);
   }    
   
@@ -380,14 +380,11 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
 
 Combine_Table::~Combine_Table()
 {
-  //  std::cout<<this;
-  msg.Tracking()<<" removing momenta"<<std::endl;
   delete [] moms;
  
   for (int k=0;k<nampl;++k) 
     delete [] legs[k];
   delete [] legs;
-  msg.Tracking()<<" done "<<std::endl;
 }
 
 std::ostream& SHERPA::operator<< (std::ostream& s ,Combine_Table * ct) {
