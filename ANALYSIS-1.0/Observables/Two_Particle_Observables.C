@@ -136,12 +136,12 @@ void Two_Particle_Angles::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double 
   ((TH2D*)(*MYROOT::myroot)[m_flav1.Name()+std::string("_")+m_flav2.Name()+
 			    std::string("_Angles")])->Fill(mom1.Theta(),mom2.Theta(),weight);
 } 
-#endif
 
 Primitive_Observable_Base * Two_Particle_Angles::Copy() const 
 {
   return new Two_Particle_Angles(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
 }
+#endif
 
 Two_Particle_Eta::Two_Particle_Eta(const Flavour & _flav1,const Flavour & _flav2,
 				 int _type,double _xmin,double _xmax,int _nbins,

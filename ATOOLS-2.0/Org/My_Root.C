@@ -1,5 +1,7 @@
 #ifdef ROOT_SUPPORT
+
 #include "My_Root.H"
+#include <sys/stat.h>
 
 using namespace MYROOT;
 
@@ -31,6 +33,8 @@ My_Root::My_Root(const int argc,char **const argv):
   char **argvf = new char*[1];
   p_root = new TApplication("MyRoot",&argcf,argvf);
   if ((OutputPath()+OutputFile())!="") {
+    if (OutputPath()[OutputPath().length()-1]!='/') SetOutputPath(OutputPath()+std::string("/"));
+    mkdir(OutputPath().c_str(),448);
     if (!system((std::string("test -f ")+OutputPath()+OutputFile()).c_str())) {
       system((std::string("rm -f ")+OutputPath()+OutputFile()).c_str());
     }
