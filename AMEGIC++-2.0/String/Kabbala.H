@@ -150,20 +150,20 @@ namespace AMEGIC {
     return i2*k1;
   }
 
-  /*
-    inline Kabbala operator* (const double d1, const Kabbala& k2) 
-    {
+  
+  inline Kabbala operator* (const double d1, const Kabbala& k2) 
+  {
     Kabbala k(k2); 
     k *= d1;
     return k;
-    }
-
-    inline Kabbala operator* (const Kabbala& k1,const double d2) 
-    {
+  }
+  
+  inline Kabbala operator* (const Kabbala& k1,const double d2) 
+  {
     return d2*k1;
-    }
-  */
-
+  }
+  
+  
   inline Kabbala operator/ (const Kabbala& k1, const Kabbala& k2) 
   {
     Kabbala k(k1);
