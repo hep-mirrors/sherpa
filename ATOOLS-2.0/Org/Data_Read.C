@@ -216,9 +216,9 @@ template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string n
   if (cit==parameters.end()) return  NotDefined<Model_Type::code>();
 
   std::string value = parameters[name];
-  if (value==std::string("pure QCD")) return Model_Type::pure_QCD;
+  if (value==std::string("pure_QCD")) return Model_Type::pure_QCD;
   if (value==std::string("QCD"))      return Model_Type::QCD;
-  if (value==std::string("EW"))       return Model_Type::EW;
+  if (value==std::string("pure_EW"))  return Model_Type::pure_EW;
   if (value==std::string("SM"))       return Model_Type::SM;
   if (value==std::string("MSSM"))     return Model_Type::MSSM;
   if (value==std::string("THDM"))     return Model_Type::THDM;

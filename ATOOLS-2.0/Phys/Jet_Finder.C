@@ -58,6 +58,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   AORGTOOLS::msg.Debugging()<<"Initialize the Jet_Finder : "<<std::endl
 			    <<"   Jetalg = "<<m_jet_alg<<", type = "<<m_type
 			    <<", ycut = "<<m_ycut<<std::endl;
+  rpa.gen.SetYcut(_ycut);
 
   m_name    = std::string("Jetfinder");
 
@@ -191,9 +192,10 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) : 
   p_value(NULL),p_frame(NULL),m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type) 
 {
-  AORGTOOLS::msg.Debugging()<<"Initialize the <"<<_n<<"> Jet_Finder : "<<std::endl;
-  AORGTOOLS::msg.Debugging()<<"   Jetalg = "<<m_jet_alg<<", type = "<<m_type;
-  AORGTOOLS::msg.Debugging()<<", ycut = "<<m_ycut<<std::endl;
+  AORGTOOLS::msg.Debugging()<<"Initialize the <"<<_n<<"> Jet_Finder : "<<std::endl
+			    <<"   Jetalg = "<<m_jet_alg<<", type = "<<m_type
+			    <<", ycut = "<<m_ycut<<std::endl;
+  rpa.gen.SetYcut(_ycut);
 
   m_name = std::string("Jetfinder");
   m_fl   = _fl;

@@ -56,7 +56,7 @@ namespace AORGTOOLS {
   public:
     enum code { pure_QCD = 0, 
 	        QCD      = 1, 
-	        EW       = 2, 
+	        pure_EW  = 2, 
 	        SM       = 3, 
 	        MSSM     = 4, 
 	        THDM     = 5,

@@ -55,16 +55,6 @@ bool Selector_Data::ReadInData(std::string filename) {
     if (keyword == string("JetFinder")) {
       dat.type = 1;
       from>>dat.min>>dat.max;
-      if (dat.min!=rpa.integ.Ycut()) {
-	msg.Out()<<" ycut in Selector.dat = "<<dat.min<<endl;
-	msg.Out()<<" ycut in Run.dat = "<<rpa.integ.Ycut()<<endl;
-	dat.min=Max(dat.min,rpa.integ.Ycut());
-	if (dat.min!=rpa.integ.Ycut()) {
-	  msg.Out()<<"WARNING: ycut restricted by values in Selector.dat!"<<endl;
-	  rpa.integ.SetYcut(dat.min);
-	}
-	msg.Out()<<" using yut = "<<dat.min<<endl;
-      }
       data.push_back(dat);
     }
     if (keyword == string("ConeFinder")) {

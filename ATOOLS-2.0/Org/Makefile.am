@@ -4,4 +4,6 @@ libToolsOrg_la_SOURCES = Data_Read.C Run_Parameter.C FastList.C MyTiming.C Messa
 noinst_HEADERS = Exeptions.H Data_Read.H Data_Return.H Run_Parameter.H Message.H \
                  FastList.H List_Algorithms.H MyStrStream.H Sort.H\
 	         MyTiming.H prof.hh prof_exampl.cc IO_Handler.H
-INCLUDES = -I../Phys -I../Math 
+INCLUDES = -I../Phys \
+	   -I../Math \
+	   -I../../MODEL-1.0/Main
