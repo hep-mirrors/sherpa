@@ -1,10 +1,15 @@
-SHERPASYS  = ../..
+SHERPASYS     =	../..
 
-ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
-MODELINC   = $(SHERPASYS)/MODEL-1.0
+SHERPAFLAGS   =	-pedantic -Wall -Winline
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+PDFINCS       =	-I../LHAPDF 
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 
 lib_LTLIBRARIES       =	libPDF.la
-libPDF_la_SOURCES     =	ISR_Handler.C \
+libPDF_la_SOURCES     =	\
+			ISR_Handler.C \
 		    	Intact.C \
 			Structure_Function.C \
 		    	PDF_Base.C \
@@ -17,13 +22,8 @@ libPDF_la_SOURCES     =	ISR_Handler.C \
 			GRVph_Fortran_Interface.C \
 		    	grvphoton.f \
 			PDF_Handler.C 
-CXXFLAGS      =	-pedantic -Wall -Winline
-INCLUDES      =	-I../LHAPDF \
-	   	-I$(MODELINC)/Main \
-	   	-I$(ATOOLSINC)/Phys \
-	   	-I$(ATOOLSINC)/Org \
-	   	-I$(ATOOLSINC)/Math
-noinst_HEADERS        =	ISR_Base.H \
+noinst_HEADERS        =	\
+			ISR_Base.H \
 		 	ISR_Handler.H \
 			Intact.H \
 			Structure_Function.H\
@@ -34,4 +34,6 @@ noinst_HEADERS        =	ISR_Base.H \
 			CTEQ6_Fortran_Interface.H \
 			GRVph_Fortran_Interface.H \
 			PDF_Handler.H 
+AM_CXXFLAGS   =	$(SHERPAFLAGS)
+INCLUDES      =	$(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
 
