@@ -423,7 +423,7 @@ bool Process_Base::IsFile(string filename)
 
 void Process_Base::AddChannels(Process_Base * _proc) 
 {
-  if (m_nin!=2) return;
+//   if (m_nin!=2) return;
   for (size_t i=0;i<_proc->Size();i++) {
     if ((*_proc)[i]->Partner()==NULL) AddChannels((*_proc)[i]);
     else {

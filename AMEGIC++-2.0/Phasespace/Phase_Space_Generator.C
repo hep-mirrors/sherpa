@@ -4,6 +4,7 @@
 #include "Channel_Generator_NPV.H"
 #include "Channel_Generator3V.H"
 #include "Channel_Generator3_NPV.H"
+#include "Channel_Generator_Decays.H"
 #include "Process_Base.H"
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -80,14 +81,17 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   for (int i=0;i<ngraph;i++) {
     if (proc->IsFreeOfFourVertex(proc->Diagram(i))) {
     for(int j=0;j<ng;j++){
-      Channel_Generator_Base *cg,*cg2;
-      if (inttype==6) {
-	if (j==0) cg = new Channel_Generator3V(nin,nout,fl,proc->Diagram(i),0);
-	else cg = new Channel_Generator3_NPV(nin,nout,fl,proc->Diagram(i),0);
-      }
+      Channel_Generator_Base *cg;
+      if (nin==1 && nout>2) cg = new Channel_Generator_Decays(nin,nout,fl,proc->Diagram(i),0);
       else {
-	if (j==0) cg = new Channel_Generator(nin,nout,fl,proc->Diagram(i),0);
-	else cg = new Channel_Generator_NPV(nin,nout,fl,proc->Diagram(i),0);
+	if (inttype==6) {
+	  if (j==0) cg = new Channel_Generator3V(nin,nout,fl,proc->Diagram(i),0);
+	  else cg = new Channel_Generator3_NPV(nin,nout,fl,proc->Diagram(i),0);
+	}
+	else {
+	  if (j==0) cg = new Channel_Generator(nin,nout,fl,proc->Diagram(i),0);
+	  else cg = new Channel_Generator_NPV(nin,nout,fl,proc->Diagram(i),0);
+	}
       }
       for (int k=0;k<cg->NumberOfChannels();k++) {
 	string chID = cg->CreateChannelID(k);

@@ -770,7 +770,7 @@ bool Single_Process::SetUpIntegrator()
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
     if (CreateChannelLibrary()) return 1;
   }
-  if (m_nin==1) return 1;
+  if (m_nin==1) if (CreateChannelLibrary()) return 1;
   return 0;
 }
 
@@ -778,7 +778,7 @@ bool Single_Process::CreateChannelLibrary()
 {
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
-  if (m_nin>1)  newch = p_psgen->Construct(p_pshandler->GetChannelLibNames(),m_ptypename,m_pslibname,p_flavours,this); 
+  if (m_nin>=1)  newch = p_psgen->Construct(p_pshandler->GetChannelLibNames(),m_ptypename,m_pslibname,p_flavours,this); 
   if (newch>0) {
     msg_Tracking()<<"Single_Process::CreateChannelLibrary() :"<<std::endl
 		  <<"   "<<p_pshandler->NumberOfFSRIntegrators()<<" new channels produced for "

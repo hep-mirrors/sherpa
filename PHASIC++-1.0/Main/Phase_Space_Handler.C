@@ -201,8 +201,8 @@ double Phase_Space_Handler::Differential()
 double Phase_Space_Handler::Differential(Integrable_Base *const process) 
 { 
   PROFILE_HERE;
+  p_info->ResetAll();
   if (m_nin>1) {
-    p_info->ResetAll();
     p_isrhandler->Reset();
     if (p_beamhandler->On()>0) { 
       p_beamhandler->SetSprimeMin(m_smin);
@@ -529,7 +529,11 @@ bool Phase_Space_Handler::CreateIntegrators()
     p_cuts->Init(nin+nout,psflavs);
     if (proc->Selector()) (proc->Selector())->BuildCuts(p_cuts);
     } */
-  if (m_nin==1) m_inttype = 0;
+  if (m_nin==1) {
+    if (m_nout==2) m_inttype = 0;
+    if (m_inttype<4 || m_inttype==7)  m_inttype = 0;
+    else m_inttype = 4;
+  }
   if(!LoadChannelLibraries()) return 0;
   if (m_nin==2) {
     if (p_beamhandler && p_beamhandler->On()>0) {
