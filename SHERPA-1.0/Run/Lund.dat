@@ -1,46 +1,20 @@
 !-------------------------------------------------------
 !--- Lund Run Parameters -------------------------------
 !-------------------------------------------------------
-
-FRAME		= CMS
-BEAM		= P+
-TARGET		= PBAR-
-WIN		= 540.0
-
-MSEL		= 0	! subprocesses 
-
-MSUB(11)	= 0	! f_i f_j -> f_i f_j  
-MSUB(12)	= 1	! f_i \bar{f}_i -> f_j \bar{f}_j
-MSUB(13)	= 0	! f_i \bar{f}_i -> g g
-MSUB(28)	= 0	! f_i g -> f_i g
-MSUB(53)	= 0	! g g -> f_i \bar{f}_i
-MSUB(68)	= 0	! g g -> g g
-MSUB(95)	= 0 	! low p_{\perp} production
-
-MSTJ(1)		= 0	! Fragmentation switch
-MSTJ(41)	= 0	! Parton Shower branching
-MSTP(61)	= 0	! Parton Shower switch
+PARJ(41)	= 0.85	! a
+PARJ(42)	= 0.3	! b
+PARJ(21)	= 0.36	! sigma
+MSTJ(1)		= 1	! fragmentation on
+MSTP(11)	= 0	! isr off
+MSTJ(41)	= 0	! parton shower off
+MSTP(61)	= 0	! parton shower off
+MSTP(48)	= 1	! no W->ll decay
+MSTJ(101)	= 5	! no W->ll decay
 MSTP(105)	= 0	! hadronization off
 MSTP(111)	= 0	! hadronization off
-
-MSTP(81)	= 1	! multiple interactions on
-MSTP(82)	= 1	! multiple interaction model
-
-PARP(81)	= 1.9	! p_{\perp min} for hard process
-CKIN(3)		= 1.6	! p_{\perp min} for hard underlying event
-
-PARP(82)	= 1.9	! regularization scale
-
-PARJ(21)	= 0	! primordial k_{\perp} of primary hadron
-MSTP(91)	= 0	! primordial k_{\perp} 
-PARP(91)	= 0.0	! width of gaussian k_{\perp}
-PARP(92)	= 0.0	! width of exponential k_{\perp}
-PARP(93)	= 0.0	! upper cutoff for k_{\perp}
-
-MSTP(32)	= 1	! scale for pdf
-MSTP(33)	= 0	! K factor scheme
-MSTP(52)	= 1	! pdf library
-MSTP(51)	= 8	! pdf set
-
-MSTP(2)		= 1		! \alpha_s
-PARU(111)	= 0.1188	! \alpha_s fixed
+MSTP(81)	= 0	! multiple interactions off
+PARJ(21)	= 0	! primordial k_\perp
+MSTP(91)	= 0	! primordial k_\perp
+PARP(91)	= 0.0	! gaussian k_\perp 0
+PARP(92)	= 0.0	! exponential k_\perp 0
+PARP(93)	= 0.0	! cutoff for k_\perp 0
