@@ -36,8 +36,6 @@ Kt_Algorithm::~Kt_Algorithm()
 
 void Kt_Algorithm::AddToKtlist(double kt2) {
   if (p_kts) {
-    if (p_kts->size()>0) if (p_kts->back()==kt2) 
-      msg.Out()<<" WARNING something fishy in AddToKtlist "<<std::endl;
     p_kts->push_back(kt2);
   }
 }

@@ -33,14 +33,14 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle* part) {
   case 1 : // active (final state) particle
   case 2 : // decayed or fragmented
     str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
-    str<<"  "<<std::setw(3)<<part->Info()<<"  "<<std::setw(3)<<part->Status()<<std::setw(1)<<" "
-       <<std::setw(22)<<part->Flav()<<std::setw(1)<<" "
-       <<std::setw(10)<<part->Number()<<std::setw(1)<<" (";
+    str<<"["<<part->Info()<<"] "<<part->Status()<<" "
+       <<std::setw(15)<<part->Flav()<<" "<<std::setiosflags(std::ios::right)
+       <<std::setw(6)<<part->Number()<<" (";
     if (part->ProductionBlob()) str<<std::setw(5)<<part->ProductionBlob()->Id();
     else str<<"     ";
     if (part->DecayBlob()) str<<" -> "<<std::setw(5)<<part->DecayBlob()->Id();
     else str<<" ->      ";
-    str<<std::setw(1)<<") ";
+    str<<std::setw(1)<<") "<<std::resetiosflags(std::ios::right);
     str<<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
     break;
   case 3 : // documentation line
@@ -56,11 +56,12 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle* part) {
   default : // user defined or reserved
     return str<<"--- unrecognized status:"<<part->Status()<<" ---"<<std::endl;
   }
+  Vec4D p=part->Momentum();
   str<<std::setiosflags(std::ios::scientific)
-     <<" ["<<part->Momentum()<<", "<<part->Momentum().Abs2()<<"]"
-     <<" ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")"
-     <<std::resetiosflags(std::ios::scientific)
-     <<std::resetiosflags(std::ios::left);
+     <<" [("<<std::setw(11)<<p[0]<<','<<std::setw(11)<<p[1]<<','
+	  <<std::setw(11)<<p[2]<<','<<std::setw(11)<<p[3]<<"),"<<std::setw(11)<<p.Abs2()<<"]"
+     <<" ("<<std::setw(3)<<part->GetFlow(1)<<","<<std::setw(3)<<part->GetFlow(2)<<")"
+     <<std::resetiosflags(std::ios::scientific)<<std::resetiosflags(std::ios::left);
   std::cout.precision(io);
   return str;
 }
