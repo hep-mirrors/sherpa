@@ -5,7 +5,7 @@
 
 #define Nc 3
 #define CA Nc
-#define Nf 3
+#define Nf 4
 #define BETA0 (11.*CA-2.*Nf)/3.
 
 using namespace SHERPA;
