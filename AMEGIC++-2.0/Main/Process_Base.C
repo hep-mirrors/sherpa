@@ -415,6 +415,7 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 			       vector<Channel_Info> & _beamparams,
 			       vector<Channel_Info> & _isrparams) {
 
+  if (m_nin!=2) return;
   bool         addit;
   Channel_Info ci;
 
@@ -483,10 +484,17 @@ void Process_Base::SetSelector(Selector_Base * _sel)    { p_selector     = _sel;
 void Process_Base::SetMomenta(ATOOLS::Vec4D * _moms)  { p_momenta    = _moms;   }
 void Process_Base::SetNStrong(int _nstrong)             { m_nstrong = _nstrong;}
 void Process_Base::SetNEWeak(int _neweak)               { m_neweak  = _neweak; }
-void Process_Base::SetTotal(double _total)              { m_totalxs = _total;  } 
-void Process_Base::SetMax(double _max)                  { m_max     = _max;    } 
+void Process_Base::SetMax(const double max, int depth)  
+{
+  if (max!=0.) m_max     = max;     
+} 
 void Process_Base::SetMaxJetNumber(int max)             { m_maxjetnumber  = max;    } 
 void Process_Base::SetScale(double _scale)              { m_asscale=m_facscale=_scale;  } 
+void Process_Base::SetScales(double q2_fac, double q2_ren)
+{ 
+  m_facscale = q2_fac;  
+  m_asscale  = q2_ren;
+} 
 void Process_Base::SetISRThreshold(double threshold)    { m_threshold  = threshold;}
 
 /*------------------------------------------------------------------------------
@@ -508,7 +516,7 @@ void Process_Base::SetupEnhance() {
   if (m_enhancefac==1. && m_maxfac==1.) return;
   if (m_enhancefac!=1.) {
     double xs=TotalXS();
-    SetTotal(xs*m_enhancefac);
+    SetTotalXS(xs*m_enhancefac);
   }
   if (m_maxfac!=1.) {
     double max=Max();
@@ -575,7 +583,8 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     }
     break;
   case 65:
-    pt2 = m_asscale;
+  //    pt2 = m_asscale;
+    pt2 = m_facscale;
 
     // if highest number of jets
     if ((int)m_nout==m_maxjetnumber) {

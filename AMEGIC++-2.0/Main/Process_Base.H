@@ -112,11 +112,11 @@ namespace AMEGIC {
     virtual void             SetNEWeak(int);
 
     virtual void             Empty()                                               =0;
-    virtual void             SetTotal(int)                                         =0;
+    virtual void             SetTotal(int flag, int depth=0)                       =0;
     virtual void             SetScale(double);
+    virtual void             SetScales(double q2_fac, double q2_ren);
     virtual void             SetISRThreshold(double)                               =0;
-    virtual void             SetTotal(double);
-    virtual void             SetMax(double);
+    virtual void             SetMax(const double max, int depth=0);
     virtual void             SetMaxJetNumber(int);
 
 
