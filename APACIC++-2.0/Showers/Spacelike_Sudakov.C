@@ -111,20 +111,26 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
     SelectOne();
     m_z   = GetZ();   
     m_pt2 = -(1.-m_z)*m_t;
-
+    
     double uhat = -m_t - sprime* (1.-m_z)/m_z;
     if (uhat>=0.) m_last_veto=9;
 
     if (uhat<0. && !Veto(mo,jetveto,extra_pdf)) {
-      UniformPhi();
-      mo->z      = m_z;
-      mo->t      = m_t;
-      mo->phi    = m_phi;
-      if (m_ordering_scheme==2) {
-	double th = 4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_pt2max);
-	mo->thcrit = th;
+      if (!RemnantVeto(mo)) {
+	UniformPhi();
+	mo->z      = m_z;
+	mo->t      = m_t;
+	mo->phi    = m_phi;
+	if (m_ordering_scheme==2) {
+	  double th = 4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_pt2max);
+	  mo->thcrit = th;
+	}
+	return 1;
       }
-      return 1;
+      else {
+	m_last_veto=7;
+	break;
+      }
     }
   }
   mo->t    = mo->tout;
@@ -179,12 +185,6 @@ bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf)
       return 1;
     }
     extra_pdf=0;
-  }
-
-  // 6. remnant veto
-  if (RemnantVeto(mo)) {
-    m_last_veto=7;
-    return 1;
   }
   return 0;
 }
@@ -286,6 +286,7 @@ bool Spacelike_Sudakov::JetVeto(Knot * mo)
 bool Spacelike_Sudakov::RemnantVeto(Knot * mo) 
 {
 #ifdef SHERPA_SUPPORT
+  p_remnant->QuickClear();
   double E=p_remnant->BeamEnergy()*mo->x/m_z;
   Particle part(1,GetFlA(),Vec4D(E,0.0,0.0,E));
   if (!p_remnant->Extract(&part)) return 1;
