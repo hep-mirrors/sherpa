@@ -56,16 +56,18 @@ namespace SHERPA {
 
     bool InitializeTheFramework();
     bool CalculateTheHardProcesses();
+    bool InitializeAllHardDecays();
 
     MODEL::Model_Base           * GetModel()                { return p_model;           }
     PDF::ISR_Handler            * GetISRHandler()           { return p_isrhandler;      }
     BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()   { return p_beamspectra;     }
+    Hard_Decay_Handler          * GetHardDecayHandler()     { return p_harddecays;      }
     Matrix_Element_Handler      * GetMatrixElementHandler() { return p_mehandler;       }
     Shower_Handler              * GetShowerHandler()        { return p_showerhandler;   }
     Beam_Remnant_Handler        * GetBeamRemnantHandler()   { return p_beamremnants;    }
     Fragmentation_Handler       * GetFragmentationHandler() { return p_fragmentation;   }
     Hadron_Decay_Handler        * GetHadronDecayHandler()   { return p_hadrondecays;    }
-    ATOOLS::Flavour          * GetBunches()              { return m_bunch_particles; }
+    ATOOLS::Flavour             * GetBunches()              { return m_bunch_particles; }
   };
 
   /*!

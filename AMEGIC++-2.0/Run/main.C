@@ -22,7 +22,8 @@ int main(int argc,char* argv[])
   Environment environment(path,std::string("Run.dat"));
   environment.InitializeTheEnvironment();
 
-  Amegic generator(path,environment.GetMEFile(),environment.GetModel());
+  Amegic generator(path,environment.GetMEFile(),
+		   environment.GetModel());
 
   /*    
 	if (generator.InitializeDecays()) {

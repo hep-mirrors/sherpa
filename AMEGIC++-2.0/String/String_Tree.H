@@ -47,7 +47,7 @@ namespace AMEGIC {
   };
 
   class String_Tree {
-    std::list<sknot> sknotlist;
+    std::list<sknot>  sknotlist;
     std::list<sknot*> leaflist;
     sknot* Leaf(std::string&,sknot*,int);
    

@@ -95,7 +95,7 @@ void String_Handler::Initialize(const int& _maxgraph,const int& _maxhel)
   
   if (val==0) {
     stringsk = new string*[maxgraph];
-    sk = new sknot**[maxgraph];
+    sk       = new sknot**[maxgraph];
     for (short int i=0;i<maxgraph;i++) {
       sk[i]       = new sknot*[maxhel];
       stringsk[i] = new string[maxhel];
@@ -115,7 +115,6 @@ String_Handler::~String_Handler()
   }
   if (own_sgen)  // delete only if constructed
     delete sgen;
-
 }
 
 void String_Handler::Set_String(const int &igraph,const int &ihel,
@@ -152,7 +151,7 @@ sknot* String_Handler::MakeSknotAFill(string & str)
   list<sknot*> endpoint;
   stree.GetEnd(shelp,endpoint);
   for (list<sknot*>::iterator it=endpoint.begin();it!=endpoint.end();++it) { 
-    (*it)->value = sgen->Get_Kabbala((*it)->Str());
+    (*it)->value = sgen->GetKabbala((*it)->Str());
     sgen->SetOn((*it)->Str());	
   }
 
@@ -173,7 +172,7 @@ void String_Handler::Complete(Helicity* hel)
   //connect sgenZ to treeZ
   list<sknot*> endpoint;
 
-  for (long int i=1;i<sgen->ZX_Max_Number();i++) sgen->SetOff(i);
+  for (long int i=1;i<sgen->ZXMaxNumber();i++) sgen->SetOff(i);
 
   for (short int j=0;j<maxhel;j++) {
     for (short int i=0;i<maxgraph;i++) {
@@ -188,26 +187,26 @@ void String_Handler::Complete(Helicity* hel)
   int countall = 0;
   int counton = 0;
   
-  for (long int i=1;i<sgen->ZX_Max_Number();i++) {
+  for (long int i=1;i<sgen->ZXMaxNumber();i++) {
     countall++;
-    if (sgen->Get_ZXl(i)->on) counton++;
+    if (sgen->GetZXl(i)->on) counton++;
   }
 
-  for (long int i=sgen->ZX_Max_Number()-1;i>0;i--) {
-    if (sgen->Get_ZXl(i)->zlist==6 && sgen->Get_ZXl(i)->on) {
-      if (sgen->Get_ZXl(i)->sk!=0) {
+  for (long int i=sgen->ZXMaxNumber()-1;i>0;i--) {
+    if (sgen->GetZXl(i)->zlist==6 && sgen->GetZXl(i)->on) {
+      if (sgen->GetZXl(i)->sk!=0) {
 	endpoint.clear();
-	stree.GetEnd(sgen->Get_ZXl(i)->sk,endpoint);
+	stree.GetEnd(sgen->GetZXl(i)->sk,endpoint);
 	for (list<sknot*>::iterator it=endpoint.begin();it!=endpoint.end();++it) 
-	  (*it)->value = sgen->Get_Kabbala((*it)->Str());
+	  (*it)->value = sgen->GetKabbala((*it)->Str());
 	/*
-	string spre = stree.Tree2String(sgen->Get_ZXl(i)->sk,0);
-	stree.Simplify(sgen->Get_ZXl(i)->sk);
-	string safter = stree.Tree2String(sgen->Get_ZXl(i)->sk,0);
+	string spre = stree.Tree2String(sgen->GetZXl(i)->sk,0);
+	stree.Simplify(sgen->GetZXl(i)->sk);
+	string safter = stree.Tree2String(sgen->GetZXl(i)->sk,0);
 	if (spre!=safter) {
 	  //changed endpoints
 	  endpoint.clear();
-	  stree.GetEnd(sgen->Get_ZXl(i)->sk,endpoint);
+	  stree.GetEnd(sgen->GetZXl(i)->sk,endpoint);
 	}
 	*/
 	for (list<sknot*>::iterator it=endpoint.begin();it!=endpoint.end();++it) 
@@ -219,9 +218,9 @@ void String_Handler::Complete(Helicity* hel)
   countall = 0;
   counton = 0;
   
-  for (long int i=1;i<sgen->ZX_Max_Number();i++) {
+  for (long int i=1;i<sgen->ZXMaxNumber();i++) {
     countall++;
-    if (sgen->Get_ZXl(i)->on) counton++;
+    if (sgen->GetZXl(i)->on) counton++;
   }
 
   Z_Kill();  
@@ -248,37 +247,32 @@ void String_Handler::Calculate() {
 
 void String_Handler::Output(Helicity* hel)
 {
-#ifdef Kabbala_on  
   if (gen_str<2 || val!=0) return;
   String_Output so(path,maxgraph,maxhel);
   so.Output(sk,&stree,sgen,hel);
-#endif
 }
 
 void String_Handler::Output(Helicity* hel, string path)
 {
-#ifdef Kabbala_on  
   if (gen_str<2 || val!=0) return;
   String_Output so(path,maxgraph,maxhel);
   so.Output(sk,&stree,sgen,hel);
-#endif
 }
 
 void String_Handler::Z_Kill()
 {
-#ifdef Kabbala_on
   int count = 0;
-  msg.Debugging()<<"Number of Z functions: "<<sgen->ZX_Max_Number()<<endl;
+  msg.Debugging()<<"Number of Z functions: "<<sgen->ZXMaxNumber()<<endl;
   string str;
-  for (long int i=1;i<sgen->ZX_Max_Number();i++) {
-    if (sgen->Get_ZXl(i)->on==0) {
+  for (long int i=1;i<sgen->ZXMaxNumber();i++) {
+    if (sgen->GetZXl(i)->on==0) {
       //search in 6
-      str = sgen->Get_ZXl(i)->value.String();
+      str = sgen->GetZXl(i)->value.String();
       int hit = 0;
-      for (long int j=i+1;j<sgen->ZX_Max_Number();j++) {
-	if (sgen->Get_ZXl(j)->zlist==6 && sgen->Get_ZXl(j)->on) {
-	  if (sgen->Get_ZXl(j)->sk!=0) {
-	    stree.Find(sgen->Get_ZXl(j)->sk,str,hit);
+      for (long int j=i+1;j<sgen->ZXMaxNumber();j++) {
+	if (sgen->GetZXl(j)->zlist==6 && sgen->GetZXl(j)->on) {
+	  if (sgen->GetZXl(j)->sk!=0) {
+	    stree.Find(sgen->GetZXl(j)->sk,str,hit);
 	    if (hit==1) break;
 	  }
 	}
@@ -288,7 +282,6 @@ void String_Handler::Z_Kill()
     }
   }
   
-  msg.Debugging()<<count<<"/"<<sgen->ZX_Max_Number()<<" Z functions have been deleted."<<endl;
-#endif
+  msg.Debugging()<<count<<"/"<<sgen->ZXMaxNumber()<<" Z functions have been deleted."<<endl;
 }
 

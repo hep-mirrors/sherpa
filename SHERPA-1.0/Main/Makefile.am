@@ -27,7 +27,7 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org \
-	   -I../../HepMC_Version1.23 \
+	   -I../../../HepMC_Version1.23 \
 	   -I$(CLHEPincdir)
 noinst_HEADERS = Sherpa.H
 

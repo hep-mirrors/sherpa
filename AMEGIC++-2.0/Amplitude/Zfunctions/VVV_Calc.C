@@ -26,7 +26,7 @@ Kabbala VVV_Calc::GGG()
 
 Kabbala VVV_Calc::Do() 
 {
-  Kabbala factor = sgen->Get_Enumber(coupl[6]);
+  Kabbala factor = sgen->GetEnumber(coupl[6]);
 
   if (IsZero(M(0)) &&
       IsZero(M(1)) &&

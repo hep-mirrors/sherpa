@@ -132,14 +132,14 @@ void U1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
 
 Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res) 
 {  
-  if (_nout != 2 || _nin!=2) {
+  if (_nout != 2 || _nin!=1) {
     msg.Error()<<"Tried to initialize Decay2Channel with nout = "<<_nin<<" -> "<<_nout<<endl;
     abort();
   }
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout];
   for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
-  rannum = 2;
+  rannum = 3;
   rans   = new double[rannum];
 
   s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
@@ -154,7 +154,7 @@ Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
 }
 
 void Decay2Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran=0) {
-  CE.Isotropic2Momenta(p[0],ms[1],ms[2],p[1],p[2],_ran[0],_ran[1]);
+  CE.Isotropic2Momenta(p[0],ms[1],ms[2],p[1],p[2],_ran[1],_ran[2]);
 }
 
 void Decay2Channel::GenerateWeight(ATOOLS::Vec4D * p) {

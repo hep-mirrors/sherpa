@@ -113,7 +113,6 @@ int Basic_Sfuncs::BuildMomlist(Pfunc_List& pl)
 	if(hit==1) Mom->type=mt::cmprop;
       }
       Momlist.push_back(*Mom);
-      //      cout<<"******Build_Momlist: "<<momcount<<endl;
       momcount++;
       n = Momlist.size()-1;
       
@@ -122,7 +121,6 @@ int Basic_Sfuncs::BuildMomlist(Pfunc_List& pl)
        Mom->type=mt::p_none;
        Momlist.push_back(*Mom);
        momcount++;
-       //  cout<<"******Build_Momlist(dummy): "<<momcount<<endl;
       }
       delete Mom;
       
@@ -159,7 +157,6 @@ void Basic_Sfuncs::PropPolarisation(int pindex,Pfunc_List& pl,vector<int>& iargs
 	    break;
 	  default:
 	    iargs.push_back(Momlist[k].type);
-	    //cout<<"PropPolarisations"<<iargs[iargs.size()-1]<<endl;
 	  }
       }
     }
@@ -284,8 +281,7 @@ int Basic_Sfuncs::BuildPolarisations(int momindex, Flavour fl)
     msg.Error()<<"*****BuildPolarisations: Not an internal momentum!"<<endl;
     return 0;
   }
-    //cout<<"Build Pols"<<endl;
-double Mass = fl.Mass();
+  double Mass = fl.Mass();
   Complex Mass2= Complex(sqr(Mass),0.);
   if(!ATOOLS::IsZero(fl.Width()))
       Mass2-=Complex(0.,fl.Width()*Mass);
@@ -664,13 +660,11 @@ void Basic_Sfuncs::CalcS(int i, int j)
     _S1[j][i] = - _S1[i][j];
   }
   else {	
-    //cout<<"Zero: "<<i<<";"<<j<<endl;
     _S0[i][j] = Complex(0.,0.);
     _S0[j][i] = Complex(0.,0.);
     _S1[i][j] = Complex(0.,0.);
     _S1[j][i] = Complex(0.,0.);
   }
-  //cout<<"S0: "<<_S0[m->arg[0]][m1->arg[0]]<<endl;
   calc_st[i][j]=calc_st[j][i]=1;
 }
 

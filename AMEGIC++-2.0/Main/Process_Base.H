@@ -34,10 +34,10 @@ namespace AMEGIC {
     int                              m_gen_str;
 
     int                              m_nvec,   m_nin,    m_nout,    m_nex;
-    ATOOLS::Flavour             * p_fl,   * p_flin, * p_flout, * p_ex_fl;
+    ATOOLS::Flavour                * p_fl,   * p_flin, * p_flout, * p_ex_fl;
     AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
     int                            * p_b;
-    ATOOLS::Vec4D                * p_moms;
+    ATOOLS::Vec4D                  * p_moms;
 
     bool                             m_atoms, m_analyse, m_tables;
     long int                         m_n;
@@ -55,9 +55,9 @@ namespace AMEGIC {
 
     BEAM::Beam_Spectra_Handler     * p_beam;
     PDF::ISR_Handler               * p_isr;
-    ATOOLS::Cut_Data            * p_cuts;
-    ATOOLS::Selector_Base       * p_sel;
-    ATOOLS::Primitive_Analysis  * p_analysis;
+    ATOOLS::Cut_Data               * p_cuts;
+    ATOOLS::Selector_Base          * p_sel;
+    ATOOLS::Primitive_Analysis     * p_analysis;
 
     AMEGIC::Process_Base           * p_selected;
     
@@ -148,9 +148,9 @@ namespace AMEGIC {
     virtual void   RescaleXSec(double);
     virtual bool   PrepareXSecTables()                                             =0;
     virtual void   AddPoint(const double value)                                    =0;
-    virtual double Differential(ATOOLS::Vec4D *)                                 =0;
+    virtual double Differential(ATOOLS::Vec4D *)                                   =0;
     virtual double Differential2()                                                 =0;
-    virtual double DSigma(ATOOLS::Vec4D *,bool)                                  =0;
+    virtual double DSigma(ATOOLS::Vec4D *,bool)                                    =0;
     virtual double DSigma2()                                                       =0;
     virtual double operator()(ATOOLS::Vec4D *) { return 0.; }
     virtual double Scale(ATOOLS::Vec4D *);
@@ -162,7 +162,7 @@ namespace AMEGIC {
 
     virtual void SwapInOrder();
     virtual void RestoreInOrder();
-    int InSwaped();
+    int          InSwaped();
 
     /*------------------------------------------------------------------------------
 
@@ -190,9 +190,9 @@ namespace AMEGIC {
 
     virtual BEAM::Beam_Spectra_Handler    * Beam();
     virtual PDF::ISR_Handler              * ISR();
-    virtual ATOOLS::Cut_Data           * Cuts();
-    virtual ATOOLS::Selector_Base      * Selector();
-    virtual ATOOLS::Primitive_Analysis * Analysis();
+    virtual ATOOLS::Cut_Data              * Cuts();
+    virtual ATOOLS::Selector_Base         * Selector();
+    virtual ATOOLS::Primitive_Analysis    * Analysis();
     virtual Phase_Space_Generator         * PSGenerator();
     virtual void                            ISRChannels(int,PHASIC::Channel_Info & );
     virtual void                            BeamChannels(int,PHASIC::Channel_Info & );

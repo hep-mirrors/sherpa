@@ -8,7 +8,7 @@ using namespace ATOOLS;
 Kabbala Basic_Vfunc::V(const int a,const int b)
 {
   Complex vc = Vcalc(ps[iabs(a)].numb,ps[iabs(b)].numb);
-  if ( ATOOLS::IsZero(vc) ) return sgen->Get_Enumber(Complex(0.,0.));
+  if ( ATOOLS::IsZero(vc) ) return sgen->GetEnumber(Complex(0.,0.));
   
   int sign = Sign(a)*Sign(b)*ps[iabs(a)].direction*ps[iabs(b)].direction; 
 
@@ -16,9 +16,9 @@ Kabbala Basic_Vfunc::V(const int a,const int b)
   if (ps[iabs(b)].numb<BS->GetNmomenta()) sign *= BS->Sign(ps[iabs(b)].numb);
 
   return (sign>0) ?
-    sgen->Get_Snumber(ps[iabs(a)].numb,ps[iabs(b)].numb,vc)
+    sgen->GetSnumber(ps[iabs(a)].numb,ps[iabs(b)].numb,vc)
     :
-    -sgen->Get_Snumber(ps[iabs(a)].numb,ps[iabs(b)].numb,vc);
+    -sgen->GetSnumber(ps[iabs(a)].numb,ps[iabs(b)].numb,vc);
 }
 
 Complex Basic_Vfunc::Vcalc(const int a,const int b)
@@ -27,14 +27,14 @@ Complex Basic_Vfunc::Vcalc(const int a,const int b)
 Kabbala Basic_Vfunc::Vcplx(const int a,const int b,const int s)
 {
   Complex vc = Vcplxcalc(a,b);
-  if ( ATOOLS::IsZero(vc) ) return sgen->Get_Enumber(Complex(0.,0.));
+  if ( ATOOLS::IsZero(vc) ) return sgen->GetEnumber(Complex(0.,0.));
   
   if(s==1) return (BS->IsComplex(a)||BS->IsComplex(b)) ?
-	    sgen->Get_Scplxnumber(a,b,vc)
-	    : sgen->Get_Snumber(a,b,vc);
+	    sgen->GetScplxnumber(a,b,vc)
+	    : sgen->GetSnumber(a,b,vc);
   else return (BS->IsComplex(a)||BS->IsComplex(b)) ?
-	    -sgen->Get_Scplxnumber(a,b,vc)
-	    : -sgen->Get_Snumber(a,b,vc);
+	    -sgen->GetScplxnumber(a,b,vc)
+	    : -sgen->GetSnumber(a,b,vc);
 
 }
     

@@ -25,9 +25,14 @@ Sherpa::~Sherpa()
 bool Sherpa::InitializeTheRun(std::string _path) { 
   m_path = _path;
   p_inithandler  = new Initialization_Handler(m_path);
+
+  bool okay;
   if (p_inithandler->InitializeTheFramework()) {
-    p_output     = new Output_Handler(1);
-    return p_inithandler->CalculateTheHardProcesses();
+    p_output = new Output_Handler(0);
+    okay     =  p_inithandler->CalculateTheHardProcesses();
+    if (rpa.gen.NumberOfEvents()>0)
+      okay   = okay && p_inithandler->InitializeAllHardDecays();
+    return okay;
   }
   msg.Error()<<"Error in Sherpa::InitializeRun("<<_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl

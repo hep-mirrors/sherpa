@@ -42,7 +42,6 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
     return new Interaction_Model_THDM(p_model,cplscheme,yukscheme); 
   }
   if (modeltype==std::string("MSSM")) {
-      cout<<"Found Model MSSM"<<endl;
       rpa.gen.SetModelType(ATOOLS::Model_Type::MSSM);
       return new Interaction_Model_MSSM(p_model,cplscheme,yukscheme); 
   }

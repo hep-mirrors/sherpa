@@ -81,8 +81,9 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
   InitCuts();
   if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
   else {
-    msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
-	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
+    if (m_nout>2) 
+      msg.Error()<<"Potential Error in Process_Group "<<m_name<<endl
+		 <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_sel = new No_Selector();
   }
 }
@@ -342,6 +343,8 @@ void Process_Group::Add(Process_Base * _proc)
     m_nvec    = _proc->Nvec();
     m_nstrong = _proc->NStrong();
     m_neweak  = _proc->NEWeak();
+    p_fl = new Flavour[m_nin+m_nout];
+    for (int i=0;i<m_nin+m_nout;i++) p_fl[i] = (_proc->Flavs())[i];
   }
   else {
     if (_proc->Nvec() > m_nvec) m_nvec = _proc->Nvec();
@@ -480,6 +483,7 @@ void Process_Group::SetTotalXS(int tables)  {
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+    if ((m_nin==1 && m_nout==2) || m_n==1) m_totalerr = 0.;
     if (p_sel) p_sel->Output();
     m_max = 0.;
     for (int i=0;i<m_procs.size();i++) {
@@ -492,9 +496,14 @@ void Process_Group::SetTotalXS(int tables)  {
     //               update maximum to sum of maximum
     SetMax(0.);
   }
-  msg.Events()<<"-----------------------------------------------------------------------"<<endl
-	      <<"Total XS for "<<m_name<<"("<<m_procs.size()<<") : "<<m_totalxs*rpa.Picobarn()<<" pb"
-	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl;
+  msg.Events()<<"-----------------------------------------------------------------------"<<endl;
+  if (m_nin==2) 
+    msg.Events()<<"Total XS for "<<m_name<<"("<<m_procs.size()<<") : "
+		<<m_totalxs*rpa.Picobarn()<<" pb"<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl;
+  
+  if (m_nin==1) 
+    msg.Events()<<"Total Width for "<<m_name<<"("<<m_procs.size()<<") : "
+		<<m_totalxs<<" GeV"<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl;
 }
 
 void Process_Group::SetMax(double max) {
@@ -698,7 +707,8 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     p_sel->BuildCuts(p_cuts);
     m_tables  = 0;
     
-    m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn(); 
+    m_totalxs = p_ps->Integrate();
+    if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
@@ -709,9 +719,10 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	std::ofstream to;
 	to.open(filename,ios::out);
 	to.precision(12);
-	msg.Events()<<"Store result : xs for "<<m_name<<" : "
-		    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+	msg.Events()<<"Store result : xs for "<<m_name<<" : ";
+	if (m_nin==2) msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+	if (m_nin==1) msg.Events()<<m_totalxs<<" GeV";
+	msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		    <<"       max : "<<m_max<<endl;
 	WriteOutXSecs(to);
 	p_ps->WriteOut(_resdir+string("/MC_")+m_name);

@@ -11,7 +11,7 @@ using namespace std;
 Kabbala Basic_Pfunc::P(Pfunc* p1)
 { 
   p1->value = Pcalc(p1->fl,p1->momnum);
-  return sgen->Get_Pnumber(p1,p1->momnum);
+  return sgen->GetPnumber(p1,p1->momnum);
 }
 
 

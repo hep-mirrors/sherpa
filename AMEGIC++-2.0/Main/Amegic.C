@@ -20,12 +20,13 @@ using namespace std;
 
   ----------------------------------------------------------------------------------*/
 
-Amegic::Amegic(std::string _path,std::string _file,MODEL::Model_Base * _model) :
+Amegic::Amegic(std::string _path,std::string _file,
+	       MODEL::Model_Base * _model) :
   m_path(_path), m_file(_file), m_nmax(0),m_maxjet(0), 
   p_procs(NULL), p_decs(NULL), p_model(NULL), p_top(NULL), p_fifo(NULL),
   p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
-  p_dataread         = new Data_Read(m_path+m_file);
+  p_dataread          = new Data_Read(m_path+m_file);
   InitializeInteractionModel(_model);
 
   rpa.SetPath(m_path);
@@ -54,7 +55,6 @@ Amegic::~Amegic() {
 bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Handler * _isr) {
   p_beam              = _beam; 
   p_isr               = _isr;
-
   string processfile  = p_dataread->GetValue<string>("PROCESSFILE",string("Processes.dat"));
   p_procs             = new All_Processes();
   p_procs->SetName("All_Processes");
@@ -89,8 +89,15 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
 }
 
 
-bool Amegic::InitializeDecays() {
+bool Amegic::InitializeDecays(bool constructall) {
   int maxnumber = p_dataread->GetValue<int>("DECAY_PRODUCTS",3);
+  if (maxnumber>3) {
+    msg.Error()<<"Error in Amegic::InitializeDecays()."<<endl
+	       <<"   Number of potential decay products larger than three."<<endl
+	       <<"   This has not been implemented yet. Reduce number of decay products"<<endl
+	       <<"   to three and continue run."<<endl;
+    maxnumber = 3;
+  }
   if (p_top) {
     if (m_nmax<maxnumber) {
       msg.Error()<<"Error in Amegic::InitializeDecays()."<<endl
@@ -101,7 +108,8 @@ bool Amegic::InitializeDecays() {
   }
   else p_top    = new Topology(1+maxnumber);
   p_decs        = new All_Decays(p_model,p_top);
-  return p_decs->InitializeDecays();
+  if (constructall) return p_decs->InitializeDecayTables();
+  return 1;
 }
 
 
@@ -453,7 +461,7 @@ bool Amegic::CalculateTotalXSec(string _resdir) {
 }
 
 bool Amegic::CalculateBranchingWidths(string _resdir) {
-  return p_decs->CalculateBranchingWidths(_resdir);
+  return p_decs->CalculateWidths(_resdir);
 }
 
 void Amegic::SetResDir(string _respath) {

@@ -20,8 +20,7 @@ Kabbala Basic_Xfunc::X(const int a, const int b)
   //Marker for -99
   if(sarg[0]==99){
     if(sarg[3]==sarg[2]){
-      //cout<<"X: warning, ep("<<sarg[2]<<") droped"<<endl;
-      return sgen->Get_Enumber(Complex(0.,0.));
+      return sgen->GetEnumber(Complex(0.,0.));
     }
     return (sign>0) ? 
       Vcplx(BS->GetPolNumber(sarg[3],sarg[4],GetPMass(sarg[3],sarg[4])),sarg[2]) 
@@ -31,8 +30,7 @@ Kabbala Basic_Xfunc::X(const int a, const int b)
   //Marker for -99
   if(sarg[3]==99){
     if(sarg[0]==sarg[2]){
-      //cout<<"X: warning, ep("<<sarg[2]<<") droped"<<endl;
-      return sgen->Get_Enumber(Complex(0.,0.));
+      return sgen->GetEnumber(Complex(0.,0.));
     }
     return (sign>0) ? 
       Vcplx(BS->GetPolNumber(sarg[0],sarg[1],GetPMass(sarg[0],sarg[1])),sarg[2])
@@ -41,13 +39,13 @@ Kabbala Basic_Xfunc::X(const int a, const int b)
   }
 
   return (sign>0) ? 
-    sgen->Get_Xnumber(sarg,&coupl[2*a],
+    sgen->GetXnumber(sarg,&coupl[2*a],
 		      Xcalc(arg[4*a]  ,arg[4*a+1],
 			    ps[iabs(b)].numb,
 			    arg[4*a+2],arg[4*a+3],
 			    coupl[2*a],coupl[2*a+1]))
     :
-    -sgen->Get_Xnumber(sarg,&coupl[2*a],
+    -sgen->GetXnumber(sarg,&coupl[2*a],
 		       Xcalc(arg[4*a]  ,arg[4*a+1],
 			     ps[iabs(b)].numb,
 			     arg[4*a+2],arg[4*a+3],
@@ -66,21 +64,19 @@ Kabbala Basic_Xfunc::X(const int a, const int b, const int m)
   //Marker for -99
   if(sarg[0]==99){
     if(sarg[3]==sarg[2]){
-      //cout<<"X: warning, ep("<<sarg[2]<<") droped"<<endl;
-      return sgen->Get_Enumber(Complex(0.,0.));
+      return sgen->GetEnumber(Complex(0.,0.));
     }
     return Vcplx(BS->GetPolNumber(sarg[3],sarg[4],GetPMass(sarg[3],sarg[4])),sarg[2]); 
   }
   //Marker for -99
   if(sarg[3]==99){
     if(sarg[0]==sarg[2]){
-      //cout<<"X: warning, ep("<<sarg[2]<<") droped"<<endl;
-      return sgen->Get_Enumber(Complex(0.,0.));
+      return sgen->GetEnumber(Complex(0.,0.));
     }
     return Vcplx(BS->GetPolNumber(sarg[0],sarg[1],GetPMass(sarg[0],sarg[1])),sarg[2]);
   }
 
-  return sgen->Get_Xnumber(sarg,&coupl[2*a],
+  return sgen->GetXnumber(sarg,&coupl[2*a],
 		      Xcalc(arg[4*a]  ,arg[4*a+1],
 			    sarg[2],
 			    arg[4*a+2],arg[4*a+3],

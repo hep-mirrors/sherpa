@@ -21,32 +21,31 @@ namespace AMEGIC {
     std::string                   path;
     
     void                       Z_Kill();
-    sknot*                     MakeSknotAFill(std::string&);
+    sknot*                     MakeSknotAFill(std::string &);
   public:
-    String_Handler(const int&,const std::string&,Basic_Sfuncs*);
-    String_Handler(const int&,Basic_Sfuncs*);
+    String_Handler(const int &,const std::string &,Basic_Sfuncs *);
+    String_Handler(const int &,Basic_Sfuncs *);
     String_Handler(Virtual_String_Generator *); 
     ~String_Handler();  
-    bool                      SearchValues(const int,std::string&,Basic_Sfuncs*);
-    void                      Initialize(const int&,const int&); //former Init
-    void                      Set_String(const int&,const int&,const std::string&);
+    bool                      SearchValues(const int,std::string &,Basic_Sfuncs *);
+    void                      Initialize(const int &,const int &);
+    void                      Set_String(const int &,const int &,const std::string &);
     Complex                   Evaluate(int,int);
     void                      Calculate();
-    void                      Complete(Helicity*);
-    void                      Output(Helicity*);
-    void                      Output(Helicity*,std::string);
+    void                      Complete(Helicity *);
+    void                      Output(Helicity *);
+    void                      Output(Helicity *,std::string);
     //    void                      Complete();
 
     Complex                   Zvalue(int,int); 
-    Values *                  Set_Values(std::string&,Basic_Sfuncs*);
+    Values *                  Set_Values(std::string &,Basic_Sfuncs *);
     
     Virtual_String_Generator* Get_Generator() { return sgen; }
-
     int                       Is_String()     { return working; }
-    bool                      IsLibrary() {return (val!=0);}
+    bool                      IsLibrary()     { return (val!=0); }
 
-    inline int NumberOfCouplings() { return sgen->couplingsLength(); }
-    inline int NumberOfZfuncs()    { return sgen->zxlLength(); }
+    inline int NumberOfCouplings() { return sgen->NumberOfCouplings(); }
+    inline int NumberOfZfuncs()    { return sgen->NumberOfzxl(); }
   };
 }
 

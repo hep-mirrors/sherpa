@@ -15,7 +15,7 @@ namespace AMEGIC {
       \brief Array of Flavour objects according to the particles 
       participating in the considered interaction
     */
-   ATOOLS::Flavour   in[4];
+    ATOOLS::Flavour   in[4];
     //!number of external legs the Single_Vertex possesses
     int       nleg;
     //!On/Off switch of a Single_Vertex 

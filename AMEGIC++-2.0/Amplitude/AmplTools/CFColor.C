@@ -527,14 +527,12 @@ void CFColor::ReplaceG(sknot* m,sknot* m0)
 	    // kill G's
 	    // replace s1->Str()[2] -> s1->Str()[4]
 	    char c = s1->Str()[2];
-	    cout<<"RG1:  "<<s1->Str()<<"!"<<c<<endl;
 	    sknot* akt = m0;
 	    do {
 	      if (m0->left->op=='*' || m0->left->op==0) {
 		// right...
 		if(m0->right->Str().length()==8) {
 		  string shelp = m0->right->Str();
-		  cout<<"RG2r: "<<shelp<<endl;
 		  for(short int k=1;k<4;k++) if(shelp[2*k]==c)shelp[2*k] = s1->Str()[4];
 		  m0->right->SetString(shelp);
 		}		
@@ -542,7 +540,6 @@ void CFColor::ReplaceG(sknot* m,sknot* m0)
 	      if (m0->left->op==0) {
 		// left...
 		if(m0->left->Str().length()==8) { 
-		  cout<<"RG2l: "<<m0->left->Str()<<endl;
 		  string shelp = m0->left->Str();
 		  for(short int k=1;k<4;k++) if(shelp[2*k]==c)shelp[2*k] = s1->Str()[4];
 		  m0->left->SetString(shelp);

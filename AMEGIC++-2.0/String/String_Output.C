@@ -1,7 +1,5 @@
 #include "String_Output.H"
 
-#ifdef Kabbala_on
-
 #include <stdio.h>  
 #include <iostream>
 //#include <stdlib.h>
@@ -225,14 +223,14 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
   zf<<"{"<<endl;
   int hit;
   Complex norm;
-  zf<<"  if (Z==NULL) Z = new Complex["<<sgen->ZX_Max_Number()<<"];"<<endl<<endl;
+  zf<<"  if (Z==NULL) Z = new Complex["<<sgen->ZXMaxNumber()<<"];"<<endl<<endl;
   zf<<"  Z[0] = Complex(0.,0.);"<<endl;
   lines += 7;
 
   int divnum = 0;
   ZXlist* zx;
-  for (int i=1;i<sgen->ZX_Max_Number();i++) {
-    zx = sgen->Get_ZXl(i);
+  for (int i=1;i<sgen->ZXMaxNumber();i++) {
+    zx = sgen->GetZXl(i);
     if (zx->on) {
       lines++;
       zf<<"  Z["<<i<<"] = ";
@@ -266,11 +264,11 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
 	norm = zx->value.Value();
 	hit = 0;
 	//couplings
-	for (short int j=0;j<sgen->Coupl_Max_Number();j++) {
-	  if ( ATOOLS::IsEqual(norm,sgen->Get_Coupl(j)) ||
-	       ATOOLS::IsEqual(norm,-sgen->Get_Coupl(j)) ) {
+	for (short int j=0;j<sgen->CouplingMaxNumber();j++) {
+	  if ( ATOOLS::IsEqual(norm,sgen->GetCoupling(j)) ||
+	       ATOOLS::IsEqual(norm,-sgen->GetCoupling(j)) ) {
 	    hit = 1;
-	    if (ATOOLS::IsEqual(norm,-sgen->Get_Coupl(j))) zf<<"-";
+	    if (ATOOLS::IsEqual(norm,-sgen->GetCoupling(j))) zf<<"-";
 	    zf<<"c["<<j<<"];"<<endl;
 	    break;
 	  }
@@ -396,7 +394,7 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
  	break;
       }
     }
-    if (((maxlines+tolerance)<lines) && (i!=sgen->ZX_Max_Number()-1)) {
+    if (((maxlines+tolerance)<lines) && (i!=sgen->ZXMaxNumber()-1)) {
       lines = 0;
       divnum++;
       //close the old one
@@ -529,4 +527,3 @@ void String_Output::Add_To_Set_Values()
     remove("Process/Set_Values.C.tmp");
 }
 
-#endif

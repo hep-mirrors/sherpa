@@ -23,7 +23,7 @@ G4_Calc::G4_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
 
 Kabbala G4_Calc::Do() 
 {
-  Kabbala factor = sgen->Get_Enumber(coupl[8]);
+  Kabbala factor = sgen->GetEnumber(coupl[8]);
  
   return factor*(Z(0,1)*Z(2,3)-Z(0,3)*Z(2,1));
   

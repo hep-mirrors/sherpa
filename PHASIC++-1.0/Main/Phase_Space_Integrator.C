@@ -291,7 +291,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
 double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double mass, double maxerror) 
 { 
-  msg.Out()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
+  msg.Tracking()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
   iter      = 20000;
   nopt      = 10; 
@@ -309,7 +309,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
   double oldvalue = 0.;
 
   for (n=1;n<=nmax;n++) {
-    do {value = psh->Differential();}
+    do { value = psh->Differential(); }
     while (value > 1./ATOOLS::Accu());
     (psh->FSRIntegrator())->AddPoint(value);
     

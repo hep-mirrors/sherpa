@@ -19,7 +19,7 @@ Kabbala Basic_Mfunc::M(const int a)
       break;
     }
   }
-  if (hit==0) return sgen->Get_Enumber(0.);
+  if (hit==0) return sgen->GetEnumber(0.);
 
   Complex mass2 = Complex(0.,0.);
 
@@ -31,8 +31,8 @@ Kabbala Basic_Mfunc::M(const int a)
 	  mass2 -= Complex(0,p1->fl.Mass()*
 	  p1->fl.Width());
   }
-  if (ATOOLS::IsZero(mass2)) return sgen->Get_Enumber(0.);
+  if (ATOOLS::IsZero(mass2)) return sgen->GetEnumber(0.);
 
-  return sgen->Get_Enumber(1./mass2);
+  return sgen->GetEnumber(1./mass2);
 
 }

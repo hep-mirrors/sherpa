@@ -191,3 +191,11 @@ bool Standard_Model::RunSpectrumGenerator() {
   return 1;
 }
 
+bool Standard_Model::FillDecay(ATOOLS::Decay_Table * dt) 
+{
+  if (m_generator==std::string("Hdecay")) {
+    return p_spectrumgenerator->FillDecay(dt);
+  }
+  return 0;
+}
+

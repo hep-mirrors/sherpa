@@ -14,15 +14,15 @@ namespace AMEGIC {
 
   class ZXlist {
   public:
-    int     narg;
-    int*    arg;
-    Kabbala value;
-    int     zlist;
-    sknot*  sk;
-    int     on;
-    ZXlist()  {arg = 0;sk = 0;on = 1;narg = 0;zlist = -1;}
-    ZXlist(const ZXlist& copy) {arg = 0;*this = copy;}
-    ~ZXlist() {if (arg!=0) delete[] arg;} 
+    int       narg, * arg;
+    Kabbala   value;
+    int       zlist;
+    sknot   * sk;
+    int       on;
+
+    ZXlist()                    { arg = 0;sk = 0;on = 1;narg = 0;zlist = -1; }
+    ZXlist(const ZXlist & copy) { arg = 0;*this = copy; }
+    ~ZXlist()                   { if (arg!=0) delete[] arg; } 
 
     ZXlist& operator=(const ZXlist& copy) {
       if (this!=&copy) {
@@ -42,79 +42,32 @@ namespace AMEGIC {
   class Virtual_String_Generator {
   public:
     virtual ~Virtual_String_Generator() {}
-    virtual void Reset() {}
-    virtual int Get_Cnumber(Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return 0;}
-#ifdef Kabbala_on
-    virtual Kabbala Get_CZnumber(Complex,std::string) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
-    virtual Kabbala Get_Znumber(int*,Complex*,Complex) { 
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
-    virtual Kabbala Get_Xnumber(int*,Complex*,Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));} 
-    virtual Kabbala Get_Ynumber(int*,Complex*,Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));} 
-    virtual Kabbala Get_Pnumber(Pfunc*,int) {   
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));} 
-    virtual Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}  
-    virtual Kabbala Get_Enumber(Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
-    virtual Kabbala Get_Snumber(const int,const int,Complex) {     
-      std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
-  virtual Kabbala Get_Scplxnumber(const int,const int,Complex)     
-    {std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
-#else
-    virtual Kabbala Get_CZnumber(Complex,std::string) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
-    virtual Kabbala Get_Znumber(int*,Complex*,Complex) { 
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
-    virtual Kabbala Get_Xnumber(int*,Complex*,Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);} 
-    virtual Kabbala Get_Ynumber(int*,Complex*,Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);} 
-    virtual Kabbala Get_Pnumber(Pfunc*,int) {   
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);} 
-    virtual Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}  
-    virtual Kabbala Get_Enumber(Complex) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
-    virtual Kabbala Get_Snumber(const int,const int,Complex) {     
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
-  virtual Kabbala Get_Scplxnumber(const int,const int,Complex)     
-#endif    
-    virtual void     Calculate(Values*) {
-      std::cerr<<"Virtual Method called !"<<std::endl;}
-    virtual int      Massless(int) {
-      std::cerr<<"Virtual Method called !"<<std::endl;
-      return 0;
-    }
-    virtual Kabbala* Get_Kabbala(const std::string&) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return 0;}
-    virtual inline int ZX_Max_Number() {
-      std::cerr<<"Virtual Method called !"<<std::endl;return 0;}
-    virtual inline std::vector<int>* GetFlavours() {
-      std::cerr<<"Virtual Method called !"<<std::endl;return 0;}
-    virtual inline ZXlist* Get_ZXl(const int&) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return 0;}
-    virtual inline int Coupl_Max_Number() {
-      std::cerr<<"Virtual Method called !"<<std::endl;return 0;}
-    virtual inline Complex Get_Coupl(const int&) {
-      std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
-    virtual inline void SetOn(const int&) {
-      std::cerr<<"Virtual Method called !"<<std::endl;}
-    virtual inline void SetOn(const std::string&) {
-      std::cerr<<"Virtual Method called !"<<std::endl;}
-    virtual inline void SetOff(const int&) {
-      std::cerr<<"Virtual Method called !"<<std::endl;}
-    virtual inline int couplingsLength() {
-      std::cerr<<"Virtual Method called !"<<std::endl;
-      return 0;
-    }
-    virtual inline int zxlLength() {
-      std::cerr<<"Virtual Method called !"<<std::endl;
-      return 0;
-    }
+    virtual void      Reset()           {}
+    virtual void      StoreAndReset()   {}
+    virtual void      ReStore()         {}
+    virtual int       GetCnumber(Complex)                          = 0;
+    virtual Kabbala   GetCZnumber(Complex,std::string)             = 0;
+    virtual Kabbala   GetZnumber(int*,Complex*,Complex)            = 0; 
+    virtual Kabbala   GetXnumber(int*,Complex*,Complex)            = 0;
+    virtual Kabbala   GetYnumber(int*,Complex*,Complex)            = 0;
+    virtual Kabbala   GetPnumber(Pfunc *,int)                      = 0;   
+    virtual Kabbala   GetMassnumber(int,ATOOLS::Flavour,Complex)   = 0;
+    virtual Kabbala   GetEnumber(Complex)                          = 0;
+    virtual Kabbala   GetSnumber(const int,const int,Complex)      = 0;     
+    virtual Kabbala   GetScplxnumber(const int,const int,Complex)  = 0;      
+    virtual void      Calculate(Values*)                           = 0;
+    virtual int       Massless(int)                                = 0;
+    virtual Kabbala * GetKabbala(const std::string&)               = 0;
+    virtual int       ZXMaxNumber()                                = 0;
+    virtual std::vector<int>* GetFlavours()                        = 0;
+    virtual ZXlist*   GetZXl(const int&)                           = 0;
+    virtual int       CouplingMaxNumber()                          = 0;
+    virtual Complex   GetCoupling(const int&)                      = 0;
+    virtual void      SetOn(const int&)                            = 0;
+    virtual void      SetOn(const std::string&)                    = 0;
+    virtual void      SetOff(const int&)                           = 0;
+    virtual int       NumberOfCouplings()                          = 0;
+    virtual int       NumberOfzxl()                                = 0;
   };
   
 
@@ -127,98 +80,91 @@ namespace AMEGIC {
 			   public Basic_Vfunc,
 			   public Basic_Pfunc,
 			   public Basic_MassTermfunc {
-    std::vector<ZXlist>  zxl;
-    std::vector<Complex> couplings;
-    std::vector<int>     flavours;
-    String_Tree stree;
-    int ZX_Count(); 
-    int Z_Number(int*,int*);
-    int X_Number(int*,int*);
-    int Y_Number(int*,int*);
-    int H_Number(int*,int*);
-    int ZXY_Number(int,int,int*,int,int*);
-    int GetNumber(int,Complex);
+    std::vector<ZXlist>  * p_zxl,       * p_zxlsave;
+    std::vector<Complex> * p_couplings, * p_couplingssave;
+    std::vector<int>     * p_flavours,  * p_flavourssave;
+    String_Tree            m_stree;
+    bool                   m_copied;
+    int  ZXCount(); 
+    int  ZNumber(int *,int *);
+    int  XNumber(int *,int *);
+    int  YNumber(int *,int *);
+    int  HNumber(int *,int *);
+    int  ZXYNumber(int,int,int *,int,int *);
+    int  GetNumber(int,Complex);
     void Print();
   public:
-    String_Generator(Basic_Sfuncs* _BS) : 
-      Basic_Func(this,_BS), 
-      Basic_Yfunc(this,_BS), 
-      Basic_Zfunc(this,_BS), 
-      Basic_Xfunc(this,_BS), 
-      Basic_Mfunc(this,_BS), 
-      Basic_Vfunc(this,_BS), 
-      Basic_Pfunc(this,_BS),
-      Basic_MassTermfunc(this,_BS) {Reset();}
+    String_Generator(Basic_Sfuncs *);
     ~String_Generator();
     void Reset();
-    int Z_Count(); 
-    int X_Count(); 
-    int E_Count(); 
+    void StoreAndReset();
+    void ReStore();
+    int ZCount(); 
+    int XCount(); 
+    int ECount(); 
     
-    int Get_Cnumber(Complex);
-    int Get_Fnumber(int);
+    int GetCnumber(Complex);
+    int GetFnumber(int);
     
-    Kabbala Number(int,Complex);
-    Kabbala Get_CZnumber(Complex,std::string);
-    Kabbala Get_Znumber(int*,Complex*,Complex);
-    Kabbala Get_Xnumber(int*,Complex*,Complex); 
-    Kabbala Get_Ynumber(int*,Complex*,Complex); 
-    Kabbala Get_Pnumber(Pfunc*,int);
-    Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex);
-    Kabbala Get_Enumber(Complex); 
-    Kabbala Get_Snumber(int,int,Complex); 
-    Kabbala Get_Scplxnumber(const int,const int,Complex); 
-    void Calculate(Values*); 
-    int  Massless(int); 
-    Kabbala* Get_Kabbala(const std::string&);
-    inline int ZX_Max_Number()             { return zxl.size(); }
-    inline std::vector<int>* GetFlavours() {return &flavours;}
-    inline ZXlist* Get_ZXl(const int& i)   { return &zxl[i]; }
-    inline int Coupl_Max_Number()          { return couplings.size(); }
-    inline Complex Get_Coupl(const int& i) { return couplings[i]; }
-    inline void SetOff(const int& i)       { zxl[i].on = 0; }
-    inline void SetOn(const int& i)        { zxl[i].on = 1; }
-    void   SetOn(const std::string&);
+    Kabbala     Number(int,Complex);
+    Kabbala     GetCZnumber(Complex,std::string);
+    Kabbala     GetZnumber(int *,Complex *,Complex);
+    Kabbala     GetXnumber(int *,Complex *,Complex); 
+    Kabbala     GetYnumber(int *,Complex *,Complex); 
+    Kabbala     GetPnumber(Pfunc *,int);
+    Kabbala     GetMassnumber(int,ATOOLS::Flavour,Complex);
+    Kabbala     GetEnumber(Complex); 
+    Kabbala     GetSnumber(int,int,Complex); 
+    Kabbala     GetScplxnumber(const int,const int,Complex); 
+    void        Calculate(Values*); 
+    int         Massless(int); 
+    Kabbala   * GetKabbala(const std::string&);
+    int         ZXMaxNumber()               { return p_zxl->size(); }
+    std::vector<int>* GetFlavours()         { return p_flavours;}
+    ZXlist    * GetZXl(const int & i)       { return &(*p_zxl)[i]; }
+    int         CouplingMaxNumber()         { return p_couplings->size(); }
+    Complex     GetCoupling(const int & i)  { return (*p_couplings)[i]; }
+    void        SetOff(const int & i)       { (*p_zxl)[i].on = 0; }
+    void        SetOn(const int & i)        { (*p_zxl)[i].on = 1; }
+    void        SetOn(const std::string &);
 
-    inline int zxlLength()                 { return zxl.size(); }
-    inline ZXlist zxlist(int i)            { return zxl[i]; }
-    inline int couplingsLength()           { return couplings.size(); }
-    inline Complex cplist(int i)           { return couplings[i]; } 
-    inline int FlavoursLength()            { return flavours.size(); }
-    inline int Fllist(int i)               { return flavours[i]; }  
-    inline String_Tree Stree()             { return stree; }
+    int         NumberOfzxl()               { return p_zxl->size(); }
+    ZXlist      zxlist(int i)               { return (*p_zxl)[i]; }
+    int         NumberOfCouplings()         { return p_couplings->size(); }
+    Complex     cplist(int i)               { return (*p_couplings)[i]; } 
+    int         NumberOfFlavours()          { return p_flavours->size(); }
+    int         GetFlavour(int i)           { return (*p_flavours)[i]; }  
+    String_Tree GetStree()                  { return m_stree; }
   };
   
   class No_String_Generator : public Virtual_String_Generator {
   public:
-    void Reset() {};
-    int Get_Cnumber(Complex)                         {return 0;}
-#ifdef Kabbala_on
-    Kabbala Get_CZnumber(Complex value,std::string)       {return Kabbala(std::string(""),value);}
-    Kabbala Get_Znumber(int*,Complex*,Complex value) {return Kabbala(std::string(""),value);}
-    Kabbala Get_Xnumber(int*,Complex*,Complex value) {return Kabbala(std::string(""),value);} 
-    Kabbala Get_Ynumber(int*,Complex*,Complex value) {return Kabbala(std::string(""),value);} 
-    Kabbala Get_Pnumber(Pfunc* pl,int)               {return Kabbala(std::string(""),pl->value);} 
-    Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex value){return Kabbala(std::string(""),value);}
-    Kabbala Get_Enumber(Complex value)               {return Kabbala(std::string(""),value);}
-    Kabbala Get_Snumber(int,int,Complex value)     {return Kabbala(std::string(""),value);}
-    Kabbala Get_Scplxnumber(const int,const int,Complex value)     {return Kabbala(std::string(""),value);}
-#else
-    Kabbala Get_CZnumber(Complex value,std::string)       {return value;}
-    Kabbala Get_Znumber(int*,Complex*,Complex value) {return value;}
-    Kabbala Get_Xnumber(int*,Complex*,Complex value) {return value;} 
-    Kabbala Get_Ynumber(int*,Complex*,Complex value) {return value;} 
-    Kabbala Get_Pnumber(Pfunc* pl,int)               {return pl->value;} 
-    Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex value){return value;}
-    Kabbala Get_Enumber(Complex value)               {return value;}
-    Kabbala Get_Scplxnumber(const int&,const int&,Complex value)     {return value;}
-#endif    
-    void     Calculate(Values*)                       {}  
-    int      Massless(int)                            { return 0; }  
-    Kabbala* Get_Kabbala(const std::string&)          { return 0;}
-    inline   int zxlLength()                          { return 0; }
-    inline   int couplingsLength()                    { return 0; }
+    void Reset()                                                {};
+    int       GetCnumber(Complex)                               { return 0;}
+    Kabbala   GetCZnumber(Complex value,std::string)            { return Kabbala(std::string(""),value);}
+    Kabbala   GetZnumber(int*,Complex*,Complex value)           { return Kabbala(std::string(""),value);}
+    Kabbala   GetXnumber(int*,Complex*,Complex value)           { return Kabbala(std::string(""),value);} 
+    Kabbala   GetYnumber(int*,Complex*,Complex value)           { return Kabbala(std::string(""),value);} 
+    Kabbala   GetPnumber(Pfunc * pl,int)                        { return Kabbala(std::string(""),pl->value);} 
+    Kabbala   GetMassnumber(int,ATOOLS::Flavour,Complex value)  { return Kabbala(std::string(""),value);}
+    Kabbala   GetEnumber(Complex value)                         { return Kabbala(std::string(""),value);}
+    Kabbala   GetSnumber(int,int,Complex value)                 { return Kabbala(std::string(""),value);}
+    Kabbala   GetScplxnumber(const int,const int,Complex value) { return Kabbala(std::string(""),value);}
+    int       Massless(int)                                     { return 0; }  
+    Kabbala * GetKabbala(const std::string&)                    { return 0;}
+    int       NumberOfzxl()                                     { return 0; }
+    int       NumberOfCouplings()                               { return 0; }
+    int       ZXMaxNumber()                                     { return 0; }   
+    std::vector<int>* GetFlavours()                             { return NULL; }
+    ZXlist*   GetZXl(const int&)                                { return NULL; }
+    int       CouplingMaxNumber()                               { return 0; }
+    Complex   GetCoupling(const int&)                           { return Complex(0.,0.); }
+    void      Calculate(Values*)                                {}  
+    void      SetOn(const int&)                                 {}  
+    void      SetOn(const std::string&)                         {}  
+    void      SetOff(const int&)                                {}  
   };
+
 }
 #include "Values.H"
 

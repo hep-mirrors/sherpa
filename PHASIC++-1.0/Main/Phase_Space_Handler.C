@@ -198,8 +198,8 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
   double KFactor = 0., Q2 = -1.;
   result1 = result2 = 0.;
 
-  if (ih->On()>0) ih->BoostInLab(p,nin+nout);
-  if (bh->On()>0) bh->BoostInLab(p,nin+nout);
+  if (ih && ih->On()>0) ih->BoostInLab(p,nin+nout);
+  if (bh && bh->On()>0) bh->BoostInLab(p,nin+nout);
 
   Vec4D * p_save = new Vec4D[nin+nout];
   for (int i=0;i<nin+nout;++i) p_save[i]=p[i];

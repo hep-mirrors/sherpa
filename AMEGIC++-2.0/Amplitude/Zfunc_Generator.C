@@ -71,9 +71,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
   if (p->fl.IsVector() && p->number>99){
     p->m = 1;
     notcut++;
-    //cout<<"+++++++++Cut:"<< p->number<<endl;
     if(fromfermion&&p->left->fl.IsFermion()){
-      //      cout<<"MarkCut: "<<p->number<<" not cutted"<<endl;
       p->m=0;
       }
     if(ATOOLS::IsZero(p->fl.Mass())){

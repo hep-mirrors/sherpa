@@ -103,7 +103,7 @@ namespace PHASIC {
     virtual int                  ValidN()    { return n_contrib; }
     virtual int                  Nin()       { return nin; }
     virtual int                  Nout()      { return nout; }
-    virtual ATOOLS::Flavour * Flavs()     { return fl; }
+    virtual ATOOLS::Flavour    * Flavs()     { return fl; }
     virtual double               Res1()      { return res1; }
     virtual double               Res2()      { return res2; }
     virtual double               Res3()      { return res3; }

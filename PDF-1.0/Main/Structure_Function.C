@@ -20,9 +20,6 @@ Structure_Function::~Structure_Function() {
 
 bool Structure_Function::CalculateWeight(double x,double q2) 
 {
-
-  //cout<<x<<" : "<<p_pdf->GetXMax()<<endl;
-
   if ( (x  > p_pdf->GetXMax()) || (x<= p_pdf->GetXMin()) ) {
     msg.Error()<<"SF : x out of bounds "<<x<<" at "<<q2<<", "
 	       <<"xrange = "<<p_pdf->GetXMin()<<" ... "<<p_pdf->GetXMax()<<std::endl;

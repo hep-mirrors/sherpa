@@ -218,7 +218,7 @@ void Single_Amplitude::FillCoupling(String_Handler* _shand)
   for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
     Zfunc* z = (*zit);
     for (short int i=0;i<z->m_ncoupl;i++) {
-      (_shand->Get_Generator())->Get_Cnumber(z->p_couplings[i]);
+      (_shand->Get_Generator())->GetCnumber(z->p_couplings[i]);
     }
   }
 }

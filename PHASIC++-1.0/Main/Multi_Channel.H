@@ -27,7 +27,7 @@ namespace PHASIC {
   class Multi_Channel {
   protected :
     int                           nin, nout;
-    ATOOLS::Flavour          * fl;
+    ATOOLS::Flavour             * fl;
     std::string                   name;
     long int                      n_points,n_contrib;
     double    m_weight,m_result,m_result2;

@@ -211,7 +211,7 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
       }
 
       Kabbala n33;
-      if(buildstring) n33=(shand->Get_Generator())->Get_Enumber(Complex(1./3.,0.));
+      if(buildstring) n33=(shand->Get_Generator())->GetEnumber(Complex(1./3.,0.));
       else n33=Kabbala(string(""),Complex(1./3.,0.));
       value -= n33*hlp1*hlp2;
 
@@ -261,7 +261,7 @@ Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,vector<int>* iz, vector<int
     if ( (value.String()).find(string("+"))!=-1 ||
 	 (value.String()).find(string("-"))!=-1 ||
 	 (value.String()).find(string("*"))!=-1 )
-      value = (shand->Get_Generator())->Get_CZnumber(value.Value(),value.String());
+      value = (shand->Get_Generator())->GetCZnumber(value.Value(),value.String());
   }
   else value.SetString("");
 
@@ -362,7 +362,7 @@ Kabbala Single_Amplitude_Base::GetProp(Zfunc* z)
 
   if (buildstring) {
     if (cnt>1)
-      Pols = (shand->Get_Generator())->Get_CZnumber(Pols.Value(),Pols.String());
+      Pols = (shand->Get_Generator())->GetCZnumber(Pols.Value(),Pols.String());
   }
   return Pols;
 }

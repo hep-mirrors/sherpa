@@ -10,7 +10,7 @@ Kabbala Basic_Yfunc::Y(const int z)
 
   for (short int i=0;i<4;i++) sarg[i] = arg[4*z+i];
 
-  return sgen->Get_Ynumber(sarg,&coupl[2*z],
+  return sgen->GetYnumber(sarg,&coupl[2*z],
 			   Ycalc(arg[4*z],arg[4*z+1],
 				 arg[4*z+2],arg[4*z+3],
 				 coupl[2*z],coupl[2*z+1]));

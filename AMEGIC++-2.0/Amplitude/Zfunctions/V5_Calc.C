@@ -60,8 +60,8 @@ Kabbala V5_Calc::G5()
 
 Kabbala V5_Calc::Do() 
 {
-  Kabbala factor = sgen->Get_Enumber(coupl[10])*sgen->Get_Enumber(coupl[11])
-    *sgen->Get_Enumber(coupl[12]);
+  Kabbala factor = sgen->GetEnumber(coupl[10])*sgen->GetEnumber(coupl[11])
+    *sgen->GetEnumber(coupl[12]);
  
   if (IsZero(M(0)) &&
       IsZero(M(1)) &&

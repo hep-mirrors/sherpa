@@ -393,7 +393,8 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 	int next; string chname;
 	for (int j=0;j<(*_proc)[i]->NumberOfFSRIntegrators();j++) { 
 	  chname = ((*_proc)[i]->FSRIntegrator(j))->Name();
-	  if ( (chname!=string("Rambo")) && (chname!=string("Sarge")) ) { 
+	  if ( (chname!=string("Rambo")) && (chname!=string("Sarge")) && 
+	       (chname!=string("Decay2-Channel 1")) ) { 
 	    next   = chname.find(string("--"));
 	    chname = chname.substr(0,next);
 	    sc     = (*_proc)[i]->PSGenerator()->SetChannel(m_nin,m_nout,p_fl,

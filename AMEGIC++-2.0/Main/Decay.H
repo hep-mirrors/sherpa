@@ -8,6 +8,7 @@
 
 
 namespace AMEGIC {
+  /*
   //! The DecayTable implements the partial widths and branching ratios.
   struct DecayTable {
     //! The width of the particular particle (fl[0])
@@ -38,9 +39,8 @@ namespace AMEGIC {
     //! Finds every 1->2 decay for the unstable particles.
     void FindDecayProducts2();
     //! Finds every 1->3 decay.
-    /*! Finds every 1->3 decay, where no 1->2 decay exists or 
-      could not pass the mass constraint.
-     */
+    //! Finds every 1->3 decay, where no 1->2 decay exists or 
+    //!could not pass the mass constraint.
     void FindDecayProducts3();
     //! Used for the determination of further decays.
     void NextDecay(DecayTable*);
@@ -58,6 +58,7 @@ namespace AMEGIC {
     //! Calculates the width of the different decay modes.
     void Calculate(Topology*);
   };
+*/
 }
 
 #endif

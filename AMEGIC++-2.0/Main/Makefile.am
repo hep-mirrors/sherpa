@@ -1,7 +1,7 @@
 lib_LTLIBRARIES = libAmegic.la
 libAmegic_la_SOURCES = Helicity.C Topology.C Polarisation.C Pol_Info.C\
 		       Process_Base.C Single_Process.C Process_Group.C \
-		       All_Processes.C All_Decays.C Amegic.C
+		       All_Processes.C Full_Decay_Table.C All_Decays.C Amegic.C
 INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \
 	   -I../Amplitude/Zfunctions \
@@ -20,5 +20,5 @@ INCLUDES = -I../Amplitude \
 	   -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H \
 		 Process_Base.H Single_Process.H Process_Group.H Decay.H \
-		 All_Processes.H All_Decays.H Amegic.H 
+		 All_Processes.H Full_Decay_Table.H All_Decays.H Amegic.H 
 	         

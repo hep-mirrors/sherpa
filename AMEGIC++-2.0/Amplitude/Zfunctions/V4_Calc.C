@@ -28,7 +28,7 @@ Kabbala V4_Calc::Massless()
 
 Kabbala V4_Calc::Do() 
 {
-  Kabbala factor = sgen->Get_Enumber(coupl[8]);
+  Kabbala factor = sgen->GetEnumber(coupl[8]);
  
   if (IsZero(M(0)) &&
       IsZero(M(1)) &&

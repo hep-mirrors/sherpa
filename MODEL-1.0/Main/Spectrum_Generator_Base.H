@@ -19,9 +19,10 @@ namespace MODEL {
   public:
     Spectrum_Generator_Base(ATOOLS::Data_Read *,Model_Base *);
     virtual ~Spectrum_Generator_Base();
-    virtual void Run(std::string) = 0;
-    virtual void FillMasses()     = 0;
-    virtual void FillDecays()     = 0;
+    virtual void Run(std::string)                 = 0;
+    virtual void FillMasses()                     = 0;
+    virtual void FillDecays()                     = 0;
+    virtual bool FillDecay(ATOOLS::Decay_Table *) = 0;
   };
 
   /*!

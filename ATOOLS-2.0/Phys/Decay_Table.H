@@ -19,19 +19,21 @@ namespace ATOOLS {
   typedef FlavourSet::iterator FlSetIter;
 
   class Decay_Channel {
-  private :
+  protected :
     double     m_width;
     Flavour    m_flin;
     FlavourSet m_flouts;
   public :
-    Decay_Channel(const Flavour);
+    Decay_Channel() {}
+    Decay_Channel(const Flavour &);
+    Decay_Channel(const Decay_Channel &);
     void AddDecayProduct(const Flavour &);
     void SetWidth(const double &);
     void Output();
 
-    double          Width();
-    Flavour GetDecaying();
-    FlavourSet      GetDecayProducts();
+    double     Width();
+    Flavour    GetDecaying();
+    FlavourSet GetDecayProducts();
   };
 
   inline void Decay_Channel::AddDecayProduct(const Flavour & _flout) { m_flouts.insert(_flout); }
@@ -42,23 +44,29 @@ namespace ATOOLS {
 
 
   class Decay_Table {
-  private :
+  protected :
+    bool                          m_overwrite;
+    std::string                   m_generator;
     double                        m_width;
     Flavour                       m_flin;
+  private :
     std::vector <Decay_Channel *> m_channels;
   public :
     Decay_Table(const Flavour);
     void AddDecayChannel(Decay_Channel *);
     void Output();
-    
-    double          TotalWidth();
+    void SetOverwrite()                      { m_overwrite = 1; }
+    void SetWidthGenerator(std::string _gen) { m_generator = _gen; }
+
+    bool            Overwrite()              { return m_overwrite; }
+    Flavour         Flav()                   { return m_flin; }
+    double          TotalWidth()             { return m_width; }
+    int             NumberOfDecayChannels()  { return m_channels.size(); } 
     double          Width(const int);
     double          Width(const FlavourSet);
     Decay_Channel * GetDecayChannel(const int);
     Decay_Channel * GetDecayChannel(const FlavourSet);
   };
-
-  inline double Decay_Table::TotalWidth() { return m_width; }
 }
 
 #endif

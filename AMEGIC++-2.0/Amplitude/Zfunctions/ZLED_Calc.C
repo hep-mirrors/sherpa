@@ -160,7 +160,6 @@ FFVGS_Calc::FFVGS_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) :
 Kabbala FFT_Calc::Do() 
 {
   int sarg[4];
-  //cout<<"FFT_Calc:"<<arg[4]<<","<<arg[5]<<","<<arg[6]<<","<<arg[7]<<endl;
   sarg[2]=BS->GetPolNumber(arg[4],arg[5],GetPMass(arg[4],arg[5]));
   sarg[3]=BS->GetPolNumber(arg[6],arg[7],GetPMass(arg[6],arg[7]));
 
@@ -168,12 +167,11 @@ Kabbala FFT_Calc::Do()
  
   if (ps[1].numb<BS->GetNmomenta()) s1 *= BS->Sign(ps[1].numb);
   if (ps[2].numb<BS->GetNmomenta()) s2 *= BS->Sign(ps[2].numb);
-  //cout<<"FFT_Calc:"<<ps[1].numb<<","<<ps[2].numb<<":"<<sarg[2]<<","<<sarg[3]<<":"<<s1<<","<<s2<<endl;
   return 
     ( X(0,1,0)* ( Vcplx(ps[1].numb,sarg[3],s1)-Vcplx(ps[2].numb,sarg[3],s2) ) +
       X(0,1,1)* ( Vcplx(ps[1].numb,sarg[2],s1)-Vcplx(ps[2].numb,sarg[2],s2) ) -
-      sgen->Get_Enumber(2.) * Vcplx(sarg[2],sarg[3]) *
-      (X(0,1)-X(0,2)-Y(0) * sgen->Get_Enumber(coupl[2])) );
+      sgen->GetEnumber(2.) * Vcplx(sarg[2],sarg[3]) *
+      (X(0,1)-X(0,2)-Y(0) * sgen->GetEnumber(coupl[2])) );
 }
 
 Kabbala VVT_Calc::Do() 
@@ -187,7 +185,6 @@ Kabbala VVT_Calc::Do()
       s1=ps[1].direction;
   if (sarg[0]<BS->GetNmomenta()) s0 *= BS->Sign(sarg[0]);
   if (sarg[1]<BS->GetNmomenta()) s1 *= BS->Sign(sarg[1]);
-  //cout<<"VVT_Calc: "<<ps[0].numb<<":"<<ps[0].direction<<";"<<ps[1].numb<<":"<<ps[1].direction<<endl;
   Kabbala Z01 = Z(0,1),
           X01 = X(0,1)+X(0,0),
           X10 = X(1,0)+X(1,1),
@@ -200,8 +197,8 @@ Kabbala VVT_Calc::Do()
           V12 = Vcplx(sarg[1],sarg[2],s1),
           V13 = Vcplx(sarg[1],sarg[3],s1),
           V23 = Vcplx(sarg[2],sarg[3]);
-  return sgen->Get_Enumber(coupl[4])*
-    ( ( sgen->Get_Enumber(coupl[5]) + V(0,1) )*( X02*X13 + X03*X12 - Z01*V23 )
+  return sgen->GetEnumber(coupl[4])*
+    ( ( sgen->GetEnumber(coupl[5]) + V(0,1) )*( X02*X13 + X03*X12 - Z01*V23 )
       + X01*X10*V23 - ( X01*( X13*V02 + X12*V03 ) +
 			X10*( X02*V13 + X03*V12 ) -
 			Z01*( V03*V12 + V02*V13 ) ) );
@@ -218,8 +215,8 @@ Kabbala SST_Calc::Do()
       s1=ps[1].direction;
   if (sarg[0]<BS->GetNmomenta()) s0 *= BS->Sign(sarg[0]);
   if (sarg[1]<BS->GetNmomenta()) s1 *= BS->Sign(sarg[1]);
-  return sgen->Get_Enumber(coupl[4])*
-    ( ( sgen->Get_Enumber(coupl[5]) + V(0,1) ) * Vcplx(sarg[2],sarg[3]) -
+  return sgen->GetEnumber(coupl[4])*
+    ( ( sgen->GetEnumber(coupl[5]) + V(0,1) ) * Vcplx(sarg[2],sarg[3]) -
       Vcplx(sarg[0],sarg[2],s0) * Vcplx(sarg[1],sarg[3],s1) -
       Vcplx(sarg[0],sarg[3],s0) * Vcplx(sarg[1],sarg[2],s1) );     
 }
@@ -233,7 +230,7 @@ Kabbala FFVT_Calc::Do()
   int s0=ps[0].direction;
   if (sarg[0]<BS->GetNmomenta()) s0 *= BS->Sign(sarg[0]);
 
-  Kabbala V23x2=sgen->Get_Enumber(2.) * Vcplx(sarg[2],sarg[3]);
+  Kabbala V23x2=sgen->GetEnumber(2.) * Vcplx(sarg[2],sarg[3]);
   
   if(IsZero(M(0))) return  X(0,2,1)*X(1,2,0) + X(0,2,0)*X(1,2,1) - Z(0,1)*V23x2;
   return 
@@ -254,11 +251,10 @@ Kabbala VVVT_Calc::Do()
   if (sarg[0]<BS->GetNmomenta()) s0 *= BS->Sign(sarg[0]);
   if (sarg[1]<BS->GetNmomenta()) s1 *= BS->Sign(sarg[1]);
   if (sarg[2]<BS->GetNmomenta()) s2 *= BS->Sign(sarg[2]);
-  //cout<<"VVVT_Calc: "<<ps[0].numb<<":"<<ps[0].direction<<";"<<ps[1].numb<<":"<<ps[1].direction<<";"<<ps[2].numb<<":"<<ps[2].direction<<endl;
 
   Kabbala V34=Vcplx(sarg[3],sarg[4]);
 
-  return sgen->Get_Enumber(coupl[6])*
+  return sgen->GetEnumber(coupl[6])*
     (  (X(2,0)-X(2,1))*(X(0,3,0)*X(1,3,1)+X(0,3,1)*X(1,3,0)-Z(0,1)*V34) +
        (X(0,1)-X(0,2))*(X(1,3,0)*X(2,3,1)+X(1,3,1)*X(2,3,0)-Z(1,2)*V34) +
        (X(1,2)-X(1,0))*(X(2,3,0)*X(0,3,1)+X(2,3,1)*X(0,3,0)-Z(2,0)*V34) +
@@ -275,25 +271,25 @@ Kabbala SSST_Calc::Do()
   int sarg[2];
   sarg[0]=BS->GetPolNumber(arg[0],arg[1],GetPMass(arg[0],arg[1]));
   sarg[1]=BS->GetPolNumber(arg[2],arg[3],GetPMass(arg[2],arg[3]));
-  return sgen->Get_Enumber(coupl[0])* Vcplx(sarg[0],sarg[1]);     
+  return sgen->GetEnumber(coupl[0])* Vcplx(sarg[0],sarg[1]);     
 }
 
 Kabbala FFGS_Calc::Do() 
 {
-  return X(0,1)-X(0,2)-Y(0) * sgen->Get_Enumber(coupl[2]);
+  return X(0,1)-X(0,2)-Y(0) * sgen->GetEnumber(coupl[2]);
 }
 
 Kabbala VVGS_Calc::Do() 
 {
-  return sgen->Get_Enumber(coupl[6])*
-    ( sgen->Get_Enumber(coupl[7])*Z(1,0) +
+  return sgen->GetEnumber(coupl[6])*
+    ( sgen->GetEnumber(coupl[7])*Z(1,0) +
       X(0,0)*X(1,2) + X(0,2)*X(1,1) );
 }
 
 Kabbala SSGS_Calc::Do() 
 {
-  return sgen->Get_Enumber(coupl[4]) *
-    ( V(0,1) + sgen->Get_Enumber(coupl[5]) );
+  return sgen->GetEnumber(coupl[4]) *
+    ( V(0,1) + sgen->GetEnumber(coupl[5]) );
 }
 
 Kabbala FFVGS_Calc::Do() 

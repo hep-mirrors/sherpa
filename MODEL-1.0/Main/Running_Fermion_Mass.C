@@ -34,7 +34,6 @@ double Running_Fermion_Mass::operator()(double t) {
 void Running_Fermion_Mass::SelfTest() {
   double m_test = m_polemass/2.;
   for (int i=0;i<100;i++) {
-    std::cout<<m_test<<" : "<<(*this)(sqr(m_test))<<" ("<<m_polemass<<")"<<std::endl;
     m_test += m_polemass/20.*i;
   }
 }

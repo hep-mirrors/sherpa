@@ -24,12 +24,17 @@ namespace SHERPA {
 
     DecayTables m_decaytables;
     AMEGIC::Amegic * p_amegic;
+    bool m_amegicflag;
 
     void ReadInDecays();
     void EvaluateWidths(std::string,MODEL::Model_Base *);
+    void SetWidths(bool);
   public :
     Hard_Decay_Handler(std::string,std::string,std::string,MODEL::Model_Base *);
     ~Hard_Decay_Handler();
+
+    bool InitializeAllHardDecays(std::string,MODEL::Model_Base *);
+
     std::string Name();
     AMEGIC::Amegic * GetAmegic() { return p_amegic; }
   };

@@ -3,8 +3,11 @@
 
 using namespace ATOOLS;
 
-Decay_Channel::Decay_Channel(const Flavour _flin) :
+Decay_Channel::Decay_Channel(const Flavour & _flin) :
   m_flin(_flin), m_width(0.) { }
+
+Decay_Channel::Decay_Channel(const Decay_Channel & _dec) :
+  m_flin(_dec.m_flin), m_flouts(_dec.m_flouts), m_width(_dec.m_width) { }
 
 void Decay_Channel::Output() 
 {
@@ -14,7 +17,7 @@ void Decay_Channel::Output()
 }
 
 Decay_Table::Decay_Table(const Flavour _flin) :
-  m_flin(_flin), m_width(0.) { }
+  m_flin(_flin), m_width(0.), m_overwrite(0), m_generator(std::string("")) { }
 
 void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
 {
@@ -23,9 +26,12 @@ void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
 }
 
 void Decay_Table::Output() {
-  msg.Out()<<"Decay table for : "<<m_flin<<", total width : "<<m_width<<" GeV."<<endl
+  msg.Out()<<"Decay table for : "<<m_flin<<", total width : "<<m_width<<" GeV ("
+	   <<m_flin.Width()<<" GeV)."<<endl
 	   <<"----------------------------------------------------------------"<<endl;
   for (int i=0;i<m_channels.size();i++) m_channels[i]->Output();
+  if (m_overwrite) msg.Out()<<" Value of Particle.dat has been overwritten by "
+			    <<m_generator<<"."<<endl;
   msg.Out()<<"----------------------------------------------------------------"<<endl;
 }
 

@@ -69,7 +69,7 @@ bool Initialization_Handler::InitializeTheFramework()
     return 0;
   }
   
-  okay = okay && InitializeTheHardDecays();
+  //okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheBeamRemnants();
@@ -148,10 +148,14 @@ bool Initialization_Handler::InitializeTheHardDecays()
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
-  if (p_harddecays->GetAmegic()) cout<<"Yes Amegic."<<endl;
-  p_mehandler = new Matrix_Element_Handler(m_path,m_medat,
-					   p_model,p_beamspectra,p_isrhandler,
-					   p_harddecays->GetAmegic());
+  if (p_harddecays) 
+    p_mehandler = new Matrix_Element_Handler(m_path,m_medat,
+					     p_model,p_beamspectra,p_isrhandler,
+					     p_harddecays->GetAmegic());
+  else
+    p_mehandler = new Matrix_Element_Handler(m_path,m_medat,
+					     p_model,p_beamspectra,p_isrhandler,NULL);
+ 
   return 1;
 }
 
@@ -191,4 +195,10 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   if (p_showerhandler->FSROn()) scalechoice += 2;
 
   return p_mehandler->CalculateTotalXSecs(scalechoice);
+}
+
+bool Initialization_Handler::InitializeAllHardDecays()
+{
+  return 1;
+  return p_harddecays->InitializeAllHardDecays(m_medat,p_model);
 }

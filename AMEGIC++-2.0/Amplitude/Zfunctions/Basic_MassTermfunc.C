@@ -27,7 +27,7 @@ Kabbala Basic_MassTermfunc::MassTerm(int a)
 
   if (ATOOLS::IsZero(mass)) return Kabbala(string("1"),Complex(1.,0.));
 
-  return sgen->Get_Massnumber(Sign(a)*p1->momnum,p1->fl,MassTermCalc(Sign(a)*p1->momnum,p1->fl));
+  return sgen->GetMassnumber(Sign(a)*p1->momnum,p1->fl,MassTermCalc(Sign(a)*p1->momnum,p1->fl));
 }
 
 Complex Basic_MassTermfunc::MassTermCalc(int a,int fl)

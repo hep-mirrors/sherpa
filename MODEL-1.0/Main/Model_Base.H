@@ -3,6 +3,7 @@
 
 #include "Data_Read.H"
 #include "Flavour.H"
+#include "Decay_Table.H"
 #include "Matrix.H"
 #include "Function_Base.H"
 #include "MathTools.H"
@@ -35,9 +36,10 @@ namespace MODEL {
   public:
     Model_Base(std::string,std::string);
     virtual ~Model_Base();
-    virtual bool RunSpectrumGenerator() = 0;
-    virtual void FillMasses()           = 0;
-    virtual void FillWidths()           = 0;
+    virtual bool RunSpectrumGenerator()           = 0;
+    virtual void FillMasses()                     = 0;
+    virtual void FillWidths()                     = 0;
+    virtual bool FillDecay(ATOOLS::Decay_Table *) = 0;
 
     virtual std::string          Name()               { return m_name; } 
     virtual ScalarNumbersMap   * GetScalarNumbers()   { return p_numbers; }

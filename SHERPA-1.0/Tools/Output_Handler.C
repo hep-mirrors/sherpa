@@ -9,12 +9,18 @@ extern "C" {
 }
 
 Output_Handler::Output_Handler(int type) :
-  m_type(type), p_hepmc(NULL), p_hepevt(NULL), p_event(NULL), m_active(0)
+  m_type(type), 
+#ifdef _USE_HEPMC_
+  p_hepmc(NULL), p_event(NULL),  
+#endif
+  p_hepevt(NULL), m_active(0)
 {
   switch (m_type) {
   case 1: 
+#ifdef _USE_HEPMC_
     p_hepmc  = new HepMC_Interface();
     m_active = 1;
+#endif
     return;
   case 2:
     p_hepevt = new HepEvt_Interface();
@@ -27,7 +33,9 @@ Output_Handler::Output_Handler(int type) :
 }
 
 Output_Handler::~Output_Handler() {
+#ifdef _USE_HEPMC_
   if (p_hepmc)  { delete p_hepmc;  p_hepmc  = NULL; }
+#endif
   if (p_hepevt) { delete p_hepevt; p_hepevt = NULL; }
 }
 

@@ -49,8 +49,9 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   InitCuts();
   if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
   else {
-    msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
-	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
+    if (m_nout>2)
+      msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
+		 <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_sel = new No_Selector();
   }
 
@@ -237,25 +238,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
 }
 
 
-void Single_Process::InitDecay(Topology* top)
-{
-  /*  
-  top          = new Topology(m_nin+m_nout);
- 
-  p_hel    = new Helicity(m_nin,m_nout,fl,pl);
-  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvec,fl,b);  
-  p_shand  = new String_Handler(m_gen_str,p_BS);
-
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,fl,b,&m_pol,top,p_BS,p_shand,m_ptypename+string("/")+m_name);
-  if (p_ampl->GetGraphNumber()==0) {
-    msg.Error()<<"Single_Process::InitDecays : No diagrams for "<<name<<"."<<endl;
-    return;
-  }
-  m_pol.Add_Extern_Polarisations(p_BS,fl,p_hel);
-  p_BS->Initialize();
-  p_shand->Initialize(p_ampl->GetGraphNumber(),p_hel->Max_Hel());
-  */
-}
+void Single_Process::InitDecay(Topology* top) { }
 
 int Single_Process::Tests(double & result) {
   int number      = 1;
@@ -278,6 +261,8 @@ int Single_Process::Tests(double & result) {
   p_ampl->SetStringOff();
 
   double M2 = 0.;
+  double helvalue;
+
   if (gauge_test) {
     m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_moms,Vec4D(sqrt(3.),1.,1.,-1.));
     p_BS->Setk0(0);
@@ -287,7 +272,8 @@ int Single_Process::Tests(double & result) {
     msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
     for (short int i=0;i<p_hel->Max_Hel();i++) { 
       if (p_hel->On(i)) {
-	M2 +=  p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
+	helvalue = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
+	M2      +=  helvalue;
 	msg.Debugging()<<"*";msg.Debugging().flush();
       } 
       else {
@@ -299,18 +285,17 @@ int Single_Process::Tests(double & result) {
     result  = M2;
   }
 
-    p_ampl->ClearCalcList();
-    // To prepare for the string test.
-    p_ampl->SetStringOn();
-    (p_shand->Get_Generator())->Reset();
-    p_ampl->FillCoupling(p_shand);
-
-
+  p_ampl->ClearCalcList();
+  // To prepare for the string test.
+  p_ampl->SetStringOn();
+  (p_shand->Get_Generator())->Reset();
+  p_ampl->FillCoupling(p_shand);
+  
   /* ---------------------------------------------------
      
-     First test : gauge test
-
-     --------------------------------------------------- */
+  First test : gauge test
+  
+  --------------------------------------------------- */
 #ifndef Explicit_Pols 
   Vec4D gauge(sqrt(3.),1.,1.,1.);
   if (m_nout==4) gauge = p_moms[4];
@@ -345,7 +330,7 @@ int Single_Process::Tests(double & result) {
     if (M_doub[i]/M2g<1.e-30) {
       p_hel->switch_off(i);
       msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
-		     <</*p_ampl->Differential(i,(*p_hel)[i])<<"/"<<*/M_doub[i]/M2g<<endl;
+		     <<p_ampl->Differential(i,(*p_hel)[i])<<"/"<<M_doub[i]/M2g<<endl;
     }
   }
   M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
@@ -372,12 +357,13 @@ int Single_Process::Tests(double & result) {
       (p_shand->Get_Generator())->Reset();
       p_ampl->FillCoupling(p_shand);
       p_shand->Complete(p_hel);
+
       M2 = operator()(p_moms);
       gauge_test = string_test = 0;
     }
     msg.Debugging()<<"Mapping file(1) : "<<abs(M2)<<endl
 		   <<"Original    (2) : "<<abs(M2g)<<endl
-		   <<"Cross check     : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
+		   <<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
     if (!ATOOLS::IsZero(abs(M2/M2g-1.))) {
       msg.Tracking()<<"Cross check not satisfied: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
       return 0;
@@ -401,6 +387,7 @@ int Single_Process::Tests(double & result) {
     if (p_shand->Is_String()) {
       double  M2S = 0.;
       p_shand->Calculate();
+
       msg.Debugging()<<"3:";msg.Debugging().flush();
       for (short int i=0;i<p_hel->Max_Hel();i++) {
 	if (p_hel->On(i)) {
@@ -448,7 +435,8 @@ int Single_Process::InitLibrary(double result) {
   int number  = 0;
   string proc = string("Process/")+m_ptypename+string("/V");
   string testname;
-  double M2s;
+  double M2s, helvalue;
+  double crosscheck;
 
   for (;;) {
     ++number;
@@ -456,20 +444,21 @@ int Single_Process::InitLibrary(double result) {
     testname  = m_libname+string("_")+string(help);
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
       shand1->Initialize(p_ampl->GetRealGraphNumber(),p_hel->Max_Hel());
-      (shand1->Get_Generator())->Reset();
+      (shand1->Get_Generator())->StoreAndReset();
       p_ampl->FillCoupling(shand1);
       shand1->Calculate();
       
       M2s = 0.;
       ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
       for (short int i=0;i<p_hel->Max_Hel();i++) {
-	M2s     += p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
+	helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
 	  p_hel->Multiplicity(i);
+	M2s     += helvalue;
 	msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
       }
       msg.Debugging()<<endl;
       M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
-      msg.Debugging()<<"Cross check: "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
+      msg.Debugging()<<"Cross check (1): "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
 		     <<M2s<<"/"<<result<<endl;
       if (ATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
 	msg.Tracking()<<"Found a suitable string."<<endl;
@@ -489,17 +478,21 @@ int Single_Process::InitLibrary(double result) {
 	  }
 	  msg.Debugging()<<endl;
 	  M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
-	  msg.Tracking()<<"Cross check: "<<abs(M2s/result-1.)*100.<<"%"<<endl;
-	  
-	  CreateMappingFile();
-	  if (shand1) { delete shand1; shand1 = 0; }
-	  return 1;
+	  crosscheck = abs(M2s/result-1.);
+	  msg.Tracking()<<"Cross check (2): "<<crosscheck*100.<<"%"<<endl;
+	  if (ATOOLS::IsZero(crosscheck)) {
+	    if (shand1) { delete shand1; shand1 = 0; }
+	    CreateMappingFile();
+	    return 1;
+	  }
+	  else break;
 	}
 	else {
 	  msg.Error()<<"Error in Single_Process::InitLibrary for "<<testname<<endl;
 	  abort();
 	}
       }
+      else p_shand->Get_Generator()->ReStore();
     }
     else break;
   }
@@ -512,7 +505,7 @@ int Single_Process::InitLibrary(double result) {
   }
   m_libname = testname;
   if (p_partner==this) {
-    msg.Debugging()<<"Write Library for "<<m_name<<" = "<<m_libname<<endl;
+    msg.Debugging()<<"Write Library for "<<m_name<<" = "<<m_libname<<", = case."<<endl;
     int  mode_dir = 448;
     msg.Debugging()<<" m_ptypename = "<<m_ptypename<<endl<<" m_libname = "<<m_libname<<endl;
     mkdir((string("Process/")+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
@@ -538,7 +531,7 @@ int Single_Process::InitLibrary(double result) {
 	}
 	msg.Debugging()<<endl;
 	M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
-	msg.Debugging()<<"Cross check: "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
+	msg.Debugging()<<"Cross check (3): "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
 		       <<M2s<<"/"<<result<<endl;
 	if (ATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
 	  m_libname = p_partner->m_libname;
@@ -663,6 +656,7 @@ void Single_Process::SetTotalXS(int _tables)  {
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+    if ((m_nin==1 && m_nout==2) || m_n==1) m_totalerr = 0.;
   }
   else {
     //   _tables==2  means  check xs with sum of subprocesses
@@ -670,16 +664,16 @@ void Single_Process::SetTotalXS(int _tables)  {
   }
   if (m_nin==2) {
     msg.Events()<<"      xs for "<<m_name<<" : "
-			   <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-			   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-			   <<"       max : "<<m_max<<endl;
-    msg.Events()<<"   exp. eff: "<<(100.*m_totalxs/m_max)<<"%"<<endl;
+		<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+		<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+		<<"       max : "<<m_max<<endl
+		<<"   exp. eff: "<<(100.*m_totalxs/m_max)<<"%"<<endl;
   }
   if (m_nin==1) {
-    msg.Events()<<"      xs for "<<m_name<<" : "
-			   <<m_totalxs<<" GeV"
-			   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-			   <<"       max : "<<m_max<<endl;
+    msg.Events()<<"      width for "<<m_name<<" : "
+		<<m_totalxs<<" GeV"
+		<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+		<<"       max : "<<m_max<<endl;
   }
 }
 
@@ -817,10 +811,10 @@ void Single_Process::AddPoint(const double value) {
   if (m_n<200000)        iter =  40000;
   else if  (m_n<400000)  iter = 200000;
   // ==== uncomment for better unweighting efficiency ===
-//   if (iter!=1 && m_n%iter==0) {
-//     m_max = m_save_max;
-//     m_save_max = 0.;
-//   }
+  //   if (iter!=1 && m_n%iter==0) {
+  //     m_max = m_save_max;
+  //     m_save_max = 0.;
+  //   }
   if (value>m_save_max) m_save_max = value;
   if (m_analyse) p_analysis->DoAnalysis(value*rpa.Picobarn());
 }
@@ -875,17 +869,23 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
 #endif
   p_BS->CalcEtaMu(mom);
   
+  double helvalue;
   if (p_shand->Is_String()) {
     p_shand->Calculate();
     for (short int i=0;i<p_hel->Max_Hel();i++) {
-      if (p_hel->On(i)) 
-	M2 += p_ampl->Differential(i) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);
+      if (p_hel->On(i)) {
+	helvalue = p_ampl->Differential(i) * p_hel->Multiplicity(i) * p_hel->PolarizationFactor(i);
+	M2      += helvalue;
+      }
     }
   }
   else {
-    for (short int i=0;i<p_hel->Max_Hel();i++)
-      if (p_hel->On(i)) 
-	M2 += p_ampl->Differential(i,(*p_hel)[i]) * p_hel->PolarizationFactor(i);
+    for (short int i=0;i<p_hel->Max_Hel();i++) {
+      if (p_hel->On(i)) {
+	helvalue = p_ampl->Differential(i,(*p_hel)[i]) * p_hel->PolarizationFactor(i);
+	M2 += helvalue;
+      }
+    }
     p_shand->Complete(p_hel);
     p_ampl->ClearCalcList();
   }
@@ -894,9 +894,9 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
 }
 
 
-bool Single_Process::OneEvent()        { return (p_ps->OneEvent()); }
-bool Single_Process::SameEvent()       { return (p_ps->SameEvent()); }
-double Single_Process::WeightedEvent() { return (p_ps->WeightedEvent()); }
+bool   Single_Process::OneEvent()          { return (p_ps->OneEvent()); }
+bool   Single_Process::SameEvent()         { return (p_ps->SameEvent()); }
+double Single_Process::WeightedEvent()     { return (p_ps->WeightedEvent()); }
 double Single_Process::SameWeightedEvent() { return (p_ps->SameWeightedEvent()); }
 
 

@@ -24,7 +24,7 @@ Kabbala Basic_Zfunc::Z(const int z1,const int z2)
   scoupl[0] = coupl[2*z1];  scoupl[1] = coupl[2*z1+1];
   scoupl[2] = coupl[2*z2];  scoupl[3] = coupl[2*z2+1];
 
-  return sgen->Get_Znumber(sarg,scoupl,
+  return sgen->GetZnumber(sarg,scoupl,
 			   Zcalc(arg[4*z1],arg[4*z1+1],arg[4*z1+2],arg[4*z1+3],
 				 arg[4*z2],arg[4*z2+1],arg[4*z2+2],arg[4*z2+3],
 				 coupl[2*z1],coupl[2*z1+1],coupl[2*z2],coupl[2*z2+1]));

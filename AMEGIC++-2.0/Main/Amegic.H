@@ -32,8 +32,8 @@ namespace AMEGIC {
 
     std::ostream               * p_fifo;
 
-    ATOOLS::Data_Read       * p_dataread;
-    ATOOLS::Selector_Data   * p_seldata;
+    ATOOLS::Data_Read          * p_dataread;
+    ATOOLS::Selector_Data      * p_seldata;
     BEAM::Beam_Spectra_Handler * p_beam;
     PDF::ISR_Handler           * p_isr;
 
@@ -42,29 +42,30 @@ namespace AMEGIC {
     int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string);
     void Shorten(std::string&);
   public :
-    Amegic(std::string,std::string,MODEL::Model_Base * _model);
+    Amegic(std::string,std::string,MODEL::Model_Base *);
     ~Amegic();
     bool        InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
-    bool        InitializeDecays();
+    bool        InitializeDecays(bool);
     bool        CalculateTotalXSec(std::string _resdir=std::string(""));
     bool        CalculateBranchingWidths(std::string _resdir=std::string(""));
     void        SetResDir(std::string);
 
-    bool        UnweightedEvent();
-    double      WeightedEvent();
-    bool        SameEvent();
-    double      SameWeightedEvent();
-    Process_Base       * GetProcess()       { return p_procs->Selected(); }
-    Process_Base * Processes();
-    std::string          ProcessName()      { return p_procs->Selected()->Name(); }
-    int                  Nin()              { return p_procs->Selected()->Nin(); }
-    int                  Nout()             { return p_procs->Selected()->Nout(); }
+    bool              UnweightedEvent();
+    double            WeightedEvent();
+    bool              SameEvent();
+    double            SameWeightedEvent();
+    Process_Base    * GetProcess()       { return p_procs->Selected(); }
+    Process_Base    * Processes();
+    All_Decays      * GetAllDecays()     { return p_decs; }
+    std::string       ProcessName()      { return p_procs->Selected()->Name(); }
+    int               Nin()              { return p_procs->Selected()->Nin(); }
+    int               Nout()             { return p_procs->Selected()->Nout(); }
     ATOOLS::Flavour * Flavs()            { return p_procs->Selected()->Flavs(); }
-    ATOOLS::Vec4D    * Momenta()          { return p_procs->Selected()->Momenta(); }
-    int        InSwaped() { return p_procs->Selected()->InSwaped(); }
-    int                  NumberOfDiagrams() { return p_procs->Selected()->NumberOfDiagrams(); }
-    AMEGIC::Point      * Diagram(int _diag) { return p_procs->Selected()->Diagram(_diag); }
-    int                  MaxJets()          { return m_maxjet; }
+    ATOOLS::Vec4D   * Momenta()          { return p_procs->Selected()->Momenta(); }
+    int               InSwaped()         { return p_procs->Selected()->InSwaped(); }
+    int               NumberOfDiagrams() { return p_procs->Selected()->NumberOfDiagrams(); }
+    AMEGIC::Point   * Diagram(int _diag) { return p_procs->Selected()->Diagram(_diag); }
+    int               MaxJets()          { return m_maxjet; }
 
 
     void SingleEvents();

@@ -63,10 +63,9 @@ double Basic_Func::GetPMass(int a,int sign)
       break;
     }
   }
-  //cout<<"Basic_Func::GetPMass: "<<ps[b].numb<<" "<<a<<" Hit:"<<hit<<" "<<p1->fl<<endl;
   if(hit) return (p1->fl).Mass();
-  ATOOLS::msg.Error()<<"Basic_Func::GetPMass: Propagator not found! "<<a<<","<<b<<endl;
-  ATOOLS::msg.Error()<<ps[0].numb<<"."<<ps[1].numb<<"."<<pn<<endl;
+  ATOOLS::msg.Error()<<"Basic_Func::GetPMass: Propagator not found! "<<a<<","<<b<<endl
+		     <<ps[0].numb<<"."<<ps[1].numb<<"."<<pn<<endl;
   abort();
   return 0.;
 }

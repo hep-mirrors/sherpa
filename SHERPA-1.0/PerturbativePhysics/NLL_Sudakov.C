@@ -428,49 +428,7 @@ double NLL_Sudakov::operator()(double x) {
 
 void NLL_Sudakov::CheckSudakovs()
 {
-  if (!rpa.gen.Debugging()) return;
-  double Q  = 91.2;
-  double q0 = 0.1*Q;
-  R4(q0,Q);
-  std::cout<<"============================================================"<<std::endl
-	   <<"   Selftest in NLL_Sudakov"<<std::endl
-	   <<"------------------------------------------------------------"<<std::endl
-	   <<"     q0     Q   sudq(q0,Q) sudg(q0,Q)    R2       R3       "<<std::endl;
-  for (int i=0; i<13;++i) {
-    q0=Q*exp(-i/3.*log(10.));
-    std::cout.precision(4);
-    std::cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
-    std::cout.precision(6);
-    std::cout<<" "<<setw(10)<<DeltaQ(Q,q0)
-	     <<" "<<setw(11)<<DeltaG(Q,q0)
-	     <<" "<<setw(10)<<R2(q0,Q)
-	     <<" "<<setw(19)<<R3(q0,Q)
-	     <<std::endl;
-  }
-  std::cout<<"------------------------------------------------------------"<<std::endl;
-  Q  = 2000.;
-  q0 = 6.32455532;
-  for (int i=0; i<13;++i) {
-    Q=q0*exp(i/6.*log(10.));
-    std::cout.precision(4);
-    std::cout<<" "<<setw(6)<<q0<<" "<<setw(6)<<Q;
-    std::cout.precision(6);
-    std::cout<<" "<<setw(10)<<DeltaQ(Q,q0)
-	<<" "<<setw(11)<<DeltaG(Q,q0)
-	<<std::endl;
-  }
-
-  std::cout<<"============================================================"<<std::endl;
 }
-
-
-
-
-
-
-
-
-
 
 double NLL_Sudakov::P_q_MLLA(double q,double z)
 {

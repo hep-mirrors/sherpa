@@ -67,12 +67,13 @@ INCLUDES = -I../../SHERPA-1.0/Main \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org \
-	   -I../../HepMC_Version1.23 \
-	   -I../../HepMC_Version1.23/HepMC \
+	   -I../../../HepMC_Version1.23 \
+	   -I../../../HepMC_Version1.23/HepMC \
 	   -I$(CLHEPincdir)
 SUBDIRS    = Process
 EXTRA_DIST = Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
-	     Particle.dat Hadron.dat Run.dat ISR.dat ME.dat Shower.dat Fragmentation.dat \
+	     Particle.dat Hadron.dat Run.dat ISR.dat ME.dat Decays.dat \
+	     Shower.dat Fragmentation.dat \
 	     makeclean \
 	     PDFsets.tar.gz MRST99Grid.tar.gz
 

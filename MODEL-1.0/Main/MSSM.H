@@ -16,9 +16,10 @@ namespace MODEL {
   public :
     MSSM(std::string,std::string);
     ~MSSM()                     {}
-    bool   RunSpectrumGenerator();
-    void   FillMasses()           {}
-    void   FillWidths()           {}
+    bool RunSpectrumGenerator();
+    void FillMasses()                     {}
+    void FillWidths()                     {}
+    bool FillDecay(ATOOLS::Decay_Table *) {}
   };
   /*!
     \class MSSM

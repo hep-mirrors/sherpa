@@ -1,10 +1,11 @@
+#ifdef _USE_HEPMC_
+
+
 #include "HepMC_Interface.H"
 #include "Vector.H"
 #include "Message.H"
 
-#ifdef _USE_HEPMC_
 #include "CLHEP/Vector/LorentzVector.h"
-#endif
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -17,7 +18,6 @@ HepMC_Interface::HepMC_Interface()
 
 void HepMC_Interface::InitTheMap() 
 {
-#ifdef _USE_HEPMC_
   p_particledatatable = new ParticleDataTable;
   ParticleData * pdata;
   Fl_Iter fli;
@@ -49,7 +49,6 @@ void HepMC_Interface::InitTheMap()
   msg.Debugging()<<"#######################################################"<<endl;
   p_particledatatable->print();
   msg.Debugging()<<"#######################################################"<<endl;
-#endif
 }
 
 void HepMC_Interface::ResetTheLinks()
@@ -61,7 +60,6 @@ void HepMC_Interface::ResetTheLinks()
 bool HepMC_Interface::Sherpa2HepMC(Blob_List * _blobs,GenEvent *& _event)
 {
   ResetTheLinks();
-#ifdef _USE_HEPMC_
   if (_blobs->empty()) {
     msg.Error()<<"Error in HepMC_Interface::Sherpa2HepMC(Blob_List)."<<endl
 	       <<"   Empty list - nothing to translate into HepMC standard."<<endl
@@ -80,12 +78,10 @@ bool HepMC_Interface::Sherpa2HepMC(Blob_List * _blobs,GenEvent *& _event)
       if (type.find(string("Signal Process"))>-1) _event->set_signal_process_vertex(vertex);
     }
   }
-#endif
 }
 
 bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex) 
 {
-#ifdef _USE_HEPMC_
   if (_blob->NInP()==1 && _blob->NOutP()==1) {
     if (_blob->InParticle(0)->Number()==_blob->OutParticle(0)->Number()) return 0;
   }
@@ -145,14 +141,10 @@ bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex)
   }
 
   return okay;
-#else
-  return 1;
-#endif
 }
 
 bool HepMC_Interface::Sherpa2HepMC(Particle * _SHparticle,GenParticle *& _particle) 
 {
-#ifdef _USE_HEPMC_
   int count = m_particle2particle.count(_SHparticle->Number());
   if (count>0) {
     _particle = m_particle2particle[_SHparticle->Number()];
@@ -168,8 +160,7 @@ bool HepMC_Interface::Sherpa2HepMC(Particle * _SHparticle,GenParticle *& _partic
     if (_SHparticle->GetFlow(i)>0) _particle->set_flow(i,_SHparticle->GetFlow(i));
   }
   m_particle2particle.insert(std::make_pair(_SHparticle->Number(),_particle));
-
-#endif
   return 1;
 }
 
+#endif

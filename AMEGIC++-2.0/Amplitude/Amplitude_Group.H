@@ -43,27 +43,40 @@ namespace AMEGIC {
       for (int i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(ihel,signlist);
       return M;
     }
-
     void    PrintGraph() {
       if (!ATOOLS::rpa.gen.Tracking()) return;
       ATOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;
       for (int i=0;i<graphs.size();i++) graphs[i]->PrintGraph();
     }
-
     void FillCoupling(String_Handler* shand) 
-       {for (int i=0;i<graphs.size();i++) graphs[i]->FillCoupling(shand);}
-    void ClearCalcList() {for (int i=0;i<graphs.size();i++) graphs[i]->ClearCalcList();}
-
-    void SetStringOn()   {buildstring=1;for (int i=0;i<graphs.size();i++) graphs[i]->SetStringOn();}
-    void SetStringOff()  {buildstring=0;for (int i=0;i<graphs.size();i++) graphs[i]->SetStringOff();}
-    void SetNumber(int& n) {for (int i=0;i<graphs.size();i++) graphs[i]->SetNumber(n);}
+    { 
+      for (int i=0;i<graphs.size();i++) graphs[i]->FillCoupling(shand);
+    }
+    void ClearCalcList() 
+    {
+      for (int i=0;i<graphs.size();i++) graphs[i]->ClearCalcList();
+    }
+    void SetStringOn()   
+    {
+      buildstring=1;
+      for (int i=0;i<graphs.size();i++) graphs[i]->SetStringOn();
+    }
+    void SetStringOff()  
+    {
+      buildstring=0;
+      for (int i=0;i<graphs.size();i++) graphs[i]->SetStringOff();
+    }
+    void SetNumber(int& n) 
+    {
+      for (int i=0;i<graphs.size();i++) graphs[i]->SetNumber(n);
+    }
     void Add(Amplitude_Base* ab, int sign =1) {
       if (sign==-1)
 	ab->SetSign(sign*ab->GetSign());
       graphs.push_back(ab);
     }
-    int  Size()                  {return graphs.size();}
-    Amplitude_Base* operator[](const int i) {return (i<graphs.size()) ? graphs[i] : 0;}
+    int  Size()                             { return graphs.size(); }
+    Amplitude_Base* operator[](const int i) { return (i<graphs.size()) ? graphs[i] : 0; }
 
     Amplitude_Base* GetAmplitude(const int n) {
       for (int i=0;i<graphs.size();i++) {

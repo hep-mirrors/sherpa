@@ -248,12 +248,8 @@ Complex String_Tree::Evaluate(sknot* m)
   case 's': return std::sin(Evaluate(m->right));
 #endif
   default:
-#ifdef Kabbala_on  
     if (m->Str()==string("0")) return Complex(0.,0.);
     return m->value->Value();
-#else
-    return *m->value;
-#endif
   }
 }
 
