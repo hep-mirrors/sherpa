@@ -34,6 +34,12 @@ namespace SHERPA {
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
   };
 
+
+  /*!
+    \file 
+    \brief Contains the class SHERPA::Event_Handler
+  */
+
   /*!
     \class Event_Handler
     \brief For the generation of single events.
