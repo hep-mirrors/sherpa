@@ -1,0 +1,22 @@
+07/19/03
+
+Package MODEL, version 1.0
+
+This directory contains all methods for the handling of models.
+Currently, the following spectrum generator/decay evaluation packages are supported:
+- Hdecay
+- Isajet 7.67
+
+Since this directory contains no executable it should be compiled and
+linked to any executable in the framework. To install it the first time
+follow the sequence
+
+libtoolize --force
+aclocal
+automake -a
+autoconf
+configure
+make install
+
+Everything should be ready then. Note that the directory ATOOLS is needed
+for this.

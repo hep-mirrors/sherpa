@@ -70,7 +70,7 @@ namespace MODEL {
   //! QCD SM Running of AlphaS
   /*!
     \class Running_AlphaS
-    \brief The class for the(running) strong couplnig constant.
+    \brief The class for the (running) strong coupling constant.
 
     This is an implementation of the
     <A HREF="http://131.169.91.193/cgi-bin/spiface/find/hep/www?rawcmd=f+eprint+hep-ph%2F9706430">

@@ -15,6 +15,10 @@ namespace MODEL {
     void   FillWidths()        {}
   };
   /*!
+    \class ADD
+    \brief A model for extra dimensions accroding to ADD.
+  */
+  /*!
     \fn ADD::ADD(std::string,std::string)
     The constructor first initalizes the subset of the Standard Model, MODEL::SM. 
     Its parameters (i.e. constants, functions, matrices) are then copied into the newly 
