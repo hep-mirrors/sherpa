@@ -1,0 +1,6 @@
+ANALYSIS_PHASE = ME+Showers+Hadrons    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
+OUTPUT = Output
+93   0. 0.  0.  .01  1.
+OBSERVABLES
+DiffJet  93   1.e-5  1. 100    1  1  5 Log
+END_ANALYSIS_PHASE

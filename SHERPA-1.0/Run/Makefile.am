@@ -7,10 +7,9 @@ ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
-ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
-		-I../SoftPhysics -I../LundTools -I../HerwigTools -I../Single_Events \
+		-I../SoftPhysics -I../LundTools -I../Single_Events \
 		-I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
@@ -27,8 +26,6 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
-ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
-                -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
@@ -44,10 +41,9 @@ endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lProcess -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
-ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct -lAdicicTool -lAdicicInput
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundTools -lHerwigTools -lSherpaTools 
+		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
 
 if AMISIC_SUPPORT
 AMISICFLAGS   =	-DUSING__Amisic
@@ -73,12 +69,12 @@ endif
 
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
-Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(ADICICLIBS) \
+Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
 		$(AMISICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(CLHEPFLAGS) $(ROOTFLAGS)
-INCLUDES      = $(ANALYSISINCS) $(SHERPAINCS) $(APACICINCS) $(ADICICINCS) $(AMEGICINCS) \
+INCLUDES      = $(ANALYSISINCS) $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) \
 		$(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) 
 SUBDIRS       =	Process
