@@ -90,10 +90,15 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   }
 
   // prepare Blob , will be inserted later
+  /*
+    std::cout<<"Delete two blobs : "<<std::endl;
+    if (p_blob_psme_IS) std::cout<<p_blob_psme_IS<<std::endl;
+    if (p_blob_psme_FS) std::cout<<p_blob_psme_FS<<std::endl;
+  */
   if (p_blob_psme_IS) { delete p_blob_psme_IS; p_blob_psme_IS = 0; }
   if (p_blob_psme_FS) { delete p_blob_psme_FS; p_blob_psme_FS = 0; }
 
-  if (p_shower->ISROn()) {
+  if (!m_isdecay && p_shower->ISROn()) {
     p_blob_psme_IS = new Blob();
     p_blob_psme_IS->SetType(btp::ME_PS_Interface_IS);
     p_blob_psme_IS->SetTypeSpec(string("Sherpa"));
@@ -201,11 +206,11 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
       return 1;
     }
   }
-  if (m_isdecay) {
+  else {
     p_xs = 0;
     if (XS_Selector::FindInGroup(p_one2N,p_xs,nin,nout,p_fl)==std::string::npos) {
       EXTRAXS::XS_Selector selector(p_xs);
-      p_xs = selector.GetXS(nin,2,p_fl,false);
+      p_xs = selector.GetXS(nin,nout,p_fl,false);
       if (p_xs) p_one2N->Add(p_xs);
     }
     if (p_xs) {
@@ -216,9 +221,13 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
       }
     }
     else {
-      msg.Error()<<"ERROR in Amegic_Apacic_Interface::DefineInitialConditions."<<std::endl
-		 <<"   No Extra_XS found to define colour flow. Return 0."<<std::endl;
-      return 0;
+      int col1 = blob->InParticle(0)->GetFlow(1);
+      int col2 = blob->InParticle(0)->GetFlow(2);
+      if (p_cluster->SetDecayColours(p_moms,p_fl,col1,col2)!=0) {
+	msg.Error()<<"ERROR in Amegic_Apacic_Interface::DefineInitialConditions."<<std::endl
+		   <<"   No Extra_XS found to define colour flow. Return 0."<<std::endl;
+	return 0;
+      }
     }
     p_cluster->FillDecayTree(p_shower->GetFinTree(),p_xs);
   }

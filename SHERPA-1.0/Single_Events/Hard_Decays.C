@@ -43,10 +43,12 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
       if ((*blit)->Status()==1 && (*blit)->Type()==btp::FS_Shower) {
 	myblob = (*blit);
+	//std::cout<<"Found a blob : "<<std::endl<<myblob;
 	found  = 1;
 	for (int i=0;i<myblob->NOutP();i++) {
 	  if ((!myblob->OutParticle(i)->Flav().IsStable()) &&
 	      (myblob->OutParticle(i)->DecayBlob()!=NULL)) {
+	    //std::cout<<"Dec for : "<<myblob->OutParticle(i)<<std::endl;
 	    decblob = myblob->OutParticle(i)->DecayBlob();
 	    if (decblob->NInP()!=1) {
 	      msg.Error()<<"Error in Hard_Decays::Treat : "<<endl
@@ -68,6 +70,7 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
 	    _bloblist->push_back(decblob);
 	  }
 	}
+	//std::cout<<std::endl<<std::endl<<std::endl;
 	myblob->SetStatus(0);
 	return 1;
       }
@@ -76,7 +79,10 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   return hit;
 }
 
-void Hard_Decays::CleanUp() { p_dechandler->ResetTables(); }
+void Hard_Decays::CleanUp() { 
+  p_dechandler->ResetTables(); 
+  p_dechandler->ResetSelect(); 
+}
 
 void Hard_Decays::FillBlob(Particle * _orig,Blob * _blob)
 {

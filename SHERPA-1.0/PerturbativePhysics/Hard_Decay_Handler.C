@@ -43,8 +43,8 @@ void Hard_Decay_Handler::ReadInDecays()
   int    kfc;
   size_t pos;
   Decay_Table * dt = NULL;
-  Flavour     flav;
-  FlavourSet  decflavs;
+  Flavour       crit,flav,decayer;
+  FlavourSet    decflavs;
   for(;from;) {
     from.getline(buffer,100);
     if (buffer[0] != '%' && strlen(buffer)>0) {
@@ -64,16 +64,25 @@ void Hard_Decay_Handler::ReadInDecays()
 	    break;
 	  }
 	}
-	flav = Flavour(kf::code(int(abs(double(kfc)))));
-	dt   = new Decay_Table(Flavour(kf::code(int(abs(double(kfc))))));
+	crit = Flavour(kf::code(int(abs(double(kfc)))));
+	dt   = new Decay_Table(crit);
 	m_decaytables.insert(dt);
       }
 
       pos     = buf.find(string("forced channel :"));  
       if (pos!=std::string::npos && pos<=buf.length()) {
 	decflavs.clear();
-	buf  = buf.substr(pos+16);
-	buf  = buf+string(" ");
+	buf   = buf.substr(pos+16)+string(" ");
+	pos   = buf.find(string("->")); 
+	if (pos!=std::string::npos && pos<=buf.length()) {
+	  MyStrStream sstream;
+	  sstream<<buf.substr(0,pos);
+	  sstream>>kfc;
+	  decayer = Flavour(kf::code(int(abs(double(kfc)))));
+	  if (kfc<0) decayer = decayer.Bar();
+	  buf = buf.substr(pos+2);
+	}
+	else decayer = crit;
 	while(buf.length()>0) {
 	  if (buf[0]==' ') buf = buf.substr(1);
 	  else {
@@ -87,7 +96,14 @@ void Hard_Decay_Handler::ReadInDecays()
 	    buf = buf.substr(pos);
 	  }
 	}
-	if (dt) dt->SetSelectedChannel(decflavs);
+	if      (dt && decayer==crit)       dt->SetSelectedChannel(decflavs,false);
+	else if (dt && decayer==crit.Bar()) dt->SetSelectedChannel(decflavs,true);
+	else {
+	  msg.Error()<<"ERROR in Hard_Decay_Handler::ReadInDecays from "<<m_path+m_file<<std::endl
+		     <<"   Tried to specifiy a forced decay with non-matching flavours:"
+		     <<"   "<<decayer<<" vs. "<<crit<<std::endl
+		     <<"   Will ignore this decay channel."<<std::endl;
+	}
       }
 
       // Check, if width of particle.dat is to be overwritten by total width as calculated
@@ -105,14 +121,14 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
 {
   Flavour    flav;
   for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
+    flav = (*dit)->Flav();
     if ((*dit)->Overwrite()) {
       if (_model->FillDecay((*dit))) { 
 	if (msg.LevelIsTracking()) { (*dit)->Output(); }
       }
       else {
-	(*dit)->Flav().SetWidth(-1.);
+	flav.SetWidth(-1.);
 	if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
-	flav = (*dit)->Flav();
 	if (!p_mehandler->AddToDecays(flav)) {
 	  msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
 		     <<"   Could not add "<<flav
@@ -123,16 +139,17 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
     }
     else if ((*dit)->FixedDecay()) {
       if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
-      if (!p_mehandler->AddToDecays((*dit)->GetOneDecayChannel())) {
-	msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
-		   <<"   Could not add "<<flav
-		   <<" to list of decays treated by ME_Handler. Abort run."<<endl;
-	abort();
+      for (int i=0;i<(*dit)->NumberOfDecayChannels();i++) {
+	if (!p_mehandler->AddToDecays((*dit)->GetDecayChannel(i))) {
+	  msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
+		     <<"   Could not add "<<flav
+		     <<" to list of decays treated by ME_Handler. Abort run."<<endl;
+	  abort();
+	}
       }
     }
     else {
       if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
-      flav = (*dit)->Flav();
       if (!p_mehandler->AddToDecays(flav)) {
 	msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
 		   <<"   Could not add "<<flav
@@ -228,7 +245,7 @@ Decay_Channel * Hard_Decay_Handler::SpecifyHardDecay(ATOOLS::Particle * _part,do
 	(*dit)->Flav().Bar()==_part->Flav()) {
       if ((*dit)->Flav().Bar()==_part->Flav() &&
 	  (*dit)->Flav()!=_part->Flav()) barflag = true;
-      (*dit)->Select();
+      (*dit)->Select(-1+2*int(barflag));
       Decay_Channel * dc = (*dit)->GetOneDecayChannel();
       Blob * blob         = new Blob();
       blob->AddToInParticles(_part);
@@ -275,3 +292,7 @@ void Hard_Decay_Handler::ResetTables()
   m_table.clear();
 } 
 
+void Hard_Decay_Handler::ResetSelect()
+{
+  for (DecIt decit=m_decaytables.begin();decit!=m_decaytables.end();decit++) (*decit)->Reset();
+}

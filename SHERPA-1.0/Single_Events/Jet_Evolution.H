@@ -11,9 +11,9 @@ namespace SHERPA {
 
   class Jet_Evolution: public Event_Phase_Handler {
   private :
-
-    Shower_Handler         * p_showerhandler;
-    PertInterfaceMap         m_interfaces;
+    ATOOLS::Particle_Blob_Map m_decmap;
+    Shower_Handler          * p_showerhandler;
+    PertInterfaceMap          m_interfaces;
 
     int AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,Perturbative_Interface *);
     
@@ -21,7 +21,9 @@ namespace SHERPA {
     void UpdateInterfaces(const ATOOLS::Blob *blob,const size_t beam);
     bool DefineInitialConditions(const ATOOLS::Blob *blob,
 				 const ATOOLS::Blob_List *bloblist); 
-
+    void FillDecayBlobMap(ATOOLS::Blob * blob,ATOOLS::Blob_List *bloblist);
+    void SetDecayBlobPointers(ATOOLS::Blob * blob,ATOOLS::Blob_List *bloblist);
+    ATOOLS::Particle * FollowUp(ATOOLS::Particle *,ATOOLS::Blob *);
   public :
 
     // constructor

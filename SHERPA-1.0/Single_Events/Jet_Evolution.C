@@ -67,6 +67,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
     for (size_t i=0;i<_bloblist->size();++i) {
       blob = (*_bloblist)[i];
       if (blob->Status()==1 && blob->Type()==btp::Signal_Process) {
+	FillDecayBlobMap(blob,_bloblist);
 	piIter = m_interfaces.find(string("SignalMEs"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -78,6 +79,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	weight *= piIter->second->Weight();
       }  
       if (blob->Status()==1 && blob->Type()==btp::Hard_Collision) {
+	FillDecayBlobMap(blob,_bloblist);
 	piIter = m_interfaces.find(string("MIMEs"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -89,6 +91,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	weight *= piIter->second->Weight();
       }  
       if (blob->Status()==1 && blob->Type()==btp::Hard_Decay) {
+	FillDecayBlobMap(blob,_bloblist);
 	piIter = m_interfaces.find(string("HardDecays"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -164,6 +167,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  _bloblist->push_back(myblob);
 	}
       }
+      else SetDecayBlobPointers(_blob,_bloblist);
     }
     else  if (shower==3) {
       _blob->SetStatus(-1);
@@ -182,8 +186,70 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
   return 0;
 }
 
+
+void Jet_Evolution::SetDecayBlobPointers(Blob * blob,Blob_List * bloblist) 
+{ 
+  if (m_decmap.empty()) return;
+  Blob     * dec;
+  Particle * partin, * partout;
+  Particle_Blob_Map::iterator pbiter;
+  for (int i=0;i<blob->NOutP();i++) {
+    partin = blob->OutParticle(i);
+    if (partin->Flav().IsStable()) continue;
+    pbiter = m_decmap.find(partin);
+    if (pbiter==m_decmap.end()) {
+      msg.Error()<<"ERROR in Jet_Evolution::SetDecayBlobPointers:"<<std::endl
+		 <<"   Did not find particle in map of decay blobs."<<std::endl
+		 <<"   Particle : "<<partin<<std::endl
+		 <<"   Will abort the run."<<std::endl;
+      abort();
+    }
+    dec     = pbiter->second;
+    if (dec->Type()==btp::Hard_Decay) {
+      //std::cout<<"Check for "<<partin->Flav()<<" / "<<partin->FinalMass()<<std::endl;
+      partout = FollowUp(partin,dec);
+      partout->SetDecayBlob(dec);
+      dec->RemoveInParticle(partin);
+      dec->AddToInParticles(partout);
+      //std::cout<<"Match : "<<partin->Number()<<" -> "<<partout->Number()<<std::endl
+      //	       <<(*dec)<<std::endl;
+    }
+  }
+}
+
+Particle * Jet_Evolution::FollowUp(Particle * partin,Blob * dec) 
+{
+  Blob * current = partin->DecayBlob();
+  Particle * partout;
+  if (current==0 || current==dec) return partin;
+  //std::cout<<"Current : "<<current->Id()<<" <- "<<partin->Number()
+  //	   <<" / "<<partin->Flav()<<std::endl;
+  for (int i=0;i<current->NOutP();++i) {
+    partout = current->OutParticle(i);
+    if (partout->Flav()==partin->Flav() &&
+	partout->FinalMass()==partin->FinalMass()) return FollowUp(partout,dec);
+  }
+  msg.Error()<<"ERROR in JetEvolution::FollowUp:"<<std::endl
+	     <<"   Did not find a suitable particle to follow up decay initiator through blob list."<<std::endl
+	     <<"   Particle = "<<partin<<std::endl
+	     <<"   Will abort the run."<<std::endl;
+  abort();
+}
+
+void Jet_Evolution::FillDecayBlobMap(Blob * blob,Blob_List * bloblist) 
+{
+  //  std::cout<<"Which blob ? "<<std::endl<<(*blob)<<std::endl;
+  for (int i=0;i<blob->NOutP();++i) {
+    if (blob->OutParticle(i)->DecayBlob()) 
+      m_decmap.insert(std::make_pair(blob->OutParticle(i),
+				     blob->OutParticle(i)->DecayBlob()));
+  }
+  //  std::cout<<"length of map : "<<m_decmap.size()<<std::endl;
+}
+
 void Jet_Evolution::CleanUp() 
 { 
+  m_decmap.clear();
   p_showerhandler->CleanUp();
 }
 

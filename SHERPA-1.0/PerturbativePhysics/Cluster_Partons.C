@@ -134,7 +134,7 @@ bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
   int nout        = p_blob->NOutP();
 
   if (nin==1) {
-    if (nout<3) return 1;
+    if (nout<4) return 1;
     msg.Error()<<"Error in Cluster_Partons::ClusterConfiguration()"<<std::endl
 	       <<"   Try to cluster decay blob, nin ="<<nin<<" with nout = "<<nout<<","<<std::endl
 	       <<"   No method provided yet. Return 0."<<std::endl;
@@ -632,6 +632,12 @@ void Cluster_Partons::FillDecayTree(Tree * fin_tree,XS_Base * xs)
 	knot->part->SetFlow(j+1,flow+xs->Colours()[i][j]); 
 	p_blob->OutParticle(i-1)->SetFlow(j+1,flow+xs->Colours()[i][j]); 
       }
+      else {
+	if (m_colors[i][j]!=0) {	
+	  knot->part->SetFlow(j+1,flow+m_colors[i][j]);
+	  p_blob->OutParticle(i-1)->SetFlow(j+1,flow+m_colors[i][j]);
+	}
+      }
     }
   }
   i++;
@@ -650,6 +656,12 @@ void Cluster_Partons::FillDecayTree(Tree * fin_tree,XS_Base * xs)
       if (xs && (xs->Colours()[i][j]!=0)) {	
 	knot->part->SetFlow(j+1,flow+xs->Colours()[i][j]); 
 	p_blob->OutParticle(i-1)->SetFlow(j+1,flow+xs->Colours()[i][j]); 
+      }
+      else {
+	if (m_colors[i][j]!=0) {	
+	  knot->part->SetFlow(j+1,flow+m_colors[i][j]);
+	  p_blob->OutParticle(i-1)->SetFlow(j+1,flow+m_colors[i][j]);
+	}
       }
     }
   }

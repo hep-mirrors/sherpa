@@ -59,6 +59,7 @@ namespace SHERPA {
     bool   PerformDecay(ATOOLS::Blob *);
 
     void                     ResetTables();
+    void                     ResetSelect();
     std::string              Name();
     Matrix_Element_Handler * GetMEHandler() { return p_mehandler; }
     AMEGIC::Amegic         * GetAmegic()    { return p_amegic; }

@@ -97,6 +97,7 @@ bool Sherpa::InitializeTheEventHandler()
   default:
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(sme),
 						       p_inithandler->GetHardDecayHandler()));
+    p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
 						    p_inithandler->GetShowerHandler()));
     p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
