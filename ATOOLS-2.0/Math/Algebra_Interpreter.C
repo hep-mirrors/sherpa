@@ -203,12 +203,12 @@ DEFINE_INTERPRETER_FUNCTION(Resolve_Bracket)
     if (expr[i]=='(') {
       ++open;
       if (l==std::string::npos) {
-	Algebra_Interpreter::Function_Set::const_iterator fit=
+	Algebra_Interpreter::Function_Map::const_iterator fit=
 	  p_interpreter->Functions().begin();
 	for (;fit!=p_interpreter->Functions().end();++fit) {
-	  size_t pos=expr.rfind((*fit)->Tag(),i);
+	  size_t pos=expr.rfind(fit->second->Tag(),i);
 	  if (pos!=std::string::npos &&
-	      pos+(*fit)->Tag().length()==i) break;
+	      pos+fit->second->Tag().length()==i) break;
 	}
 	if (fit==p_interpreter->Functions().end()) {
 	  l=i;
@@ -239,13 +239,13 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
       expr.find(")")==std::string::npos) return expr;
   Function *func=NULL;
   size_t pos=std::string::npos;
-  for (Algebra_Interpreter::Function_Set::const_reverse_iterator 
+  for (Algebra_Interpreter::Function_Map::const_reverse_iterator 
 	 fit=p_interpreter->Functions().rbegin();
-       fit!=p_interpreter->Functions().rend();++fit) 
-    if ((pos=expr.rfind((*fit)->Tag()))!=std::string::npos) {
-      func=*fit;
+       fit!=p_interpreter->Functions().rend();++fit) {
+    if ((pos=expr.rfind(fit->second->Tag()))!=std::string::npos) {
+      func=fit->second;
       break;
-    }
+    }}
   if (func==NULL) return expr;
   size_t last=pos+func->Tag().length()+1, open=0;
   std::vector<std::string> args;
@@ -462,7 +462,7 @@ Algebra_Interpreter::~Algebra_Interpreter()
     m_operators.erase(m_operators.begin());
   }
   while (!m_functions.empty()) {
-    delete *m_functions.begin();
+    delete m_functions.begin()->second;
     m_functions.erase(m_functions.begin());
   }
 }
@@ -478,7 +478,7 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
 
 void Algebra_Interpreter::AddFunction(Function *const f)
 {
-  m_functions.insert(f); 
+  m_functions.insert(Function_Pair(f->Tag(),f)); 
 }
 
 void Algebra_Interpreter::AddOperator(Operator *const b)

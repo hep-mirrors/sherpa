@@ -91,15 +91,16 @@ namespace ATOOLS {
   public:
 
     typedef std::map<std::string,std::string> String_Map;
-
-    typedef std::set<Function*>             Function_Set;
-    typedef std::pair<size_t,Operator*>     Operator_Pair;
-    typedef std::multimap<size_t,Operator*> Operator_Map;
-    typedef std::set<Interpreter_Function*> Interpreter_Set;
+    
+    typedef std::pair<std::string,Function*> Function_Pair;
+    typedef std::map<std::string,Function*>  Function_Map;
+    typedef std::pair<size_t,Operator*>      Operator_Pair;
+    typedef std::multimap<size_t,Operator*>  Operator_Map;
+    typedef std::set<Interpreter_Function*>  Interpreter_Set;
 
   private:
 
-    Function_Set m_functions;
+    Function_Map m_functions;
     Operator_Map m_operators;
 
     Interpreter_Set m_interpreters;
@@ -132,7 +133,7 @@ namespace ATOOLS {
     inline void SetTagReplacer(Tag_Replacer *const replacer) 
     { p_replacer=replacer; }
 
-    inline const Function_Set &Functions() const { return m_functions; }
+    inline const Function_Map &Functions() const { return m_functions; }
     inline const Operator_Map &Operators() const { return m_operators; }
 
     inline Tag_Replacer *const TagReplacer() const { return p_replacer; }
