@@ -24,9 +24,9 @@ namespace AMEGIC {
     void ForwardLineOrientation(Point*,int&);
     void BackwardLineOrientation(Point*,int&);
     
-    void SetFermionNumberFlow(Point*,Point*);
-    void SetForwardFNFlow(Point*,int,int);
-    void SetBackwardFNFlow(Point*,int,int);
+    int  SetFermionNumberFlow(Point*,Point*);
+    void SetForwardFNFlow(Point*,int,int&);
+    void SetBackwardFNFlow(Point*,int,int&);
     
     void SetMajoFlowForward(Point*,int);
     void SetMajoFlowBackward(Point*,int);

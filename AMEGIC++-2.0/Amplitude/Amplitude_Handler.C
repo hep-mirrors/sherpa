@@ -56,7 +56,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
     if (n->on) {
       pol->Replace_Numbers(N,fl,n);
 
-      OptimizeProps(N,n);
+      //OptimizeProps(N,n);
 
       BS->BuildMomlist(*n->GetPlist());
     } 

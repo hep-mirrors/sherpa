@@ -271,7 +271,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
     
   }
 
-  if (pID!=noname) Output(pID);
+  
+  if (pID!=noname && pID[0]!='N') Output(pID);
 
   // check if Matrix can be reduce even further!
   int idcc=0;
