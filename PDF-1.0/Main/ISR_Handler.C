@@ -11,7 +11,7 @@ using namespace PDF;
 using namespace std;
 
 ISR_Handler::ISR_Handler(ISR_Base ** _ISRBase,double * _splimits) :
-  p_ISRBase(_ISRBase), m_mass12(0.), m_mass22(0.), m_x1(1.), m_x2(1.)
+  p_ISRBase(_ISRBase), m_x1(1.), m_x2(1.), m_mass12(0.), m_mass22(0.)
 {
   m_mode = 0;
   for (short int i=0;i<2;i++) {
@@ -60,7 +60,7 @@ ISR_Handler::~ISR_Handler() {
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour * _bunches,
 				   ATOOLS::Flavour * _partons) {
   
-    bool fit = 1;
+  bool fit = 1;
   for (int i=0;i<2;i++) {
     if (p_ISRBase[i]->On()) {
       if (_bunches[i] != PDF(i)->Bunch()) { fit = 0; break; }
