@@ -121,9 +121,6 @@ namespace ATOOLS {
     inline const double Y() const; 
     inline const double Eta() const; 
 
-    inline const double Y() const; 
-    inline const double Eta() const; 
-
     Vec4D& operator+= (const Vec4D& v);
     Vec4D& operator-= (const Vec4D& v);
     Vec4D& operator*= (const double scal);
@@ -410,11 +407,6 @@ namespace ATOOLS {
     return sqrt(EPerp2()); 
   }
 
-  inline const double Vec4D::Y() const 
-  { 
-    return 0.5*log((m_x[0]+m_x[3])/(m_x[0]-m_x[3])); 
-  }
-  
   inline const double Vec4D::Eta() const 
   {
     double pt2=PPerp2();
