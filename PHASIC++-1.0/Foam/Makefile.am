@@ -4,9 +4,6 @@ PHASICFLAGS   =	-pedantic -Wall -Winline
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-#PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
-#BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
-#MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
@@ -25,6 +22,7 @@ libFoam_la_SOURCES    =	\
 			TFHST.cxx \
 			TFOAM.cxx
 noinst_HEADERS        =	\
+			ROOT_DEF.h \
 			TPSEMAR.h \
 			TFOAM_INTEGRAND.h \
 			TFMAXWT.h \
