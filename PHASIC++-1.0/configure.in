@@ -28,7 +28,6 @@ AC_CHECK_FUNCS(mkdir)
 
 AC_OUTPUT(Main/Makefile \
           ISR/Makefile \
-	  Beam/Makefile \
 	  Makefile )
 
 

@@ -1,3 +1,3 @@
 MAKE = make 
-SUBDIRS = Main ISR Beam
-
+SUBDIRS = Main
+EXTRA_DIST = docit Doxyfile

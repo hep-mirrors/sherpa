@@ -260,7 +260,6 @@ void Multi_Channel::EndOptimize(double error)
   }
   delete[] alp;
 #endif
-
 }
 
 void Multi_Channel::AddPoint(double value)

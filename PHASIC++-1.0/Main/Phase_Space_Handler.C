@@ -19,7 +19,7 @@ using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace BEAM;
-using namespace ISR;
+using namespace PDF;
 using namespace std;
 
 Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
@@ -41,21 +41,21 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
   p          = new Vec4D[nvec];  
   msg.Debugging()<<"Initialize new vectors : "<<nvec<<endl;
   
+  fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
   m1 = psflavs[0].Mass(); m12 = m1*m1;
-  if (nin==2) { m2   = psflavs[1].Mass(); m22 = m2*m2; }
+ 
 
   if (nin==2) {
+    m2   = psflavs[1].Mass(); m22 = m2*m2; 
     if (bh) {
       if (bh->On()>0) beamchannels = new Multi_Channel(string("beam_")+proc->Name());
     }
     if (ih) {
       if (ih->On()>0) isrchannels  = new Multi_Channel(string("isr_")+proc->Name());
     }
+    msg.Tracking()<<"Initialized new Phase_Space_Handler for "<<proc->Name()<<endl
+		  <<" ("<<ih->Type()<<", "<<nin<<"  ->  "<<nout<<" process)"<<endl;
   }
-  fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
-
-  msg.Tracking()<<"Initialized new Phase_Space_Handler for "<<proc->Name()<<endl
-		<<" ("<<ih->Type()<<", "<<nin<<"  ->  "<<nout<<" process)"<<endl;
 }
 
 Phase_Space_Handler::~Phase_Space_Handler()
@@ -163,17 +163,10 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
       ih->SetPole(sprimeB);
       isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
     }
-
-    //msg.Out()<<"Beam : "<<sprimeB<<" / "<<yB<<endl;
-
     sprime = sprimeB; y += yB;
   }
-
   if (ih && ih->On()>0) { 
     isrchannels->GeneratePoint(sprimeI,yI,ih->On());
-
-    //msg.Out()<<"ISR : "<<sprimeI<<" / "<<yI<<endl;
-
     if (!(ih->MakeISR(p,sprimeI,yI))) return 0.;
     sprime = sprimeI; y += yI;
   }
@@ -290,10 +283,10 @@ bool Phase_Space_Handler::OneEvent(int mode)
       else disc  = max*AMATOOLS::ran.Get();
       if (value >= disc) {
 	sumtrials += i;events ++;
-	msg.Debugging()<<"Phase_Space_Handler::OneEvent() : "<<i<<" trials for "
-		       <<proc->Selected()->Name()<<endl
-		       <<"   Efficiency = "<<100./double(i)<<" %."
-		       <<"   in total = "<<double(events)/double(sumtrials)*100.<<" %."<<endl;
+	//msg.Debugging()<<"Phase_Space_Handler::OneEvent() : "<<i<<" trials for "
+	//       <<proc->Selected()->Name()<<endl
+	//       <<"   Efficiency = "<<100./double(i)<<" %."
+	//       <<"   in total = "<<double(events)/double(sumtrials)*100.<<" %."<<endl;
 
 
 	if (result1 < (result1+result2)*AMATOOLS::ran.Get()) Rotate(p);
@@ -396,11 +389,11 @@ bool Phase_Space_Handler::CreateIntegrators()
   msg.Debugging()<<"In Phase_Space_Handler::CreateIntegrators"<<endl;
 
   if (nin==1) int_type = 0;
-  if (bh) {
-    if ((nin==2) && (bh && bh->On()>0) ) {
+  if (nin==2) {
+    if (bh && bh->On()>0) {
       if (!(MakeBeamChannels())) {
 	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
-		 <<"   did not construct any isr channels !"<<endl;
+		   <<"   did not construct any isr channels !"<<endl;
       }
       if (beamchannels) 
 	msg.Debugging()<<"  ("<<beamchannels->Name()<<","<<beamchannels->Number()<<";";
@@ -409,10 +402,7 @@ bool Phase_Space_Handler::CreateIntegrators()
       msg.Debugging()<<" no Beam-Handling needed : "<<bh->Name()
 		     <<" for "<<nin<<" incoming particles."<<endl;
     }
-  }
-
-  if (ih) {
-    if ((nin==2) && (ih && ih->On()>0)) {
+    if (ih && ih->On()>0) {
       if (!(MakeISRChannels())) {
 	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
 		   <<"   did not construct any isr channels !"<<endl;
@@ -425,15 +415,21 @@ bool Phase_Space_Handler::CreateIntegrators()
 		     <<" for "<<nin<<" incoming particles."<<endl;
     }
   }
+  
+  
+  if (nin==2) { 
+    msg.Debugging()<<" "<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl
+		   <<" integration mode = "<<int_type<<endl;
+    if (int_type < 3 || int_type == 5 && (fsrchannels!=0)) fsrchannels->DropAllChannels();
+  }
+  if (nin==1) {
+    msg.Debugging()<<"Initialize Rambo .... "<<endl;
+  }
 
-  msg.Debugging()<<" "<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl
-		 <<" integration mode = "<<int_type<<endl;
-  
-  if (int_type < 3 || int_type == 5 && (fsrchannels!=0)) fsrchannels->DropAllChannels();
-  
   switch (int_type) {
   case 0: 
-    fsrchannels->Add(new Rambo(nin,nout,psflavs));
+    if (nout==2) fsrchannels->Add(new Decay2Channel(nin,nout,psflavs));
+            else fsrchannels->Add(new Rambo(nin,nout,psflavs));
     break;
   case 1: 
     fsrchannels->Add(new Sarge(nin,nout));
@@ -489,7 +485,7 @@ void Phase_Space_Handler::DropRedundantChannels()
   int    * marker = new int[number];  
   double * res    = new double[number];
   for (short int i=0;i<number;i++) { marker[i] = 0;res[i] = 0.; }
-
+  
   for (short int i=0;i<number;i++) {
     perm_vec[i][0] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,rpa.gen.Ecms()/2.);
     perm_vec[i][1] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,-rpa.gen.Ecms()/2.); 
@@ -522,6 +518,7 @@ void Phase_Space_Handler::DropRedundantChannels()
       }
     }
   }
+
 
   // kick non-resonants
   /*
@@ -563,8 +560,8 @@ void Phase_Space_Handler::DropRedundantChannels()
     }
   }
   msg.Debugging()<<"    "<<count<<" channel(s) were deleted."<<endl;
-
-
+  
+  
   delete [] res;
   delete [] marker; 
   for (short int i=0;i<number;i++) delete [] perm_vec[i];
@@ -929,4 +926,6 @@ bool Phase_Space_Handler::CreateISRChannels()
   }
   return 1;
 }
+
+
 

@@ -81,6 +81,32 @@ namespace PHASIC {
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
   };
+
+
+  class Decay2Channel : public Single_Channel {
+    /*!
+      This channel is meant to be the default s-channel integrator.
+      There is no specific angular dependence, i.e. cos(theta) in the rest 
+      frame is distributed uniformly.
+    */
+    double E,s;
+    double E1,E2,Ehat,shat,phat;
+    double pt,pl,pt2,pt2min,pt2max,smin,smax;
+    double zmin,zmax,z;
+    double mass,width;
+    int    type;
+    int    chnumber;
+  public :
+    Decay2Channel(int,int,APHYTOOLS::Flavour *,
+		  APHYTOOLS::Flavour=APHYTOOLS::Flavour(APHYTOOLS::kf::none)); 
+    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
+    void GenerateWeight(AMATOOLS::Vec4D * p);
+    void GeneratePoint(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
+    void GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *)              { GenerateWeight(p); }
+    void ISRInfo(int &,double &,double &);
+    int  ChNumber()                 { return chnumber;      }
+    void SetChNumber(int _chnumber) { chnumber = _chnumber; }
+  };
 }
 
 

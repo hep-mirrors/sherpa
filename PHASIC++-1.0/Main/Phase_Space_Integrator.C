@@ -265,7 +265,6 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
     }
 #endif
 
-
     if ((!(n%iter)) || (n==maxopt)) {
 #ifndef _USE_MPI_ // non MPI mode
       msg.Tracking()<<" n="<<n<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
