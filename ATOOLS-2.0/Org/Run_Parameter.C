@@ -8,6 +8,7 @@
 #include "Data_Collector.H"
 #include <stdlib.h>
 #include <termios.h>
+#include <unistd.h>
 
 using namespace ATOOLS;
 

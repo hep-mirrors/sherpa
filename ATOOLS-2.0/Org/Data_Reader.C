@@ -2,6 +2,7 @@
 
 #include "Message.H"
 #include "MyStrStream.H"
+#include <typeinfo>
 #include <ctype.h>
 #ifdef DEBUG__Data_Reader
 #include <iostream>
