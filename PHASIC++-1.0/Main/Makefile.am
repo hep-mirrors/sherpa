@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-PHASICFLAGS   =	-pedantic -Wall -Winline 
+PHASICFLAGS   =	-pedantic -Wall -Winline
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
@@ -14,13 +14,18 @@ endif
 
 lib_LTLIBRARIES       =	libPhasespace.la
 libPhasespace_la_SOURCES      =	\
-				Info_Key.C \
-				Integration_Info.C \
 				Integrable_Base.C \
 			   	Channel_Basics.C \
 				Channel_Elements.C \
 				Single_Channel.C \
-			 	ISR_Channel.C \
+				Simple_Pole.C \
+			   	Resonance.C \
+				Threshold.C \
+				Leading_Log.C \
+				LBS_Compton_Peak.C \
+			   	Leading_Log_Z.C \
+			   	LL_KPerp.C \
+			   	LDL_KPerp.C \
 				FSR_Channel.C \
 				Rambo.C \
 				RamboKK.C \
@@ -29,21 +34,18 @@ libPhasespace_la_SOURCES      =	\
 			   	Multi_Channel.C \
 				Phase_Space_Handler.C \
 				Phase_Space_Integrator.C 
-#				Simple_Pole.C \
-#			   	Resonance.C \
-#				Threshold.C \
-#				Leading_Log.C \
-#				LBS_Compton_Peak.C \
-#			   	LL_KPerp.C \
 noinst_HEADERS        =	\
-			Info_Key.H \
-			Info_Key.inl.H \
-			Integration_Info.H \
-			Integration_Info.inl.H \
 		 	Channel_Basics.H \
 			Channel_Elements.H \
 			Single_Channel.H \
-		 	ISR_Channel.H \
+		 	Simple_Pole.H \
+		 	Resonance.H \
+			Threshold.H \
+			Leading_Log.H \
+			LBS_Compton_Peak.H \
+		 	Leading_Log_Z.H \
+		 	LL_KPerp.H \
+		 	LDL_KPerp.H \
 			FSR_Channel.H \
 			Channel_Interface.H \
 			Rambo.H \
@@ -53,12 +55,6 @@ noinst_HEADERS        =	\
 		 	Integrable_Base.H \
 			Phase_Space_Handler.H \
 			Phase_Space_Integrator.H 
-#		 	Simple_Pole.H \
-#		 	Resonance.H \
-#			Threshold.H \
-#			Leading_Log.H \
-#			LBS_Compton_Peak.H \
-#		 	LL_KPerp.H \
 AM_CXXFLAGS   =	$(PHASICFLAGS)
 EXTRA_DIST    = $(CVSINCLUDE)
 INCLUDES      =	$(BEAMINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
