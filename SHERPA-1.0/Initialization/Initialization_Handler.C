@@ -5,10 +5,8 @@
 #include "Intact.H"
 #include "PDF_Handler.H"
 #include "PDF_Base.H"
-
 #include "Initial_State_Shower.H"
 #include "LL_Branching.H"
-
 #include "Data_Read.H"
 #include "Message.H"
 #include "Scaling.H"
@@ -395,6 +393,9 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
   p_beamremnants = new Beam_Remnant_Handler(m_path,m_beamremnantdat,
 					    m_isrhandlers[isr::hard_process],
 					    p_beamspectra,scale);
+  for (size_t i=0;i<2;++i) {
+    AMISIC::MI_Base::SetRemnantHandler(p_beamremnants->BeamParticle(i),i);
+  }
   ATOOLS::msg.Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }
