@@ -322,11 +322,10 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::SameWeightedEvent()
   return WeightedEvent(1);
 }
 
-bool Phase_Space_Handler::OneEvent(double mass,int mode)
+bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
 {
   PROFILE_HERE;
   const bool use_overflow=true;
-
   if ((mass<0) && (!m_initialized)) InitIncoming();
   if ((mass>0) && (m_nin==1)) InitIncoming(mass);
   m_weight=1.;
@@ -343,17 +342,12 @@ bool Phase_Space_Handler::OneEvent(double mass,int mode)
       }
     }
     double max = p_process->Selected()->Max();
-
     if (p_process->Selected()->Overflow()==0.) {
       p_process->Selected()->RestoreInOrder(); // use last order for overflow events
-      // *SH*    if (p_isrchannels) p_isrchannels->SetRange(p_isrhandler->SprimeRange(),p_isrhandler->YRange());
       value = Differential(p_process->Selected());
     }
     else {
       value = p_process->Selected()->Overflow();
-      msg.Debugging()<<om::green<<" old Overflow event: "<<value<<" ("<<max<<") "<<om::bold<<value/max<<om::reset<<std::endl;
-      msg.Debugging()<<"     proc "<<p_process->Selected()->Name()<<std::endl;
-
       std::vector<double> & xinfo =p_process->Selected()->XInfo();
       m_beamspkey[3] = xinfo[0];
       m_beamykey[2]  = xinfo[1];
@@ -368,8 +362,6 @@ bool Phase_Space_Handler::OneEvent(double mass,int mode)
       }
       else {
 	p_process->Selected()->SetOverflow(0.);
-	msg.Debugging()<<om::blue<<" Overflow event finished: "<<value<<" ("<<max<<")"<<om::reset<<std::endl;
-	msg.Debugging()<<"     proc "<<p_process->Selected()->Name()<<std::endl;
       }
       m_result_1=value;
       m_result_2=0.;
@@ -386,8 +378,6 @@ bool Phase_Space_Handler::OneEvent(double mass,int mode)
 	}
 	else {
 	  // use overflow
-	  msg.Debugging()<<om::red<<" Overflow event: "<<value<<" ("<<max<<") "<<om::bold<<value/max<<om::reset<<std::endl;
-	  msg.Debugging()<<"     proc "<<p_process->Selected()->Name()<<std::endl;
 	  p_process->Selected()->SetOverflow(value-max);
 	  std::vector<double> & xinfo =p_process->Selected()->XInfo();
 	  xinfo[0]=m_beamspkey[3];

@@ -1,5 +1,6 @@
 #include "Integrable_Base.H"
 
+#include "Phase_Space_Handler.H"
 #include "Message.H"
 
 using namespace PHASIC;
@@ -50,6 +51,11 @@ bool Integrable_Base::OneEvent()
 {
   ATOOLS::msg.Error()<<"Integrable_Base::OneEvent(): Virtual function called !"<<std::endl;
   return false;
+} 
+
+bool Integrable_Base::OneEvent(const double mass,const int mode) 
+{
+  return p_activepshandler->OneEvent(mass,mode);
 } 
 
 bool Integrable_Base::SameEvent() 

@@ -62,7 +62,7 @@ namespace PHASIC {
 
     // constructor
     Integrable_Base(const size_t nin=0,const size_t nout=0,const ATOOLS::Flavour *flavours=NULL,
-		    const int scalescheme=0,const int kfactorscheme=0,const double scalefactor=0.,
+		    const int scalescheme=0,const int kfactorscheme=0,const double scalefactor=1.,
 		    BEAM::Beam_Spectra_Handler *const beamhandler=NULL,
 		    PDF::ISR_Handler *const isrhandler=NULL,
 		    ATOOLS::Selector_Data *const selectordata=NULL);
@@ -72,6 +72,7 @@ namespace PHASIC {
   
     // member functions
     void SetMomenta(const ATOOLS::Vec4D *momenta); 
+    bool OneEvent(const double mass,const int mode);
 
     virtual void SwapInOrder() = 0;
     virtual void RestoreInOrder() = 0;
