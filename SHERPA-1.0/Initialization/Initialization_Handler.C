@@ -194,7 +194,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     cout<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
 
     // variables in dat files
-    if (equal!=-1 && mode==0) {
+    if (equal!=-1 && mode==1) {
       cout<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
       Data_Read::SetCommandLine(key,value);
     }
