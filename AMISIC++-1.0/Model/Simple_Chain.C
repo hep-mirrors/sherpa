@@ -241,6 +241,7 @@ bool Simple_Chain::ReadInData()
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   reader->SetMatrixType(reader->MTransposed);
+  reader->SetVectorType(reader->VHorizontal);
   std::string helps;
   if (reader->ReadFromFile(helps,"GENERATION_MODE")) {
     m_weighted=helps.find("Weighted")!=std::string::npos;
