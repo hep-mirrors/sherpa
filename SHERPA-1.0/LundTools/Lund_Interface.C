@@ -20,7 +20,11 @@ ATOOLS::Blob_List *Lund_Interface::s_bloblist;
 
 Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   m_path(_m_path),
-  m_file(_m_file)
+  m_file(_m_file),
+  p_phep(new double[5*4000]),
+  p_vhep(new double[4*4000]),
+  p_jmohep(new int[2*4000]),
+  p_jdahep(new int[2*4000])
 {
   double win;
   std::string beam[2], frame("CMS");
@@ -70,7 +74,16 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   reader->AddIgnore("(");
   reader->AddIgnore(")");
   reader->AddIgnore(",");
-  // if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
+  bool sherpa=true;
+  if (ATOOLS::rpa.gen.Ecms()==0.) {
+    sherpa=false;
+    if (!reader->ReadFromFile(frame,"FRAME")) frame=std::string("CMS");
+    if (!reader->ReadFromFile(beam[0],"BEAM")) beam[0]=std::string("P+");
+    if (!reader->ReadFromFile(beam[1],"TARGET")) beam[1]=std::string("PBAR-");
+    if (!reader->ReadFromFile(win,"WIN")) win=1800.0;
+    ATOOLS::rpa.gen.SetEcms(win);
+    if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
+  }
   pysubs.msel=0;
   reader->MatrixFromFile(help,"MSUB");
   for (size_t i=0;i<help.size();++i) {
@@ -112,19 +125,57 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.paru[(int)help[i][0]-1]=help[i][1];
   }
+  reader->MatrixFromFile(help,"MDME");
+  for (size_t i=0;i<help.size();++i) {
+    if (help[i].size()>2) {
+      if ((int)help[i][0]>0 && abs((int)help[i][1]<2)) {
+	pydat3.mdme[(int)help[i][1]-1][(int)help[i][0]-1]=(int)help[i][2];
+      }
+    }
+  }
   // the next lines replace the apyinit_ call
-  hepevt.nhep=100;
-  for (int i=pydat3.mdcy[23-1][2-1];i<pydat3.mdcy[23-1][2-1]+pydat3.mdcy[23-1][3-1];++i) {
-    if (abs(pydat3.kfdp[i-1][1-1])>=2) pydat3.mdme[i-1][1-1]=ATOOLS::Min(0,pydat3.mdme[i-1][1-1]);
+  if (sherpa) {
+    hepevt.nhep=100;
+    for (int i=pydat3.mdcy[23-1][2-1];i<pydat3.mdcy[23-1][2-1]+pydat3.mdcy[23-1][3-1];++i) {
+      if (abs(pydat3.kfdp[i-1][1-1])>=2) pydat3.mdme[i-1][1-1]=ATOOLS::Min(0,pydat3.mdme[i-1][1-1]);
+    }
+    pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
   }
   // replacement ends here
-  if (ATOOLS::msg.Level()&8) ListLundParameters();
-  pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
+  if (ATOOLS::msg.LevelIsDebugging()) ListLundParameters();
+  if (!sherpa) {
+    p_hepevt = new ATOOLS::HepEvt_Interface(ATOOLS::gtp::Pythia);
+    if (pypars.mstp[105-1]==0) p_hepevt->SetHadronized(false);
+    pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
+    if (reader->ReadFromFile(m_outfile,"OUTPUT_FILE")) {
+      m_writeout = true;
+      if (!reader->ReadFromFile(m_evtsperfile,"EVENTS_PER_FILE")) m_evtsperfile=1000;
+      NextFile(true);
+      int helper;
+      if (!reader->ReadFromFile(helper,"COMPRESS")) helper=1;
+      m_compress=(bool)helper;
+    }
+  }
   delete reader;
 }
 
 Lund_Interface::~Lund_Interface()
 {
+  NextFile(false);
+  if (p_hepevt) { 
+    p_hepevt->SetNhep(0);
+    p_hepevt->SetIsthep(NULL);
+    p_hepevt->SetIdhep(NULL);
+    p_hepevt->SetJmohep(NULL);
+    p_hepevt->SetJdahep(NULL);
+    p_hepevt->SetPhep(NULL);
+    p_hepevt->SetVhep(NULL);
+    delete p_hepevt; p_hepevt = NULL; 
+  }
+  if (p_jmohep) { delete p_jmohep; p_jmohep = NULL; }
+  if (p_jdahep) { delete p_jdahep; p_jdahep = NULL; }
+  if (p_phep)   { delete p_phep;   p_phep   = NULL; }
+  if (p_vhep)   { delete p_vhep;   p_vhep   = NULL; }
 }
 
 bool Lund_Interface::ConvertParticles(std::map<int,ATOOLS::Particle*> &converted)
@@ -397,3 +448,65 @@ void Lund_Interface::Error(const int error)
     }
   }
 }
+
+void Lund_Interface::NextFile(const bool newfile) 
+{
+  if (!m_writeout) return; 
+  std::string oldfile;
+  bool oldfileexists=false;
+  std::ofstream *outfile=p_hepevt->GetOutStream();
+  if (outfile!=NULL) {
+    oldfileexists=true;
+    oldfile=m_outfile+ATOOLS::ToString(m_curfile)+std::string(".evts");
+    if (newfile) 
+      (*outfile)<<(m_outfile+ATOOLS::ToString(++m_curfile)+std::string(".evts"))<<std::endl;
+    if (m_compress) {
+      system((std::string("gzip ")+oldfile+std::string(".gz ")+oldfile).c_str());
+      system((std::string("rm ")+oldfile).c_str());
+    }
+  }
+  if (!newfile) {
+    if (p_hepevt) { 
+      p_hepevt->SetNhep(0);
+      p_hepevt->SetIsthep(NULL);
+      p_hepevt->SetIdhep(NULL);
+      p_hepevt->SetJmohep(NULL);
+      p_hepevt->SetJdahep(NULL);
+      p_hepevt->SetPhep(NULL);
+      p_hepevt->SetVhep(NULL);
+      delete p_hepevt; 
+      p_hepevt = NULL; 
+    }
+    return;
+  }
+  std::string file = std::string(m_outfile+ATOOLS::ToString(m_curfile)+std::string(".evts"));
+  p_hepevt->ChangeOutStream(file,m_evtsperfile);
+}
+
+bool Lund_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
+{
+  bool okay = false;
+  for (int i=0;i<200;i++) {
+    pyevnt();
+    pyhepc(1);
+    weight=1.;  //*=pypars.pari[10];
+    for (int i=0;i<hepevt.nhep;i++) {
+      for (int j=0;j<2;j++) {
+	p_jmohep[2*i+j] = hepevt.jmohep[i][j]; 
+	p_jdahep[2*i+j] = hepevt.jdahep[i][j];
+      } 
+      for (int j=0;j<5;j++) p_phep[5*i+j] = hepevt.phep[i][j];
+      for (int j=0;j<4;j++) p_vhep[4*i+j] = hepevt.vhep[i][j];
+    }
+    p_hepevt->SetNhep(hepevt.nhep);
+    p_hepevt->SetIsthep(hepevt.isthep);
+    p_hepevt->SetIdhep(hepevt.idhep);
+    p_hepevt->SetJmohep(p_jmohep);
+    p_hepevt->SetJdahep(p_jdahep);
+    p_hepevt->SetPhep(p_phep);
+    p_hepevt->SetVhep(p_vhep);
+    if (p_hepevt->HepEvt2Sherpa(blobs)) { okay = true; break; }
+  }
+  if (ATOOLS::msg.LevelIsTracking()) pylist(2);
+  return okay;
+} 

@@ -1,6 +1,7 @@
 #ifndef Lund_Interface_H
 #define Lund_Interface_H
 
+#include "HepEvt_Interface.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
 #include <map>
@@ -12,7 +13,15 @@ namespace SHERPA {
 
     static size_t s_errors, s_maxerrors;
 
-    std::string m_path, m_file;
+    std::string m_path, m_file, m_outfile;
+
+    ATOOLS::HepEvt_Interface *p_hepevt;
+
+    long int m_events, m_curfile, m_evtsperfile;
+    bool     m_compress, m_writeout;
+
+    double *p_phep, *p_vhep;
+    int    *p_jmohep, *p_jdahep;
 
     static ATOOLS::Blob_List *s_bloblist;
 
@@ -21,6 +30,8 @@ namespace SHERPA {
     bool ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS::Particle*> &converted);
     bool SetTypes(ATOOLS::Blob_List *blobs);
     bool DeleteObsolete(std::map<int,ATOOLS::Particle*> &converted);
+
+    void NextFile(const bool newfile);
 
     // tools for extracting hadrons
     void AddPartonToString(ATOOLS::Particle *particle,int &nhep);
@@ -42,6 +53,8 @@ namespace SHERPA {
     bool ConvertEvent(ATOOLS::Blob_List *bloblist);
 
     static void Error(const int error);
+
+    bool OneEvent(ATOOLS::Blob_List *const bloblist,double &weight);
 
   };// end of class Lund_Interface
 

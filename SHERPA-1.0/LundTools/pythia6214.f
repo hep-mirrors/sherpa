@@ -52088,29 +52088,29 @@ C...Local character variable.
       CHARACTER CHMESS*(*)
  
 C...Write first few warnings, then be silent.
-      IF(MERR.LE.10) THEN
-        MSTU(27)=MSTU(27)+1
-        MSTU(28)=MERR
-        IF(MSTU(25).EQ.1.AND.MSTU(27).LE.MSTU(26)) WRITE(MSTU(11),5000)
-     &  MERR,MSTU(31),CHMESS
- 
+C      IF(MERR.LE.10) THEN
+C        MSTU(27)=MSTU(27)+1
+C        MSTU(28)=MERR
+C        IF(MSTU(25).EQ.1.AND.MSTU(27).LE.MSTU(26)) WRITE(MSTU(11),5000)
+C     &  MERR,MSTU(31),CHMESS
+C 
 C...Write first few errors, then be silent or stop program.
-      ELSEIF(MERR.LE.20) THEN
+C      ELSEIF(MERR.LE.20) THEN
         IF(MSTU(29).EQ.0) MSTU(23)=MSTU(23)+1
         MSTU(24)=MERR-10
         IF(MSTU(21).GE.1.AND.MSTU(23).LE.MSTU(22)) WRITE(MSTU(11),5100)
      &  MERR-10,MSTU(31),CHMESS
-        IF(MSTU(21).GE.2.AND.MSTU(23).GT.MSTU(22)) THEN
-          WRITE(MSTU(11),5100) MERR-10,MSTU(31),CHMESS
-          WRITE(MSTU(11),5200)
+C        IF(MSTU(21).GE.2.AND.MSTU(23).GT.MSTU(22)) THEN
+C          WRITE(MSTU(11),5100) MERR-10,MSTU(31),CHMESS
+C          WRITE(MSTU(11),5200)
           CALL SHERRM(MERR)
-        ENDIF
- 
+C        ENDIF
+C 
 C...Stop program in case of irreparable error.
-      ELSE
-        WRITE(MSTU(11),5300) MERR-20,MSTU(31),CHMESS
-        CALL SHERRM(MERR)
-      ENDIF
+C      ELSE
+C        WRITE(MSTU(11),5300) MERR-20,MSTU(31),CHMESS
+C        STOP
+C      ENDIF
  
 C...Formats for output.
  5000 FORMAT(/5X,'Advisory warning type',I2,' given after',I9,
