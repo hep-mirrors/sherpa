@@ -41,7 +41,7 @@ void Perturbative_Interface::RemoveBackward(ATOOLS::Blob *const blob,
 }
 
 void Perturbative_Interface::RemoveForward(ATOOLS::Blob *const blob,
-					    ATOOLS::Blob_List *const bloblist)
+					   ATOOLS::Blob_List *const bloblist)
 {
   while (blob->NOutP()>0) {
     ATOOLS::Particle *cur=blob->OutParticle(0);
@@ -69,7 +69,10 @@ void Perturbative_Interface::CleanBlobList(ATOOLS::Blob_List *const bloblist,
       ATOOLS::Blob *blob=*blit;
       RemoveForward(blob,bloblist);
       RemoveBackward(blob,bloblist);
-      blit=bloblist->begin();
+      if (type!=ATOOLS::btp::Signal_Process) {
+	delete *blit;
+	if ((blit=bloblist->erase(blit))==bloblist->end()) break;
+      }
     }
   }
 }
