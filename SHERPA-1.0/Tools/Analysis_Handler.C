@@ -131,6 +131,8 @@ Analysis_Handler::Analysis_Handler(std::ifstream * readin, std::string _phase,
   ReadInObservables(readin);
   SetUpObservables();
   //  SetUpSubSamples();
+  
+  ATOOLS::Exception_Handler::AddTerminatorObject(this);
 
   if (msg.LevelIsInfo()) {
     msg.Out()<<"Initialized new Analysis_Handler for "<<m_phase<<","<<mode<<std::endl;
