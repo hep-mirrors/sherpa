@@ -4,6 +4,7 @@
 #include "PI_Interface.H"
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
+#include <algorithm>
 
 using namespace PHASIC;
 using namespace ATOOLS;

@@ -6,6 +6,7 @@
 #include "PI_Interface.H"
 
 #include "Random.H"
+#include <unistd.h>
 
 //#define _USE_MPI_
 #ifdef _USE_MPI_
