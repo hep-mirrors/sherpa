@@ -16,8 +16,8 @@
 using namespace SHERPA;
 
 Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,
-			       const unsigned int beam,const double scale):
-  QCD_Remnant_Base(isrhandler,beam,-scale,rtp::hadron)
+			       const unsigned int beam):
+  QCD_Remnant_Base(isrhandler,beam,rtp::hadron)
 {
   if (isrhandler==NULL) {
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
@@ -342,5 +342,18 @@ double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour)
     if (flavour.IsQuark()) return flavour.Bar().PSMass();
   }
   return 0.;
+}
+
+ATOOLS::Flavour Hadron_Remnant::ConstituentType(const ATOOLS::Flavour &flavour) 
+{
+  if (flavour.IsGluon()) return ATOOLS::kf::gluon;
+  if (flavour.Kfcode()==ATOOLS::kf::quark || 
+      flavour.Kfcode()==ATOOLS::kf::seaquark) return flavour.Kfcode();
+  if (flavour.IsQuark()) {
+    for (size_t i=0;i<m_constit.size();++i) 
+      if (flavour==m_constit[i]) return ATOOLS::kf::quark;
+    return ATOOLS::kf::seaquark;
+  }
+  return ATOOLS::kf::none;
 }
 

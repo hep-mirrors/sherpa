@@ -23,10 +23,11 @@ namespace SHERPA {
     
     // constructor
     Hadron_Remnant(PDF::ISR_Handler *isrhandler,
-		   const unsigned int beam,const double scale);
+		   const unsigned int beam);
 
     // member functions
-    double MinimalEnergy(const ATOOLS::Flavour &flavour); 
+    double          MinimalEnergy(const ATOOLS::Flavour &flavour); 
+    ATOOLS::Flavour ConstituentType(const ATOOLS::Flavour &flavour);
     
     bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist);
 

@@ -21,7 +21,10 @@ using namespace SHERPA;
 #define TEST__Beam_Remnant_Handler
 
 #ifndef TEST__Beam_Remnant_Handler
-inline void SumMomenta(ATOOLS::Blob *bl) {}
+inline bool SumMomenta(ATOOLS::Blob *bl) 
+{
+  return true;
+}
 #else
 std::set<ATOOLS::Blob*> checked_blobs;
 
@@ -63,13 +66,12 @@ bool SumMomenta(ATOOLS::Blob *bl)
 Beam_Remnant_Handler::
 Beam_Remnant_Handler(const std::string path,const std::string file,
 		     PDF::ISR_Handler *const isr,
-		     BEAM::Beam_Spectra_Handler *const beam,
-		     const double scale):
+		     BEAM::Beam_Spectra_Handler *const beam):
   p_isr(isr), p_beam(beam), m_path(path), m_file(file), m_fill(true)
 {
   for (size_t i=0;i<2;++i) {
     if (p_isr->Flav(i).IsHadron()) {
-      Hadron_Remnant *remnant = new Hadron_Remnant(p_isr,i,scale);
+      Hadron_Remnant *remnant = new Hadron_Remnant(p_isr,i);
       ATOOLS::Data_Reader reader;
       reader.SetInputPath(m_path);
       reader.SetInputFile(m_file);
@@ -81,7 +83,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
       p_beampart[i]=remnant;
     }
     else if (p_isr->Flav(i).IsLepton()) 
-      p_beampart[i] = new Electron_Remnant(p_isr,i,scale);
+      p_beampart[i] = new Electron_Remnant(p_isr,i);
     else if (p_isr->Flav(i).IsPhoton()) 
       p_beampart[i] = new Photon_Remnant(i);
     else p_beampart[i] = new No_Remnant(i);
@@ -239,3 +241,7 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   return okay;
 }
 
+void Beam_Remnant_Handler::SetScale(const double scale)
+{
+  for (short unsigned int i=0;i<2;++i) p_beampart[i]->SetScale(scale);
+}

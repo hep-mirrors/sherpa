@@ -5,9 +5,8 @@
 using namespace SHERPA;
 
 Electron_Remnant::Electron_Remnant(PDF::ISR_Handler *isrhandler,
-				   const unsigned int _m_beam,double _m_scale):
-  Remnant_Base(rtp::electron,_m_beam),
-  m_scale(-_m_scale)
+				   const unsigned int _m_beam):
+  Remnant_Base(rtp::electron,_m_beam)
 {
   if (isrhandler==NULL) {
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,

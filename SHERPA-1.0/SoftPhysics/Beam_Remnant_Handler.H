@@ -31,8 +31,7 @@ namespace SHERPA {
     // constructor
     Beam_Remnant_Handler(const std::string path,const std::string file,
 			 PDF::ISR_Handler *const isr,
-			 BEAM::Beam_Spectra_Handler *const beam,
-			 const double scale);
+			 BEAM::Beam_Spectra_Handler *const beam);
 
     // destructor
     ~Beam_Remnant_Handler();
@@ -42,6 +41,8 @@ namespace SHERPA {
 			ATOOLS::Particle_List *const particlelist=NULL);
     bool FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
 		       ATOOLS::Particle_List *const particlelist=NULL);
+
+    void SetScale(const double scale);
 
     // inline functions
     inline Remnant_Base *const BeamParticle(const size_t i) const 

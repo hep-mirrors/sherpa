@@ -22,7 +22,7 @@ namespace SHERPA {
 
     PDF::PDF_Base *p_pdfbase;
 
-    double       m_deltax, m_scale;
+    double       m_deltax;
     unsigned int m_xscheme, m_maxtrials, m_set;
     size_t       m_initial, m_constrained;
 
@@ -47,8 +47,7 @@ namespace SHERPA {
     
     // constructor
     QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,
-		     const unsigned int _m_beam,
-		     const double _m_scale,const rtp::code type);
+		     const unsigned int _m_beam,const rtp::code type);
 
     // destructor
     ~QCD_Remnant_Base();

@@ -11,12 +11,10 @@ namespace SHERPA {
 
     PDF::PDF_Base *p_pdfbase;
 
-    double m_scale;
-
   public:
     
     // constructor
-    Electron_Remnant(PDF::ISR_Handler *isrhandler,const unsigned int _m_beam,double _m_scale);
+    Electron_Remnant(PDF::ISR_Handler *isrhandler,const unsigned int _m_beam);
 
     // member functions
     bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist);

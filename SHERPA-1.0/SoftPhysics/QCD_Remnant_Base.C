@@ -17,11 +17,11 @@
 using namespace SHERPA;
 
 QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,
-				   const unsigned int beam,
-				   const double scale,const rtp::code type):
-  Remnant_Base(type,beam), p_start(NULL), m_deltax(0.0125), m_scale(scale),
+				   const unsigned int beam,const rtp::code type):
+  Remnant_Base(type,beam), p_start(NULL), m_deltax(0.0125),
   m_xscheme(1), m_maxtrials(100), p_string(new double[2])
 {
+  m_scale=4.0;
   if (isrhandler==NULL) {
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
 			    "QCD remnant needs ISR Handler.",

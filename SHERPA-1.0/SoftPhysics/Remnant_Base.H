@@ -39,7 +39,7 @@ namespace SHERPA {
     ATOOLS::Blob  *p_beamblob;
     ATOOLS::Vec4D  m_pbeam;
 
-    double m_erem, m_pzrem, m_deltae, m_deltap, m_ebeam;
+    double m_erem, m_pzrem, m_deltae, m_deltap, m_ebeam, m_scale;
 
     bool m_active, m_initialized;
 
@@ -64,7 +64,8 @@ namespace SHERPA {
     virtual void Clear();
     virtual void QuickClear();
 
-    virtual double MinimalEnergy(const ATOOLS::Flavour &flavour);
+    virtual double          MinimalEnergy(const ATOOLS::Flavour &flavour);
+    virtual ATOOLS::Flavour ConstituentType(const ATOOLS::Flavour &flavour);
 
     virtual bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist) = 0;
     virtual bool AdjustKinematics();
@@ -90,6 +91,7 @@ namespace SHERPA {
     inline void ClearErrors() { m_errors=0; }
 
     inline void SetBeamEnergy(const double ebeam) { m_ebeam=ebeam; }
+    inline void SetScale(const double scale)      { m_scale=scale; }
 
   };// end of class Remnant_Base
 
