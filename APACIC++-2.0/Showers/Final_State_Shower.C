@@ -79,12 +79,12 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   if (mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
 
-    int stat = InitializeJets(tree,mo,1);
+    InitializeJets(tree,mo,1);
   }
   else {
     if (mo->part->Info()=='H') {
       int found=0;
-      for (int i=0;i<m_ini_partons.size();++i) {
+      for (size_t i=0;i<m_ini_partons.size();++i) {
 	if (m_ini_partons[i]==mo) found=1;
       }
       if (!found) {
@@ -497,7 +497,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn, Particle_List * pl)
 bool Final_State_Shower::TestShower(Tree * tree) 
 {
   double E2 = sqr(rpa.gen.Ecms());
-  double E  =rpa.gen.Ecms()*0.5;
+  //double E  =rpa.gen.Ecms()*0.5;
   for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
     if (i%2500==0) {
       msg.Out()<<" "<<i<<" th event "<<std::endl;
@@ -569,7 +569,7 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
   else {
     if (d1->part->Flav().Strong()) {
       int found=0;
-      for (int i=0;i<m_ini_partons.size();++i) {
+      for (size_t i=0;i<m_ini_partons.size();++i) {
 	if (m_ini_partons[i]==d1) found=1;
       }
       if (!found) {
@@ -585,7 +585,7 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
   else {
     if (d2->part->Flav().Strong()) {
       int found=0;
-      for (int i=0;i<m_ini_partons.size();++i) {
+      for (size_t i=0;i<m_ini_partons.size();++i) {
 	if (m_ini_partons[i]==d2) found=1;
       }
       if (!found) {
@@ -606,8 +606,8 @@ bool  Final_State_Shower::ExtraJetCheck() const {
   bool test=1;
 
   if (m_ini_partons.size()>=2) {
-    for (int i=0;i<m_ini_partons.size()-1;++i) {
-      for (int j=i+1;j<m_ini_partons.size();++j) {
+    for (size_t i=0;i<m_ini_partons.size()-1;++i) {
+      for (size_t j=i+1;j<m_ini_partons.size();++j) {
 	test=test & p_kin->ExtraJetCheck(0,m_ini_partons[i],m_ini_partons[j]);
 	if (test==0) break;
       }
