@@ -51,7 +51,6 @@ noinst_HEADERS        =	\
 			Getter_Function.H \
 			Exception.H \
 			Exception_Handler.H \
-			Exception_Handler.inl.H \
 			File_IO_Base.H \
 			Read_Write_Base.H \
 			Read_Write_Base.inl.H \
