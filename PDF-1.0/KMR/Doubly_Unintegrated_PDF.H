@@ -61,6 +61,9 @@ namespace PDF {
 
     PDF_Base *GetBasicPDF();
 
+    // inline functions
+    inline kps::type KPerpScheme() const { return m_kperpscheme; }
+
   };// end of class Doubly_Unintegrated_PDF
 
 }// end of namespace PDF
