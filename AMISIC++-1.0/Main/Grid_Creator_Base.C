@@ -121,7 +121,10 @@ namespace AMISIC {
     }
     if (!reader->ReadFromFile(m_griddeltaymax,"D_Y_MAX")) {
       if (m_useymax&&m_useymin) m_griddeltaymax=(GridYMax()-GridYMin())/(GridResultType)2.0;
-      else m_optimize=false;
+      else {
+	m_griddeltaymax=0.0;
+	m_optimize=false;
+      }
     }
     if (reader->VectorFromFile(temp,"D_Y_MIN",ATOOLS::noinputtag,reader->VHorizontal)) { 
       reader->ReadFromString(m_griddeltaymin,ATOOLS::nullstring,temp[0]);
