@@ -267,7 +267,22 @@ double Primordial_KPerp::Lambda2(double sp,double sp1,double sp2)
 
 void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
 {
-  if (m_kperpmean[0]==0.0 && m_kperpmean[1]==0.0) return;
+#ifdef ANALYSE__Primordial_KPerp
+  static TH1D *pkp[2]={NULL,NULL};
+  if (pkp[0]==NULL) {
+    pkp[0] = new TH1D("kperp_1","kperp_1",200,0.0,10.0);
+    pkp[1] = new TH1D("kperp_2","kperp_2",200,0.0,10.0);
+    MYROOT::myroot->AddObject(pkp[0],"kperp_1");
+    MYROOT::myroot->AddObject(pkp[1],"kperp_2");
+  }
+#endif
+  if (m_kperpmean[0]==0.0 && m_kperpmean[1]==0.0) {
+#ifdef ANALYSE__Primordial_KPerp
+    pkp[0]->Fill(0.0);
+    pkp[1]->Fill(0.0);
+#endif
+    return;
+  }
   if (p_filled->find(cur1)!=p_filled->end()) return;
   ++m_current[beam];
   Vec3D kp1;
@@ -277,6 +292,9 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   if (!FindConnected(cur1,cur2,true,0)) {
     mom1=Vec4D(old1[0],kp1[1],kp1[2],
 	       Sign(old1[3])*sqrt(old1[3]*old1[3]-kp1[1]*kp1[1]-kp1[2]*kp1[2])); 
+#ifdef ANALYSE__Primordial_KPerp
+    pkp[beam]->Fill(mom1.PPerp());
+#endif
     cur1->SetMomentum(mom1); 
     p_filled->insert(cur1);
     return;
@@ -312,13 +330,6 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   mom1=Vec4D(E1,kp1[1],kp1[2],pz1);
   mom2=Vec4D(E2,kp2[1],kp2[2],pz2);
 #ifdef ANALYSE__Primordial_KPerp
-  static TH1D *pkp[2]={NULL,NULL};
-  if (pkp[0]==NULL) {
-    pkp[0] = new TH1D("kperp_1","kperp_1",200,0.0,10.0);
-    pkp[1] = new TH1D("kperp_2","kperp_2",200,0.0,10.0);
-    MYROOT::myroot->AddObject(pkp[0],"kperp_1");
-    MYROOT::myroot->AddObject(pkp[1],"kperp_2");
-  }
   pkp[0]->Fill(mom1.PPerp());
   pkp[1]->Fill(mom2.PPerp());
 #endif
