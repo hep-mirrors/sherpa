@@ -13,7 +13,7 @@ namespace PHASIC {
     bool operator==(const Channel_Info & ci) {
       if (type != ci.type)                           return 0;
       if (parameters.size() != ci.parameters.size()) return 0;
-      for (int i=0;i<parameters.size();i++) {
+      for (unsigned int i=0;i<parameters.size();i++) {
 	if (parameters[i] != ci.parameters[i])       return 0;
       }
       return 1;
@@ -75,11 +75,11 @@ namespace PHASIC {
 
     void    Print();
     void    SetRange(double * sprimerange,double * yrange) {
-      for (int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
+      for (unsigned int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
     }
     void    GetRange() {
       ATOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
-      for (int i=0;i<channels.size();i++) channels[i]->GetRange();
+      for (unsigned int i=0;i<channels.size();i++) channels[i]->GetRange();
     }
     void    WriteOut(std::string);
     bool    ReadIn(std::string);

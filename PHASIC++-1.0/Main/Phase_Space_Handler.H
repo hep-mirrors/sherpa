@@ -81,7 +81,7 @@ namespace PHASIC {
     inline channelinfos   & ISRParameters()           { return isr_params; } 
 
     void ISRChannels(int i,Channel_Info & ci) {
-      if (i<isr_params.size()) {
+      if (i<(int)isr_params.size()) {
 	ci.type       = isr_params[i].type;
 	ci.parameters = isr_params[i].parameters;
 	return;
@@ -94,7 +94,7 @@ namespace PHASIC {
     }
 
     void BeamChannels(int i,Channel_Info & ci) {
-      if (i<beam_params.size()) {
+      if (i<(int)beam_params.size()) {
 	ci.type       = beam_params[i].type;
 	ci.parameters = beam_params[i].parameters;
 	return;
