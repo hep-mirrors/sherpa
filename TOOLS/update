@@ -1,16 +1,26 @@
 #!/bin/bash
 
 cvs $1 update > updated.log 
-cat updated.log | grep "M " | grep "\.C" > updated_C.log 
+echo -e "\n\e[1m=\e[0m\e[34m C-Files\e[0m\e[1m ========================================\e[0m" > updated_C.log 
+cat updated.log | grep "U " | grep "\.C" >> updated_C.log 
+echo -e "\e[1m-\e[0m Conflicts \e[1m--------------------------------------\e[0m" >> updated_C.log 
 cat updated.log | grep "C " | grep "\.C" >> updated_C.log 
-cat updated.log | grep "M " | grep "\.H" > updated_H.log 
+echo -e "\e[1m-\e[0m Changes \e[1m----------------------------------------\e[0m" >> updated_C.log 
+cat updated.log | grep "M " | grep "\.C" >> updated_C.log 
+echo -e "\e[1m=\e[0m\e[32m H-Files\e[0m\e[1m ========================================\e[0m" > updated_H.log 
+cat updated.log | grep "U " | grep "\.H" >> updated_H.log 
+echo -e "\e[1m-\e[0m Conflicts \e[1m--------------------------------------\e[0m" >> updated_H.log 
 cat updated.log | grep "C " | grep "\.H" >> updated_H.log 
-cat updated.log | grep "M " | grep "\.am" > updated_am.log 
+echo -e "\e[1m-\e[0m Changes \e[1m----------------------------------------\e[0m" >> updated_H.log 
+cat updated.log | grep "M " | grep "\.H" >> updated_H.log 
+echo -e "\e[1m=\e[0m\e[31m Makefiles\e[0m\e[1m ======================================\e[0m" > updated_am.log 
+cat updated.log | grep "U " | grep "\.am" >> updated_am.log 
+echo -e "\e[1m-\e[0m Conflicts \e[1m--------------------------------------\e[0m" >> updated_am.log 
 cat updated.log | grep "C " | grep "\.am" >> updated_am.log 
-echo -e "\n\e[1m=\e[0m\e[34m C-Files\e[0m\e[1m ========================================\e[0m"
-cat updated_C.log
-echo -e "\e[1m=\e[0m\e[32m H-Files\e[0m\e[1m ========================================\e[0m"
-cat updated_H.log
-echo -e "\e[1m=\e[0m\e[31m Makefiles\e[0m\e[1m ======================================\e[0m"
+echo -e "\e[1m-\e[0m Changes \e[1m----------------------------------------\e[0m" >> updated_am.log 
+cat updated.log | grep "M " | grep "\.am" >> updated_am.log 
 cat updated_am.log
+cat updated_H.log
+cat updated_C.log
 echo -e "\e[1m==================================================\e[0m\n"
+#rm updated_C.log updated_H.log updated_am.log updated.log
