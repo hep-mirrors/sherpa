@@ -83,7 +83,7 @@ bool All_Decays::UnweightedEvent(ATOOLS::Decay_Channel * _dec,double _mass)
 
 bool All_Decays::InitializeDecayTables() {
   BinaryDecays();
-  ThreeBodyDecays();
+  //ThreeBodyDecays();
   ArrangeDecays();
   return InitializeDecays();
 }

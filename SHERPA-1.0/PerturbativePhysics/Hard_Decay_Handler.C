@@ -76,7 +76,9 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
   Flavour flav;
   for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
     if ((*dit)->Overwrite()) {
-      if (_model->FillDecay((*dit))) { if (rpa.gen.Tracking()) { (*dit)->Output(); }}
+      if (_model->FillDecay((*dit))) { 
+	if (rpa.gen.Tracking()) { (*dit)->Output(); }
+      }
       else {
 	(*dit)->Flav().SetWidth(-1.);
 	if (!p_mehandler) {
@@ -93,6 +95,8 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
     }
   }
   if (p_mehandler->InitializeDecayTables()) p_mehandler->CalculateWidths();
+  cout<<"##########################################################"<<endl
+      <<"  Width : "<<flav<<" "<<flav.Width()<<endl;
 }
 
 
@@ -115,6 +119,7 @@ bool Hard_Decay_Handler::InitializeAllHardDecays(std::string _pfile,MODEL::Model
   Flavour flav;
   for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
     flav = (*dit)->Flav();
+    cout<<"Check for "<<flav<<endl;
     if (p_mehandler->AddToDecays(flav)) newones = 1;
   }
   if (newones) {

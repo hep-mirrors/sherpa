@@ -58,7 +58,7 @@ namespace AMEGIC {
     //! Calculates the width of the different decay modes.
     void Calculate(Topology*);
   };
-*/
+  */
 }
 
 #endif

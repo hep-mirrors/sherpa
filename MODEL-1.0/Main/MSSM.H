@@ -19,7 +19,7 @@ namespace MODEL {
     bool RunSpectrumGenerator();
     void FillMasses()                     {}
     void FillWidths()                     {}
-    bool FillDecay(ATOOLS::Decay_Table *) {}
+    bool FillDecay(ATOOLS::Decay_Table *) { return 0; }
   };
   /*!
     \class MSSM

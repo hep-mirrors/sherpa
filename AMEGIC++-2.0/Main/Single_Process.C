@@ -239,6 +239,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
       links.push_back(this);
       totalsize++;
     }
+    if (m_gen_str<2) return 1;
     WriteLibrary();
     if (p_partner==this) SetUpIntegrator();
     return 0;
@@ -972,7 +973,7 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
   m_pol.Set_Gauge_Vectors(m_nin+m_nout,mom,gauge);
 #endif
   p_BS->CalcEtaMu(mom);
-  
+
   double helvalue;
   if (p_shand->Is_String()) {
     p_shand->Calculate();

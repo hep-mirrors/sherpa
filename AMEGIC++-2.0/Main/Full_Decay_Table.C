@@ -156,6 +156,7 @@ void Full_Decay_Table::ArrangeDecays()
 	newgroup = 1;
 	flavs = proc->Flavs();
 	group = new Process_Group();
+	group->SetName("Decay for : "+flavs[0].TexName());
 	group->Add(proc);
 	group->SetAtoms(0);
 	m_decaymodes.push_back(group);
@@ -179,6 +180,8 @@ void Full_Decay_Table::CalculateWidths()
     m_width += m_channels[i]->Width();
   }
   m_isevaluated = 1;
+  Output();
+  m_flin.SetWidth(m_width);
 }
 
 Decay_Channel * Full_Decay_Table::GetChannel(int _ch) 

@@ -133,7 +133,8 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   _name      += string("_");
   sprintf(help,"%i",_nout);
   _name      += string(help);
-  _ptype      = string("P")+_name;
+  if (m_gen_str>1) _ptype      = string("P")+_name;
+              else _ptype      = string("N")+_name;
   _lib        = _name;
   _name      += string("_");
 

@@ -42,8 +42,8 @@ void Decay_Table::Select() {
 }
 
 void Decay_Table::Output() {
-  msg.Out()<<"Decay table for : "<<m_flin<<", total width : "<<m_width<<" GeV ("
-	   <<m_flin.Width()<<" GeV)."<<endl
+  msg.Out()<<"Decay table for : "<<m_flin<<", total width is now "<<m_width<<" GeV,"<<endl
+	   <<"   (instead of "<<m_flin.Width()<<" GeV), calculated by "<<m_generator<<endl
 	   <<"----------------------------------------------------------------"<<endl;
   for (int i=0;i<m_channels.size();i++) m_channels[i]->Output();
   if (m_overwrite) msg.Out()<<" Value of Particle.dat has been overwritten by "

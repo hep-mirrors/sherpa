@@ -427,6 +427,7 @@ void Isajet_Fortran_Interface::Decays(Flavour flav) {
     decay->SetWidth(partialwidths[i]);
     dt->AddDecayChannel(decay);
   }
+  dt->SetWidthGenerator("Isajet");
   dt->Output();  
   flav.SetWidth(totalwidth);
   
@@ -444,28 +445,31 @@ void Isajet_Fortran_Interface::CharginoMasses()
 
   chargino_(MChi1,MChi2,gammaL,gammaR,ThX,ThY);
 
+  MChi1 = -MChi1;
+  MChi2 = -MChi2;
+
+  int theta1=0,theta2=0;
   Flavour flav;
   flav = Flavour(kf::Chargino1);flav.SetMass(dabs(MChi1));
-  if (MChi1<0) flav.SetMassSign(-1);
+  if (MChi1<0) { flav.SetMassSign(-1); theta1 = 1; }
   flav = Flavour(kf::Chargino2);flav.SetMass(dabs(MChi2));
-  if (MChi2<0) flav.SetMassSign(-1);
+  if (MChi2<0) { flav.SetMassSign(-1); theta2 = 1; }
 
   msg.Tracking()<<"--------------------------------------------------------------"<<std::endl
 		<<"Charginomasses :"<<std::endl
 		<<Flavour(kf::Chargino1).MassSign()<<" * "<<Flavour(kf::Chargino1).Mass()
 		<<", "
 		<<Flavour(kf::Chargino2).MassSign()<<" * "<<Flavour(kf::Chargino2).Mass()<<std::endl;
-
   
-  Zminus[0][0] = ::sin(gammaL);
-  Zminus[1][0] = cos(gammaL);
-  Zminus[0][1] = ThX*cos(gammaL);
-  Zminus[1][1] = -ThX*::sin(gammaL);
+  Zminus[0][0] = -(::sin(gammaL));
+  Zminus[1][0] = -cos(gammaL);
+  Zminus[0][1] = -ThX*cos(gammaL);
+  Zminus[1][1] = ThX*(::sin(gammaL));
   
-  Zplus[0][0] = ::sin(gammaR);
-  Zplus[1][0] = cos(gammaR);
-  Zplus[0][1] = ThY*cos(gammaR);
-  Zplus[1][1] = -ThY*::sin(gammaR);  
+  Zplus[0][0] = -pow(-1.,theta1)*(::sin(gammaR));
+  Zplus[1][0] = -pow(-1.,theta2)*cos(gammaR);
+  Zplus[0][1] = -ThY*pow(-1.,theta1)*cos(gammaR);
+  Zplus[1][1] = ThY*pow(-1.,theta2)*(::sin(gammaR));  
   
   p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z^+"),Zplus));
   p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z^-"),Zminus));
@@ -477,10 +481,9 @@ void Isajet_Fortran_Interface::NeutralinoMasses()
   float * M   = new float[4];
   float * Mix = new float[16];
 
-  neutralino_(M,Mix);
   
+  neutralino_(M,Mix);
   for (short int i=0;i<4;i++) M[i] = -M[i];
-
   Matrix<4> M_Mix;
   for (short int i=0;i<4;i++) {
     for (short int j=0;j<4;j++) M_Mix[i][j] = Mix[i+j*4];
