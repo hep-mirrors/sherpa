@@ -401,6 +401,7 @@ namespace ATOOLS {
     kf::code   FromInt(int);
     kf::code   FromString(std::string st);
     int IsInitialised() { return is_initialised;}
+    int Size()          { return anz; }
   };
 
   /////////////////////////////////////////////////////////////////////////////
