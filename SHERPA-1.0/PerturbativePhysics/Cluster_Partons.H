@@ -74,10 +74,11 @@ namespace SHERPA {
     void    DetermineColourAngles(const std::vector<APACIC::Knot *> &);
 
     void    CreateFlavourMap();
-    void    FixJetvetoPt2(double &);
 
     void    WriteOutSudakovWeights();
   public :
+    void    FixJetvetoPt2(double &);
+
     Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf, 
 		    int maxjetnumber, int isrmode, int isrshoweron, int fsrshoweron) ;
     ~Cluster_Partons();

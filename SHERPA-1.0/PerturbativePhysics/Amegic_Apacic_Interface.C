@@ -175,7 +175,13 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     amegic_apacic_interface_last_hard_scale = m_scale;
     
     p_cluster->CalculateWeight(m_scale,asscale,m_jetscale,m_qmin_i,m_qmin_f);
-    
+
+    // try alternative scale for UE
+    //    std::cout<<"ascale="<<m_scale<<","<<asscale;
+    m_scale=asscale;
+    p_cluster->FixJetvetoPt2(m_scale);
+    //    std::cout<<"  scale="<<    m_scale<<std::endl;
+
     m_weight = p_cluster->Weight();
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
       if (m_weight>ran.Get()) {
