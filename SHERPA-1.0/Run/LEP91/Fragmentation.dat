@@ -2,6 +2,3 @@
 !-- Fragmentation parameters----------------------------
 !-------------------------------------------------------
 FRAGMENTATION = Lund ! Off 
-LUND_A        = 0.85
-LUND_B        = 0.3
-LUND_SIGMA    = 0.36

@@ -1,6 +1,75 @@
-ANALYSIS_PHASE = ME+Showers+Hadrons    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
-OUTPUT = Output
-93   0. 0.  0.  .01  1.
-OBSERVABLES
-DiffJet  93   1.e-5  1. 100    1  1  5 Log
-END_ANALYSIS_PHASE
+BEGIN_ANALYSIS {
+ LEVEL Hadron
+ PATH_PIECE _Hadron
+ EEShapes {
+   InList  FinalState
+   OutList EventShapes
+   Qual    10
+ }
+ Thrust     .0   .5    50 Lin EventShapes
+ Major      .0   .64   64 Lin EventShapes
+ Minor      .0   .5    50 Lin EventShapes
+ Oblateness .0   .52   52 Lin EventShapes
+ PT_in_T    .0  1.     50 Lin EventShapes
+ PT_out_T   .0  1.     50 Lin EventShapes
+ SphCalc EventShapes
+ Sphericity .0  1.    100 Lin EventShapes
+ Aplanarity .0   .3    30 Lin EventShapes
+ Planarity  .0   .5    50 Lin EventShapes
+ CDCalc  EventShapes
+ CParam     .0  1.     50 Lin EventShapes
+ DParam     .0  1.     50 Lin EventShapes
+ JBCalc  EventShapes
+ BW         .0   .34   34 Lin EventShapes
+ BN         .0   .24   24 Lin EventShapes
+ BT         .0   .36   36 Lin EventShapes
+ BD         .0   .28   28 Lin EventShapes
+ MH         .0   .4    40 Lin EventShapes
+ ML         .0   .12   12 Lin EventShapes
+ MD         .0   .4    40 Lin EventShapes
+% scaled momentum
+ XP         .0  1.    200 Lin ChargedParticle
+ LogXP      .0 10.    100 Lin ChargedParticle
+ XP         .0  1.    100 Lin ChargedPion
+ XP         .0  1.    100 Lin ChargedKaon
+ XP         .0  1.    100 Lin ProtonAntiproton
+% decayed
+ XP         .0  1.    100 Lin NeutralPion
+ XP         .0  1.    100 Lin NeutralKaon
+ XP         .0  1.    50 Lin NeutralKStar
+ XE         .0  1.    100 Lin ChargedKStar
+ XE         .0  1.    50 Lin Eta
+ XP         .0  1.    50 Lin Rho0
+ XP         .0  1.    20 Lin Omega
+ XP         .0  1.    10 Lin EtaPrime
+ XP         .0  1.    50 Lin Phi
+ XP         .0  1.    100 Lin Lambda
+ XE         .0  .5    50 Lin ChargedSigma
+ XE         .0  .5    50 Lin ChargedXi
+ XE         .0  .5    10 Lin NeutralXi
+% multiplicities
+ Multi     -.5 100.5  101 Lin FinalState
+ Multi     -.5 50.5   51  Lin ChargedParticle
+ Multi     -.5 50.5   51  Lin ChargedPion
+ Multi     -.5 20.5   21  Lin ChargedKaon
+ Multi     -.5 20.5   21  Lin ProtonAntiproton
+% jet finder
+Trigger {
+ InList  FinalState
+ OutList Analysed
+ Finder  93   0. 0.  0.  .008  1.
+% Qual    43
+}
+% diff jet rates
+ JetDRate  1.e-5  1. 100    1  1  5 Log Analysed
+Trigger {
+ InList  Analysed
+ OutList AnalysedJets
+ Keep    93
+}
+% four-jet angle
+ BZAngle   0.    1.  20 Lin AnalysedJets
+ NRAngle   0.    1.  20 Lin AnalysedJets
+ KSWAngle   -1.   1.  20 Lin AnalysedJets
+ A34Angle   -1.   1.  20 Lin AnalysedJets
+} END_ANALYSIS

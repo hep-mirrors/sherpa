@@ -21,7 +21,6 @@ End process
 Process : 11 -11  ->  93 93 93
 Order electroweak : 2
 Order strong : 1
-%N_Max : 4
 End process
 %
 Process : 11 -11  ->  5  -5 93 93 

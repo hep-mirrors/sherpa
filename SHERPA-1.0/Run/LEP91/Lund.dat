@@ -1,20 +1,23 @@
 !-------------------------------------------------------
 !--- Lund Run Parameters -------------------------------
 !-------------------------------------------------------
-PARJ(41)	= 0.85	! a
-PARJ(42)	= 0.3	! b
-PARJ(21)	= 0.36	! sigma
+!SIGMA_Q = 0.482092
+!LUND_A = 0.432568
+!LUND_B = 0.643371
+FRAME           = CMS
+BEAM            = e-
+TARGET          = e+
+WIN             = 91.2 ! cms energy
+MSEL            = 1     ! W, 12 = no jet ...  14 = W+jet
+PARJ(41) = 0.431206382697022 ! a
+PARJ(42) = 0.877999201758934 ! b
+PARJ(21) = 0.336193315524203 ! sigma
 MSTJ(1)		= 1	! fragmentation on
 MSTP(11)	= 0	! isr off
 MSTJ(41)	= 0	! parton shower off
 MSTP(61)	= 0	! parton shower off
-MSTP(48)	= 1	! no W->ll decay
-MSTJ(101)	= 5	! no W->ll decay
+!MSTP(48)	= 1	! no W->ll decay
+!MSTJ(101)	= 5	! no W->ll decay
 MSTP(105)	= 0	! hadronization off
 MSTP(111)	= 0	! hadronization off
 MSTP(81)	= 0	! multiple interactions off
-PARJ(21)	= 0	! primordial k_\perp
-MSTP(91)	= 0	! primordial k_\perp
-PARP(91)	= 0.0	! gaussian k_\perp 0
-PARP(92)	= 0.0	! exponential k_\perp 0
-PARP(93)	= 0.0	! cutoff for k_\perp 0

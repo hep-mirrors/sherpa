@@ -1,7 +1,7 @@
 !=================================================!
 !          Underlying Event Setup file            !
 !=================================================!
-MI_HANDLER	= Amisic
+MI_HANDLER	= None ! Amisic
 !
 HARD_MODEL_NAME	= None ! Simple Chain
 HARD_MODEL_FILE = simplechain.dat
