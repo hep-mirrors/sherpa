@@ -39,6 +39,7 @@ void Final_State_Shower::SetJetvetoPt2(const double pt2) {
 
 int Final_State_Shower::PerformShower(Tree * tree,int _jetveto) 
 {
+  msg.Debugging()<<"* Final_State_Shower::PerformShower"<<std::endl;
   bool jetveto = (_jetveto>0);
 
   p_kin->SetJetVeto(jetveto);
@@ -516,6 +517,8 @@ bool Final_State_Shower::TestShower(Tree * tree)
 //----------------------------------------------------------------------- 
 int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
 {
+  msg.Debugging()<<"* Final_State_Shower::InitializeJets(["<<mo->kn_no<<"],"<<init_rel<<")"<<std::endl;
+
   if (!mo) {
     msg.Error()<<"Error in Final_State_Shower : "<<std::endl
 	       <<"   Final_State_Shower::InitializeJets : No mother found !"<<std::endl;
@@ -738,6 +741,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
 
 bool Final_State_Shower::EvolveJet(Tree * tree,Knot* mo)
 {
+  msg.Debugging()<<"* Final_State_Shower::EvolveJet(["<<mo->kn_no<<"])"<<std::endl;
   if (!mo->stat) {
     ResetDaughters(mo);
     return 1;
@@ -779,6 +783,7 @@ bool Final_State_Shower::EvolveJet(Tree * tree,Knot* mo)
 
 bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
 {
+  msg.Debugging()<<"* Final_State_Shower::FillBranch(["<<mo->kn_no<<"],"<<first<<")"<<std::endl;
   Knot * d1 = mo->left;
   Knot * d2 = mo->right;
   if (!(first) && (mo->t <= mo->tout) ) return 0; 
