@@ -8,15 +8,15 @@ using namespace SHERPA;
 
 int main(int argc,char* argv[]) 
 {  
-  std::set_terminate(ATOOLS::Exception::Terminate);
-  std::set_unexpected(ATOOLS::Exception::Terminate);
-  signal(SIGSEGV,ATOOLS::Exception::SignalHandler);
-  signal(SIGINT,ATOOLS::Exception::SignalHandler);
-  signal(SIGBUS,ATOOLS::Exception::SignalHandler);
-  signal(SIGFPE,ATOOLS::Exception::SignalHandler);
-  signal(SIGABRT,ATOOLS::Exception::SignalHandler);
-  signal(SIGTERM,ATOOLS::Exception::SignalHandler);
-  signal(SIGXCPU,ATOOLS::Exception::SignalHandler);
+  std::set_terminate(ATOOLS::Exception_Handler::Terminate);
+  std::set_unexpected(ATOOLS::Exception_Handler::Terminate);
+  signal(SIGSEGV,ATOOLS::Exception_Handler::SignalHandler);
+  signal(SIGINT,ATOOLS::Exception_Handler::SignalHandler);
+  signal(SIGBUS,ATOOLS::Exception_Handler::SignalHandler);
+  signal(SIGFPE,ATOOLS::Exception_Handler::SignalHandler);
+  signal(SIGABRT,ATOOLS::Exception_Handler::SignalHandler);
+  signal(SIGTERM,ATOOLS::Exception_Handler::SignalHandler);
+  signal(SIGXCPU,ATOOLS::Exception_Handler::SignalHandler);
   try {
     Sherpa Generator;
     ATOOLS::msg.Out()<<" Process initialization started "<<std::endl;
@@ -41,7 +41,7 @@ int main(int argc,char* argv[])
   catch (ATOOLS::Exception exception) {
     exception.UpdateLogFile();
     ATOOLS::msg.Error()<<exception<<std::endl;
-    if (exception.ApproveTerminate()) std::terminate();
+    std::terminate();
   }
   catch (std::exception exception) {
     std::cout<<"Sherpa: throws std::exception "<<exception.what()<<" ..."<<std::endl;
