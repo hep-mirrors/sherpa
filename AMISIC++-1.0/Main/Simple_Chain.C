@@ -5,6 +5,7 @@
 #include "Single_XS.H"
 #include "XS_Selector.H"
 #include "Channel_Elements.H"
+#include "Vegas.H"
 #include "Particle.H"
 #include "Random.H"
 #include "My_Limits.H"
@@ -23,6 +24,7 @@
 #endif
 
 #ifdef DEBUG__Simple_Chain
+#include "Debugger.H"
 const std::string differentialfile=std::string("differential.dat");
 const std::string integralfile=std::string("integral.dat");
 const std::string normalizedfile=std::string("normalized.dat");
@@ -397,81 +399,77 @@ bool Simple_Chain::ReadInData()
   reader->MatrixFromFile(temp,"CREATE_GRID");
   for (unsigned int i=0;i<temp.size();++i) {
     if (temp[i].size()>3) {
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("QCD"))&&
-	  (temp[i][2]==std::string("2"))&&
-	  (temp[i][3]==std::string("2"))) {
-	FillMode(EXTRAXS::QCD_Processes::All);
+      ATOOLS::Flavour flavour[4];
+      int current;
+      bool success=true;
+      for (unsigned int j=0;j<4;++j) {
+	flavour[j]=ATOOLS::Flavour(ATOOLS::kf_table.FromString(temp[i][j]));
+	if (flavour[j].Kfcode()==ATOOLS::kf::none) {
+	  reader->ReadFromString(current,"",temp[i][j]);
+	  flavour[j]=ATOOLS::Flavour((kf::code)abs(current));
+	  if (current<0) flavour[j]=flavour[j].Bar();
+	  if (flavour[j].Kfcode()==ATOOLS::kf::none) success=false;
+	}
       }
-      else {
-	ATOOLS::Flavour flavour[4];
-	int current;
-	bool success=true;
-	for (unsigned int j=0;j<4;++j) {
-	  flavour[j]=ATOOLS::Flavour(ATOOLS::kf_table.FromString(temp[i][j]));
-	  if (flavour[j].Kfcode()==ATOOLS::kf::none) {
-	    reader->ReadFromString(current,"",temp[i][j]);
-	    flavour[j]=ATOOLS::Flavour((kf::code)abs(current));
-	    if (current<0) flavour[j]=flavour[j].Bar();
-	    if (flavour[j].Kfcode()==ATOOLS::kf::none) success=false;
-	  }
+      if (!success) continue;
+      ATOOLS::Blob *newblob;
+      if ((newblob=GetBlob(flavour))!=NULL) {
+	m_blobs.push_back(ATOOLS::Blob_List(0));
+	m_blobs[m_blobs.size()-1].push_back(newblob);
+	std::string filename=std::string();
+	for (int j=0;j<2;++j) {
+	  if (flavour[j].IsAnti()) filename+=std::string("-");
+	  filename+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string("_");
 	}
-	if (!success) continue;
-	ATOOLS::Blob *newblob;
-	if ((newblob=GetBlob(flavour))!=NULL) {
-	  m_blobs.push_back(ATOOLS::Blob_List(0));
-	  m_blobs[m_blobs.size()-1].push_back(newblob);
-	  std::string filename=std::string();
-	  for (int j=0;j<2;++j) {
-	    if (flavour[j].IsAnti()) filename+=std::string("-");
-	    filename+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string("_");
-	  }
-	  filename+=std::string("to_");
-	  for (int j=2;j<4;++j) {
-	    if (flavour[j].IsAnti()) filename+=std::string("-");
-	    filename+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string("_");
-	  }
-	  filename+=std::string("_grid");
-	  if (temp[i].size()>4) m_filename.push_back(temp[i][4]);
-	  else m_filename.push_back(filename);
+	filename+=std::string("to_");
+	for (int j=2;j<4;++j) {
+	  if (flavour[j].IsAnti()) filename+=std::string("-");
+	  filename+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string("_");
 	}
+	filename+=std::string("_grid");
+	if (temp[i].size()>4) m_filename.push_back(temp[i][4]);
+	else m_filename.push_back(filename);
       }
     }
     else if (temp[i].size()>1) {
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("gggg"))) {
+      if ((temp[i][0]==std::string("2"))&&
+	  (temp[i][1]==std::string("2"))) {
+	FillMode(EXTRAXS::QCD_Processes::All);
+      }
+      if ((temp[i][0]==std::string("gg"))&&
+	  (temp[i][1]==std::string("gg"))) {
 	FillMode(EXTRAXS::QCD_Processes::gggg);
       }
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("qqbgg"))) {
+      if ((temp[i][0]==std::string("qqb"))&&
+	  (temp[i][1]==std::string("gg"))) {
 	FillMode(EXTRAXS::QCD_Processes::qqbgg);
       }
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("ggqqb"))) {
+      if ((temp[i][0]==std::string("gg"))&&
+	  (temp[i][1]==std::string("qqb"))) {
 	FillMode(EXTRAXS::QCD_Processes::ggqqb);
       }
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("qgqg"))) {
+      if ((temp[i][0]==std::string("qg"))&&
+	  (temp[i][1]==std::string("qg"))) {
 	FillMode(EXTRAXS::QCD_Processes::qgqg);
       }
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("q1q1q1q1"))) {
+      if ((temp[i][0]==std::string("q1q1"))&&
+	  (temp[i][1]==std::string("q1q1"))) {
 	FillMode(EXTRAXS::QCD_Processes::q1q1q1q1);
       }
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("q1q2q1q2"))) {
+      if ((temp[i][0]==std::string("q1q2"))&&
+	  (temp[i][1]==std::string("q1q2"))) {
 	FillMode(EXTRAXS::QCD_Processes::q1q2q1q2);
       }
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("q1q1bq1q1b"))) {
+      if ((temp[i][0]==std::string("q1q1b"))&&
+	  (temp[i][1]==std::string("q1q1b"))) {
 	FillMode(EXTRAXS::QCD_Processes::q1q1bq1q1b);
       }
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("q1q2bq1q2b"))) {
+      if ((temp[i][0]==std::string("q1q2b"))&&
+	  (temp[i][1]==std::string("q1q2b"))) {
 	FillMode(EXTRAXS::QCD_Processes::q1q2bq1q2b);
       }
-      if ((temp[i][0]==std::string("all"))&&
-	  (temp[i][1]==std::string("q1q1bq2q2b"))) {
+      if ((temp[i][0]==std::string("q1q1b"))&&
+	  (temp[i][1]==std::string("q2q2b"))) {
 	FillMode(EXTRAXS::QCD_Processes::q1q1bq2q2b);
       }
     }
@@ -622,6 +620,7 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,GridFunctionT
   return true;
 }
 
+
 bool Simple_Chain::InitializeBlobList()
 {  
   PROFILE_HERE;
@@ -698,6 +697,7 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->PSHandler(false)->ReadIn(OutputPath()+m_filename[i]+m_mcextension,16);
   }
 #ifdef USING__Sherpa
+  std::cout<<"  p_mehandler = new SHERPA::Matrix_Element_Handler();"<<std::endl;
   p_mehandler = new SHERPA::Matrix_Element_Handler();
   p_mehandler->SetXS(p_processes);
 #endif
@@ -837,6 +837,9 @@ bool Simple_Chain::Initialize()
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
   SetStop(stop,0);
+  int vegas=PHASIC::Vegas::OnExternal();
+  if (!reader->ReadFromFile(m_vegas,"USE_VEGAS")) m_vegas=0;
+  PHASIC::Vegas::SetOnExternal(m_vegas);
   std::string function;
   if (reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
     std::vector<double> parameters;
@@ -870,6 +873,7 @@ bool Simple_Chain::Initialize()
     throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Cannot initialize selected processes.",
 			    "Simple_Chain","Initialize"));
   }  
+  PHASIC::Vegas::SetOnExternal(vegas);
   return true;
 }
 
