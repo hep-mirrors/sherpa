@@ -93,13 +93,8 @@ namespace ATOOLS {
 }
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
-  m_position(_pos), 
-  m_id(_id), 
-  m_weight(1.), 
-  m_hasboost(false), 
-  m_status(0), 
-  m_beam(-1), 
-  m_type(btp::Unspecified) {}
+  m_position(_pos), m_id(_id), m_weight(1.), m_hasboost(false), m_status(0), 
+  m_beam(-1), m_type(btp::Unspecified), m_typespec(std::string("unspecified")) {}
 
 Blob::~Blob() {
   DeleteOwnedParticles();
@@ -338,6 +333,10 @@ Blob_Data_Base::~Blob_Data_Base()
 }
 
 
+template <class Type>
+Blob_Data<Type>::~Blob_Data() 
+{
+}
 
 
 template int Blob_Data_Base::Get<int>();

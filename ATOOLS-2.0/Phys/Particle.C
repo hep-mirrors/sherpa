@@ -71,7 +71,7 @@ Particle::Particle():
 {
   ++s_totalnumber;
   m_number    = -1;
-  m_info      = ' ';
+  m_info      = 'X';
   m_status    = 1;
   m_fl        = Flavour(kf::none);
   m_momentum  = Vec4D(0,0,0,0); 
@@ -134,7 +134,7 @@ Particle::Particle(int number,Flavour fl,Vec4D p)  {
   ++s_totalnumber;
   m_number    = number;
   m_status    = 1;
-  m_info      = ' ';
+  m_info      = 'X';
   m_fl        = fl;
   m_momentum  = p;
   m_dec_time  = 0.;

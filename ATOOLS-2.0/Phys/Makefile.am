@@ -26,6 +26,7 @@ libToolsPhys_la_SOURCES       =	\
 				Standard_Selector.C \
 				Blob.C \
 				Blob_List.C \
+				HepEvt_Interface.C \
 				Flow.C  
 noinst_HEADERS        =	\
 			Flavour.H \
@@ -44,6 +45,7 @@ noinst_HEADERS        =	\
 			Flow.H \
 			Blob.H \
 			Blob_List.H \
+			HepEvt_Interface.H \
 			Event.H  
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)

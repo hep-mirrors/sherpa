@@ -57,7 +57,8 @@ double * Jet_Finder::ActualValue() {
   --------------------------------------------------------------------- */
 
 Jet_Finder::Jet_Finder(double _ycut,int _type=1) : 
-  m_ycut(_ycut), m_type(_type) , m_jet_alg(1), p_value(NULL), p_frame(NULL)
+  m_ycut(_ycut), m_type(_type) , m_jet_alg(1), p_value(NULL), 
+  m_delta_r(1.), p_frame(NULL)
 {
   rpa.gen.SetYcut(_ycut);
   m_ycut=1.0*m_ycut;
@@ -298,7 +299,8 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 
 
 Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) : 
-  m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type), p_value(NULL), p_frame(NULL) 
+  m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type), p_value(NULL),
+  m_delta_r(1.),  p_frame(NULL) 
 {
   rpa.gen.SetYcut(_ycut);
   m_ycut=1.0*m_ycut;
@@ -436,7 +438,10 @@ bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2)
     if (pt1_2  < m_shower_pt2 ) return 0;
     if (pt2_2  < m_shower_pt2 ) return 0;
     double pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
-    if (pt12_2 < m_shower_pt2 ) return 0;
+    if (m_delta_r!=0.) {
+      pt12_2/=sqr(m_delta_r);
+      if (pt12_2 < m_shower_pt2 ) return 0;
+    }
   }
   else {
     double pt12_2 = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
@@ -458,7 +463,11 @@ bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
   }
   else {
     pt12_2 = 2.*E2*sqr(Min(z,1.- z))*(1.-costheta);
-    if (pt12_2 < m_shower_pt2 ) return 0;
+    if (m_delta_r!=0.) {
+      pt12_2/=sqr(m_delta_r);
+    
+      if (pt12_2 < m_shower_pt2 ) return 0;
+    }
   }
   return 1;
 }
@@ -477,11 +486,11 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	             (lepton-lepton collisions)
       */
       if (m_type>=2) {
-	cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
+	cuts->energymin[i] = Max(sqrt(1. * m_ycut * m_s),cuts->energymin[i]);
 	if (m_type==4) {
 	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
-	    sqrt(1.-2.*m_ycut);
-	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
+	    sqrt(1.-2.* 1.* m_ycut);
+	  cuts->etmin[i] = Max(sqrt(1.* m_ycut * m_s),cuts->etmin[i]);
 	}
       }
       else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
@@ -497,7 +506,7 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
                	         (hadron-hadron collisions)
  
 	  */
-	  if (m_type>=2) cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_s);
+	  if (m_type>=2) cuts->scut[j][i] = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
 	  else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_smin);
 	}
       }
@@ -526,7 +535,6 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
     }
   }
 }
-
 double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 {
   PROFILE_HERE;
@@ -543,9 +551,9 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 	                       else k1 = 1;
 	} 
 	for (int k=j+1;k<m_n;k++) {
-	  if (m_fl[k].Strong()) {
+	  if (m_fl[k].Strong() && m_delta_r!=0.) {
 	    pt2k  = (sqr(p[k][1]) + sqr(p[k][2]));
-	    pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(p[j],p[k])) - CosDPhi12(p[j],p[k]));
+	    pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(p[j],p[k])) - CosDPhi12(p[j],p[k]))/sqr(m_delta_r);
 	    if (pt2jk<ymin*m_s) {
 	      ymin = pt2jk/m_s;j1 = j;k1 = k;
 	    }
@@ -622,4 +630,10 @@ void Jet_Finder::BoostInFrame(Vec4D & p)
 void Jet_Finder::BoostBack(Vec4D & p)
 {
   m_cms_boost.BoostBack(p);
+}
+
+void Jet_Finder::SetDeltaR(double dr) 
+{ 
+  m_delta_r = dr; 
+  rpa.gen.SetDeltaR(dr);
 }

@@ -13,6 +13,9 @@ namespace ATOOLS {
     double m_ene, m_s, m_sprime; //, m_smin, m_smax;
 
     double m_shower_pt2;
+
+    double m_delta_r;
+
     /*
       The vectors related to the frame
     */
@@ -41,6 +44,7 @@ namespace ATOOLS {
   public:
     Jet_Finder(double,int);
     Jet_Finder(int,Flavour *,double,int,int);
+
     ~Jet_Finder();
 
     void   Init(const Vec4D *);
@@ -50,6 +54,7 @@ namespace ATOOLS {
     bool   ConstructJets(Particle_List *, double, bool );
 
     bool   Trigger(const Vec4D *);
+
     bool   TwoJets(const Vec4D &);
     bool   TwoJets(const Vec4D &, const Vec4D &);
     bool   TwoJets(double &,double &,double &,bool);
@@ -66,6 +71,11 @@ namespace ATOOLS {
     void SetShowerPt2(const double pt2) { m_shower_pt2=pt2; }
     double Smin() { return m_smin; }
     double Smax() { return m_smax; }
+
+
+    void SetDeltaR(double dr);
+    double DeltaR() { return m_delta_r; }
+    double YCut() { return m_ycut; }
   };
 
 

@@ -32,7 +32,6 @@ namespace ATOOLS {
   typedef std::map<std::string,Blob_Data_Base *> String_BlobDataBase_Map;
 
   struct btp {
-
     enum code {
       Unspecified         =    0,
       Signal_Process      =    1,
@@ -50,7 +49,6 @@ namespace ATOOLS {
       Cluster_Decay       =  250,
       Hadron_Decay        = 1001
     };
-
   };// end of struct btp
 
   std::ostream& operator<<(std::ostream&,const btp::code);
@@ -154,12 +152,6 @@ namespace ATOOLS {
   {
     return ((Blob_Data<Type>*)this)->Get();
   }
-
-  template <class Type>
-  Blob_Data<Type>::~Blob_Data() 
-  {
-  }
-
 
   /*!
     \file 
