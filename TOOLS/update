@@ -18,11 +18,13 @@ LOGFILE="#updated-source#"
 for I in $* ; do
   if [ "$I" = "-n" ]; then NOUPDATE=TRUE 
   elif [ "$I" = "-f" ]; then NOUPDATE=
+  elif [ "$I" = "-s" ]; then STATISTICS=TRUE
   elif [ "$I" = "-l" ]; then DLOGFILE=TRUE && CLOGFILE=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "update version 1.0" && echo && \
     echo "options: -n             run 'cvs -n update <options>'" && \
     echo "         -f             run 'cvs update <options>'" && \
+    echo "         -s             show statistics'" && \
     echo "         -l <logfile>   create logfile <logfile>" && \
     echo "         -h             display this help and exit" && \
     echo "         <any other>    passed directly to 'cvs update'" && echo && \
@@ -40,6 +42,12 @@ fi
 
 CHANGES=
 EXTCNT=0
+TUCOUNT=0
+TMCOUNT=0
+TCCOUNT=0
+TNCOUNT=0
+TACOUNT=0
+TRCOUNT=0
 for EXTENSION in $EXTENSIONS ; do
   (( ++EXTCNT ))
   cat $LOGFILE | grep -q $EXTENSION 
@@ -60,16 +68,26 @@ for EXTENSION in $EXTENSIONS ; do
   cat $LOGFILE | grep "U " | grep $EXTENSION
   cat $LOGFILE | grep "P " | grep $EXTENSION
   cat $LOGFILE | grep "C " | grep $EXTENSION > $TEMPFILE
+  COUNT=`cat $LOGFILE | grep "U " | grep $EXTENSION | wc -l`
+  (( TUCOUNT = TUCOUNT + COUNT )); COUNT=0
+  COUNT=`cat $LOGFILE | grep "P " | grep $EXTENSION | wc -l`
+  (( TUCOUNT = TUCOUNT + COUNT )); COUNT=0
+  COUNT=`cat $LOGFILE | grep "C " | grep $EXTENSION | wc -l`
+  (( TCCOUNT = TCCOUNT + COUNT )); COUNT=0
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Conflicts --------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
   cat $LOGFILE | grep "M " | grep $EXTENSION > $TEMPFILE
+  COUNT=`cat $LOGFILE | grep "M " | grep $EXTENSION | wc -l`
+  (( TMCOUNT = TMCOUNT + COUNT )); COUNT=0
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Changes ----------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
   cat $LOGFILE | grep "erging " | grep $EXTENSION > $TEMPFILE
+  COUNT=`cat $LOGFILE | grep "erging " | grep $EXTENSION | wc -l`
+  (( TMCOUNT = TMCOUNT + COUNT )); COUNT=0
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Merged -----------------------------------------\e[0m" 
     cat $TEMPFILE
@@ -78,16 +96,31 @@ for EXTENSION in $EXTENSIONS ; do
   TEST1=$?
   cat $LOGFILE | grep "A " | grep $EXTENSION >> $TEMPFILE
   TEST2=$?
+  COUNT=`cat $LOGFILE | grep "? " | grep $EXTENSION | wc -l`
+  (( TNCOUNT = TNCOUNT + COUNT )); COUNT=0
+  COUNT=`cat $LOGFILE | grep "A " | grep $EXTENSION | wc -l`
+  (( TACOUNT = TACOUNT + COUNT )); COUNT=0
   if (( $TEST1 == 0 )) || (( $TEST2 == 0 )) ; then
     echo -e "\e[1m- New files --------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
   cat $LOGFILE | grep "R " | grep $EXTENSION > $TEMPFILE
+  COUNT=`cat $LOGFILE | grep "R " | grep $EXTENSION | wc -l`
+  (( TRCOUNT = TRCOUNT + COUNT )); COUNT=0
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Removed files ----------------------------------\e[0m" 
     cat $TEMPFILE
   fi
 done
+if [ "$STATISTICS" = "TRUE" ] ; then
+  echo -e "\e[1m==================================================\e[0m"
+  echo "Updated   : $TUCOUNT"
+  echo "Modified  : $TMCOUNT"
+  echo "Conflicts : $TCCOUNT"
+  echo "New       : $TNCOUNT"
+  echo "Added     : $TACOUNT"
+  echo "Removed   : $TRCOUNT"
+fi
 echo -e "\e[1m==================================================\e[0m"
 if [ ! "$CHANGES" = "TRUE" ] ; then
   echo -e "update: no recognized changes"
