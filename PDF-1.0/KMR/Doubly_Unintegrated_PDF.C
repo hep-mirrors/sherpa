@@ -13,6 +13,9 @@
 #endif
 #endif
 
+//#include "Exception.H"
+//#include "MyRoot.H"
+
 using namespace PDF;
 
 Doubly_Unintegrated_PDF::Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running_AlphaS *_p_alphas,
@@ -50,6 +53,51 @@ Doubly_Unintegrated_PDF::Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running
 
 Doubly_Unintegrated_PDF::~Doubly_Unintegrated_PDF()
 {
+  /*/////////////////////////////////////////////////
+  int argcf=1;
+  char **argvf = new char*[1];
+  argvf[0]="MyRoot";
+  
+  MYROOT::myroot = new TApplication("MyRoot",&argcf,argvf);
+
+  delete [] argvf;
+
+  MYROOT::myfile = new TFile("output.root");
+  MYROOT::mystyle = new TStyle("MyStyle","Plain");
+  MYROOT::mystyle->SetOptStat(0);
+  MYROOT::mystyle->cd();
+
+  MYROOT::sudu = new TH1D("up","Sudakov",40,0,8);
+  MYROOT::sudg = new TH1D("gluon","Sudakov",40,0,8);
+
+  for (double logkt=log(1.5);logkt<7.5;logkt+=.2) {
+    double kt=exp(logkt);
+    MYROOT::sudu->Fill(logkt,p_sudakov->Delta(ATOOLS::kf::u)(kt,sqrt(m_mu02)));          
+    MYROOT::sudg->Fill(logkt,p_sudakov->Delta(ATOOLS::kf::gluon)(kt,sqrt(m_mu02)));          
+  }
+
+  TCanvas *c1 = new TCanvas("Sudakovs","Sudakovs");
+  c1->cd();
+  MYROOT::sudu->SetLineColor(2);
+  MYROOT::sudg->SetLineColor(4);
+  MYROOT::sudu->Draw();
+  MYROOT::sudg->Draw("same");
+  MYROOT::sudu->SetTitle("");
+  MYROOT::sudu->SetXTitle("log k_{#perp}");
+  MYROOT::sudu->SetYTitle("#Delta(k_{#perp } ,k_{#perp min} )");
+
+  TLegend *l1 = new TLegend(.7,.75,.85,.85);
+  l1->AddEntry(MYROOT::sudu,"up");
+  l1->AddEntry(MYROOT::sudg,"gluon");
+  l1->Draw();
+
+  MYROOT::myfile->Write();
+  MYROOT::myroot->Run(kTRUE);
+  MYROOT::myfile->Write();
+  delete MYROOT::myroot;
+
+  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"finished histogram","DUPDF","DUPDF"));
+  *//////////////////////////////////////////////////
   while (m_branching.size()>0) {
     delete (*m_branching.begin()).second;
     m_branching.erase(m_branching.begin());
