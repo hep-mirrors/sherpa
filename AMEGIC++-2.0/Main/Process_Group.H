@@ -9,7 +9,6 @@ namespace AMEGIC {
   class Process_Group : public Process_Base {
   protected :
     std::vector<Process_Base *> m_procs;
-    std::string m_resultpath, m_resultfile;
     /*------------------------------------------------------------------------------
 
       Constructors

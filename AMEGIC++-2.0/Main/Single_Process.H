@@ -13,7 +13,6 @@ namespace AMEGIC {
   class Single_Process : public Process_Base {
   private:
     std::string             m_ptypename,m_libname,m_pslibname;
-    std::string             m_resultfile, m_resultpath;
     Polarisation            m_pol;
     double                  m_Norm;
     double                  m_save_max;

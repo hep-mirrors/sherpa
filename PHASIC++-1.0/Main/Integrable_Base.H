@@ -30,7 +30,7 @@ namespace PHASIC {
   class Integrable_Base: public ATOOLS::Terminator_Base {
   protected:
 
-    std::string m_name;
+    std::string m_name, m_resultpath, m_resultfile;
     size_t      m_nin, m_nout, m_nvector;
 
     ATOOLS::Flavour *p_flavours;

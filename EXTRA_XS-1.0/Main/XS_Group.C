@@ -190,6 +190,9 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	}
       }
     }
+    m_resultpath=resultpath;
+    m_resultfile=filename;
+    ATOOLS::Exception::AddObject(this);
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
@@ -210,9 +213,31 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	p_pshandler->WriteOut(resultpath+std::string("/MC_")+m_name);
 	to.close();
       }
+      ATOOLS::Exception::RemoveObject(this);
       return 1;
     }
+    ATOOLS::Exception::RemoveObject(this);
     return 0;
+  }
+}
+
+void XS_Group::Terminate()  
+{
+  SetTotalXS();
+  if (m_totalxs>0.) {
+    if (m_resultpath!=std::string("")) {
+      std::ofstream to;
+      to.open(m_resultfile.c_str(),std::ios::out);
+      to.precision(12);
+      ATOOLS::msg.Events()<<"Store result : xs for "<<m_name<<" : ";
+      WriteOutXSecs(to);
+      if (m_nin==2) ATOOLS::msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+      if (m_nin==1) ATOOLS::msg.Events()<<m_totalxs<<" GeV";
+      ATOOLS::msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
+			  <<"       max : "<<m_max<<std::endl;
+      p_pshandler->WriteOut(m_resultpath+std::string("/MC_")+m_name);
+      to.close();
+    }
   }
 }
 
