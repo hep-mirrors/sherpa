@@ -17,6 +17,11 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+endif
+
 lib_LTLIBRARIES       =	libSherpaSoftPhysics.la
 libSherpaSoftPhysics_la_SOURCES	      =	\
 					Primordial_KPerp.C \
@@ -44,6 +49,7 @@ noinst_HEADERS        =	\
 		 	Fragmentation_Handler.H \
 			Hadron_Decay_Handler.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(EXTRAXSINCS) \
-		$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) $(ATOOLSINCS)
+		$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) \
+		$(ATOOLSINCS) $(ROOTINCS)
