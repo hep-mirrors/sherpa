@@ -8,6 +8,7 @@
 #include "Random.H"
 #include "MyStrStream.H"
 #include "Data_Read.H"
+#include "Data_Reader.H"
 #include "Model_Base.H"
 #include "XS_Selector.H"
 #include "Regulator_Base.H"
@@ -96,11 +97,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     if (buffer[0] != '%' && strlen(buffer)>0) {
       order_ew=99;
       order_strong=99;
-      buf        = string(buffer);
-      reader.SetString(buf);
-      unsigned int order_ew_t, order_strong_t;
-      if (reader.ReadFromString(order_ew_t,"Order electroweak :")) order_ew=order_ew_t;
-      if (reader.ReadFromString(order_strong_t,"Order strong :")) order_strong=order_strong_t;
+      buf      = string(buffer);
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position!=std::string::npos && position<buf.length()) {
@@ -128,6 +125,11 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      from.getline(buffer,100);
 	      if (buffer[0] != '%' && strlen(buffer)>0) {
 		buf      = string(buffer);
+		reader.SetString(buf);
+		unsigned int order_ew_t, order_strong_t;
+		if (reader.ReadFromString(order_ew_t,"Order electroweak :")) order_ew=order_ew_t;
+		if (reader.ReadFromString(order_strong_t,"Order strong :")) order_strong=order_strong_t;
+
 		position = buf.find(string("End process"));
 		if (!from) {
 		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("
@@ -163,13 +165,13 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		      std::string name;
 		      converter>>name;
 		      if (setup.find(name)==setup.end()) {
-			XS_Base *newxs = XSSelector()->GetXS(nIS,nFS,help);
+			XS_Base *newxs = XSSelector()->GetXS(nIS,nFS,help,false,order_ew,order_strong);
 			if (newxs!=NULL) {
 			  delete newxs;
 			  XS_Group *pdfgroup = 
 			    FindPDFGroup(nIS,nFS,help,this);
 			  XS_Base *newxs = pdfgroup->
-			    XSSelector()->GetXS(nIS,nFS,help);
+			    XSSelector()->GetXS(nIS,nFS,help,false,order_ew,order_strong);
 			  if (m_regulator.length()>0) 
 			    newxs->AssignRegulator(m_regulator,m_regulation);
 			  pdfgroup->Add(newxs);

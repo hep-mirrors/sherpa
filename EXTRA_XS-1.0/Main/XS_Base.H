@@ -97,6 +97,9 @@ namespace EXTRAXS {
     inline void SetScaleFactor(const double scalefactor)  
     { m_scalefactor=scalefactor;     }
 
+    inline size_t OrderEW() const     { return m_order_ew;     }
+    inline size_t OrderStrong() const { return m_order_strong; }
+
     inline Regulator_Base *const Regulator() const { return p_regulator; }
 
   };// end of class XS_Base
