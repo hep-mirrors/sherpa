@@ -14,6 +14,7 @@ namespace AMEGIC {
     char        filename[12], procname[12];
     std::string path,pathID,pID;
     std::string headername,cfilename;
+    int m_mode;
 
     bool  CheckForOldChannels(int,ATOOLS::Flavour *,PHASIC::Multi_Channel *);
     bool  IsFile(std::string &);
@@ -25,6 +26,7 @@ namespace AMEGIC {
     int   AddToHeader(std::string &,char*,bool);
     int   AddToCfile(std::string &,char*,int,bool);
     void  AddToMakefile(std::string Makefile,std::string pathID,std::string fileID);
+    void  AddToMakefileAM(std::string, std::string, std::string);
     void  AddToSetChannel();
   public:
     Phase_Space_Generator(int,int);

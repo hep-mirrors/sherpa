@@ -15,7 +15,10 @@ using namespace PHASIC;
 using namespace ATOOLS; 
 using namespace std;
 
-Phase_Space_Generator::Phase_Space_Generator(int _nin,int _nout) : nin(_nin), nout(_nout) {}
+Phase_Space_Generator::Phase_Space_Generator(int _nin,int _nout) : nin(_nin), nout(_nout) 
+{
+  m_mode=1;
+}
 
 bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _pID,
 				      ATOOLS::Flavour* fl,Process_Base * proc)
@@ -86,8 +89,12 @@ bool Phase_Space_Generator::MakeHeader(string &headername,char* name,int rannum)
 	<<"#ifndef "<<pID.c_str()<<"_on"<<endl
 	<<"#define "<<pID.c_str()<<"_on"<<endl
 	<<"#include "<<'"'<<"Single_Channel.H"<<'"'<<endl<<endl
-	<<"using namespace PHASIC;"<<endl<<endl
-	<<"namespace PHASIC {"<<endl
+	<<"using namespace PHASIC;"<<endl<<endl;
+
+  header<<"extern "<<'"'<<"C"<<'"'<<" Single_Channel * Getter_"<<pID
+	<<"(int nin,int nout,ATOOLS::Flavour* fl, int chn);"<<endl<<endl;
+
+  header<<"namespace PHASIC {"<<endl
 	<<"  class "<<pID.c_str()<<" : public Single_Channel {"<<endl
 	<<"    int     chnumber;"<<endl;
 
@@ -127,12 +134,19 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
 
   cfile.open(cfilename.c_str());
 
-  cfile<<"//Process "<<pID.c_str()<<endl<<endl
-  //  cfile<<"#include "<<'"'<<pID.c_str()<<".H"<<'"'<<endl
+  cfile<<"//Process "<<pID<<endl<<endl
+  //     <<"#include "<<'"'<<pID<<".H"<<'"'<<endl
        <<"#include "<<'"'<<"P.H"<<'"'<<endl
        <<"#include "<<'"'<<"Random.H"<<'"'<<endl<<endl
-       <<"using namespace PHASIC;"<<endl<<endl
-       <<"void "<<pID.c_str()<<"::GeneratePoint("
+       <<"using namespace PHASIC;"<<endl<<endl;
+
+  cfile<<"extern "<<'"'<<"C"<<'"'<<" Single_Channel * Getter_"<<pID
+       <<"(int nin,int nout,ATOOLS::Flavour* fl, int chn) {"<<endl
+       <<"  return new "<<pID<<"(nin,nout,fl,chn);"<<endl
+       <<"}"<<endl<<endl;
+
+
+  cfile<<"void "<<pID<<"::GeneratePoint("
        <<"ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,double* ran)"<<endl 
        <<"{"<<endl  
        <<"  switch (chnumber) {"<<endl
@@ -141,7 +155,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"Channel Number"<<'"'<<"<<chnumber<<"<<'"'<<" not found !"<<'"'<<"<<std::endl;"<<endl
        <<"  }"<<endl
        <<"}"<<endl<<endl
-       <<"void "<<pID.c_str()<<"::GenerateWeight("
+       <<"void "<<pID<<"::GenerateWeight("
        <<"ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)"<<endl 
        <<"{"<<endl  
        <<"  switch (chnumber) {"<<endl
@@ -150,7 +164,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"Channel Number"<<'"'<<"<<chnumber<<"<<'"'<<" not found !"<<'"'<<"<<std::endl;"<<endl
        <<"  }"<<endl
        <<"}"<<endl<<endl
-       <<"int "<<pID.c_str()<<"::CountResonances(ATOOLS::Flavour*& fl_res)"<<endl 
+       <<"int "<<pID<<"::CountResonances(ATOOLS::Flavour*& fl_res)"<<endl 
        <<"{"<<endl  
        <<"  switch (chnumber) {"<<endl
        <<"    case "<<chnumber<<": return "<<name<<"Resonances(fl_res);"<<endl
@@ -159,7 +173,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"  }"<<endl
        <<"  return 0;"<<endl
        <<"}"<<endl<<endl
-       <<"void "<<pID.c_str()<<"::ISRInfo(int & type,double & mass,double & width)"<<endl 
+       <<"void "<<pID<<"::ISRInfo(int & type,double & mass,double & width)"<<endl 
        <<"{"<<endl
        <<"  switch (chnumber) {"<<endl
        <<"    case "<<chnumber<<": "<<name<<"ISRtype(type,mass,width); return;"<<endl
@@ -273,21 +287,51 @@ int Phase_Space_Generator::AddToCfile(string &cfilename,char* name,int chnumber,
 }
 
 
-void  Phase_Space_Generator::AddToMakefile(string Makefile,string pathID,string fileID)
+void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,string fileID)
 {
-  if (IsFile(Makefile)==0) {
-    cerr<<Makefile.c_str()<<" is not available !"<<endl;
+  cout<<"Phase_Space_Generator::AddToMakefileAM("<<makefilename<<","<<pathID<<","<<fileID<<")"<<endl;
+
+  unsigned int hit=pathID.find("/");
+  string base=pathID.substr(0,hit);
+  string subdirname=pathID.substr(hit+1);
+
+  ifstream from(makefilename.c_str());
+  ofstream to((makefilename+string(".tmp")).c_str());  
+
+  string buffer;
+  string key=string("libProc_"+subdirname+"_la_SOURCES");
+  for (;from;) {
+    getline(from,buffer);
+    to<<buffer<<endl;
+    if (buffer.find(key)!=string::npos) {
+      to<<"\t"<<fileID<<".C"<<'\\'<<endl;
+    }
+  }
+  from.close();
+  to.close();
+  
+  string mv=string("mv ")+makefilename+".tmp "+makefilename;
+  system(mv.c_str());
+}
+
+
+void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,string fileID)
+{
+  if (IsFile(makefilename)==0) {
+    cerr<<makefilename.c_str()<<" is not available !"<<endl;
     return;
   }
 
-  if (Search(Makefile,string(fileID)+string(".C"))) return;
+  if (Search(makefilename,string(fileID)+string(".C"))) return;
+
+  AddToMakefileAM(makefilename+string(".am"),pathID,fileID);
 
   ofstream to;  
   ifstream from;
 
 
-  from.open(Makefile.c_str()); 
-  to.open((Makefile+string(".tmp")).c_str());
+  from.open(makefilename.c_str()); 
+  to.open((makefilename+string(".tmp")).c_str());
 
   char buffer[buffersize];
 
@@ -334,11 +378,14 @@ void  Phase_Space_Generator::AddToMakefile(string Makefile,string pathID,string 
   to.close();
 
   //copy back
-  Copy(Makefile+string(".tmp"),Makefile);
+  Copy(makefilename+string(".tmp"),makefilename);
 }
 
 void Phase_Space_Generator::AddToSetChannel()
 {
+  // only include in Set_Channel.C if neccessary
+  if (m_mode==1) return;
+
   ifstream from;
   ofstream to;
 
@@ -347,7 +394,7 @@ void Phase_Space_Generator::AddToSetChannel()
 
   int hit = 0;
 
-  char buffer[buffersize];
+  string buffer;
 
   //include into first line
 
@@ -355,11 +402,11 @@ void Phase_Space_Generator::AddToSetChannel()
   to<<"#include "<<'"'<<(pathID+string("/P.H")).c_str()<<'"'<<endl;  
 
   for(;from;) {
-    from.getline(buffer,buffersize);
-    
-    if (string(buffer).find(pID)!=-1) break;
+    getline(from,buffer);
 
-    if (string(buffer).find(string("return 0"))!=-1) {
+    if (buffer.find(pID)!=-1) break;
+
+    if (buffer.find(string("return 0"))!=-1 || buffer.find(string("libname"))!=-1) {
       hit = 1;
       to<<"#ifdef "<<pID<<"_on"<<endl
 	<<"  if (pID==string("<<'"'<<pID<<'"'<<")) "

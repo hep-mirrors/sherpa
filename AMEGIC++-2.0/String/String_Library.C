@@ -7,6 +7,161 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
+
+String_Library::String_Library(int mode):m_mode(mode)
+{
+
+}
+
+void String_Library::UpdateConfigure(std::string pathID)
+{
+  cout<<"String_Library::UpdateConfigure("<<pathID<<") called";
+
+  string cnf("/configure.in");
+  string mkam("/Makefile.am");
+  unsigned int hit=pathID.find("/");
+  string base=pathID.substr(0,hit);
+  string subdirname=pathID.substr(hit+1);
+  string name=string("Process/")+base+cnf;
+  if (!IsFile(name)) {
+    cout<<" file "<<name<<" does not exist creating it "<<endl;
+
+
+    ofstream file(name.c_str());
+
+    file<<"dnl Process this file with autoconf to produce a configure script."<<endl;
+    file<<"AC_INIT"<<endl; 
+    file<<"AM_INIT_AUTOMAKE("<<base<<",1.0)"<<endl;
+    file<<"AM_DISABLE_STATIC"<<endl;
+    file<<"AC_PREFIX_DEFAULT(${PWD}/../../../..)"<<endl;
+    file<<"dnl AC_TOP_SRCDIR_DEFAULT(${PWD}/../../../../..)"<<endl;
+    file<<"dnl Checks for programs."<<endl;
+    file<<"AC_PROG_INSTALL"<<endl;
+    file<<"AC_PROG_MAKE_SET"<<endl;
+    file<<"AC_PROG_CXX"<<endl;
+    file<<"AM_PROG_LIBTOOL"<<endl;
+    file<<"AC_OUTPUT( "<<'\\'<<endl;
+    file<<"\t"<<subdirname<<"/Makefile "<<'\\'<<endl;
+    file<<"\tMakefile )"<<endl;
+
+    CreateExtraFiles(string("Process/")+base);
+  } 
+  else {
+    ifstream from(name.c_str());
+    ofstream to((name+string(".tmp")).c_str());  
+
+    string buffer;
+    for (;from;) {
+      getline(from,buffer);
+      if (buffer.find("\tMakefile )")!=string::npos) {
+	to<<"\t"<<subdirname<<"/Makefile "<<'\\'<<endl;
+      }
+      to<<buffer<<endl;
+    }
+    from.close();
+    to.close();
+
+    string mv=string("mv ")+name+".tmp "+name;
+    system(mv.c_str());
+  }
+  
+  name=string("Process/")+base+mkam;
+  if (!IsFile(name)) {
+    cout<<" file "<<name<<" does not exist creating it "<<endl;
+
+    ofstream file(name.c_str());
+
+    file<<"MAKE = make "<<endl;
+    file<<"SUBDIRS = "<<'\\'<<endl;
+    file<<"\t"<<subdirname<<endl;
+  }
+  else {
+    ifstream from(name.c_str());
+    ofstream to((name+string(".tmp")).c_str());  
+
+    string buffer;
+    for (;from;) {
+      getline(from,buffer);
+      to<<buffer<<endl;
+      if (buffer.find("SUBDIRS")!=string::npos) {
+	to<<"\t"<<subdirname<<" "<<'\\'<<endl;
+      }
+    }
+    from.close();
+    to.close();
+
+    string mv=string("mv ")+name+".tmp "+name;
+    system(mv.c_str());
+  }
+
+}
+
+void String_Library::CreateExtraFiles(std::string path) 
+{
+  const int ln=4;
+  string names[ln];
+  names[0]=path+string("/NEWS");
+  names[1]=path+string("/README");
+  names[2]=path+string("/AUTHORS");
+  names[3]=path+string("/ChangeLog");
+  for (int i=0;i<ln;++i) {
+    ofstream file(names[i].c_str());
+    file.close();
+  }
+
+}
+
+void String_Library::AddToMakefileAM(string makefilename,string pathID,string fileID)
+{
+  cout<<"String_Library::AddToMakefileAM("<<makefilename<<","<<pathID<<","<<fileID<<")"<<endl;
+
+  unsigned int hit=pathID.find("/");
+  string base=pathID.substr(0,hit);
+  string subdirname=pathID.substr(hit+1);
+
+  if (!IsFile(makefilename)) {
+    ofstream file(makefilename.c_str());
+
+    file<<"lib_LTLIBRARIES = libProc_"<<subdirname<<".la"<<endl;
+    file<<"libProc_"<<subdirname<<"_la_SOURCES = "<<'\\'<<endl;
+    file<<"\t"<<fileID<<".C"<<endl;
+    file<<"INCLUDES = -I../../../../../AMEGIC++-2.0/Amplitude "<<'\\'<<endl;
+    file<<"\t-I../../../../../AMEGIC++-2.0/Amplitude/AmplTools "<<'\\'<<endl; 
+    file<<"\t-I../../../../../AMEGIC++-2.0/Amplitude/Zfunctions "<<'\\'<<endl;
+    file<<"\t-I../../../../../AMEGIC++-2.0/Main "<<'\\'<<endl;
+    file<<"\t-I../../../../../AMEGIC++-2.0/Model "<<'\\'<<endl;
+    file<<"\t-I../../../../../AMEGIC++-2.0/String "<<'\\'<<endl;
+    file<<"\t-I../../../../../PHASIC++-1.0/Main "<<'\\'<<endl;
+    file<<"\t-I../../../../../PHASIC++-1.0/ISR "<<'\\'<<endl;
+    file<<"\t-I../../../../../ATOOLS-2.0/Phys "<<'\\'<<endl;
+    file<<"\t-I../../../../../ATOOLS-2.0/Math "<<'\\'<<endl;
+    file<<"\t-I../../../../../ATOOLS-2.0/Org "<<'\\'<<endl;
+    file<<"\t-I../../../../../MODEL-1.0/Main "<<endl;
+    file<<"noinst_HEADERS = P.H  V.H"<<endl;
+  }
+  else {
+    ifstream from(makefilename.c_str());
+    ofstream to((makefilename+string(".tmp")).c_str());  
+
+    string buffer;
+    string key=string("libProc_"+subdirname+"_la_SOURCES");
+    for (;from;) {
+      getline(from,buffer);
+      to<<buffer<<endl;
+      if (buffer.find(key)!=string::npos) {
+	to<<"\t"<<fileID<<".C"<<'\\'<<endl;
+      }
+    }
+    from.close();
+    to.close();
+
+    string mv=string("mv ")+makefilename+".tmp "+makefilename;
+    system(mv.c_str());
+  }
+}
+
+
+
 void String_Library::InitMakefile(string pathID)
 {
   string newMakefile = string("Process/")+pathID+string("/Makefile");
@@ -39,7 +194,7 @@ void String_Library::InitMakefile(string pathID)
     
     string buf = string(buffer);
     
-    //change subdir structure   (AS)
+    //change subdir structure  
     Replace(buf,string("../../.."),string("../../../.."));
  
     //replace libDummy
@@ -83,6 +238,15 @@ void String_Library::InitMakefile(string pathID)
   //copy back
   Copy(string("Process/Makefile.tmp"),string("Process/Makefile"));
   
+
+  UpdateConfigure(pathID);
+
+
+  //proceed only if not dynamic linking:
+  if (m_mode==1) return;
+
+
+
   //adding new library to linker
   //============================
   ofstream to3;  
@@ -175,21 +339,24 @@ int String_Library::Search(string file,string search)
   return 0;
 }
 
-void String_Library::AddToMakefile(string Makefile,string pathID,string fileID)
+void String_Library::AddToMakefile(string makefilename,string pathID,string fileID)
 {
-  if (IsFile(Makefile)==0) {
-    cerr<<Makefile.c_str()<<" is not available !"<<endl;
+  // add also to makefile am!
+  AddToMakefileAM(makefilename+string(".am"),pathID,fileID);
+
+  if (IsFile(makefilename)==0) {
+    cerr<<makefilename.c_str()<<" is not available !"<<endl;
     return;
   }
 
-  if (Search(Makefile,string(fileID)+string(".C"))) return;
+  if (Search(makefilename,string(fileID)+string(".C"))) return;
 
   ofstream to;  
   ifstream from;
 
 
-  from.open(Makefile.c_str()); 
-  to.open((Makefile+string(".tmp")).c_str());
+  from.open(makefilename.c_str()); 
+  to.open((makefilename+string(".tmp")).c_str());
 
   char buffer[buffersize];
 
@@ -236,5 +403,5 @@ void String_Library::AddToMakefile(string Makefile,string pathID,string fileID)
   to.close();
 
   //copy back
-  Copy(Makefile+string(".tmp"),Makefile);
+  Copy(makefilename+string(".tmp"),makefilename);
 }

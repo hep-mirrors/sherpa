@@ -15,13 +15,15 @@ class String_Output {
   int maxgraph,maxhel;
   std::string pID,pathID;
 
+  int m_mode;
+
   void Cform(std::ofstream&,int,int,sknot***,String_Tree*,const std::string&,Helicity*);
   void Zform(std::ofstream&,int &,int &,Virtual_String_Generator*,String_Tree*);
   void Make_Header(std::ofstream &);
   int  Line_Form(std::ofstream&,const std::string &);
   void Add_To_Set_Values();
 public:
-  String_Output(const std::string&,int,int); 
+  String_Output(const std::string&,int,int,int); 
   void Output(sknot***,String_Tree*,Virtual_String_Generator*,Helicity*);
 };
 }

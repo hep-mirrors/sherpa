@@ -11,6 +11,8 @@ using namespace std;
 String_Handler::String_Handler(const int &_gen_str,const string& _path,Basic_Sfuncs* _BS) 
   : gen_str(_gen_str), path(_path)
 {
+  m_mode=1;
+
   working = 0;
   sk      = 0;
   val     = 0;
@@ -51,6 +53,8 @@ String_Handler::String_Handler(const int &_gen_str,const string& _path,Basic_Sfu
 String_Handler::String_Handler(const int &_gen_str,Basic_Sfuncs* _BS) 
   : gen_str(_gen_str)
 {
+  m_mode=1;
+
   own_sgen= 1;
   working = 0;
   sk      = 0;
@@ -62,6 +66,8 @@ String_Handler::String_Handler(const int &_gen_str,Basic_Sfuncs* _BS)
 
 String_Handler::String_Handler(Virtual_String_Generator * _sgen) 
 {
+  m_mode=1;
+
   own_sgen= 0;
   working = 0;
   sk      = 0;
@@ -248,14 +254,14 @@ void String_Handler::Calculate() {
 void String_Handler::Output(Helicity* hel)
 {
   if (gen_str<2 || val!=0) return;
-  String_Output so(path,maxgraph,maxhel);
+  String_Output so(path,maxgraph,maxhel,m_mode);
   so.Output(sk,&stree,sgen,hel);
 }
 
 void String_Handler::Output(Helicity* hel, string path)
 {
   if (gen_str<2 || val!=0) return;
-  String_Output so(path,maxgraph,maxhel);
+  String_Output so(path,maxgraph,maxhel,m_mode);
   so.Output(sk,&stree,sgen,hel);
 }
 

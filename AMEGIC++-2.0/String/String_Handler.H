@@ -20,6 +20,8 @@ namespace AMEGIC {
     Values                      * val;
     std::string                   path;
     
+    int m_mode;
+
     void                       Z_Kill();
     sknot*                     MakeSknotAFill(std::string &);
   public:
@@ -46,6 +48,8 @@ namespace AMEGIC {
 
     inline int NumberOfCouplings() { return sgen->NumberOfCouplings(); }
     inline int NumberOfZfuncs()    { return sgen->NumberOfzxl(); }
+
+    int LibMode() { return m_mode; }
   };
 }
 

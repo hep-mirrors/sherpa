@@ -12,8 +12,8 @@ using namespace std;
 
 #define use_templates
 
-String_Output::String_Output(const string &_path,int _maxgraph,int _maxhel) 
-  : path(_path), maxgraph(_maxgraph), maxhel(_maxhel)  
+String_Output::String_Output(const string &_path,int _maxgraph,int _maxhel, int mode) 
+  : slib(mode), path(_path), maxgraph(_maxgraph), maxhel(_maxhel), m_mode(mode)
 {
   pathID = path;
   pID    = path;
@@ -93,6 +93,11 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   cfile<<"using namespace AMEGIC;"<<endl;
   cfile<<"using namespace ATOOLS;"<<endl;
   cfile<<"using namespace std;"<<endl<<endl;
+
+  cfile<<"extern "<<'"'<<"C"<<'"'<<" Values* Getter_"<<pID<<"(Basic_Sfuncs* bs) {"<<endl;
+  cfile<<"  return new "<<pID<<"(bs);"<<endl;
+  cfile<<"}"<<endl<<endl;
+
   cfile<<"Complex "<<pID<<"::Evaluate"<<"(int& m,int& n)"<<endl;
   cfile<<"{"<<endl;
   cfile<<"  switch (m) {"<<endl;
@@ -424,9 +429,12 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
 void String_Output::Make_Header(ofstream &header)
 {
   header<<"//Header file for process "<<pID.c_str()<<endl<<endl;
-  header<<"#ifndef "<<pID.c_str()<<"_on"<<endl;
-  header<<"#define "<<pID.c_str()<<"_on"<<endl;  
+  header<<"#ifndef "<<pID<<"_on"<<endl;
+  header<<"#define "<<pID<<"_on"<<endl;  
   header<<"#include "<<'"'<<"Values.H"<<'"'<<endl<<endl;
+
+  header<<"extern "<<'"'<<"C"<<'"'<<" AMEGIC::Values* Getter_"<<pID<<"(AMEGIC::Basic_Sfuncs* bs);"<<endl<<endl;
+
   header<<"namespace AMEGIC {"<<endl<<endl;  
   header<<"class "<<pID.c_str()<<" : public Values,"<<endl;
   header<<"  public Basic_Yfunc,"<<endl; 
@@ -492,6 +500,10 @@ void String_Output::Add_To_Set_Values()
 {
   //manipulate Set_Values
 
+  // only include in Set_Values.C if neccessary
+  if (m_mode==1) return;
+
+
   ifstream from;
   ofstream to;
 
@@ -500,17 +512,17 @@ void String_Output::Add_To_Set_Values()
 
   int hit = 0;
 
-  char buffer[512];
+  string buffer;
 
   //include into first line
   to<<"#include "<<'"'<<(pathID+string("/V.H")).c_str()<<'"'<<endl;  
 
   for(;from;) {
-    from.getline(buffer,512);
+    getline(from,buffer);
     
-    if (string(buffer).find(pID)!=-1) break;
+    if (buffer.find(pID)!=-1) break;
 
-    if (string(buffer).find(string("return 0"))!=-1) {
+    if (buffer.find(string("return 0"))!=-1 || buffer.find(string("libname"))!=-1) {
       hit = 1;
       to<<"#ifdef "<<pID<<"_on"<<endl;
       to<<"  if (pID==string("<<'"'<<pID<<'"'<<")) return (new "<<pID<<"(BS));"<<endl;
