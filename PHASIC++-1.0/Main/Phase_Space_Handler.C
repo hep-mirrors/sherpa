@@ -490,7 +490,7 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   if (p_zchannels!=NULL && !(exclude&4)) okay = okay && p_zchannels->ReadIn(pID+string("/MC_KMR_Z"));
   if (p_kpchannels!=NULL && !(exclude&8)) okay = okay && p_kpchannels->ReadIn(pID+string("/MC_KMR_KP"));
   if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+string("/MC_FSR"));
-  if (rpa.gen.RandomSeed()==1234) {
+  if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
     string filename     = (pID+string("/Random")).c_str();
     ran.ReadInStatus(filename.c_str(),0);
   }
