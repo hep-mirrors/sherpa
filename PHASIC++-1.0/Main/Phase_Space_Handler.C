@@ -530,7 +530,10 @@ double Phase_Space_Handler::Integrate()
     beamchannels->GetRange();
   }
   if (ih->On()>0) {
-    //    isrchannels->GetRange();
+    //new SS 
+    //to ensure the right sprimemin for massive processes
+    ih->SetSprimeMin(sqr(proc->ISRThreshold()));
+    
     isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
     isrchannels->GetRange();
   }
@@ -575,6 +578,7 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     beamchannels->GeneratePoint(sprimeB,yB,bh->On()); 
     if (!(bh->MakeBeams(p,sprimeB,yB))) return 0.;
     if (ih->On()>0) {
+      
       ih->SetSprimeMax(sprimeB*sqrt(ih->Upper1()*ih->Upper2()));
       ih->SetPole(sprimeB);
       isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
@@ -586,6 +590,7 @@ double Phase_Space_Handler::Differential(Process_Base * process)
   }
 
   if (ih->On()>0) { 
+    
     isrchannels->GeneratePoint(sprimeI,yI,ih->On());
 
     //msg.Out()<<"ISR : "<<sprimeI<<" / "<<yI<<endl;
@@ -598,8 +603,8 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     proc->UpdateCuts(sprime,y);
   }
   
-//   msg.Debugging()<<"Before FSR moms:"<<endl;
-//   for (int i=0;i<nin;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
+  //msg.Debugging()<<"Before FSR moms:"<<endl;
+  //for (int i=0;i<nin;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
   
   if (proc->NumberOfDiagrams() != IS_XS_FLAG) fsrchannels->GeneratePoint(p,proc->Cuts());
   else fsrchannels->GeneratePoint(p);
@@ -718,6 +723,11 @@ bool Phase_Space_Handler::OneEvent(int mode)
 	  return 0;
 	}
       }
+      //new SS to ensure the right sprime min for massive processes
+      ih->SetSprimeMin(sqr(proc->ISRThreshold()));
+      
+      isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
+    
       value = Differential(proc->Selected());
     }
 
