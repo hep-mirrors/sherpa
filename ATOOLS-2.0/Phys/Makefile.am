@@ -34,6 +34,7 @@ noinst_HEADERS        =	\
 			Flavour_List.H \
 			Particle_List.H \
 			Decay_Table.H \
+			Remnant_Info.H \
 			Cut_Data.H \
 			Selector.H \
 			Jet_Finder.H \
