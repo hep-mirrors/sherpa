@@ -99,7 +99,7 @@ bool Hard_Interface::InitColours(Blob * blob) {
 }
 
 bool Hard_Interface::InitialConditions(Blob * blob,XS_Base * xs) {
-  double scale = xs->Scale();
+  double scale = xs->GetBroker()->Scale();
   double th1,th2;
   th1   = tools->ColourAngle(blob->InParton(0),blob);
   th2   = tools->ColourAngle(blob->InParton(1),blob);

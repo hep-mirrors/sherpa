@@ -30,7 +30,7 @@ namespace APACIC {
     AMATOOLS::vec4d lab;
 
   public:
-    Initial_State_Shower(ISR::ISR_Handler *& ,Final_State_Shower *);
+    Initial_State_Shower(ISR::ISR_Handler *, Final_State_Shower *);// for testing purposes
     ~Initial_State_Shower();
     bool PerformShower(Tree **,bool);
     void InitShowerPT(double pt2max);

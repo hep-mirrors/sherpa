@@ -8,8 +8,6 @@
 #include "QED_Processes.H"
 #include "QCD_Processes.H"
 
-#include "Process_XS_Trait.H"
-
 using namespace APACIC;
 using namespace EXTRAXS;
 using namespace PHASIC;
@@ -36,7 +34,11 @@ bool Hard_Processes::ProcessesInit() {
 	 (rpa.gen.Beam2() == (Flavour(kf::e).bar())) ) ||
        ( (rpa.gen.Beam1() == (Flavour(kf::e)).bar()) &&
 	 (rpa.gen.Beam2() == Flavour(kf::e)) ) ) {
-    two2two = new QED_Processes();
+    two2two = (new QED_Processes())->CreateBroker();
+    msg.Debugging()<<"In Hard_Processes::Process_Init : "<<std::endl;
+    if (two2two) msg.Debugging()<<" Initialised new Broker " 
+				<<two2two->Name()<<std::endl;
+    else msg.Debugging()<<" Cannot initialise new Broker ! "<<std::endl;
     return 1;
   }
   if ( ( (rpa.gen.Beam1() == Flavour(kf::p_plus))         &&
@@ -47,7 +49,11 @@ bool Hard_Processes::ProcessesInit() {
 	 (rpa.gen.Beam2() == Flavour(kf::p_plus)) )           ||
        ( (rpa.gen.Beam1() == (Flavour(kf::p_plus).bar())) &&
 	 (rpa.gen.Beam2() == Flavour(kf::p_plus).bar()) )    ) {
-    two2two = new QCD_Processes();
+    two2two = (new QCD_Processes())->CreateBroker();
+    msg.Debugging()<<"In Hard_Processes::Process_Init : "<<std::endl;
+    if (two2two) msg.Debugging()<<" Initialised new Broker " 
+				<<two2two->Name()<<std::endl;
+    else msg.Debugging()<<" Cannot initialise new Broker ! "<<std::endl;
     return 1;
   }
   return 0;
@@ -55,9 +61,9 @@ bool Hard_Processes::ProcessesInit() {
 
 bool Hard_Processes::PrepareCalculation() {
   msg.Debugging()<<"Hard_Processes::PrepareCalculation() : "<<std::endl
-		 <<"        SetISR : "<<isr<<" for "<<two2two->Name()<<std::endl;
-  two2two->SetISR(isr);
-  return two2two ->SetUpIntegrator(isr,beam);
+		 <<" SetISR  : "<<isr<<" for "<<two2two->Name()<<std::endl
+		 <<" SetBeam : "<<beam<<" for "<<two2two->Name()<<std::endl;
+  return two2two->SetUpIntegrator(isr,beam);
 };
 
 

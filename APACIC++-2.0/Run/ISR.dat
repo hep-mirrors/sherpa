@@ -2,7 +2,7 @@
 !-- ISR parameters -------------------------------------
 !-------------------------------------------------------
 ISR1     = No ! extended Struct ! No
-ISR2     = No ! extended Struct ! No
+ISR2     = No !  extended Struct ! No
 SMIN     = 0.01     ! Minimal Energy in fractions of the CM energy
 SMAX     = 0.998    ! Maximal Energy in fractions of the CM energy
 Max_Phot = 25       ! Maximum number of Photons

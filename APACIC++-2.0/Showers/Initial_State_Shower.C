@@ -11,15 +11,15 @@ using namespace AORGTOOLS;
 //--------------------------- Constructors ------------------------------
 //----------------------------------------------------------------------- 
 
-Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler *& _isr,Final_State_Shower * _fin) : 
-  fin(_fin) {
+Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler * _isr, Final_State_Shower * _fin) : 
+  fin(_fin) {// i think isr doesn't have to be modified no more when i'm through with this
   
   if (_isr) {
-    msg.Debugging()<<"----------------------------------------------------------"<<std::endl
-		   <<"Initial_State_Shower::Initial_State_Shower : for beams : "
+    msg.Debugging()<<"-----------------------------------------------------------"<<std::endl;
+    msg.Debugging()<<"Initial_State_Shower::Initial_State_Shower : Beams : "
 		   <<rpa.gen.Beam1()<<", "<<rpa.gen.Beam2()<<std::endl
-		   <<"  "<<_isr->PDF(0)->Beam()<<" "<<_isr->PDF(1)->Beam()<<std::endl
-		   <<"  ISR_Handler : "<<_isr->Type()<<std::endl;
+		   <<"ISR_Handler : "<<_isr->Type()<<std::endl;
+    msg.Debugging()<<"-----------------------------------------------------------"<<std::endl;
   }
   else {
     // test shower only
@@ -68,7 +68,7 @@ Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler *& _isr,Final_State_
     allowed   = 20;
   }
   else {
-    msg.Error()<<"Initialise NO Initial_State_Shower : ISR_Handler is OFF !"<<endl;
+    msg.Error()<<"Initialise Initial_State_Shower according to file ISR.dat"<<endl;
 
     tools = 0;
     suds  = 0;

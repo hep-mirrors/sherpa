@@ -35,19 +35,34 @@ void Apacic::Init() {
   if (!as) as       = new Running_AlphaS();
   if (!aqed) aqed   = new Running_AlphaQED();
 
-  //ISR.dat
-  /*
   Data_Read dr(rpa.GetPath()+string("/ISR.dat"));
-  int * isrtypes     = new int[2];
-  isrtypes[0]  = dr.GetValue<ISR_Type::code>("ISR1");
-  isrtypes[1]  = dr.GetValue<ISR_Type::code>("ISR2");
-  Flavour * beams        = new Flavour[2];
-  beams[0]     = rpa.gen.Beam1();
-  beams[1]     = rpa.gen.Beam2();
-  Flavour * flins      = new Flavour[2];
+
+  int * isrtypes  = new int[2];
+  isrtypes[0]     = dr.GetValue<ISR_Type::code>("ISR1");
+  isrtypes[1]     = dr.GetValue<ISR_Type::code>("ISR2");
+
+  double s          = sqr(AORGTOOLS::rpa.gen.Ecms());
+  double * splimits = new double[2];
+  splimits[0]       = s*sqr(dr.GetValue<double>("SMIN"));
+  splimits[1]       = s*sqr(dr.GetValue<double>("SMAX"));
+
+  Flavour * bunches, * beams, * parton;
+
+  bunches      = new Flavour[2];
+  beams        = new Flavour[2];
+  parton       = new Flavour[2];
+  for (int i=0;i<2;i++) {
+    bunches[i] = Flavour(kf::none);
+    beams[i]   = Flavour(kf::none);
+    parton[i]  = Flavour(kf::none);
+  }
+
+  bunches[0] = beams[0] = rpa.gen.Beam1();// bunches[] is just for testing ..
+  bunches[1] = beams[1] = rpa.gen.Beam2();
+
   if (beams[0]==Flavour(kf::e) || beams[0]==Flavour(kf::e).bar()) {
-    flins[0]   = beams[0];
-    flins[1]   = beams[1];
+    parton[0] = beams[0];
+    parton[1] = beams[1];
   }
   else {
     cout<<" partons have to be set in Apacic.C "<<endl;
@@ -55,16 +70,15 @@ void Apacic::Init() {
     exit(1);
   }
 
-  double s     = sqr(AORGTOOLS::rpa.gen.Ecms());
-  double *  splimits     = new double[2];
-  splimits[0]  = s*sqr(dr.GetValue<double>("SMIN"));
-  splimits[1]  = s*sqr(dr.GetValue<double>("SMAX"));
+  int * beamtypes  = new int[2];
+  beamtypes[0] = 0;
+  beamtypes[1] = 0;
+  double * pol = new double[2]; 
+  pol[0] = 0;
+  pol[1] = 0;
 
-
-  if (isr==0) isr = new ISR_Handler(isrtypes,beams,flins,splimits);
-  */
-  //new ISR_Handler(beams,0.,sqr(rpa.gen.Ecms()));
-  beam = 0;
+  if (!beam) beam = new Beam_Handler(beamtypes,bunches,pol,beams,pol,splimits);
+  if (!isr)  isr  = new ISR_Handler(isrtypes,beams,parton,splimits);
 
 
   ini = 1;
