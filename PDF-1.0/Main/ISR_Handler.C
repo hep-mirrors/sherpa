@@ -275,6 +275,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   for (size_t i=0;i<2;++i) {
     phi+=2.0*M_PI*ran.Get();
     double kp=sqrt(m_kpkey[i][3]); 
+    if (p_isrbase[i]->Collinear(m_kpkey[i][3])) m_zkey[i][2]=0.;
     m_kp[i]=Vec4D(0.0,cos(phi)*kp,sin(phi)*kp,0.0);
   }
   E=sqrt(m_spkey[3]-(m_kp[0]+m_kp[1]).Abs2());
@@ -283,8 +284,9 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   double D2=E/Q/xi;
   double C1=m_zkey[0][2]/(1.-m_zkey[0][2])*m_kpkey[0][3]/m_splimits[2];
   double C2=m_zkey[1][2]/(1.-m_zkey[1][2])*m_kpkey[1][3]/m_splimits[2];
-  m_x[0]=.5*D1*(1.+sqrt(1.+4.*C1/(D1*D1)));
-  m_x[1]=.5*D2*(1.+sqrt(1.+4.*C2/(D2*D2)));
+  m_x[0]=.5*(D1+(C2-C1)/D2);
+  m_x[0]=m_x[0]+sqrt(m_x[0]*m_x[0]+C1*D1/D2);
+  m_x[1]=(D2*m_x[0]+C1-C2)/D1;
   double b1=C1/m_x[0], b2=C2/m_x[1];
   if (m_zkey[0][2]>1. || m_zkey[1][2]>1.) return false;
   if (m_x[0]>m_zkey[0][2] || m_x[1]>m_zkey[1][2]) return false;
@@ -322,7 +324,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_info_cms[iic::t_2]=p[1].Abs2();
   m_info_cms[iic::Em_2]=p[1][0]/p[0].Mass();		
 #endif
-  m_weight=1./((1.+C1/(m_x[0]*m_x[0]))*(1.+C2/(m_x[1]*m_x[1])));
+  m_weight=E/sqrt(m_spkey[3]);
+  m_weight*=(m_x[1]*m_x[0]-b2*b1)/(m_x[1]*m_x[0])
   m_flux=.25;
   m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   for (int i=0;i<2;++i) {
