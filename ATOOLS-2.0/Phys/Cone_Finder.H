@@ -21,6 +21,7 @@ namespace ATOOLS {
     bool   Trigger(const Vec4D *);
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
+    int    IsConditional() { return 1; }
     double * ActualValue();
 
   };

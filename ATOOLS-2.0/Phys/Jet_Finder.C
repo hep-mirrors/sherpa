@@ -476,8 +476,16 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	             ycut s' > ycut s_min   
 	             (lepton-lepton collisions)
       */
-      if (m_type>=2) cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
-              else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
+      if (m_type>=2) {
+	cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
+	if (m_type==4) {
+	  cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
+	    sqrt(1.-2.*m_ycut);
+	  cuts->etmin[i] = Max(sqrt(m_ycut * m_s),cuts->etmin[i]);
+	}
+      }
+      else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
+
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong()) {                
 	  /* 
@@ -489,42 +497,31 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
                	         (hadron-hadron collisions)
  
 	  */
-	  cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_smin);
+	  if (m_type>=2) cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_s);
+	  else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_smin);
 	}
       }
     }
   }
 }
 
-void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
+void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
+{
+  if (m_type>1) return;
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
-    cuts->energymin[i] = m_fl[i].Mass();
-    // strong interacting particles first.
-    if (m_fl[i].Strong()) {                
-      /* 
-	 minimal energies : 
-	 either   :  E^2 > kt^2 > y_cut s      
-	             (hadron-hadron collisions)
-	 or       :  4 min{E_i^2,E_j^2} > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
-	             ycut s' > ycut s_min   
-	             (lepton-lepton collisions)
-      */
-      if (m_type>=2) cuts->energymin[i] = Max(sqrt(m_ycut * m_s),cuts->energymin[i]);
-              else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
-      for (int j=i+1; j<m_nin+m_nout; ++j) {
-	if (m_fl[j].Strong()) {                
-	  /* 
-	     minimal scut :
-	     either   :  s_ij = 2 E_i E_j (1-cos(ij)) > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
-	                 ycut s' > ycut s_min   
-	                 (lepton-lepton collisions)
-	     or       :  similarly .... have to think ...
-               	         (hadron-hadron collisions)
- 
-	  */
-	  if (m_type>=2) cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_smin);
-	          else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*sprime);
-	}
+    cuts->energymin[i] = Max(sqrt(m_ycut * m_sprime/4.),cuts->energymin[i]);
+    for (int j=i+1; j<m_nin+m_nout; ++j) {
+      if (m_fl[j].Strong()) {                
+	/* 
+	   minimal scut :
+	   either   :  s_ij = 2 E_i E_j (1-cos(ij)) > 2 min{E_i^2,E_j^2} (1-cos(ij)) > 
+	               ycut s' > ycut s_min   
+	               (lepton-lepton collisions)
+	   or       :  similarly .... have to think ...
+	               (hadron-hadron collisions)
+	   
+	*/
+	cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*sprime);
       }
     }
   }

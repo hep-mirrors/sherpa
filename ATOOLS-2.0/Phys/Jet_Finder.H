@@ -59,6 +59,8 @@ namespace ATOOLS {
     void   UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
 
+    int      IsConditional() { return m_type==1; }
+    int      NeedUpdate()    { return m_type==1; }
 
     double ShowerPt2() const { return m_shower_pt2; }
     void SetShowerPt2(const double pt2) { m_shower_pt2=pt2; }

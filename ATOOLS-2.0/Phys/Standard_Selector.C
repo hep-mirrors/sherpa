@@ -54,22 +54,10 @@ void Energy_Selector::BuildCuts(Cut_Data * cuts)
   for (int i=0;i<m_n-1;i++) {
     cuts->energymin[i] = Max(emin[i],cuts->energymin[i]);
     cuts->energymax[i] = Min(emax[i],cuts->energymax[i]);
-    for (int j=i+1;j<m_n;j++) {
-      cuts->scut[i][j] = cuts->scut[j][i] = 
-	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
-    }
   }
 }
 
 void Energy_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-  for (int i=0;i<m_n-1;i++) {
-    cuts->energymin[i] = Max(emin[i],cuts->energymin[i]);
-    cuts->energymax[i] = Min(emax[i],cuts->energymax[i]);
-    for (int j=i+1;j<m_n;j++) {
-      cuts->scut[i][j] = cuts->scut[j][i] = 
-	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
-    }
-  }
 }
  
 void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min, 
@@ -138,21 +126,16 @@ double * ET_Selector::ActualValue() { return value; }
 
 void ET_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  
-  for (int i=0;i<m_n-1;i++) {
+  for (int i=m_nin;i<m_n-1;i++) {
     cuts->energymin[i] = Max(etmin[i],cuts->energymin[i]);
-    cuts->energymax[i] = Min(etmax[i],cuts->energymax[i]);
+    cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
+      sqrt(1.-2.*sqr(etmin[i])/m_smax);
+    cuts->etmin[i] = Max(etmin[i],cuts->etmin[i]);
   }
 }
 
 void ET_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
-{
-  
-  for (int i=0;i<m_n-1;i++) {
-    cuts->energymin[i] = Max(etmin[i],cuts->energymin[i]);
-    cuts->energymax[i] = Min(etmax[i],cuts->energymax[i]);
-  }
-}
+{ }
  
 void ET_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max=rpa.gen.Ecms())
@@ -218,26 +201,15 @@ double * PT_Selector::ActualValue() { return value; }
 
 void PT_Selector::BuildCuts(Cut_Data * cuts) 
 {
-  for (int i=0;i<m_n-1;i++) {
-    cuts->energymin[i] = Max(ptmin[i],cuts->energymin[i]);
-    cuts->energymax[i] = Min(ptmax[i],cuts->energymax[i]);
-    for (int j=i+1;j<m_n;j++) {
-      cuts->scut[i][j] = cuts->scut[j][i] = 
-	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
-    }
+  for (int i=m_nin;i<m_n-1;i++) {
+    cuts->energymin[i] = Max(sqrt(sqr(ptmin[i])+sqr(m_fl[i].Mass())),cuts->energymin[i]);
+    cuts->cosmax[0][i] = cuts->cosmax[1][i] = cuts->cosmax[i][0] = cuts->cosmax[i][1] =  
+      sqrt(1.-sqr(ptmin[i])/(0.5*m_smax-sqr(m_fl[i].Mass())));
+    cuts->etmin[i] = Max(ptmin[i],cuts->etmin[i]);
   }
 }
 
-void PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-  for (int i=0;i<m_n-1;i++) {
-    cuts->energymin[i] = Max(ptmin[i],cuts->energymin[i]);
-    cuts->energymax[i] = Min(ptmax[i],cuts->energymax[i]);
-    for (int j=i+1;j<m_n;j++) {
-      cuts->scut[i][j] = cuts->scut[j][i] = 
-	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
-    }
-  }
-}
+void PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
  
 void PT_Selector::SetRange(std::vector<Flavour> crit,double _min, 
 			       double _max=0.5*rpa.gen.Ecms())
@@ -308,14 +280,32 @@ bool Rapidity_Selector::Trigger(const Vec4D * mom)
 
 double * Rapidity_Selector::ActualValue() { return value; }
 
-void Rapidity_Selector::BuildCuts(Cut_Data * cuts) {}
+void Rapidity_Selector::BuildCuts(Cut_Data * cuts) 
+{
+  for (int i=m_nin;i<m_n-1;i++) {
+    cuts->cosmax[0][i] = cuts->cosmax[i][0] =  
+      1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(ymax[i]);
+    cuts->cosmax[1][i] = cuts->cosmax[i][1] = 
+      1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]);
+  }
+}
 
-void Rapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
+void Rapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
+{
+  for (int i=m_nin;i<m_n-1;i++) {
+    if (!ATOOLS::IsZero(m_fl[i].Mass())) {
+      cuts->cosmax[0][i] = cuts->cosmax[i][0] =  
+	1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(ymax[i]);
+      cuts->cosmax[1][i] = cuts->cosmax[i][1] = 
+	1./sqrt(1.-sqr(m_fl[i].Mass())/sqr(cuts->energymin[i]))*tanh(-ymin[i]);
+    }  
+  }
+}
  
 
 
 void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max=0.5*rpa.gen.Ecms())
+			       double _max)
 {
   if (crit.size() != 1) {
     msg.Error()<<"Wrong number of arguments in Rapidity_Selector::SetRange : "
@@ -383,14 +373,20 @@ bool PseudoRapidity_Selector::Trigger(const Vec4D * mom)
 
 double * PseudoRapidity_Selector::ActualValue() { return value; }
 
-void PseudoRapidity_Selector::BuildCuts(Cut_Data * cuts) {}
+void PseudoRapidity_Selector::BuildCuts(Cut_Data * cuts) 
+{
+  for (int i=m_nin;i<m_n-1;i++) {
+    cuts->cosmax[0][i] = cuts->cosmax[i][0] = tanh(etamax[i]);
+    cuts->cosmax[1][i] = cuts->cosmax[i][1] = tanh(-etamin[i]);
+  }
+}
 
 void PseudoRapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
  
 
 
 void PseudoRapidity_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max=0.5*rpa.gen.Ecms())
+			       double _max)
 {
   if (crit.size() != 1) {
     msg.Error()<<"Wrong number of arguments in PseudoRapidity_Selector::SetRange : "
@@ -470,24 +466,11 @@ void Angle_Selector::BuildCuts(Cut_Data * cuts)
 	Max(cosmin[i][j],cuts->cosmin[i][j]);
       cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
 	Min(cosmax[i][j],cuts->cosmax[i][j]);
-      cuts->scut[i][j]   = cuts->scut[j][i]   = 
-	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
     }
   }
 }
 
-void Angle_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-  for (int i=0;i<m_n-1;i++) {
-    for (int j=i+1;j<m_n;j++) {
-      cuts->cosmin[i][j] = cuts->cosmin[j][i] = 
-	Max(cosmin[i][j],cuts->cosmin[i][j]);
-      cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
-	Min(cosmax[i][j],cuts->cosmax[i][j]);
-      cuts->scut[i][j]   = cuts->scut[j][i]   = 
-	Max(cuts->scut[i][j],2.*cuts->energymin[i]*cuts->energymin[j]*(1.-cuts->cosmax[i][j]));
-    }
-  }
-}
+void Angle_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
 
 
 void Angle_Selector::SetRange(std::vector<Flavour> crit,
@@ -525,8 +508,8 @@ void Angle_Selector::SetRange(std::vector<Flavour> crit,int beam,
   }
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
-      cosmin[i][beam] = cosmin[beam][i] = Max(_min,-1.); 
-      cosmax[i][beam] = cosmax[beam][i] = Min(_max, 1.); 
+      cosmin[i][beam] = cosmin[beam][i] = Max(_min,-1.1); 
+      cosmax[i][beam] = cosmax[beam][i] = Min(_max, 1.1); 
     }
   }
 }
@@ -593,28 +576,11 @@ void Mass_Selector::BuildCuts(Cut_Data * cuts)
   for (int i=0;i<m_n-1;i++) {
     for (int j=i+1;j<m_n;j++) {
       cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],sqr(massmin[i][j]));
-      if (cuts->scut[i][j] < 
-	  cuts->energymax[i]*cuts->energymax[j]*(1.-cuts->cosmax[i][j])) {
-	cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
-	  Min(cuts->cosmax[i][j],1.-cuts->scut[i][j]/(cuts->energymax[i]*cuts->energymax[j]));
-      }
     }
   }
 }
 
-void Mass_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) 
-{
-  for (int i=0;i<m_n-1;i++) {
-    for (int j=i+1;j<m_n;j++) {
-      cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],sqr(massmin[i][j]));
-      if (cuts->scut[i][j] < 
-	  cuts->energymax[i]*cuts->energymax[j]*(1.-cuts->cosmax[i][j])) {
-	cuts->cosmax[i][j] = cuts->cosmax[j][i] = 
-	  Min(cuts->cosmax[i][j],1.-cuts->scut[i][j]/(cuts->energymax[i]*cuts->energymax[j]));
-      }
-    }
-  }
-}
+void Mass_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
 
 
 void Mass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)

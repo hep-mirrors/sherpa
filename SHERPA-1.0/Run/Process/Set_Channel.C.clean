@@ -6,14 +6,14 @@ using namespace AMEGIC;
 using namespace PHASIC;
 using namespace std;
 
-typedef Single_Channel * (*Getter_Function)(int nin,int nout,ATOOLS::Flavour* fl,
-						   int chn);
+typedef Single_Channel * (*Getter_Function)(int nin,int nout,ATOOLS::Flavour* fl);
 
 Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flavour* fl,
-						   int chn,string& pID)
+						   string& pID)
 {
-  std::string libname=std::string("libProc_")+pID.substr(1)+std::string(".so");
-  std::string gettername=std::string("Getter_")+pID;
+  int pos=pID.find(string("/"));
+  string libname=string("libProc_")+pID.substr(0,pos)+string(".so");
+  string gettername=string("Getter_")+pID.substr(pos+1); 
 
   char * error;
   void * module;
@@ -24,7 +24,7 @@ Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flav
   error  = dlerror();
   if (module==NULL) {
     ATOOLS::msg.Error()<<"Phase_Space_Generator::SetChannel("
-		       <<nin<<","<<nout<<","<<fl<<","<<chn<<","<<pID<<"): "
+		       <<nin<<","<<nout<<","<<fl<<","<<pID<<"): "
 		       <<"Error in loading library "<<libname<<std::endl<<error<<std::endl;
     return 0;
   }
@@ -33,13 +33,13 @@ Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flav
   error  = dlerror();
   if (error!=NULL) {
     ATOOLS::msg.Error()<<"Phase_Space_Generator::SetChannel("
-		       <<nin<<","<<nout<<","<<fl<<","<<chn<<","<<pID<<"): "
+		       <<nin<<","<<nout<<","<<fl<<","<<pID<<"): "
 		       <<"Error while loading symbol from library "<<libname<<std::endl<<error<<std::endl;
     return 0;
   }
 
   ATOOLS::msg.Tracking()<<" calling Getter for library"<<endl;
-  return GetterFunction(nin,nout,fl,chn);
+  return GetterFunction(nin,nout,fl);
 }
 
 

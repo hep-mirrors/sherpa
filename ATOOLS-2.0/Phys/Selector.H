@@ -48,33 +48,21 @@ namespace ATOOLS {
     Selector_Base() { m_sel_log=0; m_name=std::string("noname"); }
     virtual ~Selector_Base();
     virtual bool Trigger(const Vec4D *) = 0;
-    virtual void Add(Selector_Base *) {
-      msg.Error()<<"Selector_Base::Add : Virtual method."<<std::endl;
-    }
-    virtual double * ActualValue() {
-      msg.Error()<<"Selector_Base::ActualValue :"
-			    <<m_name<<" Virtual method."<<std::endl;
-      return 0;
-    }
-    virtual void BuildCuts(Cut_Data *) { 
-      msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
-    }
-    virtual void UpdateCuts(double,double,Cut_Data *) { 
-      msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
-    }
-    virtual void   SetRange(std::vector<Flavour>,double,double) { 
-      msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
-    }
-    virtual void   SetRange(std::vector<Flavour>,int,double,double) { 
-      msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
-    }
+    virtual void Add(Selector_Base *);
+    virtual double * ActualValue();
+    virtual void BuildCuts(Cut_Data *);
+    virtual void UpdateCuts(double,double,Cut_Data *);
+    virtual void   SetRange(std::vector<Flavour>,double,double);
+    virtual void   SetRange(std::vector<Flavour>,int,double,double);
     virtual void   Output();
 
-    virtual void   SetSRange(double _smin,double _smax) { m_smin = _smin; m_smax = _smax; }
-    virtual void   SetName(std::string _name)           { m_name = _name; }
-    virtual double Smin()                               { return m_smin; }
-    virtual double Smax()                               { return m_smax; }
-    virtual std::string Name()                          { return m_name; }
+    virtual int    NeedUpdate();
+    virtual int    IsConditional();
+    virtual void   SetSRange(double _smin,double _smax);
+    virtual void   SetName(std::string _name);    
+    //virtual double Smin();
+    //virtual double Smax(); 
+    virtual std::string Name(); 
   };
 
   class Selector_Log {

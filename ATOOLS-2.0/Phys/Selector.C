@@ -16,6 +16,41 @@ void Selector_Base::Output() {
   }
 }
 
+void Selector_Base::Add(Selector_Base *) {
+  msg.Error()<<"Selector_Base::Add : Virtual method."<<std::endl;
+}
+
+double * Selector_Base::ActualValue() {
+  msg.Error()<<"Selector_Base::ActualValue :"
+	     <<m_name<<" Virtual method."<<std::endl;
+  return 0;
+}
+
+void Selector_Base::BuildCuts(Cut_Data *) { 
+  msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
+}
+
+void Selector_Base::UpdateCuts(double,double,Cut_Data *) { 
+  msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
+}
+
+void Selector_Base::SetRange(std::vector<Flavour>,double,double) { 
+  msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
+}
+
+void Selector_Base::SetRange(std::vector<Flavour>,int,double,double) { 
+  msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
+}
+
+int    Selector_Base::NeedUpdate()                         { return 0; }
+int    Selector_Base::IsConditional()                      { return 0; }
+void   Selector_Base::SetSRange(double _smin,double _smax) { m_smin = _smin; m_smax = _smax; }
+void   Selector_Base::SetName(std::string _name)           { m_name = _name; }
+//double Selector_Base::Smin()                               { return m_smin; }
+//double Selector_Base::Smax()                               { return m_smax; }
+std::string Selector_Base::Name()                          { return m_name; }
+
+
 /*-----------------------------------------------------------------------------------
 
   Selector_Data

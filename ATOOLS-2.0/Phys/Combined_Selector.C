@@ -16,6 +16,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
   m_fl    = _fl;
   m_count = 0;
   m_smin = 0.;
+  m_update = 0;
   m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
 
   if (_seldata==NULL) return; 
@@ -100,14 +101,15 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	sel = NULL;
 	msg.Error()<<"Error in Combined_Selector::Combined_Selector."<<endl
 			      <<"  Unknown type of selector-data : "<<type<<endl; 
-      } 
+      }
+      m_update += sel->NeedUpdate(); 
       Add(sel);
     }
   }
 
-  for (int i=0;i<m_sels.size();i++) {
+  /*for (int i=0;i<m_sels.size();i++) {
     if (m_sels[i]->Smin()>m_smin) m_smin = m_sels[i]->Smin();
-  }
+    }*/
 }
 
 Combined_Selector::~Combined_Selector()
@@ -116,6 +118,11 @@ Combined_Selector::~Combined_Selector()
     delete *m_sels.begin();
     m_sels.erase(m_sels.begin());
   }
+}
+
+int  Combined_Selector::NeedUpdate() 
+{ 
+  return m_update>0; 
 }
 
 void Combined_Selector::Add(Selector_Base * sel) { 
@@ -134,12 +141,24 @@ bool Combined_Selector::Trigger(const Vec4D* p)
 
 void Combined_Selector::BuildCuts(Cut_Data * cuts)
 {
-  for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->BuildCuts(cuts);
+  for (short int i=0; i<m_sels.size(); ++i) 
+    if (!m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
+
+  //smin update!!!
+
+  for (short int i=0; i<m_sels.size(); ++i) 
+    if (m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
+  for (short int i=0; i<m_sels.size(); ++i) 
+    if (m_sels[i]->IsConditional()) m_sels[i]->BuildCuts(cuts);
+  cuts->Complete();
 }
 
 void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 {
-  for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->UpdateCuts(sprime,y,cuts);
+  cuts->Reset(NeedUpdate());
+  if (NeedUpdate()) 
+    for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->UpdateCuts(sprime,y,cuts);
+  cuts->Update(sprime,y);      
 }
 
 void Combined_Selector::Output()

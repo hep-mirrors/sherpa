@@ -73,10 +73,19 @@ bool Cone_Finder::Trigger(const Vec4D * p)
 
 void Cone_Finder::BuildCuts(Cut_Data * cuts) 
 {
+  double rp2=sqr(m_rcone)-0.5*(cosh(m_rcone)+cos(m_rcone)-2);
+  for (int i=0;i<m_n-1;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      double mp2=Max(sqr(cuts->etmin[i])-sqr(m_fl[i].Mass()),
+		     (sqr(cuts->energymin[i])-sqr(m_fl[i].Mass()))*(1-sqr(cuts->cosmax[0][i])))*
+	         Max(sqr(cuts->etmin[j])-sqr(m_fl[j].Mass()),
+		     (sqr(cuts->energymin[j])-sqr(m_fl[j].Mass()))*(1-sqr(cuts->cosmax[0][j])));
+      cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],sqrt(mp2)*rp2);
+    }
+  }
 }
 
-void   Cone_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
-}
+void   Cone_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
 
 double Cone_Finder::DEta12(const Vec4D & p1,const Vec4D & p2)
 {

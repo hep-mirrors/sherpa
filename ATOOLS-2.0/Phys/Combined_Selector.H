@@ -8,6 +8,7 @@ namespace ATOOLS {
   class Combined_Selector : public Selector_Base {
   protected: 
     long int       m_count;
+    int            m_update;
     std::vector<Selector_Base *> m_sels;
   public:
     Combined_Selector() {};
@@ -16,6 +17,7 @@ namespace ATOOLS {
     void Add(Selector_Base *);
     bool Trigger(const Vec4D *);
     void BuildCuts(Cut_Data *);
+    int  NeedUpdate();
     void UpdateCuts(double,double,Cut_Data *);
     void Output();
     size_t Size();
