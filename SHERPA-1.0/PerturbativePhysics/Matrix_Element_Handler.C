@@ -201,6 +201,14 @@ ATOOLS::Flavour * Matrix_Element_Handler::Flavs() {
   return NULL;
 }
 
+int Matrix_Element_Handler::InSwaped() {
+  switch (m_mode) {
+  case 1: return p_amegic->InSwaped();
+  case 2: return p_simplexs->InSwaped();
+  }
+  return NULL;
+}
+
 
 int Matrix_Element_Handler::NumberOfDiagrams() 
 {

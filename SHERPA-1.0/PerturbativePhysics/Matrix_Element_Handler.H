@@ -64,6 +64,7 @@ namespace SHERPA {
     int                  MaxJets();
     ATOOLS::Vec4D      * Momenta();
     ATOOLS::Flavour    * Flavs();
+    int                  InSwaped();
 
     int                  NumberOfDiagrams();
     AMEGIC::Point      * GetDiagram(int);

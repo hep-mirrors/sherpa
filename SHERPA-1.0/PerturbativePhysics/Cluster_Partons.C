@@ -58,7 +58,6 @@ Cluster_Partons::~Cluster_Partons()
 bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
   int nin         = p_me->Nin();
   int nout        = p_me->Nout();
-  Flavour * flavs = p_me->Flavs();
   int nampl       = p_me->NumberOfDiagrams();
 
   int    nlegs    = nin + nout;
@@ -100,6 +99,15 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
     */ 
     Vec4D * amoms = new Vec4D[nlegs];
     for (int i=0;i<nlegs;++i) amoms[i] = p_me->Momenta()[i];
+    if (p_me->InSwaped()) {
+      // avoid flavour mismatch if using amplitudes
+      Vec4D help=amoms[0];
+      amoms[0]=amoms[1];
+      amoms[1]=help;
+      double h=_x1;
+      _x1=_x2;
+      _x2=h;
+    }
 
     p_combi = new Combine_Table(p_jf,amoms,0,m_isrmode,m_isrshoweron);
     p_combi->FillTable(legs,nlegs,nampl);   
@@ -107,7 +115,19 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
   }
   else {
     // use the existing combination table and determine best combination sheme
-    p_ct = p_combi->CalcJet(nlegs,_x1,_x2,p_me->Momenta());
+    Vec4D * amoms = new Vec4D[nlegs];
+    for (int i=0;i<nlegs;++i) amoms[i] = p_me->Momenta()[i];
+    if (p_me->InSwaped()) {
+      // avoid flavour mismatch if using amplitudes
+      Vec4D help=amoms[0];
+      amoms[0]=amoms[1];
+      amoms[1]=help;
+      double h=_x1;
+      _x1=_x2;
+      _x2=h;
+    }
+    p_ct = p_combi->CalcJet(nlegs,_x1,_x2,amoms);
+    delete [] amoms;
   }
 
   return 1;
@@ -350,7 +370,6 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
 
 void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
 {
-  cout<< "Cluster"<<endl;
   if ((!ini_trees && m_isrshoweron) || (!fin_tree && m_fsrshoweron)) {
     msg.Error()<<"ERROR in Cluster_Partons::FillTrees: no trees! no shower to be performed! "<<endl;
     return;
@@ -370,6 +389,12 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     fin_tree=p_local_tree;
   }
 
+  int n[2]={0,1};
+  if (p_me->InSwaped()) {
+    n[0]=1;
+    n[1]=0;
+  }
+
   std::vector<Knot *> knots;
   std::vector<Knot *> ini_knots; // production points
   knots.reserve(10);
@@ -379,8 +404,8 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
 
   // start initial state
   if (m_isrshoweron) {
-    knots.push_back(Point2Knot(ini_trees[0],p_ct->GetLeg(0), p_ct->Momentum(0),'G'));
-    knots.push_back(Point2Knot(ini_trees[1],p_ct->GetLeg(1), p_ct->Momentum(1),'G'));
+    knots.push_back(Point2Knot(ini_trees[n[0]],p_ct->GetLeg(0), p_ct->Momentum(0),'G'));
+    knots.push_back(Point2Knot(ini_trees[n[1]],p_ct->GetLeg(1), p_ct->Momentum(1),'G'));
   }
   else {
     knots.push_back(Point2Knot(p_local_tree,p_ct->GetLeg(0), p_ct->Momentum(0),'G'));
@@ -444,7 +469,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     p_ct->GetWinner(i,j);
     for (int l=knots.size()-1;l>j;--l) knots[l] = knots[l-1];
     if (i>=2) tree = fin_tree; 
-    else      tree = ini_trees[i];
+    else      tree = ini_trees[n[i]];
 
     Knot * d1, * d2, * mo1, * mo2;
     if (i>=2) {
@@ -477,19 +502,18 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   for (int i=0; i<4 ; ++i) {
     int j=i/2;
     int k=i%2+1;
-    if (knots[j]) p_blob->InParton(j)->SetFlow(k, knots[j]->part->GetFlow(k));
+    if (p_blob->InParton(j)->Flav()==knots[j]->part->Flav()) {
+      p_blob->InParton(j)->SetFlow(k, knots[j]->part->GetFlow(k));
+    }
     else {
-      cout<<" Problem in Cluster_Partons ini"<<endl;
+      p_blob->InParton(1-j)->SetFlow(k, knots[j]->part->GetFlow(k));
     }
   }
   
   for (int i=4; i<2*nlegs ; ++i) {
     int j=i/2;
     int k=i%2+1;
-    if (knots[j])  p_blob->OutParton(j-2)->SetFlow(k, knots[j]->part->GetFlow(k));
-    else {
-      cout<<" Problem in Cluster_Partons fin"<<endl;
-    }
+    p_blob->OutParton(j-2)->SetFlow(k, knots[j]->part->GetFlow(k));
   }
 }
 

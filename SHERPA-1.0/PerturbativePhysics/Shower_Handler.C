@@ -42,7 +42,6 @@ Shower_Handler::~Shower_Handler()
 
 
 int Shower_Handler::PerformShowers(bool jetveto,double _x1,double _x2) {
-  cout<<"In Shower_Handler::PerformShowers("<<_x1<<","<<_x2<<")"<<endl;
   if (p_apacic) return p_apacic->PerformShowers(m_isrshowerswitch,m_fsrshowerswitch,jetveto,_x1,_x2);
   return 0;
 }
