@@ -6,8 +6,7 @@ STATUS="Benchmarking report: "
 DATE=`date +'%y-%m-%d'`
 CVSROOT=":ext:141.30.17.250:/usr/local/cvsroot"
 CVS_RSH="ssh"
-#COMPILECOMMAND="TOOLS/makeinstall -t --clean"
-COMPILECOMMAND="TOOLS/makeinstall"
+COMPILECOMMAND="TOOLS/makeinstall -t --clean"
 INPUTFILE="Benchmark.dat"
 SHERPAPATH="SHERPA-1.0/Run/"
 MEHANDLEREXIT=201
@@ -22,10 +21,7 @@ SendMail() {
   if [ "$COMPILE_ERROR" = "TRUE" ] ; then SetStatus "Compile error " ; fi
   if [ "$SETUP_ERROR" = "TRUE" ] ; then SetStatus "Setup error " ; fi
   if [ "$BENCHMARK_ERROR" = "TRUE" ] ; then SetStatus "Benchmark error " ; fi
-#  nail -s "$STATUS" $MAILADDRESS < $LOGFILE
-  echo $STATUS
-  echo $MAILADDRESS
-  echo $LOGFILE
+  nail -s "$STATUS" $MAILADDRESS < $LOGFILE
   exit $1
 }
 
@@ -133,7 +129,7 @@ for I in $LIST ; do
       if (( $COUNTER%2 == 0 )) ; then 
         NEW=$I 
 	diff -cb $NEW $OLD >> "../"$LOGFILE 2>&1
-	if (( $? == $DIFFTRUE )) ; then
+	if (( $? != 0 )) ; then
 	  BENCHMARK_ERROR=TRUE
 	fi
       elif (( $COUNTER%2 == 1 )) ; then 
@@ -147,7 +143,7 @@ for I in $LIST ; do
   fi
 done
 
-if [ "BENCHMARK_ERROR" = "" ] ; then
+if [ "BENCHMARK_ERROR" != "TRUE" ] ; then
   SetStatus "Benchmarking succeeded "
 fi
 SendMail 0
