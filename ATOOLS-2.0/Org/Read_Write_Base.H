@@ -13,6 +13,8 @@ namespace ATOOLS {
   const int defaultblank = 32;
   const int defaulttab   = 9;
 
+  class Primitive_Interpreter;
+
   class Read_Write_Base: public File_IO_Base {
   public:
 
@@ -39,9 +41,11 @@ namespace ATOOLS {
     VectorTypeID m_vectortype;
     MatrixTypeID m_matrixtype;
 
-    bool m_ignorecase, m_ignoreblanks, m_exactmatch;
+    bool m_ignorecase, m_ignoreblanks, m_exactmatch, m_interprete;
 
     size_t m_occurrence;
+
+    Primitive_Interpreter *p_interpreter;    
 
     void Init();
 
@@ -139,6 +143,7 @@ namespace ATOOLS {
     inline void SetIgnoreBlanks(const bool ignorecase);
 
     inline void SetExactMatch(const bool exact);
+    inline void SetInterprete(const bool interprete);
 
     inline void SetEscape(const char escape);
 
@@ -166,11 +171,13 @@ namespace ATOOLS {
     inline bool IgnoreBlanks() const;
 
     inline bool ExactMatch() const;
+    inline bool Interprete() const;
 
     inline char Escape() const;
 
-    // inline functions
     inline bool RereadInFile(const unsigned int i=0);
+    
+    inline Primitive_Interpreter *Interpreter() const;
 
   };// end of class Read_Write_Base
 

@@ -1,5 +1,6 @@
 #include "Read_Write_Base.H"
 
+#include "Primitive_Interpreter.H"
 //#define DEBUG__Read_Write_Base
 #ifdef DEBUG__Read_Write_Base
 #include <iostream>
@@ -41,6 +42,7 @@ Read_Write_Base::~Read_Write_Base()
   m_infile.clear();
   for (unsigned int i=0;i<m_outfile.size();++i) CloseOutFile(i,true);
   m_outfile.clear();
+  delete p_interpreter;
 }
 
 void Read_Write_Base::Init()
@@ -48,6 +50,7 @@ void Read_Write_Base::Init()
 #ifdef DEBUG__Read_Write_Base
   std::cout<<" Read_Write_Base:\n";
 #endif
+  p_interpreter = new Primitive_Interpreter();
   m_blank.push_back(defaultblank);
   m_blank.push_back(defaulttab);
   m_vectortype=VVertical;
@@ -57,6 +60,7 @@ void Read_Write_Base::Init()
   m_ignorecase=false;
   m_ignoreblanks=false;
   m_exactmatch=true;
+  m_interprete=false;
   m_occurrence=std::string::npos;
   m_escape='\\';
 }

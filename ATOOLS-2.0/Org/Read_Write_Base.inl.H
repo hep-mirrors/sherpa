@@ -388,6 +388,21 @@ namespace ATOOLS {
     return m_exactmatch; 
   }
 
+  inline void Read_Write_Base::SetInterprete(const bool interprete) 
+  { 
+    m_interprete=interprete; 
+  }
+
+  inline bool Read_Write_Base::Interprete() const 
+  { 
+    return m_interprete; 
+  }
+
+  inline Primitive_Interpreter *Read_Write_Base::Interpreter() const
+  {
+    return p_interpreter;
+  }
+
   inline void Read_Write_Base::SetEscape(const char escape)
   { 
     m_escape=escape; 
