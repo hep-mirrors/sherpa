@@ -11,8 +11,8 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
     std::string list=parameters[0].size()>5?parameters[0][5]:"Analysed";
-    double ref=parameters.size()>4?ATOOLS::rpa.gen.Ecms():
-      ATOOLS::ToType<double>(parameters[0][4]);
+    double ref=parameters[0].size()>4?ATOOLS::ToType<double>(parameters[0][4]):
+      ATOOLS::rpa.gen.Ecms();
     return new Class(10*(int)(parameters[0][3]=="Log"),
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
@@ -41,7 +41,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_PRINT_METHOD(NAME)					\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"min max bins Lin|Log ref [list]"; }
+  { str<<"min max bins Lin|Log [ref list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
