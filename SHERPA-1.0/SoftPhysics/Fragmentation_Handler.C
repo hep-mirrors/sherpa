@@ -3,6 +3,8 @@
 #include "Data_Read.H"
 #include "Exception.H"
 
+#include <set>
+
 using namespace SHERPA;
 
 Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file):
@@ -43,74 +45,88 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
   bloblist->push_back(p_blob);
   p_blob->SetId(bloblist->size());
   p_blob->SetType(ATOOLS::btp::Fragmentation);
+  std::set<ATOOLS::Particle*> startpoints;
   for (ATOOLS::Blob_Iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     for (size_t i=0;i<(size_t)(*bit)->NOutP();++i) {
       ATOOLS::Particle *cur=(*bit)->OutParticle(i);
       if (cur->DecayBlob()==NULL && cur->Status()==1 && 
-	  (cur->Info()=='F' || cur->Info()=='H')) {
-	p_blob->AddToInParticles(cur);
+	  (cur->Info()=='F' || cur->Info()=='H') &&
+	  cur->GetFlow(1)!=0 && cur->GetFlow(2)==0) {
+	startpoints.insert(cur);
       }
     }
   }
-  for (size_t i=0;i<(size_t)p_blob->NInP();++i) {
-    ATOOLS::Particle *comp, *cur=p_blob->InParticle(i);  
-    bool anti=cur->Flav().IsAnti();
-    for (size_t step=0;step<2;++step) {
-      comp=cur;
-      if (step==anti || cur->Flav().IsGluon()) {
-	if (FindConnected(comp,cur->GetFlow(step+1),anti,true,1)) {
-	  bool add=true;
-	  for (size_t j=0;j<(size_t)p_blob->NInP();++j) if (comp==p_blob->InParticle(j)) add=false;	
-	  if (add) p_blob->AddToInParticles(comp);
-	}
-	else {
-	  ATOOLS::msg.Error()<<"Fragmentation_Handler::PerformFragmentation(..): "
-			     <<"Cannot find connected parton for parton ("<<cur->Number()<<")"<<std::endl;
-	  return false;
-	}
+  for (std::set<ATOOLS::Particle*>::iterator sit=startpoints.begin();
+       sit!=startpoints.end();++sit) {
+    ATOOLS::Particle *cur=*sit, *comp=cur;  
+    while (comp->Flav().IsGluon() || comp==cur) {
+      cur=comp;
+      bool add=true;
+      for (size_t i=0;i<(size_t)p_blob->NInP();++i) if (p_blob->InParticle(i)==cur) add=false;
+      if (add) p_blob->AddToInParticles(cur);
+      if ((comp=FindConnected(cur,cur->GetFlow(1),false,false,1))!=NULL) {
+	p_blob->AddToInParticles(comp);
+      }
+      else {
+	ATOOLS::msg.Error()<<"Fragmentation_Handler::PerformFragmentation(..): "
+			   <<"Cannot find connected parton for parton ("
+			   <<cur->Number()<<")"<<std::endl;
+	return false;
       }
     }
   }
+  std::cout<<*p_blob<<std::endl;
   return p_lund->Hadronize(p_blob,bloblist,particlelist);
 }
 
-bool Fragmentation_Handler::FindConnected(ATOOLS::Particle *particle,unsigned int color,
-					  bool anti,bool forward,unsigned int catcher)
+ATOOLS::Particle *Fragmentation_Handler::FindConnected(ATOOLS::Particle *particle,unsigned int color,
+						       bool anti,bool forward,unsigned int catcher)
 {
   if (++catcher>100) {
     ATOOLS::msg.Tracking()<<"Fragmentation_Handler::FindConnected(..): "
 			  <<"Colour nesting is too deep."<<std::endl;
-    return false;
+    return NULL;
   }
+  bool newanti;
   ATOOLS::Blob *cur;
   if (forward) cur=particle->DecayBlob();
   else cur=particle->ProductionBlob();
   if (cur!=NULL) {
-    if (cur->Type()==ATOOLS::btp::Fragmentation) return true;
+    ATOOLS::Particle *fwparticle=NULL, *bwparticle=NULL;
     for (int i=0;i<cur->NOutP();++i) {
-      for (int j=1;j<3;++j) {
+      for (int j=0;j<2;++j) {
 	ATOOLS::Particle *help=cur->OutParticle(i);
-	if (help->GetFlow(j)==(int)color && 
-	    (help->Flav().IsAnti()!=anti || help->Flav().IsGluon())) {
-	  return FindConnected(help,color,anti,true,catcher);
+	if (help->GetFlow(j+1)==(int)color && help!=particle) {
+	  fwparticle=help;
+	  newanti=(bool)j;
 	}
       }
+      if (fwparticle!=NULL && newanti==anti) break;
     }
     for (int i=0;i<cur->NInP();++i) {
-      for (int j=1;j<3;++j) {
+      for (int j=0;j<2;++j) {
 	ATOOLS::Particle *help=cur->InParticle(i);
-	if (help->GetFlow(j)==(int)color && 
-	    (help->Flav().IsAnti()!=anti || help->Flav().IsGluon())) {
-	  return FindConnected(help,color,anti,true,catcher);
+	if (help->GetFlow(j+1)==(int)color && help!=particle) {
+	  bwparticle=help;
+	  newanti=(bool)j;
 	}
       }
+      if (bwparticle!=NULL && newanti==anti) break;
+    }
+    if (forward) {
+      if (fwparticle!=NULL) return FindConnected(fwparticle,color,newanti,true,catcher);
+      if (bwparticle!=NULL) return FindConnected(bwparticle,color,newanti,false,catcher);
+    }
+    else {
+      if (bwparticle!=NULL) return FindConnected(bwparticle,color,newanti,false,catcher);
+      if (fwparticle!=NULL) return FindConnected(fwparticle,color,newanti,true,catcher);
     }
   }
   else {
-    return true;
+    return particle;
   }
-  return false;
+  return NULL;
 }
 
 

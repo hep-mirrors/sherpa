@@ -18,8 +18,8 @@ namespace SHERPA {
     Lund_Interface *p_lund;
     ATOOLS::Blob   *p_blob;
 
-    bool FindConnected(ATOOLS::Particle *particle,unsigned int color,
-		       bool anti,bool forward,unsigned int catcher);
+    ATOOLS::Particle *FindConnected(ATOOLS::Particle *particle,unsigned int color,
+				    bool anti,bool forward,unsigned int catcher);
 
   public:
 
