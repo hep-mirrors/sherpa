@@ -828,6 +828,7 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    
 	    vertex[vanz].nleg     = 4;
 	    
+	    //Attention, this is only a dummy coupling
 	    kcpl0 = num_2;
 	    kcpl1 = kcpl0;
 	    

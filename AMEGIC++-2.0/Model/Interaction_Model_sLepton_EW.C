@@ -943,7 +943,13 @@ int Interaction_Model_sLepton_EW::gen_sLep(Flavour fl)
   if (fl.Kfcode() == 73 || fl.Kfcode() == 76)
     gen_sL = 2;
 
-
+  if (fl.Kfcode() == 81)
+    gen_sL = 0;
+  if (fl.Kfcode() == 82)
+    gen_sL = 1;
+  if (fl.Kfcode() == 83)
+    gen_sL = 2;
+  
   return gen_sL;
 }
 

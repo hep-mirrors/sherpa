@@ -5,6 +5,7 @@
 #include "Interaction_Model_SM.H"
 #include "Interaction_Model_THDM.H"
 #include "Interaction_Model_MSSM.H"
+#include "Interaction_Model_ADD.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -29,7 +30,7 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
   if (modeltype==std::string("SM"))       return new Interaction_Model_SM(p_model,cplscheme,yukscheme);
   if (modeltype==std::string("THDM"))     return new Interaction_Model_THDM(p_model,cplscheme,yukscheme);
   if (modeltype==std::string("MSSM"))     return new Interaction_Model_MSSM(p_model,cplscheme,yukscheme);
-  //if (modeltype==std::string("ADD"))      return new Interaction_Model_ADD(p_model,cplscheme,yukscheme);
+  if (modeltype==std::string("ADD"))      return new Interaction_Model_ADD(p_model,cplscheme,yukscheme);
 
   msg.Error()<<"Error in Interaction_Model_Handler::GetModel("<<modeltype<<") : "<<endl
 	     <<"   Model not found. Initialize Standard Model."<<endl;

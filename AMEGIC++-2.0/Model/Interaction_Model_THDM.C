@@ -37,7 +37,6 @@ void Interaction_Model_THDM::c_VVVV(Single_Vertex* vertex,int& vanz)
 
 void Interaction_Model_THDM::c_FFS(Single_Vertex* vertex,int& vanz)  
 { 
-  p_mosm->c_FFS(vertex,vanz); 
   p_mohiggs->c_FFS(vertex,vanz); 
 }
 

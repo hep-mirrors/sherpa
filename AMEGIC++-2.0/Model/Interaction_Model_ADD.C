@@ -40,6 +40,7 @@ void Interaction_Model_ADD::c_VVS(Single_Vertex* vertex,int& vanz) {p_moew->c_VV
 void Interaction_Model_ADD::c_SSS(Single_Vertex* vertex,int& vanz) {p_moew->c_SSS(vertex,vanz);}
 
 void Interaction_Model_ADD::c_SSSS(Single_Vertex* vertex,int& vanz) { p_moew->c_SSSS(vertex,vanz); }
+void Interaction_Model_ADD::c_SSVV(Single_Vertex* vertex,int& vanz) { p_moew->c_SSVV(vertex,vanz); }
 
 void Interaction_Model_ADD::c_FFT(Single_Vertex* vertex,int& vanz)
 {
