@@ -51,19 +51,19 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
   p_blob->SetId();
   p_blob->SetType(ATOOLS::btp::Fragmentation);
   bloblist->push_back(p_blob);
-  std::set<ATOOLS::Particle*> startpoints;
+  std::vector<ATOOLS::Particle*> startpoints;
   for (ATOOLS::Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
     for (size_t i=0;i<(size_t)(*bit)->NOutP();++i) {
       ATOOLS::Particle *cur=(*bit)->OutParticle(i);
       if (cur->DecayBlob()==NULL && cur->Status()==1 && 
 	  (cur->Info()=='F' || cur->Info()=='H') &&
 	  cur->GetFlow(1)!=0 && cur->GetFlow(2)==0) {
-	startpoints.insert(cur);
+	startpoints.push_back(cur);
       }
     }
   }
   m_used.clear();
-  for (std::set<ATOOLS::Particle*>::iterator sit=startpoints.begin();
+  for (std::vector<ATOOLS::Particle*>::iterator sit=startpoints.begin();
        sit!=startpoints.end();++sit) {
     ATOOLS::Particle *cur=*sit, *comp;  
     p_blob->AddToInParticles(cur);
