@@ -5,32 +5,42 @@ DIRS=$DIRS" EXTRA_XS-1.0 APACIC++-2.0 AMEGIC++-2.0"
 #DIRS=$DIRS" AMISIC++-1.0 COMPARE-1.0"
 DIRS=$DIRS" SHERPA-1.0"
 
+ECXXFLAGS=""
+EFFLAGS=""
+ECOPT=""
 for I in $* ; do
   if [ "$I" = "-c" ]; then CONFIGURE=TRUE 
   elif [ "$I" = "-e" ]; then EXTRACT=TRUE
   elif [ "$I" = "-t" ]; then TOTAL=TRUE && CONFIGURE=TRUE
-  elif [ "$I" = "-O2" ]; then OPTIMIZE=-O2 
+  elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
+  elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
   elif [ "$I" = "--clean" ]; then CLEAN=TRUE
   elif [ "$I" = "--clean-run" ]; then RUNCLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
-  elif [ "$I" = "--enable-clhep" ]; then CLHEP=--enable-clhep 
+  elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
   elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && EXTRACT=TRUE
   elif [ "$I" = "-h" ]; then \
     echo "makeinstall options: -c             configure before compiling (enabled with '-t')" && \
     echo "                     -e             extract tar files" && \
     echo "                     -t             apply libtool and aclocal before compiling" && \
-    echo "                     -O2            compile with \"-O2\" " && \
+    echo "                     --cxx          define cxx flag for 'make'" && \
+    echo "                     --f            define fortran flag for 'make'" && \
     echo "                     --clean        \"make clean\" before compiling" && \
     echo "                     --clean-run    apply \"makeclean\" in SHERPA-1.0/Run before compiling" && \
     echo "                     --no-abort     force installation in every module" && \
-    echo "                     --enable-clhep enable CLHEP support" && \
+    echo "                     --copt         define option for 'configure'" && \
     echo "                     --force-tar    force extraction of tar files (enables '-e')" && \
     echo "                     -h             display this help and exit" && \
     exit 0
+  elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$ECXXFLAGS" "$I
+  elif [ "$DFFLAGS" = "TRUE" ]; then DFFLAGS="" && EFFLAGS=$EFFLAGS" "$I
+  elif [ "$DCOPT" = "TRUE" ]; then DCOPT="" && ECOPT=$ECOPT" "$I
   else echo "makeinstall: error: unrecognized option '$I'. try '-h'" && \
-    exit 1 ;
+    exit 1 
   fi
 done
+if [ ! "$ECXXFLAGS" = "" ]; then ECXXFLAGS="CXXFLAGS="$ECXXFLAGS ; fi
+if [ ! "$EFFLAGS" = "" ]; then EFFLAGS="FFLAGS="$EFFLAGS ; fi
 
 if test "$EXTRACT" = "TRUE" ; then
   echo "**************************************"
@@ -80,7 +90,7 @@ do
       autoconf
     fi
     if test "$CONFIGURE" = "TRUE" ; then
-      ./configure $CLHEP 
+      ./configure "$ECOPT" 
     fi
     if `test "$CLEAN" = "TRUE"` ; then 
       make clean
@@ -88,7 +98,7 @@ do
     CONTINUE="r"
     while test "$CONTINUE" = "r" ; do 
       CONTINUE=""
-      if ! make install -j2 "CXXFLAGS=-g $OPTIMIZE" "FFLAGS=-g" ; then
+      if ! make install -j2 "$ECXXFLAGS" "$EFFLAGS" ; then
 	echo "makeinstall: error: \"make install\" in $I failed"
         if test ! "$NOABORT" = "TRUE" ; then
           until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
