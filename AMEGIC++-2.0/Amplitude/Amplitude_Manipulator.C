@@ -507,7 +507,7 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
 
 void Amplitude_Manipulator::SetForwardFNFlow(Point* p,int majoflag,int fermflag)
 {
-  if (p->left==0) return;
+  //if (p->left==0) return;
   
   //nothing......
   //p->m = 1;
@@ -544,6 +544,9 @@ void Amplitude_Manipulator::SetForwardFNFlow(Point* p,int majoflag,int fermflag)
     if (fermflag==1) p->m = 1;
   }    
 
+  //new
+  if (p->left==0) return;
+
   if (p->left->fl.IsFermion())     { SetForwardFNFlow(p->left,majoflag,fermflag);   return; }
   if (p->middle) {
     if (p->middle->fl.IsFermion()) { SetForwardFNFlow(p->middle,majoflag,fermflag); return; }
@@ -577,7 +580,7 @@ void Amplitude_Manipulator::SetMajoFlowForward(Point* p,int fermflag)
 }
 void Amplitude_Manipulator::SetBackwardFNFlow(Point* p,int majoflag,int fermflag)
 {  
-  if (p->prev==0) return;  
+  //if (p->prev==0) return;  
 
   if (p->fl.Majorana() && majoflag) return;
   if (majoflag==-1) p->m = 1;
@@ -607,10 +610,12 @@ void Amplitude_Manipulator::SetBackwardFNFlow(Point* p,int majoflag,int fermflag
       }
     }
     if (fermflag==-1) p->m = 1;
-    //if (fermflag==1 || p->fl.Majorana()) p->m = -1;
     if (fermflag==1) p->m = -1;
   }   
   
+  //new
+  if (p->prev==0) return;  
+
   if (p->prev->fl.IsFermion()) { SetBackwardFNFlow(p->prev,majoflag,fermflag); return; }
   if (p->prev->left==p){
     if (p->prev->right->fl.IsFermion()) { SetForwardFNFlow(p->prev->right,majoflag,fermflag); return; }
