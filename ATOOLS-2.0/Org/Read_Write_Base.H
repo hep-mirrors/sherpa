@@ -26,6 +26,8 @@ namespace ATOOLS {
 
   private:
 
+    static std::vector<std::string> s_commandline;
+
     std::vector<std::string> m_comment, m_ignore, m_seperator, m_filecontent;
     std::vector<int>         m_blank;
 
@@ -40,7 +42,9 @@ namespace ATOOLS {
 
     const std::vector<std::string> &FileContent() const;
 
-    bool m_allownans;
+    static const std::vector<std::string> &CommandLine();
+
+    bool m_allownans, m_addcommandline;
 
     bool OpenInFile(const unsigned int i=0);
     bool OpenOutFile(const unsigned int i=0);
@@ -68,55 +72,69 @@ namespace ATOOLS {
     ~Read_Write_Base();
 
     // setters
-    void SetSeperator(const std::string _m_seperator);
-    void SetSeperator(const std::vector<std::string> &_m_seperator);
-    void AddSeperator(const std::string _m_seperator);
-    void AddSeperator(const std::vector<std::string> &_m_seperator);
+    inline void SetSeperator(const std::string _m_seperator);
+    inline void SetSeperator(const std::vector<std::string> &_m_seperator);
+    inline void AddSeperator(const std::string _m_seperator);
+    inline void AddSeperator(const std::vector<std::string> &_m_seperator);
 
-    void SetComment(const std::string _m_comment);
-    void SetComment(const std::vector<std::string> &_m_comment);
-    void AddComment(const std::string _m_comment);
-    void AddComment(const std::vector<std::string> &_m_comment);
+    inline void SetComment(const std::string _m_comment);
+    inline void SetComment(const std::vector<std::string> &_m_comment);
+    inline void AddComment(const std::string _m_comment);
+    inline void AddComment(const std::vector<std::string> &_m_comment);
 
-    void SetIgnore(const std::string _m_ignore);
-    void SetIgnore(const std::vector<std::string> &_m_ignore);
-    void AddIgnore(const std::string _m_ignore);
-    void AddIgnore(const std::vector<std::string> &_m_ignore);
+    inline void SetIgnore(const std::string _m_ignore);
+    inline void SetIgnore(const std::vector<std::string> &_m_ignore);
+    inline void AddIgnore(const std::string _m_ignore);
+    inline void AddIgnore(const std::vector<std::string> &_m_ignore);
 
-    void SetBlank(const int _m_blank);
-    void SetBlank(const std::vector<int> &_m_blank);
-    void AddBlank(const int _m_blank);
-    void AddBlank(const std::vector<int> &_m_blank);
+    inline void SetBlank(const int _m_blank);
+    inline void SetBlank(const std::vector<int> &_m_blank);
+    inline void AddBlank(const int _m_blank);
+    inline void AddBlank(const std::vector<int> &_m_blank);
 
-    void SetFileBegin(const std::string _m_filebegin);
-    void SetFileEnd(const std::string _m_fileend);
+    inline void SetFileBegin(const std::string _m_filebegin);
+    inline void SetFileEnd(const std::string _m_fileend);
 
-    void SetString(const std::string _m_string);
+    inline void SetString(const std::string _m_string);
 
-    void SetOpenMode(const OpenModeID _m_openmode);
+    inline void SetOpenMode(const OpenModeID _m_openmode);
 
-    void SetVectorType(const VectorTypeID _m_vectortype);
-    void SetMatrixType(const MatrixTypeID _m_matrixtype);
+    inline void SetVectorType(const VectorTypeID _m_vectortype);
+    inline void SetMatrixType(const MatrixTypeID _m_matrixtype);
 
-    void SetAllowNans(const bool _m_killnans);
+    inline void SetAllowNans(const bool _m_killnans);
+    inline void SetAddCommandLine(const bool _m_commandline);
 
-    // getters
-    const std::vector<std::string> &Comment() const;
-    const std::vector<std::string> &Ignore() const;
-    const std::vector<std::string> &Seperator() const;
+    inline void SetFileContent(const std::string _m_filecontent);
+    inline void SetFileContent(const std::vector<std::string> &_m_filecontent);
 
-    const std::vector<int> &Blank() const;
+    inline void AddFileContent(const std::string _m_filecontent);
+    inline void AddFileContent(const std::vector<std::string> &_m_filecontent);
 
-    const std::string FileBegin() const;
-    const std::string FileEnd() const;
-
-    const std::string String() const;
-
-    const VectorTypeID VectorType() const;
-    const MatrixTypeID MatrixType() const;
-
-    const bool AllowNans() const;
+    inline static void SetCommandLine(const std::string _s_commandline);
+    inline static void SetCommandLine(const std::vector<std::string> &_s_commandline);
   
+    inline static void AddCommandLine(const std::string _s_commandline);
+    inline static void AddCommandLine(const std::vector<std::string> &_s_commandline);
+  
+    // getters
+    inline const std::vector<std::string> &Comment() const;
+    inline const std::vector<std::string> &Ignore() const;
+    inline const std::vector<std::string> &Seperator() const;
+
+    inline const std::vector<int> &Blank() const;
+
+    inline const std::string FileBegin() const;
+    inline const std::string FileEnd() const;
+
+    inline const std::string String() const;
+
+    inline const VectorTypeID VectorType() const;
+    inline const MatrixTypeID MatrixType() const;
+
+    inline const bool AllowNans() const;
+    inline const bool AddCommandLine() const;
+
   };// end of class Read_Write_Base
 
   //////////////////

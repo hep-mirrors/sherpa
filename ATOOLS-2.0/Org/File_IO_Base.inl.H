@@ -15,7 +15,10 @@ namespace ATOOLS {
   }
 
   inline const std::string File_IO_Base::InputPath(const unsigned int i) const
-  { if (i<m_inputfile.size()) return m_inputpath[i]; return nullstring; }
+  { 
+    if (i<m_inputfile.size()) return m_inputpath[i]; 
+    return nullstring; 
+  }
 
   inline void File_IO_Base::SetInputFile(const std::string _m_inputfile,
 					 const unsigned int i)
@@ -27,7 +30,10 @@ namespace ATOOLS {
   }
 
   inline const std::string File_IO_Base::InputFile(const unsigned int i) const
-  { if (i<m_inputfile.size()) return m_inputfile[i]; return nullstring; }
+  { 
+    if (i<m_inputfile.size()) return m_inputfile[i]; 
+    return nullstring; 
+  }
 
   inline void File_IO_Base::SetOutputPath(const std::string _m_outputpath,
 					  const unsigned int i)
@@ -39,7 +45,10 @@ namespace ATOOLS {
   }
 
   inline const std::string File_IO_Base::OutputPath(const unsigned int i) const
-  { if (i<m_outputpath.size()) return m_outputpath[i]; return nullstring; }
+  { 
+    if (i<m_outputpath.size()) return m_outputpath[i]; 
+    return nullstring; 
+  }
 
   inline void File_IO_Base::SetOutputFile(const std::string _m_outputfile,
 					  const unsigned int i)
@@ -61,7 +70,9 @@ namespace ATOOLS {
   }
 
   inline const File_IO_Base::OpenModeID File_IO_Base::InFileMode(const unsigned int i) const
-  { return m_infilemode[i]; }
+  { 
+    return m_infilemode[i]; 
+  }
 
   inline void File_IO_Base::SetOutFileMode(const OpenModeID _m_outfilemode,
 					   const unsigned int i)
@@ -71,13 +82,19 @@ namespace ATOOLS {
   }
 
   inline const File_IO_Base::OpenModeID File_IO_Base::OutFileMode(const unsigned int i) const
-  { return m_outfilemode[i]; }
+  { 
+    return m_outfilemode[i]; 
+  }
 
   inline std::ifstream *File_IO_Base::InFile(const unsigned int i)
-  { return m_infile[i]; }
+  { 
+    return m_infile[i]; 
+  }
 
   inline std::ofstream *File_IO_Base::OutFile(const unsigned int i)
-  { return m_outfile[i]; }
+  { 
+    return m_outfile[i]; 
+  }
 
   inline bool File_IO_Base::CheckInputPath(const unsigned int i)
   {	

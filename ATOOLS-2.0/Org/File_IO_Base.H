@@ -43,25 +43,25 @@ namespace ATOOLS {
     virtual ~File_IO_Base();
 
     // setters
-    void SetInputPath(const std::string _m_inputpath,const unsigned int i=0);
-    void SetInputFile(const std::string _m_inputfile,const unsigned int i=0);
-    void SetOutputPath(const std::string _m_outputpath,const unsigned int i=0);
-    void SetOutputFile(const std::string _m_outputfile,const unsigned int i=0);
+    inline void SetInputPath(const std::string _m_inputpath,const unsigned int i=0);
+    inline void SetInputFile(const std::string _m_inputfile,const unsigned int i=0);
+    inline void SetOutputPath(const std::string _m_outputpath,const unsigned int i=0);
+    inline void SetOutputFile(const std::string _m_outputfile,const unsigned int i=0);
 
-    void SetInFileMode(const OpenModeID _m_infilemode,const unsigned int i=0);
-    void SetOutFileMode(const OpenModeID _m_outfilemode,const unsigned int i=0);
+    inline void SetInFileMode(const OpenModeID _m_infilemode,const unsigned int i=0);
+    inline void SetOutFileMode(const OpenModeID _m_outfilemode,const unsigned int i=0);
 
     // getters
-    const std::string InputPath(const unsigned int i=0) const;
-    const std::string InputFile(const unsigned int i=0) const;
-    const std::string OutputPath(const unsigned int i=0) const;
-    const std::string OutputFile(const unsigned int i=0) const;
+    inline const std::string InputPath(const unsigned int i=0) const;
+    inline const std::string InputFile(const unsigned int i=0) const;
+    inline const std::string OutputPath(const unsigned int i=0) const;
+    inline const std::string OutputFile(const unsigned int i=0) const;
 
-    const OpenModeID InFileMode(const unsigned int i=0) const;
-    const OpenModeID OutFileMode(const unsigned int i=0) const;
+    inline const OpenModeID InFileMode(const unsigned int i=0) const;
+    inline const OpenModeID OutFileMode(const unsigned int i=0) const;
 
-    std::ifstream *InFile(const unsigned int i=0);
-    std::ofstream *OutFile(const unsigned int i=0);
+    inline std::ifstream *InFile(const unsigned int i=0);
+    inline std::ofstream *OutFile(const unsigned int i=0);
 
     // member functions
     bool CheckInputPath(const unsigned int i=0);
