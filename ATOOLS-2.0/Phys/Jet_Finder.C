@@ -76,7 +76,8 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_sel_log = new Selector_Log(m_name);
 }
 
-bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res, bool final_only) 
+bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res,
+			       int number, bool final_only) 
 {
   PROFILE_HERE;
   std::vector<Vec4D>   momsout;
@@ -122,12 +123,13 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res, bool final_only
     }
   }
 
-  // Cluster vectors untill y_res reached!
+  // Cluster vectors untill y_res or number reached!
   for (;;) {
     int j,k;
     double yij=YminKt(momsin,flavsin,momsout,j,k);
     if (yij>y_res) break;
-
+    if (momsout.size()<=number) break;
+    
     if (j<0) {
       //      momsin[j+2] += momsout[k]; // *AS*   ??!!!
     }
@@ -152,6 +154,15 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res, bool final_only
   return true;
 }
 
+bool Jet_Finder::ConstructJets(Particle_List * pl, double y_cut, bool final_only) 
+{
+  return ConstructJets(pl,y_cut,0,final_only);
+}
+
+bool Jet_Finder::ConstructJets(Particle_List * pl, int number, bool final_only) 
+{
+  return ConstructJets(pl,1.0,number,final_only);
+}
 
 bool Jet_Finder::ConstructJets(const Particle_List * parts,
 			       const std::vector<int> & jets,std::vector<double> & lastys,bool final_only) 

@@ -41,6 +41,7 @@ namespace ATOOLS {
     double CosDPhi12(Vec4D &,Vec4D &);
     double DCos12(Vec4D &,Vec4D &);
     double Coshyp(double);
+    bool   ConstructJets(Particle_List *, double, int, bool );
   public:
     Jet_Finder(double,int);
     Jet_Finder(int,Flavour *,double,int,int);
@@ -52,6 +53,7 @@ namespace ATOOLS {
 			 const std::vector<int> &,std::vector<double> & ,bool);
 
     bool   ConstructJets(Particle_List *, double, bool );
+    bool   ConstructJets(Particle_List *, int, bool );
 
     bool   Trigger(const Vec4D *);
 
