@@ -26,7 +26,18 @@ namespace ATOOLS {
 
     // member functions
     template <class Type> static Type *const GetObject(const std::string name)
-    { return static_cast<Type *const>(s_objects[name]); }
+    { 
+      String_Object_Map::const_iterator pos=s_objects.find(name);
+      if (pos!=s_objects.end())	return static_cast<Type *const>(pos->second); 
+      return NULL;
+    }
+
+    template <class Type> static std::string &Name(const Type *object)
+    { 
+      for (String_Object_Map::const_iterator oit=s_objects.begin();
+	   oit!=s_objects.end();++oit) if (oit->second==object) return oit->first;
+      return "";
+    }
 
   };//end of class Object
 
