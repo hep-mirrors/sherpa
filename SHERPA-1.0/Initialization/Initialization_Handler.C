@@ -12,6 +12,7 @@
 #include "Data_Reader.H"
 #include "Message.H"
 #include "Scaling.H"
+#include "Shell_Tools.H"
 #include "Particle_Qualifier.H"
 #ifdef USING__MCatNLO
 #include "MCatNLO_Wrapper.H"
@@ -384,7 +385,9 @@ bool Initialization_Handler::InitializeTheMatrixElements()
     me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,
 				    m_isrhandlers[isr::hard_process],NULL);
   }
-  m_mehandlers.insert(std::make_pair(std::string("SignalMEs"),me)); 
+  MEHandlersMap::iterator it=m_mehandlers.find("SignalMEs");
+  if (it!=m_mehandlers.end()) delete it->second;
+  m_mehandlers["SignalMEs"]=me; 
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes :"<<me->Name()<<endl;
   if (p_analysis) {
     bool weighted=me->EventGenerationMode()==0;
@@ -557,7 +560,19 @@ void Initialization_Handler::SetParameter(int nr) {
   if (nr!=m_scan_istep) 
     msg.Out()<<"WARNING: internal and external scan counter do not coincide "<<nr<<" vs. "<<m_scan_istep<<endl;
 
-  double value=m_scan_value=m_scan_begin+(m_scan_end-m_scan_begin)*double(m_scan_istep)/double(m_scan_nsteps);
+  bool logmode=false;
+  if (m_scan_variable==string("YCUT")) {
+    logmode=true;
+  }
+
+  if (logmode) {
+    m_scan_value=m_scan_begin*exp(log(m_scan_end/m_scan_begin)*double(m_scan_istep)/double(m_scan_nsteps));
+  }
+  else {
+    m_scan_value=m_scan_begin+(m_scan_end-m_scan_begin)*double(m_scan_istep)/double(m_scan_nsteps);
+  }
+
+  double value=m_scan_value;
 
   MyStrStream s;
   string sval;
@@ -576,7 +591,10 @@ void Initialization_Handler::SetParameter(int nr) {
     m_options[m_scan_variable]=sval;
     // make sure UpdateParameters() is called
   }   
-  else {
+  else if (m_scan_variable==string("YCUT")) {
+    rpa.gen.SetYcut(value);
+  }
+  else  {
     msg.Out()<<" Unknown Variable "<< m_scan_variable<<" in scan modus "<<endl;
     msg.Out()<<"  setting "<<m_scan_variable<<" = "<<value<<endl;
     s<<value; 
@@ -584,6 +602,44 @@ void Initialization_Handler::SetParameter(int nr) {
     m_options[m_scan_variable]=sval;    
     //    exit(1);
   }
+
+  s.clear();
+  double vmax=m_scan_end, vmin=m_scan_begin, vstep=(m_scan_end-m_scan_begin)/double(m_scan_nsteps);
+  const  double ln10=log(10.);
+  if (logmode) {
+    value=log(value)/ln10;
+    vmax=log(vmax)/ln10;
+    vmin=log(vmin)/ln10;
+    vstep=(vmax-vmin)/double(m_scan_nsteps);
+  }
+  double fac=exp(-ln10*int(log(vstep)/ln10-.999));
+  value=dabs(value*fac);vmax=dabs(vmax*fac);vmin=dabs(vmin*fac);
+  int nprec=int(log(Max(vmax,vmin))/ln10+.9999);
+  
+  s.width(nprec);
+  s.fill('0');
+  s<<int(value);
+  s>>sval;
+
+  std::string resdir="none";
+  Parameter_Iterator it=m_options.find("#RESULT_DIRECTORY");
+  if (it==m_options.end()) {
+    Data_Read dataread(m_path+m_medat);
+    resdir=dataread.GetValue<string>("RESULT_DIRECTORY",string("./Results"));
+    m_options["#RESULT_DIRECTORY"]=resdir;
+  }
+  else {
+    resdir=it->second;
+  }
+  size_t pos=resdir.find("$");
+  if (pos!=std::string::npos) {
+    if (pos!=resdir.size()) resdir=resdir.substr(0,pos)+sval+resdir.substr(pos+1);
+    else resdir=resdir.substr(0,pos)+sval;
+    std::cout<<"new RESULT_DIRECTORY = #"<<resdir<<"#\n";
+    m_options["RESULT_DIRECTORY"]=resdir;
+    ATOOLS::MakeDir(resdir,0755);
+  }
+
   ++m_scan_istep;
 }
 
@@ -798,34 +854,41 @@ int Initialization_Handler::UpdateParameters()
     MyStrStream s;
     string key=it->first;
     string value=it->second;
-    msg_Info()<<" "<<key<<" = "<<value<<endl;
-    int a=key.find("(")+1;
-    int b=key.find(")")-a;
-    msg_Tracking()<<"Flavour "<<key.substr(a,b);
-    s<<key.substr(a,b);
-    int kfc;
-    s>>kfc;
-    s.clear();
-    Flavour fl((kf::code)kfc);
-    msg_Tracking()<<" : "<<fl<<endl;
-    if (key.find("MASS")!=string::npos) {
-      double mass=fl.Mass();
-      msg_Tracking()<<" old mass = "<<mass<<endl;
-      s<<value;
-      s>>mass;
+    if (key[0]=='#') continue;
+    if (key.find("MASS(")!=string::npos || key.find("WIDTH(")!=string::npos ) {
+      int a=key.find("(")+1;
+      int b=key.find(")")-a;
+      msg_Tracking()<<"Flavour "<<key.substr(a,b);
+      s<<key.substr(a,b);
+      int kfc;
+      s>>kfc;
       s.clear();
-      msg_Tracking()<<" new mass = "<<mass<<endl;
-      fl.SetMass(mass);
+      Flavour fl((kf::code)kfc);
+      msg_Tracking()<<" : "<<fl<<endl;
+      if (key.find("MASS(")!=string::npos) {
+	double mass=fl.Mass();
+	msg_Tracking()<<" old mass = "<<mass<<endl;
+	s<<value;
+	s>>mass;
+	s.clear();
+	msg_Tracking()<<" new mass = "<<mass<<endl;
+	fl.SetMass(mass);
+      }
+      if (key.find(string("WIDTH("))!=string::npos) {
+	msg_Tracking()<<"key:"<<key<<endl;
+	double width=fl.Width();
+	msg_Tracking()<<" old width = "<<width<<endl;
+	s<<value;
+	s>>width;
+	s.clear();
+	msg_Tracking()<<" new width = "<<width<<endl;
+	fl.SetWidth(width);
+      }
     }
-    if (key.find(string("WIDTH"))!=string::npos) {
-      msg_Tracking()<<"key:"<<key<<endl;
-      double width=fl.Width();
-      msg_Tracking()<<" old width = "<<width<<endl;
-      s<<value;
-      s>>width;
-      s.clear();
-      msg_Tracking()<<" new width = "<<width<<endl;
-      fl.SetWidth(width);
+    else {
+      msg_Info()<<" update "<<key<<" = "<<value<<endl;
+      Data_Read::SetCommandLine(key,value);
+      Read_Write_Base::AddCommandLine(key+std::string(" = ")+value);
     }
   }
   return 1;
