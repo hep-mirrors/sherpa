@@ -39,13 +39,13 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
   double t1 = k1->part->Momentum().Abs2();
   double t2 = k2->part->Momentum().Abs2();
 
- if (rpa.gen.Debugging()) {
+ if (msg.LevelIsDebugging()) {
     cout<<"InitKinematics before boost"<<endl;
     cout<<*k1<<*k2;
  }
   if (first)
     BoostInCMS(trees,k1, k2);
-  if (rpa.gen.Debugging()) {
+  if (msg.LevelIsDebugging()) {
     cout<<" after boost "<<endl;
     cout<<*k1<<*k2<<endl;
 
@@ -86,7 +86,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
 	msg.Error().precision(12);
       }
       trees[0]->BoRo(boost);
-      if (error||rpa.gen.Debugging()) {
+      if (error||msg.LevelIsDebugging()) {
 	msg.Error() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
 		    <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<endl
 		    <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<endl;
@@ -110,7 +110,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
 	msg.Error()<<" ERROR in Spacelike_Kinematics::InitKinematics "<<endl;
 	msg.Error().precision(12);
       }
-      if (error||rpa.gen.Debugging()) {
+      if (error||msg.LevelIsDebugging()) {
 	msg.Error() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
 		    <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<endl
 		    <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<endl;
@@ -121,7 +121,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
   k1->part->SetMomentum(v1);
   k2->part->SetMomentum(v2);  
 
-  if (error||rpa.gen.Debugging()) {
+  if (error||msg.LevelIsDebugging()) {
     msg.Error() <<"Spacelike_Kinematics::InitKinematics : C"<<endl
 		<<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
 		<<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
@@ -158,7 +158,7 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
     }
   }
 
-  if (rpa.gen.Debugging()) {
+  if (msg.LevelIsDebugging()) {
     switch (mode) {
     case 1: cout<<" DoKinematics B"<<endl; break;
     case 3: cout<<" DoKinematics C1"<<endl; break;

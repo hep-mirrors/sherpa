@@ -24,7 +24,7 @@ MPI::Datatype   mpi_point_type;
 
 std::ostream & AMEGIC::operator<<(std::ostream & s, const Point * p)
 {
-  //  if (!(ATOOLS::rpa.gen.Debugging())) return s;
+  //  if (!(ATOOLS::msg.LevelIsDebugging())) return s;
   if ((p->left==0) && (p->right==0)) {
     s<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<std::endl;
     return s;
@@ -165,7 +165,7 @@ void Amplitude_Generator::Next_P(Point* p,Point* &hit)
 
 void Amplitude_Generator::Print_P(Point* p)
 {
-  if (!(ATOOLS::rpa.gen.Debugging())) return;
+  if (!(ATOOLS::msg.LevelIsDebugging())) return;
   if ((p->left==0) && (p->right==0)) {
     ATOOLS::msg.Out()<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<endl;
     return;

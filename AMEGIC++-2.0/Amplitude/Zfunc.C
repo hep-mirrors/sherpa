@@ -1,7 +1,6 @@
 #include "Zfunc.H"
 #include "Pfunc.H"
 #include "Zfunc_Calc.H"
-#include "Run_Parameter.H"
 #include "Message.H"
 
 using namespace AMEGIC;
@@ -105,7 +104,7 @@ void Zfunc::ClearCalcList()
 
 void Zfunc::Print() 
 {
-  if (!ATOOLS::rpa.gen.Tracking()) return;
+  if (!ATOOLS::msg.LevelIsTracking()) return;
 
   msg.Out()<<"Z(["<<m_type<<"],";
   msg.Out()<<"[";
@@ -311,7 +310,7 @@ void Zfunc_Group::KillZList()
 
 void Zfunc_Group::Print() 
 {
-  if (!rpa.gen.Tracking()) return;
+  if (!msg.LevelIsTracking()) return;
   msg.Out()<<"SZ(["<<m_type<<"],";
   msg.Out()<<"[";
   for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";

@@ -46,7 +46,7 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec)
       Full_Decay_Table * dt = new Full_Decay_Table(flav,false);
       dt->AddDecayChannel(dc);
       msg.Tracking()<<"Added Decay_Channel :"<<endl;
-      if (rpa.gen.Tracking()) dc->Output();
+      if (msg.LevelIsTracking()) dc->Output();
       m_decays.insert(std::make_pair(flav,dt));
       return 1;
     }
@@ -64,7 +64,7 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec)
 
 void All_Decays::PrintDecayings()
 {
-  if (rpa.gen.Tracking()) {
+  if (msg.LevelIsTracking()) {
     msg.Out()<<"Final list : "<<m_particles.size()<<endl;
     for (FlSetIter flit=m_particles.begin();flit!=m_particles.end();++flit) msg.Out()<<(*flit)<<endl;
   }
@@ -154,7 +154,7 @@ void All_Decays::BinaryDecays()
 	  dc->CreateDecay();
 	  dt->AddDecayChannel(dc);
 	  msg.Tracking()<<"Added Decay_Channel :"<<endl;
-	  if (rpa.gen.Tracking()) dc->Output();
+	  if (msg.LevelIsTracking()) dc->Output();
 	}
       }
       m_decays.insert(std::make_pair((*flit),dt));

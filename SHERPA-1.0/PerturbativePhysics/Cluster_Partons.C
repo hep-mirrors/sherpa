@@ -855,7 +855,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   }
 
 
-  if (rpa.gen.Debugging()) {
+  if (msg.LevelIsDebugging()) {
     std::cout<<" in Cluster_Partons::FillTrees("<<m_isrshoweron<<","
 	     <<m_fsrshoweron<<")"<<endl;
     if (ini_trees) {

@@ -1,6 +1,5 @@
 #include "Selector.H"
 #include "Message.H"
-#include "Run_Parameter.H"
 
 using namespace ATOOLS;
 using namespace std;
@@ -9,7 +8,7 @@ using namespace std;
 Selector_Base::~Selector_Base() { }
 
 void Selector_Base::Output() { 
-  if (!(rpa.gen.Debugging())) return;
+  if (!(msg.LevelIsTracking())) return;
   if(m_sel_log) {
     m_sel_log->Output();
     msg.Out()<<m_name<<"  total number of rejections: "<<m_sel_log->Rejections()<<std::endl;

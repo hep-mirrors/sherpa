@@ -1,7 +1,7 @@
 #include "Histogram.H"
 #include "Message.H"
 #include "MyStrStream.H"
-#include "Run_Parameter.H"
+#include "MathTools.H"
 #include <stdio.h>
 
 using namespace ATOOLS;
@@ -159,7 +159,7 @@ void Histogram::Scale(double scale) {
 }
 
 void Histogram::Output() {
-  if (!rpa.gen.Tracking()) return;
+  if (!msg.LevelIsTracking()) return;
   msg.Out()<<"----------------------------------------"<<std::endl
 	   <<"    "<<m_bins[0][0]<<std::endl
 	   <<"----------------------------------------"<<std::endl;

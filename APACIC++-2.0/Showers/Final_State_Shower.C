@@ -512,7 +512,7 @@ bool Final_State_Shower::TestShower(Tree * tree)
     tree->Reset();
     InitTwojetTree(tree,E2);
     if (!PerformShower(tree,0)) return 0;     // *AS*   (tree,0) = no jetveto! (default)
-    if (rpa.gen.Tracking()) OutputTree(tree);
+    if (msg.LevelIsTracking()) OutputTree(tree);
   }
 
   return 1;

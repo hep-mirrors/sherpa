@@ -256,7 +256,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     return 0;
   }
 
-  if (rpa.gen.Debugging()) {
+  if (msg.LevelIsDebugging()) {
     cout<<" Initialize System : "<<endl;
     cout<<*k1<<*k2<<endl;;
   }
@@ -318,7 +318,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 	return 1;
       }
       else if (stat==2 || stat==3) {
-	if (rpa.gen.Debugging()) {
+	if (msg.LevelIsDebugging()) {
 	  cout<<" EvolveSystem returned with : "<<stat<<endl;
 	  cout<<trees[0];
 	  cout<<trees[1];
@@ -355,7 +355,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
       }
       trees[0]->Restore();
       trees[1]->Restore();
-      if (rpa.gen.Events()) {
+      if (msg.LevelIsTracking()) {
 	OutputTree(trees[0]);
 	OutputTree(trees[1]);
       }
@@ -413,7 +413,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       msg.Tracking()<<" detz="<<k1->z<<" ("<<k1->kn_no<<")"<<endl;
       k1->prev->x=k1->x/k1->z;
       m_sprime/=k1->z;
-      if (rpa.gen.Debugging()) {
+      if (msg.LevelIsDebugging()) {
 	cout<<" prepare (II) "<<ntree0<<endl;
 	cout<<" ac : "<<k1->part->Momentum()<<" ("<<k1->part->Momentum().Abs2()<<")"<<endl;
 	cout<<" mo : "<<k1->prev->part->Momentum()<<" ("<<k1->prev->part->Momentum().Abs2()<<")"<<endl;
@@ -426,7 +426,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 
       /*  // *AS*
       if (m_to_be_diced[ntree0]) {
-	if (rpa.gen.Debugging()) {
+	if (msg.LevelIsDebugging()) {
 	  cout<<" set scales: "<<k1->t<<" vs. "<<k1->prev->part->Momentum().Abs2()<<endl;
 	  cout<<" from "<<endl<<*k1;
 	  cout<<" fixing sister "<<endl<<*k1->prev->left;
@@ -438,7 +438,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 	k1->prev->left->thcrit = th;  
 	k1->prev->left->t      = k1->prev->part->Momentum().Abs2();
 
-	if (rpa.gen.Debugging()) {
+	if (msg.LevelIsDebugging()) {
 	  cout<<" to "<<endl<<*k1;
 	  cout<<" fixing sister "<<endl<<*k1->prev->left;
 	  cout<<" fixing mother "<<endl<<*k1->prev<<endl;
@@ -552,7 +552,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     }
 
     if (caught_jetveto!=ntree0+2) {
-      if (rpa.gen.Debugging()) {
+      if (msg.LevelIsDebugging()) {
 	cout<<" jetveto=="<<caught_jetveto<<"  ntree0="<<ntree0<<"  leaving Evolve"<<endl;
 	cout<<" k1="<<*k1;
 	cout<<" k2="<<*k2;
@@ -586,7 +586,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 }  
 
 int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg) {
-  if (rpa.gen.Debugging()) {
+  if (msg.LevelIsDebugging()) {
     cout<<" FillBranch "<<endl;
     cout<<*active<<*partner<<endl;
   }
@@ -629,7 +629,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
       //      cout<<" mo flav changed from "<<mother->part->Flav()<<" to "<<k_flavs[0]<<endl;
     }
     if (mother->prev) {
-      if (rpa.gen.Debugging()) {
+      if (msg.LevelIsDebugging()) {
 	cout<<" deleting mother tree : "<<endl;
 	cout<<*mother<<endl;
       }
@@ -691,7 +691,7 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   k->part->SetStatus(2);
   SetColours(k);
 
-  if (rpa.gen.Debugging()) {
+  if (msg.LevelIsDebugging()) {
     cout<<" FillMotherAndSister: "<<endl;
     cout<<" k  : "<<*k;
     cout<<" mo : "<<*mother;

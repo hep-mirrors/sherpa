@@ -1,4 +1,3 @@
-#include "Run_Parameter.H"
 #include "Message.H"
 #include "Single_Amplitude.H"
 #include "Prop_Generator.H"
@@ -134,7 +133,7 @@ void Single_Amplitude::AddSpinorDirection(const int& from,const int& to)
 
 void Single_Amplitude::PrintGraph() 
 {
-  if (!rpa.gen.Debugging()) return;
+  if (!msg.LevelIsDebugging()) return;
   
   ATOOLS::msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
 

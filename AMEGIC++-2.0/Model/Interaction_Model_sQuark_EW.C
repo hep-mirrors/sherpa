@@ -1,6 +1,7 @@
 #include "Interaction_Model_sQuark_EW.H"
 #include "MathTools.H"
 #include "Message.H"
+#include "Run_Parameter.H"
 #include <stdio.h>
 
 

@@ -85,13 +85,15 @@ namespace ATOOLS {
       }
 #endif
 
+      /*
       inline int Output()                                 { return m_output; }
       inline int Error()                                  { return (m_output>=0); }
-      inline int Events()                                 { return (m_output>=1); }
-      inline int Tracking()                               { return (m_output>=2); }
-      inline int Debugging()                              { return (m_output>=3); }
+      inline int Events()                                 { return (m_output&1); }
+      inline int Tracking()                               { return (m_output&4); }
+      inline int Debugging()                              { return (m_output&8); }
       inline int SetOutput(int o)                         { return m_output = o; }
       inline void OutputOff()                             { m_output = -1; }
+      */
 
       inline double Accu()                                { return m_accu; }
       inline std::string GetRpaID()                       { return m_rpa_id; }

@@ -1,5 +1,4 @@
 #include "Topology.H"
-#include "Run_Parameter.H"
 #include "Message.H"
 
 using namespace AMEGIC;
@@ -49,7 +48,7 @@ void Topology::Build_All(int N)
 
 void Topology::Print(Point* p)
 {
-  if (!rpa.gen.Debugging()) return;
+  if (!msg.LevelIsDebugging()) return;
   if (p==0) {ATOOLS::msg.Out()<<"End."<<endl;return;}
 
   ATOOLS::msg.Out()<<"Left - ";

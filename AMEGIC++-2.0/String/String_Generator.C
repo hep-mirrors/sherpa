@@ -1,6 +1,5 @@
 #include <iostream>
 #include "String_Generator.H"
-#include "Run_Parameter.H"
 #include "Message.H"
 #include "MyStrStream.H"
 
@@ -81,7 +80,7 @@ void String_Generator::ReStore()
 
 void String_Generator::Print()
 {
-  if (!(rpa.gen.Debugging())) return;
+  if (!(msg.LevelIsDebugging())) return;
   for (long int i=0;i<(*p_zxl).size();i++) {
     msg.Out()<<i<<". Zfunction: Type="<<(*p_zxl)[i].zlist<<";On="<<(*p_zxl)[i].on<<";Value="<<(*p_zxl)[i].value.String(); 
     if ((*p_zxl)[i].narg>0) msg.Out()<<";Arg[0] = "<<(*p_zxl)[i].arg[0];

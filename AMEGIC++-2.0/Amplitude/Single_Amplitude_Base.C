@@ -4,7 +4,6 @@
 #include "Zfunc_Calc.H"
 #include "String_Handler.H"
 #include "Message.H"
-#include "Run_Parameter.H"
 
 using namespace ATOOLS;
 using namespace AMEGIC;
@@ -54,7 +53,7 @@ Single_Amplitude_Base::~Single_Amplitude_Base()
 
 void Single_Amplitude_Base::PrintGraph() 
 {
-  if (!rpa.gen.Tracking()) return;
+  if (!msg.LevelIsTracking()) return;
   for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) 
     (*zit)->Print(); 
 

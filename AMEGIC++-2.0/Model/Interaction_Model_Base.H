@@ -3,7 +3,7 @@
 
 #include "Model_Base.H"
 #include "Vertex.H"
-#include "Run_Parameter.H"
+//#include "Run_Parameter.H"
 
 namespace AMEGIC {
 

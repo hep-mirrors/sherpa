@@ -1081,7 +1081,7 @@ Point * Single_Process::Diagram(int i) {
 
 void Single_Process::PrintDifferential()
 {
-  if (!(ATOOLS::rpa.gen.Tracking())) return;
+  if (!(ATOOLS::msg.LevelIsDebugging())) return;
   ATOOLS::msg.Out()<<m_name<<" : "<<m_last<<" -> "
 		      <<m_lastdxs<<" @ "<<m_lastlumi<<", "<<endl;
 }

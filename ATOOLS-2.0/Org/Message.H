@@ -83,6 +83,12 @@ namespace ATOOLS {
 
     inline std::ostream &LogFile()   { if (m_level & 4) return *p_logfile; return *p_no; }
 
+    inline bool  LevelIsError()     { return (m_level >= 0); }
+    inline bool  LevelIsEvents()    { return (m_level & 1); }
+    inline bool  LevelIsInfo()      { return (m_level & 2); }
+    inline bool  LevelIsTracking()  { return (m_level & 4); }
+    inline bool  LevelIsDebugging() { return (m_level & 8); }
+
   };// end of class Message
 
   extern Message msg;

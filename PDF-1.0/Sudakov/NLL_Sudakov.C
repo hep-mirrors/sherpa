@@ -1,7 +1,7 @@
 #include "NLL_Sudakov.H"
 #include "Message.H"
 #include "MathTools.H"
-#include "Run_Parameter.H"
+//#include "Run_Parameter.H"
 #include "Running_AlphaS.H"
 #include <iomanip> 
 #include <stdio.h>  // sprintf
@@ -220,7 +220,7 @@ void NLL_Sudakov::CheckSudakovs(int jetmode)
 {
   return;
 
-  if (!rpa.gen.Debugging()) return;
+  if (!msg.LevelIsDebugging()) return;
   /*
   cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
   cout<<"kfactor for e+ e- -> Hadrons"<<endl;

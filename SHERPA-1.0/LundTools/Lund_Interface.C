@@ -234,7 +234,7 @@ bool Lund_Interface::Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;
   // replacement ends here
-  if (ATOOLS::rpa.gen.Debugging()) {
+  if (ATOOLS::msg.LevelIsDebugging()) {
     ATOOLS::msg.Tracking()<<"Lund_Interface::Hadronize(..): Passed hadronisation (pythia 6.214)."<<std::endl;
     pylist(dummy);
     ATOOLS::msg.Out()<<std::endl<<std::endl;

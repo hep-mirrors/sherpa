@@ -2,7 +2,7 @@
 #define Environmen_h
 
 #include "Data_Read.H"
-#include "Run_Parameter.H"
+//#include "Run_Parameter.H"
 
 #include "Model_Base.H"
 #include "Beam_Spectra_Handler.H"

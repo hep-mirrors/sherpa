@@ -6,7 +6,6 @@
 
 #include "Vertex.H"
 #include "Interaction_Model_Base.H"
-#include "Run_Parameter.H"
 #include "Message.H"
 #include "Vector.H"
 #include "String_Tree.H"
@@ -457,7 +456,7 @@ void Vertex::CheckEqual(Flavour** fl,short int& count)
 
 void Vertex::Print()
 {
-  if (!rpa.gen.Debugging()) return;
+  if (!msg.LevelIsDebugging()) return;
   //3 legs
   for (int i=0;i<m_nvertex;i++) {
     msg.Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];

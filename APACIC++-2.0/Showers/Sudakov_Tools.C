@@ -15,7 +15,7 @@ Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * _model) {
   p_as     = _model->GetScalarFunction(std::string("alpha_S"));
   p_aqed   = _model->GetScalarFunction(std::string("alpha_QED"));
   FixLambda2(sqr((Flavour(kf::Z)).Mass()));
-  if (rpa.gen.Debugging()) Output();
+  if (msg.LevelIsDebugging()) Output();
 }
 
 Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin, double tmax) {
@@ -36,7 +36,7 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin,
     beta0 = lambda2 = 0.;          
     scalefac        = 1.;          
   }
-  if (rpa.gen.Debugging()) { 
+  if (msg.LevelIsDebugging()) { 
     msg.Debugging()<<" tmin= "<< tmin<<std::endl
 		   <<" alpha_max="<< alphaSmax <<std::endl
 		   <<" Checking alphaS "<<std::endl;

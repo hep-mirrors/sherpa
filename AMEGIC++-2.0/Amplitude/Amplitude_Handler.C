@@ -127,7 +127,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   SetNumber(dummy);  
   namplitude = dummy;
 
-  if (rpa.gen.Tracking()) {
+  if (msg.LevelIsTracking()) {
     PrintGraph();
     /*
     Amplitude_Output ao(pID,top);

@@ -999,7 +999,7 @@ ATOOLS::Blob_Data_Base *  Process_Group::SameWeightedEvent() {
 
 void Process_Group::PrintDifferential()
 {
-  if (!(rpa.gen.Debugging())) return;
+  if (!(msg.LevelIsDebugging())) return;
   m_last = 0;
   msg.Out()<<"--------------------------------------------------------"<<endl
 	   <<"--------------------------------------------------------"<<endl

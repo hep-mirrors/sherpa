@@ -61,7 +61,7 @@ void Full_Decay_Channel::SetWidth(double _w )
 {
   if (_w<0.) p_dec->SetWidth(p_proc->TotalXS()); 
   else p_dec->SetWidth(_w);
-  if (rpa.gen.Events()) Output();
+  if (msg.LevelIsInfo()) Output();
 }
 
 //-----------------------------------------------------------------------

@@ -1,6 +1,7 @@
 #include "Interaction_Model_QCD.H"
 #include "MathTools.H"
 #include "Message.H"
+#include "Run_Parameter.H"
 
 using namespace AMEGIC;
 using namespace ATOOLS;

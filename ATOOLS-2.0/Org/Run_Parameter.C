@@ -39,7 +39,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   Data_Read dr(m_path+file);
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
-  msg.Init(gen.Output(),logfile);
+  msg.Init(gen.m_output,logfile);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)

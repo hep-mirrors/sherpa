@@ -215,7 +215,7 @@ void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflis
 
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function> &lflist)
 {
-  if (!rpa.gen.Tracking()) return;
+  if (!msg.LevelIsTracking()) return;
   ATOOLS::msg.Out()<<"LorentzList: "<<endl;
   for (short int i=0;i<lflist.size();i++)
     ATOOLS::msg.Out()<<lflist[i].String(1)<<endl;
@@ -224,7 +224,7 @@ void Zfunc_Generator::LFPrint(const vector<Lorentz_Function> &lflist)
 
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
 {
-  if (!rpa.gen.Tracking()) return;
+  if (!msg.LevelIsTracking()) return;
   ATOOLS::msg.Out()<<"LorentzList: "<<endl;
   for (short int i=0;i<lflist.size();i++)
     ATOOLS::msg.Out()<<lflist[i]->String(1)<<endl;

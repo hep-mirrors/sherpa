@@ -1,6 +1,5 @@
 #include "Super_Amplitude.H"
 #include "Zfunc.H"
-#include "Run_Parameter.H"
 #include "Message.H"
 
 using namespace AMEGIC;
@@ -263,7 +262,7 @@ int Super_Amplitude::FindNewNumber(int number)
  
 void Super_Amplitude::PrintGraph() 
 {  
-  if (!rpa.gen.Tracking()) return;
+  if (!msg.LevelIsTracking()) return;
   msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
   Single_Amplitude_Base::PrintGraph();
 

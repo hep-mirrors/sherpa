@@ -62,7 +62,7 @@ void Hard_Interface::SetFactorisationScale(const double scale)
 
 int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
   if (!m_showers) return 1;
-  if (rpa.gen.Debugging()) {
+  if (msg.LevelIsDebugging()) {
     if (m_fsron) 
       p_finshower->OutputTree(p_fintree);
     if (m_isron) {
@@ -135,7 +135,7 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,doubl
     msg.Debugging()<<"Initial State Shower successful !"<<std::endl;
   }
 
-  if (rpa.gen.Debugging()) {
+  if (msg.LevelIsDebugging()) {
     if (m_fsron) 
       p_finshower->OutputTree(p_fintree);
     if (m_isron) {

@@ -174,7 +174,7 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 
   // determine possible combinations and corresponding y_ij  if nlegs>4
   if (nlegs>4) {
-    if (rpa.gen.Debugging()) {
+    if (msg.LevelIsDebugging()) {
       for (int k=0;k<nampl;++k) {
 	std::cout<<"Combine_Table for Graph "<<k<<std::endl
 		 <<"=============================="<<endl

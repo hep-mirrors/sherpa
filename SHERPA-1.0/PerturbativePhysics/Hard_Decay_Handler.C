@@ -107,7 +107,7 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
   for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
     if ((*dit)->Overwrite()) {
       if (_model->FillDecay((*dit))) { 
-	if (rpa.gen.Tracking()) { (*dit)->Output(); }
+	if (msg.LevelIsTracking()) { (*dit)->Output(); }
       }
       else {
 	(*dit)->Flav().SetWidth(-1.);
