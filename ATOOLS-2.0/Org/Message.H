@@ -93,6 +93,11 @@ namespace ATOOLS {
 
   extern Message msg;
 
+#define msg_Events() if (msg.LevelIsEvents()) msg.Out()
+#define msg_Info() if (msg.LevelIsInfo()) msg.Out()
+#define msg_Tracking() if (msg.LevelIsTracking()) msg.Out()
+#define msg_Debugging() if (msg.LevelIsDebugging()) msg.Out()
+
   /*!
     \file
     \brief contains the class Message
