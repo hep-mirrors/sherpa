@@ -1,0 +1,80 @@
+#ifndef Integration_Info_IC
+#define Integration_Info_IC
+
+#include "Integration_Info.H"
+
+namespace PHASIC {
+
+  inline Double_Container &Integration_Info::Doubles(const size_t valuekey)
+  { return m_doubles[valuekey]; }
+
+  inline Vector_Container &Integration_Info::Vectors(const size_t valuekey)
+  { return m_vectors[valuekey]; }
+
+  inline double &Integration_Info::Double(const size_t valuekey,const size_t i)
+  { return m_doubles[valuekey][i]; }
+
+  inline ATOOLS::Vec4D &Integration_Info::Vector(const size_t valuekey,const size_t i)
+  { return m_vectors[valuekey][i]; }
+
+  inline double Integration_Info::Double(const size_t valuekey,const size_t i) const
+  { return m_doubles[valuekey][i]; }
+
+  inline ATOOLS::Vec4D Integration_Info::Vector(const size_t valuekey,const size_t i) const
+  { return m_vectors[valuekey][i]; }
+
+  inline void Integration_Info::SetWeight(const size_t valuekey,const size_t weightkey,
+					  const double weight)
+  { m_weights[valuekey][weightkey]=weight; }
+
+  inline double Integration_Info::Weight(const size_t valuekey,const size_t weightkey) const
+  { return m_weights[valuekey][weightkey]; }
+
+  inline si::code Integration_Info::Status(const size_t statuskey)
+  { return m_status[statuskey]; }
+  
+  inline si::code Integration_Info::SetStatus(const size_t statuskey,const si::code status)
+  { si::code old=m_status[statuskey]; m_status[statuskey]=status; return old; }
+
+  inline void Info_Key::SetInfo(const std::string info)
+  { m_info=info; }
+
+  inline si::code Info_Key::SetStatus(const si::code status)
+  { return p_info->SetStatus(m_valuekey,status); }
+
+  inline const std::string &Info_Key::Name() const
+  { return m_name; }
+
+  inline const std::string &Info_Key::Info() const
+  { return m_info; }
+
+  inline Double_Container &Info_Key::Doubles()
+  { return p_info->Doubles(m_valuekey); }
+
+  inline Vector_Container &Info_Key::Vectors()
+  { return p_info->Vectors(m_valuekey); }
+
+  inline si::code Info_Key::Status() const
+  { return p_info->Status(m_valuekey); }
+
+  inline double Info_Key::Weight() const
+  { return p_info->Weight(m_valuekey,m_weightkey); }
+
+  inline double Info_Key::Double(const size_t i)
+  { return p_info->Double(m_valuekey,i); }
+
+  inline ATOOLS::Vec4D Info_Key::Vector(const size_t i)
+  { return p_info->Vector(m_valuekey,i); }
+
+  inline double &Info_Key::operator[](const size_t i)
+  { return p_info->Double(m_valuekey,i); }
+
+  inline ATOOLS::Vec4D &Info_Key::operator()(const size_t i)
+  { return p_info->Vector(m_valuekey,i); }
+
+  inline void Info_Key::operator<<(const double weight)
+  { p_info->SetWeight(m_valuekey,m_weightkey,weight); }
+
+}// end of namespace PHASIC
+
+#endif
