@@ -163,7 +163,7 @@ namespace ATOOLS {
 #define msg_Debugging() if (ATOOLS::msg.LevelIsDebugging()) ATOOLS::msg.Out()
 
 #define msg_Indent() ATOOLS::Indentation indent
-#define msg_Indentation(COL) ATOOLS::Indentation indent(col)
+#define msg_Indentation(COL) ATOOLS::Indentation indent(COL)
 
 #define PRINT_METHOD \
   std::cout<<ATOOLS::om::blue<<__FUNCTION__<<ATOOLS::om::reset<<std::endl
