@@ -40,12 +40,6 @@ void S1Channel::GenerateWeight(AMATOOLS::vec4d * p) {
   weight = 1. / ( CE.Isotropic2Weight(p[2],p[3]) * pow(2.*M_PI,2.*3.-4.) );
 };
 
-
-
-
-
-
-
 T1Channel::T1Channel(int _nin,int _nout,Flavour * fl) 
 {  
   if (_nout != 2) {
@@ -73,10 +67,6 @@ void T1Channel::GeneratePoint(AMATOOLS::vec4d * p,double * _ran =0) {
 void T1Channel::GenerateWeight(AMATOOLS::vec4d * p) {
   weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,0.5,0.,2.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 };
-
-
-
-
 
 U1Channel::U1Channel(int _nin,int _nout,Flavour * fl) 
 {  

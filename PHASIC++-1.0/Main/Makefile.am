@@ -7,6 +7,7 @@ lib_LTLIBRARIES = libPhasespace.la
 libPhasespace_la_SOURCES = Multi_Channel.C Single_Channel.C \
 			   ISR_Channel.C FSR_Channel.C Rambo.C Sarge.C \
 			   Channel_Basics.C Channel_Elements.C \
+			   Single_Broker.C Broker_Group.C \
 			   Phase_Space_Handler.C \
 			   Phase_Space_Generator.C Channel_Generator.C \
 			   Phase_Space_Integrator.C 
@@ -30,6 +31,7 @@ INCLUDES = -I../ISR \
 noinst_HEADERS = Multi_Channel.H Single_Channel.H \
 		 ISR_Channel.H FSR_Channel.H Rambo.H Sarge.H \
 		 Channel_Basics.H Channel_Elements.H \
+	         Single_Broker.H Broker_Group.H \
 		 Phase_Space_Handler.H \
 		 Phase_Space_Generator.H Channel_Generator.H \
 		 Phase_Space_Integrator.H 

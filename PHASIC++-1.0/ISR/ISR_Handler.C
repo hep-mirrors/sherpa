@@ -33,11 +33,11 @@ ISR_Handler::ISR_Handler(int * isrtypes,Flavour * beams,Flavour * partons,
   type = ISRBase[0]->Type() + std::string("*") + ISRBase[1]->Type();
 
   double s    = sqr(AORGTOOLS::rpa.gen.Ecms());
-  cout<<"a  "<<_splimits[0]<<" "<<_splimits[1]<<endl;
+  //  cout<<"a  "<<_splimits[0]<<" "<<_splimits[1]<<endl;
   splimits[0] = smin = _splimits[0];
   splimits[1] = smax = AMATOOLS::Min(_splimits[1],s*Upper1()*Upper2());
   splimits[2] = s;
-  cout<<"b  "<<splimits[0]<<" "<<splimits[1]<<endl;
+  //  cout<<"b  "<<splimits[0]<<" "<<splimits[1]<<endl;
 
   ylimits[0]  = -10.;
   ylimits[1]  = 10.;
