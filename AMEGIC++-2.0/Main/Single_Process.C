@@ -488,8 +488,7 @@ int Single_Process::Tests() {
 			   <<om::reset<<std::endl;
 	system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
 		string("/makelibs ")+rpa.gen.Variable("SHERPA_CPP_PATH")).c_str());
-	throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to load library."),
-				"Single_Process","Tests"));
+	THROW(normal_exit,"Failed to load library.");
       }
       else {
       	ATOOLS::msg.Error()<<"ERROR in Single_Process::Tests()"<<std::endl
@@ -498,8 +497,7 @@ int Single_Process::Tests() {
 			   <<"   and no files written out !"<<std::endl
 			   <<om::bold<<"   Interrupt run, execute \"makeclean\" in Run-directory and re-start."
 			   <<om::reset<<std::endl;
-	throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Failed to load library."),
-				"Single_Process","Tests"));
+	THROW(critical_error,"Failed to load library.");
       }
     }
     if (!ATOOLS::IsEqual(M2,M2g)) {

@@ -25,8 +25,7 @@ Timelike_Kinematics::Timelike_Kinematics(double pt2min, Data_Read * const datare
     msg.Error()<<"ERROR in Timelike_Kinematics : "<<std::endl
 	       <<"   DIS is not yet implemented in the jetfinder, continue with hh-mode."<<std::endl;
     m_type = 4;
-    throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"DIS is not implemented yet",
-			    "Timelike_Kinematics","Timelike_Kinematics"));
+    THROW(not_implemented,"DIS is not implemented yet");
   }
   p_jf = new ATOOLS::Jet_Finder(rpa.gen.Ycut(),m_type); 
   p_jf->SetDeltaR(rpa.gen.DeltaR()); 
