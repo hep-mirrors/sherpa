@@ -1,0 +1,69 @@
+#ifndef Kt_Algorithm_H
+#define Kt_Algorithm_H
+
+#include "Vector.H"
+#include "Particle_List.H"
+#include <vector>
+
+namespace ATOOLS {
+
+  class Kt_Algorithm  {
+    int    m_mode;
+    double m_ymin, m_r2min;
+
+    int    m_matrixsize;
+    double ** p_ktij;
+    int    *  p_imap;
+    double *  p_kis;
+
+    Particle_List       * p_jets;
+    std::vector<double> * p_kts;
+
+    double DRap12(const Vec4D &,const Vec4D &) const;
+    double DEta12(const Vec4D &,const Vec4D &) const;
+    double DPhi12(const Vec4D &,const Vec4D &) const;
+    double CosDPhi12(const Vec4D &,const Vec4D &) const;
+    double DCos12(const Vec4D &,const Vec4D &) const;
+
+    double R2(const Vec4D &p1, const Vec4D &p2) const;
+      
+    void AddToKtlist(double );
+    void AddToJetlist(const Vec4D &);
+
+    void SortE();
+    void SortPT();
+  public:
+    static double Kt2(const Vec4D & p);    
+
+    Kt_Algorithm(double =1.0);
+    ~Kt_Algorithm();
+
+    void   Init(int);
+    bool   ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double);
+
+    double Ktmin(Vec4D *,int);
+  };
+
+
+  inline double Kt_Algorithm::Kt2(const Vec4D & p)
+  {
+    return sqr(p[1])+sqr(p[2]);
+  }
+
+  inline double Kt_Algorithm::R2(const Vec4D &p1, const Vec4D &p2) const
+  {
+    return (sqr(DEta12(p1,p2)) + sqr(DPhi12(p1,p2)));
+  }
+
+
+}
+
+#endif
+
+
+
+
+
+
+
+

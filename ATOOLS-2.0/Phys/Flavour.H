@@ -728,6 +728,7 @@ namespace ATOOLS {
     inline const bool IsLightQuark() const { return (abs(kfc)>=1 && abs(kfc)<=3);}
     inline const bool IsDiQuark() const {
       if(abs(kfc)>=1103 && abs(kfc)<=5505) {
+	// better?:  if (abs(kfc)%100 <=3) return true;
 	double help=abs(kfc)/100.0-int(abs(kfc)/100.0); if(help<0.031) return true;}
       return false;
     }
@@ -740,8 +741,9 @@ namespace ATOOLS {
       return anti;
     }
     inline const bool IsHadron() const {     
-      if(abs(kfc)>=100) return 1;
-      return 0;
+      if (abs(kfc)<100) return 0;
+      if (kfc-100*int(kfc/100)<10) return 0;
+      return 1;
     }
 
     inline const bool IsSusy() const {     

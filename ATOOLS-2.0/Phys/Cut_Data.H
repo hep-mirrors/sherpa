@@ -22,6 +22,9 @@ namespace ATOOLS {
     void Init(Cut_Data *,Flavour *);
     void Update(double,double);
   };    
+
+
+  std::ostream & operator<<(std::ostream &, Cut_Data &);
 }
 
 #endif

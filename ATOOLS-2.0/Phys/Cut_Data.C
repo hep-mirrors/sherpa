@@ -3,6 +3,18 @@
 
 using namespace ATOOLS;
 
+
+std::ostream & ATOOLS::operator<<(std::ostream & s , Cut_Data & cd)
+{
+  s<<" Cut Data : "<<cd.ncut<<" \n"<<std::endl;
+  for (int i=0;i<cd.ncut;++i) {
+    for (int j=0;j<cd.ncut;++j) s<<cd.scut[i][j]<<"  ";
+    s<<std::endl;
+  }
+  return s;
+}
+
+
 Cut_Data::Cut_Data() {
   energymin = 0;
   energymax = 0;

@@ -41,13 +41,13 @@ double Cone_Finder::Rmin(Vec4D * p)
     for (int k=j+1;k<m_n;k++) {
       r2jk = sqr(DEta12(p[j],p[k])) + sqr(DPhi12(p[j],p[k]));
       if (r2jk<r2min && 
-	  m_fl[j].Mass()<3. && m_fl[k].Mass()<3. &&
-	  !(m_fl[j].IsLepton() && m_fl[j].IntCharge()==0) &&
-	  !(m_fl[k].IsLepton() && m_fl[k].IntCharge()==0))   {
+	  //m_fl[j].Mass()<3. && m_fl[k].Mass()<3. &&
+	  !(m_fl[j].IsLepton() /*&& m_fl[j].IntCharge()==0*/) &&
+	  !(m_fl[k].IsLepton() /*&& m_fl[k].IntCharge()==0*/))   {
 	r2min = r2jk;
       }
     }
-  }    
+  }   
   return sqrt(r2min);
 } 
 

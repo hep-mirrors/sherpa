@@ -128,8 +128,7 @@ bool ET_Selector::Trigger(const Vec4D * mom)
 {
   double eti;
   for (int i=m_nin;i<m_n;i++) {   
-    double theta = acos(Vec3D(mom[i])*Vec3D(mom[0])/(Vec3D(mom[i]).Abs()*Vec3D(mom[0]).Abs())); 
-    eti = value[i] = mom[i][0]*sin(theta);
+    eti = value[i] = mom[i][0]*mom[i].PPerp()/mom[i].P();
     if (m_sel_log->Hit( ((eti<etmin[i]) || (eti>etmax[i])) )) return 0;
   }
   return 1;
@@ -156,7 +155,7 @@ void ET_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 }
  
 void ET_Selector::SetRange(std::vector<Flavour> crit,double _min, 
-			       double _max=0.5*rpa.gen.Ecms())
+			       double _max=rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
     msg.Error()<<"Wrong number of arguments in ET_Selector::SetRange : "

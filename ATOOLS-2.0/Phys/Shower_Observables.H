@@ -4,6 +4,7 @@
 #include "Primitive_Observable_Base.H"
 
 #include "Jet_Finder.H"
+#include "Kt_Algorithm.H"
 
 namespace ATOOLS {
 
@@ -31,58 +32,70 @@ namespace ATOOLS {
   public:
     Shower_Observables(int _type,double _xmin,double _xmax,int _nbins,
 		      Selector_Base * _sel,int _njet=0,int _nflavs=0,int _dohad=0);
-    void Evaluate(const Blob_List &,double);
+    void Evaluate(const Blob_List &,double,int);
 
     void EndEvaluation();
-    void Output(std::string pname);
+    void Output(const std::string & pname);
+
+    void SetAnalysis(Primitive_Analysis*);
+
+    Primitive_Observable_Base * Copy() const {
+      std::cerr<<" ERROR in Shower_Observables::Copy() : not splittable "<<std::endl;
+      return 0;
+    }
   };
 
+  struct Jetrate_Data {
+    std::vector<int> jets; 
+    std::vector<double> ys;    
+  };
+
+  std::ostream & operator<<(std::ostream &, const Jetrate_Data *);
 
 
   class Jetrates : public Primitive_Observable_Base {  
-    Jet_Finder  *jfind;  //(2.,1);
-    std::vector<int> jets; 
-    std::vector<double> ys;
-    std::vector<Histogram*> histos;
-    std::vector<Histogram*> rates;
-    Jetrates      *partner;
+    Jet_Finder  * p_jfind;  //(2.,1);
+    Kt_Algorithm * p_ktalg;
+    std::vector<int> m_jets; 
+    std::vector<double> m_ys;
+    std::vector<Histogram*> m_histos;
+    std::vector<Histogram*> m_rates;
+    Jetrates      * p_partner;
     
   public:
-    double ymin,ymax, sprime;
+    double m_ymin, m_ymax, m_sprime;
 
     Jetrates(int _type,double _xmin,double _xmax,int _nbins,
-		      Selector_Base * _sel);
+		      Selector_Base * _sel, const std::string & = std::string(""));
     Jetrates(Jetrates * _partner, std::string _prefix);
-//     Jetrates * GetCopy() {
-//       return new Jetrates(this);
-//     }
+    Primitive_Observable_Base * Copy() const;
 
-    void Evaluate(const Particle_List & pl,double);
+    void Evaluate(const Blob_List &,double, int);
+    void Evaluate(const Particle_List & pl,double, int);
 
     void EndEvaluation();
     void EndEvaluation(double);
 
-    virtual void Output(std::string pname);
+    void Output(const std::string & pname);
 
-    ~Jetrates() {
-      delete jfind;
-    }
-
+    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);
+    void Reset();
+    ~Jetrates();
   };
 
 
   class Multiplicity : public Primitive_Observable_Base {  
     int            m_mode;
-    Multiplicity * partner;
+    Multiplicity * p_partner;
   public:
-    Multiplicity(int _type,double _xmin,double _xmax,int _nbins, int mode);
+    Multiplicity(int _type,double _xmin,double _xmax,int _nbins, int mode, const std::string &);
     Multiplicity(Multiplicity * old);
     Multiplicity(Multiplicity * _partner, std::string _prefix);
 
-    void Evaluate(const Particle_List & pl,double);
-    void Evaluate(const Blob_List &,double);
+    void Evaluate(const Particle_List & pl,double, int);
+    void Evaluate(const Blob_List &,double, int);
 
-    void Evaluate(Vec4D *,Flavour *,double);
+    Primitive_Observable_Base * Copy() const;
   };
 
 
@@ -96,36 +109,49 @@ namespace ATOOLS {
 
 
   class ME_Rate : public Primitive_Observable_Base {  
-    std::vector<ME_Data> all_rates;
-    double sum;
+    std::vector<ME_Data> m_all_rates;
+    double m_sum;
   public:
     ME_Rate(int _type,double _xmin,double _xmax,int _nbins,std::string prefix);
     ME_Rate(ME_Rate * old);
-    void Evaluate(const Blob_List & bl,double);
+    void Evaluate(const Blob_List & bl,double, int);
 
     void EndEvaluation();
     void EndEvaluation(double);
-    virtual void Output(std::string pname);
+    virtual void Output(const std::string & pname);
+
+    Primitive_Observable_Base * Copy() const {
+      return new ME_Rate(m_type,m_xmin,m_xmax,m_nbins,"");
+    }
+    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);
+    void Reset();
 
   };
 
 
   class PT_Distribution : public Primitive_Observable_Base {  
-    std::vector<Histogram*> histos;
-    Flavour checkfl;
-    int maxn;
+    std::vector<Histogram*>  m_histos;
+    Flavour     m_checkfl;
+    int         m_minn, m_maxn;
   public:
     PT_Distribution(int _type,double _xmin,double _xmax,int _nbins,
-		    int _maxn, Flavour _fl);
+		    int _maxn, Flavour _fl,std::string =std::string("FinalState"));
+    PT_Distribution(int _type,double _xmin,double _xmax,int _nbins,
+		    int _minn,int _maxn, Flavour _fl,std::string =std::string("FinalState"));
     PT_Distribution(PT_Distribution * _partner, std::string _prefix);
 
 
-    void Evaluate(const Particle_List &,double);
-    void Evaluate(const Blob_List & blobs,double value);
+    void Evaluate(const Particle_List &,double, int);
+    void Evaluate(const Blob_List & blobs,double value, int);
 
     void EndEvaluation();
     void EndEvaluation(double);
-    virtual void Output(std::string pname);
+    virtual void Output(const std::string & pname);
+
+    Primitive_Observable_Base * Copy() const;
+    Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);
+    void Reset();
+
   };
 
 }

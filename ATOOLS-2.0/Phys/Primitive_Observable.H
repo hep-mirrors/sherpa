@@ -10,28 +10,27 @@ namespace ATOOLS {
     Differential_Jetrate(int _type,double _xmin,double _xmax,int _nbins,
 			 Selector_Base * _sel)
     {
-      type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = _sel;
-      name  = std::string("dY_cut");
-      histo = new Histogram(11,xmin,xmax,nbins);
+      m_type = _type; m_xmin = _xmin; m_xmax = _xmax; m_nbins = _nbins; p_sel = _sel;
+      m_name  = std::string("dY_cut");
+      p_histo = new Histogram(11,m_xmin,m_xmax,m_nbins);
     };
 
     Differential_Jetrate(Differential_Jetrate * old) {
-      type  = old->Type();
-      sel   = old->Sel();
-      xmin  = old->Xmin();
-      xmax  = old->Xmax();
-      nbins = old->Nbins();
-      name  = old->Name();
-      histo = new Histogram(old->Histo());
+      m_type  = old->Type();
+      p_sel   = old->Sel();
+      m_xmin  = old->Xmin();
+      m_xmax  = old->Xmax();
+      m_nbins = old->Nbins();
+      m_name  = old->Name();
+      p_histo = new Histogram(old->Histo());
     }
 
-    Differential_Jetrate * GetCopy() {
-      return new Differential_Jetrate(this);
+    Differential_Jetrate * Copy() const {
+      return new Differential_Jetrate(m_type,m_xmin,m_xmax,m_nbins,p_sel);
     }
 
-    void Evaluate(double); 
-    void Evaluate(int,Vec4D *,Flavour *,double);
-    void Evaluate(const Particle_List &,double);
+    void Evaluate(int,const Vec4D *,const Flavour *,double, int);
+    void Evaluate(const Particle_List &,double, int);
   };
 
 }

@@ -15,47 +15,69 @@
 #include "Blob_List.H"
 
 namespace ATOOLS {
+  class Primitive_Analysis;
+
   class Primitive_Observable_Base {  
   protected:
-    int             type,nbins;
-    double          xmin,xmax;
-    Histogram     * histo;
-    Selector_Base * sel;
-    int             nout;
-    Flavour       * flavs;
-    Vec4D         * moms;
-    std::string     name;
-    std::string     m_blobtype;
-    bool            m_blobdisc;
+    int     m_type, m_nbins;
+    double  m_xmin, m_xmax;
+
+    std::string  m_name;
+    std::string  m_listname;
+    Histogram  * p_histo;
+
+    int       m_nout;
+    Flavour * p_flavs;
+    Vec4D   * p_moms;
+
+    std::string  m_blobtype;
+    bool         m_blobdisc;
+    bool         m_splitt_flag;
+
+    Primitive_Analysis * p_ana;
+    Selector_Base      * p_sel;
   public:
     Primitive_Observable_Base();
-    Primitive_Observable_Base(int,double,double,int,Selector_Base *);
+    Primitive_Observable_Base(int _type,double _xmin,double _xmax,int _nbins,
+			      Selector_Base * _sel);
     Primitive_Observable_Base(Primitive_Observable_Base *);
     virtual ~Primitive_Observable_Base();
 
-    virtual Primitive_Observable_Base * GetCopy()          { return NULL; }
+    virtual Primitive_Observable_Base * Copy() const   =0; //   { return NULL; }
 
-    virtual void Evaluate(double)                          { }
-    virtual void Evaluate(int,Vec4D *,Flavour *,double=1.) { }
-    virtual void Evaluate(const Particle_List &,double=1.) { }
-    virtual void Evaluate(const Blob_List &,double=1.);
-    virtual void EndEvaluation(double=1.);
+    virtual void Evaluate(int,const Vec4D *,const Flavour *,double=1.);
+    virtual void Evaluate(const Particle_List &,double=1.,int=1);
+    virtual void Evaluate(const Blob_List &,double=1.,int=1);
 
+    virtual void EndEvaluation(double scale=1.);
+    virtual void Reset();
+    virtual void Output(const std::string & pname);
 
-    virtual void Output(std::string);
+    //    virtual void SetFlavInfo(int,const Vec4D *,const Flavour *);
+    virtual void SetBlobType(const std::string & =std::string(""));
+    virtual void SetAnalysis(Primitive_Analysis*);
 
+    virtual Primitive_Observable_Base & operator+=(const Primitive_Observable_Base &);
 
-    virtual void            SetFlavInfo(int,Vec4D *,Flavour *);
-    virtual void            SetBlobType(std::string=std::string(""));
-
-    virtual int             Type();
-    virtual int             Nbins();
-    virtual double          Xmin();
-    virtual double          Xmax();
-    virtual std::string     Name();
-    virtual Histogram     * Histo();
-    virtual Selector_Base * Sel();
+    int             Type()  const;
+    int             Nbins() const;
+    double          Xmin()  const;
+    double          Xmax()  const;
+    std::string     Name()  const;
+    Histogram     * Histo() const;
+    Selector_Base * Sel()   const;
+    bool       Splittable() const;
   };
+
+  // --- inline functions ---
+  inline int             Primitive_Observable_Base::Type()  const { return m_type; }
+  inline int             Primitive_Observable_Base::Nbins() const { return m_nbins; }
+  inline double          Primitive_Observable_Base::Xmin()  const { return m_xmin; }
+  inline double          Primitive_Observable_Base::Xmax()  const { return m_xmax; }
+  inline std::string     Primitive_Observable_Base::Name()  const { return m_name; }
+  inline Histogram     * Primitive_Observable_Base::Histo() const { return p_histo; }
+  inline Selector_Base * Primitive_Observable_Base::Sel()   const { return p_sel; }
+  inline bool       Primitive_Observable_Base::Splittable() const { return m_splitt_flag; }
 }
 
 #endif

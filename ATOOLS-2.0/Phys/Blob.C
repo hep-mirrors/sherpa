@@ -9,7 +9,8 @@ using namespace ATOOLS;
 namespace ATOOLS {
   std::ostream& operator<<( std::ostream& ostr, const Blob & bl) {
     ostr<<std::setw(4)<<std::setprecision(4);
-    ostr<<"Blob ( "<<bl.Id()<<", "<<bl.Type()<<", ";
+    ostr<<"Blob ["<<bl.Status()<<"]( "<<bl.Id()<<", "<<bl.Type()<<", ";
+    //    ostr<<"Blob ( "<<bl.Id()<<", "<<bl.Type()<<", ";
     if (bl.Beam() != -1) {
       ostr<<" from Beam "<<bl.Beam()<<", ";
     }
@@ -30,7 +31,7 @@ namespace ATOOLS {
 
   std::ostream& operator<<( std::ostream& ostr,const  Blob * bl) {
     ostr<<std::setw(4)<<std::setprecision(4);
-    ostr<<"Blob ( "<<bl->Id()<<", "<<bl->Type()<<", ";
+    ostr<<"Blob ["<<bl->Status()<<"]( "<<bl->Id()<<", "<<bl->Type()<<", ";
     if (bl->Beam() != -1) {
       ostr<<" from Beam "<<bl->Beam()<<", ";
     }
@@ -274,27 +275,21 @@ void Blob::ClearAllData()
 
 //=====================================================================
 
-template <class Type>
-Type Blob_Data_Base::Get() 
+
+
+std::ostream& ATOOLS::operator<<( std::ostream& s, const Blob_Data_Base & bd) 
 {
-  return ((Blob_Data<Type>*)this)->Get();
+  bd>>s;
+  return s;
 }
+
+
 
 Blob_Data_Base::~Blob_Data_Base()
 {
 }
 
-template <class Type>
-Blob_Data<Type>::~Blob_Data() 
-{
-}
 
-template <class Type>
-std::ostream & Blob_Data<Type>::operator<<(std::ostream & s)
-{
-  s<<m_data;
-  return s;
-}
 
 
 template int Blob_Data_Base::Get<int>();

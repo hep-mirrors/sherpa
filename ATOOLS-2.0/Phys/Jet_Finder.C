@@ -2,6 +2,13 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 
+#ifdef PROFILE__Analysis_Phase
+#include "prof.hh"
+#else 
+#define PROFILE_HERE {}
+#define PROFILE_LOCAL(LOCALNAME) {}
+#endif
+
 using namespace ATOOLS;
 
 
@@ -12,6 +19,7 @@ Jet_Finder::~Jet_Finder() {
 
 void Jet_Finder::Init(const Vec4D * p)
 {
+  PROFILE_HERE;
   if (m_nin==2) {
     switch (m_type) {
     case 4 : 
@@ -66,39 +74,146 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_sel_log = new Selector_Log(m_name);
 }
 
+bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res, bool final_only) 
+{
+  PROFILE_HERE;
+  std::vector<Vec4D>   momsout;
+
+  Vec4D   momsin[2];
+  Flavour flavsin[2];
+  if (!final_only) {
+    for (int i=0;i<2;i++) {
+      momsin[i]  = (*pl)[i]->Momentum();
+      flavsin[i] = (*pl)[i]->Flav();
+    }
+    if ( (flavsin[0].Strong()) || (flavsin[1].Strong()) || (m_type != 1) ) {
+      if (m_type==1) m_type=4;  // assume hadron hadron
+    }
+
+    Init(momsin);
+    BoostInFrame(momsout);
+
+    // delete first two
+    pl->erase(pl->begin());
+    pl->erase(pl->begin());
+  }
+  else {
+    if (rpa.gen.Beam1().Strong() || rpa.gen.Beam2().Strong() || rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) 
+      m_type=4;
+    flavsin[0]=rpa.gen.Beam1();
+    flavsin[1]=rpa.gen.Beam1();
+
+    momsin[0]=Vec4D::ZVEC;
+    momsin[0]*=(rpa.gen.Ecms()*0.5);
+    momsin[1]=Vec4D(momsin[0][0],-1.*Vec3D(momsin[0]));
+  }
+
+  // remove everything not to cluster and create momentum list
+  for (Particle_List::iterator it=pl->begin(); it!=pl->end();) {
+    //    if ((*parts)[i]->Flav().Strong()) {
+    if (!(*it)->Flav().IsLepton()) {
+      momsout.push_back((*it)->Momentum());
+      ++it;
+    }
+    else {
+      it=pl->erase(it);
+    }
+  }
+
+  // Cluster vectors untill y_res reached!
+  for (;;) {
+    int j,k;
+    double yij=YminKt(momsin,flavsin,momsout,j,k);
+    if (yij>y_res) break;
+
+    if (j<0) {
+      //      momsin[j+2] += momsout[k]; // *AS*   ??!!!
+    }
+    else {
+      momsout[j] += momsout[k];
+    }
+    for (int i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
+    momsout.pop_back();
+    for (int i=k;i<pl->size()-1;i++) (*pl)[i] = (*pl)[i+1];
+    pl->pop_back();
+  }
+
+
+  // create "complete new particle list"
+  int j=0;
+  for (Particle_List::iterator it=pl->begin(); it!=pl->end();++it,++j) {
+    (*it)= new Particle(*it);
+    (*it)->SetFlav(Flavour(kf::jet));
+    (*it)->SetMomentum(momsout[j]);
+  }
+
+  return true;
+}
+
+
 bool Jet_Finder::ConstructJets(const Particle_List * parts,
-			       const std::vector<int> & jets,std::vector<double> & lastys) {
+			       const std::vector<int> & jets,std::vector<double> & lastys,bool final_only) 
+{
+  PROFILE_HERE;
+  //  std::cout<<" in Jet_Finder::ConstructJets with "<<parts->size()<<" particles "<<std::endl;
+
   std::vector<Vec4D>   momsout;
   Vec4D   momsin[2];
   Flavour flavsin[2];
-  for (int i=0;i<2;i++) {
-    momsin[i]  = (*parts)[i]->Momentum();
-    flavsin[i] = (*parts)[i]->Flav();
-  }
-  if ( (flavsin[0].Strong()) || (flavsin[1].Strong()) || (m_type != 1) ) {
-    if (m_type==1) m_type=4;  // assume hadron hadron
-  }
-
-  for (int i=2;i<parts->size();i++) {
-    if ((*parts)[i]->Flav().Strong()) {
-      momsout.push_back((*parts)[i]->Momentum());
+  if (!final_only) {
+    for (int i=0;i<2;i++) {
+      momsin[i]  = (*parts)[i]->Momentum();
+      flavsin[i] = (*parts)[i]->Flav();
     }
+    if ( (flavsin[0].Strong()) || (flavsin[1].Strong()) || (m_type != 1) ) {
+      if (m_type==1) m_type=4;  // assume hadron hadron
+    }
+
+    for (int i=2;i<parts->size();i++) {
+      //    if ((*parts)[i]->Flav().Strong()) {
+      if (!(*parts)[i]->Flav().IsLepton()) {
+	momsout.push_back((*parts)[i]->Momentum());
+      }
+    }
+    Init(momsin);
+    BoostInFrame(momsout);
   }
-  Init(momsin);
-  BoostInFrame(momsout);
+  else {
+    if (rpa.gen.Beam1().Strong() || rpa.gen.Beam2().Strong() || rpa.gen.Beam1().IsHadron() || rpa.gen.Beam2().IsHadron()) 
+      m_type=4;
+    flavsin[0]=rpa.gen.Beam1();
+    flavsin[1]=rpa.gen.Beam1();
+
+    momsin[0]=Vec4D::ZVEC;
+    momsin[0]*=(rpa.gen.Ecms()*0.5);
+    momsin[1]=Vec4D(momsin[0][0],-1.*Vec3D(momsin[0]));
+
+    for (int i=0;i<parts->size();i++) {
+      //    if ((*parts)[i]->Flav().Strong()) {
+      if (!(*parts)[i]->Flav().IsLepton()) {
+	momsout.push_back((*parts)[i]->Momentum());
+      }
+    }
+
+  }
 
   bool ordered = 1;
   while ((momsout.size()<=jets[lastys.size()]) && (lastys.size()<jets.size())) {
+    //    std::cout<<" A: "<<momsout.size()<<" <=? "<<jets[lastys.size()]<<std::endl;
     lastys.push_back(-1.);
   }
   while (momsout.size()>jets.back()) {
+    //    std::cout<<" B: "<<momsout.size()<<" >? "<<jets.back()<<std::endl;
     if (!ConstructJetSystem(momsin,flavsin,momsout,jets,lastys)) ordered = 0;
   }
   return ordered;
 }
 
 bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> & momsout,
-				    std::vector<int> jets,std::vector<double> & lastys) {
+				    std::vector<int> jets,std::vector<double> & lastys) 
+{
+  PROFILE_HERE;
+  //  std::cout<<" in Jet_Finder::ConstructJetSystem with "<<momsout.size()<<" momenta "<<std::endl;
   int j,k;
   bool ordered = 1;
   // Calculate ymin and store for comparison
@@ -121,12 +236,16 @@ bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector
   for (int i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
   momsout.pop_back();
 
+//   std::cout<<"============================================================"<<std::endl;
+//   for (int i=0;i<momsout.size();++i) std::cout<<i<<" : "<<momsout[i]<<std::endl;
+
   return ordered;
 }
 
 double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> momsout,
 			   int & j1,int & k1)
 {
+  PROFILE_HERE;
   double ymin = 2.;
   j1=-3; k1=-3;
   double pt2jk,pt2j,pt2k;
@@ -216,6 +335,7 @@ Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) 
 
 bool Jet_Finder::Trigger(const Vec4D * p)
 {
+  PROFILE_HERE;
   // create copy
   Vec4D * moms = new Vec4D[m_nin+m_nout];
   for (int i=0;i<m_nin+m_nout;i++) moms[i]=p[i];
@@ -410,6 +530,7 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
 
 double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 {
+  PROFILE_HERE;
   double ymin = 2.;
   double pt2jk,pt2j,pt2k;
   for (int j=m_nin;j<m_n;j++) {

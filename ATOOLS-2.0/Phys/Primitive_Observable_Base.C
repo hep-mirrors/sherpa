@@ -1,81 +1,117 @@
 #include "Primitive_Observable_Base.H"
+#include "Primitive_Analysis.H"
 
 using namespace ATOOLS;
 using namespace std;
 
 Primitive_Observable_Base::Primitive_Observable_Base() :
-  type(0), nbins(0), xmin(0.), xmax(0.), histo(NULL), sel(NULL),
-  nout(0), flavs(NULL), moms(NULL), name(std::string("noname")) { };
-
-
-Primitive_Observable_Base::Primitive_Observable_Base(int _type,double _xmin,double _xmax,
-			  int _nbins, Selector_Base * _sel) :
-  type(_type), nbins(_nbins), xmin(_xmin), xmax(_xmax), sel(_sel) 
+  m_type(0), m_nbins(0), m_xmin(0.), m_xmax(0.), m_name(std::string("noname")),
+  p_histo(NULL), m_nout(0), p_flavs(NULL), p_moms(NULL), 
+  m_splitt_flag(true) ,p_ana(NULL), p_sel(NULL)
 { 
-  histo = new Histogram(type,xmin,xmax,nbins);
-};
+  m_blobdisc = false;
+  m_listname="FinalState";
+}
+
+Primitive_Observable_Base::Primitive_Observable_Base(int _type,double _xmin,double _xmax,int _nbins,
+			      Selector_Base * _sel) :
+  m_type(_type), m_nbins(_nbins), m_xmin(_xmin), m_xmax(_xmax), m_splitt_flag(true), p_ana(NULL), p_sel(_sel)
+{ 
+  p_histo = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
+  m_listname="FinalState";
+  /*
+  msg.Error()<<"LAGACY WARNING  Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
+  */
+}
 
 
 Primitive_Observable_Base::Primitive_Observable_Base(Primitive_Observable_Base * old) :
-  type(old->type), nbins(old->nbins), xmin(old->xmin), xmax(old->xmax), 
-  sel(old->sel), name(old->name) 
+  m_type(old->m_type), m_nbins(old->m_nbins), m_xmin(old->m_xmin), m_xmax(old->m_xmax), 
+  p_sel(old->p_sel), m_name(old->m_name) 
 { 
-  histo = new Histogram(old->histo);
+  m_listname="FinalState";
+  msg.Error()<<"LAGACY WARNING  Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
+  p_histo = new Histogram(old->p_histo);
 }
 
 
-Primitive_Observable_Base::~Primitive_Observable_Base() {
-  if (histo!=0) { delete histo; histo = 0; }
+Primitive_Observable_Base::~Primitive_Observable_Base() 
+{
+  if (p_histo!=0) { delete p_histo; p_histo = 0; }
 }
 
-void Primitive_Observable_Base::SetBlobType(std::string _btype) 
+void Primitive_Observable_Base::SetBlobType(const std::string & _btype) 
 { 
   m_blobtype = _btype;
   m_blobdisc = false;
   if (_btype!=std::string("")) m_blobdisc = true;
 }
 
-void Primitive_Observable_Base::Evaluate(const Blob_List & _blist,double _weight) 
+void Primitive_Observable_Base::Evaluate(int,const Vec4D *,const Flavour *,double) 
 {
-  size_t pos;
-  bool   take;
-  Particle_List plist;
-  plist.clear();
-  for (Blob_Const_Iterator blit=_blist.begin();blit!=_blist.end();++blit) {
-    take = true;
-    if (m_blobdisc) {
-      take = false;
-      pos  = (*blit)->Type().find(m_blobtype);
-      if (pos!=std::string::npos) take = true;
+  msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : A "<<m_name<<std::endl;
+}
+
+void Primitive_Observable_Base::Evaluate(const Particle_List & pl,double weight,int ncount) 
+{
+  if (ncount>1) {
+    msg.Out()<<" WARNING: "<<Name()<<"::Evaluate(const Particle_List & pl,const double weight,"<<ncount<<") "<<std::endl;
+    Evaluate(pl,weight);
+    for (int i=2;i<=ncount;++i) {
+      Evaluate(pl,0.);
     }
-    if (take) {
-      for (int i=0;i<(*blit)->NOutP();i++) plist.push_back((*blit)->OutParticle(i));
-    }
+    return;
   }
-  if (plist.size()>0) Evaluate(plist,_weight);
+
+  msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : B "<<m_name<<std::endl;
+}
+
+void Primitive_Observable_Base::Evaluate(const Blob_List & blobs,double value, int ncount)
+{
+  Particle_List * pl=p_ana->GetParticleList(m_listname);
+  Evaluate(*pl,value, ncount);
 }
 
 
 void Primitive_Observable_Base::EndEvaluation(double _scale) {
-  histo->Finalize();
-  if (_scale!=1.) histo->Scale(_scale);
-  histo->Output();
+  if (p_histo) {
+    p_histo->Finalize();
+    if (_scale!=1.) p_histo->Scale(_scale);
+    p_histo->Output();
+  }
 }
 
-void Primitive_Observable_Base::SetFlavInfo(int _nout,Vec4D * _moms,Flavour * _flavs) {
-  nout = _nout; moms = _moms; flavs = _flavs;
+/*
+void Primitive_Observable_Base::SetFlavInfo(int _nout,const Vec4D * _moms,const Flavour * _flavs) {
+  m_nout = _nout; p_moms = _moms; p_flavs = _flavs;
+}
+*/
+
+void Primitive_Observable_Base::Output(const std::string & _pname) {
+  if (p_histo) {
+    int  mode_dir = 448;
+    mkdir((_pname).c_str(),mode_dir); 
+    p_histo->Output((_pname+std::string("/")+m_name).c_str());
+  }
 }
 
-void Primitive_Observable_Base::Output(std::string _pname) {
-  int  mode_dir = 448;
-  mkdir((_pname).c_str(),mode_dir); 
-  histo->Output((_pname+std::string("/")+name).c_str());
+void Primitive_Observable_Base::SetAnalysis(Primitive_Analysis * ana) 
+{
+  p_ana=ana;
 }
 
-int             Primitive_Observable_Base::Type()  { return type;  }
-int             Primitive_Observable_Base::Nbins() { return nbins; }
-double          Primitive_Observable_Base::Xmin()  { return xmin;  }
-double          Primitive_Observable_Base::Xmax()  { return xmax;  }
-std::string     Primitive_Observable_Base::Name()  { return name;  }
-Histogram     * Primitive_Observable_Base::Histo() { return histo; }
-Selector_Base * Primitive_Observable_Base::Sel()   { return sel;   }
+void Primitive_Observable_Base::Reset()
+{
+  if (p_histo) p_histo->Reset();
+}
+
+Primitive_Observable_Base & Primitive_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
+{
+  if (p_histo) {
+    (*p_histo)+=(*ob.p_histo);
+  }
+  else {
+    msg.Out()<<" warning "<<Name()<<" has not overloaded the operator+="<<std::endl;
+  }
+  return *this;
+}

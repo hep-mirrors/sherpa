@@ -45,7 +45,9 @@ namespace ATOOLS {
 
     void   Init(const Vec4D *);
     bool   ConstructJets(const Particle_List *,
-			 const std::vector<int> &,std::vector<double> &);
+			 const std::vector<int> &,std::vector<double> & ,bool);
+
+    bool   ConstructJets(Particle_List *, double, bool );
 
     bool   Trigger(const Vec4D *);
     bool   TwoJets(const Vec4D &);

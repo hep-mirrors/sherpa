@@ -17,18 +17,20 @@ namespace ATOOLS {
   public:
     template <class Type> Type Get();
     virtual ~Blob_Data_Base();
-    virtual std::ostream & operator<<(std::ostream &) =0;
+    virtual std::ostream & operator>>(std::ostream &) const =0;
   };
 
   template <class Type> class Blob_Data : public Blob_Data_Base {
     Type m_data;
   public:
-    Blob_Data(const Type & d) : m_data(d) {}
+    Blob_Data(const Type & d);
     Type Get() { return m_data; }
     void Set(const Type & d) { m_data=d; }
-    std::ostream & operator<<(std::ostream &);
+    std::ostream & operator>>(std::ostream &) const;
     ~Blob_Data();
   };
+
+  std::ostream& operator<<( std::ostream&, const Blob_Data_Base &);
 
   typedef std::vector<Particle *> Particle_Queue;
   typedef std::map<std::string,Blob_Data_Base*> Data_Container;
@@ -108,6 +110,29 @@ namespace ATOOLS {
     Vec4D       const CMS()              const { return m_cms_vec; }
     std::string const Type()             const { return m_type; }
   };
+
+
+  template <class Type>
+  Blob_Data<Type>::Blob_Data(const Type & d) : m_data(d) {}
+
+
+  template <class Type>
+  std::ostream & Blob_Data<Type>::operator>>(std::ostream & s) const 
+  {
+    s<<m_data;
+    return s;
+  }
+
+  template <class Type>
+  Type Blob_Data_Base::Get() 
+  {
+    return ((Blob_Data<Type>*)this)->Get();
+  }
+
+  template <class Type>
+  Blob_Data<Type>::~Blob_Data() 
+  {
+  }
 
 
   /*!

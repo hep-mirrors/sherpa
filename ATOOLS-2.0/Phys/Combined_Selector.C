@@ -10,6 +10,7 @@ using namespace std;
 
 Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 				     Selector_Data * _seldata) {
+
   m_name  = std::string("Combined_Selector"); 
   m_nin   = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl    = _fl;
@@ -39,7 +40,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
     if (init) {
       int jettype = 0;
       switch (type) {
-      case 1  : 
+      case 1 : 
 	if (_nin==2) {
 	  int instrong = 0;
 	  for (int j=0;j<_nin;j++) { if (_fl[j].Strong()) instrong++; }
