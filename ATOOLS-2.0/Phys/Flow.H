@@ -30,9 +30,11 @@ namespace ATOOLS {
     ~Flow();
     
     // member functions
+    void SetCode(const Flow &flow);
     void SetCode(const unsigned int code_index=1,const int code=-1);
 
     unsigned int Code(const unsigned int index=1) const;
+    int          Index(const unsigned int code) const;
 
     // inline functions
     inline static void ResetCounter() { s_qcd_counter=600; }

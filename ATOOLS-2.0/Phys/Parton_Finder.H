@@ -5,15 +5,20 @@
 
 namespace ATOOLS {
 
-  struct pfc {
+  class Parton_Tester {
+  public:
     
-    enum code{
-      color = 1
-    };
+    // member functions
+    virtual void Turn();
+    virtual bool Test(const Particle *parton) const;
 
-  };// end of struct pfc
+  };// end of class Parton_Tester
 
   class Parton_Finder {
+  public:
+
+    typedef std::vector<const Particle*> Const_Particle_Vector;
+
   private:
     
     const Particle *m_start, *m_end;
@@ -21,11 +26,9 @@ namespace ATOOLS {
     std::set<btp::code> m_excludeblobs;
     std::set<kf::code>  m_excludeflavours;
 
-    std::set<const Particle*> m_tested;
+    Parton_Tester *p_criterion;
 
-    std::pair<unsigned int,unsigned int> m_color;
-
-    pfc::code m_criterion;
+    Const_Particle_Vector m_track;
 
     void Turn();
     bool Test(const Particle *cur);
@@ -33,18 +36,19 @@ namespace ATOOLS {
     const Particle *FindConstConnectedForward(const Particle *start);
     const Particle *FindConstConnectedBackward(const Particle *start);
 
-    const Particle *FindConstConnected(const Particle *start,bool forward=true);
+    const Particle *FindConstConnected(const Particle *start,
+				       bool forward=true);
 
   public:
 
     // constructor
-    Parton_Finder();
+    Parton_Finder(Parton_Tester &criterion);
 
     // member funnctions
     void Clear();
 
     Particle *FindConnected(const Particle *start,
-			    bool forward=true,unsigned int index=0);
+			    bool forward=true);
 
     const Particle *FindConstConnected(); 
 
@@ -52,8 +56,10 @@ namespace ATOOLS {
     inline void SetStart(Particle *const start) { m_start=start; }
     inline void SetEnd(Particle *const end)     { m_end=end;     }
 
-    inline void Exclude(const btp::code code) { m_excludeblobs.insert(code);    }
-    inline void Exclude(const kf::code code)  { m_excludeflavours.insert(code); }
+    inline void Exclude(const btp::code code) 
+    { m_excludeblobs.insert(code); }
+    inline void Exclude(const kf::code code)  
+    { m_excludeflavours.insert(code); }
 
     inline Particle *Start() const { return (Particle*)m_start; }
     inline Particle *End() const   { return (Particle*)m_end;   }
@@ -61,8 +67,7 @@ namespace ATOOLS {
     inline const Particle *ConstStart() const { return m_start; }
     inline const Particle *ConstEnd() const   { return m_end;   }
 
-    inline void SetColour(const unsigned int i,const unsigned int code)
-    { m_color=std::pair<unsigned int,unsigned int>(i,code); }
+    inline const Const_Particle_Vector &Track() { return m_track; }
 
   };// end of class Parton_Finder
 
