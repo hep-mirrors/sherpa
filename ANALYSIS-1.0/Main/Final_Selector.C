@@ -49,7 +49,7 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="Finder" && cur.size()>1) {
       int kf=ATOOLS::ToType<int>(cur[1]);
-      if (kf!=ATOOLS::kf::jet || kf==ATOOLS::kf::bjet) continue;
+      // if (kf!=ATOOLS::kf::jet || kf==ATOOLS::kf::bjet) continue;
       ATOOLS::Flavour flavour((ATOOLS::kf::code)abs(kf));
       if (kf<0) flavour=flavour.Bar();
       data.pt_min=0.;
