@@ -403,7 +403,7 @@ void Sample_Analysis::SetUpObservables()
 	break; 
       }
       if (type==std::string("SPT2")) { 
-	//	obs = new Two_Particle_Scalar_PT(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
+	obs = new Two_Particle_Scalar_PT(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
 	break; 
       }
       if (type==std::string("Eta2"))  { 
