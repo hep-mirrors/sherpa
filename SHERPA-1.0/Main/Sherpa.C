@@ -95,6 +95,7 @@ bool Sherpa::InitializeTheEventHandler()
 						       p_inithandler->GetHardDecayHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
 						    p_inithandler->GetShowerHandler()));
+    p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
 						    p_inithandler->GetFragmentationHandler()));
     break;
