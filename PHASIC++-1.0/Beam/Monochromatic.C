@@ -5,6 +5,7 @@ using namespace APHYTOOLS;
 using namespace AMATOOLS;
 using namespace AORGTOOLS;
 using namespace BEAM;
+using namespace std;
 
 Monochromatic::Monochromatic(const Flavour _beam,const double _energy,
 			     const double _polarization,bool & okay) 
