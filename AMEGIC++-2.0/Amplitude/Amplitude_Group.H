@@ -78,10 +78,11 @@ namespace AMEGIC {
   /*! 
     \file
     \brief this file contains the class AMEGIC::Amplitude_Group
+  
   */
 
   /*! \class Amplitude_Group
-      \brief is the basis class for gouping Feynman amplitudes in
+      \brief is the basis class for grouping Feynman amplitudes in
              Color_Group's or Super_Amplitudes
   */
 

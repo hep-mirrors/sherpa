@@ -935,8 +935,27 @@ int Amplitude_Generator::FindQEDOrder(Point * p,int & countQED)
 {
   //cout<<" In FindQEDOrder countQED"<<countQED<<endl;
   if (!p) return countQED;
-  if (p->number>99 && p->fl.IsVector() && !(p->fl.IsGluon())) countQED +=2;
-  if (p->number<99 && p->fl.IsVector() && !(p->fl.IsGluon())) countQED +=1;
+  
+  int hit = 0;
+  
+  //Vector-Boson propagators
+  if (p->number>99 && p->fl.IsVector() && !(p->fl.IsGluon())) {
+    countQED += 2;
+    hit       = 1; 
+  }    
+  //External Vector-Boson 
+  if (p->number<99 && p->fl.IsVector() && !(p->fl.IsGluon())) {
+    countQED += 1;
+    hit       = 1;
+  }
+  
+  //triple and quartic Vector-Boson interactions
+  if (hit) {
+    if (p->left   && p->left->fl.IsVector() && !(p->left->fl.IsGluon()))     countQED -= 1;
+    if (p->right  && p->right->fl.IsVector() && !(p->right->fl.IsGluon()))   countQED -= 1;
+    if (p->middle && p->middle->fl.IsVector() && !(p->middle->fl.IsGluon())) countQED -= 1;
+  }
+  
   FindQEDOrder(p->left,countQED);
   FindQEDOrder(p->right,countQED);
   if (p->middle) FindQEDOrder(p->middle,countQED);
@@ -947,8 +966,27 @@ int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
 {
   //cout<<" In FindQCDOrder countQCD"<<countQCD<<endl;
   if (!p) return countQCD;
-  if (p->number>99 && p->fl.IsVector() && p->fl.IsGluon()) countQCD +=2;
-  if (p->number<99 && p->fl.IsVector() && p->fl.IsGluon()) countQCD +=1;
+  
+  int hit = 0;
+  
+  //Gluon propagators
+  if (p->number>99 && p->fl.IsGluon()) {
+    countQCD += 2;
+    hit       = 1;
+  }
+  //External gluon 
+  if (p->number<99 && p->fl.IsGluon()) {
+    countQCD += 1;
+    hit       = 1;
+  }
+
+   //triple and quartic Gluon vertices 
+  if (hit) {
+    if (p->left   && p->left->fl.IsGluon())   countQCD -= 1;
+    if (p->right  && p->right->fl.IsGluon())  countQCD -= 1;
+    if (p->middle && p->middle->fl.IsGluon()) countQCD -= 1;
+  }
+  
   FindQCDOrder(p->left,countQCD);
   FindQCDOrder(p->right,countQCD);
   if (p->middle) FindQCDOrder(p->middle,countQCD);
