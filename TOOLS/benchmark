@@ -90,7 +90,7 @@ echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n"
 echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n" >> $OUTPUTFILE
 LIST=""
 
-rm -rf BENCHMARK
+rm -rf $DIR
 echo -en "checking out current benchmarking points from cvs ... " >> $LOGFILE
 echo -e "checking out current benchmarking points from cvs {\n" >> $OUTPUTFILE
 if ! cvs co benchmark >> $OUTPUTFILE 2>&1 ; then
