@@ -28,7 +28,7 @@ void Single_XS::WriteOutXSecs(std::ofstream &outfile)
   outfile.precision(12);
   outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
 	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
-	 <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<std::endl; 
+	 <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<std::endl; 
 }
 
 bool Single_XS::CalculateTotalXSec(const std::string &resultpath) 
@@ -86,13 +86,19 @@ void Single_XS::AddPoint(const double value)
 
 void Single_XS::OptimizeResult()
 {
-  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
-  m_ssigma2  += 1./ssigma2; 
-  m_totalsum += m_ssum/ssigma2/m_sn;
-  m_totalsumsqr+= m_ssumsqr/ssigma2/m_sn;
-  m_ssum     = 0.;
-  m_ssumsqr  = 0.;
-  m_sn       = 0;
+  double ssigma2 = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  if (ssigma2>m_wmin) {
+    m_ssigma2  += ssigma2; 
+    m_totalsum += m_ssum*ssigma2/m_sn;
+    m_totalsumsqr+= m_ssumsqr*ssigma2/m_sn;
+    m_ssum     = 0.;
+    m_ssumsqr  = 0.;
+    m_sn       = 0;
+    if (ssigma2/m_son>m_wmin) m_wmin = ssigma2/m_son;
+    m_son      = 0;
+  }
+//   cout<<"Weights (actual/min) "<<ssigma2<<" "<<m_wmin<<endl;
+  m_son++;
 }
 
 void Single_XS::ResetMax(int flag)

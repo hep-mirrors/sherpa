@@ -159,7 +159,7 @@ void XS_Group::WriteOutXSecs(std::ofstream &outfile)
   outfile.precision(12);
   outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
 	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
-	 <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<std::endl; 
+	 <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<std::endl; 
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->WriteOutXSecs(outfile);
 }
 
@@ -206,8 +206,8 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       m_channels = true;
     }
     std::string filename=resultpath+std::string("/")+m_name+std::string(".xs_tot"), singlename;
-    double singlexs, singleerr, singlemax, singlesum, singlesumsqr,ssum,ssqrsum,ss2;
-    long unsigned int singlen,sn;
+    double singlexs, singleerr, singlemax, singlesum, singlesumsqr,ssum,ssqrsum,ss2,wmin;
+    long unsigned int singlen,sn,son;
     m_foundown=false;
     if (resultpath!=std::string("")) {
       std::ifstream infile;
@@ -216,7 +216,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       if (infile.good()) {
 	infile>>singlename>>singlexs>>singlemax>>singleerr
 	      >>singlesum>>singlesumsqr>>singlen
-	      >>ssum>>ssqrsum>>ss2>>sn;
+	      >>ssum>>ssqrsum>>ss2>>sn>>wmin>>son;
 	do {
 	  msg_Tracking()<<"Found result: xs for "<<singlename<<" : "
 			<<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -234,11 +234,13 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	    xs->SetSSumSqr(ssqrsum);
 	    xs->SetSigmaSum(ss2);
 	    xs->SetSPoints(sn);
+	    xs->SetWMin(wmin);
+	    xs->SetOptCounter(son);
 	    --hits;
 	  }
 	  infile>>singlename>>singlexs>>singlemax>>singleerr
 		>>singlesum>>singlesumsqr>>singlen
-		>>ssum>>ssqrsum>>ss2>>sn;
+		>>ssum>>ssqrsum>>ss2>>sn>>wmin>>son;
 	} while (infile);
       }
       infile.close();
@@ -379,13 +381,18 @@ void XS_Group::ResetMax(int flag)
 
 void XS_Group::OptimizeResult() 
 {
-  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
-  m_ssigma2  += 1./ssigma2; 
-  m_totalsum += m_ssum/ssigma2/m_sn;
-  m_totalsumsqr+= m_ssumsqr/ssigma2/m_sn;
-  m_ssum     = 0.;
-  m_ssumsqr  = 0.;
-  m_sn       = 0;
+  double ssigma2 = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  if (ssigma2>m_wmin) {
+    m_ssigma2  += ssigma2; 
+    m_totalsum += m_ssum*ssigma2/m_sn;
+    m_totalsumsqr+= m_ssumsqr*ssigma2/m_sn;
+    m_ssum     = 0.;
+    m_ssumsqr  = 0.;
+    m_sn       = 0;
+    if (ssigma2/m_son>m_wmin) m_wmin = ssigma2/m_son;
+    m_son      = 0;
+  }
+  m_son++;
   for (size_t i=0;i<m_xsecs.size();i++) m_xsecs[i]->OptimizeResult();
 }
 
