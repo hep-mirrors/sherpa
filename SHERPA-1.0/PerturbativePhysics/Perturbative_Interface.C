@@ -77,10 +77,3 @@ void Perturbative_Interface::CleanBlobList(ATOOLS::Blob_List *const bloblist,
   }
 }
 
-void Perturbative_Interface::Reset()
-{
-}
-
-void Perturbative_Interface::UpdateEnergy(const double energy,const size_t i)
-{
-}

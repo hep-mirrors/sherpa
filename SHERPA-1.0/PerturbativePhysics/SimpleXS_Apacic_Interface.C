@@ -107,7 +107,22 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
 
 int SimpleXS_Apacic_Interface::PerformShowers()
 {
-  return p_shower->PerformShowers(-1,p_mehandler->GetISR_Handler()->X1(),
+  int jetveto=-1;
+  double qmin2i=0., qmin2f=0.; 
+  if (p_mehandler->UseSudakovWeight()) {
+    p_tools->JetVetoPt2(qmin2i,qmin2f);
+    p_shower->SetJetvetoPt2(qmin2i,qmin2f);
+    double scale=p_mehandler->FactorisationScale();
+    p_shower->SetFactorisationScale(scale);
+    jetveto=2;
+  }
+  msg_Debugging()<<"SimpleXS_Apacic_Interface::PerformShowers(): {\n"
+		 <<"   initial = "<<m_ini<<", final = "<<m_fin<<"\n"
+		 <<"   sudakov weight = "<<p_mehandler->UseSudakovWeight()<<"\n"
+		 <<"    maxpt ini = "<<qmin2i<<" maxpt fin = "<<qmin2f
+		 <<" vs. "<<p_hard->OutParticle(0)->Momentum().PPerp2()
+		 <<"\n}"<<std::endl;
+  return p_shower->PerformShowers(jetveto,p_mehandler->GetISR_Handler()->X1(),
 				  p_mehandler->GetISR_Handler()->X2());
 }
 
@@ -116,12 +131,3 @@ int SimpleXS_Apacic_Interface::PerformDecayShowers()
   return 1; 
 }
 
-void SimpleXS_Apacic_Interface::Reset()
-{
-  m_rescale[1]=m_rescale[0]=1.;
-}
-
-void SimpleXS_Apacic_Interface::UpdateEnergy(const double energy,const size_t i)
-{
-  m_rescale[i]-=2.*energy/sqrt(p_mehandler->GetISR_Handler()->Pole());
-}

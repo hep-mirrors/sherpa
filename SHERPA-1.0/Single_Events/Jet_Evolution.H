@@ -17,8 +17,8 @@ namespace SHERPA {
 
     int AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,Perturbative_Interface *);
     
-    void ResetInterfaces();
-    void UpdateInterfaces(const ATOOLS::Blob *blob,const size_t beam);
+    void Reset();
+    void Update(const ATOOLS::Blob *blob,const size_t beam);
     bool DefineInitialConditions(const ATOOLS::Blob *blob,
 				 const ATOOLS::Blob_List *bloblist); 
     void FillDecayBlobMap(ATOOLS::Blob * blob,ATOOLS::Blob_List *bloblist);

@@ -40,9 +40,6 @@ namespace SHERPA {
     virtual int PerformShowers() = 0;
     virtual int PerformDecayShowers() = 0;
 
-    virtual void Reset();
-    virtual void UpdateEnergy(const double energy,const size_t i);
-
     void CleanBlobList(ATOOLS::Blob_List *const bloblist,
 		       const ATOOLS::btp::code type);
 

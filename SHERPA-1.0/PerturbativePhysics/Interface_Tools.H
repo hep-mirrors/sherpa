@@ -16,6 +16,8 @@ namespace SHERPA {
     APACIC::Tree **p_initrees; 
     APACIC::Tree  *p_fintree; 
 
+    double m_inipt2, m_finpt2;
+
     bool   Connected(const ATOOLS::Particle *p1,const ATOOLS::Particle *p2);
     double Angle(const ATOOLS::Particle *p1,const ATOOLS::Blob *blob);
 
@@ -30,6 +32,8 @@ namespace SHERPA {
     // member functions
     void InitializeIncoming(const ATOOLS::Blob *blob,const double &ecms);
     void InitializeOutGoing(ATOOLS::Blob *blob,const double &ecms);
+
+    void JetVetoPt2(double &inipt2,double &finpt2);
 
   };// end of class Interface_Tools
 

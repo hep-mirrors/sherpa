@@ -364,6 +364,7 @@ bool Simple_Chain::SetUpInterface()
 #ifdef USING__Sherpa
   p_mehandler = new SHERPA::Matrix_Element_Handler();
   p_mehandler->SetXS(p_processes);
+  p_mehandler->SetUseSudakovWeight(m_jetveto);
 #endif
   return true;
 }
@@ -599,6 +600,7 @@ bool Simple_Chain::Initialize()
       p_profile = Profile_Function_Base::SelectProfile(function,parameters);
     }
   }
+  if (!reader->ReadFromFile(m_jetveto,"JET_VETO")) m_jetveto=1;
   delete reader;
   if (!CreateGrid()) {
     CleanUp();
@@ -768,22 +770,13 @@ bool Simple_Chain::DiceProcess()
     for (;sit!=sorter.upper_bound(sit->first);++sit) {
       if ((cur+=sit->first/norm)>rannr) {
 	m_selected=sit->second;
-	double xrem[2];
-	for (short unsigned int k=0;k<2;++k) {
-	  xrem[k]=0.0;
-	  if (m_last[3-k]<xmin+xrem[k]) {
-	    s_stophard=true;
-	    m_dicedprocess=false;
-	    return true;
-	  }
-	}
 	PDF::ISR_Handler *isr=m_processmap[m_selected]->ISR();
 	double sprimemin=isr->SprimeMin(), sprimemax=isr->SprimeMax();
 	double ymin=isr->YMin(), ymax=isr->YMax();
 	isr->SetSprimeMin(4.0*m_last[0]*m_last[0]);
 	isr->SetSprimeMax(ATOOLS::sqr(m_ecms*(m_last[2]+m_last[3])));
-	isr->SetYMin(0.5*log((xmin+xrem[0])/m_last[3]));
-	isr->SetYMax(0.5*log(m_last[2]/(xmin+xrem[1])));
+	isr->SetYMin(0.5*log(xmin/m_last[3]));
+	isr->SetYMax(0.5*log(m_last[2]/xmin));
 	FillBlob(p_blob);
 	isr->SetYMin(ymin);
 	isr->SetYMax(ymax);

@@ -63,7 +63,7 @@ Initial_State_Shower::~Initial_State_Shower()
 
 bool Initial_State_Shower::PerformShower(Tree ** trees,int jetvetoflag) {
   m_jetveto = (jetvetoflag>0);
-  if (jetvetoflag<0) {
+  if (jetvetoflag<0 || jetvetoflag>1) {
     m_extra_pdf[0]    = 0;
     m_extra_pdf[1]    = 0;
   }

@@ -115,7 +115,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
       } 
     }
     if (found) hit = 1;
-    ResetInterfaces();
+    Reset();
   }
   return hit;
 }
@@ -297,12 +297,8 @@ void Jet_Evolution::CleanUp()
   p_showerhandler->CleanUp();
 }
 
-void Jet_Evolution::ResetInterfaces() 
+void Jet_Evolution::Reset() 
 {
-  for (PertInterfaceMap::iterator piiter=m_interfaces.begin();
-       piiter!=m_interfaces.end();++piiter) {
-    piiter->second->Reset();
-  }
   p_showerhandler->GetISRHandler()->Reset(0);
   p_showerhandler->GetISRHandler()->Reset(1);
 }
@@ -310,33 +306,25 @@ void Jet_Evolution::ResetInterfaces()
 bool Jet_Evolution::DefineInitialConditions(const ATOOLS::Blob *blob,
 					    const ATOOLS::Blob_List *bloblist) 
 { 
-  ResetInterfaces();
-  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),1.,0);
-  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),1.,1);
+  Reset();
   for (ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
        blit!=bloblist->end();++blit) {
     if (((*blit)->Type()==ATOOLS::btp::Signal_Process ||
 	 (*blit)->Type()==ATOOLS::btp::Hard_Collision) && *blit!=blob) {
-      UpdateInterfaces(*blit,0);
-      UpdateInterfaces(*blit,1);
+      Update(*blit,0);
+      Update(*blit,1);
     }
   }
   return true;
 }
 
-void Jet_Evolution::UpdateInterfaces(const ATOOLS::Blob *blob,const size_t beam) 
+void Jet_Evolution::Update(const ATOOLS::Blob *blob,const size_t beam) 
 { 
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
     const ATOOLS::Particle *cur=blob->ConstInParticle(i);
     if (i==beam || blob->NInP()<=1) {
-      if (cur->ProductionBlob()!=NULL) {
-	UpdateInterfaces(cur->ProductionBlob(),beam);
-      }
+      if (cur->ProductionBlob()!=NULL) Update(cur->ProductionBlob(),beam);
       else {
-	for (PertInterfaceMap::iterator piiter=m_interfaces.begin();
-	     piiter!=m_interfaces.end();++piiter) {
-	  piiter->second->UpdateEnergy(cur->Momentum()[0],i);
-	}
 	p_showerhandler->GetISRHandler()->Extract(cur->Flav(),cur->Momentum()[0],beam);
 	return;
       }

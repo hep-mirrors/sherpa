@@ -46,6 +46,7 @@ void Interface_Tools::InitializeIncoming(const Blob *blob,const double &E)
   m2->E2=sqr(m2->x*E);
   m2->stat=1;
   m2->part->SetDecayBlob((ATOOLS::Blob*)blob);
+  m_inipt2=part1->Momentum().PPerp2();
 }
 
 void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
@@ -89,6 +90,7 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,const double &E)
   dummy->left=d1;
   dummy->right=d2;
   blob->BoostInLab();
+  m_finpt2=part1->Momentum().PPerp2();
 }
 
 bool Interface_Tools::Connected(const Particle *a,const Particle *b) 
@@ -116,3 +118,8 @@ double Interface_Tools::Angle(const Particle *p1,const Blob *blob)
   return angle;
 }
 
+void Interface_Tools::JetVetoPt2(double &inipt2,double &finpt2)
+{
+  inipt2=m_inipt2;
+  finpt2=m_finpt2;
+}

@@ -43,7 +43,7 @@ int Final_State_Shower::PerformShower(Tree * tree,int jetvetoflag)
   bool jetveto = (jetvetoflag>0);
 
   p_kin->SetJetVeto(jetveto);
-  p_kin->SetNoLoseJetVeto(jetvetoflag<0);
+  p_kin->SetNoLoseJetVeto(jetvetoflag<0 || jetvetoflag>1);
 
   m_ini_partons.clear();
   int stat=InitializeJets(tree,tree->GetRoot());

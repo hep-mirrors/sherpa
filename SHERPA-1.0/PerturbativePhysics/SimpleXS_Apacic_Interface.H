@@ -21,7 +21,7 @@ namespace SHERPA {
 
     ATOOLS::Blob *p_psme_is, *p_psme_fs, *p_hard;
 
-    double m_rescale[2], m_scale;
+    double m_scale;
 
     int InitColours(ATOOLS::Blob *blob);
 
@@ -39,10 +39,6 @@ namespace SHERPA {
 
     int  PerformShowers();
     int  PerformDecayShowers();
-
-    void Reset();
-
-    void UpdateEnergy(const double energy,const size_t i);
 
   };// end of class Simple_XS_Interface
 
