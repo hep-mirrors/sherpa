@@ -123,7 +123,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   //delete[] switch_graphs;
   ngraph=pointlist.size();
    
-  for (int i=0;i<graphs.size();i++) graphs[i]->BuildGlobalString(b,N,BS,fl,shand);
+  for (size_t i=0;i<graphs.size();i++) graphs[i]->BuildGlobalString(b,N,BS,fl,shand);
 
   int dummy = 0;
   SetNumber(dummy);  
@@ -289,7 +289,7 @@ void Amplitude_Handler::PreCluster(Single_Amplitude* firstgraph)
       if((*pit)->fl.IsScalar()) 
 	propselect.push_back((*pit)->arg[0]);
 
-    for(int i=0;i<propselect.size();i++){
+    for(size_t i=0;i<propselect.size();i++){
       int ia=0;
       Zfunc *zh[2];
       for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit){
@@ -501,8 +501,7 @@ Point* Amplitude_Handler::GetPointlist(int n)
 
 void Amplitude_Handler::Reset_ProbAbs()
 {
-  short int i;
-  for (i=0;i<graphs.size();i++) probabs[i] = 0.;
+  for (size_t i=0;i<graphs.size();i++) probabs[i] = 0.;
 }
 
 double Amplitude_Handler::Get_Probab(int i) {return probabs[i];}
@@ -510,12 +509,12 @@ double Amplitude_Handler::Get_Probab(int i) {return probabs[i];}
 
 Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 {
-  for (int i=0;i<graphs.size();i++){
+  for (size_t i=0;i<graphs.size();i++){
     Mi[i] = graphs[i]->Zvalue(sh, ihel);
   }
   Complex M(0.,0.);
-  for (short int i=0;i<graphs.size();i++) {
-    for (short int j=0;j<graphs.size();j++) {
+  for (size_t i=0;i<graphs.size();i++) {
+    for (size_t j=0;j<graphs.size();j++) {
       M += Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
     }
   }
@@ -524,13 +523,13 @@ Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 
 Complex Amplitude_Handler::Zvalue(int ihel)
 { 
-  for (int i=0;i<graphs.size();i++) {
+  for (size_t i=0;i<graphs.size();i++) {
     Mi[i] = graphs[i]->Zvalue(ihel);
   }
 
   Complex M(0.,0.);
-  for (short int i=0;i<graphs.size();i++) {
-    for (short int j=0;j<graphs.size();j++) {
+  for (size_t i=0;i<graphs.size();i++) {
+    for (size_t j=0;j<graphs.size();j++) {
       M+= Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
     }
   }
@@ -539,12 +538,12 @@ Complex Amplitude_Handler::Zvalue(int ihel)
 
 Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 { 
-  for (int i=0;i<graphs.size();i++) Mi[i] = graphs[i]->Zvalue(ihel,sign);
+  for (size_t i=0;i<graphs.size();i++) Mi[i] = graphs[i]->Zvalue(ihel,sign);
 
   Complex mcm,M(0.,0.);
   double max = 0.;
-  for (short int i=0;i<graphs.size();i++) {
-    for (short int j=0;j<graphs.size();j++) {
+  for (size_t i=0;i<graphs.size();i++) {
+    for (size_t j=0;j<graphs.size();j++) {
       mcm = Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
       M+=mcm;
       max = ATOOLS::Max(max,abs(mcm));
