@@ -137,7 +137,7 @@ void Four_Particle_Observable_Base::Evaluate(const Particle_List & plist,double 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 DEFINE_OBSERVABLE_GETTER(Four_Particle_PlaneAngle,
-			 Four_Particle_PlaneAngle_Getter,"4PPlanePhi");
+			 Four_Particle_PlaneAngle_Getter,"PlaneAngle");
 
 void Four_Particle_PlaneAngle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,
 					const Vec4D & mom3,const Vec4D & mom4,
