@@ -29,6 +29,7 @@ QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,const unsigned i
 			    "QCD_Remnant_Base","QCD_Remnant_Base"));
   }
   p_pdfbase=isrhandler->PDF(m_beam)->GetBasicPDF();
+  m_dupdf=isrhandler->KMROn()>0;
   m_finder.Exclude(ATOOLS::btp::Beam);
 }
 

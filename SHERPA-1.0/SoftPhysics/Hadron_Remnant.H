@@ -15,7 +15,7 @@ namespace SHERPA {
     void GetConstituents(ATOOLS::Flavour flav);
 
     double GetXPDF(ATOOLS::Flavour flavour,double scale);
-    void   DiceKinematics();
+    bool   DiceKinematics();
 
     bool AttachLastRemnants();
 

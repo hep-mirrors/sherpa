@@ -23,7 +23,6 @@ Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Hadron remnant needs ISR Handler.",
 			    "Hadron_Remnant","Hadron_Remnant"));
   }
-  p_pdfbase=isrhandler->PDF(m_beam)->GetBasicPDF();
   GetConstituents(isrhandler->Flav(m_beam));
 }
 
@@ -79,7 +78,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
   if (m_initial>1) if (!ConnectRemnants()) return false;
   if (!AttachLastRemnants()) return false;
   // select x's according to pdf
-  DiceKinematics();
+  if (!DiceKinematics()) return false;
   // fill blob
   for (int i=1;i>=0;--i) {
     for (size_t j=0;j<m_parton[i].size();++j) {
@@ -97,7 +96,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
   return true;
 }
 
-void Hadron_Remnant::DiceKinematics()
+bool Hadron_Remnant::DiceKinematics()
 {
   PROFILE_HERE;
   unsigned int trials;
@@ -165,12 +164,16 @@ void Hadron_Remnant::DiceKinematics()
     p[3]=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-ATOOLS::sqr(m));
     m_parton[0][j]->SetMomentum(p);
     if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
-      ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 
-                         <<"Parton ("<<m_parton[0][j]<<") has non-positive momentum: p = "
-                         <<m_parton[0][j]->Momentum()<<" m_{"<<m_parton[0][j]->Flav()<<"} = "
-                         <<m_parton[0][j]->Flav().PSMass()<<" <- "<<m_xscheme<<std::endl;
+      if (!m_dupdf) {
+	ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 
+			   <<"Parton ("<<m_parton[0][j]<<") has non-positive momentum: p = "
+			   <<m_parton[0][j]->Momentum()<<" m_{"<<m_parton[0][j]->Flav()<<"} = "
+			   <<m_parton[0][j]->Flav().PSMass()<<" <- "<<m_xscheme<<std::endl;
+      }
+      return false;
     }
   }
+  return true;
 }
 
 bool Hadron_Remnant::AttachLastRemnants() 

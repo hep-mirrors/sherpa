@@ -22,6 +22,8 @@ namespace SHERPA {
     unsigned int m_xscheme, m_maxtrials, m_set;
     size_t       m_initial, m_constrained;
 
+    bool m_dupdf;
+
     ATOOLS::Parton_Finder m_finder;
 
     void SortRemnants(); 
