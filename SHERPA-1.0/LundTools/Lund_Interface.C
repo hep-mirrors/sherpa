@@ -22,7 +22,7 @@ ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL;
 PDF::ISR_Handler *Lund_Interface::s_isrhandler=NULL; 
 
 Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa):
-  m_path(_m_path),m_file(_m_file),
+  m_path(_m_path),m_file(_m_file), m_maxtrials(1),
   p_hepevt(NULL), 
   m_compress(true),m_writeout(false),
   p_phep(new double[5*4000]),
@@ -216,8 +216,93 @@ Lund_Interface::~Lund_Interface()
   if (p_vhep)   { delete p_vhep;   p_vhep   = NULL; }
 }
 
-bool Lund_Interface::Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
-			       ATOOLS::Particle_List *pl) 
+bool Lund_Interface::Hadronize(ATOOLS::Blob_List *bloblist,
+			       ATOOLS::Particle_List *particlelist) 
+{
+  ATOOLS::Blob * blob = new ATOOLS::Blob();
+  blob->SetId();
+  blob->SetType(ATOOLS::btp::Fragmentation);
+  blob->SetTypeSpec("Pythia_v6.214");
+  bloblist->push_back(blob);
+
+  if (PrepareFragmentationBlob(blob,bloblist,particlelist)) {
+    for (size_t trials=0;trials<m_maxtrials;++trials) {
+      if (StringFragmentation(blob,bloblist,particlelist)) return true;
+      if (m_maxtrials>1) 
+	ATOOLS::msg.Error()<<"Error in Lund_Interface::Hadronize ."<<std::endl
+			   <<"   Hadronization failed. Retry event."<<std::endl;
+    }
+  }
+  ATOOLS::msg.Error()<<"Error in Lund_Interface::Hadronize ."<<std::endl
+		     <<"   Hadronization failed. Retry event."<<std::endl;
+  while (bloblist->size()>0) {
+    delete *bloblist->begin();
+    bloblist->erase(bloblist->begin());
+  }
+  return false;
+}
+
+
+bool Lund_Interface::PrepareFragmentationBlob(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
+					      ATOOLS::Particle_List *pl) 
+{
+  std::set<ATOOLS::Particle*> startpoints;
+  for (ATOOLS::Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
+    for (size_t i=0;i<(size_t)(*bit)->NOutP();++i) {
+      ATOOLS::Particle *cur=(*bit)->OutParticle(i);
+      if (cur->DecayBlob()==NULL && cur->Status()==1 && 
+	  (cur->Info()=='F' || cur->Info()=='H') &&
+	  cur->GetFlow(1)!=0 && cur->GetFlow(2)==0) {
+	startpoints.insert(cur);
+      }
+    }
+  }
+  m_used.clear();
+  for (std::set<ATOOLS::Particle*>::iterator sit=startpoints.begin();
+       sit!=startpoints.end();++sit) {
+    ATOOLS::Particle *cur=*sit, *comp;  
+    blob->AddToInParticles(cur);
+    m_used.insert(cur);
+    do {
+      bool found=false;
+      for (ATOOLS::Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
+	for (size_t i=0;i<(size_t)(*bit)->NOutP();++i) {
+	  comp=(*bit)->OutParticle(i);
+	  bool test=false;
+	  if (comp->DecayBlob()==NULL) test=true;
+	  else if (comp->DecayBlob()->Type()==ATOOLS::btp::Fragmentation) test=true;
+	  if (test && comp->Status()==1 && comp->GetFlow(2)==cur->GetFlow(1) &&
+	      (comp->Info()=='F' || comp->Info()=='H')) {
+	    if (m_used.find(comp)==m_used.end()) {
+	      blob->AddToInParticles(comp);
+	      m_used.insert(comp);
+	      found=true;
+	      break;
+	    }
+	  }
+	}
+	if (found) break;
+      }
+      if (!found) {
+	ATOOLS::msg.Error()<<"Fragmentation_Handler::PerformFragmentation(..): "
+			   <<"Cannot find connected parton for parton ("
+			   <<cur->Number()<<") in event ["
+			   <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]"<<std::endl;
+	msg_Tracking()<<"   Empty blob list and retry event. {\n"<<*bloblist<<"   }"<<std::endl;
+	while (bloblist->size()>0) {
+	  delete *bloblist->begin();
+	  bloblist->erase(bloblist->begin());
+	}
+	return false;
+      }
+    } while ((cur=comp)->Flav().IsGluon());
+  }
+  return true;
+}
+
+
+bool Lund_Interface::StringFragmentation(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
+					 ATOOLS::Particle_List *pl) 
 {
   int nhep = 0;
   s_bloblist=bloblist;

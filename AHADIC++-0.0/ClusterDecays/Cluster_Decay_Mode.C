@@ -113,7 +113,11 @@ void Simple_Cluster_Fission::SelectFlavour(double maxmass)
     wt = ran.Get()*m_totalwt;
     for (fliter=m_dicelist.begin();fliter!=m_dicelist.end();fliter++) {
       if (2.001*fliter->second->Mass()<maxmass) wt -= fliter->second->TotWeight();
-      if (wt<0.) { m_flav = fliter->first; return; }
+      if (wt<0.) { 
+	m_flav = fliter->first; 
+	if (m_flav.IsDiQuark()) m_flav = m_flav.Bar();
+	return; 
+      }
     }
   }
 }

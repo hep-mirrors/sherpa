@@ -47,7 +47,7 @@ Cluster::Cluster(ATOOLS::Particle * trip, ATOOLS::Particle * antitrip) :
     p_fpair->second = qflav;
   }
   else {
-    msg.Error()<<"Error in Cluster::Cluster("<<trip<<","<<antitrip<<") :"<<std::endl
+    msg.Error()<<"Error in Cluster::Cluster("<<trip->Flav()<<","<<antitrip->Flav()<<") :"<<std::endl
 	       <<"   Cannot handle this colour structure."<<std::endl
 	       <<"   Abort the run."<<std::endl;
     abort();

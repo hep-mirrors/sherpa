@@ -1,4 +1,5 @@
 #include "Hadron_List.H"
+#include "Flavour.H"
 #include "MathTools.H"
 #include "Data_Read.H"
 #include "Message.H"
@@ -15,7 +16,7 @@ Hadron_Parameters AHADIC::hadpars;
 //##############################################################################
 
 
-ConstituentMasses::ConstituentMasses() {
+ConstituentMasses::ConstituentMasses(bool no_diquarks) {
   ConstituentCharacteristic * cc;
   double flwt=0., spwt=0., sm = hadpars.Get("AngularSmearing");
 
@@ -34,6 +35,7 @@ ConstituentMasses::ConstituentMasses() {
   cc = new ConstituentCharacteristic(hadpars.Get("Mass_strange"),1,flwt,spwt,sm);
   CCMap[Flavour(kf::s)] = cc;
 
+  if (no_diquarks) return;
 
   // Light Di-quarks, spin 0
   spwt = 1.;
@@ -485,14 +487,13 @@ void Hadron_Parameters::Init(std::string dir,std::string file)
 {
   std::cout<<"In Hadron_Parameters::Init("<<dir<<file<<")"<<std::endl;
   ReadParameters(dir,file);
-  p_constituents = new ConstituentMasses;
+  p_constituents = new ConstituentMasses(true);
   p_constituents->PrintConstituents();
   p_hadrons      = new Hadron_List;
   CreateWeightLists();  
   PrintWeightLists();  
   CreateChannelLists();  
   PrintChannelLists();  
-  abort();
 }
   
 void Hadron_Parameters::ReadParameters(std::string dir,std::string file)

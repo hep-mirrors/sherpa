@@ -8,6 +8,7 @@ EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
+AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
 
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
 		-I../SoftPhysics -I../LundTools -I../HerwigTools -I../Single_Events \
@@ -29,6 +30,8 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
                 -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
+AHADICINCS    =	-I$(AHADICDIR)/Main -I$(AHADICDIR)/ClusterFormation \
+		-I$(AHADICDIR)/ClusterDecays
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
@@ -45,6 +48,7 @@ AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lProcess -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct -lAdicicTool -lAdicicInput
+AHADICLIBS    =	-L@libdir@ -lAhadicMain -lClusterFormation -lClusterDecays
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
 		-lSherpaSoftPhysics -lLundTools -lHerwigTools -lSherpaTools 
@@ -74,18 +78,19 @@ endif
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
 Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(ADICICLIBS) \
-		$(AMISICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
-		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
+		$(AMISICLIBS) $(AHADICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
+		$(PDFLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(CLHEPFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(ANALYSISINCS) $(SHERPAINCS) $(APACICINCS) $(ADICICINCS) $(AMEGICINCS) \
-		$(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
-		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) 
+		$(AMISICINCS) $(AHADICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \
+		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) 
 SUBDIRS       =	Process
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
 	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat simplechain.dat \
-		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs Lund.dat
+		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs Lund.dat \
+		Cluster.dat
 #	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
 

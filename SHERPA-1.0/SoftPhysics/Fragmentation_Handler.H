@@ -2,6 +2,7 @@
 #define Fragmentation_Handler_H
 
 #include "Lund_Interface.H"
+#include "Ahadic.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
 
@@ -14,29 +15,17 @@ namespace SHERPA {
     std::string m_fragmentationmodel;
 
     int    m_mode;
-    size_t m_maxtrials;
 
-    Lund_Interface *p_lund;
-    ATOOLS::Blob   *p_blob;
-
-    std::set<ATOOLS::Particle*> m_used;
-
+    Lund_Interface * p_lund;
+    AHADIC::Ahadic * p_ahadic;
   public:
-
-    // constructor
     Fragmentation_Handler(std::string,std::string);
-
-    // destructor
     ~Fragmentation_Handler();
 
-    //member functions
     bool PerformFragmentation(ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
     
-    // inline functions
-    const std::string &FragmentationModel() const { return m_fragmentationmodel; }
-
-    inline Lund_Interface *const GetLundInterface() const { return p_lund; }
-
+    const std::string &           FragmentationModel() const { return m_fragmentationmodel; }
+    inline Lund_Interface *const  GetLundInterface()   const { return p_lund; }
   };// end of class Fragmentation_Handler
 
   /*!

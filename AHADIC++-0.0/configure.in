@@ -40,7 +40,6 @@ AC_CHECK_FUNCS(mkdir)
 AC_OUTPUT(Main/Makefile \
 	  ClusterFormation/Makefile \
 	  ClusterDecays/Makefile \
-          Run/Makefile \
 	  Makefile )
 
 
