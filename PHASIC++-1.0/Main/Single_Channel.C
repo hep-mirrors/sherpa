@@ -87,11 +87,10 @@ void Single_Channel::GenerateWeight(const int mode)
                    <<"Virtual Method called !"<<std::endl; 
 }
 
-bool Single_Channel::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Single_Channel::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   ATOOLS::msg.Error()<<"Single_Channel::CalculateLimits(): "
                    <<"Virtual method called!"<<std::endl;
-  return false;
 }
 
 

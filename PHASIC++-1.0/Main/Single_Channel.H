@@ -35,11 +35,11 @@ namespace PHASIC {
     void AddPoint(double);
     void Reset(double value);
     void ResetOpt();
-    virtual void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
-    virtual void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const int mode=0);
+    virtual void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,const double *rans,const int mode=0);
+    virtual void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,const int mode=0);
     virtual void GenerateWeight(const int mode=0);
     
-    virtual bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    virtual void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
     virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *); 
     virtual void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);

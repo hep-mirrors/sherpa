@@ -70,7 +70,7 @@ namespace PHASIC {
     void    GeneratePoint(double & sprime,double & y,int mode);
     void    GenerateWeight(double sprime,double y,int mode);
 
-    void    GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode);
+    void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode);
     void    GenerateWeight(int mode);
  
     void    ISRInfo(int,int &,double &,double &);

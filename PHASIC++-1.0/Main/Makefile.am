@@ -18,14 +18,7 @@ libPhasespace_la_SOURCES      =	\
 			   	Channel_Basics.C \
 				Channel_Elements.C \
 				Single_Channel.C \
-				Simple_Pole.C \
-			   	Resonance.C \
-				Threshold.C \
-				Leading_Log.C \
-				LBS_Compton_Peak.C \
-			   	Leading_Log_Z.C \
-			   	LL_KPerp.C \
-			   	LDL_KPerp.C \
+				ISR_Channel.C \
 				FSR_Channel.C \
 				Rambo.C \
 				RamboKK.C \
@@ -38,14 +31,7 @@ noinst_HEADERS        =	\
 		 	Channel_Basics.H \
 			Channel_Elements.H \
 			Single_Channel.H \
-		 	Simple_Pole.H \
-		 	Resonance.H \
-			Threshold.H \
-			Leading_Log.H \
-			LBS_Compton_Peak.H \
-		 	Leading_Log_Z.H \
-		 	LL_KPerp.H \
-		 	LDL_KPerp.H \
+			ISR_Channel.H \
 			FSR_Channel.H \
 			Channel_Interface.H \
 			Rambo.H \

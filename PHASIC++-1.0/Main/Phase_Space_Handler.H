@@ -46,8 +46,8 @@ namespace PHASIC {
     ATOOLS::Vec4D          * p;
     Phase_Space_Integrator * psi;    
     bool  m_initialized;
-    Integration_Info           * p_info;
-    Info_Key                     m_spkey, m_ykey, m_xkey;
+    ATOOLS::Integration_Info   * p_info;
+    ATOOLS::Info_Key             m_spkey, m_ykey, m_xkey;
     ATOOLS::Cut_Data           * p_cuts;
 
     void TestIntegration(double);

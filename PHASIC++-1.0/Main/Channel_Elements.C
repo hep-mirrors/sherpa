@@ -249,7 +249,6 @@ double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
     double range  = smax-smin;
     double upper  = (smax-mass2)/mw;
     double lower  = (smin-mass2)/mw;
-    double ymin   = atan(lower);
     double yrange = atan(range/(mw*(1.+lower*upper)));
     if (lower*upper<-1.) {
       if (upper>0) yrange = yrange + M_PI;
@@ -379,6 +378,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   }
   s1out = Max(0.,p1out.Abs2());
   s2out = Max(0.,p2out.Abs2());
+  return 0;
 }
 
 
