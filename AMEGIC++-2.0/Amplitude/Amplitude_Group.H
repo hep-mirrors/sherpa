@@ -58,7 +58,7 @@ namespace AMEGIC {
     }
     void KillZList() 
     {
-      for (int i=0;i<graphs.size();i++) graphs[i]->KillZList();
+      for (size_t i=0;i<graphs.size();i++) graphs[i]->KillZList();
     }
     void SetStringOn()   
     {
