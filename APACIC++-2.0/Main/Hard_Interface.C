@@ -60,7 +60,7 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto) {
     p_fintree->BoRo(cms);
 
     int fsrstatus = p_finshower->PerformShower(p_fintree,jetveto);
-    //    if (fsrstatus!=1) return fsrstatus;         // "Extrajetveto not yet supported"
+    //    if (fsrstatus!=1) return fsrstatus;         // "Extrajetveto not wanted for hadron hadron"
     if (fsrstatus==0) return fsrstatus;
     p_finshower->SetAllColours(p_fintree->GetRoot());
 

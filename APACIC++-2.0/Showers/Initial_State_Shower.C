@@ -29,7 +29,7 @@ Initial_State_Shower::Initial_State_Shower(ISR::ISR_Handler * _isr,
     p_suds            = new Spacelike_Sudakov*[2];
     p_suds[0]         = new Spacelike_Sudakov(_isr->PDF(0),p_tools,p_kin,m_t0,_dataread);
     p_suds[1]         = new Spacelike_Sudakov(_isr->PDF(1),p_tools,p_kin,m_t0,_dataread);
-    m_allowed         = 20;
+    m_allowed         = 200;
     return;
   }
 
@@ -69,8 +69,8 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
           trees[1]->GetInitiator()->part->Momentum();
     x1  = trees[0]->GetInitiator()->x;
     x2  = trees[1]->GetInitiator()->x;
-    if ((dabs(m_sprime - cms.Abs2())/m_sprime > 1.e-6 ) ||
-	(dabs(m_sprime - x1*x2*E2)/m_sprime > 1.e-6 )) {
+    if ((dabs(m_sprime - cms.Abs2())/m_sprime > 2.e-5 ) ||
+	(dabs(m_sprime - x1*x2*E2)/m_sprime > 2.e-5 )) {
       msg.Out()<<"ERROR in Initial_State_Shower : "<<std::endl;
       msg.Error()<<setprecision(12)
 		 <<"ERROR in Initial_State_Shower : "<<std::endl
@@ -81,19 +81,7 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
       OutputTree(trees[0]);
       OutputTree(trees[1]);
 
-      return 1;  // should return 0; but not supported by wrapper !!
-    }
-    else if ((dabs(m_sprime - cms.Abs2())/m_sprime > rpa.gen.Accu()) ||
-	(dabs(m_sprime - x1*x2*E2)/m_sprime > rpa.gen.Accu())) {
-      /* *AS*
-      msg.Error()<<setprecision(12)
-		 <<"WARNING in Initial_State_Shower : "<<std::endl
-		 <<"Initial_State_Shower::PerformShower : "
-		 <<"Mismatch of sprimes in CMS !"<<std::endl
-		 <<"   "<<m_sprime<<" / "<<x1*x2*E2<<std::endl
-		 <<"   "<<cms<<" / "<<cms.Abs2()<<std::endl;
-      //      return 0;
-      */
+      return 0;
     }
     msg.Tracking()<<" In CMS "<<std::endl
 		  <<" s after shower : "<<cms.Abs2()<<" == "<<m_sprime<<std::endl;
@@ -102,15 +90,15 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
       trees[1]->GetInitiator()->part->Momentum();
     x1    = trees[0]->GetInitiator()->x;
     x2    = trees[1]->GetInitiator()->x;
-    if ((dabs(m_sprime - cms.Abs2())/m_sprime > 1.e-6 ) ||
-	(dabs(m_sprime - x1*x2*E2)/m_sprime > 1.e-6 )) {
+    if ((dabs(m_sprime - cms.Abs2())/m_sprime > 2.e-5 ) ||
+	(dabs(m_sprime - x1*x2*E2)/m_sprime > 2.e-5 )) {
       msg.Error()<<setprecision(12)
 		 <<"ERROR in Initial_State_Shower : "<<std::endl
 		 <<"Initial_State_Shower::PerformShower : "
 		 <<"Mismatch of sprimes in Lab !"<<std::endl
 		 <<"   "<<m_sprime<<" / "<<x1*x2*E2<<std::endl
 		 <<"   "<<cms<<" / "<<cms.Abs2()<<std::endl;
-      return 1;  // should return 0; but not supported by wrapper !!
+      return 0;
     }
     else if ((dabs(m_sprime - cms.Abs2())/m_sprime > rpa.gen.Accu()) ||
 	(dabs(m_sprime - x1*x2*E2)/m_sprime > rpa.gen.Accu())) {
