@@ -9,11 +9,14 @@ SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *meh
 						     Shower_Handler *showerhandler):
   Perturbative_Interface(mehandler,showerhandler),
   p_tools(new Interface_Tools(showerhandler->GetIniTrees(),showerhandler->GetFinTree())),
-  p_twototwo(new EXTRAXS::XS_Group(2,2,"Core Processes")),
+  p_twototwo(new EXTRAXS::XS_Group(2,2,"Interface Processes")),
   p_momenta(new ATOOLS::Vec4D[4]), 
   p_flavours(new ATOOLS::Flavour[4]), 
   p_psme_is(NULL),
-  p_psme_fs(NULL) {}
+  p_psme_fs(NULL) 
+{
+  p_twototwo->SetScaleScheme(mehandler->GetXS()->ScaleScheme());
+}
 
 SimpleXS_Apacic_Interface::~SimpleXS_Apacic_Interface() 
 {

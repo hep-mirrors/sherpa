@@ -550,7 +550,14 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 
 EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS() 
 {
-  if (m_mode==2) return static_cast<EXTRAXS::XS_Base*>(p_simplexs->Selected());
+  if (m_mode==2) {
+    if (p_simplexs->Selected()!=NULL) {
+      return static_cast<EXTRAXS::XS_Base*>(p_simplexs->Selected());
+    }
+    else {
+      return p_simplexs;
+    }
+  }
   msg.Error()<<"Error in Matrix_Element_Handler::GetXS()."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
