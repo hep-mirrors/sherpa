@@ -72,32 +72,61 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 	    if (p_mehandler->GenerateOneEvent()) {
 	      EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
 	      if (xs!=NULL && xs->NAddOut()!=0) {
+		xs->SetColours(xs->Momenta());
 		for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
 		  isr[i] = new ATOOLS::Blob();
 		  isr[i]->SetType(ATOOLS::btp::IS_Shower);
 		  isr[i]->SetTypeSpec("KMR DUPDF");
 		  isr[i]->SetId();
 		  isr[i]->SetStatus(1);
-		  size_t j=i;
-		  ATOOLS::Particle *parton = 
-		    new ATOOLS::Particle(-1,xs->AddFlavours()[j],
-					 xs->AddMomenta()[j]);
-		  parton->SetNumber();
-		  parton->SetStatus(2);
-		  isr[i]->AddToOutParticles(parton);
-		  parton = new ATOOLS::Particle(-1,xs->AddFlavours()[j],
-						xs->AddMomenta()[j]);
-		  parton->SetNumber();
-		  parton->SetStatus(2);
-		  parton->SetMomentum(parton->Momentum()
+		  ATOOLS::Particle *parton1 = 
+		    new ATOOLS::Particle(-1,xs->AddFlavours()[i],
+					 xs->AddMomenta()[i]);
+		  parton1->SetNumber();
+		  parton1->SetStatus(1);
+		  isr[i]->AddToOutParticles(parton1);
+		  ATOOLS::Particle *
+		    parton2 = new ATOOLS::Particle(-1,xs->AddFlavours()[i],
+						   xs->AddMomenta()[i]);
+		  parton2->SetNumber();
+		  parton2->SetStatus(2);
+		  parton2->SetMomentum(parton2->Momentum()
 				      +xs->Momenta()[i]);
-		  isr[i]->AddToInParticles(parton);
+		  isr[i]->AddToInParticles(parton2);
 		  isr[i]->SetBeam(i);
 		  if (p_remnants[i]!=NULL) {
 		    p_remnants[i]->QuickClear();
-		    if (!p_remnants[i]->Extract(parton)) success=false;
+		    if (!p_remnants[i]->Extract(parton2)) success=false;
 		  }
 		  else THROW(fatal_error,"No remnant found.");
+		  if (xs->Flavours()[i].IsQuark()) {
+		    int anti=xs->Flavours()[i].IsAnti();
+		    int newc=ATOOLS::Flow::Counter();
+		    if (xs->AddFlavours()[i].IsQuark()) {
+		      parton1->SetFlow(2-anti,newc);
+		      parton2->SetFlow(2-anti,newc);
+		      parton2->SetFlow(1+anti,xs->Colours()[i][anti]);
+		    }
+		    else {
+		      parton1->SetFlow(2-anti,xs->Colours()[i][1-anti]);
+		      parton1->SetFlow(1+anti,newc);
+		      parton2->SetFlow(1+anti,newc);
+		    }
+		  }
+		  else {
+		    int anti=xs->AddFlavours()[i].IsAnti();
+		    if (xs->AddFlavours()[i].IsQuark()) {
+		      parton1->SetFlow(1+anti,xs->Colours()[i][1-anti]);
+		      parton2->SetFlow(1+anti,xs->Colours()[i][anti]);
+		    }
+		    else {
+		      int newc=ATOOLS::Flow::Counter();
+		      parton1->SetFlow(1+anti,xs->Colours()[i][1-anti]);
+		      parton1->SetFlow(2-anti,newc);
+		      parton2->SetFlow(2-anti,newc);
+		      parton2->SetFlow(1+anti,xs->Colours()[i][anti]);
+		    }
+		  }
 		}
 		blit=bloblist->begin();
 	      }
@@ -117,6 +146,22 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 					 <<sum<<"."<<std::endl;
 		  }
 		  myblob->SetStatus(0);
+		  for (short unsigned int i=0;i<2;++i) {
+		    ATOOLS::Blob *fsr = new ATOOLS::Blob();
+		    fsr->SetType(ATOOLS::btp::FS_Shower);
+		    fsr->SetTypeSpec("KMR DUPDF");
+		    fsr->SetId();
+		    fsr->SetStatus(1);
+		    fsr->AddToInParticles(myblob->OutParticle(i));
+		    ATOOLS::Particle *parton = 
+		      new ATOOLS::Particle(*myblob->OutParticle(i));
+		    parton->SetNumber();
+		    parton->SetStatus(1);
+		    parton->SetFlow(1,xs->Colours()[2+i][0]);
+		    parton->SetFlow(2,xs->Colours()[2+i][1]);
+		    fsr->AddToOutParticles(parton);
+		    bloblist->push_back(fsr);
+		  }
 		}
 		hit = 1;
 	      }
@@ -195,11 +240,16 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extr
   bool success=true;
 
   Particle * particle;
+  EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
   for (unsigned int i=0;i<p_mehandler->NIn();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],p_mehandler->Momenta()[i]);
     particle->SetNumber(0);
     particle->SetStatus(2);
     particle->SetInfo('G');
+    if (xs!=NULL) {
+      particle->SetFlow(1,xs->Colours()[i][0]);
+      particle->SetFlow(2,xs->Colours()[i][1]);
+    }
     blob->AddToInParticles(particle);
     if (extract)
       if (p_remnants[i]!=NULL) {
@@ -215,6 +265,10 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent,const bool extr
     particle->SetNumber(0);
     particle->SetStatus(1);
     particle->SetInfo('H');
+    if (xs!=NULL) {
+      particle->SetFlow(1,xs->Colours()[i][0]);
+      particle->SetFlow(2,xs->Colours()[i][1]);
+    }
     blob->AddToOutParticles(particle);
   }
   if (unstable) {
