@@ -25,7 +25,6 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
 {
   m_atoms=1;
   p_dataread = new Data_Read(m_path+m_file);
-  m_scalefactor=1.;
 }
 
 Simple_XS::~Simple_XS() 
