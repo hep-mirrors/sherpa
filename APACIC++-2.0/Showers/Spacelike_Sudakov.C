@@ -25,11 +25,14 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spac
   m_ordering_scheme = _dataread->GetValue<int>("IS ORDERING",0);  /* Switch for ordering due to coherence:  
                                                                      0 = none, 1 = pt^2, 2 = pt^2/E^2     */
   m_cpl_scheme      = _dataread->GetValue<int>("IS COUPLINGS",3); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
+  m_pdf_scheme      = _dataread->GetValue<int>("IS PDF SCALE",1); /*  0 = -Q^2, 1 = -(1-z)*Q^2 */
+  m_pdf_scale_fac   = _dataread->GetValue<double>("IS PDF SCALE FACTOR",1.);
   m_jetveto_scheme  = _dataread->GetValue<int>("IS JETVETOSCHEME",2);
 
   m_emin            = .5;
   m_pt2max          = sqr(rpa.gen.Ecms());
   m_qjet            = rpa.gen.Ycut()*sqr(rpa.gen.Ecms());
+  m_facscale        = m_qjet;
   m_pdf_fac         = 5.; 
   m_lambda2         = p_tools->GetLambda2(); 
   m_b               = p_tools->GetBnorm();   
@@ -178,20 +181,35 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
 {
   double weight  = p_pdf->GetXPDF(GetFlB())/(p_pdf->GetXPDF(GetFlA())*m_pdf_fac); 
 
-  double scale = -m_t;
+  double q = sqrt(-m_t);
+  double firstq = sqrt(m_facscale);
   double wb_jet;
+  switch (m_pdf_scheme) {
+  case 0:
+    firstq/=sqrt(1.-m_z);
+    break;
+  default:
+    q = sqrt(m_pt2);
+  }
+
+  q *= m_pdf_scale_fac;
+
+
   if (extra_pdf) {
-    p_pdf->Calculate(m_x,m_qjet/sqrt(1.-m_z));
+    firstq*=m_pdf_scale_fac;
+    //    std::cout<<" first_q="<<firstq<<std::endl;
+
+    p_pdf->Calculate(m_x,firstq);
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
-  p_pdf->Calculate(m_x,sqrt(scale));
+  p_pdf->Calculate(m_x,q);
   if (!extra_pdf) {
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
   if (m_x/m_z>=1.) {
     std::cout<<"x="<<m_x<<"    z="<<m_z<<"  x/z="<<m_x/m_z<<std::endl;
   }
-  p_pdfa->Calculate(m_x/m_z,sqrt(scale));
+  p_pdfa->Calculate(m_x/m_z,q);
   weight        *= p_pdfa->GetXPDF(GetFlA())/wb_jet;
   weight        *= GetWeight(m_z,-m_t,0);
 
@@ -288,4 +306,9 @@ double Spacelike_Sudakov::CrudeInt(double _zmin, double _zmax)
 void Spacelike_Sudakov::SetJetvetoPt2(const double pt2) 
 { 
   p_kin->SetJetvetoPt2(pt2); 
+}
+
+void Spacelike_Sudakov::SetFactorisationScale(const double scale)
+{
+  m_facscale=scale;
 }

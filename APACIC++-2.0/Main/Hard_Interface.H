@@ -31,6 +31,7 @@ namespace APACIC {
     ~Hard_Interface(); 
     void PrepareTrees();
     void SetJetvetoPt2(const double pt2);
+    void SetFactorisationScale(const double scale);
     int  PerformShowers(bool,bool,int,double,double);
     bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
 

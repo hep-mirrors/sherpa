@@ -28,11 +28,13 @@ namespace APACIC {
     double          m_pt2minQED;
 
     int             m_cpl_scheme;
+    int             m_pdf_scheme;
     int             m_ordering_scheme;
     int             m_jetveto_scheme;
     int             m_last_veto;
-    double          m_qjet;
+    double          m_qjet, m_facscale;
     double          m_pdf_fac;
+    double          m_pdf_scale_fac;
     // mother
     double m_E2;
     double m_x, m_z, m_t, m_phi,m_pt2;
@@ -64,6 +66,7 @@ namespace APACIC {
     } //!!!mass
 
     void SetJetvetoPt2(const double pt2);
+    void SetFactorisationScale(const double scale);
   };
 
   /*!

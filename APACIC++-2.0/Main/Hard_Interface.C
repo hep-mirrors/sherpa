@@ -53,6 +53,13 @@ void Hard_Interface::SetJetvetoPt2(const double pt2)
     p_inishower->SetJetvetoPt2(pt2); 
 }
 
+void Hard_Interface::SetFactorisationScale(const double scale)
+{
+  if (m_isron) {
+    p_inishower->SetFactorisationScale(scale);
+  }
+}
+
 int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
   if (!m_showers) return 1;
   if (rpa.gen.Debugging()) {

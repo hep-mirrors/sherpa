@@ -60,6 +60,10 @@ namespace APACIC {
     void SetJetvetoPt2(const double pt2) { 
       p_kin->SetJetvetoPt2(pt2); 
     }
+    void SetFactorisationScale(const double scale) {
+      p_suds[0]->SetFactorisationScale(scale);
+      p_suds[1]->SetFactorisationScale(scale);
+    }
   private:
     bool InitializeSystem(Tree **,Knot *,Knot *);
     void InitTwoTrees(Tree **,double);
