@@ -148,8 +148,9 @@ XS_Group *Simple_XS::FindGroup(const size_t nin,const size_t nout,const ATOOLS::
   ATOOLS::Flavour *dummy = new ATOOLS::Flavour[nin+nout];
   for (size_t i=0;i<nin+nout;++i) {
     // if (flavours[i].IsLepton()) dummy[i]=ATOOLS::kf::lepton;
-    if (flavours[i].IsQuark() || flavours[i].IsGluon()) dummy[i]=ATOOLS::kf::jet;
-    else dummy[i]=flavours[i];
+    // if (flavours[i].IsQuark() || flavours[i].IsGluon()) dummy[i]=ATOOLS::kf::jet;
+    // else dummy[i]=flavours[i];
+    dummy[i]=flavours[i];
   }
   for (size_t i=0;i<m_xsecs.size();++i) {
     if (nin==m_xsecs[i]->NIn() && nout==m_xsecs[i]->NOut()) {

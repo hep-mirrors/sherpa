@@ -119,7 +119,7 @@ void XS_Group::SelectOne()
 
 void XS_Group::WriteOutXSecs(std::ofstream &outfile)
 {
-  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<std::endl;
+  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<m_n<<std::endl;
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->WriteOutXSecs(outfile);
 }
 
@@ -152,12 +152,13 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     }
     std::string filename=resultpath+std::string("/")+m_name+std::string(".xstotal"), singlename;
     double singlexs, singleerr, singlemax;
+    long unsigned int singlen;
     if (resultpath!=std::string("")) {
       std::ifstream infile;
       int hits=m_xsecs.size();
       infile.open(filename.c_str());
       if (infile.good()) {
-	infile>>singlename>>singlexs>>singlemax>>singleerr;
+	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlen;
 	do {
 	  ATOOLS::msg.Events()<<"Found result: xs for "<<singlename<<" : "
 			      <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -168,6 +169,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	      m_totalxs+=singlexs;
 	      dynamic_cast<Integrable_Base*>(m_xsecs[i])->SetTotalXS(singlexs);
 	      dynamic_cast<Integrable_Base*>(m_xsecs[i])->SetMax(singlemax);
+	      dynamic_cast<Integrable_Base*>(m_xsecs[i])->SetPoints(singlen);
 	      --hits;
 	    }
 	  }
