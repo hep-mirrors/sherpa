@@ -165,7 +165,13 @@ void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,
     buffer += std::string(" ");
     if (buffer[0] != '%' && buffer[0] != '!' && buffer[0] != '#' && buffer.length()>0) {
       if (buffer.find("END_ANALYSIS_PHASE")!=std::string::npos) return;
-      if (buffer.find("OBSERVABLES")!=std::string::npos) return;
+      if (buffer.find("OBSERVABLES")!=std::string::npos) {
+	if (!ini_fsel) {
+	  fsel     = new Final_Selector("FinalState","Analysed",(rpa.gen.Beam1()==Flavour(kf::e)));
+	  ini_fsel = true;
+	}
+	return;
+      }
       if (buffer.find("OUTPUT =")!=std::string::npos) {
 	buffer=buffer.substr(buffer.find("OUTPUT =")+8);
 	while(buffer.length()>0) {
