@@ -230,3 +230,9 @@ void Integrable_Base::OptimizeResult()
 {
   ATOOLS::msg.Error()<<"Integrable_Base::OptimizeResult(): Virtual function called !"<<std::endl;
 } 
+
+void Integrable_Base::SetMomenta()   
+{ 
+  const ATOOLS::Vec4D *p=p_activepshandler->Point();
+  for (size_t i=0;i<m_nvector;++i) p_momenta[i]=p[i];
+}

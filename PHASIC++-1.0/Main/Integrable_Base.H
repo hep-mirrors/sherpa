@@ -130,7 +130,9 @@ namespace PHASIC {
     virtual void InitWeightHistogram();
     virtual void ReadInHistogram(std::string);
     virtual void WriteOutHistogram(std::string);
+
     double GetMaxEps(double);
+    void   SetMomenta();
 
     Integrable_Base *const Selected();
     Integrable_Base *const Parent();
