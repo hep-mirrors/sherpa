@@ -255,8 +255,8 @@ void One_Eta_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
       }
     }
   if (pos==std::string::npos) return;
-  double et=particlelist[pos]->Momentum().Eta();
-  if (et<m_xmin || et>m_xmax) return;
+  double eta=particlelist[pos]->Momentum().Eta();
+  if (eta<m_xmin || eta>m_xmax) return;
   outlist->resize(particlelist.size());
   for (size_t i=0;i<particlelist.size();++i) 
     (*outlist)[i] = new ATOOLS::Particle(*particlelist[i]);
@@ -321,8 +321,9 @@ void One_DPhi_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
     }
   }
   if (pos==std::string::npos || refpos==std::string::npos) return;
-  double dphi=(*reflist)[pos]->Momentum().DPhi((*reflist)[refpos]->Momentum())/
-    M_PI*180.0;
+  double dphi=
+    ATOOLS::dabs((*reflist)[pos]->Momentum().
+		 DPhi((*reflist)[refpos]->Momentum())/M_PI*180.0);
   if (dphi<m_xmin || dphi>m_xmax) return;
   outlist->resize(particlelist.size());
   for (size_t i=0;i<particlelist.size();++i) 

@@ -119,7 +119,7 @@ void PT_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
   p_ana->AddParticleList(m_outlist,outlist);
   for (size_t i=0;i<particlelist.size();++i) {
     double pt=particlelist[i]->Momentum().PPerp();
-    if (pt>m_xmin && pt<m_xmax) 
+    if (pt>=m_xmin && pt<=m_xmax) 
       outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
   }
 }
@@ -154,7 +154,7 @@ void ET_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
   p_ana->AddParticleList(m_outlist,outlist);
   for (size_t i=0;i<particlelist.size();++i) {
     double et=particlelist[i]->Momentum().EPerp();
-    if (et>m_xmin && et<m_xmax) 
+    if (et>=m_xmin && et<=m_xmax) 
       outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
   }
 }
@@ -188,8 +188,8 @@ void Eta_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
   ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
   p_ana->AddParticleList(m_outlist,outlist);
   for (size_t i=0;i<particlelist.size();++i) {
-    double et=particlelist[i]->Momentum().Eta();
-    if (et>m_xmin && et<m_xmax) 
+    double eta=particlelist[i]->Momentum().Eta();
+    if (eta>=m_xmin && eta<=m_xmax) 
       outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
   }
 }
@@ -223,8 +223,8 @@ void Y_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
   ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
   p_ana->AddParticleList(m_outlist,outlist);
   for (size_t i=0;i<particlelist.size();++i) {
-    double et=particlelist[i]->Momentum().Y();
-    if (et>m_xmin && et<m_xmax) 
+    double y=particlelist[i]->Momentum().Y();
+    if (y>=m_xmin && y<=m_xmax) 
       outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
   }
 }
@@ -259,7 +259,7 @@ void Phi_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
   p_ana->AddParticleList(m_outlist,outlist);
   for (size_t i=0;i<particlelist.size();++i) {
     double phi=particlelist[i]->Momentum().Phi()/M_PI*180.0;
-    if (phi>m_xmin && phi<m_xmax) 
+    if (phi>=m_xmin && phi<=m_xmax) 
       outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
   }
 }
@@ -311,9 +311,10 @@ void DPhi_Selector::Evaluate(const ATOOLS::Particle_List &particlelist,
     }
   if (pos==std::string::npos) return;
   for (size_t i=0;i<particlelist.size();++i) {
-    double phi=particlelist[i]->Momentum().DPhi((*reflist)[pos]->Momentum())/
-      M_PI*180.0;
-    if (phi>m_xmin && phi<m_xmax) 
+    double phi=
+      ATOOLS::dabs(particlelist[i]->Momentum().
+		   DPhi((*reflist)[pos]->Momentum())/M_PI*180.0);
+    if (phi>=m_xmin && phi<=m_xmax) 
       outlist->push_back(new ATOOLS::Particle(*particlelist[i]));
   }
 }
