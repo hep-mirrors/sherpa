@@ -44,7 +44,6 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
   Vec4D o1 = k1->part->Momentum();
   Vec4D o2 = k2->part->Momentum();
   Vec4D cms     = o1 + o2;
-  
 
   double sprime = cms.Abs2();
   double E1     = (sprime + k1->t - k2->t)/sqrt(4.*sprime);
@@ -60,11 +59,11 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
     if (IsEqual(k1 -> t,t1)) {
       double s1 = 4. * sqr(o1[0]);
       double t1 = k1 -> t;
-      double sgn2 = 1.;
-      if (t1<0.) sgn2 = -1.;
-      double sgn1 = E1/dabs(E1);
-      double eboo1 = sgn2*(dabs(E1) * s1 - pz*sqrt(s1*(s1-4.*t1))); // / -(2. * t1);
-      double pboo1 = -sgn2*sgn1 * (pz * s1 - dabs(E1)*sqrt(s1*(s1-4.*t1))); // /-(2. * t1);
+      double sgnt = 1., sgn1 = 1.;
+      if (t1<0.) sgnt = -1.;
+      if (o1[0]<0.) sgn1 = -1;
+      double eboo1 = sgnt * (E1 * s1 * sgn1 - pz*sqrt(s1*(s1-4.*t1))); // / -(2. * t1);
+      double pboo1 = -sgnt* (pz * s1 * sgn1 - E1*sqrt(s1*(s1-4.*t1))); // /-(2. * t1);
       Vec4D b1(eboo1,0.,0.,pboo1);
       boost = Poincare(b1);
       boost.Boost(o1);
@@ -77,6 +76,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       if (error) {
 	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
 		  <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<endl
+		  <<"   vs.  : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
 		  <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<endl;
       }
     }
@@ -85,10 +85,11 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       double s2 = 4. * sqr(o2[0]);
       double t2 = k2 -> t;
 
-      double sgn2 = 1.;
-      if (t2<0.) sgn2 = -1.;
-      double eboo2 = sgn2 * (dabs(E2) * s2 - pz*sqrt(s2*(s2-4.*t2))); // /-(2. * t2);
-      double pboo2 = sgn2 * (pz * s2 - dabs(E2)*sqrt(s2*(s2-4.*t2))); // /-/(2. * t2);
+      double sgnt = 1., sgn2 = 1.;
+      if (t2<0.) sgnt = -1.;
+      if (o2[0]<0.) sgn2 = -1.;
+      double eboo2 = sgnt * (E2 * s2 * sgn2 - pz*sqrt(s2*(s2-4.*t2))); // /-(2. * t2);
+      double pboo2 = sgnt * (pz * s2 * sgn2 - E2*sqrt(s2*(s2-4.*t2))); // /-/(2. * t2);
       Vec4D b2(eboo2,0.,0.,pboo2);
       boost = Poincare(b2);
       boost.Boost(o2);
@@ -101,6 +102,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       if (error) {
 	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
 		  <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<endl
+		  <<"   vs.  : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
 		  <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<endl;
       }
     }
@@ -114,6 +116,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
 	     <<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
 	     <<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
 	     <<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<endl;
+    abort();
   }
 
 
@@ -261,11 +264,11 @@ void Spacelike_Kinematics::BoostPartial(const int mode, Knot * si, const Vec4D &
   double E1     = v_si[0];
   double pz     = lv_si;
 
-  double sgn2 = 1.;
-  if (t1<0.) sgn2 = -1.;
-  double sgn1 = E1/dabs(E1);
-  double eboo1 = sgn2*(dabs(E1) * s1 - pz*sqrt(s1*(s1-4.*t1))); // / -(2. * t1);
-  double pboo1 = -sgn2*sgn1 * (pz * s1 - dabs(E1)*sqrt(s1*(s1-4.*t1))); // /-(2. * t1);
+  double sgnt = 1., sgn1 = 1.;
+  if (t1<0.) sgnt = -1.;
+  if (p_si[0]<0.) sgn1 = -1.;
+  double eboo1 = sgnt * (E1 * s1 * sgn1 - pz*sqrt(s1*(s1-4.*t1))); // / -(2. * t1);
+  double pboo1 = -sgnt* (pz * s1 * sgn1 - E1*sqrt(s1*(s1-4.*t1))); // /-(2. * t1);
 
   // boost
   Vec4D b1(eboo1,pboo1*np_si);
