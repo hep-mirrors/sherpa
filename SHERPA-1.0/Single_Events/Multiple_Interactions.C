@@ -5,6 +5,7 @@
 #include "Remnant_Base.H"
 #include "ISR_Handler.H"
 #include "Jet_Finder.H"
+#include "Kt_Algorithm.H"
 #include "Run_Parameter.H"
 
 #ifdef PROFILE__all
@@ -92,9 +93,26 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 //       return true;
 //     }
   switch (p_mihandler->ScaleScheme()) {
+  case 2: {
+    Blob_List shower=bloblist->
+      FindConnected(m_diced?bloblist->FindLast(btp::Hard_Collision):
+		    signal);
+    Particle_List partons=shower.ExtractLooseParticles(1), jets;
+    Is_Parton qualifier;
+    Kt_Algorithm finder(&qualifier);
+    std::vector<double> kts;
+    finder.ConstructJets(&partons,&jets,&kts,0.7);
+    double ptmax=0.0;
+    for (Particle_List::const_iterator pit=jets.begin();
+	 pit!=jets.end();++pit)
+      ptmax=Max(ptmax,(*pit)->Momentum().PPerp());
+    jets.Clear();
+    m_ptmax=Min(m_ptmax,ptmax);
+    break;
+  }
   case 1: {
     Blob_List shower=bloblist->
-      FindConnected(m_diced?bloblist->FindFirst(btp::Hard_Collision):
+      FindConnected(m_diced?bloblist->FindLast(btp::Hard_Collision):
 		    signal);
     int njets=2;
     if (!m_diced) {
