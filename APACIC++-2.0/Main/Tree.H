@@ -94,10 +94,6 @@ namespace APACIC {
   //--------------------------- Inline functions --------------------------
   //----------------------------------------------------------------------- 
 
-  inline void Tree::Reset() {
-    ResetKnots();    
-  }
-
   inline void Tree::ResetKnots() {
     for (Knot_Iterator kit=p_knots->begin(); kit!=p_knots->end(); ++kit) {
       delete (*kit); 
@@ -105,6 +101,11 @@ namespace APACIC {
     p_knots->erase(p_knots->begin(),p_knots->end());
     p_root = 0;
   }
+
+  inline void Tree::Reset() {
+    ResetKnots();    
+  }
+
 
 }
 #endif

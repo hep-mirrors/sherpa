@@ -206,6 +206,7 @@ void Tree::CopyBackKnot(Knot * a, Knot * b)
   if (!b) return;
 
   if (!a || a==b) {
+    std::cerr<<" Error in  Tree::CopyBackKnot "<<std::endl;
     Knot * b = p_save_root;
     if (b) {
       while (b->prev) {

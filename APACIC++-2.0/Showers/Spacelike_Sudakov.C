@@ -62,6 +62,8 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spac
 
 
 bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pdf) {
+  mo->tmax = mo->t;  // last start t
+  msg.Tracking()<<" tstart="<<mo->tmax<<" ("<<mo->kn_no<<")"<<std::endl;
   m_last_veto = 0;
   m_inflav = mo->part->Flav(); 
   m_t      = mo->t;
@@ -151,12 +153,12 @@ bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf)
     return 1;
   }
   // 4. jet veto
-  if (jetveto) {    
+  if (jetveto) {      // test only!!!
     if (JetVeto(mo)) {
       m_last_veto=5;
       return 1;
     }
-  }
+   }
 
   // 5. extra pdf weight for first branch below  Q_jet
   if (extra_pdf) {
@@ -186,6 +188,9 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
   if (!extra_pdf) {
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
+  if (m_x/m_z>=1.) {
+    std::cout<<"x="<<m_x<<"    z="<<m_z<<"  x/z="<<m_x/m_z<<std::endl;
+  }
   p_pdfa->Calculate(m_x/m_z,sqrt(scale));
   weight        *= p_pdfa->GetXPDF(GetFlA())/wb_jet;
   weight        *= GetWeight(m_z,-m_t,0);
@@ -201,6 +206,16 @@ bool Spacelike_Sudakov::CplVeto()
     return 0;
   case 2 : 
     return (GetCoupling(0.25*m_t)/GetCoupling() > ran.Get()) ? 0 : 1;   
+  case 3 : {
+    double a3 = GetCoupling();
+    double b3 = GetCoupling(0.25*m_pt2);
+//     std::cout<<" coupling "<<a3<<"  bigger? than "<<b3;
+//     if (b3>a3) std::cout<<"IS!!!"<<std::endl;
+//     else  std::cout<<std::endl;
+    double r3 = ran.Get();
+    double w3 = b3/a3;
+    return (w3 > r3) ? 0 : 1;
+  }
   default : 
     double a = GetCoupling();
     double b = GetCoupling(m_pt2);
@@ -237,7 +252,14 @@ bool Spacelike_Sudakov::PTVeto(Knot * mo)
 
 bool Spacelike_Sudakov::JetVeto(Knot * mo) 
 {
-  if (m_pt2>m_qjet) return 1;
+  std::cout<<" Spacelike_Sudakov::JetVeto("<<mo->kn_no<<") called "<<m_pt2<<" vs. "<<m_qjet;
+  if (m_pt2>m_qjet) {
+    std::cout<<"would be veto "<<std::endl;
+    return 0;  // test only!!!!
+
+    return 1;
+  }
+  std::cout<<std::endl;
   return 0;
 }
 

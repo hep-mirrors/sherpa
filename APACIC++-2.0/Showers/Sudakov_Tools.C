@@ -24,8 +24,10 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin,
   scheme = _scheme;
   if (scheme>0) {
     alphaQEDmax = (*p_aqed)(tmax);    
-    alphaSmax   = AlphaS(tmin);      
-    FixLambda2(sqr((Flavour(kf::Z)).Mass()));                   
+    //    alphaSmax   = AlphaS(tmin);      
+    alphaSmax   = AlphaS(0.25*tmin);      
+    std::cout<<" asmax="<<alphaSmax<<std::endl;
+    FixLambda2(sqr((Flavour(kf::Z)).Mass())); 
     Setscalefac(tmin);   
   }
   else {

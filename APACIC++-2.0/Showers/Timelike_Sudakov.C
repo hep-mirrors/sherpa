@@ -154,6 +154,10 @@ bool Timelike_Sudakov::Veto(Knot * mo)
   if ((m_tb>wb) || (m_tc>wc)) {
     return 1;
   }
+  // kincheck for first timelike from spacelike
+  if (mo->tmax!=0 && m_ta>mo->tmax) {
+    return 1;
+  }
   // timelike
   if (m_wa < m_ta) {
     m_last_veto=1;
@@ -184,7 +188,7 @@ bool Timelike_Sudakov::Veto(Knot * mo)
     m_last_veto=6;
     return 1;
   }
-  // 5. JetVeto *AS*
+  // 5. JetVeto
   if (JetVeto(mo)) {
     m_last_veto=7;
     return 1;    

@@ -33,6 +33,10 @@ namespace APACIC {
 
     ATOOLS::Vec4D m_lab;
 
+    ATOOLS::Blob * m_bl_meps_is, * m_bl_meps_fs;
+
+    void SingleExtract(Knot *,int,ATOOLS::Blob *,
+			ATOOLS::Blob_List *,int &);
   public:
     Initial_State_Shower(PDF::ISR_Handler *,Final_State_Shower *,
 			 MODEL::Model_Base *,ATOOLS::Data_Read * const );

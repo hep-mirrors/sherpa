@@ -47,6 +47,14 @@ void Hard_Interface::PrepareTrees() {
 
 int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
   if (!m_showers) return 1;
+  if (rpa.gen.Debugging()) {
+    if (m_fsron) 
+      p_finshower->OutputTree(p_fintree);
+    if (m_isron) {
+      p_inishower->OutputTree(p_initrees[0]);
+      p_inishower->OutputTree(p_initrees[1]);
+    }
+  }
   if (m_fsron) {
     Vec4D sum=p_fintree->GetRoot()->part->Momentum();
     Poincare cms(sum);
@@ -57,7 +65,10 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,doubl
     // check ME if still njet ME!
     // if isr is on, this check will be performed after the initial state shower
     if (!m_isron)
-      if (!p_finshower->ExtraJetCheck()) return 3;
+      if (!p_finshower->ExtraJetCheck()) {
+	//	std::cout<<" lose jet veto called FS "<<std::endl;
+	return 3;
+      }
 
     p_finshower->SetAllColours(p_fintree->GetRoot());
 
@@ -94,7 +105,10 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,doubl
       p_fintree->BoRo(lab);
 
       // check ME if still njet ME!
-      if (!p_finshower->ExtraJetCheck()) return 3;
+      if (!p_finshower->ExtraJetCheck()) {
+	//	std::cout<<" lose jet veto called IS "<<std::endl;
+	return 3;
+      }
     }
 
     msg.Debugging()<<"Initial State Shower successful !"<<std::endl;

@@ -63,6 +63,11 @@ namespace APACIC {
       Checking for extra jets in the initial shower.
       If an emission gives rise to an extra jet, true is returned.
     */
+    bool JetVeto(Knot *, Knot *);
+    /*
+      Checking for extra jets in the initial shower.
+      If an emission gives rise to an extra jet, true is returned.
+    */
     bool KinCheck(Knot *,bool);
     /*!
       Knowing the virtual masses of k1 and k2 the maximal allowed timelike t
@@ -85,6 +90,15 @@ namespace APACIC {
       Note: Both initiators will be oriented along the z-axis !
     */
     ATOOLS::Vec4D BoostInLab(Tree **);
+
+
+    void ResetMomenta(Knot*,Tree*,int=0);
   };
+
+  /*!
+  \fn void Spacelike_Kinematics::ResetMomenta(Knot*,Tree*,int=0);
+  \brief ResetsMomenta after jetveto
+  */
+
 }
 #endif

@@ -76,6 +76,8 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
     mo->thcrit=th1c;
   }
 
+//   cout<<" starting FS from IS knot : "<<mo->kn_no<<"  t="<<mo->t<<" tmax="<<mo->tmax<<endl;
+//   cout<<*mo;
   if (mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
 
@@ -306,19 +308,35 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
   if (!d1 || !d2 || !mo) {
     msg.Error()<<" WARNING:Final_State_Shower::EstablishRelations() called with"<<endl;
-    if (mo) msg.Error()<<"mo :"<<mo<<endl; else msg.Error()<<"mo : 0x0"<<endl;
-    if (d1) msg.Error()<<"d1 :"<<d1<<endl; else msg.Error()<<"d1 : 0x0"<<endl;
-    if (d2) msg.Error()<<"d2 :"<<d2<<endl; else msg.Error()<<"d2 : 0x0"<<endl;
+    if (mo) msg.Error()<<"mo :"<<*mo<<endl; else msg.Error()<<"mo : 0x0"<<endl;
+    if (d1) msg.Error()<<"d1 :"<<*d1<<endl; else msg.Error()<<"d1 : 0x0"<<endl;
+    if (d2) msg.Error()<<"d2 :"<<*d2<<endl; else msg.Error()<<"d2 : 0x0"<<endl;
     return;
   }
-  // set color conections (if not jet known)
+  // set color connections (if not jet known)
   APACIC::Final_State_Shower::SetColours(mo,0);
   
   double t_mo = mo->part->Momentum().Abs2();
   double E_mo= mo->part->Momentum()[0];
+
+  //  cout<<"Final_State_Shower:Est: "<<t_mo<<" vs. "<<mo->t<<endl;
   
   double th  = sqrt( t_mo/(mo->z*(1.- mo->z)))/E_mo;
-  if (mo->part->Flav().Strong()) {
+  if (mo->part->Flav().IsQuark() && d1->part->Flav().Strong() && d2->part->Flav().Strong()) {
+    if (d1->part->Flav().IsQuark()) {
+      d1->t      = mo->t;
+      d1->thcrit = mo->thcrit;
+      d2->t      = t_mo;
+      d2->thcrit = th;
+    }
+    else {
+      d1->t      = t_mo;
+      d1->thcrit = th;
+      d2->t      = mo->t;
+      d2->thcrit = mo->thcrit;
+    }
+  }
+  else  if (mo->part->Flav().Strong()) {
     if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {
       if ((d1->E2) > (d2->E2)) {
 	d1->t      = mo->t;
@@ -995,7 +1013,7 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
     if (found) return aup;
   }
 
-  msg.Out()<<" no aunt in blob  found ! return normal aunt"<<endl;
+  msg.Events()<<" no aunt in blob  found ! return normal aunt"<<endl;
   return au->part;
 
 }
