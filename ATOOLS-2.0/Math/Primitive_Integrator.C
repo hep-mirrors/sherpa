@@ -12,6 +12,14 @@ Primitive_Integrand::~Primitive_Integrand()
 {
 }
 
+void Primitive_Integrand::AddPoint(const double weight)
+{
+}
+
+void Primitive_Integrand::FinishConstruction(const double apweight)
+{
+}
+
 #define DFORMAT std::setw(15)
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,
@@ -92,7 +100,7 @@ Primitive_Channel::~Primitive_Channel()
 }
 
 double Primitive_Channel::
-Point(const Primitive_Integrand *function,
+Point(Primitive_Integrand *const function,
       std::vector<double> &point,std::vector<double> &opt)
 {
   if (opt.size()<m_pos+8*m_this.size())
@@ -110,7 +118,7 @@ Point(const Primitive_Integrand *function,
   return cur;
 }
 
-double Primitive_Channel::Point(const Primitive_Integrand *function,
+double Primitive_Channel::Point(Primitive_Integrand *const function,
 				std::vector<double> &point)
 {
   if (point.size()!=m_this.size())
@@ -226,7 +234,7 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 
 Primitive_Integrator::Primitive_Integrator():
   m_nopt(10000), m_nmax(1000000), m_error(0.01), m_scale (1.0),
-  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
+  m_apweight(1.0), m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
   m_ncells(1000), m_mode(0), m_split(1), m_shuffle(1), m_last(0), 
   m_vname("I") {}
 
@@ -266,7 +274,7 @@ void Primitive_Integrator::Initialize()
   Primitive_Channel::CreateRoot(m_rmin,m_rmax,m_channels);
 }
 
-double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
+double Primitive_Integrator::Integrate(Primitive_Integrand *const function)
 {
   if (m_channels.empty()) Initialize();
   p_function=function;
@@ -278,10 +286,9 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   m_opt.resize(16*m_point.size());
   for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
   long unsigned int nfirst=(m_channels.size()-m_point.size())*m_nopt/2;
+  m_apweight=m_channels[0]->Alpha();
   for (long unsigned int n=0;n<nfirst;++n) Point();
   Split();
-  for (size_t i=0;i<m_channels.size();++i) 
-    if (m_channels[i]->Alpha()!=0.5) m_channels[i]->SetAlpha(0.0);
   while (((long unsigned int)m_np)<m_nmax &&
 	 m_channels.size()-m_point.size()<m_ncells) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
@@ -290,11 +297,11 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
     Split();
   }
   for (long unsigned int n=0;n<m_nopt;++n) Point();
+  p_function->FinishConstruction(m_apweight);
   m_opt.clear();
-  double alpha=1.0/(m_channels.size()-m_point.size());
   for (size_t i=0;i<m_channels.size();++i) 
     if (!m_channels[i]->Boundary()) {
-      m_channels[i]->SetAlpha(alpha);
+      m_channels[i]->SetAlpha(m_apweight);
       m_channels[i]->Store();
       m_channels[i]->Reset();
     }
@@ -365,7 +372,10 @@ void Primitive_Integrator::Point()
   }
   if (selected==NULL) THROW(fatal_error,"No channel selected.");
   if (m_opt.size()>0) selected->Point(p_function,m_point,m_opt);
-  else selected->Point(p_function,m_point);
+  else {
+    selected->Point(p_function,m_point);
+    p_function->AddPoint(selected->Weight()/selected->Alpha());
+  }
 }
 
 void Primitive_Integrator::Point(std::vector<double> &x)
@@ -412,6 +422,7 @@ void Primitive_Integrator::Split()
     switch (m_mode) {
     case 1:
       cur=m_channels[i]->Max();
+
       break;
     case 0: 
     default:
@@ -435,6 +446,7 @@ void Primitive_Integrator::Split()
   selected->SetAlpha(0.5);
   selected->SetPosition(0);
   selected->Reset();
+  m_apweight/=m_apweight+1.0;
 }
 
 void Primitive_Integrator::SelectDimension(Primitive_Channel *const current)

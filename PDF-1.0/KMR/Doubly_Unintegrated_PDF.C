@@ -45,14 +45,14 @@ public:
 
   double Integrate(const double &x,const double &z,const double &kp2);
 
-  double operator()(const std::vector<double> &point) const;
+  double operator()(const std::vector<double> &point);
 
 };// end of class DGLAP_PDF
 
 DGLAP_PDF::DGLAP_PDF(PDF_Base *const pdf,const double &mu02): 
   p_pdf(pdf), m_q0(sqrt(mu02)), m_fl(ATOOLS::kf::gluon) {}
 
-double DGLAP_PDF::operator()(const std::vector<double> &point) const
+double DGLAP_PDF::operator()(const std::vector<double> &point)
 {
   double q=pow(10.0,point[0]), phi=point[1];
   double kpp2=ATOOLS::sqr((1.0-m_z)*q)+m_kp2+2.0*m_kp*(1.0-m_z)*q*cos(phi);

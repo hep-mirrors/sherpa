@@ -22,10 +22,21 @@ namespace ATOOLS {
     virtual ~Primitive_Integrand();
 
     // member functions
-    virtual double operator()(const std::vector<double> &point) const = 0;
+    virtual double operator()(const std::vector<double> &point) = 0;
     /*!
       \fn virtual double operator()(const std::vector<double> &point) const
       \brief Evaluates the integrand at the given point
+    */
+    virtual void AddPoint(const double weight);
+    /*!
+      \fn virtual void AddPoint(const double weight)
+      \brief Updates the integrand with the approved phasespace points.
+    */
+    virtual void FinishConstruction(const double apweight);
+    /*!
+      \fn virtual void FinishConstruction(const double apweight)
+      \brief Informs the integrand that the cell buildup is finished
+      and updates it with the new a priori weight.
     */
 
   };// end of class Primitive_Integrand
@@ -73,15 +84,15 @@ namespace ATOOLS {
     ~Primitive_Channel();
 
     // member functions
-    double Point(const Primitive_Integrand *function,
+    double Point(Primitive_Integrand *const function,
 		 std::vector<double> &point);
     /*!
-      \fn double Point(const Primitive_Integrand *function,
+      \fn double Point(Primitive_Integrand *const function,
       std::vector<double> &point)
       \brief Generates one point inside the integration domain
       employing a uniform weight distrbution.
     */
-    double Point(const Primitive_Integrand *function,
+    double Point(Primitive_Integrand *const function,
 		 std::vector<double> &point,std::vector<double> &opt);
     /*!
       \fn double Point(const Primitive_Integrand *function,
@@ -296,7 +307,7 @@ namespace ATOOLS {
 
     long unsigned int m_nopt, m_nmax;
 
-    double m_error, m_scale;
+    double m_error, m_scale, m_apweight;
     double m_sum, m_sum2, m_max, m_np;
 
     std::vector<double>   m_rmin, m_rmax, m_point, m_opt;
@@ -304,7 +315,7 @@ namespace ATOOLS {
 
     std::vector<Primitive_Channel*> m_channels;
 
-    const Primitive_Integrand *p_function;
+    Primitive_Integrand *p_function;
 
     size_t m_ncells, m_mode, m_split, m_shuffle, m_last;
 
@@ -410,9 +421,9 @@ namespace ATOOLS {
       \brief Initializes the integrator by creating a root cell 
       of type Primitive_Channel inside the integration domain.
     */
-    double Integrate(const Primitive_Integrand *function);
+    double Integrate(Primitive_Integrand *const function);
     /*!
-      \fn double Integrate(const Primitive_Integrand *function)
+      \fn double Integrate(Primitive_Integrand *const function)
       \brief Integrates the integrand.
       
       This method iterates the splitting of the root cell until 
@@ -539,10 +550,10 @@ namespace ATOOLS {
       \brief Sets the shuffle mode. If set to 0 weights will not be shuffled.
     */
 
-    inline void SetFunction(const Primitive_Integrand *function)
+    inline void SetFunction(Primitive_Integrand *const function)
     { p_function=function; }
     /*!
-      \fn inline void SetFunction(const Primitive_Integrand *function)
+      \fn inline void SetFunction(Primitive_Integrand *const function)
       \brief Sets the integrand.
     */
 
@@ -572,6 +583,12 @@ namespace ATOOLS {
     /*!
       \fn inline double Sigma() const
       \brief Returns \f$\sqrt{\frac{Variance()}{n}}\f$
+    */
+
+    inline double APrioriWeight() const { return m_apweight; }
+    /*!
+      \fn inline double APrioriWeight() const
+      \brief Returns the a priori weight of a single channel.
     */
 
   };// end of class Primitive_Integrator
