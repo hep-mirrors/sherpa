@@ -56,15 +56,15 @@ void Exception::SignalHandler(int signal)
 	     <<"Signal "<<om::reset<<om::bold<<"("<<om::red<<signal
 	     <<om::reset<<om::bold<<")"<<om::reset<<om::blue<<" caught. "<<om::reset<<std::endl;
   switch (signal) {
-  case SIGABRT:
-  case SIGTERM:
-  case SIGXCPU:
   case SIGSEGV:
     ++segv_signals;
     if (segv_signals>3) {
       msg.Error()<<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
       abort();
     }
+  case SIGABRT:
+  case SIGTERM:
+  case SIGXCPU:
     msg.Error()<<om::reset<<"   Cannot run further. Preparing termination ..."<<om::reset<<std::endl;
     s_exitcode=2;
     Terminate();
