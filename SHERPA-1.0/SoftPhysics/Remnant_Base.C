@@ -21,6 +21,11 @@ void Remnant_Base::Clear()
   p_beamblob=NULL;
 }
 
+double Remnant_Base::Lambda2(double sp,double sp1,double sp2) 
+{ 
+  return (sp-sp1-sp2)*(sp-sp1-sp2)-4.0*sp1*sp2;
+}
+
 bool Remnant_Base::AdjustKinematics()
 {
   if (!m_active) return true;
@@ -49,16 +54,13 @@ bool Remnant_Base::AdjustKinematics()
     }
   }
   ATOOLS::Vec4D pr1=p_last[0]->Momentum(), pr2=p_last[1]->Momentum();
-  double sp, sp1, sp2, lam2, c1, c2, c3, E1, E2, pz1, pz2;
+  double sp, sp1, sp2, E1, E2, pz1, pz2;
   sp1=ATOOLS::sqr(p_last[0]->Flav().PSMass())+ATOOLS::sqr(pr1[1])+ATOOLS::sqr(pr1[2]);
   sp2=ATOOLS::sqr(p_last[1]->Flav().PSMass())+ATOOLS::sqr(pr2[1])+ATOOLS::sqr(pr2[2]);
   sp=Erem*Erem-pzrem*pzrem;
-  lam2=(sp-sp1-sp2)*(sp-sp1-sp2)/4.0-sp1*sp2;
-  c1=0.5*(sp-sp1+sp2); c2=0.5*(sp+sp1-sp2); 
-  c3=0.5*(sp-sp1-sp2)*Erem*Erem-lam2;
   double spn, ytn, yto=(Erem+pzrem)/(Erem-pzrem);
   for (double sign=1.0;sign>=-1.0;sign-=2.0) {
-    E1=Erem*c2/(c1+c2)*(1.0+sign*sqrt(1.0+(c3/(Erem*Erem)-c2)/(c2*c2)*(c1+c2)));
+    E1=0.5/sp*((sp+sp1-sp2)*Erem+sign*sqrt(Lambda2(sp,sp1,sp2))*pzrem);
     E2=Erem-E1;
     pz1=ATOOLS::Sign(pr1[3])*sqrt(E1*E1-sp1); pz2=ATOOLS::Sign(pr2[3])*sqrt(E2*E2-sp2);
     spn=ATOOLS::sqr(Erem)-ATOOLS::sqr(pz1+pz2);
@@ -69,7 +71,18 @@ bool Remnant_Base::AdjustKinematics()
     if (ATOOLS::dabs((ytn-yto)/(ytn+yto))>ATOOLS::rpa.gen.Accu()) 
       { pz1*=-1.0; pz2*=-1.0; ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2); }
     if (ATOOLS::dabs((ytn-yto)/(ytn+yto))>ATOOLS::rpa.gen.Accu()) continue;
+    if (ATOOLS::dabs(pz1)>ATOOLS::dabs(pz2)) { if (ATOOLS::Sign(pz1)==ATOOLS::Sign(pr1[3])) break; }
+    else { if (ATOOLS::Sign(pz2)==ATOOLS::Sign(pr2[3])) break; }
   }
+  /*
+  if (pz2>0.0&&pz1<0.0) {
+    ATOOLS::msg.Error()<<"Remnant_Base::AdjustKinematics(): "
+		       <<"Warning. Interchanged remnant momenta."<<std::endl
+		       <<"   Former momenta are "<<pr1<<" "<<pr2<<std::endl
+		       <<"   New momenta are    "<<ATOOLS::Vec4D(E1,pr1[1],pr1[2],pz1)
+		       <<" "<<ATOOLS::Vec4D(E2,pr2[1],pr2[2],pz2)<<std::endl;
+  }
+  */
   pr1=ATOOLS::Vec4D(E1,pr1[1],pr1[2],pz1); p_last[0]->SetMomentum(pr1);
   pr2=ATOOLS::Vec4D(E2,pr2[1],pr2[2],pz2); p_last[1]->SetMomentum(pr2);
   return true;
