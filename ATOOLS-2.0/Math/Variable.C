@@ -41,71 +41,113 @@ void Variable_Base<ValueType>::ShowVariables(const int mode)
 template <class ValueType>
 class No_Variable: public Variable_Base<ValueType> {
 public:
-  No_Variable(): Variable_Base<ValueType>("") {}
+  No_Variable();
 };// end of class No_Variable
+template <class ValueType>
+No_Variable<ValueType>::No_Variable(): Variable_Base<ValueType>("") {}
   
 template <class ValueType>
 class PPerp: public Variable_Base<ValueType> {
 public:
-  PPerp(): Variable_Base<ValueType>("p_\\perp") { m_selectorid=12; }
+  PPerp();
   ValueType Value(const Vec3D *vectors) const
   { return Vec4D(0.0,vectors[0]).PPerp(); }
   ValueType Value(const Vec4D *vectors) const { return vectors[0].PPerp(); }
 };// end of class PPerp
+template <class ValueType>
+PPerp<ValueType>::PPerp(): Variable_Base<ValueType>("p_\\perp") 
+{
+  m_selectorid=12; 
+}
   
 template <class ValueType>
 class EPerp: public Variable_Base<ValueType> {
 public:
-  EPerp(): Variable_Base<ValueType>("E_\\perp") { m_selectorid=15; }
+  EPerp();
   ValueType Value(const Vec4D *vectors) const { return vectors[0].EPerp(); }
 };// end of class EPerp
+template <class ValueType>
+EPerp<ValueType>::EPerp(): Variable_Base<ValueType>("E_\\perp") 
+{
+  m_selectorid=15; 
+}
   
 template <class ValueType>
 class Energy: public Variable_Base<ValueType> {
 public:
-  Energy(): Variable_Base<ValueType>("E") { m_selectorid=11; }
+  Energy();
   ValueType Value(const Vec4D *vectors) const { return vectors[0][0]; }
 };// end of class Energy
+template <class ValueType>
+Energy<ValueType>::Energy(): Variable_Base<ValueType>("E") 
+{
+  m_selectorid=11; 
+}
   
 template <class ValueType>
 class Mass: public Variable_Base<ValueType> {
 public:
-  Mass(): Variable_Base<ValueType>("m") { m_selectorid=21; }
+  Mass();
   ValueType Value(const Vec4D *vectors) const { return vectors[0].Mass(); }
 };// end of class Mass
+template <class ValueType>
+Mass<ValueType>::Mass(): Variable_Base<ValueType>("m") 
+{
+  m_selectorid=21; 
+}
   
 template <class ValueType>
 class Rapidity: public Variable_Base<ValueType> {
 public:
-  Rapidity(): Variable_Base<ValueType>("y") { m_selectorid=13; }
+  Rapidity();
   ValueType Value(const Vec4D *vectors) const { return vectors[0].Y(); }
 };// end of class Rapidity
+template <class ValueType>
+Rapidity<ValueType>::Rapidity(): Variable_Base<ValueType>("y") 
+{
+  m_selectorid=13; 
+}
   
 template <class ValueType>
 class Eta: public Variable_Base<ValueType> {
 public:
-  Eta(): Variable_Base<ValueType>("\\eta") { m_selectorid=16; }
+  Eta();
   ValueType Value(const Vec4D *vectors) const { return vectors[0].Eta(); }
 };// end of class Eta
+template <class ValueType>
+Eta<ValueType>::Eta(): Variable_Base<ValueType>("\\eta") 
+{
+  m_selectorid=16; 
+}
   
 template <class ValueType>
 class Theta: public Variable_Base<ValueType> {
 public:
-  Theta(): Variable_Base<ValueType>("\\theta") { m_selectorid=14; }
+  Theta();
   ValueType Value(const Vec3D *vectors) const 
   { return Vec4D(0.0,vectors[0]).Theta(); }
   ValueType Value(const Vec4D *vectors) const { return vectors[0].Theta(); }
 };// end of class Theta
+template <class ValueType>
+Theta<ValueType>::Theta(): Variable_Base<ValueType>("\\theta") 
+{
+  m_selectorid=14; 
+}
   
 template <class ValueType>
 class Theta2: public Variable_Base<ValueType> {
 public:
-  Theta2(): Variable_Base<ValueType>("\\theta_{ij}") { m_selectorid=22; }
+  Theta2();
   ValueType Value(const Vec3D *vectors) const 
   { return Vec4D(0.0,vectors[1]).Theta(Vec4D(0.0,vectors[0])); }
   ValueType Value(const Vec4D *vectors) const 
   { return vectors[1].Theta(vectors[0]); }
 };// end of class Theta2
+template <class ValueType>
+Theta2<ValueType>::Theta2(): Variable_Base<ValueType>("\\theta_{ij}") 
+{
+  m_selectorid=22; 
+}
 
 template class Variable_Base<double>;
 
