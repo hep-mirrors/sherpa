@@ -42,8 +42,9 @@ void Exception::Terminate()
 
 void Exception::Exit(int exitcode)
 {
-  msg.Error()<<"Irregularly terminating Sherpa: exit code ("
-	     <<exitcode<<")"<<std::endl;
+  msg.Error()<<om::bold<<"Irregularly terminating Sherpa: "<<om::reset
+	     <<"exit code "<<om::bold<<"("<<om::red<<exitcode
+	     <<om::reset<<om::bold<<")"<<om::reset<<std::endl;
   exit(exitcode);
 }
 
@@ -52,12 +53,14 @@ void Exception::SEGVHandler(int signal)
   static unsigned int segv_signals;
   ++segv_signals;
   if (segv_signals>3) {
-    msg.Error()<<"ATOOLS::SEGVHandler("<<signal<<"): Caught SIGSEGV 3 times. "<<std::endl
-	       <<"   Abort immediately."<<std::endl;
+    msg.Error()<<om::bold<<"ATOOLS::SEGVHandler("<<om::reset<<om::red<<signal
+	       <<om::reset<<om::bold<<"): "<<om::reset<<om::blue<<"Caught SIGSEGV 3 times. "<<std::endl
+	       <<om::reset<<"   Abort immediately."<<om::reset<<std::endl;
     abort();
   }
-  msg.Error()<<"ATOOLS::SEGVHandler("<<signal<<"): Signal SIGSEGV caught. "<<std::endl
-	     <<"   Cannot run further. Preparing termination ..."<<std::endl;
+  msg.Error()<<om::bold<<"ATOOLS::SEGVHandler("<<om::reset<<om::red<<signal
+	     <<om::reset<<om::bold<<"): "<<om::reset<<om::blue<<"Signal SIGSEGV caught. "<<std::endl
+	     <<om::reset<<"   Cannot run further. Preparing termination ..."<<om::reset<<std::endl;
   PrepareTerminate();
   Exit(2);
 }
@@ -66,21 +69,24 @@ void Exception::INTHandler(int signal)
 {
   std::string input="y";
   if (!rpa.gen.BatchMode()) {
-    msg.Error()<<"ATOOLS::INTHandler("<<signal<<"): Signal SIGINT caught."<<std::endl
-	       <<"   Do you want to stop the program ? ";
+    msg.Error()<<om::bold<<"ATOOLS::INTHandler("<<om::reset<<om::red<<signal
+	       <<om::reset<<om::bold<<"): "<<om::reset<<om::blue<<"Signal SIGINT caught."<<std::endl
+	       <<om::reset<<"   Do you want to stop the program ? "<<om::reset;
     std::cin>>input;
   }
   if (input!="y" && input!="Y") return;
-  msg.Error()<<"ATOOLS::INTHandler("<<signal<<"): "
-	     <<"Preparing termination ..."<<std::endl;
+  msg.Error()<<om::bold<<"ATOOLS::INTHandler("<<om::reset<<om::red<<signal
+	     <<om::reset<<om::bold<<"): "<<om::reset<<om::blue
+	     <<"Preparing termination ..."<<om::reset<<std::endl;
   PrepareTerminate();
   Exit(1);
 }
 
 void Exception::FPEHandler(int signal) 
 {
-  msg.Error()<<"ATOOLS::FPEHandler("<<signal<<"): "<<std::endl
-	     <<"   Sherpa does not throw floating point exceptions."<<std::endl;
+  msg.Error()<<om::bold<<"ATOOLS::FPEHandler("<<om::reset<<om::red<<signal
+	     <<om::reset<<om::bold<<"): "<<om::reset<<om::green
+	     <<"   Sherpa does not throw floating point exceptions."<<om::reset<<std::endl;
 }
 
 bool Exception::ApproveTerminate() const
