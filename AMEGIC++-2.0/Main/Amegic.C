@@ -280,34 +280,39 @@ int Amegic::ReadProcesses(string path)
       }
       if (!error) {
 	nFS = ExtractFlavours(FS,plFS,buf);
-	if (!(procs->CheckExternalFlavours(2,partons,nFS,FS))) {
-	  msg.Tracking()<<"Mismatch of flavours. Cannot initialize this process."<<endl
-			<<"flavours are "<<buf<<endl;
+	cout<<"nFS = "<<nFS<<" "<<" : ";
+	for (short int i=0;i<nFS;i++) cout<<FS[i]<<" ";
+	cout<<endl;
+	++count;
+	msg.Tracking()<<"Init process : "<<partons[0]<<" "<<partons[1]<<" -> ";
+	for (int j=0;j<nFS;j++) msg.Tracking()<<FS[j]<<" ";
+	msg.Tracking()<<"  (Check : "<<buf<<" )"<<endl;
+	
+	if (nIS+nFS > nmax) nmax = nIS+nFS;
+	flavs = new Flavour[nIS+nFS];
+	plavs = new Pol_Info[nIS+nFS];
+	for (int i=0;i<nIS;i++) { flavs[i]     = partons[i]; plavs[i]     = plpartons[i]; }
+	for (int i=0;i<nFS;i++) { flavs[i+nIS] = FS[i];      plavs[i+nIS] = plFS[i]; }
+	bool single = 1;
+	for (int i=0;i<nIS+nFS;i++) {
+	  msg.Debugging()<<"Flavour "<<i<<" : "<<flavs[i]<<" : "<<flavs[i].Size()<<endl;
+	  if (flavs[i].Size()>1) { single = 0; break; }
+	} 
+	if (single) {
+	  if (!(procs->CheckExternalFlavours(2,partons,nFS,FS))) {
+	    msg.Tracking()<<"Mismatch of flavours. Cannot initialize this process."<<endl
+			  <<"flavours are "<<buf<<endl;
+	  }
+	  else {
+	    procs->Add(new Single_Process(nIS,nFS,flavs,isr,beam,seldata,2,
+					  rpa.me.KFactorScheme(),
+					  rpa.me.ScaleScheme(),plavs,runmode));
+	  }
 	}
-	else {
-	  ++count;
-	  msg.Tracking()<<"Init process : "<<partons[0]<<" "<<partons[1]<<" -> ";
-	  for (int j=0;j<nFS;j++) msg.Tracking()<<FS[j]<<" ";
-	  msg.Tracking()<<"  (Check : "<<buf<<" )"<<endl;
-	  
-	  if (nIS+nFS > nmax) nmax = nIS+nFS;
-	  flavs = new Flavour[nIS+nFS];
-	  plavs = new Pol_Info[nIS+nFS];
-	  for (int i=0;i<nIS;i++) { flavs[i]     = partons[i]; plavs[i]     = plpartons[i]; }
-	  for (int i=0;i<nFS;i++) { flavs[i+nIS] = FS[i];      plavs[i+nIS] = plFS[i]; }
-	  bool single = 1;
-	  for (int i=0;i<nIS+nFS;i++) {
-	    msg.Debugging()<<"Flavour "<<i<<" : "<<flavs[i]<<" : "<<flavs[i].Size()<<endl;
-	    if (flavs[i].Size()>1) { single = 0; break; }
-	  } 
-	  if (single) procs->Add(new Single_Process(nIS,nFS,flavs,isr,beam,seldata,2,
-						    rpa.me.KFactorScheme(),
-						    rpa.me.ScaleScheme(),plavs,runmode));
-	  else procs->Add(new Process_Group(nIS,nFS,flavs,isr,beam,seldata,2,
-					    rpa.me.KFactorScheme(),
-					    rpa.me.ScaleScheme(),plavs, runmode));
-	  delete [] flavs;
-	}
+	else procs->Add(new Process_Group(nIS,nFS,flavs,isr,beam,seldata,2,
+					  rpa.me.KFactorScheme(),
+					  rpa.me.ScaleScheme(),plavs, runmode));
+	delete [] flavs;
       }
     }
   }

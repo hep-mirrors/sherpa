@@ -76,12 +76,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
     if (flout[i].IntCharge()!=0) neweak++;
   }
 
-  GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
-
-  PolarizationNorm();
-  Initialize(_seldata);
-
-  xsflag = 0;
+ xsflag = 0;
   if (_runmode!=AMPLITUDE_MODE) {
     if ((xsflag = FindXS()) != 0) {
       msg.Debugging()<<"In Single_Process : xs is available as fast function "<<std::endl;
@@ -92,6 +87,11 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
       return;
     }
   }
+
+  GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
+
+  PolarizationNorm();
+  Initialize(_seldata);
 
   // making directory
   int  mode_dir = 448;
@@ -783,7 +783,13 @@ bool Single_Process::PrepareXSecTables() {
 
 
 void Single_Process::AddPoint(const double value) {
-  //msg.Debugging()<<"In Process_Base::AddPoint("<<value<<")"<<endl;  
+  if (rpa.gen.Debugging()) {
+    if (n<=10 || (n>=500000 && n<=500010)) {
+      msg.Debugging()<<"In Process_Base::AddPoint("<<value<<")"<<endl;  
+      msg.Out()<<" n        = "<<n<<endl;
+      msg.Out()<<" totalsum = "<<totalsum<<endl;
+    }
+  }
   n++;
   totalsum    += value;
   totalsumsqr += value*value;

@@ -42,6 +42,17 @@ public:
 
   class Pol_Info{
   public:
+    Pol_Info(const Pol_Info & p) {
+      num=p.num;
+      p_type=p.p_type;
+      angle=p.angle;
+      type=new int[num];
+      factor=new double[num];
+      for(int i=0;i<num;i++){
+	type[i]=p.type[i];
+	factor[i]=p.factor[i];
+      }
+    }
     Pol_Info& operator=(const Pol_Info& p){
       if (this!=&p) {
 	num    = p.num;

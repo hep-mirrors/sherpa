@@ -119,10 +119,10 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
   }
   
   delete[] switch_graphs;
-  
+  /*
   // create Superamplitudes:
   for (int i=0;i<graphs.size();i++) graphs[i]->BuildGlobalString(b,N,BS,fl,shand);
-  
+  */
   int dummy = 0;
   SetNumber(dummy);  
   namplitude = dummy;
@@ -541,8 +541,10 @@ Complex Amplitude_Handler::Zvalue(String_Handler * sh, int ihel)
 }
 
 Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
-{
-  for (int i=0;i<graphs.size();i++) Mi[i] = graphs[i]->Zvalue(ihel,sign);
+{ 
+  for (int i=0;i<graphs.size();i++) {
+    Mi[i] = graphs[i]->Zvalue(ihel,sign);
+  }
 
   Complex M(0.,0.);
   for (short int i=0;i<graphs.size();i++) {
@@ -550,25 +552,11 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
       M += Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);  //colfactors[i][j];
     }
   }
-
+  
+  
+  
   return M;
 }
-
-	/*
-	for (short int i=0;i<ngraph;i++) {
-	  for (short int j=0;j<ngraph;j++) M += Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);
-	  if (probs) {
-	    if (sw_probabs==2) probabs[i] += abs(Mi[i]*conj(Mi[i])*CFCol_Matrix->Mij(i,i));
-	    Complex c(0.,0.);
-	    if (sw_probabs==3) {
-	      for (short int j=0;j<ngraph;j++)
-		c += Mi[i]*conj(Mi[j])*CFCol_Matrix->Mij(i,j);
-	    }
-	    probabs[i] += abs(c);
-	  }
-	}
-	*/
-
 
 
 

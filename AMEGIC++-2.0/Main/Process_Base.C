@@ -24,9 +24,19 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
 				     int _nout,Flavour * _flout,Pol_Info * _plout,
 				     string & _name,string & _ptype, string & _lib)
 {
-  Reshuffle(_nin, _flin,  _plin);
-  Reshuffle(_nout,_flout, _plout);
-
+  Reshuffle(_nin, _flin, _plin);
+  
+  if (_flin[0].IsAnti() && !_flin[1].IsAnti()) {
+    Flavour flhelp  = _flin[0];
+    _flin[0] = _flin[1];
+    _flin[1] = flhelp;
+    Pol_Info plhelp  = _plin[0];
+    _plin[0] = _plin[1];
+    _plin[1] = plhelp;    
+  }
+  
+  Reshuffle(_nout, _flout, _plout);
+  
   char help[20];
 
   sprintf(help,"%i",_nin);
@@ -131,15 +141,16 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
     for (short int i=0;i<n-1;i++) {
       for (short int j=i+1;j<n;j++) {
 	shuffle = 0;
-        if ( (flav[i].IsVector()) && !(flav[j].IsVector()))      shuffle = 1;
+        if ( (flav[i].IsVector()) && !(flav[j].IsVector())) shuffle = 1;
 	else if ( (flav[i].Kfcode()) > (flav[j].Kfcode()) ) {
 	  if (!( !(flav[i].IsVector()) && (flav[j].IsVector()))) shuffle = 1;
 	}
 	else if ( (flav[i].IsAnti()) && !(flav[j].IsAnti()) &&
-		  (flav[i].Kfcode()  == flav[j].Kfcode()) )      shuffle = 1;
+		  (flav[i].Kfcode()  == flav[j].Kfcode()) )  shuffle = 1;
 	
 	if (shuffle) {
-          flhelp  = flav[j];
+          //cout<<"------------------    shuffle    ------------------------ "<<endl;
+	  flhelp  = flav[j];
           flav[j] = flav[i];
           flav[i] = flhelp;
 	  plhelp  = plav[j];
@@ -155,6 +166,12 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 
 bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
 					 int _nout,Flavour * _out) {
+
+  for (short int i=0;i<_nin;i++) cout<<_in[i]<<" ";
+  cout<<endl;
+  for (short int j=0;j<_nout;j++) cout<<_out[j]<<" ";
+  cout<<endl;
+
   // first : sum over all invariants and compare
   int    cin  = 0, cout  = 0;
   int    sin  = 0, sout  = 0;
@@ -196,10 +213,10 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   if (cin  != cout) return 0;    // electric charge violation
   if (sin  != sout) return 0;    // spin/fermion number violation
   if (bin  != bout) return 0;    // baryon number violation
-  //  if (lin  != lout) return 0;    // lepton number violation
+  //if (lin  != lout) return 0;    // lepton number violation
   //if (qin  != qout) return 0;    // strong charge violation
   if (qfin != qfout) return 0;   // quark family violation
-  //  if (lfin != lfout) return 0;   // lepton family violation
+  //if (lfin != lfout) return 0;   // lepton family violation
   return 1;
 }
 
