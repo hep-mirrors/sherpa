@@ -16,6 +16,8 @@ using namespace SHERPA;
 size_t Lund_Interface::s_errors=0;
 size_t Lund_Interface::s_maxerrors=0;
 
+ATOOLS::Blob_List *Lund_Interface::s_bloblist; 
+
 Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   m_path(_m_path),
   m_file(_m_file)
@@ -128,13 +130,15 @@ Lund_Interface::~Lund_Interface()
 bool Lund_Interface::ConvertParticles(std::map<int,ATOOLS::Particle*> &converted)
 {
   for (int i=0;i<hepevt.nhep;++i) {
-    ATOOLS::msg.Debugging()<<i<<" "<<hepevt.isthep[i]<<" "<<hepevt.idhep[i]<<" "
-			   <<hepevt.jmohep[i][0]<<" "
-			   <<hepevt.jdahep[i][0]<<" "<<hepevt.jdahep[i][1]<<" "
-			   <<"("<<hepevt.phep[i][0]<<","<<hepevt.phep[i][1]<<","
-			   <<hepevt.phep[i][2]<<","<<hepevt.phep[i][3]<<") "
-			   <<"("<<hepevt.vhep[i][0]<<","<<hepevt.vhep[i][1]<<","
-			   <<hepevt.vhep[i][2]<<","<<hepevt.vhep[i][3]<<")"<<std::endl;
+    if (ATOOLS::msg.LevelIsDebugging()) {
+      ATOOLS::msg.Debugging()<<i<<" "<<hepevt.isthep[i]<<" "<<hepevt.idhep[i]<<" "
+			     <<hepevt.jmohep[i][0]<<" "
+			     <<hepevt.jdahep[i][0]<<" "<<hepevt.jdahep[i][1]<<" "
+			     <<"("<<hepevt.phep[i][0]<<","<<hepevt.phep[i][1]<<","
+			     <<hepevt.phep[i][2]<<","<<hepevt.phep[i][3]<<") "
+			     <<"("<<hepevt.vhep[i][0]<<","<<hepevt.vhep[i][1]<<","
+			     <<hepevt.vhep[i][2]<<","<<hepevt.vhep[i][3]<<")"<<std::endl;
+    }
     ATOOLS::Flavour flavour;
     flavour.FromHepEvt(hepevt.idhep[i]);
     ATOOLS::Particle *newpart = new ATOOLS::Particle(i+1,flavour,
@@ -231,6 +235,7 @@ bool Lund_Interface::Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
 			       ATOOLS::Particle_List *pl) 
 {
   int nhep = 0;
+  s_bloblist=bloblist;
   blob->SetType(ATOOLS::btp::Fragmentation);
   blob->SetTypeSpec("Pythia_v6.214");
   if (nhep==0) {
@@ -251,24 +256,24 @@ bool Lund_Interface::Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
     AddPartonToString(blob->InParticle(i),nhep);
   }
   int dummy=2;
-  // the next lines replace the finterf_ call
   hepevt.nevhep=0;
   hepevt.nhep=nhep;
   pyhepc(2);
   pydat1.mstu[70-1]=1;
   pydat1.mstu[71-1]=hepevt.nhep;
+  size_t errors=s_errors;
   pyexec();
   pyhepc(1);
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;
-  // replacement ends here
   if (ATOOLS::msg.LevelIsDebugging()) {
-    ATOOLS::msg.Tracking()<<"Lund_Interface::Hadronize(..): Passed hadronisation (pythia 6.214)."<<std::endl;
+    ATOOLS::msg.Tracking()<<"Lund_Interface::Hadronize(..): "
+			  <<"Passed hadronisation (Pythia 6.214)."<<std::endl;
     pylist(dummy);
     ATOOLS::msg.Out()<<std::endl<<std::endl;
   }
   FillPrimaryHadronsInBlob(blob,bloblist,pl);
-  return true;
+  return s_errors==errors;
 }
 
 void Lund_Interface::AddPartonToString(ATOOLS::Particle *parton,int &nhep)
@@ -305,8 +310,6 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
     if (flav==ATOOLS::Flavour(ATOOLS::kf::string) || 
 	flav==ATOOLS::Flavour(ATOOLS::kf::cluster)) {
       for (int j=hepevt.jdahep[i][0]-1;j<hepevt.jdahep[i][1];j++) {
-	// flav=Flavour(ATOOLS::kf::code(abs(hepevt.idhep[j])));
-	// if (hepevt.idhep[j]<0) flav=flav.Bar();
 	flav.FromHepEvt(hepevt.idhep[j]);
 	if (!flav.IsHadron()) continue;
 	momentum=ATOOLS::Vec4D(hepevt.phep[j][3],hepevt.phep[j][0],
@@ -349,8 +352,6 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
   ATOOLS::Vec4D momentum, position;
   int number;
   for (int i=daughter1;i<daughter2;++i) {
-    //flav=Flavour(ATOOLS::kf::code(abs(hepevt.idhep[i])));
-    //if ((*(kfjet+i))<0) flav=flav.Bar();
     flav.FromHepEvt(hepevt.idhep[i]);
     momentum=ATOOLS::Vec4D(hepevt.phep[i][3],hepevt.phep[i][0],
 			   hepevt.phep[i][1],hepevt.phep[i][2]);
@@ -390,6 +391,9 @@ void Lund_Interface::Error(const int error)
   else {
     ATOOLS::msg.Error()<<"Lund_Interface::Error("<<error<<") "<<ATOOLS::om::red
 		       <<"Pythia calls PYERRM("<<error<<")."<<ATOOLS::om::reset<<std::endl;
-    if (ATOOLS::msg.LevelIsError()) pylist(2);
+    if (ATOOLS::msg.LevelIsTracking()) {
+      ATOOLS::msg.Tracking()<<*s_bloblist<<std::endl;
+      pylist(2);
+    }
   }
 }

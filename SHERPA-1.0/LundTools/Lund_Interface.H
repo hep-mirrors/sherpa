@@ -14,6 +14,8 @@ namespace SHERPA {
 
     std::string m_path, m_file;
 
+    static ATOOLS::Blob_List *s_bloblist;
+
     // tools for converting a whole event
     bool ConvertParticles(std::map<int,ATOOLS::Particle*> &converted);
     bool ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS::Particle*> &converted);
