@@ -25,9 +25,11 @@ void HepEvt_Interface::Sherpa2HepEvt(Blob_List * _blobs) {
   isthep   = new int[maxentries];
   idhep    = new int[maxentries];
 
+  m_connect.clear();
+
   m_evtnumber++;
   int nhep = 0;
- 
+
   ISBlobs2HepEvt(_blobs,nhep);
   HardBlob2HepEvt(_blobs,nhep);
   FSBlobs2HepEvt(_blobs,nhep);
