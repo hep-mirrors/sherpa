@@ -54,8 +54,7 @@ Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
     kswitch = 1;
   }
   m_nvector=m_nvector+2;
-  delete [] p_momenta;
-  p_momenta = new ATOOLS::Vec4D[m_nvector];
+  CreateMomenta(m_nvector);
 }
 
 double Off_Shell_qqb_llb::operator()(double s,double t,double u) 
@@ -115,6 +114,8 @@ Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
   m_barred=flavours[0].IsAnti();
   p_colours[0][m_barred]=p_colours[1][1-m_barred]=500;
   m_colfac=1./3.;
+  m_nvector=m_nvector+2;
+  CreateMomenta(m_nvector);
 }
 
 double Off_Shell_q1q2b_lnulb::operator()(double s,double t,double u) 

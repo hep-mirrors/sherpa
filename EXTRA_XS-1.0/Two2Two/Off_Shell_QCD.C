@@ -27,8 +27,7 @@ Off_Shell_gg_qqb::Off_Shell_gg_qqb(const size_t nin,const size_t nout,
 {
   m_alphas=(*MODEL::as)(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
   m_nvector=m_nvector+2;
-  delete [] p_momenta;
-  p_momenta = new ATOOLS::Vec4D[m_nvector];
+  CreateMomenta(m_nvector);
 }
 
 double Off_Shell_gg_qqb::operator()(double s,double t,double u) 
@@ -86,8 +85,7 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
 {
   m_alphas=(*MODEL::as)(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
   m_nvector=m_nvector+2;
-  delete [] p_momenta;
-  p_momenta = new ATOOLS::Vec4D[m_nvector];
+  CreateMomenta(m_nvector);
 }
 
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
