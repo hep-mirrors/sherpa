@@ -23,6 +23,8 @@ namespace PHASIC {
     // member functions
     void GeneratePoint(ATOOLS::Vec4D *p,double *ran);
     void GenerateWeight(ATOOLS::Vec4D *p);
+
+    std::string ChID();
     
     // inline functions
     ATOOLS::Variable Variable() const { return m_variable; }

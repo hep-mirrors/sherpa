@@ -47,3 +47,7 @@ void Fixed_Variable_Channel::GenerateWeight(ATOOLS::Vec4D *_p)
     pow(2.0*M_PI,2.0*3.0-4.0);
 }
 
+std::string Fixed_Variable_Channel::ChID()
+{
+  return "T-Channel";
+}
