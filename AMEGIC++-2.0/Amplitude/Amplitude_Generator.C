@@ -198,11 +198,10 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
   if (p==0) return 1;
   if (p->left==0) return 1;
   if (((p->left->fl)!=Flavour(kf::none)) && ((p->right->fl)!=Flavour(kf::none))) { 
-    short int j,k;
     Flavour flav[3];
     Flavour s_flav[3];
     Complex cpl[4];
-    for (j=0;j<4;j++) cpl[j] = Complex(0.,0.);
+    for (int j=0;j<4;j++) cpl[j] = Complex(0.,0.);
 
     flav[0] = infl;
     flav[1] = p->left->fl;
@@ -242,9 +241,9 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
     // look for flav[0]
     Vertex_List & vl= v_table[flav[0]];
 
-    for (j=0;j<vl.size();j++) {
+    for (size_t j=0;j<vl.size();j++) {
       if (MatchVertex(vl[j],flav,cpl)) {
-	for (k=0;k<4;k++) p->cpl[k] = cpl[k];
+	for (int k=0;k<4;k++) p->cpl[k] = cpl[k];
 	p->v = vl[j];
 	*(p->Color)   = *(vl[j]->Color);
 	*(p->Lorentz) = *(vl[j]->Lorentz);
@@ -267,7 +266,6 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 
   Point* p;
 
-  short int i,k;
   int help = 0;
   top->Copy(pl,prea[0].p,help);
 
@@ -344,7 +342,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
       // look for flav[0]
       Vertex_List & vl= v_table[flav[0]];
 
-      for (i=0;i<vl.size();i++) {
+      for (size_t i=0;i<vl.size();i++) {
 	sw1 = 0;
 	flav[0]=s_flav[0];
 	flav[1]=s_flav[1];
@@ -370,7 +368,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  *(p->Color)   = *(vl[i]->Color);
 	  *(p->Lorentz) = *(vl[i]->Lorentz);
 	  
-	  for (k=0;k<4;k++) p->cpl[k] = cpl[k];
+	  for (int k=0;k<4;k++) p->cpl[k] = cpl[k];
 	  ll = 0;top->Copy(prea[ap].p,prea[lanz].p,ll);
 	  ll = 0;top->Copy(preah,prea[ap].p,ll);
 	  prea[lanz].on = 1;
@@ -383,7 +381,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
     ap++;
   }
 
-  for (i=0;i<lanz;i++) {
+  for (int i=0;i<lanz;i++) {
     if (prea[i].on) {
       int ll = 0;
       Point* ph;
@@ -403,7 +401,7 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
   int rank = MPI::COMM_WORLD.Get_Rank();
   int size = MPI::COMM_WORLD.Get_size();
 #else
-  int rank=0;
+  //int rank=0;
   //int size=1;
 #endif
 
@@ -416,7 +414,7 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
   if (n) while (n->Next) n = n->Next;
   Single_Amplitude* gra;
   
-  for (int i=0;i<prea_table.size();i++) {
+  for (size_t i=0;i<prea_table.size();i++) {
     int sw1 = 1;
     if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) {
       for (int j=0;j<dep;j++) {
@@ -700,7 +698,7 @@ void Amplitude_Generator::ReplaceVertex(Point * p) {
 
   int hit=0;
   Vertex_List & vl= v_table[sv->in[0]];
-  for (int i=0;i<vl.size();++i) {
+  for (size_t i=0;i<vl.size();++i) {
     if (vl[i]->in[1] == sv->in[1]  && vl[i]->in[2] == sv->in[2] && vl[i]->in[3] == sv->in[3]) {
       delete sv;
       p->v=vl[i];
@@ -1177,7 +1175,7 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
   }
 #endif
   
-  int killed=Kill_Off(first);
+  Kill_Off(first);
 
   f1 = first;
   nampl=0;
@@ -1365,7 +1363,7 @@ void Amplitude_Generator::CheckFor4Vertices(Single_Amplitude* &first)
 	    }
 	  }
 	  else { 
-	    for (short int j=0;j<pcollist.size();j++) {
+	    for (size_t j=0;j<pcollist.size();j++) {
 	      
 	      extraAmpl = new Single_Amplitude(pcollist[j],f1->topnum,f1->permnum,b,dep,N,top,BS,fl,shand);
 	      extraAmpl->Next = 0;
@@ -1461,8 +1459,8 @@ Single_Amplitude* Amplitude_Generator::Matching()
 
 
 #else
-  int rank = 0;
-  int size = 1;
+  //int rank = 0;
+  //int size = 1;
   int start_top = 0;
   int end_top = single_top->number;
 #endif
