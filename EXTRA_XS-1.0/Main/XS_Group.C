@@ -330,8 +330,8 @@ void XS_Group::CreateFSRChannels()
   p_pshandler->FSRIntegrator()->DropAllChannels();
   p_pshandler->FSRIntegrator()->Add(new PHASIC::S1Channel(2,2,p_flavours,
 							  ATOOLS::Flavour(ATOOLS::kf::photon)));
-//   p_pshandler->FSRIntegrator()->Add(new PHASIC::T1Channel(2,2,p_flavours));
-//   p_pshandler->FSRIntegrator()->Add(new PHASIC::U1Channel(2,2,p_flavours));
+  p_pshandler->FSRIntegrator()->Add(new PHASIC::T1Channel(2,2,p_flavours));
+  p_pshandler->FSRIntegrator()->Add(new PHASIC::U1Channel(2,2,p_flavours));
 }      
 
 void XS_Group::DeSelect() 

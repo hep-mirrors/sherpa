@@ -35,7 +35,6 @@ namespace EXTRAXS {
 
     virtual XS_Base *const operator[](const size_t i) const;
 
-    void UpdateCuts(const double sprime,const double y);  
     void SetSTU(const ATOOLS::Vec4D *momenta);
 
     double Differential(const ATOOLS::Vec4D *momenta);
