@@ -45,7 +45,7 @@ namespace AMEGIC {
     void           SetScale(double);
     void           SetISRThreshold(double);
     void           SetTables(bool);
-    void           SetTotalXS(int);
+    void           SetTotal(int);
     void           SetMax(double);
     void           SetMaxJetNumber(int max);
     void           SetAtoms(bool);

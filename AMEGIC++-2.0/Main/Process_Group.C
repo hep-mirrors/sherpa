@@ -495,7 +495,7 @@ void Process_Group::SetTables(bool _tables)
   for (int i=0;i<m_procs.size();i++) m_procs[i]->SetTables(m_tables);
 } 
 
-void Process_Group::SetTotalXS(int tables)  { 
+void Process_Group::SetTotal(int tables)  { 
   if (tables!=2) {
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
@@ -504,7 +504,7 @@ void Process_Group::SetTotalXS(int tables)  {
     if (p_selector) p_selector->Output();
     m_max = 0.;
     for (int i=0;i<m_procs.size();i++) {
-      m_procs[i]->SetTotalXS(tables);
+      m_procs[i]->SetTotal(tables);
       m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
     }
   }
@@ -532,7 +532,7 @@ void Process_Group::SetMax(double max) {
   double sum = 0.;
   m_max = 0.;
   for (int i=0;i<m_procs.size();i++) {
-    m_procs[i]->SetTotalXS(2);
+    m_procs[i]->SetTotal(2);
     sum   += m_procs[i]->TotalXS();
     m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
   }
@@ -711,7 +711,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 		      <<"       max : "<<_max<<endl;
 	  Process_Base * _proc = NULL;
 	  if (Find(_name,_proc)) {
-	    _proc->SetTotal(_totalxs);
+	    _proc->SetTotalXS(_totalxs);
 	    _proc->SetTotalError(_totalerr);
 	    _proc->SetMax(_max);
 	    _proc->SetSum(sum);
@@ -737,7 +737,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	  if (okay) {
 	    msg.Debugging()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
 			   <<"   Found all xsecs. Continue"<<endl;
-	    SetTotalXS(2);
+	    SetTotal(2);
 	  }
 	}
       }
@@ -757,7 +757,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
-    SetTotalXS(0);
+    SetTotal(0);
     if (m_totalxs>0.) {
       if (_resdir!=string("")) {
 	std::ofstream to;
@@ -783,7 +783,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 void Process_Group::PrepareTerminate()
 {
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
-  SetTotalXS(0);
+  SetTotal(0);
   if (m_totalxs<=0.) return;
   std::ofstream to;
   to.open(m_resultfile.c_str(),ios::out);
@@ -868,7 +868,7 @@ bool Process_Group::PrepareXSecTables()
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl;
       msg.Error()<<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
-    SetTotalXS(1);
+    SetTotal(1);
     p_pshandler->WriteOut(m_resdir+string("/MC_")+m_name);
     if (m_totalxs>0.) return 1;
   }

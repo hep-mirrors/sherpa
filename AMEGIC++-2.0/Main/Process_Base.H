@@ -109,7 +109,7 @@ namespace AMEGIC {
     virtual void             SetNEWeak(int);
 
     virtual void             Empty()                                               =0;
-    virtual void             SetTotalXS(int)                                       =0;
+    virtual void             SetTotal(int)                                         =0;
     virtual void             SetScale(double);
     virtual void             SetISRThreshold(double)                               =0;
     virtual void             SetTotal(double);

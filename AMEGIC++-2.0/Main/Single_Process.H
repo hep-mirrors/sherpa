@@ -95,7 +95,7 @@ namespace AMEGIC {
     Process_Base   * operator[] (int idx)               { return this;          }
     std::string      LibName()                          { return m_libname;     }
     std::string      PSLibName()                        { return m_pslibname;     }
-    void             SetTotalXS(int);
+    void             SetTotal(int);
     void             FixISRThreshold();
     void             SetISRThreshold(double _isrth)     { m_threshold = _isrth;}
     void             Empty();

@@ -771,7 +771,7 @@ void Single_Process::Empty() {
   }
 }
 
-void Single_Process::SetTotalXS(int _tables)  { 
+void Single_Process::SetTotal(int _tables)  { 
   if (_tables!=2) {
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
@@ -845,7 +845,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
     msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
 	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
-  SetTotalXS(0);
+  SetTotal(0);
   if (m_totalxs>=0.) {
     if (_resdir!=string("")) {
       std::ofstream to;
@@ -868,6 +868,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 void Single_Process::PrepareTerminate()
 {
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
+  SetTotal(0);
   std::ofstream to;
   to.open(m_resultfile.c_str(),ios::out);
   WriteOutXSecs(to);
@@ -938,7 +939,7 @@ bool Single_Process::PrepareXSecTables() {
     msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl;
     msg.Error()<<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
-  SetTotalXS(1);
+  SetTotal(1);
   p_pshandler->WriteOut(m_resdir+string("/MC_")+m_name);
   if (m_totalxs>0.) return 1;
   return 0;
