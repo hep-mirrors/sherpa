@@ -290,12 +290,19 @@ operator+=(const Primitive_Observable_Base &obs)                   \
   return *this;                                                    \
 }
 
-#define DEFINE_END_EVALUATION(NAME)                             \
-void NAME::EndEvaluation(double scale)                          \
-{                                                               \
-  double n=ATOOLS::Max(1.0,m_histogram.Entries());              \
-  m_histogram.Scale(scale*m_nbins/(m_xmax-m_xmin)/n);           \
-  m_histogram.ScaleExtra(scale/n);                              \
+#define DEFINE_END_EVALUATION(NAME)                                \
+void NAME::EndEvaluation(double scale)                             \
+{                                                                  \
+  double n=ATOOLS::Max(1.0,m_histogram.Entries());                 \
+  m_histogram.Scale(scale*m_nbins/(m_xmax-m_xmin)/n);              \
+  m_histogram.ScaleExtra(scale/n);                                 \
+  if (!m_copied) {                                                 \
+    for (size_t i=0;i<(size_t)m_nbins+2;++i) {			   \
+      p_histo->SetBin((int)i,m_histogram.BinEntries(i)!=0?	   \
+        m_histogram.BinContent(i)/m_histogram.BinExtra(i):0.0);	   \
+    }								   \
+    p_histo->SetFills((long int)m_histogram.Entries());            \
+  }                                                                \
 }
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_JetPT,
