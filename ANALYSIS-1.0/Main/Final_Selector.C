@@ -30,7 +30,6 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
   int jetmode=0;
   if (ATOOLS::rpa.gen.Beam1().Kfcode()==ATOOLS::kf::e && 
       ATOOLS::rpa.gen.Beam2().Kfcode()==ATOOLS::kf::e) jetmode=1;
-  std::cout<<" beams : "<<ATOOLS::rpa.gen.Beam2()<<","<<ATOOLS::rpa.gen.Beam2()<<"   jetmode="<<jetmode<<std::endl;
   std::string inlist="FinalState", outlist="Analysed";
   ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
   for (size_t i=0;i<parameters.size();++i) {

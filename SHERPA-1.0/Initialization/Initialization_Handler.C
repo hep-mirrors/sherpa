@@ -127,7 +127,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
 
   bool okay = InitializeTheIO();
 
-  okay = okay && InitializeTheAnalyses();
   okay = okay && InitializeTheModel();  
 
   //  set masses and widths from command line
@@ -136,6 +135,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     
   okay = okay && InitializeTheBeams();
   okay = okay && InitializeThePDFs();
+
+  okay = okay && InitializeTheAnalyses();
 
   ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
   m_isrhandlers[isr::hard_process]->AssignKeys(info);
