@@ -2,6 +2,50 @@
 #include "Primitive_Analysis.H"
 
 using namespace ANALYSIS;
+
+#include "MyStrStream.H"
+
+template <class Class>
+Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
+{									
+  if (parameters.size()<1) return NULL;
+  if (parameters.size()==1) {
+    if (parameters[0].size()<4) return NULL;
+    std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
+    return new Class(10*(int)(parameters[0][3]=="Log"),
+		     ATOOLS::ToType<double>(parameters[0][0]),
+		     ATOOLS::ToType<double>(parameters[0][1]),
+		     ATOOLS::ToType<int>(parameters[0][2]),list);
+  }
+  else if (parameters.size()<4) return NULL;
+  double min=0.0, max=1.0;
+  size_t bins=100, scale=0;
+  std::string list="Analysed";
+  for (size_t i=0;i<parameters.size();++i) {
+    if (parameters[i].size()<2) continue;
+    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+  }
+  return new Class(scale,min,max,bins,list);
+}									
+
+#define DEFINE_GETTER_METHOD(CLASS,NAME)				\
+  Primitive_Observable_Base *const					\
+  NAME::operator()(const String_Matrix &parameters) const		\
+  { return GetObservable<CLASS>(parameters); }
+
+#define DEFINE_PRINT_METHOD(NAME)					\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<"min max bins Lin|Log [list]"; }
+
+#define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DEFINE_GETTER_METHOD(CLASS,NAME);					\
+  DEFINE_PRINT_METHOD(NAME)
+
 using namespace ATOOLS;
 
 Four_Jet_Angle_Base::Four_Jet_Angle_Base(unsigned int type,double xmin,double xmax,int nbins,
@@ -41,6 +85,9 @@ void Four_Jet_Angle_Base::Evaluate(const Blob_List & blobs,double value, int nco
 
 // ======================================================================
 
+DEFINE_OBSERVABLE_GETTER(Bengtsson_Zerwas_Angle,
+			 Bengtsson_Zerwas_Angle_Getter,"BZAngle");
+
 Bengtsson_Zerwas_Angle::Bengtsson_Zerwas_Angle(unsigned int type,double xmin,double xmax,int nbins,
 					       const std::string & lname) :
   Four_Jet_Angle_Base(type,xmin,xmax,nbins,lname)
@@ -63,6 +110,9 @@ Primitive_Observable_Base * Bengtsson_Zerwas_Angle::Copy() const
 
 // ======================================================================
 
+DEFINE_OBSERVABLE_GETTER(Nachtmann_Reiter_Angle,
+			 Nachtmann_Reiter_Angle_Getter,"NRAngle");
+
 Nachtmann_Reiter_Angle::Nachtmann_Reiter_Angle(unsigned int type,double xmin,double xmax,int nbins,
 					       const std::string & lname) :
   Four_Jet_Angle_Base(type,xmin,xmax,nbins,lname)
@@ -84,6 +134,9 @@ Primitive_Observable_Base * Nachtmann_Reiter_Angle::Copy() const
 }
 
 // ======================================================================
+
+DEFINE_OBSERVABLE_GETTER(Koerner_Schierholz_Willrodt_Angle,
+			 Koerner_Schierholz_Willrodt_Angle_Getter,"KSWAngle");
 
 Koerner_Schierholz_Willrodt_Angle::Koerner_Schierholz_Willrodt_Angle(unsigned int type,double xmin,double xmax,int nbins,
 					       const std::string & lname) :
@@ -112,6 +165,8 @@ Primitive_Observable_Base * Koerner_Schierholz_Willrodt_Angle::Copy() const
 }
 
 // ======================================================================
+
+DEFINE_OBSERVABLE_GETTER(Alpha34_Angle,Alpha34_Angle_Getter,"A34Angle");
 
 Alpha34_Angle::Alpha34_Angle(unsigned int type,double xmin,double xmax,int nbins,
 					       const std::string & lname) :
