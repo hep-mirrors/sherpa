@@ -233,17 +233,18 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   sp=oldcms.Abs2()+sqr((kp1+kp2).Abs());
   Enew=sqrt(sp/(1.0-sqr(oldcms[3]/oldcms[0])));
   pznew=sqrt(Enew*Enew-sp);
-  double ytn, yto=(oldcms[0]+oldcms[3])/(oldcms[0]-oldcms[3]);
-  double spn, spo=oldcms.Abs2();
+  double yto=(oldcms[0]+oldcms[3])/(oldcms[0]-oldcms[3]);
+  double spo=oldcms.Abs2();
   for (double sign=1.0;sign>=-1.0;sign-=2.0) {
     E1=0.5/sp*((sp+sp1-sp2)*Enew+sign*sqrt(Lambda2(sp,sp1,sp2))*pznew);
     E2=Enew-E1;
     pz1=Sign(old1[3])*sqrt(E1*E1-sp1);
     pz2=Sign(old2[3])*sqrt(E2*E2-sp2);
-    spn=sqr(E1+E2)-sqr(pz1+pz2)-sqr((kp1+kp2).Abs());
-    if (!IsEqual(spn,spo)) pz1*=-1.0;
-    ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2);
-    if (!IsEqual(ytn,yto)) { pz1*=-1.0; pz2*=-1.0; }
+    double spn1=sqr(E1+E2)-sqr(pz1+pz2)-sqr((kp1+kp2).Abs());
+    double spn2=sqr(E1+E2)-sqr(-pz1+pz2)-sqr((kp1+kp2).Abs());
+    if (ATOOLS::dabs(spn1-spo)>ATOOLS::dabs(spn2-spo)) pz1*=-1.0;
+    double ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2);
+    if (ATOOLS::dabs(ytn-yto)>ATOOLS::dabs(1./ytn-yto)) { pz1*=-1.0; pz2*=-1.0; }
     if (dabs(pz1)>dabs(pz2)) { if (Sign(pz1)==Sign(old1[3])) break; }
     else { if (Sign(pz2)==Sign(old2[3])) break; }
   }
