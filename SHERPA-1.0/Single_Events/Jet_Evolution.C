@@ -58,7 +58,6 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	       <<"   Continue and hope for the best."<<endl;
     return 0;
   }
-  
   PertInterfaceIter piIter;
   std::string tag;
   bool found = 1;
@@ -217,9 +216,8 @@ bool Jet_Evolution::DefineInitialConditions(const ATOOLS::Blob *blob,
 					    const ATOOLS::Blob_List *bloblist) 
 { 
   ResetInterfaces();
-  // fetch maximum remnant energy from mi handler
-  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),AMISIC::MI_Base::StopScale(),0);
-  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),AMISIC::MI_Base::StopScale(),1);
+  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),1.,0);
+  p_showerhandler->GetISRHandler()->Extract(ATOOLS::Flavour(ATOOLS::kf::none),1.,1);
   for (ATOOLS::Blob_List::const_iterator blit=bloblist->begin();
        blit!=bloblist->end();++blit) {
     if (((*blit)->Type()==ATOOLS::btp::Signal_Process ||
