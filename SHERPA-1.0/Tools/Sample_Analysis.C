@@ -49,10 +49,12 @@ void Observable_Data::Output() {
 
 int Observable_Data::Specify() {
   if (type==std::string("ET") || type==std::string("PT") ||
-      type==std::string("Eta") || type==std::string("E"))        return 1;
+      type==std::string("Eta") || type==std::string("E") ||
+      type==std::string("EVis"))                                 return 1;
   if (type==std::string("Mass") || type==std::string("PT2") ||
       type==std::string("Eta2"))                                 return 2;
-  if (type==std::string("JetPT") || type==std::string("JetEta")) return 10;
+  if (type==std::string("JetPT") || type==std::string("JetEta") || 
+      type==std::string("JetE") || type==std::string("JetDR")) return 10;
   return -1;
 }
 
@@ -198,6 +200,7 @@ void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,Final_Selector
 	  if (numbers.size()>=1) fd.eta_min = numbers[1];
 	  if (numbers.size()>=2) fd.eta_max = numbers[2];
 	  if (numbers.size()>=3 && kfcs[0]==93) fd.r_min = numbers[3];
+	  if (numbers.size()>=4 && kfcs[0]==93) fd.bf = (bool)numbers[4];
 	  fsel->AddSelector(flav,fd);
 	}
 	else if (kfcs.size()==2 && numbers.size()>=1) {
@@ -322,6 +325,10 @@ void Sample_Analysis::SetUpObservables()
 	obs = new One_Particle_E(flav,linlog,od->numbers[0],od->numbers[1],od->ints[1]); 
 	break; 
       }
+      if (type==std::string("EVis")) { 
+	obs = new One_Particle_EVis(flav,linlog,od->numbers[0],od->numbers[1],od->ints[1]); 
+	break; 
+      }
     case 2:
       if (!(od->ints.size()==3 && od->numbers.size()==2 && od->keywords.size()==1)) {
 	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
@@ -357,7 +364,7 @@ void Sample_Analysis::SetUpObservables()
       }
       flav   = Flavour(kf::code(abs(od->ints[0])));
       if (od->ints[0]<0) flav = flav.Bar();
-      if (flav==Flavour(kf::jet)) listname = std::string("Jets");
+      if (flav==Flavour(kf::jet)) listname = std::string("Analysed");
       linlog = 0;
       if (od->keywords[0]==std::string("Log")) linlog = 10;
       //type,  xmin,xmax,nbins,mode,minn,maxn,listname 
@@ -387,6 +394,16 @@ void Sample_Analysis::SetUpObservables()
       }
       if (type==std::string("JetEta"))  { 
 	obs = new Jet_Eta_Distribution(linlog,od->numbers[0],od->numbers[1],
+				       od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	break; 
+      }
+      if (type==std::string("JetE"))  { 
+	obs = new Jet_E_Distribution(linlog,od->numbers[0],od->numbers[1],
+				       od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	break; 
+      }
+      if (type==std::string("JetDR"))  { 
+	obs = new Jet_Differential_Rates(linlog,od->numbers[0],od->numbers[1],
 				       od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
 	break; 
       }

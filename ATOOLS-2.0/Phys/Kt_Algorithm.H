@@ -15,6 +15,7 @@ namespace ATOOLS {
     double ** p_ktij;
     int    *  p_imap;
     double *  p_kis;
+    bool   m_bflag;
 
     Particle_List       * p_jets;
     std::vector<double> * p_kts;
@@ -28,7 +29,7 @@ namespace ATOOLS {
     double R2(const Vec4D &p1, const Vec4D &p2) const;
       
     void AddToKtlist(double );
-    void AddToJetlist(const Vec4D &);
+    void AddToJetlist(const Vec4D &, bool);
 
     void SortE();
     void SortPT();
@@ -41,7 +42,8 @@ namespace ATOOLS {
     void   Init(int);
     bool   ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double);
 
-    double Ktmin(Vec4D *,int);
+    double Ktmin(Vec4D *,bool *,int);
+    void   Setbflag(bool bf) { m_bflag=bf; }
   };
 
 

@@ -119,6 +119,7 @@ namespace ATOOLS {
       quark                  = 94,
       string                 = 95,
       cluster                = 96,
+      bjet                   = 97,
       /* ------------------------------------------
 	unspecified hadrons
       ------------------------------------------ */

@@ -515,6 +515,7 @@ void ATOOLS::ParticleInit(std::string path)
 
   *(pi++) = Part_Info( kf::cluster,    0.,0., 0, 0,0, 0,0,1,1,0,"cluster",1);
   *(pi++) = Part_Info( kf::string,    0.,0., 0, 0,0, 0,0,1,1,0,"string",1);
+  *(pi++) = Part_Info( kf::bjet,      0.,0., 0, 0,1, 2,0,1,1,0,"bjet",1);
 
   *(pi++)=Part_Info( kf::none, -1,0,0,0,0,0,0,0,1,0, "no particle",1);
 

@@ -43,9 +43,11 @@ void Kt_Algorithm::AddToKtlist(double kt2) {
   }
 }
 
-void Kt_Algorithm::AddToJetlist(const Vec4D & mom) {
-  if (p_jets)
-    p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::jet),mom));
+void Kt_Algorithm::AddToJetlist(const Vec4D & mom, bool bf) {
+  if (p_jets) {
+    if(!bf) p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::jet),mom));
+    else    p_jets->push_back(new Particle(p_jets->size(),Flavour(kf::bjet),mom));
+  }
 }
 
 
@@ -61,19 +63,22 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
   int n=0;
   //  cout<<" create vector "<<endl;
   Vec4D * moms = new Vec4D[pl->size()];
+  bool * bflag = new bool[pl->size()];
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
     if (!(*it)->Flav().IsLepton()) {
-      moms[n]=((*it)->Momentum());      
+      moms[n]  = ((*it)->Momentum()); 
+      bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
       ++n;
     }
   }
 
   //cout<<" cluster vector "<<n<<endl;
   // cluster
-  Ktmin(moms,n);
+  Ktmin(moms,bflag,n);
 
   //cout<<" finish "<<endl;
   delete [] moms;
+  delete [] bflag;
   // finalize (sort and release used containers)
 
   SortPT();
@@ -106,11 +111,11 @@ void Kt_Algorithm::Init(int size)
 }
 
 
-double Kt_Algorithm::Ktmin(Vec4D * p, int n)
+double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
 {
   if (n==0) return 0.;
   if (n==1) {
-    AddToJetlist(p[0]);
+    AddToJetlist(p[0],bf[0]);
     double dmin=Kt2(p[0]);
     AddToKtlist(dmin);
     return dmin;;
@@ -123,7 +128,7 @@ double Kt_Algorithm::Ktmin(Vec4D * p, int n)
   int ii=0, jj=0;
   double dmin=Kt2(p[0]);
   double rmin=R2(p[0],p[1]);
-    
+  //cout<<"Ktmin start: "  << dmin<<" "<<rmin<<endl;
   {
   PROFILE_LOCAL(" first loop ");
 
@@ -139,6 +144,7 @@ double Kt_Algorithm::Ktmin(Vec4D * p, int n)
     }
   }
   }
+  //cout<<"Ktmin after: "  << dmin<<" "<<rmin<<"("<<ii<<","<<jj<<")"<<endl;
 
   // recalc matrix
   while (n>0) {
@@ -163,11 +169,12 @@ double Kt_Algorithm::Ktmin(Vec4D * p, int n)
     if (ii!=jj) {
       // combine precluster
       p[p_imap[jj]]+=p[p_imap[ii]];
+      bf[p_imap[jj]] = bf[p_imap[jj]]||bf[p_imap[ii]];      
       AddToKtlist(dmin);
     }
     else {
       // add to jet list
-      AddToJetlist(p[p_imap[jj]]);
+      AddToJetlist(p[p_imap[jj]],bf[p_imap[jj]]);
       AddToKtlist(dmin);
     }
 
@@ -223,7 +230,7 @@ double Kt_Algorithm::Ktmin(Vec4D * p, int n)
 
   // add remaining preclusters to jetlist
   for (int i=0;i<n;++i) {
-    AddToJetlist(p[p_imap[i]]);
+    AddToJetlist(p[p_imap[i]],bf[p_imap[i]]);
     AddToKtlist(p_ktij[p_imap[i]][p_imap[i]]);
   }
   return dmin;
