@@ -17,12 +17,12 @@ namespace ATOOLS {
     ostr<<"Incoming partons :"<<std::endl;
     for (Parton_Queue::const_iterator part = bl.m_inpartons.begin();
 	 part != bl.m_inpartons.end(); ++part) {
-      ostr<<*part;
+      ostr<<*part<<std::endl;
     }
     ostr<<"Outgoing partons :"<<std::endl;
     for (Parton_Queue::const_iterator part = bl.m_outpartons.begin();
 	 part != bl.m_outpartons.end(); ++part) {
-      ostr<<*part;
+      ostr<<*part<<std::endl;
     }
     return ostr;
   }
