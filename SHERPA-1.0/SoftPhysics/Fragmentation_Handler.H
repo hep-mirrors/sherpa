@@ -1,34 +1,43 @@
-#ifndef Fragmentation_Handler_h
-#define Fragmentation_Handler_h
-
-#include <set> 
-#include <iterator> 
-#include <iostream> 
+#ifndef Fragmentation_Handler_H
+#define Fragmentation_Handler_H
 
 #include "Lund_Interface.H"
 #include "Particle_List.H"
-#include "Particle.H"
 #include "Blob_List.H"
-#include "Blob.H"
 
 namespace SHERPA {
+
   class Fragmentation_Handler {
-    std::string              m_dir,m_file;
-    std::string              m_fragmentationmodel;
-    double                   m_lund_a,m_lund_b,m_lund_sigma;
-    int                      m_mode;
-    Lund_Interface         * p_lund;
-    bool   ExtractSinglets(ATOOLS::Blob_List *,ATOOLS::Particle_List *);
-    bool   FindConnected(ATOOLS::Blob_List *,ATOOLS::Particle *,
-			 ATOOLS::Blob *);
-  public :
+  private:
+
+    std::string m_dir,m_file;
+    std::string m_fragmentationmodel;
+
+    int m_mode;
+
+    Lund_Interface *p_lund;
+    ATOOLS::Blob   *p_blob;
+
+    bool FindConnected(ATOOLS::Particle *particle,unsigned int color,
+		       bool anti,bool forward,unsigned int catcher);
+
+  public:
+
+    // constructor
     Fragmentation_Handler(std::string,std::string);
+
+    // destructor
     ~Fragmentation_Handler();
+
+    //member functions
     bool PerformFragmentation(ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
-    void EmptyMyLists();
-    Lund_Interface * GetLundInterface();
-    std::string FragmentationModel() { return m_fragmentationmodel; }
-  };
+    
+    // inline functions
+    const std::string &FragmentationModel() const { return m_fragmentationmodel; }
+
+    inline Lund_Interface *const GetLundInterface() const { return p_lund; }
+
+  };// end of class Fragmentation_Handler
 
   /*!
     \class Fragmentation_Handler
