@@ -141,10 +141,11 @@ Type * IO_Handler::ArrayInput(const std::string name,int nx) {
   sit2=find(sit1,send,';');
   //  cout<<" buffer="<<buffer<<endl;
   for (;x<nx ;++x) {
+    MyStrStream helpstr;
     string value(sit1,sit2);
     //  cout<<" value="<<value<<endl;
-    str<<value;
-    str>>values[x];
+    helpstr<<value;
+    helpstr>>values[x];
     //    cout<<" value["<<x<<"]="<<values[x]<<endl;
 
     sit1=++sit2;

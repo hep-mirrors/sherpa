@@ -275,7 +275,20 @@ string Data_Read::GenerateKey() {
 
 void Data_Read::WriteOut(std::string filename,int flag) {
   std::fstream file;
+
+#ifdef __GNUC__
+#if __GNUC__ > 2 
+// GNU gcc 3.x.x C++ Compiler
+  std::_Ios_Openmode flagc = _Ios_Openmode(flag);
+  file.open(filename.c_str(),flagc);
+  file.open(filename.c_str(),flagc);
+#else
+// GNU gcc 2.95.x C++ Compiler
   file.open(filename.c_str(),flag);
+#endif
+#endif
+
+
   // add a header
   file<<"!======================================== "<<endl;
   file<<"! File: "<<filename<<endl;

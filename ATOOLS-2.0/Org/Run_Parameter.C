@@ -8,6 +8,7 @@
 using namespace AMATOOLS;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
+using namespace std;
 
 Run_Parameter AORGTOOLS::rpa;
 
