@@ -205,7 +205,7 @@ void Amegic::ReadInProcessfile(string file)
   string      selectorfile;
   for(;from;) {
     from.getline(buffer,100);
-    if (buffer[0] != '\%' && strlen(buffer)>0) {
+    if (buffer[0] != '%' && strlen(buffer)>0) {
       msg.LogFile()<<buffer<<std::endl;
       buf        = string(buffer);
       position   = buf.find(string("Process :")); 
@@ -259,7 +259,7 @@ void Amegic::ReadInProcessfile(string file)
 	    nex            = 0;
 	    do {
 	      from.getline(buffer,100);
-	      if (buffer[0] != '\%' && strlen(buffer)>0) {
+	      if (buffer[0] != '%' && strlen(buffer)>0) {
 		msg.LogFile()<<buffer<<std::endl;
 		buf      = string(buffer);
 		position = buf.find(string("Excluded particles :"));

@@ -40,8 +40,6 @@ namespace AMEGIC {
     int     m_orderQCD, m_orderEW,m_nstrong,m_neweak;
     double  m_asscale,m_facscale;
 
-    int m_swaped;
-
     Phase_Space_Generator          * p_psgen;
     
     int m_maxjetnumber;
