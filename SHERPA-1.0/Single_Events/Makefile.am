@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = libSherpaSingleEvents.la
 libSherpaSingleEvents_la_SOURCES = Event_Handler.C Event_Phase_Handler.C \
-				   Signal_Processes.C Jet_Evolution.C \
+				   Signal_Processes.C Jet_Evolution.C Hard_Decays.C \
 				   Hadronization.C
 INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../SHERPA-1.0/PerturbativePhysics \
@@ -27,7 +27,7 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Event_Handler.H Event_Phase_Handler.H \
-		 Signal_Processes.H Jet_Evolution.H \
+		 Signal_Processes.H Jet_Evolution.H Hard_Decays.H \
 		 Hadronization.H
 
 

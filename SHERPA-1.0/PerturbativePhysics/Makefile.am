@@ -1,7 +1,6 @@
 lib_LTLIBRARIES = libSherpaPerturbativePhysics.la
-libSherpaPerturbativePhysics_la_SOURCES  = Matrix_Element_Handler.C Shower_Handler.C \
-					   SimpleXS_Apacic_Interface.C \
-					   Amegic_Apacic_Interface.C \
+libSherpaPerturbativePhysics_la_SOURCES  = Matrix_Element_Handler.C Shower_Handler.C Hard_Decay_Handler.C \
+					   SimpleXS_Apacic_Interface.C Amegic_Apacic_Interface.C \
 					   Interface_Tools.C \
 					   Cluster_Partons.C Combine_Table.C NLL_Sudakov.C
 INCLUDES = -I../../SHERPA-1.0/Tools \
@@ -25,7 +24,7 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Matrix_Element_Handler.H Shower_Handler.H \
+noinst_HEADERS = Matrix_Element_Handler.H Shower_Handler.H Hard_Decay_Handler.H \
 		 Perturbative_Interface.H SimpleXS_Apacic_Interface.H \
 		 Interface_Tools.H Cluster_Partons.H Combine_Table.H NLL_Sudakov.H
 

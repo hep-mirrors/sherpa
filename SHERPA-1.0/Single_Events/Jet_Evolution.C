@@ -53,7 +53,8 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	if (stat) {
 	  p_interface->FillBlobs(_bloblist);
 	  shower = p_showerhandler->PerformShowers(p_showerhandler->MaxJetNumber()!=p_mehandler->Nout(),
-						   p_mehandler->GetISR_Handler()->X1(),p_mehandler->GetISR_Handler()->X2());
+						   p_mehandler->GetISR_Handler()->X1(),
+						   p_mehandler->GetISR_Handler()->X2());
 	  if (shower==1) {
 	    p_showerhandler->FillBlobs(_bloblist);
 	    (*blit)->SetStatus(0);

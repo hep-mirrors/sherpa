@@ -45,7 +45,8 @@ namespace SHERPA {
     double WeightedEvent();
   public :
     Matrix_Element_Handler(std::string,std::string,MODEL::Model_Base *,
-			   BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
+			   BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *,
+			   AMEGIC::Amegic *);
     ~Matrix_Element_Handler();
 
     bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
@@ -67,6 +68,7 @@ namespace SHERPA {
     int                  InSwaped();
 
     int                  NumberOfDiagrams();
+    AMEGIC::Amegic     * GetAmegic();
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS();
     double               Weight();

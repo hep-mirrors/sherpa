@@ -13,8 +13,9 @@ using namespace std;
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
 					       BEAM::Beam_Spectra_Handler * _beam,
-					       PDF::ISR_Handler * _isr) :
-  m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL), p_isr(_isr), m_mode(0), m_weight(1.)
+					       PDF::ISR_Handler * _isr,
+					       AMEGIC::Amegic * _amegic) :
+  m_dir(_dir), m_file(_file), p_amegic(_amegic), p_simplexs(NULL), p_isr(_isr), m_mode(0), m_weight(1.)
 {
   p_dataread = new Data_Read(m_dir+m_file);
   m_signalgenerator = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
@@ -46,18 +47,18 @@ Matrix_Element_Handler::~Matrix_Element_Handler()
 
 
 int Matrix_Element_Handler::InitializeAmegic(MODEL::Model_Base * _model,
-					      BEAM::Beam_Spectra_Handler * _beam,
-					      PDF::ISR_Handler * _isr) 
+					     BEAM::Beam_Spectra_Handler * _beam,
+					     PDF::ISR_Handler * _isr) 
 {
   m_name    = string("Amegic");
-  p_amegic  = new AMEGIC::Amegic(m_dir,m_file,_model);
+  if (!p_amegic) p_amegic = new AMEGIC::Amegic(m_dir,m_file,_model);
   if (p_amegic->InitializeProcesses(_beam,_isr)) return 1;
   return 0;
 }
 
 int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
-						BEAM::Beam_Spectra_Handler * _beam,
-						PDF::ISR_Handler * _isr) 
+					       BEAM::Beam_Spectra_Handler * _beam,
+					       PDF::ISR_Handler * _isr) 
 {
   m_name     = string("Simple X-section");
   p_simplexs = new EXTRAXS::SimpleXSecs(m_dir,m_file,_model);
@@ -216,6 +217,12 @@ int Matrix_Element_Handler::NumberOfDiagrams()
   msg.Error()<<"Error in Matrix_Element_Handler::NumberOfDiagrams()."<<endl
 	     <<"   Run in mode for "<<m_signalgenerator<<", abort."<<endl;
   abort();
+}
+
+AMEGIC::Amegic * Matrix_Element_Handler::GetAmegic() 
+{
+  if (m_mode==1) return p_amegic;
+  return NULL;
 }
 
 AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag) 

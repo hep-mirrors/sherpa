@@ -5,6 +5,7 @@
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
 #include "Matrix_Element_Handler.H"
+#include "Hard_Decay_Handler.H"
 #include "Shower_Handler.H"
 #include "Beam_Remnant_Handler.H"
 #include "Fragmentation_Handler.H"
@@ -19,7 +20,7 @@ namespace SHERPA {
   class Initialization_Handler {
   private :
     std::string m_path,m_file;
-    std::string m_modeldat, m_beamdat, m_isrdat, m_medat, m_showerdat;
+    std::string m_modeldat, m_beamdat, m_isrdat, m_medat, m_decaydat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat,m_hadrondecaysdat;
 
     double                 m_bunch_splimits[2];
@@ -31,6 +32,7 @@ namespace SHERPA {
     BEAM::Beam_Spectra_Handler         * p_beamspectra;
     PDF::ISR_Handler                   * p_isrhandler;
     Matrix_Element_Handler             * p_mehandler;
+    Hard_Decay_Handler                 * p_harddecays;
     Shower_Handler                     * p_showerhandler;
     Beam_Remnant_Handler               * p_beamremnants;
     Fragmentation_Handler              * p_fragmentation;
@@ -40,6 +42,7 @@ namespace SHERPA {
     bool InitializeTheBeams();
     bool InitializeThePDFs();
     bool InitializeTheMatrixElements();
+    bool InitializeTheHardDecays();
     bool InitializeTheShowers();
     bool InitializeTheBeamRemnants();
     bool InitializeTheFragmentation();

@@ -29,6 +29,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
   m_isrdat           = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
   m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
+  m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
   m_showerdat        = p_dataread->GetValue<string>("SHOWER_DATA_FILE",string("Shower.dat"));
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
@@ -41,6 +42,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
+  if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
   if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
@@ -67,7 +69,11 @@ bool Initialization_Handler::InitializeTheFramework()
     return 0;
   }
   
+  okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
+
+  abort();
+
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheBeamRemnants();
   okay = okay && InitializeTheFragmentation();
@@ -137,11 +143,18 @@ bool Initialization_Handler::InitializeThePDFs()
   return 1;
 }
 
+bool Initialization_Handler::InitializeTheHardDecays()
+{
+  p_harddecays = new Hard_Decay_Handler(m_path,m_decaydat,m_medat,p_model);
+  return 1;
+}
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
+  if (p_harddecays->GetAmegic()) cout<<"Yes Amegic."<<endl;
   p_mehandler = new Matrix_Element_Handler(m_path,m_medat,
-					   p_model,p_beamspectra,p_isrhandler);
+					   p_model,p_beamspectra,p_isrhandler,
+					   p_harddecays->GetAmegic());
   return 1;
 }
 
