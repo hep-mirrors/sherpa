@@ -68,6 +68,7 @@ void XS_Group::Add(XS_Base *const xsec)
     p_flavours=new ATOOLS::Flavour[m_nin+m_nout];
     for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=xsec->Flavours()[i];
   }
+  if (xsec->NVector()>m_nvector) CreateMomenta(xsec->NVector());
   else {
     if (m_nin!=xsec->NIn() || m_nout!=xsec->NOut()) {
       ATOOLS::msg.Error()<<"XS_Group::Add("<<xsec<<"): ("<<this<<") Cannot add process '"
