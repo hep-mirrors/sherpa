@@ -28,15 +28,20 @@ namespace SHERPA {
   class Output_Handler {
   private :
 
-    int          m_io;
-    iotype::code m_outtype, m_intype;
+    int             m_io;
+    iotype::code    m_outtype, m_intype;
 
 #ifdef _USE_HEPMC_
     HepMC_Interface  * p_hepmc;
     HepMC::GenEvent  * p_event;
 #endif
     HepEvt_Interface * p_hepevt;
+    std::string     m_path, m_filename;
+    std::ofstream   m_outstream;
+    std::ifstream * p_instream;
 
+    void SherpaOutput(ATOOLS::Blob_List *const blobs,const double=1.);
+    bool SherpaInput(ATOOLS::Blob_List *const blobs);
   public :
 
     // constructors
@@ -51,8 +56,8 @@ namespace SHERPA {
     void AddOutputMode(const iotype::code);
     void AddInputMode(const iotype::code);
 
-    bool OutputToFormat(ATOOLS::Blob_List *const blobs);
-    bool InputFromFormat(ATOOLS::Blob_List *const blobs);
+    bool OutputToFormat(ATOOLS::Blob_List * const,const double=1.);
+    bool InputFromFormat(ATOOLS::Blob_List * const);
     
     // inline functions
     inline bool OutputOn() const { return m_io&1; }

@@ -573,7 +573,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       case 9999:
 	  m_mode       = 9999;
 	  m_evtfile    = value;
-	  ATOOLS::msg.Out()<<" Sherpa will readin events from : "<<value<<endl;
+	  ATOOLS::msg.Out()<<" Sherpa will read in events from : "<<value<<endl;
         break;
       case 100:
 	m_options[key] = value;

@@ -108,7 +108,6 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
 
 void HepEvt_Interface::WriteFullHepEvt(int nhep)
 {
-  m_outstream<<"-------------------------------------------------------------------"<<std::endl;
   m_outstream<<"  "<<m_evtnumber<<" "<<nhep<<" \n";
   for (int i=0;i<nhep;++i) {
     m_outstream<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]
@@ -122,7 +121,6 @@ void HepEvt_Interface::WriteFullHepEvt(int nhep)
 
 void HepEvt_Interface::WriteReducedHepEvt(int nhep)
 {
-  m_outstream<<"-------------------------------------------------------------------"<<std::endl;
   m_outstream<<"  "<<m_evtnumber<<" "<<nhep<<" \n";
   for (int i=0;i<nhep;++i) {
     m_outstream<<i+1<<"  "<<p_isthep[i]<<" "<<p_idhep[i]<<" "<<p_jmohep[2*i]<<" "<<p_jmohep[2*i+1]

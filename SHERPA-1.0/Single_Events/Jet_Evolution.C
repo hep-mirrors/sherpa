@@ -115,7 +115,7 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
     p_showerhandler->CleanUp();
     return true;
   }
-  if (stat) {
+  if (stat==1) {
     interface->FillBlobs(_bloblist);
     if (!decayblob) shower = interface->PerformShowers();
                else shower = interface->PerformDecayShowers();  

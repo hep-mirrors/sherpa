@@ -73,12 +73,10 @@ namespace SHERPA {
     const int    * const Jdahep() const { return p_jdahep; }
     const int    * const Isthep() const { return p_isthep; }
     const int    * const Idhep() const  { return p_idhep;  }
+    double               Weight()       { return m_weight; }
 
     bool Sherpa2HepEvt(ATOOLS::Blob_List * const);
     bool HepEvt2Sherpa(ATOOLS::Blob_List * const);
-
-    double   Weight() { return m_weight; }
-
   };
 }
 
