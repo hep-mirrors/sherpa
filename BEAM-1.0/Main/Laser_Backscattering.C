@@ -137,7 +137,7 @@ bool Laser_Backscattering::CalculateWeight(double _x,double _scale)
 double Laser_Backscattering::Weight(Flavour flin)
 {
   if (m_weight<=0.) return 0.;
-  if (flin != Flavour(kf::photon)) return 0.;
+  //if (flin != Flavour(kf::photon)) return 0.;
   return m_weight;
 }
 
