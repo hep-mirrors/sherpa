@@ -91,6 +91,10 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   double    value;
   int nlo=0;
   if (ncontrib>maxopt) endopt=2;
+
+  double starttime = ATOOLS::rpa.gen.Timer().UserTime();
+  double lotime    = ATOOLS::rpa.gen.Timer().UserTime();
+  double totalopt  = maxopt+8.*iter1;
   
 #ifdef _USE_MPI_
   // ------ total sums for MPI ---
@@ -289,6 +293,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
     if ( ncontrib!=nlo && ((ncontrib%iter)==0 || ncontrib==maxopt)) {
       nlo=ncontrib;
 #ifndef _USE_MPI_ // non MPI mode
+      bool fotime = false;
       msg_Tracking()<<" n="<<ncontrib<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
       if ((ncontrib<=maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->Optimize(maxerror);
@@ -297,7 +302,11 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->Optimize(maxerror);
 	(psh->FSRIntegrator())->Optimize(maxerror);
 	(psh->Process())->ResetMax(2);
-	if (ncontrib%iter1==0) (psh->Process())->OptimizeResult();
+	if (ncontrib%iter1==0) {
+	  (psh->Process())->OptimizeResult();
+	  if ((psh->Process())->SPoints()==0) lotime = ATOOLS::rpa.gen.Timer().UserTime();
+	}
+	fotime = true;
       }
       else {
 	(psh->Process())->ResetMax(0);
@@ -320,12 +329,32 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	msg.Error()<<"FS - Channel result is a NaN. Knockout!!!!"<<endl;
 	break;
       }
+      
+      double time = ATOOLS::rpa.gen.Timer().UserTime();
+      double timeest=0.;
+      timeest = totalopt/double(ncontrib)*(time-starttime);
+      if (!fotime) {
+	if (fin_opt==1)
+	  timeest = ATOOLS::Max(timeest,(psh->Process())->RemainTimeFactor(maxerror)*
+				(time-lotime)+lotime-starttime);
+	else timeest = (psh->Process())->RemainTimeFactor(maxerror)*
+	       (time-lotime)+lotime-starttime;
+      }
       error=(psh->Process())->TotalVar()/(psh->Process())->TotalResult();
       msg_Info()<<om::blue
 		<<(psh->Process())->TotalResult()*rpa.Picobarn()
 		<<" pb"<<om::reset<<" +- ( "<<om::red
 		<<(psh->Process())->TotalVar()*rpa.Picobarn()
 		<<" pb = "<<error*100<<" %"<<om::reset<<" )."<<endl;
+      if (fotime) {
+	msg_Info()<<"full optimization: ";
+      }
+      else msg_Info()<<"integration time: ";
+      msg_Info()<<" ( "<<int(time-starttime)<<" s elapsed / "
+		    <<int(timeest)-int((time-starttime))
+		    <<" s left / "<<int(timeest)
+		    <<" s total )   "<<endl;
+
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;

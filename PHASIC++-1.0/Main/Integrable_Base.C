@@ -80,6 +80,13 @@ double Integrable_Base::TotalVar()
   return m_totalsum/m_ssigma2/sqrt(m_ssigma2);
 }
 
+double Integrable_Base::RemainTimeFactor(double maxerr) 
+{
+  if (m_sn<1000) return 0.;
+  double disc = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  return (ATOOLS::sqr(1./maxerr)-m_ssigma2)/disc;
+}
+
 void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta) 
 { 
   if (!p_momenta) {

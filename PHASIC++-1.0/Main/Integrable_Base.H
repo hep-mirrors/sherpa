@@ -80,6 +80,7 @@ namespace PHASIC {
 
     double TotalResult();
     double TotalVar();
+    double RemainTimeFactor(double maxerr); 
 
   public:
 
@@ -195,6 +196,7 @@ namespace PHASIC {
     inline double   Sum() const    { return m_totalsum;    }
     inline double   SumSqr() const { return m_totalsumsqr; }
     inline long int Points() const { return m_n;           }
+    inline long int SPoints() const { return m_sn;           }
 
     inline double TotalXS() const    { return m_totalxs;  }
     inline double TotalError() const { return m_totalerr; }
