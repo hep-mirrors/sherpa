@@ -327,9 +327,9 @@ void ISR_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
   ATOOLS::msg.Tracking()<<"... done."<<std::endl;
 }
 
-void ISR_Handler::Reset() 
+void ISR_Handler::Reset(const ATOOLS::Cut_Data *const cuts) 
 {
-  m_splimits[0]=m_fixed_smin;
+  m_splimits[0]=ATOOLS::Max(m_fixed_smin,cuts->Smin());
   m_splimits[1]=m_fixed_smax*Upper1()*Upper2();
   m_splimits[2]=m_fixed_smax;
 }
