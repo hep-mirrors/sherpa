@@ -159,7 +159,7 @@ double XS_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     m_scale[PHASIC::stp::kp21]=p[2].PPerp2();
     m_scale[PHASIC::stp::kp22]=p[3].PPerp2();
     // qcd scale
-    m_scale[PHASIC::stp::as]=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
+    m_scale[PHASIC::stp::as]=ATOOLS::sqr((p[2].PPerp()+p[3].PPerp())/2.0);
     break;
   }
   default:
@@ -198,6 +198,9 @@ void XS_Base::SwapInOrder()
   std::swap(p_flavours[0],p_flavours[1]);
   std::swap(p_momenta[0],p_momenta[1]);
   std::swap(p_colours[0],p_colours[1]);
+  if (m_naddout>0) {
+    std::swap(p_addmomenta[0],p_addmomenta[1]);
+  }
   m_swaped=true;
 }
 
@@ -207,6 +210,9 @@ void XS_Base::RestoreInOrder()
     std::swap(p_flavours[0],p_flavours[1]);
     std::swap(p_momenta[0],p_momenta[1]);
     std::swap(p_colours[0],p_colours[1]);
+    if (m_naddout>0) {
+      std::swap(p_addmomenta[0],p_addmomenta[1]);
+    }
     m_swaped=false;
   }
 }

@@ -75,10 +75,11 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 // 			 <<(xs->AddMomenta()[i].Perp()==
 // 			    -1.0*xs->Momenta()[i].Perp())<<" -> "
 // 			 <<((xs->AddMomenta()[i].Perp()==
-// 			    -1.0*xs->Momenta()[i].Perp())?i:1-i)<<std::endl;
+// 			     -1.0*xs->Momenta()[i].Perp())?i:1-i)
+// 			 <<" "<<i<<std::endl;
 		size_t j=i;
-		if (!(xs->AddMomenta()[i].Perp()
-		      ==-1.0*xs->Momenta()[i].Perp())) j=1-i;
+// 		if (!(xs->AddMomenta()[i].Perp()
+// 		      ==-1.0*xs->Momenta()[i].Perp())) j=1-i;
 		ATOOLS::Particle *parton = 
 		  new ATOOLS::Particle(-1,xs->AddFlavours()[j],
 				       xs->AddMomenta()[j]);
@@ -93,7 +94,6 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 				    +xs->Momenta()[i]);
 		isr[i]->AddToInParticles(parton);
 		isr[i]->SetBeam(i);
-		bloblist->push_back(isr[i]);
  		p_remnants[i]->QuickClear();
  		if (!p_remnants[i]->Extract(parton)) success=false;
 	      }
@@ -102,7 +102,8 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 	    if (success) {
 	      FillBlob(myblob,weight,ntrial);
 	      if (isr[0]!=NULL && isr[1]!=NULL) {
-		for (size_t stop=myblob->NInP(), i=0;i<stop;++i) {
+		for (short unsigned int i=0;i<2;++i) {
+		  bloblist->push_front(isr[i]);
 		  isr[i]->AddToOutParticles(myblob->InParticle(i));
 		  ATOOLS::Vec4D sum=isr[i]->CheckMomentumConservation();
 		  if (!(sum==ATOOLS::Vec4D()))
@@ -113,6 +114,10 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 		myblob->SetStatus(0);
 	      }
 	      hit = 1;
+	    }
+	    else {
+	      for (short unsigned int i=0;i<2;++i) 
+		if (isr[i]!=NULL) delete isr[i];
 	    }
 	  }
 	}
