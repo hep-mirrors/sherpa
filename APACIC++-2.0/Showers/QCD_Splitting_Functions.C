@@ -100,9 +100,8 @@ double g_gg::CrudeInt(double _zmin, double _zmax)
 
 double g_gg::Integral(double zmin, double zmax) 
 {
-//   return s_CA*(log(zmax*(1.-zmin)/(zmin*(1.-zmax)))-
-// 	       zmax*(zmax*(zmax/3.-0.5)+2.)+zmin*(zmin*(zmin/3.-0.5)+2.));
-  return s_CA*(log((1.-zmin)/(1.-zmax))-(zmax*zmax-zmin*zmin)/2.);
+  return s_CA*(log(zmax*(1.-zmin)/(zmin*(1.-zmax)))-
+	       zmax*(zmax*(zmax/3.-0.5)+2.)+zmin*(zmin*(zmin/3.-0.5)+2.));
 }
 
 //! gluon to quark + anti-quark splitting function
@@ -151,7 +150,7 @@ double g_qq::CrudeInt(double _zmin, double _zmax)
 double g_qq::Integral(double zmin, double zmax) 
 {
   return s_TR*(zmax*(zmax*(2.0*zmax/3.0-1.0)+1.0)+
-	       -zmin*(zmin*(2.0*zmin/3.0-1.0)+1.0));
+ 	       -zmin*(zmin*(2.0*zmin/3.0-1.0)+1.0));
 }
 
 // quark to qluon + quark splitting function (only used in Initial State Shower)
