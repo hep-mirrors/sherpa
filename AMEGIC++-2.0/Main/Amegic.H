@@ -34,6 +34,8 @@ namespace AMEGIC {
     Topology                 * top;
 
     int runmode;
+
+    ostream                  * p_fifo;
     
       //int ExtractFlavours(APHYTOOLS::Flavour*&,std::string);
     int ExtractFlavours(APHYTOOLS::Flavour*&,Pol_Info*&,std::string);
@@ -52,6 +54,8 @@ namespace AMEGIC {
 
     void           SetResDir(std::string _resdir) { resdir = _resdir; }
     std::string    ResDir()                       { return resdir; }
+
+    void           FifoOutput(double = 1.0) ;
   };
   
   inline Process_Base * Amegic::Processes() { return procs; };

@@ -10,6 +10,8 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 
+#include <iomanip>
+
 
 using namespace AMEGIC;
 using namespace AORGTOOLS;
@@ -41,6 +43,8 @@ Amegic::Amegic(string _path,ISR_Handler * _isr,Beam_Handler * _beam) :
   mo = mh.GetModel();
   mo->Init();
   mo->Init_Vertex();
+
+  p_fifo = new ofstream("fifotest.out");
 }
  
 
@@ -57,6 +61,7 @@ Amegic::~Amegic() {
   if (partons)   { delete partons;   partons   = 0; }
   if (beam)      { delete beam;      beam      = 0; }
   if (isr)       { delete isr;       isr       = 0; }
+  if (p_fifo)    { delete p_fifo;    p_fifo       = 0; }
   msg.Tracking()<<"Amegic regularly finished."<<endl;
 }
 
@@ -519,14 +524,56 @@ bool Amegic::PrepareXSecTables() {
   return procs->PrepareXSecTables();
 }
 
+void Amegic::FifoOutput(double wt) 
+{
+  int nin  = procs->Selected()->Nin();
+  int nout = procs->Selected()->Nout();
+
+
+  ostream &  fifo = *p_fifo;
+  fifo<<" event"<<endl;
+  fifo<<"   "<<nout<<" number of particles"<<endl;
+  fifo<<setiosflags(std::ios::scientific);
+  fifo<<setiosflags(std::ios::uppercase);
+  fifo<<std::setprecision(9);
+  fifo<<" "<<std::setw(16)<<wt<<"  event weight"<<endl;  // unweighted
+
+  //  fifo<<std::setiosflags(std::ios::scientific);
+    //<<std::setprecision(9)<<std::setw(16);
+
+  for (int j = 0;j<nin; j++) {
+    fifo<<" "<<std::setw(3)<<int(procs->Selected()->Flavs()[j])<<" ";
+    for (int k=1;k<4;++k) {
+      fifo<<std::setw(16)<<procs->Selected()->Momenta()[j][k]<<" ";
+    }
+    fifo<<std::setw(16)<<procs->Selected()->Momenta()[j][0]<<endl;
+  }
+  msg.Debugging()<<"                      -> "<<endl;
+  for (int j = nin;j<nin+nout; j++) {
+    fifo<<" "<<std::setw(3)<<int(procs->Selected()->Flavs()[j])<<" ";
+    for (int k=1;k<4;++k)
+      fifo<<std::setw(16)<<procs->Selected()->Momenta()[j][k]<<" ";
+    fifo<<std::setw(16)<<procs->Selected()->Momenta()[j][0]<<endl;
+  }
+
+  // "conti" or "endss"
+}
 
 
 void Amegic::SingleEvents() {
-  for (int i=0;i<rpa.gen.NumberOfEvents();i++) {
+  for (int i=1;i<=rpa.gen.NumberOfEvents();++i) {
     msg.Debugging()<<"------------------------------------------------------------"<<endl
 		   <<"----------------"<<i<<" th Event --------------------------"<<endl
 		   <<"------------------------------------------------------------"<<endl;
     if (procs->OneEvent()) {
+      FifoOutput();
+      if (i==rpa.gen.NumberOfEvents()) {
+	(*p_fifo)<<"endss"<<endl;
+      }
+      else {
+	(*p_fifo)<<"conti"<<endl;
+      }
+
       msg.Debugging()<<"OneEvent for "<<procs->Name()<<" successful !"<<endl
 		     <<"    Selected "<<procs->Selected()->Name()<<" as subprocess."<<endl
 		     <<"    Found "<<procs->Selected()->NumberOfDiagrams()
