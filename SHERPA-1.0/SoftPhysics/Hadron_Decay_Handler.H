@@ -7,11 +7,12 @@
 #include <iostream> 
 
 #include "Lund_Interface.H"
-#include "Hadron_Decays.H"
 #include "Particle_List.H"
 #include "Particle.H"
 #include "Blob_List.H"
 #include "Blob.H"
+
+namespace HADRONS { class Hadron_Decays; }
 
 namespace SHERPA {
   class Hadron_Decay_Handler {
@@ -19,13 +20,17 @@ namespace SHERPA {
     std::string              m_dir,m_file,m_decmodel;
     int                      m_mode;
     Lund_Interface         * p_lund; 
+#ifdef USING__Hadrons
     HADRONS::Hadron_Decays * p_hadrons;
+#endif
 
     bool ReconstructLundHadronDecays();
 
   public :
 
+#ifdef USING__Hadrons
     Hadron_Decay_Handler(std::string,std::string,HADRONS::Hadron_Decays *);
+#endif
     Hadron_Decay_Handler(std::string,std::string,Lund_Interface *);
 
     ~Hadron_Decay_Handler();

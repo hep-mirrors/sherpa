@@ -7,7 +7,10 @@ ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+if HADRONS_SUPPORT
 HADRONSDIR    = $(SHERPASYS)/HADRONS++-0.0
+HADRONSFLAGS  = -DUSING__Hadrons
+endif
 if ADICIC_SUPPORT
 ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 ADICICFLAGS   = -DUSING__Adicic
@@ -39,7 +42,9 @@ AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
 		-I$(AMEGICDIR)/String 
 APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
+if HADRONS_SUPPORT
 HADRONSINCS   = -I$(HADRONSDIR)/Main
+endif
 if ADICIC_SUPPORT
 ADICICINCS    = -I$(ADICICDIR)/Main -I$(ADICICDIR)/Structure \
                 -I$(ADICICDIR)/Handler -I$(ADICICDIR)/Tool -I$(ADICICDIR)/Input
@@ -66,7 +71,9 @@ endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
+if HADRONS_SUPPORT
 HADRONSLIBS   =	-L@libdir@ -lHadronsMain -lHadronsMEs -lHadronsPSs
+endif
 if ADICIC_SUPPORT
 ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct \
 		-lAdicicTool -lAdicicInput
@@ -109,22 +116,24 @@ endif
 
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
-Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(ADICICLIBS) \
-		$(AMISICLIBS) $(AHADICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
-		$(PDFLIBS) $(LHAPDFLIBS) $(CTEQLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(HADRONSLIBS)\
-		$(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
+Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
+		$(ADICICLIBS) $(AMISICLIBS) $(AHADICLIBS) $(EXTRAXSLIBS) \
+		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) $(LHAPDFLIBS) \
+		$(CTEQLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(HADRONSLIBS)\
+		$(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS)
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AHADICFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) \
-		$(CLHEPFLAGS) $(ROOTFLAGS) $(LHAPDFFLAGS) 
-INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(AHADICINCS) $(APACICINCS) $(ADICICINCS) \
-		$(AMISICINCS) $(AMEGICINCS) $(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) \
-		$(PDFINCS) $(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) \
-		$(HADRONSINCS)
+		$(CLHEPFLAGS) $(ROOTFLAGS) $(LHAPDFFLAGS) $(HADRONFLAGS)
+INCLUDES      = $(SHERPAINCS) $(ANALYSISINCS) $(HADRONSINCS) $(AHADICINCS) \
+		$(APACICINCS) $(ADICICINCS) $(AMISICINCS) $(AMEGICINCS) \
+		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
+		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
 	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat \
-		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs Lund.dat \
-		Cluster.dat
+		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs \
+		Lund.dat Cluster.dat
+
 #	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
 

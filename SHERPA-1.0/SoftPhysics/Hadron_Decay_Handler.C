@@ -3,6 +3,9 @@
 #include "Random.H"
 #include "Vector.H"
 #include "Data_Read.H"
+#ifdef USING__Hadrons
+#include "Hadron_Decays.H"
+#endif
 
 using namespace SHERPA;
 using namespace HADRONS;
@@ -10,6 +13,7 @@ using namespace ATOOLS;
 using namespace std;
 
 
+#ifdef USING__Hadrons
 Hadron_Decay_Handler::Hadron_Decay_Handler(std::string _dir,std::string _file,
 					   Hadron_Decays * _hadrons) :
   m_dir(_dir), m_file(_file), m_decmodel(string("")), m_mode(-1),
@@ -20,11 +24,15 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(std::string _dir,std::string _file,
 	     <<"   Abort program."<<std::endl;
   abort();
 }
+#endif
 
 Hadron_Decay_Handler::Hadron_Decay_Handler(std::string _dir,std::string _file,
 					   Lund_Interface * _lund) :
   m_dir(_dir), m_file(_file), m_decmodel(string("")), m_mode(-1),
-  p_lund(NULL), p_hadrons(NULL)
+  p_lund(NULL)
+#ifdef USING__Hadrons
+  , p_hadrons(NULL)
+#endif
 {
   Data_Read dr(m_dir+m_file);
   m_decmodel = dr.GetValue<string>("DECAYMODEL",string("Lund"));
@@ -33,6 +41,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(std::string _dir,std::string _file,
     m_mode = 0;
     return;
   }
+#ifdef USING__Hadrons
   else if (m_decmodel==std::string("Hadrons")) {
     string decayfile = dr.GetValue<string>("DECAYFILE",string("HadronDecays.dat"));
     cout<<"|"<<m_dir<<"|"<<decayfile<<"|"<<endl;
@@ -40,6 +49,7 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(std::string _dir,std::string _file,
     m_mode = 1;
     return;
   }
+#endif
   THROW(critical_error,"Fragmentation model not implemented.");
 }
 
