@@ -59,8 +59,7 @@ void LHAPDF_Fortran_Interface::Calculate(const double _x, const double _Q2) {
 
 double LHAPDF_Fortran_Interface::GetXPDF(const APHYTOOLS::Flavour & infl) {
   if (infl == Flavour(kf::gluon)) return m_f[6];
-  int kfc = m_anti*infl.Kfcode();
-  if (infl.IsAnti()) kfc = -kfc;
+  int kfc = m_anti*int(infl);
   return m_f[6+kfc];
 }
 

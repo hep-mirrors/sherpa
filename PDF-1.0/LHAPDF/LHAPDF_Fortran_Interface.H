@@ -9,7 +9,7 @@ namespace PDF {
   private:
     std::string m_path,m_set;
     int         m_member;
-    bool        m_anti;
+    int         m_anti;
     double      m_f[13];
   public:
     LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour,std::string,int,std::string);

@@ -65,7 +65,9 @@ void PDF_MRST99::Calculate(const double x, const double Q2) {
 
 
 double PDF_MRST99::GetXPDF(const APHYTOOLS::Flavour & infl) {
-  int kfc = m_anti*infl.Kfcode();
+  //  int kfc = m_anti*infl.Kfcode();
+  //    kf::code kfc=fl.Kfcode(); does not hold anti information
+  int kfc=m_anti*int(infl);
   switch (kfc) {
   case  APHYTOOLS::kf::d : return (m_content.dnv + m_content.dsea);
   case -APHYTOOLS::kf::d : return m_content.dsea; 
