@@ -1,4 +1,4 @@
-#include "Primitive_Interpreter.H"
+#include "Algebra_Interpreter.H"
 #include "Exception.H"
 
 using namespace ATOOLS;
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
     msg.Init(6,"");
     msg.SetModifiable(true);
     PRINT_INFO("Initialize interpreter");
-    Primitive_Interpreter interpreter;
+    Algebra_Interpreter interpreter;
     std::string expr;
     for (int i=1;i<argc;++i) {
       std::string argvs=argv[i];

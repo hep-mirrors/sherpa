@@ -398,7 +398,7 @@ namespace ATOOLS {
     return m_interprete; 
   }
 
-  inline Primitive_Interpreter *Read_Write_Base::Interpreter() const
+  inline Algebra_Interpreter *Read_Write_Base::Interpreter() const
   {
     return p_interpreter;
   }

@@ -13,7 +13,7 @@ namespace ATOOLS {
   const int defaultblank = 32;
   const int defaulttab   = 9;
 
-  class Primitive_Interpreter;
+  class Algebra_Interpreter;
 
   class Read_Write_Base: public File_IO_Base {
   public:
@@ -45,7 +45,7 @@ namespace ATOOLS {
 
     size_t m_occurrence;
 
-    Primitive_Interpreter *p_interpreter;    
+    Algebra_Interpreter *p_interpreter;    
 
     void Init();
 
@@ -177,7 +177,7 @@ namespace ATOOLS {
 
     inline bool RereadInFile(const unsigned int i=0);
     
-    inline Primitive_Interpreter *Interpreter() const;
+    inline Algebra_Interpreter *Interpreter() const;
 
   };// end of class Read_Write_Base
 

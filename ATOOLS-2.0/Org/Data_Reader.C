@@ -1,6 +1,6 @@
 #include "Data_Reader.H"
 
-#include "Primitive_Interpreter.H"
+#include "Algebra_Interpreter.H"
 #include "Message.H"
 #include "MyStrStream.H"
 #include <ctype.h>

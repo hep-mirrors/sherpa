@@ -1,6 +1,6 @@
 #include "Read_Write_Base.H"
 
-#include "Primitive_Interpreter.H"
+#include "Algebra_Interpreter.H"
 //#define DEBUG__Read_Write_Base
 #ifdef DEBUG__Read_Write_Base
 #include <iostream>
@@ -50,7 +50,7 @@ void Read_Write_Base::Init()
 #ifdef DEBUG__Read_Write_Base
   std::cout<<" Read_Write_Base:\n";
 #endif
-  p_interpreter = new Primitive_Interpreter();
+  p_interpreter = new Algebra_Interpreter();
   m_blank.push_back(defaultblank);
   m_blank.push_back(defaulttab);
   m_vectortype=VVertical;

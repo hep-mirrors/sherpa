@@ -210,7 +210,7 @@ int main(int argc,char **argv)
     integrator.SetNCells(4000);
     integrator.SetNOpt(1000);
     integrator.SetNMax(4000000);
-    integrator.SetError(5.0e-4);
+    integrator.SetError(1.0e-3);
     // set default mode for
     // variance optimization
     integrator.SetMode(0);
