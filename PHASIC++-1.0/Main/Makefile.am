@@ -19,7 +19,7 @@ INCLUDES = -I../ISR \
 	   -I../../AMEGIC++-2.0/Model \
 	   -I../../AMEGIC++-2.0/String \
 	   -I../../EXTRA_XS-1.0/Main \
-	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/Include \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org \

@@ -32,7 +32,7 @@ RamboKK::RamboKK(int _Nin,int _Nout,Flavour* fl) : Nin(_Nin), Nout(_Nout)
   
   for (short int i=0;i<Nin+Nout;i++) {
     ms_out[i] = sqr(fl[i].Mass());
-    //cout<<"Masses in Rambo: "<<sqrt(ms_out[i])<<endl;
+    //msg.Out()<<"Masses in Rambo: "<<sqrt(ms_out[i])<<std::endl;
     if (!AMATOOLS::IsZero(ms_out[i])) massflag = 1;
   } 
 
@@ -40,7 +40,7 @@ RamboKK::RamboKK(int _Nin,int _Nout,Flavour* fl) : Nin(_Nin), Nout(_Nout)
   for (short int i=Nin;i<Nin+Nout;i++) {
     if(fl[i].IsKK()){
       if(AMATOOLS::IsZero(ms_out[i])){
-	cout<<"Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<endl;
+	msg.Out()<<"Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
 	abort();
       }
       kkp=i;
@@ -67,14 +67,14 @@ void RamboKK::Set_KKmass()
   double ms2;
   do{
     ms2=0;
-    //cout<<"Set_KKmass: "<<kkp<<","<<maxM2<<","<<maxN<<":";
+    //msg.Out()<<"Set_KKmass: "<<kkp<<","<<maxM2<<","<<maxN<<":";
     for (short int i=0;i<ed;i++) {
       nv[i]=ran.Get()*maxN;
-      //cout<<nv[i]<<",";
+      //msg.Out()<<nv[i]<<",";
       ms2+=sqr(nv[i]);
     }
     ms2*=4*sqr(M_PI)/R2;
-    //cout<<ms2<<endl;
+    //msg.Out()<<ms2<<std::endl;
   }while (ms2>maxM2);
   ms_out[kkp]=ms2;
   delete[] nv;
@@ -128,12 +128,12 @@ void RamboKK::Generate_Point(Vec4D* p,Cut_Data * cuts)
 
   weight = 1.;
   if (massflag) Massive_Point(p,ET);
-  //for (short int i=0;i<Nin+Nout;i++) cout<<i<<". Momentum: "<<p[i]<<";"<<sqrt(p[i].Abs2())<<endl;
+  //for (short int i=0;i<Nin+Nout;i++) msg.Out()<<i<<". Momentum: "<<p[i]<<";"<<sqrt(p[i].Abs2())<<std::endl;
 }
 
 void RamboKK::Generate_Point(Vec4D* p,Cut_Data * cuts,double* ran)
 {
-  msg.Error()<<"In Rambo a dummy routine!"<<endl;
+  msg.Error()<<"In Rambo a dummy routine!"<<std::endl;
   Generate_Point(p,cuts);
 }
 

@@ -24,8 +24,15 @@ Combine_Data::Combine_Data(int _i, int _j, double _pt2ij, int _ngraph):
   graphs.push_back(_ngraph);
 }
 
+
+Combine_Data::Combine_Data(const Combine_Data & cd):
+  i(cd.i),j(cd.j),pt2ij(cd.pt2ij),graphs(cd.graphs),down(cd.down) 
+{
+}
+
 Combine_Data::~Combine_Data() {
-  if (down==0) delete down;
+  if (down!=0) delete down;
+  down=0;
 }
 
 std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd) {
@@ -180,7 +187,7 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
       }
     }
   }
-  msg.Tracking()<<"out Combine_Table::FillTable"<<std::endl;
+  msg.Tracking()<<"out Combine_Table::FillTable "<<nampl<<std::endl;
 }
 
 
@@ -223,7 +230,7 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
 	cwin = cit;
       }
     } 
-    msg.Debugging()<<" Winner:"<<(*cwin)<<std::endl;
+    msg.Tracking()<<" Winner:"<<(*cwin)<<std::endl;
 
     --nl;
     

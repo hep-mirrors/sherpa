@@ -107,7 +107,7 @@ void Sample_Analysis::Finish() {
     s3<<nllf;
     s3>>snllf;
 
-    string name=string("sh_FE_") + salf + string("_") + syf + string("_") + snllf;
+    string name=string("sh_HB_") + salf + string("_") + syf + string("_") + snllf;
 
     //    ana->FinishAnalysis("testout_sherpa_GE125g",0);
     ana->FinishAnalysis(name,0);

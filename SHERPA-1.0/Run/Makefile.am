@@ -24,7 +24,6 @@ Sherpa_LDADD =  \
 	 @libdir@/libHardProc.la \
 	 @libdir@/libHardInterface.la \
 	 @libdir@/libShowers.la \
-	 @libdir@/libLHAPDF.la \
 	 @libdir@/libPDF.la \
 	 @libdir@/libExtraXS.la \
 	 @libdir@/libExtraXS2_2.la \
@@ -48,7 +47,7 @@ INCLUDES = -I../Main/ \
 	   -I../../APACIC++-2.0/Hard_Processes \
 	   -I../../APACIC++-2.0/Showers \
 	   -I../../EXTRA_XS-1.0/Main \
-	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/Include \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../PHASIC++-1.0/ISR \
 	   -I../../PHASIC++-1.0/Beam \

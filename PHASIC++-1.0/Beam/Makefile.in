@@ -81,17 +81,16 @@ am__quote = @am__quote@
 install_sh = @install_sh@
 
 lib_LTLIBRARIES = libBeam.la
-libBeam_la_SOURCES = Beam_Spectra_Handler.C Monochromatic.C Laser_Backscattering.C
+libBeam_la_SOURCES = Beam_Handler.C No_Beam.C Laser_Backscattering.C
 INCLUDES = -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org \
-	   -I../../PDF-1.0/Main \
-	   -I../../PDF-1.0/LHAPDF \
+	   -I../../PDF-1.0/Include \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../AMEGIC++-2.0/Main 
 
-noinst_HEADERS = Beam_Spectra_Handler.H Beam_Base.H \
-		 Monochromatic.H Laser_Backscattering.H
+noinst_HEADERS = Beam_Handler.H Beam_Base.H \
+		 No_Beam.H Laser_Backscattering.H
 
 subdir = Beam
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -100,7 +99,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libBeam_la_LDFLAGS =
 libBeam_la_LIBADD =
-am_libBeam_la_OBJECTS = Beam_Spectra_Handler.lo Monochromatic.lo \
+am_libBeam_la_OBJECTS = Beam_Handler.lo No_Beam.lo \
 	Laser_Backscattering.lo
 libBeam_la_OBJECTS = $(am_libBeam_la_OBJECTS)
 
@@ -110,9 +109,9 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Beam_Spectra_Handler.Plo \
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Beam_Handler.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Laser_Backscattering.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Monochromatic.Plo
+@AMDEP_TRUE@	$(DEPDIR)/No_Beam.Plo
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -176,9 +175,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Beam_Spectra_Handler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Beam_Handler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Laser_Backscattering.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Monochromatic.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/No_Beam.Plo@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)

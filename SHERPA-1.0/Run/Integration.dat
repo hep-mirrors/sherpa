@@ -4,7 +4,7 @@
 !YCUT  = 0.004073802778   ! ycut initial, double 10^-2.39
 !YCUT  = 0.0039811        ! ycut initial, double 
 !YCUT  = 0.01       ! for the tuning YCUT is read from Run.dat !
-ERROR =  5.e-2      ! Error by calculating matrix-elements              
+ERROR =  1.e-2      ! Error by calculating matrix-elements              
 !-------------------------------------------------------
 !-- General switches -----------------------------------
 !-------------------------------------------------------    

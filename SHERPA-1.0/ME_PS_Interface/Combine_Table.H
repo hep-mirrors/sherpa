@@ -26,7 +26,8 @@ namespace SHERPA {
   public:
     // constructor
     Leg(AMEGIC::Point * _point = 0, int _anti = 1) :  
-      point(_point), anti(_anti) {};
+      point(_point), anti(_anti) { }
+    Leg(const Leg & l) : point(l.point), anti(l.anti) { }
 
     // access function for point data
     const AMEGIC::Point * operator&()  const { return point; }
@@ -58,6 +59,7 @@ namespace SHERPA {
     Combine_Table    * down;      // new Combine table with n-1 legs (i and j combined)
   public:
     Combine_Data();
+    Combine_Data(const Combine_Data &);
     Combine_Data(int, int, double, int);
     ~Combine_Data();
 

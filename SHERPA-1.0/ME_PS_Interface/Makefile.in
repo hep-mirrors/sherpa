@@ -89,7 +89,7 @@ INCLUDES = -I../Mocaic \
 	   -I../../APACIC++-2.0/Showers \
 	   -I../../APACIC++-2.0/Hard_Processes \
 	   -I../../APACIC++-2.0/Hard_Interface \
-	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/Include \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org \

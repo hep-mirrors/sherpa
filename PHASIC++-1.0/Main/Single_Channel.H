@@ -135,9 +135,11 @@ namespace PHASIC {
     }
     virtual int CountResonances(APHYTOOLS::Flavour*&) { 
       AORGTOOLS::msg.Error()<<"Virtual Method : Single_Channel::CountResonances()"<<std::endl; 
+      return 0;
     }
     virtual int ChNumber() {
       AORGTOOLS::msg.Error()<<"Virtual Method : Single_Channel::ChNumber()"<<std::endl;
+      return 0;
     }
     virtual void SetChNumber(int) {
       AORGTOOLS::msg.Error()<<"Virtual Method : Single_Channel::SetChNumber()"<<std::endl;
@@ -161,6 +163,7 @@ namespace PHASIC {
     virtual void SetRes1(double _r)          { res1       = _r; }
     virtual void SetRes2(double _r)          { res2       = _r; }
     virtual void SetRes3(double _r)          { res3       = _r; }
+    virtual void SetN(long int _n)           { n_points   = _n; }
     virtual void SetName(std::string _name)  { name       = _name; }
     virtual void SetWeight(double _weight)   { weight     = _weight; }
     virtual void SetAlpha(double _alpha)     { alpha      = _alpha; }

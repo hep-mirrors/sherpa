@@ -1,19 +1,21 @@
-#ifndef ISR_Handler_h
-#define ISR_Handler_h
+#ifndef Beam_Handler_h
+#define Beam_Handler_h
 
 #include "Vector.H"
 #include "Poincare.H"
-#include "ISR_Base.H"
+#include "Beam_Base.H"
 #include "PDF_Base.H"
 
-namespace ISR {
-  class ISR_Handler {
+#include "Pol_Info.H"
+
+namespace BEAM {
+  class Beam_Handler {
   protected:
-    ISR_Base           ** ISRBase;
+    Beam_Base          ** BeamBase;
     AMATOOLS::Poincare    CMSBoost;
     /*
       mode   
-      0          no isr 
+      0          no beam
       1          beam 1
       2          beam 2
       3          beam 1 & beam 2 
@@ -25,42 +27,40 @@ namespace ISR {
     AMATOOLS::Vec4D       fiXVECs[2];
     std::string           name, type;
   public:
-    ISR_Handler(int *,APHYTOOLS::Flavour *,APHYTOOLS::Flavour *,double *);
-    ~ISR_Handler();
+      Beam_Handler(int *,APHYTOOLS::Flavour *,double *,APHYTOOLS::Flavour *,double *,double *);
+      ~Beam_Handler();
+
     bool   CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *);
-    void   SetPartonMasses(APHYTOOLS::Flavour * _fl); 
-    bool   MakeISR(AMATOOLS::Vec4D *,double,double);
+    void   SetBeamMasses(APHYTOOLS::Flavour * beams); 
+
+    bool   MakeBeams(AMATOOLS::Vec4D *,double,double);
     bool   CalculateWeight(double);
-    bool   CalculateWeight2(double);
     double Weight(APHYTOOLS::Flavour *);
-    double Weight2(APHYTOOLS::Flavour *);
+    double Weight();
 
     void   BoostInCMS(AMATOOLS::Vec4D *,int);
     void   BoostInLab(AMATOOLS::Vec4D *,int);
 
     void   SetName(std::string _name) { name         = _name; }
-    void   SetSprimeMin(double _spl)  { if (_spl > smin) splimits[0]  = _spl; }
-    void   SetSprimeMax(double _spl)  { if (_spl < smax) splimits[1]  = _spl; }
-    void   SetPole(double _spl)       { splimits[2]  = _spl; }
+    void   SetSprimeMin(double _spl)  { splimits[0]  = _spl; }
+    void   SetSprimeMax(double _spl)  { splimits[1]  = _spl; }
     void   SetYMin(double _yl)        { ylimits[0]   = _yl; }
     void   SetYMax(double _yl)        { ylimits[1]   = _yl; }
 
+
     std::string     Name()            { return name; }
     std::string     Type()            { return type; }
-    double          Exponent(int i)   { return exponent[i]; }
     double        * SprimeRange()     { return splimits; }
     double        * YRange()          { return ylimits; }
     double          SprimeMin()       { return splimits[0]; }
     double          SprimeMax()       { return splimits[1]; }
-    double          Pole()            { return splimits[2]; }
     double          YMin()            { return ylimits[0]; }
     double          YMax()            { return ylimits[1]; }
-    
-    // Don't use this !!! It is for the ISRChannels only !!!
-    double          Upper1()          { return ISRBase[0]->Xmax(); }
-    double          Upper2()          { return ISRBase[1]->Xmax(); }
-  
-    PDF::PDF_Base * PDF(int beam)     { return ISRBase[beam]->PDF(); }
+    double          Upper1()          { return BeamBase[0]->Xmax(); }
+    double          Upper2()          { return BeamBase[1]->Xmax(); }
+    double          Peak()            { return BeamBase[0]->Peak() *
+					       BeamBase[1]->Peak(); }
+    double          Exponent(int i)   { return exponent[i]; }
     int             On()              { return mode; }
   };
 }
@@ -70,28 +70,28 @@ namespace ISR {
 
 
 /*!
-  \class ISR_Handler 
-  \brief Manager of all ISR.
-  This class manages all initial state radiation (ISR) according to the strategy 
-  named in ISR.dat. It is initialized from Amegic and handed over to all Processes,
+  \class Beam_Handler 
+  \brief Manager of all Beam.
+  This class manages all initial state radiation (Beam) according to the strategy 
+  named in Beam.dat. It is initialized from Amegic and handed over to all Processes,
   both groups and individual ones. Before oming into full efect during integration
-  or event generation, it initalises suitable ISR treatment (ISR_Bases) for both 
-  beams and uses them to generate corresponding ISR weights. 
+  or event generation, it initalises suitable Beam treatment (Beam_Bases) for both 
+  beams and uses them to generate corresponding Beam weights. 
 */
 
 /*!
-  \var   ISR_Base * ISRBase[2]
-  \brief The two ISR bases, one for each beam.
+  \var   Beam_Base * BeamBase[2]
+  \brief The two Beam bases, one for each beam.
 */
 
 /*!
-  \fn    ISR_Handler(APHYTOOLS::Flavour *)
+  \fn    Beam_Handler(APHYTOOLS::Flavour *)
   \brief The explicit constructor doing a proper initialisation
   The constructor is a pretty simple object. Entering with the two beam flavours and
   a default s-range as arguments, the actual s-range will be deduced by comparing with
-  the range given in the "ISR.dat" file. Additionally, the ISR strategy (none or SF)
-  is read off there and corresponding ISR_Bases are initialized.
-  We might have to think about "hybrid" stuff, e.g. DIS with no ISR off the electron
+  the range given in the "Beam.dat" file. Additionally, the Beam strategy (none or SF)
+  is read off there and corresponding Beam_Bases are initialized.
+  We might have to think about "hybrid" stuff, e.g. DIS with no Beam off the electron
   and the like ...
 */
 

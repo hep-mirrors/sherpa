@@ -56,18 +56,22 @@
 
 // ANSI-C++ style (gcc 3.2, sgi CC)
 
+
 #include "mrst99.h"
 
 using namespace PDF;
 using namespace PDF::MRST99;
 using namespace std;
 
-int c_mrst99function::initialise(int mode,string path)
+int c_mrst99function::initialise(int mode)
 {
   ifstream data_file;
   
   char filename[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // the name of the datafile to read in
   int i,j,n,m,k; // counters
+  
+  // cout << "#Initialising MRST mode " << mode << "\n";
+  // cout << "#Initialising MRST arrays\n";
   
   // Initialising the x array common to all members of the class
   // Unfortunately, ANSI-C++ does not allow a initialisation of a 
@@ -179,14 +183,14 @@ int c_mrst99function::initialise(int mode,string path)
 
   // The name of the file to open is stored in 'filename'
 
-  sprintf(filename,(path+string("cor%02d.dat")).c_str(),mode);
+  sprintf(filename,"Testrun/cor%02d.dat",mode);
 
   data_file.open(filename);
   
   if (data_file.bad()) {
-    std::cerr << "Error opening " << filename << "\n";
-    exit (-1);
-  }
+      std::cerr << "Error opening " << filename << "\n";
+      exit (-1);
+    }
 
   for (n=1;n<=nx-1;n++) 
     for (m=1;m<=nq;m++) {
@@ -260,9 +264,9 @@ struct s_partoncontent c_mrst99function::update(double x, double qsq)
   
   if (x<xx[ntenth]) xxx=log10(x/xx[ntenth])+xx[ntenth];
   
-  n = 1;
+  n=1;
   while (xxx>xx[n+1]) n++;
-  a = (xxx-xx[n])/(xx[n+1]-xx[n]);
+  a=(xxx-xx[n])/(xx[n+1]-xx[n]);
   
   m=1;
   while (qsq>qq[m+1]) m++;
@@ -277,24 +281,26 @@ struct s_partoncontent c_mrst99function::update(double x, double qsq)
     g[i]=g[i]*pow((1.0-x),n0[i]);
   }
   
-  partcontent.upv  = g[1];
-  partcontent.dnv  = g[2];
-  partcontent.usea = g[4];
-  partcontent.dsea = g[8];
-  partcontent.str  = g[6];
-  partcontent.chm  = g[5];
-  partcontent.glu  = g[3];
-  partcontent.bot  = g[7];
+  partcontent.upv=g[1];
+  partcontent.dnv=g[2];
+  partcontent.usea=g[4];
+  partcontent.dsea=g[8];
+  partcontent.str=g[6];
+  partcontent.chm=g[5];
+  partcontent.glu=g[3];
+  partcontent.bot=g[7];
 
   return partcontent;
 }
 
-c_mrst::c_mrst(std::string path)
+c_mrst::c_mrst(void)
   // The constructor
   // This will initialise the mrst functions automatically
 {
   int i; // counter
-  for (i=1;i<=12;i++) function[i-1].initialise(i,path);
+  for (i=1;i<=12;i++) {
+    function[i-1].initialise(i);
+  }
   table[0]=&cont.upv;
   table[1]=&cont.dnv;
   table[2]=&cont.usea;
@@ -315,5 +321,5 @@ void c_mrst::mrst99(double x,double q2,int mode)
 
   // To save memory, we use the first array element also
   // instead of following the FORTRAN standard
-  cont = function[mode-1].update(x,q2);
+  cont=function[mode-1].update(x,q2);
 }

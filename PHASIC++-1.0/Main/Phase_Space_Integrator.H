@@ -40,6 +40,11 @@ namespace PHASIC {
       an error given externally by the Phase_Space_Handler.
     */
     double Calculate(Phase_Space_Handler*,double); 
+   /*!
+      Calculate the Decay width of a 1->N process up to
+      an error given externally by the Phase_Space_Handler.
+    */
+    double CalculateDecay(Phase_Space_Handler*,double,double); 
     //! Simple access methods.
     inline double GetMax()            { return max; };
     inline void   SetMax(double _max) { max = _max; };

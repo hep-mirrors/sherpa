@@ -83,9 +83,10 @@ bool Soft_Interface::PerformFragmentation(APHYTOOLS::Blob_List * bl,
   for (Blob_Iterator biter = myblobs->begin();biter != myblobs->end();++biter) {
     if ( ((*biter)->Type() == std::string("Fragmentation")) && 
 	 ((*biter)->Status() != 0) ) {
-      cout<<"Fragmentation"<<endl;
-      cout<<*(*biter)<<endl;
-
+      if (rpa.gen.Events()) {
+	msg.Out()<<"Fragmentation"<<endl;
+	msg.Out()<<*(*biter)<<endl;
+      }
       (*biter)->BoostInCMS();
       lund->Hadronize(pl,(*biter));
       (*biter)->BoostInLab();

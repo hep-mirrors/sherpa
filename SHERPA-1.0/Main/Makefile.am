@@ -17,7 +17,7 @@ INCLUDES = -I../Sherpa/ \
 	   -I../../APACIC++-2.0/Hard_Processes/Process_Library \
 	   -I../../APACIC++-2.0/Showers \
 	   -I../../EXTRA_XS-1.0/Main \
-	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/Include \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../PHASIC++-1.0/ISR \
 	   -I../../PHASIC++-1.0/Beam \

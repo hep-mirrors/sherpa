@@ -7,6 +7,11 @@ using namespace APHYTOOLS;
 using namespace AMATOOLS;
 using namespace std;
 
+//#define _USE_MPI_
+#ifdef _USE_MPI_
+#include <mpi++.h>
+#endif
+
 Multi_Channel::Multi_Channel(string _name) 
 {
   string help;
@@ -91,52 +96,51 @@ void Multi_Channel::ResetOpt()
   n_points = 0;
 };        
 
-/*
-void Multi_Channel::MPIOptimize()
+void Multi_Channel::MPIOptimize(double error)
 {
 #ifdef _USE_MPI_
-  int rank = MPI::COMM_WORLD.Get_Rank();
+  int rank = MPI::COMM_WORLD.Get_rank();
   int size = MPI::COMM_WORLD.Get_size();
   
   cout<<"Process "<<rank<<" in MPIOptimize()."<<endl;
 
-  double* messageblock = new double[1+3*Chp.size()];
-  double* alp = new double[Chp.size()];
+  double* messageblock = new double[1+3*channels.size()];
+  double* alp = new double[channels.size()];
   //tag 9 for communication
   if (rank==0) {
     int count = 0;
     while (count<size-1) {
-      MPI::COMM_WORLD.Recv(messageblock, 1+3*Chp.size(), MPI::DOUBLE, MPI::ANY_SOURCE, 9);
+      MPI::COMM_WORLD.Recv(messageblock, 1+3*channels.size(), MPI::DOUBLE, MPI::ANY_SOURCE, 9);
       count++;
       cout<<" received Channel-Data from Knot "<<messageblock[0]<<endl;
-      for (short int i=0;i<Chp.size();i++) {
-	Chp[i]->Res1 += messageblock[1+Chp.size()+i];
-	Chp[i]->Res2 += messageblock[1+2*Chp.size()+i];
-	Chp[i]->Res3  = sqr(Chp[i]->Res1)-Chp[i]->Res2;
-	Chp[i]->N    += int(messageblock[1+i]);
+      for (short int i=0;i<channels.size();i++) {
+	channels[i]->SetRes1(channels[i]->Res1() + messageblock[1+channels.size()+i]);
+	channels[i]->SetRes2(channels[i]->Res2() + messageblock[1+2*channels.size()+i]);
+	channels[i]->SetRes3(sqr(channels[i]->Res1()) - channels[i]->Res2());
+	channels[i]->SetN(channels[i]->N() + int(messageblock[1+i]));
       }
     }
-    cout<<"Master: "<<Chp[0]->N<<" data accumulated."<<endl; 
-    Optimize();
+    cout<<"Master: "<<channels[0]->N()<<" data accumulated."<<endl; 
+    Optimize(error);
     //broadcast alphai
-    for (short int i=0;i<Chp.size();i++) alp[i] = Chp[i]->Alpha;
+    for (short int i=0;i<channels.size();i++) alp[i] = channels[i]->Alpha();
     
-    for (int i=1;i<size;i++) MPI::COMM_WORLD.Isend(alp, Chp.size(), MPI::DOUBLE, i, 9);
+    for (int i=1;i<size;i++) MPI::COMM_WORLD.Isend(alp, channels.size(), MPI::DOUBLE, i, 9);
   }
   else {
     messageblock[0] = rank;
-    for (int i=0;i<Chp.size();i++) messageblock[1+i]       = Chp[i]->N;
-    for (int i=0;i<Chp.size();i++) messageblock[1+Chp.size()+i]   = Chp[i]->Res1;
-    for (int i=0;i<Chp.size();i++) messageblock[1+2*Chp.size()+i] = Chp[i]->Res2;
-    MPI::COMM_WORLD.Send(messageblock, 1+3*Chp.size(), MPI::DOUBLE, 0, 9);   
+    for (int i=0;i<channels.size();i++) messageblock[1+i]                   = channels[i]->N();
+    for (int i=0;i<channels.size();i++) messageblock[1+channels.size()+i]   = channels[i]->Res1();
+    for (int i=0;i<channels.size();i++) messageblock[1+2*channels.size()+i] = channels[i]->Res2();
+    MPI::COMM_WORLD.Send(messageblock, 1+3*channels.size(), MPI::DOUBLE, 0, 9);   
     //Waiting for new alpha's
-    MPI::COMM_WORLD.Recv(alp, Chp.size(), MPI::DOUBLE, 0, 9);
-    cout<<"Slave "<<rank<<" received new alpha."<<endl;
+    MPI::COMM_WORLD.Recv(alp, channels.size(), MPI::DOUBLE, 0, 9);
+    msg.Out()<<"Slave "<<rank<<" received new alpha."<<endl;
 
-    for (short int i=0;i<Chp.size();i++) {
-      Chp[i]->Alpha = alp[i];
-      Chp[i]->Reset_Opt();
-      Chp[i]->Weight = 0.;
+    for (short int i=0;i<channels.size();i++) {
+      channels[i]->SetAlpha(alp[i]);
+      channels[i]->ResetOpt();
+      channels[i]->SetWeight(0.);
     }
   }
   delete[] alp;
@@ -146,7 +150,7 @@ void Multi_Channel::MPIOptimize()
 #endif
 
 }
-*/
+
 
 void Multi_Channel::Optimize(double error)
 {
@@ -195,7 +199,11 @@ void Multi_Channel::Optimize(double error)
 
 void Multi_Channel::EndOptimize(double error)
 {
+
   short int i;
+
+#ifndef _USE_MPI_
+
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
     if (channels[i]->Alpha() < 1.e-8 ) channels[i]->SetAlpha(0.);
@@ -217,6 +225,44 @@ void Multi_Channel::EndOptimize(double error)
   msg.Tracking()<<"result,result2,n,n_contrib : "<<result<<", ";
   msg.Tracking()<<result2<<", "<<n_points<<", "<<n_contrib<<endl;
   msg.Tracking()<<"-------------------------------------------"<<endl;
+
+#else
+
+//bcast them to all
+  int rank = MPI::COMM_WORLD.Get_rank();
+  int size = MPI::COMM_WORLD.Get_size();
+  
+  cout<<"Process "<<rank<<" in End_Optimize()."<<endl;
+
+  double* alp = new double[channels.size()];
+  //tag 9 for communication
+  if (rank==0) {
+    short int i;
+    for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->AlphaSave());
+    double norm = 0;
+    for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
+    for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
+
+    msg.Tracking()<<"Best weights:-------------------------------"<<endl;
+    for (i=0;i<channels.size();i++)
+      if (channels[i]->Alpha() > 0) {
+	msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<" :"<<channels[i]->Alpha()<<endl;
+	msg.Tracking()<<"S1X: "<<s1xmin<<endl;
+	msg.Tracking()<<"-------------------------------------------"<<endl;
+      }
+    //broadcast alphai
+    for (short int i=0;i<channels.size();i++) alp[i] = channels[i]->Alpha();    
+    for (int i=1;i<size;i++) MPI::COMM_WORLD.Isend(alp, channels.size(), MPI::DOUBLE, i, 9);
+  }
+  else {
+    //Waiting for new alpha's
+    MPI::COMM_WORLD.Recv(alp, channels.size(), MPI::DOUBLE, 0, 9);
+    cout<<"Slave "<<rank<<" received new alpha."<<endl;
+    for (short int i=0;i<channels.size();i++) channels[i]->SetAlpha(alp[i]);
+  }
+  delete[] alp;
+#endif
+
 }
 
 void Multi_Channel::AddPoint(double value)
@@ -456,4 +502,16 @@ bool Multi_Channel::ReadIn(std::string pID) {
   }
   ifile.close();
   return 1;
+}
+
+
+void Multi_Channel::SetRange(double * sprimerange,double * yrange) 
+{
+  for (int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
+}
+
+void Multi_Channel::GetRange() 
+{
+  AORGTOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
+  for (int i=0;i<channels.size();i++) channels[i]->GetRange();
 }

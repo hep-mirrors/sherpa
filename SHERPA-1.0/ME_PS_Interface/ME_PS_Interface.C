@@ -28,8 +28,8 @@ ME_PS_Interface::ME_PS_Interface(ISR_Handler * _isr,int _number) :
   jetscale  = ycut * sqr(rpa.gen.Ecms());
 
   // *AS* switch on initial and/or final state shower
-  ini       = 1;
-  fin       = 0;
+  ini       = 0;
+  fin       = 1;
   NLLweight = 1;
 }
   

@@ -4,6 +4,7 @@
 #include "Single_Channel.H"
 #include <vector>
 
+
 namespace PHASIC {
   struct Channel_Info {
     int                  type;
@@ -47,6 +48,7 @@ namespace PHASIC {
 
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
+    
     std::vector<Single_Channel *> channels;
   public:
     Multi_Channel(std::string);
@@ -82,6 +84,8 @@ namespace PHASIC {
       of s2 ... . I'll have to check this ... .
     */
     void    Optimize(double);
+    void    MPIOptimize(double);
+
     /*!
       Endoptimize replaces, after an ordinary optimization step, the set of a-priori weights
       with the best set so far which has been stored during the optimization procedure.
@@ -130,13 +134,8 @@ namespace PHASIC {
     /*!
       This is used for ISR Channels to set the y and s' range.
     */
-    void SetRange(double * sprimerange,double * yrange) {
-      for (int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
-    };
-    void GetRange() {
-      AORGTOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
-      for (int i=0;i<channels.size();i++) channels[i]->GetRange();
-    }
+    void SetRange(double * sprimerange,double * yrange);
+    void GetRange();
     void WriteOut(std::string);
     bool ReadIn(std::string);
 

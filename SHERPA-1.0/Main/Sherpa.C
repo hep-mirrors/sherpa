@@ -82,7 +82,7 @@ bool Sherpa::Init(int argc,char* argv[]) {
   blobs             = new Blob_List;
   AM                = new Amegic("./"); // ,isr;
 
-  int jetnumber     = 2;   // *AS* WARNING this influences the jetveto! Have to apply
+  int jetnumber     = 5;   // *AS* WARNING this influences the jetveto! Have to apply
   // modified sudakovs as well!
   
   isr=0; // NO Initial-Shower (isr has to be initialised by Amegic)
@@ -299,9 +299,8 @@ bool Sherpa::GenerateEvents() {
 	if (!(hard_interface->Treat(proc,blob,1))) {
 	  // event rejected due to Sudakov-n-AlphaS-weight
 	  stat=4;
-	  //	  continue; 
 	}
-	//*AS*	else {
+	else {
 	  // perform parton shower
 	  stat=hard_interface->PerformShower(proc,1);
 	  if ((stat==3)  ) {
@@ -309,20 +308,17 @@ bool Sherpa::GenerateEvents() {
 	    //	    cout<<" stat==3"<<endl;
 	    CleanUpEvent();
 	  }
-	  //*AS*	}
+	}
       } while (stat==3);
 
      analysis.AfterME(blobs);
 
-     /*
-       // *AS* switched of sudakov weight !!!!
-      if ((stat==4)  ) {
-	// event rejected due to Sudakov-n-AlphaS-weight	
-	--n;
-	CleanUpEvent();
-	continue;
-      }
-     */
+     if ((stat==4)  ) {
+       // event rejected due to Sudakov-n-AlphaS-weight	
+       --n;
+       CleanUpEvent();
+       continue;
+     }
 
       if ((stat==0)  ) {
 	msg.Error()<<"ERROR in Sherpa::GenerateEvents"<<std::endl
@@ -341,7 +337,7 @@ bool Sherpa::GenerateEvents() {
 
       analysis.AfterPartonShower(blobs);
 
-      //      soft_interface->PerformFragmentation(blobs,partons);
+      soft_interface->PerformFragmentation(blobs,partons);
 //          analysis.AfterHadronization(blobs);
 
       msg.SetPrecision(4);
@@ -382,8 +378,6 @@ void Sherpa::OneEvent() {
 
 	Blob * blob= new Blob();
 	FillBlob(blob,proc);
-	cout<<"a: "<<proc->Momenta()[0]+proc->Momenta()[1]<<endl;
-	cout<<"   "<<blob->InParton(0)->Momentum()+blob->InParton(1)->Momentum()<<endl;
 
 	blob->SetId(blobs->size());
 	blobs->push_back(blob);
@@ -439,17 +433,23 @@ void Sherpa::Finalize() {
 
 
 void Sherpa::RunPythiaTest() {
-  msg.Out()<<"calculating alphas with Pythia: "<<std::endl;
-  double q2_max=sqr(91.2);
-  double q2_min=sqr(.912);
-  int    n =10;
-  for (int i=0;i<=n;++i) {
-    double q2=q2_min*pow((q2_max/q2_min),double(i)/double(n));
-    double alphas=0, lambda=0;
-    altest_(q2,lambda,alphas);
-    cout<<" "<<q2<<" \t"<<alphas<<" \t"<<sqr(lambda)<<endl;
+  bool calc_alphas=0;
+  int process=1;       // 0 - ee-> jets;  1 - drell-yan
+
+  if (calc_alphas) {
+    msg.Out()<<"calculating alphas with Pythia: "<<std::endl;
+    double q2_max=sqr(91.2);
+    double q2_min=sqr(.912);
+    int    n =10;
+    for (int i=0;i<=n;++i) {
+      double q2=q2_min*pow((q2_max/q2_min),double(i)/double(n));
+      double alphas=0, lambda=0;
+      altest_(q2,lambda,alphas);
+      cout<<" "<<q2<<" \t"<<alphas<<" \t"<<sqr(lambda)<<endl;
+    }
+    //  exit(0);
   }
-  //  exit(0);
+  
 
   msg.Out()<<"Start generating events with Pythia: "<<std::endl;
 
@@ -475,7 +475,7 @@ void Sherpa::RunPythiaTest() {
 
   msg.Out()<<" Starting event generation now. "<<std::endl;
   for (int n=1;n<=rpa.gen.NumberOfEvents();n++) {
-    if (n%1000==0) {
+    if (n%2500==0) {
       msg.Out()<<"event ="<<n<<endl;
     }
     //    msg.Out()<<"event ="<<n<<endl;
@@ -491,27 +491,47 @@ void Sherpa::RunPythiaTest() {
     
     //    msg.Out()<<"nk ="<<nk<<endl;
 
-    pl.push_back(new Parton(0,Flavour(kf::e),Vec4D(E,0,0,E)));
-    pl.push_back(new Parton(1,Flavour(kf::e).Bar(),Vec4D(E,0,0,-E)));
-
+    if (process==0) {
+      pl.push_back(new Parton(0,Flavour(kf::e),Vec4D(E,0,0,E)));
+      pl.push_back(new Parton(1,Flavour(kf::e).Bar(),Vec4D(E,0,0,-E)));
+    }
+    else if (process==1) {
+      // pseudo initiator!
+      pl.push_back(new Parton(0,Flavour(kf::gluon),Vec4D(E,0,0,E)));
+      pl.push_back(new Parton(1,Flavour(kf::gluon),Vec4D(E,0,0,-E)));
+    }
     for (int i=0; i<nk; ++i) {
       Flavour flav = Flavour(kf::code(abs(*(kfjet+i))));
       if ((*(kfjet+i))<0) flav = flav.Bar();
-      Vec4D momentum;
-      for(int j=0; j<4; ++j) momentum[j] = *(pjet+i+j*2000);
+      Vec4D mom;
+      for(int j=0; j<4; ++j) mom[j] = *(pjet+i+j*2000);
 
-      Parton * parton = new Parton(pl.size(),flav,momentum);
-      parton->SetStatus(1);
-
-      pl.push_back(parton);
+      if (flav.IsLepton()) {
+	msg.Events()<<" ignoring "<<flav<<" "<<mom<<endl;
+      }
+      else if (flav.IsDiQuark() || flav.IsHadron()) {
+	msg.Events()<<" assuming Beam remnant "<<flav<<" "<<mom<<endl;
+	if (mom[3]>0) {
+	  mom=pl[0]->Momentum()-mom;
+	  pl[0]->SetMomentum(mom);
+	}
+	else {
+	  mom=pl[1]->Momentum()-mom;
+	  pl[1]->SetMomentum(mom);
+	}
+      } 
+      else {
+	Parton * parton = new Parton(pl.size(),flav,mom);
+	parton->SetStatus(1);
+	
+	pl.push_back(parton);
+      }
     }
 
-    /*
-    cout<<" pln="<<pl.size()<<endl;
+    msg.Events()<<" pln="<<pl.size()<<endl;
     for (int i=0; i<pl.size();++i) { 
-      cout<<i<<" :"<<pl[i]<<endl;
+      msg.Events()<<i<<" :"<<pl[i]<<endl;
     }
-    */
 
     
     // do analysis
@@ -525,7 +545,7 @@ void Sherpa::RunPythiaTest() {
   }
 
   // Analysis: write out histos
-  ana.FinishAnalysis("testout_pythia_FD",0);
+  ana.FinishAnalysis("pythia_HE",0);
 
     
   delete kfjet;

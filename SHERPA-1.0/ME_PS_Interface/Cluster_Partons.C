@@ -121,10 +121,10 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
     ct_test=ct_test->Up();
     ++njet;
   }
-//   cout<<" njets="<<njet<<endl;
-//   cout<<" nlegs="<<nlegs<<std::endl;
+//   msg.Out()<<" njets="<<njet<<std::endl;
+//   msg.Out()<<" nlegs="<<nlegs<<std::endl;
 //   if (njet==maxjetnumber) {
-//     cout<<" reduced weight!!! "<<endl;
+//     msg.Out()<<" reduced weight!!! "<<std::endl;
 //   }
 
 
@@ -520,12 +520,12 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,bool mod
     double q2      = mo->t;
     Vec4D cms      = d1->part->Momentum() + d2->part->Momentum();
     Vec4D cms_blob = blob->CMS();
-    msg.Debugging()<<" ======================================== "<<endl;
-    msg.Debugging()<<" Establish relations (IS):"<<endl; 
-    msg.Debugging()<<" ---------------------------------------- "<<endl;   
+    msg.Debugging()<<" ======================================== "<<std::endl;
+    msg.Debugging()<<" Establish relations (IS):"<<std::endl; 
+    msg.Debugging()<<" ---------------------------------------- "<<std::endl;   
     msg.Debugging()<<" q2 = "<<q2;
-    msg.Debugging()<<" cms= "<<cms<<" / "<<cms_blob<<endl;
-    msg.Debugging()<<" cms_3 = "<<blob->InParton(0)->Momentum()+ blob->InParton(1)->Momentum()<<endl;
+    msg.Debugging()<<" cms= "<<cms<<" / "<<cms_blob<<std::endl;
+    msg.Debugging()<<" cms_3 = "<<blob->InParton(0)->Momentum()+ blob->InParton(1)->Momentum()<<std::endl;
     // naive 
     double ebeam  = 0.5*rpa.gen.Ecms();
     double s      = sqr(2.*ebeam);
@@ -533,9 +533,9 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,bool mod
     double x1=d1->part->Momentum()[0]/ebeam;
     double x2=d2->part->Momentum()[0]/ebeam;
     
-    msg.Debugging()<<" x1 = " << x1 <<endl;
-    msg.Debugging()<<" x2 = " << x2 <<endl;    
-    msg.Debugging()<<" sprime = "<<sprime<<" / "<<x1*x2*s<<endl;
+    msg.Debugging()<<" x1 = " << x1 <<std::endl;
+    msg.Debugging()<<" x2 = " << x2 <<std::endl;    
+    msg.Debugging()<<" sprime = "<<sprime<<" / "<<x1*x2*s<<std::endl;
 
     // set naive x
     d1->x=x1;

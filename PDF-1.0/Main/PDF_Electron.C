@@ -11,68 +11,60 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace PDF;
 
-PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _order) : 
-  m_izetta(_izetta), m_order(_order)
-{
-  m_bunch  = _bunch;
-  m_partons.push_back(m_bunch);
-  m_type   = std::string("PDF_")+std::string(m_bunch.Name());
+PDF_Electron::PDF_Electron(int mode) {
+  if (mode==0) beam = Flavour(kf::e);
+          else beam = Flavour(kf::e).Bar();
+  partons.push_back(beam);
   
-  m_mass   = m_bunch.PSMass();
-  m_alpha  = (*aqed)(sqr(rpa.gen.Ecms()));
+  mass     = beam.PSMass();
+  alpha    = (*aqed)(sqr(rpa.gen.Ecms()));
 
-  double L = log(sqr(rpa.gen.Ecms()/m_bunch.PSMass()));
-  m_beta   = (*aqed)(sqr(m_bunch.PSMass()))/M_PI*(L-1.);
+  double L = log(sqr(rpa.gen.Ecms()/beam.PSMass()));
+  beta     = (*aqed)(sqr(beam.PSMass()))/M_PI*(L-1.);
 }
 
-double PDF_Electron::GetXPDF(const APHYTOOLS::Flavour & fl) {
-  if (fl==m_bunch) return m_xpdf;
-  return 0.;
-}
-
-PDF_Base * PDF_Electron::GetCopy() { return new PDF_Electron(m_bunch,m_order,m_izetta); }
-
-void PDF_Electron::Output() {
-  msg.Out()<<" internal PDF_Electron : "<<endl
-	   <<"          Order = "<<m_order<<", scheme = "<<m_izetta<<endl
-	   <<"          alpha(MZ) = "<<(*aqed)(sqr(91.2))<<endl;
-}
 
 void PDF_Electron::Calculate(const double x, const double Q2) 
 {
-  m_xpdf  = 0.;
-  m_alpha = (*aqed)(Q2);
+  xpdf  = 0.;
+  alpha = (*aqed)(Q2);
   if (x>=0.999999) return;
 
-  double L       = 2.*log(sqrt(Q2)/m_mass);
-  double beta_e  = 2.*m_alpha/M_PI*(L-1.);
-  double eta     = 2.*m_alpha/M_PI*L;
+  double L       = 2.*log(sqrt(Q2)/mass);
+  double beta_e  = 2.*alpha/M_PI*(L-1.);
+  double eta     = 2.*alpha/M_PI*L;
+
+  // parameters :
+  int izetta=1;
+  int order=1;
 
   double betaS,betaH;
-  switch(m_izetta) {
+  switch(izetta) {
   case 0:
-    m_beta = beta_e;
-    betaS  = betaH = eta;
+    beta = beta_e;
+    betaS = betaH = eta;
     break;
   case 1:
-    m_beta = betaS = beta_e;
-    betaH  = eta;
+    beta = betaS = beta_e;
+    betaH = eta;
     break;
   default:
-    m_beta = betaS = betaH = beta_e; 
+    beta = betaS = betaH = beta_e; 
   }
-  double gamma   = ::exp(Gammln(1.+m_beta/2.)); 
+  double gamma   = ::exp(Gammln(1.+beta/2.)); 
+  // beta,betaS,betaH
+
 
   // Produces collinear bremsstrahlung in exponentiated LLA,
   double S=0.,h0=0.,h1=0.,h2=0.;
-  S  = exp(-.5*GAMMA_E*m_beta+.375*betaS)/gamma*m_beta/2.;
+  S  = exp(-.5*GAMMA_E*beta+.375*betaS)/gamma*beta/2.; // *pow(1.-x,beta/2.-1.);
   h0 = -.25*(1.+x)*betaH;
 
-  if (m_order>=2) {  
+  if (order>=2) {  
     h1   = -1./32.*betaH*betaH*
       ((1.+3.*x*x)/(1.-x)*log(x)+4.*(1.+x)*log(1.-x)+5.+x); 
   }
-  if (m_order==3) {
+  if (order==3) {
     int i = 1;
     double Li = 0.;
     double del= 1.;
@@ -89,8 +81,8 @@ void PDF_Electron::Calculate(const double x, const double Q2)
 		  .25*(39.-24.*x-15.*x*x)));                
   } 
 
-  m_xpdf = x * (S*pow(1.-x,m_beta/2.-1.)+(h0+h1+h2));  
-  if (x>0.9999) m_xpdf *= pow(100.,m_beta/2)/(pow(100.,m_beta/2)-1.);
+  xpdf = x * (S*pow(1.-x,beta/2.-1.)+(h0+h1+h2));  
+  if (x>0.9999) xpdf *= pow(100.,beta/2)/(pow(100.,beta/2)-1.);
 }
 
 

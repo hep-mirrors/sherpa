@@ -6,13 +6,18 @@
 #include "Flavour.H"
 #include <string>
 #include <vector>
-
+#include <map>
 
 namespace PHASIC {
 
+  typedef std::map<std::string,std::string> Decls;
+  
   typedef std::vector<std::string> String_List;
 
   class Channel_Generator : public Single_Channel {
+
+    Decls declarations;
+    
     int    extrachannelflag,newchannel;
     //! The usual identifiers, number of incoming and outgoing legs.
     int         nin,nout;
@@ -122,7 +127,8 @@ namespace PHASIC {
     */
     std::string Order(std::string);
     std::string IString(int);
-
+    void  AddToVariables(int,const std::string&,const std::string&,const int&,std::ofstream&); 
+    void ClearDeclarations() { declarations.clear(); }  
   public:
     /*!
       Copies the pointlist to make sure that we can work on it, identifies the types of 
