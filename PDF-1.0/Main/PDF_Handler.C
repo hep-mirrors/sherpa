@@ -47,7 +47,9 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	       set==std::string("Fermi_2002__100") ||
 	       set==std::string("MRST2001") ||
 	       set==std::string("MRST98") ||
-	       set==std::string("cteq6") ) {
+	       set==std::string("cteq6")  ||
+	       set==std::string("cteq6l")  ||
+	       set==std::string("cteq6ll")) {
 	msg.Tracking()<<"Initialize "<<set<<" : "<<version<<" from "<<grid_path<<endl;
 	return new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path);
       }
