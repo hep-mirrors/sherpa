@@ -1,5 +1,5 @@
 #include "Particle_Qualifier.H"
-
+#include "Blob.H"
 #include "Message.H"
 
 using namespace ATOOLS;
@@ -77,20 +77,21 @@ void Particle_Qualifier_Base::ShowQualifiers(const int mode)
 }
 
 
-
-class Is_Zboson : public Particle_Qualifier_Base {
-public:
-  bool operator()(const Particle*) const;
-};
-class Is_Wboson : public Particle_Qualifier_Base {
-public:
-  bool operator()(const Particle*) const;
-};
+#define DEFINE_QUALIFIER_CLASS(NAME)                              \
+class NAME : public Particle_Qualifier_Base {                     \
+public:                                                           \
+  bool operator()(const Particle*) const;                         \
+}
 
 
+DEFINE_QUALIFIER_CLASS(Is_BHadron_Decay_Product);
+DEFINE_QUALIFIER_GETTER(Is_BHadron_Decay_Product,Is_BHadron_Decay_Product_Getter,
+			"DecayedBHadron","decay product of bhadron");
 
+DEFINE_QUALIFIER_CLASS(Is_Zboson);
 DEFINE_QUALIFIER_GETTER(Is_Zboson,Is_Zboson_Getter,
 			"kf24","zboson");
+DEFINE_QUALIFIER_CLASS(Is_Wboson);
 DEFINE_QUALIFIER_GETTER(Is_Wboson,Is_Wboson_Getter,
 			"kf23","wboson");
 DEFINE_QUALIFIER_GETTER(Is_Photon,Is_Photon_Getter,
@@ -207,6 +208,16 @@ bool Is_ME_Particle::operator() (const Particle * p) const {
   if ( p && p->Info()=='H' ) return 1;
   return 0;  
 };
+
+
+bool Is_BHadron_Decay_Product::operator() (const Particle * p) const {
+  if (!p) return 0;
+  if (p->Flav().IsB_Hadron()) return 1;
+  Blob * b = p->ProductionBlob();
+  if (!b || b->NInP()!=1 || b->Type()==btp::Fragmentation) return 0;
+  return operator()(b->InParticle(0));
+};
+
 
 bool Is_Photon::operator() (const Particle * p) const {
   if ( p && p->Flav().IsPhoton() ) return 1;
