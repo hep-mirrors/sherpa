@@ -7,6 +7,9 @@
 #error parameter type undefined
 #error specify a parameter type using #define PARAMETER_TYPE Parameter_Type 
 #endif
+#ifndef EXACTMATCH
+#define EXACTMATCH true
+#endif
 
 #include "Getter_Function.H"
 #include "Exception.H"
@@ -18,6 +21,9 @@ using namespace ATOOLS;
 template<class ObjectType,class ParameterType>
 typename Getter_Function<ObjectType,ParameterType>::String_Getter_Map *
 Getter_Function<ObjectType,ParameterType>::s_getters=NULL;
+
+template<class ObjectType,class ParameterType>
+bool Getter_Function<ObjectType,ParameterType>::s_exactmatch=EXACTMATCH;
 
 template<class ObjectType,class ParameterType>
 Getter_Function<ObjectType,ParameterType>::
@@ -37,7 +43,9 @@ Getter_Function(const std::string &name)
 		      Getter_Function *const>(name,this));
   }
   else {
-    std::cout<<"Getter_Function::Getter_Function(\""<<name<<"\"): "
+    std::cout<<"Getter_Function<"<<typeid(ObjectType*).name()
+	     <<","<<typeid(ParameterType*).name()<<">::"
+	     <<"Getter_Function(\""<<name<<"\"): "
 	     <<"Doubled identifier. Abort."<<std::endl;
     abort();
   }
@@ -90,6 +98,15 @@ template<class ObjectType,class ParameterType>
 ObjectType *const Getter_Function<ObjectType,ParameterType>::
 GetObject(const std::string &name,const Parameter_Type &parameters)
 {
+  if (!s_exactmatch) {
+    for (typename String_Getter_Map::reverse_iterator git=s_getters->rbegin();
+	 git!=s_getters->rend();++git) {
+      if ((name.length()==0 && git->first.length()==0) ||
+	  (git->first.length()>0 && name.find(git->first)!=std::string::npos))
+	return (*git->second)(parameters);
+    }
+    return NULL;
+  }
   typename String_Getter_Map::iterator git=s_getters->find(name);
   if (git!=s_getters->end()) return (*git->second)(parameters);
   return NULL;

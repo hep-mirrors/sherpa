@@ -18,6 +18,8 @@ namespace ATOOLS {
 
     static String_Getter_Map *s_getters;
 
+    static bool s_exactmatch;
+
   protected:
 
     virtual Object_Type * 
@@ -38,6 +40,12 @@ namespace ATOOLS {
 
     static Object_Type *const GetObject(const std::string &name,
 					const Parameter_Type &parameters);
+
+    // inline functions
+    inline static void SetExactMatch(const bool exactmatch)
+    { s_exactmatch=exactmatch; }
+    
+    inline static bool ExactMatch() { return s_exactmatch; }
   
   };// end of class Getter_Function
 
