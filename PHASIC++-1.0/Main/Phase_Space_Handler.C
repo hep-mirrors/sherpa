@@ -32,7 +32,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
   fsrchannels(NULL), isrchannels(NULL), beamchannels(NULL),
   nin(proc->Nin()), nout(proc->Nout()), nvec(proc->Nvec()+1),
   psflavs(NULL), name(proc->Name()),
-  maxtrials(100000), sumtrials(0), events(0),    
+  maxtrials(1000000), sumtrials(0), events(0),    
   E(ATOOLS::rpa.gen.Ecms()), s(E*E), sprime(s), m_weight(1.), 
   p(NULL), psi(NULL), m_initialized(0),
   p_info(new Integration_Info()), p_cuts(NULL)
