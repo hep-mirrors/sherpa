@@ -50,13 +50,16 @@ bool ATOOLS::MakeDir(std::string path,const mode_t mode)
   return true;
 }
 
-std::vector<std::string> ATOOLS::EnvironmentVariable(const std::string &name)
+std::vector<std::string> 
+ATOOLS::EnvironmentVariable(const std::string &name,std::string entry)
 {
 #ifdef DEBUG__Shell_Tools
   std::cout<<"EnvironmentVariable("<<name<<"): {\n";
 #endif
-  char *var=NULL;
-  std::string entry=(var=getenv(name.c_str()))==NULL?"":var;
+  if (entry.length()==0) {
+    char *var=NULL;
+    entry=(var=getenv(name.c_str()))==NULL?"":var;
+  }
   size_t pos=std::string::npos;
   std::vector<std::string> entries;
   if (entry[entry.length()-1]!=':') entry+=":";

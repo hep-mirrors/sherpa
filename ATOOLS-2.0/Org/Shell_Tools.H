@@ -8,7 +8,8 @@ namespace ATOOLS {
 
   bool MakeDir(std::string path,const mode_t mode);
 
-  std::vector<std::string> EnvironmentVariable(const std::string &name);
+  std::vector<std::string> EnvironmentVariable(const std::string &name,
+					       std::string entry="");
 
 }// end of namespace ATOOLS
 
