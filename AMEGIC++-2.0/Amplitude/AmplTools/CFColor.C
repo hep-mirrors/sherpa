@@ -380,7 +380,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	  m2 = m2->Next;
 	  c2++;
 	}
-	msg.Debugging()<<endl;
+	//msg.Debugging()<<endl;
       }
       m1 = m1->Next;
       c1++;
