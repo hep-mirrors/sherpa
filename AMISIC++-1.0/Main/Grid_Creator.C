@@ -36,6 +36,8 @@ namespace AMISIC {
     }
     m_maxpoints[1]=PHASIC::Phase_Space_Integrator::MaxPoints();
     PHASIC::Phase_Space_Integrator::SetMaxPoints(m_maxpoints[0]);
+    p_gridhandler[0]->Grid()->SetMonotony(GridFunctionType::None);
+    p_gridhandler[1]->Grid()->SetMonotony(GridFunctionType::None);
   }
   
   template <class Argument_Type,class Result_Type>
