@@ -1,27 +1,34 @@
 #ifndef Analysis_Phase_H
 #define Analysis_Phase_H
 
-#include "Particle_List.H"
-#include "Blob_List.H"
 #include "Event_Phase_Handler.H"
 
+namespace ANALYSIS { class Analysis_Handler; }
+
 namespace SHERPA {
-  class Analysis_Handler;
 
-  class Analysis_Phase : public Event_Phase_Handler {
-    int                m_status;
-    Analysis_Handler * p_analysis;
-    std::string        m_outputpath;
+  class Analysis_Phase: public Event_Phase_Handler {
+  private:
+
+    ANALYSIS::Analysis_Handler *p_analysis;
+
   public:
-    Analysis_Phase();
-    Analysis_Phase(Analysis_Handler *,const  std::string & =std::string(""));
-    bool Treat(ATOOLS::Blob_List *, double &);
-    void CleanUp();
-    void Finish(const std::string & =std::string("./Results"));
+    
+    // constructors
+    Analysis_Phase(ANALYSIS::Analysis_Handler *const analysis);
 
-    void SetAnalysisHandler(Analysis_Handler * _ana) { p_analysis = _ana; }
-    Analysis_Handler * GetAnalysisHandler() const   { return p_analysis; }
-  };
-}
+    // member functions
+    bool Treat(ATOOLS::Blob_List *bloblist,double &weight);
+    void CleanUp();
+
+    void Finish(const std::string &path);
+
+    // inline functions
+    inline ANALYSIS::Analysis_Handler *const GetAnalysisHandler() const   
+    { return p_analysis; }
+
+  };// end of class Analysis_Phase
+
+}// end of namespace SHERPA
 
 #endif

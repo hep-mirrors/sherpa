@@ -114,13 +114,7 @@ bool Sherpa::InitializeTheEventHandler()
 						    p_inithandler->GetFragmentationHandler()));
     break;
   }
-
-  AnalysesMap * analyses = p_inithandler->GetSampleAnalyses();
-  int anacount = 1;
-  for (AnalysesIter ana=analyses->begin();ana!=analyses->end();ana++) {
-    p_eventhandler->AddEventPhase(new Analysis_Phase(ana->second,ATOOLS::ToString(anacount++)));
-  }
-
+  p_eventhandler->AddEventPhase(new Analysis_Phase(p_inithandler->GetSampleAnalysis()));
   p_eventhandler->PrintGenericEventStructure();
   return 1;
 }

@@ -60,7 +60,6 @@ namespace SHERPA {
     BEAM::Beam_Spectra_Handler * p_beamspectra;
     ISR_Handler_Map              m_isrhandlers;
     MEHandlersMap                m_mehandlers;
-    AnalysesMap                  m_analyses;
     Hard_Decay_Handler         * p_harddecays;
     Shower_Handler             * p_showerhandler;
     Beam_Remnant_Handler       * p_beamremnants;
@@ -71,6 +70,7 @@ namespace SHERPA {
     Lund_Interface             * p_pythia;
     Herwig_Interface           * p_herwig;
     MCatNLO_Interface          * p_mcatnlo;
+    ANALYSIS::Analysis_Handler * p_analysis;
   private :
     bool InitializeTheIO();
     bool InitializeTheExternalMC();
@@ -106,11 +106,11 @@ namespace SHERPA {
     const std::string EvtFile() const { return m_evtfile; }
 
     Matrix_Element_Handler      * GetMatrixElementHandler(std::string);
-    Analysis_Handler            * GetAnalysisHandler(std::string);
+    ANALYSIS::Analysis_Handler  * GetAnalysisHandler(std::string);
     inline PDF::ISR_Handler     * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
 
     MEHandlersMap               * GetMatrixElementHandlers() { return &m_mehandlers;     }
-    AnalysesMap                 * GetSampleAnalyses()        { return &m_analyses;       }
+    ANALYSIS::Analysis_Handler  * GetSampleAnalysis()        { return p_analysis;        }
     MODEL::Model_Base           * GetModel()                 { return p_model;           }
     ISR_Handler_Map             * GetISRHandlers()           { return &m_isrhandlers;    }
     BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()    { return p_beamspectra;     }

@@ -1,54 +1,35 @@
 #include "Analysis_Phase.H"
 #include "Analysis_Handler.H"
-#include "Run_Parameter.H"
-#include "Message.H"
-#include <vector>
-
-#include "Jet_Observables.H"
-#include "One_Particle_Observables.H"
-#include "Two_Particle_Observables.H"
-#include "Four_Particle_Observables.H"
-
-#include "Primitive_Detector.H"
-#include "Final_Selector.H"
 
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
 #else 
-#define PROFILE_HERE {}
-#define PROFILE_LOCAL(LOCALNAME) {}
+#define PROFILE_HERE 
+#define PROFILE_LOCAL(LOCALNAME) 
 #endif
+
 using namespace SHERPA;
-using namespace ATOOLS;
-using namespace std;
 
-Analysis_Phase::Analysis_Phase() :
-  Event_Phase_Handler(std::string("Analysis")), p_analysis(NULL) 
-{ 
-  m_type = eph::Analysis;
-}
-
-Analysis_Phase::Analysis_Phase(Analysis_Handler * ana,const std::string  & iter) :
-  Event_Phase_Handler(std::string("Analysis:")+ana->Phase()), 
-  p_analysis(ana) 
+Analysis_Phase::Analysis_Phase(ANALYSIS::Analysis_Handler *const analysis):
+  Event_Phase_Handler(std::string("Analysis")), 
+  p_analysis(analysis) 
 {
-  if (iter!=std::string("")) m_name += std::string("_")+iter;
-  m_type = eph::Analysis;
+  m_type=eph::Analysis;
 }
 
-bool Analysis_Phase::Treat(ATOOLS::Blob_List * blist, double & weight) 
+bool Analysis_Phase::Treat(ATOOLS::Blob_List *bloblist,double &weight) 
 {
-  PROFILE_LOCAL("Analysis_Phase::Treat");
-  if (!blist->empty()) p_analysis->DoAnalysis(blist,weight);
-  return 0;
+  PROFILE_HERE;
+  if (!bloblist->empty()) p_analysis->DoAnalysis(bloblist,weight);
+  return false;
 }
 
-void  Analysis_Phase::CleanUp() 
+void Analysis_Phase::CleanUp() 
 {
   p_analysis->Clear();
 }
 
-void Analysis_Phase::Finish(const std::string & dirname)
+void Analysis_Phase::Finish(const std::string &path)
 {
-  p_analysis->Finish();
+  p_analysis->Finish(path);
 }

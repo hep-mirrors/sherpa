@@ -8,7 +8,6 @@
 #include "PDF_Base.H"
 #include "Initial_State_Shower.H"
 #include "MI_Base.H"
-#include "LL_Branching.H"
 #include "Data_Read.H"
 #include "Data_Reader.H"
 #include "Message.H"
@@ -32,10 +31,10 @@ extern "C" {
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file), m_mode(0),
-  p_model(NULL), p_beamspectra(NULL), 
-  p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
-  p_iohandler(NULL), p_pythia(NULL), p_herwig(NULL), p_mcatnlo(NULL)
+  p_model(NULL), p_beamspectra(NULL), p_harddecays(NULL), 
+  p_showerhandler(NULL), p_beamremnants(NULL), p_fragmentation(NULL), 
+  p_hadrondecays(NULL), p_mihandler(NULL), p_iohandler(NULL), p_pythia(NULL), 
+  p_herwig(NULL), p_mcatnlo(NULL), p_analysis(NULL) 
 {
   m_scan_istep=-1;  
 
@@ -90,10 +89,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
 Initialization_Handler::~Initialization_Handler()
 {
-  while (m_analyses.size()>0) {
-    delete m_analyses.begin()->second;
-    m_analyses.erase(m_analyses.begin());
-  }
   if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
   if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
@@ -106,6 +101,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
   if (p_herwig)        { delete p_herwig;        p_herwig        = NULL; }
   if (p_mcatnlo)       { delete p_mcatnlo;       p_mcatnlo       = NULL; }
+  if (p_analysis)      { delete p_analysis;      p_analysis      = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   std::set<Matrix_Element_Handler*> deleted;
   while (m_mehandlers.size()>0) {
@@ -426,58 +422,20 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {
-  if (rpa.gen.Analysis()<=0) return 1;
-
-  std::string prefix=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT");
-  if (prefix==NotDefined<std::string>()) prefix="";
-
-
-  ifstream * from = new ifstream((m_path+m_analysisdat).c_str());
-  if (!from->good()) {
-    msg.Error()<<"Error in Initialization_Handler::InitializeTheAnalyses()."<<std::endl
-	       <<"   File : "<<(m_path+m_analysisdat).c_str()<<" not found ! Abort program execution."<<endl;
-    abort();
+  int helpi=p_dataread->GetValue<int>("SHOW_ANALYSIS_SYNTAX",0);
+  if (helpi>0) {
+    ANALYSIS::Analysis_Handler::ShowSyntax(helpi);
+    throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"Syntax shown.",
+			    "Initialization_Handler","InitializeTheAnalyses"));
   }
-  std::string buffer, phase;
-  Analysis_Handler * sa = NULL;
-  size_t pos;
-  bool add;
-  for (;;) {
-    if (from->eof()) break;
-    getline(*from,buffer);
-    buffer += std::string(" ");
-    if (buffer[0] != '%' && buffer.length()>0) {
-      if (buffer.find("ANALYSIS_PHASE =")!=std::string::npos) {
-	pos    = buffer.find("ANALYSIS_PHASE =");
-	buffer = buffer.substr(pos+16);
-	while(buffer.length()>0) {
-	  if (buffer[0]==' ') buffer = buffer.substr(1);
-	  else {
-	    pos = buffer.find(string(" "));
-	    if (pos!=std::string::npos) phase = buffer.substr(0,pos);
-	    else phase=buffer;
-	    break;
-	  }
-	}
-	add = false;
-	if (phase!=std::string("")) {
-	  sa  = new Analysis_Handler(from,phase,prefix);
-	  if (sa->On()) add = true;
-	  else delete sa;
-	}
-	if (add) { 
-	  int i=0;
-	  std::string name;
-	  do {
-	    name=phase+std::string("_")+ATOOLS::ToString(++i);
-	  } while (m_analyses.find(name)!=m_analyses.end());
-	  m_analyses.insert(std::make_pair(name,sa)); 
-	  msg_Info()<<"Initialized Analysis_Handler "<<name<<std::endl;
-	}
-      }
-    }
-  }
-  return 1;
+  std::string outpath=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT","./");
+  if (outpath==NotDefined<std::string>()) outpath="";
+  p_analysis = new ANALYSIS::Analysis_Handler();
+  p_analysis->SetInputPath(m_path);
+  p_analysis->SetInputFile(m_analysisdat);
+  p_analysis->SetOutputPath(outpath);
+  p_analysis->ReadIn();
+  return true;
 }
 
 bool Initialization_Handler::CalculateTheHardProcesses()
