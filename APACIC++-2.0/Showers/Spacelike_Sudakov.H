@@ -3,6 +3,9 @@
 
 #include "Backward_Splitting_Group.H"
 #include "Random.H"
+#ifdef SHERPA_SUPPORT
+namespace SHERPA { class Remnant_Base; }
+#endif
 
 namespace PDF {
   class PDF_Base;
@@ -19,6 +22,9 @@ namespace APACIC {
     Sudakov_Tools        * p_tools;
     Spacelike_Kinematics * p_kin;
     PDF::PDF_Base        * p_pdfa;
+#ifdef SHERPA_SUPPORT
+    SHERPA::Remnant_Base * p_remnant;
+#endif
     double          m_pt2min, m_pt2max; 
     double          m_alphaSmax, m_alphaSfix; 
     double          m_lambda2, m_b, m_t0;
@@ -51,12 +57,11 @@ namespace APACIC {
     bool PTVeto(Knot *);
     bool JetVeto(Knot *);
     bool MassVeto(int);
-    bool MIVeto(const ATOOLS::Flavour &flavour,
-		const double x, const double scale);
+    bool RemnantVeto(Knot *);
     void UniformPhi() { m_phi =  2.*M_PI*ATOOLS::ran.Get(); };
   public:
     Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools *, Spacelike_Kinematics *,
-		      double,ATOOLS::Data_Read *); 
+		      double,ATOOLS::Data_Read *,const size_t); 
     ~Spacelike_Sudakov() {};
     bool Dice(Knot * mother,double sprime,bool jetveto, int & extra_pdf);
 

@@ -29,8 +29,8 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * isr,
     p_tools           = new Sudakov_Tools(1,model,m_t0,(rpa.gen.Ecms())*(rpa.gen.Ecms()));
     p_kin             = new Spacelike_Kinematics(pt2fin, dataread);
     p_suds            = new Spacelike_Sudakov*[2];
-    p_suds[0]         = new Spacelike_Sudakov(isr->PDF(0),p_tools,p_kin,m_t0,dataread);
-    p_suds[1]         = new Spacelike_Sudakov(isr->PDF(1),p_tools,p_kin,m_t0,dataread);
+    p_suds[0]         = new Spacelike_Sudakov(isr->PDF(0),p_tools,p_kin,m_t0,dataread,0);
+    p_suds[1]         = new Spacelike_Sudakov(isr->PDF(1),p_tools,p_kin,m_t0,dataread,1);
 
     m_allowed         = 200;
 

@@ -7,6 +7,10 @@
 #include "QCD_Splitting_Functions.H"
 #include "QED_Splitting_Functions.H"
 #include "Run_Parameter.H"
+#ifdef SHERPA_SUPPORT
+#include "Remnant_Base.H"
+#include "MyStrStream.H"
+#endif
 
 #include <iomanip>
 
@@ -17,7 +21,7 @@ using namespace ATOOLS;
 
 
 Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacelike_Kinematics * kin,
-				     double pt2min,ATOOLS::Data_Read * dataread) : 
+				     double pt2min,ATOOLS::Data_Read * dataread,const size_t beam) : 
   Backward_Splitting_Group(0,0), p_tools(tools), p_kin(kin), m_pt2min(dabs(pt2min)), 
   m_last_veto(0)
 {
@@ -60,6 +64,10 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * pdf,Sudakov_Tools * tools,Spacel
     Add(new p_ff(Flavour(kf::e),p_tools));
     Add(new p_ff(Flavour(kf::e).Bar(),p_tools));
   }
+#ifdef SHERPA_SUPPORT
+  p_remnant=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_"
+		       +ATOOLS::ToString(beam));
+#endif
 
   PrintStat();
 }
@@ -172,6 +180,12 @@ bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf)
     }
     extra_pdf=0;
   }
+
+  // 6. remnant veto
+  if (RemnantVeto(mo)) {
+    m_last_veto=7;
+    return 1;
+  }
   return 0;
 }
 
@@ -266,6 +280,16 @@ bool Spacelike_Sudakov::JetVeto(Knot * mo)
   if (m_pt2>m_qjet) {
     return 1;
   }
+  return 0;
+}
+
+bool Spacelike_Sudakov::RemnantVeto(Knot * mo) 
+{
+#ifdef SHERPA_SUPPORT
+  double E=p_remnant->BeamEnergy()*mo->x/m_z;
+  Particle part(1,GetFlA(),Vec4D(E,0.0,0.0,E));
+  if (!p_remnant->Extract(&part)) return 1;
+#endif
   return 0;
 }
 
