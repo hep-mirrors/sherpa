@@ -527,7 +527,7 @@ bool Simple_Chain::InitializeBlobList()
 			  <<"   Empty group and start with QCD_Processes."<<std::endl;
     p_processes->Clear();
   }
-  p_processes->InitializeProcesses(p_beam,p_isr);  
+  p_processes->InitializeProcesses(p_beam,p_isr,false);  
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
   std::vector<EXTRAXS::QCD_Processes*> group=std::vector<EXTRAXS::QCD_Processes*>(m_blobs.size());
