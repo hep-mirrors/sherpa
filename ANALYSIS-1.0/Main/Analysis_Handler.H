@@ -24,6 +24,8 @@ namespace ANALYSIS {
 
     Analyses_Vector m_analyses;
 
+    bool m_weighted;
+
     void Clean();
     void PrepareTerminate();
 
@@ -46,6 +48,11 @@ namespace ANALYSIS {
 
     static String_Matrix FindArguments(const String_Matrix &strings,
 				       size_t &starty,size_t &startx);
+
+    // inline functions
+    inline void SetWeighted(const bool weighted) { m_weighted=weighted; }
+    
+    inline bool Weighted() const { return m_weighted; }
 
   };// end of class Analysis_Handler   
 

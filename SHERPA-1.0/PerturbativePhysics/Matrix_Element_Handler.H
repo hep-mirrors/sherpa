@@ -132,6 +132,7 @@ namespace SHERPA {
     double               FactorisationScale();
 
     inline void SetUseSudakovWeight(const int on) { m_sudakovon=on; }
+    inline bool EventGenerationMode() const { return m_eventmode; }
     inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; }
     inline void ResetNumberOfTrials() { m_sntrial=0; }
   };

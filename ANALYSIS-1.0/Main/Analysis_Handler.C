@@ -20,7 +20,8 @@ using namespace ANALYSIS;
 
 size_t Analysis_Handler::s_maxanalyses=100;
 
-Analysis_Handler::Analysis_Handler() {}
+Analysis_Handler::Analysis_Handler():
+  m_weighted(false) {}
 
 Analysis_Handler::~Analysis_Handler()
 {
@@ -123,8 +124,7 @@ bool Analysis_Handler::ReadIn()
     reader.RereadInFile();
     if (!reader.VectorFromFile(helpsv,"LEVEL")) break;
     bool split=false, trigger=false;
-    //int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
-    int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds|ANALYSIS::splitt_process;
+    int mode=ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
     for (size_t j=0;j<helpsv.size();++j) {
       if (split) mode=mode|ANALYSIS::splitt_phase;
       else split=true;
@@ -146,7 +146,8 @@ bool Analysis_Handler::ReadIn()
     for (size_t j=1;j<helpsv.size();++j) msg_Info()<<","<<helpsv[j];
     msg_Info()<<"\")\n";
     msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
-    m_analyses.push_back(new ANALYSIS::Primitive_Analysis(ATOOLS::ToString(i),mode));
+    if (m_weighted) mode=mode|weighted;
+    m_analyses.push_back(new Primitive_Analysis(ATOOLS::ToString(i),mode));
     std::string outpath;
     if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
     m_analyses.back()->SetOutputPath(outpath);
@@ -191,6 +192,7 @@ bool Analysis_Handler::ReadIn()
 void Analysis_Handler::DoAnalysis(const ATOOLS::Blob_List *bloblist,
 				  const double weight)
 {
+  if (m_analyses.empty()) ReadIn();
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) (*ait)->DoAnalysis(bloblist,weight); 
 }

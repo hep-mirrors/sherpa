@@ -176,7 +176,8 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   ClearAllData();
   p_blobs = bl;
 
-  if (value!=1.) m_mode=m_mode|ANALYSIS::weighted;////////////////////////////////////////////////
+  // if (value!=1.) m_mode=m_mode|ANALYSIS::weighted;
+
   if (p_partner==this) {
     m_mode=m_mode|ANALYSIS::fill_helper;
     m_mode=m_mode|ANALYSIS::output_this;
