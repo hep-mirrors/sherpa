@@ -149,6 +149,8 @@ else
   echo "RUNPATH=$SETUPPATH" >> $FILE
   echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
+  echo "cd \$RUNPATH" >> $FILE
+  echo "" >> $FILE
 fi
 echo "export PATH=\$PATH:$BINPATH" >> $FILE
 echo "" >> $FILE
@@ -163,25 +165,27 @@ echo -e ">> \$LOGFILE 2>&1 \n\n" >> $FILE
 chmod 777 $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then
   qsub $FILE $BOPTIONS
+  mv $FILE $SETUPPATH
 elif [ "$RUN" = "TRUE" ] ; then
-  COUNTER=0
+  mv $FILE $SETUPPATH
+  sync
+  RCOUNTER=0
   ssh -q $RHOST exit 
-  while (( $? != 0 )) && (( $COUNTER < 5 )) ; do
-    (( ++COUNTER ))
-    if (( COUNTER > 1 )) ; then
+  while (( $? != 0 )) && (( $RCOUNTER < 5 )) ; do
+    (( ++RCOUNTER ))
+    if (( RCOUNTER > 1 )) ; then
       echo "run: host '"$RHOST"' not available."
     fi
-    read -p "run: where shall your job '"$SETUPPATH"' be run ? " RHOST
+    read -p "run: where shall your job '"$BASENAME"_"$COUNTER"' be run ? " RHOST
     ssh -q $RHOST exit 
   done
   ssh -q $RHOST exit 
   if (( $? ==0 )) ; then
-    ssh $RHOST ( nohup $FILE > /dev/null & )
+    ( ssh $RHOST "sync && ( nohup $SETUPPATH/$FILE > /dev/null ) &" ) &
   else 
-    echo "run: error: cannot submit job '"$SETUPPATH"'"
+    echo "run: error: cannot submit job '"$BASENAME"_"$COUNTER"'"
   fi 
 fi
-mv $FILE $SETUPPATH
 
 # mode:shell-script
 # sh-indentation:2
