@@ -295,5 +295,6 @@ void XS_Base::AssignRegulator(const std::string &regulator,
 
 void XS_Base::Print()
 {
-  ATOOLS::msg.Out()<<m_name<<"  ->  "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
+  ATOOLS::msg.Out()<<m_name<<" ("<<m_order_ew<<","<<m_order_strong
+		   <<")  ->  "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
 }

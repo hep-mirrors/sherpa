@@ -64,13 +64,16 @@ bool XS_qg_qp::SetColours(double s,double t,double u) {
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_ee_ffbar>(const size_t nin,const size_t nout,
-					      const ATOOLS::Flavour *flavours)
+					      const ATOOLS::Flavour *flavours,
+					      const size_t nqed, const size_t nqcd)
 {
   if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && flavours[0].IsQuark() && 
        flavours[1]==flavours[0].Bar()) ||   
       (flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && flavours[2].IsQuark() && 
        flavours[3]==flavours[2].Bar())) { 
-    return new XS_ee_ffbar(nin,nout,flavours); 
+    if (nqcd==0 && nqed==2) {
+      return new XS_ee_ffbar(nin,nout,flavours);  
+    }
   }
   return NULL;
 }

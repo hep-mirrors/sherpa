@@ -11,13 +11,16 @@ using namespace MODEL;
 
 template <> 
 Single_XS *Single_XS::GetProcess<Off_Shell_qqb_llb>(const size_t nin,const size_t nout,
-						    const ATOOLS::Flavour *flavours)
+						    const ATOOLS::Flavour *flavours,
+						    const size_t nqed, const size_t nqcd)
 {
   if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && 
        flavours[0].IsQuark() && flavours[1]==flavours[0].Bar()) ||
       (flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && 
        flavours[2].IsQuark() && flavours[3]==flavours[2].Bar())){ 
-    return new Off_Shell_qqb_llb(nin,nout,flavours); 
+    if (nqcd==0 && nqed==2) {
+      return new Off_Shell_qqb_llb(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
@@ -86,9 +89,11 @@ bool Off_Shell_qqb_llb::SetColours(double s,double t,double u)
 
 template <> 
 Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(const size_t nin,const size_t nout,
-							const ATOOLS::Flavour *flavours)
+							const ATOOLS::Flavour *flavours,
+							const size_t nqed, const size_t nqcd)
 {
   if (!flavours[0].IsQuark() || !flavours[2].IsLepton()) return NULL;
+  if (nqcd!=0 || nqed!=2) return NULL;
   int ints[4];
   bool up[4], anti[4];
   for (short int i=0;i<4;++i) {
@@ -152,9 +157,11 @@ bool Off_Shell_q1q2b_lnulb::SetColours(double s,double t,double u)
 
 template <> 
 Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_q3q4b>(const size_t nin,const size_t nout,
-							const ATOOLS::Flavour *flavours)
+							const ATOOLS::Flavour *flavours,
+							const size_t nqed, const size_t nqcd)
 {
   if (!flavours[0].IsQuark() || !flavours[2].IsQuark()) return NULL;
+  if (nqcd!=0 || nqed!=2) return NULL;
   bool up[4], anti[4];
   for (short int i=0;i<4;++i) {
     if (flavours[i].IsUptype()) up[i]=true;

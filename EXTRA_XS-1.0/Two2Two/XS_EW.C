@@ -10,9 +10,11 @@ using namespace std;
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1q2b_q3q4b>(const size_t nin,const size_t nout,
-							const ATOOLS::Flavour *flavours)
+						 const ATOOLS::Flavour *flavours,
+						 const size_t nqed, const size_t nqcd)
 {
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (nqcd!=0 || nqed!=2) return NULL;
   if (!flavours[0].IsQuark() || !flavours[1].IsQuark()) return NULL;
   if (!flavours[2].IsQuark() || !flavours[3].IsQuark()) return NULL;
   bool up[4], anti[4];

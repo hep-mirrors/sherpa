@@ -16,8 +16,10 @@ using namespace ATOOLS;
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_pp_ffbar>(const size_t nin,const size_t nout,
-					      const ATOOLS::Flavour *flavours)
+					      const ATOOLS::Flavour *flavours, 
+					      const size_t nqed, const size_t nqcd)
 {
+  if (nqed!=2 || nqcd!=0) return NULL;
   if (flavours[2].IsFermion() && flavours[3]==flavours[2].Bar() &&
       flavours[0].IsPhoton()  && flavours[1]==flavours[0]) { 
     return new XS_pp_ffbar(nin,nout,flavours); 
@@ -48,18 +50,28 @@ bool XS_pp_ffbar::SetColours(double s,double t,double u)
 }
 
 template <> 
-Single_XS *Single_XS::GetProcess<XS_q1q2_q1q2>(const size_t nin,const size_t nout,
-						  const ATOOLS::Flavour *flavours)
+Single_XS *Single_XS::GetProcess<XS_q1q2_q1q2<sgq::none> >(const size_t nin,const size_t nout,
+							  const ATOOLS::Flavour *flavours, 
+							  const size_t nqed, const size_t nqcd)
 {
   if (flavours[0].IsQuark() && flavours[1].IsQuark() && flavours[0]!=flavours[1] &&
       ((flavours[2]==flavours[0] && flavours[3]==flavours[1]) ||
        (flavours[3]==flavours[0] && flavours[2]==flavours[1]))) { 
-    return new XS_q1q2_q1q2(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new XS_q1q2_q1q2<sgq::pure_qcd>(nin,nout,flavours); 
+    }
+    if (nqcd==0 && nqed==2) {
+      return new XS_q1q2_q1q2<sgq::pure_ew>(nin,nout,flavours); 
+    }
+    if (nqcd==2 && nqed==2) {
+      return new XS_q1q2_q1q2<sgq::mixed>(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
 
-XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
+template <sgq::code mode>
+XS_q1q2_q1q2<mode>::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
   Single_XS(nin,nout,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
@@ -68,12 +80,14 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Fla
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
-double XS_q1q2_q1q2::operator()(double s,double t,double u) {
+template <sgq::code mode>
+double XS_q1q2_q1q2<mode>::operator()(double s,double t,double u) {
   if (s<m_threshold) return 0.;
   return sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
 }
 
-bool XS_q1q2_q1q2::SetColours(double s,double t,double u) 
+template <sgq::code mode>
+bool XS_q1q2_q1q2<mode>::SetColours(double s,double t,double u) 
 { 
   bool swap=m_swaped;
   RestoreInOrder();
@@ -90,23 +104,34 @@ bool XS_q1q2_q1q2::SetColours(double s,double t,double u)
   if (swap) SwapInOrder();
   return 1; 
 }
-bool XS_q1q2_q1q2::SetColours()                           { return 1; }
+template <sgq::code mode>
+bool XS_q1q2_q1q2<mode>::SetColours()                           { return 1; }
 
 //----------------------------------------------------------------------
 
 template <> 
-Single_XS *Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(const size_t nin,const size_t nout,
-						     const ATOOLS::Flavour *flavours)
+Single_XS *Single_XS::GetProcess<XS_q1qbar1_q2qbar2<sgq::none> >(const size_t nin,const size_t nout,
+						     const ATOOLS::Flavour *flavours, 
+					      const size_t nqed, const size_t nqcd)
 {
   if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
       flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() &&
       flavours[0]!=flavours[2]) { 
-    return new XS_q1qbar1_q2qbar2(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new XS_q1qbar1_q2qbar2<sgq::pure_qcd>(nin,nout,flavours); 
+    }
+    if (nqcd==0 && nqed==2) {
+      return new XS_q1qbar1_q2qbar2<sgq::pure_ew>(nin,nout,flavours); 
+    }
+    if (nqcd==2 && nqed==2) {
+      return new XS_q1qbar1_q2qbar2<sgq::mixed>(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
 
-XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const size_t nin,const size_t nout, 
+template <sgq::code mode>
+XS_q1qbar1_q2qbar2<mode>::XS_q1qbar1_q2qbar2(const size_t nin,const size_t nout, 
 				       const ATOOLS::Flavour *fl)  : 
   Single_XS(nin,nout,fl) 
 {
@@ -118,12 +143,14 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const size_t nin,const size_t nout,
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
-double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
+template <sgq::code mode>
+double XS_q1qbar1_q2qbar2<mode>::operator()(double s,double t,double u) {
   if (s<m_threshold) return 0.;
   return sqr(4.*M_PI*aS)* 4. * (t*t + u*u) / ( 9. * s*s); 
 }
 
-bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u) 
+template <sgq::code mode>
+bool XS_q1qbar1_q2qbar2<mode>::SetColours(double s,double t,double u) 
 { 
   bool swap=m_swaped;
   RestoreInOrder();
@@ -135,23 +162,34 @@ bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u)
   if (swap) SwapInOrder();
   return 1; 
 }
-bool XS_q1qbar1_q2qbar2::SetColours()                           { return 1; }
+template <sgq::code mode>
+bool XS_q1qbar1_q2qbar2<mode>::SetColours()                           { return 1; }
 
 //----------------------------------------------------------------------
 // Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
 
 template <> 
-Single_XS *Single_XS::GetProcess<XS_q1q1_q1q1>(const size_t nin,const size_t nout,
-					       const ATOOLS::Flavour *flavours)
+Single_XS *Single_XS::GetProcess<XS_q1q1_q1q1<sgq::none> >(const size_t nin,const size_t nout,
+					       const ATOOLS::Flavour *flavours, 
+					      const size_t nqed, const size_t nqcd)
 {
   if (flavours[0].IsQuark() && flavours[1]==flavours[0] &&
       flavours[2]==flavours[0] && flavours[3]==flavours[0]) { 
-    return new XS_q1q1_q1q1(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new XS_q1q1_q1q1<sgq::pure_qcd>(nin,nout,flavours); 
+    }
+    if (nqcd==0 && nqed==2) {
+      return new XS_q1q1_q1q1<sgq::pure_ew>(nin,nout,flavours); 
+    }
+    if (nqcd==2 && nqed==2) {
+      return new XS_q1q1_q1q1<sgq::mixed>(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
 
-XS_q1q1_q1q1::XS_q1q1_q1q1(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
+template <sgq::code mode>
+XS_q1q1_q1q1<mode>::XS_q1q1_q1q1(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
   Single_XS(nin,nout,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
@@ -161,14 +199,16 @@ XS_q1q1_q1q1::XS_q1q1_q1q1(const size_t nin,const size_t nout, const ATOOLS::Fla
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
-double XS_q1q1_q1q1::operator()(double s,double t,double u) {
+template <sgq::code mode>
+double XS_q1q1_q1q1<mode>::operator()(double s,double t,double u) {
   if (s<m_threshold) return 0.;
   Mt    = (s*s + u*u) / (t*t);
   Mu    = (s*s + t*t) / (u*u);
   return sqr(4.*M_PI*aS) * 4./9.*(Mt + Mu - 2./3. * (s*s) / (u*t)) /2.;
 }
 
-bool XS_q1q1_q1q1::SetColours(double s, double t, double u) 
+template <sgq::code mode>
+bool XS_q1q1_q1q1<mode>::SetColours(double s, double t, double u) 
 {
   bool swap=m_swaped;
   RestoreInOrder();
@@ -183,7 +223,8 @@ bool XS_q1q1_q1q1::SetColours(double s, double t, double u)
 }
 
 
-bool XS_q1q1_q1q1::SetColours() 
+template <sgq::code mode>
+bool XS_q1q1_q1q1<mode>::SetColours() 
 {
   if (Mt > (Mt+Mu) * ran.Get()) {
     p_colours[3][a] = p_colours[0][a] = Flow::Counter();
@@ -199,18 +240,28 @@ bool XS_q1q1_q1q1::SetColours()
 //----------------------------------------------------------------------
 
 template <> 
-Single_XS *Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(const size_t nin,const size_t nout,
-						     const ATOOLS::Flavour *flavours)
+Single_XS *Single_XS::GetProcess<XS_q1qbar1_q1qbar1<sgq::none> >(const size_t nin,const size_t nout,
+						     const ATOOLS::Flavour *flavours, 
+					      const size_t nqed, const size_t nqcd)
 {
   if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
       ((flavours[2]==flavours[0] && flavours[3]==flavours[1]) ||
        (flavours[3]==flavours[0] && flavours[2]==flavours[1]))) { 
-    return new XS_q1qbar1_q1qbar1(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new XS_q1qbar1_q1qbar1<sgq::pure_qcd>(nin,nout,flavours); 
+    }
+    if (nqcd==0 && nqed==2) {
+      return new XS_q1qbar1_q1qbar1<sgq::pure_ew>(nin,nout,flavours); 
+    }
+    if (nqcd==2 && nqed==2) {
+      return new XS_q1qbar1_q1qbar1<sgq::mixed>(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
 
-XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const size_t nin,const size_t nout, 
+template <sgq::code mode>
+XS_q1qbar1_q1qbar1<mode>::XS_q1qbar1_q1qbar1(const size_t nin,const size_t nout, 
 				       const ATOOLS::Flavour *fl) : 
   Single_XS(nin,nout,fl) 
 {
@@ -223,7 +274,8 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const size_t nin,const size_t nout,
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
-double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
+template <sgq::code mode>
+double XS_q1qbar1_q1qbar1<mode>::operator()(double s,double t,double u) {
   if (s<m_threshold) return 0.;
   Mt = 1. - 2.*(u*s)/(t*t); 
   Ms = 1. - 2.*(t*u)/(s*s); 
@@ -231,7 +283,8 @@ double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
 }
 
 
-bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
+template <sgq::code mode>
+bool XS_q1qbar1_q1qbar1<mode>::SetColours(double s, double t, double u) {
   bool swap=m_swaped;
   RestoreInOrder();
 
@@ -244,7 +297,8 @@ bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
   return result;
 }
 
-bool XS_q1qbar1_q1qbar1::SetColours() 
+template <sgq::code mode>
+bool XS_q1qbar1_q1qbar1<mode>::SetColours() 
 {
   if (Ms >  (Mt+Ms) * ran.Get()) {
     p_colours[0][a] = p_colours[2+r][a] = Flow::Counter();	
@@ -262,11 +316,14 @@ bool XS_q1qbar1_q1qbar1::SetColours()
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1qbar1_gg>(const size_t nin,const size_t nout,
-						const ATOOLS::Flavour *flavours)
+						const ATOOLS::Flavour *flavours, 
+					      const size_t nqed, const size_t nqcd)
 {
   if (flavours[0].IsQuark() && flavours[1]==flavours[0].Bar() &&
       flavours[2].IsGluon() && flavours[3].IsGluon()) { 
-    return new XS_q1qbar1_gg(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new XS_q1qbar1_gg(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
@@ -325,11 +382,14 @@ bool XS_q1qbar1_gg::SetColours()
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_gg_q1qbar1>(const size_t nin,const size_t nout,
-						const ATOOLS::Flavour *flavours)
+						const ATOOLS::Flavour *flavours, 
+					      const size_t nqed, const size_t nqcd)
 {
   if (flavours[0].IsGluon() && flavours[1].IsGluon() && 
       flavours[2].IsQuark() && flavours[3]==flavours[2].Bar()) { 
-    return new XS_gg_q1qbar1(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new XS_gg_q1qbar1(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
@@ -387,7 +447,8 @@ bool XS_gg_q1qbar1::SetColours()
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1g_q1g>(const size_t nin,const size_t nout,
-					     const ATOOLS::Flavour *flavours)
+					     const ATOOLS::Flavour *flavours, 
+					      const size_t nqed, const size_t nqcd)
 {
   if (((flavours[0].IsQuark() && flavours[1].IsGluon()) && 
        ((flavours[2]==flavours[0] && flavours[3].IsGluon()) || 
@@ -395,7 +456,9 @@ Single_XS *Single_XS::GetProcess<XS_q1g_q1g>(const size_t nin,const size_t nout,
       ((flavours[1].IsQuark() && flavours[0].IsGluon()) && 
        ((flavours[2]==flavours[1] && flavours[3].IsGluon()) || 
 	(flavours[3]==flavours[1] && flavours[2].IsGluon()))))  { 
-    return new XS_q1g_q1g(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new XS_q1g_q1g(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
@@ -478,11 +541,14 @@ bool XS_q1g_q1g::SetColours()
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_gg_gg>(const size_t nin,const size_t nout,
-					   const ATOOLS::Flavour *flavours)
+					   const ATOOLS::Flavour *flavours, 
+					      const size_t nqed, const size_t nqcd)
 {
   if (flavours[0].IsGluon() && flavours[1].IsGluon() &&
       flavours[2].IsGluon() && flavours[3].IsGluon()) { 
-    return new XS_gg_gg(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new XS_gg_gg(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
@@ -551,6 +617,22 @@ bool XS_gg_gg::SetColours()
   return 1;
 }
 
+
+template class XS_q1qbar1_q1qbar1<sgq::pure_qcd>;
+template class XS_q1qbar1_q1qbar1<sgq::pure_ew>;
+template class XS_q1qbar1_q1qbar1<sgq::mixed>;
+
+template class XS_q1qbar1_q2qbar2<sgq::pure_qcd>;
+template class XS_q1qbar1_q2qbar2<sgq::pure_ew>;
+template class XS_q1qbar1_q2qbar2<sgq::mixed>;
+
+template class XS_q1q1_q1q1<sgq::pure_qcd>;
+template class XS_q1q1_q1q1<sgq::pure_ew>;
+template class XS_q1q1_q1q1<sgq::mixed>;
+
+template class XS_q1q2_q1q2<sgq::pure_qcd>;
+template class XS_q1q2_q1q2<sgq::pure_ew>;
+template class XS_q1q2_q1q2<sgq::mixed>;
 
 
 

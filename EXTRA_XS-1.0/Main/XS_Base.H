@@ -20,12 +20,16 @@ namespace EXTRAXS {
     double m_s, m_t, m_u;
     double m_scalefactor;
 
+    size_t m_order_ew, m_order_strong;
+
     std::vector<ATOOLS::Flavour> m_resonances;
 
     static std::string GenerateName(const size_t nin,const size_t nout,
 				    const ATOOLS::Flavour *flavours);
 
     void Init(const ATOOLS::Flavour *flavours);
+
+    friend class XS_Selector;
 
    public:
 

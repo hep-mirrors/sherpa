@@ -43,7 +43,8 @@ namespace EXTRAXS {
 
     template <class Process_Type>
     static Single_XS *GetProcess(const size_t nin,const size_t nout,
-				 const ATOOLS::Flavour *flavours);
+				 const ATOOLS::Flavour *flavours,
+				 const size_t nqed,const size_t nqcd);
 
   };// end of class Single_XS
 

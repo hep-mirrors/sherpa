@@ -85,15 +85,22 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     THROW(critical_error,"Cannot open file '"+m_path+processfile+"'");
   }
   char buffer[100];
-  size_t position;
+  size_t position, order_ew, order_strong;
   int         flag;
   string      buf,ini,fin;
   int         nIS,   nFS;
   Flavour   * IS,  * FS, * flavs;
+  Data_Reader reader;
   while(from) {
     from.getline(buffer,100);
     if (buffer[0] != '%' && strlen(buffer)>0) {
+      order_ew=99;
+      order_strong=99;
       buf        = string(buffer);
+      reader.SetString(buf);
+      unsigned int order_ew_t, order_strong_t;
+      if (reader.ReadFromString(order_ew_t,"Order electroweak :")) order_ew=order_ew_t;
+      if (reader.ReadFromString(order_strong_t,"Order strong :")) order_strong=order_strong_t;
       position   = buf.find(string("Process :")); 
       flag       = 0;
       if (position!=std::string::npos && position<buf.length()) {
@@ -183,6 +190,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     }
   }
   ResetSelector(p_selectordata);
+  this->Print();
   if (m_xsecs.size()>0) return true;
   msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"): "
 	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;

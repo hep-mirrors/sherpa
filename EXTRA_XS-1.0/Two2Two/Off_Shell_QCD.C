@@ -14,11 +14,14 @@ using namespace EXTRAXS;
 
 template <> 
 Single_XS *Single_XS::GetProcess<Off_Shell_gg_qqb>(const size_t nin,const size_t nout,
-						   const ATOOLS::Flavour *flavours)
+						   const ATOOLS::Flavour *flavours,
+						   const size_t nqed, const size_t nqcd)
 {
   if (flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() && 
       flavours[0].IsGluon() && flavours[1].IsGluon()){ 
-    return new Off_Shell_gg_qqb(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new Off_Shell_gg_qqb(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
@@ -77,11 +80,14 @@ bool Off_Shell_gg_qqb::SetColours(double s,double t,double u)
 
 template <> 
 Single_XS *Single_XS::GetProcess<Off_Shell_gg_gg>(const size_t nin,const size_t nout,
-						  const ATOOLS::Flavour *flavours)
+						  const ATOOLS::Flavour *flavours,
+					      const size_t nqed, const size_t nqcd)
 {
   if (flavours[2].IsGluon() && flavours[3].IsGluon() && 
       flavours[0].IsGluon() && flavours[1].IsGluon()){ 
-    return new Off_Shell_gg_gg(nin,nout,flavours); 
+    if (nqcd==2 && nqed==0) {
+      return new Off_Shell_gg_gg(nin,nout,flavours); 
+    }
   }
   return NULL;
 }
