@@ -712,6 +712,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	  Process_Base * _proc = NULL;
 	  if (Find(_name,_proc)) {
 	    _proc->SetTotal(_totalxs);
+	    _proc->SetTotalError(_totalerr);
 	    _proc->SetMax(_max);
 	    _proc->SetSum(sum);
 	    _proc->SetSumSqr(sqrsum);
