@@ -81,7 +81,7 @@ template<Dipole::Type DT>
 Sudakov_Group<DT>::~Sudakov_Group() {
   for(list<Sudakov_Base*>::iterator bit=l_sud.begin(); bit!=l_sud.end(); ++bit)
     if(*bit) delete (*bit);
-  cout<<"~Sudakov_Group"<<endl;////////////////////////////////////////////////
+  msg_Tracking()<<"~Sudakov_Group"<<endl;////////////////////////////////////////////////
 }
 
 

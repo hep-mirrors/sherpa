@@ -32,7 +32,7 @@ namespace ADICIC {
 
 
   inline Sudakov_Calculator::~Sudakov_Calculator() {
-    --s_count; std::cout<<"~Sudakov_Calculator"<<std::endl;////////////////////
+    --s_count; msg_Tracking()<<"~Sudakov_Calculator"<<std::endl;////////////////////
   }
 
 
@@ -143,7 +143,7 @@ namespace ADICIC {
 
 
   inline Sudakov_Base::~Sudakov_Base() {
-    --s_count; std::cout<<"~Sudakov_Base"<<std::endl;//////////////////////////
+    --s_count; msg_Tracking()<<"~Sudakov_Base"<<std::endl;//////////////////////////
   }
 
 

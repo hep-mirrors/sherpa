@@ -302,7 +302,7 @@ namespace ADICIC {
   public:
 
     Sudakov(const Sudakov_Group<_Diptype>&, ATOOLS::kf::code);
-    ~Sudakov() { std::cout<<"~Sudakov(gluon)"<<std::endl;}/////////////////////
+    ~Sudakov() { msg_Tracking()<<"~Sudakov(gluon)"<<std::endl;}/////////////////////
 
     inline void Which() const;
     inline void ShowSpecification() const;
@@ -342,7 +342,7 @@ namespace ADICIC {
   public:
 
     Sudakov(const Sudakov_Group<_Diptype>&, ATOOLS::kf::code);
-    ~Sudakov() { std::cout<<"~Sudakov(quark)"<<std::endl;}/////////////////////
+    ~Sudakov() { msg_Tracking()<<"~Sudakov(quark)"<<std::endl;}/////////////////////
 
     inline void Which() const;
     inline void ShowSpecification() const;
