@@ -16,6 +16,12 @@
 #include "Shape_Observables_EE.H"
 #include "Statistics_Observable.H"
 #include "MI_Statistics.H"
+#ifdef ANALYSE__ISR_Statistics
+#include "ISR_Statistics.H"
+#endif
+#ifdef ANALYSE__Shower_Statistics
+#include "Shower_Statistics.H"
+#endif
 
 #ifdef PROFILE__all
 #define PROFILE__Analysis_Handler
@@ -567,6 +573,12 @@ void Analysis_Handler::SetUpObservables()
   }
   p_analysis->AddObservable(new Statistics_Observable("Analysed"));
   p_analysis->AddObservable(new MI_Statistics("Analysed"));
+#ifdef ANALYSE__ISR_Statistics
+  p_analysis->AddObservable(new ISR_Statistics("Analysed"));
+#endif
+#ifdef ANALYSE__Shower_Statistics
+  p_analysis->AddObservable(new Shower_Statistics("Analysed"));
+#endif
   SetUpSubSamples();
 } 
 
