@@ -12,6 +12,7 @@
 #include "Fragmentation_Handler.H"
 #include "Hadron_Decay_Handler.H"
 #include "Event_Reader.H"
+#include "Sample_Analysis.H"
 #include "Data_Read.H"
 
 #include <map>
@@ -23,7 +24,7 @@ namespace SHERPA {
   private :
     std::string m_path,m_file,m_evtfile;
     std::string m_modeldat, m_beamdat, m_isrdat, m_medat, m_midat, m_decaydat, m_showerdat;
-    std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat;
+    std::string m_beamremnantdat, m_fragmentationdat, m_hadrondecaysdat, m_analysisdat;
 
     double              m_bunch_splimits[2];
     ATOOLS::Flavour     m_bunch_particles[2];
@@ -41,6 +42,7 @@ namespace SHERPA {
     BEAM::Beam_Spectra_Handler * p_beamspectra;
     PDF::ISR_Handler           * p_isrhandler;
     MEHandlersMap                m_mehandlers;
+    AnalysesMap                  m_analyses;
     Hard_Decay_Handler         * p_harddecays;
     Shower_Handler             * p_showerhandler;
     Beam_Remnant_Handler       * p_beamremnants;
@@ -61,7 +63,7 @@ namespace SHERPA {
     bool InitializeTheBeamRemnants();
     bool InitializeTheFragmentation();
     bool InitializeTheHadronDecays();
-    //bool InitializeTheAnalysis();
+    bool InitializeTheAnalyses();
 
     int  ExtractCommandLineParameters(int argc,char * argv[]);
     bool CheckBeamISRConsistency();
@@ -81,9 +83,11 @@ namespace SHERPA {
     const std::string File()    const { return m_file; }
     const std::string EvtFile() const { return m_evtfile; }
 
-    Matrix_Element_Handler      * GetMatrixElementHandler(std::string _key);
+    Matrix_Element_Handler      * GetMatrixElementHandler(std::string);
+    Sample_Analysis             * GetSampleAnalysis(std::string);
 
     MEHandlersMap               * GetMatrixElementHandlers() { return &m_mehandlers;     }
+    AnalysesMap                 * GetSampleAnalyses()        { return &m_analyses;       }
     MODEL::Model_Base           * GetModel()                 { return p_model;           }
     PDF::ISR_Handler            * GetISRHandler()            { return p_isrhandler;      }
     BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()    { return p_beamspectra;     }

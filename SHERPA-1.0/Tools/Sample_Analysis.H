@@ -1,33 +1,48 @@
-#ifndef  Sample_Analysis_H
+#ifndef Sample_Analysis_H
 #define Sample_Analysis_H
 
+#include "Primitive_Analysis.H"
+#include "Final_Selector.H"
 #include "Particle_List.H"
 #include "Blob_List.H"
-#include "Primitive_Analysis.H"
-#include "Event_Phase_Handler.H"
+#include <iostream>
 
 namespace SHERPA {
-  class Sample_Analysis  {
-    bool        hepevt;
-    bool        InitIO;
-    int         status,hepevtmode;
-    int         nhep;
-    std::string m_path, m_file;
-    ATOOLS::Primitive_Analysis * ana;
-    std::vector<ATOOLS::Primitive_Observable_Base *> obs;
-    // ----- test only
+  class Observable_Data {
   public:
-    static int    m_njet;
-    static double m_pt_W;
-    Sample_Analysis(const std::string & ,const std::string &);
-    ~Sample_Analysis();
-    void Init();
+    Observable_Data(std::string=std::string(""));
+    std::string              type;
+    std::vector<int>         ints;
+    std::vector<double>      numbers;
+    std::vector<std::string> keywords;
+    int  Specify();
+    void Output();
+  };
 
-    void AfterME(ATOOLS::Blob_List *,double);
-    void AfterPartonShower(ATOOLS::Blob_List *,double);
-    void AfterHadronization(ATOOLS::Blob_List *,double );
-    void Finish(const std::string);
+  class Sample_Analysis  {
+    std::string m_phase, m_type, m_outputpath;
+    ANALYSIS::Primitive_Analysis * p_analysis;
+    std::vector<Observable_Data *> m_obsdata;
+
+    void ReadInFinalSelectors(std::ifstream *,ANALYSIS::Final_Selector *);
+    void SetUpSubSamples();
+    void ReadInObservables(std::ifstream *);
+    void SetUpObservables();
+  public:
+    Sample_Analysis(std::ifstream *,std::string=std::string("Hadrons"));
+    ~Sample_Analysis();
+    void DoAnalysis(ATOOLS::Blob_List * const, double);
+    void Clear()        { p_analysis->ClearAllData(); }
+    void Finish();
+
+    void SetOutputPath(const std::string);
+    std::string Phase() { return m_phase; }
+    std::string Type()  { return m_type; }
+    bool On()    { return (p_analysis->NumberOfObservables()>0); }
   };   
+
+  typedef std::map<std::string,Sample_Analysis *> AnalysesMap;
+  typedef AnalysesMap::iterator                   AnalysesIter;
 }
 
 #endif

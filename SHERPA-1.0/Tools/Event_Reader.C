@@ -37,7 +37,7 @@ void Event_Reader::InitialSettings()
       getline(*p_instream,buffer);
       buffer += std::string(" ");
       if (buffer.find("Generated events start here.")!=std::string::npos) break;
-      if (buffer[0] != '%' && buffer.length()>0) {
+      if (buffer[0] != '%' && buffer[1] != '%' && buffer.length()>0) {
 	if (buffer.find("Generator   = ")!=std::string::npos) {
 	  pos = buffer.find("Generator   = ");
 	  buffer = buffer.substr(pos+14);
@@ -125,7 +125,7 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
       new_file = found_event = false;
       getline(*p_instream,buffer);
       buffer += std::string(" ");
-      if (buffer[0] != '%' && buffer.length()>0) {
+      if (buffer[0] != '%' && buffer[1] != '%' && buffer.length()>0) {
 	while(buffer.length()>0) {
 	  if (buffer[0]==' ') buffer = buffer.substr(1);
 	  else break;
@@ -229,6 +229,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   hardblob->SetBeam(-1);
   hardblob->SetWeight(m_weight);
   blobs->push_back(hardblob);
+  hardblob->AddData("ME_Weight",new Blob_Data<double>(m_weight));
 
   showerblob         = new Blob();
   showerblob->SetType(std::string("FS Shower : ")+m_generator);
@@ -251,7 +252,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
       endevent = false;
       getline(*p_instream,buffer);
       buffer  += std::string(" ");
-      if (buffer[0] != '%' && buffer.length()>0) {
+      if (buffer[0] != '%' && buffer[1]!='%' && buffer.length()>0) {
 	while(buffer.length()>0) {
 	  if (buffer[0]==' ') buffer = buffer.substr(1);
 	  else break;

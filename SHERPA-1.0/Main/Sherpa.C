@@ -93,9 +93,13 @@ bool Sherpa::InitializeTheEventHandler()
       p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
 						      p_inithandler->GetFragmentationHandler()));
   }
-  
-  p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Signal Process"),
-						   p_inithandler->Path(),p_inithandler->File()));
+  AnalysesMap * analyses = p_inithandler->GetSampleAnalyses();
+  if (!analyses->empty()) {
+    for (AnalysesIter ana=analyses->begin();ana!=analyses->end();ana++) {
+      p_eventhandler->AddEventPhase(new Analysis_Phase(ana->second));
+    }
+  }
+
   return 1;
 }
 

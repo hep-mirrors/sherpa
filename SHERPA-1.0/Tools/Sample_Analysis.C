@@ -4,189 +4,361 @@
 #include "Message.H"
 
 
-#include "Shower_Observables.H"
+#include "Final_Selector.H"
 #include "Primitive_Detector.H"
+#include "Jet_Observables.H"
 #include "One_Particle_Observables.H"
-
-
-namespace SHERPA {
-
-  class PHard_Observable : public ATOOLS::Primitive_Observable_Base {  
-  public:
-    PHard_Observable(int type,double xmin,double xmax,int nbins, const std::string & name);
-    void Evaluate(double,int); 
-    void Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double w, int);
-    void Evaluate(const ATOOLS::Particle_List &,double w, int);
-    void Evaluate(const ATOOLS::Blob_List &,double w, int); 
-    Primitive_Observable_Base * Copy() const;
-  };
-
-  extern double amegic_apacic_interface_last_hard_scale;
-}
+#include "Two_Particle_Observables.H"
+#include "Four_Particle_Observables.H"
+#include <ctype.h>
 
 using namespace SHERPA;
+using namespace ANALYSIS;
 using namespace ATOOLS;
-//using namespace ATOOLS::ANALYSIS;
-using namespace std;
 
+// Output treatment: 1 master (ME+PS ... -> einlesbar) -> n specials (ME, PS, ...)
 
-int Sample_Analysis::m_njet=2;
-double Sample_Analysis::m_pt_W=0.;
+Observable_Data::Observable_Data(std::string _type) : type(_type) {}
 
-PHard_Observable::PHard_Observable(int type,double xmin,double xmax,int nbins, const std::string & name)
-{
-  m_splitt_flag=false;
-  m_type = type; m_xmin = xmin; m_xmax = xmax; m_nbins = nbins;
-  m_name  = std::string("pt_hard.dat");
-  m_name  = name+std::string(".dat");
-  p_histo = new ATOOLS::Histogram(m_type,m_xmin,m_xmax,m_nbins);
+void Observable_Data::Output() {
+  Flavour flav1,flav2;
+  if (Specify()==1) {
+    flav1 = Flavour(kf::code(abs(ints[0])));
+    if (ints[0]<0) flav1=flav1.Bar();
+    msg.Out()<<"Obs : "<<type<<" for "<<flav1<<" : "
+	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[1]<<" bins,"
+	     <<" extra : "<<keywords[0]<<std::endl;
+  }
+  if (Specify()==2) {
+    flav1 = Flavour(kf::code(abs(ints[0])));
+    if (ints[0]<0) flav1=flav1.Bar();
+    flav2 = Flavour(kf::code(abs(ints[1])));
+    if (ints[1]<0) flav2=flav2.Bar();
+    msg.Out()<<"Obs : "<<type<<" for "<<flav1<<" "<<flav2<<" : "
+	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[2]<<" bins,"
+	     <<" extra : "<<keywords[0]<<std::endl;
+  }
+}
+
+int Observable_Data::Specify() {
+  if (type==std::string("ET") || type==std::string("PT") ||
+      type==std::string("Eta") || type==std::string("E")) return 1;
+  if (type==std::string("Mass") || type==std::string("PT2") ||
+      type==std::string("Eta2"))                           return 2;
+  return -1;
 }
 
 
 
-void PHard_Observable::Evaluate(double w, int ncount)
-{
-  //  histo->Insert(sqrt(amegic_apacic_interface_last_hard_scale),w); 
-  p_histo->Insert(Sample_Analysis::m_pt_W,w,ncount); 
-}
-
-void PHard_Observable::Evaluate(int,const ATOOLS::Vec4D *,const ATOOLS::Flavour *,double w, int ncount)
-{
-  Evaluate(w,ncount);
-}
-
-void PHard_Observable::Evaluate(const ATOOLS::Particle_List &,double w, int ncount)
-{
-  Evaluate(w,ncount);
-}
-
-void PHard_Observable::Evaluate(const ATOOLS::Blob_List &,double w, int ncount)
-{
-  Evaluate(w,ncount);
-}
-
-Primitive_Observable_Base * PHard_Observable::Copy() const {
-  std::cerr<<" ERROR in PHard_Observable::Copy() : not splittable "<<std::endl;
-  return 0;
-}
 
 
-void Sample_Analysis::Init() { 
-  if (hepevt) nhep = 0;
-}
-
-Sample_Analysis::Sample_Analysis(const std::string & path,const std::string & file):
-  m_path(path),
-  m_file(file)
-{
-  status     = rpa.gen.Analysis();
-  if (!(status)) { ana = 0; return; }
-  ana        = new Primitive_Analysis("Sample_Analysis",ANALYSIS::splitt_all|ANALYSIS::fill_all);
-  //  ana->AddObservable(new Shower_Observables(11,1.e-6,1.,180,0));
-  ana->AddObservable(new Primitive_Detector(0.5,8.,0,"ConeJets(.5)"));
-  ana->AddObservable(new Jetrates(11,1.e-6,1.,80,0));
-  ana->AddObservable(new Jetrates(11,1.e-6,1.,80,0,"ConeJets(.5)"));
-  ana->AddObservable(new Multiplicity(00,-0.5,50.5,51,0,"FinalState"));
-  ana->AddObservable(new Multiplicity(00,-0.5,50.5,51,0,"ConeJets(.5)"));
-  ana->AddObservable(new Multiplicity(00,-0.5,50.5,51,0,"KtJets"));
-  ana->AddObservable(new PT_Distribution(00,0.,200.,100,1,Flavour(kf::W)));
-  ana->AddObservable(new PT_Distribution(00,0.,200.,100,6,Flavour(kf::jet)));
-  ana->AddObservable(new PT_Distribution(00,0.,200.,100,0,4,Flavour(kf::jet),"ConeJets(.5)"));
-  ana->AddObservable(new PT_Distribution(00,0.,200.,100,1,4,Flavour(kf::jet),"ConeJets(.5)"));
-  ana->AddObservable(new PT_Distribution(00,0.,200.,100,2,4,Flavour(kf::jet),"ConeJets(.5)"));
-  ana->AddObservable(new PT_Distribution(00,0.,200.,100,3,4,Flavour(kf::jet),"ConeJets(.5)"));
-  ana->AddObservable(new PT_Distribution(00,0.,200.,100,4,4,Flavour(kf::jet),"ConeJets(.5)"));
-  ana->AddObservable(new PT_Distribution(00,0.,200.,100,6,Flavour(kf::jet),"KtJets"));
-
-
-  //  ana->AddObservable(new PT_Distribution(00,0.,250.,50,6,Flavour(kf::Z)));
-
-  //  ana->AddObservable(new PHard_Observable(00,0.,250.,125));
-  //  ana->AddObservable(new PT_Distribution(00,0.,250.,125,1,Flavour(kf::photon)));
-
-  obs.push_back(new ME_Rate(00,1.5,7.5,6,"me"));
-  obs.push_back(new ME_Rate(00,1.5,7.5,6,"me_nll"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_2"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_3"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_4"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_5"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_6"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_2"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_3"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_4"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_5"));
-  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_6"));
-}
-
-
-void Sample_Analysis::AfterME(ATOOLS::Blob_List * blobs, double weight) {
-  if (!(status)) return;
-  obs[0]->Evaluate(*blobs,weight);
-
-  for (Blob_Const_Iterator bit=blobs->begin();bit!=blobs->end();++bit) {
-    if ((*bit)->Type().find("Signal") !=std::string::npos ) {
-      m_njet= (*bit)->NOutP();
-      Vec4D sum;
-      for (int i=0; i<m_njet; ++i) {
-	if ( (*bit)->OutParticle(i)->Flav().IsLepton()) {
-	  sum+=(*bit)->OutParticle(i)->Momentum();
-	}
-	m_pt_W=sqrt(sqr(sum[1])+sqr(sum[2]));
+Sample_Analysis::Sample_Analysis(std::ifstream * readin,std::string _phase) :
+  m_phase(_phase), m_outputpath(std::string("./")+_phase), p_analysis(NULL)
+{  
+  m_type = std::string("Perturbative");
+  std::cout<<"Initialize new Sample_Analysis for "<<_phase<<std::endl;
+  std::string phasemode;
+  int  mode  = ANALYSIS::fill_all; //|ANALYSIS::splitt_jetseeds;
+  bool split = false;
+  while (_phase.length()>0) {
+    if (_phase[0]==' ' || _phase[0]=='+') _phase = _phase.substr(1);
+    else { 
+      phasemode = _phase.substr(0,_phase.find(std::string("+")));
+      if (phasemode==std::string("ME")) {
+	mode  = mode|ANALYSIS::do_me;
+	if (split) mode = mode|ANALYSIS::splitt_phase;
+	else split = true;
+	_phase = _phase.substr(2);
+      }
+      if (phasemode==std::string("Showers")) {
+	mode = mode|ANALYSIS::do_shower;
+	if (split) mode = mode|ANALYSIS::splitt_phase;
+	else split = true;
+	_phase = _phase.substr(7);
+      }
+      if (phasemode==std::string("Hadrons"))  {
+	mode = mode|ANALYSIS::do_hadron;
+	if (split) mode = mode|ANALYSIS::splitt_phase;
+	else split = true;
+	_phase = _phase.substr(7);
+	m_type = std::string("Hadronization");
       }
     }
   }
-  obs[8]->Evaluate(*blobs,weight);
-  obs[m_njet+7]->Evaluate(*blobs,weight);
+  p_analysis            = new Primitive_Analysis(m_phase,mode);
+  Final_Selector * fsel = new Final_Selector("FinalState","Analysed");
+  ReadInFinalSelectors(readin,fsel);
+  p_analysis->AddObservable(fsel);
+  ReadInObservables(readin);
+  SetUpObservables();
 
+  std::cout<<"Initialized new Sample_Analysis for "<<m_phase<<","<<mode<<std::endl;
+  fsel->Output();
 }
 
-void Sample_Analysis::AfterPartonShower(ATOOLS::Blob_List * blobs, double weight) {
-  if (!(status & 1)) return;
-
-  // extra statistics
-  obs[1]->Evaluate(*blobs,weight);
-  obs[2]->Evaluate(*blobs,weight);
-  obs[m_njet+1]->Evaluate(*blobs,weight);
-
-  
-  // simple parton level analysis:
-  ana->DoAnalysis(blobs,weight);
-}
-
-void Sample_Analysis::AfterHadronization(ATOOLS::Blob_List * blobs, double weight) {
-  if (!(status == 2)) return;
-  ana->DoAnalysis(blobs,weight);
-}
-
-
-
-void Sample_Analysis::Finish(std::string addpath) 
+Sample_Analysis::~Sample_Analysis() 
 {
-  if (status>= 1) {
-    Primitive_Analysis * sana=new Primitive_Analysis("ME_Analysis",ANALYSIS::fill_all);
-    for (size_t i=0; i<obs.size();++i) {
-      sana->AddObservable(obs[i]);
+  if (p_analysis) { delete p_analysis; p_analysis = NULL; }
+}
+
+void Sample_Analysis::SetOutputPath(const std::string path)
+{
+  m_outputpath = path+std::string("/")+m_phase;
+}
+
+void Sample_Analysis::DoAnalysis(ATOOLS::Blob_List * const blist, double weight) 
+{
+  p_analysis->DoAnalysis(blist,weight);
+}
+
+void Sample_Analysis::Finish() 
+{
+  int  mode_dir = 448;
+  mkdir(m_outputpath.c_str(),mode_dir); 
+  p_analysis->FinishAnalysis(m_outputpath);
+}
+
+/*--------------------------------------------------------------------------------------
+
+Read in routines.
+
+---------------------------------------------------------------------------------------*/
+
+void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,Final_Selector * fsel)
+{  
+  std::string buffer, arg;
+  unsigned int pos;
+  int    kfc;
+  double number;
+  std::vector<int>    kfcs; 
+  std::vector<double> numbers; 
+  Flavour flav,flav2;
+  Final_Selector_Data fd;
+
+  for (;;) {
+    if (readin->eof()) return;
+    getline(*readin,buffer);
+    buffer += std::string(" ");
+    if (buffer[0] != '%' && buffer.length()>0) {
+      if (buffer.find("END_ANALYSIS_PHASE")!=std::string::npos) return;
+      if (buffer.find("OBSERVABLES")!=std::string::npos) return;
+      if (buffer.find("OUTPUT =")!=std::string::npos) {
+	buffer=buffer.substr(buffer.find("OUTPUT =")+8);
+	while(buffer.length()>0) {
+	  if (buffer[0]==' ') buffer = buffer.substr(1);
+	  else {
+	    pos = buffer.find(std::string(" "));
+	    if (pos!=std::string::npos) {
+	      m_outputpath = buffer.substr(0,pos);
+	    }
+	    break;
+	  }
+	}
+      }
+      else {
+	kfcs.clear();
+	numbers.clear();
+	while(buffer.length()>0) {
+	  if (buffer[0]==' ') buffer = buffer.substr(1);
+	  else {
+	    pos = buffer.find(std::string(" "));
+	    if (pos!=std::string::npos) {
+	      arg = buffer.substr(0,pos);
+	      if (arg.find(".")==std::string::npos) {
+		kfc = std::atoi(arg.c_str());
+		kfcs.push_back(kfc);
+	      }
+	      else {
+		number = std::atof(arg.c_str());
+		numbers.push_back(number);
+	      }
+	      buffer = buffer.substr(pos);
+	    }
+	    else break;
+	  }
+	}
+	if (kfcs.size()==1 && numbers.size()>=3) {
+	  flav       = Flavour(kf::code(abs(kfcs[0])));
+	  if (kfcs[0]<0) flav = flav.Bar();
+	  fd.pt_min  =   0.;
+	  fd.eta_min = -20.;
+	  fd.eta_max = +20.;
+	  if (numbers.size()>=0) fd.pt_min  = numbers[0];
+	  if (numbers.size()>=1) fd.eta_min = numbers[1];
+	  if (numbers.size()>=2) fd.eta_max = numbers[2];
+	  if (numbers.size()>=3 && kfcs[0]==93) fd.r_min = numbers[3];
+	  fsel->AddSelector(flav,fd);
+	}
+	else if (kfcs.size()==2 && numbers.size()>=1) {
+	  flav       = Flavour(kf::code(abs(kfcs[0])));
+	  if (kfcs[0]<0) flav  = flav.Bar();
+	  flav2      = Flavour(kf::code(abs(kfcs[1])));
+	  if (kfcs[0]<0) flav2 = flav2.Bar();
+	  fd.r_min  =   0.;
+	  if (numbers.size()>=0) fd.r_min  = numbers[0];
+	  fsel->AddSelector(flav,flav2,fd);
+	}
+	else if (kfcs.size()==3  && numbers.size()==0) {
+	  flav       = Flavour(kf::code(abs(kfcs[0])));
+	  if (kfcs[0]<0) flav = flav.Bar();
+	  fsel->AddSelector(flav,kfcs[1],kfcs[2]);
+	}
+      }
     }
-    ana->AddSubAnalysis("ME",sana);
-
-    MyStrStream s1;
-    int   alf = int(1000.*rpa.gen.ScalarFunction(string("alpha_S"))+0.5);
-    string salf;
-    s1<<alf;
-    s1>>salf;
-
-    ATOOLS::Data_Read *dataread = new Data_Read(m_path+m_file);
-    std::string outputpath=dataread->GetValue<std::string>("ANALYSIS_OUTPUT",std::string("output"));
-    delete dataread;
-    msg.Out()<<" FinishAnalysis("<<outputpath+addpath<<");"<<endl;
-    ana->FinishAnalysis(outputpath+addpath);
   }
-
 }
 
+void Sample_Analysis::ReadInObservables(std::ifstream * readin)
+{
+  std::string buffer, arg;
+  unsigned int pos;
+  int    kfc;
+  double number;
+  Observable_Data * obs;
 
-Sample_Analysis::~Sample_Analysis() {
-  if (ana)   { delete ana;     ana     = 0; }
+  for (;;) {
+    if (readin->eof()) return;
+    getline(*readin,buffer);
+    buffer += std::string(" ");
+    if (buffer[0] != '%' && buffer.length()>0) {
+      if (buffer.find("END_ANALYSIS_PHASE")!=std::string::npos) return;
+      if (buffer.find("OUTPUT =")!=std::string::npos) {
+	while(buffer.length()>0) {
+	  if (buffer[0]==' ') buffer = buffer.substr(1);
+	  else {
+	    pos = buffer.find(std::string(" "));
+	    if (pos!=std::string::npos) m_outputpath = buffer.substr(0,pos);
+	    else break;
+	  }
+	}
+      }
+      else {
+	obs = new Observable_Data();
+	while(buffer.length()>0) {
+	  if (buffer[0]==' ') buffer = buffer.substr(1);
+	  else {
+	    pos = buffer.find(std::string(" "));
+	    if (pos!=std::string::npos) {
+	      arg = buffer.substr(0,pos);
+	      if (isalpha(arg[0])) {
+		if (obs->type==std::string("")) obs->type = arg;
+		else obs->keywords.push_back(arg);
+	      }
+	      else {
+		if (arg.find(".")==std::string::npos) {
+		  kfc = std::atoi(arg.c_str());
+		  obs->ints.push_back(kfc);
+		}
+		else {
+		  number = std::atof(arg.c_str());
+		  obs->numbers.push_back(number);
+		}
+	      }
+	      buffer = buffer.substr(pos);
+	    }
+	    else break;
+	  }
+	}
+	m_obsdata.push_back(obs);
+      }
+    }
+  }
 }
+
+void Sample_Analysis::SetUpObservables()
+{
+  Primitive_Observable_Base * obs;
+  Observable_Data * od;
+  int     odn,linlog;
+  Flavour flav,flav2;
+  std::vector<Flavour> subsamples;
+  std::string type;
+  for (int i=0;i<m_obsdata.size();++i) {
+    msg.Tracking()<<"Try to initialize another observable from read in :"<<std::endl;
+    od   = m_obsdata[i];
+    od->Output();
+    odn  = od->Specify();
+    type = od->type;
+
+    switch (odn) {
+    case 1: // One-Particle Observables
+      if (!(od->ints.size()==2 && od->numbers.size()==2 && od->keywords.size()==1)) {
+	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+		   <<"   One particle observable with "
+		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
+		   <<". Continue and hope for the best."<<std::endl;
+      }
+      flav   = Flavour(kf::code(abs(od->ints[0])));
+      if (od->ints[0]<0) flav = flav.Bar();
+      linlog = 0;
+      if (od->keywords[0]==std::string("Log")) linlog = 10;
+      
+      if (type==std::string("ET")) { 
+	obs = new One_Particle_ET(flav,linlog,od->numbers[0],od->numbers[1],od->ints[1]); 
+	break; 
+      }
+      if (type==std::string("PT")) { 
+	obs = new One_Particle_PT(flav,linlog,od->numbers[0],od->numbers[1],od->ints[1]); 
+	break; 
+      }
+      if (type==std::string("Eta")) { 
+	obs = new One_Particle_Eta(flav,linlog,od->numbers[0],od->numbers[1],od->ints[1]); 
+	break; 
+      }
+      if (type==std::string("E")) { 
+	obs = new One_Particle_E(flav,linlog,od->numbers[0],od->numbers[1],od->ints[1]); 
+	break; 
+      }
+    case 2:
+      if (!(od->ints.size()==3 && od->numbers.size()==2 && od->keywords.size()==1)) {
+	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+		   <<"   One particle observable with "
+		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
+		   <<". Continue and hope for the best."<<std::endl;
+      }
+      flav   = Flavour(kf::code(abs(od->ints[0])));
+      if (od->ints[0]<0) flav = flav.Bar();
+      flav2  = Flavour(kf::code(abs(od->ints[1])));
+      if (od->ints[1]<0) flav2 = flav2.Bar();
+      linlog = 0;
+      if (od->keywords[0]==std::string("Log")) linlog = 10;
+      
+      if (type==std::string("Mass")) { 
+	obs = new Two_Particle_Mass(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
+	break; 
+      }
+      if (type==std::string("PT2")) { 
+	obs = new Two_Particle_PT(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
+	break; 
+      }
+      if (type==std::string("Eta2"))  { 
+	obs = new Two_Particle_Eta(flav,flav2,linlog,od->numbers[0],od->numbers[1],od->ints[2]); 
+	break; 
+      }
+    default:
+      msg.Error()<<"Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+		 <<"   "<<odn<<"-Particle Observables not yet realized for "<<type<<"."<<std::endl;
+      abort();
+    }
+    p_analysis->AddObservable(obs);
+  }
+  SetUpSubSamples();
+} 
+
+void Sample_Analysis::SetUpSubSamples()
+{
+  Final_Selector * fsel;
+
+  // jet sample
+  fsel = new Final_Selector("Analysed","KtJets");
+  fsel->AddKeepFlavour(Flavour(kf::jet));
+  p_analysis->AddObservable(fsel);
+  
+  // lepton sample
+  fsel = new Final_Selector("Analysed","Leptons");
+  fsel->AddKeepFlavour(Flavour(kf::lepton));
+  p_analysis->AddObservable(fsel);
+} 
+
+
+

@@ -45,6 +45,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
+  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
 }
 
 
@@ -62,6 +63,8 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   if (m_mode>9000) {
     p_evtreader = new Event_Reader(m_path,m_evtfile);
+    p_dataread         = new Data_Read(m_path+m_file);
+    m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
     return;
   }
   p_dataread         = new Data_Read(m_path+m_file);
@@ -75,6 +78,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
+  m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
 }
 
 
@@ -90,6 +94,15 @@ Initialization_Handler::~Initialization_Handler()
   if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
+
+  for (MEHandlersMap::iterator mit=m_mehandlers.begin();mit!=m_mehandlers.end();mit++) {
+    if (mit->second) { delete mit->second; mit->second=NULL; }
+  }
+  m_mehandlers.clear();
+  for (AnalysesMap::iterator ait=m_analyses.begin();ait!=m_analyses.end();ait++) {
+    if (ait->second) { delete ait->second; ait->second=NULL; }
+  }
+  m_analyses.clear();
 }
 
 
@@ -103,6 +116,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (m_mode==9999) {
     msg.Out()<<"SHERPA will read in the events."<<std::endl
 	     <<"   The full framework is not needed."<<std::endl;
+    InitializeTheAnalyses();
     return true;
   }
 
@@ -126,6 +140,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheUnderlyingEvents();
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheBeamRemnants();
+    okay = okay && InitializeTheAnalyses();
   }
   return okay;
 }
@@ -336,14 +351,61 @@ bool Initialization_Handler::InitializeTheFragmentation()
 
 bool Initialization_Handler::InitializeTheHadronDecays() 
 {
-    if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
-//   p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
-//  					     p_fragmentation->GetLundInterface());
+  if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   p_hadrondecays  = new Hadron_Decay_Handler(m_path,m_hadrondecaysdat,
  					     p_fragmentation->GetLundFortranInterface());
   return 1;
 }
 
+bool Initialization_Handler::InitializeTheAnalyses()
+{
+  if (rpa.gen.Analysis()<=0) {
+    msg.Error()<<"Warning in Initialization_Handler::InitializeTheAnalyses()."<<std::endl
+	       <<"   Analysis is switched off - continue run."<<std::endl;
+    return 1;
+  } 
+  ifstream * from = new ifstream((m_path+m_analysisdat).c_str());
+  if (!from->good()) {
+    msg.Error()<<"Error in Initialization_Handler::InitializeTheAnalyses()."<<std::endl
+	       <<"   File : "<<(m_path+m_analysisdat).c_str()<<" not found ! Abort program execution."<<endl;
+    abort();
+  }
+  std::string buffer, phase;
+  Sample_Analysis * sa = NULL;
+  unsigned int pos;
+  bool add;
+  for (;;) {
+    if (from->eof()) break;
+    getline(*from,buffer);
+    buffer += std::string(" ");
+    std::cout<<buffer<<std::endl;
+    if (buffer[0] != '%' && buffer.length()>0) {
+      if (buffer.find("ANALYSIS_PHASE =")!=std::string::npos) {
+	pos    = buffer.find("ANALYSIS_PHASE =");
+	buffer = buffer.substr(pos+16);
+	while(buffer.length()>0) {
+	  if (buffer[0]==' ') buffer = buffer.substr(1);
+	  else {
+	    pos = buffer.find(string(" "));
+	    if (pos>0) phase = buffer.substr(0,pos);
+	    break;
+	  }
+	}
+	add = false;
+	if (phase!=std::string("")) {
+	  sa  = new Sample_Analysis(from,phase);
+	  if (sa->On()) add = true;
+	           else delete sa;
+	}
+	if (add) { 
+	  m_analyses.insert(std::make_pair(phase,sa)); 
+	  ATOOLS::msg.Tracking()<<"Initialized a Sample_Analysis for "<<phase<<std::endl;
+	}
+      }
+    }
+  }
+  return 1;
+}
 
 bool Initialization_Handler::CalculateTheHardProcesses()
 {

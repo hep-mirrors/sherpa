@@ -15,7 +15,7 @@ EvtReadin_Phase::EvtReadin_Phase(Event_Reader * _evtreader) :
 bool EvtReadin_Phase::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
 {
   if (!m_read) {
-    std::cout<<"In EvtReadin_Phase::Treat"<<std::endl;
+    //std::cout<<"In EvtReadin_Phase::Treat"<<std::endl;
     p_evtreader->FillBlobs(_bloblist);
     //what about the weight ???
     weight = p_evtreader->Weight();

@@ -3,6 +3,7 @@ SHERPASYS  = ../..
 SHERPAFLAGS   =	# -pedantic -Wall -Winline
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+ANALYSISDIR   =	$(SHERPASYS)/ANALYSIS-1.0
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
@@ -10,6 +11,7 @@ SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
 		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
 		-I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
@@ -26,6 +28,7 @@ APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
+ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
 PDFLIBS       =	-L@libdir@ -lPDF -lLHAPDF 
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
@@ -66,12 +69,12 @@ bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
 Sherpa_LDADD  =	$(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(AMISICLIBS) \
 		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) $(BEAMLIBS) \
-		$(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS)
+		$(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) $(ANALYSISLIBS)
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS) $(CLHEPFLAGS)
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
 		$(EXTRAXSINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
-		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS)
+		$(BEAMINCS) $(ATOOLSINCS) $(ANALYSISINCS) $(CLHEPINCS) $(ROOTINCS)
 SUBDIRS       =	Process
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \
