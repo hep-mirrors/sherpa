@@ -163,6 +163,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (color==Switch::On) msg.SetModifiable(true);
   gen.m_rpa_id = dr.GenerateKey();
   if (gen.m_seed!=1234) ran.SetSeed(gen.m_seed);
+  gen.m_ren_scale_fac=1.0;
+  gen.m_fac_scale_fac=1.0;
 }
 
 Run_Parameter::~Run_Parameter() 
