@@ -704,7 +704,12 @@ void Simple_Chain::CalculateSigmaND()
   double xsel=0.0511*xstot*xstot/(4*(b+pow(s,eps))-4.2);
   double xssd=0.0336*X*sqrt(X)*JAX;
   double xsdd=0.0084*X*JXX;
-  SetNorm(xstot-xsel-2.0*xssd-xsdd);
+  msg_Tracking()<<"Simple_Chain::CalculateSigmaND(): Results are {\n"
+		<<"   \\sigma^{tot} = "<<xstot<<" pb\n"
+		<<"   \\sigma^{el}  = "<<xsel<<" pb\n"
+		<<"   \\sigma^{sd}  = "<<2.0*xssd<<" pb\n"
+		<<"   \\sigma^{dd}  = "<<xsdd<<" pb\n}"<<std::endl;
+  SetNorm((xstot-xsel-2.0*xssd-xsdd)*1.0e9/ATOOLS::rpa.Picobarn());
 }
 
 bool Simple_Chain::CalculateTotal()
@@ -754,7 +759,7 @@ bool Simple_Chain::CalculateTotal()
 #ifdef DEBUG__Simple_Chain
   comments.clear();
   comments.push_back("   Integrated XS    "); 
-  GridFunctionType *total = differential->IntegralY(0.0,0.0,"Id","Id",false);
+  GridFunctionType *total = differential->IntegralY(m_stop[0],m_start[0],"Id","Id",false);
   gridhandler = new GridHandlerType(total);
   gridcreator->SetOutputFile(integralfile);
   gridcreator->WriteSingleGrid(gridhandler,comments);
