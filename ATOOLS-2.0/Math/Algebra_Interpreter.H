@@ -83,7 +83,7 @@ namespace ATOOLS {
     // member functions
     std::string &KillBlanks(std::string& expr) const;
 
-    virtual std::string &ReplaceTags(std::string &expr) const;    
+    virtual std::string ReplaceTags(std::string &expr) const;    
 
   };// end of class Tag_Replacer
 
@@ -123,7 +123,7 @@ namespace ATOOLS {
     void AddFunction(Function *const f);
     void AddOperator(Operator *const b);
 
-    std::string &ReplaceTags(std::string &expr) const;    
+    std::string ReplaceTags(std::string &expr) const;    
 
     void AddTag(const std::string &tag,const std::string &value);
     void SetTags(const String_Map &tags);

@@ -468,7 +468,7 @@ std::string Algebra_Interpreter::Interprete(const std::string &expr)
 {
   std::string res=expr;
   KillBlanks(res);
-  p_replacer->ReplaceTags(res);
+  res=p_replacer->ReplaceTags(res);
   return Iterate(res);
 }
 
@@ -506,13 +506,15 @@ void Algebra_Interpreter::SetTags(const String_Map &tags)
   m_tags=tags;
 }
 
-std::string &Algebra_Interpreter::ReplaceTags(std::string &expr) const
+std::string Algebra_Interpreter::ReplaceTags(std::string &expr) const
 {
+  msg_Tracking()<<"Algebra_Interpreter::ReplaceTags("<<expr<<")\n";
   size_t pos=std::string::npos;
   for (String_Map::const_iterator sit=m_tags.begin();
-       sit!=m_tags.end();++sit) 
+       sit!=m_tags.end();++sit) {
+    PRINT_INFO(sit->first<<" -> "<<sit->second);
     if ((pos=expr.find(sit->first))!=std::string::npos) 
-      return ReplaceTags(expr.replace(pos,sit->first.length(),sit->second));
+      return ReplaceTags(expr.replace(pos,sit->first.length(),sit->second));}
   return expr;
 }
 
@@ -525,7 +527,7 @@ std::string &Tag_Replacer::KillBlanks(std::string& expr) const
   return expr;
 }
 
-std::string &Tag_Replacer::ReplaceTags(std::string &expr) const
+std::string Tag_Replacer::ReplaceTags(std::string &expr) const
 {
   return expr;
 }

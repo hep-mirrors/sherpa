@@ -1,6 +1,5 @@
 #include "Read_Write_Base.H"
 
-#include "Algebra_Interpreter.H"
 #include "MyStrStream.H"
 //#define DEBUG__Read_Write_Base
 #ifdef DEBUG__Read_Write_Base
@@ -126,6 +125,8 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
   return pos;
 }
 
+#include "Message.H"
+
 bool Read_Write_Base::OpenInFile(const unsigned int i)
 {  
   if (InputFile(i)==nullstring) {
@@ -199,23 +200,36 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 		if (lastline[opos]=='(') break;
 	      if (opos<cpos) {
 		Algebra_Interpreter interpreter;
+		interpreter.SetTagReplacer(this);
 		bool result=ToType<int>
 		  (interpreter.Interprete(lastline.
 					  substr(opos+1,cpos-opos-1)));
-		for (opos=cpos;opos<lastline.length();++opos) 
+		for (opos=cpos+1;opos<lastline.length();++opos) 
 		  if (lastline[opos]=='{') {
 		    ifresults.push_back(result);
+		    ++opos;
 		    break;
 		  }
-		if (opos==std::string::npos) opos=cpos;
-		if (result) lastline=lastline.substr(opos+1);
+		  else {
+		    bool blank=false;
+		    for (size_t i=0;i<m_blank.size();++i) 
+		      if (lastline[opos]==m_blank[i]) {
+			blank=true;
+			break;
+		      }
+		    if (!blank) break;
+		  }
+		if (opos==lastline.length()) opos=cpos;
+		if (result) lastline=lastline.substr(opos);
 		else lastline="";
 	      }
 	    }
 	  }
-	  if (lastline.length()>0) m_filecontent.push_back(lastline);
+	  if (lastline.length()>0) {
+	    m_filecontent.push_back(lastline);
+	  }
 	}
-	else {
+	else if (lastline.length()>0) {
 	  m_filecontent.push_back(lastline);
 	}
 	getline(*m_infile[i],lastline);
@@ -276,4 +290,28 @@ void Read_Write_Base::CloseOutFile(const unsigned int i,const bool force)
   m_outfile[i]=NULL;
 }
 
+std::string Read_Write_Base::ReplaceTags(std::string &expr) const
+{ 
+  std::string tag=expr;
+#ifdef DEBUG__Read_Write_Base
+  std::cout<<"Read_Write_Base::ReplaceTags("<<tag<<"): "<<std::endl;
+#endif
+  bool success=false;
+  for (std::map<std::string,std::string>::const_iterator tit=m_tags.begin();
+       tit!=m_tags.end();++tit) {
+    size_t pos=tag.find(tit->first);
+    if (pos!=std::string::npos) {
+#ifdef DEBUG__Read_Write_Base
+      std::cout<<"   '"<<tit->first<<"' => '"<<tag;
+#endif
+      tag.replace(pos,tit->first.length(),tit->second);
+#ifdef DEBUG__Read_Write_Base
+      std::cout<<"' -> '"<<tag<<"'"<<std::endl;
+#endif
+      success=true;
+    }
+  }
+  if (success && tag!=expr) return ReplaceTags(tag);
+  return tag;
+}
 

@@ -1,6 +1,5 @@
 #include "Data_Reader.H"
 
-#include "Algebra_Interpreter.H"
 #include "Message.H"
 #include "MyStrStream.H"
 #include <ctype.h>
@@ -133,31 +132,6 @@ std::string Data_Reader::StripEscapes(const std::string &buffer) const
   return input;
 }
 
-std::string Data_Reader::ReplaceTags(std::string tag)
-{ 
-  const std::string oldtag=tag;
-#ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::ReplaceTags("<<tag<<"): "<<std::endl;
-#endif
-  bool success=false;
-  for (std::map<std::string,std::string>::const_iterator tit=m_tags.begin();
-       tit!=m_tags.end();++tit) {
-    size_t pos=tag.find(tit->first);
-    if (pos!=std::string::npos) {
-#ifdef DEBUG__Data_Reader
-      std::cout<<"   '"<<tit->first<<"' => '"<<tag;
-#endif
-      tag.replace(pos,tit->first.length(),tit->second);
-#ifdef DEBUG__Data_Reader
-      std::cout<<"' -> '"<<tag<<"'"<<std::endl;
-#endif
-      success=true;
-    }
-  }
-  if (success && tag!=oldtag) return ReplaceTags(tag);
-  return tag;
-}
-
 template <class Read_Type>
 Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &inputstring)
 {
@@ -184,16 +158,17 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
   size_t length=0;
   if(((pos=Find(inputstring,parameter,length))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+length)).length()>0)) {
-    std::string tempstring=ReplaceTags(HighlightSeparator(inputstring));
+    std::string cur=HighlightSeparator(inputstring);
+    std::string tempstring=ReplaceTags(cur);
     if (typeid(value)==typeid(int) || 
 	typeid(value)==typeid(unsigned int) ||
 	typeid(value)==typeid(float) ||
 	typeid(value)==typeid(double)) {
       if (!m_allownans) {
  	if ((pos=tempstring.find("nan"))!=std::string::npos)
- 	  tempstring.replace(pos,3,"0");
+ 	  tempstring.replace(pos,3,"1");
  	else if ((pos=tempstring.find("inf"))!=std::string::npos) 
- 	  tempstring.replace(pos,3,"0");
+ 	  tempstring.replace(pos,3,"1");
       }
       if (Interprete()) tempstring=Interpreter()->
 	  Interprete(StripEscapes(tempstring));

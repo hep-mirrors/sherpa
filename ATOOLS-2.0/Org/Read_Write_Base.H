@@ -2,6 +2,7 @@
 #define Read_Write_Base_H
 
 #include "File_IO_Base.H"
+#include "Algebra_Interpreter.H"
 
 namespace ATOOLS {
 
@@ -15,7 +16,7 @@ namespace ATOOLS {
 
   class Algebra_Interpreter;
 
-  class Read_Write_Base: public File_IO_Base {
+  class Read_Write_Base: public File_IO_Base, public Tag_Replacer {
   public:
 
     enum VectorTypeID { VVertical   =  1,
@@ -27,6 +28,8 @@ namespace ATOOLS {
 			MUnknown    = 99 };
 
   private:
+
+    std::map<std::string,std::string> m_tags;
 
     static std::vector<std::string> s_commandline;
 
@@ -63,6 +66,8 @@ namespace ATOOLS {
     ReadWrite_Type Default();
 
     size_t Find(std::string input,std::string parameter,size_t &length) const;
+
+    std::string ReplaceTags(std::string &expr) const;    
 
   public:
 
@@ -148,6 +153,11 @@ namespace ATOOLS {
 
     inline void SetEscape(const char escape);
 
+    inline void SetTags(const std::map<std::string,std::string> &tags);
+    inline void AddTags(const std::map<std::string,std::string> &tags);
+    inline void SetTag(const std::string &tag,const std::string &value);
+    inline void AddTag(const std::string &tag,const std::string &value);
+
     // getters
     inline const std::vector<std::string> &Comment() const;
     inline const std::vector<std::string> &Ignore() const;
@@ -180,6 +190,9 @@ namespace ATOOLS {
     inline bool RereadInFile(const unsigned int i=0);
     
     inline Algebra_Interpreter *Interpreter() const;
+
+    inline const std::string &Tag(const std::string &tag) const;
+    inline const std::map<std::string,std::string> &Tags() const;
 
   };// end of class Read_Write_Base
 

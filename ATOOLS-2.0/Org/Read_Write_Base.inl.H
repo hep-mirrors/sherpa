@@ -423,6 +423,38 @@ namespace ATOOLS {
     return m_escape; 
   }
 
+  inline void Read_Write_Base::SetTags(const std::map<std::string,std::string> &tags) 
+  { 
+    m_tags=tags; 
+  }
+  
+  inline void Read_Write_Base::AddTags(const std::map<std::string,std::string> &tags) 
+  { 
+    for (std::map<std::string,std::string>::const_iterator tit=tags.begin();
+	 tit!=tags.end();++tit) m_tags[tit->first]=tit->second; 
+  }
+  
+  inline void Read_Write_Base::SetTag(const std::string &tag,const std::string &value) 
+  { 
+    m_tags.clear(); 
+    m_tags[tag]=value; 
+  }
+  
+  inline void Read_Write_Base::AddTag(const std::string &tag,const std::string &value) 
+  { 
+    m_tags[tag]=value; 
+  }
+
+  inline const std::string &Read_Write_Base::Tag(const std::string &tag) const 
+  { 
+    return m_tags.find(tag)->second;
+  }
+  
+  inline const std::map<std::string,std::string> &Read_Write_Base::Tags() const
+  { 
+    return m_tags;
+  }
+
 } // end of namespace ATOOLS
 
 #endif
