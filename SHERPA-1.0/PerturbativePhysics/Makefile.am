@@ -8,7 +8,8 @@ AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 SHERPAINCS    =	-I../SingleEvents -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
-PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+PDFDIR        =	-I$(SHERPASYS)/PDF-1.0
+PDFINCS       = $(PDFDIR)/Main $(PDFDIR)/Sudakov
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
@@ -37,13 +38,7 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 					   	Cluster_Partons.C \
 					   	SimpleXS_Apacic_Interface.C \
 						Amegic_Apacic_Interface.C \
-						Combine_Table.C \
-						NLL_Sudakov.C \
-						NLL_Branching_Probability_Base.C \
-						NLL_Branching_Probabilities.C \
-						NLL_Single_Sudakov.C \
-						NLL_Combined_Sudakov.C \
-						NLL_JetRate.C
+						Combine_Table.C 
 noinst_HEADERS        =	\
 			Matrix_Element_Handler.H \
 			MI_Handler.H \
@@ -54,14 +49,7 @@ noinst_HEADERS        =	\
 			Cluster_Partons.H \
 			SimpleXS_Apacic_Interface.H \
 			Amegic_Apacic_Interface.H \
-			Combine_Table.H \
-			NLL_Sudakov.H \
-			NLL_Branching_Probabilities.H \
-			NLL_Branching_Probability_Base.H \
-			NLL_Sudakov_Base.H \
-			NLL_Single_Sudakov.H \
-			NLL_Combined_Sudakov.H \
-			NLL_JetRate.H
+			Combine_Table.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AMISICFLAGS)
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(AMEGICINCS) $(AMISICINCS) \
