@@ -106,6 +106,7 @@ void Zfunc::ClearCalcList()
 void Zfunc::Print() 
 {
   if (!ATOOLS::rpa.gen.Tracking()) return;
+
   msg.Out()<<"Z(["<<m_type<<"],";
   msg.Out()<<"[";
   for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";
@@ -149,6 +150,7 @@ void Zfunc::Print()
 Zfunc_Group::Zfunc_Group(const Zfunc& z) : Zfunc(z) 
 {
   m_op = '+';
+  m_sign = 1;
   if (m_nprop!=0) delete[] p_propagators;
   m_nprop = 0;
   p_equal = this;
@@ -314,12 +316,13 @@ void Zfunc_Group::Print()
   if (m_op=='+'){  
     for (int i=0;i<m_zlist.size();i++) {
       if (m_zsigns[i]==-1) {
-	msg.Out()<<"   - "<<m_zlist[i]->p_propagators[0].numb<<" * ";m_zlist[i]->Print();
+	msg.Out()<<"   - "; //<<m_zlist[i]->p_propagators[0].numb<<" * ";
+	m_zlist[i]->Print();
       }
       else {
 	if (m_zlist[i]->p_propagators!=NULL) {
-	  msg.Out()<<"   + "<<m_zlist[i]->p_propagators[0].numb<<" * ";
-	  m_zlist[i]->Print();
+	  msg.Out()<<"   + ";
+	  m_zlist[i]->Print(); 
 	}
 	else {
 	  msg.Out()<<" ??? "<<" * ";m_zlist[i]->Print();
