@@ -186,7 +186,7 @@ int Basic_Sfuncs::GetPolNumber(int momindex, int sign,double mass,int check)
 
 void Basic_Sfuncs::PrintMomlist()
 {
-  //return;
+  return;
 
   AORGTOOLS::msg.Out()<<"Momlist: "<<endl;
   for(short int k=0;k<Momlist.size();k++) {

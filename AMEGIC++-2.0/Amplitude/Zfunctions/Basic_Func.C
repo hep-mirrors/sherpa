@@ -14,15 +14,8 @@ void Basic_Func::SetArgCouplProp(int narg,int* _arg,Complex* _coupl,
   arg = _arg; coupl = _coupl;ps = _ps;pl = _pl;pn= _pn;
   for (short int i=0;i<narg;i+=2) {
     Map(arg[i]);
-    //changing sign according to spinordirection
-    //    if (arg[i].spinortype==Spinor::v || arg[i].spinortype==Spinor::vbar) {
-    //  arg[i].numb   *= -1; //for mu
-    //  arg[i+1].numb *= -1; //for sign
-    //}
   }
-
   for (short int i=0;i<pn;i++) Map(ps[i].numb,ps[i].maped);
-
 }
 
 void Basic_Func::Map(int& numb) 

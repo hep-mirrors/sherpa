@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "prof.hh"
 
-#include "MyTiming.H"
+//#include "MyTiming.H"
 
 using namespace AMEGIC;
 using namespace AORGTOOLS;
@@ -50,8 +50,6 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
     n = n->Next;
   }
 
-  MyTiming watch;
-  
   PreCluster(firstgraph); 
   CheckEqual(firstgraph);
 
@@ -92,12 +90,8 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
   //delete[] switch_graphs;
   
   ngraph = ncount;
-  
    
-  watch.Start();
   for (int i=0;i<graphs.size();i++) graphs[i]->BuildGlobalString(b,N,BS,fl,shand);
-  watch.Stop();
-  watch.PrintTime();
 
   int dummy = 0;
   SetNumber(dummy);  
@@ -105,7 +99,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 
   if (rpa.gen.Tracking()) {
     PrintGraph();
-    BS->PrintMomlist();
+    //BS->PrintMomlist();
   }
 
   CheckEqualInGroup();
@@ -443,7 +437,7 @@ void Amplitude_Handler::CheckEqualInGroup()
       }
     }
   }
-  msg.Out()<<"Equal Zfuncs: "<<count<<"/"<<zcount<<endl;
+  msg.Tracking()<<"Equal Zfuncs: "<<count<<"/"<<zcount<<endl;
 }
 
 
@@ -541,7 +535,7 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 
 int Amplitude_Handler::TOrder(Single_Amplitude* a)
 {  
-  if(rpa.me.Model()!=Model_Type::LED) return 0;
+  if(rpa.me.Model()!=Model_Type::ADD) return 0;
   Data_Read dr(rpa.GetPath()+std::string("/")+rpa.me.ModelFile());
   int maxorder = dr.GetValue<int>("Max_KK-Props");
 

@@ -5,8 +5,8 @@
 #include "Message.H"
 #include "MathTools.H"
 
-#include "MyTiming.H"
-
+//Do not use this here !!! 
+//THis is only for test purposes !!!
 //#define _USE_MPI_
 
 #ifdef _USE_MPI_
@@ -66,7 +66,7 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
   if (rank==0) {
     for (int i=0; i<size; ++i) {
       r_buffers.push_back(Prea_Buffer());
-      msg.Out()<<" create Buffer for "<<i<<" size "<<NMAX<<endl;
+      msg.Tracking()<<" create Buffer for "<<i<<" size "<<NMAX<<endl;
       r_buffers[i].buff     = new MPI_Point[NMAX];
       r_buffers[i].counters = new int[2*NMAX]; // too big!!!
       r_buffers[i].nbuff = 0;
@@ -74,7 +74,7 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
   }
   else {
     r_buffers.push_back(Prea_Buffer());
-    msg.Out()<<" create Buffer for Slave "<<rank<<" size "<<NMAX<<endl;
+    msg.Tracking()<<" create Buffer for Slave "<<rank<<" size "<<NMAX<<endl;
     r_buffers[0].buff     = new MPI_Point[NMAX];
     r_buffers[0].counters = new int[2*NMAX]; // too big!!!
     r_buffers[0].nbuff = 0;
@@ -334,21 +334,15 @@ void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,i
 
 	if (Match_Vertex(vl[i],flav,cpl)) {
 	  if (flav[0].Majorana()) {    
-	    //AORGTOOLS::msg.Out()<<"Majorana Staffelstab: "<<p->b<<endl;
 	    if (flav[1].IsFermion() && p->left->b==0)  p->left->b  = p->b;
 	    if (flav[2].IsFermion() && p->right->b==0) p->right->b = p->b;
-	    //AORGTOOLS::msg.Out()<<"Nachfolger links : "<<p->left->fl<<";"<<p->left->b<<endl;
-	    //AORGTOOLS::msg.Out()<<"Nachfolger rechts: "<<p->right->fl<<";"<<p->right->b<<endl;
 	  }
-	  //AORGTOOLS::msg.Out()<<"Left Check: "<<flav[0]<<"->"<<flav[1]<<";"<<flav[2]<<endl;
 	  sw1 = Check_End(p->left,flav[1]);	    
 	  if (sw1) {
-	    //AORGTOOLS::msg.Out()<<"Right Check: "<<flav[0]<<"->"<<flav[1]<<";"<<flav[2]<<endl;
 	    sw1 = Check_End(p->right,flav[2]);
 	  }
 	}
 	if (sw1) {
-	  //AORGTOOLS::msg.Out()<<"Bingo: "<<flav[0]<<"->"<<flav[1]<<";"<<flav[2]<<endl;
 	  //match
 	  int ll = 0;
 	  top->Copy(prea[ap].p,preah,ll);
@@ -406,13 +400,6 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
 
   
   for (int i=0;i<prea_table.size();i++) {
-    //    msg.Out()<<" Single Ampl "<<i<<"/"<<prea_table.size()<<endl;
-    //    msg.Out()<<" start with "<<prea_table[i].p[0].number<<endl;
-    //     MPI_Point * mp = new MPI_Point[dep];
-    //     Point2MPI(prea_table[i].p,mp);
-    //    for (int k=0; k<dep;++k) msg.Out()<<mp[k]<<endl;
-    //     delete mp;
-    // msg.Out()<<"done"<<endl;
     int sw1 = 1;
     if (AORGTOOLS::rpa.me.Model()==AORGTOOLS::Model_Type::QCD ||
 	AORGTOOLS::rpa.me.Model()==AORGTOOLS::Model_Type::pure_QCD) {
@@ -528,7 +515,7 @@ void  Amplitude_Generator::CollectPreAmplitudes() {
     int nbuf  = prea_table.size()*dep;
     int ncbuf = 2*prea_table.size();
 
-    msg.Out()<<"CPU "<<rank<<" creates MPI_Points "<<nbuf<<"("<<prea_table.size()<<")"<<endl;
+    msg.Tracking()<<"CPU "<<rank<<" creates MPI_Points "<<nbuf<<"("<<prea_table.size()<<")"<<endl;
     s_buffer=new MPI_Point[nbuf];
     s_counter_buffer = new int[ncbuf];
 
@@ -546,7 +533,7 @@ void  Amplitude_Generator::CollectPreAmplitudes() {
     if (nbuf<=NMAX) {
     
       // send local list
-      msg.Out()<<"CPU"<<rank<<"sends "<<nbuf<<" points now"<<endl;
+      msg.Tracking()<<"CPU"<<rank<<"sends "<<nbuf<<" points now"<<endl;
       MPI::COMM_WORLD.Send(s_buffer,nbuf,mpi_point_type,0,Mpi_Tag::complete_buffer);
       MPI::COMM_WORLD.Send(s_counter_buffer,ncbuf,MPI::INT,0,Mpi_Tag::complete_buffer);  
     }
@@ -557,7 +544,7 @@ void  Amplitude_Generator::CollectPreAmplitudes() {
       int pncbuf=pnbuf*2;
       pnbuf*=dep;
       for (;;) {
-	msg.Out()<<"CPU"<<rank<<" sends only "<<pnbuf<<" points now"<<endl;
+	msg.Tracking()<<"CPU"<<rank<<" sends only "<<pnbuf<<" points now"<<endl;
 	MPI::COMM_WORLD.Send(&s_buffer[ibuf],pnbuf,mpi_point_type,0,Mpi_Tag::partial_buffer);      
 	MPI::COMM_WORLD.Send(&s_counter_buffer[icbuf],pncbuf,MPI::INT,0,Mpi_Tag::partial_buffer);  
 	ibuf+=pnbuf;
@@ -566,14 +553,14 @@ void  Amplitude_Generator::CollectPreAmplitudes() {
       }
       pnbuf = nbuf  - ibuf;
       pncbuf= ncbuf - icbuf;
-      msg.Out()<<"CPU"<<rank<<" sending final "<<pnbuf<<" points now"<<endl;      
+      msg.Tracking()<<"CPU"<<rank<<" sending final "<<pnbuf<<" points now"<<endl;      
       MPI::COMM_WORLD.Send(&s_buffer[ibuf],pnbuf,mpi_point_type,0,Mpi_Tag::complete_buffer);
       MPI::COMM_WORLD.Send(&s_counter_buffer[icbuf],pncbuf,MPI::INT,0,Mpi_Tag::complete_buffer);  
     }
   }
   else {
     // if master
-    msg.Out()<<" Master creates MPI_Points "<<"("<<prea_table.size()<<")"<<endl;
+    msg.Tracking()<<" Master creates MPI_Points "<<"("<<prea_table.size()<<")"<<endl;
     // receive all buffers!
     for (int i=1;i<size;++i) {
       r_buffers[i].tag=Mpi_Tag::partial_buffer;
@@ -588,7 +575,7 @@ void  Amplitude_Generator::CollectPreAmplitudes() {
 	  MPI::COMM_WORLD.Recv(r_buffers[i].counters,2*NMAX,MPI::INT, i,MPI::ANY_TAG);
 	  r_buffers[i].nbuff=r_status.Get_count(mpi_point_type);
 	  r_buffers[i].tag  =(Mpi_Tag::code)r_status.Get_tag();
-	  msg.Out()<<"recved buffer from CPU"<<i
+	  msg.Tracking()<<"recved buffer from CPU"<<i
 	      <<" ("<<r_buffers[i].nbuff<<")"<<endl;
 	  if (r_buffers[i].tag==Mpi_Tag::partial_buffer) rerun=1;
 	}
@@ -604,10 +591,6 @@ void  Amplitude_Generator::CollectPreAmplitudes() {
 	    ReplaceVertex(ph);
 	    prea_table.push_back(Pre_Amplitude(ph,
 		 r_buffers[i].counters[jc],r_buffers[i].counters[jc+1]));
-// 	    int * ctmp = new int[2];
-// 	    ctmp[0] = r_buffers[i].counters[jc];
-// 	    ctmp[1] = r_buffers[i].counters[jc+1];
-// 	    counter_table.push_back(ctmp);
 	  }
 	}
 	if (r_buffers[i].tag==Mpi_Tag::complete_buffer) r_buffers[i].tag=Mpi_Tag::empty_buffer;
@@ -634,7 +617,7 @@ void  Amplitude_Generator::DistributePreAmplitudes() {
     int nbuf  = prea_table.size()*dep;
     int ncbuf = 2*prea_table.size();
 
-    msg.Out()<<"Master creates MPI_Points for final transmission "<<nbuf<<"("<<prea_table.size()<<")"<<endl;
+    msg.tracking()<<"Master creates MPI_Points for final transmission "<<nbuf<<"("<<prea_table.size()<<")"<<endl;
     s_buffer=new MPI_Point[nbuf];
     s_counter_buffer = new int[ncbuf];
 
@@ -653,7 +636,7 @@ void  Amplitude_Generator::DistributePreAmplitudes() {
     
       // send local list
       for (int cpu=1;cpu<size;++cpu) {
-	msg.Out()<<"Master sends to"<<cpu<<"  "<<nbuf<<" points now"<<endl;
+	msg.Tracking()<<"Master sends to"<<cpu<<"  "<<nbuf<<" points now"<<endl;
 	MPI::COMM_WORLD.Send(s_buffer,nbuf,mpi_point_type,cpu,Mpi_Tag::complete_buffer);
 	MPI::COMM_WORLD.Send(s_counter_buffer,ncbuf,MPI::INT,cpu,Mpi_Tag::complete_buffer);  
       }
@@ -666,7 +649,7 @@ void  Amplitude_Generator::DistributePreAmplitudes() {
       pnbuf*=dep;
       for (;;) {
 	for (int cpu=1;cpu<size;++cpu) {
-	  msg.Out()<<"Master sends to"<<cpu<<"  "<<pnbuf<<" points now"<<endl;
+	  msg.Tracking()<<"Master sends to"<<cpu<<"  "<<pnbuf<<" points now"<<endl;
 	  MPI::COMM_WORLD.Send(&s_buffer[ibuf],pnbuf,mpi_point_type,cpu,Mpi_Tag::partial_buffer);      
 	  MPI::COMM_WORLD.Send(&s_counter_buffer[icbuf],pncbuf,MPI::INT,cpu,Mpi_Tag::partial_buffer);  
 	}
@@ -677,7 +660,7 @@ void  Amplitude_Generator::DistributePreAmplitudes() {
       pnbuf = nbuf  - ibuf;
       pncbuf= ncbuf - icbuf;
       for (int cpu=1;cpu<size;++cpu) {
-	msg.Out()<<"Master sends to"<<cpu<<"  "<<pnbuf<<" (final) points now"<<endl;
+	msg.Tracking()<<"Master sends to"<<cpu<<"  "<<pnbuf<<" (final) points now"<<endl;
 	MPI::COMM_WORLD.Send(&s_buffer[ibuf],pnbuf,mpi_point_type,cpu,Mpi_Tag::complete_buffer);
 	MPI::COMM_WORLD.Send(&s_counter_buffer[icbuf],pncbuf,MPI::INT,cpu,Mpi_Tag::complete_buffer);  
       }
@@ -690,7 +673,7 @@ void  Amplitude_Generator::DistributePreAmplitudes() {
     prea_table.clear();
 
 
-    msg.Out()<<" Slave "<<rank<<" receives MPI_Points "<<endl;
+    msg.Tracking()<<" Slave "<<rank<<" receives MPI_Points "<<endl;
     r_buffers[0].tag=Mpi_Tag::partial_buffer;
  
     for (;;) {
@@ -700,7 +683,7 @@ void  Amplitude_Generator::DistributePreAmplitudes() {
 	MPI::COMM_WORLD.Recv(r_buffers[0].counters,2*NMAX,MPI::INT, 0,MPI::ANY_TAG);
 	r_buffers[0].nbuff=r_status.Get_count(mpi_point_type);
 	r_buffers[0].tag  =(Mpi_Tag::code)r_status.Get_tag();
-	msg.Out()<<" Slave "<<rank<<" received buffer from Master"
+	msg.Tracking()<<" Slave "<<rank<<" received buffer from Master"
 	    <<" ("<<r_buffers[0].nbuff<<")"<<endl;
       }
 
@@ -713,10 +696,6 @@ void  Amplitude_Generator::DistributePreAmplitudes() {
 	  ReplaceVertex(ph);
 	  prea_table.push_back(Pre_Amplitude(ph,
 		       r_buffers[0].counters[jc],r_buffers[0].counters[jc+1]));
-// 	  int * ctmp = new int[2];
-// 	  ctmp[0] = r_buffers[0].counters[jc];
-// 	  ctmp[1] = r_buffers[0].counters[jc+1];
-// 	  counter_table.push_back(ctmp);
 	}
       }
       if (r_buffers[0].tag==Mpi_Tag::complete_buffer) break;
@@ -742,7 +721,7 @@ void Amplitude_Generator::ReplaceVertex(Point * p) {
     }
   }
   if (!hit) {
-    msg.Out()<<" vertex not found , something wrong with MPI "<<endl;
+    msg.Error()<<" vertex not found , something wrong with MPI "<<endl;
     abort();
   }
 }
@@ -930,7 +909,6 @@ int Amplitude_Generator::Kill_Off(Single_Amplitude* &first)
 
 int Amplitude_Generator::FindQEDOrder(Point * p,int & countQED)
 {
-  //msg.Out()<<" In FindQEDOrder countQED"<<countQED<<endl;
   if (!p) return countQED;
   
   int hit = 0;
@@ -961,7 +939,6 @@ int Amplitude_Generator::FindQEDOrder(Point * p,int & countQED)
 
 int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
 {
-  //msg.Out()<<" In FindQCDOrder countQCD"<<countQCD<<endl;
   if (!p) return countQCD;
   
   int hit = 0;
@@ -992,9 +969,6 @@ int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
 
 void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first,int noQEDcpl,int noQCDcpl)
 {
-
-  //msg.Out()<<"In KillHigherOrders() noQEDcpl "<<noQEDcpl<<" noQCDcpl "<<noQCDcpl<<endl; 
-    
   Single_Amplitude* last;
   last = first;
   Single_Amplitude* f1 = first;
@@ -1005,9 +979,9 @@ void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first,int noQEDc
     int hitQCD = 0;
     hitQED = FindQEDOrder(f1->GetPointlist(),hitQED);
     hitQCD = FindQCDOrder(f1->GetPointlist(),hitQCD);
-    msg.Out()<<"hitQED / hitQCD "<<hitQED<<" "<<hitQCD<<endl;
+    msg.Tracking()<<"hitQED / hitQCD "<<hitQED<<" / "<<hitQCD<<endl;
     if (hitQED > noQEDcpl || hitQCD > noQCDcpl) {
-      msg.Out()<<"Diagram has to be kicked "<<endl;
+      msg.Tracking()<<"Diagram has to be kicked "<<endl;
       ++count;
       if (f1==first) {
 	first = f1->Next;
@@ -1027,8 +1001,7 @@ void Amplitude_Generator::KillHigherOrders(Single_Amplitude * & first,int noQEDc
       f1 = f1->Next;
     }
   }
-  msg.Out()<<"Kicked number of diagrams (KillHigherOrder) "<<count<<endl;
-  //return count;
+  msg.Tracking()<<"Kicked number of diagrams (Amplitude_Generator::KillHigherOrders()) "<<count<<endl;
 }
 
 
@@ -1052,14 +1025,14 @@ int *  Amplitude_Generator::DivideComparisons(int cpu_size, int nampl, int rank)
     int no = int(est_no+0.5);      // round
     start_no[cpu]=no;
     // real shares
-    if (rank==0) msg.Out()<<" cpu"<<cpu<<" "<<start_no[cpu];
+    if (rank==0) msg.Tracking()<<" cpu"<<cpu<<" "<<start_no[cpu];
     no = 0;
     if (cpu>0) no=nampl-start_no[cpu-1];
-    if (rank==0) msg.Out()<<" -> "<<no<<"  ";
+    if (rank==0) msg.Tracking()<<" -> "<<no<<"  ";
     double cmp=total_compare;
     if (cpu>0) cmp=double(start_no[cpu-1])*double((start_no[cpu-1]-1.))*0.5;
     cmp-=double(start_no[cpu])*double(start_no[cpu]-1.)*0.5;
-    if (rank==0) msg.Out()<<" ("<<compare_share[cpu]<<" -> "<<cmp<<") "<<endl;
+    if (rank==0) msg.Tracking()<<" ("<<compare_share[cpu]<<" -> "<<cmp<<") "<<endl;
     compare_share[cpu]=cmp;
   }
   // translate to reverse shares
@@ -1082,7 +1055,7 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
 
   Single_Amplitude* f1;
   Single_Amplitude* f2;
-  msg.Out()<<" in Amplitude_Generator::Compare "<<endl;
+  msg.Debugging()<<" in Amplitude_Generator::Compare "<<endl;
 
   Single_Amplitude*   start_ampl=first;
   Single_Amplitude*   stop_ampl =0;
@@ -1095,7 +1068,7 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
     f1=f1->Next;
   } 
 
-  msg.Out()<<"CPU"<<rank<<" got "<<nampl<<endl;
+  msg.Debugging()<<"CPU"<<rank<<" got "<<nampl<<endl;
 
   int * start_no=DivideComparisons(size,nampl,rank);
 
@@ -1142,8 +1115,8 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
     f1 = f1->Next;
     if (f1==stop_ampl) break;
   }
-  msg.Out()<<"CPU"<<rank<<" did "<<ncomps<<" compares "<<endl;
-  msg.Out()<<"CPU"<<rank<<" switch off "<<noffs<<" amplitudes"<<endl;
+  msg.Debugging()<<"CPU"<<rank<<" did "<<ncomps<<" compares "<<endl;
+  msg.Debugging()<<"CPU"<<rank<<" switch off "<<noffs<<" amplitudes"<<endl;
 
 
 #ifdef _USE_MPI_
@@ -1201,7 +1174,7 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
 #endif
   
   int killed=Kill_Off(first);
-  msg.Out()<<"CPU"<<rank<<" killed "<<killed<<endl;
+  msg.Debugging()<<"CPU"<<rank<<" killed "<<killed<<endl;
 
   f1 = first;
   nampl=0;
@@ -1209,7 +1182,7 @@ void Amplitude_Generator::Compare(Single_Amplitude* &first)
     ++nampl;
     f1=f1->Next;
   } 
-  msg.Out()<<"CPU"<<rank<<" left with "<<nampl<<endl;
+  msg.Debugging()<<"CPU"<<rank<<" left with "<<nampl<<endl;
 }
 
 //==================================================================
@@ -1264,15 +1237,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
     flav[3] = pnext->right->fl;
     if (pnext->right->number<99 && pnext->right->b==-1) in[3] = 1;
   }  
- 
-  /* 
-     if (flav[0].IsVector() && flav[1].IsVector() && flav[2].IsVector() && flav[3].IsVector()) {
-     AORGTOOLS::msg.Out()<<"flav[0] "<<flav[0]<<";"<<in[0]<<endl;
-     AORGTOOLS::msg.Out()<<"flav[1] "<<flav[1]<<";"<<in[1]<<endl;
-     AORGTOOLS::msg.Out()<<"flav[2] "<<flav[2]<<";"<<in[2]<<endl;
-     AORGTOOLS::msg.Out()<<"flav[3] "<<flav[3]<<";"<<in[3]<<endl;
-     }
-  */
+
   //barflags 
   
   Vertex* v = p_model->GetVertex();
@@ -1294,8 +1259,8 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  flav[2]==test.in[3] &&
 	  flav[3]==test.in[2]) 
 	{
-	  //	  AORGTOOLS::msg.Out()<<"4 leg Vertex found !!!"<<endl;
-	  AORGTOOLS::msg.Out()<<"x";
+	  //AORGTOOLS::msg.Out()<<"4 leg Vertex found !!!"<<endl;
+	  //AORGTOOLS::msg.Out()<<"x";
 	  
 	  hit = 1;
 	  
@@ -1315,9 +1280,6 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  }
 	  
 	  //setting the contraction flags
-	  
-	  //if (p->right->number == pnext->number) p->right->m = 1;
-	  //if (p->left->number == pnext->number) p->left->m = 1;
 	  pnext->m  = 1;
 	  
 	  if ((*v)(i)->ncf==1) {
@@ -1400,17 +1362,10 @@ void Amplitude_Generator::CheckFor4Vertices(Single_Amplitude* &first)
   vector<Point*> pcollist;//vector with different color structures
   int counter   = 0;
   int amplcount = 0;
-  //int topperm[2];
-  //topperm[0]=0;
-  //topperm[1]=0;
-
-
-  AORGTOOLS::msg.Out()<<"=============== CheckFor4Vertices ======================="<<endl;  
+ 
+  AORGTOOLS::msg.Debugging()<<"=============== CheckFor4Vertices ======================="<<endl;  
   
   while (f1) { 
-    //topperm[0]=f1->topnum;
-    //topperm[1]=f1->permnum;
-
     amplcount++;
     
     p = f1->GetPointlist();
@@ -1448,7 +1403,6 @@ void Amplitude_Generator::CheckFor4Vertices(Single_Amplitude* &first)
 	    extraAmpl->Next = 0;
 	    
 	    f2 = first;
-	    //muss ueberdacht werden, wohin zeigt der Zeiger ???
 	    while (f2) {
 	      if (f2->Next==0) {
 		f2->Next = extraAmpl;
@@ -1514,11 +1468,6 @@ int Amplitude_Generator::CountRealAmplitudes(Single_Amplitude* first)
 
 Single_Amplitude* Amplitude_Generator::Matching()
 {
-
-  AORGTOOLS::MyTiming watch;
-    
-  watch.Start();
-    
   AORGTOOLS::msg.Out()<<"Matching of topologies..."<<endl;
   int nloop = N-1;
   short int i,j;
@@ -1556,7 +1505,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
   int end_top = single_top->number;
 #endif
 
-  msg.Out()<<" "<<rank<<"/"<<size<<" CPUS  ("<<start_top<<"-"<<end_top<<")"<<endl;
+  msg.Tracking()<<" "<<rank<<"/"<<size<<" CPUS  ("<<start_top<<"-"<<end_top<<")"<<endl;
 
   for(;;) {
     sw1 = 1;
@@ -1592,12 +1541,8 @@ Single_Amplitude* Amplitude_Generator::Matching()
       }
     }
     if (sw1) {
-      //chsum=neusum=qsum=l1sum=l2sum=l3sum=0;
       qsum=l1sum=l2sum=l3sum=0;
       for (j=0;j<N-1;j++) {
- 	if (fl[perm[j]].IsNeutralino()) {
-	  // no rules!!!!
-	}
 	if (fl[perm[j]].IsQuark()) {
 	  if (fl[perm[j]].IsAnti()) {
 	    if (b[perm[j]]==1) qsum--;
@@ -1659,16 +1604,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
       }
     }
     if (sw1) {
-      /*
-	AORGTOOLS::msg.Out()<<endl;
-	if (AORGTOOLS::rpa.gen.Tracking()) {
-	for (j=0;j<N;j++) AORGTOOLS::msg.Out()<<perm[j]<<" "<<fl[perm[j]]<<":";
-	AORGTOOLS::msg.Out()<<endl;
-	}
-      */
-      //AORGTOOLS::msg.Out()<<"Count: "<<count<<"/"<<fak<<endl;
       for (j=start_top;j<end_top;j++) {
-	//	AORGTOOLS::msg.Out()<<"------------------------New Topology "<<j<<" CPU "<<rank<<endl;
 	perm++;
 	int pnum = 100;
 	Set_End(&single_top->p[j][0],perm,pnum);
@@ -1679,7 +1615,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
 	
 	Set_Props(single_top->p[j],2*N-3,first_amp,perm,j,count);
 	
-	Print_P(&single_top->p[j][0]);
+	//Print_P(&single_top->p[j][0]);
       }
     }     
     for (j=nloop-1;j>=0;j--) {
@@ -1702,13 +1638,9 @@ Single_Amplitude* Amplitude_Generator::Matching()
   CollectPreAmplitudes();
 
   if (rank==0) {
-    AORGTOOLS::MyTiming watch;
-    watch.Start();
-    msg.Out()<<" sorting "<<prea_table.size()<<" PreAmpl "<<endl;
+    msg.Debugging()<<" sorting "<<prea_table.size()<<" PreAmpl "<<endl;
     std::stable_sort(prea_table.begin(),prea_table.end(),Compare_Pre_Amplitudes());
-    watch.Stop();
-    watch.PrintTime();
-    msg.Out()<<" sorting done"<<endl;
+    msg.Debugging()<<" sorting done"<<endl;
   }
 
   DistributePreAmplitudes();
@@ -1721,43 +1653,24 @@ Single_Amplitude* Amplitude_Generator::Matching()
 //     MPI::COMM_WORLD.Recv(&dummy,1,MPI::INT, 0,MPI::ANY_TAG);
 // }
 
-  watch.Stop();
-  watch.PrintTime();
+  msg.Debugging()<<"Now CheckFor4Vertices()"<<endl;
 
-  msg.Out()<<"Now CheckFor4Vertices()"<<endl;
-
-  watch.Start();
-  
   CheckFor4Vertices(first_amp);
   
   int OrderQED = 99;
   int OrderQCD = 99;
-  
-  //msg.Out()<<"OrderQED vorher: "<<OrderQED<<endl;
-  //msg.Out()<<"OrderQCD vorher "<<OrderQCD<<endl;
-  
+    
   OrderQED = rpa.me.OrderAlpha12();
   OrderQCD = rpa.me.OrderAlphaS();
   
-  //msg.Out()<<"OrderQED nachher: "<<OrderQED<<endl;
-  //msg.Out()<<"OrderQCD nachher "<<OrderQCD<<endl;
-  
   if (OrderQED != 99 || OrderQCD != 99) KillHigherOrders(first_amp,OrderQED,OrderQCD);
 
-  watch.Stop();
-  watch.PrintTime();
-
-  msg.Out()<<"Now Compare"<<endl;
-
-  watch.Start();
+  msg.Debugging()<<"Now Compare"<<endl;
 
   Compare(first_amp);
 
   // count physical number of 4 Verticies (nampl- n4/3*2 -n44/9*8)
   msg.Out()<<" real number of amplitudes "<<CountRealAmplitudes(first_amp)<<endl<<endl;
-
-  watch.Stop();
-  watch.PrintTime();
   
 #ifdef _USE_MPI_
   if (rank==0) {
@@ -1792,9 +1705,6 @@ void Amplitude_Generator::CommitMPITypes() {
   lf_disp[0] = MPI::Get_address(&sample_lf.m_type);
   lf_disp[1] = MPI::Get_address(&sample_lf.m_partarg);
   for (short int i=1;i>=0;i--) lf_disp[i] -= lf_disp[0];
-  //  msg.Out()<<" make type lf ";
-  //  for (short int i=1;i>=0;i--) msg.Out()<<" "<<lf_disp[i];
-  //  msg.Out()<<endl;
 
   mpi_lf_type = MPI::Datatype::Create_struct(2,lf_blocks,lf_disp,lf_types);
   mpi_lf_type.Commit();
@@ -1810,9 +1720,6 @@ void Amplitude_Generator::CommitMPITypes() {
   cf_disp[1] = MPI::Get_address(&sample_cf.m_partarg);
   cf_disp[2] = MPI::Get_address(&sample_cf.m_strarg);
   for (short int i=2;i>=0;i--) cf_disp[i] -= cf_disp[0];
-//   msg.Out()<<" make type cf ";
-//   for (short int i=2;i>=0;i--) msg.Out()<<" "<<cf_disp[i];
-//  msg.Out()<<endl;
 
   mpi_cf_type = MPI::Datatype::Create_struct(3,cf_blocks,cf_disp,cf_types);
   mpi_cf_type.Commit();
@@ -1827,10 +1734,6 @@ void Amplitude_Generator::CommitMPITypes() {
 
   mpi_sv_type = MPI::Datatype::Create_struct(1,sv_blocks,sv_disp,sv_types);
   mpi_sv_type.Commit();
-
-  //  msg.Out()<<" make type sv ";
-  //  for (short int i=0;i>=0;i--) msg.Out()<<" "<<sv_disp[i];
-  //  msg.Out()<<endl;
 
   // ----------------------------------------
 
@@ -1849,15 +1752,11 @@ void Amplitude_Generator::CommitMPITypes() {
 
 
   for (short int i=5;i>=0;i--) point_disp[i] -= point_disp[0];
-  //  msg.Out()<<" make type point ";
-  //  for (short int i=5;i>=0;i--) msg.Out()<<" "<<point_disp[i];
-
-
+  
   mpi_point_type = MPI::Datatype::Create_struct(6,point_blocks,point_disp,point_types);
   mpi_point_type.Commit();
 #endif
 
-  //  abort();
 }
 
 

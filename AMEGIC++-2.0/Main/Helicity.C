@@ -47,7 +47,7 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
       Slist[i].Mult      = 1;
       Slist[i].polfactor = 1.;
       Slist[i].partner   = -1;
-      AORGTOOLS::msg.Tracking()<<i<<":";
+      AORGTOOLS::msg.Debugging()<<i<<":";
       for (j=0;j<N;j++){
 	int div = 1;
 	for (k=0;k<j;k++) div *= pl[k].num;

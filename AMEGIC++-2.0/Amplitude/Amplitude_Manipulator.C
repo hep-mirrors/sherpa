@@ -21,14 +21,14 @@ void Amplitude_Manipulator::SetPrev(Point* p)
 
 void Amplitude_Manipulator::FixSign(Single_Amplitude* first_amp)
 {
-  if (rpa.gen.Tracking()) 
-    AORGTOOLS::msg.Tracking()<<"===================================================================="<<endl;
+  if (rpa.gen.Debugging()) 
+    AORGTOOLS::msg.Debugging()<<"===================================================================="<<endl;
   int fermnumber = 0;
   for (short int i=0;i<N;i++) {
     if (fl[i].IsFermion()) fermnumber++;
   }
 
-  if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Number of Fermions: "<<fermnumber<<endl;
+  if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Number of Fermions: "<<fermnumber<<endl;
 
   int* perm           = new int[fermnumber];
   Single_Amplitude* f = first_amp;
@@ -38,23 +38,23 @@ void Amplitude_Manipulator::FixSign(Single_Amplitude* first_amp)
   int count = 1;
 
   while (f) { 
-    if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<count<<". Amplitude-------------------------"<<endl;
+    if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<count<<". Amplitude-------------------------"<<endl;
     count++;
     p = f->GetPointlist();
     p[0].prev = 0;
     SetPrev(p);
     f->sign = 1;
-    if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Sign before: "<<f->sign<<endl;
+    if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Sign before: "<<f->sign<<endl;
     GetPerm(perm,f,f->sign);
-    if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Sign after props: "<<f->sign<<endl;
+    if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Sign after props: "<<f->sign<<endl;
     f->sign *= Permutation(perm,fermnumber);
-    if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Sign after : "<<f->sign<<endl;
+    if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Sign after : "<<f->sign<<endl;
     f = f->Next;
   }
   
   delete[] perm;
-  if (rpa.gen.Tracking()) 
-    AORGTOOLS::msg.Tracking()<<"===================================================================="<<endl;
+  if (rpa.gen.Debugging()) 
+    AORGTOOLS::msg.Debugging()<<"===================================================================="<<endl;
 }
 
 void Amplitude_Manipulator::GetPerm(int* perm,Single_Amplitude* f,int& sign)
@@ -71,13 +71,13 @@ void Amplitude_Manipulator::GetPerm(int* perm,Single_Amplitude* f,int& sign)
   do {
     pnext = FindNext(p);
     if (pnext) {
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"The next is: "<<pnext->number<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"The next is: "<<pnext->number<<endl;
       Point* pb;
       Point* pe;
       GetFermionLine(pnext,pb,pe);
       perm[pnumb]   = pb->number;
       perm[pnumb+1] = pe->number;
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Permutation: "<<perm[pnumb]<<";"<<perm[pnumb+1]<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Permutation: "<<perm[pnumb]<<";"<<perm[pnumb+1]<<endl;
       SetFermionNumberFlow(pb,pe);
       sign *= SetPropOrientation(pb,pe);
       f->AddSpinorDirection(pb->number,pe->number);
@@ -86,7 +86,7 @@ void Amplitude_Manipulator::GetPerm(int* perm,Single_Amplitude* f,int& sign)
   } 
   while(pnext);  
   
-  if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Fermions found: "<<pnumb<<endl;
+  if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Fermions found: "<<pnumb<<endl;
 }
 
 Point* Amplitude_Manipulator::FindNext(Point* p)
@@ -110,7 +110,7 @@ void Amplitude_Manipulator::GetFermionLine(Point* pcurr,Point*& pbegin,Point*& p
   pbegin = BackwardLine(pcurr);
   pend   = ForwardLine(pcurr);
 
-  if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Natural Orientation: "<<pbegin->number<<";"<<pend->number<<endl;
+  if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Natural Orientation: "<<pbegin->number<<";"<<pend->number<<endl;
 
   if (b[pbegin->number]==-1 ||
       b[pend->number]  ==-1) {
@@ -245,7 +245,7 @@ int Amplitude_Manipulator::SetPropOrientation(Point* pb,Point* pe)
 {
   int sign = 1;
   
-  if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"gegen orientierung: "<<pb->number<<" -> "<<pe->number<<endl;
+  if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Opposite to orientation: "<<pb->number<<" -> "<<pe->number<<endl;
 
   if (pb->prev==0) ForwardLineOrientation(pb,sign);
   else BackwardLineOrientation(pb,sign);
@@ -257,17 +257,17 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
   if (p->prev==0) {
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<p->number<<" is vbar"<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<p->number<<" is vbar"<<endl;
     }
   }
   if (p->left==0) {
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<p->number<<" is u"<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<p->number<<" is u"<<endl;
     }
     if (b[p->number]==1) {
       // O----<--- Orientation
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<p->number<<" is v"<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<p->number<<" is v"<<endl;
     }
     return;
   }
@@ -309,8 +309,8 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
     if (p->right->fl.Majorana())  majo++;
 
     if (vect==1 && ferm==2 && majo!=2) {
-      if (rpa.gen.Tracking()) 
-	AORGTOOLS::msg.Tracking()<<"FL GammaPrime: "<<p->number<<" -> "<<p->left->number<<";"<<p->right->number<<endl;
+      if (rpa.gen.Debugging()) 
+	AORGTOOLS::msg.Debugging()<<"FL GammaPrime: "<<p->number<<" -> "<<p->left->number<<";"<<p->right->number<<endl;
       Complex h = p->cpl[0];
       p->cpl[0] = -p->cpl[1];
       p->cpl[1] = -h;
@@ -320,12 +320,12 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
   if (minus==-1) {
     sign *= -1;
     //if (!p->fl.IsAnti()) p->fl = p->fl.Bar();
-    if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"FL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
+    if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"FL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
   }
   else {
     if (p->number>99) {
       //if (p->fl.IsAnti()) p->fl = p->fl.Bar();
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"FL Flavour in spin flow: "<<p->fl<<";"<<p->t<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"FL Flavour in spin flow: "<<p->fl<<";"<<p->t<<endl;
     }
   }
 
@@ -344,17 +344,17 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
   if (p->left==0) {  
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<p->number<<" is vbar"<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<p->number<<" is vbar"<<endl;
     }
     if (b[p->number]==1) {
       // O----<--- Orientation
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<p->number<<" is ubar"<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<p->number<<" is ubar"<<endl;
     }    
   }
   if (p->prev==0) {  
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<p->number<<" is u"<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<p->number<<" is u"<<endl;
     }
     return;
   }
@@ -396,7 +396,7 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
     if ((p->prev)->right->fl.Majorana())  majo++;
 
     if (vect==1 && ferm==2 && majo!=2) {
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"BL GammaPrime: "<<(p->prev)->number<<" -> "<<
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"BL GammaPrime: "<<(p->prev)->number<<" -> "<<
 			   (p->prev)->left->number<<";"<<(p->prev)->right->number<<endl;
       Complex h         = (p->prev)->cpl[0];
       (p->prev)->cpl[0] = -(p->prev)->cpl[1];
@@ -407,12 +407,12 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
   if (minus==-1) {
     sign *= -1;
     //if (!p->fl.IsAnti()) p->fl = p->fl.Bar();
-    if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"BL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
+    if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"BL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
   }
   else {
     if (p->number>99) {
       //if (p->fl.IsAnti()) p->fl = p->fl.Bar();
-      if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"BL Flavour in spin flow             : "<<p->fl<<";"<<p->t<<endl;
+      if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"BL Flavour in spin flow             : "<<p->fl<<";"<<p->t<<endl;
     }
   }
 
@@ -472,7 +472,7 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
   }
   
   if (majoflag) {
-    if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
+    if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
     if (!pb->fl.IsAnti() && b[pb->number]==-1) majoflag=1;
     if (pb->fl.IsAnti()  && b[pb->number]==-1) majoflag=-1;
     if (!pb->fl.IsAnti() && b[pb->number]==1)  majoflag=-1;
@@ -490,7 +490,7 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
     else SetBackwardFNFlow(pe,majoflag);
   }
   else {   
-    if (rpa.gen.Tracking()) AORGTOOLS::msg.Tracking()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
+    if (rpa.gen.Debugging()) AORGTOOLS::msg.Debugging()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
     if (pb->prev==0) SetForwardFNFlow(pb,0);
     else SetBackwardFNFlow(pb,0);
   }

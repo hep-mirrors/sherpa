@@ -82,13 +82,7 @@ void Super_Amplitude::Init(string _str)
   }
 
   ReduceZfuncs(str);
-  /*  
-  cout<<"New Superamplitude!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
-  Amplitude_Group::PrintGraph();
-  Single_Amplitude_Base::PrintGraph();
-  abort();
-  */
-
+ 
   sign = graphs.front()->GetSign();
 
   int hit = 0;
@@ -103,7 +97,7 @@ void Super_Amplitude::Init(string _str)
       msg.Out()<<endl;
     }
     if (sign!=(*g)->GetSign()) {
-      msg.Tracking()<<" Different Signs in the sub amplitudes!"<<endl;
+      msg.Debugging()<<" Different Signs in the sub amplitudes!"<<endl;
       hit = 1;
       // *AS*      break;
     }
@@ -113,8 +107,6 @@ void Super_Amplitude::Init(string _str)
 
 int Super_Amplitude::NewSigns(vector<vector<int> > & zsignlists) {
   int hit =0;
-
-  //  cout<<" in Super_Amplitude::NewSigns "<<endl;
 
   // don't change the first sign of each super zfunc
   for (int i=zsignlists.size()-1;i>=0;--i) {
@@ -131,37 +123,25 @@ int Super_Amplitude::NewSigns(vector<vector<int> > & zsignlists) {
     if (hit) break;
   }
 
-  /*
-  cout <<" new Signlist: "<<endl;
-  for (int i=0;i<zsignlists.size();++i) { 
-    for (int j=0;j<zsignlists[i].size();++j) {    
-      cout<<" "<<zsignlists[i][j];
-    }
-    cout<<endl;
-  }
-  */
-
   return hit;
 }
 
 
 void Super_Amplitude::SetZfuncSign()
 {
-  //  cout<<"In SetZfuncSign"<<endl;
   //search for suitable factor
 
   vector<vector<int> > zsignlists;
 
   for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
 
-// if super zf (+)
+    // if super zf (+)
       if ((*zit)->GetOp()=='+')
 	  zsignlists.push_back(vector<int>((*zit)->GetSize(),1));
       else
 	  zsignlists.push_back(vector<int>(1,1));
-// if pregroup zf (*)
-// if single zf
-
+      // if pregroup zf (*)
+      // if single zf
   }
 
   int global_sign=GetSign();
@@ -169,7 +149,7 @@ void Super_Amplitude::SetZfuncSign()
   int ok;
   for (;;) {
     ok=1;
-    // probieren
+    // try
     for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) { 
       int sign=1;
       Zfunc_List* gzlist = (*g)->GetZlist(); 
@@ -182,7 +162,7 @@ void Super_Amplitude::SetZfuncSign()
 		zsize=1;
 	  for (int j=0;j<zsize;j++) {
 	    Zfunc* z = (*(*zit))[j]; 
-	    if (zsize==1) z=(*zit);  // *AS* ? *-group? !!!!!!!
+	    if (zsize==1) z=(*zit);  
 	    if ((*gzit)->m_str==z->m_str) {
 	      //gotcha
 	      sign*=zsignlists[i][j];
@@ -194,27 +174,17 @@ void Super_Amplitude::SetZfuncSign()
 	ok = 0;
 	break;
       }
-      //      cout<<"  Global Sign = "<<global_sign<<endl;
-      /*
-      int i =0;
-      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
-	for (int j=0;j<(*zit)->GetSize();++j) {
-	  cout<<"   "<<(*(*zit))[j]->m_str<<" has sign "<<zsignlists[i][j]<<endl;
-	}
-      }
-      */
-
     }
     if (ok) {
       // found permutation
-      msg.Out()<<"Found a suitable permutation!!"<<endl;
+      msg.Debugging()<<"Found a suitable permutation!!"<<endl;
       //      cout<<"  Global Sign = "<<global_sign<<endl;
       int i =0;
       for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
 	for (int j=0;j<(*zit)->GetSize();++j) {
 	    if ((*zit)->GetOp()=='+') { 
 	      (*zit)->SetSign(j,zsignlists[i][j]);
-	      //	      cout<<"   "<<(*(*zit))[j]->m_str<<" has sign "<<zsignlists[i][j]<<endl;
+	      //cout<<"   "<<(*(*zit))[j]->m_str<<" has sign "<<zsignlists[i][j]<<endl;
 	  }
 	}
       }
@@ -228,49 +198,6 @@ void Super_Amplitude::SetZfuncSign()
     abort();
   }
 }
-
-/*
-void Super_Amplitude::SetZfuncSign()
-{
-  cout<<"In SetZfuncSign"<<endl;
-  //search for suitable factor
-  int ok = 0;
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
-    if ((*zit)->GetSize()>1) {
-      ok = 1;
-      vector<int> zsignlist;
-      for (int i=0;i<(*zit)->GetSize();i++) {
-	Zfunc* z = (*(*zit))[i];
-	int zsign = 0;
-	for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) { 
-	  Zfunc_List* gzlist = (*g)->GetZlist(); 
-	  for (Zfunc_Iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
-	    if ((*gzit)->m_str==z->m_str) {
-	      //gotcha
-	      if (zsign==0) zsign = (*g)->GetSign();
-	      if (zsign!=(*g)->GetSign()) ok = 0;
-	      break;
-	    }
-	  }
-	  if (ok==0) break;
-	}
-	if (ok==0) break;
-	      else zsignlist.push_back(zsign);
-      }
-      if (ok==1) {
-	cout<<"Found a suitable factor!!"<<endl;
-	//found a factor 
-	for (int i=0;i<(*zit)->GetSize();i++) (*zit)->SetSign(i,sign*zsignlist[i]);
-	break;
-      }
-    }
-  }
-  if (ok==0) {
-    cerr<<"Found no suitable factor in Super_Amplitude::SetZfuncSign()!"<<endl;
-    abort();
-  }
-}
-*/
 
 void Super_Amplitude::ReduceZfuncs(string str)
 {
@@ -346,7 +273,8 @@ int Super_Amplitude::FindNewNumber(int number)
 }
  
 void Super_Amplitude::PrintGraph() 
-{
+{  
+
   msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
   Single_Amplitude_Base::PrintGraph();
 
@@ -355,7 +283,6 @@ void Super_Amplitude::PrintGraph()
 
 Complex Super_Amplitude::Zvalue(int ihel,int * signlist)   
   {return Single_Amplitude_Base::Zvalue(ihel,signlist);}
-//{return Amplitude_Group::Zvalue(ihel,signlist);}
 
 Complex Super_Amplitude::Zvalue(String_Handler * sh,int ihel)   
   {return Single_Amplitude_Base::Zvalue(sh,ihel);}

@@ -630,7 +630,7 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 	  m_totalxs += m_procs[i]->Total();
 	  m_max     += m_procs[i]->Max();
 	}
-	msg.Out()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
+	msg.Tracking()<<m_name<<" : Set total xsec and max at ycut = "<<ycut
 		    <<" : "<<endl<<"   "<<m_totalxs<<" / "<<m_max<<endl;
 	return 1;
       }

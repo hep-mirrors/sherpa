@@ -147,8 +147,7 @@ void Single_Amplitude::AddSpinorDirection(const int& from,const int& to)
 void Single_Amplitude::PrintGraph() 
 {
   if (!rpa.gen.Debugging()) return;
-  cout<<"rpa.gen.Debugging()="<<rpa.gen.Debugging()<<endl;
-
+  
   AORGTOOLS::msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
 
   Single_Amplitude_Base::PrintGraph();
@@ -182,7 +181,6 @@ void Single_Amplitude::PrintGraph()
     AORGTOOLS::msg.Out()<<sd->from<<" -> "<<sd->to<<endl;
     sd = sd->Next;     
   }
-
   AORGTOOLS::msg.Out()<<"Overall sign "<<sign<<endl;
 }
 

@@ -110,7 +110,7 @@ Kabbala Single_Amplitude_Base::SingleZvalueTensor(Zfunc* z,vector<int>* iz, vect
   Kabbala value;
   int narg=z->m_narg - z->p_calculator->GetScalarNumb();
   if(z->p_arguments[narg-2]!=z->p_arguments[narg-1]){
-    cout<<"Single_Amplitude_Base::SingleZvalueTensor: Unexpected tensor sign! "<<(*iargs)[2*k+1]<<" "<<k<<endl;
+    msg.Error()<<"Single_Amplitude_Base::SingleZvalueTensor: Unexpected tensor sign! "<<(*iargs)[2*k+1]<<" "<<k<<endl;
     z->Print();
     abort();
   }
@@ -149,7 +149,7 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
     Kabbala hlp;
 
     if(z->GetSize()!=2){
-      cout<<"Invalid Zfunc_ProdGroup!"<<endl;
+      msg.Error()<<"Invalid Zfunc_ProdGroup!"<<endl;
       abort();
     }
     vector<int> iz_s;
@@ -481,7 +481,7 @@ void Single_Amplitude_Base::GroupZfuncs()
 	if(!hit){++ilt;++zit;}
       }
       if(ia!=2){
-	cout<<"Error Single_Amplitude_Base::GroupZfuncs: index appeared "<<ia<<" times!"<<endl;
+	msg.Error()<<"Error Single_Amplitude_Base::GroupZfuncs: index appeared "<<ia<<" times!"<<endl;
 	zh[0]->Print();zh[1]->Print();
 	abort();
       }
@@ -503,9 +503,6 @@ Complex Single_Amplitude_Base::Zvalue(String_Handler * sh, int ihel)
 Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist) 
 {
   if (signlist==0) return shand->Zvalue(amplnumber,ihel);
-  
-  //cout<<"Amplitude number "<<amplnumber;
-  //cout<<"============================================================================"<<endl;
   
   if(zlist.size()>1) GroupZfuncs();
     
@@ -543,7 +540,6 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
 
   if (sign<0) value = -value; 
  
-  //if (buildstring) cout<<"Amplitude "<<amplnumber<<": "<<value.String()<<endl;
   if (buildstring) shand->Set_String(amplnumber,ihel,value.String());
   return value.Value();
 }

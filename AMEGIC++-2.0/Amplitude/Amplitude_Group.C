@@ -4,9 +4,6 @@
 #include "Zfunc.H"
 #include "Basic_Sfuncs.H"
 
-#include "MyTiming.H"
-#include "prof.hh"
-
 #include <algorithm>
 
 using namespace AMEGIC;
@@ -47,7 +44,6 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
 					Flavour* _fl,
 					String_Handler* _shand)
 {
-  //  PROFILE_HERE;
   // fill map
   for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) {    
     Zfunc_List* zl = (*g)->GetZlist();
@@ -87,11 +83,10 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
   sort(family_table.begin(), family_table.end(),Compare_Graph_Families());
 
   // family output
-  cout<<"families="<<family_table.size()<<endl;
+  msg.Debugging()<<"families="<<family_table.size()<<endl;
   for (Graph_Families::iterator git=family_table.begin(); git!=family_table.end();++git) {
-    cout<<" "<<(*git)->znumber<<" "<<(*git)->topnumber<<" "<<(*git)->permnumber<<" - "
+    msg.Debugging()<<" "<<(*git)->znumber<<" "<<(*git)->topnumber<<" "<<(*git)->permnumber<<" - "
 	<<(*git)->graphs.size()<<endl;
-    //    cout<<"  : "<<(*git)->banner<<endl;
   } 
 
   // count zn
@@ -102,7 +97,7 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
       ++zncount;
     }
   }
-  cout<<" zncount="<<zncount<<endl;
+  msg.Debugging()<<" zncount="<<zncount<<endl;
 
   //using the Kabbala value of the Zfunc
   String_Tree st;
@@ -111,10 +106,6 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
 
 
   int combine_step=0;
-
-  MyTiming watch;
-  watch.Start();
-
 
   for (;;) {
     // basic output
@@ -154,8 +145,7 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
       }
     }
 
-    watch.PrintTime();
-    msg.Out()<<"  nsuper="<<nsuper<<"  ("<<nampl<<")  families="<<family_table.size()<<endl;
+    msg.Tracking()<<"  nsuper="<<nsuper<<"  ("<<nampl<<")  families="<<family_table.size()<<endl;
 
     // if only one family cluster finished
     if (family_table.size()==zncount) break;
@@ -225,14 +215,10 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
       globalstr+=string("+") + family_table[i]->banner;
   }
 
-//   cout<<"Global Nachher: "<<globalstr<<endl;
+  //std::cout<<"global after: "<<globalstr<<endl;
   sknot* sh = st.String2Tree(globalstr);
   st.Addends(sh,addend_list);
-  cout<<" nsuper="<<addend_list.size()<<endl;
-
-   watch.Stop();
-  watch.PrintTime();
-
+  //std::cout<<" nsuper="<<addend_list.size()<<endl;
 
   for (list<sknot*>::iterator it=addend_list.begin();it!=addend_list.end();++it) {
     string newaddend = st.Tree2String(*it,0); 
@@ -257,8 +243,6 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
       graphs.push_back(sg);
     }
   }
-
-  //abort();
 }
 
 Amplitude_Base* Amplitude_Group::GetSingleGraph(list<sknot*>& zfunclist)

@@ -472,8 +472,8 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
     if (m_nin+m_nout==4) {
       double t = (_p[0]-_p[2]).Abs2();
       double u = (_p[0]-_p[3]).Abs2();
-      pt2 = AMATOOLS::sqr(_p[2][1])+AMATOOLS::sqr(_p[2][2]);
-      //pt2 = 2.*s*t*u/(s*s+t*t+u*u);
+      //pt2 = AMATOOLS::sqr(_p[2][1])+AMATOOLS::sqr(_p[2][2]);
+      pt2 = 2.*s*t*u/(s*s+t*t+u*u);
     }
     return pt2;
   case 2  :
