@@ -1,0 +1,72 @@
+DIRS="ATOOLS-2.0 PDF-1.0 BEAM-1.0 PHASIC++-1.0 MODEL-1.0 EXTRA_XS-1.0"
+DIRS=$DIRS" APACIC++-2.0 AMEGIC++-2.0 AMISIC++-1.0 SHERPA-1.0 COMPARE-1.0"
+
+for I in $* ; do
+  if [ "$I" = "-c" ]; then CLEAN=TRUE 
+  elif [ "$I" = "-f" ]; then FORCE=TRUE 
+  elif [ "$I" = "--enable-clhep" ]; then CLHEP=--enable-clhep 
+  elif [ "$I" = "-O2" ]; then OPTIMIZE=-O2 
+  elif [ "$I" = "-t" ]; then TOTAL=TRUE 
+  elif [ "$I" = "-h" ]; then \
+    echo "makeinstall options: -c             \"make clean\" before compiling" && \
+    echo "                     -f             force extraction of tar files" && \
+    echo "                     -t             apply libtool and aclocal before compiling" && \
+    echo "                     -O2            compile with \"-O2\" " && \
+    echo "                     --enable-clhep enable CLHEP support" && \
+    echo "                     -h             display this help and exit" && \
+    exit 0
+  else echo "makeinstall: error: unrecognized option $I" && exit 1 ;
+  fi
+done
+
+echo "**************************************"
+echo "*   extracting the SHERPA package    *"
+echo "**************************************"
+ALL=
+for I in $DIRS;
+do
+  if test -s $I.tar.gz; then
+    echo "makeinstall: testing for $I"
+    if `test ! -d $I` || `test "$FORCE" = "TRUE"` ; then 
+      echo "======================================"
+      echo " extracting $I"
+      echo "======================================"
+      tar -xzvf $I.tar.gz
+      ALL=$ALL" "$I.tar.gz
+    else
+      echo "makeinstall: warning: directory $I already present"
+    fi
+  else
+    echo "makeinstall: warning: tar file $I.tar.gz not found"
+  fi
+done
+rm -f $ALL
+
+echo "**************************************"
+echo "*   installing the SHERPA package    *"
+echo "**************************************"
+for I in $DIRS;
+do
+  if test -d $I; then
+    echo "======================================"
+    echo " making install in $I"
+    echo "======================================"
+    cd $I 
+    if `test "$TOTAL" = "TRUE"` ; then
+      libtoolize --force
+      aclocal
+      automake -a
+      autoconf
+    fi
+    ./configure $CLHEP 
+    if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
+    if ! make install -j2 "CXXFLAGS=-g $OPTIMIZE" "FFLAGS=-g" ; then
+      echo "makeinstall: error: \"make install\" in $I failed"
+      exit 1
+    fi
+    cd ..
+  else
+    echo "makeinstall: error: directory $I not found"
+    exit 2
+  fi
+done;
