@@ -8,6 +8,9 @@ MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+endif
 
 lib_LTLIBRARIES = libToolsOrg.la
 libToolsOrg_la_SOURCES        = \
@@ -28,7 +31,8 @@ libToolsOrg_la_SOURCES        = \
 				Type.C \
 				Info_Key.C \
 				Integration_Info.C \
-				Debugger.C
+				Debugger.C \
+				My_Root.C
 noinst_HEADERS        =	\
 			Exception.H \
 			Exception_Handler.H \
@@ -60,7 +64,8 @@ noinst_HEADERS        =	\
 			Debugger.H \
 			Debugger.inl.H \
 			Node.H \
-			Node.C
+			Node.C \
+			My_Root.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)
-INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
+INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
