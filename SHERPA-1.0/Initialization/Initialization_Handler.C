@@ -66,12 +66,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   ExtractCommandLineParameters(argc, argv);
 
-  if (m_mode>8999) {
-    p_dataread         = new Data_Read(m_path+m_file);
-    m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
-    rpa.Init(m_path,m_file);
-    return;
-  }
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
@@ -133,11 +127,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
 
   bool okay = InitializeTheIO();
-  if (m_mode>8999) {
-    okay &= InitializeTheExternalMC();
-    InitializeTheAnalyses();
-    return true;
-  }
 
   okay      = okay && InitializeTheModel();  
 
@@ -156,6 +145,12 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
 
   if (!CheckBeamISRConsistency()) return 0.;
   
+  if (m_mode>8999) {
+    okay &= InitializeTheExternalMC();
+    InitializeTheAnalyses();
+    return true;
+  }
+
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   //  only if events:
@@ -315,6 +310,7 @@ bool Initialization_Handler::InitializeThePDFs()
       abort();
     }
   }
+  Lund_Interface::SetISRHandler(m_isrhandlers[isr::hard_process]);
   return 1;
 }
 
