@@ -34,6 +34,7 @@ noinst_HEADERS        =	\
 	         	PDF_Base.H \
 		 	PDF_Electron.H \
 			CTEQ6_Fortran_Interface.H \
+			GRVph_Fortran_Interface.H \
 			PDF_MRST99.H \
 			PDF_Handler.H \
 			ISR_Base.H \
