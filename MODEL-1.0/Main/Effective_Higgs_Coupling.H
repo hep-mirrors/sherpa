@@ -1,0 +1,24 @@
+#ifndef Effective_Higgs_Coupling_H
+#define Effective_Higgs_Coupling_H
+
+#include "MyComplex.H"
+
+namespace MODEL {
+
+
+  class Effective_Higgs_Coupling  {
+    double m_mhiggs;
+    Complex f(double); 
+  public:
+
+    // constructor
+    Effective_Higgs_Coupling(const double mhiggs);
+    
+    double GetFermionContribution(double mass);
+  };
+
+}
+
+
+
+#endif

@@ -384,6 +384,9 @@ namespace ATOOLS {
       f_2_2300               = 9050225,
       f_2_2340               = 9060225,
 
+      // dummy for shrinked gluon in 4gluon-higgs vertex
+      shgluon                = 999,
+
       none                   = 99999
     };
   };
@@ -613,7 +616,7 @@ namespace ATOOLS {
       return ((Strong()>0) && (IntSpin()==1) && !(Majorana())); 
     }
     inline bool IsGluon() const {
-      return (kfc==kf::gluon); 
+      return (kfc==kf::gluon || kfc==kf::shgluon); 
     }
     inline bool IsJet() const {
       return (kfc==kf::jet); 
@@ -760,7 +763,11 @@ namespace ATOOLS {
       return 0;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Flavour& f);
+     inline bool Is5VDummy() const {
+      return (kfc==kf::shgluon); 
+    }   
+
+   friend std::ostream& operator<<(std::ostream& os, const Flavour& f);
     int HepEvt();
     void FromHepEvt(int code);
     void FromHadron(int code);

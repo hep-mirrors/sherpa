@@ -63,7 +63,7 @@ namespace ATOOLS {
 	        MSSM     = 4, 
 	        THDM     = 5,
 	        ADD      = 7,
-	        SMHL     = 7,
+	        SMEHC    = 8,
 	        Unknown  = 99
     };
   };

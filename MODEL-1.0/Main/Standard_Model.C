@@ -2,6 +2,7 @@
 #include "Running_AlphaQED.H"
 #include "Running_AlphaS.H"
 #include "Running_Fermion_Mass.H"
+#include "Effective_Higgs_Coupling.H"
 #include "Message.H"
 #include "Hdecay_Fortran_Interface.H"
 
@@ -83,6 +84,15 @@ void Standard_Model::ReadInFile() {
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::e).Name()),me));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::mu).Name()),mmu));
   p_functions->insert(std::make_pair(std::string("m")+std::string(Flavour(kf::tau).Name()),mtau));
+
+  //Effective coupling for Higgs-Gluon-Gluon / Higgs-3 Gluon /Higgs-4 Gluon vertices 
+  double eh=2./3.;
+  if (p_dataread->GetValue<int>("FINITE_TOP_MASS",0)==1) {
+    double hm=Flavour(kf::h).Mass();
+    Effective_Higgs_Coupling ehc(hm);
+    eh = ehc.GetFermionContribution(Flavour(kf::t).Mass());
+  }
+  p_constants->insert(std::make_pair(std::string("Higgs_gg_fac"),eh));
 }
 
 

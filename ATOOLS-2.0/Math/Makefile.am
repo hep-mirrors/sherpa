@@ -27,7 +27,8 @@ libToolsMath_la_SOURCES       =	\
 				Fast_Function.C \
 				Gauss_Integrator.C \
 				Histogram.C \
-				Variable.C 
+				Variable.C \
+				Permutation.C
 noinst_HEADERS        =	\
 			MathTools.H \
 			Random.H \
@@ -49,7 +50,8 @@ noinst_HEADERS        =	\
 			Data_To_Function.H \
 			Data_To_Function.inl.H \
 			Data_To_Function.C \
-			Histogram.H
+			Histogram.H \
+			Permutation.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)

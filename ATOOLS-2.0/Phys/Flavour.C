@@ -136,6 +136,7 @@ Flavour::Flavour(kf::code _kfc, bool _anti) {
   if (_kfc==kf::photon)   return;
   if (_kfc==kf::Z)        return;
   if (_kfc==kf::gluon)    return;
+  if (_kfc==kf::shgluon)  return;
   if (_kfc==kf::h)        return;
   if (_kfc==kf::h0)       return;
   if (_kfc==kf::H0)       return;
@@ -156,6 +157,7 @@ const Flavour Flavour::Bar() const {
   if (flbar==Flavour(kf::photon))   return flbar;
   if (flbar==Flavour(kf::Z))        return flbar;
   if (flbar==Flavour(kf::gluon))    return flbar;
+  if (flbar==Flavour(kf::shgluon))  return flbar;
   if (flbar==Flavour(kf::h))        return flbar;
   if (flbar==Flavour(kf::h0))       return flbar;
   if (flbar==Flavour(kf::H0))       return flbar;
@@ -509,6 +511,10 @@ void ATOOLS::ParticleInit(std::string path)
       if (kfc==22)
 	*(pi++)=Part_Info( kf::code(26), mass, width, charge, icharge, 
 			   strong, spin, Majorana, Take, stable, massive, "isrphoton",1);
+      //dummy for 4gluon-higgs vertex
+      if (kfc==21)
+	*(pi++)=Part_Info( kf::code(999), mass, width, charge, icharge, 
+			   strong, spin, Majorana, Take, stable, massive, "shgluon",1);
       kfcold = kfc;
     }
   }
