@@ -161,6 +161,9 @@ namespace PHASIC {
     inline Phase_Space_Handler *const PSHandler(const bool own=true) 
     { if (own) return p_pshandler; return p_activepshandler; }
     
+    inline void CreateMomenta(const size_t n)
+    { delete p_momenta; p_momenta = new ATOOLS::Vec4D[n]; }
+
   };// end of class Integrable_Base
 
 }// end of namespace PHASIC
