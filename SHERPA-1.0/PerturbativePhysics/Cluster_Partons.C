@@ -556,7 +556,26 @@ int Cluster_Partons::SetColours(XS_Base * xs, Vec4D * p, Flavour * fl)
 //     std::cout<<proc->Name()<<std::endl;
 //     std::cout<<xs->Name()<<std::endl;
 //     std::cout<<" ("<<m_hard_nqed<<","<<m_hard_nqcd<<")\n";
-    return xs->SetColours(p);
+    bool test=xs->SetColours(p);
+    // check colour consistency 
+    bool check=true;
+    for (int i=0; i<4; ++i) {
+      if (fl[i].IsQuark()) {
+	if (fl[i].IsAnti() && (xs->Colours()[i][0]!=0 || xs->Colours()[i][1]==0)) check=false;
+	if (!fl[i].IsAnti() && (xs->Colours()[i][0]==0 || xs->Colours()[i][1]!=0)) check=false;
+      }
+      if (fl[i].IsGluon()) {
+	if (xs->Colours()[i][0]==0 || xs->Colours()[i][1]==0) check=false;
+      }
+      if (!check) break;
+    }
+    if (!check) {
+      std::cout<<" colour check failed !!!\n";
+      for (int i=0; i<4; ++i) {
+	std::cout<<i<<" : "<<fl[i]<<" ("<<xs->Colours()[i][0]<<","<<xs->Colours()[i][1]<<") \n";
+      }
+    }
+    return test;
   }
   else {
     // count existing ew and strong order
