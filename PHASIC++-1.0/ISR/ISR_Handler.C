@@ -78,14 +78,9 @@ bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches,
 }
 
 bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _partons) {
-  
-  std::cout<<"In CheckConsistency"<<endl;
-    
   bool fit = 1;
   for (int i=0;i<2;i++) {
-    cout<<"Before if ()"<<endl;
     if (p_ISRBase[i]->On()) {
-      cout<<"In it "<<endl;
       fit = 0;
       msg.Debugging()<<"ISR_Handler::CheckConsistency : "<<_partons[i]<<" "<<PDF(i)->Bunch()<<endl;
       for (int j = 0;j<(PDF(i)->Partons()).size();j++) {
@@ -117,6 +112,7 @@ void ISR_Handler::SetPartonMasses(Flavour * _fl) {
   m_fiXVECs[0] = Vec4D(E1,0.,0., sqrt(sqr(E1)-m_mass12));
   m_fiXVECs[1] = Vec4D(E2,0.,0.,-sqrt(sqr(E1)-m_mass12));
 }
+
 
 bool ISR_Handler::MakeISR(Vec4D * p,double sprime,double y) 
 {
@@ -166,6 +162,7 @@ bool ISR_Handler::MakeISR(Vec4D * p,double sprime,double y)
 
    ---------------------------------------------------------------- */
 
+
 bool ISR_Handler::CalculateWeight(double scale) 
 {
   switch (m_mode) {
@@ -206,11 +203,14 @@ double ISR_Handler::Weight2(Flavour* flin)
   return (p_ISRBase[0]->Weight(flin[1]) * p_ISRBase[1]->Weight(flin[0]));
 }
 
+
+
 /* ----------------------------------------------------------------
 
    Boosts
 
    ---------------------------------------------------------------- */
+
 
 void  ISR_Handler::BoostInCMS(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) m_CMSBoost.Boost(p[i]);
