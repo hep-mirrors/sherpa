@@ -3,6 +3,7 @@
 #include "Interaction_Model_Handler.H"
 #include "Message.H"
 #include "Topology.H"
+#include "Algebra_Interpreter.H"
 #include "MyStrStream.H"
 
 #include <iomanip>
@@ -357,8 +358,8 @@ void Amegic::ReadInProcessfile(string file)
 		  MyStrStream str;      
 		  buf          = buf.substr(buf.find(":",position)+1);
 		  Shorten(buf);
-		  str<<buf;
-		  str>>ycut;
+		  Algebra_Interpreter inter;
+		  ycut=ToType<double>(inter.Interprete(buf));
 		  std::cout<<"AMEGIC: found ycut "<<ycut<<std::endl;
 		}
 

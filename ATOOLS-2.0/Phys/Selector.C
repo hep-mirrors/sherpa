@@ -1,6 +1,9 @@
 #include "Selector.H"
 #include "Message.H"
 
+#include "Algebra_Interpreter.H"
+#include "MyStrStream.H"
+
 using namespace ATOOLS;
 using namespace std;
 
@@ -86,7 +89,11 @@ bool Selector_Data::ReadInData(std::string filename) {
     from>>keyword;
     if (keyword == string("JetFinder")) {
       dat.type = 1;
-      from>>dat.min>>dat.max;
+      std::string dmin, dmax;
+      from>>dmin>>dmax;
+      Algebra_Interpreter inter;
+      dat.min=ToType<double>(inter.Interprete(dmin));
+      dat.max=ToType<double>(inter.Interprete(dmax));
       data.push_back(dat);
     }
     if (keyword == string("ConeFinder")) {
