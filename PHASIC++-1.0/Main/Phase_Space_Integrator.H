@@ -4,17 +4,27 @@
 namespace PHASIC {class Phase_Space_Handler;}
 
 namespace PHASIC {
+
   class Phase_Space_Integrator {
-    double   result, max, error;
-    int      iter,nopt;
-    long int maxopt,nmax;
+  private:
+
+    double          result, max, error;
+    int             iter,nopt;
+    long int        maxopt;
+    static long int nmax;
+
   public:
-    Phase_Space_Integrator();
+
     double Calculate(Phase_Space_Handler*,double); 
     double CalculateDecay(Phase_Space_Handler*,double,double); 
+
     //! Simple access methods.
-    inline double GetMax()            { return max; };
-    inline void   SetMax(double _max) { max = _max; };
+    inline double GetMax()            { return max;  };
+    inline void   SetMax(double _max) { max = _max;  };
+
+    static long int MaxPoints();
+    static void     SetMaxPoints(long int _nmax);
+
   };
   /*!
     To perform the phase space integral. Its main task is to

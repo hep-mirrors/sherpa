@@ -14,10 +14,7 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace std;
 
-Phase_Space_Integrator::Phase_Space_Integrator() {
-  nmax      = 1000000;
-}
-
+long int Phase_Space_Integrator::nmax=1000000;                  
 
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerror) 
 {
@@ -349,3 +346,10 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
   }
   return (psh->FSRIntegrator())->Result() / (psh->FSRIntegrator())->N();
 }
+
+long int Phase_Space_Integrator::MaxPoints()                  
+{ return nmax; };
+
+void     Phase_Space_Integrator::SetMaxPoints(long int _nmax) 
+{ nmax=_nmax;  };
+
