@@ -72,13 +72,19 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   reader->SetInputFile(InputPath()+InputFile());
   reader->SetVectorType(reader->VHorizontal);
   std::vector<std::string> helps;
-  if (!reader->VectorFromFile(helps,"X_VARIABLE")) m_gridxvariable="";
+  if (!reader->VectorFromFile(helps,"X_VARIABLE")) 
+    m_gridxvariable="p_\\perp";
   else m_gridxvariable=MakeString(helps);
-  if (!reader->VectorFromFile(helps,"Y_VARIABLE")) m_gridyvariable="";
+  if (!reader->VectorFromFile(helps,"Y_VARIABLE")) 
+    m_gridyvariable="\\frac{d\\sigma}{dp_\\perp}";
   else m_gridyvariable=MakeString(helps);
-  if (!reader->ReadFromFile(m_gridxmin,"GRID_X_MIN")) m_gridxmin=1.3;
-  if (!reader->ReadFromFile(m_gridxmax,"GRID_X_MAX")) m_gridxmax=1.3e3;
-  if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) m_griddeltax=.1;
+  if (!reader->ReadFromFile(m_gridxmin,"GRID_X_MIN")) 
+    m_gridxmin=sqrt(ATOOLS::Max(p_processes->ISR()->PDF(0)->Q2Min(),
+				p_processes->ISR()->PDF(1)->Q2Min()));
+  if (!reader->ReadFromFile(m_gridxmax,"GRID_X_MAX")) 
+    m_gridxmax=ATOOLS::rpa.gen.Ecms()/2.0;
+  if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) 
+    m_griddeltax=(log(m_gridxmax)-log(m_gridxmin))/1000.;
   double helpd;
   if (reader->ReadFromFile(helpd,"INITIAL_EVENTS")) 
     m_initevents=(long unsigned)helpd;
@@ -91,7 +97,7 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
     m_outputlevel=ATOOLS::msg.Level();
   }
   if (!reader->ReadFromFile(m_gridxscaling,
-			    "HISTO_X_SCALING")) m_gridxscaling="Id";
+			    "HISTO_X_SCALING")) m_gridxscaling="Log_B_10";
   if (!reader->ReadFromFile(m_gridyscaling,
 			    "HISTO_Y_SCALING")) m_gridyscaling="Id";
   for (Amisic_Histogram_Map::iterator hit=m_histograms.begin();
@@ -106,9 +112,9 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
 				       (*axis)(m_gridxmin))/m_griddeltax)));
   }
   if (!reader->ReadFromFile(m_gridxscaling,
-			    "GRID_X_SCALING")) m_gridxscaling="Id";
+			    "GRID_X_SCALING")) m_gridxscaling="Log_B_10";
   if (!reader->ReadFromFile(m_gridyscaling,
-			    "GRID_Y_SCALING")) m_gridyscaling="Id";
+			    "GRID_Y_SCALING")) m_gridyscaling="Log_B_10";
   for (Grid_Handler_Map::iterator git=p_gridhandlers->begin();
        git!=p_gridhandlers->end();++git) {
     git->second->Grid()->XAxis()->SetVariable(m_gridxvariable);
@@ -297,7 +303,7 @@ bool Grid_Creator::CreateGrid()
     success=false;
   }
   ATOOLS::msg.SetLevel(formerlevel);
-  msg_Info()<<"}"<<std::endl;
+  msg_Info()<<"\n}"<<std::endl;
   return success;
 }
 
@@ -362,8 +368,8 @@ bool Grid_Creator::WriteSingleGrid(Grid_Handler_Type *grid,
   comments.push_back("--------------------");
   comments.push_back("  Data Set follows  ");
   comments.push_back("--------------------");
-  msg_Tracking()<<"Grid_Creator::WriteSingleGrid(..): Writing grid to '"
-		<<OutputFile()<<"'"<<std::endl;
+  msg_Debugging()<<"Grid_Creator::WriteSingleGrid(..): Writing grid to '"
+		 <<OutputFile()<<"'"<<std::endl;
   return grid->WriteOut(ATOOLS::Type::TFStream,
 			OutputPath()+OutputFile(),comments);
 }
