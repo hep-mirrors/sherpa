@@ -18,7 +18,6 @@ using namespace std;
 Multi_Channel::Multi_Channel(string _name) : 
   fl(NULL), s1(NULL), s2(NULL), m_readin(false), m_fixalpha(false)
 {
-  cout<<"Multi_Channel::Multi_Channel : "<<_name<<endl;
   string help;
   int    pos;
   for (;;) {
@@ -433,7 +432,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p)
   double rn  = ran.Get();
   double sum = 0;
   for (size_t i=0;i<channels.size();i++) {
-    cout<<"   "<<sum<<" "<<channels[i]->Alpha()<<endl;
+//     cout<<"   "<<sum<<" "<<channels[i]->Alpha()<<endl;
     sum += channels[i]->Alpha();
     if (sum>rn) {
       channels[i]->GeneratePoint(p);
@@ -441,7 +440,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p)
       break;
     }
   }  
-  std::cout<<" ERROR in void Multi_Channel::GeneratePoint(Vec4D * p) \n";
+  msg.Error()<<" ERROR in void Multi_Channel::GeneratePoint(Vec4D * p) \n";
   channels[0]->GeneratePoint(p);
 }
 
@@ -484,7 +483,7 @@ void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
       return;
     }
   }  
-  std::cout<<" ERROR in void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) \n";
+  msg.Error()<<" ERROR in void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) \n";
   channels[0]->GeneratePoint(sprime,y,mode,rans);
 }
 
