@@ -3,9 +3,9 @@
 NOUPDATE="TRUE"
 TEMPFILE="#update#"
 
-EXTENSIONS="C H am"
-DESCRIPTIONS="C-Files H-Files Makefiles"
-COLOURS="4 2 1"
+EXTENSIONS="\.C \.H \.am configure\.in"
+DESCRIPTIONS="C-Files H-Files Makefiles configures"
+COLOURS="4 2 1 6"
 
 OPTIONS=
 LOGFILE="updated"
@@ -36,7 +36,7 @@ CHANGES=
 EXTCNT=0
 for EXTENSION in $EXTENSIONS ; do
   (( ++EXTCNT ))
-  cat $LOGFILE | grep -q "\."$EXTENSION 
+  cat $LOGFILE | grep -q $EXTENSION 
   if (( $? != 0 )) ; then continue ; fi
   CHANGES="TRUE"
   DESCCNT=0
@@ -51,32 +51,32 @@ for EXTENSION in $EXTENSIONS ; do
   done
   echo -en "\e[1m==================================================\e[0m"
   echo -e "\r\e[1m=\e[3"$COLOUR"m $DESCRIPTION \e[0m"
-  cat $LOGFILE | grep "U " | grep "\."$EXTENSION
-  cat $LOGFILE | grep "P " | grep "\."$EXTENSION
-  cat $LOGFILE | grep "C " | grep "\."$EXTENSION > $TEMPFILE
+  cat $LOGFILE | grep "U " | grep $EXTENSION
+  cat $LOGFILE | grep "P " | grep $EXTENSION
+  cat $LOGFILE | grep "C " | grep $EXTENSION > $TEMPFILE
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Conflicts --------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
-  cat $LOGFILE | grep "M " | grep "\."$EXTENSION > $TEMPFILE
+  cat $LOGFILE | grep "M " | grep $EXTENSION > $TEMPFILE
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Changes ----------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
-  cat $LOGFILE | grep "erging " | grep "\."$EXTENSION > $TEMPFILE
+  cat $LOGFILE | grep "erging " | grep $EXTENSION > $TEMPFILE
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Merged -----------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
-  cat $LOGFILE | grep "? " | grep "\."$EXTENSION > $TEMPFILE
+  cat $LOGFILE | grep "? " | grep $EXTENSION > $TEMPFILE
   TEST1=$?
-  cat $LOGFILE | grep "A " | grep "\."$EXTENSION >> $TEMPFILE
+  cat $LOGFILE | grep "A " | grep $EXTENSION >> $TEMPFILE
   TEST2=$?
   if (( $TEST1 == 0 )) || (( $TEST2 == 0 )) ; then
     echo -e "\e[1m- New files --------------------------------------\e[0m" 
     cat $TEMPFILE
   fi
-  cat $LOGFILE | grep "R " | grep "\."$EXTENSION > $TEMPFILE
+  cat $LOGFILE | grep "R " | grep $EXTENSION > $TEMPFILE
   if (( $? == 0 )) ; then
     echo -e "\e[1m- Removed files ----------------------------------\e[0m" 
     cat $TEMPFILE
