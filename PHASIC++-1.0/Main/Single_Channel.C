@@ -218,3 +218,7 @@ void Single_Channel::SetWeight(double _weight)   { weight     = _weight; }
 void Single_Channel::SetAlpha(double _alpha)     { alpha      = _alpha; }
 void Single_Channel::SetAlphaSave(double _alpha) { alpha_save = _alpha; }
 
+void Single_Channel::Optimize() {}
+void Single_Channel::EndOptimize() {}
+void Single_Channel::WriteOut(std::string) {}
+void Single_Channel::ReadIn(std::string) {}
