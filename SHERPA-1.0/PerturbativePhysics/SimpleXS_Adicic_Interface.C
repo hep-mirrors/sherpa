@@ -59,14 +59,15 @@ bool SimpleXS_Adicic_Interface::InitColours(Blob * blob)
   return 0;
 }
 
-bool SimpleXS_Adicic_Interface::Valid(Blob * blob) 
-{
-  for (int i=0;i<blob->NInP();++i) {
-    for (int j=1;j<3;j++) {
-      if (blob->InParticle(i)->GetFlow(j)!=0) return false;
+bool SimpleXS_Adicic_Interface::Valid(Blob* blob) {
+  for(int i=0; i<blob->NInP(); ++i) {
+    for(int j=1; j<3; j++) {
+      if(blob->InParticle(i)->GetFlow(j)!=0) return false;
     }
   }
-  if (!(blob->OutParticle(0)->GetFlow(1)!=0 && blob->OutParticle(1)->GetFlow(2)!=0)) return false;
+  if(blob->OutParticle(0)->Flav().IsAnti()) blob->SwapOutParticles(0,1);
+  if(!(blob->OutParticle(0)->GetFlow(1)!=0 &&
+       blob->OutParticle(1)->GetFlow(2)!=0)) return false;
   return true;
 }
 

@@ -31,7 +31,7 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 					  m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
   }
   else if (m_showergenerator==std::string("Adicic")) {
-    p_adicic = new ADICIC::Adicic();
+    p_adicic = new ADICIC::Adicic(_model);
   }
   else {
     msg.Error()<<"Error in Shower_Handler::ReadInFile()."<<std::endl
