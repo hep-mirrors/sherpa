@@ -100,7 +100,8 @@ std::ostream &PHASIC::operator<<(std::ostream &str,const Vector_Container &vecto
 std::ostream &PHASIC::operator<<(std::ostream &str,const Info_Key &key)
 {
   str<<"(\""<<key.m_name<<"\",\""<<key.m_info<<"\") -> "
-     <<key.p_info->m_doubles[key.m_valuekey]<<" => ("
+     <<key.p_info->m_doubles[key.m_valuekey]<<" "
+     <<key.p_info->m_vectors[key.m_valuekey]<<" => ("
      <<key.p_info->m_weights[key.m_valuekey][key.m_weightkey]<<")";
   return str;
 }
