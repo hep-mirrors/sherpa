@@ -6,7 +6,7 @@ AC_PREFIX_DEFAULT(${PWD}/..)
 
 dnl Conditional compiling and linking
 AC_ARG_ENABLE(cvsinclude,
-[  --disable-cvs           Disable CVS Synchronization ],
+[  --disable-cvsinclude    Disable CVS Synchronization ],
 [ cvsinclude=true
   case "${enableval}" in
     no) echo "enable CVS synchronization... no" ;
