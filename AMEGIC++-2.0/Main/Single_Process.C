@@ -50,6 +50,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   if (mkdir(newpath.c_str(),448)==0) {
     system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
 	    string("/Process/Dummy ")+newpath).c_str());
+    system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+	    string("/makelibs ")+newpath).c_str());
   }
 
   m_newlib   = false;
