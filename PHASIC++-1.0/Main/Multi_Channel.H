@@ -30,8 +30,7 @@ namespace PHASIC {
     APHYTOOLS::Flavour          * fl;
     std::string                   name;
     long int                      n_points,n_contrib;
-    double                        weight,result,result2;
-
+    double    m_weight,m_result,m_result2;
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
     std::vector<Single_Channel *> channels;
@@ -91,8 +90,8 @@ namespace PHASIC {
     inline int                  Nin()       { return nin; }
     inline int                  Nout()      { return nout; }
     inline APHYTOOLS::Flavour * Flavs()     { return fl; }
-    inline double               Weight()    { return weight; }
-    inline double               Result()    { return result; }
+    inline double               Weight()    { return m_weight; }
+    inline double               Result()    { return m_result; }
     inline std::string          Name()      { return name; }
   };
 

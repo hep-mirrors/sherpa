@@ -71,7 +71,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
   bool flag = 0;
   long int  n;
-  int       endopt = 0;
+  int       endopt = 1;
   double    value;
 
   /*
@@ -345,9 +345,9 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
     }
     
     if (!(n%iter)) {
-      if (n<=maxopt) (psh->FSRIntegrator())->Optimize(maxerror);
+      if (n<=maxopt) psh->FSRIntegrator()->Optimize(maxerror);
       if (n==maxopt) {
-	(psh->FSRIntegrator())->EndOptimize(maxerror);
+	psh->FSRIntegrator()->EndOptimize(maxerror);
 	iter = 50000;
       }
       //Nan Check

@@ -174,10 +174,12 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
   if ( (bh && bh->On()>0) || (ih && ih->On()>0) ) {
     proc->UpdateCuts(sprime,y);
   }
+  
   fsrchannels->GeneratePoint(p,proc->Cuts());
 
   if (!Check4Momentum(p)) {
     msg.Out()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
+    //    for (int i=0;i<nin+nout;++i) cout<<i<<":"<<p[i]<<endl;
     return 0.;
   }
 
@@ -276,9 +278,11 @@ bool Phase_Space_Handler::OneEvent(int mode)
       double disc = 0.;
       max = proc->Selected()->Max();
       if (value > max) {
-	  msg.Events()<<"Shifted maximum in "<<proc->Selected()->Name()<<" : "
-		      <<proc->Selected()->Max()<<" -> "<<value<<endl;
-	  proc->Selected()->SetMax(value);
+	msg.Out()<<"Shifted maximum in "<<proc->Selected()->Name()<<" : "
+		 <<proc->Selected()->Max()<<" -> "<<value<<endl;
+	proc->Selected()->SetMax(value*1.001);
+	// update max sums!
+	proc->SetMax(0.);
       }
       else disc  = max*AMATOOLS::ran.Get();
       if (value >= disc) {
@@ -301,9 +305,9 @@ bool Phase_Space_Handler::OneEvent(int mode)
   sumtrials += maxtrials;
 
 
-  msg.Debugging()<<"Phase_Space_Handler::OneEvent() : "
-		 <<" too many trials for "<<proc->Selected()->Name()<<endl
-		 <<"   Efficiency = "<<double(events)/double(sumtrials)*100.<<" %."<<endl;
+  msg.Out()<<"Phase_Space_Handler::OneEvent() : "
+	   <<" too many trials for "<<proc->Selected()->Name()<<endl
+	   <<"   Efficiency = "<<double(events)/double(sumtrials)*100.<<" %."<<endl;
   return 0;
 }
 

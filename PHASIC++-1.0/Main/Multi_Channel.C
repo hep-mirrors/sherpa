@@ -78,8 +78,8 @@ void Multi_Channel::Reset()
   s1xmin     = 1.e32;
   n_points   = 0;  
   n_contrib  = 0;
-  result     = 0.;
-  result2    = 0.;
+  m_result     = 0.;
+  m_result2    = 0.;
 
   msg.Tracking()<<"Channels for "<<name<<endl;
   msg.Tracking()<<"----------------- "<<n_points<<" --------------------"<<endl;
@@ -191,8 +191,8 @@ void Multi_Channel::Optimize(double error)
   }
   msg.Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl;
   msg.Tracking()<<"Variance : "<<Variance()<<endl;
-  msg.Tracking()<<"result,result2,n,n_contrib : "<<result<<", ";
-  msg.Tracking()<<result2<<", "<<n_points<<", "<<n_contrib<<endl;
+  msg.Tracking()<<"result,result2,n,n_contrib : "<<m_result<<", ";
+  msg.Tracking()<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl;
   msg.Tracking()<<"-----------------------------------------------"<<endl;
 }
 
@@ -220,8 +220,8 @@ void Multi_Channel::EndOptimize(double error)
   }
   msg.Tracking()<<"S1X: "<<s1xmin<<endl;
   msg.Tracking()<<"Variance : "<<Variance()<<endl;
-  msg.Tracking()<<"result,result2,n,n_contrib : "<<result<<", ";
-  msg.Tracking()<<result2<<", "<<n_points<<", "<<n_contrib<<endl;
+  msg.Tracking()<<"result,result2,n,n_contrib : "<<m_result<<", ";
+  msg.Tracking()<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl;
   msg.Tracking()<<"-------------------------------------------"<<endl;
 
 #else
@@ -268,14 +268,14 @@ void Multi_Channel::AddPoint(double value)
   if (!AMATOOLS::IsZero(value)) n_contrib++;
 
   n_points++;
-  result  += value;
-  result2 += value*value;
+  m_result  += value;
+  m_result2 += value*value;
   
   double var;
   for (short int i=0;i<channels.size();i++) {
     if (value!=0.) {
       if (channels[i]->Weight()!=0) 
-	var = sqr(value)*weight/channels[i]->Weight();
+	var = sqr(value)*m_weight/channels[i]->Weight();
       else var = 0.;
 
       //Reciprocal weights compared to Berends et al.
@@ -288,13 +288,13 @@ void Multi_Channel::AddPoint(double value)
 }
 
 double Multi_Channel::Variance() {
-  double disc = (n_points*result2)/((n_points-1)*AMATOOLS::sqr(result)) - 1./(n_points-1);
-  if (disc>0.) return result/n_points * sqrt(disc);
-  disc = result2/(n_points*(n_points-1)) - AMATOOLS::sqr(result/n_points)/(n_points-1);
+  double disc = (n_points*m_result2)/((n_points-1)*AMATOOLS::sqr(m_result)) - 1./(n_points-1);
+  if (disc>0.) return m_result/n_points * sqrt(disc);
+  disc = m_result2/(n_points*(n_points-1)) - AMATOOLS::sqr(m_result/n_points)/(n_points-1);
   if (disc>0.) return sqrt(disc);
   
   AORGTOOLS::msg.Error()<<"Variance yielded a NaN !"<<endl;
-  AORGTOOLS::msg.Error()<<"   res,res2 = "<<result<<", "<<result2;
+  AORGTOOLS::msg.Error()<<"   res,res2 = "<<m_result<<", "<<m_result2;
   AORGTOOLS::msg.Error()<<" after "<<n_points<<" points."<<endl; 
   
   return sqrt(-disc);
@@ -305,15 +305,15 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts)
 {
   if (channels[n]->Alpha() > 0.) {
     channels[n]->GenerateWeight(p,cuts);
-    if (channels[n]->Weight()==0.) weight = 0.; 
-                              else weight = 1./channels[n]->Weight();
+    if (channels[n]->Weight()==0.) m_weight = 0.; 
+                              else m_weight = 1./channels[n]->Weight();
   }
-  else weight = 0.;
+  else m_weight = 0.;
 }
 
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
-  weight = 0.;
+  m_weight = 0.;
   for (short int i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
       channels[i]->GenerateWeight(p,cuts);
@@ -322,10 +322,10 @@ void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 	msg.Error()<<"Channel "<<i<<" produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
-	weight += channels[i]->Alpha()/channels[i]->Weight();
+	m_weight += channels[i]->Alpha()/channels[i]->Weight();
     }
   }
-  if (weight!=0) weight = 1./weight;
+  if (m_weight!=0) m_weight = 1./m_weight;
 }
 
 
@@ -343,10 +343,15 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   }  
   double rn  = ran.Get();
   double sum = 0;
-  for (short int i=0;i<channels.size();i++) {
+  for (short int i=0;;++i) {
+    if (i==channels.size()) {
+      rn  = ran.Get();
+      i   = 0;
+      sum = 0.;
+    }
     sum += channels[i]->Alpha();
     if (sum>rn) {
-      //      cout<<"Channel number "<<i<<endl;
+      //      cout<<"Channel number "<<i<<"  rn="<<rn<<" sum="<<sum<<endl;
       channels[i]->GeneratePoint(p,cuts);
       break;
     }
@@ -357,16 +362,16 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p)
 {
   if (channels[n]->Alpha() > 0.) {
     channels[n]->GenerateWeight(p);
-    if (channels[n]->Weight()==0.) weight = 0.; 
-                              else weight = 1./channels[n]->Weight();
+    if (channels[n]->Weight()==0.) m_weight = 0.; 
+                              else m_weight = 1./channels[n]->Weight();
   }
-  else weight = 0.;
+  else m_weight = 0.;
 }
 
 
 void Multi_Channel::GenerateWeight(Vec4D * p)
 {
-  weight = 0.;
+  m_weight = 0.;
   for (short int i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
       channels[i]->GenerateWeight(p);
@@ -375,10 +380,10 @@ void Multi_Channel::GenerateWeight(Vec4D * p)
 	msg.Error()<<"Channel "<<i<<" produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0) 
-	weight += channels[i]->Alpha()/channels[i]->Weight();
+	m_weight += channels[i]->Alpha()/channels[i]->Weight();
     }
   }
-  if (!AMATOOLS::IsZero(weight)) weight = 1./weight;
+  if (!AMATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
 }
 
 
@@ -403,7 +408,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p)
 }
 
 void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
-  weight = 0.;
+  m_weight = 0.;
   for (short int i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {
       channels[i]->GenerateWeight(sprime,y,mode);
@@ -412,19 +417,19 @@ void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
 	AORGTOOLS::msg.Error()<<"Channel "<<i<<" produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0.) 
-	weight += channels[i]->Alpha()/channels[i]->Weight();
+	m_weight += channels[i]->Alpha()/channels[i]->Weight();
     }
   }
-  if (!AMATOOLS::IsZero(weight)) weight = 1./weight;
+  if (!AMATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
 }
 
 void Multi_Channel::GenerateWeight(int n,double sprime,double y,int mode) {
   if (channels[n]->Alpha() > 0.) {
     channels[n]->GenerateWeight(sprime,y,mode);
-    if (channels[n]->Weight()==0.) weight = 0.; 
-                              else weight = 1./channels[n]->Weight();
+    if (channels[n]->Weight()==0.) m_weight = 0.; 
+                              else m_weight = 1./channels[n]->Weight();
   }
-  else weight = 0.;
+  else m_weight = 0.;
 }
 
 void Multi_Channel::GeneratePoint(double & sprime,double & y,int mode) {
@@ -472,6 +477,7 @@ void Multi_Channel::WriteOut(std::string pID) {
   ofile.open(pID.c_str());
 
   ofile<<channels.size()<<" "<<name<<endl;
+  ofile.precision(12);
   for (int i=0;i<channels.size();i++) 
     ofile<<channels[i]->Name()<<" "<<channels[i]->Alpha()<<endl;
   ofile.close();
@@ -492,8 +498,11 @@ bool Multi_Channel::ReadIn(std::string pID) {
 	       <<"  "<<_name<<" vs. "<<name<<endl;
     return 0;
   }
+
+  double sum=0;
   for (int i=0;i<channels.size();i++) {
     ifile>>_name>>_alpha;
+    sum+= _alpha;
     if (_name != channels[i]->Name()) {
       msg.Error()<<"Error in Multi_Channel::ReadIn("<<pID<<")"<<endl 
 		 <<"  name of Single_Channel not consistent ("<<i<<")"<<endl
@@ -502,6 +511,11 @@ bool Multi_Channel::ReadIn(std::string pID) {
     }
     channels[i]->SetAlpha(_alpha);
   }
+  for (int i=0;i<channels.size();i++) {
+    double a=channels[i]->Alpha();
+    channels[i]->SetAlpha(a/sum);
+  }
+
   ifile.close();
   return 1;
 }
