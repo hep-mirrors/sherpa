@@ -59755,57 +59755,57 @@ C*********************************************************************
  
 C...SUGRA
 C...Dummy routine, to be removed when ISAJET (ISASUSY) is to be linked.
- 
-      SUBROUTINE SUGRA(MZERO,MHLF,AZERO,TANB,SGNMU,MTOP,IMODL)
-       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
-      IMPLICIT INTEGER(I-N)
-      REAL MZERO,MHLF,AZERO,TANB,SGNMU,MTOP
-      INTEGER IMODL
+C 
+C      SUBROUTINE SUGRA(MZERO,MHLF,AZERO,TANB,SGNMU,MTOP,IMODL)
+C       IMPLICIT DOUBLE PRECISION(A-H, O-Z)
+C      IMPLICIT INTEGER(I-N)
+C      REAL MZERO,MHLF,AZERO,TANB,SGNMU,MTOP
+C      INTEGER IMODL
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
+C      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+C      SAVE /PYDAT1/
  
 C...Stop program if this routine is ever called.
-      WRITE(MSTU(11),5000)
-      IF(PYR(0).LT.10D0) STOP
+C      WRITE(MSTU(11),5000)
+C      IF(PYR(0).LT.10D0) STOP
  
 C...Format for error printout.
- 5000 FORMAT(1X,'Error: you did not link ISAJET correctly.'/
-     &1X,'Dummy routine SUGRA in PYTHIA file called instead.'/
-     &1X,'Execution stopped!')
+C 5000 FORMAT(1X,'Error: you did not link ISAJET correctly.'/
+C     &1X,'Dummy routine SUGRA in PYTHIA file called instead.'/
+C     &1X,'Execution stopped!')
  
-      RETURN
-      END
+C      RETURN
+C      END
  
 C*********************************************************************
  
 C...VISAJE
 C...Dummy function, to be removed when ISAJET (ISASUSY) is to be linked.
- 
-      FUNCTION VISAJE()
-      IMPLICIT DOUBLE PRECISION(A-H, O-Z)
-      IMPLICIT INTEGER(I-N)
-      CHARACTER*40 VISAJE
- 
+C 
+C      FUNCTION VISAJE()
+C      IMPLICIT DOUBLE PRECISION(A-H, O-Z)
+C      IMPLICIT INTEGER(I-N)
+C      CHARACTER*40 VISAJE
+C 
 C...Commonblocks.
-      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
-      SAVE /PYDAT1/
- 
+C      COMMON/PYDAT1/MSTU(200),PARU(200),MSTJ(200),PARJ(200)
+C      SAVE /PYDAT1/
+C 
 C...Assign default value.
-      VISAJE='Undefined'
- 
+C      VISAJE='Undefined'
+C 
 C...Stop program if this routine is ever called.
-      WRITE(MSTU(11),5000)
-      IF(PYR(0).LT.10D0) STOP
+C      WRITE(MSTU(11),5000)
+C      IF(PYR(0).LT.10D0) STOP
  
 C...Format for error printout.
- 5000 FORMAT(1X,'Error: you did not link ISAJET correctly.'/
-     &1X,'Dummy function VISAJE in PYTHIA file called instead.'/
-     &1X,'Execution stopped!')
- 
-      RETURN
-      END
- 
+C 5000 FORMAT(1X,'Error: you did not link ISAJET correctly.'/
+C     &1X,'Dummy function VISAJE in PYTHIA file called instead.'/
+C     &1X,'Execution stopped!')
+C 
+C      RETURN
+C      END
+C 
 C*********************************************************************
  
 C...PYTAUD
