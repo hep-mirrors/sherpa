@@ -231,10 +231,10 @@ void Interaction_Model_sQCD::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].Lorentz = new Lorentz_Function[2]; 
 
 	vertex[vanz].Color[0]        = Color_Function(cf::T,0,1,4,'0','1','4',
-						      new Color_Function(cf::T,3,4,2,'3','4','2');
+						      new Color_Function(cf::T,3,4,2,'3','4','2'));
 		
 	vertex[vanz].Color[1]        = Color_Function(cf::T,3,1,4,'3','1','4',
-						      new Color_Function(cf::T,0,4,2,'0','4','2');
+						      new Color_Function(cf::T,0,4,2,'0','4','2'));
 						      
 						      
 	vertex[vanz].Lorentz[0] = Lorentz_Function(lf::VVSS);     

@@ -107,7 +107,13 @@ int Vertex::CheckExistence(Single_Vertex& probe)
       if (m_v4[i].in[0]==probe.in[0] &&
 	  m_v4[i].in[1]==probe.in[1] &&
 	  m_v4[i].in[2]==probe.in[2] &&
-	  m_v4[i].in[3]==probe.in[3]) return 0;
+	  m_v4[i].in[3]==probe.in[3] ) return 0;
+
+      /*&&
+	  (m_v4->Color)->String() == (probe.Color)->String()) {
+	if (!((m_v4->Color)->Next && (probe.Color)->Next)) return 0;
+	if (((m_v4->Color)->Next)->String() == ((probe.Color)->Next)->String()) return 0;
+	}*/
     }
   }
   //3 leg vertices
@@ -254,38 +260,75 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 	}
       }
     }
-    
-  ColorExchange(probe.Color,newIndex[0],newIndex[1],newIndex[2]);
-  LorentzExchange(probe.Lorentz,newIndex[0],newIndex[1],newIndex[2],newIndex[3]);
+
+  for (int i=0;i<probe.ncf;i++) {
+    ColorExchange(&probe.Color[i],newIndex[0],newIndex[1],newIndex[2],newIndex[3]);
+  }
+  for (int i=0;i<probe.nlf;i++)
+  LorentzExchange(&probe.Lorentz[i],newIndex[0],newIndex[1],newIndex[2],newIndex[3]);
   
   return 1;
 }
     
-void Vertex::ColorExchange(Color_Function* colfunc,int new0,int new1,int new2)
+void Vertex::ColorExchange(Color_Function* colfunc,int new0,int new1,int new2,int new3)
 {
-  // T[0,2,1]
-  int partarg[3]={-1,-1,-1};
-  char strarg[3]={-1,-1,-1};
+  //T[0,1,2] -> T[new0,new1,new2]
+  int  partarg[3]  ={-1,-1,-1};
+  char strarg[3]   ={-1,-1,-1};
+  int  partargn[3] ={-1,-1,-1};
+  char strargn[3]  ={-1,-1,-1};
+ 
   for (short int i=0;i<3;i++) {
     if (colfunc->Type()==cf::D && i==2) break;
     switch (colfunc->ParticleArg(i)) {
+    case 0: 
+      partarg[i] = new0;
+      strarg[i]  = new0+48;
+      break;
+    case 1: 
+      partarg[i] = new1;
+      strarg[i]  = new1+48;
+      break;
+    case 2: 
+      partarg[i] = new2;
+      strarg[i]  = new2+48;
+      break;
+    case 3: 
+      partarg[i] = new3;
+      strarg[i]  = new3+48;
+      break;
+    }
+  }
+  //T[0,1,4]T[3,4,2] -> T[new0,new1,4]T[new3,4,new2]
+  if (colfunc->Next()) {
+  for (short int i=0;i<3;i++) {
+      if (colfunc->Next()->Type()==cf::D && i==2) break;
+      switch (colfunc->Next()->ParticleArg(i)) {
       case 0: 
-	partarg[i] = new0;
-	strarg[i]  = new0+48;
+	partargn[i] = new0;
+	strargn[i]  = new0+48;
 	break;
       case 1: 
-	partarg[i] = new1;
-	strarg[i]  = new1+48;
+	partargn[i] = new1;
+	strargn[i]  = new1+48;
 	break;
       case 2: 
-	partarg[i] = new2;
-	strarg[i]  = new2+48;
+	partargn[i] = new2;
+	strargn[i]  = new2+48;
 	break;
+      case 3: 
+	partargn[i] = new3;
+	strargn[i]  = new3+48;
+	break;
+      }
     }
   }
   colfunc->SetStringArg(strarg[0],strarg[1],strarg[2]);
   colfunc->SetParticleArg(partarg[0],partarg[1],partarg[2]);
+  colfunc->Next()->SetStringArg(strargn[0],strargn[1],strargn[2]);
+  colfunc->Next()->SetParticleArg(partargn[0],partargn[1],partargn[2]);
 }
+
 
 void Vertex::LorentzExchange(Lorentz_Function* lorfunc,int new0,int new1,int new2,int new3)
 {
@@ -300,13 +343,6 @@ void Vertex::LorentzExchange(Lorentz_Function* lorfunc,int new0,int new1,int new
   }
   lorfunc->SetParticleArg(partarg[0],partarg[1],partarg[2],partarg[3]);
 }
-
-/*
-void Vertex::Conjugate(Color_Function* colfunc)
-{
-  colfunc->Conjugate();
-}
-*/
 
 Vertex::Vertex(Interaction_Model_Base * _model)
 {
