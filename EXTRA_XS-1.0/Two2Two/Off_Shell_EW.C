@@ -89,9 +89,9 @@ Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(const size_t nin,const s
 							const ATOOLS::Flavour *flavours)
 {
   if ((flavours[2].IsUptype() && flavours[2].IntCharge()==0 && flavours[3].IsDowntype() && 
-       flavours[0].IsUptype() && flavours[1].IsDowntype()) ||
+       flavours[0].IsUptype() && flavours[0].IsAnti() && flavours[1].IsDowntype()) ||
       (flavours[3].IsUptype() && flavours[3].IntCharge()==0 && flavours[2].IsDowntype() && 
-       flavours[1].IsUptype() && flavours[0].IsDowntype())){ 
+       flavours[1].IsUptype() && flavours[1].IsAnti() && flavours[0].IsDowntype())){ 
     return new Off_Shell_q1q2b_lnulb(nin,nout,flavours); 
   }
   return NULL;
@@ -133,5 +133,10 @@ bool Off_Shell_q1q2b_lnulb::SetColours(double s,double t,double u)
 
 double Off_Shell_q1q2b_lnulb::KFactor(double scale) 
 {
+  double CF=3.;
+  switch (m_kfactorscheme) {
+  case 10:
+    return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
+  }
   return 1.;
 }
