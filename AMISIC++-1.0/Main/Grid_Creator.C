@@ -4,6 +4,7 @@
 #include "ISR_Handler.H"
 #include "Data_Writer.H"
 #include "Blob.H"
+#include "Run_Parameter.H"
 
 using namespace AMISIC;
 
@@ -198,8 +199,9 @@ bool Grid_Creator::CreateOptimizedGrid()
       msg_Tracking()<<"Grid_Creator::CreateOptimizedGrid(): "
 		    <<"Event "<<m_events<<std::endl;
     if ((m_events%(m_maxevents/100))==0) {
-      ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents
-		       <<" %"<<std::flush;
+      ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents<<" % ( "
+		       <<ATOOLS::rpa.gen.Timer().UserTime()
+		       <<" s )   "<<std::flush;
     }
   }
   return true;
@@ -207,6 +209,7 @@ bool Grid_Creator::CreateOptimizedGrid()
 
 bool Grid_Creator::CreateInitialGrid()
 {
+  ATOOLS::rpa.gen.Timer().Start();
   for (m_events=0;m_events<m_initevents;++m_events) {
     ATOOLS::Blob_Data_Base *xsdata=p_processes->WeightedEvent();
     PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
@@ -216,8 +219,9 @@ bool Grid_Creator::CreateInitialGrid()
       msg_Tracking()<<"Grid_Creator::CreateInitialGrid(): "
 		    <<"Event "<<m_events<<std::endl;
     if ((m_events%(m_maxevents/100))==0) 
-      ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents
-		       <<" %"<<std::flush;
+      ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents<<" % ( "
+		       <<ATOOLS::rpa.gen.Timer().UserTime()
+		       <<" s )   "<<std::flush;
   }
   return true;
 }
