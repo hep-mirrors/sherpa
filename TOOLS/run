@@ -1,5 +1,5 @@
 #!/bin/bash
-TIME=`date +'%m-%d_%H-%M-%S'`
+TIME=`date`
 
 rmr () {  
   for file in * ; do                                                          
@@ -71,10 +71,15 @@ if [ ! "$BATCH" = "PBS" ] && [ ! "$BATCH" = "SGE" ] ; then
   exit 0
 fi
 
+COUNTER=0
 LOGPATH=$PWD
-SETUPPATH=$LOGPATH"/"$BASENAME"_"$TIME"/"
+SETUPPATH=$LOGPATH"/"$BASENAME
+while test -d $SETUPPATH"_"$COUNTER ; do
+  (( ++COUNTER ))
+done
+SETUPPATH=$SETUPPATH"_"$COUNTER
 LOGFILE="run.log"
-FILE=$BASENAME"_"$TIME".sh"
+FILE=$BASENAME"_"$COUNTER".sh"
 
 cp -r $RUNPATH $SETUPPATH
 echo "" > $FILE
@@ -90,26 +95,31 @@ if [ "$SUBMIT" = "TRUE" ] ; then
   fi
   echo "" >> $FILE
   echo "RUNPATH=$SETUPPATH" >> $FILE
-  echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
+  echo "LOGFILE=\"$LOGFILE\"" >> $FILE
   echo "" >> $FILE
-  echo "echo \"\" > \$RUNPATH\$LOGFILE" >> $FILE
-  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$RUNPATH\$LOGFILE" >> $FILE
-  echo "echo \"HOME        = \$HOME\" >> \$RUNPATH\$LOGFILE" >> $FILE
-  echo "echo \"USER        = \$USER\" >> \$RUNPATH\$LOGFILE" >> $FILE
-  echo "echo \"\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"\" > \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "echo \"HOME        = \$HOME\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "echo \"USER        = \$USER\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "echo \"\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
   if [ "$BATCH" = "SGE" ] ; then
-    echo "echo \"JOB_ID      = \$JOB_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \"JOB_NAME    = \$JOB_NAME\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_TASK_ID = \$"$BATCH"_TASK_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \"QUEUE       = \$QUEUE\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \"TMPDIR      = \$TMPDIR\" >> \$RUNPATH\$LOGFILE" >> $FILE
+    echo "echo \"JOB_ID      = \$JOB_ID\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \"JOB_NAME    = \$JOB_NAME\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_TASK_ID = \$"$BATCH"_TASK_ID\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \"QUEUE       = \$QUEUE\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \"TMPDIR      = \$TMPDIR\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
   else
-    echo "echo \""$BATCH"_JOBID     = \$"$BATCH"_JOBID\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_JOBNAME   = \$"$BATCH"_JOBNAME\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_O_QUEUE   = \$"$BATCH"_O_QUEUE\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_O_WORKDIR = \$"$BATCH"_O_WORKDIR\" >> \$RUNPATH\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_JOBID     = \$"$BATCH"_JOBID\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_JOBNAME   = \$"$BATCH"_JOBNAME\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_O_QUEUE   = \$"$BATCH"_O_QUEUE\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_O_WORKDIR = \$"$BATCH"_O_WORKDIR\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
   fi
-  echo "echo \"\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \"\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "" >> $FILE
+  echo "echo \"Submitted on "$TIME"\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "echo \"Started on   \`date\`\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
+  echo "" >> $FILE
+  echo "echo \"\" >> \$RUNPATH\"/\"\$LOGFILE" >> $FILE
   echo "" >> $FILE
 else
   echo "#!/bin/bash" >> $FILE
@@ -120,11 +130,11 @@ else
 fi
 echo "cd $BINPATH" >> $FILE
 echo -en "./Sherpa PATH=\$RUNPATH " >> $FILE
-if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=\$RUNPATH\"$RESULTS\" " >> $FILE ; fi
-if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\$RUNPATH\"$ANALYSIS\" " >> $FILE ; fi
+if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=\$RUNPATH\"/$RESULTS\" " >> $FILE ; fi
+if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\$RUNPATH\"/$ANALYSIS\" " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$SOPTIONS" = "" ] ; then echo -en "$SOPTIONS " >> $FILE ; fi
-echo -e ">> \$RUNPATH\$LOGFILE 2>&1 \n\n" >> $FILE
+echo -e ">> \$RUNPATH\"/\"\$LOGFILE 2>&1 \n\n" >> $FILE
 
 chmod 777 $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then
