@@ -18,7 +18,7 @@ namespace SHERPA {
       electron    =  8
     };
 
-  };//end of struct rtp
+  };// end of struct rtp
 
   inline bool operator&(const rtp::code code1,const rtp::code code2)
   { return (rtp::code)((int)code1&(int)code2); }

@@ -4,6 +4,7 @@
 #include "Electron_Remnant.H"
 #include "Photon_Remnant.H"
 #include "No_Remnant.H"
+#include "Data_Reader.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Beam_Remnant_Handler
@@ -66,8 +67,18 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   p_isr(isr), p_beam(beam), m_path(path), m_file(file), m_fill(true)
 {
   for (size_t i=0;i<2;++i) {
-    if (p_isr->Flav(i).IsHadron()) 
-      p_beampart[i] = new Hadron_Remnant(p_isr,i,scale);
+    if (p_isr->Flav(i).IsHadron()) {
+      Hadron_Remnant *remnant = new Hadron_Remnant(p_isr,i,scale);
+      ATOOLS::Data_Reader reader;
+      reader.SetInputPath(m_path);
+      reader.SetInputFile(m_file);
+      double helpd;
+      if (!reader.ReadFromFile(helpd,"REMNANT_STRING_TENSION")) helpd=1.0;
+      remnant->SetStringDrawing(helpd,0);
+      if (!reader.ReadFromFile(helpd,"REMNANT_RANDOM_STRINGS")) helpd=0.0;
+      remnant->SetStringDrawing(helpd,1);
+      p_beampart[i]=remnant;
+    }
     else if (p_isr->Flav(i).IsLepton()) 
       p_beampart[i] = new Electron_Remnant(p_isr,i,scale);
     else if (p_isr->Flav(i).IsPhoton()) 

@@ -28,8 +28,14 @@ namespace SHERPA {
 
     bool m_dupdf;
 
+    double *p_string;
+
     Color_Dipole *FindClosest(const Color_Dipole *info,
 			      const qri::type type);
+    Color_Dipole *FindRandom(const Color_Dipole *info,
+			     const qri::type type);
+    Color_Dipole *Find(const Color_Dipole *info,
+		       const qri::type type);
 
     bool Connect(const bool sorted); 
 
@@ -44,8 +50,14 @@ namespace SHERPA {
 		     const unsigned int _m_beam,
 		     const double _m_scale,const rtp::code type);
 
+    // destructor
+    ~QCD_Remnant_Base();
+    
     // member functions
     void Clear();
+
+    inline void SetStringDrawing(const double opt,const size_t i)
+    { p_string[i]=opt; }
 
   };// end of class QCD_Remnant_Base
 

@@ -20,7 +20,8 @@ QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,
 				   const unsigned int beam,
 				   const double scale,const rtp::code type):
   Remnant_Base(type,beam), p_start(NULL), m_deltax(0.0125), m_scale(scale),
-  m_ecms(sqrt(isrhandler->Pole())), m_xscheme(1), m_maxtrials(100)
+  m_ecms(sqrt(isrhandler->Pole())), m_xscheme(1), m_maxtrials(100),
+  p_string(new double[2])
 {
   if (isrhandler==NULL) {
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
@@ -29,6 +30,11 @@ QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,
   }
   p_pdfbase=isrhandler->PDF(m_beam)->GetBasicPDF();
   m_dupdf=isrhandler->KMROn()>0;
+}
+
+QCD_Remnant_Base::~QCD_Remnant_Base()
+{
+  delete [] p_string;
 }
 
 void QCD_Remnant_Base::Clear()
@@ -69,6 +75,7 @@ Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
   Color_Dipole *closest=p_start;
   const ATOOLS::Vec4D &ref=dipole->End(type)->Momentum();
   double min=std::numeric_limits<double>::max();
+  std::multimap<double,Color_Dipole*> sorted;
   for (Dipole_Vector::iterator dit=m_attached.begin();
        dit!=m_attached.end();++dit) {
     if (*dit==dipole) continue;
@@ -76,9 +83,37 @@ Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
     if (cur<=min) {
       min=cur;
       closest=*dit;
+      sorted.insert(std::pair<double,Color_Dipole*>(cur,*dit));
+    }
+  }
+  if (p_string[0]!=1.0) {
+    double pos=(1.-p_string[0])*(sorted.size()-1), i=0.0;
+    for (std::multimap<double,Color_Dipole*>::const_iterator dit=sorted.begin();
+	 dit!=sorted.end();++dit) {
+      //     std::cout<<pos<<" vs "<<i<<" "<<sorted.size()<<std::endl;
+      if (i++>pos) return dit->second;
     }
   }
   return closest;
+}
+
+Color_Dipole *QCD_Remnant_Base::FindRandom(const Color_Dipole *dipole,
+					   const qri::type type)
+{
+  double ran=ATOOLS::ran.Get()*(m_attached.size()-1), i=0.0;
+  for (Dipole_Vector::iterator dit=m_attached.begin();
+       dit!=m_attached.end();++dit) {
+    if (*dit==dipole) continue;
+    if (i++>ran) return *dit;
+  }
+  return p_start;
+}
+
+Color_Dipole *QCD_Remnant_Base::Find(const Color_Dipole *dipole,
+				     const qri::type type)
+{
+  if (p_string[1]==1.0) return FindRandom(dipole,type);
+  return FindClosest(dipole,type);
 }
 
 class Compare_PT {
@@ -104,7 +139,8 @@ bool QCD_Remnant_Base::Connect(const bool sorted)
        dit!=m_connected.end();++dit) {
     qri::type type=(qri::type)((*dit)->End(qri::real)->Momentum().PPerp2()>=
 			       (*dit)->End(qri::anti)->Momentum().PPerp2());
-    if (!FindClosest(*dit,type)->Insert(*dit,type)) {
+    
+    if (!Find(*dit,type)->Insert(*dit,type)) {
       for (Dipole_Vector::iterator uit=m_connected.begin();
 	   uit!=dit;++uit) (*uit)->UnDo();
       return false;
