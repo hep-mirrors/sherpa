@@ -531,7 +531,6 @@ void Process_Group::SetTables(bool _tables)
 void Process_Group::SetTotal(int flag, int depth)  { 
   if (flag!=2) {
     m_totalxs  = TotalResult(); 
-    RescaleXSec(1.);
     m_totalerr = TotalVar();
     //     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
     // 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
@@ -548,6 +547,9 @@ void Process_Group::SetTotal(int flag, int depth)  {
     //               update maximum to sum of maximum
     SetMax(0., depth+1);
   }
+
+  RescaleXSec(1.);
+  
   if (m_nin==2 && flag==0) {
     if ( (depth<=0 && msg.LevelIsInfo()) || msg.LevelIsTracking()) {
       for (int i=0;i<depth;++i) msg.Out()<<"  ";
@@ -825,7 +827,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     }
 
     SetTotal(0);
-    RescaleXSec(1.);
+    //RescaleXSec(1.);
     if (m_totalxs>0.) {
       if (points==m_n) {
 	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
@@ -873,9 +875,8 @@ void Process_Group::PrepareTerminate()
 void  Process_Group::RescaleXSec(double fac) {
   double sumxs=0.;
   for (size_t i=0;i<m_procs.size();++i) sumxs +=m_procs[i]->TotalXS();
-    
   if (sumxs!=0.) m_totalxs = sumxs;
-
+  
   for (size_t i=0;i<m_procs.size();i++) {
     m_procs[i]->RescaleXSec(fac);
   }
@@ -984,7 +985,6 @@ bool Process_Group::PrepareXSecTables()
 
 void Process_Group::AddPoint(const double value) 
 {
-//   cout<<"Process_Group::AddPoint: "<<m_name<<" "<<value<<endl;
   m_n++;
   m_sn++;
   m_ssum    += value;

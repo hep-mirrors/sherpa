@@ -26,15 +26,6 @@ void  All_Processes::SelectOne() {
   if (m_totalxs==0) p_selected = m_procs[int(ran.Get()*m_procs.size())];
   else {
     double disc = m_totalxs * ran.Get(); 
-
-    /*
-      double test=0.;
-      for (size_t i=0;i<m_procs.size();i++) {
-	test+=m_procs[i]->TotalXS();
-      }
-      cout<<"m_total(allprocess) = "<<m_totalxs<<" vs. "<<test<<" "<<m_totalxs/test-1<<endl;
-    */
-
     for (size_t i=0;i<m_procs.size();i++) {
       disc -= m_procs[i]->TotalXS();
       if (disc<0.) {
