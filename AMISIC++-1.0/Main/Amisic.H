@@ -39,6 +39,9 @@ namespace AMISIC {
     ModelID HardModel();
     ModelID SoftModel();
 
+    MI_Base *HardBase();
+    MI_Base *SoftBase();
+
     EXTRAXS::XS_Base *HardXS();
     EXTRAXS::XS_Base *SoftXS();
 

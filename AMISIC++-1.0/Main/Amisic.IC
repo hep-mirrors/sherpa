@@ -5,6 +5,12 @@
 
 namespace AMISIC {
 
+  inline MI_Base *Amisic::HardBase()
+  { return p_hardbase; }
+
+  inline MI_Base *Amisic::SoftBase()
+  { return p_softbase; }
+
   inline EXTRAXS::XS_Base *Amisic::HardXS()
   { return p_hardbase->XS(); }
 
