@@ -63,10 +63,10 @@ noinst_HEADERS        =	\
 			Sphericity_Observables.H \
 			Event_Shapes_EE.H \
 			Shape_Observables_EE.H \
-			Jet_Mass_and_Broadening.C \
+			Jet_Mass_and_Broadening.H \
 			Scaled_Observables.H \
 			Four_Jet_Angles.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ANALYSISFLAGS) $(ROOTFLAGS)
-INCLUDES      =	$(ANALYSISINCS) $(MODELINCS) $(PDFINCS) $(ATOOLSINCS) \
-		$(ROOTINCS)
+INCLUDES      =	$(ANALYSISINCS) $(MODELINCS) $(PDFINCS) \
+		$(ATOOLSINCS) $(ROOTINCS)
