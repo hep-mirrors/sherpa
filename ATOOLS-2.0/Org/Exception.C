@@ -65,7 +65,7 @@ void Exception::SignalHandler(int signal)
   case SIGABRT:
   case SIGTERM:
   case SIGXCPU:
-    msg.Error()<<om::reset<<"   Cannot run further. Preparing termination ..."<<om::reset<<std::endl;
+    msg.Error()<<om::reset<<"   Cannot run further."<<om::reset<<std::endl;
     s_exitcode=2;
     Terminate();
     break;
@@ -131,7 +131,9 @@ void Exception::RemoveObject(Terminator_Base *const object)
 void Exception::SetExitCode()
 {
   s_exitcode=1;
-  if (m_class=="ISR_Handler") s_exitcode=151;
+  if (m_class=="ISR_Handler")            s_exitcode=151;
+  if (m_class=="Matrix_Element_Handler") s_exitcode=201;
+
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const ex::type &type)
