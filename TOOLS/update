@@ -1,6 +1,11 @@
 #!/bin/bash
 
 NOUPDATE="TRUE"
+TEMPFILE="#update#"
+
+EXTENSIONS="C H am"
+DESCRIPTIONS="C-Files H-Files Makefiles"
+COLOURS="4 2 1"
 
 OPTIONS=
 LOGFILE="updated"
@@ -9,11 +14,12 @@ for I in $* ; do
   elif [ "$I" = "-f" ]; then NOUPDATE=
   elif [ "$I" = "-l" ]; then DLOGFILE=TRUE && CLOGFILE=TRUE
   elif [ "$I" = "-h" ]; then echo && \
-    echo "makeinstall version 1.0" && echo && \
+    echo "update version 1.0" && echo && \
     echo "options: -n             run 'cvs -n update <options>'" && \
     echo "         -f             run 'cvs update <options>'" && \
     echo "         -l <logfile>   create logfile <logfile>" && \
-    echo "         -h             display this help and exit" && echo && \
+    echo "         -h             display this help and exit" && \
+    echo "         <any other>    passed directly to 'cvs update'" && echo && \
     exit 0
   elif [ "$DLOGFILE" = "TRUE" ]; then DLOGFILE="" && LOGFILE=$I
   else OPTIONS=$OPTIONS" "$I
@@ -21,58 +27,76 @@ for I in $* ; do
 done
 
 if [ "$NOUPDATE" = "TRUE" ] ; then 
-  cvs -n update $OPTIONS > $LOGFILE.log 
+  if ! cvs -n update $OPTIONS > $LOGFILE ; then 
+    echo "update: error: cvs -n update failed"
+    exit 1
+  fi
 else 
-  cvs update $OPTIONS > $LOGFILE.log
+  if ! cvs update $OPTIONS > $LOGFILE ; then
+    echo "update: error: cvs update failed"
+    exit 1
+  fi
 fi
 
-echo -e "\e[1m=\e[34m C-Files\e[0m\e[1m ========================================\e[0m" > $LOGFILE"_C.log"
-cat $LOGFILE.log | grep "U " | grep "\.C" >> $LOGFILE"_C.log" 
-cat $LOGFILE.log | grep "P " | grep "\.C" >> $LOGFILE"_C.log" 
-echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> $LOGFILE"_C.log" 
-cat $LOGFILE.log | grep "C " | grep "\.C" >> $LOGFILE"_C.log" 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_C.log" 
-cat $LOGFILE.log | grep "M " | grep "\.C" >> $LOGFILE"_C.log" 
-cat $LOGFILE.log | grep "R " | grep "\.C" >> $LOGFILE"_C.log" 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_C.log" 
-cat $LOGFILE.log | grep "erging " | grep "\.C" >> $LOGFILE"_C.log" 
-echo -e "\e[1m- New files --------------------------------------\e[0m" >> $LOGFILE"_C.log" 
-cat $LOGFILE.log | grep "? " | grep "\.C" >> $LOGFILE"_C.log" 
-cat $LOGFILE.log | grep "A " | grep "\.C" >> $LOGFILE"_C.log" 
-echo -e "\e[1m=\e[32m H-Files\e[0m\e[1m ========================================\e[0m" > $LOGFILE"_H.log" 
-cat $LOGFILE.log | grep "U " | grep "\.H" >> $LOGFILE"_H.log" 
-cat $LOGFILE.log | grep "P " | grep "\.H" >> $LOGFILE"_H.log" 
-echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> $LOGFILE"_H.log" 
-cat $LOGFILE.log | grep "C " | grep "\.H" >> $LOGFILE"_H.log" 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_H.log" 
-cat $LOGFILE.log | grep "M " | grep "\.H" >> $LOGFILE"_H.log" 
-cat $LOGFILE.log | grep "R " | grep "\.H" >> $LOGFILE"_H.log" 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_H.log" 
-cat $LOGFILE.log | grep "erging " | grep "\.H" >> $LOGFILE"_H.log" 
-echo -e "\e[1m- New files --------------------------------------\e[0m" >> $LOGFILE"_H.log" 
-cat $LOGFILE.log | grep "? " | grep "\.H" >> $LOGFILE"_H.log" 
-cat $LOGFILE.log | grep "A " | grep "\.H" >> $LOGFILE"_H.log" 
-echo -e "\n\e[1m=\e[31m Makefiles\e[0m\e[1m ======================================\e[0m" > $LOGFILE"_am.log" 
-cat $LOGFILE.log | grep "U " | grep "\.am" >> $LOGFILE"_am.log" 
-cat $LOGFILE.log | grep "P " | grep "\.am" >> $LOGFILE"_am.log" 
-echo -e "\e[1m- Conflicts --------------------------------------\e[0m" >> $LOGFILE"_am.log" 
-cat $LOGFILE.log | grep "C " | grep "\.am" >> $LOGFILE"_am.log" 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_am.log" 
-cat $LOGFILE.log | grep "M " | grep "\.am" >> $LOGFILE"_am.log" 
-cat $LOGFILE.log | grep "R " | grep "\.am" >> $LOGFILE"_am.log" 
-echo -e "\e[1m- Changes ----------------------------------------\e[0m" >> $LOGFILE"_am.log" 
-cat $LOGFILE.log | grep "erging " | grep "\.am" >> $LOGFILE"_am.log" 
-echo -e "\e[1m- New files --------------------------------------\e[0m" >> $LOGFILE"_am.log" 
-cat $LOGFILE.log | grep "? " | grep "\.am" >> $LOGFILE"_am.log" 
-cat $LOGFILE.log | grep "A " | grep "\.am" >> $LOGFILE"_am.log" 
-cat $LOGFILE"_am.log"
-cat $LOGFILE"_H.log"
-cat $LOGFILE"_C.log"
-echo -e "\e[1m==================================================\e[0m\n"
+CHANGES=
+EXTCNT=0
+for EXTENSION in $EXTENSIONS ; do
+  (( ++EXTCNT ))
+  cat $LOGFILE | grep -q "\."$EXTENSION 
+  if (( $? != 0 )) ; then continue ; fi
+  CHANGES="TRUE"
+  DESCCNT=0
+  for DESCRIPTION in $DESCRIPTIONS ; do
+    (( ++DESCCNT ))
+    if (( $DESCCNT == $EXTCNT )) ; then break ; fi
+  done
+  COLCNT=0
+  for COLOUR in $COLOURS ; do
+    (( ++COLCNT ))
+    if (( $COLCNT == $EXTCNT )) ; then break ; fi
+  done
+  echo -en "\e[1m==================================================\e[0m"
+  echo -e "\r\e[1m=\e[3"$COLOUR"m $DESCRIPTION \e[0m"
+  cat $LOGFILE | grep "U " | grep "\."$EXTENSION
+  cat $LOGFILE | grep "P " | grep "\."$EXTENSION
+  cat $LOGFILE | grep "C " | grep "\."$EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Conflicts --------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  cat $LOGFILE | grep "M " | grep "\."$EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Changes ----------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  cat $LOGFILE | grep "erging " | grep "\."$EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Merged -----------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  cat $LOGFILE | grep "? " | grep "\."$EXTENSION > $TEMPFILE
+  TEST1=$?
+  cat $LOGFILE | grep "A " | grep "\."$EXTENSION > $TEMPFILE
+  TEST2=$?
+  if (( $TEST1 == 0 )) || (( $TEST2 == 0 )) ; then
+    echo -e "\e[1m- New files --------------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+  cat $LOGFILE | grep "R " | grep "\."$EXTENSION > $TEMPFILE
+  if (( $? == 0 )) ; then
+    echo -e "\e[1m- Removed files ----------------------------------\e[0m" 
+    cat $TEMPFILE
+  fi
+done
+echo -e "\e[1m==================================================\e[0m"
+if [ ! "$CHANGES" = "TRUE" ] ; then
+  echo -e "update: no recognized changes"
+  echo -e "\e[1m==================================================\e[0m"
+fi
 
-rm $LOGFILE"_C.log" $LOGFILE"_H.log" $LOGFILE"_am.log"
+if test -f $TEMPFILE ; then rm $TEMPFILE ; fi
 if [ ! "$CLOGFILE" = "TRUE" ] ; then
-  rm $LOGFILE.log
+  rm $LOGFILE
 fi
 
 # mode:shell-script
