@@ -19,6 +19,7 @@ Amisic_SOURCES	      =	\
 			Main.C 
 Amisic_LDADD  =	\
 		@libdir@/libAmisic.la \
+		@libdir@/libAmisicHelpers.la \
 		@libdir@/libAmisicTools.la \
 		-L$(EXTRAXSLIB) -lExtraXS \
 		-L$(EXTRAXSLIB) -lExtraXS2_2 \
@@ -37,6 +38,7 @@ CXXFLAGS      =	-pedantic -Wall -Winline -g
 INCLUDES      = \
 		-I../Main \
 		-I../Tools \
+		-I../Other \
 		-I$(EXTRAXSINC)/Two2Two \
 		-I$(EXTRAXSINC)/Main \
 		-I$(PHASICINC)/Main \

@@ -37,7 +37,7 @@ int main(int argc, const char *argv[])
     for (int i=0;i<testevents;++i) {
       ATOOLS::Blob_List *blobs=test->CreateProcesses();
       if (debug) { 
-	std::cout<<"***** new try *****"<<std::endl;
+	std::cout<<"***** try "<<i<<" *****"<<std::endl;
 	for (ATOOLS::Blob_Iterator bit=blobs->begin();bit!=blobs->end();std::cout<<*bit++<<std::endl);
       }
       delete blobs;

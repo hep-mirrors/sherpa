@@ -9,20 +9,22 @@ EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
 
 lib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
+			Channel_Interface.C \
 			Environment.C \
 			Amisic.C 
-CXXFLAGS              = -pedantic -Wall -Winline
-INCLUDES              = \
-			-I../Tools \
-			-I$(EXTRAXSINC)/Two2Two \
-			-I$(EXTRAXSINC)/Main \
-			-I$(PHASICINC)/Main \
-			-I$(MODELINC)/Main \
-			-I$(PDFINC)/Main \
-			-I$(BEAMINC)/Main \
-		        -I$(ATOOLSINC)/Phys \
-		        -I$(ATOOLSINC)/Math \
-		        -I$(ATOOLSINC)/Org 
+CXXFLAGS      =	-pedantic -Wall -Winline
+INCLUDES      =	\
+		-I../Tools \
+		-I../Other \
+		-I$(EXTRAXSINC)/Two2Two \
+		-I$(EXTRAXSINC)/Main \
+		-I$(PHASICINC)/Main \
+		-I$(MODELINC)/Main \
+		-I$(PDFINC)/Main \
+		-I$(BEAMINC)/Main \
+		-I$(ATOOLSINC)/Phys \
+		-I$(ATOOLSINC)/Math \
+		-I$(ATOOLSINC)/Org 
 noinst_HEADERS        = \
 			Grid_Handler.H \
 			Grid_Handler.IC \
@@ -33,6 +35,7 @@ noinst_HEADERS        = \
 			Fixed_Variable_Channel.H \
 			Fixed_Variable_Channel.IC \
 			Fixed_Variable_Channel.C \
+			Channel_Interface.H \
 			Environment.H \
 			Amisic.H \
 			Amisic.IC 

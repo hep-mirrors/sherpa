@@ -5,7 +5,7 @@
 
 #include "SimpleXSecs.H"
 #include "Environment.H"
-#include "QCD_Processes.H"
+#include "QCD_Processes_C.H"
 #include "Blob_List.H"
 #include "Fixed_Variable_Channel.H"
 
@@ -62,6 +62,8 @@ namespace AMISIC {
     std::vector<GridFunctionType*>  m_differential;
     GridFunctionType               *p_total;
 
+    long int m_particlecounter;
+
     GridArgumentType m_start, m_stop;
     
     std::string m_inputdirectory, m_inputfile, m_environmentfile, m_xsfile;
@@ -74,7 +76,7 @@ namespace AMISIC {
     ATOOLS::Blob *GetBlob(ATOOLS::Flavour flavour[4]);
 
     void CleanUp();
-    void FillMode(EXTRAXS::QCD_Processes::Mode mode);
+    void FillMode(EXTRAXS::QCD_Processes_C::Mode mode);
     bool HaveBlob(ATOOLS::Blob *blob);
 
     bool ReadInData();

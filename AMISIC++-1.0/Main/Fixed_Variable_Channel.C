@@ -20,11 +20,11 @@ namespace PHASIC {
       pt=(double)m_value;
       if (Ehat/2.0>pt) {
 	weight=1.0; 
-	_p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*_ran[0]),pt*sin(2.0*M_PI*_ran[0]),sqrt(Ehat*Ehat/4.0-pt*pt));
+	_p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*_ran[1]),pt*sin(2.0*M_PI*_ran[1]),sqrt(Ehat*Ehat/4.0-pt*pt));
       }
       else {
 	weight=0.0;
-	_p[2]=ATOOLS::Vec4D(Ehat/2.0,Ehat/2.0*cos(2.0*M_PI*_ran[0]),Ehat/2.0*sin(2.0*M_PI*_ran[0]),0.0);
+	_p[2]=ATOOLS::Vec4D(Ehat/2.0,Ehat/2.0*cos(2.0*M_PI*_ran[1]),Ehat/2.0*sin(2.0*M_PI*_ran[1]),0.0);
       }
       _p[3]=ATOOLS::Vec4D(Ehat/2.0,ATOOLS::Vec3D()-ATOOLS::Vec3D(_p[2]));
       break;
@@ -33,11 +33,11 @@ namespace PHASIC {
       pt=sqrt((double)(m_value*m_value)-_p[0].Abs2());
       if (Ehat/2.0>pt) {
 	weight=1.0; 
-	_p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*_ran[0]),pt*sin(2.0*M_PI*_ran[0]),sqrt(Ehat*Ehat/4.0-pt*pt));
+	_p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*_ran[1]),pt*sin(2.0*M_PI*_ran[1]),sqrt(Ehat*Ehat/4.0-pt*pt));
       }
       else {
 	weight=0.0;
-	_p[2]=ATOOLS::Vec4D(Ehat/2.0,Ehat/2.0*cos(2.0*M_PI*_ran[0]),Ehat/2.0*sin(2.0*M_PI*_ran[0]),0.0);
+	_p[2]=ATOOLS::Vec4D(Ehat/2.0,Ehat/2.0*cos(2.0*M_PI*_ran[1]),Ehat/2.0*sin(2.0*M_PI*_ran[1]),0.0);
       }
       _p[3]=ATOOLS::Vec4D(Ehat/2.0,ATOOLS::Vec3D()-ATOOLS::Vec3D(_p[2]));
       break;

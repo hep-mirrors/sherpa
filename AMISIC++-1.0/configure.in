@@ -22,6 +22,7 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
 AC_OUTPUT(Tools/Makefile \
+	  Other/Makefile \
 	  Main/Makefile \
 	  Run/Makefile \
           Makefile )

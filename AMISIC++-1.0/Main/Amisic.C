@@ -56,6 +56,7 @@ Result_Type Amisic::Grid_Creator<Argument_Type,Result_Type>::CalculateSingleValu
 Amisic::Amisic():
   m_differential(std::vector<GridFunctionType*>(0)),
   p_total(NULL),
+  m_particlecounter(0),
   m_start((GridArgumentType)0.0),
   m_stop((GridArgumentType)1.6),
   m_inputdirectory(std::string("./")),
@@ -126,15 +127,15 @@ ATOOLS::Blob *Amisic::GetBlob(ATOOLS::Flavour flavour[4])
   return newblob;
 }
 
-void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
+void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 {
   const unsigned int nflavour=4;
   ATOOLS::Flavour temp[4];
   ATOOLS::Blob *newblob;
   unsigned int i, j;
   switch (mode) {
-  case EXTRAXS::QCD_Processes::All:
-  case EXTRAXS::QCD_Processes::gggg:
+  case EXTRAXS::QCD_Processes_C::All:
+  case EXTRAXS::QCD_Processes_C::gggg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=0;i<4;++i) temp[i]=ATOOLS::Flavour((ATOOLS::kf::code)21);
     if ((newblob=GetBlob(temp))!=NULL) {
@@ -143,8 +144,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     m_filename.push_back("gg_to_gg__grid.dat");
     m_processname.push_back("g g -> g g");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes::gggg) break;
-  case EXTRAXS::QCD_Processes::qqbgg:
+    if (mode==EXTRAXS::QCD_Processes_C::gggg) break;
+  case EXTRAXS::QCD_Processes_C::qqbgg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     temp[3]=temp[2]=ATOOLS::Flavour((ATOOLS::kf::code)21);
     for (i=1;i<=nflavour;++i) {
@@ -157,8 +158,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     m_filename.push_back("qqb_to_gg__grid.dat");
     m_processname.push_back("q qb -> g g");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes::qqbgg) break;
-  case EXTRAXS::QCD_Processes::ggqqb:
+    if (mode==EXTRAXS::QCD_Processes_C::qqbgg) break;
+  case EXTRAXS::QCD_Processes_C::ggqqb:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)21);
     for (i=1;i<=nflavour;++i) {
@@ -171,8 +172,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     m_filename.push_back("gg_to_qqb__grid.dat");
     m_processname.push_back("g g -> q qb");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes::ggqqb) break;
-  case EXTRAXS::QCD_Processes::qgqg:
+    if (mode==EXTRAXS::QCD_Processes_C::ggqqb) break;
+  case EXTRAXS::QCD_Processes_C::qgqg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)21);
     for (i=1;i<=nflavour;++i) {
@@ -188,8 +189,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     m_filename.push_back("qg_to_qg__grid.dat");
     m_processname.push_back("q g -> q g");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes::qgqg) break;
-  case EXTRAXS::QCD_Processes::q1q2q1q2:
+    if (mode==EXTRAXS::QCD_Processes_C::qgqg) break;
+  case EXTRAXS::QCD_Processes_C::q1q2q1q2:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=1;i<=nflavour;++i) {
       for (j=i+1;j<=nflavour;++j) {
@@ -205,8 +206,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
 	}
       }
     }
-  case EXTRAXS::QCD_Processes::q1q1q1q1:
-    if (mode==EXTRAXS::QCD_Processes::q1q1q1q1) m_blobs.push_back(ATOOLS::Blob_List(0));
+  case EXTRAXS::QCD_Processes_C::q1q1q1q1:
+    if (mode==EXTRAXS::QCD_Processes_C::q1q1q1q1) m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=1;i<=nflavour;++i) {
       temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       if ((newblob=GetBlob(temp))!=NULL) {
@@ -217,7 +218,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
-    if (mode==EXTRAXS::QCD_Processes::q1q1q1q1) {
+    if (mode==EXTRAXS::QCD_Processes_C::q1q1q1q1) {
       m_filename.push_back("q1q1_to_q1q1__grid.dat");
       m_processname.push_back("q1 q1 -> q1 q1");
       m_create.push_back(false);
@@ -226,8 +227,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     m_filename.push_back("q1q2_to_q1q2__grid.dat");
     m_processname.push_back("q1 q2 -> q1 q2");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes::q1q2q1q2) break;
-  case EXTRAXS::QCD_Processes::q1q2bq1q2b:
+    if (mode==EXTRAXS::QCD_Processes_C::q1q2q1q2) break;
+  case EXTRAXS::QCD_Processes_C::q1q2bq1q2b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=1;i<=nflavour;++i) {
       for (j=i+1;j<=nflavour;++j) {
@@ -246,8 +247,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     m_filename.push_back("q1q2b_to_q1q2b__grid.dat");
     m_processname.push_back("q1 q2b -> q1 q2b");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes::q1q2bq1q2b) break;
-  case EXTRAXS::QCD_Processes::q1q1bq1q1b:
+    if (mode==EXTRAXS::QCD_Processes_C::q1q2bq1q2b) break;
+  case EXTRAXS::QCD_Processes_C::q1q1bq1q1b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=1;i<=nflavour;++i) {
       temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
@@ -259,8 +260,8 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     m_filename.push_back("q1q1b_to_q1q1b__grid.dat");
     m_processname.push_back("q1 q1b -> q1 q1b");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes::q1q1bq1q1b) break;
-  case EXTRAXS::QCD_Processes::q1q1bq2q2b:
+    if (mode==EXTRAXS::QCD_Processes_C::q1q1bq1q1b) break;
+  case EXTRAXS::QCD_Processes_C::q1q1bq2q2b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=1;i<=nflavour;++i) {
       for (j=i+1;j<=nflavour;++j) {
@@ -276,10 +277,10 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes::Mode mode)
     m_filename.push_back("q1q1b_to_q2q2b__grid.dat");
     m_processname.push_back("q1 q1b -> q2 q2b");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes::q1q1bq2q2b) break;
+    if (mode==EXTRAXS::QCD_Processes_C::q1q1bq2q2b) break;
     break;
-  case EXTRAXS::QCD_Processes::Unknown:
-  case EXTRAXS::QCD_Processes::None:
+  case EXTRAXS::QCD_Processes_C::Unknown:
+  case EXTRAXS::QCD_Processes_C::None:
     ATOOLS::msg.Error()<<"Amisic::FillMode("<<mode<<"): "
 		       <<"Wrong parameter. Abort."<<std::endl;
     break;
@@ -305,7 +306,7 @@ bool Amisic::ReadInData()
 	  (temp[i][1]==std::string("QCD"))&&
 	  (temp[i][2]==std::string("2"))&&
 	  (temp[i][3]==std::string("2"))) {
-	FillMode(EXTRAXS::QCD_Processes::All);
+	FillMode(EXTRAXS::QCD_Processes_C::All);
       }
       else {
 	ATOOLS::Flavour flavour[4];
@@ -355,39 +356,39 @@ bool Amisic::ReadInData()
     else if (temp[i].size()>1) {
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("gggg"))) {
-	FillMode(EXTRAXS::QCD_Processes::gggg);
+	FillMode(EXTRAXS::QCD_Processes_C::gggg);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("qqbgg"))) {
-	FillMode(EXTRAXS::QCD_Processes::qqbgg);
+	FillMode(EXTRAXS::QCD_Processes_C::qqbgg);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("ggqqb"))) {
-	FillMode(EXTRAXS::QCD_Processes::ggqqb);
+	FillMode(EXTRAXS::QCD_Processes_C::ggqqb);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("qgqg"))) {
-	FillMode(EXTRAXS::QCD_Processes::qgqg);
+	FillMode(EXTRAXS::QCD_Processes_C::qgqg);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q1q1q1"))) {
-	FillMode(EXTRAXS::QCD_Processes::q1q1q1q1);
+	FillMode(EXTRAXS::QCD_Processes_C::q1q1q1q1);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q2q1q2"))) {
-	FillMode(EXTRAXS::QCD_Processes::q1q2q1q2);
+	FillMode(EXTRAXS::QCD_Processes_C::q1q2q1q2);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q1bq1q1b"))) {
-	FillMode(EXTRAXS::QCD_Processes::q1q1bq1q1b);
+	FillMode(EXTRAXS::QCD_Processes_C::q1q1bq1q1b);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q2bq1q2b"))) {
-	FillMode(EXTRAXS::QCD_Processes::q1q2bq1q2b);
+	FillMode(EXTRAXS::QCD_Processes_C::q1q2bq1q2b);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q1bq2q2b"))) {
-	FillMode(EXTRAXS::QCD_Processes::q1q1bq2q2b);
+	FillMode(EXTRAXS::QCD_Processes_C::q1q1bq2q2b);
       }
     }
   }
@@ -403,14 +404,14 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Amisic::CreateGrid(..): "
 			  <<"Found an initialized process group."<<std::endl
-			  <<"   Empty group and start with QCD_Processes."<<std::endl;
+			  <<"   Empty group and start with QCD_Processes_C."<<std::endl;
     p_processes->Clear();
   }
   p_processes->InitializeProcesses(p_environment->BeamSpectraHandler(),p_environment->ISRHandler());  
   ATOOLS::Flavour flavour[4];
   flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
-  EXTRAXS::QCD_Processes *group;
-  group = new EXTRAXS::QCD_Processes(p_environment->ISRHandler(),p_environment->BeamSpectraHandler(),
+  EXTRAXS::QCD_Processes_C *group;
+  group = new EXTRAXS::QCD_Processes_C(p_environment->ISRHandler(),p_environment->BeamSpectraHandler(),
 				     flavour,p_processes->SelectorData(),p_processes->ScaleScheme(),
 				     p_processes->KFactorScheme(),p_processes->ScaleFactor(),false);
   for (Blob_Iterator bit=bloblist.begin();bit!=bloblist.end();++bit) {
@@ -458,16 +459,16 @@ bool Amisic::InitializeBlobList()
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Amisic::InitializeBlobList(): "
 			  <<"Found an initialized process group."<<std::endl
-			  <<"   Empty group and start with QCD_Processes."<<std::endl;
+			  <<"   Empty group and start with QCD_Processes_C."<<std::endl;
     p_processes->Clear();
   }
   p_processes->InitializeProcesses(p_environment->BeamSpectraHandler(),p_environment->ISRHandler());  
-  std::vector<EXTRAXS::QCD_Processes*> group=std::vector<EXTRAXS::QCD_Processes*>(m_blobs.size());
+  std::vector<EXTRAXS::QCD_Processes_C*> group=std::vector<EXTRAXS::QCD_Processes_C*>(m_blobs.size());
   ATOOLS::Flavour flavour[4];
   ATOOLS::Flow::ResetCounter();
   for (unsigned int i=0;i<m_blobs.size();++i) {
     flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
-    group[i]=new EXTRAXS::QCD_Processes(p_environment->ISRHandler(),p_environment->BeamSpectraHandler(),
+    group[i]=new EXTRAXS::QCD_Processes_C(p_environment->ISRHandler(),p_environment->BeamSpectraHandler(),
 					flavour,p_processes->SelectorData(),p_processes->ScaleScheme(),
 					p_processes->KFactorScheme(),p_processes->ScaleFactor(),false);
     for (Blob_Iterator bit=m_blobs[i].begin();bit!=m_blobs[i].end();++bit) {
@@ -637,14 +638,23 @@ ATOOLS::Blob *Amisic::CreateBlob(unsigned int i,double ran)
   if (i<(unsigned int)p_processes->Size()) {
     if ((*p_processes)[i]->OneEvent()) {
       EXTRAXS::XS_Base *selected=(*p_processes)[i]->Selected();
+      ATOOLS::Particle *particle;
       blob = new ATOOLS::Blob();
       for (int j=0;j<selected->Nin();++j) {
-	blob->AddToInParticles(new ATOOLS::Particle(selected->Flavs()[j]));
-	blob->InParticle(j)->SetMomentum(selected->Momenta()[j]);
+	particle = new ATOOLS::Particle(m_particlecounter++,selected->Flavs()[j]);
+	particle->SetMomentum(selected->Momenta()[j]);
+ 	particle->GetFlow()->SetCode(particle->Flav().IsAnti()+1,
+				     selected->Colours()[j][particle->Flav().IsAnti()]);
+	particle->SetStatus(1);
+	blob->AddToInParticles(particle);
       }
       for (int j=0;j<selected->Nout();++j) {
-	blob->AddToOutParticles(new ATOOLS::Particle(selected->Flavs()[selected->Nin()+j]));
-	blob->OutParticle(j)->SetMomentum(selected->Momenta()[selected->Nin()+j]);
+	particle = new ATOOLS::Particle(m_particlecounter++,selected->Flavs()[selected->Nin()+j]);
+	particle->SetMomentum(selected->Momenta()[selected->Nin()+j]);
+ 	particle->GetFlow()->SetCode(particle->Flav().IsAnti()+1,
+				     selected->Colours()[j][particle->Flav().IsAnti()]);
+	particle->SetStatus(1);
+	blob->AddToOutParticles(particle);
       }
       return blob;
     }
@@ -690,6 +700,7 @@ Amisic::GridArgumentType Amisic::DiceParameter(GridArgumentType &last,double ran
 
 ATOOLS::Blob_List *Amisic::CreateProcesses()
 {
+  m_particlecounter=0;
   ATOOLS::Blob_List *blobs = new ATOOLS::Blob_List();
   double rans[3];
   GridArgumentType last=m_start;
@@ -697,7 +708,10 @@ ATOOLS::Blob_List *Amisic::CreateProcesses()
   ATOOLS::Blob *blob;
   do {
     for (unsigned int i=0;i<3;++i) do { rans[i]=ATOOLS::ran.Get(); } while (rans[i]==0.0);  
-    if ((blob=DiceProcess(DiceParameter(last,rans[2]),rans))!=NULL) blobs->push_back(blob);
+    if ((blob=DiceProcess(DiceParameter(last,rans[2]),rans))!=NULL) {
+      blob->SetId(blobs->size());
+      blobs->push_back(blob);
+    }
   } while (last>m_stop);
   return blobs;
 }
