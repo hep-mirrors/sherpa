@@ -28,14 +28,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
     m1 = m1->Next;  
   }
   
-  /*
-  // too big !!!
-  CFC = new Complex*[mcount];
-  for (short int j=0;j<mcount;j++) CFC[j] = new Complex[mcount];
-  */  
-
-  //if already on
-  
 
   if (pID!=noname) {
     // look for file
@@ -78,19 +70,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	  }
 	}
 
-	/*
-	  fstream from;
-	  from.open(name,ios::in);
-	  //read in
-	  from.precision(15);
-	  short int i,j;
-	  for(;from;) {      
-	  from>>i>>j;
-	  from>>CFC[i][j];
-	  if ((i==mcount-1) && (j==mcount-1)) break;
-	  }
-	*/
-
 	msg.Debugging()<<"File "<<name<<" read."<<endl;   
 	return; 
       }
@@ -116,24 +95,16 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
   sw1 = 0;
   Single_Amplitude* m2;
   m1 = first;
-  int counter=0;
   while (m1) {
     if (m1->Get_CFlist()==NULL) {
       sw1 = 1;
       break;
     }
-    
-    counter++;
     m1 = m1->Next;
   }
   if (sw1) {
     //no color structure
-    /*
-      for(short int i=0;i<mcount;i++) {
-      for (short int j=0;j<mcount;j++) CFC[i][j] = 1.;      
-      }
-    */
-
+    
     // matrix
     CFC = new Complex*[1];
     CFC[0] = new Complex[1];
@@ -167,11 +138,11 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	cm1 = m1->Get_CFlist();
 	//looking for j
 	while (cm1) {
-	  for (short int i=0;i<3;i++) {
-	    if (cm1->type==cf::D && i==2) break;    
+	  for(short int i=0;i<3;i++) {
+	    if ((cm1->type==cf::D || cm1->type==cf::G) && i==2) break;    
 	    if (cm1->partarg[i]==j) {
 	      for (short int k=0;k<3;k++) {
-		if (cm1->type==cf::D && k==2) break;
+		if ((cm1->type==cf::D || cm1->type==cf::G) && k==2) break;    
 		if ((k!=i) && (cm1->partarg[k]>99) && 
 		    ((cm1->partarg[k]<120) || (cm1->partarg[k]>150)))
 		  hit = cm1->partarg[k];
@@ -186,7 +157,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	  cm1 = m1->Get_CFlist();
 	  while (cm1) {
 	    for (short int i=0;i<3;i++) {
-	      if (cm1->type==cf::D && i==2) break;    
+	      if ((cm1->type==cf::D || cm1->type==cf::G) && i==2) break;    
 	      if (cm1->partarg[i]==hit) cm1->partarg[i] = prop;
 	    }
 	    cm1 = cm1->Next;
@@ -230,6 +201,8 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	      cm1 = m1->Get_CFlist();
 	      //cm1=cm2 ??
 	      int hit = 1;
+	      int count1 = 0;
+	      int count2 = 0;
 	      int hit2 = 0;
 	      while (cm1) {
 		cm2 = m2->Get_CFlist();
@@ -318,8 +291,10 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	    m->op = '*';
 	    m->right = s1;
 	    m->left  = s2;
-	    
+	    ReplaceF(m,c);	    
+
 	    st.Expand(m);st.Linear(m);st.Sort(m);
+	    ReplaceG(m);
 	    ReplaceT(m);
 	    st.Expand(m);
 	    st.Linear(m);
@@ -337,52 +312,31 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
       m1 = m1->Next;
       c1++;
     }
-
-    /*
-    // too big !!
-    int a,b;
     
-    for (short int i=0;i<mcount;i++) {
-    if (id[i]==mcount) a = i;
-    else a = iabs(id[i]); 
-    for (short int j=0;j<mcount;j++) {
-    if (id[j]==mcount) b = j;
-    else b = iabs(id[j]);
-    int sign = 1;
-    if (a!=i && id[i]<0) sign *= -1;
-    if (b!=j && id[j]<0) sign *= -1;
-    //AORGTOOLS::msg.Out()<<"Negative Sign....!"<<endl;
-    CFC[i][j] = double(sign)*CFC[a][b];
-    }
-    }
-    */
-
   }
 
   if (pID!=noname) Output(pID);
 
   // check if Matrix can be reduce even further!
   int idcc=0;
+  
   int * idid = new int[ncount];
+ 
   for (int i=0; i<ncount; ++i) 
     idid[i]=-1;
   for (int i=0; i<ncount; ++i) {
     if (idid[i]==-1) { idid[i]=idcc; ++idcc; }
     for (int j=i+1; j<ncount; ++j) {
       int hit=1;
-      Complex factor(0.,0.); //CFC[i][0]/CFC[j][0];
+      Complex factor=CFC[i][0]/CFC[j][0];
       for (int k=0; k<ncount; ++k) {
-	if (factor==Complex(0.,0.) && CFC[j][k]!=Complex(0.,0.))
-	  factor =CFC[i][k]/CFC[j][k];
-	//	if (CFC[i][k]!=factor*CFC[j][k]) {
-	Complex diff=(CFC[i][k]-factor*CFC[j][k]);
-	if ( dabs(diff.real())<1.e-10 && dabs(diff.imag())<1.e-10 ) {
+	if (CFC[i][k]!=factor*CFC[j][k]) {
 	  hit=0;
 	  break;
 	}
       }
       if (hit) {
-	msg.Events()<<"Color Matrix could  be further simplified ("<<j<<" ->"<<i<<" with "<<factor<<endl;
+	cout<<"Color Matrix could  be further simplified ("<<j<<" ->"<<j<<" with "<<factor<<endl;
 	idid[j] =idid[i];
       }
     }
@@ -440,12 +394,11 @@ void CFColor::Output(string & dirname) {
 
 }
 
-
 int CFColor::CompareArg(int a,int b, int c,Color_Function* cm1,Color_Function* cm2)
 {
-  if (cm1->partarg[a]!=cm2->partarg[0]) return 0;
-  if (cm1->partarg[b]!=cm2->partarg[1]) return 0;
-  if (cm1->type==cf::D) return 1;
+  if (cm1->partarg[a]!= cm2->partarg[0]) return 0;
+  if (cm1->partarg[b]!= cm2->partarg[1]) return 0;
+  if (cm1->type==cf::D || cm1->type==cf::G) return 1;
   if (cm1->partarg[c]!=cm2->partarg[2]) return 0;
 
   return 1;
@@ -608,6 +561,101 @@ void CFColor::ReplaceD(sknot* m)
 
   ReplaceD(m->left);
   ReplaceD(m->right);
+}
+
+void CFColor::ReplaceG(sknot* m,sknot* m0)
+{
+  if (m==0) return;
+  if (m->op=='*') {
+    if (m0==0)m0=m;
+    sknot* s1 = m->right;
+    sknot* s2 = 0;
+    if (m->left->op=='*') s2 = m->left->right;
+    else {
+      if (m->left->op==0) s2 = m->left;
+    }
+    if (s2!=0) {
+      if (s1->Str().length()==6) {
+	if (s1->Str()[0]=='G') {
+	  if (s1->Str()[2]==s1->Str()[4]) s1->SetString(string("8"));
+	  else {
+	    // kill G's
+	    // replace s1->Str()[2] -> s1->Str()[4]
+	    char c = s1->Str()[2];
+	    cout<<"RG1:  "<<s1->Str()<<"!"<<c<<endl;
+	    sknot* akt = m0;
+	    do {
+	      if (m0->left->op=='*' || m0->left->op==0) {
+		// right...
+		if(m0->right->Str().length()==8) {
+		  string shelp = m0->right->Str();
+		  cout<<"RG2r: "<<shelp<<endl;
+		  for(short int k=1;k<4;k++) if(shelp[2*k]==c)shelp[2*k] = s1->Str()[4];
+		  m0->right->SetString(shelp);
+		}		
+	      }
+	      if (m0->left->op==0) {
+		// left...
+		if(m0->left->Str().length()==8) { 
+		  cout<<"RG2l: "<<m0->left->Str()<<endl;
+		  string shelp = m0->left->Str();
+		  for(short int k=1;k<4;k++) if(shelp[2*k]==c)shelp[2*k] = s1->Str()[4];
+		  m0->left->SetString(shelp);
+		}
+	      }
+	      m0 = m0->left;
+	    }
+	    while (m0->op=='*');
+	    m0 = akt;
+	  
+	    akt = m;
+	    do {
+	      
+	      if (m->left->op=='*' || m->left->op==0) {
+		// right...
+		if (m->right->Str().length()==6) {
+		  if (m->right->Str()[0]=='G') {
+		    string shelp = m->right->Str();
+		    if (shelp[2]==c) shelp[2] = s1->Str()[4];
+		    else {
+		      if (shelp[4]==c) shelp[4] = s1->Str()[4];
+		    }
+		    m->right->SetString(shelp);
+		  }
+		}
+	      }
+	      if (m->left->op==0) {
+		// left...
+		if (m->left->Str().length()==6) {
+		  if (m->left->Str()[0]=='G') {
+		    string shelp = m->left->Str();
+		    if (shelp[2]==c) shelp[2] = s1->Str()[4];	   
+		    else {
+		      if (shelp[4]==c) shelp[4] = s1->Str()[4];
+		    }
+		    m->left->SetString(shelp); 
+		  }
+		}
+	      }
+	      
+	      m = m->left;
+	    }
+	    while (m->op=='*');
+	    m = akt;
+	    s1->SetString(string("1"));
+	  }
+	}
+      }
+      if (s2->Str().length()==6) {
+	if (s2->Str()[0]=='G') {
+	  if (s2->Str()[2]==s2->Str()[4]) s2->SetString(string("8"));
+	}
+      }
+    }
+  }
+
+  ReplaceG(m->left,m0);
+  ReplaceG(m->right,m0);
 }
 
 void CFColor::ReplaceF(sknot* m,char& c)

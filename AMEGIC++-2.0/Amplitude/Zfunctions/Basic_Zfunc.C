@@ -7,7 +7,7 @@ using namespace std;
 
 Kabbala Basic_Zfunc::Z(const int& z1,const int& z2)
 {
-  if (AMATOOLS::IsZero(coupl[2*z2]) && AMATOOLS::IsZero(coupl[2*z2+1])) {
+  /*if (AMATOOLS::IsZero(coupl[2*z2]) && AMATOOLS::IsZero(coupl[2*z2+1])) {
     cerr<<"Error in Basic_Zfunc::Z()!!!"<<endl;
     abort();
   }
@@ -15,7 +15,7 @@ Kabbala Basic_Zfunc::Z(const int& z1,const int& z2)
   if (AMATOOLS::IsZero(coupl[2*z1]) && AMATOOLS::IsZero(coupl[2*z1+1])) {
     cerr<<"Error in Basic_Zfunc::Z()!!!"<<endl;
     abort();
-  }
+    }*/
 
   //for testing purpose -> still to be improved
   int sarg[8];
@@ -28,15 +28,19 @@ Kabbala Basic_Zfunc::Z(const int& z1,const int& z2)
     if (sarg[i]==99) {
       int partner;
       switch (i) {
-      case 0:partner = 2;break;
+      case 0:partner = 1;break;
       case 2:partner = 0;break;
-      case 4:partner = 6;break;
-      case 6:partner = 4;break;
+      case 4:partner = 3;break;
+      case 6:partner = 2;break;
       }
-      int polnumb = BS->Get_Pol_Number(sarg[partner],sarg[partner+1]);
+
+      if (partner<2) return X(z2,z1,partner);
+      if (partner>1) return X(z1,z2,partner-2);
+
+      //int polnumb = BS->Get_Pol_Number(sarg[partner*2],sarg[partner*2+1],GetPMass(sarg[partner*2],sarg[partner*2+1]));
       //cout<<"Plnumber: "<<polnumb<<endl;
-      if (partner<4) return X(sarg[4],sarg[5],polnumb,sarg[6],sarg[7],coupl[2*z2],coupl[2*z2+1]);
-      if (partner>2) return X(sarg[0],sarg[1],polnumb,sarg[2],sarg[3],coupl[2*z1],coupl[2*z1+1]);
+      //if (partner*2<4) return X(sarg[4],sarg[5],polnumb,sarg[6],sarg[7],coupl[2*z2],coupl[2*z2+1]);
+      //if (partner*2>2) return X(sarg[0],sarg[1],polnumb,sarg[2],sarg[3],coupl[2*z1],coupl[2*z1+1]);
     }
   }
 

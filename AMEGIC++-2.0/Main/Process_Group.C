@@ -428,7 +428,6 @@ void Process_Group::SetTotalXS(int tables)  {
 		    (AMATOOLS::sqr(totalsum)-totalsumsqr)/n/(n-1) )  / n); 
   if (sel) sel->Output();
 
-
   max = 0.;
   for (int i=0;i<procs.size();i++) {
     procs[i]->SetTotalXS(tables);
@@ -558,8 +557,10 @@ bool Process_Group::SetUpIntegrator()
   
   sel->BuildCuts(cuts);
   if (nin==2) {
+    
     if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
 	 (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
+	 
   }
   ps  = new Phase_Space_Handler(this,isr,beam);
   ps->CollectChannels();
@@ -605,8 +606,9 @@ bool Process_Group::CalculateTotalXSec()
   }
   else {
     if (nin==2) {
-      if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
-	   (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
+    
+    if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
+	 (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
     }
     sel->BuildCuts(cuts);
     tables  = 0;
@@ -693,9 +695,11 @@ bool Process_Group::PrepareXSecTables()
   }
   else {
     if (nin==2) {
-      if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
-	   (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
+    
+    if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
+	 (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
     }
+    
     sel->BuildCuts(cuts);
     totalxs = ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
     if (!(AMATOOLS::IsZero((n*totalxs-totalsum)/(n*totalxs+totalsum)))) {

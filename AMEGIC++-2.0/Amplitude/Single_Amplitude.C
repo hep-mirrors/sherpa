@@ -11,6 +11,46 @@ using namespace std;
 
 #define Cut_Fermion_Prop
 
+Single_Amplitude::Single_Amplitude(Point* _p,int _topnum, int _permnum,int* _b,int dep,int _no,
+				   Topology* top,
+				   Basic_Sfuncs* _BS,
+				   Flavour* _fl,
+				   String_Handler* _shand) 
+  : Single_Amplitude_Base(_b,_no,_BS,_fl,_shand)
+{
+
+  static int first = 1;
+
+  if (first) {
+    first = 0;
+#ifdef Cut_Fermion_Prop
+    msg.Out()<<"Cutting Fermions according to the outer particle version."<<endl;
+#else
+    msg.Out()<<"Cutting Fermions according to the Propagator version."<<endl;
+#endif
+  }
+  
+  topnum  = _topnum;
+  permnum = _permnum;
+  
+  icoul = 0;
+  on = 1;
+  Pointlist = new Point[dep];
+  Next = 0;
+  int ll = 0;
+  top->Copy(_p,Pointlist,ll);
+
+  CFlist  = NULL;
+  CCFlist = NULL;
+  spind   = NULL;
+  SetStringOn(); 
+
+  static int ampltotalnumber = 0;
+  ampltotalnumber++;
+  amplnumber = ampltotalnumber;
+}
+
+
 Single_Amplitude::Single_Amplitude(Point* _p,int* _b,int dep,int _no,
 				   Topology* top,
 				   Basic_Sfuncs* _BS,
@@ -18,6 +58,8 @@ Single_Amplitude::Single_Amplitude(Point* _p,int* _b,int dep,int _no,
 				   String_Handler* _shand) 
   : Single_Amplitude_Base(_b,_no,_BS,_fl,_shand)
 {
+  topnum  = 0;
+  permnum = 0;
 
   static int first = 1;
 

@@ -13,6 +13,7 @@ namespace AMEGIC {
     int buildstring;
   public:
     int on;
+    int     topnum, permnum;
     virtual ~Amplitude_Base() {} 
     virtual void    PrintGraph() = 0; 
     virtual Complex Zvalue(int,int*) = 0;

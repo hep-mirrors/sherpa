@@ -17,6 +17,7 @@ namespace AMEGIC {
 
     void ReplaceT(sknot*);
     void ReplaceD(sknot*);
+    void ReplaceG(sknot* m,sknot* m0=0);
     void ReplaceF(sknot*,char&);
 
     void Single_ReplaceF(sknot*,int&,char&);

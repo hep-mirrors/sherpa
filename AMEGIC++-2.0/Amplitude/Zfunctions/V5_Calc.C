@@ -36,7 +36,7 @@ Kabbala V5_Calc::G5()
 
 Kabbala V5_Calc::Do() 
 {
-  Kabbala factor = P(pn)*sgen->Get_Enumber(coupl[10])*sgen->Get_Enumber(coupl[11])
+  Kabbala factor = sgen->Get_Enumber(coupl[10])*sgen->Get_Enumber(coupl[11])
     *sgen->Get_Enumber(coupl[12]);
  
   if (IsZero(M(0)) &&

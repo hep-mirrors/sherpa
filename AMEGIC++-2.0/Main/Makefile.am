@@ -1,6 +1,5 @@
 lib_LTLIBRARIES = libAmegic.la
 libAmegic_la_SOURCES = Helicity.C Topology.C Polarisation.C \
-		       Amplitude_Handler.C \
 		       Process_Base.C Single_Process.C Process_Group.C \
 		       All_Processes.C  \
 	               Amegic.C
@@ -19,7 +18,6 @@ INCLUDES = -I../Amplitude \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Helicity.H Topology.H Polarisation.H Point.H \
-		 Amplitude_Handler.H \
 		 Process_Base.H Single_Process.H Process_Group.H \
 		 All_Processes.H  \
 	         Amegic.H Pol_Info.H \

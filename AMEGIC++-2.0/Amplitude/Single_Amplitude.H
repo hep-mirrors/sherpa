@@ -31,6 +31,7 @@ namespace AMEGIC {
     void   Set_Coulomb() {icoul = 1;}
     int    Get_Coulomb() {return icoul;}  
     Single_Amplitude* Next;
+    Single_Amplitude(Point*,int,int,int*,int,int,Topology*,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*);
     Single_Amplitude(Point*,int*,int,int,Topology*,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*);
     ~Single_Amplitude(); 
     void PrintGraph(); 

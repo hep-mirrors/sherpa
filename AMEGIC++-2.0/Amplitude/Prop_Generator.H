@@ -14,7 +14,7 @@ namespace AMEGIC {
     void Convert(Point*);
     void Fill();
     void Kill(std::list<Zfunc*>&); 
-    void Calculate(AMATOOLS::Vec4D*,int*);
+    //void Calculate(AMATOOLS::Vec4D*,int*);
     void Get(std::list<Pfunc*>& _plist) {
       for (std::list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) 
 	_plist.push_back(*pit);

@@ -306,17 +306,17 @@ int Single_Process::Tests(double & result) {
 
     ampl->SetStringOff();
 
-    msg.Debugging()<<number<<" :";AORGTOOLS::msg.Debugging().flush();
+    msg.Tracking()<<number<<" :";AORGTOOLS::msg.Tracking().flush();
     for (short int i=0;i<hel->Max_Hel();i++) { 
       if (hel->On(i)) {
 	M2 +=  ampl->Differential(i,(*hel)[i])*hel->PolarizationFactor(i); 
-	msg.Debugging()<<"*";msg.Debugging().flush();
+	msg.Tracking()<<"*";msg.Tracking().flush();
       } 
       else {
-	msg.Debugging()<<"0";msg.Debugging().flush();
+	msg.Tracking()<<"0";msg.Tracking().flush();
       }
     }
-    msg.Debugging()<<endl;
+    msg.Tracking()<<endl;
     M2     *= sqr(pol.Massless_Norm(nin+nout,fl,BS));
     result  = M2;
   }
@@ -345,7 +345,7 @@ int Single_Process::Tests(double & result) {
 
   BS->setS(moms);
   number++;
-  msg.Debugging()<<number<<" :";
+  msg.Tracking()<<number<<" :";
 
   double M2g = 0.;
   double * M_doub = new double[hel->Max_Hel()];
@@ -354,10 +354,10 @@ int Single_Process::Tests(double & result) {
     if (hel->On(i)) {
       M_doub[i]  = ampl->Differential(i,(*hel)[i])*hel->PolarizationFactor(i);  
       M2g       += M_doub[i];
-      msg.Debugging()<<"*";msg.Debugging().flush();
+      msg.Tracking()<<"*";msg.Tracking().flush();
     }
   }
-  msg.Debugging()<<endl;
+  msg.Tracking()<<endl;
 
   //shorten helicities
   for (short int i=0;i<hel->Max_Hel();i++) {
@@ -366,20 +366,23 @@ int Single_Process::Tests(double & result) {
       msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
 		     <<ampl->Differential(i,(*hel)[i])<<"/"<<M_doub[i]/M2g<<endl;
     }
+    /*
+      //may cause problems due to numerics
     if (hel->On(i)) {
       for (short int j=i+1;j<hel->Max_Hel();j++) {
 	if (hel->On(j)) {
 	  if (AMATOOLS::IsEqual(M_doub[i]/M2g,M_doub[j]/M2g)) {
 	    msg.Debugging()<<"Switch off helicity "<<j<<" -> "<<i<<" : "
-			   <<ampl->Differential(i,(*hel)[i])<<"/"
+		   	   <<ampl->Differential(i,(*hel)[i])<<"/"
 			  <<M_doub[i]/M2g<<" -> "<<M_doub[j]/M2g<<endl;
+			  
 	    hel->switch_off(j);
 	    hel->SetPartner(i,j);
 	    hel->Inc_Mult(i);
 	  }
 	}
       }
-    }
+    }*/
   }
   M2g    *= sqr(pol.Massless_Norm(nin+nout,fl,BS));
   result  = M2g;
@@ -660,10 +663,11 @@ void Single_Process::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Ba
 bool Single_Process::SetUpIntegrator() {  
   sel->BuildCuts(cuts);
   if (nin==2) {
+  
     if ( (fl[0].Mass() != rpa.gen.Beam1().Mass()) ||
 	 (fl[1].Mass() != rpa.gen.Beam2().Mass()) ) isr->SetPartonMasses(fl);
   }
-
+  
   if (ps->CreateChannelLibrary(ptypename,libname)) {
     if (ps->CreateIntegrators()) return 1;
   }
@@ -916,65 +920,3 @@ void Single_Process::SetXS(EXTRAXS::Single_XS * _xsec)
   xsec = _xsec;
 }
 
-
-
-/*
-    for (int j=0;j<results.size();j++) {
-      if (AMATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
-	msg.Tracking()<<"Test : 1. Can map "<<name<<" on "<<links[j]->Name()<<endl;
-	partner = links[j];
-
-	string testname = string("");
-	if (!FoundMappingFile(testname)) {
-	  ampl->ClearCalcList();
-	  String_Handler * shand1;
-	  shand1 = new String_Handler(partner->shand->Get_Generator());
-	  //if (shand1->SearchValues(gen_str,partner->libname,BS)) {
-	  shand1->Initialize(ampl->GetGraphNumber(),hel->Max_Hel());
-	  (shand1->Get_Generator())->Reset();
-	  ampl->FillCoupling(shand1);
-	  shand1->Calculate();
-	  
-	  double M1 = 0.;
-	  double M2 = 0.;
-	  for (short int i=0;i<hel->Max_Hel();i++) {
-	    M2        += ampl->Differential(i) * hel->PolarizationFactor(i) *
-	                 hel->Multiplicity(i);
-	    M1        += ampl->Differential(i) * partner->hel->PolarizationFactor(i) *
-	                 partner->hel->Multiplicity(i);
-	    msg.Tracking()<<"check : helicity "<<i
-			  <<" : "<<ampl->Differential(i)
-			  <<" : "<<ampl->Differential(shand1,i)
-			  <<" :: "<<partner->hel->Multiplicity(i)
-			  <<" * "<<partner->hel->PolarizationFactor(i)<<endl;
-	  }
-	  M2    *= sqr(pol.Massless_Norm(nin+nout,fl,BS));
-	  M2    *= sqr(partner->pol.Massless_Norm(nin+nout,fl,BS));
-	  delete shand1;
-	  
-	  if (AMATOOLS::IsZero(abs(result/M2-1.))) {
-	    msg.Tracking()<<"Cross check satisfied: "<<abs(result/M2-1.)*100.<<"%"<<endl;
-	    msg.Tracking()<<"Cross check satisfied: "<<abs(result/M1-1.)*100.<<"%"<<endl;
-	    libname = partner->LibName();
-	    CreateMappingFile();
-	    return 1;
-	  }
-	  else {
-	    msg.Tracking()<<"Cross check not satisfied: "<<abs(result/M2-1.)*100.<<"%"<<endl;
-	  }
-	  //}
-	}
-	return 0;
-	//return InitLibrary(result);
-
-
-	return 1;
-      }
-    }
-    results.push_back(result);
-    links.push_back(this);
-    return 0;
-    // return InitLibrary(result);
-*/
-	  //string tmp = string("");
-	  //if (!FoundMappingFile(tmp)) CreateMappingFile();

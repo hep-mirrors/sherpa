@@ -5,11 +5,6 @@
 
 namespace AMEGIC {
 
-  struct Block_Info {
-    Zfunc* Z;
-    int index;
-    int l,r;
-  };
 
   class Single_Amplitude_Base: public virtual Amplitude_Base {
   protected:
@@ -24,19 +19,16 @@ namespace AMEGIC {
     Basic_Sfuncs* BS;
     APHYTOOLS::Flavour*      fl;
 
-    virtual Kabbala Single_Zvalue(Argument*,Zfunc*);
-    virtual void    Fill_Args(Zfunc* z,Argument* args,int* signlist,
-			      std::vector<int>* iz=0,std::vector<int>* ii=0,
-			      std::vector<std::vector<int> >* iargs=0);
-    void    SetLoopVar(std::vector<int>&,std::vector<std::vector<int> >&);
-    Kabbala Mass_Terms(std::vector<int>& iz,std::vector<int>& ii,std::vector<std::vector<int> >& iargs);
+    virtual Kabbala Single_Zvalue(Zfunc*,vector<int>*,vector<int>*,int last=0);
+    Kabbala Single_ZGroup_value(Zfunc* z, vector<int>* iz, vector<int>* iargs,int last=0);
+    Kabbala Single_ZvalueTensor(Zfunc* z,vector<int>* iz, vector<int>* iargs,int);
+    virtual int    Fill_Args(Zfunc* z,Argument* args,vector<int>*,vector<int>*);
+    void    SetLoopVar(vector<int>&,vector<vector<int> >&);
 
-    Kabbala Single_Mass_Terms_new(int iz,int iarg);
-    Kabbala Generate_Block(std::vector<Block_Info>& BlockList,int bi,
-			   std::vector<int>& iz,std::vector<int>& ii,
-			   std::vector<std::vector<int> >& iargs,
-			   int* signlist);
-    Complex Zvalue_new_sum(int,int*);
+    Kabbala Single_Mass_Terms(int iz,int iarg);
+    APHYTOOLS::Flavour* Get_Pflav(int pn);
+    Kabbala Get_Prop(int,Argument*,char);
+    Complex Zvalue_sum(int,int*);
   public:
     int sign;
     Single_Amplitude_Base(int* _b,int _n, Basic_Sfuncs* _BS,

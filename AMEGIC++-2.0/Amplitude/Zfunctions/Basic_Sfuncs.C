@@ -64,7 +64,7 @@ int Basic_Sfuncs::Initialize_Momlist()
     Mom.arg    = new int[Mom.argnum];
     Mom.arg[0] = i;
     Mom.type=mt::mom;
-    Mom.mass =AORGTOOLS::rpa.consts.Mass(fl[i],sqr(AORGTOOLS::rpa.gen.Ecms())); 
+    Mom.mass =fl[i].Mass();
     Momlist.push_back(Mom);
   }
   return nvec; 
@@ -113,11 +113,18 @@ int Basic_Sfuncs::Build_Momlist(list<Pfunc*>& pl)
       Mom->arg[0] = momcount;
       Mom->type=mt::prop;
       p->momnum   = momcount;
-      momcount++;
       for (short int i=1;i<p->argnum;i++) 
 	Mom->arg[i] = p->arg[i];
+
+      if(p->argnum==(Nmom-1) && b[1]==-1){
+        int hit=1;
+        for(short int i=1;i<p->argnum;i++) if(p->arg[i]<2)hit=0;
+	if(hit==1) Mom->type=mt::cmprop;
+      }
+	
       Momlist.push_back(*Mom);
       //      cout<<"******Build_Momlist: "<<momcount<<endl;
+      momcount++;
       n = Momlist.size()-1;
       
       while(momcount>93&&momcount<100){
@@ -149,34 +156,38 @@ void Basic_Sfuncs::PropPolarisation(int pindex,list<Pfunc*>& pl,vector<int>& iar
     }
   }
 
-  for(short int k=Nmom;k<Momlist.size();k++) {
-    if (Momlist[k].arg[1]==momindex) {
-      switch(Momlist[k].type)
-	{
-      case mt::p_s:
-	if(!AMATOOLS::IsZero(momfl.Mass()))iargs.push_back(Momlist[k].type);
-	break;
-      case mt::p_si:
-	if(AMATOOLS::IsZero(momfl.Mass()))iargs.push_back(Momlist[k].type);
-	break;
-      default:
-	iargs.push_back(Momlist[k].type);
-	//cout<<"PropPolarisations"<<iargs[iargs.size()-1]<<endl;
-	}
+  if(!momfl.IsScalar()){
+    for(short int k=Nmom;k<Momlist.size();k++) {
+      if (Momlist[k].arg[1]==momindex) {
+	switch(Momlist[k].type)
+	  {
+	  case mt::p_s:
+	    if(AMATOOLS::IsZero(momfl.Mass()-Momlist[k].mass))iargs.push_back(Momlist[k].type);
+	    break;
+	  case mt::p_si:
+	    if(AMATOOLS::IsZero(momfl.Mass()))iargs.push_back(Momlist[k].type);
+	    break;
+	  default:
+	    iargs.push_back(Momlist[k].type);
+	    //cout<<"PropPolarisations"<<iargs[iargs.size()-1]<<endl;
+	  }
+      }
     }
   }
-  //if(iargs.size()==0)iargs.push_back(0);  
+  else iargs.push_back(0);  
 }
 
 
-int Basic_Sfuncs::Get_Pol_Number(int momindex, int sign,int check)
+int Basic_Sfuncs::Get_Pol_Number(int momindex, int sign,double mass,int check)
 {
   for(short int k=Nmom;k<Momlist.size();k++) 
     if (Momlist[k].type==sign) 
-      if (Momlist[k].arg[1]==momindex) return k;
+      if (Momlist[k].arg[1]==momindex && (sign!=mt::p_s || Momlist[k].mass==mass)) return k;
 
-  if (check==0) AORGTOOLS::msg.Error()<<"******Get_Pol_Number: Not Found! "<<momindex<<" "<<sign<<endl;
-
+  if (check==0){
+    AORGTOOLS::msg.Error()<<"******Get_Pol_Number: Not Found! "<<momindex<<" "<<sign<<" Mass:"<<mass<<endl;
+    abort();
+  }
   return -1;
 }
 
@@ -191,6 +202,45 @@ void Basic_Sfuncs::Print_Momlist()
     AORGTOOLS::msg.Out()<<"on = "<<Momlist[k].on<<", type = "<<Momlist[k].type<<endl;
   }
 }
+
+int Basic_Sfuncs::Build_TensorPolarisations(int momindex) 
+{
+  //Add polarisation vectors to construct tensors for external spin 2 particles
+  if (momindex>nvec) {
+    msg.Error()<<"*****Build_TensorPolarisations: Not an external momentum!"<<endl;
+    return 0;
+  }
+  Momfunc* Mom;
+  Mom = new Momfunc;
+  Mom->on = 1;
+
+  //Polarisation -1
+  Mom->argnum = 2;
+  Mom->arg    = new int[Mom->argnum];
+  Mom->arg[0] = momcount;
+  Mom->arg[1] = momindex;
+  Mom->type=mt::p_m;  
+  Mom->mass=Momlist[momindex].mass;
+  msg.Debugging()<<"*****Build_TensorPolarisations: -("<<Mom->type<<") "<<momcount<<" M:"<<Mom->mass<<endl;
+  momcount++;
+  Momlist.push_back(*Mom);
+
+  //Polarisation +1
+  Mom->arg[0] = momcount;
+  Mom->type=mt::p_p;
+  msg.Debugging()<<"*****Build_TensorPolarisations: + ("<<Mom->type<<") "<<momcount<<endl;
+  momcount++;
+  Momlist.push_back(*Mom);
+
+  //Polarisation longitudinal
+  Mom->arg[0] = momcount;
+  Mom->type=mt::p_l;
+  msg.Debugging()<<"*****Build_TensorPolarisations: l "<<momcount<<endl;
+  momcount++;
+  Momlist.push_back(*Mom);
+  return momcount;
+}
+
 
 int Basic_Sfuncs::Build_Polarisations(int momindex,char type,double angle) 
 {
@@ -253,7 +303,7 @@ int Basic_Sfuncs::Build_Polarisations(int momindex, Flavour fl)
     return 0;
   }
     //cout<<"Build Pols"<<endl;
-double Mass = AORGTOOLS::rpa.consts.Mass(fl,sqr(AORGTOOLS::rpa.gen.Ecms()));
+double Mass = fl.Mass();
   Complex Mass2= Complex(sqr(Mass),0.);
   if(!AMATOOLS::IsZero(fl.Width()))
       Mass2-=Complex(0.,fl.Width()*Mass);
@@ -265,7 +315,7 @@ double Mass = AORGTOOLS::rpa.consts.Mass(fl,sqr(AORGTOOLS::rpa.gen.Ecms()));
   Mom->mass  = Mass;
   Mom->cplxmass2 = Mass2;
 
-  if (Get_Pol_Number(momindex,mt::p_lh,1)==-1) {
+  if (Get_Pol_Number(momindex,mt::p_lh,0,1)==-1) {
     //Polarisation -1
     Mom->arg[0] = momcount;
     Mom->type=mt::p_lh;
@@ -290,7 +340,7 @@ double Mass = AORGTOOLS::rpa.consts.Mass(fl,sqr(AORGTOOLS::rpa.gen.Ecms()));
     }
   
   if(AMATOOLS::IsZero(Mass)){ 
-    if (Get_Pol_Number(momindex,mt::p_si,1)==-1 && rpa.me.CutScheme()!=1 ) {
+    if (Get_Pol_Number(momindex,mt::p_si,0,1)==-1 && rpa.me.CutScheme()!=1 ) {
       Mom->arg[0] = momcount;
       Mom->type=mt::p_si;
       msg.Debugging()<<"*****Build_Polarisations: zero mass s "<<momcount<<endl;
@@ -300,21 +350,15 @@ double Mass = AORGTOOLS::rpa.consts.Mass(fl,sqr(AORGTOOLS::rpa.gen.Ecms()));
     }
     return momcount;
   }
-   if (Get_Pol_Number(momindex,mt::p_s,1)==-1) {
+  if (Get_Pol_Number(momindex,mt::p_s,Mass,1)==-1) {
     //Polarisation scalar
     Mom->arg[0] = momcount;
     Mom->type=mt::p_s;
-    msg.Debugging()<<"*****Build_Polarisations: s "<<momcount<<endl;
+    msg.Debugging()<<"*****Build_Polarisations: s "<<momcount<<" mass:"<<Mass<<endl;
     momcount++;
     Momlist.push_back(*Mom);
   }
-  else {
-    int numb = Get_Pol_Number(momindex,mt::p_s,1);
-    if (Momlist[numb].mass!=Mass) {
-      msg.Error()<<" Multiple massive vector bosons in Basic_Sfuncs::Build_Polarisations()!!"<<endl;
-      abort();
-    }
-  }
+ 
   return momcount;
 }
 
@@ -356,7 +400,9 @@ void Basic_Sfuncs::Calc_Momlist()
 	Momlist[j].mom += b[Momlist[j].arg[i]]*p[Momlist[j].arg[i]];
       }
       break;
-
+    case mt::cmprop :
+      Momlist[j].mom = Vec4D(p[0][0]+p[1][0],0.,0.,0.);
+      break;
     case mt::p_m :
       mom=Momlist[Momlist[j].arg[1]].mom;
       ps=sqrt(sqr(mom[1])+sqr(mom[2])+sqr(mom[3]));

@@ -42,6 +42,7 @@ double Polarisation::Spin_Average(int nin,Flavour* flin)
       if (AMATOOLS::IsZero(flin[i].Mass())) Norm *= 2.;
                                        else Norm *= 3.;
     }
+    if (flin[i].IsTensor()) Norm *= 5.;
   }
   return 1./Norm;
 }
@@ -49,8 +50,10 @@ double Polarisation::Spin_Average(int nin,Flavour* flin)
 void Polarisation::Add_Extern_Polarisations(Basic_Sfuncs* BS,Flavour* fl,Helicity *hel)
 {
 #ifdef Explicit_Pols
-  for(short int i=0;i<BS->GetNmomenta();i++)
+  for(short int i=0;i<BS->GetNmomenta();i++){
     if(fl[i].IsVector())BS->Build_Polarisations(i,hel->p_type[i],hel->angle[i]);
+    if(fl[i].IsTensor())BS->Build_TensorPolarisations(i);
+  } 
 #endif
 }
 

@@ -23,7 +23,7 @@ Kabbala Basic_MassTermfunc::MassTerm(int a)
     if (p1->arg[0]==iabs(a)) break;
   }
 
-  double mass = AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()));
+  double mass = (p1->fl).Mass();
 
   if (AMATOOLS::IsZero(mass)) 
 #ifdef Kabbala_on
@@ -50,7 +50,7 @@ Complex Basic_MassTermfunc::MassTermCalc(int a,Flavour flav)
   double mass;
 #endif
 
-  mass = AORGTOOLS::rpa.consts.Mass(flav,sqr(AORGTOOLS::rpa.gen.Ecms()));
+  mass = flav.Mass();
 
 #ifdef Complex_Mass_Scheme
   mass -= Complex(0.,1./2.)*flav.Width();

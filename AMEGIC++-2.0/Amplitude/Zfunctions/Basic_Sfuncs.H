@@ -88,12 +88,13 @@ public:
   inline AMATOOLS::Vec4D  Momentum(int i){return Momlist[i].mom;}
   inline AMATOOLS::Vec4D  Momentum_img(int i){return Momlist[i].mom_img;}
   int    Build_Momlist(std::list<Pfunc*>&); 
+  int    Build_TensorPolarisations(int); 
   int    Build_Polarisations(int,char,double angle=0.);
   int    Build_Polarisations(int,APHYTOOLS::Flavour);
   void   Print_Momlist();
   int    Get_Mom_Number(Pfunc*);
   void   PropPolarisation(int,std::list<Pfunc*>&,std::vector<int>&);
-  int    Get_Pol_Number(int,int,int check=0);
+  int    Get_Pol_Number(int,int,double,int check=0);
   void   Initialize();
   inline bool iscplx(int i) {return (Momlist[i].type==mt::p_p||Momlist[i].type==mt::p_m || Momlist[i].type==mt::p_l || Momlist[i].type==mt::p_s|| Momlist[i].type==mt::p_si);} 
 };

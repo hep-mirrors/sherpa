@@ -34,18 +34,23 @@ Topology::~Topology()
 
 void Topology::Build_All(int N)
 {
-  msg.Tracking()<<"Building Topology..."<<endl;
+  msg.Tracking()<<"Building Topology..."<<N<<endl;
   top = new Single_Topology[N];
+  cout<<"Past new Top"<<endl;
   top[0].number  = 1;
   top[0].depth   = 1;
   top[0].p    = new Point*[1];
   top[0].p[0] = new Point[1]; 
+  cout<<"Past new Point"<<endl;
   top[0].p[0][0].left  = 0;
   top[0].p[0][0].right = 0;
 
   short int i;
 
-  for(i=1;i<N;i++) Build_Single(i+1,top);
+  for(i=1;i<N;i++) {
+    cout<<"Build Single for "<<i<<endl;
+    Build_Single(i+1,top);
+  }
 }
 
 void Topology::Print(Point* p)
@@ -84,6 +89,7 @@ Point* Topology::Copy(Point* po,Point* pc,int& ll)
 
 void Topology::Build_Single(int nlegs,Single_Topology* t) 
 {
+  cout<<"In Build Single"<<endl;
   int newnumber = 0;
   // t[0] = 1jet
   // t[1] = 2jet
@@ -110,9 +116,11 @@ void Topology::Build_Single(int nlegs,Single_Topology* t)
 	ll = 1;
 	t[nlegs-1].p[newnumber][0].left  = Copy(t[i].p[j],t[nlegs-1].p[newnumber],ll);
 	t[nlegs-1].p[newnumber][0].right = Copy(t[nlegs-i-2].p[k],t[nlegs-1].p[newnumber],ll); 
+	/*
 	// Added 09/08/02 by AS
 	t[nlegs-1].p[newnumber][0].left->prev  = &(t[nlegs-1].p[newnumber][0]);
 	t[nlegs-1].p[newnumber][0].right->prev = &(t[nlegs-1].p[newnumber][0]);
+	*/	
 	t[nlegs-1].depth = ll;
 	newnumber++;
       }

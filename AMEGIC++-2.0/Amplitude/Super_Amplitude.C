@@ -6,14 +6,6 @@ using namespace AMEGIC;
 using namespace AORGTOOLS;
 using namespace std;
 
-class Pair {
-public:
-  int pold,pnew;
-  
-  Pair(int _pold,int _pnew) : pold(_pold), pnew(_pnew) {}
-};
-
-
 
 void Super_Amplitude::Init(string _str)
 {
@@ -32,9 +24,11 @@ void Super_Amplitude::Init(string _str)
 	  break;
 	}
       }
-      if (hit==0) zlist.push_back(new Zfunc(*(*zit)));
+      if (hit==0) {
+	zlist.push_back((*zit));
+	//zlist.push_back(new Zfunc(*(*zit)));
+      }
     }
-
 
     list<Pfunc*>* gplist = (*g)->GetPlist(); 
     
@@ -81,26 +75,7 @@ void Super_Amplitude::Init(string _str)
     int i=0;
     for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
       if (i>=old) {
-	Zfunc* z = *zit;
-	for (int j=0;j<z->narg;j++) {
-	  for (int k=0;k<pairlist.size();k++) {
-	    if (pairlist[k].pold==z->arg[j]) {
-	      z->arg[j] = pairlist[k].pnew;
-	      break;
-	    }
-	  }
-	}
-	//cout<<"Pn: "<<z->pn<<endl;
-	for (int j=0;j<z->pn;j++) {
-	  //cout<<"Prop: "<<z->psnew[j].numb<<endl;
-	  for (int k=0;k<pairlist.size();k++) {
-	    if (pairlist[k].pold==z->psnew[j].numb) {
-	      //cout<<"From "<<z->psnew[j].numb<<" to "<<pairlist[k].pnew<<endl;
-	      z->psnew[j].numb = pairlist[k].pnew;
-	      break;
-	    }
-	  }
-	}
+	(*zit)->ReplaceProp(&pairlist);	
       }
     }
   }
@@ -122,12 +97,12 @@ void Super_Amplitude::Init(string _str)
       list<Zfunc*>* gzlist = (*g)->GetZlist(); 
       cout<<(*g)->GetSign()<<flush;
       for (list<Zfunc*>::iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
-	cout<<" "<<(*gzit)->str<<flush;
+	msg.Out()<<" "<<(*gzit)->str<<flush;
       }
-      cout<<endl;
+      msg.Out()<<endl;
     }
     if (sign!=(*g)->GetSign()) {
-      cout<<" Different Signs in the sub amplitudes!"<<endl;
+      msg.Tracking()<<" Different Signs in the sub amplitudes!"<<endl;
       hit = 1;
       // *AS*      break;
     }
@@ -177,7 +152,15 @@ void Super_Amplitude::SetZfuncSign()
   vector<vector<int> > zsignlists;
 
   for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
-    zsignlists.push_back(vector<int>((*zit)->GetSize(),1));
+
+// if super zf (+)
+      if ((*zit)->GetOp()=='+')
+	  zsignlists.push_back(vector<int>((*zit)->GetSize(),1));
+      else
+	  zsignlists.push_back(vector<int>(1,1));
+// if pregroup zf (*)
+// if single zf
+
   }
 
   int global_sign=GetSign();
@@ -193,8 +176,12 @@ void Super_Amplitude::SetZfuncSign()
 	// looking for zfunc in superampl
 	int i =0;
 	for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
-	  for (int j=0;j<(*zit)->GetSize();j++) {
-	    Zfunc* z = (*(*zit))[j];
+	    int zsize=(*zit)->GetSize();
+	    if (!((*zit)->GetOp()=='+'))
+		zsize=1;
+	  for (int j=0;j<zsize;j++) {
+	    Zfunc* z = (*(*zit))[j]; 
+	    if (zsize==1) z=(*zit);  // *AS* ? *-group? !!!!!!!
 	    if ((*gzit)->str==z->str) {
 	      //gotcha
 	      sign*=zsignlists[i][j];
@@ -219,13 +206,15 @@ void Super_Amplitude::SetZfuncSign()
     }
     if (ok) {
       // found permutation
-      cout<<"Found a suitable permutation!!"<<endl;
+      msg.Out()<<"Found a suitable permutation!!"<<endl;
       //      cout<<"  Global Sign = "<<global_sign<<endl;
       int i =0;
       for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
 	for (int j=0;j<(*zit)->GetSize();++j) {
-	  (*zit)->SetSign(j,zsignlists[i][j]);
-	  //	  cout<<"   "<<(*(*zit))[j]->str<<" has sign "<<zsignlists[i][j]<<endl;
+	    if ((*zit)->GetOp()=='+') { 
+	      (*zit)->SetSign(j,zsignlists[i][j]);
+	      //	      cout<<"   "<<(*(*zit))[j]->str<<" has sign "<<zsignlists[i][j]<<endl;
+	  }
 	}
       }
       break;
@@ -234,7 +223,7 @@ void Super_Amplitude::SetZfuncSign()
   }
   // did not find a permutation
   if (ok==0) {
-    cerr<<"Found no suitable factor in Super_Amplitude::SetZfuncSign()!"<<endl;
+    msg.Error()<<"Found no suitable factor in Super_Amplitude::SetZfuncSign()!"<<endl;
     abort();
   }
 }
@@ -327,7 +316,11 @@ void Super_Amplitude::ReduceZfuncs(string str)
 	abort();
       }
     }
-    zlist.push_back(superfunc);
+    if(superfunc->GetSize()==1){
+      zlist.push_back((*superfunc)[0]);
+      delete superfunc;
+    }
+    else zlist.push_back(superfunc);
   }  
 }
 
@@ -358,41 +351,6 @@ void Super_Amplitude::PrintGraph()
 
   msg.Out()<<"Overall sign "<<sign<<endl;
 }
-
-Kabbala Super_Amplitude::Single_Zvalue(Argument* args,Zfunc* z)
-{ 
-  Kabbala value;
-  
-  for (int i=0;i<z->GetSize();i++) {
-    if (z->GetSign(i)==-1) value -= Single_Amplitude_Base::Single_Zvalue(arglist[i],(*z)[i]);
-                      else value += Single_Amplitude_Base::Single_Zvalue(arglist[i],(*z)[i]);
-  }
-  
-  if (buildstring && z->GetSize()>1) {
-    value = (shand->Get_Generator())->Get_CZnumber(value.Value(),value.String());
-  }
-
-  return value;
-}
-
-void Super_Amplitude::Fill_Args(Zfunc* z,Argument* args,int* signlist,
-				vector<int>* iz,vector<int>* ii,
-				vector<vector<int> >* iargs) 
-{
-  for (int i=0;i<arglist.size();i++) delete[] arglist[i];
-  arglist.clear();
-
-  for (int i=0;i<z->GetSize();i++) {
-    Single_Amplitude_Base::Fill_Args((*z)[i],args,signlist,iz,ii,iargs);
-    Argument* saveargs = new Argument[2*z->narg];
-    for (int j=0;j<2*z->narg;j++) {
-      saveargs[j] = args[j]; 
-      args[j].spinortype = Spinor::None;
-    }
-    arglist.push_back(saveargs);
-  }
-}
-
 
 Complex Super_Amplitude::Zvalue(int ihel,int * signlist)   
   {return Single_Amplitude_Base::Zvalue(ihel,signlist);}

@@ -21,7 +21,7 @@ Kabbala V4V3_Calc::G4G3()
 
 Kabbala V4V3_Calc::Do() 
 {
-  Kabbala factor = P(pn)*sgen->Get_Enumber(coupl[10])*sgen->Get_Enumber(coupl[11]);
+  Kabbala factor = sgen->Get_Enumber(coupl[10])*sgen->Get_Enumber(coupl[11]);
  
   if (IsZero(M(0)) &&
       IsZero(M(1)) &&

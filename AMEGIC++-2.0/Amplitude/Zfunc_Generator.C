@@ -25,8 +25,31 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
   zcalc.push_back(new SSV_Calc(_sgen,_BS));
   zcalc.push_back(new SSS_Calc(_sgen,_BS));
   zcalc.push_back(new VVSS_Calc(_sgen,_BS));
+  zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
+  zcalc.push_back(new SSSS_Calc(_sgen,_BS));
   zcalc.push_back(new ZNC_Calc(_sgen,_BS));
-  zcalc.push_back(new VVVNC_Calc(_sgen,_BS));  
+  zcalc.push_back(new VVVNC_Calc(_sgen,_BS));
+  
+  if(rpa.me.Model()==AORGTOOLS::Model_Type::LED){
+    zcalc.push_back(new FFT_Calc(_sgen,_BS));
+    zcalc.push_back(new VVT_Calc(_sgen,_BS));
+    zcalc.push_back(new SST_Calc(_sgen,_BS));
+    zcalc.push_back(new FFVT_Calc(_sgen,_BS));
+    zcalc.push_back(new VVVT_Calc(_sgen,_BS));
+    zcalc.push_back(new SSST_Calc(_sgen,_BS));
+    zcalc.push_back(new FFGS_Calc(_sgen,_BS));
+    zcalc.push_back(new VVGS_Calc(_sgen,_BS));
+    zcalc.push_back(new SSGS_Calc(_sgen,_BS));
+    zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
+  }
+  /*
+  AORGTOOLS::msg.Out()<<"Available Zfunctions:"<<endl;
+
+  for (short int i=0;i<zcalc.size();i++) {
+    AORGTOOLS::msg.Out()<<"Type: "<<zcalc[i]->type<<"; Ncoupl: "<<zcalc[i]->ncoupl<<"; Narg: "<<zcalc[i]->narg<<"; ";
+    LFPrint(zcalc[i]->lorentzlist);
+  }
+  */
 }
 
 void Zfunc_Generator::LorentzConvert(Point* p)
@@ -62,20 +85,11 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
     if(AMATOOLS::IsZero(p->fl.Mass())){
       p->m=0;
       }	
-    /*if(!(p->left->fl.Kfcode()==kf::gluon&&p->right->fl.Kfcode()==kf::gluon&&!fromfermion)){
-      cout<<"MarkCut: "<<p->number<<" not cutted (1)"<<endl;
-      p->m=0;
-      //notcut=true;
-      }*/
-    /* if(!(p->fl.Kfcode()==kf::photon||p->fl.Kfcode()==kf::Z)){
-      cout<<"MarkCut: "<<p->number<<" not cutted (1)"<<endl;
-      p->m=0;
-      }*/
   }
   else p->m = 0;
 
-  // to aktivate Cut of Boson lines comment out the following line
-  //p->m = 0;
+  // spin 2 particels must be cutted
+  if (p->fl.IsTensor() && p->number>99) p->m = 1;
 
   // "new gauge test" cut all massless propagators
   if (p->fl.IsVector() && p->number>99  && rpa.me.CutScheme()==1) {
@@ -96,7 +110,7 @@ void Zfunc_Generator::Convert(Point* p)
   Zfunc* Zh = 0;
   if ((p->left==0) && (p->right==0)) return;
  
-  if ( p->fl.IsFermion() || p->fl.IsScalar() || 
+  if ( p->fl.IsFermion() || p->fl.IsScalar() || (p->fl.IsTensor() && p->number<99) ||
        (p->fl.IsVector() && p->number<99) || p->m==1) {
     Zh = new Zfunc;
     Point* pb;
@@ -112,6 +126,9 @@ void Zfunc_Generator::Convert(Point* p)
 	pb = p->right;
 	pf = p->left;
       }
+      if(pb->fl.IsTensor()||pb->fl.IsScalar()){
+	if(p->middle)pb =p->middle; 
+      }
     }
     else {
       //Incoming Boson
@@ -120,29 +137,42 @@ void Zfunc_Generator::Convert(Point* p)
     if(!LFDetermine_Zfunc(Zh,p,pf,pb)){
       cout<<"Unknown lorentz sequence found! Cutting...";
       Point* ph=pb->right;
-      //cout<<"right "<<ph->fl<<endl;
+      //cout<<"right "<<ph->fl<<ph->left<<ph->right<<endl;
       if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	     (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
-	if(!(ph->left->fl.IsFermion()))
-	  {ph->m=1;cout<<"right"<<endl;}
-      else {
-	ph=pb->left;
-	//cout<<"left "<<ph->fl<<endl;
+	if(!(ph->left->fl.IsFermion())){
+	  ph->m=1;cout<<"right"<<endl;      
+	  Convert(p); 
+	  return;
+	}
+      ph=pb->left;
+      cout<<"left "<<ph->fl<<endl;
+      if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
+	     (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
+	if(!(ph->left->fl.IsFermion())){
+	  ph->m=1;cout<<"left"<<endl;
+	  Convert(p); 
+	  return;
+	}
+      if(pb->middle){
+	ph=pb->middle;
+	cout<<"middle "<<ph->fl<<endl;
 	if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
 	       (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
-	  if(!(ph->left->fl.IsFermion()))
-	    {ph->m=1;cout<<"left"<<endl;}
-	else if(p->middle){
-	  ph=pb->middle;
-	  //cout<<"middle "<<ph->fl<<endl;
-	  if (!( ph->fl.IsFermion() || ph->fl.IsScalar() || 
-		 (ph->fl.IsVector() && ph->number<99) || ph->m==1)&&ph->left)
-	    if(!(ph->left->fl.IsFermion()))
-	      {ph->m=1;cout<<"middle"<<endl;}
-	}
+	  if(!(ph->left->fl.IsFermion())){
+	    ph->m=1;cout<<"middle"<<endl;
+	    Convert(p); 
+	    return;
+	  }
       }
-      Convert(p); 
-      return;
+      if(pf!=0 && ((p->Lorentz)->type==lf::FFVT || 
+                   (p->Lorentz)->type==lf::FFVGS  ) ){
+	pb->m=1;cout<<"myself"<<endl;
+	Convert(p);
+	return;
+      }
+      cout<<"Cutting Error!"<<endl;
+      abort();
     }
   }
   if (Zh) zlist.push_back(Zh);
@@ -154,32 +184,31 @@ void Zfunc_Generator::Convert(Point* p)
 
 void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflist)
 { 
-  if (pb->left==0 && pb->fl.IsScalar()) return;
+  if (pb->left==0 && (pb->fl.IsScalar()||pb->fl.IsTensor())) return;
  
   lflist.push_back(*(pb->Lorentz));
 
   //Endpoints are scalar or non-bosons
   int skal,vec;
   IsGaugeV(pb,skal,vec);      
-  
-  if (skal+vec>=3) {
+  if (skal+vec>=2) {
     if (pb->left->fl.IsVector() && pb->left->m==0)  Lorentz_Sequence(pb->left,lflist);
     if (pb->right->fl.IsVector() && pb->right->m==0) Lorentz_Sequence(pb->right,lflist);
     if (pb->middle!=0) {
             if (pb->middle->fl.IsVector() && pb->middle->m==0) Lorentz_Sequence(pb->middle,lflist);
-      if (pb->middle->m==1) {
+      if (pb->middle->m==1 && !pb->middle->fl.IsTensor()) {
 	Lorentz_Function lf(lf::Pol);
 	lf.SetParticleArg(pb->middle->number);
 	lflist.push_back(lf);
       }
     }
 
-    if (pb->left->m==1) {
+    if (pb->left->m==1 && !pb->left->fl.IsTensor()) {
       Lorentz_Function lf(lf::Pol);
       lf.SetParticleArg(pb->left->number);
       lflist.push_back(lf);
     }
-    if (pb->right->m==1) {
+    if (pb->right->m==1 && !pb->right->fl.IsTensor()) {
       Lorentz_Function lf(lf::Pol);
       lf.SetParticleArg(pb->right->number);
       lflist.push_back(lf);
@@ -224,7 +253,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
   
   if (!( (pb->fl.IsScalar() || pb->m==1) && pf!=0)) Lorentz_Sequence(pb,lflist);
   else {
-    if (pb->m==1 && pf!=0) {
+    if (pb->m==1 && pf!=0 && !pb->fl.IsTensor()) {
       Lorentz_Function lf(lf::Pol);
       lf.SetParticleArg(pb->number);
       lflist.push_back(lf);
@@ -294,6 +323,7 @@ void Zfunc_Generator::CopyOrder(vector<Lorentz_Function> &lflist,vector<Lorentz_
 	lfpointer[j] = help;
       }
     }  
+  //AORGTOOLS::msg.Out()<<"Copied and ordered: "<<endl;
   //LFPrint(lfpointer);
 }
 
@@ -474,17 +504,48 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
       break;
     }
   }
+
+    if(Zh->type>=zl::FFT && Zh->type<zl::FFGS)Set_Tensor(Zh,p);
+  
   //Special cases
+  int icoupl        = Zh->narg - Zh->calculator->GetScalarNumb();
+
   switch (Zh->type) {
     
+  case zl::SSST: break;
+  case zl::FFT:
+    if (pf==0) Set_Out(Zh,0,pb,p);
+    //else Set_In(Zh,0,p,pf,pb);
+    Set_FermionProp(Zh,p,pf);
+    break;
+  case zl::FFGS:
+    Set_FermionProp(Zh,p,pf);
+    Zh->coupl[2]=p->cpl[2];
   case zl::Y:
         if (pf==0) Set_Out(Zh,0,pb,p);
               else Set_In(Zh,0,p,pf,pb);
     break;
+  case zl::FFVT:
+  case zl::FFVGS:
+    //if(pb)cout<<pb->number;if(p)cout<<" "<<p->number;if(pf)cout<<" "<<pf->number;cout<<endl;
+    if(pf==0){
+      Set_Out(Zh,0,pb,p);
+      Zh->Print();cout<<pb->fl<<endl;
+      if(pb->fl.IsVector()){Set_In(Zh,1,p,0,pb);break;}
+      if(pb->left->fl.IsVector()){Set_Out(Zh,1,pb->left,p);break;}
+      if(pb->right->fl.IsVector()){Set_Out(Zh,1,pb->right,p);break;}
+      if(pb->middle->fl.IsVector()){Set_Out(Zh,1,pb->middle,p);break;}
+    }
+    else if(!p->middle && pb->fl.IsVector()){
+      Set_Out(Zh,0,pb,p);
+      Set_In(Zh,1,p,pf,pb);break;
+    }
   case zl::Z:Set_Out(Zh,1,pb,p);break;
   case zl::ZNC:Set_Out(Zh,1,pb,p);break;
+  case zl::SSGS:
+  case zl::VVGS:
+    Zh->coupl[icoupl] = pb->cpl[0];icoupl++;
   default:
-    int icoupl        = Zh->narg;
     Zh->coupl[icoupl] = pb->cpl[1];icoupl++;
 
     SetArgs(Zh,lfnumb,canumb,pb->left,p,icoupl);
@@ -492,6 +553,16 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
     SetArgs(Zh,lfnumb,canumb,pb->middle,p,icoupl);
   }
 
+  if(Zh->calculator->GetScalarNumb()>0){
+    int scnt=Zh->calculator->narg - Zh->calculator->GetScalarNumb();
+    if(pb->fl.IsScalar())SetScalarArgs(Zh,scnt,pb);
+    if(Zh->type==zl::FFVGS && pb->fl.IsVector())pb=p;
+    if(Zh->type!=zl::Y && Zh->type!=zl::FFGS){
+      SetScalarArgs(Zh,scnt,pb->left);
+      SetScalarArgs(Zh,scnt,pb->right);
+      SetScalarArgs(Zh,scnt,pb->middle);
+    } 
+   }
   delete[] lfnumb;
   delete[] canumb;
 }
@@ -566,7 +637,7 @@ void Zfunc_Generator::SearchNextProp(int Nargs,
 
 void Zfunc_Generator::SetArgs(Zfunc* Zh,int* lfnumb,int* canumb,Point* pb,Point* p,int& icoupl)
 {
-  if (pb==0) return;
+  if (pb==0||pb->fl.IsTensor()) return;
   //if (!pb->fl.IsVector()) return;
 
 
@@ -592,21 +663,55 @@ void Zfunc_Generator::SetArgs(Zfunc* Zh,int* lfnumb,int* canumb,Point* pb,Point*
   }
 }
 
+void Zfunc_Generator::SetScalarArgs(Zfunc* Zh,int &scnt,Point* pb)
+{
+  if (pb==0) return;
+  //if (!pb->fl.IsVector()) return;
+
+  if (scnt==Zh->narg) return;
+
+  if(pb->fl.IsScalar()){
+    //cout<<pb->number<<pb->fl<<endl;
+    if  (scnt<Zh->narg)  Zh->arg[scnt]=pb->number;
+    else{
+      Zh->Print();
+      cout<<"scnt : "<<scnt<<" Zh->narg : "<<Zh->narg<<endl;
+      cout<<"Error in Zfunc_Generator::SetScalarArgs!"<<endl;
+      abort();
+    }
+    scnt++;
+  }
+  if (pb->number<99 || pb->m==1) {}
+  else {
+    if  (!pb->left->fl.IsVector() && !pb->right->fl.IsVector()) {}
+    else {
+      SetScalarArgs(Zh,scnt,pb->left);
+      SetScalarArgs(Zh,scnt,pb->right);
+      SetScalarArgs(Zh,scnt,pb->middle);
+    }
+  }
+}
+
+
 void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb)
 {
-  //  cout<<"Incoming: "<<number<<" : "<<pb->number<<endl;
-  Zh->psnew[number].numb      = pb->number;
-  Zh->psnew[number].kfcode    = (pb->fl).Kfcode();
-  Zh->psnew[number].direction = Direction::Incoming;
-  
+  //cout<<"Incoming: "<<number<<" : "<<pb->number<<p->fl<<endl;
+  if(p->fl.IsTensor())return;
+  int nb=number;
+  if (Zh->type==zl::FFVT||Zh->type==zl::FFVGS)nb--;
+  if (Zh->pn>nb && nb>=0) {
+    Zh->psnew[nb].numb      = pb->number;
+    Zh->psnew[nb].kfcode    = (pb->fl).Kfcode();
+    Zh->psnew[nb].direction = Direction::Incoming;
+  }
   if (pf!=0) {
     if (pb->m==1) {
-      //      cout<<"Changing Directions...."<<number<<endl;
-      Zh->psnew[number].direction = Direction::Outgoing;
+      //cout<<"Changing Directions...."<<number<<endl;
+      if (Zh->pn>nb && nb>=0)Zh->psnew[nb].direction = Direction::Outgoing;
     }
     if (pb->number<99) {
       if (BS->Sign(pb->number)==1) {
-	Zh->psnew[number].direction = Direction::Outgoing;
+	if (Zh->pn>nb && nb>=0)Zh->psnew[nb].direction = Direction::Outgoing;
       }
     }
 
@@ -624,16 +729,21 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
   else {
     if (pb->number<99) {
       if (BS->Sign(pb->number)==-1) {
-	Zh->psnew[number].direction = Direction::Outgoing;
+	if (Zh->pn>nb && nb>=0) Zh->psnew[nb].direction = Direction::Outgoing;
       }
     }
 
     if (p->m==1) {
       Zh->arg[number*2]   = p->number;
+      if (!(p->fl).IsTensor()) {
       //Marker for -99
-      Zh->arg[number*2+1] = 99;
-      Zh->coupl[number*2]   = Complex(1.,0.);
-      Zh->coupl[number*2+1] = Complex(1.,0.);
+	Zh->arg[number*2+1] = 99;
+	Zh->coupl[number*2]   = Complex(1.,0.);
+	Zh->coupl[number*2+1] = Complex(1.,0.);
+	}
+	else {
+	  Zh->arg[number*2+1]   = p->number;
+	  }
     }
     else {
       //incoming boson
@@ -656,14 +766,19 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
 
 void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
 {
+  //cout<<"Outgoing: "<<number<<" : "<<pg->number<<endl;
   //setting an outgoing in gauge vertices
-  if (Zh->pn>number) {
-    Zh->psnew[number].numb      = pg->number;
-    Zh->psnew[number].kfcode    = (pg->fl).Kfcode();
-    Zh->psnew[number].direction = Direction::Outgoing;
+  //if(pg->fl.IsTensor())return;
+  int nb=number;
+  if (Zh->type==zl::FFVT||Zh->type==zl::FFVGS)nb--;
+  if (Zh->pn>nb && nb>=0) {
+    Zh->psnew[nb].numb      = pg->number;
+    Zh->psnew[nb].kfcode    = (pg->fl).Kfcode();
+    Zh->psnew[nb].direction = Direction::Outgoing;
   }
 
-  if ((pg->fl).IsScalar() && pg->left==0) {
+  // old:  if ((pg->fl).IsScalar() && pg->left==0) {
+  if ((pg->fl).IsScalar() && (pg->left==0 || Zh->type==zl::SSV || p!=pg)) {
     Zh->arg[number*2]     = pg->number;
     Zh->arg[number*2+1]   = pg->number;
     Zh->coupl[number*2]   = Complex(0.,0.);
@@ -673,14 +788,21 @@ void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
     if (pg->left!=0) {
       if (pg->m==1 && pg!=p) {
 	Zh->arg[number*2]     = pg->number;
-	//Marker for -99
-	Zh->arg[number*2+1]   = 99;
-	Zh->coupl[number*2]   = Complex(1.,0.);
-	Zh->coupl[number*2+1] = Complex(1.,0.);
+	if (!(pg->fl).IsTensor()) {
+	  //Marker for -99
+	  Zh->arg[number*2+1]   = 99;
+	  
+	  Zh->coupl[number*2]   = Complex(1.,0.);
+	  Zh->coupl[number*2+1] = Complex(1.,0.);
+	}
       }
       else {
 	Zh->arg[number*2]     = pg->left->number;
 	Zh->arg[number*2+1]   = pg->right->number;
+	if(pg->middle)if(pg->middle->fl.IsFermion()){
+	  if(!(pg->left->fl.IsFermion())) Zh->arg[number*2]   = pg->middle->number;
+	  if(!(pg->right->fl.IsFermion()))Zh->arg[number*2+1] = pg->middle->number;
+	}
 	Zh->coupl[number*2]   = pg->cpl[0];
 	Zh->coupl[number*2+1] = pg->cpl[1];
       }
@@ -701,6 +823,65 @@ void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
     }
   }
 }	
+void Zfunc_Generator::Set_Tensor(Zfunc* Zh,Point* p)
+{
+  if(Zh->type==zl::SSST)cout<<"in Set_Tensor "<<p->left->fl<<p->right->fl<<p->middle->fl<<endl;
+  Point *pb=p,*pt;
+  if(p->fl.IsFermion()){
+    if(p->left->fl.IsBoson())pb=p->left;
+    if(!(pb->fl.IsTensor())&&p->right->fl.IsBoson())pb=p->right;
+    if(!(pb->fl.IsTensor())&&p->middle)
+      if(p->middle->fl.IsBoson())pb=p->middle;
+  }
+  pt=pb;
+  if(!(pb->fl.IsTensor())){
+    if(pb->left==0)return;
+    if(pb->left->fl.IsTensor())pt=pb->left;
+    else if(pb->right->fl.IsTensor())pt=pb->right;
+    else if(pb->middle)if(pb->middle->fl.IsTensor())pt=pb->middle;
+  }else pb=p;
+  if(!(pt->fl.IsTensor()))return;
+  cout<<pt->number<<endl;
+  Zh->psnew[Zh->pn-1].numb      = pt->number;
+  Zh->psnew[Zh->pn-1].kfcode    = (pt->fl).Kfcode();
+  Zh->psnew[Zh->pn-1].direction = Direction::Outgoing;
+  
+  int narg=Zh->narg - Zh->calculator->GetScalarNumb();
+  Zh->arg[narg-2]     = pt->number;
+  Zh->arg[narg-1]     = pt->number;
+  int ic=narg-2;
+  switch(Zh->type){
+    case zl::FFT: Zh->coupl[2]=pb->cpl[2];
+    case zl::FFVT: ic=0;break;  
+  }
+  Zh->coupl[ic]     = pb->cpl[0];
+  Zh->coupl[ic+1]     = pb->cpl[1];  
+}	
+
+void Zfunc_Generator::Set_FermionProp(Zfunc* Zh,Point* p,Point* pf)
+{
+  if(Zh->pn!=3)return;
+  //cout<<"Fermions:"<<p->fl<<p->fl.IsAnti()<<p->left->fl.IsAnti()<<p->right->fl.IsAnti()<<endl;
+  if(pf){
+    int i1=1,i2=2;
+    if((p->fl).IsAnti()){i1=2;i2=1;}
+    Zh->psnew[i2].numb      = p->number;
+    Zh->psnew[i2].kfcode    = (p->fl).Kfcode();
+    Zh->psnew[i2].direction = Direction::Incoming;
+    if(p->number==0)Zh->psnew[i2].direction = Direction::Outgoing;
+    Zh->psnew[i1].numb      = pf->number;
+    Zh->psnew[i1].kfcode    = (pf->fl).Kfcode();
+    Zh->psnew[i1].direction = Direction::Outgoing;
+  }
+  else{
+    Zh->psnew[2].numb      = p->left->number;
+    Zh->psnew[2].kfcode    = (p->left->fl).Kfcode();
+    Zh->psnew[2].direction = Direction::Outgoing;
+    Zh->psnew[1].numb      = p->right->number;
+    Zh->psnew[1].kfcode    = (p->right->fl).Kfcode();
+    Zh->psnew[1].direction = Direction::Outgoing;
+  }
+}
 
 void Zfunc_Generator::IsGaugeV(Point* p,int& skal,int& vec)
 {
@@ -710,6 +891,9 @@ void Zfunc_Generator::IsGaugeV(Point* p,int& skal,int& vec)
     if ((p->fl).IsScalar())        skal++;
     if ((p->left->fl).IsScalar())  skal++;
     if ((p->right->fl).IsScalar()) skal++;
+    if ((p->fl).IsTensor())        skal++;
+    if ((p->left->fl).IsTensor())  skal++;
+    if ((p->right->fl).IsTensor()) skal++;
 
     if ((p->fl).IsVector())        vec++;
     if ((p->left->fl).IsVector())  vec++;
@@ -717,6 +901,7 @@ void Zfunc_Generator::IsGaugeV(Point* p,int& skal,int& vec)
 
     if (p->middle!=0) {
       if ((p->middle->fl).IsScalar()) skal++;
+      if ((p->middle->fl).IsTensor()) skal++;
       if ((p->middle->fl).IsVector()) vec++;
     }
   }
@@ -730,7 +915,7 @@ void Zfunc_Generator::SetDirection(int N,SpinorDirection* spind)
   ip = jp = -1;
   for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
     Zfunc* z = (*zit);
-    for (int pos=0;pos<z->narg;pos+=2) {
+    for (int pos=0;pos<(z->narg - z->calculator->GetScalarNumb());pos+=2) {
       int swchange = 0;
       i = pos;
       int first;
@@ -781,7 +966,7 @@ void Zfunc_Generator::SetDirection(int N,SpinorDirection* spind)
 	      Zfunc* zh = (*zit);
 	      if (zh!=z) {
 		end = 0;
-		for (int pos2=0;pos2<zh->narg;pos2+=2) {
+		for (int pos2=0;pos2<(zh->narg - zh->calculator->GetScalarNumb());pos2+=2) {
 		  j = pos2;
 		  swchange = 0;
 		  if (zh->arg[j]==partner) {

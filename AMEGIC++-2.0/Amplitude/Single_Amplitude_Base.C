@@ -39,125 +39,230 @@ void Single_Amplitude_Base::ClearCalcList()
       z->calclist.clear();
     }
     */
-    for (int i=0;i<z->GetSize();i++) {
-      Zfunc* z1 = (*z)[i];
-      if (!z1->value.empty()) {
-	z1->value.clear();
-	for (short int i=0;i<z1->calclist.size();i++) {
-	  delete[] z1->calclist[i];
-	}
-	z1->calclist.clear();
-      }
-    }
+
+    z->ClearCalcList();
   }
 }
 
 #define new_calc
 
-Kabbala Single_Amplitude_Base::Mass_Terms(vector<int>& iz,vector<int>& ii,
-				     vector<vector<int> >& iargs)
+
+int Single_Amplitude_Base::Fill_Args(Zfunc* z, Argument* args, vector<int>* iz, vector<int>* iargs)  
 {
-#ifdef Kabbala_on
-  Kabbala factor(string("1"),Complex(1.,0.));
-#else
-  Kabbala factor(1.,0.);
-#endif    
-
-  Basic_MassTermfunc bmtf(shand->Get_Generator(),BS);
-
-  bmtf.SetArgCouplProp(0,0,0,0,0,&plist); 
-
-  for (short int i=0;i<iz.size();i++) {
-    if (iz[i]<199 && iz[i]>0) factor *= bmtf.MassTerm(iz[i]*iargs[2*i][ii[2*i]]);
-  }
-
-  return factor;
-}
-
-void Single_Amplitude_Base::Fill_Args(Zfunc* z,Argument* args,int* signlist,
-				      vector<int>* iz,              //list of indizes(propagators to sum)
-				      vector<int>* ii,              //current positions of indizes 
-				      vector<vector<int> >* iargs)  //list of indizes with different index values
-                                      //e.g (*iargs)[3][(*ii)[3]] is the current value of the third index 
-{
-  int nargs = 0;
+  int k=-1;
   for (short int i=0;i<z->narg;i++) {
-    //cout<<"Setting Argument : "<<z->arg[i]<<endl;
-    if (z->arg[i]>99) {
-      if (z->arg[i]>199) {
-	//boson
-	args[nargs].numb   = z->arg[i];
-	//scalar bosons have no helicity, result should be independent of special choice....
-	nargs++;
-	args[nargs].numb = 1;
-	if (iz!=0) {
-	  for (short int j=0;j<iz->size();j++) {
-	    if ((*iz)[j]==z->arg[i]) {
-	      args[nargs].numb = (*iargs)[2*j+1][(*ii)[2*j+1]];
-	      break;
-	    }
-	  }
+    args[2*i].numb = z->arg[i];
+    int hit=0,j;
+    if(iz!=0){
+      for(j=0;j<iz->size();j++){
+	if(iabs((*iz)[j])==z->arg[i]){
+	  hit=1;
+	  break;
 	}
       }
-      else {
-	//fermion prop
-	for (short int j=0;j<iz->size();j++) {
-	  if (iabs((*iz)[j])==z->arg[i]) {
-	    if ((*iz)[j]>0) {
-	      args[nargs].numb = (*iz)[j];
-	      if ((*iargs)[2*j][(*ii)[2*j]]<0) {
-		if (i%2==0) args[nargs].spinortype = Spinor::vbar;
-                       else args[nargs].spinortype = Spinor::v;
-	      }
-	    }
-	    else {
-	      //new case
-	      args[nargs].numb = (*iargs)[2*j][(*ii)[2*j]];
-	    }
-	    args[++nargs].numb = (*iargs)[2*j+1][(*ii)[2*j+1]];
+    }
+    if(hit){
+      if((*iargs)[2*j+1]>100){
+	//cout<<"Tensor: "<<(*iargs)[2*j+1]<<":"<<j<<","<<i<<endl;
+	//z->Print();
+	k= j;           //spin2 tensor dummies have to be replaced
+      }
+      if((z->arg[i]>99)&&(z->arg[i]<200)){
+	//fermions
+	if((*iz)[j]<0) args[2*i].numb=(*iargs)[2*j]; // new cut fermion prop  
+	else{ 
+	  if ((*iargs)[2*j]<0) {                  // old cut fermion prop
+	    if (i%2==0) args[2*i].spinortype = Spinor::vbar;
+	           else args[2*i].spinortype = Spinor::v;
+	  }
+	}      
+      }
+
+      if(z->arg[i]<99) 
+	if (fl[z->arg[i]].Majorana() && i%2!=0) args[2*i].spinortype = Spinor::v;
+      args[2*i+1].numb = (*iargs)[2*j+1];
+
+      if(i<z->narg-1)
+	if(z->arg[i]==z->arg[i+1]&&(*iz)[j]==(*iz)[j+1]){ // spin2 boson
+	  i++;j++;
+	  args[2*i].numb = z->arg[i];
+	  args[2*i+1].numb = (*iargs)[2*j+1];
+	}
+
+    }
+    else{
+      if (z->arg[i]<20) {                                //old external massless Vector Boson treatment
+	args[2*i].numb = z->arg[i]-10;
+	for(short int j=0;j<iz->size();j++){
+	  if(iabs((*iz)[j])==z->arg[i]-10){
+	    args[2*i+1].numb = (*iargs)[2*j+1];
 	    break;
 	  }
 	}
       }
-    }
-    else {
-      args[nargs].numb   = z->arg[i];
-      if ((args[nargs].numb>N-1) && (args[nargs].numb<20)) {
-	for (short int j=z->arg[i]-10-1;j>=0;j--) {
-	  if ( (fl[j].IsVector() && AMATOOLS::IsZero(fl[j].Mass())) ||
-	       fl[j]==Flavour(kf::pol) ) {
-	    args[++nargs].numb = signlist[j];	    
-	    break;
-	  }
-	}	      
-	args[nargs-1].numb = z->arg[i]-10;
-      }
-      else {
-	if (args[nargs].numb>=20 && args[nargs].numb<99) {
-	  //massive Vector bosons
-	  args[nargs].numb   = z->arg[i]-20;
-	  args[++nargs].numb = -1;
+      else{
+	if (z->arg[i]>=20 && z->arg[i]<99) {
+	  //old  massive Vector bosons
+	  args[2*i].numb   = z->arg[i]-20;
+	  args[2*i+1].numb = -1;
 	}
-	else {
-	  if (z->arg[i]!=99) {
-	    if (fl[z->arg[i]].Majorana() && i%2!=0) args[nargs].spinortype = Spinor::v;
-	    args[++nargs].numb = signlist[z->arg[i]];
-	  }
-	  else nargs++; 
-	}
+        //else args[2*i+1].numb = 0;
       }
     }
-    nargs++;
   }
+  return k;
 }
 
-Kabbala Single_Amplitude_Base::Single_Zvalue(Argument* args,Zfunc* z)
+Kabbala Single_Amplitude_Base::Single_ZvalueTensor(Zfunc* z,vector<int>* iz, vector<int>* iargs,int k)
+{
+  //cout<<"in Single_ZvalueTensor"<<endl;
+  Kabbala value;
+  int narg=z->narg - z->calculator->GetScalarNumb();
+  if(z->arg[narg-2]!=z->arg[narg-1]){
+    cout<<"Single_Amplitude_Base::Single_ZvalueTensor: Unexpected tensor sign! "<<(*iargs)[2*k+1]<<" "<<k<<endl;
+    z->Print();
+    abort();
+  }
+  vector<vector<int> > pol;
+  vector<int> sign;
+  tensor_struc ts;
+  int tensor_type=(*iargs)[2*k+1];
+  ts.Get_Pol_Combos(tensor_type,&pol,&sign);
+  //for(int i=0;i<pol.size();i++)
+  //cout<<sign[i]<<"("<<pol[i][0]<<","<<pol[i][1]<<") ";cout<<endl;
+  //cout<<"TViarg:"<<(*iargs)[2*k+1]<<","<<(*iargs)[2*k+3]<<endl;
+  for(int i=0;i<pol.size();i++){
+    (*iargs)[2*k+1]=pol[i][0];
+    (*iargs)[2*k+3]=pol[i][1];
+    if(sign[i]==-1) value -= Single_Zvalue(z,iz,iargs);
+    else            value += Single_Zvalue(z,iz,iargs);
+  }
+  (*iargs)[2*k+1]=tensor_type;
+  (*iargs)[2*k+3]=tensor_type;
+  return value;
+}
+
+Kabbala Single_Amplitude_Base::Single_ZGroup_value(Zfunc* z,
+					     vector<int>* iz,              //list of indizes(propagators to sum)
+					     vector<int>* iargs,int last)
 { 
+  Kabbala value;
+  if(z->GetOp()=='+') { 
+     for (int i=0;i<z->GetSize();i++) {
+      Kabbala hlp = Single_Zvalue((*z)[i],iz,iargs);
+      if ((*z)[i]->pn>0) hlp*= Get_Prop((*z)[i]->pn,(*z)[i]->psnew,(*z)[i]->GetOp());
+
+      if (z->GetSign(i)==-1) value -= hlp;
+                        else value += hlp;
+    }
+  }  
+
+  if(z->GetOp()=='*'){
+    Kabbala hlp;
+
+    if(z->GetSize()!=2){
+      cout<<"Invalid Zfunc_ProdGroup!"<<endl;
+      abort();
+    }
+    vector<int> iz_s;
+    iz_s.push_back(z->GetSumIndex());
+
+    vector<int> dummy;
+    vector<vector<int> > iargs_s;
+
+    iargs_s.reserve(2);iargs_s.resize(2,dummy);
+
+    SetLoopVar(iz_s,iargs_s);
+    iz->push_back(iz_s[0]);
+
+    bool tensor=Get_Pflav(z->GetSumIndex())->IsTensor();
+    if(tensor) iz->push_back(iz_s[0]);
+
+    if(!tensor){                                 //fermions and cutted vector bosons
+      for(int i1=0;i1<iargs_s[0].size();i1++)
+	for(int i2=0;i2<iargs_s[1].size();i2++){
+	  iargs->push_back(iargs_s[0][i1]);
+	  iargs->push_back(iargs_s[1][i2]);
+	  
+	  hlp= Single_Zvalue((*z)[0],iz,iargs)*
+	       Single_Zvalue((*z)[1],iz,iargs);
+	  
+	  if ((z->GetSumIndex()>99) && (z->GetSumIndex()<199))
+	    hlp*= Single_Mass_Terms((*iz)[iz->size()-1],(*iargs)[iargs->size()-2]);
+	  
+	  value+=hlp;
+	  iargs->pop_back();iargs->pop_back();
+	}
+    }
+    else {                                              //cutted spin2 bosons notation: hep-ph/9811350
+      for(int i1=0;i1<iargs_s[1].size();i1++)
+	for(int i2=i1;i2<iargs_s[1].size();i2++){
+	  iargs->push_back(iargs_s[0][0]);
+	  iargs->push_back(iargs_s[1][i1]);
+	  iargs->push_back(iargs_s[0][0]);
+	  iargs->push_back(iargs_s[1][i2]);
+
+	  hlp= Single_Zvalue((*z)[0],iz,iargs)*
+	       Single_Zvalue((*z)[1],iz,iargs);
+#ifdef Kabbala_on
+	  if(i1!=i2)hlp*= Kabbala(string("2"),Complex(2.,0.));
+#else
+	  if(i1!=i2)hlp*2.;
+#endif
+	  value+=hlp;
+ 
+	  iargs->pop_back();iargs->pop_back();
+	  iargs->pop_back();iargs->pop_back();
+	}
+      Kabbala hlp1,hlp2;
+      for(int i1=0;i1<iargs_s[1].size();i1++){
+	  iargs->push_back(iargs_s[0][0]);
+	  iargs->push_back(iargs_s[1][i1]);
+	  iargs->push_back(iargs_s[0][0]);
+	  iargs->push_back(iargs_s[1][i1]);
+
+	  hlp1+= Single_Zvalue((*z)[0],iz,iargs);
+	  hlp2+= Single_Zvalue((*z)[1],iz,iargs);
+
+	  iargs->pop_back();iargs->pop_back();
+	  iargs->pop_back();iargs->pop_back();
+      }
+#ifdef Kabbala_on
+      Kabbala n33;
+      if(buildstring) n33=(shand->Get_Generator())->Get_Enumber(Complex(1./3.,0.));
+      else n33=Kabbala(string(""),Complex(1./3.,0.));
+      value -= n33*hlp1*hlp2;
+
+#else
+      value-=(1./3.)*hlp1*hlp2;
+#endif
+
+      iz->pop_back();
+    }
+
+    iz->pop_back();
+
+  }
+  return value;
+}
+
+Kabbala Single_Amplitude_Base::Single_Zvalue(Zfunc* z,vector<int>* iz, vector<int>* iargs,int last)
+{
+  if(last && z->GetSize()>1) return Single_ZGroup_value(z,iz,iargs,last);
+   
+  Argument* args = new Argument[2*z->narg];
+  int k=Fill_Args(z,args,iz,iargs);
+  if(k!=-1&&z->GetSize()==1){
+    delete[] args;
+    return Single_ZvalueTensor(z,iz,iargs,k); //produce tensors for extern spin2 bosons
+  }
+
 #ifdef new_calc
   if (z->Equal!=z) {
     //cout<<"In not equal part!!!!"<<endl;
     Zfunc* ze = z->Equal;
     for (short int i=0;i<ze->value.size();i++) {
+      //cout<<i<<": "<<ze->value[i].String()<<endl;
       int hit = 1;
       //Signs Equal ??
       for (short int j=1;j<2*ze->narg;j+=2) {
@@ -177,6 +282,7 @@ Kabbala Single_Amplitude_Base::Single_Zvalue(Argument* args,Zfunc* z)
       }
 
       if (hit) {
+	delete[] args;
 	if (z->sign==-1) return -ze->value[i];
 	            else return ze->value[i];
       }
@@ -194,6 +300,7 @@ Kabbala Single_Amplitude_Base::Single_Zvalue(Argument* args,Zfunc* z)
 	}
       }
       if (hit) {
+	delete[] args;
 	if (z->sign==-1) return -z->value[i];
 	            else return z->value[i];
       }
@@ -203,8 +310,14 @@ Kabbala Single_Amplitude_Base::Single_Zvalue(Argument* args,Zfunc* z)
   Argument* newargs = new Argument[2*z->narg];
   for (short int i=0;i<2*z->narg;i++) newargs[i] = args[i];
 
-  z->calculator->SetArgCouplProp(2*z->narg,args,z->coupl,z->pn,z->psnew,&plist);
-  Kabbala value = z->calculator->Do();
+  Kabbala value;
+
+  if(z->GetSize()>1)value=Single_ZGroup_value(z,iz,iargs,last);
+  else {
+    z->calculator->SetArgCouplProp(2*z->narg,args,z->coupl,z->pn,z->psnew,&plist);
+
+    value = z->calculator->Do();
+  }
 
 #ifdef Kabbala_on
   if (buildstring) {
@@ -213,6 +326,7 @@ Kabbala Single_Amplitude_Base::Single_Zvalue(Argument* args,Zfunc* z)
 	 (value.String()).find(string("*"))!=-1 )
       value = (shand->Get_Generator())->Get_CZnumber(value.Value(),value.String());
   }
+  else value.SetString("");
 
 #endif
 #ifdef new_calc  
@@ -226,6 +340,7 @@ Kabbala Single_Amplitude_Base::Single_Zvalue(Argument* args,Zfunc* z)
   }
 
 #endif
+  delete[] args;
   if (z->sign==-1) return -value;
 
   return value;
@@ -233,7 +348,7 @@ Kabbala Single_Amplitude_Base::Single_Zvalue(Argument* args,Zfunc* z)
 
 void Single_Amplitude_Base::SetLoopVar(vector<int>& iz,vector<vector<int> >& iargs)
 {
-  for (short int i=0;i<iz.size();i++) {
+  for (short int i=0;i<iz.size();i++) if(iz[i]>99){
     //cout<<"New Prop: "<<iz[i]<<endl;
     if (iz[i]<199) {
 #ifdef Cut_Fermion_Prop
@@ -246,12 +361,12 @@ void Single_Amplitude_Base::SetLoopVar(vector<int>& iz,vector<vector<int> >& iar
       //cout<<iz[i]<<";"<<p->fl<<" --> ";
       for (short j=1;j<p->argnum;j++) {
 	//cout<<p->arg[j]<<","<<fl[p->arg[j]]<<","<<b[p->arg[j]]<<" ; ";
-	if (fl[p->arg[j]].IsAnti()) mass -= b[p->arg[j]]*rpa.consts.Mass(fl[p->arg[j]],sqr(rpa.gen.Ecms()));
-	                       else mass += b[p->arg[j]]*rpa.consts.Mass(fl[p->arg[j]],sqr(rpa.gen.Ecms()));
+	if (fl[p->arg[j]].IsAnti()) mass -= b[p->arg[j]] * fl[p->arg[j]].Mass();
+	                       else mass += b[p->arg[j]] * fl[p->arg[j]].Mass();
       }
       //cout<<endl;
 
-      double particlemass = rpa.consts.Mass(p->fl,sqr(rpa.gen.Ecms()));
+      double particlemass = p->fl.Mass();
 
       if (p->fl.IsAnti()) particlemass = -particlemass;
 
@@ -302,147 +417,73 @@ Complex Single_Amplitude_Base::Zvalue(String_Handler * sh, int ihel)
   shand->Zvalue(amplnumber,ihel); 
 }
 
-
 Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist) 
 {
   if (signlist==0) return shand->Zvalue(amplnumber,ihel);
 
-  // use new sum scheme
-  return Zvalue_new_sum(ihel,signlist);
+    //cout<<"Amplitude number "<<amplnumber;
+    //cout<<"============================================================================"<<endl;
+    
+    return Zvalue_sum(ihel,signlist);
+}
 
-  Kabbala Zval;
-
-  vector<int> iz;
-
+Flavour* Single_Amplitude_Base::Get_Pflav(int pn)
+{
   for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
-    Pfunc* p = *pit;
-    if ((p->on && (p->fl).IsFermion()) ||
-	p->haspol) {
-      if (p->arg[0]>99) iz.push_back(p->arg[0]);
-    }
+    Pfunc*  p = *pit;
+    if(pn==p->arg[0])return &(p->fl);
   }
+  msg.Error()<<"Single_Amplitude_Base::Get_Pflav: Propagator not found!"<<endl;
+  abort();
+}
 
-  //cout<<"Number of fermions: "<<iz.size()<<endl;
-
-  Kabbala sum;
-  Argument* args;
-  
-  if (iz.empty()) {
-#ifdef Kabbala_on
-    Kabbala factor(string("1"),Complex(1.,0.));
-#else
-    Kabbala factor(1.,0.);
-#endif
-    for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
-      Zfunc* z = (*zit);
-      args = new Argument[2*z->narg];
-      Fill_Args(z,args,signlist);      
-      factor *= Single_Zvalue(args,z);
-      delete[] args;
-    }
-    sum += factor;
-  }
-  else {
-    vector<int> ii;ii.reserve(2*iz.size());ii.resize(2*iz.size(),0);
-    vector<int> dummy;
-    vector<vector<int> > iargs;iargs.reserve(2*iz.size());iargs.resize(2*iz.size(),dummy);
-
-    SetLoopVar(iz,iargs);
-
-    int over = 0;
-    int sw1 = 0;
-    do {
-#ifdef Kabbala_on
-      Kabbala factor(string("1"),Complex(1.,0.));
-#else
-      Kabbala factor(1.,0.);
-#endif
-      int minus = 0;
-      for (int j=0;j<iz.size();j++) {
-	if (iabs(iz[j])<199 && iz[j]<0) {
-	  int currval = iargs[2*j][ii[2*j]];
-	  if (b[currval]<0) minus++;
-	}
-      }
-
-      /*
-      cout<<"Next: ";
-      for (short int i=0;i<2*iz.size();i++)
-	cout<<iargs[i][ii[i]]; 
-      cout<<endl;
-      */
-      for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
-	Zfunc* z = (*zit);
-	args = new Argument[2*z->narg];
-	Fill_Args(z,args,signlist,&iz,&ii,&iargs);
-	factor *= Single_Zvalue(args,z);
-	delete[] args;
-      }
-      factor *= Mass_Terms(iz,ii,iargs);
-      if (minus%2) sum -= factor;
-              else sum += factor;
-      for (short int j=2*iz.size()-1;j>=0;j--) {
-	ii[j]++;
-	if (ii[j]==iargs[j].size()) {
-	  ii[j]=0;
-	  if (j==0) over = 1;
-	}
-	else break;
-      }
-    } while (over==0);
-
-#ifdef Kabbala_on
-    for (short int k=0;k<iz.size();k++) {
-      if (iz[k]<199 && iz[k]>0) sum *= Kabbala(string("0.5"),Complex(1./2.,0.));
-    }
-#else
-    for (short int k=0;k<iz.size();k++) {
-      if (iz[k]<199 && iz[k]>0) sum *= 0.5;
-    }
-#endif    
-  }
-  
-  //Propagators...
-  Basic_Pfunc bpf(shand->Get_Generator(),BS);
-
+Kabbala Single_Amplitude_Base::Get_Prop(int pn, Argument *ps, char op)
+{
 #ifdef Kabbala_on
   Kabbala Pols(string("1"),Complex(1.,0.));
 #else
   Kabbala Pols(1.,0.);
 #endif
-  for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
-    Pfunc* p = *pit;
-    if (p->on) {
-      //cout<<"Multiply outer with "<<p->arg[0]<<" = "<<p->fl<<endl;
-      if (p->haspol) Pols *= -bpf.P(p);
-                else Pols *= bpf.P(p); 
+  Basic_Pfunc bpf(shand->Get_Generator(),BS);
+
+  int cnt=0,sign=1;
+  for(int i=0;i<pn;i++){
+
+    for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
+      Pfunc*  p = *pit;
+      int pc;
+
+      if (!ps[i].maped) pc = p->arg[0];
+      else {
+	pc = p->momnum;
+	if((p->fl).Kfcode()!=ps[i].kfcode) pc = -1;
+      }
+      //cout<<ps[i].numb<<"/"<<pc<<" OP:"<<op<<" On:"<<p->on<<endl;
+
+      if (pc==iabs(ps[i].numb)) {
+	if(op==0 && p->on==1)break;
+	if (p->haspol && p->fl.IsVector()) sign*=-1;
+        Pols*= bpf.P(p);
+	cnt++;
+	break;
+      } 
     }
   }
+  if(sign<0)Pols=-Pols;
 
 #ifdef Kabbala_on
   if (buildstring) {
-    if ( (Pols.String()).find(string("+"))!=-1 ||
-	 (Pols.String()).find(string("-"))!=-1 ||
-	 (Pols.String()).find(string("*"))!=-1 )
+    if (cnt>1)
       Pols = (shand->Get_Generator())->Get_CZnumber(Pols.Value(),Pols.String());
   }
 #endif
 
-  sum *= Pols;
-
-  if (sign<0) sum = -sum; 
-    
-#ifdef Kabbala_on
-  if (buildstring) shand->Set_String(amplnumber,ihel,sum.String());
-
-  return sum.Value();
-#else
-  return sum;
-#endif      
+  return Pols;
 }
 
-Kabbala Single_Amplitude_Base::Single_Mass_Terms_new(int iz,int iarg)
-{
+
+Kabbala Single_Amplitude_Base::Single_Mass_Terms(int iz,int iarg)
+{  
 #ifdef Kabbala_on
   Kabbala factor(string("1"),Complex(1.,0.));
 #else
@@ -459,103 +500,52 @@ Kabbala Single_Amplitude_Base::Single_Mass_Terms_new(int iz,int iarg)
 
   bmtf.SetArgCouplProp(0,0,0,0,0,&plist); 
   //cout<<"Single_Mass_Terms_new:"<<iz<<" "<<iarg;
-  if(iz>0) factor = bmtf.MassTerm(iz*iarg);
+  if(iz>0) {
+    factor = bmtf.MassTerm(iz*iarg);
+#ifdef Kabbala_on
+    factor*= Kabbala(string("0.5"),Complex(1./2.,0.));
+#else
+    factor*= 0.5;
+#endif
+  }
   return factor;
 }
 
-Kabbala Single_Amplitude_Base::Generate_Block(vector<Block_Info>& BlockList,int bi,
-					 vector<int>& iz,vector<int>& ii,vector<vector<int> >& iargs,
-					 int* signlist)
+
+
+Complex Single_Amplitude_Base::Zvalue_sum(int ihel, int* signlist) 
 {
-  Kabbala sum,hlp;
-  if(BlockList[bi].l>-1){
-    //cout<<"Generate_Block: index:"<<BlockList[bi].index<<" #:"<<bi<<" l:"<<BlockList[bi].l<<" r:"<<BlockList[bi].r<<endl;
-    vector<int> iii(ii);
-    for(short int i1=0;i1<iargs[2*BlockList[bi].index].size();i1++)
-      for(short int i2=0;i2<iargs[2*BlockList[bi].index+1].size();i2++){
-	iii[2*BlockList[bi].index]=i1;
-	iii[2*BlockList[bi].index+1]=i2;
-
-	hlp= Generate_Block(BlockList,BlockList[bi].l,iz,iii,iargs,signlist)
-	    *Generate_Block(BlockList,BlockList[bi].r,iz,iii,iargs,signlist);
-	//hlp = (shand->Get_Generator())->Get_CZnumber(hlp.Value(),hlp.String());
-
-	if(BlockList[bi].index<iz.size())
-	  sum+=hlp*Single_Mass_Terms_new(iz[BlockList[bi].index],iargs[2*BlockList[bi].index][i1]);    
-	else
-	  sum+=hlp;    
-      }
-    //cout<<"Generate_Block: index:"<<BlockList[bi].index<<" #:"<<bi<<" l:"<<BlockList[bi].l<<" r:"<<BlockList[bi].r<<endl;
-    //cout<<sum.String()<<endl;
-    if (buildstring) sum = (shand->Get_Generator())->Get_CZnumber(sum.Value(),sum.String());
-  }
-  else{
-    Argument* args = new Argument[2*BlockList[bi].Z->narg];
-    Fill_Args(BlockList[bi].Z,args,signlist,&iz,&ii,&iargs);
-    sum = Single_Zvalue(args,BlockList[bi].Z);
-    delete[] args;
-    //cout<<"Generate_Block: Z:"<<bi<<" >"<<sum.String()<<";";
-    //for(int i=0;i<ii.size();i++)cout<<" "<<ii[i];
-    //cout<<endl;
-  }
-  return sum;
-}
-
-Complex Single_Amplitude_Base::Zvalue_new_sum(int ihel, int* signlist) 
-{
-  Kabbala Zval;
-
   vector<int> iz;
 
   Zfunc* z;
 
-  for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
-    Pfunc* p = *pit;
-    if ((p->on && (p->fl).IsFermion()) ||
-	p->haspol ) {
-      if (p->arg[0]>99) iz.push_back(p->arg[0]);
+  if(zlist.size()>1){
+    for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
+      Pfunc* p = *pit;
+      if (p->on) {
+	if (p->arg[0]>99) iz.push_back(p->arg[0]);
+      }
     }
   }
 
   //cout<<"Zvalue_new: iz"<<endl;
-
-  //cout<<"Number of propagators: "<<iz.size()<<endl;
-
-  Kabbala sum;
-  Argument* args;
   
-  if (iz.empty()) {
-#ifdef Kabbala_on
-    Kabbala factor(string("1"),Complex(1.,0.));
-#else
-    Kabbala factor(1.,0.);
-#endif
-    for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
-      Zfunc* z = (*zit);
-      args = new Argument[2*z->narg];
-      Fill_Args(z,args,signlist);      
-      factor *= Single_Zvalue(args,z);
-      delete[] args;
-    }
-    sum += factor;
-  }
-  else {
+  /*cout<<"Number of propagators: "<<iz.size()<<endl;
+  for(int i=0;i<iz.size();i++) cout<<iz[i]<<" ";
+   cout<<endl;
+  */
+  
+  if (!iz.empty()) {
     vector<int> dummy;
     vector<vector<int> > iargs;iargs.reserve(2*iz.size());iargs.resize(2*iz.size(),dummy);
 
     SetLoopVar(iz,iargs);
     
     vector<vector<int> > indexlist;
-    vector<Zfunc*> ScalarZ;
     int cnt=0;
-    Block_Info bdummy;
-    bdummy.l = -1;bdummy.r = -1;bdummy.index = -1;
-    vector<Block_Info> BlockList;
     for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
       Zfunc* z = (*zit);
       indexlist.push_back(dummy);
-      bdummy.Z=z;
-      BlockList.push_back(bdummy);
       for (short int i=0;i<z->narg;i++) {
 	if (z->arg[i]>99) {
 	  for (short int j=0;j<iz.size();j++) {
@@ -566,27 +556,9 @@ Complex Single_Amplitude_Base::Zvalue_new_sum(int ihel, int* signlist)
 	  }
 	}
       }
-      if(indexlist[cnt].size()==0){
-	//	msg.Error()<<"Zvalue_new: Z-function without sum index found"<<endl;
-	ScalarZ.push_back(z);
-      }
       cnt++;
     }
-    /*  cout<<"Zvalue_new: indexlist"<<endl;
-    for(cnt=0;cnt<indexlist.size();cnt++){
-      cout<<cnt<<": ";
-      for(int j=0;j<indexlist[cnt].size();j++)cout<<indexlist[cnt][j]<<" ";
-      cout<<endl;
-    }
-    cout<<"Zvalue_new: iargs"<<endl;
-    for(cnt=0;cnt<iargs.size();cnt++){
-      cout<<cnt<<": ";
-      for(int j=0;j<iargs[cnt].size();j++)cout<<iargs[cnt][j]<<" ";
-      cout<<endl;
-      }*/
-    int over;
-    bdummy.Z=0;
-    vector<int> TreeList;
+   int over;
 
     do{
       over=1;
@@ -609,189 +581,91 @@ Complex Single_Amplitude_Base::Zvalue_new_sum(int ihel, int* signlist)
 	  }      
 	if (adds>0&&adds<min) {min=adds;imin=i;}
       }
-      int ia=0; 
+      int ia=0;
       if(over==0){
-	//cout<<"Zvalue_new: sum over prop "<<imin<<endl;
+	Zfunc* zh[2]; 
 	indexlist.push_back(dummy);
-	bdummy.index=imin;
-	BlockList.push_back(bdummy);
-	//if(min==1)TreeList.push_back(BlockList.size()-1);
-	for(cnt=0;cnt<indexlist.size()-1;cnt++){
-	  for(short int j=0;j<indexlist[cnt].size();j++) {
-	    if(indexlist[cnt][j]==imin){
+
+	vector<vector<int> >::iterator ilt=indexlist.begin();	
+	for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();) {
+	  int hit=0;
+	  for(short int j=0;j<(*ilt).size();j++) {
+	    //cout<<j<<":"<<(*ilt)[j]<<endl;
+	    if((*ilt)[j]==imin){
+	      //cout<<"ini "<<ia<<endl;
+	      zh[ia]=(*zit);
 	      ia++;
-	      for(short int k=0;k<indexlist[cnt].size();k++)
-		if(indexlist[cnt][k]!=imin)
+	      for(short int k=0;k<(*ilt).size();k++)
+		if((*ilt)[k]!=imin)
 		  {
-		    indexlist[indexlist.size()-1].push_back(indexlist[cnt][k]);
+		    indexlist[indexlist.size()-1].push_back((*ilt)[k]);
 		  }
-	      indexlist[cnt].clear();
-	      switch(ia){
-	      case 1:BlockList[BlockList.size()-1].l=cnt;break;
-	      case 2:BlockList[BlockList.size()-1].r=cnt;break;		
-	      }
+	      ilt=indexlist.erase(ilt);
+	      zit=zlist.erase(zit);
+	      hit=1;
 	      break;
 	    }
 	  }
 	  //if(ia==2)break;
+	  if(!hit){++ilt;++zit;}
 	}
-	if(indexlist[indexlist.size()-1].empty())TreeList.push_back(BlockList.size()-1);
-	if(ia!=2) msg.Error()<<"Error Zvalue_new: index appeared "<<ia<<" times!"<<endl;
+	if(ia!=2){
+	  cout<<"Error Zvalue_new: index appeared "<<ia<<" times!"<<endl;
+	  zh[0]->Print();zh[1]->Print();
+	  abort();
+	}
+	
+        Zfunc_Group *sf=new Zfunc_Group(*zh[0],*zh[1],iabs(iz[imin]),&plist);
+	zlist.push_back(sf);
+
       }
     }while(over==0);
-
-    int l=TreeList.size();
-    //if(l!=1)cout<<"TreeList.size:"<<l<<endl;
-    if(l>1){
-      dummy.push_back(0);
-      iargs.push_back(dummy);
-      iargs.push_back(dummy);
-    }
-    while(l>1){
-      BlockList.push_back(bdummy);
-      BlockList[BlockList.size()-1].l=TreeList[l-1];
-      BlockList[BlockList.size()-1].r=TreeList[l-2];
-      BlockList[BlockList.size()-1].index=iargs.size()/2-1;
-      TreeList[l-2]=BlockList.size()-1;
-      l--;
-    }
-
-    /*   if(amplnumber>83){
- cout<<"Zvalue_new: BlockList"<<endl;
-    for(cnt=0;cnt<BlockList.size();cnt++){
-      cout<<cnt<<": ";
-      if(BlockList[cnt].Z)cout<<"Z"<<endl;
-      else cout<<" l:"<<BlockList[cnt].l<<" r:"<<BlockList[cnt].r<<" index:"<<BlockList[cnt].index<<endl;
-      }
-      }*/
-    vector<int> ii;ii.reserve(iargs.size());ii.resize(iargs.size(),0);
-    int bi=BlockList.size()-1;
-    if(BlockList[bi].l>-1){
-      for(short int i1=0;i1<iargs[2*BlockList[bi].index].size();i1++)
-	for(short int i2=0;i2<iargs[2*BlockList[bi].index+1].size();i2++){
-	  ii[2*BlockList[bi].index]=i1;
-	  ii[2*BlockList[bi].index+1]=i2;
-
-	  Kabbala hlp=
-	    Generate_Block(BlockList,BlockList[bi].l,iz,ii,iargs,signlist)*
-	    Generate_Block(BlockList,BlockList[bi].r,iz,ii,iargs,signlist);
-
-	  //hlp = (shand->Get_Generator())->Get_CZnumber(hlp.Value(),hlp.String());
-	  if(BlockList[bi].index<iz.size())
-	    sum+=hlp*Single_Mass_Terms_new(iz[BlockList[bi].index],iargs[2*BlockList[bi].index][i1]);    
-	  else
-	    sum+=hlp;    
-		}
-    }
-    //cout<<sum.String()<<endl;    
-
-#ifdef Kabbala_on
-      Kabbala factor(string("1"),Complex(1.,0.));
-#else
-      Kabbala factor(1.,0.);
-#endif
-
-    for(short int i=0;i<ScalarZ.size();i++){
-      args = new Argument[2*ScalarZ[i]->narg];
-      Fill_Args(ScalarZ[i],args,signlist);      
-      factor *= Single_Zvalue(args,ScalarZ[i]);
-      delete[] args;
-    }
-    if(ScalarZ.size()>1) {
-      if (buildstring) factor = (shand->Get_Generator())->Get_CZnumber(factor.Value(),factor.String());
-    }
-
-    sum*=factor;
-
-#ifdef Kabbala_on
-    for (short int k=0;k<iz.size();k++) {
-      if (iz[k]<199 && iz[k]>0) sum *= Kabbala(string("0.5"),Complex(1./2.,0.));
-    }
-#else
-    for (short int k=0;k<iz.size();k++) {
-      if (iz[k]<199 && iz[k]>0) sum *= 0.5;
-    }
-#endif    
   }
-  
-  //Propagators...
+
+#ifdef Kabbala_on
+  Kabbala value(string("1"),Complex(1.,0.));
+#else
+  Kabbala value(1.,0.);
+#endif
+  vector<int> iarg,ize;
+  for(int j=0;j<N;j++){
+    ize.push_back(j);
+    iarg.push_back(0);
+    iarg.push_back(signlist[j]);
+    if(signlist[j]>100){
+      ize.push_back(j);
+      iarg.push_back(0);
+      iarg.push_back(signlist[j]);
+    }
+  }
+
+  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+    Zfunc* z = (*zit);
+
+    value*= Single_Zvalue(z,&ize,&iarg,1);
+    if (z->pn>0) value*= Get_Prop(z->pn,z->psnew,z->GetOp());
+  }
+  //cout<<"Amplitude vor prop:"<<amplnumber<<": "<<value.Value()<<endl;
+
   Basic_Pfunc bpf(shand->Get_Generator(),BS);
 
-#ifdef Kabbala_on
-  Kabbala Pols(string("1"),Complex(1.,0.));
-#else
-  Kabbala Pols(1.,0.);
-#endif
+  //   scalar propagators:
+#ifndef Scalar_Args
   for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
     Pfunc*  p = *pit;
-    if (p->on) {
-      if (p->haspol) Pols *= -bpf.P(p);
-      else Pols *= bpf.P(p);
+    if ((p->fl).IsScalar()) {
+      value *= bpf.P(p);
     } 
-    /*
-    if (p->haspol) Pols *= -1;
-    if (p->on) Pols *= bpf.P(p);
-    */
-  }
-
-#ifdef Kabbala_on
-  if (buildstring) {
-    if ( (Pols.String()).find(string("+"))!=-1 ||
-	 (Pols.String()).find(string("-"))!=-1 ||
-	 (Pols.String()).find(string("*"))!=-1 )
-      Pols = (shand->Get_Generator())->Get_CZnumber(Pols.Value(),Pols.String());
   }
 #endif
 
-  sum *= Pols;
-
-  if (sign<0) sum = -sum; 
-    
-#ifdef Kabbala_on
-  if (buildstring) shand->Set_String(amplnumber,ihel,sum.String());
-  return sum.Value();
-#else
-  return sum;
-#endif      
-
-  /*
-  p = Plist;
-  
-  Basic_Pfunc bpf(shand->Get_Generator(),BS);
-
-#ifdef Kabbala_on
-  Kabbala Pols(string("1"),Complex(1.,0.));
-#else
-  Kabbala Pols(1.,0.);
-#endif
-
-  while (p) {
-    if (p->haspol) Pols *= -bpf.P(p);
-              else Pols *= bpf.P(p);
-    p = p->Next;
-  }
-
-#ifdef Kabbala_on
-  if (buildstring) {
-    if ( (Pols.String()).find(string("+"))!=-1 ||
-	 (Pols.String()).find(string("-"))!=-1 ||
-	 (Pols.String()).find(string("*"))!=-1 )
-      Pols = (shand->Get_Generator())->Get_CZnumber(Pols.Value(),Pols.String());
-  }
-#endif
-
-  sum *= Pols;
-
-  if (sign<0) sum = -sum; 
+  if (sign<0) value = -value; 
  
-  //cout<<"done! "<<ihel<<" "<<igraph<<endl;
-   
+  //if (buildstring) cout<<"Amplitude nach prop:"<<amplnumber<<": "<<value.String()<<endl;
 #ifdef Kabbala_on
-  if (buildstring) shand->Set_String(igraph,ihel,sum.String());
-
-  return sum.Value();
+  if (buildstring) shand->Set_String(amplnumber,ihel,value.String());
+  return value.Value();
 #else
-  return sum;
-#endif
-  */      
+  return value;
+#endif      
 }

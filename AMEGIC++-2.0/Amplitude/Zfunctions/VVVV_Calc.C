@@ -23,7 +23,7 @@ Kabbala VVVV_Calc::GGGG()
 
 Kabbala VVVV_Calc::Do() 
 {
-  Kabbala factor = P(pn)*sgen->Get_Enumber(coupl[8])*sgen->Get_Enumber(coupl[9]);
+  Kabbala factor = sgen->Get_Enumber(coupl[8])*sgen->Get_Enumber(coupl[9]);
 
   if (IsZero(M(0)) &&
       IsZero(M(1)) &&

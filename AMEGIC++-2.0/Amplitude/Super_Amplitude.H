@@ -13,11 +13,6 @@ namespace AMEGIC {
     void    ReduceZfuncs(std::string);
     int     NewSigns(std::vector<std::vector<int> > & zsignlists);
     void    SetZfuncSign();
-  protected:
-    Kabbala Single_Zvalue(Argument*,Zfunc*);
-    void    Fill_Args(Zfunc* z,Argument* args,int* signlist,
-		      std::vector<int>* iz=0,std::vector<int>* ii=0,
-		      std::vector<std::vector<int> >* iargs=0);
   public:
     Super_Amplitude(int* _b,int _n,Basic_Sfuncs* _BS,
 		    APHYTOOLS::Flavour* _fl,String_Handler* _shand) 

@@ -3,6 +3,7 @@
 
 #include "Flavour.H"
 #include "MathTools.H"
+#include "Message.H"
 #define Explicit_Pols
 
 //syntax for polarised particles: (in processes.dat)
@@ -27,6 +28,7 @@ class mt {
 public:
   enum momtype{  mom  = 10,  //external momentum
 		 prop = 11,  //propagator
+		 cmprop=12,  //center of momentum propagator
 		 p_p  = 1,   //polarisation +1 (circular)
 		 p_m  =-1,   //             -1 (circular)
 		 p_l  = 0,   //             longitudinal
@@ -36,7 +38,13 @@ public:
 		 p_l1 = 4,   //             linear, perpendicular to p_l0
 	  	 p_lh = 5,   //             horizontaly (linear)
 		 p_lp = 6,    //             perpendicular (linear)
-		 p_none = 8
+		 p_none = 8,
+
+		 p_t1 = 101,  //dummies for graviton polarization tensors
+		 p_t2 = 102,
+		 p_t3 = 103,
+		 p_t4 = 104,
+		 p_t5 = 105
   };
 };
 
@@ -93,15 +101,60 @@ public:
     }
 
     ~Pol_Info(){if(type) delete[] type;if(factor)delete[] factor;}
-    //Polarisation type: 'c'=circular 'l'=linear 'h'=helicity
+    //Polarisation type: 'c'=circular 'l'=linear 'h'=helicity 't'=tensor
     char p_type;
     //direction for linear polarisation
     double angle;
     int      num;
     int    * type;
     double * factor;
+    void init(int i){num=i;type=new int[num];factor=new double[num];}
+  };
 
-    void init(int i)  { num=i; type=new int[num]; factor=new double[num]; }
+  class tensor_struc{                //defines the spin2 tensors
+  public:
+    void Get_Pol_Combos(int num, vector<vector<int> >* pol, vector<int>* sign){
+      pol->clear();
+      sign->clear();
+      vector<int> cc;cc.push_back(8);cc.push_back(8); 
+      sign->push_back(1);
+      switch(num){
+      case mt::p_t1:
+	cc[0]=mt::p_p;cc[1]=mt::p_p;
+	pol->push_back(cc);
+	break;
+      case mt::p_t2:
+	cc[0]=mt::p_p;cc[1]=mt::p_l;
+	pol->push_back(cc);
+	break;
+      case mt::p_t3:
+	cc[0]=mt::p_p;cc[1]=mt::p_m;
+	pol->push_back(cc);
+	cc[0]=mt::p_l;cc[1]=mt::p_l;
+	pol->push_back(cc);
+	sign->push_back(-1);
+	break;
+      case mt::p_t4:
+	cc[0]=mt::p_m;cc[1]=mt::p_l;
+	pol->push_back(cc);
+	break;
+      case mt::p_t5:
+	cc[0]=mt::p_m;cc[1]=mt::p_m;
+	pol->push_back(cc);
+	break;
+      default: AORGTOOLS::msg.Error()<<"Invalid tensor type: "<<num<<endl;abort();
+      }
+    }
+    double Get_Tfactor(int num){
+      if(num<mt::p_t1) return 1.;
+      switch(num){
+      case mt::p_t1:return 1.;
+      case mt::p_t2:return 2.;
+      case mt::p_t3:return 2./3.;
+      case mt::p_t4:return 2.;
+      case mt::p_t5:return 1.;
+      }
+    }
   };
 }
 #endif

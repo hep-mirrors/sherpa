@@ -8,6 +8,7 @@ using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace AMEGIC;
+using namespace std;
 
 Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
 {
@@ -40,12 +41,12 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
   Slist = new signlist[nsign];
   msg.Debugging()<<"*****Helicity "<<p_type<<":"<<std::endl;
   for (i=0;i<nsign;i++){
-      Slist[i].s = new int[N];
-      Slist[i].on = 1;
-      Slist[i].Mult = 1;
+      Slist[i].s         = new int[N];
+      Slist[i].on        = 1;
+      Slist[i].Mult      = 1;
       Slist[i].polfactor = 1.;
-      Slist[i].partner = -1;
-      msg.Debugging()<<i<<":";
+      Slist[i].partner   = -1;
+      AORGTOOLS::msg.Tracking()<<i<<":";
       for (j=0;j<N;j++){
 	int div = 1;
 	for (k=0;k<j;k++) div *= pl[k].num;
@@ -53,8 +54,10 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
 	//msg.Debugging()<<div<<","<<l<<";";
 	Slist[i].s[j] = pl[j].type[l];
 	if(j<Nin)Slist[i].polfactor *= pl[j].factor[l];
+	tensor_struc ts;
+	Slist[i].polfactor*=ts.Get_Tfactor(pl[j].type[l]);          //extra factor for spin2 polarisation tensor 
 	msg.Debugging()<<Slist[i].s[j]<<";";
-      }
+      } 
       msg.Debugging()<<" "<<Slist[i].polfactor<<std::endl;
   }
 

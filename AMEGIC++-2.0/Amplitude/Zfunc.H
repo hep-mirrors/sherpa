@@ -9,6 +9,13 @@ namespace AMEGIC {
 
 namespace AMEGIC {
 
+  class Pair {
+  public:
+    int pold,pnew;
+    
+    Pair(int _pold,int _pnew) : pold(_pold), pnew(_pnew) {}
+  };
+
   struct SpinorDirection {
     int from,to;
     SpinorDirection* Next;
@@ -85,32 +92,58 @@ namespace AMEGIC {
       }
     }
     //virtual part
+    virtual void ClearCalcList();
+    virtual void ReplaceProp(vector<Pair>*);
+
     virtual Zfunc* operator[](const int i) {return this;} 
 
     virtual void Print();
     virtual int  GetSize() {return 1;}
+    virtual char GetOp() {return 0;}
 
-    virtual void SetSign(const int,const int) 
-      {std::cerr<<"Called virtual function Zfunc::AddSign()!!!"<<std::endl;}
-    virtual int  GetSign(const int i) {   
+      virtual void SetSign(const int,const int) 
+	  {std::cerr<<"Called virtual function Zfunc::SetSign()!!!"<<std::endl;}
+      virtual int  GetSign(const int i) {   
       std::cerr<<"Called virtual function Zfunc::GetSign()!!!"<<std::endl;
       return 1;
+    }
+    virtual int  GetSumIndex() {   
+      std::cerr<<"Called virtual function Zfunc::GetSumIndex()!!!"<<std::endl;
+      return 0;
     }
   };
 
   class Zfunc_Group: public Zfunc {
   public:
     Zfunc_Group() : Zfunc() {}
-    Zfunc_Group(const Zfunc& z) : Zfunc(z) {}
+    Zfunc_Group(const Zfunc& z) : Zfunc(z) 
+    {
+      op='+';
+      if(pn!=0)delete[] psnew;
+      pn=0;
+      Equal=this;
+    }
+    Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,std::list<Pfunc*>* pl);
+    
+    //Zfunc_Group& operator=(const Zfunc_Group& z) {
+      
     
     std::vector<Zfunc*> zlist;
     Zfunc* operator[](const int i) {return zlist[i];} 
     void Print();
     int  GetSize() {return zlist.size();}
-    
+    char GetOp() {return op;} 
+   
     std::vector<int>    zsign;
     void SetSign(const int pos,const int _sign) {zsign[pos] = _sign;}
     int  GetSign(const int i)                   {return zsign[i];}
+    int  GetSumIndex()                          {if(op=='*')return sumindex;else return -1;}
+
+    char op;
+    int sumindex;
+
+    void ClearCalcList();
+    void ReplaceProp(vector<Pair>*);  
   };
 }
 

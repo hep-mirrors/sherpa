@@ -114,7 +114,7 @@ void Prop_Generator::Kill(list<Zfunc*>& zlist)
 }
 
 
-void Prop_Generator::Calculate(Vec4D* p,int* b)
+/*void Prop_Generator::Calculate(Vec4D* p,int* b)
 {
   for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) {
     Pfunc* p1 = *pit;
@@ -130,4 +130,4 @@ void Prop_Generator::Calculate(Vec4D* p,int* b)
     if (p1->fl.IsFermion() || p1->fl.IsScalar()) p1->value *= Complex (0.,1.);
     if (p1->fl.IsVector()) p1->value *= Complex (0.,-1.);
   }  
-}
+  }*/

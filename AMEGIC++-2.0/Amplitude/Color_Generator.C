@@ -1,6 +1,5 @@
 #include "Color_Generator.H"
-#include "Message.H"
-//#include "MyStrStream.H"
+#include <strstream>
 
 using namespace AMEGIC;
 using namespace std;
@@ -23,7 +22,7 @@ void Color_Generator::CFConvert(Point* p)
       
       if (CFh->type!=cf::None) {
 	for (short int i=0;i<3;i++) {
-	  if (CFh->type==cf::D && i==2) break;
+	  if ((CFh->type==cf::D || CFh->type==cf::G) && i==2) break;
 	  switch (CFh->partarg[i]) {
 	  case 0: CFh->partarg[i] = p->number;break;
 	  case 1: CFh->partarg[i] = p->left->number;break;
@@ -93,7 +92,7 @@ void Color_Generator::FillString(int N, Color_Function* cflist,int& prop)
   while (CFh) {
     //if (CFh->type==cf::None) break;    
     for (short int i=0;i<3;i++) {
-      if (CFh->type==cf::D && i==2) break;
+      if ((CFh->type==cf::D || CFh->type==cf::G) && i==2) break;
       if ((CFh->strarg[i]>=48 && CFh->strarg[i]<=52)) {
 	char chelp;
 	switch (CFh->type) {
@@ -117,12 +116,17 @@ void Color_Generator::FillString(int N, Color_Function* cflist,int& prop)
 	                     else chelp = ci+(prop++)+N;
 	  
 	  break;
+	case cf::G: 
+	  if (CFh->partarg[i]<99) chelp = ca+CFh->partarg[i];
+	                     else chelp = ca+(prop++)+N;
+	  
+	  break;
 	}
 	Color_Function* CFh2 = CFh;
 	while (CFh2) {
 	  //if (CFh2->type==cf::None) break;
 	  for (short int j=0;j<3;j++) {
-	    if (CFh2->type==cf::D && j==2) break;
+	    if ((CFh2->type==cf::D || CFh2->type==cf::G) && j==2) break;
 	    if (CFh2->partarg[j]==CFh->partarg[i]) CFh2->strarg[j] = chelp;
 	  }
 	  CFh2 = CFh2->Next;
@@ -192,7 +196,7 @@ void Color_Generator::CFKill()
   replace = with  = 0;
   short int i;
   while (c) {
-    if (c->type == cf::D) {
+    if (c->type == cf::D || c->type == cf::G) {
       replace = -1;
       if (c->partarg[0]>99) {
 	replace = c->partarg[0];
@@ -207,7 +211,7 @@ void Color_Generator::CFKill()
 	while (c2) {
 	  if (c2!=c) {
 	    for (i=0;i<3;i++) {
-	      if (c2->type==cf::D && i==2) break;
+	      if ((c2->type==cf::D || c2->type==cf::G) && i==2) break;
 	      if (c2->partarg[i]==replace) c2->partarg[i]=with;
 	    }
 	  }
@@ -223,7 +227,7 @@ void Color_Generator::CFKill()
   last = CFlist;
   c = CFlist;
   while (c) {
-    if ((c->type==cf::D) && ((c->partarg[0]>99) || (c->partarg[1]>99))) {
+    if ((c->type==cf::D || c->type==cf::G) && ((c->partarg[0]>99) || (c->partarg[1]>99))) {
       if (c==CFlist) {
 	CFlist = c->Next;
 	c = c->Next;

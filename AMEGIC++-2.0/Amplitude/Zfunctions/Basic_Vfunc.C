@@ -20,15 +20,19 @@ Kabbala Basic_Vfunc::V(const int& a,const int &b)
 Complex Basic_Vfunc::Vcalc(const int& a,const int &b)
 { return BS->Momentum(a)*BS->Momentum(b);}
   
-Kabbala Basic_Vfunc::Vcplx(const int& a,const int &b)
+Kabbala Basic_Vfunc::Vcplx(const int& a,const int &b,int s)
 {
   int sarg[2];
   sarg[0]=a;
   sarg[1]=b;
   
-  return (BS->iscplx(sarg[0])||BS->iscplx(sarg[1])) ?
-    sgen->Get_Scplxnumber(sarg[0],sarg[1],Vcplxcalc(sarg[0],sarg[1]))
-    : sgen->Get_Snumber(sarg[0],sarg[1],Vcalc(sarg[0],sarg[1]));  
+  if(s==1) return (BS->iscplx(sarg[0])||BS->iscplx(sarg[1])) ?
+	    sgen->Get_Scplxnumber(sarg[0],sarg[1],Vcplxcalc(sarg[0],sarg[1]))
+	    : sgen->Get_Snumber(sarg[0],sarg[1],Vcalc(sarg[0],sarg[1]));
+  else return (BS->iscplx(sarg[0])||BS->iscplx(sarg[1])) ?
+	    -sgen->Get_Scplxnumber(sarg[0],sarg[1],Vcplxcalc(sarg[0],sarg[1]))
+	    : -sgen->Get_Snumber(sarg[0],sarg[1],Vcalc(sarg[0],sarg[1]));
+
 }
     
 Complex Basic_Vfunc::Vcplxcalc(const int& a,const int &b)

@@ -6,12 +6,31 @@
 #include "Amplitude_Base.H"
 #include "Message.H"
 
+#include <map>
+
 namespace AMEGIC {
 
+  typedef std::vector<Amplitude_Base *>          Amplitude_List;
+  typedef std::map<std::string, Amplitude_List>  Graph_Table;
+
+  struct Graph_Family {
+    int             was_clustered;
+    int             znumber;
+    int             topnumber;
+    int             permnumber;
+    Amplitude_List  graphs;
+    std::string     banner;
+  };
+
+  typedef std::vector<Graph_Family *>    Graph_Families;
+  
   class Amplitude_Group: public virtual Amplitude_Base {
     Amplitude_Base* GetSingleGraph(std::list<sknot*>&);
+    Graph_Family * FindFamily(int zn, int tn, int pn);
   protected:
     std::vector<Amplitude_Base*> graphs;
+    Graph_Table             graph_table;
+    Graph_Families          family_table;
     std::string             groupname;          
   public:
     Complex Zvalue(String_Handler * sh,int ihel) {
@@ -24,7 +43,6 @@ namespace AMEGIC {
       for (int i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(ihel,signlist);
       return M;
     }
-
 
     void    PrintGraph() {
       AORGTOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;

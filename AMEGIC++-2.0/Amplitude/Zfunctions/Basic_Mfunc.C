@@ -26,9 +26,9 @@ Kabbala Basic_Mfunc::M(const int &a)
   //double mass = 0.;
   
   if (p1->arg[0]>99) {
-      mass2 = Complex(sqr(AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()))),0);
+      mass2 = Complex(sqr(p1->fl.Mass()),0);
       if (p1->fl.Width()>0.) 
-	  mass2 -= Complex(0,AORGTOOLS::rpa.consts.Mass(p1->fl,sqr(AORGTOOLS::rpa.gen.Ecms()))*
+	  mass2 -= Complex(0,p1->fl.Mass()*
 	  p1->fl.Width());
   }
   if (AMATOOLS::IsZero(mass2)) return sgen->Get_Enumber(0.);

@@ -91,8 +91,8 @@ void Coulomb::Calculate(int* b,Vec4D* mom)
     }
   }
   double s      = (mom[0]+mom[1]).Abs2();
-  double MW     = AORGTOOLS::rpa.consts.Mass(Flavour(kf::W),s);
-  double GW     = AORGTOOLS::rpa.consts.Width(Flavour(kf::W),s);
+  double MW     = Flavour(kf::W).Mass();
+  double GW     = Flavour(kf::W).Width();
   double beta   = sqrt((s-sqr(mp-mm))*(s-sqr(mp+mm)))/s;
   Complex betam = sqrt(Complex(1.-4.*MW*MW/s,4*MW*GW/s)); 
   double delta  = dabs(sqr(mp)-sqr(mm))/s;

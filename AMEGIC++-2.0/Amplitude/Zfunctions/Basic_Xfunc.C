@@ -18,7 +18,7 @@ Kabbala Basic_Xfunc::X(const int& t1,const int& sign1,const int& t2,
       //cout<<"X: warning, ep("<<t2<<") droped"<<endl;
       return sgen->Get_Enumber(Complex(0.,0.));
     }
-    return Vcplx(BS->Get_Pol_Number(t3,sign3),t2);
+    return Vcplx(BS->Get_Pol_Number(t3,sign3,GetPMass(t3,sign3)),t2);
   }
   //Marker for -99
   if(t3==99){
@@ -26,7 +26,7 @@ Kabbala Basic_Xfunc::X(const int& t1,const int& sign1,const int& t2,
       //cout<<"X: warning, ep("<<t2<<") droped"<<endl;
       return sgen->Get_Enumber(Complex(0.,0.));
     }
-    return Vcplx(BS->Get_Pol_Number(t1,sign1),t2);
+    return Vcplx(BS->Get_Pol_Number(t1,sign1,GetPMass(t1,sign1)),t2);
   }
 
   int sarg[5];
@@ -57,9 +57,9 @@ Kabbala Basic_Xfunc::X(const int &a, const int &b)
       return sgen->Get_Enumber(Complex(0.,0.));
     }
     return (sign>0) ? 
-      Vcplx(BS->Get_Pol_Number(sarg[3],sarg[4]),sarg[2]) 
+      Vcplx(BS->Get_Pol_Number(sarg[3],sarg[4],GetPMass(sarg[3],sarg[4])),sarg[2]) 
       :
-      -Vcplx(BS->Get_Pol_Number(sarg[3],sarg[4]),sarg[2]); 
+      -Vcplx(BS->Get_Pol_Number(sarg[3],sarg[4],GetPMass(sarg[3],sarg[4])),sarg[2]); 
   }
   //Marker for -99
   if(sarg[3]==99){
@@ -68,9 +68,9 @@ Kabbala Basic_Xfunc::X(const int &a, const int &b)
       return sgen->Get_Enumber(Complex(0.,0.));
     }
     return (sign>0) ? 
-      Vcplx(BS->Get_Pol_Number(sarg[0],sarg[1]),sarg[2])
+      Vcplx(BS->Get_Pol_Number(sarg[0],sarg[1],GetPMass(sarg[0],sarg[1])),sarg[2])
       :
-      -Vcplx(BS->Get_Pol_Number(sarg[0],sarg[1]),sarg[2]);
+      -Vcplx(BS->Get_Pol_Number(sarg[0],sarg[1],GetPMass(sarg[0],sarg[1])),sarg[2]);
   }
 
   return (sign>0) ? 
@@ -86,6 +86,40 @@ Kabbala Basic_Xfunc::X(const int &a, const int &b)
 			     arg[4*a+2].numb,arg[4*a+3].numb,
 			     coupl[2*a],coupl[2*a+1]));
 }
+
+Kabbala Basic_Xfunc::X(const int &a, const int &b, const int &m)
+{
+  int sarg[5];
+
+  for (short int i=0;i<2;i++) sarg[i] = arg[4*a+i].numb;
+  sarg[2] = BS->Get_Pol_Number(arg[4*b+2*m].numb,arg[4*b+2*m+1].numb,
+			       GetPMass(arg[4*b+2*m].numb,arg[4*b+2*m+1].numb));
+  for (short int i=3;i<5;i++) sarg[i] = arg[4*a+i-1].numb;
+  
+  //Marker for -99
+  if(sarg[0]==99){
+    if(sarg[3]==sarg[2]){
+      //cout<<"X: warning, ep("<<sarg[2]<<") droped"<<endl;
+      return sgen->Get_Enumber(Complex(0.,0.));
+    }
+    return Vcplx(BS->Get_Pol_Number(sarg[3],sarg[4],GetPMass(sarg[3],sarg[4])),sarg[2]); 
+  }
+  //Marker for -99
+  if(sarg[3]==99){
+    if(sarg[0]==sarg[2]){
+      //cout<<"X: warning, ep("<<sarg[2]<<") droped"<<endl;
+      return sgen->Get_Enumber(Complex(0.,0.));
+    }
+    return Vcplx(BS->Get_Pol_Number(sarg[0],sarg[1],GetPMass(sarg[0],sarg[1])),sarg[2]);
+  }
+
+  return sgen->Get_Xnumber(sarg,&coupl[2*a],
+		      Xcalc(arg[4*a].numb  ,arg[4*a+1].numb,
+			    sarg[2],
+			    arg[4*a+2].numb,arg[4*a+3].numb,
+			    coupl[2*a],coupl[2*a+1]));
+}
+
 
 Complex Basic_Xfunc::Xcalc(const int& t1,const int& sign1,const int& t2,
 			   const int& t3,const int& sign3,

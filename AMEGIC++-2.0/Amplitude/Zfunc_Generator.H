@@ -16,6 +16,8 @@ namespace AMEGIC {
     Basic_Sfuncs* BS;
     void  Set_In(Zfunc*,int,Point*,Point*,Point*);
     void  Set_Out(Zfunc*,int,Point*,Point*);
+    void  Set_Tensor(Zfunc*,Point*);
+    void  Set_FermionProp(Zfunc*,Point*,Point*);
     void  IsGaugeV(Point*,int&,int&);
     
     int   TryArgs(int,std::vector<Lorentz_Function> &,int,std::vector<Lorentz_Function> &);
@@ -32,6 +34,7 @@ namespace AMEGIC {
 		    const std::vector<Lorentz_Function*> &,int*);
     void CopyOrder(std::vector<Lorentz_Function> &,std::vector<Lorentz_Function*> &);
     void SetArgs(Zfunc*,int*,int*,Point*,Point*,int&);
+    void SetScalarArgs(Zfunc*,int&,Point*);
     void SearchNextProp(int,const std::vector<Lorentz_Function*> &,int*,
 			    const std::vector<Lorentz_Function*> &,int*,
 			int,int);

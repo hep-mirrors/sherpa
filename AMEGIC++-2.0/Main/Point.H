@@ -27,6 +27,7 @@ public:
 
   Point(int _extra = 0) : nextra(_extra)  { 
     extrafl = 0;
+    v       = 0;
     Color   = new Color_Function;
     Lorentz = new Lorentz_Function;
     middle  = 0;
@@ -34,6 +35,18 @@ public:
     cpl = new Complex[4];
     if (nextra>0) extrafl = new APHYTOOLS::Flavour[nextra]; 
   }
+  Point(const Point& copy) { 
+    extrafl = 0;
+    Color   = new Color_Function;
+    Lorentz = new Lorentz_Function;
+    middle  = 0;
+    ncpl = 4;
+    cpl = new Complex[4];
+    if (nextra>0) extrafl = new APHYTOOLS::Flavour[nextra]; 
+
+    *this = copy;
+  } 
+
   ~Point() {
     if (nextra>0) delete[] extrafl;
     delete[] cpl; 
@@ -86,6 +99,30 @@ public:
     return *this;
   }
 };
+
+ // Format of a Point to transport via MPI:
+  struct MPI_Point {
+    
+    int                   m_fl;  
+    MPI_Lorentz_Function  m_lf;
+    MPI_Color_Function    m_cf;
+    MPI_Single_Vertex     m_v;
+    double               m_cpl[8];
+    int                  m_left, m_middle, m_right, m_num, m_b;
+  };
+  
+  //for MPI usage
+  
+  void Point2MPI(const Point * , MPI_Point &);
+  void Point2MPI(const Point * , MPI_Point *);
+  int Point2MPI(const Point * , MPI_Point *,int &);
+  
+  Point * MPI2Point(const MPI_Point &, Point &);
+  Point * MPI2Point(const MPI_Point *, Point *);
+  Point * MPI2Point(const MPI_Point *, Point *, int);
+
+
+  std::ostream & operator<<(std::ostream &, const MPI_Point &);
 }
 #endif
 

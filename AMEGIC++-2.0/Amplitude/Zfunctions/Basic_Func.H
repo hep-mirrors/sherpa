@@ -61,6 +61,7 @@ namespace AMEGIC {
     Argument*                 arg;
     Complex*                  coupl;
     Argument*                 ps;
+    int                       pn;
     std::list<Pfunc*>*        pl;
     Virtual_String_Generator* sgen;
     Basic_Sfuncs*             BS;
@@ -70,7 +71,11 @@ namespace AMEGIC {
     virtual Kabbala X(const int&,const int&,const int&,
  		      const int&,const int&,
  		      const Complex&,const Complex&) {
-      std::cerr<<"Calling Basic_Func::X"<<std::endl;
+      std::cerr<<"Calling Basic_Func::Xf"<<std::endl;
+      return Kabbala();
+    }
+    virtual Kabbala X(const int&,const int&,const int&) {
+      std::cerr<<"Calling Basic_Func::X3"<<std::endl;
       return Kabbala();
     }
     virtual Kabbala V(const int& a,const int &b)
@@ -78,7 +83,7 @@ namespace AMEGIC {
       std::cerr<<"Calling Basic_Func::V"<<std::endl;
       return Kabbala();
     }
-    virtual Kabbala Vcplx(const int& a,const int &b)
+    virtual Kabbala Vcplx(const int& a,const int &b,int s=1)
     {
       std::cerr<<"Calling Basic_Func::Vcplx"<<std::endl;
       return Kabbala();
@@ -86,6 +91,7 @@ namespace AMEGIC {
 
     void SetArgCouplProp(int,Argument*,Complex*,int,Argument*,std::list<Pfunc*>*);
     void Map(int&,bool&);
+    double GetPMass(int,int);
   };
 
   class Basic_Yfunc : public virtual Basic_Func {
@@ -127,6 +133,7 @@ namespace AMEGIC {
   public:
     Basic_Xfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
     Kabbala X(const int&,const int&);
+    Kabbala X(const int&,const int&,const int&);
     Kabbala X(const int&,const int&,const int&,
 	      const int&,const int&,
  	      const Complex&,const Complex&);
@@ -158,7 +165,7 @@ namespace AMEGIC {
     Basic_Vfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
     Kabbala V(const int&,const int&);
     Complex Vcalc(const int&,const int&);
-    Kabbala Vcplx(const int&,const int&);
+    Kabbala Vcplx(const int& a,const int& b,int s=1);
     Complex Vcplxcalc(const int&,const int&);
   };
 
@@ -173,7 +180,7 @@ namespace AMEGIC {
   class Basic_Pfunc : public virtual Basic_Func {
   public:
     Basic_Pfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
-    Kabbala P(const int&);
+    //Kabbala P(const int&);
     Complex Propagator(double,APHYTOOLS::Flavour);
     Complex Pcalc(const int&,const int&);
     Complex Pcalc(const APHYTOOLS::Flavour&,const int&);
