@@ -44,3 +44,10 @@ double Hadron_Decay_Channel::Differential()
   return value*weight;
 }
 
+void Hadron_Decay_Channel::SwapInOrder() {}
+void Hadron_Decay_Channel::RestoreInOrder() {}
+void Hadron_Decay_Channel::DeSelect() {}
+bool Hadron_Decay_Channel::SelectOne() {}
+bool Hadron_Decay_Channel::ReSelect(int) {}
+bool Hadron_Decay_Channel::SelectOneFromList() {}
+

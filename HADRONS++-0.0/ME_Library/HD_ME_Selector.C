@@ -34,8 +34,8 @@ HD_ME_Base * HD_ME_Selector::GetME(int nin,int nout,Flavour * flavs,
   case (kf::rho_770):
   case (kf::rho_770_plus):
   case (kf::omega_782):
-  case (kf::Kstar_892):
-  case (kf::Kstar_892_plus):
+    //case (kf::K_star_892):
+    //case (kf::K_star_892_plus):
   case (kf::phi_1020):
     //SelectLightVectorDecay(nout,flavs,hdme);
     break;

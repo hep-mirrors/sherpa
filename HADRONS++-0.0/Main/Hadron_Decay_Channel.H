@@ -19,14 +19,16 @@ namespace HADRONS {
     Hadron_Decay_Channel(ATOOLS::Decay_Channel * _dc);
     ~Hadron_Decay_Channel();
     void   InitialisePhaseSpace(std::vector<std::string> &);
-    void   SwapInOrder()    {}
-    void   RestoreInOrder() {}
-    void   DeSelect()       {}
-    void   SelectOne()      {}
     double Differential();
     double Differential(const ATOOLS::Vec4D *momenta) { return 0.; }
     double Differential2()                            { return 0.; }
 
+    void   SwapInOrder();
+    void   RestoreInOrder();
+    void   DeSelect();
+    bool   SelectOne();
+    bool   ReSelect(int);
+    bool   SelectOneFromList();
     HD_ME_Base * GetME() { return p_me; }
     HD_PS_Base * GetPS() { return p_ps; }
   };
