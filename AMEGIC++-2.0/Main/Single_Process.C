@@ -154,8 +154,21 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 				  vector<double> & results,vector<Single_Process *> & links)
 {
   if (_testmoms==0) {
-    _testmoms = new Vec4D[m_nvec];
-    p_ps->TestPoint(_testmoms);
+    string model_name = model->Name();
+    cout<<" Model Name : "<<model_name<<endl;
+    if (model_name==string("ADD")) {
+      double ms=model->ScalarConstant("M_s");
+      cout<<" M_s : "<<ms<<endl;
+      double ecms=rpa.gen.Ecms();
+      rpa.gen.SetEcms(0.5*ms);
+      _testmoms = new Vec4D[m_nvec];
+      p_ps->TestPoint(_testmoms);
+      rpa.gen.SetEcms(ecms);    
+    }
+    else {
+      _testmoms = new Vec4D[m_nvec];
+      p_ps->TestPoint(_testmoms);
+    }
   }
   if (p_moms) { delete [] p_moms; }
   p_moms = new Vec4D[m_nvec]; 
