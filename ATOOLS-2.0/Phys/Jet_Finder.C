@@ -134,9 +134,9 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res, bool final_only
     else {
       momsout[j] += momsout[k];
     }
-    for (int i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
+    for (size_t i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
     momsout.pop_back();
-    for (int i=k;i<pl->size()-1;i++) (*pl)[i] = (*pl)[i+1];
+    for (size_t i=k;i<pl->size()-1;i++) (*pl)[i] = (*pl)[i+1];
     pl->pop_back();
   }
 
@@ -170,7 +170,7 @@ bool Jet_Finder::ConstructJets(const Particle_List * parts,
       if (m_type==1) m_type=4;  // assume hadron hadron
     }
 
-    for (int i=2;i<parts->size();i++) {
+    for (size_t i=2;i<parts->size();i++) {
       //    if ((*parts)[i]->Flav().Strong()) {
       if (!(*parts)[i]->Flav().IsLepton()) {
 	momsout.push_back((*parts)[i]->Momentum());
@@ -189,7 +189,7 @@ bool Jet_Finder::ConstructJets(const Particle_List * parts,
     momsin[0]*=(rpa.gen.Ecms()*0.5);
     momsin[1]=Vec4D(momsin[0][0],-1.*Vec3D(momsin[0]));
 
-    for (int i=0;i<parts->size();i++) {
+    for (size_t i=0;i<parts->size();i++) {
       //    if ((*parts)[i]->Flav().Strong()) {
       if (!(*parts)[i]->Flav().IsLepton()) {
 	momsout.push_back((*parts)[i]->Momentum());
@@ -199,10 +199,10 @@ bool Jet_Finder::ConstructJets(const Particle_List * parts,
   }
 
   bool ordered = 1;
-  while ((momsout.size()<=jets[lastys.size()]) && (lastys.size()<jets.size())) {
+  while (((int)momsout.size()<=jets[lastys.size()]) && (lastys.size()<jets.size())) {
     lastys.push_back(-1.);
   }
-  while (momsout.size()>jets.back()) {
+  while ((int)momsout.size()>jets.back()) {
     if (!ConstructJetSystem(momsin,flavsin,momsout,jets,lastys)) ordered = 0;
   }
   return ordered;
@@ -220,7 +220,7 @@ bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector
     if (lastys.back() > lastys[lastys.size()-2]) ordered = 0; 
   }
   // Erase previous y if not already jets.
-  if ((momsout.size() > jets[0]) && (lastys.size()>1)) {
+  if (((int)momsout.size() > jets[0]) && (lastys.size()>1)) {
     lastys.front() = lastys.back();
     lastys.pop_back();
   }
@@ -231,7 +231,7 @@ bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector
   else {
     momsout[j] += momsout[k];
   }
-  for (int i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
+  for (size_t i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
   momsout.pop_back();
 
   return ordered;
@@ -244,7 +244,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
   double ymin = 2.;
   j1=-3; k1=-3;
   double pt2jk,pt2j,pt2k;
-  for (int j=0;j<momsout.size();j++) {
+  for (size_t j=0;j<momsout.size();j++) {
     if (m_type>=3) {
       pt2j = (sqr(momsout[j][1]) + sqr(momsout[j][2]));
       if (pt2j < ymin*m_s) {
@@ -253,7 +253,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 	if (momsout[j][3]*momsin[0][3] > 0.) j1 = -2;
 	                                else j1 = -1;
       } 
-      for (int k=j+1;k<momsout.size();k++) {
+      for (size_t k=j+1;k<momsout.size();k++) {
 	pt2k  = (sqr(momsout[k][1]) + sqr(momsout[k][2]));
 	pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(momsout[j],momsout[k])) - 
 				     CosDPhi12(momsout[j],momsout[k]));
@@ -264,7 +264,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
       }
     }
     else {
-      for (int k=j+1;k<momsout.size();k++) {
+      for (size_t k=j+1;k<momsout.size();k++) {
 	pt2jk  = 2.*sqr(Min(momsout[j][0],momsout[k][0]))*(1.-DCos12(momsout[j],momsout[k]));
 	if (pt2jk<ymin*m_sprime) {
 	  ymin = pt2jk/m_sprime;
@@ -292,7 +292,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 
 
 Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) : 
-  m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type), p_value(NULL),
+  m_ycut(_ycut), m_type(_type), m_jet_alg(_jetalg), p_value(NULL),
   m_delta_r(1.),  p_frame(NULL) 
 {
   rpa.gen.SetYcut(_ycut);
@@ -487,7 +487,6 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
 	  cuts->etmin[i] = Max(sqrt(1.* m_ycut * m_s),cuts->etmin[i]);
 	}
       }
-      else cuts->energymin[i] = Max(sqrt(m_ycut * m_smin/4.),cuts->energymin[i]);
 
       for (int j=i+1; j<m_nin+m_nout; ++j) {
 	if (m_fl[j].Strong()) {                
@@ -501,7 +500,6 @@ void Jet_Finder::BuildCuts(Cut_Data * cuts)
  
 	  */
 	  if (m_type>=2) cuts->scut[j][i] = Max(cuts->scut[i][j],sqr(m_delta_r)*m_ycut*m_s);
-	  else cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],m_ycut*m_smin);
 	}
       }
     }
@@ -512,7 +510,7 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 {
   if (m_type>1) return;
   for (int i=m_nin; i<m_nin+m_nout; ++i) {
-    cuts->energymin[i] = Max(sqrt(m_ycut * m_sprime/4.),cuts->energymin[i]);
+    cuts->energymin[i] = Max(sqrt(m_ycut * sprime/4.),cuts->energymin[i]);
     for (int j=i+1; j<m_nin+m_nout; ++j) {
       if (m_fl[j].Strong()) {                
 	/* 
@@ -529,6 +527,7 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts)
     }
   }
 }
+
 double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 {
   PROFILE_HERE;
@@ -608,12 +607,12 @@ void Jet_Finder::BoostBack(Vec4D * p)
 
 void Jet_Finder::BoostInFrame(std::vector<Vec4D> p)
 {
-  for (int i=0;i<p.size();i++) m_cms_boost.Boost(p[i]);
+  for (size_t i=0;i<p.size();i++) m_cms_boost.Boost(p[i]);
 }
 
 void Jet_Finder::BoostBack(std::vector<Vec4D> p)
 {
-  for (int i=0;i<p.size();i++) m_cms_boost.BoostBack(p[i]);
+  for (size_t i=0;i<p.size();i++) m_cms_boost.BoostBack(p[i]);
 }
 
 void Jet_Finder::BoostInFrame(Vec4D & p)
