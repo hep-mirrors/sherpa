@@ -88,6 +88,9 @@ void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta)
     abort();
   }
   for (size_t i=0;i<NVector();++i) p_momenta[i]=momenta[i];
+  if (Selected()!=this) 
+    for (size_t i=0;i<NVector();++i) 
+      Selected()->p_momenta[i]=momenta[i];
 }
 
 void Integrable_Base::SetAddMomenta(const ATOOLS::Vec4D *momenta) 
@@ -98,6 +101,9 @@ void Integrable_Base::SetAddMomenta(const ATOOLS::Vec4D *momenta)
     abort();
   }
   for (size_t i=0;i<NAddIn()+NAddOut();++i) p_addmomenta[i]=momenta[i];
+  if (Selected()!=this) 
+    for (size_t i=0;i<NAddIn()+NAddOut();++i) 
+      Selected()->p_addmomenta[i]=momenta[i];
 }
 
 void Integrable_Base::SetAddFlavours(const ATOOLS::Flavour *flavours) 
