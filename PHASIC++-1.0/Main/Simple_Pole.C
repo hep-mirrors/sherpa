@@ -44,7 +44,7 @@ void Simple_Pole_Uniform::GenerateWeight(const int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool Simple_Pole_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Simple_Pole_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -62,7 +62,6 @@ bool Simple_Pole_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Simple_Pole_Forward::Simple_Pole_Forward(const double sexponent,const double yexponent,
@@ -106,7 +105,7 @@ void Simple_Pole_Forward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool Simple_Pole_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Simple_Pole_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -124,7 +123,6 @@ bool Simple_Pole_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Simple_Pole_Backward::Simple_Pole_Backward(const double sexponent,const double yexponent,
@@ -168,7 +166,7 @@ void Simple_Pole_Backward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool Simple_Pole_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Simple_Pole_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -186,7 +184,6 @@ bool Simple_Pole_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Simple_Pole_Central::Simple_Pole_Central(const double exponent,const std::string cinfo,
@@ -226,7 +223,7 @@ void Simple_Pole_Central::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool Simple_Pole_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Simple_Pole_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -244,6 +241,5 @@ bool Simple_Pole_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 

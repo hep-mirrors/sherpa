@@ -22,7 +22,7 @@ namespace PHASIC {
     void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
 
   };// end of class Simple_Pole_Uniform
 
@@ -44,7 +44,7 @@ namespace PHASIC {
     void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
 
   };// end of class Simple_Pole_Forward
 
@@ -66,7 +66,7 @@ namespace PHASIC {
     void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
 
   };// end of class Simple_Pole_Backward
 
@@ -87,7 +87,7 @@ namespace PHASIC {
     void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
 
   };// end of class Simple_Pole_Central
 

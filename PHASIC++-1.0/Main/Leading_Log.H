@@ -23,7 +23,7 @@ namespace PHASIC {
     void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
 
   };// end of class Leading_Log_Uniform
 
@@ -45,7 +45,7 @@ namespace PHASIC {
     void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
 
   };// end of class Leading_Log_Forward
 
@@ -67,7 +67,7 @@ namespace PHASIC {
     void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
 
   };// end of class Leading_Log_Backward
 
@@ -89,7 +89,7 @@ namespace PHASIC {
     void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
 
   };// end of class Leading_Log_Central
 

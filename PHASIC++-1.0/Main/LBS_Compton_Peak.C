@@ -61,7 +61,7 @@ void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool LBS_Compton_Peak_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void LBS_Compton_Peak_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -79,7 +79,6 @@ bool LBS_Compton_Peak_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(const double exponent,const double pole,const double yexponent,
@@ -140,7 +139,7 @@ void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool LBS_Compton_Peak_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void LBS_Compton_Peak_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -158,7 +157,6 @@ bool LBS_Compton_Peak_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(const double exponent,const double pole,const double yexponent,
@@ -219,7 +217,7 @@ void LBS_Compton_Peak_Backward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool LBS_Compton_Peak_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void LBS_Compton_Peak_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -237,7 +235,6 @@ bool LBS_Compton_Peak_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 LBS_Compton_Peak_Central::LBS_Compton_Peak_Central(const double exponent,const double pole,
@@ -294,7 +291,7 @@ void LBS_Compton_Peak_Central::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool LBS_Compton_Peak_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void LBS_Compton_Peak_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -312,6 +309,5 @@ bool LBS_Compton_Peak_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 

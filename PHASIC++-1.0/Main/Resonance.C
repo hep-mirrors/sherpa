@@ -48,7 +48,7 @@ void Resonance_Uniform::GenerateWeight(const int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool Resonance_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Resonance_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -66,7 +66,6 @@ bool Resonance_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Resonance_Forward::Resonance_Forward(const double mass,const double width,const double yexponent,
@@ -114,7 +113,7 @@ void Resonance_Forward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool Resonance_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Resonance_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -132,7 +131,6 @@ bool Resonance_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Resonance_Backward::Resonance_Backward(const double mass,const double width,const double yexponent,
@@ -180,7 +178,7 @@ void Resonance_Backward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool Resonance_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Resonance_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -198,7 +196,6 @@ bool Resonance_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Resonance_Central::Resonance_Central(const double mass,const double width,
@@ -242,7 +239,7 @@ void Resonance_Central::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool Resonance_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Resonance_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -260,6 +257,5 @@ bool Resonance_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 

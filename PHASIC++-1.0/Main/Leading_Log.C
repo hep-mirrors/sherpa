@@ -54,7 +54,7 @@ void Leading_Log_Uniform::GenerateWeight(const int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool Leading_Log_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Leading_Log_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -72,7 +72,6 @@ bool Leading_Log_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Leading_Log_Forward::Leading_Log_Forward(const double beta,const double factor,const double yexponent,
@@ -126,7 +125,7 @@ void Leading_Log_Forward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool Leading_Log_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Leading_Log_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -144,7 +143,6 @@ bool Leading_Log_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Leading_Log_Backward::Leading_Log_Backward(const double beta,const double factor,const double yexponent,
@@ -198,7 +196,7 @@ void Leading_Log_Backward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-bool Leading_Log_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Leading_Log_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -216,7 +214,6 @@ bool Leading_Log_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
 Leading_Log_Central::Leading_Log_Central(const double beta,const double factor,
@@ -266,7 +263,7 @@ void Leading_Log_Central::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-bool Leading_Log_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void Leading_Log_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
 {
   m_spkey[2]=spkey[2];
   if (!m_zchannel) {
@@ -284,6 +281,5 @@ bool Leading_Log_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey)
     m_xkey[1]=0.;
     m_xkey[3]=0.;
   }
-  return true;
 }
 
