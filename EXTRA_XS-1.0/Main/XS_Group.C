@@ -19,7 +19,6 @@ XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *fla
 	  beamhandler,isrhandler,selectordata),
   m_atoms(false), m_channels(false), p_xsselector(new XS_Selector(this)) 
 {
-  m_name=std::string("G_")+m_name;
   p_selected=NULL;
 }
 
@@ -127,7 +126,8 @@ void XS_Group::WriteOutXSecs(std::ofstream &outfile)
 
 XS_Base *XS_Group::Matching(const std::string &name)
 {
-  if (name==m_name) {
+  if (name==m_name && !m_foundown) {
+    m_foundown=true;
     return this;
   }
   else {
@@ -169,8 +169,9 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     double singlexs, singleerr, singlemax, singlesum, singlesumsqr;
     long unsigned int singlen;
     if (resultpath!=std::string("")) {
+      m_foundown=false;
       std::ifstream infile;
-      int hits=m_xsecs.size();
+      int hits=m_xsecs.size()+1;
       infile.open(filename.c_str());
       if (infile.good()) {
 	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;

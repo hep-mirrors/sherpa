@@ -14,7 +14,7 @@ namespace EXTRAXS {
 
     std::vector<XS_Base *> m_xsecs;
 
-    bool m_atoms, m_channels;
+    bool m_atoms, m_channels, m_foundown;
 
     XS_Selector *p_xsselector;
 
