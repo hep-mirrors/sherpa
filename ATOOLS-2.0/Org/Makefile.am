@@ -28,6 +28,7 @@ libToolsOrg_la_SOURCES        = \
 noinst_HEADERS        =	\
 			Exeptions.H \
 			Data_Read.H \
+			My_Limits.H \
 			Data_Return.H \
 			Run_Parameter.H \
 			Message.H \
