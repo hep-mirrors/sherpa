@@ -12,9 +12,6 @@ namespace PDF {
     // constructor
     Structure_Function(PDF::PDF_Base *,ATOOLS::Flavour); 
 
-    // destructor
-    ~Structure_Function();
-
     // meber functions
     bool   CalculateWeight(double,double,double,double);
     double Weight(ATOOLS::Flavour);

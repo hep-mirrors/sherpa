@@ -13,8 +13,8 @@ Structure_Function::Structure_Function(PDF::PDF_Base * _p_pdf,ATOOLS::Flavour _m
   p_pdf->Output();
 }
 
-Structure_Function::~Structure_Function() {
-  if (p_pdf) { delete p_pdf; p_pdf = NULL; }   
+Structure_Function::~Structure_Function() 
+{
 }
 
 bool Structure_Function::CalculateWeight(double x,double z,double kp2,double q2) 

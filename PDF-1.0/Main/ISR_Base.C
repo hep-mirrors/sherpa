@@ -15,4 +15,7 @@ ISR_Base::ISR_Base(PDF_Base *pdf):
   }
 }
 
-ISR_Base::~ISR_Base() {}
+ISR_Base::~ISR_Base() 
+{
+  if (p_pdf!=NULL) delete p_pdf;
+}
