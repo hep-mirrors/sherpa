@@ -416,7 +416,6 @@ void Amegic::ReadInProcessfile(string file)
 
 	    if (summass<rpa.gen.Ecms()) {
 	      Process_Base * proc=NULL;
-	      std::cout<<"new process: "<<ycut<<std::endl;
 	      if (single) proc = new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 						     order_strong,order_ew,
 						     -kfactor_scheme,-scale_scheme,fixed_scale,

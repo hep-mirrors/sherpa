@@ -46,7 +46,7 @@ void Jet_Finder::Init(const Vec4D * p)
   }
 }
 
-double * Jet_Finder::ActualValue() { 
+double * Jet_Finder::ActualValue() {
   return p_value; 
 }
 
@@ -60,7 +60,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_ycut(_ycut), m_type(_type) , m_jet_alg(1), p_value(NULL), 
   m_delta_r(1.), p_frame(NULL)
 {
-  rpa.gen.SetYcut(_ycut);
+//   rpa.gen.SetYcut(_ycut);
   m_ycut=1.0*m_ycut;
 
   m_name    = std::string("Jetfinder");
@@ -295,7 +295,7 @@ Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) 
   m_ycut(_ycut), m_type(_type), m_jet_alg(_jetalg), p_value(NULL),
   m_delta_r(1.),  p_frame(NULL) 
 {
-  rpa.gen.SetYcut(_ycut);
+//   rpa.gen.SetYcut(_ycut);
   m_ycut=1.0*m_ycut;
 
   m_name = std::string("Jetfinder");

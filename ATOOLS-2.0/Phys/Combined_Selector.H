@@ -12,7 +12,7 @@ namespace ATOOLS {
     std::vector<Selector_Base *> m_sels;
   public:
     Combined_Selector() {};
-    Combined_Selector(int,int,Flavour *,Selector_Data *);
+    Combined_Selector(int,int,Flavour *,Selector_Data *,double ycut=-1.);
     ~Combined_Selector();
     void Add(Selector_Base *);
     bool Trigger(const Vec4D *);

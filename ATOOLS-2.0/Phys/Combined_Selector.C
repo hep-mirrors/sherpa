@@ -9,7 +9,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
-				     Selector_Data * _seldata) {
+				     Selector_Data * _seldata, double ycut) {
 
   m_name  = std::string("Combined_Selector"); 
   m_nin   = _nin; m_nout = _nout; m_n = m_nin+m_nout;
@@ -50,6 +50,11 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	  if (instrong==2) jettype = 4;
 	}
 	rmin=Max(rmin,rpa.gen.Ycut());
+	rpa.gen.SetYcut(rmin);
+	if (ycut>0.) { 
+// 	  cout<<"Combined selector: reset ycut: "<<ycut<<endl;
+	  rmin=ycut;
+	}
 	{
 	  Jet_Finder * jf = new Jet_Finder(_nin+_nout,_fl,rmin,1,jettype);
 	  jf->SetDeltaR(rmax);

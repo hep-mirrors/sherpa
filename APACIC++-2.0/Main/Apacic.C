@@ -54,7 +54,7 @@ void Apacic::PrepareTrees() {
 
 void Apacic::SetJetvetoPt2(const double q2i, const double q2f)
 { 
-  //  std::cout<<" Apacic::SetJetvetoPt2("<<q2i<<","<<q2f<<")\n";
+//   std::cout<<" Apacic::SetJetvetoPt2("<<q2i<<","<<q2f<<")\n";
   
   if (m_fsron) 
     p_finshower->SetJetvetoPt2(q2f); 
@@ -64,12 +64,13 @@ void Apacic::SetJetvetoPt2(const double q2i, const double q2f)
 
 void Apacic::SetFactorisationScale(const double scale)
 {
+//   std::cout<<" Apacic::SetFactorisationScale("<<scale<<")\n";
   if (m_isron) {
     p_inishower->SetFactorisationScale(scale);
   }
 }
 
-int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
+int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2, double ycut) {
   if (!m_showers) return 1;
   if (msg.LevelIsDebugging()) {
     if (m_fsron) 
@@ -96,7 +97,7 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
     // check ME if still njet ME!
     // if isr is on, this check will be performed after the initial state shower
     if (!m_isron) {
-      double ycut   = rpa.gen.Ycut();
+      //      double ycut   = rpa.gen.Ycut();
       double s  = sqr(rpa.gen.Ecms());
       double dr2 = sqr(rpa.gen.DeltaR());
       SetJetvetoPt2(s*ycut,dr2*s*ycut);
@@ -170,10 +171,11 @@ int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
       p_fintree->BoRo(lab);
 
       // check ME if still njet ME!
-      double ycut   = rpa.gen.Ycut();
+      //      double ycut   = rpa.gen.Ycut();
       double s  = sqr(rpa.gen.Ecms());
       double dr2 = sqr(rpa.gen.DeltaR());
       SetJetvetoPt2(s*ycut,dr2*s*ycut);
+//       std::cout<<"extra_jet "<<s*ycut<<"/n";
       int number=0;
       Vec4D sum_fs=p_finshower->GetMomentum(p_fintree->GetRoot(),number);
       //      std::cout<<" sum_fs:"<<sum_fs<<"\n";

@@ -75,7 +75,7 @@ namespace ATOOLS {
 
     void SetDeltaR(double dr);
     double DeltaR() { return m_delta_r; }
-    double YCut() { return m_ycut; }
+    double Ycut() { return m_ycut; }
   };
 
 
