@@ -326,7 +326,7 @@ bool Simple_Chain::ReadInData()
   converter>>help[1];
   outputpath=std::string("MI-Grid__")+help[0]+std::string("_")+help[1]+
     std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV__")+
-    p_isr->PDF(0)->Type()+std::string("-")+p_isr->PDF(1)->Type()+std::string("__as-")+
+    p_isr->PDF(0)->Type()+std::string("_")+p_isr->PDF(1)->Type()+std::string("__as_")+
     ATOOLS::ToString(dynamic_cast<MODEL::Running_AlphaS*>
 		     (p_model->GetScalarFunction("alpha_S"))->Order())+std::string("/");
   SetOutputPath(OutputPath()+outputpath);
