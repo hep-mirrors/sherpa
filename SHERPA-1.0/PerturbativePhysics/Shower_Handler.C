@@ -42,7 +42,9 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 
 Shower_Handler::~Shower_Handler() 
 {
+  cout<<"in  Shower_Handler::~Shower_Handler() "<<endl;
   if (p_apacic) { delete p_apacic; p_apacic = NULL; }
+  cout<<"out Shower_Handler::~Shower_Handler() "<<endl;
 }
 
 

@@ -1,0 +1,449 @@
+#include "Combine_Table.H"
+#include "Run_Parameter.H"
+
+using namespace SHERPA;
+using namespace AMEGIC;
+using namespace APHYTOOLS;
+using namespace AMATOOLS;
+using namespace AORGTOOLS;
+
+int Combine_Table::all=0;
+
+
+// ============================================================
+//    class Combine_Data
+// ============================================================
+
+Combine_Data::Combine_Data():i(0),j(0),pt2ij(0),down(0)
+{
+}
+
+Combine_Data::Combine_Data(int _i, int _j, double _pt2ij, int _ngraph):
+  i(_i),j(_j),pt2ij(_pt2ij),down(0) 
+{
+  graphs.push_back(_ngraph);
+}
+
+
+Combine_Data::Combine_Data(const Combine_Data & cd):
+  i(cd.i),j(cd.j),pt2ij(cd.pt2ij),graphs(cd.graphs),down(cd.down) 
+{
+}
+
+Combine_Data::~Combine_Data() {
+  if (down!=0) delete down;
+  down=0;
+}
+
+std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd) {
+    s<<" "<<cd.i<<"&"<<cd.j<<"   "<<cd.pt2ij<<"    "<<std::flush;
+    for (int k=0; k<cd.graphs.size(); ++k)
+    s<<cd.graphs[k]<<","<<std::flush;
+    s<<"     ";
+    if (cd.down)
+    s<<" "<<cd.down->no<<std::endl;
+    else 
+    s<<" #"<<std::endl;
+}
+
+Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up):
+  jf(_jf),moms(_moms),legs(0),gwin(0),up(_up)
+{
+  msg.Debugging()<<"creating new Combine_Table::Combine_Table() "<<std::endl;
+  no=all++;
+}
+
+inline bool Combine_Table::Combinable(const Leg & a , const Leg & b) const {
+  // 1.) check if both points have common mother
+  if ((a->prev == b->prev) && (a->prev != 0))   return 1;
+
+  // 2.) check if "a" is daughter of "b"
+  if (a->prev == &b)                            return 1;
+
+  // 3.) check if "b" is daughter of "a"
+  if (b->prev == &a)                            return 1;
+
+  // else legs not combinable
+  return 0;
+}
+
+Leg Combine_Table::CombinedLeg(Leg * legs, int i, int j)
+{
+  Leg & a = legs[i];
+  Leg & b = legs[j];
+
+  Leg mo;
+
+  if ( (a->prev == b->prev) && (a->prev != 0) ) {
+    // combinable-type (1.)
+    mo.SetPoint(a->prev);
+  } 
+  else if (&a == b->left) {
+    // combinable-type (2.a)
+    mo.SetPoint(b->right);
+  } 
+  else if (&a == b->right) {
+    // combinable-type (2.b)
+    mo.SetPoint(b->left);
+  } 
+  else  if (&b == a->left) {
+    // combinable-type (3.a)
+    mo.SetPoint(a->right);
+  } 
+  else  if (&b == a->right) {
+    // combinable-type (3.b)
+    mo.SetPoint(a->left);
+  } 
+  else {
+    msg.Error()<<" ERROR: cannot combine legs!"<<std::endl;
+  }
+
+  // fix charge incase initial state has wrong
+  int icharge;
+  if (i<2)  icharge = a.ExtraAnti()*a->fl.IntCharge() - b.ExtraAnti()*b->fl.IntCharge();
+  else      icharge = a->fl.IntCharge() + b->fl.IntCharge();
+
+  if (icharge!=mo->fl.IntCharge()) {
+    std::cout<<" changing "<<mo->fl<<" to "<<Flavour(mo->fl).Bar()<<", "<<std::endl;
+    mo.SetAnti(-1);
+  }    
+  
+  return mo;
+}
+  
+Leg * Combine_Table::CombineLegs(Leg *legs, int i, int j, int _nlegs) {
+  Leg * alegs = new Leg[_nlegs];
+  // assume i < j 
+
+  for (int l=0; l<j; ++l) {
+    if (l==i) alegs[i] = CombinedLeg(legs,i,j);
+    else      alegs[l] = legs[l];
+  }
+  for (int l=j+1; l<=_nlegs; ++l) alegs[l-1] = legs[l];
+  return alegs;
+}
+
+
+void Combine_Table::CombineMoms(Vec4D* _moms , int i, int j, int maxl) {
+  
+  msg.Debugging()<<"CombineMoms(i="<<i<<",  j="<<j<<",  maxl="<<maxl<<")"<<std::endl;
+  // assume i < j
+  for (int l=0; l<j; ++l) {
+    if (l==i) { 
+      if (i<2) moms[i] = _moms[i] - _moms[j];      
+      else     moms[i] = _moms[i] + _moms[j];
+    }
+    else       moms[l] = _moms[l];
+  }
+  for (int l=j+1; l<=maxl; ++l) 
+    moms[l-1]=_moms[l];
+  if (rpa.gen.Debugging()) {
+    for (int l=0; l<maxl;++l) 
+      msg.Out()<<" moms["<<l<<"]="<<moms[l]<<std::endl;
+  }
+}
+
+void Combine_Table::CombineMoms(Vec4D * _moms ,int i,int j,int maxl,Vec4D *& omoms) {
+  omoms = new Vec4D[maxl];
+  msg.Debugging()<<"CombineMoms(i="<<i<<",  j="<<j<<",  maxl="<<maxl<<",  omoms="<<omoms<<")"<<std::endl;
+  
+  // assume i < j
+  for (int l=0; l<j; ++l) {
+    if (l==i) {
+      if (i<2) omoms[i] = _moms[i]-_moms[j];      
+      else     omoms[i] = _moms[i]+_moms[j];
+    }
+    else       omoms[l] = _moms[l];
+  }
+  for (int l=j+1; l<=maxl; ++l) 
+    omoms[l-1]=_moms[l];
+
+  if (rpa.gen.Debugging()) {
+    for (int l=0; l<maxl;++l) 
+      msg.Out()<<" omoms["<<l<<"]="<<omoms[l]<<std::endl;
+  }
+}
+
+void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
+{
+  // store information
+  legs  = _legs;
+  nlegs = _nlegs;
+  nampl = _nampl;
+
+  // determine possible combinations and corresponding y_ij  if nlegs>4
+  if (nlegs>4) {
+    for (int i=0; i<nlegs; ++i) {   // *AS* start with 2 for outgoing only
+      for (int j=i+1; j<nlegs; ++j) {
+	// never combine "0&1" !
+	if (j==1) j=2;
+	// check if leg i is combinable with leg j in any graph
+	for (int k=0;k<nampl;++k) {
+	  if (Combinable(legs[k][i],legs[k][j])) {  
+	    AddPossibility(i,j,k); // insert graph k with combination i&j in table
+	  } 
+	}	 
+      }
+    }
+  }
+}
+
+
+void Combine_Table::AddPossibility(int i, int j, int ngraph) {
+  if (combinations.size()==0) {
+    // add new "i&j" combination to empty table
+    combinations.push_back(Combine_Data(i,j,0.,ngraph));
+  }
+  else if ((combinations.back().i==i)&&(combinations.back().j==j)) {
+    // add graph only ("i&j" row exists already)
+    combinations.back().graphs.push_back(ngraph);
+  } 
+  else {
+    // add new "i&j" combination 
+    combinations.push_back(Combine_Data(i,j,0.,ngraph));
+  }
+}
+
+
+Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) {
+  Combine_Table * ct=0;
+  CD_List & cl=combinations;
+  msg.Tracking()<<"in Combine_Table::CalcJet "<<std::endl;
+  if (cl.size()==0) {
+    //!!! why not change the momenta to actual value!!!
+
+    if (up==0) {
+      //      initialize x1 and x2
+      double Ebeam1 = 0.5*rpa.gen.Ecms();
+      double Ebeam2 = 0.5*rpa.gen.Ecms();
+      //     only correct for massless momenta !!!
+      x1=moms[0][0]/Ebeam1; 
+      x2=moms[1][0]/Ebeam2;
+//       cout<<" left  "<<moms[0]<<"  x1 ="<<x1<<endl;
+//       cout<<" right "<<moms[1]<<"  x2 ="<<x2<<endl;
+//       cout<<(moms[0]+moms[1]).Abs2()<<"/"<<x1*x2*sqr(rpa.gen.Ecms())<<endl;
+    }
+
+    return this;
+  } 
+  else {
+    // change momenta to actual values    
+    if (_moms!=0) {
+      for (int l=0;l<nl;++l)
+      moms[l]=_moms[l];
+    }
+    if (up==0) {
+      //      initialize x1 and x2
+      double Ebeam1 = 0.5*rpa.gen.Ecms();
+      double Ebeam2 = 0.5*rpa.gen.Ecms();
+      //      for massless momenta !!!
+      x1=moms[0][0]/Ebeam1; 
+      x2=moms[1][0]/Ebeam2;
+//       cout<<" left  "<<moms[0]<<"  x1 ="<<x1<<endl;
+//       cout<<" right "<<moms[1]<<"  x2 ="<<x2<<endl;
+//       cout<<(moms[0]+moms[1]).Abs2()<<"/"<<x1*x2*sqr(rpa.gen.Ecms())<<endl;
+    }
+
+    // boost in CMS frame and rotate to z-axis (store old moms)
+    Vec4D * save_moms=0;
+    save_moms = new Vec4D[nl];
+    for (int i=0;i<nl;++i) save_moms[i]=moms[i];
+
+    Poincare cms,zaxis;
+    bool did_boost=0;
+    // boost needed?
+    if (!(Vec3D(moms[0])==Vec3D(-1.*moms[1]))) {
+
+//       cout<<"for boost "<<endl;
+//       for (int i=0;i<nl;++i) cout<<" "<<i<<" : "<<moms[i]<<endl;
+
+      cms   = Poincare(moms[0]+moms[1]);
+      for (int i=0;i<nl;++i) cms.Boost(moms[i]);
+
+//       cout<<"nach boost "<<endl;
+//       for (int i=0;i<nl;++i) cout<<" "<<i<<" : "<<moms[i]<<endl;
+
+      zaxis = Poincare(moms[0],Vec4D::ZVEC);
+      for (int i=0;i<nl;++i) zaxis.Rotate(moms[i]);
+
+//       cout<<"nach rotate "<<endl;
+//       for (int i=0;i<nl;++i) cout<<" "<<i<<" : "<<moms[i]<<endl;
+//       cout<<endl;
+
+      did_boost=1;
+    }
+
+    // calculate pt2ij and determine "best" combination
+    double pt2max = sqr(rpa.gen.Ecms());
+    double pt2min = pt2max;
+    for (CD_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
+      double pt2ij = cit->pt2ij = jf->PTij(moms[cit->i], moms[cit->j]);
+      if (cit->i < 2  && pt2ij < pt2min ) {
+	// check if is combination has right direction!!!!
+	double d = moms[cit->i][3] * moms[cit->j][3];
+	if (d<0. ) {
+	  msg.Tracking()<<cit->i<<","<<cit->j<<" a increase ptij "<<pt2ij<<" to "<<pt2ij*1.001<<endl;
+	  pt2ij*=1.001;
+	  cit->pt2ij = pt2ij;
+	} 
+
+	// check if combined momenta is physical even in LAB frame
+	double e = save_moms[cit->i][0] - save_moms[cit->j][0];
+	if (e<0. ) {
+	  msg.Tracking()<<cit->i<<","<<cit->j<<" b increase ptij "<<pt2ij<<" to "<<pt2min<<endl;
+	  cit->pt2ij = pt2ij = pt2min;
+	}
+	else {
+	// check if combined momenta are physical in thier CMS frame
+	Vec4D s1 = save_moms[cit->i] - save_moms[cit->j];
+	Vec4D s2 = save_moms[1-cit->i];
+	Poincare test(s1+s2);
+	test.Boost(s1);
+	test.Boost(s2);
+	if (s1[0]<0. || s2[0]<0.) {
+	  msg.Tracking()<<cit->i<<","<<cit->j<<" c increase ptij "<<pt2ij<<" to "<<pt2min<<endl;
+	  cit->pt2ij = pt2ij = pt2min;
+	}
+	}
+      }
+
+      if (pt2ij>pt2max && pt2min==pt2max) {
+	pt2max=pt2min;
+	cwin = cit;
+      }
+	
+
+      if (pt2ij<pt2min) {
+	pt2min = pt2ij;
+	cwin = cit;
+      }
+    } 
+    
+    msg.Tracking()<<this<<endl;
+    msg.Tracking()<<" Winner:"<<(*cwin)<<std::endl;
+
+    // check if boosted  (restore saved moms)
+    if (did_boost) {
+      for (int i=0;i<nl;++i) moms[i]=save_moms[i];
+    }
+    delete [] save_moms;
+
+    --nl;
+    
+    // if number of legs is still greater 4 Cluster once more
+    // if number of legs equals 4, determine end situation
+    if (nl>=4) {
+      if (!cwin->down) {
+	Leg ** alegs = new Leg*[cwin->graphs.size()];
+	for (int k=0;k<cwin->graphs.size();++k) {
+	  alegs[k]   = CombineLegs(legs[cwin->graphs[k]],cwin->i,cwin->j,nl);
+	}
+	Vec4D * amoms;
+	CombineMoms(moms,cwin->i,cwin->j,nl,amoms); // generate new momenta
+	cwin->down=new Combine_Table(jf,amoms,this);
+	cwin->down->FillTable(alegs,nl,cwin->graphs.size());   // initialise Combine_Table
+      } 
+      else {
+	cwin->down->CombineMoms(moms,cwin->i,cwin->j,nl);
+      }
+      // update x1 (before calling CalcJet again
+      if (cwin->i<2) {
+	double z=cwin->down->Sprime()/Sprime();
+	if (cwin->i==0) {
+	  cwin->down->x1=x1*z;
+	  cwin->down->x2=x2;
+	}
+	else {
+	  cwin->down->x1=x1;
+	  cwin->down->x2=x2*z;
+	}
+      }
+      else {
+	cwin->down->x1=x1;
+	cwin->down->x2=x2;
+      }
+//       cout<<" new x1,x2 = "<<cwin->down->x1<<","<<cwin->down->x2<<endl;
+
+      ct   = cwin->down->CalcJet(nl);
+      gwin = cwin->down->gwin;
+      gwin = cwin->graphs[gwin];   // translate back
+
+    } 
+    else {
+      msg.Error()<<" ERROR:  nlegs < 4 !!!!!!!!!"<<std::endl;
+      abort();
+    }
+  }
+  msg.Tracking()<<"out Combine_Table::CalcJet  gwin="<<gwin<<"   table no.:"<<ct->no<<std::endl;
+  return ct;
+}
+
+Combine_Table::~Combine_Table()
+{
+  //  std::cout<<this;
+  msg.Tracking()<<" removing momenta"<<std::endl;
+  delete [] moms;
+ 
+  for (int k=0;k<nampl;++k) 
+    delete [] legs[k];
+  delete [] legs;
+  msg.Tracking()<<" done "<<std::endl;
+}
+
+std::ostream& SHERPA::operator<< (std::ostream& s ,Combine_Table * ct) {
+  if (ct) {
+    s<<std::endl<<" Combine_Table "<<ct->no<<" (up=";
+    if (ct->up) s<<ct->up->no<<")"<<std::endl; else s<<"#)"<<std::endl;
+    s<<" x1="<<ct->x1<<" x2="<<ct->x2<<endl;
+    s<<" ==============="<<std::endl;
+    s<<"moms="<<ct->moms<<std::endl;
+    for (int l=0; l<ct->nlegs; ++l) 
+      s<<" "<<l<<":"<<ct->moms[l]<<std::endl;
+    s<<" ---------------"<<std::endl;
+    CD_List & cl=ct->combinations;
+    if (cl.size()>0) {
+      s<<"     with "<<cl.size()<<" combinations"<<std::endl;
+      for (CD_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
+	s<<(*cit); 
+      }
+      
+      for (CD_Iterator cit=cl.begin(); cit!=cl.end(); ++cit) {
+	if (cit->down) {
+	  s<<cit->down<<std::endl;
+	}
+      }
+
+      // test output
+      for (int k=0; k<ct->nampl; ++k) {
+	for (int l=0; l<ct->nlegs; ++l) 
+	  s<<" "<<ct->legs[k][l]->fl<<"("<<ct->legs[k][l].ExtraAnti()<<")  ";
+	s<<std::endl;
+      }
+
+    }
+    else {
+      for (int k=0; k<ct->nampl; ++k) {
+	for (int l=0; l<ct->nlegs; ++l) 
+	  s<<" "<<ct->legs[k][l]->fl<<"("<<ct->legs[k][l].ExtraAnti()<<")  ";
+	s<<std::endl;
+      }
+    }
+  } 
+  else
+    s<<"***empty Combine_Table***"<<std::endl;
+  return s;
+}
+
+double Combine_Table::Sprime() {
+  if (!moms) {
+    cout<<" ERROR: Combine_Table::Sprime() "<<endl;
+    return 0;
+  }
+
+//   cout<<" left  "<<moms[0]<<endl;
+//   cout<<" right "<<moms[1]<<endl;
+//   cout<<(moms[0]+moms[1]).Abs2()<<endl;
+
+  return (moms[0]+moms[1]).Abs2();
+
+}
