@@ -299,3 +299,34 @@ Primitive_Observable_Base * Two_Particle_DR::Copy() const
     return new Two_Particle_DR(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DEFINE_OBSERVABLE_GETTER(Two_Particle_CMS_Angle,Two_Particle_CMS_Angle_Getter,"CMSAngle");
+// angle of particle in CMS system of particles 1+2 relative to boost direction
+
+Two_Particle_CMS_Angle::Two_Particle_CMS_Angle(const Flavour & flav1, const Flavour & flav2,
+				     int type, double xmin, double xmax, int nbins,
+				     const std::string & listname) :
+  Two_Particle_Observable_Base(flav1,flav2,type,xmin,xmax,nbins,listname,"CMSAngle") { }
+
+
+void Two_Particle_CMS_Angle::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{
+  Vec4D sum=mom1+mom2;
+  Poincare boost(sum);
+  Vec4D p1=boost*mom1;
+
+  Vec3D a(sum), b(p1);
+  double costh=a*b/(a.Abs()*b.Abs());
+
+  p_histo->Insert(costh,weight,ncount); 
+  if (weight!=0) {
+    p_ana->AddData(m_name,new Blob_Data<double>(costh));
+  }
+} 
+
+Primitive_Observable_Base * Two_Particle_CMS_Angle::Copy() const
+{
+  return new Two_Particle_CMS_Angle(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
