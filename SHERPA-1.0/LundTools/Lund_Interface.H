@@ -27,6 +27,8 @@ namespace SHERPA {
 
     static ATOOLS::Blob_List *s_bloblist;
 
+    static bool s_exportas, s_exportpdf;
+
     // tools for converting a whole event
     bool ConvertParticles(std::map<int,ATOOLS::Particle*> &converted);
     bool ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS::Particle*> &converted);
@@ -62,6 +64,9 @@ namespace SHERPA {
     inline static void SetISRHandler(PDF::ISR_Handler *const handler) { s_isrhandler=handler; }
 
     inline static PDF::ISR_Handler *ISRHandler() { return s_isrhandler; }
+
+    inline static bool ExportAS()  { return s_exportas;  }
+    inline static bool ExportPDF() { return s_exportpdf; }
 
   };// end of class Lund_Interface
 

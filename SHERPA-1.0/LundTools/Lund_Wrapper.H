@@ -18,10 +18,11 @@ extern "C" {
   void pylist_(int*);
   void pyplst_();
   void pymult_(int*);
-  double pyalps_(double*);
+  double pyalp_(double*);
 #ifndef NO_EXPORT__AlphaS
   double shalps_(double*);
 #endif
+  void pypdpr_(double*,double*,double*);
 #ifndef NO_EXPORT__PDF
   void shpdpr_(double*,double*,double*);
 #endif
@@ -60,32 +61,28 @@ void pymult(int mmul) {
   pymult_(&mmul);
 }
 
-double pyalps(double q2) {
-  return pyalps_(&q2);
-}
-
 #ifndef NO_EXPORT__AlphaS
 double shalps_(double *q2) {
-  return (*MODEL::as)(*q2);
+  if (Lund_Interface::ExportAS()) return (*MODEL::as)(*q2);
+  return pyalp_(q2);
 }
 #endif
 
 #ifndef NO_EXPORT__PDF
 void shpdpr_(double *x,double *q2,double *xppr) {
-  for (int i=0;i<=10;++i) {
-    Lund_Interface::ISRHandler()->PDF(0)->Calculate(*x,0.,0.,*q2);
-    if (i!=3 && i!=4) {
-//       std::cout<<"xpdf["<<i<<"]("<<*x<<","<<*q2<<"): "<<xppr[i+1]<<" vs. "
-// 	       <<Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(i-5)))
-// 	       <<std::endl;     
-      xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(i-5)));
+  if (Lund_Interface::ExportPDF()) {
+    for (int i=0;i<=10;++i) {
+      Lund_Interface::ISRHandler()->PDF(0)->Calculate(*x,0.,0.,*q2);
+      if (i!=3 && i!=4) {
+	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(i-5)));
+      }
+      else {
+	xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(2-i)));
+      }
     }
-    else {
-//       std::cout<<"xpdf["<<i<<"->"<<(2-i)<<"]("<<*x<<","<<*q2<<"): "<<xppr[i+1]<<" vs. "
-// 	       <<Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(2-i)))
-// 	       <<std::endl;     
-      xppr[i+1]=Lund_Interface::ISRHandler()->PDF(0)->GetXPDF(ATOOLS::Flavour((ATOOLS::kf::code)(2-i)));
-    }
+  }
+  else {
+    pypdpr_(x,q2,xppr);
   }
 }
 #endif
