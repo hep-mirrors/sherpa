@@ -29,7 +29,6 @@ XS_f1f1_f1f1::XS_f1f1_f1f1(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours), m_Z_on(true), m_P_on(true), m_anti(int(flavours[0].IsAnti()))
 {
-  std::cout<<"Construct it !"<<std::endl;
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_aqed      = MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
   m_eq        = flavours[0].Charge();
@@ -37,22 +36,38 @@ XS_f1f1_f1f1::XS_f1f1_f1f1(const size_t nin,const size_t nout,
   m_wz2       = ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width());
   m_sin2tw    = ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
   m_cos2tw    = 1.-m_sin2tw;
+  m_pref_qed  = (4.*M_PI*m_aqed*m_eq*m_eq);
+  m_pref_Z    = (4.*M_PI*m_aqed)/(m_sin2tw*m_cos2tw);
   if (!ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())      m_Z_on = false;
   if (!ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) m_P_on = false;
+  std::cout<<"Init f1f1 -> f1f1 : "<<m_Z_on<<", "<<m_P_on
+	   <<"("<<m_pref_Z<<", "<<m_pref_qed<<" <- "<<sqrt(4.*M_PI*m_aqed)*m_eq<<")"<<std::endl;
 }
 
 double XS_f1f1_f1f1::operator()(double s,double t,double u) 
 {
   M_t = 0., M_u = 0., M_mix = 0.;
-  double pref_qed = ATOOLS::sqr(4.*M_PI*m_aqed*m_eq*m_eq);
   if (m_P_on) {
-    M_t   +=  pref_qed     * (s*s+u*u)/(t*t);
-    M_mix += -pref_qed/3.  * (s*s)/(t*u);
-    M_u   +=  pref_qed     * (s*s+t*t)/(u*u); 
+    M_t   +=  sqr(m_pref_qed)     * (s*s+u*u)/(t*t);
+    M_mix += -sqr(m_pref_qed)/3.  * (s*s)/(t*u);
+    M_u   +=  sqr(m_pref_qed)     * (s*s+t*t)/(u*u); 
   }
   if (m_Z_on) {
+    M_t   +=  sqr(m_pref_Z) /((t-m_mz2)*(t-m_mz2)) *
+      (sqr(sqr(1.-2.*m_eq*m_sin2tw)+sqr(2.*m_eq*m_sin2tw)) * (s*s+u*u) +
+       sqr(sqr(1.-2.*m_eq*m_sin2tw)-sqr(2.*m_eq*m_sin2tw)) * (s*s-u*u));
+    M_mix +=  0.;
+    M_u   +=  sqr(m_pref_Z) /((u-m_mz2)*(u-m_mz2)) *
+      (sqr(sqr(1.-2.*m_eq*m_sin2tw)+sqr(2.*m_eq*m_sin2tw)) * (s*s+t*t) +
+       sqr(sqr(1.-2.*m_eq*m_sin2tw)-sqr(2.*m_eq*m_sin2tw)) * (s*s-t*t));
   }
   if (m_P_on && m_Z_on) {
+    M_t   +=  m_pref_qed*m_pref_Z    / (t*(t-m_mz2))  * 
+      ( sqr(1.-4.*m_eq*m_sin2tw) * (s*s+u*u) + 1. * (s*s-u*u));
+    M_mix += -m_pref_qed*m_pref_Z/3. * (1/(t*(u-m_mz2)) + 1/(u*(t-m_mz2)))  * 
+      ( sqr(1.-2.*m_eq*m_sin2tw) + sqr(2.*m_eq*m_sin2tw) ) * (s*s);
+    M_u   +=  m_pref_qed*m_pref_Z    / (u*(u-m_mz2))  * 
+      ( sqr(1.-4.*m_eq*m_sin2tw) * (s*s+u*u) + 1. * (s*s-t*t));
   }
   return M_t + M_u + M_mix;
 }

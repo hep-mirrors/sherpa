@@ -22,7 +22,8 @@ namespace EXTRAXS {
 
   class XS_f1f1_f1f1: public Single_XS {  
   private:
-    double m_aqed, m_eq, m_mz2, m_wz2, m_sin2tw, m_cos2tw, m_kappa, m_colfac;
+    double m_aqed, m_eq, m_mz2, m_wz2, m_sin2tw, m_cos2tw, m_pref_qed, m_pref_Z;
+    double m_kappa, m_colfac;
     double M_t, M_u, M_mix;
     bool   m_Z_on, m_P_on;
     int    m_anti;
