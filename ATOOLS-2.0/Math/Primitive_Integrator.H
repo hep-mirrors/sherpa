@@ -22,7 +22,7 @@ namespace ATOOLS {
   private:
     
     double m_alpha, m_weight;
-    double m_sum, m_sum2, m_np;
+    double m_sum, m_sum2, m_max, m_np;
     std::vector<double> m_this;
     std::vector<Primitive_Channel*> m_next;
 
@@ -66,6 +66,7 @@ namespace ATOOLS {
 
     inline double Sum() const    { return m_sum;  }
     inline double Sum2() const   { return m_sum2; }
+    inline double Max() const    { return m_max;  }
     inline double Points() const { return m_np;   }
 
     inline double Mean() const   { return m_sum/m_np; }
@@ -82,14 +83,18 @@ namespace ATOOLS {
   operator<<(std::ostream &str,const Primitive_Channel &channel);
 
   class Primitive_Integrator {
+  public:
+
+    typedef std::map<std::string,std::pair<size_t,size_t> > Position_Map;
+
   private:
 
     long unsigned int m_nopt, m_nmax, m_nmaxopt;
 
     double m_error, m_scale;
-    double m_sum, m_sum2, m_np;
+    double m_sum, m_sum2, m_max, m_np;
 
-    std::vector<double> m_min, m_max, m_point;
+    std::vector<double> m_rmin, m_rmax, m_point;
 
     std::vector<Primitive_Channel*> m_channels;
 
@@ -97,7 +102,8 @@ namespace ATOOLS {
 
     size_t m_lastdim, m_mode;
 
-    std::string m_vname, m_uname;
+    std::string  m_vname, m_uname;
+    Position_Map m_reserved;
 
     void Point();
     void Split();
@@ -122,9 +128,12 @@ namespace ATOOLS {
     bool WriteOut(const std::string &filename) const;
     bool ReadIn(const std::string &filename);
 
+    void Reserve(const std::string &key,const size_t n);
+    const double *const Reserved(const std::string &key) const;
+
     // inline functions
-    inline void SetMin(const std::vector<double> &min) { m_min=min; }
-    inline void SetMax(const std::vector<double> &max) { m_max=max; }
+    inline void SetMin(const std::vector<double> &min) { m_rmin=min; }
+    inline void SetMax(const std::vector<double> &max) { m_rmax=max; }
 
     inline void SetNOpt(const long unsigned int &nopt) { m_nopt=nopt; }
     inline void SetNMax(const long unsigned int &nmax) { m_nmax=nmax; }
@@ -138,7 +147,11 @@ namespace ATOOLS {
     inline void SetVariableName(const std::string &vname) { m_vname=vname; }
     inline void SetUnitName(const std::string &uname)     { m_uname=uname; } 
 
-    inline double Mean() const   { return m_sum/m_np; }
+    inline void SetFunction(const Primitive_Integrand *function)
+    { p_function=function; }
+
+    inline double Mean() const     { return m_sum/m_np; }
+    inline double Max() const      { return m_max;      }
     inline double Variance() const    
     { return (m_sum2-m_sum*m_sum/m_np)/(m_np-1.0); }
     inline double Sigma() const  
