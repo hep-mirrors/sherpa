@@ -10,6 +10,7 @@
 #include "MI_Base.H"
 #include "LL_Branching.H"
 #include "Data_Read.H"
+#include "Data_Reader.H"
 #include "Message.H"
 #include "Scaling.H"
 
@@ -543,6 +544,8 @@ void Initialization_Handler::SetParameter(int nr) {
     msg.Out()<<" Setting Ecms/2 to : "<<sval<<endl;
     Data_Read::SetCommandLine("BEAM_ENERGY_1",sval);
     Data_Read::SetCommandLine("BEAM_ENERGY_2",sval);
+    Read_Write_Base::AddCommandLine(std::string("BEAM_ENERGY_1 = ")+sval);
+    Read_Write_Base::AddCommandLine(std::string("BEAM_ENERGY_2 = ")+sval);
   }
   else if (m_scan_variable.find("MASS(")!=string::npos || m_scan_variable.find("WIDTH(")!=string::npos ) {
     s<<value;
@@ -603,6 +606,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
       // perhaps check varible name first
 
       Data_Read::SetCommandLine(key,value);
+      Read_Write_Base::AddCommandLine(key+std::string(" = ")+value);
     }
     
     // special variables
@@ -624,6 +628,8 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	s>>value;
 	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
+	Read_Write_Base::AddCommandLine(std::string("BEAM_ENERGY_1 = ")+value);
+	Read_Write_Base::AddCommandLine(std::string("BEAM_ENERGY_2 = ")+value);
 	break;
       case 9000:
 	m_mode       = 9000;
@@ -681,6 +687,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	// scan
 	m_mode=14;
 	Data_Read::SetCommandLine("EVENTS","0");
+	Read_Write_Base::AddCommandLine("EVENTS = 0");
 	if (i+4<argc) {
 	  m_scan_variable=argv[++i];
 	  MyStrStream s;
@@ -725,16 +732,22 @@ void Initialization_Handler::CheckFlagConsitency()
     long nevt = p_dataread->GetValue<long>("EVENTS",0);
     if (nevt<=0) {
       Data_Read::SetCommandLine("EVENTS","1");
+      Read_Write_Base::AddCommandLine("EVENTS = 1");
     }
 
     //  ME.dat 
     Data_Read::SetCommandLine("SCALE_SCHEME","65");
     Data_Read::SetCommandLine("KFACTOR_SCHEME","65");
     Data_Read::SetCommandLine("COUPLING_SCHEME","Running_alpha_S");
+    Read_Write_Base::AddCommandLine("SCALE_SCHEME = 65");
+    Read_Write_Base::AddCommandLine("KFACTOR_SCHEME = 65");
+    Read_Write_Base::AddCommandLine("COUPLING_SCHEME = Running_alpha_S");
 
     //  Shower.dat
     Data_Read::SetCommandLine("FSR_SHOWER","1");
     Data_Read::SetCommandLine("FS_LOSEJETVETO","1");
+    Read_Write_Base::AddCommandLine("FSR_SHOWER = 1");
+    Read_Write_Base::AddCommandLine("FSR_LOSEJETVETO = 1");
   }
 
 
