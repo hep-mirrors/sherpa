@@ -4,6 +4,9 @@
 #include "Random.H"
 #include "Exception.H"
 #include "Run_Parameter.H"
+#ifdef CLHEP_SUPPORT
+#include "IO_Handler.H"
+#endif
 
 #ifdef PROFILE__all
 #include "prof.hh"
@@ -53,6 +56,9 @@ int main(int argc,char* argv[])
 		    <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
 	}
 	if (Generator.GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
+#ifdef CLHEP_SUPPORT
+// 	Generator.GetIOHandler()->GetHepMCInterface()->PrintHepMCEvent();
+#endif
       }
       msg_Info()<<std::endl;      
       Generator.SummarizeRun();
