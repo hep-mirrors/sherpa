@@ -181,9 +181,8 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
     return false;
   }
   if (!bloblist->FourMomentumConservation()) {
-    msg_Info()<<"Beam_Remnant_Handler::FillBeamBlobs(..): Retry event "
-	      <<rpa.gen.NumberOfDicedEvents()<<".\n"
-	      <<*bloblist<<std::endl;
+    ATOOLS::msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): Retry event "
+		       <<rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
     bloblist->Clear();
     return false;
   }
