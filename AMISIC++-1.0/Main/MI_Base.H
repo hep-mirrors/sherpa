@@ -6,11 +6,10 @@
 #include "Exception.H"
 #include <map>
 
+namespace EXTRAXS { class XS_Base; }
 #ifdef USING__Sherpa
 namespace SHERPA { class Matrix_Element_Handler; }
 #endif
-
-namespace EXTRAXS { class XS_Base; }
 
 namespace AMISIC {
 
@@ -46,8 +45,9 @@ namespace AMISIC {
 #endif
 
     EXTRAXS::XS_Base *p_xs;
+    static MI_Base   *s_hard, *s_soft;
 
-    static bool s_stophard, s_stopsoft, s_cleaned, s_hard, s_soft;
+    static bool s_stophard, s_stopsoft, s_cleaned;
 
   public:
 

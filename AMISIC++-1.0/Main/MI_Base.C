@@ -19,8 +19,9 @@ MI_Base::String_MI_Base_Map MI_Base::s_bases=MI_Base::String_MI_Base_Map();
 bool MI_Base::s_stophard=true;
 bool MI_Base::s_stopsoft=true;
 bool MI_Base::s_cleaned=true;
-bool MI_Base::s_hard=false;
-bool MI_Base::s_soft=false;
+
+MI_Base *MI_Base::s_hard=NULL;
+MI_Base *MI_Base::s_soft=NULL;
 
 MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 		 unsigned int infiles,unsigned int outfiles):
@@ -54,10 +55,10 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
   s_bases[m_name]=this;
   switch (m_type) {
   case SoftEvent: 
-    if (m_name!=TypeToString(_m_type)+" None") s_soft=true; 
+    if (m_name!=TypeToString(_m_type)+" None") s_soft=this; 
     break;
   case HardEvent: 
-    if (m_name!=TypeToString(_m_type)+" None") s_hard=true; 
+    if (m_name!=TypeToString(_m_type)+" None") s_hard=this; 
     break;
   default: 
     break;
