@@ -245,10 +245,11 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     return true;
   }
   if (m_spkey[3]<m_splimits[0] || m_spkey[3]>m_splimits[1]) {
-    msg.Error()<<"ERROR in ISR_Handler::MakeISR(..): "<<std::endl
-	       <<om::red<<" sprime out of bounds :"<<om::reset
-	       <<" s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
-	       <<", "<<m_splimits[1]<<", "<<m_splimits[2]<<" vs. "<<m_spkey[3]<<endl;
+    ATOOLS::msg.Error()<<"ISR_Handler::MakeISR(..): "<<std::endl
+		       <<om::red<<" sprime out of bounds :"<<om::reset
+		       <<" s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
+		       <<", "<<m_splimits[1]<<", "<<m_splimits[2]
+		       <<" vs. "<<m_spkey[3]<<endl;
     return false;
   }
   double Q=sqrt(m_splimits[2]), E=sqrt(m_spkey[3]);
