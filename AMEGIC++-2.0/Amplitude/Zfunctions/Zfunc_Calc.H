@@ -38,7 +38,9 @@ namespace AMEGIC {
 	       SSGS   = 72,
 	       FFVGS  = 73,
 	       Unknown= 99,
-               Triangle = 101
+               Triangle = 101,
+	       Box      = 102,
+	       Pentagon = 103
     }; 
   };
   

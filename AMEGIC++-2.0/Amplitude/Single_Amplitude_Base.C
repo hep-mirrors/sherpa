@@ -400,7 +400,7 @@ Kabbala Single_Amplitude_Base::GetProp(Zfunc* z)
 	if((p->fl).Kfcode()!=z->p_propagators[i].kfcode) pc = -1;
       }
  
-      if (pc==iabs(z->p_propagators[i].numb)) {
+      if (pc==iabs(z->p_propagators[i].numb) && !p->fl.Is5VDummy()) {
 	if(z->GetOp()==0 && p->on==1)break;
 	if (p->haspol && p->fl.IsVector()) sign*=-1;
         Pols*= bpf.P(p);
@@ -588,7 +588,6 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
 
   if (sign<0 && value.Value()!=Complex(0.,0.)) value = -value; 
   //if (sign<0) value = -value; 
-
   if (buildstring) shand->Set_String(amplnumber,ihel,value.String());
   return value.Value();
 }

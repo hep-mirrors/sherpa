@@ -88,6 +88,7 @@ namespace AMEGIC {
     void Compare(Single_Amplitude* &);
     void Unite(Point*,Point*);
     int  CompareColors(Point*,Point*);
+    int  Compare5Vertex(Point*,Point*);
 
     void CreateSingleAmplitudes(Single_Amplitude* &);
     void CheckFor4Vertices(Single_Amplitude* &);
@@ -104,6 +105,9 @@ namespace AMEGIC {
     void CommitMPITypes() ;
     void ReplaceVertex(Point *);
   
+    void Kill5VertexArtefacts(Single_Amplitude* first);
+    int  Is5VertexArtefact(Point* p, int &tcnt);
+
     int Count4G(Point * p);
     int CountRealAmplitudes(Single_Amplitude* first);
   public:

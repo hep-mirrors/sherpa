@@ -4,6 +4,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "MathTools.H"
+#include "Permutation.H"
 
 //Do not use this here !!! 
 //This is only for test purposes !!!
@@ -247,6 +248,7 @@ int Amplitude_Generator::CheckEnd(Point* p,Flavour infl)
 	p->v = vl[j];
 	*(p->Color)   = *(vl[j]->Color);
 	*(p->Lorentz) = *(vl[j]->Lorentz);
+	p->t = vl[j]->t;
 	  
 	return 1;
       }
@@ -367,6 +369,7 @@ void Amplitude_Generator::SetProps(Point* pl,int dep,Single_Amplitude* &first,in
 	  p->v          = vl[i];
 	  *(p->Color)   = *(vl[i]->Color);
 	  *(p->Lorentz) = *(vl[i]->Lorentz);
+	  p->t = vl[i]->t;
 	  
 	  for (int k=0;k<4;k++) p->cpl[k] = cpl[k];
 	  ll = 0;top->Copy(prea[ap].p,prea[lanz].p,ll);
@@ -856,6 +859,9 @@ int Amplitude_Generator::SingleCompare(Point* p1,Point* p2)
   
   // return 1 if equal and 0 if different
   
+  if (p1->Lorentz->Type()==lf::C4GS && p2->Lorentz->Type()==lf::C4GS) 
+    return Compare5Vertex(p1,p2);
+
   if (SingleCompare(p1->middle,p2->middle)) {
     int sw1 = SingleCompare(p1->left,p2->left);
     if (sw1) sw1 = SingleCompare(p1->right,p2->right);
@@ -885,7 +891,57 @@ int Amplitude_Generator::SingleCompare(Point* p1,Point* p2)
     }
     return sw1;
   }
+
   return 0;
+}
+
+int Amplitude_Generator::Compare5Vertex(Point* p1,Point* p2)
+{
+  Point** pts1=new Point*[4];
+  Point** pts2=new Point*[4];
+  Point *p41,*p42;
+  if (p1->left->fl.Is5VDummy()) {
+    pts1[0]=p1->left->left;
+    pts1[1]=p1->left->middle;
+    pts1[2]=p1->left->right;
+    pts1[3]=p1->right;
+    p41=p1->left;
+  }
+  else {
+    pts1[0]=p1->left;
+    pts1[1]=p1->right->left;
+    pts1[2]=p1->right->middle;
+    pts1[3]=p1->right->right;
+    p41=p1->right;
+  }
+  if (p2->left->fl.Is5VDummy()) {
+    pts2[0]=p2->left->left;
+    pts2[1]=p2->left->middle;
+    pts2[2]=p2->left->right;
+    pts2[3]=p2->right;
+    p42=p2->left;
+  }
+  else {
+    pts2[0]=p2->left;
+    pts2[1]=p2->right->left;
+    pts2[2]=p2->right->middle;
+    pts2[3]=p2->right->right;
+    p42=p2->right;
+  }
+
+  if (!CompareColors(p41,p42)) return 0;
+
+  int hit = 0;
+  Permutation perm(4);
+  for (int i=0;i<perm.MaxNumber()&&!hit;i++) {
+    int* pp=perm.Get(i);
+    hit = 1;
+    for (int j=0;j<4&&hit;j++) hit = SingleCompare(pts1[j],pts2[pp[j]]);
+  }
+
+  delete[] pts1;
+  delete[] pts2;
+  return hit;
 }
 
 int Amplitude_Generator::Kill_Off(Single_Amplitude* &first)
@@ -1280,12 +1336,14 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  if ((*v)(i)->ncf==1) {
 	    *(pcopy->Color)   = *((*v)(i)->Color);
 	    *(pcopy->Lorentz) = *((*v)(i)->Lorentz);
+	    pcopy->t = (*v)(i)->t;
 	    break;
 	  }
 	  else {
 	    for (short int k=0;k<(*v)(i)->ncf;k++) {
 	      *(pcopy->Color)   = ((*v)(i)->Color)[k];
 	      *(pcopy->Lorentz) = ((*v)(i)->Lorentz)[k];
+	      pcopy->t = (*v)(i)->t;
 	      
 	      Color_Function* cfmemo = pcopy->Color;
 	      
@@ -1389,6 +1447,36 @@ void Amplitude_Generator::CheckFor4Vertices(Single_Amplitude* &first)
   }
 }
 
+void Amplitude_Generator::Kill5VertexArtefacts(Single_Amplitude* first)
+{
+  Single_Amplitude* amp=first;
+  while (amp) {
+    int tcnt = 0;
+    if (Is5VertexArtefact(amp->GetPointlist(),tcnt)) amp->on=0;      
+    amp=amp->Next;
+  }
+  Kill_Off(first);
+}
+
+int Amplitude_Generator::Is5VertexArtefact(Point* p, int &tcnt)
+{
+  if (!p) return 0;
+  switch(p->t) {
+  case 0:
+    break;
+  case 1: 
+    if (tcnt!=-1 || !p->fl.Is5VDummy()) return 1;
+    tcnt++;
+    break;
+  case -1:
+    if (tcnt!=0) return 1;
+    tcnt--;
+  }
+  if (Is5VertexArtefact(p->left,tcnt)) return 1;
+  if (Is5VertexArtefact(p->right,tcnt)) return 1;
+  if (Is5VertexArtefact(p->middle,tcnt)) return 1;
+  return 0;
+}
 
 int Amplitude_Generator::Count4G(Point * p) {
   if (!p) return 0;
@@ -1605,6 +1693,7 @@ Single_Amplitude* Amplitude_Generator::Matching()
   if (nEW != 99 || nQCD != 99) KillHigherOrders(first_amp);
   
   CheckFor4Vertices(first_amp);
+  Kill5VertexArtefacts(first_amp);
   Compare(first_amp);
 
 #ifdef _USE_MPI_

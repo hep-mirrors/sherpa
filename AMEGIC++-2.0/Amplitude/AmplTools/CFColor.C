@@ -293,7 +293,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		string newaddend = st.Tree2String(*it,0); 
 		ReplaceG(*it);
 		ReplaceD(*it,*it);
-		
+
 		list<sknot*>    factor_list;
 		st.Factors(*it,factor_list);
 		
@@ -778,6 +778,72 @@ void CFColor::ReplaceG(sknot* m,sknot* m0)
       if (s2->Str().length()==6) {
 	if (s2->Str()[0]=='G') {
 	  if (s2->Str()[2]==s2->Str()[4]) s2->SetString(string("8"));
+	  else {
+	    // kill G's
+	    // replace s2->Str()[2] -> s2->Str()[4]
+	    char c = s2->Str()[2];
+	    sknot* akt = m0;
+	    do {
+	      if (m0->left->op=='*' || m0->left->op==0) {
+		// right...
+		if(m0->right->Str().length()==8) {
+		  string shelp = m0->right->Str();
+		  for(short int k=1;k<4;k++) if(shelp[2*k]==c)shelp[2*k] = s2->Str()[4];
+		  m0->right->SetString(shelp);
+		}		
+	      }
+	      if (m0->left->op==0) {
+		// left...
+		if(m0->left->Str().length()==8) { 
+		  string shelp = m0->left->Str();
+		  for(short int k=1;k<4;k++) if(shelp[2*k]==c)shelp[2*k] = s2->Str()[4];
+		  m0->left->SetString(shelp);
+		}
+	      }
+	      m0 = m0->left;
+	    }
+	    while (m0->op=='*');
+	    m0 = akt;
+	  
+	    akt = m;
+	    do {
+	      
+	      if (m->left->op=='*' || m->left->op==0) {
+		// right...
+		if (m->right->Str().length()==6) {
+		  if (m->right->Str()[0]=='G') {
+		    string shelp = m->right->Str();
+		    if (shelp[2]==c) shelp[2] = s2->Str()[4];
+		    else {
+		      if (shelp[4]==c) shelp[4] = s2->Str()[4];
+		    }
+		    m->right->SetString(shelp);
+		  }
+		}
+	      }
+	      if (m->left->op==0) {
+		// left...
+		if (m->left->Str().length()==6) {
+		  if (m->left->Str()[0]=='G') {
+		    string shelp = m->left->Str();
+		    if (shelp[2]==c) shelp[2] = s2->Str()[4];	   
+		    else {
+		      if (shelp[4]==c) shelp[4] = s2->Str()[4];
+		    }
+		    m->left->SetString(shelp); 
+		  }
+		}
+	      }
+	      
+	      m = m->left;
+	    }
+	    while (m->op=='*');
+	    m = akt;
+	    s2->SetString(string("1"));
+	  }
+
+
+
 	}
       }
     }

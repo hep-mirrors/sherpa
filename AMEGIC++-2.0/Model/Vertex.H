@@ -37,7 +37,7 @@ namespace AMEGIC {
     //!the Lorentz structure of the interaction
     Lorentz_Function* Lorentz;
     //!number of Lorentz_Functions the SIngle_Vertex possesses
-    int               nlf;
+    int               nlf,t;
     
     /*!
       \brief The constructor initializes the number of external legs as 3 and 
@@ -48,6 +48,7 @@ namespace AMEGIC {
       nleg    = 3;
       Color   = 0;
       Lorentz = 0;
+      t=0;
     }
 
     //! Copy constructor
@@ -81,6 +82,7 @@ namespace AMEGIC {
 	on   = v.on;
 	ncf  = v.ncf;
 	nlf  = v.nlf;
+	t=v.t;
 	if (ncf==1) Color   = new Color_Function(*v.Color);
 	else {
 	  Color = new Color_Function[ncf];

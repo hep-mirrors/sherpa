@@ -304,5 +304,31 @@ class VVSS4_Calc : public Zfunc_Calc,
 #endif
     Kabbala Do();
   };
+
+  class Box_Calc : public Zfunc_Calc, 
+			public Basic_Zfunc,
+			public Basic_Xfunc,
+			public Basic_Vfunc {
+  public:
+    Box_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~Box_Calc() {}
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 1; }
+#endif
+    Kabbala Do();
+  };
+
+  class Pentagon_Calc : public Zfunc_Calc, 
+			public Basic_Zfunc,
+			public Basic_Xfunc,
+			public Basic_Vfunc {
+  public:
+    Pentagon_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
+    ~Pentagon_Calc() {}
+#ifdef Scalar_Args
+    int GetScalarNumb() { return 1; }
+#endif
+    Kabbala Do();
+  };
 }
 #endif

@@ -1,17 +1,17 @@
-#ifndef Interaction_Model_SMHL_h
-#define Interaction_Model_SMHL_h
+#ifndef Interaction_Model_SMEHC_h
+#define Interaction_Model_SMEHC_h
 
 #include "Interaction_Model_QCD.H"
 #include "Interaction_Model_EW.H"
-#include "Interaction_Model_HL.H"
+#include "Interaction_Model_EHC.H"
 
 namespace AMEGIC {  
-  class Interaction_Model_SMHL : public Interaction_Model_Base {
+  class Interaction_Model_SMEHC : public Interaction_Model_Base {
     Interaction_Model_QCD       * p_moqcd;
     Interaction_Model_EW        * p_moew;
-    Interaction_Model_HL        * p_mohl;
+    Interaction_Model_EHC       * p_mohl;
   public:
-    Interaction_Model_SMHL(MODEL::Model_Base *,std::string,std::string);
+    Interaction_Model_SMEHC(MODEL::Model_Base *,std::string,std::string);
     void c_FFV(Single_Vertex  *,int &);
     void c_VVV(Single_Vertex  *,int &);
     void c_VVVV(Single_Vertex *,int &);
@@ -27,7 +27,7 @@ namespace AMEGIC {
     void c_VVVT(Single_Vertex *,int &)  {}
     void c_FFVT(Single_Vertex *,int &)  {}
     void c_SSST(Single_Vertex *,int &)  {}
-    ~Interaction_Model_SMHL();
+    ~Interaction_Model_SMEHC();
 };
 }
 #endif

@@ -131,6 +131,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
   if (msg.LevelIsTracking()) {
     PrintGraph();
+//     BS->PrintMomlist();
   }
   if (m_print_graph) {
     Amplitude_Output ao(pID,top);

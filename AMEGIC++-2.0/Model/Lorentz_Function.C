@@ -1,4 +1,5 @@
 #include "Lorentz_Function.H"
+#include "Message.H"
 
 using namespace AMEGIC;
 
@@ -91,6 +92,18 @@ void Lorentz_Function::InitPermutation()
     AddPermutation(1,0,1);
     AddPermutation(1,1,0);  
     break;
+  case lf::Box:
+    AddPermutation( 1,0,1,2);
+    AddPermutation(-1,0,2,1);  
+    AddPermutation(-1,1,0,2);
+    AddPermutation(-1,2,1,0);  
+    AddPermutation( 1,1,2,0);
+    AddPermutation( 1,2,0,1);  
+    break;
+  case lf::C4GS   : 
+     AddPermutation(1,0,1);
+     AddPermutation(1,1,0);  
+     break;
   default : break;
   }
   m_permcount = 0;
@@ -221,6 +234,13 @@ std::string Lorentz_Function::String(int shortversion) const
   case lf::Triangle:   
     // G[0,1]
     help = std::string("T[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
+  case lf::Box:   
+    // G[0,1]
+    help = std::string("B[") + Str(0) + std::string(",") + Str(1) + std::string(",") + 
+      Str(2) + std::string("]");break;
+  case lf::C4GS:   
+    // G[0,1]
+    help = std::string("AddOn5Vertex[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
   default :
     return std::string("1");
   }     

@@ -32,7 +32,9 @@ namespace AMEGIC {
 	       SSGS   =72,
 	       FFVGS  =73,
 	       Unknown=99,
-	       Triangle=101//effective Higgs-PP or -GG interaction via triangle-loop
+	       Triangle=101,//effective Higgs-PP or -GG interaction via triangle-loop
+	       Box    =102,//effective Higgs-GGG interaction via box-loop
+	       C4GS   =110//effective Higgs-GGGG interaction (together with Gluon4)
     }; 
   };
   
@@ -110,6 +112,8 @@ namespace AMEGIC {
       case lf::FFVGS : return 1;
       case lf::SSGS  : return 2;
       case lf::Triangle: return 2;	
+      case lf::Box   : return 3;
+      case lf::C4GS  : return 2;	
       default: return 0;
       }
       //default (includes FFS, SSS and SSSS )
