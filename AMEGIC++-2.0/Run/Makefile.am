@@ -34,7 +34,7 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libLHAPDF.la \
 	       @libdir@/libPhasespace.la \
 	       @libdir@/libBeam.la \
-	       -lg2c -lm 
+	       -lg2c -lm -ldl
 #	       -L$(rootlibdir) -lCint -lCore -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
 Amegic_LDFLAGS =  -rdynamic
 noinst_HEADERS = Environment.H 

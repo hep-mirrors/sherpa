@@ -33,7 +33,7 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
                  @libdir@/libModelMain.la \
                  @libdir@/libHdecay.la \
                  @libdir@/libIsajet.la \
-                 -lg2c -lm
+                 -lg2c -lm -ldl
 #Flavtest_LDFLAGS = -rdynamic
 
 
@@ -54,7 +54,7 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
                      @libdir@/libModelMain.la \
                      @libdir@/libHdecay.la \
                      @libdir@/libIsajet.la \
-                     -lg2c -lm
+                     -lg2c -lm -ldl
 
 
 
@@ -68,7 +68,7 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
                   @libdir@/libModelMain.la \
                   @libdir@/libHdecay.la \
                   @libdir@/libIsajet.la \
-                  -lg2c -lm
+                  -lg2c -lm -ldl
 
 
 
