@@ -268,7 +268,8 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	endopt++;
       }
 
-      if (!((psh->FSRIntegrator())->Result()>0) && !((psh->FSRIntegrator())->Result()<0)) {
+      if (!((psh->FSRIntegrator())->Result()>0.) && !((psh->FSRIntegrator())->Result()<0.)
+	  && !((psh->FSRIntegrator())->Result()==0.)) {
 	msg.Error()<<"FS - Channel result is a NaN. Knockout!!!!"<<endl;
 	break;
       }

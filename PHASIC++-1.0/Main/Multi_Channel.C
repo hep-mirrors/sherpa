@@ -270,6 +270,10 @@ void Multi_Channel::AddPoint(double value)
 
 double Multi_Channel::Variance() {
   if (nin==1 && nout==2) return 0.;
+  if (m_result2==0. && m_result==0.) {
+    if (n_points>20000) return 0.;
+    else return 1.;
+  }
   double disc = (n_points*m_result2)/((n_points-1)*ATOOLS::sqr(m_result)) - 1./(n_points-1);
   if (disc>0.) return m_result/n_points * sqrt(disc);
   disc = m_result2/(n_points*(n_points-1)) - ATOOLS::sqr(m_result/n_points)/(n_points-1);
