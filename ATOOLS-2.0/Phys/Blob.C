@@ -29,6 +29,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
   }
 }
 
+/*
 std::ostream &ATOOLS::operator<<(std::ostream &str,const std::vector<double> &info)
 {
 //   str<<"std::vector<double>: this = "<<&info<<" {\n";
@@ -40,6 +41,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const std::vector<double> &in
   for (size_t i=1;i<info.size();++i) str<<","<<info[i];
   return str<<")";
 }
+*/
 
 namespace ATOOLS {
   int Blob::s_totalnumber=0;
