@@ -17,6 +17,7 @@ lib_LTLIBRARIES       =	libPDF.la
 libPDF_la_SOURCES     =	\
 		    	PDF_Base.C \
 		    	PDF_Electron.C \
+			Continued_PDF.C \
 		    	PDF_Handler.C \
 			ISR_Base.C \
 		    	Intact.C \
@@ -25,6 +26,7 @@ libPDF_la_SOURCES     =	\
 noinst_HEADERS        =	\
 	         	PDF_Base.H \
 		 	PDF_Electron.H \
+			Continued_PDF.H \
 			PDF_Handler.H \
 			ISR_Base.H \
 			Intact.H \

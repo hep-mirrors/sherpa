@@ -8,6 +8,7 @@
 #include "Exception.H"
 #include "Running_AlphaS.H"
 #include "Doubly_Unintegrated_PDF.H"
+#include "Continued_PDF.H"
 #include <stdio.h>
 
 using namespace PDF;
@@ -41,6 +42,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
     if ((bunch_particle==Flavour(kf::p_plus) || (bunch_particle==Flavour(kf::p_plus).Bar()))) {
       PDF_Base *pdfbase=NULL;
       Switch::code kmr      = dataread->GetValue<Switch::code>("KMR_DUPDF");
+      Switch::code cont     = dataread->GetValue<Switch::code>("CONTINUE_PDF");
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("MRST99"));
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("MRST99Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
@@ -76,10 +78,16 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	pdfbase = new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path,m_initlhapdf);
       }
       if (pdfbase!=NULL) {
-	double mu0=dataread->GetValue("KMR_KPERP_CUT",(double)1.0);
-	int kpscheme=dataread->GetValue("KMR_KPERP_SCHEME",(int)0);
- 	if (kmr==Switch::On) return new Doubly_Unintegrated_PDF(pdfbase,MODEL::as,
-								mu0*mu0,(kps::type)kpscheme);
+	if (kmr==Switch::On) {
+	  double mu0=dataread->GetValue("KMR_KPERP_CUT",(double)1.0);
+	  int kpscheme=dataread->GetValue("KMR_KPERP_SCHEME",(int)0);
+	  return new Doubly_Unintegrated_PDF(pdfbase,MODEL::as,
+					     mu0*mu0,(kps::type)kpscheme);
+	}
+ 	if (cont==Switch::On) {
+	  int pcscheme=dataread->GetValue("CONTINUATION_SCHEME",(int)0);
+	  return new Continued_PDF(pdfbase,(pcs::type)pcscheme);
+	}
 	return pdfbase;
       }
       throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
