@@ -113,11 +113,11 @@ bool Profile_Function_Base::CalculateOMean(const double ratio)
   delete gausso;
   delete gaussp;
   m_omean=ratio2/m_kfactor;
-  msg_Tracking()<<"Profile_Function_Base::CalculateOMean("<<ratio<<"): "
-		<<"Results are {\n   k           = "<<m_kfactor
+  msg_Info()<<"Profile_Function_Base::CalculateOMean("<<ratio<<"): "
+	    <<"Results are {\n   k           = "<<m_kfactor
 // 		<<"\n   <\\tilde{O}> = "<<om<<" norm = "<<norm
 // 		<<"\n   f_c         = "<<f_c
-		<<"\n   <\\tilde{O}> = "<<m_omean<<"\n}"<<std::endl;
+	    <<"\n   <\\tilde{O}> = "<<m_omean<<"\n}"<<std::endl;
   return true;
 }
 
