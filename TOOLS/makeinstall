@@ -41,6 +41,7 @@ for I in $* ; do
   elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
   elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
   elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && EXTRACT=TRUE
+  elif [ "$I" = "--clean-up" ]; then CLEANUP=TRUE
   elif [ "$I" = "--rm-libs" ]; then RMLIBS=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "makeinstall version 1.0" && echo && \
@@ -58,6 +59,7 @@ for I in $* ; do
     echo "         --cxx          define cxx flag for 'make'" && \
     echo "         --f            define fortran flag for 'make'" && \
     echo "         --force-tar    force extraction of tar files (enables '-e')" && \
+    echo "         --clean-up     execute 'make clean' in every module" && \
     echo "         --rm-libs      remove shared libraries (does not remove '.lo' files)" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
@@ -177,6 +179,21 @@ if [ "$TOTAL" = "TRUE" ] ; then
   rmr "Makefile Makefile.in \
        aclocal.m4 config.guess config.log config.status config.sub configure \
        depcomp install-sh libtool ltconfig ltmain.sh missing mkinstalldirs"
+fi
+
+if [ "$CLEANUP" = "TRUE" ] ; then 
+  for I in $DIRS;
+  do
+    if test -d $I; then
+      echo "======================================"
+      echo " making clean in $I"
+      echo "======================================"
+      make clean
+    else 
+      echo "makeinstall: warning: directory $I not found"
+    fi
+  done
+  exit 0
 fi
 
 for I in $DIRS;
