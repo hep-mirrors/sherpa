@@ -288,7 +288,6 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
   m_kmrboost=Poincare(p[0]+p[1]);
   m_kmrboost.Boost(p[0]);
   m_kmrboost.Boost(p[1]);
-  // if (p[0][0]<0. || p[1][0]<0.) return false;
   if (p[1][3]>0.0) m_kmrrot=Poincare(Vec4D::ZVEC,p[1]);
   else m_kmrrot=Poincare(Vec4D::ZVEC,p[0]);
   m_kmrrot.RotateBack(p[0]);
