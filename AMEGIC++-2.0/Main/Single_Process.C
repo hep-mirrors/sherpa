@@ -218,7 +218,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 	msg.Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
-	  if (IsFile(string("Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map "))) { 
+	  if (IsFile(string("Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map"))) { 
 	    system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map ")
 		    +string("Process/")+m_ptypename+string("/")+Name()+string(".map")).c_str());
 	    system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".col ")
@@ -542,7 +542,9 @@ int Single_Process::Tests() {
       if (!ATOOLS::IsEqual(M2g,M2S)) {
 	msg.Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
-	if (abs(M2g/M2S-1.)>rpa.gen.Accu()) return 0;
+	if (abs(M2g/M2S-1.)>rpa.gen.Accu()) {
+	  return 0;
+	}
 	msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
       }
       return 1;
@@ -550,6 +552,7 @@ int Single_Process::Tests() {
     return 1;
   }
   delete[] M_doub;
+
   return 0;
 }
 
@@ -650,6 +653,7 @@ void Single_Process::WriteLibrary()
   m_newlib=true;
   msg.Info()<<"Single_Process::WriteLibrary : "<<std::endl
 	    <<"   Library for "<<m_name<<" has been written, name is "<<m_libname<<std::endl;
+  system("sync");
 }
 
 std::string  Single_Process::CreateLibName()
@@ -686,7 +690,7 @@ void Single_Process::CreateMappingFile() {
 		 <<"   Files do not coincide. Maybe changed input data ? Abort the run."<<std::endl;
       abort();
     }
-    else return;
+    return;
   }
 
   std::ofstream to;
