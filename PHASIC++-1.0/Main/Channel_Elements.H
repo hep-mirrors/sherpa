@@ -3,7 +3,7 @@
 
 #include "Vector.H"
 #include "Channel_Basics.H"
-#include "Integration_Info.H"
+#include "Info_Key.H"
 
 namespace PHASIC {
   class  Channel_Elements;
