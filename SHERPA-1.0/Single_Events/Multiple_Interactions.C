@@ -22,6 +22,7 @@ bool Multiple_Interactions::Treat(Blob_List *bloblist,double &weight)
 #ifdef PROFILE__Multiple_Interactions
   PROFILE_HERE;
 #endif
+  if (p_mihandler->Type()==MI_Handler::None) return false;
   if (bloblist->empty()) {
     ATOOLS::msg.Error()<<"Potential error in Multiple_Interactions::Treat."<<std::endl
 		       <<"   Incoming blob list is empty!"<<std::endl;
@@ -83,6 +84,7 @@ bool Multiple_Interactions::Treat(Blob_List *bloblist,double &weight)
 	}
       }
     }
+    if (myblob->Status()!=0) return false;
     m_pperpmax=1.0e37; 
     m_ecmsmax=ATOOLS::rpa.gen.Ecms();
     m_xmax[1]=m_xmax[0]=1.0;
