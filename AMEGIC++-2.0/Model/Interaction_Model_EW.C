@@ -311,9 +311,9 @@ void Interaction_Model_EW::c_VVS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flav;
     
-    kcpl0 = M_I*g2*flav.Yuk()/vev;
+    kcpl0 = M_I*g2*flav.Yuk();
     kcpl1 = kcpl0;
-    
+
     vertex[vanz].cpl[0]  = kcpl0.Value();
     vertex[vanz].cpl[1]  = vertex[vanz].cpl[0];
     vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
@@ -341,7 +341,7 @@ void Interaction_Model_EW::c_VVS(Single_Vertex* vertex,int& vanz)
     vertex[vanz].in[1] = flh;
     vertex[vanz].in[2] = flav;
     
-    kcpl0 = M_I*g2*flav.Yuk()/vev;
+    kcpl0 = M_I*g2*flav.Yuk()/costW;
     kcpl1 = kcpl0;
 
     vertex[vanz].cpl[0]  = kcpl0.Value();
