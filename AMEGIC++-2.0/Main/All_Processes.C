@@ -35,8 +35,8 @@ void  All_Processes::SelectOne() {
       }
     }
     if (disc>0.) { 
-      msg.Error()<<"Error in Process_Group::SelectOne() : "<<std::endl
-		 <<"   Total xsec = "<<m_totalxs<<", continue and hope for the best."<<std::endl;
+      msg.Error()<<"Error in All_Processes::SelectOne() : "<<std::endl
+		 <<"   Total xsec = "<<m_totalxs<<", continue and hope for the best. "<<std::endl;
       return;
     }
   }
