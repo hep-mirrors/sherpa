@@ -289,6 +289,7 @@ void IO_Handler::Shorten(std::string& str) {
 template <class Type> 
  IO_Handler &  IO_Handler::operator>>(Type & value) {
   file>>value;
+  return *this;
 }
 
 // undef`void AORGTOOLS::IO_Handler::operator<<<double>(double const &)'
