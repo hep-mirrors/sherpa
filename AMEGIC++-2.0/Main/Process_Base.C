@@ -521,8 +521,8 @@ void Process_Base::SetScales(double q2_fac, double q2_ren)
 { 
   //  std::cout<<"Process_Base::SetScales("<<q2_fac<<","<<q2_ren<<") : "<<Name()<<std::endl;
 
-  m_scale[stp::fac] = rpa.gen.RenormalizationScaleFactor() * q2_fac;  
-  m_scale[stp::as]  = rpa.gen.FactorizationScaleFactor() * q2_ren;
+  m_scale[stp::fac] = rpa.gen.FactorizationScaleFactor() * q2_fac;  
+  m_scale[stp::as]  = rpa.gen.RenormalizationScaleFactor() * q2_ren;
 } 
 void Process_Base::SetISRThreshold(double threshold)    { m_threshold  = threshold;}
 
@@ -636,22 +636,21 @@ double Process_Base::CalculateScale(const ATOOLS::Vec4D * _p) {
 	if (jf) {
 	  double y=jf->ActualValue()[0];
 	  if (y==2.) {
-	    pt2=s;
-	    //	    std::cout<<" pt2="<<pt2<<std::endl;
+	    pt2 = rpa.gen.FactorizationScaleFactor()*s;
 	  }
 	  else {
-	    pt2=y*sqr(rpa.gen.Ecms());
+	    pt2 = rpa.gen.FactorizationScaleFactor()*y*sqr(rpa.gen.Ecms());
 	  }
 	}
 	else {
 	  msg.Out()<<"WARNING in Process_Base::Scale : "<<std::endl
 		   <<"   No jetfinder found, cannot use SCALESCHEME=="<<m_scalescheme<<"."
 		   <<" Return s as scale."<<std::endl;
-	  pt2 = s;
+	  pt2 = rpa.gen.FactorizationScaleFactor()*s;
 	}
       }
     }
-    //    std::cout<<" pt2="<<pt2<<std::endl;
+    //    std::cout<<m_nout<<" pt2="<<pt2<<std::endl;
     break;
   case 21 :
     if (m_nin+m_nout==4) {
@@ -687,8 +686,8 @@ double Process_Base::KFactor(double _scale) {
   case 65:
     m_scale[stp::fac]=_scale;
 //     cout<<Name()<<" : "<<std::endl;
-//       cout<<"as:  Q_F^2 = "<<m_scale[stp::fac]<<endl;
-//       cout<<"as:  Q_R^2 = "<<m_scale[stp::as]<<endl;
+//     cout<<"as:  Q_F^2 = "<<m_scale[stp::fac]<<endl;
+//     cout<<"as:  Q_R^2 = "<<m_scale[stp::as]<<endl;
     if (m_nstrong>2) {
       return m_rfactor*pow(as->AlphaS(m_scale[stp::as])/
 			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
