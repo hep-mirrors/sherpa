@@ -324,8 +324,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_info_cms[iic::t_2]=p[1].Abs2();
   m_info_cms[iic::Em_2]=p[1][0]/p[0].Mass();		
 #endif
-  m_weight=E/sqrt(m_spkey[3]);
-  m_weight*=(m_x[1]*m_x[0]-b2*b1)/(m_x[1]*m_x[0])
+  m_weight=(m_x[1]*m_x[0]-b2*b1)/(m_x[1]*m_x[0]);
   m_flux=.25;
   m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   for (int i=0;i<2;++i) {
