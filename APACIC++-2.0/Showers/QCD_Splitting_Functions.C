@@ -100,8 +100,9 @@ double g_gg::CrudeInt(double _zmin, double _zmax)
 
 double g_gg::Integral(double zmin, double zmax) 
 {
-  return s_CA*(log(zmax*(1.-zmin)/(zmin*(1.-zmax)))-
-	       zmax*(zmax*(zmax/3.-0.5)+2.)+zmin*(zmin*(zmin/3.-0.5)+2.));
+//   return s_CA*(log(zmax*(1.-zmin)/(zmin*(1.-zmax)))-
+// 	       zmax*(zmax*(zmax/3.-0.5)+2.)+zmin*(zmin*(zmin/3.-0.5)+2.));
+  return s_CA*(log((1.-zmin)/(1.-zmax))-(zmax*zmax-zmin*zmin)/2.);
 }
 
 //! gluon to quark + anti-quark splitting function
