@@ -130,8 +130,6 @@ void Spacelike_Sudakov::ProduceT() {
   return;
 }
 
-static double rem_ran, rem_weight;
-
 bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf) 
 {  
   m_last_veto=0;
@@ -174,22 +172,7 @@ bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf)
     }
     extra_pdf=0;
   }
-  // 6. energy conservation for multiple iteractions
-  if (m_miveto_scheme) {
-    if (MIVeto(mo->part->Flav(),mo->x,mo->t)) {
-      m_last_veto=7;
-      return 1;
-    }
-  }
   return 0;
-}
-
-bool Spacelike_Sudakov::MIVeto(const ATOOLS::Flavour &flavour,
-			       const double x,const double scale) 
-{
-  p_pdf->Calculate(x,0,0,scale);
-  if (p_pdf->GetXPDF(flavour)==0.) return true;
-  return false;
 }
 
 bool Spacelike_Sudakov::MassVeto(int extra_pdf) 
