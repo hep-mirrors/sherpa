@@ -139,7 +139,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	}
       }
     }
-    
+    PrintBlobs();
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==eph::Analysis) (*pit)->Treat(&m_blobs,weight);
     }
