@@ -31,6 +31,7 @@ Random::Random(long nid):
 { 
   SetSeed(nid); 
   Exception_Handler::AddTerminatorObject(this);
+  SaveStatus();
 }
 
 Random::~Random() 
@@ -42,8 +43,11 @@ Random::~Random()
 } 
 
 static long idum2=123456789;
+static long sidum2=123456789;
 static long iy=0;
+static long siy=0;
 static long iv[NTAB];
+static long siv[NTAB];
 
 double Random::Ran2(long *idum)
 {
@@ -260,6 +264,28 @@ void Random::SetSeed(long int nid)
   std::strcpy(m_outname,"");
 }
 
+void Random::SaveStatus()
+{
+  m_sid=m_id; 
+  m_sinext=m_inext; 
+  m_sinextp=m_inextp;
+  for (int i=0;i<56;++i) m_sma[i]=m_ma[i];    
+  siy=iy;
+  sidum2=idum2;
+  for (int i=0;i<NTAB;++i) siv[i]=iv[i];
+}
+
+void Random::RestoreStatus()
+{
+  m_id=m_sid; 
+  m_inext=m_sinext; 
+  m_inextp=m_sinextp;
+  for (int i=0;i<56;++i) m_ma[i]=m_sma[i];    
+  iy=siy;
+  idum2=sidum2;
+  for (int i=0;i<NTAB;++i) iv[i]=siv[i];
+}
+
 void Random::PrepareTerminate()
 {
   if (Exception_Handler::LastException()==NULL && 
@@ -275,6 +301,7 @@ void Random::PrepareTerminate()
 			    std::string(".random")).c_str());
     if (!testfile.is_open()) break;
   } while (i<MAXLOGFILES);
+  RestoreStatus();
   WriteOutStatus((name+ATOOLS::ToString(i)+
 		  std::string(".random")).c_str());
 }

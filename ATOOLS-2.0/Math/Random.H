@@ -11,7 +11,9 @@ namespace ATOOLS {
   private:
 
     long int m_id, m_ma[56], m_written;
+    long int m_sid, m_sma[56];
     int      m_inext,m_inextp;
+    int      m_sinext,m_sinextp;
     char     m_outname[150];
 
     std::fstream *p_outstream;
@@ -39,6 +41,8 @@ namespace ATOOLS {
 
     int  WriteOutStatus(const char *outfile);
     void ReadInStatus(const char *infile,long int index=0);
+    void SaveStatus();
+    void RestoreStatus();
 
     inline double Get()   { return Ran2(&m_id);       }
     inline double Theta() { return acos(2.*Get()-1.); }  
