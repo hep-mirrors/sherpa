@@ -4,7 +4,7 @@
 #include "Beam_Spectra_Handler.H"
 #include "Particle_List.H"
 #include "Blob.H"
-#include "My_Vector.H"
+#include <vector>
 
 namespace SHERPA {
 

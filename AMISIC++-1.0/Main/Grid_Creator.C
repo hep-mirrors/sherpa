@@ -1,6 +1,8 @@
 #ifndef Grid_Creator_C
 #define Grid_Creator_C
 
+#include "Phase_Space_Integrator.H"
+
 namespace AMISIC {
 
   template <class Argument_Type,class Result_Type>
@@ -13,6 +15,7 @@ namespace AMISIC {
     m_xsextension("_xs.dat"),
     m_maxextension("_max.dat")
   {
+    m_maxpoints[0]=2500000;
     if (p_gridhandler.size()<2) {
       ATOOLS::msg.Out()<<"Grid_Creator::Grid_Creator("<<&_p_gridhandler<<","<<_p_processes<<"): "
 		       <<"Constructor called with one grid handler only. "<<std::endl
@@ -31,8 +34,16 @@ namespace AMISIC {
 			 <<"   Run cannot continue."<<std::endl;
       abort();
     }
+    m_maxpoints[1]=PHASIC::Phase_Space_Integrator::MaxPoints();
+    PHASIC::Phase_Space_Integrator::SetMaxPoints(m_maxpoints[0]);
   }
   
+  template <class Argument_Type,class Result_Type>
+  Grid_Creator<Argument_Type,Result_Type>::~Grid_Creator()
+  {
+    PHASIC::Phase_Space_Integrator::SetMaxPoints(m_maxpoints[1]);
+  }
+
   template <class Argument_Type,class Result_Type>
   bool Grid_Creator<Argument_Type,Result_Type>::
   ReadInArguments(std::string tempifile,std::string tempipath)

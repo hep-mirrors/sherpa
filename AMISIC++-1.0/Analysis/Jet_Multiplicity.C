@@ -25,6 +25,12 @@ Jet_Multiplicity::~Jet_Multiplicity()
 
 void Jet_Multiplicity::Evaluate(const ATOOLS::Particle_List &particles,double weight) 
 {
+//   int jets =0;
+//   for (unsigned int i=0;i<particles.size();i+=2) {
+//     ATOOLS::Vec4D p=particles[i]->Momentum();
+//     if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) ++jets;
+//   }
+//   if (jets<2) return;
   if (m_mode>0) {
 //     p_jetfinder->ConstructJets(&particles,(*p_jets),(*p_ys));
     for (unsigned int i=0;i<p_ys->size();++i) {

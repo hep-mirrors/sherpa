@@ -4,13 +4,14 @@
 
 using namespace AMISIC;
 
-Jet_PT::Jet_PT(int _m_type,double _m_min,double _m_max,int _m_nbins,int _m_njets):
+Jet_PT::Jet_PT(int _m_type,double _m_min,double _m_max,int _m_nbins,int _m_njets,double _m_ptcut):
   Primitive_Observable_Base(_m_type,_m_min,_m_max,_m_nbins,NULL),
   p_histogram(new std::vector<ATOOLS::Histogram*>(_m_njets)),
   p_jets(new std::vector<int>(_m_njets)),
   p_ys(new std::vector<double>()),
   m_njets(_m_njets),
-  m_mode(0)
+  m_mode(0),
+  m_ptcut(_m_ptcut)
 {
   histo = new ATOOLS::Histogram(type,xmin,xmax,nbins);
   for (unsigned int i=0;i<m_njets;++i) {
@@ -47,6 +48,10 @@ void Jet_PT::SortJetPT(std::vector<ATOOLS::Vec4D> &jetmomenta)
       }
     }
   }
+//   std::cout<<"new"<<std::endl;
+//   for (unsigned int i=0;i<jetmomenta.size();++i) {
+//     std::cout<<jetmomenta[i]<<std::endl;
+//   }
 }
 
 void Jet_PT::Evaluate(const ATOOLS::Particle_List &particles,double weight) 
@@ -61,12 +66,19 @@ void Jet_PT::Evaluate(const ATOOLS::Particle_List &particles,double weight)
     for (unsigned int i=0;i<particles.size();++i) jetmomenta[i]=particles[i]->Momentum();
   }
   SortJetPT(jetmomenta);
-  for (unsigned int i=0;i<particles.size();++i) jetmomenta[i]=particles[i]->Momentum();
-  SortJetPT(jetmomenta);
+//   int jets =0;
+//   for (unsigned int i=0;i<particles.size();i+=2) {
+//     ATOOLS::Vec4D &p=jetmomenta[i];
+//     if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) ++jets;
+//   }
+//   if (jets<2) return;
   for (unsigned int i=0;i<ATOOLS::Min(p_histogram->size(),jetmomenta.size());i+=2) {
     ATOOLS::Vec4D &p=jetmomenta[i];
-    histo->Insert(sqrt(p[1]*p[1]+p[2]*p[2]),weight);
-    (*p_histogram)[i/2]->Insert(sqrt(p[1]*p[1]+p[2]*p[2]),weight);
+    if (sqrt(p[1]*p[1]+p[2]*p[2])>m_ptcut) {
+      histo->Insert(sqrt(p[1]*p[1]+p[2]*p[2]),weight);
+      (*p_histogram)[i/2]->Insert(sqrt(p[1]*p[1]+p[2]*p[2]),weight);
+//       std::cout<<"inserted "<<p<<std::endl;
+    }
   }
 }
 

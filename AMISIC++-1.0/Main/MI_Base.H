@@ -3,7 +3,7 @@
 
 #include "File_IO_Base.H"
 #include "Blob_List.H"
-#include "My_Map.H"
+#include <map>
 
 #ifdef USING_SHERPA
 namespace SHERPA { class Matrix_Element_Handler; }

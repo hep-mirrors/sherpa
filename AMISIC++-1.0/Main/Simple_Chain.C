@@ -32,6 +32,7 @@ Simple_Chain::Simple_Chain():
   p_model(NULL),
   p_beam(NULL),
   p_isr(NULL),
+  m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
   m_external(false) 
@@ -62,6 +63,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   p_model(_p_model),
   p_beam(_p_beam),
   p_isr(_p_isr),
+  m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
   m_external(true)
@@ -147,18 +149,17 @@ ATOOLS::Blob *Simple_Chain::GetBlob(ATOOLS::Flavour *flavour)
   return newblob;
 }
 
-void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
+void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
 {
 #ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
 #endif
-  const unsigned int nflavour=4;
   ATOOLS::Flavour temp[4];
   ATOOLS::Blob *newblob;
   unsigned int i, j;
   switch (mode) {
-  case EXTRAXS::QCD_Processes_C::All:
-  case EXTRAXS::QCD_Processes_C::gggg:
+  case EXTRAXS::QCD_Processes::All:
+  case EXTRAXS::QCD_Processes::gggg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     for (i=0;i<4;++i) temp[i]=ATOOLS::Flavour((ATOOLS::kf::code)21);
     if ((newblob=GetBlob(temp))!=NULL) {
@@ -167,11 +168,11 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     m_filename.push_back("gg_to_gg__grid");
     m_processname.push_back("g g -> g g");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::gggg) break;
-  case EXTRAXS::QCD_Processes_C::qqbgg:
+    if (mode==EXTRAXS::QCD_Processes::gggg) break;
+  case EXTRAXS::QCD_Processes::qqbgg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     temp[3]=temp[2]=ATOOLS::Flavour((ATOOLS::kf::code)21);
-    for (i=1;i<=nflavour;++i) {
+    for (i=1;i<=m_nflavour;++i) {
       temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
       if ((newblob=GetBlob(temp))!=NULL) {
@@ -181,11 +182,11 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     m_filename.push_back("qqb_to_gg__grid");
     m_processname.push_back("q qb -> g g");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::qqbgg) break;
-  case EXTRAXS::QCD_Processes_C::ggqqb:
+    if (mode==EXTRAXS::QCD_Processes::qqbgg) break;
+  case EXTRAXS::QCD_Processes::ggqqb:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)21);
-    for (i=1;i<=nflavour;++i) {
+    for (i=1;i<=m_nflavour;++i) {
       temp[2]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       temp[3]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
       if ((newblob=GetBlob(temp))!=NULL) {
@@ -195,11 +196,11 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     m_filename.push_back("gg_to_qqb__grid");
     m_processname.push_back("g g -> q qb");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::ggqqb) break;
-  case EXTRAXS::QCD_Processes_C::qgqg:
+    if (mode==EXTRAXS::QCD_Processes::ggqqb) break;
+  case EXTRAXS::QCD_Processes::qgqg:
     m_blobs.push_back(ATOOLS::Blob_List(0));
     temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)21);
-    for (i=1;i<=nflavour;++i) {
+    for (i=1;i<=m_nflavour;++i) {
       temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
@@ -212,11 +213,11 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     m_filename.push_back("qg_to_qg__grid");
     m_processname.push_back("q g -> q g");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::qgqg) break;
-  case EXTRAXS::QCD_Processes_C::q1q2q1q2:
+    if (mode==EXTRAXS::QCD_Processes::qgqg) break;
+  case EXTRAXS::QCD_Processes::q1q2q1q2:
     m_blobs.push_back(ATOOLS::Blob_List(0));
-    for (i=1;i<=nflavour;++i) {
-      for (j=i+1;j<=nflavour;++j) {
+    for (i=1;i<=m_nflavour;++i) {
+      for (j=i+1;j<=m_nflavour;++j) {
 	temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
 	temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)j);
 	if ((newblob=GetBlob(temp))!=NULL) {
@@ -229,10 +230,10 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	}
       }
     }
-  case EXTRAXS::QCD_Processes_C::q1q2bq1q2b:
-    if (mode==EXTRAXS::QCD_Processes_C::q1q2bq1q2b) m_blobs.push_back(ATOOLS::Blob_List(0));
-    for (i=1;i<=nflavour;++i) {
-      for (j=i+1;j<=nflavour;++j) {
+  case EXTRAXS::QCD_Processes::q1q2bq1q2b:
+    if (mode==EXTRAXS::QCD_Processes::q1q2bq1q2b) m_blobs.push_back(ATOOLS::Blob_List(0));
+    for (i=1;i<=m_nflavour;++i) {
+      for (j=i+1;j<=m_nflavour;++j) {
 	temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
 	temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)j).Bar();
 	if ((newblob=GetBlob(temp))!=NULL) {
@@ -245,7 +246,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	}
       }
     }
-    if (mode==EXTRAXS::QCD_Processes_C::q1q2bq1q2b) {
+    if (mode==EXTRAXS::QCD_Processes::q1q2bq1q2b) {
       m_filename.push_back("q1q2b_to_q1q2b__grid");
       m_processname.push_back("q1 q2b -> q1 q2b");
       m_create.push_back(false);
@@ -254,10 +255,10 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     m_filename.push_back("q1q2_to_q1q2__grid");
     m_processname.push_back("q1 q2 -> q1 q2");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::q1q2q1q2) break;
-  case EXTRAXS::QCD_Processes_C::q1q1q1q1:
+    if (mode==EXTRAXS::QCD_Processes::q1q2q1q2) break;
+  case EXTRAXS::QCD_Processes::q1q1q1q1:
     m_blobs.push_back(ATOOLS::Blob_List(0));
-    for (i=1;i<=nflavour;++i) {
+    for (i=1;i<=m_nflavour;++i) {
       temp[3]=temp[2]=temp[1]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       if ((newblob=GetBlob(temp))!=NULL) {
 	m_blobs[m_blobs.size()-1].push_back(newblob);
@@ -270,10 +271,10 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     m_filename.push_back("q1q1_to_q1q1__grid");
     m_processname.push_back("q1 q1 -> q1 q1");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::q1q1q1q1) break;
-  case EXTRAXS::QCD_Processes_C::q1q1bq1q1b:
+    if (mode==EXTRAXS::QCD_Processes::q1q1q1q1) break;
+  case EXTRAXS::QCD_Processes::q1q1bq1q1b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
-    for (i=1;i<=nflavour;++i) {
+    for (i=1;i<=m_nflavour;++i) {
       temp[2]=temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
       temp[3]=temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
       if ((newblob=GetBlob(temp))!=NULL) {
@@ -283,11 +284,11 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     m_filename.push_back("q1q1b_to_q1q1b__grid");
     m_processname.push_back("q1 q1b -> q1 q1b");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::q1q1bq1q1b) break;
-  case EXTRAXS::QCD_Processes_C::q1q1bq2q2b:
+    if (mode==EXTRAXS::QCD_Processes::q1q1bq1q1b) break;
+  case EXTRAXS::QCD_Processes::q1q1bq2q2b:
     m_blobs.push_back(ATOOLS::Blob_List(0));
-    for (i=1;i<=nflavour;++i) {
-      for (j=i+1;j<=nflavour;++j) {
+    for (i=1;i<=m_nflavour;++i) {
+      for (j=i+1;j<=m_nflavour;++j) {
 	temp[0]=ATOOLS::Flavour((ATOOLS::kf::code)i);
 	temp[1]=ATOOLS::Flavour((ATOOLS::kf::code)i).Bar();
 	temp[2]=ATOOLS::Flavour((ATOOLS::kf::code)j);
@@ -300,10 +301,10 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     m_filename.push_back("q1q1b_to_q2q2b__grid");
     m_processname.push_back("q1 q1b -> q2 q2b");
     m_create.push_back(false);
-    if (mode==EXTRAXS::QCD_Processes_C::q1q1bq2q2b) break;
+    if (mode==EXTRAXS::QCD_Processes::q1q1bq2q2b) break;
     break;
-  case EXTRAXS::QCD_Processes_C::Unknown:
-  case EXTRAXS::QCD_Processes_C::None:
+  case EXTRAXS::QCD_Processes::Unknown:
+  case EXTRAXS::QCD_Processes::None:
     ATOOLS::msg.Error()<<"Simple_Chain::FillMode("<<mode<<"): "
 		       <<"Wrong parameter. Abort."<<std::endl;
     break;
@@ -319,8 +320,9 @@ bool Simple_Chain::ReadInData()
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
   reader->SetMatrixType(reader->MTransposed);
-  reader->ReadFromFile(m_scalescheme,"SCALE_SCHEME");
-  reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME");
+  if (!reader->ReadFromFile(m_scalescheme,"SCALE_SCHEME")) m_scalescheme=11;
+  if (!reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME")) m_kfactorscheme=1;
+  if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=3;
   std::string outputpath;
   reader->ReadFromFile(outputpath,"GRID DIRECTORY");
   SetOutputPath(OutputPath()+outputpath);
@@ -338,7 +340,7 @@ bool Simple_Chain::ReadInData()
 	  (temp[i][1]==std::string("QCD"))&&
 	  (temp[i][2]==std::string("2"))&&
 	  (temp[i][3]==std::string("2"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::All);
+	FillMode(EXTRAXS::QCD_Processes::All);
       }
       else {
 	ATOOLS::Flavour flavour[4];
@@ -388,39 +390,39 @@ bool Simple_Chain::ReadInData()
     else if (temp[i].size()>1) {
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("gggg"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::gggg);
+	FillMode(EXTRAXS::QCD_Processes::gggg);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("qqbgg"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::qqbgg);
+	FillMode(EXTRAXS::QCD_Processes::qqbgg);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("ggqqb"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::ggqqb);
+	FillMode(EXTRAXS::QCD_Processes::ggqqb);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("qgqg"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::qgqg);
+	FillMode(EXTRAXS::QCD_Processes::qgqg);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q1q1q1"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::q1q1q1q1);
+	FillMode(EXTRAXS::QCD_Processes::q1q1q1q1);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q2q1q2"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::q1q2q1q2);
+	FillMode(EXTRAXS::QCD_Processes::q1q2q1q2);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q1bq1q1b"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::q1q1bq1q1b);
+	FillMode(EXTRAXS::QCD_Processes::q1q1bq1q1b);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q2bq1q2b"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::q1q2bq1q2b);
+	FillMode(EXTRAXS::QCD_Processes::q1q2bq1q2b);
       }
       if ((temp[i][0]==std::string("all"))&&
 	  (temp[i][1]==std::string("q1q1bq2q2b"))) {
-	FillMode(EXTRAXS::QCD_Processes_C::q1q1bq2q2b);
+	FillMode(EXTRAXS::QCD_Processes::q1q1bq2q2b);
       }
     }
   }
@@ -444,7 +446,7 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::CreateGrid(..): "
 			  <<"Found an initialized process group."<<std::endl
-			  <<"   Empty group and start with QCD_Processes_C."<<std::endl;
+			  <<"   Empty group and start with QCD_Processes."<<std::endl;
     p_processes->Clear();
   }
   p_processes->InitializeProcesses(p_beam,p_isr);  
@@ -452,8 +454,8 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,
   p_processes->SetKFactorScheme(m_kfactorscheme);
   ATOOLS::Flavour flavour[4];
   flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
-  EXTRAXS::QCD_Processes_C *group;
-  group = new EXTRAXS::QCD_Processes_C(p_isr,p_beam,flavour,p_processes->SelectorData(),
+  EXTRAXS::QCD_Processes *group;
+  group = new EXTRAXS::QCD_Processes(p_isr,p_beam,flavour,p_processes->SelectorData(),
 				       p_processes->ScaleScheme(),p_processes->KFactorScheme(),
 				       p_processes->ScaleFactor(),false);
   for (Blob_Iterator bit=bloblist.begin();bit!=bloblist.end();++bit) {
@@ -530,20 +532,20 @@ bool Simple_Chain::InitializeBlobList()
   if (p_processes->Size()>0) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::InitializeBlobList(): "
 			  <<"Found an initialized process group."<<std::endl
-			  <<"   Empty group and start with QCD_Processes_C."<<std::endl;
+			  <<"   Empty group and start with QCD_Processes."<<std::endl;
     p_processes->Clear();
   }
   p_processes->InitializeProcesses(p_beam,p_isr);  
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
-  std::vector<EXTRAXS::QCD_Processes_C*> group=std::vector<EXTRAXS::QCD_Processes_C*>(m_blobs.size());
+  std::vector<EXTRAXS::QCD_Processes*> group=std::vector<EXTRAXS::QCD_Processes*>(m_blobs.size());
   ATOOLS::Flavour flavour[4];
   ATOOLS::Flow::ResetCounter();
   for (unsigned int i=0;i<m_blobs.size();++i) {
     flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
-    group[i]=new EXTRAXS::QCD_Processes_C(p_isr,p_beam,flavour,p_processes->SelectorData(),
-					  p_processes->ScaleScheme(),p_processes->KFactorScheme(),
-					  p_processes->ScaleFactor(),false);
+    group[i]=new EXTRAXS::QCD_Processes(p_isr,p_beam,flavour,p_processes->SelectorData(),
+					p_processes->ScaleScheme(),p_processes->KFactorScheme(),
+					p_processes->ScaleFactor(),false);
     for (Blob_Iterator bit=m_blobs[i].begin();bit!=m_blobs[i].end();++bit) {
       for (int j=0;j<group[i]->Nin();++j) flavour[j]=(*bit)->InParticle(j)->Flav();
       for (int j=0;j<group[i]->Nout();++j) flavour[group[i]->Nin()+j]=(*bit)->OutParticle(j)->Flav();
@@ -572,11 +574,17 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
   }
-#ifdef DEBUG__Simple_Chain
-//   p_processes->CalculateTotalXSec();
-//   std::cout<<"Simple_Chain::InitializeBlobList(): \\sigma_{nd calc} = "
-// 	   <<p_processes->Total()*ATOOLS::rpa.Picobarn()<<" pb."<<std::endl;
-#endif
+  if (ATOOLS::msg.Level()>2) {
+    p_processes->CalculateTotalXSec();
+    double total=p_processes->Total();
+    ATOOLS::msg.Tracking()<<"Simple_Chain::InitializeBlobList(): \\sigma_{hard} = "
+			  <<total*ATOOLS::rpa.Picobarn()<<" pb vs."
+			  <<m_sigmahard*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
+			  <<"   Relative error : "
+			  <<ATOOLS::dabs((total-m_sigmahard)/(total+m_sigmahard))*100.0
+			  <<"%."<<std::endl;
+    if ((m_sigmahard-total)/(m_sigmahard+total)>5.0e-2) exit(120);
+  }
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
   p_fsrinterface->SetAlphaSave(1.0);
@@ -591,6 +599,38 @@ bool Simple_Chain::InitializeBlobList()
   p_mehandler->SetXS(p_processes);
 #endif
   return true;
+}
+
+void Simple_Chain::CalculateSigmaND()
+{
+  double eps=0.0808, eta=-0.4525, X=21.70, Y=56.08, b=2.3;
+  if (p_isr->Flav(0).IsAnti()^p_isr->Flav(1).IsAnti()) Y=98.39;
+  double s=ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+  double mp=ATOOLS::Flavour(ATOOLS::kf::p_plus).PSMass();
+  double mpi=ATOOLS::Flavour(ATOOLS::kf::pi).PSMass();
+  double ap=0.25, s0=8.0, y0=log(s/(mp*mp));
+  double M1res=2.0, M2res=2.0, cres=2.0;
+  double M1min=mp+2.0*mpi, M2min=mp+2.0*mpi;
+  double ymin=4.0*log(1.0+2.0*mpi/mp);
+  double MmaxAX2=0.213*s;
+  double Del0=3.2-9.0/log(s)+17.4/ATOOLS::sqr(log(s));
+  double MmaxXX2=s*(0.07-0.44/log(s)+1.36/ATOOLS::sqr(log(s)));
+  double BAX=-0.47+150.0/s;
+  double BXX=-1.05+40.0/sqrt(s)+8000.0/(s*s);
+  double JAX=0.5/ap*log((b+ap*log(s/(M2min*M2min)))/(b+ap*log(s/MmaxAX2)));
+  JAX+=0.5*cres/(b+ap*log(s/(M2res*M2min))+BAX)*log(1.0+M2res*M2res/(M2min*M2min));
+  double s1, s2, s3, JXX=0.5/ap*((y0-ymin)*(log((y0-ymin)/Del0)-1.0)+Del0);
+  JXX+=s1=0.5*cres/ap*log(log(s*s0/(M1min*M1min*M2res*M2min))/
+		       log(s*s0/(MmaxXX2*M2res*M2min)))*log(1.0+M2res*M2res/(M2min*M2min));
+  JXX+=s2=0.5*cres/ap*log(log(s*s0/(M2min*M2min*M1res*M1min))/
+		       log(s*s0/(MmaxXX2*M1res*M1min)))*log(1.0+M1res*M1res/(M1min*M1min));
+  JXX+=s3=cres*cres/(2.0*ap*log(s*s0/(M1res*M2res*M1min*M2min))+BXX)*
+    log(1.0+M1res*M1res/(M1min*M1min))*log(1.0+M2res*M2res/(M2min*M2min));
+  double xstot=X*pow(s,eps)+Y*pow(s,eta);
+  double xsel=0.0511*xstot*xstot/(4*(b+pow(s,eps))-4.2);
+  double xssd=0.0336*X*sqrt(X)*JAX;
+  double xsdd=0.0084*X*JXX;
+  SetNorm(xstot-xsel-xssd-xsdd);
 }
 
 bool Simple_Chain::CalculateTotal()
@@ -633,6 +673,7 @@ bool Simple_Chain::CalculateTotal()
   delete gridhandler;
 #endif
   p_total = differential->IntegralY(0.0,0.0,ATOOLS::nullstring,ATOOLS::nullstring,false);
+  m_sigmahard=p_total->YMax();
   p_total->ScaleY(1.0/m_norm);
 #ifdef DEBUG__Simple_Chain
   comments.clear();
@@ -655,7 +696,7 @@ bool Simple_Chain::Initialize()
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
   CleanUp();
-  SetNorm(pyint7.sigt[5][0][0]);
+  CalculateSigmaND();
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
   if (!m_external) {
@@ -671,6 +712,8 @@ bool Simple_Chain::Initialize()
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
+  double stop;
+  if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
   delete reader;
   ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer("=",";","!");
   writer->SetOutputPath(InputPath());
@@ -733,7 +776,7 @@ bool Simple_Chain::Initialize()
     exit(120);
   }
   SetStart(p_total->XMax(),0);
-  SetStop(p_total->XMin(),0);
+  SetStop(ATOOLS::Max(p_total->XMin(),stop),0);
   if (!InitializeBlobList()) {
     ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 		       <<"Cannot initialize selected processes. "<<std::endl
@@ -839,17 +882,18 @@ bool Simple_Chain::DiceProcess()
       p_processes->SetSelected((*p_processes)[m_selected]);
 #endif
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
-	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): s' out of bounds."<<std::endl
-			   <<"   Cannot create any process. Abort."<<std::endl;
+	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): s' out of bounds: "
+			   <<m_last[1]<<" vs. "<<(*p_processes)[m_selected]->ISR()->SprimeMin()
+			   <<std::endl<<"   Cannot create any process."<<std::endl;
 	return false;
       }
-      double sprimemax=(*p_processes)[m_selected]->ISR()->SprimeMax(), pref=0.1;
+      double sprimemin=(*p_processes)[m_selected]->ISR()->SprimeMin();
+      double sprimemax=(*p_processes)[m_selected]->ISR()->SprimeMax();
       (*p_processes)[m_selected]->ISR()->SetSprimeMax(m_last[1]*m_last[1]);
-      do {
-	pref*=2.0;
-	(*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(pref*m_last[0]),1);
-      } while (!FillBlob(p_blob));
+      (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]),1);
+      do { } while (!FillBlob(p_blob));
       (*p_processes)[m_selected]->ISR()->SetSprimeMax(sprimemax);
+      (*p_processes)[m_selected]->ISR()->SetSprimeMin(sprimemin);
       m_dicedprocess=true;
       return m_filledblob;
     }

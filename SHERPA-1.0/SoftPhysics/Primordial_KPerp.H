@@ -20,6 +20,8 @@ namespace SHERPA {
     
     double m_kperpmean[2], m_kperpsigma[2];
 
+    double Lambda2(double sp,double sp1,double sp2); 
+
     bool FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle *&connected,
 		       bool forward,unsigned int catcher);
     bool BoostConnected(ATOOLS::Blob*,unsigned int catcher);

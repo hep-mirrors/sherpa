@@ -3,6 +3,7 @@
 
 #include "MI_Base.H"
 #include "Grid_Creator.H"
+#include "QCD_Processes.H"
 
 namespace AMISIC {
   
@@ -40,22 +41,21 @@ namespace AMISIC {
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
 
-    int m_scalescheme, m_kfactorscheme;
-
-    bool m_external;
-
-    unsigned int m_selected;
+    unsigned int m_selected, m_nflavour, m_scalescheme, m_kfactorscheme;
+    double       m_sigmahard;
+    bool         m_external;
 
     ATOOLS::Blob *GetBlob(ATOOLS::Flavour *flavour);
 
     void CleanUp();
     bool HaveBlob(ATOOLS::Blob *blob);
-    void FillMode(EXTRAXS::QCD_Processes_C::Mode mode);
+    void FillMode(EXTRAXS::QCD_Processes::Mode mode);
 
     bool ReadInData();
     bool CreateGrid(ATOOLS::Blob_List& bloblist,
 		    std::string& filename,std::string& processname);
     bool CalculateTotal();
+    void CalculateSigmaND();
     bool InitializeBlobList();
 
     bool FillBlob(ATOOLS::Blob *blob);

@@ -21,9 +21,7 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
-AC_OUTPUT(Tools/Makefile \
-	  Other/Makefile \
-	  Main/Makefile \
+AC_OUTPUT(Main/Makefile \
 	  Run/Makefile \
 	  Analysis/Makefile \
           Makefile )

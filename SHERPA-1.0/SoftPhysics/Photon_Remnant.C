@@ -13,7 +13,6 @@ bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
     exit(129);
   }
   // fill blob
-  ATOOLS::Vec4D ptot=m_pbeam;
   for (size_t j=0;j<m_parton[1].size();++j) {
     beamblob->AddToOutParticles(m_parton[1][j]);
     if (particlelist!=NULL) {

@@ -2,14 +2,12 @@
 #define Jet_Multiplicity_H
 
 #include "Primitive_Observable_Base.H"
-// #include "Jet_Algorithm.H"
 
 namespace AMISIC {
 
   class Jet_Multiplicity: public ATOOLS::Primitive_Observable_Base {
   private:
 
-//     ATOOLS::Jet_Algorithm           *p_jetfinder;
     std::vector<ATOOLS::Histogram*> *p_histogram;
 
     std::vector<int>    *p_jets;
@@ -28,11 +26,9 @@ namespace AMISIC {
     ~Jet_Multiplicity();
 
     // setters
-//     void SetJetFinder(ATOOLS::Jet_Algorithm *_p_jetfinder) { p_jetfinder=_p_jetfinder; }
     void SetMode(unsigned int _m_mode)                     { m_mode=_m_mode;           }
 
     // getters
-//     ATOOLS::Jet_Algorithm *JetFinder() { return p_jetfinder; }
     unsigned int           Mode()      { return m_mode;      }
 
     // member functions

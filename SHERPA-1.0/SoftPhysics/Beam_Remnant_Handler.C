@@ -10,6 +10,7 @@ using namespace ATOOLS;
 
 #ifdef DEBUG__Beam_Remnant_Handler
 std::set<Blob*> checked_blobs;
+
 void SumMomenta(Blob * bl, Vec4D & inisum, Vec4D & finsum,bool iterate=true) 
 {
   // check if caught in loop
@@ -28,14 +29,6 @@ void SumMomenta(Blob * bl, Vec4D & inisum, Vec4D & finsum,bool iterate=true)
     else if (iterate) SumMomenta(p->DecayBlob(),inisum,finsum);
     else finsum+=p->Momentum();
   }
-  else m_fill = 0;
-  p_particle[0] = new ATOOLS::Particle_List[3];
-  p_particle[1] = new ATOOLS::Particle_List[3];
-  p_x = new std::map<ATOOLS::Particle*,double>();
-
-  m_q2min = 1.;
-
-  p_kperp = new Primordial_KPerp(_m_path,_m_file);
 }
 
 bool SumMomenta(Blob * bl)

@@ -29,6 +29,15 @@ namespace AMISIC {
   const std::string Grid_Creator<Argument_Type,Result_Type>::XSExtension() const
   { return m_xsextension; }
 
+  template <class Argument_Type,class Result_Type>
+  void Grid_Creator<Argument_Type,Result_Type>::
+  SetMaxPoints(const long int _m_maxpoints)
+  { m_maxpoints[0]=_m_maxpoints; }
+
+  template <class Argument_Type,class Result_Type>
+  const long int Grid_Creator<Argument_Type,Result_Type>::MaxPoints() const
+  { return m_maxpoints[0]; }
+
 } // end of namespace AMISIC
 
 #endif

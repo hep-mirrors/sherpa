@@ -4,7 +4,6 @@
 #include "Grid_Handler.H"
 #include "SimpleXSecs.H"
 #include "Environment.H"
-#include "QCD_Processes_C.H"
 #include "Blob_List.H"
 #include "Fixed_Variable_Channel.H"
 
@@ -31,8 +30,10 @@ namespace AMISIC {
     GridHandlerVector     p_gridhandler;
     EXTRAXS::SimpleXSecs *p_processes;
 
-    int m_criterion;
+    int  m_criterion;
     bool m_storemax;
+
+    long int m_maxpoints[2];
     
     ATOOLS::Mom_Data m_initialdata;
     GridResultType m_lastxs, m_lastmax;
@@ -46,14 +47,21 @@ namespace AMISIC {
     
     // constructor
     Grid_Creator(GridHandlerVector _p_gridhandler,EXTRAXS::SimpleXSecs *_p_processes);
+
+    // destructor
+    ~Grid_Creator();
     
     // setters
     void SetXSExtension(const std::string _m_xsextension);
     void SetMaxExtension(const std::string _m_maxextension);
+
+    void SetMaxPoints(const long int _m_maxpoints);
     
     // getters
     const std::string XSExtension() const;
     const std::string MaxExtension() const;
+
+    const long int MaxPoints() const;
     
     // member functions
     bool InitializeCalculation();
