@@ -91,7 +91,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List 
 	      if (!(FindConnected(_bloblist,part,newb))) {
 		msg.Error()<<"Fragmentation_Handler::ExtractSinglets :"
 			   <<"Could not find connected parton for quark:"<<std::endl
-			   <<part<<std::endl;
+			   <<part<<"\n\n"<<_bloblist<<"\n"<<std::endl;
 		return 0;
 	      }
 	    }
