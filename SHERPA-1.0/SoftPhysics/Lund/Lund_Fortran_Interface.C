@@ -39,7 +39,6 @@ Lund_Fortran_Interface::~Lund_Fortran_Interface() {
 
 void Lund_Fortran_Interface::Init()
 {
-  cout<<" Lund_Fortran_Interface::Init() "<<endl;
   phep   = new double[5*maxentries];
   vhep   = new double[4*maxentries];
   jmohep = new int[2*maxentries];
