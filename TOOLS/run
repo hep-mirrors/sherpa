@@ -65,10 +65,25 @@ if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
 if [ "$RESULTS" = "" ]; then RESULTS="./" ; fi
 if [ "$ANALYSIS" = "" ]; then ANALYSIS="./" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
+$BINPATH/Sherpa --version > /dev/null 2>&1
+if (( $? != 0 )) ; then
+  BINPATH="."
+  Sherpa --version > /dev/null 2>&1
+  if (( $? != 0 )) ; then
+    echo "run: executeable cannot be found in '$BINPATH' and \$PATH"
+    echo "run: abort"
+    exit 1
+  fi
+fi
+if ! test -d $RUNPATH ; then
+  echo "run: setup directory '$RUNPATH' does not exist"
+  echo "run: abort"
+  exit 2
+fi
 if [ ! "$BATCH" = "PBS" ] && [ ! "$BATCH" = "SGE" ] ; then 
   echo "run: error: invalid batch system: '$BATCH'"
   echo "run: supported batch systems are: 'PBS' / 'SGE'"
-  exit 0
+  exit 3
 fi
 
 COUNTER=0
