@@ -13,7 +13,7 @@ namespace PHASIC {
     Channel_Basics CB;
   public:
     double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
-    void Isotropic2Momenta(ATOOLS::Vec4D,double&,double&,
+    void Isotropic2Momenta(ATOOLS::Vec4D,double,double,
 			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double);
     double Anisotropic2Weight(double,double,double,
 			      const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
@@ -23,7 +23,7 @@ namespace PHASIC {
 			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  double,double,double,double,double,int);
     int TChannelMomenta(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D&,ATOOLS::Vec4D&,
-			double&,double&,double,double,double,double,double,int,double,double);
+			double,double,double,double,double,double,double,int,double,double);
     double BremsstrahlungWeight(double,double,double,
 				const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
     void BremsstrahlungMomenta(ATOOLS::Vec4D&,const double,const double,const double,
