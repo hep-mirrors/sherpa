@@ -10,14 +10,21 @@
 
 using namespace EXTRAXS;
 
+template <> 
+Single_XS *Single_XS::GetProcess<Off_Shell_gg_qqb>(const size_t nin,const size_t nout,
+						   const ATOOLS::Flavour *flavours)
+{
+  if (flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() && 
+      flavours[0].IsGluon() && flavours[1].IsGluon()){ 
+    return new Off_Shell_gg_qqb(nin,nout,flavours); 
+  }
+  return NULL;
+}
+
 Off_Shell_gg_qqb::Off_Shell_gg_qqb(const size_t nin,const size_t nout,
-				   const ATOOLS::Flavour *flavours,const int scalescheme,
-				   const int kfactorscheme,const double scalefactor):
+				   const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours) 
 {
-  m_scalescheme=scalescheme;
-  m_kfactorscheme=kfactorscheme;
-  m_scalefactor=scalefactor;
   m_alphas=(*MODEL::as)(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
   m_nvector=m_nvector+2;
   delete [] p_momenta;
@@ -62,14 +69,21 @@ bool Off_Shell_gg_qqb::SetColours(double s,double t,double u)
   return true;
 }
 
+template <> 
+Single_XS *Single_XS::GetProcess<Off_Shell_gg_gg>(const size_t nin,const size_t nout,
+						  const ATOOLS::Flavour *flavours)
+{
+  if (flavours[2].IsGluon() && flavours[3].IsGluon() && 
+      flavours[0].IsGluon() && flavours[1].IsGluon()){ 
+    return new Off_Shell_gg_gg(nin,nout,flavours); 
+  }
+  return NULL;
+}
+
 Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
-				   const ATOOLS::Flavour *flavours,const int scalescheme,
-				   const int kfactorscheme,const double scalefactor):
+				   const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours) 
 {
-  m_scalescheme=scalescheme;
-  m_kfactorscheme=kfactorscheme;
-  m_scalefactor=scalefactor;
   m_alphas=(*MODEL::as)(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
   m_nvector=m_nvector+2;
   delete [] p_momenta;

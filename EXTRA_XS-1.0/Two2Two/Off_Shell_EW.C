@@ -7,14 +7,23 @@
 using namespace EXTRAXS;
 using namespace MODEL;
 
+template <> 
+Single_XS *Single_XS::GetProcess<Off_Shell_qqb_llb>(const size_t nin,const size_t nout,
+						    const ATOOLS::Flavour *flavours)
+{
+  if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && 
+       flavours[0].IsQuark() && flavours[1]==flavours[0].Bar()) ||
+      (flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && 
+       flavours[2].IsQuark() && flavours[3]==flavours[2].Bar())){ 
+    return new Off_Shell_qqb_llb(nin,nout,flavours); 
+  }
+  return NULL;
+}
+
 Off_Shell_qqb_llb::Off_Shell_qqb_llb(const size_t nin,const size_t nout,
-				     const ATOOLS::Flavour *flavours,const int scalescheme,
-				     const int kfactorscheme,const double scalefactor):
+				     const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours) 
 {
-  m_scalescheme=scalescheme;
-  m_kfactorscheme=kfactorscheme;
-  m_scalefactor=scalefactor;
   MZ2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
   GZ2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width());
   alpha  = aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
@@ -76,14 +85,23 @@ double Off_Shell_qqb_llb::KFactor(double scale)
   return 1.;
 }
 
+template <> 
+Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(const size_t nin,const size_t nout,
+							const ATOOLS::Flavour *flavours)
+{
+  if ((flavours[2].IsUptype() && flavours[2].IntCharge()==0 && flavours[3].IsDowntype() && 
+       flavours[0].IsUptype() && flavours[1].IsDowntype()) ||
+      (flavours[3].IsUptype() && flavours[3].IntCharge()==0 && flavours[2].IsDowntype() && 
+       flavours[1].IsUptype() && flavours[0].IsDowntype())){ 
+    return new Off_Shell_q1q2b_lnulb(nin,nout,flavours); 
+  }
+  return NULL;
+}
+
 Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
-					     const ATOOLS::Flavour *flavours,const int scalescheme,
-					     const int kfactorscheme,const double scalefactor):
+					     const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours) 
 {
-  m_scalescheme=scalescheme;
-  m_kfactorscheme=kfactorscheme;
-  m_scalefactor=scalefactor;
   int ints[2];
   for (short int i=0;i<2;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
   if (flavours[0].IsDowntype()) std::swap(ints[0],ints[1]);

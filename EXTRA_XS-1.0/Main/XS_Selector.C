@@ -20,31 +20,17 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
 { 
   Single_XS *xs;
   if (offshell) {
-    if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && 
-	 flavours[0].IsQuark() && flavours[1]==flavours[0].Bar()) ||
-	(flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && 
-	 flavours[2].IsQuark() && flavours[3]==flavours[2].Bar())){ 
-      return new Off_Shell_qqb_llb(nin,nout,flavours,p_owner->ScaleScheme(),
-				   p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
+    if ((xs=Single_XS::GetProcess<Off_Shell_qqb_llb>(nin,nout,flavours))!=NULL);
+    else if ((xs=Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(nin,nout,flavours))!=NULL);
+    else if ((xs=Single_XS::GetProcess<Off_Shell_gg_qqb>(nin,nout,flavours))!=NULL);
+    else if ((xs=Single_XS::GetProcess<Off_Shell_gg_gg>(nin,nout,flavours))!=NULL);
+    else;
+    if (xs!=NULL) {
+      xs->SetScaleScheme(p_owner->ScaleScheme());
+      xs->SetKFactorScheme(p_owner->KFactorScheme());
+      xs->SetScaleFactor(p_owner->ScaleFactor());
     }
-    if ((flavours[2].IsUptype() && flavours[2].IntCharge()==0 && flavours[3].IsDowntype() && 
-	 flavours[0].IsUptype() && flavours[1].IsDowntype()) ||
-	(flavours[3].IsUptype() && flavours[3].IntCharge()==0 && flavours[2].IsDowntype() && 
-	 flavours[1].IsUptype() && flavours[0].IsDowntype())){ 
-      return new Off_Shell_q1q2b_lnulb(nin,nout,flavours,p_owner->ScaleScheme(),
-				       p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
-    }
-    if (flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() && 
-	flavours[0].IsGluon() && flavours[1].IsGluon()){ 
-      return new Off_Shell_gg_qqb(nin,nout,flavours,p_owner->ScaleScheme(),
-				  p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
-    }
-    if (flavours[2].IsGluon() && flavours[3].IsGluon() && 
-	flavours[0].IsGluon() && flavours[1].IsGluon()){ 
-      return new Off_Shell_gg_gg(nin,nout,flavours,p_owner->ScaleScheme(),
-				 p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
-    }
-    return NULL;
+    return xs;
   }
   if ((xs=Single_XS::GetProcess<XS_pp_ffbar>(nin,nout,flavours))!=NULL) return xs;
   if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours))!=NULL) return xs;

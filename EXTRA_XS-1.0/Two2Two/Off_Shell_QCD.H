@@ -13,8 +13,7 @@ namespace EXTRAXS {
   public:
 
     // constructor
-    Off_Shell_gg_qqb(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		     const int scalescheme,const int kfactorscheme,const double scalefactor);
+    Off_Shell_gg_qqb(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
     
     // member functions
     double operator()(double s,double t,double u);
@@ -30,8 +29,7 @@ namespace EXTRAXS {
   public:
 
     // constructor
-    Off_Shell_gg_gg(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
-		     const int scalescheme,const int kfactorscheme,const double scalefactor);
+    Off_Shell_gg_gg(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
     
     // member functions
     double operator()(double s,double t,double u);
