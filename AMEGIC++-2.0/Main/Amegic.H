@@ -2,7 +2,6 @@
 #define Amegic_h
 
 #include "All_Processes.H"
-#include "Process_Base.H"
 #include "Selector.H"
 #include "Flavour.H"
 #include "MyString.H"
@@ -30,7 +29,7 @@ namespace AMEGIC {
     ISR::ISR_Handler         * isr;
     BEAM::Beam_Handler       * beam;
 
-    Process_Base             * procs;
+    All_Processes            * procs;
 
     Topology                 * top;
 

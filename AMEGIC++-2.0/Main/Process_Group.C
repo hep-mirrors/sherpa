@@ -571,7 +571,7 @@ bool Process_Group::SetUpIntegrator()
 
 
 void Process_Group::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *> _obs) {
-  analysis = new APHYTOOLS::Primitive_Analysis(this->Name());//check thsi
+  analysis = new APHYTOOLS::Primitive_Analysis(Name());
   for (int i=0;i<_obs.size();i++) {
     analysis->AddObservable(_obs[i]->GetCopy());
   }

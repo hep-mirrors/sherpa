@@ -39,7 +39,7 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    Single_Process(){};
+
     Single_Process(int,int,APHYTOOLS::Flavour*,
 		   ISR::ISR_Handler *,BEAM::Beam_Handler *,
 		   APHYTOOLS::Selector_Data *,
@@ -47,8 +47,6 @@ namespace AMEGIC {
     ~Single_Process();
 
     int FindXS();
-    int KFactorScheme() { return kfactorscheme; }
-    int ScaleScheme()   { return scalescheme;   }
 
     void Add(Process_Base *) {
       AORGTOOLS::msg.Error()<<"Error in Single_Process. Method Add called."<<std::endl;

@@ -10,8 +10,6 @@ using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace std;
 
-All_Processes::All_Processes(int _runmode): runmode(_runmode){}
-
 /*----------------------------------------------------------------------------------
   
   Management of the processes included in All_Processes

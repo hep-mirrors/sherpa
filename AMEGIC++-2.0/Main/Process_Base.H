@@ -176,13 +176,9 @@ namespace AMEGIC {
     virtual int                             ISRNumber();
     virtual void                            ISRInfo(int,int &,double &,double &);
     virtual bool                            SetISRParams(int *)  { return 0; }
-    virtual int                             BeamNumber();
-    virtual void                            BeamInfo(int,int &,double &,double &);
-    virtual bool                            SetBeamParams(int *) { return 0; }
 
-    virtual int KFactorScheme() { return 0; }
-    virtual int ScaleScheme()   { return 0; }
-    virtual PHASIC::Phase_Space_Handler * GetPSH() { return 0; }
+    int                                     KFactorScheme();
+    int                                     ScaleScheme();
 
     virtual double                          Total();
     virtual double                          Max();
@@ -197,18 +193,10 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
 
-    void                      SetPol(AMEGIC::Pol_Info * _pl) { pl = _pl; }
+    void                       SetPol(AMEGIC::Pol_Info * _pl) { pl = _pl; }
 
     virtual void               PrintDifferential() = 0;
 
-    virtual EXTRAXS::XS_Base * GetXS() { return 0; }
-    virtual void               Initialize(APHYTOOLS::Selector_Data *, 
-					  ISR::ISR_Handler *, BEAM::Beam_Handler *) { return; }
-
-// for testing purposes only ...
-
-    virtual int  InitAllProcesses(Topology *,AMATOOLS::Vec4D *&,
-		std::vector<double> &,std::vector<Single_Process *> &) { return 0; }
   };
 }
 

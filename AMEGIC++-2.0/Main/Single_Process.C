@@ -76,6 +76,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
     if (flout[i].IntCharge()!=0) neweak++;
   }
 
+  GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
+
   PolarizationNorm();
   Initialize(_seldata);
 
@@ -90,8 +92,6 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
       return;
     }
   }
-
-  GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
 
   // making directory
   int  mode_dir = 448;
@@ -249,7 +249,6 @@ int Single_Process::InitAmplitude(Topology* top,Vec4D *& _testmoms,
 
   switch (Tests(result)) {
   case 2 : 
-    //    initflag = 0;
     for (int j=0;j<results.size();j++) {
       if (AMATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
 	msg.Tracking()<<"Test : 2.  Can map "<<name<<" on "<<links[j]->Name()<<endl;
@@ -804,7 +803,7 @@ double Single_Process::DSigma(AMATOOLS::Vec4D* _moms,bool lookup)
   last = lastdxs = 0.;
   if (partner == this) {
     lastdxs = operator()(_moms);
-    //msg.Out()<<"Check this : "<<name<<" : "<<lastdxs * Norm<<" @ "<<isr->Weight(flin)<<endl;
+    //    msg.Out()<<"Check this : "<<name<<" : "<<lastdxs * Norm<<" @ "<<isr->Weight(flin)<<endl;
   }
   else {
     if (lookup)        lastdxs = partner->LastXS();
@@ -823,7 +822,7 @@ double Single_Process::DSigma(AMATOOLS::Vec4D* _moms,bool lookup)
 double Single_Process::DSigma2() { 
   if ((flin[0]==flin[1]) || (isr->On()==0) ) return 0.;
   if (partner == this) {
-    //msg.Out()<<"Check this : "<<name<<" : "<<lastdxs * Norm<<" @ "<<isr->Weight2(flin)<<endl;
+    //    msg.Out()<<"Check this : "<<name<<" : "<<lastdxs * Norm<<" @ "<<isr->Weight2(flin)<<endl;
   }
   double tmp = Norm * lastdxs * isr->Weight2(flin); 
   last      += tmp;
@@ -861,7 +860,7 @@ double Single_Process::operator()(AMATOOLS::Vec4D * mom)
     ampl->ClearCalcList();
   }
 
-  return M2 * sqr(pol.Massless_Norm(nin+nout,fl,BS));;
+  return M2 * sqr(pol.Massless_Norm(nin+nout,fl,BS));
 }
 
 
@@ -899,7 +898,7 @@ int Single_Process::FindXS()
 {
   xsec = 0;
   XS_Selector * xsselector = new XS_Selector(); 
-  if (xsec = xsselector->GetXS(nin, nout, fl)) {
+  if ((xsec = xsselector->GetXS(nin, nout, fl))) {
     return 1; 
   }
   return 0;

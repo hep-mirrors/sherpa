@@ -9,8 +9,6 @@
 
 #include "Run_Parameter.H"
 #include "Message.H"
-#include "QED_Processes.H"
-#include "QCD_Processes.H"
 
 
 using namespace AMEGIC;
@@ -19,7 +17,6 @@ using namespace APHYTOOLS;
 using namespace AMATOOLS;
 using namespace BEAM;
 using namespace ISR;
-using namespace EXTRAXS;
 using namespace std;
 
 
@@ -37,6 +34,8 @@ Amegic::Amegic(string _path,ISR_Handler * _isr,Beam_Handler * _beam) :
 {
   gen_str = 2; //strings + libraries
   resdir  = string(".");
+
+  polbunches = 0;
 
   Model_Handler mh;
   mo = mh.GetModel();
@@ -73,7 +72,7 @@ bool Amegic::InitializeProcesses(int _runmode)
 {
   runmode = _runmode;
   msg.Debugging()<<"In Amegic::InitializeProcesses() "<<endl;
-  procs    = new All_Processes(runmode);
+  procs = new All_Processes();
   procs->SetName("All_Processes");
   procs->SetAtoms(1);
 
@@ -97,7 +96,6 @@ bool Amegic::InitializeProcesses(int _runmode)
   splimits[1]  = s*sqr(dr.GetValue<double>("SMAX"));
 
   bunches      = new Flavour[2];
-
   beams        = new Flavour[2];
   partons      = new Flavour[2];
   for (int i=0;i<2;i++) {
@@ -136,7 +134,6 @@ bool Amegic::InitializeProcesses(int _runmode)
 
 int Amegic::ReadProcesses(string path)
 { 
-  int available;
   msg.Debugging()<<"Open file "<<path+string("/Processes.dat")<<endl;
   ifstream from((path+string("/Processes.dat")).c_str());
   if (!from) {
@@ -221,7 +218,6 @@ int Amegic::ReadProcesses(string path)
 	}
       }
       if (!error) {
-	polbunches = 0;// depends on the parameter files ...
 	if (!beam) {
 	  beam = new Beam_Handler(beamtypes,bunches,polbunches,beams,polbeams,splimits);
 	  if (beam->On()>0) {

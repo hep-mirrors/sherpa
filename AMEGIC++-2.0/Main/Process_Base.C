@@ -291,6 +291,7 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
     pt2 = s;
   }
   // cout<<" Q2="<<pt2<<endl;
+  //  AORGTOOLS::msg.Out()<<"as is : "<<(*as).AlphaS(pt2)<<std::endl;
   return pt2;
 }
 
@@ -308,8 +309,8 @@ double Process_Base::KFactor(double _scale) {
       return rfactor*pow(APHYTOOLS::as->AlphaS(_scale)/
 		 APHYTOOLS::as->AsFixed(),nstrong-2);
     } 
-    else 
-      return rfactor;
+    else {
+    return rfactor;}
   default :
     return rfactor;
   }
@@ -320,6 +321,9 @@ double Process_Base::KFactor(double _scale) {
   Access methods
   
   ------------------------------------------------------------------------------*/
+
+inline int           Process_Base::KFactorScheme()       { return kfactorscheme; }
+inline int           Process_Base::ScaleScheme()         { return scalescheme;   }
 
 int                  Process_Base::Nin()                 { return nin; }
 int                  Process_Base::Nout()                { return nout; }
@@ -366,8 +370,6 @@ double               Process_Base::Last()                { return last; }
 double               Process_Base::LastXS()              { return lastdxs; }
 double               Process_Base::LastLumi()            { return lastlumi; }
 
-int Process_Base::ISRNumber()  { return 0; }
-int Process_Base::BeamNumber() { return 0; }
+int  Process_Base::ISRNumber()  { return 0; }
 void Process_Base::ISRInfo(int a,int & b,double & c,double & d)  { return; }
-void Process_Base::BeamInfo(int a,int & b,double & c,double & d) { return; }
 
