@@ -361,12 +361,12 @@ void Data_Read::WriteOut(std::string filename,int flag) {
 
 void Data_Read::Shorten(std::string& str) {
   //kill initial spaces
-  for (;;) {    
+  for (;str.length()>0;) {    
     if (int(str[0])==32 || int(str[0])==9) str = str.substr(1);
     else break;
   }
   //kill final spaces
-  for (;;) {    
+  for (;str.length()>0;) {    
     if (int(str[str.length()-1])==32 ||
 	//Tabulator
 	int(str[str.length()-1])==9) str = str.substr(0,str.length()-1);
