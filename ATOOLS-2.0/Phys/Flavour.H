@@ -123,6 +123,7 @@ namespace ATOOLS {
       string                 = 95,
       cluster                = 96,
       bjet                   = 97,
+      seaquark               = 98,
       /* ------------------------------------------
 	unspecified hadrons
       ------------------------------------------ */
