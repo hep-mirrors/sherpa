@@ -108,6 +108,13 @@ bool Phase_Space_Handler::InitIncoming(double _mass)
   } 
 
   if (nin>1) {
+
+    if (p_cuts == 0) {
+      p_cuts = new Cut_Data();
+      p_cuts->Init(nin+nout,psflavs);
+      if (proc->Selector()) (proc->Selector())->BuildCuts(p_cuts);
+    } 
+  
     msg.SetPrecision(12);
     if (bh) {
       if (bh->On()>0) {
@@ -136,12 +143,7 @@ bool Phase_Space_Handler::InitIncoming(double _mass)
 double Phase_Space_Handler::Integrate() 
 {
   psi        = new Phase_Space_Integrator();
-  if (p_cuts == 0) {
-    p_cuts = new Cut_Data();
-    p_cuts->Init(nin+nout,psflavs);
-    if (proc->Selector()) (proc->Selector())->BuildCuts(p_cuts);
-  } 
-
+ 
   if (!InitIncoming()) return 0;
   if (rpa.gen.ModelName()==std::string("ADD") && ih->On()==0 && bh->On()==0) {
     if (rpa.gen.Ecms()>rpa.gen.ScalarConstant(std::string("M_cut"))) {
@@ -384,7 +386,7 @@ bool Phase_Space_Handler::OneEvent(double _mass,int _mode)
 ATOOLS::Blob_Data_Base *  Phase_Space_Handler::WeightedEvent(int mode)
 {
   if (!m_initialized) InitIncoming();
-
+  
   double value;
   for (int i=1;i<maxtrials+1;i++) {
     if (mode==0) {
