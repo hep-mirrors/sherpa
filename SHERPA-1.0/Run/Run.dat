@@ -10,6 +10,7 @@ PRETTY_PRINT	= On		! Coloured output
 !
 BEAM_DATA_FILE   = Beam.dat
 ISR_DATA_FILE    = ISR.dat
+MI_ISR_DATA_FILE    = ISR.dat
 ME_DATA_FILE     = ME.dat
 MODEL_DATA_FILE  = Model.dat
 SHOWER_DATA_FILE = Shower.dat
