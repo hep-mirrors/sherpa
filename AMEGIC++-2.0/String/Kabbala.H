@@ -65,7 +65,7 @@ namespace AMEGIC {
       std::string save = shem;
       shem  = std::string("(") + save + std::string(")*(");
       
-      std::strstream sstr;
+      MyStrStream sstr;
       sstr<<i;
       std::string istr;
       sstr>>istr;
@@ -80,7 +80,7 @@ namespace AMEGIC {
       std::string save = shem;
       shem  = std::string("(") + save + std::string(")*(");
       
-      std::strstream sstr;  
+      MyStrStream sstr;  
       sstr<<d;
       std::string dstr;
       sstr>>dstr;

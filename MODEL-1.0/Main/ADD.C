@@ -35,7 +35,7 @@ void ADD::ReadInFile() {
   p_constants->insert(std::make_pair(std::string("M_s"), 
 				     p_dataread->GetValue<double>("M_S",0.)));
   p_constants->insert(std::make_pair(std::string("M_cut"), 
-				     p_dataread->GetValue<double>("M_CUT",ScalarConstant(string("M_s")))));
+				     p_dataread->GetValue<double>("M_CUT",ScalarConstant(std::string("M_s")))));
   p_constants->insert(std::make_pair(std::string("Radius"), 
 				     p_dataread->GetValue<double>("RADIUS",0.)));
   p_numbers->insert(std::make_pair(std::string("KK_mode"), 

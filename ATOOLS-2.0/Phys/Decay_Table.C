@@ -2,6 +2,7 @@
 #include "Message.H"
 
 using namespace ATOOLS;
+using namespace std;
 
 Decay_Channel::Decay_Channel(const Flavour & _flin) :
   m_flin(_flin), m_width(0.) { }

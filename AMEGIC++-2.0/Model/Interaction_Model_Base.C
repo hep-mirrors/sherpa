@@ -7,8 +7,6 @@ Interaction_Model_Base::Interaction_Model_Base(MODEL::Model_Base * _model,
 					       std::string _cplscheme,std::string _yukscheme) :
   p_model(_model), p_vertex(NULL), m_cplscheme(_cplscheme), m_yukscheme(_yukscheme)  
 { 
-
-  cout<<"base model"<<p_model->Name()<<" "<<Name()<<endl;
 }
 
 void Interaction_Model_Base::Init_Vertex() {

@@ -51,7 +51,7 @@ bool Full_Decay_Channel::CalculateWidth()
 {
 }
 
-void Full_Decay_Channel::SetWidth(double _w = -1.) 
+void Full_Decay_Channel::SetWidth(double _w ) 
 {
   Output();
   if (_w<0.) m_dec.SetWidth(p_proc->Total()); 
