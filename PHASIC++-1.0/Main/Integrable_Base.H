@@ -43,7 +43,8 @@ namespace PHASIC {
 
     std::vector<double> m_xinfo;
 
-    long int m_n;
+    long unsigned int m_n;
+
     double   m_last, m_lastlumi, m_lastdxs, m_max;
     double   m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
 
