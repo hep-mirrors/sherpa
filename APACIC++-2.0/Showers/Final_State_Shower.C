@@ -1069,6 +1069,14 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
 	    (aup->GetFlow(k2)==mo->part->GetFlow(k1))) found=1;
     if (found) return aup;
   }
+  for (int i=0; i<bl->NOutP();++i) {
+    aup=bl->OutParticle(i);
+    for (int k1=1;k1<=2;++k1)
+      for (int k2=1;k2<=2;++k2)
+	if ((mo->part->GetFlow(k1) > 0 ) &&
+	    (aup->GetFlow(3-k1)==mo->part->GetFlow(k1))) found=1;
+    if (found) return aup;
+  }
 
   msg_Tracking()<<" no aunt in blob  found ! return normal aunt\n";
   return au->part;
