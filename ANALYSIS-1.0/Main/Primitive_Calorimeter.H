@@ -1,0 +1,65 @@
+#ifndef Primitive_Calorimeter_H
+#define Primitive_Calorimeter_H
+
+#include "Primitive_Detector.H"
+#include "Particle_List.H"
+#include "Vector.H"
+#include "Message.H"
+
+namespace ANALYSIS {
+  class Primitive_Calorimeter : public Primitive_Detector_Element {
+  private:
+    double m_mineta, m_maxeta, m_delta_eta, m_delta_phi;
+    double *  p_costheta, *  p_sintheta, *  p_cosphi, *  p_sinphi;
+
+    void   SmearEnergy(const ATOOLS::Flavour &, double &);
+    void   Reset();
+    double PseudoRapidityNAzimuthalAngle(const ATOOLS::Vec4D & p, double & phi);
+  public:
+    Primitive_Calorimeter(int,int,std::string) { abort(); }
+    Primitive_Calorimeter(const double mineta=-2.5,const double maxeta=2.5,
+			  const int neta=50, const int nphi=40);
+    ~Primitive_Calorimeter();
+    void Fill(const ATOOLS::Particle_List *);
+    void Print(std::ostream & =std::cout);
+
+    void GetDimensions(int & neta,int & nphi,
+		       double & mineta, double & maxeta); 
+    void GetCosSinTheta(const int i,double & costheta,double & sintheta);  
+    void GetCosSinPhi(const int i,double & cosphi,double & sinphi);  
+  };
+
+
+  inline void Primitive_Calorimeter::Reset()
+  {
+    for (int i=0; i<m_nx; ++i) {
+      for (int j=0; j<m_ny; ++j) {
+	p_cells[i][j]=0.;
+      }
+    }
+  };
+
+  inline void Primitive_Calorimeter::GetDimensions(int & neta,int & nphi,
+						   double & mineta, double & maxeta) { 
+    neta     = m_nx;       nphi     = m_ny;
+    mineta   = m_mineta;   maxeta   = m_maxeta;
+  };
+  inline void Primitive_Calorimeter::GetCosSinTheta(const int i,
+						    double & costheta,double & sintheta) {
+    if (i>-1&&i<m_nx) { costheta = p_costheta[i]; sintheta = p_sintheta[i]; return; }
+    ATOOLS::msg.Error()<<"Error in Primitive_Calorimeter::GetCosSinTheta("
+		       <<i<<") : "<<std::endl
+		       <<"   Out of bounds ("<<m_nx<<"), will return zeroes."<<std::endl;
+    costheta = sintheta = 0.;
+  };  
+  inline void Primitive_Calorimeter::GetCosSinPhi(const int i,
+						  double & cosphi,double & sinphi) {
+    if (i>-1&&i<m_ny) { cosphi = p_cosphi[i]; sinphi = p_sinphi[i]; return; }
+    ATOOLS::msg.Error()<<"Error in Primitive_Calorimeter::GetCosSinPhi("
+		       <<i<<") : "<<std::endl
+		       <<"   Out of bounds ("<<m_ny<<"), will return zeroes."<<std::endl;
+    cosphi = sinphi = 0.;
+  };
+}
+
+#endif

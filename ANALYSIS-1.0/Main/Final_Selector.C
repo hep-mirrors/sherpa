@@ -3,6 +3,7 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Durham_Algorithm.H"
+#include "Calorimeter_Cone.H"
 
 #include <algorithm>
 
@@ -36,13 +37,11 @@ Final_Selector::Final_Selector(const std::string & inlistname,
   msg_Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<")"<<std::endl;
   m_splitt_flag = false;
   switch (mode) {
-    case 1: p_jetalg = new Durham_Algorithm(); break;
-    case 0: p_jetalg = new Kt_Algorithm(); break;
-    default: break;
+  case 1: p_jetalg = new Durham_Algorithm(); break;
+  case 0: p_jetalg = new Kt_Algorithm(); break;
+  default: break;
   }
 }
-
-
 
 void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data & fs) 
 {
@@ -102,6 +101,31 @@ void Final_Selector::AddSelector(const Flavour & fl, int min, int max)
     it->second.min_n = min;  
     it->second.max_n = max;  
   }
+}
+
+void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data & fs,
+				 Calorimeter_Cone * const cone) {
+  msg_Tracking()<<" AddSelector : Cone."<<std::endl;
+  Final_Data_Map::iterator it = m_fmap.find(fl);
+  if (it==m_fmap.end()) {
+    m_fmap.insert(std::make_pair(fl,fs));
+    if (m_extract) m_fmap[fl].keep = false;
+  }
+  else {
+    it->second.eta_min = fs.eta_min; 
+    it->second.eta_max = fs.eta_max;
+    it->second.et_min  = fs.et_min;
+    it->second.pt_min  = fs.pt_min;
+    it->second.r_min   = fs.r_min;
+  }
+  if (p_jetalg!=NULL) {
+    msg.Error()<<"Error in Final_Selector::AddSelector("<<cone<<") : "<<std::endl
+	       <<"   Tried to add a cone finder based on Hcal,"
+	       <<" jet finder already present."<<std::endl
+	       <<"   Abort the run."<<std::endl;
+    abort();
+  }
+  p_jetalg = cone;
 }
 
 void Final_Selector::AddKeepFlavour(const Flavour & fl) 
@@ -278,15 +302,6 @@ void Final_Selector::Extract(Particle_List * pl)
   }
 }
 
-class Order_PT {
-public:
-  int operator()(const Particle * a, const Particle * b) {
-    if (a->Momentum().PPerp2()>b->Momentum().PPerp2()) return 1;
-    return 0;
-  }
-};
-
-
 void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   Particle_List * pl_in = p_ana->GetParticleList(m_inlistname);
   if (pl_in==NULL) {
@@ -294,10 +309,8 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
     return;
   }
   Particle_List * pl_out = new Particle_List;
-  
-  
   // look for kt and after for other selectors
-  Final_Data_Map::iterator it =m_fmap.find(Flavour(kf::jet));
+  Final_Data_Map::iterator it = m_fmap.find(Flavour(kf::jet));
   if (it!=m_fmap.end()) {
     if (it->second.r_min>0.) {
       std::vector<double> * diffrates=new std::vector<double>();
@@ -358,7 +371,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
     }
   }
   
-  std::sort(pl_out->begin(),pl_out->end(),Order_PT());
+  std::sort(pl_out->begin(),pl_out->end(),ATOOLS::Order_PT());
   
   p_ana->AddParticleList(m_outlistname,pl_out);
 }

@@ -195,7 +195,8 @@ void Primitive_Analysis::DoAnalysis(Blob_List * const bl, double value) {
   double weight=(*p_partner)["ME_Weight"]->Get<double>();
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
   if (!IsEqual(value,weight)) 
-    msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis : weight in Primitive_Analysis ambiguous! "<<std::endl;
+    msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl
+	     <<"   Weight in Primitive_Analysis ambiguous! "<<std::endl;
   double weight_one=weight;
   int    ncount_one=ncount;
   Blob_Data_Base * info = (*p_partner)["ME_Weight_One"];
@@ -203,10 +204,10 @@ void Primitive_Analysis::DoAnalysis(Blob_List * const bl, double value) {
     weight_one = info->Get<double>();
     ncount_one = (*p_partner)["ME_NumberOfTrials_One"]->Get<int>();
   }
-  m_stats.sum_weight+=weight;
-  m_stats.nevt+=ncount;
-  m_stats.sum_weight_one+=weight_one;
-  m_stats.nevt_one+=ncount_one;
+  m_stats.sum_weight     += weight;
+  m_stats.nevt           += ncount;
+  m_stats.sum_weight_one += weight_one;
+  m_stats.nevt_one       += ncount_one;
   
 
   // do nonsplittable (helper and legacy observables) first

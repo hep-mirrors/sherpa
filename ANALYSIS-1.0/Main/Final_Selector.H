@@ -3,6 +3,7 @@
 
 
 #include "Primitive_Observable_Base.H"
+#include "Calorimeter_Cone.H"
 #include "Kt_Algorithm.H"
 #include "Durham_Algorithm.H"
 #include <vector>
@@ -54,11 +55,14 @@ namespace ANALYSIS {
     void   Extract(ATOOLS::Particle_List *); 
  public:
     Final_Selector(const std::string &,const std::string &);
-    Final_Selector(const std::string &,const std::string &, int mode=0);
+    Final_Selector(const std::string &,const std::string &, int mode);
 
     void AddSelector(const ATOOLS::Flavour &, const Final_Selector_Data &);
     void AddSelector(const ATOOLS::Flavour & ,const ATOOLS::Flavour &, const Final_Selector_Data &);
     void AddSelector(const ATOOLS::Flavour &, int, int);
+    void AddSelector(const ATOOLS::Flavour &, const Final_Selector_Data &,
+		     Calorimeter_Cone * const);
+
     void AddKeepFlavour(const ATOOLS::Flavour &);
 
     void Evaluate(const ATOOLS::Blob_List &,double, int);

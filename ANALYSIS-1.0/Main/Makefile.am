@@ -16,6 +16,7 @@ libAnalysis_la_SOURCES = \
 			 Primitive_Observable_Base.C \
 			 Primitive_Observable.C \
 			 Primitive_Detector.C \
+			 Primitive_Calorimeter.C \
 			 Primitive_Analysis.C \
 	 		 Particle_Selector.C
 noinst_HEADERS         = \
@@ -23,6 +24,7 @@ noinst_HEADERS         = \
 			 Primitive_Observable_Base.H \
 			 Primitive_Observable.H \
 			 Primitive_Detector.H \
+			 Primitive_Calorimeter.H \
 			 Primitive_Analysis.H \
 	 		 Particle_Selector.H
 EXTRA_DIST    = $(CVSINCLUDE)

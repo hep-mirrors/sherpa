@@ -55,6 +55,7 @@ namespace ANALYSIS {
     int                    m_mode;
     long                   m_nevt;
     std::string            m_name;
+
     Observable_List        m_observables;
 
     PL_Container           m_pls;
