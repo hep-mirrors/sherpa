@@ -782,11 +782,11 @@ void Single_Process::SetTotalXS(int _tables)  {
     //   nothing to do for a Single_Process
   }
   if (m_nin==2) {
-    msg.Events()<<"      xs for "<<m_name<<" : "
-		<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+    msg.Events()<<"      xs for "<<om::bold<<m_name<<om::reset<<" : "
+		<<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
+		<<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset<<endl
 		<<"       max : "<<m_max<<endl
-		<<"   exp. eff: "<<(100.*m_totalxs/m_max)<<"%"<<endl;
+		<<om::bold<<"   exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %"<<om::reset<<endl;
   }
   if (m_nin==1) {
     msg.Events()<<"      width for "<<m_name<<" : "
