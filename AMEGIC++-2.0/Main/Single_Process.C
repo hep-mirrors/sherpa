@@ -10,7 +10,6 @@
 #include "Combined_Selector.H"
 
 #include "prof.hh"
-#include "Test_Selector.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
