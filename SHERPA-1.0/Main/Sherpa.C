@@ -56,8 +56,6 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
     if (p_inithandler->InitializeTheFramework()) {
       p_output = new Output_Handler(0);
       okay     =  p_inithandler->CalculateTheHardProcesses();
-      if (rpa.gen.NumberOfEvents()>0)
-	okay   = okay && p_inithandler->InitializeAllHardDecays();
       return okay;
     }
   }
@@ -76,8 +74,8 @@ bool Sherpa::InitializeTheEventHandler()
 						     p_inithandler->GetHardDecayHandler()));
   p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
   //p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
-  //p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Signal Process")));
-  p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Hard decay")));
+  p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Signal Process")));
+  //p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Hard decay")));
   p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
 						  p_inithandler->GetShowerHandler()));
   //p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));

@@ -85,13 +85,17 @@ bool Event_Handler::GenerateEvent()
   while (flag) {
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      if ((*pit)->Type()==std::string("Perturbative")) {
+      if ((*pit)->Type()==std::string("Perturbative") &&
+	  (*pit)->Name()!=std::string("Analysis") ) {
 	bool result=(*pit)->Treat(&m_blobs,weight);
-	// 	ATOOLS::msg.Tracking()<<(*pit)->Name()<<" yields "<<result<<std::endl;
-	//	ATOOLS::msg.Tracking()<<m_blobs;
  	if (result) flag = 1;
       }
     }
+  }
+
+  for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
+    if ((*pit)->Type()==std::string("Perturbative") &&
+	(*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
   }
 
   if (flag==0) flag=1;
@@ -104,7 +108,6 @@ bool Event_Handler::GenerateEvent()
     }
   }
 
-  //if (rpa.gen.Events()) PrintBlobs();
   return 1;
 }
 
