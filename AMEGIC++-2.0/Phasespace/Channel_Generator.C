@@ -163,9 +163,19 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	  break;
 	}
 	if (flag==2) {
+	  Point* ph = p->left;
+	  if (ph->left==0) {
+	    ph = p->right;
+	    if (ph->left==0 && p->middle) ph = p->middle;
+	    if (ph->left==0) {
+	      msg.Error()<<"This seems to be a 2->1 process !!!"<<endl
+			 <<"  "<<p->fl<<" -> { "<<p->left->fl<<" "<<p->right->fl<<" }"<<endl;
+	      abort();
+	    }
+	  }
 	  sf<<"  type  = 1;"<<endl
-	    <<"  mass  = Flavour(kf::code("<<p->left->fl.Kfcode()<<")).Mass();"<<endl
-	    <<"  width = Flavour(kf::code("<<p->left->fl.Kfcode()<<")).Width();"<<endl;
+	    <<"  mass  = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Mass();"<<endl
+	    <<"  width = Flavour(kf::code("<<ph->fl.Kfcode()<<")).Width();"<<endl;
 	  return;
 	}
       }
