@@ -94,6 +94,8 @@ namespace EXTRAXS {
 
   class XS_q1g_q1g : public Single_XS {
     int a,p;
+    int fin_q,ini_q;
+    int swap_ut;
     double Ms,Mt,Mu,aS;
   public:
     XS_q1g_q1g(int _nin,int _nout, 

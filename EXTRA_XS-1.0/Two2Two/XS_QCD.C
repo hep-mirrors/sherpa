@@ -240,39 +240,64 @@ XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) :
   Single_XS(_nin,_nout,_fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  a = _fl[0].IsAnti();
+  ini_q=0;
+  swap_ut=0;
+  if (_fl[1].IsQuark()){
+    ini_q=1;
+    swap_ut=1;
+  }
+
+  fin_q=2;
+  if (_fl[3].IsQuark()) {
+    fin_q=3;  
+    if (swap_ut) swap_ut=0;
+    else swap_ut=1;
+  }
+
+  a = _fl[ini_q].IsAnti();
   p = 1-a;
 
-  p_colours[0][a] = 500;
-  p_colours[2][a] = 501;
+  p_colours[ini_q][a] = 500;
+  p_colours[fin_q][a] = 501;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
 double XS_q1g_q1g::operator()(double s,double t,double u) {
   if (s<m_thres) return 0.;
+  if (swap_ut) {
+    Ms = t/s;
+    Mu = s/t;
+    return  sqr(4.*M_PI*aS)*(-4./9. * (Ms + Mu) +  (s*s + t*t)/(u*u));
+  }
   Ms = u/s;
   Mu = s/u;
   return  sqr(4.*M_PI*aS)*(-4./9. * (Ms + Mu) +  (s*s + u*u)/(t*t));
 }
 
 bool XS_q1g_q1g::SetColours(double s, double t, double u) {
-  Ms      = u/s;
-  Mu      = s/u;
+  if (swap_ut) {
+    Ms      = t/s;
+    Mu      = s/t;
+  }
+  else {
+    Ms      = u/s;
+    Mu      = s/u;
+  }
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
       
 bool XS_q1g_q1g::SetColours() {
   if (Ms > (Ms+Mu) * ran.Get()) {
-    p_colours[3][a] = p_colours[0][a];
-    p_colours[3][p] = p_colours[1][p] = 502;
-    p_colours[1][a] = p_colours[2][a];
+    p_colours[5-fin_q][a] = p_colours[ini_q][a];
+    p_colours[5-fin_q][p] = p_colours[1-ini_q][p] = 502;
+    p_colours[1-ini_q][a] = p_colours[fin_q][a];
   }
   else {
-    p_colours[3][p] = p_colours[2][a];
-    p_colours[1][a] = p_colours[3][a] = 502;
-    p_colours[1][p] = p_colours[0][a];
+    p_colours[5-fin_q][p] = p_colours[fin_q][a];
+    p_colours[1-ini_q][a] = p_colours[5-fin_q][a] = 502;
+    p_colours[1-ini_q][p] = p_colours[ini_q][a];
   }
   return 1;
 }
