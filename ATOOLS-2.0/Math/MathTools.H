@@ -78,6 +78,7 @@ namespace ATOOLS {
 
   double Gammln(double xx);
 
+  double ReIncompleteGamma0(double x,double prec=1.e-6);
 
   /*!
     \file
@@ -152,6 +153,11 @@ namespace ATOOLS {
   /*!
     \fn    double Gammln(double xx)
     \brief calculates the logarithm of the Gammafunction
+  */
+
+  /*!
+    \fn    double ReIncomplietGamma0(double xx)
+    \brief calculates the real part of the incomplete Gammafunction.
   */
 
 }
