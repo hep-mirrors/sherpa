@@ -49,7 +49,7 @@ namespace ANALYSIS {
     Observable_List        m_observables;
 
     PL_Container           m_pls;
-    ATOOLS::Data_Container m_datacontainer;
+    ATOOLS::String_BlobDataBase_Map m_datacontainer;
     Analysis_List          m_subanalyses;
 
     // reference to the event record
@@ -88,7 +88,7 @@ namespace ANALYSIS {
 
     ATOOLS::Blob_Data_Base * operator[](const std::string name) 
     {
-      ATOOLS::Data_Container::const_iterator cit=m_datacontainer.find(name);
+      ATOOLS::String_BlobDataBase_Map::const_iterator cit=m_datacontainer.find(name);
       if (cit==m_datacontainer.end()) return 0;
       return cit->second;
     } 

@@ -95,7 +95,7 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
   int nout=-1;
   std::string name;
   for (Blob_Const_Iterator bit=bl->begin();bit!=bl->end();++bit) {
-    if ((*bit)->Type().find("Signal") !=std::string::npos ) {
+    if ((*bit)->Type()==btp::Signal_Process) {
       nout  = (*bit)->NOutP();
       name  = (*bit)->Type();
       break;
@@ -244,7 +244,7 @@ void Primitive_Analysis::CreateFinalStateParticleList()
   Particle_List * pl = new Particle_List;
 
   for (Blob_Const_Iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
-    if ((*blit)->Type().find("Signal")!=std::string::npos) {
+    if ((*blit)->Type()==btp::Signal_Process) {
       Blob_Data_Base * info=(*(*blit))["ME_Weight"];
       if (info) {
 	m_datacontainer["ME_Weight"]=new Blob_Data<double>(info->Get<double>());
@@ -255,14 +255,14 @@ void Primitive_Analysis::CreateFinalStateParticleList()
       }
     }
     if (m_mode&ANALYSIS::do_hadron ||
-        (m_mode&ANALYSIS::do_shower && (*blit)->Type().find("Shower")!=std::string::npos) ||
-        (m_mode&ANALYSIS::do_me && (*blit)->Type().find("Signal")!=std::string::npos)) {
+        (m_mode&ANALYSIS::do_shower && ((*blit)->Type()==btp::IS_Shower || (*blit)->Type()==btp::FS_Shower)) ||
+        (m_mode&ANALYSIS::do_me && (*blit)->Type()==btp::Signal_Process)) {
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);
 	if (p->DecayBlob()==NULL || 
 	    (m_mode&ANALYSIS::do_hadron)==0 && p->Info()!='G') {
 	  if ((p->Info()!='G' &&  p->Info()!='H')
-	      || (*blit)->Type().find("IS Shower")==std::string::npos)
+	      || (*blit)->Type()==btp::IS_Shower)
 	    pl->push_back(new Particle(p));
 	}
       }
@@ -326,7 +326,7 @@ void Primitive_Analysis::AddParticleList(const std::string & key,Particle_List *
 
 void Primitive_Analysis::AddData(const std::string name, Blob_Data_Base * data) 
 {
-  Data_Container::iterator it=m_datacontainer.find(name);
+  String_BlobDataBase_Map::iterator it=m_datacontainer.find(name);
   if (it==m_datacontainer.end()) {
     m_datacontainer[name]=data;
   }
@@ -346,7 +346,7 @@ void Primitive_Analysis::ClearAllData()
   }
   m_pls.clear();
 
-  for (Data_Container::iterator it=m_datacontainer.begin();
+  for (String_BlobDataBase_Map::iterator it=m_datacontainer.begin();
        it!=m_datacontainer.end(); ++it) delete it->second;
   m_datacontainer.clear();
 }
@@ -366,7 +366,7 @@ void Primitive_Analysis::PrintStatus()
   }
 
   msg.Out()<<"Data_Container:"<<std::endl;
-  for (Data_Container::iterator it=m_datacontainer.begin();
+  for (String_BlobDataBase_Map::iterator it=m_datacontainer.begin();
        it!=m_datacontainer.end(); ++it) {
     msg.Out()<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
   }
