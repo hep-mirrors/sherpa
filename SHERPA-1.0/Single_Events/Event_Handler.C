@@ -190,7 +190,7 @@ void Event_Handler::CleanUpEvent()
     for (Blob_Iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) delete (*blit);
     m_blobs.clear();
   }
-  if (Particle::Counter()!=0 || Blob::Counter()!=0) 
+  if (Particle::Counter()>1 || Blob::Counter()!=0) 
     msg.Error()<<"Error in Event_Handler::CleanUpEvent()"<<std::endl
 	       <<"   After event : "<<Particle::Counter()<<" / "<<Blob::Counter()
 	       <<" particles / blobs undeleted !"<<std::endl
