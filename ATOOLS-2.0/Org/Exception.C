@@ -7,10 +7,13 @@ using namespace ATOOLS;
 std::ostream &ATOOLS::operator<<(std::ostream &str,const ex::type &type)
 {
   switch (type) {
-  case ex::normal_exit   : return str<<"normal exit";
-  case ex::critical_error: return str<<"critical error";
-  case ex::fatal_error   : return str<<"fatal error";
-  case ex::unknown       : return str<<"unknown exception";
+  case ex::normal_exit         : return str<<"normal exit";
+  case ex::unknown_option      : return str<<"unknown option";
+  case ex::inconsistent_option : return str<<"inconsistent option";
+  case ex::not_implemented     : return str<<"not implemented";
+  case ex::critical_error      : return str<<"critical error";
+  case ex::fatal_error         : return str<<"fatal error";
+  case ex::unknown             : return str<<"unknown exception";
   }
   return str;
 }
