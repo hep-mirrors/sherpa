@@ -97,7 +97,8 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
   for (Blob_Const_Iterator bit=bl->begin();bit!=bl->end();++bit) {
     if ((*bit)->Type()==btp::Signal_Process) {
       nout  = (*bit)->NOutP();
-      name  = (*bit)->Type();
+      // orig: (*bit)->Type();
+      name  = (*bit)->TypeSpec();
       break;
     }
   }
@@ -121,7 +122,9 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
 //     if (m_mode&ANALYSIS::output_process) mode=mode|ANALYSIS::output_this;
 //     else 
       if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
-    key=name.substr(17);
+
+      // orig:    key=name.substr(17);
+      key=name;
   }
   
   Primitive_Analysis * ana=GetSubAnalysis(key,mode);
