@@ -373,6 +373,23 @@ bool ISR_Handler::CalculateWeight(const double scale)
   }
   switch (m_mode) {
   case 3 :
+#ifdef TEST__Doubly_Unintegrated_PDF
+    {
+      ATOOLS::Flavour flu(ATOOLS::kf::u);
+      ATOOLS::Flavour fld(ATOOLS::kf::d);
+      ATOOLS::Flavour fls(ATOOLS::kf::s);
+      ATOOLS::Flavour flg(ATOOLS::kf::gluon);
+      p_isrbase[0]->CalculateWeight(0.1,0.3,100.,8100.);
+      p_isrbase[0]->PDF()->GetXPDF(flu);
+      p_isrbase[0]->PDF()->GetXPDF(fld);
+      p_isrbase[0]->PDF()->GetXPDF(fls);
+      p_isrbase[0]->PDF()->GetXPDF(flu.Bar());
+      p_isrbase[0]->PDF()->GetXPDF(fld.Bar());
+      p_isrbase[0]->PDF()->GetXPDF(fls.Bar());
+      p_isrbase[0]->PDF()->GetXPDF(flg);
+      abort();
+    }
+#endif
     if (p_isrbase[0]->CalculateWeight(m_x[0],m_zkey[0][2],m_kpkey[0][3],m_mu2[0]) && 
 	p_isrbase[1]->CalculateWeight(m_x[1],m_zkey[1][2],m_kpkey[1][3],m_mu2[1])) return 1;
     break;
