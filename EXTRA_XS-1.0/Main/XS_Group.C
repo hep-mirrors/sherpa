@@ -322,7 +322,13 @@ void XS_Group::SetTotal()
 	    <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red
 	    <<m_totalerr<<" pb = "<<m_totalerr/m_totalxs*100.
 	    <<" %"<<ATOOLS::om::reset<<" )"<<std::endl
-	    <<"      max = "<<m_max<<std::endl;
+	    <<"      max = "<<m_max<<"\n"<<ATOOLS::om::bold<<m_name
+	    <<ATOOLS::om::reset<<" : "<<ATOOLS::om::blue<<ATOOLS::om::bold
+	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<ATOOLS::om::reset
+	    <<" +/- "<<ATOOLS::om::reset<<ATOOLS::om::blue<<m_totalerr/m_totalxs*100.
+	    <<" %,"<<ATOOLS::om::reset<<ATOOLS::om::bold<<" exp. eff: "
+	    <<ATOOLS::om::red<<(100.*m_totalxs/m_max)<<" %."
+	    <<ATOOLS::om::reset<<std::endl;
 }
 
 bool XS_Group::OneEvent() 
