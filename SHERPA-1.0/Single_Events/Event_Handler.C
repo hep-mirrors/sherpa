@@ -7,18 +7,24 @@ using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
 
-Event_Handler::Event_Handler() {
+Event_Handler::Event_Handler() 
+{
   p_phases  = new Phase_List;
 }
 
-Event_Handler::~Event_Handler() {
+Event_Handler::~Event_Handler() 
+{
+  cout<<"in  Event_Handler::~Event_Handler() "<<endl;
+
   CleanUpEvent();
   EmptyEventPhases();
   
   if (p_phases)  { delete p_phases;  p_phases  = NULL; }
+  cout<<"out Event_Handler::~Event_Handler() "<<endl;
 }
 
-void Event_Handler::AddEventPhase(Event_Phase_Handler * _phase) {
+void Event_Handler::AddEventPhase(Event_Phase_Handler * _phase) 
+{
   std::string _type = _phase->Type();
   std::string _name = _phase->Name();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
@@ -32,16 +38,19 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * _phase) {
   p_phases->push_back(_phase);
 }
 
-void Event_Handler::EmptyEventPhases() {
+void Event_Handler::EmptyEventPhases() 
+{
   if (p_phases) {
     while (!p_phases->empty()) {
+      cout<<" deleting "<<p_phases->back()->Name()<<endl;
       delete p_phases->back();
       p_phases->pop_back();
     }
   }
 }  
 
-void Event_Handler::PrintGenericEventStructure() {
+void Event_Handler::PrintGenericEventStructure() 
+{
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       msg.Debugging()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<endl;
@@ -49,7 +58,8 @@ void Event_Handler::PrintGenericEventStructure() {
   }
 }
 
-bool Event_Handler::GenerateEvent() {
+bool Event_Handler::GenerateEvent() 
+{
   CleanUpEvent();
   Blob * hardblob = new Blob();
   hardblob->SetType(string("Signal Process : "));
@@ -74,7 +84,7 @@ bool Event_Handler::GenerateEvent() {
     flag = 0;
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       if ((*pit)->Type()==string("Hadronization")) {
-	msg.Debugging()<<"#############"<<endl
+	msg.Debugging()<<"#############"
 		       <<"   Try "<<(*pit)->Name()<<" : "<<m_blobs.size()<<endl;
 	if ((*pit)->Treat(&m_blobs)) flag = 1;
       }
@@ -85,7 +95,8 @@ bool Event_Handler::GenerateEvent() {
   return 1;
 }
 
-void Event_Handler::CleanUpEvent() {
+void Event_Handler::CleanUpEvent() 
+{
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
       (*pit)->CleanUp();
