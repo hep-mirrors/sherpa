@@ -60,10 +60,10 @@ for I in $* ; do
     echo "         --rm-libs      remove shared libraries (does not remove '.lo' files)" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
-  elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$ECXXFLAGS" "$I
-  elif [ "$DFFLAGS" = "TRUE" ]; then DFFLAGS="" && EFFLAGS=$EFFLAGS" "$I
-  elif [ "$DCOPT" = "TRUE" ]; then DCOPT="" && ECOPT=$ECOPT" "$I
-  elif [ "$DMOPT" = "TRUE" ]; then DMOPT="" && EMOPT=$EMOPT" "$I
+  elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$I" "$ECXXFLAGS
+  elif [ "$DFFLAGS" = "TRUE" ]; then DFFLAGS="" && EFFLAGS=$I" "$EFFLAGS
+  elif [ "$DCOPT" = "TRUE" ]; then DCOPT="" && ECOPT=$I" "$ECOPT
+  elif [ "$DMOPT" = "TRUE" ]; then DMOPT="" && EMOPT=$I" "$EMOPT
   else echo "makeinstall: error: unrecognized option '$I'. try '-h'" && \
     exit 1 
   fi
