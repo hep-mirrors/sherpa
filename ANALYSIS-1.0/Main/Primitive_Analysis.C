@@ -354,6 +354,28 @@ void Primitive_Analysis::CreateFinalStateParticleList()
   m_pls["FinalState"]=pl;
 }
 
+void Primitive_Analysis::CreateIntermediateHadronsList()
+{
+  PL_Container::const_iterator cit=m_pls.find("IntermediateHadrons");
+  if (cit!=m_pls.end()) return;
+
+  Particle_List * pl = new Particle_List;
+
+  if (m_mode&ANALYSIS::do_hadron) {
+
+    for (Blob_Const_Iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
+      if ((*blit)->Type()==btp::Hadron_Decay || (*blit)->Type()==btp::Fragmentation) {
+	for (int i=0;i<(*blit)->NOutP();++i) {
+	  Particle * p = (*blit)->OutParticle(i);
+	  if (p->Flav().IsHadron()) pl->push_back(new Particle(*p));
+	}
+      }
+    }
+  }
+
+  m_pls["IntermediateHadrons"]=pl;
+}
+
 void Primitive_Analysis::CreateChargedParticleList()
 {
   PL_Container::const_iterator cit=m_pls.find("ChargedParticle");
@@ -376,6 +398,7 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   if (cit!=m_pls.end()) return cit->second;
 
   if (key=="FinalState") CreateFinalStateParticleList();
+  else if (key=="IntermediateHadrons") CreateIntermediateHadronsList();
   //  else if (key=="ChargedParticle") CreateChargedParticleList();
   if (key=="Analysed") return 0;
 
@@ -394,7 +417,7 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   }
 
   if (ps==0) {
-    ps = new Particle_Selector("FinalState",key);
+    ps = new Particle_Selector("FinalState","IntermediateHadrons",key);
     AddObservable(ps);
   }
 
