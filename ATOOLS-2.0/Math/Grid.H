@@ -2,6 +2,7 @@
 #define Grid_H
 
 #include "Node.H"
+#include <iostream>
 
 namespace ATOOLS {
 
@@ -11,6 +12,9 @@ namespace ATOOLS {
     size_t m_dim, m_points;
 
     Node<double> *p_root;
+
+    std::string   m_file;
+    std::fstream *p_file;
 
     void Allocate(Node<double> *current,
 		  const size_t node);
@@ -29,6 +33,9 @@ namespace ATOOLS {
 		     Node<double> *const node,std::vector<double> &y,
 		     const size_t j);
 
+    bool WriteOut(Node<double> *current,size_t &node);
+    bool ReadIn(Node<double> *current,size_t &node);
+
   public:
 
     // constructor
@@ -39,6 +46,9 @@ namespace ATOOLS {
 
     // member functions
     double Interpolate(const std::vector<double> &x) const;
+
+    bool WriteOut(const std::string &filename);
+    bool ReadIn(const std::string &filename);
 
     // inline functions
     inline void SetX(const size_t position,
@@ -56,7 +66,7 @@ namespace ATOOLS {
 
     inline double operator()(const std::vector<double> &x) const
     { return Interpolate(x); }
-
+    
   };// end of class Interpolate
 
 };// end of namespace ATOOLS

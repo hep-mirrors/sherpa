@@ -25,7 +25,7 @@ void Grid::Allocate(Node<double> *current,const size_t node)
 {
 #ifdef DEBUG__Grid
   msg.Debugging()<<"Grid<"<<m_dim<<","<<m_points
-		 <<">Allocate("<<current<<","<<node<<") {\n";
+		 <<">::Allocate("<<current<<","<<node<<") {\n";
   {
     msg_Indent();
 #endif
@@ -192,4 +192,67 @@ double Grid::Interpolate(const std::vector<double> &x) const
   return cur;
 }
 
+bool Grid::WriteOut(const std::string &filename)
+{
+  p_file = new std::fstream((m_file=filename).c_str(),std::ios::out);
+  if (p_file->bad()) {
+    delete p_file;
+    return false;
+  }
+  p_file->precision(14);
+  (*p_file)<<m_dim<<" "<<m_points<<" {"<<std::endl;
+  size_t node=0;
+  bool result=WriteOut(p_root,node);
+  (*p_file)<<"}"<<std::endl;
+  delete p_file;
+  return result;
+}
+
+bool Grid::WriteOut(Node<double> *current,size_t &node)
+{
+  bool result=true;
+  for (size_t i=0;i<current->size();++i) {
+    (*p_file)<<(*current)[i]<<" ";
+    if (current->operator->()==NULL) node=0;
+    else {
+      if (!WriteOut((*current)()[i],node)) result=false;
+      ++node;
+    }
+    if (node==2) (*p_file)<<std::endl;
+  }
+  return result;
+}
+
+bool Grid::ReadIn(const std::string &filename)
+{
+  p_file = new std::fstream((m_file=filename).c_str(),std::ios::in);
+  if (p_file->bad()) {
+    delete p_file;
+    return false;
+  }
+  std::string dummy;
+  size_t dim, points;
+  p_file->precision(14);
+  (*p_file)>>dim>>points>>dummy;
+  if (dim!=m_dim || points!=m_points) {
+    delete p_file;
+    return false;
+  }
+  size_t node=0;
+  bool result=ReadIn(p_root,node);
+  delete p_file;
+  return result;
+}
+
+bool Grid::ReadIn(Node<double> *current,size_t &node)
+{
+  bool result=true;
+  for (size_t i=0;i<current->size();++i) {
+    if (p_file->eof()) return false;
+    (*p_file)>>(*current)[i];
+    if (current->operator->()!=NULL) 
+      if (!ReadIn((*current)()[i],node)) result=false;
+  }
+  return result;
+}
 
