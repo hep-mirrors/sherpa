@@ -853,9 +853,8 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
     }
 
-    //RescaleXSec(1.);
     if (m_totalxs>0.) {
-      if (var==TotalVar()) {
+      if (ATOOLS::IsEqual(var,TotalVar())) {
 	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
 	return 1;
       }
