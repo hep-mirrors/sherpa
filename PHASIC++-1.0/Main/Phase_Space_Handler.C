@@ -18,9 +18,7 @@
 #include "Blob.H"
 #include "Message.H"  
 #include "Random.H"
-
-#include <sys/types.h>
-#include <sys/stat.h>
+#include "Shell_Tools.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Phase_Space_Handler
@@ -476,7 +474,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
 {
   msg_Tracking()<<"Write out channels into directory : "<<pID<<endl;
   int  mode_dir = 448;
-  mkdir(pID.c_str(),mode_dir); 
+  ATOOLS::MakeDir(pID.c_str(),mode_dir); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+string("/MC_Beam"));
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+string("/MC_ISR"));
   if (p_zchannels != 0) p_zchannels->WriteOut(pID+string("/MC_KMR_Z"));
