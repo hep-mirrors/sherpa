@@ -25,7 +25,7 @@ for I in $* ; do
     echo "                     --force-tar    force extraction of tar files (enables '-e')" && \
     echo "                     -h             display this help and exit" && \
     exit 0
-  else echo "makeinstall: error: unrecognized option '$I', try '-h'" && \
+  else echo "makeinstall: error: unrecognized option '$I'. try '-h'" && \
     exit 1 ;
   fi
 done
@@ -80,7 +80,12 @@ do
     if ! make install -j2 "CXXFLAGS=-g $OPTIMIZE" "FFLAGS=-g" ; then
       echo "makeinstall: error: \"make install\" in $I failed"
       if test ! "$NOABORT" = "TRUE" ; then
-        exit 1
+        until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" ; do
+    	  read -t 300 -p "continue anyway (y/n) ? " CONTINUE 
+	  if test "$CONTINUE" = "n" ; then
+            exit 1
+	  fi
+	done
       fi
     fi
     cd ..
