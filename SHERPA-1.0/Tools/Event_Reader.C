@@ -304,10 +304,10 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 	      FS  = FS.substr(pos);
 	    }
 	  }
-	  int hardsize = ISc.size()+FSc.size();
+	  size_t hardsize = ISc.size()+FSc.size();
 	  int control;
 	  Vec4D cms = Vec4D(0.,0.,0.,0.);
-	  for (int i=0;i<hardsize;i++) {
+	  for (size_t i=0;i<hardsize;i++) {
 	    getline(*p_instream,buffer);
 	    if (i<ISc.size()) control = ISc[i];
 	                 else control = FSc[i-ISc.size()]; 

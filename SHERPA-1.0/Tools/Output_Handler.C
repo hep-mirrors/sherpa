@@ -140,8 +140,8 @@ void Output_Handler::AddInputMode(const iotype::code c1)
 
 bool Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weight) 
 {
-  if (m_on==false) return;
-  if (!(m_io&1)) return 0;
+  if (m_on==false) return false;
+  if (!(m_io&1)) return false;
   for (int i=1;i<(int)iotype::size;i*=2) {
     if (m_outtype&i) {
       switch (m_outtype) {
@@ -149,7 +149,7 @@ bool Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double 
 	if (m_evtcount%m_filesize==0) {
 	  m_outstream<<"Sherpa"<<"  "<<m_filesize<<" \n";
 	}
-	if (!blobs->empty()) { SherpaOutput(blobs,weight); return 1; }
+	if (!blobs->empty()) { SherpaOutput(blobs,weight); return true; }
 	else { 
 	  msg.Error()<<"Error in Output_Handler::OutputToFormat."<<std::endl
 		     <<"   empty bloblist."<<std::endl
@@ -162,10 +162,10 @@ bool Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double 
 	p_event = new HepMC::GenEvent();
 	p_hepmc->Sherpa2HepMC(_blobs,p_event);
 	p_event->print();
-	return 1;
+	return true;
 #endif
       case iotype::HepEvt: 
-	p_hepevt->Sherpa2HepEvt(blobs); return 1;
+	p_hepevt->Sherpa2HepEvt(blobs); return true;
       default:
 	msg.Error()<<"Error in Output_Handler::OutputToFormat."<<std::endl
 		   <<"   Unknown Output format : "<<m_outtype<<std::endl
@@ -174,13 +174,13 @@ bool Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double 
       }
     }
   }
-  return 0;
+  return false;
 }
 
 bool Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs) 
 {
-  if (m_on==false) return;
-  if (!(m_io&2)) return 0;
+  if (m_on==false) return false;
+  if (!(m_io&2)) return false;
   switch (m_intype) {
   case iotype::Sherpa: return SherpaInput(blobs); 
 #ifdef _USE_HEPMC_
@@ -194,7 +194,7 @@ bool Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
 	       <<"   No input, continue run ... ."<<std::endl;
     break;
   }
-  return 0;
+  return false;
 }
 
 /*------------------------------------------------------------------
@@ -258,7 +258,7 @@ void Output_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double we
 
 bool Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs) 
 { 
-  if (m_on==false) return;
+  if (m_on==false) return false;
   blobs->clear();
 
   m_evtcount++;
@@ -352,6 +352,6 @@ bool Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
     m_evtcount=0;
   }
 
-  std::cout<<(*blobs)<<std::endl;
+  //  std::cout<<(*blobs)<<std::endl;
   return true;
 }
