@@ -73,6 +73,7 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
   delete [] moms;
   delete [] bflag;
 
+  // finalize (sort and release used containers)
   SortPT();
 
   p_jets=0;
@@ -135,6 +136,7 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
     }
   }
 
+  // recalc matrix
   while (n>0) {
     PROFILE_LOCAL(" main loop ");
     if (ii!=jj) {
