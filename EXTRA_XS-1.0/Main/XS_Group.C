@@ -188,7 +188,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	  if (xs!=NULL) {
 	    xs->SetTotalXS(singlexs);
 	    xs->SetTotalError(singleerr);
-	    xs->SetMax(singlemax,false);
+	    if (xs!=this) xs->SetMax(singlemax,true);
 	    xs->SetSum(singlesum);
 	    xs->SetSumSqr(singlesumsqr);
 	    xs->SetPoints(singlen);
@@ -198,6 +198,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	} while (infile);
       }
       infile.close();
+      SetMax(0.,false);
       if (hits==0) {
 	p_pshandler->ReadIn(resultpath+std::string("/MC_")+m_name);
 	if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
