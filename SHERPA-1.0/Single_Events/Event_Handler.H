@@ -34,6 +34,7 @@ namespace SHERPA {
     void PrintEvent(int);
 
     void SetAnalysis(Sample_Analysis *);
+    APHYTOOLS::Blob_List * GetBlobs() { return &m_blobs; }
   };
 }
 #endif

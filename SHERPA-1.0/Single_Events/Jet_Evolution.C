@@ -11,7 +11,7 @@ using namespace std;
 
 Jet_Evolution::Jet_Evolution(Matrix_Element_Handler * _mehandler,
 			     Shower_Handler * _showerhandler) :
-  p_mehandler(_mehandler), p_showerhandler(_showerhandler), p_interface(0)
+  p_mehandler(_mehandler), p_showerhandler(_showerhandler), p_interface(NULL)
 {
   m_name      = string("Jet_Evolution : ")+p_showerhandler->ShowerGenerator();
   m_type      = string("Perturbative");

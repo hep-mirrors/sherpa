@@ -8,7 +8,8 @@ using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
 
-Event_Handler::Event_Handler() 
+Event_Handler::Event_Handler() :
+  p_analysis(NULL)
 {
   p_phases  = new Phase_List;
 }
@@ -20,8 +21,8 @@ Event_Handler::~Event_Handler()
   CleanUpEvent();
   EmptyEventPhases();
   
-  if (p_phases)  { delete p_phases;  p_phases  = NULL; }
-  cout<<"out Event_Handler::~Event_Handler() "<<endl;
+  if (p_phases)   { delete p_phases;   p_phases   = NULL; }
+  if (p_analysis) { delete p_analysis; p_analysis = NULL; }
 }
 
 void Event_Handler::AddEventPhase(Event_Phase_Handler * _phase) 
@@ -43,7 +44,6 @@ void Event_Handler::EmptyEventPhases()
 {
   if (p_phases) {
     while (!p_phases->empty()) {
-      cout<<" deleting "<<p_phases->back()->Name()<<endl;
       delete p_phases->back();
       p_phases->pop_back();
     }
@@ -112,10 +112,10 @@ void Event_Handler::CleanUpEvent()
   Flow::ResetCounter();
 }
 
+
 void Event_Handler::PrintEvent(int mode) {
   switch (mode) {
     case 1:  PrintBlobs();   return;
-    default: PrintPartons(); return;
   }
 }
 
@@ -132,24 +132,9 @@ void Event_Handler::PrintBlobs() {
   msg.Out()<<"  -------------------------------------------------  "<<endl;
 }
 
-void Event_Handler::PrintPartons() {
-  /*
-    msg.Out()<<"  -------------------------------------------------  "<<endl;
-    if (!m_partons.empty()) {
-    for (Parton_Iterator plit=m_partons.begin();plit!=m_partons.end();++plit) {
-    msg.Out()<<(*plit)<<endl;
-    }
-    }
-    else {
-    msg.Out()<<"  ***** Empty Event *****  "<<endl;
-    }
-    msg.Out()<<"  -------------------------------------------------  "<<endl;
-  */
-}
-
 
 void Event_Handler::PerformAnalysis() {
-  //  p_analysis->DoAnalysis(&m_partons);
+  if (p_analysis) p_analysis->DoAnalysis(&m_partons);
 }
 
 void Event_Handler::SetAnalysis(Sample_Analysis * _analysis) { _analysis = p_analysis; }

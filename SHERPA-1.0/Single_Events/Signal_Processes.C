@@ -73,19 +73,19 @@ void Signal_Processes::FillBlob(Blob * _blob)
   _blob->SetType(_blob->Type()+p_mehandler->ProcessName());
   _blob->SetStatus(1);
 
-  msg.Debugging()<<"Filled Blob : "<<_blob->Status()<<endl;
-
   Vec4D cms = Vec4D(0.,0.,0.,0.);
   for (int i=0;i<p_mehandler->Nin();i++) cms += p_mehandler->Momenta()[i];
   _blob->SetCMS(cms);
   _blob->SetBeam(-1);
 
-  // make shure that blob is empty
+  // make sure that blob is empty
   _blob->DeleteOwnedPartons();
 
   Parton * parton;
   for (int i=0;i<p_mehandler->Nin();i++) {
-    parton = new Parton(0,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
+    msg.Debugging()<<"Fill in parton in blob :"<<i<<","
+		   <<p_mehandler->Flavs()[i]<<","<<p_mehandler->Momenta()[i]<<endl;
+    parton = new Parton(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
     parton->SetNumber(int(parton));
     parton->SetDecayBlob(_blob);
     parton->SetStatus(2);
@@ -93,7 +93,7 @@ void Signal_Processes::FillBlob(Blob * _blob)
     _blob->AddToInPartons(parton);
   }
   for (int i=p_mehandler->Nin();i<p_mehandler->Nin()+p_mehandler->Nout();i++) {
-    parton = new Parton(0,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
+    parton = new Parton(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
     parton->SetProductionBlob(_blob);
     parton->SetStatus(1);
     parton->SetInfo('H');
