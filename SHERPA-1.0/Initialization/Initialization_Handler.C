@@ -147,16 +147,16 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   if (nr<=0) {
     ATOOLS::ParticleInit(m_path); 
   }
-  
+
+  bool okay = InitializeTheIO();
+ 
   if (m_mode==9999) {
     msg.Out()<<"SHERPA will read in the events."<<std::endl
 	     <<"   The full framework is not needed."<<std::endl;
     InitializeTheAnalyses();
     return true;
   }
-  
-  bool okay = InitializeTheIO();
-  
+     
   okay = okay && InitializeTheModel();  
 
   //  set masses and widths from command line
