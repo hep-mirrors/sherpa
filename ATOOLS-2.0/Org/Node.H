@@ -10,6 +10,8 @@ namespace ATOOLS {
   private:
     
     std::vector<Node<Node_Type>*> *p_next;
+
+    Node();
     
   public:
 
@@ -19,8 +21,9 @@ namespace ATOOLS {
     // destructor
     ~Node();
     
-    // member function
+    // member functions
     std::vector<Node<Node_Type>*> *operator->();
+    std::vector<Node<Node_Type>*> &operator()();
 
   };// end of class Node
 

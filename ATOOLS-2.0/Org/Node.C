@@ -29,6 +29,12 @@ namespace ATOOLS {
     return p_next; 
   }
   
+  template <class Node_Type>
+  std::vector<Node<Node_Type>*> &Node<Node_Type>::operator()() 
+  { 
+    return *p_next; 
+  }
+  
 }// end of namespace ATOOLS
 
 #endif
