@@ -37,7 +37,7 @@ bool Momentum_Shifter::CalculateShift()
 
 bool Momentum_Shifter::DetermineDirection()
 {
-  if (m_setshift) {
+  if (m_setshift && !m_setdirection) {
     double abs=Vec3D(m_shift).Abs();
     if (abs==0.0) {
       msg.Error()<<"Momentum_Shifter::DetermineDirection(): "
