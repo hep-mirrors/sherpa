@@ -247,6 +247,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 	    blob->SetId();
 	    p_beamblob[i]=blob;
 	    okay=true;
+	    treat[i]=true;
 	  }
 	}
       }
