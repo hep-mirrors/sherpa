@@ -1,8 +1,6 @@
-#ifndef Event_Phase_Handler_h
-#define Event_Phase_Handler_h
+#ifndef Event_Phase_Handler_H
+#define Event_Phase_Handler_H
 
-//#include "Parton_List.H"
-//#include "Parton.H"
 #include "Blob_List.H"
 #include "Blob.H"
 
@@ -14,14 +12,31 @@ namespace SHERPA {
     Event_Phase_Handler();
     Event_Phase_Handler(std::string);
     virtual ~Event_Phase_Handler();
-    virtual bool Treat(ATOOLS::Blob_List *, double &) = 0;
-    virtual void        CleanUp()                     = 0;
-    virtual void        Finish(std::string)           = 0;
-    virtual std::string Type();
-    virtual void        SetType(std::string);
-    virtual std::string Name();
-    virtual void        SetName(std::string);
+    virtual bool  Treat(ATOOLS::Blob_List *, double &) = 0;
+    virtual void  CleanUp() = 0;
+    virtual void  Finish(const std::string &) = 0;
+
+    const std::string & Type() const;
+    const std::string & Name() const;
+    void  SetType(const std::string &);
+    void  SetName(const std::string &);
   };
+
+  inline const std::string & Event_Phase_Handler::Type() const {
+    return m_type;
+  }
+
+  inline const std::string & Event_Phase_Handler::Name() const {
+    return m_name;
+  }
+
+  inline void Event_Phase_Handler::SetType(const std::string & type) {
+    m_type = type;
+  }
+
+  inline void Event_Phase_Handler::SetName(const std::string & name) {
+    m_name = name;
+  }
 
   /*!
     \file 
