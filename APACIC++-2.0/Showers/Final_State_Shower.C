@@ -249,8 +249,8 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 	      nopart=d2;
 	    }
 	    else {
-	      partner=d1;
-	      nopart=d2;
+	      partner=d2;
+	      nopart=d1;
 	    }
 
 	    partner->part->SetFlow(1,mo->part->GetFlow(1));
