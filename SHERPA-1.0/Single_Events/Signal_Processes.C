@@ -94,6 +94,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
  		p_remnants[i]->QuickClear();
  		if (!p_remnants[i]->Extract(parton)) success=false;
 	      }
+	      blit=bloblist->begin();
 	    }
 	    if (success) {
 	      FillBlob(myblob,weight,ntrial);
