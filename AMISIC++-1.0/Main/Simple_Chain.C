@@ -52,7 +52,7 @@ Simple_Chain::Simple_Chain():
   m_kfactorscheme(1),
   m_maxtrials(1),
   m_external(false),
-  m_regulate(true)
+  m_regulate(false)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -89,7 +89,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   m_kfactorscheme(1),
   m_maxtrials(1),
   m_external(true),
-  m_regulate(true)
+  m_regulate(false)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
@@ -355,7 +355,7 @@ bool Simple_Chain::ReadInData()
   if (reader->ReadFromFile(helps,"GENERATION_MODE")) {
     m_weighted=helps.find("Weighted")!=std::string::npos;
   }
-  int regulate=1;
+  int regulate=0;
   if (reader->ReadFromFile(regulate,"REGULATE_XS")) {
     m_regulate=regulate;
     if (!reader->ReadFromFile(m_regulator,"XS_REGULATOR")) m_regulator="Massive_Propagator";
@@ -372,7 +372,7 @@ bool Simple_Chain::ReadInData()
   converter.clear();
   converter<<ATOOLS::rpa.gen.Bunch(1);
   converter>>help[1];
-  outputpath=std::string("MIG_")+help[0]+std::string("_")+help[1]+
+  outputpath=std::string("MIG_")+help[0]+help[1]+
     std::string("_")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms());
   if (m_regulate) {
     outputpath+=std::string("_")+m_regulator[0];
