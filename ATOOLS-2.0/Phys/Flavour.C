@@ -377,11 +377,13 @@ std::string Flavour::TexName() const
   case kf::sNu1 :{name=std::string("\\tilde\\nu_1");break;}
   case kf::sNu2 :{name=std::string("\\tilde\\nu_2");break;}
   case kf::sNu3 :{name=std::string("\\tilde\\nu_3");break;}
- 
+  case kf::p_plus :{name+=std::string("P");break;}
+  case kf::jet :{name=std::string("j");break;}
+  case kf::lepton :{name=std::string("l");break;}
+  case kf::neutrino :{name=std::string("\\nu");break;}
+  case kf::quark :{name=std::string("q");break;}
   default : break;
   }
-
-  //Nomenklatur fuer Anti-Tilde-Teilchen nochmal ueberpruefen
 
   if (anti) {
   switch(kfc) {
@@ -417,7 +419,7 @@ std::string Flavour::TexName() const
   case kf::sTau1 :{name=std::string("\\tilde\\tau_1^\\ti");break;}
   case kf::sNu1 :{name=std::string("\\tilde\\nu_1^\\ti");break;}
   case kf::sNu2 :{name=std::string("\\tilde\\nu_2^\\ti");break;}
-  case kf::sNu3 :{name=std::string("\\tilde\\nu_^\\ti3");break;}  
+  case kf::sNu3 :{name=std::string("\\tilde\\nu_3^\\ti");break;}  
   default : break;}
   }
   
