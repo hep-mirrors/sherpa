@@ -789,7 +789,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #endif
     size_t trials=0;
     bool test=false;
-    while (!test && m_maxtrials) {
+    while (!test && trials<m_maxtrials) {
       ++trials;
       dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[m_selected])->SetAtoms(true);
       (*p_processes)[m_selected]->SelectOne();
