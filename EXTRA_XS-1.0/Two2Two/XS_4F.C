@@ -20,6 +20,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
+  for (int i=1;i<4;i++) { if (flavours[0]!=flavours[i])      return NULL; }
   if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
       ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1_f1f1(nin,nout,flavours); 
   return NULL;
@@ -27,47 +28,56 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
 
 XS_f1f1_f1f1::XS_f1f1_f1f1(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours):
-  Single_XS(nin,nout,flavours), m_Z_on(true), m_P_on(true), m_anti(int(flavours[0].IsAnti()))
+  Single_XS(nin,nout,flavours), m_Z_on(true), m_P_on(true), 
+  m_anti(-2*int(flavours[0].IsAnti())+1),
+  m_y3f(2*int(flavours[0].IsUptype())-1)
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_aqed      = MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
-  m_eq        = flavours[0].Charge();
+  m_eq        = m_anti * flavours[0].Charge();
   m_mz2       = ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
   m_wz2       = ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width());
   m_sin2tw    = ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
   m_cos2tw    = 1.-m_sin2tw;
   m_pref_qed  = (4.*M_PI*m_aqed*m_eq*m_eq);
-  m_pref_Z    = (4.*M_PI*m_aqed)/(m_sin2tw*m_cos2tw);
+  m_pref_Z    = (4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw);
   if (!ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())      m_Z_on = false;
   if (!ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) m_P_on = false;
-  std::cout<<"Init f1f1 -> f1f1 : "<<m_Z_on<<", "<<m_P_on
-	   <<"("<<m_pref_Z<<", "<<m_pref_qed<<" <- "<<sqrt(4.*M_PI*m_aqed)*m_eq<<")"<<std::endl;
+  std::cout<<"Init f1f1 -> f1f1 : "<<m_anti<<" : "<<m_Z_on<<", "<<m_P_on
+	   <<"("<<m_pref_Z<<", "<<m_pref_qed<<" <- "<<sqrt(4.*M_PI*m_aqed)*m_eq<<","
+	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
 }
 
 double XS_f1f1_f1f1::operator()(double s,double t,double u) 
 {
   M_t = 0., M_u = 0., M_mix = 0.;
   if (m_P_on) {
-    M_t   +=  sqr(m_pref_qed)     * (s*s+u*u)/(t*t);
-    M_mix += -sqr(m_pref_qed)/3.  * (s*s)/(t*u);
-    M_u   +=  sqr(m_pref_qed)     * (s*s+t*t)/(u*u); 
+    M_t   +=     sqr(m_pref_qed)    * (s*s+u*u)/(t*t);
+    M_mix +=  2.*sqr(m_pref_qed)/3. * (s*s)/(t*u);
+    M_u   +=     sqr(m_pref_qed)    * (s*s+t*t)/(u*u); 
   }
   if (m_Z_on) {
-    M_t   +=  sqr(m_pref_Z) /((t-m_mz2)*(t-m_mz2)) *
-      (sqr(sqr(1.-2.*m_eq*m_sin2tw)+sqr(2.*m_eq*m_sin2tw)) * (s*s+u*u) +
-       sqr(sqr(1.-2.*m_eq*m_sin2tw)-sqr(2.*m_eq*m_sin2tw)) * (s*s-u*u));
-    M_mix +=  0.;
-    M_u   +=  sqr(m_pref_Z) /((u-m_mz2)*(u-m_mz2)) *
-      (sqr(sqr(1.-2.*m_eq*m_sin2tw)+sqr(2.*m_eq*m_sin2tw)) * (s*s+t*t) +
-       sqr(sqr(1.-2.*m_eq*m_sin2tw)-sqr(2.*m_eq*m_sin2tw)) * (s*s-t*t));
+    M_t   +=     sqr(m_pref_Z) /(4.*(sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      (sqr(sqr(m_y3f-2.*m_eq*m_sin2tw)+sqr(2.*m_eq*m_sin2tw)) * (s*s+u*u) +
+       sqr(sqr(m_y3f-2.*m_eq*m_sin2tw)-sqr(2.*m_eq*m_sin2tw)) * (s*s-u*u));
+    M_mix +=  4.*sqr(m_pref_Z)/3. /4. *
+      ((t-m_mz2)*(u-m_mz2)-m_mz2*m_wz2)/(sqr((t-m_mz2)*(u-m_mz2)-m_mz2*m_wz2)+m_mz2*m_wz2*(t+u-2.*m_mz2)) *
+      (sqr(sqr(m_y3f-2.*m_eq*m_sin2tw))+sqr(sqr(2.*m_eq*m_sin2tw))) * s*s;
+    M_u   +=     sqr(m_pref_Z) /(4.*(sqr(u-m_mz2)+m_mz2*m_wz2)) *
+      (sqr(sqr(m_y3f-2.*m_eq*m_sin2tw)+sqr(2.*m_eq*m_sin2tw)) * (s*s+t*t) +
+       sqr(sqr(m_y3f-2.*m_eq*m_sin2tw)-sqr(2.*m_eq*m_sin2tw)) * (s*s-t*t));
   }
   if (m_P_on && m_Z_on) {
-    M_t   +=  m_pref_qed*m_pref_Z    / (t*(t-m_mz2))  * 
-      ( sqr(1.-4.*m_eq*m_sin2tw) * (s*s+u*u) + 1. * (s*s-u*u));
-    M_mix += -m_pref_qed*m_pref_Z/3. * (1/(t*(u-m_mz2)) + 1/(u*(t-m_mz2)))  * 
-      ( sqr(1.-2.*m_eq*m_sin2tw) + sqr(2.*m_eq*m_sin2tw) ) * (s*s);
-    M_u   +=  m_pref_qed*m_pref_Z    / (u*(u-m_mz2))  * 
-      ( sqr(1.-4.*m_eq*m_sin2tw) * (s*s+u*u) + 1. * (s*s-t*t));
+    M_t   +=  m_pref_qed*m_pref_Z /2. *                   
+      (t-m_mz2)/(t*(sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      ( sqr(m_y3f-4.*m_eq*m_sin2tw) * (s*s+u*u) + 1. * (s*s-u*u));
+    M_mix += 2.*m_pref_qed*m_pref_Z/3./2. * 
+      ((u-m_mz2)/(t*(sqr(u-m_mz2)+m_mz2*m_wz2)) + 
+       (t-m_mz2)/(u*(sqr(t-m_mz2)+m_mz2*m_wz2)) )  * 
+      ( sqr(m_y3f-2.*m_eq*m_sin2tw) + sqr(2.*m_eq*m_sin2tw) ) * (s*s);
+    M_u   +=  m_pref_qed*m_pref_Z /2.  * 
+      (u-m_mz2)/(u*(sqr(u-m_mz2)+m_mz2*m_wz2)) *
+      ( sqr(m_y3f-4.*m_eq*m_sin2tw) * (s*s+t*t) + 1. * (s*s-t*t));
   }
   return M_t + M_u + M_mix;
 }

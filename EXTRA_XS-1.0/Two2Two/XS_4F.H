@@ -26,7 +26,7 @@ namespace EXTRAXS {
     double m_kappa, m_colfac;
     double M_t, M_u, M_mix;
     bool   m_Z_on, m_P_on;
-    int    m_anti;
+    int    m_anti, m_y3f;
   public:
     // constructor
     XS_f1f1_f1f1(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
