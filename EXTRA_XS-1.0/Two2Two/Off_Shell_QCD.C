@@ -158,8 +158,28 @@ Complex Apm(const ATOOLS::Vec4D *p)
 			 (kp[2]+kp[3])/kp[3]*kt[3]));
 }
 
+Complex Lpp(const ATOOLS::Vec4D *p)
+{
+  double kp[4], km[4];
+  Complex kt[4], qt[3];
+  for (short unsigned int i=2;i<4;++i) {
+    kp[i]=p[i].PPlus();
+    km[i]=p[i].PMinus();
+    double spt=p[i].PPerp();
+    kt[i]=Complex(spt*p[i].CosPhi(),spt*p[i].SinPhi());
+    ATOOLS::Vec4D pi=p[i-2];
+    if (i==3) pi=-1.0*pi;
+    spt=pi.PPerp();
+    qt[i-1]=Complex(spt*pi.CosPhi(),spt*pi.SinPhi());
+  }
+  return 2.0*std::conj(qt[1])*(p[0]-p[2]).PPerp2()/(p[0]-p[2]).Abs2()*qt[2]
+    /kt[2]/kt[3];
+}
+
 #define USING__NLO_LEV
-#define USING__Angular_Ordering_Check
+#define TESTING__LO_LEV
+// #define USING__LEV
+// #define USING__Angular_Ordering_Check
 // #define USING__NLO_LEV_Rapidity_Check
 // #define USING__Turn
 // #define USING__LO_Offshell_ME
@@ -217,16 +237,21 @@ double Off_Shell_gg_gg::operator()(double s,double t,double u)
     turn=true;
   }
 #endif
+#ifndef TESTING__LO_LEV
   Complex app34=App(p);
-  Complex apm34=App(p);
+  Complex apm34=Apm(p);
   std::swap<ATOOLS::Vec4D>(p[2],p[3]);
   Complex app43=App(p);
-  Complex amp43=App(p);
+  Complex amp43=Apm(p);
   std::swap<ATOOLS::Vec4D>(p[2],p[3]);
   double Mpp=std::abs(app34*std::conj(app34)+app43*std::conj(app43)
 		      +0.5*(app34*std::conj(app43)+std::conj(app34)*app43));
   double Mpm=std::abs(apm34*std::conj(apm34)+amp43*std::conj(amp43));
   double M=2.0*(Mpp+Mpm);
+#else
+  Complex lpp34=Lpp(p);
+  double M=2.0*(2.0*std::abs(lpp34*std::conj(lpp34)));
+#endif
 #ifdef USING__Turn
   if (turn) {
     ATOOLS::Vec4D plus(1.0,0.0,0.0,1.0);
