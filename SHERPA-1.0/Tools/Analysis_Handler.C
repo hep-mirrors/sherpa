@@ -66,8 +66,6 @@ int Observable_Data::Specify() {
   return -1;
 }
 
-
-
 Analysis_Handler::Analysis_Handler(std::ifstream * readin, std::string _phase,
 				   const std::string & prefix) :
   m_phase(_phase), m_outputpath(std::string("./")+_phase), m_prefix(prefix), 
@@ -83,6 +81,12 @@ Analysis_Handler::Analysis_Handler(std::ifstream * readin, std::string _phase,
       phasemode = _phase.substr(0,_phase.find(std::string("+")));
       if (phasemode==std::string("ME")) {
 	mode  = mode|ANALYSIS::do_me;
+	if (split) mode = mode|ANALYSIS::splitt_phase;
+	else split = true;
+	_phase = _phase.substr(2);
+      }
+      if (phasemode==std::string("MI")) {
+	mode  = mode|ANALYSIS::do_mi;
 	if (split) mode = mode|ANALYSIS::splitt_phase;
 	else split = true;
 	_phase = _phase.substr(2);
