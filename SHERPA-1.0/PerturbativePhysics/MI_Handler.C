@@ -36,7 +36,10 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
     p_amisic->SetInputPath(path);
     p_amisic->SetOutputPath(path);
     p_amisic->SetInputFile(file);
-    p_amisic->Initialize();
+    if (!p_amisic->Initialize()) {
+      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Cannot initialize Amisic.",
+			      "MI_Handler","MI_Handler"));
+    }
     m_type=Amisic;
   }
 }
