@@ -16,7 +16,7 @@ namespace SHERPA {
     int m_status;
   public:
     Analysis_Phase(Sample_Analysis *,int);
-    bool Treat(APHYTOOLS::Blob_List *);
+    bool Treat(APHYTOOLS::Blob_List *, double &);
     void CleanUp();
   };
 
@@ -33,9 +33,9 @@ namespace SHERPA {
     ~Sample_Analysis();
     void Init();
 
-    void AfterME(APHYTOOLS::Blob_List *);
-    void AfterPartonShower(APHYTOOLS::Blob_List *);
-    void AfterHadronization(APHYTOOLS::Blob_List *);
+    void AfterME(APHYTOOLS::Blob_List *,double);
+    void AfterPartonShower(APHYTOOLS::Blob_List *,double);
+    void AfterHadronization(APHYTOOLS::Blob_List *,double );
     void Finish();
   };   
 }

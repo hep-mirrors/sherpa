@@ -4,17 +4,52 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 
+
+
+namespace SHERPA {
+
+  class PHard_Observable : public APHYTOOLS::Primitive_Observable_Base {  
+  public:
+    PHard_Observable(int _type,double _xmin,double _xmax,int _nbins)
+    {
+      type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins;
+      name  = std::string("pt_hard.dat");
+      histo = new AMATOOLS::Histogram(type,xmin,xmax,nbins);
+    };
+
+    void Evaluate(double); 
+    void Evaluate(int,AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double w);
+    void Evaluate(const APHYTOOLS::Parton_List &,double w);
+    void Evaluate(const APHYTOOLS::Blob_List &,double w); 
+  };
+
+  extern double amegic_apacic_interface_last_hard_scale;
+}
+
 using namespace SHERPA;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace std;
 
-/*
-  extern "C" {
-  void pyhepc_(int&);
-  void pylist_(int&);
-  }
-*/
+
+void PHard_Observable::Evaluate(double w)
+{
+//   cout<<" put" <<sqrt(amegic_apacic_interface_last_hard_scale)<<endl;
+  histo->Insert(sqrt(amegic_apacic_interface_last_hard_scale),w); 
+}
+void PHard_Observable::Evaluate(int,AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double w)
+{
+  Evaluate(w);
+}
+
+void PHard_Observable::Evaluate(const APHYTOOLS::Parton_List &,double w)
+{
+  Evaluate(w);
+}
+void PHard_Observable::Evaluate(const APHYTOOLS::Blob_List &,double w)
+{
+  Evaluate(w);
+}
 
 
 void Sample_Analysis::Init() { 
@@ -38,7 +73,8 @@ Sample_Analysis::Sample_Analysis(IO_HepEvt *& _convert,bool _hepevt) :
   if (!(status)) { ana = 0; return; }
   ana        = new Primitive_Analysis();
   ana->AddObservable(new Shower_Observables(11,1.e-6,1.,180,0));
-//   ana->AddObservable(new PT_Distribution(00,0.,250.,50,1,Flavour(kf::W)));
+  ana->AddObservable(new PHard_Observable(00,0.,250.,125));
+  //  ana->AddObservable(new PT_Distribution(00,0.,250.,125,1,Flavour(kf::photon)));
 //   ana->AddObservable(new PT_Distribution(00,0.,250.,50,6,Flavour(kf::jet)));
 
   obs.push_back(new ME_Rate(00,1.5,7.5,6,"me"));
@@ -47,7 +83,7 @@ Sample_Analysis::Sample_Analysis(IO_HepEvt *& _convert,bool _hepevt) :
 
 
 
-void Sample_Analysis::AfterME(APHYTOOLS::Blob_List * blobs) {
+void Sample_Analysis::AfterME(APHYTOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
   if (hepevt) {
     convert->Blobs2HepEvt(blobs,std::string("Beam"),nhep);
@@ -61,10 +97,10 @@ void Sample_Analysis::AfterME(APHYTOOLS::Blob_List * blobs) {
   // extra statistics
   //  cout<<" in Sample_Analysis::AfterME with "<<blobs->size()<<" ("<<status<<")"<<endl;
   if (!(status)) return;
-  obs[0]->Evaluate(*blobs,1.);
+  obs[0]->Evaluate(*blobs,weight);
 }
 
-void Sample_Analysis::AfterPartonShower(APHYTOOLS::Blob_List * blobs) {
+void Sample_Analysis::AfterPartonShower(APHYTOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
   //  cout<<" in Sample_Analysis::AfterPartonShower with "<<blobs->size()<<" ("<<status<<")"<<endl;
   if (hepevt) {
@@ -79,13 +115,13 @@ void Sample_Analysis::AfterPartonShower(APHYTOOLS::Blob_List * blobs) {
   if (!(status & 1)) return;
 
   // extra statistics
-  obs[1]->Evaluate(*blobs,1.);
+  obs[1]->Evaluate(*blobs,weight);
 
   // simple parton level analysis:
-  ana->DoAnalysis(*blobs,1.);
+  ana->DoAnalysis(*blobs,weight);
 }
 
-void Sample_Analysis::AfterHadronization(APHYTOOLS::Blob_List * blobs) {
+void Sample_Analysis::AfterHadronization(APHYTOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
   if (hepevt) {
     convert->Blobs2HepEvt(blobs,std::string("ISR"),nhep);
@@ -127,7 +163,7 @@ void Sample_Analysis::Finish() {
     s3<<nllf;
     s3>>snllf;
 
-    string name=string("sh_TR_") + salf + string("_") + syf + string("_") + snllf;
+    string name=string("sh_VI_") + salf + string("_") + syf + string("_") + snllf;
 
     msg.Out()<<" FinishAnalysis("<<name<<");"<<endl;
     //    ana->FinishAnalysis("testout_sherpa_GE125g",0);
@@ -178,25 +214,25 @@ Analysis_Phase::Analysis_Phase(Sample_Analysis * ana, int mode) :
 
 
 
-bool  Analysis_Phase::Treat(APHYTOOLS::Blob_List * bl) 
+bool  Analysis_Phase::Treat(APHYTOOLS::Blob_List * bl, double & weight) 
 {
   switch (m_mode) {
   case 1:
     if (bl->size()==1 && bl->back()->Status()==1) {
-      p_analysis->AfterME(bl);
+      p_analysis->AfterME(bl,weight);
       m_status = 1;
     }
     break;
   case 2:
     if (m_status) return 0;
     if (bl->size()>1) {
-      p_analysis->AfterPartonShower(bl);
+      p_analysis->AfterPartonShower(bl,weight);
       m_status = 1;
     }
     break;
   case 3:
     if (m_status) return 0;
-    p_analysis->AfterHadronization(bl);
+    p_analysis->AfterHadronization(bl,weight);
     m_status = 1;
     break;
   default:
