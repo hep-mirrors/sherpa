@@ -16,6 +16,10 @@ namespace ATOOLS {
 
   std::ostream & operator<<(std::ostream & s, const Particle_List & pl);
 
+  template <class Predicate> 
+  void copy_if(Particle_Iterator first, Particle_Iterator last, std::back_insert_iterator<Particle_List> out, const Predicate & pred) {
+    for ( ; first != last; ++first ) { if ( pred(*first) ) out = new Particle(**first); }
+  }
 
 }
 

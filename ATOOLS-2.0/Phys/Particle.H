@@ -100,74 +100,107 @@ namespace ATOOLS {
 
   class Particle_Qualifier_Base {
   public:
-    virtual bool operator() (const Particle *) = 0;
+    virtual bool operator() (const Particle *) const = 0;
   };
 
   class Is_Photon : public Particle_Qualifier_Base {
   public:
-    bool operator()(const Particle *);
+    bool operator()(const Particle *) const;
   };
   class Is_Gluon : public Particle_Qualifier_Base {
   public:
-    bool operator()(const Particle *);
+    bool operator()(const Particle *) const;
   };
   class Is_Charged : public Particle_Qualifier_Base {
   public:
-    bool operator()(const Particle *);
+    bool operator()(const Particle *) const;
   };
   class Is_Hadron : public Particle_Qualifier_Base {
   public:
-    bool operator()(const Particle *);
+    bool operator()(const Particle *) const;
   };
   class Is_Charged_Hadron : public Particle_Qualifier_Base {
   public:
-    bool operator()(const Particle *);
+    bool operator()(const Particle *) const;
   };
   class Is_Neutral_Hadron : public Particle_Qualifier_Base {
   public:
-    bool operator()(const Particle *);
+    bool operator()(const Particle *) const;
   };
   class Is_Final_State : public Particle_Qualifier_Base {
   public:
-    bool operator()(const Particle *);
+    bool operator()(const Particle *) const;
+  };
+
+  class Is_Neutral : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Charged_Pion : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Charged_Kaon : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Proton_Antiproton : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
   };
 
 
 
-  inline bool Is_Photon::operator() (const Particle * p) {
+  inline bool Is_Photon::operator() (const Particle * p) const {
     if ( p && p->Flav().IsPhoton() ) return 1;
     return 0;
   };
 
-  inline bool Is_Gluon::operator() (const Particle * p) {
+  inline bool Is_Gluon::operator() (const Particle * p)  const {
     if ( p && p->Flav().IsGluon() ) return 1;
     return 0;
   };
 
-  inline bool Is_Charged::operator() (const Particle * p) {
+  inline bool Is_Charged::operator() (const Particle * p)  const{
       if ( p && (p->Flav().IntCharge() !=0) ) return 1;
       return 0;
   };
 
-  inline bool Is_Hadron::operator() (const Particle * p) {
+  inline bool Is_Hadron::operator() (const Particle * p)  const{
     if ( p && p->Flav().IsHadron() &&  !p->Flav().IsDiQuark()) return 1;
     return 0;
   };
 
-  inline bool Is_Charged_Hadron::operator() (const Particle * p) {
+  inline bool Is_Charged_Hadron::operator() (const Particle * p)  const{
     if ( p && p->Flav().IntCharge() !=0 &&  
 	 p->Flav().IsHadron() &&  !p->Flav().IsDiQuark()) return 1;
     return 0;
   };
 
-  inline bool Is_Neutral_Hadron::operator() (const Particle * p) {
+  inline bool Is_Neutral_Hadron::operator() (const Particle * p)  const{
     if ( p && p->Flav().IntCharge() ==0 &&  
 	 p->Flav().IsHadron() &&  !p->Flav().IsDiQuark()) return 1;
     return 0;
   };
 
-  inline bool Is_Final_State::operator() (const Particle * p) {
+  inline bool Is_Final_State::operator() (const Particle * p)  const{
     if ( p && (p->Status() == 1) ) return 1;
+    return 0;
+  };
+  inline bool Is_Neutral::operator() (const Particle * p)  const{
+    if ( p && p->Flav().IntCharge()==0) return 1;
+    return 0;
+  };
+  inline bool Is_Charged_Pion::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==211) return 1;
+    return 0;
+  };
+  inline bool Is_Charged_Kaon::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==321) return 1;
+    return 0;
+  };
+  inline bool Is_Proton_Antiproton::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==2212) return 1;
     return 0;
   };
 
