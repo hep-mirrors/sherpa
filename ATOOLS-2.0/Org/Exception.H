@@ -33,6 +33,11 @@ namespace ATOOLS {
     virtual bool ApproveTerminate();
     friend class Exception_Handler;
 
+  public:
+
+    // destructor
+    virtual ~Tester_Object();
+
   };// end of class Tester_Object
 
   class Terminator_Object {
@@ -40,6 +45,11 @@ namespace ATOOLS {
 
     virtual void PrepareTerminate();
     friend class Exception_Handler;
+    
+  public:
+
+    // destructor
+    virtual ~Terminator_Object();
 
   };// end of class Terminator_Object
 

@@ -18,11 +18,19 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const ex::type &type)
   return str;
 }
 
+Tester_Object::~Tester_Object()
+{
+}
+
 bool Tester_Object::ApproveTerminate()
 {
   msg.Error()<<"Tester_Oject::ApproveTerminate(): "
 	     <<"Vitual function called !"<<std::endl;
   return true;
+}
+
+Terminator_Object::~Terminator_Object()
+{
 }
 
 void Terminator_Object::PrepareTerminate()
