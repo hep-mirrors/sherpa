@@ -45,7 +45,7 @@ namespace AMEGIC {
     double                           m_last, m_lastdxs, m_lastlumi;
     int                              m_kfactorscheme,m_scalescheme;
     int                              m_orderQCD, m_orderEW,m_nstrong,m_neweak;
-    double                           m_scale,m_scalefactor;
+    double                           m_asscale,m_facscale,m_scalefactor;
     double                           m_isrthreshold;
 
     int m_swaped;
@@ -132,7 +132,7 @@ namespace AMEGIC {
 
     virtual void             Empty()                                               =0;
     virtual void             SetTotalXS(int)                                       =0;
-    virtual void             SetScale(double)                                      =0;
+    virtual void             SetScale(double);
     virtual void             SetISRThreshold(double)                               =0;
     virtual void             SetTotal(double);
     virtual void             SetMax(double);
@@ -156,6 +156,7 @@ namespace AMEGIC {
     virtual double operator()(ATOOLS::Vec4D *) { return 0.; }
     virtual double Scale(ATOOLS::Vec4D *);
     virtual double Scale();
+    virtual double FactorisationScale();
     virtual bool   OneEvent(double = -1.)                                          =0;
     virtual bool   SameEvent()                                                     =0;
     virtual double WeightedEvent()                                                 =0;

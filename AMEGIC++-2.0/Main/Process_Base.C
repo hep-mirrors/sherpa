@@ -1,6 +1,7 @@
 #include "Process_Base.H"
 #include "Run_Parameter.H"
-#include "Standard_Selector.H"
+//#include "Standard_Selector.H"
+#include "Combined_Selector.H"
 #include "Message.H"
 
 #include "Running_AlphaS.H"
@@ -37,7 +38,8 @@ Process_Base::Process_Base():
   m_totalxs=m_totalerr=m_totalsum=m_totalsumsqr=m_max=0.;
   m_last=m_lastdxs=0.;
   m_lastlumi=1.;
-  m_scale=sqr(rpa.gen.Ecms());
+  m_asscale=sqr(rpa.gen.Ecms());
+  m_facscale=sqr(rpa.gen.Ecms());
   m_scalefactor=1.;
   m_isrthreshold=0.;
 }
@@ -54,8 +56,8 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
   p_isr(_isr), p_beam(_beam), p_cuts(NULL), p_analysis(NULL),
   p_selected(this), p_ex_fl(_ex_fl),p_moms(NULL), 
-  m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),m_scale(_scale),
-  m_n(0), m_totalxs(0.), m_totalerr(0.), m_totalsum(0.), m_totalsumsqr(0.), m_rfactor(1.),
+  m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),m_asscale(_scale),
+  m_facscale(_scale),m_n(0), m_totalxs(0.), m_totalerr(0.), m_totalsum(0.), m_totalsumsqr(0.), m_rfactor(1.),
   m_last(0.), m_lastdxs(0.), m_max(0.), m_lastlumi(1.),
   m_atoms(0), m_analyse(0), m_tables(0), m_swaped(0), p_psgen(0)
 {
@@ -84,7 +86,9 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
     if (p_flout[i].IntCharge()!=0) m_neweak++;
   }
 
-  if (m_scale<0.) m_scale=sqr(rpa.gen.Ecms());
+  if (m_asscale<0.) {
+    m_asscale=m_facscale=sqr(rpa.gen.Ecms());
+  }
 }
 
 
@@ -522,7 +526,7 @@ void Process_Base::SetNEWeak(int _neweak)               { m_neweak  = _neweak; }
 void Process_Base::SetTotal(double _total)              { m_totalxs = _total;  } 
 void Process_Base::SetMax(double _max)                  { m_max     = _max;    } 
 void Process_Base::SetMaxJetNumber(int max)             { m_maxjetnumber  = max;    } 
-void Process_Base::SetScale(double _scale)              { m_scale   = _scale;  } 
+void Process_Base::SetScale(double _scale)              { m_asscale=m_facscale=_scale;  } 
 void Process_Base::SetISRThreshold(double _isrthreshold){ m_isrthreshold  = _isrthreshold;}
 
 /*------------------------------------------------------------------------------
@@ -556,7 +560,7 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
   //new
   switch (m_scalescheme) {
   case 1 :   
-    pt2 = m_scale;
+    pt2 = m_asscale;
     break;
   case 2  :
     if (m_nin+m_nout==4) {
@@ -581,7 +585,7 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
     break;
   case 63 :
     if (m_nout!=m_maxjetnumber) {
-      pt2 = m_scale;
+      pt2 = m_asscale;
     }
     else {
       pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
@@ -595,6 +599,25 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
     pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
     for (int i=m_nin+1;i<m_nin+m_nout;++i) {
       pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
+    }
+    break;
+  case 65:
+    pt2 = m_asscale;
+
+    // if highest number of jets
+    //    cout<<" Scale : "<<pt2<<" "<<m_nout<<" vs. "<<m_maxjetnumber<<" ("<<p_sel->Name()<<")"<<endl;
+    if (m_nout==m_maxjetnumber) {
+      if (p_sel->Name()=="Combined_Selector") {
+	Selector_Base * jf = ((Combined_Selector*)p_sel)->GetSelector("Jetfinder");
+	if (jf) {
+	  pt2=jf->ActualValue()[0]*sqr(rpa.gen.Ecms());
+	  //	  cout<<" value="<<pt2<<endl;
+	}
+	else {
+	  cout<<" NO JETFINDER FOUND! "<<endl;
+	  cout<<" do not used SCALESCHEME=="<<m_scalescheme<<" without Jetfinder! "<<endl;
+	}
+      }
     }
     break;
   case 21 :
@@ -613,7 +636,9 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
   default :
     pt2 = s;
   }
-  return m_scalefactor * pt2;
+  m_facscale=m_scalefactor * pt2;
+  FactorisationScale();
+  return m_facscale;
 }
 
 double Process_Base::KFactor(double _scale) {
@@ -621,6 +646,14 @@ double Process_Base::KFactor(double _scale) {
   case 1  :
     if (m_nstrong>2) {
       return m_rfactor*pow(as->AlphaS(_scale)/
+			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
+    } 
+    else 
+      return m_rfactor;
+  case 65:
+    m_facscale=_scale;
+    if (m_nstrong>2) {
+      return m_rfactor*pow(as->AlphaS(m_asscale)/
 			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
     } 
     else 
@@ -657,7 +690,8 @@ Cut_Data              * Process_Base::Cuts()                         { return p_
 Selector_Base         * Process_Base::Selector()                     { return p_sel;      }
 Primitive_Analysis    * Process_Base::Analysis()                     { return p_analysis; }
 Phase_Space_Generator * Process_Base::PSGenerator()                  { return p_psgen; }
-double                  Process_Base::Scale()                        { return m_scale;    }
+double                  Process_Base::Scale()                        { return m_asscale; }
+double                  Process_Base::FactorisationScale()           { return m_facscale; }
 double                  Process_Base::Total()                        { return m_totalxs; }
 double                  Process_Base::TotalError()                   { return m_totalerr; }
 double                  Process_Base::Max()                          { return m_max; }

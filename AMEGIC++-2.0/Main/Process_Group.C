@@ -155,7 +155,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
     if (take) {
       if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
 	Add(new Single_Process(m_nin,m_nout,_fl,p_isr,p_beam,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			       m_kfactorscheme,m_scalescheme,m_scalefactor,m_scale,_pl,m_nex,p_ex_fl));
+			       m_kfactorscheme,m_scalescheme,m_scalefactor,m_asscale,_pl,m_nex,p_ex_fl));
       }
       else {
 	take=0;
@@ -493,8 +493,8 @@ void Process_Group::SetResDir(std::string _resdir) {
 
 void Process_Group::SetScale(double _scale)
 {
-  m_scale = _scale;
-  for (int i=0;i<m_procs.size();i++) m_procs[i]->SetScale(m_scale); 
+  Process_Base::SetScale(_scale);
+  for (int i=0;i<m_procs.size();i++) m_procs[i]->SetScale(_scale); 
 } 
 
 
@@ -1033,10 +1033,10 @@ void Process_Group::ControlOutput(Vec4D * p)
   double s   = (p[0]+p[1]).Abs2();
   double t   = (p[0]-p[2]).Abs2();
   double u   = (p[0]-p[3]).Abs2();
-  m_scale    = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-  double a_s = as->AlphaS(m_scale);
+  m_asscale    = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+  double a_s = as->AlphaS(m_asscale);
   msg.Out()<<"-------- Process_Group : "<<m_name<<" : DSigma -------------------"<<endl
-	   <<"         scale = "<<m_scale<<" = "<<2.*s*t*u/(s*s+u*u+t*t)<<endl
+	   <<"         scale = "<<m_asscale<<" = "<<2.*s*t*u/(s*s+u*u+t*t)<<endl
 	   <<"         s,t,u = "<<s<<", "<<t<<", "<<u<<" : "<<sqrt(4.*M_PI*a_s)<<endl
 	   <<"-----------------------------------------------------------------------"<<endl;
   double g4  = sqr(4.*M_PI*a_s);

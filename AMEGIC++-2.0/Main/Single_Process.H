@@ -96,7 +96,6 @@ namespace AMEGIC {
     std::string      LibName()                          { return m_libname;     }
     std::string      PSLibName()                        { return m_pslibname;     }
     void             SetTotalXS(int);
-    void             SetScale(double _sc)               { m_scale      = _sc;   }
     void             FixISRThreshold();
     void             SetISRThreshold(double _isrth)     { m_isrthreshold = _isrth;}
     void             Empty();
