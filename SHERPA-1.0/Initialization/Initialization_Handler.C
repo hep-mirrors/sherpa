@@ -69,7 +69,7 @@ bool Initialization_Handler::InitializeTheFramework()
     return 0;
   }
   
-  //okay = okay && InitializeTheHardDecays();
+  okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheBeamRemnants();
