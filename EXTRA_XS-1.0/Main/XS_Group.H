@@ -18,7 +18,8 @@ namespace EXTRAXS {
 
     XS_Selector *p_xsselector;
 
-    void PrepareTerminate();
+    XS_Base *Matching(const std::string &name);
+    void     PrepareTerminate();
 
   public :
 
@@ -51,7 +52,7 @@ namespace EXTRAXS {
     void SetISR(PDF::ISR_Handler *const isrhandler);
 
     void SetMax(const double max,const int flag);
-    void SetTotalXS();
+    void SetTotal();
 
     double Differential(const double s,const double t,const double u);
     bool   SetColours(const double s,const double t,const double u);

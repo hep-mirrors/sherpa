@@ -55,7 +55,7 @@ namespace EXTRAXS {
     virtual void SetMax(const double max,const int flag);
 
     virtual void SetISR(PDF::ISR_Handler *const isrhandler) = 0;
-    virtual void SetTotalXS() = 0;
+    virtual void SetTotal() = 0;
 
     virtual double Differential(const double s,const double t,const double u) = 0;
     virtual bool   SetColours(const double s,const double t,const double u) = 0;

@@ -59,7 +59,7 @@ ATOOLS::Blob_Data_Base *Single_XS::WeightedEvent()
   return (p_pshandler->WeightedEvent()); 
 }
 
-void Single_XS::SetTotalXS() 
+void Single_XS::SetTotal() 
 {
   m_totalxs=m_totalsum/m_n; 
   m_totalerr=sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;

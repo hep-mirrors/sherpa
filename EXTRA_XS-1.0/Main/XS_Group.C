@@ -123,6 +123,19 @@ void XS_Group::WriteOutXSecs(std::ofstream &outfile)
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->WriteOutXSecs(outfile);
 }
 
+XS_Base *XS_Group::Matching(const std::string &name)
+{
+  if (name==m_name) {
+    return this;
+  }
+  else {
+    for (size_t i=0;i<m_xsecs.size();++i) {
+      if (name==m_xsecs[i]->Name()) return m_xsecs[i];
+    }
+  }
+  return NULL;
+}
+
 bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 {
   if (m_atoms) {
@@ -158,26 +171,27 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       int hits=m_xsecs.size();
       infile.open(filename.c_str());
       if (infile.good()) {
-	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlen;
 	do {
+	  infile>>singlename>>singlexs>>singlemax>>singleerr>>singlen;
 	  ATOOLS::msg.Events()<<"Found result: xs for "<<singlename<<" : "
 			      <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
 			      <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
 			      <<"         max : "<<singlemax<<std::endl;
-	  for (size_t i=0;i<m_xsecs.size();++i) {
-	    if (singlename==m_xsecs[i]->Name()) {
-	      m_totalxs+=singlexs;
-	      dynamic_cast<Integrable_Base*>(m_xsecs[i])->SetTotalXS(singlexs);
-	      dynamic_cast<Integrable_Base*>(m_xsecs[i])->SetMax(singlemax);
-	      dynamic_cast<Integrable_Base*>(m_xsecs[i])->SetPoints(singlen);
-	      --hits;
-	    }
+	  XS_Base *xs=Matching(singlename);
+	  if (xs!=NULL) {
+	    xs->SetTotalXS(singlexs);
+	    xs->SetMax(singlemax,false);
+	    xs->SetSum(singlemax);
+	    xs->SetSumSqr(singlemax);
+	    xs->SetPoints(singlen);
+	    --hits;
 	  }
 	  infile>>singlename>>singlexs>>singlemax>>singleerr;
 	} while (infile);
       }
       infile.close();
       if (hits==0) {
+	SetTotal();
 	p_pshandler->ReadIn(resultpath+std::string("/MC_")+m_name);
 	if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
 	if (p_pshandler->ISRIntegrator() != 0) p_pshandler->ISRIntegrator()->Print();
@@ -195,7 +209,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
 			 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<std::endl;
     }
-    SetTotalXS();
+    SetTotal();
     if (m_totalxs>0.) {
       if (resultpath!=std::string("")) {
 	std::ofstream to;
@@ -221,7 +235,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 void XS_Group::PrepareTerminate()  
 {
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
-  SetTotalXS();
+  SetTotal();
   if (m_totalxs<=0.) return;
   std::ofstream to;
   to.open(m_resultfile.c_str(),std::ios::out);
@@ -237,14 +251,14 @@ void XS_Group::PrepareTerminate()
   to.close();
 }
 
-void XS_Group::SetTotalXS()  
+void XS_Group::SetTotal()  
 { 
   m_totalxs=m_totalsum/m_n; 
   m_totalerr=sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
   if (p_selector) p_selector->Output();
   m_max=0.;
   for (size_t i=0;i<m_xsecs.size();++i) {
-    m_xsecs[i]->SetTotalXS();
+    m_xsecs[i]->SetTotal();
     m_max+=m_xsecs[i]->Max();
   }
   ATOOLS::msg.Events()<<"--------------------------------------------------"<<std::endl;

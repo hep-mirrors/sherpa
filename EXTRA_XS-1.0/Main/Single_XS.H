@@ -24,7 +24,7 @@ namespace EXTRAXS {
     double Differential2();
 
     void SetISR(PDF::ISR_Handler *const isrhandler);
-    void SetTotalXS();
+    void SetTotal();
 
     double Differential(const double s,const double t,const double u);
     double operator()(const double s,const double t,const double u);
