@@ -183,12 +183,20 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
   size_t length=0;
   if(((pos=Find(inputstring,parameter,length))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+length)).length()>0)) {
-    inputstring=ReplaceTags(HighlightSeparator(inputstring));
-    if (Interprete() && 
-	typeid(value)!=typeid(char) &&
-	typeid(value)!=typeid(std::string))
-      inputstring=Interpreter()->Interprete(inputstring);
-    value=ATOOLS::ToType<Read_Type>(inputstring);
+    std::string tempstring=ReplaceTags(HighlightSeparator(inputstring));
+    if (typeid(value)==typeid(int) || 
+	typeid(value)==typeid(unsigned int) ||
+	typeid(value)==typeid(float) ||
+	typeid(value)==typeid(double)) {
+      if (!m_allownans) {
+ 	if ((pos=tempstring.find("nan"))!=std::string::npos)
+ 	  tempstring.replace(pos,3,"0");
+ 	else if ((pos=tempstring.find("inf"))!=std::string::npos) 
+ 	  tempstring.replace(pos,3,"0");
+      }
+      if (Interprete()) tempstring=Interpreter()->Interprete(tempstring);
+    }
+    value=ATOOLS::ToType<Read_Type>(tempstring);
 #ifdef DEBUG__Data_Reader
     std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<typeid(value).name()<<" )"<<std::endl;
 #endif
@@ -271,14 +279,6 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
     values.push_back(M_ReadFromString<Read_Type>(nullstring,value));
     if (tempvtype==VVertical) break;
     inputstring=inputstring.substr(inputstring.find(value)+value.length());
-    if (!m_allownans &&
-	typeid(value)!=typeid(char) && 
-	typeid(value)!=typeid(std::string)) {
-      if (((pos=inputstring.find(std::string("nan")))!=std::string::npos)||
-	  ((pos=inputstring.find(std::string("inf")))!=std::string::npos)) {
-	inputstring.replace(pos,3,"0");
-      }
-    }
     value=M_ReadFromString<std::string>(nullstring,inputstring);
   }
 #ifdef DEBUG__Data_Reader
