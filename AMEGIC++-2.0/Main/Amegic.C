@@ -280,9 +280,6 @@ int Amegic::ReadProcesses(string path)
       }
       if (!error) {
 	nFS = ExtractFlavours(FS,plFS,buf);
-	cout<<"nFS = "<<nFS<<" "<<" : ";
-	for (short int i=0;i<nFS;i++) cout<<FS[i]<<" ";
-	cout<<endl;
 	++count;
 	msg.Tracking()<<"Init process : "<<partons[0]<<" "<<partons[1]<<" -> ";
 	for (int j=0;j<nFS;j++) msg.Tracking()<<FS[j]<<" ";
