@@ -199,13 +199,14 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       int hits=m_xsecs.size()+1;
       infile.open(filename.c_str());
       if (infile.good()) {
-	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen
+	infile>>singlename>>singlexs>>singlemax>>singleerr
+	      >>singlesum>>singlesumsqr>>singlen
 	      >>ssum>>ssqrsum>>ss2>>sn;
 	do {
 	  msg_Info()<<"Found result: xs for "<<singlename<<" : "
-			    <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
-			    <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
-			    <<"         max : "<<singlemax<<std::endl;
+		    <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
+		    <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
+		    <<"         max : "<<singlemax<<std::endl;
 	  XS_Base *xs=Matching(singlename);
 	  if (xs!=NULL) {
 	    xs->SetTotalXS(singlexs);
@@ -220,7 +221,8 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	    xs->SetSPoints(sn);
 	    --hits;
 	  }
-	  infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen
+	  infile>>singlename>>singlexs>>singlemax>>singleerr
+		>>singlesum>>singlesumsqr>>singlen
 		>>ssum>>ssqrsum>>ss2>>sn;
 	} while (infile);
       }
@@ -261,7 +263,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
 	if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
 	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
-			  <<"       max : "<<m_max<<std::endl;
+		  <<"       max : "<<m_max<<std::endl;
 	p_pshandler->WriteOut(resultpath+std::string("/MC_")+m_name);
 	to.close();
       }
@@ -294,8 +296,8 @@ void XS_Group::PrepareTerminate()
 
 void XS_Group::SetTotal()  
 { 
-  m_totalxs=TotalResult();//m_totalsum/m_n; 
-  m_totalerr=TotalVar();//sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
+  m_totalxs=TotalResult();
+  m_totalerr=TotalVar();
   if (p_selector) p_selector->Output();
   m_max=0.;
   for (size_t i=0;i<m_xsecs.size();++i) {
@@ -303,10 +305,11 @@ void XS_Group::SetTotal()
     m_max+=m_xsecs[i]->Max();
   }
   msg_Info()<<"Total XS for "<<ATOOLS::om::bold<<m_name<<" : "
-		    <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		    <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red<<m_totalerr<<" pb = "
-		    <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl
-		    <<"      max = "<<m_max<<std::endl;
+	    <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+	    <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red
+	    <<m_totalerr<<" pb = "<<m_totalerr/m_totalxs*100.
+	    <<" %"<<ATOOLS::om::reset<<" )"<<std::endl
+	    <<"      max = "<<m_max<<std::endl;
 }
 
 bool XS_Group::OneEvent() 
@@ -346,9 +349,10 @@ void XS_Group::AddPoint(const double value)
   }
 }
 
-void XS_Group::ResetMax(int flag) {
+void XS_Group::ResetMax(int flag) 
+{
   m_max = 0.;
-  for (int i=0;i<m_xsecs.size();i++) {
+  for (size_t i=0;i<m_xsecs.size();i++) {
     m_xsecs[i]->ResetMax(flag);
   }
 }
@@ -362,7 +366,7 @@ void XS_Group::OptimizeResult()
   m_ssum     = 0.;
   m_ssumsqr  = 0.;
   m_sn       = 0;
-  for (int i=0;i<m_xsecs.size();i++) m_xsecs[i]->OptimizeResult();
+  for (size_t i=0;i<m_xsecs.size();i++) m_xsecs[i]->OptimizeResult();
 }
 
 double XS_Group::Differential(double s,double t,double u)
@@ -444,18 +448,18 @@ void XS_Group::SetISR(PDF::ISR_Handler *const isrhandler)
   p_isrhandler=isrhandler;
 }
 
+void XS_Group::SetAtoms(bool _atoms) 
+{ 
+  m_atoms = _atoms; 
+}
+
 XS_Base *const XS_Group::operator[](const size_t i) const
 { 
   if (i<m_xsecs.size()) return m_xsecs[i];
   return NULL;
 } 
 
-void XS_Group::SetAtoms(bool _atoms) 
-{ 
-  m_atoms = _atoms; 
-}
-
-size_t XS_Group::Size() 
+size_t XS_Group::Size() const
 { 
   return m_xsecs.size(); 
 }
@@ -485,7 +489,9 @@ void XS_Group::SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler)
 void XS_Group::ResetSelector(ATOOLS::Selector_Data *const selectordata)
 {
   PROFILE_HERE;
-  for (unsigned int i=0;i<m_xsecs.size();++i) m_xsecs[i]->ResetSelector(selectordata);
+  for (unsigned int i=0;i<m_xsecs.size();++i) {
+    m_xsecs[i]->ResetSelector(selectordata);
+  }
   XS_Base::ResetSelector(selectordata);
 }
 

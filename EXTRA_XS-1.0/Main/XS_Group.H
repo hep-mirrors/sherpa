@@ -45,7 +45,7 @@ namespace EXTRAXS {
     virtual void SetAtoms(const bool atoms);
     virtual void CreateFSRChannels();
 
-    size_t Size();
+    size_t Size() const;
 
     XS_Base *const operator[](const size_t i) const;
 
@@ -61,8 +61,8 @@ namespace EXTRAXS {
     bool   SetColours(const double s,const double t,const double u);
     double operator()(const double s,const double t,const double u);
     void   AddPoint(const double xs);
-    void           ResetMax(int);
-    void           OptimizeResult();
+    void   ResetMax(int);
+    void   OptimizeResult();
 
     bool CalculateTotalXSec(const std::string &resultpath);
     void WriteOutXSecs(std::ofstream &outfile);

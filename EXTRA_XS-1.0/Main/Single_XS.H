@@ -19,7 +19,9 @@ namespace EXTRAXS {
 	      ATOOLS::Selector_Data *const selectordata);
 
     // member functions
-    size_t Size();
+    size_t Size() const;
+
+    XS_Base *const operator[](const size_t i) const;
 
     double Differential2();
 

@@ -26,8 +26,6 @@ Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *f
 void Single_XS::WriteOutXSecs(std::ofstream &outfile)
 {
   outfile.precision(12);
-//   outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
-// 	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<std::endl;
   outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
 	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
 	 <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<std::endl; 
@@ -151,13 +149,19 @@ double Single_XS::operator()(const double s,const double t,const double u)
   return 0.;
 }
 
-size_t Single_XS::Size() 
-{ 
-  return 1; 
-}
-
 void Single_XS::SetISR(PDF::ISR_Handler *const isrhandler) 
 { 
   p_isrhandler=isrhandler; 
+}
+
+XS_Base *const Single_XS::operator[](const size_t i) const 
+{
+  const XS_Base *value=this;
+  return (XS_Base*)value;
+}
+
+size_t Single_XS::Size() const
+{ 
+  return 1; 
 }
 
