@@ -23,9 +23,13 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
 
-AC_OUTPUT(Main/Makefile \
-          ME_PS_Interface/Makefile \
-          Had_Interface/Makefile \
+AC_OUTPUT(Tools/Makefile \
+          Initialization/Makefile \
+          PerturbativePhysics/Makefile \
+          SoftPhysics/Makefile \
+          SoftPhysics/Lund/Makefile \
+          Single_Events/Makefile \
+          Main/Makefile \
           Run/Makefile \
           Run/Process/Makefile \
           Run/Process/Dummy/Makefile \
