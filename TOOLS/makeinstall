@@ -41,6 +41,7 @@ for I in $* ; do
   elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
   elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
   elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && EXTRACT=TRUE
+  elif [ "$I" = "--rm-libs" ]; then RMLIBS=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "makeinstall version 1.0" && echo && \
     echo "options: -c             configure before compiling (enabled with '-t')" && \
@@ -57,6 +58,7 @@ for I in $* ; do
     echo "         --cxx          define cxx flag for 'make'" && \
     echo "         --f            define fortran flag for 'make'" && \
     echo "         --force-tar    force extraction of tar files (enables '-e')" && \
+    echo "         --rm-libs      remove shared libraries (does not remove '.lo' files)" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$ECXXFLAGS" "$I
@@ -161,15 +163,17 @@ else
   echo "*   Installing the SHERPA package    *"
   echo "**************************************"
 fi
-if test "$RUNCLEAN" = "TRUE" ; then
+if [ "$RUNCLEAN" = "TRUE" ] ; then
   if cd SHERPA-1.0/Run ; then
     ./makeclean
     cd ../..
   fi
 fi
-
+if [ "$RMLIBS" = "TRUE" ] ; then
+  rmr "*.la *.so *.so.0 *.so.0.0.0"
+fi
 if [ "$TOTAL" = "TRUE" ] ; then
-  rmr "*.la *.so *.so.0 *.so.0.0.0 Makefile Makefile.in \
+  rmr "Makefile Makefile.in \
        aclocal.m4 config.guess config.log config.status config.sub configure \
        depcomp install-sh libtool ltconfig ltmain.sh missing mkinstalldirs"
 fi
