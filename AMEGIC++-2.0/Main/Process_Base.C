@@ -220,6 +220,13 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
     hname = _name;
     _name = hname.substr(0,i) + string("j") + hname.substr(i+3); 
   }
+  // Quark -> Q
+  for (;;) {
+    i = _name.find("Quark");
+    if (i==-1) break;
+    hname = _name;
+    _name = hname.substr(0,i) + string("Q") + hname.substr(i+5); 
+  }
   // photon -> P
   for (;;) {
     i = _name.find("photon");
