@@ -445,12 +445,12 @@ namespace ATOOLS {
 
   inline const double Vec4D::CosPhi() const
   {
-    return m_x[1]/PPerp();
+    return Max(Min(m_x[1]/PPerp(),1.0),-1.0);
   }
 
   inline const double Vec4D::SinPhi() const 
   {
-    return m_x[2]/PPerp();
+    return Max(Min(m_x[2]/PPerp(),1.0),-1.0);
   }
 
   inline const double Vec4D::Phi() const 
@@ -461,12 +461,12 @@ namespace ATOOLS {
 
   inline const double Vec4D::CosTheta() const 
   {
-    return m_x[3]/PSpat();
+    return Max(Min(m_x[3]/PSpat(),1.0),-1.0);
   }
 
   inline const double Vec4D::SinTheta() const 
   {
-    return sqrt(PPerp2()/PSpat2());
+    return Max(Min(sqrt(PPerp2()/PSpat2()),1.0),-1.0);
   }
 
   inline const double Vec4D::Theta() const 
@@ -489,7 +489,7 @@ namespace ATOOLS {
   inline const double Vec4D::CosTheta(const Vec4D &ref) const 
   { 
     Vec3D pref=Vec3D(ref), p=Vec3D(*this);
-    return pref*p/(pref.Abs()*p.Abs());
+    return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);
   }
   
   inline const double Vec4D::Theta(const Vec4D &ref) const 
@@ -500,7 +500,7 @@ namespace ATOOLS {
   inline const double Vec4D::CosDPhi(const Vec4D &ref) const 
   { 
     Vec3D pref=Vec3D(ref[1],ref[2],0.0), p=Vec3D(m_x[1],m_x[2],0.0);
-    return pref*p/(pref.Abs()*p.Abs());
+    return Max(Min(pref*p/(pref.Abs()*p.Abs()),1.0),-1.0);
   }
   
   inline const double Vec4D::DPhi(const Vec4D &ref) const 
