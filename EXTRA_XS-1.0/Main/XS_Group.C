@@ -352,12 +352,6 @@ XS_Base *const XS_Group::operator[](const size_t i) const
   return NULL;
 } 
 
-XS_Base *const XS_Group::Selected() 
-{ 
-  if (p_selected==this) return this;
-  return dynamic_cast<XS_Base*>(p_selected->Selected()); 
-}    
-
 void XS_Group::SetAtoms(bool _atoms) 
 { 
   m_atoms = _atoms; 

@@ -43,7 +43,6 @@ namespace EXTRAXS {
     size_t Size();
 
     XS_Base *const operator[](const size_t i) const;
-    XS_Base *const Selected();
 
     double Differential2();
 
