@@ -94,9 +94,14 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _p
 	blob->SetType(std::string("Bunch"));
 	blob->SetBeam(i);
 	blob->AddToOutPartons((*biter)->InParton(0));
+	(*biter)->InParton(0)->SetProductionBlob(blob);
 	if ((*biter)->InParton(0)->Flav()==p_beam->GetBeam(i)->Flav() &&
-	    (*biter)->InParton(0)->E()==p_beam->GetBeam(i)->Momentum()[0]) 
-	  blob->AddToInPartons((*biter)->InParton(0));
+	    (*biter)->InParton(0)->E()==p_beam->GetBeam(i)->Momentum()[0]) {
+	  Parton * p = new Parton((*biter)->InParton(0));
+	  p->SetDecayBlob(blob);
+	  p->SetProductionBlob(NULL);
+	  blob->AddToInPartons(p);
+	}
 	else {
 	  blob->AddToInPartons(new Parton(-1,p_beam->GetBeam(i)->Flav(),p_beam->GetBeam(i)->Momentum()));
 	  blob->InParton(0)->SetDecayBlob(blob);

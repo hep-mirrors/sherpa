@@ -25,12 +25,13 @@ Lund_Fortran_Interface::Lund_Fortran_Interface(double _a,double _b, double _sigm
 } 
 
 Lund_Fortran_Interface::~Lund_Fortran_Interface() {
-  if (phep)   delete phep;
-  if (vhep)   delete vhep;
-  if (jmohep) delete jmohep;
-  if (jdahep) delete jdahep;
-  if (isthep) delete isthep;
-  if (idhep)  delete idhep;
+  cout<<" Deleting Lund_Fortran_Interface "<<endl;
+  if (phep)   delete [] phep;
+  if (vhep)   delete [] vhep;
+  if (jmohep) delete [] jmohep;
+  if (jdahep) delete [] jdahep;
+  if (isthep) delete [] isthep;
+  if (idhep)  delete [] idhep;
 }
 
 void Lund_Fortran_Interface::Init()
