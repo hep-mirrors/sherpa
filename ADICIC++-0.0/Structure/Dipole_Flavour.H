@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/05
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //Purpose is to have defined dipole-flavour structures throughout the model.
 
@@ -22,14 +22,18 @@ namespace ADICIC {
 
   class Dipole_Flavour_Init {
   private:
-    static const bool status;
-    static const bool Now() {
-      ATOOLS::ParticleInit("./");
-    }
+    static bool s_status;
   public:
     Dipole_Flavour_Init() {}
     ~Dipole_Flavour_Init() {}
+  public:
+    static inline const bool Status();
+    static const bool DoIt(bool level=false);
   };
+
+  inline const bool Dipole_Flavour_Init::Status() {    //Static.
+    return s_status;
+  }
 
 
 
@@ -41,9 +45,10 @@ namespace ADICIC {
 
 
   class Dipole_Gluon_Base {
+    friend class Dipole_Flavour_Init;
   protected:
     static const short GNtag;
-    static const ATOOLS::Flavour GN;
+    static const ATOOLS::Flavour* GN;
 
     Dipole_Gluon_Base(const Dipole_Gluon_Base&) {}
     Dipole_Gluon_Base& operator=(const Dipole_Gluon_Base&) { return *this;}
@@ -72,7 +77,7 @@ namespace ADICIC {
     //If several gluon-type-like particles exist then overwriting is necessary.
     //const short Tag() const { return GNtag;}    //Special case!
 
-    const ATOOLS::Flavour operator()() const { return GN;}
+    const ATOOLS::Flavour operator()() const { return *GN;}
   };
 
 
@@ -85,14 +90,15 @@ namespace ADICIC {
 
 
   class Dipole_Quark_Base {
+    friend class Dipole_Flavour_Init;
   protected:
     static const short QUtag;
-    static const ATOOLS::Flavour DQ;
-    static const ATOOLS::Flavour UQ;
-    static const ATOOLS::Flavour SQ;
-    static const ATOOLS::Flavour CQ;
-    static const ATOOLS::Flavour BQ;
-    static const ATOOLS::Flavour TQ;
+    static const ATOOLS::Flavour* DQ;
+    static const ATOOLS::Flavour* UQ;
+    static const ATOOLS::Flavour* SQ;
+    static const ATOOLS::Flavour* CQ;
+    static const ATOOLS::Flavour* BQ;
+    static const ATOOLS::Flavour* TQ;
 
     Dipole_Quark_Base(const Dipole_Quark_Base&) {}
     Dipole_Quark_Base& operator=(const Dipole_Quark_Base&) { return *this;}
@@ -117,7 +123,7 @@ namespace ADICIC {
   public:
     Dipole_Quark_D();
     ~Dipole_Quark_D();
-    const ATOOLS::Flavour operator()() const { return DQ;}
+    const ATOOLS::Flavour operator()() const { return *DQ;}
   };
 
 
@@ -131,7 +137,7 @@ namespace ADICIC {
   public:
     Dipole_Quark_U();
     ~Dipole_Quark_U();
-    const ATOOLS::Flavour operator()() const { return UQ;}
+    const ATOOLS::Flavour operator()() const { return *UQ;}
   };
 
 
@@ -145,7 +151,7 @@ namespace ADICIC {
   public:
     Dipole_Quark_S();
     ~Dipole_Quark_S();
-    const ATOOLS::Flavour operator()() const { return SQ;}
+    const ATOOLS::Flavour operator()() const { return *SQ;}
   };
 
 
@@ -159,7 +165,7 @@ namespace ADICIC {
   public:
     Dipole_Quark_C();
     ~Dipole_Quark_C();
-    const ATOOLS::Flavour operator()() const { return CQ;}
+    const ATOOLS::Flavour operator()() const { return *CQ;}
   };
 
 
@@ -173,7 +179,7 @@ namespace ADICIC {
   public:
     Dipole_Quark_B();
     ~Dipole_Quark_B();
-    const ATOOLS::Flavour operator()() const { return BQ;}
+    const ATOOLS::Flavour operator()() const { return *BQ;}
   };
 
 
@@ -187,7 +193,7 @@ namespace ADICIC {
   public:
     Dipole_Quark_T();
     ~Dipole_Quark_T();
-    const ATOOLS::Flavour operator()() const { return TQ;}
+    const ATOOLS::Flavour operator()() const { return *TQ;}
   };
 
 
@@ -200,14 +206,15 @@ namespace ADICIC {
 
 
   class Dipole_Antiquark_Base {
+    friend class Dipole_Flavour_Init;
   protected:
     static const short AQtag;
-    static const ATOOLS::Flavour DA;
-    static const ATOOLS::Flavour UA;
-    static const ATOOLS::Flavour SA;
-    static const ATOOLS::Flavour CA;
-    static const ATOOLS::Flavour BA;
-    static const ATOOLS::Flavour TA;
+    static const ATOOLS::Flavour* DA;
+    static const ATOOLS::Flavour* UA;
+    static const ATOOLS::Flavour* SA;
+    static const ATOOLS::Flavour* CA;
+    static const ATOOLS::Flavour* BA;
+    static const ATOOLS::Flavour* TA;
 
     Dipole_Antiquark_Base(const Dipole_Antiquark_Base&) {}
     Dipole_Antiquark_Base& operator=(const Dipole_Antiquark_Base&) {
@@ -233,7 +240,7 @@ namespace ADICIC {
   public:
     Dipole_Antiquark_D();
     ~Dipole_Antiquark_D();
-    const ATOOLS::Flavour operator()() const { return DA;}
+    const ATOOLS::Flavour operator()() const { return *DA;}
   };
 
 
@@ -247,7 +254,7 @@ namespace ADICIC {
   public:
     Dipole_Antiquark_U();
     ~Dipole_Antiquark_U();
-    const ATOOLS::Flavour operator()() const { return UA;}
+    const ATOOLS::Flavour operator()() const { return *UA;}
   };
 
 
@@ -261,7 +268,7 @@ namespace ADICIC {
   public:
     Dipole_Antiquark_S();
     ~Dipole_Antiquark_S();
-    const ATOOLS::Flavour operator()() const { return SA;}
+    const ATOOLS::Flavour operator()() const { return *SA;}
   };
 
 
@@ -275,7 +282,7 @@ namespace ADICIC {
   public:
     Dipole_Antiquark_C();
     ~Dipole_Antiquark_C();
-    const ATOOLS::Flavour operator()() const { return CA;}
+    const ATOOLS::Flavour operator()() const { return *CA;}
   };
 
 
@@ -289,7 +296,7 @@ namespace ADICIC {
   public:
     Dipole_Antiquark_B();
     ~Dipole_Antiquark_B();
-    const ATOOLS::Flavour operator()() const { return BA;}
+    const ATOOLS::Flavour operator()() const { return *BA;}
   };
 
 
@@ -303,7 +310,7 @@ namespace ADICIC {
   public:
     Dipole_Antiquark_T();
     ~Dipole_Antiquark_T();
-    const ATOOLS::Flavour operator()() const { return TA;}
+    const ATOOLS::Flavour operator()() const { return *TA;}
   };
 
 
@@ -319,10 +326,3 @@ namespace ADICIC {
 
 
 //eof
-
-
-
-
-
-
-
