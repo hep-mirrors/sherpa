@@ -182,7 +182,10 @@ namespace AMISIC {
     p(p_\perp,b)\,=\;e(b)\,\frac{1}{\sigma_{\rm ND}}\,
     \frac{{\rm d} \sigma}{{\rm d} p_\perp^2}\;.
     \f]
-    It is found through a suitable veto algorithm.
+    It is found through a suitable veto algorithm.<br>
+    The non-diffractive hadronic cross section is determined 
+    according to a model by G. A. Schuler and T. Sjostrand 
+    (see Phys. Rev. D <b>49</b> (1994) 2257).
   */
 
 } // end of namespace AMISIC
