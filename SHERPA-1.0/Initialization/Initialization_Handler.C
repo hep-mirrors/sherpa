@@ -71,8 +71,10 @@ bool Initialization_Handler::InitializeTheFramework()
   double smax=sqr(rpa.gen.Ecms());
   smin = Max(smin,p_beamspectra->SprimeMin());
   smax = Min(smax,p_beamspectra->SprimeMax());
-  smin = Max(smin,p_isrhandler->SprimeMin());
-  smax = Min(smax,p_isrhandler->SprimeMax());
+  if (p_isrhandler->On()) {
+    smin = Max(smin,p_isrhandler->SprimeMin());
+    smax = Min(smax,p_isrhandler->SprimeMax());
+  }
   if (p_beamspectra->On()) {
     p_beamspectra->SetSprimeMin(smin);
   }
