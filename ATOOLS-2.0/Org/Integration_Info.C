@@ -50,12 +50,10 @@ void Integration_Info::ReleaseKey(Info_Key &key)
     std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > > > >::iterator 
     vit=m_keymap.find(key.m_name);
   if (vit==m_keymap.end()) return;
-  size_t vpos=vit->second.first;
   std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > > &keys=vit->second.second;
   std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > >::iterator 
     wit=keys.find(key.m_info);
   if (wit==keys.end()) return;
-  size_t wpos=wit->second.first;
   for (std::vector<Info_Key*>::iterator kit=wit->second.second.begin();
        kit!=wit->second.second.end();++kit) {
     if (*kit==&key) { 

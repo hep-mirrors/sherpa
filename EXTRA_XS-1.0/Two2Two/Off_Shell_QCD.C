@@ -93,10 +93,12 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
 {
   ATOOLS::Vec4D *p=p_momenta;
-  double S=p[4]*p[5], M2=p[2].Abs2();
+  double S=p[4]*p[5]; //M2=p[2].Abs2();
   double z1=p[5]*p[0]/S, z2=p[4]*p[1]/S;
-  double a3=p[5]*p[2]/(z1*S), a4=p[5]*p[3]/(z1*S);
-  double b3=p[4]*p[2]/(z2*S), b4=p[4]*p[3]/(z2*S);
+  //double a3=p[5]*p[2]/(z1*S), 
+  double a4=p[5]*p[3]/(z1*S);
+  //double b3=p[4]*p[2]/(z2*S), 
+  double b4=p[4]*p[3]/(z2*S);
   double k12=p[0].Abs2(), k22=p[1].Abs2();
   return ATOOLS::sqr(4.*M_PI*m_alphas)/(k12*k22)*
     ggggosmec(S,s,t,u,k12,k22,z1,z2,a4,b4)*(NC*NC)/(NC*NC-1.)/8.;
