@@ -37,7 +37,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 
   msg.Init(gen.Output());
   gen.m_rpa_id = dr.GenerateKey();
-  ran.SetSeed(gen.m_seed);
+  if (gen.m_seed!=1234) ran.SetSeed(gen.m_seed);
 }
 
 Run_Parameter::~Run_Parameter() { }
