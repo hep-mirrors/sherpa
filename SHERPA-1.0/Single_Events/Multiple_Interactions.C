@@ -134,10 +134,12 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     break;
   }
   case 0: {
-    Blob_Data_Base *miinfo=
-      (*bloblist->FindLast(btp::ME_PS_Interface_FS))["MI_Scale"];
-    if (miinfo==NULL) THROW(fatal_error,"No mi scale information.");
-    m_ptmax=Min(m_ptmax,miinfo->Get<double>());
+    if (!m_diced) {
+      Blob_Data_Base *miinfo=
+	(*bloblist->FindLast(btp::ME_PS_Interface_FS))["MI_Scale"];
+      if (miinfo==NULL) THROW(fatal_error,"No mi scale information.");
+      m_ptmax=Min(m_ptmax,miinfo->Get<double>());
+    }
     break;
   }
   default: THROW(not_implemented,"Wrong mi scale scheme.");
