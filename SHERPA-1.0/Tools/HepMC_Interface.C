@@ -16,7 +16,11 @@ using namespace HepMC;
 using namespace HepPDT;
 
 HepMC_Interface::HepMC_Interface():
+#ifdef CLHEP_SUPPORT
+  p_event(new HepMC::GenEvent())
+#else
   p_event(NULL)
+#endif
 {
   InitTheMap();
 }
@@ -24,6 +28,7 @@ HepMC_Interface::HepMC_Interface():
 HepMC_Interface::~HepMC_Interface()
 {
 #ifdef CLHEP_SUPPORT
+  delete p_event;
   delete p_particledatatable;
 #endif
 }
