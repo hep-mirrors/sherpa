@@ -6,7 +6,6 @@ using namespace ATOOLS;
 void Kinematics::ShuffleMomenta(std::vector<Vec4D> _moms,std::vector<double> _newmasses2)
 {
   const int number = _moms.size();
-
   double xmt     = 0.;
   double * oldenergies2 = new double[number];
   double * energies     = new double[number];

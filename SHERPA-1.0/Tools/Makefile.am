@@ -25,13 +25,16 @@ libSherpaTools_la_SOURCES     =	\
 			    	HepMC_Interface.C \
 				HepEvt_Interface.C \
 			    	Sample_Analysis.C \
+			    	Analysis_Phase.C \
 				fhepevt.f 
 noinst_HEADERS        =	\
 			Kinematics.H \
 			Output_Handler.H \
 		 	HepMC_Interface.H \
 			HepEvt_Interface.H \
-			Sample_Analysis.H 
+			Sample_Analysis.H \
+			Analysis_Phase.H 
+
 EXTRA_DIST    =	$(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
 INCLUDES      =	$(SHERPAINCS) $(AMISICINCS) $(MODELINCS) $(ATOOLSINCS) \

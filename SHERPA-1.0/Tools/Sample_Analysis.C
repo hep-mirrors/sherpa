@@ -1,45 +1,33 @@
 #include "Sample_Analysis.H"
 #include "Shower_Observables.H"
+#include "One_Particle_Observables.H"
 #include "MyStrStream.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 
 
 
-namespace SHERPA {
-
-  class PHard_Observable : public ATOOLS::Primitive_Observable_Base {  
-  public:
-    PHard_Observable(int _type,double _xmin,double _xmax,int _nbins, std::string _name);
-    void Evaluate(double); 
-    void Evaluate(int,ATOOLS::Vec4D *,ATOOLS::Flavour *,double w);
-    void Evaluate(const ATOOLS::Particle_List &,double w);
-    void Evaluate(const ATOOLS::Blob_List &,double w); 
-  };
-
-  extern double amegic_apacic_interface_last_hard_scale;
-}
-
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
+
 int Sample_Analysis::m_njet=2;
 double Sample_Analysis::m_pt_W=0.;
 
-PHard_Observable::PHard_Observable(int _type,double _xmin,double _xmax,int _nbins, std::string _name)
-{
-  type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins;
-  name  = std::string("pt_hard.dat");
-  name  = _name+std::string(".dat");
-  histo = new ATOOLS::Histogram(type,xmin,xmax,nbins);
-}
+extern double amegic_apacic_interface_last_hard_scale;
+
+
+PHard_Observable::PHard_Observable(int _type,double _xmin,double _xmax, int _nbins, 
+				   std::string _name = std::string("pt_hard.dat")) :
+  Primitive_Observable_Base(_type,_xmin,_xmax,_nbins,NULL) { name = _name; }
+
 
 void PHard_Observable::Evaluate(double w)
 {
-  //  histo->Insert(sqrt(amegic_apacic_interface_last_hard_scale),w); 
   histo->Insert(Sample_Analysis::m_pt_W,w); 
 }
+
 void PHard_Observable::Evaluate(int,ATOOLS::Vec4D *,ATOOLS::Flavour *,double w)
 {
   Evaluate(w);
@@ -49,14 +37,10 @@ void PHard_Observable::Evaluate(const ATOOLS::Particle_List &,double w)
 {
   Evaluate(w);
 }
+
 void PHard_Observable::Evaluate(const ATOOLS::Blob_List &,double w)
 {
   Evaluate(w);
-}
-
-
-void Sample_Analysis::Init() { 
-  if (hepevt) nhep = 0;
 }
 
 Sample_Analysis::Sample_Analysis(std::string _m_path,std::string _m_file):
@@ -90,6 +74,10 @@ Sample_Analysis::Sample_Analysis(std::string _m_path,std::string _m_file):
 
 
 
+void Sample_Analysis::Init() { 
+  if (hepevt) nhep = 0;
+}
+
 void Sample_Analysis::AfterME(ATOOLS::Blob_List * blobs, double weight) {
   if (!(status)) return;
   obs[0]->Evaluate(*blobs,weight);
@@ -116,7 +104,6 @@ void Sample_Analysis::AfterPartonShower(ATOOLS::Blob_List * blobs, double weight
 
   // extra statistics
   obs[1]->Evaluate(*blobs,weight);
-
   obs[2]->Evaluate(*blobs,weight);
   obs[m_njet+1]->Evaluate(*blobs,weight);
 
@@ -158,79 +145,3 @@ void Sample_Analysis::Finish(std::string addpath)
 Sample_Analysis::~Sample_Analysis() {
   if (ana)                   { delete ana;     ana     = 0; }
 }
-
-
-// ============================================================
-
-
-Analysis_Phase::Analysis_Phase(Sample_Analysis * ana, int mode) :
-  p_analysis(ana), m_mode(mode) 
-{
-  m_type      = string("Perturbative");
-  m_status    = 0;
-
-  if (!ana) m_mode=0;
-
-  switch (m_mode) {
-  case 1:
-    m_name      = string("Analysis_Phase Matrix Elements");
-    msg.Tracking()<<" Init "<<m_name<<endl;
-    break;
-  case 2:
-    m_name      = string("Analysis_Phase Parton Shower");
-    msg.Tracking()<<" Init "<<m_name<<endl;
-    break;
-  case 3:
-    m_name      = string("Analysis_Phase Hadronization");
-    m_type      = std::string("Hadronization");
-    msg.Tracking()<<" Init "<<m_name<<endl;
-    break;
-  default:
-    msg.Out()<<" Unknow Analysis_Phase "<<m_mode<<endl;
-  }
-  if (!ana) m_mode=0;
-
-}
-
-
-
-
-
-bool  Analysis_Phase::Treat(ATOOLS::Blob_List * bl, double & weight) 
-{
-  switch (m_mode) {
-  case 1:
-    // should be if "signal process" has status 1! beware of MI
-    if (bl->size()==1 && bl->back()->Status()==1) {
-
-      p_analysis->AfterME(bl,weight);
-      m_status = 1;
-    }
-    break;
-  case 2:
-    if (m_status) return 0;
-    // should look for a shower blobs! 
-    if (bl->size()>2) {
-      p_analysis->AfterPartonShower(bl,weight);
-      m_status = 1;
-    }
-    break;
-  case 3:
-    if (m_status) return 0;
-    if (bl->size()>2) {
-      p_analysis->AfterHadronization(bl,weight);
-      m_status = 1;
-    }
-    break;
-  default:
-    msg.Out()<<" Unknow Analysis_Phase "<<m_mode<<endl;
-  }
-
-  return 0; // analysis does not create any new blobs.
-}
-
-void  Analysis_Phase::CleanUp() 
-{
-  m_status=0;
-}
-

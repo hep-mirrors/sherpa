@@ -18,6 +18,9 @@ Output_Handler::Output_Handler(int type) :
   m_type(type)
 {
   switch (m_type) {
+  case 0:
+    m_active = 1;
+    return;    
   case 1: 
 #ifdef _USE_HEPMC_
     p_hepmc  = new HepMC_Interface();
@@ -45,6 +48,13 @@ void Output_Handler::OutputToFormat(Blob_List * _blobs)
 {
   if (!m_active) return;
   switch (m_type) {
+  case 0:
+    if (!_blobs->empty()) {
+      for (Blob_Iterator blit=_blobs->begin();blit!=_blobs->end();++blit) {
+	msg.Events()<<(*blit)<<std::endl;
+      }
+    }
+    return;
   case 1: 
 #ifdef _USE_HEPMC_
     if (p_event) { delete p_event; p_event = NULL; }
