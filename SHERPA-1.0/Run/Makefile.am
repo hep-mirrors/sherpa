@@ -28,7 +28,7 @@ APACICINCS    = -I$(APACICDIR)/Main -I$(APACICDIR)/Showers
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lLHAPDF -lDUPDF
+PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lLHAPDF 
 ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
 BEAMLIBS      =	-L@libdir@ -lBeam 
 PHASICLIBS    =	-L@libdir@ -lPhasespace 

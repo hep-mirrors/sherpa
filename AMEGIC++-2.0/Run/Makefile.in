@@ -157,7 +157,11 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libHdecay.la \
 	       @libdir@/libIsajet.la \
 	       @libdir@/libModel.la \
+	       @libdir@/libDUPDF.la \
+	       @libdir@/libApacicMain.la \
+	       @libdir@/libApacicShowers.la \
 	       @libdir@/libPDF.la \
+	       @libdir@/libSudakov.la \
 	       @libdir@/libLHAPDF.la \
 	       @libdir@/libPhasespace.la \
 	       @libdir@/libBeam.la \
@@ -204,9 +208,10 @@ Amegic_DEPENDENCIES = @libdir@/libProcess.la @libdir@/libAmegic.la \
 	@libdir@/libString.la @libdir@/libToolsPhys.la \
 	@libdir@/libToolsMath.la @libdir@/libToolsOrg.la \
 	@libdir@/libModelMain.la @libdir@/libHdecay.la \
-	@libdir@/libIsajet.la @libdir@/libModel.la @libdir@/libPDF.la \
-	@libdir@/libLHAPDF.la @libdir@/libPhasespace.la \
-	@libdir@/libBeam.la
+	@libdir@/libIsajet.la @libdir@/libModel.la @libdir@/libDUPDF.la \
+	@libdir@/libApacicMain.la @libdir@/libApacicShowers.la \
+	@libdir@/libPDF.la @libdir@/libSudakov.la @libdir@/libLHAPDF.la \
+	@libdir@/libPhasespace.la @libdir@/libBeam.la
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp

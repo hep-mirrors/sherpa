@@ -11,7 +11,8 @@ SHERPAINCS    =	-I../PerturbativePhysics -I../SoftPhysics \
 		-I../SoftPhysics/Lund -I../LundTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
-PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+PDFDIR        =	-I$(SHERPASYS)/PDF-1.0
+PDFINCS       = $(PDFDIR)/Main $(PDFDIR)/Sudakov
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
