@@ -29,7 +29,9 @@ namespace SHERPA {
 
     TypeID      m_type;
     std::string m_name;
-    int         m_scalescheme;
+
+    int    m_scalescheme;
+    double m_ycut; 
 
   public:
 
@@ -72,6 +74,8 @@ namespace SHERPA {
     
     // inline functions
     inline int ScaleScheme() const { return m_scalescheme; }
+
+    inline double YCut() const { return m_ycut; }
 
   }; // end of class MI_Handler
 

@@ -21,7 +21,8 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   p_beam(beam),
   p_isr(isr),
   m_type(None),
-  m_scalescheme(1)
+  m_scalescheme(1),
+  m_ycut(1.0e-7)
 {
   std::string mihandler;
   ATOOLS::Data_Read *read = new ATOOLS::Data_Read(path+file,true);
@@ -41,6 +42,9 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
     if (!p_amisic->Initialize()) {
       THROW(fatal_error,"Cannot initialize Amisic.");
     }
+    m_ycut=p_amisic->HardBase()->Stop(0);
+    PRINT_INFO(m_ycut);
+    m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa.gen.Ecms());
     m_type=Amisic;
   }
 }

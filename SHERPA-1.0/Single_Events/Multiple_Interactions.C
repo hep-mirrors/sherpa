@@ -4,6 +4,8 @@
 #include "My_Limits.H"
 #include "Remnant_Base.H"
 #include "ISR_Handler.H"
+#include "Jet_Finder.H"
+#include "Run_Parameter.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Multiple_Interactions
@@ -63,15 +65,13 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       signal=bloblist->
 	FindConnected(bloblist->FindLast(ATOOLS::btp::Hard_Collision));
     }
+    ATOOLS::Particle_List jets=signal.ExtractLooseParticles(1);
+    ATOOLS::Jet_Finder finder(p_mihandler->YCut(),4);
+    finder.ConstructJets(&jets,2,true);
     double ptmax=0.0;
-    for (ATOOLS::Blob_List::const_iterator sit=signal.begin();
-	 sit!=signal.end();++sit) {
-      for (int i=0;i<(*sit)->NOutP();++i) {
-	const ATOOLS::Particle *part=(*sit)->ConstOutParticle(i);
-	if (part->DecayBlob()==NULL)
-	  ptmax=ATOOLS::Max(ptmax,part->Momentum().PPerp());
-      }
-    }
+    for (ATOOLS::Particle_List::const_iterator pit=jets.begin();pit!=jets.end();++pit)
+      ptmax=ATOOLS::Max(ptmax,(*pit)->Momentum().PPerp());
+    jets.Clear();
     m_ptmax=ATOOLS::Min(m_ptmax,ptmax);
     break;
   }
