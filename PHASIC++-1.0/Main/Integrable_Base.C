@@ -373,8 +373,12 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     ATOOLS::Vec4D *p=p_momenta;
     double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
     double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
-    m_scale[PHASIC::stp::kp21]=x1*x1*2.*S2*xi;
-    m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
+    double xi1=p_addmomenta[0].PMinus()/p_addmomenta[0].PPlus();
+    double xi2=p_addmomenta[1].PMinus()/p_addmomenta[1].PPlus();
+    // for testing purposes; yields good fit to data
+    S2=(p[0]+p[1]+p_addmomenta[0]+p_addmomenta[1]).Abs2();
+    m_scale[PHASIC::stp::kp21]=x1*x1*S2*xi2;
+    m_scale[PHASIC::stp::kp22]=x2*x2*S2/xi1;
     // ew scale a la watt
     double sc=(p[0]+p[1]).PPerp2();
     pt2=m_scale[PHASIC::stp::as]=pow(sc,2./3.)*pow(M2,1./3.);
