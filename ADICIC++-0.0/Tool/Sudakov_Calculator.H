@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/27    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/10/28    (surely preliminarily)
 
 //Classes are provided, which manage the Sudakov calculation needed for the
 //gluon emission or splitting of a specific dipole.
@@ -21,6 +21,8 @@
 
 #define SUDAKOV_CALCULATOR_OUTPUT SUDAKOV_CALCULATOR_OUTPUT
 #undef  SUDAKOV_CALCULATOR_OUTPUT
+#define TEMP_OUTPUT TEMP_OUTPUT////////////////////////////////////////////////
+#undef  TEMP_OUTPUT////////////////////////////////////////////////////////////
 
 
 
@@ -302,7 +304,11 @@ namespace ADICIC {
   public:
 
     Sudakov(const Sudakov_Group<_Diptype>&, ATOOLS::kf::code);
-    ~Sudakov() { msg_Tracking()<<"~Sudakov(gluon)"<<std::endl;}/////////////////////
+    ~Sudakov() {
+#ifdef TEMP_OUTPUT
+      std::cout<<"~Sudakov(gluon)"<<std::endl;/////////////////////////////////
+#endif
+    }
 
     inline void Which() const;
     inline void ShowSpecification() const;
@@ -342,7 +348,11 @@ namespace ADICIC {
   public:
 
     Sudakov(const Sudakov_Group<_Diptype>&, ATOOLS::kf::code);
-    ~Sudakov() { msg_Tracking()<<"~Sudakov(quark)"<<std::endl;}/////////////////////
+    ~Sudakov() {
+#ifdef TEMP_OUTPUT
+      std::cout<<"~Sudakov(quark)"<<std::endl;/////////////////////////////////
+#endif
+    }
 
     inline void Which() const;
     inline void ShowSpecification() const;

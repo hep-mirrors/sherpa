@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/27
+//Version: 2 ADICIC++-0.0/2004/10/28
 
 //Implementation of the template structures of Sudakov_Calculator.H.
 
@@ -81,7 +81,9 @@ template<Dipole::Type DT>
 Sudakov_Group<DT>::~Sudakov_Group() {
   for(list<Sudakov_Base*>::iterator bit=l_sud.begin(); bit!=l_sud.end(); ++bit)
     if(*bit) delete (*bit);
-  msg_Tracking()<<"~Sudakov_Group"<<endl;////////////////////////////////////////////////
+#ifdef TEMP_OUTPUT
+  cout<<"~Sudakov_Group"<<endl;////////////////////////////////////////////////
+#endif
 }
 
 
@@ -172,7 +174,7 @@ Sudakov_Group<DT>::GenerateEfracsFor(const Dipole& dip,
 
 template<Dipole::Type DT>
 const kf::code Sudakov_Group<DT>::InitRadiation() const {
-  std::cout<<"RADINIT"<<std::endl;
+  std::cout<<"RADINIT"<<std::endl;/////////////////////////////////////////////
   for(list<Sudakov_Base*>::const_iterator cit=l_sud.begin();
       cit!=l_sud.end(); ++cit)
     if(*cit) (*cit)->InitRadParticle();

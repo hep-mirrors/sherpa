@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/01
+//Version: 2 ADICIC++-0.0/2004/10/28
 
 //Inline methods of Sudakov_Calculator.H.
 
@@ -28,11 +28,6 @@ namespace ADICIC {
     : m_spl(between), m_rad(ATOOLS::kf::none),
       m_p2t(0.0), m_x1(1.0), m_x3(1.0) {
     ++s_count;
-  }
-
-
-  inline Sudakov_Calculator::~Sudakov_Calculator() {
-    --s_count; msg_Tracking()<<"~Sudakov_Calculator"<<std::endl;////////////////////
   }
 
 
@@ -126,11 +121,6 @@ namespace ADICIC {
   }
 
 
-  inline void Sudakov_Calculator::Which() const {
-    std::cout<<"Incomplete Sudakov_Calculator!"<<std::endl;
-  }
-
-
 
   //===========================================================================
 
@@ -139,11 +129,6 @@ namespace ADICIC {
   inline Sudakov_Base::Sudakov_Base(ATOOLS::kf::code c)
     : m_code(c), m_split(between), m_mass(0.0) {
     ++s_count;
-  }
-
-
-  inline Sudakov_Base::~Sudakov_Base() {
-    --s_count; msg_Tracking()<<"~Sudakov_Base"<<std::endl;//////////////////////////
   }
 
 
@@ -160,11 +145,6 @@ namespace ADICIC {
 
   inline void Sudakov_Base::InitRadParticle() {
     m_mass=ATOOLS::Flavour(m_code).Mass();
-  }
-
-
-  inline void Sudakov_Base::Which() const {
-    std::cout<<"Incomplete Sudakov object!"<<std::endl;
   }
 
 
