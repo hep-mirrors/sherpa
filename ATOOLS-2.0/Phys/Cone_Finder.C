@@ -41,9 +41,9 @@ double Cone_Finder::Rmin(Vec4D * p)
     for (int k=j+1;k<m_n;k++) {
       r2jk = sqr(DEta12(p[j],p[k])) + sqr(DPhi12(p[j],p[k]));
       if (r2jk<r2min && 
-	  //m_fl[j].Mass()<3. && m_fl[k].Mass()<3. &&
-	  !(m_fl[j].IsLepton() /*&& m_fl[j].IntCharge()==0*/) &&
-	  !(m_fl[k].IsLepton() /*&& m_fl[k].IntCharge()==0*/))   {
+	  m_fl[j].Mass()<3. && m_fl[k].Mass()<3. &&
+	  !(m_fl[j].IsLepton() && m_fl[j].IntCharge()==0) &&
+	  !(m_fl[k].IsLepton() && m_fl[k].IntCharge()==0))   {
 	r2min = r2jk;
       }
     }
@@ -74,13 +74,17 @@ bool Cone_Finder::Trigger(const Vec4D * p)
 void Cone_Finder::BuildCuts(Cut_Data * cuts) 
 {
   double rp2=sqr(m_rcone)-0.5*(cosh(m_rcone)+cos(m_rcone)-2);
-  for (int i=0;i<m_n-1;i++) {
-    for (int j=i+1;j<m_n;j++) {
-      double mp2=Max(sqr(cuts->etmin[i])-sqr(m_fl[i].Mass()),
-		     (sqr(cuts->energymin[i])-sqr(m_fl[i].Mass()))*(1-sqr(cuts->cosmax[0][i])))*
-	         Max(sqr(cuts->etmin[j])-sqr(m_fl[j].Mass()),
-		     (sqr(cuts->energymin[j])-sqr(m_fl[j].Mass()))*(1-sqr(cuts->cosmax[0][j])));
-      cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],sqrt(mp2)*rp2);
+  for (int i=m_nin;i<m_n-1;i++) {
+    for (int j=i+1;j<m_n;j++) {     
+      if (m_fl[i].Mass()<3. && m_fl[j].Mass()<3. &&
+	  !(m_fl[i].IsLepton() && m_fl[i].IntCharge()==0) &&
+	  !(m_fl[j].IsLepton() && m_fl[j].IntCharge()==0))   {
+	double mp2=Max(sqr(cuts->etmin[i])-sqr(m_fl[i].Mass()),
+		       (sqr(cuts->energymin[i])-sqr(m_fl[i].Mass()))*(1-sqr(cuts->cosmax[0][i])))*
+	           Max(sqr(cuts->etmin[j])-sqr(m_fl[j].Mass()),
+		       (sqr(cuts->energymin[j])-sqr(m_fl[j].Mass()))*(1-sqr(cuts->cosmax[0][j])));
+	cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],sqrt(mp2)*rp2);
+      }
     }
   }
 }
