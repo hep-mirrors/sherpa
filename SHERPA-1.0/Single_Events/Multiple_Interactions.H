@@ -6,26 +6,27 @@
 
 namespace SHERPA {
 
-  class Multiple_Interactions : public Event_Phase_Handler {
-  private :
+  class Multiple_Interactions: public Event_Phase_Handler {
+  private:
 
-    bool m_diced;
-    double m_pperpmax, m_ecmsmax, m_xmax[2];
+    double m_ecms, m_pperpmax, m_ecmsmax, m_xmax[2];
 
     MI_Handler *p_mihandler;
 
-  public :
+    bool CheckBlobList(const ATOOLS::Blob_List *bloblist);
+
+  public:
 
     // constructor
-    Multiple_Interactions(MI_Handler *_p_mihandler);
+    Multiple_Interactions(MI_Handler *mihandler);
 
     // destructor
     ~Multiple_Interactions();
 
     // member functions
-    bool Treat(ATOOLS::Blob_List *, double &);
+    bool Treat(ATOOLS::Blob_List *bloblist, double &weight);
     void CleanUp();
-    void Finish(const std::string &);
+    void Finish(const std::string &resultpath);
 
   }; // end of class Multiple_Interactions
 
