@@ -47,6 +47,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	  if (instrong==1) jettype = 2;
 	  if (instrong==2) jettype = 4;
 	}
+	rmin=Max(rmin,rpa.gen.Ycut());
 	sel = new Jet_Finder(_nin+_nout,_fl,rmin,1,jettype);
 	activetypes.push_back(type);
 	break;
