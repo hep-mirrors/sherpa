@@ -4,7 +4,6 @@
 #include "Scaling.H"
 #include <sys/types.h>
 #include <unistd.h>
-#include <execinfo.h>
 
 #define USING_Stack_Trace
 #ifndef __USE_GNU
@@ -16,6 +15,7 @@
 #endif
 
 #ifdef USING_Stack_Trace
+#include <execinfo.h>
 #include <dlfcn.h>
 #define MAX_BACKTRACE_DEPTH 128
 #endif
