@@ -22,5 +22,6 @@ FS WIDTH SCHEME   = 0        !  0=no width supression,
                              !  2=suppressed by pt2/(Gamma^2+pt2)
 FS Z RANGES       = 1        !  0=constrained z, 1=unconstrained z
 FS ME CORRECTIONS = 0        !  0=none, 1=hardest so far, 2=first
+FS LOSEJETVETO    = 0        !  0=Off 1=On
 FS ANGLE DEF      = 1        !  so far no options
 FS PHOTONS        = 0        !  1=On,0=Off
