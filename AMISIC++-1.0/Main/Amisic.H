@@ -54,6 +54,7 @@ namespace AMISIC {
     // member functions
     bool Initialize();
     void Reset();
+    void CleanUp();
 
     bool GenerateHardProcess(ATOOLS::Blob *blob);
     bool GenerateHardEvent(ATOOLS::Blob_List *blobs);

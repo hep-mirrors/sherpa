@@ -37,7 +37,6 @@ noinst_HEADERS        = \
 			Grid_Creator.inl.H \
 		       	Grid_Creator.C \
 			Fixed_Variable_Channel.H \
-			Fixed_Variable_Channel.inl.H \
 			Fixed_Variable_Channel.C \
 			MI_Base.H \
 			MI_Base.inl.H \

@@ -69,6 +69,7 @@ namespace AMISIC {
     bool InitializeCalculation();
     unsigned int CreateSinglePoint(GridArgumentType *boundary,
 				   bool newpoint,bool force);
+    bool RemoveSinglePoint(GridArgumentType x);
     
     bool CreateInitialGrid();
     bool CreateOptimizedGrid();

@@ -1,6 +1,7 @@
 #include "MI_Base.H"
-#include "Message.H"
+
 #include "Particle.H"
+#include "Message.H"
 
 #ifdef PROFILE__MI_Base
 #include "prof.hh"
@@ -17,8 +18,8 @@ MI_Base::NameMIBaseMap MI_Base::s_bases=MI_Base::NameMIBaseMap();
 std::vector<ATOOLS::Remnant_Info*> 
 MI_Base::s_remnanthandlers=std::vector<ATOOLS::Remnant_Info*>(2,(ATOOLS::Remnant_Info*)NULL);
 
-bool MI_Base::m_stophard=true;
-bool MI_Base::m_stopsoft=true;
+bool MI_Base::s_stophard=true;
+bool MI_Base::s_stopsoft=true;
 
 MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 		 unsigned int infiles,unsigned int outfiles):
@@ -26,6 +27,7 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
   m_name(_m_name),
   m_type(_m_type),
   m_nparameter(_m_nparameter),
+  m_weighted(false),
   p_blob(NULL),
 #ifdef USING__Sherpa
   p_mehandler(NULL),
@@ -92,6 +94,12 @@ void MI_Base::Reset()
   return;
 }
 
+void MI_Base::CleanUp()
+{
+  s_stophard=false;
+  s_stopsoft=false;
+}
+
 bool MI_Base::DiceOrderingParameter()
 {
   ATOOLS::msg.Error()<<"MI_Base::DiceOrderingParameter(): "
@@ -152,6 +160,8 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
     particle->SetInfo('H');
     blob->AddToOutParticles(particle);
   }
+  blob->AddData("MI_Weight",new ATOOLS::Blob_Data<double>((*p_blob)["MI_Weight"]->Get<double>()));
+  blob->AddData("MI_Trials",new ATOOLS::Blob_Data<size_t>((*p_blob)["MI_Trials"]->Get<size_t>()));
   return _m_dicedprocess;
 }
 

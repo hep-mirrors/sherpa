@@ -42,6 +42,26 @@ namespace PHASIC {
     weight/=PHASIC::CE.Isotropic2Weight(_p[2],_p[3])*pow(2.0*M_PI,2.0*3.0-4.0);
   }
 
+  template <class Value_Type>
+  void Fixed_Variable_Channel<Value_Type>::
+  SetVariable(const ATOOLS::Variable _m_variable)
+  { m_variable=_m_variable; }
+
+  template <class Value_Type>
+  const ATOOLS::Variable Fixed_Variable_Channel<Value_Type>::
+  Variable() const 
+  { return m_variable; }
+
+  template <class Value_Type>
+  void Fixed_Variable_Channel<Value_Type>::
+  SetValue(const ValueType _m_value)
+  { m_value=_m_value; }
+
+  template <class Value_Type>
+  const Value_Type Fixed_Variable_Channel<Value_Type>::
+  Value() const
+  { return m_value; }
+
 } // end of namespace PHASIC
 
 #endif

@@ -82,6 +82,7 @@ namespace AMISIC {
     virtual bool InitializeCalculation();
     virtual unsigned int CreateSinglePoint(GridArgumentType *boundary,
 					   bool newpoint=true,bool force=false);
+    virtual bool RemoveSinglePoint(GridArgumentType x);
 
     bool InitializeSingleGrid(GridHandlerType *grid);
     bool OptimizeSingleGrid(GridHandlerType *grid);
@@ -115,6 +116,8 @@ namespace AMISIC {
 			      std::string tempofile=ATOOLS::nullstring,
 			      std::string tempopath=ATOOLS::nullstring);
     
+    bool CheckBoundaries(GridHandlerType *grid);
+
     bool CreateGrid();
 
 #ifdef DEBUG__Simple_Chain

@@ -38,7 +38,6 @@ namespace PHASIC {
     
 } // end of namespace PHASIC
 
-#include "Fixed_Variable_Channel.inl.H"
 #include "Fixed_Variable_Channel.C"
 
 #endif

@@ -160,7 +160,7 @@ namespace AMISIC {
 		       <<"Sorry, grid cannot be written to '"<<OutputFile()<<"'"<<std::endl;
       success=false;
     }
-    ATOOLS::msg.Info()<<"Grid_Creator_Base: Wrote grid to '"<<OutputFile()<<"'"<<std::endl;
+    msg_Info()<<"Grid_Creator_Base: Wrote grid to '"<<OutputFile()<<"'"<<std::endl;
     ATOOLS::msg.SetLevel(formerlevel);
     return success;
   }
@@ -175,11 +175,27 @@ namespace AMISIC {
   }
 
   template <class Argument_Type,class Result_Type>
+  bool Grid_Creator_Base<Argument_Type,Result_Type>::
+  RemoveSinglePoint(GridArgumentType x)
+  {
+    ATOOLS::msg.Error()<<"Grid_Creator_Base::RemoveSinglePoint(): "
+		       <<"Virtual method called!"<<std::endl;
+    return false;
+  }
+
+  template <class Argument_Type,class Result_Type>
   bool Grid_Creator_Base<Argument_Type,Result_Type>::CreateInitialGrid()
   {
     ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): "
 		       <<"Virtual method called!"<<std::endl;
     return false;
+  }
+
+  template <class Argument_Type,class Result_Type>
+  bool Grid_Creator_Base<Argument_Type,Result_Type>::CheckBoundaries(GridHandlerType *grid)
+  {
+    if (grid==NULL) return false;
+    return true;
   }
 
   template <class Argument_Type,class Result_Type>
@@ -201,7 +217,7 @@ namespace AMISIC {
       boundary[0]=(*xaxis)[GridXMin()+(double)i*GridDeltaXMax()];
       boundary[1]=(*xaxis)[GridXMin()+((double)i-1.0)*GridDeltaXMax()];
       boundary[2]=(*xaxis)[GridXMin()+((double)i+1.0)*GridDeltaXMax()];
-      ATOOLS::msg.Tracking()<<"Grid_Creator_Base::CreateInitialGrid(): "
+      msg_Tracking()<<"Grid_Creator_Base::CreateInitialGrid(): "
 			    <<"Calculation for "<<npoints-i<<"th of "<<npoints<<" points in progress."<<std::endl;
       if (!CreateSinglePoint(boundary,true,(i==0)||(i==npoints))) {
 	ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): "
@@ -241,7 +257,7 @@ namespace AMISIC {
 	boundary[0]=middle;
 	boundary[1]=left;
 	boundary[2]=right;
-	ATOOLS::msg.Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
+	msg_Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 			  <<"Calculation for new grid point in progress."<<std::endl
 			  <<"   Currently \\Delta y_{max} = "<<deltaymax
 			  <<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
@@ -262,7 +278,7 @@ namespace AMISIC {
 	    boundary[1]=(*xaxis)[(*xaxis)(left)-delta*(GridArgumentType)(i+1)];
 	    boundary[2]=(*xaxis)[(*xaxis)(left)-delta*(GridArgumentType)(i-1)];
 	    if ((boundary[0]>=(*xaxis)[GridXMin()])&&(boundary[0]<=(*xaxis)[GridXMax()])) {
-	      ATOOLS::msg.Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
+	      msg_Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 				<<"Calculation for corrected "<<i+1<<"th left point in progress."<<std::endl
 				<<"   Currently \\Delta y_{max} = "<<deltaymax
 				<<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
@@ -277,7 +293,7 @@ namespace AMISIC {
 	    boundary[1]=(*xaxis)[(*xaxis)(right)+delta*(GridArgumentType)(i-1)];
 	    boundary[2]=(*xaxis)[(*xaxis)(right)+delta*(GridArgumentType)(i+1)];
 	    if ((boundary[0]>=(*xaxis)[GridXMin()])&&(boundary[0]<=(*xaxis)[GridXMax()])) {
-	      ATOOLS::msg.Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
+	      msg_Info()<<"Grid_Creator_Base::OptimizeSingleGrid(): "
 				<<"Calculation for corrected "<<i+1<<"th right point in progress."<<std::endl
 				<<"   Currently \\Delta y_{max} = "<<deltaymax
 				<<" vs. \\Delta y_{limit} = "<<GridDeltaYMax()<<std::endl;
@@ -292,8 +308,12 @@ namespace AMISIC {
 	}
       }
       else {
-	if (grid->Grid()->YMin()<GridYMin()) grid->Grid()->DeleteYPoint(grid->Grid()->YMin());
-	else if (grid->Grid()->YMax()>GridYMax()) grid->Grid()->DeleteYPoint(grid->Grid()->YMax());
+	if (grid->Grid()->YMin()<GridYMin()) {
+	  RemoveSinglePoint(grid->Grid()->X(grid->Grid()->YMin(),grid->Grid()->Data));
+	}
+	else if (grid->Grid()->YMax()>GridYMax()) {
+	  RemoveSinglePoint(grid->Grid()->X(grid->Grid()->YMax(),grid->Grid()->Data));
+	}
 	yaxis->SetScalingMode(yaxis->Reference);
       }
     } 

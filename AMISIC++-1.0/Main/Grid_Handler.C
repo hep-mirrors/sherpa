@@ -93,12 +93,12 @@ namespace AMISIC {
     reader->SetInputFile(m_streamname);
     reader->AddIgnore("!");
     if (!reader->ReadFromFile(gridxscaling,"x scale :")) {
-      ATOOLS::msg.Tracking()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
+      msg_Tracking()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
 			    <<"   No x scaling information in "<<tempname<<"! "<<std::endl;
       return false;
     }
     if (!reader->ReadFromFile(gridyscaling,"y scale :")) {
-      ATOOLS::msg.Tracking()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
+      msg_Tracking()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
 			    <<"   No y scaling information in "<<tempname<<"! "<<std::endl;
       return false;
     }
@@ -155,7 +155,7 @@ namespace AMISIC {
   {
     if (tempname!=std::string("")) m_streamname=tempname;
     if (m_streamname==std::string("")) {
-      ATOOLS::msg.Tracking()<<"Grid_Handler::WriteToFile(..): No filename specified."<<std::endl
+      msg_Tracking()<<"Grid_Handler::WriteToFile(..): No filename specified."<<std::endl
 			    <<"   Writing to last_grid.dat ."<<std::endl;
       m_streamname=std::string("last_grid.dat");
     }

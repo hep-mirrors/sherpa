@@ -21,11 +21,11 @@ namespace AMISIC {
   { 
     switch (type) {
     case HardEvent:
-      return m_stophard;
+      return s_stophard;
     case SoftEvent:
-      return m_stopsoft;
+      return s_stopsoft;
     case Unknown:
-      return m_stophard&&m_stopsoft;
+      return s_stophard&&s_stopsoft;
     default:	
       return false;
     }

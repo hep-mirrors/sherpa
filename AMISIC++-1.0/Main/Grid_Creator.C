@@ -127,13 +127,27 @@ namespace AMISIC {
 	success=0;
       }
     }
-    ATOOLS::msg.Tracking()<<"Grid_Creator::CalculateSingleValue(): Got value for "<<boundary[0]<<" GeV"<<std::endl
+    msg_Tracking()<<"Grid_Creator::CalculateSingleValue(): Got value for "<<boundary[0]<<" GeV"<<std::endl
 			  <<"   Calculation for "<<lower<<" GeV < "<<p_xaxis->Variable().Name()
 			  <<" < "<<upper<<" GeV yielded "<<newxs*rpa.Picobarn()<<" pb/GeV ( max = "
 			  <<p_processes->Max()*rpa.Picobarn()<<" pb/GeV )"<<std::endl;
     return success;
   }
   
+  template <class Argument_Type,class Result_Type>
+  bool Grid_Creator<Argument_Type,Result_Type>::
+  RemoveSinglePoint(GridArgumentType x)
+  {
+    bool success=true;
+    if (!p_gridhandler[0]->Grid()->DeleteXPoint(x)) success=false;
+    if (m_storemax) {
+      for (unsigned int i=1;i<p_gridhandler.size();++i) {
+	if (!p_gridhandler[i]->Grid()->DeleteXPoint(x)) success=false; 
+      }
+    }
+    return success;
+  }
+
   template <class Argument_Type,class Result_Type>
   bool Grid_Creator<Argument_Type,Result_Type>::WriteOutGrid(std::vector<std::string> addcomments,
 							     std::string tempofile,std::string tempopath)

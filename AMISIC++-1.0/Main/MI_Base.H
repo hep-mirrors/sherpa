@@ -42,7 +42,7 @@ namespace AMISIC {
     double       *m_start, *m_stop, *m_last;
     unsigned int  m_nparameter;
 
-    bool m_dicedparameter, m_dicedprocess, m_filledblob;
+    bool m_dicedparameter, m_dicedprocess, m_filledblob, m_weighted;
 
     ATOOLS::Blob *p_blob;
 
@@ -52,8 +52,8 @@ namespace AMISIC {
 
     EXTRAXS::XS_Base *p_xs;
 
-    static bool m_stophard;
-    static bool m_stopsoft;
+    static bool s_stophard;
+    static bool s_stopsoft;
 
   public:
 
@@ -101,6 +101,8 @@ namespace AMISIC {
     static void SetRemnantHandler(ATOOLS::Remnant_Info *const remnanthandler,
 				  const size_t i);
     static ATOOLS::Remnant_Info *RemnantHandler(const size_t i);
+
+    static void CleanUp();
 
   }; // end of class MI_Base
 
