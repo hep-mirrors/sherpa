@@ -2,7 +2,7 @@
 #define Blob_h
 
 #include <string>
-#include <deque>
+#include <vector>
 #include <iterator> 
 #include <iostream> 
 
@@ -13,7 +13,7 @@
 namespace APHYTOOLS {
   class Parton; 
 
-  typedef std::deque<Parton *> Parton_Queue;
+  typedef std::vector<Parton *> Parton_Queue;
 
   class Blob {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
@@ -22,7 +22,6 @@ namespace APHYTOOLS {
     int   m_id;
     int   m_status;
     int   m_beam;
-    int   m_nin, m_nout;
     std::string         m_type;
     Parton_Queue        m_inpartons;
     Parton_Queue        m_outpartons;
@@ -31,13 +30,21 @@ namespace APHYTOOLS {
     AMATOOLS::Vec4D     m_position;
   public:
     Blob(const AMATOOLS::Vec4D _pos = AMATOOLS::Vec4D(0.,0.,0.,0.), const int _id=0) : 
-      m_position(_pos), m_id(_id) { m_nin = 0; m_nout=0; m_beam = -1; m_status = 0; };
+      m_position(_pos), m_id(_id) { m_beam = -1; m_status = 0; };
     ~Blob();
-    Parton * OutParton(int);
-    Parton * InParton(int);
     void     AddToInPartons(Parton *);
     void     AddToOutPartons(Parton *);
+    Parton * OutParton(int);
+    Parton * InParton(int);
+    Parton * RemoveInParton(int);
+    Parton * RemoveInParton(Parton *);
+    Parton * RemoveOutParton(int);
+    Parton * RemoveOutParton(Parton *);
+    void     DeleteInParton(Parton *);
+    void     DeleteOutParton(Parton *);
+    void     RemoveOwnedPartons();
     void     DeleteOwnedPartons();
+
     void     BoostInCMS();
     void     BoostInLab();
 
@@ -52,8 +59,8 @@ namespace APHYTOOLS {
     int      Id()                       const { return m_id; }
     int      Status()                   const { return m_status; }
     int      Beam()                     const { return m_beam; }
-    int      NInP()                     const { return m_nin; }
-    int      NOutP()                    const { return m_nout; }
+    int      NInP()                     const { return m_inpartons.size(); }
+    int      NOutP()                    const { return m_outpartons.size(); }
 
     AMATOOLS::Vec4D    CheckMomentumConservation();
     AMATOOLS::Vec4D    const Position() const { return m_position; }
@@ -62,46 +69,45 @@ namespace APHYTOOLS {
   };
 
 
-/*!
-  \file 
-  \brief  contains the class APHYTOOLS::Blob
-*/
-
-/*!
-  \class Blob 
-  \brief This class contains a point where a given number of incomming and outgoing Parton interact
-
-  A typical Blob is the hard process at a center of a collision. Another Blob
-  might be the transition between a hard partons and soft partons, i.e. the parton
-  shower.
-*/
-
-/*!
-  \var int Blob::m_id 
-  \brief contains an unique number for each Blob in an event.
-*/
-
-/*!
-  \var   char Blob::m_type;
-  \brief Classifies the type of blob.
+  /*!
+    \file 
+    \brief  contains the class APHYTOOLS::Blob
+  */
   
-  Info about the blob type:
-  H = primary hard interaction - i.e. signal
-  h = secondary hard interaction, for instance underlying event vertex
-  D = hard decay, like for instance top decay
-  d = soft decay, like in fragmentation
-  F = final state shower for H
-  I = initial state shower for H
-  i = hadron to parton transition
-*/
-
-/*!
-  \fn void Blob::BoostInLab()
-  \brief boost blob back in lab system
-
-  \warning this is not jet implemented!
-*/
-
+  /*!
+    \class Blob 
+    \brief This class contains a point where a given number of incomming and outgoing Parton interact
+    
+    A typical Blob is the hard process at a center of a collision. Another Blob
+    might be the transition between a hard partons and soft partons, i.e. the parton
+    shower.
+  */
+  
+  /*!
+    \var int Blob::m_id 
+    \brief contains an unique number for each Blob in an event.
+  */
+  
+  /*!
+    \var   char Blob::m_type;
+    \brief Classifies the type of blob.
+    
+    Info about the blob type:
+    H = primary hard interaction - i.e. signal
+    h = secondary hard interaction, for instance underlying event vertex
+    D = hard decay, like for instance top decay
+    d = soft decay, like in fragmentation
+    F = final state shower for H
+    I = initial state shower for H
+    i = hadron to parton transition
+  */
+  
+  /*!
+    \fn void Blob::BoostInLab()
+    \brief boost blob back in lab system
+    
+    \warning this is not jet implemented!
+  */
 }
 
 #endif

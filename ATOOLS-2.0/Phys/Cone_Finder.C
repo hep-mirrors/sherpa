@@ -10,7 +10,6 @@ using namespace AMATOOLS;
 void Cone_Finder::Init(const AMATOOLS::Vec4D * p)
 {
   //nothing has to be done for hadronic collisions
-
   //think about lepton-lepton collisions
 }
 
@@ -37,7 +36,7 @@ Cone_Finder::Cone_Finder(int _n,double _rcone) :
 
 double Cone_Finder::Rmin(AMATOOLS::Vec4D * p)
 {
-  double r2min = 100.;
+  double r2min = 100000.;
   double r2jk, deta, dphi;
     
   for (int j=m_nin;j<m_n;j++) {
@@ -68,7 +67,7 @@ bool Cone_Finder::Trigger(const AMATOOLS::Vec4D * p)
   
   //msg.Out()<<" Trigger (Rcone vs. r_min) "<<Rcone<<" vs. "<<r_min<<endl;
   
-  if (rmin < m_rcone) trigger = 0;
+  if (rmin<m_rcone) trigger = 0;
   
   delete [] moms;
     

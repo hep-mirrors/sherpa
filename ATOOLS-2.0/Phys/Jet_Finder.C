@@ -95,11 +95,11 @@ bool Jet_Finder::ConstructJets(const APHYTOOLS::Parton_List * parts,
 
   bool ordered = 1;
   //  while (momsout.size() <= jets[jets.front()-lastys.size()]) {
-  while ((momsout.size() <= jets[lastys.size()])&&(lastys.size()<jets.size())) {
+  while ((momsout.size()<=jets[lastys.size()]) && (lastys.size()<jets.size())) {
     //    cout<<" i="<<lastys.size()<<" moms="<<momsout.size()<<" "<<jets[lastys.size()]<<std::endl;
     lastys.push_back(-1.);
   }
-  while (momsout.size() > jets.back()) {
+  while (momsout.size()>jets.back()) {
     if (!ConstructJetSystem(momsin,flavsin,momsout,jets,lastys)) ordered = 0;
   }
   return ordered;

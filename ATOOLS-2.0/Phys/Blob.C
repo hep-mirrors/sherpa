@@ -43,81 +43,152 @@ namespace APHYTOOLS {
 	<<" at "<<bl->Position()<<std::endl
 	<<" with "<<bl->CMS()<<std::endl;
     //    if (bl->NInP() > 0) {
-      ostr<<"Incoming partons :"<<std::endl;
-      for (Parton_Queue::const_iterator part = bl->m_inpartons.begin();
-	   part != bl->m_inpartons.end(); ++part) {
-	ostr<<*part<<std::endl;
-      }
-      //    }
+    ostr<<"Incoming partons :"<<std::endl;
+    for (Parton_Queue::const_iterator part = bl->m_inpartons.begin();
+	 part != bl->m_inpartons.end(); ++part) {
+      ostr<<*part<<std::endl;
+    }
+    //    }
     //    if (bl->NOutP() > 0) {
-      ostr<<"Outgoing partons :"<<std::endl;
-      for (Parton_Queue::const_iterator part = bl->m_outpartons.begin();
-	   part != bl->m_outpartons.end(); ++part) {
-	ostr<<*part<<std::endl;
-      }
-      //    }
+    ostr<<"Outgoing partons :"<<std::endl;
+    for (Parton_Queue::const_iterator part = bl->m_outpartons.begin();
+	 part != bl->m_outpartons.end(); ++part) {
+      ostr<<*part<<std::endl;
+    }
+    //    }
     return ostr;
   }
 }
 
-Parton * Blob::InParton(int n) {
-  for (Parton_Queue::iterator part = m_inpartons.begin();
-       part != m_inpartons.end(); ++part) {
-    n--;
-    if (n<0) return *part;
-  }
-  return 0;
-}
-
-Parton * Blob::OutParton(int n) {
-  for (Parton_Queue::iterator part = m_outpartons.begin();
-       part != m_outpartons.end(); ++part) {
-    n--;
-    if (n<0) return *part;
-  }
-  return 0;
+Blob::~Blob() {
+  DeleteOwnedPartons();
+  cout<<"Deleted all partons in blob : "<<m_id<<endl;
 }
 
 void Blob::AddToInPartons(Parton * Newp) {
   if (!Newp) return;
   m_inpartons.push_back( Newp );
-  m_nin++;
 }
 
 void Blob::AddToOutPartons(Parton * Newp) {
   if (!Newp) return;
   m_outpartons.push_back( Newp );
-  m_nout++;
 }
 
-Blob::~Blob() {
-  DeleteOwnedPartons();
+Parton * Blob::InParton(int _pos) {
+  if (_pos>m_inpartons.size()-1 || _pos<0) { return NULL; }
+  return m_inpartons[_pos];
 }
 
-void Blob::DeleteOwnedPartons() {
-  if ( (m_nin==0) && (m_nout==0) ) {
-    if (m_inpartons.empty() && m_outpartons.empty()) {
-      msg.Debugging()<<"Funny Partons in Blob !"<<std::endl; 
-    }
-    return;
-  }
-  if (m_inpartons.empty() && m_outpartons.empty()) {
-    msg.Debugging()<<"Blob owns no more partons !"<<std::endl; 
-    return;
-  }
-  for (Parton_Queue::iterator part = m_outpartons.begin();
-       part != m_outpartons.end(); ++part) {
-    delete *part;
-    m_nout--;
-  }
-  m_outpartons.clear();
+Parton * Blob::OutParton(int _pos) {
+  if (_pos>m_outpartons.size()-1 || _pos<0) { return NULL; }
+  return m_outpartons[_pos];
+}
 
+Parton * Blob::RemoveInParton(int _pos) {
+  if (_pos>m_inpartons.size()-1 || _pos<0) { return NULL; }
   for (Parton_Queue::iterator part = m_inpartons.begin();
        part != m_inpartons.end(); ++part) {
-    delete *part;
-    m_nin--;
+    if ((*part)==m_inpartons[_pos]) {
+      m_inpartons.erase(part);
+      (*part)->SetDecayBlob(NULL);
+      return (*part);
+    }
+  }
+  return NULL;
+}
+
+Parton * Blob::RemoveOutParton(int _pos) {
+  if (_pos>m_outpartons.size()-1 || _pos<0) { return NULL; }
+  for (Parton_Queue::iterator part = m_outpartons.begin();
+       part != m_outpartons.end(); ++part) {
+    if ((*part)==m_outpartons[_pos]) {
+      m_outpartons.erase(part);
+      (*part)->SetProductionBlob(NULL);
+      return (*part);
+    }
+  }
+  return NULL;
+}
+
+
+Parton * Blob::RemoveInParton(Parton * _part) {
+  if (!_part) return 0;
+  for (Parton_Queue::iterator part = m_inpartons.begin();
+       part != m_inpartons.end(); ++part) {
+    if ((*part)==_part) {
+      m_inpartons.erase(part);
+      (*part)->SetDecayBlob(NULL);
+      return (*part);
+    }
+  }
+  return NULL;
+}
+
+Parton * Blob::RemoveOutParton(Parton * _part) {
+  if (!_part) return 0;
+  for (Parton_Queue::iterator part = m_outpartons.begin();
+       part != m_outpartons.end(); ++part) {
+    if ((*part)==_part) {
+      m_outpartons.erase(part);
+      (*part)->SetProductionBlob(NULL);
+      return (*part);
+    }
+  }
+  return NULL;
+}
+
+
+void Blob::DeleteInParton(Parton * _part) {
+  if (!_part) return;
+  for (Parton_Queue::iterator part = m_inpartons.begin();
+       part != m_inpartons.end(); ++part) {
+    if ((*part)==_part) {
+      m_inpartons.erase(part);
+      if (_part->ProductionBlob()!=NULL) {
+	_part = _part->ProductionBlob()->RemoveOutParton(_part);
+      }
+      delete _part;
+      _part = NULL;
+      return ;
+    }
+  }
+}
+
+void Blob::DeleteOutParton(Parton * _part) {
+  if (!_part) return;
+  for (Parton_Queue::iterator part = m_outpartons.begin();
+       part != m_outpartons.end(); ++part) {
+    if ((*part)==_part) {
+      m_outpartons.erase(part);
+      if (_part->DecayBlob()!=NULL) {
+	_part = _part->DecayBlob()->RemoveInParton(_part);
+      }
+      delete _part;
+      _part = NULL;
+      return ;
+    }
+  }
+}
+
+
+
+void Blob::DeleteOwnedPartons() {
+  if (m_inpartons.empty() && m_outpartons.empty()) return;
+  cout<<"In DeleteOwnedPartons() for blob no. : "<<m_id<<" with "
+      <<m_inpartons.size()<<" -> "<<m_outpartons.size()<<endl;
+  for (int i=m_inpartons.size()-1;i>=0;i--)  {
+    cout<<"Try to delete inparton : "<<i<<"/"<<m_inpartons.size()-1<<endl;
+    DeleteInParton(m_inpartons[i]);
+    cout<<"Succeeded."<<endl;
+  }
+  for (int i=m_outpartons.size()-1;i>=0;i--) {
+    cout<<"Try to delete outparton : "<<i<<"/"<<m_outpartons.size()-1<<endl;
+    DeleteOutParton(m_outpartons[i]);
+    cout<<"Succeeded."<<endl;
   }
   m_inpartons.clear();
+  m_outpartons.clear();
 }
 
 Vec4D Blob::CheckMomentumConservation() {

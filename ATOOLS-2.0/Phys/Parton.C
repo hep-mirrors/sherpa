@@ -18,8 +18,8 @@ std::ostream& APHYTOOLS::operator<<(std::ostream& str,Parton* part) {
     str<<' ';
     str<<part->Number();
     str<<' ';
-    if (part->Prod()) str<<" produced in "<<part->Prod()->Id()<<std::endl<<" ";
-    if (part->Dec())  str<<" decayed in "<<part->Dec()->Id()<<std::endl<<" ";
+    if (part->ProductionBlob()) str<<" produced in "<<part->ProductionBlob()->Id()<<std::endl<<" ";
+    if (part->DecayBlob())      str<<" decayed in "<<part->DecayBlob()->Id()<<std::endl<<" ";
     break;
   case 2 : // decayed or fragmented
     str<<part->Info();
@@ -29,8 +29,8 @@ std::ostream& APHYTOOLS::operator<<(std::ostream& str,Parton* part) {
     str<<'!';
     str<<part->Number();
     str<<' ';
-    if (part->Prod()) str<<" produced in "<<part->Prod()->Id()<<std::endl<<" ";
-    if (part->Dec())  str<<" decayed in "<<part->Dec()->Id()<<std::endl<<" ";
+    if (part->ProductionBlob()) str<<" produced in "<<part->ProductionBlob()->Id()<<std::endl<<" ";
+    if (part->DecayBlob())      str<<" decayed in "<<part->DecayBlob()->Id()<<std::endl<<" ";
     break;
   case 3 : // documentation line
     return str<<"============================================================"<<std::endl;
@@ -43,7 +43,7 @@ std::ostream& APHYTOOLS::operator<<(std::ostream& str,Parton* part) {
 }
 
 Parton::~Parton() {
-  //  cout<<" delete "<<this<<endl;
+  if (p_flow) { delete p_flow; p_flow = NULL; } 
 }
 
 Parton::Parton() {
@@ -52,10 +52,12 @@ Parton::Parton() {
   m_status    = 1;
   m_fl        = Flavour(kf::none);
   m_momentum  = Vec4D(0,0,0,0); 
-  m_startblob = 0;
-  m_endblob   = 0;
   m_dec_time  = 0.;
-};
+  p_startblob = NULL;
+  p_endblob   = NULL;
+  cout<<"Blobs done."<<endl;
+  p_flow      = new Flow(this);
+}
 
 Parton::Parton(Parton * in)  {
   m_number    = in->m_number;
@@ -63,10 +65,12 @@ Parton::Parton(Parton * in)  {
   m_status    = in->Status();
   m_fl        = in->m_fl;
   m_momentum  = in->m_momentum;
-  m_startblob = in->m_startblob;
-  m_endblob   = in->m_endblob;
   m_dec_time  = in->m_dec_time;
-  m_flow      = in->m_flow;
+  p_startblob = in->p_startblob;
+  p_endblob   = in->p_endblob;
+  p_flow      = new Flow(this);
+  p_flow->SetCode(1,in->GetFlow(1));
+  p_flow->SetCode(2,in->GetFlow(2));
 }
 
 Parton::Parton(int number,Flavour fl,Vec4D p)  {
@@ -75,21 +79,22 @@ Parton::Parton(int number,Flavour fl,Vec4D p)  {
   m_info      = ' ';
   m_fl        = fl;
   m_momentum  = p;
-  m_startblob = 0;
-  m_endblob   = 0;
   m_dec_time  = 0.;
+  p_startblob = 0;
+  p_endblob   = 0;
+  p_flow      = new Flow(this);
 }
 
 void Parton::Copy(Parton* in)  {
-  m_number   = in->m_number;
-  m_info     = in->m_info;
-  m_status   = in->Status();
-  m_fl       = in->m_fl;
-  m_momentum = in->m_momentum;
-  m_startblob  = in->m_startblob;
-  m_endblob    = in->m_endblob;
-  m_dec_time      = in->m_dec_time;
-  m_flow     = in->m_flow;
+  m_number    = in->m_number;
+  m_info      = in->m_info;
+  m_status    = in->Status();
+  m_fl        = in->m_fl;
+  m_momentum  = in->m_momentum;
+  m_dec_time  = in->m_dec_time;
+  p_startblob = in->p_startblob;
+  p_endblob   = in->p_endblob;
+  p_flow      = in->p_flow;
 }
 
 double Parton::ProperTime() {
@@ -124,7 +129,7 @@ Vec3D Parton::Distance() {
   return v*LifeTime();
 }
 
-  // Numbers etc.
+// Numbers etc.
 int    Parton::Number()   const                 { return m_number; }
 void   Parton::SetNumber(const int n)           { m_number    = n; }
 int    Parton::JetNumber()   const              { return m_jetnumber; }
@@ -144,29 +149,30 @@ double Parton::Time() const                     { return m_dec_time; }
 void   Parton::SetTime(const int t)             { m_dec_time = t; }
 void   Parton::SetTime()                        { m_dec_time = LifeTime(); }
 
-  // Production and decay vertices
-Vec4D  Parton::XProd()                          { return m_startblob->Position(); }
-Blob * Parton::Prod()                           { return m_startblob; }
-void   Parton::SetProductionBlob(Blob * _blob)  { m_startblob = _blob; }
-Vec4D  Parton::XDec()                           { return m_endblob->Position(); }
-Blob * Parton::Dec()                            { return m_endblob; }
-void   Parton::SetDecayBlob(Blob * _blob)       { m_endblob = _blob; }
+// Production and decay vertices
+Vec4D  Parton::XProd()                          { return p_startblob->Position(); }
+Blob * Parton::ProductionBlob()                 { return p_startblob; }
+void   Parton::SetProductionBlob(Blob * _blob)  { p_startblob = _blob; }
+Vec4D  Parton::XDec()                           { return p_endblob->Position(); }
+Blob * Parton::DecayBlob()                      { return p_endblob; }
+void   Parton::SetDecayBlob(Blob * _blob)       { p_endblob = _blob; }
 
-  // Flavour and flow
-APHYTOOLS::Flavour Parton::Flav() const         { return m_fl; }
-void   Parton::SetFlav(APHYTOOLS::Flavour & fl) { m_fl      = fl; }
-APHYTOOLS::Flow Parton::GetFlow() const         { return m_flow; }
-int    Parton::GetFlow(const int index) const   { return m_flow.icode(index); }
-void   Parton::SetFlow(const Flow & f )         { m_flow    = f; }
-void   Parton::SetFlow(const int index, const int code) {
+// Flavour and flow
+Flavour   Parton::Flav() const                     { return m_fl; }
+void      Parton::SetFlav(APHYTOOLS::Flavour & fl) { m_fl      = fl; }
+Flow    * Parton::GetFlow() const                  { return p_flow; }
+int       Parton::GetFlow(const int index) const   { return p_flow->Code(index); }
+void      Parton::SetFlow(Flow * _flow)            { p_flow    = _flow; }
+void      Parton::SetFlow(const int index, const int code) {
+  cout<<"In Parton SetFlow("<<index<<","<<code<<")"<<endl;
   if (!m_fl.Strong()) return;
-  if ( code==-1 ) m_flow.set_unique_icode(index);
-  else m_flow.set_icode(index,code);
+  if (code==-1) p_flow->SetUniqueCode(index);
+  else p_flow->SetCode(index,code);
 }
 
 
 
-void APHYTOOLS::Parton2MPI(const Parton * p , MPI_Parton & mpi_p) {
+void Parton2MPI(const Parton * p , MPI_Parton & mpi_p) {
   mpi_p.id  =p->Number();
   mpi_p.m_fl=int(p->Flav());
   for (int i=0; i<4; ++i)  
@@ -175,7 +181,7 @@ void APHYTOOLS::Parton2MPI(const Parton * p , MPI_Parton & mpi_p) {
   mpi_p.m_flow[1]=p->GetFlow(2);
 }
   
-Parton * APHYTOOLS::MPI2Parton(const MPI_Parton & mpi_p ) {
+Parton * MPI2Parton(const MPI_Parton & mpi_p ) {
   Parton * p ;
   if (mpi_p.m_fl>0) p= new Parton(mpi_p.id, Flavour((kf::code)mpi_p.m_fl),
 			  Vec4D(mpi_p.m_mom[0],mpi_p.m_mom[1],mpi_p.m_mom[2],mpi_p.m_mom[3]));

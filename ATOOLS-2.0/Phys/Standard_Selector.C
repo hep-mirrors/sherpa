@@ -194,7 +194,7 @@ PT_Selector::PT_Selector(int _nin,int _nout, Flavour * _fl) {
   ptmin  = new double[m_n];
   ptmax  = new double[m_n];
   value = new double[m_n];
-  for (int i=0;i<m_n;i++) { ptmin[i] = 0.; ptmax[i] = E; }
+  for (int i=0;i<m_n;i++) { ptmin[i] = 0.; ptmax[i] = 10.*E; }
   m_sel_log = new Selector_Log(m_name);
 }
 
@@ -252,8 +252,8 @@ void PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
 
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
-      ptmin[i] = _min;
-      ptmax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
+      ptmin[i] = _min; 
+      ptmax[i] = AMATOOLS::Min(_max,AORGTOOLS::rpa.gen.Ecms());
       AORGTOOLS::msg.Debugging()<<"Set PT-Range for "<<m_fl[i]<<" : "
 				<<ptmin[i]<<" ... "<<ptmax[i]<<endl;
     }
@@ -328,8 +328,8 @@ void Rapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _mi
   for (int i=m_nin;i<m_n;i++) {
     pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
     y       = log((E+pl)/(E-pl));
-    ymin[i] = AMATOOLS::Max(_min,-y);
-    ymax[i] = AMATOOLS::Min(_max,y);
+    ymin[i] = _min; //AMATOOLS::Max(_min,-y);
+    ymax[i] = _max; //AMATOOLS::Min(_max,y);
     AORGTOOLS::msg.Debugging()<<"Set y-Range for "<<m_fl[i]<<" : "
 			      <<ymin[i]<<" ... "<<ymax[i]<<endl;
   }
