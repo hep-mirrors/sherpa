@@ -71,5 +71,7 @@ INCLUDES = -I../../SHERPA-1.0/Main \
 	   -I$(CLHEPincdir)
 SUBDIRS    = Process
 EXTRA_DIST = Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
-	     Particle.dat Hadron.dat Const.dat Run.dat ISR.dat ME.dat makeclean
+	     Particle.dat Hadron.dat Run.dat ISR.dat ME.dat Shower.dat Fragmentation.dat \
+	     makeclean \
+	     PDFsets.tar.gz MRST99Grid.tar.gz
 

@@ -1,6 +1,6 @@
-SHOWER_GENERATOR  = Apacic   !  Sooner or later :Apacic/Adicic
+SHOWER_GENERATOR  = Apacic   !  
 FSR_SHOWER        = 1        !  1=On,0=Off
-ISR_SHOWER        = 1        !  1=On,0=Off
+ISR_SHOWER        = 0        !  1=On,0=Off
 !
 IS PT2MIN         = 4.       !  
 IS ORDERING       = 0        !  0 = none, 1 = pt^2, 2 = pt^2/E^2

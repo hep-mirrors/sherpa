@@ -16,7 +16,7 @@ INCLUDES = -I../../BEAM-1.0/Main \
 	   -I../../ATOOLS-2.0/Org \
 	   -I../../MODEL-1.0/Main 
 noinst_HEADERS = Phase_Space_Handler.H Phase_Space_Integrator.H \
-		 Multi_Channel.H Single_Channel.H \
+		 Integrable_Base.H Multi_Channel.H Single_Channel.H \
 		 ISR_Channel.H FSR_Channel.H Rambo.H RamboKK.H Sarge.H \
 		 Channel_Basics.H Channel_Elements.H 
 

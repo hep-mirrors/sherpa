@@ -1,17 +1,18 @@
 !-------------------------------------------------------
 !-- ME generators --------------------------------------
 !-------------------------------------------------------
-ME_SIGNAL_GENERATOR   = Amegic
-ME_2->2_GENERATOR     = Internal
-SIGNAL_MODEL          = SM
-COUPLING SCHEME       = Running     ! Fixed   (default value) or 
+!RESULT DIRECTORY     = Results      not working at the moment.
+ME_SIGNAL_GENERATOR   = Amegic      ! Internal or Amegic
+EVENT_GENERATION_MODE = Unweighted
+SIGNAL_MODEL          = SM          ! subset of a physical model
+COUPLING SCHEME       = Fixed       ! Fixed   (default value) or 
                                     ! Running (s for ME generators, pt for 2->2)
 COUPLING SCALE FACTOR = 1.          ! Additional prefactor for ME's scale.
-YUKAWA MASSES         = Running     ! Fixed   (polemass) or 
+YUKAWA MASSES         = Fixed       ! Fixed   (polemass) or 
                                     ! Running (higgs mass)
 YUKAWA MASSES FACTOR  = 1.          ! Additional prefactor for yukawas
-WIDTH SCHEME          = Complex     ! Fixed or Complex width for internal propagators
+WIDTH SCHEME          = Fixed       ! Fixed or complex width for internal propagators
                                     ! of unstable particles.
-SCALE SCHEME          = 4           ! 1 = pt^2 a la Herwig, 2 = pt2^2, 3 = fixed scale, default = s_hat 
-KFACTOR SCHEME        = 1           ! 1 = as(scale)/as(default)^n_strong-2, default = 1
-SCALE FACTOR          = 1.          ! extra factor on scale
+SCALE SCHEME          = 0           ! 1=pt2, default=shat
+KFACTOR SCHEME        = 0           ! 1=as(pt2)/as(ecms)^nstrong,default=1
+SCALE FACTOR          = 1.

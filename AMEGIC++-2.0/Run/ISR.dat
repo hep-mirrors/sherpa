@@ -1,20 +1,20 @@
 !-------------------------------------------------------
 !-- ISR parameters ------------------------------------
 !-------------------------------------------------------
-BUNCH_1         = -2                  ! possible beam particles:  P+, P-, e+, e-
+BUNCH_1         = 11                   ! possible beam particles:  P+, P-, e+, e-
 ISR_1           = Off                  ! On/Off
-!
-BUNCH_2         = -2                  ! possible beam particles:  P+, P-, e+, e- 
+! 
+BUNCH_2         = -11                  ! possible beam particles:  P+, P-, e+, e- 
 ISR_2           = Off                  ! On/Off
 !
-ISR_SMIN        = 1.E-10               ! Minimal fraction of nominal s for parton after ISR
+ISR_SMIN        = 0.0000000000001      ! Minimal fraction of nominal s for parton after ISR
 ISR_SMAX        = 1.0                  ! Maximal fraction of nominal s for parton after ISR
 !
 ISR_E_ORDER     = 1                    ! Perturbative order of electron structure function
 ISR_E_SCHEME    = 2                    ! Beta-scheme : 0,1,2 , default = 2 
 !
-PDF_SET         = MRST99               ! Alekhin_100,Alekhin_1000,Botje_100,Botje_1000,
+PDF_SET         = cteq6ll              ! Alekhin_100,Alekhin_1000,Botje_100,Botje_1000,
                                        ! Fermi2002_100,Fermi2002_1000,
-				       ! MRST2001,MRST98,MRST99,cteq6,cteq6l,cetq6ll
+				       ! MRST2001,MRST98,MRST99,cteq6 
 PDF_SET_VERSION = 1
-PDF_GRID_PATH   = MRST99Grid           ! PDFsets,MRST99Grid
+PDF_GRID_PATH   = PDFsets              ! PDFsets,MRST99Grid

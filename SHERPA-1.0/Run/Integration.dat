@@ -1,8 +1,7 @@
 !-------------------------------------------------------
 !-- Phase space parameters -----------------------------
 !-------------------------------------------------------
-!YCUT  = 0.01       ! for the tuning YCUT is read from Run.dat !
-ERROR =  8.e-2      ! Error by calculating matrix-elements              
+ERROR =  2.e-2      ! Error by calculating matrix-elements              
 !-------------------------------------------------------
 !-- General switches -----------------------------------
 !-------------------------------------------------------    
