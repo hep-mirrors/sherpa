@@ -31,11 +31,15 @@ namespace SHERPA {
     ATOOLS::Blob  *p_beamblob;
     ATOOLS::Vec4D  m_pbeam;
 
-    double m_erem, m_pzrem;
+    double m_erem, m_pzrem, m_deltae, m_deltap;
 
     bool m_active, m_initialized;
 
-    void AdjustEnergy();
+    void FindHardProcess(ATOOLS::Particle *const initiator,ATOOLS::Blob *&process);
+    void FindIncoming(ATOOLS::Blob *const blob,const size_t beam,ATOOLS::Particle *&incoming);
+    bool AcquireMass(ATOOLS::Blob *const process,const double newsp);
+
+    bool AdjustEnergy();
 
   public:
 
