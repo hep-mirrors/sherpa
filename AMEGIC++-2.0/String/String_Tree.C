@@ -9,6 +9,14 @@ using namespace std;
 
 string sknot::emptystring = string("");
 
+String_Tree::String_Tree() 
+{
+  zero.op    = 0;
+  zero.SetString(string("0"));
+  zero.left  = 0;
+  zero.right = 0;
+}
+
 sknot* String_Tree::newsk() 
 { 
   //sknot newknot;
@@ -67,13 +75,13 @@ sknot* String_Tree::String2Tree(string term,int fixed)
 	  m->left  = String2Tree(term.substr(i+1),fixed);
 	  //change *1
 	  if (m->right->op==0) {
-	    if (m->right->Str()==string("1")) {
+	    if (m->right->Str()==string("1") || m->right->Str()==string("1.")) {
 	      m = m->left;
 	      return m;
 	    }
 	  }
 	  if (m->left->op==0) {
-	    if (m->left->Str()==string("1")) {
+	    if (m->left->Str()==string("1") || m->left->Str()==string("1.")) {
 	      m = m->right;
 	      return m;
 	    }
@@ -150,6 +158,7 @@ sknot* String_Tree::Leaf(string& term,sknot* m,int fixed)
       }
     }
   }
+  if (term==string("1.")) term = string("1");
   m->op    = 0;
   m->SetString(term);
   m->left  = 0;
@@ -253,16 +262,22 @@ Complex String_Tree::Evaluate(sknot* m)
   }
 }
 
+
 string String_Tree::Tree2String(sknot* m,sknot* g)
 {
-  //if (m==0) return string("");
   if (m->op!=0) {
     char cc[2];
     string sop;
     cc[1] = 0;cc[0]=m->op;
     sop = string(cc);
-    if (g==0 || m->op=='*')       
+
+    if (g==0 || m->op=='*') {   
+      if (m->op=='*') {
+	if (m->left->Str()==string("1")) return Tree2String(m->right,m);
+	if (m->right->Str()==string("1")) return Tree2String(m->left,m);
+      }
       return Tree2String(m->left,m)+sop+Tree2String(m->right,m);
+    }
     if (g->op=='+') {
       if (m->op=='-' && m->left->op==0) {
 	if (m->left->Str()==string("0")) 
@@ -522,12 +537,12 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 	}
 	//remove first leaf from list
 	if (winknot1->op=='-') {
-	  sknot *sk = newsk();
+	  /*sknot *sk = newsk();
 	  sk->op    = 0;
 	  sk->SetString(string("0"));
 	  sk->left  = 0;
-	  sk->right = 0;
-	  winknot1->left = sk;
+	  sk->right = 0;*/
+	  winknot1->left = &zero;
 	  //test
 	  if (leaf2==winknot1) leaf2 = winknot1->right;
 	}
@@ -592,6 +607,23 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 void String_Tree::DeleteMinus(sknot* &m)
 {
   //  PROFILE_HERE;
+  if (m->op=='*'){
+    int nminus = CountMinus(m);
+    if (nminus%2) {
+      /*      sknot* zero = newsk();
+      zero->op    = 0;
+      zero->SetString(string("0"));
+      zero->left  = 0;
+      zero->right = 0;*/
+      
+      sknot* totalminus = newsk();
+      totalminus->op    = '-';
+      totalminus->left  = &zero;
+      totalminus->right = m;
+      
+      m = totalminus;      
+    }
+  }
   int hit;
   do {
     hit = 0;
@@ -646,18 +678,18 @@ void String_Tree::SingleDeleteMinus(sknot* &m,int& hit)
 	  m->right     = shelp;
 	}
 	else {
-	  sknot* zero = newsk();
+	  /*	  sknot* zero = newsk();
 	  zero->op    = 0;
 	  zero->SetString(string("0"));
 	  zero->left  = 0;
-	  zero->right = 0;
+	  zero->right = 0;*/
 	  
 	  sknot* newplus = newsk();
 	  newplus->op    = '+';
 	  newplus->left  = m->left;
 	  newplus->right = m->right;
 
-	  m->left  = zero;
+	  m->left  = &zero;
 	  m->right = newplus;
 	}
       }
@@ -1106,12 +1138,12 @@ void String_Tree::OrderPM(sknot* m,sknot* g)
 	sknot* startknot = m;
 	if (pmsigns[0]==-1) {
 	  //complete minus list
-	  sknot *sk = newsk();
+	  /*sknot *sk = newsk();
 	  sk->op    = 0;
 	  sk->SetString(string("0"));
 	  sk->left  = 0;
-	  sk->right = 0;
-	  m->left   = sk;
+	  sk->right = 0;*/
+	  m->left   = &zero;
 	  m->op     = '-'; 
 	  startknot = m->right;
 	}
@@ -1236,6 +1268,11 @@ sknot* String_Tree::Copy(sknot* m,int fixed)
 	if ((*it)->Str()==m->Str()) return (*it); 
       }
     }
+  }
+
+  if(m->Str()==string("0")){
+    if (fixed) leaflist.push_back(&zero);
+    return &zero;
   }
 
   //totally new sknot

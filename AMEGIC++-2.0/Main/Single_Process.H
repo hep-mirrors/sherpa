@@ -15,6 +15,7 @@ namespace AMEGIC {
     Polarisation            m_pol;
     double                  m_Norm;
     double                  m_save_max;
+    bool                    m_newlib;
 
     Helicity              * p_hel;
     Basic_Sfuncs          * p_BS;
@@ -54,19 +55,24 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   protected :
-    int            Tests(double &);
-    int            InitLibrary(double);
-    void           CreateMappingFile();
-    bool           FoundMappingFile(std::string &);
-    bool           CreateChannelLibrary();
+    int              Tests(double &);
+    int              CheckLibraries(double);
+    int              CheckStrings(double ,Single_Process*);
+    void             WriteLibrary();
+    std::string      CreateLibName();
+    void             CreateMappingFile();
+    bool             CreateChannelLibrary();
   public:
-    int            InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
-				 std::vector<double> &,std::vector<Single_Process *> &);
-    int            InitAmplitude(Interaction_Model_Base *,Topology *);
-    void           InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>);
-    void           InitDecay(Topology* top); 
-    bool           SetUpIntegrator();
-    bool           IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); };
+    bool             NewLibs() {return m_newlib;}
+    bool             FoundMappingFile(std::string &);
+    int              InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
+				   std::vector<double> &,std::vector<Single_Process *> &);
+    int              InitAmplitude(Interaction_Model_Base *,Topology *);
+    void             InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>);
+    void             InitDecay(Topology* top); 
+    bool             SetUpIntegrator();
+    bool             IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); }
+    String_Handler * GetStringHandler()             { return p_shand;}
 
     /*------------------------------------------------------------------------------
 
@@ -90,6 +96,7 @@ namespace AMEGIC {
     void             Empty();
     void             SetPartner(Single_Process * _p)    { p_partner = _p;       }
     Process_Base   * Partner()                          { return p_partner;     }
+    void             Minimalize();
 
     /*------------------------------------------------------------------------------
 

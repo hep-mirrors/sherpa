@@ -24,7 +24,7 @@ namespace AMEGIC {
     int     * p_args;
     Kabbala   m_value;
     CValue() { p_args=0; }
-    CValue(int * _args, const Kabbala _value) : p_args(_args) , m_value(_value) {}
+    CValue(int * _args, const Kabbala _value) : p_args(_args) , m_value(_value) {} 
     inline bool Compare(int* args, int n){
       for(int i=0;i<n;++i) if (args[i]!=p_args[i]) return false;
       return true;
@@ -58,6 +58,7 @@ namespace AMEGIC {
     Zfunc& operator=(const Zfunc& z);
     //virtual part
     virtual void ClearCalcList();
+    virtual void KillZList() {}
     virtual void ReplaceProp(std::vector<Pair>*);
 
     virtual Zfunc* operator[](const int i) {return this;} 
@@ -100,10 +101,11 @@ namespace AMEGIC {
 
 
     void ClearCalcList();
+    void KillZList();
     void ReplaceProp(std::vector<Pair>*);  
   };
 
-  typedef std::list<Zfunc*> Zfunc_List;
+  typedef std::vector<Zfunc*> Zfunc_List;
   typedef Zfunc_List::iterator Zfunc_Iterator;
 
   /*!

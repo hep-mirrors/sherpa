@@ -10,6 +10,7 @@
 #include "Combined_Selector.H"
 
 #include "prof.hh"
+#include "MyTiming.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -42,6 +43,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl),
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
 {
+  m_newlib=false;
   m_save_max=0.;
   GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,m_ptypename,m_libname);
 
@@ -202,25 +204,37 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
       if (ATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
 	msg.Tracking()<<"Test : 2.  Can map "<<m_name<<" on "<<links[j]->Name()<<endl;
 	p_partner = links[j];
-      }
+	break;
+      } 
     }
     if (p_partner==this) {
       results.push_back(result);
       links.push_back(this);
     }
+    Minimalize();
     return 1;
   case 1 :
     for (int j=0;j<results.size();j++) {
       if (ATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
 	msg.Tracking()<<"Test : 1.  Can map "<<m_name<<" on "<<links[j]->Name()<<endl;
 	p_partner = links[j];
+	break;
+      } 
+    }
+    if (CheckLibraries(result)) return 1;
+    for (int j=0;j<results.size();j++) {
+      if (ATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
+	if (links[j]->NewLibs()) {
+	  if (CheckStrings(result,links[j])) return 1;
+	}
       }
     }
-    if (p_partner==this) {
-      results.push_back(result);
-      links.push_back(this);
-    }
-    return InitLibrary(result);
+    // if (p_partner==this) {
+    results.push_back(result);
+    links.push_back(this);
+      // }
+    WriteLibrary();
+    return 0;
   default :
     msg.Error()<<"Error in Single_Process::InitAmplitude : Failed for "<<m_name<<"."<<endl;
     return -2;
@@ -250,7 +264,10 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
   double result;
   switch (Tests(result)) {
   case 2 : return 1;
-  case 1 : return InitLibrary(result);
+  case 1 : 
+    if (CheckLibraries(result)) return 1;
+    WriteLibrary();
+    return 0;
   default :
     msg.Error()<<"Error in Single_Process::InitAmplitude : Failed for "<<m_name<<"."<<endl;
     return -2;
@@ -283,16 +300,21 @@ int Single_Process::Tests(double & result) {
   double M2 = 0.;
   double helvalue;
 
+  MyTiming watch;
   if (gauge_test) {
     m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_moms,Vec4D(sqrt(3.),1.,1.,-1.));
     p_BS->Setk0(0);
     p_BS->CalcEtaMu(p_moms);  
     p_BS->InitGaugeTest(.9);
 
+   
+  watch.Start();
+
     msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
     for (short int i=0;i<p_hel->MaxHel();i++) { 
       if (p_hel->On(i)) {
 	helvalue = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
+	//cout<<i<<". :"<<helvalue<<endl;
 	M2      +=  helvalue;
 	msg.Debugging()<<"*";msg.Debugging().flush();
       } 
@@ -304,12 +326,13 @@ int Single_Process::Tests(double & result) {
     M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
     result  = M2;
   }
+  watch.Stop();
+  watch.PrintTime();
 
   p_ampl->ClearCalcList();
   // To prepare for the string test.
   p_ampl->SetStringOn();
-  (p_shand->Get_Generator())->Reset();
-  p_ampl->FillCoupling(p_shand);
+  (p_shand->Get_Generator())->Reset(1);
   
   /* ---------------------------------------------------
      
@@ -336,21 +359,25 @@ int Single_Process::Tests(double & result) {
   double M2g = 0.;
   double * M_doub = new double[p_hel->MaxHel()];
 
+  watch.Start();
   for (short int i=0;i<p_hel->MaxHel();i++) { 
     if (p_hel->On(i)) {
       M_doub[i]  = p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i);  
+      //cout<<i<<". :"<<M_doub[i]<<endl;
       M2g       += M_doub[i];
       msg.Debugging()<<"*";msg.Debugging().flush();
     }
   }
   msg.Debugging()<<endl;
+  watch.Stop();
+  watch.PrintTime();
 
   //shorten helicities
   for (short int i=0;i<p_hel->MaxHel();i++) {
     if (M_doub[i]/M2g<1.e-30) {
       p_hel->SwitchOff(i);
       msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
-		     <<p_ampl->Differential(i,(*p_hel)[i])<<"/"<<M_doub[i]/M2g<<endl;
+		     <<M_doub[i]<<"/"<<M_doub[i]/M2g<<endl;
     }
   }
   M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
@@ -358,6 +385,8 @@ int Single_Process::Tests(double & result) {
 
   delete[] M_doub;
   p_ampl->ClearCalcList();  
+  p_ampl->FillCoupling(p_shand);
+  p_ampl->KillZList();  
   p_BS->StartPrecalc();
 
   if (gauge_test) {
@@ -379,13 +408,9 @@ int Single_Process::Tests(double & result) {
   else {
     number++;
     if (p_shand->SearchValues(m_gen_str,testname,p_BS)) {
-      m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_moms,Vec4D(sqrt(3.),1.,1.,-1.));
-      p_BS->CalcEtaMu(p_moms);  
       p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
       (p_shand->Get_Generator())->Reset();
-      p_ampl->FillCoupling(p_shand);
-      p_shand->Complete(p_hel);
-
+  
       M2 = operator()(p_moms);
       gauge_test = string_test = 0;
     }
@@ -417,6 +442,7 @@ int Single_Process::Tests(double & result) {
 
      --------------------------------------------------- */
 
+  watch.Start();
   {
     PROFILE_LOCAL("Shand.Complete()");
     p_shand->Complete(p_hel);
@@ -453,29 +479,16 @@ int Single_Process::Tests(double & result) {
     }
     return 1;
   }
+  watch.Stop();
+  watch.PrintTime();
   return 0;
 }
 
-int Single_Process::InitLibrary(double result) {
+int Single_Process::CheckLibraries(double result) {
   if (m_gen_str==0) return 1;
   if (p_shand->IsLibrary()) return 1;
 
   char help[20];
-  sprintf(help,"%i",p_ampl->GetGraphNumber());
-  m_libname += string("_");
-  m_libname += string(help);
-  sprintf(help,"%i",p_shand->NumberOfCouplings());
-  m_libname += string("_");
-  m_libname += string(help);
-  sprintf(help,"%i",p_shand->NumberOfZfuncs());
-  m_libname += string("_");
-  m_libname += string(help);
-  int  antis = 0;
-  for (int i=0;i<m_nin;i++) { if (p_flin[i].IsAnti()) antis++; }
-  sprintf(help,"%i",antis);
-  m_libname += string("_");
-  m_libname += string(help);
-
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
   
@@ -483,17 +496,14 @@ int Single_Process::InitLibrary(double result) {
   string proc = string("Process/")+m_ptypename+string("/V");
   string testname;
   double M2s, helvalue;
-  double crosscheck;
 
   for (;;) {
     ++number;
     sprintf(help,"%i",number);
-    testname  = m_libname+string("_")+string(help);
+    testname  = CreateLibName()+string("_")+string(help);
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
-      shand1->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
-      (shand1->Get_Generator())->StoreAndReset();
-      p_ampl->FillCoupling(shand1);
-      shand1->Calculate();
+
+      p_shand->Calculate();
       
       M2s = 0.;
       ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
@@ -508,101 +518,102 @@ int Single_Process::InitLibrary(double result) {
       msg.Debugging()<<"Cross check (1): "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
 		     <<M2s<<"/"<<result<<endl;
       if (ATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
-	msg.Tracking()<<"Found a suitable string."<<endl;
+	msg.Tracking()<<"Found a suitable Library."<<endl;
 	m_libname = testname;
-	if (p_shand->SearchValues(m_gen_str,testname,p_BS)) {
-	  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
-	  (p_shand->Get_Generator())->Reset();
-	  p_ampl->FillCoupling(p_shand);
-	  
-	  p_shand->Calculate();
-	  M2s = 0.;
-	  ATOOLS::msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
-	  for (short int i=0;i<p_hel->MaxHel();i++) {
-	    M2s     += p_ampl->Differential(p_shand,i) * p_hel->PolarizationFactor(i) * 
-	      p_hel->Multiplicity(i);
-	    msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
-	  }
-	  msg.Debugging()<<endl;
-	  M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
-	  crosscheck = abs(M2s/result-1.);
-	  msg.Tracking()<<"Cross check (2): "<<crosscheck*100.<<"%"<<endl;
-	  if (ATOOLS::IsZero(crosscheck)) {
-	    if (shand1) { delete shand1; shand1 = 0; }
-	    CreateMappingFile();
-	    return 1;
-	  }
-	  else break;
-	}
-	else {
-	  msg.Error()<<"Error in Single_Process::InitLibrary for "<<testname<<endl;
-	  abort();
-	}
+	if (shand1) { delete shand1; shand1 = 0; }
+	//Clean p_shand!!!!
+	Minimalize();
+	CreateMappingFile();
+	return 1;
       }
-      else p_shand->Get_Generator()->ReStore();
-    }
+    } 
     else break;
   }
+  if (shand1) { delete shand1; shand1 = 0; }
+  return 0;
+}
+
+int Single_Process::CheckStrings(double result,Single_Process* tproc)
+{
+  String_Handler * shand1;
+  shand1 = new String_Handler(p_shand->Get_Generator(),
+			      (tproc->GetStringHandler())->GetSKnots());
+  (shand1->Get_Generator())->ReplaceZXlist((tproc->GetStringHandler())->Get_Generator());
+  double M2s, helvalue;
+  shand1->Calculate();
+
+  M2s = 0.;
+  ATOOLS::msg.Debugging()<<"Check "<<tproc->Name()<<" :";ATOOLS::msg.Debugging().flush();
+  for (short int i=0;i<p_hel->MaxHel();i++) {
+    helvalue = p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
+      p_hel->Multiplicity(i);
+    M2s     += helvalue;
+    msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
+  }
+  msg.Debugging()<<endl;
+  M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
+  msg.Debugging()<<"Cross check (2): "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
+		 <<M2s<<"/"<<result<<endl;
+  (shand1->Get_Generator())->ReStore();
+  delete shand1;
+
+  if (ATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
+    msg.Tracking()<<"Found a suitable string."<<endl;
+    m_libname = tproc->LibName();
+    //delete p_shand; p_shand=0;
+    Minimalize();
+    CreateMappingFile();
+    return 1;
+  }
+  return 0;
+}
   
+void Single_Process::WriteLibrary() 
+{
+  char help[20];
+  int number  = 0;
+  string testname;
   for (;;) {
     sprintf(help,"%i",number);
-    testname    = m_libname+string("_")+string(help);
+    testname    = CreateLibName()+string("_")+string(help);
     if (!(IsFile(string("Process/")+m_ptypename+string("/")+testname+string("/V.H")))) break;
     ++number;
   }
   m_libname = testname;
-  if (p_partner==this) {
-    msg.Debugging()<<"Write Library for "<<m_name<<" = "<<m_libname<<", = case."<<endl;
-    int  mode_dir = 448;
-    msg.Debugging()<<" m_ptypename = "<<m_ptypename<<endl<<" m_libname = "<<m_libname<<endl;
-    mkdir((string("Process/")+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
-    p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
-    CreateMappingFile();
-    if (shand1) { delete shand1; shand1 = 0; }
-    return 0;
-  }
-  else {
-    if (p_partner->p_shand->IsLibrary()) {
-      if (p_partner->p_shand->SearchValues(m_gen_str,p_partner->m_libname,p_BS)) {
-	p_partner->p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
-	(p_partner->p_shand->Get_Generator())->Reset();
-	p_ampl->FillCoupling(p_partner->p_shand);
-	p_partner->p_shand->Calculate();
-	
-	M2s = 0.;
-	ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
-	for (short int i=0;i<p_hel->MaxHel();i++) {
-	  M2s     += p_ampl->Differential(p_partner->p_shand,i) * p_hel->PolarizationFactor(i) *
-	    p_hel->Multiplicity(i);
-	  msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
-	}
-	msg.Debugging()<<endl;
-	M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
-	msg.Debugging()<<"Cross check (3): "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
-		       <<M2s<<"/"<<result<<endl;
-	if (ATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
-	  m_libname = p_partner->m_libname;
-	  CreateMappingFile();
-	}
-	else {
-	  m_libname = testname;
-	  msg.Debugging()<<"Write Library for "<<m_name<<" = "<<m_libname<<endl;
-	  int  mode_dir = 448;
-	  msg.Debugging()<<" m_ptypename = "<<m_ptypename<<endl<<" m_libname = "<<m_libname<<endl;
-	  mkdir((string("Process/")+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
-	  p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
-	  CreateMappingFile();
-	  if (shand1) { delete shand1; shand1 = 0; }
-	  return 0;
-	}
-      }
-      else {
-	msg.Error()<<"Partner with no library."<<endl;
-	abort();
-      }
-    }
-    return 0;
-  }
+  msg.Debugging()<<"Write Library for "<<m_name<<" = "<<m_libname<<", = case."<<endl;
+  int  mode_dir = 448;
+  msg.Debugging()<<" m_ptypename = "<<m_ptypename<<endl<<" m_libname = "<<m_libname<<endl;
+  mkdir((string("Process/")+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
+  p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
+  CreateMappingFile();
+  m_newlib=true;
+}
+
+std::string  Single_Process::CreateLibName()
+{
+  string name=m_ptypename;
+  char help[20];
+  sprintf(help,"%i",p_ampl->GetGraphNumber());
+  name += string("_");
+  name += string(help);
+  sprintf(help,"%i",p_shand->NumberOfCouplings());
+  name += string("_");
+  name += string(help);
+  sprintf(help,"%i",p_shand->NumberOfZfuncs());
+  name += string("_");
+  name += string(help);
+  sprintf(help,"%i",p_hel->MaxHel());
+  name += string("_");
+  name += string(help);
+  sprintf(help,"%i",p_BS->MomlistSize());
+  name += string("_");
+  name += string(help);
+  /* int  antis = 0;
+  for (int i=0;i<m_nin;i++) { if (p_flin[i].IsAnti()) antis++; }
+  sprintf(help,"%i",antis);
+  name += string("_");
+  name += string(help);*/
+  return name;
 }
 
 void Single_Process::CreateMappingFile() {
@@ -688,6 +699,14 @@ bool Single_Process::CreateChannelLibrary()
   Process management
   
   ------------------------------------------------------------------------------*/
+void Single_Process::Minimalize()
+{
+  if (p_partner==this) return;
+  if (p_hel)      {delete p_hel; p_hel=0;}
+  if (p_BS)       {delete p_BS;   p_BS=0;}
+  if (p_shand)    {delete p_shand;p_shand=0;}
+  if (p_ampl)     {delete p_ampl; p_ampl=0;}
+}
 
 void Single_Process::Empty() {
   if (p_cuts)        { delete p_cuts; p_cuts = 0; }

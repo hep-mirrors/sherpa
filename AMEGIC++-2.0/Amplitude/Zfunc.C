@@ -30,7 +30,7 @@ Zfunc::~Zfunc() {
   if (m_narg!=0)   delete[] p_arguments;
   if (m_ncoupl!=0) delete[] p_couplings;
   if (m_nprop!=0)  delete[] p_propagators;
-  for (CL_Iterator clit=m_calclist.begin();clit!=m_calclist.end();++clit) delete[] (*clit).p_args;
+  for (CL_Iterator clit=m_calclist.begin();clit!=m_calclist.end();++clit) {delete[] (*clit).p_args;}
 }
     	
 Zfunc& Zfunc::operator=(const Zfunc& z) {
@@ -283,7 +283,6 @@ Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl)
   m_zsigns.push_back(1);
 }
 
-
 void Zfunc_Group::ReplaceProp(vector<Pair>* pairlist)
 {
   for (int k=0;k<pairlist->size();k++) {
@@ -300,6 +299,14 @@ void Zfunc_Group::ClearCalcList()
 {
   Zfunc::ClearCalcList();
   for (int i=0;i<m_zlist.size();i++) m_zlist[i]->ClearCalcList();
+}
+
+void Zfunc_Group::KillZList()
+{
+  for (Zfunc_Iterator zit=m_zlist.begin();zit!=m_zlist.end();++zit) {
+    (*zit)->KillZList();
+    delete (*zit);
+  }  
 }
 
 void Zfunc_Group::Print() 

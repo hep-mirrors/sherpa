@@ -47,6 +47,7 @@ namespace AMEGIC {
   };
 
   class String_Tree {
+    sknot zero;
     std::list<sknot>  sknotlist;
     std::list<sknot*> leaflist;
     sknot* Leaf(std::string&,sknot*,int);
@@ -68,6 +69,7 @@ namespace AMEGIC {
     void    CollectLeafs(sknot*,std::vector<sknot*>&,int);
     
   public:
+    String_Tree();
     void Reset() {sknotlist.clear();}
     sknot*  newsk(); 
     sknot*  String2Tree(std::string,int fixed = 0); 

@@ -22,6 +22,7 @@ namespace AMEGIC {
     virtual Complex Zvalue(int,int*) = 0;
     virtual Complex Zvalue(String_Handler * sh,int ihel) =0;
     virtual void    ClearCalcList() = 0;
+    virtual void    KillZList() = 0;
     virtual void    FillCoupling(String_Handler*) = 0;
     virtual void SetNumber(int&) = 0;
     virtual Amplitude_Base* GetAmplitude(const int) = 0;

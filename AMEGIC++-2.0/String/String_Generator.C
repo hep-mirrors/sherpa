@@ -33,9 +33,9 @@ String_Generator::~String_Generator()
   if (p_flavourssave)  { delete p_flavourssave;  p_flavourssave  = NULL; }
 }
 
-void String_Generator::Reset()
+void String_Generator::Reset(int f)
 {
-  (*p_couplings).clear();
+  if (f) (*p_couplings).clear();
   (*p_flavours).clear();
   (*p_zxl).clear();
 
@@ -46,19 +46,16 @@ void String_Generator::Reset()
   (*p_zxl).push_back(zero);
 }
 
-void String_Generator::StoreAndReset()
+void String_Generator::ReplaceZXlist(Virtual_String_Generator* _sgen)
 {
-  if (m_copied) { 
-    Reset(); 
-    return; 
+  if (!m_copied) {
+    p_zxlsave       = p_zxl;
+    //p_couplingssave = p_couplings;
+    p_flavourssave  = p_flavours;
   }
-
-  p_zxlsave       = p_zxl;
-  p_couplingssave = p_couplings;
-  p_flavourssave  = p_flavours;
-  p_zxl           = new vector<ZXlist>;
-  p_couplings     = new vector<Complex>;
-  p_flavours      = new vector<int>;
+  p_zxl           = _sgen->GetZXlist();
+  //p_couplings     = coupl;
+  p_flavours      = _sgen->GetFlavours();
 
   m_copied = 1;
 }
@@ -66,15 +63,11 @@ void String_Generator::StoreAndReset()
 void String_Generator::ReStore()
 {
   if (m_copied) {
-    if (p_zxl)           { delete p_zxl;       }
-    if (p_couplings)     { delete p_couplings; }
-    if (p_flavours)      { delete p_flavours;  }
-
     p_zxl           = p_zxlsave;
-    p_couplings     = p_couplingssave;
+    //p_couplings     = p_couplingssave;
     p_flavours      = p_flavourssave;
     p_zxlsave       = NULL;
-    p_couplingssave = NULL;
+    //p_couplingssave = NULL;
     p_flavourssave  = NULL;
 
     m_copied        = 0;
@@ -212,26 +205,19 @@ Kabbala String_Generator::GetCZnumber(Complex value,string str)
   if (newz.sk->op==0) {
     if (newz.sk->Str()==string("0")) return (*p_zxl)[0].value;
   }
-
   st.DeleteMinus(newz.sk);
-
-  String_Tree st2;
-  newz.sk = st2.String2Tree(st.Tree2String(newz.sk,0));
-
-  st2.Cluster(newz.sk,0);
-  st2.DeleteMinus(newz.sk);
-
-  st2.Delete(newz.sk,string("Z[0]"));
 
   if (newz.sk->op==0) {
     if (newz.sk->Str()==string("0")) return (*p_zxl)[0].value;
   }
-  string newstr = st2.Tree2String(newz.sk,0);
+  string newstr = st.Tree2String(newz.sk,0);
   if ( newstr.find(string("+"))==-1 &&
        newstr.find(string("-"))==-1 &&
        newstr.find(string("*"))==-1 ) return Kabbala(newstr,value);
 
-  newz.sk = m_stree.String2Tree(newstr);
+  newz.sk = st.String2Tree(newstr);
+  st.DeleteMinus(newz.sk);
+  newz.sk = m_stree.Copy(newz.sk,0);
   newz.value = Number((*p_zxl).size(),value);
   (*p_zxl).push_back(newz);
 
@@ -421,7 +407,7 @@ Kabbala String_Generator::GetScplxnumber(const int a1,const int a2,Complex value
 void String_Generator::Calculate(Values* val) 
 {  
   if (val!=0) {
-    val->Calculate((*p_couplings));
+    val->Calculate();
     return;
   }
 
@@ -520,6 +506,7 @@ Kabbala* String_Generator::GetKabbala(const string& str)
     msstr>>number;
     
     if ((*p_zxl)[number].value.String()==str) {
+      (*p_zxl)[number].on = 1;
       return &(*p_zxl)[number].value; 
     }
     else {

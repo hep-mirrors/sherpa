@@ -56,6 +56,10 @@ namespace AMEGIC {
     {
       for (size_t i=0;i<graphs.size();i++) graphs[i]->ClearCalcList();
     }
+    void KillZList() 
+    {
+      for (int i=0;i<graphs.size();i++) graphs[i]->KillZList();
+    }
     void SetStringOn()   
     {
       buildstring=1;

@@ -94,7 +94,10 @@ Single_Amplitude::~Single_Amplitude()
   delete[] Pointlist;
   //Zlist,Clist,Plist
 
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) delete (*zit);
+  if (zlist){
+    for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) delete (*zit);
+  }
+  
   for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) delete (*pit);
   
   SpinorDirection* sd;
@@ -190,18 +193,18 @@ void Single_Amplitude::Zprojecting(Flavour* fl,int ngraph)
   zgen.MarkCut(Pointlist,0);
   zgen.Convert(Pointlist);
   zgen.SetDirection(N,spind);
-  zgen.Get(zlist);
+  zgen.Get(*zlist);
   
   Prop_Generator pgen;
   pgen.Convert(Pointlist);
   pgen.Fill();
-  pgen.Kill(zlist);
+  pgen.Kill(*zlist);
   pgen.Get(plist);
 }
 
 void Single_Amplitude::FillCoupling(String_Handler* _shand) 
 {
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
     Zfunc* z = (*zit);
     for (short int i=0;i<z->m_ncoupl;i++) {
       (_shand->Get_Generator())->GetCnumber(z->p_couplings[i]);
@@ -211,7 +214,7 @@ void Single_Amplitude::FillCoupling(String_Handler* _shand)
 
 void Single_Amplitude::MPolconvert(int alt,int neu)
 {
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
     Zfunc* z = (*zit);
     for (int i=0;i<z->m_narg;i++) {
       if (z->p_arguments[i]==alt) z->p_arguments[i]=neu;

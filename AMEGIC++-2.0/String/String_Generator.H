@@ -42,8 +42,8 @@ namespace AMEGIC {
   class Virtual_String_Generator {
   public:
     virtual ~Virtual_String_Generator() {}
-    virtual void      Reset()           {}
-    virtual void      StoreAndReset()   {}
+    virtual void      Reset(int = 0)    {}
+    virtual void      ReplaceZXlist(Virtual_String_Generator*) {}   
     virtual void      ReStore()         {}
     virtual int       GetCnumber(Complex)                          = 0;
     virtual Kabbala   GetCZnumber(Complex,std::string)             = 0;
@@ -61,8 +61,9 @@ namespace AMEGIC {
     virtual int       ZXMaxNumber()                                = 0;
     virtual std::vector<int>* GetFlavours()                        = 0;
     virtual ZXlist*   GetZXl(const int&)                           = 0;
-    virtual int       CouplingMaxNumber()                          = 0;
     virtual Complex   GetCoupling(const int&)                      = 0;
+    virtual std::vector<Complex>* GetCouplList()                   = 0;
+    virtual std::vector<ZXlist>*  GetZXlist()                      = 0;
     virtual void      SetOn(const int&)                            = 0;
     virtual void      SetOn(const std::string&)                    = 0;
     virtual void      SetOff(const int&)                           = 0;
@@ -96,8 +97,8 @@ namespace AMEGIC {
   public:
     String_Generator(Basic_Sfuncs *);
     ~String_Generator();
-    void Reset();
-    void StoreAndReset();
+    void Reset(int = 0);
+    void ReplaceZXlist(Virtual_String_Generator*);
     void ReStore();
     int ZCount(); 
     int XCount(); 
@@ -122,8 +123,9 @@ namespace AMEGIC {
     int         ZXMaxNumber()               { return p_zxl->size(); }
     std::vector<int>* GetFlavours()         { return p_flavours;}
     ZXlist    * GetZXl(const int & i)       { return &(*p_zxl)[i]; }
-    int         CouplingMaxNumber()         { return p_couplings->size(); }
     Complex     GetCoupling(const int & i)  { return (*p_couplings)[i]; }
+    std::vector<Complex>* GetCouplList()    { return p_couplings; }
+    std::vector<ZXlist>*  GetZXlist()       { return p_zxl; }
     void        SetOff(const int & i)       { (*p_zxl)[i].on = 0; }
     void        SetOn(const int & i)        { (*p_zxl)[i].on = 1; }
     void        SetOn(const std::string &);
@@ -157,8 +159,9 @@ namespace AMEGIC {
     int       ZXMaxNumber()                                     { return 0; }   
     std::vector<int>* GetFlavours()                             { return NULL; }
     ZXlist*   GetZXl(const int&)                                { return NULL; }
-    int       CouplingMaxNumber()                               { return 0; }
     Complex   GetCoupling(const int&)                           { return Complex(0.,0.); }
+    std::vector<Complex>* GetCouplList()                        { return NULL; }
+    std::vector<ZXlist>*  GetZXlist()                           { return NULL; }
     void      Calculate(Values*)                                {}  
     void      SetOn(const int&)                                 {}  
     void      SetOn(const std::string&)                         {}  

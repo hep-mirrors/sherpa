@@ -14,19 +14,19 @@ void Super_Amplitude::Init(string _str)
   str = _str;
 
   for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) {  
-    int old = zlist.size();
+    int old = zlist->size();
 
     Zfunc_List* gzlist = (*g)->GetZlist(); 
     for (Zfunc_Iterator zit=gzlist->begin();zit!=gzlist->end();++zit) {
       int hit = 0;
-      for (Zfunc_Iterator zit2=zlist.begin();zit2!=zlist.end();++zit2) {
+      for (Zfunc_Iterator zit2=zlist->begin();zit2!=zlist->end();++zit2) {
 	if ((*zit)->p_equal==(*zit2)->p_equal) {
 	  hit = 1;
 	  break;
 	}
       }
       if (hit==0) {
-	zlist.push_back((*zit));
+	zlist->push_back((*zit));
 	//zlist.push_back(new Zfunc(*(*zit)));
       }
     }
@@ -67,7 +67,7 @@ void Super_Amplitude::Init(string _str)
     }
 
     int i=0;
-    for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
+    for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit,++i) {
       if (i>=old) {
 	(*zit)->ReplaceProp(&pairlist);	
       }
@@ -116,7 +116,7 @@ void Super_Amplitude::SetZfuncSign()
 
   vector<vector<int> > zsignlists;
 
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
 
     // if super zf (+)
       if ((*zit)->GetOp()=='+')
@@ -139,7 +139,7 @@ void Super_Amplitude::SetZfuncSign()
       for (Zfunc_Iterator gzit=gzlist->begin();gzit!=gzlist->end();++gzit) {
 	// looking for zfunc in superampl
 	int i =0;
-	for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
+	for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit,++i) {
 	    int zsize=(*zit)->GetSize();
 	    if (!((*zit)->GetOp()=='+'))
 		zsize=1;
@@ -160,7 +160,7 @@ void Super_Amplitude::SetZfuncSign()
     }
     if (ok) {
       int i =0;
-      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit,++i) {
+      for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit,++i) {
 	for (int j=0;j<(*zit)->GetSize();++j) {
 	    if ((*zit)->GetOp()=='+') { 
 	      (*zit)->SetSign(j,zsignlists[i][j]);
@@ -195,7 +195,7 @@ void Super_Amplitude::ReduceZfuncs(string str)
    
     for (list<sknot*>::iterator sit=zfunclist.begin();sit!=zfunclist.end();++sit) {
       int hit = 0;
-      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+      for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
 	if ((*zit)->m_str==st.Tree2String(*sit,0)) {
 	  hit = 1;
 	  if (first) {
@@ -205,7 +205,7 @@ void Super_Amplitude::ReduceZfuncs(string str)
 	  }
 	  superfunc->m_zlist.push_back(*zit);
 	  superfunc->m_zsigns.push_back(1);
-	  zlist.erase(zit);
+	  zlist->erase(zit);
 	  break;
 	}
       }
@@ -215,10 +215,10 @@ void Super_Amplitude::ReduceZfuncs(string str)
       }
     }
     if(superfunc->GetSize()==1){
-      zlist.push_back((*superfunc)[0]);
+      zlist->push_back((*superfunc)[0]);
       delete superfunc;
     }
-    else zlist.push_back(superfunc);
+    else zlist->push_back(superfunc);
   }  
 }
 

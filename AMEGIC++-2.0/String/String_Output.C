@@ -65,7 +65,7 @@ void String_Output::Output(sknot*** sk,String_Tree* stree,
 
   Zform(header,maxlines,tolerance,sgen,stree);
 
-  Cform(header,maxlines,tolerance,sk,stree,cfilename,hel);
+  Cform(header,maxlines,tolerance,sgen,sk,stree,cfilename,hel);
 
   header<<"};"<<endl;
   header<<"}"<<endl<<endl;
@@ -77,6 +77,7 @@ void String_Output::Output(sknot*** sk,String_Tree* stree,
 }
 
 void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
+			  Virtual_String_Generator* sgen,
 			  sknot*** sk,String_Tree* stree,
 			  const string& cfilename,Helicity* hel)
 {
@@ -98,58 +99,69 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   cfile<<"  return new "<<pID<<"(bs);"<<endl;
   cfile<<"}"<<endl<<endl;
 
+  cfile<<pID<<"::"<<pID<<"(Basic_Sfuncs* _BS) :"<<endl;
+  cfile<<"     Basic_Func(0,_BS),"<<endl;  
+  cfile<<"     Basic_Yfunc(0,_BS),"<<endl;  
+  cfile<<"     Basic_Zfunc(0,_BS),"<<endl;  
+  cfile<<"     Basic_Xfunc(0,_BS),"<<endl;  
+  cfile<<"     Basic_Mfunc(0,_BS),"<<endl;   
+  cfile<<"     Basic_Vfunc(0,_BS),"<<endl;  
+  cfile<<"     Basic_Pfunc(0,_BS),"<<endl; 
+  cfile<<"     Basic_MassTermfunc(0,_BS)"<<endl;
+  cfile<<"{"<<endl;
+  cfile<<"  f = new int["<<sgen->GetFlavours()->size()<<"];"<<endl;
+  cfile<<"  c = new Complex["<<sgen->NumberOfCouplings()<<"];"<<endl;
+  cfile<<"  Z = new Complex["<<sgen->ZXMaxNumber()<<"];"<<endl;
+  cfile<<"  M = new Complex*["<<maxhel<<"];"<<endl;
+  cfile<<"  for(int i=0;i<"<<maxhel<<";i++) M[i] = new Complex["<<maxgraph<<"];"<<endl;
+  cfile<<"  cl = new int["<<maxhel<<"];"<<endl;
+  cfile<<"}"<<endl<<endl;
+  cfile<<pID<<"::"<<"~"<<pID<<"()"<<endl; 
+  cfile<<"{"<<endl;
+  cfile<<"  if (Z)  delete[] Z;"<<endl;
+  cfile<<"  if (f)  delete[] f;"<<endl;
+  cfile<<"  if (c)  delete[] c;"<<endl;
+  cfile<<"  if (cl) delete[] cl;"<<endl;
+  cfile<<"  if (M) {"<<endl;
+  cfile<<"    for(int i=0;i<"<<maxhel<<";i++) delete[] M[i];"<<endl;
+  cfile<<"    delete[] M;"<<endl; 
+  cfile<<"  }"<<endl;
+  cfile<<"}"<<endl<<endl;
+  lines+=25;
+
   cfile<<"Complex "<<pID<<"::Evaluate"<<"(int& m,int& n)"<<endl;
   cfile<<"{"<<endl;
-  cfile<<"  switch (m) {"<<endl;
+  cfile<<"  if (cl[n]) return M[n][m];"<<endl;
+  cfile<<"  switch (n) {"<<endl;
 
-  lines += 11;
+  lines += 4;
 
-  for (int i=0;i<maxgraph;i++) {
-    cfile<<"    case "<<i<<": return M"<<i<<"(n);"<<endl;
-    lines++;
+  for (int ihel=0;ihel<maxhel;ihel++) {
+    if (hel->On(ihel)!=0) {
+      header<<"  void Calculate_M"<<ihel<<"();"<<endl;
+      cfile<<"    case "<<ihel<<": Calculate_M"<<ihel<<"(); break;"<<endl;
+      lines++;
+    }
+    if (hel->On(ihel)==0) 
+      if (hel->Partner(ihel)!=-1) {
+	cfile<<"    case "<<ihel<<": return Evaluate(m,"<<hel->Partner(ihel)<<");"
+	     <<ihel<<"();"<<endl;
+	lines++;
+      }
   }  
   cfile<<"  }"<<endl;
-  cfile<<"  return Complex(0.,0.);"<<endl;
+  cfile<<"  cl[n]=1;"<<endl;
+  cfile<<"  return M[n][m];"<<endl;
   cfile<<"}"<<endl<<endl;
-  lines += 3;
+  lines += 4;
   
   string str;
   int divnum;
-  for (short int igraph=0;igraph<maxgraph;igraph++) {
-    divnum = 0;
-    header<<"  Complex M"<<igraph<<"(const int&);"<<endl;
-    cfile<<"Complex "<<pID<<"::M"<<igraph<<"(const int& n)"<<endl;
-    cfile<<"{"<<endl;
-    cfile<<"  Complex M;"<<endl; 
-    cfile<<"  switch (n) {"<<endl;
-    lines += 4;
-    for (short int ihel=0;ihel<maxhel;ihel++) {
-      if (sk[igraph][ihel]!=0) 
-	str = stree->Tree2String(sk[igraph][ihel],0);
-      else
-	str = string("");
-      if (str!=string("")) {
-	if (hel->On(ihel)==0) {
-	  if (hel->Partner(ihel)!=-1) {
-	    cfile<<"    case "<<ihel<<": M = M"<<igraph<<"("<<hel->Partner(ihel)<<");break;"<<endl;
-	    lines++;
-	  }
-	}
-	else {
-	  cfile<<"    case "<<ihel<<": M = ";
-	  lines += Line_Form(cfile,str);
-	  cfile<<"break;"<<endl;
-	  lines++;
-	}
-      }
-      if (((maxlines+tolerance)<lines) && (ihel!=maxhel-1)) {
+  for (int ihel=0;ihel<maxhel;ihel++) {
+    if (hel->On(ihel)!=0) {
+      if ((maxlines-tolerance)<lines) {
+	//cut
 	lines = 0;
-	divnum++;
-	//close the old one
-	cfile<<"    default: M = M"<<igraph<<"_"<<divnum<<"(n);"<<endl;
-	cfile<<"  }"<<endl;
-	cfile<<"  return M;"<<endl;
-	cfile<<"}"<<endl<<endl;
 	cfile.close();
 	// new file
 	fnumber++;
@@ -157,43 +169,55 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
 	sprintf(numb,"%i",fnumber);	
 	cfile.open((cfilename+string("_")+string(numb)+string(".C")).c_str());
 	slib.AddToMakefile(Makefile,pathID,string("V_")+string(numb));
-	header<<"  Complex M"<<igraph<<"_"<<divnum<<"(const int&);"<<endl;
 	cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
 	cfile<<"using namespace AMEGIC;"<<endl;  
-	cfile<<"using namespace ATOOLS;"<<endl;
-	cfile<<"using namespace std;"<<endl<<endl;  
-
-	cfile<<"Complex "<<pID<<"::M"<<igraph<<"_"<<divnum<<"(const int& n)"<<endl;
-	cfile<<"{"<<endl;
-	cfile<<"  Complex M;"<<endl; 
-	cfile<<"  switch (n) {"<<endl;
-	lines += 6;
+	cfile<<"using namespace ATOOLS;"<<endl<<endl;
       }
-    }
-    cfile<<"    default: M = Complex(0.,0.);"<<endl;
-    cfile<<"  }"<<endl;
-    cfile<<"  return M;"<<endl;
-    cfile<<"}"<<endl<<endl;
-    if (((maxlines-tolerance)<lines) && igraph!=maxgraph-1) {
-      //cut
-      lines = 0;
-      cfile.close();
-      // new file
-      fnumber++;
-      char numb[5];
-      sprintf(numb,"%i",fnumber);	
-      cfile.open((cfilename+string("_")+string(numb)+string(".C")).c_str());
-      slib.AddToMakefile(Makefile,pathID,string("V_")+string(numb));
-      cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
-      cfile<<"using namespace AMEGIC;"<<endl;  
-      cfile<<"using namespace ATOOLS;"<<endl;
-      cfile<<"using namespace std;"<<endl<<endl;  
+
+      divnum = 0;
+      cfile<<"void "<<pID<<"::Calculate_M"<<ihel<<"()"<<endl;
+      cfile<<"{"<<endl;
+      lines += 2;
+
+      for (int igraph=0;igraph<maxgraph;igraph++) {
+	if (sk[igraph][ihel]!=0) 
+	  str = stree->Tree2String(sk[igraph][ihel],0);
+	else
+	  str = string("");
+	if (str!=string("")) {
+	  cfile<<"  M["<<ihel<<"]["<<igraph<<"] = ";
+	  lines += Line_Form(cfile,str)+1;
+	}
+      
+	if (((maxlines+tolerance)<lines) && (ihel!=maxhel-1)) {
+	  lines = 0;
+	  divnum++;
+	  //close the old one
+	  cfile<<"  Calculate_M"<<ihel<<"_"<<divnum<<"();"<<endl;
+	  cfile<<"}"<<endl<<endl;
+	  cfile.close();
+	  // new file
+	  fnumber++;
+	  char numb[5];
+	  sprintf(numb,"%i",fnumber);	
+	  cfile.open((cfilename+string("_")+string(numb)+string(".C")).c_str());
+	  slib.AddToMakefile(Makefile,pathID,string("V_")+string(numb));
+	  header<<"  void Calculate_M"<<ihel<<"_"<<divnum<<"();"<<endl;
+	  cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
+	  cfile<<"using namespace AMEGIC;"<<endl;  
+	  cfile<<"using namespace ATOOLS;"<<endl<<endl;
+	  cfile<<"void "<<pID<<"::Calculate_M"<<ihel<<"_"<<divnum<<"()"<<endl;
+	  cfile<<"{"<<endl;
+	  lines += 2;
+	}
+      }
+      cfile<<"}"<<endl<<endl;
     }
   }
   cfile.close();
 }
 
-void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
+void String_Output::Zform(ofstream& header,int maxlines,int tolerance,
 			  Virtual_String_Generator* sgen,
 			  String_Tree* stree)
 {  
@@ -212,64 +236,33 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
   zf<<"using namespace std;"<<endl<<endl;  
 
   //Flavours and Couplings
-  header<<"  void SetCouplFlav();"<<endl;
-  zf<<"void "<<pID<<"::SetCouplFlav()"<<endl;
+  zf<<"void "<<pID<<"::SetCouplFlav(vector<Complex>& coupl)"<<endl;
   zf<<"{"<<endl;
-  zf<<"  if (f==NULL) f = new int["<<sgen->GetFlavours()->size()<<"];"<<endl<<endl;
-  lines += 3;
+  lines ++;
   for (short int i=0;i<sgen->GetFlavours()->size();i++) {
     zf<<"  f["<<i<<"] = "<<(*sgen->GetFlavours())[i]<<";"<<endl;
     lines++;
   }
-  zf<<"}"<<endl<<endl;
-  lines +=2 ;
-
-  zf<<"void "<<pID<<"::Calculate(vector<Complex>& c)"<<endl;
-  zf<<"{"<<endl;
+  zf<<endl;
+  zf<<"  for (int i=0;i<"<<sgen->NumberOfCouplings()<<";i++) "<<"c[i] = coupl[i];"<<endl;
+  zf<<"  for (int i=0;i<"<<maxhel<<";i++)"<<endl;
+  zf<<"    for (int j=0;j<"<<maxgraph<<";j++) M[i][j] = Complex(0.,0.);"<<endl;
+  zf<<endl<<"  //constant Z's"<<endl;
+  zf<<"  Z[0] = Complex(0.,0.);"<<endl;
+  ZXlist* zx;
   int hit;
   Complex norm;
-  zf<<"  if (Z==NULL) Z = new Complex["<<sgen->ZXMaxNumber()<<"];"<<endl<<endl;
-  zf<<"  Z[0] = Complex(0.,0.);"<<endl;
-  lines += 7;
-
-  int divnum = 0;
-  ZXlist* zx;
   for (int i=1;i<sgen->ZXMaxNumber();i++) {
     zx = sgen->GetZXl(i);
-    if (zx->on) {
+    if (zx->on && zx->zlist==2) {
       lines++;
       zf<<"  Z["<<i<<"] = ";
-      int* arg = zx->arg;
       switch (zx->zlist) {
-      case 0: 
-#ifdef use_templates
-	zf<<"XT<"<<arg[1]<<","<<arg[4]<<">";
-	zf<<"("<<arg[0]<<","<<arg[2]<<","<<arg[3];
-	zf<<",c["<<arg[5]<<"],c["<<arg[6]<<"]);"<<endl;
-#else
-	zf<<"Xcalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<","<<arg[4];
-	zf<<",c["<<arg[5]<<"],c["<<arg[6]<<"]);"<<endl;
-#endif
-	break;
-      case 1:
-#ifdef use_templates
-	zf<<"ZT";
-	if (!sgen->Massless(i)) zf<<"M";
-	zf<<"<"<<arg[1]<<","<<arg[3]<<","<<arg[5]<<","<<arg[7]<<">";
-	zf<<"("<<arg[0]<<","<<arg[2]<<","<<arg[4]<<","<<arg[6];
-	zf<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
-#else
-	zf<<"Zcalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3];
-	zf<<","<<arg[4]<<","<<arg[5]<<","<<arg[6]<<","<<arg[7];
-	zf<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
-#endif
-	break;
       case 2: 
-	// E = 1/M(Z,W,H)^(2,4); E = coupl
 	norm = zx->value.Value();
 	hit = 0;
 	//couplings
-	for (short int j=0;j<sgen->CouplingMaxNumber();j++) {
+	for (short int j=0;j<sgen->NumberOfCouplings();j++) {
 	  if ( ATOOLS::IsEqual(norm,sgen->GetCoupling(j)) ||
 	       ATOOLS::IsEqual(norm,-sgen->GetCoupling(j)) ) {
 	    hit = 1;
@@ -371,7 +364,51 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
 	  zf<<"Complex(0.,-1./4.);"<<endl;
 	  break;
 	}
-	if (hit==0) msg.Error()<<"No match for E-function:"<<zx->value.Value()<<endl;
+	if (hit==0) {
+	  msg.Error()<<"No match for E-function:"<<zx->value.Value()<<endl;
+	  abort();
+	}
+      }
+    }
+  }
+  zf<<"}"<<endl<<endl;
+  lines +=4 ;
+
+  zf<<"void "<<pID<<"::Calculate()"<<endl;
+  zf<<"{"<<endl;
+  zf<<"  for(int i=0;i<"<<maxhel<<";i++) cl[i] = 0;"<<endl<<endl;
+  lines += 2;
+
+  int divnum = 0;
+  for (int i=1;i<sgen->ZXMaxNumber();i++) {
+    zx = sgen->GetZXl(i);
+    if (zx->on && zx->zlist!=2) {
+      lines++;
+      zf<<"  Z["<<i<<"] = ";
+      int* arg = zx->arg;
+      switch (zx->zlist) {
+      case 0: 
+#ifdef use_templates
+	zf<<"XT<"<<arg[1]<<","<<arg[4]<<">";
+	zf<<"("<<arg[0]<<","<<arg[2]<<","<<arg[3];
+	zf<<",c["<<arg[5]<<"],c["<<arg[6]<<"]);"<<endl;
+#else
+	zf<<"Xcalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3]<<","<<arg[4];
+	zf<<",c["<<arg[5]<<"],c["<<arg[6]<<"]);"<<endl;
+#endif
+	break;
+      case 1:
+#ifdef use_templates
+	zf<<"ZT";
+	if (!sgen->Massless(i)) zf<<"M";
+	zf<<"<"<<arg[1]<<","<<arg[3]<<","<<arg[5]<<","<<arg[7]<<">";
+	zf<<"("<<arg[0]<<","<<arg[2]<<","<<arg[4]<<","<<arg[6];
+	zf<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
+#else
+	zf<<"Zcalc("<<arg[0]<<","<<arg[1]<<","<<arg[2]<<","<<arg[3];
+	zf<<","<<arg[4]<<","<<arg[5]<<","<<arg[6]<<","<<arg[7];
+	zf<<",c["<<arg[8]<<"],c["<<arg[9]<<"],c["<<arg[10]<<"],c["<<arg[11]<<"]);"<<endl;
+#endif
 	break;
       case 3: 
 	zf<<"Vcalc("<<arg[0]<<","<<arg[1]<<");"<<endl;
@@ -403,7 +440,7 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
       lines = 0;
       divnum++;
       //close the old one
-      zf<<"  Calculate_"<<divnum<<"(c);"<<endl;
+      zf<<"  Calculate_"<<divnum<<"();"<<endl;
       zf<<"}"<<endl;
       zf.close();
       // new file
@@ -413,12 +450,11 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
       slib.AddToMakefile(Makefile,pathID,string("V_Z_")+string(numb));
       zf<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
       zf<<"using namespace AMEGIC;"<<endl;  
-      zf<<"using namespace ATOOLS;"<<endl;
-      zf<<"using namespace std;"<<endl<<endl;  
+      zf<<"using namespace ATOOLS;"<<endl<<endl;
       zf<<"void "<<pID.c_str()<<"::Calculate_"<<divnum
-	<<"(vector<Complex>& c)"<<endl;
+	<<"()"<<endl;
       zf<<"{"<<endl;
-      header<<"  void Calculate_"<<divnum<<"(std::vector<Complex>&);"<<endl;
+      header<<"  void Calculate_"<<divnum<<"();"<<endl;
       lines += 4;
     }
   }
@@ -445,26 +481,17 @@ void String_Output::Make_Header(ofstream &header)
   header<<"  public Basic_Pfunc,"<<endl; 
   header<<"  public Basic_MassTermfunc {"<<endl; 
 
-  header<<"  Complex* Z;"<<endl; 
-  header<<"  int*     f;"<<endl; 
-  header<<"  Complex* c;"<<endl; 
+  header<<"  Complex*  Z;"<<endl; 
+  header<<"  int*      f;"<<endl; 
+  header<<"  Complex*  c;"<<endl; 
+  header<<"  Complex** M;"<<endl; 
+  header<<"  int*      cl;"<<endl; 
   header<<"public:"<<endl;
-  header<<"  "<<pID<<"(Basic_Sfuncs* _BS) :"<<endl; 
-  header<<"     Basic_Func(0,_BS),"<<endl;  
-  header<<"     Basic_Yfunc(0,_BS),"<<endl;  
-  header<<"     Basic_Zfunc(0,_BS),"<<endl;  
-  header<<"     Basic_Xfunc(0,_BS),"<<endl;  
-  header<<"     Basic_Mfunc(0,_BS),"<<endl;  
-  header<<"     Basic_Vfunc(0,_BS),"<<endl;  
-  header<<"     Basic_Pfunc(0,_BS),"<<endl; 
-  header<<"     Basic_MassTermfunc(0,_BS) {Z=NULL;f=NULL;c=NULL;}"<<endl;
-  header<<"  ~"<<pID<<"() {"<<endl;
-  header<<"    if (Z) delete[] Z;"<<endl;
-  header<<"    if (f) delete[] f;"<<endl;
-  header<<"    if (c) delete[] c;"<<endl;
-  header<<"  }"<<endl;
+  header<<"  "<<pID<<"(Basic_Sfuncs* _BS);"<<endl; 
+  header<<"  ~"<<pID<<"();"<<endl;
+  header<<"  void SetCouplFlav(std::vector<Complex>&);"<<endl;
   header<<"  Complex Evaluate(int&,int&);"<<endl;
-  header<<"  void    Calculate(std::vector<Complex>&);"<<endl;
+  header<<"  void    Calculate();"<<endl;
 }
 
 int String_Output::Line_Form(ofstream& file,const string &str)

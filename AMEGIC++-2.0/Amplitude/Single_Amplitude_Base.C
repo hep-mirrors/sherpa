@@ -15,7 +15,7 @@ using namespace std;
 void Single_Amplitude_Base::PrintGraph() 
 {
   if (!rpa.gen.Tracking()) return;
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) 
+  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) 
     (*zit)->Print(); 
 
   msg.Out()<<endl<<endl<<"Propagators: "<<endl;
@@ -31,13 +31,22 @@ void Single_Amplitude_Base::PrintGraph()
 void Single_Amplitude_Base::ClearCalcList()
 {
   //clear z's 
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
     Zfunc* z = (*zit);
 
     z->ClearCalcList();
   }
 }
 
+void Single_Amplitude_Base::KillZList()
+{
+  if (!zlist) return;    
+  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
+    (*zit)->KillZList();
+    delete (*zit);
+  }
+  delete zlist;
+}
 
 int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector<int>* iargs)  
 {
@@ -406,7 +415,7 @@ void Single_Amplitude_Base::GroupZfuncs()
   
   vector<vector<int> > indexlist;
   int cnt=0;
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
     Zfunc* z = (*zit);
     indexlist.push_back(dummy);
     for (short int i=0;i<z->m_narg;i++) {
@@ -450,7 +459,7 @@ void Single_Amplitude_Base::GroupZfuncs()
       indexlist.push_back(dummy);
       
       vector<vector<int> >::iterator ilt=indexlist.begin();	
-      for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();) {
+      for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();) {
 	int hit=0;
 	for(short int j=0;j<(*ilt).size();j++) {
 	  if((*ilt)[j]==imin){
@@ -462,7 +471,7 @@ void Single_Amplitude_Base::GroupZfuncs()
 		  indexlist[indexlist.size()-1].push_back((*ilt)[k]);
 		}
 	    ilt=indexlist.erase(ilt);
-	    zit=zlist.erase(zit);
+	    zit=zlist->erase(zit);
 	    hit=1;
 	    break;
 	  }
@@ -476,7 +485,7 @@ void Single_Amplitude_Base::GroupZfuncs()
       }
       
       Zfunc_Group *sf=new Zfunc_Group(*zh[0],*zh[1],iabs(iz[imin]),&plist);
-      zlist.push_back(sf);
+      zlist->push_back(sf);
       
     }
   } while(over==0);
@@ -494,7 +503,7 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
 {
   if (signlist==0) return shand->Zvalue(amplnumber,ihel);
   
-  if(zlist.size()>1) GroupZfuncs();
+  if(zlist->size()>1) GroupZfuncs();
     
   Kabbala value(string("1"),Complex(1.,0.));
   vector<int> iarg,ize;
@@ -509,7 +518,7 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
     }
   }
 
-  for (Zfunc_Iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+  for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
     Zfunc* z = (*zit);
 
     value*= SingleZvalue(z,&ize,&iarg,1);
