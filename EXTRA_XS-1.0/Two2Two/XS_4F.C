@@ -290,9 +290,9 @@ XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const size_t nin,const size_t nout,
     int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[2].Kfcode());
     if (flavours[0].IsQuark() && flavours[2].IsQuark()) { 
       if (kfc1%2==0 && kfc2%2!=0)
-	m_ckm = rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1);
+	m_ckm = rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2-1,kfc2/2);
       if (kfc1%2!=0 && kfc2%2==0)
-	m_ckm = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
+	m_ckm = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc1/2);
     }
     if (abs(m_ckm)==0.) m_W_on = false;
   }
