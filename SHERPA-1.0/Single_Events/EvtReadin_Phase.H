@@ -3,10 +3,11 @@
 
 #include "Blob_List.H"
 #include "Event_Reader.H"
-#include "Output_Handler.H"
 #include "Event_Phase_Handler.H"
 
 namespace SHERPA {
+  class IO_Handler;
+
   class EvtReadin_Phase : public Event_Phase_Handler {
     IO_Handler     * p_iohandler;
     Event_Reader   * p_evtreader;

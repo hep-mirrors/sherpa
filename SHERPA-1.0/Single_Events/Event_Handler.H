@@ -5,7 +5,6 @@
 #include <iostream>
 
 #include "Event_Phase_Handler.H"
-#include "Sample_Analysis.H"
 
 namespace SHERPA {
   typedef std::vector<Event_Phase_Handler *> Phase_List;
@@ -64,10 +63,6 @@ namespace SHERPA {
     standard library, the corresponding iterator is defined to be Phase_Iterator.
   */ 
   /*!
-    \var Analysis_Handler * Event_Handler::p_analysis
-    A pointer to some analysis.
-  */ 
-  /*!
     \var ATOOLS::Blob_List Event_Handler::m_blobs
     The internal list of blobs constituting the event. This list is emptied before any new event
     is generated.
@@ -78,7 +73,7 @@ namespace SHERPA {
   */ 
   /*!
     \fn Event_Handler::~Event_Handler()
-    Deletes the phase list and the analysis.
+    Deletes the phase list.
   */ 
   /*!
     \fn void Event_Handler::AddEventPhase(Event_Phase_Handler *)
@@ -123,15 +118,6 @@ namespace SHERPA {
   /*!
     \fn void Event_Handler::PrintBlobs()
     Prints the actual blob list.
-  */ 
-  /*!
-    \fn void Event_Handler::SetAnalysis(Analysis_Handler *)
-    To set the analysis from outside.
-  */ 
-  /*!
-    \fn void Event_Handler::PerformAnalysis()
-    Disabled at the moment. 
-    \todo Get this back in or delte it completely.
   */ 
 }
 #endif

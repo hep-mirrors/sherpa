@@ -9,7 +9,7 @@ AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 SHERPAINCS    =	-I../PerturbativePhysics -I../SoftPhysics \
-		-I../SoftPhysics/Lund -I../LundTools -I../Tools 
+		-I../LundTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
 PDFDIR        =	-I$(SHERPASYS)/PDF-1.0
@@ -40,7 +40,10 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Jet_Evolution.C \
 					Hard_Decays.C \
 					Hadronization.C \
+					Analysis_Phase.C \
+					EvtReadin_Phase.C \
 					MC_Interface.C
+
 noinst_HEADERS        =	\
 			Event_Handler.H \
 			Event_Phase_Handler.H \
@@ -49,7 +52,10 @@ noinst_HEADERS        =	\
 			Jet_Evolution.H \
 			Hard_Decays.H \
 		 	Hadronization.H \
+			Analysis_Phase.H \
+			EvtReadin_Phase.H \
 			MC_Interface.H
+
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(SHERPAFLAGS)
 INCLUDES      = $(SHERPAINCS) $(APACICINCS) $(ADICICINCS) $(AMEGICINCS) \

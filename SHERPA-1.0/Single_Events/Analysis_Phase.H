@@ -3,10 +3,11 @@
 
 #include "Particle_List.H"
 #include "Blob_List.H"
-#include "Sample_Analysis.H"
 #include "Event_Phase_Handler.H"
 
 namespace SHERPA {
+  class Analysis_Handler;
+
   class Analysis_Phase : public Event_Phase_Handler {
     int                m_status;
     Analysis_Handler * p_analysis;
