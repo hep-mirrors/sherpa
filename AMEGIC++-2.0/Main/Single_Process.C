@@ -968,7 +968,10 @@ int Single_Process::NumberOfDiagrams() {
   return p_partner->NumberOfDiagrams();
 }
 
-Point * Single_Process::Diagram(int i) { return p_ampl->GetPointlist(i); } 
+Point * Single_Process::Diagram(int i) { 
+  if (p_partner==this) return p_ampl->GetPointlist(i); 
+  return p_partner->Diagram(i);
+} 
 
 
 
