@@ -75,6 +75,7 @@ namespace AORGTOOLS {
 
     class Me { // matrix element
       std::string       model_file;
+      std::string       model_data_file;
       Model_Type::code  the_model;
       String_Type::code m_string; 
       Switch::code      model_mass;
@@ -86,6 +87,7 @@ namespace AORGTOOLS {
       int               orderalphas;
     public:
       inline std::string ModelFile()         { SAVE_RETURN(model_file,"model_file");}
+      inline std::string ModelDataFile()     { SAVE_RETURN(model_data_file,"model_data_file");}
       inline Model_Type::code Model()        { SAVE_RETURN(the_model,"the_model");}
       inline Switch::code UsingModelMass()   { SAVE_RETURN(model_mass,"model_mass");}
       inline Switch::code UsingCoulombCorr() { SAVE_RETURN(coulomb_corr,"coulomb_corr");}
@@ -96,7 +98,7 @@ namespace AORGTOOLS {
       inline int    KFactorScheme()         { SAVE_RETURN(kfactorscheme,"kfactorscheme"); }
       inline int    ScaleScheme()           { SAVE_RETURN(scalescheme,"scalescheme"); }
       inline int    OrderAlpha12()          { SAVE_RETURN(orderalpha12,"orderalpha12"); }
-      inline int    OrderAlphaS()           { SAVE_RETURN(orderalphas,"orderalpha12"); }
+      inline int    OrderAlphaS()           { SAVE_RETURN(orderalphas,"orderalphas"); }
       friend class Run_Parameter;
     } me;
 

@@ -32,6 +32,7 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
   gen.massive            = dr.GetValue<Switch::code>("MASSES");
 
   me.model_file          = dr.GetValue<std::string>("MODELFILE");
+  me.model_data_file     = dr.GetValue<std::string>("MODEL_DATA_FILE");
   me.the_model           = dr.GetValue<Model_Type::code>("MODEL");
   me.model_mass          = dr.GetValue<Switch::code>("MODELMASS");
   me.m_string            = dr.GetValue<String_Type::code>("CALCULATION");
@@ -45,9 +46,7 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
   me.coulomb_corr        = dr.GetValue<Switch::code>("COULOMB");
   me.kfactorscheme       = dr.GetValue<int>("KFACTORSCHEME");
   me.scalescheme         = dr.GetValue<int>("SCALESCHEME");
-  me.orderalpha12        = dr.GetValue<int>("OrderAlpha12");
-  me.orderalphas         = dr.GetValue<int>("OrderAlphaS");
-
+  
   // read in some consts
   dr.ReadIn(path+std::string("/")+me.model_file);
 
