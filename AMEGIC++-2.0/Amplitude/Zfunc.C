@@ -77,7 +77,7 @@ Zfunc& Zfunc::operator=(const Zfunc& z) {
 void Zfunc::ReplaceProp(vector<Pair>* pairlist)
 {
   for(int i=0;i<m_narg;i++){
-    for (int k=0;k<pairlist->size();k++) {
+    for (size_t k=0;k<pairlist->size();k++) {
       if ((*pairlist)[k].pold==p_arguments[i]) {
 	p_arguments[i] = (*pairlist)[k].pnew;
 	break;
@@ -85,7 +85,7 @@ void Zfunc::ReplaceProp(vector<Pair>* pairlist)
     }
   }
   for (int i=0;i<m_nprop;i++) {
-    for (int k=0;k<pairlist->size();k++) {
+    for (size_t k=0;k<pairlist->size();k++) {
       if ((*pairlist)[k].pold==p_propagators[i].numb) {
 	p_propagators[i].numb = (*pairlist)[k].pnew;
 	break;
@@ -284,20 +284,20 @@ Zfunc_Group::Zfunc_Group(Zfunc& z1,Zfunc& z2,int si,Pfunc_List* pl)
 
 void Zfunc_Group::ReplaceProp(vector<Pair>* pairlist)
 {
-  for (int k=0;k<pairlist->size();k++) {
+  for (size_t k=0;k<pairlist->size();k++) {
     if ((*pairlist)[k].pold==m_sumindex) {
       m_sumindex = (*pairlist)[k].pnew;
       break;
     }
   }
   Zfunc::ReplaceProp(pairlist);
-  for (int i=0;i<m_zlist.size();i++) m_zlist[i]->ReplaceProp(pairlist);
+  for (size_t i=0;i<m_zlist.size();i++) m_zlist[i]->ReplaceProp(pairlist);
 }
 
 void Zfunc_Group::ClearCalcList()
 {
   Zfunc::ClearCalcList();
-  for (int i=0;i<m_zlist.size();i++) m_zlist[i]->ClearCalcList();
+  for (size_t i=0;i<m_zlist.size();i++) m_zlist[i]->ClearCalcList();
 }
 
 void Zfunc_Group::KillZList()
@@ -320,7 +320,7 @@ void Zfunc_Group::Print()
   msg.Out()<<endl;
 
   if (m_op=='+'){  
-    for (int i=0;i<m_zlist.size();i++) {
+    for (size_t i=0;i<m_zlist.size();i++) {
       if (m_zsigns[i]==-1) {
 	msg.Out()<<"   - "; //<<m_zlist[i]->p_propagators[0].numb<<" * ";
 	m_zlist[i]->Print();
@@ -337,7 +337,7 @@ void Zfunc_Group::Print()
     }
   }
   if (m_op=='*'){
-    for (int i=0;i<m_zlist.size();i++) {
+    for (size_t i=0;i<m_zlist.size();i++) {
       if (i>0) msg.Out()<<"  *";else msg.Out()<<" ->";
       m_zlist[i]->Print();
     }
