@@ -196,10 +196,21 @@ bool Timelike_Kinematics::ShuffleMoms(Knot * mo)
     }
   }
 
+  msg.Debugging()<<"Timelike_Kinematics::ShuffleMoms(["<<mo->kn_no<<"])"<<std::endl;
+
   d1->part->SetMomentum( (1.-r1)*p1 + r2*p2 );
   d2->part->SetMomentum( (1.-r2)*p2 + r1*p1 );
   d1->E2   = mo->z*mo->z*mo->E2;
   d2->E2   = (1.-mo->z)*(1.-mo->z)*mo->E2;
+  msg.Debugging()<<" d1 : "<<sqr(d1->part->Momentum()[0])<<" == "<<d1->E2<<std::endl;
+  msg.Debugging()<<" d2 : "<<sqr(d2->part->Momentum()[0])<<" == "<<d2->E2<<std::endl;
+
+  // boost daughters if existent
+  BoostDaughters(mo);
+
+  // update daughter E2,z 
+  Tree::UpdateDaughters(mo);
+
   return 1;
 }
 
@@ -350,6 +361,7 @@ bool Timelike_Kinematics::JetVeto(double mo_t, double mo_e2, double mo_z,
  
 bool Timelike_Kinematics::DoKinematics(Knot * mo) 
 {
+  msg.Debugging()<<"Timelike_Kinematics::DoKinematics([<<"<<mo->kn_no<<"])"<<std::endl;
   if (!(mo)) return 1;
   if (!(mo->left)) {
     if (mo->part->Info()==' ') {
@@ -422,6 +434,11 @@ bool Timelike_Kinematics::DoKinematics(Knot * mo)
 
 
     if (error) {
+      Vec3D pm(mo->part->Momentum());
+      msg.Out()<<" p = "<<nm*pm<<" = "<<pm.Abs()<<" = "<<p<<endl;
+      msg.Out()<<" p_l = "<<p1*cth1<<" + "<<p2*cth2<<" = "<<(p1*cth1 + p2*cth2)<<endl;
+      msg.Out()<<" p_t = "<<p1*sth1<<" - "<<p2*sth2<<" = "<<(p1*sth1-p2*sth2)<<endl;
+
       msg.Error()<<"Error in Timelike_Kinematics."<<endl
 		 <<"Timelike_Kinematics::DoKinematics : After moms set"<<endl
 		 <<"    Mother & Daughters :"<<endl
@@ -497,6 +514,8 @@ bool Timelike_Kinematics::CheckVector(Vec4D vec) {
 void Timelike_Kinematics::BoostDaughters(Vec4D pold, Vec4D pnew, 
 					 const Vec4D & pmom, Knot * mo) {
 
+  msg.Debugging()<<"Timelike_Kinematics::BoostDaughters(...,["<<mo->kn_no<<"]"<<std::endl;
+
   int bigboost=0;
   Vec3D prot = cross(Vec3D(pnew),Vec3D(pold));
 
@@ -530,14 +549,14 @@ void Timelike_Kinematics::BoostDaughters(Knot * mo) {
   if (d1->left) {
     Vec4D p1old = d1->left->part->Momentum() + d1->right->part->Momentum();
     Vec4D p1new = d1->part->Momentum();
-    if (p1new != p1old) {
+    if (p1new!=p1old && p1old!=Vec4D(0.,0.,0.,0.)) {
       BoostDaughters(p1old,p1new,p,d1);
     }
   }
   if (d2->left) {
     Vec4D p2old = d2->left->part->Momentum() + d2->right->part->Momentum();
     Vec4D p2new = d2->part->Momentum();
-    if (p2new != p2old) {
+    if (p2new!=p2old && p2old!=Vec4D(0.,0.,0.,0.)) {
       BoostDaughters(p2old,p2new,p,d2);
     }
   }
