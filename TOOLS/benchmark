@@ -66,61 +66,74 @@ for I in $* ; do
   fi
 done
 
-LOGFILE=$LOGFILE"_"$DATE".bmk"
+LOGFILE=$LOGFILE"_"$DATE
+OUTPUTFILE=$LOGFILE"_full_output"
 echo "" > $LOGFILE
+echo "" > $OUTPUTFILE
 
 echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`" >> $LOGFILE
+echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`" >> $OUTPUTFILE
 LIST=""
 if [ -f $FILE ] ; then
   GetList < $FILE
 else
   echo "benchmark: reading from input file '$FILE' failed on `date`\n" >> $LOGFILE
+  echo "benchmark: reading from input file '$FILE' failed on `date`\n" >> $OUTPUTFILE
   IO_ERROR=TRUE
   SendMail 1
 fi
 
 echo -e "updating current sherpa version from cvs {\n" >> $LOGFILE
-if ! cvs update >> $LOGFILE 2>&1 ; then
+echo -e "updating current sherpa version from cvs {\n" >> $OUTPUTFILE
+if ! cvs update >> $OUTPUTFILE 2>&1 ; then
   echo -e "\n} update failed\n\nbenchmark: cvs update failed" >> $LOGFILE
+  echo -e "\n} update failed\n\nbenchmark: cvs update failed" >> $OUTPUTFILE
   CVS_ERROR=TRUE
   SendMail 2
 else 
   echo -e "\n} finished update\n" >> $LOGFILE
+  echo -e "\n} finished update\n" >> $OUTPUTFILE
 fi
 
 echo -e "compiling current sherpa version via '$COMPILECOMMAND' {\n" >> $LOGFILE
-if ! $COMPILECOMMAND >> $LOGFILE 2>&1 ; then
+echo -e "compiling current sherpa version via '$COMPILECOMMAND' {\n" >> $OUTPUTFILE
+if ! $COMPILECOMMAND >> $OUTPUTFILE 2>&1 ; then
   echo -e "\n} compilation failed\n\nbenchmark: compilation failed" >> $LOGFILE
+  echo -e "\n} compilation failed\n\nbenchmark: compilation failed" >> $OUTPUTFILE
   COMPILE_ERROR=TRUE
   SendMail 3
 else 
   echo -e "\n} finished compilation\n" >> $LOGFILE
+  echo -e "\n} finished compilation\n" >> $OUTPUTFILE
 fi
 
 for I in $LIST ; do
   if [ ! -d $I ] ; then
     echo "benchmark: setup directory '$I' is missing" >> $LOGFILE
+    echo "benchmark: setup directory '$I' is missing" >> $OUTPUTFILE
     SETUP_ERROR=TRUE
   else
     echo -e "benchmark: benchmarking in '$I' {\n" >> $LOGFILE
+    echo -e "benchmark: benchmarking in '$I' {\n" >> $OUTPUTFILE
     cd $I
     BENCHMARK=""
     if [ -f $INPUTFILE ] ; then
       GetFiles < $INPUTFILE
     else
       echo -e "benchmark: no benchmarking points specified in '$PWD'" >> $LOGFILE
+      echo -e "benchmark: no benchmarking points specified in '$PWD'" >> $OUTPUTFILE
       SETUP_ERROR=TRUE
     fi
     CleanUp "Results Analysis"
     RUNPATH=$PWD
     cd ../$SHERPAPATH
-    makeclean >> $RUNPATH"/../"$LOGFILE 2>&1
+    makeclean >> $RUNPATH"/../"$OUTPUTFILE 2>&1
     Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
-	   RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$LOGFILE 2>&1
+	   RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$OUTPUTFILE 2>&1
     while (( $? == $MEHANDLEREXIT )) ; do
-      makelibs >> $RUNPATH"/../"$LOGFILE 2>&1
+      makelibs >> $RUNPATH"/../"$OUTPUTFILE 2>&1
       Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
-             RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$LOGFILE 2>&1
+             RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$OUTPUTFILE 2>&1
     done 
     cd $RUNPATH
     COUNTER=0
@@ -128,7 +141,7 @@ for I in $LIST ; do
       (( ++COUNTER ))
       if (( $COUNTER%2 == 0 )) ; then 
         NEW=$I 
-	diff -cb $NEW $OLD >> "../"$LOGFILE 2>&1
+	diff -cb $NEW $OLD >> "../"$OUTPUTFILE 2>&1
 	if (( $? != 0 )) ; then
 	  BENCHMARK_ERROR=TRUE
 	fi
@@ -140,10 +153,12 @@ for I in $LIST ; do
     done
     cd ..
     echo -e "\n} benchmarking finished \n" >> $LOGFILE
+    echo -e "\n} benchmarking finished \n" >> $OUTPUTFILE
   fi
 done
 
+echo -e "\nbenchmark: for details consider '$PWD/$OUTPUTFILE'\n" >> $LOGFILE
 if [ ! "BENCHMARK_ERROR" = "TRUE" ] ; then
   SetStatus "Benchmarking succeeded "
 fi
-SendMail 0
+# SendMail 0
