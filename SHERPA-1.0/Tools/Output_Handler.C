@@ -53,7 +53,7 @@ void Output_Handler::OutputToFormat(Blob_List * _blobs)
     return;
   case 2:
     p_hepevt->Sherpa2HepEvt(_blobs);
-    outhepevt_();
+    if (msg.Level()>0)        outhepevt_();
     return;
   default:
     msg.Error()<<"Potential Error in Output_Handler::OutputToFormat("<<m_type<<")"<<std::endl
