@@ -1,7 +1,6 @@
 #ifndef Process_Group_H
 #define Process_Group_H
 
-#include "Primitive_Observable_Base.H"
 #include "Process_Base.H"
 #include "Polarisation.H"
 #include <string>

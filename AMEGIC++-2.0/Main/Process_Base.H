@@ -3,9 +3,6 @@
 
 #include "Polarisation.H"
 
-#include "Primitive_Analysis.H"
-#include "Primitive_Observable_Base.H"
-
 #include "Phase_Space_Handler.H"
 #include "Multi_Channel.H"
 #include "Integrable_Base.H"

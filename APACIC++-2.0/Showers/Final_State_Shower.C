@@ -7,8 +7,6 @@
 #include "Timelike_Kinematics.H"
 #include "Run_Parameter.H"
 
-#include "Primitive_Analysis.H"
-
 #include "Random.H"
 
 using namespace APACIC;

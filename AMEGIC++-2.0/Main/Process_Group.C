@@ -7,7 +7,6 @@
 
 #include "Running_AlphaS.H"
 #include "Combined_Selector.H"
-#include "Primitive_Observable_Base.H"
 #include "MathTools.H"
 
 

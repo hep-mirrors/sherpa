@@ -9,6 +9,8 @@
 #include "Running_AlphaS.H"
 #include "Combined_Selector.H"
 
+#include "Histogram.H"
+
 #include "Random.H"
 #include "prof.hh"
 
