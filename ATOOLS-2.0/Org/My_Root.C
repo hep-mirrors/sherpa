@@ -55,7 +55,10 @@ void My_Root::Draw()
   for (String_Object_Map::const_iterator oit=m_objects.begin();
        oit!=m_objects.end();++oit) {
     new TCanvas(oit->first.c_str(),oit->first.c_str());
-    oit->second->Draw();
+    if (m_drawmode&2) gPad->SetLogx();
+    if (m_drawmode&4) gPad->SetLogy();
+    if (m_drawmode&8) gPad->SetLogz();
+    oit->second->Draw(m_drawoption.c_str());
   }
   if (m_objects.size()>0) p_root->Run(kTRUE);
 }

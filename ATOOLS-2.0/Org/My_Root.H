@@ -36,6 +36,8 @@ namespace MYROOT {
 
     int m_drawmode;
 
+    std::string m_drawoption;
+
   public:
 
     // constructor
@@ -64,7 +66,12 @@ namespace MYROOT {
 
     inline void SetDrawMode(const bool drawmode) { m_drawmode=drawmode; }
 
+    inline void SetDrawOption(const std::string &option) 
+    { m_drawoption=option; }
+
     inline bool DrawMode() const { return m_drawmode; }
+
+    inline const std::string &DrawOption() const { return m_drawoption; }
 
   };// end of class My_Root
 
