@@ -3,6 +3,8 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 
+#define ANALYSE__ISR_Statistics
+#define ANALYSE__Shower_Statistics
 
 #include "Final_Selector.H"
 #include "Primitive_Observable.H"
