@@ -39,7 +39,7 @@ double Cone_Finder::Rmin(Vec4D * p)
     
   for (int j=m_nin;j<m_n;j++) {
     for (int k=j+1;k<m_n;k++) {
-      r2jk = sqr(DEta12(p[j],p[k])) + sqr(DPhi12(p[j],p[k]));
+      r2jk = sqr(DEta12(p[j],p[k],p[0])) + sqr(DPhi12(p[j],p[k]));
       if (r2jk<r2min && 
 	  m_fl[j].Mass()<3. && m_fl[k].Mass()<3. &&
 	  !(m_fl[j].IsLepton() && m_fl[j].IntCharge()==0) &&
@@ -53,6 +53,9 @@ double Cone_Finder::Rmin(Vec4D * p)
 
 bool Cone_Finder::Trigger(const Vec4D * p)
 {
+
+  //std::cout<<" New event !!!!!!!!!!!!!!!! "<<std::endl;
+
   // create copy
   Vec4D * moms = new Vec4D[m_nin+m_nout];
   for (int i=0;i<m_nin+m_nout;i++) moms[i]=p[i];
@@ -63,7 +66,15 @@ bool Cone_Finder::Trigger(const Vec4D * p)
   double rmin   = Rmin(moms); 
   
   if (rmin<m_rcone) trigger = 0;
-  
+  /*
+  if (trigger==0) {
+    //std::cout<<"Rmin is : "<<rmin<<endl;
+    //for (int i=0;i<m_nin+m_nout;i++) std::cout<<i<<" : "<<moms[i]<<std::endl;
+
+    //abort();
+  }
+  */
+
   delete [] moms;
     
   m_value[0] = rmin;
@@ -78,16 +89,38 @@ void Cone_Finder::BuildCuts(Cut_Data * cuts)
 void   Cone_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
 }
 
-double Cone_Finder::DEta12(const Vec4D & p1,const Vec4D & p2)
+double Cone_Finder::DEta12(const Vec4D & p1,const Vec4D & p2,const Vec4D & p0)
 {
-  return log(sqrt( (sqr(p2[1])+sqr(p2[2]))/(sqr(p1[1])+sqr(p1[2])) ) * dabs(p1[3]/p2[3]));
+  //old version equals Jetfinder one
+  // eta1,2 = -log(tan(theta_1,2)/2)   
+  //  => eta1 - eta2 
+  //  = -log(tan1/2)+log(tan2/2) = log(tan2/tan1) = log(pt2/pt1 * pl1/pl2)
+  //return log(sqrt( (sqr(p2[1])+sqr(p2[2]))/(sqr(p1[1])+sqr(p1[2])) ) * dabs(p1[3]/p2[3])); 
+
+  double theta1 = acos(Vec3D(p1)*Vec3D(p0)/(Vec3D(p1).Abs()*Vec3D(p0).Abs())); 
+  double eta1   = -log(tan(theta1/2.));
+  double theta2 = acos(Vec3D(p2)*Vec3D(p0)/(Vec3D(p2).Abs()*Vec3D(p0).Abs())); 
+  double eta2   = -log(tan(theta2/2.));
+  
+  //std::cout<<"theta1/theta2 "<<theta1+theta2<<std::endl;
+  //std::cout<<"eta1/eta2 : "<<eta1<<" "<<eta2<<" deta : "<<eta1-eta2<<endl;
+  
+  double deta = eta1 - eta2;
+
+  return deta;
+  
 }
 
 double Cone_Finder::DPhi12(const Vec4D & p1,const Vec4D & p2)
 {
+
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
   return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
+  
+  //JetFinder version
+  // cos(phi1-phi2) = cos(phi1) cos(phi2) + sin(phi1) sin(phi2)
+  //                = (p1_x p2_x + p1_y p2_y)/(p1_z * p2_z)
+  //return acos((p1[1]*p2[1]+p1[2]*p2[2])/(Vec3D(p1).Abs()*Vec3D(p2).Abs()));
 }
-
 

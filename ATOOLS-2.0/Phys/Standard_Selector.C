@@ -632,7 +632,7 @@ void Mass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
 	massmin[i][j] = massmin[j][i] = Max(_min,m_fl[i].Mass()+m_fl[j].Mass()); 
 	massmax[i][j] = massmax[j][i] = _max;
-	if (massmin[i][j]>m_smin) m_smin = Max(massmin[i][j],m_smin);
+	if (sqr(massmin[i][j])>m_smin) m_smin = Max(sqr(massmin[i][j]),m_smin);
       }
     }
   }
