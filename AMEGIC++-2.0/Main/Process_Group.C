@@ -75,6 +75,16 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
     p_selector = new No_Selector();
   }
+  SetSelector(p_selector);
+
+  if (m_scalescheme==65) {
+    double dr   = rpa.gen.DeltaR();
+    double ycut = rpa.gen.Ycut();
+    m_facscale = ycut*sqr(rpa.gen.Ecms());
+    ycut=Min(ycut,ycut*sqr(dr));
+    m_asscale  = ycut*sqr(rpa.gen.Ecms());
+    SetScales(m_facscale, m_asscale);
+  }
 }
 
 
@@ -239,7 +249,7 @@ void Process_Group::GroupProcesses() {
     for (size_t j=0;j<m_procs[i]->NOut();j++) {
       if (!(ATOOLS::IsEqual(massout[j],(m_procs[i]->Flavours()[j+m_procs[i]->NIn()]).Mass()))) {
 	msg.Error()<<"Error in Process_Group::GroupProcesses : "<<std::endl
-		   <<"   Incoming masses "<<massout[j]<<" vs. "
+		   <<"   Outgoing masses "<<massout[j]<<" vs. "
 		   <<(m_procs[i]->Flavours()[j+m_procs[i]->NIn()]).Mass()
 		   <<" for "<<p_flout[j]<<" "<<m_procs[i]->Flavours()[j+m_procs[i]->NIn()]<<endl
 		   <<"   Continue run and hope for the best."<<std::endl;
@@ -483,13 +493,12 @@ void Process_Group::SetScale(double _scale)
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetScale(_scale); 
 } 
 
-/*
 void Process_Group::SetScales(double q2_fac, double q2_ren)
 { 
   Process_Base::SetScales(q2_fac,q2_ren);
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetScales(q2_fac,q2_ren); 
 } 
-*/
+
 
 void Process_Group::SetISRThreshold(double _isrth)
 {
@@ -504,8 +513,8 @@ void Process_Group::SetTables(bool _tables)
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetTables(m_tables);
 } 
 
-void Process_Group::SetTotal(int tables)  { 
-  if (tables!=2) {
+void Process_Group::SetTotal(int flag, int depth)  { 
+  if (flag!=2) {
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
@@ -513,21 +522,23 @@ void Process_Group::SetTotal(int tables)  {
     if (p_selector) p_selector->Output();
     m_max = 0.;
     for (size_t i=0;i<m_procs.size();i++) {
-      m_procs[i]->SetTotal(tables);
+      m_procs[i]->SetTotal(flag, depth+1);
       m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
     }
   }
   else {
-    //   _tables==2  means  check xs with sum of subprocesses
+    //   flag==2  means  check xs with sum of subprocesses
     //               update maximum to sum of maximum
-    SetMax(0.);
+    SetMax(0., depth+1);
   }
-  if (m_nin==2) {
-    msg.Info()<<"Total xs for "<<om::bold<<m_name<<om::reset<<" : "
-	      <<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
-	      <<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset
-	      <<" max : "<<m_max<<", "
-	      <<om::bold<<" exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %."<<om::reset<<endl;    
+  if (m_nin==2 && flag==0) {
+    if ( (depth<=0 && msg.LevelIsInfo()) || msg.LevelIsTracking()) {
+      for (int i=0;i<depth;++i) msg.Out()<<"  ";
+      msg.Info()<<om::bold<<m_name<<om::reset<<" : "
+		<<om::blue<<om::bold<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"<<om::reset
+		<<" +/- "<<om::reset<<om::blue<<m_totalerr/m_totalxs*100.<<" %,"<<om::reset
+		<<om::bold<<" exp. eff: "<<om::red<<(100.*m_totalxs/m_max)<<" %."<<om::reset<<endl;    
+    }
   }
   if (m_nin==1) {
     msg.Info()<<"Total width for "<<m_name<<" : "
@@ -536,7 +547,7 @@ void Process_Group::SetTotal(int tables)  {
   }
 }
 
-void Process_Group::SetMax(double max) {
+void Process_Group::SetMax(const double max, int depth) {
   if (max>0.) {
     m_max=max;
     return;
@@ -545,17 +556,20 @@ void Process_Group::SetMax(double max) {
   double sum = 0.;
   m_max = 0.;
   for (size_t i=0;i<m_procs.size();i++) {
-    m_procs[i]->SetTotal(2);
+    m_procs[i]->SetTotal(2,depth);
     sum   += m_procs[i]->TotalXS();
     m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
   }
   if (m_totalxs!=0.) {
     if (!ATOOLS::IsEqual(sum,m_totalxs)) {
-      msg.Out().precision(12);
+      int io = msg.Out().precision(12);
+      /*
       msg.Out()<<"WARNING in Process_Group::SetMax :"<<std::endl
 	       <<"   In group "<<Name()<<": xs and sum of daughters does not agree ! "<<endl
 	       <<" sum="<<sum<<"  total:"<<m_totalxs
 	       <<"  ("<<((sum-m_totalxs)/m_totalxs)<<")"<<endl;
+      */
+      msg.Out().precision(io);
     }
     m_totalxs=sum;
   }
@@ -713,9 +727,9 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	while (from) {
 	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n;
 	  if (_name==m_name) m_totalxs += _totalxs;
-	  msg.Tracking()<<"Found result : xs for "<<_name<<" : "
-			<<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-			<<" +/- "<<_totalerr/_totalxs*100.<<"%, max : "<<_max<<endl;
+// 	  msg.Tracking()<<"Found result : xs for "<<_name<<" : "
+// 			<<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+// 			<<" +/- "<<_totalerr/_totalxs*100.<<"%, max : "<<_max<<endl;
 	  Process_Base * _proc = NULL;
 	  if (Find(_name,_proc)) {
 	    _proc->SetTotalXS(_totalxs);
@@ -888,6 +902,7 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
 
 bool Process_Group::PrepareXSecTables()
 {
+  msg.Info()<<"Process_Group::PrepareXSecTables()"<<std::endl;
   if (m_atoms) {
     bool okay = 1;
     for (size_t i=0;i<m_procs.size();i++) {

@@ -43,10 +43,11 @@ namespace AMEGIC {
     Process_Base * operator[] (int idx)            { return m_procs[idx]; } 
     void           SetResDir(std::string);
     void           SetScale(double);
+    void           SetScales(double q2_fac, double q2_ren);
     void           SetISRThreshold(double);
     void           SetTables(bool);
-    void           SetTotal(int);
-    void           SetMax(double);
+    void           SetTotal(int flag, int depth=0);
+    void           SetMax(const double max, int depth=0);
     void           SetMaxJetNumber(int max);
     void           SetAtoms(bool);
     void           SetPartner(Single_Process * _p) { }
