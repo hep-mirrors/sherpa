@@ -35,15 +35,22 @@ void Data_Reader::KillComments(std::string& buffer)
 #endif
   size_t pos;
   for (unsigned int i=0;i<Comment().size();++i) {
-    if ((pos=buffer.find(Comment()[i]))!=std::string::npos) {
-      buffer=buffer.substr(0,pos);
+    size_t next=0;
+    while ((pos=buffer.find(Comment()[i],next))!=std::string::npos) {
+      if (pos>0 && buffer[pos-1]==Escape()) next=pos+1;
+      else buffer=buffer.substr(0,pos);
     }
   }
   KillBlanks(buffer);
   for (unsigned int i=0; i<Ignore().size(); ++i) {
-    while ((pos=buffer.find(Ignore()[i]))!=std::string::npos) {
-      buffer=buffer.substr(0,pos)+std::string(" ")+buffer.substr(pos+Ignore()[i].length());
-      KillBlanks(buffer);
+    size_t next=0;
+    while ((pos=buffer.find(Ignore()[i],next))!=std::string::npos) {
+      if (pos>0 && buffer[pos-1]==Escape()) next=pos+1;
+      else {
+	buffer=buffer.substr(0,pos)+" "+
+	  buffer.substr(pos+Ignore()[i].length());
+	KillBlanks(buffer);
+      }
     }
   }
 #ifdef DEBUG__Data_Reader
@@ -57,23 +64,27 @@ std::string Data_Reader::KillBlanks(std::string& buffer)
   std::cout<<"Data_Reader::KillBlanks("<<buffer<<")"<<std::endl;
 #endif
   if (buffer==nullstring) return buffer;
-  bool hit;
-  do { 
+  bool hit=true;
+  while (hit && buffer.length()>0) { 
     hit=false;
-    for (size_t i=0;i<Blank().size();++i) hit=hit||(int(buffer[0])==Blank()[i]);
-    if (hit) {
-      if (buffer.length()>0) buffer=buffer.substr(1); 
-      else break;
-    }
-  } while (hit);
-  do { 
+    for (size_t i=0;i<Blank().size();++i) 
+      if (int(buffer[0])==Blank()[i]) {
+	buffer.erase(0,1); 
+	hit=true;
+	break;
+      }
+  }
+  hit=true;
+  while (hit && buffer.length()>0) { 
+    if (buffer.length()>1 && buffer[buffer.length()-1]==Escape()) break;
     hit=false;
-    for (size_t i=0;i<Blank().size();++i) hit=hit||(int(buffer[buffer.length()-1])==Blank()[i]);
-    if (hit) {
-      if (buffer.length()>0) buffer=buffer.substr(0,buffer.length()-1);
-      else break;
-    }
-  } while (hit);
+    for (size_t i=0;i<Blank().size();++i) 
+      if (int(buffer[buffer.length()-1])==Blank()[i]) {
+	buffer.erase(buffer.length()-1,1);
+	hit=true;
+	break;
+      }
+  }
 #ifdef DEBUG__Data_Reader
   std::cout<<"   returning '"<<buffer<<"'"<<std::endl;
 #endif
@@ -85,18 +96,40 @@ std::string Data_Reader::HighlightSeparator(std::string& buffer)
 #ifdef DEBUG__Data_Reader
   std::cout<<"Data_Reader::HighlightSeparator("<<buffer<<")"<<std::endl;
 #endif
-  size_t pos;
   if (buffer==nullstring) return buffer;
+  size_t pos=std::string::npos, next=0;
   for (unsigned int j=0; j<Separator().size(); ++j) {
-    if ((pos=buffer.find(Separator()[j]))!=std::string::npos) {
-      buffer.insert(pos+1," ",1);
-      buffer.insert(pos," ",1);
+    while (pos!=next &&
+	   (next=pos=buffer.find(Separator()[j],next))!=std::string::npos) {
+      if (pos>0 && buffer[pos-1]==Escape()) next=pos+1;
+      else {
+	buffer.insert(pos+1," ",1);
+	buffer.insert(pos," ",1);
+      }
     }
   }
 #ifdef DEBUG__Data_Reader
   std::cout<<"   returning '"<<buffer<<"'"<<std::endl;
 #endif
   return buffer;
+}
+
+std::string Data_Reader::StripEscapes(const std::string &buffer) const
+{
+#ifdef DEBUG__Data_Reader
+  std::cout<<"Data_Reader::StripEscapes("<<buffer<<")"<<std::endl;
+#endif
+  if (buffer.length()==0) return buffer;
+  std::string input=buffer;
+  size_t pos, next=0;
+  while ((pos=input.find(Escape(),next))!=std::string::npos) {
+    input.erase(pos,1);
+    if (input.length()>pos && input[pos]==Escape()) next=pos+1;
+  }
+#ifdef DEBUG__Data_Reader
+  std::cout<<"   returning '"<<input<<"'"<<std::endl;
+#endif
+  return input;
 }
 
 std::string Data_Reader::ReplaceTags(std::string tag)
@@ -188,7 +221,7 @@ Read_Type Data_Reader::M_ReadFromFile(std::string parameter,std::string filename
     buffer=FileContent()[i];
     if((temp=M_ReadFromString<Read_Type>(parameter,buffer))!=Default<Read_Type>()) value=temp;
   }
-  //  CloseInFile();
+  CloseInFile();
   if (value==Default<Read_Type>()) {
     msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   }
@@ -286,7 +319,7 @@ Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,Vector
       break;
     }
   }
-  //  CloseInFile();
+  CloseInFile();
   if (values.size() != 0) return values;
   msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   return values;
@@ -374,7 +407,7 @@ Data_Reader::M_MatrixFromFile(std::string parameter,std::string filename,MatrixT
       transposedvalues.push_back(temp[j]);
     }
   }
-  //  CloseInFile();
+  CloseInFile();
   if (transposedvalues.size()!=0) {
     if (tempmtype==MNormal) {
       std::vector< std::vector<Read_Type> > normalvalues;     

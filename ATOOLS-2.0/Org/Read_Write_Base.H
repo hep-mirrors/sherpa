@@ -33,6 +33,8 @@ namespace ATOOLS {
 
     std::string              m_string;
     std::vector<std::string> m_filebegin, m_fileend;
+    
+    char m_escape;
 
     VectorTypeID m_vectortype;
     MatrixTypeID m_matrixtype;
@@ -137,6 +139,8 @@ namespace ATOOLS {
 
     inline void SetExactMatch(const bool exact);
 
+    inline void SetEscape(const char escape);
+
     // getters
     inline const std::vector<std::string> &Comment() const;
     inline const std::vector<std::string> &Ignore() const;
@@ -161,6 +165,8 @@ namespace ATOOLS {
     inline bool IgnoreBlanks() const;
 
     inline bool ExactMatch() const;
+
+    inline char Escape() const;
 
     // inline functions
     inline bool RereadInFile(const unsigned int i=0);

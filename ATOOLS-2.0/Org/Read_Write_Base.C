@@ -58,6 +58,7 @@ void Read_Write_Base::Init()
   m_ignoreblanks=false;
   m_exactmatch=true;
   m_occurrence=std::string::npos;
+  m_escape='\\';
 }
 
 size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &length) const

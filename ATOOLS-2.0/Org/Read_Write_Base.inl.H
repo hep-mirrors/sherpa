@@ -388,6 +388,16 @@ namespace ATOOLS {
     return m_exactmatch; 
   }
 
+  inline void Read_Write_Base::SetEscape(const char escape)
+  { 
+    m_escape=escape; 
+  }
+
+  inline char Read_Write_Base::Escape() const 
+  { 
+    return m_escape; 
+  }
+
 } // end of namespace ATOOLS
 
 #endif

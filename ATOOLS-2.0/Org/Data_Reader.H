@@ -67,6 +67,8 @@ namespace ATOOLS {
     bool MatrixFromString(std::vector<std::vector<Read_Type> >& values,std::string parameter=nullstring,
 			  std::string inputstring=noinputtag,MatrixTypeID tempmtype=MUnknown);
 
+    std::string StripEscapes(const std::string &buffer) const;
+
     // inline functions
     inline const std::string &Tag(const std::string &tag) const;
 
