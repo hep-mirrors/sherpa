@@ -15,12 +15,18 @@ using namespace AMEGIC;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
-
+int runmode;
 
 int main(int argc,char* argv[]) 
 {    
   std::string path("Testrun");
-  if (argc==2) path = std::string(argv[1]);
+  if (argc==2) {
+    if (std::string(argv[1])==std::string("-XS")) runmode = 1;
+    else {
+      runmode = 0;
+      path = std::string(argv[1]);
+    }
+  }
 
   APHYTOOLS::particle_init(path);
   AORGTOOLS::rpa.Init(path);
@@ -31,12 +37,12 @@ int main(int argc,char* argv[])
   
   Amegic Test(path,0);
 
-  if (Test.InitializeProcesses()) { 
+  if (Test.InitializeProcesses(runmode)) { 
     Test.CalculateTotalXSec();
     Test.SingleEvents();
   }
 
-  msg.Tracking()<<"AMEGIC is deleting Running_AlphaS ..."<<endl;
+  msg.Tracking()<<"AMEGIC is deleting Running_AlphaS ..."<<std::endl;
   if (as)   delete as; 
   if (aqed) delete aqed;
   msg.Tracking()<<"Deleted couplings in the wrapper "<<std::endl;

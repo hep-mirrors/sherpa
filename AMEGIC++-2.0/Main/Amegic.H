@@ -2,7 +2,7 @@
 #define Amegic_h
 
 #include "All_Processes.H"
-
+#include "Process_Base.H"
 #include "Selector.H"
 #include "Flavour.H"
 #include "MyString.H"
@@ -30,9 +30,11 @@ namespace AMEGIC {
     ISR::ISR_Handler         * isr;
     BEAM::Beam_Handler       * beam;
 
-    All_Processes            * procs;
+    Process_Base             * procs;
 
-    Topology           * top;
+    Topology                 * top;
+
+    int mode;
     
       //int ExtractFlavours(APHYTOOLS::Flavour*&,std::string);
     int ExtractFlavours(APHYTOOLS::Flavour*&,Pol_Info*&,std::string);
@@ -46,7 +48,8 @@ namespace AMEGIC {
     bool           PrepareXSecTables();
     bool           LookUpXSec(double,bool,std::string);
     void           SingleEvents();
-    bool           InitializeProcesses();
+    bool           InitializeProcesses(int);
+    bool           InitializeXS(int);
     Process_Base * Processes();
 
     void           SetResDir(std::string _resdir) { resdir = _resdir; }

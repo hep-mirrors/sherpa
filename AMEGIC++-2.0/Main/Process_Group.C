@@ -7,7 +7,7 @@
 
 #include "Running_AlphaS.H"
 #include "Combined_Selector.H"
-
+#include "Primitive_Observable_Base.H"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -570,8 +570,8 @@ bool Process_Group::SetUpIntegrator()
 
 
 
-void Process_Group::InitAnalysis(vector<Primitive_Observable_Base *> _obs) {
-  analysis = new Primitive_Analysis(name);
+void Process_Group::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *> _obs) {
+  analysis = new APHYTOOLS::Primitive_Analysis(this->Name());//check thsi
   for (int i=0;i<_obs.size();i++) {
     analysis->AddObservable(_obs[i]->GetCopy());
   }
@@ -897,4 +897,9 @@ void Process_Group::ControlOutput(vec4d * p)
     msg.Out()<<"gg   -> qqb   : "
 	     <<g4 * (1./6.*(t*t+u*u)/(t*u)-3./8.*(t*t+u*u)/(s*s))<<endl;
   msg.Out()<<"-----------------------------------------------------------------------"<<endl;
+}
+
+double Process_Group::DSigma(double s, double t, double u) {
+  // this is a dummy method for the use with XS'
+  AORGTOOLS::msg.Error()<<"Error : Process_Base::Dsigma(s,t,u) called in Single_Process"<<std::endl;
 }

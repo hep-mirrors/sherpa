@@ -111,6 +111,7 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     void           PrintDifferential();
+    double         DSigma(double, double, double);
    };
 }
 

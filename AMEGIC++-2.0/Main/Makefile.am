@@ -10,6 +10,7 @@ INCLUDES = -I../Amplitude \
 	   -I../Model \
 	   -I../String \
 	   -I../../EXTRA_XS-1.0/Main \
+	   -I../../EXTRA_XS-1.0/Two2Two \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../PHASIC++-1.0/ISR \
 	   -I../../PHASIC++-1.0/Beam \

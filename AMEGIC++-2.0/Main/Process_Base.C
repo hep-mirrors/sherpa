@@ -120,8 +120,6 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   }
 }
 
-
-
 void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
 {
   Flavour flhelp;
@@ -154,8 +152,6 @@ void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
     if (!hit) break;
   }                                                                          
 }
-
-
 
 bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
 					 int _nout,Flavour * _out) {
@@ -207,9 +203,6 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   return 1;
 }
 
-
-
-
 /*------------------------------------------------------------------------------
   
   Process initialization
@@ -232,21 +225,21 @@ void Process_Base::UpdateCuts(double sprime,double y)
   
   ------------------------------------------------------------------------------*/
 
-void                 Process_Base::SetName(string _name)               { name    = _name;   }
-void                 Process_Base::SetResDir(string _resdir)           { resdir  = _resdir; }
-void                 Process_Base::SetAtoms(bool _atoms)               { atoms   = _atoms;  }
-void                 Process_Base::SetTables(bool _tables)             { tables  = _tables; }
+void Process_Base::SetName(string _name)               { name    = _name;   }
+void Process_Base::SetResDir(string _resdir)           { resdir  = _resdir; }
+void Process_Base::SetAtoms(bool _atoms)               { atoms   = _atoms;  }
+void Process_Base::SetTables(bool _tables)             { tables  = _tables; }
 
-void                 Process_Base::SetBeam(Beam_Handler * _beam)       { beam    = _beam;   }
-void                 Process_Base::SetISR(ISR_Handler * _isr)          { isr     = _isr;    }
-void                 Process_Base::SetCuts(Cut_Data * _cuts)           { cuts    = _cuts;   }
-void                 Process_Base::SetSelector(Selector_Base * _sel)   { sel     = _sel;    }
-void                 Process_Base::SetMomenta(AMATOOLS::vec4d * _moms) { moms    = _moms;   }
-void                 Process_Base::SetNStrong(int _nstrong)            { nstrong = _nstrong; }
-void                 Process_Base::SetNEWeak(int _neweak)              { neweak  = _neweak; }
+void Process_Base::SetBeam(Beam_Handler * _beam)       { beam    = _beam;   }
+void Process_Base::SetISR(ISR_Handler * _isr)          { isr     = _isr;    }
+void Process_Base::SetCuts(Cut_Data * _cuts)           { cuts    = _cuts;   }
+void Process_Base::SetSelector(Selector_Base * _sel)   { sel     = _sel;    }
+void Process_Base::SetMomenta(AMATOOLS::vec4d * _moms) { moms    = _moms;   }
+void Process_Base::SetNStrong(int _nstrong)            { nstrong = _nstrong; }
+void Process_Base::SetNEWeak(int _neweak)              { neweak  = _neweak; }
 
-void                 Process_Base::SetMax(double _max)                 { max     = _max;    } 
-void                 Process_Base::SetScale(double _scale)             { scale   = _scale;
+void Process_Base::SetMax(double _max)                 { max     = _max;    } 
+void Process_Base::SetScale(double _scale)             { scale   = _scale;
  cout<<" new   scale="<<scale<<endl; } 
 
 /*------------------------------------------------------------------------------
@@ -348,11 +341,12 @@ Point              * Process_Base::Diagram(int i)                 { return 0; }
 bool                 Process_Base::IsFreeOfFourVertex(Point * _p) { return 1; }
 
 
-Beam_Handler       * Process_Base::Beam()                { return beam; }
-ISR_Handler        * Process_Base::ISR()                 { return isr; }
-Cut_Data           * Process_Base::Cuts()                { return cuts; }
-Selector_Base      * Process_Base::Selector()            { return sel; }
-Primitive_Analysis * Process_Base::Analysis()            { return analysis; }
+Beam_Handler                  * Process_Base::Beam()     { return beam;     }
+ISR_Handler                   * Process_Base::ISR()      { return isr;      }
+Cut_Data                      * Process_Base::Cuts()     { return cuts;     }
+Selector_Base                 * Process_Base::Selector() { return sel;      }
+APHYTOOLS::Primitive_Analysis * Process_Base::Analysis() { return analysis; }
+double                          Process_Base::Scale()    { return scale;    }
 
 
 void Process_Base::BeamChannels(int i,Channel_Info & ci) { ps->BeamChannels(i,ci); }
@@ -368,4 +362,9 @@ double               Process_Base::Max()                 { return max; }
 double               Process_Base::Last()                { return last; }
 double               Process_Base::LastXS()              { return lastdxs; }
 double               Process_Base::LastLumi()            { return lastlumi; }
+
+int Process_Base::ISRNumber()  { return 0; }
+int Process_Base::BeamNumber() { return 0; }
+void Process_Base::ISRInfo(int a,int & b,double & c,double & d)  { return; }
+void Process_Base::BeamInfo(int a,int & b,double & c,double & d) { return; }
 

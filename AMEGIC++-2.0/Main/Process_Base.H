@@ -19,7 +19,6 @@
 #include "Message.H"
 #include <string>
 
-
 namespace AMEGIC {
   class Process_Base;
   class Single_Process;
@@ -32,7 +31,7 @@ namespace AMEGIC {
     int                            * b;
     int                              nvec,   nin,    nout;
     APHYTOOLS::Flavour             * fl,   * flin, * flout;
-    Pol_Info                       * pl,   * plin, * plout;
+    AMEGIC::Pol_Info               * pl,   * plin, * plout;
     AMATOOLS::vec4d                * moms;
     bool                             atoms, analyse, tables;
     long int                         n;
@@ -50,7 +49,7 @@ namespace AMEGIC {
     APHYTOOLS::Selector_Base       * sel;
     APHYTOOLS::Primitive_Analysis  * analysis;
 
-    Process_Base                   * selected;
+    AMEGIC::Process_Base           * selected;
     
     /*------------------------------------------------------------------------------
 
@@ -61,10 +60,10 @@ namespace AMEGIC {
     bool           CheckExternalFlavours(int,APHYTOOLS::Flavour *,
 					 int,APHYTOOLS::Flavour *);
   protected:
-    std::string *  GenerateNames(int,APHYTOOLS::Flavour *,Pol_Info *,
+    std::string *  GenerateNames(int,APHYTOOLS::Flavour *,AMEGIC::Pol_Info *,
 				 int,APHYTOOLS::Flavour *,Pol_Info *,
 				 std::string &,std::string &,std::string &);
-    void           Reshuffle(int,APHYTOOLS::Flavour *,Pol_Info *);
+    void           Reshuffle(int,APHYTOOLS::Flavour *,AMEGIC::Pol_Info *);
     /*------------------------------------------------------------------------------
 
       Process initialization
@@ -72,18 +71,19 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     Process_Base(): rfactor(1.) {};
-    virtual int    InitAmplitude(Topology *,AMATOOLS::vec4d *&,std::vector<double> &,
-				 std::vector<Single_Process *> &)                  =0;
-    virtual void   InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>)    =0;
-    virtual bool   SetUpIntegrator()                                               =0; 
+    virtual int    InitAmplitude(AMEGIC::Topology *,AMATOOLS::vec4d *&,std::vector<double> &,
+				 std::vector<AMEGIC::Single_Process *> &)            =0;
+    virtual void   InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>) =0;
+    virtual bool   SetUpIntegrator()                                                 =0; 
     virtual void   UpdateCuts(double,double);
-    virtual void   InitCuts()                                                      =0;
+    virtual void   InitCuts()                                                        =0;
     /*------------------------------------------------------------------------------
 
       Process management
 
       ------------------------------------------------------------------------------*/
   public:
+
     virtual void             SetName(std::string);
     virtual void             SetResDir(std::string);
     virtual void             SetAtoms(bool);
@@ -94,6 +94,7 @@ namespace AMEGIC {
     virtual void             SelectOne()                                           =0;
     virtual void             DeSelect()                                            =0;
     virtual void             Add(Process_Base *)                                   =0;
+    //    virtual void             Add(EXTRAXS::XS_Base *) { return; }
     virtual int              Size()                                                =0;
     virtual Process_Base  *  operator[] (int idx)                                  =0;
 
@@ -125,9 +126,11 @@ namespace AMEGIC {
     virtual double Differential(AMATOOLS::vec4d *)                                 =0;
     virtual double Differential2()                                                 =0;
     virtual double DSigma(AMATOOLS::vec4d *,bool)                                  =0;
+    //    virtual double DSigma(double, double, double)                                  =0;
     virtual double DSigma2()                                                       =0;
     virtual double operator()(AMATOOLS::vec4d *) {}
     virtual double Scale(AMATOOLS::vec4d *);
+    virtual double Scale();
     virtual bool   OneEvent()                                                      =0;
     virtual bool   SameEvent()                                                     =0;
     virtual double WeightedEvent()                                                 =0;
@@ -155,8 +158,8 @@ namespace AMEGIC {
     virtual bool                            Tables();
 
     virtual int                             NumberOfDiagrams();
-    virtual Point                         * Diagram(int i);
-    virtual bool                            IsFreeOfFourVertex(Point * _p);
+    virtual AMEGIC::Point                 * Diagram(int i);
+    virtual bool                            IsFreeOfFourVertex(AMEGIC::Point * _p);
 
     virtual BEAM::Beam_Handler            * Beam();
     virtual ISR::ISR_Handler              * ISR();
@@ -171,6 +174,10 @@ namespace AMEGIC {
     virtual int                             NumberOfFSRIntegrators();
     virtual PHASIC::Multi_Channel         * FSRIntegrator();
     virtual PHASIC::Single_Channel        * FSRIntegrator(int i);
+    virtual int                             ISRNumber();
+    virtual void                            ISRInfo(int,int &,double &,double &);
+    virtual int                             BeamNumber();
+    virtual void                            BeamInfo(int,int &,double &,double &);
 
     virtual double                          Total();
     virtual double                          Max();
@@ -185,7 +192,16 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
 
-    virtual void                            PrintDifferential()                    =0;
+    virtual void               PrintDifferential() = 0;
+
+    virtual EXTRAXS::XS_Base * GetXS() { return 0; }
+
+    virtual bool SetUpIntegrator(ISR::ISR_Handler *, BEAM::Beam_Handler *) { return 0; }
+
+    // for testing purposes only ...
+
+    virtual int  InitAllProcesses(Topology *,AMATOOLS::vec4d *&,
+		std::vector<double> &,std::vector<Single_Process *> &) { return 0; }
   };
 }
 

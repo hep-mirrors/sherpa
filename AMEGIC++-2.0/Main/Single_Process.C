@@ -41,6 +41,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
 			       Pol_Info * _pl) 
 {
   nin = _nin; nout = _nout; isr = _isr; beam = _beam; gen_str = _gen_str;
+  //  std::cout<<"In Single_Process : nin = "<<nin<<" nout = "<<nout<<std::endl;
   kfactorscheme = _kfactorscheme;
   scalescheme   = _scalescheme;
 
@@ -141,7 +142,6 @@ void Single_Process::Initialize(APHYTOOLS::Selector_Data * _seldata) {
   analyse  = 0;
 }
 
-
 void Single_Process::PolarizationNorm() {
   int                   is_massless_pol  = pol.Massless_Vectors(nin,flin);
   if (!is_massless_pol) is_massless_pol  = pol.Massless_Vectors(nout,flout);
@@ -163,9 +163,6 @@ void Single_Process::PolarizationNorm() {
   Norm *= pol.Massive_Norm();
 #endif
 }
-
-
-
 
 double Single_Process::SymmetryFactors()
 {
@@ -655,8 +652,8 @@ bool Single_Process::IsFile(string filename)
 
 
 
-void Single_Process::InitAnalysis(vector<Primitive_Observable_Base *> _obs) {
-  analysis = new Primitive_Analysis(name);
+void Single_Process::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *> _obs) {
+  analysis = new APHYTOOLS::Primitive_Analysis(this->Name());//check this
   for (int i=0;i<_obs.size();i++) {
     analysis->AddObservable(_obs[i]->GetCopy());
   }
@@ -919,6 +916,10 @@ void Single_Process::PrintDifferential()
 		      <<lastdxs<<" @ "<<lastlumi<<", "<<endl;
 }
 
+double Single_Process::DSigma(double s, double t, double u) {
+  // this is a dummy method for the use with XS'
+  AORGTOOLS::msg.Error()<<"Error : Process_Base::Dsigma(s,t,u) called in Single_Process"<<std::endl;
+}
 
 
 /*
