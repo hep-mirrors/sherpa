@@ -65,8 +65,8 @@ void LHAPDF_Fortran_Interface::Output() {
 }
 
 void LHAPDF_Fortran_Interface::Calculate(double x,double z,double kp2,double Q2) {
-  double _Q = sqrt(Q2);
-  lhapdfevolve_(x,_Q,m_f);
+  double Q = sqrt(Q2);
+  lhapdfevolve_(x,Q,m_f);
 }
 
 double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {

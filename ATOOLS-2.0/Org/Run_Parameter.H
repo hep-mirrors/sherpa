@@ -20,6 +20,11 @@
 #define SAVE_RETURN(x,name) return IsDefined(x,name);
 #endif
 
+#if defined __GNUC__ && defined __ppc__
+#define LIB_SUFFIX ".dylib"
+#else
+#define LIB_SUFFIX ".so"
+#endif
 
 namespace ATOOLS {  
 

@@ -135,30 +135,30 @@ C =======================================================================
 C ============== BEGINNING OF THE MAIN PROGRAM ==========================
 C =======================================================================
 C
-      PROGRAM HDECAY
-      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-      COMMON/HMASS_HDEC/AMSM,AMA,AML,AMH,AMCH,AMAR
-      COMMON/FLAGS_HDEC/INDIDEC
-
-      CALL READ_HDEC(TGBET,AMABEG,AMAEND,NMA)
-      CALL HEAD_HDEC(TGBET,AMABEG)
-
-      DO 9999 II=1,NMA
-       IF(NMA.NE.1)THEN
-        AMAR = AMABEG + (AMAEND-AMABEG)/(NMA-1D0)*(II-1D0)
-       ELSE
-        AMAR = AMABEG
-       ENDIF
-       AMSM = AMAR
-       AMA = AMAR
-       CALL HDEC(TGBET)
-       CALL WRITE_HDEC(TGBET)
-9999  CONTINUE
-
-      CALL CLOSE_HDEC
-
-      STOP
-      END
+cc       PROGRAM HDECAY
+cc       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+cc       COMMON/HMASS_HDEC/AMSM,AMA,AML,AMH,AMCH,AMAR
+cc       COMMON/FLAGS_HDEC/INDIDEC
+cc
+cc       CALL READ_HDEC(TGBET,AMABEG,AMAEND,NMA)
+cc       CALL HEAD_HDEC(TGBET,AMABEG)
+cc
+cc       DO 9999 II=1,NMA
+cc        IF(NMA.NE.1)THEN
+cc         AMAR = AMABEG + (AMAEND-AMABEG)/(NMA-1D0)*(II-1D0)
+cc        ELSE
+cc         AMAR = AMABEG
+cc        ENDIF
+cc        AMSM = AMAR
+cc        AMA = AMAR
+cc        CALL HDEC(TGBET)
+cc        CALL WRITE_HDEC(TGBET)
+cc 9999  CONTINUE
+cc
+cc       CALL CLOSE_HDEC
+cc
+cc       STOP
+cc       END
 
       SUBROUTINE READ_HDEC(TGBET,AMABEG,AMAEND,NMA)
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)

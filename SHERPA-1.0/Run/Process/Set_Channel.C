@@ -14,7 +14,7 @@ Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavou
 {
   int pos=pID.find(string("/"));
   string libname=ATOOLS::rpa.gen.Variable("SHERPA_LIB_PATH")+
-    string("/libProc_")+pID.substr(0,pos)+string(".so");
+    string("/libProc_")+pID.substr(0,pos)+string(LIB_SUFFIX);
   string gettername=string("Getter_")+pID.substr(pos+1); 
 
   char * error;

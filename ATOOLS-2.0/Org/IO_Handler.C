@@ -348,18 +348,24 @@ template IO_Handler & IO_Handler::operator>> (double &);
 template int IO_Handler::ValueInput(std::string,double &);
 // int
 template void IO_Handler::Output(const std::string,const int &);
+template void IO_Handler::ArrayOutput(const std::string,const int *,const int ,bool);
 template void IO_Handler::MatrixOutput(const std::string ,int ** const ,const int ,const int );
 template int IO_Handler::Input<int>(const std::string);
+template int  * IO_Handler::ArrayInput<int>(const std::string, int);
 template int ** IO_Handler::MatrixInput<int>(const std::string, int, int);
 // double
 template void IO_Handler::Output(const std::string,const double &);
+template void IO_Handler::ArrayOutput(const std::string,const double *,const int ,bool);
 template void IO_Handler::MatrixOutput(const std::string ,double ** const ,const int ,const int );
 template double IO_Handler::Input<double>(const std::string);
+template double  * IO_Handler::ArrayInput<double>(const std::string, int);
 template double ** IO_Handler::MatrixInput<double>(const std::string, int, int);
 // complex
 template void IO_Handler::Output(const std::string,const Complex &);
+template void IO_Handler::ArrayOutput(const std::string,const Complex *,const int ,bool);
 template void IO_Handler::MatrixOutput(const std::string ,Complex ** const ,const int ,const int );
 template Complex IO_Handler::Input<Complex>(const std::string);
+template Complex  * IO_Handler::ArrayInput<Complex>(const std::string, int);
 template Complex ** IO_Handler::MatrixInput<Complex>(const std::string, int, int);
 
 

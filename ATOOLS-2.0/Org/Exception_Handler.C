@@ -9,6 +9,9 @@
 #ifndef __USE_GNU
 #ifdef __GNUC__
 #define __USE_GNU
+#ifdef __ppc__
+#undef USING_Stack_Trace
+#endif
 #else 
 #undef USING_Stack_Trace
 #endif

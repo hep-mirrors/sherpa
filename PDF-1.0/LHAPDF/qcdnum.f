@@ -11945,7 +11945,7 @@ C
       CL1PX  = LOG(C1PX)
       CPFFX  = (1.+CX2) / C1MX
       CPFFMX = (1.+CX2) / C1PX
-      CS3X   = -DDILOG(-X)
+      CS3X   = -DILLOG(-X)
       CS2X   = .5*(CLX2-CPI2S3) + 2.*(CS3X-CLX*CL1PX)
 C
       AAA = - CPFFX*2.*CLX*CL1MX - (2.*X+3./C1MX)*CLX - .5*C1PX*CLX2
@@ -12010,7 +12010,7 @@ C
       CL1PX  = LOG(C1PX)
       CPFFX  = (1.+CX2) / C1MX
       CPFFMX = (1.+CX2) / C1PX
-      CS3X   = -DDILOG(-X)
+      CS3X   = -DILLOG(-X)
       CS2X   = .5*(CLX2-CPI2S3) + 2.*(CS3X-CLX*CL1PX)
 C
       AAA = - CPFFX*2.*CLX*CL1MX - (2.*X+3./C1MX)*CLX - .5*C1PX*CLX2
@@ -12074,7 +12074,7 @@ C
       CL1PX  = LOG(C1PX)
       CPFFX  = (1.+CX2) / C1MX
       CPFFMX = (1.+CX2) / C1PX
-      CS3X   = -DDILOG(-X)
+      CS3X   = -DILLOG(-X)
       CS2X   = .5*(CLX2-CPI2S3) + 2.*(CS3X-CLX*CL1PX)
 C
       AAA = - CPFFX*CLX*(1.5+2.*CL1MX) + 2.*CPFFMX*CS2X
@@ -12140,7 +12140,7 @@ C
       CL1MX2 = CL1MX**2
       CPGFX  = CX2 + C1MX**2
       CPGFMX = CX2 + C1PX**2
-      CS3X   = -DDILOG(-X)
+      CS3X   = -DILLOG(-X)
       CS2X   = .5*(CLX2-CPI2S3) + 2.*(CS3X-CLX*CL1PX)
 C
       AAA =   4. - 9.*X + (4.*X-1.)*CLX + (2.*X-1.)*CLX2
@@ -12189,8 +12189,8 @@ C
       CPFFMX = (1.+CX2) / C1PX
       CPFGX  = (1.+C1MX**2) / X
       CPFGMX = - (1.+C1PX**2) / X
-      CS1X   = -DDILOG(1.D0-X)
-      CS3X   = -DDILOG(-X)
+      CS1X   = -DILLOG(1.D0-X)
+      CS3X   = -DILLOG(-X)
       CS2X   = .5*(CLX2-CPI2S3) + 2.*(CS3X-CLX*CL1PX)
 C
       AAA =   CPFFX*(1.5*CLX-2.*CLX2+2.*CLX*CL1MX) + 2.*CPFFMX*CS2X
@@ -12246,7 +12246,7 @@ C
       CL1MX  = LOG(C1MX)
       CL1PX  = LOG(C1PX)
       CL1MX2 = CL1MX**2
-      CS3X   = -DDILOG(-X)
+      CS3X   = -DILLOG(-X)
       CS2X   = .5*(CLX2-CPI2S3) + 2.*(CS3X-CLX*CL1PX)
 C
       CPGG  = 1./C1MX + 1./X -2. + X - CX2
@@ -12315,7 +12315,7 @@ C
       CL1MX2 = CL1MX**2
       CPFGX  = (1.+C1MX**2) / X
       CPFGMX = - (1.+C1PX**2) / X
-      CS3X   = -DDILOG(-X)
+      CS3X   = -DILLOG(-X)
       CS2X   = .5*(CLX2-CPI2S3) + 2.*(CS3X-CLX*CL1PX)
 C
       AAA   = -5./2.- 7./2.*X+(2.+7./2.*X)*CLX+(-1.+0.5*X)*CLX2 
@@ -12361,8 +12361,8 @@ C
       CL1MX2 = CL1MX**2
       CPGFX  = CX2 + C1MX**2
       CPGFMX = CX2 + C1PX**2
-      CS1X   = -DDILOG(1.D0-X)
-      CS3X   = -DDILOG(-X)
+      CS1X   = -DILLOG(1.D0-X)
+      CS3X   = -DILLOG(-X)
       CS2X   = .5*(CLX2-CPI2S3) + 2.*(CS3X-CLX*CL1PX)
 C
       CPGG  = 1./C1MX + 1./X -2. + X - CX2

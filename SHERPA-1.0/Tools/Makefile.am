@@ -34,8 +34,8 @@ libSherpaTools_la_SOURCES     =	\
 				ISR_Statistics.C \
 				Shower_Statistics.C \
 			    	Analysis_Handler.C \
-                                Event_Reader.C \
-				fhepevt.f 
+                                Event_Reader.C
+#				fhepevt.f 
 noinst_HEADERS        =	\
 			Kinematics.H \
 			IO_Handler.H \

@@ -1,4 +1,7 @@
 * $Log$
+* Revision 1.3  2004/10/15 14:59:14  dreas
+* bugfix compile and link problems under MacOSX
+*
 * Revision 1.2  2004/05/11 09:18:43  stefan
 * DUPDF changes
 *
@@ -21,7 +24,7 @@
 * Mathlib gen
 *
 *
-      FUNCTION DDILOG(X)
+      FUNCTION DILLOG(X)
       implicit real*8 (a-h,o-z)
       DIMENSION C(0:19)
       PARAMETER (Z1 = 1d0, HF = Z1/2d0)
@@ -92,13 +95,16 @@
     1  B1=B0
        H=-(S*(B0-H*B2)+A)
       ENDIF
-      DDILOG=H
+      DILLOG=H
       RETURN
       END
 *
 * $Id$
 *
 * $Log$
+* Revision 1.3  2004/10/15 14:59:14  dreas
+* bugfix compile and link problems under MacOSX
+*
 * Revision 1.2  2004/05/11 09:18:43  stefan
 * DUPDF changes
 *
@@ -204,6 +210,9 @@ C
 * $Id$
 *
 * $Log$
+* Revision 1.3  2004/10/15 14:59:14  dreas
+* bugfix compile and link problems under MacOSX
+*
 * Revision 1.2  2004/05/11 09:18:43  stefan
 * DUPDF changes
 *
@@ -249,6 +258,9 @@ C-    Find last non-blank character in CHV
 * $Id$
 *
 * $Log$
+* Revision 1.3  2004/10/15 14:59:14  dreas
+* bugfix compile and link problems under MacOSX
+*
 * Revision 1.2  2004/05/11 09:18:43  stefan
 * DUPDF changes
 *
@@ -301,6 +313,9 @@ C-    DUMMY FOR NON-ESSENTIAL ROUTINE STILL MISSING ON YOUR MACHINE
 * $Id$
 *
 * $Log$
+* Revision 1.3  2004/10/15 14:59:14  dreas
+* bugfix compile and link problems under MacOSX
+*
 * Revision 1.2  2004/05/11 09:18:43  stefan
 * DUPDF changes
 *
