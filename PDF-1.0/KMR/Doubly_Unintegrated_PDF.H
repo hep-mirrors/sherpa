@@ -9,8 +9,9 @@ namespace PDF {
   struct kps {
     
     enum type {
-      constant = 0,
-      smooth   = 1
+      constant   = 0,
+      function   = 1,
+      derivative = 2
     };
     
   };// end of struct kps
@@ -30,6 +31,7 @@ namespace PDF {
     double m_integrated, m_unintegrated;
 
     kps::type m_kperpscheme;
+    double    m_cutrescale;
     bool      m_calculate;
 
     double SmoothIntegrated(const ATOOLS::Flavour flavour);
@@ -41,7 +43,7 @@ namespace PDF {
 
     // constructor
     Doubly_Unintegrated_PDF(PDF_Base *pdf,MODEL::Running_AlphaS *alphas,
-			    const double mu02,const kps::type kperpscheme);
+			    const double mu02);
 
     // destructor
     ~Doubly_Unintegrated_PDF();
@@ -63,6 +65,12 @@ namespace PDF {
 
     // inline functions
     inline kps::type KPerpScheme() const { return m_kperpscheme; }
+    inline double    CutRescale() const  { return m_cutrescale;  }
+
+    inline void SetKPerpScheme(const kps::type scheme) 
+    { m_kperpscheme=scheme; }
+    inline void SetCutRescale(const double rescale) 
+    { m_cutrescale=rescale; }
 
   };// end of class Doubly_Unintegrated_PDF
 

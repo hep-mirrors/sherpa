@@ -28,13 +28,15 @@ static bool initialized=false;
 
 using namespace PDF;
 
-Doubly_Unintegrated_PDF::Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running_AlphaS *_p_alphas,
-						 const double mu02,const kps::type kperpscheme):
+Doubly_Unintegrated_PDF::
+Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running_AlphaS *_p_alphas,
+			const double mu02):
   p_pdf(_p_pdf),
   p_alphas(_p_alphas),
   m_mu02(mu02),
   m_epsilon(1.e-2),
-  m_kperpscheme(kperpscheme)
+  m_kperpscheme(kps::function),
+  m_cutrescale(1.0)
 {
   m_type=std::string("DUPDF(")+p_pdf->Type()+std::string(")");
   m_xmin=m_xmax=0.0;
@@ -46,7 +48,8 @@ Doubly_Unintegrated_PDF::Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running
   for (size_t i=0;i<m_partons.size();++i) {
     if (m_partons[i].Size()>1) {
       for (int j=0;j<m_partons[i].Size();++j) {
-	m_branching[m_partons[i][j]] = new LL_Branching(m_partons[i][j],p_alphas);
+	m_branching[m_partons[i][j]] = 
+	  new LL_Branching(m_partons[i][j],p_alphas);
       }
     }
     else {
@@ -144,44 +147,68 @@ void Doubly_Unintegrated_PDF::AssignKeys(ATOOLS::Integration_Info *const info)
 double Doubly_Unintegrated_PDF::ConstantIntegrated(ATOOLS::Flavour flavour)
 {
   p_pdf->Calculate(m_x,0.,0.,m_mu02);                                         
-  double integrated=p_pdf->GetXPDF(flavour);                                       
-  integrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_mu02));          
-  return integrated/((1.-m_x)*m_mu02);                                              
+  double integrated=p_pdf->GetXPDF(flavour);
+  integrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_mu02)); 
+  return integrated/((1.-m_x)*m_mu02);
 }
 
 double Doubly_Unintegrated_PDF::SmoothIntegrated(ATOOLS::Flavour flavour)
 {
-  double savekp2=m_kperp2;
-  this->Calculate(m_x,m_z,m_mu02*(1.+m_epsilon),m_mu2);
-  double fprime=this->GetXPDF(flavour)*m_mu02;
-  this->Calculate(m_x,m_z,m_mu02,m_mu2);
-  double f=this->GetXPDF(flavour)*m_mu02;
-  fprime-=f;
-  fprime/=m_mu02*m_epsilon;
-  m_unintegrated=0.;
-  m_kperp2=savekp2;
-  p_pdf->Calculate(m_x,0.,0.,m_mu02);
-  m_integrated=p_pdf->GetXPDF(flavour);
-  m_integrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_mu02));
-  m_integrated/=(1.-m_x);
-  double c=3.*(fprime+(2.*m_integrated-3.*f)/m_mu02);
-  double b=fprime-f/m_mu02-c;
-  c/=2.;
-  double a=f/m_mu02-b-c;
-  c/=m_mu02*m_mu02;
-  b/=m_mu02;
-  return a+b*m_kperp2+c*m_kperp2*m_kperp2;
+  switch (m_kperpscheme) {
+  case kps::function: {
+    double savekp2=m_kperp2;
+    this->Calculate(m_x,m_z,m_mu02,m_mu2);
+    double f=this->GetXPDF(flavour)*m_mu02;
+    m_unintegrated=0.;
+    m_kperp2=savekp2;
+    p_pdf->Calculate(m_x,0.,0.,m_mu02);
+    m_integrated=p_pdf->GetXPDF(flavour);
+    m_integrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_mu02));
+    m_integrated/=(1.-m_x);
+    double b=3.*(f-2.*m_integrated)/m_mu02;
+    double a=f/m_mu02-b;
+    b/=m_mu02;
+    return a+b*m_kperp2;
+  }
+  case kps::derivative: {
+    double savekp2=m_kperp2;
+    this->Calculate(m_x,m_z,m_mu02*(1.+m_epsilon),m_mu2);
+    double fprime=this->GetXPDF(flavour)*m_mu02;
+    this->Calculate(m_x,m_z,m_mu02,m_mu2);
+    double f=this->GetXPDF(flavour)*m_mu02;
+    fprime-=f;
+    fprime/=m_mu02*m_epsilon;
+    m_unintegrated=0.;
+    m_kperp2=savekp2;
+    p_pdf->Calculate(m_x,0.,0.,m_mu02);
+    m_integrated=p_pdf->GetXPDF(flavour);
+    m_integrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_mu02));
+    m_integrated/=(1.-m_x);
+    double c=4.*(fprime+(6.*m_integrated-4.*f)/m_mu02);
+    double b=fprime-f/m_mu02-c;
+    c/=2.;
+    double a=f/m_mu02-b-c;
+    c/=m_mu02*m_mu02;
+    b/=m_mu02;
+    return a+b*m_kperp2+c*m_kperp2*m_kperp2;
+  }
+  default: return 0.;
+  }
+  return 0.;
 }
-
+		 
 bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
 {
   PROFILE_HERE;
   m_unintegrated=m_integrated=0.;
-  if (m_kperp2<m_mu02) {
+  if (Collinear(m_kperp2)) {
     switch (m_kperpscheme) {
-    case kps::smooth: m_integrated=SmoothIntegrated(flavour); 
+    case kps::function: 
+    case kps::derivative:
+      m_integrated=SmoothIntegrated(flavour); 
       return true;
-    case kps::constant: m_integrated=ConstantIntegrated(flavour); 
+    case kps::constant: 
+      m_integrated=ConstantIntegrated(flavour); 
       return true;
     }
     return false;     
@@ -200,14 +227,16 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
   m_unintegrated*=(*p_alphas)(m_kperp2)/(2.0*M_PI);
   m_unintegrated*=p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2));
 #ifdef TEST__Doubly_Unintegrated_PDF
-  std::cout<<flavour<<" sud / pdf : "<<p_sudakov->Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2))
+  std::cout<<flavour<<" sud / pdf : "<<p_sudakov->
+    Delta(flavour)(sqrt(m_mu2),sqrt(m_kperp2))
    	   <<" / "<<m_unintegrated<<std::endl;
 #endif
   m_unintegrated/=m_kperp2;
   return true;
 }
 
-void Doubly_Unintegrated_PDF::Calculate(double x,double z,double kperp2,double mu2)
+void Doubly_Unintegrated_PDF::Calculate(double x,double z,
+					double kperp2,double mu2)
 {
   PROFILE_HERE;
   m_x=x;
