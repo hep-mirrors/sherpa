@@ -18,7 +18,8 @@ using namespace std;
 Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_Handler * _fragmentation) :
   p_beamremnanthandler(_beamremnant), p_fragmentationhandler(_fragmentation)
 {
-  m_name = std::string("Hadronization")+p_fragmentationhandler->FragmentationModel();
+  m_name = std::string("Hadronization:")+
+    p_fragmentationhandler->FragmentationModel();
   m_type = eph::Hadronization;
 }
 
