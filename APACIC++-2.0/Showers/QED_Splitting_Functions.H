@@ -44,7 +44,7 @@ namespace APACIC {
     double CrudeInt(double _zmin, double _zmax) {
       zmin = _zmin;
       zmax = _zmax;
-ls      return 2.*qsqr*alpha*log((1.-zmin)/(1.-zmax));
+      return 2.*qsqr*alpha*log((1.-zmin)/(1.-zmax));
     };
   };
 
