@@ -78,10 +78,14 @@ Sample_Analysis::Sample_Analysis(std::string _m_path,std::string _m_file):
   obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_2"));
   obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_3"));
   obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_4"));
+  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_5"));
+  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_6"));
   obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure"));
   obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_2"));
   obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_3"));
   obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_4"));
+  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_5"));
+  obs.push_back(new PHard_Observable(00,0.,200.,100,"pw_me_pure_6"));
 }
 
 
@@ -102,8 +106,8 @@ void Sample_Analysis::AfterME(ATOOLS::Blob_List * blobs, double weight) {
       }
     }
   }
-  obs[6]->Evaluate(*blobs,weight);
-  obs[m_njet+5]->Evaluate(*blobs,weight);
+  obs[8]->Evaluate(*blobs,weight);
+  obs[m_njet+7]->Evaluate(*blobs,weight);
 
 }
 
