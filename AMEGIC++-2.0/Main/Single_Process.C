@@ -44,7 +44,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl),
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
-  m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
+  m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.),
+  m_sfactor(1.)
 {
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   mkdir(newpath.c_str(),448);
@@ -222,8 +223,9 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   }
   procs++;
   for (size_t j=0;j<links.size();j++) {
-    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler())) {
+    if (p_ampl->CompareAmplitudes(links[j]->GetAmplitudeHandler(),m_sfactor)) {
       if (p_hel->Compare(links[j]->GetHelicity(),m_nin+m_nout)) {
+	m_sfactor = sqr(m_sfactor);
 	msg_Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
@@ -754,11 +756,9 @@ bool Single_Process::SetUpIntegrator()
   if (m_nin==2) {
     if ( (p_flavours[0].Mass() != p_isrhandler->Flav(0).Mass()) ||
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
-    if (CreateChannelLibrary()) {
-      if (p_pshandler->CreateIntegrators()) return 1;
-    }
+    if (CreateChannelLibrary()) return 1;
   }
-  if (m_nin==1) return p_pshandler->CreateIntegrators();
+  if (m_nin==1) return 1;
   return 0;
 }
 
@@ -766,9 +766,7 @@ bool Single_Process::CreateChannelLibrary()
 {
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
-  if (m_nin>1)  newch = p_psgen->Construct(p_pshandler->FSRIntegrator(),m_ptypename,
-					   m_pslibname,p_flavours,this); 
-
+  if (m_nin>1)  newch = p_psgen->Construct(p_pshandler->GetChannelLibNames(),m_ptypename,m_pslibname,p_flavours,this); 
   if (newch>0) {
     msg_Tracking()<<"Single_Process::CreateChannelLibrary() :"<<std::endl
 		  <<"   "<<p_pshandler->NumberOfFSRIntegrators()<<" new channels produced for "
@@ -811,9 +809,10 @@ void Single_Process::Empty() {
 
 void Single_Process::SetTotal(int flag, int depth)  { 
   if (flag!=2) {
-    m_totalxs  = m_totalsum/m_n; 
-    m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+    m_totalxs  = TotalResult(); 
+    m_totalerr = TotalVar();
+//     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
+// 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
     if ((m_nin==1 && m_nout==2) || m_n==1) m_totalerr = 0.;
   }
   else {
@@ -846,15 +845,15 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   msg_Info()<<"In Single_Process::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
   
   string _name;
-  double _totalxs,_totalerr,_max,sum,sqrsum;
-  long int n;
+  double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2;
+  long int n,sn;
   char filename[100];
   sprintf(filename,"%s.xstotal",(_resdir+string("/")+m_name).c_str());
   if (_resdir!=string("")) {
     if (IsFile(filename)) {
       ifstream from;
       from.open(filename,ios::in);
-      from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n;
+      from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn;
       if (_name==m_name) {
 	m_totalxs  = _totalxs;
 	m_totalerr = _totalerr; 
@@ -862,6 +861,14 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 	m_n        = n;
 	m_totalsum = sum;
 	m_totalsumsqr = sqrsum;
+	m_vsmax.clear(); 
+	m_vsmax.push_back(_max);
+	m_vsn.clear();   
+	m_vsn.push_back(n);
+	m_sn = sn; m_smax=0.;
+	m_ssum     = ssum;
+	m_ssumsqr  = ssqrsum;
+	m_ssigma2  = ss2;
       }
       msg_Tracking()<<"Found result : xs for "<<m_name<<" : "
 		    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -880,10 +887,10 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   long unsigned int points=m_n;
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
-  if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+  if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
     msg.Error()<<"ERROR in Single_Process::CalculateTotalXSec :"<<std::endl
 	       <<"   Result of PS-Integrator and internal summation to not coincide for "<<endl
-	       <<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+	       <<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
   }
   SetTotal(0);
   if (m_totalxs>=0.) {
@@ -926,8 +933,12 @@ void Single_Process::PrepareTerminate()
 
 void Single_Process::WriteOutXSecs(std::ofstream & _to)    
 { 
+//   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
+//      <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<endl; 
+  _to.precision(12);
   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
-     <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<endl; 
+     <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
+     <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<endl; 
 }
 
 bool Single_Process::Find(std::string _name,Process_Base *& _proc)  
@@ -974,10 +985,10 @@ bool Single_Process::PrepareXSecTables() {
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
 
-  if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+  if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
     msg.Error()<<"ERROR in Single_Process::PrepareXSecTables :"<<std::endl
 	       <<"   Result of PS-Integrator and internal summation to not coincide for "
-	       <<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+	       <<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
   }
   SetTotal(1);
   p_pshandler->WriteOut(m_resdir+string("/MC_")+m_name);
@@ -987,9 +998,11 @@ bool Single_Process::PrepareXSecTables() {
 
 void Single_Process::AddPoint(const double value) {
   m_n++;
-  m_totalsum    += value;
-  m_totalsumsqr += value*value;
-  if (value>m_max) m_max = value;
+  m_sn++;
+  m_ssum    += value;
+  m_ssumsqr += value*value;
+  if (value>m_max)  m_max  = value;
+  if (value>m_smax) m_smax = value;
   int iter=1;
   if (m_n<200000)        iter =  40000;
   else if  (m_n<400000)  iter = 200000;
@@ -999,6 +1012,42 @@ void Single_Process::AddPoint(const double value) {
   //     m_save_max = 0.;
   //   }
   if (value>m_save_max) m_save_max = value;
+}
+
+void Single_Process::OptimizeResult()
+{
+  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
+  m_ssigma2  += 1./ssigma2; 
+  m_totalsum += m_ssum/ssigma2/m_sn;
+  m_totalsumsqr+= m_ssumsqr/ssigma2/m_sn;
+  m_ssum     = 0.;
+  m_ssumsqr  = 0.;
+  m_sn       = 0;
+}
+
+void Single_Process::ResetMax(int flag)
+{
+  if (flag==0) {
+    if (m_vsmax.size()>1) {
+      m_vsmax.erase(m_vsmax.begin());
+      m_vsn.erase(m_vsn.begin());
+    }
+    m_vsmax.back() = ATOOLS::Max(m_smax,m_vsmax.back());
+    m_vsn.back()   = m_n;
+  }
+  else {
+    if (flag==2 && m_vsmax.size()==4) {
+      m_vsmax.erase(m_vsmax.begin());
+      m_vsn.erase(m_vsn.begin());
+    }
+    m_vsmax.push_back(m_smax);
+    m_vsn.push_back(m_n);
+    if (flag==2) m_smax = 0.;
+  }
+  m_max  = 0.;
+//   cout<<"Single_Process::ResetMax "<<flag<<": "<<endl;
+//   for (size_t i=0;i<m_vsmax.size();i++) cout<<m_vsmax[i]<<" "<<m_vsn[i]<<endl;
+  for (size_t i=0;i<m_vsmax.size();i++) m_max=ATOOLS::Max(m_max,m_vsmax[i]);
 }
 
 double Single_Process::Differential(const ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
@@ -1030,8 +1079,8 @@ double Single_Process::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
     else m_lastdxs = operator()(_moms);
   }
   else {
-    if (lookup) m_lastdxs = p_partner->LastXS();
-           else m_lastdxs = p_partner->operator()(_moms);
+    if (lookup) m_lastdxs = p_partner->LastXS()*m_sfactor;
+           else m_lastdxs = p_partner->operator()(_moms)*m_sfactor;
   }
   if (m_lastdxs <= 0.) return m_lastdxs = m_last = 0.;
   if (m_nin==2) {

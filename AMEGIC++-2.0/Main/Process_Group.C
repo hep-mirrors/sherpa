@@ -415,8 +415,12 @@ bool Process_Group::Find(string _name,Process_Base *& _proc)
 
 void Process_Group::WriteOutXSecs(std::ofstream & _to)
 {
+//   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
+//      <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<endl;
+  _to.precision(12);
   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
-     <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<endl;
+     <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
+     <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<endl; 
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->WriteOutXSecs(_to);
 }
 
@@ -515,9 +519,10 @@ void Process_Group::SetTables(bool _tables)
 
 void Process_Group::SetTotal(int flag, int depth)  { 
   if (flag!=2) {
-    m_totalxs  = m_totalsum/m_n; 
-    m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+    m_totalxs  = TotalResult(); 
+    m_totalerr = TotalVar();
+//     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
+// 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
     if ((m_nin==1 && m_nout==2) || m_n==1) m_totalerr = 0.;
     if (p_selector) p_selector->Output();
     m_max = 0.;
@@ -573,6 +578,24 @@ void Process_Group::SetMax(const double max, int depth) {
     }
     m_totalxs=sum;
   }
+}
+
+void Process_Group::ResetMax(int flag) {
+  m_max = 0.;
+  for (int i=0;i<m_procs.size();i++) {
+    m_procs[i]->ResetMax(flag);
+  }
+}
+void Process_Group::OptimizeResult() 
+{
+  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
+  m_ssigma2  += 1./ssigma2; 
+  m_totalsum += m_ssum/ssigma2/m_sn;
+  m_totalsumsqr+= m_ssumsqr/ssigma2/m_sn;
+  m_ssum     = 0.;
+  m_ssumsqr  = 0.;
+  m_sn       = 0;
+  for (int i=0;i<m_procs.size();i++) m_procs[i]->OptimizeResult();
 }
 
 void Process_Group::SetMaxJetNumber(int max) {
@@ -688,9 +711,10 @@ bool Process_Group::SetUpIntegrator()
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
   }
   p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
-  if (m_nin==2 ) AddChannels(this,p_pshandler->FSRIntegrator(),
-			     p_pshandler->BeamParameters(),p_pshandler->ISRParameters());
-  if (!p_pshandler->CreateIntegrators()) return 0;
+  if (m_nin==2 ) AddChannels(this);
+// AddChannels(this,p_pshandler->FSRIntegrator(),
+// 			     p_pshandler->BeamParameters(),p_pshandler->ISRParameters());
+//   if (!p_pshandler->CreateIntegrators()) return 0;
   if (m_nin==2) { for (size_t i=0;i<m_procs.size();i++) m_procs[i]->Empty(); }
   return 1;
 }
@@ -718,15 +742,15 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     char filename[100];
     sprintf(filename,"%s.xs_tot",(_resdir+string("/")+m_name).c_str());
     string _name;
-    double _totalxs,_totalerr,_max, sum, sqrsum;
-    long int n;
+    double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2;
+    long int n,sn;
     if (_resdir!=string("")) {
       if (IsFile(filename)) {
 	ifstream from;
 	bool okay=1;
 	from.open(filename);
 	while (from) {
-	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n;
+	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn;
 	  if (_name==m_name) m_totalxs += _totalxs;
 // 	  msg_Tracking()<<"Found result : xs for "<<_name<<" : "
 // 			<<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -739,6 +763,10 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	    _proc->SetSum(sum);
 	    _proc->SetSumSqr(sqrsum);
 	    _proc->SetPoints(n);
+	    _proc->SetSSum(ssum);
+	    _proc->SetSSumSqr(ssqrsum);
+	    _proc->SetSigmaSum(ss2);
+	    _proc->SetSPoints(sn);
 	  }
 	  else {
 	    okay = 0;
@@ -777,10 +805,10 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     long unsigned int points=m_n;
     m_totalxs = p_pshandler->Integrate();
     if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn(); 
-    if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+    if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
       msg.Error()<<"ERROR in Process_Group::CalculateTotalXSec :"
 		 <<"Result of PS-Integrator and internal summation do not coincide!"<<endl
-		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
     }
     SetTotal(0);
     if (m_totalxs>0.) {
@@ -917,10 +945,10 @@ bool Process_Group::PrepareXSecTables()
 	   (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
     }
     m_totalxs = p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
-    if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+    if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
       msg.Error()<<"ERROR in Process_Group::PrepareXSecTables :"<<std::endl
 		 <<"   Result of PS-Integrator and internal summation do not coincide for"<<endl
-		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
     }
     SetTotal(1);
     p_pshandler->WriteOut(m_resdir+string("/MC_")+m_name);
@@ -936,10 +964,13 @@ bool Process_Group::PrepareXSecTables()
 
 void Process_Group::AddPoint(const double value) 
 {
+//   cout<<"Process_Group::AddPoint: "<<m_name<<" "<<value<<endl;
   m_n++;
-  m_totalsum    += value;
-  m_totalsumsqr += value*value;
-  if (value>m_max) m_max = value;
+  m_sn++;
+  m_ssum    += value;
+  m_ssumsqr += value*value;
+  if (value>m_max)  m_max  = value;
+  if (value>m_smax) m_smax = value;
 
   for (size_t i=0;i<m_procs.size();i++) {
     if (dabs(m_last)>0.) {

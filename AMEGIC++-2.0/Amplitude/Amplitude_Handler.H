@@ -31,7 +31,7 @@ namespace AMEGIC {
     void PreCluster(Single_Amplitude* firstgraph);
     void OptimizeProps(int,Single_Amplitude*);
     int  TOrder(Single_Amplitude* a);
-    int  SingleCompare(Point* p1,Point* p2);
+    int  SingleCompare(Point*,Point*,double &);
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,
 		      Interaction_Model_Base *,Topology *,int,int,
@@ -57,7 +57,7 @@ namespace AMEGIC {
     double Get_Probab(int);
     int    FourVertex(int i) { return ExistFourVertex(GetPointlist(i)); } 
     bool   ExistFourVertex(Point *);
-    int    CompareAmplitudes(Amplitude_Handler* c_ampl);
+    int    CompareAmplitudes(Amplitude_Handler*,double &);
   };
 
     //! The alternative color matrix, for more details see CFColor.

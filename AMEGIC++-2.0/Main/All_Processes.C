@@ -139,6 +139,7 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
   bool okay = 1;
   for (size_t i=0;i<m_procs.size();i++) {
     msg_Info()<<"All_Processes::CalculateTotalXSec for "<<m_procs[i]->Name()<<endl;
+    if (!m_procs[i]->PSHandler()->CreateIntegrators()) return 0;
     if (!(m_procs[i]->CalculateTotalXSec(_resdir))) okay = 0;
     else m_totalxs += m_procs[i]->TotalXS();
   }

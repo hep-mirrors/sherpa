@@ -74,8 +74,9 @@ namespace AMEGIC {
 				 std::vector<AMEGIC::Single_Process *> &,int &,int &)=0;
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
-    virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
-    			       PHASIC::channelinfos &,PHASIC::channelinfos &);
+//     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
+//     			       PHASIC::channelinfos &,PHASIC::channelinfos &);
+    virtual void   AddChannels(Process_Base *);
     virtual double Result()   {return 0.;}
     /*------------------------------------------------------------------------------
 
@@ -116,12 +117,17 @@ namespace AMEGIC {
     virtual void             SetMax(const double max, int depth=0);
     virtual void             SetMaxJetNumber(int);
 
+    void SetSSum(const double sum)           { m_ssum=sum;       }
+    void SetSSumSqr(const double sumsqr)     { m_ssumsqr=sumsqr; }
+    void SetSigmaSum(const double sigma2)    { m_ssigma2=sigma2; }
+    void SetSPoints(const long int points)   { m_sn=points;           }
 
     /*------------------------------------------------------------------------------
 
       Calculating total cross sections and single event generation
 
       ------------------------------------------------------------------------------*/
+  public:
     virtual bool   CalculateTotalXSec(std::string _resdir=std::string(""))         =0;
     virtual bool   LookUpXSec(double,bool,std::string)                             =0;
     virtual void   RescaleXSec(double);

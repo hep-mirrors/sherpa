@@ -579,21 +579,25 @@ int Amplitude_Handler::TOrder(Single_Amplitude* a)
   return cnt;
 } 
 
-int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl)
+int Amplitude_Handler::CompareAmplitudes(Amplitude_Handler* c_ampl, double & sf)
 {
   if (GetTotalGraphNumber()!=c_ampl->GetTotalGraphNumber()) return 0;
+  sf = 1.;
 
   Single_Amplitude * n = firstgraph;
   Single_Amplitude * n_cmp = c_ampl->GetFirstGraph();
   for (int i=0;i<GetTotalGraphNumber();i++) {
-    if (!SingleCompare(n->GetPointlist(),n_cmp->GetPointlist())) return 0;
+    double factor = 1.;
+    if (!SingleCompare(n->GetPointlist(),n_cmp->GetPointlist(),factor)) return 0;
+    if (i==0) sf = factor;
+    else if(!ATOOLS::IsEqual(sf,factor)) return 0;
     n     = n->Next;
     n_cmp = n_cmp->Next;
   }
   return 1;
 }
 
-int Amplitude_Handler::SingleCompare(Point* p1,Point* p2)
+int Amplitude_Handler::SingleCompare(Point* p1,Point* p2, double & sf)
 {
   //zero check
   if (p1==0) {
@@ -607,10 +611,6 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2)
   if (p1->fl.Mass()!=p2->fl.Mass()) return 0;
   if (p1->fl.Spin()!=p2->fl.Spin()) return 0;
 
-  //Couplings equal
-  if (p1->ncpl!=p2->ncpl) return 0;
-  for (int i=0;i<p1->ncpl;i++) if (p1->cpl[i]!=p2->cpl[i]) return 0;
-
   //outgoing number equal
   if ((p1->left==0) && (p2->left==0)) {
     if (p1->number!=p2->number) return 0;
@@ -623,11 +623,19 @@ int Amplitude_Handler::SingleCompare(Point* p1,Point* p2)
   //Check extended Color_Functions
   if (p1->Color->Type()!=p2->Color->Type()) return 0;
   
+  //Couplings equal
+  //if (p1->ncpl!=p2->ncpl) return 0;
+  Complex ratio = Complex(0.,0.);
+  for (int i=0;i<2;i++) {
+    if (ratio==Complex(0.,0.) && p2->cpl[i]!=Complex(0.,0.)) ratio = p1->cpl[i]/p2->cpl[i];
+    if (!ATOOLS::IsEqual(p2->cpl[i]*ratio,p1->cpl[i])) return 0;
+  } 
+  sf *= abs(ratio);
   // return 1 if equal and 0 if different
   
-  if (SingleCompare(p1->middle,p2->middle)) {
-    int sw1 = SingleCompare(p1->left,p2->left);
-    if (sw1) sw1 = SingleCompare(p1->right,p2->right);
+  if (SingleCompare(p1->middle,p2->middle,sf)) {
+    int sw1 = SingleCompare(p1->left,p2->left,sf);
+    if (sw1) sw1 = SingleCompare(p1->right,p2->right,sf);
     return sw1;
   }
   return 0;

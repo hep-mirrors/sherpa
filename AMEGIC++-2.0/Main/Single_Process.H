@@ -19,6 +19,7 @@ namespace AMEGIC {
     bool                    m_newlib;
     double                  m_iresult;
     int                     m_libnumb;
+    double                  m_sfactor;
 
     Helicity              * p_hel;
     Basic_Sfuncs          * p_BS;
@@ -124,6 +125,8 @@ namespace AMEGIC {
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
+    void           ResetMax(int);
+    void           OptimizeResult();
 
     /*------------------------------------------------------------------------------
 

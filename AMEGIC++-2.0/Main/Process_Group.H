@@ -48,6 +48,7 @@ namespace AMEGIC {
     void           SetTables(bool);
     void           SetTotal(int flag, int depth=0);
     void           SetMax(const double max, int depth=0);
+    void           ResetMax(int);
     void           SetMaxJetNumber(int max);
     void           SetAtoms(bool);
     void           SetPartner(Single_Process * _p) { }
@@ -85,6 +86,7 @@ namespace AMEGIC {
     bool           SameEvent();
     ATOOLS::Blob_Data_Base * WeightedEvent();
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
+    void           OptimizeResult();
     /*------------------------------------------------------------------------------
 
       Helpers

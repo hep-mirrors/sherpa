@@ -413,7 +413,31 @@ bool Process_Base::IsFile(string filename)
   ------------------------------------------------------------------------------*/
 
 
-void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
+void Process_Base::AddChannels(Process_Base * _proc) 
+{
+  if (m_nin!=2) return;
+  for (size_t i=0;i<_proc->Size();i++) {
+    if ((*_proc)[i]->Partner()==NULL) AddChannels((*_proc)[i]);
+    else {
+      if ((*_proc)[i]->Partner()==(*_proc)[i]) {
+	list<string>* clist = (*_proc)[i]->PSHandler()->GetChannelLibNames();
+	list<string>* tlist = PSHandler()->GetChannelLibNames();
+	for (list<string>::iterator it=clist->begin();it!=clist->end();++it) {
+	  bool hit = 0;
+	  for (list<string>::iterator jt=tlist->begin();jt!=tlist->end();++jt) {
+	    if ((*it)==(*jt)) {
+	      //cout<<"Process_Base::AddChannels: "<<(*it)<<"/"<<(*jt)<<endl;
+	      hit = 1;
+	      break;
+	    }
+	  }
+	  if (!hit) tlist->push_back((*it));
+	}
+      }
+    }
+  }
+}
+/*void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 			       vector<Channel_Info> & _beamparams,
 			       vector<Channel_Info> & _isrparams) {
 
@@ -466,7 +490,7 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
       }
     }
   }
-}
+  }*/
 
 
 
