@@ -94,10 +94,6 @@ Single_Amplitude::~Single_Amplitude()
   delete[] Pointlist;
   //Zlist,Clist,Plist
 
-  if (zlist){
-    for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) delete (*zit);
-  }
-  
   for (Pfunc_Iterator pit=plist.begin();pit!=plist.end();++pit) delete (*pit);
   
   SpinorDirection* sd;

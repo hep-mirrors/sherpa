@@ -16,6 +16,7 @@ namespace AMEGIC {
     Super_Amplitude(int* _b,int _n,Basic_Sfuncs* _BS,
 		    ATOOLS::Flavour* _fl,String_Handler* _shand) 
       : Single_Amplitude_Base(_b,_n,_BS,_fl,_shand) {groupname = std::string("Super-Amplitude");}
+    ~Super_Amplitude() {}
     void Init(std::string);
 
     void PrintGraph();
@@ -25,8 +26,10 @@ namespace AMEGIC {
     Complex Zvalue(String_Handler * sh,int ihel);
     Complex Zvalue(int ihel,int * signlist);
     void    ClearCalcList()                   {Single_Amplitude_Base::ClearCalcList();}
-    void    KillZList()                       {Single_Amplitude_Base::KillZList();}
+    void    KillZList()                       {Amplitude_Group::KillZList();}
     void    SetNumber(int & n)                {Single_Amplitude_Base::SetNumber(n);}
+    Zfunc_List* GetZlist()                    {Single_Amplitude_Base::GetZlist();}
+
     Amplitude_Base* GetAmplitude(int n)       {return (n==amplnumber) ? this : 0;}
   };
 }

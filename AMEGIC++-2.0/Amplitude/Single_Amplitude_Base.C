@@ -12,6 +12,14 @@ using namespace std;
 
 #define Cut_Fermion_Prop
 
+Single_Amplitude_Base::~Single_Amplitude_Base() 
+{
+  if (zlist){
+    for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) delete (*zit);
+    delete zlist;
+  }
+}
+
 void Single_Amplitude_Base::PrintGraph() 
 {
   if (!rpa.gen.Tracking()) return;

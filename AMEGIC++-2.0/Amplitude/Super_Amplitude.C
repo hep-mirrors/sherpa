@@ -16,7 +16,7 @@ void Super_Amplitude::Init(string _str)
   for (vector<Amplitude_Base*>::iterator g=graphs.begin();g!=graphs.end();++g) {  
     int old = zlist->size();
 
-    Zfunc_List* gzlist = (*g)->GetZlist(); 
+    Zfunc_List* gzlist = (*g)->GetZlist();
     for (Zfunc_Iterator zit=gzlist->begin();zit!=gzlist->end();++zit) {
       int hit = 0;
       for (Zfunc_Iterator zit2=zlist->begin();zit2!=zlist->end();++zit2) {
@@ -27,9 +27,9 @@ void Super_Amplitude::Init(string _str)
       }
       if (hit==0) {
 	zlist->push_back((*zit));
-	//zlist.push_back(new Zfunc(*(*zit)));
+	//zlist->push_back(new Zfunc(*(*zit)));
       }
-    }
+    } 
 
     Pfunc_List* gplist = (*g)->GetPlist(); 
     

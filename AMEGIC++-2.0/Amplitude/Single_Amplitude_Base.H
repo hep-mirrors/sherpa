@@ -38,7 +38,7 @@ namespace AMEGIC {
 			  String_Handler* _shand) 
       : b(_b), N(_n), shand(_shand), BS(_BS), fl(_fl) {zlist= new Zfunc_List;}
 
-    virtual ~Single_Amplitude_Base() {if (zlist) delete zlist;}
+    virtual ~Single_Amplitude_Base();
 
     Complex Zvalue(int,int*);
     Complex Zvalue(String_Handler * sh,int ihel);
