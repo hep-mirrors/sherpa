@@ -43,9 +43,10 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
       
       ed  = rpa.gen.ScalarNumber(std::string("ED"));
       r2  = sqr(rpa.gen.ScalarConstant(std::string("Radius")));
-      double gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
-      double m_s = rpa.gen.ScalarConstant(std::string("M_s"));
+      gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
+      m_s = rpa.gen.ScalarConstant(std::string("M_s"));
       double mm=rpa.gen.Ecms();
+      prevET = mm;
       for(int j=nin;j<nin+nout;j++)
 	if(j!=i) mm -= sqrt(ms[j]);
       maxm2=sqr(mm);
@@ -99,12 +100,21 @@ Vec4D sump(0.,0.,0.,0.);
 void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {  
 
-  Set_KKmass();
-
   Vec4D sump(0.,0.,0.,0.);
   for (short int i=0;i<nin;i++) sump += p[i];
 
   double ET = sqrt(sump.Abs2());
+
+  if (!IsEqual(ET,prevET)) {
+    double mm = prevET = ET;
+    for(int j=nin;j<nin+nout;j++)
+      if(j!=kkp) mm -= sqrt(ms[j]);
+    maxm2=sqr(mm);
+    maxn=sqrt(maxm2*r2/4./sqr(M_PI));
+    mpss=1./ed*pow(maxm2,0.5*(double(ed)))/pow(m_s,2.+(double(ed)))/gn;
+  }
+
+  Set_KKmass();
   
   double Q, S, C, F, G, A, X, RMAS, BQ, e;
   short int i;

@@ -17,7 +17,7 @@ namespace PHASIC {
     double accu;
     //! Constants needed to generate the mass of the KK particle 
     int     kkp,ed;
-    double  r2,maxm2,maxn,mpss;
+    double  r2,maxm2,maxn,mpss,gn,m_s,prevET;
     /*!
       Determines the mass for the KK particle. This has to be done every time
       before a phase space point is generated.
