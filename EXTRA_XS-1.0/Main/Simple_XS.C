@@ -101,7 +101,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    }
 	    while (position==std::string::npos);
 	    msg.Debugging()<<"Read in process :";
-	    for (short int i=0;i<nIS;i++) msg.Debugging()<<" "<<IS[i].Name();
+	    for (short int i=0;i<nIS;i++) msg.Debugging()<<" "<<IS[i];
 	    msg.Debugging()<<" -> ";
 	    for (short int i=0;i<nFS;i++) msg.Debugging()<<FS[i].Name()<<" ";
 	    msg.Debugging()<<" EW("<<order_ew<<"), QCD("<<order_strong<<")"<<endl;
@@ -110,15 +110,35 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    for (int i=0;i<nIS;i++) flavs[i]     = IS[i]; 
 	    for (int i=0;i<nFS;i++) flavs[i+nIS] = FS[i]; 
 	    bool single        = 1;
-	    for (int i=0;i<nIS+nFS;i++) {
-	      if (flavs[i].Size()>1) { single = 0; break; }
-	    } 
 	    double summass = 0.;
 	    for (int i=0;i<nFS;i++) summass += flavs[i+nIS].Mass();
 	    if (summass<rpa.gen.Ecms()) {
 	      if (single) {
  		XS_Group *group=FindGroup(nIS,nFS,flavs,m_scalescheme,m_kfactorscheme,m_scalefactor);
-		group->Add(group->XSSelector()->GetXS(nIS,nFS,flavs,p_isrhandler->KMROn()));
+		if (flavs[0].Kfcode()==ATOOLS::kf::quark && flavs[1].Kfcode()==ATOOLS::kf::quark) {
+		  ATOOLS::Flavour help[4];
+		  help[2]=flavs[2];
+		  help[3]=flavs[3];
+		  for (size_t i=0;i<flavs[0].Size();++i) {
+		    help[0]=flavs[0][i];
+		    help[1]=flavs[0][i].Bar();
+		    group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
+		  }
+		}
+		else if (flavs[2].Kfcode()==ATOOLS::kf::quark && flavs[3].Kfcode()==ATOOLS::kf::quark) {
+		  ATOOLS::Flavour help[4];
+		  help[0]=flavs[0];
+		  help[1]=flavs[1];
+		  for (size_t i=0;i<flavs[2].Size();++i) {
+		    help[2]=flavs[2][i];
+		    help[3]=flavs[2][i].Bar();
+		    std::cout<<ATOOLS::om::greenbg<<"SXS "<<help[2]<<ATOOLS::om::reset<<std::endl;
+		    group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
+		  }
+		}
+		else {
+		  group->Add(group->XSSelector()->GetXS(nIS,nFS,flavs,p_isrhandler->KMROn()));
+		}
 		p_selected=group;
 	      }
 	    }
