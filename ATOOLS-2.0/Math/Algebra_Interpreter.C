@@ -270,18 +270,16 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) 
     if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos) {
       if (oit->second->Tag()=="-") {
-	if (expr[pos-1]=='e' || expr[pos-1]=='E') continue;
-	if (pos>0) {
-	  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
-		 toit=p_interpreter->Operators().rbegin();
-	       toit!=p_interpreter->Operators().rend();++toit) 
-	    if ((tpos=expr.rfind(toit->second->Tag(),pos-1))!=
-		std::string::npos) {
-	      pos=tpos;
-	      oit=toit;
-	      break;
-	    }
-	}
+	if (pos==0 || expr[pos-1]=='e' || expr[pos-1]=='E') continue;
+	for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
+	       toit=p_interpreter->Operators().rbegin();
+	     toit!=p_interpreter->Operators().rend();++toit) 
+	  if ((tpos=expr.rfind(toit->second->Tag(),pos-1))
+	      +toit->second->Tag().length()==pos) {
+	    pos=tpos;
+	    oit=toit;
+	    break;
+	  }
       }
       if (oit->second->Binary() && pos!=0) {
 	size_t mpos=pos+oit->second->Tag().length();
@@ -301,11 +299,30 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t tlfpos=lstr.rfind(oit->second->Tag());
     if (tlfpos!=std::string::npos) {
-      if (tlfpos>0 && 
-	  (lstr[tlfpos-1]=='e' || lstr[tlfpos-1]=='E')) {
-	tlfpos=lstr.rfind(oit->second->Tag(),tlfpos-1);
-	if (tlfpos!=std::string::npos) 
+      if (oit->second->Tag()=="-") {
+	if (tlfpos==0) {
+	  lfpos=Max(lfpos,tlfpos);
+	}
+	else {
+	  if (lstr[tlfpos-1]=='e' || lstr[tlfpos-1]=='E') {
+	    tlfpos=lstr.rfind(oit->second->Tag(),tlfpos-1);
+	    if (tlfpos!=std::string::npos) 
+	      lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
+	  }
+	  else {
+	    size_t ttlfpos=std::string::npos;
+	    for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
+		   toit=p_interpreter->Operators().rbegin();
+		 toit!=p_interpreter->Operators().rend();++toit) 
+	      if ((ttlfpos=lstr.rfind(toit->second->Tag(),tlfpos-1))
+		  +toit->second->Tag().length()==tlfpos) {
+		tlfpos=ttlfpos;
+		oit=toit;
+		break;
+	      }
+	  }
 	  lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
+	}
       } 
       else {
 	lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
@@ -358,8 +375,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) 
-    if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos &&
-	expr[pos-1]!='e' && expr[pos-1]!='E') 
+    if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos)
       if (!oit->second->Binary()) {
 	op=oit->second;
 	break;
@@ -369,7 +385,9 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
       }
   if (op==NULL) return expr;
   std::string lrstr=expr.substr(0,pos);
-  std::string rrstr, rstr=expr.substr(pos+op->Tag().length());
+  std::string rrstr, rstr=expr.substr(pos+op->Tag().length()), mrstr=rstr;
+  bool negative=rstr.length()>0?rstr[0]=='-':false;
+  if (negative) rstr=rstr.substr(1);
   size_t rfpos=rstr.length();
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
@@ -386,6 +404,10 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
 	rfpos=Min(rfpos,trfpos);
       }
     }
+  }
+  if (negative) {
+    rstr=mrstr;
+    ++rfpos;
   }
   rrstr=rstr.substr(rfpos);
   rstr=rstr.substr(0,rfpos);
