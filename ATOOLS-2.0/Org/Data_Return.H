@@ -3,14 +3,9 @@
 
 #include "Data_Read.H"
 #include <iostream>
-
+#include <limits>
 
 namespace ATOOLS {
-
-#define UNDEF_FLOAT  __FLT_MAX__
-#define UNDEF_DOUBLE __DBL_MAX__
-#define UNDEF_INT    __INT_MAX__
-#define UNDEF_LONG   __LONG_MAX__
 
   template <class Type>
   inline Type NotDefined() { return (Type)0; }
@@ -26,9 +21,9 @@ namespace ATOOLS {
     return d;
   }
 
-  template <> inline double             NotDefined<double>() { return UNDEF_DOUBLE; } 
-  template <> inline int                NotDefined<int>()    { return UNDEF_INT; } 
-  template <> inline long               NotDefined<long>()   { return UNDEF_LONG; } 
+  template <> inline double NotDefined<double>()   { return std::numeric_limits<double>::max();   } 
+  template <> inline int    NotDefined<int>()      { return std::numeric_limits<int>::max();      } 
+  template <> inline long   NotDefined<long int>() { return std::numeric_limits<long int>::max(); } 
 
   template <> inline std::string        NotDefined<std::string>() { 
     return std::string("Unknown parameter"); 
