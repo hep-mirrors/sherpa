@@ -15,7 +15,7 @@
 namespace EXTRAXS   { class XS_Selector;   }
 namespace AMEGIC    { class Process_Group; }
 namespace ISR       { class ISR_Handler;   }
-namespace BEAM      { class Beam_Handler;  }
+namespace BEAM      { class Beam_Spectra_Handler;  }
 
 using namespace APHYTOOLS;
 
@@ -42,7 +42,7 @@ namespace EXTRAXS {
       return 0;
     } 
     
-    void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Handler *,
+    void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Spectra_Handler *,
 		    APHYTOOLS::Selector_Data *,AMEGIC::Process_Group *);
     AMEGIC::Process_Group * Broker() { return broker; }
 

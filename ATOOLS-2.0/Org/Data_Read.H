@@ -62,9 +62,26 @@ namespace AORGTOOLS {
   //! different Beam realization  
   class Beam_Type {
   public:
-    enum code {No             = 0, 
-	       Laser_Back     = 1,
-	       Unknown        = 99
+    enum code { No             = 0, 
+		Monochromatic  = 0,
+		Gaussian       = 1,
+	        Laser_Back     = 2,
+	        Unknown        = 99
+    };
+  };
+
+  class Beam_Shape {
+  public:
+    enum code { Cylinder          = 0,
+                Gaussian_Cylinder = 1,
+		Unknown           = 99
+    };
+  };
+
+  class Beam_Generator {
+  public:
+    enum code { Internal          = 0,
+		Unknown           = 99
     };
   };
 
@@ -107,6 +124,15 @@ namespace AORGTOOLS {
   template <>  String_Type::code  Data_Read::GetValue<String_Type::code>(std::string);
 
 
+  // do we need those:  
+  template <>  Switch::code       Data_Read::GetValue<Switch::code>(std::string,Switch::code);
+  template <>  Model_Type::code   Data_Read::GetValue<Model_Type::code>(std::string,Model_Type::code);
+  template <>  APHYTOOLS::Flavour Data_Read::GetValue<APHYTOOLS::Flavour>(std::string,APHYTOOLS::Flavour);
+  template <>  Beam_Type::code    Data_Read::GetValue<Beam_Type::code>(std::string,Beam_Type::code);
+  template <>  ISR_Type::code     Data_Read::GetValue<ISR_Type::code>(std::string,ISR_Type::code);
+  template <>  String_Type::code  Data_Read::GetValue<String_Type::code>(std::string,String_Type::code);
+  
+
   /*!
     \file contains the class AORGTOOLS::Data_Read
   */
@@ -136,9 +162,9 @@ namespace AORGTOOLS {
     \fn    void Data_Read::ReadIn(std::string filename)    
     \brief reads a datafile in buffer
     
-    This routine read a parameter file in buffer. I can be called more than once to read 
+    This routine reads a parameter file in buffer. It can be called more than once to read 
     a number of data files, e.g. "default.dat" and "user.dat".
-    The last apearance of a key word actually defines the value of it
+    The last appearance of a key word actually defines the value of it
   */
 
   /*!
@@ -171,6 +197,11 @@ namespace AORGTOOLS {
     \brief generates a (hopefully) unique identifier
   */
 
+  /*!   
+    \fn    int Crossfoot(std::string name)
+    \brief returns sum of digits
+
+  */
 } // namespace AORGTOOLS
 
 #endif  // Data_Read_H

@@ -12,6 +12,9 @@
 
 #include <iomanip>
 
+#include "PDF_Handler.H"
+#include "Intact.H"
+#include "Structure_Function.H"
 
 using namespace AMEGIC;
 using namespace AORGTOOLS;
@@ -31,8 +34,8 @@ using namespace std;
 
 Model * mo =0;
 
-Amegic::Amegic(string _path,ISR_Handler * _isr,Beam_Handler * _beam) :
-  path(_path), isr(_isr), beam(_beam)
+Amegic::Amegic(string _path,ISR_Handler * _isr,Beam_Spectra_Handler * _beam) :
+  path(_path), p_isrhandler(_isr), beam(_beam)
 {
   gen_str = 2; //strings + libraries
   resdir  = string(".");
@@ -60,7 +63,7 @@ Amegic::~Amegic() {
   if (beams)     { delete beams;     beams     = 0; }
   if (partons)   { delete partons;   partons   = 0; }
   if (beam)      { delete beam;      beam      = 0; }
-  if (isr)       { delete isr;       isr       = 0; }
+  if (p_isrhandler)       { delete p_isrhandler;       p_isrhandler       = 0; }
   if (p_fifo)    { delete p_fifo;    p_fifo       = 0; }
   msg.Tracking()<<"Amegic regularly finished."<<endl;
 }
@@ -224,11 +227,12 @@ int Amegic::ReadProcesses(string path)
       }
       if (!error) {
 	if (!beam) {
-	  beam = new Beam_Handler(beamtypes,bunches,polbunches,beams,polbeams,splimits);
+       //beam = new Beam_Spectra_Handler(beamtypes,bunches,polbunches,beams,polbeams,splimits);
+	  Beam_Initialization(rpa.GetPath(),"/ISR.dat");
 	  if (beam->On()>0) {
-	    if (isr) {
+	    if (p_isrhandler) {
 	      if (!(beam->CheckConsistency(bunches,beams))) {
-		msg.Error()<<"Error in initialising Beam_Handler with ISR."<<endl
+		msg.Error()<<"Error in initialising Beam_Spectra_Handler with ISR."<<endl
 			   <<" "<<bunches[0]<<" -> "<<beams[0]<<", "
 			   <<" "<<bunches[1]<<" -> "<<beams[1]<<endl
 			   <<"  Delete it and ignore the process."<<endl;
@@ -238,7 +242,7 @@ int Amegic::ReadProcesses(string path)
 	    }
 	    else {
 	      if (!(beam->CheckConsistency(bunches,partons))) {
-		msg.Error()<<"Error in initialising Beam_Handler without ISR."<<endl
+		msg.Error()<<"Error in initialising Beam_Spectra_Handler without ISR."<<endl
 			   <<" "<<bunches[0]<<" -> "<<partons[0]<<", "
 			   <<" "<<bunches[1]<<" -> "<<partons[1]<<endl
 			   <<"  Delete it and ignore the process."<<endl;
@@ -248,21 +252,22 @@ int Amegic::ReadProcesses(string path)
 	    }
 	  }
 	}
-	if (!isr)  {
-	  isr  = new ISR_Handler(isrtypes,beams,partons,splimits);
-	  if (isr->On()>0) {
-	    if (!(isr->CheckConsistency(beams,partons))) {
+	if (!p_isrhandler)  {
+	  //	  p_isrhandler  = new ISR_Handler(isrtypes,beams,partons,splimits);
+	  ISR_Initialization(rpa.GetPath(),"/ISR.dat");
+	  if (p_isrhandler->On()>0) {
+	    if (!(p_isrhandler->CheckConsistency(beams,partons))) {
 	      msg.Error()<<"Error in initialising ISR_Handler."<<endl
 			 <<" "<<beams[0]<<" -> "<<partons[0]<<", "
 			 <<" "<<beams[1]<<" -> "<<partons[1]<<endl
 			 <<"  Delete it and ignore the process."<<endl;
-	      delete isr;
+	      delete p_isrhandler;
 	      error = 1;
 	    }
 	  }
 	}
 	if (beam->On()>0) {
-	  if (isr->On()>0) {
+	  if (p_isrhandler->On()>0) {
 	    if (!(beam->CheckConsistency(bunches,beams))) {
 	      error = 1;
 	    }
@@ -273,8 +278,8 @@ int Amegic::ReadProcesses(string path)
 	    }
 	  }
 	}
-	if (isr->On()>0) {
-	  if (!(isr->CheckConsistency(beams,partons))) {
+	if (p_isrhandler->On()>0) {
+	  if (!(p_isrhandler->CheckConsistency(beams,partons))) {
 	      msg.Error()<<"Error in initialising ISR_Handler."<<endl
 			 <<" "<<beams[0]<<" -> "<<partons[0]<<", "
 			 <<" "<<beams[1]<<" -> "<<partons[1]<<endl
@@ -306,12 +311,12 @@ int Amegic::ReadProcesses(string path)
 			  <<"flavours are "<<buf<<endl;
 	  }
 	  else {
-	    procs->Add(new Single_Process(nIS,nFS,flavs,isr,beam,seldata,2,
+	    procs->Add(new Single_Process(nIS,nFS,flavs,p_isrhandler,beam,seldata,2,
 					  rpa.me.KFactorScheme(),
 					  rpa.me.ScaleScheme(),plavs,runmode));
 	  }
 	}
-	else procs->Add(new Process_Group(nIS,nFS,flavs,isr,beam,seldata,2,
+	else procs->Add(new Process_Group(nIS,nFS,flavs,p_isrhandler,beam,seldata,2,
 					  rpa.me.KFactorScheme(),
 					  rpa.me.ScaleScheme(),plavs, runmode));
 	delete [] flavs;
@@ -603,4 +608,52 @@ void Amegic::SingleEvents() {
       msg.Debugging()<<endl;
     }
   }
+}
+
+
+// to be replaced by SHERPA Initialization soon
+void Amegic::ISR_Initialization(string dir,string file)  
+{
+  msg.Debugging()<<"Initialize ISR_Initialization for "<<dir<<file<<endl;
+  p_isrhandler             = NULL;
+  PDF::PDF_Handler * pdfhandler = new PDF::PDF_Handler();
+
+  PDF::PDF_Base *  pdfbase  = NULL;
+  ISR_Base ** isrbases = new ISR_Base*[2];
+  Flavour bunch_particles[2];
+  double  bunch_splimits[2];
+
+  msg.Debugging()<<"Open file "<<dir+file<<endl;
+  bool okay  = 1;
+  Data_Read * dataread = new Data_Read(dir+file);
+  for (int i=0;i<2;++i) {
+    pdfbase = pdfhandler->GetPDFLib(dataread,bunch_particles[i],i);
+    if (pdfbase==NULL) {
+      msg.Debugging()<<"No ISR for beam "<<i+1<<" : Initialize Intact for "<<bunch_particles[i]<<endl;
+      isrbases[i] = new Intact(bunch_particles[i]);     
+    }
+    else {
+      msg.Debugging()<<"ISR for beam "<<i+1<<" : Initialize SF for "<<bunch_particles[i]<<endl;
+      isrbases[i] = new Structure_Function(pdfbase,bunch_particles[i]);
+    }
+  }
+
+  bunch_splimits[0]      = dataread->GetValue<double>("ISR_SMIN");
+  bunch_splimits[1]      = dataread->GetValue<double>("ISR_SMAX");
+
+  p_isrhandler = new ISR_Handler(isrbases,bunch_splimits);
+
+  delete dataread;
+  delete pdfhandler;
+}
+
+// to be replaced by SHERPA Initialization soon
+void Amegic::Beam_Initialization(string dir,string file)
+{
+  msg.Debugging()<<"Initialized Beam_Initialization for "<<dir<<file<<endl;
+  Data_Read * dataread = new Data_Read(dir+file);
+  beam       = new Beam_Spectra_Handler(dataread);
+  //  Flavour   * beams    = new Flavour[2];
+  for (short int i=0;i<2;i++) beams[i] = beam->GetBeam(i)->Flav();
+  delete dataread;  
 }

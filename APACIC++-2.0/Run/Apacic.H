@@ -12,7 +12,7 @@ namespace APACIC {
   private:
     bool             test,ini,fin,had;
     ISR::ISR_Handler         * isr;
-    BEAM::Beam_Handler       * beam;
+    BEAM::Beam_Spectra_Handler       * beam;
     APHYTOOLS::Selector_Data * seldata;
     APHYTOOLS::Parton_List   * partons;
     APHYTOOLS::Blob_List     * blobs;

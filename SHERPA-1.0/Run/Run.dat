@@ -1,7 +1,7 @@
-EVENTS         = 500000    ! Number of Events
-CMSENERGY      = 91.2   ! cms-Energy in GeV
-BEAM1          = e-     ! possible beam particle:  P+, P-, e+, e-
-BEAM2          = e+     ! possible beam particle:  P+, P-, e+, e- 
+EVENTS         = 100000    ! Number of Events
+CMSENERGY      = 1800   ! cms-Energy in GeV
+BEAM1          = P+     ! possible beam particle:  P+, P-, e+, e-
+BEAM2          = P-     ! possible beam particle:  P+, P-, e+, e- 
 !
 MASSES         = On    ! Include effect of quark masses
 ANALYSIS       = 1     ! Analysis :
@@ -13,6 +13,8 @@ K_T_MIN        = 100.  ! Minimum pt for hard process !!!! (differs from ADICIC)
 Jet_Scheme     = 1     ! Jet-Scheme : 1=Durham,2=Jade,3=Geneva
 KFACTORSCHEME  = 1     ! 0 - no K-fact, 1 - [as(q)/as(s)]^(ns-2)   ! for matching 1
 SCALESCHEME    = 2     ! 0 - s, 1 - pt2, 2 - scale                 ! form matching 2
+OrderAlpha12   = 99             ! Order of g1/g2 for the process default 99 
+OrderAlphaS    = 99             ! Order of alphas for the process default 99 
 ! Shower parameter
 INITIAL_Q02    = 4.             ! initial state shower end virtuality         
 MODEL          = QCD            ! Model                             ! for matching QCD

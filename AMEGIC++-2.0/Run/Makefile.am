@@ -16,6 +16,7 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libToolsPhys.la \
 	       @libdir@/libToolsMath.la \
 	       @libdir@/libToolsOrg.la \
+	       @libdir@/libLHAPDF.la \
 	       @libdir@/libPDF.la \
 	       @libdir@/libExtraXS.la \
 	       @libdir@/libExtraXS2_2.la \
@@ -35,7 +36,7 @@ INCLUDES = -I../Main \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../PHASIC++-1.0/ISR \
 	   -I../../PHASIC++-1.0/Beam \
-	   -I../../PDF-1.0/Include \
+	   -I../../PDF-1.0/Main \
 	   -I../../EXTRA_XS-1.0/Main \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \

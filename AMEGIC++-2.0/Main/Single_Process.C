@@ -39,7 +39,7 @@ int fak(int N)
   ------------------------------------------------------------------------------- */
 
 Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
-			       ISR::ISR_Handler * _isr,BEAM::Beam_Handler * _beam,
+			       ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			       APHYTOOLS::Selector_Data * _seldata,
 			       int _gen_str,int _kfactorscheme, int _scalescheme, 
 			       Pol_Info * _pl, int _runmode) 

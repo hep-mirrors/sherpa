@@ -11,7 +11,7 @@ namespace EXTRAXS {
   public:
     QED_Processes();
     QED_Processes(int);
-    void Initialize(ISR::ISR_Handler *, BEAM::Beam_Handler *,
+    void Initialize(ISR::ISR_Handler *, BEAM::Beam_Spectra_Handler *,
 		    APHYTOOLS::Selector_Data *, AMEGIC::Process_Group *);
   };
 }

@@ -24,7 +24,7 @@ namespace EXTRAXS {
     double KFactor(double);
 
     void Initialize(APHYTOOLS::Flavour *) { }
-    void Initialize(ISR::ISR_Handler *, BEAM::Beam_Handler *,
+    void Initialize(ISR::ISR_Handler *, BEAM::Beam_Spectra_Handler *,
 		    APHYTOOLS::Selector_Data *, AMEGIC::Process_Group *);
   };
 }

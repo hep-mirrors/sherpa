@@ -227,7 +227,7 @@ void Running_AlphaS::Init()
   // read in order!!!!!!
   // working is: 0 == one loop,  1 == two loops (recom.), and  2 == three loops 
   //   attention! not working yet is:     3 == four loops
-  order=1;
+  order=0;
 
   Data_Read dr(rpa.GetPath()+std::string("/")+rpa.me.ModelFile());
   // Note: all alphas become inverted (see below) !!!

@@ -94,7 +94,7 @@ double Single_XS::operator()(double s,double t,double u) {
   return 0.; 
 }
 
-void Single_XS::MakeBroker(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
+void Single_XS::MakeBroker(ISR::ISR_Handler * isr, BEAM::Beam_Spectra_Handler * beam,
 			   APHYTOOLS::Selector_Data * _seldata,AMEGIC::Process_Group * _broker) 
 {
   Pol_Info * _plavs   = 0;

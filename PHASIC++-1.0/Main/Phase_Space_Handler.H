@@ -5,7 +5,7 @@
 
 namespace PHASIC  { class  Phase_Space_Integrator; }
 namespace PHASIC  { class  Phase_Space_Generator;  }
-namespace BEAM    { class  Beam_Handler;           }
+namespace BEAM    { class  Beam_Spectra_Handler;           }
 namespace ISR     { class  ISR_Handler;            }
 namespace AMEGIC  { class  Process_Base;           }                                       
 namespace EXTRAXS { class  XS_Base;                }                                       
@@ -18,7 +18,7 @@ namespace PHASIC {
     Multi_Channel * isrchannels;
     Multi_Channel * beamchannels;
     ISR::ISR_Handler   * ih;
-    BEAM::Beam_Handler * bh;
+    BEAM::Beam_Spectra_Handler * bh;
     std::vector<Channel_Info> beam_params;
     std::vector<Channel_Info> isr_params;
     Phase_Space_Generator * psgen;
@@ -49,7 +49,7 @@ namespace PHASIC {
     void Init(APHYTOOLS::Flavour *);
     bool Check4Momentum(AMATOOLS::Vec4D *);
   public:
-    Phase_Space_Handler(AMEGIC::Process_Base *,ISR::ISR_Handler *,BEAM::Beam_Handler *);
+    Phase_Space_Handler(AMEGIC::Process_Base *,ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Phase_Space_Handler();
     bool   CreateChannelLibrary(std::string,std::string);
     void   CollectChannels();
@@ -149,7 +149,7 @@ namespace PHASIC {
 //       For the Yennie-Frautschi-Suura method, however, it is not clear to me how to proceed.
 //     */
 //     ISR::ISR_Handler   * ih;
-//     BEAM::Beam_Handler * bh;
+//     BEAM::Beam_Spectra_Handler * bh;
 //     /*!
 //       The parameters of eventual initial state radiation channels. isr_types labels all 
 //       possible /sa isrchannels (s' will be the actual c.m. energy squared), but this depends on
@@ -275,8 +275,8 @@ namespace PHASIC {
 //       - makes a safety copy of the flavours.
 //       /sa CreateSelector(), InitInitialState()
 //     */
-//     Phase_Space_Handler(AMEGIC::Process_Base *,ISR::ISR_Handler *,BEAM::Beam_Handler *);
-//     Phase_Space_Handler(EXTRAXS::XS_Base *,ISR::ISR_Handler *,BEAM::Beam_Handler *);
+//     Phase_Space_Handler(AMEGIC::Process_Base *,ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
+//     Phase_Space_Handler(EXTRAXS::XS_Base *,ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
 //     ~Phase_Space_Handler();
 //     /*!
 //       Creates the channels of the multichannel with help of the

@@ -21,10 +21,14 @@ void Data_Read::SetValue(std::string name, std::string value) {
 // definition
 template <class Type>
 Type  Data_Read::GetValue(std::string name, Type default_value) {
-  Type dummy=GetValue<Type>(name);
-  if (dummy!=NotDefined<Type>()) {
-    return dummy;
+  Shorten(name);
+  if (name.length()==0) {
+    msg.Events()<<"Could not find any value for empty name. Return "<<default_value<<"."<<endl;
+    return default_value;
   }
+  Type dummy = GetValue<Type>(name);
+  if (dummy!=NotDefined<Type>()) { return dummy; }
+  msg.Events()<<"Could not find any allowed value for "<<name<<". Return "<<default_value<<"."<<endl;
   return default_value;
 }
 
@@ -71,14 +75,44 @@ template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string nam
   std::string value = parameters[name];
   
   if (value==std::string("No"))                   return Beam_Type::No;    
+  if (value==std::string("Monochromatic"))        return Beam_Type::Monochromatic;    
+  if (value==std::string("Gaussian"))             return Beam_Type::Gaussian;    
   if (value==std::string("Laser_Backscattering")) return Beam_Type::Laser_Back;    
-  
-  
+    
   msg.Error()<<"Unknown Beam type  "<<name<<" = "<<value<<" !!!"<<endl;
   return NotDefined<Beam_Type::code>();
 }
 
-// definition (specialisation), explicit instanciation
+template <> Beam_Generator::code Data_Read::GetValue<Beam_Generator::code>(std::string name) {
+  Shorten(name);
+  Parameter_Map::const_iterator cit=parameters.find(name);
+  if (cit==parameters.end()) return  NotDefined<Beam_Generator::code>();
+  std::string value = parameters[name];
+  
+  if (value==std::string("Internal"))  return Beam_Generator::Internal;
+    
+  msg.Error()<<"Unknown Beam generator  "<<name<<" = "<<value<<" !!!"<<endl;
+  return NotDefined<Beam_Generator::code>();
+}
+
+
+
+
+template <> Beam_Shape::code Data_Read::GetValue<Beam_Shape::code>(std::string name) {
+  Shorten(name);
+  Parameter_Map::const_iterator cit=parameters.find(name);
+  if (cit==parameters.end()) return  NotDefined<Beam_Shape::code>();
+  std::string value = parameters[name];
+  
+  if (value==std::string("Cylinder"))          return Beam_Shape::Cylinder;
+  if (value==std::string("Gaussian_Cylinder")) return Beam_Shape::Gaussian_Cylinder;
+  
+  msg.Error()<<"Unknown Beam shape  "<<name<<" = "<<value<<" !!!"<<endl;
+  return NotDefined<Beam_Shape::code>();
+}
+
+
+
 template <> ISR_Type::code Data_Read::GetValue<ISR_Type::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=parameters.find(name);
@@ -141,7 +175,12 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   
   Parameter_Map::const_iterator cit=parameters.find(name);
   if (cit==parameters.end()) return  NotDefined<Flavour>();
-  
+  if (!kf_table.IsInitialised()) {
+    msg.Error()<<"Warning in Flavour Data_Read::GetValue."<<endl
+	       <<"   kf table not initialized yet. Return undefined flavour."<<endl;
+    return NotDefined<Flavour>();
+  }
+
   std::string value = parameters[name];
   // compare strings
   bool anti= 0;  // 0 = particle;  1 = anti-particle
@@ -151,8 +190,6 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
     value = value.substr(hit+5);
     anti=1;
   }
-  // looking in Particles for string
-  if (!kf_table.IsInitialised()) return NotDefined<Flavour>();
   
   kf::code kfc;
   kfc = kf_table.FromString(value);
@@ -186,7 +223,6 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   if (kfci<0) fl = fl.Bar();
   return fl;
 }
-//  return NotDefined<Flavour>();
  
 
 
@@ -243,16 +279,16 @@ int Data_Read::Crossfoot(string name) {
 string Data_Read::GenerateKey() {
   // Hexadeximal Number
   //  nn_m_dddddd
-  //  v v  version main and subnumber of code (not included jet)
+  //  v v  version main and subnumber of code (not included yet)
   //  nn  number of parameters readin
   //  m   model number
-  //  dddddd = Sum_i (quersumme des namens * quersumme des werts)
+  //  dddddd = Sum_i (cross sum of name * cross sum of value above)
   //  output hex,
 
   // possible extensions: 
-  // * output 0-9,A-Z stat hex (130 mal soviel Zustaende)
+  // * output 0-9,A-Z stat hex (130 times as many states))
   // * additional rotation by position
-  // * make partitions of parameters that have been used and those not!
+  // * make partitions of parameters that have been used and those that have not been used.
 
   int sum=0;
   for (Parameter_Iterator it = parameters.begin(); it!=parameters.end() ; ++it) {
@@ -334,5 +370,12 @@ template int              Data_Read::GetValue<int>(std::string);
 template long             Data_Read::GetValue<long>(std::string);
 template float            Data_Read::GetValue<float>(std::string);
 template double           Data_Read::GetValue<double>(std::string);
-template double           Data_Read::GetValue(std::string,double);
 template std::string      Data_Read::GetValue<std::string>(std::string);
+
+template int              Data_Read::GetValue<int>(std::string,int);
+template long             Data_Read::GetValue<long>(std::string,long);
+template float            Data_Read::GetValue<float>(std::string,float);
+template double           Data_Read::GetValue<double>(std::string,double);
+template std::string      Data_Read::GetValue<std::string>(std::string,std::string);
+
+

@@ -2,7 +2,7 @@
 
 #include "Phase_Space_Generator.H"
 #include "Phase_Space_Integrator.H"
-#include "Beam_Handler.H"
+#include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
 #include "Process_Base.H"
 #include "Single_Process.H"
@@ -27,7 +27,7 @@ using namespace ISR;
 using namespace std;
 
 Phase_Space_Handler::Phase_Space_Handler(Process_Base * _proc,
-					 ISR_Handler * _ih,Beam_Handler * _bh) 
+					 ISR_Handler * _ih,Beam_Spectra_Handler * _bh) 
   : proc(_proc), ih(_ih), bh(_bh)
 {
   nin  = proc->Nin();

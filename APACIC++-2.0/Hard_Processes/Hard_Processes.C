@@ -16,7 +16,7 @@ using namespace AMEGIC;
 using namespace EXTRAXS;
 
 Hard_Processes::Hard_Processes(APHYTOOLS::Selector_Data * _seldata,
-			       ISR::ISR_Handler * _isr,BEAM::Beam_Handler * _beam,
+			       ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			       bool & success) : 
   seldata(_seldata), isr(_isr), beam(_beam)
 {

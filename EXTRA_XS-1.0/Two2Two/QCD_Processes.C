@@ -25,7 +25,7 @@ QCD_Processes::QCD_Processes()
   CreateSelector();
 }
 
-void QCD_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
+void QCD_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Spectra_Handler * beam,
 			       APHYTOOLS::Selector_Data * _seldata, AMEGIC::Process_Group * _broker)
 {
   xsselector = new XS_Selector();

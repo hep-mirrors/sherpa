@@ -29,7 +29,7 @@ namespace EXTRAXS {
 
     virtual XS_Base * Selected() { return this; }
 
-    void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Handler *,
+    void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Spectra_Handler *,
 		    APHYTOOLS::Selector_Data *,AMEGIC::Process_Group *);
 
   };

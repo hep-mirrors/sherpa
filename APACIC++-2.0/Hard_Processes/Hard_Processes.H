@@ -5,7 +5,7 @@
 #include "XS_Base.H"
 #include "All_Processes.H"
 #include "ISR_Handler.H"
-#include "Beam_Handler.H"
+#include "Beam_Spectra_Handler.H"
 
 #include <string>
 
@@ -19,12 +19,12 @@ namespace APACIC {
     AMEGIC::All_Processes    * broker;
     APHYTOOLS::Selector_Data * seldata;
     ISR::ISR_Handler         * isr;
-    BEAM::Beam_Handler       * beam;
+    BEAM::Beam_Spectra_Handler       * beam;
 
     bool ProcessesInit();
 
   public :
-    Hard_Processes(APHYTOOLS::Selector_Data *,ISR::ISR_Handler *,BEAM::Beam_Handler *,bool &);
+    Hard_Processes(APHYTOOLS::Selector_Data *,ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,bool &);
     ~Hard_Processes();
     bool OneEvent();
     bool PrepareCalculation();
