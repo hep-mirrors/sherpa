@@ -65,7 +65,8 @@ void Analysis_Handler::ShowSyntax(const size_t i)
   ATOOLS::msg.Out()<<"Analysis_Handler::ShowSyntax(): {\n\n"
 		   <<"   ..     -  mandatory variable\n"
 		   <<"   ..|..  -  mandatory selection\n"
-		   <<"   [..]   -  optional variable\n\n";
+		   <<"   [..]   -  optional variable\n"
+		   <<"   -> ..  -  depends on\n\n";
   Getter_Function::PrintGetterInfo(ATOOLS::msg.Out(),10);
   ATOOLS::msg.Out()<<"\n}"<<std::endl;
 }
