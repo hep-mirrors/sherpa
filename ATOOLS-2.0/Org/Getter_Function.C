@@ -15,12 +15,12 @@
 
 using namespace ATOOLS;
 
-template<class ObjectType,class ParameterType>
-typename Getter_Function<ObjectType,ParameterType>::String_Getter_Map *
-Getter_Function<ObjectType,ParameterType>::s_getters=NULL;
+template<class ObjectType,class ParameterType,class OwnerType>
+typename Getter_Function<ObjectType,ParameterType,OwnerType>::String_Getter_Map *
+Getter_Function<ObjectType,ParameterType,OwnerType>::s_getters=NULL;
 
-template<class ObjectType,class ParameterType>
-Getter_Function<ObjectType,ParameterType>::
+template<class ObjectType,class ParameterType,class OwnerType>
+Getter_Function<ObjectType,ParameterType,OwnerType>::
 Getter_Function(const std::string &name)
 {
   static bool initialized=false;
@@ -43,8 +43,8 @@ Getter_Function(const std::string &name)
   }
 }
 
-template<class ObjectType,class ParameterType>
-Getter_Function<ObjectType,ParameterType>::~Getter_Function()
+template<class ObjectType,class ParameterType,class OwnerType>
+Getter_Function<ObjectType,ParameterType,OwnerType>::~Getter_Function()
 {
   for (typename String_Getter_Map::iterator git=s_getters->begin();
        git!=s_getters->end();++git) {
@@ -55,24 +55,24 @@ Getter_Function<ObjectType,ParameterType>::~Getter_Function()
   }
 }
 
-template<class ObjectType,class ParameterType>
-void Getter_Function<ObjectType,ParameterType>::
+template<class ObjectType,class ParameterType,class OwnerType>
+void Getter_Function<ObjectType,ParameterType,OwnerType>::
 PrintInfo(std::ostream &str,const size_t width) const
 {
   str<<"No Information";
 }
 
-template<class ObjectType,class ParameterType>
-ObjectType *const Getter_Function<ObjectType,ParameterType>::
-operator()(const Parameter_Type &parameters) const
+template<class ObjectType,class ParameterType,class OwnerType>
+ObjectType *const Getter_Function<ObjectType,ParameterType,OwnerType>::
+operator()(const Parameter_Type &parameters,OwnerType *const owner) const
 {
   std::cout<<"Getter_Function::operator(): "
 	   <<"Virtual function called."<<std::endl;
   return NULL;
 }
 
-template<class ObjectType,class ParameterType>
-void Getter_Function<ObjectType,ParameterType>::
+template<class ObjectType,class ParameterType,class OwnerType>
+void Getter_Function<ObjectType,ParameterType,OwnerType>::
 PrintGetterInfo(std::ostream &str,const size_t width)
 {
   const std::ios_base::fmtflags def=str.flags();
@@ -86,15 +86,34 @@ PrintGetterInfo(std::ostream &str,const size_t width)
   str.setf(def);
 }
 
-template<class ObjectType,class ParameterType>
-ObjectType *const Getter_Function<ObjectType,ParameterType>::
-GetObject(const std::string &name,const Parameter_Type &parameters)
+template<class ObjectType,class ParameterType,class OwnerType>
+ObjectType *const Getter_Function<ObjectType,ParameterType,OwnerType>::
+GetObject(const std::string &name,const Parameter_Type &parameters,
+	  OwnerType *const owner)
 {
   typename String_Getter_Map::iterator git=s_getters->find(name);
-  if (git!=s_getters->end()) return (*git->second)(parameters);
+  if (git!=s_getters->end()) return (*git->second)(parameters,owner);
   return NULL;
 }
 
-template Getter_Function<OBJECT_TYPE,PARAMETER_TYPE>;
+template<class ObjectType,class ParameterType>
+Primitive_Getter_Function<ObjectType,ParameterType>::
+Primitive_Getter_Function(const std::string &name):
+  Getter_Function<ObjectType,ParameterType,void>(name) 
+{
+}
+
+template<class ObjectType,class ParameterType>
+ObjectType *const Primitive_Getter_Function<ObjectType,ParameterType>::
+GetObject(const std::string &name,const Parameter_Type &parameters)
+{
+  return Getter_Function<ObjectType,ParameterType,void>::GetObject(name,parameters,NULL);
+}
+
+#ifdef OWNER_TYPE
+template Getter_Function<OBJECT_TYPE,PARAMETER_TYPE,OWNER_TYPE>;
+#else
+template Primitive_Getter_Function<OBJECT_TYPE,PARAMETER_TYPE>;
+#endif
 
 #endif
