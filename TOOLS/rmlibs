@@ -21,26 +21,30 @@ for I in $* ; do
   fi
 done
 
-echo "**************************************"
-echo "*   removing libraries from SHERPA   *"
-echo "**************************************"
+echo "************************************"
+echo "*   removing libraries of SHERPA   *"
+echo "************************************"
 for I in $DIRS;
 do
-  echo "======================================"
-  echo " removing libraries in $I;"
-  echo "======================================"
-  cd $I 
-  FILES=`find . -maxdepth 4 -name 'lib*'`
-  rm $FILES
-  if test "$CONFIGURE" = "TRUE" ; then
-    libtoolize --force
-    aclocal
-    automake -a
-    autoconf
+  if test -d $I ; then
+    echo "===================================="
+    echo " removing libraries in $I"
+    echo "===================================="
+    cd $I 
+    FILES=`find . -maxdepth 4 -name 'lib*'`
+    rm $FILES
+    if test "$CONFIGURE" = "TRUE" ; then
+      libtoolize --force
+      aclocal
+      automake -a
+      autoconf
+    fi
+    if test "$INSTALL" = "TRUE" ; then
+      make install -j2 
+    fi
+    cd ..
+  else 
+    echo "rmlibs: error: directory $I not found"
   fi
-  if test "$INSTALL" = "TRUE" ; then
-    make install -j2 
-  fi
-  cd ..
 done;
 
