@@ -213,6 +213,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 	}
 
       }
+      p_shower->CleanUp();
       p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
       return 1;
     }
