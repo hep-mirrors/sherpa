@@ -88,6 +88,8 @@ namespace AMISIC {
 
     bool CalculateOMean(const double ratio);
 
+    double DiceImpactParameter() const;
+
     // inline functions
     inline pft::code Type() const { return m_type; }
 
@@ -102,9 +104,9 @@ namespace AMISIC {
     inline double KFactor() const { return m_kfactor; }
     inline double OMean() const   { return m_omean;   }
 
-    Differential_Overlap *const Differential() const 
+    inline Differential_Overlap *const Differential() const 
     { return p_overlap; }
-    Interaction_Probability *const Probability() const  
+    inline Interaction_Probability *const Probability() const  
     { return p_probability; }
 
     inline double operator()(const double b) const 
@@ -112,13 +114,8 @@ namespace AMISIC {
     inline double operator[](const double b) const 
     { return MajorValue(b); }
 
-    inline double operator+(const double b) const 
-    { return MajorIntegral(b); }
-    inline double operator-(const double I) const 
-    { return InverseMajorIntegral(I); }
-
   };// end of class Profile_Function_Base
-  
+
   //////////////////
   // Doxygen part //
   //////////////////

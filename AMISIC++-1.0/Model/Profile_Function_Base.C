@@ -2,7 +2,7 @@
 
 #include "Profile_Function.H"
 #include "Gauss_Integrator.H"
-#include "MathTools.H"
+#include "Random.H"
 
 using namespace AMISIC;
 
@@ -144,4 +144,13 @@ bool Profile_Function_Base::CalculateOMean(const double ratio)
   return true;
 }
 
+double Profile_Function_Base::DiceImpactParameter() const
+{
+  double b=0.0;
+  double maxintegral=MajorIntegral(m_bmin);
+  do {
+    b=InverseMajorIntegral(ATOOLS::ran.Get()*maxintegral);
+  } while (Value(b)<=ATOOLS::ran.Get()*MajorValue(b));
+  return b;
+}
 

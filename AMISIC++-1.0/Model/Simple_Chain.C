@@ -820,11 +820,8 @@ bool Simple_Chain::DiceEnhanceFactor()
   if (p_profile==NULL) return true;
   double b=0.0;
   double last=(*p_total)(m_last[0]);
-  double maxintegral=(*p_profile)+p_profile->BMin();
   do {
-    do {
-      b=(*p_profile)-(ATOOLS::ran.Get()*maxintegral);
-    } while ((*p_profile)(b)<=ATOOLS::ran.Get()*(*p_profile)[b]);
+    b=p_profile->DiceImpactParameter();
     m_enhance=(*p_profile)(b)/p_profile->OMean();
   } while (exp(-m_enhance*last)<=ATOOLS::ran.Get());
   msg_Tracking()<<"Simple_Chain::DiceEnhanceFactor(): { profile '"
