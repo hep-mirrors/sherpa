@@ -71,6 +71,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
   char hlp[4];
   sprintf(hlp,"%i",nout);
   fsrpath += string(hlp);
+  fsrpath0 = fsrpath;
   if (cnt>=maxchannels) {
     sprintf(hlp,"_%i",cnt/maxchannels);
     fsrpath = fsrpath+string(hlp);
