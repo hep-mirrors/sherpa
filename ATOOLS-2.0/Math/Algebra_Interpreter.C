@@ -7,6 +7,8 @@
 
 using namespace ATOOLS;
 
+Function::Function(const std::string &tag): m_tag(tag) {}
+
 Function::~Function() {}
 
 std::string Function::Evaluate(const std::vector<std::string> &args) const
@@ -44,7 +46,66 @@ DEFINE_BINARY_OPERATOR(Binary_Divide,"/",2)
   return ToString(arg0/arg1);
 }
 
-DEFINE_UNARY_OPERATOR(Unary_Not,"!",3)
+DEFINE_BINARY_OPERATOR(Binary_Modulus,"%",2)
+{
+  long int arg0=ToType<long int>(args[0]);
+  long int arg1=ToType<long int>(args[1]);
+  return ToString(arg0%arg1);
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Shift_Left,"<<",2)
+{
+  long int arg0=ToType<long int>(args[0]);
+  long int arg1=ToType<long int>(args[1]);
+  return ToString(arg0<<arg1);
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Shift_Right,">>",2)
+{
+  long int arg0=ToType<long int>(args[0]);
+  long int arg1=ToType<long int>(args[1]);
+  return ToString(arg0>>arg1);
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Equal,"==",3)
+{
+  return args[0]==args[1]?"1":"0";
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Not_Equal,"!=",3)
+{
+  return args[0]!=args[1]?"1":"0";
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Less,"<",3)
+{
+  double arg0=ToType<double>(args[0]);
+  double arg1=ToType<double>(args[1]);
+  return arg0<arg1?"1":"0";
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Greater,">",3)
+{
+  double arg0=ToType<double>(args[0]);
+  double arg1=ToType<double>(args[1]);
+  return arg0>arg1?"1":"0";
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Less_Equal,"<=",3)
+{
+  double arg0=ToType<double>(args[0]);
+  double arg1=ToType<double>(args[1]);
+  return arg0<=arg1?"1":"0";
+}
+
+DEFINE_BINARY_OPERATOR(Binary_Greater_Equal,">=",3)
+{
+  double arg0=ToType<double>(args[0]);
+  double arg1=ToType<double>(args[1]);
+  return arg0>=arg1?"1":"0";
+}
+
+DEFINE_UNARY_OPERATOR(Unary_Not,"!",4)
 {
   double arg0=ToType<int>(args[0]);
   return ToString(!arg0);
@@ -203,12 +264,25 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   if (expr.find("(")!=std::string::npos ||
       expr.find(")")!=std::string::npos) return expr;
   Operator *op=NULL;
-  size_t pos=std::string::npos;
+  size_t pos=std::string::npos, tpos=std::string::npos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) 
-    if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos &&
-	expr[pos-1]!='e' && expr[pos-1]!='E') 
+    if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos) {
+      if (oit->second->Tag()=="-") {
+	if (expr[pos-1]=='e' || expr[pos-1]=='E') continue;
+	if (pos>0) {
+	  for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
+		 toit=p_interpreter->Operators().rbegin();
+	       toit!=p_interpreter->Operators().rend();++toit) 
+	    if ((tpos=expr.rfind(toit->second->Tag(),pos-1))!=
+		std::string::npos) {
+	      pos=tpos;
+	      oit=toit;
+	      break;
+	    }
+	}
+      }
       if (oit->second->Binary() && pos!=0) {
 	op=oit->second;
 	break;
@@ -216,6 +290,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
       else {
 	return expr;
       }
+    }
   if (op==NULL) return expr;
   std::string lrstr, lstr=expr.substr(0,pos);
   size_t lfpos=0;
@@ -237,7 +312,8 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   }
   lrstr=lstr.substr(0,lfpos);
   lstr=lstr.substr(lfpos);
-  std::string rrstr, rstr=expr.substr(pos+op->Tag().length());
+  std::string rrstr, rstr=expr.substr(pos+op->Tag().length()), mrstr=rstr;
+  if (tpos==pos) rstr=rstr.substr(1);
   size_t rfpos=rstr.length();
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
@@ -254,6 +330,10 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 	rfpos=Min(rfpos,trfpos);
       }
     }
+  }
+  if (tpos==pos) {
+    rstr=mrstr;
+    ++rfpos;
   }
   rrstr=rstr.substr(rfpos);
   rstr=rstr.substr(0,rfpos);
@@ -326,6 +406,15 @@ Algebra_Interpreter::Algebra_Interpreter(const bool standard)
   AddOperator(new Binary_Minus());
   AddOperator(new Binary_Times());
   AddOperator(new Binary_Divide());
+  AddOperator(new Binary_Equal());
+  AddOperator(new Binary_Not_Equal());
+  AddOperator(new Binary_Less());
+  AddOperator(new Binary_Greater());
+  AddOperator(new Binary_Less_Equal());
+  AddOperator(new Binary_Greater_Equal());
+  AddOperator(new Binary_Modulus());
+  AddOperator(new Binary_Shift_Left());
+  AddOperator(new Binary_Shift_Right());
   AddOperator(new Unary_Not());
   AddFunction(new Power());
   AddFunction(new Logarithm());

@@ -17,7 +17,7 @@ namespace ATOOLS {
   public:
 
     // constructor
-    inline Function(const std::string &tag): m_tag(tag) {}
+    Function(const std::string &tag);
 
     // destructor
     virtual ~Function();
@@ -125,25 +125,28 @@ namespace ATOOLS {
 #define DEFINE_FUNCTION(NAME,TAG)					\
   class NAME: public Function {						\
   public:								\
-    inline NAME(): Function(TAG) {}					\
+    NAME();								\
     std::string Evaluate(const std::vector<std::string> &args) const;	\
   };									\
+  NAME::NAME(): Function(TAG) {}					\
   std::string NAME::Evaluate(const std::vector<std::string> &args) const
 
 #define DEFINE_UNARY_OPERATOR(NAME,TAG,PRIORITY)			\
   class NAME: public Operator {						\
   public:								\
-    inline NAME(): Operator(TAG,PRIORITY,false) {}			\
+    NAME();								\
     std::string Evaluate(const std::vector<std::string> &args) const;	\
   };									\
+  NAME::NAME(): Operator(TAG,PRIORITY,false) {}				\
   std::string NAME::Evaluate(const std::vector<std::string> &args) const
 
 #define DEFINE_BINARY_OPERATOR(NAME,TAG,PRIORITY)			\
   class NAME: public Operator {						\
   public:								\
-    inline NAME(): Operator(TAG,PRIORITY,true) {}			\
+    NAME();								\
     std::string Evaluate(const std::vector<std::string> &args) const;	\
   };									\
+  NAME::NAME(): Operator(TAG,PRIORITY,true) {}				\
   std::string NAME::Evaluate(const std::vector<std::string> &args) const
 
 #define DEFINE_INTERPRETER_FUNCTION(NAME)				\
