@@ -30,6 +30,8 @@ namespace SHERPA {
     long int NumberOfErrors() { return m_errors; } 
     
     bool     PerformScan();
+
+    IO_Handler *GetIOHandler() { return p_iohandler; }
   };
 
   /*!

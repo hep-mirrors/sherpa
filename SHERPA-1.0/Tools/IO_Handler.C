@@ -22,20 +22,27 @@ const iotype::code SHERPA::operator&(const iotype::code code1,const iotype::code
 
 IO_Handler::IO_Handler():
   m_io(0), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
-#ifdef _USE_HEPMC_
-  p_hepmc(NULL), p_event(NULL),
+#ifdef CLHEP_SUPPORT
+  p_hepmc(NULL), 
+  p_event(NULL),  
 #endif
-  p_hepevt(NULL), p_instream(NULL) {}
+  p_hepevt(NULL), 
+  p_instream(NULL) {}
 
 IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
 		       const std::vector<std::string> & infiles,
 		       const std::string _path):
   m_on(true), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
-#ifdef _USE_HEPMC_
-  p_hepmc(NULL), p_event(NULL),
+#ifdef CLHEP_SUPPORT
+  p_hepmc(NULL), 
+  p_event(NULL),
 #endif
-  p_hepevt(NULL), p_instream(NULL),
-  m_path(_path), m_filesize(1000), m_evtnumber(0), m_evtcount(0)
+  p_hepevt(NULL), 
+  p_instream(NULL),
+  m_path(_path), 
+  m_filesize(1000), 
+  m_evtnumber(0), 
+  m_evtcount(0)
 {
   for (size_t i=0;i<infiles.size();++i) {
     m_intype=m_intype|(iotype::code)(pow(2,i)*(infiles[i]!=std::string("")));
@@ -62,10 +69,9 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
       abort();
     }
     break;
-#ifdef _USE_HEPMC_
+#ifdef CLHEP_SUPPORT
   case iotype::HepMC: 
-    p_hepmc  = new HepMC_Interface();
-    break;
+    p_hepmc = new HepMC_Interface();
 #endif
   case iotype::HepEvt:
     p_hepevt = new HepEvt_Interface(true,1,m_path,outfiles[2]);
@@ -95,7 +101,7 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
       abort();
     }
     break;
-#ifdef _USE_HEPMC_
+#ifdef CLHEP_SUPPORT
   case iotype::HepMC: 
     if (p_hepmc==NULL) p_hepmc  = new HepMC_Interface();
     break;
@@ -112,9 +118,8 @@ IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
 
 IO_Handler::~IO_Handler() 
 {
-#ifdef _USE_HEPMC_
-  if (p_hepmc!=NULL)  { delete p_hepmc;  p_hepmc=NULL;  }
-  if (p_event!=NULL)  { delete p_event;  p_event=NULL;  }
+#ifdef CLHEP_SUPPORT
+  if (p_hepmc)  { delete p_hepmc;  p_hepmc  = NULL; }
 #endif
   if (p_hepevt!=NULL) { delete p_hepevt; p_hepevt=NULL; }
   if (p_instream) {
@@ -156,13 +161,10 @@ bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weig
 		     <<"   No output, continue run ..."<<std::endl;
 	  break;
 	}
-#ifdef _USE_HEPMC_
+#ifdef CLHEP_SUPPORT
       case iotype::HepMC: 
-	if (p_event) { delete p_event; p_event = NULL; }
-	p_event = new HepMC::GenEvent();
-	p_hepmc->Sherpa2HepMC(_blobs,p_event);
-	p_event->print();
-	return true;
+	p_hepmc->Sherpa2HepMC(blobs,p_event);
+	if (ATOOLS::msg.LevelIsEvents()) p_event->print();
 #endif
       case iotype::HepEvt: 
 	p_hepevt->Sherpa2HepEvt(blobs); return true;

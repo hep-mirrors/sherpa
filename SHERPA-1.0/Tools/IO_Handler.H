@@ -1,7 +1,7 @@
 #ifndef IO_Handler_H
 #define IO_Handler_H
 
-#ifdef _USE_HEPMC_
+#ifdef CLHEP_SUPPORT
 #include "HepMC_Interface.H"
 #endif
 
@@ -31,7 +31,7 @@ namespace SHERPA {
     int             m_io;
     iotype::code    m_outtype, m_intype;
 
-#ifdef _USE_HEPMC_
+#ifdef CLHEP_SUPPORT
     HepMC_Interface          * p_hepmc;
     HepMC::GenEvent          * p_event;
 #endif
@@ -63,6 +63,10 @@ namespace SHERPA {
     
     // inline functions
     inline bool OutputOn() const { return m_io&1; }
+
+#ifdef CLHEP_SUPPORT
+    HepMC::GenEvent *GetGenEvent() { return p_event; }
+#endif
   };
 
   /*!
