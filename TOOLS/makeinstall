@@ -6,12 +6,14 @@ DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
 DIRS=$DIRS" EXTRA_XS-1.0 APACIC++-2.0 ADICIC++-0.0 AMEGIC++-2.0 AMISIC++-1.0"
 DIRS=$DIRS" ANALYSIS-1.0 SHERPA-1.0 COMPARE-1.0"
 
-rmr () {  
-  for file in * ; do                                                          
-    if [ -d $file ] ; then                                                       
-      cd $file                                                                  
-      rmr "$1" $2
-      cd ..                                                             
+rmr () { 
+  for file in `ls -a` ; do                                                          
+    if [ $file != . ] && [ $file != .. ]; then
+      if [ -d $file ] ; then                                                       
+        cd $file  
+        rmr "$1" $2
+        cd ..                                                             
+      fi
     fi
   done  
   for i in $1 ; do    
