@@ -35,7 +35,7 @@ namespace AMEGIC {
     void FillCoupling(String_Handler*);
     void MPolconvert(int,int);
     void Prop_Replace(ATOOLS::Flavour,int,int,int);
-    Point*  GetPointlist() {return Pointlist;} 
+    Point*  GetPointlist();
     inline  Color_Function* Get_CFlist()  {return CFlist;}
     inline  Color_Function* Get_CCFlist() {return CCFlist;}
 

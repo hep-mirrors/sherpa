@@ -418,7 +418,7 @@ void Amplitude_Handler::CheckEqualInGroup()
   // === old ========================================
   //Renew all Zfuncs
   for (int g1=0;g1<namplitude;g1++) {
-    Amplitude_Base* f1 = GetAmplitude(g1);    
+    Amplitude_Base* f1 = GetAmplitude(g1);
     Zfunc_List* zlist = f1->GetZlist();
     for (Zfunc_Iterator zit=zlist->begin();zit!=zlist->end();++zit) {
       Zfunc* zl1 = (*zit);

@@ -37,53 +37,18 @@ namespace AMEGIC {
     Complex Zvalue(String_Handler*,int);
     Complex Zvalue(int);
     Complex Zvalue(int,int*);
-    void    PrintGraph() {
-      if (!ATOOLS::rpa.gen.Tracking()) return;
-      ATOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;
-      for (size_t i=0;i<graphs.size();i++) graphs[i]->PrintGraph();
-    }
-    void FillCoupling(String_Handler* shand) 
-    { 
-      for (size_t i=0;i<graphs.size();i++) graphs[i]->FillCoupling(shand);
-    }
-    void ClearCalcList() 
-    {
-      for (size_t i=0;i<graphs.size();i++) graphs[i]->ClearCalcList();
-    }
-    void KillZList() 
-    {
-      for (size_t i=0;i<graphs.size();i++) graphs[i]->KillZList();
-    }
-    void SetStringOn()   
-    {
-      buildstring=1;
-      for (size_t i=0;i<graphs.size();i++) graphs[i]->SetStringOn();
-    }
-    void SetStringOff()  
-    {
-      buildstring=0;
-      for (size_t i=0;i<graphs.size();i++) graphs[i]->SetStringOff();
-    }
-    void SetNumber(int& n) 
-    {
-      for (size_t i=0;i<graphs.size();i++) graphs[i]->SetNumber(n);
-    }
-    void Add(Amplitude_Base* ab, int sign =1) {
-      if (sign==-1)
-	ab->SetSign(sign*ab->GetSign());
-      graphs.push_back(ab);
-    }
-    int  Size()                             { return graphs.size(); }
+    void    PrintGraph();
+    void FillCoupling(String_Handler*); 
+    void ClearCalcList(); 
+    void KillZList(); 
+    void SetStringOn();   
+    void SetStringOff();  
+    void SetNumber(int& n); 
+    void Add(Amplitude_Base*, int sign =1);
+    int  Size();
     Amplitude_Base* operator[](const int i) { return (i<(int)graphs.size()) ? graphs[i] : 0; }
 
-    Amplitude_Base* GetAmplitude(const int n) {
-      for (size_t i=0;i<graphs.size();i++) {
-	Amplitude_Base* help = graphs[i]->GetAmplitude(n);
-	if (help!=0) return help;
-      }
-      return 0;
-    }
-
+    Amplitude_Base* GetAmplitude(const int n);
     void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
   };
 

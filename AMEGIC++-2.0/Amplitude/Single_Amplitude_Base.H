@@ -33,27 +33,23 @@ namespace AMEGIC {
     void    GroupZfuncs();
   public:
     int sign;
-    Single_Amplitude_Base(int* _b,int _n, Basic_Sfuncs* _BS,
-			  ATOOLS::Flavour* _fl,
-			  String_Handler* _shand) 
-      : b(_b), N(_n), shand(_shand), BS(_BS), fl(_fl) {zlist= new Zfunc_List;}
-
+    Single_Amplitude_Base(int*,int,Basic_Sfuncs*,ATOOLS::Flavour* ,String_Handler*); 
     virtual ~Single_Amplitude_Base();
 
     Complex Zvalue(int);
     Complex Zvalue(int,int*);
     Complex Zvalue(String_Handler * sh,int ihel);
 
-    inline  Zfunc_List* GetZlist() {return zlist;}
-    inline  Pfunc_List* GetPlist() {return &plist;}
-    inline  int GetSign() {return sign;}
-    inline  void SetSign(int s) {sign=s;}
+    Zfunc_List* GetZlist();
+    Pfunc_List* GetPlist();
+    int GetSign();
+    void SetSign(int);
 
     void ClearCalcList();
     void KillZList();
     void PrintGraph(); 
-    void SetNumber(int& i) {amplnumber = i;i++;}
-    Amplitude_Base* GetAmplitude(const int n) {return (n==amplnumber) ? this : 0;}
+    void SetNumber(int& i);
+    Amplitude_Base* GetAmplitude(const int n);
   };
 
   /*!

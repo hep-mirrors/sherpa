@@ -68,20 +68,9 @@ namespace AMEGIC {
 
     Basic_Func(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : sgen(_sgen), BS(_BS) {}
 
-    virtual Kabbala X(const int,const int,const int) {
-      std::cerr<<"Calling Basic_Func::X3"<<std::endl;
-      return Kabbala();
-    }
-    virtual Kabbala V(const int a,const int b)
-    {
-      std::cerr<<"Calling Basic_Func::V"<<std::endl;
-      return Kabbala();
-    }
-    virtual Kabbala Vcplx(const int a,const int b,const int s=1)
-    {
-      std::cerr<<"Calling Basic_Func::Vcplx"<<std::endl;
-      return Kabbala();
-    }
+    virtual Kabbala X(const int,const int,const int);
+    virtual Kabbala V(const int,const int);
+    virtual Kabbala Vcplx(const int,const int,const int s=1);
 
     void SetArgCouplProp(int,int*,Complex*,int,Argument*,Pfunc_List*);
     void Map(int&);
@@ -97,7 +86,7 @@ namespace AMEGIC {
     Complex Ycalc(const int,const int,const int,const int,const Complex&,const Complex&);
 
     template <int,int>
-    Complex YT(const int,const int,const Complex&,const Complex&);
+    inline Complex YT(const int,const int,const Complex&,const Complex&);
   };
 
   class Basic_Zfunc : public virtual Basic_Func {

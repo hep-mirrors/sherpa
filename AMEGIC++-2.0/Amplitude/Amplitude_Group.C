@@ -34,6 +34,64 @@ Amplitude_Group::~Amplitude_Group()
   //graphs.clear();
 }
 
+void Amplitude_Group::PrintGraph() {
+  if (!ATOOLS::rpa.gen.Tracking()) return;
+  ATOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;
+  for (size_t i=0;i<graphs.size();i++) graphs[i]->PrintGraph();
+}
+
+void Amplitude_Group::FillCoupling(String_Handler* shand) 
+{ 
+  for (size_t i=0;i<graphs.size();i++) graphs[i]->FillCoupling(shand);
+}
+
+void Amplitude_Group::ClearCalcList() 
+{
+  for (size_t i=0;i<graphs.size();i++) graphs[i]->ClearCalcList();
+}
+
+void Amplitude_Group::KillZList() 
+{
+  for (size_t i=0;i<graphs.size();i++) graphs[i]->KillZList();
+}
+
+void Amplitude_Group::SetStringOn()   
+{
+  buildstring=1;
+  for (size_t i=0;i<graphs.size();i++) graphs[i]->SetStringOn();
+}
+
+void Amplitude_Group::SetStringOff()  
+{
+  buildstring=0;
+  for (size_t i=0;i<graphs.size();i++) graphs[i]->SetStringOff();
+}
+
+void Amplitude_Group::SetNumber(int& n) 
+{
+  for (size_t i=0;i<graphs.size();i++) graphs[i]->SetNumber(n);
+}
+
+void Amplitude_Group::Add(Amplitude_Base* ab, int sign) {
+  if (sign==-1)
+    ab->SetSign(sign*ab->GetSign());
+  graphs.push_back(ab);
+}
+ 
+int Amplitude_Group::Size()                             
+{ 
+  return graphs.size(); 
+}
+
+Amplitude_Base* Amplitude_Group::GetAmplitude(const int n) {
+  for (size_t i=0;i<graphs.size();i++) {
+    Amplitude_Base* help = graphs[i]->GetAmplitude(n);
+    if (help!=0) return help;
+  }
+  return 0;
+}
+
+
 Graph_Family *  Amplitude_Group::FindFamily(int zn, int tn, int pn) {
   for (Graph_Families::iterator git=family_table.begin(); git!=family_table.end();++git) {
     if (((*git)->znumber==zn) && ((*git)->topnumber==tn) && ((*git)->permnumber==pn)) {

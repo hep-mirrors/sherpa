@@ -7,6 +7,25 @@ using namespace AMEGIC;
 using namespace ATOOLS;
 using namespace std;
 
+void Super_Amplitude::ClearCalcList()                   
+{
+  Single_Amplitude_Base::ClearCalcList();
+}
+
+void Super_Amplitude::KillZList()         
+{
+  Amplitude_Group::KillZList();
+}
+
+void Super_Amplitude::SetNumber(int & n)                
+{
+  Single_Amplitude_Base::SetNumber(n);
+}
+
+Zfunc_List* Super_Amplitude::GetZlist()                    
+{
+  Single_Amplitude_Base::GetZlist();
+}
 
 void Super_Amplitude::Init(string _str)
 {

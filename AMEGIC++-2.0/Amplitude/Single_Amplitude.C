@@ -110,6 +110,10 @@ Single_Amplitude::~Single_Amplitude()
 
 }
 
+Point* Single_Amplitude::GetPointlist() {
+  return Pointlist;
+} 
+
 void Single_Amplitude::AddSpinorDirection(const int& from,const int& to)
 {
   SpinorDirection* sd = new SpinorDirection;

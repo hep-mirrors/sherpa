@@ -70,6 +70,22 @@ double Basic_Func::GetPMass(int a,int sign)
   return 0.;
 }
 
+Kabbala Basic_Func::X(const int,const int,const int) {
+  std::cerr<<"Calling Basic_Func::X3"<<std::endl;
+  return Kabbala();
+}
+
+Kabbala Basic_Func::V(const int a,const int b)
+{
+  std::cerr<<"Calling Basic_Func::V"<<std::endl;
+  return Kabbala();
+}
+
+Kabbala Basic_Func::Vcplx(const int a,const int b,const int s)
+{
+  std::cerr<<"Calling Basic_Func::Vcplx"<<std::endl;
+  return Kabbala();
+}
 
 
 

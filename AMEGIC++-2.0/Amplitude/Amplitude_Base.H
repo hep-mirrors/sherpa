@@ -28,29 +28,19 @@ namespace AMEGIC {
     virtual void SetNumber(int&) = 0;
     virtual Amplitude_Base* GetAmplitude(const int) = 0;
 
-    virtual void SetStringOn()  {buildstring = 1;}
-    virtual void SetStringOff() {buildstring = 0;}
-    virtual Point*  GetPointlist() 
-      {std::cerr<<"Error: Virtual  Amplitude_Base::GetPointlist() called!"<<std::endl;return 0;}
+    virtual void SetStringOn();  
+    virtual void SetStringOff(); 
+    virtual Point*  GetPointlist(); 
+    virtual void Add(Amplitude_Base*, int sign=1);
+    virtual int Size();
 
-    virtual void Add(Amplitude_Base*, int sign=1)
-      {std::cerr<<"Error: Virtual  Amplitude_Base::Add() called!"<<std::endl;}
-    virtual int Size()  {return 1;}
-    virtual Amplitude_Base* operator[](const int i) { return this; }
+    virtual Zfunc_List* GetZlist();
+    virtual Pfunc_List* GetPlist(); 
 
-    virtual Zfunc_List* GetZlist()
-      {std::cerr<<"Error: Virtual  Amplitude_Base::GetZlist() called!"<<std::endl;return 0;}
-    virtual Pfunc_List* GetPlist()
-      {std::cerr<<"Error: Virtual  Amplitude_Base::GetPlist() called!"<<std::endl;return 0;}
+    virtual int GetSign();
+    virtual void SetSign(int);
 
-    virtual int GetSign()
-      {std::cerr<<"Error: Virtual  Amplitude_Base::GetSign() called!"<<std::endl;return 0;}
-
-    virtual void SetSign(int)
-      {std::cerr<<"Error: Virtual  Amplitude_Base::SetSign() called!"<<std::endl;}
-
-    virtual void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*)
-      {std::cerr<<"Error: Virtual  Amplitude_Base::BuildGlobalString() called!"<<std::endl;}
+    virtual void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
   };
 }
 #endif

@@ -132,7 +132,7 @@ class VVSS4_Calc : public Zfunc_Calc,
     Kabbala Do(); 
   };
 
-  class VVVV_Calc : public Zfunc_Calc, 
+  /*class VVVV_Calc : public Zfunc_Calc, 
 		    public Basic_Zfunc,
 		    public Basic_Xfunc,
 		    public Basic_Mfunc,
@@ -148,9 +148,9 @@ class VVSS4_Calc : public Zfunc_Calc,
     VVVV_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~VVVV_Calc() {}
     Kabbala Do();
-  };
+    };*/
 
-  class V5_Calc : public Zfunc_Calc, 
+  /*class V5_Calc : public Zfunc_Calc, 
 		  public Basic_Zfunc,
 		  public Basic_Xfunc,
 		  public Basic_Mfunc,
@@ -169,9 +169,9 @@ class VVSS4_Calc : public Zfunc_Calc,
     V5_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~V5_Calc() {}
     Kabbala Do();
-  };
+    };*/
 
-  class V4V3_Calc : public Zfunc_Calc, 
+  /*class V4V3_Calc : public Zfunc_Calc, 
 		    public Basic_Zfunc,
 		    public Basic_Xfunc,
 		    public Basic_Vfunc,
@@ -182,7 +182,7 @@ class VVSS4_Calc : public Zfunc_Calc,
     V4V3_Calc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS);
     ~V4V3_Calc() {}
     Kabbala Do();
-  };
+    };*/
 
 
   class FFT_Calc : public Zfunc_Calc, 

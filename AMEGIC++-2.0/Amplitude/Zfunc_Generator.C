@@ -28,11 +28,11 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
     zcalc.push_back(new Y_Calc(_sgen,_BS));
     zcalc.push_back(new Z_Calc(_sgen,_BS));
     zcalc.push_back(new VVV_Calc(_sgen,_BS));
-    zcalc.push_back(new VVVV_Calc(_sgen,_BS));
+    //zcalc.push_back(new VVVV_Calc(_sgen,_BS));
     zcalc.push_back(new V4_Calc(_sgen,_BS));
     zcalc.push_back(new G4_Calc(_sgen,_BS));
-    zcalc.push_back(new V5_Calc(_sgen,_BS));
-    zcalc.push_back(new V4V3_Calc(_sgen,_BS));
+    //zcalc.push_back(new V5_Calc(_sgen,_BS));
+    //zcalc.push_back(new V4V3_Calc(_sgen,_BS));
     zcalc.push_back(new VVS_Calc(_sgen,_BS));
     zcalc.push_back(new SSV_Calc(_sgen,_BS));
     zcalc.push_back(new SSS_Calc(_sgen,_BS));

@@ -12,6 +12,38 @@ using namespace std;
 
 #define Cut_Fermion_Prop
 
+Single_Amplitude_Base::Single_Amplitude_Base(int* _b,int _n, Basic_Sfuncs* _BS,
+					     ATOOLS::Flavour* _fl,
+					     String_Handler* _shand) 
+  : b(_b), N(_n), shand(_shand), BS(_BS), fl(_fl) 
+{
+  zlist= new Zfunc_List;
+}
+
+Zfunc_List* Single_Amplitude_Base::GetZlist() {
+  return zlist;
+}
+
+Pfunc_List* Single_Amplitude_Base::GetPlist() {
+  return &plist;
+}
+
+int Single_Amplitude_Base::GetSign() {
+  return sign;
+}
+
+void Single_Amplitude_Base::SetSign(int s) {
+  sign=s;
+}
+
+void Single_Amplitude_Base::SetNumber(int& i) {
+  amplnumber = i;i++;
+}
+
+Amplitude_Base* Single_Amplitude_Base::GetAmplitude(const int n) {
+  return (n==amplnumber) ? this : 0;
+}
+ 
 Single_Amplitude_Base::~Single_Amplitude_Base() 
 {
   if (zlist){
@@ -114,6 +146,7 @@ int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector
 	  args[2*i]   = z->p_arguments[i]-20;
 	  args[2*i+1] = -1;
 	}
+	else args[2*i+1] = 0;
       }
     }
   }
@@ -159,7 +192,6 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
                         else value += hlp;
     }
   }  
-
   if(z->GetOp()=='*'){
     Kabbala hlp;
 
@@ -189,7 +221,7 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
 	  
 	  hlp= SingleZvalue((*z)[0],iz,iargs)*
 	       SingleZvalue((*z)[1],iz,iargs);
-	  
+
 	  if ((z->GetSumIndex()>99) && (z->GetSumIndex()<199))
 	    hlp*= SingleMassTerms((*iz)[iz->size()-1],(*iargs)[iargs->size()-2]);
 	  value+=hlp;
@@ -252,8 +284,8 @@ Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,vector<int>* iz, vector<int
     return SingleZvalueTensor(z,iz,iargs,k); //produce tensors for extern spin2 bosons
   }
 
-  Zfunc* ze = z;
-  if (z->p_equal!=z) ze = z->p_equal;
+  Zfunc* ze = z->p_equal;
+  //if (z->p_equal!=z) ze = z->p_equal;
 
   for (CL_Iterator clit=ze->m_calclist.begin();clit!=ze->m_calclist.end();++clit) {
      if ((*clit).Compare(args,2*z->m_narg)) {
@@ -273,7 +305,7 @@ Kabbala Single_Amplitude_Base::SingleZvalue(Zfunc* z,vector<int>* iz, vector<int
 
     value = z->p_calculator->Do();
   }
-
+  
   if (buildstring) {
     if ( (value.String()).find(string("+"))!=-1 ||
 	 (value.String()).find(string("-"))!=-1 ||
