@@ -1,0 +1,63 @@
+#ifndef Herwig_Interface_H
+#define Herwig_Interface_H
+
+#include "HepEvt_Interface.H"
+#include "Particle_List.H"
+#include "Blob_List.H"
+#include "ISR_Handler.H"
+#include <map>
+
+namespace SHERPA {
+
+  class Herwig_Interface {
+  private:
+
+  private:
+
+    static size_t s_errors, s_maxerrors;
+
+    std::string m_path, m_file, m_outfilename;
+
+    ATOOLS::HepEvt_Interface *p_hepevt;
+    static PDF::ISR_Handler  *s_isrhandler;
+
+    long int m_events, m_curfile, m_evtsperfile;
+    bool     m_compress, m_writeout;
+
+    double * p_phep,   * p_vhep;
+    int    * p_jmohep, * p_jdahep;
+    static ATOOLS::Blob_List * s_bloblist;
+
+    static bool s_exportas, s_exportpdf;
+
+
+    // tools for converting a whole event
+    bool ConvertParticles(std::map<int,ATOOLS::Particle*> &converted);
+    bool ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS::Particle*> &converted);
+    bool SetTypes(ATOOLS::Blob_List *blobs);
+    bool DeleteObsolete(std::map<int,ATOOLS::Particle*> &converted);
+    void NextFile(const bool newfile);
+
+  public:
+    Herwig_Interface(std::string _m_path,std::string _m_file,bool sherpa);
+    ~Herwig_Interface();
+
+    bool ConvertEvent(ATOOLS::Blob_List *blobs);
+    static void Error(const int error);
+    bool OneEvent(ATOOLS::Blob_List *const bloblist,double &weight);
+
+   // inline functions
+    inline static void SetISRHandler(PDF::ISR_Handler *const handler) { s_isrhandler=handler; }
+
+    inline static PDF::ISR_Handler *ISRHandler() { return s_isrhandler; }
+
+    inline static bool ExportAS()  { return s_exportas;  }
+    inline static bool ExportPDF() { return s_exportpdf; }
+
+    //    bool Treat(ATOOLS::Blob_List *, double &);
+    //    void CleanUp();
+  };
+
+}// end of namespace SHERPA
+
+#endif

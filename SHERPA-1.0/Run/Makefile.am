@@ -10,7 +10,7 @@ APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 ADICICDIR     =	$(SHERPASYS)/ADICIC++-0.0
 
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
-		-I../SoftPhysics -I../LundTools -I../Single_Events \
+		-I../SoftPhysics -I../LundTools -I../HerwigTools -I../Single_Events \
 		-I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
@@ -47,7 +47,7 @@ APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain
 ADICICLIBS    =	-L@libdir@ -lAdicicMain -lAdicicHdl -lAdicicStruct -lAdicicTool 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
+		-lSherpaSoftPhysics -lLundTools -lHerwigTools -lSherpaTools 
 
 if AMISIC_SUPPORT
 AMISICFLAGS   =	-DUSING__Amisic
