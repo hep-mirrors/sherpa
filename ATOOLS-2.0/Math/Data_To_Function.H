@@ -197,11 +197,11 @@ namespace ATOOLS {
     DataToFunctionType *IntegralY(ArgumentType xmin=0.0,ArgumentType xmax=0.0,
 				  std::string xscaling=nullstring,
 				  std::string yscaling=nullstring,
-				  bool forward=true);
+				  bool forward=true,const MonotonyID=None);
     DataToFunctionType *IntegralX(ResultType ymin=0.0,ResultType ymax=0.0,
   				  std::string yscaling=nullstring,
 				  std::string xscaling=nullstring,
-				  bool forward=true);
+				  bool forward=true,const MonotonyID=None);
 
     ResultType   IntegrateY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
     ArgumentType IntegrateX(ResultType ymin=0.0,ResultType ymax=0.0);

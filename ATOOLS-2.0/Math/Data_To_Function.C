@@ -730,7 +730,8 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
-  IntegralY(ArgumentType xmin,ArgumentType xmax,std::string xscaling,std::string yscaling,bool forward)
+  IntegralY(ArgumentType xmin,ArgumentType xmax,std::string xscaling,std::string yscaling,
+	    bool forward,const MonotonyID monotony=None)
   { 
 #ifdef PROFILE__Data_To_Function
     PROFILE_HERE;
@@ -743,6 +744,7 @@ namespace ATOOLS {
       xmax=(*p_xaxis)[(*p_xydata)[p_xydata->size()-1].first];
     }
     integrated = new DataToFunctionType();
+    integrated->SetMonotony(monotony);
     integrated->XAxis()->SetVariable(ATOOLS::Variable(p_xaxis->Variable().Name()));
     integrated->YAxis()->SetVariable(ATOOLS::Variable(std::string("\\int d")+p_xaxis->Variable().Name()
 						      +std::string(" ")+p_yaxis->Variable().Name()));
@@ -814,7 +816,8 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
-  IntegralX(ResultType ymin,ResultType ymax,std::string yscaling,std::string xscaling,bool forward)
+  IntegralX(ResultType ymin,ResultType ymax,std::string yscaling,std::string xscaling,
+	    bool forward,const MonotonyID monotony=None)
   { 
 #ifdef PROFILE__Data_To_Function
     PROFILE_HERE;
@@ -827,6 +830,7 @@ namespace ATOOLS {
       ymax=(*p_yaxis)[(*p_yxdata)[p_yxdata->size()-1].first];
     }
     integrated = new DataToFunctionType();
+    integrated->SetMonotony(monotony);
     integrated->XAxis()->SetVariable(ATOOLS::Variable(std::string("\\int d")+p_yaxis->Variable().Name()
 						      +std::string(" ")+p_xaxis->Variable().Name()));
     integrated->YAxis()->SetVariable(ATOOLS::Variable(p_yaxis->Variable().Name()));
