@@ -109,7 +109,7 @@ double Phase_Space_Handler::Integrate()
   }
   if (ih) {
     if (ih->On()>0) {
-      ih->SetSprimeMin(sqr(proc->ISRThreshold()));
+      ih->SetSprimeMin(AMATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
       isrchannels->GetRange();
       msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
 		     <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl;
@@ -179,7 +179,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
 
   if (!Check4Momentum(p)) {
     msg.Out()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
-    //    for (int i=0;i<nin+nout;++i) cout<<i<<":"<<p[i]<<endl;
+    //for (int i=0;i<nin+nout;++i) msg.Out()<<i<<":"<<p[i]<<endl;
     return 0.;
   }
 
