@@ -13,7 +13,7 @@ Perturbative_Interface::Perturbative_Interface(Matrix_Element_Handler *mehandler
   p_fl(NULL), 
   p_moms(NULL) {}
 
-virtual Perturbative_Interface::~Perturbative_Interface() 
+Perturbative_Interface::~Perturbative_Interface() 
 {
   if (p_fl)   { delete p_fl;   p_fl   = NULL; }
   if (p_moms) { delete p_moms; p_moms = NULL; }
