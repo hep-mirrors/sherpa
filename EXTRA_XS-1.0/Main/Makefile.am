@@ -9,7 +9,7 @@ INCLUDES = -I../Two2Two \
 	   -I../../AMEGIC++-2.0/String \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../MODEL-1.0/Main \
-	   -I../../BEAM-1.0 \
+	   -I../../BEAM-1.0/Main \
 	   -I../../PDF-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
            -I../../ATOOLS-2.0/Phys \

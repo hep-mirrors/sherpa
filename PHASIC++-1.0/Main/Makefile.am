@@ -8,7 +8,7 @@ libPhasespace_la_SOURCES = Phase_Space_Handler.C Phase_Space_Integrator.C \
 			   Multi_Channel.C Single_Channel.C \
 			   ISR_Channel.C FSR_Channel.C Rambo.C RamboKK.C Sarge.C \
 			   Channel_Basics.C Channel_Elements.C 
-INCLUDES = -I../../BEAM-1.0 \
+INCLUDES = -I../../BEAM-1.0/Main \
 	   -I../../PDF-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
 	   -I../../ATOOLS-2.0/Phys \

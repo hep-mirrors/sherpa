@@ -8,7 +8,7 @@ INCLUDES = -I../Main \
 	   -I../String \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../MODEL-1.0/Main \
-	   -I../../BEAM-1.0 \
+	   -I../../BEAM-1.0/Main \
 	   -I../../PDF-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
 	   -I../../EXTRA_XS-1.0/Main \

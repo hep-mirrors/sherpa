@@ -4,7 +4,7 @@ libExtraXS2_2_la_SOURCES = XS_QCD.C XS_Drell_Yan.C \
 INCLUDES = -I../Main \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../MODEL-1.0/Main \
-	   -I../../BEAM-1.0 \
+	   -I../../BEAM-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
 	   -I../../PDF-1.0/Main \
            -I../../ATOOLS-2.0/Phys \

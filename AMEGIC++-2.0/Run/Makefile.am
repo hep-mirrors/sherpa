@@ -24,7 +24,6 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libPDF.la \
 	       @libdir@/libLHAPDF.la \
 	       @libdir@/libPhasespace.la \
-	       @libdir@/libISR.la \
 	       @libdir@/libBeam.la \
 	       -lg2c -lm 
 #	       -L$(rootlibdir) -lCint -lCore -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
@@ -39,11 +38,10 @@ INCLUDES = -I../Main \
 	   -I../Model \
 	   -I../String \
 	   -I../../PHASIC++-1.0/Main \
-	   -I../../PHASIC++-1.0/ISR \
-	   -I../../PHASIC++-1.0/Beam \
 	   -I../../MODEL-1.0/Main \
 	   -I../../MODEL-1.0/Hdecay \
 	   -I../../MODEL-1.0/Isajet \
+	   -I../../BEAM-1.0/Main \
 	   -I../../PDF-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
 	   -I../../EXTRA_XS-1.0/Main \
