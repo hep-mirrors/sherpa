@@ -338,7 +338,7 @@ void Process_Group::GroupProcesses() {
       if ((sproc->Flavours()[sproc->NIn()+j]).IsFermion()) fermions++;
       if ((sproc->Flavours()[sproc->NIn()+j]).IsVector())  vectors++;
     }
-    std::string numb = ToString(scalars)+"S_"+ToString(fermions)+"F_"+ToString(vectors)+"V";
+    help += ToString(scalars)+"S_"+ToString(fermions)+"F_"+ToString(vectors)+"V";
     
     bool found = 0;
     for (size_t j=0;j<m_procs.size();j++) {
