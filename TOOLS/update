@@ -3,11 +3,15 @@
 NOUPDATE="TRUE"
 TEMPFILE="#update#"
 
-EXTENSIONS="\.C \.cpp \.cc \.H \.hpp \.hh \.am configure\.in"
+EXTENSIONS="\.C \.cpp \.cc"
+EXTENSIONS=$EXTENSIONS=" \.H \.hpp \.hh"
+EXTENSIONS=$EXTENSIONS=" \.am configure\.in" 
+EXTENSIONS=$EXTENSIONS=" \.trf \.man \.texi \.info"
 DESCRIPTIONS="C-Files cpp-Files cc-Files"
 DESCRIPTIONS=$DESCRIPTIONS" H-Files hpp-Files hh-Files"
 DESCRIPTIONS=$DESCRIPTIONS" Makefiles configures"
-COLOURS="4 4 4 2 2 2 1 1"
+DESCRIPTIONS=$DESCRIPTIONS" Manpages Manpages TeXinfos TeXinfos"
+COLOURS="4 4 4 2 2 2 1 1 6 6 6 6"
 
 OPTIONS=
 LOGFILE="updated"
