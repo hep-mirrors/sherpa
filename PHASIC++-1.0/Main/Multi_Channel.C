@@ -12,18 +12,17 @@ using namespace std;
 #include <mpi++.h>
 #endif
 
-Multi_Channel::Multi_Channel(string _name) 
+Multi_Channel::Multi_Channel(string _name) : fl(NULL), s1(NULL), s2(NULL)
 {
   string help;
   int    pos;
   for (;;) {
     pos  = _name.find(" ");
     if (pos==-1) break;
-    help  = _name;
-    _name = help.substr(0,pos) + help.substr(pos+1); 
+    help   = _name;
+    _name  = help.substr(0,pos) + help.substr(pos+1); 
   }
   name     = _name;
-  s1       = s2        = 0;
   n_points = n_contrib = 0;
 }
 
@@ -94,7 +93,7 @@ void Multi_Channel::Reset()
 void Multi_Channel::ResetOpt() 
 {
   n_points = 0;
-};        
+}        
 
 void Multi_Channel::MPIOptimize(double error)
 {
@@ -104,8 +103,8 @@ void Multi_Channel::MPIOptimize(double error)
   
   cout<<"Process "<<rank<<" in MPIOptimize()."<<endl;
 
-  double* messageblock = new double[1+3*channels.size()];
-  double* alp = new double[channels.size()];
+  double * messageblock = new double[1+3*channels.size()];
+  double * alp = new double[channels.size()];
   //tag 9 for communication
   if (rank==0) {
     int count = 0;
@@ -336,7 +335,7 @@ void Multi_Channel::GeneratePoint(int n,Vec4D * p,Cut_Data * cuts,double * ran)
   channels[n]->GeneratePoint(p,cuts,ran);
 }
 
-void Multi_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
+void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {
   for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   double rn  = ran.Get();
@@ -382,10 +381,11 @@ void Multi_Channel::GenerateWeight(Vec4D * p)
 
 void Multi_Channel::GeneratePoint(int n,Vec4D * p,double * rn)
 {
+  msg.Debugging()<<"Multi_Channel::GeneratePoint("<<name<<", "<<n<<")"<<endl;
   channels[n]->GeneratePoint(p,rn);
 }
 
-void Multi_Channel::GeneratePoint(Vec4D* p)
+void Multi_Channel::GeneratePoint(Vec4D * p)
 {
   for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   double rn  = ran.Get();

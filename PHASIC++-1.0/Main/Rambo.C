@@ -7,7 +7,9 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
-Rambo::Rambo(int _nin,int _nout,Flavour * fl) : nin(_nin), nout(_nout)
+Rambo::Rambo(int _nin,int _nout,Flavour * fl) : 
+  nin(_nin), nout(_nout), 
+  xm2(NULL), p2(NULL), E(NULL), ms(NULL)
 {
   xm2 = new double[nin+nout+1];
   p2  = new double[nin+nout+1];  

@@ -61,8 +61,9 @@ void Single_Channel::GeneratePoint(Vec4D* p,Cut_Data * cuts)
 }
 
 
-void Single_Channel::GeneratePoint(Vec4D* p)
+void Single_Channel::GeneratePoint(Vec4D * p)
 {
+  msg.Debugging()<<"In Single_Channel::GeneratePoint(Vec4d) "<<name<<endl;
   for (short int i=1;i<rannum;i++) rans[i] = ran.Get();
   GeneratePoint(p,rans);
 }

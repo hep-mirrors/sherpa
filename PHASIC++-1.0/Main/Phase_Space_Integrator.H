@@ -4,6 +4,18 @@
 namespace PHASIC {class Phase_Space_Handler;}
 
 namespace PHASIC {
+  class Phase_Space_Integrator {
+    double   result, max, error;
+    int      iter,nopt;
+    long int maxopt,nmax;
+  public:
+    Phase_Space_Integrator();
+    double Calculate(Phase_Space_Handler*,double); 
+    double CalculateDecay(Phase_Space_Handler*,double,double); 
+    //! Simple access methods.
+    inline double GetMax()            { return max; };
+    inline void   SetMax(double _max) { max = _max; };
+  };
   /*!
     To perform the phase space integral. Its main task is to
     call the integration channel repeatedly and to sample the process
@@ -15,38 +27,22 @@ namespace PHASIC {
     In that respect, the Integrator is a mere tool, initialized and
     steered by the handler.
   */
-  class Phase_Space_Integrator {
-    /*! 
-      Global results of the integration:
-      Value of the results, its actual error and the maximal value 
-      given by the combination of matrixelement and phase space point
-      so far.
-    */
-    double   result, max, error;
-    /*!
-      Parameters for steering the integration
-    */
-    int      iter,nopt;
-    long int maxopt,nmax;
-  public:
-    /*!
-      Constructor initializes the steering parameters and the
-      channel(s) for the integration.
-    */
-    Phase_Space_Integrator();
-    /*!
-      Calculate the total cross section of a 2->N process up to
-      an error given externally by the Phase_Space_Handler.
-    */
-    double Calculate(Phase_Space_Handler*,double); 
-   /*!
-      Calculate the Decay width of a 1->N process up to
-      an error given externally by the Phase_Space_Handler.
-    */
-    double CalculateDecay(Phase_Space_Handler*,double,double); 
-    //! Simple access methods.
-    inline double GetMax()            { return max; };
-    inline void   SetMax(double _max) { max = _max; };
-  };
+  /*! 
+    Global results of the integration:
+    Value of the results, its actual error and the maximal value 
+    given by the combination of matrixelement and phase space point
+    so far.
+  */
+  /*!
+    Parameters for steering the integration
+  */
+  /*!
+    Constructor initializes the steering parameters and the
+    channel(s) for the integration.
+  */
+  /*!
+    Calculate the total cross section of a 2->N process up to
+    an error given externally by the Phase_Space_Handler.
+  */
 }
 #endif

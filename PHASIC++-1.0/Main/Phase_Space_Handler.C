@@ -3,7 +3,6 @@
 #include "Phase_Space_Integrator.H"
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
-#include "Process_Base.H"
 
 #include "Rambo.H"
 #include "RamboKK.H"
@@ -16,22 +15,20 @@
 #include "Random.H"
 
 using namespace PHASIC;
-using namespace AMEGIC;
-using namespace EXTRAXS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace AMATOOLS;
-using namespace BEAM; 
+using namespace BEAM;
 using namespace ISR;
 using namespace std;
 
-Phase_Space_Handler::Phase_Space_Handler(Process_Base * _proc,
+Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
 					 ISR_Handler * _ih,Beam_Spectra_Handler * _bh) 
   : proc(_proc), ih(_ih), bh(_bh),
     E(AORGTOOLS::rpa.gen.Ecms()), s(E*E), sprime(s),
     maxtrials(100000), sumtrials(0),
-    events(0), psi(NULL), 
-    beamchannels(NULL), isrchannels(NULL), fsrchannels(NULL),
+    events(0), psi(NULL), p(NULL),
+    beamchannels(NULL), isrchannels(NULL), fsrchannels(NULL), psflavs(NULL),
     nin(proc->Nin()), nout(proc->Nout()), nvec(proc->Nvec()+1), name(proc->Name())
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
@@ -54,11 +51,11 @@ Phase_Space_Handler::Phase_Space_Handler(Process_Base * _proc,
     if (ih) {
       if (ih->On()>0) isrchannels  = new Multi_Channel(string("isr_")+proc->Name());
     }
-    fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
   }
+  fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
 
-  msg.Debugging()<<"Initialized new Phase_Space_Handler for "<<proc->Name()<<endl;
-  msg.Tracking()<<" ("<<ih->Type()<<", "<<nin<<"  ->  "<<nout<<" process)"<<endl;
+  msg.Tracking()<<"Initialized new Phase_Space_Handler for "<<proc->Name()<<endl
+		<<" ("<<ih->Type()<<", "<<nin<<"  ->  "<<nout<<" process)"<<endl;
 }
 
 Phase_Space_Handler::~Phase_Space_Handler()
@@ -69,7 +66,6 @@ Phase_Space_Handler::~Phase_Space_Handler()
   if (isrchannels)  { delete isrchannels;  isrchannels  = 0; }
   if (fsrchannels)  { delete fsrchannels;  fsrchannels  = 0; }
   if (beamchannels) { delete beamchannels; beamchannels = 0; }
-  // if (kin)          { delete kin;          kin          = 0; }
   if (proc) msg.Debugging()<<"Deleted Phase_Space_Handler for "<<proc->Name()<<endl;
 }
 
@@ -103,7 +99,8 @@ double Phase_Space_Handler::Integrate()
     return 0;
   } 
 
-if (bh) {
+  msg.SetPrecision(12);
+  if (bh) {
     if (bh->On()>0) {
       beamchannels->GetRange();
       beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
@@ -114,9 +111,8 @@ if (bh) {
     if (ih->On()>0) {
       ih->SetSprimeMin(sqr(proc->ISRThreshold()));
       isrchannels->GetRange();
-      msg.Debugging()<<"In Phase_Space_Handler::Integrate : ";
-      if (bh) bh->On(); msg.Debugging()<<":"<<ih->On()<<endl;
-      msg.Debugging()<<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl;
+      msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
+		     <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl;
       isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
       isrchannels->GetRange();
     }
@@ -125,7 +121,7 @@ if (bh) {
 
   if (nin==2) return psi->Calculate(this,error);
   if (nin==1) return psi->CalculateDecay(this,sqrt(p[0].Abs2()),error);
-  
+  return 0.;
 }
 
 
@@ -157,8 +153,7 @@ double Phase_Space_Handler::Differential() {
   return Differential(proc);
 }
 
-double Phase_Space_Handler::Differential(Process_Base * process)
-{
+double Phase_Space_Handler::Differential(Integrable_Base * process) { 
   y = 0;
   if (bh && bh->On()>0) { 
     beamchannels->GeneratePoint(sprimeB,yB,bh->On()); 
@@ -186,7 +181,6 @@ double Phase_Space_Handler::Differential(Process_Base * process)
   if ( (bh && bh->On()>0) || (ih && ih->On()>0) ) {
     proc->UpdateCuts(sprime,y);
   }
-  
   fsrchannels->GeneratePoint(p,proc->Cuts());
 
   if (!Check4Momentum(p)) {
@@ -195,16 +189,10 @@ double Phase_Space_Handler::Differential(Process_Base * process)
   }
 
   double value = 0., KFactor = 0., Q2 = -1.;
-  
-  result1 = result2 = 0.;
+  result1      = result2     = 0.;
 
-  if (bh && bh->On()>0) bh->BoostInLab(p,nin+nout);
-  if (ih && ih->On()>0) ih->BoostInLab(p,nin+nout);
-
-  Vec4D * p_save = new Vec4D[nin+nout];
-  for (int i=0;i<nin+nout;++i) p_save[i]=p[i];
-  
-
+  if (bh->On()>0) bh->BoostInLab(p,nin+nout);
+  if (ih->On()>0) ih->BoostInLab(p,nin+nout);
 
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
 
@@ -229,8 +217,7 @@ double Phase_Space_Handler::Differential(Process_Base * process)
 
     KFactor = proc->KFactor(Q2);
     fsrchannels->GenerateWeight(p,proc->Cuts());
-    result1 *= KFactor;
-    result1 *= fsrchannels->Weight();
+    result1 *= KFactor * fsrchannels->Weight();
 
     if (ih && ih->On()==3) result2 = result1;
 
@@ -242,14 +229,11 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     Rotate(p);
     ih->CalculateWeight2(Q2);
     if (result2 > 0.) result2 *= process->Differential2();
-    else              result2  = 0.;
+                 else result2  = 0.;
   }
 
   if ( (ih && ih->On()>0) || (bh && bh->On()>0) ) 
     flux = 1./(2.*sqrt(sqr(sprime-m12-m22)-4.*m12*m22));
-
-  for (int i=0;i<nin+nout;++i) p[i]=p_save[i];
-  delete [] p_save;
 
   return flux*(result1+result2);
 }
@@ -272,22 +256,20 @@ bool Phase_Space_Handler::OneEvent(int mode)
 {
   double value;
   for (int i=1;i<maxtrials+1;i++) {
-    {
-      if (mode==0) {
-	proc->DeSelect();
-	proc->SelectOne();
-      }
-      else {
-	if (!(proc->Selected())) {
-	  msg.Error()<<" ERROR: in Phase_Space_Handler::OneEvent() "<<endl;
-	  return 0;
-	}
-      }
-      ih->SetSprimeMin(sqr(proc->ISRThreshold()));
-      
-      if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
-      value = Differential(proc->Selected());
+    if (mode==0) {
+      proc->DeSelect();
+      proc->SelectOne();
     }
+    else {
+      if (!(proc->Selected())) {
+	msg.Error()<<" ERROR: in Phase_Space_Handler::OneEvent() "<<endl;
+	return 0;
+      }
+    }
+    ih->SetSprimeMin(sqr(proc->ISRThreshold()));
+    
+    if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
+    value = Differential(proc->Selected());
 
     if (value > 0.) {
       double max;
@@ -301,9 +283,9 @@ bool Phase_Space_Handler::OneEvent(int mode)
       else disc  = max*AMATOOLS::ran.Get();
       if (value >= disc) {
 	sumtrials += i;events ++;
-	msg.Debugging()<<"Phase_Space_Handler::OneEvent() : "<<i<<" trials for ";
-	msg.Debugging()<<proc->Selected()->Name()<<endl;
-	msg.Debugging()<<"   Efficiency = "<<100./double(i)<<" %."
+	msg.Debugging()<<"Phase_Space_Handler::OneEvent() : "<<i<<" trials for "
+		       <<proc->Selected()->Name()<<endl
+		       <<"   Efficiency = "<<100./double(i)<<" %."
 		       <<"   in total = "<<double(events)/double(sumtrials)*100.<<" %."<<endl;
 
 
@@ -312,7 +294,7 @@ bool Phase_Space_Handler::OneEvent(int mode)
 	for (int i=0;i<nin+nout;i++) {
 	  msg.Debugging()<<"  "<<proc->Selected()->Flavs()[i]<<" : "<<p[i]<<endl; 
 	} 
-	return 1.;
+	return 1;
       }
     }
   }
@@ -320,11 +302,8 @@ bool Phase_Space_Handler::OneEvent(int mode)
 
 
   msg.Debugging()<<"Phase_Space_Handler::OneEvent() : "
-		 <<" too many trials for ";
-  msg.Debugging()<<proc->Selected()->Name()<<endl;
-  msg.Debugging()<<"   Efficiency = "<<double(events)/double(sumtrials)*100.<<" %."<<endl;
-
-
+		 <<" too many trials for "<<proc->Selected()->Name()<<endl
+		 <<"   Efficiency = "<<double(events)/double(sumtrials)*100.<<" %."<<endl;
   return 0;
 }
 
@@ -408,8 +387,7 @@ bool Phase_Space_Handler::CreateIntegrators()
 {
   msg.Debugging()<<"In Phase_Space_Handler::CreateIntegrators"<<endl;
 
-  if (nin==1) int_type = 0; //The Rambo integrator
-
+  if (nin==1) int_type = 0;
   if (bh) {
     if ((nin==2) && (bh && bh->On()>0) ) {
       if (!(MakeBeamChannels())) {
@@ -426,7 +404,7 @@ bool Phase_Space_Handler::CreateIntegrators()
   }
 
   if (ih) {
-    if ((nin==2) && (ih->On()>0)) {
+    if ((nin==2) && (ih && ih->On()>0)) {
       if (!(MakeISRChannels())) {
 	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
 		   <<"   did not construct any isr channels !"<<endl;
@@ -444,6 +422,7 @@ bool Phase_Space_Handler::CreateIntegrators()
 		 <<" integration mode = "<<int_type<<endl;
   
   if (int_type < 3 || int_type == 5 && (fsrchannels!=0)) fsrchannels->DropAllChannels();
+  
   switch (int_type) {
   case 0: 
     fsrchannels->Add(new Rambo(nin,nout,psflavs));
@@ -721,7 +700,8 @@ bool Phase_Space_Handler::MakeISRChannels()
   double deltay[2];  
   deltay[0] = log(ih->Upper1());
   deltay[1] = log(ih->Upper2());
-  msg.Out()<<"*** DeltaY1 / 2 = "<<deltay[0]<<" / "<<deltay[1]<<endl;
+  msg.Out()<<"*** DeltaY1 / 2 = "<<deltay[0]<<" / "<<deltay[1]<<endl
+	   <<"*** Exponents :   "<<ih->Exponent(0)<<" / "<<ih->Exponent(1)<<endl;
 
 
   if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) {
@@ -762,6 +742,14 @@ bool Phase_Space_Handler::MakeISRChannels()
 
     ci.type = 0;
     (ci.parameters).push_back(0.99);
+    (ci.parameters).push_back(0.5);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    isr_params.push_back(ci);
+    ci.parameters.clear();
+
+    ci.type = 0;
+    (ci.parameters).push_back(2.);
     (ci.parameters).push_back(0.5);
     (ci.parameters).push_back(deltay[0]);
     (ci.parameters).push_back(deltay[1]);
@@ -809,7 +797,7 @@ bool Phase_Space_Handler::CreateBeamChannels()
 
   for (int i=0;i<beam_params.size();i++) {
     if ((beam_params[i]).type==0) {
-      channel = new SimplePoleUniform(beam_params[i].parameters[0],
+      channel = new SimplePoleCentral(beam_params[i].parameters[0],
 				      beam_params[i].parameters[2],
 				      beam_params[i].parameters[3]);
       beamchannels->Add(channel);
@@ -824,9 +812,28 @@ bool Phase_Space_Handler::CreateBeamChannels()
 				       beam_params[i].parameters[3]);
       beamchannels->Add(channel);
     } 
+    if ((beam_params[i]).type==1) {
+      channel = new ResonanceCentral(beam_params[i].parameters[0],
+				     beam_params[i].parameters[1],
+				     beam_params[i].parameters[3],
+				     beam_params[i].parameters[4]);
+      beamchannels->Add(channel);
+      channel = new ResonanceForward(beam_params[i].parameters[0],
+				     beam_params[i].parameters[1],
+				     beam_params[i].parameters[2],
+				     beam_params[i].parameters[3],
+				     beam_params[i].parameters[4]);
+      beamchannels->Add(channel);
+      channel = new ResonanceBackward(beam_params[i].parameters[0],
+				      beam_params[i].parameters[1],
+				      beam_params[i].parameters[2],
+				      beam_params[i].parameters[3],
+				      beam_params[i].parameters[4]);
+      beamchannels->Add(channel);
+    }
     if ((beam_params[i]).type==3) {
       if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
-	  channel = new LBSComptonPeakUniform(beam_params[i].parameters[0],
+	  channel = new LBSComptonPeakCentral(beam_params[i].parameters[0],
 					      beam_params[i].parameters[1],
 					      beam_params[i].parameters[2],
 					      beam_params[i].parameters[3]);
@@ -861,7 +868,7 @@ bool Phase_Space_Handler::CreateISRChannels()
   for (int i=0;i<length;i++) {
     if ((isr_params[i]).type==0) {
       // Maybe set also the exponent of the y - integral ???
-      channel = new SimplePoleUniform(isr_params[i].parameters[0],
+      channel = new SimplePoleCentral(isr_params[i].parameters[0],
 				      isr_params[i].parameters[2],
 				      isr_params[i].parameters[3]);
       isrchannels->Add(channel);
@@ -877,7 +884,7 @@ bool Phase_Space_Handler::CreateISRChannels()
       isrchannels->Add(channel);
     } 
     if ((isr_params[i]).type==1) {
-      channel = new ResonanceUniform(isr_params[i].parameters[0],
+      channel = new ResonanceCentral(isr_params[i].parameters[0],
 				     isr_params[i].parameters[1],
 				     isr_params[i].parameters[3],
 				     isr_params[i].parameters[4]);
@@ -896,7 +903,7 @@ bool Phase_Space_Handler::CreateISRChannels()
       isrchannels->Add(channel);
     }
     if (isr_params[i].type==3) {
-      channel = new LLUniform(isr_params[i].parameters[0],
+      channel = new LLCentral(isr_params[i].parameters[0],
 			      isr_params[i].parameters[2],
 			      isr_params[i].parameters[3]);
       isrchannels->Add(channel);

@@ -8,7 +8,8 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
-Sarge::Sarge(int _nin,int _nout) : nin(_nin), nout(_nout)
+Sarge::Sarge(int _nin,int _nout) : 
+  nin(_nin), nout(_nout), x(NULL), rot(NULL)
 {
   n_xi  = 2*nout-4;
   x     = new double[n_xi+1];

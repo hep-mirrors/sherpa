@@ -14,70 +14,31 @@ namespace PHASIC {
   */
   class Single_Channel {
   protected:
-    /*!
-      Some basic ingredients for all channels :
-      numbers of legs, their flavours and masses squared (not needed for isr)
-      and the name of the channel. This name might be given explicitly 
-      (for instance for ISR_Channels) or it may be constructed from amplitudes 
-      in the Phase_Space/Channel_Generator.
-    */
     int                  nin, nout;
     APHYTOOLS::Flavour * fl;
     double             * ms;
     std::string          name;
-    /*!
-      Stuff for the immediate integration 
-    */
     long int             n_points,n_contrib;
     double               weight,result,result2;
     double               res1,res2,res3;
     double               alpha,alpha_save;
     int                  rannum;
     double             * rans;
-    /*!
-      Specifics for isr and beamchannels
-    */
     double               sprimerange[3], yrange[2];
     double               sprime,y,y0,ymin,ymax,Eprime,E1,E2;
   public:
-    /*!
-      Explicit constructor. 
-      It initializes outgoing masses and the vector of random numbers :
-      For them the following construction is applied :
-      - two rans for the first pair of outgoing particles (orientation)
-      - three rans for each new particle, one for the intermediate propagator,
-        two for the orientation of the splitting
-    */
     Single_Channel():ms(0),rans(0) { };
     Single_Channel(Single_Channel *);
     Single_Channel(int,int,APHYTOOLS::Flavour *);
     virtual ~Single_Channel() {
-      //if (ms)  { delete[] ms; }
-      //if (rans) { delete[] rans; }
+      if (ms)   { delete[] ms; }
+      if (rans) { delete[] rans; }
     }
-    /*!
-      Adding a value to the Single_Channel. It basically increments n,
-      eventuall n_contrib, and the various result, result2, and res{i} in
-      appropriate manners.
-    */
     void AddPoint(double);
-    /*!
-      Resetting the channels completely for a new integration.
-    */
     void Reset(double value);
-    /*!
-      Resetting for the optimization involves a bit more. However, the accumulated
-      results are kept. So this involves only what was accumulated between two iteration
-      steps for the optimzation procedure. See the Multi_Channel for more information.
-    */
     void ResetOpt();
-
-
-    /*!
-      Point and weight generation for fsr channels.
-    */
     virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
-    virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *) { 
+    virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *) {
       AORGTOOLS::msg.Error()<<"Virtual Method : ";
       AORGTOOLS::msg.Error()<<"Single_Channel::GeneratePoint(Vec4D,Cut_Data,double)."<<std::endl; 
     }
@@ -95,10 +56,6 @@ namespace PHASIC {
       AORGTOOLS::msg.Error()<<"Virtual Method : ";
       AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(Vec4D)"<<std::endl; 
     }
-
-    /*!
-      Point and weight generation for isr channels.
-    */
     virtual void GeneratePoint(double &,double &,int,double *) {
       AORGTOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GeneratePoint(double,double,double)"<<std::endl; 
@@ -111,9 +68,6 @@ namespace PHASIC {
       AORGTOOLS::msg.Error()<<"Virtual Method : ";
       AORGTOOLS::msg.Error()<<"Single_Channel::GenerateWeight(double,double)"<<std::endl; 
     }
-
-
-
     /*!
       Some more service methods.
     */
@@ -169,6 +123,46 @@ namespace PHASIC {
     virtual void SetAlpha(double _alpha)     { alpha      = _alpha; }
     virtual void SetAlphaSave(double _alpha) { alpha_save = _alpha; }
   };
+  /*!
+    Some basic ingredients for all channels :
+    numbers of legs, their flavours and masses squared (not needed for isr)
+    and the name of the channel. This name might be given explicitly 
+    (for instance for ISR_Channels) or it may be constructed from amplitudes 
+    in the Phase_Space/Channel_Generator.
+  */
+  /*!
+    Stuff for the immediate integration 
+  */
+  /*!
+    Specifics for isr and beamchannels
+  */
+  /*!
+    Explicit constructor. 
+    It initializes outgoing masses and the vector of random numbers :
+    For them the following construction is applied :
+    - two rans for the first pair of outgoing particles (orientation)
+    - three rans for each new particle, one for the intermediate propagator,
+      two for the orientation of the splitting
+  */
+  /*!
+    Adding a value to the Single_Channel. It basically increments n,
+    eventuall n_contrib, and the various result, result2, and res{i} in
+    appropriate manners.
+  */
+  /*!
+    Resetting the channels completely for a new integration.
+  */
+  /*!
+    Resetting for the optimization involves a bit more. However, the accumulated
+    results are kept. So this involves only what was accumulated between two iteration
+    steps for the optimzation procedure. See the Multi_Channel for more information.
+  */
+  /*!
+    Point and weight generation for fsr channels.
+  */
+  /*!
+    Point and weight generation for isr channels.
+  */
 }
 
 #endif
