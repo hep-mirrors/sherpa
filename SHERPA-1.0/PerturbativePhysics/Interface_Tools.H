@@ -1,9 +1,13 @@
 #ifndef Interface_Tools_H
 #define Interface_Tools_H
 
-#include "Particle_List.H"
-#include "Blob.H"
-#include "Tree.H"
+namespace ATOOLS { 
+  class Particle; 
+  class Blob;
+}
+namespace APACIC { 
+  class Tree; 
+}
 
 namespace SHERPA {
 
@@ -12,7 +16,8 @@ namespace SHERPA {
     APACIC::Tree **p_initrees; 
     APACIC::Tree  *p_fintree; 
 
-    bool IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *) ;
+    bool   Connected(const ATOOLS::Particle *p1,const ATOOLS::Particle *p2);
+    double Angle(const ATOOLS::Particle *p1,const ATOOLS::Blob *blob);
 
   public :
 
@@ -23,10 +28,8 @@ namespace SHERPA {
     ~Interface_Tools(); 
 
     // member functions
-    void InitializeIncoming(ATOOLS::Blob *,double,double,double,double,double,double);
-    void InitializeOutGoing(ATOOLS::Blob *,double,double,double,double);
-
-    double ColourAngle(ATOOLS::Particle *,ATOOLS::Blob *);
+    void InitializeIncoming(const ATOOLS::Blob *blob,const double &ecms);
+    void InitializeOutGoing(ATOOLS::Blob *blob,const double &ecms);
 
   };// end of class Interface_Tools
 

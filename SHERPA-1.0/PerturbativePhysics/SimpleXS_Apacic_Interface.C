@@ -1,14 +1,16 @@
 #include "SimpleXS_Apacic_Interface.H"
 
-#include "Exception.H"
+#include "Interface_Tools.H"
 #include "XS_Selector.H"
+#include "Exception.H"
 
 using namespace SHERPA;
 
 SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler *mehandler,
 						     Shower_Handler *showerhandler):
   Perturbative_Interface(mehandler,showerhandler),
-  p_tools(new Interface_Tools(showerhandler->GetIniTrees(),showerhandler->GetFinTree())),
+  p_tools(new Interface_Tools(showerhandler->GetIniTrees(),
+			      showerhandler->GetFinTree())),
   p_twototwo(new EXTRAXS::XS_Group(2,2,"Interface Processes")),
   p_momenta(new ATOOLS::Vec4D[4]), 
   p_flavours(new ATOOLS::Flavour[4]), 
@@ -67,22 +69,10 @@ int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob)
       blob->OutParticle(i)->SetFlow(j+1,p_xs->Colours()[i+blob->NInP()][j]);
     }
   }
-  p_xs->CalculateScale(p_momenta);
   m_scale=p_xs->Scale(PHASIC::stp::as);
   double E=sqrt(p_mehandler->GetISR_Handler()->Pole())/2.;
-  double th1,th2;
-  if (m_ini) {
-    th1=p_tools->ColourAngle(blob->InParticle(0),blob);
-    th2=p_tools->ColourAngle(blob->InParticle(1),blob);
-    double x1=blob->InParticle(0)->Momentum()[0]/E;
-    double x2=blob->InParticle(1)->Momentum()[0]/E;
-    p_tools->InitializeIncoming(blob,m_scale,E,th1,th2,x1,x2);
-  }
-  if (m_fin) {
-    th1=p_tools->ColourAngle(blob->OutParticle(0),blob);
-    th2=p_tools->ColourAngle(blob->OutParticle(1),blob);
-    p_tools->InitializeOutGoing(blob,m_scale,E,th1,th2);
-  }
+  if (m_ini) p_tools->InitializeIncoming(blob,E);
+  if (m_fin) p_tools->InitializeOutGoing(blob,E);
   return 1;
 }
 

@@ -3,9 +3,10 @@
 
 #include "Perturbative_Interface.H"
 #include "Simple_XS.H"
-#include "Interface_Tools.H"
 
 namespace SHERPA {
+
+  class Interface_Tools;
 
   class SimpleXS_Apacic_Interface: public Perturbative_Interface {
   private:
