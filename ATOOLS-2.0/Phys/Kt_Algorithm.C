@@ -75,6 +75,7 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
   m_r2min = sqr(rmin);
 
   // create vector list from particle list
+  
   int n=0;
   Vec4D * moms = new Vec4D[pl->size()];
   bool * bflag = new bool[pl->size()];
@@ -82,7 +83,9 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
     if ((*p_qualifier)(*it)) {
       //    if (!(*it)->Flav().IsLepton()) {
       moms[n]  = ((*it)->Momentum()); 
-      bflag[n] = (((*it)->Flav()).Kfcode()==kf::b)&& !m_bflag;
+      bflag[n] = false;
+      if (m_bflag==0) bflag[n] = (((*it)->Flav()).Kfcode()==kf::b || 
+				  ((*it)->Flav()).Kfcode()==kf::bjet);
       ++n;
     }
   }
