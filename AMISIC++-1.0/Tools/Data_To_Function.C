@@ -527,6 +527,10 @@ namespace ATOOLS {
   { 
     ResultType integral=(ResultType)0.0;
     if (p_xydata->size()<2) return integral;
+    if (xmin==xmax) {
+      xmin=XMin();
+      xmax=XMax();
+    }
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::IntegrateY("<<xmin<<","<<xmax<<"): starting integration"<<std::endl;
 #endif
@@ -566,6 +570,10 @@ namespace ATOOLS {
   { 
     ArgumentType integral=(ArgumentType)0.0;
     if (p_yxdata->size()<2) return integral;
+    if (ymin==ymax) {
+      ymin=YMin();
+      ymax=YMax();
+    }
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::IntegrateX("<<ymin<<","<<ymax<<"): starting integration"<<std::endl;
 #endif

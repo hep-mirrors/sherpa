@@ -192,8 +192,8 @@ namespace ATOOLS {
     DataToFunctionType *IntegralY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
     DataToFunctionType *IntegralX(ResultType ymin=0.0,ResultType ymax=0.0);
 
-    ResultType   IntegrateY(ArgumentType xmin,ArgumentType xmax);
-    ArgumentType IntegrateX(ResultType ymin,ResultType ymax);
+    ResultType   IntegrateY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
+    ArgumentType IntegrateX(ResultType ymin=0.0,ResultType ymax=0.0);
 
     DataToFunctionType *DerivativeY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
     DataToFunctionType *DerivativeX(ResultType ymin=0.0,ResultType ymax=0.0);

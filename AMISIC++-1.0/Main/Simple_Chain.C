@@ -6,6 +6,7 @@
 
 #ifdef DEBUG__Simple_Chain
 const std::string integralfile=std::string("integral.dat");
+const std::string differentialfile=std::string("differential.dat");
 #endif
 
 using namespace AMISIC;
@@ -540,6 +541,9 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
   }
+  p_processes->CalculateTotalXSec();
+  m_sigmand=p_processes->Total();
+  p_total->ScaleY(1.0/m_sigmand);
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
   p_fsrinterface->SetAlphaSave(1.0);
@@ -573,6 +577,17 @@ bool Simple_Chain::CalculateTotal()
       differential->ReplaceXPoint(x,differential->Y(x,differential->Interpolation)+(*diffit)->XYData(i).second);
     }
   }
+#ifdef DEBUG__Simple_Chain
+  std::vector<std::string> comments;
+  comments.push_back("  Differential XS   "); 
+  GridHandlerType *gridhandler = new GridHandlerType(differential);
+  GridCreatorBaseType *gridcreator = new GridCreatorBaseType();
+  gridcreator->SetOutputPath(m_outputpath);
+  gridcreator->SetOutputFile(differentialfile);
+  gridcreator->WriteSingleGrid(gridhandler,comments);
+  delete gridcreator;
+  delete gridhandler;
+#endif
   p_total = differential->IntegralY();
   total=p_total->YData(p_total->YDataSize()-1);
   p_total->SetMonotony(p_total->None);
@@ -580,13 +595,11 @@ bool Simple_Chain::CalculateTotal()
     p_total->ReplaceXPoint(p_total->XYData(i).first,total-p_total->XYData(i).second);
   }
   p_total->SetMonotony(p_total->MUnknown);
-  p_total->MoveY(-p_total->YMin());
-  p_total->ScaleY((GridArgumentType)1.0/p_total->YMax());
 #ifdef DEBUG__Simple_Chain
-  std::vector<std::string> comments;
+  comments.clear();
   comments.push_back("   Integrated XS    "); 
-  GridHandlerType *gridhandler = new GridHandlerType(p_total);
-  GridCreatorBaseType *gridcreator = new GridCreatorBaseType();
+  gridhandler = new GridHandlerType(p_total);
+  gridcreator = new GridCreatorBaseType();
   gridcreator->SetOutputPath(m_outputpath);
   gridcreator->SetOutputFile(integralfile);
   gridcreator->WriteSingleGrid(gridhandler,comments);
@@ -663,7 +676,7 @@ bool Simple_Chain::Initialize()
 	ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 			   <<"Grid creation failed for "<<m_outputpath+m_filename[i]<<std::endl
 			   <<"   Run cannot continue."<<std::endl;
-	abort();
+	exit(120);
       }
     }
   }
@@ -671,7 +684,7 @@ bool Simple_Chain::Initialize()
     ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 		       <<"Determination of \\sigma_{tot} failed. "<<std::endl
 		       <<"   Run cannot continue."<<std::endl;
-    abort();
+    exit(120);
   }
   SetStart(p_total->XMax(),0);
   SetStop(p_total->XMin(),0);
@@ -679,7 +692,7 @@ bool Simple_Chain::Initialize()
     ATOOLS::msg.Error()<<"Simple_Chain::Initialize(): "
 		       <<"Cannot initialize selected processes. "<<std::endl
 		       <<"   Run cannot continue."<<std::endl;
-    abort();
+    exit(120);
   }  
   return true;
 }
@@ -696,6 +709,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 		       <<"Blob is not initialized! Abort."<<std::endl;
     return false;
   }
+  blob->DeleteOwnedParticles();
   if (m_selected<(unsigned int)p_processes->Size()) {
 #ifdef DEBUG__Simple_Chain
     std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
@@ -776,7 +790,8 @@ bool Simple_Chain::DiceProcess()
 	return false;
       }
       double sprimemax=(*p_processes)[m_selected]->ISR()->SprimeMax();
-      (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]*0.2),1);
+      // (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]*0.2),1);
+      (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]),1);
       (*p_processes)[m_selected]->ISR()->SetSprimeMax(m_last[1]*m_last[1]);
       m_dicedprocess=true;
       bool result=FillBlob(p_blob);

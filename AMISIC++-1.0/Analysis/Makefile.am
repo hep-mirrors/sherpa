@@ -5,6 +5,7 @@ MODELINC   = $(SHERPASYS)/MODEL-1.0
 
 lib_LTLIBRARIES               =	libAmisicAnalysis.la
 libAmisicAnalysis_la_SOURCES  = \
+				Primordial_KT.C \
 				Jet_Algorithm.C \
 				Jet_PT.C \
 				Jet_Y.C \
@@ -18,6 +19,7 @@ INCLUDES      = \
 		-I$(ATOOLSINC)/Math \
 		-I$(ATOOLSINC)/Org
 noinst_HEADERS        =	\
+			Primordial_KT.H \
 			Jet_Algorithm.H \
 			Jet_PT.H \
 			Jet_Y.H \

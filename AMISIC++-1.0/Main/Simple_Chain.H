@@ -39,6 +39,8 @@ namespace AMISIC {
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
 
+    double m_sigmand;
+
     int m_scalescheme, m_kfactorscheme;
 
     bool m_external;

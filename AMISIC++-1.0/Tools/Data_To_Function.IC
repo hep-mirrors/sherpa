@@ -125,11 +125,8 @@ namespace ATOOLS {
   inline void Data_To_Function<Argument_Type,Result_Type>::
   NormalizeY(ArgumentType xmin,ArgumentType xmax,ResultType norm)
   { 
-    if (p_xydata.size()<2) return;
-    if (xmin==xmax) {
-      xmin=(*p_xydata)[0].first;
-      xmax=(*p_xydata)[p_xydata->size()-1].first;
-    }
+    if (p_xydata->size()<2) return;
+    if (xmin==xmax) ScaleY(norm/IntegrateY()); 
     ScaleY(norm/IntegrateY(xmin,xmax)); 
   }
 
@@ -137,11 +134,8 @@ namespace ATOOLS {
   inline void Data_To_Function<Argument_Type,Result_Type>::
   NormalizeX(ResultType ymin,ResultType ymax,ArgumentType norm)
   { 
-    if (p_yxdata.size()<2) return;
-    if (ymin==ymax) {
-      ymin=(*p_yxdata)[0].first;
-      ymax=(*p_yxdata)[p_yxdata->size()-1].first;
-    }
+    if (p_yxdata->size()<2) return;
+    if (ymin==ymax) ScaleX(norm/IntegrateX()); 
     ScaleX(norm/IntegrateX(ymin,ymax)); 
   }
 

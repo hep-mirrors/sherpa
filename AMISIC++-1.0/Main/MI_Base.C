@@ -138,7 +138,6 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
     particle->SetStatus(1);
     blob->AddToOutParticles(particle);
   }
-  p_blob->DeleteOwnedParticles();
   return _m_dicedprocess;
 }
 

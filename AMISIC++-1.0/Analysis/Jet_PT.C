@@ -17,7 +17,7 @@ Jet_PT::Jet_PT(int _m_type,double _m_min,double _m_max,int _m_nbins,int _m_njets
     (*p_histogram)[i] = new ATOOLS::Histogram(type,xmin,xmax,nbins);
     (*p_jets)[i]=i;
   }
-  name=std::string("PT_jet");
+  name=std::string("PT_Jet");
 }
 
 Jet_PT::~Jet_PT()
