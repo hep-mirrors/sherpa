@@ -25,7 +25,7 @@ Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *f
 
 void Single_XS::WriteOutXSecs(std::ofstream &outfile)
 {
-  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<std::endl;
+  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "<<m_n<<std::endl;
 }
 
 bool Single_XS::CalculateTotalXSec(const std::string &resultpath) 

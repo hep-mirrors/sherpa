@@ -119,7 +119,7 @@ void XS_Group::SelectOne()
 
 void XS_Group::WriteOutXSecs(std::ofstream &outfile)
 {
-  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<m_n<<std::endl;
+  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "<<m_n<<std::endl;
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->WriteOutXSecs(outfile);
 }
 
