@@ -19,4 +19,4 @@ KFACTOR SCHEME        = 0           ! 1=as(pt2)/as(ecms)^nstrong,default=1
 SUDAKOV WEIGHT        = 0           ! apply sudakov weight on single events
 !FIXED SCALE          = 8315.25     ! fixed scale for the processes in GeV^2
 SCALE FACTOR          = 1.          ! factor the scale is multiplied with
-PROCESSFILE	      = XS.dat
+PROCESSFILE	      = Processes.dat
