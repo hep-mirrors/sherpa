@@ -1,0 +1,21 @@
+18.11.02
+========
+
+ * reducing includes in header files
+	moved Constructor from PDF_MRST and PDF_Electron in C-file
+ * removed using statement in header files
+ * changed cout => msg.Tracking()
+
+
+TODO
+====
+     *	check scale in structure function!!!! (thomson scale)
+     * 	check that PDF_Handler takes the right Proton or Anti proton!
+	(kfcode check) 
+     * 	check source of Warning:
+ g++ -DPACKAGE=\"PDF\" -DVERSION=\"1.0\" -DSTDC_HEADERS=1 -DHAVE_MKDIR=1 -I. -I. -I../../ATOOLS-2.0/Phys -I../../ATOOLS-2.0/Org -I../../ATOOLS-2.0/Math -I../Include -g -pedantic -c PDF_Electron.C  -fPIC -DPIC -o PDF_Electron.lo
+ In file included from /usr/local/gcc/include/c++/3.2/backward/strstream:51,
+                  from ../../ATOOLS-2.0/Org/Data_Read.H:5,
+                  from ../../ATOOLS-2.0/Org/Run_Parameter.H:5,
+                  from PDF_Electron.C:2:
+ /usr/local/gcc/include/c++/3.2/backward/backward_warning.h:32:2: warning: #warning This file includes at least one deprecated or antiquated header. Please consider using one of the 32 headers found in section 17.4.1.2 of the C++ standard. Examples include substituting the <X> header for the <X.h> header for C++ includes, or <sstream> instead of the deprecated header <strstream.h>. To disable this warning use -Wno-deprecated.

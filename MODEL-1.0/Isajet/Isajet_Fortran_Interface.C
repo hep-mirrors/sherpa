@@ -1,0 +1,523 @@
+#include "Isajet_Fortran_Interface.H"
+#include "Run_Parameter.H"
+#include "Message.H"
+#include "MathTools.H"
+
+using namespace ISAJET;
+using namespace MODEL;
+using namespace AMATOOLS;
+using namespace AORGTOOLS;
+using namespace APHYTOOLS;
+
+extern "C" {
+  void isasusyinter_(float *,float *,float *,float *,int &,const char *);
+  void chargino_(float&,float&,float&,float&,float&,float&);
+  void neutralino_(float*,float*);
+  void sneutrino_(float&,float&,float&);
+  void higgses_(float&,float&,float&,float&,float&,float&,float&);
+  void sups_(float*,float&,float&,float&);
+  void sdowns_(float*,float&,float&);
+  void sleptons_(float*,float&,float&,float&);
+  void gluino_(float&);
+}
+
+
+
+
+Isajet_Fortran_Interface::Isajet_Fortran_Interface(Data_Read * _dataread,
+						   Model_Base * _model) :
+  Spectrum_Generator_Base(_dataread,_model) {
+  msg.Debugging()<<"Initialize Isajet_Fortran_Interface."<<endl;
+}
+
+
+
+Isajet_Fortran_Interface::~Isajet_Fortran_Interface() { }
+
+
+
+
+void Isajet_Fortran_Interface::Run(std::string _model) {
+  float * xxsm = new float[15];
+  xxsm[0]   = float(p_model->ScalarConstant(std::string("Yukawa_u")));
+  xxsm[1]   = float(p_model->ScalarConstant(std::string("Yukawa_d")));
+  xxsm[2]   = float(p_model->ScalarConstant(std::string("Yukawa_s")));
+  xxsm[3]   = float(p_model->ScalarConstant(std::string("Yukawa_c")));
+  xxsm[4]   = float(p_model->ScalarConstant(std::string("Yukawa_b")));
+  xxsm[5]   = float(p_model->ScalarConstant(std::string("Yukawa_t")));
+  xxsm[6]   = float(p_model->ScalarConstant(std::string("Yukawa_e")));
+  xxsm[7]   = float(p_model->ScalarConstant(std::string("Yukawa_mu")));
+  xxsm[8]   = float(p_model->ScalarConstant(std::string("Yukawa_tau")));
+  xxsm[9]   = float(p_model->ScalarConstant(std::string("MZ")));
+  xxsm[10]  = float(p_model->ScalarConstant(std::string("GammaW")));
+  xxsm[11]  = float(p_model->ScalarConstant(std::string("GammaZ")));
+  xxsm[12]  = float(p_model->ScalarFunction(std::string("alpha_QED"),sqr(xxsm[9]))); 
+  xxsm[13]  = float(p_model->ScalarConstant(std::string("sin2_thetaW"))); 
+  xxsm[14]  = float(p_model->ScalarFunction(std::string("alpha_S"),sqr(xxsm[9]))); 
+
+  float * xsugin = new float[7];
+  for (int i=0;i<7;i++)    xsugin[i]=0.;
+  float * xgmin = new float[14];
+  for (int i=0;i<14;i++)   xgmin[i]=0.;
+  float * xnusug = new float[18];
+  for (int i=0;i<18;i++)   xnusug[i]=1.e20;
+  
+  int model;
+  if (_model==std::string("mSUGRA") ||
+      _model==std::string("non-universal SUGRA") ||
+      _model==std::string("SUGRA with enforced unification") ) {
+    model     = 1;
+    xsugin[0] = float(p_model->ScalarConstant(std::string("m0")));
+    xsugin[1] = float(p_model->ScalarConstant(std::string("m12")));
+    xsugin[2] = float(p_model->ScalarConstant(std::string("A0")));
+    xsugin[3] = float(p_model->ScalarConstant(std::string("tan(beta)")));
+    xsugin[4] = float(p_model->ScalarNumber(std::string("sign(mu)")));
+    xsugin[5] = float(p_model->ScalarConstant(std::string("mT")));
+    if (_model==std::string("non-universal SUGRA")) {
+      model     = 3;
+      xsugin[6] = float(p_model->ScalarConstant(std::string("m_SUSY")));
+
+      xnusug[0]  = float(p_model->ScalarConstant(std::string("m_U1")));
+      xnusug[1]  = float(p_model->ScalarConstant(std::string("m_SU2")));
+      xnusug[2]  = float(p_model->ScalarConstant(std::string("m_SU3")));
+      xnusug[3]  = float(p_model->ScalarConstant(std::string("A(tau)_GUT")));
+      xnusug[4]  = float(p_model->ScalarConstant(std::string("A(b)_GUT")));
+      xnusug[5]  = float(p_model->ScalarConstant(std::string("A(t)_GUT")));
+      xnusug[6]  = float(p_model->ScalarConstant(std::string("H(d)_GUT")));
+      xnusug[7]  = float(p_model->ScalarConstant(std::string("H(u)_GUT")));
+      xnusug[8]  = float(p_model->ScalarConstant(std::string("M(e1R)_GUT")));
+      xnusug[9]  = float(p_model->ScalarConstant(std::string("M(l1)_GUT")));
+      xnusug[10] = float(p_model->ScalarConstant(std::string("M(d1R)_GUT")));
+      xnusug[11] = float(p_model->ScalarConstant(std::string("M(u1R)_GUT")));
+      xnusug[12] = float(p_model->ScalarConstant(std::string("M(q1)_GUT")));
+      xnusug[13]  = float(p_model->ScalarConstant(std::string("M(e3R)_GUT")));
+      xnusug[14]  = float(p_model->ScalarConstant(std::string("M(l3)_GUT")));
+      xnusug[15] = float(p_model->ScalarConstant(std::string("M(d3R)_GUT")));
+      xnusug[16] = float(p_model->ScalarConstant(std::string("M(u3R)_GUT")));
+      xnusug[17] = float(p_model->ScalarConstant(std::string("M(q3)_GUT")));
+    }
+    if(_model==std::string("SUGRA with enforced unification")) {
+      model     = 4;
+    }
+  }
+  if (_model==std::string("AMSB")) {
+    model     = 7;
+    xsugin[0] = float(p_model->ScalarConstant(std::string("m0")));
+    xsugin[1] = float(p_model->ScalarConstant(std::string("m32")));
+    xsugin[2] = 0.;
+    xsugin[3] = float(p_model->ScalarConstant(std::string("tan(beta)")));
+    xsugin[4] = float(p_model->ScalarNumber(std::string("sign(mu)")));
+    xsugin[5] = float(p_model->ScalarConstant(std::string("mT")));
+  }
+  if (_model==std::string("mGMSB") ||
+      _model==std::string("non-minimal GMSB")) {
+    model      = 2;
+    xsugin[0]  = float(p_model->ScalarConstant(std::string("Lambda_m")));
+    xsugin[1]  = float(p_model->ScalarConstant(std::string("m_mes")));
+    xsugin[2]  = float(p_model->ScalarNumber(std::string("n_mes")));
+    xsugin[3]  = float(p_model->ScalarConstant(std::string("tan(beta)")));
+    xsugin[4]  = float(p_model->ScalarNumber(std::string("sign(mu)")));
+    xsugin[5]  = float(p_model->ScalarConstant(std::string("mT")));
+    xsugin[6]  = float(p_model->ScalarConstant(std::string("c_grav")));
+    if(_model==std::string("non-minimal GMSB")) {
+      model     = 5;
+      xgmin[7]  = float(p_model->ScalarConstant(std::string("c_gauge")));
+      xgmin[8]  = float(p_model->ScalarConstant(std::string("Delta_Hd")));
+      xgmin[9]  = float(p_model->ScalarConstant(std::string("Delta_Hu")));
+      xgmin[10] = float(p_model->ScalarConstant(std::string("Delta_Y")));
+      xgmin[11] = float(p_model->ScalarConstant(std::string("n5_1")));
+      xgmin[12] = float(p_model->ScalarConstant(std::string("n5_2")));
+      xgmin[13] = float(p_model->ScalarConstant(std::string("n5_3")));
+    }
+  }
+  
+  const char * help;
+  std::string full = p_dataread->GetValue<std::string>("OUTPUTFILE",std::string("Isajet.out"));
+  help = full.c_str();
+
+  msg.Debugging()<<"Try isasusy with : "<<_model<<" -> "<<model<<" and "<<help<<endl;
+
+  isasusyinter_(xsugin,xnusug,xgmin,xxsm,model,help);
+
+  msg.Debugging()<<"Out Isajet_Fortran_Interface::Run()"<<endl;
+
+  delete [] xxsm;
+  delete [] xgmin;
+  delete [] xsugin;
+  delete [] xnusug;
+}
+
+
+void Isajet_Fortran_Interface::FillMasses() {
+  msg.Out()<<"In Isajet_Fortran_Interface::FillMasses()"<<endl;
+  CharginoMasses();
+  NeutralinoMasses();
+  GluinoMasses();
+  HiggsMasses();
+  sNeutrinoMasses();
+  sUpMasses();
+  sDownMasses();
+  sLeptonMasses();
+}
+
+void Isajet_Fortran_Interface::FillDecays() {
+}
+
+
+void Isajet_Fortran_Interface::CharginoMasses()
+{
+  float MChi1,MChi2,gammaL,gammaR,ThX,ThY;
+  CMatrix Zplus  = CMatrix(2);
+  CMatrix Zminus = CMatrix(2);
+
+  chargino_(MChi1,MChi2,gammaL,gammaR,ThX,ThY);
+
+  Flavour flav;
+  flav = Flavour(kf::Chargino1);flav.SetMass(dabs(MChi1));
+  if (MChi1<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::Chargino2);flav.SetMass(dabs(MChi2));
+  if (MChi2<0) flav.SetMassSign(-1);
+
+  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl;
+  msg.Tracking()<<"Charginomasses :"<<std::endl;
+  msg.Tracking()<<"m_Chi_1 = "<<Flavour(kf::Chargino1).Mass()<<" Sign: "<<Flavour(kf::Chargino1).MassSign();
+  msg.Tracking()<<", m_Chi_2 = "<<Flavour(kf::Chargino2).Mass()<<" Sign: "<<Flavour(kf::Chargino2).MassSign()<<std::endl;
+
+  
+  Zminus[0][0] = ::sin(gammaL);
+  Zminus[1][0] = cos(gammaL);
+  Zminus[0][1] = ThX*cos(gammaL);
+  Zminus[1][1] = -ThX*::sin(gammaL);
+  
+  Zplus[0][0] = ::sin(gammaR);
+  Zplus[1][0] = cos(gammaR);
+  Zplus[0][1] = ThY*cos(gammaR);
+  Zplus[1][1] = -ThY*::sin(gammaR);  
+  
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z^+"),Zplus));
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z^-"),Zminus));
+}
+
+
+void Isajet_Fortran_Interface::NeutralinoMasses()
+{
+  float * M   = new float[4];
+  float * Mix = new float[16];
+
+  neutralino_(M,Mix);
+  
+  for (short int i=0;i<4;i++) M[i] = -M[i];
+
+  Matrix<4> M_Mix;
+  for (short int i=0;i<4;i++) {
+    for (short int j=0;j<4;j++) M_Mix[i][j] = Mix[i+j*4];
+  }
+
+  Flavour flav;
+  flav = Flavour(kf::Neutralino1);flav.SetMass(dabs(M[0]));
+  if (M[0]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::Neutralino2);flav.SetMass(dabs(M[1]));
+  if (M[1]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::Neutralino3);flav.SetMass(dabs(M[2]));
+  if (M[2]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::Neutralino4);flav.SetMass(dabs(M[3]));
+  if (M[3]<0) flav.SetMassSign(-1);
+
+  delete[] M;
+  delete[] Mix;
+
+  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl;
+  msg.Tracking()<<"Neutralinomasses :"<<std::endl;
+  msg.Tracking()<<"m_Neu_1 = "<<Flavour(kf::Neutralino1).Mass();
+  msg.Tracking()<<", m_Neu_2 = "<<Flavour(kf::Neutralino2).Mass()<<std::endl;
+  msg.Tracking()<<"m_Neu_3 = "<<Flavour(kf::Neutralino3).Mass();
+  msg.Tracking()<<", m_Neu_4 = "<<Flavour(kf::Neutralino4).Mass()<<std::endl;
+  
+  msg.Tracking()<<"Signs: "<<std::endl;
+  msg.Tracking()<<"ms_Neu_1 = "<<Flavour(kf::Neutralino1).MassSign();
+  msg.Tracking()<<", ms_Neu_2 = "<<Flavour(kf::Neutralino2).MassSign()<<std::endl;
+  msg.Tracking()<<"ms_Neu_3 = "<<Flavour(kf::Neutralino3).MassSign();
+  msg.Tracking()<<", ms_Neu_4 = "<<Flavour(kf::Neutralino4).MassSign()<<std::endl;
+
+
+  CMatrix ZN = CMatrix(4);
+  for (short int i=0;i<4;i++) {
+    //transposed with respect to Richardson !
+    ZN[0][i] = Complex(M_Mix[3][i],0.);
+    ZN[1][i] = Complex(M_Mix[2][i],0.);
+    ZN[2][i] = Complex(-M_Mix[1][i],0.);
+    ZN[3][i] = Complex(-M_Mix[0][i],0.);        
+  }
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z^N"),ZN));
+}
+
+void Isajet_Fortran_Interface::sNeutrinoMasses()
+{
+  float mn1,mn2,mn3;
+  sneutrino_(mn1,mn2,mn3);
+  
+  Flavour flav;    
+  flav = Flavour(kf::sNu1);flav.SetMass(dabs(mn1));
+  if (mn1<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sNu2);flav.SetMass(dabs(mn2));
+  if (mn2<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sNu3);flav.SetMass(dabs(mn3));
+  if (mn3<0) flav.SetMassSign(-1);
+  
+  CMatrix ZNue = CMatrix(3);
+  for (short int i=0;i<3;i++) {
+    for (short int j=0;j<3;j++) ZNue[i][j] = Complex(0.,0.);
+    ZNue[i][i] = Complex(1.,0.);
+  }    
+
+  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl;
+  msg.Tracking()<<"sNeutrinomasses :"<<std::endl;
+  msg.Tracking()<<"m_sNu_1 = "<<Flavour(kf::sNu1).Mass();
+  msg.Tracking()<<", m_sNu_2 = "<<Flavour(kf::sNu2).Mass();
+  msg.Tracking()<<", m_sNu_3 = "<<Flavour(kf::sNu3).Mass()<<std::endl;
+
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_nu"),ZNue));
+}
+
+void Isajet_Fortran_Interface::HiggsMasses()
+{
+  float mh,mH,mA,mHC,tanb,alpha,vev;
+  
+  higgses_(mh,mH,mA,mHC,tanb,alpha,vev);
+
+  // _v = vev;
+  
+  double cosb = sqrt(1./(1.+sqr(tanb)));
+  double sinb = cosb*tanb;  
+  
+  CMatrix ZH  = CMatrix(2);
+  ZH[0][0]    = Complex(sinb,0.);
+  ZH[0][1]    = Complex(-cosb,0.);
+  ZH[1][0]    = Complex(cosb,0.);
+  ZH[1][1]    = Complex(sinb,0.);
+    
+  double sina = ::sin(alpha);
+  double cosa = cos(alpha);
+
+  CMatrix ZR  = CMatrix(2);
+  ZR[0][0]    = Complex(-sina,0.);
+  ZR[0][1]    = Complex(cosa,0.);
+  ZR[1][0]    = Complex(cosa,0.);
+  ZR[1][1]    = Complex(sina,0.);
+  
+  Flavour flav;
+  flav = Flavour(kf::h0);flav.SetMass(mh);
+  flav = Flavour(kf::H0);flav.SetMass(mH);
+  flav = Flavour(kf::A0);flav.SetMass(mA);
+  flav = Flavour(kf::Hmin);flav.SetMass(mHC);
+
+  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl;
+  msg.Tracking()<<"Higgs Masses :"<<std::endl;
+  msg.Tracking()<<"m_h0 = "<<Flavour(kf::h0).Mass()<<std::endl;
+  msg.Tracking()<<"m_H0 = "<<Flavour(kf::H0).Mass()<<std::endl;
+  msg.Tracking()<<"m_A0 = "<<Flavour(kf::A0).Mass()<<std::endl;
+  msg.Tracking()<<"m_H- = "<<Flavour(kf::Hmin).Mass()<<std::endl;
+
+  msg.Tracking()<<"Test of tree--level relation : (m_h0^2+m_H0^2)/(m_A0^2+m_Z^2) = ";
+  msg.Tracking()<<(sqr(Flavour(kf::h0).Mass())+sqr(Flavour(kf::H0).Mass()))/
+    (sqr(Flavour(kf::A0).Mass())+sqr(Flavour(kf::Z).Mass()))<<std::endl;
+
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_R"),ZR));
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_H"),ZH));
+}
+
+void Isajet_Fortran_Interface::sUpMasses()
+{
+  float * msups = new float[6];
+  float thetaf,mu_1,_us22;
+  sups_(msups,thetaf,mu_1,_us22);
+
+  double mu    = mu_1;  
+  double us22  = _us22;
+  
+  p_model->GetScalarConstants()->insert(std::make_pair(std::string("mu"),mu));
+
+  double sinth = ::sin(thetaf);
+  double costh = cos(thetaf);
+
+  Flavour flav;    
+
+  flav = Flavour(kf::sUpL);flav.SetMass(dabs(msups[0]));
+  if (msups[0]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sCharmL);flav.SetMass(dabs(msups[1]));
+  if (msups[1]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sTopL);flav.SetMass(dabs(msups[2]));
+  if (msups[2]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sUpR);flav.SetMass(dabs(msups[3]));
+  if (msups[3]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sCharmR);flav.SetMass(dabs(msups[4]));
+  if (msups[4]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sTopR);flav.SetMass(dabs(msups[5]));
+  if (msups[5]<0) flav.SetMassSign(-1);
+  
+  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl;
+  msg.Tracking()<<"sQuark masses :"<<std::endl;
+  for (short int i=0;i<6;++i) msg.Tracking()<<"sUpquarks["<<i<<"] : "<<dabs(msups[i])<<std::endl;
+
+
+  CMatrix Zu = CMatrix(6);
+  for (short int i=0;i<6;i++) {
+    for (short int j=0;j<6;j++) Zu[i][j] = Complex(0.,0.);
+    Zu[i][i] = Complex(1.,0.);
+  }    
+  Zu[2][2] = Complex(sinth,0.);
+  Zu[2][5] = Complex(costh,0.);
+  Zu[5][5] = Complex(sinth,0.);
+  Zu[5][2] = Complex(-costh,0.);
+  
+  delete[] msups;
+
+  CMatrix ws = CMatrix(3);
+  CMatrix us = CMatrix(3);
+  for (short int i=0;i<2;i++) {
+    for (short int j=0;j<2;j++) ws[i][j] = Complex(0.,0.);   
+  }    
+  for (short int i=0;i<3;i++) {
+    for (short int j=0;j<3;j++) us[i][j] = Complex(0.,0.);
+    us[2][2] = Complex(us22,0.);  
+  }    
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("ws"),ws));
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("us"),us));
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_u"),Zu));
+}
+
+void Isajet_Fortran_Interface::sDownMasses()
+{
+  float* msdowns = new float[6];
+  float thetaf,_ds22;
+  sdowns_(msdowns,thetaf,_ds22);
+
+  double ds22  = _ds22;
+  double sinth = ::sin(thetaf);
+  double costh = cos(thetaf);
+
+  Flavour flav;    
+
+  flav = Flavour(kf::sDownL);flav.SetMass(dabs(msdowns[0]));
+  if (msdowns[0]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sStrangeL);flav.SetMass(dabs(msdowns[1]));
+  if (msdowns[1]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sBottomL);flav.SetMass(dabs(msdowns[2]));
+  if (msdowns[2]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sDownR);flav.SetMass(dabs(msdowns[3]));
+  if (msdowns[3]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sStrangeR);flav.SetMass(dabs(msdowns[4]));
+  if (msdowns[4]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sBottomR);flav.SetMass(dabs(msdowns[5]));
+  if (msdowns[5]<0) flav.SetMassSign(-1);
+  
+  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl;
+  msg.Tracking()<<"sQuark masses :"<<std::endl;
+  for (short int i=0;i<6;++i) msg.Tracking()<<"sDownquarks["<<i<<"] : "<<dabs(msdowns[i])<<std::endl;
+
+  CMatrix Zd = CMatrix(6);
+  for (short int i=0;i<6;i++) {
+    for (short int j=0;j<6;j++) Zd[i][j] = Complex(0.,0.);
+    Zd[i][i] = Complex(1.,0.);
+  }    
+  Zd[2][2] = Complex(-sinth,0.);
+  Zd[2][5] = Complex(costh,0.);
+  Zd[5][5] = Complex(sinth,0.);
+  Zd[5][2] = Complex(costh,0.);
+  
+  delete[] msdowns;
+
+  CMatrix es = CMatrix(3);
+  CMatrix ds = CMatrix(3);
+  for (short int i=0;i<2;i++) {
+    for (short int j=0;j<2;j++) es[i][j] = Complex(0.,0.);   
+  }    
+  for (short int i=0;i<3;i++) {
+    for (short int j=0;j<3;j++) ds[i][j] = Complex(0.,0.);
+    ds[2][2] = Complex(ds22,0.);  
+  }    
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("es"),es));
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("ds"),ds));
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_d"),Zd));
+}
+
+void Isajet_Fortran_Interface::sLeptonMasses()
+{
+  float* msleptons = new float[6];
+  float thetaf,mu_1,_ls22;
+  sleptons_(msleptons,thetaf,mu_1,_ls22);
+
+  double sinth = ::sin(thetaf);
+  //msg.Tracking()<<"thLep :"<<thetaf<<std::endl;
+  double costh = cos(thetaf);
+
+  Flavour flav;    
+
+  flav = Flavour(kf::sElectronL);flav.SetMass(dabs(msleptons[0]));
+  if (msleptons[0]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sMuL);flav.SetMass(dabs(msleptons[1]));
+  if (msleptons[1]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sTauL);flav.SetMass(dabs(msleptons[2]));
+  if (msleptons[2]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sElectronR);flav.SetMass(dabs(msleptons[3]));
+  if (msleptons[3]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sMuR);flav.SetMass(dabs(msleptons[4]));
+  if (msleptons[4]<0) flav.SetMassSign(-1);
+  flav = Flavour(kf::sTauR);flav.SetMass(dabs(msleptons[5]));
+  if (msleptons[5]<0) flav.SetMassSign(-1);
+  
+  msg.Tracking()<<"--------------------------------------------------------------"<<std::endl;
+  msg.Tracking()<<"sLepton masses :"<<std::endl;
+  for (short int i=0;i<6;++i) msg.Tracking()<<"sLeptons["<<i<<"] : "<<dabs(msleptons[i])<<std::endl;
+   
+  CMatrix Zl = CMatrix(6);
+  for (short int i=0;i<6;i++) {
+    for (short int j=0;j<6;j++) Zl[i][j] = Complex(0.,0.);
+    Zl[i][i] = Complex(1.,0.);
+  }    
+  Zl[2][2] = Complex(sinth,0.);
+  Zl[2][5] = Complex(costh,0.);
+  Zl[5][5] = Complex(sinth,0.);
+  Zl[5][2] = Complex(-costh,0.);
+  
+
+  for (short int i=0;i<6;i++) {
+    for (short int j=0;j<6;j++) Zl[i][j] = 0.;
+    Zl[i][i] = 1.;}    
+
+  Zl[2][2] = sinth;
+  Zl[2][5] = costh;
+  Zl[5][5] = sinth;
+  Zl[5][2] = -costh;
+  
+  delete[] msleptons;
+
+  CMatrix ls = CMatrix(3);
+  CMatrix ks = CMatrix(3);
+  for (short int i=0;i<2;i++) {
+    for (short int j=0;j<2;j++) ks[i][j] = Complex(0.,0.);   
+  }    
+  for (short int i=0;i<3;i++) {
+    for (short int j=0;j<3;j++) ls[i][j] = Complex(0.,0.);
+    ls[2][2] = Complex(double(_ls22),0.);  
+  }    
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("ls"),ls));
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("ks"),ks));
+  p_model->GetComplexMatrices()->insert(std::make_pair(std::string("Z_l"),Zl));
+}
+
+
+void Isajet_Fortran_Interface::GluinoMasses()
+{
+  float _mGL;
+  gluino_(_mGL);
+
+  double mGL  = _mGL;
+  
+  Flavour flav;    
+
+  flav = Flavour(kf::Gluino);flav.SetMass(dabs(mGL));
+  if (mGL<0) flav.SetMassSign(-1);
+  
+  msg.Tracking()<<"Gluino mass : "<<dabs(mGL)<<std::endl;
+}
