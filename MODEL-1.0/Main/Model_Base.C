@@ -127,16 +127,16 @@ CMatrix Model_Base::ComplexMatrix(const std::string _name) {
 
 Complex Model_Base::ComplexMatrixElement(const std::string _name,const int _i,const int _j) {
   if (p_matrices->empty()) {
-    msg.Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<") : "<<std::endl
+    msg.Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<")("<<_i<<","<<_j<<") : "<<std::endl
 	       <<"   No matrices stored in model "<<m_name<<". Return 0."<<std::endl;
     return 0;
   }
   if (p_matrices->count(_name)>0) {
     int rank = (*p_matrices)[_name].Rank();
-    if (_i<rank && _j<rank) return (*p_matrices)[_name][_i][_j];
+    if (_i<rank && _j<rank && 0<=_i && 0<=_j) return (*p_matrices)[_name][_i][_j];
   }
 
-  msg.Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<") : "<<std::endl
+  msg.Error()<<"Error in Model_Base::ComplexMatrixElement("<<_name<<")("<<_i<<","<<_j<<") : "<<std::endl
 	     <<"   Key not found in model "<<m_name<<". Return 0."<<std::endl;
   return 0;
 }
