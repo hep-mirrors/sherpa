@@ -47,7 +47,6 @@
 
 #ifndef _MRST_H_INCLUDED_
 
-// namespace added AS (2.08.01)
 namespace PDF {
 
   namespace MRST99 {
@@ -71,22 +70,20 @@ namespace PDF {
     double qq[MRST99::nq+1];
     double n0[MRST99::np+1];
     double f[MRST99::np+1][MRST99::nx+1][MRST99::nq+2];
-    //    double g[MRST99::np+1];
   public:
-    int initialise(int mode);
+    int initialise(int mode,std::string);
     struct s_partoncontent update(double x, double qsq);
   };
 
   class c_mrst {
   private:
-    // Note that we start with the first function as array element zero.
+    std::string path;
     class c_mrst99function function[12]; 
   public:
-    double * table[8];
-    struct s_partoncontent cont;
-    void mrst99(double x,double q,int mode);
-    // The constructor (initialises the functions)
-    c_mrst();
+    c_mrst(std::string);
+    double                 * table[8];
+    struct s_partoncontent   cont;
+    void                     mrst99(double x,double q,int mode);
   };
 
 } // namespace PDF

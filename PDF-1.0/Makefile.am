@@ -1,3 +1,3 @@
 MAKE = make 
-SUBDIRS = Include Main
+SUBDIRS = Main LHAPDF
 
