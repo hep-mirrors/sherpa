@@ -20,6 +20,7 @@ namespace PHASIC {
     int *p_ia,*p_opt;
     int **p_hit;
     int m_dim,m_mode,m_on;
+    static int s_onext;
     void Rebin(double rc, double * xi);
   public:
     Vegas(int dim,int ndx,const std::string &,int=1);
@@ -34,6 +35,9 @@ namespace PHASIC {
 
     void WriteOut(const std::string &);
     void ReadIn(const std::string &);
+
+    static inline void SetOnExternal(const bool on) { s_onext=on;     }
+    static inline bool OnExternal()                 { return s_onext; }
   };
 
 }

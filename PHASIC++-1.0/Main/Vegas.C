@@ -9,13 +9,14 @@ using namespace ATOOLS;
 using namespace PHASIC;
 using namespace std;
 
-
+int Vegas::s_onext=-1;
 
 Vegas::Vegas(int dim,int ndx,const std::string & name,int opt)
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   m_on = dr.GetValue<Switch::code>("VEGAS");
   if (m_on==NotDefined<Switch::code>()) m_on=Switch::On;
+  if (s_onext>-1) m_on=s_onext;
   m_dim  = dim;
   m_sum  = 0.;
   m_sum2 = 0.;
@@ -191,7 +192,7 @@ void Vegas::Reset()
 void Vegas::Optimize()
 { 
   if (m_on==0) return;
-  if (m_nevt-m_snevt<m_nd*20) return;
+  if (m_nevt-m_snevt<(unsigned int)m_nd*20) return;
   msg_Tracking()<<"Vegas optimize "<<m_name<<" "<<m_nopt<<" |"<<m_nevt-m_snevt<<endl;
   for (int j=0;j<m_dim;j++) if(p_opt[j]) {
     for (int i=0;i<m_nd;i++) {if(p_hit[j][i]) p_d[j][i]/=p_hit[j][i];
