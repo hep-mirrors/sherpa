@@ -42,24 +42,39 @@ void ADD::ReadInFile() {
 				     p_dataread->GetValue<int>("KK_CONVENTION",1)));
 
 
+  int    mode = ScalarNumber(std::string("KK_mode"));
   double rad = ScalarConstant(std::string("Radius"));
   int    ed  = ScalarNumber(std::string("ED"));
   double gn  = ScalarConstant(std::string("G_Newton"));
   double ms  = ScalarConstant(std::string("M_s"));
 
-  //Calculation of Gamma(ed/2)
-  double gam;
-  if(ed%2==0) gam=1.;
-  else gam=sqrt(M_PI);
-  for(int i=2-ed%2;i<ed;i+=2)gam*=0.5*i;
-  
-  //If Radius is set but not the scale M_s, M_s is calculated
-  if (IsZero(ms) && rad > 0.) {
-    ms=pow(gam*pow(4.*M_PI,.5*ed)/pow(rad,1.*ed)/gn,1./(2.+ed));
-    (*p_constants)[std::string("M_s")] = ms;
+  switch(mode){
+  case 1:case 2:                            //HLZ
+    //Calculation of Gamma(ed/2)
+    double gam;
+    if(ed%2==0) gam=1.;
+    else gam=sqrt(M_PI);
+    for(int i=2-ed%2;i<ed;i+=2)gam*=0.5*i;
+    
+    //If Radius is set but not the scale M_s, M_s is calculated
+    if (IsZero(ms) && rad > 0.) {
+      ms=pow(gam*pow(4.*M_PI,.5*ed)/pow(rad,1.*ed)/gn,1./(2.+ed));
+      (*p_constants)[std::string("M_s")] = ms;
+    }
+    
+    (*p_constants)[std::string("Radius")] = 
+      pow(gam*pow(4.*M_PI,.5*ed)/pow(ms,2.+(double(ed)))/gn/2.,1./(double(ed)));
+    break;
+  case 5:                                   //GRW
+    //If Radius is set but not the scale M_s, M_s is calculated
+    if (IsZero(ms) && rad > 0.) {
+      ms=pow(8.*M_PI*pow(rad,1.*ed)*gn,-1./(2.+ed));
+      (*p_constants)[std::string("M_s")] = ms;
+    }
+    
+    (*p_constants)[std::string("Radius")] = pow(8.*M_PI*pow(ms,2.+(double(ed)))*gn,-1./(double(ed)));
   }
 
-  (*p_constants)[std::string("Radius")] = pow(gam*pow(4.*M_PI,.5*ed)/pow(ms,2.+(double(ed)))/gn,1./(double(ed)));
   p_constants->insert(std::make_pair(std::string("kappa"),sqrt(8.*M_PI*gn))); 
   p_constants->insert(std::make_pair(std::string("omega"),sqrt(4.*(-1.+ed)/(3.*(2.+ed)))));
   p_constants->insert(std::make_pair(std::string("M2_s"),sqr(ms)));

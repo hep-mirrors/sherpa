@@ -31,8 +31,9 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
   delete[] Z;
 
   kkp=-1;mpss=1.;
+  int mode = rpa.gen.ScalarNumber(std::string("KK_mode"));
   for (int i=nin;i<nin+nout;i++) {
-    if(fl[i].IsKK()){
+    if(fl[i].IsKK() && (mode==1 || mode==2 || mode==5)){
       if(ATOOLS::IsZero(ms[i])){
 	msg.Error()<<"Error in RamboKK: "<<endl
 		   <<"   Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
@@ -43,14 +44,19 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
       ed  = rpa.gen.ScalarNumber(std::string("ED"));
       r2  = sqr(rpa.gen.ScalarConstant(std::string("Radius")));
       gn  = rpa.gen.ScalarConstant(std::string("G_Newton"));
-      m_s = rpa.gen.ScalarConstant(std::string("M_s"));
+
+      //Calculation of Gamma(ed/2)
+      if(ed%2==0) gam=1.;
+      else gam=sqrt(M_PI);
+      for(int k=2-ed%2;k<ed;k+=2)gam*=0.5*k;
+
       double mm=rpa.gen.Ecms();
       prevET = mm;
       for(int j=nin;j<nin+nout;j++)
 	if(j!=i) mm -= sqrt(ms[j]);
       maxm2=sqr(mm);
       maxn=sqrt(maxm2*r2/4./sqr(M_PI));
-      mpss=1./ed*pow(maxm2,0.5*(double(ed)))/pow(m_s,2.+(double(ed)))/gn;
+      mpss=2.*pow(sqrt(M_PI)*maxn,double(ed))/ed/gam;
       break;
     }
   }
@@ -104,13 +110,13 @@ void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 
   double ET = sqrt(sump.Abs2());
 
-  if (!IsEqual(ET,prevET)) {
+  if (!IsEqual(ET,prevET) && kkp>-1) {
     double mm = prevET = ET;
     for(int j=nin;j<nin+nout;j++)
       if(j!=kkp) mm -= sqrt(ms[j]);
     maxm2=sqr(mm);
     maxn=sqrt(maxm2*r2/4./sqr(M_PI));
-    mpss=1./ed*pow(maxm2,0.5*(double(ed)))/pow(m_s,2.+(double(ed)))/gn;
+    mpss=2.*pow(sqrt(M_PI)*maxn,double(ed))/ed/gam;
   }
 
   Set_KKmass();
