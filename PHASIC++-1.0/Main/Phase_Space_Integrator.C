@@ -141,9 +141,8 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
   for (n=ATOOLS::Max(psh->Process()->Points(),(long int)1);n<=nmax;n++) {
     if (!rpa.gen.CheckTime()) {
-      ATOOLS::msg.Error()<<om::bold<<"Phase_Space_Integrator::Calculate(): "
-			 <<om::reset<<om::red<<" Timeout ! Abort calculation."<<om::reset<<std::endl;
-      break;
+      throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,"Timeout. Interrupt integration",
+			      "Phase_Space_Integrator","Calculate"));
     }
 
     value = psh->Differential();
