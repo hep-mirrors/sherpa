@@ -5,12 +5,14 @@ DIRS=$DIRS" SHERPA-1.0"
 
 for I in $* ; do
   if [ "$I" = "-c" ]; then CLEAN=TRUE 
+  elif [ "$I" = "-e" ]; then EXTRACT=TRUE
   elif [ "$I" = "-f" ]; then FORCE=TRUE 
   elif [ "$I" = "--enable-clhep" ]; then CLHEP=--enable-clhep 
   elif [ "$I" = "-O2" ]; then OPTIMIZE=-O2 
   elif [ "$I" = "-t" ]; then TOTAL=TRUE 
   elif [ "$I" = "-h" ]; then \
     echo "makeinstall options: -c             \"make clean\" before compiling" && \
+    echo "                     -e             extract tar files" && \
     echo "                     -f             force extraction of tar files" && \
     echo "                     -t             apply libtool and aclocal before compiling" && \
     echo "                     -O2            compile with \"-O2\" " && \
@@ -21,28 +23,30 @@ for I in $* ; do
   fi
 done
 
-echo "**************************************"
-echo "*   extracting the SHERPA package    *"
-echo "**************************************"
-ALL=
-for I in $DIRS;
-do
-  if test -s $I.tar.gz; then
-    echo "makeinstall: testing for $I"
-    if `test ! -d $I` || `test "$FORCE" = "TRUE"` ; then 
-      echo "======================================"
-      echo " extracting $I"
-      echo "======================================"
-      tar -xzvf $I.tar.gz
-      ALL=$ALL" "$I.tar.gz
+if test "$EXTRACT" = "TRUE" ; then
+  echo "**************************************"
+  echo "*   extracting the SHERPA package    *"
+  echo "**************************************"
+  ALL=
+  for I in $DIRS;
+  do
+    if test -s $I.tar.gz; then
+      echo "makeinstall: testing for $I"
+      if `test ! -d $I` || `test "$FORCE" = "TRUE"` ; then 
+        echo "======================================"
+        echo " extracting $I"
+        echo "======================================"
+        tar -xzvf $I.tar.gz
+        ALL=$ALL" "$I.tar.gz
+      else
+        echo "makeinstall: warning: directory $I already present"
+      fi
     else
-      echo "makeinstall: warning: directory $I already present"
+      echo "makeinstall: warning: tar file $I.tar.gz not found"
     fi
-  else
-    echo "makeinstall: warning: tar file $I.tar.gz not found"
-  fi
-done
-rm -f $ALL
+  done
+  rm -f $ALL
+fi
 
 echo "**************************************"
 echo "*   installing the SHERPA package    *"
