@@ -57,6 +57,7 @@ Sherpa::~Sherpa()
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
 { 
   PROFILE_HERE;
+  DrawLogo();
   m_path = std::string("./");
   p_inithandler  = new Initialization_Handler(argc, argv);
   int mode = p_inithandler->Mode();  
@@ -115,6 +116,7 @@ bool Sherpa::InitializeTheEventHandler()
 bool Sherpa::GenerateOneEvent() 
 {
   PROFILE_HERE;
+  ATOOLS::rpa.gen.SetNumberOfDicedEvents(ATOOLS::rpa.gen.NumberOfDicedEvents()+1);
   for (int i=0;i<m_trials;i++) {
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
       if (p_output->OutputOn()) {
