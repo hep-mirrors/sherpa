@@ -6,22 +6,27 @@ DIRS=$DIRS" EXTRA_XS-1.0 APACIC++-2.0 AMEGIC++-2.0"
 DIRS=$DIRS" SHERPA-1.0"
 
 for I in $* ; do
-  if [ "$I" = "-c" ]; then CLEAN=TRUE 
+  if [ "$I" = "-c" ]; then CONFIGURE=TRUE 
   elif [ "$I" = "-e" ]; then EXTRACT=TRUE
-  elif [ "$I" = "-f" ]; then FORCE=TRUE 
-  elif [ "$I" = "--enable-clhep" ]; then CLHEP=--enable-clhep 
+  elif [ "$I" = "-t" ]; then TOTAL=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "-O2" ]; then OPTIMIZE=-O2 
-  elif [ "$I" = "-t" ]; then TOTAL=TRUE 
+  elif [ "$I" = "--clean" ]; then CLEAN=TRUE 
+  elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
+  elif [ "$I" = "--enable-clhep" ]; then CLHEP=--enable-clhep 
+  elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && EXTRACT=TRUE
   elif [ "$I" = "-h" ]; then \
-    echo "makeinstall options: -c             \"make clean\" before compiling" && \
+    echo "makeinstall options: -c             configure before compiling (enabled with '-t')" && \
     echo "                     -e             extract tar files" && \
-    echo "                     -f             force extraction of tar files" && \
     echo "                     -t             apply libtool and aclocal before compiling" && \
     echo "                     -O2            compile with \"-O2\" " && \
+    echo "                     --clean        \"make clean\" before compiling" && \
+    echo "                     --no-abort     force installation in every module" && \
     echo "                     --enable-clhep enable CLHEP support" && \
+    echo "                     --force-tar    force extraction of tar files (enables '-e')" && \
     echo "                     -h             display this help and exit" && \
     exit 0
-  else echo "makeinstall: error: unrecognized option $I" && exit 1 ;
+  else echo "makeinstall: error: unrecognized option '$I', try '-h'" && \
+    exit 1 ;
   fi
 done
 
@@ -66,11 +71,17 @@ do
       automake -a
       autoconf
     fi
-    ./configure $CLHEP 
-    if `test "$CLEAN" = "TRUE"` ; then make clean ; fi
+    if test "$CONFIGURE" = "TRUE" ; then
+      ./configure $CLHEP 
+    fi
+    if `test "$CLEAN" = "TRUE"` ; then 
+      make clean
+    fi
     if ! make install -j2 "CXXFLAGS=-g $OPTIMIZE" "FFLAGS=-g" ; then
       echo "makeinstall: error: \"make install\" in $I failed"
-      exit 1
+      if test ! "$NOABORT" = "TRUE" ; then
+        exit 1
+      fi
     fi
     cd ..
   else
