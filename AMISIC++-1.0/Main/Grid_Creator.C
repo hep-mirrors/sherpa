@@ -177,7 +177,11 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process,
     if (process->ISR()->On()==3) {
       weight+=process->Differential2()*process->PSHandler(false)->PSWeight();
     }
-    double value=process->Momenta()[2].PPerp();
+    const ATOOLS::Vec4D *p=process->Momenta();
+    double value=p[0].PPerp();
+    for (size_t i=1;i<4;++i) {
+      value=ATOOLS::Max(value,p[i].PPerp());
+    }
     histo->Add(value,weight);
     for (size_t i=1;i<trials;++i) histo->Add(value,0.0); 
     return true;
