@@ -147,8 +147,8 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
     }
     if (p_isrhandler) {
       if (p_isrhandler->On()>0) {
- 	p_isrhandler->SetSprimeMin(ATOOLS::Max(sqr(p_process->ISRThreshold()),
- 						    p_cuts->Smin()));
+ 	p_isrhandler->SetSprimeMin(ATOOLS::Max(ATOOLS::sqr(p_process->ISRThreshold()),
+					       p_cuts->Smin()));
 	msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<p_beamhandler->On()<<":"
 		       <<p_isrhandler->On()<<endl
 		       <<"   "<<p_isrhandler->SprimeMin()<<" ... "<<p_isrhandler->SprimeMax()
@@ -219,7 +219,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
 { 
   PROFILE_HERE;
   p_info->ResetAll();
-  p_isrhandler->Reset(p_cuts);
+  p_isrhandler->Reset();
   if (m_nin>1) {
     if (p_beamhandler->On()>0) { 
       p_beamhandler->SetLimits();

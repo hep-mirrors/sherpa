@@ -5,7 +5,6 @@
 #include "Poincare.H"
 #include "ISR_Base.H"
 #include "Info_Key.H"
-#include "Cut_Data.H"
 
 namespace PDF {
 
@@ -64,7 +63,7 @@ namespace PDF {
 
     void AssignKeys(ATOOLS::Integration_Info *const info);
     void SetLimits();
-    void Reset(const ATOOLS::Cut_Data *const cuts);
+    void Reset();
 
     // inline functions 
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
