@@ -14,6 +14,7 @@
 namespace AMEGIC {
   //! This is the master class for the generation and calculation of an amplitude.
   class Amplitude_Handler : public Amplitude_Group {
+    String_Handler* shand;
     CFColor              * CFCol_Matrix;   
     int       ngraph,namplitude,ntotal;
     int       sw_probabs;
@@ -21,7 +22,6 @@ namespace AMEGIC {
     Complex * Mi;
     int probs;
     Single_Amplitude* firstgraph;
-    String_Handler* shand;
     std::vector<Point*> pointlist;
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
