@@ -156,7 +156,7 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
 		       <<"   Will abort the run."<<std::endl;
 	      abort();
 	    }
-	    break;
+	    continue;
 	  }
 	}
 	if (buffer.find("Event :")!=std::string::npos) {
@@ -216,14 +216,12 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 {
   std::string    buffer,tmp,IS,FS;
   unsigned int   pos;
-  int            kfc, minhadron,mother;
+  int            kfc, mother, minhadron=0;
   vector<int>    ISc;
   vector<int>    FSc;
-  Particle     * part;
+  Particle*      part=NULL;
   Blob         * hardblob, * showerblob, * hadronblob;
-  bool           endevent,hard,shower,hadron;
-  endevent  = hard = shower = hadron = false;
-  minhadron = 0;
+  bool           fhard, fshower, fhadron;
 
   hardblob         = new Blob();
   hardblob->SetType(btp::Signal_Process);
@@ -255,29 +253,26 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   blobs->push_back(hadronblob);
 
   for (;;) {
-    if (!p_instream->eof()) {
-      endevent = false;
+    if(!p_instream->eof()) {
       getline(*p_instream,buffer);
       buffer  += std::string(" ");
-      if (buffer[0] != '%' && buffer[1]!='%' && buffer.length()>0) {
+      if(buffer[0] != '%' && buffer[1]!='%' && buffer.length()>0) {
 	while(buffer.length()>0) {
 	  if (buffer[0]==' ') buffer = buffer.substr(1);
 	  else break;
 	}
-	if (buffer.find("End event")!=std::string::npos) {
-	  endevent = true;
-	  break;
-	}
+	if (buffer.find("End event")!=std::string::npos) break;
 	if (buffer.find("Event :")!=std::string::npos) {
-	  msg.Error()<<"Error in Event_Reader::ReadInSimpleHepEvtEvent"<<std::endl
-		     <<"   Found Event start for event end."<<std::endl
+	  msg.Error()<<"Error in Event_Reader::ReadInSimpleHepEvtEvent\n"
+		     <<"   Found Event start for event end.\n"
 		     <<"   Consider the current event finished and continue."<<std::endl;
-	  endevent = true;
 	  break;
 	}
 
-	// Fill signal blob
-	if (buffer.find("->")!=std::string::npos) {
+	part=NULL;
+	fhard=fshower=fhadron=true;
+
+	if (buffer.find("->")!=std::string::npos) {    // Fill signal blob
 	  pos = buffer.find("->");
 	  IS  = buffer.substr(0,pos);
 	  FS  = buffer.substr(pos+2)+std::string(" ");
@@ -314,7 +309,8 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 	    getline(*p_instream,buffer);
 	    if (i<ISc.size()) control = ISc[i];
 	                 else control = FSc[i-ISc.size()]; 
-	    part    = TranslateFromInput(buffer,mother,control);
+	    part=TranslateFromInput(buffer,mother,control);
+	    if(part==NULL) break;
 	    if (i<ISc.size()) {
 	      hardblob->AddToInParticles(part);
 	      cms += part->Momentum();
@@ -329,42 +325,42 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 	      minhadron = part->Number()+1;
 	    }
 	  }
-	  hardblob->SetCMS(cms);
-	  hard = true;
+	  if(part==NULL) fhard=false;
+	  else hardblob->SetCMS(cms);
 	}	// End of fill signal blob
-	else {
-	  // Fill other blobs
-	  part    = TranslateFromInput(buffer,mother,0);
-	  if (part->Status()>2) delete part;
+	else {    // Fill other blobs
+	  part=TranslateFromInput(buffer,mother,0);
+	  if(!part) { fshower=fhadron=false;}
 	  else {
-	    if (part->Flav().IsHadron()) {
-	      part->SetInfo('P');
-	      hadronblob->AddToOutParticles(part);
-	      hadron = true;
-	    }
+	    if(part->Status()>2) delete part;
 	    else {
-	      part->SetInfo('F');
-	      if (part->Status()>1) part->SetInfo('f');
-	      if ((!part->Flav().IsPhoton()) || 
-		  (part->Flav().IsPhoton() &&  mother<minhadron)) {
-		showerblob->AddToOutParticles(part);
-		hadronblob->AddToInParticles(part);
-		if (!part->Flav().Strong() &&
-		    !part->Flav().IsDiQuark()) hadronblob->AddToOutParticles(new Particle(*part));
-		minhadron = part->Number();
-		shower = true;
+	      if(part->Flav().IsHadron()) {
+		part->SetInfo('P');
+		hadronblob->AddToOutParticles(part);
 	      }
 	      else {
-		hadronblob->AddToOutParticles(part);
+		part->SetInfo('F');
+		if(part->Status()>1) part->SetInfo('f');
+		if((!part->Flav().IsPhoton()) || (part->Flav().IsPhoton() &&  mother<minhadron)) {
+		  showerblob->AddToOutParticles(part);
+		  hadronblob->AddToInParticles(part);
+		  if(!part->Flav().Strong() && !part->Flav().IsDiQuark())
+		    hadronblob->AddToOutParticles(new Particle(*part));
+		  minhadron=part->Number();
+		}
+		else hadronblob->AddToOutParticles(part);
 	      }
 	    }
 	  }
+	}    //End of fill other blobs
+	if(fhard && fshower && fhadron);
+	else {
+	  msg_Info()<<__PRETTY_FUNCTION__<<":\n "
+		    <<"Warning: Event could not be reconstructed..."
+		    <<"fhard="<<fhard<<",  fshower="<<fshower<<",  fhadron="<<fhadron<<std::endl;
+	  return false;
 	}
       }
-    }
-    if (endevent) {
-      if (hard && shower && hadron) return true;
-      return false;
     }
   }
   return true;
@@ -372,7 +368,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 
 
 
-Particle * Event_Reader::TranslateFromInput(std::string buffer,int & mother,const int control)
+Particle* Event_Reader::TranslateFromInput(std::string buffer, int& mother, const int control)
 {
   unsigned int     pos;
   std::string      tmp;
@@ -402,25 +398,28 @@ Particle * Event_Reader::TranslateFromInput(std::string buffer,int & mother,cons
   if (control != 0) {
     if (flags[1]!=control) {
       msg.Error()<<"Error in Event_Reader::TranslateFromInput."<<std::endl
-		 <<"   Particle ID and control number do not coincide : "<<flags[1]<<" vs. "<<control<<std::endl
+		 <<"   Particle ID and control number do not coincide : "<<flags[1]<<" vs. "
+		 <<control<<std::endl
 		 <<"   in event number "<<m_evtnumber<<" of file "<<m_file<<"."<<std::endl
 		 <<"   Abort the run and check."<<std::endl;
       abort();
     }
   }
+  Particle* part=NULL;
   if (flags.size()<4 || numbers.size()<4) {
-    msg.Error()<<"Error in Event_Reader::TranslateFromInput."<<std::endl
-	       <<"   Not enough information provided for particle construction :"
-	       <<"   ("<<flags.size()<<" "<<numbers.size()<<")"<<std::endl
-	       <<"   in event number "<<m_evtnumber<<" of file "<<m_file<<"."<<std::endl
-	       <<"   Abort the run and check."<<std::endl;
-    abort();
+    msg.Error()<<"Error in "<<__PRETTY_FUNCTION__<<"\n"
+	       <<"   Not enough information provided for particle construction: "
+	       <<"   ("<<flags.size()<<" "<<numbers.size()<<")\n"
+	       <<"   in event number "<<m_evtnumber<<" of file "<<m_file<<".\n"
+	       <<"   Will return (nil)-particle."<<std::endl;
+    return part;    //abort();
   }
-  Flavour flav; flav.FromHepEvt(flags[1]);
-  Vec4D   momentum = Vec4D(numbers[0],numbers[1],numbers[2],numbers[3]);
-  Particle * part  = new Particle(flags[0],flav,momentum);
+  Flavour flav;
+  flav.FromHepEvt(flags[1]);
+  Vec4D momentum=Vec4D(numbers[0],numbers[1],numbers[2],numbers[3]);
+  part=new Particle(flags[0],flav,momentum);
   part->SetStatus(flags[2]);
-  mother           = flags[3];
+  mother=flags[3];
   return part;
 }
 
