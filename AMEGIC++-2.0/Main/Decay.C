@@ -1,7 +1,7 @@
 #include "Flavour.H"
 #include "Run_Parameter.H"
 #include "Decay.H"
-#include "Model.H"
+#include "Interaction_Model_Base.H"
 #include "Message.H"
 
 using namespace AMEGIC;
@@ -267,8 +267,8 @@ void Decay_Handler::RecCalc(Topology* top,DecayTable* dt,int sw_2)
     int sw = 1;
     if (dtit->More==0) {
       Single_Process* pro;
-      pro = new Single_Process(1,dtit->fn-1,dtit->fl,0,1);
-      pro->InitDecay(top);
+      //pro = new Single_Process(1,dtit->fn-1,dtit->fl,0,1);
+      //pro->InitDecay(top);
       /*
 	if (!pro->InitAmplitude(top,moms,results,links)) 
  	msg.Error()<<"Error in InitAmplitude !"<<endl;

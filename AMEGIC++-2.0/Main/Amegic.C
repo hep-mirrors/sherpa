@@ -1,29 +1,19 @@
 #include "Amegic.H"
-#include "All_Processes.H"
-#include "Single_Process.H"
 #include "Decay.H"
 
-#include "Model_Handler.H"
-#include "Vertex.H"
-#include "Topology.H"
-#include "Pol_Info.H"
-
-#include "Run_Parameter.H"
+#include "Interaction_Model_Handler.H"
 #include "Message.H"
+#include "Topology.H"
+#include "MyStrStream.H"
 
 #include <iomanip>
 
-#define _DECAYS_
+//#define _DECAYS_
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
 using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace BEAM;
-using namespace ISR;
+using namespace AORGTOOLS;
 using namespace std;
-
-
 
 /*----------------------------------------------------------------------------------
   
@@ -31,22 +21,12 @@ using namespace std;
 
   ----------------------------------------------------------------------------------*/
 
-Model * mo =0;
-
-Amegic::Amegic(string _path,ISR_Handler * _isr,Beam_Handler * _beam) :
-  path(_path), isr(_isr), beam(_beam)
+Amegic::Amegic(std::string _path,std::string _file,MODEL::Model_Base * _model) :
+  m_path(_path), m_file(_file)
 {
-  gen_str = 2; //strings + libraries
-  resdir  = string(".");
+  p_dataread         = new Data_Read(m_path+m_file);
+  InitializeInteractionModel(_model);
 
-  polbunches = 0;
-
-  Model_Handler mh;
-  mo = mh.GetModel();
-  mo->Init();
-  mo->Init_Vertex();
-
-  
   bool use_fifo=0;
   if (rpa.gen.NumberOfEvents()>0 && use_fifo)
     p_fifo = new ofstream("flap.dat");
@@ -56,87 +36,47 @@ Amegic::Amegic(string _path,ISR_Handler * _isr,Beam_Handler * _beam) :
  
 
 Amegic::~Amegic() {
-  if (mo)        { delete mo;        mo        = 0; }
-  if (top)       { delete top;       top       = 0; }
-  if (procs)     { delete procs;     procs     = 0; }
-  if (seldata)   { delete seldata;   seldata   = 0; }
-  if (beamtypes) { delete beamtypes; beamtypes = 0; }
-  if (isrtypes)  { delete isrtypes;  isrtypes  = 0; }
-  if (splimits)  { delete splimits;  splimits  = 0; }
-  if (bunches)   { delete bunches;   bunches   = 0; }
-  if (beams)     { delete beams;     beams     = 0; }
-  if (partons)   { delete partons;   partons   = 0; }
-  if (beam)      { delete beam;      beam      = 0; }
-  if (isr)       { delete isr;       isr       = 0; }
-  if (p_fifo)    { delete p_fifo;    p_fifo       = 0; }
-  msg.Tracking()<<"Amegic regularly finished."<<endl;
+  if (p_dataread) { delete p_dataread; p_dataread = NULL;}
+  if (p_fifo)     { delete p_fifo;    p_fifo       = 0;  }
 }
 
 
+/*---------------------------------------------------------------------------------
 
-/*----------------------------------------------------------------------------------
-  
-  Process initialization
+  Process initialization 
 
   ----------------------------------------------------------------------------------*/
 
-bool Amegic::InitializeProcesses(int _runmode) 
-{
-  runmode = _runmode;
-  msg.Debugging()<<"In Amegic::InitializeProcesses() "<<endl;
-  procs = new All_Processes();
-  procs->SetName("All_Processes");
-  procs->SetAtoms(1);
 
-  seldata      = new Selector_Data(path);
+bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,ISR::ISR_Handler * _isr) {
+  p_beam              = _beam; 
+  p_isr               = _isr;
 
-  beamon = isron = 0;
-  arrows = 1;
-  msg.Debugging()<<"Open file "<<path+string("/ISR.dat")<<endl;
-  Data_Read dr(path+string("/ISR.dat"));
-  beamtypes    = new int[2];
-  beamtypes[0] = dr.GetValue<Beam_Type::code>("BEAM1");
-  beamtypes[1] = dr.GetValue<Beam_Type::code>("BEAM2");
-  if ((beamtypes[0] != Beam_Type::No) || (beamtypes[1] != Beam_Type::No)) { beamon = 1; ++arrows; }
-  isrtypes     = new int[2];
-  isrtypes[0]  = dr.GetValue<ISR_Type::code>("ISR1");
-  isrtypes[1]  = dr.GetValue<ISR_Type::code>("ISR2");
-  if ((isrtypes[0] != ISR_Type::No) || (isrtypes[1] != ISR_Type::No))     { isron = 1;  ++arrows; }
-  double s     = sqr(AORGTOOLS::rpa.gen.Ecms());
-  splimits     = new double[2];
-  splimits[0]  = s*sqr(dr.GetValue<double>("SMIN"));
-  splimits[1]  = s*sqr(dr.GetValue<double>("SMAX"));
+  string processfile  = p_dataread->GetValue<string>("PROCESSFILE",string("Processes.dat"));
+  p_procs             = new All_Processes();
+  p_procs->SetName("All_Processes");
+  p_procs->SetAtoms(1);
 
-  bunches      = new Flavour[2];
-  beams        = new Flavour[2];
-  partons      = new Flavour[2];
-  for (int i=0;i<2;i++) {
-    bunches[i] = Flavour(kf::none);
-    beams[i]   = Flavour(kf::none);
-    partons[i] = Flavour(kf::none);
-  }
-  int Nmax     = ReadProcesses(path);
+  string selfile      = p_dataread->GetValue<string>("SELECTORFILE",string("Selector.dat"));
+  p_seldata           = new Selector_Data(m_path+selfile);
 
-  top          = new Topology(Max(Nmax,4));
+
+  ReadInProcessfile(processfile);
+
+  m_count            = p_procs->Size();
+  msg.Tracking()<<"All together : "<<m_count<<" processes with up to "<<m_nmax<<" legs."<<endl;
+
+  p_top              = new Topology(AMATOOLS::Max(m_nmax,4));
 
   vector<double>           results;
   vector<Single_Process *> links;
-  Vec4D * moms  = 0;
+  AMATOOLS::Vec4D * moms  = 0;
 
-  switch (procs->InitAllProcesses(top,moms,results,links)) { 
+  switch (p_procs->InitAllProcesses(p_model,p_top,moms,results,links)) { 
   case 1  : 
-    if (runmode==XS_MODE) {
-      bool okay = 1;
-      for (int j=0; j<links.size(); j++) if (links[j]->NumberOfDiagrams()!=IS_XS_FLAG) okay = 0;
-      return okay;
-    }
     return 1;
   case 0  : 
-    if (runmode==XS_MODE) {
-      msg.Error()<<"Some differentials are not available as fast function ! Try \"-P\"."<<endl;
-      return 0;
-    }
-    msg.Error()<<"Some libraries were missing ! Type \"make install\" and rerun."<<endl;
+    msg.Error()<<"Some libraries were missing ! Type make install and rerun."<<endl;
     return 0;
   default :
     return 0;
@@ -144,193 +84,204 @@ bool Amegic::InitializeProcesses(int _runmode)
   return 1;
 }
 
-int Amegic::ReadProcesses(string path)
-{ 
-  msg.Debugging()<<"Open file "<<path+string("/Processes.dat")<<endl;
-  ifstream from((path+string("/Processes.dat")).c_str());
+
+void Amegic::InitializeInteractionModel(MODEL::Model_Base * _model)
+{
+  string modeltype   = p_dataread->GetValue<string>("SIGNAL_MODEL",string("SM"));
+  string cplscheme   = p_dataread->GetValue<string>("COUPLING SCHEME",string("Running"));
+  string massscheme  = p_dataread->GetValue<string>("YUKAWA MASSES",string("Running"));
+  string widthscheme = p_dataread->GetValue<string>("WIDTH SCHEME",string("Complex"));
+
+  Interaction_Model_Handler mh(_model);
+  p_model = mh.GetModel(modeltype,cplscheme,massscheme);
+  p_model->Init_Vertex();
+}
+
+void Amegic::ReadInProcessfile(string file) 
+{
+  int    _scale_scheme   = p_dataread->GetValue<int>("SCALE SCHEME",0);
+  int    _kfactor_scheme = p_dataread->GetValue<int>("KFACTOR SCHEME",0);
+  double _scale_factor   = p_dataread->GetValue<double>("SCALE FACTOR",1.);
+
+
+  ifstream from((m_path+file).c_str());
   if (!from) {
-    msg.Error()<<(path+string("/Processes.dat")).c_str()<<" not found !"<<endl;
+    msg.Error()<<"Error in Amegic::InitializeProcesses : "<<endl
+	       <<"   File : "<<(m_path+file).c_str()<<" not found ! Abort program execution."<<endl;
     abort();
   }
 
-  int nmax  = 0;
-  int count = 0;
-  Flavour  * FS, * flavs;
-  Pol_Info * plFS, * plavs;
+  m_nmax    = 0;
   char buffer[100];
+
+  int         flag,position;
+  string      buf,ini,fin;
+  int         nIS,   nFS,    nex;
+  Flavour   * IS,  * FS,   * excluded, * flavs;
+  Pol_Info  * plIS,* plFS, * pldummy,  * plavs;
+  int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
+  double      scale_factor;
+  string      selectorfile;
+  MyStrStream str;      
   for(;from;) {
-    bool error = 0;
-    int  nIS = 0, nFS = 0;
     from.getline(buffer,100);
     if (buffer[0] != '\%' && strlen(buffer)>0) {
-      string buf(buffer);
-      msg.Debugging()<<"Analyse : "<<buf<<endl;
-      // First : Check number of arrows
-      int  position;
-      int  flag  = 0;
-      if ( (!beamon) && (isron) ) flag=1;
-      if ( (!beamon) && (!isron)) flag=2;
-      while (flag > -1) {
+      buf        = string(buffer);
+      position   = buf.find(string("Process :")); 
+      flag       = 0;
+      if (position>-1 && position<buf.length()) {
+	flag     = 1;
+	buf      = buf.substr(position+9);
 	position = buf.find(string("->"));
 	if (position > 0) {
-	  string ini = buf.substr(0,position);
-	  buf        = buf.substr(position+2);
-	  switch (flag) {
-	  case 0: 
-	    if (beamon) {
-	      msg.Out()<<"Try to extract flavours for beams."<<endl;
-	      if (ExtractFlavours(bunches,polbunches,ini) != 2) {
-		msg.Error()<<"Error in Amegic::ReadProcesses("<<path<<")."<<endl
-			   <<"Wrong number of bunches in "<<string(buffer)<<endl;
-	      } 
-	      if (!isron) flag++;
-	      msg.Out()<<"found : "<<bunches[0]<<";"<<bunches[1]<<endl;
-	    }
-	    break;
-	  case 1: 
-	    if (isron) {
-	      if (ExtractFlavours(beams,polbeams,ini) != 2) {
-		msg.Error()<<"Error in Amegic::ReadProcesses("<<path<<")."<<endl
-			   <<"Wrong number of beams in "<<string(buffer)<<endl;
-	      } 
-	    }
-	    break;
-	  case 2:
-	    nIS = ExtractFlavours(partons,plpartons,ini);
-	    if ((nIS< 1) || (nIS > 2)) {
-	      msg.Error()<<"Error in Amegic::ReadProcesses("<<path<<")."<<endl
-			 <<"Wrong number of partons in "<<string(buffer)<<endl;
-	    } 
-	    break;
-	  default:
-	    msg.Error()<<"Error in Amegic::ReadProcesses("<<path<<")."<<endl
-		       <<"Funny number of arrows in "<<string(buffer)<<endl
-		       <<"Have "<<flag<<" arrows with ISR : "<<isron
-		       <<", Beam : "<<beamon<<endl;
-	    error = 1;
+	  ini    = buf.substr(0,position);
+	  fin    = buf.substr(position+2);
+	  nIS    = ExtractFlavours(IS,plIS,ini);
+	  nFS    = ExtractFlavours(FS,plFS,fin);
+	  int jet_flag =0;
+	  
+	  /*
+	  for (int i=0;i<nIS;i++) {
+	    if (IS[i]==Flavour(kf::code(93)) || IS[i]==Flavour(kf::code(94)))
+	      jet_flag=1;
 	  }
-	  flag++;
-	  if (flag>3) {
-	    msg.Error()<<"Error in Amegic::ReadProcesses("<<path<<")."<<endl
-		       <<"Funny number of arrows in "<<string(buffer)<<endl
-		       <<"Have "<<flag<<" arrows with ISR : "<<isron
-		       <<", Beam : "<<beamon<<endl;
-	    error = 1;
+	  */
+	  cout<<"nis / nfs "<<nIS<<" "<<"-> "<<nFS<<endl; 
+	  if ((nIS< 1) || (nIS > 2)) {
+	    msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+		       <<"   Wrong number of partons in "<<string(buffer)<<endl;
+	    flag = 0;
 	  }
-	}
-	else {
-	  if (flag<arrows) {
-	    msg.Error()<<"Error in Amegic::ReadProcesses("<<path<<")."<<endl
-		       <<"Funny number of arrows in "<<string(buffer)<<endl
-		       <<"Have "<<flag<<" arrows with ISR : "<<isron
-		       <<", Beam : "<<beamon<<endl;
-	    error = 1;
-	  }
-	  flag = -1;
-	}
-      }
-      if (!error) {
-	if (!beam) {
-	  beam = new Beam_Handler(beamtypes,bunches,polbunches,beams,polbeams,splimits);
-	  if (beam->On()>0) {
-	    if (isr) {
-	      if (!(beam->CheckConsistency(bunches,beams))) {
-		msg.Error()<<"Error in initialising Beam_Handler with ISR."<<endl
-			   <<" "<<bunches[0]<<" -> "<<beams[0]<<", "
-			   <<" "<<bunches[1]<<" -> "<<beams[1]<<endl
-			   <<"  Delete it and ignore the process."<<endl;
-		delete beam;
-		error = 1;
-	      }
+	  if (nIS==2) {
+	    if (!(p_procs->CheckExternalFlavours(2,IS,nFS,FS)) && jet_flag==0) {
+	      msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+			 <<"   Mismatch of flavours. Cannot initialize this process."<<endl
+			 <<"   flavours are "<<buf<<endl;
+	      flag = 0;
 	    }
-	    else {
-	      if (!(beam->CheckConsistency(bunches,partons))) {
-		msg.Error()<<"Error in initialising Beam_Handler without ISR."<<endl
-			   <<" "<<bunches[0]<<" -> "<<partons[0]<<", "
-			   <<" "<<bunches[1]<<" -> "<<partons[1]<<endl
-			   <<"  Delete it and ignore the process."<<endl;
-		delete beam;
-		error = 1;
-	      }
-	    }
-	  }
-	}
-	if (!isr)  {
-	  isr  = new ISR_Handler(isrtypes,beams,partons,splimits);
-	  if (isr->On()>0) {
-	    if (!(isr->CheckConsistency(beams,partons))) {
+	    cout<<"Try CheckConsistency "<<endl;
+	    if (!(p_isr->CheckConsistency(IS))) {
 	      msg.Error()<<"Error in initialising ISR_Handler."<<endl
-			 <<" "<<beams[0]<<" -> "<<partons[0]<<", "
-			 <<" "<<beams[1]<<" -> "<<partons[1]<<endl
+			 <<" "<<p_isr->Flav(0)<<" -> "<<IS[0]<<", "
+			 <<" "<<p_isr->Flav(1)<<" -> "<<IS[1]<<endl
 			 <<"  Delete it and ignore the process."<<endl;
-	      delete isr;
-	      error = 1;
+	      flag = 0;
 	    }
 	  }
-	}
-	if (beam->On()>0) {
-	  if (isr->On()>0) {
-	    if (!(beam->CheckConsistency(bunches,beams))) {
-	      error = 1;
-	    }
+	  if (flag==0) {
+	    delete [] IS;
+	    delete [] plIS;
+	    delete [] FS;
+	    delete [] plFS;
 	  }
 	  else {
-	    if (!(beam->CheckConsistency(bunches,partons))) {
-	      error = 1;
+	    order_ew = order_strong = -1;
+	    selectorfile   = string("");
+	    scale_scheme   = _scale_scheme;
+	    scale_factor   = _scale_factor;
+	    kfactor_scheme = _kfactor_scheme;
+	    nex            = 0;
+	    do {
+	      from.getline(buffer,100);
+	      if (buffer[0] != '\%' && strlen(buffer)>0) {
+		buf      = string(buffer);
+		position = buf.find(string("Excluded particles :"));
+		if (position > -1) {
+		  buf    = buf.substr(position+20);
+		  nex    = ExtractFlavours(excluded,pldummy,buf);
+		}
+
+		position = buf.find(string("Order electroweak :"));
+		if (position > -1) {
+		  buf    = buf.substr(position+19);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>order_ew;
+		}
+
+		position     = buf.find(string("Order strong :"));
+		if (position > -1) {
+		  buf    = buf.substr(position+14);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>order_strong;
+		}
+
+		position       = buf.find(string("Selector file :"));
+		if (position > -1) {
+		  buf          = buf.substr(position+15);
+		  Shorten(buf);
+		  selectorfile = buf;
+		}
+
+		position       = buf.find(string("Scale scheme :"));
+		if (position > -1) {
+		  buf          = buf.substr(position+14);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>scale_scheme;
+		}
+
+		position       = buf.find(string("Scale factor :"));
+		if (position > -1) {
+		  buf          = buf.substr(position+14);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>scale_factor;
+		}
+
+		position       = buf.find(string("KFactor scheme :"));
+		if (position > -1) {
+		  buf          = buf.substr(position+17);
+		  Shorten(buf);
+		  str<<buf;
+		  str>>kfactor_scheme;
+		}
+
+		position       = buf.find(string("End process"));
+		if (!from) {
+		  msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
+			     <<"   End of file reached without 'End process'-tag."<<endl
+			     <<"   Continue and hope for the best."<<endl;
+		  position     = 0;
+		}
+	      }
 	    }
+	    while (position==-1);
+	    msg.Tracking()<<"Read in process :";
+	    for (short int i=0;i<nIS;i++) msg.Tracking()<<" "<<IS[i].Name();
+	    msg.Tracking()<<" -> ";
+	    for (short int i=0;i<nFS;i++) msg.Tracking()<<FS[i].Name()<<" ";
+	    msg.Tracking()<<" EW("<<order_ew<<"), QCD("<<order_strong<<")"<<endl;
+	    if (nex>0) {
+	      msg.Tracking()<<" Excluded particles : ";
+	      for (short int i=0;i<nex;i++) msg.Tracking()<<excluded[i].Name()<<" ";
+	      msg.Tracking()<<endl;
+	    }
+
+	    if (nIS+nFS>m_nmax) m_nmax = nIS+nFS;
+	    flavs              = new Flavour[nIS+nFS];
+	    plavs              = new Pol_Info[nIS+nFS];
+	    for (int i=0;i<nIS;i++) { flavs[i]     = IS[i]; plavs[i]     = plIS[i]; } 
+	    for (int i=0;i<nFS;i++) { flavs[i+nIS] = FS[i]; plavs[i+nIS] = plFS[i]; }
+	    bool single        = 1;
+	    for (int i=0;i<nIS+nFS;i++) {
+	      if (flavs[i].Size()>1) { single = 0; break; }
+	    } 
+
+	    if (single) p_procs->Add(new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+							kfactor_scheme,scale_scheme,scale_factor,
+							plavs,nex,excluded));
+ 	    else p_procs->Add(new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
+						kfactor_scheme,scale_scheme,scale_factor,
+						plavs,nex,excluded));
+	    delete [] flavs;
+	    delete [] plavs;
 	  }
 	}
-	if (isr->On()>0) {
-	  if (!(isr->CheckConsistency(beams,partons))) {
-	      msg.Error()<<"Error in initialising ISR_Handler."<<endl
-			 <<" "<<beams[0]<<" -> "<<partons[0]<<", "
-			 <<" "<<beams[1]<<" -> "<<partons[1]<<endl
-			 <<"  Ignore the process."<<endl;
-	    error = 1;
-	  }
-	}
-      }
-      if (!error) {
-	nFS = ExtractFlavours(FS,plFS,buf);
-	++count;
-	msg.Tracking()<<"Init process : "<<partons[0];
-	if (nIS>1) msg.Tracking()<<" "<<partons[1];
-	msg.Tracking()<<" -> ";
-	for (int j=0;j<nFS;j++) msg.Tracking()<<FS[j]<<" ";
-	msg.Tracking()<<"  (Check : "<<buf<<" )"<<endl;
-	
-	if (nIS+nFS > nmax) nmax = nIS+nFS;
-	flavs = new Flavour[nIS+nFS];
-	plavs = new Pol_Info[nIS+nFS];
-	for (int i=0;i<nIS;i++) { flavs[i]     = partons[i]; plavs[i]     = plpartons[i]; }
-	for (int i=0;i<nFS;i++) { flavs[i+nIS] = FS[i];      plavs[i+nIS] = plFS[i]; }
-	bool single = 1;
-	for (int i=0;i<nIS+nFS;i++) {
-	  msg.Debugging()<<"Flavour "<<i<<" : "<<flavs[i]<<" : "<<flavs[i].Size()<<endl;
-	  if (flavs[i].Size()>1) { single = 0; break; }
-	} 
-	if (single) {
-	  //if (!(procs->CheckExternalFlavours(2,partons,nFS,FS))) {
-	  if (!(procs->CheckExternalFlavours(nIS,partons,nFS,FS))) {
-	    msg.Tracking()<<"Mismatch of flavours. Cannot initialize this process."<<endl
-			  <<"flavours are "<<buf<<endl;
-	  }
-	  else {
-	    procs->Add(new Single_Process(nIS,nFS,flavs,isr,beam,seldata,2,
-					  rpa.me.KFactorScheme(),
-					  rpa.me.ScaleScheme(),plavs,runmode));
-	  }
-	}
-	else procs->Add(new Process_Group(nIS,nFS,flavs,isr,beam,seldata,2,
-					  rpa.me.KFactorScheme(),
-					  rpa.me.ScaleScheme(),plavs, runmode));
-	delete [] flavs;
       }
     }
   }
-  from.close();
-  msg.Tracking()<<count<<" process(es) !"<<endl;
-  return nmax;
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -338,9 +289,9 @@ int Amegic::ReadProcesses(string path)
 void Amegic::DecCalc() 
 {
 #ifdef  _DECAYS_ 
- Decay_Handler dh;
- dh.FindUnstable();
- dh.Calculate(top);
+  Decay_Handler dh;
+  dh.FindUnstable();
+  dh.Calculate(p_top);
 #endif
 
 }
@@ -360,7 +311,6 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
   for (i=0;i<20;i++) { pp[i]=' '; pd[i]=0.; pc[i]=' '; angle[i]=0.;}
 
   while(buf.length()>1) {
-
     if (buf[0]==' ') buf = buf.substr(1);
     else {
       int next = buf.find(string(" "));
@@ -403,8 +353,14 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
       buf = buf.substr(next);
     }
   }
+
+  msg.Debugging()<<"Count in ExtractFlavours : "<<count<<" : ";
+  for (i=0;i<count;i++) msg.Debugging()<<ii[i]<<" ";
+  msg.Debugging()<<endl;
+  
   fl = new Flavour[count];
   pl = new Pol_Info[count];
+  
   for (i=0;i<count;i++) {
     fl[i] = Flavour(kf::code(int(abs(double(ii[i])))));
     if (ii[i]<0) fl[i] = fl[i].Bar();
@@ -432,16 +388,16 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
                                else pl[i].Init(dof);
 
     if(!fl[i].IsTensor()){
-      int tf[3]={t1,t2,mt::p_l};
+      int tf[3] = {t1,t2,mt::p_l};
       if(pl[i].num==1) {
 	pl[i].type[0]=type;
-	pl[i].factor[0]=dof;}
+	pl[i].factor[0]=dof;
+      }
       else{
-	for(int j=0;j<pl[i].num;j++){
+	for (int j=0;j<pl[i].num;j++){
 	  pl[i].type[j]=tf[j];
-	  if(pl[i].type[j]==type)
-	    pl[i].factor[j]=1.+pd[i]*(dof-1.);
-	  else pl[i].factor[j]=1.-pd[i];
+	  if(pl[i].type[j]==type)  pl[i].factor[j] = 1.+pd[i]*(dof-1.);
+	                     else  pl[i].factor[j] = 1.-pd[i];
 	}
       }
     }
@@ -466,71 +422,19 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
   return count;
 }
 
-
-int Amegic::ExtractFlavours(Flavour*& fl,double*& plfac,string buf)
-{
-  // kill initial spaces
-  int ii[20];
-  char pc[20],pp[20];
-  double pd[20],angle[20];
-  int count = 0;
-  buf += string(" "); 
-  int int_tag;
-  short int i;
-  for (i=0;i<20;i++) { pp[i]=' '; pd[i]=0.; pc[i]=' '; angle[i]=0.;}
-
-  while(buf.length()>1) {
-    if (buf[0]==' ') buf = buf.substr(1);
-    else {
-      int next = buf.find(string(" "));
-      string pn = buf.substr(0,next);
-      int nxt = pn.find(string("("));
-      string number;
-      if (nxt==string::npos) number = pn.substr(0,pn.length());
-      else {
-	number = pn.substr(0,nxt);
-	pn.erase(0,nxt);
-	if(pn[pn.length()-1]==')'){
-	  pn.erase(0,1);
-	  pn.erase(pn.length()-1,1);
-	  int lh=pn.find(string("l"));
-
-	  if(lh!=string::npos) {
-	    pc[count]='l';
-	    pp[count]='+';
-	    string ha = pn.substr(lh+1,pn.length()-lh);
-	    std::strstream astream;
-	    astream<<ha;
-	    astream>>angle[count];
-	    msg.Debugging()<<"*****Extract_Flavours:angle:"<<pn<<";"<<ha<<";"<<angle[count]<<endl;
-	  }
-	  else {
-	    pp[count]=pn[pn.length()-1];
-	    pc[count]=pn[pn.length()-2];
-	    pn.erase(pn.length()-2,2);
-	  }
-	  std::strstream pstream;
-	  pstream<<pn;
-	  pstream>>pd[count];
-	}
-      }
-      std::strstream sstream;
-      sstream<<number;
-      sstream>>ii[count];
-
-      count++;
-      buf = buf.substr(next);
-    }
+void Amegic::Shorten(std::string& str) {
+  //kill initial spaces
+  for (;;) {    
+    if (int(str[0])==32 || int(str[0])==9) str = str.substr(1);
+    else break;
   }
-  fl  = new Flavour[count];
-  plfac = new double[count];
-  for (i=0;i<count;i++) {
-    fl[i] = Flavour(kf::code(int(abs(double(ii[i])))));
-    if (ii[i]<0) fl[i] = fl[i].Bar();
-    plfac[i] = pd[i]; 
-    if (pp[i]=='-') plfac[i]=-plfac[i];
+  //kill final spaces
+  for (;;) {    
+    if (int(str[str.length()-1])==32 ||
+	//Tabulator
+	int(str[str.length()-1])==9) str = str.substr(0,str.length()-1);
+    else break;
   }
-  return count;
 }
 
 
@@ -542,25 +446,25 @@ int Amegic::ExtractFlavours(Flavour*& fl,double*& plfac,string buf)
 
 
 bool Amegic::CalculateTotalXSec() {
-  return procs->CalculateTotalXSec();
+  return p_procs->CalculateTotalXSec();
 }
 
 bool Amegic::LookUpXSec(double ycut,bool calc,string obs) {
-  procs->SetResDir(resdir);
-  return procs->LookUpXSec(ycut,calc,obs);
+  p_procs->SetResDir(m_respath);
+  return p_procs->LookUpXSec(ycut,calc,obs);
 }
 
 
 bool Amegic::PrepareXSecTables() {
-  procs->SetResDir(resdir);
-  return procs->PrepareXSecTables();
+  p_procs->SetResDir(m_respath);
+  return p_procs->PrepareXSecTables();
 }
 
 void Amegic::FifoOutput(double wt) 
 {
   if (p_fifo) {
-    int nin  = procs->Selected()->Nin();
-    int nout = procs->Selected()->Nout();
+    int nin  = p_procs->Selected()->Nin();
+    int nout = p_procs->Selected()->Nout();
 
 
     ostream &  fifo = *p_fifo;
@@ -575,18 +479,18 @@ void Amegic::FifoOutput(double wt)
     //<<std::setprecision(9)<<std::setw(16);
 
     for (int j = 0;j<nin; j++) {
-      fifo<<" "<<std::setw(3)<<int(procs->Selected()->Flavs()[j])<<" ";
+      fifo<<" "<<std::setw(3)<<int(p_procs->Selected()->Flavs()[j])<<" ";
       for (int k=1;k<4;++k) {
-	fifo<<std::setw(16)<<procs->Selected()->Momenta()[j][k]<<" ";
+	fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][k]<<" ";
       }
-      fifo<<std::setw(16)<<procs->Selected()->Momenta()[j][0]<<endl;
+      fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][0]<<endl;
     }
     msg.Debugging()<<"                      -> "<<endl;
     for (int j = nin;j<nin+nout; j++) {
-      fifo<<" "<<std::setw(3)<<int(procs->Selected()->Flavs()[j])<<" ";
+      fifo<<" "<<std::setw(3)<<int(p_procs->Selected()->Flavs()[j])<<" ";
       for (int k=1;k<4;++k)
-	fifo<<std::setw(16)<<procs->Selected()->Momenta()[j][k]<<" ";
-      fifo<<std::setw(16)<<procs->Selected()->Momenta()[j][0]<<endl;
+	fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][k]<<" ";
+      fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][0]<<endl;
     }
   }
   // "conti" or "endss"
@@ -598,7 +502,7 @@ void Amegic::SingleEvents() {
     msg.Debugging()<<"------------------------------------------------------------"<<endl
 		   <<"----------------"<<i<<" th Event --------------------------"<<endl
 		   <<"------------------------------------------------------------"<<endl;
-    if (procs->OneEvent()) {
+    if (p_procs->OneEvent()) {
       if (p_fifo) {
 	FifoOutput();
 	if (i==rpa.gen.NumberOfEvents()) {
@@ -608,18 +512,18 @@ void Amegic::SingleEvents() {
 	  (*p_fifo)<<" conti"<<endl;
 	}
       }
-      msg.Debugging()<<"OneEvent for "<<procs->Name()<<" successful !"<<endl
-		     <<"    Selected "<<procs->Selected()->Name()<<" as subprocess."<<endl
-		     <<"    Found "<<procs->Selected()->NumberOfDiagrams()
+      msg.Debugging()<<"OneEvent for "<<p_procs->Name()<<" successful !"<<endl
+		     <<"    Selected "<<p_procs->Selected()->Name()<<" as subprocess."<<endl
+		     <<"    Found "<<p_procs->Selected()->NumberOfDiagrams()
 		     <<" Feynman diagrams."<<endl;
-      for (int j = 0;j<procs->Selected()->Nin(); j++) {
-	msg.Debugging()<<procs->Selected()->Flavs()[j]<<" : "
-		       <<procs->Selected()->Momenta()[j]<<endl;
+      for (int j = 0;j<p_procs->Selected()->Nin(); j++) {
+	msg.Debugging()<<p_procs->Selected()->Flavs()[j]<<" : "
+		       <<p_procs->Selected()->Momenta()[j]<<endl;
       }
       msg.Debugging()<<"                      -> "<<endl;
-      for (int j = 0;j<procs->Selected()->Nout(); j++) {
-	msg.Debugging()<<procs->Selected()->Flavs()[j+procs->Selected()->Nin()]<<" : "
-		       <<procs->Selected()->Momenta()[j+procs->Selected()->Nin()]<<endl;
+      for (int j = 0;j<p_procs->Selected()->Nout(); j++) {
+	msg.Debugging()<<p_procs->Selected()->Flavs()[j+p_procs->Selected()->Nin()]<<" : "
+		       <<p_procs->Selected()->Momenta()[j+p_procs->Selected()->Nin()]<<endl;
       }
       msg.Debugging()<<endl;
     }

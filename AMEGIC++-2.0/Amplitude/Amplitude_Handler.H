@@ -1,6 +1,7 @@
 #ifndef Amplitude_Handler_h
 #define Amplitude_Handler_h
 
+#include "Interaction_Model_Base.H"
 #include "Flavour.H"
 #include "Polarisation.H"
 #include "Basic_Sfuncs.H"
@@ -57,8 +58,9 @@ namespace AMEGIC {
     int  TOrder(Single_Amplitude* a);
   public:
     //! The whole generation of the amplitudes takes place in this constructor.
-    Amplitude_Handler(int,APHYTOOLS::Flavour*,int*,Polarisation*,Topology*,
-		      Basic_Sfuncs*,String_Handler*,std::string);
+    Amplitude_Handler(int,APHYTOOLS::Flavour *,int *,Polarisation *,
+		      Interaction_Model_Base *,Topology *,
+		      Basic_Sfuncs *,String_Handler *,std::string);
     //! Destructing stuff.....
     ~Amplitude_Handler();
     //! Kicking amplitudes... 

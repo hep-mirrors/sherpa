@@ -32,9 +32,7 @@ namespace AMEGIC {
     //! Destructs all topologies.
     ~Topology();
     //! Returns a list of topologies with a certain number of legs.
-    inline Single_Topology* Get(int N) {
-      cout<<"In Get Top !!!! "<<N<<endl;
-      return &top[N];}
+    inline Single_Topology* Get(int N) {return &top[N];}
     //! Copies a given point list into another.
     Point* Copy(Point*,Point*,int&);
     //! Prints a topology.

@@ -8,12 +8,16 @@
 
 #include "Phase_Space_Handler.H"
 #include "Multi_Channel.H"
-#include "Beam_Handler.H"
+
+#include "Phase_Space_Generator.H"
+
+#include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
 #include "Selector.H"
 #include "Flavour.H"
 #include "Vector.H"
 
+#include "Interaction_Model_Base.H"
 #include "Topology.H"
 
 #include "Message.H"
@@ -22,35 +26,39 @@
 namespace AMEGIC {
   class Process_Base;
   class Single_Process;
+  class Phase_Space_Generator;
 
   class Process_Base {
   protected:
-    std::string                      name, resdir;
-    int                              gen_str;
+    std::string                      m_name, m_resdir;
+    int                              m_gen_str;
 
-    int                            * b;
-    int                              nvec,   nin,    nout;
-    APHYTOOLS::Flavour             * fl,   * flin, * flout;
-    AMEGIC::Pol_Info               * pl,   * plin, * plout;
-    AMATOOLS::Vec4D                * moms;
-    bool                             atoms, analyse, tables;
-    long int                         n;
-    double                           totalxs, totalerr, totalsum, totalsumsqr, max, rfactor;
-    double                           last, lastdxs, lastlumi;
-    int                              kfactorscheme,scalescheme;
-    int                              nstrong,neweak;
-    double                           scale;
-    double                           isrthreshold;
-    
-    PHASIC::Phase_Space_Handler    * ps; 
+    int                              m_nvec,   m_nin,    m_nout,    m_nex;
+    APHYTOOLS::Flavour             * p_fl,   * p_flin, * p_flout, * p_ex_fl;
+    AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
+    int                            * p_b;
+    AMATOOLS::Vec4D                * p_moms;
 
-    BEAM::Beam_Handler             * beam;
-    ISR::ISR_Handler               * isr;
-    APHYTOOLS::Cut_Data            * cuts;
-    APHYTOOLS::Selector_Base       * sel;
-    APHYTOOLS::Primitive_Analysis  * analysis;
+    bool                             m_atoms, m_analyse, m_tables;
+    long int                         m_n;
+    double                           m_totalxs, m_totalerr, m_totalsum, m_totalsumsqr, m_max, m_rfactor;
+    double                           m_last, m_lastdxs, m_lastlumi;
+    int                              m_kfactorscheme,m_scalescheme;
+    int                              m_nstrong,m_neweak;
+    double                           m_scale,m_scalefactor;
+    double                           m_isrthreshold;
 
-    AMEGIC::Process_Base           * selected;
+
+    PHASIC::Phase_Space_Handler    * p_ps; 
+    Phase_Space_Generator          * p_psgen;
+
+    BEAM::Beam_Spectra_Handler     * p_beam;
+    ISR::ISR_Handler               * p_isr;
+    APHYTOOLS::Cut_Data            * p_cuts;
+    APHYTOOLS::Selector_Base       * p_sel;
+    APHYTOOLS::Primitive_Analysis  * p_analysis;
+
+    AMEGIC::Process_Base           * p_selected;
     
     /*------------------------------------------------------------------------------
 
@@ -71,26 +79,34 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    Process_Base(): rfactor(1.) {};
-    virtual int    InitAmplitude(AMEGIC::Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
+    Process_Base::Process_Base();
+    Process_Base(int,int,APHYTOOLS::Flavour *,
+		 ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+		 int,int,int,double,Pol_Info * _pl = 0,
+		 int _nex = 0,APHYTOOLS::Flavour * _ex_fl = 0);
+    virtual ~Process_Base();
+
+    virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,
+				 AMATOOLS::Vec4D *&,std::vector<double> &,
 				 std::vector<AMEGIC::Single_Process *> &)            =0;
     virtual void   InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>) =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
+    virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
+    			       PHASIC::channelinfos &,PHASIC::channelinfos &);
     virtual void   UpdateCuts(double,double);
-    virtual void   InitCuts()                                                        =0;
+    virtual void   InitCuts();
     /*------------------------------------------------------------------------------
 
       Process management
 
       ------------------------------------------------------------------------------*/
   public:
-
     virtual void             SetName(std::string);
     virtual void             SetResDir(std::string);
     virtual void             SetAtoms(bool);
     virtual void             SetTables(bool);
-    virtual Process_Base  *  Partner()                                             =0;
 
+    virtual Process_Base  *  Partner()                                             =0;
     virtual Process_Base  *  Selected()                                            =0;
     virtual void             SelectOne()                                           =0;
     virtual void             DeSelect()                                            =0;
@@ -98,7 +114,7 @@ namespace AMEGIC {
     virtual int              Size()                                                =0;
     virtual Process_Base  *  operator[] (int idx)                                  =0;
 
-    virtual void             SetBeam(BEAM::Beam_Handler *);
+    virtual void             SetBeam(BEAM::Beam_Spectra_Handler *);
     virtual void             SetISR(ISR::ISR_Handler *);
     virtual void             SetCuts(APHYTOOLS::Cut_Data *);
     virtual void             SetSelector(APHYTOOLS::Selector_Base *);
@@ -144,9 +160,6 @@ namespace AMEGIC {
     virtual int                             Nout();
     virtual int                             Nvec();
     virtual APHYTOOLS::Flavour            * Flavs();
-    virtual APHYTOOLS::Flavour            * FlIn(); 
-    virtual APHYTOOLS::Flavour            * FlOut();
-
     virtual AMATOOLS::Vec4D               * Momenta();
 
     virtual int                             NStrong();
@@ -162,12 +175,12 @@ namespace AMEGIC {
     virtual AMEGIC::Point                 * Diagram(int i);
     virtual bool                            IsFreeOfFourVertex(AMEGIC::Point * _p);
 
-    virtual BEAM::Beam_Handler            * Beam();
+    virtual BEAM::Beam_Spectra_Handler    * Beam();
     virtual ISR::ISR_Handler              * ISR();
     virtual APHYTOOLS::Cut_Data           * Cuts();
     virtual APHYTOOLS::Selector_Base      * Selector();
     virtual APHYTOOLS::Primitive_Analysis * Analysis();
-    
+    virtual Phase_Space_Generator         * PSGenerator();
     virtual void                            ISRChannels(int,PHASIC::Channel_Info & );
     virtual void                            BeamChannels(int,PHASIC::Channel_Info & );
     virtual int                             NumberOfBeamIntegrators();
@@ -177,10 +190,8 @@ namespace AMEGIC {
     virtual PHASIC::Single_Channel        * FSRIntegrator(int i);
     virtual int                             ISRNumber();
     virtual void                            ISRInfo(int,int &,double &,double &);
-    virtual bool                            SetISRParams(int *)  { return 0; }
-
-    int                                     KFactorScheme();
-    int                                     ScaleScheme();
+    virtual int                             BeamNumber();
+    virtual void                            BeamInfo(int,int &,double &,double &);
 
     virtual double                          Total();
     virtual double                          Max();
@@ -196,8 +207,6 @@ namespace AMEGIC {
       Helpers
 
       ------------------------------------------------------------------------------*/
-
-    void                       SetPol(AMEGIC::Pol_Info * _pl) { pl = _pl; }
 
     virtual void               PrintDifferential() = 0;
 

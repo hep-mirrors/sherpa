@@ -115,8 +115,8 @@ if (bh) {
       ih->SetSprimeMin(sqr(proc->ISRThreshold()));
       isrchannels->GetRange();
       msg.Debugging()<<"In Phase_Space_Handler::Integrate : ";
-      if (bh) bh->On(); <<":"<<ih->On()<<endl;
-      <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl;
+      if (bh) bh->On(); msg.Debugging()<<":"<<ih->On()<<endl;
+      msg.Debugging()<<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl;
       isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
       isrchannels->GetRange();
     }
@@ -443,7 +443,7 @@ bool Phase_Space_Handler::CreateIntegrators()
   msg.Debugging()<<" "<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl
 		 <<" integration mode = "<<int_type<<endl;
   
-  if (int_type < 3 || int_type == 5 && (fsrchannles!=0)) fsrchannels->DropAllChannels();
+  if (int_type < 3 || int_type == 5 && (fsrchannels!=0)) fsrchannels->DropAllChannels();
   switch (int_type) {
   case 0: 
     fsrchannels->Add(new Rambo(nin,nout,psflavs));

@@ -912,9 +912,9 @@ void String_Tree::ExpandToDepth(sknot* m,int depth,list<sknot*>& addlist)
   while (hit>0);
 
   /*  
-  cout<<"Final List: "<<endl;
+  msg.Out()<<"Final List: "<<std::endl;
   for (list<sknot*>::iterator it=addlist.begin();it!=addlist.end();++it) {
-    cout<<"Add: "<<Tree2String(*it,0)<<endl;
+    msg.Out()<<"Add: "<<Tree2String(*it,0)<<std::endl;
   }
   */
 }

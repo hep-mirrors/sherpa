@@ -90,11 +90,13 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 
 Combined_Selector::~Combined_Selector()
 {
+  
   int count=0;
   for(int i=0; i<m_sels.size(); ++i) {
     if (m_sels[i-count]) delete m_sels[i-count];
     count++;
   }
+  
 }
 
 void Combined_Selector::Add(Selector_Base * sel) { 

@@ -2,7 +2,7 @@
 #include "Basic_Sfuncs.H"
 #include "String_Generator.H"
 //#include "Run_Parameter.H"
-#include "Couplings_LED.H"
+//#include "Couplings_LED.H"
 #include "MathTools.H"
 
 using namespace AMEGIC;
@@ -26,6 +26,7 @@ Complex Basic_Pfunc::Pcalc(const int fl,const int a)
 Complex Basic_Pfunc::Propagator(double p2,Flavour fl)
 {
   Complex value;
+  /*
   if(fl.IsKK()){
     //Model dependent, to be improved!!!
     Couplings_LED  CplLED;
@@ -37,9 +38,10 @@ Complex Basic_Pfunc::Propagator(double p2,Flavour fl)
     }
   }
   else {
-    value = Complex(1.,0.)/
+  */
+  value = Complex(1.,0.)/
       Complex(p2-sqr(fl.Mass()),fl.Mass()*fl.Width());
-  }
+  //}
   //extra i
   if (fl.IsFermion() || fl.IsScalar() || fl.IsTensor()) value *= Complex (0.,1.);
   if (fl.IsVector())                                    value *= Complex (0.,-1.);

@@ -111,11 +111,6 @@ void Topology::Build_Single(int nlegs,Single_Topology* t)
 	ll = 1;
 	t[nlegs-1].p[newnumber][0].left  = Copy(t[i].p[j],t[nlegs-1].p[newnumber],ll);
 	t[nlegs-1].p[newnumber][0].right = Copy(t[nlegs-i-2].p[k],t[nlegs-1].p[newnumber],ll); 
-	/*
-	// Added 09/08/02 by AS
-	t[nlegs-1].p[newnumber][0].left->prev  = &(t[nlegs-1].p[newnumber][0]);
-	t[nlegs-1].p[newnumber][0].right->prev = &(t[nlegs-1].p[newnumber][0]);
-	*/	
 	t[nlegs-1].depth = ll;
 	newnumber++;
       }

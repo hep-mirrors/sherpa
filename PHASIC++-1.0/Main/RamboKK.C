@@ -2,13 +2,12 @@
 #include "Message.H"
 #include "Random.H"
 #include "Run_Parameter.H"
-#include "Couplings_LED.H"
+//#include "Couplings_LED.H"
 
 using namespace PHASIC;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
-using namespace AMEGIC;
 
 RamboKK::RamboKK(int _Nin,int _Nout,Flavour* fl) : Nin(_Nin), Nout(_Nout) 
 {
@@ -44,16 +43,18 @@ RamboKK::RamboKK(int _Nin,int _Nout,Flavour* fl) : Nin(_Nin), Nout(_Nout)
 	abort();
       }
       kkp=i;
+      /*
       Couplings_LED  CplLED;
       CplLED.Init();
       ed=CplLED.Ned();
       R2=sqr(CplLED.R());
-      double mm=rpa.gen.Ecms();
+      */      
+double mm=rpa.gen.Ecms();
       for(short int j=Nin;j<Nin+Nout;j++)
 	if(j!=i)mm-=sqrt(ms_out[j]);
       maxM2=sqr(mm);
       maxN=sqrt(maxM2*R2/4./sqr(M_PI));
-      mpss=1./ed*pow(maxM2,0.5*(double(ed)))/pow(CplLED.Ms(),2.+(double(ed)))/CplLED.Gn();
+      //mpss=1./ed*pow(maxM2,0.5*(double(ed)))/pow(CplLED.Ms(),2.+(double(ed)))/CplLED.Gn();
       break;
     }
   }

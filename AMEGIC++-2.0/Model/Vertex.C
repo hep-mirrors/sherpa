@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "Vertex.H"
-#include "Model.H"
+#include "Interaction_Model_Base.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "Vector.H"
@@ -27,7 +27,7 @@ void Vertex::GenerateVertex()
   for (int i=0;i<vanz4save;++i) {
     int hit = 1;
     if (hit) {
-      //required by Model_LED due to small couplings
+      //required by _Modeldel_LED due to small couplings
       if (m_v4[i].cpl[0]==Complex(0.,0.) && m_v4[i].cpl[1]==Complex(0.,0.))
 	m_v4[i].on = 0;
       else { 
@@ -328,7 +328,7 @@ void Vertex::Conjugate(Color_Function* colfunc)
   colfunc->strarg[2] = help2;  
 }
 
-Vertex::Vertex() 
+Vertex::Vertex(Interaction_Model_Base * _model)
 {
   /* 
      use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
@@ -344,35 +344,35 @@ Vertex::Vertex()
   int vanz4 = 0;
 
   AORGTOOLS::msg.Tracking()<<"   Setting vertices..."<<endl;
-  mo->c_FFV(m_v,vanz);
+  _model->c_FFV(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_FFS(m_v,vanz);
+  _model->c_FFS(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVV(m_v,vanz);
+  _model->c_VVV(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSV(m_v,vanz);
+  _model->c_SSV(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVS(m_v,vanz);
+  _model->c_VVS(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSS(m_v,vanz);
+  _model->c_SSS(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVVV(m_v4,vanz4);
+  _model->c_VVVV(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSVV(m_v4,vanz4);
+  _model->c_SSVV(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSSS(m_v4,vanz4);
+  _model->c_SSSS(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_FFT(m_v,vanz);
+  _model->c_FFT(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVT(m_v,vanz);
+  _model->c_VVT(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SST(m_v,vanz);
+  _model->c_SST(m_v,vanz);
   AORGTOOLS::msg.Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_VVVT(m_v4,vanz4);
+  _model->c_VVVT(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_FFVT(m_v4,vanz4);
+  _model->c_FFVT(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
-  mo->c_SSST(m_v4,vanz4);
+  _model->c_SSST(m_v4,vanz4);
   AORGTOOLS::msg.Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
 
   m_nvertex  = vanz;
@@ -413,17 +413,6 @@ void Vertex::CheckEqual(Flavour** fl,short int& count)
       count--;
       break;
     }
-    //if (fl[i][1].Majorana() && (fl[i][2].Majorana()))) {
-
-    /*
-    if (fl[i][0]==fl[count-1][0] &&
-	fl[i][1]==fl[count-1][2] &&
-	fl[i][2]==fl[count-1][1]) {
-      count--;
-      break;
-      //}
-    }
-    */
   }
 }
 
@@ -675,9 +664,6 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
     AORGTOOLS::msg.Debugging()<<"Vertex not found!"<<endl;
   }
   else AORGTOOLS::msg.Debugging()<<"no routine to search for 4 legs"<<endl;
-  
-  
-  
 }
 
 ostream& AMEGIC::operator<<(ostream& s, const Single_Vertex& sv)

@@ -3,18 +3,14 @@
 
 #include "Primitive_Observable_Base.H"
 #include "Process_Base.H"
-#include "Single_Process.H"
 #include "Polarisation.H"
 #include <string>
 
 namespace AMEGIC {
-
-  const int FORCED_MODE = -255;
-
   class Process_Group : public Process_Base {
   protected :
-    std::vector<Process_Base *> procs;
-    int runmode;
+    std::vector<Process_Base *> m_procs;
+
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -22,9 +18,8 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public :
     Process_Group(int,int,APHYTOOLS::Flavour *&,
-		  ISR::ISR_Handler *,BEAM::Beam_Handler *,
-		  APHYTOOLS::Selector_Data *,
-		  int,int,int,Pol_Info* _pl=0,int _runmode=AMPLITUDE_MODE);
+		  ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+		  int,int,int,double,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
     Process_Group();
     ~Process_Group();
     /*------------------------------------------------------------------------------
@@ -41,8 +36,8 @@ namespace AMEGIC {
     void           DeSelect();
     Process_Base * Selected();
     void           Empty();
-    int            Size()                          { return procs.size(); }
-    Process_Base * operator[] (int idx)            { return procs[idx]; } 
+    int            Size()                          { return m_procs.size(); }
+    Process_Base * operator[] (int idx)            { return m_procs[idx]; } 
     void           SetResDir(std::string);
     void           SetScale(double);
     void           SetISRThreshold(double);
@@ -57,14 +52,10 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    int            InitAmplitude(Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
-				 std::vector<Single_Process *> &);
+    int            InitAmplitude(Interaction_Model_Base *,Topology *,AMATOOLS::Vec4D *&,
+				 std::vector<double> &,std::vector<Single_Process *> &);
     bool           SetUpIntegrator();
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
-    void           Initialize(APHYTOOLS::Selector_Data * _seldata=0);
-  private:
-    void           ConstructSelector(APHYTOOLS::Selector_Data * _seldata=0);
-    void           InitCuts();
     /*------------------------------------------------------------------------------
 
       Calculating total cross sections and single event generation

@@ -1,7 +1,6 @@
 #ifndef Pfunc_h
 #define Pfunc_h
 
-#include "MyComplex.H"
 #include "Flavour.H"
 #include <list>
 

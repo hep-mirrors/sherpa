@@ -1,39 +1,27 @@
-SUBDIRS = Isajet
 lib_LTLIBRARIES = libModel.la
-libModel_la_SOURCES = Model.C Model_Handler.C \
-                 Model_EE_QCD.C Model_EW.C Model_QCD.C \
-		 Model_SM.C \
-                 Model_Chi.C Model_sLep_Chi.C Model_THDM.C Model_SQCD.C \
-		 Model_sLeptons.C Model_SQCD_Chi.C Model_Higgs.C \
-		 Model_MSSM.C \
-		 Model_EW_Grav.C Model_QCD_Grav.C Model_LED.C \
-                 Spectrum_EW.C \
-		 Spectrum_Higgs.C Spectrum_sDownquarks.C \
-		 Spectrum_sUpquarks.C Spectrum_sLeptons.C \
-		 Spectrum_sNeutrinos.C\
-		 Spectrum_Charginos.C Spectrum_Neutralinos.C \
-                 Couplings_EW.C Couplings_LED.C \
-	         Vertex.C Lorentz_Function.C
-INCLUDES = -I./Isajet/ \
-	   -I../Amplitude \
+libModel_la_SOURCES = Interaction_Model_Base.C Interaction_Model_Handler.C \
+		      Interaction_Model_QCD.C Interaction_Model_EW.C \
+		      Interaction_Model_SM.C \
+		      Interaction_Model_Higgs.C Interaction_Model_THDM.C \
+		      Interaction_Model_Inos.C Interaction_Model_sLepton_EW.C \
+		      Interaction_Model_sQCD.C Interaction_Model_sQuark_EW.C \
+		      Interaction_Model_MSSM.C \
+		      Vertex.C Lorentz_Function.C
+INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \
 	   -I../Amplitude/Zfunctions \
 	   -I../Model \
 	   -I../String \
+           -I../../MODEL-1.0/Main \
            -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Model.H Model_Handler.H \
-                 Model_EE_QCD.H Model_EW.H Model_Higgs.H Model_QCD.H \
-                 Model_Chi.H Model_sLep_Chi.H Model_THDM.H Model_SQCD.H \
-		 Model_sLeptons.H Model_SQCD_Chi.H \
-		 Model_SM.H \
-		 Model_MSSM.H \
-		 Model_EW_Grav.H Model_QCD_Grav.H Model_LED.H \
-	         Spectrum_EW.H Spectrum_Higgs.H \
-		 Spectrum_Charginos.H Spectrum_Neutralinos.H \
-		 Spectrum_sDownquarks.H Spectrum_sUpquarks.H \
-		 Spectrum_sLeptons.H Spectrum_sNeutrinos.H \
-                 Couplings_EW.H Couplings_LED.H \
+noinst_HEADERS = Interaction_Model_Base.H Interaction_Model_Handler.H \
+		 Interaction_Model_QCD.H Interaction_Model_EW.H \
+		 Interaction_Model_SM.H \
+		 Interaction_Model_Higgs.H Interaction_Model_THDM.H \
+		 Interaction_Model_Inos.H Interaction_Model_sLepton_EW.H \
+		 Interaction_Model_sQCD.H Interaction_Model_sQuark_EW.H \
+		 Interaction_Model_MSSM.H \
 	         Vertex.H Lorentz_Function.H Color_Function.H 
-
+CXXFLAGS=-g

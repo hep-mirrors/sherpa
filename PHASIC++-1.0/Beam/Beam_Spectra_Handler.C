@@ -122,6 +122,7 @@ bool Beam_Spectra_Handler::InitializeMonochromatic(Data_Read * dataread,int num)
 
 
 bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
+ 
   // cms system from beam momenta - this is for potential assymmetric collisions.
   Vec4D  P      = p_BeamBase[0]->Momentum()+p_BeamBase[1]->Momentum();
   double s      = P.Abs2();
@@ -156,6 +157,8 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
 		 <<p_BeamBase[0]->Flav()<<" / "<<p_BeamBase[1]->Flav();
   if (m_asymmetric) msg.Debugging()<<" for asymmetric situation"<<endl;
                else msg.Debugging()<<" for symmetric situation"<<endl;
+
+  return 1;
 }
 
 

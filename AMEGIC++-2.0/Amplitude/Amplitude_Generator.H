@@ -2,6 +2,8 @@
 #define Amplitude_Generator_h
 
 #include "Flavour.H"
+
+#include "Interaction_Model_Base.H"
 #include "Vertex.H"
 #include "Topology.H"
 #include "Single_Amplitude.H"
@@ -60,15 +62,18 @@ namespace AMEGIC {
 class Amplitude_Generator {
   static int NMAX;
   int N;
-  APHYTOOLS::Flavour* fl;
-  int* b;
-  Topology* top;
-  Single_Topology* single_top;
-  int prenum;
-  Pre_Amplitude*   prea;
-  Basic_Sfuncs*    BS;
-  String_Handler*  shand;
+  APHYTOOLS::Flavour     * fl;
+  int                    * b;
+  Interaction_Model_Base * p_model;
+  Topology               * top;
+  Single_Topology        * single_top;
+  int                      prenum;
+  Pre_Amplitude          * prea;
+  Basic_Sfuncs           * BS;
+  String_Handler         * shand;
   
+
+
   Vertex_Table     v_table;
   //exhibits the points, the topology and the permutation number
   Pre_Ampl_List    prea_table;
@@ -107,8 +112,8 @@ class Amplitude_Generator {
   int CountRealAmplitudes(Single_Amplitude* first);
 public:
   static int * DivideComparisons(int cpu_size, int nampl, int rank);
-  Amplitude_Generator(int,APHYTOOLS::Flavour*,int*,Topology*,Basic_Sfuncs*,
-		      String_Handler*);
+  Amplitude_Generator(int,APHYTOOLS::Flavour*,int*,Interaction_Model_Base *,Topology*,
+		      Basic_Sfuncs*,String_Handler*);
   ~Amplitude_Generator(); 
   Single_Amplitude* Matching();
 };

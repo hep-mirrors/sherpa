@@ -80,9 +80,10 @@ void Energy_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
   }
 
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) || (crit[0]==m_fl[i])) {
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       emin[i] = AMATOOLS::Max(_min,m_fl[i].Mass()); 
-      emax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
+      //emax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
+      emax[i] = _max;
       AORGTOOLS::msg.Debugging()<<"Set e-Range for "<<m_fl[i]<<" : "
 				<<emin[i]<<" ... "<<emax[i]<<endl;
     }
@@ -170,7 +171,7 @@ void ET_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       etmin[i] = _min; 
-      etmax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
+      etmax[i] = _max;
       AORGTOOLS::msg.Debugging()<<"Set et-Range for "<<m_fl[i]<<" : "
 				<<etmin[i]<<" ... "<<etmax[i]<<endl;
     }
@@ -241,15 +242,16 @@ void PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
 }
  
 void PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, 
-			   double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
     AORGTOOLS::msg.Error()<<"Wrong number of arguments in PT_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
+
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) || (crit[0]==m_fl[i])) {
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       ptmin[i] = AMATOOLS::Max(_min,m_fl[i].Mass()); 
       ptmax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
       AORGTOOLS::msg.Debugging()<<"Set PT-Range for "<<m_fl[i]<<" : "
@@ -271,7 +273,7 @@ Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) {
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   
-  double E = AORGTOOLS::rpa.gen.Ecms()/2;
+  double E = AORGTOOLS::rpa.gen.Ecms();
   double pl;
 
   ymin  = new double[m_n];
@@ -324,14 +326,12 @@ void Rapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _mi
   double pl,y;
 
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) || (crit[0]==m_fl[i])) {
-      pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
-      y       = log((E+pl)/(E-pl));
-      ymin[i] = AMATOOLS::Max(_min,-y);
-      ymax[i] = AMATOOLS::Min(_max,y);
-      AORGTOOLS::msg.Debugging()<<"Set y-Range for "<<m_fl[i]<<" : "
-				<<ymin[i]<<" ... "<<ymax[i]<<endl;
-    }
+    pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
+    y       = log((E+pl)/(E-pl));
+    ymin[i] = AMATOOLS::Max(_min,-y);
+    ymax[i] = AMATOOLS::Min(_max,y);
+    AORGTOOLS::msg.Debugging()<<"Set y-Range for "<<m_fl[i]<<" : "
+			      <<ymin[i]<<" ... "<<ymax[i]<<endl;
   }
 }
 
@@ -353,8 +353,9 @@ Angle_Selector::Angle_Selector(int _nin,int _nout, Flavour * _fl) {
   for (int i=0;i<m_n;i++) { cosmin[i] = new double[m_n]; cosmax[i] = new double[m_n]; }
   for (int i=0;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
-      cosmin[i][j] = cosmin[j][i] = -1.; 
-      cosmax[i][j] = cosmax[j][i] =  1.; 
+      //for numerical reason min and max should be slightly larger than -/+1
+      cosmin[i][j] = cosmin[j][i] = -1.1; 
+      cosmax[i][j] = cosmax[j][i] =  1.1; 
     }
   }
     
@@ -424,14 +425,18 @@ void Angle_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,
 			  <<crit.size()<<endl;
     return;
   }
+
+  //for numerical reasons exact +1 or -1 may be prolematic as borders
+  if (AMATOOLS::IsEqual(_min,-1.)) _min = -1.1;
+  if (AMATOOLS::IsEqual(_max,1.))  _max = 1.1;
+
+
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
-      if ( ((crit[0].Includes(m_fl[i]) || (crit[0]==m_fl[i])) && 
-	    (crit[1].Includes(m_fl[j]) || (crit[1]==m_fl[j])))   || 
-	   ((crit[0].Includes(m_fl[j]) || (crit[0]==m_fl[j])) && 
-	    (crit[1].Includes(m_fl[i]) || (crit[1]==m_fl[i])))   ) {  
-	cosmin[i][j] = cosmin[j][i] = AMATOOLS::Max(_min,-1.); 
-	cosmax[i][j] = cosmax[j][i] = AMATOOLS::Min(_max,1.); 
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
+	cosmin[i][j] = cosmin[j][i] = _min; 
+	cosmax[i][j] = cosmax[j][i] = _max; 
 	AORGTOOLS::msg.Debugging()<<"Set cos-Range for "<<m_fl[i]<<"/"<<m_fl[j]<<" : "
 				  <<cosmin[i][j]<<" ... "<<cosmax[i][j]<<endl;
       }
@@ -448,7 +453,7 @@ void Angle_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,int beam,
     return;
   }
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) || (crit[0]==m_fl[i]) ) {
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       cosmin[i][beam] = cosmin[beam][i] = AMATOOLS::Max(_min,-1.); 
       cosmax[i][beam] = cosmax[beam][i] = AMATOOLS::Min(_max, 1.); 
       AORGTOOLS::msg.Debugging()<<"Set cos-Range for "<<m_fl[i]<<" : "
@@ -480,7 +485,7 @@ Mass_Selector::Mass_Selector(int _nin,int _nout, Flavour * _fl) {
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
       massmin[i][j] = massmin[j][i] = 0.; 
-      massmax[i][j] = massmax[j][i] = sqr(AORGTOOLS::rpa.gen.Ecms()); 
+      massmax[i][j] = massmax[j][i] = 2.*AORGTOOLS::rpa.gen.Ecms(); 
     }
   }
   m_sel_log = new Selector_Log(m_name);
@@ -550,12 +555,10 @@ void Mass_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, d
   }
   for (int i=m_nin;i<m_n;i++) {
     for (int j=m_nin+1;i<m_n;i++) {
-      if ( ((crit[0].Includes(m_fl[i]) || (crit[0]==m_fl[i])) && 
-	    (crit[1].Includes(m_fl[j]) || (crit[1]==m_fl[j])))   || 
-	   ((crit[0].Includes(m_fl[j]) || (crit[0]==m_fl[j])) && 
-	    (crit[1].Includes(m_fl[i]) || (crit[1]==m_fl[i])))   ) {  
+      if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
+	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
 	massmin[i][j] = massmin[j][i] = AMATOOLS::Max(_min,m_fl[i].Mass()+m_fl[j].Mass()); 
-	massmax[i][j] = massmax[j][i] = AMATOOLS::Min(_max,AORGTOOLS::rpa.gen.Ecms()); 
+	massmax[i][j] = massmax[j][i] = _max; 
 	AORGTOOLS::msg.Debugging()<<"Set mass-Range for "<<m_fl[i]<<"/"<<m_fl[j]<<" : "
 				  <<massmin[i][j]<<" ... "<<massmax[i][j]<<endl;
       }

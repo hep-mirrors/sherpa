@@ -52,8 +52,8 @@ namespace PHASIC {
     Single_Channel(Single_Channel *);
     Single_Channel(int,int,APHYTOOLS::Flavour *);
     virtual ~Single_Channel() {
-      if (ms)  { delete[] ms; }
-      if (rans) { delete[] rans; }
+      //if (ms)  { delete[] ms; }
+      //if (rans) { delete[] rans; }
     }
     /*!
       Adding a value to the Single_Channel. It basically increments n,

@@ -1,0 +1,13 @@
+%
+%Process : 11 -11 -> 93 93
+%Excluded particles : 1 2 3
+%Order electroweak : 2
+%End process
+%
+%Process : 93 93 -> 93 93
+%End process
+%
+%
+Process : 93 93 -> 11 -11 93
+End process
+%

@@ -5,7 +5,6 @@
 #include "Flavour.H"
 #include "Color_Function.H"
 #include "Lorentz_Function.H"
-//#include "Kabbala.H"
 
 
 namespace AMEGIC {
@@ -73,6 +72,8 @@ namespace AMEGIC {
     }
   };
   
+  class Interaction_Model_Base;
+
   class Vertex {
     //! list of all vertices with three external legs
     Single_Vertex* m_v;
@@ -95,9 +96,7 @@ namespace AMEGIC {
     void           Conjugate(Color_Function*);
   public:
     int on;
-    
-    Vertex();
-    //!Prints the list of vertices
+    Vertex(Interaction_Model_Base *);
     void Print();
     ~Vertex();
     

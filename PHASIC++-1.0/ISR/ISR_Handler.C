@@ -42,7 +42,6 @@ void ISR_Handler::Init(double * _splimits) {
 }
 
 
-
 ISR_Handler::~ISR_Handler() {
   if (p_ISRBase) {
     for (int i=0;i<2;i++) {
@@ -54,7 +53,8 @@ ISR_Handler::~ISR_Handler() {
 
 bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches,
 				   APHYTOOLS::Flavour * _partons) {
-  bool fit = 1;
+  
+    bool fit = 1;
   for (int i=0;i<2;i++) {
     if (p_ISRBase[i]->On()) {
       if (_bunches[i] != PDF(i)->Bunch()) { fit = 0; break; }
@@ -78,9 +78,14 @@ bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches,
 }
 
 bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _partons) {
+  
+  std::cout<<"In CheckConsistency"<<endl;
+    
   bool fit = 1;
   for (int i=0;i<2;i++) {
+    cout<<"Before if ()"<<endl;
     if (p_ISRBase[i]->On()) {
+      cout<<"In it "<<endl;
       fit = 0;
       msg.Debugging()<<"ISR_Handler::CheckConsistency : "<<_partons[i]<<" "<<PDF(i)->Bunch()<<endl;
       for (int j = 0;j<(PDF(i)->Partons()).size();j++) {

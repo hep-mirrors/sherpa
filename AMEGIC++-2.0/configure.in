@@ -37,13 +37,13 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
 AC_OUTPUT(Main/Makefile \
-          Amplitude/AmplTools/Makefile \
 	  Amplitude/Makefile \
-	  Run/Makefile \
-	  String/Makefile \
+          Amplitude/AmplTools/Makefile \
 	  Amplitude/Zfunctions/Makefile \
+	  Phasespace/Makefile \
+	  String/Makefile \
 	  Model/Makefile \
-	  Model/Isajet/Makefile \
+	  Run/Makefile \
           Run/Process/Makefile \
           Run/Process/Dummy/Makefile \
 	  Makefile )

@@ -86,9 +86,10 @@ rootlibdir = $(rootdir)/lib
 CLHEPlibdir = $(CLHEPDIR)/lib
 CLHEPincdir = $(CLHEPDIR)/include
 bin_PROGRAMS = Amegic
-Amegic_SOURCES = main.C
+Amegic_SOURCES = main.C Environment.C
 Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libAmegic.la \
+	       @libdir@/libAmegicPSGen.la \
 	       @libdir@/libAmplitude.la \
 	       @libdir@/libZfunctions.la \
 	       @libdir@/libAmplTools.la \
@@ -98,9 +99,12 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libToolsPhys.la \
 	       @libdir@/libToolsMath.la \
 	       @libdir@/libToolsOrg.la \
+	       @libdir@/libModelMain.la \
+	       @libdir@/libHdecay.la \
+	       @libdir@/libIsajet.la \
+	       @libdir@/libModel.la \
 	       @libdir@/libPDF.la \
-	       @libdir@/libExtraXS.la \
-	       @libdir@/libExtraXS2_2.la \
+	       @libdir@/libLHAPDF.la \
 	       @libdir@/libPhasespace.la \
 	       @libdir@/libISR.la \
 	       @libdir@/libBeam.la \
@@ -108,17 +112,23 @@ Amegic_LDADD = @libdir@/libProcess.la \
 
 #	       -L$(rootlibdir) -lCint -lCore -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
 Amegic_LDFLAGS = -rdynamic
+noinst_HEADERS = Environment.H 
 
 INCLUDES = -I../Main \
 	   -I../Amplitude \
 	   -I../Amplitude/AmplTools \
 	   -I../Amplitude/Zfunctions \
+	   -I../Phasespace \
 	   -I../Model \
 	   -I../String \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../PHASIC++-1.0/ISR \
 	   -I../../PHASIC++-1.0/Beam \
-	   -I../../PDF-1.0/Include \
+	   -I../../MODEL-1.0/Main \
+	   -I../../MODEL-1.0/Hdecay \
+	   -I../../MODEL-1.0/Isajet \
+	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/LHAPDF \
 	   -I../../EXTRA_XS-1.0/Main \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
@@ -136,17 +146,18 @@ CONFIG_CLEAN_FILES =
 bin_PROGRAMS = Amegic$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
-am_Amegic_OBJECTS = main.$(OBJEXT)
+am_Amegic_OBJECTS = main.$(OBJEXT) Environment.$(OBJEXT)
 Amegic_OBJECTS = $(am_Amegic_OBJECTS)
 Amegic_DEPENDENCIES = @libdir@/libProcess.la @libdir@/libAmegic.la \
-	@libdir@/libAmplitude.la @libdir@/libZfunctions.la \
-	@libdir@/libAmplTools.la @libdir@/libModel.la \
-	@libdir@/libIsajet.la @libdir@/libString.la \
-	@libdir@/libToolsPhys.la @libdir@/libToolsMath.la \
-	@libdir@/libToolsOrg.la @libdir@/libPDF.la \
-	@libdir@/libExtraXS.la @libdir@/libExtraXS2_2.la \
-	@libdir@/libPhasespace.la @libdir@/libISR.la \
-	@libdir@/libBeam.la
+	@libdir@/libAmegicPSGen.la @libdir@/libAmplitude.la \
+	@libdir@/libZfunctions.la @libdir@/libAmplTools.la \
+	@libdir@/libModel.la @libdir@/libIsajet.la \
+	@libdir@/libString.la @libdir@/libToolsPhys.la \
+	@libdir@/libToolsMath.la @libdir@/libToolsOrg.la \
+	@libdir@/libModelMain.la @libdir@/libHdecay.la \
+	@libdir@/libIsajet.la @libdir@/libModel.la @libdir@/libPDF.la \
+	@libdir@/libLHAPDF.la @libdir@/libPhasespace.la \
+	@libdir@/libISR.la @libdir@/libBeam.la
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir)
@@ -154,7 +165,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/main.Po
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Environment.Po $(DEPDIR)/main.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
@@ -165,12 +176,14 @@ CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = @CXXFLAGS@
 DIST_SOURCES = $(Amegic_SOURCES)
+HEADERS = $(noinst_HEADERS)
+
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-info-recursive all-recursive install-data-recursive \
 	install-exec-recursive installdirs-recursive install-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
-DIST_COMMON = Makefile.am Makefile.in
+DIST_COMMON = $(noinst_HEADERS) Makefile.am Makefile.in
 DIST_SUBDIRS = $(SUBDIRS)
 SOURCES = $(Amegic_SOURCES)
 
@@ -228,6 +241,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Environment.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/main.Po@am__quote@
 
 distclean-depend:
@@ -382,7 +396,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
 	$(mkinstalldirs) $(DESTDIR)$(bindir)

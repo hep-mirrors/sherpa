@@ -1,11 +1,12 @@
 lib_LTLIBRARIES = libAmegic.la
 libAmegic_la_SOURCES = Helicity.C Topology.C Polarisation.C \
 		       Process_Base.C Single_Process.C Process_Group.C \
-		       All_Processes.C  Decay.C Pol_Info.C\
+		       All_Processes.C  Pol_Info.C\
 	               Amegic.C
 INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \
 	   -I../Amplitude/Zfunctions \
+	   -I../Phasespace \
 	   -I../Model \
 	   -I../String \
 	   -I../../EXTRA_XS-1.0/Main \
@@ -13,7 +14,9 @@ INCLUDES = -I../Amplitude \
 	   -I../../PHASIC++-1.0/Main \
 	   -I../../PHASIC++-1.0/ISR \
 	   -I../../PHASIC++-1.0/Beam \
-	   -I../../PDF-1.0/Include \
+	   -I../../MODEL-1.0/Main \
+	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/LHAPDF \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 

@@ -272,7 +272,6 @@ Kabbala String_Generator::Get_Ynumber(int* arg,Complex* coupl,Complex value)
 
 Kabbala String_Generator::Get_Enumber(Complex value) 
 {
-  //if (AMATOOLS::IsZero(value)) return zxl[0].value;
   if (value==Complex(0.,0.)) return zxl[0].value;
 
   int numb = GetNumber(2,value);

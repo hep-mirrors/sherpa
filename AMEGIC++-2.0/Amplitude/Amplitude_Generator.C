@@ -3,7 +3,6 @@
 #include "Amplitude_Manipulator.H"
 #include "Run_Parameter.H"
 #include "Message.H"
-#include "Model.H"
 #include "MathTools.H"
 
 #include "MyTiming.H"
@@ -38,13 +37,12 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace std;
 
-Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,Topology* _top,
+Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
+					 Interaction_Model_Base * _model,Topology* _top,
 					 Basic_Sfuncs* _BS,String_Handler* _shand) 
-  : N(_no), fl(_fl), b(_b), top(_top), BS(_BS), shand(_shand), s_buffer(0)
+  : N(_no), fl(_fl), b(_b), p_model(_model), top(_top), BS(_BS), shand(_shand), s_buffer(0)
 {
   single_top = top->Get(N-2);
-  
-  cout<<"In Amplitude_Generator "<<N<<" depth "<<single_top->depth<<endl;
   
   // 2 incoming
   prenum  = 1000;
@@ -54,7 +52,7 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,Topology* 
 
   // fill hash table
   
-  Vertex* v = mo->GetVertex();
+  Vertex* v = p_model->GetVertex();
 
   for (int i=0;i<v->MaxNumber();++i) {
     if ((*v)[i]->on) {
@@ -267,8 +265,6 @@ void Amplitude_Generator::Set_Props(Point* pl,int dep,Single_Amplitude* &first,i
   Flavour s_flav[3];
   Complex cpl[4];
 
-  //  Vertex* v = mo->GetVertex();
-    
   int first_try = 1;
   
   for (;;) {    
@@ -1279,7 +1275,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
   */
   //barflags 
   
-  Vertex* v = mo->GetVertex();
+  Vertex* v = p_model->GetVertex();
   
   for (short int i=0;i<v->MaxNumber4();i++) {
     if ((*v)(i)->on) {

@@ -2,7 +2,6 @@
 #define Helicity_h
 
 #include "Flavour.H"
-//#include "Pol_Info.H"
 
 namespace AMEGIC {
 

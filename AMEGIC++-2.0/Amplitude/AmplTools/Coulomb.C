@@ -1,6 +1,6 @@
 #include "Coulomb.H"
+#include "Running_AlphaQED.H"
 #include "Run_Parameter.H"
-#include "Model.H"
 
 using namespace AMEGIC;
 using namespace APHYTOOLS;
@@ -91,14 +91,14 @@ void Coulomb::Calculate(int* b,Vec4D* mom)
     }
   }
   double s      = (mom[0]+mom[1]).Abs2();
-  double MW     = Flavour(kf::W).Mass();
-  double GW     = Flavour(kf::W).Width();
+  double MW     = AORGTOOLS::rpa.consts.Mass(Flavour(kf::W),s);
+  double GW     = AORGTOOLS::rpa.consts.Width(Flavour(kf::W),s);
   double beta   = sqrt((s-sqr(mp-mm))*(s-sqr(mp+mm)))/s;
   Complex betam = sqrt(Complex(1.-4.*MW*MW/s,4*MW*GW/s)); 
   double delta  = dabs(sqr(mp)-sqr(mm))/s;
   double arg    = 2./M_PI*atan((abs((betam+delta)*conj(betam+delta))-sqr(beta))/
 			       (2*beta*imag(betam)));
-  fcoul = mo->Aqed()*M_PI/(2.*beta)*(1.-arg);
+  fcoul         = (*MODEL::aqed)(s)*M_PI/(2.*beta)*(1.-arg);
 }
 
 

@@ -427,14 +427,14 @@ void APHYTOOLS::ParticleInit(std::string path)
   particles[idx].SetGroup();
   particles[idx].Add(Flavour(kf::d));
   particles[idx].Add(Flavour(kf::u));
-  particles[idx].Add(Flavour(kf::s));
-  particles[idx].Add(Flavour(kf::c));
-  particles[idx].Add(Flavour(kf::b));
+  //particles[idx].Add(Flavour(kf::s));
+  //particles[idx].Add(Flavour(kf::c));
+  //particles[idx].Add(Flavour(kf::b));
   particles[idx].Add(Flavour(kf::d).Bar());
   particles[idx].Add(Flavour(kf::u).Bar());
-  particles[idx].Add(Flavour(kf::s).Bar());
-  particles[idx].Add(Flavour(kf::c).Bar());
-  particles[idx].Add(Flavour(kf::b).Bar());
+  // particles[idx].Add(Flavour(kf::s).Bar());
+  //particles[idx].Add(Flavour(kf::c).Bar());
+  //particles[idx].Add(Flavour(kf::b).Bar());
   particles[idx].Add(Flavour(kf::gluon));
 
   test = Flavour(kf::quark);

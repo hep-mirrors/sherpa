@@ -21,13 +21,13 @@ void out_pfunc(Pfunc & pf) {
 
 
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
-				     Topology* top,Basic_Sfuncs* BS,
-				     String_Handler* _shand,
+				     Interaction_Model_Base * model,Topology* top,
+				     Basic_Sfuncs* BS,String_Handler* _shand,
 				     std::string pID) : shand(_shand)
 {
   groupname = string("All Amplitudes");
 
-  gen = new Amplitude_Generator(N,fl,b,top,BS,shand);
+  gen = new Amplitude_Generator(N,fl,b,model,top,BS,shand);
   Single_Amplitude* firstgraph = gen->Matching();
   delete gen;
 
@@ -527,7 +527,6 @@ Complex Amplitude_Handler::Zvalue(int ihel,int* sign)
 { 
   for (int i=0;i<graphs.size();i++) {
     Mi[i] = graphs[i]->Zvalue(ihel,sign);
-    //msg.Out()<<"Mi ["<<i<<"] = "<<Mi[i]<<endl; 
   }
 
   Complex M(0.,0.);
