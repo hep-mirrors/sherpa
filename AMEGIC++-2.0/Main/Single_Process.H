@@ -29,10 +29,11 @@ namespace AMEGIC {
   public:
 
     Single_Process(int,int,APHYTOOLS::Flavour *,
-		   ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
-		   int,int,int,int,int,double,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
+		   PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
+		   APHYTOOLS::Selector_Data * =NULL,
+		   int=0,int=99,int=99,int=0,int=0,
+		   double=1.,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
     ~Single_Process();
-
     void Add(Process_Base *) {
       AORGTOOLS::msg.Error()<<"Error in Single_Process. Method Add called."<<std::endl;
       abort();
@@ -60,6 +61,7 @@ namespace AMEGIC {
   public:
     int            InitAmplitude(Interaction_Model_Base *,Topology *,AMATOOLS::Vec4D *&,
 				 std::vector<double> &,std::vector<Single_Process *> &);
+    int            InitAmplitude(Interaction_Model_Base *,Topology *);
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
     void           InitDecay(Topology* top); 
     bool           SetUpIntegrator();

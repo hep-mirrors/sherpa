@@ -39,12 +39,13 @@ Process_Group::Process_Group() :
   p_ps    = 0;
   p_moms  = 0;
   p_analysis = 0;
+  m_procs.clear();
 }
 
 
 
 Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
-			     ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
+			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,int _scalescheme,double _scalefactor,
 			     Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
@@ -203,12 +204,16 @@ void Process_Group::GroupProcesses() {
   for (int i=0;i<m_procs.size();i++) {
     for (int j=0;j<m_procs[i]->Nin();j++) {
       if (!(AMATOOLS::IsEqual(massin[j],(m_procs[i]->Flavs()[j]).Mass()))) {
+	msg.Error()<<"Error in Incoming masses ; "<<massin[j]<<" vs. "<<(m_procs[i]->Flavs()[j]).Mass()
+		   <<"for "<<p_flin[j]<<" "<<m_procs[i]->Flavs()[j]<<endl;
 	massok = 0; break;
       }
     }
     if (!massok) break;
     for (int j=0;j<m_procs[i]->Nout();j++) {
       if (!(AMATOOLS::IsEqual(massout[j],(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()))) {
+	msg.Error()<<"Error in Incoming masses ; "<<massin[j]<<" vs. "<<(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()
+		   <<"for "<<p_flout[j]<<" "<<m_procs[i]->Flavs()[j+m_procs[i]->Nin()]<<endl;
 	massok = 0; break;
       }
     }
@@ -286,9 +291,10 @@ void Process_Group::GroupProcesses() {
       }
     }
     else {
-      msg.Error()<<"Error in Process_Group::GroupProcesses :"<<endl
-		 <<"Right now process groups with one incoming particle are NOT enabled."<<endl;
-      abort();
+      flav1    = sproc->Flavs()[0]; 
+      if (flav1.IsVector())        help += string("V_->_");
+      else if (flav1.IsFermion())  help += string("f_->_");
+      else                         help += string("S_->_");
     }
     int scalars = 0,fermions = 0,vectors = 0;
     for (int j=0;j<sproc->Nout();j++) {
@@ -774,6 +780,9 @@ bool Process_Group::PrepareXSecTables()
   }
   return 0;
 }
+
+
+
 
 
 

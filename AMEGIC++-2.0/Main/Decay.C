@@ -15,7 +15,7 @@ const double min_BR = 0;
 
 int Decay_Handler::CheckInVertex(Flavour fl)
 {
-  Vertex* v = mo->GetVertex();
+  Vertex * v = mo->GetVertex();
   for (int i=0;i<v->MaxNumber();i++) {
     if ((*v)[i]->on) {
       for (short int j=0;j<3;j++) {
@@ -28,7 +28,7 @@ int Decay_Handler::CheckInVertex(Flavour fl)
 
 int Decay_Handler::CheckVertex(Flavour flin,Flavour flout1,Flavour flout2)
 {
-  Vertex* v = mo->GetVertex();
+  Vertex * v = mo->GetVertex();
   for (int i=0;i<v->MaxNumber();i++) {
     if ((*v)[i]->on) {
 	if ((*v)[i]->in[0]==flin &&

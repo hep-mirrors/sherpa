@@ -7,11 +7,11 @@
 #include "Running_AlphaQED.H"
 
 using namespace AMEGIC;
-using namespace MODEL;
 using namespace PHASIC;
-using namespace APHYTOOLS;
+using namespace MODEL;
 using namespace BEAM;
-using namespace ISR;
+using namespace PDF;
+using namespace APHYTOOLS;
 using namespace std;
 
 
@@ -42,7 +42,7 @@ Process_Base::Process_Base():
 
 
 Process_Base::Process_Base(int _nin,int _nout,APHYTOOLS::Flavour * _fl,
-			   ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+			   PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			   int _gen_str, int _orderQCD, int _orderEW,
 			   int _scalescheme,int _kfactorscheme,double _scalefactor,
 			   Pol_Info * _pl,
@@ -475,30 +475,47 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
 			  <<"Do not know how to handle more than 2 incoming particles."<<endl;
     abort();
   }
-  
-  double s = (_p[0]+_p[1]).Abs2();
-  double pt2;
+  double s;
+  if (m_nin==2) s = (_p[0]+_p[1]).Abs2();
+  if (m_nin==1) s = (_p[0]).Abs2();
+  double pt2 = 0.;
 
   //new
   switch (m_scalescheme) {
   case 1  :
     if (m_nin+m_nout==4) {
-      double t = (_p[0]-_p[2]).Abs2();
-      double u = (_p[0]-_p[3]).Abs2();
-      pt2 = 2.*s*t*u/(s*s+t*t+u*u);
+      double t = (_p[0]-_p[2]).Abs2()-(AMATOOLS::sqr(p_fl[2].PSMass())+AMATOOLS::sqr(p_fl[3].PSMass()))/2.;
+      double u = (_p[0]-_p[3]).Abs2()-(AMATOOLS::sqr(p_fl[2].PSMass())+AMATOOLS::sqr(p_fl[3].PSMass()))/2.;
+      pt2 = 4.*s*t*u/(s*s+t*t+u*u);
+      return pt2;
     }
     pt2 = s;
   break;
   case 2  :
-    pt2 = m_scale;
+    pt2 = s;
+    double pt2i;
+    for (int i=m_nin;i<m_nin+m_nout;i++) {
+      pt2i = AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]);
+      if (pt2i<pt2) pt2 = pt2i;
+    }
+    break;
+  case 3  :
+    pt2 = 0.;
+    for (int i=m_nin;i<m_nin+m_nout;i++) {
+      pt2 += AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]);
+    }
+    break;
+  case 4  :
+    pt2 = AMATOOLS::sqr(175.);
     break;
   default :
     pt2 = s;
   }
- return pt2;
+  return pt2;
 }
 
 double Process_Base::KFactor(double _scale) {
+  double kfactor;
   switch (m_kfactorscheme) {
   case 2  :
     if (m_nstrong>2) {

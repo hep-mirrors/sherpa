@@ -18,8 +18,10 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public :
     Process_Group(int,int,APHYTOOLS::Flavour *&,
-		  ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
-		  int,int,int,int,int,double,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
+		  PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
+		  APHYTOOLS::Selector_Data * =NULL,
+		  int=0,int=99,int=99,int=0,int=0,double=1.,
+		  Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
     Process_Group();
     ~Process_Group();
     /*------------------------------------------------------------------------------
@@ -29,10 +31,10 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   private :
     void           ConstructProcesses(APHYTOOLS::Selector_Data *);
-    void           GroupProcesses();
   public :
     bool           Find(std::string,Process_Base *&);
     void           Add(Process_Base *);
+    void           GroupProcesses();
     void           SelectOne();
     void           DeSelect();
     Process_Base * Selected();
@@ -55,6 +57,7 @@ namespace AMEGIC {
   public:
     int            InitAmplitude(Interaction_Model_Base *,Topology *,AMATOOLS::Vec4D *&,
 				 std::vector<double> &,std::vector<Single_Process *> &);
+    int            InitAmplitude(Interaction_Model_Base *,Topology *) {}
     bool           SetUpIntegrator();
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
     /*------------------------------------------------------------------------------

@@ -14,7 +14,7 @@
 
 using namespace AMEGIC;
 using namespace PHASIC;
-using namespace ISR;
+using namespace PDF;
 using namespace BEAM;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
@@ -208,6 +208,39 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     return -2;
   }
 }
+
+
+int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
+{
+  if (p_moms) { delete [] p_moms; }
+  p_moms   = new Vec4D[m_nvec]; 
+  p_ps->TestPoint(p_moms);
+  for (int i=0;i<m_nin+m_nout;i++)
+    msg.Debugging()<<i<<" th mom : "<<p_moms[i]<<" ("<<p_moms[i].Abs2()<<")"<<endl;
+
+  p_hel    = new Helicity(m_nin,m_nout,p_fl,p_pl);
+  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvec,p_fl,p_b);  
+  p_shand  = new String_Handler(m_gen_str,p_BS);
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,&m_pol,model,top,m_orderQCD,m_orderEW,
+				   p_BS,p_shand,m_ptypename+string("/")+m_name);
+  if (p_ampl->GetGraphNumber()==0) {
+    msg.Error()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
+    return -1;
+  }
+  m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
+  p_BS->Initialize();
+  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->Max_Hel());
+
+  double result;
+  switch (Tests(result)) {
+  case 2 : return 1;
+  case 1 : return InitLibrary(result);
+  default :
+    msg.Error()<<"Error in Single_Process::InitAmplitude : Failed for "<<m_name<<"."<<endl;
+    return -2;
+  }
+}
+
 
 void Single_Process::InitDecay(Topology* top)
 {
@@ -407,13 +440,14 @@ int Single_Process::Tests(double & result) {
       return 1;
     }
     msg.Tracking()<<"no strings created."<<endl;
-    return 0;
+    return 1;
   }
   msg.Tracking()<<"string_test switched off !"<<endl;
   return 0;
 }
 
 int Single_Process::InitLibrary(double result) {
+  if (m_gen_str==0) return 1;
   if (p_shand->IsLibrary()) {
     msg.Tracking()<<"No library needs to be initialized. Already done."<<endl;
     return 1;
@@ -616,10 +650,11 @@ bool Single_Process::SetUpIntegrator() {
   if (m_nin==2) {
     if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
 	 (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
+    if (CreateChannelLibrary()) {
+      if (p_ps->CreateIntegrators()) return 1;
+    }
   }
-  if (CreateChannelLibrary()) {
-    if (p_ps->CreateIntegrators()) return 1;
-  }
+  if (m_nin==1) return p_ps->CreateIntegrators();
   return 0;
 }
 
@@ -752,6 +787,7 @@ bool Single_Process::Find(std::string _name,Process_Base *& _proc)
   return 0;
 }
 
+
 bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) { 
   string filename = (m_resdir+string("/Tab")+m_name+string("/")+obs).c_str();
   if (IsFile(filename)) {
@@ -832,7 +868,6 @@ double Single_Process::DSigma(AMATOOLS::Vec4D* _moms,bool lookup)
   if (m_lastdxs <= 0.)                  return m_lastdxs = m_last = 0.;
   if (m_nin==2) m_lastlumi = p_isr->Weight(p_flin);
           else  m_lastlumi = 1.;
-
   return m_last = m_Norm * m_lastdxs * m_lastlumi;
 }
 

@@ -2,6 +2,7 @@
 #define Amegic_h
 
 #include "All_Processes.H"
+#include "All_Decays.H"
 
 #include "Model_Base.H"
 #include "Interaction_Model_Base.H"
@@ -25,6 +26,7 @@ namespace AMEGIC {
     int                          m_nmax,m_count,m_maxjet;
 
     All_Processes              * p_procs;
+    All_Decays                 * p_decs;
     Interaction_Model_Base     * p_model;
     Topology                   * p_top;
 
@@ -33,7 +35,7 @@ namespace AMEGIC {
     AORGTOOLS::Data_Read       * p_dataread;
     APHYTOOLS::Selector_Data   * p_seldata;
     BEAM::Beam_Spectra_Handler * p_beam;
-    ISR::ISR_Handler           * p_isr;
+    PDF::ISR_Handler           * p_isr;
 
     void InitializeInteractionModel(MODEL::Model_Base *);
     void ReadInProcessfile(std::string); 
@@ -42,8 +44,10 @@ namespace AMEGIC {
   public :
     Amegic(std::string,std::string,MODEL::Model_Base * _model);
     ~Amegic();
-    bool        InitializeProcesses(BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
+    bool        InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
+    bool        InitializeDecays();
     bool        CalculateTotalXSec(std::string _resdir=std::string(""));
+    bool        CalculateBranchingWidths(std::string _resdir=std::string(""));
     void        SetResDir(std::string);
 
     bool        UnweightedEvent();

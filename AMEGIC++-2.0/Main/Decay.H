@@ -1,13 +1,13 @@
-//Decay tables
-
 #ifndef Decay_h
 #define Decay_h
 
-#include "Topology.H"
+#include "Process_Group.H"
 #include "Single_Process.H"
+#include "Topology.H"
+
+
 
 namespace AMEGIC {
-
   //! The DecayTable implements the partial widths and branching ratios.
   struct DecayTable {
     //! The width of the particular particle (fl[0])

@@ -1,8 +1,7 @@
 lib_LTLIBRARIES = libAmegic.la
-libAmegic_la_SOURCES = Helicity.C Topology.C Polarisation.C \
+libAmegic_la_SOURCES = Helicity.C Topology.C Polarisation.C Pol_Info.C\
 		       Process_Base.C Single_Process.C Process_Group.C \
-		       All_Processes.C  Pol_Info.C\
-	               Amegic.C
+		       All_Processes.C All_Decays.C Amegic.C
 INCLUDES = -I../Amplitude \
 	   -I../Amplitude/AmplTools \
 	   -I../Amplitude/Zfunctions \
@@ -12,16 +11,14 @@ INCLUDES = -I../Amplitude \
 	   -I../../EXTRA_XS-1.0/Main \
 	   -I../../EXTRA_XS-1.0/Two2Two \
 	   -I../../PHASIC++-1.0/Main \
-	   -I../../PHASIC++-1.0/ISR \
-	   -I../../PHASIC++-1.0/Beam \
 	   -I../../MODEL-1.0/Main \
+	   -I../../BEAM-1.0 \
 	   -I../../PDF-1.0/Main \
 	   -I../../PDF-1.0/LHAPDF \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = Helicity.H Topology.H Polarisation.H Point.H \
-		 Process_Base.H Single_Process.H Process_Group.H \
-		 All_Processes.H  \
-	         Amegic.H Pol_Info.H \
-	         Decay.H Extra_XS.H
+noinst_HEADERS = Helicity.H Topology.H Polarisation.H Pol_Info.H Point.H \
+		 Process_Base.H Single_Process.H Process_Group.H Decay.H \
+		 All_Processes.H All_Decays.H Amegic.H 
+	         

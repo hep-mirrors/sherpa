@@ -22,7 +22,9 @@ using namespace std;
   ----------------------------------------------------------------------------------*/
 
 Amegic::Amegic(std::string _path,std::string _file,MODEL::Model_Base * _model) :
-  m_path(_path), m_file(_file), m_maxjet(0)
+  m_path(_path), m_file(_file), m_maxjet(0), m_nmax(0),
+  p_procs(NULL), p_decs(NULL), p_model(NULL), p_top(NULL), p_fifo(NULL),
+  p_dataread(NULL), p_seldata(NULL), p_beam(NULL), p_isr(NULL)
 {
   p_dataread         = new Data_Read(m_path+m_file);
   InitializeInteractionModel(_model);
@@ -50,7 +52,7 @@ Amegic::~Amegic() {
   ----------------------------------------------------------------------------------*/
 
 
-bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,ISR::ISR_Handler * _isr) {
+bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Handler * _isr) {
   p_beam              = _beam; 
   p_isr               = _isr;
 
@@ -68,7 +70,8 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,ISR::ISR_Han
   m_count            = p_procs->Size();
   msg.Tracking()<<"All together : "<<m_count<<" processes with up to "<<m_nmax<<" legs."<<endl;
 
-  p_top              = new Topology(AMATOOLS::Max(m_nmax,4));
+  m_nmax             = AMATOOLS::Max(m_nmax,4);
+  p_top              = new Topology(m_nmax);
 
   vector<double>           results;
   vector<Single_Process *> links;
@@ -84,6 +87,22 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,ISR::ISR_Han
     return 0;
   }
   return 1;
+}
+
+
+bool Amegic::InitializeDecays() {
+  int maxnumber = p_dataread->GetValue<int>("DECAY_PRODUCTS",3);
+  if (p_top) {
+    if (m_nmax<maxnumber) {
+      msg.Error()<<"Error in Amegic::InitializeDecays()."<<endl
+		 <<"   Potential inconsistency in number of legs of processes and decays."<<endl
+		 <<"   Processes : "<<m_nmax<<", Decays : "<<1+maxnumber<<endl
+		 <<"   Reduce number of legs for decay accordingly."<<endl; 
+    } 
+  }
+  else p_top    = new Topology(1+maxnumber);
+  p_decs        = new All_Decays(p_model,p_top);
+  return p_decs->InitializeDecays();
 }
 
 
@@ -113,7 +132,6 @@ void Amegic::ReadInProcessfile(string file)
     abort();
   }
 
-  m_nmax    = 0;
   char buffer[100];
 
   int         flag,position,njets;
@@ -290,19 +308,6 @@ void Amegic::ReadInProcessfile(string file)
   }
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-void Amegic::DecCalc() 
-{
-#ifdef  _DECAYS_ 
-  Decay_Handler dh;
-  dh.FindUnstable();
-  dh.Calculate(p_top);
-#endif
-
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 {
@@ -453,6 +458,10 @@ void Amegic::Shorten(std::string& str) {
 
 bool Amegic::CalculateTotalXSec(string _resdir) {
   return p_procs->CalculateTotalXSec(_resdir);
+}
+
+bool Amegic::CalculateBranchingWidths(string _resdir) {
+  return p_decs->CalculateBranchingWidths(_resdir);
 }
 
 void Amegic::SetResDir(string _respath) {

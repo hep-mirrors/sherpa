@@ -53,7 +53,7 @@ namespace AMEGIC {
     Phase_Space_Generator          * p_psgen;
 
     BEAM::Beam_Spectra_Handler     * p_beam;
-    ISR::ISR_Handler               * p_isr;
+    PDF::ISR_Handler               * p_isr;
     APHYTOOLS::Cut_Data            * p_cuts;
     APHYTOOLS::Selector_Base       * p_sel;
     APHYTOOLS::Primitive_Analysis  * p_analysis;
@@ -82,7 +82,7 @@ namespace AMEGIC {
   public:
     Process_Base::Process_Base();
     Process_Base(int,int,APHYTOOLS::Flavour *,
-		 ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+		 PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		 int,int,int,int,int,double,Pol_Info * _pl = 0,
 		 int _nex = 0,APHYTOOLS::Flavour * _ex_fl = 0);
     virtual ~Process_Base();
@@ -90,6 +90,7 @@ namespace AMEGIC {
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,
 				 AMATOOLS::Vec4D *&,std::vector<double> &,
 				 std::vector<AMEGIC::Single_Process *> &)            =0;
+    virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
     virtual void   InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>) =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
@@ -118,7 +119,7 @@ namespace AMEGIC {
     virtual Process_Base  *  operator[] (int idx)                                  =0;
 
     virtual void             SetBeam(BEAM::Beam_Spectra_Handler *);
-    virtual void             SetISR(ISR::ISR_Handler *);
+    virtual void             SetISR(PDF::ISR_Handler *);
     virtual void             SetCuts(APHYTOOLS::Cut_Data *);
     virtual void             SetSelector(APHYTOOLS::Selector_Base *);
     virtual void             SetMomenta(AMATOOLS::Vec4D *);
@@ -180,7 +181,7 @@ namespace AMEGIC {
     virtual bool                            IsFreeOfFourVertex(AMEGIC::Point * _p);
 
     virtual BEAM::Beam_Spectra_Handler    * Beam();
-    virtual ISR::ISR_Handler              * ISR();
+    virtual PDF::ISR_Handler              * ISR();
     virtual APHYTOOLS::Cut_Data           * Cuts();
     virtual APHYTOOLS::Selector_Base      * Selector();
     virtual APHYTOOLS::Primitive_Analysis * Analysis();
