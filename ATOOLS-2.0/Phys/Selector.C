@@ -108,6 +108,17 @@ bool Selector_Data::ReadInData(std::string filename) {
       (dat.flavs).push_back(flav);
       data.push_back(dat);
     }
+    if (keyword == string("PT2")) {
+      dat.type = 23;
+      from>>crit1>>crit2>>dat.min>>dat.max;
+      Flavour flav1 = Flavour(kf::code(abs(crit1)));
+      Flavour flav2 = Flavour(kf::code(abs(crit2)));
+      if (crit1<0) flav1 = flav1.Bar();
+      if (crit2<0) flav2 = flav2.Bar();
+      (dat.flavs).push_back(flav1);
+      (dat.flavs).push_back(flav2);
+      data.push_back(dat);
+    }
     if (keyword == string("Rapidity")) {
       dat.type = 13;
       from>>crit1>>dat.min>>dat.max;
