@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/10
+//Version: 2 ADICIC++-0.0/2004/08/26
 
 //Implementation of Sudakov_Calculator.H.
 
@@ -31,40 +31,84 @@ using namespace ADICIC;
 
 
 
-template struct Sudakov_Info<Dipole::qqbar>;
-template struct Sudakov_Info<Dipole::qg>;
-template struct Sudakov_Info<Dipole::gqbar>;
-template struct Sudakov_Info<Dipole::gg>;
+template struct Sudakov_Info<Dipole::qqbar,Radiation::gluon>;
+template struct Sudakov_Info<Dipole::qg,Radiation::gluon>;
+template struct Sudakov_Info<Dipole::gqbar,Radiation::gluon>;
+template struct Sudakov_Info<Dipole::gg,Radiation::gluon>;
+
+template struct Sudakov_Info<Dipole::qg,Radiation::quark>;
+template struct Sudakov_Info<Dipole::gqbar,Radiation::quark>;
+template struct Sudakov_Info<Dipole::gg,Radiation::quark>;
 
 
 
-template<Dipole::Type D>
-const Dipole::Type Sudakov_Info<D>::Dipoletype=Dipole::qqbar;
-template<Dipole::Type D> const short Sudakov_Info<D>::X1power=2;
-template<Dipole::Type D> const short Sudakov_Info<D>::X3power=2;
-template<Dipole::Type D>
-const double Sudakov_Info<D>::Colourfactor=1.5/*0.75*/*M_PI;
 
-template<>
-const Dipole::Type Sudakov_Info<Dipole::qg>::Dipoletype=Dipole::qg;
-template<> const short Sudakov_Info<Dipole::qg>::X1power=2;
-template<> const short Sudakov_Info<Dipole::qg>::X3power=3;
-template<>
-const double Sudakov_Info<Dipole::qg>::Colourfactor=4.0/*2.0*/*M_PI/3.0;
+template<Dipole::Type D> const Radiation::Group
+Sudakov_Info<D,Radiation::gluon>::Radiationgroup=Radiation::gluon;
+template<Dipole::Type D> const Radiation::Group
+Sudakov_Info<D,Radiation::quark>::Radiationgroup=Radiation::quark;
 
-template<>
-const Dipole::Type Sudakov_Info<Dipole::gqbar>::Dipoletype=Dipole::gqbar;
-template<> const short Sudakov_Info<Dipole::gqbar>::X1power=3;
-template<> const short Sudakov_Info<Dipole::gqbar>::X3power=2;
-template<>
-const double Sudakov_Info<Dipole::gqbar>::Colourfactor=4.0/*2.0*/*M_PI/3.0;
 
-template<>
-const Dipole::Type Sudakov_Info<Dipole::gg>::Dipoletype=Dipole::gg;
-template<> const short Sudakov_Info<Dipole::gg>::X1power=3;
-template<> const short Sudakov_Info<Dipole::gg>::X3power=3;
-template<>
-const double Sudakov_Info<Dipole::gg>::Colourfactor=4.0/*2.0*/*M_PI/3.0;
+
+
+template<> const Dipole::Type
+Sudakov_Info<Dipole::qqbar,Radiation::gluon>::Dipoletype=Dipole::qqbar;
+template<> const short
+Sudakov_Info<Dipole::qqbar,Radiation::gluon>::X1power=2;
+template<> const short
+Sudakov_Info<Dipole::qqbar,Radiation::gluon>::X3power=2;
+template<> const double
+Sudakov_Info<Dipole::qqbar,Radiation::gluon>::Colourfactor=1.5*M_PI;
+
+
+template<> const Dipole::Type
+Sudakov_Info<Dipole::qg,Radiation::gluon>::Dipoletype=Dipole::qg;
+template<> const short
+Sudakov_Info<Dipole::qg,Radiation::gluon>::X1power=2;
+template<> const short
+Sudakov_Info<Dipole::qg,Radiation::gluon>::X3power=3;
+template<> const double
+Sudakov_Info<Dipole::qg,Radiation::gluon>::Colourfactor=4.0*M_PI/3.0;
+
+
+template<> const Dipole::Type
+Sudakov_Info<Dipole::gqbar,Radiation::gluon>::Dipoletype=Dipole::gqbar;
+template<> const short
+Sudakov_Info<Dipole::gqbar,Radiation::gluon>::X1power=3;
+template<> const short
+Sudakov_Info<Dipole::gqbar,Radiation::gluon>::X3power=2;
+template<> const double
+Sudakov_Info<Dipole::gqbar,Radiation::gluon>::Colourfactor=4.0*M_PI/3.0;
+
+
+template<> const Dipole::Type
+Sudakov_Info<Dipole::gg,Radiation::gluon>::Dipoletype=Dipole::gg;
+template<> const short
+Sudakov_Info<Dipole::gg,Radiation::gluon>::X1power=3;
+template<> const short
+Sudakov_Info<Dipole::gg,Radiation::gluon>::X3power=3;
+template<> const double
+Sudakov_Info<Dipole::gg,Radiation::gluon>::Colourfactor=4.0*M_PI/3.0;
+
+
+
+
+template<> const Dipole::Type
+Sudakov_Info<Dipole::qg,Radiation::quark>::Dipoletype=Dipole::qg;
+template<> const double
+Sudakov_Info<Dipole::qg,Radiation::quark>::Colourfactor=8.0*M_PI;
+
+
+template<> const Dipole::Type
+Sudakov_Info<Dipole::gqbar,Radiation::quark>::Dipoletype=Dipole::gqbar;
+template<> const double
+Sudakov_Info<Dipole::gqbar,Radiation::quark>::Colourfactor=8.0*M_PI;
+
+
+template<> const Dipole::Type
+Sudakov_Info<Dipole::gg,Radiation::quark>::Dipoletype=Dipole::gg;
+template<> const double
+Sudakov_Info<Dipole::gg,Radiation::quark>::Colourfactor=4.0*M_PI;
 
 
 
@@ -74,11 +118,15 @@ const double Sudakov_Info<Dipole::gg>::Colourfactor=4.0/*2.0*/*M_PI/3.0;
 
 const bool Sudakov_Calculator::sf_start=Dipole_Parameter::ForceFirstInit();
 
+//Mimic Ariadne.
+const bool Sudakov_Calculator::sf_ariadne=false;//true;//false;
+const bool& Sudakov_Calculator::Ariadne=Sudakov_Calculator::sf_ariadne;
+
 //So far there is no static Sudakov_Calculator.
 int Sudakov_Calculator::s_count=0;
 const int& Sudakov_Calculator::InStore=Sudakov_Calculator::s_count;
 
-//AlphaS treatment flag and fixed coupling
+//AlphaS treatment flag and fixed coupling.
 bool   Sudakov_Calculator::s_isalphasrun=Dipole_Parameter::IsAlphaSRunning();
 double Sudakov_Calculator::s_alphasfix=Dipole_Parameter::AlphaSFix();
 double Sudakov_Calculator::s_k2tmin=Dipole_Parameter::MinOfK2t();    //GeV^2
@@ -86,10 +134,25 @@ double Sudakov_Calculator::s_k2tmax=Dipole_Parameter::MaxOfK2t();    //GeV^2
 
 double Sudakov_Calculator::s_approx=Sudakov_Calculator::s_alphasfix;
 
+//
+const int Sudakov_Calculator::s_nffix=5;
+
+//
 Function_Base* Sudakov_Calculator::s_pas=NULL;
 
-Sudakov_Calculator::AlphaSCorr_Func
+Sudakov_Calculator::Double_Double_Func
 Sudakov_Calculator::GetAlphaSCorr=&Sudakov_Calculator::FixAlphaSCorr;
+Sudakov_Calculator::Int_Double_Func
+Sudakov_Calculator::GetNf=&Sudakov_Calculator::FixNf;
+
+
+
+//=============================================================================
+
+
+
+int Sudakov_Base::s_count=0;
+const int& Sudakov_Base::InStore=Sudakov_Base::s_count;
 
 
 
@@ -124,6 +187,7 @@ const bool Sudakov_Calculator::AdjustParameters() {    //Static.
     if(s_isalphasrun) {
       s_pas=NULL;
       GetAlphaSCorr=&FixAlphaSCorr;
+      GetNf=&FixNf;
     }
     s_isalphasrun=Dipole_Parameter::IsAlphaSRunning();
   }
@@ -149,6 +213,7 @@ const bool Sudakov_Calculator::Init(MODEL::Model_Base* pmod) {    //Static.
   assert(s_pas);
   s_approx=(*s_pas)(s_k2tmin);
   GetAlphaSCorr=&RunAlphaSCorr;
+  GetNf=&RunNf;
   return true;
 }
 
@@ -158,10 +223,25 @@ const bool Sudakov_Calculator::Init(MODEL::Model_Base* pmod) {    //Static.
 
 
 
-template class Sudakov<Dipole::qqbar>;
-template class Sudakov<Dipole::qg>;
-template class Sudakov<Dipole::gqbar>;
-template class Sudakov<Dipole::gg>;
+template class Sudakov_Group<Dipole::qqbar>;
+template class Sudakov_Group<Dipole::qg>;
+template class Sudakov_Group<Dipole::gqbar>;
+template class Sudakov_Group<Dipole::gg>;
+
+
+
+//=============================================================================
+
+
+
+template class Sudakov<Dipole::qqbar,Radiation::gluon>;
+template class Sudakov<Dipole::qg,Radiation::gluon>;
+template class Sudakov<Dipole::gqbar,Radiation::gluon>;
+template class Sudakov<Dipole::gg,Radiation::gluon>;
+
+template class Sudakov<Dipole::qg,Radiation::quark>;
+template class Sudakov<Dipole::gqbar,Radiation::quark>;
+template class Sudakov<Dipole::gg,Radiation::quark>;
 
 
 

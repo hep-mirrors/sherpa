@@ -19,7 +19,7 @@ AM_CXXFLAGS = -pedantic -Wall -Winline
 
 
 
-bin_PROGRAMS = Flavtest Emissiontest Chaintest
+bin_PROGRAMS = Flavtest Emissiontest Chaintest Cascadetest
 
 
 
@@ -77,6 +77,22 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
 
 
 
+Cascadetest_SOURCES = Cascadetest.C
+Cascadetest_LDADD = @libdir@/libAdicicTool.la \
+                    @libdir@/libAdicicInput.la \
+                    @libdir@/libAdicicStruct.la \
+                    @libdir@/libAdicicHdl.la \
+                    @libdir@/libAdicicMain.la \
+                    @libdir@/libToolsPhys.la \
+                    @libdir@/libToolsMath.la \
+                    @libdir@/libToolsOrg.la \
+                    @libdir@/libModelMain.la \
+                    @libdir@/libHdecay.la \
+                    @libdir@/libIsajet.la \
+                    -lg2c -lm -ldl
+
+
+
 INCLUDES = -I../Tool \
            -I../Input \
            -I../Structure \
@@ -95,5 +111,9 @@ INCLUDES = -I../Tool \
 
 EXTRA_DIST = $(CVSINCLUDE)
 #EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat
+
+
+
+
 
 

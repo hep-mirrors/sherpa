@@ -36,14 +36,14 @@ INCLUDES = -I../Tool \
 
   
 noinst_HEADERS = Dipole_Flavour.H Information.hpp \
-                 Recoil_Strategy.hpp Evolution_Strategy.hpp \
+                 Sudakov_Strategy.hpp Recoil_Strategy.hpp \
+                 Evolution_Strategy.hpp \
                  Dipole_Parameter.H
 
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
              Dipole_Parameter.inl.hh Dipole_Parameter.prm.cc
-
 
 
 

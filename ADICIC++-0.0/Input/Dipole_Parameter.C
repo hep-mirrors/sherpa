@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/11
+//Version: 2 ADICIC++-0.0/2004/08/20
 
 //Implementation of Dipole_Parameter.H.
 
@@ -114,7 +114,7 @@ const bool Dipole_Parameter::ForceFirstInit() {    //Static.
   static bool firsttime=true;
   if(firsttime==false) return false;
 #ifdef DIPOLE_PARAMETER_OUTPUT
-  cout<<"ADICIC::Dipole_Parameter::Init() is running.\n";
+  cout<<"ADICIC::Dipole_Parameter::ForceFirstInit() is running.\n";
 #endif
   firsttime=false;
 #include "Dipole_Parameter.prm.cc"

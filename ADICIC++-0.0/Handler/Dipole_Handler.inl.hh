@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/01
+//Version: 2 ADICIC++-0.0/2004/09/03
 
 //Inline methods of Dipole_Handler.H.
 
@@ -25,7 +25,7 @@ namespace ADICIC {
   inline const bool4::level Dipole_Handler::Status() const {
     if(!p_dix && !p_ban && !p_ati && !p_glu) return bool4::zero;
     if( p_dix && !p_ban && !p_ati &&  p_glu) return bool4::one;
-    if(!p_dix &&  p_ban &&  p_ati && !p_glu) return bool4::two;
+    if(!p_dix &&  p_ban &&  p_ati &&  p_glu) return bool4::two;
     return bool4::three;
   }
 
@@ -51,13 +51,15 @@ namespace ADICIC {
 
 
   inline const bool Dipole_Handler::AttachDipole(Dipole* pD) {
-    if( p_dix || p_ban || p_ati || p_glu) return false;
-    if( p_dip==NULL && pD->IsHandledBy(*this) ) {
+    if(p_dix || p_ban || p_ati || p_glu) return false;
+    if(p_dip==NULL && pD->IsHandledBy(*this)) {
       p_dip=pD;
-      p_tempa=s_map[p_dip->IsType()];
-      p_sudakov=p_tempa->p_sud;
-      p_recoil=p_tempa->p_rec;
+      m_key.first=p_dip->IsType();
+      m_key.second=Radiation::incorrect;
+      p_sudakov=s_sumap[m_key.first];
+      p_recoil=s_remap[m_key];
       f_below=false;
+      f_recoil=Nil;
       f_gate=0;
       return true;
     }
@@ -70,7 +72,8 @@ namespace ADICIC {
       f_gate=0;
       p_recoil=NULL;
       p_sudakov=NULL;
-      p_tempa=NULL;
+      m_key=Key(Dipole::incorrect,Radiation::incorrect);
+      //m_key=std::make_pair(Dipole::incorrect,Radiation::incorrect);
       p_dip=NULL;
       return true;
     }
@@ -83,27 +86,20 @@ namespace ADICIC {
 
 
 
-  inline void Dipole_Handler::ResetStatus() {
-    f_below=false;
-    if(p_dix) { delete p_dix; p_dix=NULL;}
-    if(p_ban) { delete p_ban; p_ban=NULL;}
-    if(p_ati) { delete p_ati; p_ati=NULL;}
-    if(p_glu) { delete p_glu; p_glu=NULL;}
+  inline void Dipole_Handler::DecoupleNew(Dipole*& pD,
+					  Dipole::Glubranch*& pG,
+					  Dipole::Antibranch*& pA,
+					  Dipole::Branch*& pB,
+					  bool& below,
+					  Trio& recoil) {
+    if(pD || pG || pA || pB) return;
+    pD=p_dix; p_dix=NULL;
+    pG=p_glu; p_glu=NULL;
+    pA=p_ati; p_ati=NULL;
+    pB=p_ban; p_ban=NULL;
+    below=f_below; f_below=false;
+    recoil=f_recoil; f_recoil=Nil;
   }
-
-
-  inline void Dipole_Handler::DecoupleNewDipole(Dipole*& pD, bool& below) {
-    if(pD || !p_dix) return; pD=p_dix; p_dix=NULL; below=f_below;
-  }
-
-
-  inline void Dipole_Handler::DecoupleGlubranch(Dipole::Glubranch*& pG) {
-    if(pG || !p_glu) return; pG=p_glu; p_glu=NULL;
-  }
-
-
-
-  //===========================================================================
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/10
+//Version: 2 ADICIC++-0.0/2004/09/10
 
 //Implementation of Adicic.H.
 
@@ -7,7 +7,6 @@
 
 #include "Message.H"
 #include "Particle_List.H"
-#include "Chain_Handler.H"
 #include "Paraminit.H"
 #include "Adicic.H"
 
@@ -27,7 +26,7 @@ using namespace ADICIC;
 
 
 
-Adicic::Adicic() : p_chain(new Chain()) {
+Adicic::Adicic() : m_total(0), m_fail(0), p_handler(NULL), m_cascade() {
   cout<<om::green;/////////////////////////////////////////////////////////////
   cout<<"Dipole Flavour Initialization ......."<<endl;/////////////////////////
   cout<<"  "<<Dipole_Flavour_Init::Status()<<endl;/////////////////////////////
@@ -59,13 +58,18 @@ Adicic::Adicic() : p_chain(new Chain()) {
   Dipole_Handler::ShowCalcBox();///////////////////////////////////////////////
   cout<<om::reset;/////////////////////////////////////////////////////////////
   //assert(0);
+
+  p_handler=new Cascade_Handler();
+  assert(p_handler);
+
 }
 
 
 
 
 
-Adicic::Adicic(MODEL::Model_Base* pmod) : p_chain(new Chain()) {
+Adicic::Adicic(MODEL::Model_Base* pmod)
+  : m_total(0), m_fail(0), p_handler(NULL), m_cascade() {
   cout<<om::green;/////////////////////////////////////////////////////////////
   cout<<"Dipole Flavour Initialization ......."<<endl;/////////////////////////
   cout<<"  "<<Dipole_Flavour_Init::Status()<<endl;/////////////////////////////
@@ -100,6 +104,10 @@ Adicic::Adicic(MODEL::Model_Base* pmod) : p_chain(new Chain()) {
   Dipole_Handler::ShowCalcBox();///////////////////////////////////////////////
   cout<<om::reset;/////////////////////////////////////////////////////////////
   //assert(0);
+
+  p_handler=new Cascade_Handler();
+  assert(p_handler);
+
 }
 
 
@@ -107,7 +115,11 @@ Adicic::Adicic(MODEL::Model_Base* pmod) : p_chain(new Chain()) {
 
 
 Adicic::~Adicic() {
-  if(p_chain) { delete p_chain; p_chain=NULL;}
+  m_cascade|0;
+  p_handler->PrintCounter();
+  cout<<"Total number = "<<m_total<<"\tTotal number of failures = "<<m_fail;
+  cout<<"   ("<<1.0*m_fail/m_total<<")."<<endl;
+  if(p_handler) delete p_handler;
 }
 
 
@@ -117,11 +129,11 @@ Adicic::~Adicic() {
 
 
 int Adicic::PerformShowers() {
-  Chain_Handler chainhandler(*p_chain);
-  while(chainhandler.EvolveChainByOneStep()) {
-    Vec4D test;
-    p_chain->CheckMomentumConservation(test);
-  }
+  ++m_total;
+  assert(m_cascade|(*p_handler));
+  if(p_handler->EvolveCascade());
+  else ++m_fail;
+  m_cascade|0;
   return 1;
 }
 
@@ -131,16 +143,12 @@ int Adicic::PerformShowers() {
 
 bool Adicic::ExtractPartons(ATOOLS::Blob_List* blobs, ATOOLS::Particle_List*) {
 
-  static unsigned count=0;
-  ++count;
-  if(count==1 || count%1000==0) {
-    cout<<"\n                "<<om::red<<om::blackbg<<count<<om::reset<<"\n\n";
-    for(int i=0; i<100000000; ++i);
-  }
+  if(m_total==1 || m_total%1000==0)
+    cout<<"                "<<om::red<<om::blackbg<<m_total<<om::reset<<"\n";
 
   int num;
   Blob* blob;
-  Particle_List plist;
+  list<Particle_List> lists;
 
 #ifdef ADICIC_OUTPUT
   cout<<"Blob list......: "<<blobs->size()<<endl;//////////////////////////////
@@ -151,10 +159,12 @@ bool Adicic::ExtractPartons(ATOOLS::Blob_List* blobs, ATOOLS::Particle_List*) {
   for(Blob_Iterator blit=blobs->begin(); blit!=blobs->end(); ++blit) {
 
     if((*blit)->Type()==btp::FS_Shower) {
-      if(!p_chain->ExtractPartons(plist)) {
-	msg.Error()<<"Error in Adicic::ExtractPartons."<<endl;
+      if(!m_cascade.ExtractPartons(lists)) {
+	msg.Error()<<__PRETTY_FUNCTION__<<endl;
 	return false;
       }
+      assert(lists.size()==1);/////////////////////////////////////////////////
+      Particle_List& plist=lists.front();
       blob=*blit;
 #ifdef ADICIC_OUTPUT
       cout<<om::greenbg<<"Initial 2nd blob:"<<om::reset<<" \n"<<*blob<<endl;///

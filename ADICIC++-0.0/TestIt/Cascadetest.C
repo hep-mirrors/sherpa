@@ -1,7 +1,7 @@
 //bof
 //Version: 2 ADICIC++-0.0/2004/09/10
 
-//Chaintest.C - testing the first chaining.
+//Cascadetest.C - testing the first cascading.
 
 
 
@@ -19,10 +19,12 @@
 #include "Sudakov_Calculator.H"
 #include "Chain.H"
 #include "Chain_Handler.H"
+#include "Cascade.H"
+#include "Cascade_Handler.H"
 
 
-#define CHAINTEST_OUTPUT CHAINTEST_OUTPUT
-#undef  CHAINTEST_OUTPUT
+#define CASCADETEST_OUTPUT CASCADETEST_OUTPUT
+#undef  CASCADETEST_OUTPUT
 
 
 
@@ -31,33 +33,6 @@
 using namespace std;
 using namespace ATOOLS;
 using namespace ADICIC;
-
-
-
-
-
-class Lev1;
-
-class Lev2 {
-  friend class Lev1;
-  class {
-    friend class Lev2;
-    int t;
-  public:
-    int& T() { t=333; return t;}
-    int& Tt() { return t;}
-  } lev3;
-public:
-  Lev2() { lev3.t=77;}
-};
-
-class Lev1 {
-  Lev2 member;
-public:
-  void Print() { cout<<"In-class trick works: "<<member.lev3.T()<<endl;}
-  void Vary() { member.lev3.T()=43; cout<<"Varying: "<<member.lev3.Tt()<<endl;}
-  //void Test() { member.lev3.t=99;}    //does not work - as wished
-};
 
 
 
@@ -75,16 +50,6 @@ int main() {
   cout<<cout.precision(6)<<endl;
   cout<<endl;
 
-  Lev1 kkk;
-  kkk.Print();
-  kkk.Vary();
-
-  Lev2 uuu;
-  //uuu.lev3.t=11;    //does not work - as wished
-  //uuu.lev3.T()=16;    //does not work - as wished
-
-  cout<<endl;
-
   Dipole_Parameter::Show();
   Sudakov_Calculator::ShowParameters();
   Sudakov_Calculator::AdjustParameters();
@@ -97,15 +62,17 @@ int main() {
   Chain_Handler::AdjustParameters();
   Chain_Handler::ShowParameters();
 
-  cout<<endl; cin>>enter; cout<<endl;
+  cout<<endl;
   cout<<"=============================================================="<<endl;
   cout<<endl;
 
-  cout<<"======================================"<<endl;
-  cout<<" Testing the chaining - Preparations. "<<endl;
-  cout<<"======================================"<<endl;
+  cout<<"======================================="<<endl;
+  cout<<" Testing the cascading - Preparations. "<<endl;
+  cout<<"======================================="<<endl;
 
-  {
+  cout<<endl; cin>>enter; cout<<endl;
+
+  {//muss noch diese tests machen!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     Chain cha;
     cha.Print();
@@ -249,13 +216,15 @@ int main() {
   }
 
   cout<<"=============================================================="<<endl;
-  cout<<endl; cin>>enter; cout<<endl;
+  cout<<endl;
   cout<<"=============================================================="<<endl;
   cout<<endl;
 
-  cout<<"=================================="<<endl;
-  cout<<" Testing the chaining stepwisely. "<<endl;
-  cout<<"=================================="<<endl;
+  cout<<"==================================="<<endl;
+  cout<<" Testing the cascading stepwisely. "<<endl;
+  cout<<"==================================="<<endl;
+
+  cout<<endl; cin>>enter; cout<<endl;
 
   {
 
@@ -307,8 +276,10 @@ int main() {
     //abort();
 
     {
-      unsigned total=13;//20000;
-      unsigned qcount=0, gcount=0, gluons=0, cd=0, cu=0, cs=0, cc=0, cb=0;
+      unsigned total=3;//20000;
+      unsigned fail=0;
+
+      Cascade_Handler H;
 
       for(unsigned i=1; i<=total; ++i) {
 
@@ -319,108 +290,69 @@ int main() {
 	Dipole::Antibranch a1(info.antiq.u,pr);
 	Dipole::Glubranch  g2(pr);
 
-	Chain cha(b1,a1,Chain::Initiator::simple_epem);
-	//Chain cha(g1,g2,Chain::Initiator::simple_epem);
-	Chain chtest(cha);
-	Chain_Handler H(cha);
+	Cascade cas;
 
-	list<Chain*> chainlist;
-	chainlist.push_front(&cha);
-	list<Chain*>::iterator itcha=chainlist.begin();
+	cas.AddChain(b1,a1);
+	cas.AddChain(b1,a1);
+	//cas.AddChain(g1,g2);
+	//cas.AddChain(g1,g2);
 
-	cha.Print();
-	cout<<cha.MaxParticleNumber()<<endl;
-	cout<<cha.MaxDipoleNumber()<<endl;
-	if(i==total) chtest.Print();
+	Cascade cascop(cas);
+
+	cas|H;
+
+	cas.Print();
+	cout<<cas.MaxChainNumber()<<endl;
+	if(i==total) cascop.Print();
 	cout<<endl;
 	cout<<"\e[7m\e[31m                    \e[0m";
 	cout<<"\e[1m\e[40m\e[33mSTART: "<<i<<"\e[0m";
-	cout<<"\e[7m\e[31m                    \e[0m"<<endl;
+	cout<<"\e[7m\e[31m                    \e[0m\n\n";
 
-	while(H.EvolveChainByOneStep()) {
-	  bool below;
-	  kf::code kfc;
-	  Chain* pCha=NULL;
-	  H.DecoupleNew(pCha,kfc,below);
-	  if(pCha) {
-	    ++qcount;
-	    if(below) { ++itcha; itcha=chainlist.insert(itcha,pCha); --itcha;}
-	    else      { itcha=chainlist.insert(itcha,pCha); ++itcha;}
-	  } else {
-	    ++gcount;
-	  }
-	  switch(kfc) {
-	  case kf::gluon: ++gluons; break;
-	  case kf::d    : ++cd; break;
-	  case kf::u    : ++cu; break;
-	  case kf::s    : ++cs; break;
-	  case kf::c    : ++cc; break;
-	  case kf::b    : ++cb; break;
-	  default       : cout<<kfc<<endl; assert(0);
-	  }
-	  cout<<cha<<endl;
-	  Vec4D test;
-	  cout<<cha.CheckMomentumConservation(test)<<"\t"<<test<<"\n\n";
-	}
+	if(H.EvolveCascade());
+	else ++fail;
+
+	Vec4D test;
+	cout<<"Momentum conservation check = ";
+	cout<<cas.CheckMomentumConservation(test)<<"\t"<<test<<"\n\n";
 
 	cout<<"\e[7m\e[31m                    \e[0m";
 	cout<<"\e[1m\e[40m\e[33mSTOP: "<<i<<"\e[0m";
 	cout<<"\e[7m\e[31m                    \e[0m"<<endl;
 
 	if(i==total) {
-	  cha.Print();
-	  //chtest.Print();
+	  cas.Print();
+	  //cascop.Print();
 	  cout<<endl;
 	  cout<<om::greenbg<<"Operator= test:"<<om::reset<<endl;
-	  chtest=cha;
-	  chtest.Print();
+	  cascop=cas;
+	  cascop.Print();
 	  cout<<endl<<om::greenbg<<"Copy constructor test:"<<om::reset<<endl;
-	  Chain chacopy(cha);
-	  chacopy.Print();
+	  Cascade cascopy(cas);
+	  cascopy.Print();
 	  cout<<endl<<om::greenbg<<"Extracting test:"<<om::reset<<endl;
-	  Particle_List plist;
-	  cha.ExtractPartons(plist);
-	  cout<<plist<<endl;
-	  for(Particle_Iterator pit=plist.begin(); pit!=plist.end(); ++pit)
-	    if(*pit) delete (*pit);
+	  list<Particle_List> lists;
+	  assert(cas.ExtractPartons(lists));
+	  for(list<Particle_List>::iterator loc=lists.begin();
+	      loc!=lists.end(); ++loc) {
+	    cout<<(*loc);
+	    for(Particle_Iterator pit=(*loc).begin(); pit!=(*loc).end(); ++pit)
+	      if(*pit) delete (*pit);
+	  }
 	}
 
-	cout<<om::brownbg<<"THIS IS NOW THE RESULT......."<<om::reset;
-	for(list<Chain*>::const_iterator cit=chainlist.begin();
-	    cit!=chainlist.end(); ++cit) {
-	  const Chain& chi=**cit;
-	  if((*cit)==(&cha)) cout<<"This is the root:";
-	  chi.Print();
-	  cout<<chi.MaxParticleNumber()<<endl;
-	  cout<<chi.MaxDipoleNumber()<<endl;
-	}
-	for(list<Chain*>::const_iterator cit=chainlist.begin();
-	    cit!=chainlist.end(); ++cit) {
-	  if((*cit)==(&cha)); else delete (*cit);
-	}
+	cout<<"\n\n"<<om::redbg<<"THIS IS NOW THE RESULT......."<<om::reset;
+	cas.Print();
+	cout<<cas.MaxChainNumber()<<"\n";
 	cout<<endl;
+
+	cas|0;    //Otherwise one gets a warning.
 
       }
 
-      cout<<endl;
-      cout<<"Total number of gluon  emissions (root chain)   = "<<gcount;
-      cout<<"   ("<<1.0*gcount/total<<")   ["<<gluons<<"]."<<endl;
-      cout<<"Total number of gluon splittings (extra chains) = "<<qcount;
-      cout<<"   ("<<1.0*qcount/total<<")   ["<<cd+cu+cs+cc+cb<<"]."<<endl;
-      cout<<"Total number of gluon splittings -> ddbar pairs = "<<cd;
-      cout<<"   ("<<1.0*cd/qcount<<")."<<endl;
-      cout<<"Total number of gluon splittings -> uubar pairs = "<<cu;
-      cout<<"   ("<<1.0*cu/qcount<<")."<<endl;
-      cout<<"Total number of gluon splittings -> ssbar pairs = "<<cs;
-      cout<<"   ("<<1.0*cs/qcount<<")."<<endl;
-      cout<<"Total number of gluon splittings -> ccbar pairs = "<<cc;
-      cout<<"   ("<<1.0*cc/qcount<<")."<<endl;
-      cout<<"Total number of gluon splittings -> bbbar pairs = "<<cb;
-      cout<<"   ("<<1.0*cb/qcount<<")."<<endl;
-      cout<<"Ratio of the # of splittings to the # of emissions = "
-	  <<1.0*qcount/gcount<<" ."<<endl;
-      //cout<<"Ratio of the # of produced q-qbar pairs to the # of gluons = "
-      //  <<1.0*qcount/gcount<<" ."<<endl;
+      H.PrintCounter();
+      cout<<"Total number of failures = "<<fail;
+      cout<<"   ("<<1.0*fail/total<<")."<<endl;
     }
 
   }

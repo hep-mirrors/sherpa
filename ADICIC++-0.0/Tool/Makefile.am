@@ -21,6 +21,7 @@ endif
 
 lib_LTLIBRARIES = libAdicicTool.la
 libAdicicTool_la_SOURCES = Xio.C Xmath.C \
+                           Sudakov_Result.cpp \
                            Sudakov_Calculator.C Recoil_Calculator.C
 
 
@@ -41,14 +42,13 @@ INCLUDES = -I../Input \
 
   
 noinst_HEADERS = Xenum.H Xio.H Xmath.H defextra enumextra ioextra mathextra \
-                 Sudakov_Calculator.H Recoil_Calculator.H
+                 Sudakov_Result.hpp Sudakov_Calculator.H Recoil_Calculator.H
 
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
              Sudakov_Calculator.inl.hh Sudakov_Calculator.tpt.cc \
              Recoil_Calculator.inl.hh Recoil_Calculator.tpt.cc
-
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/04
+//Version: 2 ADICIC++-0.0/2004/09/06
 
 //Implementation of Dipole.H.
 
@@ -607,8 +607,7 @@ void Dipole::RenewBranch(bool top, Glubranch& glu) {
     newtow.remove(this);
     newtow.push_front(this);
 
-  }
-  else {    //Then method is concerned with p_bot.
+  } else {    //Then method is concerned with p_bot.
 
     if(p_bot==&glu && !f_bot) return;
 

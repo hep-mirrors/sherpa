@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/10
+//Version: 2 ADICIC++-0.0/2004/09/01
 
 //Emissiontest.C - testing the first emission.
 
@@ -12,6 +12,7 @@
 #include <enumextra>
 #include <mathextra>
 #include "Message.H"
+#include "Run_Parameter.H"
 #include "Dipole.H"
 #include "Dipole_Handler.H"
 #include "Sudakov_Calculator.H"
@@ -117,7 +118,7 @@ int main() {
     Vec4D pr(45.0,-20.0, 5.0,-40.0);
     Dipole D1;
     Dipole::Branch b0(info.quark.s,pl);
-    Dipole::Antibranch a0(info.antiquark.t,pl);
+    Dipole::Antibranch a0(info.antiq.t,pl);
     Dipole D2(b0,a0,33);
     cout<<D1<<endl<<D2<<endl;
     D1.PrintTowers(); D2.PrintTowers();
@@ -139,7 +140,7 @@ int main() {
 
     Dipole D1;
     Dipole::Branch b1(info.quark.u,pl);
-    Dipole::Antibranch a1(info.antiquark.u,pr);
+    Dipole::Antibranch a1(info.antiq.u,pr);
     Dipole D2(b1,a1);
     cout<<D1<<endl<<D2<<endl;
     D1.PrintTowers(); D2.PrintTowers();
@@ -152,10 +153,10 @@ int main() {
     {
       Dipole_Handler H1;
       H1.ShowSudakov();
-      H1.ShowRecoilStrategy();
+      H1.ShowRecoil();
       Dipole_Handler H2(D2);
       H2.ShowSudakov();
-      H2.ShowRecoilStrategy();
+      H2.ShowRecoil();
 
       cout<<"H1 docking="<<H1.IsDocked()<<endl;
       cout<<"H2 docking="<<H2.IsDocked()<<endl;
@@ -176,13 +177,13 @@ int main() {
 
       Dipole_Handler H3;
       H3.ShowSudakov();
-      H3.ShowRecoilStrategy();
+      H3.ShowRecoil();
       {
 	Dipole E(b1,a1);
 	E|H3;
 	cout<<"H3 docking="<<H3.IsDocked()<<endl;
 	H3.ShowSudakov();
-	H3.ShowRecoilStrategy();
+	H3.ShowRecoil();
 	cout<<E<<endl;
       }
       cout<<"H3 docking="<<H3.IsDocked()<<endl;
@@ -222,8 +223,13 @@ int main() {
 
   }
 
-  cout<<"=============================================================="<<endl;
-  cout<<endl;
+  cout<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
+  cout<<endl; cin>>enter; cout<<endl;
+  cout<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
 
   cout<<"============================="<<endl;
   cout<<" Testing the first emission. "<<endl;
@@ -231,84 +237,134 @@ int main() {
 
   {
 
+    extern Run_Parameter ATOOLS::rpa;
+    rpa.gen.SetEcms(90.0);
+
     Sudakov_Calculator::ShowParameters();
     Dipole_Handler::ShowCalcBox();
     cout<<"\nDip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
-    //cout<<"\nDo Init: "<<Dipole_Parameter_Init::DoIt()<<endl;////////////////
-    //cout<<"Do Init: "<<Dipole_Parameter_Init::DoIt()<<endl;//////////////////
+    cout<<"\nDo Init: "<<Dipole_Parameter_Init::DoIt()<<endl;////////////////
+    cout<<"Do Init: "<<Dipole_Parameter_Init::DoIt()<<endl;//////////////////
     cout<<"Dip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
 
     cout<<"\nRunning?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
     cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;
     cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
+    cout<<"NfFix="<<Sudakov_Calculator::NfFix()<<endl;
     cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
     cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
     cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
-    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    cout<<"Nf(1.20)="<<Sudakov_Calculator::Nf(1.2)<<endl;
+    cout<<"Nf(8100)="<<Sudakov_Calculator::Nf(8100.0)<<endl;
+
+    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;////////////////
+
     cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
     cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
     cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
     cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+    cout<<"Nf(1.20)="<<Sudakov_Calculator::Nf(1.2)<<endl;
+    cout<<"Nf(8100)="<<Sudakov_Calculator::Nf(8100.0)<<endl;
 
     TEMP::CPTEST=true;
 
     Vec4D pl(45.0, 20.0,-5.0, 40.0);
     Vec4D pr(45.0,-20.0, 5.0,-40.0);
 
-    Dipole::Branch     b1(info.quark.u,pl);
-    //Dipole::Glubranch  b1(pl);
-    Dipole::Antibranch a1(info.antiquark.u,pr);
+    //Dipole::Branch     b1(info.quark.u,pl);
+    Dipole::Glubranch  b1(pl);
+    Dipole::Antibranch a1(info.antiq.u,pr);
     //Dipole::Glubranch  a1(pr);
 
     Dipole* pDin=NULL;
     Dipole::Glubranch* pGlu=NULL;
+    Dipole::Antibranch* pAti=NULL;
+    Dipole::Branch* pBan=NULL;
 
     {
 
+      unsigned trials=1;
       bool below;
+      Trio recoil;
       Dipole Dip(b1,a1);
       Dipole_Handler H(Dip);
 
-      H.ShowSudakov(); H.ShowRecoilStrategy();
+      H.ShowSudakov(); H.ShowRecoil();
       cout<<Dip<<endl; Dip.PrintTowers();
 
-      assert(H.ManageGluonEmission());// && H.ManageGluonEmission());
+      //assert(H.ManageGluonEmission());// && H.ManageGluonEmission());
+      while(H.ManageDipoleRadiation()==false) ++trials;
+      cout<<"Trials for a successful radiation="<<trials<<endl;
 
-      H.DecoupleNewDipole(pDin,below); assert(pDin);
-      H.DecoupleGlubranch(pGlu); assert(pGlu);
+      H.DecoupleNew(pDin,pGlu,pAti,pBan,below,recoil);
 
-      cout<<"\t  p1="<<b1.Momentum()<<" \t "<<b1.Momentum().Abs2()<<endl;
-      cout<<"\t  p2="<<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2()<<endl;
-      cout<<"\t  p3="<<a1.Momentum()<<" \t "<<a1.Momentum().Abs2()<<endl;
-      cout<<"\t sum="<<b1.Momentum()+pGlu->Momentum()+a1.Momentum()<<endl;
-
-      cout<<"\t       ";
-      for(char i=0; i<4; ++i) cout<<b1.Momentum()[i]/pl[i]<<" \t ";
-      cout<<endl<<"\t       ";
-      for(char i=0; i<4; ++i) cout<<pGlu->Momentum()[i]/pl[i]<<" \t ";
-      cout<<endl<<"\t       ";
-      for(char i=0; i<4; ++i) cout<<a1.Momentum()[i]/pl[i]<<" \t ";
-      cout<<endl;
-
-      const Dipole& Din=*pDin;
-
-      cout<<"Is order given as olddip newdip? "<<below<<endl;
-
-      if(below) {
-	cout<<Dip<<endl<<Din<<endl;
-	Dip.PrintTowers(); Din.PrintTowers();
+      if(pDin) {
+	assert(!pAti && !pBan && pGlu);
+	cout<<  "\t  p1="<<b1.Momentum()<<" \t "<<b1.Momentum().Abs2();
+	cout<<"\n\t  p2="<<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2();
+	cout<<"\n\t  p3="<<a1.Momentum()<<" \t "<<a1.Momentum().Abs2();
+	cout<<"\n\t sum="<<b1.Momentum()+pGlu->Momentum()+a1.Momentum();
+	cout<<"\n\t       ";
+	for(char i=0; i<4; ++i) cout<<b1.Momentum()[i]/pl[i]<<" \t ";
+	cout<<endl<<"\t       ";
+	for(char i=0; i<4; ++i) cout<<pGlu->Momentum()[i]/pl[i]<<" \t ";
+	cout<<endl<<"\t       ";
+	for(char i=0; i<4; ++i) cout<<a1.Momentum()[i]/pl[i]<<" \t ";
+	cout<<endl;
+	const Dipole& Din=*pDin;
+	cout<<"Recoil is "<<recoil
+	    <<"; and, is order given as olddip newdip? "<<below<<endl;
+	if(below) {
+	  cout<<Dip<<endl<<Din<<endl;
+	  Dip.PrintTowers(); Din.PrintTowers();
+	} else {
+	  cout<<Din<<endl<<Dip<<endl;
+	  Din.PrintTowers(); Dip.PrintTowers();
+	}
       } else {
-	cout<<Din<<endl<<Dip<<endl;
-	Din.PrintTowers(); Dip.PrintTowers();
+	assert(pAti && pBan && pGlu);
+	cout<<"Is top(0) or bottom(1) split? "<<below<<endl;
+	if(below) {
+	  cout<<  "\t  p1="<<b1.Momentum()<<" \t "<<b1.Momentum().Abs2();
+	  cout<<"\n\t  p2="<<pAti->Momentum()<<" \t "<<pAti->Momentum().Abs2();
+	  cout<<"\n\t  p3="<<pBan->Momentum()<<" \t "<<pBan->Momentum().Abs2();
+	  cout<<"\n\t  pa="<<a1.Momentum()<<" \t "<<a1.Momentum().Abs2();
+	  cout<<"\n\t  pg="<<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2();
+	  cout<<"\n\t sum="<<b1.Momentum()+pAti->Momentum()+pBan->Momentum();
+	  cout<<"\n\t       ";
+	  for(char i=0; i<4; ++i) cout<<b1.Momentum()[i]/pl[i]<<" \t ";
+	  cout<<endl<<"\t       ";
+	  for(char i=0; i<4; ++i) cout<<pAti->Momentum()[i]/pl[i]<<" \t ";
+	  cout<<endl<<"\t       ";
+	  for(char i=0; i<4; ++i) cout<<pBan->Momentum()[i]/pl[i]<<" \t ";
+	} else {
+	  cout<<  "\t  p1="<<pAti->Momentum()<<" \t "<<pAti->Momentum().Abs2();
+	  cout<<"\n\t  p2="<<pBan->Momentum()<<" \t "<<pBan->Momentum().Abs2();
+	  cout<<"\n\t  p3="<<a1.Momentum()<<" \t "<<a1.Momentum().Abs2();
+	  cout<<"\n\t  pb="<<b1.Momentum()<<" \t "<<b1.Momentum().Abs2();
+	  cout<<"\n\t  pg="<<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2();
+	  cout<<"\n\t sum="<<a1.Momentum()+pAti->Momentum()+pBan->Momentum();
+	  cout<<"\n\t       ";
+	  for(char i=0; i<4; ++i) cout<<pAti->Momentum()[i]/pl[i]<<" \t ";
+	  cout<<endl<<"\t       ";
+	  for(char i=0; i<4; ++i) cout<<pBan->Momentum()[i]/pl[i]<<" \t ";
+	  cout<<endl<<"\t       ";
+	  for(char i=0; i<4; ++i) cout<<a1.Momentum()[i]/pl[i]<<" \t ";
+	}
+	cout<<endl;
+	cout<<"Recoil is "<<recoil<<endl;
+	cout<<Dip<<endl;
+	Dip.PrintTowers();
       }
-      H.ShowSudakov(); H.ShowRecoilStrategy();
+
+      H.ShowSudakov(); H.ShowRecoil();
 
     }
 
-    delete pDin;
-    delete pGlu;
+    if(pDin) { delete pDin; if(pGlu) delete pGlu;}
+    else { if(pBan) delete pBan; if(pAti) delete pAti;}
 
     TEMP::CPTEST=false;
   }
@@ -321,10 +377,19 @@ int main() {
   Dipole_Handler::ShowCalcBox();
   cout<<"Number of Dipole_Handler's = "<<Dipole_Handler::InStore<<endl;
   cout<<"=============================================================="<<endl;
+  cout<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
+  cout<<endl; cin>>enter; cout<<endl;
+  cout<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
 
   {
     unsigned total=4000000; //total=0;
     unsigned count=0;
+    unsigned gluons=0;
+    unsigned quarks=0, cd=0, cu=0, cs=0, cc=0, cb=0;
 
     for(unsigned i=1; i<=total; ++i) {
 
@@ -334,17 +399,20 @@ int main() {
 
       Vec4D pl(45.0, 20.0,-5.0, 40.0);
       Vec4D pr(45.0,-20.0, 5.0,-40.0);
-      Dipole::Branch     b1(info.quark.u,pl);
-      //Dipole::Glubranch  b1(pl);
-      Dipole::Antibranch a1(info.antiquark.u,pr);
-      //Dipole::Glubranch  a1(pr);
+      //Dipole::Branch     b1(info.quark.u,pl);
+      Dipole::Glubranch  b1(pl);
+      //Dipole::Antibranch a1(info.antiq.u,pr);
+      Dipole::Glubranch  a1(pr);
 
       Dipole* pDin=NULL;
-      Dipole::Glubranch* pGlu=NULL;
+      Dipole::Branch*     pBan=NULL;
+      Dipole::Antibranch* pAti=NULL;
+      Dipole::Glubranch*  pGlu=NULL;
 
       {
 
-	bool dummy;
+	bool below;
+	Trio recoil;
 	Dipole Dip(b1,a1);
 	Dipole_Handler H(Dip);
 
@@ -352,36 +420,89 @@ int main() {
 	cout<<Dip<<endl;
 #endif
 
-	if( H.InduceGluonEmission() && H.FinishGluonEmission() );
+	if( H.InduceDipoleRadiation() && H.FinishDipoleRadiation() );
 	else {
 	  ++count;
-	  if(control) cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<endl;
+	  H.DecoupleNew(pDin,pGlu,pAti,pBan,below,recoil);
+	  assert(pBan==NULL); assert(pAti==NULL); assert(pGlu==NULL);
+	  if(control) {//||1
+	    cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<"\t\t";
+	    cout<<pGlu; cout<<",";
+	    cout<<pBan; cout<<",";
+	    cout<<pAti; cout<<endl;
+	  }
 	  continue;
 	}
+	H.DecoupleNew(pDin,pGlu,pAti,pBan,below,recoil);
+	kf::code kfc;
+	if(pDin) {
+	  assert(!pAti && !pBan && pGlu);
+	  kfc=kf::gluon;
+	} else {
+	  assert(pAti && pBan && pGlu);
+	  kfc=pBan->Flav().Kfcode();
+	  assert(pAti->Flav().Kfcode()==kfc);
+	}
+	switch(kfc) {
+	case kf::gluon: ++gluons; break;
+	case kf::d    : ++cd; break;
+	case kf::u    : ++cu; break;
+	case kf::s    : ++cs; break;
+	case kf::c    : ++cc; break;
+	case kf::b    : ++cb; break;
+	default       : assert(0);
+	}
 
-	if(control) cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<endl;
-
-	H.DecoupleNewDipole(pDin,dummy); assert(pDin);
-	H.DecoupleGlubranch(pGlu); assert(pGlu);
+	if(control) {//||1
+	  cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<"\t\t";
+	  if(pGlu) cout<<pGlu->Flav(); else cout<<pGlu; cout<<",";
+	  if(pBan) cout<<pBan->Flav(); else cout<<pBan; cout<<",";
+	  if(pAti) cout<<pAti->Flav(); else cout<<pAti; cout<<"\t\t";
+	  cout<<Flavour(kfc)<<","<<below<<","<<recoil<<endl;
+	}
 
 #ifdef EMISSIONTEST_OUTPUT
-	const Dipole& Din=*pDin;
-	if(Dip.IsType()==Dipole::qg) cout<<Dip<<endl<<Din<<endl;
-	else cout<<Din<<endl<<Dip<<endl;
+	if(pDin) {
+	  const Dipole& Din=*pDin;
+	  if(Dip.IsType()==Dipole::qg) cout<<Dip<<endl<<Din<<endl;
+	  else cout<<Din<<endl<<Dip<<endl;
+	}
 #endif
 
       }
 
-      delete pDin;
-      delete pGlu;
+      if(pDin) { delete pDin; if(pGlu) delete pGlu;}
+      else { if(pBan) delete pBan; if(pAti) delete pAti;}
 
     }
 
-    cout<<endl<<"Total number of failures="<<count;
+    quarks=cd+cu+cs+cc+cb;
+
+    cout<<endl;
+    cout<<"Total number of   gluons="<<gluons;
+    cout<<"   ("<<1.0*gluons/total<<")."<<endl;
+    cout<<"Total number of   quarks="<<quarks;
+    cout<<"   ("<<1.0*quarks/total<<")."<<endl;
+    cout<<"                       d="<<cd;
+    cout<<"   ("<<1.0*cd/total<<")."<<endl;
+    cout<<"                       u="<<cu;
+    cout<<"   ("<<1.0*cu/total<<")."<<endl;
+    cout<<"                       s="<<cs;
+    cout<<"   ("<<1.0*cs/total<<")."<<endl;
+    cout<<"                       c="<<cc;
+    cout<<"   ("<<1.0*cc/total<<")."<<endl;
+    cout<<"                       b="<<cb;
+    cout<<"   ("<<1.0*cb/total<<")."<<endl;
+    cout<<"Total number of failures="<<count;
     cout<<"   ("<<1.0*count/total<<")."<<endl;
+    cout<<"Total number of   events="<<count+quarks+gluons;
+    cout<<"   ("<<1.0*(count+quarks+gluons)/total<<")."<<endl;
+
   }
 
-  cout<<"=============================================================="<<endl;
+  cout<<om::greenbg;
+  cout<<"====================================================================";
+  cout<<om::reset<<endl;
 
   cout<<endl;
 

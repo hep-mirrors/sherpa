@@ -17,7 +17,9 @@ endif
 
 
 lib_LTLIBRARIES = libAdicicHdl.la
-libAdicicHdl_la_SOURCES = Dipole_Handler.C Chain_Handler.C
+libAdicicHdl_la_SOURCES = Dipole_Handler.C \
+                          Chain_Handler.C \
+                          Cascade_Handler.C
 
 
 
@@ -36,12 +38,20 @@ INCLUDES = -I../Tool \
 
 
 
-noinst_HEADERS = Dipole_Handler.H Chain_Handler.H
+noinst_HEADERS = Dipole_Handler.H \
+                 Chain_Handler.H \
+                 Cascade_Handler.H
 
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
-             Dipole_Handler.inl.hh Chain_Handler.inl.hh
+             Dipole_Handler.inl.hh \
+             Chain_Handler.inl.hh \
+             Cascade_Handler.inl.hh
+
+
+
+
 
 
 

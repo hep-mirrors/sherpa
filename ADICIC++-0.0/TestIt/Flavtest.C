@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12
+//Version: 2 ADICIC++-0.0/2004/09/01
 
 //Flavtest.C - testing the dipole-flavour structure.
 
@@ -147,9 +147,9 @@ int main() {
     cout<<"============================================================"<<endl;
 
     Flavour x=Flavour(kf::b).Bar(); cout<<x<<endl;
-    cout<<"More testing: "<<info.quark.d()<<" "<<info.antiquark.b()<<endl;
-    cout<<"More testing: "<<info.gluon.g()<<" "<<info.antiquark.d()<<endl;
-    cout<<"More testing: "<<info.antiquark.s()<<" "<<info.quark.t()<<endl;
+    cout<<"More testing: "<<info.quark.d()<<" "<<info.antiq.b()<<endl;
+    cout<<"More testing: "<<info.gluon.g()<<" "<<info.antiq.d()<<endl;
+    cout<<"More testing: "<<info.antiq.s()<<" "<<info.quark.t()<<endl;
 
     cout<<"============================================================"<<endl;
 
@@ -259,11 +259,11 @@ int main() {
     cout<<(&(*utest))<<endl;
     utest.Quarkize(info.quark.t);
     cout<<(&(*utest))<<endl;
-    utest.Antiquarkize(info.antiquark.u);
+    utest.Antiquarkize(info.antiq.u);
     cout<<(&(*utest))<<endl;
     utest.Gluonize();
     cout<<(&(*utest))<<endl;
-    utest.Antiquarkize(info.antiquark.b);
+    utest.Antiquarkize(info.antiq.b);
     cout<<(&(*utest))<<endl;
 
     cout<<"------------------------------------------------------------"<<endl;
@@ -285,7 +285,7 @@ int main() {
     cout<<"Branch "<<b1.Name<<": Show the particle:";
     b1.ShowParticle();
     b1.ShowDipoles();
-    //b1.Antiquarkize(info.antiquark.u);    //crashes due to d-quark
+    //b1.Antiquarkize(info.antiq.u);    //crashes due to d-quark
     //b1.Quarkize(info.quark.s);
     b1.Gluonize();
     cout<<"Branch "<<b1.Name<<" has type      "<<b1.OrgType()<<endl;
@@ -308,7 +308,7 @@ int main() {
     cout<<(&newpa)<<endl;
     g1.ShowDipoles();
 
-    //Dipole::Branch b7(info.antiquark.b,pr);    //exits as wished
+    //Dipole::Branch b7(info.antiq.b,pr);    //exits as wished
 
     Dipole::Branch b2(info.quark.d,pr);
     cout<<"Branch "<<b2.Name<<" has type      "<<b2.OrgType()<<endl;
@@ -342,7 +342,7 @@ int main() {
     //b1==b2;
     //Dipole::Antibranch a0(info.quark.u,pr);
 
-    Dipole::Antibranch a1(info.antiquark.u,pr);
+    Dipole::Antibranch a1(info.antiq.u,pr);
     cout<<"Antibranch "<<a1.Name<<" has type      "<<a1.OrgType()<<endl;
     cout<<"Antibranch "<<a1.Name<<" has tag       "<<a1.Tag()<<endl;
     cout<<"Antibranch "<<a1.Name<<" has flavour   "<<a1.Flav()<<endl;
@@ -360,7 +360,7 @@ int main() {
     cout<<"Antibranch "<<a2.Name<<" has particle:"<<endl;
     cout<<(&(*a2))<<endl;
     //a2.Quarkize(info.quark.s);
-    //a2.Antiquarkize(info.antiquark.s);
+    //a2.Antiquarkize(info.antiq.s);
     //cout<<"Antibranch "<<a2.Name<<" has type      "<<a2.OrgType()<<endl;
     //cout<<"Antibranch "<<a2.Name<<" has tag       "<<a2.Tag()<<endl;
     //cout<<"Antibranch "<<a2.Name<<" has flavour   "<<a2.Flav()<<endl<<endl;
@@ -489,15 +489,15 @@ int main() {
     Dipole::Glubranch g2(g1);
 
     Dipole::Branch b5(info.quark.s,pr);
-    //Dipole::Branch b6(info.antiquark.d,pl);
+    //Dipole::Branch b6(info.antiq.d,pl);
     //Dipole::Branch b7(info.gluon.g,pr);
 
     //Dipole::Antibranch a4(info.quark.s,pr);
-    Dipole::Antibranch a4(info.antiquark.d,pl);
+    Dipole::Antibranch a4(info.antiq.d,pl);
     //Dipole::Antibranch a6(info.gluon.g,pr);
 
     //Dipole::Glubranch g3(info.quark.s,pr);
-    //Dipole::Glubranch g4(info.antiquark.d,pl);
+    //Dipole::Glubranch g4(info.antiq.d,pl);
     //Dipole::Glubranch g5(info.gluon.g,pr);    //not yet implemented
     Dipole::Glubranch g3(pr);
 
@@ -580,7 +580,7 @@ int main() {
     Dipole D1;
     Dipole D2(D1);
     Dipole::Branch b1(info.quark.u,pl);
-    Dipole::Antibranch a1(info.antiquark.u,pr);
+    Dipole::Antibranch a1(info.antiq.u,pr);
     Dipole D3(b1,a1,77);
     Dipole D4(D3);
     cout<<D1<<endl<<D2<<endl<<D3<<endl<<D4<<endl;
@@ -603,7 +603,7 @@ int main() {
     Vec4D pr(45.0,-20.0, 5.0,-40.0);
     Dipole D1;
     Dipole::Branch b0(info.quark.s,pl);
-    Dipole::Antibranch a0(info.antiquark.t,pl);
+    Dipole::Antibranch a0(info.antiq.t,pl);
     Dipole D2(b0,a0,33);
     cout<<D1<<endl<<D2<<endl;
     D1.PrintTowers(); D2.PrintTowers();
@@ -623,7 +623,7 @@ int main() {
     Dipole D1;
     Dipole D2(D1);
     Dipole::Branch b0(info.quark.u,pl);
-    Dipole::Antibranch a0(info.antiquark.t,pl);
+    Dipole::Antibranch a0(info.antiq.t,pl);
     Dipole D3(b0,a0,33);
 
     Dipole::Particle_Pointer b;
@@ -685,7 +685,7 @@ int main() {
 
     D2.GetTopBranchPointer()->ShowParticle();
     D2.GetBotBranchPointer()->ShowParticle();
-    D2.GetBotBranchPointer()->Antiquarkize(info.antiquark.s);
+    D2.GetBotBranchPointer()->Antiquarkize(info.antiq.s);
     D2.GetTopBranchPointer()->Quarkize(info.quark.s);
     D2.GetTopBranchPointer()->ShowParticle();
     D2.GetBotBranchPointer()->ShowParticle();
@@ -754,7 +754,7 @@ int main() {
     cout<<pB<<endl;    //(*)
     {
       Dipole::Branch b2(info.quark.u,pl);
-      Dipole::Antibranch a2(info.antiquark.t,pl);
+      Dipole::Antibranch a2(info.antiq.t,pl);
       Dipole D3(b2,a2,33);
       D2=D3;
       pC=D2.GetTopBranchPointer().operator->();
@@ -772,7 +772,7 @@ int main() {
       cout<<"Flavour before="<<fla<<endl;
       D1.GetBotBranchPointer()->WhatIsIt();
       const Particle& pa1=
-	D1.GetBotBranchPointer()->Antiquarkize(info.antiquark.u);
+	D1.GetBotBranchPointer()->Antiquarkize(info.antiq.u);
       D1.GetBotBranchPointer()->WhatIsIt();
       const Particle& pa2=
 	D1.GetBotBranchPointer()->Quarkize(info.quark.t);

@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/10    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/09/09    (surely preliminarily)
 
 //Only the Chain_Handler structure can reasonably modify the state of a Chain.
 
@@ -51,7 +51,7 @@ namespace ADICIC {
 
     //enum,class
 
-    typedef const bool (ADICIC::Chain_Handler::*FindDecDip_Func)();
+    typedef const bool (ADICIC::Chain_Handler::*FindDipole_Func)();
 
     //Blocked methods:
     //================
@@ -64,8 +64,9 @@ namespace ADICIC {
     static int s_count;
     static int s_param;
 
-    bool f_below;
-    Chain* p_cix;
+    bool             f_below;
+    ATOOLS::kf::code m_code;
+    Chain*           p_cix;
 
     double m_k2tcomp;
     Chain* p_cha;
@@ -80,7 +81,20 @@ namespace ADICIC {
     std::list<Dipole*>::iterator i_fix;
     std::list<Dipole*>::iterator i_run;
 
-    FindDecDip_Func fp_finddecdip[4];
+    FindDipole_Func fp_finddip[4];
+
+    //========================
+    bool                f_bot;
+    Trio                m_rec;
+    Chain::Type         m_typ;
+    Dipole*             p_dw;
+    Dipole::Glubranch*  p_gw;
+    Dipole::Antibranch* p_aw;
+    Dipole::Branch*     p_bw;
+    Dipole*             p_win;
+    ATOOLS::Vec4D       m_vec;
+    ATOOLS::Vec4D       m_old;
+    //========================
 
     //Private static methods:
     //=======================
@@ -88,13 +102,23 @@ namespace ADICIC {
 
     //Private inline methods:
     //=======================
-    inline void PresetCompScale();
+    inline void       PresetCompScale();
+    inline void       CleanUp();
     inline const bool FindDipole();
 
     //Private methods:
     //================
-    template<class _Strategy> const bool FindDecDipole();
-    const bool SplitDipole();
+    void FreeChain();    //Needed since here we may have handlers acting.
+
+    template<class _Strategy> const bool FindTheDipole();
+
+    const bool ModifyChain();
+
+    void EmitGluon();
+    void TopSplitLine();
+    void BotSplitLine();
+    void TopSplitRing();
+    void BotSplitRing();
 
   public:
 
@@ -110,12 +134,12 @@ namespace ADICIC {
     //======================
     static inline const int ChainEvolutionStrategy();
 
-    static       void ShowParameters();
-    static const int  AdjustParameters();
+    static void      ShowParameters();
+    static const int AdjustParameters();
 
     //Public inline methods:
     //======================
-    inline const bool   IsNewChain() const;
+    inline const bool   HasNewChain() const;
     inline const bool   IsDocked() const;
     inline const bool   IsDockedAt(const Chain&) const;
     inline const double CompScale() const;
@@ -124,13 +148,13 @@ namespace ADICIC {
     inline const bool AttachChain(Chain*);
     inline const bool DetachChain(const Chain*);
 
-    inline void DecoupleNewChain(Chain*&, bool&);
+    inline void DecoupleNew(Chain*&, ATOOLS::kf::code&, bool&);
+    inline void RemoveNewProducts();
 
     //Public methods:
     //===============
-    void Reset();
     const bool EvolveChainByOneStep();
-    const bool EvolveChain();
+    const bool EvolveChain();//////////////////////////////////////////////////
 
   };
 

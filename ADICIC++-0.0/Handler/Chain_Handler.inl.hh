@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/10
+//Version: 2 ADICIC++-0.0/2004/09/09
 
 //Inline methods of Chain_Handler.H.
 
@@ -34,7 +34,7 @@ namespace ADICIC {
 
 
 
-  inline const bool Chain_Handler::IsNewChain() const {
+  inline const bool Chain_Handler::HasNewChain() const {
     return bool(p_cix);
   }
 
@@ -45,7 +45,7 @@ namespace ADICIC {
 
 
   inline const bool Chain_Handler::IsDockedAt(const Chain& cha) const {
-    if(p_cha==&cha) return true; return false;
+    return (p_cha==&cha);
   }
 
 
@@ -60,8 +60,13 @@ namespace ADICIC {
 
 
   inline const bool Chain_Handler::AttachChain(Chain* pC) {
-    if( p_cha==NULL && pC->IsHandledBy(*this) ) {
+    if(p_cix) return false;
+    if(p_cha==NULL && pC->IsHandledBy(*this)) {
       p_cha=pC;
+      m_code=ATOOLS::kf::none;
+      f_below=false;
+      this->PresetCompScale();
+      this->CleanUp();
       return true;
     }
     return false;
@@ -70,7 +75,7 @@ namespace ADICIC {
 
   inline const bool Chain_Handler::DetachChain(const Chain* pC) {
     if(p_cha==pC && pC->IsHandled()==false) {
-      this->Reset();
+      this->FreeChain();
       p_cha=NULL;
       return true;
     }
@@ -83,10 +88,20 @@ namespace ADICIC {
 
 
 
-  inline void Chain_Handler::DecoupleNewChain(Chain*& pC, bool& below) {
-    if(pC || !p_cix) return;
+  inline void Chain_Handler::DecoupleNew(Chain*& pC, ATOOLS::kf::code& code,
+					 bool& below) {
+    if(pC) return;
     pC=p_cix; p_cix=NULL;
-    below=f_below;
+    code=m_code; m_code=ATOOLS::kf::none;
+    below=f_below; f_below=false;
+  }
+
+
+  inline void Chain_Handler::RemoveNewProducts() {
+    //Resets the news.
+    f_below=false;
+    m_code=ATOOLS::kf::none;
+    if(p_cix) { delete p_cix; p_cix=NULL;}
   }
 
 
@@ -113,19 +128,33 @@ namespace ADICIC {
   }
 
 
+  inline void Chain_Handler::CleanUp() {
+    assert(!m_dh1.IsDocked() && !m_dh2.IsDocked());
+    m_dh1.RemoveNewProducts();
+    m_dh2.RemoveNewProducts();
+    p_dhwait=&m_dh1;
+    p_dhaciv=&m_dh2;
+    p_dhtemp=NULL;
+    i_fix=NULL;
+    i_run=NULL;
+  }
+
+
+
+
 
   template<> const bool
-  Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Production>();
+  Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Production>();
   //template<> const bool
-  //Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Emission>();
+  //Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Emission>();
   //template<> const bool
-  //Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Mass>();
+  //Chain_Handler::FindTheDipole<Chain_Evolution_Strategy::Mass>();
 
 
 
   inline const bool Chain_Handler::FindDipole() {
     //return FindDecDipole<Chain_Evolution_Strategy::Ret>();
-    return (this->*fp_finddecdip[s_param])();
+    return (this->*fp_finddip[s_param])();
   }
 
 

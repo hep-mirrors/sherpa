@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/09    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/09/03    (surely preliminarily)
 
 //The Dipole_Handler structure has the task of a Dipole modifier.
 
@@ -13,6 +13,9 @@
 
 
 #include <map>
+#include <utility>
+#include "Sudakov_Strategy.hpp"
+#include "Sudakov_Result.hpp"
 
 
 #define DIPOLE_HANDLER_OUTPUT DIPOLE_HANDLER_OUTPUT
@@ -43,23 +46,22 @@ namespace ADICIC {
 
   public:
 
-    //typedef,enum,class
+    typedef Dipole::Type         Dkey;
+    typedef Radiation::Group     Rkey;
+    typedef std::pair<Dkey,Rkey> Key;
 
   private:
 
-    //friend std::ostream& operator<<(std::ostream&, const ...&);
+    typedef std::map<Dkey,Sudakov_Calculator*> Sudakovbox;
+    typedef std::map<Key,Recoil_Calculator*>   Recoilbox;
 
-    //enum
-
-    class Calcpair {
+    class Calcbox {
       friend class Dipole_Handler;
-      Sudakov_Calculator* p_sud;
-      Recoil_Calculator*  p_rec;
-      Calcpair() : p_sud(NULL), p_rec(NULL) {}
-      ~Calcpair();
+      Sudakov_Calculator* p_sud[4];
+      Recoil_Calculator*  p_rec[8];
+      Calcbox();
+      ~Calcbox();
     };
-
-    typedef std::map<Dipole::Type,Calcpair*> Calcbox;
 
     //Blocked methods:
     //================
@@ -71,10 +73,12 @@ namespace ADICIC {
 
     static const bool sf_init;
 
-    static int     s_count;
-    static Calcbox s_map;
+    static int s_count;
 
-    Calcpair* p_tempa;
+    static Sudakovbox s_sumap;
+    static Recoilbox  s_remap;
+
+    Key m_key;
 
     Sudakov_Calculator* p_sudakov;
     Recoil_Calculator*  p_recoil;
@@ -86,13 +90,11 @@ namespace ADICIC {
     Dipole::Antibranch* p_ati;
     Dipole::Glubranch*  p_glu;
 
-    bool f_below;
+    bool f_below;    //g emit: new dip's place, g split: place of splitting
     Trio f_recoil;    //Positive = top branch, Negative = bottom branch, Nil
     int  f_gate;
 
-    double m_p2t;
-    double m_x1;
-    double m_x3;
+    Sudakov_Result m_sur;
 
     ATOOLS::Vec4D m_p1;
     ATOOLS::Vec4D m_p2;
@@ -137,17 +139,18 @@ namespace ADICIC {
     inline const bool AttachDipole(Dipole*);
     inline const bool DetachDipole(const Dipole*);
 
-    inline void ResetStatus();
-    inline void DecoupleNewDipole(Dipole*&, bool&);
-    inline void DecoupleGlubranch(Dipole::Glubranch*&);
+    inline void DecoupleNew(Dipole*&, Dipole::Glubranch*&,
+			    Dipole::Antibranch*&, Dipole::Branch*&,
+			    bool&, Trio&);
 
     //Public methods:
     //===============
+    void RemoveNewProducts();
     void ShowSudakov() const;
-    void ShowRecoilStrategy() const;
-    const bool InduceGluonEmission();
-    const bool FinishGluonEmission();
-    const bool ManageGluonEmission();
+    void ShowRecoil() const;
+    const bool InduceDipoleRadiation();
+    const bool FinishDipoleRadiation();
+    const bool ManageDipoleRadiation();
 
   };
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/10
+//Version: 2 ADICIC++-0.0/2004/09/10
 
 //The main Adicic object.
 
@@ -12,7 +12,7 @@
 #include "Blob_List.H"
 #include "Particle_List.H"
 #include "Model_Base.H"    //Will give running alpha_S etc.
-#include "Chain.H"
+#include "Cascade_Handler.H"
 
 
 #define ADICIC_OUTPUT ADICIC_OUTPUT
@@ -28,23 +28,26 @@ namespace ADICIC {
 
   class Adicic {
   private:
-    Chain* p_chain;
+    std::size_t      m_total;
+    std::size_t      m_fail;
+    Cascade_Handler* p_handler;
+    Cascade          m_cascade;
   public:
     Adicic();
     Adicic(MODEL::Model_Base*);
     ~Adicic();
 
-    void   PrepareChain();
-    Chain* GetChain();
+    void     PrepareCascade();
+    Cascade& GetCascade();
 
-    int    PerformShowers();
-    bool   ExtractPartons(ATOOLS::Blob_List*, ATOOLS::Particle_List* =NULL);
+    int  PerformShowers();
+    bool ExtractPartons(ATOOLS::Blob_List*, ATOOLS::Particle_List* =NULL);
   };
 
 
 
-  inline void Adicic::PrepareChain() { p_chain->Clear();}
-  inline Chain* Adicic::GetChain() { return p_chain;}
+  inline void     Adicic::PrepareCascade() { assert(m_cascade.Clear());}
+  inline Cascade& Adicic::GetCascade()     { return m_cascade;}
 
 
 

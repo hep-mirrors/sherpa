@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/09
+//Version: 2 ADICIC++-0.0/2004/08/27
 
 //Possibility of having information at compile time.
 //Globally defined parameter sets influencing Dipole_Handler.H.
@@ -22,10 +22,16 @@ namespace ADICIC {
 
 
     //Set the corresponding values:
-    static const int Label_qqbar = 2;
-    static const int Label_qg    = 3;
-    static const int Label_gqbar = 1;
-    static const int Label_gg    = 4;
+
+    static const int Label_qgqbar = 2;
+    static const int Label_qgg    = 3;
+    static const int Label_ggqbar = 1;
+    static const int Label_ggg    = 4;
+
+    static const int Label_qqbarq    = 1;//4;3;
+    static const int Label_qbarqqbar = 3;//4;1;
+    static const int Label_gqbarq    = 1;//1;1;
+    static const int Label_qbarqg    = 3;//3;3;
 
 
 
@@ -67,10 +73,15 @@ namespace ADICIC {
 
 
 
-    typedef Map<Label_qqbar>::Ret Ret_qqbar;
-    typedef Map<Label_qg>::Ret    Ret_qg;
-    typedef Map<Label_gqbar>::Ret Ret_gqbar;
-    typedef Map<Label_gg>::Ret    Ret_gg;
+    typedef Map<Label_qgqbar>::Ret Ret_qgqbar;
+    typedef Map<Label_qgg>::Ret    Ret_qgg;
+    typedef Map<Label_ggqbar>::Ret Ret_ggqbar;
+    typedef Map<Label_ggg>::Ret    Ret_ggg;
+
+    typedef Map<Label_qqbarq>::Ret    Ret_qqbarq;
+    typedef Map<Label_qbarqqbar>::Ret Ret_qbarqqbar;
+    typedef Map<Label_gqbarq>::Ret    Ret_gqbarq;
+    typedef Map<Label_qbarqg>::Ret    Ret_qbarqg;
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/05
+//Version: 2 ADICIC++-0.0/2004/09/01
 
 //The Dipole structure is a carrier of information.
 
@@ -358,7 +358,7 @@ namespace ADICIC {
   public:
 
     Dipole_Antibranch()
-      : Dipole_Particle(info.antiquark.d,ATOOLS::Vec4D()) { ca_info();}
+      : Dipole_Particle(info.antiq.d,ATOOLS::Vec4D()) { ca_info();}
     Dipole_Antibranch(const Dipole_Antibranch& DA)
       : Dipole_Particle(DA) { ca_info();}
 
