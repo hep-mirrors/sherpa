@@ -1,7 +1,6 @@
 !-------------------------------------------------------
 !-- ME generators --------------------------------------
 !-------------------------------------------------------
-!RESULT DIRECTORY     = Results      not working at the moment.
 ME_SIGNAL_GENERATOR   = Amegic      ! Internal or Amegic
 EVENT_GENERATION_MODE = Unweighted
 !
@@ -18,4 +17,5 @@ YUKAWA MASSES FACTOR  = 1.          ! Additional prefactor for yukawas
 SCALE SCHEME          = 0           ! default is 0=shat, 
 KFACTOR SCHEME        = 0           ! 1=as(pt2)/as(ecms)^nstrong,default=1
 SUDAKOV WEIGHT        = 0           ! apply sudakov weight on single events
-SCALE FACTOR          = 1.
+!FIXED SCALE          = 8315.25     ! fixed scale for the processes in GeV^2
+SCALE FACTOR          = 1.          ! factor the scale is multiplied with
