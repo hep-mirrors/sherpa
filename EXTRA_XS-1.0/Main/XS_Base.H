@@ -14,13 +14,14 @@
 
 #include <string>
 
-namespace EXTRAXS { class XS_Base; }
+namespace AMEGIC { class Process_Group; }
 
 namespace EXTRAXS {
+
+  class Single_XS;
+
   class XS_Base {
   protected:
-
-    AMEGIC::Process_Base * broker;
 
     int                    nin, nout;
 
@@ -34,15 +35,16 @@ namespace EXTRAXS {
 
     XS_Base              * selected;
 
+    std::vector<int>    isr_types;
+    std::vector<double> isr_masses;
+    std::vector<double> isr_widths;
+
     void Init(int,int,APHYTOOLS::Flavour * =0);
 
   public:
 
     XS_Base() {};
     virtual ~XS_Base();
-
-    virtual AMEGIC::Process_Base * GetBroker();
-    virtual AMEGIC::Process_Base * CreateBroker() { return broker; }
 
     virtual double operator()(double,double,double);
 
@@ -51,26 +53,37 @@ namespace EXTRAXS {
 
     virtual XS_Base * Selected();
 
-    virtual int Size() { return 0; }
+    virtual int Size() { return 1; }
     virtual XS_Base * operator[](int idx) { return this; }
 
     int                  Nin();
     int                  Nout();
     std::string          Name();
     APHYTOOLS::Flavour * Flavs();
+    void                 SetFlav(int,APHYTOOLS::Flavour);
     int               ** Colours();
     double               Scale();
+    virtual double       KFactor(double _scale) { return 1; }
 
-    virtual double KFactor(double _scale) { return 1; }
+    int  ISRNumber() { return isr_types.size(); }
+    void ISRInfo(int,int &,double &,double &);
+    void SetISRTypes(APHYTOOLS::Flavour *);
+
+    virtual void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Handler *,
+			    APHYTOOLS::Selector_Data *,AMEGIC::Process_Group *) { }
+    virtual void Initialize(ISR::ISR_Handler *, BEAM::Beam_Handler *,
+			    APHYTOOLS::Selector_Data *, AMEGIC::Process_Group *) { }
+
   };
 
-  inline AMEGIC::Process_Base * XS_Base::GetBroker() { return broker; }
-  inline int                    XS_Base::Nin()     { return nin; }
-  inline int                    XS_Base::Nout()    { return nout; }  
-  inline std::string            XS_Base::Name()    { return name; }
-  inline APHYTOOLS::Flavour   * XS_Base::Flavs()   { return fl; }
+  inline int                    XS_Base::Nin()     { return nin;     }
+  inline int                    XS_Base::Nout()    { return nout;    }  
+  inline std::string            XS_Base::Name()    { return name;    }
+  inline APHYTOOLS::Flavour   * XS_Base::Flavs()   { return fl;      }
   inline int                 ** XS_Base::Colours() { return colours; }
-  inline double                 XS_Base::Scale()   { return scale; }
+  inline double                 XS_Base::Scale()   { return scale;   }
+
+  inline void                   XS_Base::SetFlav(int i,APHYTOOLS::Flavour _fl) { fl[i] = _fl; }
 
 }
 

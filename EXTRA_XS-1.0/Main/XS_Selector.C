@@ -61,6 +61,10 @@ Single_XS * XS_Selector::GetXS(int nin,int nout,Flavour * fl)
        ( ((fl[2]==fl[0]) && (fl[3]==fl[1])) ||
 	 ((fl[3]==fl[0]) && (fl[2]==fl[1]))) )   { return new XS_q1q2_q1q2(nin,nout,fl); }
 
+  if (fl[2].IsLepton() && fl[3]==fl[2].Bar() &&
+      fl[0].IsLepton() && fl[1]==fl[0].Bar() && 
+      fl[0] != fl[2] && fl[0] != fl[2].Bar())    { return new XS_ee_ffbar(nin,nout,fl); }
+
 
   //  if (rpa.gen.Error()) {
     cout<<"looking for: ";

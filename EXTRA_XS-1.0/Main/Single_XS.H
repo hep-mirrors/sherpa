@@ -3,31 +3,34 @@
 
 #include "XS_Base.H"
 #include "Standard_Selector.H"
-#include "Single_Broker.H"
 
-namespace PHASIC  { class Single_Broker; }
+namespace AMEGIC { class Single_Process; }
 
 namespace EXTRAXS {
 
   class Single_XS : public XS_Base {
-  protected:
-    
-    PHASIC::Single_Broker * broker;
+  private:
+
+    AMEGIC::Single_Process * broker;
 
     double               thres;
-
     virtual void GenerateName();
 
   public:
 
     Single_XS(int,int,APHYTOOLS::Flavour *);
-    ~Single_XS();
+    ~Single_XS(){};
 
-    AMEGIC::Process_Base * GetBroker()    { return broker; }
-    AMEGIC::Process_Base * CreateBroker() { return broker = new PHASIC::Single_Broker(this); }
+    double            SetThres(double _thres) { return thres = _thres; }
+    double            Thres()                 { return thres;          } 
 
+    virtual double    operator() (AMATOOLS::Vec4D *);
     virtual double    operator() (double,double,double);
+
     virtual XS_Base * Selected() { return this; }
+
+    void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Handler *,
+		    APHYTOOLS::Selector_Data *,AMEGIC::Process_Group *);
 
   };
 }

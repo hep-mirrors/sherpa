@@ -56,5 +56,45 @@ XS_Base * XS_Base::Selected()  {
   msg.Debugging()<<"Error : Virtual method XS_Base::Selected()"<<endl;
 }
 
+void XS_Base::ISRInfo(int i,int & type,double & mass,double & width) 
+{
+  type  = isr_types[i];
+  mass  = isr_masses[i];
+  width = isr_widths[i];
+}
 
-
+void XS_Base::SetISRTypes(APHYTOOLS::Flavour * _beams)
+{
+  if ((_beams[0] == APHYTOOLS::Flavour(APHYTOOLS::kf::e) &&
+      _beams[1] == APHYTOOLS::Flavour(APHYTOOLS::kf::e).Bar())
+      || (_beams[0] == APHYTOOLS::Flavour(APHYTOOLS::kf::e).Bar() &&
+	  _beams[1] == APHYTOOLS::Flavour(APHYTOOLS::kf::e))) {
+    isr_types.push_back(0);
+    isr_masses.push_back(Flavour(APHYTOOLS::kf::photon).Mass());
+    isr_widths.push_back(Flavour(APHYTOOLS::kf::photon).Width());
+    
+    isr_types.push_back(3);
+    isr_masses.push_back(Flavour(APHYTOOLS::kf::photon).Mass());
+    isr_widths.push_back(Flavour(APHYTOOLS::kf::photon).Width());
+    
+    if (Flavour(kf::Z).IsOn()) {
+      isr_types.push_back(1);
+      isr_masses.push_back(Flavour(kf::Z).Mass());
+      isr_widths.push_back(Flavour(kf::Z).Width());
+    }
+  }
+  if ((_beams[0] == Flavour(kf::p_plus) &&
+       _beams[1] == Flavour(kf::p_plus).Bar())
+      ||(_beams[0] == Flavour(kf::p_plus).Bar() &&
+	 _beams[1] == Flavour(kf::p_plus))
+      || ((iabs((_beams[0]).HepEvt())>0 && iabs((_beams[0]).HepEvt())<7) &&
+         (iabs((_beams[0]).HepEvt())>0 && iabs((_beams[0]).HepEvt())<7))) {
+    isr_types.push_back(0);
+    isr_masses.push_back(Flavour(APHYTOOLS::kf::gluon).Mass());
+    isr_widths.push_back(Flavour(APHYTOOLS::kf::gluon).Width());
+    
+    isr_types.push_back(3);
+    isr_masses.push_back(Flavour(APHYTOOLS::kf::gluon).Mass());
+    isr_widths.push_back(Flavour(APHYTOOLS::kf::gluon).Width());
+  }
+}

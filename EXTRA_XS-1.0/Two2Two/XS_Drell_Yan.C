@@ -24,10 +24,12 @@ XS_qqbar_pg::XS_qqbar_pg(int _nin,int _nout,APHYTOOLS::Flavour * _fl)
   colours[0][barred] = colours[2][barred] = 500; 
   colours[1][1-barred] = colours[2][1-barred] = 501;
   name=" q qbar -> g  photon ";
+
+  SetISRTypes(_fl);
 } 
 
 double XS_qqbar_pg::operator()(double s,double t,double u) {  
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   return 8. * (t*t + u*u + 2. * s * ( s + t + u)) / ( 9. * t*u);
 } 
 
@@ -48,10 +50,12 @@ XS_qg_qp::XS_qg_qp (int _nin,int _nout,APHYTOOLS::Flavour * _fl)
   colours[0][barred] = colours[1][1-barred] = 500; 
   colours[1][barred] = colours[2][barred] = 501; 
   name=" q g -> q  photon ";
+
+  SetISRTypes(_fl);
 }
  
 double XS_qg_qp::operator()(double s,double t,double u) { 
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   return (-1.) * (t*t + u*u + 2. * s * ( s + t + u)) / ( 3. * s*u);
 } 
 
@@ -103,10 +107,12 @@ XS_ee_ffbar::XS_ee_ffbar(int _nin,int _nout,APHYTOOLS::Flavour * _fl)
     colfac  = 1./3.;
     kswitch = 1;
   }
+
+  SetISRTypes(_fl);
 }
 
 double XS_ee_ffbar::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   chi1  = kappa * s * (s-MZ2)/(sqr(s-MZ2) + GZ2*MZ2);
   chi2  = sqr(kappa * s)/(sqr(s-MZ2) + GZ2*MZ2);
 

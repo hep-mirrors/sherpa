@@ -86,7 +86,7 @@ bool Hard_Interface::InitColours(Blob * blob) {
   XS_Base * xs; 
   if (!(xsselector->FindInGroup(two2two,xs,2,2,fl))) {
     xs = xsselector->GetXS(2,2,fl);
-    two2two->Add(xs);
+    two2two->Add(xs,false);
   }
   if (!(xs->SetColours(p))) return 0;
   for (int j=0;j<2;j++) {
@@ -99,7 +99,7 @@ bool Hard_Interface::InitColours(Blob * blob) {
 }
 
 bool Hard_Interface::InitialConditions(Blob * blob,XS_Base * xs) {
-  double scale = xs->GetBroker()->Scale();
+  double scale = xs->Scale();
   double th1,th2;
   th1   = tools->ColourAngle(blob->InParton(0),blob);
   th2   = tools->ColourAngle(blob->InParton(1),blob);

@@ -21,11 +21,13 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) :
   colours[0][a] = colours[2][a] = 500;
   colours[1][a] = colours[3][a] = 501;
 
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+
+  SetISRTypes(_fl);
 };
 
 double XS_q1q2_q1q2::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   return sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
 };
 
@@ -49,11 +51,13 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(int _nin,int _nout,
   colours[0][a] = colours[1][p] = 500;
   colours[2][0] = colours[3][1] = 501;
 
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+
+  SetISRTypes(_fl);
 };
 
 double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   return sqr(4.*M_PI*aS)* 4. * (t*t + u*u) / ( 9. * s*s); 
 };
 
@@ -72,11 +76,13 @@ XS_q1q1_q1q1::XS_q1q1_q1q1(int _nin,int _nout, Flavour * _fl) :
 
   a  = _fl[0].IsAnti();
 
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+
+  SetISRTypes(_fl);
 };
 
 double XS_q1q1_q1q1::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   Mt    = (s*s + u*u) / (t*t);
   Mu    = (s*s + t*t) / (u*u);
   return sqr(4.*M_PI*aS) * 4./9.*(Mt + Mu - 2./3. * (s*s) / (u*t));
@@ -114,11 +120,13 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(int _nin,int _nout,
   a  = _fl[0].IsAnti();
   p  = 1-a;
 
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+
+  SetISRTypes(_fl);
 };
 
 double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   Mt = (s*s + u*u) / (t*t);
   Ms = (t*t + u*u) / (s*s);
   return sqr(4.*M_PI*aS)*4./9.*(Mt + Ms - 2./3. * (u*u) / (s*t));
@@ -158,11 +166,13 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(int _nin,int _nout,
   colours[0][a] = 500;
   colours[1][p] = 501;
 
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+
+  SetISRTypes(_fl);
 };
 
 double XS_q1qbar1_gg::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   Mt = u/t;
   Mu = t/u;
   return sqr(4.*M_PI*aS)* (32./27.* ( Mt + Mu )   - 8./3. *(t*t +u*u)/ (s*s));
@@ -200,11 +210,13 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(int _nin,int _nout, Flavour * _fl) :
   colours[0][0] = 500;
   colours[0][1] = 501;
 
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+
+  SetISRTypes(_fl);
 };
 
 double XS_gg_q1qbar1::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   Mt = u/t;
   Mu = t/u;
   return sqr(4.*M_PI*aS)*(1./6.* ( Mt + Mu )   - 3./8. *(t*t +u*u)/ (s*s)); 
@@ -243,11 +255,13 @@ XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) :
   colours[0][a] = 500;
   colours[2][a] = 501;
 
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+
+  SetISRTypes(_fl);
 };
 
 double XS_q1g_q1g::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   Ms = u/s;
   Mu = s/u;
   return  sqr(4.*M_PI*aS)*(-4./9. * (Ms + Mu) +  (s*s + u*u)/(t*t));
@@ -283,11 +297,13 @@ XS_gg_gg::XS_gg_gg(int _nin,int _nout, Flavour * _fl) :
   colours[0][0] = 500;
   colours[1][1] = 501;
 
-  aS = (*as)(sqr(rpa.gen.Ecms()));
+  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+
+  SetISRTypes(_fl);
 };
 
 double XS_gg_gg::operator()(double s,double t,double u) {
-  if (s<thres) return 0.;
+  if (s<Thres()) return 0.;
   Ms = 1 - t*u/(s*s);
   Mt = 1 - s*u/(t*t);
   Mu = 1 - s*t/(u*u);

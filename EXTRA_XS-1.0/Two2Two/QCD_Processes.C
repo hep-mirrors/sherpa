@@ -1,6 +1,7 @@
 #include "QCD_Processes.H"
 #include "Single_XS.H"
 #include "XS_Selector.H"
+#include "Process_Group.H"
 
 #include "Running_AlphaS.H"
 #include "Jet_Finder.H"
@@ -10,6 +11,7 @@
 #include "MathTools.H"
 
 using namespace EXTRAXS;
+using namespace AMEGIC;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
@@ -17,139 +19,174 @@ using namespace AORGTOOLS;
 QCD_Processes::QCD_Processes() 
   : XS_Group(2,2,std::string(" parton parton -> parton parton"))  
 {
-  xsselector = new XS_Selector();
-
   Init(2,2,0);
   fl[0] = fl[1] = fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   aS = (*as)(sqr(rpa.gen.Ecms()));
+  CreateSelector();
+}
+
+void QCD_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
+			       APHYTOOLS::Selector_Data * _seldata, AMEGIC::Process_Group * _broker)
+{
+  xsselector = new XS_Selector();
+  MakeBroker(isr, beam, _seldata, _broker);
 
   Fill4qmodes();
   Fill2q2gmodes();
   Fill4gmodes();
 
-  CreateSelector();
+  SetISRTypes(fl);
+
+  delete xsselector;
 }
 
-void QCD_Processes::Fill4gmodes() {
+void QCD_Processes::Fill4gmodes() 
+{
   XS_Group * gggg;
   gggg = new XS_Group(2,2,std::string("gg -> gg"));
+  gggg->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   fl[0] = fl[1] = fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
-  gggg->Add(xsselector->GetXS(2,2,fl));
-  Add(gggg);
+  gggg->Add(xsselector->GetXS(2,2,fl),true);
+  gggg->SetISRTypes(fl);
+  Add(gggg,false);
 }
 
-void QCD_Processes::Fill2q2gmodes() {
+void QCD_Processes::Fill2q2gmodes() 
+{
   XS_Group * qqbgg;
   qqbgg = new XS_Group(2,2,std::string("qqb -> gg"));
+  qqbgg->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   for (int i=1;i<6;i++) {
     fl[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
     fl[1] = fl[0].Bar();
-    qqbgg->Add(xsselector->GetXS(2,2,fl));
+    qqbgg->Add(xsselector->GetXS(2,2,fl),true);
   }
-  Add(qqbgg);
+  qqbgg->SetISRTypes(fl);
+  Add(qqbgg,false);
 
   XS_Group * ggqqb;
   ggqqb = new XS_Group(2,2,std::string("gg -> qqb"));
+  ggqqb->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   fl[0] = fl[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   for (int i=1;i<6;i++) {
     fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
     fl[3] = fl[2].Bar();
-    ggqqb->Add(xsselector->GetXS(2,2,fl));
+    ggqqb->Add(xsselector->GetXS(2,2,fl),true);
   }
-  Add(ggqqb);
+  ggqqb->SetISRTypes(fl);
+  Add(ggqqb,false);
 
   XS_Group * gqgq;
   gqgq = new XS_Group(2,2,std::string("gq -> gq"));
+  gqgq->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   for (int i=1;i<6;i++) {
     fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
-    gqgq->Add(xsselector->GetXS(2,2,fl));
+    gqgq->Add(xsselector->GetXS(2,2,fl),true);
   }
-  Add(gqgq);
+  gqgq->SetISRTypes(fl);
+  Add(gqgq,false);
 
   XS_Group * gqbgqb;
   gqbgqb = new XS_Group(2,2,std::string("gqb -> gqb"));
+  gqbgqb->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
   for (int i=1;i<6;i++) {
     fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).Bar();
-    gqbgqb->Add(xsselector->GetXS(2,2,fl));
+    gqbgqb->Add(xsselector->GetXS(2,2,fl),true);
   }
-  Add(gqbgqb);
+  gqbgqb->SetISRTypes(fl);
+  Add(gqbgqb,false);
 }
 
-void QCD_Processes::Fill4qmodes() {
+void QCD_Processes::Fill4qmodes() 
+{
   XS_Group * qqqq;
   qqqq = new XS_Group(2,2,std::string("qq -> qq"));
+  qqqq->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   for (int i=1;i<6;i++) {
     fl[0] = fl[1] = fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
-    qqqq->Add(xsselector->GetXS(2,2,fl));
+    qqqq->Add(xsselector->GetXS(2,2,fl),true);
   }
-  Add(qqqq);
+  qqqq->SetISRTypes(fl);
+  Add(qqqq,false);
 
   XS_Group * q1q2q1q2;
   q1q2q1q2 = new XS_Group(2,2,std::string("q1q2 -> q1q2"));
+  q1q2q1q2->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   for (int i=1;i<5;i++) {
     fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
     for (int j=i+1;j<6;j++) {
       fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j));
-      q1q2q1q2->Add(xsselector->GetXS(2,2,fl));
+      q1q2q1q2->Add(xsselector->GetXS(2,2,fl),true);
     }
   }
-  Add(q1q2q1q2);
+  q1q2q1q2->SetISRTypes(fl);
+  Add(q1q2q1q2,false);
 
   XS_Group * qqbqqb;
   qqbqqb = new XS_Group(2,2,std::string("qqb -> qqb"));
+  qqbqqb->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   for (int i=1;i<6;i++) {
     fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
     fl[1] = fl[3] = fl[0].Bar();
-    qqbqqb->Add(xsselector->GetXS(2,2,fl));
+    qqbqqb->Add(xsselector->GetXS(2,2,fl),true);
   }
-  Add(qqbqqb);
+  qqbqqb->SetISRTypes(fl);
+  Add(qqbqqb,false);
 
   XS_Group * q1q2bq1q2b;
   q1q2bq1q2b = new XS_Group(2,2,std::string("q1q2b -> q1q2b"));
+  q1q2bq1q2b->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   for (int i=1;i<5;i++) {
     fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
     for (int j=i+1;j<6;j++) {
       fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).Bar();
-      q1q2bq1q2b->Add(xsselector->GetXS(2,2,fl));
+      q1q2bq1q2b->Add(xsselector->GetXS(2,2,fl),true);
     }
   }
-  Add(q1q2bq1q2b);
+  q1q2bq1q2b->SetISRTypes(fl);
+  Add(q1q2bq1q2b,false);
 
   XS_Group * q1q1bq2q2b;
-  q1q2bq1q2b = new XS_Group(2,2,std::string("q1q1b -> q2q2b"));
-  for (int i=1;i<5;i++) {
+  q1q1bq2q2b = new XS_Group(2,2,std::string("q1q1b -> q2q2b"));
+  q1q1bq2q2b->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
+  for (int i=1;i<6;i++) {
     fl[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i));
     fl[1] = fl[0].Bar();
     for (int j=i+1;j<6;j++) {
       fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).Bar();
       fl[3] = fl[2].Bar();
-      q1q2bq1q2b->Add(xsselector->GetXS(2,2,fl));
+      q1q1bq2q2b->Add(xsselector->GetXS(2,2,fl),true);
     }
   }
-  Add(q1q2bq1q2b);
-
+  q1q1bq2q2b->SetISRTypes(fl);
+  Add(q1q1bq2q2b,false);
 
   XS_Group * qbqbqbqb;
   qbqbqbqb = new XS_Group(2,2,std::string("qbqb -> qbqb"));
+  qbqbqbqb->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   for (int i=1;i<6;i++) {
     fl[0] = fl[1] = fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).Bar();
-    qbqbqbqb->Add(xsselector->GetXS(2,2,fl));
+    qbqbqbqb->Add(xsselector->GetXS(2,2,fl),true);
   }
-  Add(qbqbqbqb);
+  qbqbqbqb->SetISRTypes(fl);
+  Add(qbqbqbqb,false);
 
   XS_Group * q1bq2bq1bq2b;
   q1bq2bq1bq2b = new XS_Group(2,2,std::string("q1bq2b -> q1bq2b"));
+  q1bq2bq1bq2b->MakeBroker(broker->ISR(), broker->Beam(), seldata, broker);
   for (int i=1;i<5;i++) {
     fl[0] = fl[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(i)).Bar();
     for (int j=i+1;j<6;j++) {
       fl[1] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::code(j)).Bar();
-      q1bq2bq1bq2b->Add(xsselector->GetXS(2,2,fl));
+      q1bq2bq1bq2b->Add(xsselector->GetXS(2,2,fl),true);
     }
   }
-  Add(q1bq2bq1bq2b);
+  q1bq2bq1bq2b->SetISRTypes(fl);
+  Add(q1bq2bq1bq2b,false);
+
 }
 
 void QCD_Processes::CreateSelector() 

@@ -51,7 +51,7 @@ bool ME_PS_Interface::Treat(Process_Base * proc,Blob * blob,int type)
   xs = 0;
   if (!(xsselector->FindInGroup(two2two,xs,2,2,fl))) {
     xs = xsselector->GetXS(2,2,fl);
-    if (xs) two2two->Add(xs);
+    if (xs) two2two->Add(xs,false);
   }
 
   if (!xs) {

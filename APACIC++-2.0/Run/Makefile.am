@@ -29,9 +29,10 @@ Apacic_LDADD =  \
 	 @libdir@/libToolsPhys.la \
 	 @libdir@/libToolsMath.la \
 	 @libdir@/libToolsOrg.la \
-	 -lg2c -lm \
-	 -L$(rootlibdir) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
+	 -lg2c -lm 
+#	 -L$(rootlibdir) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
 Apacic_LDFLAGS =  -rdynamic
+
 INCLUDES = -I../Main \
 	   -I../Hard_Processes \
 	   -I../Hard_Processes/Process_Library \

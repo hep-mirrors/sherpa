@@ -24,6 +24,7 @@ using namespace BEAM;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
+using namespace std;
 
 
 Apacic::Apacic(bool _t) : test(_t) { isr = 0; beam = 0; };
@@ -34,6 +35,8 @@ void Apacic::Init() {
 
   if (!as)   as     = new Running_AlphaS();
   if (!aqed) aqed   = new Running_AlphaQED();
+
+  seldata = new Selector_Data(rpa.GetPath());
 
   Data_Read dr(rpa.GetPath()+string("/ISR.dat"));
 
@@ -63,6 +66,11 @@ void Apacic::Init() {
   if (beams[0]==Flavour(kf::e) || beams[0]==Flavour(kf::e).Bar()) {
     parton[0] = beams[0];
     parton[1] = beams[1];
+  }
+  else if (beams[0]==Flavour(kf::p_plus) || beams[0]==Flavour(kf::p_plus).Bar()) {
+    parton[0] = beams[0];
+    parton[1] = beams[1];
+    cout<<" This is just a Testrun ! "<<endl; 
   }
   else {
     cout<<" partons have to be set in Apacic.C "<<endl;
@@ -170,7 +178,7 @@ void Apacic::TestShower()
 
 void Apacic::CrossSections() {
   bool success;
-  AP_proc = new Hard_Processes(isr,beam,success);  
+  AP_proc = new Hard_Processes(seldata,isr,beam,success);  
   if (success) {
     if (AP_proc->PrepareCalculation()) {
       AP_proc->CalculateCrossSections();

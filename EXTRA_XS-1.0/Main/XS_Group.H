@@ -3,7 +3,7 @@
 
 #include "XS_Selector.H"
 #include "XS_Base.H"
-#include "Broker_Group.H"
+#include "Selector.H"
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -12,17 +12,22 @@
 #include <string>
 #include <vector>
 
-namespace EXTRAXS { class XS_Selector;  }
-namespace PHASIC  { class Broker_Group; }
+namespace EXTRAXS   { class XS_Selector;   }
+namespace AMEGIC    { class Process_Group; }
+namespace ISR       { class ISR_Handler;   }
+namespace BEAM      { class Beam_Handler;  }
+
+using namespace APHYTOOLS;
 
 namespace EXTRAXS {
   class XS_Group : public XS_Base {
   protected:
 
+    AMEGIC::Process_Group * broker;
+    APHYTOOLS::Selector_Data * seldata;
+
     std::vector<XS_Base *> xsecs;
     XS_Selector * xsselector;
-
-    PHASIC::Broker_Group * broker;
 
   public :
 
@@ -30,15 +35,17 @@ namespace EXTRAXS {
     XS_Group() {};
     ~XS_Group();
 
-    AMEGIC::Process_Base * GetBroker() { return broker; }
-    AMEGIC::Process_Base * CreateBroker();
-
-    virtual void       Add(XS_Base *);
+    virtual void       Add(XS_Base *,bool);
     virtual int        Size() { return xsecs.size(); }
     virtual XS_Base *  operator[] (int idx) { 
       if ((idx<xsecs.size()) && (idx>=0)) return xsecs[idx];
       return 0;
     } 
+    
+    void MakeBroker(ISR::ISR_Handler *, BEAM::Beam_Handler *,
+		    APHYTOOLS::Selector_Data *,AMEGIC::Process_Group *);
+    AMEGIC::Process_Group * Broker() { return broker; }
+
   };
 }
 

@@ -4,20 +4,20 @@
 #include "MathTools.H"
 #include "Single_XS.H"
 #include "XS_Selector.H"
+#include "Process_Group.H"
 
 #include "Run_Parameter.H"
 
+using namespace AMEGIC;
 using namespace EXTRAXS;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
-QED_Processes::QED_Processes() : 
+QED_Processes::QED_Processes(int initflag) : 
   XS_Group(2,2,std::string(" e+ + e- -> q + qbar "))  
 {
   xsselector = new XS_Selector();
-
-  Init(2,2,0);
 
   if ((rpa.gen.Beam1() == Flavour(kf::e)) &&
       (rpa.gen.Beam2() == Flavour(kf::e).Bar()) ) {
@@ -34,45 +34,44 @@ QED_Processes::QED_Processes() :
 	       <<"   Mismatch of flavours : "
 	       <<rpa.gen.Beam1()<<" and  "<<rpa.gen.Beam2()<<std::endl;
   }
+  if (initflag) Initialize(fl);
+}
+
+QED_Processes::QED_Processes(APHYTOOLS::Flavour * _fl) : 
+  XS_Group(2,2,std::string(" e+ + e- -> q + qbar "))  
+{
+  Initialize(_fl);
+}
+
+void QED_Processes::Initialize(APHYTOOLS::Flavour * _fl)
+{
+  fl[0] = APHYTOOLS::Flavour(_fl[0]);
+  fl[1] = APHYTOOLS::Flavour(_fl[1]);
 
   for (int ifl=1;ifl<6;++ifl) {
     fl[nin+0] = APHYTOOLS::Flavour(ifl);
     fl[nin+1] = APHYTOOLS::Flavour(ifl).Bar();
-    Add(xsselector->GetXS(nin,nout,fl) );
+    Add(xsselector->GetXS(nin,nout,fl),false);
   }
 
-  fl[0]  = Flavour(kf::e);
-  fl[1]  = Flavour(kf::e).Bar();
-  fl[2]  = Flavour(kf::u);
-  fl[3]  = Flavour(kf::u).Bar();
-
-//   isr_types.push_back(0);
-//   isr_masses.push_back(0.);
-//   isr_widths.push_back(0.);
-
-//   isr_types.push_back(3);
-//   isr_masses.push_back(0.);
-//   isr_widths.push_back(0.);
-
-  if (APHYTOOLS::Flavour(APHYTOOLS::kf::Z).IsOn()) {
-//     isr_types.push_back(1);
-//     isr_masses.push_back(Flavour(APHYTOOLS::kf::Z).Mass());
-//     isr_widths.push_back(Flavour(APHYTOOLS::kf::Z).Width());
-  }
-
-  CreateSelector();
+  SetISRTypes(_fl);
 }
 
-void QED_Processes::CreateSelector() 
+void QED_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
+			       APHYTOOLS::Selector_Data * _seldata, AMEGIC::Process_Group * _broker)
 {
-  msg.Tracking()<<"In QED_Processes::CreateSelector() :"<<std::endl;
-  Data_Read dr(rpa.GetPath()+std::string("/ISR.dat"));
+  fl[nin+0] = APHYTOOLS::Flavour(kf::code(int(94)));
+  fl[nin+1] = APHYTOOLS::Flavour(kf::code(int(94)));
 
-//   taumin = dr.GetValue<double>("SMIN");
-//   taumax = dr.GetValue<double>("SMAX");
+  MakeBroker(isr, beam, _seldata, _broker);
 
-//   sel = new No_Selector();
-//   msg.Tracking()<<" s-range : "<<taumin<<" ... "<<taumax<<std::endl;
+  for (int ifl=1;ifl<6;++ifl) {
+    fl[nin+0] = APHYTOOLS::Flavour(ifl);
+    fl[nin+1] = APHYTOOLS::Flavour(ifl).Bar();
+    Add(xsselector->GetXS(nin,nout,fl),true);
+  }
+  SetISRTypes(fl);
+  //  broker->Initialize(seldata);
 }
 
 
