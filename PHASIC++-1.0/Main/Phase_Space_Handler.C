@@ -281,8 +281,9 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     }
     p_fsrchannels->GenerateWeight(p_cms,p_cuts);
     m_result_1 *= KFactor * p_fsrchannels->Weight();
-    if (p_isrhandler && p_isrhandler->On()==3) m_result_2 = m_result_1;
-    m_result_1 *= process->Differential(p_cms);
+    if (p_isrhandler->On()==3) m_result_2 = m_result_1;
+    if (p_isrhandler->KMROn()==0) m_result_1 *= process->Differential(p_cms);
+    else m_result_1 *= process->Differential(p_lab);
   }
   if (p_isrhandler->On()==3 && trigger==1) {
     Rotate(p_cms);
@@ -847,6 +848,12 @@ bool Phase_Space_Handler::MakeKMRChannels()
     ci.parameters[0]=1.333;
     m_kpparams.push_back(ci);
     ci.parameters[0]=1.5;
+    m_kpparams.push_back(ci);
+    ci.parameters[0]=1.667;
+    m_kpparams.push_back(ci);
+    ci.parameters[0]=1.833;
+    m_kpparams.push_back(ci);
+    ci.parameters[0]=2.0;
     m_kpparams.push_back(ci);
     ci.parameters.clear();
   }
