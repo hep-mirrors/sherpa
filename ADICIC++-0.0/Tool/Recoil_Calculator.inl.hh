@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/09
+//Version: 2 ADICIC++-0.0/2004/10/28
 
 //Inline methods of Recoil_Calculator.H.
 
@@ -29,7 +29,6 @@ namespace ADICIC {
     : f_recoil(Nil), m_p1(ATOOLS::Vec4D()), m_p3(ATOOLS::Vec4D()) {
     ++s_count;
   }
-
 
 
 
