@@ -29,7 +29,7 @@ Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl,
   XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor)
 {
   double mass = 0.;
-  for (int i=0;i<m_nin;i++)   mass += _fl[i].PSMass();
+  for (int i=0;i<m_nin;i++)  mass += _fl[i].PSMass(); 
   m_thres     = ATOOLS::sqr(mass);
   mass        = 0.;
   for (int i=2;i<2+m_nout;i++) mass += _fl[i].PSMass();
@@ -39,7 +39,8 @@ Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl,
 }
 
 Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl) :
-  XS_Base(_nin,_nout,_fl)
+  XS_Base(_nin,_nout,_fl),
+  m_thres(0.)
 {
   p_selected = this;
 }
@@ -86,8 +87,11 @@ double Single_XS::Differential(double s,double t,double u)
 {
   m_lastdxs = operator()(s,t,u);
   if (m_lastdxs <= 0.) return m_lastdxs = m_last = 0.;
-  if ((p_isr) && m_nin==2) m_lastlumi = p_isr->Weight(p_fl);
-                     else  m_lastlumi = 1.;
+  if ((p_isr) && m_nin==2) { 
+    if (p_isr->On()) m_lastlumi = p_isr->Weight(p_fl); 
+    else m_lastlumi = 1.;
+  }
+  else  m_lastlumi = 1.;
 
   return m_last = m_lastdxs * m_lastlumi;
 }

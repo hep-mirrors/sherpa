@@ -85,28 +85,8 @@ void QCD_Processes::FillMode(Mode mode)
 	group->Add(p_xsselector->GetXS(2,2,p_fl));
       }
     }
-  case q1q1q1q1:
-    if (mode==q1q1q1q1) group = new XS_Group(2,2,p_fl);
-    group->SetName(std::string(" q1q1 -> q1q1 "));
-    for (int i=1;i<6;i++) {
-      p_fl[0] = p_fl[1] = p_fl[2] = p_fl[3] = ATOOLS::Flavour(ATOOLS::kf::code(i));
-      group->Add(p_xsselector->GetXS(2,2,p_fl));
-    }
-    Add(group);
-    if (mode==q1q1q1q1) break;
-    if (mode==q1q2q1q2) break;
-  case q1q1bq1q1b:
-    group = new XS_Group(2,2,p_fl);
-    group->SetName(std::string(" q1q1b -> q1q1b "));
-    for (int i=1;i<6;i++) {
-      p_fl[0] = p_fl[2] = ATOOLS::Flavour(ATOOLS::kf::code(i));
-      p_fl[1] = p_fl[3] = p_fl[0].Bar();
-      group->Add(p_xsselector->GetXS(2,2,p_fl));
-    }
-    Add(group);
-    if (mode==q1q1bq1q1b) break;
   case q1q2bq1q2b:
-    group = new XS_Group(2,2,p_fl);
+    if (mode==q1q2bq1q2b) group = new XS_Group(2,2,p_fl);
     group->SetName(std::string(" q1q2b -> q1q2b "));
     for (int i=1;i<5;i++) {
       p_fl[0] = p_fl[2] = ATOOLS::Flavour(ATOOLS::kf::code(i));
@@ -117,6 +97,26 @@ void QCD_Processes::FillMode(Mode mode)
     }
     Add(group);
     if (mode==q1q2bq1q2b) break;
+    if (mode==q1q2q1q2) break;
+  case q1q1q1q1:
+    group = new XS_Group(2,2,p_fl);
+    group->SetName(std::string(" q1q1 -> q1q1 "));
+    for (int i=1;i<6;i++) {
+      p_fl[0] = p_fl[1] = p_fl[2] = p_fl[3] = ATOOLS::Flavour(ATOOLS::kf::code(i));
+      group->Add(p_xsselector->GetXS(2,2,p_fl));
+    }
+    Add(group);
+    if (mode==q1q1q1q1) break;
+  case q1q1bq1q1b:
+    group = new XS_Group(2,2,p_fl);
+    group->SetName(std::string(" q1q1b -> q1q1b "));
+    for (int i=1;i<6;i++) {
+      p_fl[0] = p_fl[2] = ATOOLS::Flavour(ATOOLS::kf::code(i));
+      p_fl[1] = p_fl[3] = p_fl[0].Bar();
+      group->Add(p_xsselector->GetXS(2,2,p_fl));
+    }
+    Add(group);
+    if (mode==q1q1bq1q1b) break;
   case q1q1bq2q2b:
     group = new XS_Group(2,2,p_fl);
     group->SetName(std::string(" q1q1b -> q2q2b "));
