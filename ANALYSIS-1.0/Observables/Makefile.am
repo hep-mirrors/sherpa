@@ -30,7 +30,8 @@ libObservables_la_SOURCES     =	\
 			    	Jet_Observables.C \
 			    	Event_Shapes_EE.C \
 			    	Shape_Observables_EE.C \
-			    	Scaled_Observables.C
+			    	Scaled_Observables.C \
+				Four_Jet_Angles.C
 noinst_HEADERS        =	\
 			Statistics_Observable.H \
 			MI_Observables.H \
@@ -44,7 +45,8 @@ noinst_HEADERS        =	\
 			Jet_Observables.H \
 			Event_Shapes_EE.H \
 			Shape_Observables_EE.H \
-			Scaled_Observables.H
+			Scaled_Observables.H \
+			Four_Jet_Angles.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ANALYSISFLAGS) $(ROOTFLAGS)
 INCLUDES      =	$(ANALYSISINCS) $(PDFINCS) $(ATOOLSINCS) $(ROOTINCS)
