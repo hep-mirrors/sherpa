@@ -71,11 +71,12 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
   for (size_t i=0;i<m_extracted.size();++i) {
     m_hardpt+=m_extracted[i]->Momentum();
   }
-  if (!DecomposeHadron()) return false;
+  bool success=true;
+  if (!DecomposeHadron()) success=false;
   AssignRemnants();
-  if (!ConnectRemnants()) return false;
+  if (!ConnectRemnants()) success=false;
   FillRemnants();
-  if (!DiceKinematics()) return false;
+  if (!DiceKinematics()) success=false;
   for (size_t j=0;j<m_extracted.size();++j) {
     if (particlelist!=NULL) {
       m_extracted[j]->SetNumber(-particlelist->size());
@@ -90,7 +91,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,
       particlelist->push_back(m_companions[j]);
     }
   }
-  return true;
+  return success;
 }
 
 bool Hadron_Remnant::DiceKinematics()
