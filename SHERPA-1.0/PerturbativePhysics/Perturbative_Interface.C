@@ -19,16 +19,22 @@ Perturbative_Interface::~Perturbative_Interface()
   if (p_moms) { delete p_moms; p_moms = NULL; }
 }
 
-void Perturbative_Interface::DeleteMergingBlobs(ATOOLS::Blob *const blob,
-						const bool forward)
+void Perturbative_Interface::RemoveConnected(ATOOLS::Blob *const blob,
+					     const bool forward)
 { 
   for (size_t i=0;!forward && i<(size_t)blob->NInP();++i) {
     ATOOLS::Particle *cur=blob->InParticle(i);
-    if (cur->ProductionBlob()!=NULL) DeleteMergingBlobs(cur->ProductionBlob(),false);
+    if (cur->ProductionBlob()!=NULL) {
+      RemoveConnected(cur->ProductionBlob(),false);
+      delete cur->ProductionBlob();
+    }
   } 
   for (size_t i=0;forward && i<(size_t)blob->NOutP();++i) {
     ATOOLS::Particle *cur=blob->OutParticle(i);
-    if (cur->DecayBlob()!=NULL) DeleteMergingBlobs(cur->DecayBlob(),true);
+    if (cur->DecayBlob()!=NULL) {
+      RemoveConnected(cur->DecayBlob(),true);
+      delete cur->DecayBlob();
+    }
   } 
 }
 
@@ -37,8 +43,8 @@ void Perturbative_Interface::CleanBlobList(ATOOLS::Blob_List *const bloblist,
 {
   for (ATOOLS::Blob_Iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
     if ((*blit)->Type()==type) {
-      DeleteMergingBlobs(*blit,true);
-      DeleteMergingBlobs(*blit,false);
+      RemoveConnected(*blit,true);
+      RemoveConnected(*blit,false);
       blit=bloblist->begin();
     }
   }
