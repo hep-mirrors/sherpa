@@ -75,6 +75,7 @@ namespace PHASIC {
     virtual ATOOLS::Flavour *Flavs(); 
     virtual std::string      Name();     
     virtual std::string      ChID();
+    virtual size_t           Dimension() const;
 
     virtual int N();
     virtual int ValidN();

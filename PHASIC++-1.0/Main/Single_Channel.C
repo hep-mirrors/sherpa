@@ -185,6 +185,13 @@ std::string Single_Channel::ChID()
   return std::string(""); 
 }
 
+size_t Single_Channel::Dimension() const 
+{ 
+  // ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::Dimension()"<<std::endl;
+  // for testing purposes
+  return 2;
+}
+
 ATOOLS::Flavour *Single_Channel::Flavs()     { return fl; }
 std::string      Single_Channel::Name()      { return name; }
 
