@@ -18,7 +18,7 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS
   m_xinfo(std::vector<double>(4)),
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
-  m_ssum(0.), m_ssumsqr(0.),m_smax(0.),m_ssigma2(0.), m_sn(0), 
+  m_ssum(0.), m_ssumsqr(0.),m_smax(0.),m_ssigma2(0.),m_wmin(0.),m_sn(0),m_son(1), 
   m_swaped(false), p_selected(this), p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), p_cuts(NULL),
   m_ownselector(true) {}
@@ -38,22 +38,28 @@ Integrable_Base *const Integrable_Base::Selected()
 
 double Integrable_Base::TotalResult()
 { 
+//   if (m_ssigma2>0. && m_sn<1000) return m_totalsum/m_ssigma2; 
+//   if (m_sn<1000) return m_ssum/m_sn;
+//   double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
+//   return (m_totalsum+m_ssum/ssigma2/m_sn)/(m_ssigma2+1./ssigma2);
   if (m_ssigma2>0. && m_sn<1000) return m_totalsum/m_ssigma2; 
   if (m_sn<1000) return m_ssum/m_sn;
-  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
-  return (m_totalsum+m_ssum/ssigma2/m_sn)/(m_ssigma2+1./ssigma2);
+  double ssigma2 = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  return (m_totalsum+m_ssum*ssigma2/m_sn)/(m_ssigma2+ssigma2);
 }
 
 double Integrable_Base::TotalVar() 
 {
   if (m_nin==1 && m_nout==2) return 0.;
-  if (m_ssigma2==0.) return 1.;
-  if (m_sn<1000) return sqrt(1./m_ssigma2); 
+  if (m_sn<1000) {
+    if (m_ssigma2>0.) return m_totalsum/m_ssigma2/sqrt(m_ssigma2); 
+    else return TotalResult(); 
+  }
 
-  double disc = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
-  if (disc>0.) return sqrt(1./(m_ssigma2+1./disc));
+  double disc = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  if (disc>0.) return TotalResult()/sqrt(m_ssigma2+disc);
   
-  return sqrt(1./m_ssigma2);
+  return m_totalsum/m_ssigma2/sqrt(m_ssigma2);
 }
 
 void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta) 

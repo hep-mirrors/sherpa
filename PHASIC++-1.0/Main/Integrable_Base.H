@@ -52,12 +52,12 @@ namespace PHASIC {
 
     double m_last, m_lastlumi, m_lastdxs, m_max;
     double m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
-    double m_ssum, m_ssumsqr,m_smax,m_ssigma2;
+    double m_ssum, m_ssumsqr,m_smax,m_ssigma2,m_wmin;
 
     std::vector<double> m_vsmax;
     std::vector<long unsigned int> m_vsn;
 
-    long unsigned int m_sn;
+    long unsigned int m_sn,m_son;
 
     bool m_swaped;
 
@@ -72,7 +72,7 @@ namespace PHASIC {
 
     bool m_ownselector;
 
-  protected:
+  public:
 
     double TotalResult();
     double TotalVar();
@@ -143,7 +143,9 @@ namespace PHASIC {
     inline void SetSSum(const double sum)           { m_ssum=sum;       }
     inline void SetSSumSqr(const double sumsqr)     { m_ssumsqr=sumsqr; }
     inline void SetSigmaSum(const double sigma2)    { m_ssigma2=sigma2; }
-    inline void SetSPoints(const long int points)   { m_sn=points;           }
+    inline void SetSPoints(const long int points)   { m_sn=points;      }
+    inline void SetWMin(const double wmin)          { m_wmin=wmin;      }
+    inline void SetOptCounter(const long int son)   { m_son=son;        }
 
     inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
 

@@ -71,11 +71,16 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   numberofchannels += psh->NumberOfFSRIntegrators();
   msg.Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
 
-  iter      = Max(1+100*int(numberofchannels),10000);
-  if (iter>50000) iter=Max(20*int(numberofchannels),50000);
+  iter = iter0 = Max(20*int(numberofchannels),5000);
+  iter1      = Max(100*int(numberofchannels),10000);
+  if (iter1>50000) iter1=Max(iter0,50000);
+  int hlp = (iter1-1)/iter0+1;
+  iter1   = hlp*iter0;
   nopt      = 25; 
 
-  maxopt    = iter*nopt;
+  maxopt    = (5/hlp+21)*iter1;
+  int ncontrib = psh->FSRIntegrator()->ValidN();
+  if (ncontrib/iter0>=5) iter=iter1;
 
   long int  n;
   int       endopt = 1;
@@ -271,7 +276,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if (over) break;
     }
 #endif
-    int ncontrib = psh->FSRIntegrator()->ValidN();
+    ncontrib = psh->FSRIntegrator()->ValidN();
     if ( ncontrib!=nlo && ((ncontrib%iter)==0 || ncontrib==maxopt)) {
       nlo=ncontrib;
 #ifndef _USE_MPI_ // non MPI mode
@@ -283,7 +288,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	if ((psh->KMRKPIntegrator()))  (psh->KMRKPIntegrator())->Optimize(maxerror);
 	(psh->FSRIntegrator())->Optimize(maxerror);
 	(psh->Process())->ResetMax(2);
-	(psh->Process())->OptimizeResult();
+	if (ncontrib%iter1==0) (psh->Process())->OptimizeResult();
       }
       else {
 	(psh->Process())->ResetMax(0);
@@ -300,19 +305,18 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	(psh->Process())->ResetMax(1);
       }
 
-      if (!((psh->FSRIntegrator())->Result()>0.) && !((psh->FSRIntegrator())->Result()<0.)
-	  && !((psh->FSRIntegrator())->Result()==0.)) {
+      if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)
+	  && !((psh->Process())->TotalResult()==0.)) {
 	msg.Error()<<"FS - Channel result is a NaN. Knockout!!!!"<<endl;
 	break;
       }
-      if ( ATOOLS::IsZero((psh->FSRIntegrator())->Result()) ) break;
-      error = (psh->FSRIntegrator())->Variance()/(psh->FSRIntegrator())->Result() * 
-	(psh->FSRIntegrator())->N();
+      error=(psh->Process())->TotalVar()/(psh->Process())->TotalResult();
       msg_Info()<<om::blue
-		<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()*rpa.Picobarn()
+		<<(psh->Process())->TotalResult()*rpa.Picobarn()
 		<<" pb"<<om::reset<<" +- ( "<<om::red
-		<<(psh->FSRIntegrator())->Variance()*rpa.Picobarn()
+		<<(psh->Process())->TotalVar()*rpa.Picobarn()
 		<<" pb = "<<error*100<<" %"<<om::reset<<" )."<<endl;
+      if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
       if (error<maxerror && allowbreak) break;
@@ -321,7 +325,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
     }
   }
 
-  result = (psh->FSRIntegrator())->Result() / (psh->FSRIntegrator())->N() * rpa.Picobarn();
+  result = (psh->Process())->TotalResult() * rpa.Picobarn();
   return result;
   
 }
@@ -359,31 +363,34 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
     oldvalue = value;
     
     //Nan Check
-    if (!((psh->FSRIntegrator())->Result()>0.) && !((psh->FSRIntegrator())->Result()<0.)) {
+    if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)) {
       msg.Out()<<"NaN knockout!!!!"<<endl;
       break;
     }
     
     if (!(n%iter)) {
-      if (n<=maxopt) psh->FSRIntegrator()->Optimize(maxerror);
+      if (n<=maxopt) {
+	psh->FSRIntegrator()->Optimize(maxerror);
+	(psh->Process())->OptimizeResult();
+      }
       if (n==maxopt) {
 	psh->FSRIntegrator()->EndOptimize(maxerror);
 	iter = 50000;
       }
       //Nan Check
-      if (!((psh->FSRIntegrator())->Result()>0.) && !((psh->FSRIntegrator())->Result()<0.)) {
+      if (!((psh->Process())->TotalResult()>0.) && !((psh->Process())->TotalResult()<0.)) {
 	msg.Out()<<"NaN knockout!!!!"<<endl;
 	break;
       }
-      if (ATOOLS::IsZero((psh->FSRIntegrator())->Result())) break;
+      if ((psh->Process())->TotalResult()==0.) break;
       
-      error = (psh->FSRIntegrator())->Variance() / (psh->FSRIntegrator())->Result()*(psh->FSRIntegrator())->N();
-      msg_Info()<<n<<". Result : "<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()
+      error = (psh->Process())->TotalVar() / (psh->Process())->TotalResult();
+      msg_Info()<<n<<". Result : "<<(psh->Process())->TotalResult()
 		<<" GeV"<<" +- "<<error*100<<"%"<<endl;
       if (error<maxerror) break;
     }
   }
-  return (psh->FSRIntegrator())->Result() / (psh->FSRIntegrator())->N();
+  return (psh->Process())->TotalResult();
 }
 
 long int Phase_Space_Integrator::MaxPoints()                  

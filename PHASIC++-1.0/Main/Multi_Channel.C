@@ -1,6 +1,7 @@
 #include "Single_Channel.H"
 #include "Multi_Channel.H"
 #include "Random.H"
+#include "Run_Parameter.H"
 
 using namespace PHASIC;
 using namespace ATOOLS;
@@ -22,7 +23,7 @@ Multi_Channel::Multi_Channel(string _name) : fl(NULL), s1(NULL), s2(NULL), m_rea
     _name  = help.substr(0,pos) + help.substr(pos+1); 
   }
   name     = _name;
-  n_points = n_spoints = n_contrib = 0;
+  n_points = n_contrib = 0;
   m_lastdice = -1;
   m_optcnt = 0;
   m_pol = 250.;
@@ -75,13 +76,7 @@ void Multi_Channel::Reset()
   if (!m_readin) {
     s1xmin     = 1.e32;
     n_points   = 0;  
-    n_spoints   = 0;  
     n_contrib  = 0;
-    m_result     = 0.;
-    m_result2    = 0.;
-    m_sresult     = 0.;
-    m_sresult2    = 0.;
-    m_ssigma2     = 0.;  
   }
   msg_Tracking()<<"Channels for "<<name<<endl
 		<<"----------------- "<<n_points<<" --------------------"<<endl;
@@ -96,7 +91,6 @@ void Multi_Channel::Reset()
 void Multi_Channel::ResetOpt() 
 {
   n_points = 0;
-  n_spoints = 0;
 }        
 
 void Multi_Channel::MPIOptimize(double error)
@@ -153,14 +147,6 @@ void Multi_Channel::Optimize(double error)
 {
   msg.Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
 
-  double ssigma2 = (m_sresult2/n_spoints - ATOOLS::sqr(m_sresult/n_spoints))/(n_spoints-1);
-  m_ssigma2  += 1./ssigma2; 
-  m_result   += m_sresult/ssigma2/n_spoints;
-  m_result2  += m_sresult2/ssigma2/n_spoints;
-  m_sresult  = 0.;
-  m_sresult2 = 0.;
-  n_spoints  = 0;
-
   double aptot = 0.;
   size_t i;
   for (i=0;i<channels.size();i++) {
@@ -182,15 +168,17 @@ void Multi_Channel::Optimize(double error)
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
   for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
 
+    if((m_optcnt>4 || channels.size()==1)&& m_optcnt<20)    
+      for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.01) channels[i]->Optimize();
+    if (m_optcnt==20){
+      for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
+      s1xmin     = 1.e32;
+    }
+
   if (s1x<s1xmin) {
     s1xmin = s1x;
     for (i=0;i<channels.size();i++) channels[i]->SetAlphaSave(channels[i]->Alpha());
   }  
-
-   if((m_optcnt>4 || channels.size()==1)&& m_optcnt<20)    
-     for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.01) channels[i]->Optimize();
-   if (m_optcnt==20)
-     for (i=0;i<channels.size();i++) if (channels[i]->Alpha()>0.) channels[i]->EndOptimize();
 
   for(i=0;i<channels.size();i++) channels[i]->ResetOpt();
   msg_Tracking()<<"New weights for : "<<name<<endl
@@ -202,9 +190,7 @@ void Multi_Channel::Optimize(double error)
     }
   }
   msg_Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl
-		<<"Variance : "<<Variance()<<endl
-		<<"result,result2,n,n_contrib : "<<m_result<<", "
-		<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl
+ 		<<"n,n_contrib : "<<n_points<<", "<<n_contrib<<endl
 		<<"-----------------------------------------------"<<endl;
   m_optcnt++;
 }
@@ -232,9 +218,7 @@ void Multi_Channel::EndOptimize(double error)
     }
   }
   msg_Tracking()<<"S1X: "<<s1xmin<<endl
-		<<"Variance : "<<Variance()<<endl
-		<<"result,result2,n,n_contrib : "<<m_result<<", "
-		<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl
+ 		<<"n,n_contrib : "<<n_points<<", "<<n_contrib<<endl
 		<<"-------------------------------------------"<<endl;
 
 #else
@@ -277,10 +261,6 @@ void Multi_Channel::AddPoint(double value)
   //if (!ATOOLS::IsZero(value)) n_contrib++;
   if (value>0.) n_contrib++;
   n_points++;
-  n_spoints++;
-  m_sresult  += value;
-  m_sresult2 += value*value;
-  //if (!ATOOLS::IsZero(value/m_result*(double)n_points)) n_contrib++;
   double var;
   for (size_t i=0;i<channels.size();i++) {
     if (value!=0.) {
@@ -296,36 +276,6 @@ void Multi_Channel::AddPoint(double value)
   if (m_lastdice>=0) Channel(m_lastdice)->AddPoint(value);
 }
 
-double Multi_Channel::Result()
-{ 
-  if (m_ssigma2>0. && n_spoints<1000) return double(n_points-n_spoints)*m_result/m_ssigma2; 
-  if (n_spoints<1000) return m_sresult;
-  double ssigma2 = (m_sresult2/n_spoints - ATOOLS::sqr(m_sresult/n_spoints))/(n_spoints-1);
-  return double(n_points)*(m_result+m_sresult/ssigma2/n_spoints)/(m_ssigma2+1./ssigma2);
-}
-
-double Multi_Channel::Variance() {
-  if (nin==1 && nout==2) return 0.;
-  if (m_ssigma2==0.) return 1.;
-  if (n_spoints<1000) return sqrt(1./m_ssigma2); 
-
-  double disc = (m_sresult2/n_spoints - ATOOLS::sqr(m_sresult/n_spoints))/(n_spoints-1);
-  if (disc>0.) return sqrt(1./(m_ssigma2+1./disc));
-//   if (m_result2==0. && m_result==0.) {
-//     if (n_points>20000) return 0.;
-//     else return 1.;
-//   }
-//   double disc = (n_points*m_result2)/((n_points-1)*ATOOLS::sqr(m_result)) - 1./(n_points-1);
-//   if (disc>0.) return m_result/n_points * sqrt(disc);
-//   disc = m_result2/(n_points*(n_points-1)) - ATOOLS::sqr(m_result/n_points)/(n_points-1);
-//   if (disc>0.) return sqrt(disc);
-  
-  ATOOLS::msg.Error()<<"Variance yielded a NaN !"<<endl
-			<<"   res,res2 = "<<m_result<<", "<<m_result2
-			<<" after "<<n_points<<" points."<<endl; 
-  
-  return sqrt(-disc);
-};
 
 
 void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts) 
@@ -550,8 +500,9 @@ void Multi_Channel::WriteOut(std::string pID)
   ofile.open(pID.c_str());
   ofile.precision(12);
   ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "
-       <<m_result<<" "<<m_result2<<" "<<s1xmin<<" "
-       <<m_sresult<<" "<<m_sresult2<<" "<<m_ssigma2<<" "<<n_spoints<<" "<<m_optcnt<<endl;
+       <<s1xmin<<" "<<m_optcnt<<endl;
+//        <<m_result<<" "<<m_result2<<" "<<s1xmin<<" "
+//        <<m_sresult<<" "<<m_sresult2<<" "<<m_ssigma2<<" "<<n_spoints<<" "<<m_optcnt<<endl;
   for (size_t i=0;i<channels.size();i++) 
     ofile<<channels[i]->Name()<<" "<<channels[i]->N()<<" "
 	 <<channels[i]->Alpha()<<" "<<channels[i]->AlphaSave()<<" "
@@ -578,7 +529,8 @@ bool Multi_Channel::ReadIn(std::string pID) {
     return 0;
   }
   m_readin=true;
-  ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult>>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
+//   ifile>>n_points>>n_contrib>>m_result>>m_result2>>s1xmin>>m_sresult>>m_sresult2>>m_ssigma2>>n_spoints>>m_optcnt;
+  ifile>>n_points>>n_contrib>>s1xmin>>m_optcnt;
 
   double sum=0;
   for (size_t i=0;i<channels.size();i++) {

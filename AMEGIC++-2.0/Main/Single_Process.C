@@ -837,14 +837,14 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   msg_Info()<<"In Single_Process::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
   
   string _name;
-  double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2;
-  long int n,sn;
+  double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2,wmin;
+  long int n,sn,son;
   std::string filename = _resdir+"/"+m_name+".xstotal";
   if (_resdir!=string("")) {
     if (IsFile(filename)) {
       ifstream from;
       from.open(filename.c_str(),ios::in);
-      from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn;
+      from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn>>wmin>>son;
       if (_name==m_name) {
 	m_totalxs  = _totalxs;
 	m_totalerr = _totalerr; 
@@ -860,6 +860,8 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 	m_ssum     = ssum;
 	m_ssumsqr  = ssqrsum;
 	m_ssigma2  = ss2;
+	m_wmin     = wmin;
+	m_son      = son;
       }
       msg_Tracking()<<"Found result : xs for "<<m_name<<" : "
 		    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -929,7 +931,7 @@ void Single_Process::WriteOutXSecs(std::ofstream & _to)
   _to.precision(12);
   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
      <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
-     <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<endl; 
+     <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<endl; 
 }
 
 bool Single_Process::Find(std::string _name,Process_Base *& _proc)  
@@ -1007,13 +1009,23 @@ void Single_Process::AddPoint(const double value) {
 
 void Single_Process::OptimizeResult()
 {
-  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
-  m_ssigma2  += 1./ssigma2; 
-  m_totalsum += m_ssum/ssigma2/m_sn;
-  m_totalsumsqr+= m_ssumsqr/ssigma2/m_sn;
-  m_ssum     = 0.;
-  m_ssumsqr  = 0.;
-  m_sn       = 0;
+//   double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
+//   m_ssigma2  += 1./ssigma2; 
+//   m_totalsum += m_ssum/ssigma2/m_sn;
+//   m_totalsumsqr+= m_ssumsqr/ssigma2/m_sn;
+  double ssigma2 = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  if (ssigma2>m_wmin) {
+    m_ssigma2  += ssigma2; 
+    m_totalsum += m_ssum*ssigma2/m_sn;
+    m_totalsumsqr+= m_ssumsqr*ssigma2/m_sn;
+    m_ssum     = 0.;
+    m_ssumsqr  = 0.;
+    m_sn       = 0;
+    if (ssigma2/m_son>m_wmin) m_wmin = ssigma2/m_son;
+    m_son      = 0;
+  }
+//   cout<<"Weights (actual/min) "<<ssigma2<<" "<<m_wmin<<endl;
+  m_son++;
 }
 
 void Single_Process::ResetMax(int flag)

@@ -9,7 +9,7 @@ namespace PHASIC {
   private:
 
     double          result, max, error;
-    int             iter,nopt;
+    int             iter,iter0,iter1,nopt;
     long int        maxopt;
     static long int nmax;
 

@@ -209,9 +209,8 @@ void Vegas::Optimize()
     double cx;
     for (int i=0;i<m_nd;i++){
       s2=(p_di[j][i]/p_hit[j][i] - sqr(p_d[j][i]))/(p_hit[j][i]-1);
-      cx=1.e4;
-      if (s2>0.) cx=sqr(p_d[j][i]-av)/s2;
-      if (p_d[j][i]<av && cx>1.e4) cx=1.e4;
+      cx=sqr(p_d[j][i]-av)/s2;
+      if ((p_d[j][i]<av && cx>1.e4) || !(cx>=0.)) cx=1.e4;
       chi+=cx;
     }
     chi=sqrt(chi/m_nd);

@@ -413,7 +413,7 @@ void Process_Group::WriteOutXSecs(std::ofstream & _to)
   _to.precision(12);
   _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
      <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
-     <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<endl; 
+     <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<endl; 
   for (size_t i=0;i<m_procs.size();i++) m_procs[i]->WriteOutXSecs(_to);
 }
 
@@ -602,13 +602,19 @@ void Process_Group::ResetMax(int flag) {
 }
 void Process_Group::OptimizeResult() 
 {
-  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
-  m_ssigma2  += 1./ssigma2; 
-  m_totalsum += m_ssum/ssigma2/m_sn;
-  m_totalsumsqr+= m_ssumsqr/ssigma2/m_sn;
-  m_ssum     = 0.;
-  m_ssumsqr  = 0.;
-  m_sn       = 0;
+  double ssigma2 = ATOOLS::sqr(m_ssum/m_sn)/((m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1));
+  if (ssigma2>m_wmin) {
+    m_ssigma2  += ssigma2; 
+    m_totalsum += m_ssum*ssigma2/m_sn;
+    m_totalsumsqr+= m_ssumsqr*ssigma2/m_sn;
+    m_ssum     = 0.;
+    m_ssumsqr  = 0.;
+    m_sn       = 0;
+    if (ssigma2/m_son>m_wmin) m_wmin = ssigma2/m_son;
+    m_son      = 0;
+  }
+//   cout<<"Weights (actual/min) "<<ssigma2<<" "<<m_wmin<<endl;
+  m_son++;
   for (int i=0;i<m_procs.size();i++) m_procs[i]->OptimizeResult();
 }
 
@@ -754,15 +760,16 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
   else {
     std::string filename =_resdir+"/"+m_name+".xs_tot";
     string _name;
-    double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2;
-    long int n,sn;
+    double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2,wmin;
+    long int n,sn,son;
     if (_resdir!=string("")) {
       if (IsFile(filename)) {
 	ifstream from;
 	bool okay=1;
 	from.open(filename.c_str());
 	while (from) {
-	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn;
+	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn
+	      >>wmin>>son;
 	  if (_name==m_name) m_totalxs += _totalxs;
 // 	  msg_Tracking()<<"Found result : xs for "<<_name<<" : "
 // 			<<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -779,6 +786,8 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	    _proc->SetSSumSqr(ssqrsum);
 	    _proc->SetSigmaSum(ss2);
 	    _proc->SetSPoints(sn);
+	    _proc->SetWMin(wmin);
+	    _proc->SetOptCounter(son);
 	  }
 	  else {
 	    okay = 0;
