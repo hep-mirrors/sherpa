@@ -37,7 +37,7 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder
   }
   //    m_kfac=  CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*Nf;  == 3.45409 (for Nf=5)
   if (m_bp_mode&16) m_kfac = 3.45409;
-  msg.Tracking()<<"Cluster_Partons runs in mode : "<<endl
+  msg_Tracking()<<"Cluster_Partons runs in mode : "<<endl
 		<<"   SUDAKOVTYPE    = "<<m_bp_mode<<std::endl
 		<<"   SUDAKOVASORDER = "<<m_as_order<<std::endl
 		<<"   CALCJETRATE    = "<<jetratemode<<std::endl
@@ -77,7 +77,7 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder
 
 void Cluster_Partons::WriteOutSudakovWeights() 
 {
-  msg.Info()<<" Statistics Sudakov Rejection "<<std::endl;
+  msg_Info()<<" Statistics Sudakov Rejection "<<std::endl;
 
   for (int i=0;i<m_maxjetnumber;++i) {
     if (p_events[i]==0) continue;
@@ -86,7 +86,7 @@ void Cluster_Partons::WriteOutSudakovWeights()
 					   (sqr(p_weight_sum[i])-p_weight_sum_sqr[i])/(p_events[i]-1.)));
     double w_sigma =  sqrt(dabs(( sqr(p_weight_sum[i]/p_events[i])
 				    - p_weight_sum_sqr[i]/p_events[i]))/(p_events[i]-1.) );
-    msg.Info()<<(i+1)<<" : weight="<<w_mean<<" +- "<<w_delta<<" ("<<w_sigma<<")"<<std::endl;
+    msg_Info()<<(i+1)<<" : weight="<<w_mean<<" +- "<<w_delta<<" ("<<w_sigma<<")"<<std::endl;
     p_weight_sum[i]=w_mean;
     p_weight_sum_sqr[i]=w_sigma;
   }

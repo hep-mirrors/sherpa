@@ -3,6 +3,9 @@
 #include "Amisic.H"
 #include "My_Limits.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Multiple_Interactions
+#endif
 #ifdef PROFILE__Multiple_Interactions
 #include "prof.hh"
 #else 
@@ -66,9 +69,9 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   p_mihandler->SetScaleMax(m_pperpmax,0);
   p_mihandler->SetScaleMax(m_xmax[0],2);
   p_mihandler->SetScaleMax(m_xmax[1],3);
-  p_mihandler->Reset();
   ATOOLS::Blob *blob = new ATOOLS::Blob();
   blob->SetType(ATOOLS::btp::Hard_Collision);
+  p_mihandler->Reset();
   if (p_mihandler->GenerateHardProcess(blob)) {
     blob->SetId(bloblist->size());
     bloblist->push_back(blob);
@@ -85,4 +88,5 @@ void Multiple_Interactions::Finish(const std::string &resultpath)
 
 void Multiple_Interactions::CleanUp() 
 {
+  p_mihandler->CleanUp();
 }

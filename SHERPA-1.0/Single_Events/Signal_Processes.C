@@ -1,5 +1,8 @@
 #include "Signal_Processes.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Signal_Processes
+#endif
 #ifdef PROFILE__Signal_Processes
 #include "prof.hh"
 #else 
@@ -21,15 +24,11 @@ Signal_Processes::Signal_Processes(Matrix_Element_Handler * _mehandler,
 
 Signal_Processes::~Signal_Processes()
 {
-  //  if (p_mehandler) { delete p_mehandler; p_mehandler = NULL; }
-  //  Matrix Element Handler will be deleted in Initialization Handler
 }
-
 
 bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 {
   PROFILE_HERE;
-  // if (bloblist->size()>1) return 0;
   if (bloblist->empty()) {
     msg.Error()<<"Potential error in Signal_Processes::Treat."<<endl
 	       <<"   Incoming blob list contains "<<bloblist->size()<<" entries."<<endl

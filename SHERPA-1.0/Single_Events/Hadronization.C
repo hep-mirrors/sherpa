@@ -4,6 +4,9 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
+#ifdef PROFILE__all
+#define PROFILE__Hadronization
+#endif
 #ifdef PROFILE__Hadronization
 #include "prof.hh"
 #else 

@@ -39,7 +39,7 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
       return;
     }
   }
-  msg.Tracking()<<"Event_Handler::AddEventPhase("<<type<<":"<<name<<")."<<std::endl;
+  msg_Tracking()<<"Event_Handler::AddEventPhase("<<type<<":"<<name<<")."<<std::endl;
   p_phases->push_back(phase);
 }
 
@@ -105,9 +105,10 @@ bool Event_Handler::GenerateEvent(int mode)
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Perturbative) {
 	    bool result=(*pit)->Treat(&m_blobs,weight);
-	    ATOOLS::msg.Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
-				  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
-				  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
+	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
+			  <<ATOOLS::om::reset
+			  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
+			  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
 	    if (result) flag = 1;
 	  }
 	}
@@ -118,7 +119,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Hadronization) {
 	    bool result=(*pit)->Treat(&m_blobs,weight);
-	    ATOOLS::msg.Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
+	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
 				  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
 				  <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
 	    if (result) flag = 1;
@@ -209,7 +210,7 @@ void Event_Handler::PrintBlobs() {
 
 
 void Event_Handler::Finish() {
-  msg.Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
+  msg_Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
     (*pit)->Finish(std::string("Results"));
 }

@@ -4,6 +4,9 @@
 #include "Amegic_Apacic_Interface.H"
 #include "MI_Base.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Jet_Evolution
+#endif
 #ifdef PROFILE__Jet_Evolution
 #include "prof.hh"
 #else 
