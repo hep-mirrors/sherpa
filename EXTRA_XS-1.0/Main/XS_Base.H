@@ -45,7 +45,7 @@ namespace EXTRAXS {
 
   public:
 
-    XS_Base() {};
+    XS_Base():fl(0),colours(0),selected(0) {};
     virtual ~XS_Base();
 
     virtual double operator()(double,double,double);
