@@ -834,8 +834,6 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       if (p_pshandler->ISRIntegrator()  != 0) p_pshandler->ISRIntegrator()->Print();
       if (p_pshandler->FSRIntegrator()  != 0) p_pshandler->FSRIntegrator()->Print();
       p_pshandler->InitIncoming();
-
-      if (m_totalerr<=p_pshandler->Error()*m_totalxs) return 1;
     }
   }
   m_resultpath=_resdir;
