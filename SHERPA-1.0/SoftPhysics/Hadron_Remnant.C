@@ -162,7 +162,6 @@ void Hadron_Remnant::DiceKinematics()
     double pz=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-ATOOLS::sqr(m)-m_hardpt.PPerp2()/ATOOLS::sqr(m_parton[0].size()));
     m_parton[0][j]->SetMomentum(ATOOLS::Vec4D(E,-m_hardpt[1]/m_parton[0].size(),
 					      -m_hardpt[2]/m_parton[0].size(),pz));
-    // the brackets are necessary for 'nan'-values
     if (!(E>0.) || (!(pz>0.) && !(pz<=0.))) {
       ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 
                          <<"Parton ("<<(long int)m_parton[0][j]<<") has non-positive momentum: p = "
