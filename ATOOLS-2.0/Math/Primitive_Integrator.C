@@ -8,6 +8,8 @@
 
 using namespace ATOOLS;
 
+static double s_minalpha=1.0e-50;
+
 Primitive_Integrand::~Primitive_Integrand()
 {
 }
@@ -23,16 +25,12 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
      <<"   m_weight = "<<DFORMAT<<channel.Weight()<<"\n"
      <<"   m_sum    = "<<DFORMAT<<channel.Sum()
      <<" -> integral   = "<<DFORMAT<<channel.Mean()<<"\n"
-     <<"   m_ssum   = "<<DFORMAT<<channel.SSum()
-     <<" -> integral   = "<<DFORMAT<<channel.SMean()<<"\n"
      <<"   m_sum2   = "<<DFORMAT<<channel.Sum2()
      <<" -> error      = "<<DFORMAT<<channel.Sigma()<<"\n"
-     <<"   m_ssum2  = "<<DFORMAT<<channel.SSum2()
-     <<" -> error      = "<<DFORMAT<<channel.SSigma()<<"\n"
      <<"   m_np     = "<<DFORMAT<<channel.Points()
      <<" -> rel. error = "<<DFORMAT<<channel.Sigma()/channel.Mean()<<"\n"
-     <<"   m_snp    = "<<DFORMAT<<channel.SPoints()
-     <<" -> rel. error = "<<DFORMAT<<channel.SSigma()/channel.SMean()<<"\n"
+     <<"   m_ssum2  = "<<DFORMAT<<channel.SSum2()
+     <<"    m_snp    = "<<DFORMAT<<channel.SPoints()<<"\n"
      <<"   m_this   = ";
   for (size_t i=0;i<channel.m_this.size();++i) 
     str<<DFORMAT<<channel.m_this[i]<<" ";
@@ -48,15 +46,15 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
 
 Primitive_Channel::Primitive_Channel():
   m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
-  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0),
-  m_ssum(0.0), m_ssum2(0.0), m_snp(0.0), m_pos(0) {}
+  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
+  m_ssum2(0.0), m_snp(0.0), m_pos(0) {}
 
 Primitive_Channel::
 Primitive_Channel(Primitive_Channel *const prev,const size_t i,
 		  const double &pos):
   m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
-  m_ssum(0.0), m_ssum2(0.0), m_snp(0.0), m_pos(0)
+  m_ssum2(0.0), m_snp(0.0), m_pos(0)
 {
   if (prev->Boundary()) THROW(fatal_error,"Attempt to split boundary cell.");
   if (i>=prev->m_this.size()) THROW(fatal_error,"Inconsistent dimensions.");
@@ -134,11 +132,6 @@ void Primitive_Channel::Reset()
   m_sum=m_sum2=m_max=m_np=0.0;
 }
 
-void Primitive_Channel::ResetAll()
-{
-  m_sum=m_sum2=m_max=m_np=m_ssum=m_ssum2=m_snp=0.0;
-}
-
 void Primitive_Channel::SetWeight()
 {
   if (m_next[0]==NULL) {
@@ -160,7 +153,6 @@ void Primitive_Channel::Store(const double &alpha)
 {
   if (alpha==0.0) return;
   m_snp+=m_np;
-  m_ssum+=m_sum/alpha;
   m_ssum2+=m_sum2/sqr(alpha);
 }
 
@@ -169,8 +161,7 @@ WriteOut(std::fstream *const file,
 	 std::map<Primitive_Channel*,size_t> &pmap) const
 {
   (*file)<<"[ "<<m_alpha<<" "<<m_oldalpha<<" "<<m_sum<<" "
-	 <<m_sum2<<" "<<m_max<<" "<<m_np<<" "<<m_ssum<<" "
-	 <<m_ssum2<<" "<<m_snp<<" ( ";
+	 <<m_sum2<<" "<<m_max<<" "<<m_np<<" "<<m_ssum2<<" "<<m_snp<<" ( ";
   for (size_t i=0;i<m_this.size();++i) (*file)<<m_this[i]<<" ";
   (*file)<<") ( ";
   for (size_t i=0;i<m_next.size();++i) (*file)<<pmap[m_next[i]]<<" ";
@@ -184,7 +175,7 @@ bool Primitive_Channel::ReadIn(std::fstream *const file,
   if (file->eof()) return false;
   std::string dummy;
   (*file)>>dummy>>m_alpha>>m_oldalpha>>m_sum>>m_sum2
-	 >>m_max>>m_np>>m_ssum>>m_ssum2>>m_snp>>dummy;
+	 >>m_max>>m_np>>m_ssum2>>m_snp>>dummy;
   for (size_t i=0;i<m_this.size();++i) {
     if (file->eof()) return false;
     (*file)>>m_this[i];
@@ -225,7 +216,7 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 }
 
 Primitive_Integrator::Primitive_Integrator():
-  m_nopt(10000), m_nmax(1000000), m_error(0.01), m_scale (1.0), 
+  m_nopt(10000), m_nmax(1000000), m_error(0.01), m_scale (1.0),
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
   m_ncells(1000), m_lastdim(0), m_mode(0), 
   m_split(1), m_shuffle(1), m_vname("I") {}
@@ -324,26 +315,19 @@ void Primitive_Integrator::CheckTime() const
 double Primitive_Integrator::Update(const int mode)
 {
   double sum=0.0;
-  m_sum=m_sum2=m_max=m_np=0.0;
+  if (mode==0) m_sum=m_sum2=m_max=m_np=0.0;
   for (size_t i=0;i<m_channels.size();++i) {
     if (!m_channels[i]->Boundary()) {
       double alpha=m_channels[i]->Alpha();
+      if (alpha==0.0) 
+	THROW(fatal_error,"Integration domain not covered.");
       sum+=alpha;
-      switch (mode) {
-      case 0:
-	if (m_channels[i]->Points()<m_nopt/3)
-	  msg.Error()<<"Primitive_Integrator::Update(): "
-		     <<"Few points in cell. Increase NOpt."<<std::endl;
-	m_np+=m_channels[i]->Points();
-	m_sum+=m_channels[i]->Sum()/alpha;
-	m_sum2+=m_channels[i]->Sum2()/sqr(alpha);
-	break;
-      case 1:
-	m_np+=m_channels[i]->SPoints();
-	m_sum+=m_channels[i]->SSum();
-	m_sum2+=m_channels[i]->SSum2();
-	break;
-      }
+      if (mode==0 && m_channels[i]->Points()<m_nopt/3)
+	msg.Error()<<"Primitive_Integrator::Update(): "
+		   <<"Few points in cell. Increase NOpt."<<std::endl;
+      m_np+=m_channels[i]->Points();
+      m_sum+=m_channels[i]->Sum()/alpha;
+      m_sum2+=m_channels[i]->Sum2()/sqr(alpha);
       m_max=ATOOLS::Max(m_max,m_channels[i]->Max());
     }
   }
@@ -439,7 +423,7 @@ void Primitive_Integrator::Split()
   selected->SaveAlpha();
   selected->SetAlpha(0.5);
   selected->SetPosition(0);
-  selected->ResetAll();
+  selected->Reset();
 }
 
 void Primitive_Integrator::SelectDimension(const size_t pos)
@@ -474,31 +458,46 @@ bool Primitive_Integrator::Shuffle()
   if (m_shuffle==0) {
     for (size_t i=0;i<m_channels.size();++i) 
       if (!m_channels[i]->Boundary()) 
-	m_channels[i]->Store(m_channels[i]->Alpha());
+ 	m_channels[i]->Store(m_channels[i]->Alpha());
     return true;
   }
-  double norm=0.0;
+  size_t diced=0;
+  double norm=0.0, oldnorm=0.0;
   for (size_t i=0;i<m_channels.size();++i) {
     if (!m_channels[i]->Boundary()) {
       double alpha=m_channels[i]->Alpha();
-      m_channels[i]->Store(alpha);
-#ifdef USING__Old_Shufflemode
-      alpha=(m_channels[i]->Sum2()>Accu()?
-	     sqrt(m_channels[i]->Sum2()/m_channels[i]->Points())/alpha:
-	     sqrt(m_channels[i]->SSum2()/m_channels[i]->SPoints()));
-#else
-      alpha=sqrt(m_channels[i]->SSum2()/m_channels[i]->SPoints());
-#endif
-      if (!(alpha>=0.0)) THROW(fatal_error,"Invalid weight.");
-      m_channels[i]->SetAlpha(alpha);
-      m_channels[i]->Reset();
-      norm+=alpha;
+      m_channels[i]->SaveAlpha();
+      if (m_channels[i]->Points()!=0.0) {
+	oldnorm+=alpha;
+	alpha=sqrt(m_channels[i]->SSum2()/
+		   m_channels[i]->SPoints());
+	if (!(alpha>=0.0)) 
+	  THROW(fatal_error,"Invalid weight.");
+	m_channels[i]->SetAlpha(alpha);
+	norm+=alpha;
+	++diced;
+      }
+      if (alpha==0.0) {
+	m_channels[i]->SetAlpha(s_minalpha);
+	norm+=s_minalpha;
+      }
     }
   }
-  for (size_t i=0;i<m_channels.size();++i) {
-    if (!m_channels[i]->Boundary()) 
+  norm/=oldnorm;
+  if (diced==0) THROW(fatal_error,"No channel diced.");
+  for (size_t i=0;i<m_channels.size();++i) 
+    if (!m_channels[i]->Boundary() && 
+	m_channels[i]->Points()!=0.0) 
       m_channels[i]->SetAlpha(m_channels[i]->Alpha()/norm);
-  }
+  norm=0.0;
+  for (size_t i=0;i<m_channels.size();++i)
+    if (!m_channels[i]->Boundary()) {
+      norm+=m_channels[i]->Alpha();
+      m_channels[i]->Store(m_channels[i]->OldAlpha());
+      m_channels[i]->Reset();
+    }
+  if (!IsEqual(norm,1.0)) 
+    THROW(critical_error,"Summation does not agree.");
   return true;
 }
 
