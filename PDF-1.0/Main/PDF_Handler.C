@@ -3,6 +3,7 @@
 #include "PDF_MRST99.H"
 #include "LHAPDF_Fortran_Interface.H"
 #include "CTEQ6_Fortran_Interface.H"
+#include "GRVph_Fortran_Interface.H"
 #include "Message.H"
 #include <stdio.h>
 
@@ -21,6 +22,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 
   if (dataread->GetValue<Switch::code>("ISR_"+number)) {    
     if (bunch_particle.IsLepton()) {
+      //Electron
       if (bunch_particle.IntCharge()!=0) {
 	return new PDF_Electron(bunch_particle,
 				dataread->GetValue<int>("ISR_E_ORDER",1),
@@ -31,6 +33,12 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 		 <<"   Will abort the program."<<endl;
       abort();
     }
+    //Photon
+    if (bunch_particle.IsPhoton()) {
+      msg.Out()<<"PDF_Handler::GetPDFLib : Try to initialize photon PDF."<<endl;
+      return new GRVph_Fortran_Interface(bunch_particle);
+    }
+    //Proton
     if ((bunch_particle==Flavour(kf::p_plus) || (bunch_particle==Flavour(kf::p_plus).Bar()))) {
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("MRST99"));
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("MRST99Grid"));

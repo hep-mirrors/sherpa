@@ -14,7 +14,9 @@ libPDF_la_SOURCES     =	ISR_Handler.C \
 			Cteq61Pdf.f \
 			cteq6_inter.f \
 		    	CTEQ6_Fortran_Interface.C \
-		    	PDF_Handler.C 
+			GRVph_Fortran_Interface.C \
+		    	grvphoton.f \
+			PDF_Handler.C 
 CXXFLAGS      =	-pedantic -Wall -Winline
 INCLUDES      =	-I../LHAPDF \
 	   	-I$(MODELINC)/Main \
@@ -30,5 +32,6 @@ noinst_HEADERS        =	ISR_Base.H \
 			PDF_MRST99.H \
 		 	PDF_Electron.H \
 			CTEQ6_Fortran_Interface.H \
+			GRVph_Fortran_Interface.H \
 			PDF_Handler.H 
 
