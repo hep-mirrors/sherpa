@@ -48,6 +48,10 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
     rpa.gen.SetModelType(ATOOLS::Model_Type::ADD);
     return new Interaction_Model_ADD(p_model,cplscheme,yukscheme); 
   }
+  if (modeltype==std::string("SM+EHC")) {
+    rpa.gen.SetModelType(ATOOLS::Model_Type::SMEHC);
+    return new Interaction_Model_SMEHC(p_model,cplscheme,yukscheme); 
+  }
   
   msg.Error()<<"Error in Interaction_Model_Handler::GetModel("<<modeltype<<") : "<<endl
 	     <<"   Model not found. Initialize Standard Model."<<endl;
