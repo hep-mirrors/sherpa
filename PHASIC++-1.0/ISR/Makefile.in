@@ -82,16 +82,17 @@ install_sh = @install_sh@
 
 lib_LTLIBRARIES = libISR.la
 libISR_la_SOURCES = ISR_Handler.C \
-		    No_ISR.C Structure_Function.C
+		    Intact.C Structure_Function.C
 
 INCLUDES = -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org \
-	   -I../../PDF-1.0/Include \
+	   -I../../PDF-1.0/Main \
+	   -I../../PDF-1.0/LHAPDF \
 	   -I../../PHASIC++-1.0/Main 
 
 noinst_HEADERS = ISR_Handler.H ISR_Base.H \
-		 No_ISR.H Structure_Function.H
+		 Intact.H Structure_Function.H
 
 subdir = ISR
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -100,7 +101,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libISR_la_LDFLAGS =
 libISR_la_LIBADD =
-am_libISR_la_OBJECTS = ISR_Handler.lo No_ISR.lo Structure_Function.lo
+am_libISR_la_OBJECTS = ISR_Handler.lo Intact.lo Structure_Function.lo
 libISR_la_OBJECTS = $(am_libISR_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -109,7 +110,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/ISR_Handler.Plo $(DEPDIR)/No_ISR.Plo \
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/ISR_Handler.Plo $(DEPDIR)/Intact.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Structure_Function.Plo
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -175,7 +176,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/ISR_Handler.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/No_ISR.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Intact.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Structure_Function.Plo@am__quote@
 
 distclean-depend:
