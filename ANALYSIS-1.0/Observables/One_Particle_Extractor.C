@@ -84,8 +84,7 @@ One_Particle_Extractor(const std::string &type,const ATOOLS::Flavour flav,
 void One_Particle_Extractor::Evaluate(const ATOOLS::Particle_List &particlelist,
 				      double weight,int ncount)
 {
-  ATOOLS::Particle_List *outlist = 
-    new ATOOLS::Particle_List(particlelist.size());
+  ATOOLS::Particle_List *outlist = new ATOOLS::Particle_List();
   p_ana->AddParticleList(m_outlist,outlist);
   ATOOLS::Particle_List *reflist=p_ana->GetParticleList(m_reflist);
   int no=-1; 
@@ -94,13 +93,9 @@ void One_Particle_Extractor::Evaluate(const ATOOLS::Particle_List &particlelist,
 	m_flavour.Kfcode()==ATOOLS::kf::none) {
       if (++no==(int)m_item) {
 	double pt=(*p_variable)(&(*reflist)[i]->Momentum());
-	for (size_t shift=0, j=0;j<particlelist.size();++j) {
+	for (size_t j=0;j<particlelist.size();++j) {
 	  if (!(*particlelist[j]==*(*reflist)[i]) || pt<m_xmin || pt>m_xmax) 
-	    (*outlist)[j-shift] = new ATOOLS::Particle(*particlelist[j]);
-	  else {
-	    outlist->pop_back();
-	    ++shift;
-	  }
+	    outlist->push_back(new ATOOLS::Particle(*particlelist[j]));
 	}
 	break;
       }
