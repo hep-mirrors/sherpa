@@ -188,7 +188,9 @@ if [ "$CLEANUP" = "TRUE" ] ; then
       echo "======================================"
       echo " making clean in $I"
       echo "======================================"
+      cd $I
       make clean
+      cd ..
     else 
       echo "makeinstall: warning: directory $I not found"
     fi
