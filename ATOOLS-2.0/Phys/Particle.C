@@ -202,26 +202,26 @@ Vec3D Particle::Distance(double _lifetime) {
   return v*_lifetime;
 }
 
-void   Particle::SetProductionBlob(Blob * _blob)  
+void   Particle::SetProductionBlob(Blob *blob)  
 { 
-  if ((p_startblob!=NULL)&&(_blob!=NULL)) {
+  if (p_startblob!=NULL && blob!=NULL) {
     if (p_startblob->Id()>-1) 
-      ATOOLS::msg.Out()<<"Warning in Particle::SetProductionBlob(..): "<<std::endl
+      ATOOLS::msg.Out()<<"Particle::SetProductionBlob("<<blob<<"): blob->Id() = "<<blob->Id()<<std::endl
 		       <<"   Particle already has a production blob!"<<std::endl
-		       <<*this<<std::endl;
+		       <<"   "<<*this<<std::endl;
   }
-  p_startblob = _blob; 
+  p_startblob=blob; 
 }
 
-void   Particle::SetDecayBlob(Blob * _blob)       
+void   Particle::SetDecayBlob(Blob *blob)       
 { 
-  if ((p_endblob!=NULL)&&(_blob!=NULL)) {
+  if (p_endblob!=NULL && blob!=NULL) {
     if (p_endblob->Id()>-1) 
-      ATOOLS::msg.Out()<<"Warning in Particle::SetDecayBlob(..): "<<std::endl
+      ATOOLS::msg.Out()<<"Particle::SetDecayBlob("<<blob<<"): blob->Id() = "<<blob->Id()<<std::endl
 		       <<"   Particle already has a decay blob!"<<std::endl
-		       <<*this<<std::endl;
+		       <<"   "<<*this<<std::endl;
   }
-  p_endblob = _blob; 
+  p_endblob=blob; 
 }
 
 void Particle::SetNumber(const int n)           
