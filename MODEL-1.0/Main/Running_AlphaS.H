@@ -62,6 +62,7 @@ namespace MODEL {
     inline int    Nf(const double q2);
 
     inline double CutQ2() { return m_cutq2; }    
+    inline double ScaleFactor() { return m_fac; }
   };
 
   inline int Running_AlphaS::Nf(const double q2) {

@@ -26,6 +26,7 @@ namespace PDF {
 
     std::vector<std::pair<ATOOLS::Flavour,double> > m_extracted;
 
+    double m_renormalization_scale_factor;
   public:
 
     // constructor
@@ -40,6 +41,7 @@ namespace PDF {
     virtual bool   Collinear(const double kp2) const;
     virtual double Cut(const std::string &type);
     
+    void   Calculate(double x,double Q2);
     virtual void   Calculate(double x,double z,double kp,double Q2) = 0;
     virtual double GetXPDF(const ATOOLS::Flavour flavour) = 0;
 
@@ -60,11 +62,13 @@ namespace PDF {
     inline const std::vector<ATOOLS::Flavour> &Partons() const { return m_partons; }
     inline const ATOOLS::Flavour               Bunch() const   { return m_bunch;   }
 
-    inline const std::string &Type() const     { return m_type;     }  
-    inline double             Exponent() const { return m_exponent; }
+    inline const std::string &Type() const { return m_type;     }  
+    inline double         Exponent() const { return m_exponent; }
 
     inline PDF_Base *operator->() { return GetBasicPDF(); }
 
+    inline double RenormalizationScaleFactor() const { return m_renormalization_scale_factor; }
+    inline void SetRenormalizationScaleFactor(double r) { m_renormalization_scale_factor = r; }
   };
   
   /*!
