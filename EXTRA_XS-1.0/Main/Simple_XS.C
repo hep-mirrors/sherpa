@@ -155,11 +155,17 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		      std::string name;
 		      converter>>name;
 		      if (setup.find(name)==setup.end()) {
-			XS_Group *pdfgroup = FindPDFGroup(nIS,nFS,help,this);
-			XS_Base *newxs = pdfgroup->XSSelector()->GetXS(nIS,nFS,help);
-			if (newxs!=NULL && m_regulator.length()>0) 
-			  newxs->AssignRegulator(m_regulator,m_regulation);
-			pdfgroup->Add(newxs);
+			XS_Base *newxs = XSSelector()->GetXS(nIS,nFS,help);
+			if (newxs!=NULL) {
+			  delete newxs;
+			  XS_Group *pdfgroup = 
+			    FindPDFGroup(nIS,nFS,help,this);
+			  XS_Base *newxs = pdfgroup->
+			    XSSelector()->GetXS(nIS,nFS,help);
+			  if (m_regulator.length()>0) 
+			    newxs->AssignRegulator(m_regulator,m_regulation);
+			  pdfgroup->Add(newxs);
+			}
 			setup.insert(name);
 		      }
 		    }

@@ -63,6 +63,7 @@ XS_Group::~XS_Group()
 void XS_Group::Add(XS_Base *const xsec) 
 {
   if (xsec==NULL) return;
+  for (size_t i=0;i<m_xsecs.size();++i) if (m_xsecs[i]==xsec) return;
   if (m_xsecs.size()==0) {
     m_nin=xsec->NIn();
     m_nout=xsec->NOut();
