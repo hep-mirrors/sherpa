@@ -77,17 +77,21 @@ do
     if `test "$CLEAN" = "TRUE"` ; then 
       make clean
     fi
-    if ! make install -j2 "CXXFLAGS=-g $OPTIMIZE" "FFLAGS=-g" ; then
-      echo "makeinstall: error: \"make install\" in $I failed"
-      if test ! "$NOABORT" = "TRUE" ; then
-        until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" ; do
-    	  read -t 300 -p "continue anyway (y/n) ? " CONTINUE 
-	  if test "$CONTINUE" = "n" ; then
-            exit 1
-	  fi
-	done
+    CONTINUE="r"
+    while test "$CONTINUE" = "r" ; do 
+      CONTINUE=""
+      if ! make install -j2 "CXXFLAGS=-g $OPTIMIZE" "FFLAGS=-g" ; then
+	echo "makeinstall: error: \"make install\" in $I failed"
+        if test ! "$NOABORT" = "TRUE" ; then
+          until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
+    	    read -t 300 -p "continue anyway (y/n/r) ? " CONTINUE 
+	    if test "$CONTINUE" = "n" ; then
+              exit 1
+	    fi
+	  done
+        fi
       fi
-    fi
+    done
     cd ..
   else
     echo "makeinstall: error: directory $I not found"
