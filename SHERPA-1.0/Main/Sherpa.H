@@ -52,7 +52,7 @@ namespace SHERPA {
     ~Sherpa();
     // init all essentials (e.g. rpa, Flavour, msg, aqed, ..., Amegic )
     // returns 1 for successful
-    bool Init();
+    bool Init(int argc=0,char* argv[]=0);
     // calculate total crosssections (preparation for event selection)
     // returns 1 if process libs were existing and could be integrated () otherwise
     bool CrossSections();

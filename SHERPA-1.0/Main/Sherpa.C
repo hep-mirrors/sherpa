@@ -55,15 +55,20 @@ using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
 
-bool Sherpa::Init() {
+//const double facycut=.125;
+const double facycut=.125;
+
+bool Sherpa::Init(int argc,char* argv[]) {
   ParticleInit("./");
-  rpa.Init("./");
+  rpa.Init("./",argc, argv);   // use comand line parameter
 
   if (!as) as       = new Running_AlphaS();
   if (!aqed) aqed   = new Running_AlphaQED();
 
 
-  double sy = rpa.integ.Ycut()*sqr(rpa.gen.Ecms());
+
+
+  double sy = facycut*rpa.integ.Ycut()*sqr(rpa.gen.Ecms());
   double sa = sqr(rpa.gen.Ecms());
 
   cout<<" a = "<<(*as)(sy)<<endl;
@@ -77,7 +82,7 @@ bool Sherpa::Init() {
   blobs             = new Blob_List;
   AM                = new Amegic("./"); // ,isr;
 
-  int jetnumber     = 4;   // *AS* WARNING this influences the jetveto! Have to apply
+  int jetnumber     = 5;   // *AS* WARNING this influences the jetveto! Have to apply
   // modified sudakovs as well!
   
   isr=0; // NO Initial-Shower (isr has to be initialised by Amegic)
@@ -137,7 +142,7 @@ bool Sherpa::RescaleJetrates() {
   for (int i=0; i<pd.size();++i) {
     if (pd[i].njet==2) {
       if (in2!=-1) {
-	msg.Out()<<" someting wrong in RescaleJetrates: two 2->2 process groups!"<<endl;
+	msg.Out()<<" WARNING: someting wrong in RescaleJetrates: two 2->2 process groups!"<<endl;
       }
       in2=i;
     }
@@ -172,23 +177,27 @@ bool Sherpa::RescaleJetrates() {
 	    pd[0].r_res1 = 1. - sum_res1;
 	  }
 	}
-	sum_r       +=pd[i].r;
-	sum_dir     +=pd[i].r_dir;
-	sum_nat     +=pd[i].r_nat;
-	sum_res1    +=pd[i].r_res1;
-	sum_res2    +=pd[i].r_res2;
+	sum_r       +=pd[i].r;                    // sig(i)/(sum sig(j)) cf. (**)
+	sum_dir     +=pd[i].r_dir;                // sig(i)/sig(1) i!=1  
+	sum_nat     +=pd[i].r_nat;                // [sig(i)-sig(i+1)]/sig(1)
+	sum_res1    +=pd[i].r_res1;               // res1
+	sum_res2    +=pd[i].r_res2;               // not implemented
       }
 
       // rescale and output
       for (int i=0; i<pd.size(); ++i) {
-	pd[i].proc->RescaleXSec(pd[i].r_nat/pd[i].r);
+	//	pd[i].proc->RescaleXSec(pd[i].r_nat/pd[i].r);
+      }
+
+      for (int i=0;i<pd.size();++i) { 
+	pd[i].r*=1./sum_r;                        //  (**)
 
 	msg.Out()<<" "<<pd[i].njet<<"-Jet  sigma="<<pd[i].xstot<<endl;
-	msg.Out()<<"\t\t"<<pd[i].r/sum_r<<"\t"<<pd[i].r_nat<<"\t"<<pd[i].r_dir<<"\t"
+	msg.Out()<<"\t\t"<<pd[i].r<<"\t"<<pd[i].r_nat<<"\t"<<pd[i].r_dir<<"\t"
 		 <<pd[i].r_res1<<"\t"<<pd[i].r_res2<<endl;
 	
       }
-      // actualise "All_Processes"
+      // actualize "All_Processes"
       double dummy=1.;
       procs->RescaleXSec(dummy);
       
@@ -212,14 +221,14 @@ bool Sherpa::CrossSections() {
       AM->SetResDir(std::string("Tuning"));
       // set scale for alphaS factors
       if (rpa.me.KFactorScheme()==1 && rpa.me.ScaleScheme()==2)
-	AM->Processes()->SetScale(rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
+	AM->Processes()->SetScale(facycut*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
       if (!AM->LookUpXSec(rpa.integ.Ycut(),1,std::string("dY_cut"))) return 0;
       return 1;
     }
     else {
       // set scale for alphaS factors
       if (rpa.me.KFactorScheme()==1 && rpa.me.ScaleScheme()==2)
-	AM->Processes()->SetScale(rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
+	AM->Processes()->SetScale(facycut*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
       if (AM->CalculateTotalXSec()) {
 	// determine (rescaled) jetrates
 	RescaleJetrates();
@@ -255,6 +264,9 @@ bool Sherpa::GenerateEvents() {
       //      int no=Ran.WriteOutStatus("RandomC.dat");
       int no=0;
       msg.Out()<<" "<<n<<" Events ( ran="<<no<<")"<<std::endl;
+//       cout<<" Press Enter to continue ! "<<endl;
+//       string enter;
+//       cin>>enter;
     }
     msg.Events()<<"##########################################################"<<std::endl
 		<<"#############################"<<n<<"th event #############"<<std::endl
@@ -294,7 +306,7 @@ bool Sherpa::GenerateEvents() {
 	}
       } while (stat==3);
 
-      analysis.AfterME(blobs);
+     analysis.AfterME(blobs);
 
       if ((stat==4)  ) {
 	// event rejected due to Sudakov-n-AlphaS-weight	
@@ -312,6 +324,7 @@ bool Sherpa::GenerateEvents() {
 	continue;
       }
 
+
       hard_interface->ExtractPartons(blobs,partons);
       msg.SetPrecision(4);
       msg.Events()<<(*blobs)<<std::endl;
@@ -321,7 +334,6 @@ bool Sherpa::GenerateEvents() {
 
       soft_interface->PerformFragmentation(blobs,partons);
 //          analysis.AfterHadronization(blobs);
-
 
       msg.SetPrecision(4);
       msg.Events()<<(*blobs)<<std::endl;

@@ -65,6 +65,9 @@ bool ME_PS_Interface::Treat(Process_Base * proc,Blob * blob,int type)
     if (!(xs->SetColours(p))) return 0;
   }
 
+  // *AS* 
+  //  NLLweight =0;
+
   if (NLLweight) {
     if (type==1) {
       double sprime = (proc->Momenta()[0]+proc->Momenta()[1]).Abs2();

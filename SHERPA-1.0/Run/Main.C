@@ -33,7 +33,7 @@ int main(int argc,char* argv[]) {
 #endif
 
   Sherpa Generator;
-  Generator.Init();
+  Generator.Init(argc,argv);
   if (Generator.CrossSections())
     Generator.GenerateEvents();
 

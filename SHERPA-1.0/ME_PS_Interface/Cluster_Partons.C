@@ -34,7 +34,6 @@ bool Cluster_Partons::ClusterConfiguration(Process_Base * proc,Blob * _blob) {
     if (combi) delete combi;
     combi    = 0;
 
-
     // generate a list of "legs" for each amplitude
     legs = new Leg *[nampl];
     for (int k=0;k<nampl;) {
@@ -104,8 +103,12 @@ bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
 
 void Cluster_Partons::CalculateWeight(double hard,double jet) {
   msg.Debugging()<<"In Cluster_Partons::CalculateWeight("<<hard<<","<<jet<<")"<<std::endl;
-  double qmin = sqrt(jet);
-  double qmax = sqrt(hard);
+  const double facycut=0.125;
+  const double facnlly=1.; sqrt(2.);
+
+
+  double qmin = facnlly*sqrt(jet);
+  double qmax = facnlly*sqrt(hard);
 
   int nlegs   = ct->NLegs();
   // count jets
@@ -128,7 +131,7 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
   int si = 0;
   std::vector<double> last_q(nlegs,qmax);
   std::vector<int>    last_i(nlegs,si);
-  double as_jet  = (*as)(jet);
+  double as_jet  = (*as)(facycut*jet);
   double as_hard = (*as)(hard);
 
   // remove (for e+e- -> Jets) universal 2 Quark sudakov to increase the effectivity!
@@ -170,25 +173,25 @@ void Cluster_Partons::CalculateWeight(double hard,double jet) {
     double ptij = ct->GetWinner(i,j);
 
     if (ct_down->GetLeg(i)->fl.IsGluon()) {  // Gluon sudakov
-      weight *= sud->DeltaG(last_q[i],qmin)/sud->DeltaG(ptij,qmin);
+      weight *= sud->DeltaG(last_q[i],qmin)/sud->DeltaG(facnlly*ptij,qmin);
       msg.Debugging()<<"Multiply weight by (in G)  "
-		     <<sud->DeltaG(last_q[i],qmin)/sud->DeltaG(ptij,qmin)
+		     <<sud->DeltaG(last_q[i],qmin)/sud->DeltaG(facnlly*ptij,qmin)
 		     <<"  "<<last_q[i]<<" -> "<<ptij<<"  ("<<qmin<<")"<<std::endl;
     }
     if (ct_down->GetLeg(i)->fl.IsQuark()) {  // Quark sudakov
-      weight *= sud->DeltaQ(last_q[i],qmin)/sud->DeltaQ(ptij,qmin);
+      weight *= sud->DeltaQ(last_q[i],qmin)/sud->DeltaQ(facnlly*ptij,qmin);
       msg.Debugging()<<"Multiply weight by (in Q)  "
-		     <<sud->DeltaQ(last_q[i],qmin)/sud->DeltaQ(ptij,qmin)
+		     <<sud->DeltaQ(last_q[i],qmin)/sud->DeltaQ(facnlly*ptij,qmin)
 		     <<"  "<<last_q[i]<<" -> "<<ptij<<"  ("<<qmin<<")"<<std::endl;
     }
     if (ct_down->GetLeg(i)->fl.Strong()) {   // alphaS factor
-      weight *= (*as)(ptij*ptij)/as_jet;
-      msg.Debugging()<<"Multiply weight by (as in)  "<<(*as)(ptij*ptij)/as_jet<<std::endl;
+      weight *= (*as)(facycut*ptij*ptij)/as_jet;
+      msg.Debugging()<<"Multiply weight by (as in)  "<<(*as)(facycut*ptij*ptij)/as_jet<<std::endl;
     }
 
     // store old q values
     last_i[i] = si;
-    last_q[i] = ptij;
+    last_q[i] = facnlly*ptij;
     for (int l=j+1; l<nlegs; ++l ) {
       last_i[l] = last_i[l-1];
       last_q[l] = last_q[l-1];

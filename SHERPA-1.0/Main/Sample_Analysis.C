@@ -1,5 +1,6 @@
 #include "Sample_Analysis.H"
 #include "Shower_Observables.H"
+#include "MyStrStream.H"
 #include "Run_Parameter.H"
 #include "Message.H"
 
@@ -84,8 +85,16 @@ void Sample_Analysis::Finish() {
       ana->AddObservable(obs[i]);
     }
 
-    //    ana->FinishAnalysis("testout_mocaic_EU108",0);
-    ana->FinishAnalysis("testout_sherpa_GD",0);
+    //    ana->FinishAnalysis("testout_sherpa_GE130c",0);
+    MyStrStream s;
+    int   alf = int(1000.*rpa.consts.FixedAlphaS()+0.5);
+    s<<alf;
+    string salf;
+    s>>salf;
+    string name=string("testout_sherpa_GM") + salf;
+
+    //    ana->FinishAnalysis("testout_sherpa_GE125g",0);
+    ana->FinishAnalysis(name,0);
   }
 
 }
