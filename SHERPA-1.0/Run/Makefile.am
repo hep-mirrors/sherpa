@@ -89,7 +89,7 @@ SUBDIRS       =	Process
 EXTRA_DIST    =	\
 		$(CVSINCLUDE) \
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \
-	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat simplechain.dat \
+	     	Particle.dat Hadron.dat Run.dat ISR.dat ME.dat MI.dat \
 		Decays.dat Shower.dat Fragmentation.dat makeclean makelibs Lund.dat \
 		Cluster.dat
 #	     	PDFsets.tar.gz MRST99Grid.tar.gz CTEQ6Grid.tar.gz
