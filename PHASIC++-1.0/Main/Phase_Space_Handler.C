@@ -54,8 +54,8 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_weight(1.)
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
-  m_error = dr.GetValue<double>("ERROR",0.01);
-  m_inttype = dr.GetValue<int>("INTEGRATOR",3);
+  m_error    = dr.GetValue<double>("ERROR",0.01);
+  m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
   p_flavours = new Flavour[m_nin+m_nout];
   for (int i=0;i<m_nin+m_nout;i++) p_flavours[i] = proc->Flavours()[i];
   p_fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
@@ -75,12 +75,14 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
       }
     }
   }
-  m_isrspkey.Assign("s' isr",4,0,p_info);
-  m_isrykey.Assign("y isr",3,0,p_info);
-  m_beamspkey.Assign("s' beam",4,0,p_info);
-  m_beamykey.Assign("y beam",3,0,p_info);
-  p_beamhandler->AssignKeys(p_info);
-  p_isrhandler->AssignKeys(p_info);
+  if (m_nin==2) {
+    m_isrspkey.Assign("s' isr",4,0,p_info);
+    m_isrykey.Assign("y isr",3,0,p_info);
+    m_beamspkey.Assign("s' beam",4,0,p_info);
+    m_beamykey.Assign("y beam",3,0,p_info);
+    p_beamhandler->AssignKeys(p_info);
+    p_isrhandler->AssignKeys(p_info);
+  }
 }
 
 Phase_Space_Handler::~Phase_Space_Handler()
@@ -167,7 +169,6 @@ double Phase_Space_Handler::Integrate()
 
 bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p,const double mass) 
 {
-  if (m_isrspkey[3]==0.) m_isrspkey[3] = sqr(ATOOLS::rpa.gen.Ecms());
   if (m_nin == 1) {
     if (mass<0.) m_E = m_m[0];
     else m_E = mass;  
@@ -177,6 +178,7 @@ bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p,const double mass)
     return 1;
   }
   if (m_nin == 2) {
+    if (m_isrspkey[3]==0.) m_isrspkey[3] = sqr(ATOOLS::rpa.gen.Ecms());
     double Eprime = sqrt(m_isrspkey[3]);
     if ((m_E<m_m[0]+m_m[1])) return 0;
     double x = 1./2.+(m_m2[0]-m_m2[1])/(2.*m_isrspkey[3]);
@@ -198,9 +200,9 @@ double Phase_Space_Handler::Differential()
 double Phase_Space_Handler::Differential(Integrable_Base *const process) 
 { 
   PROFILE_HERE;
-  p_info->ResetAll();
-  p_isrhandler->Reset();
   if (m_nin>1) {
+    p_info->ResetAll();
+    p_isrhandler->Reset();
     if (p_beamhandler->On()>0) { 
       p_beamhandler->SetSprimeMin(m_smin);
       p_beamhandler->SetLimits();
@@ -235,8 +237,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   double KFactor = 1., Q2 = -1.;
   m_result_1 = m_result_2 = 0.;
   for (int i=0;i<m_nvec;++i) p_cms[i]=p_lab[i];
-  if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(p_lab,m_nvec);
-  if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(p_lab,m_nvec);
+  if (m_nin>1) {
+    if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(p_lab,m_nvec);
+    if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(p_lab,m_nvec);
+  }
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
   bool trigger = 0;
   if ((process->Selector())->Trigger(p_lab)) {
@@ -264,11 +268,14 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     }
     p_fsrchannels->GenerateWeight(p_cms,p_cuts);
     m_result_1 *= KFactor * p_fsrchannels->Weight();
-    if (p_isrhandler->On()==3) m_result_2 = m_result_1;
-    if (p_isrhandler->KMROn()==0) m_result_1 *= process->Differential(p_cms);
+    if (m_nin>1) {
+      if (p_isrhandler->On()==3) m_result_2 = m_result_1;
+      if (p_isrhandler->KMROn()==0) m_result_1 *= process->Differential(p_cms);
+                               else m_result_1 *= process->Differential(p_lab);
+    }
     else m_result_1 *= process->Differential(p_lab);
   }
-  if (p_isrhandler->On()==3 && trigger==1) {
+  if (m_nin>1 && p_isrhandler->On()==3 && trigger==1) {
     Rotate(p_cms);
     p_isrhandler->CalculateWeight2(Q2);
     if (m_result_2 > 0.) m_result_2 *= process->Differential2();
@@ -312,7 +319,7 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
   if ((mass<0) && (!m_initialized)) InitIncoming();
   if ((mass>0) && (m_nin==1)) InitIncoming(mass);
   m_weight=1.;
-  double value;
+  double value;    
   for (int i=1;i<m_maxtrials+1;i++) {
     if (mode==0) {
       p_process->DeSelect();
@@ -440,7 +447,7 @@ void Phase_Space_Handler::AddPoint(const double value)
 
 void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 {
-  m_isrspkey[3] = sqr(ATOOLS::rpa.gen.Ecms());
+  if (m_nin==2) m_isrspkey[3] = sqr(ATOOLS::rpa.gen.Ecms());
   Single_Channel * TestCh = new Rambo(m_nin,m_nout,p_flavours);
   MakeIncoming(p);
   TestCh->GeneratePoint(p,p_cuts);

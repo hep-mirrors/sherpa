@@ -139,6 +139,8 @@ namespace ATOOLS {
 
 
   typedef std::map<int,ATOOLS::Blob *> Int_Blob_Map;
+  typedef std::map<ATOOLS::Particle *,ATOOLS::Blob *> Particle_Blob_Map;
+
 
 
   template <class Type>

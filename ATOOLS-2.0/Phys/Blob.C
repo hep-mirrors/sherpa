@@ -179,7 +179,7 @@ void Blob::DeleteInParticle(Particle * _part) {
 	delete _part;
 	_part = NULL;
       }
-      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      //else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
       return ;
     }
   }
@@ -198,7 +198,7 @@ void Blob::DeleteOutParticle(Particle * _part) {
 	delete _part;
 	_part = NULL;
       }
-      else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
+      //else msg.Out()<<"WARNING: particle not owned by the Blob asked to delete it"<<std::endl;
       return ;
     }
   }

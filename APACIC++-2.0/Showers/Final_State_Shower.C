@@ -412,19 +412,18 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       if (pl) pl->push_back(kn->part);
       jet = new Blob();
       jet->SetStatus(1);
-      p=new Particle(kn->part);
+      p = new Particle(kn->part);
       jet->AddToInParticles(p);
       if (bl_meps) {
 	bl_meps->AddToOutParticles(p);
 	bl_meps->SetStatus(0);
       }
 
-      p=new Particle(kn->part);
+      p = new Particle(kn->part);
       jet->AddToOutParticles(p);
       if (pl) number = pl->size();
       else number = (long int)(kn->part);
       p->SetNumber(number);
-
       kn->part->SetNumber(number);
       jet->SetId();
       jet->SetType(btp::FS_Shower);

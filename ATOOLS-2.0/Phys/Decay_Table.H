@@ -66,20 +66,22 @@ namespace ATOOLS {
   private :
     std::vector <Decay_Channel *> m_channels;
     Decay_Channel *               p_selected;
+    std::vector <Decay_Channel *> m_selectedchannels, m_selectedchannelsbar;
+    std::vector <Decay_Channel *>::iterator m_seliter, m_seliterbar;
   public :
     Decay_Table(const Flavour);
     void AddDecayChannel(Decay_Channel *);
-    void Select();
-    void SetSelectedChannel(const FlavourSet &);
+    void Reset();
+    void Select(const int flag=0);
+    void SetSelectedChannel(const FlavourSet &,const bool bar=false);
     void SetOverwrite()                      { m_overwrite = 1; }
     void SetSmearing()                       { m_smearing  = 1; }
     void SetWidthGenerator(std::string _gen) { m_generator = _gen; }
-
     void Output();
 
-    bool            Overwrite()              { return m_overwrite; }
-    bool            Smearing()               { return m_smearing; }
     bool            FixedDecay()             { return m_fixdecay;  }
+    bool            Overwrite()              { return m_overwrite; }
+    bool            Smearing()               { return m_smearing;  }
     Flavour         Flav()                   { return m_flin;      }
     FlavourSet      GetDecayFlavs()          { return m_flouts;    }
     double          TotalWidth()             { return m_width;     }
@@ -88,7 +90,7 @@ namespace ATOOLS {
     double          Width(const FlavourSet);
     Decay_Channel * GetDecayChannel(const int);
     Decay_Channel * GetDecayChannel(const FlavourSet);
-    Decay_Channel * GetOneDecayChannel()     { return p_selected; }
+    Decay_Channel * GetOneDecayChannel();
   };
 }
 

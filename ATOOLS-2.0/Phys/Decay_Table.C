@@ -35,43 +35,59 @@ void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
   m_width += _dc->Width();
 }
 
-void Decay_Table::SetSelectedChannel(const FlavourSet & _flouts)
+void Decay_Table::SetSelectedChannel(const FlavourSet & _flouts,const bool bar)
 {
-  m_flouts           = _flouts;
   m_fixdecay         = true;
   Decay_Channel * dc = new Decay_Channel(m_flin);
-  for (FlSetIter flit=m_flouts.begin();flit!=m_flouts.end();++flit) dc->AddDecayProduct((*flit));
   dc->SetWidth(0.);
-  m_channels.push_back(dc);
-  p_selected         = dc;
-}
-
-void Decay_Table::Select() {
-  if (m_fixdecay) {
-    if (p_selected==NULL) {
-      for (size_t i=0;i<m_channels.size();i++) {
-	if (m_channels[i]->GetDecayProducts()==m_flouts) {
-	  p_selected = m_channels[i];
-	  break;
-	}
-      }
-    }
+  for (FlSetIter flit=_flouts.begin();flit!=_flouts.end();++flit) {
+    if (bar) dc->AddDecayProduct((*flit).Bar());
+        else dc->AddDecayProduct((*flit));
+  }
+  if (bar) {
+    m_selectedchannelsbar.push_back(dc);
   }
   else {
-    p_selected = NULL;
-    if (m_channels.size()==1) {
-      p_selected = m_channels[0];
+    m_selectedchannels.push_back(dc);
+  }
+  m_channels.push_back(dc);
+}
+
+void Decay_Table::Select(const int flag) {
+  if ((flag==1 && !m_selectedchannels.empty()) ||
+      (flag==-1 && !m_selectedchannelsbar.empty())) {
+    if (m_fixdecay) {
+      if (flag==1) {
+	p_selected  = (*m_seliter);
+	m_seliter++;
+	if (m_seliter==m_selectedchannels.end()) m_seliter = m_selectedchannels.begin();
+      }
+      if (flag==-1) {
+	p_selected  = (*m_seliterbar);
+	m_seliterbar++;
+	if (m_seliterbar==m_selectedchannelsbar.end()) m_seliterbar = m_selectedchannelsbar.begin();
+      }
       return;
     }
-    double disc = m_width*ran.Get();
-    for (size_t i=0;i<m_channels.size();i++) {
-      disc -= m_channels[i]->Width();
-      if (disc<0) {
-	p_selected = m_channels[i];
-	break;
-      }
+  }
+  p_selected = NULL;
+  if (m_channels.size()==1) {
+    p_selected = m_channels[0];
+    return;
+  }
+  double disc = m_width*ran.Get();
+  for (int i=0;i<m_channels.size();i++) {
+    disc -= m_channels[i]->Width();
+    if (disc<0) {
+      p_selected = m_channels[i];
+      break;
     }
   }
+}
+
+void Decay_Table::Reset() {
+  if (!m_selectedchannels.empty())    m_seliter    = m_selectedchannels.begin();
+  if (!m_selectedchannelsbar.empty()) m_seliterbar = m_selectedchannelsbar.begin(); 
 }
 
 void Decay_Table::Output() {
@@ -105,6 +121,12 @@ Decay_Channel * Decay_Table::GetDecayChannel(const int i)
   }
   return m_channels[i];
 }
+
+Decay_Channel * Decay_Table::GetOneDecayChannel()     
+{ 
+  if (p_selected) return p_selected; 
+}
+
 
 double Decay_Table::Width(const FlavourSet) { return 0.; }
 Decay_Channel * Decay_Table::GetDecayChannel(const FlavourSet) { return NULL; }
