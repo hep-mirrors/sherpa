@@ -53,7 +53,8 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
       do {
 	double ran1, ran2, r12, kperp[2], minimum[2];
 	min[1]=min[0]=0; minimum[1]=minimum[0]=1.0e37; sum[1]=sum[0]=Vec3D();
-	for (int i=0;i<ATOOLS::Max(blob1->NOutP(),blob2->NOutP())-1;++i) {
+	int pairs=ATOOLS::Max(blob1->NOutP(),blob2->NOutP())-1;
+	for (int i=0;i<pairs;++i) {
 	  // dice gaussian numbers
 	  do {
 	    ran1=2.0*ran.Get()-1.0; ran2=2.0*ran.Get()-1.0;
@@ -153,6 +154,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
   m_kperpsigma[0]=kps1; 
   m_kperpsigma[1]=kps2;
   p_filled->clear();
+  m_fill=1;
   return true;
 }
 
@@ -288,8 +290,72 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   return;
 }
 
+bool Primordial_KPerp::CheckBoost(ATOOLS::Particle *cur1,unsigned int beam) 
+{
+  if (m_kperpmean[0]==0.0 && m_kperpmean[1]==0.0) return true;
+  if (p_filled->find(cur1)!=p_filled->end()) return true;
+  ++m_current[beam];
+  Vec3D kp1;
+  Vec4D mom1, old1=cur1->Momentum();
+  kp1=(*p_kperp[beam])[m_current[beam]]+Vec3D(old1[1],old1[2],0.0);
+  Particle *cur2;
+  if (!FindConnected(cur1,cur2,true,0)) {
+    p_filled->insert(cur1);
+    return true;
+  }
+  ++m_current[1-beam];
+  Vec4D mom2, old2=cur2->Momentum(), oldcms=old1+old2;
+  Vec3D kp2=(*p_kperp[1-beam])[m_current[1-beam]]+Vec3D(old2[1],old2[2],0.0);
+  m_oldcms=Poincare(oldcms);
+  double sp, sp1, sp2, Enew, pznew, E1, E2, pz1, pz2;
+  sp1=old1.Abs2()+sqr(kp1.Abs());
+  sp2=old2.Abs2()+sqr(kp2.Abs());
+  sp=oldcms.Abs2()+sqr((kp1+kp2).Abs());
+  Enew=sqrt(sp/(1.0-sqr(oldcms[3]/oldcms[0])));
+  pznew=sqrt(Enew*Enew-sp);
+  double yto=(oldcms[0]+oldcms[3])/(oldcms[0]-oldcms[3]);
+  double spo=oldcms.Abs2();
+  for (double sign=1.0;sign>=-1.0;sign-=2.0) {
+    E1=0.5/sp*((sp+sp1-sp2)*Enew+sign*sqrt(Lambda2(sp,sp1,sp2))*pznew);
+    E2=Enew-E1;
+    pz1=Sign(old1[3])*sqrt(E1*E1-sp1);
+    pz2=Sign(old2[3])*sqrt(E2*E2-sp2);
+    double spn1=sqr(E1+E2)-sqr(pz1+pz2)-sqr((kp1+kp2).Abs());
+    double spn2=sqr(E1+E2)-sqr(-pz1+pz2)-sqr((kp1+kp2).Abs());
+    if (ATOOLS::dabs(spn1-spo)>ATOOLS::dabs(spn2-spo)) pz1*=-1.0;
+    double ytn=(E1+E2+pz1+pz2)/(E1+E2-pz1-pz2);
+    if (ATOOLS::dabs(ytn-yto)>ATOOLS::dabs(1./ytn-yto)) { pz1*=-1.0; pz2*=-1.0; }
+    if (dabs(pz1)>dabs(pz2)) { if (Sign(pz1)==Sign(old1[3])) break; }
+    else { if (Sign(pz2)==Sign(old2[3])) break; }
+  }
+  mom1=Vec4D(E1,kp1[1],kp1[2],pz1);
+  mom2=Vec4D(E2,kp2[1],kp2[2],pz2);
+  m_newcms=Poincare(mom1+mom2);
+  m_newcms.Boost(mom1); 
+  m_newcms.Boost(mom2);
+  if (mom2[3]>0.0) m_rotate=Poincare(Vec4D::ZVEC,mom2);
+  else m_rotate=Poincare(Vec4D::ZVEC,mom1);
+  if (m_newcms.CheckBoost() && 
+      m_oldcms.CheckBoost() && 
+      m_rotate.CheckRotation()) return false;
+  return true;
+}
+
 void Primordial_KPerp::FillKPerp(ATOOLS::Blob *blob)
 {
   unsigned int beam=blob->Beam();
-  for (int i=0;i<blob->NOutP();++i) FillKPerp(blob->OutParticle(i),beam);
+  if (blob->Beam()==0) {
+    for (int i=0;i<blob->NOutP();++i) 
+      if (!CheckBoost(blob->OutParticle(i),beam)) {
+	m_current[1]=m_current[0]=-1;
+	p_filled->clear();
+	m_fill=0;
+	return;
+      }
+    m_current[1]=m_current[0]=-1;
+    p_filled->clear();
+  }
+  if (m_fill) 
+    for (int i=0;i<blob->NOutP();++i) 
+      FillKPerp(blob->OutParticle(i),beam);
 }

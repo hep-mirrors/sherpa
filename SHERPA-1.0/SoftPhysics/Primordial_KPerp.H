@@ -16,7 +16,7 @@ namespace SHERPA {
 
     ATOOLS::Poincare m_oldcms, m_rotate, m_newcms;
 
-    int m_current[2], m_scheme;
+    int m_current[2], m_scheme, m_fill;
     
     double m_kperpmean[2], m_kperpsigma[2];
     double m_kperpmeans[2], m_kperpsigmas[2];
@@ -26,6 +26,9 @@ namespace SHERPA {
     bool FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle *&connected,
 		       bool forward,unsigned int catcher);
     bool BoostConnected(ATOOLS::Blob*,unsigned int catcher);
+
+    bool CheckBoost(ATOOLS::Particle *particle,unsigned int beam);
+    void FillKPerp(ATOOLS::Particle *particle,unsigned int beam);
 
   public:
 
@@ -48,7 +51,6 @@ namespace SHERPA {
     // member functions
     bool CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2);
 
-    void FillKPerp(ATOOLS::Particle *particle,unsigned int beam);
     void FillKPerp(ATOOLS::Blob *blob);
 
   };// end of class Primordial_KPerp
