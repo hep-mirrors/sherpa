@@ -115,10 +115,11 @@ bool MCatNLO_Interface::ReadInTheParameters()
     hwproc.iproc = -proc;
     m_proc       = ptp::Lepton_Pair; 
     break;
-  case 285:
-  case 286:
-  case 287:
-  case 288:
+  case  285:
+  case 1285: 
+  case  286:
+  case  287:
+  case  288:
     hwproc.iproc = -proc;
     m_proc       = ptp::Boson_Pair; 
     break;
