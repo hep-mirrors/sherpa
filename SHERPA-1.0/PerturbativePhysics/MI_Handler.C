@@ -20,8 +20,8 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
   file=read->GetValue<std::string>("INPUT_FILE",file);
   beamfile=read->GetValue<std::string>("BEAM_DATA_FILE","Beam.dat");
   delete read;
-  Lund_Interface *pyinterface = new Lund_Interface(path,"Lund.dat");
-  delete pyinterface;
+//   Lund_Interface *pyinterface = new Lund_Interface(path,"Lund.dat");
+//   delete pyinterface;
   if (mihandler==std::string("Amisic")) {
     p_amisic = new AMISIC::Amisic(model,beam,isr);
     p_amisic->SetInputPath(path);
