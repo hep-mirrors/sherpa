@@ -8,6 +8,7 @@ CVSROOT=":ext:141.30.17.250:/usr/local/cvsroot"
 CVS_RSH="ssh"
 ROOTSYS="/usr/local/root"
 CLHEPSYS="/usr/local/CLHEP"
+UPDATECOMMAND="TOOLS/update -f -d"
 COMPILECOMMAND="TOOLS/makeinstall --clean-run -t --clean"
 DIR="BENCHMARK"
 FILE="Benchmark.dat"
@@ -118,9 +119,9 @@ else
 fi
 
 if [ "$UPDATE" = "TRUE" ] ; then
-  echo -en "updating current sherpa version from cvs ... " >> $LOGFILE
-  echo -e "updating current sherpa version from cvs {\n" >> $OUTPUTFILE
-  if ! cvs update -d >> $OUTPUTFILE 2>&1 ; then
+  echo -en "updating current sherpa version via '$UPDATECOMMAND' ... " >> $LOGFILE
+  echo -e "updating current sherpa version via '$UPDATECOMMAND' ... {\n" >> $OUTPUTFILE
+  if ! $UPDATECOMMAND >> $OUTPUTFILE 2>&1 ; then
     echo -e "update failed\n\nbenchmark: cvs update failed" >> $LOGFILE
     echo -e "\n} update failed\n\nbenchmark: cvs update failed" >> $OUTPUTFILE
     CVS_ERROR=TRUE
