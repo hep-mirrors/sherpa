@@ -89,14 +89,15 @@ void Analysis_Handler::ShowSyntax(const size_t i)
 		   <<"   [..]   -  optional variable\n"
 		   <<"   -> ..  -  depends on\n\n"
                    <<"   list   -  particle list specifier, \n"
-		   <<"             user defined lists can be created using e.g. Trigger \n"
-                   <<"             predefined lists include:\n"
-		   <<"              FinalState, Parton, ChargedParticle, Hadron, ChargedHadron,\n"
-		   <<"              NeutralHadron, ChargePion, ChargedKaon, ProtonAntiproton \n\n"
+		   <<"             user defined lists are created by selectors\n"
+		   <<"             (e.g. by 'Trigger', 'PTSel', 'OnePTSel')\n"
+                   <<"             default lists are created by qualifiers\n"
+		   <<"             (i.e. the 'Charged' qualifier "
+		   <<"creates the 'Charged' list)\n\n"
 		   <<"   BEGIN_ANALYSIS {\n\n"
 		   <<"   LEVEL      [ME]|[MI]|[Shower]|[Hadron]\n\n"
 		   <<"   PATH_PIECE path\n\n";
-  Getter_Function::PrintGetterInfo(ATOOLS::msg.Out(),10);
+  Getter_Function::PrintGetterInfo(ATOOLS::msg.Out(),15);
   ATOOLS::msg.Out()<<"\n   } END_ANALYSIS\n\n"
 		   <<"}"<<std::endl;
 }
@@ -114,6 +115,7 @@ bool Analysis_Handler::ReadIn()
   reader.SetInputFile(InputFile());
   reader.AddComment("!");
   reader.AddComment("%");
+  reader.AddComment("//");
   reader.AddIgnore("+");
   reader.SetFileBegin("BEGIN_ANALYSIS");
   reader.SetFileEnd("END_ANALYSIS");
