@@ -29,7 +29,8 @@ Process_Base::Process_Base():
   Integrable_Base(0,0),
   m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0), 
-  m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.), p_psgen(0)
+  m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.), p_psgen(0),
+  m_print_graphs(false)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
@@ -59,7 +60,7 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   m_atoms(0), m_analyse(0), m_tables(0), 
   m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0), 
-  p_psgen(0)
+  p_psgen(0), m_print_graphs(false)
 {
   m_scale[stp::as]=m_scale[stp::fac]=_scale;
 
@@ -729,3 +730,7 @@ void Process_Base::RestoreInOrder() {
   }
 }
 
+void Process_Base::SetPrintGraphs(bool print_graphs) 
+{
+ m_print_graphs=print_graphs; 
+}

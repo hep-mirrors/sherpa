@@ -15,7 +15,9 @@ void Amplitude_Base::Add(Amplitude_Base* a, int sign)
 {std::cerr<<"Error: Virtual  Amplitude_Base::Add() called!"<<std::endl;}
 
 int Amplitude_Base::Size()
-{std::cerr<<"Error: Virtual  Amplitude_Base::Size() called!"<<std::endl;return 0;}
+{
+  return 1;
+}
  
 Zfunc_List* Amplitude_Base::GetZlist(){
   std::cerr<<"Error: Virtual  Amplitude_Base::GetZlist() called!"<<std::endl;return 0;

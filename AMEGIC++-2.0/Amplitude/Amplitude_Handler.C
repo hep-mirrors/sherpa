@@ -22,8 +22,8 @@ void out_pfunc(Pfunc & pf) {
 Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,
 				     Interaction_Model_Base * model,Topology* top,
 				     int _orderQCD,int _orderEW,Basic_Sfuncs* BS,
-				     String_Handler* _shand) 
-  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0)
+				     String_Handler* _shand, bool print_graph) 
+  : shand(_shand),CFCol_Matrix(0),probabs(0),Mi(0), m_print_graph(print_graph)
 {
   groupname = string("All Amplitudes");
 
@@ -131,7 +131,8 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
   if (msg.LevelIsTracking()) {
     PrintGraph();
-    /*
+  }
+  if (m_print_graph) {
     Amplitude_Output ao(pID,top);
     for (int i=0;i<namplitude;i++) {
       Amplitude_Base * am = GetAmplitude(i);
@@ -140,11 +141,11 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
       }
       else {
         ao.BeginSuperAmplitude();
-        for (int j=0;j<am->Size();++j) ao.WriteOut((*am)[j]->GetPointlist());
+	Amplitude_Group * ag=dynamic_cast<Amplitude_Group*>(am);
+        for (int j=0;j<ag->Size();++j) ao.WriteOut((*ag)[j]->GetPointlist());
         ao.EndSuperAmplitude();
       }
     }
-    */
   }
 
   CheckEqualInGroup();

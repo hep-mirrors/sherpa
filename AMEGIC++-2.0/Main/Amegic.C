@@ -203,6 +203,7 @@ void Amegic::ReadInProcessfile(string file)
   int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
   double      scale_factor,fixed_scale;
   double      enhance_factor=1.,maxreduction_factor=1.;
+  bool        print_graphs=false;
   string      selectorfile;
   for(;from;) {
     from.getline(buffer,100);
@@ -348,6 +349,11 @@ void Amegic::ReadInProcessfile(string file)
 		  str>>maxreduction_factor;
 		}
 
+		position       = buf.find(string("Print_Graphs"));
+		if (position > -1) {
+		  print_graphs=true;
+		}
+
 		position     = buf.find(string("N_Max :"));
 		if (position > -1) {
 		  int nmax;
@@ -406,8 +412,9 @@ void Amegic::ReadInProcessfile(string file)
 					    kfactor_scheme,scale_scheme,scale_factor,fixed_scale,
 					    plavs,nex,excluded);
 	      proc->SetEnhance(enhance_factor,maxreduction_factor);
+	      if (print_graphs) proc->SetPrintGraphs();
 	      p_procs->Add(proc);
-
+	      print_graphs=false;
 	    }
 	    else {
 	      msg.Out()<<"Ignored process: ";

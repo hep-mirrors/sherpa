@@ -216,7 +216,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   p_shand  = new String_Handler(m_gen_str,p_BS);
 
   p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,model,top,m_orderQCD,m_orderEW,
-				   p_BS,p_shand);
+				   p_BS,p_shand,m_print_graphs);
   if (p_ampl->GetGraphNumber()==0) {
     msg_Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;

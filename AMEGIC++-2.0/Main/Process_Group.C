@@ -1161,3 +1161,9 @@ void Process_Group::ControlOutput(Vec4D * p)
   msg.Out()<<"-----------------------------------------------------------------------"<<endl;
 }
 
+void Process_Group::SetPrintGraphs(bool print_graphs) 
+{
+ m_print_graphs=print_graphs; 
+ std::cout<<" "<<Name()<<" setprintgraphs : "<<print_graphs<<std::endl;
+ for (size_t i=0;i<m_procs.size();i++) m_procs[i]->SetPrintGraphs(print_graphs);
+}

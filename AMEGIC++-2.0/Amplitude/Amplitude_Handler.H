@@ -23,6 +23,7 @@ namespace AMEGIC {
     int probs;
     Single_Amplitude* firstgraph;
     std::vector<Point*> pointlist;
+    bool m_print_graph;
     int  PropProject(Amplitude_Base*,int);
     int  CompareZfunc(Amplitude_Base*,Zfunc*,Amplitude_Base*,Zfunc*);
     void CheckEqual(Single_Amplitude*);
@@ -35,7 +36,7 @@ namespace AMEGIC {
   public:
     Amplitude_Handler(int,ATOOLS::Flavour *,int *,
 		      Interaction_Model_Base *,Topology *,int,int,
-		      Basic_Sfuncs *,String_Handler *);
+		      Basic_Sfuncs *,String_Handler *, bool print_graph=false);
     ~Amplitude_Handler();
     void CompleteAmplitudes(int,ATOOLS::Flavour*,int*,Polarisation*,
 			    Topology*,Basic_Sfuncs*,std::string);

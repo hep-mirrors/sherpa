@@ -95,6 +95,7 @@ namespace AMEGIC {
   public :
     void           PrintDifferential();
     void           ControlOutput(ATOOLS::Vec4D * moms);
+    void           SetPrintGraphs(bool print_graphs=true);
 
   };
 }

@@ -42,6 +42,7 @@ namespace AMEGIC {
     Phase_Space_Generator          * p_psgen;
     
     int m_maxjetnumber;
+    bool m_print_graphs;
     /*------------------------------------------------------------------------------
 
       Naming
@@ -162,6 +163,7 @@ namespace AMEGIC {
 
     inline double       EnhanceFactor();
     inline double       MaxReduction();
+    virtual void        SetPrintGraphs(bool print_graphs=true);
 
     virtual std::string                     ResDir();
     virtual std::string                     LibName();
@@ -204,6 +206,7 @@ namespace AMEGIC {
 
   inline double      Process_Base::EnhanceFactor() { return m_enhancefac; }
   inline double      Process_Base::MaxReduction()  { return m_maxfac; }
+
 }
 
 #endif
