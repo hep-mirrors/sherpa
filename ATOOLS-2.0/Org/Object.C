@@ -20,7 +20,7 @@ Object::Object(const Object &reference)
   }
   size_t i=0;
   for (;i<std::string::npos;++i) {
-    if (s_objects.find(oit->first+" "+ToString(i))!=s_objects.end()) break;
+    if (s_objects.find(oit->first+"_"+ToString(i))==s_objects.end()) break;
   }
   s_objects.insert(std::pair<const std::string,
 		   Object *const>(oit->first+" "+ToString(i),this));
@@ -35,7 +35,7 @@ Object::Object(const std::string name)
   }
   size_t i=0;
   for (;i<std::string::npos;++i) {
-    if (s_objects.find(name+" "+ToString(i))!=s_objects.end()) break;
+    if (s_objects.find(name+"_"+ToString(i))==s_objects.end()) break;
   }
   s_objects.insert(std::pair<const std::string,
 		   Object *const>(name+" "+ToString(i),this));
