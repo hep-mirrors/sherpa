@@ -1,7 +1,8 @@
 #include "NLL_Single_Sudakov.H"
+
 #include "Run_Parameter.H"
 #include "Message.H"
-#include <sys/stat.h>
+#include "Shell_Tools.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -32,7 +33,7 @@ bool NLL_Single_Sudakov::Initialize(double _m_qmin,double _m_qmax)
     bool create=true;
     if (p_bp->Name().length()>0) {
       if (!m_log_delta.ReadIn((m_outpath+std::string("/")+p_bp->Name()).c_str())) {
-	mkdir(m_outpath.c_str(),0755);
+	ATOOLS::MakeDir(m_outpath.c_str(),0755);
       }
       else {
 	create=false;
