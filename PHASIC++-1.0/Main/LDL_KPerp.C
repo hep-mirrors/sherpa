@@ -1,6 +1,6 @@
 #include "LDL_KPerp.H"
 
-#include "Scaling.H"
+#include "MyStrStream.H"
 #include <stdio.h>
 
 using namespace PHASIC;

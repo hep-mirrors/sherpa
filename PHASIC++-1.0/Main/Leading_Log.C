@@ -2,7 +2,7 @@
 
 #include "Channel_Elements.H"
 #include "Message.H"
-#include "Scaling.C"
+#include "MyStrStream.H"
 
 #include <stdio.h>
 

@@ -1,7 +1,7 @@
 #include "LL_KPerp.H"
 
 #include "Channel_Elements.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
 
 #include <stdio.h>
 
