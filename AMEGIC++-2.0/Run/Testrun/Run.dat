@@ -1,9 +1,9 @@
 EVENTS         = 0      ! Number of Events
-CMSENERGY      = 91.299    ! cms-Energy in GeV
+CMSENERGY      = 2500    ! cms-Energy in GeV
 BEAM1          = e-     ! possible beam particle:  P+, P-, e+, e-
 BEAM2          = e+     ! possible beam particle:  P+, P-, e+, e- 
 !
-MASSES         = Off     ! Include effect of quark masses
+MASSES         = On    ! Include effect of quark masses
 ANALYSIS       = 1      ! Analysis :
 !                       ! 0=none, 1=parton-level only, 
 !                       ! 2=hadron-level only, 3=both
@@ -16,15 +16,16 @@ Jet_Scheme     = 1      ! Jet-Scheme : 1=Durham,2=Jade,3=Geneva
 LAMBDA_QCD     = 0.4            ! Lambda_QCD used for running alpha_s l^2=0.16
 FINAL_Q02      = 0.50           ! minimal virtuality in parton shower
 INITIAL_Q02    = 4.             ! initial state shower end virtuality         
-MODEL          = SM             ! Standard Model
-!MODEL          = pure QCD       ! QCD only.
+MODEL          = SM             ! Standard Model, MSSM, LED ...
 MODELFILE      = Const.dat      ! Model File
 MODELMASS      = Off            ! uses masses in Model File
 RUNMASS        = Off            ! running masses
 RUNWIDTH       = 0              ! scheme of running widths
 RUNAQED        = Off            ! running alpha_qed
 COULOMB        = Off            ! coulomb correction
-RUN_ALPHA_S    = On            ! running alpha_S
+RUN_ALPHA_S    = Off            ! running alpha_S
 Num. Accuracy  = 1.e-10         !
 Runtime        = 0              ! maximal runtime (min); 0 means off
 PT2MIN         = 100.           ! Minimum pt for hard process 	
+OrderAlpha12   = 99             ! Order of g1/g2 for the process default 99 
+OrderAlphaS    = 99             ! Order of alphas for the process default 99 
