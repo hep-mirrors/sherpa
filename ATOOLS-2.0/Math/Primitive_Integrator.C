@@ -157,6 +157,7 @@ void Primitive_Channel::SetAlpha(const double &alpha)
 
 void Primitive_Channel::Store(const double &alpha)
 {
+  if (alpha==0.0) return;
   m_snp+=m_np;
   m_ssum+=m_sum/alpha;
   m_ssum2+=m_sum2/sqr(alpha);
@@ -476,7 +477,7 @@ bool Primitive_Integrator::Shuffle()
       alpha=(m_channels[i]->Sum2()>Accu()?
 	     sqrt(m_channels[i]->Sum2()/m_channels[i]->Points()):
 	     sqrt(m_channels[i]->SSum2()/m_channels[i]->SPoints()));
-      if (!(alpha>0)) THROW(fatal_error,"Invalid weight.");
+      if (!(alpha>=0.0)) THROW(fatal_error,"Invalid weight.");
       m_channels[i]->SetAlpha(alpha);
       m_channels[i]->Reset();
       norm+=alpha;
