@@ -25,7 +25,8 @@ INCLUDES = -I../../SHERPA-1.0/Tools \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Matrix_Element_Handler.H Shower_Handler.H Hard_Decay_Handler.H \
-		 Perturbative_Interface.H SimpleXS_Apacic_Interface.H \
+		 Perturbative_Interface.H \
+		 SimpleXS_Apacic_Interface.H Amegic_Apacic_Interface.H \
 		 Interface_Tools.H Cluster_Partons.H Combine_Table.H NLL_Sudakov.H
 
 
