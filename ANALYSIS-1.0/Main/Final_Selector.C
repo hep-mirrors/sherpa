@@ -9,12 +9,23 @@
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
+namespace ANALYSIS {
+  std::ostream & operator<<(std::ostream & s,const Final_Selector_Data & fd )
+  {
+    s<<"[keep("<<fd.keep<<","<<fd.bf<<"), n("<<fd.min_n<<","<<fd.max_n<<"),"
+     <<" eta("<<fd.eta_min<<","<<fd.eta_max<<"), "<<"etpt("<<fd.et_min<<","<<fd.pt_min<<"), "
+     <<" r_min("<<fd.r_min<<"), "<<" mass("<<fd.mass_min<<","<<fd.mass_max<<")]";
+    return s;
+  }
+}
+
 Final_Selector::Final_Selector(const std::string & inlistname,
 			       const std::string & outlistname,
 			       int mode) :
   m_inlistname(inlistname),m_outlistname(outlistname),m_ownlist(false), m_extract(false),
   m_mode(mode), p_jetalg(NULL)
 {
+  msg.Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<")"<<std::endl;
   m_splitt_flag = false;
   if (mode) {
     p_jetalg = new Durham_Algorithm();  
@@ -28,6 +39,7 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 
 void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data & fs) 
 {
+  msg.Tracking()<<" AddSelector("<<fl<<","<<fs<<")"<<std::endl;
   Final_Data_Map::iterator it = m_fmap.find(fl);
   if (it==m_fmap.end()) {
     m_fmap.insert(std::make_pair(fl,fs));
@@ -46,6 +58,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
 void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2, 
 				 const Final_Selector_Data & fs) 
 {
+  msg.Tracking()<<" AddSelector("<<flav1<<","<<flav2<<","<<fs<<")"<<std::endl;
   std::pair<Flavour,Flavour> flavs(flav1,flav2);
   Final_Correlator_Map::iterator it = m_cmap.find(flavs);
   if (it==m_cmap.end()) {
@@ -69,6 +82,7 @@ void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2,
 
 void Final_Selector::AddSelector(const Flavour & fl, int min, int max) 
 {
+  msg.Tracking()<<" AddSelector("<<fl<<", n("<<min<<","<<max<<") )"<<std::endl;
   Final_Data_Map::iterator it = m_fmap.find(fl);
   if (it==m_fmap.end()) {
     Final_Selector_Data fs;
@@ -85,6 +99,7 @@ void Final_Selector::AddSelector(const Flavour & fl, int min, int max)
 
 void Final_Selector::AddKeepFlavour(const Flavour & fl) 
 {
+  msg.Tracking()<<" AddKeepFlavour("<<fl<<")"<<std::endl;
   if (fl==Flavour(kf::lepton)) {
     for (int i=0;i<fl.Size();++i) AddKeepFlavour(fl[i]);
   }
@@ -113,8 +128,8 @@ void Final_Selector::Output()
     std::cout<<" "<<it->first.first<<" "<<it->first.second<<" : "<<it->second.r_min<<std::endl;
   }
   for (Final_Data_Map::iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
-    if ((it->second.min_n>-1) && (it->second.max_n>-1)) {
-      std::cout<<" "<<it->first<<" : min = "<<it->second.min_n<<", max = "<<it->second.min_n<<std::endl;
+    if ((it->second.min_n>-1) || (it->second.max_n>-1)) {
+      std::cout<<" "<<it->first<<" : min = "<<it->second.min_n<<", max = "<<it->second.max_n<<std::endl;
     }
   }
 }
@@ -181,6 +196,8 @@ void Final_Selector::Select(Particle_List * pl,Final_Data_Map::iterator it)
       if (it->second.pt_min!=0. && !hit) hit=PtSelect((*pit)->Momentum(),it->second.pt_min);
       if (!hit) ++pit;
       else {
+// 	std::cout<<om::red<<" Final_Selector HIT "<<om::reset<<std::endl;
+// 	std::cout<<(*pit)<<std::endl;
 	if (m_ownlist) delete *pit;
 	pit = pl->erase(pit);
       }
@@ -208,6 +225,7 @@ void Final_Selector::Select2(Particle_List * pl,Final_Correlator_Map::iterator i
     }
   } 
   if (hit) {
+    //    std::cout<<om::red<<" Final_Selector HIT2 "<<om::reset<<std::endl;
     for (Particle_List::iterator pit=pl->begin();pit!=pl->end();) {
       if (m_ownlist) delete *pit;
       pit=pl->erase(pit);
@@ -227,6 +245,8 @@ void Final_Selector::SelectN(Particle_List * pl,Final_Data_Map::iterator it)
   if ((it->second.min_n>counter && it->second.min_n!=-1) ||
       (it->second.max_n<counter && it->second.max_n!=-1)) {
     // delete list
+    //    std::cout<<om::red<<" Final_Selector HITN "<<om::reset<<std::endl;
+
     for (Particle_List::iterator pit=pl->begin();pit!=pl->end();) {
       if (m_ownlist) delete *pit;
       pit=pl->erase(pit);

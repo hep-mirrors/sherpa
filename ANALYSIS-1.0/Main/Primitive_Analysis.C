@@ -411,6 +411,15 @@ Primitive_Observable_Base * Primitive_Analysis::GetObservable(const std::string 
 
 
 
+template <>
+std::ostream & Blob_Data<std::vector<double> *>::operator>>(std::ostream & s) const 
+{
+  if (m_data->size()>0) 
+    s<<(*m_data)[0];
+  for (size_t i=1;i<m_data->size();++i) 
+    s<<","<<(*m_data)[i];
+  return s;
+}
 
 template <> Blob_Data<std::vector<double> *>::~Blob_Data() 
 {
