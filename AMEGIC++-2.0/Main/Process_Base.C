@@ -135,18 +135,12 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   
   Reshuffle(_nout, _flout, _plout);
   
-  char help[20];
-
-  sprintf(help,"%i",_nin);
-  _name       = string(help);
-  _name      += string("_");
-  sprintf(help,"%i",_nout);
-  _name      += string(help);
+  _name=ToString(_nin)+"_"+ToString(_nout);
   if (m_gen_str>1) _ptype      = string("P")+_name;
-              else _ptype      = string("N")+_name;
+  else _ptype      = string("N")+_name;
   _lib        = _name;
   _name      += string("_");
-
+  
   for (size_t i=0;i<m_nin;i++) {
     _name += string(_flin[i].Name());
     if ((_flin[i].Kfcode()==kf::e)   ||

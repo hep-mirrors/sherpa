@@ -47,15 +47,13 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 {
   bool gen_colors=true;
   // look for file
-  char name[100];
-  sprintf(name,"%s.col",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
+  std::string name = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".col";
   fstream test;
-  test.open(name,ios::in); 
+  test.open(name.c_str(),ios::in); 
   if (test) { 
     test.close();
     gen_colors=false;
   }
-
   Single_Amplitude* n = firstgraph;
   ngraph = 0;
   while (n) { 
@@ -88,6 +86,8 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
 
   //Colors
   CFCol_Matrix   = new CFColor(N,firstgraph,gen_colors,pID);
+
+
 
   for (int i=0;i<CFCol_Matrix->MatrixSize();i++) graphs.push_back(new Color_Group());
 
@@ -481,16 +481,15 @@ bool Amplitude_Handler::ExistFourVertex(Point* p)
 
 void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
 {
-  char name[100];
-  sprintf(name,"%s.kick",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
+  std::string name =rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+pID+".kick";
   //  sprintf(name,"%s/Kicker.dat",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
   fstream test;
-  test.open(name,ios::in);
+  test.open(name.c_str(),ios::in);
 
   if (test) {
     test.close();
     fstream from;
-    from.open(name,ios::in);
+    from.open(name.c_str(),ios::in);
     //read in
     int i,sw;
     for(;from;) {
@@ -508,7 +507,7 @@ void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
   
 
   ofstream to;
-  to.open(name);
+  to.open(name.c_str());
 
   for(short int i=0;i<ngraph;i++) to<<i+1<<"     "<<Switch_Vector[i]<<endl;
 }

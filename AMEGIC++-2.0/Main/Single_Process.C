@@ -11,6 +11,7 @@
 #include "prof.hh"
 
 #include "Shell_Tools.H"
+#include "MyStrStream.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -191,7 +192,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 				  vector<Single_Process *> & links,vector<Single_Process *> & errs,
 				  int & totalsize, int & procs)
 {
-  if (_testmoms==0) {
+ if (_testmoms==0) {
     string model_name = model->Name();
     if (model_name==string("ADD")) {
       double ms=model->ScalarConstant("M_s");
@@ -251,6 +252,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
       }
     }
   }
+
   p_ampl->CompleteAmplitudes(m_nin+m_nout,p_flavours,p_b,&m_pol,
 			     top,p_BS,m_ptypename+string("/")+m_name);
 
@@ -585,7 +587,7 @@ int Single_Process::CheckLibraries() {
   if (p_shand->IsLibrary()) return 1;
 
   msg_Info()<<"Single_Process::CheckLibraries : Looking for a suitable library. This may take some time."<<std::endl;
-  char help[20];
+  std::string help;
   String_Handler * shand1;
   shand1      = new String_Handler(p_shand->Get_Generator());
   
@@ -595,8 +597,8 @@ int Single_Process::CheckLibraries() {
   double M2s, helvalue;
 
   for (;;) {
-    sprintf(help,"%i",m_libnumb);
-    testname  = CreateLibName()+string("_")+string(help);
+    help=ATOOLS::ToString(m_libnumb);
+    testname  = CreateLibName()+string("_")+help;
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
 
       shand1->Calculate();
@@ -659,12 +661,12 @@ int Single_Process::CheckStrings(Single_Process* tproc)
 void Single_Process::WriteLibrary() 
 {
   if (m_gen_str<2) return;
-  char help[20];
+  std::string help;
   string testname;
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
   for (;;) {
-    sprintf(help,"%i",m_libnumb);
-    testname    = CreateLibName()+string("_")+string(help);
+    help=ToString(m_libnumb);
+    testname    = CreateLibName()+string("_")+help;
     if (!(IsFile(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
     ++m_libnumb;
   }
@@ -684,29 +686,17 @@ void Single_Process::WriteLibrary()
 std::string  Single_Process::CreateLibName()
 {
   string name=m_ptypename;
-  char help[20];
-  sprintf(help,"%i",p_ampl->GetGraphNumber());
-  name += string("_");
-  name += string(help);
-  sprintf(help,"%i",p_shand->NumberOfCouplings());
-  name += string("_");
-  name += string(help);
-  sprintf(help,"%i",p_shand->NumberOfZfuncs());
-  name += string("_");
-  name += string(help);
-  sprintf(help,"%i",p_hel->MaxHel());
-  name += string("_");
-  name += string(help);
-  sprintf(help,"%i",p_BS->MomlistSize());
-  name += string("_");
-  name += string(help);
+  name+="_"+ToString(p_ampl->GetGraphNumber());
+  name+="_"+ToString(p_shand->NumberOfCouplings());
+  name+="_"+ToString(p_shand->NumberOfZfuncs());
+  name+="_"+ToString(p_hel->MaxHel());
+  name+="_"+ToString(p_BS->MomlistSize());
   return name;
 }
 
 void Single_Process::CreateMappingFile() {
   if (m_gen_str<2) return;
-  char outname[100];
-  sprintf(outname,"%s.map",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+m_name).c_str());
+  std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
   if (IsFile(outname)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
@@ -719,29 +709,26 @@ void Single_Process::CreateMappingFile() {
   }
 
   std::ofstream to;
-  to.open(outname,ios::out);
+  to.open(outname.c_str(),ios::out);
   to<<"ME: "<<m_libname<<endl
     <<"PS: "<<m_pslibname<<endl;
   to.close();
 }
 
 bool Single_Process::FoundMappingFile(std::string & MEname, std::string & PSname) {
-  char outname[100];
-  char buffer[100];
-  string buf;
+  
+  std::string buf;
   int pos;
-  sprintf(outname,"%s.map",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+m_name).c_str());
+  std::string outname = rpa.gen.Variable("SHERPA_CPP_PATH")+"/Process/"+m_ptypename+"/"+m_name+".map";
   if (IsFile(outname)) {
     ifstream from;
-    from.open(outname);
-    from.getline(buffer,100);
-    buf = string(buffer);
+    from.open(outname.c_str());
+    getline(from,buf);
     pos = buf.find(string("ME:"));
     if (pos==-1) MEname = PSname = buf;
     else {
       MEname = buf.substr(pos+4);
-      from.getline(buffer,100);
-      buf = string(buffer);
+      getline(from,buf);
       pos = buf.find(string("PS:"));
       if (pos==-1) PSname = MEname;
       else PSname = buf.substr(pos+4);
@@ -857,12 +844,11 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   string _name;
   double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2;
   long int n,sn;
-  char filename[100];
-  sprintf(filename,"%s.xstotal",(_resdir+string("/")+m_name).c_str());
+  std::string filename = _resdir+"/"+m_name+".xstotal";
   if (_resdir!=string("")) {
     if (IsFile(filename)) {
       ifstream from;
-      from.open(filename,ios::in);
+      from.open(filename.c_str(),ios::in);
       from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn;
       if (_name==m_name) {
 	m_totalxs  = _totalxs;
@@ -910,7 +896,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
     }
     if (_resdir!=string("")) {
       std::ofstream to;
-      to.open(filename,ios::out);
+      to.open(filename.c_str(),ios::out);
       WriteOutXSecs(to);
       msg_Info()<<"Store result : xs for "<<m_name<<" : "
 		<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"

@@ -338,15 +338,8 @@ void Process_Group::GroupProcesses() {
       if ((sproc->Flavours()[sproc->NIn()+j]).IsFermion()) fermions++;
       if ((sproc->Flavours()[sproc->NIn()+j]).IsVector())  vectors++;
     }
-    char numb[20];
-    sprintf(numb,"%i",scalars);
-    help += string(numb) + string("S_");
-    sprintf(numb,"%i",fermions);
-    help += string(numb) + string("F_");
-    sprintf(numb,"%i",vectors);
-    help += string(numb) + string("V");
-
-
+    std::string numb = ToString(scalars)+"S_"+ToString(fermions)+"F_"+ToString(vectors)+"V";
+    
     bool found = 0;
     for (size_t j=0;j<m_procs.size();j++) {
       if (m_procs[j]->Name() == help) {
@@ -738,8 +731,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     return okay;
   }
   else {
-    char filename[100];
-    sprintf(filename,"%s.xs_tot",(_resdir+string("/")+m_name).c_str());
+    std::string filename =_resdir+"/"+m_name+".xs_tot";
     string _name;
     double _totalxs,_totalerr,_max,sum,sqrsum,ssum,ssqrsum,ss2;
     long int n,sn;
@@ -747,7 +739,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
       if (IsFile(filename)) {
 	ifstream from;
 	bool okay=1;
-	from.open(filename);
+	from.open(filename.c_str());
 	while (from) {
 	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n>>ssum>>ssqrsum>>ss2>>sn;
 	  if (_name==m_name) m_totalxs += _totalxs;
@@ -817,7 +809,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
       }
       if (_resdir!=string("")) {
 	std::ofstream to;
-	to.open(filename,ios::out);
+	to.open(filename.c_str(),ios::out);
 	to.precision(12);
 	msg_Info()<<"Store result : xs for "<<m_name<<" : ";
 	if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
