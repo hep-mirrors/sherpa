@@ -128,6 +128,8 @@ namespace ATOOLS {
       if (cit==m_datacontainer.end()) return 0;
       return cit->second;
     } 
+    const String_BlobDataBase_Map & GetData() const {return m_datacontainer;}
+
     void     AddData(const std::string name, Blob_Data_Base * data); 
     void     ClearAllData();
 
