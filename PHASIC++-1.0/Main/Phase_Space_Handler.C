@@ -83,7 +83,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
       }
     }
   }
-  m_use_foam=dr.GetValue<int>("FOAM",1);
+  m_use_foam=dr.GetValue<int>("FOAM",0);
   if (m_nin==2) {
     m_isrspkey.Assign("s' isr",4,0,p_info);
     m_isrykey.Assign("y isr",3,0,p_info);
