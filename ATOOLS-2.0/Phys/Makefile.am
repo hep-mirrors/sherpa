@@ -26,6 +26,7 @@ libToolsPhys_la_SOURCES       =	\
 				Standard_Selector.C \
 				Blob.C \
 				Blob_List.C \
+				Parton_Finder.C \
 				Momentum_Shifter.C \
 				HepEvt_Interface.C \
 				Flow.C  
@@ -47,6 +48,7 @@ noinst_HEADERS        =	\
 			Flow.H \
 			Blob.H \
 			Blob_List.H \
+			Parton_Finder.H \
 			Momentum_Shifter.H \
 			HepEvt_Interface.H \
 			Event.H  
