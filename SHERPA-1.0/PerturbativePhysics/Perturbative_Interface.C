@@ -36,7 +36,7 @@ void Perturbative_Interface::RemoveBackward(ATOOLS::Blob *const blob,
       }
       delete prod;
     }
-    else blob->DeleteInParticle(0);
+    else blob->DeleteInParticle(cur);
   } 
 }
 
@@ -57,7 +57,7 @@ void Perturbative_Interface::RemoveForward(ATOOLS::Blob *const blob,
       }
       delete dec;
     }
-    else blob->DeleteOutParticle(0);
+    else blob->DeleteOutParticle(cur);
   } 
 }
 
