@@ -38,6 +38,7 @@ libSherpaSingleEvents_la_SOURCES      =	\
 					Event_Handler.C \
 					Event_Phase_Handler.C \
 				   	Signal_Processes.C \
+					Multiple_Interactions.C \
 					Jet_Evolution.C \
 					Hard_Decays.C \
 					Hadronization.C \
@@ -46,6 +47,7 @@ noinst_HEADERS        =	\
 			Event_Handler.H \
 			Event_Phase_Handler.H \
 		 	Signal_Processes.H \
+			Multiple_Interactions.H \
 			Jet_Evolution.H \
 			Hard_Decays.H \
 		 	Hadronization.H \
