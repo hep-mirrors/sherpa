@@ -149,7 +149,7 @@ echo "export PATH=\$PATH:$BINPATH" >> $FILE
 echo "" >> $FILE
 
 echo -en "Sherpa " >> $FILE
-if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=\"$RESULTS\" " >> $FILE ; fi
+if [ ! "$RESULTS" = "" ] ; then echo -en "RESULT_DIRECTORY=\"$RESULTS\" " >> $FILE ; fi
 if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\"$ANALYSIS\" " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$SOPTIONS" = "" ] ; then echo -en "$SOPTIONS " >> $FILE ; fi
