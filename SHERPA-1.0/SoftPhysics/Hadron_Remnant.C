@@ -152,32 +152,27 @@ bool Hadron_Remnant::DiceKinematics()
       it->second*=m_xtot/xtot;
     }
   }
-  double xperptot=0.9999999999;
+  double xperptot=1.0-1.0e-12;
   for (unsigned int i=0;i<m_extracted.size();++i) 
     ptot-=m_extracted[i]->Momentum();
   for (unsigned int j=0;j<m_companions.size();++j) {
     double E=xmap[m_companions[j]]*m_pbeam[0];
     double m=m_companions[j]->Flav().PSMass();
-    double pmax=0.9999999999*sqrt(E*E-m*m);
+    double pmax=(1.0-1.0e-12)*sqrt(E*E-m*m);
     double xperp=ATOOLS::Min(xperptot,pmax/ptot.PPerp());
-    if (m_companions[j]->Flav().IsDiQuark() && j<m_companions.size()-1) {
-      xperp=0.;
-    }
-    if (j==m_companions.size()-1) xperp=xperptot;
     xperptot-=xperp;
     ATOOLS::Vec4D p=xperp*ptot;
     p[0]=E;
     p[3]=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-ATOOLS::sqr(m));
     m_companions[j]->SetMomentum(p);
     if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
-      if (!m_dupdf) {
-	ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 			   <<"Parton ("<<m_companions[j]<<") "
-			   <<" has non-positive momentum: p = "
-			   <<m_companions[j]->Momentum()<<" m_{"
-			   <<m_companions[j]->Flav()<<"} = "
-			   <<m_companions[j]->Flav().PSMass()<<" <- "
-			   <<m_xscheme<<std::endl;
-      }
+      ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "
+			 <<"Parton ("<<m_companions[j]<<") "
+			 <<" has non-positive momentum: p = "
+			 <<m_companions[j]->Momentum()<<" m_{"
+			 <<m_companions[j]->Flav()<<"} = "
+			 <<m_companions[j]->Flav().PSMass()<<" <- "
+			 <<m_xscheme<<std::endl;
       return false;
     }
   }
