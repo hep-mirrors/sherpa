@@ -493,30 +493,27 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
     read=read&&gridhandler[i]->ReadIn(ATOOLS::Type::TFStream,
 				      OutputPath()+(*group)[i-1]->Name()+m_maxextension);
   }
-  if (!read) for (unsigned int i=0;i<gridhandler.size();++i) {
-    gridhandler[i]->Grid()->Clear();
-    p_gridcreator = new GridCreatorType(gridhandler,group);
-    p_gridcreator->ReadInArguments(InputFile(),InputPath());
-    if (mkdir(OutputPath().c_str(),448)==0) {
-      ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
-		       <<"Created output directory "<<OutputPath()<<"."<<std::endl;
-    }
-    if (mkdir((OutputPath()+filename+m_mcextension+std::string("/")).c_str(),448)==0) {
-      ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): Created output directory "
-		       <<OutputPath()+filename+m_mcextension+std::string("/")<<"."<<std::endl;
-    }
-    p_gridcreator->SetXSExtension(m_xsextension);
-    p_gridcreator->SetMaxExtension(m_maxextension);
-    p_gridcreator->SetMCExtension(m_mcextension);
-    p_gridcreator->SetOutputPath(OutputPath());
-    p_gridcreator->SetOutputFile(filename);
-    ATOOLS::Exception_Handler::AddTerminatorObject(this);
-    p_gridcreator->CreateGrid();
-    p_gridcreator->WriteOutGrid(m_comments);
-    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
-    delete p_gridcreator;
+  p_gridcreator = new GridCreatorType(gridhandler,group);
+  p_gridcreator->ReadInArguments(InputFile(),InputPath());
+  if (mkdir(OutputPath().c_str(),448)==0) {
+    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): "
+		     <<"Created output directory "<<OutputPath()<<"."<<std::endl;
   }
+  if (mkdir((OutputPath()+filename+m_mcextension+std::string("/")).c_str(),448)==0) {
+    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): Created output directory "
+		     <<OutputPath()+filename+m_mcextension+std::string("/")<<"."<<std::endl;
+  }
+  p_gridcreator->SetXSExtension(m_xsextension);
+  p_gridcreator->SetMaxExtension(m_maxextension);
+  p_gridcreator->SetMCExtension(m_mcextension);
+  p_gridcreator->SetOutputPath(OutputPath());
+  p_gridcreator->SetOutputFile(filename);
+  ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  p_gridcreator->CreateGrid();
+  p_gridcreator->WriteOutGrid(m_comments);
+  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
   m_comments.clear();
+  delete p_gridcreator;
   m_differential.push_back(new GridFunctionType(*gridhandler[0]->Grid()));
   delete gridhandler[0];
   for (unsigned int i=1;i<gridhandler.size();++i) {
@@ -727,6 +724,7 @@ bool Simple_Chain::Initialize()
   SetInputFile(xsfile,1);
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
+  s_stopscale=ATOOLS::Max(s_stopscale,stop);
   delete reader;
   for (unsigned int i=0;i<m_blobs.size();++i) {
     if (!CreateGrid(m_blobs[i],m_filename[i])) {
