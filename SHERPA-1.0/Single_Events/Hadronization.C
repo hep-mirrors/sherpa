@@ -26,6 +26,7 @@ bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &) {
   // Here we should boost -> It's only here we have the full beam information.
 
   p_fragmentationhandler->PerformFragmentation(_bloblist);
+  return 0;
 }
 
 
