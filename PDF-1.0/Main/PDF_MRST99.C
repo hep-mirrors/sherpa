@@ -10,7 +10,7 @@ c_mrst * PDF_MRST99::p_proton = NULL;
 
 PDF_MRST99::PDF_MRST99(const APHYTOOLS::Flavour _bunch,
 		       const int _set,const std::string _path) :
-  m_set(_set), m_path(_path), p_proton(NULL)
+  m_set(_set), m_path(_path)//, p_proton(NULL)
 {
   if ((m_set<1)||(m_set>12)) {
     std::cout <<"Error in PDF_MRST99::PDF_MRST99 : Wrong set : "<<m_set<<std::endl

@@ -4,13 +4,18 @@ libProcess_la_SOURCES = Set_Channel.C Set_Values.C
 INCLUDES = -I../../../AMEGIC++-2.0/Amplitude \
 	   -I../../../AMEGIC++-2.0/Amplitude/AmplTools \
 	   -I../../../AMEGIC++-2.0/Amplitude/Zfunctions \
+           -I../../../AMEGIC++-2.0/Phasespace \
 	   -I../../../AMEGIC++-2.0/Main \
 	   -I../../../AMEGIC++-2.0/Model \
 	   -I../../../AMEGIC++-2.0/String \
 	   -I../../../PHASIC++-1.0/Main \
 	   -I../../../PHASIC++-1.0/ISR \
 	   -I../../../PHASIC++-1.0/Beam \
+	   -I../../../MODEL-1.0/Main \
+	   -I../../../MODEL-1.0/Hdecay \
+	   -I../../../MODEL-1.0/Isajet \
 	   -I../../../PDF-1.0/Main \
+	   -I../../../PDF-1.0/LHAPDF \
 	   -I../../../EXTRA_XS-1.0/Main \
 	   -I../../../ATOOLS-2.0/Phys \
 	   -I../../../ATOOLS-2.0/Math \

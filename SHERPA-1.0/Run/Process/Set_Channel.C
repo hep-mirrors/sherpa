@@ -1,5 +1,6 @@
 #include "Phase_Space_Generator.H"
 
+using namespace AMEGIC;
 using namespace PHASIC;
 using namespace std;
 
