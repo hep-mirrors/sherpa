@@ -100,6 +100,7 @@ void MI_Base::CleanUp()
 {
   s_stophard=false;
   s_stopsoft=false;
+  s_cleaned=true;
 }
 
 bool MI_Base::DiceOrderingParameter()

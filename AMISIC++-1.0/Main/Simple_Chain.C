@@ -44,6 +44,7 @@ Simple_Chain::Simple_Chain():
   p_model(NULL),
   p_beam(NULL),
   p_isr(NULL),
+  p_profile(NULL),
   m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
@@ -77,6 +78,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
   p_model(_p_model),
   p_beam(_p_beam),
   p_isr(_p_isr),
+  p_profile(NULL),
   m_nflavour(3),
   m_scalescheme(2),
   m_kfactorscheme(1),
@@ -125,6 +127,7 @@ void Simple_Chain::CleanUp()
     delete *m_differential.begin();
     m_differential.erase(m_differential.begin());
   }
+  if (p_profile!=NULL) delete p_profile;
 }
 
 bool Simple_Chain::HaveBlob(ATOOLS::Blob *blob) 
@@ -680,8 +683,8 @@ void Simple_Chain::CalculateSigmaND()
   double eps=0.0808, eta=-0.4525, X=21.70, Y=56.08, b=2.3;
   if (p_isr->Flav(0).IsAnti()^p_isr->Flav(1).IsAnti()) Y=98.39;
   double s=ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-  double mp=ATOOLS::Flavour(ATOOLS::kf::p_plus).PSMass();
-  double mpi=ATOOLS::Flavour(ATOOLS::kf::pi).PSMass();
+  double mp=ATOOLS::Flavour(ATOOLS::kf::p_plus).Mass();
+  double mpi=ATOOLS::Flavour(ATOOLS::kf::pi).Mass();
   double ap=0.25, s0=8.0, y0=log(s/(mp*mp));
   double M1res=2.0, M2res=2.0, cres=2.0;
   double M1min=mp+2.0*mpi, M2min=mp+2.0*mpi;
@@ -801,6 +804,13 @@ bool Simple_Chain::Initialize()
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
   SetStop(stop,0);
+  std::string function;
+  if (reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
+    std::vector<double> parameters;
+    if (reader->VectorFromFile(parameters,"PROFILE_PARAMETERS")) {
+      p_profile = Profile_Function_Base::SelectProfile(function,parameters);
+    }
+  }
   delete reader;
   for (unsigned int i=0;i<m_blobs.size();++i) {
     if (!CreateGrid(m_blobs[i],m_filename[i])) {
@@ -987,6 +997,12 @@ bool Simple_Chain::DiceProcess()
   return false;
 }
 
+bool Simple_Chain::DiceEnhanceFactor()
+{
+  if (p_profile==NULL) return 1.0;
+  return false;
+}
+
 bool Simple_Chain::DiceOrderingParameter()
 { 
   PROFILE_HERE;
@@ -994,6 +1010,10 @@ bool Simple_Chain::DiceOrderingParameter()
     ATOOLS::msg.Error()<<"Simple_Chain::DiceOrderingParameter(): "
 		       <<"Value exceeded minimum: last = "<<m_last[0]
 		       <<" vs. stop = "<<m_stop[0]<<std::endl;
+    s_stophard=true;
+    return false;
+  }
+  if (s_cleaned) if (!DiceEnhanceFactor()) {
     s_stophard=true;
     return false;
   }

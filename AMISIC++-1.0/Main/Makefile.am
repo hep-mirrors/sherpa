@@ -24,6 +24,8 @@ lib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
 			MI_Base.C \
 			Environment.C \
+			Profile_Function_Base.C \
+			Profile_Function.C \
 			Simple_Chain.C \
 			Amisic.C 
 noinst_HEADERS        = \
@@ -41,6 +43,8 @@ noinst_HEADERS        = \
 			MI_Base.H \
 			MI_Base.inl.H \
 			Environment.H \
+			Profile_Function_Base.H \
+			Profile_Function.H \
 			Simple_Chain.H \
 			Simple_Chain.inl.H \
 			Amisic.H \

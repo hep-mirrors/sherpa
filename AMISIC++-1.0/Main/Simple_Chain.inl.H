@@ -17,6 +17,9 @@ namespace AMISIC {
   inline Simple_Chain::GridResultType Simple_Chain::Norm()
   { return m_norm; }
 
+  inline Profile_Function_Base *Simple_Chain::ProfileFunction()
+  { return p_profile; }
+
 } // end of namespace AMISIC
 
 #endif

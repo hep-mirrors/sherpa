@@ -52,8 +52,7 @@ namespace AMISIC {
 
     EXTRAXS::XS_Base *p_xs;
 
-    static bool s_stophard;
-    static bool s_stopsoft;
+    static bool s_stophard, s_stopsoft, s_cleaned;
 
   public:
 

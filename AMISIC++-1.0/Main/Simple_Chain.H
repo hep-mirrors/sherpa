@@ -4,6 +4,7 @@
 #include "MI_Base.H"
 #include "Grid_Creator.H"
 #include "QCD_Processes.H"
+#include "Profile_Function_Base.H"
 
 namespace AMISIC {
   
@@ -45,6 +46,8 @@ namespace AMISIC {
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
 
+    Profile_Function_Base *p_profile;
+
     unsigned int m_selected, m_nflavour, m_scalescheme;
     unsigned int m_kfactorscheme, m_maxtrials;
     double       m_sigmahard, m_error, m_ecms;
@@ -79,18 +82,21 @@ namespace AMISIC {
     ~Simple_Chain();
 
     // setter
-    void SetEnvironmentFile(std::string _m_environmentfile);
-    void SetNorm(GridResultType _m_norm);
+    inline void SetEnvironmentFile(std::string _m_environmentfile);
+    inline void SetNorm(GridResultType _m_norm);
 
     // getter
-    std::string    EnvironmentFile();
-    GridResultType Norm();
+    inline std::string    EnvironmentFile();
+    inline GridResultType Norm();
+
+    inline Profile_Function_Base *ProfileFunction();
 
     // member functions
     bool Initialize();
     void Update(const MI_Base *mibase);
     void Reset();
 
+    bool DiceEnhanceFactor();
     bool DiceOrderingParameter();
     bool DiceProcess();
 
