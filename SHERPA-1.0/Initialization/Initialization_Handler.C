@@ -275,7 +275,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	      <<" in "<<m_scan_nsteps<<" steps"<<endl;
 	}
 	else {
-	  cout<<"ERROR: too less parameter after -scan"<<endl;
+	  cout<<"ERROR: missing scan parameter -scan"<<endl;
 	  cout<<"       try Sherpa -? for more information "<<endl;
 	  exit(1);
 	}
