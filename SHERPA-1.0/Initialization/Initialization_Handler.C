@@ -376,7 +376,7 @@ void Initialization_Handler::SetParameter(int nr) {
     Data_Read::SetCommandLine("BEAM_ENERGY_1",sval);
     Data_Read::SetCommandLine("BEAM_ENERGY_2",sval);
   }
-  else if (m_scan_variable.find("MASS")!=string::npos || m_scan_variable.find("WIDTH")!=string::npos ) {
+  else if (m_scan_variable.find("MASS(")!=string::npos || m_scan_variable.find("WIDTH(")!=string::npos ) {
     s<<value;
     s>>sval;
     m_options[m_scan_variable]=sval;
@@ -427,7 +427,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
     cout<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
 
     // variables in dat files
-    if (equal!=-1 && mode==0) {
+    if (equal!=-1 && mode==1) {
       cout<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
       Data_Read::SetCommandLine(key,value);
     }
