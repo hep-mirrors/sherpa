@@ -7,6 +7,8 @@
 using namespace ATOOLS;
 using namespace std;
 
+#define MAXLOGFILES 10
+
 #define IM1 2147483563
 #define IM2 2147483399
 #define AM (1.0/IM1)
@@ -272,7 +274,7 @@ void Random::PrepareTerminate()
     std::ifstream testfile((name+ATOOLS::ToString(++i)+
 			    std::string(".random")).c_str());
     if (!testfile.is_open()) break;
-  } while (true);
-  WriteOutStatus((name+ATOOLS::ToString(++i)+
+  } while (i<MAXLOGFILES);
+  WriteOutStatus((name+ATOOLS::ToString(i)+
 		  std::string(".random")).c_str());
 }
