@@ -239,9 +239,9 @@ do
     fi
     if test ! -f Makefile || test "$CONFIGURE" = "TRUE" ; then
       if [ "$RELEASE" = "TRUE" ] ; then
-        ./configure "$ECOPT" >> ../$LOGFILE 2>&1
+        ./configure $ECOPT >> ../$LOGFILE 2>&1
       else
-        ./configure "$ECOPT"
+        ./configure $ECOPT
       fi
     fi
     if `test "$CLEAN" = "TRUE"` ; then 
