@@ -43,13 +43,13 @@ namespace ATOOLS {
   class Primitive_Channel {
   private:
     
-    double m_alpha, m_oldalpha, m_weight;
+    double m_alpha, m_oldalpha, m_weight, p_split[2];
     double m_sum, m_sum2, m_max, m_np, m_ssum2, m_snp;
 
     std::vector<double>             m_this;
     std::vector<Primitive_Channel*> m_next;
 
-    size_t m_pos;
+    size_t m_pos, m_split;
 
     friend std::ostream &
     operator<<(std::ostream &str,const Primitive_Channel &channel);
@@ -115,12 +115,11 @@ namespace ATOOLS {
       \fn void SetAlpha(const double &alpha)
       \brief Sets the external weight of the channel.
     */
-    void Store(const double &alpha);
+    void Store();
     /*!
-      \fn void Store(const double &alpha)
-      \brief Adds the the weight, the squared weight, the maximum 
-      and the number of points to the stored data employing the 
-      weight of the channel.
+      \fn void Store()
+      \brief Adds the the squared weight, and the number of points 
+      to the stored data employing the weight of the channel.
     */
 
     bool WriteOut(std::fstream *const file,
@@ -151,12 +150,24 @@ namespace ATOOLS {
     */
 
     // inline functions
-    inline void SetPosition(const size_t pos) { m_pos=pos; }
+    inline void SetPosition(const size_t pos)         { m_pos=pos;     }
     /*!
       \fn inline void SetPosition(const size_t pos)
       \brief Sets the position of the channel in the 
       information container which is used to determine the dimension 
       for the splitting of the integration domain.
+    */
+    inline void SetSplitDimension(const size_t split) { m_split=split; }
+    /*!
+      \fn inline void SetSplitDimension(const size_t split)
+      \brief Sets the splitting dimension for the next splitting 
+      of the channel.
+    */
+    inline void SetSplitWeight(const double weight,const size_t i)
+    { if (i<2) p_split[i]=weight; }
+    /*!
+      \fn inline void SetSplitWeight(const double weight,const size_t i)
+      \brief Sets the weight for the next splitting of the channel.
     */
 
     inline double Alpha() const    { return m_alpha;    }
@@ -174,12 +185,25 @@ namespace ATOOLS {
       \fn inline double Weight() const
       \brief Returns the volume of the integration domain.
     */
-    inline size_t Position() const { return m_pos;      }
+
+    inline size_t Position() const       { return m_pos;   }
     /*!
       \fn inline size_t Position() const
       \brief Returns the position of the channel in the 
       information container which is used to determine the dimension 
       for the splitting of the integration domain.
+    */
+    inline size_t SplitDimension() const { return m_split; }
+    /*!
+      \fn inline size_t SplitDimension() const
+      \brief Returns the dimension for the next splitting 
+      of the channel.
+    */
+    inline double SplitWeight(const size_t i) const 
+    { if (i<2) return p_split[i]; }
+    /*!
+      \fn inline size_t SplitWeight(const size_t i) const
+      \brief Returns the weight for the next splitting of the channel.
     */
 
     inline double Sum() const     { return m_sum;   }
@@ -282,14 +306,14 @@ namespace ATOOLS {
 
     const Primitive_Integrand *p_function;
 
-    size_t m_ncells, m_lastdim, m_mode, m_split, m_shuffle;
+    size_t m_ncells, m_mode, m_split, m_shuffle, m_last;
 
     std::string  m_vname, m_uname;
     Position_Map m_reserved;
 
-    void SelectDimension(const size_t pos);
+    void SelectDimension(Primitive_Channel *const current);
     /*!
-      \fn void SelectDimension(const size_t pos)
+      \fn void SelectDimension(Primitive_Channel *const current)
       \brief Selectes a dimesion for the splitting of the active
       integration channel. 
       

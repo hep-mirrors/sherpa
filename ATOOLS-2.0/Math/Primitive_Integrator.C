@@ -8,8 +8,6 @@
 
 using namespace ATOOLS;
 
-static double s_minalpha=1.0e-50;
-
 Primitive_Integrand::~Primitive_Integrand()
 {
 }
@@ -22,7 +20,8 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
   str<<"("<<&channel<<"): {\n"
      <<"   m_alpha  = "<<DFORMAT<<channel.Alpha()
      <<" <- oldalpha   = "<<DFORMAT<<channel.OldAlpha()<<"\n"
-     <<"   m_weight = "<<DFORMAT<<channel.Weight()<<"\n"
+     <<"   m_weight = "<<DFORMAT<<channel.Weight()
+     <<"    m_max      = "<<DFORMAT<<channel.Max()<<"\n"
      <<"   m_sum    = "<<DFORMAT<<channel.Sum()
      <<" -> integral   = "<<DFORMAT<<channel.Mean()<<"\n"
      <<"   m_sum2   = "<<DFORMAT<<channel.Sum2()
@@ -30,7 +29,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
      <<"   m_np     = "<<DFORMAT<<channel.Points()
      <<" -> rel. error = "<<DFORMAT<<channel.Sigma()/channel.Mean()<<"\n"
      <<"   m_ssum2  = "<<DFORMAT<<channel.SSum2()
-     <<"    m_snp    = "<<DFORMAT<<channel.SPoints()<<"\n"
+     <<"    m_snp      = "<<DFORMAT<<channel.SPoints()<<"\n"
      <<"   m_this   = ";
   for (size_t i=0;i<channel.m_this.size();++i) 
     str<<DFORMAT<<channel.m_this[i]<<" ";
@@ -47,14 +46,17 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
 Primitive_Channel::Primitive_Channel():
   m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
-  m_ssum2(0.0), m_snp(0.0), m_pos(0) {}
+  m_ssum2(0.0), m_snp(0.0), m_pos(0), m_split(0) 
+{
+  p_split[1]=p_split[0]=0.0;
+}
 
 Primitive_Channel::
 Primitive_Channel(Primitive_Channel *const prev,const size_t i,
 		  const double &pos):
-  m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
+  m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0),
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
-  m_ssum2(0.0), m_snp(0.0), m_pos(0)
+  m_ssum2(0.0), m_snp(0.0), m_pos(0), m_split(0)
 {
   if (prev->Boundary()) THROW(fatal_error,"Attempt to split boundary cell.");
   if (i>=prev->m_this.size()) THROW(fatal_error,"Inconsistent dimensions.");
@@ -65,12 +67,20 @@ Primitive_Channel(Primitive_Channel *const prev,const size_t i,
     m_next[j]=prev->m_next[j];
   }
   if (pos!=std::numeric_limits<double>::max()) m_this[i]=pos;
-  else m_this[i]=(m_next[i]->m_this[i]+m_this[i])/2.0;
+  else {
+    m_this[i]=(m_next[i]->m_this[i]+m_this[i])/2.0;
+    if (prev->p_split[1]!=0.0 && prev->p_split[0]!=0.0) {
+      m_this[i]+=(m_next[i]->m_this[i]-m_this[i])/4.0*
+	(prev->p_split[1]-prev->p_split[0])/
+	(prev->p_split[1]+prev->p_split[0]);
+    }
+  }
   m_next[i]=prev->m_next[i];
   prev->m_next[i]=this;
   prev->SetWeight();
   SetWeight();
   m_alpha=(prev->m_alpha/=2.0);
+  p_split[1]=p_split[0]=0.0;
   msg_Debugging()<<"Primitive_Channel::Primitive_Channel("
 		 <<prev<<","<<i<<"): {\n"<<*prev<<*this<<"}"<<std::endl;
   if (m_weight<=0.0 || prev->m_weight<=0.0) 
@@ -91,7 +101,7 @@ Point(const Primitive_Integrand *function,
   cur*=m_weight;
   for (size_t i=0;i<m_this.size();++i) {
     double mid=(m_this[i]+m_next[i]->m_this[i])/2.0;
-    size_t pos=8*(m_this.size()*m_pos+i)+4*(size_t)(point[i]<mid);
+    size_t pos=8*(m_this.size()*m_pos+i)+4*(size_t)(point[i]>mid);
     ++opt[pos];
     opt[pos+1]+=cur;
     opt[pos+2]+=sqr(cur);
@@ -149,11 +159,10 @@ void Primitive_Channel::SetAlpha(const double &alpha)
   m_alpha=alpha;
 }
 
-void Primitive_Channel::Store(const double &alpha)
+void Primitive_Channel::Store()
 {
-  if (alpha==0.0) return;
   m_snp+=m_np;
-  m_ssum2+=m_sum2/sqr(alpha);
+  m_ssum2+=m_sum2/sqr(m_alpha);
 }
 
 bool Primitive_Channel::
@@ -197,7 +206,7 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 				   std::vector<Primitive_Channel*> &channels)
 {
   if (min.size()!=max.size()) THROW(fatal_error,"Inconsistent dimensions.");
-  if (!channels.empty()) THROW(fatal_error,"Initialized channels found.");
+  if (!channels.empty()) THROW(critical_error,"Initialized channels found.");
   Primitive_Channel *root = new Primitive_Channel();
   channels.push_back(root);
   root->m_this=min;
@@ -218,8 +227,8 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 Primitive_Integrator::Primitive_Integrator():
   m_nopt(10000), m_nmax(1000000), m_error(0.01), m_scale (1.0),
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
-  m_ncells(1000), m_lastdim(0), m_mode(0), 
-  m_split(1), m_shuffle(1), m_vname("I") {}
+  m_ncells(1000), m_mode(0), m_split(1), m_shuffle(1), m_last(0), 
+  m_vname("I") {}
 
 Primitive_Integrator::~Primitive_Integrator()
 {
@@ -276,8 +285,6 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   while (((long unsigned int)m_np)<m_nmax &&
 	 m_channels.size()-m_point.size()<m_ncells) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
-    double alpha=1.0/(m_channels.size()-m_point.size());
-    for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
     CheckTime();
     if (Update(0)<m_error) break;
     Split();
@@ -288,7 +295,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   for (size_t i=0;i<m_channels.size();++i) 
     if (!m_channels[i]->Boundary()) {
       m_channels[i]->SetAlpha(alpha);
-      m_channels[i]->Store(alpha);
+      m_channels[i]->Store();
       m_channels[i]->Reset();
     }
   size_t add=0;
@@ -299,7 +306,7 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
 	add++>=ATOOLS::Max((size_t)5,m_point.size())) break;
     Shuffle();
   }
-  msg_Info()<<std::endl;
+  msg_Info()<<mm(1,mm::down)<<std::endl;
   return m_sum/m_np;
 }
 
@@ -319,6 +326,7 @@ double Primitive_Integrator::Update(const int mode)
   for (size_t i=0;i<m_channels.size();++i) {
     if (!m_channels[i]->Boundary()) {
       double alpha=m_channels[i]->Alpha();
+      if (mode==0) alpha=1.0/(m_channels.size()-m_point.size());
       if (alpha==0.0) 
 	THROW(fatal_error,"Integration domain not covered.");
       sum+=alpha;
@@ -328,18 +336,19 @@ double Primitive_Integrator::Update(const int mode)
       m_np+=m_channels[i]->Points();
       m_sum+=m_channels[i]->Sum()/alpha;
       m_sum2+=m_channels[i]->Sum2()/sqr(alpha);
-      m_max=ATOOLS::Max(m_max,m_channels[i]->Max());
+      m_max=ATOOLS::Max(m_max,m_channels[i]->Max()/alpha);
     }
   }
   if (!IsEqual(sum,1.0)) 
-    THROW(critical_error,"Summation does not agree.");
+    THROW(fatal_error,"Summation does not agree.");
   double error=dabs(Sigma()/Mean());
   msg_Info()<<"  "<<om::bold<<m_vname<<om::reset<<" = "<<om::blue
 	    <<Mean()*m_scale<<" "<<m_uname<<om::reset<<" +- ( "
 	    <<error*Mean()*m_scale<<" "<<m_uname<<" = "<<om::red
-	    <<error*100.0<<" %"<<om::reset<<" ), n = "<<m_np<<", "
+	    <<error*100.0<<" %"<<om::reset<<" )\n  eff = "
+	    <<Mean()/m_max*100.0<<" %, n = "<<m_np<<", "
 	    <<m_channels.size()-m_point.size()
-	    <<" cells      "<<bm::cr<<std::flush;
+	    <<" cells      "<<mm(1,mm::up)<<bm::cr<<std::flush;
   return error;
 }
 
@@ -350,7 +359,7 @@ void Primitive_Integrator::Point()
   for (size_t i=0;i<m_channels.size();++i) {
     sum+=m_channels[i]->Alpha();
     if (sum>=disc) {
-      selected=m_channels[i];
+      selected=m_channels[m_last=i];
       break;
     }
   }
@@ -369,13 +378,14 @@ void Primitive_Integrator::Point(std::vector<double> &x)
 
 double Primitive_Integrator::Weight(const std::vector<double> &x) const
 {
+  if (m_last<m_channels.size() && x==m_point) return 
+    m_channels[m_last]->Weight()/m_channels[m_last]->Alpha();
   for (size_t i=0;i<m_channels.size();++i) {
     if (m_channels[i]->Find(x)) {
       return m_channels[i]->Weight()/m_channels[i]->Alpha();
     }
   }
-  msg.Error()<<"Primitive_Integrator::Weight(..): "
-	     <<"Point out of range."<<std::endl;
+  THROW(critical_error,"Point out of range.");
   return 0.0;
 }
 
@@ -394,28 +404,29 @@ void Primitive_Integrator::Split()
   double max=-std::numeric_limits<double>::max(), cur=0.0;
   Primitive_Channel *selected=NULL;
   for (size_t i=0;i<m_channels.size();++i) {
+    if (m_channels[i]->Position()!=std::string::npos) {
+      SelectDimension(m_channels[i]);
+      m_channels[i]->SetPosition(std::string::npos);
+    }
     m_channels[i]->SetAlpha(0.0);
     switch (m_mode) {
     case 1:
-      if ((cur=m_channels[i]->Max())>max) {
-	max=cur;
-	selected=m_channels[i];
-      }
+      cur=m_channels[i]->Max();
       break;
     case 0: 
     default:
-      if ((cur=m_channels[i]->Variance())>max) {
-	max=cur;
-	selected=m_channels[i];
-      }
-      break;
+      cur=m_channels[i]->Variance();
+    }
+    if (cur>max) {
+      max=cur;
+      selected=m_channels[i];
     }
   }
   if (selected==NULL) THROW(fatal_error,"Internal error.");
-  SelectDimension(selected->Position());
   for (size_t i=0;i<16*m_point.size();++i) m_opt[i]=0.0;
   selected->SetAlpha(selected->OldAlpha());
-  Primitive_Channel *next = new Primitive_Channel(selected,m_lastdim);
+  Primitive_Channel *next = 
+    new Primitive_Channel(selected,selected->SplitDimension());
   m_channels.push_back(next);
   next->SaveAlpha();
   next->SetAlpha(0.5);
@@ -426,28 +437,28 @@ void Primitive_Integrator::Split()
   selected->Reset();
 }
 
-void Primitive_Integrator::SelectDimension(const size_t pos)
+void Primitive_Integrator::SelectDimension(Primitive_Channel *const current)
 {
-  m_lastdim=0;
-  double max=-std::numeric_limits<double>::max(), cur=0.0;
+  double max=-std::numeric_limits<double>::max(), cur=0.0, val[2]={0.0,0.0};
   for (size_t i=0;i<m_point.size();++i) {
     if (m_nosplit[i]==true) continue;
-    size_t l=8*(m_point.size()*pos+i);
+    size_t l=8*(m_point.size()*current->Position()+i);
     switch (m_mode) {
     case 1: 
-      cur=ATOOLS::Max(m_opt[l+3],m_opt[l+7]);
+      cur=dabs((val[0]=m_opt[l+3])-(val[1]=m_opt[l+7]));
       break;
     case 0: 
     default:
-      cur=ATOOLS::Max((m_opt[l+2]-m_opt[l+1]*m_opt[l+1]/m_opt[l])
-		      /(m_opt[l]-1.0),
-		      (m_opt[l+6]-m_opt[l+5]*m_opt[l+5]/m_opt[l+4])
-		      /(m_opt[l+4]-1.0));
-      break;
+      cur=dabs((val[0]=(m_opt[l+2]-m_opt[l+1]*
+			m_opt[l+1]/m_opt[l])/(m_opt[l]-1.0))-
+	       (val[1]=(m_opt[l+6]-m_opt[l+5]*
+			m_opt[l+5]/m_opt[l+4])/(m_opt[l+4]-1.0)));
     }
     if (cur>max || (IsEqual(cur,max) && ran.Get()>0.5)) {
       max=cur;
-      m_lastdim=i;
+      current->SetSplitDimension(i);
+      for (short unsigned int j=0;j<2;++j) 
+	current->SetSplitWeight(val[j],j);
     }
     if (!(cur<0) && !(cur>=0)) THROW(fatal_error,"Criterion is nan.")
   } 
@@ -457,8 +468,7 @@ bool Primitive_Integrator::Shuffle()
 {
   if (m_shuffle==0) {
     for (size_t i=0;i<m_channels.size();++i) 
-      if (!m_channels[i]->Boundary()) 
- 	m_channels[i]->Store(m_channels[i]->Alpha());
+      if (!m_channels[i]->Boundary()) m_channels[i]->Store();
     return true;
   }
   size_t diced=0;
@@ -466,38 +476,37 @@ bool Primitive_Integrator::Shuffle()
   for (size_t i=0;i<m_channels.size();++i) {
     if (!m_channels[i]->Boundary()) {
       double alpha=m_channels[i]->Alpha();
-      m_channels[i]->SaveAlpha();
-      if (m_channels[i]->Points()!=0.0) {
-	oldnorm+=alpha;
-	alpha=sqrt(m_channels[i]->SSum2()/
-		   m_channels[i]->SPoints());
-	if (!(alpha>=0.0)) 
+      m_channels[i]->Store();
+      if (m_channels[i]->Sum2()!=0.0) {
+ 	oldnorm+=alpha;
+	switch (m_mode) {
+	case 1:
+	  break;
+	case 0:
+	default:
+	  alpha=sqrt(m_channels[i]->SSum2()/
+		     m_channels[i]->SPoints());
+	}
+	if (!(alpha>0.0)) 
 	  THROW(fatal_error,"Invalid weight.");
 	m_channels[i]->SetAlpha(alpha);
 	norm+=alpha;
-	++diced;
-      }
-      if (alpha==0.0) {
-	m_channels[i]->SetAlpha(s_minalpha);
-	norm+=s_minalpha;
+ 	++diced;
       }
     }
   }
   norm/=oldnorm;
+  oldnorm=0.0;
   if (diced==0) THROW(fatal_error,"No channel diced.");
   for (size_t i=0;i<m_channels.size();++i) 
-    if (!m_channels[i]->Boundary() && 
-	m_channels[i]->Points()!=0.0) 
-      m_channels[i]->SetAlpha(m_channels[i]->Alpha()/norm);
-  norm=0.0;
-  for (size_t i=0;i<m_channels.size();++i)
     if (!m_channels[i]->Boundary()) {
-      norm+=m_channels[i]->Alpha();
-      m_channels[i]->Store(m_channels[i]->OldAlpha());
+      if (m_channels[i]->Sum2()!=0.0) 
+	m_channels[i]->SetAlpha(m_channels[i]->Alpha()/norm);
+      oldnorm+=m_channels[i]->Alpha();
       m_channels[i]->Reset();
     }
-  if (!IsEqual(norm,1.0)) 
-    THROW(critical_error,"Summation does not agree.");
+  if (!IsEqual(oldnorm,1.0)) 
+    THROW(fatal_error,"Summation does not agree.");
   return true;
 }
 
@@ -577,7 +586,7 @@ bool Primitive_Integrator::ReadIn(const std::string &filename)
     }
     else {
       if (i<size-1) m_channels.
-	push_back(new Primitive_Channel(m_channels[0],m_lastdim));
+	push_back(new Primitive_Channel(m_channels[0],0));
       pmap[i+1]=m_channels[i];
     }
   }
@@ -639,7 +648,7 @@ Split(const std::string &key,
       const size_t nprev,const std::vector<double> &pos)
 {
   if (m_channels.empty()) 
-    THROW(fatal_error,"No cells. Call Initialize() first.");
+    THROW(critical_error,"No cells. Call Initialize() first.");
   Position_Map::const_iterator rit=m_reserved.find(key);
   if (rit==m_reserved.end()) THROW(critical_error,"Key not found.");
   if (nprev>=rit->second.second.first)
