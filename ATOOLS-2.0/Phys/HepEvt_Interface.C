@@ -1253,6 +1253,19 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
     }
   }
 
+  Blob *nirwana = new Blob();
+  // Nirwana particles
+  for (biter=blobs->begin();biter!=blobs->end();biter++) {
+    for (size_t i=0;i<(size_t)(*biter)->NOutP();++i) {
+      Particle *part=(*biter)->OutParticle(i);
+      if (part->Status()!=1 && part->DecayBlob()==NULL) {
+	nirwana->AddToInParticles(part);
+      }
+    }
+  }
+  nirwana->SetTypeSpec("Nirwana");
+  blobs->push_back(nirwana);
+
   int blobid = 0;
   for (biter=blobs->begin();biter!=blobs->end();biter++) {
     (*biter)->SetId(-blobid);
