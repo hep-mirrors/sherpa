@@ -103,10 +103,20 @@ namespace ATOOLS {
 
     inline const double PPerp2() const; 
     inline const double PPerp() const; 
+    inline const double MPerp2() const; 
+    inline const double MPerp() const; 
     inline const double EPerp2() const;
     inline const double EPerp() const; 
     inline const double PPlus() const; 
     inline const double PMinus() const; 
+    inline const double PSpat2() const; 
+    inline const double PSpat() const; 
+    inline const double CosPhi() const; 
+    inline const double SinPhi() const; 
+    inline const double Phi() const; 
+    inline const double CosTheta() const; 
+    inline const double SinTheta() const; 
+    inline const double Theta() const; 
 
     inline const double Y() const; 
     inline const double Eta() const; 
@@ -352,7 +362,7 @@ namespace ATOOLS {
 
   inline const double Vec4D::Abs2() const 
   { 
-    return m_x[0]*m_x[0]-m_x[1]*m_x[1]-m_x[2]*m_x[2]-m_x[3]*m_x[3]; 
+    return m_x[0]*m_x[0]-PSpat2();
   }
   
   inline const double Vec4D::Abs() const 
@@ -360,11 +370,15 @@ namespace ATOOLS {
     return sqrt(Abs2()); 
   }
 
+  inline const double Vec4D::Y() const 
+  { 
+    return 0.5*log(PPlus()/PMinus()); 
+  }
+  
   inline const double Vec4D::P() const 
   { 
-    return sqrt(m_x[1]*m_x[1]+m_x[2]*m_x[2]+m_x[3]*m_x[3]); 
+    return PSpat();
   }
-
 
   inline const double Vec4D::PPerp2() const 
   { 
@@ -376,9 +390,19 @@ namespace ATOOLS {
     return sqrt(PPerp2()); 
   }
   
+  inline const double Vec4D::MPerp2() const 
+  { 
+    return m_x[0]*m_x[0]-m_x[3]*m_x[3]; 
+  }
+  
+  inline const double Vec4D::MPerp() const 
+  { 
+    return sqrt(MPerp2()); 
+  }
+  
   inline const double Vec4D::EPerp2() const 
   { 
-    return m_x[0]*m_x[0]*(m_x[1]*m_x[1]+m_x[2]*m_x[2])/(m_x[1]*m_x[1]+m_x[2]*m_x[2]+m_x[3]*m_x[3]); 
+    return m_x[0]*m_x[0]*PPerp2()/PSpat2();
   }
   
   inline const double Vec4D::EPerp() const 
@@ -411,6 +435,46 @@ namespace ATOOLS {
   inline const double Vec4D::PMinus() const 
   { 
     return m_x[0]-m_x[3]; 
+  }
+
+  inline const double Vec4D::PSpat2() const
+  {
+    return m_x[1]*m_x[1]+m_x[2]*m_x[2]+m_x[3]*m_x[3];
+  }
+
+  inline const double Vec4D::PSpat() const 
+  {
+    return sqrt(PSpat2());
+  }
+
+  inline const double Vec4D::CosPhi() const
+  {
+    return m_x[1]/PPerp();
+  }
+
+  inline const double Vec4D::SinPhi() const 
+  {
+    return m_x[2]/PPerp();
+  }
+
+  inline const double Vec4D::Phi() const 
+  {
+    return acos(CosPhi());
+  }
+
+  inline const double Vec4D::CosTheta() const 
+  {
+    return m_x[3]/PSpat();
+  }
+
+  inline const double Vec4D::SinTheta() const 
+  {
+    return sqrt(PPerp2()/PSpat2());
+  }
+
+  inline const double Vec4D::Theta() const 
+  {
+    return acos(CosTheta());
   }
   
   // output streams:
