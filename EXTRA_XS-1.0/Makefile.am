@@ -1,4 +1,8 @@
 MAKE = make 
-SUBDIRS = Main Two2Two
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+SUBDIRS       =	Main Two2Two
+EXTRA_DIST    = $(CVSINCLUDE)
 
 

@@ -1,18 +1,33 @@
+SHERPASYS     =	../..
+
+EXTRAXSFLAGS  =	# -pedantic -Wall -Winline
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
+PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+EXTRAXSINCS   =	-I../Two2Two
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 lib_LTLIBRARIES = libExtraXS.la
-libExtraXS_la_SOURCES = SimpleXSecs.C XS_Base.C Single_XS.C XS_Group.C XS_Selector.C
-INCLUDES = -I../Two2Two \
-	   -I../../AMEGIC++-2.0/Main \
-	   -I../../AMEGIC++-2.0/Amplitude \
-	   -I../../AMEGIC++-2.0/Amplitude/AmplTools \
-	   -I../../AMEGIC++-2.0/Amplitude/Zfunctions \
-	   -I../../AMEGIC++-2.0/Model \
-	   -I../../AMEGIC++-2.0/String \
-	   -I../../PHASIC++-1.0/Main \
-	   -I../../MODEL-1.0/Main \
-	   -I../../BEAM-1.0/Main \
-	   -I../../PDF-1.0/Main \
-	   -I../../PDF-1.0/LHAPDF \
-           -I../../ATOOLS-2.0/Phys \
-           -I../../ATOOLS-2.0/Math \
-           -I../../ATOOLS-2.0/Org 
-noinst_HEADERS = SimpleXSecs.H XS_Base.H Single_XS.H XS_Group.H XS_Selector.H
+libExtraXS_la_SOURCES =	\
+			XS_Base.C \
+			Single_XS.C \
+			XS_Group.C \
+			SimpleXSecs.C \
+			XS_Selector.C
+noinst_HEADERS        =	\
+			XS_Base.H \
+			Single_XS.H \
+			XS_Group.H \
+			SimpleXSecs.H \
+			XS_Selector.H
+EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(EXTRAXSFLAGS)
+INCLUDES      =	$(EXTRAXSINCS) $(PHASICINCS) $(PDFINCS) \
+		$(BEAMINCS) $(MODELINCS) $(ATOOLSINCS)
