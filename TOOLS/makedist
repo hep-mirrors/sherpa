@@ -8,6 +8,7 @@ DISTDIR=`date +'%y-%m-%d'`
 ECOPT=""
 for I in $* ; do
   if [ "$I" = "-c" ]; then CLEAN=TRUE 
+  elif [ "$I" = "-f" ]; then DISTDIR=$DISTDIR"_"`date +'%H-%M'` 
   elif [ "$I" = "--clean" ]; then ALLCLEAN=TRUE 
   elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
   elif [ "$I" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" 
@@ -17,6 +18,7 @@ for I in $* ; do
   elif [ "$I" = "-h" ]; then echo && \
     echo "makedist version 1.0 " && echo && \
     echo "options: -c             execute './SHERPA-1.0/Run/makeclean' first" && \
+    echo "         -f             include full time information in distribution name" && \
     echo "         --clean        execute 'make clean' before 'make dist'" && \
     echo "         --configure    configure before 'make dist' (enabled with '-t')" && \
     echo "         --hide-cvs     do not include cvs directories in distribution" && \
@@ -83,3 +85,5 @@ do
 done;
 tar -czvf $DISTDIR.tar.gz $ALL makedist makeinstall
 rm -rf $ALL
+echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
+exit 0
