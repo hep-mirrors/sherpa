@@ -2,12 +2,57 @@
 
 #include "Environment.H"
 #include "Particle.H"
+#include "Random.H"
 
 using namespace AMISIC;
 
+template <class Argument_Type,class Result_Type>
+Amisic::Grid_Creator<Argument_Type,Result_Type>::Grid_Creator(GridHandlerType *_p_gridhandler,
+							      EXTRAXS::SimpleXSecs *_p_processes):
+  GridCreatorBaseType(_p_gridhandler),
+  p_processes(_p_processes)
+{
+  if (p_processes==NULL) {
+      ATOOLS::msg.Error()<<"Grid_Creator::Grid_Creator("<<_p_gridhandler<<","<<_p_processes<<"): "
+			 <<"Process handler is not initialized! Abort."<<std::endl;
+      abort();
+  }
+}
+
+template <class Argument_Type,class Result_Type>
+bool Amisic::Grid_Creator<Argument_Type,Result_Type>::InitializeCalculation()
+{
+  p_xaxis=p_gridhandler->Grid()->XAxis();
+  m_criterion=p_xaxis->Variable().TypeToSelectorID(p_xaxis->Variable().GetType());
+  m_initialdata=p_processes->SelectorData()->RemoveData(m_criterion);
+  return true;
+}
+
+template <class Argument_Type,class Result_Type>
+Result_Type Amisic::Grid_Creator<Argument_Type,Result_Type>::CalculateSingleValue(GridArgumentType nextleft,
+										  GridArgumentType nextright)
+{
+  GridArgumentType lower, upper, middle;
+  GridResultType result;
+  lower=ATOOLS::Max((*p_xaxis)[(*p_xaxis)(nextleft)*(GridArgumentType)(3.0/4.0)
+			       +(*p_xaxis)(nextright)*(GridArgumentType)(1.0/4.0)],(*p_xaxis)[GridXMin()]);
+  upper=ATOOLS::Min((*p_xaxis)[(*p_xaxis)(nextleft)*(GridArgumentType)(1.0/4.0)
+			       +(*p_xaxis)(nextright)*(GridArgumentType)(3.0/4.0)],(*p_xaxis)[GridXMax()]);
+  middle=(*p_xaxis)[((*p_xaxis)(nextleft)+(*p_xaxis)(nextright))/(GridArgumentType)2.0];
+  p_processes->SelectorData()->SetData(m_criterion,m_initialdata.flavs,m_initialdata.help,lower,upper);
+  p_processes->ResetSelector(p_processes->SelectorData());
+  p_processes->CalculateTotalXSec();
+  result=(GridResultType)p_processes->Total()/(upper-lower);
+  ATOOLS::msg.Out()<<"Amisic::Grid_Creator::CalculateSingleValue(): Got value for "<<middle<<" GeV"<<std::endl
+		   <<"   Calculation for "<<lower<<" GeV < "<<p_xaxis->Variable().Name()
+		   <<" < "<<upper<<" GeV yielded "<<result*rpa.Picobarn()<<" pb/GeV"<<std::endl;
+  return result;
+}
+
 Amisic::Amisic():
-  m_differential(std::vector<GridHandlerType*>(0)),
-  m_total(new GridHandlerType()),
+  m_differential(std::vector<GridFunctionType*>(0)),
+  p_total(new GridFunctionType()),
+  m_cutoff((GridArgumentType)1.6),
   m_inputdirectory(std::string("./")),
   m_inputfile(std::string("MI.dat")),
   m_environmentfile(std::string("Run.dat")),
@@ -17,7 +62,7 @@ Amisic::Amisic():
 Amisic::~Amisic()
 {
   ClearVector();
-  if (m_total!=NULL) delete m_total;
+  if (p_total!=NULL) delete p_total;
 }
 
 void Amisic::ClearVector() 
@@ -402,28 +447,41 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
 bool Amisic::CalculateTotal()
 {
   if (m_differential.size()==0) return false;
-  GridHandlerType::GridFunctionType *temp, *tempintegral;
-  temp = new GridHandlerType::GridFunctionType();
-  temp->XAxis()->SetVariable(m_differential[0]->Grid()->XAxis()->Variable());
-  temp->YAxis()->SetVariable(m_differential[0]->Grid()->YAxis()->Variable());
-  temp->XAxis()->SetScaling(m_differential[0]->Grid()->XAxis()->Scaling()->Name());
-  temp->YAxis()->SetScaling(m_differential[0]->Grid()->YAxis()->Scaling()->Name());
-  std::vector<GridHandlerType*>::iterator diffit=m_differential.begin();
-  for (unsigned int i=0;i<(*diffit)->Grid()->XDataSize();++i) {
-    temp->AddPoint((*diffit)->Grid()->XYData(i).first,(*diffit)->Grid()->XYData(i).second);
+  GridHandlerType::GridFunctionType *differential, *integrated;
+  differential = new GridHandlerType::GridFunctionType();
+  differential->XAxis()->SetVariable(m_differential[0]->XAxis()->Variable());
+  differential->YAxis()->SetVariable(m_differential[0]->YAxis()->Variable());
+  differential->XAxis()->SetScaling(m_differential[0]->XAxis()->Scaling()->Name());
+  differential->YAxis()->SetScaling(m_differential[0]->YAxis()->Scaling()->Name());
+  std::vector<GridFunctionType*>::iterator diffit=m_differential.begin();
+  for (unsigned int i=0;i<(*diffit)->XDataSize();++i) {
+    differential->AddPoint((*diffit)->XYData(i).first,(*diffit)->XYData(i).second);
   }
   for (++diffit;diffit!=m_differential.end();++diffit) {
-    for (unsigned int i=0;i<(*diffit)->Grid()->XDataSize();++i) {
-      GridArgumentType x=(*diffit)->Grid()->XYData(i).first;
-      temp->ReplaceXPoint(x,temp->Y(x,temp->Interpolation)+(*diffit)->Grid()->XYData(i).second);
+    for (unsigned int i=0;i<(*diffit)->XDataSize();++i) {
+      GridArgumentType x=(*diffit)->XYData(i).first;
+      differential->ReplaceXPoint(x,differential->Y(x,differential->Interpolation)+(*diffit)->XYData(i).second);
     }
   }
-  m_total->Grid()->XAxis()->SetScaling(m_differential[0]->Grid()->XAxis()->Scaling()->Name());
-  m_total->Grid()->YAxis()->SetScaling(m_differential[0]->Grid()->YAxis()->Scaling()->Name());
-  tempintegral = temp->IntegralY();
-  m_total->Grid()->Import(*tempintegral); 
-  delete tempintegral;
-  delete temp;
+  p_total->XAxis()->SetScaling(m_differential[0]->XAxis()->Scaling()->Name());
+  p_total->YAxis()->SetScaling(m_differential[0]->YAxis()->Scaling()->Name());
+  integrated = differential->IntegralY();
+  GridResultType total=integrated->YData(integrated->YDataSize()-1);
+  for (unsigned int i=0;i<integrated->XDataSize();++i) {
+    GridArgumentType x=integrated->XYData(i).first;
+    integrated->ReplaceXPoint(x,total-integrated->XYData(i).second);
+  }
+  p_total->Import(*integrated);
+  p_total->MoveY(-p_total->YMin());
+  p_total->ScaleY((GridArgumentType)1.0/p_total->YMax());
+//   EXTRAXS::SimpleXSecs *help1;
+//   GridHandlerType *help2 = new GridHandlerType(p_total);
+//   GridCreatorType *help3 = new GridCreatorType(help2,help1);
+//   help3->WriteOutGrid("test");
+//   delete help3;
+//   delete help2;
+  delete integrated;
+  delete differential;
   return true;
 }
 
@@ -454,7 +512,14 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
       m_create[i]=true;
     }
     else {
-      m_differential.push_back(newgridhandler);
+      newgridhandler->Grid()->XAxis()->SetScalingMode(newgridhandler->Grid()->XAxis()->Identical);
+      newgridhandler->Grid()->YAxis()->SetScalingMode(newgridhandler->Grid()->YAxis()->Identical);
+      m_differential.push_back(new GridFunctionType(*newgridhandler->Grid()));
+      m_differential[m_differential.size()-1]->XAxis()->SetScaling
+	(newgridhandler->Grid()->XAxis()->Scaling()->Name());
+      m_differential[m_differential.size()-1]->YAxis()->SetScaling
+	(newgridhandler->Grid()->YAxis()->Scaling()->Name());
+      delete newgridhandler;
     }
     if (m_create[i]) {
       if (creategrid) {
@@ -463,6 +528,7 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
 			     <<m_outputdirectory+m_filename[i]<<" failed! "<<std::endl
 			     <<"   Abort initialization."<<std::endl;
 	  ClearVector();
+	  delete newgridhandler;
 	  return false;
 	}
 	if (!newgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputdirectory+m_filename[i])) {
@@ -470,15 +536,24 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
 			     <<m_outputdirectory+m_filename[i]<<" failed! "<<std::endl
 			     <<"   Abort initialization."<<std::endl;
 	  ClearVector();
+	  delete newgridhandler;
 	  return false;
 	}
 	else {
-	  m_differential.push_back(newgridhandler);
+	  newgridhandler->Grid()->XAxis()->SetScalingMode(newgridhandler->Grid()->XAxis()->Identical);
+	  newgridhandler->Grid()->YAxis()->SetScalingMode(newgridhandler->Grid()->YAxis()->Identical);
+	  m_differential.push_back(new GridFunctionType(*newgridhandler->Grid()));
+	  m_differential[m_differential.size()-1]->XAxis()->SetScaling
+	    (newgridhandler->Grid()->XAxis()->Scaling()->Name());
+	  m_differential[m_differential.size()-1]->YAxis()->SetScaling
+	    (newgridhandler->Grid()->YAxis()->Scaling()->Name());
+	  delete newgridhandler;
 	}
       }
       else {
 	ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): "
 			   <<"Grid files are missing! Run cannot continue."<<std::endl;
+	delete newgridhandler;
 	abort();
       }
     }
@@ -489,49 +564,59 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
 		       <<" Run cannot continue."<<std::endl;
 	abort();
   }
+//   for (unsigned int i=0;i<10;++i) {
+//     std::cout<<" new try "<<std::endl;
+//     ATOOLS::Blob_List *blobs=CreateProcesses();
+//     for (ATOOLS::Blob_Iterator bit=blobs->begin();bit!=blobs->end();std::cout<<*bit++<<std::endl);
+//     delete blobs;
+//   }
   return true;
 }
 
-template <class Argument_Type,class Result_Type>
-Amisic::Grid_Creator<Argument_Type,Result_Type>::Grid_Creator(GridHandlerType *_p_gridhandler,
-							      EXTRAXS::SimpleXSecs *_p_processes):
-  GridCreatorBaseType(_p_gridhandler),
-  p_processes(_p_processes)
+ATOOLS::Blob *Amisic::SelectBlob(ATOOLS::Blob_List bloblist,double ran)
 {
-  if (p_processes==NULL) {
-      ATOOLS::msg.Error()<<"Grid_Creator::Grid_Creator("<<_p_gridhandler<<","<<_p_processes<<"): "
-			 <<"Process handler is not initialized! Abort."<<std::endl;
-      abort();
+  for (unsigned int i=0;i<bloblist.size();++i) 
+    if ((float)(i+1)>ran*(float)bloblist.size()) return bloblist[i];
+  ATOOLS::msg.Error()<<"Amisic::SelectBlob("<<&bloblist<<","<<ran<<"): "
+		     <<"Could not select any process! Abort."<<std::endl;
+  return NULL;
+}
+
+ATOOLS::Blob *Amisic::DiceProcess(GridArgumentType parameter,double ran[2])
+{
+  if (m_differential.size()==0) return NULL;
+  Data_To_Function<GridResultType,unsigned int> sorter;
+  GridResultType cur, norm=(GridResultType)0.0;
+  for (unsigned int i=0;i<m_differential.size();++i) {
+    cur=(*m_differential[i])(parameter);
+    sorter.AddPoint(cur,i);
+    norm+=cur;
   }
+  cur=(GridResultType)0.0;
+  for (unsigned int i=sorter.XDataSize()-1;i>=0;--i) {
+    if ((cur+=sorter.XData(i)/norm)>ran[0]) {
+      return SelectBlob(m_blobs[sorter.XYData(i).second],ran[1]);
+    }
+  }
+  ATOOLS::msg.Error()<<"Amisic::DiceProcess("<<parameter<<","<<ran[0]<<","<<ran[1]<<"): "
+		     <<"Could not select any process! Abort."<<std::endl;
+  return NULL;
 }
 
-template <class Argument_Type,class Result_Type>
-bool Amisic::Grid_Creator<Argument_Type,Result_Type>::InitializeCalculation()
+Amisic::GridArgumentType Amisic::DiceParameter(GridArgumentType &last,double ran)
+{ 
+  return last=(*p_total)[(*p_total)(last)-log(ran)]; 
+}
+
+ATOOLS::Blob_List *Amisic::CreateProcesses()
 {
-  p_xaxis=p_gridhandler->Grid()->XAxis();
-  m_criterion=p_xaxis->Variable().TypeToSelectorID(p_xaxis->Variable().GetType());
-  m_initialdata=p_processes->SelectorData()->RemoveData(m_criterion);
-  return true;
+  ATOOLS::Blob_List *blobs = new ATOOLS::Blob_List();
+  double rans[3];
+  GridArgumentType last=p_total->XMax();
+  ATOOLS::Blob *blob;
+  do {
+    for (unsigned int i=0;i<3;++i) do { rans[i]=ATOOLS::ran.Get(); } while (rans[i]==0.0);  
+    if ((blob=DiceProcess(DiceParameter(last,rans[2]),rans))!=NULL) blobs->push_back(blob);
+  } while (last>m_cutoff);
+  return blobs;
 }
-
-template <class Argument_Type,class Result_Type>
-Result_Type Amisic::Grid_Creator<Argument_Type,Result_Type>::CalculateSingleValue(GridArgumentType nextleft,
-										  GridArgumentType nextright)
-{
-  GridArgumentType lower, upper, middle;
-  GridResultType result;
-  lower=ATOOLS::Max((*p_xaxis)[(*p_xaxis)(nextleft)*(GridArgumentType)(3.0/4.0)
-			       +(*p_xaxis)(nextright)*(GridArgumentType)(1.0/4.0)],(*p_xaxis)[GridXMin()]);
-  upper=ATOOLS::Min((*p_xaxis)[(*p_xaxis)(nextleft)*(GridArgumentType)(1.0/4.0)
-			       +(*p_xaxis)(nextright)*(GridArgumentType)(3.0/4.0)],(*p_xaxis)[GridXMax()]);
-  middle=(*p_xaxis)[((*p_xaxis)(nextleft)+(*p_xaxis)(nextright))/(GridArgumentType)2.0];
-  p_processes->SelectorData()->SetData(m_criterion,m_initialdata.flavs,m_initialdata.help,lower,upper);
-  p_processes->ResetSelector(p_processes->SelectorData());
-  p_processes->CalculateTotalXSec();
-  result=(GridResultType)p_processes->Total()/(upper-lower);
-  ATOOLS::msg.Out()<<"Amisic::Grid_Creator::CalculateSingleValue(): Got value for "<<middle<<" GeV"<<std::endl
-		   <<"   Calculation for "<<lower<<" GeV < "<<p_xaxis->Variable().Name()
-		   <<" < "<<upper<<" GeV yielded "<<result*rpa.Picobarn()<<" pb/GeV"<<std::endl;
-  return result;
-}
-

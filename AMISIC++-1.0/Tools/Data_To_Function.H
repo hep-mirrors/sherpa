@@ -109,7 +109,7 @@ namespace ATOOLS {
 
     // constructors
     Data_To_Function();
-    Data_To_Function(const Data_To_Function<ArgumentType,ResultType> &reference);
+    Data_To_Function(Data_To_Function<ArgumentType,ResultType> &reference);
     Data_To_Function(XYMap *_m_xydata);
     Data_To_Function(ArgumentVector *_m_xdata,ResultVector *_m_ydata);
 

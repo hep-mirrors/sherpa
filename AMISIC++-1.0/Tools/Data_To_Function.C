@@ -16,8 +16,8 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type>::
-  Data_To_Function(const DataToFunctionType &reference)
-  { Init(); Import(reference.p_xydata); }
+  Data_To_Function(DataToFunctionType &reference)
+  { Init(); Import(reference); }
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type>::
@@ -111,6 +111,8 @@ namespace ATOOLS {
       (*p_xydata)[i]=XYPair(x,y);
       (*p_yxdata)[i]=YXPair(y,x);
     }
+    p_xaxis->SetVariable(reference.p_xaxis->Variable());
+    p_yaxis->SetVariable(reference.p_yaxis->Variable());
 #ifdef DEBUG__Data_To_Function
     std::cout<<"Data_To_Function::Import("<<&reference<<") :"<<std::endl;
 #endif
@@ -440,7 +442,7 @@ namespace ATOOLS {
   Argument_Type Data_To_Function<Argument_Type,Result_Type>::
   X(ResultType y,AcquisitionModeID tempmode)
   { 
-    if (p_xdata->size()<2) {
+    if (p_xydata->size()<2) {
       ATOOLS::msg.Debugging()<<"Data_To_Function::X("<<y<<","<<tempmode<<"): "
 			     <<"Less than 2 data points available."<<std::endl
 			     <<"   Returning (ArgumentType)0."<<std::endl;
@@ -550,9 +552,9 @@ namespace ATOOLS {
       xmax=(*p_xaxis)[(*p_xydata)[p_xydata->size()-1].first];
     }
     integrated = new DataToFunctionType();
-    integrated->XAxis()->SetVariable(p_xaxis->Variable().Name());
-    integrated->YAxis()->SetVariable(std::string("\\int d")+p_xaxis->Variable().Name()
-				     +std::string(" ")+p_yaxis->Variable().Name());
+    integrated->XAxis()->SetVariable(ATOOLS::Variable(p_xaxis->Variable().Name()));
+    integrated->YAxis()->SetVariable(ATOOLS::Variable(std::string("\\int d")+p_xaxis->Variable().Name()
+						      +std::string(" ")+p_yaxis->Variable().Name()));
     integrated->XAxis()->SetScaling(p_xaxis->Scaling()->Name());
     integrated->YAxis()->SetScaling(p_yaxis->Scaling()->Name());
 #ifdef DEBUG__Data_To_Function
@@ -604,9 +606,9 @@ namespace ATOOLS {
       ymax=(*p_yaxis)[(*p_yxdata)[p_yxdata->size()-1].first];
     }
     integrated = new DataToFunctionType();
-    integrated->XAxis()->SetVariable(std::string("\\int d")+p_yaxis->Variable().Name()
-				     +std::string(" ")+p_xaxis->Variable().Name());
-    integrated->YAxis()->SetVariable(p_yaxis->Variable().Name());
+    integrated->XAxis()->SetVariable(ATOOLS::Variable(std::string("\\int d")+p_yaxis->Variable().Name()
+						      +std::string(" ")+p_xaxis->Variable().Name()));
+    integrated->YAxis()->SetVariable(ATOOLS::Variable(p_yaxis->Variable().Name()));
     integrated->XAxis()->SetScaling(p_xaxis->Scaling()->Name());
     integrated->YAxis()->SetScaling(p_yaxis->Scaling()->Name());
 #ifdef DEBUG__Data_To_Function
@@ -652,9 +654,9 @@ namespace ATOOLS {
   ScaleY(ResultType scalefactor)
   { 
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
-      yxit->first=(*p_yscale)((*p_yscale)[yxit->first]*scalefactor);
+      yxit->first=(*p_yaxis)((*p_yaxis)[yxit->first]*scalefactor);
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
-      xyit->second=(*p_yscale)((*p_yscale)[xyit->second]*scalefactor);
+      xyit->second=(*p_yaxis)((*p_yaxis)[xyit->second]*scalefactor);
   }
 
   template <class Argument_Type,class Result_Type>
@@ -662,9 +664,9 @@ namespace ATOOLS {
   ScaleX(ArgumentType scalefactor)
   { 
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
-      xyit->first=(*p_xscale)((*p_xscale)[xyit->first]*scalefactor);
+      xyit->first=(*p_xaxis)((*p_xaxis)[xyit->first]*scalefactor);
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
-      yxit->second=(*p_xscale)((*p_xscale)[yxit->second]*scalefactor);
+      yxit->second=(*p_xaxis)((*p_xaxis)[yxit->second]*scalefactor);
   }
 
   template <class Argument_Type,class Result_Type>
@@ -672,9 +674,9 @@ namespace ATOOLS {
   MoveY(ResultType distance)
   { 
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
-      yxit->first=(*p_yscale)((*p_yscale)[yxit->first]+distance);
+      yxit->first=(*p_yaxis)((*p_yaxis)[yxit->first]+distance);
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
-      xyit->second=(*p_yscale)((*p_yscale)[xyit->second]+distance);
+      xyit->second=(*p_yaxis)((*p_yaxis)[xyit->second]+distance);
   }
 
   template <class Argument_Type,class Result_Type>
@@ -682,9 +684,9 @@ namespace ATOOLS {
   MoveX(ArgumentType distance)
   { 
     for (XYVectorIterator xyit=p_xydata->begin();xyit!=p_xydata->end();++xyit) 
-      xyit->first=(*p_xscale)((*p_xscale)[xyit->first]+distance);
+      xyit->first=(*p_xaxis)((*p_xaxis)[xyit->first]+distance);
     for (YXVectorIterator yxit=p_yxdata->begin();yxit!=p_yxdata->end();++yxit) 
-      yxit->second=(*p_xscale)((*p_xscale)[yxit->second]+distance);
+      yxit->second=(*p_xaxis)((*p_xaxis)[yxit->second]+distance);
   }
 
   template <class Argument_Type,class Result_Type>

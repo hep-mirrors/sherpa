@@ -48,15 +48,18 @@ namespace AMISIC {
     typedef Grid_Handler<GridArgumentType,GridResultType> GridHandlerType;
     typedef Grid_Creator_Base<GridArgumentType,GridResultType> GridCreatorBaseType;
     typedef Grid_Creator<GridArgumentType,GridResultType> GridCreatorType;
+    typedef Data_To_Function<GridArgumentType,GridResultType> GridFunctionType;
 
   private:
 
     std::vector<ATOOLS::Blob_List> m_blobs;
     std::vector<std::string>       m_filename, m_processname;
     std::vector<bool>              m_create;
-    std::vector<GridHandlerType*>  m_differential;
+    std::vector<GridFunctionType*> m_differential;
 
-    GridHandlerType *m_total;
+    GridFunctionType *p_total;
+
+    GridArgumentType m_cutoff;
     
     std::string m_inputdirectory, m_inputfile, m_environmentfile, m_xsfile;
     std::string m_outputdirectory;
@@ -72,6 +75,11 @@ namespace AMISIC {
 		    std::string& filename,std::string& processname);
     bool CalculateTotal();
 
+    ATOOLS::Blob *SelectBlob(ATOOLS::Blob_List bloblist,double ran);
+
+    GridArgumentType  DiceParameter(GridArgumentType &last,double ran);
+    ATOOLS::Blob     *DiceProcess(GridArgumentType parameter,double ran[2]);
+
   public:
 
     // constructor
@@ -81,12 +89,16 @@ namespace AMISIC {
     ~Amisic();
 
     // setters 
+    void SetCutoff(GridArgumentType _m_cutoff);
+
     void SetInputFile(std::string _m_inputfile);
     void SetEnvironmentFile(std::string _m_environmentfile);
     void SetInputDirectory(std::string _m_inputdirectory);
     void SetOutputDirectory(std::string _m_outputdirectory);
 
     // getters
+    GridArgumentType Cutoff();
+
     std::string InputFile();
     std::string EnvironmentFile();
     std::string InputDirectory();
@@ -95,7 +107,7 @@ namespace AMISIC {
     // member functions
     bool Initialize(std::string tempidir=ATOOLS::nullstring,
 		    std::string tempifile=ATOOLS::nullstring,bool creategrid=true);
-    // ATOOLS::Blob_List CreateProcesses();
+    ATOOLS::Blob_List *CreateProcesses();
 
   }; // end of class Amisic
 

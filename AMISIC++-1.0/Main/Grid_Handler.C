@@ -88,21 +88,37 @@ namespace AMISIC {
 			 <<"   Abort reading."<<std::endl;
       return false;
     }
-    std::string gridxscaling, gridyscaling;
-    ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader(":",";","#");
+    std::string gridxscaling, gridyscaling, gridxvariable, gridyvariable;
+    ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","#");
     reader->SetFileName(m_streamname);
     reader->AddIgnore("!");
-    if (!reader->ReadFromFile(gridxscaling,"x scale")) {
+    if (!reader->ReadFromFile(gridxscaling,"x scale :")) {
       ATOOLS::msg.Error()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
 			 <<"   No x scaling information in "<<tempname<<"! "<<std::endl;
       return false;
     }
-    if (!reader->ReadFromFile(gridyscaling,"y scale")) {
+    if (!reader->ReadFromFile(gridyscaling,"y scale :")) {
       ATOOLS::msg.Error()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
 			 <<"   No y scaling information in "<<tempname<<"! "<<std::endl;
       return false;
     }
+    std::vector<std::string> temp;
+    if (!reader->VectorFromFile(temp,"x :",ATOOLS::noinputtag,reader->VHorizontal)) {
+      gridxvariable=std::string("Unknown");
+    }
+    else {
+      gridxvariable=temp[0];
+      for (unsigned int i=1;i<temp.size();++i) gridxvariable+=std::string(" ")+temp[i];
+    }
+    if (!reader->VectorFromFile(temp,"y :",ATOOLS::noinputtag,reader->VHorizontal)) {
+      gridyvariable=std::string("Unknown");
+    }
+    else {
+      gridyvariable=temp[0];
+      for (unsigned int i=1;i<temp.size();++i) gridyvariable+=std::string(" ")+temp[i];
+    }
     reader->SetComment("!");
+    reader->SetIgnore(":");
     std::vector<std::vector<GridArgumentType> > _m_xydata;
     reader->ArrayFromFile(_m_xydata,m_datatag);
     if (_m_xydata.size()<2) return false;
@@ -118,6 +134,8 @@ namespace AMISIC {
     }
     p_grid->XAxis()->SetScaling(gridxscaling);
     p_grid->YAxis()->SetScaling(gridyscaling);
+    p_grid->XAxis()->SetVariable(ATOOLS::Variable(gridxvariable));
+    p_grid->YAxis()->SetVariable(ATOOLS::Variable(gridyvariable));    
     typename ATOOLS::Axis<GridArgumentType>::ScalingModeID xscalingmode=p_grid->XAxis()->ScalingMode();
     typename ATOOLS::Axis<GridResultType>::ScalingModeID yscalingmode=p_grid->YAxis()->ScalingMode();
     p_grid->XAxis()->SetScalingMode(p_grid->XAxis()->Identical);
