@@ -559,6 +559,7 @@ void Interaction_Model_sQuark_EW::c_SSS(Single_Vertex* vertex,int& vanz)
   
   for (short int k=31;k<33;k++) {
     Flavour flH = Flavour(kf::code(k)); 
+    if (flH.IsOn()) {
     //uptypes  
     for (short int i=51;i<57;i++) {
       Flavour flav1 = Flavour(kf::code(i));
@@ -675,8 +676,8 @@ void Interaction_Model_sQuark_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	}
       }
     }
-  }
-  
+    }
+  }  
   //sUp - Hmin - sDown
   
   Flavour flHmin = Flavour(kf::Hmin);
@@ -765,7 +766,10 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	 
 	 vertex[vanz].nleg     = 4;
 	 
-	 kcpl0 = M_I*flav.Charge()*flav.Charge()*num_2*g1*g1;;
+	 
+	 Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
+	 
+	 kcpl0 = M_I*charge*charge*num_2*g1*g1;;
 	 kcpl1 = kcpl0;
 	 
 	 vertex[vanz].cpl[0]  = kcpl0.Value();

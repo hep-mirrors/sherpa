@@ -46,8 +46,6 @@ namespace AMEGIC {
       nleg    = 3;
       Color   = 0;
       Lorentz = 0;
-      //      Color   = new Color_Function;
-      //      Lorentz = new Lorentz_Function;
     }
 
     //! Copy constructor
@@ -94,7 +92,7 @@ namespace AMEGIC {
 	    Lorentz[i] = v.Lorentz[i];
 	}
       }
-    return *this;
+      return *this;
     }
   };
   
@@ -117,7 +115,7 @@ namespace AMEGIC {
     int            FermionRule(Single_Vertex& probe);
     int            SetVertex(Single_Vertex&,Single_Vertex&,int,int,int,int a=99);
 
-    void           ColorExchange(Color_Function*,int,int,int);
+    void           ColorExchange(Color_Function*,int,int,int,int);
     void           LorentzExchange(Lorentz_Function*,int,int,int,int);
     //    void           Conjugate(Color_Function*);
   public:
