@@ -70,7 +70,7 @@ namespace ATOOLS {
     bool operator==(Particle part);
     static void   ResetCounter() { s_totalnumber = 0; }
     static int    Counter()      { return s_totalnumber; }
-    inline void Reset() { s_currentnumber = 0; }
+    inline static void Reset() { s_currentnumber = 0; }
   };
 
   typedef std::vector<Particle *>          Particle_Vector;
