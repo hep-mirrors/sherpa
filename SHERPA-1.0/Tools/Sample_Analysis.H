@@ -24,17 +24,18 @@ namespace SHERPA {
     bool                            InitIO;
     int                             status,hepevtmode;
     int                             nhep;
+    std::string m_path, m_file;
     ATOOLS::Primitive_Analysis * ana;
     std::vector<ATOOLS::Primitive_Observable_Base *> obs;
   public:
-    Sample_Analysis();
+    Sample_Analysis(std::string,std::string);
     ~Sample_Analysis();
     void Init();
 
     void AfterME(ATOOLS::Blob_List *,double);
     void AfterPartonShower(ATOOLS::Blob_List *,double);
     void AfterHadronization(ATOOLS::Blob_List *,double );
-    void Finish();
+    void Finish(std::string);
   };   
 }
 

@@ -84,7 +84,7 @@ bool Sherpa::GenerateOneEvent()
 
 bool Sherpa::SummarizeRun() 
 {
-  if (p_analysis) p_analysis->Finish("Sherpa");
+  if (p_analysis) p_analysis->Finish("");
   return 1;
 }
 

@@ -24,6 +24,7 @@ AC_CHECK_FUNCS(mkdir)
 
 
 AC_OUTPUT(Tools/Makefile \
+	  LundTools/Makefile \
           Initialization/Makefile \
           PerturbativePhysics/Makefile \
           SoftPhysics/Makefile \

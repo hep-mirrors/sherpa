@@ -54,7 +54,9 @@ void Sample_Analysis::Init() {
   if (hepevt) nhep = 0;
 }
 
-Sample_Analysis::Sample_Analysis() 
+Sample_Analysis::Sample_Analysis(std::string _m_path,std::string _m_file):
+  m_path(_m_path),
+  m_file(_m_file)
 {
   status     = rpa.gen.Analysis();
   if (!(status)) { ana = 0; return; }
@@ -92,7 +94,8 @@ void Sample_Analysis::AfterHadronization(ATOOLS::Blob_List * blobs, double weigh
 
 
 
-void Sample_Analysis::Finish() {
+void Sample_Analysis::Finish(std::string addpath) 
+{
   if (status== 1) {
     for (int i=0; i<obs.size();++i) {
       ana->AddObservable(obs[i]);
@@ -104,10 +107,11 @@ void Sample_Analysis::Finish() {
     s1<<alf;
     s1>>salf;
 
-    string name=string("output");
-
-    msg.Out()<<" FinishAnalysis("<<name<<");"<<endl;
-    ana->FinishAnalysis(name,0);
+    ATOOLS::Data_Read *dataread = new Data_Read(m_path+m_file);
+    std::string outputpath=dataread->GetValue<std::string>("ANALYSIS_OUTPUT",std::string("output"));
+    delete dataread;
+    msg.Out()<<" FinishAnalysis("<<outputpath+addpath<<");"<<endl;
+    ana->FinishAnalysis(outputpath+addpath,0);
   }
 
 }
