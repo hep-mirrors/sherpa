@@ -188,8 +188,8 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
   double KFactor = 0., Q2 = -1.;
   result1 = result2 = 0.;
 
-  if (bh->On()>0) bh->BoostInLab(p,nin+nout);
   if (ih->On()>0) ih->BoostInLab(p,nin+nout);
+  if (bh->On()>0) bh->BoostInLab(p,nin+nout);
 
   Vec4D * p_save = new Vec4D[nin+nout];
   for (int i=0;i<nin+nout;++i) p_save[i]=p[i];
@@ -278,6 +278,7 @@ bool Phase_Space_Handler::OneEvent(int mode)
 	return 0;
       }
     }
+    proc->Selected()->RestoreInOrder();
     
     if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
     value = Differential(proc->Selected());
@@ -296,8 +297,14 @@ bool Phase_Space_Handler::OneEvent(int mode)
       else disc  = max*ATOOLS::ran.Get();
       if (value >= disc) {
 	sumtrials += i;events ++;
-	if (result1 < (result1+result2)*ATOOLS::ran.Get()) Rotate(p);
-	proc->Selected()->SetMomenta(p);
+	if (result1 < (result1+result2)*ATOOLS::ran.Get()) {
+	  Rotate(p);
+	  proc->Selected()->SetMomenta(p);
+	  proc->Selected()->SwapInOrder();
+	}
+	else {
+	  proc->Selected()->SetMomenta(p);
+	}
 	return 1;
       }
     }

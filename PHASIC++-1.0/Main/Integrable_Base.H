@@ -32,6 +32,9 @@ namespace PHASIC {
     virtual void                       SetMax(double)                  = 0;
     virtual void                       SetMomenta(ATOOLS::Vec4D *)   = 0;
     virtual Integrable_Base          * Selected()                      = 0;
+
+    virtual void SwapInOrder() = 0;
+    virtual void RestoreInOrder() = 0;
   };
 }
 
