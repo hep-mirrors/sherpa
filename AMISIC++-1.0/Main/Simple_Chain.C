@@ -319,7 +319,7 @@ bool Simple_Chain::ReadInData()
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=3;
   std::string outputpath;
   outputpath=std::string("MI-Grid__")+
-    ATOOLS::rpa.gen.Bunch(1).Name()+std::string("_")+ATOOLS::rpa.gen.Bunch(1).Name()+
+    ATOOLS::rpa.gen.Bunch(1).Name()+std::string("_")+ATOOLS::rpa.gen.Bunch(2).Name()+
     std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV");
   SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
