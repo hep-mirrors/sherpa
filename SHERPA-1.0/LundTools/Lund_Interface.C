@@ -56,7 +56,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
     for (size_t i=0;i<2;++i) beam[i]="gamma";
     pysubs.msub[57]=1;    
   }
-  else if (flav[0]==ATOOLS::kf::e && flav[1]==ATOOLS::kf::e) {
+  else if (flav[0].Kfcode()==ATOOLS::kf::e && flav[1].Kfcode()==ATOOLS::kf::e) {
     for (size_t i=0;i<2;++i) if (flav[i].IsAnti()) beam[i]="e+"; else beam[i]="e-";
     pysubs.msub[0]=1;    
     pypars.mstp[47]=1;
@@ -193,6 +193,8 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
     }
   }
   delete reader;
+  // print decay channel list
+  //   pylist(12);
 }
 
 Lund_Interface::~Lund_Interface()

@@ -1149,6 +1149,26 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
 	  }
 	}
       }
+      if (part!=NULL && (part->Flav()==rpa.gen.Bunch(0)||part->Flav()==rpa.gen.Bunch(1))) {
+	if (part->Momentum()[3]>0) {
+	  if (beam1==NULL) beam1 = part->DecayBlob();
+	  else {
+	    msg.Error()<<"WARNING : Error in HepEvt_Interface::ConstructBlobsFromPythia."<<std::endl
+		       <<"    too many transition blobs (1) found for incoming beam1."<<std::endl
+		       <<"    Will return .false. and hope that event is discarded."<<std::endl;
+	    return false;
+	  }
+	}
+	else {
+	  if (beam2==NULL) beam2 = part->DecayBlob();
+	  else {
+	    msg.Error()<<"WARNING : Error in HepEvt_Interface::ConstructBlobsFromPythia."<<std::endl
+		       <<"    too many transition blobs (2) found for incoming beam2."<<std::endl
+		       <<"    Will return .false. and hope that event is discarded."<<std::endl;
+	    return false;
+	  }
+	}
+      }
     } 
   }
 
@@ -1212,7 +1232,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
       return false;
     }
   }
-  
+
   for (int i=0;i<m_nhep;++i) {
     piter = m_convertH2S.find(i);
     if (piter==m_convertH2S.end()) continue;
@@ -1377,6 +1397,7 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
   std::vector<Particle *>::iterator piter;
   incomings.clear();
 
+
   // Beams and bunches
   for (biter=blobs->begin();biter!=blobs->end();biter++) {
     if ((*biter)->NInP()==0 && (*biter)->NOutP()==1) {
@@ -1402,6 +1423,10 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
 	    beam->SetType(btp::Bunch);
 	    beam->OutParticle(0)->DecayBlob()->SetType(btp::Beam);
 	  }
+	  if (in==kf::e && out==kf::e) {
+	    beam->SetType(btp::Bunch);
+	    beam->OutParticle(0)->DecayBlob()->SetType(btp::Beam);
+	  }
 	}
       }
     }
@@ -1419,6 +1444,7 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
     }
     if (counter==2) { incomings.clear(); break; }
   }
+
   
   // ME Blob
   for (biter=blobs->begin();biter!=blobs->end();biter++) {
