@@ -148,6 +148,7 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     m_weight=1.;
   }
   else {
+    if (!(p_me->UseSudakovWeight())) m_weight=1.;
     p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
     return 1;
   }

@@ -35,12 +35,10 @@ Cone_Finder::Cone_Finder(int _n,Flavour * _fl,double _rcone) :
 double Cone_Finder::Rmin(Vec4D * p)
 {
   double r2min = 100000.;
-  double r2jk, deta, dphi;
+  double r2jk; 
     
   for (int j=m_nin;j<m_n;j++) {
     for (int k=j+1;k<m_n;k++) {
-      deta = sqr(DEta12(p[j],p[k]));
-      dphi = sqr(DPhi12(p[j],p[k]));
       r2jk = sqr(DEta12(p[j],p[k])) + sqr(DPhi12(p[j],p[k]));
       if (r2jk<r2min && 
 	  m_fl[j].Mass()<3. && m_fl[k].Mass()<3. &&
@@ -80,12 +78,12 @@ void Cone_Finder::BuildCuts(Cut_Data * cuts)
 void   Cone_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
 }
 
-double Cone_Finder::DEta12(Vec4D & p1,Vec4D & p2)
+double Cone_Finder::DEta12(const Vec4D & p1,const Vec4D & p2)
 {
   return log(sqrt( (sqr(p2[1])+sqr(p2[2]))/(sqr(p1[1])+sqr(p1[2])) ) * dabs(p1[3]/p2[3]));
 }
 
-double Cone_Finder::DPhi12(Vec4D & p1,Vec4D & p2)
+double Cone_Finder::DPhi12(const Vec4D & p1,const Vec4D & p2)
 {
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);

@@ -71,7 +71,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   switch (m_mode) {
   case 1: 
     m_readin = p_dataread->GetValue<string>("RESULT DIRECTORY",string(""));
-    // FK ****** p_amegic->Processes()->SetScale(rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
     if (scalechoice>0) p_amegic->Processes()->SetScale(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
     if (p_amegic->CalculateTotalXSec(m_readin)) {
       RescaleJetrates();
