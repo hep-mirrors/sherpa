@@ -42,9 +42,10 @@ namespace EXTRAXS {
     int                  Nin()         { return p_selected->Selected()->Nin();     }
     int                  Nout()        { return p_selected->Selected()->Nout();    }
     int               ** Colours()     { return p_selected->Selected()->Colours(); }
-    ATOOLS::Flavour * Flavs()       { return p_selected->Selected()->Flavs();   }
-    ATOOLS::Vec4D    * Momenta()     { return p_selected->Selected()->Momenta(); }
-    int                  MaxJets()     { return m_maxjet;                          }
+    ATOOLS::Flavour * Flavs()          { return p_selected->Selected()->Flavs();   }
+    ATOOLS::Vec4D    * Momenta()       { return p_selected->Selected()->Momenta(); }
+    int  InSwaped() { return p_selected->Selected()->InSwaped(); }
+    int  MaxJets()  { return m_maxjet; }
 
     void SingleEvents();
     bool PrepareXSecTables();

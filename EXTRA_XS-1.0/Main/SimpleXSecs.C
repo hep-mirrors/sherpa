@@ -144,6 +144,6 @@ double SimpleXSecs::WeightedEvent(int mode)
   return 0.;
 }
 
-bool SimpleXSecs::PrepareXSecTables() {}
-bool SimpleXSecs::LookUpXSec(double,bool,std::string) {}
+bool SimpleXSecs::PrepareXSecTables() { return 0; }
+bool SimpleXSecs::LookUpXSec(double,bool,std::string) { return 0;}
 void SimpleXSecs::SingleEvents() {}

@@ -176,5 +176,23 @@ double XS_Base::KFactor(double _scale) {
 
 
 
+void XS_Base::SwapInOrder() {
+  Flavour help = p_fl[0];
+  p_fl[0] = p_fl[1];
+  p_fl[1] = help;
+  Vec4D mom = p_moms[0];
+  p_moms[0] = p_moms[1];
+  p_moms[1] = mom;
+  m_swaped = 1;
+}
+
+void XS_Base::RestoreInOrder() {
+  if (m_swaped) {
+    Flavour help = p_fl[0];
+    p_fl[0] = p_fl[1];
+    p_fl[1] = help;
+    m_swaped = 0;
+  }
+}
 
 

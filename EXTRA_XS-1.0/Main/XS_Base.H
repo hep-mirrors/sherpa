@@ -23,8 +23,8 @@ namespace EXTRAXS {
   class XS_Base : public PHASIC::Integrable_Base {
   protected:
     int                    m_nin, m_nout;
-    ATOOLS::Flavour   * p_fl;
-    ATOOLS::Vec4D      * p_moms;
+    ATOOLS::Flavour      * p_fl;
+    ATOOLS::Vec4D        * p_moms;
     std::string            m_name;
 
     double                 m_s, m_t, m_u;
@@ -34,6 +34,8 @@ namespace EXTRAXS {
     long int               m_n;
     double                 m_last,m_lastlumi,m_lastdxs;
     double                 m_totalxs,m_totalsum,m_totalsumsqr,m_totalerr, m_max;
+
+    int m_swaped;
 
     int                 ** p_colours;
     XS_Base              * p_selected;
@@ -98,6 +100,9 @@ namespace EXTRAXS {
     //virtual bool               SameEvent()                         = 0;
     //virtual double             WeightedEvent()                     = 0;
 
+    virtual void SwapInOrder();
+    virtual void RestoreInOrder();
+    int InSwaped();
   };
 
   inline int                        XS_Base::Nin()                   { return m_nin; }
@@ -121,6 +126,7 @@ namespace EXTRAXS {
   inline void                       XS_Base::SetMax(double _max)             { m_max     = _max;   }
   inline void                       XS_Base::SetTotal(double _total)         { m_totalxs = _total; }
   inline void                       XS_Base::SetName(std::string _name)      { m_name    = _name; }
+  inline int XS_Base::InSwaped() { return m_swaped; }
 }
 
 #endif
