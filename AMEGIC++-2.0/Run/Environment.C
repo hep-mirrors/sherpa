@@ -36,7 +36,7 @@ Environment::~Environment() {
 
 void Environment::InitializeTheEnvironment() {
   ATOOLS::ParticleInit(m_path); 
-  rpa.Init(m_path);
+  rpa.Init(m_path,m_file);
 
   bool okay =         InitializeTheModel();  
   okay      = okay && InitializeTheBeams();  
