@@ -1,0 +1,30 @@
+18.11.02
+========
+      * removed "CXX=g++"
+	(if needed make "export CXX=g++" before "configure")
+  Math
+      *	change cout => msg.Tracking() in
+	  Random.C Matrix.C Vector.H
+	(added Include Dir ../Org)
+      *	changed to ANSI C++ Headers
+	  complex, cmath,
+
+
+07.01.03
+========
+  Phys
+      * extended Jet_Finder     
+	(added methods like PTij etc. to enable usage of the Jet_Finder in the 
+	 Showers, etc.). This leads to a globalization of the Jet_Finder in
+	 MOCAIC.
+      * extended Running_AlphaS (made Beta0 public + added Nf(t))
+
+10.01.03
+========
+  Math
+      * added a histogram class (should be templated ...)
+  Phys
+      * added a method UpdateCuts to all Selectors. This method
+	is used when integrating with varying c.m. energies (i.e. with ISR).
+      * changed the cut handling of the Jet_Finder :
+	BuildCuts/UpdateCuts now affects the scut[i][j] of the Cut_Data.
