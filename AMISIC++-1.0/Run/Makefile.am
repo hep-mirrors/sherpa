@@ -19,10 +19,10 @@ SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
 PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lLHAPDF -lCTEQ -lMRST -lGRV
 BEAMLIBS      =	-L@libdir@ -lBeam 
-PHASICLIBS    =	-L@libdir@ -lPhasespace 
+PHASICLIBS    =	-L@libdir@ -lPhasespace -lFoam
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
-AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicProcess
+AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicModel -lAmisicTools
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 
 if ROOT_SUPPORT
@@ -37,11 +37,11 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-if ROOT_SUPPORT
+if SHERPA_SUPPORT
+SOURCE	      = Main.C 
+else
 bin_PROGRAMS  =	Amisic
-Amisic_SOURCES        =	Main.C \
-			Set_Channel.C \
-			Set_Values.C
+Amisic_SOURCES        =	Main.C 
 Amisic_LDADD  =	$(AMISICLIBS) $(APACICLIBS) $(EXTRAXSLIBS) \
 		$(PHASICLIBS) $(MODELLIBS) $(PDFLIBS) \
 		$(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) $(CLHEPLIBS) $(ROOTLIBS) 
@@ -50,8 +50,6 @@ AM_CXXFLAGS   =	$(AMISICFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(AMISICINCS) $(APACICINCS) $(EXTRAXSINCS) \
 		$(PHASICINCS) $(MODELINCS) $(PDFINCS) \
 		$(BEAMINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ROOTINCS) 
-else
-SOURCE	      = Main.C Set_Channel.C Set_Values.C
 endif
 
 EXTRA_DIST    =	\

@@ -1,7 +1,8 @@
 #include "Semihard_QCD.H"
 
-#include "FSR_Channel.H"
 #include "Phase_Space_Handler.H"
+#include "FSR_Channel.H"
+#include "ISR_Vegas.H"
 #include "ISR_Handler.H"
 
 #define INIFL ATOOLS::Flavour(ATOOLS::kf::jet)
@@ -41,9 +42,34 @@ void Semihard_QCD::CreateFSRChannels()
     if (m_fsrmode==2) {
       p_pshandler->FSRIntegrator()->DropAllChannels();
       p_pshandler->FSRIntegrator()->Add(p_fsrinterface);
+      p_fsrinterface->SetAlpha(1.0);
+      p_fsrinterface->SetAlphaSave(1.0);
       m_fsrmode=1;
     }
   }
+}
+
+void Semihard_QCD::CreateISRChannels() 
+{
+  PHASIC::Multi_Channel *isr=p_pshandler->ISRIntegrator();
+  isr->DropAllChannels();
+  double mass=sqrt(p_isrhandler->SprimeMin());
+  PHASIC::Single_Channel *channel=NULL;
+  if (m_xsecs.size()>0 && 
+      m_xsecs[0]->Regulator()!=NULL && 
+      m_xsecs[0]->Regulator()->Type()==EXTRAXS::rf::qcd_trivial) {
+    mass=2.0*m_xsecs[0]->Regulator()->Parameters()[0]; 
+    channel = 
+      new PHASIC::Threshold_Uniform_V(mass,1.75," isr",p_pshandler->GetInfo());
+  }
+  else {
+    channel = 
+      new PHASIC::Simple_Pole_Uniform_V(1.0," isr",p_pshandler->GetInfo());
+  }
+  channel->SetAlpha(1.0);
+  channel->SetAlphaSave(1.0);
+  isr->Add(channel);
+  isr->Reset();
 }
 
 void Semihard_QCD::InitIntegrators() 

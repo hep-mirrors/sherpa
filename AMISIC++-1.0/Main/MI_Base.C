@@ -38,13 +38,11 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 {
   for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     if (nbit->first==m_name) {
-      throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"MI_Base already exists!",
-			      "MI_Base","MI_Base"));
+      THROW(fatal_error,"MI_Base already exists!");
     }
   }
   if (m_type==Unknown) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"MI base has no type!",
-			    "MI_Base","MI_Base"));
+    THROW(fatal_error,"MI base has no type!");
   }
   m_start = new double[m_nparameter];
   m_stop = new double[m_nparameter];

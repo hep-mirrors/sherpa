@@ -22,7 +22,7 @@ Flat_Profile::Flat_Profile(const double radius):
   m_omax=Value(m_bmin);
   m_omin=Value(m_bmax);
   m_norm=M_PI;
-  throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"Flat profile not implemented yet","",""));
+  THROW(not_implemented,"Flat profile not implemented yet");
 }
 
 
@@ -63,7 +63,7 @@ Exponential_Profile::Exponential_Profile(const double radius):
   m_omax=Value(m_bmin);
   m_omin=Value(m_bmax);
   m_norm=M_PI;
-  throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"Exponential profile not implemented yet","",""));
+  THROW(not_implemented,"Exponential profile not implemented yet");
 }
 
 double Exponential_Profile::Value(const double b) const

@@ -1,10 +1,38 @@
 #include "Amisic_Histogram.H"
+
 #include "Data_Writer.H"
 #include "MathTools.H"
 #include "My_Limits.H"
+#include "Data_Reader.H"
+#include "Message.H"
+#include "MyStrStream.H"
 
 using namespace AMISIC;
   
+template <class ArgumentType> std::ostream &
+AMISIC::operator<<(std::ostream &str,
+		   const Amisic_Histogram<ArgumentType> &histogram) 
+{
+  str<<"("<<&histogram<<") {\n";
+  {
+    msg_Indent();
+    str.precision(6);
+    str<<std::setw(14)<<"value"
+       <<std::setw(14)<<"weight"
+       <<std::setw(14)<<"square weight"
+       <<std::setw(14)<<"maximum"
+       <<std::setw(14)<<"entries\n";
+    ATOOLS::Axis<ArgumentType> &yaxis=*histogram.YAxis();
+    for (size_t i=0;i<histogram.m_data[hci::x_value].size();++i)
+      str<<std::setw(14)<<histogram.m_data[hci::x_value][i]<<" "
+	 <<std::setw(14)<<yaxis[histogram.m_data[hci::y_value][i]]<<" "
+	 <<std::setw(14)<<yaxis[histogram.m_data[hci::y_square][i]]<<" "
+	 <<std::setw(14)<<yaxis[histogram.m_data[hci::maximum][i]]<<" "
+	 <<std::setw(14)<<histogram.m_data[hci::entries][i]<<"\n";
+  }
+  return str<<"}"<<std::endl;
+}
+
 template <class ArgumentType>
 Amisic_Histogram<ArgumentType>::Amisic_Histogram():
   m_entries(0.0),
@@ -267,9 +295,9 @@ WriteOut(const std::string &filename,const std::string &datatag,
 		       p_yaxis->Scaling()->Name());
   writer->WriteComment("--------------------");
   writer->WriteComment(std::string("x : ")+
-		       p_xaxis->Variable().Name());
+		       p_xaxis->Variable()->Name());
   writer->WriteComment(std::string("y : ")+
-		       p_yaxis->Variable().Name());
+		       p_yaxis->Variable()->Name());
   writer->WriteComment("--------------------");
   writer->WriteComment(std::string("x_{min} : ")+
 		       ATOOLS::ToString(m_xmin,12));
@@ -490,3 +518,7 @@ void Amisic_Histogram<ArgumentType>::SetFinished(const bool finished)
 }
 
 template class AMISIC::Amisic_Histogram<double>;
+template std::ostream &
+AMISIC::operator<<<double>(std::ostream &str,
+			   const Amisic_Histogram<double> &histogram);
+

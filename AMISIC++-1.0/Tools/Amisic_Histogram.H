@@ -46,6 +46,10 @@ namespace AMISIC {
     size_t FindX(const Argument_Type x) const;
     size_t FindY(const Argument_Type y) const;
 
+    template <class Argument_Type> friend std::ostream &
+    operator<<(std::ostream &str,
+	       const Amisic_Histogram<Argument_Type> &histogram);
+
   public:
 
     // constructor
@@ -126,6 +130,10 @@ namespace AMISIC {
     void SetFinished(const bool finished);
 
   };// end of class Amisic_Histogram
+
+  template <class ArgumentType> std::ostream &
+  operator<<(std::ostream &str,
+	     const Amisic_Histogram<ArgumentType> &histogram);
 
 }// end of namespace AMISIC
 

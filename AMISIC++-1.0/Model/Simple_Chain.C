@@ -4,7 +4,6 @@
 #include "Running_AlphaS.H"
 #include "Single_XS.H"
 #include "XS_Selector.H"
-#include "Channel_Elements.H"
 #include "Semihard_QCD.H"
 #include "Particle.H"
 #include "Random.H"
@@ -16,6 +15,8 @@
 #endif
 #include "Shell_Tools.H"
 #include "Remnant_Base.H"
+#include "Data_Reader.H"
+#include "MyStrStream.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_Chain
@@ -35,12 +36,16 @@ const std::string integralfile=std::string("integral.dat");
 const std::string normalizedfile=std::string("normalized.dat");
 #endif
 
+static ATOOLS::Info_Key m_spkey, m_ykey;
+static double s_maxoverflow=10.0;
+static double s_epsilon=1.0e-3;
+
 using namespace AMISIC;
 
 Simple_Chain::Simple_Chain():
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_total(NULL), p_differential(NULL), m_norm(1.0), m_enhance(1.0), 
-  m_xsextension("_xs.dat"), m_mcextension("MC"), 
+  m_maxreduction(1.0), m_xsextension("_xs.dat"), m_mcextension("MC"), 
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), 
   m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
@@ -52,6 +57,8 @@ Simple_Chain::Simple_Chain():
   SetInputFile("Model.dat",3);
   SetOutputFile("SC.log");
   p_remnants[1]=p_remnants[0]=NULL;
+  m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
 }
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
@@ -59,7 +66,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
 			   PDF::ISR_Handler *const isr):
   MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_total(NULL), p_differential(NULL), m_norm(1.0), m_enhance(1.0),
-  m_xsfile("XS.dat"), m_xsextension("_xs.dat"), 
+  m_maxreduction(1.0), m_xsfile("XS.dat"), m_xsextension("_xs.dat"), 
   m_mcextension("MC"), p_processes(NULL), p_fsrinterface(NULL), 
   p_environment(NULL), p_model(model), p_beam(beam), p_isr(isr), 
   p_profile(NULL), m_nflavour(5), m_maxtrials(1000), m_scalescheme(2), 
@@ -81,6 +88,8 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
     ATOOLS::msg.Error()<<"Simple_XS::Simple_XS(..): "
 		       <<"No beam remnant handler found."<<std::endl;
   }
+  m_spkey.Assign("s' isr",4,0,PHASIC::Phase_Space_Handler::GetInfo());
+  m_ykey.Assign("y isr",3,0,PHASIC::Phase_Space_Handler::GetInfo());
 }
 
 Simple_Chain::~Simple_Chain()
@@ -159,7 +168,8 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
     if (nin==2 && nout==(*p_processes)[i]->NOut()) {
       ATOOLS::Flavour ref[2], test[2];
       for (size_t j=0;j<2;++j) {
-	ref[j]=p_remnants[j]->ConstituentType((*p_processes)[i]->Flavours()[j]);
+	ref[j]=p_remnants[j]->
+	  ConstituentType((*p_processes)[i]->Flavours()[j]);
 	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
       }
       if (ref[0]==test[0] && ref[1]==test[1])
@@ -172,9 +182,11 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
   for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
   Semihard_QCD *newgroup = 
     new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
-		     copy,m_scalescheme,m_kfactorscheme,p_processes->ScaleFactor());
+		     copy,m_scalescheme,m_kfactorscheme,
+		     p_processes->ScaleFactor());
   newgroup->XSSelector()->SetOffShell(p_isr->KMROn());
   newgroup->PSHandler(false)->SetError(m_error);
+  newgroup->PSHandler(false)->SetUseFoam(m_foam);
   newgroup->SetScaleScheme(m_scalescheme);
   newgroup->SetKFactorScheme(m_kfactorscheme);
   p_processes->Add(newgroup);
@@ -187,7 +199,7 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 			      const ATOOLS::Flavour *flavs)
 {
   bool success=false;
-  ATOOLS::Flavour help[4], mapped[4];
+  ATOOLS::Flavour help[4];
   for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
     for (size_t j=0;j<(size_t)flavs[1].Size();++j) {
       for (size_t k=0;k<(size_t)flavs[2].Size();++k) {
@@ -197,53 +209,21 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	  help[2]=flavs[2][k];
 	  help[3]=flavs[3][l];
 	  OrderFlavours(help);
-	  for (size_t i=0;i<4;++i) {
-	    if (m_mapmap.find(help[i].Kfcode())!=m_mapmap.end()) {
-	      ATOOLS::kf::code code=m_mapmap[help[i].Kfcode()];
-	      if (m_mapmap.find(code)!=m_mapmap.end() && 
-		  m_mapmap[code]==help[i].Kfcode())
-		mapped[i]=ATOOLS::Flavour(help[i].Kfcode());
-	      else mapped[i]=ATOOLS::Flavour(m_mapmap[help[i].Kfcode()]);
-	    }
-	    else {
-	      mapped[i]=ATOOLS::Flavour(help[i].Kfcode());
-	    }
-	    if (help[i].IsAnti()) mapped[i]=mapped[i].Bar();
-	    for (size_t j=0;j<i;++j) {
-	      if (mapped[i].Kfcode()==mapped[j].Kfcode() &&
-		  help[i].Kfcode()!=help[j].Kfcode()) {
-		if (m_mapmap.find(mapped[i].Kfcode())!=m_mapmap.end()) 
-		  mapped[i]=ATOOLS::Flavour(m_mapmap[mapped[i].Kfcode()]);
-		else mapped[i]=ATOOLS::Flavour(help[i].Kfcode());
-		if (help[i].IsAnti()) mapped[i]=mapped[i].Bar();
-	      }
-	    }
-	  }
 	  EXTRAXS::XS_Group *pdfgroup = FindPDFGroup(2,2,help);
 	  EXTRAXS::XS_Base *newxs = pdfgroup->XSSelector()->GetXS(2,2,help);
 	  if (newxs==NULL) continue;
 	  EXTRAXS::XS_Base *testxs=NULL;
-	  EXTRAXS::XS_Selector::FindInGroup(pdfgroup,testxs,2,2,mapped);
-	  if (testxs==NULL) {
+          EXTRAXS::XS_Selector::FindInGroup(pdfgroup,testxs,2,2,help);
+          if (testxs==NULL) {
 	    if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
 	    newxs->SetScaleScheme(m_scalescheme);
 	    newxs->SetKFactorScheme(m_kfactorscheme);
 	    pdfgroup->Add(newxs);
+	    if (m_foam==0) pdfgroup->CreateISRChannels();
 	    m_processmap[newxs->Name()]=newxs;
 	    success=true;
 	    msg_Debugging()<<"Simple_Chain::AddProcess(..): "
 			   <<"New process '"<<newxs->Name()<<"'.\n";
-	  }
-	  else {
-	    if (testxs->Name()!=newxs->Name()) {
-	      if (m_processmap.find(newxs->Name())!=
-		  m_processmap.end()) continue;
-	      m_processmap[newxs->Name()]=testxs;
-	      msg_Debugging()<<"Simple_Chain::AddProcess(..): "
-			     <<"Map process '"<<newxs->Name()<<"' -> '"
-			     <<testxs->Name()<<"'.\n";
-	    }
-	    delete newxs;
 	  }
 	}
       }
@@ -270,6 +250,12 @@ bool Simple_Chain::ReadInData()
       m_regulator="QCD_Trivial";
     if (!reader->VectorFromFile(m_regulation,"XS_REGULATION")) 
       m_regulation=std::vector<double>(1,.71);
+    double exponent;
+    if (reader->ReadFromFile(exponent,"RESCALE_EXPONENT")) {
+      double scale;
+      if (!reader->ReadFromFile(scale,"REFERENCE_SCALE")) scale=1960.0;
+      m_regulation[0]*=pow(m_ecms/scale,exponent);
+    }
   }
   if (!reader->ReadFromFile(m_scalescheme,"MI_SCALE_SCHEME")) 
     m_scalescheme=2;
@@ -278,22 +264,6 @@ bool Simple_Chain::ReadInData()
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
   if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   GeneratePathName();
-  std::vector<std::vector<int> > helpivv;
-  if (reader->MatrixFromFile(helpivv,"MAP_FLAVOUR")) {
-    for (size_t i=0;i<helpivv.size();++i) {
-      if (helpivv[i].size()<2) continue;
-      m_mapmap[ATOOLS::kf::code(helpivv[i][0])]=
-	ATOOLS::kf::code(helpivv[i][1]);
-      m_mapmap[ATOOLS::kf::code(helpivv[i][1])]=
-	ATOOLS::kf::code(helpivv[i][0]);
-    }
-    msg_Tracking()<<"Simple_Chain::ReadInData(): Mapping flavours {\n";
-    for (Map_Map::iterator mit=m_mapmap.begin();
-	 mit!=m_mapmap.end();++mit) {
-      msg_Tracking()<<"   "<<mit->first<<" -> "<<mit->second<<"\n";
-    }
-    msg_Tracking()<<"}"<<std::endl;
-  }
   delete reader;
   return true;
 }
@@ -361,7 +331,7 @@ bool Simple_Chain::CreateGrid()
   }
   msg_Tracking()<<"}"<<std::endl;
   if (!p_gridcreator->ReadInGrid()) {
-    if (ATOOLS::MakeDir(OutputPath().c_str(),448)==0) {
+    if (ATOOLS::MakeDir(OutputPath().c_str(),493)==0) {
       msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
 		    <<"Created output directory "
 		    <<OutputPath()<<"."<<std::endl;
@@ -378,24 +348,15 @@ bool Simple_Chain::CreateGrid()
 bool Simple_Chain::SetUpInterface()
 {
   p_processes->Reset();
-  ATOOLS::Flavour flavour[4];
-  flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
+  ATOOLS::Flavour flavour[4]={ATOOLS::kf::jet,ATOOLS::kf::jet,
+			      ATOOLS::kf::jet,ATOOLS::kf::jet};
   p_fsrinterface = new FSR_Channel(2,2,flavour,
-				   p_total->XAxis()->Variable());
-  p_fsrinterface->SetAlpha(1.0);
-  p_fsrinterface->SetAlphaSave(1.0);
+				   p_total->XAxis()->Variable()->Name());
   for (size_t i=0;i<p_processes->Size();++i) {
     Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
     group->InitIntegrators();
-    if (!group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension+
-					 "/MC_"+group->Name(),16|32))
-      group->CalculateTotalXSec(OutputPath()+m_mcextension+
-				"/MC_"+group->Name(),true);
-    const std::vector<PHASIC::Single_Channel*> &best=group->PSHandler(false)->
-      FSRIntegrator()->Best();    
-    if (best.size()>0) p_fsrinterface->SetChID(best[0]->Name());
-    else p_fsrinterface->SetChID("T-Channel");
-    p_fsrinterface->SetChID("T-Channel");
+    if (m_foam==0) group->CreateISRChannels();
+    else group->CalculateTotalXSec("");
     group->SetFSRInterface(p_fsrinterface);
     group->SetFSRMode(2);
     group->CreateFSRChannels();
@@ -412,10 +373,12 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
 				    const double min,const double max,
 				    const double integral)
 {  
-  int helpi=0, criterion=ATOOLS::Variable::
-    TypeToSelectorID(grid->XAxis()->Variable().Type());
+  int helpi=0, criterion=grid->XAxis()->Variable()->SelectorID();
   std::vector<ATOOLS::Flavour> flavours(1,(ATOOLS::kf::jet));
-  group->SelectorData()->AddData(criterion,flavours,helpi,(double)min,(double)max);
+  group->SelectorData()->AddData(criterion,flavours,helpi,min,max);
+  double emin=ATOOLS::Min(m_stop[0],m_stop[4]);
+  p_isr->SetFixedSprimeMin(4.0*emin*emin);
+  p_isr->SetFixedSprimeMax(4.0*m_start[0]*m_start[0]);
   group->ResetSelector(group->SelectorData());
   int level=ATOOLS::msg.Level();
   ATOOLS::msg.SetLevel(0);
@@ -433,10 +396,13 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
 	    <<"   relative error     = "
 	    <<ATOOLS::dabs((total-integral)/(total))*100.0
 	    <<" %\n}"<<std::endl;
-  if (ATOOLS::dabs((total-integral)/total)>2.*m_error) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			    "Grid integral and \\sigma_{tot} do not coincide.",
-			    "Simple_Chain","CheckConsistency"));
+  if (ATOOLS::dabs((total-integral)/total)>m_error) {
+    ATOOLS::msg.Error()<<"Simple_Chain::CheckConsistency(..): Warning.\n"
+		       <<"   \\Delta_{rel}\\sigma / m_error = "
+		       <<ATOOLS::dabs((total-integral)/
+				      (total*m_error))<<std::endl;
+    if (ATOOLS::dabs((total-integral)/total)>2.*m_error) 
+      THROW(fatal_error,"Grid integral and \\sigma_{tot} do not coincide.");
   }
   return true;
 }
@@ -491,8 +457,8 @@ bool Simple_Chain::CalculateTotal()
   p_differential = new Amisic_Histogram_Type();
   ATOOLS::Axis<double> *xaxis=p_differential->XAxis(), *refx=ref->XAxis();
   ATOOLS::Axis<double> *yaxis=p_differential->YAxis(), *refy=ref->YAxis();
-  xaxis->SetVariable(refx->Variable());
-  yaxis->SetVariable(refy->Variable());
+  xaxis->SetVariable(refx->Variable()->Name());
+  yaxis->SetVariable(refy->Variable()->Name());
   xaxis->SetScaling(refx->Scaling()->Name());
   yaxis->SetScaling(refy->Scaling()->Name());
   p_differential->Initialize(ref->XMin(),ref->XMax(),ref->NBins());
@@ -512,20 +478,21 @@ bool Simple_Chain::CalculateTotal()
   p_differential->SetFinished(true);
 #ifdef DEBUG__Simple_Chain
   std::vector<std::string> comments(1,"  Differential XS   "); 
-  p_differential->WriteOut(OutputPath()+differentialfile,"[x,y] =",comments);
+  p_differential->WriteOut(OutputPath()+differentialfile,
+			   "[x,w,w2,max,n] = ",comments);
 #endif
   SetStart(p_differential->XMax(),0);
   SetStop(ATOOLS::Max(p_differential->XMin(),m_stop[0]),0);
   p_total = new Grid_Function_Type();
   xaxis=p_total->XAxis();
   yaxis=p_total->YAxis();
-  xaxis->SetVariable(refx->Variable());
-  yaxis->SetVariable(refy->Variable());
+  xaxis->SetVariable(refx->Variable()->Name());
+  yaxis->SetVariable(refy->Variable()->Name());
   xaxis->SetScaling(refx->Scaling()->Name());
   yaxis->SetScaling(refy->Scaling()->Name());
   m_sigmahard=0.0;
   for (size_t i=ref->NBins()-2;
-       i>0 && p_differential->BinXMin(i)>m_stop[4];--i) {
+       i>0 && p_differential->BinXMin(i)>=m_stop[4];--i) {
     double width=p_differential->BinXMax(i)-p_differential->BinXMin(i);
     m_sigmahard+=p_differential->BinContent(i)*width;
     p_total->AddPoint(p_differential->BinXMin(i),m_sigmahard);
@@ -552,21 +519,28 @@ bool Simple_Chain::CalculateTotal()
 			     p_processes->KFactorScheme(),
 			     p_processes->ScaleFactor());
     group->XSSelector()->SetOffShell(p_isr->KMROn());
+    std::map<EXTRAXS::XS_Base*,EXTRAXS::XS_Group*> parents;
     for (Process_Map::iterator pit=m_processmap.begin();
 	 pit!=m_processmap.end();++pit) {
+      EXTRAXS::XS_Group *parent=
+	dynamic_cast<EXTRAXS::XS_Group*>(pit->second->Parent());
+      parents[pit->second]=parent;
+      parent->Remove(pit->second);
       group->Add(pit->second);
     }
-    CheckConsistency(group,p_total,m_stop[4],m_start[4],(*p_total)(m_stop[4]));
+    CheckConsistency(group,p_total,m_stop[4],m_start[4],m_sigmahard);
     for (Process_Map::iterator pit=m_processmap.begin();
 	 pit!=m_processmap.end();++pit) {
       group->Remove(pit->second);
+      parents[pit->second]->Add(pit->second);
     }
     delete group;
   }
   ATOOLS::msg.Tracking()<<"Simple_Chain::CalculateTotal(): Pythia mode {"
 			<<"\n   \\sigma_{tot} = "
 			<<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
-			<<" mb @ p_\\perp = "<<m_stop[4]<<" GeV\n   \\sigma_{cut} = "
+			<<" mb @ p_\\perp = "<<m_stop[4]
+			<<" GeV\n   \\sigma_{cut} = "
 			<<((*p_total)(m_stop[0])*ATOOLS::rpa.Picobarn()/1.e9)
 			<<" mb p_\\perp = "<<m_stop[0]<<" GeV\n}"<<std::endl;
   p_total->ScaleY(1.0/m_norm);
@@ -613,8 +587,11 @@ bool Simple_Chain::Initialize()
   SetStop(stop,0);
   SetStop(stop,4); 
   if (m_regulate) SetStop(ATOOLS::rpa.gen.Accu()*stop,4);
-  if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
+  if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=1;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
+  if (!reader->ReadFromFile(m_foam,"FOAM_MI")) m_foam=0;
+  if (!reader->ReadFromFile(m_maxreduction,"MI_MAX_REDUCTION")) 
+    m_maxreduction=10.0;
   std::string function;
   if (reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
     std::vector<double> parameters;
@@ -625,28 +602,20 @@ bool Simple_Chain::Initialize()
   delete reader;
   if (!CreateGrid()) {
     CleanUp();
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			    "Grid creation failed.",
-			    "Simple_Chain","Initialize"));
+    THROW(critical_error,"Grid creation failed.");
   }
   if (!CalculateTotal()) {
     CleanUp();
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			    "Determination of \\sigma_{tot} failed.",
-			    "Simple_Chain","Initialize"));
+    THROW(critical_error,"Determination of \\sigma_{tot} failed.");
   }
   if (!SetUpInterface()) {
     CleanUp();
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			    "Phasespace setup failed.",
-			    "Simple_Chain","Initialize"));
+    THROW(critical_error,"Phasespace setup failed.");
   }
   if (p_profile!=NULL) {
     if (!p_profile->CalculateOMean(m_sigmahard/m_norm)) {
       CleanUp();
-      throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			      "Determination of <\\tilde{O}> failed.",
-			      "Simple_Chain","Initialize"));
+      THROW(critical_error,"Determination of <\\tilde{O}> failed.");
     }
   }
   return true;
@@ -657,9 +626,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
   PROFILE_HERE;
   m_filledblob=false;
   if (p_processes==NULL || blob==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			    "Multiple interactions are not initialized",
-			    "Simple_Chain","FillBlob"));
+    THROW(fatal_error,"Multiple interactions are not initialized");
   }
   blob->DeleteOwnedParticles();
   if (m_processmap.find(m_selected)!=m_processmap.end()) {
@@ -678,18 +645,77 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	  delete data;
 	  if (weight>max) {
 	    ATOOLS::msg.Tracking()<<"Simple_Chain::FillBlob(..): "
-				  <<"Weight exceeded maximum.\n   Setting new maximum "
+				  <<"Weight exceeded maximum.\n"
+				  <<"   Setting new maximum "
 				  <<max<<" -> "<<weight<<std::endl;
 	    m_differentials[m_selected]->SetBinMax(m_last[0],weight);
 	  }
-	  if (p_fsrinterface->Trigger() && weight>max*ATOOLS::ran.Get()) break;
+	  if (p_fsrinterface->Trigger()) {
+	    double ran=ATOOLS::ran.Get();
+	    if (weight*m_maxreduction>=max*ran) {
+	      if (weight*m_maxreduction<max) break;
+	      else {
+		if (m_overflow.find(m_selected)==m_overflow.end()) {
+		  Amisic_Histogram<double> *sample=m_differentials[m_selected];
+		  Amisic_Histogram<double> *newhisto = 
+		    new Amisic_Histogram<double>();
+		  newhisto->Initialize(sample->XMin(),sample->XMax(),
+				       sample->NBins());
+		  m_overflow[m_selected]=newhisto;
+		}
+		Amisic_Histogram<double> *cur=m_overflow[m_selected];
+		double value=cur->BinContent(m_last[0]);
+		if (value>0.0) {
+		  if (value>=1.0 ||
+		      (value<1.0 && value>ATOOLS::ran.Get())) {
+		    cur->SetBinContent(m_last[0],ATOOLS::Max(0.0,value-1.0));
+		    m_spkey[3]=
+		      ATOOLS::Max(cur->BinSumSqr(m_last[0]),
+				  4.0*(1.0+s_epsilon)*m_last[0]*m_last[0]);
+		    m_ykey[2]=cur->BinMax(m_last[0]);
+		    double logtau=log(m_spkey[3]/m_spkey[2]);
+		    if (-logtau<m_ykey[2]) m_ykey[2]=-logtau;
+		    else if (m_ykey[2]<logtau) m_ykey[2]=logtau;
+		    msg_Debugging()<<"hit "<<m_selected<<" "<<m_last[0]<<" "
+				   <<value<<" "<<cur->BinEntries(m_last[0])
+				   <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
+		    selected->WeightedEvent(3);
+		    cur->SetBinEntries(m_last[0],cur->BinEntries(m_last[0])+1);
+		  }
+		  else {
+		    msg_Debugging()<<"no hit "<<m_selected<<" "
+				   <<m_last[0]<<" "<<value<<" "
+				   <<cur->BinEntries(m_last[0])<<" "
+				   <<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
+		    if (value<1.0) cur->SetBinContent(m_last[0],0.0);
+		    return false;
+		  }
+		}
+		else {
+		  msg_Debugging()<<"set "<<m_selected<<" "<<m_last[0]<<" "
+				 <<value<<" "<<m_spkey[3]<<" "
+				 <<m_ykey[2]<<"\n";
+		  double overflow=weight*m_maxreduction/max;
+		  if (overflow>s_maxoverflow) {
+		    ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
+				       <<"overflow = "<<overflow<<" > "
+				       <<"s_maxoverflow = "<<s_maxoverflow
+				       <<std::endl;
+		  }
+		  cur->SetBinContent(m_last[0],overflow-1.0);
+		  cur->SetBinSumSqr(m_last[0],m_spkey[3]);
+		  cur->SetBinMax(m_last[0],m_ykey[2]);
+		  cur->SetBinEntries(m_last[0],1);
+		}
+		break;
+	      }
+	    }
+	  }
 	}
       }
     }
     else {
-      throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,
-			      "Weighted events not available",
-			      "Simple_Chain","FillBlob"));
+      THROW(not_implemented,"Weighted events not available");
     }
     (*p_blob)["MI_Weight"]->Set(weight);
     (*p_blob)["MI_Trials"]->Set(trials);
@@ -778,9 +804,7 @@ bool Simple_Chain::DiceProcess()
       }
     }
   }
-  throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			  "Internal Error. Could not select any process.",
-			  "Simple_Chain","DiceProcess"));
+  THROW(critical_error,"Internal Error. Could not select any process.");
   return false;
 }
 

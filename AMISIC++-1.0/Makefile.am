@@ -6,5 +6,7 @@ endif
 
 EXTRA_DIST    = $(CVSINCLUDE)
 SUBDIRS       =	\
+		Tools \
+		Model \
 		Main\
 		Run

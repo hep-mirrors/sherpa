@@ -6,15 +6,15 @@ using namespace PHASIC;
 
 Fixed_Variable_Channel::
 Fixed_Variable_Channel(int nin,int nout,ATOOLS::Flavour *fl,
-		       ATOOLS::Variable variable):
+		       const std::string &variable):
   PHASIC::Channel_Interface(nin,nout,fl),
-  m_variable(variable) {}
+  p_variable(ATOOLS::Variable_Getter::GetObject(variable,"")) {}
 
 void Fixed_Variable_Channel::
 GeneratePoint(ATOOLS::Vec4D *p,double *ran)
 {
-  switch (m_variable.Type()) {
-  case ATOOLS::Variable::p_perp:
+  switch (p_variable->SelectorID()) {
+  case 12: {
     Ehat=sqrt((p[0]+p[1]).Abs2());
     pt=m_value;
     if (Ehat/2.0>pt) {
@@ -32,12 +32,12 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
     }
     p[3]=ATOOLS::Vec4D(Ehat/2.0,ATOOLS::Vec3D()-ATOOLS::Vec3D(p[2]));
     break;
+  }
   default:
     ATOOLS::msg.Error()<<"Fixed_Variable_Channel::GeneratePoint(..): "
-		       <<"Cannot handle "<<m_variable.Name()
+		       <<"Cannot handle "<<p_variable->Name()
 		       <<"! Setting weight to 0."<<std::endl;
     weight=0.0;
-    break;
   }
 }
   

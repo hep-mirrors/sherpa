@@ -10,7 +10,7 @@ PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Main -I$(EXTRAXSDIR)/Two2Two
-AMISICINCS    = -I../Tools -I../Model
+AMISICINCS    = -I../Tools -I../Main
 
 if SHERPA_SUPPORT
 SHERPADIR     = $(SHERPASYS)/SHERPA-1.0
@@ -23,13 +23,21 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       = libAmisic.la
-libAmisic_la_SOURCES  = \
-			MI_Base.C \
-			Amisic.C 
+lib_LTLIBRARIES       = libAmisicModel.la
+libAmisicModel_la_SOURCES     = \
+			       	Grid_Creator.C \
+				Profile_Function_Base.C \
+				Profile_Function.C \
+				Simple_Chain.C \
+				Reggeon_Trajectory.C \
+				Simple_String.C 
 noinst_HEADERS        = \
-			MI_Base.H \
-			Amisic.H 
+			Grid_Creator.H \
+			Profile_Function_Base.H \
+			Profile_Function.H \
+			Simple_Chain.H \
+			Reggeon_Trajectory.H \
+			Simple_String.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(AMISICFLAGS) $(SHERPAFLAGS)
 INCLUDES      =	$(SHERPAINCS) $(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) \

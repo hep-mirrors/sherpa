@@ -10,7 +10,6 @@ PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
 EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Main -I$(EXTRAXSDIR)/Two2Two
-AMISICINCS    = -I../Tools -I../Model
 
 if SHERPA_SUPPORT
 SHERPADIR     = $(SHERPASYS)/SHERPA-1.0
@@ -23,14 +22,18 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       = libAmisic.la
-libAmisic_la_SOURCES  = \
-			MI_Base.C \
-			Amisic.C 
+lib_LTLIBRARIES       = libAmisicTools.la
+libAmisicTools_la_SOURCES     = \
+				Amisic_Histogram.C \
+				Fixed_Variable_Channel.C \
+				Environment.C \
+				Semihard_QCD.C 
 noinst_HEADERS        = \
-			MI_Base.H \
-			Amisic.H 
+			Amisic_Histogram.H \
+			Fixed_Variable_Channel.H \
+			Environment.H \
+			Semihard_QCD.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(AMISICFLAGS) $(SHERPAFLAGS)
-INCLUDES      =	$(SHERPAINCS) $(AMISICINCS) $(EXTRAXSINCS) $(PHASICINCS) \
-		$(PDFINCS) $(BEAMINCS) $(MODELINCS) $(ATOOLSINCS)
+INCLUDES      =	$(SHERPAINCS) $(EXTRAXSINCS) $(PHASICINCS) $(PDFINCS) \
+		$(BEAMINCS) $(MODELINCS) $(ATOOLSINCS)

@@ -29,6 +29,7 @@ namespace AMISIC {
 
     // member functions
     void CreateFSRChannels();
+    void CreateISRChannels();
     void InitIntegrators();
 
     // inline functions

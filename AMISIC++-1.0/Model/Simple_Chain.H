@@ -27,22 +27,19 @@ namespace AMISIC {
     typedef PHASIC::Fixed_Variable_Channel FSR_Channel;
 
     typedef std::map<std::string,EXTRAXS::XS_Base*> Process_Map;
-
     typedef std::multimap<double,std::string,
-			  std::greater<double> >        Sort_Map;
-    typedef std::map<ATOOLS::kf::code,ATOOLS::kf::code> Map_Map;
+			  std::greater<double> >    Sort_Map;
 
   private:
 
-    Amisic_Histogram_Map   m_differentials;
+    Amisic_Histogram_Map   m_differentials, m_overflow;
     Grid_Function_Type    *p_total;
     Amisic_Histogram_Type *p_differential;
     Grid_Creator          *p_gridcreator;
 
     Process_Map m_processmap;
-    Map_Map     m_mapmap;
 
-    double m_norm, m_enhance;
+    double m_norm, m_enhance, m_maxreduction;
 
     std::string m_environmentfile, m_xsfile;
     std::string m_xsextension, m_mcextension;
@@ -60,8 +57,8 @@ namespace AMISIC {
     std::string m_selected;
 
     unsigned int m_nflavour, m_maxtrials, m_check;
-    unsigned int m_scalescheme, m_kfactorscheme;
-    double       m_sigmahard, m_error, m_ecms, m_vegas;
+    unsigned int m_scalescheme, m_kfactorscheme, m_vegas, m_foam;
+    double       m_sigmahard, m_error, m_ecms;
     bool         m_external, m_regulate;
 
     std::string         m_regulator; 

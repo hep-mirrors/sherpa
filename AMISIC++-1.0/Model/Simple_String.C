@@ -79,8 +79,7 @@ bool Simple_String::Initialize()
   p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
   p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"No beam remnant handler found.",
-			    "Simple_String","Initialize"));
+    THROW(fatal_error,"No beam remnant handler found.");
   }
   return true;
 }

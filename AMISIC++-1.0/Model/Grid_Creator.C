@@ -2,14 +2,15 @@
 
 #include "Phase_Space_Handler.H"
 #include "ISR_Handler.H"
+#include "Data_Reader.H"
 #include "Data_Writer.H"
 #include "Blob.H"
 #include "Run_Parameter.H"
 
 #ifdef PROFILE__all
-#define PROFILE__Simple_Chain
+#define PROFILE__Grid_Creator
 #endif
-#ifdef PROFILE__Simple_Chain
+#ifdef PROFILE__Grid_Creator
 #include "prof.hh"
 #else
 #define PROFILE_HERE
@@ -23,18 +24,14 @@ Grid_Creator::Grid_Creator(Amisic_Histogram_Map *histograms,
   p_processes(processes),
   m_xsextension("_xs.dat"),
   m_mcextension("MC"),
-  m_datatag("[x,y] ="),
+  m_datatag("[x,w,w2,max,n] = "),
   m_events(0)
 {
   if (p_processes==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			    "Process handler is not initialized",
-			    "Grid_Creator","Grid_Creator"));
+    THROW(fatal_error,"Process handler is not initialized");
   }
   if (!CollectProcesses(p_processes)) {
-    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
-			    "Process handler does not own any process",
-			    "Grid_Creator","Grid_Creator"));
+    THROW(fatal_error,"Process handler does not own any process");
   }
 }
 
@@ -73,11 +70,9 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   reader->SetInputFile(InputPath()+InputFile());
   reader->SetVectorType(reader->VHorizontal);
   std::vector<std::string> helps;
-  if (!reader->VectorFromFile(helps,"X_VARIABLE")) 
-    m_gridxvariable="p_\\perp";
+  if (!reader->VectorFromFile(helps,"X_VARIABLE")) m_gridxvariable="p_\\perp";
   else m_gridxvariable=MakeString(helps);
-  if (!reader->VectorFromFile(helps,"Y_VARIABLE")) 
-    m_gridyvariable="\\frac{d\\sigma}{dp_\\perp}";
+  if (!reader->VectorFromFile(helps,"Y_VARIABLE")) m_gridyvariable="";
   else m_gridyvariable=MakeString(helps);
   if (m_gridxmin==0.0) 
     m_gridxmin=sqrt(ATOOLS::Max(p_processes->ISR()->PDF(0)->Q2Min(),
@@ -91,7 +86,8 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   if (!reader->ReadFromFile(helpd,"MAX_EVENTS")) helpd=100000;
   m_maxevents=(long unsigned)helpd;
   if (!reader->ReadFromFile(m_binerror,"GRID_ERROR")) m_binerror=0.05;
-  if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) m_outputlevel=0;
+  if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) 
+    m_outputlevel=0;
   if (!reader->ReadFromFile(m_gridxscaling,"HISTO_X_SCALING")) 
     m_gridxscaling="Log_B_10";
   if (!reader->ReadFromFile(m_gridyscaling,"HISTO_Y_SCALING")) 
@@ -107,13 +103,12 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
 				 abs((int)(((*axis)(m_gridxmax)-
 					    (*axis)(m_gridxmin))/
 					   m_griddeltax)))) 
-      throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
-			      "Cannot initialize histogram.",
-			      "Grid_Creator","ReadInArguments"));
+      THROW(critical_error,"Cannot initialize histogram.");
   }
   delete reader;
   p_xaxis=p_histograms->begin()->second->XAxis();
   p_yaxis=p_histograms->begin()->second->YAxis();
+  p_variable=p_xaxis->Variable();
   return true;
 }
 
@@ -153,7 +148,7 @@ bool Grid_Creator::ReadInGrid()
 bool Grid_Creator::InitializeCalculation()
 {
   int helpi=0;
-  m_criterion=ATOOLS::Variable::TypeToSelectorID(p_xaxis->Variable().Type());
+  m_criterion=p_xaxis->Variable()->SelectorID();
   std::vector<ATOOLS::Flavour> flavours(1,(ATOOLS::kf::jet));
   p_processes->SelectorData()->
     SetData(m_criterion,flavours,helpi,m_gridxmin,m_gridxmax);
@@ -174,8 +169,8 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
     delete xsdata;
     Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
     const ATOOLS::Vec4D *p=process->Momenta();
-    double value=p[0].PPerp();
-    for (size_t i=1;i<4;++i) value=ATOOLS::Max(value,p[i].PPerp());
+    double value=(*p_variable)(&p[0]);
+    for (size_t i=1;i<4;++i) value=ATOOLS::Max(value,(*p_variable)(&p[i]));
     histo->Add(value,info.weight);
     for (size_t i=1;i<info.ntrial;++i) histo->Add(value,0.0); 
     return true;
@@ -188,7 +183,7 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
 
 bool Grid_Creator::CreateOptimizedGrid()
 {
-  msg_Info()<<"Grid_Creator::CreateInitialGrid(): "
+  msg_Info()<<"Grid_Creator::CreateOptimizedGrid(): "
 	    <<"Optimizing grid for MI.\n";
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_maxevents;++m_events) {
