@@ -50,7 +50,15 @@ namespace AMISIC {
   {
     if (m_finished) return std::string::npos;
     ++m_entries;
-    size_t i=0;
+    size_t l=0, r=m_data[hci::x_value].size()-1, i=(l+r)/2;
+    double xi=m_data[hci::x_value][i];
+    while (r-l>1) {
+      if (value<xi) r=i;
+      else l=i;
+      i=(l+r)/2;
+      xi=m_data[hci::x_value][i];
+    }
+    if (value<xi) --i;
     for (;i<m_data[hci::x_value].size();++i) {
       if (value>=m_data[hci::x_value][i] && 
 	  value<m_data[hci::x_value][i+1]) {
@@ -71,13 +79,15 @@ namespace AMISIC {
   {
     if (m_finished) return std::string::npos;
     ++m_entries;
-    size_t i=0;
-    for (;i<m_data[hci::x_value].size();++i) {
-      if (value>=m_data[hci::x_value][i] && 
-	  value<m_data[hci::x_value][i+1]) {
-	break;
-      }
-    }  
+    size_t l=0, r=m_data[hci::x_value].size()-1, i=(l+r)/2;
+    double xi=m_data[hci::x_value][i];
+    while (r-l>1) {
+      if (value<xi) r=i;
+      else l=i;
+      i=(l+r)/2;
+      xi=m_data[hci::x_value][i];
+    }
+    if (value<xi) --i;
     m_data[hci::y_value][i]=(*p_yaxis)(weight);
     m_data[hci::y_square][i]=(*p_yaxis)(weight*weight);
     m_data[hci::maximum][i]=(*p_yaxis)(weight);
