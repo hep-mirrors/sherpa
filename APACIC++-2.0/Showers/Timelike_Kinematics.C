@@ -414,8 +414,8 @@ bool Timelike_Kinematics::DoKinematics(Knot * mo)
                   CheckVector(mo->left->part->Momentum()) || 
                   CheckVector(mo->right->part->Momentum()));
     if (error) msg.Error()<<"Error after CheckVector() !"<<endl;
-    if ( (mo->part->Momentum()-mo->left->part->Momentum()-
-	  mo->right->part->Momentum()).Abs2() > rpa.gen.Accu()) error = 1;
+    if ( dabs((mo->part->Momentum()-mo->left->part->Momentum()-
+	       mo->right->part->Momentum()).Abs2()) > rpa.gen.Accu()) error = 1;
 
     double py=mo->left->part->Momentum()[2];
     if (!(py<0) && !(py>0)) error =1;
