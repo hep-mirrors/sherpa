@@ -10,8 +10,8 @@ nlo,1.69,1.0
 EVLCTEQ
 1d-6,1e5,95,19
 Alphas:
-Fixed,nlo,Internal
-0.1179,91.70,1.3,4.5,180.0
+Fixed,nlo,CTEQalfa
+0.117997,91.188,1.3,4.5,180.0
 Parametrization:
 CTEQ6,-1,5
 dv,log-pade

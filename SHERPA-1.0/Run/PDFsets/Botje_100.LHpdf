@@ -8,7 +8,7 @@ Description:
 Evolution:
 nlo,4.0,1.0
 QCDNUM
-'large.grid',400,1d-6,1d0,112,1d0,1d10
+'Botje.large.grid',400,1d-6,1d0,112,1d0,1d10
 Alphas:
 Fixed,nlo,Internal
 0.118,91.71,1.5,5.0,188.0

@@ -11,20 +11,14 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-lib_LTLIBRARIES       =	libLHAPDF.la
+if LHAPDF_SUPPORT
+LHAPDFFLAGS      = -DLHAPDF_SUPPORT
+lib_LTLIBRARIES = libLHAPDF.la 
 libLHAPDF_la_SOURCES  =	\
 			LHAPDF_Fortran_Interface.C \
-			lhapdf_inter.f \
-		       	LHpdflib.f \
-			description.f \
-		       	evolution.f \
-			alphas.f  \
-		       	parameter.f \
-			inputPDF.f \
-		       	wrapQCDNUM.f \
-			qcdnum.f \
-			Sqcdnum.f
+			lhapdf_inter.f 
 noinst_HEADERS        =	LHAPDF_Fortran_Interface.H
-EXTRA_DIST    = parmsetup.f $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(PDFFLAGS)
+endif
+EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(PDFFLAGS) $(LHAPDFFLAGS)
 INCLUDES      =	$(PDFINCS) $(MODELINCS) $(ATOOLSINCS)

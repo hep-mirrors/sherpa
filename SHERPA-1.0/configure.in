@@ -59,6 +59,21 @@ AC_ARG_ENABLE(root,
     esac
   fi ],[ root=false ])
 AM_CONDITIONAL(ROOT_SUPPORT, test $root = true)
+AC_ARG_ENABLE(lhapdf,
+[  --enable-lhapdf          Enable LHAPDF support ],
+[ lhapdf=false
+  if test -d "$LHAPDFDIR"; then
+    echo "checking for LHAPDF libraries... yes"
+    case "${enableval}" in 
+      yes) lhapdf=true ;;
+    esac
+  else 
+    echo "checking for LHAPDF libraries... no"
+    case "${enableval}" in 
+      yes) AC_MSG_ERROR(\$LHAPDFDIR is not a valid path.) ;;
+    esac
+  fi ],[ lhapdf=false ])
+AM_CONDITIONAL(LHAPDF_SUPPORT, test $lhapdf = true)
 AC_ARG_ENABLE(cvsinclude,
 [  --disable-cvsinclude    Disable CVS Synchronization ],
 [ cvsinclude=true

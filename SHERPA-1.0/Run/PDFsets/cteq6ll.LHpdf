@@ -10,7 +10,7 @@ lo,1.69,1.0
 EVLCTEQ
 1d-6,1e5,95,19
 Alphas:
-Fixed,lo,Internal
+Fixed,lo,CTEQalfa
 0.129783,91.188,1.3,4.5,180.0
 Parametrization:
 CTEQ6,-1,5

@@ -13,6 +13,8 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+if LHAPDF_SUPPORT
+else
 lib_LTLIBRARIES       =	libCTEQ.la
 libCTEQ_la_SOURCES     =	\
 			Cteq61Pdf.f \
@@ -20,6 +22,7 @@ libCTEQ_la_SOURCES     =	\
 		    	CTEQ6_Fortran_Interface.C 
 noinst_HEADERS        =	\
 			CTEQ6_Fortran_Interface.H 
+endif
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(PDFFLAGS)
 INCLUDES      =	$(APACICINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)

@@ -11,9 +11,9 @@ Description:
 Evolution:
 nlo,1.0,1.0
 QCDNUM
-'large.grid',400,1d-6,1d0,112,1d0,1d10
+'MRST98.large.grid',400,1d-6,1d0,112,1d0,1d10
 Alphas:
-Fixed,nlo,EvolCode
+Fixed,nlo,MRSTalfa
 0.1175,91.71,1.35,4.30,180.0
 Parametrization:
 MRST,-1,5

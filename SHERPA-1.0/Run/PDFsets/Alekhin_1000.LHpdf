@@ -9,7 +9,7 @@ Description:
 Evolution:
 nlo,9.0,1.0
 QCDNUM
-'small.grid',80,1d-6,1d0,60,1d0,1d10
+'Alekhin.small.grid',80,1d-6,1d0,60,1d0,1d10
 Alphas:
 Variable,nlo,Internal
 15,91.71,1.5,4.5,188.0

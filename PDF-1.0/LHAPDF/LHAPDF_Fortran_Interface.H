@@ -29,7 +29,7 @@ namespace PDF {
   /*!
     \class LHAPDF_Fortran_Interface
     \brief An interface to the package of various sets of parton distribution functions organized 
-    according to the Les Houches accord.
+    according to the Les Houches accord. (latest update for version LHAPDFv3)
 
     This class provides an interface to a package of various parton distribution functions
     that are accessible according to the standards put down in the Les Houches accord. The
@@ -51,10 +51,6 @@ namespace PDF {
     - <A HREF="http://131.169.91.193/cgi-bin/spiface/find/hep/www?eprint=hepph-9912439">Botje</A>
 
     The Fortran package is also downloadable from <A HREF="http://vircol.fnal.gov/">here</A>.
-
-    It should be stressed here that this interface so far does not make full use of all possibilities
-    in the package. For instance, only one of the numerical evolution codes provided has been implemented
-    so far. 
   */
   /*!
     \var std::string LHAPDF_Fortran_Interface::m_path

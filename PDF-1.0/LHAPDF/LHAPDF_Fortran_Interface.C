@@ -12,6 +12,7 @@ extern "C" {
   void   lhapdfinit_(int &);
   void   lhapdfevolve_(double &,double &,double *);
   double lhapdfalphas_(double &);
+  void   lhapdfgetdesc_();
 }
 
 LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
@@ -27,8 +28,8 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
   m_bunch = _bunch; 
   if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
   if (!initlhapdf) {
-    initlhapdf = 1;
-    std::string full = m_path+std::string("/")+m_set+std::string(".LHpdf");
+    initlhapdf = true;
+    std::string full = m_path+std::string("/")+m_set;
     const char * help;
     help = full.c_str();
     lhapdfinitset_(help);
@@ -59,9 +60,10 @@ double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
 }
 
 void LHAPDF_Fortran_Interface::Output() {
-  double scale = 91.2;
+  double scale = Flavour(kf::Z).Mass();
   msg.Out()<<" LHAPDF : "<<m_set<<" / "<<m_member<<std::endl
 	   <<"          alpha_s(MZ) = "<<lhapdfalphas_(scale)<<std::endl;
+  lhapdfgetdesc_();
 }
 
 void LHAPDF_Fortran_Interface::Calculate(double x,double z,double kp2,double Q2) {

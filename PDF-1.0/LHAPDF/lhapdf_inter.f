@@ -5,11 +5,8 @@ C
 C******************************************************************
 
       SUBROUTINE LHAPDFINITSET(set)
-      character*64 set
-
-      print *,set
+      character*256 set
       call initpdfset(set)
-
       end
 
 C******************************************************************
@@ -32,6 +29,12 @@ C******************************************************************
       FUNCTION LHAPDFALPHAS(Q)
       real*8 Q,LHAPDFALPHAS
       LHAPDFALPHAS = alphasPDF(Q)
+      end
+
+C******************************************************************
+
+      FUNCTION LHAPDFGETDESC(Q)
+      call GetDesc()
       end
 
 C******************************************************************
