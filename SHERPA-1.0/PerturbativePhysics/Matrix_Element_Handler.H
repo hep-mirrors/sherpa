@@ -32,6 +32,8 @@ namespace SHERPA {
     AMEGIC::Amegic              * p_amegic;
     EXTRAXS::SimpleXSecs        * p_simplexs;
 
+    bool RescaleJetrates() ;
+
     int InitializeSimpleXS(MODEL::Model_Base *,
 			   BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
     int InitializeAmegic(MODEL::Model_Base *,

@@ -70,7 +70,13 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   switch (m_mode) {
   case 1: 
     m_readin = p_dataread->GetValue<string>("RESULT DIRECTORY",string(""));
-    if (p_amegic->CalculateTotalXSec(m_readin)) return 1;
+    cout<<" fac "<<rpa.test.FactorYcut()<<endl;
+    cout<<" ycut "<<(rpa.integ.Ycut()*sqr(rpa.gen.Ecms()))<<endl;
+    p_amegic->Processes()->SetScale(rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
+    if (p_amegic->CalculateTotalXSec(m_readin)) {
+      RescaleJetrates();
+      return 1;
+    }
     msg.Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
 	       <<"   Failed to Calculate total XSec through Amegic. Abort."<<endl;
     abort();
@@ -85,7 +91,16 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   abort();
 }
 
-
+bool Matrix_Element_Handler::RescaleJetrates() 
+{
+  // processes not rescaled in the moment only status printed
+  AMEGIC::Process_Base * procs = p_amegic->Processes();
+  for (int i=0; i<procs->Size();++i) {
+    double xstot = (*procs)[i]->Total()*rpa.Picobarn();
+    double njet  = (*procs)[i]->Nout();
+    cout<<" "<<njet<<" : "<<xstot<<endl;
+  }
+}
 
 bool Matrix_Element_Handler::PrepareXSecTables() {};
 bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) {};
