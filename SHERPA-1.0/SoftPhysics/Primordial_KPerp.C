@@ -96,7 +96,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  double cur=dabs(blob[i]->OutParticle(j)->Momentum()[3]);
 	  for (int k=j;k<blob[i]->NOutP();++k) {
 	    if (cur>(*p_kperp[i])[k].Abs()) {
-	      copy=(*p_kperp[i])[j]; (*p_kperp[i])[j]=(*p_kperp[i])[k]; (*p_kperp[i])[j]=copy;
+	      copy=(*p_kperp[i])[j]; (*p_kperp[i])[j]=(*p_kperp[i])[k]; (*p_kperp[i])[k]=copy;
 	      break;
 	    }
 	    else {
