@@ -11,18 +11,19 @@ SHERPAINCS    =	-I../Single_Events
 
 lib_LTLIBRARIES       =	libHerwigTools.la
 libHerwigTools_la_SOURCES       =	\
-				herwig6500mod.f \
 				fiherwig.f \
-				hwudat.f \
+				fimcatnlo.f \
+				mcatnlo_hwlhin.f \
+				mcatnlo_str.f \
+				herwig6504mod.f \
+				MCatNLO_Interface.C \
 				Herwig_Interface.C 
 noinst_HEADERS        =	\
-			herwig6500.inc \
+			MCatNLO_Wrapper.H \
+			MCatNLO_Interface.H \
 		 	Herwig_Wrapper.H \
-			Herwig_Interface.H 
+			Herwig_Interface.H \
+			HERWIG65.INC 
 
 AM_CXXFLAGS   =	$(SHERPAFLAGS)
 INCLUDES      =	$(MODELINCS) $(ATOOLSINCS) $(PDFINCS) $(SHERPAINCS)
-
-
-
-
