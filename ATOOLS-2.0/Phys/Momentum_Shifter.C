@@ -6,6 +6,21 @@
 
 using namespace ATOOLS;
 
+std::ostream &ATOOLS::operator<<(std::ostream &ostr,const ms::error_code code)
+{
+  switch (code) {
+  case ms::shift_error:     return ostr<<"shift vector error";
+  case ms::direction_error: return ostr<<"shift direction error";
+  case ms::sperp_error:     return ostr<<"s_\\perp error";
+  case ms::momenta_error:   return ostr<<"momenta error";
+  case ms::boost_error_1:   return ostr<<"boost error (1)";
+  case ms::boost_error_2:   return ostr<<"boost error (2)";
+  case ms::scale_error:     return ostr<<"scale error";
+  case ms::no_error:        return ostr<<"no error";
+  }
+  return ostr;
+}
+
 Momentum_Shifter::Momentum_Shifter(Particle *const initial1,
 				   Particle *const initial2)
 {
@@ -181,12 +196,12 @@ bool Momentum_Shifter::BoostBack(Particle *const particle,const size_t catcher)
   return true;
 }
 
-bool Momentum_Shifter::Boost()
+ms::error_code Momentum_Shifter::Boost()
 {
-  if (!CalculateShift()) return false;
-  if (!DetermineDirection()) return false;
-  if (!CalculateSPerp()) return false;
-  if (!ConstructMomenta()) return false;
+  if (!CalculateShift()) return ms::shift_error;
+  if (!DetermineDirection()) return ms::direction_error;
+  if (!CalculateSPerp()) return ms::sperp_error;
+  if (!ConstructMomenta()) return ms::momenta_error;
   m_oldcms=Poincare(m_pold[0]);
   m_newcms=Poincare(m_pnew[0]);
   m_newcms.Boost(m_pnew[1]); 
@@ -198,24 +213,24 @@ bool Momentum_Shifter::Boost()
     m_oldcms.BoostBack(m_pnew[i]);
   }
   m_boosted.clear();
-  if (!Boost(p_initial[0],0)) return false;
+  if (!Boost(p_initial[0],0)) return ms::boost_error_1;
   if (!Boost(p_initial[1],0)) {
     m_boosted.clear();
     BoostBack(p_initial[0],0);
-    return false;
+    return ms::boost_error_2;
   }
-  return true;
+  return ms::no_error;
 }
 
-bool Momentum_Shifter::Scale()
+ms::error_code Momentum_Shifter::Scale()
 {
-  if (!CalculateShift()) return false;
-  if (!DetermineDirection()) return false;
-  if (!CalculateSPerp()) return false;
-  if (!ConstructMomenta()) return false;
+  if (!CalculateShift()) return ms::shift_error;
+  if (!DetermineDirection()) return ms::direction_error;
+  if (!CalculateSPerp()) return ms::sperp_error;
+  if (!ConstructMomenta()) return ms::momenta_error;
   p_initial[0]->SetMomentum(m_pnew[1]);
   p_initial[1]->SetMomentum(m_pnew[2]);
-  return true;
+  return ms::no_error;
 }
 
 void Momentum_Shifter::Reset()

@@ -8,6 +8,23 @@
 
 namespace ATOOLS {
 
+  struct ms {
+
+    enum error_code {
+      no_error        =  0,
+      shift_error     =  1,
+      direction_error =  2,
+      sperp_error     =  4,
+      momenta_error   =  8,
+      boost_error_1   = 16,
+      boost_error_2   = 32,
+      scale_error     = 64
+    };
+
+  };// end of struct ms
+
+  std::ostream &operator<<(std::ostream &ostr,const ms::error_code code);
+
   class Momentum_Shifter {
   private:
 
@@ -39,8 +56,8 @@ namespace ATOOLS {
     // member functions
     double Lambda2(double sp,double sp1,double sp2);
  
-    bool Boost();
-    bool Scale();
+    ms::error_code Boost();
+    ms::error_code Scale();
 
     void Reset();
 
