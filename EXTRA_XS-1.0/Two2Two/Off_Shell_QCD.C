@@ -58,29 +58,14 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
   p_momenta = new ATOOLS::Vec4D[m_nvector];
 }
 
-#include "Debugger.H"
-
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
 {
   ATOOLS::Vec4D *p=p_momenta;
   double S=p[4]*p[5], M2=p[2].Abs2();
   double z1=p[5]*p[0]/S, z2=p[4]*p[1]/S;
-//   ATOOLS::dbg.PrintStatus();
-//   double z1=ATOOLS::dbg.Value<double>("z_1 key");
-//   double z2=ATOOLS::dbg.Value<double>("z_2 key");
-
   double a3=p[5]*p[2]/(z1*S), a4=p[5]*p[3]/(z1*S);
   double b3=p[4]*p[2]/(z2*S), b4=p[4]*p[3]/(z2*S);
   double k12=p[0].Abs2(), k22=p[1].Abs2();
-//   double ggc = ggggosmec(S,s,t,u,k12,k22,z1,z2,a4,b4);
-//   double ggt = ggggosmet(S,s,t,u,k12,k22,z1,z2,a4,b4);
-//   double ggu = ggggosmeu(S,s,t,u,k12,k22,z1,z2,a4,b4);
-
-//   std::cout<<"z1/2 "<<z1<<" "<<z2<<std::endl;//" "<<p[4]<<" "<<p[5]<<" "<<p[0]<<" "<<p[1]<<" "<<p[2]<<" "<<p[3]<<std::endl;
-//   std::cout<<"c "<<ggc
-// 	   <<"\t t "<<ggt
-// 	   <<"\t u "<<ggu
-// 	   <<"\t r1:"<<k12/s<<"\t r2:"<<k22/s<<"\t -> "<<(ggt-ggu)/(ggt+ggu)<<std::endl; 
   return ATOOLS::sqr(4.*M_PI*m_alphas)/(k12*k22)*
     ggggosmec(S,s,t,u,k12,k22,z1,z2,a4,b4)*(NC*NC)/(NC*NC-1.)/8.;
 }
