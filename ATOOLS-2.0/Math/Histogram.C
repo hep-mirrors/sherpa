@@ -123,7 +123,9 @@ Histogram::~Histogram() {
 
 
 void Histogram::Finalize() {
-  for (int i=0;i<m_nbin;++i) m_bins[i][0]/=m_fills*m_binsize;
+  double total=0.0;
+  for (int i=0;i<m_nbin;++i) total+=m_bins[i][0];
+  for (int i=0;i<m_nbin;++i) m_bins[i][0]/=total*m_binsize;
 }
 
 void Histogram::Reset() {
