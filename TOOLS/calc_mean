@@ -1,0 +1,17 @@
+#!/usr/bin/awk -f
+BEGIN {i=0; sum=0.; integral=0.; binwidth=0.; underflow=0.; overflow=0. } 
+{
+  if (i==0) {
+    underflow=$5;
+    binwidthh=(0.5/($2-2.))*($4-$3);  
+  }
+  if (i>0) {
+    sum+=$2*($1+binwidthh)*binwidthh*2.; 
+    integral+=$2*binwidthh*2.;
+  }
+  ++i; 
+} 
+END {printf "mean=" sum " integral=" integral+(underflow*binwidthh*2.) "  binwidth=" binwidthh*2. "\n";}
+
+
+# FILES=`find . -name jet_1_1_pt_1.dat`; for I in $FILES; do echo $I; ../calc_mean < $I; done
