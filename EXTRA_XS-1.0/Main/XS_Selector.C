@@ -116,38 +116,39 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
     }
     return xs;
   }
+  Flavour_Container flc(flavours,nqed,nqcd);
   if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_ee_ffbar>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_ee_ffbar>;
   else if ((xs=Single_XS::GetProcess<XS_gg_gg>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_gg_gg>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_gg_gg>;
   else if ((xs=Single_XS::GetProcess<XS_q1g_q1g>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_q1g_q1g>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_q1g_q1g>;
   else if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_gg_q1qbar1>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_gg_q1qbar1>;
   else if ((xs=Single_XS::GetProcess<XS_q1qbar1_gg>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_q1qbar1_gg>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_q1qbar1_gg>;
   else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_q1qbar1_q1qbar1>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_q1qbar1_q1qbar1>;
   else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_q1qbar1_q2qbar2>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_q1qbar1_q2qbar2>;
   else if ((xs=Single_XS::GetProcess<XS_q1q1_q1q1>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_q1q1_q1q1>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_q1q1_q1q1>;
   else if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_q1q2_q1q2>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_q1q2_q1q2>;
   else if ((xs=Single_XS::GetProcess<XS_f1f1_f1f1>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_f1f1_f1f1>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1_f1f1>;
   else if ((xs=Single_XS::GetProcess<XS_f1f1b_f1f1b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_f1f1b_f1f1b>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1b_f1f1b>;
   else if ((xs=Single_XS::GetProcess<XS_f1f1b_f2f2b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_f1f1b_f2f2b>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f1b_f2f2b>;
   else if ((xs=Single_XS::GetProcess<XS_f1f2_f1f2>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_f1f2_f1f2>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f1f2>;
   else if ((xs=Single_XS::GetProcess<XS_f1f2b_f1f2b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_f1f2b_f1f2b>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f1f2b>;
   else if ((xs=Single_XS::GetProcess<XS_f1f2_f3f4>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_f1f2_f3f4>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2_f3f4>;
   else if ((xs=Single_XS::GetProcess<XS_f1f2b_f3f4b>(nin,nout,flavours,nqed,nqcd))!=NULL) 
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Single_XS::GetProcess<XS_f1f2b_f3f4b>;
+    s_gettermap[flc]=&Single_XS::GetProcess<XS_f1f2b_f3f4b>;
   if (xs!=NULL) {
     xs->SetScaleScheme(p_owner->ScaleScheme());
     xs->SetKFactorScheme(p_owner->KFactorScheme());
@@ -155,7 +156,7 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
     xs->m_order_strong=nqcd;
   }
   else {
-    s_gettermap[Flavour_Container(flavours,nqed,nqcd)]=Dummy_Getter;
+    s_gettermap[flc]=Dummy_Getter;
   }
 //   if (xs)  std::cout<<" found "<<xs->Name()<<"\n";
 //   else std::cout<<" found 0";
