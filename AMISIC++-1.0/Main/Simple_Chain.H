@@ -53,6 +53,8 @@ namespace AMISIC {
     double       m_sigmahard, m_error, m_ecms;
     bool         m_external, m_regulate;
 
+    int m_vegas;
+
     std::string         m_regulator;
     std::vector<double> m_regulation;
 
