@@ -76,7 +76,7 @@ for EXTENSION in $EXTENSIONS ; do
   fi
   cat $LOGFILE | grep "? " | grep "\."$EXTENSION > $TEMPFILE
   TEST1=$?
-  cat $LOGFILE | grep "A " | grep "\."$EXTENSION > $TEMPFILE
+  cat $LOGFILE | grep "A " | grep "\."$EXTENSION >> $TEMPFILE
   TEST2=$?
   if (( $TEST1 == 0 )) || (( $TEST2 == 0 )) ; then
     echo -e "\e[1m- New files --------------------------------------\e[0m" 
