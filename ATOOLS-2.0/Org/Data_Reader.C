@@ -194,7 +194,8 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
  	else if ((pos=tempstring.find("inf"))!=std::string::npos) 
  	  tempstring.replace(pos,3,"0");
       }
-      if (Interprete()) tempstring=Interpreter()->Interprete(tempstring);
+      if (Interprete()) tempstring=Interpreter()->
+	Interprete(StripEscapes(tempstring));
     }
     value=ATOOLS::ToType<Read_Type>(tempstring);
 #ifdef DEBUG__Data_Reader
