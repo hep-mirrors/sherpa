@@ -2,6 +2,7 @@ PT      12       5.   10000.
 Rapidity 12     -3.8      3.8
 Mass    1   -2  75.      85.
 JetFinder        0.01     1.
+ConeFinder        0.4
 Energy  22      10.    1000.
 Angle   11  22  -0.995    0.995
 Angle  -11  22  -0.995    0.995 
