@@ -156,7 +156,7 @@ bool Adicic::ExtractPartons(ATOOLS::Blob_List* blobs, ATOOLS::Particle_List*) {
   cout<<"Current  number: "<<ATOOLS::Particle::CurrentNumber()<<"\n"<<endl;////
 #endif
 
-  for(Blob_Iterator blit=blobs->begin(); blit!=blobs->end(); ++blit) {
+  for(Blob_List::iterator blit=blobs->begin(); blit!=blobs->end(); ++blit) {
 
     if((*blit)->Type()==btp::FS_Shower) {
       if(!m_cascade.ExtractPartons(lists)) {
