@@ -130,7 +130,9 @@ namespace ATOOLS {
     const Vec4D& CMS()                   const { return m_cms_vec; }
     btp::code   const Type()             const { return m_type; }
     std::string const TypeSpec()         const { return m_typespec; }
-  };
+    void SwapInParticles(const size_t i,const size_t j);
+    void SwapOutParticles(const size_t i,const size_t j);
+  };// end of class Blob
 
 
   typedef std::map<int,ATOOLS::Blob *> Int_Blob_Map;

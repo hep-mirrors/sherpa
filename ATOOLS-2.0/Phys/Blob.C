@@ -349,3 +349,20 @@ template class Blob_Data<long>;
 template class Blob_Data<double>;
 template class Blob_Data<std::string>;
 
+void Blob::SwapInParticles(const size_t i, const size_t j) 
+{
+  if (i<m_inparticles.size() && j<m_inparticles.size()) {
+    ATOOLS::Particle *help=m_inparticles[j];
+    m_inparticles[j]=m_inparticles[i];
+    m_inparticles[i]=help;
+  }
+}
+
+void Blob::SwapOutParticles(const size_t i, const size_t j) 
+{
+  if (i<m_outparticles.size() && j<m_outparticles.size()) {
+    ATOOLS::Particle *help=m_outparticles[j];
+    m_outparticles[j]=m_outparticles[i];
+    m_outparticles[i]=help;
+  }
+}
