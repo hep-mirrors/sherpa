@@ -3,6 +3,7 @@
 #include "Shell_Tools.H"
 #include "Data_Reader.H"
 #include "Run_Parameter.H"
+#include "MyStrStream.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Analysis_Handler
@@ -137,46 +138,48 @@ bool Analysis_Handler::ReadIn()
 			   <<"'"<<std::endl;
 	continue;
       }
-      success=true;
-      msg_Info()<<"   new Primitive_Analysis(\""<<helpsv[j]<<"\")\n";
-      msg_Tracking()<<"   new Primitive_Analysis(\""<<helpsv[j]<<"\") {\n";
-      m_analyses.push_back(new ANALYSIS::Primitive_Analysis(helpsv[j],mode));
-      std::string outpath;
-      if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
-      m_analyses.back()->SetOutputPath(outpath);
-      reader.MatrixFromFile(helpsvv,"");
-      String_Matrix arguments(helpsvv);
-      for (size_t k=0;k<helpsvv.size();++k) {
-	if (arguments[k].size()>0) {
-	  if (arguments[k][0]=="{" || arguments[k][0]=="}") continue;
-	}
-	size_t col=1;
-	String_Matrix mat=FindArguments(arguments,k,col);
-	ANALYSIS::Primitive_Observable_Base *observable = 
-	  Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
-	if (observable!=NULL) {
-	  m_analyses.back()->AddObservable(observable);
-	  if (arguments[k][0]=="Trigger") trigger=true;
-	  if (ATOOLS::msg.LevelIsTracking()) {
-	    ATOOLS::msg.Out()<<"      new Primitive_Observable_Base(\""
-			     <<arguments[k][0]<<"\",";
-	    for (size_t i=0;i<mat.size();++i) {
-	      ATOOLS::msg.Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
-	      for (size_t j=1;j<mat[i].size();++j) 
-		ATOOLS::msg.Out()<<","<<mat[i][j];
-	      ATOOLS::msg.Out()<<"}";
-	    }
-	    ATOOLS::msg.Out()<<")\n";
-	  }
-	}
-      }
-      if (!trigger) {
-	ANALYSIS::Primitive_Observable_Base *observable = 
-	  Getter_Function::GetObject("Trigger",String_Matrix()(m_analyses.back()));
-	m_analyses.back()->AddObservable(observable);
-      }
-      msg_Tracking()<<"   }\n";
     }
+    success=true;
+    msg_Info()<<"   new Primitive_Analysis(\""<<helpsv[0];
+    for (size_t j=1;j<helpsvv.size();++j) msg_Info()<<","<<helpsv[j];
+    msg_Info()<<"\")\n";
+    msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
+    m_analyses.push_back(new ANALYSIS::Primitive_Analysis(ATOOLS::ToString(i),mode));
+    std::string outpath;
+    if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
+    m_analyses.back()->SetOutputPath(outpath);
+    reader.MatrixFromFile(helpsvv,"");
+    String_Matrix arguments(helpsvv);
+    for (size_t k=0;k<helpsvv.size();++k) {
+      if (arguments[k].size()>0) {
+	if (arguments[k][0]=="{" || arguments[k][0]=="}") continue;
+      }
+      size_t col=1;
+      String_Matrix mat=FindArguments(arguments,k,col);
+      ANALYSIS::Primitive_Observable_Base *observable = 
+	Getter_Function::GetObject(arguments[k][0],mat(m_analyses.back()));
+      if (observable!=NULL) {
+	m_analyses.back()->AddObservable(observable);
+	if (arguments[k][0]=="Trigger") trigger=true;
+	if (ATOOLS::msg.LevelIsTracking()) {
+	  ATOOLS::msg.Out()<<"      new Primitive_Observable_Base(\""
+			   <<arguments[k][0]<<"\",";
+	  for (size_t i=0;i<mat.size();++i) {
+	    ATOOLS::msg.Out()<<"{"<<(mat[i].size()>0?mat[i][0]:"");
+	    for (size_t j=1;j<mat[i].size();++j) 
+	      ATOOLS::msg.Out()<<","<<mat[i][j];
+	    ATOOLS::msg.Out()<<"}";
+	  }
+	  ATOOLS::msg.Out()<<")\n";
+	}
+      }
+    }
+    if (!trigger) {
+      ANALYSIS::Primitive_Observable_Base *observable = 
+	Getter_Function::GetObject("Trigger",String_Matrix()(m_analyses.back()));
+      m_analyses.back()->AddObservable(observable);
+    }
+    msg_Tracking()<<"   }\n";
   }
   msg_Info()<<"}"<<std::endl;
   if (success) ATOOLS::Exception_Handler::AddTerminatorObject(this);
