@@ -147,8 +147,8 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
     }
     if (p_isrhandler) {
       if (p_isrhandler->On()>0) {
-	p_isrhandler->SetSprimeMin(ATOOLS::Max(sqr(p_process->ISRThreshold()),
-					       p_cuts->Smin()));
+	p_isrhandler->SetFixedSprimeMin(ATOOLS::Max(sqr(p_process->ISRThreshold()),
+						    p_cuts->Smin()));
 	msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<p_beamhandler->On()<<":"
 		       <<p_isrhandler->On()<<endl
 		       <<"   "<<p_isrhandler->SprimeMin()<<" ... "<<p_isrhandler->SprimeMax()

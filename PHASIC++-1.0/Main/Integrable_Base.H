@@ -100,6 +100,7 @@ namespace PHASIC {
     inline void SetTotalXS(const double totalxs)   { m_totalxs=totalxs;   }
     inline void SetTotalError(const double error)  { m_totalerr=error;    }
     inline void SetMax(const double max)           { m_max=max;           }
+    inline void SetPoints(const long int points)   { m_n=points;          }
     inline void SetOverflow(const double overflow) { m_overflow=overflow; }
 
     inline void SetScale(const double scale) { m_scale=scale; }
