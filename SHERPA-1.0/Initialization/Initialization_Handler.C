@@ -64,6 +64,7 @@ Initialization_Handler::~Initialization_Handler()
 
 bool Initialization_Handler::InitializeTheFramework()
 {
+  APHYTOOLS::ParticleInit(m_path); 
   rpa.Init(m_path);
 
   bool okay = InitializeTheModel();  
