@@ -137,6 +137,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
       pos = (*biter)->Type().find(std::string("IS"));
       if ((*biter)->Beam()==i && (*biter)->Status()==1 && pos>-1) { 
+	blob=NULL;
 	if (p_beampart[i]->Type()==Remnant_Base::Hadron) {
 	  if (flag) {
 	    blob = new ATOOLS::Blob();
@@ -177,7 +178,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _
 	}
       }
     }
-    p_beampart[i]->FillBlob(blob,_particlelist);
+    if (blob!=NULL) p_beampart[i]->FillBlob(blob,_particlelist);
   }
   if ((p_beampart[0]->Type()==Remnant_Base::Hadron)||
       (p_beampart[1]->Type()==Remnant_Base::Hadron)) {
