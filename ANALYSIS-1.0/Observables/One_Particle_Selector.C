@@ -8,7 +8,7 @@ using namespace ANALYSIS;
 template <class Class>
 Primitive_Observable_Base *const 
 GetOneParticleSelector(const String_Matrix &parameters) 
-{									
+{				
   if (parameters.size()<1) return NULL;
   if (parameters.size()==1) {
     if (parameters[0].size()<6) return NULL;
