@@ -257,6 +257,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
       if (treat[0]) success=success&&p_beampart[0]->FillBlob(p_beamblob[0],particlelist);
       if (treat[1]) success=success&&p_beampart[1]->FillBlob(p_beamblob[1],particlelist);
     }
+  std::cout<<*bloblist<<std::endl;
     if ((p_beampart[0]->Type()==Remnant_Base::Hadron)||
 	(p_beampart[1]->Type()==Remnant_Base::Hadron)) {
       p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);

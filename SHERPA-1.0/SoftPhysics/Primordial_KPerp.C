@@ -43,7 +43,6 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
   else { blob[0]=blob2; blob[1]=blob1; }
   p_kperp[0]->resize(blob[0]->NOutP()); 
   p_kperp[1]->resize(blob[1]->NOutP());
-  p_filled->clear();
   p_boosted->clear();
   if (m_scheme==0) {
     bool success;
@@ -108,9 +107,12 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	}
       }
       // test whether Energy and momentum of hard scattering can be preserved
+      p_filled->clear();
+      int tested=0;
       for (int i=0;i<blob[0]->NOutP();++i) {
       	ATOOLS::Particle *cur2, *cur1=blob[0]->OutParticle(i);
 	if (FindConnected(cur1,cur2,true,0)) {
+	  ++tested;
 	  Vec3D kp1=(*p_kperp[0])[i], kp2=(*p_kperp[1])[i];
 	  double s, sp, sp1, sp2;
 	  s=(cur1->Momentum()+cur2->Momentum()).Abs2();
@@ -119,8 +121,19 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  sp2=cur2->Momentum().Abs2()+sqr(kp2.Abs());
 	  if (((sp-sp1-sp2)*(sp-sp1-sp2)<4.0*sp1*sp2)||
 	      (s<sp1)||(s<sp2)) success=false;
+	  p_filled->insert(cur2);
 	}
+	else {
+	  if ((*p_kperp[0])[i].Abs()>ATOOLS::dabs(cur1->Momentum()[3])) success=false;
+	}
+	p_filled->insert(cur1);
       }
+      for (int i=0;i<blob[1]->NOutP();++i) {
+	ATOOLS::Particle *cur=blob[1]->OutParticle(i);
+	if (p_filled->find(cur)==p_filled->end()) {
+	  if ((*p_kperp[1])[tested++].Abs()>ATOOLS::dabs(cur->Momentum()[3])) success=false;
+	}
+      }      
       if ((++trials)==m_maxtrials) {
 	for(size_t i=0;i<2;++i) {
 	  m_kperpmean[i]/=10.0;
@@ -139,6 +152,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
   m_kperpmean[1]=kpm2;
   m_kperpsigma[0]=kps1; 
   m_kperpsigma[1]=kps2;
+  p_filled->clear();
   return true;
 }
 
