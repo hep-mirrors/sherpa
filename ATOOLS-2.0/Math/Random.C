@@ -31,13 +31,14 @@ Random::~Random()
   }
 } 
 
+static long idum2=123456789;
+static long iy=0;
+static long iv[NTAB];
+
 double Random::Ran2(long *idum)
 {
   int   j;
   long  k;
-  static long idum2=123456789;
-  static long iy=0;
-  static long iv[NTAB];
   double temp;
   
   if (*idum <= 0) {
@@ -75,7 +76,6 @@ double Random::Ran2(long *idum)
 #undef IQ2
 #undef IR1
 #undef IR2
-#undef NTAB
 #undef NDIV
 #undef EPS
 #undef RNMX
@@ -86,7 +86,6 @@ double Random::Ran2(long *idum)
 #define AM (1.0/IM)
 #define IQ 127773
 #define IR 2836
-#define NTAB 32
 #define NDIV (1+(IM-1)/NTAB)
 #define EPS 1.2e-7
 #define RNMX (1.0-EPS)
@@ -95,8 +94,6 @@ double Random::Ran1(long *idum)
 {
   int j;
   long k;
-  static long iy=0;
-  static long iv[NTAB];
   double temp;
 
   if (*idum <= 0 || !iy) {
@@ -124,7 +121,6 @@ double Random::Ran1(long *idum)
 #undef AM
 #undef IQ
 #undef IR
-#undef NTAB
 #undef NDIV
 #undef EPS
 #undef RNMX
@@ -208,6 +204,8 @@ int Random::WriteOutStatus(const char * filename){
   } 
   (*p_outstream)<<m_written<<"\t"<<m_id<<"\t"<<m_inext<<"\t"<<m_inextp<<"\t";
   for (int i=0;i<56;++i) (*p_outstream)<<m_ma[i]<<"\t";
+  (*p_outstream)<<iy<<"\t"<<idum2<<"\t";
+  for (int i=0;i<NTAB;++i) (*p_outstream)<<iv[i]<<"\t";
   (*p_outstream)<<endl;
   return m_written++;
 }
@@ -219,14 +217,16 @@ void Random::ReadInStatus(const char * filename, long int index){
   long int count;
   if (myinstream.good()) {
     (myinstream)>>count;
-    char buffer[600];
-    while ((count!=index)&&(!myinstream.eof())) {
-      myinstream.getline(buffer,600);
+    std::string buffer;
+    while (count!=index && !myinstream.eof()) {
+      getline(myinstream,buffer);
       (myinstream)>>count;    
     }
     if (count==index) {
       (myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
       for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
+      (myinstream)>>iy>>idum2;
+      for (int i=0;i<NTAB;++i) (myinstream)>>iv[i];
     } 
     else msg.Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
     myinstream.close();
