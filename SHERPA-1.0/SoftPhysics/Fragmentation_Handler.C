@@ -82,8 +82,7 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
 	ATOOLS::msg.Error()<<"Fragmentation_Handler::PerformFragmentation(..): "
 			   <<"Cannot find connected parton for parton ("
 			   <<cur->Number()<<") in event ["
-			   <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"] {\n"
-			   <<*bloblist<<"}"<<std::endl;
+			   <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]"<<std::endl;
 	return false;
       }
     } while ((cur=comp)->Flav().IsGluon());
