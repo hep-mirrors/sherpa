@@ -17,4 +17,5 @@ YUKAWA MASSES FACTOR  = 1.          ! Additional prefactor for yukawas
 !
 SCALE SCHEME          = 0           ! 1=pt2, default=shat
 KFACTOR SCHEME        = 0           ! 1=as(pt2)/as(ecms)^nstrong,default=1
+SUDAKOV WEIGHT        = 0           ! apply sudakov weight on single events! (ME&PS matching)
 SCALE FACTOR          = 1.
