@@ -21,7 +21,13 @@ namespace AMISIC {
       typedef Argument_Type GridArgumentType;
       typedef Result_Type GridResultType;
 
+      typedef std::vector<GridArgumentType> GridArgumentVector;
+      typedef std::vector<GridResultType> GridResultVector;
+
       typedef Grid_Handler<GridArgumentType,GridResultType> GridHandlerType;
+      typedef std::vector<GridHandlerType*> GridHandlerVector;
+    
+      typedef ATOOLS::Data_To_Function<GridArgumentType,GridResultType> GridFunctionType;
 
     private:
       
@@ -29,19 +35,27 @@ namespace AMISIC {
 
       int m_criterion;
       ATOOLS::Mom_Data m_initialdata;
+      GridResultType m_lastxs, m_lastmax;
+
       ATOOLS::Axis<GridArgumentType> *p_xaxis;
+      ATOOLS::Axis<GridResultType> *p_yaxis;
 
     public:
 
       // constructor
-      Grid_Creator(GridHandlerType *_p_gridhandler,
-		   EXTRAXS::SimpleXSecs *_p_processes);
+      Grid_Creator(GridHandlerVector _p_gridhandler,EXTRAXS::SimpleXSecs *_p_processes);
       
       // member functions
       bool InitializeCalculation();
-      GridResultType CalculateSingleValue(GridArgumentType nextleft,
-					  GridArgumentType nextright);
+      unsigned int CreateSinglePoint(GridArgumentType *boundary,
+				     bool newpoint,bool force);
+      bool CreateOptimizedGrid();
+
+      GridHandlerType *RelevantGrid();
       
+      bool WriteOutGrid(std::vector<std::string> addcomments,
+			std::string tempofile,std::string tempopath);
+
     }; // end of class Amisic::Grid_Creator
 
     typedef double GridArgumentType;
@@ -51,7 +65,8 @@ namespace AMISIC {
     typedef Grid_Creator<GridArgumentType,GridResultType> GridCreatorType;
     typedef Grid_Creator_Base<GridArgumentType,GridResultType> GridCreatorBaseType;
     typedef Data_To_Function<GridArgumentType,GridResultType> GridFunctionType;
-    
+    typedef std::vector<GridHandlerType*> GridHandlerVector;
+
     typedef PHASIC::Fixed_Variable_Channel<GridArgumentType> FSRChannel;
 
   private:
@@ -59,7 +74,7 @@ namespace AMISIC {
     std::vector<ATOOLS::Blob_List>  m_blobs;
     std::vector<std::string>        m_filename, m_processname;
     std::vector<bool>               m_create;
-    std::vector<GridFunctionType*>  m_differential;
+    std::vector<GridFunctionType*>  m_differential, m_maximum;
     GridFunctionType               *p_total;
 
     long int m_particlecounter;
@@ -68,6 +83,7 @@ namespace AMISIC {
     
     std::string m_inputdirectory, m_inputfile, m_environmentfile, m_xsfile;
     std::string m_outputdirectory;
+    std::string m_xsextension, m_maxextension;
 
     AMEGIC::Environment  *p_environment;
     EXTRAXS::SimpleXSecs *p_processes;

@@ -11,13 +11,13 @@ const std::string integralfile=std::string("integral.dat");
 using namespace AMISIC;
 
 template <class Argument_Type,class Result_Type>
-Amisic::Grid_Creator<Argument_Type,Result_Type>::Grid_Creator(GridHandlerType *_p_gridhandler,
+Amisic::Grid_Creator<Argument_Type,Result_Type>::Grid_Creator(GridHandlerVector _p_gridhandler,
 							      EXTRAXS::SimpleXSecs *_p_processes):
   GridCreatorBaseType(_p_gridhandler),
   p_processes(_p_processes)
 {
   if (p_processes==NULL) {
-      ATOOLS::msg.Error()<<"Grid_Creator::Grid_Creator("<<_p_gridhandler<<","<<_p_processes<<"): "
+      ATOOLS::msg.Error()<<"Grid_Creator::Grid_Creator("<<&_p_gridhandler<<","<<_p_processes<<"): "
 			 <<"Process handler is not initialized! Abort."<<std::endl;
       abort();
   }
@@ -26,31 +26,91 @@ Amisic::Grid_Creator<Argument_Type,Result_Type>::Grid_Creator(GridHandlerType *_
 template <class Argument_Type,class Result_Type>
 bool Amisic::Grid_Creator<Argument_Type,Result_Type>::InitializeCalculation()
 {
-  p_xaxis=p_gridhandler->Grid()->XAxis();
+  if (p_gridhandler.size()<2) return false;
+  p_xaxis=p_gridhandler[0]->Grid()->XAxis();
+  p_yaxis=p_gridhandler[0]->Grid()->YAxis();
   m_criterion=ATOOLS::Variable::TypeToSelectorID(p_xaxis->Variable().Type());
   m_initialdata=p_processes->SelectorData()->RemoveData(m_criterion);
   return true;
 }
 
 template <class Argument_Type,class Result_Type>
-Result_Type Amisic::Grid_Creator<Argument_Type,Result_Type>::CalculateSingleValue(GridArgumentType nextleft,
-										  GridArgumentType nextright)
+unsigned int Amisic::Grid_Creator<Argument_Type,Result_Type>::
+CreateSinglePoint(GridArgumentType *boundary,bool newpoint,bool force)
 {
-  GridArgumentType lower, upper, middle;
-  GridResultType result;
-  lower=ATOOLS::Max((*p_xaxis)[(*p_xaxis)(nextleft)*(GridArgumentType)(3.0/4.0)
-			       +(*p_xaxis)(nextright)*(GridArgumentType)(1.0/4.0)],(*p_xaxis)[GridXMin()]);
-  upper=ATOOLS::Min((*p_xaxis)[(*p_xaxis)(nextleft)*(GridArgumentType)(1.0/4.0)
-			       +(*p_xaxis)(nextright)*(GridArgumentType)(3.0/4.0)],(*p_xaxis)[GridXMax()]);
-  middle=(*p_xaxis)[((*p_xaxis)(nextleft)+(*p_xaxis)(nextright))/(GridArgumentType)2.0];
+  unsigned int success=1;
+  GridArgumentType lower, upper;
+  GridResultType newxs, newmax;
+  lower=ATOOLS::Max((*p_xaxis)[(*p_xaxis)(boundary[1])*(GridArgumentType)(3.0/4.0)
+			       +(*p_xaxis)(boundary[2])*(GridArgumentType)(1.0/4.0)],(*p_xaxis)[GridXMin()]);
+  upper=ATOOLS::Min((*p_xaxis)[(*p_xaxis)(boundary[1])*(GridArgumentType)(1.0/4.0)
+			       +(*p_xaxis)(boundary[2])*(GridArgumentType)(3.0/4.0)],(*p_xaxis)[GridXMax()]);
+  if (lower==upper) return 0;
   p_processes->SelectorData()->SetData(m_criterion,m_initialdata.flavs,m_initialdata.help,lower,upper);
   p_processes->ResetSelector(p_processes->SelectorData());
+  p_processes->SetMax(0.0,1);
   p_processes->CalculateTotalXSec();
-  result=(GridResultType)p_processes->Total()/(upper-lower);
-  ATOOLS::msg.Out()<<"Amisic::Grid_Creator::CalculateSingleValue(): Got value for "<<middle<<" GeV"<<std::endl
+  p_processes->SetMax(0.0,0);
+  newxs=(GridResultType)p_processes->Total()/(upper-lower);
+  newmax=(GridResultType)p_processes->Max();
+  if (((GridResultType)dabs((*p_yaxis)(newxs)-(*p_yaxis)(m_lastxs))>GridDeltaYMin())||(force)) {
+    if (!newpoint) {
+      if (!p_gridhandler[0]->Grid()->DeleteXPoint(boundary[0])) success=0;
+      if (!p_gridhandler[1]->Grid()->DeleteXPoint(boundary[0])) success=0;
+    }
+    if (p_gridhandler[0]->Grid()->AddPoint(boundary[0],newxs)) {
+      m_lastxs=newxs;
+    }
+    else {
+      ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): Could not add last cross section! "
+			 <<"Ignored it instead."<<std::endl
+			 <<"   Please do either reduce the grid point distance "<<std::endl
+			 <<"   or select higher precision for the integration step."<<std::endl;
+      success=0;
+    }
+    if (p_gridhandler[1]->Grid()->AddPoint(boundary[0],newmax)) {
+      m_lastmax=newmax;
+    }
+    else {
+      ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): Could not add last maximum! "
+			 <<"Ignored it instead."<<std::endl
+			 <<"   Please do either reduce the grid point distance "<<std::endl
+			 <<"   or select higher precision for the integration step."<<std::endl;
+      success=0;
+    }
+  }
+  ATOOLS::msg.Out()<<"Amisic::Grid_Creator::CalculateSingleValue(): Got value for "<<boundary[0]<<" GeV"<<std::endl
 		   <<"   Calculation for "<<lower<<" GeV < "<<p_xaxis->Variable().Name()
-		   <<" < "<<upper<<" GeV yielded "<<result*rpa.Picobarn()<<" pb/GeV"<<std::endl;
-  return result;
+		   <<" < "<<upper<<" GeV yielded "<<newxs*rpa.Picobarn()<<" pb/GeV"<<std::endl;
+  return success;
+}
+
+template <class Argument_Type,class Result_Type>
+bool Amisic::Grid_Creator<Argument_Type,Result_Type>::WriteOutGrid(std::vector<std::string> addcomments,
+								   std::string tempofile,std::string tempopath)
+{
+  if (tempopath!=ATOOLS::nullstring) SetOutputPath(tempopath);
+  if (tempofile!=ATOOLS::nullstring) SetOutputFile(tempofile);
+  if (OutputFile()==ATOOLS::nullstring) {
+    ATOOLS::msg.Error()<<"Grid_Creator_Base::WriteOutGrid("<<&addcomments<<","<<tempofile<<","<<tempopath<<"): "
+		       <<"No output file specified!"<<std::endl
+		       <<"   Writing grid to 'output_xs.dat'"<<std::endl;
+    SetOutputFile("output_");
+  }
+  tempofile=OutputFile();
+  bool success=true;
+  p_gridhandler[1]->Grid()->XAxis()->
+    SetVariable(p_gridhandler[0]->Grid()->XAxis()->Variable().Name());
+  p_gridhandler[1]->Grid()->YAxis()->
+    SetVariable(std::string("\\frac{\\partial \\sigma}{\\partial \\Omega}_{max}"));
+  addcomments.push_back("--------------------");
+  addcomments.push_back(std::string("xs file : ")+tempofile+std::string("xs.dat"));
+  SetOutputFile(tempofile+std::string("max.dat"));
+  success=success&&WriteOutSingleGrid(p_gridhandler[1],addcomments);
+  addcomments[addcomments.size()-1]=std::string("max file : ")+tempofile+std::string("max.dat");
+  SetOutputFile(tempofile+std::string("xs.dat"));
+  success=success&&WriteOutSingleGrid(p_gridhandler[0],addcomments);
+  return success;
 }
 
 Amisic::Amisic():
@@ -64,6 +124,8 @@ Amisic::Amisic():
   m_environmentfile(std::string("Run.dat")),
   m_xsfile(std::string("XS.dat")),
   m_outputdirectory(std::string("./Grid")),
+  m_xsextension("xs.dat"),
+  m_maxextension("max.dat"),
   p_environment(NULL),
   p_processes(NULL),
   p_fsrinterface(NULL) {}
@@ -141,7 +203,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
     if ((newblob=GetBlob(temp))!=NULL) {
       m_blobs[m_blobs.size()-1].push_back(newblob);
     }
-    m_filename.push_back("gg_to_gg__grid.dat");
+    m_filename.push_back("gg_to_gg__grid_");
     m_processname.push_back("g g -> g g");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes_C::gggg) break;
@@ -155,7 +217,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
-    m_filename.push_back("qqb_to_gg__grid.dat");
+    m_filename.push_back("qqb_to_gg__grid_");
     m_processname.push_back("q qb -> g g");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes_C::qqbgg) break;
@@ -169,7 +231,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
-    m_filename.push_back("gg_to_qqb__grid.dat");
+    m_filename.push_back("gg_to_qqb__grid_");
     m_processname.push_back("g g -> q qb");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes_C::ggqqb) break;
@@ -186,7 +248,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
-    m_filename.push_back("qg_to_qg__grid.dat");
+    m_filename.push_back("qg_to_qg__grid_");
     m_processname.push_back("q g -> q g");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes_C::qgqg) break;
@@ -223,12 +285,12 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
       }
     }
     if (mode==EXTRAXS::QCD_Processes_C::q1q2bq1q2b) {
-      m_filename.push_back("q1q2b_to_q1q2b__grid.dat");
+      m_filename.push_back("q1q2b_to_q1q2b__grid_");
       m_processname.push_back("q1 q2b -> q1 q2b");
       m_create.push_back(false);
       break;
     }
-    m_filename.push_back("q1q2_to_q1q2__grid.dat");
+    m_filename.push_back("q1q2_to_q1q2__grid_");
     m_processname.push_back("q1 q2 -> q1 q2");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes_C::q1q2q1q2) break;
@@ -244,7 +306,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
-    m_filename.push_back("q1q1_to_q1q1__grid.dat");
+    m_filename.push_back("q1q1_to_q1q1__grid_");
     m_processname.push_back("q1 q1 -> q1 q1");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes_C::q1q1q1q1) break;
@@ -257,7 +319,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	m_blobs[m_blobs.size()-1].push_back(newblob);
       }
     }
-    m_filename.push_back("q1q1b_to_q1q1b__grid.dat");
+    m_filename.push_back("q1q1b_to_q1q1b__grid_");
     m_processname.push_back("q1 q1b -> q1 q1b");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes_C::q1q1bq1q1b) break;
@@ -274,7 +336,7 @@ void Amisic::FillMode(EXTRAXS::QCD_Processes_C::Mode mode)
 	}
       }
     }
-    m_filename.push_back("q1q1b_to_q2q2b__grid.dat");
+    m_filename.push_back("q1q1b_to_q2q2b__grid_");
     m_processname.push_back("q1 q1b -> q2 q2b");
     m_create.push_back(false);
     if (mode==EXTRAXS::QCD_Processes_C::q1q1bq2q2b) break;
@@ -345,7 +407,7 @@ bool Amisic::ReadInData()
 	    filename+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string("_");
 	    processname+=ATOOLS::ToString((int)flavour[j].Kfcode())+std::string(" ");
 	  }
-	  filename+=std::string("_grid.dat");
+	  filename+=std::string("_grid_");
 	  if (temp[i].size()>4) m_filename.push_back(temp[i][4]);
 	  else m_filename.push_back(filename);
 	  m_processname.push_back(processname);
@@ -433,17 +495,18 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
   p_processes->PushBack(group);
   std::vector<std::string> comments;
   comments.push_back(std::string("processes : ")+processname);
-  GridHandlerType *gridhandler = new GridHandlerType();
+  GridHandlerVector gridhandler=GridHandlerVector(2);
+  for (unsigned int i=0;i<gridhandler.size();++i) gridhandler[i] = new GridHandlerType();
   GridCreatorType *gridcreator = new GridCreatorType(gridhandler,p_processes);
   gridcreator->ReadInArguments(m_inputdirectory+m_inputfile);
   if (mkdir(m_outputdirectory.c_str(),448)==0) {
     ATOOLS::msg.Out()<<"Amisic::CreateGrid(..): "
 		     <<"Created output directory "<<m_outputdirectory<<"."<<std::endl;
   }
-  gridcreator->CreateGrid(m_outputdirectory+filename);
-  gridcreator->WriteOutGrid(m_outputdirectory+filename,comments);
+  gridcreator->CreateGrid(filename,m_outputdirectory);
+  gridcreator->WriteOutGrid(comments,filename,m_outputdirectory);
   delete gridcreator;
-  delete gridhandler;
+  for (unsigned int i=0;i<gridhandler.size();++i) delete gridhandler[i];
   delete p_processes;
   p_processes=NULL;
   delete p_environment;
@@ -490,7 +553,6 @@ bool Amisic::InitializeBlobList()
     group[i]->SetName(m_processname[i]);
     p_processes->PushBack(group[i]);
   }
-  p_processes->CalculateTotalXSec();
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
   p_fsrinterface->SetAlphaSave(1.0);
@@ -530,16 +592,16 @@ bool Amisic::CalculateTotal()
     p_total->ReplaceXPoint(p_total->XYData(i).first,total-p_total->XYData(i).second);
   }
   p_total->SetMonotony(p_total->MUnknown);
-  p_total->Monotony();
   p_total->MoveY(-p_total->YMin());
   p_total->ScaleY((GridArgumentType)1.0/p_total->YMax());
 #ifdef DEBUG__Amisic
   EXTRAXS::SimpleXSecs *processes;
-  GridHandlerType *gridhandler = new GridHandlerType(p_total);
+  GridHandlerVector gridhandler;
+  for (unsigned int i=0;i<2;++i) gridhandler.push_back(new GridHandlerType(p_total));
   GridCreatorType *gridcreator = new GridCreatorType(gridhandler,processes);
   gridcreator->WriteOutGrid(integralfile);
   delete gridcreator;
-  delete gridhandler;
+  for (unsigned int i=0;i<gridhandler.size();++i) delete gridhandler[i];
 #endif
   delete differential;
   return true;
@@ -568,46 +630,56 @@ bool Amisic::Initialize(std::string tempidir,std::string tempifile,bool creategr
   writer->WriteToFile(std::string(" Init QCD 2->2"));
   delete writer;
   for (unsigned int i=0;i<m_blobs.size();++i) {
-    GridHandlerType *newgridhandler = new GridHandlerType();
-    if (!newgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputdirectory+m_filename[i])) {
+    GridHandlerType *xsgridhandler = new GridHandlerType();
+    GridHandlerType *maxgridhandler = new GridHandlerType();
+    if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputdirectory+m_filename[i]+m_xsextension)&&
+	maxgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputdirectory+m_filename[i]+m_maxextension)) {
+      m_differential.push_back(new GridFunctionType(*xsgridhandler->Grid()));
+      m_maximum.push_back(new GridFunctionType(*maxgridhandler->Grid()));
+      delete xsgridhandler;
+      delete maxgridhandler;
+    }
+    else {
       ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): "
-			 <<"File "<<m_outputdirectory+m_filename[i]<<" does not exist "<<std::endl
+			 <<"File "<<m_filename[i]<<" does not exist "<<std::endl
 			 <<"   or does not contain any grid information."<<std::endl
 			 <<"   Scheduling corresponding blob for grid creation."<<std::endl;
       m_create[i]=true;
     }
-    else {
-      m_differential.push_back(new GridFunctionType(*newgridhandler->Grid()));
-      delete newgridhandler;
-    }
     if (m_create[i]) {
       if (creategrid) {
 	if (!CreateGrid(m_blobs[i],m_filename[i],m_processname[i])) {
-	  ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): Grid creation for "
-			     <<m_outputdirectory+m_filename[i]<<" failed! "<<std::endl
+	  ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): "
+			     <<"Grid creation for "<<m_filename[i]<<" failed! "<<std::endl
 			     <<"   Abort initialization."<<std::endl;
 	  CleanUp();
-	  delete newgridhandler;
+	  delete xsgridhandler;
+	  delete maxgridhandler;
 	  return false;
 	}
-	if (!newgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputdirectory+m_filename[i])) {
-	  ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): Grid creation for "
-			     <<m_outputdirectory+m_filename[i]<<" failed! "<<std::endl
-			     <<"   Abort initialization."<<std::endl;
-	  CleanUp();
-	  delete newgridhandler;
-	  return false;
+	if (xsgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputdirectory+m_filename[i]+m_xsextension)&&
+	    maxgridhandler->ReadIn(ATOOLS::Type::TFStream,m_outputdirectory+m_filename[i]+m_maxextension)) {
+	  m_differential.push_back(new GridFunctionType(*xsgridhandler->Grid()));
+	  m_maximum.push_back(new GridFunctionType(*maxgridhandler->Grid()));
+	  delete xsgridhandler;
+	  delete maxgridhandler;
 	}
 	else {
-	  m_differential.push_back(new GridFunctionType(*newgridhandler->Grid()));
-	  delete newgridhandler;
+	  ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): Grid creation for "
+			     <<m_outputdirectory+m_filename[i]<<" failed! "<<std::endl
+			     <<"   Abort initialization."<<std::endl;
+	  CleanUp();
+	  delete xsgridhandler;
+	  delete maxgridhandler;
+	  return false;
 	}
       }
       else {
 	ATOOLS::msg.Error()<<"Amisic::Initialize("<<tempidir<<","<<tempifile<<"): "
 			   <<"Grid files are missing!"<<std::endl
 			   <<"   Run cannot continue."<<std::endl;
-	delete newgridhandler;
+	delete xsgridhandler;
+	delete maxgridhandler;
 	abort();
       }
     }
@@ -669,9 +741,9 @@ ATOOLS::Blob *Amisic::DiceProcess(GridArgumentType parameter,double ran[2])
   if (m_differential.size()==0) return NULL;
   p_fsrinterface->SetValue(parameter);
   int criterion=ATOOLS::Variable::TypeToSelectorID(m_differential[0]->XAxis()->Variable().Type());
-  ATOOLS::Mom_Data m_initialdata=p_processes->SelectorData()->RemoveData(criterion);
-  p_processes->SelectorData()->SetData(criterion,m_initialdata.flavs,m_initialdata.help,
-				       parameter,m_initialdata.max);
+  ATOOLS::Mom_Data initialdata=p_processes->SelectorData()->RemoveData(criterion);
+  p_processes->SelectorData()->AddData(criterion,initialdata.flavs,initialdata.help,
+ 				       parameter,initialdata.max);
   p_processes->ResetSelector(p_processes->SelectorData());
   Data_To_Function<GridResultType,unsigned int> sorter;
   GridResultType cur, norm=(GridResultType)0.0;
@@ -683,7 +755,9 @@ ATOOLS::Blob *Amisic::DiceProcess(GridArgumentType parameter,double ran[2])
   cur=(GridResultType)0.0;
   for (int i=sorter.XDataSize()-1;i>=0;--i) {
     if ((cur+=sorter.XData(i)/norm)>ran[0]) {
-      return CreateBlob(sorter.XYData(i).second,ran[1]);
+      unsigned int selected=sorter.XYData(i).second;
+      (*p_processes)[selected]->SetMax((*m_maximum[selected])(parameter*0.1),1);
+      return CreateBlob(selected,ran[1]);
     }
   }
   ATOOLS::msg.Tracking()<<"Amisic::DiceProcess("<<parameter<<","<<ran[0]<<","<<ran[1]<<"): "

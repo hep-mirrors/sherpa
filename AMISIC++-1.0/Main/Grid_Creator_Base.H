@@ -66,47 +66,64 @@ namespace AMISIC {
     typedef Argument_Type GridArgumentType;
     typedef Result_Type GridResultType;
 
+    typedef std::vector<GridArgumentType> GridArgumentVector;
+    typedef std::vector<GridResultType> GridResultVector;
+
     typedef Grid_Handler<GridArgumentType,GridResultType> GridHandlerType;
     typedef Grid_Creator_Arguments<GridArgumentType,GridResultType> ArgumentsType;
+    typedef ATOOLS::Data_To_Function<GridArgumentType,GridResultType> GridFunctionType;
+
+    typedef std::vector<GridHandlerType*> GridHandlerVector;
 
   protected:
 
-    GridHandlerType      *p_gridhandler;
+    GridHandlerVector p_gridhandler;
 
     virtual bool InitializeCalculation();
-    virtual GridResultType CalculateSingleValue(GridArgumentType nextleft,
-						GridArgumentType nextright);
+    virtual unsigned int CreateSinglePoint(GridArgumentType *boundary,
+					   bool newpoint=true,bool force=false);
+
+    bool         OptimizeSingleGrid(GridHandlerType *grid);
+    virtual bool CreateOptimizedGrid();
+
+    virtual GridHandlerType *RelevantGrid();
     
+    bool WriteOutSingleGrid(GridHandlerType *grid,std::vector<std::string> addcomments);
+
   private:
 
-    std::string m_inputfile, m_outputfile;
+    std::string m_inputfile, m_outputpath, m_outputfile;
 
     bool CreateInitialGrid();
-    bool CreateOptimizedGrid();
 
   public:
 
     // constructors
-    Grid_Creator_Base(GridHandlerType *_p_gridhandler);
+    Grid_Creator_Base(GridHandlerVector _p_gridhandler);
 
     // destructor
     virtual ~Grid_Creator_Base();
     
     // setters
     void SetInputFile(std::string _m_outputfile);
+    void SetOutputPath(std::string _m_outputpath);
     void SetOutputFile(std::string _m_outputfile);
     bool SetArguments(ArgumentsType _m_arguments);
 
     // getters
     std::string InputFile();
+    std::string OutputPath();
     std::string OutputFile();
     ArgumentsType Arguments();
 
     // member functions
     bool ReadInArguments(std::string tempifile=ATOOLS::nullstring);
-    bool CreateGrid(std::string tempofile=ATOOLS::nullstring);
-    bool WriteOutGrid(std::string tempofile=ATOOLS::nullstring,
-		      std::vector<std::string> addcomments=std::vector<std::string>(0));
+    bool CreateGrid(std::string tempofile=ATOOLS::nullstring,
+		    std::string tempopath=ATOOLS::nullstring);
+
+    virtual bool WriteOutGrid(std::vector<std::string> addcomments=std::vector<std::string>(0),
+			      std::string tempofile=ATOOLS::nullstring,
+			      std::string tempopath=ATOOLS::nullstring);
     
   }; // end of class Grid_Creator_Base
 

@@ -5,6 +5,15 @@
 
 namespace AMISIC {
 
+  template <class Argument_Type,class Result_Type>
+  inline Grid_Handler<Argument_Type,Result_Type> *Amisic::
+  Grid_Creator<Argument_Type,Result_Type>::RelevantGrid()
+  { if (p_gridhandler.size()>0) return p_gridhandler[0]; else return NULL; }
+	
+  template <class Argument_Type,class Result_Type>
+  inline bool Amisic::Grid_Creator<Argument_Type,Result_Type>::CreateOptimizedGrid()
+  { return OptimizeSingleGrid(RelevantGrid()); }
+
   inline void Amisic::SetInputFile(std::string _m_inputfile)
   { m_inputfile=_m_inputfile; }
 

@@ -95,6 +95,9 @@ PHASICLIB = $(SHERPASYS)/lib
 MODELLIB = $(SHERPASYS)/lib
 EXTRAXSLIB = $(SHERPASYS)/lib
 
+ROOTINC = $(ROOTSYS)/include
+ROOTLIB = $(ROOTSYS)/lib
+
 bin_PROGRAMS = Amisic
 Amisic_SOURCES = \
 			Main.C 
@@ -103,18 +106,15 @@ Amisic_LDADD = \
 		@libdir@/libAmisic.la \
 		@libdir@/libAmisicHelpers.la \
 		@libdir@/libAmisicTools.la \
-		-L$(EXTRAXSLIB) -lExtraXS \
-		-L$(EXTRAXSLIB) -lExtraXS2_2 \
+		-L$(EXTRAXSLIB) -lExtraXS -lExtraXS2_2 \
 		-L$(PHASICLIB) -lPhasespace \
-		-L$(MODELLIB) -lModelMain \
-		-L$(MODELLIB) -lIsajet \
-		-L$(MODELLIB) -lHdecay \
-		-L$(PDFLIB) -lPDF \
-		-L$(PDFLIB) -lLHAPDF \
+		-L$(MODELLIB) -lModelMain -lIsajet -lHdecay \
+		-L$(PDFLIB) -lPDF -lLHAPDF \
 		-L$(BEAMLIB) -lBeam \
-		-L$(ATOOLSLIB) -lToolsPhys \
-		-L$(ATOOLSLIB) -lToolsMath \
-		-L$(ATOOLSLIB) -lToolsOrg \
+		-L$(ATOOLSLIB) -lToolsPhys -lToolsMath -lToolsOrg \
+		-L$(ROOTLIB) -lCint -lCore -lHist -lGraf \
+		-lGraf3d -lGpad -lTree -lRint -lPostscript \
+		-lMatrix -lPhysics -lGui -ldl \
 		-lg2c -lm 
 
 CXXFLAGS = -pedantic -Wall -Winline -g
@@ -130,7 +130,8 @@ INCLUDES = \
 		-I$(BEAMINC)/Main \
 		-I$(ATOOLSINC)/Phys \
 		-I$(ATOOLSINC)/Math \
-		-I$(ATOOLSINC)/Org 
+		-I$(ATOOLSINC)/Org \
+		-I$(ROOTINC) 
 
 EXTRA_DIST = \
 		Run.dat \
