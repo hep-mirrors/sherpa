@@ -1,4 +1,9 @@
 lib_LTLIBRARIES = libZfunctions.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libZfunctions_la_SOURCES = Basic_Func.C Basic_Sfuncs.C Basic_Pfunc.C \
 			   Basic_Mfunc.C Basic_MassTermfunc.C \
 			   Basic_Vfunc.C Basic_Xfunc.C Basic_Yfunc.C \
@@ -19,3 +24,5 @@ INCLUDES = -I../../Amplitude \
 	   -I../../../ATOOLS-2.0/Org 
 noinst_HEADERS = Basic_Func.H  Basic_Sfuncs.H Basic_Func.icc Zfunc_Calc.H Calculator.H
 CXXFLAGS=-g
+
+EXTRA_DIST    = $(CVSINCLUDE)

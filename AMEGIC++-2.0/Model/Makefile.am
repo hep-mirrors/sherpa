@@ -1,4 +1,9 @@
 lib_LTLIBRARIES = libModel.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libModel_la_SOURCES = Interaction_Model_Base.C Interaction_Model_Handler.C \
 		      Interaction_Model_QCD.C Interaction_Model_EW.C \
 		      Interaction_Model_SM.C \
@@ -31,3 +36,4 @@ noinst_HEADERS = Interaction_Model_Base.H Interaction_Model_Handler.H \
 		 Interaction_Model_ADD.H \
 	         Vertex.H Lorentz_Function.H Color_Function.H 
 CXXFLAGS=-g
+EXTRA_DIST    = $(CVSINCLUDE)

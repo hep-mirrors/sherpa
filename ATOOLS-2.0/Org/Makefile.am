@@ -1,4 +1,9 @@
 lib_LTLIBRARIES = libToolsOrg.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libToolsOrg_la_SOURCES = Data_Read.C Run_Parameter.C FastList.C MyTiming.C Message.C \
 		 Sort.C prof.cc IO_Handler.C 
 noinst_HEADERS = Exeptions.H Data_Read.H Data_Return.H Run_Parameter.H Message.H \
@@ -7,3 +12,4 @@ noinst_HEADERS = Exeptions.H Data_Read.H Data_Return.H Run_Parameter.H Message.H
 INCLUDES = -I../Phys \
 	   -I../Math \
 	   -I../../MODEL-1.0/Main
+EXTRA_DIST    = $(CVSINCLUDE)

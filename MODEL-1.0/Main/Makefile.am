@@ -1,3 +1,7 @@
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 lib_LTLIBRARIES = libModelMain.la
 libModelMain_la_SOURCES = Model_Handler.C Model_Base.C \
 			  Standard_Model.C MSSM.C ADD.C\
@@ -12,3 +16,4 @@ noinst_HEADERS = Model_Handler.H Model_Base.H \
 		 Standard_Model.H MSSM.H ADD.H \
 		 Running_AlphaS.H Running_AlphaQED.H  Running_Fermion_Mass.H \
 		 Spectrum_Generator_Base.H
+EXTRA_DIST    = $(CVSINCLUDE)

@@ -1,5 +1,10 @@
 SUBDIRS = Zfunctions AmplTools
 lib_LTLIBRARIES = libAmplitude.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libAmplitude_la_SOURCES = Single_Amplitude.C Amplitude_Manipulator.C \
                           Amplitude_Generator.C Color_Generator.C \
 	                  Prop_Generator.C Zfunc_Generator.C Amplitude_Group.C \
@@ -26,3 +31,5 @@ noinst_HEADERS = Single_Amplitude.H \
 		 Color_Group.H Super_Amplitude.H Single_Amplitude_Base.H \
 		 Super_Amplitude.H Amplitude_Output.H
 CXXFLAGS=-g
+
+EXTRA_DIST    = $(CVSINCLUDE)

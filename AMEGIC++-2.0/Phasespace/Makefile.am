@@ -1,4 +1,9 @@
 lib_LTLIBRARIES = libAmegicPSGen.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libAmegicPSGen_la_SOURCES = Phase_Space_Generator.C Channel_Generator.C
 INCLUDES = -I../Main \
 	   -I../Amplitude \
@@ -17,3 +22,5 @@ INCLUDES = -I../Main \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
 noinst_HEADERS = Phase_Space_Generator.H Channel_Generator.H
+
+EXTRA_DIST    = $(CVSINCLUDE)

@@ -1,4 +1,9 @@
 lib_LTLIBRARIES = libToolsPhys.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libToolsPhys_la_SOURCES = Flavour.C Particle.C Decay_Table.C \
                           Flavour_List.C Particle_List.C \
 			  Cut_Data.C Selector.C  Combined_Selector.C \
@@ -15,3 +20,4 @@ INCLUDES = -I../Org \
 	   -I../Math \
 	   -I../../MODEL-1.0/Main
 
+EXTRA_DIST    = $(CVSINCLUDE)

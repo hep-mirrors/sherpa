@@ -4,6 +4,11 @@ rootlibdir = $(rootdir)/lib
 CLHEPlibdir   = $(CLHEPDIR)/lib
 CLHEPincdir   = $(CLHEPDIR)/include
 bin_PROGRAMS = Amegic
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 Amegic_SOURCES = main.C Environment.C
 Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libAmegic.la \
@@ -49,10 +54,7 @@ INCLUDES = -I../Main \
 	   -I../../ATOOLS-2.0/Math \
 	   -I../../ATOOLS-2.0/Org 
 SUBDIRS = Process
-EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat \
-	Testrun/Particle.dat Testrun/Const.dat Testrun/Processes.dat \
-	Testrun/ISR.dat Testrun/Hadron.dat Testrun/Isajet.dat \
-	Testrun/Run.dat Testrun/Selector.dat Testrun/Selector.dat.sample makeclean 
+EXTRA_DIST = makeclean $(CVSINCLUDE)
 
 
 

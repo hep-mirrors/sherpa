@@ -4,6 +4,11 @@ rootlibdir = $(rootdir)/lib
 CLHEPlibdir   = $(CLHEPDIR)/lib
 CLHEPincdir   = $(CLHEPDIR)/include
 lib_LTLIBRARIES = libPhasespace.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libPhasespace_la_SOURCES = Phase_Space_Handler.C Phase_Space_Integrator.C \
 			   Multi_Channel.C Single_Channel.C \
 			   ISR_Channel.C FSR_Channel.C Rambo.C RamboKK.C Sarge.C \
@@ -19,7 +24,7 @@ noinst_HEADERS = Phase_Space_Handler.H Phase_Space_Integrator.H \
 		 Integrable_Base.H Multi_Channel.H Single_Channel.H \
 		 ISR_Channel.H FSR_Channel.H Rambo.H RamboKK.H Sarge.H \
 		 Channel_Basics.H Channel_Elements.H 
-
+EXTRA_DIST    = $(CVSINCLUDE)
 
 
 

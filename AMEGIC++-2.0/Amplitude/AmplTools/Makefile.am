@@ -1,4 +1,9 @@
 lib_LTLIBRARIES = libAmplTools.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libAmplTools_la_SOURCES = CFColor.C
 INCLUDES = -I../../Amplitude \
 	   -I../../Amplitude/AmplTools \
@@ -12,3 +17,4 @@ INCLUDES = -I../../Amplitude \
 	   -I../../../ATOOLS-2.0/Math \
 	   -I../../../ATOOLS-2.0/Org 
 noinst_HEADERS = CFColor.H
+EXTRA_DIST    = $(CVSINCLUDE)

@@ -4,6 +4,20 @@ AM_INIT_AUTOMAKE(BEAM, 1.0)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD}/..)
 
+dnl Conditional compiling and linking
+AC_ARG_ENABLE(cvsinclude,
+[  --disable-cvs           Disable CVS Synchronization ],
+[ cvsinclude=true
+  case "${enableval}" in
+    no) echo "enable CVS synchronization... no" ;
+        cvsinclude=false ;;
+    yes) echo "enable CVS synchronization... yes" ;;
+    *) echo "enable CVS synchronization... yes" ;;
+  esac ],
+[ echo "enable CVS synchronization... yes" ;
+  cvsinclude=true ])
+AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
+
 dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET

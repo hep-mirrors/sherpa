@@ -1,3 +1,7 @@
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 lib_LTLIBRARIES = libIsajet.la
 libIsajet_la_SOURCES = sugrun.f aldata.f ssalfs.f ssb0.f ssb1.f ssdhll.f ssdint.f \
 		       ssdlam.f ssf0.f ssglbf.f ssgst.f ssgt.f ssgwq1.f ssgwq2.f ssgwt1.f \
@@ -26,7 +30,7 @@ INCLUDES = -I../../MODEL-1.0/Main \
 	   -I../../ATOOLS-2.0/Org 
 FFLAGS = 
 noinst_HEADERS = Isajet_Fortran_Interface.H 
-
+EXTRA_DIST    = $(CVSINCLUDE)
 
 
 

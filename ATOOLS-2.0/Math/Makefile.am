@@ -3,6 +3,11 @@ SHERPASYS = ../..
 MODELINC = $(SHERPASYS)/MODEL-1.0
 
 lib_LTLIBRARIES       =	libToolsMath.la
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
 libToolsMath_la_SOURCES       =	\
 				MathTools.C \
 				Random.C \
@@ -29,3 +34,5 @@ noinst_HEADERS        =	\
 INCLUDES      =	-I../Phys \
 	   	-I../Org \
 	   	-I$(MODELINC)/Main
+
+EXTRA_DIST    = $(CVSINCLUDE)
