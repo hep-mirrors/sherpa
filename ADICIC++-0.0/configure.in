@@ -1,0 +1,50 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT
+AM_INIT_AUTOMAKE(ADICIC++,0.0)
+AM_DISABLE_STATIC
+AC_PREFIX_DEFAULT(${PWD}/..)
+
+dnl Conditional compiling and linking
+AC_ARG_ENABLE(cvsinclude,
+[  --disable-cvsinclude    Disable CVS Synchronization ],
+[ cvsinclude=true
+  case "${enableval}" in
+    no) echo "enable CVS synchronization... no" ;
+        cvsinclude=false ;;
+    yes) echo "enable CVS synchronization... yes" ;;
+    *) echo "enable CVS synchronization... yes" ;;
+  esac ],
+[ echo "enable CVS synchronization... yes" ;
+  cvsinclude=true ])
+AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
+
+dnl Checks for programs.
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_CXX
+AC_PROG_CC
+#AC_PROG_F77
+AM_PROG_LIBTOOL
+
+dnl Checks for header files.
+AC_HEADER_STDC
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+AC_CHECK_FUNCS(mkdir)
+
+AC_OUTPUT(Tool/Makefile \
+	  Tool/savemaketool/Makefile \
+	  Structure/Makefile \
+	  Handler/Makefile \
+	  TestIt/Makefile \
+	  TestIt/data/Makefile \
+	  RunIt/Makefile \
+          Makefile)
+
+
+
+

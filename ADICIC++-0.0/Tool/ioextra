@@ -1,0 +1,19 @@
+//-*- C++ -*- forwarding header.
+//This file provides additional input-output possibilities.
+
+//Version: ADICIC++-0.0/2004/01/28
+
+
+
+#ifndef __IOEXTRA__
+#define __IOEXTRA__ __IOEXTRA__
+#include "Xio.H"
+#endif
+
+
+
+
+
+
+
+

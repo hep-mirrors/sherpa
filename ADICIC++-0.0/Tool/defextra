@@ -1,0 +1,39 @@
+//-*- C++ -*- global macro header.
+//This file provides compiler switching possibilities.
+
+//Version: ADICIC++-0.0/2004/01/28
+
+
+
+#ifndef __DEFEXTRA__
+#define __DEFEXTRA__ __DEFEXTRA__
+
+
+
+
+
+//=============================================================================
+
+#define GCC_3_0_1 GCC_3_0_1
+
+//=============================================================================
+
+#undef GCC_3_0_1
+//This directive ensures that no macro called GCC_3_0_1 is defined - whether
+//or not one was before the directive.
+
+//=============================================================================
+
+
+
+
+
+#endif    //eo __DEFEXTRA__
+
+
+
+
+
+
+
+
