@@ -136,7 +136,7 @@ void Exception_Handler::SignalHandler(int signal)
   std::string input="y";
   msg.Error()<<std::endl<<om::bold<<"Exception_Handler::SignalHandler: "<<om::reset<<om::blue
 	     <<"Signal "<<om::reset<<om::bold<<"("<<om::red<<signal
-	     <<om::reset<<om::bold<<")"<<om::reset<<om::blue<<" caught. "<<om::reset<<std::flush;
+	     <<om::reset<<om::bold<<")"<<om::reset<<om::blue<<" caught. "<<om::reset<<std::endl;
   switch (signal) {
   case SIGSEGV:
     ++s_nsegv;
