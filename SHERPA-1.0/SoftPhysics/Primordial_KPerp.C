@@ -35,6 +35,8 @@ Primordial_KPerp::~Primordial_KPerp()
 
 bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 {
+  double kpm1=m_kperpmean[0], kpm2=m_kperpmean[1];
+  double kps1=m_kperpsigma[0], kps2=m_kperpsigma[1];
   size_t m_maxtrials=1000;
   ATOOLS::Blob *blob[2];
   if (blob1->Beam()==0) { blob[0]=blob1; blob[1]=blob2; }
@@ -133,6 +135,10 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
     } while (!success);
   }
   m_current[1]=m_current[0]=-1;
+  m_kperpmean[0]=kpm1; 
+  m_kperpmean[1]=kpm2;
+  m_kperpsigma[0]=kps1; 
+  m_kperpsigma[1]=kps2;
   return true;
 }
 
