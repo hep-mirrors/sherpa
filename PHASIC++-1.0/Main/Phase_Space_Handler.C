@@ -731,6 +731,8 @@ bool Phase_Space_Handler::MakeISRChannels()
   deltay[0] = log(ih->Upper1());
   deltay[1] = log(ih->Upper2());
 
+
+
   if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) {
     // leptons : 1/s'^2 and 1/(s-s')^beta, sharp FW-BW peak
     ci.type = 0;
