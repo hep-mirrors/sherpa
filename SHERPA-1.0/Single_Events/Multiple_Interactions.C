@@ -6,6 +6,7 @@
 #endif
 
 using namespace SHERPA;
+using namespace ATOOLS;
 
 Multiple_Interactions::Multiple_Interactions(MI_Handler *_p_mihandler):
   m_one(true),

@@ -30,15 +30,13 @@ CLHEPINC   = $(CLHEPSYS)/include
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
 Sherpa_LDADD  =	\
-		-L$(SHERPALIB) -lLundTools -lSherpaMain \
+		-L$(SHERPALIB) -lSherpaMain \
 		-lSherpaInitialization -lSherpaSingleEvents \
 		-lSherpaPerturbativePhysics -lSherpaSoftPhysics \
 		-lLundInterface -lSherpaTools \
 		-L$(AMEGICLIB) -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lProcess -lString \
 		-L$(APACICLIB) -lApacicShowers -lApacicMain \
-		-L$(AMISICLIB) -lAmisicTools -lAmisicHelpers \
-		-lAmisic -lAmisicAnalysis \
 		-L$(EXTRAXSLIB) -lExtraXS -lExtraXS2_2 \
 		-L$(PHASICLIB) -lPhasespace \
 		-L$(MODELLIB) -lModelMain -lIsajet -lHdecay \
@@ -46,6 +44,8 @@ Sherpa_LDADD  =	\
 		-L$(BEAMLIB) -lBeam \
 		-L$(ATOOLSLIB) -lToolsPhys -lToolsMath -lToolsOrg \
 		-lg2c -lm -ldl
+#               -L$(AMISICLIB) -lAmisicTools -lAmisicHelpers \
+#		-lAmisic -lAmisicAnalysis \
 #		-L$(ROOTLIB) -lCint -lCore -lHist -lGraf \
 #		-lGraf3d -lGpad -lTree -lRint -lPostscript \
 #		-lMatrix -lPhysics -lGui -ldl \
