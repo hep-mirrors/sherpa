@@ -26,6 +26,9 @@ NLL_JetRate::~NLL_JetRate()
 
 void NLL_JetRate::Init() 
 {
+  msg.Debugging()<<" NLL_JetRate::Init "<<std::endl
+		 <<" qmin ="<<m_qmin<<std::endl
+		 <<" qmax ="<<m_qmax<<std::endl;
   m_qmin_b=m_qmin;
   
   if (m_massive==0 || m_massive==1 || m_massive==2 || m_massive==3) {
@@ -70,6 +73,8 @@ void NLL_JetRate::InitMassive()
   InitIntegral(nll::GFDF,nll::IntGFDF,"intGFDF");
 
   if (m_njet<5) return;
+  std::cout<<" Massive 5 Jet not implemented "<<std::endl;
+
 }
 
 void NLL_JetRate::InitIntegral(nll::code id, nll::code int_id, std::string name) 
@@ -86,6 +91,12 @@ void NLL_JetRate::InitIntegral(nll::code id, nll::code int_id, std::string name)
   //  fun->Init(*this,m_qmin,m_qmax,640);
   fun->Init(*this,m_qmin,m_qmax,180);
   integrals[name]=fun;
+
+  msg.Debugging()<<"NLL_JetRate::InitIntegral : "<<std::endl
+		 <<Integrate(id,m_qmax)<<" vs. "<<(*integrals[name])(m_qmax)
+		 <<" and "<<Integrate(id,sqrt(0.5)*m_qmax)<<" vs. "
+		 <<(*integrals[name])(sqrt(0.5)*m_qmax)<<std::endl;
+
 }
 
 void NLL_JetRate::SetSudakovs(NLL_Sudakov_Base * deltaq, NLL_Sudakov_Base * deltag,
@@ -163,6 +174,7 @@ void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
       rb = sig5/(sig1234+sig5);
       // **** R_2 ****
       r2 = (1.-rb)*r2 + rb*r2M;
+      std::cout<<"  r2   = "<<r2<<std::endl;
     }
   }
 
@@ -175,21 +187,25 @@ void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
     // *** tR_3^0
     intgqdg = Integrate(nll::GqDg,m_qmax);
     r3   = 2. * sqr(sudq) * intgqdg;
+    std::cout<<" tr3^0 = "<<r3<<std::endl;
   }
   else 
   if (m_massive==2 || m_massive==3) {
     // *** R_3^0
     intgqDG = Integrate(nll::GqDG,m_qmax); 
     r3   = 2. * sqr(sudq) * intgqDG;
+    std::cout<<"  r3^0 = "<<r3<<std::endl;
   }
   if (m_massive==1 || m_massive==3 || m_massive==4) {
     // *** R_3^m ~ tR_3^m
     intGQDG = Integrate(nll::GQDG,m_qmax);
     double r3M = 2. * sqr(sudqm) * intGQDG;
+    std::cout<<"  r3^M = "<<r3M<<std::endl;
     if (m_massive==1 || m_massive==4) r3=r3M;
     else {
       // **** R_3 ****
       r3 = (1.-rb)*r3 + rb*r3M;
+      std::cout<<"  r3   = "<<r3<<std::endl;
     }
   }
   if (m_njet==3) return ;
@@ -202,11 +218,13 @@ void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
     // *** tR_4^0
     intgqdgintggdg_gfdf = Integrate(nll::GqDgIntGgDg_GfDf,m_qmax);
     r4 = 2. * sqr(sudq) * ( sqr(intgqdg) + intgqdgintggdg_gfdf);
+    std::cout<<" tr4^0 = "<<r4<<std::endl; 
   }
   else if (m_massive==2 || m_massive==3) {
     // *** R_4^0
     intgqDGintggDG_gfdf_GFDF = Integrate(nll::GqDGIntGgDG_GfDf_GFDF,m_qmax);
     r4 = 2. * sqr(sudq) * ( sqr(intgqDG) + intgqDGintggDG_gfdf_GFDF);
+    std::cout<<"  r4^0 = "<<r4<<std::endl; 
   }
 
   if (m_massive==1 || m_massive==3 || m_massive==4) {
@@ -216,15 +234,18 @@ void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
       intGQDGintggDG_GFDF = Integrate(nll::GQDGIntGgDG_GFDF,m_qmax);
       r4M = 2. * sqr(sudqm) * ( sqr(intGQDG) + intGQDGintggDG_GFDF);
       r4=r4M;
+      std::cout<<" tr4^M = "<<r4<<std::endl; 
     }
     else {
       // *** R_4^m
       intGQDGintggDG_gfdf_GFDF = Integrate(nll::GQDGIntGgDG_GfDf_GFDF,m_qmax);
       r4M = 2. * sqr(sudqm) * ( sqr(intGQDG) + intGQDGintggDG_gfdf_GFDF);
+      std::cout<<"  r4^M = "<<r4M<<std::endl;
       if (m_massive==1) r4=r4M;
       else {
 	// **** R_4 ****
 	r4 = (1.-rb)*r4 + rb*r4M;
+	std::cout<<"  r4   = "<<r4<<std::endl;
       }
     }
   }
@@ -243,10 +264,15 @@ void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
   double r5b = Integrate(nll::GqDgIntgg2_gggg_ggff_ffsg,m_qmax);
   r5 = sqr(sudq) * ( 4./3. * intgqdg * ( sqr(intgqdg) + 3. * intgqdgintggdg_gfdf) 
 		     + r5b);
+  std::cout<<" r5 = "<<r5<<std::endl;
   */
   double r5c = Integrate(nll::GqDgIntffgg_gg2_ggff_gggg_ggtg,m_qmax);
   r5 = sqr(sudq) * ( 4./3. * intgqdg * ( sqr(intgqdg) + 3. * intgqdgintggdg_gfdf) 
 		     + r5c);
+  std::cout<<" r5 = "<<r5<<std::endl;
+  //  std::cout<<" r5b ="<<r5b<<std::endl;
+  std::cout<<" r5c ="<<r5c<<std::endl;
+  
 }
 
 double NLL_JetRate::Integrate(nll::code mode,double q) 

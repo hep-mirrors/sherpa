@@ -32,6 +32,8 @@ NLL_Sudakov::NLL_Sudakov(int mode, double _tmax,double _tmin,MODEL::Running_Alph
 {
 
   FixLambda2();
+
+  // if (jetmode>=0)  p_jetrate = new NLL_JetRate(4,sqrt(_tmin),sqrt(_tmax),jetmode&7);
   
   if (jetmode==0 || jetmode==-2) PrepareMap(runas);
   else PrepareMassiveMap(runas,jetmode&7);
