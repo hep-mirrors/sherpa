@@ -20,8 +20,6 @@ int main(int argc,char* argv[]) {
   ATOOLS::msg.Out()<<"generate "<<ATOOLS::rpa.gen.NumberOfEvents()<<" events"<<std::endl;
   Generator.InitializeTheEventHandler();
 
-  abort();
-
   int nevt=ATOOLS::rpa.gen.NumberOfEvents();
   if (nevt>0) ATOOLS::msg.Out()<<"Starting event generation now. "<<std::endl;
   for (int i=1;i<=nevt;i++) {

@@ -22,7 +22,6 @@ Hard_Decay_Handler::Hard_Decay_Handler(std::string _path,std::string _file,std::
   EvaluateWidths(_pfile,_model);
 
   SetWidths(0);
-  abort();
 }
 
 Hard_Decay_Handler::~Hard_Decay_Handler() { }
