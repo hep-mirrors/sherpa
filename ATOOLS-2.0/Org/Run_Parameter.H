@@ -41,7 +41,8 @@ namespace ATOOLS {
     class Gen {  // general parameters
       int                 m_output, m_analysis, m_cutscheme;
       //std::string         m_runtime;
-      long int            m_nevents, m_ndicedevents;
+      long int            m_nevents, m_ndicedevents, m_estimatedevents;
+      double              m_wana_scale;
       long int            m_seed;
       double              m_ecms, m_ycut, m_delta_r;
       double              m_accu;
@@ -59,6 +60,7 @@ namespace ATOOLS {
       double m_ren_scale_fac;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
+      inline long   NumberOfEstimatedEvents()             { return m_estimatedevents; }
       inline long   NumberOfDicedEvents()                 { return m_ndicedevents; }
       inline long   RandomSeed()                          { return m_seed;    }
       inline int    Analysis()                            { return m_analysis; }
@@ -82,8 +84,11 @@ namespace ATOOLS {
       inline bool   BatchMode()                           { return m_batchmode; }
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfDicedEvents(const long diced) { m_ndicedevents=diced; }
+      inline void   SetNumberOfEstimatedEvents(const long N) { m_estimatedevents=N; }
       inline const std::string &UserName() { return m_username; }
       inline const std::string &Variable(const std::string &key) { return s_variables[key]; }
+      inline double WAnaScale()                          { return m_wana_scale;}
+      inline void   SetWAnaScale(double ws)              { m_wana_scale=ws; }
 #ifndef USING__ATOOLS_only
       void SetScaleFactors(double f, double r) {
 	m_fac_scale_fac = f;

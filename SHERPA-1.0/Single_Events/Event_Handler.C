@@ -117,6 +117,8 @@ bool Event_Handler::GenerateEvent(int mode)
 	for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
 	  if ((*pit)->Type()==eph::Perturbative) {
 	    bool result=(*pit)->Treat(&m_blobs,weight);
+	    if (weight==0.0 &&
+		rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
 	    msg_Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "
 			  <<ATOOLS::om::reset
 			  <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset

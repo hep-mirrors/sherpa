@@ -11,6 +11,7 @@ namespace ANALYSIS {
   typedef ANALYSIS::String_Matrix String_Matrix;
 
   class Analysis_Handler: public ATOOLS::Terminator_Object, 
+			  public ATOOLS::Tester_Object, 
 			  public ATOOLS::File_IO_Base {
   public:
 
@@ -24,9 +25,12 @@ namespace ANALYSIS {
 
     Analyses_Vector m_analyses;
 
-    bool m_weighted, m_initialized;
+    int    m_weighted; 
+    bool   m_initialized;
+    double m_scalefactor;
 
     void Clean();
+    bool ApproveTerminate();
     void PrepareTerminate();
 
   public:
@@ -50,9 +54,11 @@ namespace ANALYSIS {
 				       size_t &starty,size_t &startx);
 
     // inline functions
-    inline void SetWeighted(const bool weighted) { m_weighted=weighted; }
+    inline void SetWeighted(const int weighted)    { m_weighted=weighted;  }
+    inline void SetScaleFactor(const double factor) { m_scalefactor=factor; }
     
-    inline bool Weighted() const { return m_weighted; }
+    inline int Weighted() const      { return m_weighted;    }
+    inline double ScaleFactor() const { return m_scalefactor; }
 
   };// end of class Analysis_Handler   
 

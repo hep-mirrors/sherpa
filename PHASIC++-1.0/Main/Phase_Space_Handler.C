@@ -35,7 +35,7 @@
 #endif
 
 #ifdef ROOT_SUPPORT
-#define ANALYSE__Phase_Space_Handler
+// #define ANALYSE__Phase_Space_Handler
 #endif
 #ifdef ANALYSE__Phase_Space_Handler
 #include "My_Root.H"
@@ -639,8 +639,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
   double value;
   for (int i=1;i<m_maxtrials+1;i++) {
     if (mode==0) {
-      p_process->DeSelect();
-      p_process->SelectOne();
+      if (!p_process->ReSelect(i)) return NULL;
     }
     else {
       if (!(p_process->Selected())) {
@@ -649,8 +648,9 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
 	return 0;
       }
     }
-    p_process->Selected()->RestoreInOrder();
-    value = Differential(p_process->Selected(),(psm::code)mode);
+    Integrable_Base *selected=p_process->Selected();
+    selected->RestoreInOrder();
+    value = Differential(selected,(psm::code)mode);
     if (value > 0.) {
       m_sumtrials+=i;
       ++m_events;
@@ -660,15 +660,17 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
 	  ATOOLS::Vec4D* addvecs=(ATOOLS::Vec4D*)p_process->AddMomenta();
 	  Rotate(addvecs,p_process->NAddOut());
 	}
-	p_process->Selected()->SetMomenta(p_lab);
-	p_process->Selected()->SwapInOrder();
+	selected->SetMomenta(p_lab);
+	selected->SwapInOrder();
       }
       else {
-	p_process->Selected()->SetMomenta(p_lab);
+	selected->SetMomenta(p_lab);
       }
       m_weight=value;
       m_trials=i;
-      return new Blob_Data<Weight_Info>(Weight_Info(m_weight,m_trials));
+      return new Blob_Data<Weight_Info>(Weight_Info(m_weight,selected->ExpectedEvents()/
+						    (double)p_process->Parent()->ExpectedEvents(),
+						    m_trials));
     }
     // call from amisic
     if ((psm::code)mode&psm::no_lim_isr ||

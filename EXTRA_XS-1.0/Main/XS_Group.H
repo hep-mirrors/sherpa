@@ -71,8 +71,14 @@ namespace EXTRAXS {
     bool CalculateTotalXSec(const std::string &resultpath,
 			    const bool create=false);
     void WriteOutXSecs(std::ofstream &outfile);
-    void SelectOne();
+    bool SelectOne();
+    bool SelectOneFromList();
     void DeSelect();
+    bool ReSelect(int);
+    void SetEvents(const double number);
+
+    void AddEvent(const double xs,const double validxs,const int ncounts);
+    void ResetEvents();
 
     bool OneEvent();
 

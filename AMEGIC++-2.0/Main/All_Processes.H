@@ -15,7 +15,7 @@ namespace AMEGIC {
     int  InitAllProcesses(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&);
 
     void Add(Process_Base *);
-    void SelectOne();
+    bool SelectOne();
     void RescaleXSec(double);
     void SetupEnhance();
 

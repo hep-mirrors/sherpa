@@ -41,7 +41,7 @@ namespace EXTRAXS {
 			     PDF::ISR_Handler *const isrhandler,const bool construct=true);
     bool CalculateTotalXSec(const std::string &resultpath);
 
-    void SelectOne();
+    bool SelectOne();
     bool OneEvent(const int mode=0);
 
     void SingleEvents();

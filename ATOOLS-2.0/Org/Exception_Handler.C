@@ -52,6 +52,8 @@ static bool s_noremove=false;
 
 bool Exception_Handler::ApproveTerminate()
 {
+  static size_t inttrials=0;
+  if (++inttrials>2) kill(getpid(),9);
   if (s_print) msg_Tracking()<<"Exception_Handler::ApproveTerminate(): "
 			     <<"Asking for termination ..."<<std::endl;
   if (s_testerfunctions.size()==0 && s_testerobjects.size()==0) {

@@ -633,3 +633,5 @@ void Process_Base::SetPrintGraphs(bool print_graphs)
 {
  m_print_graphs=print_graphs; 
 }
+
+void Process_Base::SetWEventMode(int mode) {}

@@ -138,7 +138,7 @@ void XS_Group::Clear()
   }
 }
 
-void XS_Group::SelectOne()
+bool XS_Group::SelectOne()
 {
   DeSelect();
   if (m_totalxs==0.) p_selected=m_xsecs[int(ATOOLS::ran.Get()*m_xsecs.size())];
@@ -153,15 +153,17 @@ void XS_Group::SelectOne()
 	p_selected=m_xsecs[i];
 	p_selected->SetPSHandler(p_pshandler);
 	p_selected->SelectOne();
-	return;
+	return true;
       }
     }
     if (disc>0.) { 
       ATOOLS::msg.Error()<<"XS_Group::SelectOne() : Cannot select process !"<<std::endl;
       if (m_atoms) ATOOLS::msg.Error()<<"   \\dsigma_{max} = "<<m_max<<std::endl;
       else ATOOLS::msg.Error()<<"   \\sigma_{tot} = "<<m_totalxs<<std::endl;
+      return false;
     }
   }
+  return true;
 }
 
 void XS_Group::WriteOutXSecs(std::ofstream &outfile)
@@ -489,6 +491,10 @@ void XS_Group::DeSelect()
   p_selected=NULL;
 }
 
+bool XS_Group::ReSelect(int) {
+  return SelectOne();
+}
+
 void XS_Group::SetISR(PDF::ISR_Handler *const isrhandler) 
 {
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->SetISR(isrhandler);
@@ -550,4 +556,43 @@ void XS_Group::Print()
     for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->Print();
   }
   ATOOLS::msg.Out()<<"} "<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb\n";
+}
+
+void XS_Group::SetEvents(const double number) 
+{
+  m_expevents=m_dicedevents=0;
+  m_anasum=m_validanasum=0.0;
+  for (size_t i=0;i<m_xsecs.size();++i) {
+    m_xsecs[i]->SetEvents(number);
+    m_expevents+=m_xsecs[i]->ExpectedEvents();
+    PRINT_INFO(m_xsecs[i]->Name()<<" "
+	       <<m_xsecs[i]->ExpectedEvents()<<" "<<m_xsecs[i]->TotalXS());
+  }
+}
+
+bool XS_Group::SelectOneFromList()
+{
+  std::cout.precision(12);
+  DeSelect();
+  //  if (ATOOLS::IsEqual(m_xssum,m_dicedxssum)) return false;
+  for (size_t i=0;i<m_xsecs.size();i++) {
+    if (m_xsecs[i]->DicedEvents()<m_xsecs[i]->ExpectedEvents()) {
+//       PRINT_INFO(m_xsecs[i]->DicedEvents()<<" "<<m_xsecs[i]->Events()<<" "<<m_xsecs[i]->Name());
+      p_selected=m_xsecs[i];
+      if (p_selected->SelectOneFromList()) break;
+    }
+  }
+//    PRINT_INFO(Name()<<" selected "<<(p_selected==NULL?"NULL":p_selected->Name()));
+  if (p_selected==NULL) return false;
+  return true;
+}
+
+void XS_Group::AddEvent(const double xs,const double validxs,const int ncounts)
+{ 
+  m_dicedevents+=ncounts; 
+  p_selected->AddEvent(xs,validxs,ncounts);
+}
+
+void XS_Group::ResetEvents()
+{
 }

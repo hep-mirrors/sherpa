@@ -23,9 +23,10 @@ namespace ANALYSIS {
     fill_helper     = 16,
     fill_all        = 24,
     
-    norm_to_xs      = 32,
-    norm_to_one     = 64,
-    norm            = 96,
+    weighted_ns     = 32,
+//     norm_to_xs      = 32,
+//     norm_to_one     = 64,
+//     norm            = 96,
     
     output_this     = 128,
     output_jet      = 256,

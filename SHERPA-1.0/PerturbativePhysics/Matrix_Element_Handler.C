@@ -108,11 +108,14 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   }
   if (m_signalgenerator==string("Internal")) m_mode = InitializeSimpleXS(_model,_beam,_isr);
 
-  if (p_dataread->GetValue<string>("EVENT_GENERATION_MODE",std::string("Unweighted"))==string("Unweighted"))
+  string evtm=p_dataread->GetValue<string>("EVENT_GENERATION_MODE",std::string("Unweighted"));
+  if (evtm==string("Unweighted"))
     m_eventmode=1;
-  else
-    m_eventmode=0;
-
+  else {
+    if (evtm==string("WeightedNS"))
+      m_eventmode=-31;
+    else m_eventmode=0;
+  }
   p_flavs = new Flavour[MaxJets()+2];
   p_moms  = new Vec4D[MaxJets()+2];
   if (m_apply_hhmf) SetupHHMF();
@@ -221,7 +224,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   m_readin = p_dataread->GetValue<string>("RESULT_DIRECTORY",string("./Results"));
   switch (m_mode) { 
   case 1: 
-    if (p_amegic->CalculateTotalXSec(m_readin)) {
+    if (p_amegic->CalculateTotalXSec(m_readin,m_eventmode<0?-1:1)) {
       PrintTotalXSec();
       return 1;
     }
@@ -237,6 +240,29 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   msg.Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
 	     <<"   Failed to Calculate total XSec. m_mode = "<<m_mode<<" Abort."<<endl;
   abort();
+}
+
+void Matrix_Element_Handler::AddEvent(const double xs,const double validxs,const int ncounts) 
+{
+  switch (m_mode) { 
+  case 1: 
+    p_amegic->AddEvent(xs,validxs,ncounts);
+    return;
+  case 2:
+    p_simplexs->AddEvent(xs,validxs,ncounts);
+    return;
+  }
+}
+
+double Matrix_Element_Handler::ExpectedEvents() const
+{
+  switch (m_mode) { 
+  case 1: 
+    return p_amegic->Processes()->ExpectedEvents();
+  case 2:
+    return p_simplexs->ExpectedEvents();
+  }
+  return 0.0;
 }
 
 bool Matrix_Element_Handler::PrintTotalXSec() 
@@ -284,7 +310,7 @@ bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) { return true; 
 
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
-  if (m_eventmode) {
+  if (m_eventmode==1) {
     bool stat = UnweightedEvent();
     if (!stat) return stat;
     GetMomentaNFlavours();
@@ -292,16 +318,21 @@ bool Matrix_Element_Handler::GenerateOneEvent()
     return stat;
   }
   Blob_Data_Base * message = WeightedEvent();
-  GetMomentaNFlavours();
-  ApplyHHMF();
+  if (GetMomentaNFlavours()) {
+    ApplyHHMF();
+  }
   if (message) {
     PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
     m_weight =  winfo.weight * rpa.Picobarn();
+    m_procweight = winfo.procweight;
     m_ntrial =  winfo.ntrial;
+//     PRINT_INFO(m_procweight<<" "<<m_weight<<" "<<m_ntrial);
     delete message;
   }
   else {
+    PRINT_INFO("set weight 0");
     m_weight=0.;
+    if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
   }
   return (m_weight>0.);
 }
@@ -325,7 +356,7 @@ double Matrix_Element_Handler::FactorisationScale()
 
 bool Matrix_Element_Handler::GenerateSameEvent() 
 {
-  if (m_eventmode) {
+  if (m_eventmode==1) {
     bool stat = UnweightedSameEvent();
     if (!stat) return stat;
     GetMomentaNFlavours();
@@ -333,8 +364,9 @@ bool Matrix_Element_Handler::GenerateSameEvent()
     return stat;
   }
   Blob_Data_Base * message = WeightedSameEvent();
-  GetMomentaNFlavours();
-  ApplyHHMF();
+  if (GetMomentaNFlavours()) {
+    ApplyHHMF();
+  }
   if (message) {
     PHASIC::Weight_Info winfo = message->Get<PHASIC::Weight_Info>();
     m_weight =  winfo.weight * rpa.Picobarn();
@@ -342,19 +374,21 @@ bool Matrix_Element_Handler::GenerateSameEvent()
     delete message;
   }
   else {
+    PRINT_INFO("set weight 0");
     m_weight=0.;
+    if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return true;
   }
   return (m_weight>0.);
 }
 
-void Matrix_Element_Handler::GetMomentaNFlavours() {    
+bool Matrix_Element_Handler::GetMomentaNFlavours() {    
   switch (m_mode) {
   case 1: 
     m_nmoms = p_amegic->NIn()+p_amegic->NOut();
     if (p_amegic->Flavours() && p_amegic->Momenta()) {
       for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_amegic->Flavours()[i];
       for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_amegic->Momenta()[i];
-      return;
+      return true;
     }
     break;
   case 2: 
@@ -362,12 +396,14 @@ void Matrix_Element_Handler::GetMomentaNFlavours() {
     if (p_simplexs->Flavours() && p_simplexs->Momenta()) {
       for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_simplexs->Flavours()[i];
       for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_simplexs->Momenta()[i];
-      return;
+      return true;
     }
   }
+  if (rpa.gen.NumberOfDicedEvents()==rpa.gen.NumberOfEvents()) return false;
   msg.Error()<<"Warning in Matrix_Element_Handler::SetMomenta()"<<endl
 	     <<"   No ME generator available to get momenta from."<<endl
 	     <<"   Continue run and hope for the best."<<endl;
+  return false;
 }
 
 
@@ -566,6 +602,11 @@ EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS(const int mode)
 double  Matrix_Element_Handler::Weight() 
 {
   return m_weight;
+}
+
+double  Matrix_Element_Handler::ProcessWeight() 
+{
+  return m_procweight;
 }
 
 unsigned long Matrix_Element_Handler::NumberOfTrials()

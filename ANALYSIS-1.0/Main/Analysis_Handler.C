@@ -21,7 +21,7 @@ using namespace ANALYSIS;
 size_t Analysis_Handler::s_maxanalyses=100;
 
 Analysis_Handler::Analysis_Handler():
-  m_weighted(false), m_initialized(false) {}
+  m_weighted(0), m_initialized(false), m_scalefactor(0.) {}
 
 Analysis_Handler::~Analysis_Handler()
 {
@@ -146,7 +146,9 @@ bool Analysis_Handler::ReadIn()
     for (size_t j=1;j<helpsv.size();++j) msg_Info()<<","<<helpsv[j];
     msg_Info()<<"\")\n";
     msg_Tracking()<<"   new Primitive_Analysis(..) {\n";
-    if (m_weighted) mode=mode|weighted;
+//     if (m_weighted) 
+    mode=mode|m_weighted;
+    if(m_weighted==ANALYSIS::weighted_ns) m_scalefactor=(double)ATOOLS::rpa.gen.NumberOfEstimatedEvents();
     m_analyses.push_back(new Primitive_Analysis(ATOOLS::ToString(i),mode));
     std::string outpath;
     if (!reader.ReadFromFile(outpath,"PATH_PIECE")) outpath="";
@@ -185,7 +187,10 @@ bool Analysis_Handler::ReadIn()
     msg_Tracking()<<"   }\n";
   }
   msg_Info()<<"}"<<std::endl;
-  if (success) ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  if (success) {
+    ATOOLS::Exception_Handler::AddTesterObject(this);
+    ATOOLS::Exception_Handler::AddTerminatorObject(this);
+  }
   m_initialized=true;
   return success;
 }
@@ -193,7 +198,9 @@ bool Analysis_Handler::ReadIn()
 void Analysis_Handler::DoAnalysis(const ATOOLS::Blob_List *bloblist,
 				  const double weight)
 {
-  if (!m_initialized) ReadIn();
+  if (!m_initialized) {
+    ReadIn();
+  }
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) (*ait)->DoAnalysis(bloblist,weight); 
 }
@@ -202,6 +209,20 @@ void Analysis_Handler::Clear()
 { 
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) (*ait)->ClearAllData(); 
+}
+
+bool Analysis_Handler::ApproveTerminate()
+{
+  if (m_weighted==weighted_ns) {
+    ATOOLS::msg.Error()
+      <<"Analysis_Handler::ApproveTerminate(): {\n"
+      <<"   Currently weighted analyses cannot be continued.\n"
+      <<"   To stop the event generation call SIGINT 3 times.\n"
+      <<"   The analysis status will not be written to disk.\n}"
+      <<std::endl;
+    return false;
+  }
+  return true;
 }
 
 void Analysis_Handler::PrepareTerminate()
@@ -226,12 +247,16 @@ void Analysis_Handler::Finish(const std::string &path)
     }
   }
   msg_Info()<<"Analysis_Handler::Finish(..): {\n";
+  double ws=ATOOLS::rpa.gen.WAnaScale();
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) {
     msg_Info()<<"   Writing to '"<<OutputPath()<<(*ait)->OutputPath()<<"'."<<std::endl; 
-    (*ait)->FinishAnalysis(OutputPath()); 
+    (*ait)->FinishAnalysis(OutputPath(),(long int)m_scalefactor,ws); 
   }
   msg_Info()<<"}"<<std::endl;
-  if (m_analyses.size()) ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+  if (m_analyses.size()) {
+    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
+    ATOOLS::Exception_Handler::RemoveTesterObject(this);
+  }
 }
 

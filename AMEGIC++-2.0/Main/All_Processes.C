@@ -16,12 +16,16 @@ using namespace std;
 
   ----------------------------------------------------------------------------------*/
 
+#include "Debugger.H"
+
 void All_Processes::Add(Process_Base * _proc)
 {
+  _proc->SetParent(this);
   m_procs.push_back(_proc);
 }
 
-void  All_Processes::SelectOne() {
+bool  All_Processes::SelectOne() {
+  if (m_weventmode<0) return SelectOneFromList(); 
   DeSelect();
   if (m_totalxs==0) p_selected = m_procs[int(ran.Get()*m_procs.size())];
   else {
@@ -31,15 +35,16 @@ void  All_Processes::SelectOne() {
       if (disc<0.) {
 	p_selected = m_procs[i];
 	p_selected->DeSelect();
-	return;
+	return true;
       }
     }
     if (disc>0.) { 
       msg.Error()<<"Error in All_Processes::SelectOne() : "<<std::endl
 		 <<"   Total xsec = "<<m_totalxs<<", continue and hope for the best. "<<std::endl;
-      return;
+      return false;
     }
   }
+  return true;
 }
 
 void All_Processes::RescaleXSec(double) {

@@ -226,18 +226,21 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
 
   Init();
   double weight=(*p_partner)["ME_Weight"]->Get<double>();
+  double procweight=1.;
+  if (m_mode&ANALYSIS::weighted_ns) procweight=(*p_partner)["Process_Weight"]->Get<double>();
+  weight/=procweight;
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
-  if (!IsEqual(value,weight)) {
+  if (!IsEqual(value/procweight,weight)) {
     if (p_partner==this) {
       msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl
-	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value<<","<<weight<<")"<<std::endl;
+	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value/procweight<<","<<weight<<")"<<std::endl;
     }
-    else if (value==0.) {
+    else if (value/procweight==0.) {
       weight=0.;
     }
     else {
       msg.Out()<<"WARNING something is wrong in Primitive_Analysis::DoAnalysis :"<<std::endl
-	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value<<","<<weight<<")"<<std::endl;
+	       <<"   Weight in Primitive_Analysis ambiguous! ("<<value/procweight<<","<<weight<<")"<<std::endl;
     }
   }
   double weight_one=weight;
@@ -245,6 +248,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   Blob_Data_Base * info = (*p_partner)["ME_Weight_One"];
   if (info) {
     weight_one = info->Get<double>();
+    weight_one/= procweight;
     ncount_one = (*p_partner)["ME_NumberOfTrials_One"]->Get<int>();
   }
   if (weight==0.) weight_one=0.;
@@ -258,7 +262,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   if (m_mode&ANALYSIS::fill_helper) {
     for (size_t i=0;i<m_observables.size();i++) {
       if (!m_observables[i]->Splittable()) {
-	m_observables[i]->Evaluate(*bl,value,ncount);
+	m_observables[i]->Evaluate(*bl,value/procweight,ncount);
       }
     }
   }
@@ -266,7 +270,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   if (m_mode&ANALYSIS::fill_histos) {
     for (size_t i=0;i<m_observables.size();i++) {
       if (m_observables[i]->Splittable()) {
-	m_observables[i]->Evaluate(*bl,value,ncount);
+	m_observables[i]->Evaluate(*bl,value/procweight,ncount);
       }
     }
   }
@@ -305,17 +309,22 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
 	}
       }
       else {
-	if ((m_mode&ANALYSIS::weighted)==0 ) {
-	  m_observables[i]->EndEvaluation(double(m_nevt)/double(ntotal)*xs);
+	if (m_mode&ANALYSIS::weighted_ns) {
+	  m_observables[i]->EndEvaluation(double(m_stats.nevt)/double(ntotal)*xs);
 	}
 	else {
-	  if (m_stats.nevt_one>0 && m_stats.sum_weight!=0.) {
-	    double xshist=m_stats.sum_weight/double(m_stats.nevt);
-	    double xsreal=m_stats.sum_weight_one/double(m_stats.nevt_one);
-	    m_observables[i]->EndEvaluation(xsreal/xshist);
+	  if ((m_mode&ANALYSIS::weighted)==0 ) {
+	    m_observables[i]->EndEvaluation(double(m_nevt)/double(ntotal)*xs);
 	  }
 	  else {
-	    m_observables[i]->EndEvaluation();
+	    if (m_stats.nevt_one>0 && m_stats.sum_weight!=0.) {
+	      double xshist=m_stats.sum_weight/double(m_stats.nevt);
+	      double xsreal=m_stats.sum_weight_one/double(m_stats.nevt_one);
+	      m_observables[i]->EndEvaluation(xsreal/xshist);
+	    }
+	    else {
+	      m_observables[i]->EndEvaluation();
+	    }
 	  }
 	}
       }
@@ -362,6 +371,10 @@ void Primitive_Analysis::CreateFinalStateParticleList(bool markb)
 	Blob_Data_Base * info=(*(*blit))["ME_Weight"];
 	if (info) {
 	  m_datacontainer["ME_Weight"]=new Blob_Data<double>(info->Get<double>());
+	  info=(*(*blit))["Process_Weight"];
+	  if (info) {
+	    m_datacontainer["Process_Weight"]=new Blob_Data<double>(info->Get<double>());
+	  }
 	  info=(*(*blit))["ME_NumberOfTrials"];
 	  if (info) {
 	    m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(info->Get<int>());

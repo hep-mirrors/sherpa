@@ -34,13 +34,15 @@ namespace PHASIC {
 
   struct Weight_Info {
     
-    double        weight;
+    double        weight, procweight;
     unsigned long ntrial;
     
     // constructor
     Weight_Info(const double _weight, 
+		const double _procweight,
 		const unsigned long _ntrial):
-      weight(_weight), 
+      weight(_weight),
+      procweight(_procweight),
       ntrial(_ntrial) {}
 
   };// end of struct Weight_Info

@@ -326,12 +326,13 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
     p_activepshandler=m_xsecs[i]->PSHandler(false);
     m_totalxs += m_xsecs[i]->TotalXS();
   }
+  SetEvents(rpa.gen.NumberOfEvents());
   msg_Info()<<"In Simple_XS::CalculateTotalXSec() = "
 	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb."<<endl;
   return okay;
 }
 
-void  Simple_XS::SelectOne() {
+bool  Simple_XS::SelectOne() {
   DeSelect();
   if (m_totalxs==0) p_selected = m_xsecs[int(ran.Get()*m_xsecs.size())];
   else {
@@ -341,15 +342,16 @@ void  Simple_XS::SelectOne() {
       if (disc<0.) {
 	p_selected = m_xsecs[i];
 	p_selected->DeSelect();
-	return;
+	return true;
       }
     }
     msg.Error()<<"Process_Group::SelectOne(): "
 	       <<"Total xsec = "<<m_totalxs<<std::endl;
     p_selected = m_xsecs[0];
     p_selected->DeSelect();
-    return;
+    return false;
   }
+  return true;
 }
 
 bool Simple_XS::OneEvent(const int mode)

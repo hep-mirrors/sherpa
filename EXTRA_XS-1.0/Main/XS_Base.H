@@ -56,8 +56,10 @@ namespace EXTRAXS {
     void SwapInOrder();
     void RestoreInOrder();
 
-    void SelectOne();
+    bool SelectOne();
+    bool SelectOneFromList();
     void DeSelect();
+    bool ReSelect(int);
 
     virtual void Print();
 

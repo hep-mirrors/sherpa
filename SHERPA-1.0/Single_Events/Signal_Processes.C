@@ -18,7 +18,8 @@ using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * mehandler,
 				   Hard_Decay_Handler * hdhandler) :
-  p_mehandler(mehandler), p_hdhandler(hdhandler)
+  p_mehandler(mehandler), p_hdhandler(hdhandler),
+  m_addedxs(false)
 {
   m_name      = string("Signal_Processes:")+p_mehandler->Name();
   m_type      = eph::Perturbative;
@@ -50,81 +51,93 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
   while (found) {
     found = 0;
     for (Blob_List::iterator blit=bloblist->begin();blit!=bloblist->end();++blit) {
-      if ((*blit)->Type()==btp::Signal_Process && (*blit)->Status()==2) {
-	myblob = (*blit);
-	found  = 1;
-	bool success=false;
-	ATOOLS::Blob *isr[2]={NULL,NULL};
-	while (!success) {
-	  success=true;
-	  if (p_mehandler->GenerateOneEvent()) {
-	    EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
-	    if (xs!=NULL && xs->NAddOut()!=0) {
-	      for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
-		isr[i] = new ATOOLS::Blob();
-		isr[i]->SetType(ATOOLS::btp::IS_Shower);
-		isr[i]->SetTypeSpec("KMR DUPDF");
-		isr[i]->SetId();
-		isr[i]->SetStatus(1);
-		size_t j=i;
-		ATOOLS::Particle *parton = 
-		  new ATOOLS::Particle(-1,xs->AddFlavours()[j],
-				       xs->AddMomenta()[j]);
-		parton->SetNumber();
-		parton->SetStatus(2);
-		isr[i]->AddToOutParticles(parton);
-		parton = new ATOOLS::Particle(-1,xs->AddFlavours()[j],
-					      xs->AddMomenta()[j]);
-		parton->SetNumber();
-		parton->SetStatus(2);
-		parton->SetMomentum(parton->Momentum()
-				    +xs->Momenta()[i]);
-		isr[i]->AddToInParticles(parton);
-		isr[i]->SetBeam(i);
-		if (p_remnants[i]!=NULL) {
-		  p_remnants[i]->QuickClear();
-		  if (!p_remnants[i]->Extract(parton)) success=false;
+      if ((*blit)->Type()==btp::Signal_Process) {
+	if ((*blit)->Status()==0 && !m_addedxs) {
+ 	  Blob_Data_Base * message = (*(*blit))["ME_Weight"];
+ 	  double lastweight = message->Get<double>();
+ 	  message = (*(*blit))["ME_Weight_One"];
+	  double nljweight = lastweight;
+	  if (message) nljweight = message->Get<double>();
+	  p_mehandler->AddEvent(nljweight/rpa.Picobarn(),
+				lastweight/rpa.Picobarn(),0);
+	  m_addedxs=true;
+	}
+	else if ((*blit)->Status()==2) {
+	  myblob = (*blit);
+	  found  = 1;
+	  bool success=false;
+	  ATOOLS::Blob *isr[2]={NULL,NULL};
+	  while (!success) {
+	    success=true;
+	    if (p_mehandler->GenerateOneEvent()) {
+	      EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
+	      if (xs!=NULL && xs->NAddOut()!=0) {
+		for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
+		  isr[i] = new ATOOLS::Blob();
+		  isr[i]->SetType(ATOOLS::btp::IS_Shower);
+		  isr[i]->SetTypeSpec("KMR DUPDF");
+		  isr[i]->SetId();
+		  isr[i]->SetStatus(1);
+		  size_t j=i;
+		  ATOOLS::Particle *parton = 
+		    new ATOOLS::Particle(-1,xs->AddFlavours()[j],
+					 xs->AddMomenta()[j]);
+		  parton->SetNumber();
+		  parton->SetStatus(2);
+		  isr[i]->AddToOutParticles(parton);
+		  parton = new ATOOLS::Particle(-1,xs->AddFlavours()[j],
+						xs->AddMomenta()[j]);
+		  parton->SetNumber();
+		  parton->SetStatus(2);
+		  parton->SetMomentum(parton->Momentum()
+				      +xs->Momenta()[i]);
+		  isr[i]->AddToInParticles(parton);
+		  isr[i]->SetBeam(i);
+		  if (p_remnants[i]!=NULL) {
+		    p_remnants[i]->QuickClear();
+		    if (!p_remnants[i]->Extract(parton)) success=false;
+		  }
+		  else THROW(fatal_error,"No remnant found.");
 		}
-		else THROW(fatal_error,"No remnant found.");
+		blit=bloblist->begin();
 	      }
-	      blit=bloblist->begin();
-	    }
-	    if (success) {
-	      if (!FillBlob(myblob)) success=false;
-	      else p_mehandler->ResetNumberOfTrials();
-	      weight = p_mehandler->Weight();
-	      if (isr[0]!=NULL && isr[1]!=NULL) {
-		for (short unsigned int i=0;i<2;++i) {
-		  bloblist->push_front(isr[i]);
-		  isr[i]->AddToOutParticles(myblob->InParticle(i));
-		  ATOOLS::Vec4D sum=isr[i]->CheckMomentumConservation();
-		  if (!(sum==ATOOLS::Vec4D()))
-		    ATOOLS::msg.Error()<<"Signal_Processes::Treat(): "
-				       <<"4-momentum not conserved: sum = "
-				       <<sum<<"."<<std::endl;
+	      if (success) {
+		if (!FillBlob(myblob)) success=false;
+		else p_mehandler->ResetNumberOfTrials();
+		weight = p_mehandler->Weight();
+		if (isr[0]!=NULL && isr[1]!=NULL) {
+		  for (short unsigned int i=0;i<2;++i) {
+		    bloblist->push_front(isr[i]);
+		    isr[i]->AddToOutParticles(myblob->InParticle(i));
+		    ATOOLS::Vec4D sum=isr[i]->CheckMomentumConservation();
+		    if (!(sum==ATOOLS::Vec4D()))
+		      ATOOLS::msg.Error()<<"Signal_Processes::Treat(): "
+					 <<"4-momentum not conserved: sum = "
+					 <<sum<<"."<<std::endl;
+		  }
+		  myblob->SetStatus(0);
 		}
-		myblob->SetStatus(0);
+		hit = 1;
 	      }
-	      hit = 1;
-	    }
-	    else {
-	      for (short unsigned int i=0;i<2;++i) 
-		if (isr[i]!=NULL) delete isr[i];
+	      else {
+		for (short unsigned int i=0;i<2;++i) 
+		  if (isr[i]!=NULL) delete isr[i];
+	      }
 	    }
 	  }
 	}
-      }
-      else if (((*blit)->Type()==btp::Signal_Process) &&
-	       ((*blit)->Status()==-1)) {
-	myblob = (*blit);
-	found  = 1;
-	bool success=false;
-	while (!success) {
-	  success=true;
-	  if (p_mehandler->GenerateSameEvent()) {
-	    if (!FillBlob(myblob,true)) success=false;
-	    weight = p_mehandler->Weight();
-	    hit = 1;
+	else if (((*blit)->Type()==btp::Signal_Process) &&
+		 ((*blit)->Status()==-1)) {
+	  myblob = (*blit);
+	  found  = 1;
+	  bool success=false;
+	  while (!success) {
+	    success=true;
+	    if (p_mehandler->GenerateSameEvent()) {
+	      if (!FillBlob(myblob,true)) success=false;
+	      weight = p_mehandler->Weight();
+	      hit = 1;
+	    }
 	  }
 	}
       }
@@ -133,13 +146,17 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
   return hit;
 }
 
-void Signal_Processes::CleanUp() { return; }
+void Signal_Processes::CleanUp() 
+{ 
+  m_addedxs=false;
+}
 
 bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent)
 {
   PROFILE_HERE; 
 
   double  weight = p_mehandler->Weight();
+  double  procweight = p_mehandler->ProcessWeight();
   int  ntrial = p_mehandler->NumberOfTrials();
 
   double weight_one=0.;
@@ -226,6 +243,7 @@ bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent)
   }
   blob->AddData("ME_Weight",new Blob_Data<double>(weight));
   blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
+  blob->AddData("Process_Weight",new Blob_Data<double>(procweight));
 
 //   blob->AddData("ISR_Info_cms",p_mehandler->GetISR_Handler()->Info(0));
 //   blob->AddData("ISR_Info_lab",p_mehandler->GetISR_Handler()->Info(1));

@@ -570,9 +570,17 @@ void Amegic::Shorten(std::string& str) {
   ----------------------------------------------------------------------------------*/
 
 
-bool Amegic::CalculateTotalXSec(string _resdir) {
+bool Amegic::CalculateTotalXSec(string _resdir,int mode) 
+{
   bool success = p_procs->CalculateTotalXSec(_resdir);
-  if (success)   p_procs->SetupEnhance();
+  if (success) {
+    p_procs->SetupEnhance();
+    p_procs->SetWEventMode(mode);
+    if (mode<0) {
+      double nevents=rpa.gen.NumberOfEvents()/p_procs->TotalXS();
+      p_procs->SetEvents(nevents);
+    }
+  }
   return success;
 }
 
@@ -672,3 +680,10 @@ ATOOLS::Blob_Data_Base *  Amegic::WeightedEvent()
   //  if (weight>0.) return weight;
   //  return 0.;
 }
+
+
+void Amegic::AddEvent(const double xs,const double validxs,const int ncounts)
+{
+  p_procs->AddEvent(xs,validxs,ncounts);
+}
+

@@ -95,8 +95,6 @@ namespace AMEGIC {
     virtual void             SetupEnhance();
 
     virtual Process_Base  *  Partner()                                             =0;
-    virtual void             SelectOne()                                           =0;
-    virtual void             DeSelect()                                            =0;
     virtual void             Add(Process_Base *)                                   =0;
     virtual bool             Find(std::string,Process_Base *&)                     =0;
     virtual void             WriteOutXSecs(std::ofstream &)                        =0;
@@ -116,6 +114,7 @@ namespace AMEGIC {
     virtual void             SetISRThreshold(double)                               =0;
     virtual void             SetMax(const double max, int depth=0);
     virtual void             SetMaxJetNumber(int);
+    virtual void             SetWEventMode(int mode);
 
     void SetNStrong(int);
     void SetNEWeak(int);

@@ -43,12 +43,12 @@ namespace SHERPA {
     EXTRAXS::Simple_XS * p_simplexs;
     PDF::ISR_Handler   * p_isr;
     int                  m_mode;
-    double               m_weight;
+    double               m_weight, m_procweight;
     unsigned long          m_ntrial, m_sntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
  
-    bool m_eventmode;
+    int  m_eventmode;
     int  m_sudakovon;
     bool m_apply_hhmf;
     bool m_ini_swaped;
@@ -69,7 +69,7 @@ namespace SHERPA {
 
     void  SetupHHMF();
     bool  ApplyHHMF();
-    void  GetMomentaNFlavours();
+    bool  GetMomentaNFlavours();
     bool  UnweightedEvent();
     bool  UnweightedSameEvent();
 
@@ -103,6 +103,9 @@ namespace SHERPA {
     bool GenerateOneEvent(ATOOLS::Decay_Channel *,double);
     bool GenerateSameEvent();
 
+    double ExpectedEvents() const;
+    void   AddEvent(const double xs,const double validxs,const int ncounts);
+
     void SetAmegic(AMEGIC::Amegic *);
     void SetXS(EXTRAXS::Simple_XS *);
 
@@ -125,6 +128,7 @@ namespace SHERPA {
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS(const int mode=0);
     double               Weight();
+    double               ProcessWeight();
     unsigned long        NumberOfTrials();
 
     PDF::ISR_Handler   * GetISR_Handler()   { return p_isr; }
@@ -132,7 +136,7 @@ namespace SHERPA {
     double               FactorisationScale();
 
     inline void SetUseSudakovWeight(const int on) { m_sudakovon=on; }
-    inline bool EventGenerationMode() const { return m_eventmode; }
+    inline int  EventGenerationMode() const { return m_eventmode; }
     inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; }
     inline void ResetNumberOfTrials() { m_sntrial=0; }
   };

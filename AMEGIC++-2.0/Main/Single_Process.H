@@ -91,12 +91,14 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    void             SelectOne()                        {                       }
-    void             DeSelect()                         {                       }
-    size_t           Size()                             { return 1;             }
+    bool             SelectOne();
+    bool             SelectOneFromList();
+    void             DeSelect();
+    bool             ReSelect(int);
+    size_t           Size();
     bool             Find(std::string,Process_Base *&);
     void             WriteOutXSecs(std::ofstream & _to);
-    Process_Base   * operator[] (int idx)               { return this;          }
+    Process_Base   * operator[] (int idx);
     std::string      LibName()                          { return m_libname;     }
     std::string      PSLibName()                        { return m_pslibname;   }
     void             SetTotal(int flag, int depth=0);
@@ -125,6 +127,7 @@ namespace AMEGIC {
     bool           OneEvent(double = -1.);
     bool           SameEvent();
     ATOOLS::Blob_Data_Base * WeightedEvent(const int mode=0);
+    ATOOLS::Blob_Data_Base * WeightedEventNS(const int mode=0);
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
     int            NumberOfDiagrams();
     Point        * Diagram(int i);

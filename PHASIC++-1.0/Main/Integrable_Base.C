@@ -22,8 +22,8 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS
   m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
   m_nstrong(0), m_neweak(0), m_usepi(0),
   m_threshold(0.), m_overflow(0.), m_rfactor(1.0), m_xinfo(std::vector<double>(4)),
-  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
-  m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
+  m_n(0), m_expevents(0), m_dicedevents(0), m_accevents(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), 
+  m_max(0.), m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
   m_ssum(0.), m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), 
   m_sn(0), m_son(1), m_swaped(false), 
   p_selected(this), p_parent(this), 
@@ -173,7 +173,6 @@ double Integrable_Base::GetMaxEps(double epsilon)
   return m_max;
 }
 
-
 void Integrable_Base::AddPoint(const double value) 
 {
   m_n++;
@@ -212,6 +211,63 @@ bool Integrable_Base::OneEvent()
   return false;
 } 
 
+#ifdef EVENT_STATISTICS 
+#include <map>
+#include <iomanip>
+
+#define DFORMAT std::setw(15)
+#define LIFORMAT std::setw(8)
+
+typedef std::map<std::string,std::vector<double> > Mem_Map;
+
+struct Memory_Map: public Mem_Map {
+
+  // destructor
+  ~Memory_Map();
+
+};// end of struct Memory_Map
+
+Memory_Map::~Memory_Map() 
+{
+  msg_Info()<<"Memory_Map::~Memory_Map(): Weighted analysis statistics {\n\n";
+  {
+    msg_Indent();
+    std::cout.precision(6);
+    double expectedxs=0.0, dicedxs=0.0;
+    double expectedevents=0.0, dicedevents=0.0, untriggered=0.0;
+    msg_Info()<<std::setw(25)<<std::setiosflags(std::ios::left)<<"Process"
+	      <<std::resetiosflags(std::ios::left)<<std::setiosflags(std::ios::right)
+	      <<DFORMAT<<"exp. xs"<<DFORMAT<<"diced xs"
+	      <<LIFORMAT<<"exp. n"<<LIFORMAT<<"diced n"
+	      <<LIFORMAT<<"acc. n"<<LIFORMAT<<"extra n"
+	      <<std::resetiosflags(std::ios::right)<<std::endl;
+    for (Mem_Map::const_iterator mit=begin();mit!=end();++mit) {
+      if (mit->second.size()==0) return;
+      expectedxs+=mit->second[0];
+      expectedevents+=mit->second[1];
+      dicedxs+=mit->second[2];
+      dicedevents+=mit->second[3];
+      untriggered+=mit->second[4];
+      msg_Info()<<std::setw(25)<<std::setiosflags(std::ios::left)<<mit->first
+		<<std::resetiosflags(std::ios::left)<<std::setiosflags(std::ios::right)
+		<<DFORMAT<<(mit->second[0]*ATOOLS::rpa.Picobarn())
+		<<DFORMAT<<(mit->second[2]/mit->second[4]*ATOOLS::rpa.Picobarn())
+		<<LIFORMAT<<mit->second[1]<<LIFORMAT<<mit->second[4]
+		<<LIFORMAT<<mit->second[3]<<LIFORMAT<<mit->second[5]
+		<<std::resetiosflags(std::ios::right)<<std::endl;
+    }
+    msg_Info()<<"\n";
+    msg_Info()<<"exp. n = "<<expectedevents<<", diced n = "<<untriggered
+	      <<", acc. n = "<<dicedevents<<"\n";
+    msg_Info()<<"exp. xs = "<<(expectedxs/untriggered*ATOOLS::rpa.Picobarn())
+	      <<", diced xs = "<<(dicedxs/untriggered*ATOOLS::rpa.Picobarn())<<std::endl;
+  }
+  msg_Info()<<"\n}"<<std::endl;
+}
+
+static Memory_Map mem;
+#endif
+
 bool Integrable_Base::Trigger(const ATOOLS::Vec4D *const momenta)
 {
   return p_selector->Trigger(momenta);
@@ -232,6 +288,12 @@ bool Integrable_Base::SameEvent()
 ATOOLS::Blob_Data_Base *Integrable_Base::WeightedEvent(const int mode) 
 {
   ATOOLS::msg.Error()<<"Integrable_Base::WeightedEvent(): Virtual function called !"<<std::endl;
+  return NULL;
+} 
+
+ATOOLS::Blob_Data_Base *Integrable_Base::WeightedEventNS(const int mode) 
+{
+  ATOOLS::msg.Error()<<"Integrable_Base::WeightedEventNS(): Virtual function called !"<<std::endl;
   return NULL;
 } 
 
@@ -478,3 +540,74 @@ double Integrable_Base::KFactor(const double scale)
   }
 }
 
+void Integrable_Base::SetEvents(const double number)
+{
+  m_anasum=m_validanasum=0.0;
+  m_gmin=1.;
+  m_expevents=(long int)(0.6*number*TotalXS()/TriggerEfficiency()+1.0);
+  m_dicedevents=m_accevents=0;
+#ifdef EVENT_STATISTICS  
+  std::vector<double> smem(6,0.0);
+  smem[0]=TotalResult();
+  smem[1]=m_expevents;
+  mem[Name()]=smem;
+#endif
+}
+
+void Integrable_Base::AddEvent(const double xs,const double validxs,
+			       const int ncounts)
+{
+  m_anasum+=xs;
+  m_validanasum+=validxs;
+  m_dicedevents+=ncounts; 
+  if (xs!=0.0) m_accevents++;
+#ifdef EVENT_STATISTICS  
+  if (mem[Name()].size()==0) {
+    std::vector<double> smem(6,0.0);
+    smem[0]=TotalResult();
+    smem[1]=m_expevents;
+    mem[Name()]=smem;
+  }
+  mem[Name()][4]+=ncounts;
+  mem[Name()][2]+=xs;
+  if (xs!=0.0) mem[Name()][3]++;
+#endif
+}
+
+double Integrable_Base::TriggerEfficiency()
+{
+  if (p_pshandler!=NULL) {
+    Multi_Channel *fsr=p_pshandler->FSRIntegrator();
+    return fsr->ValidN()/(double)fsr->N();
+  }
+  return 1.0;
+}
+
+void Integrable_Base::ResetEvents(double gmin)
+{
+  m_gmin = gmin;
+#ifdef EVENT_STATISTICS  
+  mem[Name()][5]=m_expevents-mem[Name()][1];
+#endif
+  if (m_validanasum==0.) return;
+  long int expevents=m_expevents;
+  m_expevents=(long int)(m_anasum/m_validanasum/gmin*(double)m_expevents+.5);
+  m_expevents=(long int)ATOOLS::Min((double)m_expevents,expevents*sqrt(expevents)/gmin);
+  if (!(m_expevents>=expevents)) m_expevents=expevents;
+#ifdef EVENT_STATISTICS  
+  mem[Name()][5]=m_expevents-expevents;
+  PRINT_INFO(Name()<<" -> extra events "<<expevents<<" "<<m_expevents<<" "<<mem[Name()][5]<<" "<<m_anasum/m_validanasum<<" "<<gmin);
+#endif
+}
+
+void Integrable_Base::GetGMin(double &g, double &meff)
+{
+  if (m_validanasum==0.) return;
+  double q = m_anasum/m_validanasum;
+  double add = q*(double)m_dicedevents;
+  add = ATOOLS::Min(add,sqrt((double)m_expevents)*(double)m_dicedevents);
+  meff += add;
+  if (m_expevents<100) return;
+  if (q<1.) if (m_expevents<sqrt(Parent()->m_expevents)) q=1.;
+  g = ATOOLS::Min(g,q);
+}

@@ -178,8 +178,19 @@ size_t XS_Base::Size() const
   return 0; 
 }
 
-void XS_Base::SelectOne()
+bool XS_Base::SelectOne()
 { 
+  return true;
+}
+
+bool XS_Base::ReSelect(int)
+{ 
+  return true;
+}
+
+bool XS_Base::SelectOneFromList()
+{ 
+  return true;
 }
 
 void XS_Base::DeSelect()

@@ -46,7 +46,7 @@ namespace AMEGIC {
     ~Amegic();
     bool        InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     bool        InitializeDecays(bool);
-    bool        CalculateTotalXSec(std::string _resdir=std::string(""));
+    bool        CalculateTotalXSec(std::string _resdir=std::string(""), int mode=0);
     bool        CalculateBranchingWidths(std::string _resdir=std::string(""));
     void        SetResDir(std::string);
 
@@ -80,6 +80,9 @@ namespace AMEGIC {
     // not used right now !!!
     bool        LookUpXSec(double,bool,std::string);
     bool        PrepareXSecTables();
+    
+    void AddEvent(const double xs,const double validxs,const int ncounts);
+    
  };
 
   inline Process_Base * Amegic::Processes() { return p_procs; };

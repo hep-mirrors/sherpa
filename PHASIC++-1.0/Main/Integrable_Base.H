@@ -52,6 +52,10 @@ namespace PHASIC {
 
     long unsigned int m_n;
 
+    long int m_expevents, m_dicedevents, m_accevents;
+
+    double m_anasum, m_validanasum, m_gmin;
+
     double m_last, m_lastlumi, m_lastdxs, m_max;
     double m_totalxs, m_totalsum, m_totalsumsqr, m_totalerr;
     double m_ssum, m_ssumsqr,m_smax,m_ssigma2,m_wmin;
@@ -116,8 +120,13 @@ namespace PHASIC {
     virtual double KFactor(const double scale);
 
     virtual void DeSelect() = 0;
-    virtual void SelectOne() = 0;
+    virtual bool ReSelect(int) = 0;
+    virtual bool SelectOne() = 0;
+    virtual bool SelectOneFromList() = 0;
 
+    virtual void SetEvents(const double number);
+    virtual void ResetEvents(double gmin);
+    virtual void GetGMin(double &gmin, double &meff);
     virtual void SetScale(const double scale);
     virtual void SetMax(const double max, int depth=0);
     virtual void SetMax();  
@@ -127,6 +136,7 @@ namespace PHASIC {
     virtual void OptimizeResult();
 
     virtual ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
+    virtual ATOOLS::Blob_Data_Base *WeightedEventNS(const int mode=0);
     virtual ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
     virtual void SetPSHandler(Phase_Space_Handler *const pshandler);
@@ -135,6 +145,10 @@ namespace PHASIC {
     virtual void ReadInHistogram(std::string);
     virtual void WriteOutHistogram(std::string);
 
+    virtual void AddEvent(const double xs,const double validxs,const int ncounts);
+
+    virtual double TriggerEfficiency();
+    
     double GetMaxEps(double);
     void   SetMomenta();
 
@@ -193,11 +207,17 @@ namespace PHASIC {
     inline double LastXS() const   { return m_lastdxs;  }
     inline double LastLumi() const { return m_lastlumi; }
 
-    inline double   Sum() const    { return m_totalsum;    }
-    inline double   SumSqr() const { return m_totalsumsqr; }
-    inline long int Points() const { return m_n;           }
-    inline long int SPoints() const { return m_sn;           }
+    inline double   Sum() const     { return m_totalsum;    }
+    inline double   SumSqr() const  { return m_totalsumsqr; }
+    inline long int Points() const  { return m_n;           }
+    inline long int SPoints() const { return m_sn;          }
 
+    inline long int ExpectedEvents() const { return m_expevents;   }
+    inline long int DicedEvents() const    { return m_dicedevents; }
+
+    inline double AnalysisSum() const      { return m_anasum;      }
+    inline double ValidAnalysisSum() const { return m_validanasum; }
+    
     inline double TotalXS() const    { return m_totalxs;  }
     inline double TotalError() const { return m_totalerr; }
     inline double Max() const        { return m_max;      }

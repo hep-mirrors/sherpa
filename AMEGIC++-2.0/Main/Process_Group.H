@@ -9,6 +9,8 @@ namespace AMEGIC {
   class Process_Group : public Process_Base {
   protected :
     std::vector<Process_Base *> m_procs;
+    bool m_resetted;
+    int m_weventmode;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -35,8 +37,16 @@ namespace AMEGIC {
     bool           Find(std::string,Process_Base *&);
     void           Add(Process_Base *);
     void           GroupProcesses();
-    void           SelectOne();
+    bool           SelectOne();
+    bool           SelectOneFromList();
+    void           AddEvent(const double &xs);
     void           DeSelect();
+    bool           ReSelect(int);
+    void           AddEvent(const double xs,const double validxs,const int ncounts);
+    void           SetEvents(const double number);
+    void           ResetEvents(double gmin);
+    void           GetGMin(double &g, double &meff);
+    void           SetWEventMode(int mode);
 
     void           Empty();
     size_t         Size()                          { return m_procs.size(); }
@@ -86,6 +96,7 @@ namespace AMEGIC {
     double         DSigma2();
     bool           OneEvent(double = -1.);
     bool           SameEvent();
+    ATOOLS::Blob_Data_Base * WeightedEventNS(const int mode=0);
     ATOOLS::Blob_Data_Base * WeightedEvent(const int mode=0);
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
     void           OptimizeResult();

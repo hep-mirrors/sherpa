@@ -30,6 +30,7 @@ Run_Parameter::Run_Parameter()
   gen.m_ndicedevents = 0;
   gen.m_batchmode = 1;
   gen.SetTimeOut(3600);
+  gen.SetWAnaScale(1.);
 } 
 
 void Run_Parameter::AnalyseEnvironment() 

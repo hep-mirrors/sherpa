@@ -1168,6 +1168,11 @@ ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent(const int mode)
   return p_partner->WeightedEvent(mode); 
 }
 
+ATOOLS::Blob_Data_Base * Single_Process::WeightedEventNS(const int mode)     
+{ 
+  return WeightedEvent(mode); 
+}
+
 ATOOLS::Blob_Data_Base * Single_Process::SameWeightedEvent() 
 { 
   if (p_partner==this) return p_pshandler->SameWeightedEvent(); 
@@ -1367,3 +1372,10 @@ bool Single_Process::CheckMapping(const Process_Base * proc)
   }
   return true;
 }
+
+bool             Single_Process::SelectOne()                        { return true;          }
+bool             Single_Process::SelectOneFromList()                { return true;          }
+void             Single_Process::DeSelect()                         {                       }
+bool             Single_Process::ReSelect(int i)                    { return true;          }
+size_t           Single_Process::Size()                             { return 1;             }
+Process_Base   * Single_Process::operator[] (int idx)               { return this;          }
