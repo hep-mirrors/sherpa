@@ -23,8 +23,8 @@ void mrstlo(double x,double q,int mode,
 
 extern struct {
   char mfile[128];
-} input_;
-#define input input_
+} mrinput_;
+#define input mrinput_
 
 inline void MakeFortranString(char *output,std::string input,unsigned int length)
 {

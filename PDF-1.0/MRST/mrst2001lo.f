@@ -20,7 +20,7 @@ C                                                               C
 C***************************************************************C
       implicit real*8(a-h,o-z)
       character*128 mfile
-      common/input/mfile
+      common/mrinput/mfile
       data xmin,xmax,qsqmin,qsqmax/1d-5,1d0,1.25d0,1d7/
       if(q2.lt.qsqmin.or.q2.gt.qsqmax) print 99,q2
       if(x.lt.xmin.or.x.gt.xmax)       print 98,x
@@ -42,7 +42,7 @@ C***************************************************************C
      .ccc(nx,nqc,4,4),ccb(nx,nqb,4,4)
       real*8 xxl(nx),qql(nq),qqlc(nqc),qqlb(nqb)
       character*128 mfile
-      common/input/mfile
+      common/mrinput/mfile
       data xx/1d-5,2d-5,4d-5,6d-5,8d-5,
      .	      1d-4,2d-4,4d-4,6d-4,8d-4,
      .	      1d-3,2d-3,4d-3,6d-3,8d-3,
