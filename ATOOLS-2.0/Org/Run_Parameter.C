@@ -68,7 +68,7 @@ void Run_Parameter::AnalyseEnvironment()
     } while (paths.length()>0);
   }
   else {
-    s_variables["SHERPA_BIN_PATH"]=std::string(".");
+    s_variables["SHERPA_BIN_PATH"]=std::string(getenv("PWD"));
   }
   std::string runpath;
   system("echo $PWD > sherpa_path_test");
