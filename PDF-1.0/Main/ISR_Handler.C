@@ -285,7 +285,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   }
   double phi=0.0;
   for (size_t i=0;i<2;++i) {
-    phi+=2.0*M_PI*ran.Get();
+    phi=2.0*M_PI*ran.Get();
     double kp=sqrt(m_kpkey[i][3]); 
 #ifndef USING__No_Exact_Kinematics
     if (m_kperpscheme==(int)kps::constant &&
