@@ -877,7 +877,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   m_resultpath=_resdir;
   m_resultfile=filename;
   ATOOLS::Exception_Handler::AddTerminatorObject(this);
-  long unsigned int points=m_n;
+  double var=TotalVar();
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
   if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
@@ -887,7 +887,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   }
   SetTotal(0);
   if (m_totalxs>=0.) {
-    if (points==m_n) {
+    if (TotalVar()==var) {
       ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
       return 1;
     }
