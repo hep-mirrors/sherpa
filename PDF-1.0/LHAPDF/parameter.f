@@ -8,9 +8,9 @@
 *
       mem=imem
       if (mem.gt.listN) then
-         write(*,*) 'Maximum number of PDFs in list exceeded: ',
-     .              mem,' > ',listN
-         write(*,*) 'Returning most likely PDF'
+c         write(*,*) 'Maximum number of PDFs in list exceeded: ',
+c     .              mem,' > ',listN
+c         write(*,*) 'Returning most likely PDF'
          mem=0
       endif
       if (mem.lt.0) then

@@ -12,7 +12,11 @@ Intact::Intact(Flavour _bunch)
 }
 
 bool Intact::CalculateWeight(double x,double q2) { return 1; }
-double Intact::Weight(Flavour fl)                { return m_weight; }
+double Intact::Weight(Flavour fl)                
+{ 
+  if (fl==m_bunch) return m_weight;
+  return 0.;
+}
 
 
 
