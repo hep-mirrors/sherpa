@@ -13,13 +13,14 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS
 				 PDF::ISR_Handler *const isrhandler,
 				 ATOOLS::Selector_Data *const selectordata):
   m_name(""), m_nin(nin), m_nout(nout), m_nvector(nin+nout), p_flavours(NULL), 
-  p_momenta(new ATOOLS::Vec4D[nin+nout]), m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
-  m_scalefactor(scalefactor), m_threshold(0.), m_overflow(0.), 
-  m_xinfo(std::vector<double>(4)),
+  p_momenta(new ATOOLS::Vec4D[nin+nout]), m_scalescheme(scalescheme), 
+  m_kfactorscheme(kfactorscheme), m_scalefactor(scalefactor), m_threshold(0.), 
+  m_overflow(0.), m_xinfo(std::vector<double>(4)),
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
-  m_ssum(0.), m_ssumsqr(0.),m_smax(0.),m_ssigma2(0.),m_wmin(0.),m_sn(0),m_son(1), 
-  m_swaped(false), p_selected(this), p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
+  m_ssum(0.), m_ssumsqr(0.), m_smax(0.), m_ssigma2(0.), m_wmin(0.), m_sn(0), m_son(1), 
+  m_swaped(false), p_selected(this), p_parent(this), 
+  p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
   p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), p_cuts(NULL),
   m_ownselector(true) {}
 
@@ -33,6 +34,12 @@ Integrable_Base::~Integrable_Base()
 Integrable_Base *const Integrable_Base::Selected()
 { 
   if (p_selected!=this && p_selected!=NULL) return p_selected->Selected();
+  return this; 
+}
+
+Integrable_Base *const Integrable_Base::Parent()
+{ 
+  if (p_parent!=this && p_parent!=NULL) return p_parent->Parent();
   return this; 
 }
 
@@ -110,6 +117,7 @@ bool Integrable_Base::OneEvent(const double mass,const int mode)
 
 bool Integrable_Base::SameEvent() 
 {
+  return p_activepshandler->SameEvent();
   ATOOLS::msg.Error()<<"Integrable_Base::SameEvent(): Virtual function called !"<<std::endl;
   return false;
 } 

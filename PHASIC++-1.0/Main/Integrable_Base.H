@@ -61,7 +61,7 @@ namespace PHASIC {
 
     bool m_swaped;
 
-    Integrable_Base *p_selected;
+    Integrable_Base *p_selected, *p_parent;
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
@@ -124,6 +124,7 @@ namespace PHASIC {
     virtual void SetPSHandler(Phase_Space_Handler *const pshandler);
     
     Integrable_Base *const Selected();
+    Integrable_Base *const Parent();
 
     // inline functions
     inline void SetName(const std::string &name) { m_name=name; }
@@ -154,6 +155,8 @@ namespace PHASIC {
 
     inline void SetSelected(Integrable_Base *const selected) 
     { p_selected=selected; }
+    inline void SetParent(Integrable_Base *const parent) 
+    { p_parent=parent; }
     
     inline size_t NIn() const     { return m_nin;     }
     inline size_t NOut() const    { return m_nout;    }
