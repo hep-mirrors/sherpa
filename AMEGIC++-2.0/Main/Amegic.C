@@ -155,7 +155,6 @@ void Amegic::ReadInProcessfile(string file)
   int         order_ew,order_strong,scale_scheme,kfactor_scheme; 
   double      scale_factor,fixed_scale;
   string      selectorfile;
-  MyStrStream str;      
   for(;from;) {
     from.getline(buffer,100);
     if (buffer[0] != '\%' && strlen(buffer)>0) {
@@ -221,6 +220,7 @@ void Amegic::ReadInProcessfile(string file)
 
 		position = buf.find(string("Order electroweak :"));
 		if (position > -1) {
+		  MyStrStream str;
 		  buf    = buf.substr(position+19);
 		  Shorten(buf);
 		  str<<buf;
@@ -229,6 +229,7 @@ void Amegic::ReadInProcessfile(string file)
 
 		position     = buf.find(string("Order strong :"));
 		if (position > -1) {
+		  MyStrStream str;      
 		  buf    = buf.substr(position+14);
 		  Shorten(buf);
 		  str<<buf;
@@ -237,6 +238,7 @@ void Amegic::ReadInProcessfile(string file)
 
 		position       = buf.find(string("Selector file :"));
 		if (position > -1) {
+		  MyStrStream str;      
 		  buf          = buf.substr(position+15);
 		  Shorten(buf);
 		  selectorfile = buf;
@@ -244,6 +246,7 @@ void Amegic::ReadInProcessfile(string file)
 
 		position       = buf.find(string("Scale scheme :"));
 		if (position > -1) {
+		  MyStrStream str;      
 		  buf          = buf.substr(position+14);
 		  Shorten(buf);
 		  str<<buf;
@@ -252,6 +255,7 @@ void Amegic::ReadInProcessfile(string file)
 
 		position       = buf.find(string("Scale factor :"));
 		if (position > -1) {
+		  MyStrStream str;      
 		  buf          = buf.substr(position+14);
 		  Shorten(buf);
 		  str<<buf;
@@ -260,6 +264,7 @@ void Amegic::ReadInProcessfile(string file)
 
 		position       = buf.find(string("KFactor scheme :"));
 		if (position > -1) {
+		  MyStrStream str;      
 		  buf          = buf.substr(position+16);
 		  Shorten(buf);
 		  str<<buf;
@@ -268,6 +273,7 @@ void Amegic::ReadInProcessfile(string file)
 
 		position       = buf.find(string("Fixed scale :"));
 		if (position > -1) {
+		  MyStrStream str;      
 		  buf          = buf.substr(position+13);
 		  Shorten(buf);
 		  str<<buf;
