@@ -188,7 +188,7 @@ void Amegic::ReadInProcessfile(string file)
       buf        = string(buffer);
       position   = buf.find(string("Process :")); 
       flag       = 0;
-      if (position>-1 && position<buf.length()) {
+      if (position>-1 && position<(int)buf.length()) {
 	flag     = 1;
 	buf      = buf.substr(position+9);
 	position = buf.find(string("->"));
@@ -423,7 +423,7 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
       string pn = buf.substr(0,next);
       int nxt = pn.find(string("("));
       string number;
-      if (nxt==string::npos) number = pn.substr(0,pn.length());
+      if (nxt==(int)string::npos) number = pn.substr(0,pn.length());
       else {
 	number = pn.substr(0,nxt);
 	pn.erase(0,nxt);
@@ -432,7 +432,7 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 	  pn.erase(pn.length()-1,1);
 	  int lh=pn.find(string("l"));
 
-	  if(lh!=string::npos) {
+	  if(lh!=(int)string::npos) {
 	    pc[count]='l';
 	    pp[count]='+';
 	    string ha = pn.substr(lh+1,pn.length()-lh);
