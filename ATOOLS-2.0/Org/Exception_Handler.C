@@ -28,6 +28,7 @@ bool Exception_Handler::s_stacktrace=true;
 bool Exception_Handler::s_print=true;
 
 unsigned int Exception_Handler::s_exitcode=0;
+unsigned int Exception_Handler::s_signal=0;
 Exception *Exception_Handler::s_exception=0;
 
 unsigned int Exception_Handler::s_nbus=0;
@@ -130,10 +131,10 @@ void Exception_Handler::SetExitCode()
 
 void Exception_Handler::SignalHandler(int signal) 
 {
+  s_signal=signal;
   s_print=true;
   std::string input="y";
-  msg.Out()<<std::endl;
-  msg.Error()<<om::bold<<"Exception_Handler::SignalHandler: "<<om::reset<<om::blue
+  msg.Error()<<std::endl<<om::bold<<"Exception_Handler::SignalHandler: "<<om::reset<<om::blue
 	     <<"Signal "<<om::reset<<om::bold<<"("<<om::red<<signal
 	     <<om::reset<<om::bold<<")"<<om::reset<<om::blue<<" caught. "<<om::reset<<std::flush;
   switch (signal) {

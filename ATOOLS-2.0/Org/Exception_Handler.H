@@ -19,7 +19,7 @@ namespace ATOOLS {
   private:
 
     static bool          s_active, s_prepared, s_stacktrace, s_print;
-    static unsigned int  s_exitcode;
+    static unsigned int  s_signal, s_exitcode;
     static Exception    *s_exception;
     
     static unsigned int s_nbus, s_nsegv;
@@ -63,6 +63,9 @@ namespace ATOOLS {
 
     inline static bool Active()     { return s_active;      }
     inline static bool StackTrace() { return s_stacktrace;  }
+
+    inline static Exception    *LastException() { return s_exception; }
+    inline static unsigned int  LastSignal()    { return s_signal;    }
 
   };// end of class Exception_Handler
   
