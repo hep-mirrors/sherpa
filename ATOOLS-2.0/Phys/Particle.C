@@ -66,9 +66,10 @@ std::ostream& ATOOLS::operator<<(std::ostream& str, const Particle &part) {
   return str;
 }
 
-Particle::~Particle() {
+Particle::~Particle() 
+{
+  delete p_flow; 
   --s_totalnumber;
-  if (p_flow) { delete p_flow; p_flow = NULL; } 
 }
 
 Particle::Particle():
@@ -85,12 +86,11 @@ Particle::Particle():
   p_flow      = new Flow(this);
 }
 
-Particle::Particle(const Particle * in):
+Particle::Particle(const Particle *in):
   p_startblob(NULL),
   p_endblob(NULL)
 {
   ++s_totalnumber;
-
   m_number    = in->m_number;
   m_info      = in->m_info;
   m_status    = in->Status();
@@ -98,21 +98,27 @@ Particle::Particle(const Particle * in):
   m_momentum  = in->m_momentum;
   m_dec_time  = in->m_dec_time;
   m_finalmass = in->m_finalmass;
-//   p_startblob = in->p_startblob;
-//   p_endblob   = in->p_endblob;
   p_flow      = new Flow(this);
   p_flow->SetCode(1,in->GetFlow(1));
   p_flow->SetCode(2,in->GetFlow(2));
 }
 
-Particle::Particle(const Particle & in)  
+Particle::Particle(const Particle &in)  
 {
   ++s_totalnumber;
-  p_flow=0;
-  *this = in;
+  m_number    = in.m_number;
+  m_info      = in.m_info;
+  m_status    = in.Status();
+  m_fl        = in.m_fl;
+  m_momentum  = in.m_momentum;
+  m_dec_time  = in.m_dec_time;
+  m_finalmass = in.m_finalmass;
+  p_flow      = new Flow(this);
+  p_flow->SetCode(1,in.GetFlow(1));
+  p_flow->SetCode(2,in.GetFlow(2));
 }
 
-Particle& Particle::operator=(const Particle & in)
+Particle& Particle::operator=(const Particle &in)
 {
   if (this!=&in) {
     m_number    = in.m_number;
@@ -122,15 +128,12 @@ Particle& Particle::operator=(const Particle & in)
     m_momentum  = in.m_momentum;
     m_dec_time  = in.m_dec_time;
     m_finalmass = in.m_finalmass;
-//     p_startblob = in.p_startblob;
-//     p_endblob   = in.p_endblob;
     p_startblob = NULL;
     p_endblob   = NULL;
     if (p_flow) delete p_flow;
     p_flow      = new Flow(this);
     p_flow->SetCode(1,in.GetFlow(1));
     p_flow->SetCode(2,in.GetFlow(2));
-
   }
   return *this;
 }
@@ -226,10 +229,13 @@ void   Particle::SetDecayBlob(Blob *blob)
 
 void Particle::SetNumber(const int n)           
 { 
-  m_number = ++s_currentnumber; 
-  if (n<0) m_number = -n;
+  if (n<0) {
+    m_number = -n;
+  }
+  else {
+    if (m_number<=0) m_number=++s_currentnumber;
+  }
 }
-
 
 // Numbers etc.
 int  Particle::Number() const                   { return m_number; }

@@ -65,12 +65,13 @@ namespace ATOOLS {
     void   SetFlav(const Flavour &);
     void   SetFlow(Flow *);
     void   SetFlow(int code_index,int code=0);
-    void   SetNumber(const int);
+    void   SetNumber(const int number=0);
     void   SetJetNumber(const int);
     bool operator==(Particle part);
     static void   ResetCounter() { s_totalnumber = 0; }
     static int    Counter()      { return s_totalnumber; }
     inline static void Reset() { s_currentnumber = 0; }
+    inline static long unsigned int CurrentNumber() { return s_currentnumber; }
   };
 
   typedef std::vector<Particle *>          Particle_Vector;
