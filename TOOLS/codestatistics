@@ -40,8 +40,10 @@ for EXTENSION in $EXTENSIONS ; do
   FCOUNT=`find . -name *$EXTENSION | wc -l`
   (( TFCOUNT = TFCOUNT + FCOUNT ))
   echo -e "Files   : $FCOUNT" 
-  LCOUNT=`cat \`find . -name *$EXTENSION\` | wc -l`
-  (( TLCOUNT = TLCOUNT + LCOUNT ))
+  if (( $FCOUNT != 0 )); then
+    LCOUNT=`cat \`find . -name *$EXTENSION\` | wc -l`
+    (( TLCOUNT = TLCOUNT + LCOUNT ))
+  fi
   echo -e "Lines   : $LCOUNT" 
 done
 echo -en "\e[1m==================================================\e[0m"
