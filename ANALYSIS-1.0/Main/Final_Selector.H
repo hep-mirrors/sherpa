@@ -4,21 +4,22 @@
 
 #include "Primitive_Observable_Base.H"
 #include "Kt_Algorithm.H"
+#include "Durham_Algorithm.H"
 #include <vector>
 
 namespace ANALYSIS {
   struct Final_Selector_Data {
-    bool   keep;
+    bool   keep,bf;
     int    min_n, max_n;
     double eta_min, eta_max, et_min, pt_min;
     double r_min, mass_min, mass_max;
     Final_Selector_Data(): 
-      keep(true), min_n(-1), max_n(-1), 
+      keep(true), bf(true), min_n(-1), max_n(-1), 
       eta_min(0.), eta_max(0.), et_min(0.), pt_min(0.),
       r_min(0.), mass_min(-1.), mass_max(-1.) {}
     Final_Selector_Data(double _eta_min, double _eta_max, double _et_min, double _pt_min, 
 			double _r_min, double _mass_min, double _mass_max): 
-      keep(true), min_n(-1), max_n(-1),
+      keep(true), bf(true), min_n(-1), max_n(-1),
       eta_min(_eta_min), eta_max(_eta_max), et_min(_et_min), pt_min(_pt_min),
       r_min(_r_min), mass_min(_mass_min), mass_max(_mass_max) {}
   };
@@ -34,6 +35,7 @@ namespace ANALYSIS {
     bool                   m_ownlist,m_extract;
 
     ATOOLS::Kt_Algorithm * p_ktalg;
+    ATOOLS::Durham_Algorithm * p_dhalg;
     Final_Data_Map         m_fmap;
     Final_Correlator_Map   m_cmap;
 
