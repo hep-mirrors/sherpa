@@ -118,8 +118,8 @@ namespace AMISIC {
     /*!
       \fn void SetISRRange()
       \brief Sets the isr range for event generation, which is
-      \f$4p_\perp^2\,\le\,\hat{s}\,\le\,4E_{1, max}E_{2, max}f$,
-      \f$\log(p_\perp/E_{2, max})\,\le\,y\,\le\,\log(E_{1, max}/p_\perp)f$
+      \f$4p_\perp^2\,\le\,\hat{s}\,\le\,4E_{1, max}E_{2, max}\f$,
+      \f$\log(p_\perp/E_{2, max})\,\le\,y\,\le\,\log(E_{1, max}/p_\perp)\f$
     */
     void ResetISRRange();
     /*!
