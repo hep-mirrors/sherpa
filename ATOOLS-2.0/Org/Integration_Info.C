@@ -12,8 +12,10 @@ void Integration_Info::ResetAll()
 {
   for (size_t i=0;i<m_doubles.size();++i) {
     m_status[i]=si::reset;
-    // for (size_t j=0;j<m_doubles[i].size();++j) m_doubles[i][j]=UNDEFINED_DOUBLE;
-    // for (size_t j=0;j<m_vectors[i].size();++j) m_vectors[i][j]=UNDEFINED_VECTOR;
+#ifdef USING__safe_reset
+    for (size_t j=0;j<m_doubles[i].size();++j) m_doubles[i][j]=UNDEFINED_DOUBLE;
+    for (size_t j=0;j<m_vectors[i].size();++j) m_vectors[i][j]=UNDEFINED_VECTOR;
+#endif
     for (size_t j=0;j<m_weights[i].size();++j) m_weights[i][j]=UNDEFINED_WEIGHT;
   }
 }
@@ -21,27 +23,26 @@ void Integration_Info::ResetAll()
 void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,const size_t vectors)
 {
   if (m_keymap.find(key.m_name)==m_keymap.end()) {
-    m_keymap[key.m_name]=std::pair<size_t,std::vector<Info_Key*> >
-      (m_doubles.size(),std::vector<Info_Key*>());
+    m_keymap[key.m_name]=std::pair<size_t,std::map<std::string,
+      std::pair<size_t,std::vector<Info_Key*> > > >
+      (m_doubles.size(),std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > >());
     m_doubles.push_back(Double_Container(doubles));
     m_vectors.push_back(Vector_Container(vectors));
     m_weights.push_back(Double_Container());
     m_status.push_back(si::idle);
   }
   key.m_valuekey=m_keymap[key.m_name].first;
-  std::vector<Info_Key*> &keys=m_keymap[key.m_name].second;
-  size_t i;
-  for (i=0;i<keys.size();++i) {
-    if (keys[i]->m_info==key.m_info) { 
-      key.m_weightkey=keys[i]->m_weightkey;
-      break;
-    }
-  }
-  if (i==keys.size()) {
-    key.m_weightkey=keys.size();
-    keys.push_back(&key);
+  std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > > &keys=m_keymap[key.m_name].second;
+  std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > >::iterator kit=keys.find(key.m_info);
+  if (kit==keys.end()) {
+    size_t max=0;
+    for (kit=keys.begin();kit!=keys.end();++kit) max=ATOOLS::Max(max,kit->second.first);
+    keys[key.m_info]=std::pair<size_t,std::vector<Info_Key*> >(++max,std::vector<Info_Key*>());
     m_weights[key.m_valuekey].push_back(0.);
+    kit=keys.find(key.m_info);
   }
+  key.m_weightkey=kit->second.first;
+  kit->second.second.push_back(&key);
   ATOOLS::msg.Tracking()<<om::bold<<"key mapping: "<<om::reset<<"("
 			<<om::red<<key.m_valuekey<<om::reset<<","
 			<<om::red<<key.m_weightkey<<om::reset<<") <=> (\""
@@ -51,18 +52,37 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,const size_t
 
 void Integration_Info::ReleaseKey(Info_Key &key)
 {
-  if (m_keymap.find(key.m_name)==m_keymap.end()) return;
-  std::vector<Info_Key*> &keys=m_keymap[key.m_name].second;
-  size_t i;
-  for (std::vector<Info_Key*>::iterator kit=keys.begin();kit!=keys.end();++kit) {
-    if ((*kit)->m_info==key.m_info) { 
-      keys.erase(kit);
+  std::map<std::string,std::pair<size_t,
+    std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > > > >::iterator 
+    vit=m_keymap.find(key.m_name);
+  if (vit==m_keymap.end()) return;
+  size_t vpos=vit->second.first;
+  std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > > &keys=vit->second.second;
+  std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > >::iterator 
+    wit=keys.find(key.m_info);
+  if (wit==keys.end()) return;
+  size_t wpos=wit->second.first;
+  for (std::vector<Info_Key*>::iterator kit=wit->second.second.begin();
+       kit!=wit->second.second.end();++kit) {
+    if (*kit==&key) { 
+      wit->second.second.erase(kit);
       ATOOLS::msg.Tracking()<<om::bold<<"erased key: "<<om::reset<<"("
 			    <<om::red<<key.m_valuekey<<om::reset<<","
 			    <<om::red<<key.m_weightkey<<om::reset<<") <=> (\""
 			    <<om::green<<key.m_name<<om::reset<<"\",\""
 			    <<om::blue<<key.m_info<<om::reset<<"\")\n";
-      break;
+      if (wit->second.second.size()==0) {
+	// keys.erase(wit);
+	ATOOLS::msg.Tracking()<<om::bold<<"emptied weight map: "<<om::reset<<"("
+			      <<om::red<<key.m_valuekey<<om::reset<<","
+			      <<om::red<<key.m_weightkey<<om::reset<<")\n";
+	if (keys.size()==0) {
+	  // m_keymap.erase(vit); 
+	  ATOOLS::msg.Tracking()<<om::bold<<"emptied value map: "<<om::reset<<"("
+				<<om::red<<key.m_valuekey<<om::reset<<")\n";
+	}
+      }
+      return;
     }
   }
 }

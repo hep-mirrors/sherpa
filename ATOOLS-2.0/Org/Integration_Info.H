@@ -23,7 +23,10 @@ namespace ATOOLS {
   class Integration_Info {
   private:
 
-    std::map<std::string,std::pair<size_t,std::vector<Info_Key*> > > m_keymap;
+    std::map<std::string,
+	     std::pair<size_t,
+		       std::map<std::string,
+				std::pair<size_t,std::vector<Info_Key*> > > > > m_keymap;
 
     std::vector<Double_Container> m_doubles;
     std::vector<Vector_Container> m_vectors;
