@@ -12,7 +12,7 @@ namespace ATOOLS {
         
     double Rmin(Vec4D *);
 
-    double DEta12(const Vec4D &,const Vec4D &,const Vec4D &);
+    double DEta12(const Vec4D &,const Vec4D &);
     double DPhi12(const Vec4D &,const Vec4D &);
   public:
     Cone_Finder(int,Flavour*,double);

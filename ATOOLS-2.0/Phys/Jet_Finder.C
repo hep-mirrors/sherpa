@@ -428,9 +428,6 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 double Jet_Finder::DEta12(Vec4D & p1,Vec4D & p2)
 {
   // eta1,2 = -log(tan(theta_1,2)/2)   
-  // => eta1 - eta2 
-  //  = -log(tan1/2)+log(tan2/2) = log(tan2/tan1) = log(pt2/pt1 * pl1/pl2)
-  //  double deta = log(sqrt( (sqr(p2[1])+sqr(p2[2]))/(sqr(p1[1])+sqr(p1[2])) ) * dabs(p1[3]/p2[3]));
   double c1=p1[3]/Vec3D(p1).Abs();
   double c2=p2[3]/Vec3D(p2).Abs();
   return  0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
@@ -441,10 +438,6 @@ double Jet_Finder::CosDPhi12(Vec4D & p1,Vec4D & p2)
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
   return (p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2);
-
-  // cos(phi1-phi2) = cos(phi1) cos(phi2) + sin(phi1) sin(phi2)
-  //                = (p1_x p2_x + p1_y p2_y)/(p1_z * p2_z)
-  //return (p1[1]*p2[1]+p1[2]*p2[2])/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
 
 double Jet_Finder::DCos12(Vec4D & p1,Vec4D & p2)
