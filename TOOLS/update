@@ -54,14 +54,11 @@ if [ "$ONE" = "TRUE" ] ; then
   done
 fi
 
-echo "" > $LOGFILE
-for DIR in $DIRS ; do
-  if [ "$NOUPDATE" = "TRUE" ] ; then 
-    cvs -n update $OPTIONS $DIR >> $LOGFILE 2>&1
-  else 
-    cvs update $OPTIONS $DIR >> $LOGFILE 2>&1
-  fi
-done
+if [ "$NOUPDATE" = "TRUE" ] ; then 
+  cvs -n update $OPTIONS $DIRS > $LOGFILE 2>&1
+else 
+  cvs update $OPTIONS $DIRS > $LOGFILE 2>&1
+fi
 
 CHANGES=
 EXTCNT=0
