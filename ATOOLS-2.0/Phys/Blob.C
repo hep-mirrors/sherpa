@@ -145,10 +145,13 @@ void Blob::DeleteInParton(Parton * _part) {
        part != m_inpartons.end(); ++part) {
     if ((*part)==_part) {
       m_inpartons.erase(part);
-      if (_part->ProductionBlob()!=NULL) {
-	_part = _part->ProductionBlob()->RemoveOutParton(_part);
+      if (_part->DecayBlob()==this) {
+	if (_part->ProductionBlob()!=NULL) {
+	  _part = _part->ProductionBlob()->RemoveOutParton(_part);
+	}
+	delete _part;
       }
-      delete _part;
+      else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<endl;
       _part = NULL;
       return ;
     }
@@ -161,10 +164,14 @@ void Blob::DeleteOutParton(Parton * _part) {
        part != m_outpartons.end(); ++part) {
     if ((*part)==_part) {
       m_outpartons.erase(part);
-      if (_part->DecayBlob()!=NULL) {
-	_part = _part->DecayBlob()->RemoveInParton(_part);
+      if (_part->ProductionBlob()==this) {
+	if (_part->DecayBlob()!=NULL) {
+	  _part = _part->DecayBlob()->RemoveInParton(_part);
+	}
+	delete _part;
       }
-      delete _part;
+      else msg.Out()<<"WARNING: parton not owned by the Blob ask to delete it"<<endl;
+      
       _part = NULL;
       return ;
     }
@@ -178,14 +185,14 @@ void Blob::DeleteOwnedPartons() {
   msg.Debugging()<<"In DeleteOwnedPartons() for blob no. : "<<m_id<<" with "
       <<m_inpartons.size()<<" -> "<<m_outpartons.size()<<std::endl;
   for (int i=m_inpartons.size()-1;i>=0;i--)  {
-    //    msg.Debugging()<<"Try to delete inparton : "<<i<<"/"<<m_inpartons.size()-1<<std::endl;
+    //     msg.Debugging()<<"Try to delete inparton : "<<i<<"/"<<m_inpartons.size()-1<<"  "<<int(m_inpartons[i])<<std::endl;
     DeleteInParton(m_inpartons[i]);
-    //    msg.Debugging()<<"Succeeded."<<std::endl;
+    //     msg.Debugging()<<"Succeeded."<<std::endl;
   }
   for (int i=m_outpartons.size()-1;i>=0;i--) {
-    //    msg.Debugging()<<"Try to delete outparton : "<<i<<"/"<<m_outpartons.size()-1<<std::endl;
+    //     msg.Debugging()<<"Try to delete outparton : "<<i<<"/"<<m_outpartons.size()-1<<"  "<<int(m_outpartons[i])<<std::endl;
     DeleteOutParton(m_outpartons[i]);
-    //    msg.Debugging()<<"Succeeded."<<std::endl;
+    //     msg.Debugging()<<"Succeeded."<<std::endl;
   }
   m_inpartons.clear();
   m_outpartons.clear();
