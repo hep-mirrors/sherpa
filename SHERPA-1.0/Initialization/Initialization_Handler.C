@@ -41,7 +41,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
   m_isrdat[0]        = p_dataread->GetValue<string>("ISR_DATA_FILE",string("ISR.dat"));
-  m_isrdat[1]        = p_dataread->GetValue<string>("MI_ISR_DATA_FILE",string("ISR.dat"));
+  m_isrdat[1]        = p_dataread->GetValue<string>("MI_ISR_DATA_FILE",m_isrdat[0]);
   m_medat            = p_dataread->GetValue<string>("ME_DATA_FILE",string("ME.dat"));
   m_midat            = p_dataread->GetValue<string>("MI_DATA_FILE",string("MI.dat"));
   m_decaydat         = p_dataread->GetValue<string>("DECAY_DATA_FILE",string("Decays.dat"));
