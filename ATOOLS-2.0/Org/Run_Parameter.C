@@ -28,6 +28,8 @@ Run_Parameter::Run_Parameter()
   gen.p_model     = NULL;
 #endif
   gen.m_ndicedevents = 0;
+  gen.m_batchmode = 1;
+  gen.SetTimeOut(3600);
 } 
 
 void Run_Parameter::AnalyseEnvironment() 
