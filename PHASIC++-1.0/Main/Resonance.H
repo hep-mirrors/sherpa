@@ -11,19 +11,20 @@ namespace PHASIC {
     double m_mass, m_width;
     bool   m_zchannel;
 
-    Info_Key m_spkey, m_xkey, m_ykey;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey;
 
   public:
 
     // constructor
     Resonance_Uniform(const double mass,const double width,
-		      const std::string cinfo,Integration_Info *info);
+		      const std::string cinfo,ATOOLS::Integration_Info *info);
 
     // member functions
-    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Resonance_Uniform
 
@@ -33,19 +34,20 @@ namespace PHASIC {
     double m_mass, m_width, m_yexponent;
     bool   m_zchannel;
 
-    Info_Key m_spkey, m_xkey, m_ykey;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey;
 
   public :
 
     // constructor
     Resonance_Forward(const double mass,const double width,const double yexponent,
-		      const std::string cinfo,Integration_Info *info);
+		      const std::string cinfo,ATOOLS::Integration_Info *info);
 
     // member functions
-    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Resonance_Forward
 
@@ -55,19 +57,20 @@ namespace PHASIC {
     double m_mass, m_width, m_yexponent;
     bool   m_zchannel;
 
-    Info_Key m_spkey, m_xkey, m_ykey;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey;
 
   public :
 
     // constructor
     Resonance_Backward(const double mass,const double width,const double yexponent,
-		       const std::string cinfo,Integration_Info *info);
+		       const std::string cinfo,ATOOLS::Integration_Info *info);
 
     // member functions
-    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Resonance_Backward
 
@@ -77,19 +80,20 @@ namespace PHASIC {
     double m_mass, m_width;
     bool   m_zchannel;
 
-    Info_Key m_spkey, m_xkey, m_ykey;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey;
 
   public:
 
     // constructor
     Resonance_Central(const double mass,const double width,
-		      const std::string cinfo,Integration_Info *info);
+		      const std::string cinfo,ATOOLS::Integration_Info *info);
 
     // member functions
-    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    void CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Resonance_Central
 

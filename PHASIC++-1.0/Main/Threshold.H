@@ -11,18 +11,20 @@ namespace PHASIC {
     double m_mass;
     bool   m_zchannel;
 
-    Info_Key m_spkey, m_xkey, m_ykey;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey;
 
   public:
 
     // constructor
-    Threshold_Uniform(const double mass,const std::string cinfo,Integration_Info *info);
+    Threshold_Uniform(const double mass,
+		      const std::string cinfo,ATOOLS::Integration_Info *info);
 
     // member functions
-    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Threshold_Uniform
 
@@ -32,19 +34,20 @@ namespace PHASIC {
     double m_mass, m_yexponent;
     bool   m_zchannel;
 
-    Info_Key m_spkey, m_xkey, m_ykey;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey;
 
   public :
 
     // constructor
     Threshold_Forward(const double mass,const double yexponent,
-		      const std::string cinfo,Integration_Info *info);
+		      const std::string cinfo,ATOOLS::Integration_Info *info);
 
     // member functions
-    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Threshold_Forward
 
@@ -54,19 +57,20 @@ namespace PHASIC {
     double m_mass, m_yexponent;
     bool   m_zchannel;
 
-    Info_Key m_spkey, m_xkey, m_ykey;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey;
 
   public :
 
     // constructor
     Threshold_Backward(const double mass,const double yexponent,
-		       const std::string cinfo,Integration_Info *info);
+		       const std::string cinfo,ATOOLS::Integration_Info *info);
 
     // member functions
-    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Threshold_Backward
 
@@ -76,18 +80,20 @@ namespace PHASIC {
     double m_mass;
     bool   m_zchannel;
 
-    Info_Key m_spkey, m_xkey, m_ykey;
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey;
 
   public:
 
     // constructor
-    Threshold_Central(const double mass,const std::string cinfo,Integration_Info *info);
+    Threshold_Central(const double mass,
+		      const std::string cinfo,ATOOLS::Integration_Info *info);
 
     // member functions
-    void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    void GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
 
-    bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
+    void CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey);
 
   };// end of class Threshold_Central
 

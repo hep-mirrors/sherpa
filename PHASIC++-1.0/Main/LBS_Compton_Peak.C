@@ -8,7 +8,7 @@
 using namespace PHASIC;
 
 LBS_Compton_Peak_Uniform::LBS_Compton_Peak_Uniform(const double exponent,const double pole,
-						   const std::string cinfo,Integration_Info *info):
+						   const std::string cinfo,ATOOLS::Integration_Info *info):
   m_exponent(exponent),
   m_pole(pole)
 {
@@ -26,7 +26,8 @@ LBS_Compton_Peak_Uniform::LBS_Compton_Peak_Uniform(const double exponent,const d
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
 }
 
-void LBS_Compton_Peak_Uniform::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode) 
+void LBS_Compton_Peak_Uniform::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+					     const double *rans,const int mode) 
 {
   CalculateLimits(spkey,ykey);
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],rans[0]);
@@ -43,7 +44,7 @@ void LBS_Compton_Peak_Uniform::GeneratePoint(Info_Key &spkey,Info_Key &ykey,cons
 void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode) 
 {
   weight=0.;
-  if (m_spkey.Weight()==UNDEFINED_WEIGHT) {
+  if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
       double help=m_spkey[3];
       if (m_spkey[0]<m_spkey[2]*m_pole || m_spkey[2]*m_pole<m_spkey[1]) {
@@ -53,7 +54,7 @@ void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode)
       m_spkey<<1./CE.LLPropWeight(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],help);
     }
   }
-  if (m_ykey.Weight()==UNDEFINED_WEIGHT) {
+  if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       m_ykey<<CE.WeightYUniform(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),mode);
     }
@@ -61,28 +62,15 @@ void LBS_Compton_Peak_Uniform::GenerateWeight(const int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-void LBS_Compton_Peak_Uniform::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void LBS_Compton_Peak_Uniform::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
 {
-  m_spkey[2]=spkey[2];
-  if (!m_zchannel) {
-    m_spkey[0]=spkey[0];
-    m_spkey[1]=spkey[3];
-  }
-  else {
-    m_spkey[0]=spkey[3];
-    m_spkey[1]=spkey[1];
-    m_ykey[0]=ykey[0];
-    m_ykey[1]=ykey[1];
-    double logtau=.5*log(spkey[3]/spkey[2]);
-    m_xkey[0]=logtau+ykey[2];
-    m_xkey[2]=logtau-ykey[2];
-    m_xkey[1]=0.;
-    m_xkey[3]=0.;
-  }
+  for (size_t i=0;i<3;++i) m_spkey[i]=spkey[i];
+  if (!m_zchannel) m_spkey[1]=spkey[3];
 }
 
-LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(const double exponent,const double pole,const double yexponent,
-					 const std::string cinfo,Integration_Info *info): 
+LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(const double exponent,const double pole,
+						   const double yexponent,
+						   const std::string cinfo,ATOOLS::Integration_Info *info): 
   m_exponent(exponent),
   m_pole(pole),
   m_yexponent(yexponent)
@@ -102,7 +90,8 @@ LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(const double exponent,const d
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
 }
 
-void LBS_Compton_Peak_Forward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode) 
+void LBS_Compton_Peak_Forward::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+					     const double *rans,const int mode) 
 {
   CalculateLimits(spkey,ykey);
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],rans[0]);
@@ -120,7 +109,7 @@ void LBS_Compton_Peak_Forward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,cons
 void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
 {
   weight=0.;
-  if (m_spkey.Weight()==UNDEFINED_WEIGHT) {
+  if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
       double help=m_spkey[3];
       if (m_spkey[0]<m_spkey[2]*m_pole || m_spkey[2]*m_pole<m_spkey[1]) {
@@ -130,7 +119,7 @@ void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],help);
     }
   }
-  if (m_ykey.Weight()==UNDEFINED_WEIGHT) {
+  if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       m_ykey<<CE.WeightYForward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
 				m_ykey.Doubles(),mode);
@@ -139,28 +128,15 @@ void LBS_Compton_Peak_Forward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-void LBS_Compton_Peak_Forward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void LBS_Compton_Peak_Forward::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
 {
-  m_spkey[2]=spkey[2];
-  if (!m_zchannel) {
-    m_spkey[0]=spkey[0];
-    m_spkey[1]=spkey[3];
-  }
-  else {
-    m_spkey[0]=spkey[3];
-    m_spkey[1]=spkey[1];
-    m_ykey[0]=ykey[0];
-    m_ykey[1]=ykey[1];
-    double logtau=.5*log(spkey[3]/spkey[2]);
-    m_xkey[0]=logtau+ykey[2];
-    m_xkey[2]=logtau-ykey[2];
-    m_xkey[1]=0.;
-    m_xkey[3]=0.;
-  }
+  for (size_t i=0;i<3;++i) m_spkey[i]=spkey[i];
+  if (!m_zchannel) m_spkey[1]=spkey[3];
 }
 
-LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(const double exponent,const double pole,const double yexponent,
-					   const std::string cinfo,Integration_Info *info): 
+LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(const double exponent,const double pole,
+						     const double yexponent,
+						     const std::string cinfo,ATOOLS::Integration_Info *info): 
   m_exponent(exponent),
   m_pole(pole),
   m_yexponent(yexponent)
@@ -180,7 +156,8 @@ LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(const double exponent,const
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
 }
 
-void LBS_Compton_Peak_Backward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,int mode)
+void LBS_Compton_Peak_Backward::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+					      const double *rans,int mode)
 {
   CalculateLimits(spkey,ykey);
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],rans[0]);
@@ -198,7 +175,7 @@ void LBS_Compton_Peak_Backward::GeneratePoint(Info_Key &spkey,Info_Key &ykey,con
 void LBS_Compton_Peak_Backward::GenerateWeight(int mode)
 {
   weight=0.;
-  if (m_spkey.Weight()==UNDEFINED_WEIGHT) {
+  if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
       double help=m_spkey[3];
       if (m_spkey[0]<m_spkey[2]*m_pole || m_spkey[2]*m_pole<m_spkey[1]) {
@@ -208,7 +185,7 @@ void LBS_Compton_Peak_Backward::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],help);
     }
   }
-  if (m_ykey.Weight()==UNDEFINED_WEIGHT) {
+  if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       m_ykey<<CE.WeightYBackward(m_yexponent,m_spkey[3]/m_spkey[2],m_xkey.Doubles(),
 				 m_ykey.Doubles(),mode);
@@ -217,28 +194,14 @@ void LBS_Compton_Peak_Backward::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 } 
 
-void LBS_Compton_Peak_Backward::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void LBS_Compton_Peak_Backward::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
 {
-  m_spkey[2]=spkey[2];
-  if (!m_zchannel) {
-    m_spkey[0]=spkey[0];
-    m_spkey[1]=spkey[3];
-  }
-  else {
-    m_spkey[0]=spkey[3];
-    m_spkey[1]=spkey[1];
-    m_ykey[0]=ykey[0];
-    m_ykey[1]=ykey[1];
-    double logtau=.5*log(spkey[3]/spkey[2]);
-    m_xkey[0]=logtau+ykey[2];
-    m_xkey[2]=logtau-ykey[2];
-    m_xkey[1]=0.;
-    m_xkey[3]=0.;
-  }
+  for (size_t i=0;i<3;++i) m_spkey[i]=spkey[i];
+  if (!m_zchannel) m_spkey[1]=spkey[3];
 }
 
 LBS_Compton_Peak_Central::LBS_Compton_Peak_Central(const double exponent,const double pole,
-					 const std::string cinfo,Integration_Info *info): 
+						   const std::string cinfo,ATOOLS::Integration_Info *info): 
   m_exponent(exponent),
   m_pole(pole)
 {
@@ -256,7 +219,8 @@ LBS_Compton_Peak_Central::LBS_Compton_Peak_Central(const double exponent,const d
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
 }
 
-void LBS_Compton_Peak_Central::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,int mode)
+void LBS_Compton_Peak_Central::GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,
+					     const double *rans,int mode)
 {
   CalculateLimits(spkey,ykey);
   double help=CE.LLPropMomenta(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],rans[0]);
@@ -273,7 +237,7 @@ void LBS_Compton_Peak_Central::GeneratePoint(Info_Key &spkey,Info_Key &ykey,cons
 void LBS_Compton_Peak_Central::GenerateWeight(int mode)
 {
   weight=0.;
-  if (m_spkey.Weight()==UNDEFINED_WEIGHT) {
+  if (m_spkey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_spkey[3]>=m_spkey[0] && m_spkey[3]<=m_spkey[1]) {
       double help=m_spkey[3];
       if (m_spkey[0]<m_spkey[2]*m_pole || m_spkey[2]*m_pole<m_spkey[1]) {
@@ -283,7 +247,7 @@ void LBS_Compton_Peak_Central::GenerateWeight(int mode)
       m_spkey<<1./CE.LLPropWeight(m_exponent,m_spkey[2],m_spkey[0],m_spkey[1],help);
     }
   }
-  if (m_ykey.Weight()==UNDEFINED_WEIGHT) {
+  if (m_ykey.Weight()==ATOOLS::UNDEFINED_WEIGHT) {
     if (m_ykey[2]>=m_ykey[0] && m_ykey[2]<=m_ykey[1]) {
       m_ykey<<CE.WeightYCentral(m_spkey[3]/m_spkey[2],m_xkey.Doubles(),m_ykey.Doubles(),mode);
     }
@@ -291,23 +255,9 @@ void LBS_Compton_Peak_Central::GenerateWeight(int mode)
   weight=m_spkey.Weight()*m_ykey.Weight()/m_spkey[2];
 }
 
-void LBS_Compton_Peak_Central::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+void LBS_Compton_Peak_Central::CalculateLimits(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey) 
 {
-  m_spkey[2]=spkey[2];
-  if (!m_zchannel) {
-    m_spkey[0]=spkey[0];
-    m_spkey[1]=spkey[3];
-  }
-  else {
-    m_spkey[0]=spkey[3];
-    m_spkey[1]=spkey[1];
-    m_ykey[0]=ykey[0];
-    m_ykey[1]=ykey[1];
-    double logtau=.5*log(spkey[3]/spkey[2]);
-    m_xkey[0]=logtau+ykey[2];
-    m_xkey[2]=logtau-ykey[2];
-    m_xkey[1]=0.;
-    m_xkey[3]=0.;
-  }
+  for (size_t i=0;i<3;++i) m_spkey[i]=spkey[i];
+  if (!m_zchannel) m_spkey[1]=spkey[3];
 }
 
