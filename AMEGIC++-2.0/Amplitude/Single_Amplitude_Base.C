@@ -192,7 +192,6 @@ Kabbala Single_Amplitude_Base::SingleZGroupvalue(Zfunc* z,
 	  
 	  if ((z->GetSumIndex()>99) && (z->GetSumIndex()<199))
 	    hlp*= SingleMassTerms((*iz)[iz->size()-1],(*iargs)[iargs->size()-2]);
-	  
 	  value+=hlp;
 	  iargs->pop_back();iargs->pop_back();
 	}
@@ -551,7 +550,8 @@ Complex Single_Amplitude_Base::Zvalue(int ihel,int* signlist)
   }
 #endif
 
-  if (sign<0) value = -value; 
+  if (sign<0 && value.Value()!=Complex(0.,0.)) value = -value; 
+  //if (sign<0) value = -value; 
 
   if (buildstring) shand->Set_String(amplnumber,ihel,value.String());
   return value.Value();
