@@ -5,6 +5,7 @@
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
+using namespace std;
 
 
 Selector_Base::~Selector_Base() {

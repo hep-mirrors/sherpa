@@ -281,11 +281,13 @@ void Data_Read::WriteOut(std::string filename,int flag) {
 // GNU gcc 3.x.x C++ Compiler
   std::_Ios_Openmode flagc = _Ios_Openmode(flag);
   file.open(filename.c_str(),flagc);
-  file.open(filename.c_str(),flagc);
 #else
 // GNU gcc 2.95.x C++ Compiler
   file.open(filename.c_str(),flag);
 #endif
+#else
+// All others
+  file.open(filename.c_str(),flag);
 #endif
 
 
