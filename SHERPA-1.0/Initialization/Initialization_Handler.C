@@ -23,9 +23,10 @@ using namespace std;
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file),
-  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), p_mehandler(NULL)
+  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), p_mehandler(NULL),
+  p_showerhandler(NULL),  p_beamremnants(NULL), p_fragmentation(NULL), p_hadrondecays(NULL)
+
 {
-  cout<<"Initialize Initialization_Handler for "<<m_path+m_file<<endl;
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
   m_beamdat          = p_dataread->GetValue<string>("BEAM_DATA_FILE",string("Beam.dat"));
@@ -39,26 +40,26 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 
 Initialization_Handler::~Initialization_Handler()
 {
-  cout<<" in Initialization_Handler::~Initialization_Handler()"<<endl;
+  msg.Debugging()<<" in Initialization_Handler::~Initialization_Handler()"<<endl;
   // deleting all in reverse order:
 
-  cout<<" deleting p_hadrondecays"<<endl;
+  msg.Debugging()<<" deleting p_hadrondecays"<<endl;
   if (p_hadrondecays)  { delete p_hadrondecays; p_hadrondecays = NULL; }
-  cout<<" deleting p_fragmentation"<<endl;
+  msg.Debugging()<<" deleting p_fragmentation"<<endl;
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
-  cout<<" deleting p_beamremnants"<<endl;
+  msg.Debugging()<<" deleting p_beamremnants"<<endl;
   if (p_beamremnants)  { delete p_beamremnants; p_beamremnants = NULL; }
-  cout<<" deleting p_showerhandler"<<endl;
+  msg.Debugging()<<" deleting p_showerhandler"<<endl;
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
-  cout<<" deleting p_mehandler"<<endl;
+  msg.Debugging()<<" deleting p_mehandler"<<endl;
   if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
-  cout<<" deleting p_isrhandler"<<endl;
+  msg.Debugging()<<" deleting p_isrhandler"<<endl;
   if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
-  cout<<" deleting p_beamspectra"<<endl;
+  msg.Debugging()<<" deleting p_beamspectra"<<endl;
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
-  cout<<" deleting p_model"<<endl;
+  msg.Debugging()<<" deleting p_model"<<endl;
   if (p_model)         { delete p_model;         p_model         = NULL; }
-  cout<<" out Initialization_Handler::~Initialization_Handler()"<<endl;
+  msg.Debugging()<<" out Initialization_Handler::~Initialization_Handler()"<<endl;
 }
 
 
