@@ -23,6 +23,9 @@ LL_Branching::LL_Branching(const ATOOLS::Flavour _m_flavour,MODEL::Running_Alpha
   m_splitting.push_back(new APACIC::Splitting_Group());
   SF_Set::iterator sfit;
   if (m_flavour.IsQuark()) {
+    if ((sfit=Find(m_flavour,ATOOLS::Flavour(ATOOLS::kf::gluon)))==s_splitting.end()) {
+      Insert(new APACIC::q_gq(m_flavour));
+    }
     if ((sfit=Find(m_flavour,m_flavour))==s_splitting.end()) {
       newsplit = new APACIC::q_qg(m_flavour);
       Insert(newsplit);
