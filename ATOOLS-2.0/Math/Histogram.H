@@ -34,6 +34,7 @@ namespace ATOOLS {
     void Extrapolate(double x, double * ys,int mode);
 
     // basic access methods
+    int Type() { return m_type; }
     int Depth() { return m_depth; }
     int    Nbin() const { return m_nbin-2; }
     double Xmin() const { return m_lower; }
