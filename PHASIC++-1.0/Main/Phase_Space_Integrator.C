@@ -186,7 +186,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	//Tag 5 means optimization
 	int opt;
 	MPI::COMM_WORLD.Recv(&opt, 1, MPI::INT, 0, 5);
-	msg.Out<<"Slave "<<rank<<" received opt-tag: "<<opt<<endl;
+	msg.Out()<<"Slave "<<rank<<" received opt-tag: "<<opt<<endl;
 	if (opt==1) psh->FSRIntegrator()->MPIOptimize(maxerror);
 	if (opt==2) psh->FSRIntegrator()->EndOptimize(maxerror);
       }
