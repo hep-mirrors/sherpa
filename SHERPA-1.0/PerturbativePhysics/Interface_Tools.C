@@ -61,8 +61,8 @@ void Interface_Tools::InitializeOutGoing(Blob *blob,double scale,double E,
   Knot * dummy   = p_fintree->NewKnot(p_dummy);
   dummy->part->SetInfo('M');
   dummy->part->SetStatus(2);
-  dummy->t       = scale;
-  dummy->maxpt2  = scale;
+  dummy->t       = dummy->part->Momentum().Abs2();
+  dummy->maxpt2  = dummy->t;
   dummy->costh   = -1;
   dummy->thcrit  = M_PI;
   dummy->stat    = 0;
