@@ -230,7 +230,9 @@ double Channel_Elements::LLPropMomenta(double sexp,double pole,
 				       double smin,double smax,
 				       double ran)
 {
-  double s = Channel_Basics::PeakedDist(pole,sexp,smin,smax,-1,ran);
+  double s;
+  if (smin==smax) s=smax;
+  else s = Channel_Basics::PeakedDist(pole,sexp,smin,smax,-1,ran);
   if (!(s>0) && !(s<0) && s!=0) ATOOLS::msg.Error()<<"LLPropMomenta produced a nan !"<<endl;
   if ((s<smin) || (s>smax))     ATOOLS::msg.Error()<<"LLPropMomenta out of bounds !"<<endl;
   return s;
@@ -243,7 +245,7 @@ double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
   double mw    = mass*width;
   if (lim==0) return mw/(M_PI*((s-mass2)*(s-mass2)+mw*mw));
   else {
-    if ((s<smin) || (s>smax)) return 0.;
+    if ((s<smin) || (s>smax) || smin==smax) return 0.;
     double range  = smax-smin;
     double upper  = (smax-mass2)/mw;
     double lower  = (smin-mass2)/mw;
