@@ -5,13 +5,13 @@
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
 #include "Matrix_Element_Handler.H"
-#include "MI_Handler.H"
 #include "Hard_Decay_Handler.H"
 #include "Shower_Handler.H"
 #include "Beam_Remnant_Handler.H"
 #include "Fragmentation_Handler.H"
 #include "Hadron_Decay_Handler.H"
 #include "Output_Handler.H"
+#include "Pythia_Interface.H"
 #include "Sample_Analysis.H"
 #include "Data_Read.H"
 
@@ -62,10 +62,12 @@ namespace SHERPA {
     Beam_Remnant_Handler       * p_beamremnants;
     Fragmentation_Handler      * p_fragmentation;
     Hadron_Decay_Handler       * p_hadrondecays;
-    MI_Handler                 * p_mihandler; 
+    //MI_Handler                 * p_mihandler; 
     Output_Handler             * p_outputhandler;
+    Pythia_Interface           * p_pythia;
   private :
     bool InitializeTheIO();
+    bool InitializeTheExternalMC();
     bool InitializeTheModel();
     bool InitializeTheBeams();
     bool InitializeThePDFs();
@@ -111,8 +113,9 @@ namespace SHERPA {
     Fragmentation_Handler       * GetFragmentationHandler()  { return p_fragmentation;   }
     Hadron_Decay_Handler        * GetHadronDecayHandler()    { return p_hadrondecays;    }
     ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
-    MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
+    //MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
     Output_Handler              * GetOutputHandler()         { return p_outputhandler;   }
+    Pythia_Interface            * GetPythiaInterface()       { return p_pythia;          }
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

@@ -50,7 +50,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL), p_zchannels(NULL), p_kpchannels(NULL), 
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), 
   m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_initialized(0),
-  m_maxtrials(100000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
+  m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.)
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
@@ -1117,6 +1117,11 @@ namespace ATOOLS {
     s<<" weight="<<wi.weight<<"   ntrial="<<wi.ntrial<<std::endl;
     return s;
   }
+}
+
+
+template <> Blob_Data<Weight_Info>::~Blob_Data() 
+{
 }
 
 template class Blob_Data<Weight_Info>;

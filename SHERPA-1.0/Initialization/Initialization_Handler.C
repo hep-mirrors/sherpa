@@ -32,7 +32,8 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_path(_path), m_file(_file),
   p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_hadrondecays(NULL),  p_mihandler(NULL)
+  p_fragmentation(NULL), p_hadrondecays(NULL), /*p_mihandler(NULL),*/
+  p_pythia(NULL)
 {
   m_scan_istep=-1;  
 
@@ -55,7 +56,8 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL)
+  p_fragmentation(NULL), p_hadrondecays(NULL), /*p_mihandler(NULL),*/
+  p_pythia(NULL)
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
@@ -64,7 +66,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   ExtractCommandLineParameters(argc, argv);
 
-  if (m_mode>9000) {
+  if (m_mode>8999) {
     p_dataread         = new Data_Read(m_path+m_file);
     m_analysisdat      = p_dataread->GetValue<string>("ANALYSIS_DATA_FILE",string("Analysis.dat"));
     return;
@@ -97,9 +99,10 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
-  if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
+  //if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
+  if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
   std::set<Matrix_Element_Handler*> deleted;
   while (m_mehandlers.size()>0) {
@@ -126,9 +129,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
 
   bool okay = InitializeTheIO();
-  if (m_mode==9999) {
-    msg.Out()<<"SHERPA will read in the events."<<std::endl
-	     <<"   The full framework is not needed."<<std::endl;
+  if (m_mode>8999) {
+    okay &= InitializeTheExternalMC();
     InitializeTheAnalyses();
     return true;
   }
@@ -229,6 +231,21 @@ bool Initialization_Handler::InitializeTheIO()
   filesize  = p_dataread->GetValue<int>("FILE_SIZE",1000);
   p_outputhandler = new Output_Handler(outfiles,infiles);
   return true;
+}
+
+bool Initialization_Handler::InitializeTheExternalMC()
+{
+  std::string file;
+  switch (m_mode) {
+  case 9000: 
+    p_pythia = new Pythia_Interface(m_path,m_evtfile);
+    return true;
+  default: 
+    m_mode = 9999;
+    msg.Out()<<"SHERPA will read in the events."<<std::endl
+	     <<"   The full framework is not needed."<<std::endl;
+  }
+  return false;
 }
 
 bool Initialization_Handler::InitializeTheModel()
@@ -353,6 +370,7 @@ Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::st
 
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
+  /*
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
   Matrix_Element_Handler *mehandler;
@@ -364,6 +382,7 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     delete iit->second;
     m_isrhandlers.erase(iit);
   }
+  */
   return true;
 }
 
@@ -468,12 +487,18 @@ bool Initialization_Handler::InitializeTheAnalyses()
 
 bool Initialization_Handler::CalculateTheHardProcesses()
 {
-  if (m_mode>9000) {
-    msg.Out()<<"SHERPA will read in the events."<<std::endl
-	     <<"   No cross sections for hard processes to be calculated."<<std::endl;
-    return true;
+  if (m_mode>8999) {
+    switch (m_mode) {
+    case 9000:
+      msg.Out()<<"SHERPA will generate the events through Pyrthia."<<std::endl
+	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
+      return true;
+    case 9999:
+      msg.Out()<<"SHERPA will read in the events."<<std::endl
+	       <<"   No cross sections for hard processes to be calculated."<<std::endl;
+      return true;
+    }
   }
-
   int scalechoice = 0;
   if (p_showerhandler) {
     if (p_showerhandler->ISROn()) scalechoice += 1;
@@ -545,6 +570,7 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
   special_options["PATH"]=101;
   special_options["RUNDATA"]=102;
   special_options["ECMS"]=103;
+  special_options["PYTHIA"]=9000;
   special_options["EVTDATA"]=9999;
 
   
@@ -594,11 +620,16 @@ int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
 	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
 	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
 	break;
+      case 9000:
+	m_mode       = 9000;
+	m_evtfile    = value;
+	ATOOLS::msg.Out()<<" Sherpa will produce Pythia events according to "<<value<<endl;
+	break;
       case 9999:
-	  m_mode       = 9999;
-	  m_evtfile    = value;
-	  ATOOLS::msg.Out()<<" Sherpa will read in events from : "<<value<<endl;
-        break;
+	m_mode       = 9999;
+	m_evtfile    = value;
+	ATOOLS::msg.Out()<<" Sherpa will read in events from : "<<value<<endl;
+	break;
       case 100:
 	m_options[key] = value;
       }

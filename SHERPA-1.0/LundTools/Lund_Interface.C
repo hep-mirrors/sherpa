@@ -227,7 +227,7 @@ bool Lund_Interface::Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
 {
   int nhep = 0;
   blob->SetType(ATOOLS::btp::Fragmentation);
-  blob->SetTypeSpec("Lund : Pythia 6.214");
+  blob->SetTypeSpec("Pythia_v6.214");
   if (nhep==0) {
     hepevt.idhep[nhep]=ATOOLS::Flavour(ATOOLS::kf::photon).HepEvt();
     for (short int j=1;j<4;++j) hepevt.phep[nhep][j-1]=blob->CMS()[j];
@@ -321,7 +321,7 @@ void Lund_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_Li
 	  decay = new ATOOLS::Blob();
 	  decay->SetStatus(1);
 	  decay->SetType(ATOOLS::btp::Hadron_Decay);
-	  decay->SetTypeSpec("Lund : Pythia 6.214");
+	  decay->SetTypeSpec("Pythia_v6.214");
 	  decay->SetId(bloblist->size());
 	  decay->AddToInParticles(particle);
 	  if (particle->Info()=='P') particle->SetInfo('p');
@@ -364,7 +364,7 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
       decay = new ATOOLS::Blob();
       decay->SetStatus(1);
       decay->SetType(ATOOLS::btp::Hadron_Decay);
-      decay->SetTypeSpec("Lund : Pythia 6.214");
+      decay->SetTypeSpec("Pythia_v6.214");
       decay->SetId(bloblist->size());
       decay->AddToInParticles(particle);
       if (particle->Info()=='P') particle->SetInfo('p');

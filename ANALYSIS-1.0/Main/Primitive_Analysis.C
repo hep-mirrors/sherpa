@@ -136,6 +136,7 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
 //     if (m_mode&ANALYSIS::output_process) mode=mode|ANALYSIS::output_this;
 //     else 
       if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
+      //      mode=mode|ANALYSIS::output_this;
 
       // orig:    key=name.substr(17);
       key=name;
@@ -336,7 +337,11 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
 void Primitive_Analysis::AddParticleList(const std::string & key,Particle_List * pl) 
 {
   PL_Container::const_iterator cit=m_pls.find(key);
-  if (cit!=m_pls.end()) delete cit->second;
+  if (cit!=m_pls.end()) {
+    for (Particle_List::iterator pit=cit->second->begin(); 
+	 pit!=cit->second->end();++pit) delete (*pit);
+    delete cit->second;
+  }
 
   m_pls[key]=pl;
 }
@@ -403,6 +408,19 @@ Primitive_Observable_Base * Primitive_Analysis::GetObservable(const std::string 
 
   return 0;
 }
+
+
+
+
+template <> Blob_Data<std::vector<double> *>::~Blob_Data() 
+{
+  delete m_data;
+}
+
+template class Blob_Data<std::vector<double> *>;
+
+
+
 
 // ----------------------------------------------------------------------
 // probably obsolete:
