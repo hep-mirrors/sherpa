@@ -128,7 +128,7 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res,
     int j,k;
     double yij=YminKt(momsin,flavsin,momsout,j,k);
     if (yij>y_res) break;
-    if (momsout.size()<=number) break;
+    if ((int)momsout.size()<=number) break;
     
     if (j<0) {
       //      momsin[j+2] += momsout[k]; // *AS*   ??!!!
