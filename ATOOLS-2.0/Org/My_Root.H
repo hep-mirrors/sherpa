@@ -34,7 +34,7 @@ namespace MYROOT {
     
     TFile *p_file;
 
-    bool m_draw;
+    int m_drawmode;
 
   public:
 
@@ -62,9 +62,9 @@ namespace MYROOT {
     inline TObject *const operator[](const std::string &key) 
     { return GetObject(key); }
 
-    inline void SetDraw(const bool draw) { m_draw=draw; }
+    inline void SetDrawMode(const bool drawmode) { m_drawmode=drawmode; }
 
-    inline bool Draw() const { return m_draw; }
+    inline bool DrawMode() const { return m_drawmode; }
 
   };// end of class My_Root
 

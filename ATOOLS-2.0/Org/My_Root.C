@@ -9,7 +9,7 @@ My_Root *MYROOT::myroot=NULL;
 
 My_Root::My_Root(const int argc,char **const argv):
   p_file(NULL),
-  m_draw(false)
+  m_drawmode(0)
 {
   std::string path, file;
 #ifndef USING__My_Root_only
@@ -19,9 +19,7 @@ My_Root::My_Root(const int argc,char **const argv):
   reader->SetString(inputstring);
   if (!reader->ReadFromString(path,"ROOT_PATH")) path="./Analysis/";
   if (!reader->ReadFromString(file,"ROOT_FILE")) file="output.root";
-  if (reader->ReadFromString(inputstring,"DRAW_ROOT_RESULTS")) {
-    if (inputstring=="YES") m_draw=true;
-  }
+  if (!reader->ReadFromString(m_drawmode,"DRAW_ROOT_RESULTS")) m_drawmode=0;
   delete reader;
 #else
   path="./";
@@ -53,7 +51,7 @@ My_Root::~My_Root()
 
 void My_Root::Draw() 
 {
-  if (!m_draw) return;
+  if (m_drawmode==0) return;
   for (String_Object_Map::const_iterator oit=m_objects.begin();
        oit!=m_objects.end();++oit) {
     new TCanvas(oit->first.c_str(),oit->first.c_str());
