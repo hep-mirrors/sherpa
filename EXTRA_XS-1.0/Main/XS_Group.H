@@ -46,6 +46,7 @@ namespace EXTRAXS {
 
     virtual void SetAtoms(const bool atoms);
     virtual void CreateFSRChannels();
+    virtual void CreateISRChannels();
 
     size_t Size() const;
 

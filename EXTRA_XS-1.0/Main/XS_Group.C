@@ -200,10 +200,13 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
 	}
       }
       SetISR(p_isrhandler);
+      p_pshandler->InitCuts();
+      p_isrhandler->SetSprimeMin(p_pshandler->Cuts()->Smin());
     }
     CreateFSRChannels();
     if (!m_channels) {
       p_pshandler->CreateIntegrators();
+      CreateISRChannels();
       m_channels = true;
     }
     std::string filename=resultpath+std::string("/")+m_name+std::string(".xs_tot"), singlename;
@@ -463,6 +466,10 @@ void XS_Group::CreateFSRChannels()
 							    m_resonances[i]));
   }
 }      
+
+void XS_Group::CreateISRChannels() 
+{
+}
 
 void XS_Group::DeSelect() 
 {
