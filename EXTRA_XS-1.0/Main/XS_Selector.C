@@ -14,7 +14,7 @@ XS_Selector::XS_Selector(XS_Base *const owner):
 Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
 			      const ATOOLS::Flavour *flavours,const bool offshell)
 { 
-  Single_XS *xs;
+  Single_XS *xs=NULL;
   if (offshell) {
     if ((xs=Single_XS::GetProcess<Off_Shell_qqb_llb>(nin,nout,flavours))!=NULL);
     else if ((xs=Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(nin,nout,flavours))!=NULL);
@@ -28,17 +28,22 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
     }
     return xs;
   }
-  if ((xs=Single_XS::GetProcess<XS_pp_ffbar>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_gg_gg>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_q1g_q1g>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_q1qbar1_gg>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_q1q1_q1q1>(nin,nout,flavours))!=NULL) return xs;
-  if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2>(nin,nout,flavours))!=NULL) return xs;
-  return NULL;
+  if ((xs=Single_XS::GetProcess<XS_pp_ffbar>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_ee_ffbar>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_gg_gg>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1g_q1g>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1qbar1_gg>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1q1_q1q1>(nin,nout,flavours))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2>(nin,nout,flavours))!=NULL);
+  if (xs!=NULL) {
+    xs->SetScaleScheme(p_owner->ScaleScheme());
+    xs->SetKFactorScheme(p_owner->KFactorScheme());
+    xs->SetScaleFactor(p_owner->ScaleFactor());
+  }
+  return xs;
 }
 
 size_t XS_Selector::FindInGroup(XS_Group *const group,XS_Base *&xs,
