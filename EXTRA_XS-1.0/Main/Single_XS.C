@@ -2,6 +2,7 @@
 #include "ISR_Handler.H"
 #include "Phase_Space_Handler.H"
 #include "Run_Parameter.H"
+#include "Regulator_Base.H"
 #include "Message.H"
 
 using namespace EXTRAXS;
@@ -129,7 +130,7 @@ void Single_XS::ResetMax(int flag)
 
 double Single_XS::Differential(const double s,const double t,const double u)
 {
-  m_lastdxs=(*p_regulator)(operator()(s,t,u));
+  m_lastdxs=(*p_regulator)((*this)(s,t,u));
   if (m_lastdxs<=0.) return m_lastdxs=m_last=0.;
   if (p_isrhandler && m_nin==2) { 
     if (p_isrhandler->On()) m_lastlumi=p_isrhandler->Weight(p_flavours); 

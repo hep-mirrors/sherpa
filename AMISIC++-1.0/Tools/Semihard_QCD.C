@@ -1,6 +1,7 @@
 #include "Semihard_QCD.H"
 
 #include "Phase_Space_Handler.H"
+#include "Regulator_Base.H"
 #include "FSR_Channel.H"
 #include "ISR_Vegas.H"
 #include "ISR_Handler.H"
@@ -57,7 +58,7 @@ void Semihard_QCD::CreateISRChannels()
   PHASIC::Single_Channel *channel=NULL;
   if (m_xsecs.size()>0 && 
       m_xsecs[0]->Regulator()!=NULL && 
-      m_xsecs[0]->Regulator()->Type()==EXTRAXS::rf::qcd_trivial) {
+      m_xsecs[0]->Regulator()->Type()==PHASIC::rf::qcd_trivial) {
     mass=2.0*m_xsecs[0]->Regulator()->Parameters()[0]; 
     channel = 
       new PHASIC::Threshold_Uniform_V(mass,1.75," isr",p_pshandler->GetInfo());

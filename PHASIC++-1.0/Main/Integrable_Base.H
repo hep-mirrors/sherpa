@@ -29,6 +29,7 @@ namespace PHASIC {
 
   };// end of struct stp
 
+  class Regulator_Base;
   class Phase_Space_Handler;
 
   class Integrable_Base: public ATOOLS::Terminator_Object {
@@ -40,8 +41,9 @@ namespace PHASIC {
     ATOOLS::Flavour *p_flavours, *p_addflavours;
     ATOOLS::Vec4D   *p_momenta, *p_addmomenta;
 
-    int    m_scalescheme, m_kfactorscheme;
-    double m_threshold, m_overflow;
+    int    m_scalescheme, m_kfactorscheme, m_maxjetnumber;
+    int    m_nstrong, m_neweak;
+    double m_threshold, m_overflow, m_rfactor;
     bool   m_updatescales;
 
     std::map<stp::id,double> m_scale;
@@ -62,6 +64,7 @@ namespace PHASIC {
     bool m_swaped;
 
     Integrable_Base *p_selected, *p_parent;
+    Regulator_Base  *p_regulator;
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
@@ -108,8 +111,8 @@ namespace PHASIC {
     virtual double Differential2() = 0;
     virtual void   AddPoint(const double xs);
 
-    virtual double CalculateScale(const ATOOLS::Vec4D *momenta) = 0;
-    virtual double KFactor(const double scale) = 0;
+    virtual double CalculateScale(const ATOOLS::Vec4D *momenta);
+    virtual double KFactor(const double scale);
 
     virtual void DeSelect() = 0;
     virtual void SelectOne() = 0;

@@ -4,14 +4,15 @@
 namespace EXTRAXS { class XS_Base; }
 
 #include "Integrable_Base.H"
-#include "Regulator_Base.H"
+
+namespace PHASIC { class Regulator_Base; }
 
 namespace EXTRAXS {
 
   class XS_Base: public PHASIC::Integrable_Base {
   protected:
 
-    Regulator_Base *p_regulator;
+    PHASIC::Regulator_Base *p_regulator;
 
     int **p_colours;
 
@@ -57,9 +58,6 @@ namespace EXTRAXS {
     double Differential(const ATOOLS::Vec4D *momenta);
     void   SetMax();
 
-    double CalculateScale(const ATOOLS::Vec4D *momenta);
-    double KFactor(const double scale);
-
     void SwapInOrder();
     void RestoreInOrder();
 
@@ -100,7 +98,7 @@ namespace EXTRAXS {
     inline size_t OrderEW() const     { return m_order_ew;     }
     inline size_t OrderStrong() const { return m_order_strong; }
 
-    inline Regulator_Base *const Regulator() const { return p_regulator; }
+    inline PHASIC::Regulator_Base *const Regulator() const { return p_regulator; }
 
   };// end of class XS_Base
 

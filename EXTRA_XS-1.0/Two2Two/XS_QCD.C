@@ -52,8 +52,8 @@ bool XS_pp_ffbar::SetColours(double s,double t,double u)
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_q1q2_q1q2>(const size_t nin,const size_t nout,
-							  const ATOOLS::Flavour *flavours, 
-							  const size_t nqed, const size_t nqcd)
+					       const ATOOLS::Flavour *flavours, 
+					       const size_t nqed, const size_t nqcd)
 {
   if (flavours[0].IsQuark() && flavours[1].IsQuark() && flavours[0]!=flavours[1] &&
       ((flavours[2]==flavours[0] && flavours[3]==flavours[1]) ||
@@ -79,7 +79,7 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Fla
 
   m_barred[0]=fl[0].IsAnti();
   if (fl[0].IsDowntype()) std::swap(ints[0],ints[1]);
-  m_ckm2=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
+  m_ckm2=std::abs(ATOOLS::csqr(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2)));
 
   m_mw2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
   m_ww2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
@@ -543,11 +543,6 @@ double XS_gg_gg::operator()(double s,double t,double u) {
   Ms = 1 - t*u/(s*s);
   Mt = 1 - s*u/(t*t);
   Mu = 1 - s*t/(u*u);
-  // pure t-channel squared
-  //   return sqr(4.*M_PI*aS)*(27./2.*ATOOLS::sqr(u*u/(s*t))
-  // 			  + 36.*u*u*u/(s*t*t) + 9.*s*u/(t*t)
-  // 			  + 9./4.*s*s/(t*t) + 135./4.*u*u/(t*t))/2.;
-  // full me squared
   return sqr(4.*M_PI*aS)*9./2. * ( Ms + Mt + Mu )/2.;
 }
   

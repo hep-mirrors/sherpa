@@ -5,6 +5,7 @@
 #include "Combined_Selector.H"
 #include "Standard_Selector.H"
 #include "Run_Parameter.H"
+#include "Regulator_Base.H"
 #include "Message.H"
 
 #include <stdio.h>
@@ -22,7 +23,6 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 		 ATOOLS::Selector_Data *const selectordata):
   Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
-  p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_colours(NULL), m_pi(0), m_scalefactor(scalefactor)
 {
   Init(flavours);
@@ -33,7 +33,6 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
   Integrable_Base(nin,nout,flavours),
-  p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
   p_colours(NULL), m_pi(0)
 {
   Init(flavours);
@@ -111,91 +110,6 @@ bool XS_Base::SetColours(const ATOOLS::Vec4D *momenta)
   SetSTU(momenta);
   SetScale(momenta[2].PPerp2(),PHASIC::stp::as);  
   return SetColours(m_s,m_t,m_u);
-}
-
-double XS_Base::CalculateScale(const ATOOLS::Vec4D *momenta) 
-{
-  SetMomenta(momenta);
-  if (m_nin==1) return momenta[0].Abs2();
-  SetSTU(momenta);
-  switch (m_scalescheme) {
-  case 0:
-    m_scale[PHASIC::stp::as]=1.;
-    break;
-  case 1:
-    m_scale[PHASIC::stp::as]=momenta[2].PPerp2();
-    break;
-  case 2:
-    m_scale[PHASIC::stp::as]=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
-    break;
-  case 11: {// pp->V scheme
-    double M2=0.;
-    if (m_resonances.size()>0) {
-      M2=ATOOLS::sqr(m_resonances[0].Mass());
-    }
-    ATOOLS::Vec4D *p=p_momenta;
-    double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
-    double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
-    m_scale[PHASIC::stp::kp21]=x1*x1*2.*S2*xi;
-    m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
-    // ew scale a la watt
-    double sc=(p[0]+p[1]).PPerp2();
-    m_scale[PHASIC::stp::as]=pow(sc,2./3.)*pow(M2,1./3.);
-    break;
-  }
-  case 12: {// g*g*->qqb scheme
-    const ATOOLS::Vec4D *p=momenta;
-    double S2=p[4]*p[5];
-    double a1=p[5]*p[0]/S2;
-    double b2=p[4]*p[1]/S2;
-    m_scale[PHASIC::stp::kp21]=a1*a1*2.*S2*p[2].PMinus()/p[2].PPlus();
-    m_scale[PHASIC::stp::kp22]=b2*b2*2.*S2*p[3].PPlus()/p[3].PMinus();
-    // qcd scale
-    m_scale[PHASIC::stp::as]=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
-    break;
-  }
-  case 13: {// g*g*->gg scheme
-    const ATOOLS::Vec4D *p=momenta;
-    m_scale[PHASIC::stp::kp21]=p[2].PPerp2();
-    m_scale[PHASIC::stp::kp22]=p[3].PPerp2();
-    // qcd scale
-    m_scale[PHASIC::stp::as]=ATOOLS::sqr((p[2].PPerp()+p[3].PPerp())/2.0);
-    break;
-  }
-  default:
-    m_scale[PHASIC::stp::as]=m_s;
-    break;
-  }
-  if (operator[](0)!=NULL && operator[](0)!=this) {
-    if (operator[](0)->p_regulator->Type()!=p_regulator->Type()) 
-      return (*operator[](0)->p_regulator)[m_scale[PHASIC::stp::as]]; 
-  }
-  m_scale[PHASIC::stp::fac]=m_scale[PHASIC::stp::as];
-  return (*p_regulator)[m_scale[PHASIC::stp::as]];
-}
-
-double XS_Base::KFactor(const double scale) 
-{
-  switch (m_kfactorscheme) {
-  case 1:
-    return pow(MODEL::as->AlphaS(scale*m_scalefactor)/
-	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),
-	       double(m_nin+m_nout-2));
-  case 11:{
-    const double CF=4./3.;
-    return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
-  }
-  case 12:
-    return pow(MODEL::as->AlphaS(scale)/
-	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),
-	       double(m_nin+m_nout-2));
-  case 13:
-    return pow(MODEL::as->AlphaS(scale)/
-	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),
-	       double(m_nin+m_nout-2));
-  default:
-    return 1.;
-  }
 }
 
 void XS_Base::SwapInOrder() 
@@ -286,8 +200,8 @@ ATOOLS::Blob_Data_Base *XS_Base::SameWeightedEvent()
 void XS_Base::AssignRegulator(const std::string &regulator,
 			      const std::vector<double> &parameters)
 {
-  Regulator_Base *function=NULL;
-  if ((function=Regulator_Base::GetRegulator(this,regulator,parameters))!=NULL) {
+  PHASIC::Regulator_Base *function=NULL;
+  if ((function=PHASIC::Regulator_Base::GetRegulator(this,regulator,parameters))!=NULL) {
     delete p_regulator;
     p_regulator=function;
   }

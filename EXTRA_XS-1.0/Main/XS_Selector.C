@@ -1,5 +1,5 @@
 #include "XS_Selector.H"
-#include "XS_EW.H"
+#include "XS_4F.H"
 #include "XS_QCD.H"
 #include "XS_Drell_Yan.H"
 #include "Off_Shell_EW.H"
@@ -19,7 +19,8 @@ XS_Base *XS_Selector::GetXS(const size_t nin, const size_t nout,
 			    size_t nqed, size_t nqcd)
 { 
 //   std::cout<<"XS_Selector::GetXS nin="<<nin<<" nout="<<nout<<"\n";
-//   std::cout<<flavours[0]<<" "<<flavours[1]<<" -> "<<flavours[2]<<" "<<flavours[3]<<"  ("<<seperate_couplings<<") : "<<nqed<<","<<nqcd<<std::endl;
+//   std::cout<<flavours[0]<<" "<<flavours[1]<<" -> "<<flavours[2]<<" "<<flavours[3]<<"  
+//   ("<<seperate_couplings<<") : "<<nqed<<","<<nqcd<<std::endl;
   XS_Base * xs=NULL;
   if (seperate_couplings) {
     for (size_t i=0;i<=2;++i) {
@@ -75,10 +76,11 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   else if ((xs=Single_XS::GetProcess<XS_q1g_q1g>(nin,nout,flavours,nqed,nqcd))!=NULL);
   else if ((xs=Single_XS::GetProcess<XS_gg_q1qbar1>(nin,nout,flavours,nqed,nqcd))!=NULL);
   else if ((xs=Single_XS::GetProcess<XS_q1qbar1_gg>(nin,nout,flavours,nqed,nqcd))!=NULL);
-  else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q1qbar1<sgq::none> >(nin,nout,flavours,nqed,nqcd))!=NULL);
-  else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q2qbar2<sgq::none> >(nin,nout,flavours,nqed,nqcd))!=NULL);
-  else if ((xs=Single_XS::GetProcess<XS_q1q1_q1q1<sgq::none> >(nin,nout,flavours,nqed,nqcd))!=NULL);
-  else if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2<sgq::none> >(nin,nout,flavours,nqed,nqcd))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q1qbar1>(nin,nout,flavours,nqed,nqcd))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1qbar1_q2qbar2>(nin,nout,flavours,nqed,nqcd))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1q1_q1q1>(nin,nout,flavours,nqed,nqcd))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_q1q2_q1q2>(nin,nout,flavours,nqed,nqcd))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_f1f1_f1f1>(nin,nout,flavours,nqed,nqcd))!=NULL);
   if (xs!=NULL) {
     xs->SetScaleScheme(p_owner->ScaleScheme());
     xs->SetKFactorScheme(p_owner->KFactorScheme());

@@ -20,7 +20,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
-  if (flavours[0].Charge()>0 && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn() ||
+  if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
       ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1_f1f1(nin,nout,flavours); 
   return NULL;
 }
@@ -29,6 +29,7 @@ XS_f1f1_f1f1::XS_f1f1_f1f1(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours), m_Z_on(true), m_P_on(true), m_anti(int(flavours[0].IsAnti()))
 {
+  std::cout<<"Construct it !"<<std::endl;
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   m_aqed      = MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
   m_eq        = flavours[0].Charge();
@@ -45,9 +46,9 @@ double XS_f1f1_f1f1::operator()(double s,double t,double u)
   M_t = 0., M_u = 0., M_mix = 0.;
   double pref_qed = ATOOLS::sqr(4.*M_PI*m_aqed*m_eq*m_eq);
   if (m_P_on) {
-    M_t   += pref_qed     * (s*s+u*u)/(t*t);
-    M_mix += pref_qed/3.  * (s*s)/(t*u);
-    M_u   += pref_qed     * (s*s+t*t)/(u*u); 
+    M_t   +=  pref_qed     * (s*s+u*u)/(t*t);
+    M_mix += -pref_qed/3.  * (s*s)/(t*u);
+    M_u   +=  pref_qed     * (s*s+t*t)/(u*u); 
   }
   if (m_Z_on) {
   }

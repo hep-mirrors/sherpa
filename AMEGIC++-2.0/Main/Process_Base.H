@@ -35,12 +35,11 @@ namespace AMEGIC {
     AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
 
     bool    m_atoms, m_analyse, m_tables;
-    double  m_rfactor, m_enhancefac, m_maxfac, m_maxeps;
-    int     m_orderQCD, m_orderEW,m_nstrong,m_neweak;
+    double  m_enhancefac, m_maxfac, m_maxeps;
+    int     m_orderQCD, m_orderEW;
 
     Phase_Space_Generator          * p_psgen;
     
-    int m_maxjetnumber;
     bool m_print_graphs;
     /*------------------------------------------------------------------------------
 
@@ -144,7 +143,6 @@ namespace AMEGIC {
     virtual double DSigma(const ATOOLS::Vec4D *,bool)                              =0;
     virtual double DSigma2()                                                       =0;
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
-    virtual double CalculateScale(const ATOOLS::Vec4D *);
     virtual double FactorisationScale();
     virtual bool   OneEvent(double = -1.)                                          =0;
     virtual bool   SameEvent()                                                     =0;
@@ -190,7 +188,6 @@ namespace AMEGIC {
     virtual int                             BeamNumber();
     virtual void                            BeamInfo(int,int &,double &,double &);
 
-    virtual double                          KFactor(double);
     
 
     /*------------------------------------------------------------------------------

@@ -30,7 +30,7 @@ Process_Base::Process_Base():
   Integrable_Base(0,0),
   m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0), 
-  m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.), p_psgen(0),
+  m_enhancefac(1.), m_maxfac(1.), p_psgen(0),
   m_print_graphs(false)
 {
   m_atoms=1;
@@ -59,8 +59,8 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   m_gen_str(_gen_str),m_nex(_nex),
   p_ex_fl(_ex_fl),
   m_atoms(0), m_analyse(0), m_tables(0), 
-  m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.),
-  m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0), 
+  m_enhancefac(1.), m_maxfac(1.),
+  m_orderQCD(_orderQCD), m_orderEW(_orderEW),
   p_psgen(0), m_print_graphs(false)
 {
   m_scale[stp::as]=m_scale[stp::fac]=_scale;
@@ -565,137 +565,6 @@ void Process_Base::SetupEnhance() {
   else if (m_maxfac!=1.) {
     double max=Max();
     SetMax(max*m_maxfac);
-  }
-}
-
-double Process_Base::CalculateScale(const ATOOLS::Vec4D * _p) {
-  if (m_nin==1) return _p[0].Abs2();
-  if (m_nin!=2) {
-    ATOOLS::msg.Error()<<"ERROR in Process_Base::Scale. "
-		       <<"   Do not know how to handle more than 2 incoming particles, abort."<<endl;
-    abort();
-  }
-  double s;
-  if (m_nin==2) s = (_p[0]+_p[1]).Abs2();
-  if (m_nin==1) s = (_p[0]).Abs2();
-  double pt2 = 0.;
-
-  //new
-  switch (m_scalescheme) {
-  case 1 :   
-    pt2 = m_scale[stp::as];
-    break;
-  case 2  :
-    if (m_nin+m_nout==4) {
-      double t = (_p[0]-_p[2]).Abs2()-
-	(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
-      double u = (_p[0]-_p[3]).Abs2()-
-	(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
-      pt2 = 4.*s*t*u/(s*s+t*t+u*u);
-    }
-    else {
-      pt2 = 0.;
-      for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-	pt2 += ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
-      }
-    }
-    break;
-  case 3  :
-    pt2 = s;
-    double pt2i;
-    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-      pt2i = ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
-      if (pt2i<pt2) pt2 = pt2i;
-    }
-    break;
-  case 63 :
-    if ((int)m_nout!=m_maxjetnumber) {
-      pt2 = m_scale[stp::as];
-    }
-    else {
-      pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
-      for (size_t i=m_nin+1;i<m_nin+m_nout;++i) {
-	if (p_flavours[i].Strong())
-	  pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
-      }
-    }
-    break;
-  case 64 :
-    pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
-    for (size_t i=m_nin+1;i<m_nin+m_nout;++i) {
-      pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
-    }
-    break;
-  case 65:
-    pt2 = m_scale[stp::fac];
-
-    // if highest number of jets
-    if ((int)m_nout==m_maxjetnumber) {
-      if (p_selector->Name()=="Combined_Selector") {
-	Selector_Base * jf = ((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
-	if (jf) {
-	  double y=jf->ActualValue()[0];
-	  if (y==2.) {
-	    pt2 = rpa.gen.FactorizationScaleFactor()*s;
-	  }
-	  else {
-	    pt2 = rpa.gen.FactorizationScaleFactor()*y*sqr(rpa.gen.Ecms());
-	  }
-	}
-	else {
-	  msg.Out()<<"WARNING in Process_Base::Scale : "<<std::endl
-		   <<"   No jetfinder found, cannot use SCALESCHEME=="<<m_scalescheme<<"."
-		   <<" Return s as scale."<<std::endl;
-	  pt2 = rpa.gen.FactorizationScaleFactor()*s;
-	}
-      }
-    }
-    //    std::cout<<m_nout<<" pt2="<<pt2<<std::endl;
-    break;
-  case 21 :
-    if (m_nin+m_nout==4) {
-      double t = (_p[0]-_p[2]).Abs2();
-      double u = (_p[0]-_p[3]).Abs2();
-      pt2 = 2.*s*t*u/(s*s+t*t+u*u);
-    }
-    else {
-      pt2 = 0.;
-      for (size_t i=m_nin;i<m_nin+m_nout;i++) {
-	pt2 += ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
-      }
-    }
-    break;
-  default :
-    pt2 = s;
-  }
-  m_scale[stp::fac]= pt2;
-  FactorisationScale();
-  return m_scale[stp::fac];
-}
-
-double Process_Base::KFactor(double _scale) {
-  //std::cout<<"Scale: "<<_scale<<std::endl;
-  switch (m_kfactorscheme) {
-  case 1  :
-    if (m_nstrong>2) {
-      return m_rfactor*pow(as->AlphaS(_scale)/
-			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
-    } 
-    else 
-      return m_rfactor;
-  case 65:
-    m_scale[stp::fac]=_scale;
-//     cout<<Name()<<" : "<<std::endl;
-//     cout<<"as:  Q_F^2 = "<<m_scale[stp::fac]<<endl;
-//     cout<<"as:  Q_R^2 = "<<m_scale[stp::as]<<endl;
-    if (m_nstrong>2) {
-      return m_rfactor*pow(as->AlphaS(m_scale[stp::as])/
-			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
-    } 
-    else 
-      return m_rfactor;
-  default :
-    return 1.;
   }
 }
 
