@@ -13,6 +13,7 @@ Single_XS *Single_XS::GetProcess<XS_q1q2b_q3q4b>(const size_t nin,const size_t n
 							const ATOOLS::Flavour *flavours)
 {
   if (!flavours[0].IsQuark() || !flavours[1].IsQuark()) return NULL;
+  if (!flavours[2].IsQuark() || !flavours[3].IsQuark()) return NULL;
   bool up[4], anti[4];
   for (short int i=0;i<4;++i) {
     if (flavours[i].IsUptype()) up[i]=true;
