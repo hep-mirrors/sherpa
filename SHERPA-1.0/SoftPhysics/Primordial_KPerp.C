@@ -1,5 +1,6 @@
 #include "Primordial_KPerp.H"
 
+#include "Remnant_Base.H"
 #include "Run_Parameter.H"
 #include "Data_Read.H"
 #include "Random.H"
@@ -25,6 +26,7 @@ Primordial_KPerp::Primordial_KPerp(std::string _m_path,std::string _m_file):
   p_boosted(new std::set<ATOOLS::Blob*>()),
   m_scheme(0)
 {
+  p_remnants[0]=p_remnants[1]=NULL;
   p_kperp[0] = new std::vector<Vec3D>();
   p_kperp[1] = new std::vector<Vec3D>();
   Data_Read *dataread = new Data_Read(_m_path+_m_file);
@@ -57,6 +59,7 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
   p_kperp[0]->resize(blob[0]->NOutP()); 
   p_kperp[1]->resize(blob[1]->NOutP());
   p_boosted->clear();
+  double Etot=p_remnants[0]->BeamEnergy()+p_remnants[1]->BeamEnergy();
   if (m_scheme==0) {
     bool success;
     Vec3D sum[2];
@@ -150,26 +153,31 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
       // test whether Energy and momentum of hard scattering can be preserved
       p_filled->clear();
       int tested=0;
+      double E=0.0;
       for (int i=0;i<blob[0]->NOutP();++i) {
       	ATOOLS::Particle *cur2, *cur1=blob[0]->OutParticle(i);
 	if (FindConnected(cur1,cur2,true,0)) {
 	  ++tested;
 	  Vec3D kp1=(*p_kperp[0])[i], kp2=(*p_kperp[1])[i];
 	  double s, sp, sp1, sp2;
-	  s=(cur1->Momentum()+cur2->Momentum()).Abs2();
+	  Vec4D cms=cur1->Momentum()+cur2->Momentum();
+	  s=cms.Abs2();
 	  sp=s+sqr((kp1+kp2).Abs());
 	  sp1=cur1->Momentum().Abs2()+sqr(kp1.Abs()); 
 	  sp2=cur2->Momentum().Abs2()+sqr(kp2.Abs());
+	  E+=sqrt(sp/(1.0-sqr(cms[3]/cms[0])));
 	  if (((sp-sp1-sp2)*(sp-sp1-sp2)<4.0*sp1*sp2)||
 	      (s<sp1)||(s<sp2)) success=false;
 	  p_filled->insert(cur2);
 	}
 	else {
+	  E+=cur1->Momentum()[0];
 	  if ((*p_kperp[0])[i].Abs()>
 	      ATOOLS::dabs(cur1->Momentum()[3])) success=false;
 	}
 	p_filled->insert(cur1);
       }
+      if (E>Etot) success=false;
       for (int i=0;i<blob[1]->NOutP();++i) {
 	ATOOLS::Particle *cur=blob[1]->OutParticle(i);
 	if (p_filled->find(cur)==p_filled->end()) {
