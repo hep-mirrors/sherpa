@@ -160,5 +160,7 @@ done
 
 if [ ! "BENCHMARK_ERROR" = "TRUE" ] ; then
   SetStatus "Benchmarking succeeded "
+#  SendMail 0
+else 
+  SendMail 0
 fi
-# SendMail 0
