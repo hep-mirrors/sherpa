@@ -46,7 +46,6 @@ bool Remnant_Base::AdjustKinematics()
       if (cur->OutParticle(j)!=p_last[i]) {
 	const ATOOLS::Vec4D &p=cur->OutParticle(j)->Momentum();
 	m_erem-=p[0];
-	std::cout<<p[3]<<" "<<m_pzrem<<*cur->OutParticle(j)<<std::endl;
 	m_pzrem-=p[3];
       }
     }
@@ -56,7 +55,6 @@ bool Remnant_Base::AdjustKinematics()
   shift.SetSPerp(ATOOLS::sqr(p_last[0]->Flav().PSMass())+pr1.PPerp2(),1);
   shift.SetSPerp(ATOOLS::sqr(p_last[1]->Flav().PSMass())+pr2.PPerp2(),2);
   if (!ATOOLS::IsZero(m_pzrem-(pr1+pr2)[3])) {
-    std::cout<<"self "<<m_pzrem-(pr1+pr2)[3]<<" <- "<<p_last[0]->Momentum()<<p_last[1]->Momentum()<<std::endl;
     shift.SetShift(ATOOLS::Vec4D(m_erem-(pr1+pr2)[0],0.,0.,m_pzrem-(pr1+pr2)[3]));
   }
   else {
