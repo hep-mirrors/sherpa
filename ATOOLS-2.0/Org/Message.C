@@ -1,5 +1,7 @@
 #include "Message.H"
+
 #include "Run_Parameter.H"
+#include "MyStrStream.H"
 #include <sys/stat.h>
 
 namespace ATOOLS {

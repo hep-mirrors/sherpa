@@ -2,6 +2,7 @@
 #ifndef Message_h
 #define Message_h
 
+#include <string>
 #include <iostream>
 #include <fstream>
 
