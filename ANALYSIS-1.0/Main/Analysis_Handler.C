@@ -176,24 +176,27 @@ void Analysis_Handler::PrepareTerminate()
 
 void Analysis_Handler::Finish(const std::string &path)
 {
-  if (!ATOOLS::MakeDir(OutputPath(),448)) {
-    ATOOLS::msg.Error()<<"Analysis_Handler::Finish(..): "
-		       <<"Cannot create directory '"<<OutputPath()
-		       <<"'."<<std::endl; 
-    SetOutputPath(path);
+  if (OutputPath()[OutputPath().length()-1]=='/') {
     if (!ATOOLS::MakeDir(OutputPath(),448)) {
       ATOOLS::msg.Error()<<"Analysis_Handler::Finish(..): "
 			 <<"Cannot create directory '"<<OutputPath()
 			 <<"'."<<std::endl; 
-      SetOutputPath(ATOOLS::rpa.gen.Variable("SHERPA_RUN_PATH"));
+      SetOutputPath(path);
+      if (!ATOOLS::MakeDir(OutputPath(),448)) {
+	ATOOLS::msg.Error()<<"Analysis_Handler::Finish(..): "
+			   <<"Cannot create directory '"<<OutputPath()
+			   <<"'."<<std::endl; 
+	SetOutputPath(ATOOLS::rpa.gen.Variable("SHERPA_RUN_PATH"));
+      }
     }
   }
-  msg_Info()<<"Analysis_Handler::Finish(..): ";
+  msg_Info()<<"Analysis_Handler::Finish(..): {\n";
   for (Analyses_Vector::const_iterator ait=m_analyses.begin();
        ait!=m_analyses.end();++ait) {
-    msg_Info()<<"Writing to '"<<OutputPath()<<(*ait)->OutputPath()<<"'."<<std::endl; 
+    msg_Info()<<"   Writing to '"<<OutputPath()<<(*ait)->OutputPath()<<"'."<<std::endl; 
     (*ait)->FinishAnalysis(OutputPath()); 
   }
+  msg_Info()<<"}"<<std::endl;
   ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
 }
 
