@@ -65,7 +65,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   }
   else {
     if (p_inithandler->InitializeTheFramework()) {
-      p_output = new Output_Handler(0);
+      p_output = new Output_Handler(2);
       return p_inithandler->CalculateTheHardProcesses();
     }
   }
@@ -94,10 +94,8 @@ bool Sherpa::InitializeTheEventHandler()
 						      p_inithandler->GetFragmentationHandler()));
   }
   AnalysesMap * analyses = p_inithandler->GetSampleAnalyses();
-  if (!analyses->empty()) {
-    for (AnalysesIter ana=analyses->begin();ana!=analyses->end();ana++) {
-      p_eventhandler->AddEventPhase(new Analysis_Phase(ana->second));
-    }
+  for (AnalysesIter ana=analyses->begin();ana!=analyses->end();ana++) {
+    p_eventhandler->AddEventPhase(new Analysis_Phase(ana->second));
   }
 
   return 1;
