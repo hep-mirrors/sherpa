@@ -105,11 +105,13 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   // search for sherpa executeable
   if (argc>0) {
     std::string command=argv[0];
-    if (command.find("Sherpa")>0) {
+    if (!system((std::string("test -f ")+command).c_str())) {
       if (command[0]!='/') command=std::string(getenv("PWD"))+std::string("/Sherpa");
       s_variables["SHERPA_BIN_PATH"]=command.substr(0,command.find("/Sherpa"));
     }
-    else s_variables["SHERPA_BIN_PATH"]=std::string(getenv("PWD"));
+    else if (!system("test -f $PWD/Sherpa")) {
+      s_variables["SHERPA_BIN_PATH"]=std::string(getenv("PWD"));
+    }
   }
   // set pdf path
   std::string pdfpath=dr.GetValue<std::string>("SHERPA_PDF_PATH",std::string(""));
