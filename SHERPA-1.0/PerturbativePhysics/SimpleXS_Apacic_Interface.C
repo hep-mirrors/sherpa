@@ -69,7 +69,7 @@ int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob)
     }
   }
   p_xs->CalculateScale(p_momenta);
-  double scale=p_xs->Scale(PHASIC::stp::as);
+  m_scale=p_xs->Scale(PHASIC::stp::as);
   double E=sqrt(p_mehandler->GetISR_Handler()->Pole())/2.;
   double th1,th2;
   if (m_ini) {
@@ -77,12 +77,12 @@ int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob)
     th2=p_tools->ColourAngle(blob->InParticle(1),blob);
     double x1=blob->InParticle(0)->Momentum()[0]/E;
     double x2=blob->InParticle(1)->Momentum()[0]/E;
-    p_tools->InitializeIncoming(blob,scale,E,th1,th2,x1,x2);
+    p_tools->InitializeIncoming(blob,m_scale,E,th1,th2,x1,x2);
   }
   if (m_fin) {
     th1=p_tools->ColourAngle(blob->OutParticle(0),blob);
     th2=p_tools->ColourAngle(blob->OutParticle(1),blob);
-    p_tools->InitializeOutGoing(blob,scale,E,th1,th2);
+    p_tools->InitializeOutGoing(blob,m_scale,E,th1,th2);
   }
   return 1;
 }
@@ -110,6 +110,7 @@ bool SimpleXS_Apacic_Interface::FillBlobs(ATOOLS::Blob_List *blobs)
     for (int i=0;i<p_hard->NOutP();++i) {
       p_psme_fs->AddToInParticles(p_hard->OutParticle(i));
     }
+    p_psme_fs->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_scale));
     blobs->push_back(p_psme_fs);
   }
   return true;

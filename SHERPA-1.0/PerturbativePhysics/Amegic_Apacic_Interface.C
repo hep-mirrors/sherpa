@@ -125,6 +125,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
       p_blob_psme_FS->AddToInParticles(blob->OutParticle(i));
       if (dec) blob->OutParticle(i)->SetDecayBlob(dec);
     }
+    p_blob_psme_FS->AddData("MI_Scale",new ATOOLS::Blob_Data<double>(m_scale));
   }
 
   return 1;  // OK!
@@ -161,19 +162,19 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
       m_jetscale    = m_ycut * sprime;
     }
     
-    double scale,asscale;
+    double asscale;
     if (p_xs) {
       p_xs->CalculateScale(p_moms);
-      asscale=scale = p_xs->Scale(PHASIC::stp::as);
+      asscale=m_scale = p_xs->Scale(PHASIC::stp::as);
     }
     else {
-      scale   = p_cluster->Scale();
+      m_scale   = p_cluster->Scale();
       asscale = p_cluster->AsScale();
     }
     // save hard scale to be used in plots!
-    amegic_apacic_interface_last_hard_scale = scale;
+    amegic_apacic_interface_last_hard_scale = m_scale;
     
-    p_cluster->CalculateWeight(scale,asscale,m_jetscale,m_qmin_i,m_qmin_f);
+    p_cluster->CalculateWeight(m_scale,asscale,m_jetscale,m_qmin_i,m_qmin_f);
     
     m_weight = p_cluster->Weight();
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {

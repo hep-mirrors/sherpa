@@ -20,7 +20,7 @@ namespace SHERPA {
 
     ATOOLS::Blob *p_psme_is, *p_psme_fs, *p_hard;
 
-    double m_rescale[2];
+    double m_rescale[2], m_scale;
 
     int InitColours(ATOOLS::Blob *blob);
 

@@ -19,7 +19,7 @@ namespace SHERPA {
     bool   m_isdecay;
     int    m_type, m_lastshowerveto;
     double m_ycut,m_jetscale;
-    double m_qmin_i, m_qmin_f;
+    double m_qmin_i, m_qmin_f, m_scale;
 
     ATOOLS::Jet_Finder * p_jf;
     Cluster_Partons    * p_cluster;
