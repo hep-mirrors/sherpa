@@ -336,31 +336,45 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     }
     break;
   case 65:
+    {
+    double ycut = ATOOLS::rpa.gen.Ycut();
+    m_scale[stp::fac] = ycut*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+//     std::cout<<"CalculateScale: "<<m_scale[stp::fac]<<std::endl;
     pt2 = m_scale[stp::fac];
+
+    double y=2.;
+    if (p_selector->Name()=="Combined_Selector") {
+      ATOOLS::Selector_Base * jf = 
+	((ATOOLS::Combined_Selector*)p_selector)->GetSelector("Jetfinder");
+      if (jf) {
+	y=jf->ActualValue()[0];
+      }
+      else {
+	ATOOLS::msg.Out()<<"WARNING in Process_Base::Scale : "<<std::endl
+			 <<"   No jetfinder found, cannot use SCALESCHEME=="<<m_scalescheme<<"."
+			 <<" Return s as scale."<<std::endl;
+	pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
+      }
+    }
 
     // if highest number of jets
     if ((int)m_nout==m_maxjetnumber) {
-      if (p_selector->Name()=="Combined_Selector") {
-	ATOOLS::Selector_Base * jf = 
-	  ((ATOOLS::Combined_Selector*)p_selector)->GetSelector("Jetfinder");
-	if (jf) {
-	  double y=jf->ActualValue()[0];
-	  if (y==2.) {
-	    pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
-	  }
-	  else {
-	    pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
-	  }
-	}
-	else {
-	  ATOOLS::msg.Out()<<"WARNING in Process_Base::Scale : "<<std::endl
-		   <<"   No jetfinder found, cannot use SCALESCHEME=="<<m_scalescheme<<"."
-		   <<" Return s as scale."<<std::endl;
-	  pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
-	}
+      if (y==2.) {
+	pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*s;
+      }
+      else {
+	pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
       }
     }
-    //    std::cout<<m_nout<<" pt2="<<pt2<<std::endl;
+    else {
+      // tanju two scale treatment
+      pt2 = ATOOLS::rpa.gen.FactorizationScaleFactor()*y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
+      if (m_scale[stp::fac]<pt2) {
+	pt2 = m_scale[stp::fac];
+      }
+    }
+//    std::cout<<m_nout<<" pt2="<<pt2<<" y="<<y*ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())<<std::endl;
+     }
     break;
   case 101: {// pp->V scheme
     double M2=0.;
@@ -442,9 +456,9 @@ double Integrable_Base::KFactor(const double scale)
       return m_rfactor;
   case 65:
     m_scale[stp::fac]=scale;
-//     cout<<Name()<<" : "<<std::endl;
-//     cout<<"as:  Q_F^2 = "<<m_scale[stp::fac]<<endl;
-//     cout<<"as:  Q_R^2 = "<<m_scale[stp::as]<<endl;
+//     std::cout<<Name()<<" : "<<m_nstrong<<std::endl;
+//     std::cout<<"as:  Q_F^2 = "<<m_scale[stp::fac]<<std::endl;
+//     std::cout<<"as:  Q_R^2 = "<<m_scale[stp::as]<<std::endl;
     if (m_nstrong>2) {
       return m_rfactor*pow(MODEL::as->AlphaS(m_scale[stp::as])/
 			   MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
