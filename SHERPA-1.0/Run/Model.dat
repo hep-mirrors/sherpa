@@ -8,6 +8,7 @@ GENERATOR_ON          = 1        ! use external spectrum generator
 ! SM parameters
 !
 EW_SCHEME             = 0        ! which parameters define the ew sector.
+ORDER_ALPHAS	      = 1	 ! order of running coupling
 ALPHAS(MZ)            = 0.1188   ! strong coupling at scale M_Z 
 ALPHAS(default)       = 0.0800   ! strong coupling
 1/ALPHAQED(0)         = 137.036  ! inverse of alpha QED in the Thomson limit
