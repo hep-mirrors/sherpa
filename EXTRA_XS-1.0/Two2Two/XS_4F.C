@@ -16,6 +16,8 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
 					       const ATOOLS::Flavour *flavours,
 					       const size_t nqed, const size_t nqcd)
 {
+  if (flavours[0]!=flavours[1] || 
+      flavours[0]!=flavours[2] || flavours[0]!=flavours[3]) return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
@@ -208,7 +210,12 @@ bool XS_f1f2b_f3f4b::SetColours(double s,double t,double u)
   return true; 
 }
 
-double XS_f1f2b_f3f4b::KFactor(double scale) 
+double XS_f1f2b_f3f4b::KFactor(const double scale) 
 {
   return 1.;
+}
+
+double XS_f1f1_f1f1::KFactor(double scale) 
+{ 
+  return 1.; 
 }

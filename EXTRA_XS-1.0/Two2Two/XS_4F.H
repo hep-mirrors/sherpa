@@ -17,7 +17,7 @@ namespace EXTRAXS {
     double operator()(double s,double t,double u);
     bool   SetColours(double s,double t,double u);
 
-    double KFactor(double scale);
+    double KFactor(const double scale);
   };
 
   class XS_f1f1_f1f1: public Single_XS {  
@@ -36,7 +36,7 @@ namespace EXTRAXS {
     bool   SetColours(double s,double t,double u);
     bool   SetColours();
 
-    double KFactor(double scale) { return 1.; };
+    double KFactor(const double scale);
   };
  
 
