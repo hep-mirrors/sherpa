@@ -24,10 +24,7 @@ Hadron_Remnant::Hadron_Remnant(PDF::ISR_Handler *isrhandler,
     THROW(fatal_error,"Hadron remnant needs ISR Handler.");
   }
   GetConstituents(isrhandler->Flav(m_beam));
-  double mz=ATOOLS::Flavour(ATOOLS::kf::Z).Mass();
-  m_emin=mz*exp(-M_PI/(2.*MODEL::as->Beta0(mz*mz)*(*MODEL::as)(mz*mz)));
-  // default: allow 1/10*lambda
-  m_emin*=0.1;
+  m_emin=0.0;
 }
 
 const std::vector<ATOOLS::Flavour> &Hadron_Remnant::
