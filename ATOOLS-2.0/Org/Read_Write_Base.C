@@ -1,5 +1,6 @@
 #include "Read_Write_Base.H"
 
+//#define DEBUG__Read_Write_Base
 #ifdef DEBUG__Read_Write_Base
 #include <iostream>
 #endif
@@ -31,10 +32,22 @@ Read_Write_Base::Read_Write_Base(const unsigned int infiles,
   Init();
 }
 
-Read_Write_Base::~Read_Write_Base() {}
+Read_Write_Base::~Read_Write_Base() 
+{
+#ifdef DEBUG__Read_Write_Base
+  std::cout<<"~Read_Write_Base("<<m_infile.size()<<","<<m_outfile.size()<<")\n";
+#endif
+  for (unsigned int i=0;i<m_infile.size();++i) CloseInFile(i,true);
+  m_infile.clear();
+  for (unsigned int i=0;i<m_outfile.size();++i) CloseOutFile(i,true);
+  m_outfile.clear();
+}
 
 void Read_Write_Base::Init()
 {
+#ifdef DEBUG__Read_Write_Base
+  std::cout<<" Read_Write_Base:\n";
+#endif
   m_blank.push_back(defaultblank);
   m_blank.push_back(defaulttab);
   m_vectortype=VVertical;
@@ -49,7 +62,7 @@ void Read_Write_Base::Init()
 
 size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &length) const
 {
-#ifdef DEBUG__Read_Write_Base
+#ifdef DEBUG__Read_Write_Base1
   std::cout<<"Read_Write_Base::Find("<<input<<","<<parameter<<"): "<<std::endl;
 #endif
   if (m_ignorecase) {
@@ -97,7 +110,7 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
     for (;i<Blank().size();++i) if (input[pos-1]==Blank()[i]) break;
     if (i==Blank().size()) pos=std::string::npos;
   }
-#ifdef DEBUG__Read_Write_Base
+#ifdef DEBUG__Read_Write_Base1
   std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
 	   <<"   parameter = '"<<parameter<<"' at "<<(int)pos<<"\n"
 	   <<"   exact     = "<<(pos!=std::string::npos)<<std::endl;
@@ -169,8 +182,11 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
       } while (*m_infile[i]);
     }
   }
+  bool sucess=m_filecontent.size()>0;
   if (m_addcommandline) AddFileContent(CommandLine());
-  return !m_infile[i]->bad();
+  //  std::cout<<" filecontent.size()="<<m_filecontent.size()<<std::endl;
+  return sucess;
+  //  return !m_infile[i]->bad();
 }
 
 bool Read_Write_Base::OpenOutFile(const unsigned int i)
@@ -194,10 +210,12 @@ bool Read_Write_Base::OpenOutFile(const unsigned int i)
 void Read_Write_Base::CloseInFile(const unsigned int i,const bool force)
 { 
   if (m_infile[i]==NULL) return;
+//   std::cout<<"calling Read_Write_Base::CloseInFile("<<i<<","<<force<<"): "
+// 	   <<"Closing file '"<<m_inputpath[i]+m_inputfile[i]<<"'."<<m_infilemode[i]<<std::endl;
   if ((m_infilemode[i]==Permanent)&&(!force)) return;
 #ifdef DEBUG__Read_Write_Base
   std::cout<<"Read_Write_Base::CloseInFile("<<i<<","<<force<<"): "
-	   <<"Closing file '"<<m_inputpath[i]+m_inputfile[i]<<"'."<<m_infilemode[i]<<std::endl;
+	   <<"Closing file '"<<m_inputpath[i]+m_inputfile[i]<<"'."<<m_infilemode[i]<<m_infile[i]<<std::endl;
 #endif
   m_filecontent.clear();
   m_infile[i]->close(); 

@@ -23,6 +23,10 @@ File_IO_Base::File_IO_Base(const unsigned int inputfiles,
 
 File_IO_Base::~File_IO_Base() 
 {
+  // note this always calls File_IO_Base::Close..File()
+  //      ie. it is not possible to use virtual function can not 
+  //      be called inside the constructor since the at this point
+  //      the constructor of derived classes has already finished
   for (unsigned int i=0;i<m_infile.size();++i) CloseInFile(i,true);
   for (unsigned int i=0;i<m_outfile.size();++i) CloseOutFile(i,true);
 }
@@ -43,11 +47,17 @@ bool File_IO_Base::OpenOutFile(const unsigned int i)
 
 void File_IO_Base::CloseInFile(const unsigned int i,const bool force)
 {
+  if (m_infile[i]==NULL) return;
+  ATOOLS::msg.Error()<<"File_IO_Base::CloseInFile("<<i<<"): "
+		     <<"Virtual function called!"<<std::endl;
   return;
 }
 
 void File_IO_Base::CloseOutFile(const unsigned int i,const bool force)
 {
+  if (m_outfile[i]==NULL) return;
+  ATOOLS::msg.Error()<<"File_IO_Base::CloseOutFile("<<i<<"): "
+		     <<"Virtual function called!"<<std::endl;
   return;
 }
 
@@ -113,7 +123,7 @@ const std::string File_IO_Base::OutputFile(const unsigned int i) const
 
 void File_IO_Base::SetInFileMode(const OpenModeID _m_infilemode,
 				 const unsigned int i)
-{ 
+{
   m_infilemode[i]=_m_infilemode; 
   CloseInFile(i);
 }

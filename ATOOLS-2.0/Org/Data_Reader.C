@@ -188,7 +188,7 @@ Read_Type Data_Reader::M_ReadFromFile(std::string parameter,std::string filename
     buffer=FileContent()[i];
     if((temp=M_ReadFromString<Read_Type>(parameter,buffer))!=Default<Read_Type>()) value=temp;
   }
-  CloseInFile();
+  //  CloseInFile();
   if (value==Default<Read_Type>()) {
     msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   }
@@ -286,7 +286,7 @@ Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,Vector
       break;
     }
   }
-  CloseInFile();
+  //  CloseInFile();
   if (values.size() != 0) return values;
   msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   return values;
@@ -374,7 +374,7 @@ Data_Reader::M_MatrixFromFile(std::string parameter,std::string filename,MatrixT
       transposedvalues.push_back(temp[j]);
     }
   }
-  CloseInFile();
+  //  CloseInFile();
   if (transposedvalues.size()!=0) {
     if (tempmtype==MNormal) {
       std::vector< std::vector<Read_Type> > normalvalues;     
