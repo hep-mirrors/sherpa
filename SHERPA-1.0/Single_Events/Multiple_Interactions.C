@@ -95,15 +95,40 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
   switch (p_mihandler->ScaleScheme()) {
     // min p_{T, out}
   case 1: {
+    bool construct=false;
     Blob_Data_Base *xsinfo=
       (*bloblist->FindLast(btp::ME_PS_Interface_FS))["Core_Process"];
-    if (xsinfo==NULL) THROW(critical_error,"No merging information.");
-    XS_Base *xs=xsinfo->Get<XS_Base*>();
-    if (xs==NULL) THROW(critical_error,"No merging information.");
-    m_ptmax=std::numeric_limits<double>::max();
-    for (short unsigned int i=2;i<4;++i) 
-      if (xs->Flavours()[i].Strong()) 
-	m_ptmax=Min(m_ptmax,xs->Momenta()[i].PPerp());
+    if (xsinfo==NULL) {
+      construct=true;
+    }
+    else {
+      XS_Base *xs=xsinfo->Get<XS_Base*>();
+      if (xs==NULL) {
+	construct=true;
+      }
+      else {
+	bool one=false;
+	for (short unsigned int i=2;i<4;++i) 
+	  if (xs->Flavours()[i].Strong()) {
+	    m_ptmax=Min(m_ptmax,xs->Momenta()[i].PPerp());
+	    one=true;
+	  }
+	if (!one) construct=true;
+      }
+    }
+    if (construct) {
+      Blob_List shower=bloblist->
+	FindConnected(m_diced?bloblist->FindLast(btp::Hard_Collision):signal);
+      Particle_List jets=shower.ExtractLooseParticles(1);
+      Jet_Finder finder(p_mihandler->YCut(),4);
+      finder.ConstructJets(&jets,1,true);
+      if (jets.size()>0) {
+	m_ptmax=0.0;
+	for (size_t i=0;i<jets.size();++i)
+	  m_ptmax=Min(m_ptmax,jets[i]->Momentum().PPerp());
+      }
+      jets.Clear();
+    }
     break;
   }
     // mean p_{T, out}
