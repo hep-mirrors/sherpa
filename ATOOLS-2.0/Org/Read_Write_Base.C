@@ -123,21 +123,21 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 	if (checkbegin) {
 	  for (size_t length=0,j=0;j<m_filebegin.size();++j) {
 	    if (Find(lastline,m_filebegin[j],length)!=std::string::npos) {
-	      if (filebegin==(int)m_occurrence) {
+	      if (filebegin==0) {
 		lastline=lastline.substr(Find(lastline,m_filebegin[j],length)+length);
 	      }
 	      ++filebegin;
 	      break;
 	    }
 	  }
-	  if (filebegin<=(int)m_occurrence) {
+	  if (filebegin==0) {
 	    lastline=ATOOLS::nullstring;
 	  }
 	  else if (checkend) {
 	    for (size_t length=0,j=0;j<m_fileend.size();++j) {
 	      if (Find(lastline,m_fileend[j],length)!=std::string::npos) {
 		--filebegin;
-		if (filebegin==(int)m_occurrence) {
+		if (filebegin==0) {
 		  lastline=lastline.substr(0,Find(lastline,m_fileend[j],length));
 		}
 		break;
