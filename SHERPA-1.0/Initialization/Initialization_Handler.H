@@ -11,7 +11,7 @@
 #include "Beam_Remnant_Handler.H"
 #include "Fragmentation_Handler.H"
 #include "Hadron_Decay_Handler.H"
-#include "Event_Reader.H"
+#include "Output_Handler.H"
 #include "Sample_Analysis.H"
 #include "Data_Read.H"
 
@@ -49,10 +49,9 @@ namespace SHERPA {
     Fragmentation_Handler      * p_fragmentation;
     Hadron_Decay_Handler       * p_hadrondecays;
     MI_Handler                 * p_mihandler; 
-    Event_Reader               * p_evtreader;
-
+    Output_Handler             * p_outputhandler;
   private :
-
+    bool InitializeTheIO();
     bool InitializeTheModel();
     bool InitializeTheBeams();
     bool InitializeThePDFs();
@@ -98,7 +97,7 @@ namespace SHERPA {
     Hadron_Decay_Handler        * GetHadronDecayHandler()    { return p_hadrondecays;    }
     ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
     MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
-    Event_Reader                * GetEventReader()           { return p_evtreader;       }
+    Output_Handler              * GetOutputHandler()         { return p_outputhandler;   }
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

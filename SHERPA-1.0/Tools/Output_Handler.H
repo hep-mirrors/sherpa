@@ -1,5 +1,5 @@
-#ifndef Output_Handler_h
-#define Output_Handler_h
+#ifndef Output_Handler_H
+#define Output_Handler_H
 
 #ifdef _USE_HEPMC_
 #include "HepMC_Interface.H"
@@ -9,20 +9,54 @@
 #include "Blob_List.H"
 
 namespace SHERPA {
+
+    struct iotype {
+
+      enum code {
+	Unknown = 0,
+	Sherpa  = 1,
+	HepMC   = 2,
+	HepEvt  = 4,
+	size    = 8
+      };
+
+    };// end of struct iotype
+
+    const iotype::code operator|(const iotype::code code1,const iotype::code code2);  
+    const iotype::code operator&(const iotype::code code1,const iotype::code code2);  
+
   class Output_Handler {
   private :
+
+    int          m_io;
+    iotype::code m_outtype, m_intype;
+
 #ifdef _USE_HEPMC_
     HepMC_Interface  * p_hepmc;
     HepMC::GenEvent  * p_event;
 #endif
     HepEvt_Interface * p_hepevt;
-    bool               m_active;
-    int                m_type;
+
   public :
-    Output_Handler(int type=1);
+
+    // constructors
+    Output_Handler();
+    Output_Handler(const std::vector<std::string> &outfiles,
+		   const std::vector<std::string> &infiles);
+
+    // destructor
     ~Output_Handler();
-    void OutputToFormat(ATOOLS::Blob_List *);
-    bool Active() { return m_active; }
+
+    // member functions
+    void AddOutputMode(const iotype::code);
+    void AddInputMode(const iotype::code);
+
+    bool OutputToFormat(ATOOLS::Blob_List *const blobs);
+    bool InputFromFormat(ATOOLS::Blob_List *const blobs);
+    
+    // inline functions
+    inline bool OutputOn() const { return m_io&1; }
+
   };
 
   /*!

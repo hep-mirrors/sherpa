@@ -9,45 +9,76 @@
 #include "Vector.H"
 
 namespace SHERPA {
+  struct gtp {
+    enum code {
+      Unspecified  = 0,
+      Sherpa       = 1,
+      Herwig       = 2,
+      Pythia       = 3
+    };
+  };
+
   class HepEvt_Interface {
-    static const int maxentries = 4000;
+    bool            m_io;
+    int             m_mode;
+    std::string     m_path, m_file;
+    std::ofstream   m_outstream;
+    std::ifstream * p_instream;
+
+    ATOOLS::Particle_Int_Map m_convertS2H;
+    ATOOLS::Int_Particle_Map m_convertH2S;
+
+    int       m_evtnumber,m_nhep;
+    int       m_filesize, m_evtcount;
+    gtp::code m_generator;
+
+    static const int s_maxentries = 4000;
+    double * p_phep,   * p_vhep;
+    int    * p_jmohep, * p_jdahep,  * p_isthep, * p_idhep;
+    double   m_weight;
     
-    int m_evtnumber;
+    void WriteFullHepEvt(int nevt);
+    void WriteReducedHepEvt(int nevt);
+    void ISBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
+    void HardBlob2HepEvt(ATOOLS::Blob_List * const,int &);
+    void FSBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
+    void FragmentationBlob2HepEvt(ATOOLS::Blob_List * const,int &);
+    void HadronDecayBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
 
-    std::map<ATOOLS::Particle *,int> m_connect;
-    double * phep,   * vhep;
-    int    * jmohep, * jdahep,  * isthep, * idhep;
-    int m_nhep;
-
-    std::string m_filename;
-    std::ofstream m_ofile;
-    
-    void ISBlobs2HepEvt(ATOOLS::Blob_List *,int &);
-    void HardBlob2HepEvt(ATOOLS::Blob_List *,int &);
-    void FSBlobs2HepEvt(ATOOLS::Blob_List *,int &);
-    void FragmentationBlob2HepEvt(ATOOLS::Blob_List *,int &);
-    void HadronDecayBlobs2HepEvt(ATOOLS::Blob_List *,int &);
-
-    void EstablishRelations(ATOOLS::Particle *,ATOOLS::Blob *);  
-    void EstablishRelations(ATOOLS::Blob *);  
-    void Particle2HepEvt(ATOOLS::Particle *,int &);
-    void String2HepEvt(ATOOLS::Blob *,int &);
+    void EstablishRelations(ATOOLS::Particle * const,ATOOLS::Blob * const);  
+    void EstablishRelations(ATOOLS::Blob * const);  
+    void Particle2HepEvt(ATOOLS::Particle * const,int &);
+    void String2HepEvt(ATOOLS::Blob * const,int &);
 
 
-    void WriteHepEvt(int nevt);
+
+    bool ReadHepEvt(ATOOLS::Blob_List * const);
+    void HepEvt2Particle(const int,const int);
+    bool ConstructBlobsFromHerwig(ATOOLS::Blob_List * const);
+    bool ConstructBlobsFromPythia(ATOOLS::Blob_List * const);
+    bool ConstructBlobs(ATOOLS::Blob_List * const);
+    bool IdentifyBlobs(ATOOLS::Blob_List * const);
+    bool DeleteObsolete();
   public:
-    HepEvt_Interface(const std::string & =std::string(""));
+
+    HepEvt_Interface(bool=true,int=11,
+		     const std::string & =std::string(""),
+		     const std::string & =std::string(""));
     ~HepEvt_Interface();
     
-    void Sherpa2HepEvt(ATOOLS::Blob_List *);
+    int                  Nhep() const   { return m_nhep;   }
+    const double * const Phep() const   { return p_phep;   }
+    const double * const Vhep() const   { return p_vhep;   }
+    const int    * const Jmohep() const { return p_jmohep; }
+    const int    * const Jdahep() const { return p_jdahep; }
+    const int    * const Isthep() const { return p_isthep; }
+    const int    * const Idhep() const  { return p_idhep;  }
 
-    int      Nhep()   { return m_nhep; }
-    double * Phep()   { return phep; }
-    double * Vhep()   { return vhep; }
-    int    * Jmohep() { return jmohep; }
-    int    * Jdahep() { return jdahep; }
-    int    * Isthep() { return isthep; }
-    int    * Idhep()  { return idhep; }
+    bool Sherpa2HepEvt(ATOOLS::Blob_List * const);
+    bool HepEvt2Sherpa(ATOOLS::Blob_List * const);
+
+    double   Weight() { return m_weight; }
+
   };
 }
 

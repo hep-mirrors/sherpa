@@ -34,7 +34,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   bool hit=false;
   m_one=false;
   for (Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==std::string("Hard Subprocess : ")) {
+    if ((*bit)->Type()==btp::Hard_Collision) {
       m_one=true;
       if ((*bit)->Status()==2) {
 	myblob=*bit;
@@ -44,7 +44,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 	  // weight=p_mihandler->Weight();
 	  weight=1.0;
 	  ATOOLS::Blob *blob = new ATOOLS::Blob();
-	  blob->SetType(std::string("Hard Subprocess : "));
+	  blob->SetType(btp::Hard_Collision);
 	  blob->SetStatus(2);
 	  blob->SetId(bloblist->size());
 	  bloblist->push_back(blob);
@@ -72,7 +72,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   if (!m_one) {
     bool found=false;
     for (Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-      if ((*bit)->Type().find("ME PS Interface (Sherpa, FS)")!=std::string::npos) {
+      if ((*bit)->Type()==btp::ME_PS_Interface_FS) {
 	myblob=*bit;
 	found=true;
 	break;
@@ -80,7 +80,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
     }
     if (!found) {
       for (Blob_Iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-	if ((*bit)->Type().find("Signal Process")!=std::string::npos) {
+	if ((*bit)->Type()==btp::Signal_Process) {
 	  myblob=*bit;
 	  break;
 	}
@@ -102,7 +102,7 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
     m_ecmsmax-=sqrt(ptot.Abs2());
     m_pperpmax=ATOOLS::Min(m_pperpmax,val);
     myblob = new ATOOLS::Blob();
-    myblob->SetType(std::string("Hard Subprocess : "));
+    myblob->SetType(btp::Hard_Collision);
     myblob->SetStatus(2);
     myblob->SetId(bloblist->size());
     bloblist->push_back(myblob);
@@ -125,14 +125,13 @@ void Multiple_Interactions::CompleteBlob(Blob *blob)
 {
   PROFILE_HERE;
   EXTRAXS::XS_Base *xs=NULL;
-  if (blob->Type()==std::string("Hard Subprocess : ")) {
+  if (blob->Type()==btp::Hard_Collision) {
     xs=p_mihandler->HardMEHandler()->GetXS();
   }
-  if (blob->Type()==std::string("Soft Subprocess : ")) {
+  if (blob->Type()==btp::Soft_Collision) {
     xs=p_mihandler->SoftMEHandler()->GetXS();
   }
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
-//   blob->SetType(blob->Type()+xs->ProcessName());
   blob->SetStatus(1);
 
   Vec4D cms = Vec4D(0.,0.,0.,0.);

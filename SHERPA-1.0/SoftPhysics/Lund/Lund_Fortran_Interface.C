@@ -54,7 +54,8 @@ void Lund_Fortran_Interface::Init()
 bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
 				       ATOOLS::Blob_List * bloblist,
 				       ATOOLS::Particle_List * pl) {
-  blob->SetType(std::string("Fragmentation (Lund : Pythia 6.163)"));
+  blob->SetType(btp::Fragmentation);
+  blob->SetTypeSpec("Lund : Pythia 6.214");
   int nhep = 0;
 
   if (nhep==0) {
@@ -81,11 +82,11 @@ bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
 
   int dummy=2;
   finterf_(nhep, isthep, idhep, jmohep, jdahep, phep, vhep);
-  if (rpa.gen.Debugging()) {
+  //if (rpa.gen.Debugging()) {
     msg.Out()<<"after hadronisation"<<std::endl;
     pylist_(dummy);
     msg.Out()<<std::endl<<std::endl;
-  }
+    //}
 
 
   FillPrimaryHadronsInBlob(blob,bloblist,pl);
@@ -154,7 +155,8 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 	if (*(daughters+2*j)!=0 && *(daughters+2*j+1)!=0) {
 	  decay = new Blob();
 	  decay->SetStatus(1);
-	  decay->SetType(std::string("Hadron decay"));
+	  decay->SetType(btp::Hadron_Decay);
+	  decay->SetTypeSpec("Lund Pythia 6.214");
 	  decay->SetId(bloblist->size());
 	  decay->AddToInParticles(particle);
 	  if (particle->Info()=='P') particle->SetInfo('p');
@@ -198,7 +200,8 @@ void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
     if (*(daughters+2*i)!=0 && *(daughters+2*i+1)!=0) {
       decay = new Blob();
       decay->SetStatus(1);
-      decay->SetType(std::string("Hadron decay"));
+      decay->SetType(btp::Hadron_Decay);
+      decay->SetTypeSpec("Lund Pythia 6.214");
       decay->SetId(bloblist->size());
       decay->AddToInParticles(particle);
       if (particle->Info()=='P') particle->SetInfo('p');

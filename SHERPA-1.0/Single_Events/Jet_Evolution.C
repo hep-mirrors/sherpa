@@ -57,15 +57,12 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
   std::string tag;
   bool found = 1;
   bool hit   = 0;
-  size_t pos;
   Blob * blob;
   while (found) {
     found = 0;
     for (size_t i=0;i<_bloblist->size();++i) {
       blob = (*_bloblist)[i];
-      // Search for active blobs of type "Signal Process :"
-      pos = blob->Type().find(std::string("Signal Process :"));
-      if (blob->Status()==1 && pos!=std::string::npos) {
+      if (blob->Status()==1 && blob->Type()==btp::Signal_Process) {
 	piIter = m_interfaces.find(string("SignalMEs"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -77,9 +74,8 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	weight *= piIter->second->GetWeight();
       }  
 
-      // Search for active blobs of type "Hard Subprocess :"
-      pos = blob->Type().find(std::string("Hard Subprocess :"));
-      if (blob->Status()==1 && pos!=std::string::npos) {
+      // Search for active blobs of type "Hard Collision :"
+      if (blob->Status()==1 && blob->Type()==btp::Hard_Collision) {
 	piIter = m_interfaces.find(string("MIMEs"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -91,9 +87,8 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	weight *= piIter->second->GetWeight();
       }  
 
-      // Search for active blobs of type "Hard Decay :"
-      pos = blob->Type().find(std::string("Hard decay :"));
-      if (blob->Status()==1 && pos!=std::string::npos) {
+      // Search for active blobs of type "Hard_Decay :"
+      if (blob->Status()==1 && blob->Type()==btp::Hard_Decay) {
 	piIter = m_interfaces.find(string("HardDecays"));
 	if (piIter==m_interfaces.end()) {
 	  msg.Error()<<"Error in Jet_Evolution::Treat :"<<endl
@@ -113,12 +108,9 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 				  Perturbative_Interface * interface) 
 {
-  size_t colon= _blob->Type().find(":");
-  std::string type = _blob->Type().substr(0,colon+2);
   bool decayblob   = (_blob->NInP()==1);
   int shower,stat = interface->DefineInitialConditions(_blob);
   if (stat==3) {
-    _blob->SetType(type);
     _blob->SetStatus(-1);
     p_showerhandler->CleanUp();
     return true;
@@ -136,7 +128,7 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	for (int i=0;i<2;i++) {
 	  // new ISR Blob
 	  myblob = new Blob();
-	  myblob->SetType(string("IS Shower (none)"));
+	  myblob->SetType(btp::IS_Shower);
 	  if (Sign(_blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
 	  else myblob->SetBeam(1-i);
 	  myblob->SetStatus(1);
@@ -152,14 +144,13 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       if (!(p_showerhandler->FSROn())) {
 	for (int i=0;i<_blob->NOutP();i++) {
 	  myblob = new Blob();
-	  myblob->SetType(string("FS Shower (none)"));
+	  myblob->SetType(btp::FS_Shower);
 	  myblob->SetBeam(i);
 	  myblob->SetStatus(1);
 	  Particle * p = new Particle(_blob->OutParticle(i));
 	  if (_blob->OutParticle(i)->DecayBlob()) {
 	    Blob * dec  = _blob->OutParticle(i)->DecayBlob();
-	    size_t pos = dec->Type().find(std::string("Hard decay"));
-	    if (pos!=std::string::npos) {
+	    if (dec->Type()==btp::Hard_Decay) {
 	      dec->RemoveInParticle(_blob->OutParticle(i));
 	      dec->AddToInParticles(p);
 	    }
@@ -173,20 +164,17 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
       }
     }
     else  if (shower==3) {
-      _blob->SetType(type);
       _blob->SetStatus(-1);
       p_showerhandler->CleanUp();
       // delete all meps blobs
       interface->CleanBlobs(_bloblist);
     }
     else {
-      _blob->SetType(type);
       _blob->SetStatus(0);
       p_showerhandler->CleanUp();
     }
     return true;
   }
-  _blob->SetType(type);
   _blob->SetStatus(0);
   p_showerhandler->CleanUp();
   return false;

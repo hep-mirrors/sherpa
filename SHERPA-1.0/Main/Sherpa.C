@@ -65,7 +65,6 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   }
   else {
     if (p_inithandler->InitializeTheFramework()) {
-      p_output = new Output_Handler(2);
       return p_inithandler->CalculateTheHardProcesses();
     }
   }
@@ -79,9 +78,10 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
 bool Sherpa::InitializeTheEventHandler() 
 {
+  p_output       = p_inithandler->GetOutputHandler();
   int mode       = p_inithandler->Mode();
   p_eventhandler = new Event_Handler();
-  if (mode==9999) p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader()));
+  if (mode==9999) p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_output));
   else {
       cout<<" ============================================ "<<std::endl;
       p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(std::string("SignalMEs")),
@@ -107,7 +107,9 @@ bool Sherpa::GenerateOneEvent()
   PROFILE_HERE;
   for (int i=0;i<m_trials;i++) {
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
-      if (p_output->Active()) p_output->OutputToFormat(p_eventhandler->GetBlobs());
+      if (p_output->OutputOn()) {
+	p_output->OutputToFormat(p_eventhandler->GetBlobs());
+      }
       return 1;
     }
     m_errors++;

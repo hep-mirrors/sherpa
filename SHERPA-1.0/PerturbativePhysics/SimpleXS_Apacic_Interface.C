@@ -33,7 +33,8 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   }
   if (p_shower->ISROn()) {
     p_psme_is = new Blob();
-    p_psme_is->SetType(std::string("ME PS Interface (Sherpa, IS)"));
+    p_psme_is->SetType(btp::ME_PS_Interface_IS);
+    p_psme_is->SetTypeSpec("Sherpa");
     p_psme_is->SetStatus(1);
     for (int i=0;i<blob->NInP();++i) {
       p_psme_is->AddToOutParticles(blob->InParticle(i));
@@ -42,7 +43,8 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   }
   if (p_shower->FSROn()) {
     p_psme_fs = new Blob();
-    p_psme_fs->SetType(std::string("ME PS Interface (Sherpa, FS)"));
+    p_psme_fs->SetType(btp::ME_PS_Interface_FS);
+    p_psme_fs->SetTypeSpec("Sherpa");
     p_psme_fs->SetStatus(1);
     for (int i=0;i<blob->NOutP();++i) {
       p_psme_fs->AddToInParticles(blob->OutParticle(i));

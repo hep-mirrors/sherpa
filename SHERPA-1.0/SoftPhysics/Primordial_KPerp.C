@@ -176,7 +176,7 @@ bool Primordial_KPerp::FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle
   if (!forward) {
     Blob *prod=particle->ProductionBlob();
     if (prod!=NULL) {
-      if (prod->Type().find("Beam Remnant")!=std::string::npos) {
+      if (prod->Type()==btp::Beam) {
         connected=particle;
         return true;
       }

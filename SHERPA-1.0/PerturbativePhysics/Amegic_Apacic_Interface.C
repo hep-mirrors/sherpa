@@ -99,7 +99,8 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
 
   if (p_shower->ISROn()) {
     p_blob_psme_IS = new Blob();
-    p_blob_psme_IS->SetType(string("ME PS Interface (Sherpa, IS)"));
+    p_blob_psme_IS->SetType(btp::ME_PS_Interface_IS);
+    p_blob_psme_IS->SetTypeSpec(string("Sherpa"));
     p_blob_psme_IS->SetStatus(1);
     for (int i=0;i<blob->NInP();++i) {
       p_blob_psme_IS->AddToOutParticles(blob->InParticle(i));
@@ -110,13 +111,14 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   Blob * dec;
   if (p_shower->FSROn()) {
     p_blob_psme_FS = new Blob();
-    p_blob_psme_FS->SetType(string("ME PS Interface (Sherpa, FS)"));
+    p_blob_psme_FS->SetType(btp::ME_PS_Interface_FS);
+    p_blob_psme_FS->SetTypeSpec(string("Sherpa"));
     p_blob_psme_FS->SetStatus(1);
     for (int i=0;i<blob->NOutP();++i) {
       dec = NULL;
       if (blob->OutParticle(i)->DecayBlob()) {
-	size_t pos = blob->OutParticle(i)->DecayBlob()->Type().find(std::string("Hard decay"));
-	if (pos!=std::string::npos) dec = blob->OutParticle(i)->DecayBlob();
+	if (blob->OutParticle(i)->DecayBlob()->Type()==btp::Hard_Decay) 
+	  dec = blob->OutParticle(i)->DecayBlob();
       }
       p_blob_psme_FS->AddToInParticles(blob->OutParticle(i));
       if (dec) blob->OutParticle(i)->SetDecayBlob(dec);
@@ -250,17 +252,10 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 void Amegic_Apacic_Interface::CleanBlobs(ATOOLS::Blob_List * bl)
 {
   for (Blob_Iterator blit=bl->begin();blit!=bl->end();) {
-    if ((*blit)->Type().find(string("ME PS Interface (Sherpa, IS)"))!=string::npos) {
-      blit=bl->erase(blit);
-    }
-    else if ((*blit)->Type().find(string("ME PS Interface (Sherpa, FS)"))!=string::npos) {
-      blit=bl->erase(blit);
-    }
-    else {
-      ++blit;
-    }
+    if ((*blit)->Type()==btp::ME_PS_Interface_FS || 
+	(*blit)->Type()==btp::ME_PS_Interface_IS) blit=bl->erase(blit);
+    else ++blit;
   }
-
 }
 
 int Amegic_Apacic_Interface::PerformShowers()

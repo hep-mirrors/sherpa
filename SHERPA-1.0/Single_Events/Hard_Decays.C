@@ -38,12 +38,10 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
   Particle * check;
   bool found = 1;
   bool hit   = 0;
-  size_t pos;
   while (found) {
     found = 0;
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      pos = (*blit)->Type().find(string("FS Shower"));
-      if ((*blit)->Status()==1 && pos!=std::string::npos) {
+      if ((*blit)->Status()==1 && (*blit)->Type()==btp::FS_Shower) {
 	myblob = (*blit);
 	found  = 1;
 	for (int i=0;i<myblob->NOutP();i++) {

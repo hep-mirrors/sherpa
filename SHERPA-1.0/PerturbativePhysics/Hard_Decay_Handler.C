@@ -231,7 +231,8 @@ Decay_Channel * Hard_Decay_Handler::SpecifyHardDecay(ATOOLS::Particle * _part,do
       Decay_Channel * dc = (*dit)->GetOneDecayChannel();
       Blob * blob         = new Blob();
       blob->AddToInParticles(_part);
-      blob->SetType(string("Hard decay : ")+dc->ProcessName());
+      blob->SetType(btp::Hard_Decay);
+      blob->SetTypeSpec(dc->ProcessName());
       blob->SetBeam(-1);
       blob->SetStatus(1);
       _part->SetDecayBlob(blob);

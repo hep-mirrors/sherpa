@@ -77,18 +77,16 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Particle_List * 
   Blob_Iterator endblob = _bloblist->end(); 
   Blob * blob;
   bool flag=false;
-  int  pos,pos1,pos2,number;
+  int  number;
   Particle * p;
   for (int i=0;i<2;i++) {
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
-      pos1 = (*biter)->Type().find(std::string("Beam Remnant"));
-      pos2 = (*biter)->Type().find(std::string("IS"));
-      pos  = Max(pos1,pos2);
-      if ((*biter)->Status()==1 && (*biter)->Beam()==i && pos>-1) {
+      if ((*biter)->Status()==1 && (*biter)->Beam()==i && 
+	  ((*biter)->Type()==btp::Beam || (*biter)->Type()==btp::IS_Shower)) {
 	(*biter)->SetStatus(2);
 	blob = new ATOOLS::Blob();
 	blob->SetId(_bloblist->size());
-	blob->SetType(std::string("Bunch"));
+	blob->SetType(btp::Bunch);
 	blob->SetBeam(i);
 	blob->AddToOutParticles((*biter)->InParticle(0));
 	if ((*biter)->InParticle(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
@@ -130,19 +128,19 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _
   Blob_Iterator endblob = _bloblist->end(); 
   Blob * blob;
   bool okay=false;
-  int pos,number;
+  int number;
   for (int i=0;i<2;i++) {
     p_beampart[i]->Clear();
     bool flag=true,treat=false;
     for (Blob_Iterator biter = _bloblist->begin();biter != endblob;++biter) {
-      pos = (*biter)->Type().find(std::string("IS"));
-      if ((*biter)->Beam()==i && (*biter)->Status()==1 && pos>-1) { 
+      if ((*biter)->Beam()==i && (*biter)->Status()==1 && 
+	  (*biter)->Type()==btp::IS_Shower) { 
 	blob=NULL;
 	if (p_beampart[i]->Type()==Remnant_Base::Hadron) {
 	  if (flag) {
 	    blob = new ATOOLS::Blob();
 	    blob->SetId(_bloblist->size());
-	    blob->SetType(std::string("Beam Remnant"));
+	    blob->SetType(btp::Beam);
 	    blob->SetBeam(i);
 	    blob->SetStatus(1);
 	    Particle *p = new Particle(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum());
@@ -161,7 +159,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _
 	  (*biter)->SetStatus(2);
 	  blob = new ATOOLS::Blob();
 	  blob->SetId(_bloblist->size());
-	  blob->SetType(std::string("Beam Remnant"));
+	  blob->SetType(btp::Beam);
 	  blob->SetBeam(i);
 	  blob->SetStatus(1);
 	  p_beampart[i]->ExtractParton((*biter)->InParticle(0));

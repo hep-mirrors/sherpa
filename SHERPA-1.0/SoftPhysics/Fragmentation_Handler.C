@@ -59,8 +59,7 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
 
   bool okay = 1;
   for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {
-    if ( ((*biter)->Type()==std::string("Fragmentation")) && 
-	 ((*biter)->Status()==1) ) {
+    if ( (*biter)->Type()==btp::Fragmentation && (*biter)->Status()==1 ) {
       //(*biter)->BoostInCMS();
       (*biter)->SetCMS();
        okay = okay && p_lund->Hadronize((*biter),bl,pl);
@@ -93,7 +92,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List 
 		newb = new Blob();
 		newb->SetId(_bloblist->size());
 		newb->SetStatus(1);
-		newb->SetType(std::string("Fragmentation"));
+		newb->SetType(btp::Fragmentation);
 		_bloblist->push_back(newb);
 	      }
 	      part->SetStatus(2);
@@ -111,7 +110,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List 
       }
     }
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      if (!((*blit)->Type()==std::string("Fragmentation"))) {
+      if (!(*blit)->Type()==btp::Fragmentation) {
 	active = 0;
 	for (int i=0;i<(*blit)->NOutP();i++) {
 	  if ((*blit)->OutParticle(i)->Status()==1) { 
@@ -124,7 +123,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List 
     }
   }
   for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-    if (!((*blit)->Type()==std::string("Fragmentation"))) {
+    if (!(*blit)->Type()==btp::Fragmentation) {
       active = 0;
       for (int i=0;i<(*blit)->NOutP();i++) {
 	if ((*blit)->OutParticle(i)->Status()==1) { 

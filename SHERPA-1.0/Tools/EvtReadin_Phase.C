@@ -6,8 +6,14 @@ using namespace std;
 
 
 
+EvtReadin_Phase::EvtReadin_Phase(Output_Handler * _iohandler) :
+  p_iohandler(_iohandler), p_evtreader(NULL), m_path(".")
+{
+  m_type = std::string("Read-in");
+}    
+
 EvtReadin_Phase::EvtReadin_Phase(Event_Reader * _evtreader) :
-  p_evtreader(_evtreader), m_path(_evtreader->GetPath())
+  p_iohandler(NULL), p_evtreader(_evtreader), m_path(_evtreader->GetPath())
 {
   m_type = std::string("Read-in");
 }    
@@ -15,10 +21,14 @@ EvtReadin_Phase::EvtReadin_Phase(Event_Reader * _evtreader) :
 bool EvtReadin_Phase::Treat(ATOOLS::Blob_List * _bloblist, double & weight) 
 {
   if (!m_read) {
-    //std::cout<<"In EvtReadin_Phase::Treat"<<std::endl;
-    p_evtreader->FillBlobs(_bloblist);
-    //what about the weight ???
-    weight = p_evtreader->Weight();
+    if (p_iohandler) {
+      p_iohandler->InputFromFormat(_bloblist);
+      //weight = p_iohandler->Weight();
+    }
+    if (p_evtreader) {
+      p_evtreader->FillBlobs(_bloblist);
+      weight = p_evtreader->Weight();
+    }
     m_read = true;
   }
   return (!m_read);

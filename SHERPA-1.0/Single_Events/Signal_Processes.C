@@ -45,7 +45,7 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
   while (found) {
     found = 0;
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      if (((*blit)->Type()==string("Signal Process : ")) && ((*blit)->Status()==0)) {
+      if ((*blit)->Type()==btp::Signal_Process && (*blit)->Status()==-1) {
 	myblob = (*blit);
 	found  = 1;
 	msg.Tracking()<<" calling GenerateOneEvent() "<<endl;
@@ -56,7 +56,7 @@ bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
 	  hit = 1;
 	}
       }
-      else if (((*blit)->Type()==string("Signal Process : ")) && ((*blit)->Status()==-1)) {
+      else if (((*blit)->Type()==btp::Signal_Process) && ((*blit)->Status()==-1)) {
 	myblob = (*blit);
 	found  = 1;
 	msg.Tracking()<<" calling GenerateSameEvent() "<<endl;
@@ -77,9 +77,8 @@ void Signal_Processes::CleanUp() { return; }
 void Signal_Processes::FillBlob(Blob * blob, const double, const int)
 {
   PROFILE_HERE;
-
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
-  blob->SetType(blob->Type()+p_mehandler->ProcessName());
+  blob->SetTypeSpec(p_mehandler->ProcessName());
   blob->SetStatus(1);
 
   Vec4D cms = Vec4D(0.,0.,0.,0.);

@@ -114,7 +114,8 @@ bool Event_Handler::GenerateEvent(int mode)
 
 
   Blob * hardblob = new Blob();
-  hardblob->SetType(std::string("Signal Process : "));
+  hardblob->SetType(btp::Signal_Process);
+  hardblob->SetStatus(-1);
   hardblob->SetId(0);
   m_blobs.push_back(hardblob);
 
@@ -124,6 +125,8 @@ bool Event_Handler::GenerateEvent(int mode)
       if ((*pit)->Type()==std::string("Perturbative") &&
 	  (*pit)->Name()!=std::string("Analysis") ) {
 	bool result=(*pit)->Treat(&m_blobs,weight);
+	ATOOLS::msg.Tracking()<<"Event_Handler::Generate_Event("<<mode<<"): "
+			      <<"Phase "<<(*pit)->Name()<<" yields: "<<result<<std::endl;
  	if (result) flag = 1;
       }
     }
@@ -150,6 +153,7 @@ bool Event_Handler::GenerateEvent(int mode)
 	(*pit)->Name()==std::string("Analysis") ) (*pit)->Treat(&m_blobs,weight);
   }
 
+  PrintBlobs();
   return 1;
 }
 

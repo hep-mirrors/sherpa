@@ -219,10 +219,12 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   Particle     * part;
   Blob         * hardblob, * showerblob, * hadronblob;
   bool           endevent,hard,shower,hadron;
-  hard = shower = hadron = false;
+  endevent  = hard = shower = hadron = false;
+  minhadron = 0;
 
   hardblob         = new Blob();
-  hardblob->SetType(std::string("Signal Process : ")+m_generator);
+  hardblob->SetType(btp::Signal_Process);
+  hardblob->SetTypeSpec(m_generator);
   hardblob->SetId(0);
   hardblob->SetPosition(Vec4D(0.,0.,0.,0.));
   hardblob->SetStatus(1);
@@ -232,7 +234,8 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   hardblob->AddData("ME_Weight",new Blob_Data<double>(m_weight));
 
   showerblob         = new Blob();
-  showerblob->SetType(std::string("FS Shower : ")+m_generator);
+  showerblob->SetType(btp::FS_Shower);
+  showerblob->SetTypeSpec(m_generator);
   showerblob->SetId(1);
   showerblob->SetPosition(Vec4D(0.,0.,0.,0.));
   showerblob->SetStatus(1);
@@ -240,7 +243,8 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
   blobs->push_back(showerblob);
 
   hadronblob         = new Blob();
-  hadronblob->SetType(std::string("Fragmentation : ")+m_generator);
+  hadronblob->SetType(btp::Fragmentation);
+  hadronblob->SetTypeSpec(m_generator);
   hadronblob->SetId(2);
   hadronblob->SetPosition(Vec4D(0.,0.,0.,0.));
   hadronblob->SetStatus(1);
@@ -360,6 +364,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
       return false;
     }
   }
+  return true;
 }
 
 
@@ -400,7 +405,7 @@ Particle * Event_Reader::TranslateFromInput(std::string buffer,int & mother,cons
       abort();
     }
   }
-  if (flags.size()<3 || numbers.size()<4) {
+  if (flags.size()<4 || numbers.size()<4) {
     msg.Error()<<"Error in Event_Reader::TranslateFromInput."<<std::endl
 	       <<"   Not enough information provided for particle construction :"
 	       <<"   ("<<flags.size()<<" "<<numbers.size()<<")"<<std::endl
@@ -415,3 +420,4 @@ Particle * Event_Reader::TranslateFromInput(std::string buffer,int & mother,cons
   mother           = flags[3];
   return part;
 }
+
