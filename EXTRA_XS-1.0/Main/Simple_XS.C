@@ -308,3 +308,8 @@ void Simple_XS::SingleEvents()
 {
 }
 
+
+void Simple_XS::ResetSelector(ATOOLS::Selector_Data *const selectordata)
+{
+  for (unsigned int i=0;i<m_xsecs.size();++i) m_xsecs[i]->ResetSelector(selectordata);
+}

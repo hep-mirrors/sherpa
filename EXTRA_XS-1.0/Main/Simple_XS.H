@@ -65,6 +65,8 @@ namespace EXTRAXS {
 
     inline ATOOLS::Selector_Data *const SelectorData() { return p_selectordata; }
 
+    void ResetSelector(ATOOLS::Selector_Data *const selectordata);
+
   }; // end of class Simple_XS
 
 } // end of namespace EXTRAXS
