@@ -8,7 +8,6 @@
 #include "Run_Parameter.H"
 
 #include "Primitive_Analysis.H"
-#include "Shower_Observables.H"
 
 #include "Random.H"
 
@@ -503,13 +502,6 @@ void Final_State_Shower::ExtractPartons(Knot * kn, Particle_List * pl)
 
 bool Final_State_Shower::TestShower(Tree * tree) 
 {
-  bool do_ana=1;
-  
-  Primitive_Analysis ana("testanalysis",0);
-  Jetrates * sobs =new Jetrates(11,1.e-6,1.,180,0);
-  ana.AddObservable(sobs);
-  ana.AddObservable(new Multiplicity(00,-0.5,50.5,51,0,"FinalState"));
-  
   double E2 = sqr(rpa.gen.Ecms());
   double E  =rpa.gen.Ecms()*0.5;
   for (int i=1;i<=rpa.gen.NumberOfEvents();i++) {
@@ -521,21 +513,7 @@ bool Final_State_Shower::TestShower(Tree * tree)
     InitTwojetTree(tree,E2);
     if (!PerformShower(tree,0)) return 0;     // *AS*   (tree,0) = no jetveto! (default)
     if (rpa.gen.Tracking()) OutputTree(tree);
-    if (do_ana) {
-      // Fill Histos
-      Particle_List pl;
-      pl.push_back(new Particle(0,Flavour(kf::e),Vec4D(E,0,0,E)));
-      pl.push_back(new Particle(1,Flavour(kf::e).Bar(),Vec4D(E,0,0,-E)));
-      ExtractPartons(tree->GetRoot(),&pl);
-      ana.DoAnalysis(pl,1.);
-            
-      for (int i=0; i<pl.size();++i) {
-	delete pl[i];
-      }
-      pl.clear();
-    }
   }
-  ana.FinishAnalysis("apa_GX_125",0);
 
   return 1;
 }
