@@ -19,6 +19,7 @@ endif
 
 lib_LTLIBRARIES       =	libObservables.la
 libObservables_la_SOURCES     =	\
+				Multiplicity.C \
 			    	Statistics_Observable.C \
 			    	MI_Observables.C \
 			    	ISR_Statistics.C \
@@ -34,6 +35,7 @@ libObservables_la_SOURCES     =	\
 			    	Scaled_Observables.C \
 				Four_Jet_Angles.C
 noinst_HEADERS        =	\
+			Multiplicity.H \
 			Statistics_Observable.H \
 			MI_Observables.H \
 			ISR_Statistics.H \

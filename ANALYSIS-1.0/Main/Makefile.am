@@ -16,7 +16,6 @@ libAnalysis_la_SOURCES        =	\
 			 	Final_Selector.C \
 	 		 	Particle_Selector.C \
 			 	Primitive_Observable_Base.C \
-			 	Primitive_Observable.C \
 			 	Primitive_Calorimeter.C \
 			 	Primitive_Detector.C \
 			 	Primitive_Analysis.C \
@@ -25,7 +24,6 @@ noinst_HEADERS        =	\
 			Final_Selector.H \
 	 		Particle_Selector.H
 			Primitive_Observable_Base.H \
-			Primitive_Observable.H \
 			Primitive_Calorimeter.H \
 			Primitive_Detector.H \
 			Primitive_Analysis.H \
