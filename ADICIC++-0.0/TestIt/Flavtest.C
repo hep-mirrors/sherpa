@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/05
+//Version: 1 ADICIC++-0.0/2004/03/12
 
 //Flavtest.C - testing the dipole-flavour structure.
 
@@ -11,6 +11,9 @@
 #include <ioextra>
 #include <enumextra>
 #include "Dipole.H"
+
+
+//#define _OUTPUT _OUTPUT
 
 
 

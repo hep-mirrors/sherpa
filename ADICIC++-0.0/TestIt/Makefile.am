@@ -15,13 +15,14 @@ endif
 
 
 
-bin_PROGRAMS = Flavtest
+bin_PROGRAMS = Flavtest Emissiontest
 
 
 
 Flavtest_SOURCES = Flavtest.C
 Flavtest_LDADD = @libdir@/libAdicicTool.la \
                  @libdir@/libAdicicStruct.la \
+                 @libdir@/libAdicicHdl.la \
                  @libdir@/libToolsPhys.la \
                  @libdir@/libToolsMath.la \
                  @libdir@/libToolsOrg.la \
@@ -36,8 +37,20 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
 
 
 
+Emissiontest_SOURCES = Emissiontest.C
+Emissiontest_LDADD = @libdir@/libAdicicTool.la \
+                     @libdir@/libAdicicStruct.la \
+                     @libdir@/libAdicicHdl.la \
+                     @libdir@/libToolsPhys.la \
+                     @libdir@/libToolsMath.la \
+                     @libdir@/libToolsOrg.la \
+                     -lg2c -lm
+
+
+
 INCLUDES = -I../Tool \
            -I../Structure \
+           -I../Handler \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org
@@ -50,9 +63,6 @@ INCLUDES = -I../Tool \
 
 EXTRA_DIST = $(CVSINCLUDE)
 #EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat
-
-
-
 
 
 
