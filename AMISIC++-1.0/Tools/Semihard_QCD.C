@@ -59,7 +59,7 @@ void Semihard_QCD::CreateISRChannels()
       m_xsecs[0]->Regulator()->Type()==PHASIC::rf::qcd_trivial) {
     mass=2.0*m_xsecs[0]->Regulator()->Parameters()[0]; 
     channel = 
-      new PHASIC::Threshold_Uniform_V(mass,1.75," isr",p_pshandler->GetInfo());
+      new PHASIC::Flat_ISR_V(1.0," isr",p_pshandler->GetInfo());
   }
   else {
     channel = 
