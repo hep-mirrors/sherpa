@@ -165,7 +165,7 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 }
 
 Primitive_Integrator::Primitive_Integrator():
-  m_nopt(1000), m_nmax(1000000), m_nmaxopt(250000), m_error(0.01),
+  m_nopt(10000), m_nmax(1000000), m_nmaxopt(250000), m_error(0.01),
   m_scale (1.0), m_sum(0.0), m_sum2(0.0), m_np(0.0), m_lastdim(0), 
   m_mode(0), m_vname("I") {}
 
