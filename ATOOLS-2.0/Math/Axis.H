@@ -40,31 +40,23 @@ namespace ATOOLS {
     void SetScaling(const std::string &scalename);
     void SetVariable(const std::string &variablename);
 
+    void SetScaling(Scaling_Base<Value_Type> *const scaling);
+    void SetVariable(Variable_Base<Value_Type> *const variable);
+
+    const Scaling_Base<Value_Type>  *Scaling() const;
+    const Variable_Base<Value_Type> *Variable() const;
+
+    void SetScalingMode(const ScalingModeID &scalingmode);
+
+    ScalingModeID ScalingMode() const;
+
     Value_Type DisplayedValue(const Value_Type &realvalue,
-			      ScalingModeID tempsmode);
+			      ScalingModeID tempsmode) const;
     Value_Type RealValue(const Value_Type &displayedvalue,
-			 ScalingModeID tempsmode);
+			 ScalingModeID tempsmode) const;
 
-    // inline functions
-    inline void SetScalingMode(const ScalingModeID &scalingmode)
-    { m_scalingmode=scalingmode; }
-
-    inline void SetScaling(Scaling_Base<Value_Type> *const scaling)
-    { p_scaling=scaling; }
-    inline void SetVariable(Variable_Base<Value_Type> *const variable)
-    { p_variable=variable; }
-
-    inline ScalingModeID ScalingMode() const { return m_scalingmode; }
-
-    inline const Scaling_Base<Value_Type>  *Scaling() const 
-    { return p_scaling;  }
-    inline const Variable_Base<Value_Type> *Variable() const
-    { return p_variable; }
-
-    inline Value_Type operator()(const Value_Type &realvalue)
-    { return DisplayedValue(realvalue,Unknown); }
-    inline Value_Type operator[](const Value_Type &displayedvalue)
-    { return RealValue(displayedvalue,Unknown); }
+    Value_Type operator()(const Value_Type &realvalue) const;
+    Value_Type operator[](const Value_Type &displayedvalue) const;
     
   }; // end of class Axis
 

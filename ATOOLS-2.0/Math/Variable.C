@@ -39,6 +39,30 @@ void Variable_Base<ValueType>::ShowVariables(const int mode)
 }
 
 template <class ValueType>
+const std::string &Variable_Base<ValueType>::Name() const 
+{
+  return m_name; 
+}
+
+template <class ValueType>
+int Variable_Base<ValueType>::SelectorID() const 
+{
+  return m_selectorid; 
+}
+
+template <class ValueType>
+ValueType Variable_Base<ValueType>::operator()(const Vec3D *vectors) const
+{ 
+  return Value(vectors); 
+}
+
+template <class ValueType>
+ValueType Variable_Base<ValueType>::operator()(const Vec4D *vectors) const 
+{
+  return Value(vectors); 
+}
+
+template <class ValueType>
 class No_Variable: public Variable_Base<ValueType> {
 public:
   No_Variable();
