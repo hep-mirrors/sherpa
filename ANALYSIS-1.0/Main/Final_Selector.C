@@ -30,6 +30,7 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
   int jetmode=0;
   if (ATOOLS::rpa.gen.Beam1().Kfcode()==ATOOLS::kf::e && 
       ATOOLS::rpa.gen.Beam2().Kfcode()==ATOOLS::kf::e) jetmode=1;
+  std::cout<<" beams : "<<ATOOLS::rpa.gen.Beam2()<<","<<ATOOLS::rpa.gen.Beam2()<<"   jetmode="<<jetmode<<std::endl;
   std::string inlist="FinalState", outlist="Analysed";
   ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
   for (size_t i=0;i<parameters.size();++i) {
@@ -163,7 +164,7 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.pt_min  = fs.pt_min;
     it->second.r_min   = fs.r_min;
   }
-  if (fl==Flavour(kf::jet) && fs.r_min>0.) AddSelector(fl,fl,fs);
+  if (fl==Flavour(kf::jet) && fs.r_min>0. && m_mode!=1) AddSelector(fl,fl,fs);
 }
 
 void Final_Selector::AddSelector(const Flavour & flav1, const Flavour & flav2, 
