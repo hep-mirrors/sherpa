@@ -414,8 +414,9 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     double S2=p[4]*p[5];
     double a1=p[5]*p[0]/S2;
     double b2=p[4]*p[1]/S2;
-    m_scale[stp::kp21]=a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
-    m_scale[stp::kp22]=b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
+    double fac=ATOOLS::rpa.gen.FactorizationScaleFactor();
+    m_scale[stp::kp21]=fac*a1*a1*2.*S2*p2.PMinus()/p2.PPlus();
+    m_scale[stp::kp22]=fac*b2*b2*2.*S2*p3.PPlus()/p3.PMinus();
     // qcd scale
     pt2=m_scale[stp::as]=
       sqrt(m_scale[stp::kp21]*m_scale[stp::kp22]);
