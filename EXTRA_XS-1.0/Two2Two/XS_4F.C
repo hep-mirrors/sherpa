@@ -22,7 +22,6 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
   if (nqcd!=0 || nqed!=2)                                    return NULL;
   if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
 	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
-  for (int i=1;i<4;i++) { if (flavours[0]!=flavours[i])      return NULL; }
   if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
       ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1_f1f1(nin,nout,flavours); 
   return NULL;
@@ -30,23 +29,22 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
 
 XS_f1f1_f1f1::XS_f1f1_f1f1(const size_t nin,const size_t nout,
 			   const ATOOLS::Flavour *flavours):
-  Single_XS(nin,nout,flavours), m_Z_on(true), m_P_on(true), 
+  Single_XS(nin,nout,flavours),
+  m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
   m_anti(-2*int(flavours[0].IsAnti())+1),
-  m_y3f(2*int(flavours[0].IsUptype())-1)
+  m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
+  m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
+  m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_eq(m_anti * flavours[0].Charge()),
+  m_y3f((2.*int(flavours[0].IsUptype())-1)/2.),
+  m_v(m_y3f-2.*m_eq*m_sin2tw), m_a(m_y3f),
+  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  m_aqed      = MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
-  m_eq        = m_anti * flavours[0].Charge();
-  m_mz2       = ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
-  m_wz2       = ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width());
-  m_sin2tw    = ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
-  m_cos2tw    = 1.-m_sin2tw;
-  m_pref_qed  = (4.*M_PI*m_aqed*m_eq*m_eq);
-  m_pref_Z    = (4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw);
-  if (!ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())      m_Z_on = false;
-  if (!ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) m_P_on = false;
-  std::cout<<"Init f1f1 -> f1f1 : "<<m_anti<<" : "<<m_Z_on<<", "<<m_P_on
-	   <<"("<<m_pref_Z<<", "<<m_pref_qed<<" <- "<<sqrt(4.*M_PI*m_aqed)*m_eq<<","
+  std::cout<<"Init f1f1 -> f1f1 : anti = "<<m_anti<<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
+	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
 	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
 }
 
@@ -54,32 +52,32 @@ double XS_f1f1_f1f1::operator()(double s,double t,double u)
 {
   M_t = 0., M_u = 0., M_mix = 0.;
   if (m_P_on) {
-    M_t   +=     sqr(m_pref_qed)    * (s*s+u*u)/(t*t);
-    M_mix +=  2.*sqr(m_pref_qed)/3. * (s*s)/(t*u);
-    M_u   +=     sqr(m_pref_qed)    * (s*s+t*t)/(u*u); 
+    M_t   +=     sqr(m_pref_qed*m_eq*m_eq)    * (s*s+u*u)/(t*t);
+    M_mix +=  2.*sqr(m_pref_qed*m_eq*m_eq)/3. * (s*s)/(t*u);
+    M_u   +=     sqr(m_pref_qed*m_eq*m_eq)    * (s*s+t*t)/(u*u); 
   }
   if (m_Z_on) {
-    M_t   +=     sqr(m_pref_Z) /(4.*(sqr(t-m_mz2)+m_mz2*m_wz2)) *
-      (sqr(sqr(m_y3f-2.*m_eq*m_sin2tw)+sqr(2.*m_eq*m_sin2tw)) * (s*s+u*u) +
-       sqr(sqr(m_y3f-2.*m_eq*m_sin2tw)-sqr(2.*m_eq*m_sin2tw)) * (s*s-u*u));
-    M_mix +=  4.*sqr(m_pref_Z)/3. /4. *
-      ((t-m_mz2)*(u-m_mz2)-m_mz2*m_wz2)/(sqr((t-m_mz2)*(u-m_mz2)-m_mz2*m_wz2)+m_mz2*m_wz2*(t+u-2.*m_mz2)) *
-      (sqr(sqr(m_y3f-2.*m_eq*m_sin2tw))+sqr(sqr(2.*m_eq*m_sin2tw))) * s*s;
-    M_u   +=     sqr(m_pref_Z) /(4.*(sqr(u-m_mz2)+m_mz2*m_wz2)) *
-      (sqr(sqr(m_y3f-2.*m_eq*m_sin2tw)+sqr(2.*m_eq*m_sin2tw)) * (s*s+t*t) +
-       sqr(sqr(m_y3f-2.*m_eq*m_sin2tw)-sqr(2.*m_eq*m_sin2tw)) * (s*s-t*t));
+    M_t   +=     sqr(m_pref_Z)/((sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      (sqr(sqr(m_v)+sqr(m_a)) * (u*u+s*s) +
+       4.*sqr(m_a*m_v) * (s*s-u*u));
+    M_mix +=  2.*sqr(m_pref_Z)/3.  *
+      ((t-m_mz2)*(u-m_mz2)-m_mz2*m_wz2)/(sqr((t-m_mz2)*(u-m_mz2)-m_mz2*m_wz2)+m_mz2*m_wz2*(t+s-2.*m_mz2)) *
+      (sqr(sqr(m_v)+sqr(m_a))+ 4.*sqr(m_a*m_v)) * s*s;
+    M_u   +=     sqr(m_pref_Z)/((sqr(u-m_mz2)+m_mz2*m_wz2)) *
+      (sqr(sqr(m_v)+sqr(m_a)) * (s*s+t*t) +
+       4.*sqr(m_a*m_v) * (s*s-t*t));
   }
   if (m_P_on && m_Z_on) {
-    M_t   +=  m_pref_qed*m_pref_Z /2. *                   
+    M_t   +=  m_pref_qed*m_pref_Z  *                   
       (t-m_mz2)/(t*(sqr(t-m_mz2)+m_mz2*m_wz2)) *
-      ( sqr(m_y3f-4.*m_eq*m_sin2tw) * (s*s+u*u) + 1. * (s*s-u*u));
-    M_mix += 2.*m_pref_qed*m_pref_Z/3./2. * 
+      ( sqr(m_v*m_eq) * (s*s+u*u) + sqr(m_a*m_eq) * (s*s-u*u));
+    M_mix += 2.*m_pref_qed*m_pref_Z/3. * 
       ((u-m_mz2)/(t*(sqr(u-m_mz2)+m_mz2*m_wz2)) + 
        (t-m_mz2)/(u*(sqr(t-m_mz2)+m_mz2*m_wz2)) )  * 
-      ( sqr(m_y3f-2.*m_eq*m_sin2tw) + sqr(2.*m_eq*m_sin2tw) ) * (s*s);
-    M_u   +=  m_pref_qed*m_pref_Z /2.  * 
+      sqr(m_eq)*(sqr(m_v)+sqr(m_a)) * s*s;
+    M_u   +=  m_pref_qed*m_pref_Z   * 
       (u-m_mz2)/(u*(sqr(u-m_mz2)+m_mz2*m_wz2)) *
-      ( sqr(m_y3f-4.*m_eq*m_sin2tw) * (s*s+t*t) + 1. * (s*s-t*t));
+      ( sqr(m_v*m_eq) * (s*s+t*t) + sqr(m_a*m_eq) * (s*s-t*t));
   }
   return M_t + M_u + M_mix;
 }
@@ -113,6 +111,414 @@ bool XS_f1f1_f1f1::SetColours()
   return 1;
 }
 
+double XS_f1f1_f1f1::KFactor(double scale) 
+{ 
+  return 1.; 
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+template <> 
+Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t nout,
+						 const ATOOLS::Flavour *flavours,
+						 const size_t nqed, const size_t nqcd)
+{
+  std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  if (flavours[0]!=flavours[1].Bar() || 
+      flavours[0]!=flavours[2] || flavours[1]!=flavours[3])  return NULL;
+  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (nqcd!=0 || nqed!=2)                                    return NULL;
+  if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
+	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
+  if ((flavours[0].Charge()!=0. && ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1b_f1f1b(nin,nout,flavours); 
+  return NULL;
+}
+
+XS_f1f1b_f1f1b::XS_f1f1b_f1f1b(const size_t nin,const size_t nout,
+			   const ATOOLS::Flavour *flavours):
+  Single_XS(nin,nout,flavours), 
+  m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
+  m_anti(-2*int(flavours[0].IsAnti())+1),
+  m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
+  m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
+  m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_eq(m_anti * flavours[0].Charge()),
+  m_y3f((2.*int(flavours[0].IsUptype())-1)/2.),
+  m_v(m_y3f-2.*m_eq*m_sin2tw), m_a(m_y3f),
+  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
+{
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  std::cout<<"Init f1f1b -> f1f1b : anti = "<<m_anti<<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
+	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl;
+}
+
+double XS_f1f1b_f1f1b::operator()(double s,double t,double u) 
+{
+  M_t = 0., M_s = 0., M_mix = 0.;
+  if (m_P_on) {
+    M_t   +=     sqr(m_pref_qed*m_eq*m_eq)    * (u*u+s*s)/(t*t);
+    M_mix +=  2.*sqr(m_pref_qed*m_eq*m_eq)/3. * (u*u)/(t*s);
+    M_s   +=     sqr(m_pref_qed*m_eq*m_eq)    * (u*u+t*t)/(s*s); 
+  }
+  if (m_Z_on) {
+    M_s   +=     sqr(m_pref_Z)/((sqr(s-m_mz2)+m_mz2*m_wz2)) *
+      ((sqr(m_v)+sqr(m_a)) * (sqr(m_v)+sqr(m_a)) * (u*u+t*t) +
+       4.*(m_a*m_v*m_a*m_v) * (u*u-t*t));
+    M_mix +=  2.*sqr(m_pref_Z)/3.  *
+      ((t-m_mz2)*(s-m_mz2)-m_mz2*m_wz2)/(sqr((t-m_mz2)*(s-m_mz2)-m_mz2*m_wz2)+m_mz2*m_wz2*(t+s-2.*m_mz2)) *
+      (sqr(m_v*m_v+m_a*m_a) + 4.*m_a*m_a*m_v*m_v) * u*u;
+    M_t   +=     sqr(m_pref_Z)/((sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      ((sqr(m_v)+sqr(m_a)) * (sqr(m_v)+sqr(m_a)) * (u*u+s*s) +
+       4.*(m_a*m_v*m_a*m_v) * (u*u-s*s));
+  }
+  if (m_P_on && m_Z_on) {
+    M_t   +=  m_pref_qed*m_pref_Z  *                   
+      (t-m_mz2)/(t*(sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      ( sqr(m_v*m_eq) * (s*s+u*u) + sqr(m_a*m_eq) * (s*s-u*u));
+    M_mix += 2.*m_pref_qed*m_pref_Z/3. * 
+      ((s-m_mz2)/(t*(sqr(s-m_mz2)+m_mz2*m_wz2)) + 
+       (t-m_mz2)/(s*(sqr(t-m_mz2)+m_mz2*m_wz2)) )  * 
+      sqr(m_eq)*(sqr(m_v)+sqr(m_a)) * u*u;
+    M_s   +=  m_pref_qed*m_pref_Z   * 
+      (s-m_mz2)/(s*(sqr(s-m_mz2)+m_mz2*m_wz2)) *
+      ( sqr(m_v*m_eq) * (u*u+t*t) + sqr(m_a*m_eq) * (u*u-t*t));
+  }
+  return 2.*(M_t + M_s + M_mix);
+}
+
+bool XS_f1f1b_f1f1b::SetColours(double s, double t, double u) 
+{
+  bool swap = m_swaped;
+  RestoreInOrder();
+
+  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  
+  M_t = 1. - 2.*(u*s) / (t*t);
+  M_s = 1. - 2.*(s*t) / (u*u);
+  
+  bool result = SetColours();
+  if (swap) SwapInOrder();
+  return result;
+}
+
+
+bool XS_f1f1b_f1f1b::SetColours() 
+{
+  if (M_t > (M_t+M_s) * ran.Get()) {
+    p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
+    p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+  }
+  else {
+    p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
+    p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+  }
+  return 1;
+}
+
+double XS_f1f1b_f1f1b::KFactor(double scale) 
+{ 
+  return 1.; 
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+template <> 
+Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t nout,
+						 const ATOOLS::Flavour *flavours,
+						 const size_t nqed, const size_t nqcd)
+{
+  std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  if (flavours[0]!=flavours[1].Bar() || 
+      flavours[0]==flavours[2] || flavours[0]==flavours[3] || 
+      flavours[2]!=flavours[3].Bar())                        return NULL;
+  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (nqcd!=0 || nqed!=2)                                    return NULL;
+  if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
+	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
+  if ((flavours[0].Charge()!=0. && flavours[2].Charge()!=0. &&
+       ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f1b_f2f2b(nin,nout,flavours); 
+  return NULL;
+}
+
+XS_f1f1b_f2f2b::XS_f1f1b_f2f2b(const size_t nin,const size_t nout,
+			   const ATOOLS::Flavour *flavours) :
+  Single_XS(nin,nout,flavours), 
+  m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
+  m_anti(-2*int(flavours[0].IsAnti())+1),
+  m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
+  m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
+  m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_eq1(m_anti * flavours[0].Charge()),
+  m_eq2(m_anti * flavours[2].Charge()),
+  m_y3f1((2.*int(flavours[0].IsUptype())-1)/2.),
+  m_y3f2((2.*int(flavours[2].IsUptype())-1)/2.),
+  m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
+  m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
+  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
+{
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  if (!ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())      m_Z_on = false;
+  if (!ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) m_P_on = false;
+  std::cout<<"Init f1f1b -> f2f2b : anti = "<<m_anti<<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
+	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
+	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
+	   <<" ("<<flavours[0].Charge()<<", "<<flavours[2].Charge()<<")"<<std::endl;
+}
+
+double XS_f1f1b_f2f2b::operator()(double s,double t,double u) 
+{
+  M_s = 0.;
+  if (m_P_on) {
+    M_s   +=     sqr(m_pref_qed*m_eq1*m_eq2)   *  (u*u+t*t)/(s*s); 
+  }
+  if (m_Z_on) {
+    M_s   +=     sqr(m_pref_Z)/((sqr(s-m_mz2)+m_mz2*m_wz2)) *
+      ((sqr(m_v1)+sqr(m_a1)) * (sqr(m_v2)+sqr(m_a2)) * (u*u+t*t) +
+       4.*(m_a1*m_v1*m_a2*m_v2) * (u*u-t*t));
+  }
+  if (m_P_on && m_Z_on) {
+    M_s   +=  m_pref_qed*m_pref_Z   * 
+      (s-m_mz2)/(s*(sqr(s-m_mz2)+m_mz2*m_wz2)) *
+      ((m_v1*m_eq1)*(m_v2*m_eq2) * (t*t+u*u) + m_a1*m_a2*m_eq1*m_eq2*(u*u-t*t));
+  }
+  return 2.*(M_s);
+}
+
+bool XS_f1f1b_f2f2b::SetColours(double s, double t, double u) 
+{
+  bool swap = m_swaped;
+  RestoreInOrder();
+
+  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  
+  //M_t = 1. - 2.*(u*s) / (t*t);
+  M_s = 1. - 2.*(s*t) / (u*u);
+  
+  bool result = SetColours();
+  if (swap) SwapInOrder();
+  return result;
+}
+
+
+bool XS_f1f1b_f2f2b::SetColours() 
+{
+  return 1;
+}
+
+double XS_f1f1b_f2f2b::KFactor(double scale) 
+{ 
+  return 1.; 
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+template <> 
+Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nout,
+					       const ATOOLS::Flavour *flavours,
+					       const size_t nqed, const size_t nqcd)
+{
+  std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  if (flavours[0]!=flavours[2] || flavours[1]!=flavours[3] || 
+      (flavours[0].IsAnti() && !flavours[1].IsAnti()) ||
+      (!flavours[0].IsAnti() && flavours[1].IsAnti()))       return NULL;
+  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (nqcd!=0 || nqed!=2)                                    return NULL;
+  if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
+	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
+  if ((flavours[0].Charge()!=0. && flavours[2].Charge()!=0. &&
+       ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f2_f1f2(nin,nout,flavours); 
+  return NULL;
+}
+
+XS_f1f2_f1f2::XS_f1f2_f1f2(const size_t nin,const size_t nout,
+			   const ATOOLS::Flavour *flavours) :
+  Single_XS(nin,nout,flavours), 
+  m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
+  m_anti(-2*int(flavours[0].IsAnti())+1),
+  m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
+  m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
+  m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_eq1(m_anti * flavours[0].Charge()),
+  m_eq2(m_anti * flavours[2].Charge()),
+  m_y3f1((2.*int(flavours[0].IsUptype())-1)/2.),
+  m_y3f2((2.*int(flavours[2].IsUptype())-1)/2.),
+  m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
+  m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
+  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
+{
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  if (!ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())      m_Z_on = false;
+  if (!ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) m_P_on = false;
+  std::cout<<"Init f1f2 -> f1f2 : anti = "<<m_anti<<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
+	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
+	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
+	   <<" ("<<flavours[0].Charge()<<", "<<flavours[2].Charge()<<")"<<std::endl;
+}
+
+double XS_f1f2_f1f2::operator()(double s,double t,double u) 
+{
+  M_t = 0.;
+  if (m_P_on) {
+    M_t   +=     sqr(m_pref_qed*m_eq1*m_eq2)   *  (u*u+s*s)/(t*t); 
+  }
+  if (m_Z_on) {
+    M_t   +=     sqr(m_pref_Z)/((sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      ((sqr(m_v1)+sqr(m_a1)) * (sqr(m_v2)+sqr(m_a2)) * (u*u+s*s) +
+       4.*(m_a1*m_v1*m_a2*m_v2) * (s*s-u*u));
+  }
+  if (m_P_on && m_Z_on) {
+    M_t   +=  2.*m_pref_qed*m_pref_Z   * 
+      (t-m_mz2)/(t*(sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      (m_eq1*m_eq2*m_v1*m_v2  * (s*s+u*u) + m_eq1*m_eq2*m_a1*m_a2  * (s*s-u*u));
+  }
+  return 2.*(M_t);
+}
+
+bool XS_f1f2_f1f2::SetColours(double s, double t, double u) 
+{
+  bool swap = m_swaped;
+  RestoreInOrder();
+
+  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  
+  M_t = 1. - 2.*(u*s) / (t*t);
+  
+  bool result = SetColours();
+  if (swap) SwapInOrder();
+  return result;
+}
+
+
+bool XS_f1f2_f1f2::SetColours() 
+{
+  return 1;
+}
+
+double XS_f1f2_f1f2::KFactor(double scale) 
+{ 
+  return 1.; 
+}
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+template <> 
+Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t nout,
+						 const ATOOLS::Flavour *flavours,
+						 const size_t nqed, const size_t nqcd)
+{
+  std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  if (flavours[0]!=flavours[2] || flavours[1]!=flavours[3] || 
+      (flavours[0].IsAnti() && flavours[1].IsAnti()) ||
+      (!flavours[0].IsAnti() && !flavours[1].IsAnti()))       return NULL;
+  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
+  if (nqcd!=0 || nqed!=2)                                    return NULL;
+  if (!(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() ||
+	ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()))         return NULL;
+  if ((flavours[0].Charge()!=0. && flavours[2].Charge()!=0. &&
+       ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) ||
+      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())                 return new XS_f1f2b_f1f2b(nin,nout,flavours); 
+  return NULL;
+}
+
+XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const size_t nin,const size_t nout,
+			       const ATOOLS::Flavour *flavours) :
+  Single_XS(nin,nout,flavours), 
+  m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
+  m_anti(-2*int(flavours[0].IsAnti())+1),
+  m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
+  m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
+  m_sin2tw(ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"))),m_cos2tw(1.-m_sin2tw),
+  m_eq1(m_anti * flavours[0].Charge()),
+  m_eq2(m_anti * flavours[2].Charge()),
+  m_y3f1((2.*int(flavours[0].IsUptype())-1)/2.),
+  m_y3f2((2.*int(flavours[2].IsUptype())-1)/2.),
+  m_v1(m_y3f1-2.*m_eq1*m_sin2tw), m_a1(m_y3f1),
+  m_v2(m_y3f2-2.*m_eq2*m_sin2tw), m_a2(m_y3f2),
+  m_aqed(MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())))),
+  m_pref_qed(4.*M_PI*m_aqed),m_pref_Z((4.*M_PI*m_aqed)/(4.*m_sin2tw*m_cos2tw))
+{
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  if (!ATOOLS::Flavour(ATOOLS::kf::Z).IsOn())      m_Z_on = false;
+  if (!ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()) m_P_on = false;
+  std::cout<<"Init f1f2 -> f1f2 : anti = "<<m_anti<<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<std::endl
+	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
+	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
+	   <<m_sin2tw<<","<<m_cos2tw<<")"<<std::endl
+	   <<" m_eq1,2 = "<<m_eq1<<", "<<m_eq2
+	   <<" ("<<flavours[0].Charge()<<", "<<flavours[2].Charge()<<")"<<std::endl;
+}
+
+double XS_f1f2b_f1f2b::operator()(double s,double t,double u) 
+{
+  M_t = 0.;
+  if (m_P_on) {
+    M_t   +=     sqr(m_pref_qed*m_eq1*m_eq2)   *  (u*u+s*s)/(t*t); 
+  }
+  if (m_Z_on) {
+    M_t   +=     sqr(m_pref_Z)/((sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      ((sqr(m_v1)+sqr(m_a1)) * (sqr(m_v2)+sqr(m_a2)) * (u*u+s*s) +
+       4.*(m_a1*m_v1*m_a2*m_v2) * (s*s-u*u));
+  }
+  if (m_P_on && m_Z_on) {
+    M_t   +=  2.*m_pref_qed*m_pref_Z   * 
+      (t-m_mz2)/(t*(sqr(t-m_mz2)+m_mz2*m_wz2)) *
+      (m_eq1*m_eq2*m_v1*m_v2  * (s*s+u*u) + m_eq1*m_eq2*m_a1*m_a2  * (s*s-u*u));
+  }
+  return 2.*(M_t);
+}
+
+bool XS_f1f2b_f1f2b::SetColours(double s, double t, double u) 
+{
+  bool swap = m_swaped;
+  RestoreInOrder();
+
+  m_scale[PHASIC::stp::as] = (2.*s*t*u)/(s*s+t*t+u*u);
+  
+  M_t = 1. - 2.*(u*s) / (t*t);
+  
+  bool result = SetColours();
+  if (swap) SwapInOrder();
+  return result;
+}
+
+
+bool XS_f1f2b_f1f2b::SetColours() 
+{
+  return 1;
+}
+
+double XS_f1f2b_f1f2b::KFactor(double scale) 
+{ 
+  return 1.; 
+}
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -215,7 +621,3 @@ double XS_f1f2b_f3f4b::KFactor(const double scale)
   return 1.;
 }
 
-double XS_f1f1_f1f1::KFactor(double scale) 
-{ 
-  return 1.; 
-}
