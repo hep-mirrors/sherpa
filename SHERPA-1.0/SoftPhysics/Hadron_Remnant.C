@@ -358,7 +358,12 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
       if (xtrials>=m_maxtrials) x=cut;
     } while (x<cut);
     p_pdfbase->Calculate(x,scale);
-    if (pdftrials>=m_maxtrials) { m_xscheme=0; return 0.01; }
+    if (pdftrials>=m_maxtrials) { 
+      ATOOLS::msg.Tracking()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
+			    <<"Cannot determine x according to PDF."<<std::endl;
+      m_xscheme=0; 
+      return 0.01; 
+    }
     if (p_pdfbase->GetXPDF(flavour)/x>ATOOLS::ran.Get()) return x;
   } 
   return 0.0;

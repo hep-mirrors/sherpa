@@ -35,6 +35,7 @@ int main(int argc,char* argv[]) {
     ATOOLS::msg.Events()<<"Sherpa did "<<nevt<<" with "<<Generator.NumberOfErrors()<<" errors."<<std::endl;
   }
   ATOOLS::msg.Out()<<" Simulation finished "<<std::endl;
+  return 0;
 }
 
 

@@ -27,6 +27,7 @@ namespace ATOOLS {
     Blob    * p_endblob;
     double    m_dec_time;      
     double    m_finalmass;
+    static int s_totalnumber;
   public:
     Particle();
     Particle(const Particle * );
@@ -70,6 +71,9 @@ namespace ATOOLS {
     void   SetJetNumber(const int);
 
     bool operator==(Particle part);
+
+    static void   ResetCounter() { s_totalnumber = 0; }
+    static int    Counter()      { return s_totalnumber; }
   };
 
   // Format of a particle to transport via MPI:

@@ -50,6 +50,8 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CVS_INCLUDE_FALSE = @CVS_INCLUDE_FALSE@
+CVS_INCLUDE_TRUE = @CVS_INCLUDE_TRUE@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
@@ -135,6 +137,9 @@ rootlibdir = $(rootdir)/lib
 CLHEPlibdir = $(CLHEPDIR)/lib
 CLHEPincdir = $(CLHEPDIR)/include
 bin_PROGRAMS = Amegic
+
+@CVS_INCLUDE_TRUE@CVSINCLUDE = CVS
+
 Amegic_SOURCES = main.C Environment.C
 Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libAmegic.la \
@@ -182,11 +187,7 @@ INCLUDES = -I../Main \
 	   -I../../ATOOLS-2.0/Org 
 
 SUBDIRS = Process
-EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat \
-	Testrun/Particle.dat Testrun/Const.dat Testrun/Processes.dat \
-	Testrun/ISR.dat Testrun/Hadron.dat Testrun/Isajet.dat \
-	Testrun/Run.dat Testrun/Selector.dat Testrun/Selector.dat.sample makeclean 
-
+EXTRA_DIST = makeclean $(CVSINCLUDE)
 subdir = Run
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -458,7 +459,6 @@ top_distdir = ..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/Testrun
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

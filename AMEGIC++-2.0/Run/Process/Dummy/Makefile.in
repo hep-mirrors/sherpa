@@ -50,6 +50,8 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CVS_INCLUDE_FALSE = @CVS_INCLUDE_FALSE@
+CVS_INCLUDE_TRUE = @CVS_INCLUDE_TRUE@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
@@ -130,6 +132,9 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 lib_LTLIBRARIES = libDummy.la
+
+@CVS_INCLUDE_TRUE@CVSINCLUDE = CVS
+
 libDummy_la_SOURCES = Dummy.C
 INCLUDES = -I../../../Amplitude \
 	   -I../../../Amplitude/AmplTools \
@@ -145,7 +150,7 @@ INCLUDES = -I../../../Amplitude \
 	   -I../../../../ATOOLS-2.0/Org  \
 	   -I../../../../MODEL-1.0/Main
 
-EXTRA_DIST = Dummy.H
+EXTRA_DIST = Dummy.H $(CVSINCLUDE)
 subdir = Run/Process/Dummy
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs

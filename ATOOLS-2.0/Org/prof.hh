@@ -41,17 +41,11 @@ void print_profile( std::ostream& ost );
 void set_prof();
 
 #define PROFILE_HERE \
-{}
-/*
   static ProfStaticP _prof_static_(__PRETTY_FUNCTION__); \
-  Prof _prof_( _prof_static_.get() );
-*/
+  Prof _prof_( _prof_static_.get() )
 
 #define PROFILE_LOCAL(LOCALNAME) \
-{}
-/*
   static ProfStaticP _prof_static_(LOCALNAME); \
   Prof _prof_( _prof_static_.get() )
-*/
 
 #endif

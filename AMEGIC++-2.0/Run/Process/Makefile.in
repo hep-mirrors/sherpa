@@ -50,6 +50,8 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CVS_INCLUDE_FALSE = @CVS_INCLUDE_FALSE@
+CVS_INCLUDE_TRUE = @CVS_INCLUDE_TRUE@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
@@ -130,6 +132,9 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 lib_LTLIBRARIES = libProcess.la
+
+@CVS_INCLUDE_TRUE@CVSINCLUDE = CVS
+
 libProcess_la_SOURCES = Set_Channel.C Set_Values.C 
 INCLUDES = -I../../Amplitude \
 	   -I../../Amplitude/AmplTools \
@@ -148,8 +153,8 @@ INCLUDES = -I../../Amplitude \
 	   -I../../../ATOOLS-2.0/Math \
 	   -I../../../ATOOLS-2.0/Org 
 
-SUBDIRS = Dummy
-EXTRA_DIST = Set_Channel.C.clean Set_Values.C.clean
+SUBDIRS = Dummy 
+EXTRA_DIST = Set_Channel.C.clean Set_Values.C.clean $(CVSINCLUDE)
 subdir = Run/Process
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs

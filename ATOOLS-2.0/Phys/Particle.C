@@ -5,7 +5,12 @@
 #include "Message.H"
 #include <iomanip>
 
+namespace ATOOLS {
+  int Particle::s_totalnumber;
+}
+
 using namespace ATOOLS;
+
 
 bool ATOOLS::Particle::operator==(Particle part)
 {
@@ -47,6 +52,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str,Particle* part) {
 }
 
 Particle::~Particle() {
+  --s_totalnumber;
   if (p_flow) { delete p_flow; p_flow = NULL; } 
 }
 
@@ -54,6 +60,7 @@ Particle::Particle():
   p_startblob(NULL),
   p_endblob(NULL)
 {
+  ++s_totalnumber;
   m_number    = -1;
   m_info      = ' ';
   m_status    = 1;
@@ -67,6 +74,8 @@ Particle::Particle(const Particle * in):
   p_startblob(NULL),
   p_endblob(NULL)
 {
+  ++s_totalnumber;
+
   m_number    = in->m_number;
   m_info      = in->m_info;
   m_status    = in->Status();
@@ -83,6 +92,7 @@ Particle::Particle(const Particle * in):
 
 Particle::Particle(const Particle & in)  
 {
+  ++s_totalnumber;
   p_flow=0;
   *this = in;
 }
@@ -112,6 +122,7 @@ Particle& Particle::operator=(const Particle & in)
 
 
 Particle::Particle(int number,Flavour fl,Vec4D p)  {
+  ++s_totalnumber;
   m_number    = number;
   m_status    = 1;
   m_info      = ' ';

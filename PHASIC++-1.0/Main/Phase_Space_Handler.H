@@ -11,8 +11,19 @@ namespace PHASIC  { class  Phase_Space_Integrator; }
 namespace BEAM    { class  Beam_Spectra_Handler;   }
 namespace PDF     { class  ISR_Handler;            }
 
+namespace ATOOLS {
+  class Blob_Data_Base;
+}
 
 namespace PHASIC {
+  struct Weight_Info {
+    double        weight;
+    unsigned long ntrial;
+    Weight_Info(const double _weight, const unsigned long _ntrial):
+      weight(_weight), ntrial(_ntrial) {}
+  };
+  
+
   class Phase_Space_Handler {
     Integrable_Base            * proc;
     BEAM::Beam_Spectra_Handler * bh;
@@ -29,9 +40,10 @@ namespace PHASIC {
     double                       E,m1,m2,m12,m22,s,sprime,y;
     double                       sprimeB,yB,sprimeI,yI;
     double                       result1,result2,flux;
-    double                       m_weight; 
-    ATOOLS::Vec4D            * p;
-    Phase_Space_Integrator     * psi;    
+    double        m_weight; 
+    unsigned long m_ntrial;
+    ATOOLS::Vec4D          * p;
+    Phase_Space_Integrator * psi;    
     bool  m_initialized;
     Integration_Info           * p_info;
     Info_Key                     m_spkey, m_ykey, m_xkey;
@@ -60,17 +72,17 @@ namespace PHASIC {
     double Differential(Integrable_Base *);
     bool   OneEvent(double _mass = -1.,int mode = 0);
     bool   SameEvent();
-    double WeightedEvent(int mode =0);
-    double SameWeightedEvent();
+    ATOOLS::Blob_Data_Base *  WeightedEvent(int mode =0);
+    ATOOLS::Blob_Data_Base *  SameWeightedEvent();
     void   AddPoint(double);
     void   TestPoint(ATOOLS::Vec4D *);
 
     // Simple access methods.
 
-    inline ATOOLS::Vec4D *     Point()        { return p; }
-    inline ATOOLS::Flavour *  Flavs()        { return psflavs; }
-    inline double                Weight()       { return m_weight; }
-
+    inline ATOOLS::Vec4D *   Point()  { return p; }
+    inline ATOOLS::Flavour * Flavs()  { return psflavs; }
+    inline double            Weight() { return m_weight; }
+    inline unsigned long     NTrial() { return m_ntrial; }
 
     inline Multi_Channel  * BeamIntegrator()          { return beamchannels; }
     inline Multi_Channel  * ISRIntegrator()           { return isrchannels; }

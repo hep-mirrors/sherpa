@@ -1,5 +1,7 @@
 #include "Output_Handler.H"
 #include "Message.H"
+#include "Run_Parameter.H"
+#include "Data_Read.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -28,8 +30,14 @@ Output_Handler::Output_Handler(int type) :
 #endif
     return;
   case 2:
-    p_hepevt = new HepEvt_Interface();
+    {
+    Data_Read dataread(rpa.GetPath()+std::string("Run.dat"));
+    std::string hepevt_output=dataread.GetValue<std::string>("HEPEVT_OUTPUT");
+    if (hepevt_output==NotDefined<std::string>()) hepevt_output="";
+
+    p_hepevt = new HepEvt_Interface(hepevt_output);
     m_active = 1;
+    }
     return;
   default :
     msg.Error()<<"Potential Error in Output_Handler::Output_Handler("<<type<<")"<<std::endl

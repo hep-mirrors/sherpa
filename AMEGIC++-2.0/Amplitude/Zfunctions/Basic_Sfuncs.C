@@ -516,7 +516,7 @@ void Basic_Sfuncs::InitGaugeTest(double theta)
 int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
 {
   //  PROFILE_HERE;
-  PROFILE_LOCAL("int Basic_Sfuncs::setS(Vec4D* _p)");
+  //  PROFILE_LOCAL("int Basic_Sfuncs::setS(Vec4D* _p)");
   // _eta's and _mu's precalc
   
   p = _p;

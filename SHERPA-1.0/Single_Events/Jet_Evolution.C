@@ -172,7 +172,7 @@ bool Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	}
       }
     }
-    else if (shower==3) {
+    else  if (shower==3) {
       _blob->SetType(type);
       _blob->SetStatus(-1);
       p_showerhandler->CleanUp();

@@ -37,8 +37,6 @@ Analysis_Phase::Analysis_Phase(const std::string & btype,const std::string & pat
   m_status      = 0;
   p_analysis    = new Primitive_Analysis(m_btype,ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds|
 					 ANALYSIS::splitt_phase|ANALYSIS::do_me|ANALYSIS::do_shower);
-  //ANALYSIS::splitt_phase|ANALYSIS::do_me);
-  // --- Andreas Analysis ---
 
   Final_Selector * fsel =  new Final_Selector("FinalState","KtJetsNLeptons");
   // pure teilchen eigenschaften

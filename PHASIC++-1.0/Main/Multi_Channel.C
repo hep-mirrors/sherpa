@@ -299,6 +299,8 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts)
 
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
+  //  cout<<"Multi_Channel::GenerateWeight"<<endl;
+
   if (channels.size()==1) {
     channels[0]->GenerateWeight(p,cuts);
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
@@ -327,6 +329,9 @@ void Multi_Channel::GeneratePoint(int n,Vec4D * p,Cut_Data * cuts,double * ran)
 
 void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {
+  //  cout<<" Multi_Channel::GeneratePoint "<<endl;
+  //  cout<<*cuts<<endl;
+
   for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
   if(channels.size()==1) {
     channels[0]->GeneratePoint(p,cuts);
@@ -342,6 +347,7 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
     }
     sum += channels[i]->Alpha();
     if (sum>rn) {
+      //      cout<<" choosen : "<<i<<" "<<channels[i]->Name()<<endl;
       channels[i]->GeneratePoint(p,cuts);
       break;
     }

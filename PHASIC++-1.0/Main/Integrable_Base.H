@@ -11,6 +11,7 @@ namespace PHASIC {
 
   class Integrable_Base {
   public:
+    Integrable_Base();
     virtual int                        Nin()                           = 0;
     virtual int                        Nout()                          = 0;
     virtual int                        Nvec()                          = 0;
@@ -35,7 +36,15 @@ namespace PHASIC {
     virtual void                       SetHelicitySampling(bool) {}
     virtual void                       SwapInOrder()                   = 0;
     virtual void                       RestoreInOrder()                = 0;
+    void SetOverflow(double);
+    double Overflow();
+  private:
+    double m_overflow;
   };
+
+  inline void Integrable_Base::SetOverflow(double overflow) { m_overflow=overflow; }
+  inline double Integrable_Base::Overflow() { return m_overflow; }
+
 }
 
 #endif

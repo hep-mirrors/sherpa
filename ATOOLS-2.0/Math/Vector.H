@@ -111,6 +111,9 @@ namespace ATOOLS {
     inline const double Y() const; 
     inline const double Eta() const; 
 
+    inline const double Y() const; 
+    inline const double Eta() const; 
+
     Vec4D& operator+= (const Vec4D& v);
     Vec4D& operator-= (const Vec4D& v);
     Vec4D& operator*= (const double scal);

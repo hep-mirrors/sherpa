@@ -1,6 +1,8 @@
 #include "HepEvt_Interface.H"
 #include "Message.H"
 
+#include <iomanip>
+
 using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
@@ -11,23 +13,57 @@ extern "C" {
 }
 
 
-HepEvt_Interface::HepEvt_Interface() : m_evtnumber(0) {}
+HepEvt_Interface::HepEvt_Interface(const std::string & name) : m_evtnumber(0) 
+{
+  m_filename=name;
+  if (m_filename!="") {
+    m_ofile.open(m_filename.c_str());
+    m_ofile.precision(10);
+    //    m_ofile.setf(ios_base::scientific);
+  }
 
 
-HepEvt_Interface::~HepEvt_Interface() {}
-
-
-void HepEvt_Interface::Sherpa2HepEvt(Blob_List * _blobs) {
   phep     = new double[5*maxentries];
   vhep     = new double[4*maxentries];
   jmohep   = new int[2*maxentries];
   jdahep   = new int[2*maxentries];
   isthep   = new int[maxentries];
   idhep    = new int[maxentries];
+}
 
+void HepEvt_Interface::WriteHepEvt(int nhep)
+{
+  if (m_filename!="") {
+    m_ofile<<"  "<<m_evtnumber<<" "<<nhep<<" \n";
+    for (int i=0;i<nhep;++i) {
+      m_ofile<<"  "<<isthep[i]<<" "<<idhep[i]<<" "<<jmohep[2*i]<<" "<<jmohep[2*i+1]<<" "<<jdahep[2*i]<<" "<<jdahep[2*i+1]<<" \n ";
+      for (int j=0;j<5;++j) m_ofile<<phep[5*i+j]<<" ";
+      m_ofile<<"\n ";
+      for (int j=0;j<4;++j) m_ofile<<vhep[4*i+j]<<" ";
+      m_ofile<<"\n";
+    }
+  }
+}
+
+HepEvt_Interface::~HepEvt_Interface() 
+{
+  if (m_filename!="") {
+    m_ofile.close();
+  }
+  delete [] jmohep;
+  delete [] jdahep;
+  delete [] isthep;
+  delete [] idhep; 
+  delete [] phep;  
+  delete [] vhep;  
+}
+
+
+void HepEvt_Interface::Sherpa2HepEvt(Blob_List * _blobs) {
   m_connect.clear();
 
   m_evtnumber++;
+
   int nhep = 0;
 
   ISBlobs2HepEvt(_blobs,nhep);
@@ -35,15 +71,11 @@ void HepEvt_Interface::Sherpa2HepEvt(Blob_List * _blobs) {
   FSBlobs2HepEvt(_blobs,nhep);
   FragmentationBlob2HepEvt(_blobs,nhep);
   HadronDecayBlobs2HepEvt(_blobs,nhep);
+  
+  m_nhep=nhep;
 
   inhepevt_(m_evtnumber,nhep,isthep,idhep,jmohep,jdahep,phep,vhep);
-
-  delete [] jmohep;
-  delete [] jdahep;
-  delete [] isthep;
-  delete [] idhep; 
-  delete [] phep;  
-  delete [] vhep;  
+  WriteHepEvt(nhep);
 }
 
 void HepEvt_Interface::ISBlobs2HepEvt(Blob_List * _blobs,int & _nhep) {

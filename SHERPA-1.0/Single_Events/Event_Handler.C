@@ -84,7 +84,6 @@ bool Event_Handler::GenerateEvent(int mode)
 
   CleanUpEvent();
 
-
   bool flag     = 1;
   double weight = 1.;
   if (mode>0) {

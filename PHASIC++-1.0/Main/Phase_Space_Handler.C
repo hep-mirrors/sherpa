@@ -14,6 +14,8 @@
 #include "Message.H"  
 #include "Random.H"
 
+#include "Blob.H"
+
 #ifdef PROFILE__Phase_Space_Handler
 #include "prof.hh"
 #endif
@@ -116,7 +118,7 @@ bool Phase_Space_Handler::InitIncoming(double _mass)
     if (ih) {
       if (ih->On()>0) {
 	ih->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
-	msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
+	msg.Out()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
 		       <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
 		       <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
 	isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
@@ -254,7 +256,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
 	result1 *= beamchannels->Weight() * bh->Weight();
 	bh->BoostInCMS(p,nin+nout);
       }
-      KFactor *= proc->KFactor(Q2);
+      KFactor *= process->KFactor(Q2);
     }
     fsrchannels->GenerateWeight(p,proc->Cuts());
     result1 *= KFactor * fsrchannels->Weight();
@@ -294,7 +296,7 @@ bool Phase_Space_Handler::SameEvent() {
   return OneEvent(-1.,1);
 }
 
-double Phase_Space_Handler::SameWeightedEvent() {
+ATOOLS::Blob_Data_Base *  Phase_Space_Handler::SameWeightedEvent() {
   return WeightedEvent(1);
 }
 
@@ -323,12 +325,25 @@ bool Phase_Space_Handler::OneEvent(double _mass,int _mode)
     proc->Selected()->RestoreInOrder();
     
     if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
-    value = Differential(proc->Selected());
+
+    double max = proc->Selected()->Max();
+    if (proc->Overflow()==0.) {
+      value = Differential(proc->Selected());
+    }
+    else {
+      value = proc->Overflow();
+      if (value > max) {
+	proc->SetOverflow(value-max);
+	value=max;
+      }
+      else {
+	proc->SetOverflow(0.);
+      }
+    }
 
     if (value > 0.) {
-      double max;
       double disc = 0.;
-      max = proc->Selected()->Max();
+      
       if (value > max) {
 	msg.Events()<<"Shifted maximum in "<<proc->Selected()->Name()<<" : "
 		    <<proc->Selected()->Max()<<" -> "<<value<<endl;
@@ -360,8 +375,10 @@ bool Phase_Space_Handler::OneEvent(double _mass,int _mode)
   return 0;
 }
 
-double Phase_Space_Handler::WeightedEvent(int mode)
+ATOOLS::Blob_Data_Base *  Phase_Space_Handler::WeightedEvent(int mode)
 {
+  if (!m_initialized) InitIncoming();
+
   double value;
   for (int i=1;i<maxtrials+1;i++) {
     if (mode==0) {
@@ -389,15 +406,17 @@ double Phase_Space_Handler::WeightedEvent(int mode)
       else {
 	proc->Selected()->SetMomenta(p);
       }
-      m_weight=value;
-      return m_weight;
-      }
+      m_weight = value;
+      m_ntrial = i;
+
+      return new Blob_Data<Weight_Info>(Weight_Info(m_weight,m_ntrial));
+    }
   }
 
   msg.Error()<<"Phase_Space_Handler::WeightedEvent() : "
 	     <<" too many trials for "<<proc->Selected()->Name()<<endl;
   m_weight=0.;
-  return 0.;
+  return 0;
 } 
 
 void Phase_Space_Handler::AddPoint(const double value) { 
@@ -448,12 +467,10 @@ bool Phase_Space_Handler::ReadIn(string pID) {
   if (isrchannels  != 0) okay = okay && isrchannels->ReadIn(pID+string("/MC_ISR"));
   if (fsrchannels  != 0) okay = okay && fsrchannels->ReadIn(pID+string("/MC_FSR"));
 
-  char * filename = new char[100];
-  string help     = (pID+string("/Random")).c_str();
-  strcpy(filename,help.c_str());
-  //  for (int pos=0;pos<help.length();pos++) filename[pos] = help[pos]; // missing '\0' to end the string
-
-  ran.ReadInStatus(filename,0);
+  if (rpa.gen.RandomSeed()==1234) {
+    string filename     = (pID+string("/Random")).c_str();
+    ran.ReadInStatus(filename.c_str(),0);
+  }
 
   return okay;
 }
@@ -996,5 +1013,20 @@ bool Phase_Space_Handler::CreateISRChannels()
   return 1;
 }
 
+
+
+// --------------------------------------------------
+
+template Weight_Info ATOOLS::Blob_Data_Base::Get<Weight_Info>();
+
+namespace ATOOLS {
+  std::ostream & operator<<(std::ostream & s, const PHASIC::Weight_Info & wi)
+  {
+    s<<" weight="<<wi.weight<<"   ntrial="<<wi.ntrial<<std::endl;
+    return s;
+  }
+}
+
+template class Blob_Data<Weight_Info>;
 
 

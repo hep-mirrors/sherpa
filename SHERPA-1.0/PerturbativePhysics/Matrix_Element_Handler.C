@@ -214,7 +214,6 @@ bool Matrix_Element_Handler::RescaleJetrates()
     errsum+= (*procs)[i]->TotalError();
   }
 
-
   cout<<" rescale Jetrates : "<<endl;
   //vs.facs[10] = { 1., 1., 1. , 0.1, 1., 1.,1., 1., 1., 1.};
   double facs[10] = { 1., 1., 1. , 1, 1., 1.,1., 1., 1., 1.};

@@ -290,6 +290,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     m_jetvetopt2=asscale;
     FixJetvetoPt2();
     qmin=sqrt(m_jetvetopt2);
+    //    std::cout<<"qmin="<<qmin<<std::endl;
   }
 
 

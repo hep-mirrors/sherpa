@@ -17,6 +17,10 @@ namespace PDF {
     double                m_fixed_smin, m_fixed_smax;
     ATOOLS::Vec4D       m_fiXVECs[2];
     std::string           m_name, m_type;
+
+
+    const ATOOLS::Flavour  DiQuark(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
+    bool CheckRemnantKinematics(const ATOOLS::Flavour &,double,int);
   public:
     ISR_Handler(int *,ATOOLS::Flavour *,ATOOLS::Flavour *,double *);
     ISR_Handler(ISR_Base **,double *);

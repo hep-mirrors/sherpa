@@ -60,6 +60,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_ycut(_ycut), m_type(_type) , m_jet_alg(1), p_value(NULL), p_frame(NULL)
 {
   rpa.gen.SetYcut(_ycut);
+  m_ycut=1.0*m_ycut;
 
   m_name    = std::string("Jetfinder");
 
@@ -68,7 +69,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_smin    = m_ycut * m_s;
   m_smax    = m_s;
 
-  m_shower_pt2 = m_ycut * m_s;
+  m_shower_pt2 = _ycut * m_s;
   p_value   = new double[1];
 
   m_sel_log = new Selector_Log(m_name);
@@ -300,6 +301,7 @@ Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) 
   m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type), p_value(NULL), p_frame(NULL) 
 {
   rpa.gen.SetYcut(_ycut);
+  m_ycut=1.0*m_ycut;
 
   m_name = std::string("Jetfinder");
   m_fl   = _fl;

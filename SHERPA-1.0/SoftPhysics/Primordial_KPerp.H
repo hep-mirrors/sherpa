@@ -19,6 +19,7 @@ namespace SHERPA {
     int m_current[2], m_scheme;
     
     double m_kperpmean[2], m_kperpsigma[2];
+    double m_kperpmeans[2], m_kperpsigmas[2];
 
     double Lambda2(double sp,double sp1,double sp2); 
 

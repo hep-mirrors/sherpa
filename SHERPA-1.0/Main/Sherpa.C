@@ -79,11 +79,8 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
 bool Sherpa::InitializeTheEventHandler() 
 {
-  PROFILE_HERE;
-  
   int mode       = p_inithandler->Mode();
   p_eventhandler = new Event_Handler();
-
   if (mode==9999) p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_inithandler->GetEventReader()));
   else {
       cout<<" ============================================ "<<std::endl;

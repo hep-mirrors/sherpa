@@ -17,7 +17,10 @@ namespace SHERPA {
     std::map<ATOOLS::Particle *,int> m_connect;
     double * phep,   * vhep;
     int    * jmohep, * jdahep,  * isthep, * idhep;
-    int      nhep;
+    int m_nhep;
+
+    std::string m_filename;
+    std::ofstream m_ofile;
     
     void ISBlobs2HepEvt(ATOOLS::Blob_List *,int &);
     void HardBlob2HepEvt(ATOOLS::Blob_List *,int &);
@@ -29,13 +32,16 @@ namespace SHERPA {
     void EstablishRelations(ATOOLS::Blob *);  
     void Particle2HepEvt(ATOOLS::Particle *,int &);
     void String2HepEvt(ATOOLS::Blob *,int &);
+
+
+    void WriteHepEvt(int nevt);
   public:
-    HepEvt_Interface();
+    HepEvt_Interface(const std::string & =std::string(""));
     ~HepEvt_Interface();
     
     void Sherpa2HepEvt(ATOOLS::Blob_List *);
 
-    int      Nhep()   { return nhep; }
+    int      Nhep()   { return m_nhep; }
     double * Phep()   { return phep; }
     double * Vhep()   { return vhep; }
     int    * Jmohep() { return jmohep; }

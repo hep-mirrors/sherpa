@@ -209,12 +209,18 @@ bool ISR_Handler::CalculateWeight2(double scale)
 
 double ISR_Handler::Weight(Flavour * flin)
 {
-  return (p_ISRBase[0]->Weight(flin[0]) * p_ISRBase[1]->Weight(flin[1]));
+  if (m_mode!=3 || (CheckRemnantKinematics(flin[0],m_x1,0) &&
+      CheckRemnantKinematics(flin[1],m_x2,1))) 
+    return (p_ISRBase[0]->Weight(flin[0]) * p_ISRBase[1]->Weight(flin[1]));
+  return 0.;
 }
 
 double ISR_Handler::Weight2(Flavour* flin)
 {
-  return (p_ISRBase[0]->Weight(flin[1]) * p_ISRBase[1]->Weight(flin[0]));
+  if (CheckRemnantKinematics(flin[0],m_x1,1) &&
+      CheckRemnantKinematics(flin[1],m_x2,0)) 
+    return (p_ISRBase[0]->Weight(flin[1]) * p_ISRBase[1]->Weight(flin[0]));
+  return 0.;
 }
 
 
@@ -232,4 +238,71 @@ void  ISR_Handler::BoostInCMS(Vec4D* p,int n) {
 
 void  ISR_Handler::BoostInLab(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) m_CMSBoost.BoostBack(p[i]);
+}
+
+
+const Flavour ISR_Handler::DiQuark(const Flavour & fl1,const Flavour & fl2) 
+{
+  // lightes flavour with that content
+  int kf1=fl1.Kfcode();
+  int kf2=fl2.Kfcode();
+  Flavour diquark;
+  if (kf1>kf2) diquark =(kf::code)(kf1*1000 + kf2*100 + 1);
+  else if (kf1<kf2)  diquark =(kf::code)(kf2*1000 + kf1*100 + 1);
+  else diquark =(kf::code)(kf2*1000 + kf1*100 + 3);
+  if (fl1.IsAnti()) diquark=diquark.Bar();
+  return diquark;    
+}
+
+
+bool ISR_Handler::CheckRemnantKinematics(const ATOOLS::Flavour & fl,double x,int nbeam)
+{
+  if (x<.99) return true;
+
+  double mf   = fl.PSMass();
+  double msum = 0.;
+
+  double erem = (1. -x -1.e-6)*ATOOLS::rpa.gen.Ecms();
+  
+  Flavour bunch=p_ISRBase[nbeam]->Flav();
+  if (!bunch.IsHadron()) return true;
+  
+  int hadint=(bunch.Kfcode()-bunch.Kfcode()/10000)/10;
+
+  if ((hadint<=100)||(hadint>=1000)) return true;
+
+  Flavour constit[3];
+  constit[0]=ATOOLS::Flavour(ATOOLS::kf::code(hadint)/100);
+  constit[1]=ATOOLS::Flavour(ATOOLS::kf::code((hadint-(hadint/100)*100)/10));
+  constit[2]=ATOOLS::Flavour(ATOOLS::kf::code(hadint-(hadint/10)*10));
+  if (bunch.IsAnti()) {
+    for (int i=0;i<3;i++) constit[i]=constit[i].Bar();
+  }
+
+  // valence quark
+  for (int i=0;i<3;++i) if (constit[i]==fl) {
+    for (int j=i+1;j<3;++j) {
+      constit[j-1]=constit[j];
+    }
+    Flavour diquark=DiQuark(constit[0], constit[1]);
+    msum+=diquark.PSMass();
+    break;
+  }
+
+  if (msum==0) {
+    // gluon
+    if (fl.IsGluon()) {
+      Flavour diquark=DiQuark(constit[0], constit[2]);
+      msum+=constit[1].PSMass()+diquark.PSMass();    
+    }
+    else {
+      // sea quark
+      Flavour diquark=DiQuark(constit[0], constit[2]);
+      msum+=constit[1].PSMass()+diquark.PSMass();
+      msum+=fl.PSMass();
+    }
+  }
+
+  if (erem < mf + msum) return false;
+  return true;
 }

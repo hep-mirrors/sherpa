@@ -104,8 +104,6 @@ void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, int ncount)
   if (pt2>1.e-10*pp*pp) {
     value = sn*0.5*log(sqr(pp+pz)/pt2);
   }
-  std::cout<<" eta="<<eta<<std::endl;
-  std::cout<<" neta="<<value<<std::endl;
   p_histo->Insert(value,weight,ncount);
 } 
 

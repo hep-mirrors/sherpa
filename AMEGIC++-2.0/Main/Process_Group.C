@@ -543,7 +543,7 @@ void Process_Group::SetMax(double max) {
     m_max=max;
     return;
   }
-  // paramter is dummy!
+  // parameter is dummy!
   double sum = 0.;
   m_max = 0.;
   for (int i=0;i<m_procs.size();i++) {

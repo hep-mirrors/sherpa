@@ -55,9 +55,9 @@ namespace EXTRAXS {
 
     void   SelectOne();
     bool   UnweightedEvent(int mode=0);
-    double WeightedEvent(int mode=0);
+    ATOOLS::Blob_Data_Base * WeightedEvent(int mode=0);
     bool   SameEvent()    ;
-    double SameWeightedEvent();
+    ATOOLS::Blob_Data_Base * SameWeightedEvent();
 
     void   SingleEvents();
     bool   PrepareXSecTables();

@@ -140,12 +140,12 @@ bool SimpleXSecs::UnweightedEvent(int mode)
   return 0;
 }
 
-double SimpleXSecs::WeightedEvent(int mode)
+ATOOLS::Blob_Data_Base * SimpleXSecs::WeightedEvent(int mode)
 {
+  msg.Out()<<" WARNING: SimpleXSecs::WeightedEvent not suported calling UnweightedEvent !"<<std::endl;
   SelectOne();
-  double weight=p_selected->OneEvent();
-  if (weight>0.) return weight;
-  return 0.;
+  p_selected->OneEvent();
+  return 0;
 }
 
 void SimpleXSecs::ResetSelector(ATOOLS::Selector_Data *_seldata)

@@ -12,15 +12,15 @@ namespace ATOOLS {
   private:
     Particle *          p_owner;
     std::map<int,int>   m_code;
-    static long qcd_counter;
+    static long s_qcd_counter;
   public:
     Flow(Particle * _owner=NULL);
     ~Flow();
     const Particle *   Owner() const;
     int                Code(int _index=1);
     void               SetCode(int code_index=1,int code=-1);
-    static void        ResetCounter() { qcd_counter = 600; }
-    static long        Counter()      { return ++qcd_counter; }    
+    static void        ResetCounter() { s_qcd_counter = 600; }
+    static long        Counter()      { return ++s_qcd_counter; }    
   };  
 }
 

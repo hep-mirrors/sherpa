@@ -74,13 +74,9 @@ namespace ATOOLS {
     void AddSubAnalysis(const std::string &,Primitive_Analysis *);
     // most simple analysis, assume the observables a know how to handle a single value
     void DoAnalysis(const Particle_List &, double);
-
-    // advanced analysis, working with a bloblist, thus event generation properties can be exploit
- 
+    // advanced analysis, working with a bloblist, thus event generation properties can be exploited
     void DoAnalysis(Blob_List * const , double);
-    //void DoAnalysis(const Blob_List &, double);
- 
-   // finialise and write out results of analysis
+    // finalise and write out results of analysis
     void FinishAnalysis(const std::string &, long=0, double =1.);
     
 
