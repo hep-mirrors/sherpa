@@ -8,16 +8,22 @@
 namespace APACIC {
   class Timelike_Kinematics {
     //! For vetos on extra jet from Shower.
-    bool jetveto;
-    APHYTOOLS::Jet_Finder* jf;
-    int pt_scheme; 
-    int mass_scheme;
+    double                  pt2min,t0;
+    bool                    jetveto;
+    APHYTOOLS::Jet_Finder * jf;
+    int                     pt_scheme; 
+    int                     mass_scheme;
   public:
     //-----------------------------------------------------------------------
     //----------------------- Constructors ----------------------------------
     //----------------------------------------------------------------------- 
     //! Constructor to initialise the Jet_Finder
-    Timelike_Kinematics();
+    Timelike_Kinematics(double _pt2min) : 
+      pt2min(_pt2min), t0(4.*pt2min),pt_scheme(1),mass_scheme(1) 
+    {
+      double ycut   = AORGTOOLS::rpa.integ.Ycut();
+      jf            = new APHYTOOLS::Jet_Finder(ycut,1);
+    };
     //! Destructor to delete the Jet_Finder
     ~Timelike_Kinematics() {
       if (jf)   delete jf;

@@ -14,7 +14,9 @@ namespace APACIC {
 	   maxpt2(1.e10),x(0.),kn_no(-1) {};
     //! copy constructor
     Knot(Knot * in);
-    //! copy only the interior
+    //! copy only the interior (not the links)
+    void CopyData(Knot * in);
+    //! copy the knot properties
     void Copy(Knot * in);
 
     ~Knot();
@@ -65,10 +67,7 @@ namespace APACIC {
     kn_no  = ink->kn_no;
   };
 
-  inline void Knot::Copy(Knot * ink) {
-    prev   = ink->prev;
-    left   = ink->left;
-    right  = ink->right;
+  inline void Knot::CopyData(Knot * ink) {
 
     part->Copy(ink->part);
     stat   = ink->stat;
@@ -84,7 +83,16 @@ namespace APACIC {
     thcrit = ink->thcrit;
     
     kn_no  = ink->kn_no;
-  };
+  }
+
+  inline void Knot::Copy(Knot * ink) {
+    prev   = ink->prev;
+    left   = ink->left;
+    right  = ink->right;
+
+    CopyData(ink);
+  }
+
 
   inline Knot::~Knot() {
     if (part) delete part;

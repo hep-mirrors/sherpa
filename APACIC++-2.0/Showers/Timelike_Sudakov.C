@@ -4,7 +4,6 @@
 #include "QED_Splitting_Functions.H"
 #include "Timelike_Kinematics.H"
 #include "Sudakov_Tools.H"
-//#include "Vector.H"
 #include "Knot.H"
 #include "MathTools.H"
 
@@ -18,34 +17,33 @@ using namespace std;
 //-------------------- Constructors -------------------------------------
 //----------------------------------------------------------------------- 
 
-Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):
-  p_kin(_kin),m_last_veto(0) 
+Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin,double _pt2min,
+				   Data_Read * _dataread) :
+  p_kin(_kin), m_pt2min(_pt2min) 
 {
-  m_ordering_scheme = 1; /*  (1=VO+Coherence, 2=VO);                           */ 
-  m_cpl_scheme      = 1; /*  (0=fix, 1=pt^2, 2=t/4)                            */ 
-  m_pt_scheme       = 1; /*  (0=> pt^2 = z(1-z)t      for VO
-			    1=> z(1-z)t - (1-z)*t_0(b) - z*t_0(c)           
-                            2=> pt^2 = 1/4 min (z/(1-z),(1-z)/z) t */ 	  
-  m_mass_scheme     = 1; /*  (0=cuts, 1=a la Catani, 2=define t_eff)           */
-  m_width_scheme    = 0; /* (1) (0=no width supression,
-			    1=cut such that pt2 always > square of width
-	  		    2=suppressed according to pt2/(Gamma^2+pt2)      */			    
-  m_zrange_scheme   = 1; /*  (only for mass_scheme = 0: 0=constrained z,
-		                                      1=unconstrained z)     */ 
-  m_MEcorr_scheme   = 0; /* "1/0" (0=none, 1=hardest so far, 2=first)          */
-  m_angle_scheme    = 1; /*  (1=approximate angles)                            */
-  m_direct_photons  = 0; /*  (0=no photons in shower, 1=photons in shower)     */
-
-  //      -- initialise alphaS and the crude estimates --
-  m_pt2min = rpa.pshower.FinalQ02();      // rpa.Q02() gives minimum pt^2 for last branch.
+  m_ordering_scheme = _dataread->GetValue<int>("FS ORDERING",1);       /*  (1=VO+Coherence, 2=VO)                  */ 
+  m_cpl_scheme      = _dataread->GetValue<int>("FS COUPLINGS",1);      /*  (0=fix, 1=pt^2, 2=t/4)                  */ 
+  m_pt_scheme       = _dataread->GetValue<int>("FS PT DEFINITION",1);  /*  (0=> pt^2 = z(1-z)t      
+									   for VO
+			                                                   1=> z(1-z)t - (1-z)*t_0(b) - z*t_0(c)   */
+  m_mass_scheme     = _dataread->GetValue<int>("FS MASS SCHEME",1);    /*  (0=cuts, 1=a la Catani, 2=define t_eff) */
+  m_width_scheme    = _dataread->GetValue<int>("FS WIDTH SCHEME",0);   /*  (0=no width supression,
+	 		                                                   1=cut pt2 always > square of width
+	  		                                                   2=suppressed by pt2/(Gamma^2+pt2)      */
+  if (m_mass_scheme==0) 
+    m_zrange_scheme = _dataread->GetValue<int>("FS Z RANGES",1);       //  (only for mass_scheme = 0: 
+  else                                                                 //   0=constrained z,
+    m_zrange_scheme = 1;                                               //   1=unconstrained z)
+  m_MEcorr_scheme   = _dataread->GetValue<int>("FS ME CORRECTIONS",0); /*  (0=none, 1=hardest so far, 2=first)     */
+  m_angle_scheme    = _dataread->GetValue<int>("FS ANGLE DEF",1);      /*  (1=approximate angles)                  */
+  m_direct_photons  = _dataread->GetValue<int>("FS PHOTONS",0);        /*  (0=no photons in shower,         
+									   1=photons in shower)                    */
   m_pt2max = sqr(rpa.gen.Ecms());         // this is an obvious choice ....
   p_tools  = new Sudakov_Tools(m_cpl_scheme,m_pt2min,m_pt2max);
   m_t0     = 4.*m_pt2min;
-
-  cout<<" t0="<<m_t0<<endl;
-
   //      -- initialise QCD splitting functions -- 
   //      -- initialise QED splitting functions -- 
+
   for (int i=1;i<17;++i) {
     if (i==7) i=11;
     Flavour fl = Flavour(kf::code(i));
@@ -60,13 +58,12 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * _kin):
 	Add(new f_fp(fl.Bar(),p_tools));
 	if (fl.PSMass()<100.) Add(new p_ff(fl,p_tools));
       }
-    };
+    }
   }
   Add(new g_gg());
-
+  
+  
   PrintStat();
-  // Check splitting functions
-  //CheckSplittings();
 }
 
 Timelike_Sudakov::~Timelike_Sudakov()
@@ -81,25 +78,25 @@ Timelike_Sudakov::~Timelike_Sudakov()
 
 bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) 
 {
-  m_last_veto=0;
+  m_last_veto = 0;
   m_inflav = mother->part->Flav(); 
   m_ta     = mother->t;                  
   m_wa     = mother->E2;
 
   double tend = sqr(sqrt(mother->tout+0.25*m_t0) +sqrt(0.25*m_t0));
 
-  msg.Debugging()<<"Timelike_Sudakov::Dice (t,E2): "<<m_ta<<" / "<<m_wa<<" / for ("<<mother->kn_no
-		 <<"), "<<m_inflav<<std::endl;
+  //msg.Debugging()<<"Timelike_Sudakov::Dice (t,E2): "<<m_ta<<" / "<<m_wa<<" / for ("<<mother->kn_no
+  //	 <<"), "<<m_inflav<<std::endl;
 
   if ((m_ta-tend)<rpa.gen.Accu()) {
-    msg.Debugging()<<"Timelike_Sudakov::Dice : mother can't branch (m_ta<t_end) : "
-		   <<m_ta<<" < "<<tend<<std::endl
-		   <<"      mother = "<<m_inflav<<", mass = "<<m_inflav.PSMass()<<", "
-		   <<"status = "<<mother->stat<<std::endl;
-    if (mother->prev) {
-      msg.Debugging()<<"      prev = "<<mother->prev->part->Flav()  
-		     <<", stat = "<<mother->prev->stat<<", t = "<<mother->prev->t<<std::endl;
-    }
+    //msg.Debugging()<<"Timelike_Sudakov::Dice : mother can't branch (m_ta<t_end) : "
+    //	   <<m_ta<<" < "<<tend<<std::endl
+    //	   <<"      mother = "<<m_inflav<<", mass = "<<m_inflav.PSMass()<<", "
+    //	   <<"status = "<<mother->stat<<std::endl;
+    //if (mother->prev) {
+    //msg.Debugging()<<"      prev = "<<mother->prev->part->Flav()  
+    //	     <<", stat = "<<mother->prev->stat<<", t = "<<mother->prev->t<<std::endl;
+    //}
     return 0; 
   }
 
@@ -108,16 +105,12 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
   while (m_ta>tend) {
     //    if (last_veto==0 || last_veto==7) {
     if (m_mass_scheme >= 2) m_ta -= mother->tout;
-    if (m_pt_scheme == 2 ) {
-      z0 = 1. / ( 1. + m_ta/m_t0) ;
-    }
-    else {
-      z0 = 0.5 * (1. - sqrt(1.-m_t0/m_ta)) ; // condition that 4 pt^2 > t0 !!!
-    }
-
-    
+    if (m_pt_scheme == 2 ) { z0 = 1. / ( 1. + m_ta/m_t0) ;                                            }
+    else                   { z0 = 0.5 * (1. - sqrt(1.-m_t0/m_ta)) ; /* condition that 4 pt^2 > t0 */  }
     if (z0<rpa.gen.Accu()) {
-      msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl;
+      msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl
+		 <<"    Set it on 10^-6 and hope for the best."<<std::endl;
+      z0 = 1.e-6;
     }
     CrudeInt(z0,1.-z0);
     //    }
@@ -125,22 +118,22 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
     ProduceT();
 
     int test_mass=0;
-    if ((m_mass_scheme >= 2) && (m_ta+mother->tout<tend)) test_mass=1;
-    if ((m_mass_scheme < 2) && (m_ta<tend)) test_mass=1;
+    if ((m_mass_scheme>=2) && (m_ta+mother->tout<tend)) test_mass=1;
+    if ((m_mass_scheme<2)  && (m_ta<tend))              test_mass=1;
     if (test_mass) {
-      msg.Debugging()<<"Timelike_Sudakov::No Branch for ("<<mother->kn_no<<"), "<<m_inflav
-		     <<", set on t="<<mother->tout
-		     <<"  fl="<<mother->part->Flav()<<"  mfl="<<mother->part->Flav().PSMass()<<std::endl;
+      //msg.Debugging()<<"Timelike_Sudakov::No Branch for ("<<mother->kn_no<<"), "<<m_inflav
+      //	     <<", set on t="<<mother->tout
+      //	     <<"  fl="<<mother->part->Flav()<<"  mfl="<<mother->part->Flav().PSMass()<<std::endl;
       
       return 0;
     }
 
     // determine estimate for energy
     if (granny) {
-      msg.Debugging()<<"Timelike_Sudakov::Dice() change Energy"<<endl
-		     <<" wa = "<<m_wa;
+      //msg.Debugging()<<"Timelike_Sudakov::Dice() change Energy"<<endl
+      //	     <<" wa = "<<m_wa;
       m_wa = 0.25*sqr(m_ta+granny->E2)/granny->E2;
-      msg.Debugging()<<" -> "<<m_wa<<"  (ta="<<m_ta<<")"<<endl;
+      //msg.Debugging()<<" -> "<<m_wa<<"  (ta="<<m_ta<<")"<<endl;
     }
 
     if (m_ta<m_wa) {
@@ -149,27 +142,25 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
       m_pt2 = m_z*(1.-m_z)*m_ta;
       m_tb  = sqr(GetFlB().PSMass());
       m_tc  = sqr(GetFlC().PSMass());
-      if (m_pt_scheme == 1) m_pt2 -= (1.-m_z)*m_tb + m_z*m_tc;
-      else if (m_pt_scheme == 2)
-	m_pt2 = 0.25*Min((1.-m_z)/m_z,m_z/(1.-m_z))*m_ta;
-
+      if (m_pt_scheme == 1)      m_pt2 -= (1.-m_z)*m_tb + m_z*m_tc;
+      else if (m_pt_scheme == 2) m_pt2 = 0.25*Min((1.-m_z)/m_z,m_z/(1.-m_z))*m_ta;
       if (m_pt2>m_pt2min) {
 	if (!Veto(mother)) {
-	  msg.Debugging()<<"Timelike_Sudakov::Dice Branch with t="<<m_ta<<", z="<<m_z<<", ("
-			 <<GetFlB()<<","<<GetFlC()<<"), tend="<<tend<<std::endl;      
+	  //msg.Debugging()<<"Timelike_Sudakov::Dice Branch with t="<<m_ta<<", z="<<m_z<<", ("
+	  //	 <<GetFlB()<<","<<GetFlC()<<"), tend="<<tend<<std::endl;      
 	  if (m_mass_scheme >= 2) m_ta += mother->tout;
 	  UniformPhi();
 	  mother->z      = m_z;
 	  mother->t      = m_ta;
 	  mother->phi    = m_phi;
 	  if (m_inflav.IsQuark()) mother->maxpt2 = m_pt2;
-	  else mother->maxpt2 = m_pt2max;
+	  else                    mother->maxpt2 = m_pt2max;
 	  return 1;
 	}
       }
     }
   }
-  msg.Debugging()<<"Timelike_Sudakov::Banged out of Dice !"<<std::endl;
+  //msg.Debugging()<<"Timelike_Sudakov::Banged out of Dice !"<<std::endl;
   return 0; 
 }
 
@@ -180,23 +171,19 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
 void Timelike_Sudakov::ProduceT() 
 {
   if (m_lastint<0.) m_ta  = -1.;
-             else m_ta *= exp( 2.*M_PI*log(ran.Get()) / m_lastint );
+               else m_ta *= exp( 2.*M_PI*log(ran.Get()) / m_lastint );
 }
 
 
 bool Timelike_Sudakov::Veto(Knot * mo) 
 {  
   m_last_veto=0;
-  
-  // 0. trivial ranges : timelike, enough energy for daughters and physical opening angle ?
-
   double wb      = m_z*m_z*m_wa;
   double wc      = (1.-m_z)*(1.-m_z)*m_wa;
   // timelike daughters
   if ((m_tb>wb) || (m_tc>wc)) {
     return 1;
   }
-
   // timelike
   if (m_wa < m_ta) {
     m_last_veto=1;
@@ -207,7 +194,6 @@ bool Timelike_Sudakov::Veto(Knot * mo)
     m_last_veto=2;
     return 1;
   }
-
   // 1. masses, z-range and splitting function
   if (MassVeto()) {
     m_last_veto=3;
@@ -228,7 +214,6 @@ bool Timelike_Sudakov::Veto(Knot * mo)
     m_last_veto=6;
     return 1;
   }
-
   // 5. JetVeto *AS*
   if (JetVeto(mo)) {
     m_last_veto=7;
@@ -239,18 +224,6 @@ bool Timelike_Sudakov::Veto(Knot * mo)
 
 bool Timelike_Sudakov::MassVeto() 
 {
-
-  // *FK*  double newt0  = sqr( sqrt(tb+0.25*m_t0) + sqrt(m_tc+0.25*m_t0));
-  /*
-  double z0 = 0.5 * (1. - sqrt(1.-m_t0/m_ta)) ; // condition that pt^2 > m_t0/4 !!!
-  if (pt_scheme == 2 ) {
-    z0 = 1. / ( 1. + m_ta/m_t0) ;
-  }
-  double zm = z0;
-  double zp = 1. - z0;
-  // *FK*  if (z<zm || zp<z) return 1;
-  */
-
   double x_p_mom = sqrt(1.-m_ta/m_wa) ;   
   double mean_z,delta_z;              
 
@@ -265,15 +238,17 @@ bool Timelike_Sudakov::MassVeto()
     break;
   }
   if ((m_z<mean_z - delta_z) || (m_z>mean_z + delta_z)) {
-    //    cout<<" zrange "<<(mean_z - delta_z)<<" < "<<z<<" < "<<(mean_z + delta_z)<<endl;
+    //cout<<" zrange "<<(mean_z - delta_z)<<" < "<<m_z<<" < "<<(mean_z + delta_z)
+    //<<" in scheme : "<<m_zrange_scheme<<endl
+    //<<" for t/E/p : "<<m_ta<<" / "<<m_wa<<" / "<<x_p_mom<<endl;
     return 1;
   }
 
   double w1 = GetWeight(m_z,m_pt2,(m_mass_scheme==1 || m_mass_scheme==3));
-  if (w1<ran.Get()) {
-    //    cout<<"weight="<<w1<<endl;
-    return 1;
-  }
+  /* FK   test it in conjuntion with a different weight in the splitting function ... maybe later. */
+  //double w1 = GetWeight(m_z,m_ta,(m_mass_scheme==1 || m_mass_scheme==3));
+
+  if (w1<ran.Get()) return 1;
 
   if ((m_width_scheme > 0) && (sqr(m_inflav.Width()) > 0.)) {
     if (m_width_scheme==1) {
@@ -283,7 +258,6 @@ bool Timelike_Sudakov::MassVeto()
       if (m_pt2/(m_pt2+sqr(m_inflav.Width())) < ran.Get()) return 1;
     }
   }
-  //  msg.Debugging()<<"            MassVeto"<<std::endl;  
   return 0;
 }
 
@@ -321,20 +295,14 @@ bool Timelike_Sudakov::AngleVeto(Knot * mo)
 bool Timelike_Sudakov::MEVeto(Knot * mo) 
 {
   if (!m_inflav.Strong()) return 0;
-  //cout<<" (a) "<<endl;
 
   Knot * gr = mo->prev;
   if (gr->t < 0) return 0;
-  //cout<<" (b) "<<endl;
 
-  if ((m_MEcorr_scheme == 0) || (!gr))            return 0;
-  //cout<<" (c) "<<endl;
-  if ((m_MEcorr_scheme == 2) && (gr->prev))       return 0;
-  //cout<<" (d) "<<endl;
+  if ((m_MEcorr_scheme == 0) || (!gr))              return 0;
+  if ((m_MEcorr_scheme == 2) && (gr->prev))         return 0;
   if ((m_MEcorr_scheme == 1) && (m_pt2<mo->maxpt2)) return 0;
-  //cout<<" (e) "<<endl;
-  // Flavours: ME correction only for q->qg and q->qgamma (has to be done)
-  if (!(m_inflav.IsQuark()))                      return 0;
+  if (!(m_inflav.IsQuark()))                        return 0;
 
   // determine which is the current twig of the tree:
   Knot * twig = mo;
@@ -408,9 +376,9 @@ double Timelike_Sudakov::CrudeInt(double _zmin, double _zmax)
   for (;iter();++iter)
     if (iter()->GetFlA()==m_inflav) {p_selected=iter();break;}
   if (!iter()) {
-    cout<<"Timelike_Sudakov::CrudeInt : "<<endl;
-    cout<<"ERROR : splitting function missing for "<<m_inflav<<endl;
-    m_lastint = -1.;
+    msg.Error()<<"Timelike_Sudakov::CrudeInt : "<<endl
+	       <<"WARNING : splitting function missing for "<<m_inflav<<endl;
+    return m_lastint = -1.;
   }
   return m_lastint=p_selected->CrudeInt(_zmin,_zmax);
 }        

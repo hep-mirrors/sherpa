@@ -19,7 +19,7 @@ namespace APACIC {
     Final_State_Shower   *  p_fin;
     Sudakov_Tools        *  p_tools;
 
-    bool   m_jetveto;
+    bool   m_jetveto,m_fsron;
     double m_sprime;
     double m_t0;
 
@@ -30,12 +30,13 @@ namespace APACIC {
     AMATOOLS::Vec4D m_lab;
 
   public:
-    Initial_State_Shower(ISR::ISR_Handler *, Final_State_Shower *);// for testing purposes
+    Initial_State_Shower(ISR::ISR_Handler *, Final_State_Shower *,
+			 AORGTOOLS::Data_Read *);// for testing purposes
     ~Initial_State_Shower();
     bool PerformShower(Tree **,bool);
     void InitShowerPT(double pt2max);
-    void ExtractPartons(Knot *,APHYTOOLS::Blob *,
-			APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *,int);
+    void ExtractPartons(Knot *,int,APHYTOOLS::Blob *,
+			APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
     bool TestShower(Tree **) ;
 
     AMATOOLS::Vec4D GetLab();
@@ -44,6 +45,7 @@ namespace APACIC {
     Knot * GetInitiator(int);
     Knot * GetInitiator(Tree *);
 
+    void OutputTree(Tree *);
   private:
     bool InitializeSystem(Tree **,Knot *,Knot *);
     void InitTwoTrees(Tree **,double);
@@ -54,7 +56,6 @@ namespace APACIC {
     void SetColours(Knot *);
     void SetStartingConditions(double,double,int) ;
 
-    void OutputTree(Tree *);
   };
 
   //----------------------------------------------------------------------

@@ -10,12 +10,14 @@ namespace PDF {
 
 namespace APACIC {
   class Sudakov_Tools;
+  class Spacelike_Kinematics;
   class Knot;
 
   // dicing z and t for spacelike (initial state) shower evolution
   class Spacelike_Sudakov : public Backward_Splitting_Group {
     // global parameters
     Sudakov_Tools * p_tools;
+    Spacelike_Kinematics * p_kin;
     PDF::PDF_Base * p_pdfa;
     double          m_pt2min, m_pt2max; 
     double          m_alphaSmax, m_alphaSfix; 
@@ -39,22 +41,24 @@ namespace APACIC {
     
     void SelectOne() { p_selected->SelectOne();};
     void ProduceT();  
-    bool Veto(Knot *); 
+    bool Veto(Knot *,bool); 
     bool CplVeto();
     bool PTVeto(Knot *);
+    bool JetVeto(Knot *);
     bool MassVeto();
     void UniformPhi() { m_phi =  2.*M_PI*AMATOOLS::ran.Get(); };
   public:
-    Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools * _tools);
+    Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools *, Spacelike_Kinematics *,
+		      double,AORGTOOLS::Data_Read *); 
     ~Spacelike_Sudakov() {};
-    bool Dice(Knot * mother,double sprime);
+    bool Dice(Knot * mother,double sprime,bool jetveto);
 
     static double Q02(APHYTOOLS::Flavour const & flav) { 
       return AMATOOLS::sqr(flav.PSMass()); 
-    }; // !!!
+    } // !!!
     static double MinE2(APHYTOOLS::Flavour const & flav) { 
       return AMATOOLS::sqr(flav.PSMass()); 
-    }; //!!!mass
+    } //!!!mass
 
   };
 

@@ -1,4 +1,5 @@
 #include "Spacelike_Sudakov.H"
+#include "Spacelike_Kinematics.H"
 #include "Timelike_Sudakov.H"
 #include "Sudakov_Tools.H"
 #include "Knot.H"
@@ -14,27 +15,23 @@ using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
-Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools) : 
-  m_last_veto(0), p_tools(_tools), Backward_Splitting_Group(0,0) 
+
+Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spacelike_Kinematics * _kin,
+				     double _pt2min,AORGTOOLS::Data_Read * _dataread) : 
+  m_last_veto(0), p_tools(_tools), p_kin(_kin), Backward_Splitting_Group(0,0), m_pt2min(_pt2min) 
 {
-  p_pdf    = _pdf; 
-  p_pdfa   = p_pdf->GetCopy();
+  p_pdf             = _pdf; 
+  p_pdfa            = p_pdf->GetCopy();
+  m_ordering_scheme = _dataread->GetValue<int>("IS ORDERING",0);  /* Switch for ordering due to coherence:  
+                                                                     0 = none, 1 = pt^2, 2 = pt^2/E^2         */
+  m_cpl_scheme      = _dataread->GetValue<int>("IS COUPLINGS",1); /*  (0=fix, 1=pt^2, 2=t/4)                  */ 
+  m_emin            = .5;
+  m_pt2max          = sqr(rpa.gen.Ecms());
+  m_pt2min          = rpa.pshower.InitialQ02();
+  m_lambda2         = p_tools->GetLambda2(); // from as(pt2max) = 1/(beta_0 * log(pt2max/lambda^2))
+  m_b               = p_tools->GetBnorm();   //      2*pi*beta_0*scalefactor
 
-  m_cpl_scheme      = 1;  /*  (0=fix, 1=pt^2 2=t/4)                             */   
-  m_ordering_scheme = 0;  /* Switch for ordering due to coherence:  
-                           0 = none, 1 = pt^2, 2 = pt^2/E^2                   */
-
-  m_emin        = .5;
-
-  m_pt2max      = sqr(rpa.gen.Ecms());
-  m_pt2min      = rpa.pshower.InitialQ02();
-  m_lambda2     = p_tools->GetLambda2(); // from as(pt2max) = 1/(beta_0 * log(pt2max/lambda^2))
-  m_b           = p_tools->GetBnorm();   //      2*pi*beta_0*scalefactor
-
-  msg.Events()<<"Init QCD splitting functions ..."<<std::endl
-		 <<"   ("<<rpa.gen.Beam1()<<","<<rpa.gen.Beam1().IsHadron()<<","
-		 <<rpa.gen.Beam2()<<","<<rpa.gen.Beam2().IsHadron()<<")"<<std::endl;
-  if ( (rpa.gen.Beam1().IsHadron()) || (rpa.gen.Beam2().IsHadron())) {
+  if (p_pdf->Bunch().IsHadron()) {
     // -- initialise QCD Splittingfunctions --
     for (int i=1;i<6;++i) {
       msg.Debugging()<<"   ... : "<<Flavour(i)<<" -> "<<Flavour(i)<<std::endl;
@@ -52,22 +49,7 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools) :
     Add(new g_gg(p_tools));
   }
 
-  /*
-  if ( (rpa.gen.Beam1().IsLepton()) || (rpa.gen.Beam2().IsLepton())) {
-    for (int i=7;i<13;i+=2) {
-      // add gluon quark & quark gluon (loop over active Flavours)
-      Add(new f_fp(Flavour(i),p_tools));
-      Add(new f_fp(Flavour(i).Bar(),p_tools));
-      Add(new f_pf(Flavour(i),p_tools));
-      Add(new f_pf(Flavour(i).Bar(),p_tools));
-      // add q qbar & qbar q (loop over active Flavours)
-      Add(new p_ff(Flavour(i),p_tools));
-      Add(new p_ff(Flavour(i).Bar(),p_tools));
-    }
-  }
-  */
-
-  if ( (rpa.gen.Beam1().IsLepton()) || (rpa.gen.Beam2().IsLepton())) {
+  if (p_pdf->Bunch().IsLepton()) {
     Add(new f_fp(Flavour(kf::e),p_tools));                
     Add(new f_fp(Flavour(kf::e).Bar(),p_tools));
     Add(new f_pf(Flavour(kf::e),p_tools));
@@ -77,18 +59,17 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools) :
   }
 
   PrintStat();
-    
 }
 
 
-bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
+bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto) {
   m_last_veto = 0;
   m_inflav = mo->part->Flav(); 
   m_t      = mo->t;
   m_x      = mo->x;
   m_t0     = m_pt2min;
   
-  msg.Debugging()<<"Spacelike_Sudakov::Dice (t,x): "<<m_t<<" / "<<m_x<<" / for ("<<mo->kn_no
+  msg.Tracking()<<"Spacelike_Sudakov::Dice (t,x): "<<m_t<<" / "<<m_x<<" / for ("<<mo->kn_no
 		 <<"), "<<m_inflav<<std::endl;
   
   if (!((m_t-m_t0)<rpa.gen.Accu())) {
@@ -143,6 +124,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
   
   while (m_t<m_t0) {
     CrudeInt(m_zmin,m_zmax);  // using above pdf !!! and inflav
+    double save_t = m_t;
     ProduceT();
     if (m_t>m_t0) {
       msg.Debugging()<<"Spacelike_Sudakov::No Branch for ("<<mo->kn_no<<"), "<<m_inflav
@@ -154,8 +136,11 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
     SelectOne();
     m_z   = GetZ();   
     m_pt2 = -(1.-m_z)*m_t;
-    if (!Veto(mo)) {
-      msg.Debugging()<<"Spacelike_Sudakov::Dice Branch with t="
+
+    double uhat = -m_t - sprime* (1.-m_z)/m_z;
+
+    if (uhat<0. && !Veto(mo,jetveto)) {
+      msg.Tracking()<<"Spacelike_Sudakov::Dice Branch with t="
 		     <<m_t<<", z="<<m_z<<", "<<m_inflav<<" for "<<m_lastint<<std::endl;
       UniformPhi();
       mo->z      = m_z;
@@ -164,11 +149,16 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime) {
       return 1;
     }
     else {
-      msg.Debugging()<<" Branch Vetoed "<<m_last_veto<<std::endl;
-      msg.Debugging()<<m_t<<", z="<<m_z<<", "<<m_inflav<<" for "<<m_lastint<<std::endl;
+      msg.Debugging()<<" Branch Vetoed "<<m_last_veto;
+      msg.Debugging()<<"("<<m_t<<", z="<<m_z<<", "<<m_inflav<<" for "<<m_lastint<<")"<<std::endl;
     }
+//     if (uhat>0. ) {
+//       // reset t
+//       m_t=save_t;
+//     }
+
   }
-  msg.Debugging()<<"Spacelike_Sudakov::Banged out of Dice !"<<std::endl;
+  msg.Tracking()<<"Spacelike_Sudakov::Banged out of Dice !"<<std::endl;
   mo->t    = mo->tout;
   mo->stat = 0;
   return 0; 
@@ -180,11 +170,12 @@ void Spacelike_Sudakov::ProduceT() {
   return;
 }
 
-bool Spacelike_Sudakov::Veto(Knot * mo) 
+bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto) 
 {  
   m_last_veto=0;
 
   // "lower" cutoff reached / still spacelike
+
   if ((1.-m_z)*m_t>m_t0) {
     m_last_veto=1;
     return 1;
@@ -204,6 +195,15 @@ bool Spacelike_Sudakov::Veto(Knot * mo)
     m_last_veto=4;
     return 1;
   }
+  // 4. jet veto
+  if (jetveto) {
+    if (JetVeto(mo)) {
+      //      cout<<" JETVETO "<<endl;
+      m_last_veto=5;
+      return 1;
+    }
+  }
+
   // passed vetos
   return 0;
 }
@@ -217,6 +217,10 @@ bool Spacelike_Sudakov::MassVeto()
   p_pdf->Calculate(m_x,sqrt(-m_t));
   p_pdfa->Calculate(m_x/m_z,sqrt(-m_t));
   weight        *= GetWeight(m_z,-m_t,0) * p_pdfa->GetXPDF(GetFlA())/p_pdf->GetXPDF(GetFlB()); 
+  double r = ran.Get();
+  if ( r> weight) return 1;
+  return 0;
+
   if (ran.Get() > weight) return 1;
   return 0;
 }
@@ -229,6 +233,10 @@ bool Spacelike_Sudakov::CplVeto()
   case 2 : 
     return (GetCoupling(0.25*m_t)/GetCoupling() > ran.Get()) ? 0 : 1;   
   default : 
+    double a = GetCoupling();
+    double b = GetCoupling(m_pt2);
+    double r = ran.Get();
+    return (b/a > r) ? 0 : 1;
     return (GetCoupling(m_pt2)/GetCoupling() > ran.Get()) ? 0 : 1;   
   }
 }
@@ -237,7 +245,10 @@ bool Spacelike_Sudakov::PTVeto(Knot * mo)
 {
   // approximately pt^2/pl^2 with virtual masses neglected. Check this !
 
+
   double th = 4.*m_z*m_z*m_t/(4.*m_z*m_z*m_t-(1.-m_z)*m_x*m_x*m_pt2max);
+//   cout<<"in angle veto : "<<th<<"   knot ("<<mo->kn_no<<")  "<<endl;
+//   cout<<"      th_crit = "<<mo->thcrit<<"     mode = "<<m_ordering_scheme<<endl;
   if (!m_inflav.Strong()) {
     mo->thcrit = th;
     mo->maxpt2 = m_pt2;
@@ -262,7 +273,14 @@ bool Spacelike_Sudakov::PTVeto(Knot * mo)
   }
 }
 
+bool Spacelike_Sudakov::JetVeto(Knot * mo) 
+{
+  // cout<<"pt2="<<m_pt2<<endl;
+  if (0.5*m_pt2>rpa.integ.Ycut()*sqr(rpa.gen.Ecms())) return 1;
+  return 0;
 
+  //return p_kin->JetCheck(mo);
+}
 
 void Spacelike_Sudakov::Add(Splitting_Function * spl) 
 {
@@ -282,6 +300,10 @@ double Spacelike_Sudakov::CrudeInt(double _zmin, double _zmax)
   SplFunIter iter(m_group);
   for (;iter();++iter)
     if (iter()->GetFlB()==m_inflav) { p_selected=iter(); break; }
-  if (!iter()) std::cout<<"warning "<<m_inflav<<" not implemented in Splitting_Group"<<std::endl;
+  if (!iter()) {
+    msg.Tracking()<<"Timelike_Sudakov::CrudeInt : "<<endl;
+    msg.Tracking()<<"WARNING : splitting function missing for "<<m_inflav<<endl;
+    return m_lastint = -1.;
+  }
   return m_lastint = p_selected->CrudeInt(_zmin,_zmax);
 }     

@@ -13,10 +13,9 @@ namespace APACIC {
     // global parameters
     Sudakov_Tools       * p_tools;
     Timelike_Kinematics * p_kin;
-    double m_pt2min, m_pt2max; 
-    double m_alphaSmax, m_alphaSfix; 
-    double m_pt2minQED;
-    double m_alphaQED;
+    double                m_pt2min, m_pt2max; 
+    double                m_alphaSmax, m_alphaSfix; 
+    double                m_pt2minQED, m_alphaQED;
 
     // switches:( get in constructor)
     int m_cpl_scheme; 
@@ -41,7 +40,7 @@ namespace APACIC {
 
     void CheckSplittings();
   public:
-    Timelike_Sudakov(Timelike_Kinematics *);
+    Timelike_Sudakov(Timelike_Kinematics *,double,AORGTOOLS::Data_Read *);
     ~Timelike_Sudakov();
 
     bool Dice(Knot * mother,Knot * granny=0);

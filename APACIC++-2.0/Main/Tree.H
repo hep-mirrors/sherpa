@@ -12,9 +12,10 @@
 
 namespace APACIC {
   class Tree {
-    Knot      * root; 
-    Knot_List * knots;
+    Knot      * p_root; 
+    Knot_List * p_knots;
 
+    Knot      * p_save_root;
   public:
     friend std::ostream & operator<<(std::ostream &, Tree *);
     //-----------------------------------------------------------------------
@@ -51,12 +52,12 @@ namespace APACIC {
     //-----------------------------------------------------------------------
     //--------------------------- Deleting ----------------------------------
     //----------------------------------------------------------------------- 
-    //! deletes a Knot();
-    void DeleteKnot(Knot *);
     //! Resets the complete tree, i.e. knots etc..
     void Reset(); 
     //! Resets all knots in a tree.
     void ResetKnots();
+    //! saves a parton status (can be reactivated by Restore())
+    void Store();
     //! Restores the tree down to partons with info = 'H', 'G', or 'M'
     void Restore();
     void Restore(Knot *);
@@ -83,6 +84,12 @@ namespace APACIC {
     static void BoRo(AMATOOLS::Poincare &, Knot * );
   private:
     static void BoRoDaughters(AMATOOLS::Poincare &, Knot *);
+
+    // some recursive helpers
+    Knot * CopyKnot(Knot *,Knot *);
+    void CopyBackKnot(Knot *, Knot *);
+    //! deletes a Knot();
+    void DeleteKnot(Knot *);
   };
 
   //-----------------------------------------------------------------------
@@ -96,11 +103,11 @@ namespace APACIC {
   }
 
   inline void Tree::ResetKnots() {
-    for (Knot_Iterator kit=knots->begin(); kit!=knots->end(); ++kit) {
+    for (Knot_Iterator kit=p_knots->begin(); kit!=p_knots->end(); ++kit) {
       delete (*kit); 
     }
-    knots->erase(knots->begin(),knots->end());
-    root = 0;
+    p_knots->erase(p_knots->begin(),p_knots->end());
+    p_root = 0;
   }
 
 }

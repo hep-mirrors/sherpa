@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "Data_Read.H"
 #include "Vector.H"
 #include "Blob.H"
 #include "Blob_List.H"
@@ -19,24 +20,25 @@ namespace APACIC {
   class Tree;
 
   class Final_State_Shower {
+    double                   m_pt2min;
     Timelike_Sudakov       * p_sud;
     Timelike_Kinematics    * p_kin;
     std::vector<Knot*> m_ini_partons;
   public:
-    Final_State_Shower();
+    Final_State_Shower(AORGTOOLS::Data_Read *);
     ~Final_State_Shower();
 
     int PerformShower(Tree *,bool);
     void FirstTimelikeFromSpacelike(Tree *,Knot *,bool,double,double);
     bool SetColours(Knot *);
     void ExtractPartons(Knot *,APHYTOOLS::Blob *,
-			APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
-    void ExtractPartons(Knot *,APHYTOOLS::Parton_List *);
+			APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
+    void ExtractPartons(Knot *,APHYTOOLS::Parton_List * = NULL);
 
     bool TestShower(Tree *) ;
     AMATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
     void OutputTree(Tree *);
-
+    double PT2Min() { return m_pt2min; }
   private:
     int InitializeJets(Tree *,Knot *);
     bool SmearDaughters(Knot * mo);
@@ -261,12 +263,12 @@ namespace APACIC {
   
   /*!
     \fn bool Final_State_Shower::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2);
-    \brief make shure number of jet from hard event is not reduced!!!
+    \brief make sure number of jet from hard event is not reduced!!!
   */
 
   /*!
     \fn bool Final_State_Shower::ExtraJetCheck();
-    \brief make shure number of jet from hard event is not reduced using ALL ini_partons
+    \brief make sure number of jet from hard event is not reduced using ALL ini_partons
   */
 
 }

@@ -13,15 +13,6 @@ using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
-Timelike_Kinematics::Timelike_Kinematics() 
-{
-  double ycut   = AORGTOOLS::rpa.integ.Ycut();
-  jf            = new APHYTOOLS::Jet_Finder(ycut,1);
-  pt_scheme     = 1;  // cf. Timelike_Sudakov
-  mass_scheme   = 1;
-}
-
-
 //-----------------------------------------------------------------------
 //------------------- Checks for kinematics : The shuffles --------------
 //----------------------------------------------------------------------- 
@@ -33,9 +24,7 @@ bool Timelike_Kinematics::CheckZRange(Knot * mo) {
   // if one daughter has to be diced anyway return "nothing changed"
   if ((d1->stat == 3) || (d2->stat == 3)) return 1; 
 
-  double t  =mo->t;  double t1 =d1->t;  double t2 =d2->t;
-  // minimal (t1/t2) eff. mass
-  double t0 = 4.*rpa.pshower.FinalQ02();
+  double t  = mo->t;  double t1 =d1->t;  double t2 =d2->t;
 
   /* *as*1
   t1  = Max(t1,mo->left->tout);
@@ -43,7 +32,7 @@ bool Timelike_Kinematics::CheckZRange(Knot * mo) {
   t1  = (t1+0.25*t0);   // teff1
   t2  = (t2+0.25*t0);   // teff2
   */
-  msg.Debugging()<<" Timelike_Kinematics::CheckZRange("<<t<<","<<t1<<","<<t2<<") "<<endl;
+  //msg.Debugging()<<" Timelike_Kinematics::CheckZRange("<<t<<","<<t1<<","<<t2<<") "<<endl;
   if (t  < t1+t2+2.*sqrt(t1*t2)) {
     if (d1->stat==0 && d2->stat==0) return 0;
     if (d1->stat==0 && d2->stat!=0) {
@@ -137,8 +126,6 @@ bool Timelike_Kinematics::ShuffleZ(Knot * mo)
   double t1     = mo->left->t;
   double t2     = mo->right->t;
 
-  // minimal (t1/t2) eff. mass
-  double t0 = 4.*rpa.pshower.FinalQ02();
 
   /* *as*1
   t1  = Max(t1,mo->left->tout);
@@ -166,11 +153,8 @@ bool Timelike_Kinematics::ShuffleZ(Knot * mo)
   t2  = (t2-0.25*t0);   // teff2
   */
   double pt2 = z*(1.-z)*t;
-  if (pt_scheme == 1)
-    pt2 -= (1.-z)*t1 + z*t2;
-  else if (pt_scheme == 2)
-    pt2 = 0.25*Min((1.-z)/z,z/(1.-z))*t;
-  double  pt2min = rpa.pshower.FinalQ02();
+  if (pt_scheme==1)       pt2 -= (1.-z)*t1 + z*t2;
+  else if (pt_scheme==2)  pt2 = 0.25*Min((1.-z)/z,z/(1.-z))*t;
   if (pt2<pt2min) {
     mo->z = z;
     msg.Debugging()<<"ShuffleZ::Failed PtminCheck :"<<pt2<<endl;
@@ -200,7 +184,6 @@ bool Timelike_Kinematics::ShuffleMoms(Knot * mo)
 
 
   // minimal (t1/t2) eff. mass
-  double t0 = 4.*rpa.pshower.FinalQ02();
   /*  smooth
   t1  = Max(t1,mo->left->tout);
   t2  = Max(t2,mo->right->tout);

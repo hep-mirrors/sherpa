@@ -32,30 +32,34 @@ namespace APACIC {
     bool   CheckVector(AMATOOLS::Vec4D);
   public:
     //! Constructor to initialise the Jet_Finder
-    Spacelike_Kinematics() {
+    Spacelike_Kinematics(double pt2minFS) {
       double ycut   = AORGTOOLS::rpa.integ.Ycut();
       jf            = new APHYTOOLS::Jet_Finder(ycut,1);
-
+      kink          = new Timelike_Kinematics(pt2minFS);
       ZVEC          = AMATOOLS::Vec4D(1.,0.,0.,1.);
-      kink          = new Timelike_Kinematics();
-    };
+    }
     //! Destructor to delete the Jet_Finder and the Timelike_Kinematics
     ~Spacelike_Kinematics() {
       if (kink) delete kink;
-    };
+    }
     /*!
       Initializes kinematics of two incoming spacelike vectors and sets them on the
       z-axis of their cm system.
     */
-    void InitKinematics(Knot *& k1, Knot *& k2);
+    void InitKinematics(Tree ** trees, Knot * k1, Knot * k2,int first);
     /*!
       Does the spacelike kinematics in each step. If need be, the timelike
       kinematics of a final state branch is done as well recursively.
       The vectors of the mother and the sister of k1 will be constructed in
       the cm frame of k1 and k2. Both trees are boosted in that system.
     */
-    bool DoKinematics(Tree **,Knot *, Knot *,int);
+    bool DoKinematics(Tree **,Knot *, Knot *,int,int first);
     /*!
+      Checking for extra jets in the initial shower.
+      If an emission gives rise to an extra jet, true is returned.
+    */
+    bool JetCheck(Knot *);
+    /*
       Checking for extra jets in the initial shower.
       If an emission gives rise to an extra jet, true is returned.
     */
