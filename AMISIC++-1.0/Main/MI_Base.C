@@ -14,9 +14,7 @@
 
 using namespace AMISIC;
 
-MI_Base::NameMIBaseMap MI_Base::s_bases=MI_Base::NameMIBaseMap();
-std::vector<ATOOLS::Remnant_Info*> 
-MI_Base::s_remnanthandlers=std::vector<ATOOLS::Remnant_Info*>(2,(ATOOLS::Remnant_Info*)NULL);
+MI_Base::String_MI_Base_Map MI_Base::s_bases=MI_Base::String_MI_Base_Map();
 
 bool MI_Base::s_stophard=true;
 bool MI_Base::s_stopsoft=true;
@@ -35,7 +33,7 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 #endif
   p_xs(NULL)
 {
-  for (NameMIBaseMapIterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     if (nbit->first==m_name) {
       throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"MI_Base already exists!",
 			      "MI_Base","MI_Base"));
@@ -56,7 +54,7 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 
 MI_Base::~MI_Base()
 {
-  for (NameMIBaseMapIterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     if (nbit->first==m_name) {
       s_bases.erase(nbit--);
       break;
@@ -71,7 +69,7 @@ MI_Base::~MI_Base()
 void MI_Base::UpdateAll(const MI_Base *mibase)
 {
   PROFILE_HERE;
-  for (NameMIBaseMapIterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     nbit->second->Update(mibase);
   }  
 }
@@ -121,7 +119,7 @@ bool MI_Base::DiceProcess()
 void MI_Base::ResetAll()
 {
   PROFILE_HERE;
-  for (NameMIBaseMapIterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
+  for (String_MI_Base_Map::iterator nbit=s_bases.begin();nbit!=s_bases.end();++nbit) {
     nbit->second->Reset();
   }  
 }

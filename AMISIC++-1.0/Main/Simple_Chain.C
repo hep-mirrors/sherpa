@@ -9,6 +9,8 @@
 #include "Particle.H"
 #include "Random.H"
 #include "My_Limits.H"
+#include "Vegas.H"
+#include "Run_Parameter.H"
 #ifdef USING__Sherpa
 #include "Matrix_Element_Handler.H"
 #endif
@@ -39,18 +41,13 @@ Simple_Chain::Simple_Chain():
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), 
   m_maxtrials(1000), m_scalescheme(2), m_kfactorscheme(1), 
-  m_ecms(ATOOLS::rpa.gen.Ecms()), m_external(false), m_regulate(false)
+  m_external(false), m_regulate(false)
 {
   SetInputFile("MI.dat");
   SetInputFile("XS.dat",1);
   SetInputFile("Run.dat",2);
   SetInputFile("Model.dat",3);
   SetOutputFile("SC.log");
-  SetStart(0.0,0);
-  SetStop(1.0,0);
-  SetStart(ATOOLS::rpa.gen.Ecms(),1);
-  SetStart(ATOOLS::rpa.gen.Ecms(),4);
-  SetStop(0.0,1);
 }
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
@@ -70,11 +67,10 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   SetInputFile("Run.dat",2);
   SetInputFile("Model.dat",3);
   SetOutputFile("SC.log");
-  SetStart(0.0,0);
-  SetStop(1.0,0);
-  SetStart(ATOOLS::rpa.gen.Ecms(),1);
-  SetStart(ATOOLS::rpa.gen.Ecms(),4);
-  SetStop(0.0,1);
+  m_start[4]=m_start[0]=m_ecms/2;
+  m_start[3]=m_start[2]=1.0;
+  m_stop[4]=m_stop[0]=0.0;
+  m_stop[3]=m_stop[2]=0.0;
 }
 
 Simple_Chain::~Simple_Chain()
@@ -191,11 +187,6 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	    newxs->SetKFactorScheme(m_kfactorscheme);
 	    group->Add(newxs);
 	    m_processmap[newxs->Name()]=newxs;
-#ifdef COMPARE__Pythia
-	    if (help[0].IsGluon() && help[1].IsGluon()) {
-	      m_kinematics[newxs->Name()]=newxs;
-	    }
-#endif
 	    success=true;
 	    msg_Debugging()<<"Simple_Chain::AddProcess(..): "
 			   <<"New process '"<<newxs->Name()<<"'.\n";
@@ -267,13 +258,8 @@ bool Simple_Chain::ReadInData()
 bool Simple_Chain::CreateGrid()
 {
   PROFILE_HERE;
-  if (!m_external) {
-    p_environment = new AMEGIC::Environment(InputPath(),InputFile(2));
-    p_environment->InitializeTheEnvironment();
-    p_model=p_environment->Model();
-    p_beam=p_environment->BeamSpectraHandler();
-    p_isr=p_environment->ISRHandler();
-  }
+  bool vegas=PHASIC::Vegas::OnExternal();
+  PHASIC::Vegas::SetOnExternal(m_vegas);
   p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
   if (p_processes->Size()>0) p_processes->Clear();
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
@@ -321,6 +307,7 @@ bool Simple_Chain::CreateGrid()
     ATOOLS::msg.Error()<<"Simple_Chain::CreateGrid(): "
 		       <<"Did not find any process in '"
 		       <<InputFile()<<"'."<<std::endl;
+    PHASIC::Vegas::SetOnExternal(vegas);
     return false;
   }
   group->SetScaleScheme(m_scalescheme);
@@ -346,6 +333,7 @@ bool Simple_Chain::CreateGrid()
     ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
   }
   delete p_gridcreator;
+  PHASIC::Vegas::SetOnExternal(vegas);
   return true;
 }
 
@@ -540,17 +528,29 @@ bool Simple_Chain::Initialize()
   CleanUp();
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
-  reader->SetVectorType(reader->VHorizontal);
-  if (!m_external) {
-    ATOOLS::ParticleInit(InputPath());
-    reader->SetInputFile(InputFile());
-    std::string initfile=std::string("Run.dat");
-    reader->ReadFromFile(initfile,"ENVIRONMENT");
-    SetInputFile(initfile,2);
-    ATOOLS::rpa.Init(InputPath(),InputFile(2));
-  }
-  if (!ReadInData()) return false;
   reader->SetInputFile(InputFile());
+  reader->SetVectorType(reader->VHorizontal);
+  if (!m_external && p_environment==NULL) {
+    std::string file;
+    if (!reader->ReadFromFile(file,"ENVIRONMENT")) file="Run.dat";
+    p_environment = new Environment(InputPath(),file);
+    if (!p_environment->InitializeTheEnvironment()) return false;
+    p_model=p_environment->Model();
+    p_beam=p_environment->BeamHandler();
+    p_isr=p_environment->ISRHandler();
+    if (!reader->ReadFromFile(file,"PROCESS_FILE")) file="Processes.dat";
+    SetInputFile(file,1);
+    m_ecms=ATOOLS::rpa.gen.Ecms();
+    m_start[4]=m_start[0]=m_ecms/2;
+    m_start[3]=m_start[2]=1.0;
+    m_stop[4]=m_stop[0]=0.0;
+    m_stop[3]=m_stop[2]=0.0;
+  }
+#ifdef USING__Sherpa
+  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
+  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_2");
+#endif
+  if (!ReadInData()) return false;
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
   SetInputFile(xsfile,1);
@@ -560,6 +560,7 @@ bool Simple_Chain::Initialize()
   if (!reader->ReadFromFile(stop,"GRID_X_MIN")) stop=Stop(0);
   SetStop(stop,4);
   if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
+  if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
   std::string function;
   if (reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
     std::vector<double> parameters;
@@ -616,7 +617,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       double max=m_differentials[m_selected]->BinMax(m_last[0]);
       p_fsrinterface->SetTrigger(false);
       while (++trials<m_maxtrials) {
-	ATOOLS::Blob_Data_Base *data=selected->SameWeightedEvent();
+	ATOOLS::Blob_Data_Base *data=selected->WeightedEvent(2);
 	if (data==NULL) return false;
 	weight=data->Get<PHASIC::Weight_Info>().weight;
 	trials=data->Get<PHASIC::Weight_Info>().ntrial;
@@ -641,8 +642,9 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     bool test=true;
     for (size_t j=0;j<selected->NIn();++j) {
       x[j]=2.0*selected->Momenta()[j][0]/m_ecms;
-      if (s_remnanthandlers[j]!=NULL) {
-	xrem[j]=2.0*s_remnanthandlers[j]->
+#ifdef USING__Sherpa
+      if (p_remnants[j]!=NULL) {
+	xrem[j]=2.0*p_remnants[j]->
 	  MinimalEnergy(selected->Flavours()[j])/m_ecms;
 	if (m_last[j+2]-x[j]<xrem[j]) {
 	  test=false;
@@ -659,6 +661,11 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	// default: need 1 GeV per process and beam to adjust remnants
 	xrem[1]=xrem[0]=1./m_ecms;
       }
+#else
+      if (m_last[j+2]<=x[j]+.01) test=false;
+      // default: need 1 GeV per process and beam to adjust remnants
+      xrem[1]=xrem[0]=1./m_ecms;
+#endif
     }
     if (!test) {
       s_stophard=true;
@@ -711,9 +718,6 @@ bool Simple_Chain::DiceProcess()
   Sort_Map::key_type norm=0.0, cur=0.0;
   for (Amisic_Histogram_Map::iterator hit=m_differentials.begin();
        hit!=m_differentials.end();++hit) {
-#ifdef COMPARE__Pythia
-    if (m_kinematics.find(hit->first)==m_kinematics.end()) continue;
-#endif
     cur=(*hit->second)(m_last[0]);
     sorter.insert(Sort_Map::value_type(cur,hit->first));
     norm+=cur;
@@ -727,11 +731,15 @@ bool Simple_Chain::DiceProcess()
 	m_selected=sit->second;
 	double xrem[2];
 	for (short unsigned int k=0;k<2;++k) {
-	  if (s_remnanthandlers[k]!=NULL) {
-	    xrem[k]=2.0*s_remnanthandlers[k]->
+#ifdef USING__Sherpa
+	  if (p_remnants[k]!=NULL) {
+	    xrem[k]=2.0*p_remnants[k]->
 	      MinimalEnergy(m_processmap[m_selected]->Flavours()[k])/m_ecms;
 	  }
 	  else xrem[k]=0.0;
+#else
+	  xrem[k]=0.0;
+#endif
 	  if (m_last[3-k]<xmin+xrem[k]) {
 	    s_stophard=true;
 	    m_dicedprocess=false;

@@ -1,54 +1,47 @@
-#ifndef Environmen_h
-#define Environmen_h
+#ifndef Environmen_H
+#define Environmen_H
 
-#include "Data_Read.H"
-#include "Run_Parameter.H"
-
-#include "Model_Base.H"
 #include "Beam_Spectra_Handler.H"
-#include "Beam_Base.H"
 #include "ISR_Handler.H"
-#include "ISR_Base.H"
+#include "Model_Base.H"
 
-#include "Flavour.H"
+namespace AMISIC {
 
-#include <string>
-#include <iostream> 
-
-namespace AMEGIC {
   class Environment {
-  private :
-    std::string m_path,m_file;
-    std::string m_modeldat,m_beamdat, m_isrdat, m_medat;
+  private:
 
-    ATOOLS::Data_Read       * p_dataread;
+    std::string m_path, m_file;
+    std::string m_modeldat, m_beamdat, m_isrdat;
 
-    MODEL::Model_Base          * p_model;
+    BEAM::Beam_Spectra_Handler *p_beamhandler;
+    PDF::ISR_Handler           *p_isrhandler;
+    MODEL::Model_Base          *p_model;
 
-    BEAM::Beam_Spectra_Handler * p_beamspectra;
-    ATOOLS::Flavour           m_beam_particles[2];
-
-    PDF::ISR_Handler           * p_isrhandler;
-    ATOOLS::Flavour           m_bunch_particles[2];
-    double                       m_bunch_splimits[2];
+    ATOOLS::Flavour m_bunch[2], m_beam[2];
 
   private :
+
     bool InitializeTheModel();
     bool InitializeTheBeams();
     bool InitializeThePDFs();
-    //bool InitializeTheMatrixElements();
+
   public :
-    Environment(std::string,std::string);
-    void InitializeTheEnvironment();
+
+    // constructor
+    Environment(const std::string,const std::string);
+
+    // destructor
     ~Environment();
 
-    MODEL::Model_Base          * Model()              { return p_model; }
-    BEAM::Beam_Spectra_Handler * BeamSpectraHandler() { return p_beamspectra; }
-    PDF::ISR_Handler           * ISRHandler()         { return p_isrhandler; }
+    // member functions
+    bool InitializeTheEnvironment();
 
-    std::string                  MEFile()             { return m_medat; }
-  };
-}
+    MODEL::Model_Base          *Model()       { return p_model;       }
+    BEAM::Beam_Spectra_Handler *BeamHandler() { return p_beamhandler; }
+    PDF::ISR_Handler           *ISRHandler()  { return p_isrhandler;  }
 
+  };// end of class Environment
+
+}// end of namespace AMISIC
 
 #endif

@@ -2,7 +2,6 @@
 #define MI_Base_H
 
 #include "File_IO_Base.H"
-#include "Remnant_Info.H"
 #include "Blob_List.H"
 #include "Exception.H"
 #include <map>
@@ -15,18 +14,16 @@ namespace EXTRAXS { class XS_Base; }
 
 namespace AMISIC {
 
-  class MI_Base: public ATOOLS::File_IO_Base, public ATOOLS::Terminator_Object {
+  class MI_Base: public ATOOLS::File_IO_Base, 
+		 public ATOOLS::Terminator_Object {
   public:
 
     enum TypeID { HardEvent =  1,
 		  SoftEvent =  2,
 		  Unknown   = 99 };
 
-    typedef std::pair<const std::string,MI_Base*> NameMIBasePair;
-    typedef std::map<const std::string,MI_Base*> NameMIBaseMap;
-    typedef std::_Rb_tree_iterator<NameMIBasePair,
-				   NameMIBasePair&,
-				   NameMIBasePair*> NameMIBaseMapIterator;
+    typedef std::pair<const std::string,MI_Base*> String_MI_Base_Pair;
+    typedef std::map<const std::string,MI_Base*> String_MI_Base_Map;
 
   private:
 
@@ -35,10 +32,8 @@ namespace AMISIC {
 
   protected:
 
-    static NameMIBaseMap s_bases;
+    static String_MI_Base_Map s_bases;
 
-    static std::vector<ATOOLS::Remnant_Info*> s_remnanthandlers;    
-    
     double       *m_start, *m_stop, *m_last;
     unsigned int  m_nparameter;
 
@@ -99,14 +94,6 @@ namespace AMISIC {
 #endif
 
     inline EXTRAXS::XS_Base *XS() const { return p_xs; }
-
-    inline static void 
-    SetRemnantHandler(ATOOLS::Remnant_Info *const remnanthandler,
-		      const size_t i)
-    { s_remnanthandlers[i]=remnanthandler; }
-
-    inline static ATOOLS::Remnant_Info *RemnantHandler(const size_t i)
-    { return s_remnanthandlers[i]; }
 
   }; // end of class MI_Base
 

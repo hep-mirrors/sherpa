@@ -105,8 +105,8 @@ bool Amisic::GenerateHardEvent(ATOOLS::Blob_List *blobs)
       delete newblob;
       if (MI_Base::StopGeneration(MI_Base::HardEvent)) return true;
       msg_Tracking()<<"Amisic::GenerateHardEvent(): "
-			    <<"Cannot create hard underlying event."<<std::endl
-			    <<"   Abort attempt."<<std::endl;
+		    <<"Cannot create hard underlying event."<<std::endl
+		    <<"   Abort attempt."<<std::endl;
       return false;
     }
   }
@@ -128,8 +128,8 @@ bool Amisic::GenerateSoftEvent(ATOOLS::Blob_List *blobs)
       delete newblob;
       if (MI_Base::StopGeneration(MI_Base::SoftEvent)) return true;
       msg_Tracking()<<"Amisic::GenerateSoftEvent(): "
-			    <<"Cannot create soft underlying event."<<std::endl
-			    <<"   Abort attempt."<<std::endl;
+		    <<"Cannot create soft underlying event."<<std::endl
+		    <<"   Abort attempt."<<std::endl;
       return false;
     }
   } 

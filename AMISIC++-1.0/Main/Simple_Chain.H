@@ -8,6 +8,9 @@
 #include "Fixed_Variable_Channel.H"
 #include "Simple_XS.H"
 #include "Environment.H"
+#ifdef USING__Sherpa
+#include "Remnant_Base.H"
+#endif
 
 namespace AMISIC {
 
@@ -33,11 +36,11 @@ namespace AMISIC {
     Grid_Function_Type    *p_total;
     Amisic_Histogram_Type *p_differential;
     Grid_Creator          *p_gridcreator;
+#ifdef USING__Sherpa
+    SHERPA::Remnant_Base  *p_remnants[2];
+#endif
 
     Process_Map m_processmap;
-#ifdef COMPARE__Pythia
-    Process_Map m_kinematics;
-#endif
     Map_Map     m_mapmap;
 
     double m_norm, m_enhance;
@@ -48,7 +51,7 @@ namespace AMISIC {
     EXTRAXS::Simple_XS *p_processes;
     FSR_Channel        *p_fsrinterface;
 
-    AMEGIC::Environment        *p_environment;
+    AMISIC::Environment        *p_environment;
     MODEL::Model_Base          *p_model;
     BEAM::Beam_Spectra_Handler *p_beam;
     PDF::ISR_Handler           *p_isr;
@@ -59,7 +62,7 @@ namespace AMISIC {
 
     unsigned int m_nflavour, m_maxtrials, m_check;
     unsigned int m_scalescheme, m_kfactorscheme;
-    double       m_sigmahard, m_error, m_ecms;
+    double       m_sigmahard, m_error, m_ecms, m_vegas;
     bool         m_external, m_regulate;
 
     std::string         m_regulator; 

@@ -1,114 +1,101 @@
 #include "Environment.H"
-#include "Message.H"
 
 #include "Model_Handler.H"
 #include "PDF_Handler.H"
-#include "PDF_Base.H"
 #include "Structure_Function.H"
 #include "Intact.H"
+#include "Run_Parameter.H"
+#include "Phase_Space_Handler.H"
 
-using namespace AMEGIC;
-using namespace ATOOLS;
-using namespace MODEL;
-using namespace BEAM;
-using namespace PDF;
+using namespace AMISIC;
 
-
-Environment::Environment(std::string _path,std::string _file) : 
-  m_path(_path), m_file(_file)
+Environment::Environment(const std::string path,const std::string file): 
+  m_path(path), m_file(file),
+  p_beamhandler(NULL), p_isrhandler(NULL), p_model(NULL)
 {
-  p_dataread = new Data_Read(m_path+m_file);
-  m_modeldat = p_dataread->GetValue("MODEL_DATA_FILE",std::string("Model.dat"));
-  m_beamdat  = p_dataread->GetValue("BEAM_DATA_FILE",std::string("Beam.dat"));
-  m_isrdat   = p_dataread->GetValue("ISR_DATA_FILE",std::string("ISR.dat"));
-  m_medat    = p_dataread->GetValue("ME_DATA_FILE",std::string("ME.dat"));
-
-  p_model = NULL;
+  ATOOLS::msg.Init(2,"");
+  ATOOLS::Data_Read dataread(m_path+m_file);
+  m_modeldat=dataread.GetValue("MODEL_DATA_FILE",std::string("Model.dat"));
+  m_beamdat=dataread.GetValue("BEAM_DATA_FILE",std::string("Beam.dat"));
+  m_isrdat=dataread.GetValue("ISR_DATA_FILE",std::string("ISR.dat"));
 }
 
-
-Environment::~Environment() {
-  if (p_model)       { delete p_model;       p_model       = NULL; }
-  if (p_beamspectra) { delete p_beamspectra; p_beamspectra = NULL; }
-  if (p_isrhandler)  { delete p_isrhandler;  p_isrhandler  = NULL; }
+Environment::~Environment() 
+{
+  if (p_isrhandler) delete p_isrhandler;
+  if (p_beamhandler) delete p_beamhandler;
+  if (p_model) delete p_model;
 }
 
-void Environment::InitializeTheEnvironment() {
+bool Environment::InitializeTheEnvironment() 
+{
+  char *dummy="Sherpa";
+  ATOOLS::rpa.Init(m_path,m_file,1,&dummy);
   ATOOLS::ParticleInit(m_path); 
-  rpa.Init(m_path,m_file);
-
-  bool okay =         InitializeTheModel();  
-  okay      = okay && InitializeTheBeams();  
-  okay      = okay && InitializeThePDFs();  
+  if (!InitializeTheModel()) return false;  
+  if (!InitializeTheBeams()) return false;  
+  if (!InitializeThePDFs()) return false;
+  ATOOLS::Integration_Info *info=PHASIC::Phase_Space_Handler::GetInfo();
+  p_isrhandler->AssignKeys(info);
+  return true;
 }
-
-
 
 bool Environment::InitializeTheModel()
 {
-  Data_Read     * dataread     = new Data_Read(m_path+m_modeldat);
-  Model_Handler * modelhandler = new MODEL::Model_Handler();
-  p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);
-
+  ATOOLS::Data_Read dataread(m_path+m_modeldat);
+  MODEL::Model_Handler *modelhandler = new MODEL::Model_Handler();
+  p_model = modelhandler->GetModel(&dataread,m_path,m_modeldat);
   if (!p_model->RunSpectrumGenerator()) {
-    msg.Error()<<"Error in Model_Initialization::Model_Initialization."<<std::endl
-	       <<"    RunSpectrumGenerator() delivered false. Abort()."<<std::endl;
+    ATOOLS::msg.Error()<<"Environment::InitializeTheModel(): "
+		       <<"RunSpectrumGenerator() failed. Abort."<<std::endl;
     abort();
   }
   delete modelhandler;
-  delete dataread;  
-
-  return 1;
-
+  return true;
 }
 
 bool Environment::InitializeTheBeams() 
 {
-  msg_Debugging()<<"Initialized Beam_Initialization for "<<m_path<<m_beamdat<<std::endl;
-  Data_Read * dataread = new Data_Read(m_path+m_beamdat);
-  p_beamspectra        = new Beam_Spectra_Handler(dataread);
-  for (short int i=0;i<2;i++) m_beam_particles[i] = p_beamspectra->GetBeam(i)->Beam();
-  delete dataread;  
-  
-  return 1;
-
+  ATOOLS::Data_Read dataread(m_path+m_beamdat);
+  p_beamhandler = new BEAM::Beam_Spectra_Handler(&dataread);
+  for (short int i=0;i<2;i++) m_bunch[i]=p_beamhandler->GetBeam(i)->Beam();
+  ATOOLS::rpa.gen.SetBeam1(m_beam[0]);
+  ATOOLS::rpa.gen.SetBeam2(m_beam[1]);
+  return true;
 }
 
 bool Environment::InitializeThePDFs() 
 {
-  msg_Debugging()<<"Initialize ISR_Initialization for "<<m_path<<m_isrdat<<std::endl;
-  Data_Read * dataread     = new Data_Read(m_path+m_isrdat);
-  p_isrhandler             = NULL;
-  PDF_Handler * pdfhandler = new PDF_Handler();
-  PDF_Base *  pdfbase;
-  ISR_Base ** isrbases     = new ISR_Base*[2];
-  Flavour bunch_particles[2];
-  double  bunch_splimits[2];
-
+  ATOOLS::Data_Read dataread(m_path+m_isrdat);
+  PDF::PDF_Base *pdfbase;
+  PDF::ISR_Base **isrbases = new PDF::ISR_Base*[2];
+  PDF::PDF_Handler pdfhandler;
   for (int i=0;i<2;++i) {
-    pdfbase = pdfhandler->GetPDFLib(dataread,bunch_particles[i],i);
+    pdfbase = pdfhandler.GetPDFLib(&dataread,m_beam[i],i);
     if (pdfbase==NULL) {
-      msg_Debugging()<<"No ISR for beam "<<i+1<<" : Initialize Intact for "<<bunch_particles[i]<<std::endl;
-      isrbases[i]          = new Intact(bunch_particles[i]);     
+      msg_Info()<<"No ISR for beam "<<i+1
+		<<" : Initialize Intact for "<<m_beam[i]<<std::endl;
+      isrbases[i] = new PDF::Intact(m_beam[i]);     
     }
     else {
-      msg_Debugging()<<"ISR for beam "<<i+1<<" : Initialize SF for "<<bunch_particles[i]<<std::endl;
-      isrbases[i]          = new Structure_Function(pdfbase,bunch_particles[i]);
+      msg_Info()<<"ISR for beam "<<i+1
+		<<" : Initialize SF for "<<m_beam[i]<<std::endl;
+      isrbases[i] = new PDF::Structure_Function(pdfbase,m_beam[i]);
     }
+    ATOOLS::rpa.gen.SetBunch(m_beam[i],i);
   }
-  bunch_splimits[0]        = dataread->GetValue<double>("ISR_SMIN",0.);
-  bunch_splimits[1]        = dataread->GetValue<double>("ISR_SMAX",1.);
+  double splimits[2];
+  splimits[0]=dataread.GetValue<double>("ISR_SMIN",0.);
+  splimits[1]=dataread.GetValue<double>("ISR_SMAX",1.);
   double kplimits[2];
-  kplimits[0] = dataread->GetValue<double>("ISR_KPMIN",ATOOLS::Accu());
-  kplimits[1] = dataread->GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
-  p_isrhandler = new ISR_Handler(isrbases,m_bunch_splimits,kplimits);
-  delete dataread;
-
-  if (!(p_beamspectra->CheckConsistency(bunch_particles))) {
-    msg.Error()<<"Error in Environment::InitializeThePDFs()"<<std::endl
-	       <<"   Inconsistent ISR & Beam:"<<std::endl
-	       <<"   Abort program."<<std::endl;
+  kplimits[0]=dataread.GetValue<double>("ISR_KPMIN",ATOOLS::Accu());
+  kplimits[1]=dataread.GetValue<double>("ISR_KPMAX",splimits[1]);
+  p_isrhandler=new PDF::ISR_Handler(isrbases,splimits,kplimits);
+  if (!(p_beamhandler->CheckConsistency(m_beam))) {
+    ATOOLS::msg.Error()<<"Error in Environment::InitializeThePDFs() \n"
+		       <<"   Inconsistent ISR & Beam:"<<std::endl
+		       <<"   Abort program."<<std::endl;
     abort();
   }
-  return 1;  
+  return true;  
 }
