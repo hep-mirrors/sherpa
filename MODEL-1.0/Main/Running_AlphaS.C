@@ -14,6 +14,17 @@ using namespace MODEL;
 using namespace ATOOLS;
 using namespace std;
 
+namespace MODEL {
+
+  std::ostream &MODEL::operator<<(std::ostream &str,AsDataSet &set)
+  {
+    str<<"scale->["<<set.low_scale<<","<<set.high_scale<<"]";
+    str<<" as->["<<set.as_low<<","<<set.as_high<<"]";
+    str<<" nf->"<<set.nf<<" lam2->"<<set.lambda2;
+    str<<" bet0->"<<set.beta0;
+  }
+
+}
 
 Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ,const int order) : 
   m_order(order), m_as_MZ(_as_MZ), m_m2_MZ(_m2_MZ) 
@@ -99,6 +110,7 @@ Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ,const int
       }
     }
   }
+  for (int i=0;i<m_nth+1;++i) ATOOLS::msg.Tracking()<<"thres["<<i<<"] "<<p_thresh[i]<<std::endl;
 }
 
 
@@ -270,7 +282,7 @@ void Running_AlphaS::ContinueAlphaS(int & nr) {
   // shrink actual domain
   //  * to given t0        or
   //  * to alphaS=alphaCut
-  double alpha_cut = 1.0*M_PI;   // make parameter
+  double alpha_cut = .999999;   // make parameter
   double & beta0   = p_thresh[nr].beta0;
   double & lambda2 = p_thresh[nr].lambda2;
   double t0        = lambda2 * ::exp(M_PI/(alpha_cut*beta0));

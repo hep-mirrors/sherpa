@@ -21,6 +21,7 @@ namespace MODEL {
 
   class Running_AlphaS : public ATOOLS::Function_Base {
   protected:
+
     int         m_order;
     int         m_nth,m_mzset;
     double      m_CF,m_CA;
@@ -37,18 +38,27 @@ namespace MODEL {
     double InvZetaOS2(const double,const double,const double,const int);
     double AlphaSLam(const double,const int);
     void   ContinueAlphaS(int &);
+
   public:
+
+    // constructor
     Running_AlphaS(const double,const double, const int=0);
+    
+    // destructor
     ~Running_AlphaS();
+
+    // member functions
     double operator()(double); 
-    double AsMZ()       { return m_as_MZ; }
-    double AsFixed()    { return m_defval; }
-
     double AlphaS(const double);
-    int    Nf(const double);
-    double Beta0(const double);
-
     void   SelfTest();
+
+    // inline functions
+    inline int    Order()               { return m_order;      }
+    inline double Beta0(const double t) { return Beta0(Nf(t)); }
+    inline double AsMZ()                { return m_as_MZ;      }
+    inline double AsFixed()             { return m_defval;     }
+    int    Nf(const double);
+
   };
 
   inline int Running_AlphaS::Nf(const double t) {
@@ -59,13 +69,7 @@ namespace MODEL {
     return m_nth;
   };
 
-  inline double Running_AlphaS::Beta0(const double t){
-    return Beta0(Nf(t)); 
-  };
-
   extern Running_AlphaS * as;
-
-
 
   //! QCD SM Running of AlphaS
   /*!
