@@ -230,13 +230,16 @@ void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
 	    if (m_qualifier>=0) {
 	      if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
 		switch (m_qualifier) {
-		case  0: qualifier=new Is_There; break; 
+		case  0: qualifier=new Is_There(); break; 
 		case  1: qualifier=new Is_Charged_Hadron(); break;
 		case  2: qualifier=new Is_Neutral_Hadron(); break;
 		case  3: qualifier=new Is_Hadron(); break;
 		case  4: qualifier=new Is_Charged(); break;
+		case  5: qualifier=new Is_Charged_Pion(); break;
+		case  6: qualifier=new Is_Charged_Kaon(); break;
+		case  7: qualifier=new Is_Proton_Antiproton(); break;
 		case  9: qualifier=new Is_Parton(); break;
-		default: qualifier=new Is_Charged;
+		default: qualifier=new Is_Charged();
 		}
 		fsel=new Event_Shapes_EE("FinalState","EvtShapes",qualifier);
 		ini_fsel=true;
@@ -583,7 +586,4 @@ void Analysis_Handler::SetUpSubSamples()
 
   }
 
-} 
-
-
-
+}
