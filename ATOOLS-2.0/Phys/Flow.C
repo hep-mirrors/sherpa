@@ -28,7 +28,10 @@ int Flow::Code(int _index) {
 
 void Flow::SetCode(int _index,int _code) {
   if (_code==-1) _code = ++qcd_counter; 
-  m_code.insert(std::make_pair<int,int>(_index,_code));
+  //  m_code.insert(std::make_pair<int,int>(_index,_code)); 
+  //    caused problems with gcc 2.95.3 20010315 !
+
+  m_code[_index]=_code;
 }
 
 
