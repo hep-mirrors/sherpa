@@ -90,7 +90,7 @@ void Standard_Model::FixEWParameters() {
   switch (m_ewscheme) {
   case 1:
     // SM parameters given by alphaQED, M_W, M_Z, M_H
-    alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED",137.03599976);
+    alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     MW         = Flavour(kf::W).Mass();
     MZ         = Flavour(kf::Z).Mass();
     MH         = Flavour(kf::h).Mass();
@@ -101,7 +101,7 @@ void Standard_Model::FixEWParameters() {
     break;
   case 2:
     // SM parameters given by alphaQED, sinthetaW, v, M_H
-    alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED",137.03599976);
+    alphaQED   = 1./p_dataread->GetValue<double>("1/ALPHAQED(0)",137.03599976);
     vev        = p_dataread->GetValue<double>("VEV",246.);
     sin2thetaW = p_dataread->GetValue<double>("SIN2THETAW",0.23);
     cos2thetaW = 1.-sin2thetaW;
