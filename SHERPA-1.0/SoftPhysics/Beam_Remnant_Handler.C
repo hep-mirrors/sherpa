@@ -202,7 +202,13 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
     }
   }
   for (short unsigned int i=0;i<2;++i) 
-    if (p_beamblob[i]) p_beampart[i]->FillBlob(p_beamblob[i],particlelist);
+    if (p_beamblob[i]) if (!p_beampart[i]->FillBlob(p_beamblob[i],particlelist)) {
+      while (bloblist->size()>0) {
+	delete *bloblist->begin();
+	bloblist->erase(bloblist->begin());
+      }
+      return false;
+    }
   if (p_beampart[0]->Type()==rtp::hadron || 
       p_beampart[1]->Type()==rtp::hadron) {
     p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
