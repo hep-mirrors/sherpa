@@ -2,16 +2,44 @@
 
 #include "Channel_Elements.H"
 #include "Message.H"
-#include "Scaling.H"
+#include "MyStrStream.H"
 
 #include <stdio.h>
 
 using namespace PHASIC;
 
+ISR_Channel_Base::ISR_Channel_Base()
+{
+}
+
+ISR_Channel_Base::~ISR_Channel_Base()
+{
+}
+
 std::string ISR_Channel_Base::ChID()
 {
   return name;
 }
+
+void ISR_Channel_Base::WriteOut(std::string pId) 
+{ 
+  p_vegas->WriteOut(pId); 
+}
+
+void ISR_Channel_Base::ReadIn(std::string pId)   
+{ 
+  p_vegas->ReadIn(pId); 
+}
+
+void ISR_Channel_Base::Optimize()  
+{
+  p_vegas->Optimize();
+} 
+
+void ISR_Channel_Base::EndOptimize()  
+{
+  p_vegas->EndOptimize();
+} 
 
 Threshold_Uniform_V::Threshold_Uniform_V(const double mass,const double sexp,const std::string cinfo,
 				     ATOOLS::Integration_Info *info):

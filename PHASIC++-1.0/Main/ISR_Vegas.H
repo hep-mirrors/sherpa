@@ -2,14 +2,32 @@
 #define ISR_Vegas_H
 
 #include "Single_Channel.H"
+#include "Smart_Pointer.H"
 #include "Vegas.H"
 
 namespace PHASIC {
 
   class ISR_Channel_Base: public Single_Channel {
+  protected:
+
+    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
+    SP(Vegas) p_vegas;
+
   public:
 
+    // constructor
+    ISR_Channel_Base();
+
+    // destructor
+    ~ISR_Channel_Base();
+
+    // member functions
     std::string ChID();
+
+    void Optimize();
+    void EndOptimize();
+    void WriteOut(std::string pId);
+    void ReadIn(std::string pId);
 
   };// end of class ISR_Channel_Base
 
@@ -19,8 +37,6 @@ namespace PHASIC {
     double m_mass,m_sexp;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -32,10 +48,9 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
+
+    inline void   SetMass(const double mass) { m_mass=mass; }
+    inline double Mass() const { return m_mass; }
 
   };// end of class Threshold_Uniform
 
@@ -45,8 +60,6 @@ namespace PHASIC {
     double m_mass,m_sexp, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -58,10 +71,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Threshold_Forward
 
@@ -71,8 +80,6 @@ namespace PHASIC {
     double m_mass,m_sexp, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -84,10 +91,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Threshold_Backward
 
@@ -97,8 +100,6 @@ namespace PHASIC {
     double m_mass,m_sexp;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -110,10 +111,9 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
+
+    inline void   SetMass(const double mass) { m_mass=mass; }
+    inline double Mass() const { return m_mass; }
 
   };// end of class Threshold_Central
 
@@ -126,8 +126,6 @@ namespace PHASIC {
     double m_mass, m_width;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -139,10 +137,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Resonance_Uniform
 
@@ -152,8 +146,6 @@ namespace PHASIC {
     double m_mass, m_width, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -165,10 +157,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Resonance_Forward
 
@@ -178,8 +166,6 @@ namespace PHASIC {
     double m_mass, m_width, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -191,10 +177,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Resonance_Backward
 
@@ -204,8 +186,6 @@ namespace PHASIC {
     double m_mass, m_width;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -217,10 +197,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Resonance_Central
 
@@ -233,8 +209,6 @@ namespace PHASIC {
     double m_exponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -246,10 +220,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Simple_Pole_Uniform
 
@@ -259,8 +229,6 @@ namespace PHASIC {
     double m_sexponent, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -272,10 +240,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Simple_Pole_Forward
 
@@ -285,8 +249,6 @@ namespace PHASIC {
     double m_sexponent, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -298,10 +260,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Simple_Pole_Backward
 
@@ -311,8 +269,6 @@ namespace PHASIC {
     double m_exponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -324,10 +280,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Simple_Pole_Central
 
@@ -339,8 +291,6 @@ namespace PHASIC {
     double m_exponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -352,10 +302,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Simple_Pole_PDF_Uniform
 
@@ -365,8 +311,6 @@ namespace PHASIC {
     double m_sexponent, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -378,10 +322,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Simple_Pole_PDF_Forward
 
@@ -391,8 +331,6 @@ namespace PHASIC {
     double m_sexponent, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -404,10 +342,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Simple_Pole_PDF_Backward
 
@@ -417,8 +351,6 @@ namespace PHASIC {
     double m_exponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -430,10 +362,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Simple_Pole_PDF_Central
 
@@ -446,8 +374,6 @@ namespace PHASIC {
     double m_beta, m_factor;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -459,10 +385,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Leading_Log_Uniform
 
@@ -472,8 +394,6 @@ namespace PHASIC {
     double m_beta, m_factor, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -485,10 +405,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Leading_Log_Forward
 
@@ -498,8 +414,6 @@ namespace PHASIC {
     double m_beta, m_factor, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -511,10 +425,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Leading_Log_Backward
 
@@ -524,8 +434,6 @@ namespace PHASIC {
     double m_beta, m_factor;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -537,10 +445,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class Leading_Log_Central
 
@@ -553,8 +457,6 @@ namespace PHASIC {
     double m_exponent, m_pole;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -566,10 +468,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class LBS_Compton_Peak_Uniform
 
@@ -579,8 +477,6 @@ namespace PHASIC {
     double m_exponent, m_pole, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -592,10 +488,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class LBS_Compton_Peak_Forward
 
@@ -605,8 +497,6 @@ namespace PHASIC {
     double m_exponent, m_pole, m_yexponent;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public :
 
     // constructor
@@ -618,10 +508,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class LBS_Compton_Peak_Backward
 
@@ -631,8 +517,6 @@ namespace PHASIC {
     double m_exponent, m_pole;
     bool   m_zchannel;
 
-    ATOOLS::Info_Key m_spkey, m_xkey, m_ykey, m_sgridkey, m_ygridkey;
-    Vegas* p_vegas;
   public:
 
     // constructor
@@ -644,10 +528,6 @@ namespace PHASIC {
 		       const double *rans,const int mode=0);
     void GenerateWeight(const int mode=0);
     void AddPoint(double);
-    void Optimize()  {p_vegas->Optimize();} 
-    void EndOptimize()  {p_vegas->EndOptimize();} 
-    void WriteOut(std::string pId) { p_vegas->WriteOut(pId); }
-    void ReadIn(std::string pId)   { p_vegas->ReadIn(pId); }
 
   };// end of class LBS_Compton_Peak_Central
 
