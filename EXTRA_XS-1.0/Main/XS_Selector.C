@@ -84,6 +84,8 @@ Single_XS *XS_Selector::GetSingleXS(const size_t nin,const size_t nout,
   else if ((xs=Single_XS::GetProcess<XS_f1f1b_f2f2b>(nin,nout,flavours,nqed,nqcd))!=NULL);
   else if ((xs=Single_XS::GetProcess<XS_f1f2_f1f2>(nin,nout,flavours,nqed,nqcd))!=NULL);
   else if ((xs=Single_XS::GetProcess<XS_f1f2b_f1f2b>(nin,nout,flavours,nqed,nqcd))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_f1f2_f3f4>(nin,nout,flavours,nqed,nqcd))!=NULL);
+  else if ((xs=Single_XS::GetProcess<XS_f1f2b_f3f4b>(nin,nout,flavours,nqed,nqcd))!=NULL);
   if (xs!=NULL) {
     xs->SetScaleScheme(p_owner->ScaleScheme());
     xs->SetKFactorScheme(p_owner->KFactorScheme());

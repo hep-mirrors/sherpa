@@ -87,8 +87,8 @@ bool XS_f1f1_f1f1::SetColours(double s, double t, double u)
   bool swap  = m_swaped;
   RestoreInOrder();
   (*this)(s,t,u);
-  if (SetColours()) m_scale[PHASIC::stp::as] = t;
-               else m_scale[PHASIC::stp::as] = u;
+  if (SetColours()) m_scale[PHASIC::stp::as] = dabs(t);
+               else m_scale[PHASIC::stp::as] = dabs(u);
   if (swap) SwapInOrder();
   return true;
 }
@@ -197,10 +197,12 @@ bool XS_f1f1b_f1f1b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::as] = t;
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::as] = u;
+    m_scale[PHASIC::stp::as] = dabs(t);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::as] = dabs(u);
   }
-  else m_scale[PHASIC::stp::as] = s;
+  else {
+    m_scale[PHASIC::stp::as] = s;
+  }
   if (swap) SwapInOrder();
   return true;
 }
@@ -344,8 +346,8 @@ bool XS_f1f1b_f2f2b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::as] = t;
-    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::as] = u;
+    m_scale[PHASIC::stp::as] = dabs(t);
+    if ((m_anti1&&(!m_anti2)) || ((!m_anti1)&&m_anti2)) m_scale[PHASIC::stp::as] = dabs(u);
   }
   else m_scale[PHASIC::stp::as] = s;
   if (swap) SwapInOrder();
@@ -438,7 +440,7 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const size_t nin,const size_t nout,
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   if (m_W_on) {
-    int kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
+    int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
     if (flavours[0].IsQuark() && flavours[1].IsQuark()) { 
       if (kfc1/2==kfc1/2. && kfc2/2!=kfc2/2.)
 	m_ckm = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
@@ -497,12 +499,12 @@ bool XS_f1f2_f1f2::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::as] = t;
-    if (m_rev) m_scale[PHASIC::stp::as] = u;
+    m_scale[PHASIC::stp::as] = dabs(t);
+    if (m_rev) m_scale[PHASIC::stp::as] = dabs(u);
   }
   else {
-    m_scale[PHASIC::stp::as] = u;
-    if (m_rev) m_scale[PHASIC::stp::as] = t;
+    m_scale[PHASIC::stp::as] = dabs(u);
+    if (m_rev) m_scale[PHASIC::stp::as] = dabs(t);
   }
   if (swap) SwapInOrder();
   return true;
@@ -600,7 +602,7 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const size_t nin,const size_t nout,
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   if (m_W_on) {
-    int kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
+    int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
     if (flavours[0].IsQuark() && flavours[1].IsQuark()) { 
       if (kfc1/2==kfc1/2. && kfc2/2!=kfc2/2.)
 	m_ckm = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
@@ -659,8 +661,8 @@ bool XS_f1f2b_f1f2b::SetColours(double s, double t, double u)
   RestoreInOrder();
   (*this)(s,t,u);
   if (SetColours()) {
-    m_scale[PHASIC::stp::as] = t;
-    if (m_rev) m_scale[PHASIC::stp::as] = u;
+    m_scale[PHASIC::stp::as] = dabs(t);
+    if (m_rev) m_scale[PHASIC::stp::as] = dabs(u);
   }
   else {
     m_scale[PHASIC::stp::as] = s;
@@ -672,21 +674,7 @@ bool XS_f1f2b_f1f2b::SetColours(double s, double t, double u)
 
 bool XS_f1f2b_f1f2b::SetColours() 
 {
-  if (M_t > (M_t+M_s) * ran.Get()) {
-    if (m_rev) {
-      p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-      p_colours[2][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
-    }
-    else {
-      p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-      p_colours[3][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
-    }
-    return true;
-  }
-  p_colours[1][1-m_anti] = p_colours[0][m_anti] = Flow::Counter();
-  if (!m_rev) p_colours[3][1-m_anti] = p_colours[2][m_anti] = Flow::Counter();
-         else p_colours[2][1-m_anti] = p_colours[3][m_anti] = Flow::Counter();
-  return false;
+  return true;
 }
 
 double XS_f1f2b_f1f2b::KFactor(double scale) 
@@ -700,98 +688,282 @@ double XS_f1f2b_f1f2b::KFactor(double scale)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+template <> 
+Single_XS *Single_XS::GetProcess<XS_f1f2_f3f4>(const size_t nin,const size_t nout,
+					       const ATOOLS::Flavour *flavours,
+					       const size_t nqed, const size_t nqcd)
+{
+  int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
+  int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
+  if (!(((flavours[0].IsUptype() && flavours[1].IsDowntype()) ||
+	 (flavours[0].IsDowntype() && flavours[1].IsUptype())) &&
+	((flavours[2].IsUptype() && flavours[3].IsDowntype()) ||
+	 (flavours[2].IsDowntype() && flavours[3].IsUptype())))  ||
+      (!(!flavours[0].IsAnti() && !flavours[1].IsAnti() && 
+	 !flavours[2].IsAnti() && !flavours[3].IsAnti()) &&
+       !(flavours[0].IsAnti() && flavours[1].IsAnti() && 
+	 flavours[2].IsAnti() && flavours[3].IsAnti())) )                       return NULL;
+  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                    return NULL;
+  if (nqcd!=0 || nqed!=2)                                                       return NULL;
+  if (!ATOOLS::Flavour(ATOOLS::kf::W).IsOn())                                   return NULL;
+  if (flavours[0].IsUptype()) {
+    if (flavours[2].IsDowntype() &&
+	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc1/2-1))>0) ||
+	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc4/2-1))>0))  return NULL;
+    if (flavours[2].IsUptype() &&
+	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc1/2-1))>0) ||
+	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc3/2-1))>0))  return NULL;    
+  }
+  else {
+    if (flavours[2].IsDowntype() &&
+	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
+	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2))>0))  return NULL;
+    if (flavours[2].IsUptype() &&
+	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
+	!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2))>0))  return NULL;    
+  }
+  return new XS_f1f2_f3f4(nin,nout,flavours); 
+}
+
+XS_f1f2_f3f4::XS_f1f2_f3f4(const size_t nin,const size_t nout,
+			   const ATOOLS::Flavour *flavours) :
+  Single_XS(nin,nout,flavours), 
+  m_anti(int(flavours[0].IsAnti())), m_rev(false),
+  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
+  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width())),
+  m_pref_W((4.*M_PI*MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()))))/
+	   (2.*ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW")))),
+  m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
+{
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
+  int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
+
+  if (flavours[0].IsUptype()) {
+    if (flavours[2].IsDowntype()) {
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc1/2-1);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc4/2-1);
+    } 
+    if (flavours[2].IsUptype()) {
+      m_rev  = true;
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc1/2-1);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc3/2-1);
+    }
+  }
+  else {
+    if (flavours[2].IsDowntype()) {
+      m_rev  = true;
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc3/2);
+    }
+    if (flavours[2].IsUptype()) {
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2);
+    }
+  }
+  if (m_rev) {
+    p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
+    p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+  }
+  else {
+    p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
+    p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+  }
+}
+
+double XS_f1f2_f3f4::operator()(double s,double t,double u) 
+{
+  if (m_rev) { double help = u; u = t; t = help; }
+  return sqr(m_pref_W)/((sqr(t-m_mw2)+m_mw2*m_ww2)) * (s*s);
+}
+
+bool XS_f1f2_f3f4::SetColours(double s, double t, double u) 
+{
+  bool swap  = m_swaped;
+  RestoreInOrder();
+  if (m_rev) m_scale[PHASIC::stp::as] = dabs(u);
+        else m_scale[PHASIC::stp::as] = dabs(t);
+  if (swap) SwapInOrder();
+  return true;
+}
+
+
+bool XS_f1f2_f3f4::SetColours() 
+{
+  return true;
+}
+
+double XS_f1f2_f3f4::KFactor(double scale) 
+{ 
+  return 1.; 
+}
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 template <> 
 Single_XS *Single_XS::GetProcess<XS_f1f2b_f3f4b>(const size_t nin,const size_t nout,
 						 const ATOOLS::Flavour *flavours,
 						 const size_t nqed, const size_t nqcd)
 {
-  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
-  if (nqcd!=0 || nqed!=2)                                    return NULL;
-  if (!flavours[0].IsQuark() || !flavours[1].IsQuark())      return NULL;
-  if (!flavours[2].IsQuark() || !flavours[3].IsQuark())      return NULL;
-  bool up[4], anti[4];
-  for (short int i=0;i<4;++i) {
-    if (flavours[i].IsUptype()) up[i] = true;
-    else if (!flavours[i].IsDowntype())                      return NULL;
-    else up[i] = false;
-    anti[i]    = flavours[i].IsAnti();
+  if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD)                      return NULL;
+  if (nqcd!=0 || nqed!=2)                                                         return NULL;
+  if (!ATOOLS::Flavour(ATOOLS::kf::W).IsOn())                                     return NULL;
+  int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
+  int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
+  if (flavours[0].IsUptype() && flavours[1].IsDowntype()) {
+    if (flavours[2].IsUptype() && 
+	(!flavours[3].IsDowntype() ||
+	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1))>0) ||
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc3/2-1))>0)))  return NULL;    
+    if (flavours[3].IsUptype() && 
+	(!flavours[2].IsDowntype() ||
+	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1))>0) ||
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc4/2-1))>0)))  return NULL;    
   }
-  if (anti[0]==anti[1] || anti[2]==anti[3])                  return NULL;
-  if (!ATOOLS::Flavour(ATOOLS::kf::W).IsOn())                return NULL;
-  if ((up[0] && !up[1] && up[2] && !up[3] && anti[0]==anti[2]) ||
-      (!up[0] && up[1] && up[2] && !up[3] && anti[1]==anti[2]) ||
-      (up[0] && !up[1] && !up[2] && up[3] && anti[1]==anti[2]) ||
-      (!up[0] && up[1] && !up[2] && up[3] && anti[0]==anti[2])){ 
-    // Check if CKM allowed.
-    /*
-    double m_ckm2_0 = 1., m_ckm2_1 = 1.;
-    int ints[4];
-    for (short int i=0;i<4;++i) ints[i] = ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
-    if (flavours[0].IsQuark())
-      m_ckm2_0 = std::abs(sqr(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2)));
-    if (flavours[2].IsQuark())
-      m_ckm2_1 = std::abs(sqr(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[2]/2-1,ints[3]/2)));
-    if (m_ckm_0<1.e-6 || m_ckm_1<1.e-6)                      return NULL;
-    */
-    return new XS_f1f2b_f3f4b(nin,nout,flavours); 
+  if (flavours[0].IsDowntype() && flavours[1].IsUptype()) {
+    if (flavours[2].IsDowntype() && 
+	(!flavours[3].IsUptype() ||
+	 (flavours[0].IsAnti()^flavours[2].IsAnti()) || 
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1))>0) ||
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc4/2-1))>0)))  return NULL;    
+    if (flavours[3].IsDowntype() && 
+	(!flavours[2].IsUptype() ||
+	 (flavours[0].IsAnti()^flavours[3].IsAnti()) || 
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1))>0) ||
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc3/2-1))>0)))  return NULL;    
   }
-  return NULL;
+  if (flavours[0].IsUptype() && flavours[1].IsUptype()) {
+    if (!flavours[2].IsDowntype() || !flavours[3].IsDowntype() ||
+	!(flavours[0].IsAnti()^flavours[1].IsAnti()) || 
+	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
+    if (!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
+	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc1/2-1))>0) ||
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc2/2-1))>0)))  return NULL;    
+    if (!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
+	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc1/2-1))>0) ||
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc2/2-1))>0)))  return NULL;
+  }    
+  if (flavours[0].IsDowntype() && flavours[1].IsDowntype()) {
+    if (!flavours[2].IsUptype() || !flavours[3].IsUptype() ||
+	!(flavours[0].IsAnti()^flavours[1].IsAnti()) || 
+	!(flavours[2].IsAnti()^flavours[3].IsAnti()) )                            return NULL;
+    if (!(flavours[0].IsAnti()^flavours[2].IsAnti()) &&  
+	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2))>0) ||
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2))>0)))  return NULL;    
+    if (!(flavours[0].IsAnti()^flavours[3].IsAnti()) &&  
+	(!(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2))>0) ||
+	 !(abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2))>0)))  return NULL;
+  }    
+  return new XS_f1f2b_f3f4b(nin,nout,flavours); 
 }
 
 XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
-			       const ATOOLS::Flavour *flavours):
-  Single_XS(nin,nout,flavours) 
+			   const ATOOLS::Flavour *flavours) :
+  Single_XS(nin,nout,flavours), 
+  m_anti(int(flavours[0].IsAnti())), m_rev(false), m_schannel(true),
+  m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
+  m_ww2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width())),
+  m_pref_W((4.*M_PI*MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()))))/
+	   (2.*ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW")))),
+  m_ckm1(Complex(0.,0.)), m_ckm2(Complex(0.,0.))
 {
-  int ints[4];
-  for (short int i=0;i<4;++i) ints[i] = ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
-  m_barred[0] = flavours[0].IsAnti();
-  m_barred[1] = flavours[2].IsAnti();
-  if (flavours[0].IsDowntype()) std::swap(ints[0],ints[1]);
-  if (flavours[2].IsDowntype()) std::swap(ints[2],ints[3]);
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  p_colours[0][flavours[0].IsAnti()]=p_colours[1][1-flavours[0].IsAnti()]=ATOOLS::Flow::Counter();
-  p_colours[2][flavours[2].IsAnti()]=p_colours[3][1-flavours[2].IsAnti()]=ATOOLS::Flow::Counter();
+  int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
+  int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
 
-  /*
-  m_ckm2[0]   = m_ckm2[1]=1.;
-  m_W_on      = true;
-  if (flavours[0].IsQuark())
-    m_ckm2[0] = std::abs(sqr(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2)));
-  if (flavours[2].IsQuark())
-    m_ckm2[1] = std::abs(sqr(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[2]/2-1,ints[3]/2)));
-  if (m_ckm[0]<1.e-6 || m_ckm[1]<1.e-6) m_W_on = false;
-  */
-  m_mw2       = ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
-  m_ww2       = ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
-  m_aqed      = MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
-  m_sin2tw    = ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
-  m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
+  if (flavours[0].IsUptype() && flavours[1].IsDowntype()) {
+    if (flavours[2].IsUptype()) {
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc3/2-1);
+    }
+    else {
+      m_rev  = true;
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc4/2-1);
+    }
+    p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = Flow::Counter();
+    p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = Flow::Counter();
+  }
+  else if (flavours[0].IsDowntype() && flavours[1].IsUptype()) {
+    if (flavours[2].IsDowntype()) {
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc3/2-1);
+    }
+    else {
+      m_rev  = true;
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc4/2-1);
+    }
+    p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = Flow::Counter();
+    p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = Flow::Counter();
+  }
+  else if (flavours[0].IsUptype() && flavours[1].IsUptype()) {
+    m_schannel = false;
+    if (!(flavours[0].IsAnti()^flavours[2].IsAnti())) {  
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc1/2-1);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc2/2-1);
+    }
+    if (!(flavours[0].IsAnti()^flavours[3].IsAnti())) {
+      m_rev  = true;
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc1/2-1);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc2/2-1);
+    }    
+    p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
+    p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
+  }
+  else if (flavours[0].IsDowntype() && flavours[1].IsDowntype()) {
+    m_schannel = false;
+    if (!(flavours[0].IsAnti()^flavours[2].IsAnti())) {  
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc1/2);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc2/2);
+    }
+    if (!(flavours[0].IsAnti()^flavours[3].IsAnti())) {
+      m_rev  = true;
+      m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2);
+      m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2);
+    }    
+    p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
+    p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
+  }
 }
 
 double XS_f1f2b_f3f4b::operator()(double s,double t,double u) 
 {
-  if (m_W_on) {
-    double abst_2 = p_momenta[0]*p_momenta[2];
-    if (m_swaped) abst_2 = p_momenta[1]*p_momenta[2];
-    return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*16/3.*m_ckm2[0]*m_ckm2[1]*
-      ATOOLS::sqr(abst_2)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
-  }
-  return 0.;
+  if (m_rev) { double help = u; u = t; t = help; }
+  if (m_schannel) return sqr(m_pref_W)/((sqr(s-m_mw2)+m_mw2*m_ww2)) * (u*u);
+  return sqr(m_pref_W)/((sqr(t-m_mw2)+m_mw2*m_ww2)) * (u*u);
 }
 
-bool XS_f1f2b_f3f4b::SetColours(double s,double t,double u) 
-{ 
-  m_scale[PHASIC::stp::fac]=s;
-  p_colours[0][m_barred[0]]=ATOOLS::Flow::Counter();
-  p_colours[1][1-m_barred[0]]=p_colours[0][m_barred[0]];
-  p_colours[2][m_barred[1]]=ATOOLS::Flow::Counter();
-  p_colours[3][1-m_barred[1]]=p_colours[2][m_barred[1]];
-  return true; 
-}
-
-double XS_f1f2b_f3f4b::KFactor(const double scale) 
+bool XS_f1f2b_f3f4b::SetColours(double s, double t, double u) 
 {
-  return 1.;
+  bool swap  = m_swaped;
+  RestoreInOrder();
+  if (m_schannel) m_scale[PHASIC::stp::as] = dabs(s);
+  else {
+    if (m_rev) m_scale[PHASIC::stp::as] = dabs(u);
+          else m_scale[PHASIC::stp::as] = dabs(t);
+  }
+  if (swap) SwapInOrder();
+  return true;
 }
+
+
+bool XS_f1f2b_f3f4b::SetColours() 
+{
+  return true;
+}
+
+double XS_f1f2b_f3f4b::KFactor(double scale) 
+{ 
+  return 1.; 
+}
+
+
 
