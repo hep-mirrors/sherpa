@@ -215,12 +215,6 @@ void   Particle::SetProductionBlob(Blob *blob)
 
 void   Particle::SetDecayBlob(Blob *blob)       
 { 
-  if (p_endblob!=NULL && blob!=NULL) {
-    if (p_endblob->Id()>-1) 
-      ATOOLS::msg.Out()<<"Particle::SetDecayBlob("<<blob<<"): blob->Id() = "<<blob->Id()<<std::endl
-		       <<"   Particle already has a decay blob!"<<std::endl
-		       <<"   "<<*this<<std::endl;
-  }
   p_endblob=blob; 
 }
 
