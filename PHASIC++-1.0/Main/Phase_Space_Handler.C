@@ -187,6 +187,7 @@ double Phase_Space_Handler::Integrate()
 
 bool Phase_Space_Handler::MakeIncoming(ATOOLS::Vec4D *const p,const double mass) 
 {
+  if (m_isrspkey[3]==0.) m_isrspkey[3] = sqr(ATOOLS::rpa.gen.Ecms());
   if (m_nin == 1) {
     if (mass<0.) m_E = m_m[0];
     else m_E = mass;  
