@@ -1,15 +1,56 @@
-lib_LTLIBRARIES = libToolsOrg.la
+SHERPASYS = ../..
+
+ATOOLSFLAGS   =	-DUSING__COLOUR # -pedantic -Wall -Winline
+
+ATOOLSINCS    =	-I../Math -I../Phys
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
-libToolsOrg_la_SOURCES = Data_Read.C Run_Parameter.C FastList.C MyTiming.C Message.C \
-		 Sort.C prof.cc IO_Handler.C 
-noinst_HEADERS = Exeptions.H Data_Read.H Data_Return.H Run_Parameter.H Message.H \
-                 FastList.H List_Algorithms.H MyStrStream.H Sort.H\
-	         MyTiming.H prof.hh prof_exampl.cc IO_Handler.H
-INCLUDES = -I../Phys \
-	   -I../Math \
-	   -I../../MODEL-1.0/Main
+lib_LTLIBRARIES = libToolsOrg.la
+libToolsOrg_la_SOURCES        = \
+				Data_Read.C \
+				Run_Parameter.C \
+				FastList.C \
+				MyTiming.C \
+				Message.C \
+		 		Sort.C \
+				prof.cc \
+				IO_Handler.C \
+				Info_Key.C \
+				Integration_Info.C 
+#				File_IO_Base.C \
+#				Read_Write_Base.C \
+#				Data_Reader.C \
+#				Data_Writer.C \
+noinst_HEADERS        =	\
+			Exeptions.H \
+			Data_Read.H \
+			Data_Return.H \
+			Run_Parameter.H \
+			Message.H \
+			FastList.H \
+			List_Algorithms.H \
+			Sort.H \
+			MyTiming.H \
+			prof.hh \
+			prof_exampl.cc \
+			IO_Handler.H \
+			MyStrStream.H \
+			Type.H \
+			Type.IC \
+			Info_Key.H \
+			Info_Key.inl.H \
+			Integration_Info.H \
+			Integration_Info.inl.H 
+#			File_IO_Base.H \
+#			File_IO_Base.IC \
+#			Read_Write_Base.H \
+#			Read_Write_Base.IC \
+#			Data_Reader.H \
+#			Data_Writer.H \
 EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(ATOOLSFLAGS)
+INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
