@@ -52,7 +52,7 @@ for I in $* ; do
   elif [ "$DBINPATH" = "TRUE" ]; then DBINPATH="" && BINPATH=$I
   elif [ "$DRESULTS" = "TRUE" ]; then DRESULTS="" && RESULTS=$I
   elif [ "$DANALYSIS" = "TRUE" ]; then DANALYSIS="" && ANALYSIS=$I
-  elif [ "$DOPTIONS" = "TRUE" ]; then DOPTIONS="" && OPTONS=$OPTIONS" "$I
+  elif [ "$DOPTIONS" = "TRUE" ]; then DOPTIONS="" && OPTIONS=$OPTIONS" "$I
   elif [ "$DBASENAME" = "TRUE" ]; then DBASENAME="" && BASENAME=$I
   elif [ "$DEVENTS" = "TRUE" ]; then DEVENTS="" && EVENTS=$I
   elif [ "$DPYTHIA" = "TRUE" ]; then DPYTHIA="" && PYTHIA=$I
