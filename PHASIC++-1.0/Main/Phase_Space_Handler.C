@@ -47,7 +47,6 @@ using namespace PHASIC;
 using namespace ATOOLS;
 using namespace BEAM;
 using namespace PDF;
-using namespace std;
 
 Integration_Info *PHASIC::Phase_Space_Handler::p_info=NULL;
 
@@ -56,37 +55,36 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
   m_name(proc->Name()), p_process(proc), p_active(proc), p_integrator(NULL), p_cuts(NULL),
   p_beamhandler(bh), p_isrhandler(ih), p_fsrchannels(NULL), p_zchannels(NULL), p_kpchannels(NULL), 
   p_isrchannels(NULL), p_beamchannels(NULL), p_flavours(NULL), p_cms(NULL), p_lab(NULL), 
-  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_initialized(0),
+  m_nin(proc->NIn()), m_nout(proc->NOut()), m_nvec(0), m_use_foam(0), m_initialized(0),
   m_maxtrials(1000000), m_sumtrials(0), m_events(0), m_E(ATOOLS::rpa.gen.Ecms()), m_s(m_E*m_E), 
   m_weight(1.)
 {
   p_activefoam=NULL;
-  Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
+  Data_Read dr(rpa.GetPath()+"/Integration.dat");
   m_error    = dr.GetValue<double>("ERROR",0.01);
   m_inttype  = dr.GetValue<int>("INTEGRATOR",3);
   m_fin_opt  = dr.GetValue<Switch::code>("FINISH_OPTIMIZATION");
   if (m_fin_opt==NotDefined<Switch::code>()) m_fin_opt=Switch::Off;
   p_flavours = new Flavour[m_nin+m_nout];
   for (int i=0;i<m_nin+m_nout;i++) p_flavours[i] = proc->Flavours()[i];
-  p_channellibnames = new list<string>;
-  p_fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
+  p_channellibnames = new std::list<std::string>;
+  p_fsrchannels = new Multi_Channel("fsr_"+proc->Name());
   m_m[0] = p_flavours[0].Mass(); m_m2[0] = m_m[0]*m_m[0];
   if (m_nin==2) {
     m_m[1] = p_flavours[1].Mass(); m_m2[1] = m_m[1]*m_m[1]; 
     if (p_beamhandler) {
-      if (p_beamhandler->On()>0) p_beamchannels = new Multi_Channel(string("beam_")+proc->Name());
+      if (p_beamhandler->On()>0) p_beamchannels = new Multi_Channel("beam_"+proc->Name());
     }
     if (p_isrhandler) {
       if (p_isrhandler->On()>0) {
-	p_isrchannels = new Multi_Channel(string("isr_")+proc->Name());
+	p_isrchannels = new Multi_Channel("isr_"+proc->Name());
  	if (p_isrhandler->KMROn()>0) {
- 	  p_zchannels = new Multi_Channel(string("kmr_z_")+proc->Name());
- 	  p_kpchannels = new Multi_Channel(string("kmr_kp_")+proc->Name());
+ 	  p_zchannels = new Multi_Channel("kmr_z_"+proc->Name());
+ 	  p_kpchannels = new Multi_Channel("kmr_kp_"+proc->Name());
 	}
       }
     }
   }
-  m_use_foam=dr.GetValue<int>("FOAM",0);
   if (m_nin==2) {
     m_isrspkey.Assign("s' isr",4,0,p_info);
     m_isrykey.Assign("y isr",3,0,p_info);
@@ -140,10 +138,10 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
     p_lab = new Vec4D[m_nvec];  
   }
   if (!(MakeIncoming(p_lab)) ) {
-    msg.Error()<<"Phase_Space_Handler::Integrate : Error !"<<endl
+    msg.Error()<<"Phase_Space_Handler::Integrate : Error !"<<std::endl
 	       <<"  Either too little energy for initial state"
-	       <<"  ("<<m_E<<" vs "<<m_m[0]+m_m[1]<<") or "<<endl
-	       <<"  bad number of incoming particles ("<<m_nin<<")."<<endl;
+	       <<"  ("<<m_E<<" vs "<<m_m[0]+m_m[1]<<") or "<<std::endl
+	       <<"  bad number of incoming particles ("<<m_nin<<")."<<std::endl;
     return 0;
   } 
   if (m_nin>1) {
@@ -162,31 +160,31 @@ double Phase_Space_Handler::Integrate()
   if (!InitIncoming()) return 0;
   if (rpa.gen.ModelName()==std::string("ADD") && p_isrhandler->On()==0 && p_beamhandler->On()==0) {
     if (rpa.gen.Ecms()>rpa.gen.ScalarConstant(std::string("M_cut"))) {
-      msg.Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<endl
-		 <<"   Use of model ADD at a c.m. energy of "<<rpa.gen.Ecms()<<" GeV,"<<endl
+      msg.Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<std::endl
+		 <<"   Use of model ADD at a c.m. energy of "<<rpa.gen.Ecms()<<" GeV,"<<std::endl
 		 <<"   but internal string/cut-off scale of model is "
-		 <<rpa.gen.ScalarConstant(std::string("M_cut"))<<" GeV."<<endl
-		 <<"   Return 0 pb as cross section for process "<<p_process->Name()<<endl;
+		 <<rpa.gen.ScalarConstant(std::string("M_cut"))<<" GeV."<<std::endl
+		 <<"   Return 0 pb as cross section for process "<<p_process->Name()<<std::endl;
       return 0.;
     }
   }
-  msg_Debugging()<<"Phase_Space_Handler::Integrate with : "<<endl;
+  msg_Debugging()<<"Phase_Space_Handler::Integrate with : "<<std::endl;
   if (m_nin>1) {
     if (p_beamchannels) 
       msg_Debugging()<<"  Beam   : "<<p_beamchannels->Name()<<" ("<<p_beamchannels<<") "
-		     <<"  ("<<p_beamchannels->Number()<<","<<p_beamchannels->N()<<")"<<endl;
+		     <<"  ("<<p_beamchannels->Number()<<","<<p_beamchannels->N()<<")"<<std::endl;
     if (p_isrchannels) 
       msg_Debugging()<<"  ISR    : "<<p_isrchannels->Name()<<" ("<<p_isrchannels<<") "
-		     <<"  ("<<p_isrchannels->Number()<<","<<p_isrchannels->N()<<")"<<endl;
+		     <<"  ("<<p_isrchannels->Number()<<","<<p_isrchannels->N()<<")"<<std::endl;
     if (p_zchannels) 
       msg_Debugging()<<"  KMR Z  : "<<p_zchannels->Name()<<" ("<<p_zchannels<<") "
- 		     <<"  ("<<p_zchannels->Number()<<","<<p_zchannels->N()<<")"<<endl;
+ 		     <<"  ("<<p_zchannels->Number()<<","<<p_zchannels->N()<<")"<<std::endl;
     if (p_kpchannels) 
       msg_Debugging()<<"  KMR kp : "<<p_kpchannels->Name()<<" ("<<p_kpchannels<<") "
- 		     <<"  ("<<p_kpchannels->Number()<<","<<p_kpchannels->N()<<")"<<endl;
+ 		     <<"  ("<<p_kpchannels->Number()<<","<<p_kpchannels->N()<<")"<<std::endl;
   }
   msg_Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
-		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<endl;
+		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<std::endl;
   if (m_nin==2) return p_integrator->Calculate(this,m_error,m_fin_opt);
   if (m_nin==1) return p_integrator->CalculateDecay(this,sqrt(p_lab[0].Abs2()),m_error);
   return 0.;
@@ -245,15 +243,17 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       p_isrhandler->SetPole(m_beamspkey[3]);
     }
     if (mode<2) p_isrhandler->SetSprimeMin(m_smin);
-    p_isrhandler->SetLimits();
-    if (p_isrhandler->On()>0) { 
-      if (mode>=0) 
-	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
-      else p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
-					p_isrhandler->On(),p_activefoam);
-      if (p_isrhandler->KMROn()) {
-	p_kpchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
-	p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
+    if (mode<3) {
+      p_isrhandler->SetLimits();
+      if (p_isrhandler->On()>0) { 
+	if (mode>=0) 
+	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
+	else p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
+					  p_isrhandler->On(),p_activefoam);
+	if (p_isrhandler->KMROn()) {
+	  p_kpchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
+	  p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
+	}
       }
     }
 #ifdef ANALYSE__Phase_Space_Handler
@@ -283,12 +283,12 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       process->Selector()->UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
     }
   }
-  if (mode>=0) p_fsrchannels->GeneratePoint(p_lab,p_cuts);
+  if (mode>=-1) p_fsrchannels->GeneratePoint(p_lab,p_cuts);
   else p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_activefoam);
   if (!Check4Momentum(p_lab)) {
-    msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<endl;
+    msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<std::endl;
     for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
- 						 <<" ("<<p_lab[i].Abs2()<<")"<<endl;
+ 						 <<" ("<<p_lab[i].Abs2()<<")"<<std::endl;
     return 0.;
   }
   double KFactor = 1., Q2 = -1.;
@@ -311,7 +311,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 	m_mu2key[0][0] = process->Scale(stp::kp21);
 	m_mu2key[1][0] = process->Scale(stp::kp22);
       }
-      if (p_isrhandler->On()>0) {
+      if (p_isrhandler->On()>0 && mode<3) {
 	p_isrhandler->CalculateWeight(Q2);
  	if (mode>=0) p_isrchannels->GenerateWeight(p_isrhandler->On());
 	else p_isrchannels->GenerateWeight(p_isrhandler->On(),p_activefoam);
@@ -330,7 +330,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       }
       KFactor *= process->KFactor(Q2);
     }
-    if (mode>=0) p_fsrchannels->GenerateWeight(p_cms,p_cuts);
+    if (mode>=-1) p_fsrchannels->GenerateWeight(p_cms,p_cuts);
     else p_fsrchannels->GenerateWeight(p_cms,p_cuts,p_activefoam);
     m_psweight = m_result_1 *= KFactor * p_fsrchannels->Weight();
     if (m_nin>1) {
@@ -409,7 +409,7 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
     }
     else {
       if (!(p_process->Selected())) {
-	msg.Error()<<" ERROR: in Phase_Space_Handler::OneEvent() "<<endl;
+	msg.Error()<<" ERROR: in Phase_Space_Handler::OneEvent() "<<std::endl;
 	return false;
       }
     }
@@ -444,7 +444,7 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
 	  // don't use overflow
 	  msg.Out()<<"WARNING in Phase_Space_Handler::OneEvent :"<<std::endl
 		   <<"   Shifted maximum in "<<p_process->Selected()->Name()<<" : "
-		    <<p_process->Selected()->Max()<<" -> "<<value<<endl;
+		    <<p_process->Selected()->Max()<<" -> "<<value<<std::endl;
 	  p_process->Selected()->SetMax(value*1.001);
 	  p_process->SetMax(0.);
 	}
@@ -480,8 +480,8 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
   }
   m_sumtrials += m_maxtrials;
   msg.Out()<<"WARNING in Phase_Space_Handler::OneEvent() : "
-	   <<" too many trials for "<<p_process->Selected()->Name()<<endl
-	   <<"   Efficiency = "<<double(m_events)/double(m_sumtrials)*100.<<" %."<<endl;
+	   <<" too many trials for "<<p_process->Selected()->Name()<<std::endl
+	   <<"   Efficiency = "<<double(m_events)/double(m_sumtrials)*100.<<" %."<<std::endl;
   return false;
 }
 
@@ -498,7 +498,8 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
     }
     else {
       if (!(p_process->Selected())) {
-	msg.Error()<<" ERROR: in Phase_Space_Handler::WeightedEvent() "<<endl;
+	msg.Error()<<"Phase_Space_Handler::WeightedEvent(): "
+		   <<"No process selected."<<std::endl;
 	return 0;
       }
     }
@@ -523,10 +524,10 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       m_trials=i;
       return new Blob_Data<Weight_Info>(Weight_Info(m_weight,m_trials));
     }
-    if (mode==2) return NULL;
+    if (mode>=2) return NULL;
   }
   msg.Out()<<"WARNING in Phase_Space_Handler::WeightedEvent() : "
-	   <<" too many trials for "<<p_process->Selected()->Name()<<endl;
+	   <<" too many trials for "<<p_process->Selected()->Name()<<std::endl;
   m_weight=0.;
   return NULL;
 } 
@@ -547,35 +548,35 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 
 void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force) 
 {
-  if (m_use_foam) return;
-  msg_Tracking()<<"Write out channels into directory : "<<pID<<endl;
+  if (m_use_foam!=0) return;
+  msg_Tracking()<<"Write out channels into directory : "<<pID<<std::endl;
   int  mode_dir = 448;
   ATOOLS::MakeDir(pID.c_str(),mode_dir,force); 
-  if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+string("/MC_Beam"));
-  if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+string("/MC_ISR"));
-  if (p_zchannels != 0) p_zchannels->WriteOut(pID+string("/MC_KMR_Z"));
-  if (p_kpchannels!= 0) p_kpchannels->WriteOut(pID+string("/MC_KMR_KP"));
-  if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+string("/MC_FSR"));
-  string help     = (pID+string("/Random")).c_str();
+  if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+"/MC_Beam");
+  if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+"/MC_ISR");
+  if (p_zchannels != 0) p_zchannels->WriteOut(pID+"/MC_KMR_Z");
+  if (p_kpchannels!= 0) p_kpchannels->WriteOut(pID+"/MC_KMR_KP");
+  if (p_fsrchannels  != 0) p_fsrchannels->WriteOut(pID+"/MC_FSR");
+  std::string help     = (pID+"/Random").c_str();
   ran.WriteOutStatus(help.c_str());
 }
 
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
 {
-  if (m_use_foam) {
+  if (m_use_foam!=0) {
     msg_Info()<<"Phase_Space_Handler::ReadIn(..): "
 	      <<"Read in not supported for Foam yet.\n";
     return false;
   }
-  msg_Info()<<"Read in channels from directory : "<<pID<<endl;
+  msg_Info()<<"Read in channels from directory : "<<pID<<std::endl;
   bool okay = 1;
-  if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+string("/MC_Beam"));
-  if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+string("/MC_ISR"));
-  if (p_zchannels!=NULL && !(exclude&4)) okay = okay && p_zchannels->ReadIn(pID+string("/MC_KMR_Z"));
-  if (p_kpchannels!=NULL && !(exclude&8)) okay = okay && p_kpchannels->ReadIn(pID+string("/MC_KMR_KP"));
-  if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+string("/MC_FSR"));
+  if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+"/MC_Beam");
+  if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+"/MC_ISR");
+  if (p_zchannels!=NULL && !(exclude&4)) okay = okay && p_zchannels->ReadIn(pID+"/MC_KMR_Z");
+  if (p_kpchannels!=NULL && !(exclude&8)) okay = okay && p_kpchannels->ReadIn(pID+"/MC_KMR_KP");
+  if (p_fsrchannels!=NULL && !(exclude&16)) okay = okay && p_fsrchannels->ReadIn(pID+"/MC_FSR");
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
-    string filename     = (pID+string("/Random")).c_str();
+    std::string filename     = (pID+"/Random").c_str();
     ran.ReadInStatus(filename.c_str(),0);
   }
   return okay;
@@ -591,12 +592,12 @@ bool Phase_Space_Handler::LoadChannelLibraries()
 {
   if (p_channellibnames->size()==0) return 1;
   InitCuts();
-  for (list<string>::iterator it=p_channellibnames->begin();it!=p_channellibnames->end();++it) {
+  for (std::list<std::string>::iterator it=p_channellibnames->begin();it!=p_channellibnames->end();++it) {
     Single_Channel * sc = SetChannel(m_nin,m_nout,p_flavours,(*it),GetInfo());
     if (sc==0) {
       ATOOLS::msg.Error()<<"Phase_Space_Handler:"
-			 <<"Channels are not compiled and linked yet."<<endl
-			 <<"Type 'make install' and run again."<<endl;
+			 <<"Channels are not compiled and linked yet."<<std::endl
+			 <<"Type 'make install' and run again."<<std::endl;
       return 0;
     }
     else {
@@ -623,21 +624,21 @@ bool Phase_Space_Handler::CreateIntegrators()
   if (m_nin==2) {
     if (p_beamhandler && p_beamhandler->On()>0) {
       if (!(MakeBeamChannels())) {
-	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
-		   <<"   did not construct any isr channels !"<<endl;
+	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
+		   <<"   did not construct any isr channels !"<<std::endl;
       }
     }
     if (p_isrhandler) {
       if (p_isrhandler->On()>0) {
 	if (!(MakeISRChannels())) {
-	  msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
-		     <<"   did not construct any isr channels !"<<endl;
+	  msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
+		     <<"   did not construct any isr channels !"<<std::endl;
 	}
       }
       if (p_isrhandler->KMROn()) {
 	if (!(MakeKMRChannels())) {
-	  msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
-		     <<"   did not construct any kmr channels !"<<endl;
+	  msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<std::endl
+		     <<"   did not construct any kmr channels !"<<std::endl;
 	}
       }
     }
@@ -669,7 +670,7 @@ bool Phase_Space_Handler::CreateIntegrators()
     p_fsrchannels->Add(new RamboKK(m_nin,m_nout,p_flavours));
     break;    
   default:
-    msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<endl;
+    msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<std::endl;
     p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
   }  
   msg_Tracking()<<"Initialized Phase_Space_Integrator (\n\t";
@@ -677,7 +678,7 @@ bool Phase_Space_Handler::CreateIntegrators()
   if (p_isrchannels) msg_Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
   if (p_zchannels) msg_Tracking()<<p_zchannels->Name()<<","<<p_zchannels->Number()<<";\n\t";
   if (p_kpchannels) msg_Tracking()<<p_kpchannels->Name()<<","<<p_kpchannels->Number()<<";\n\t";
-  if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<endl;
+  if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<std::endl;
   return 1;
 }
 
@@ -1302,7 +1303,7 @@ void Phase_Space_Handler::DeleteInfo()
 bool Phase_Space_Handler::
 CreateFoamChannel(const std::vector<Single_Channel *> &channels)
 {
-  if (!m_use_foam || channels.size()<1) return false;
+  if (m_use_foam==0 || channels.size()<1) return false;
   std::string key(p_process->Name()+"_"+channels[0]->ChID());
   size_t dim=channels[0]->Dimension();
   for (size_t i=1;i<channels.size();++i) {
@@ -1313,6 +1314,7 @@ CreateFoamChannel(const std::vector<Single_Channel *> &channels)
 	    <<"Creating "<<dim<<"-dimensional foam \n";
   msg_Info()<<"   '"<<key<<"'\n";
   m_foams.push_back(new Foam_Interface(this,key,dim));
+  m_foams.back()->SetMode(m_use_foam);
   return true;
 }
 
@@ -1320,12 +1322,12 @@ typedef Single_Channel * (*Getter_Function)(int nin,int nout,ATOOLS::Flavour* fl
 					    , ATOOLS::Integration_Info * const info,Phase_Space_Handler *psh);
 
 Single_Channel * Phase_Space_Handler::SetChannel(int nin,int nout,ATOOLS::Flavour* fl,
-						   string& pID, ATOOLS::Integration_Info * const info)
+						 std::string& pID, ATOOLS::Integration_Info * const info)
 {
-  int pos=pID.find(string("/"));
-  string libname=ATOOLS::rpa.gen.Variable("SHERPA_LIB_PATH")+
-    string("/libProc_")+pID.substr(0,pos)+string(LIB_SUFFIX);
-  string gettername=string("Getter_")+pID.substr(pos+1); 
+  int pos=pID.find("/");
+  std::string libname=ATOOLS::rpa.gen.Variable("SHERPA_LIB_PATH")+
+    "/libProc_"+pID.substr(0,pos)+LIB_SUFFIX;
+  std::string gettername="Getter_"+pID.substr(pos+1); 
 
   char * error;
   void * module;

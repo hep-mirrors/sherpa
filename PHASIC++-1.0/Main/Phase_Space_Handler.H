@@ -133,6 +133,7 @@ namespace PHASIC {
     inline double   Weight() const    { return m_weight;    }
     inline double   Error() const     { return m_error;     }
     inline long int MaxTrials() const { return m_maxtrials; }
+    inline int      UseFoam() const   { return m_use_foam;  }
  
     inline Multi_Channel *const BeamIntegrator() const  
     { return p_beamchannels; }
@@ -175,6 +176,8 @@ namespace PHASIC {
     { m_error=error; }
     inline void SetMaxTrials(const long int maxtrials)
     { m_maxtrials=maxtrials; }
+    inline void SetUseFoam(const int use_foam) 
+    { m_use_foam=use_foam; }
 
     inline Phase_Space_Integrator *const Integrator() const 
     { return p_integrator; }
