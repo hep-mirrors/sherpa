@@ -23,11 +23,14 @@ namespace SHERPA {
     Sherpa();
     ~Sherpa();
 
-    bool     InitializeTheRun(std::string _path = std::string("./"));
+    //    bool     InitializeTheRun(std::string _path = std::string("./"));
+    bool     InitializeTheRun(int argc,char * argv[]);
     bool     InitializeTheEventHandler();
     bool     GenerateOneEvent();
     bool     SummarizeRun();
     long int NumberOfErrors() { return m_errors; } 
+
+    bool     PerformScan();
   };
 
   /*!

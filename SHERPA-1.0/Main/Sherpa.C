@@ -22,26 +22,33 @@ Sherpa::~Sherpa()
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
 }
 
-bool Sherpa::InitializeTheRun(std::string _path) { 
-  m_path = _path;
-  p_inithandler  = new Initialization_Handler(m_path);
-
-  bool okay;
-  if (p_inithandler->InitializeTheFramework()) {
-    p_output = new Output_Handler(2);
-    okay     =  p_inithandler->CalculateTheHardProcesses();
-    if (rpa.gen.NumberOfEvents()>0)
-      okay   = okay && p_inithandler->InitializeAllHardDecays();
-    return okay;
+bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
+{ 
+  m_path = std::string("./");
+  p_inithandler  = new Initialization_Handler(argc, argv);
+  int mode = p_inithandler->Mode();
+  if (mode==14) {
+    return PerformScan();
   }
-  msg.Error()<<"Error in Sherpa::InitializeRun("<<_path<<")"<<endl
+  else {
+    bool okay;
+    if (p_inithandler->InitializeTheFramework()) {
+      p_output = new Output_Handler(2);
+      okay     =  p_inithandler->CalculateTheHardProcesses();
+      if (rpa.gen.NumberOfEvents()>0)
+	okay   = okay && p_inithandler->InitializeAllHardDecays();
+      return okay;
+    }
+  }
+  msg.Error()<<"Error in Sherpa::InitializeRun("<<m_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
 	     <<"   Try to run nevertheless ... ."<<endl;
   return 0;
 }
 
 
-bool Sherpa::InitializeTheEventHandler() {
+bool Sherpa::InitializeTheEventHandler() 
+{
   p_analysis        = new Sample_Analysis();
   p_eventhandler    = new Event_Handler();
   p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
@@ -55,7 +62,8 @@ bool Sherpa::InitializeTheEventHandler() {
 }
 
 
-bool Sherpa::GenerateOneEvent() {
+bool Sherpa::GenerateOneEvent() 
+{
   for (int i=0;i<m_trials;i++) {
     if (p_eventhandler->GenerateEvent()) {
       if (p_output->Active()) p_output->OutputToFormat(p_eventhandler->GetBlobs());
@@ -68,9 +76,27 @@ bool Sherpa::GenerateOneEvent() {
 
 
 
-bool Sherpa::SummarizeRun() {
+bool Sherpa::SummarizeRun() 
+{
   if (p_analysis) p_analysis->Finish();
   return 1;
 }
 
 void Sherpa::DrawLogo() { }
+
+bool Sherpa::PerformScan() 
+{
+  int np = p_inithandler->NumberOfSteps();
+  for (int i=0;i<=np;++i) {
+    if (p_inithandler->InitializeTheFramework(i)) {
+      if (!p_inithandler->CalculateTheHardProcesses()) {
+	msg.Error()<<"ERROR in Sherpa::PerfomScan("<<i<<")"<<endl;
+      }
+    }
+    else {
+      msg.Error()<<"ERROR in Sherpa::InitializeRun("<<m_path<<")"<<endl;
+    }
+  }
+
+  return 1;
+}
