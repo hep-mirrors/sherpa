@@ -63,6 +63,8 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Read * dataread)
 		 <<"   Will read in parameters, check the procedure and abort later."<<endl;
       okay = 0;
       break;
+    case Beam_Type::Simple_Compton :
+      dataread->SetValue("LASER_MODE","-1");
     case Beam_Type::Laser_Back :
       okay = okay&&InitializeLaserBackscattering(dataread,num);
       break;
