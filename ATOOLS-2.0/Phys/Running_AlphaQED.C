@@ -126,7 +126,7 @@ void Running_AlphaQED::Init()
 
 // possibly running coupling (if switched on)
 double  Running_AlphaQED::Aqed(double t){
-  if (mode) {
+  if (!mode) {
     // fixed aQED!
     if (t>splitt_scale)
       return alpha_eff;
