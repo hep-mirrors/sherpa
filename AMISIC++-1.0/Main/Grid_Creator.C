@@ -79,12 +79,10 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) 
     m_griddeltax=(log(m_gridxmax)-log(m_gridxmin))/1000.;
   double helpd;
-  if (reader->ReadFromFile(helpd,"INITIAL_EVENTS")) 
-    m_initevents=(long unsigned)helpd;
-  else m_initevents=100000;
-  if (reader->ReadFromFile(helpd,"MAX_EVENTS")) 
-    m_maxevents=(long unsigned)helpd;
-  else m_maxevents=1000000;
+  if (!reader->ReadFromFile(helpd,"INITIAL_EVENTS")) helpd=0;
+  m_initevents=(long unsigned)helpd;
+  if (!reader->ReadFromFile(helpd,"MAX_EVENTS")) helpd=1000000;
+  m_maxevents=(long unsigned)helpd;
   if (!reader->ReadFromFile(m_binerror,"GRID_ERROR")) m_binerror=0.05;
   if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) {
     m_outputlevel=ATOOLS::msg.Level();

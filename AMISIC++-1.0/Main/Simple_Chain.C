@@ -558,6 +558,12 @@ bool Simple_Chain::CalculateTotal()
     }
     delete group;
   }
+  ATOOLS::msg.Tracking()<<"Simple_Chain::CalculateTotal(): Pythia mode {"
+			<<"\n   \\sigma_{tot} = "
+			<<(m_sigmahard*ATOOLS::rpa.Picobarn()/1.e9)
+			<<" mb\n   \\sigma_{cut} = "
+			<<((*p_total)(m_stop[0])*ATOOLS::rpa.Picobarn()/1.e9)
+			<<" mb\n}"<<std::endl;
   p_total->ScaleY(1.0/m_norm);
   return true;
 }
@@ -595,7 +601,7 @@ bool Simple_Chain::Initialize()
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
   SetStop(stop,0);
-  if (!reader->ReadFromFile(stop,"GRID_X_MIN")) stop=Stop(0);
+  if (!reader->ReadFromFile(stop,"GRID_X_MIN")) stop=m_regulate?0.0:Stop(0);
   SetStop(stop,4);
   if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
@@ -657,17 +663,18 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 #ifndef USING_Max_Reduction
       while (++pstrials<m_maxtrials) {
 	ATOOLS::Blob_Data_Base *data=selected->WeightedEvent(2);
-	if (data==NULL) return false;
-	weight=data->Get<PHASIC::Weight_Info>().weight;
-	trials=data->Get<PHASIC::Weight_Info>().ntrial;
-	delete data;
-	if (weight>max) {
-	  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
-			     <<"Weight exceeded maximum.\n   Setting new maximum "
-			     <<max<<" -> "<<weight<<std::endl;
-	  m_differentials[m_selected]->SetBinMax(m_last[0],weight);
+	if (data!=NULL) {
+	  weight=data->Get<PHASIC::Weight_Info>().weight;
+	  trials=data->Get<PHASIC::Weight_Info>().ntrial;
+	  delete data;
+	  if (weight>max) {
+	    ATOOLS::msg.Tracking()<<"Simple_Chain::FillBlob(..): "
+				  <<"Weight exceeded maximum.\n   Setting new maximum "
+				  <<max<<" -> "<<weight<<std::endl;
+	    m_differentials[m_selected]->SetBinMax(m_last[0],weight);
+	  }
+	  if (p_fsrinterface->Trigger() && weight>max*ATOOLS::ran.Get()) break;
 	}
-	if (p_fsrinterface->Trigger() && weight>max*ATOOLS::ran.Get()) break;
       }
 #else
       while (true) {

@@ -16,7 +16,7 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
   switch (m_variable.Type()) {
   case ATOOLS::Variable::p_perp:
     Ehat=sqrt((p[0]+p[1]).Abs2());
-    pt=(double)m_value;
+    pt=m_value;
     if (Ehat/2.0>pt) {
       weight=1.0/sqrt((Ehat*Ehat)/(4.*pt*pt)-1.0);
       p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*ran[1]),
