@@ -259,6 +259,19 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   return p_interpreter->Iterate(left+func->Evaluate(args)+right);
 }
 
+size_t FindBinaryMinus(const std::string &expr,const bool fwd,
+		       size_t cpos=std::string::npos)
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("-",cpos):expr.rfind("-",cpos));
+  if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
+  if (pos==0) return FindBinaryMinus(expr,fwd,1);
+  if (expr[pos-1]=='e' || expr[pos-1]=='E' ||
+      expr[pos-1]<48 || expr[pos-1]>57) 
+    return FindBinaryMinus(expr,fwd,fwd?pos+1:pos-1);
+  return pos;  
+}
+
 DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 {
   if (expr.find("(")!=std::string::npos ||
@@ -267,20 +280,10 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
   size_t pos=std::string::npos, tpos=std::string::npos;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
-       oit!=p_interpreter->Operators().rend();++oit) 
-    if ((pos=expr.rfind(oit->second->Tag()))!=std::string::npos) {
-      if (oit->second->Tag()=="-") {
-	if (pos==0 || expr[pos-1]=='e' || expr[pos-1]=='E') continue;
-	for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
-	       toit=p_interpreter->Operators().rbegin();
-	     toit!=p_interpreter->Operators().rend();++toit) 
-	  if ((tpos=expr.rfind(toit->second->Tag(),pos-1))
-	      +toit->second->Tag().length()==pos) {
-	    pos=tpos;
-	    oit=toit;
-	    break;
-	  }
-      }
+       oit!=p_interpreter->Operators().rend();++oit) {
+    if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,false);
+    else pos=expr.find(oit->second->Tag());
+    if (pos!=std::string::npos) {
       if (oit->second->Binary() && pos!=0) {
 	size_t mpos=pos+oit->second->Tag().length();
 	if (mpos<expr.length() && expr[mpos]=='-') tpos=pos;
@@ -291,68 +294,30 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
 	return expr;
       }
     }
+  }
   if (op==NULL) return expr;
   std::string lrstr, lstr=expr.substr(0,pos);
   size_t lfpos=0;
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t tlfpos=lstr.rfind(oit->second->Tag());
-    if (tlfpos!=std::string::npos) {
-      if (oit->second->Tag()=="-") {
-	if (tlfpos==0) {
-	  lfpos=Max(lfpos,tlfpos);
-	}
-	else {
-	  if (lstr[tlfpos-1]=='e' || lstr[tlfpos-1]=='E') {
-	    tlfpos=lstr.rfind(oit->second->Tag(),tlfpos-1);
-	    if (tlfpos!=std::string::npos) 
-	      lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
-	  }
-	  else {
-	    size_t ttlfpos=std::string::npos;
-	    for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
-		   toit=p_interpreter->Operators().rbegin();
-		 toit!=p_interpreter->Operators().rend();++toit) 
-	      if ((ttlfpos=lstr.rfind(toit->second->Tag(),tlfpos-1))
-		  +toit->second->Tag().length()==tlfpos) {
-		tlfpos=ttlfpos;
-		oit=toit;
-		break;
-	      }
-	  }
-	  lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
-	}
-      } 
-      else {
-	lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
-      }
-    }
+    size_t tlfpos=std::string::npos;
+    if (oit->second->Tag()=="-") tlfpos=FindBinaryMinus(lstr,false);
+    else tlfpos=lstr.rfind(oit->second->Tag());
+    if (tlfpos!=std::string::npos) 
+      lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
   }
   lrstr=lstr.substr(0,lfpos);
   lstr=lstr.substr(lfpos);
-  std::string rrstr, rstr=expr.substr(pos+op->Tag().length()), mrstr=rstr;
-  if (tpos==pos) rstr=rstr.substr(1);
+  std::string rrstr, rstr=expr.substr(pos+op->Tag().length());
   size_t rfpos=rstr.length();
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t trfpos=rstr.find(oit->second->Tag());
-    if (trfpos!=std::string::npos) {
-      if (trfpos>0 && 
-	  (rstr[trfpos-1]=='e' || rstr[trfpos-1]=='E')) {
-	trfpos=rstr.find(oit->second->Tag(),trfpos+1);
-	if (trfpos!=std::string::npos) 
-	  rfpos=Min(rfpos,trfpos);
-      } 
-      else {
-	rfpos=Min(rfpos,trfpos);
-      }
-    }
-  }
-  if (tpos==pos) {
-    rstr=mrstr;
-    ++rfpos;
+    size_t trfpos=std::string::npos;
+    if (oit->second->Tag()=="-") trfpos=FindBinaryMinus(rstr,true);
+    else trfpos=rstr.find(oit->second->Tag());
+    if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
   rrstr=rstr.substr(rfpos);
   rstr=rstr.substr(0,rfpos);
@@ -392,18 +357,10 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   for (Algebra_Interpreter::Operator_Map::const_reverse_iterator 
 	 oit=p_interpreter->Operators().rbegin();
        oit!=p_interpreter->Operators().rend();++oit) {
-    size_t trfpos=rstr.find(oit->second->Tag());
-    if (trfpos!=std::string::npos) {
-      if (trfpos>0 && 
-	  (rstr[trfpos-1]=='e' || rstr[trfpos-1]=='E')) {
-	trfpos=rstr.find(oit->second->Tag(),trfpos+1);
-	if (trfpos!=std::string::npos) 
-	  rfpos=Min(rfpos,trfpos);
-      } 
-      else {
-	rfpos=Min(rfpos,trfpos);
-      }
-    }
+    size_t trfpos=std::string::npos;
+    if (oit->second->Tag()=="-") trfpos=FindBinaryMinus(rstr,true);
+    else trfpos=rstr.find(oit->second->Tag());
+    if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
   if (negative) {
     rstr=mrstr;
@@ -414,7 +371,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
   std::vector<std::string> args(1);
   args[0]=p_interpreter->Iterate(rstr);
   msg_Tracking()<<"Interprete_Unary -> '"
-		<<lrstr<<"' '"<<op->Tag()<<rstr<<"' '"<<rrstr<<"'\n";
+		<<lrstr<<"' '"<<op->Tag()<<"' '"<<rstr<<"' '"<<rrstr<<"'\n";
   return p_interpreter->
     Iterate(lrstr+op->Evaluate(args)+rrstr);
 }
@@ -512,7 +469,6 @@ std::string Algebra_Interpreter::ReplaceTags(std::string &expr) const
   size_t pos=std::string::npos;
   for (String_Map::const_iterator sit=m_tags.begin();
        sit!=m_tags.end();++sit) {
-    PRINT_INFO(sit->first<<" -> "<<sit->second);
     if ((pos=expr.find(sit->first))!=std::string::npos) 
       return ReplaceTags(expr.replace(pos,sit->first.length(),sit->second));}
   return expr;
