@@ -27,6 +27,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
   Init(flavours);
   ResetSelector(selectordata);
   p_pshandler = new PHASIC::Phase_Space_Handler(this,isrhandler,beamhandler);
+  p_activepshandler=p_pshandler;
 }
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):

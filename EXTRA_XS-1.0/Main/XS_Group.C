@@ -70,6 +70,7 @@ void XS_Group::Add(XS_Base *const xsec)
   m_xsecs.push_back(xsec);
   m_nvector=ATOOLS::Max(m_nvector,xsec->NVector());
   p_selected=m_xsecs[0];
+  if (!m_atoms) xsec->SetPSHandler(p_activepshandler);
 }
 
 bool XS_Group::Delete(XS_Base *const xsec) 
@@ -106,6 +107,7 @@ void XS_Group::SelectOne()
       if (disc<=0.) {
 	p_selected=m_xsecs[i];
 	p_selected->SelectOne();
+	p_selected->SetPSHandler(p_pshandler);
 	return;
       }
     }
@@ -148,6 +150,9 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     return okay;
   }
   else {
+    for (size_t i=0;i<m_xsecs.size();++i) {
+      m_xsecs[i]->SetPSHandler(p_pshandler);
+    }
     Reset();
     if (p_isrhandler) {
       if (m_nin==2) {
@@ -416,3 +421,9 @@ void XS_Group::Reset()
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->Reset();
   XS_Base::Reset();
 }
+
+void XS_Group::SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler) 
+{
+  for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->SetPSHandler(pshandler);
+  p_activepshandler=pshandler;
+} 

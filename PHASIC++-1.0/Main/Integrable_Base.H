@@ -19,8 +19,10 @@ namespace PHASIC {
   struct stp {
 
     enum id {
-      as      =  1,
-      unknown = 99
+      renormalization =  1,
+      factorization   =  2,
+      as              =  3,
+      unknown         = 99
     };
 
   };// end of struct stp
@@ -38,6 +40,7 @@ namespace PHASIC {
 
     int    m_scalescheme, m_kfactorscheme;
     double m_scale, m_scalefactor, m_threshold, m_overflow;
+
     std::vector<double> m_xinfo;
 
     long int m_n;
@@ -51,7 +54,7 @@ namespace PHASIC {
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;
 
-    PHASIC::Phase_Space_Handler *p_pshandler; 
+    PHASIC::Phase_Space_Handler *p_pshandler, *p_activepshandler; 
     ATOOLS::Selector_Base       *p_selector;
     ATOOLS::Cut_Data            *p_cuts;
 
@@ -91,6 +94,8 @@ namespace PHASIC {
     virtual ATOOLS::Blob_Data_Base *WeightedEvent();
     virtual ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
+    virtual void SetPSHandler(Phase_Space_Handler *const pshandler);
+    
     Integrable_Base *const Selected();
 
     // inline functions
@@ -105,12 +110,11 @@ namespace PHASIC {
     inline void SetSumSqr(const double sumsqr)     { m_totalsumsqr=sumsqr; }
     inline void SetPoints(const long int points)   { m_n=points;           }
     inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
-    inline std::vector<double> & XInfo()           { return m_xinfo; }
 
     inline void SetScale(const double scale) { m_scale=scale; }
 
     inline void SetSelected(Integrable_Base *const selected) { p_selected=selected; }
-
+    
     inline size_t NIn() const     { return m_nin;     }
     inline size_t NOut() const    { return m_nout;    }
     inline size_t NVector() const { return m_nvector; }
@@ -141,14 +145,17 @@ namespace PHASIC {
 
     inline int InSwaped() const { return m_swaped; }
 
+    inline std::vector<double> &XInfo() { return m_xinfo; }
+
     inline ATOOLS::Cut_Data      *const Cuts() const     { return p_cuts;     }
     inline ATOOLS::Selector_Base *const Selector() const { return p_selector; }
 
     inline BEAM::Beam_Spectra_Handler *const Beam() const { return p_beamhandler; }
     inline PDF::ISR_Handler           *const ISR() const  { return p_isrhandler;  }
 
-    inline Phase_Space_Handler *const PSHandler() const { return p_pshandler;  }
-
+    inline Phase_Space_Handler *const PSHandler(const bool own=true) 
+    { if (own) return p_pshandler; return p_activepshandler; }
+    
   };// end of class Integrable_Base
 
 }// end of namespace PHASIC

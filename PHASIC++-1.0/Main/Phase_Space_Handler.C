@@ -546,7 +546,7 @@ bool Phase_Space_Handler::CreateIntegrators()
   switch (m_inttype) {
   case 0: 
     if (m_nin==1 && m_nout==2) p_fsrchannels->Add(new Decay2Channel(m_nin,m_nout,p_flavours));
-            else p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
+    else p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
     break;
   case 1: 
     p_fsrchannels->Add(new Sarge(m_nin,m_nout));
@@ -565,14 +565,16 @@ bool Phase_Space_Handler::CreateIntegrators()
     break;
   case 5:
     p_fsrchannels->Add(new RamboKK(m_nin,m_nout,p_flavours));
-      break;    
+    break;    
   default:
     msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<endl;
     p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
   }  
-  msg.Debugging()<<"Initialized Phase_Space_Integrator (";
-  if (p_beamchannels) msg.Debugging()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";";
-  if (p_isrchannels) msg.Debugging()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";";
+  msg.Debugging()<<"Initialized Phase_Space_Integrator (\n\t";
+  if (p_beamchannels) msg.Debugging()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
+  if (p_isrchannels) msg.Debugging()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
+  if (p_zchannels) msg.Debugging()<<p_zchannels->Name()<<","<<p_zchannels->Number()<<";\n\t";
+  if (p_kpchannels) msg.Debugging()<<p_kpchannels->Name()<<","<<p_kpchannels->Number()<<";\n\t";
   if (p_fsrchannels) msg.Debugging()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<endl;
   return 1;
 }
@@ -880,7 +882,7 @@ bool Phase_Space_Handler::MakeKMRChannels()
       MakeZChannels(3);
     }
     else if ((p_flavours[0].IsGluon() && p_flavours[1].IsGluon()) ||
-	     (p_flavours[0].Strong() && p_flavours[1].Strong())) {
+	     (p_flavours[0].IsJet() && p_flavours[1].IsJet())) {
       //MakeZChannels(1);
       MakeZChannels(2);
       MakeZChannels(3);
