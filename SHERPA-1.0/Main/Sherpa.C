@@ -1,4 +1,5 @@
 #include "Sherpa.H"
+#include "Analysis_Phase.H"
 #include "Signal_Processes.H"
 #include "Hard_Decays.H"
 #include "Multiple_Interactions.H"
@@ -53,7 +54,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
   else {
     bool okay;
     if (p_inithandler->InitializeTheFramework()) {
-      p_output = new Output_Handler(2);
+      p_output = new Output_Handler(0);
       okay     =  p_inithandler->CalculateTheHardProcesses();
       if (rpa.gen.NumberOfEvents()>0)
 	okay   = okay && p_inithandler->InitializeAllHardDecays();
@@ -69,19 +70,20 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
 bool Sherpa::InitializeTheEventHandler() 
 {
-  p_analysis        = new Sample_Analysis(p_inithandler->Path(),p_inithandler->File());
-  p_eventhandler    = new Event_Handler();
+  //p_analysis        = new Sample_Analysis(p_inithandler->Path(),p_inithandler->File());
+  p_eventhandler = new Event_Handler();
   p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(std::string("SignalMEs")),
 						     p_inithandler->GetHardDecayHandler()));
-  // p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
-  p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
-  p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,1));
+  p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
+  //p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
+  //p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Signal Process")));
+  p_eventhandler->AddEventPhase(new Analysis_Phase(std::string("Hard decay")));
   p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
 						  p_inithandler->GetShowerHandler()));
-  p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));
-  p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
-  						  p_inithandler->GetFragmentationHandler()));
-  p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,3));
+  //p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));
+  //p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
+  //						  p_inithandler->GetFragmentationHandler()));
+  //p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,3));
   return 1;
 }
 
@@ -100,11 +102,7 @@ bool Sherpa::GenerateOneEvent()
 
 
 
-bool Sherpa::SummarizeRun() 
-{
-  if (p_analysis) p_analysis->Finish("");
-  return 1;
-}
+bool Sherpa::SummarizeRun() { p_eventhandler->Finish(); }
 
 void Sherpa::DrawLogo() { }
 
