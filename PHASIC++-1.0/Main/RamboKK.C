@@ -2,103 +2,120 @@
 #include "Message.H"
 #include "Random.H"
 #include "Run_Parameter.H"
-//#include "Couplings_LED.H"
+#include "ADD.H"
 
 using namespace PHASIC;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
-RamboKK::RamboKK(int _Nin,int _Nout,Flavour* fl) : Nin(_Nin), Nout(_Nout) 
+RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
 {
-  double pi2log =log(M_PI/2.);
-  
-  double* Z = new double[Nout+1];
-
-  Z[2]=pi2log;
-  for (short int k=3;k<=Nout;k++) Z[k] = Z[k-1]+pi2log-2.*log(double(k-2));
-  for (short int k=3;k<=Nout;k++) Z[k] = Z[k]-log(double(k-1));
-
-  Z_N = Z[Nout];
-  delete[] Z;
-  
-  xm2 = new double[Nin+Nout];
-  p2  = new double[Nin+Nout];  
-  E   = new double[Nin+Nout];
-  ms_out = new double[Nin+Nout];
-
+  nin=_nin;nout=_nout;
+  xm2 = new double[nin+nout];
+  p2  = new double[nin+nout];  
+  E   = new double[nin+nout];
+  ms  = new double[nin+nout];
+  rans= 0;
+  rannum=0;
   massflag = 0;
-  
-  for (short int i=0;i<Nin+Nout;i++) {
-    ms_out[i] = sqr(fl[i].Mass());
-    //msg.Out()<<"Masses in Rambo: "<<sqrt(ms_out[i])<<std::endl;
-    if (!AMATOOLS::IsZero(ms_out[i])) massflag = 1;
+  for (short int i=0;i<nin+nout;i++) {
+    ms[i] = AMATOOLS::sqr(fl[i].Mass());
+    if (!AMATOOLS::IsZero(ms[i])) massflag = 1;
   } 
 
+  double   pi2log = log(M_PI/2.);
+  double * Z      = new double[nout+1];
+  Z[2] = pi2log;
+  for (short int k=3;k<=nout;k++) Z[k] = Z[k-1]+pi2log-2.*log(double(k-2));
+  for (short int k=3;k<=nout;k++) Z[k] = Z[k]-log(double(k-1));
+  Z_N  = Z[nout];
+  delete[] Z;
+
+
+  cout<<"Constructor RamboKK(1)"<<endl;
+
   kkp=-1;mpss=1.;
-  for (short int i=Nin;i<Nin+Nout;i++) {
+  for (int i=nin;i<nin+nout;i++) {
     if(fl[i].IsKK()){
-      if(AMATOOLS::IsZero(ms_out[i])){
+      if(AMATOOLS::IsZero(ms[i])){
 	msg.Out()<<"Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
 	abort();
       }
       kkp=i;
-      /*
-      Couplings_LED  CplLED;
-      CplLED.Init();
-      ed=CplLED.Ned();
-      R2=sqr(CplLED.R());
-      */      
-double mm=rpa.gen.Ecms();
-      for(short int j=Nin;j<Nin+Nout;j++)
-	if(j!=i)mm-=sqrt(ms_out[j]);
-      maxM2=sqr(mm);
-      maxN=sqrt(maxM2*R2/4./sqr(M_PI));
-      //mpss=1./ed*pow(maxM2,0.5*(double(ed)))/pow(CplLED.Ms(),2.+(double(ed)))/CplLED.Gn();
+      
+      MODEL::ADD add(rpa.GetPath()+std::string("/"),rpa.me.ModelDataFile());
+      ed  = add.ScalarNumber(std::string("ED"));
+      cout<<"ED "<<ed<<endl;
+      r2  = sqr(add.ScalarConstant(std::string("Radius")));
+      double gn  = add.ScalarConstant(std::string("G_Newton"));
+      double m_s = add.ScalarConstant(std::string("M_s"));
+      cout.precision(20);
+      cout<<"r2 "<<r2<<endl;       
+      double mm=rpa.gen.Ecms();
+      for(int j=nin;j<nin+nout;j++)
+	if(j!=i) mm -= sqrt(ms[j]);
+      maxm2=sqr(mm);
+      maxn=sqrt(maxm2*r2/4./sqr(M_PI));
+      mpss=1./ed*pow(maxm2,0.5*(double(ed)))/pow(m_s,2.+(double(ed)))/gn;
       break;
     }
   }
+  cout<<"Constructor RamboKK(2)"<<endl;
 
+}
+
+RamboKK::~RamboKK() 
+{
+  if (xm2) { delete [] xm2; xm2 = 0; }
+  if (p2)  { delete [] p2;  p2  = 0; }
+  if (E)   { delete [] E;   E   = 0; }
+  if (ms)  { delete [] ms;  ms  = 0; }
+  if (rans){ delete [] rans;rans = 0; }
 }
 
 void RamboKK::Set_KKmass()
 {
-  if(kkp==-1)return;
-  double *nv=new double[ed];
+
+  if (kkp==-1) return;
+  
+
+
+  double *nv = new double[ed];
   double ms2;
   do{
     ms2=0;
-    //msg.Out()<<"Set_KKmass: "<<kkp<<","<<maxM2<<","<<maxN<<":";
     for (short int i=0;i<ed;i++) {
-      nv[i]=ran.Get()*maxN;
-      //msg.Out()<<nv[i]<<",";
+      nv[i]=ran.Get()*maxn;
       ms2+=sqr(nv[i]);
     }
-    ms2*=4*sqr(M_PI)/R2;
-    //msg.Out()<<ms2<<std::endl;
-  }while (ms2>maxM2);
-  ms_out[kkp]=ms2;
+    ms2*=4*sqr(M_PI)/r2;
+  }
+  while (ms2>maxm2);
+  ms[kkp]=ms2;
   delete[] nv;
 }
 
-void RamboKK::Generate_Weight(Vec4D* p,Cut_Data * cuts)
-{
-  Vec4D sump(0.,0.,0.,0.);
-  for (short int i=0;i<Nin;i++) sump += p[i];
-  double ET = sqrt(sump.Abs2());
 
-  weight = 1.;
-  if (massflag) Massive_Weight(p,ET);
-  weight *= ::exp((2.*Nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,Nout*3.-4.);
-  weight *=mpss;
+void RamboKK::GenerateWeight(Vec4D * p,Cut_Data * cuts)
+{
+Vec4D sump(0.,0.,0.,0.);
+  for (short int i=0;i<nin;i++) sump += p[i];
+  double ET = sqrt(sump.Abs2());
+  weight    = 1.;
+  if (massflag) MassiveWeight(p,ET);
+  weight   *= exp((2.*nout-4.)*log(ET)+Z_N)/pow(2.*M_PI,nout*3.-4.);
+  weight   *= mpss;
 }
 
-void RamboKK::Generate_Point(Vec4D* p,Cut_Data * cuts)
-{
+void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts)
+{  
 
   Set_KKmass();
+
   Vec4D sump(0.,0.,0.,0.);
-  for (short int i=0;i<Nin;i++) sump += p[i];
+  for (short int i=0;i<nin;i++) sump += p[i];
+
   double ET = sqrt(sump.Abs2());
   
   double Q, S, C, F, G, A, X, RMAS, BQ, e;
@@ -106,7 +123,7 @@ void RamboKK::Generate_Point(Vec4D* p,Cut_Data * cuts)
   Vec4D R;
   Vec3D B;
   
-  for(i=Nin;i<Nin+Nout;i++) {
+  for(i=nin;i<nin+nout;i++) {
     C     = 2*ran.Get()-1;
     S     = sqrt(1-C*C);
     F     = 2*M_PI*ran.Get();
@@ -121,124 +138,105 @@ void RamboKK::Generate_Point(Vec4D* p,Cut_Data * cuts)
   A    = 1.0/(1.0+G);
   X    = ET/RMAS;
   
-  for(i=Nin;i<Nin+Nout;i++) {
+  for(i=nin;i<nin+nout;i++) {
     e     = p[i][0];
     BQ    = B*Vec3D(p[i]);
     p[i]  = X*Vec4D((G*e+BQ),Vec3D(p[i])+B*(e+A*BQ));
   }
 
   weight = 1.;
-  if (massflag) Massive_Point(p,ET);
-  //for (short int i=0;i<Nin+Nout;i++) msg.Out()<<i<<". Momentum: "<<p[i]<<";"<<sqrt(p[i].Abs2())<<std::endl;
+  // if (massflag) 
+  MassivePoint(p,ET);// The boost is numerically not very precise, MassivePoint is always called for momentum conservation
 }
 
-void RamboKK::Generate_Point(Vec4D* p,Cut_Data * cuts,double* ran)
-{
-  msg.Error()<<"In Rambo a dummy routine!"<<std::endl;
-  Generate_Point(p,cuts);
+void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran) {
+  GeneratePoint(p,cuts);
 }
 
-void RamboKK::Massive_Weight(Vec4D* p,double ET)
+void RamboKK::MassiveWeight(Vec4D* p,double ET)
 {
-  //Maxnumber of Iterations
-  short int itmax = 6;
-  //Accuracy
-  double accu = ET*pow(10.,-14.);
+  itmax = 6;
+  accu  = ET * pow(10.,-14.);
 
-  double xmt = 0.;
-  double x;
- 
-  for (short int i=Nin;i<Nin+Nout;i++) {
-    xm2[i] = 0.;
-    xmt   += sqrt(ms_out[i]);
-    p2[i]  = sqr(Vec3D(p[i]).Abs());
+  double xmt = 0.; 
+  for (short int i=nin;i<nin+nout;i++) {
+    xm2[i]   = 0.;
+    xmt     += sqrt(ms[i]);
+    p2[i]    = sqr(Vec3D(p[i]).Abs());
   }
-  x = 1./sqrt(1.-sqr(xmt/ET));
-  xmt = 0.;
-  //
-  // MASSIVE PARTICLES: RESCALE THE MOMENTA BY A FACTOR X    
-  double f0,g0,x2;
-    
+  double x   = 1./sqrt(1.-sqr(xmt/ET));
+  xmt        = 0.;
+
+  // Massive particles : Rescale their momenta by a common factor x
+
+  // Loop to calculate x
+  double f0,g0,x2;    
   short int iter = 0; 
   for (;;) {
-    f0=-ET;
-    g0=0.;
-    x2=x*x;
-    for (short int i=Nin;i<Nin+Nout;i++) {
+    f0 = -ET;g0 = 0.;x2 = x*x;
+    for (short int i=nin;i<nin+nout;i++) {
       E[i] = sqrt(xm2[i]+x2*p2[i]);
-      f0 += E[i];
-      g0 += p2[i]/E[i];
+      f0  += E[i];
+      g0  += p2[i]/E[i];
     }
     if (dabs(f0)<accu) break; 
     iter++;
     if (iter>itmax) break;
-    x-=f0/(x*g0);  
+    x -= f0/(x*g0);  
   }
   
-  double wt2=1.;
-  double wt3=0.;
+  double wt2 = 1.;
+  double wt3 = 0.;
   double v;
   
   // Calculate Momenta + Weight 
-  for (short int i=Nin;i<Nin+Nout;i++) {
+  for (short int i=nin;i<nin+nout;i++) {
     v    = Vec3D(p[i]).Abs();
     wt2 *= v/p[i][0];
     wt3 += v*v/p[i][0];
   }  
-  x = 1./x;
-  weight = ::exp((2.*Nout-3.)*log(x)+log(wt2/wt3*ET));
+  x      = 1./x;
+  weight = exp((2.*nout-3.)*log(x)+log(wt2/wt3*ET));
 }
 
-void RamboKK::Massive_Point(Vec4D* p,double ET)
+void RamboKK::MassivePoint(Vec4D* p,double ET)
 {
-  //Maxnumber of Iterations
-  short int itmax = 6;
-  //Accuracy
-  double accu = ET*pow(10.,-14.);
+  itmax = 6;
+  accu  = ET * 1.e-14; //pow(10.,-14.);
+
 
   double xmt = 0.;
   double x;
  
-  for (short int i=Nin;i<Nin+Nout;i++) {
-    xmt   += sqrt(ms_out[i]);
-    xm2[i] = ms_out[i];
+  for (short int i=nin;i<nin+nout;i++) {
+    xmt   += sqrt(ms[i]);
+    xm2[i] = ms[i];
     p2[i]  = sqr(p[i][0]);
   }
 
   x = sqrt(1.-sqr(xmt/ET));
-  //
-  // MASSIVE PARTICLES: RESCALE THE MOMENTA BY A FACTOR X    
-  double f0,g0,x2;
+
+  // Massive particles : Rescale their momenta by a common factor x
     
+  // Loop to calculate x
+
+  double f0,g0,x2;
   short int iter = 0; 
   for (;;) {
-    f0=-ET;
-    g0=0.;
-    x2=x*x;
-    for (short int i=Nin;i<Nin+Nout;i++) {
+    f0 = -ET;g0 = 0.;x2 = x*x;
+    for (short int i=nin;i<nin+nout;i++) {
       E[i] = sqrt(xm2[i]+x2*p2[i]);
-      f0 += E[i];
-      g0 += p2[i]/E[i];
+      f0  += E[i];
+      g0  += p2[i]/E[i];
     }
     if (dabs(f0)<accu) break; 
     iter++;
     if (iter>itmax) break;
-    x-=f0/(x*g0);  
+    x -= f0/(x*g0);  
   }
-
-  //double wt2=1.;
-  //double wt3=0.;
-  //double v;
   
-  // Calculate Momenta + Weight 
-  for (short int i=Nin;i<Nin+Nout;i++) {
-    //v = x*p[i][0];
-    //wt2 *= v/E[i];
-    //wt3 += v*v/E[i];
-    p[i] = Vec4D(E[i],x*Vec3D(p[i]));
-  }  
-
-  //weight = ::exp((2.*Nout-3.)*log(x)+log(wt2/wt3*ET));
+  // Construct Momenta
+  for (short int i=nin;i<nin+nout;i++) p[i] = Vec4D(E[i],x*Vec3D(p[i]));
 }
 
 

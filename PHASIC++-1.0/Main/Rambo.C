@@ -7,16 +7,15 @@ using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
 
-Rambo::Rambo(int _nin,int _nout,Flavour * fl) : 
-  nin(_nin), nout(_nout), 
-  xm2(NULL), p2(NULL), E(NULL), ms(NULL)
+Rambo::Rambo(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
 {
+  nin=_nin;nout=_nout;
   xm2 = new double[nin+nout+1];
   p2  = new double[nin+nout+1];  
   E   = new double[nin+nout+1];
   ms  = new double[nin+nout+1];
   rans= 0;
-
+  rannum=0;
   massflag = 0;
   for (short int i=0;i<nin+nout;i++) {
     ms[i] = AMATOOLS::sqr(fl[i].Mass());
@@ -87,7 +86,8 @@ void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts)
   }
 
   weight = 1.;
-  if (massflag) MassivePoint(p,ET);
+  //if (massflag)
+  MassivePoint(p,ET); // The boost is numerically not very precise, MassivePoint is always called for momentum conservation
 }
 
 void Rambo::GeneratePoint(Vec4D * p,Cut_Data * cuts,double * _ran) {

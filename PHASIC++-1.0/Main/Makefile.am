@@ -14,7 +14,8 @@ INCLUDES = -I../ISR \
 	   -I../../PDF-1.0/LHAPDF \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
-	   -I../../ATOOLS-2.0/Org 
+	   -I../../ATOOLS-2.0/Org \
+	   -I../../MODEL-1.0/Main 
 noinst_HEADERS = Phase_Space_Handler.H Phase_Space_Integrator.H \
 		 Multi_Channel.H Single_Channel.H \
 		 ISR_Channel.H FSR_Channel.H Rambo.H RamboKK.H Sarge.H \

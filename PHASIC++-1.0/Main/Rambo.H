@@ -5,8 +5,8 @@
 
 namespace PHASIC {
   class Rambo : public Single_Channel {
-    int      nin,nout;
-    double * ms;
+    //int      nin,nout;
+    //double * ms;
     bool     massflag;
     double   Z_N, * xm2, * p2, * E;
     short int itmax;

@@ -338,6 +338,10 @@ void Multi_Channel::GeneratePoint(int n,Vec4D * p,Cut_Data * cuts,double * ran)
 void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
 {
   for(short int i=0;i<channels.size();i++) channels[i]->SetWeight(0.);
+  if(channels.size()==1) {
+    channels[0]->GeneratePoint(p,cuts);
+    return;
+  }  
   double rn  = ran.Get();
   double sum = 0;
   for (short int i=0;i<channels.size();i++) {
