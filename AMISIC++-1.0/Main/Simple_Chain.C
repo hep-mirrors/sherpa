@@ -225,12 +225,7 @@ bool Simple_Chain::CreateGrid()
     p_isr=p_environment->ISRHandler();
   }
   p_processes = new EXTRAXS::Simple_XS(InputPath(),InputFile(1),p_model);
-  if (p_processes->Size()>0) {
-    msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
-		  <<"Found an initialized process group."<<std::endl
-		  <<"   Empty group and start with QCD_Processes."<<std::endl;
-    p_processes->Clear();
-  }
+  if (p_processes->Size()>0) p_processes->Clear();
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
@@ -241,8 +236,7 @@ bool Simple_Chain::CreateGrid()
 				     p_processes->SelectorData(),
 				     p_processes->ScaleScheme(),
 				     p_processes->KFactorScheme(),
-				     p_processes->ScaleFactor(),
-				     p_isr->KMROn());
+				     p_processes->ScaleFactor(),false);
   group->XSSelector()->SetOffShell(p_isr->KMROn());
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
