@@ -428,8 +428,15 @@ void LLBackward::GenerateWeight(double sprime,double y,int mode)
 
 void LBSComptonPeakUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  double help   = sprimerange[2] * pole; 
-  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
+  double help   = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], sprimerange[1], rans[0]);
+  if (sprimerange[0]<sprimerange[2]*pole && sprimerange[2]*pole<sprimerange[1]) {
+    sprime = help - sprimerange[1] + sprimerange[2]*pole;
+    if (sprime<sprimerange[0]) 
+      sprime = help + (sprimerange[2]*pole - sprimerange[0]);
+  }
+  else {
+    sprime = help;
+  }
   y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
@@ -437,17 +444,30 @@ void LBSComptonPeakUniform::GenerateWeight(double sprime,double y,int mode)
 {
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
-  double help = sprimerange[2] * pole;
-  weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], help ,sprime);
-  weight *= 1./help;
+  double help=sprime;
+  if (sprimerange[0]<sprimerange[2]*pole && sprimerange[2]*pole<sprimerange[1]) {
+    if (sprime > pole*sprimerange[2]) 
+      help = sprime - (sprimerange[2]*pole - sprimerange[0]);
+    else
+      help = sprime + sprimerange[1] - sprimerange[2]*pole;
+  }
+  weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], sprimerange[1] ,help);
+  weight *= 1./sprimerange[2];  
   weight *= CE.WeightYUniform(sprime/sprimerange[2], yrange, deltay, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
 } 
 
 void LBSComptonPeakCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  double help   = sprimerange[2] * pole; 
-  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
+  double help   = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], sprimerange[1], rans[0]);
+  if (sprimerange[0]<sprimerange[2]*pole && sprimerange[2]*pole<sprimerange[1]) {
+    sprime = help - sprimerange[1] + sprimerange[2]*pole;
+    if (sprime<sprimerange[0]) 
+      sprime = help + (sprimerange[2]*pole - sprimerange[0]);
+  }
+  else {
+    sprime = help;
+  }
   y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
 
@@ -455,9 +475,15 @@ void LBSComptonPeakCentral::GenerateWeight(double sprime,double y,int mode)
 {
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
-  double help = sprimerange[2] * pole;
-  weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], help ,sprime);
-  weight *= 1./help;
+  double help=sprime;
+  if (sprimerange[0]<sprimerange[2]*pole && sprimerange[2]*pole<sprimerange[1]) {
+    if (sprime > pole*sprimerange[2]) 
+      help = sprime - (sprimerange[2]*pole - sprimerange[0]);
+    else
+      help = sprime + sprimerange[1] - sprimerange[2]*pole;
+  }
+  weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], sprimerange[1] ,help);
+  weight *= 1./sprimerange[2];  
   weight *= CE.WeightYCentral(sprime/sprimerange[2], yrange, deltay, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
 } 
@@ -465,8 +491,15 @@ void LBSComptonPeakCentral::GenerateWeight(double sprime,double y,int mode)
 
 void LBSComptonPeakForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  double help   = sprimerange[2] * pole; 
-  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
+  double help   = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], sprimerange[1], rans[0]);
+  if (sprimerange[0]<sprimerange[2]*pole && sprimerange[2]*pole<sprimerange[1]) {
+    sprime = help - sprimerange[1] + sprimerange[2]*pole;
+    if (sprime<sprimerange[0]) 
+      sprime = help + (sprimerange[2]*pole - sprimerange[0]);
+  }
+  else {
+    sprime = help;
+  }
   y = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
@@ -476,9 +509,15 @@ void LBSComptonPeakForward::GenerateWeight(double sprime,double y,int mode)
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) {
     return;
   }
-  double help = sprimerange[2] * pole;
-  weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], help ,sprime);
-  weight *= 1./help;
+  double help=sprime;
+  if (sprimerange[0]<sprimerange[2]*pole && sprimerange[2]*pole<sprimerange[1]) {
+    if (sprime > pole*sprimerange[2]) 
+      help = sprime - (sprimerange[2]*pole - sprimerange[0]);
+    else
+      help = sprime + sprimerange[1] - sprimerange[2]*pole;
+  }
+  weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], sprimerange[1] ,help);
+  weight *= 1./sprimerange[2];  
   weight *= CE.WeightYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
 } 
@@ -486,8 +525,15 @@ void LBSComptonPeakForward::GenerateWeight(double sprime,double y,int mode)
 
 void LBSComptonPeakBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
-  double help   = sprimerange[2] * pole; 
-  sprime        = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], help, rans[0]);
+  double help   = CE.LLPropMomenta(sexp, sprimerange[2], sprimerange[0], sprimerange[1], rans[0]);
+  if (sprimerange[0]<sprimerange[2]*pole && sprimerange[2]*pole<sprimerange[1]) {
+    sprime = help - sprimerange[1] + sprimerange[2]*pole;
+    if (sprime<sprimerange[0]) 
+      sprime = help + (sprimerange[2]*pole - sprimerange[0]);
+  }
+  else {
+    sprime = help;
+  }
   y = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
 
@@ -497,9 +543,15 @@ void LBSComptonPeakBackward::GenerateWeight(double sprime,double y,int mode)
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) {
     return;
   }
-  double help = sprimerange[2] * pole;
-  weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], help ,sprime);
-  weight *= 1./help;
+  double help=sprime;
+  if (sprimerange[0]<sprimerange[2]*pole && sprimerange[2]*pole<sprimerange[1]) {
+    if (sprime > pole*sprimerange[2]) 
+      help = sprime - (sprimerange[2]*pole - sprimerange[0]);
+    else
+      help = sprime + sprimerange[1] - sprimerange[2]*pole;
+  }
+  weight  = 1./CE.LLPropWeight(sexp,sprimerange[2], sprimerange[0], sprimerange[1] ,help);
+  weight *= 1./sprimerange[2];  
   weight *= CE.WeightYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
   if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
 } 
