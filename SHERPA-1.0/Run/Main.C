@@ -17,9 +17,13 @@ int main(int argc,char* argv[])
 {  
   std::set_terminate(ATOOLS::Exception::Terminate);
   std::set_unexpected(ATOOLS::Exception::Terminate);
-  signal(SIGSEGV,ATOOLS::Exception::SEGVHandler);
-  signal(SIGINT,ATOOLS::Exception::INTHandler);
-  signal(SIGFPE,ATOOLS::Exception::FPEHandler);
+  signal(SIGSEGV,ATOOLS::Exception::SignalHandler);
+  signal(SIGINT,ATOOLS::Exception::SignalHandler);
+  signal(SIGBUS,ATOOLS::Exception::SignalHandler);
+  signal(SIGFPE,ATOOLS::Exception::SignalHandler);
+  signal(SIGABRT,ATOOLS::Exception::SignalHandler);
+  signal(SIGTERM,ATOOLS::Exception::SignalHandler);
+  signal(SIGXCPU,ATOOLS::Exception::SignalHandler);
   try {
 
     Sherpa Generator;

@@ -64,10 +64,7 @@ namespace ATOOLS {
 	      const std::string cclass,const std::string cmethod);
 
     // member functions
-    static void SEGVHandler(int signal); 
-    static void INTHandler(int signal); 
-    static void FPEHandler(int signal); 
-    
+    static void SignalHandler(int signal); 
     static void PrepareTerminate();
     static void Terminate();
     static void Exit(int exitcode);
