@@ -30,7 +30,13 @@ namespace EXTRAXS {
 
     int a,p;
     double Ms,Mt,Mu,aS;
-
+    
+    bool m_barred[2];
+    
+    double m_aqed, m_sin2tw,m_ckm2;
+    double m_mw2, m_ww2;
+    
+    bool m_existw;
   public:
 
     XS_q1q2_q1q2(const size_t nin,const size_t nout, 

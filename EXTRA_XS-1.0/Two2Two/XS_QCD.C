@@ -2,6 +2,7 @@
 #include "Random.H"
 #include "Run_Parameter.H"
 #include "Running_AlphaS.H"
+#include "Running_AlphaQED.H"
 #include "Flow.H"
 
 using namespace EXTRAXS;
@@ -63,9 +64,9 @@ Single_XS *Single_XS::GetProcess<XS_q1q2_q1q2<sgq::none> >(const size_t nin,cons
     if (nqcd==0 && nqed==2) {
       return new XS_q1q2_q1q2<sgq::pure_ew>(nin,nout,flavours); 
     }
-    if (nqcd==2 && nqed==2) {
-      return new XS_q1q2_q1q2<sgq::mixed>(nin,nout,flavours); 
-    }
+      //     if (nqcd==2 && nqed==2) {
+      //      return new XS_q1q2_q1q2<sgq::mixed>(nin,nout,flavours); 
+      //     }
   }
   return NULL;
 }
@@ -78,12 +79,44 @@ XS_q1q2_q1q2<mode>::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOL
   a  = fl[0].IsAnti();
   p = fl[1].IsAnti();
   aS = (*as)(sqr(rpa.gen.Ecms()));
+
+
+  int ints[4];
+  for (short int i=0;i<4;++i) ints[i]=ATOOLS::kf_table.ToInt(fl[i].Kfcode());
+
+  m_barred[0]=fl[0].IsAnti();
+  if (fl[0].IsDowntype()) std::swap(ints[0],ints[1]);
+  m_ckm2=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
+
+  m_mw2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
+  m_ww2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
+  m_aqed=MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
+  m_sin2tw=ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
+  m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
+  std::cout<<" creating XS_q1q2_q1q2<"<<mode<<">\n";
+  std::cout<<fl[0]<<" "<<fl[1]<<" -> "<<fl[2]<<" "<<fl[3]<<"\n";
+  std::cout<<" ckm2="<<m_ckm2<<"\n";
+  std::cout<<" aqed2="<<m_aqed<<"\n";
+  std::cout<<" sin2tw="<<m_sin2tw<<"\n";
+
+  m_existw=true;
 }
 
 template <sgq::code mode>
 double XS_q1q2_q1q2<mode>::operator()(double s,double t,double u) {
   if (s<m_threshold) return 0.;
-  return sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
+  double sum=0.;
+  if (mode==sgq::pure_ew) {
+    sum+=sqr(4.*M_PI*m_aqed)* 8. * (s*s + u*u) / ( 81. * t*t); // gamma gamma
+    if (m_existw) {
+      sum+=-2.*m_ckm2*sqr(4.*M_PI*m_aqed)/(27.*m_sin2tw) * u*u * (s-m_mw2) / (t*(sqr(s-m_mw2)-m_mw2*m_ww2));
+      sum+= sqr(m_ckm2*4.*M_PI*m_aqed/m_sin2tw) * t*u/(4.*(sqr(s-m_mw2)-m_mw2*m_ww2));
+    }
+  }
+  if (mode==sgq::pure_qcd) {
+    sum+=2*sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
+  }
+  return sum;
 }
 
 template <sgq::code mode>
