@@ -93,18 +93,18 @@ Initialization_Handler::~Initialization_Handler()
     delete m_analyses.begin()->second;
     m_analyses.erase(m_analyses.begin());
   }
-  if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
-  if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
-  if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
-  if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
-  if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
-  if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
-  if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
-  if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
-  if (p_model)         { delete p_model;         p_model         = NULL; }
-  if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
-  if (p_herwig)        { delete p_herwig;        p_herwig        = NULL; }
-  if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
+  if (p_iohandler)     delete p_iohandler;    
+  if (p_hadrondecays)  delete p_hadrondecays; 
+  if (p_fragmentation) delete p_fragmentation;
+  if (p_beamremnants)  delete p_beamremnants; 
+  if (p_showerhandler) delete p_showerhandler;
+  if (p_harddecays)    delete p_harddecays;   
+  if (p_mihandler)     delete p_mihandler;    
+  if (p_beamspectra)   delete p_beamspectra;  
+  if (p_model)         delete p_model;        
+  if (p_pythia)        delete p_pythia;       
+  if (p_herwig)        delete p_herwig;       
+  if (p_dataread)      delete p_dataread;     
   std::set<Matrix_Element_Handler*> deleted;
   while (m_mehandlers.size()>0) {
     if (deleted.find(m_mehandlers.begin()->second)==deleted.end()) {
