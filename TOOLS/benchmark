@@ -143,7 +143,7 @@ for I in $LIST ; do
   fi
 done
 
-if [ "BENCHMARK_ERROR" != "TRUE" ] ; then
+if [ ! "BENCHMARK_ERROR" = "TRUE" ] ; then
   SetStatus "Benchmarking succeeded "
 fi
 SendMail 0
