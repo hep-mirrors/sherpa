@@ -5,9 +5,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <execinfo.h>
+
+#define __USE_GNU
+
 #include <dlfcn.h>
 
 #define MAX_BACKTRACE_DEPTH 128
+
 
 using namespace ATOOLS;
 
@@ -33,33 +37,33 @@ Exception_Handler::s_terminatorobjects=std::vector<Terminator_Object*>();
 
 bool Exception_Handler::ApproveTerminate()
 {
-  if (s_print) msg.Error()<<"Exception_Handler::ApproveTerminate(): Asking for termination ..."<<std::endl;
+  if (s_print) msg.Tracking()<<"Exception_Handler::ApproveTerminate(): Asking for termination ..."<<std::endl;
   if (s_testerfunctions.size()==0 && s_testerobjects.size()==0) {
-    if (s_print) msg.Error()<<"... approved."<<std::endl;
+    if (s_print) msg.Tracking()<<"... approved."<<std::endl;
     return true;
   }
   if (s_testerfunctions.size()>0) {
     for (size_t i=0;i<s_testerobjects.size();++i) if (s_testerfunctions[i]()) {
-      if (s_print) msg.Error()<<"... approved."<<std::endl;
+      if (s_print) msg.Tracking()<<"... approved."<<std::endl;
       return true;
     }
   }
   if (s_testerobjects.size()>0) {
     for (size_t i=0;i<s_testerobjects.size();++i) if (s_testerobjects[i]->ApproveTerminate()) {
-      if (s_print) msg.Error()<<"... approved."<<std::endl;
+      if (s_print) msg.Tracking()<<"... approved."<<std::endl;
       return true;
     }
   }
-  if (s_print) msg.Error()<<"... refused."<<std::endl;
+  if (s_print) msg.Tracking()<<"... refused."<<std::endl;
   return false;
 }
 
 void Exception_Handler::PrepareTerminate()
 {
-  if (s_print) msg.Error()<<"Exception_Handler::PrepareTerminate(): Preparing termination ..."<<std::endl;
+  if (s_print) msg.Tracking()<<"Exception_Handler::PrepareTerminate(): Preparing termination ..."<<std::flush;
   for (size_t i=0;i<s_terminatorobjects.size();++i) s_terminatorobjects[i]->PrepareTerminate(); 
   for (size_t i=0;i<s_terminatorfunctions.size();++i) s_terminatorfunctions[i](); 
-  if (s_print) msg.Error()<<"... prepared."<<std::endl;
+  if (s_print) msg.Tracking()<<"... prepared."<<std::endl;
 }
 
 void Exception_Handler::Exit(int exitcode)
@@ -67,7 +71,7 @@ void Exception_Handler::Exit(int exitcode)
   if (s_print) msg.Error()<<om::bold<<"Exception_Handler::Exit: "<<om::reset<<om::blue
 			  <<"Exiting Sherpa with code "<<om::reset<<om::bold<<"("<<om::red<<exitcode
 			  <<om::reset<<om::bold<<")"<<om::reset<<std::endl;
-  if (s_print) msg.LogFile()<<"Exception_Handler::Exit: Exiting Sherpa with code ("
+  msg.LogFile()<<"Exception_Handler::Exit: Exiting Sherpa with code ("
 			    <<exitcode<<")"<<std::endl;
   exit(exitcode);
 }
@@ -121,9 +125,10 @@ void Exception_Handler::SignalHandler(int signal)
 {
   s_print=true;
   std::string input="y";
+  msg.Out()<<std::endl;
   msg.Error()<<om::bold<<"Exception_Handler::SignalHandler: "<<om::reset<<om::blue
 	     <<"Signal "<<om::reset<<om::bold<<"("<<om::red<<signal
-	     <<om::reset<<om::bold<<")"<<om::reset<<om::blue<<" caught. "<<om::reset<<std::endl;
+	     <<om::reset<<om::bold<<")"<<om::reset<<om::blue<<" caught. "<<om::reset<<std::flush;
   switch (signal) {
   case SIGSEGV:
     ++s_nsegv;
