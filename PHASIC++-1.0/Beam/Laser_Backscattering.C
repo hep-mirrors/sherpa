@@ -9,75 +9,76 @@ using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 using namespace std;
 
-Laser_Backscattering::Laser_Backscattering(Flavour _fl,double _pole)
+Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
+					   const double _energy,const double _polarization,
+					   const double _energyL,const double _polarizationL,
+					   const int _mode,const int _angles,
+					   const int _nonlin,bool & okay) :
+  m_energyL(_energyL), m_polarizationL(_polarizationL), m_mode(_mode), m_angles(_angles)
 {
-  if ( (_fl != Flavour(kf::e)) && (_fl != Flavour(kf::e).Bar()) ) {
-    msg.Error()<<"Tried to initialize Laser_Backscattering for flavour "<<_fl<<"."<<endl
-	       <<"This option is not available. Terminate program."<<endl;
-    abort();
+  m_beam         = _beam;
+  m_energy       = dabs(_energy);
+  m_polarization = _polarization; 
+  m_type         = std::string("Laser_Backscattering");
+
+  m_Ebounds[0]   = 0.;  
+  m_Ebounds[1]   = 500.;
+
+  if (m_angles!=0) {
+    msg.Error()<<"Warning in Laser_Backscattering::Laser_Backscattering."<<endl
+	       <<"   Angular distribution not implemented yet. Assume collinear beam."<<endl; 
+    m_angles     = 0;
   }
-  type = std::string("Laser_Backscattering");
+  if (m_energy>m_Ebounds[1] || m_energy<m_Ebounds[0]) {
+    msg.Error()<<"Warning in Laser_Backscattering::Laser_Backscattering."<<endl
+	       <<"   m_energy = "<<m_energy<<" out of bounds ... . Continue."<<endl;
+  }
+    
+  // Setting m_pol flag if electrons ore Laser are polarized
+  m_pol          = 0;
+  if (m_polarization!=0. || m_polarizationL!=0.) m_pol = 1;
+
+  // Nonlinear corrections.
+  m_rho2   = 3.315865;   
+  m_delta  = 1.387423/2.;
+  if (_nonlin==1) { m_nonlin1 = 0.06594662; m_nonlin2 = 0.7060851e-3; }
+             else { m_nonlin1 = 0.;         m_nonlin2 = 0.;           }
+  m_xe     = 4.*m_energy*m_energyL/sqr(APHYTOOLS::Flavour(kf::e).PSMass());
+  m_Emax   = m_energy*m_xe/(1.+m_xe);
+
+  m_xi     = m_nonlin1 + m_nonlin2 * m_energy;
+  m_xe    /= (1+m_xi);
+  m_xmax   = m_xe/(1.+m_xe);
+  m_xmax2  = 2.*m_xe/(1.+2.*m_xe);
+
+  if (m_mode==0) m_upper = m_xmax;
+            else m_upper = m_xmax2;
+  m_peak   = m_xmax;
+
+  m_yfix   = 1./(1.+m_xe);
+  m_yden   = log(1.+m_xe);
+  m_ysteps = 50;
+
+  m_totalC = 0.7115863 - 0.6776124e-3 * m_energy + 0. * m_energy * m_energy; 
+  m_total2 = m_totalC * 0.5540019 * (1.-exp(-37.38912 * m_xi * m_xi));
+  m_totalE = m_totalC * (0.7257064 + 1.517959e-3 * m_energy);
+
+  msg.Tracking()<<"Initialised Laser-Backscattering ("<<m_mode<<") : "<<endl
+		<<" xe,xmax = "<<m_xe<<", "<<m_xmax
+		<<" for energyL,mass ="<<m_energyL<<", "<<APHYTOOLS::Flavour(kf::e).PSMass()<<endl
+		<<" with xi = "<<m_xi<<", norms   = "<<m_totalC<<"  /  "<<m_total2<<endl
+		<<" with polarization = "<<m_polarization<<", polarizationL = "<<m_polarizationL<<endl;
+  okay = 1;
+}
 
 
-  E           = rpa.gen.Ecms()/2.;
-  Ebounds[0]  = 50.;  
-  Ebounds[1]  = 500.;
-  pol = 0;
 
-  // for testing purposes and to comply with 9302319
-  mode        = 0;
-  angles      = 0;
-  Ebounds[0]  = 0.;  
-  Ebounds[1]  = 500.;
-
-  omegaL      = 1.17e-9;   // (in GeV !!!)  
-  polE        = _pole;//0.85;       
-  cout<<"LaserBackscattering polE :"<<polE<<endl;
-  polL        = -1.;  
-  //Setting pol flag if electrons are polarized
-  if (polE!=0. || polL!=0.)   pol = 1;
-
-  rho2        = 3.315865;   
-  delta       = 1.387423/2.;
-  nonlin1     = 0.06594662; nonlin2 = 0.7060851e-3;
-  xe          = 4.*E*omegaL/sqr(_fl.PSMass());
-  // to compare with 9302319
-
-  polE        = 0.;         polL    = 0.;  
-  rho2        = 0.;   
-  delta       = 1.387423/2.;
-  nonlin1     = 0.;         nonlin2 = 0.;
-  xe          = 4.82;
-
-  Emax   = E*xe/(1.+xe);
-
-  xi     = nonlin1 + nonlin2 * E;
-  xe    /= (1+xi);
-  xmax   = xe/(1.+xe);
-  xmax2  = 2.*xe/(1.+2.*xe);
-
-  if (mode==0) upper = xmax;
-          else upper = xmax2;
-  peak   = xmax;
-  //  AORGTOOLS::msg.Out()<<"*** mass :"<<_fl.PSMass()<<" , "<<omegaL<<" , "<<E<<" , "<<xe<<" , "<<peak<<endl;
-
-  yfix   = 1./(1.+xe);
-  yden   = log(1.+xe);
-  ysteps = 50;
-
-  totalC = 0.7115863 - 0.6776124e-3 * E + 0. * E * E; 
-  total2 = totalC * 0.5540019 * (1.-exp(-37.38912 * xi * xi));
-  totalE = totalC * (0.7257064 + 1.517959e-3 * E);
-
-  totalC = total2 = totalE = 1.;
-
-
-  msg.Tracking()<<"Initialised Laser-Backscattering ("<<mode<<") : "<<endl
-		<<" xe,xmax = "<<xe<<", "<<xmax<<" for omegaL,mass ="
-		<<omegaL<<", "<<_fl.PSMass()<<endl
-		<<" with xi = "<<xi<<", norms   = "<<totalC<<"  /  "<<total2<<endl
-		<<" with polE = "<<polE<<endl;
-  //  PrintSpectra("spectrum.out");
+Beam_Base * Laser_Backscattering::Copy() {
+  bool okay = 1;
+  if (m_nonlin1>0.) return new Laser_Backscattering(m_beam,m_energy,m_polarization,
+						    m_energyL,m_polarizationL,m_mode,m_angles,1,okay);
+  return new Laser_Backscattering(m_beam,m_energy,m_polarization,
+				  m_energyL,m_polarizationL,m_mode,m_angles,0,okay);
 }
 
 Laser_Backscattering::~Laser_Backscattering() {}
@@ -93,11 +94,11 @@ void Laser_Backscattering::PrintSpectra(std::string filename) {
   double z,res1,res2,res3,restot;
   double deg;
   for (int i=1;i<1510;i++) { 
-    z   = xmax2*i*.0007;
+    z   = m_xmax2*i*.0007;
     restot = deg  = 0.;
-    restot += res1 = Compton(z,polE,polL,deg);
-    restot += res2 = TwoPhotons(z,polE,polL,deg); 
-    restot += res3 = Rescattering(z,polE,polL,deg);
+    restot += res1 = Compton(z,m_polarization,m_polarizationL,deg);
+    restot += res2 = TwoPhotons(z,m_polarization,m_polarizationL,deg); 
+    restot += res3 = Rescattering(z,m_polarization,m_polarizationL,deg);
     if (flag) ofile<<" "<<z<<"  "<<res1<<"  "<<res1+res2<<"  "<<res1+res2+res3;
     else  msg.Out()<<" "<<z<<"  "<<res1<<"  "<<res1+res2<<"  "<<res1+res2+res3;
     if (IsZero(restot)) {deg = 0.;restot = 1.e-17;}
@@ -110,93 +111,93 @@ void Laser_Backscattering::PrintSpectra(std::string filename) {
 
 bool Laser_Backscattering::CalculateWeight(double x,double scale) 
 {
-  if (!( (x*E >= Ebounds[0]) && (x*E <= Ebounds[1]))) {
-      //cout<<"LSB : "<<x<<" : "<<Ebounds[0]<<" "<<x*E<<" "<<Ebounds[1]<<endl;
-    weight = 0.;
+  if (!( (x*m_energy>=m_Ebounds[0]) && (x*m_energy<=m_Ebounds[1]))) {
+    m_weight = 0.;
     return 0;
   }
 
-  polar = 0.;
+  m_polar = 0.;
   double spec;
-  switch (mode) {
+  switch (m_mode) {
   case 1: 
-    spec = Compton(x,polE,polL,polar);
+    spec = Compton(x,m_polarization,m_polarizationL,m_polar);
     break;
   case 2: 
-    spec = TwoPhotons(x,polE,polL,polar);
+    spec = TwoPhotons(x,m_polarization,m_polarizationL,m_polar);
     break;
   case 3: 
-    spec = Rescattering(x,polE,polL,polar);  
+    spec = Rescattering(x,m_polarization,m_polarizationL,m_polar);  
     break;
   default:
-    spec = Compton(x,polE,polL,polar) + 
-           TwoPhotons(x,polE,polL,polar) + 
-           Rescattering(x,polE,polL,polar);  
+    spec = Compton(x,m_polarization,m_polarizationL,m_polar) + 
+           TwoPhotons(x,m_polarization,m_polarizationL,m_polar) + 
+           Rescattering(x,m_polarization,m_polarizationL,m_polar);  
     break;
   }
-  polar  = polar/spec;
-  weight = spec;
-  //cout<<"weight(spec) = "<<spec<<endl;
-   cout<<" ======================================== "<<endl;
-   cout<<" x,scale ="<<x<<","<<scale<<endl;
-   cout<<" polar= "<<polar<<endl;
-   cout<<" weight="<<weight<<endl;
+  m_polar  = m_polar/spec;
+  m_weight = spec;
 
+  /*
+    cout<<" ======================================== "<<endl;
+    cout<<" x,scale ="<<x<<","<<scale<<endl;
+    cout<<" polar= "<<m_polar<<endl;
+    cout<<" weight="<<m_weight<<endl;
+  */
   return 1;
 };
 
 double Laser_Backscattering::Weight(Flavour flin)
 {
-  if (weight<=0.) return 0.;
+  if (m_weight<=0.) return 0.;
   if (flin != Flavour(kf::photon)) return 0.;
-  return weight;
+  return m_weight;
 }
 
 
 double Laser_Backscattering::Compton(double x,double pole,double poll,double & deg)
 {
-  if ((x<0.) || (x>xmax) || (totalC < 0.) ) {
+  if ((x<0.) || (x>m_xmax) || (m_totalC < 0.) ) {
       return 0.;
   }
 
-  double value  = SimpleCompton(x,xe,pole*poll);
+  double value  = SimpleCompton(x,m_xe,pole*poll);
 
-  double g2    = xe/x - xe - 1;
+  double g2    = m_xe/x - m_xe - 1;
   if (g2<0.) {
-    if (pol) deg += value * Polarization(x,xe,pole,poll);
+    if (m_pol) deg += value * Polarization(x,m_xe,pole,poll);
     return value;
   }
 
-  double damp   = exp(-rho2 * g2/8.);
-  if (pol) deg += damp * value * totalC * Polarization(x,xe,pole,poll);
+  double damp   = exp(-m_rho2 * g2/8.);
+  if (m_pol) deg += damp * value * m_totalC * Polarization(x,m_xe,pole,poll);
 
-  double wt = damp * totalC * value;
+  double wt = damp * m_totalC * value;
   return wt;
 }
 
 double Laser_Backscattering::TwoPhotons(double x,double pole,double poll,double & deg)
 {
-  if ((x<0.) || (x>xmax2) || (total2 < 0.)) return 0.;
+  if ((x<0.) || (x>m_xmax2) || (m_total2 < 0.)) return 0.;
 
-  double value  = SimpleCompton(x,2.*xe,pole*poll);
+  double value  = SimpleCompton(x,2.*m_xe,pole*poll);
 
-  double g2    = 2.*xe/x - 2.*xe - 1;
+  double g2    = 2.*m_xe/x - 2.*m_xe - 1;
   if (g2<0.) {
-    if (pol) deg += value * total2 * Polarization(x,2.*xe,pole,poll);
+    if (m_pol) deg += value * m_total2 * Polarization(x,2.*m_xe,pole,poll);
     return value;
   }
 
-  double damp   = exp(-rho2 * g2/8.) * pow(g2,delta);
-  if (pol) deg += damp * value * total2 * Polarization(x,2.*xe,pole,poll);
+  double damp   = exp(-m_rho2 * g2/8.) * pow(g2,m_delta);
+  if (m_pol) deg += damp * value * m_total2 * Polarization(x,2.*m_xe,pole,poll);
 
-  return damp * total2 * value;
+  return damp * m_total2 * value;
 }
 
 double Laser_Backscattering::Rescattering(double x,double pole,double poll,double & deg)
 {
-  if ((x<0.) || (x>xmax) || (totalE < 0.)) return 0.;
+  if ((x<0.) || (x>m_xmax) || (m_totalE < 0.)) return 0.;
 
-  double yMin  = Max(yfix,0.5 * x * (1.+sqrt(4./(x*xe) + 1.)));
+  double yMin  = Max(m_yfix,0.5 * x * (1.+sqrt(4./(x*m_xe) + 1.)));
   if (yMin > 1.) return 0.;
   
   double y1, y2;
@@ -206,27 +207,27 @@ double Laser_Backscattering::Rescattering(double x,double pole,double poll,doubl
   value    = pvalue  = 0.;
   y1       = y2      = yMin;
   y1      *= 1.000001;
-  dy       = (1.-yMin)/ysteps;
+  dy       = (1.-yMin)/m_ysteps;
 
-  val1     = log(1.+y1*xe)/(y1 * yden) *
-    SimpleCompton(x/y1,y1*xe,0.)*SimpleCompton(1-y1,xe,pole*poll);
-  p1       = Polarization(x/y1,y1*xe,pole,poll);
+  val1     = log(1.+y1*m_xe)/(y1 * m_yden) *
+    SimpleCompton(x/y1,y1*m_xe,0.)*SimpleCompton(1-y1,m_xe,pole*poll);
+  p1       = Polarization(x/y1,y1*m_xe,pole,poll);
 
-  for (int i=0;i<ysteps;i++) {
+  for (int i=0;i<m_ysteps;i++) {
     y2       += dy;
-    val2      = log(1.+y2*xe)/(y2 * yden) *
-      SimpleCompton(x/y2,y2*xe,0.)*SimpleCompton(1-y2,xe,pole*poll);
+    val2      = log(1.+y2*m_xe)/(y2 * m_yden) *
+      SimpleCompton(x/y2,y2*m_xe,0.)*SimpleCompton(1-y2,m_xe,pole*poll);
     value    += 0.5*(val1+val2)*dy;
-    if (pol) {
-      p2      = Polarization(x/y2,y2*xe,pole,poll);
+    if (m_pol) {
+      p2      = Polarization(x/y2,y2*m_xe,pole,poll);
       pvalue += 0.5*(val1*p1+val2*p2)*dy;
       p1      = p2;
     }
     val1    = val2;
   }
 
-  if (pol) deg += pvalue*value*totalE;
-  return totalE * value;
+  if (m_pol) deg += pvalue*value*m_totalE;
+  return m_totalE * value;
 }
 
 
@@ -234,7 +235,6 @@ double Laser_Backscattering::Rescattering(double x,double pole,double poll,doubl
 double Laser_Backscattering::SimpleCompton(double x,double z,double pol2) 
 {
   double max   = z/(1.+z);
-  //cout<<"SimpleCompton : "<<x<<", "<<z<<" : "<<max<<endl;
   if ((x<0.) || (x>max)) return 0.;
 
   double help  = x/(z*(1.-x));
@@ -245,13 +245,11 @@ double Laser_Backscattering::SimpleCompton(double x,double z,double pol2)
   norm        += (1.-4./z-8./(z*z)) * log(1.+z);
   norm        -= pol2 * (2. + z*z/((z+1.)*(z+1.)) - (1.+2./z) * log(z+1.));
 
-  //cout<<"SimpleCompton : "<<x<<", "<<z/(1.+z)<<" : "<<value<<" : "<<norm<<endl;   
-    return value/norm;
+  return value/norm;
 }
 
 double Laser_Backscattering::Polarization(double x,double z,double pole,double poll)
 {
-  //cout<<" In Polarization."<<endl;
   double max   = z/(1.+z);
   if ((x<0.) || (x>max)) return 0.;
 
