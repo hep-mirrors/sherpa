@@ -143,33 +143,43 @@ ATOOLS::Flavour Remnant_Base::ConstituentType(const ATOOLS::Flavour &flavour)
 
 bool Remnant_Base::Extract(ATOOLS::Particle *parton) 
 { 
+  if (TestExtract(parton)) {
+    m_initialized=true;
+    m_extracted.push_back(parton); 
+    m_erem-=parton->Momentum()[0]+m_lastemin;
+    return true;
+  }
+  return false;
+}
+
+bool Remnant_Base::TestExtract(ATOOLS::Particle *parton) 
+{ 
   if (parton==NULL) {
-    ATOOLS::msg.Error()<<"Remnant_Base::Extract(NULL): "
+    ATOOLS::msg.Error()<<"Remnant_Base::TestExtract(NULL): "
 		       <<"Called with NULL pointer."<<std::endl;
     return false;
   }
   double E=parton->Momentum()[0];
   if (E<0.0 || E>m_ebeam) {
-    ATOOLS::msg.Error()<<"Remnant_Base::Extract("<<parton<<"): "
+    ATOOLS::msg.Error()<<"Remnant_Base::TestExtract("<<parton<<"): "
 		       <<"Constituent energy out of range E = "
 		       <<E<<"."<<std::endl;
     return false;
   }
-  double erem=m_erem-parton->Momentum()[0]+MinimalEnergy(parton->Flav());
+  double erem=m_erem-(parton->Momentum()[0]+
+    (m_lastemin=MinimalEnergy(parton->Flav())));
   if (erem<0.0) {
-    msg_Tracking()<<"Remnant_Base::Extract(..): No remaining energy for "
+    msg_Tracking()<<"Remnant_Base::TestExtract(..): No remaining energy for "
 		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" -> E_min = "
-		  <<(parton->Momentum()[0]+MinimalEnergy(parton->Flav()))<<std::endl;
+		  <<(parton->Momentum()[0]+m_lastemin)<<std::endl;
     return false;
   }
   if (parton->Momentum()[0]<=m_emin) {
-    msg_Tracking()<<"Remnant_Base::Extract(..): Energy exceeds minimum for "
+    msg_Tracking()<<"Remnant_Base::TestExtract(..): Energy exceeds minimum for "
 		  <<parton->Flav()<<", p = "<<parton->Momentum()<<" <- E_min = "
 		  <<m_emin<<std::endl;
     return false;
   }
-  m_extracted.push_back(parton); 
-  m_erem=erem;
   return true;
 }
 

@@ -43,7 +43,8 @@ namespace SHERPA {
     ATOOLS::Blob  *p_beamblob;
     ATOOLS::Vec4D  m_pbeam;
 
-    double m_erem, m_pzrem, m_deltae, m_deltap, m_ebeam, m_emin, m_scale;
+    double m_erem, m_pzrem, m_lastemin, m_deltae, m_deltap;
+    double m_ebeam, m_emin, m_scale;
 
     bool m_active, m_initialized;
 
@@ -70,6 +71,7 @@ namespace SHERPA {
 
     virtual void UnDo(); 
 
+    bool TestExtract(ATOOLS::Particle *parton);
     bool Extract(ATOOLS::Particle *parton);
 
     // inline functions 
