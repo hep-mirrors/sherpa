@@ -632,7 +632,6 @@ void Primitive_Integrator::Reserve(const std::string &key,const size_t n,
        rit!=m_reserved.end();++rit) cur+=rit->second.second.second;
   if (cur+n>m_rmin.size()) THROW(fatal_error,"Inconsistent dimesions.");
   m_reserved[key]=Position_Pair(cur,std::pair<size_t,size_t>(nprev,n));
-  for (size_t i=cur;i<cur+nprev;++i) m_nosplit[i]=true;
 }
 
 const double *const Primitive_Integrator::
@@ -644,8 +643,8 @@ Reserved(const std::string &key) const
 }
 
 void Primitive_Integrator::
-Split(const std::string &key,
-      const size_t nprev,const std::vector<double> &pos)
+Split(const std::string &key,const size_t nprev,
+      const std::vector<double> &pos,const bool nosplit)
 {
   if (m_channels.empty()) 
     THROW(critical_error,"No cells. Call Initialize() first.");
@@ -654,6 +653,7 @@ Split(const std::string &key,
   if (nprev>=rit->second.second.first)
     THROW(critical_error,"Inconsistent dimension.");
   size_t dim=rit->second.first+nprev;
+  m_nosplit[dim]=nosplit;
   const std::vector<Primitive_Channel*> channels(m_channels);
   for (size_t i=pos.size();i>0;--i) {
     for (size_t j=0;j<channels.size();++j) {

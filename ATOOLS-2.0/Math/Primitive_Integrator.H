@@ -459,18 +459,20 @@ namespace ATOOLS {
       but the multi-channel may get its discriminators from the integrator
       anyway by simply employing a unique key.
     */
-    void Split(const std::string &key,
-	       const size_t nprev,const std::vector<double> &pos);
+    void Split(const std::string &key,const size_t nprev,
+	       const std::vector<double> &pos,const bool nosplit=true);
     /*!
-      \fn void Split(const std::string &key,
-      const size_t nprev,const std::vector<double> &pos)
+      \fn void Split(const std::string &key,const size_t nprev,
+      const std::vector<double> &pos,const bool nosplit=true)
       \brief Splits an indicated dimension according to the given positions.
       
       This method is to be used after the Reserve(const std::string &key,
       const size_t n,const size_t nprev=0) method. After nprev dimesions have
       been reserved for external objects using the given key, the integration 
       domain may be splitted in the nprev'th of these dimensions according to
-      the positions given by the parameters in pos.
+      the positions given by the parameters in pos. The split flag nosplit 
+      determines, whether the integration domain is allowed to be split in 
+      this dimension again.
     */
     const double *const Reserved(const std::string &key) const;
     /*!
