@@ -17,7 +17,7 @@ endif
 
 
 lib_LTLIBRARIES = libAdicicMain.la
-libAdicicMain_la_SOURCES = Adicic.C 
+libAdicicMain_la_SOURCES = Paraminit.C Adicic.C
 
 
 
@@ -37,7 +37,7 @@ INCLUDES = -I../Tool \
 
 
 
-noinst_HEADERS = Adicic.H
+noinst_HEADERS = Paraminit.H Adicic.H
 
 
 

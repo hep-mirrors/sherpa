@@ -50,6 +50,7 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
                      @libdir@/libAdicicInput.la \
                      @libdir@/libAdicicStruct.la \
                      @libdir@/libAdicicHdl.la \
+                     @libdir@/libAdicicMain.la \
                      @libdir@/libToolsPhys.la \
                      @libdir@/libToolsMath.la \
                      @libdir@/libToolsOrg.la \
@@ -65,6 +66,7 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
                   @libdir@/libAdicicInput.la \
                   @libdir@/libAdicicStruct.la \
                   @libdir@/libAdicicHdl.la \
+                  @libdir@/libAdicicMain.la \
                   @libdir@/libToolsPhys.la \
                   @libdir@/libToolsMath.la \
                   @libdir@/libToolsOrg.la \
@@ -79,6 +81,7 @@ INCLUDES = -I../Tool \
            -I../Input \
            -I../Structure \
            -I../Handler \
+           -I../Main \
            -I../../ATOOLS-2.0/Phys \
            -I../../ATOOLS-2.0/Math \
            -I../../ATOOLS-2.0/Org \
@@ -92,8 +95,5 @@ INCLUDES = -I../Tool \
 
 EXTRA_DIST = $(CVSINCLUDE)
 #EXTRA_DIST = Testrun/Run.dat Testrun/Integration.dat
-
-
-
 
 

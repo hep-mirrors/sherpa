@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12
+//Version: 2 ADICIC++-0.0/2004/08/10
 
 //Emissiontest.C - testing the first emission.
 
@@ -17,6 +17,8 @@
 #include "Sudakov_Calculator.H"
 #include "Recoil_Calculator.H"
 #include "Chain.H"
+#include "Dipole_Parameter.H"
+#include "Paraminit.H"
 
 
 #define EMISSIONTEST_OUTPUT EMISSIONTEST_OUTPUT
@@ -102,6 +104,8 @@ int main() {
   cout<<endl;
   cout<<"=============================================================="<<endl;
 
+  Dipole_Parameter::Show();
+  Sudakov_Calculator::ShowParameters();
   Dipole_Handler::ShowCalcBox();
 
   cout<<endl; cin>>enter; cout<<endl;
@@ -226,7 +230,15 @@ int main() {
   cout<<"============================="<<endl;
 
   {
-    cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
+
+    Sudakov_Calculator::ShowParameters();
+    Dipole_Handler::ShowCalcBox();
+    cout<<"\nDip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
+    //cout<<"\nDo Init: "<<Dipole_Parameter_Init::DoIt()<<endl;////////////////
+    //cout<<"Do Init: "<<Dipole_Parameter_Init::DoIt()<<endl;//////////////////
+    cout<<"Dip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
+
+    cout<<"\nRunning?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
     cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;
     cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
     cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;

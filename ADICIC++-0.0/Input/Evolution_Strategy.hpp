@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06
+//Version: 2 ADICIC++-0.0/2004/08/09
 
 //Possibility of having information at compile time.
 //Globally defined parameters influencing Chain_Handler.H.
@@ -48,7 +48,7 @@ namespace ADICIC {
 
 
 
-    typedef Map<Label>::Ret Ret;
+    //typedef Map<Label>::Ret Ret;
 
 
 

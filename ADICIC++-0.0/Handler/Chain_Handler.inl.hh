@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/07
+//Version: 2 ADICIC++-0.0/2004/08/10
 
 //Inline methods of Chain_Handler.H.
 
@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include "Evolution_Strategy.hpp"
 #include "Sudakov_Calculator.H"
 
 
@@ -16,6 +17,16 @@
 
 
 namespace ADICIC {
+
+
+
+  //===========================================================================
+
+
+
+  inline const int Chain_Handler::ChainEvolutionStrategy() {    //Static.
+    return s_param;
+  }
 
 
 
@@ -84,6 +95,19 @@ namespace ADICIC {
 
 
 
+  inline const bool Chain_Handler::ProductionStrategyInfo() {    //Static.
+    std::cout<<"\nFor the purpose of confirmation: "
+	     <<"Chain_Evolution_Strategy::Production has been chosen!"
+	     <<std::endl;
+    return false;
+  }
+
+
+
+  //===========================================================================
+
+
+
   inline void Chain_Handler::PresetCompScale() {
     m_k2tcomp=Sudakov_Calculator::MinOfK2t();
   }
@@ -100,7 +124,8 @@ namespace ADICIC {
 
 
   inline const bool Chain_Handler::FindDipole() {
-    return FindDecDipole<Chain_Evolution_Strategy::Ret>();
+    //return FindDecDipole<Chain_Evolution_Strategy::Ret>();
+    return (this->*fp_finddecdip[s_param])();
   }
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12
+//Version: 2 ADICIC++-0.0/2004/08/10
 
 //Chaintest.C - testing the first chaining.
 
@@ -12,6 +12,8 @@
 #include <ioextra>
 #include <enumextra>
 #include "Message.H"
+#include "Dipole_Parameter.H"
+#include "Paraminit.H"
 #include "Dipole.H"
 #include "Dipole_Handler.H"
 #include "Sudakov_Calculator.H"
@@ -83,7 +85,17 @@ int main() {
 
   cout<<endl;
 
+  Dipole_Parameter::Show();
+  Sudakov_Calculator::ShowParameters();
+  Sudakov_Calculator::AdjustParameters();
+  Sudakov_Calculator::ShowParameters();
   Dipole_Handler::ShowCalcBox();
+  Dipole_Handler::AdjustCalcBox();
+  Dipole_Handler::AdjustCalcBox();
+  Dipole_Handler::ShowCalcBox();
+  Chain_Handler::ShowParameters();
+  Chain_Handler::AdjustParameters();
+  Chain_Handler::ShowParameters();
 
   cout<<endl; cin>>enter; cout<<endl;
   cout<<"=============================================================="<<endl;
@@ -252,16 +264,46 @@ int main() {
     cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
     cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
-    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
-    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+    cout<<"ASCor(700)="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
+    cout<<"ASCor(8100)="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
     cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
-    //cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
     cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
     cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
     cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
-    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
-    cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+    cout<<"ASCor(700)="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
+    cout<<"ASCor(8100)="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
 
+    Sudakov_Calculator::ShowParameters();
+    Dipole_Handler::ShowCalcBox();
+    Chain_Handler::ShowParameters();
+    cout<<"\nDip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
+    //cout<<"\nDo Init: "<<Dipole_Parameter_Init::DoIt()<<endl;////////////////
+    //cout<<"Do Init: "<<Dipole_Parameter_Init::DoIt()<<endl;//////////////////
+    cout<<"Dip Param Init?: "<<Dipole_Parameter_Init::Status()<<endl;
+
+    cout<<"\nRunning?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
+    cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;
+    cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;
+    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
+    cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
+    cout<<"ASCor(700)="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
+    cout<<"ASCor(8100)="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+    cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;
+    cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;
+    cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;
+    cout<<"ASCor(700)="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;
+    cout<<"ASCor(8100)="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;
+
+    cout<<"\n"<<Dipole_Parameter::ForceFirstInit()<<endl;
+    //Dipole_Parameter::Reset();
+    //Sudakov_Calculator::AdjustParameters();
+    //Dipole_Handler::AdjustCalcBox();
+    //Chain_Handler::AdjustParameters();
+
+    cout<<endl; cin>>enter; cout<<endl;
     //abort();
 
     Vec4D pl(45.0, 20.0,-5.0, 40.0);
@@ -336,8 +378,11 @@ int main() {
   cout<<"Test: 8.123^7="<<power<7>(8.123)<<endl;
   cout<<"Test: 4.573^3="<<power<3>(4.573)<<endl;
   cout<<"Test: 7.000^2="<<power<2>(7.000);
+  Dipole_Parameter::Show();
+  Sudakov_Calculator::ShowParameters();
   Dipole_Handler::ShowCalcBox();
   cout<<"Number of Dipole_Handler's = "<<Dipole_Handler::InStore<<endl;
+  Chain_Handler::ShowParameters();
   cout<<om::greenbg;
   cout<<"====================================================================";
   cout<<om::reset<<endl;

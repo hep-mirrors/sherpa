@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06
+//Version: 2 ADICIC++-0.0/2004/08/09
 
 //Inline methods of Recoil_Calculator.H.
 
@@ -33,6 +33,9 @@ namespace ADICIC {
 
   Recoil_Calculator::~Recoil_Calculator() {
     --s_count;
+#ifdef RECOIL_CALCULATOR_OUTPUT
+    std::cout<<"  ~Recoil_Calculator\n";
+#endif
   }
 
 

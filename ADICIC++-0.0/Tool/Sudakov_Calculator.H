@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/08/09    (surely preliminarily)
 
 //Classes are provided, which manage the Sudakov calculation needed for the
 //gluon emission or splitting of a specific dipole.
@@ -54,12 +54,14 @@ namespace ADICIC {
 
   private:
 
+    static const bool sf_start;
+
     static int s_count;
 
     static bool   s_isalphasrun;
+    static double s_alphasfix;
     static double s_k2tmin;
     static double s_k2tmax;
-    static double s_alphasfix;
 
     static double s_approx;
 
@@ -77,7 +79,7 @@ namespace ADICIC {
     double m_x1;
     double m_x3;
 
- public:
+  public:
 
     inline Sudakov_Calculator();
     virtual ~Sudakov_Calculator();
@@ -91,6 +93,8 @@ namespace ADICIC {
     static inline const double AlphaSApprox();
     static inline const double AlphaSCorr(const double);
 
+    static       void ShowParameters();
+    static const bool AdjustParameters();
     static const bool Init(MODEL::Model_Base*);
 
     inline void GetResult(bool&, double&, double&, double&) const;
@@ -147,6 +151,7 @@ namespace ADICIC {
 
     inline void Which() const;
     inline void ShowSpecification() const;
+
     const bool GenerateEfracsFor(const Dipole&);
 
   };

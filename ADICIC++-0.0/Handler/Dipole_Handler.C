@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06
+//Version: 2 ADICIC++-0.0/2004/08/10
 
 //Implementation of Dipole_Handler.H.
 
@@ -8,7 +8,7 @@
 #include "Random.H"
 #include "Poincare.H"
 #include "Dipole_Handler.H"
-
+#include "Dipole_Parameter.H"
 #include "Sudakov_Calculator.H"
 #include "Recoil_Calculator.H"
 
@@ -48,7 +48,7 @@ int Dipole_Handler::s_count=0;
 const int& Dipole_Handler::InStore=Dipole_Handler::s_count;
 
 Dipole_Handler::Calcbox Dipole_Handler::s_map=Dipole_Handler::Calcbox();
-const bool Dipole_Handler::sf_init=Dipole_Handler::InitCalcBox();
+const bool Dipole_Handler::sf_init=Dipole_Handler::AdjustCalcBox();
 
 
 
@@ -115,6 +115,8 @@ Dipole_Handler::~Dipole_Handler() {
 
 
 
+//=============================================================================
+
 
 
 void Dipole_Handler::ShowCalcBox() {    //Static.
@@ -144,6 +146,95 @@ void Dipole_Handler::ShowCalcBox() {    //Static.
 }
 
 
+
+
+
+const bool Dipole_Handler::AdjustCalcBox() {    //Static.
+
+  static bool firsttime=true;
+  static Calcpair qqpa, qgpa, gqpa, ggpa;
+
+  if(firsttime) {
+
+    firsttime=false;
+
+    Dipole_Parameter::ForceFirstInit();
+
+#ifdef DIPOLE_HANDLER_OUTPUT
+    cout<<"ADICIC::Dipole_Handler: Calcbox is now initialized.\n";
+#endif
+
+    //Arrange the Sudakov's.
+    qqpa.p_sud=new Sudakov<Dipole::qqbar>;
+    qgpa.p_sud=new Sudakov<Dipole::qg>;
+    gqpa.p_sud=new Sudakov<Dipole::gqbar>;
+    ggpa.p_sud=new Sudakov<Dipole::gg>;
+    assert(qqpa.p_sud);
+    assert(qgpa.p_sud);
+    assert(gqpa.p_sud);
+    assert(ggpa.p_sud);
+
+    //Establish the overall recoil strategy right now and here.
+    qqpa.p_rec=new Recoil<Recoil_Strategy::Ret_qqbar>;
+    qgpa.p_rec=new Recoil<Recoil_Strategy::Ret_qg>;
+    gqpa.p_rec=new Recoil<Recoil_Strategy::Ret_gqbar>;
+    ggpa.p_rec=new Recoil<Recoil_Strategy::Ret_gg>;
+    assert(qqpa.p_rec);
+    assert(qgpa.p_rec);
+    assert(gqpa.p_rec);
+    assert(ggpa.p_rec);
+
+    //Fix the whole map - finishing arrangement of the calculator box.
+    s_map[Dipole::qqbar] = &qqpa;
+    s_map[Dipole::qg]    = &qgpa;
+    s_map[Dipole::gqbar] = &gqpa;
+    s_map[Dipole::gg]    = &ggpa;
+
+  } else {
+
+    delete qqpa.p_rec;
+    delete qgpa.p_rec;
+    delete gqpa.p_rec;
+    delete ggpa.p_rec;
+    qqpa.p_rec=ReadjustRecoilStrategy(Dipole_Parameter::RecoilStrategyQQbar());
+    qgpa.p_rec=ReadjustRecoilStrategy(Dipole_Parameter::RecoilStrategyQG());
+    gqpa.p_rec=ReadjustRecoilStrategy(Dipole_Parameter::RecoilStrategyGQbar());
+    ggpa.p_rec=ReadjustRecoilStrategy(Dipole_Parameter::RecoilStrategyGG());
+    assert(qqpa.p_rec);
+    assert(qgpa.p_rec);
+    assert(gqpa.p_rec);
+    assert(ggpa.p_rec);
+
+  }
+
+  return true;
+
+}
+
+
+
+
+
+Recoil_Calculator* Dipole_Handler::ReadjustRecoilStrategy(const int s) {
+
+  //Static.
+
+  switch(s) {
+  case  1: return new Recoil<Recoil_Strategy::FixDir1>;
+  case  2: return new Recoil<Recoil_Strategy::Kleiss>;
+  case  3: return new Recoil<Recoil_Strategy::FixDir3>;
+  case  4: return new Recoil<Recoil_Strategy::MinimizePt>;
+  case  5: return new Recoil<Recoil_Strategy::Lonnblad>;
+  case  6: return new Recoil<Recoil_Strategy::OldAdicic>;
+  case  7: return new Recoil<Recoil_Strategy::Test>;
+  default: return new Recoil<Recoil_Strategy::Unknown>;
+  }
+
+}
+
+
+
+//=============================================================================
 
 
 
@@ -326,44 +417,6 @@ const bool Dipole_Handler::ManageGluonEmission() {
 
 
 //=============================================================================
-
-
-
-const bool Dipole_Handler::InitCalcBox() {    //Static.
-
-  static Calcpair qqpa, qgpa, gqpa, ggpa;
-
-  //Arrange the Sudakov's.
-  qqpa.p_sud=new Sudakov<Dipole::qqbar>;
-  qgpa.p_sud=new Sudakov<Dipole::qg>;
-  gqpa.p_sud=new Sudakov<Dipole::gqbar>;
-  ggpa.p_sud=new Sudakov<Dipole::gg>;
-  assert(qqpa.p_sud);
-  assert(qgpa.p_sud);
-  assert(gqpa.p_sud);
-  assert(ggpa.p_sud);
-
-  //Establish the overall recoil strategy right now and here.
-  qqpa.p_rec=new Recoil<Recoil_Strategy::Ret_qqbar>;
-  qgpa.p_rec=new Recoil<Recoil_Strategy::Ret_qg>;
-  gqpa.p_rec=new Recoil<Recoil_Strategy::Ret_gqbar>;
-  ggpa.p_rec=new Recoil<Recoil_Strategy::Ret_gg>;
-  assert(qqpa.p_rec);
-  assert(qgpa.p_rec);
-  assert(gqpa.p_rec);
-  assert(ggpa.p_rec);
-
-  //Fix the whole map - finishing arrangement of the calculator box.
-  s_map[Dipole::qqbar] = &qqpa;
-  s_map[Dipole::qg]    = &qgpa;
-  s_map[Dipole::gqbar] = &gqpa;
-  s_map[Dipole::gg]    = &ggpa;
-
-  return true;
-
-}
-
-
 
 
 

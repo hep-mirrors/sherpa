@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06
+//Version: 2 ADICIC++-0.0/2004/08/09
 
 //Possibility of having information at compile time.
 //Globally defined parameter sets influencing Dipole_Handler.H.
@@ -22,16 +22,16 @@ namespace ADICIC {
 
 
     //Set the corresponding values:
-    static const int Label_qqbar = 1;
+    static const int Label_qqbar = 2;
     static const int Label_qg    = 3;
-    static const int Label_gqbar = 2;
+    static const int Label_gqbar = 1;
     static const int Label_gg    = 4;
 
 
 
     struct Unknown {};       //All other Labels.
-    struct Kleiss {};        //Label==1.
-    struct FixDir1 {};       //Label==2.
+    struct FixDir1 {};       //Label==1.
+    struct Kleiss {};        //Label==2.
     struct FixDir3 {};       //Label==3.
     struct MinimizePt {};    //Label==4.
     struct Lonnblad {};      //Label==5.
@@ -44,10 +44,10 @@ namespace ADICIC {
       typedef Unknown Ret;
     };
     template<> struct Map<1> {
-      typedef Kleiss Ret;
+      typedef FixDir1 Ret;
     };
     template<> struct Map<2> {
-      typedef FixDir1 Ret;
+      typedef Kleiss Ret;
     };
     template<> struct Map<3> {
       typedef FixDir3 Ret;

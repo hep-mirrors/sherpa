@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/08/09    (surely preliminarily)
 
 //Classes are provided, which manage the calculation of the kinematics
 //according to given recoil strategies.
@@ -102,7 +102,7 @@ namespace ADICIC {
   public:
 
     Recoil();
-    ~Recoil() {}
+    ~Recoil();
 
     //Public (inline) methods:
 

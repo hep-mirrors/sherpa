@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06
+//Version: 2 ADICIC++-0.0/2004/08/10
 
 //Implementation of Chain_Handler.H.
 
@@ -8,6 +8,7 @@
 //#include "Random.H"
 #include "Poincare.H"
 #include "Chain_Handler.H"
+#include "Dipole_Parameter.H"
 
 
 
@@ -44,6 +45,8 @@ using namespace ADICIC;
 int Chain_Handler::s_count=0;
 const int& Chain_Handler::InStore=Chain_Handler::s_count;
 
+int Chain_Handler::s_param=Chain_Handler::AdjustParameters();
+
 
 
 //=============================================================================
@@ -71,8 +74,20 @@ Chain_Handler::Chain_Handler()
     m_dh1(), m_dh2(),
     p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
     i_fix(NULL), i_run(NULL) {
+
   ++s_count;
+
   PresetCompScale();
+
+  fp_finddecdip[0]=&ADICIC::Chain_Handler::
+    FindDecDipole<Chain_Evolution_Strategy::Unknown>;
+  fp_finddecdip[1]=&ADICIC::Chain_Handler::
+    FindDecDipole<Chain_Evolution_Strategy::Production>;
+  fp_finddecdip[2]=&ADICIC::Chain_Handler::
+    FindDecDipole<Chain_Evolution_Strategy::Emission>;
+  fp_finddecdip[3]=&ADICIC::Chain_Handler::
+    FindDecDipole<Chain_Evolution_Strategy::Mass>;
+
 }
 
 
@@ -87,7 +102,17 @@ Chain_Handler::Chain_Handler(Chain& cha)
      i_fix(NULL), i_run(NULL) {
 
   ++s_count;
+
   PresetCompScale();
+
+  fp_finddecdip[0]=&ADICIC::Chain_Handler::
+    FindDecDipole<Chain_Evolution_Strategy::Unknown>;
+  fp_finddecdip[1]=&ADICIC::Chain_Handler::
+    FindDecDipole<Chain_Evolution_Strategy::Production>;
+  fp_finddecdip[2]=&ADICIC::Chain_Handler::
+    FindDecDipole<Chain_Evolution_Strategy::Emission>;
+  fp_finddecdip[3]=&ADICIC::Chain_Handler::
+    FindDecDipole<Chain_Evolution_Strategy::Mass>;
 
   if(cha|*this) {
     if(cha.IsHandledBy(*this)); else {
@@ -120,6 +145,42 @@ Chain_Handler::~Chain_Handler() {
 
   *p_cha|0;
 
+}
+
+
+
+//=============================================================================
+
+
+
+void Chain_Handler::ShowParameters() {    //Static.
+  cout<<endl;
+  cout<<"======================================"<<endl;
+  cout<<"    Valid Chain_Handler parameters"<<endl;
+  cout<<"--------------------------------------"<<endl;
+  cout<<"Chain evolution strategy is set to "<<s_param<<".\n";
+  cout<<"======================================"<<endl;
+}
+
+
+
+
+
+const int Chain_Handler::AdjustParameters() {    //Static.
+  static bool firsttime=true;
+  if(firsttime) {
+    firsttime=false;
+    Dipole_Parameter::ForceFirstInit();
+#ifdef CHAIN_HANDLER_OUTPUT
+    cout<<"ADICIC::Chain_Handler: initialize parameter for the 1st time.\n";
+#endif
+  }
+  if(0 < Dipole_Parameter::ChainEvolutionStrategy() &&
+     Dipole_Parameter::ChainEvolutionStrategy() < 4)
+    s_param=Dipole_Parameter::ChainEvolutionStrategy();
+  else
+    s_param=0;
+  return s_param;
 }
 
 
@@ -196,7 +257,7 @@ const bool Chain_Handler::EvolveChainByOneStep() {
 
 
 const bool Chain_Handler::EvolveChain() {
-  return true;
+  return false;
 }
 
 
@@ -219,12 +280,7 @@ const bool Chain_Handler::FindDecDipole() {
 template<> const bool
 Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Production>() {
 
-  static bool confirm=true;
-  if(confirm) {
-    confirm=false;
-    cout<<"\nFor the purpose of confirmation: "
-	<<"Chain_Evolution_Strategy::Production has been chosen!"<<endl;
-  }
+  static const bool noaffirm=ProductionStrategyInfo();    //Gives warning.
 
   i_fix=NULL;
   i_run=p_cha->DipolePointerList().begin();
@@ -234,7 +290,9 @@ Chain_Handler::FindDecDipole<Chain_Evolution_Strategy::Production>() {
     Dipole& dip=**i_run;
     assert(dip|*p_dhaciv);
 
-    if(p_dhaciv->InduceGluonEmission()==false) { dip|0; continue;}
+    if(p_dhaciv->InduceGluonEmission()==noaffirm) {    //Removes the warning.
+      dip|0; continue;
+    }
 
     if(dip.EmitScale() >= p_cha->LastScale()) {
       bool result;

@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/08/10    (surely preliminarily)
 
 //Only the Chain_Handler structure can reasonably modify the state of a Chain.
 
@@ -12,8 +12,8 @@
 #define _Chain_Handler_H_ _Chain_Handler_H_
 
 
-//#include <map>
-#include "Evolution_Strategy.hpp"
+//#include <...>
+//#include "..."
 
 
 #define CHAIN_HANDLER_OUTPUT CHAIN_HANDLER_OUTPUT
@@ -49,7 +49,9 @@ namespace ADICIC {
 
     //friend std::ostream& operator<<(std::ostream&, const ...&);
 
-    //enum,class,typedef
+    //enum,class
+
+    typedef const bool (ADICIC::Chain_Handler::*FindDecDip_Func)();
 
     //Blocked methods:
     //================
@@ -60,6 +62,7 @@ namespace ADICIC {
   private:
 
     static int s_count;
+    static int s_param;
 
     bool f_below;
     Chain* p_cix;
@@ -77,8 +80,11 @@ namespace ADICIC {
     std::list<Dipole*>::iterator i_fix;
     std::list<Dipole*>::iterator i_run;
 
+    FindDecDip_Func fp_finddecdip[4];
+
     //Private static methods:
     //=======================
+    static inline const bool ProductionStrategyInfo();
 
     //Private inline methods:
     //=======================
@@ -102,6 +108,10 @@ namespace ADICIC {
 
     //Public static methods:
     //======================
+    static inline const int ChainEvolutionStrategy();
+
+    static       void ShowParameters();
+    static const int  AdjustParameters();
 
     //Public inline methods:
     //======================

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/01    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2004/08/09    (surely preliminarily)
 
 //The Dipole_Handler structure has the task of a Dipole modifier.
 
@@ -69,10 +69,10 @@ namespace ADICIC {
 
   private:
 
+    static const bool sf_init;
+
     static int     s_count;
     static Calcbox s_map;
-
-    static const bool sf_init;
 
     Calcpair* p_tempa;
 
@@ -100,7 +100,7 @@ namespace ADICIC {
 
     //Private static methods:
     //=======================
-    static const bool InitCalcBox();
+    static Recoil_Calculator* ReadjustRecoilStrategy(const int);
 
     //Private inline methods:
     //=======================
@@ -123,7 +123,8 @@ namespace ADICIC {
 
     //Public static methods:
     //======================
-    static void ShowCalcBox();
+    static       void ShowCalcBox();
+    static const bool AdjustCalcBox();
 
     //Public inline methods:
     //======================

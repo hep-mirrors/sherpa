@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/08/06
+//Version: 2 ADICIC++-0.0/2004/08/09
 
 //Implementation of template structures of Recoil_Calculator.H.
 
@@ -25,6 +25,16 @@ template<class ST> Recoil<ST>::Recoil()
   : Recoil_Calculator(),
     m_costheta(-1.0), m_sintheta(0.0), m_phi(0.0),
     p_ini(NULL), m_cmsaxis(Recoil_Calculator::ZAxis) {}
+
+
+
+
+
+template<class ST> Recoil<ST>::~Recoil() {
+#ifdef RECOIL_CALCULATOR_OUTPUT
+  cout<<"  ~Recoil\n";
+#endif
+}
 
 
 
