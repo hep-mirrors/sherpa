@@ -297,6 +297,10 @@ void Vertex::ColorExchange(Color_Function* colfunc,int new0,int new1,int new2,in
       partarg[i] = new3;
       strarg[i]  = new3+48;
       break;
+    case 4: 
+      partarg[i] = 4;
+      strarg[i]  = '4';
+      break;
     }
   }
   //T[0,1,4]T[3,4,2] -> T[new0,new1,4]T[new3,4,new2]
@@ -319,6 +323,10 @@ void Vertex::ColorExchange(Color_Function* colfunc,int new0,int new1,int new2,in
       case 3: 
 	partargn[i] = new3;
 	strargn[i]  = new3+48;
+	break;
+      case 4: 
+	partargn[i] = 4;
+	strargn[i]  = '4';
 	break;
       }
     }
