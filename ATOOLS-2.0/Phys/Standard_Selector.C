@@ -71,7 +71,8 @@ void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min,
 
   double MaxEmin = 0.;
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
+    //    if (crit[0].Includes(m_fl[i]) || crit[0].Bar().Includes(m_fl[i])) {
+    if (crit[0].Includes(m_fl[i])) {
       emin[i] = Max(_min,m_fl[i].Mass()); 
       emax[i] = Min(_max,rpa.gen.Ecms());
       if (emin[i]>MaxEmin ) MaxEmin = emin[i];
@@ -148,7 +149,8 @@ void ET_Selector::SetRange(std::vector<Flavour> crit,double _min,
 
   double MaxEtmin = 0.;
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
+    //    if (crit[0].Includes(m_fl[i]) || crit[0].Bar().Includes(m_fl[i])) {
+    if (crit[0].Includes(m_fl[i])) {
       etmin[i] = _min; 
       etmax[i] = _max;
       if (etmin[i] > MaxEtmin) MaxEtmin = etmin[i];
@@ -222,7 +224,7 @@ void PT_Selector::SetRange(std::vector<Flavour> crit,double _min,
 
   double MaxPTmin = 0.;
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
+    if (crit[0].Includes(m_fl[i])) {
       ptmin[i] = _min; 
       ptmax[i] = Min(_max,rpa.gen.Ecms());
       if (ptmin[i]>MaxPTmin) MaxPTmin = ptmin[i];
@@ -317,7 +319,8 @@ void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
   double pl,y;
 
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) ) {
+    //    if (crit[0].Includes(m_fl[i]) || crit[0].Bar().Includes(m_fl[i])) {
+    if (crit[0].Includes(m_fl[i])) {
       pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
       y       = log((E+pl)/(E-pl));
       ymin[i] = Max(_min,-y);
@@ -395,7 +398,8 @@ void PseudoRapidity_Selector::SetRange(std::vector<Flavour> crit,double _min,
   }
   
   for (int i=m_nin;i<m_n;i++) {
-    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) ) {
+    //    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) ) {
+    if (crit[0].Includes(m_fl[i])) {
       etamin[i] = _min;
       etamax[i] = _max;
     }
