@@ -1,6 +1,7 @@
 #include "Event_Handler.H"
 #include "Message.H"
 #include "Run_Parameter.H"
+#include "My_Limits.H"
 
 #include "Random.H"
 
@@ -15,7 +16,8 @@ using namespace SHERPA;
 using namespace ATOOLS;
 
 
-Event_Handler::Event_Handler() 
+Event_Handler::Event_Handler():
+  m_lastparticlecounter(std::numeric_limits<long int>::max())
 {
   p_phases  = new Phase_List;
 }
@@ -190,11 +192,13 @@ void Event_Handler::CleanUpEvent()
     for (Blob_Iterator blit=m_blobs.begin();blit!=m_blobs.end();++blit) delete (*blit);
     m_blobs.clear();
   }
-  if (Particle::Counter()>1 || Blob::Counter()!=0) 
+  if (Particle::Counter()>m_lastparticlecounter || Blob::Counter()!=0) {
     msg.Error()<<"Error in Event_Handler::CleanUpEvent()"<<std::endl
 	       <<"   After event : "<<Particle::Counter()<<" / "<<Blob::Counter()
 	       <<" particles / blobs undeleted !"<<std::endl
 	       <<"   Continue and hope for the best."<<std::endl;
+  }
+  m_lastparticlecounter=Particle::Counter();
   Blob::Reset();
   Particle::Reset();
   Flow::ResetCounter();

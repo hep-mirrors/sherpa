@@ -11,12 +11,18 @@ namespace SHERPA {
   typedef Phase_List::iterator Phase_Iterator;
 
   class Event_Handler {
+  private:
+
+    long int m_lastparticlecounter;
+
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs;
 
     void PrintBlobs();
     void CleanUpEvent();
+
   public:
+
     Event_Handler();
     ~Event_Handler();
 
@@ -32,6 +38,7 @@ namespace SHERPA {
     void Finish();
 
     ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
+
   };
 
 
