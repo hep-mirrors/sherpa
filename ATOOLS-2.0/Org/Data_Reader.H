@@ -11,12 +11,16 @@ namespace ATOOLS {
 
     std::map<std::string,std::string> m_tags;
 
+    bool m_ignorecase, m_ignoreblanks;
+
     void KillComments(std::string& buffer);
 
     std::string KillBlanks(std::string& buffer);
     std::string HighlightSeparator(std::string& buffer);
 
     std::string ReplaceTags(std::string tag);
+
+    size_t Find(std::string input,std::string parameter,size_t &length) const;
 
   protected:
 
@@ -70,6 +74,9 @@ namespace ATOOLS {
     // inline functions
     inline const std::string &Tag(const std::string &tag) const;
 
+    inline bool IgnoreCase() const;
+    inline bool IgnoreBlanks() const;
+
     inline const std::map<std::string,std::string> &Tags() const;
 
     inline void SetTag(const std::string &tag,const std::string &value);
@@ -77,6 +84,9 @@ namespace ATOOLS {
 
     inline void AddTag(const std::string &tag,const std::string &value);
     inline void AddTags(const std::map<std::string,std::string> &tags);
+
+    inline void SetIgnoreCase(const bool ignorecase);
+    inline void SetIgnoreBlanks(const bool ignorecase);
 
   }; // end of class Data_Reader
 

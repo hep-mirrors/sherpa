@@ -3,6 +3,7 @@
 #include "Message.H"
 #include "Type.H"
 #include "MyStrStream.H"
+#include <ctype.h>
 #ifdef DEBUG__Data_Reader
 #include <iostream>
 #endif
@@ -18,7 +19,9 @@ Data_Reader::Data_Reader():
 Data_Reader::Data_Reader(const std::string _m_cut,
 			 const std::string _m_separator,
 			 const std::string _m_comment):
-  Read_Write_Base(1,0,_m_cut,_m_separator,_m_comment)
+  Read_Write_Base(1,0,_m_cut,_m_separator,_m_comment),
+  m_ignorecase(false),
+  m_ignoreblanks(false)
 {
   SetInFileMode(Permanent);
 }
@@ -123,6 +126,58 @@ std::string Data_Reader::ReplaceTags(std::string tag)
   return tag;
 }
 
+size_t Data_Reader::Find(std::string input,std::string parameter,size_t &length) const
+{
+#ifdef DEBUG__Data_Reader
+  std::cout<<"Data_Reader::Find("<<input<<","<<parameter<<"): "<<std::endl;
+#endif
+  if (m_ignorecase) {
+    for (size_t i=0;i<input.length();++i) input[i]=toupper(input[i]);
+    for (size_t i=0;i<parameter.length();++i) parameter[i]=toupper(parameter[i]);
+  }
+  size_t cutinputblanks=0, cutparameterblanks=0;
+  if (m_ignoreblanks) {
+    for (size_t j=0;j<Blank().size();++j) {
+      bool lastblank=true;
+      for (size_t i=0;i<input.length();++i) {
+	if (input[i]==Blank()[j]) {
+	  input[i]=Blank()[0];
+	  if (lastblank) {
+	    input=input.substr(0,i)+input.substr(i+1,input.length());
+	    ++cutinputblanks;
+	  }
+	  lastblank=true;
+	}
+	else {
+	  lastblank=false;
+	}
+      }
+    }
+    for (size_t j=0;j<Blank().size();++j) {
+      bool lastblank=true;
+      for (size_t i=0;i<parameter.length();++i) {
+	if (parameter[i]==Blank()[j]) {
+	  parameter[i]=Blank()[0];
+	  if (lastblank) {
+	    parameter=parameter.substr(0,i)+parameter.substr(i,parameter.length());
+	    ++cutparameterblanks;
+	  }
+	  lastblank=true;
+	}
+	else {
+	  lastblank=false;
+	}
+      }
+    }
+  }
+  length=parameter.length()+cutinputblanks-cutparameterblanks;
+#ifdef DEBUG__Data_Reader
+  std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
+	   <<"   parameter = '"<<parameter<<"'("<<cutparameterblanks<<")"<<std::endl;
+#endif
+  return input.find(parameter);
+}
+
 template <class Read_Type>
 Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &inputstring)
 {
@@ -146,8 +201,12 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
     parameter=std::string("DUMMY_PARAMETER");
     inputstring=parameter+inputstring;
   }
-  if(((pos=inputstring.find(parameter))!=std::string::npos)&&
-     ((inputstring=inputstring.substr(pos+parameter.length())).length()>0)) {
+  size_t length=0;
+//   pos=Find(inputstring,parameter,length);
+//   if(((pos=inputstring.find(parameter))!=std::string::npos)&&
+//      ((inputstring=inputstring.substr(pos+parameter.length())).length()>0)) {
+  if(((pos=Find(inputstring,parameter,length))!=std::string::npos)&&
+     ((inputstring=inputstring.substr(pos+length)).length()>0)) {
     MyStrStream converter;
     converter<<ReplaceTags(HighlightSeparator(inputstring));
     converter>>value;

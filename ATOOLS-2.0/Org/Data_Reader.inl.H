@@ -34,6 +34,26 @@ namespace ATOOLS {
   { 
     return m_tags;
   }
+
+  inline void Data_Reader::SetIgnoreCase(const bool ignorecase) 
+  { 
+    m_ignorecase=ignorecase; 
+  }
+
+  inline bool Data_Reader::IgnoreCase() const
+  {
+    return m_ignorecase;
+  }
+  
+  inline void Data_Reader::SetIgnoreBlanks(const bool ignoreblanks) 
+  { 
+    m_ignoreblanks=ignoreblanks; 
+  }
+  
+  inline bool Data_Reader::IgnoreBlanks() const
+  {
+    return m_ignoreblanks;
+  }
   
 }// end of namespace ATOOLS
 
