@@ -5,6 +5,7 @@
 #include "Cut_Data.H"
 #include "Flavour.H"
 #include "Vector.H"
+#include "Integration_Info.H"
 
 namespace PHASIC {
 
@@ -30,13 +31,15 @@ namespace PHASIC {
     Single_Channel():ms(0),rans(0) { };
     Single_Channel(Single_Channel *);
     Single_Channel(int,int,ATOOLS::Flavour *);
-    virtual ~Single_Channel() {
-      if (ms)   { delete[] ms; }
-      if (rans) { delete[] rans; }
-    }
+    virtual ~Single_Channel();
     void AddPoint(double);
     void Reset(double value);
     void ResetOpt();
+    virtual void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode=0);
+    virtual void GeneratePoint(Info_Key &spkey,Info_Key &ykey,const int mode=0);
+    virtual void GenerateWeight(const int mode=0);
+    
+    virtual bool CalculateLimits(Info_Key &spkey,Info_Key &ykey);
     virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *) {
       ATOOLS::msg.Error()<<"Virtual Method : "

@@ -32,7 +32,8 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
   psflavs(NULL), name(proc->Name()),
   maxtrials(100000), sumtrials(0), events(0),    
   E(ATOOLS::rpa.gen.Ecms()), s(E*E), sprime(s), m_weight(1.), 
-  p(NULL), psi(NULL), m_initialized(0)
+  p(NULL), psi(NULL), m_initialized(0),
+  p_info(new Integration_Info())
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   
@@ -56,6 +57,11 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
       if (ih->On()>0) isrchannels  = new Multi_Channel(string("isr_")+proc->Name());
     }
   }
+  ATOOLS::msg.Tracking()<<"Creating initial mapping keys ...\n";
+  m_spkey.Assign("s'",4,0,p_info);
+  m_ykey.Assign("y",3,0,p_info);
+  m_xkey.Assign("x",5,0,p_info);
+  ATOOLS::msg.Tracking()<<"... ok.\n";
 }
 
 Phase_Space_Handler::~Phase_Space_Handler()
@@ -177,6 +183,15 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
 #ifdef PROFILE__Phase_Space_Handler
   PROFILE_HERE;
 #endif
+  p_info->ResetAll();
+  for (size_t i=0;i<3;++i) m_spkey[i]=ih->SprimeRange()[i];
+  for (size_t i=0;i<2;++i) m_ykey[i]=ih->YRange()[i];
+  m_xkey[0]=UNDEFINED_LOWER;
+  m_xkey[2]=UNDEFINED_LOWER;
+  m_xkey[1]=log(ih->Upper1());
+  m_xkey[3]=log(ih->Upper2());
+  m_spkey[3]=m_spkey[1];
+  m_ykey[2]=0.;
   y = 0;
   if (nin>1) {
     if (bh && bh->On()>0) { 

@@ -508,3 +508,42 @@ bool Multi_Channel::ReadIn(std::string pID) {
   ifile.close();
   return 1;
 }
+
+void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
+{
+  for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
+  double disc=ran.Get();
+  double sum=0.;
+  for (size_t n=0;n<channels.size();++n) {
+    sum+=channels[n]->Alpha();
+    if (sum>disc) {
+      for (size_t i=0;i<2;++i) rans[i]=ran.Get();
+      channels[n]->GeneratePoint(spkey,ykey,rans,mode);
+      return;
+    }
+  }  
+}
+
+void Multi_Channel::GenerateWeight(int mode=0)
+{
+  if (channels.size()==1) {
+    channels[0]->GenerateWeight(mode);
+    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
+    return;
+  }
+  m_weight = 0.;
+  for (size_t i=0;i<channels.size();++i) {
+    if (channels[i]->Alpha()>0.) {
+      channels[i]->GenerateWeight(mode);
+      if (!(channels[i]->Weight()>0)&&
+        !(channels[i]->Weight()<0)&&(channels[i]->Weight()!=0)) {
+      msg.Error()<<"Multi_Channel::GenerateWeight(..): ("<<this
+                 <<"): Channel "<<i<<" ("<<channels[i]<<") produces a nan!"<<endl;
+      }
+      if (channels[i]->Weight()!=0) 
+      m_weight += channels[i]->Alpha()/channels[i]->Weight();
+    }
+  }
+  if (m_weight!=0) m_weight=1./m_weight;
+}
+

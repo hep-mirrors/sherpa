@@ -30,6 +30,12 @@ Single_Channel::Single_Channel(Single_Channel * old)
   for (short int i=0;i<nin+nout;i++) ms[i] = old->ms[i];
 }
 
+Single_Channel::~Single_Channel()
+{
+  if (ms)   { delete[] ms; }
+  if (rans) { delete[] rans; }
+}
+
 void Single_Channel::Reset(double value) {
   alpha    = alpha_save = value;
   weight   = 0.;
@@ -63,4 +69,27 @@ void Single_Channel::GeneratePoint(Vec4D * p)
   GeneratePoint(p,rans);
 }
 
+void Single_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const double *rans,const int mode) 
+{
+  ATOOLS::msg.Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
+                   <<"Virtual Method called !"<<std::endl; 
+}
 
+void Single_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,const int mode) 
+{
+  ATOOLS::msg.Error()<<"Single_Channel::GeneratePoint("<<mode<<"): "
+                   <<"Virtual Method called !"<<std::endl; 
+}
+
+void Single_Channel::GenerateWeight(const int mode) 
+{
+  ATOOLS::msg.Error()<<"Single_Channel::GenerateWeight("<<mode<<"): "
+                   <<"Virtual Method called !"<<std::endl; 
+}
+
+bool Single_Channel::CalculateLimits(Info_Key &spkey,Info_Key &ykey) 
+{
+  ATOOLS::msg.Error()<<"Single_Channel::CalculateLimits(): "
+                   <<"Virtual method called!"<<std::endl;
+  return false;
+}
