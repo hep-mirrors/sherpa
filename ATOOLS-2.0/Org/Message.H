@@ -6,6 +6,23 @@
 #include <fstream>
 
 namespace ATOOLS {
+
+  namespace om {
+
+    extern const char *reset;
+    extern const char *bold;
+    extern const char *blink;
+    extern const char *backgd;
+    extern const char *red;
+    extern const char *green;
+    extern const char *blue;
+    extern const char *brown;
+    extern const char *violet;
+    extern const char *lblue;
+    extern const char *grey;
+    
+  }// end of namespace om
+
   class Message {
     std::ofstream * no; 
     std::ostream  * output;

@@ -2,7 +2,38 @@
 #include "Run_Parameter.H"
 
 namespace ATOOLS {
-  Message       msg;
+
+  namespace om {
+
+#ifdef USING__COLOUR
+    const char *reset  = "\e[0m";
+    const char *bold   = "\e[1m";
+    const char *blink  = "\e[5m";
+    const char *backgd = "\e[6m";
+    const char *red    = "\e[31m";
+    const char *green  = "\e[32m";
+    const char *brown  = "\e[33m";
+    const char *blue   = "\e[34m";
+    const char *violet = "\e[35m";
+    const char *lblue  = "\e[36m";
+    const char *grey   = "\e[37m";
+#else
+    const char *reset  = "";
+    const char *bold   = "";
+    const char *blink  = "";
+    const char *backgd = "";
+    const char *red    = "";
+    const char *green  = "";
+    const char *brown  = "";
+    const char *blue   = "";
+    const char *violet = "";
+    const char *lblue  = "";
+    const char *grey   = "";
+#endif
+    
+  }
+
+  Message msg;
 }
 
 using namespace ATOOLS;
