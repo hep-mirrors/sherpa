@@ -11,7 +11,7 @@ for I in $* ; do
   elif [ "$I" = "-f" ]; then DISTDIR=$DISTDIR"_"`date +'%H-%M'` 
   elif [ "$I" = "--clean" ]; then ALLCLEAN=TRUE 
   elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
-  elif [ "$I" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" 
+  elif [ "$I" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" && CONFIGURE=TRUE
   elif [ "$I" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
@@ -20,7 +20,7 @@ for I in $* ; do
     echo "options: -c             execute './SHERPA-1.0/Run/makeclean' first" && \
     echo "         -f             include full time information in distribution name" && \
     echo "         --clean        execute 'make clean' before 'make dist'" && \
-    echo "         --configure    configure before 'make dist' (enabled with '-t')" && \
+    echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
     echo "         --hide-cvs     do not include cvs directories in distribution" && \
     echo "         --total        rebuild 'Makefile.in's and 'configure' before 'make dist'" && \
     echo "         --copt         define option for 'configure'" && \
@@ -57,7 +57,7 @@ do
       autoconf
     fi
     if [ "$CONFIGURE" = "TRUE" ]; then 
-      ./configure "$ECOPT"
+      ./configure $ECOPT
     fi
     if [ "$ALLCLEAN" = "TRUE" ]; then 
       make clean 
