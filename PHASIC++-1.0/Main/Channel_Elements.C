@@ -805,6 +805,8 @@ double Channel_Elements::WeightYUniform(const double tau,const Double_Container 
   return (ymax-ymin);
 }
 
+const double pre=1.0;
+
 double Channel_Elements::DiceYCentral(const double tau,const Double_Container &xinfo,
 				      Double_Container &yinfo,const double ran,const int mode) const
 {
@@ -815,7 +817,7 @@ double Channel_Elements::DiceYCentral(const double tau,const Double_Container &x
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
-  double y=log(tan(ran*atan(exp(ymax))+(1.-ran)*atan(exp(ymin))));
+  double y=pre*tan(ran*atan(ymax/pre)+(1.-ran)*atan(ymin/pre));
   if (ATOOLS::IsZero(y)) y=0.;
   if (y<ymin || y>ymax){
     ATOOLS::msg.Error()<<"Channel_Elements::DiceYCentral("<<tau<<","<<xinfo<<","
@@ -834,8 +836,8 @@ void Channel_Elements::YCentralGrid(const double tau,const Double_Container &xin
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
-  double atey=atan(exp(ymin));
-  ran = (atan(exp(yinfo[2]))-atey)/(atan(exp(ymax))-atey);
+  double atey = atan(ymin/pre);
+  ran = (atan(yinfo[2]/pre)-atey)/(atan(ymax/pre)-atey);
 }
 
 double Channel_Elements::WeightYCentral(const double tau,const Double_Container &xinfo,
@@ -847,10 +849,10 @@ double Channel_Elements::WeightYCentral(const double tau,const Double_Container 
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
-  double atey= atan(exp(ymin));
-  double wt = atan(exp(ymax))-atey;
-  ran = (atan(exp(yinfo[2]))-atey)/wt;
-  return wt*2.*cosh(yinfo[2]);
+  double atey = atan(ymin/pre);
+  double wt = atan(ymax/pre)-atey;
+  ran = (atan(yinfo[2]/pre)-atey)/wt;
+  return wt/pre*(pre*pre+yinfo[2]*yinfo[2]);
 }
 
 double Channel_Elements::WeightYCentral(const double tau,const Double_Container &xinfo,
@@ -862,7 +864,7 @@ double Channel_Elements::WeightYCentral(const double tau,const Double_Container 
   double ymax=ATOOLS::Min(xinfo[1]-logtau,logtau-xinfo[2]);
   ymin=ATOOLS::Max(yinfo[0],ymin);
   ymax=ATOOLS::Min(yinfo[1],ymax);
-  return (atan(exp(ymax))-atan(exp(ymin)))*2.*cosh(yinfo[2]);
+  return (atan(ymax/pre)-atan(ymin/pre))*(pre*pre+yinfo[2]*yinfo[2])/pre;
 }
 
 double Channel_Elements::DiceYForward(const double yexponent,const double tau,
@@ -1021,4 +1023,58 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
     }
   return wt;
 }
+
+double Channel_Elements::MasslessPDFWeight(double sexp,double smin,double smax,double s)
+{
+  if (s<=smin || s>=smax) return 0;
+  double wt=pow(log(s),sexp)/(s*Channel_Basics::PDFPeakedWeight(0.,sexp,smin,smax,1));
+  if (!(wt>0) && !(wt<=0)) { 
+    ATOOLS::msg.Error()<<"MasslessPDFWeight produces a nan: "<<wt<<endl
+		       <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
+		       <<"   sexp = "<<sexp<<endl;
+  }
+  return wt;
+}
+
+double Channel_Elements::MasslessPDFWeight(double sexp,double smin,double smax,
+					    const double s,double &ran)
+{
+  if (s<smin || s>=smax) {
+    ran=-1.;
+    return 0.;
+  }
+  double wt=pow(log(s),sexp)/
+    (s*Channel_Basics::PDFPeakedWeight(0.,sexp,smin,smax,s,1,ran));
+  if (!(wt>0) && !(wt<=0)) { 
+    ATOOLS::msg.Error()<<"MasslessPDFWeight produces a nan: "<<wt<<endl
+			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
+		       <<"   sexp = "<<sexp<<endl;
+  }
+  return wt;
+}
+
+double Channel_Elements::MasslessPDFMomenta(double sexp,
+					     double smin,double smax,
+					     double ran)
+{
+  double s=Channel_Basics::PDFPeakedDist(0.,sexp,smin,smax,1,ran);
+  if (!(s>0) && !(s<0) && s!=0) 
+    ATOOLS::msg.Error()<<"MasslessPDFMomenta produced a nan !"<<endl;
+  return s;
+}
+
+
+void Channel_Elements::MasslessPDFGrid(double sexp,double smin,double smax,double s,double &ran)
+{
+  if (s<smin||s>smax) {
+    ran=-1.;
+    return;
+  }
+  else {
+    double cn=1.+sexp;
+    double psm=pow(log(smin),cn);
+    ran = (pow(log(s),cn)-psm)/(pow(log(smax),cn)-psm);
+  }
+}
+
 
