@@ -125,7 +125,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   string _name,_stan,_oli;
   bool flag = 1;
   bool take;
-  int overflow;
+  int overflow = 0;
   for (;;) {
     if (!flag) break;
     for (size_t i=0;i<m_nin+m_nout;++i) {
@@ -148,23 +148,21 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	_pl[i] = p_pl[i];
       }
     }
-    overflow = SetPolarisations(plindex,_pl,beam_is_poled);
-    for (size_t i=0;i<m_nin+m_nout;++i) {
-      if (plindex[i]!=' ') _pl[i].SetPol(plindex[i]);
+    if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
+      overflow = SetPolarisations(plindex,_pl,beam_is_poled);
+      for (size_t i=0;i<m_nin+m_nout;++i) {
+	if (plindex[i]!=' ') _pl[i].SetPol(plindex[i]);
+      }
+      GenerateNames(m_nin,_fl,_pl,m_nout,_fl+m_nin,_pl+m_nin,_name,_stan,_oli);
+      take = 1;
+      for (size_t k=0;k<m_procs.size();k++) {
+	if (_name == m_procs[k]->Name()) { take = 0; break; }
+      }
     }
-    GenerateNames(m_nin,_fl,_pl,m_nout,_fl+m_nin,_pl+m_nin,_name,_stan,_oli);
-    take = 1;
-    for (size_t k=0;k<m_procs.size();k++) {
-      if (_name == m_procs[k]->Name()) { take = 0; break; }
-    }
+    else take=0;
     if (take) {
-      if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
-	Add(new Single_Process(m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			       m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut));
-      }
-      else {
-	take=0;
-      }
+      Add(new Single_Process(m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
+			     m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi,m_ycut));
     }
     if (overflow || take==0) {
       for (size_t i=0; i<m_nin+m_nout; ++i) plindex[i]=' ';
