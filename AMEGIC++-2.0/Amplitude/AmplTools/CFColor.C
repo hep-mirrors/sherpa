@@ -235,7 +235,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	    char c = 'O';
 	    sknot* s1 = st.String2Tree(m1->CFColstring);
 	    sknot* s2 = st.String2Tree(m2->CFColstringC);
-	   
+	   	    
 	    list<sknot*>  f1_list;
 	    list<sknot*>  f2_list;
 	    st.Factors(s1,f1_list);
@@ -277,7 +277,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	    }
 	    //evaluate the color structure 
 	    if (hit==0) {
-	      
 	      ReplaceF(s1,c);
 	      ReplaceF(s2,c);
 	     
@@ -296,7 +295,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	      for (list<sknot*>::iterator it=addend_list.begin();it!=addend_list.end();++it) {
 		string newaddend = st.Tree2String(*it,0); 
 		ReplaceG(*it);
-		ReplaceD(*it);
+		ReplaceD(*it,*it);
 		
 		list<sknot*>    factor_list;
 		st.Factors(*it,factor_list);
@@ -329,7 +328,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		
 		if (string_list.size()>0) {
 		  newaddend = BuildTChain(string_list);
-		  		  
 		  string_list.clear();
 		  factor_list.clear();
 		  
@@ -341,7 +339,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		    ReplaceT(*it);
 		    st.Expand(*it);
 		    st.Linear(*it);
-		    ReplaceD(*it);
+		    ReplaceD(*it,*it);
 		    value = st.eval(*it);
 		    t_table.insert(std::make_pair(newaddend,value/total));
 		  }
@@ -354,7 +352,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		  ReplaceT(*it);
 		  st.Expand(*it);
 		  st.Linear(*it);
-		  ReplaceD(*it);
+		  ReplaceD(*it,*it);
 		  value = st.eval(*it);
 		  Kabbala* newone = new Kabbala(newaddend,value);
 		  (*it)->value = newone;
@@ -371,7 +369,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
 	    CFC[map[c1]][map[c2]] = cffactor;
 	    CFC[map[c2]][map[c1]] = conj(CFC[map[c1]][map[c2]]);
-	    //msg.Debugging()<<"+";msg.Out().flush();
+	    msg.Debugging()<<"+";msg.Out().flush();
 	    
 	    //clean up the string tree ...
 	    st.CleanValues();
@@ -380,7 +378,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 	  m2 = m2->Next;
 	  c2++;
 	}
-	//msg.Debugging()<<endl;
+	msg.Debugging()<<endl;
       }
       m1 = m1->Next;
       c1++;
@@ -609,15 +607,19 @@ void CFColor::ReplaceT(sknot* m)
   ReplaceT(m->right);
 }
 
-void CFColor::ReplaceD(sknot* m)
+void CFColor::ReplaceD(sknot* m, sknot* start)
 {
   if (m==0) return;
   if (m->op=='*') {
     sknot* s1 = m->right;
     sknot* s2 = 0;
-    if (m->left->op=='*') s2 = m->left->right;
+    if (m->left->op=='*') {
+      s2 = m->left->right;
+    }
     else {
-      if (m->left->op==0) s2 = m->left;
+      if (m->left->op==0) {
+	s2 = m->left;
+      }
     }
     if (s2!=0) {
       if (s1->Str().length()==6) {
@@ -626,65 +628,10 @@ void CFColor::ReplaceD(sknot* m)
 	  else {
 	    // kill D's
 	    // replace s1->Str()[2] -> s1->Str()[4]
-	    char c = s1->Str()[2];
-	    sknot* akt = m;
-	    do {
-	      
-	      if (m->left->op=='*' || m->left->op==0) {
-		// right...
-		if (m->right->Str().length()==6) {
-		  if (m->right->Str()[0]=='D') {
-		    string shelp = m->right->Str();
-		    if (shelp[2]==c) shelp[2] = s1->Str()[4];
-		    else {
-		      if (shelp[4]==c) shelp[4] = s1->Str()[4];
-		    }
-		    m->right->SetString(shelp);
-		  }
-		}
-		//new
-		if (m->right->Str().length()==8) {
-		  if (m->right->Str()[0]=='T') {
-		    string shelp = m->right->Str();
-		    if (shelp[4]==c) shelp[4] = s1->Str()[4];
-		    else {
-		      if (shelp[6]==c) shelp[6] = s1->Str()[4];
-		    }
-		    m->right->SetString(shelp);
-		  }
-		}
-		//
-	      }
-	      if (m->left->op==0) {
-		// left...
-		if (m->left->Str().length()==6) {
-		  if (m->left->Str()[0]=='D') {
-		    string shelp = m->left->Str();
-		    if (shelp[2]==c) shelp[2] = s1->Str()[4];	   
-		    else {
-		      if (shelp[4]==c) shelp[4] = s1->Str()[4];
-		    }
-		    m->left->SetString(shelp); 
-		  }
-		}
-		//new
-		if (m->left->Str().length()==8) {
-		  if (m->left->Str()[0]=='T') {
-		    string shelp = m->left->Str();
-		    if (shelp[4]==c) shelp[4] = s1->Str()[4];	   
-		    else {
-		      if (shelp[6]==c) shelp[6] = s1->Str()[4];
-		    }
-		    m->left->SetString(shelp); 
-		  }
-		}
-		//
-	      }
-	      
-	      m = m->left;
-	    }
-	    while (m->op=='*');
-	    m = akt;
+	    char from = s1->Str()[2];
+	    char to   = s1->Str()[4];
+	    int hit=0;
+	    hit = SingleReplaceD(start,s1,from,to);
 	    s1->SetString(string("1"));
 	  }
 	}
@@ -696,10 +643,64 @@ void CFColor::ReplaceD(sknot* m)
       }
     }
   }
-
-  ReplaceD(m->left);
-  ReplaceD(m->right);
+  if (m->op=='*') {
+  ReplaceD(m->left,start);
+  ReplaceD(m->right,start);
+  }
+  else {
+    ReplaceD(m->left,m->left);
+    ReplaceD(m->right,m->right);
+  }
 }
+
+
+int CFColor::SingleReplaceD(sknot * m,sknot * orig,char from, char to)
+{
+  if (m==0) return 0;
+  
+  if (m->op==0) {
+    if (m->Str().length()==6) {
+      if (m->Str()[0]=='D') {
+	string shelp = m->Str();
+	if (from==shelp[2]) {
+	  if (m!=orig) {
+	    shelp[2]=to;
+	    m->SetString(shelp);
+	    return 1;
+	  }
+	}
+	if (from==shelp[4]) {
+	  string shelp = m->Str();
+	  shelp[4]=to;
+	  m->SetString(shelp);
+	  return 1;
+	}
+      }
+    }
+    //new
+    if (m->Str().length()==8) {
+      if (m->Str()[0]=='T') {
+	string shelp = m->Str();
+	if (shelp[4]==from) {
+	    shelp[4] = to;
+	    m->SetString(shelp);
+	    return 1;
+	  }
+	  else {
+	    if (shelp[6]==from) {
+	      shelp[6] = to;
+	      m->SetString(shelp);
+	      return 1;
+	    }
+	  }
+      }
+    }
+  }
+  if (SingleReplaceD(m->left,orig,from,to))  return 1;
+  if (SingleReplaceD(m->right,orig,from,to)) return 1;
+  return 0;
+}
+
 
 void CFColor::ReplaceG(sknot* m,sknot* m0)
 {

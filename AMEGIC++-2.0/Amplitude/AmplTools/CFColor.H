@@ -24,10 +24,12 @@ namespace AMEGIC {
     int mcount, ncount;  // number of graphs, number of graphs with generic Color!
 
     void ReplaceT(sknot*);
-    void ReplaceD(sknot*);
+    void ReplaceD(sknot*,sknot*);
     void ReplaceG(sknot* m,sknot* m0=0);
     void ReplaceF(sknot*,char&);
 
+
+    int  SingleReplaceD(sknot *,sknot *,char, char);
     void Single_ReplaceF(sknot*,int&,char&);
     void Single_ReplaceFT(sknot*,int&,char&);
 
