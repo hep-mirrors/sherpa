@@ -149,6 +149,8 @@ int Channel_Generator3V::MakeChannel(int& echflag,int n,string& path,string& pID
 
   string filename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/")+
                     string(name)+string(".C");
+
+//   cout<<name<<endl<<endl;
   
   ifstream from;
   from.open((filename).c_str());
@@ -376,15 +378,27 @@ void Channel_Generator3V::GenerateDecayChain(int flag,Point* p,int& rannum,ofstr
     string pin0sum(""),pin1sum("");
     if (pin0.size()>0) {
       for (int i=0;i<pin0.size();i++) pin0sum+=pin0[i];
+ //      cout<<"GDC0: "<<pin0sum<<":";for (int i=0;i<pin0.size();i++)cout<<" "<<pin0[i];cout<<endl;
       pin0sum = Order(pin0sum);
-      if (pin0sum.length()>1) AddToVariables(flag,string("0_")+pin0sum,string("p[0]-p")+pin0sum,1,sf);
-      else AddToVariables(flag,string("0_")+pin0sum,string("p[0]-p[")+pin0sum+string("]"),1,sf);
+      string help1(""),help2 = pin0[pin0.size()-1];
+      for (int i=0;i<pin0.size()-1;i++) help1+=pin0[i];
+      if (help1.length()>0) help1 = string("p0_") + help1;
+      else help1 = string("p[0]");
+
+       if (help2.length()>1) AddToVariables(flag,string("0_")+pin0sum,help1+string("-p")+help2,1,sf);
+       else AddToVariables(flag,string("0_")+pin0sum,help1+string("-p[")+help2+string("]"),1,sf);
     }
     if (pin1.size()>0) {
       for (int i=0;i<pin1.size();i++) pin1sum+=pin1[i];
+ //      cout<<"GDC1: "<<pin1sum<<":";for (int i=0;i<pin1.size();i++)cout<<" "<<pin1[i];cout<<endl;
       pin1sum = Order(pin1sum);
-      if (pin1sum.length()>1) AddToVariables(flag,string("1_")+pin1sum,string("p[1]-p")+pin1sum,1,sf);
-      else AddToVariables(flag,string("1_")+pin1sum,string("p[1]-p[")+pin1sum+string("]"),1,sf);
+      string help1(""),help2 = pin1[pin1.size()-1];
+      for (int i=0;i<pin1.size()-1;i++) help1+=pin1[i];
+      if (help1.length()>0) help1 = string("p1_") + help1;
+      else help1 = string("p[1]");
+
+      if (help2.length()>1) AddToVariables(flag,string("1_")+pin1sum,help1+string("-p")+help2,1,sf);
+      else AddToVariables(flag,string("1_")+pin1sum,help1+string("-p[")+help2+string("]"),1,sf);
     }
     pin0sum = string("0_") + pin0sum; 
     pin1sum = string("1_") + pin1sum; 
