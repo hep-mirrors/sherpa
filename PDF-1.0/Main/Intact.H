@@ -4,14 +4,19 @@
 #include "ISR_Base.H"
 
 namespace PDF {
+
   class Intact : public ISR_Base {
   public:
+
+    // constructor
     Intact(ATOOLS::Flavour);     
-    bool       CalculateWeight(double,double);
-    double     Weight(ATOOLS::Flavour);
-    bool       On()           { return 0; }
-    PDF_Base * PDF()          { return 0; }
-  };
+
+    // member functions
+    bool   CalculateWeight(double x,double z,double kp2,double Q2);
+    double Weight(ATOOLS::Flavour flavour);
+
+  };// end of class Intact
+
   /*!
     \file 
     \brief contains the class PDF::Intact.
@@ -39,7 +44,8 @@ namespace PDF {
     The trivial weight is returned.
   */
 
-}
+}// end of namespace PDF
+
 #endif
 
 

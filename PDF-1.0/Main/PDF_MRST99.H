@@ -6,26 +6,30 @@
 #include "mrst99.h"
 
 namespace PDF {
+
   class PDF_MRST99 : public PDF_Base {
   private:
+
     static c_mrst * p_proton;
     s_partoncontent m_content;
     int             m_set;
     std::string     m_path;
     int             m_anti;
+
   public:
+
     PDF_MRST99(const ATOOLS::Flavour,const int,const std::string); 
-    void               Output();
-    void               Calculate(const double, const double);
-    double             GetXPDF(const ATOOLS::Flavour & fl); 
-    PDF_Base         * GetCopy();
-    double             GetXMin()  { return MRST99::xmin; };
-    double             GetXMax()  { return MRST99::xmax; };
-    double             GetQ2Min() { return MRST99::qsqmin; };
-    double             GetQ2Max() { return MRST99::qsqmax; };
-    ATOOLS::Flavour Bunch()    { return m_bunch; } 
-    std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
+
+    PDF_Base * GetCopy();
+    void       Output();
+
+    void   Calculate(double,double,double,double);
+    double GetXPDF(const ATOOLS::Flavour); 
+
+    void AssignKeys(ATOOLS::Integration_Info *const info);
+
   };
+
   /*!
     \class PDF_MRST99
     \brief An interface to the C++-version of the MRST99 sets.
@@ -90,7 +94,7 @@ namespace PDF {
     A method to initialize another electron PDF as exact copy of the current one.
     This is needed for the initial state shower of APACIC.
   */
-}  
 
+}  
 
 #endif

@@ -1,73 +1,106 @@
-#ifndef ISR_Handler_h
-#define ISR_Handler_h
+#ifndef ISR_Handler_H
+#define ISR_Handler_H
 
 #include "Vector.H"
 #include "Poincare.H"
 #include "ISR_Base.H"
+#include "Info_Key.H"
 
 namespace PDF {
+
   class ISR_Handler {
   protected:
-    ISR_Base           ** p_ISRBase;
-    ATOOLS::Poincare    m_CMSBoost;
-    int                   m_mode; 
-    double                m_mass12, m_mass22, m_x1, m_x2;
-    double                m_exponent[2];
-    double                m_splimits[3],m_ylimits[2];
-    double                m_fixed_smin, m_fixed_smax;
-    ATOOLS::Vec4D       m_fiXVECs[2];
-    std::string           m_name, m_type;
 
+    ISR_Base **p_isrbase;
+
+    ATOOLS::Integration_Info *p_info;
+    ATOOLS::Info_Key          m_spkey, m_ykey, m_xkey, m_zkey[2], m_kpkey[2];
+
+    std::string m_name, m_type;
+
+    int m_mode, m_kmrmode; 
+
+    double m_mass2[2], m_exponent[2], m_x[2], m_mu2[2];
+    double m_splimits[3],m_ylimits[2], m_kplimits[3], m_zlimits[2];
+    double m_fixed_smin, m_fixed_smax, m_weight, m_flux;
+
+    ATOOLS::Poincare m_cmsboost, m_kmrboost, m_kmrrot;
+    ATOOLS::Vec4D    m_fixvecs[2], m_kp[2], p_cms[2];
+
+    void Init(const double *splimits,const double *kplimits);
 
     const ATOOLS::Flavour  DiQuark(const ATOOLS::Flavour &,const ATOOLS::Flavour &);
     bool CheckRemnantKinematics(const ATOOLS::Flavour &,double,int);
+
   public:
-    ISR_Handler(int *,ATOOLS::Flavour *,ATOOLS::Flavour *,double *);
-    ISR_Handler(ISR_Base **,double *);
+
+    // constructor
+    ISR_Handler(ISR_Base **isrbase,const double *splimits,const double *kplimits);
+
+    // destructor
     ~ISR_Handler();
-    void   Init(double *);
-    bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
-    bool   CheckConsistency(ATOOLS::Flavour *);
-    void   SetPartonMasses(ATOOLS::Flavour * _fl); 
-    bool   MakeISR(ATOOLS::Vec4D *,double,double);
-    bool   CalculateWeight(double);
-    bool   CalculateWeight2(double);
-    double Weight(ATOOLS::Flavour *);
-    double Weight2(ATOOLS::Flavour *);
 
-    void   BoostInCMS(ATOOLS::Vec4D *,int);
-    void   BoostInLab(ATOOLS::Vec4D *,int);
+    // member functions
+    bool CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons);
+    bool CheckConsistency(ATOOLS::Flavour *partons);
+    void SetPartonMasses(ATOOLS::Flavour *fl); 
 
-    void   SetName(std::string _name) { m_name = _name; }
-    void   SetSprimeMin(double _spl);
-    void   SetSprimeMax(double _spl);
-    void   SetFixedSprimeMin(double _spl);
-    void   SetFixedSprimeMax(double _spl);
-    void   SetPole(double _spl)       { m_splimits[2] = _spl; }
-    void   SetYMin(double _yl)        { m_ylimits[0]  = _yl; }
-    void   SetYMax(double _yl)        { m_ylimits[1]  = _yl; }
+    bool MakeISR(ATOOLS::Vec4D *const p,const size_t n);
 
-    std::string          Name()            { return m_name; }
-    std::string          Type()            { return m_type; }
-    double               Exponent(int i)   { return m_exponent[i]; }
-    double             * SprimeRange()     { return m_splimits; }
-    double             * YRange()          { return m_ylimits; }
-    double               SprimeMin()       { return m_splimits[0]; }
-    double               SprimeMax()       { return m_splimits[1]; }
-    double               Pole()            { return m_splimits[2]; }
-    double               YMin()            { return m_ylimits[0]; }
-    double               YMax()            { return m_ylimits[1]; }
+    bool CalculateWeight(const double scale);
+    bool CalculateWeight2(const double scale);
+
+    double Weight(ATOOLS::Flavour *flavour);
+    double Weight2(ATOOLS::Flavour *flavour);
+
+    void BoostInCMS(ATOOLS::Vec4D *p,const size_t n);
+    void BoostInLab(ATOOLS::Vec4D *p,const size_t n);
+
+    void SetSprimeMin(const double spmin);
+    void SetSprimeMax(const double spmax);
+
+    void SetFixedSprimeMin(const double spmin);
+    void SetFixedSprimeMax(const double spmax);
+
+    void AssignKeys(ATOOLS::Integration_Info *const info);
+    void SetLimits();
+
+    // inline functions 
+    inline void SetPole(const double pole)      { m_splimits[2] = pole; }
+    inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
+    inline void SetYMax(const double ymax)      { m_ylimits[1]  = ymax; }
+    inline void SetName(const std::string name) { m_name = name;        }
+
+    inline std::string Name() { return m_name; }
+    inline std::string Type() { return m_type; }
+
+    inline PDF_Base        *PDF(const size_t beam)  { return p_isrbase[beam]->PDF();     }
+    inline ATOOLS::Flavour  Flav(const size_t beam) { return p_isrbase[beam]->Flavour(); }
+
+    inline int On()    { return m_mode;    }
+    inline int KMROn() { return m_kmrmode; }
+
+    inline double *SprimeRange()         { return m_splimits;    }
+    inline double *YRange()              { return m_ylimits;     }
+    inline double *KMRZRange()           { return m_zlimits;     }
+    inline double *KMRKpRange()          { return m_kplimits;    }
+    inline double  Exponent(const int i) { return m_exponent[i]; }
+
+    inline double SprimeMin() { return m_splimits[0]; }
+    inline double SprimeMax() { return m_splimits[1]; }
+    inline double Pole()      { return m_splimits[2]; }
+    inline double YMin()      { return m_ylimits[0];  }
+    inline double YMax()      { return m_ylimits[1];  }
     
-    // Don't use this !!! It is for the ISRChannels only !!!
-    double               Upper1()          { return p_ISRBase[0]->Xmax(); }
-    double               Upper2()          { return p_ISRBase[1]->Xmax(); }
-    double               X1()              { return m_x1; }
-    double               X2()              { return m_x2; }
+    inline double Upper1() { return p_isrbase[0]->XMax(); }
+    inline double Upper2() { return p_isrbase[1]->XMax(); }
+
+    inline double X1() { return m_x[0]; }
+    inline double X2() { return m_x[1]; }
+
+    inline double Flux() { return m_flux; }
   
-    PDF_Base           * PDF(int beam)     { return p_ISRBase[beam]->PDF(); }
-    ATOOLS::Flavour      Flav(int beam)    { return p_ISRBase[beam]->Flav(); }
-    int                  On()              { return m_mode; }
-  };
+  };// end of class ISR_Handler
 
   /*!
     \namespace PDF
@@ -97,7 +130,7 @@ namespace PDF {
     contain the PDFs for each of the bunches.
   */
   /*!
-    \var ISR_Base ** ISR_Handler::p_ISRBase
+    \var ISR_Base ** ISR_Handler::p_isrbase
     Pointers to the two ISR bases, one for each bunch.
 
     \sa ISR_Base
@@ -165,13 +198,13 @@ namespace PDF {
   /*!
     \fn bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *)
     This checks whether the two sets of flavours match the flavours of the incoming
-    and outgonig particles of the two p_ISRBases. If this is the case, true is returned.
+    and outgonig particles of the two p_isrbases. If this is the case, true is returned.
     This method is largely similar to the corresponding one in the BEAM::Beam_Spectra_Handler.
   */
   /*!
     \fn bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *)
     This checks whether the flavours are allowed to be used as outgonig flavours in the
-    two p_ISRBases. If this is the case, true is returned. This method is largely similar to 
+    two p_isrbases. If this is the case, true is returned. This method is largely similar to 
     the corresponding one in the BEAM::Beam_Spectra_Handler.
   */  
   /*!
@@ -224,7 +257,9 @@ namespace PDF {
     partons. It corresponds to the "twisted" weight, i.e. for parton 1 stemming from
     bunch 2 and vice versa.
   */
-} 
+
+}// end of namespace PDF 
+
 #endif
 
 

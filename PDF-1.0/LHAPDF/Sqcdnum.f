@@ -1,4 +1,19 @@
 * $Log$
+* Revision 1.2  2004/05/11 09:18:43  stefan
+* DUPDF changes
+*
+* Revision 1.1.4.1  2004/02/18 06:09:17  stefan
+* test of doubly unintegrated PDF
+*
+* Revision 1.4  2004/01/04 22:46:38  stefan
+* incorporation of hard decays
+*
+* Revision 1.1.2.1  2003/11/28 09:26:04  stefan
+* changes made for multiple interactions and hard decays
+*
+* Revision 1.3  2003/11/27 13:32:19  stefan
+* *** empty log message ***
+*
 * Revision 1.1  2003/06/10 11:41:31  frank
 * completely new directory, hosts the les houches accord pdf's by walter giele.
 *
@@ -84,6 +99,21 @@
 * $Id$
 *
 * $Log$
+* Revision 1.2  2004/05/11 09:18:43  stefan
+* DUPDF changes
+*
+* Revision 1.1.4.1  2004/02/18 06:09:17  stefan
+* test of doubly unintegrated PDF
+*
+* Revision 1.4  2004/01/04 22:46:38  stefan
+* incorporation of hard decays
+*
+* Revision 1.1.2.1  2003/11/28 09:26:04  stefan
+* changes made for multiple interactions and hard decays
+*
+* Revision 1.3  2003/11/27 13:32:19  stefan
+* *** empty log message ***
+*
 * Revision 1.1  2003/06/10 11:41:31  frank
 * completely new directory, hosts the les houches accord pdf's by walter giele.
 *
@@ -174,6 +204,21 @@ C
 * $Id$
 *
 * $Log$
+* Revision 1.2  2004/05/11 09:18:43  stefan
+* DUPDF changes
+*
+* Revision 1.1.4.1  2004/02/18 06:09:17  stefan
+* test of doubly unintegrated PDF
+*
+* Revision 1.4  2004/01/04 22:46:38  stefan
+* incorporation of hard decays
+*
+* Revision 1.1.2.1  2003/11/28 09:26:04  stefan
+* changes made for multiple interactions and hard decays
+*
+* Revision 1.3  2003/11/27 13:32:19  stefan
+* *** empty log message ***
+*
 * Revision 1.1  2003/06/10 11:41:31  frank
 * completely new directory, hosts the les houches accord pdf's by walter giele.
 *
@@ -204,6 +249,21 @@ C-    Find last non-blank character in CHV
 * $Id$
 *
 * $Log$
+* Revision 1.2  2004/05/11 09:18:43  stefan
+* DUPDF changes
+*
+* Revision 1.1.4.1  2004/02/18 06:09:17  stefan
+* test of doubly unintegrated PDF
+*
+* Revision 1.4  2004/01/04 22:46:38  stefan
+* incorporation of hard decays
+*
+* Revision 1.1.2.1  2003/11/28 09:26:04  stefan
+* changes made for multiple interactions and hard decays
+*
+* Revision 1.3  2003/11/27 13:32:19  stefan
+* *** empty log message ***
+*
 * Revision 1.1  2003/06/10 11:41:31  frank
 * completely new directory, hosts the les houches accord pdf's by walter giele.
 *
@@ -241,6 +301,21 @@ C-    DUMMY FOR NON-ESSENTIAL ROUTINE STILL MISSING ON YOUR MACHINE
 * $Id$
 *
 * $Log$
+* Revision 1.2  2004/05/11 09:18:43  stefan
+* DUPDF changes
+*
+* Revision 1.1.4.1  2004/02/18 06:09:17  stefan
+* test of doubly unintegrated PDF
+*
+* Revision 1.4  2004/01/04 22:46:38  stefan
+* incorporation of hard decays
+*
+* Revision 1.1.2.1  2003/11/28 09:26:04  stefan
+* changes made for multiple interactions and hard decays
+*
+* Revision 1.3  2003/11/27 13:32:19  stefan
+* *** empty log message ***
+*
 * Revision 1.1  2003/06/10 11:41:31  frank
 * completely new directory, hosts the les houches accord pdf's by walter giele.
 *

@@ -5,19 +5,22 @@
 #include "PDF_Base.H"
 
 namespace PDF {  
+
   class Structure_Function : public ISR_Base {
-  private:
-    PDF_Base * p_pdf;
   public:
+
+    // constructor
     Structure_Function(PDF::PDF_Base *,ATOOLS::Flavour); 
+
+    // destructor
     ~Structure_Function();
-    bool   CalculateWeight(double,double);
+
+    // meber functions
+    bool   CalculateWeight(double,double,double,double);
     double Weight(ATOOLS::Flavour);
-    bool            On()       { return 1;  }
-    PDF_Base      * PDF()      { return p_pdf; }
-    double          Exponent() { return p_pdf->Exponent(); }
-    double          Xmax()     { return p_pdf->GetXMax(); }
-  };
+
+  };// end of class Structure_Function
+
   /*!
     \file 
     \brief contains the class PDF::Structure_Function.
@@ -51,7 +54,7 @@ namespace PDF {
     weight is set to \f$1/x\f$ to be multiplied later on with the - eventuall flavour
     dependent - pdf piece.
   */
-}
 
+}// end of namespace PDF
 
 #endif

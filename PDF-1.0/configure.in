@@ -39,5 +39,6 @@ AC_CHECK_FUNCS(mkdir)
 
 AC_OUTPUT(Main/Makefile \
 	  LHAPDF/Makefile \
+	  KMR/Makefile \
 	  Makefile )
 

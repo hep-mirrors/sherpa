@@ -3,8 +3,9 @@
 #include "PDF_MRST99.H"
 #include "LHAPDF_Fortran_Interface.H"
 #include "CTEQ6_Fortran_Interface.H"
-#include "GRVph_Fortran_Interface.H"
 #include "Message.H"
+#include "Running_AlphaS.H"
+#include "Doubly_Unintegrated_PDF.H"
 #include <stdio.h>
 
 using namespace PDF;
@@ -22,7 +23,6 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 
   if (dataread->GetValue<Switch::code>("ISR_"+number)) {    
     if (bunch_particle.IsLepton()) {
-      //Electron
       if (bunch_particle.IntCharge()!=0) {
 	return new PDF_Electron(bunch_particle,
 				dataread->GetValue<int>("ISR_E_ORDER",1),
@@ -31,21 +31,17 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       msg.Error()<<"Error in PDF_Handler::GetPDFLib :"<<endl
 		 <<"   Tried to initialize a structure function for an uncharged particle."<<endl
 		 <<"   Will abort the program."<<endl;
-      abort();
+      exit(151);
     }
-    //Photon
-    if (bunch_particle.IsPhoton()) {
-      msg.Out()<<"PDF_Handler::GetPDFLib : Try to initialize photon PDF."<<endl;
-      return new GRVph_Fortran_Interface(bunch_particle);
-    }
-    //Proton
     if ((bunch_particle==Flavour(kf::p_plus) || (bunch_particle==Flavour(kf::p_plus).Bar()))) {
+      PDF_Base *pdfbase=NULL;
+      Switch::code kmr      = dataread->GetValue<Switch::code>("KMR_DUPDF");
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("MRST99"));
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("MRST99Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
       if (set==std::string("MRST99")) {
 	msg.Tracking()<<"Initialize MRST99 : "<<version<<" from "<<grid_path<<endl;
-	return new PDF_MRST99(bunch_particle,version,grid_path);
+	pdfbase = new PDF_MRST99(bunch_particle,version,grid_path);
       }
       else if ((set==std::string("cteq6m") ||
 	  set==std::string("cteq6d") ||
@@ -54,7 +50,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	  
 	  msg.Tracking()<<"Initialize CTEQ6 : "<<version<<" from "<<grid_path<<endl;
 	  msg.Tracking()<<"Initialize CTEQ6_Fortran_Interface : "<<set<<"/"<<version<<" from "<<grid_path<<endl;
-	  return new CTEQ6_Fortran_Interface(bunch_particle,set,version,grid_path);
+	  pdfbase = new CTEQ6_Fortran_Interface(bunch_particle,set,version,grid_path);
       }
       else if (set==std::string("Alekhin_100") ||
 	       set==std::string("Alekhin_1000") ||
@@ -68,18 +64,25 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	       set==std::string("cteq6l")  ||
 	       set==std::string("cteq6ll")) {
 	msg.Tracking()<<"Initialize "<<set<<" : "<<version<<" from "<<grid_path<<endl;
-	return new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path,m_initlhapdf);
+	pdfbase = new LHAPDF_Fortran_Interface(bunch_particle,set,version,grid_path,m_initlhapdf);
+      }
+      if (pdfbase!=NULL) {
+	double mu0=dataread->GetValue("KMR_KPERP_CUT",(double)1.0);
+	int kpscheme=dataread->GetValue("KMR_KPERP_SCHEME",(int)0);
+ 	if (kmr==Switch::On) return new Doubly_Unintegrated_PDF(pdfbase,MODEL::as,
+								mu0*mu0,(kps::type)kpscheme);
+	return pdfbase;
       }
       msg.Error()<<"Error in PDF_Handler::GetPDFLib :"<<endl
 		 <<"   Combination of set/member/path for proton not properly specified :"<<endl
 		 <<"   ("<<set<<"/"<<version<<"/"<<grid_path<<")"<<endl
 		 <<"   Will abort the program."<<endl;
-      abort();
+      exit(151);
     }
     msg.Error()<<"Error in PDF_Handler::GetPDFLib :"<<endl
 	       <<"   So far no PDF for the bunch_particle :"<<bunch_particle<<endl
 	       <<"   Will abort the program."<<endl;
-    abort();
+    exit(151);
   }
 
   return NULL;

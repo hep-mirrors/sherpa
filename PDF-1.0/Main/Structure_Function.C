@@ -2,14 +2,13 @@
 #include "PDF_Handler.H"
 #include "Message.H"
 
-using namespace ATOOLS;
 using namespace PDF;
 
 
-Structure_Function::Structure_Function(PDF::PDF_Base * _pdf,Flavour _bunch) :
-  p_pdf(_pdf)
+Structure_Function::Structure_Function(PDF::PDF_Base * _p_pdf,ATOOLS::Flavour _m_bunch):
+  ISR_Base(_p_pdf)
 {
-  m_bunch = _bunch;
+  m_bunch = _m_bunch;
   m_type  = std::string("(SF)");
   p_pdf->Output();
 }
@@ -18,25 +17,25 @@ Structure_Function::~Structure_Function() {
   if (p_pdf) { delete p_pdf; p_pdf = NULL; }   
 }
 
-bool Structure_Function::CalculateWeight(double x,double q2) 
+bool Structure_Function::CalculateWeight(double x,double z,double kp2,double q2) 
 {
-  if ( (x  > p_pdf->GetXMax()) || (x<= p_pdf->GetXMin()) ) {
-    msg.Error()<<"SF : x out of bounds "<<x<<" at "<<q2<<", "
-	       <<"xrange = "<<p_pdf->GetXMin()<<" ... "<<p_pdf->GetXMax()<<std::endl;
+  if ( (x  > p_pdf->XMax()) || (x<= p_pdf->XMin()) ) {
+    ATOOLS::msg.Error()<<"SF : x out of bounds "<<x<<" at "<<q2<<", "
+	       <<"xrange = "<<p_pdf->XMin()<<" ... "<<p_pdf->XMax()<<std::endl;
     return 0; 
   }
-  if ( (q2 >= p_pdf->GetQ2Max()) || (q2<= p_pdf->GetQ2Min()) ) { 
-    msg.Error()<<"SF : q2 out of bounds "<<x<<" at "<<q2<<", "
-	       <<"q2range = "<<p_pdf->GetQ2Min()<<" ... "<<p_pdf->GetQ2Max()<<std::endl;
+  if ( (q2 >= p_pdf->Q2Max()) || (q2<= p_pdf->Q2Min()) ) { 
+    ATOOLS::msg.Error()<<"SF : q2 out of bounds "<<x<<" at "<<q2<<", "
+	       <<"q2range = "<<p_pdf->Q2Min()<<" ... "<<p_pdf->Q2Max()<<std::endl;
     return 0; 
   }
   
-  p_pdf->Calculate(x,q2);
+  p_pdf->Calculate(x,z,kp2,q2);
   m_weight = 1./x;
   return 1;
 };
 
-double Structure_Function::Weight(Flavour flin)
+double Structure_Function::Weight(ATOOLS::Flavour flin)
 {
   return m_weight * p_pdf->GetXPDF(flin); 
 }

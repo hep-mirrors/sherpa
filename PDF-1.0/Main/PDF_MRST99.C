@@ -30,6 +30,11 @@ PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
   m_partons.push_back(Flavour(kf::jet));
   m_partons.push_back(Flavour(kf::quark));
   m_partons.push_back(Flavour(kf::quark).Bar());
+
+  m_xmin=MRST99::xmin;
+  m_xmax=MRST99::xmax;
+  m_q2min=MRST99::qsqmin;
+  m_q2max=MRST99::qsqmax;
 };
 
 
@@ -56,13 +61,13 @@ void PDF_MRST99::Output() {
   }
 }
 
-void PDF_MRST99::Calculate(const double x, const double Q2) {
+void PDF_MRST99::Calculate(double x,double z,double kp2,double Q2) {
   p_proton->mrst99(x,Q2,m_set);
   m_content = p_proton->cont;
 }
 
 
-double PDF_MRST99::GetXPDF(const ATOOLS::Flavour & infl) {
+double PDF_MRST99::GetXPDF(const ATOOLS::Flavour infl) {
   int kfc=m_anti*int(infl);
   switch (kfc) {
   case  ATOOLS::kf::d : return (m_content.dnv + m_content.dsea);
@@ -79,4 +84,8 @@ double PDF_MRST99::GetXPDF(const ATOOLS::Flavour & infl) {
   case -ATOOLS::kf::gluon :return m_content.glu; // pseudo anti gluon for anti-proton
   default: return 0.;
   }
+}
+
+void PDF_MRST99::AssignKeys(ATOOLS::Integration_Info *const info)
+{
 }

@@ -19,6 +19,11 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						   const std::string _path, bool & initlhapdf) :
   m_set(_set), m_member(_member), m_path(_path), m_anti(1)
 {
+  m_xmin=0.;
+  m_xmax=1.;
+  m_q2min=1.;
+  m_q2max=1.e12;
+
   m_bunch = _bunch; 
   if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
   if (!initlhapdf) {
@@ -59,12 +64,12 @@ void LHAPDF_Fortran_Interface::Output() {
 	   <<"          alpha_s(MZ) = "<<lhapdfalphas_(scale)<<std::endl;
 }
 
-void LHAPDF_Fortran_Interface::Calculate(const double _x, const double _Q2) {
-  double x = _x, Q = sqrt(_Q2);
-  lhapdfevolve_(x,Q,m_f);
+void LHAPDF_Fortran_Interface::Calculate(double x,double z,double kp2,double Q2) {
+  double _Q = sqrt(Q2);
+  lhapdfevolve_(x,_Q,m_f);
 }
 
-double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour & infl) {
+double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl) {
   if (infl == Flavour(kf::gluon)) return m_f[6];
   int kfc = m_anti*int(infl);
   if (kfc<-6 || kfc>6) {
@@ -74,3 +79,6 @@ double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour & infl) {
   return m_f[6+kfc];
 }
 
+void LHAPDF_Fortran_Interface::AssignKeys(ATOOLS::Integration_Info *const info)
+{
+}

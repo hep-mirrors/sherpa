@@ -14,8 +14,8 @@ namespace PDF {
     PDF_Base * GetCopy();
     void   Output();
 
-    void   Calculate(const double, const double);
-    double GetXPDF(const ATOOLS::Flavour &);
+    void   Calculate(const double,const double,const double,const double);
+    double GetXPDF(const ATOOLS::Flavour );
 
     double GetXMin()   { return 1.e-5; }
     double GetXMax()   { return 1.; }
@@ -23,6 +23,7 @@ namespace PDF {
     double GetQ2Max()  { return 1.e6; }
     ATOOLS::Flavour Bunch()                { return m_bunch; }
     std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
+    void AssignKeys(ATOOLS::Integration_Info *const info);
   };
 
 

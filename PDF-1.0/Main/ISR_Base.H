@@ -2,25 +2,52 @@
 #define ISR_Base_h
 
 #include "PDF_Base.H"
-#include "Message.H"
 
 namespace PDF {
+
   class ISR_Base { 
   protected:
-    std::string        m_type;
+
+    PDF_Base *p_pdf;
+
+    std::string     m_type;
     ATOOLS::Flavour m_bunch;
-    double             m_weight;
+
+    double m_weight;
+    bool   m_on, m_kmr;
+
   public:
-    virtual ~ISR_Base()          {};
-    virtual bool   CalculateWeight(double,double) =0;
-    virtual double Weight(ATOOLS::Flavour)     =0;
-    virtual ATOOLS::Flavour Flav()     { return m_bunch; }
-    virtual bool               On()       { return 0; }
-    virtual std::string        Type()     { return m_type; }
-    virtual double             Exponent() { return 0.; }
-    virtual double             Xmax()     { return 1.; }
-    virtual PDF_Base         * PDF()      { return 0; }
-  };
+
+    // constructor
+    ISR_Base(PDF_Base *_p_pdf);
+
+    // destructor
+    virtual ~ISR_Base();
+
+    // getters
+    inline const std::string     Type() const    { return m_type;  }
+    inline const ATOOLS::Flavour Flavour() const { return m_bunch; }
+
+    bool On() const  { return m_on;  }
+    bool KMR() const { return m_kmr; }
+
+    inline bool Collinear(const double kp2) const { return p_pdf->Collinear(kp2); }
+
+    inline double Cut(const std::string &type) const { return p_pdf->Cut(type); }
+
+    inline double Exponent() const { return p_pdf->Exponent(); }
+    inline double XMax() const     { return p_pdf->XMax();     }
+
+    inline PDF_Base *PDF() { return p_pdf; }
+
+    void AssignKeys(ATOOLS::Integration_Info *const info) { p_pdf->AssignKeys(info); }
+
+    // member functions
+    virtual bool   CalculateWeight(double,double,double,double) = 0;
+    virtual double Weight(ATOOLS::Flavour) = 0;
+
+  };// end of class ISR_Base
+
   /*!
     \class ISR_Base
     \brief A mainly virtual class for different initial state radiation treatments
@@ -80,5 +107,7 @@ namespace PDF {
     \fn PDF_Base * ISR_Base::PDF()
     Returns the internal pointer to the constituting PDF.
   */
-}
+
+}// end of namespace PDF
+
 #endif

@@ -3,27 +3,61 @@
 
 #include "Flavour.H"
 
+namespace ATOOLS {
+
+  class Integration_Info;
+
+}
+
 namespace PDF {
+
   class PDF_Base {
   protected :
-    std::vector<ATOOLS::Flavour> m_partons;    
-    ATOOLS::Flavour m_bunch;
-    std::string     m_type;    
-  public:
-    virtual ~PDF_Base() {}
-    virtual void Calculate(const double x, const double Q2) = 0;
-    virtual double GetXPDF(const ATOOLS::Flavour &)      = 0;
 
-    virtual void                            Output()        = 0;
-    virtual PDF_Base                      * GetCopy()       = 0;
-    virtual double                          GetXMin()       = 0;
-    virtual double                          GetXMax()       = 0;
-    virtual double                          GetQ2Min()      = 0;
-    virtual double                          GetQ2Max()      = 0;
-    virtual ATOOLS::Flavour                 Bunch()         = 0;
-    virtual std::vector<ATOOLS::Flavour>    Partons()       = 0;
-    virtual double                          Exponent()     { return 1.; }
+    std::vector<ATOOLS::Flavour> m_partons;    
+    ATOOLS::Flavour              m_bunch;
+
+    std::string m_type;    
+
+    double m_exponent;
+    double m_xmin, m_xmax, m_q2min, m_q2max;
+
+  public:
+
+    // constructor
+    PDF_Base();
+
+    // destructor
+    virtual ~PDF_Base();
+
+    // getters
+    inline double XMin() const  { return m_xmin;  }
+    inline double XMax() const  { return m_xmax;  }
+    inline double Q2Min() const { return m_q2min; }
+    inline double Q2Max() const { return m_q2max; }
+
+    virtual double Cut(const std::string &type);
+
+    inline const std::vector<ATOOLS::Flavour> &Partons() const { return m_partons; }
+    inline const ATOOLS::Flavour               Bunch() const   { return m_bunch;   }
+
+    inline const std::string &Type() const     { return m_type;     }  
+    inline double             Exponent() const { return m_exponent; }
+
+    // member functions
+    virtual void AssignKeys(ATOOLS::Integration_Info *const info) = 0;
+    virtual bool Collinear(const double kp2) const;
+    
+    virtual void   Calculate(double x,double z,double kp,double Q2) = 0;
+    virtual double GetXPDF(const ATOOLS::Flavour flavour) = 0;
+
+    virtual void      Output() = 0;
+    virtual PDF_Base *GetCopy() = 0;
+
+    virtual PDF_Base *GetBasicPDF();
+
   };
+  
   /*!
     \class PDF_Base
     \brief is the base class for parton distributions and structure functions.
@@ -71,5 +105,5 @@ namespace PDF {
     \todo Work on output, maybe printing the PDFs ?
   */
 } 
- 
+
 #endif

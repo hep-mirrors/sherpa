@@ -5,29 +5,30 @@
 #include "Flavour.H"
 
 namespace PDF {
+
   class CTEQ6_Fortran_Interface : public PDF_Base {
   private:
+
     std::string m_set,m_path;
     int         m_member;
     int         m_anti;
-    double      m_f[11];
+    double      m_f[11], m_x, m_Q;
+    bool        m_calculated[11];
+
   public:
+
     CTEQ6_Fortran_Interface(const ATOOLS::Flavour,std::string,int,std::string);
+
     PDF_Base * GetCopy();
-    void   Output();
+    void       Output();
 
-    void   Calculate(const double, const double);
+    void   Calculate(double,double,double,double);
     double AlphaSPDF(double);
-    double GetXPDF(const ATOOLS::Flavour &);
+    double GetXPDF(const ATOOLS::Flavour);
 
-    double GetXMin()   { return 0.; }
-    double GetXMax()   { return 1.; }
-    double GetQ2Min()  { return 1.; }
-    double GetQ2Max()  { return 1.e12; }
-    ATOOLS::Flavour Bunch()                { return m_bunch; }
-    std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
+    void AssignKeys(ATOOLS::Integration_Info *const info);
+
   };
-
 
   /*!
     \class CTEQ6_Fortran_Interface
@@ -66,6 +67,7 @@ namespace PDF {
     package usually scales are handled as squares of scales, whereas within the CTEQ6 package 
     the scales come without squaring.
   */
+
 }
  
 #endif

@@ -13,6 +13,11 @@ using namespace PDF;
 PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _order) : 
   m_izetta(_izetta), m_order(_order)
 {
+  m_xmin=1.e-6;
+  m_xmax=.999999;
+  m_q2min=0.25;
+  m_q2max=1.e14;
+
   m_bunch  = _bunch;
   m_partons.push_back(m_bunch);
   m_type   = std::string("PDF_")+std::string(m_bunch.Name());
@@ -21,10 +26,10 @@ PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _ord
   m_alpha  = (*aqed)(sqr(rpa.gen.Ecms()));
 
   double L = log(sqr(rpa.gen.Ecms()/m_bunch.PSMass()));
-  m_beta   = (*aqed)(sqr(m_bunch.PSMass()))/M_PI*(L-1.);
+  m_exponent = m_beta = (*aqed)(sqr(m_bunch.PSMass()))/M_PI*(L-1.);
 }
 
-double PDF_Electron::GetXPDF(const ATOOLS::Flavour & fl) {
+double PDF_Electron::GetXPDF(const ATOOLS::Flavour  fl) {
   if (fl==m_bunch) return m_xpdf;
   return 0.;
 }
@@ -37,7 +42,7 @@ void PDF_Electron::Output() {
 	   <<"          alpha(MZ) = "<<(*aqed)(sqr(91.2))<<std::endl;
 }
 
-void PDF_Electron::Calculate(const double x, const double Q2) 
+void PDF_Electron::Calculate(double x,double z,double kp2,double Q2) 
 {
   m_xpdf  = 0.;
   m_alpha = (*aqed)(Q2);
@@ -92,6 +97,9 @@ void PDF_Electron::Calculate(const double x, const double Q2)
   if (x>0.9999) m_xpdf *= pow(100.,m_beta/2)/(pow(100.,m_beta/2)-1.);
 }
 
+void PDF_Electron::AssignKeys(ATOOLS::Integration_Info *const info)
+{
+}
 
 
 
