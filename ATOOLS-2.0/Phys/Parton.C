@@ -113,7 +113,7 @@ void Parton::Copy(Parton * in)  {
   m_dec_time  = in->m_dec_time;
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
-  p_flow      = new Flow(this);
+  if (!p_flow)  p_flow  = new Flow(this);
   p_flow->SetCode(1,in->GetFlow(1));
   p_flow->SetCode(2,in->GetFlow(2));
 }

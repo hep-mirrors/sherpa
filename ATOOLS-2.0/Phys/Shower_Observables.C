@@ -30,10 +30,9 @@ using namespace std;
 void Shower_Observables::InitObservables() {
   all_obs.flav     = Flavour(kf::none);
   all_obs.jet_ini  = 0;
-  all_obs.jetrates = new Jetrates(11,1.e-6,1.,180,0);
+  //  all_obs.jetrates = new Jetrates(11,1.e-6,1.,180,0);
+  all_obs.jetrates = new Jetrates(11,1.e-6,1.,120,0);
   all_obs.multi    = new Multiplicity(00,-0.5,50.5,51,0);
-//   all_obs.wz_pt    = new PT_Distribution(00,0.,250.,125,1,Flavour(kf::W));
-//   all_obs.jet_pt   = new PT_Distribution(00,0.,250.,125,6,Flavour(kf::jet));
   all_obs.wz_pt    = new PT_Distribution(00,0.,200.,40,1,Flavour(kf::W));
   all_obs.jet_pt   = new PT_Distribution(00,0.,200.,40,6,Flavour(kf::jet));
   all_obs.sum      =0.;
@@ -73,12 +72,13 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
   }
 
   // looking for Final State particles
+  //  cout<< " ---" <<endl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
 
-      if (!PartonIsInList(p,pl) && (*blit)->Type()[0]!='S' && 
-	  ((p->Info()=='F') || (p->Info()=='H' && p->Status()!=2 ))) {
+      if (!PartonIsInList(p,pl) && (*blit)->Status()==1 && 
+	  (((p->Info()=='F') || (p->Info()==' ') || p->Info()=='H') && p->Status()!=2 )) {
 
 	//	cout<<p<<endl;
 	pl.push_back(p);
@@ -87,6 +87,7 @@ void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double val
     }
   }
 
+  //  cout<< " ---" <<endl;
 
   //  fill histograms (for all events)
   all_obs.jetrates->Evaluate(pl,value);
@@ -434,7 +435,7 @@ void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
       Parton * p = (*blit)->OutParton(i);
-      if (!PartonIsInList(p,pl) && (*blit)->Type()[0]!='S' && 
+      if (!PartonIsInList(p,pl) && (*blit)->Status()==1 && 
 	  ((p->Info()=='F') || ((*blit)->Type()[0]!='S' &&  p->Info()=='H')))
 	pl.push_back(p);
     }
@@ -629,7 +630,7 @@ void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value)
       Parton * p = (*blit)->OutParton(i);
 //       cout<<" check "<<p<<endl;
       if ((p->Info()=='F') ||  
-	  (p->Info()=='H' && p->Status()!=2 ) && (*blit)->Type()[0]!='S' ){
+	  (p->Info()=='H' && p->Status()!=2 ) && (*blit)->Status()==1 ){
 // 	cout<<" added"<<endl;
 	if (!PartonIsInList(p,pl)) pl.push_back(p);
       }

@@ -108,9 +108,10 @@ Parton * Blob::RemoveInParton(Parton * _part) {
   for (Parton_Queue::iterator part = m_inpartons.begin();
        part != m_inpartons.end(); ++part) {
     if ((*part)==_part) {
+      Parton * p = (*part);
       m_inpartons.erase(part);
-      (*part)->SetDecayBlob(NULL);
-      return (*part);
+      p->SetDecayBlob(NULL);
+      return p;
     }
   }
   return NULL;
@@ -121,9 +122,10 @@ Parton * Blob::RemoveOutParton(Parton * _part) {
   for (Parton_Queue::iterator part = m_outpartons.begin();
        part != m_outpartons.end(); ++part) {
     if ((*part)==_part) {
+      Parton * p = (*part);
       m_outpartons.erase(part);
-      (*part)->SetProductionBlob(NULL);
-      return (*part);
+      p->SetProductionBlob(NULL);
+      return p;
     }
   }
   return NULL;
@@ -175,14 +177,14 @@ void Blob::DeleteOwnedPartons() {
   msg.Debugging()<<"In DeleteOwnedPartons() for blob no. : "<<m_id<<" with "
       <<m_inpartons.size()<<" -> "<<m_outpartons.size()<<std::endl;
   for (int i=m_inpartons.size()-1;i>=0;i--)  {
-    //     msg.Debugging()<<"Try to delete inparton : "<<i<<"/"<<m_inpartons.size()-1<<"  "<<int(m_inpartons[i])<<std::endl;
+    //    msg.Debugging()<<"Try to delete inparton : "<<i<<"/"<<m_inpartons.size()-1<<"  "<<int(m_inpartons[i])<<"  no :"<<m_inpartons[i]->Number()<<std::endl;
     DeleteInParton(m_inpartons[i]);
-    //     msg.Debugging()<<"Succeeded."<<std::endl;
+    //    msg.Debugging()<<"Succeeded."<<std::endl;
   }
   for (int i=m_outpartons.size()-1;i>=0;i--) {
-    //     msg.Debugging()<<"Try to delete outparton : "<<i<<"/"<<m_outpartons.size()-1<<"  "<<int(m_outpartons[i])<<std::endl;
+    //    msg.Debugging()<<"Try to delete outparton : "<<i<<"/"<<m_outpartons.size()-1<<"  "<<int(m_outpartons[i])<<"  no :"<<m_outpartons[i]->Number()<<std::endl;
     DeleteOutParton(m_outpartons[i]);
-    //     msg.Debugging()<<"Succeeded."<<std::endl;
+    //    msg.Debugging()<<"Succeeded."<<std::endl;
   }
   m_inpartons.clear();
   m_outpartons.clear();
