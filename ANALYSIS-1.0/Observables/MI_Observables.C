@@ -4,6 +4,7 @@ using namespace ANALYSIS;
 
 #include "MyStrStream.H"
 #include "Kt_Algorithm.H"
+#include "Shell_Tools.H"
 #include <algorithm>
 
 template <class Class>
@@ -103,45 +104,89 @@ DECLARE_GETTER(MI_Statistics_Getter,"MIStats",
 Primitive_Observable_Base * 
 MI_Statistics_Getter::operator()(const String_Matrix &parameters) const
 {
+  size_t scales=5;
   std::string listname="Analysed";
-  if (parameters.size()>0 && parameters[0].size()>0) listname=parameters[0][0];
-  return new MI_Statistics(listname);
+  if (parameters.size()>0 && parameters[0].size()>0) {
+    scales=ATOOLS::ToType<int>(parameters[0][0]);
+    if (parameters[0].size()>1) listname=parameters[0][1];
+  }
+  return new MI_Statistics(ATOOLS::Max((size_t)1,scales),listname);
 }
 
 void MI_Statistics_Getter::PrintInfo(std::ostream &str,const size_t width) const
 { 
-  str<<"[list]"; 
+  str<<"[scales] [list]"; 
 }
 
 #include "Primitive_Analysis.H"
+#include "Run_Parameter.H"
 
 #include <fstream>
 
 using namespace ATOOLS;
 
-MI_Statistics::MI_Statistics(const std::string & listname, int type):
+MI_Statistics::MI_Statistics(const size_t scales,const std::string & listname, 
+			     int type):
   Primitive_Observable_Base(type,0,100,100,NULL) 
 {
   m_name="MI_Statistics.dat";
   m_type=type;
   m_listname=listname;
   m_splitt_flag=false;
+  m_scales.resize(scales);
+  double max=ATOOLS::rpa.gen.Ecms()/2.0;
+  for (size_t i=0;i<scales;++i) 
+    m_scales[i] = new ATOOLS::Histogram(10,max*1.0e-5,max,200);
+}
+
+MI_Statistics::~MI_Statistics()
+{
+  for (size_t i=0;i<m_scales.size();++i) delete m_scales[i];
 }
 
 void MI_Statistics::Evaluate(const Blob_List &  blobs,double weight,int ncount)
 {
   unsigned int number=0;
   for (Blob_List::const_iterator bit=blobs.begin();bit!=blobs.end();++bit) {
-    if ((*bit)->Type()==btp::Hard_Collision) {
+    double scale=0.0;
+    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision) {
       ++number;
+      ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
+      if (info!=NULL) scale=info->Get<double>();
     }
+    if (number-1<m_scales.size() && scale!=0.0) 
+      m_scales[number-1]->Insert(scale,weight,ncount);
   }
   p_histo->Insert(number,weight,ncount);
 }
 
+void MI_Statistics::EndEvaluation(double scale) 
+{
+  p_histo->Finalize();
+  if (scale!=1.) p_histo->Scale(scale);
+  p_histo->Output();
+  for (size_t i=0;i<m_scales.size();++i) {
+    m_scales[i]->Finalize();
+    if (scale!=1.) m_scales[i]->Scale(scale);
+    m_scales[i]->Output();
+  }
+}
+
+void MI_Statistics::Output(const std::string & pname) 
+{
+  if (p_histo) {
+    int  mode_dir = 448;
+    ATOOLS::MakeDir((pname).c_str(),mode_dir); 
+    p_histo->Output((pname+std::string("/")+m_name).c_str());
+  }
+  for (size_t i=0;i<m_scales.size();++i) {
+    m_scales[i]->Output(pname+"/MIScale"+m_listname+"_"+ATOOLS::ToString(i)+".dat");
+  }
+}
+
 Primitive_Observable_Base * MI_Statistics::Copy() const 
 {
-  return new MI_Statistics(m_listname,m_type);
+  return new MI_Statistics(m_scales.size(),m_listname,m_type);
 }
 
 DEFINE_OBSERVABLE_GETTER(Forward_Backward_Eta_Correlation,

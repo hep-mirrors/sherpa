@@ -8,11 +8,18 @@ namespace ANALYSIS {
 
 
   class MI_Statistics: public Primitive_Observable_Base {  
+  private:
+
+    std::vector<ATOOLS::Histogram*> m_scales;
+
   public:
 
-    MI_Statistics(const std::string &listname,int mode=0);
+    MI_Statistics(const size_t scales,const std::string &listname,int mode=0);
+    ~MI_Statistics();
 
     void Evaluate(const ATOOLS::Blob_List &blobs,double weight=1.,int ncount=1);
+    void EndEvaluation(double scale);
+    void Output(const std::string & pname);
 
     Primitive_Observable_Base *Copy() const;
 
