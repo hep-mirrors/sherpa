@@ -3,6 +3,7 @@
 #include "Run_Parameter.H"
 #include "Running_AlphaQED.H"
 #include "Running_AlphaS.H"
+#include "Flow.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -109,11 +110,20 @@ template <>
 Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_lnulb>(const size_t nin,const size_t nout,
 							const ATOOLS::Flavour *flavours)
 {
-  if ((flavours[2].IsUptype() && flavours[2].IntCharge()==0 && flavours[3].IsDowntype() && 
-       flavours[0].IsUptype() && flavours[0].IsAnti() && flavours[1].IsDowntype()) ||
-      (flavours[3].IsUptype() && flavours[3].IntCharge()==0 && flavours[2].IsDowntype() && 
-       flavours[1].IsUptype() && flavours[1].IsAnti() && flavours[0].IsDowntype())){ 
-    return new Off_Shell_q1q2b_lnulb(nin,nout,flavours); 
+  if (!flavours[0].IsQuark() || !flavours[2].IsLepton()) return NULL;
+  bool up[4], anti[4];
+  for (short int i=0;i<4;++i) {
+    if (flavours[i].IsUptype()) up[i]=true;
+    else if (!flavours[i].IsDowntype()) return NULL;
+    else up[i]=false;
+    anti[i]=flavours[i].IsAnti();
+  }
+  if (anti[0]==anti[1] || anti[2]==anti[3]) return NULL;
+  if ((up[0] && !up[1] && up[2] && !up[3] && anti[0]==anti[2]) ||
+      (!up[0] && up[1] && up[2] && !up[3] && anti[1]==anti[2]) ||
+      (up[0] && !up[1] && !up[2] && up[3] && anti[1]==anti[2]) ||
+      (!up[0] && up[1] && !up[2] && up[3] && anti[0]==anti[2])){ 
+    return new Off_Shell_q1q2b_q3q4b(nin,nout,flavours); 
   }
   return NULL;
 }
@@ -122,28 +132,31 @@ Off_Shell_q1q2b_lnulb::Off_Shell_q1q2b_lnulb(const size_t nin,const size_t nout,
 					     const ATOOLS::Flavour *flavours):
   Single_XS(nin,nout,flavours) 
 {
-  int ints[2];
-  for (short int i=0;i<2;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
+  int ints[4];
+  for (short int i=0;i<4;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
   if (flavours[0].IsDowntype()) std::swap(ints[0],ints[1]);
-  m_ckm2=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
+  if (flavours[2].IsDowntype()) std::swap(ints[2],ints[3]);
+  m_ckm2[0]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
+  m_ckm2[1]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[2]/2-1,ints[3]/2));
+  if (m_ckm2[1]==0.) m_ckm2[1]=1.;
   m_mw2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
   m_ww2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
   m_aqed=MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
   m_sin2tw=ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
-  m_kappa=1./(4.*m_sin2tw);
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  m_barred=flavours[0].IsAnti();
-  p_colours[0][m_barred]=p_colours[1][1-m_barred]=500;
-  m_colfac=1./3.;
+  p_colours[0][flavours[0].IsAnti()]=p_colours[1][1-flavours[0].IsAnti()]=ATOOLS::Flow::Counter();
+  p_colours[0][flavours[2].IsAnti()]=p_colours[1][1-flavours[2].IsAnti()]=ATOOLS::Flow::Counter();
+  m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
   m_nvector=m_nvector+2;
   CreateMomenta(m_nvector);
 }
 
 double Off_Shell_q1q2b_lnulb::operator()(double s,double t,double u) 
 {
-  if (s<m_threshold) return 0.;
-  return ATOOLS::sqr(4.*M_PI*m_aqed/m_kappa)*m_colfac*m_ckm2*ATOOLS::sqr(1+(1.+2.*t/s))*
-    m_mw2*m_mw2/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
+  double sc=p_momenta[0]*p_momenta[2];
+  if (m_swaped) sc=p_momenta[1]*p_momenta[2];
+  return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*16*m_ckm2[0]*m_ckm2[1]*
+    ATOOLS::sqr(sc)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
 }
 
 bool Off_Shell_q1q2b_lnulb::SetColours(double s,double t,double u) 
@@ -153,6 +166,75 @@ bool Off_Shell_q1q2b_lnulb::SetColours(double s,double t,double u)
 }
 
 double Off_Shell_q1q2b_lnulb::KFactor(double scale) 
+{
+  double CF=3.;
+  switch (m_kfactorscheme) {
+  case 10:
+    return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
+  }
+  return 1.;
+}
+
+template <> 
+Single_XS *Single_XS::GetProcess<Off_Shell_q1q2b_q3q4b>(const size_t nin,const size_t nout,
+							const ATOOLS::Flavour *flavours)
+{
+  if (!flavours[0].IsQuark() || !flavours[2].IsQuark()) return NULL;
+  bool up[4], anti[4];
+  for (short int i=0;i<4;++i) {
+    if (flavours[i].IsUptype()) up[i]=true;
+    else if (!flavours[i].IsDowntype()) return NULL;
+    else up[i]=false;
+    anti[i]=flavours[i].IsAnti();
+  }
+  if (anti[0]==anti[1] || anti[2]==anti[3]) return NULL;
+  if ((up[0] && !up[1] && up[2] && !up[3] && anti[0]==anti[2]) ||
+      (!up[0] && up[1] && up[2] && !up[3] && anti[1]==anti[2]) ||
+      (up[0] && !up[1] && !up[2] && up[3] && anti[1]==anti[2]) ||
+      (!up[0] && up[1] && !up[2] && up[3] && anti[0]==anti[2])){ 
+    return new Off_Shell_q1q2b_q3q4b(nin,nout,flavours); 
+  }
+  return NULL;
+}
+
+Off_Shell_q1q2b_q3q4b::Off_Shell_q1q2b_q3q4b(const size_t nin,const size_t nout,
+					     const ATOOLS::Flavour *flavours):
+  Single_XS(nin,nout,flavours) 
+{
+  int ints[4];
+  for (short int i=0;i<4;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
+  if (flavours[0].IsDowntype()) std::swap(ints[0],ints[1]);
+  if (flavours[2].IsDowntype()) std::swap(ints[2],ints[3]);
+  m_ckm2[0]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
+  m_ckm2[1]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[2]/2-1,ints[3]/2));
+  if (m_ckm2[1]==0.) m_ckm2[1]=1.;
+  m_mw2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass());
+  m_ww2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Width());
+  m_aqed=MODEL::aqed->Aqed((ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())));
+  m_sin2tw=ATOOLS::rpa.gen.ScalarConstant(std::string("sin2_thetaW"));
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  p_colours[0][flavours[0].IsAnti()]=p_colours[1][1-flavours[0].IsAnti()]=ATOOLS::Flow::Counter();
+  p_colours[0][flavours[2].IsAnti()]=p_colours[1][1-flavours[2].IsAnti()]=ATOOLS::Flow::Counter();
+  m_resonances.push_back(ATOOLS::Flavour(ATOOLS::kf::W));
+  m_nvector=m_nvector+2;
+  CreateMomenta(m_nvector);
+}
+
+double Off_Shell_q1q2b_q3q4b::operator()(double s,double t,double u) 
+{
+  double sc=p_momenta[0]*p_momenta[2];
+  if (m_swaped) sc=p_momenta[1]*p_momenta[2];
+  return ATOOLS::sqr(M_PI*m_aqed/m_sin2tw)*16*m_ckm2[0]*m_ckm2[1]*
+    ATOOLS::sqr(sc)/(ATOOLS::sqr(s-m_mw2)+m_mw2*m_ww2); 
+}
+
+bool Off_Shell_q1q2b_q3q4b::SetColours(double s,double t,double u) 
+{ 
+  m_scale=s;
+  return true; 
+}
+
+double Off_Shell_q1q2b_q3q4b::KFactor(double scale) 
 {
   double CF=3.;
   switch (m_kfactorscheme) {
