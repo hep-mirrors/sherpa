@@ -168,7 +168,6 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
     return 1;
   }
 
-  cout<<"Both daughters exist."<<endl;
   //  check if already enough colours
   Knot * test=0;
   
@@ -212,37 +211,36 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
     
     return ( SetColours(d1,kin) && SetColours(d2,kin) );
   }
-
-  else cout<<"Some colours unknown ..."<<endl;
+  else msg.Tracking()<<"Some colours unknown ..."<<endl;
 
   Knot * partner, * nopart;
   if (mo->part->Flav().Strong()) {
     if (mo->part->Flav().IsQuark()) {
-      cout<<"Mother is quark : "<<mo->part->Flav()<<endl;
+      msg.Tracking()<<"Mother is quark : "<<mo->part->Flav()<<endl;
       partner = d1; nopart = d2;
       if (d2->part->Flav().IsQuark()) {
 	partner = d2;
 	nopart  = d1;
       }
-      cout<<"Daughter/partner : "<<partner->part->Flav()<<" "<<nopart->part->Flav()<<endl;
+      msg.Tracking()<<"Daughter/partner : "<<partner->part->Flav()<<" "<<nopart->part->Flav()<<endl;
       if ((partner->part->Flav().IsQuark()) && (partner->part->Flav().IsAnti()) && 
 	  (nopart->part->Flav().IsGluon())) {
 	partner->part->SetFlow(2,-1);
 	nopart->part->SetFlow(1,partner->part->GetFlow(2));
 	nopart->part->SetFlow(2,mo->part->GetFlow(2));
-	cout<<"Daughter/partner : "
+	msg.Tracking()<<"Daughter/partner : "
 	    <<partner->part->GetFlow(1)<<" "<<partner->part->GetFlow(2)<<"  : "
 	    <<nopart->part->GetFlow(1)<<" "<<nopart->part->GetFlow(2)<<endl;
       } 
       if ((partner->part->Flav().IsQuark()) && (!partner->part->Flav().IsAnti()) && 
 	  (nopart->part->Flav().IsGluon())) {
-	cout<<"try to set colours ..."<<endl;
+	msg.Tracking()<<"try to set colours ..."<<endl;
 	partner->part->SetFlow(1,-1);
-	cout<<"try to set colours ... 1 "<<mo->part->GetFlow(1)<<endl;
+	msg.Tracking()<<"try to set colours ... 1 "<<mo->part->GetFlow(1)<<endl;
 	nopart->part->SetFlow(1,mo->part->GetFlow(1));
-	cout<<"try to set colours ... 2 "<<endl;
+	msg.Tracking()<<"try to set colours ... 2 "<<endl;
 	nopart->part->SetFlow(2,partner->part->GetFlow(1));
-	cout<<"try to set colours ... 3 "<<endl;
+	msg.Tracking()<<"try to set colours ... 3 "<<endl;
       } 
       if ( (partner->part->Flav().IsQuark()) && (!(nopart->part->Flav().Strong())) ) {
 	partner->part->SetFlow(1,mo->part->GetFlow(1));
@@ -250,7 +248,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
       }
     } 
     else if (mo->part->Flav().IsGluon()) {
-      cout<<"Mother is gluon : "<<mo->part->Flav()<<endl;
+      msg.Tracking()<<"Mother is gluon : "<<mo->part->Flav()<<endl;
       msg.Debugging()<<"g->gg :"<<mo->part->GetFlow(1)<<"/"<<mo->part->GetFlow(2)<<endl;
       if (mo->prev) {
 	if ( (d1->part->Flav().IsQuark()) && (d2->part->Flav().IsQuark())) {
@@ -309,7 +307,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
     }
   }
   else {
-      cout<<"Mother is colour neutral : "<<mo->part->Flav()<<endl;
+      msg.Tracking()<<"Mother is colour neutral : "<<mo->part->Flav()<<endl;
     // colour neutral mother
     if ((d1->part->Flav().Strong()) && (d2->part->Flav().Strong())) {      
       if ( (d1->part->Flav().IsQuark()) && (d2->part->Flav().IsQuark())) {
