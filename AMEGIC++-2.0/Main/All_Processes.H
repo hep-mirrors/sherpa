@@ -10,8 +10,7 @@ namespace AMEGIC {
   //! The container for a list of processes.
   class All_Processes : public Process_Group {
   public:
-    int  InitAllProcesses(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
-			  std::vector<double> &,std::vector<Single_Process *> &);
+    int  InitAllProcesses(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&);
 
     void Add(Process_Base *);
     void SelectOne();

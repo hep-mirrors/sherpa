@@ -582,7 +582,7 @@ void Process_Group::SetAtoms(bool _atoms) { m_atoms = _atoms; }
   ----------------------------------------------------------------------------------*/
 
 int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,Vec4D *& testmoms,
-				 vector<double> & results,vector<Single_Process *> & links,
+				 vector<Single_Process *> & links,vector<Single_Process *> & errs,
 				 int & totalsize, int & procs)
 {
   int okay = 1;
@@ -594,7 +594,7 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
 		   <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
     if (m_atoms) { delete [] testmoms; testmoms = 0; }
 
-    switch (m_procs[i]->InitAmplitude(model,top,testmoms,results,links,totalsize,procs)) {
+    switch (m_procs[i]->InitAmplitude(model,top,testmoms,links,errs,totalsize,procs)) {
     case -2 : 
       msg.Error()<<"Error in creation of amplitude "<<m_procs[i]->Name()<<endl;
       return -2;
@@ -611,7 +611,26 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
     }
   }
 
-  bool flag;
+  bool flag = 1;
+  if (errs.size()>0){
+    double sum = 0;
+    for (int i=0;i<m_procs.size();i++) sum+=m_procs[i]->Result();
+
+    for (int i=0;i<errs.size();i++) 
+      if (!ATOOLS::IsZero(errs[i]->Result()/sum)) flag = 0;
+    if (!flag) return -2;
+    
+    //delete
+    for (int i=0;i<errs.size();i++) 
+      for (int j=0;j<m_procs.size();j++) 
+	if (errs[i]->Name() == m_procs[j]->Name()) {
+	  deletethem.push_back(m_procs[j]->Name());
+	  msg.Out()<<"Faulty process "<<m_procs[j]->Name()<<" is negligible"<<endl
+		   <<"   delete it."<<endl;
+	}
+    errs.clear();
+  }
+
   for (int i=0;i<m_procs.size();i++) {
     flag = 0;
     if (m_procs[i]->Size() == 0) flag = 1;
@@ -631,7 +650,6 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
 
   if (okay==0) {
     links.clear();
-    results.clear();
     for (int i=0;i<m_procs.size();i++) if (m_procs[i]) delete (m_procs[i]); 
     m_procs.clear();
   }

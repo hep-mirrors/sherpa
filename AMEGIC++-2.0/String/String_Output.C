@@ -129,7 +129,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   cfile<<"}"<<endl<<endl;
   lines+=25;
 
-  cfile<<"Complex "<<pID<<"::Evaluate"<<"(int& m,int& n)"<<endl;
+  cfile<<"Complex "<<pID<<"::Evaluate"<<"(int m,int n)"<<endl;
   cfile<<"{"<<endl;
   cfile<<"  if (cl[n]) return M[n][m];"<<endl;
   cfile<<"  switch (n) {"<<endl;
@@ -144,8 +144,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
     }
     if (hel->On(ihel)==0) 
       if (hel->Partner(ihel)!=-1) {
-	cfile<<"    case "<<ihel<<": return Evaluate(m,"<<hel->Partner(ihel)<<");"
-	     <<ihel<<"();"<<endl;
+	cfile<<"    case "<<ihel<<": return Evaluate(m,"<<hel->Partner(ihel)<<");"<<endl;
 	lines++;
       }
   }  
@@ -490,7 +489,7 @@ void String_Output::Make_Header(ofstream &header)
   header<<"  "<<pID<<"(Basic_Sfuncs* _BS);"<<endl; 
   header<<"  ~"<<pID<<"();"<<endl;
   header<<"  void SetCouplFlav(std::vector<Complex>&);"<<endl;
-  header<<"  Complex Evaluate(int&,int&);"<<endl;
+  header<<"  Complex Evaluate(int,int);"<<endl;
   header<<"  void    Calculate();"<<endl;
 }
 

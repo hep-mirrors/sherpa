@@ -59,8 +59,8 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     int            InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
-				 std::vector<double> &,std::vector<Single_Process *> &, 
-				 int &, int &);
+				 std::vector<Single_Process *> &,
+				 std::vector<Single_Process *> &, int &, int &);
     int            InitAmplitude(Interaction_Model_Base *,Topology *) { return 1; }
     bool           SetUpIntegrator();
     void           InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>);

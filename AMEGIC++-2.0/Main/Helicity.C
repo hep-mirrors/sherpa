@@ -93,7 +93,13 @@ Helicity::~Helicity()
   delete [] p_angles;
 }
 
+bool Helicity::IsContrib(int i,int* pm,int length)
+{
+  if (!pm) return 1;
 
+  for (int j=0;j<length;j++) if(pm[j]<99 && p_slist[i].s[j]!=pm[j]) return 0;
+  return 1;
+}
 
 
 

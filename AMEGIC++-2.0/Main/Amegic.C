@@ -77,11 +77,9 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
   m_nmax             = ATOOLS::Max(m_nmax,4);
   p_top              = new Topology(m_nmax);
 
-  vector<double>           results;
-  vector<Single_Process *> links;
   ATOOLS::Vec4D * moms  = 0;
 
-  switch (p_procs->InitAllProcesses(p_model,p_top,moms,results,links)) { 
+  switch (p_procs->InitAllProcesses(p_model,p_top,moms)) { 
   case 1  : 
     return 1;
   case 0  : 
@@ -318,6 +316,7 @@ void Amegic::ReadInProcessfile(string file)
 	      if (plavs[i].DoFNumber()>1 && beam_is_poled[i]) { single = 0; break; }
 	    } 
 	    
+
 	    double summass = 0.;
 	    for (int i=0;i<nFS;i++)
 	      summass += flavs[i+nIS].Mass();

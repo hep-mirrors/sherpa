@@ -59,9 +59,9 @@ void All_Processes::RescaleXSec(double) {
   ----------------------------------------------------------------------------------*/
 
 
-int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * top,Vec4D *& moms,
-				    vector<double> & results,vector<Single_Process *> & links)
+int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * top,Vec4D *& moms)
 {
+  vector<Single_Process *> links,errs;
   bool okay     = 1;
   int totalsize = 0;
   int procs     = 0;
@@ -71,7 +71,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
 		   <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
     if (moms) { delete [] moms; moms = 0; }
 
-    switch(m_procs[i]->InitAmplitude(model,top,moms,results,links,totalsize,procs)) {
+    switch(m_procs[i]->InitAmplitude(model,top,moms,links,errs,totalsize,procs)) {
     case 1:break;
     case 0:okay = 0;break;
     default:
@@ -88,7 +88,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
   }
 
   if (okay) {
-    for (int i=0;i<results.size();i++) {
+    for (int i=0;i<links.size();i++) {
       msg.Debugging()<<"========================================================="<<endl
 		     <<"========================================================="<<endl
 		     <<"All_Processes::SetUpIntegrator for "<<links[i]->Name()<<endl;

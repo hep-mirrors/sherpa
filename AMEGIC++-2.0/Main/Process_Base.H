@@ -90,7 +90,7 @@ namespace AMEGIC {
     virtual ~Process_Base();
 
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,
-				 ATOOLS::Vec4D *&,std::vector<double> &,
+				 ATOOLS::Vec4D *&,std::vector<AMEGIC::Single_Process *> &,
 				 std::vector<AMEGIC::Single_Process *> &,int &,int &)=0;
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
     virtual void   InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>)    =0;
@@ -99,6 +99,7 @@ namespace AMEGIC {
     			       PHASIC::channelinfos &,PHASIC::channelinfos &);
     virtual void   UpdateCuts(double,double);
     virtual void   InitCuts();
+    virtual double Result()   {return 0.;}
     /*------------------------------------------------------------------------------
 
       Process management

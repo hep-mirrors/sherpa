@@ -9,7 +9,7 @@ namespace AMEGIC {
   class Values {
   public:
     virtual ~Values() {}
-    virtual Complex Evaluate(int&,int&) {return Complex(0.,0.);}
+    virtual Complex Evaluate(int,int) {return Complex(0.,0.);}
     virtual void    Calculate() 
     { std::cerr<<"Wrong Method in Values::Calculate()"<<std::endl;}
     virtual void    SetCouplFlav(std::vector<Complex>&) 

@@ -11,11 +11,12 @@
 namespace AMEGIC {
   class Single_Process : public Process_Base {
   private:
-    std::string             m_ptypename,m_libname; 
+    std::string             m_ptypename,m_libname,m_pslibname; 
     Polarisation            m_pol;
     double                  m_Norm;
     double                  m_save_max;
     bool                    m_newlib;
+    double                  m_iresult;
 
     Helicity              * p_hel;
     Basic_Sfuncs          * p_BS;
@@ -55,25 +56,26 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   protected :
-    int              Tests(double &);
-    int              CheckLibraries(double);
-    int              CheckStrings(double ,Single_Process*);
+    int              Tests();
+    int              CheckLibraries();
+    int              CheckStrings(Single_Process*);
     void             WriteLibrary();
     std::string      CreateLibName();
     void             CreateMappingFile();
     bool             CreateChannelLibrary();
   public:
     bool             NewLibs() {return m_newlib;}
-    bool             FoundMappingFile(std::string &);
+    bool             FoundMappingFile(std::string &,std::string &);
     int              InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
-				   std::vector<double> &,std::vector<Single_Process *> &
-				   ,int &,int &);
+				   std::vector<Single_Process *> &,std::vector<Single_Process *> &,
+				   int &,int &);
     int              InitAmplitude(Interaction_Model_Base *,Topology *);
     void             InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>);
     void             InitDecay(Topology* top); 
     bool             SetUpIntegrator();
     bool             IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); }
     String_Handler * GetStringHandler()             { return p_shand;}
+    double           Result()                       { return m_iresult; } 
 
     /*------------------------------------------------------------------------------
 
@@ -89,6 +91,7 @@ namespace AMEGIC {
     void             WriteOutXSecs(std::ofstream & _to);
     Process_Base   * operator[] (int idx)               { return this;          }
     std::string      LibName()                          { return m_libname;     }
+    std::string      PSLibName()                        { return m_pslibname;     }
     void             SetTotalXS(int);
     void             SetScale(double _sc)               { m_scale      = _sc;   }
     void             FixISRThreshold();

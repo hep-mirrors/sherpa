@@ -63,7 +63,7 @@ namespace AMEGIC {
     //! Returns the status of a certain helicity combination.
     int  On(int i) {return p_slist[i].on;}
     //! Increases the multiplicity of a combination by one.
-    void IncreaseMultitplicity(int i) {(p_slist[i].multi)++;}  
+    void IncMultiplicity(int i) {(p_slist[i].multi)++;}  
     //! Returns the multiplicity of a certain helicity combination.
     int  Multiplicity(int i) {return p_slist[i].multi;}  
     //! Polarization factors
@@ -73,6 +73,7 @@ namespace AMEGIC {
 
     char   * PolTypes()  { return p_pol_types; }
     double * PolAngles() { return p_angles; }
+    bool IsContrib(int,int*,int);
 
     ~Helicity();
   };
