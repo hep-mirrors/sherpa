@@ -211,3 +211,33 @@ Primitive_Observable_Base * PT_Out_Thrust::Copy() const
   return new PT_Out_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
 }
 
+//================================================================================
+//================================================================================
+//================================================================================
+
+DEFINE_OBSERVABLE_GETTER(Eta_Thrust,Eta_Thrust_Getter,"EtaThrust");
+
+Eta_Thrust::Eta_Thrust(int type, double xmin, double xmax, int nbins, 
+		       const std::string & listname, const std::string & name) :
+  Event_Shapes_Observable_Base(type,xmin,xmax,nbins,name) 
+{ 
+  m_listname = listname; 
+}
+
+
+void Eta_Thrust::Evaluate(const ATOOLS::Blob_List & ,double weight, int ncount)
+{
+  Blob_Data_Base * data = (*p_ana)[m_key];
+  if (data) {
+    Vec3D thrust = data->Get<Event_Shape_EE_Data>().thrustaxis;
+    double eta = Vec4D(0.,thrust).Eta();
+    if (0<=m_xmin) eta=dabs(eta);
+    p_histo->Insert(eta,weight,ncount);
+  }
+}
+
+Primitive_Observable_Base * Eta_Thrust::Copy() const 
+{
+  return new Eta_Thrust(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
+

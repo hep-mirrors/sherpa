@@ -63,6 +63,15 @@ namespace ANALYSIS {
 		  const std::string & =std::string("PT_Out_Thrust"));
     Primitive_Observable_Base * Copy() const;
   };
+
+  class Eta_Thrust : public Event_Shapes_Observable_Base {
+  public:
+    Eta_Thrust(int type, double xmin, double xmax, int nbin, 
+	      const std::string & listname, const std::string & name =std::string("EtaThrust"));
+    void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncount);
+    Primitive_Observable_Base * Copy() const;
+  };
+
 }
 
 #endif
