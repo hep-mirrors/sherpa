@@ -9,6 +9,7 @@
 #include "Blob.H"
 #include "Blob_List.H"
 #include "Particle_List.H"
+#include "Simple_Polarisation_Info.H"
 
 namespace ATOOLS {
   class Flavour;
@@ -63,7 +64,7 @@ namespace APACIC {
 
     bool ChooseDaughter(Knot *);
 
-    void InitDaughters(Tree *,Knot *,ATOOLS::Flavour *,bool);
+    void InitDaughters(Tree *,Knot *,ATOOLS::Flavour *,ATOOLS::Simple_Polarisation_Info *,bool);
     void ResetDaughters(Knot *);
 
     void Reset(Knot *);

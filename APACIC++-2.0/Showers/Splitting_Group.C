@@ -54,6 +54,21 @@ double Splitting_Group::GetZ()
 { 
   return p_selected->GetZ();
 }
+
+double Splitting_Group::GetPhi(double z)
+{
+ return p_selected->GetPhi(z);
+}
+
+const ATOOLS::Simple_Polarisation_Info Splitting_Group::GetPolB(double z, double phi)
+{
+  return p_selected->GetPolB(z,phi);
+}
+
+const ATOOLS::Simple_Polarisation_Info Splitting_Group::GetPolC(double z, double phi, double phi_b)
+{
+  return p_selected->GetPolC(z,phi,phi_b);
+}
              
 double Splitting_Group::GetCoupling() 
 { 

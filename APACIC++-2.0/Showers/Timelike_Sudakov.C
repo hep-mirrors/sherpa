@@ -43,6 +43,8 @@ Timelike_Sudakov::Timelike_Sudakov(Timelike_Kinematics * kin, double pt2min,
   /*  (0=no photons in shower, 1=photons in shower) */
   m_direct_photons  = dataread->GetValue<int>("FS_PHOTONS",0);        
 
+  m_azimuthal_correlation = dataread->GetValue<int>("FS_ANGLE_CORR",0);
+
   m_pt2max = sqr(rpa.gen.Ecms());
   p_tools  = new Sudakov_Tools(m_cpl_scheme,model,m_pt2min,m_pt2max);
   m_t0     = 4.*m_pt2min;
@@ -140,7 +142,14 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny)
 	//      if (pt2_save>m_pt2min) {
 	if (!Veto(mother,ta_save,wa_save)) {
 	  m_ta = ta_save; 
-	  UniformPhi();
+	  if (m_azimuthal_correlation) {
+	    //	    std::cout<<"calling GetPhi from ["<<mother->kn_no<<"]"<<std::endl;
+	    m_phi = p_selected->GetPhi(m_z);
+	  }
+	  else {
+	    UniformPhi();
+	  }
+
 	  msg_Debugging()<<mother->part->Flav()<<" Select: z="<<m_z<<" t="<<m_ta<<" pt2="<<m_pt2<<std::endl;
 	  mother->z      = m_z;
 	  mother->t      = m_ta;
@@ -463,4 +472,16 @@ void Timelike_Sudakov::CheckSplittings()
 void Timelike_Sudakov::SetJetvetoPt2(const double pt2) 
 { 
   p_kin->SetJetvetoPt2(pt2); 
+}
+
+const Simple_Polarisation_Info & Timelike_Sudakov::GetPolB()
+{
+  if (m_azimuthal_correlation) m_pol_b = p_selected->GetPolB(m_z,m_phi);
+  return m_pol_b;
+}
+
+const Simple_Polarisation_Info & Timelike_Sudakov::GetPolC()
+{
+  if (m_azimuthal_correlation) m_pol_c = p_selected->GetPolC(m_z,m_phi,m_pol_b.Angle());
+  return m_pol_c;
 }

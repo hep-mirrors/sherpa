@@ -437,9 +437,11 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
     mo->part->SetStatus(2);
     Knot * au = mo->prev->left;
     int sign  = 0;
+    int mode  = 1;
     if (mo==au) {
       au      = mo->prev->right;
       sign    = 1;
+      mode    = 3;
     }
     Vec3D na(au->part->Momentum()); // aunt
     Vec3D nm(mo->part->Momentum()); // mother
@@ -451,19 +453,35 @@ bool Timelike_Kinematics::DoKinematics(Knot * const mo) const
     if (n1abs<1.e-5) {
       n1         = cross(Vec3D(0.,0.,1.),nm);
       n1abs      = n1.Abs();
+      mode = mode|4;
     }
     if (n1abs<1.e-5) {
       n1         = cross(Vec3D(0.,1.,0.),nm);
       n1abs      = n1.Abs();
+      mode = mode|8;
     }
     
     n1           = n1/n1abs;
     if (sign) n1 = -1.*n1; 
     Vec3D n2     = cross(nm,n1);
     
-    double sph=sin(mo->phi),cph=cos(mo->phi);
-    Vec3D es   = cph*n1 + sph*n2;
-    
+    double phi=mo->phi + mo->polinfo.Angle();
+    //    double sph=sin(mo->phi),cph=cos(mo->phi);
+    double bph=cos(phi),cph=-sin(phi);
+    Vec3D es   = cph*n1 + bph*n2;
+    bool test=false;
+    if (test) {
+      msg.Out()<<"==============="<<std::endl;
+      msg.Out()<<" nm ="<<nm<<"\n"
+	       <<" n1 ="<<n1<<"\n"
+	       <<" n2 ="<<n2<<"\n"
+	       <<" phi="<<mo->phi<<" ("<<180.*mo->phi/M_PI<<")\n"
+	       <<" na="<<na<<"("<<mode<<")\n";
+      msg.Out()<<" es="<<es<<"("<<acos(es*n2)<<")\n";
+      msg.Out()<<"test = "<<cross(nm,n1)*n2<<"\n";
+    }
+
+
     double cth1 = (p*p-p2*p2+p1*p1)/(2.*p*p1);
     double sth1 = sqrt(1.-sqr(cth1));
     double cth2 = (p*p+p2*p2-p1*p1)/(2.*p*p2);

@@ -2,6 +2,7 @@
 #define Splitting_Function_H
 
 #include "Flavour.H"
+#include "Simple_Polarisation_Info.H"
 #include <iostream>
 
 namespace APACIC {
@@ -19,7 +20,10 @@ namespace APACIC {
     double m_lastint;
   public:
     virtual double operator() (double) = 0;
-    virtual double GetZ()=0;             
+    virtual double GetZ()=0;         
+    virtual double GetPhi(double z);
+    virtual const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi);
+    virtual const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b);
 
     virtual double GetWeight(double,double,bool)=0;
 

@@ -17,6 +17,10 @@ namespace APACIC {
     q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
+    double GetPhi(double z);
+    const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi);
+    const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b);
+    
     double GetCoupling();
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool massterm);
@@ -33,6 +37,9 @@ namespace APACIC {
     g_gg(Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
+    double GetPhi(double z);
+    const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi);
+    const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b);
     double GetCoupling();
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool masses);
@@ -49,6 +56,9 @@ namespace APACIC {
     g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
+    double GetPhi(double z);
+    const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi);
+    const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b);
     double GetCoupling();
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool masses);
@@ -66,6 +76,9 @@ namespace APACIC {
     q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
+    double GetPhi(double z);
+    const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi);
+    const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b);
     double GetCoupling();
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool massterm);

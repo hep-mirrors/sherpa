@@ -19,6 +19,7 @@ lib_LTLIBRARIES       =	libToolsPhys.la
 libToolsPhys_la_SOURCES       =	\
 				Flavour.C \
 				Particle.C \
+			        Simple_Polarisation_Info.C \
 				Decay_Table.C \
 				Flavour_List.C \
 				Particle_List.C \
@@ -40,6 +41,7 @@ libToolsPhys_la_SOURCES       =	\
 noinst_HEADERS        =	\
 			Flavour.H \
 			Particle.H \
+			Simple_Polarisation_Info.H \
 			Flavour_List.H \
 			Particle_List.H \
 			Decay_Table.H \

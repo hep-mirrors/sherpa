@@ -29,11 +29,13 @@ namespace APACIC {
     int m_zrange_scheme;
     int m_angle_scheme;
     int m_direct_photons;
+    int m_azimuthal_correlation;
   
     // mother
     double m_wa;
     double m_ta, m_tb, m_tc, m_t0;
     double m_z, m_phi, m_pt2;
+    ATOOLS::Simple_Polarisation_Info m_pol_b, m_pol_c;
     double m_maxpt;
     ATOOLS::Flavour m_inflav;
 
@@ -47,6 +49,8 @@ namespace APACIC {
     ~Timelike_Sudakov();
 
     bool Dice(Knot * mother,Knot * granny=0);
+    const ATOOLS::Simple_Polarisation_Info & GetPolB();
+    const ATOOLS::Simple_Polarisation_Info & GetPolC();
   private:
     double CrudeInt(double zmin, double zmax) ;
 

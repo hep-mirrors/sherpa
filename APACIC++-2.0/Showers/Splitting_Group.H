@@ -34,6 +34,9 @@ namespace APACIC {
     double operator()(double z);
     double Integral(double zmin,double zmax);
     double GetZ();
+    double GetPhi(double z);
+    const ATOOLS::Simple_Polarisation_Info GetPolB(double z, double phi);
+    const ATOOLS::Simple_Polarisation_Info GetPolC(double z, double phi, double phi_b);
     double GetCoupling();
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool masses);

@@ -3,6 +3,7 @@
 
 #include "MathTools.H"
 #include "Particle.H"
+#include "Simple_Polarisation_Info.H"
 
 namespace APACIC {
   // defines one parton splitting (basic element of a Tree)
@@ -13,10 +14,12 @@ namespace APACIC {
     int stat;
     double t, tout, tmax, E2, costh, phi, z, thcrit, maxpt2, x;
     int kn_no;
+    ATOOLS::Simple_Polarisation_Info polinfo;
   public :
     Knot():left(0),right(0),prev(0),part(0),stat(0),
            t(0.),tout(0.),tmax(0.),E2(0.),costh(0.),phi(0.),z(0.),thcrit(M_PI),
-	   maxpt2(1.e10),x(0.),kn_no(-1) {};
+	   maxpt2(1.e10),x(0.),kn_no(-1),
+	   polinfo(ATOOLS::Simple_Polarisation_Info()) {};
     Knot(Knot * in);
     ~Knot();
 
@@ -51,6 +54,7 @@ namespace APACIC {
     thcrit = ink->thcrit;
     
     kn_no  = ink->kn_no;
+    polinfo= ink->polinfo;
   };
 
   inline void Knot::CopyData(Knot * ink) {
@@ -69,6 +73,7 @@ namespace APACIC {
     thcrit = ink->thcrit;
     
     kn_no  = ink->kn_no;
+    polinfo= ink->polinfo;
   }
 
   inline void Knot::Copy(Knot * ink) {

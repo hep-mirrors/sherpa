@@ -33,6 +33,31 @@ double q_qg::GetZ()
   return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran.Get());   
 }
 
+double q_qg::GetPhi(double z)
+{
+  //  std::cout<<"q_qg::GetPhi --- uniform"<<std::endl;
+  return ATOOLS::ran.Get()*2.*M_PI;
+}
+
+const ATOOLS::Simple_Polarisation_Info q_qg::GetPolB(double z, double phi) 
+{
+  return ATOOLS::Simple_Polarisation_Info();
+}
+
+const ATOOLS::Simple_Polarisation_Info q_qg::GetPolC(double z, double phi, double phi_b) 
+{
+  double phi_c,f;
+  double deno = 1./ATOOLS::sqr(1+z);
+  double nume = 1 + z*z;
+  do {
+    phi_c=ATOOLS::ran.Get()*2.*M_PI;
+    f=(nume + 2.*z*cos(2.*phi_c))*deno;
+  }
+  while (f<ATOOLS::ran.Get());
+  return ATOOLS::Simple_Polarisation_Info(1,phi_c);
+}
+
+
 double q_qg::GetCoupling()         { return m_alpha;}
 double q_qg::GetCoupling(double t) { return p_tools->AlphaS(t);}
 
@@ -84,6 +109,70 @@ double g_gg::GetZ()
 	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
 }
 
+double g_gg::GetPhi(double z)
+{
+  //  std::cout<<"g_gg::GetPhi("<<z<<") --- "<<std::endl;
+
+  double phi,f;
+  double nume1 = ATOOLS::sqr(1-z) + ATOOLS::sqr(z);
+  double nume2 = ATOOLS::sqr(z*(1-z));
+  double deno  = 1./(nume1 + 2.*nume2);
+  do {
+    phi=ATOOLS::ran.Get()*2.*M_PI;
+    f=(nume1 + nume2*cos(2.*phi))*deno;
+  } 
+  while (f<ATOOLS::ran.Get());
+  return phi;
+}
+
+const ATOOLS::Simple_Polarisation_Info g_gg::GetPolB(double z, double phi) 
+{
+  double phi_b,f;
+  double c2phi = ATOOLS::sqr(cos(phi));
+  double s2phi = 1. - c2phi;
+
+  double nume1 = (1.-z)/z;
+  double nume2 = z/(1.-z);
+  double nume3 = z*(1.-z);
+  double deno = 1./(nume1 + nume2 + nume3*c2phi);
+  do {
+    phi_b=ATOOLS::ran.Get()*2.*M_PI;
+    double c2phi_b = ATOOLS::sqr(cos(phi_b));
+    double s2phi_b = 1. - c2phi_b;
+
+    f=(nume1*c2phi_b + nume2*(s2phi*s2phi_b + c2phi*c2phi_b) + nume3*c2phi)*deno;
+  }
+  while (f<ATOOLS::ran.Get());
+  return ATOOLS::Simple_Polarisation_Info(1,phi_b);
+}
+
+const ATOOLS::Simple_Polarisation_Info g_gg::GetPolC(double z, double phi, double phi_b) 
+{
+  double phi_c,f;
+  double c2phi = ATOOLS::sqr(cos(phi));
+  double s2phi = 1. - c2phi;
+  double c2phi_b = ATOOLS::sqr(cos(phi_b));
+  double s2phi_b = 1. - c2phi_b;
+
+  double nume1 = (1.-z)/z;
+  double nume2 = z/(1.-z);
+  double nume3 = z*(1.-z);
+  double deno; // = 1./(nume1 + nume2 + nume3);
+  deno = 1./(nume1*c2phi_b + nume2*(s2phi*s2phi_b + c2phi*c2phi_b) + nume3*c2phi);
+  do {
+    phi_c=ATOOLS::ran.Get()*2.*M_PI;
+    double c2phi_c = ATOOLS::sqr(cos(phi_c));
+    double s2phi_c = 1. - c2phi_c;
+
+    f=(nume1*c2phi_b*(s2phi*s2phi_c + c2phi*c2phi_c) +
+       nume2*c2phi_c*(s2phi*s2phi_b + c2phi*c2phi_b) + 
+       nume3*c2phi*(s2phi_b*s2phi_c + c2phi_b*c2phi_c))*deno;
+  }
+  while (f<ATOOLS::ran.Get());
+  return ATOOLS::Simple_Polarisation_Info(1,phi_c);
+}
+
+
 double g_gg::GetCoupling()         { return m_alpha;}
 double g_gg::GetCoupling(double t) { return p_tools->AlphaS(t);}
 double g_gg::GetWeight(double z,double pt2,bool masses)   
@@ -132,6 +221,33 @@ double g_qq::GetZ()
   return m_zmin+(m_zmax-m_zmin)*ATOOLS::ran.Get();                       
 }
 
+double g_qq::GetPhi(double z)
+{
+  // uniform
+  //  return Splitting_Function::GetPhi(z);
+  //  std::cout<<"g_qq::GetPhi("<<z<<") ---"<<std::endl;
+
+  double phi,f;
+  double nume1 = z*z + ATOOLS::sqr(1-z);
+  double nume2 = -2.*z*(1-z);
+  do {
+    phi = ATOOLS::ran.Get()*2.*M_PI;
+    f   = nume1 + nume2*cos(2.*phi);
+  }
+  while (f<ATOOLS::ran.Get());
+  return phi;
+}
+
+const ATOOLS::Simple_Polarisation_Info g_qq::GetPolB(double z, double phi) 
+{
+  return ATOOLS::Simple_Polarisation_Info();
+}
+
+const ATOOLS::Simple_Polarisation_Info g_qq::GetPolC(double z, double phi, double phi_b) 
+{
+  return ATOOLS::Simple_Polarisation_Info();
+}
+
 double g_qq::GetCoupling()         { return m_alpha; }
 double g_qq::GetCoupling(double t) { return p_tools->AlphaS(t); }
 double g_qq::GetWeight(double z,double pt2,bool masses) 
@@ -176,6 +292,31 @@ double q_gq::GetZ()
 {
   return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
 }
+double q_gq::GetPhi(double z)
+{
+  //  std::cout<<"q_gq::GetPhi --- uniform"<<std::endl;
+
+  return ATOOLS::ran.Get()*2.*M_PI;
+}
+
+const ATOOLS::Simple_Polarisation_Info q_gq::GetPolB(double z, double phi) 
+{
+  double phi_b,f;
+  double deno = 1./ATOOLS::sqr(2-z);
+  double nume = 1. + ATOOLS::sqr(1-z);
+  do {
+    phi_b=ATOOLS::ran.Get()*2.*M_PI;
+    f=(nume + 2.*(1.-z)*cos(2.*phi_b))*deno;
+  }
+  while (f<ATOOLS::ran.Get());
+  return ATOOLS::Simple_Polarisation_Info(1,phi_b);
+}
+
+const ATOOLS::Simple_Polarisation_Info q_gq::GetPolC(double z, double phi, double phi_b) 
+{
+  return ATOOLS::Simple_Polarisation_Info();
+}
+
 
 double q_gq::GetCoupling()         { return m_alpha;}
 double q_gq::GetCoupling(double t) { return p_tools->AlphaS(t);}

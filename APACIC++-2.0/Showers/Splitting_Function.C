@@ -1,5 +1,6 @@
 #include "Splitting_Function.H"
 #include "Message.H"
+#include "Random.H"
 
 using namespace APACIC;
 
@@ -10,6 +11,21 @@ const double Splitting_Function::s_CA = s_Nc;
 const double Splitting_Function::s_TR = 1./2.;
 
 // some virtual functions
+
+double Splitting_Function::GetPhi(double z) 
+{ 
+  return 2.*M_PI*ATOOLS::ran.Get(); 
+}
+const ATOOLS::Simple_Polarisation_Info Splitting_Function::GetPolB(double z, double phi) 
+{ 
+  return ATOOLS::Simple_Polarisation_Info(); 
+}
+
+const ATOOLS::Simple_Polarisation_Info Splitting_Function::GetPolC(double z, double phi, double phi_b) 
+{ 
+  return ATOOLS::Simple_Polarisation_Info();
+}
+
 
 double Splitting_Function::CrudeInt(double z0)  
 {

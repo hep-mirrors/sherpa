@@ -94,6 +94,7 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
     }
 
     Flavour flavs[2];
+    Simple_Polarisation_Info polinfos[2];
     for (;;) {
       if (p_sud->Dice(mo)) {
 	double test_e4  =((1./z-1.)*sprime - mo->t)/(2.*sqrt(sprime));
@@ -102,7 +103,7 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
 	// init daughters
 	flavs[0]  = p_sud->GetFlB();
 	flavs[1]  = p_sud->GetFlC();
-	InitDaughters(tree,mo,flavs,1);
+	InitDaughters(tree,mo,flavs,polinfos,1);
 	int stat = EvolveJet(tree,mo);
 	if (stat==1) {
 	  return;
@@ -432,7 +433,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       jet->SetId();
       jet->SetType(btp::FS_Shower);
       jet->SetTypeSpec("APACIC++2.0");
-      jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
+      //      jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
       bl->push_back(jet);
       return;
     }
@@ -455,7 +456,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 	jet->SetId();
 	jet->SetType(btp::FS_Shower);
 	jet->SetTypeSpec("APACIC++2.0");
-	jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
+	//	jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
 	bl->push_back(jet);
       }
     }
@@ -841,6 +842,8 @@ int Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
 
   Flavour d1_flavs[2];
   Flavour d2_flavs[2];
+  Simple_Polarisation_Info d1_polinfos[2];
+  Simple_Polarisation_Info d2_polinfos[2];
   
   bool do12;
   bool diced1=0, diced2=0;
@@ -855,6 +858,8 @@ int Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
       if (p_sud->Dice(d1,g)) { // determine t,z, and flavours
 	d1_flavs[0]  = p_sud->GetFlB();
 	d1_flavs[1]  = p_sud->GetFlC();
+	d1_polinfos[0] = p_sud->GetPolB();
+	d1_polinfos[1] = p_sud->GetPolC();
 	d1->stat=1;
 	diced1=1;
       }   
@@ -867,6 +872,8 @@ int Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
       if (p_sud->Dice(d2,g)) { // determine t,z, and flavours
 	d2_flavs[0]  = p_sud->GetFlB();
 	d2_flavs[1]  = p_sud->GetFlC();
+	d2_polinfos[0] = p_sud->GetPolB();
+	d2_polinfos[1] = p_sud->GetPolC();
 	d2->stat=1;
 	diced2=1;
       }    
@@ -881,12 +888,12 @@ int Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
       int stat = p_kin->Shuffle(mo,first);
       if (stat==1) { 
 	if (d1->stat) {
-	  InitDaughters(tree,d1,d1_flavs,diced1); 
-	  diced1=0;
+	  InitDaughters(tree,d1,d1_flavs,d1_polinfos,diced1); 
+	  diced1=false;
 	}
 	if (d2->stat) {
-	  InitDaughters(tree,d2,d2_flavs,diced2); 
-	  diced2=0;
+	  InitDaughters(tree,d2,d2_flavs,d2_polinfos,diced2); 
+	  diced2=false;
 	}
 
 	return 1; 
@@ -921,7 +928,8 @@ bool Final_State_Shower::ChooseDaughter(Knot * mo)
  
 }
 
-void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs, bool diced) 
+void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs, 
+				       Simple_Polarisation_Info * mo_pols, bool diced) 
 { 
   if (!mo->left) {
     mo->left        = tree->NewKnot();
@@ -929,6 +937,7 @@ void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
   }
   if (diced) {
     mo->left->prev  = mo;
+    mo->left->polinfo = mo_pols[0];
     mo->left->part->SetFlav(mo_flavs[0]);
     mo->left->part->SetInfo('F');
     mo->left->part->SetStatus(1);
@@ -936,6 +945,7 @@ void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
     mo->left->stat  = 3;  
 
     mo->right->prev = mo;
+    mo->right->polinfo = mo_pols[1];
     mo->right->part->SetFlav(mo_flavs[1]);
     mo->right->part->SetInfo('F');
     mo->right->part->SetStatus(1);
