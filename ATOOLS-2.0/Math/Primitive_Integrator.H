@@ -2,6 +2,9 @@
 #define Primitive_Integrator_H
 
 #include "MathTools.H"
+#include "My_Limits.H"
+#include <fstream>
+#include <string>
 #include <vector>
 #include <map>
 

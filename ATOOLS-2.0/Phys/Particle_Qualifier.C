@@ -5,7 +5,7 @@
 using namespace ATOOLS;
 
 template<>
-Particle_Qualifier_Base *const Getter_Function<Particle_Qualifier_Base,std::string>::
+Particle_Qualifier_Base *Getter_Function<Particle_Qualifier_Base,std::string>::
 GetObject(const std::string &name,const std::string &parameters)
 {
   msg.Tracking()<<"Looking for Qualifier '"<<name<<"' ... ";

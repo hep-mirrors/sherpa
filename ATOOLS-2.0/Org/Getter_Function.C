@@ -15,6 +15,7 @@
 #include "Exception.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include <typeinfo>
 
 using namespace ATOOLS;
 
@@ -95,7 +96,7 @@ PrintGetterInfo(std::ostream &str,const size_t width)
 }
 
 template<class ObjectType,class ParameterType>
-ObjectType *const Getter_Function<ObjectType,ParameterType>::
+ObjectType *Getter_Function<ObjectType,ParameterType>::
 GetObject(const std::string &name,const Parameter_Type &parameters)
 {
   if (!s_exactmatch) {

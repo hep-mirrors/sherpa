@@ -35,6 +35,8 @@ namespace PDF {
 
     static SF_Set::iterator Find(const ATOOLS::Flavour &a,const ATOOLS::Flavour &b);
 
+    friend class Initializer_Function;
+
   protected:
 
     ATOOLS::Flavour        m_flavour;

@@ -2,6 +2,7 @@
 #define Debugger_inl_H
 
 #include "Debugger.H"
+#include <typeinfo>
 
 namespace ATOOLS {
 

@@ -2,6 +2,7 @@
 #define Getter_Function_H
 
 #include <map>
+#include <string>
 
 namespace ATOOLS {
 
@@ -38,8 +39,8 @@ namespace ATOOLS {
     // member functions
     static void PrintGetterInfo(std::ostream &str,const size_t width);
 
-    static Object_Type *const GetObject(const std::string &name,
-					const Parameter_Type &parameters);
+    static Object_Type *GetObject(const std::string &name,
+				  const Parameter_Type &parameters);
 
     // inline functions
     inline static void SetExactMatch(const bool exactmatch)

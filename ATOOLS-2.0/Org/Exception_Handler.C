@@ -80,13 +80,15 @@ void Exception_Handler::PrepareTerminate()
     s_noremove=true;
     s_terminatorobjects.back()->PrepareTerminate();
     s_noremove=false;
-    RemoveTerminatorObject(*--s_terminatorobjects.end());
+    std::vector<Terminator_Object*>::iterator end=s_terminatorobjects.end();
+    RemoveTerminatorObject(*--end);
   }
   while (s_terminatorfunctions.size()>0) {
     s_noremove=true;
     s_terminatorfunctions.back()();
     s_noremove=false;
-    RemoveTerminatorFunction(*--s_terminatorfunctions.end());
+    std::vector<Terminator_Function>::iterator end=s_terminatorfunctions.end();
+    RemoveTerminatorFunction(*--end);
   }
   if (s_print) msg_Tracking()<<"... prepared."<<std::endl;
 }

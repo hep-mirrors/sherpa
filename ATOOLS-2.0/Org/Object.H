@@ -2,6 +2,7 @@
 #define Object_H
 
 #include <map>
+#include <string>
 
 namespace ATOOLS {
 
