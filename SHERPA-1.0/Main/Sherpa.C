@@ -10,8 +10,25 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
+namespace SHERPA {
+  Sherpa generator;
+}
+
+extern "C" {
+  void apainit_() {
+    SHERPA::generator.InitializeTheRun(0,NULL);
+    SHERPA::generator.InitializeTheEventHandler();
+  }
+  void aparun_() {
+    SHERPA::generator.GenerateOneEvent();
+  }
+  void apaend_() {
+    SHERPA::generator.SummarizeRun();
+  }
+}
+
 Sherpa::Sherpa() :
-  p_inithandler(NULL), p_eventhandler(NULL), p_analysis(NULL)  
+  p_inithandler(NULL), p_eventhandler(NULL), p_output(NULL), p_analysis(NULL)  
 {
   m_errors = 0;
   m_trials = 100;
@@ -20,6 +37,7 @@ Sherpa::Sherpa() :
 Sherpa::~Sherpa() 
 {
   if (p_analysis)     { delete p_analysis;     p_analysis     = NULL; }
+  if (p_output)       { delete p_output;       p_output       = NULL; }
   if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
 }
