@@ -22,6 +22,7 @@ bool Foam_Interface::Initialize()
   p_ran = new TPSEMAR();
   p_foam->SetkDim(m_values.size());
   p_foam->SetnCells(2000);
+  p_foam->SetOptDrive(1);
   m_initialize=true;
   p_foam->Initialize(p_ran,this);
   double relerr;
