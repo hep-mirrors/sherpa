@@ -42,7 +42,7 @@ namespace ATOOLS {
       return "";
     }
 
-    static void PrintObjects(std::ofstream &str);
+    static void PrintObjects(std::ostream &str);
 
   };//end of class Object
 
