@@ -31,7 +31,9 @@ namespace AMEGIC {
 	       VVGS   =71,
 	       SSGS   =72,
 	       FFVGS  =73,
-	       Unknown=99}; 
+	       Unknown=99,
+	       Triangle=101//effective Higgs-PP or -GG interaction via triangle-loop
+    }; 
   };
   
   class Lorentz_Function {
@@ -107,6 +109,7 @@ namespace AMEGIC {
       case lf::VVGS  : return 3;
       case lf::FFVGS : return 1;
       case lf::SSGS  : return 2;
+      case lf::Triangle: return 2;	
       default: return 0;
       }
       //default (includes FFS, SSS and SSSS )

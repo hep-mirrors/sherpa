@@ -87,6 +87,10 @@ void Lorentz_Function::InitPermutation()
     AddPermutation( 1,1,2,0,3);
     AddPermutation( 1,2,0,1,3);  
     break;    
+  case lf::Triangle   : 
+    AddPermutation(1,0,1);
+    AddPermutation(1,1,0);  
+    break;
   default : break;
   }
   m_permcount = 0;
@@ -214,6 +218,9 @@ std::string Lorentz_Function::String(int shortversion) const
   case lf::VVGS:
     help = std::string("VVGS[") + Str(0) + std::string(",") + Str(1) 
       + std::string(",") + Str(2) + std::string("]");break;
+  case lf::Triangle:   
+    // G[0,1]
+    help = std::string("T[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
   default :
     return std::string("1");
   }     

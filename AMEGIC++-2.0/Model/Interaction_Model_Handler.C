@@ -6,6 +6,7 @@
 #include "Interaction_Model_THDM.H"
 #include "Interaction_Model_MSSM.H"
 #include "Interaction_Model_ADD.H"
+#include "Interaction_Model_SMHL.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -48,6 +49,10 @@ Interaction_Model_Base * Interaction_Model_Handler::GetModel(std::string modelty
   if (modeltype==std::string("ADD")) {
     rpa.gen.SetModelType(ATOOLS::Model_Type::ADD);
     return new Interaction_Model_ADD(p_model,cplscheme,yukscheme); 
+  }
+  if (modeltype==std::string("SMHL")) {
+    rpa.gen.SetModelType(ATOOLS::Model_Type::SMHL);
+    return new Interaction_Model_SMHL(p_model,cplscheme,yukscheme); 
   }
   
   msg.Error()<<"Error in Interaction_Model_Handler::GetModel("<<modeltype<<") : "<<endl
