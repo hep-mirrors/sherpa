@@ -26,6 +26,7 @@ libToolsPhys_la_SOURCES       =	\
 				Standard_Selector.C \
 				Blob.C \
 				Blob_List.C \
+				Momentum_Shifter.C \
 				HepEvt_Interface.C \
 				Flow.C  
 noinst_HEADERS        =	\
@@ -46,6 +47,7 @@ noinst_HEADERS        =	\
 			Flow.H \
 			Blob.H \
 			Blob_List.H \
+			Momentum_Shifter.H \
 			HepEvt_Interface.H \
 			Event.H  
 EXTRA_DIST    = $(CVSINCLUDE)

@@ -1,0 +1,228 @@
+#include "Momentum_Shifter.H"
+
+#include "Run_Parameter.H"
+#include "Message.H"
+#include "Blob.H"
+
+using namespace ATOOLS;
+
+Momentum_Shifter::Momentum_Shifter(Particle *const initial1,
+				   Particle *const initial2)
+{
+  p_initial[0]=initial1;
+  p_initial[1]=initial2;
+  Reset();
+}
+
+double Momentum_Shifter::Lambda2(double sp,double sp1,double sp2) 
+{ 
+  double lambda2=(sp-sp1-sp2)*(sp-sp1-sp2)-4.0*sp1*sp2;
+  if (!(lambda2>0.)) {
+    ATOOLS::msg.Error()<<"Momentum_Shifter::Lambda2("<<sp<<","<<sp1<<","<<sp2<<"): "
+		       <<"\\Lambda^2(s,s_1,s_2) < 0."<<std::endl;
+  }
+  return lambda2;
+}
+
+bool Momentum_Shifter::CalculateShift()
+{
+  if (!m_setshift) {
+    m_shift=Vec4D();
+  }
+  else {
+    for (short unsigned int i=0;i<4;++i) if (IsZero(m_shift[i])) m_shift[i]=0.;
+  }
+  return true;
+}
+
+bool Momentum_Shifter::DetermineDirection()
+{
+  if (m_setshift) {
+    double abs=Vec3D(m_shift).Abs();
+    if (abs==0.0) {
+      msg.Error()<<"Momentum_Shifter::DetermineDirection(): "
+		 <<"Shift has vanishing 3-momentum. Abort."<<std::endl;
+      return false;
+    }
+    m_direction=Vec4D(0.0,Vec3D(m_shift));
+    m_direction=1./abs*m_direction;
+    double max=0.0, sign=1.0;
+    for (short unsigned int i=0;i<4;++i) {
+      if (IsZero(m_direction[i])) m_direction[i]=0.;
+      if (dabs(m_direction[i])>max) {
+	max=dabs(m_direction[i]);
+	sign=Sign(m_direction[i]);
+      }
+    }
+    m_direction=sign*m_direction;
+  }
+  else if (!m_setdirection) {
+    m_direction=Vec4D(0.,0.,0.,1.);
+  }
+  return true;
+}
+
+bool Momentum_Shifter::CalculateSPerp()
+{
+  m_pold[0]=Vec4D();
+  for (short unsigned int i=1;i<3;++i) {
+    m_pold[i]=p_initial[i-1]->Momentum();
+    m_pperp[i]=Vec4D(0.0,Vec3D(m_pold[i]+(m_pold[i]*m_direction)*m_direction));
+    m_pold[0]=m_pold[0]+m_pold[i];
+  }
+  m_pperp[0]=Vec4D(0.0,Vec3D(m_pold[0]+(m_pold[0]*m_direction)*m_direction));
+  m_pnew[0]=m_pold[0]+m_shift;
+  for (short unsigned int i=1;i<3;++i) {
+    if (!m_setsp[i]) {
+      m_sp[i]=(m_pold[i]-m_pperp[i]).Abs2();
+      if (m_sp[i]<0.0) {
+	msg.Error()<<"Momentum_Shifter::CalculateSPerp(): "
+		   <<"s_{\\perp "<<i<<"} < 0. Abort."<<std::endl;
+	return false;
+      }
+    }
+  }
+  m_sp[0]=(m_pnew[0]-m_pperp[0]).Abs2();
+  if (m_sp[0]<0.0) {
+    msg.Error()<<"Momentum_Shifter::CalculateSPerp(): "
+	       <<"s_\\perp < 0. Abort."<<std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool Momentum_Shifter::ConstructMomenta()
+{
+  double E1, E2, plong1, plong2, lambda2=Lambda2(m_sp[0],m_sp[1],m_sp[2]);
+  if (lambda2<0.) {
+    ATOOLS::msg.Error()<<"Momentum_Shifter::ConstructBoost(..): "
+		       <<"\\Lambda^2("<<m_sp[0]<<","<<m_sp[1]<<","
+		       <<m_sp[2]<<") < 0. Cannot shift momenta."<<std::endl;
+    return false;
+  }
+  lambda2=sqrt(lambda2);
+  double plong=-1.0*m_pnew[0]*m_direction;
+  double yto=(m_pnew[0][0]+plong)/(m_pnew[0][0]-plong);
+  for (double sign=1.0;sign>=-1.0;sign-=2.0) {
+    E1=0.5/m_sp[0]*((m_sp[0]+m_sp[1]-m_sp[2])*m_pnew[0][0]+sign*lambda2*plong);
+    E2=m_pnew[0][0]-E1;
+    plong1=-Sign(m_pold[1]*m_direction)*sqrt(E1*E1-m_sp[1]);
+    plong2=-Sign(m_pold[2]*m_direction)*sqrt(E2*E2-m_sp[2]);
+    double spn=sqr(m_pnew[0][0])-sqr(plong1+plong2);
+    if (ATOOLS::dabs((spn-m_sp[0])/(spn+m_sp[0]))>m_accuracy) { 
+      plong1*=-1.0; 
+      spn=ATOOLS::sqr(E1+E2)-ATOOLS::sqr(plong1+plong2); 
+    }
+    if (ATOOLS::dabs((spn-m_sp[0])/(spn+m_sp[0]))>m_accuracy) continue;
+    double ytn=(m_pnew[0][0]+plong1+plong2)/(m_pnew[0][0]-plong1-plong2);
+    if (ATOOLS::dabs((ytn-yto)/(ytn+yto))>m_accuracy) { 
+      plong1*=-1.0; 
+      plong2*=-1.0; 
+      ytn=(m_pnew[0][0]+plong1+plong2)/(m_pnew[0][0]-plong1-plong2); 
+    }
+    if (ATOOLS::dabs((ytn-yto)/(ytn+yto))>m_accuracy) continue;
+    if (dabs(plong1)>dabs(plong2)) { 
+      if (Sign(plong1)==-Sign(m_pold[1]*m_direction)) break; 
+    }
+    else { 
+      if (Sign(plong2)==-Sign(m_pold[2]*m_direction)) break; 
+    }
+  }
+  m_pnew[1]=Vec4D(E1,plong1*Vec3D(m_direction))+m_pperp[1];
+  m_pnew[2]=Vec4D(E2,plong2*Vec3D(m_direction))+m_pperp[2];
+  return true;
+}
+
+bool Momentum_Shifter::Boost(Particle *const particle,const size_t catcher)
+{
+  if (m_boosted.find(particle)!=m_boosted.end()) return true;
+  if (catcher>=m_maxdepth) {
+    msg.Error()<<"Momentum_Shifter::Boost(..): "
+	       <<"Nesting of event structure is deeper than "<<m_maxdepth
+	       <<" levels.\n   Cannot adjust momenta."<<std::endl;
+    return false;
+  }
+  if (particle->DecayBlob()!=NULL) {
+    Blob *cur=particle->DecayBlob();
+    for (size_t i=0;i<(size_t)cur->NOutP();++i) {
+      if (!Boost(cur->OutParticle(i),catcher+1)) return false;
+    }
+  }
+  Vec4D p=particle->Momentum();
+  m_oldcms.Boost(p);
+  m_rotate.Rotate(p);
+  m_newcms.BoostBack(p);
+  particle->SetMomentum(p);
+  m_boosted.insert(particle);
+  return true;
+}
+
+bool Momentum_Shifter::BoostBack(Particle *const particle,const size_t catcher)
+{
+  if (m_boosted.find(particle)!=m_boosted.end()) return true;
+  if (catcher>=m_maxdepth) {
+    msg.Error()<<"Momentum_Shifter::Boost(..): "
+	       <<"Nesting of event structure is deeper than "<<m_maxdepth
+	       <<" levels.\n   Cannot adjust momenta."<<std::endl;
+    return false;
+  }
+  if (particle->DecayBlob()!=NULL) {
+    Blob *cur=particle->DecayBlob();
+    for (size_t i=0;i<(size_t)cur->NOutP();++i) {
+      if (!BoostBack(cur->OutParticle(i),catcher+1)) return false;
+    }
+  }
+  Vec4D p=particle->Momentum();
+  m_newcms.Boost(p);
+  m_rotate.RotateBack(p);
+  m_oldcms.BoostBack(p);
+  particle->SetMomentum(p);
+  m_boosted.insert(particle);
+  return true;
+}
+
+bool Momentum_Shifter::Boost()
+{
+  if (!CalculateShift()) return false;
+  if (!DetermineDirection()) return false;
+  if (!CalculateSPerp()) return false;
+  if (!ConstructMomenta()) return false;
+  m_oldcms=Poincare(m_pold[0]);
+  m_newcms=Poincare(m_pnew[0]);
+  m_newcms.Boost(m_pnew[1]); 
+  m_newcms.Boost(m_pnew[2]);
+  if (m_pnew[2]*m_direction<0.0) m_rotate=Poincare(Vec4D::ZVEC,m_pnew[2]);
+  else m_rotate=Poincare(Vec4D::ZVEC,m_pnew[1]);
+  for (short unsigned int i=1;i<3;++i) {
+    m_rotate.RotateBack(m_pnew[i]);
+    m_oldcms.BoostBack(m_pnew[i]);
+  }
+  m_boosted.clear();
+  if (!Boost(p_initial[0],0)) return false;
+  if (!Boost(p_initial[1],0)) {
+    m_boosted.clear();
+    BoostBack(p_initial[0],0);
+    return false;
+  }
+  return true;
+}
+
+bool Momentum_Shifter::Scale()
+{
+  if (!CalculateShift()) return false;
+  if (!DetermineDirection()) return false;
+  if (!CalculateSPerp()) return false;
+  if (!ConstructMomenta()) return false;
+  p_initial[0]->SetMomentum(m_pnew[1]);
+  p_initial[1]->SetMomentum(m_pnew[2]);
+  return true;
+}
+
+void Momentum_Shifter::Reset()
+{
+  m_maxdepth=100;
+  m_accuracy=rpa.gen.Accu();
+  m_setshift=false;
+  m_setdirection=false;
+  for (short unsigned int i=0;i<3;++i) m_setsp[i]=false; 
+}
