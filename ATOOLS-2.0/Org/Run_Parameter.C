@@ -73,6 +73,7 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
   else {
     return m_timer.UserTime()<limit;
   }
+  return false;
 }
 
 

@@ -127,7 +127,6 @@ template <> std::string Data_Read::GetValue<std::string>(std::string name)
 
 template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   Shorten(name);
-  Switch::code test;
   Parameter_Map::const_iterator cit=m_parameters.find(name);
   if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Switch::code>());
   std::string value = m_parameters[name];
