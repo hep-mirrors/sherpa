@@ -2,6 +2,7 @@
 #include "Primitive_Analysis.H"
 #include "Message.H"
 #include "MyStrStream.H"
+#include "Durham_Algorithm.H"
 
 #include <algorithm>
 
@@ -9,12 +10,18 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 Final_Selector::Final_Selector(const std::string & inlistname,
-			       const std::string & outlistname) :
+			       const std::string & outlistname,
+			       int mode) :
   m_inlistname(inlistname),m_outlistname(outlistname),m_ownlist(false), m_extract(false),
-  p_ktalg(NULL)
+  m_mode(mode), p_jetalg(NULL)
 {
   m_splitt_flag = false;
-  p_ktalg       = new Kt_Algorithm();
+  if (mode) {
+    p_jetalg = new Durham_Algorithm();  
+  }
+  else {
+    p_jetalg = new Kt_Algorithm();
+  }
 }
 
 
@@ -269,7 +276,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   if (it!=m_fmap.end()) {
     if (it->second.r_min>0.) {
       std::vector<double> * diffrates=new std::vector<double>();
-      p_ktalg->ConstructJets(pl_in,pl_out,diffrates,it->second.r_min);
+      p_jetalg->ConstructJets(pl_in,pl_out,diffrates,it->second.r_min);
       // add leptons
       for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
 	if ((*pit)->Flav().IsLepton()) pl_out->push_back(new Particle(*pit));
@@ -279,6 +286,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
       str<<"KtJetrates("<<it->second.r_min<<")"<<m_listname;
       std::string key;
       str>>key;
+      //      std::cout<<" creating : "<<key<<" with "<<diffrates->size()<<" elements "<<std::endl;
       p_ana->AddData(key,new Blob_Data<std::vector<double> *>(diffrates));
     }
     else {
@@ -318,7 +326,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
 
 Primitive_Observable_Base * Final_Selector::Copy() const 
 {
-  Final_Selector *fs = new Final_Selector(m_inlistname,m_outlistname);
+  Final_Selector *fs = new Final_Selector(m_inlistname,m_outlistname,m_mode);
   for (Final_Data_Map::const_iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
     fs->AddSelector(it->first,it->second);
   }
@@ -335,5 +343,5 @@ Primitive_Observable_Base * Final_Selector::Copy() const
 
 
 Final_Selector::~Final_Selector() {
-  if (p_ktalg) { delete p_ktalg; p_ktalg = NULL; }
+  if (p_jetalg) { delete p_jetalg; p_jetalg = NULL; }
 }
