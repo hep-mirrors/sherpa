@@ -132,8 +132,8 @@ void Sample_Analysis::AfterHadronization(APHYTOOLS::Blob_List * blobs, double we
     //pylist_(hepevtmode);
   }
 
-  if (!(status & 2)) return;
-  //  ana->DoAnalysis(*blobs,1.);
+  if (!(status == 2)) return;
+  ana->DoAnalysis(*blobs,weight);
 }
 
 
@@ -188,6 +188,7 @@ Analysis_Phase::Analysis_Phase(Sample_Analysis * ana, int mode) :
     break;
   case 3:
     m_name      = string("Analysis_Phase Hadronization");
+    m_type      = std::string("Hadronization");
     msg.Tracking()<<" Init "<<m_name<<endl;
     break;
   default:
@@ -212,15 +213,17 @@ bool  Analysis_Phase::Treat(APHYTOOLS::Blob_List * bl, double & weight)
     break;
   case 2:
     if (m_status) return 0;
-    if (bl->size()>1) {
+    if (bl->size()>2) {
       p_analysis->AfterPartonShower(bl,weight);
       m_status = 1;
     }
     break;
   case 3:
     if (m_status) return 0;
-    p_analysis->AfterHadronization(bl,weight);
-    m_status = 1;
+    if (bl->size()>2) {
+      p_analysis->AfterHadronization(bl,weight);
+      m_status = 1;
+    }
     break;
   default:
     msg.Out()<<" Unknow Analysis_Phase "<<m_mode<<endl;
