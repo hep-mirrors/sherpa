@@ -884,7 +884,6 @@ int Amplitude_Generator::SingleCompare(Point* p1,Point* p2)
     }
     return sw1;
   }
-
   return 0;
 }
 
@@ -940,12 +939,10 @@ int Amplitude_Generator::FindQEDOrder(Point * p,int & countQED)
   if (hit) {
     if (p->left   && (p->left->fl.IsVector() || p->left->fl.IsScalar()) && !(p->left->fl.IsGluon()))      countQED -= 1;
     if (p->right  && (p->right->fl.IsVector() || p->right->fl.IsScalar()) && !(p->right->fl.IsGluon()))   countQED -= 1;
-    //if (p->middle && (p->middle->fl.IsVector() || p->middle->fl.IsScalar())&& !(p->middle->fl.IsGluon())) countQED -= 1;
   }
   
   FindQEDOrder(p->left,countQED);
   FindQEDOrder(p->right,countQED);
-  //if (p->middle) FindQEDOrder(p->middle,countQED);
   return countQED;
 }
 
@@ -970,12 +967,10 @@ int Amplitude_Generator::FindQCDOrder(Point * p,int & countQCD)
   if (hit) {
     if (p->left   && p->left->fl.IsGluon())   countQCD -= 1;
     if (p->right  && p->right->fl.IsGluon())  countQCD -= 1;
-    //if (p->middle && p->middle->fl.IsGluon()) countQCD -= 1;
   }
   
   FindQCDOrder(p->left,countQCD);
   FindQCDOrder(p->right,countQCD);
-  //if (p->middle) FindQCDOrder(p->middle,countQCD);
   return countQCD;
 }
 
@@ -1200,23 +1195,21 @@ Point* Amplitude_Generator::FindNext(Point* p)
   if (p->right->m==0) return p;
   if ((p->middle!=0) && (p->middle->m==0)) return p;
   
-  FindNext(p->left);
-  FindNext(p->right);
-  FindNext(p->middle);
-
+  if (FindNext(p->left))   return p;
+  if (FindNext(p->right))  return p;
+  if (FindNext(p->middle)) return p;
   return 0;
-
 }
 
 int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Point*& beg_pcopy,
 				     vector<Point*>& pcollist)
 {
-  if (p->left==0 || pnext->left==0) return 0;
   
+  if (p->left==0 || pnext->left==0) return 0;
   if (p->v->nleg==4 || pnext->v->nleg==4) return 0;
   
   if (pnext->m==1) return 0;
-
+  
   if (pnext->fl.IsFermion()) return 0;
     
   int hit = 0;
@@ -1245,7 +1238,6 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
   }  
 
   //barflags 
-  
   Vertex* v = p_model->GetVertex();
   
   for (short int i=0;i<v->MaxNumber4();i++) {
@@ -1272,7 +1264,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  for (short int k=0;k<4;k++) pcopy->cpl[k] = (*v)(i)->cpl[k];
 	  //set pcopy legs
 	  
-	  if (p->left->number==pnext->number) {	    
+	  if (p->left->number==pnext->number) {
 	    pcopy->middle = pcopy->left->right;
 	    pcopy->left   = pcopy->left->left;
 	    pcopy->right  = pcopy->right;
@@ -1287,13 +1279,11 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  pnext->m  = 1;
 	  
 	  if ((*v)(i)->ncf==1) {
-	    
 	    *(pcopy->Color)   = *((*v)(i)->Color);
 	    *(pcopy->Lorentz) = *((*v)(i)->Lorentz);
 	    break;
 	  }
 	  else {
-	    
 	    for (short int k=0;k<(*v)(i)->ncf;k++) {
 	      *(pcopy->Color)   = ((*v)(i)->Color)[k];
 	      *(pcopy->Lorentz) = ((*v)(i)->Lorentz)[k];
@@ -1325,11 +1315,9 @@ int Amplitude_Generator::EvalPointlist(Point*& porig, Point*& pcopy,Point*& beg_
 				       vector<Point*>& pcollist)
 {
   if(porig==0) return 0;
-  
   if (ShrinkProps(porig,porig->right,pcopy,beg_pcopy,pcollist))    return 1;
-  
   if (ShrinkProps(porig,porig->left,pcopy,beg_pcopy,pcollist))     return 1;
-  
+    
   if (EvalPointlist(porig->left,pcopy->left,beg_pcopy,pcollist))   return 1;
   if (EvalPointlist(porig->right,pcopy->right,beg_pcopy,pcollist)) return 1;
   if (EvalPointlist(porig->middle,pcopy->middle,beg_pcopy,pcollist)) return 1;
@@ -1342,49 +1330,31 @@ void Amplitude_Generator::CheckFor4Vertices(Single_Amplitude* &first)
   Single_Amplitude* f1 = first;
   Single_Amplitude* extraAmpl;
   Single_Amplitude* f2;
+  
+  
   Point* p;
   int dep       = single_top->depth;
   Point* pcopy  = new Point[dep];
   vector<Point*> pcollist;//vector with different color structures
-  int counter   = 0;
-  int amplcount = 0;
- 
+  
   while (f1) { 
-    amplcount++;
+    if (f1->on) {
+      p = f1->GetPointlist();
+      
+      for (int i=0; i<dep; i++) p[i].m = 0; 
     
-    p = f1->GetPointlist();
-    
-    for (int i=0; i<dep; i++) p[i].m = 0; 
-    
-    while (p) {
-      //p initial Pointlist with m flags set, pcopy is the contracted Pointlist !!!
-      int ll = 0;
-      top->Copy(p,pcopy,ll);
-      if (EvalPointlist(p,pcopy,pcopy,pcollist)) {
-	if (pcollist.size()==0) {
-	  counter++;
-	  
-	  extraAmpl = new Single_Amplitude(pcopy,f1->topnum,f1->permnum,b,dep,N,top,BS,fl,shand);
-	  extraAmpl->Next = 0;
-	  
-	  f2 = first;
-	  
-	  while (f2) {
-	    if (f2->Next==0) {
-	      f2->Next = extraAmpl;
-	      break;
-	    }
-	    f2 = f2->Next;
-	  }
-	}
-	else { 
-	  for (short int j=0;j<pcollist.size();j++) {
-	    counter++;
+      while (p) {
+	//p initial Pointlist with m flags set, pcopy is the contracted Pointlist !!!
+	int ll = 0;
+	top->Copy(p,pcopy,ll);
+	if (EvalPointlist(p,pcopy,pcopy,pcollist)) {
+	  if (pcollist.size()==0) {
 	    
-	    extraAmpl = new Single_Amplitude(pcollist[j],f1->topnum,f1->permnum,b,dep,N,top,BS,fl,shand);
+	    extraAmpl = new Single_Amplitude(pcopy,f1->topnum,f1->permnum,b,dep,N,top,BS,fl,shand);
 	    extraAmpl->Next = 0;
-	    
+	  
 	    f2 = first;
+	    
 	    while (f2) {
 	      if (f2->Next==0) {
 		f2->Next = extraAmpl;
@@ -1393,12 +1363,28 @@ void Amplitude_Generator::CheckFor4Vertices(Single_Amplitude* &first)
 	      f2 = f2->Next;
 	    }
 	  }
-	  //erase all elements of pcollist
-	  pcollist.clear();
+	  else { 
+	    for (short int j=0;j<pcollist.size();j++) {
+	      
+	      extraAmpl = new Single_Amplitude(pcollist[j],f1->topnum,f1->permnum,b,dep,N,top,BS,fl,shand);
+	      extraAmpl->Next = 0;
+	      
+	      f2 = first;
+	      while (f2) {
+		if (f2->Next==0) {
+		  f2->Next = extraAmpl;
+		  break;
+		}
+		f2 = f2->Next;
+	      }
+	    }
+	    //erase all elements of pcollist
+	    pcollist.clear();
+	  }
+	  p = FindNext(p);
 	}
-	p = FindNext(p);
+	else break;
       }
-      else break;
     }
     f1 = f1->Next;
   }
