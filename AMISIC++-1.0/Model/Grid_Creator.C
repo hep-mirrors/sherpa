@@ -188,7 +188,7 @@ bool Grid_Creator::CreateOptimizedGrid()
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_maxevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
-    if ((m_events%(m_maxevents/100))==0) {
+    if ((m_events%(m_maxevents/100))==0 && m_events>0) {
       double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
       msg_Info()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
 		<<int(diff)<<" s elapsed / "
@@ -207,7 +207,7 @@ bool Grid_Creator::CreateInitialGrid()
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_initevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
-    if ((m_events%(m_initevents/100))==0) {
+    if ((m_events%(m_initevents/100))==0 && m_events>0) {
       double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
       msg_Info()<<"   "<<((100*m_events)/m_initevents)<<" % ( "
 		<<int(diff)<<" s elapsed / "

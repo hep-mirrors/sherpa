@@ -729,10 +729,10 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 			       <<weight*m_maxreduction/max<<"\n";
 		double overflow=weight*m_maxreduction/max;
 		if (overflow>m_maxreduction) {
-		  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
-				     <<"overflow = "<<overflow<<" > "
-				     <<"m_maxreduction = "<<m_maxreduction
-				     <<std::endl;
+		  msg_Tracking()<<"Simple_Chain::FillBlob(..): "
+				<<"overflow = "<<overflow<<" > "
+				<<"m_maxreduction = "<<m_maxreduction
+				<<std::endl;
 		  cur->SetBinMax(m_last[0],weight);
 		}
 		cur->SetBinExtra(m_last[0],overflow-1.0);

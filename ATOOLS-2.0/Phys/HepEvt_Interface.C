@@ -1140,8 +1140,8 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
       ueints.push_back(i);
     }
   }
-  bool create,test,inout;
-  int  intermed, pint, testint, lsize;
+  bool create,test;
+  int  pint, lsize;
   for (sit=signalints.begin();sit!=signalints.end();sit++) {
     piter = m_convertH2S.find((*sit));
     if (piter==m_convertH2S.end()) continue;
@@ -1213,7 +1213,7 @@ bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
       }
       piter->second.second = false;
     }
-    for (int i=0;i<transfer.size();i++) {
+    for (size_t i=0;i<transfer.size();i++) {
       intermeds.erase(transfer[i]);
       outs.insert(transfer[i]);
     }
