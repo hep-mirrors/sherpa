@@ -23,7 +23,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 		 ATOOLS::Selector_Data *const selectordata):
   Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
-  p_colours(NULL), m_pi(0), m_scalefactor(scalefactor)
+  p_colours(NULL), m_scalefactor(scalefactor)
 {
   Init(flavours);
   ResetSelector(selectordata);
@@ -33,7 +33,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
   Integrable_Base(nin,nout,flavours),
-  p_colours(NULL), m_pi(0)
+  p_colours(NULL)
 {
   Init(flavours);
   p_selector = new ATOOLS::No_Selector();

@@ -112,7 +112,6 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
   string selfile      = p_dataread->GetValue<string>("SELECTORFILE",string("Selector.dat"));
   p_seldata           = new Selector_Data(m_path+selfile);
 
-
   ReadInProcessfile(processfile);
 
   m_count            = p_procs->Size();
@@ -182,11 +181,13 @@ void Amegic::ReadInProcessfile(string file)
   int    _scale_scheme   = p_dataread->GetValue<int>("SCALE_SCHEME",0);
   int    _kfactor_scheme = p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   double _scale          = p_dataread->GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
-
+  int usepi              = p_dataread->GetValue<int>("PI",0);
   double scale_factor   = p_dataread->GetValue<double>("SCALE_FACTOR",1.);
   double factorization_scale_factor   = scale_factor*p_dataread->GetValue<double>("FACTORIZATION_SCALE_FACTOR",1.);
   double renormalization_scale_factor = scale_factor*p_dataread->GetValue<double>("RENOMALIZATION_SCALE_FACTOR",1.);
   rpa.gen.SetScaleFactors(factorization_scale_factor,renormalization_scale_factor);
+
+  p_procs->SetUsePI(usepi);
 
   ifstream from((m_path+file).c_str());
   if (!from) {
@@ -407,11 +408,11 @@ void Amegic::ReadInProcessfile(string file)
 	      if (single) proc = new Single_Process(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 						     order_strong,order_ew,
 						     -kfactor_scheme,-scale_scheme,fixed_scale,
-						     plavs,nex,excluded);
+						    plavs,nex,excluded,usepi);
 	      else proc = new Process_Group(nIS,nFS,flavs,p_isr,p_beam,p_seldata,2,
 					    order_strong,order_ew,
 					    -kfactor_scheme,-scale_scheme,fixed_scale,
-					    plavs,nex,excluded);
+					    plavs,nex,excluded,usepi);
 	      proc->SetEnhance(enhance_factor,maxreduction_factor,maxredepsilon);
 	      if (print_graphs) proc->SetPrintGraphs();
 	      p_procs->Add(proc);

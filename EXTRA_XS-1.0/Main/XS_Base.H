@@ -16,8 +16,6 @@ namespace EXTRAXS {
 
     int **p_colours;
 
-    unsigned int m_pi;
-
     double m_s, m_t, m_u;
     double m_scalefactor;
 

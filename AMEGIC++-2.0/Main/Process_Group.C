@@ -39,7 +39,7 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
 			     int _gen_str,int _orderQCD, int _orderEW,
 			     int _kfactorscheme,int _scalescheme,double _scale,
-			     Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
+			     Pol_Info * _pl,int _nex,Flavour * _ex_fl,int usepi) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scale,_pl,_nex,_ex_fl)
 {
@@ -65,6 +65,8 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
     p_flavours[i] = Flavour(kf::pol); 
     p_b[i]  = 1; 
   }
+
+  m_usepi = usepi;
 
   ConstructProcesses(_seldata);
   GroupProcesses();
@@ -156,7 +158,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
     if (take) {
       if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
 	Add(new Single_Process(m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
-			       m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl));
+			       m_kfactorscheme,m_scalescheme,m_scale[stp::as],_pl,m_nex,p_ex_fl,m_usepi));
       }
       else {
 	take=0;
@@ -744,6 +746,7 @@ bool Process_Group::SetUpIntegrator()
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
   }
   p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
+  p_pshandler->SetUsePI(m_usepi);
 
   //  if (m_nin==2 ) 
   AddChannels(this);

@@ -84,7 +84,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     double param=p_dataread->GetValue<double>("XS_REGULATION",0.71);
     m_regulation.push_back(param);
   }
-  m_pi=p_dataread->GetValue<int>("PI",0);
+  m_usepi=p_dataread->GetValue<int>("PI",0);
   if (!construct) return true;
   ifstream from((m_path+processfile).c_str());
   if (!from) {
@@ -170,17 +170,19 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		      std::string name;
 		      converter>>name;
 		      if (setup.find(name)==setup.end()) {
-			XS_Base *newxs = XSSelector()->GetXS(nIS,nFS,help,false,order_ew,order_strong);
+ 			XS_Base *newxs = XSSelector()->
+			  GetXS(nIS,nFS,help,false,order_ew,order_strong);
 			if (newxs!=NULL) {
 			  delete newxs;
 			  XS_Group *pdfgroup = 
 			    FindPDFGroup(nIS,nFS,help,this);
 			  XS_Base *newxs = pdfgroup->
-			    XSSelector()->GetXS(nIS,nFS,help,false,order_ew,order_strong);
+ 			    XSSelector()->GetXS(nIS,nFS,help,false,
+						order_ew,order_strong);
 			  if (m_regulator.length()>0) 
 			    newxs->AssignRegulator(m_regulator,m_regulation);
 			  pdfgroup->Add(newxs);
-			  newxs->PSHandler(false)->SetUsePI(m_pi);
+			  newxs->PSHandler(false)->SetUsePI(m_usepi);
 			}
 			setup.insert(name);
 		      }
@@ -197,7 +199,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
     }
   }
   ResetSelector(p_selectordata);
-  this->Print();
+  if (ATOOLS::msg.LevelIsTracking()) this->Print();
   if (m_xsecs.size()>0) return true;
   msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"): "
 	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;
@@ -248,7 +250,7 @@ XS_Group *Simple_XS::FindPDFGroup(const size_t nin,const size_t nout,
 		 p_beamhandler,p_isrhandler,p_selectordata);
   newgroup->XSSelector()->SetOffShell(p_isrhandler->KMROn());
   container->Add(newgroup);
-  newgroup->PSHandler(false)->SetUsePI(m_pi);
+  newgroup->PSHandler(false)->SetUsePI(m_usepi);
   container->SetAtoms(1);
   delete [] copy;
   return newgroup;

@@ -38,7 +38,7 @@ namespace AMEGIC {
 		   PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
 		   ATOOLS::Selector_Data * =NULL,
 		   int=1,int=99,int=99,int=0,int=0,
-		   double=-1.,Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0);
+		   double=-1.,Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0,int usepi=0);
     ~Single_Process();
     void Add(Process_Base *) {
       ATOOLS::msg.Error()<<"Error in Single_Process. Method Add called."<<std::endl;
