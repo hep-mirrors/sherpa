@@ -11,6 +11,7 @@ namespace PHASIC {
     
     ATOOLS::Variable m_variable;
     double           m_value;
+    std::string      m_chid;
 
     bool m_trigger;
     
@@ -27,13 +28,15 @@ namespace PHASIC {
     std::string ChID();
     
     // inline functions
-    ATOOLS::Variable Variable() const { return m_variable; }
-    double           Value() const    { return m_value;    }
-    bool             Trigger() const  { return m_trigger;  }
+    inline ATOOLS::Variable Variable() const { return m_variable; }
+    inline double           Value() const    { return m_value;    }
+    inline bool             Trigger() const  { return m_trigger;  }
     
-    void SetVariable(const ATOOLS::Variable variable) { m_variable=variable; }
-    void SetValue(const double value)                 { m_value=value;       }
-    void SetTrigger(const bool trigger)               { m_trigger=trigger;   }
+    inline void SetVariable(const ATOOLS::Variable variable) { m_variable=variable; }
+    inline void SetValue(const double value)                 { m_value=value;       }
+    inline void SetTrigger(const bool trigger)               { m_trigger=trigger;   }
+    
+    inline void SetChID(const std::string chid) { m_chid=chid; }
     
   }; // end of class Fixed_Variable_Channel
   
