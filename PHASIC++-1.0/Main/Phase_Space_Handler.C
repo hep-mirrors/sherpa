@@ -342,18 +342,24 @@ double Phase_Space_Handler::WeightedEvent(int mode)
 	return 0;
       }
     }
-    ih->SetSprimeMin(sqr(proc->ISRThreshold()));
-    
+    proc->Selected()->RestoreInOrder();
+        
     if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
     value = Differential(proc->Selected());
 
     if (value > 0.) {
       sumtrials += i;events ++;
-      if (result1 < (result1+result2)*ATOOLS::ran.Get()) Rotate(p);
-      proc->Selected()->SetMomenta(p);
+      if (result1 < (result1+result2)*ATOOLS::ran.Get()) {
+	Rotate(p);
+	proc->Selected()->SetMomenta(p);
+	proc->Selected()->SwapInOrder();
+      }
+      else {
+	proc->Selected()->SetMomenta(p);
+      }
       m_weight=value;
       return m_weight;
-    }
+      }
   }
 
   msg.Error()<<"Phase_Space_Handler::WeightedEvent() : "
@@ -852,10 +858,10 @@ bool Phase_Space_Handler::CreateBeamChannels()
     }
     if ((beam_params[i]).type==3) {
       if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
-	  channel = new LBSComptonPeakCentral(beam_params[i].parameters[0],
-					      beam_params[i].parameters[1],
-					      beam_params[i].parameters[2],
-					      beam_params[i].parameters[3]);
+	channel = new LBSComptonPeakCentral(beam_params[i].parameters[0],
+					    beam_params[i].parameters[1],
+					    beam_params[i].parameters[2],
+					    beam_params[i].parameters[3]);
 	  beamchannels->Add(channel);
 	  channel = new LBSComptonPeakForward(beam_params[i].parameters[0],
 					      beam_params[i].parameters[1],
@@ -887,7 +893,7 @@ bool Phase_Space_Handler::CreateISRChannels()
   for (int i=0;i<length;i++) {
     if ((isr_params[i]).type==0) {
       // Maybe set also the exponent of the y - integral ???
-      channel = new SimplePoleCentral(isr_params[i].parameters[0],
+      channel = new SimplePoleUniform(isr_params[i].parameters[0],
 				      isr_params[i].parameters[2],
 				      isr_params[i].parameters[3]);
       isrchannels->Add(channel);
