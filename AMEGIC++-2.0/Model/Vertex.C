@@ -27,7 +27,7 @@ void Vertex::GenerateVertex()
   for (int i=0;i<vanz4save;++i) {
     int hit = 1;
     if (hit) {
-      //required by _Modeldel_LED due to small couplings
+      //required by Interaction_Model_ADD due to small couplings
       if (m_v4[i].cpl[0]==Complex(0.,0.) && m_v4[i].cpl[1]==Complex(0.,0.))
 	m_v4[i].on = 0;
       else { 
@@ -66,7 +66,7 @@ void Vertex::GenerateVertex()
   for (int i=0;i<vanzsave;++i) {
     int hit = 1;
     if (hit) {
-      //required by Model_LED due to small couplings
+      //required by Interaction_Model_ADD due to small couplings
       if (m_v[i].cpl[0]==Complex(0.,0.) && m_v[i].cpl[1]==Complex(0.,0.))
 	m_v[i].on = 0;
       if (m_v[i].nleg==3) {  
