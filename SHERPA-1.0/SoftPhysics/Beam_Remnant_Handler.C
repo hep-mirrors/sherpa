@@ -230,11 +230,11 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   }
   for (short unsigned int i=0;i<2;++i) p_beampart[i]->AdjustKinematics();
   if (!SumMomenta(bloblist->front())) {
-    msg_Info()<<ATOOLS::rpa.gen.NumberOfDicedEvents()<<" "<<*bloblist<<std::endl;
-    while (bloblist->size()>0) {
-      delete bloblist->back();
-      bloblist->pop_back();
-    }
+    // msg_Info()<<ATOOLS::rpa.gen.NumberOfDicedEvents()<<" "<<*bloblist<<std::endl;
+    // while (bloblist->size()>0) {
+    //   delete bloblist->back();
+    //   bloblist->pop_back();
+    // }
   }
   return okay;
 }
