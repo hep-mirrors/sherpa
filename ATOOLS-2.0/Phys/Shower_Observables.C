@@ -32,8 +32,10 @@ void Shower_Observables::InitObservables() {
   all_obs.jet_ini  = 0;
   all_obs.jetrates = new Jetrates(11,1.e-6,1.,180,0);
   all_obs.multi    = new Multiplicity(00,-0.5,50.5,51,0);
-  all_obs.wz_pt    = new PT_Distribution(00,0.,250.,125,1,Flavour(kf::photon));
-  all_obs.jet_pt   = new PT_Distribution(00,0.,250.,125,6,Flavour(kf::jet));
+//   all_obs.wz_pt    = new PT_Distribution(00,0.,250.,125,1,Flavour(kf::W));
+//   all_obs.jet_pt   = new PT_Distribution(00,0.,250.,125,6,Flavour(kf::jet));
+  all_obs.wz_pt    = new PT_Distribution(00,0.,200.,40,1,Flavour(kf::W));
+  all_obs.jet_pt   = new PT_Distribution(00,0.,200.,40,6,Flavour(kf::jet));
   all_obs.sum      =0.;
 }
 
@@ -558,6 +560,7 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
 
   if (checkfl==Flavour(kf::Z) || checkfl==Flavour(kf::W) || checkfl==Flavour(kf::W).Bar()) {
     AMATOOLS::Vec4D mom;
+    AMATOOLS::Vec4D mom_w;
     int count=0;
 //     cout<<" --- Partons : "<<endl;
     for (int i=2;i<pl.size();i++) {
@@ -566,6 +569,8 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
 	mom+=pl[i]->Momentum();
 	++count;
       }
+      if (pl[i]->Flav()==checkfl || pl[i]->Flav().Bar()==checkfl)
+	mom_w=pl[i]->Momentum();
     }
     if (count==2) {
       double pt=sqrt(sqr(mom[1]) + sqr(mom[2]));
@@ -574,6 +579,10 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
     }
     else {
       //      cout<<"WARNING looking for 2 leptons ("<<checkfl<<") found "<<count<<endl;
+      if (mom_w[0]!=0) {
+	double pt=sqrt(sqr(mom_w[1]) + sqr(mom_w[2]));
+	histos[0]->Insert(pt,weight);
+      }
     }
     return;
   }
@@ -590,9 +599,9 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
 
   std::sort(pts.begin(),pts.end());
 
-//   cout<<" pt of "<<checkfl<<endl;
+  //  cout<<" pt of "<<checkfl<<endl;
   for (int i=1;i<=pts.size();++i) {
-//     cout<<"  "<<i<<" : "<<pts[pts.size()-i]<<" w="<<weight<<endl;
+    //    cout<<"  "<<i<<" : "<<pts[pts.size()-i]<<" w="<<weight<<endl;
     histos[0]->Insert(pts[pts.size()-i],weight);
     if (i<histos.size()) histos[i]->Insert(pts[pts.size()-i],weight);
   }
