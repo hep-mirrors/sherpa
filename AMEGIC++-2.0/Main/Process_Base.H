@@ -155,8 +155,6 @@ namespace AMEGIC {
       Access methods
 
       ------------------------------------------------------------------------------*/
-    inline int NStrong();
-    inline int NEWeak();
     inline int OrderStrong();
     inline int OrderEWeak();
 
@@ -204,8 +202,6 @@ namespace AMEGIC {
   inline int  Process_Base::OrderStrong()  { return m_orderQCD; }
   inline int  Process_Base::OrderEWeak()   { return m_orderEW; }
 
-  inline int         Process_Base::NStrong() { return m_nstrong; }
-  inline int         Process_Base::NEWeak()  { return m_neweak; }
   inline bool        Process_Base::Atoms()   { return m_atoms; }
   inline bool        Process_Base::Tables()  { return m_tables; }
   inline std::string Process_Base::Name()    { return m_name; }

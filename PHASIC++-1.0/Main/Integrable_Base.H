@@ -205,8 +205,11 @@ namespace PHASIC {
 
     inline double ISRThreshold() const      { return m_threshold;   }
 
-    inline int    KFactorScheme() const { return m_kfactorscheme; }
-    inline int    ScaleScheme() const   { return m_scalescheme;   }
+    inline int KFactorScheme() const { return m_kfactorscheme; }
+    inline int ScaleScheme() const   { return m_scalescheme;   }
+
+    inline int NStrong() const { return m_nstrong; }
+    inline int NEWeak() const  { return m_neweak;  }
 
     inline const double Scale(const stp::id type=stp::as) 
     { return m_scale[type]; }
