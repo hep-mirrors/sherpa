@@ -89,7 +89,7 @@ namespace SHERPA {
     \var std::string Initialization_Handler::m_path
     The path where the steering input data and all other input data files are to be found.
     Also, the particle data are read in through the files "Particle.dat" and "Hadron.dat" 
-    in the same path. The default fro the path is "./".
+    in the same path. The default for the path is "./".
   */
   /*!
     \var std::string Initialization_Handler::m_file
@@ -189,8 +189,8 @@ namespace SHERPA {
     A pointer to the wrapper around the hadron decay code that will be used during the run.
   */
   /*!
-    \fn Initialization_Handler(std::string=std::string("./"),
-			       std::string=std::string("Run.dat"))
+    \fn Initialization_Handler::Initialization_Handler(std::string=std::string("./"),
+                                                       std::string=std::string("Run.dat"))
     In the constructor, the data read object is instantiated and all file names to be used
     for the set up are read in.
   */

@@ -29,8 +29,8 @@ namespace SHERPA {
       if (p_fl)   { delete p_fl;   p_fl   = NULL; }
       if (p_moms) { delete p_moms; p_moms = NULL; }
     }
-    virtual bool   DefineInitialConditions(ATOOLS::Blob *) = 0;
-    virtual bool   FillBlobs(ATOOLS::Blob_List *) = 0; 
+    virtual bool DefineInitialConditions(ATOOLS::Blob *) = 0;
+    virtual bool FillBlobs(ATOOLS::Blob_List *) = 0; 
     double GetWeight() { return m_weight; }
   };
 
@@ -95,7 +95,7 @@ namespace SHERPA {
     Deletes the poniters to flavours and momenta, p_fl and p_moms.
   */
   /*!
-    \fn virtual bool Perturbative_Interface::Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob *)
+    \fn virtual bool Perturbative_Interface::DefineInitialConditions(ATOOLS::Blob *)
     This is the central method of all interfaces. After the (hard signal) blob is filled by the
     matrix element handler it is passed into the corresponding interface which in turn reconstructs
     a parton shower history and - by doing so - defines the start conditions for hte shower.

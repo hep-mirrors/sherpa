@@ -21,8 +21,6 @@ SimpleXS_Apacic_Interface::~SimpleXS_Apacic_Interface()
 bool SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob) 
 {
   if (!blob) return 0;
-  blob->BoostInCMS();
-
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
     msg.Error()<<"Error in SimpleXS_Apacic_Interface::DefineInitialConditions."<<std::endl
 	       <<"   No idea how to handle blobs with "
@@ -30,6 +28,7 @@ bool SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 	       <<"   Abort run. "<<std::endl;
     abort();
   }
+  blob->BoostInCMS();
   return InitColours(blob);
 }
 

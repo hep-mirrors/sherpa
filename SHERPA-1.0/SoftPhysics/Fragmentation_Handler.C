@@ -22,14 +22,16 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
     m_lund_b     = dr.GetValue<double>("LUND_B",0.85);
     m_lund_sigma = dr.GetValue<double>("LUND_SIGMA",0.36);
     msg.Events()<<"Initialize Lund Fragmentation : "<<std::endl
-		<<"  LUND_A = "<<m_lund_a<<", LUND_B = "<<m_lund_b<<", LUND_SIGMA = "<<m_lund_sigma<<std::endl;
+		<<"  LUND_A = "<<m_lund_a<<", LUND_B = "<<m_lund_b
+		<<", LUND_SIGMA = "<<m_lund_sigma<<std::endl;
     p_lund       = new Lund_Fortran_Interface(m_lund_a,m_lund_b,m_lund_sigma);
     m_mode       = 1;
     return;
   }
 
   msg.Error()<<"Error in Fragmentation_Handler::Fragmentation_Handler."<<std::endl
-	     <<"    Fragmentation model "<<m_fragmentationmodel<<" not implemented yet. Abort."<<std::endl;
+	     <<"    Fragmentation model "<<m_fragmentationmodel
+	     <<" not implemented yet. Abort."<<std::endl;
   abort();
 }
    

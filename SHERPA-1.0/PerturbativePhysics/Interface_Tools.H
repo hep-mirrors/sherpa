@@ -34,7 +34,10 @@ namespace SHERPA {
 
   /*!
     \class Interface_Tools
-    \brief
+    \brief To interface simple $2\to 24 processes with the parton shower.
+
+    This class contains the core methods to interface simple matrix elements with 
+    the parton shower. It is employed by the SimpleXS_Apacic_Interface.
   */
   /*!
     \var APACIC::Tree ** Interface_Tools::p_initrees 

@@ -24,6 +24,13 @@ namespace SHERPA {
     ~Hadron_Decay_Handler();
     bool FillHadronDecayBlobs(ATOOLS::Blob_List *,ATOOLS::Particle_List *);
   };
+
+  /*!
+    \class Hadron_Decay_Handler
+    \brief So far not being used.
+    
+    This class so far is not being used. Work is ongoing.
+  */
 }
 #endif
 

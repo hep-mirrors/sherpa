@@ -38,7 +38,6 @@ bool Sherpa::InitializeTheRun(std::string _path) {
 
 bool Sherpa::InitializeTheEventHandler() {
   p_analysis        = new Sample_Analysis();
-
   p_eventhandler    = new Event_Handler();
   p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
   p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,1));

@@ -59,10 +59,10 @@ namespace SHERPA {
     If so, the Blob_List and the Blob will be modified accordingly to allow for 
     more modifications in other phases of the event.
 
-    It should be noted that the specific Event_Phase_Handlers and their base class as well as the Event_Handler
-    can be found in the subdirectory SingleEvents, whereas specific handlers that are filled into the
-    Event_Phase_Handlers (such as Matrix_Element_Handler or Shower_Handler) can be 
-    found in the subdirectories PerturbativePhysics or SoftPhysics).
+    It should be noted that the specific Event_Phase_Handlers and their base class as well as 
+    the Event_Handler can be found in the subdirectory SingleEvents, whereas specific handlers 
+    that are filled into the Event_Phase_Handlers (such as Matrix_Element_Handler or Shower_Handler) 
+    can be found in the subdirectories PerturbativePhysics or SoftPhysics.
   */
   /*!
     \var std::string Sherpa::m_path
@@ -114,17 +114,18 @@ namespace SHERPA {
     \fn bool Sherpa::InitializeTheRun(std::string _path = std::string("./"))
     Initializes the full run through instantiation of the Initialization_Handler and corresponding
     calls to its methods. If the initialization of the framework was successful, cross sections are
-    evaluated, if this worked out, true is returned. If any of the tasks above fails, flase is returned.
+    evaluated, if this worked out, true is returned. If any of the tasks above fails, false is 
+    returned.
   */
   /*!
     \fn bool Sherpa::InitializeTheEventHandler()
-    The event handler is instatiated, individual event phases are initialized and added to the event handler's
-    list of event phases to be dealt with. Per default, true is returned.
+    The event handler is instatiated, individual event phases are initialized and added to the event 
+    handler's list of event phases to be dealt with. Per default, true is returned.
   */
   /*!
     \fn bool Sherpa::GenerateOneEvent()
-    In this method, up to m_trials (default 100) trials are made to geenrate one single event. If this succeeds,
-    true is returned, otherwise the reuslt is false. 
+    In this method, up to m_trials (default 100) trials are made to geenrate one single event. If 
+    this succeeds, true is returned, otherwise the result is false. 
   */
   /*!
     \fn bool Sherpa::SummarizeRun()

@@ -15,11 +15,9 @@ extern "C" {
 };
 
 Lund_Fortran_Interface::Lund_Fortran_Interface(double _a,double _b, double _sigma) :
-  a(_a), b(_b), sigma(_sigma)
 { 
   Init();
-  apyinit_(ATOOLS::rpa.gen.Ecms(),a,b,sigma,1,0);
-  pyinit = 1;
+  apyinit_(ATOOLS::rpa.gen.Ecms(),_a,_b,_sigma,1,0);
 } 
 
 Lund_Fortran_Interface::~Lund_Fortran_Interface() {

@@ -11,13 +11,7 @@ Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_H
   m_type      = string("Hadronization");
 }
 
-Hadronization::~Hadronization() {
-  // are deleted in the Initialization_Handler
-//   if (p_beamremnanthandler)   { delete p_beamremnanthandler;   p_beamremnanthandler   = NULL; }
-//   if (p_fragmentationhandler) { delete p_fragmentationhandler; p_fragmentationhandler = NULL; }
-// 
-
-}
+Hadronization::~Hadronization() {}
 
 bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &) {
   if (_bloblist->empty()) {

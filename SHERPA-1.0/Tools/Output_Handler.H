@@ -19,5 +19,38 @@ namespace SHERPA {
     void OutputToFormat(ATOOLS::Blob_List *);
     bool Active() { return m_active; }
   };
+
+  /*!
+    \class Output_Handler
+    \brief Handles the output of single events to an output format.
+
+    This class steers the output of single events to a specific output selected
+    from outside. So far, two formats are available (and mildly tested):
+    HepMC through the HepMC_Interface and HepEvt through the HepEvt_Interface.
+  */
+  /*!
+    \var HepMC_Interface * Output_Handler::p_hepmc
+  */
+  /*!
+    \var HepMC::GenEvent * Output_Handler::p_event
+  */
+  /*!
+    \var bool Output_Handler::m_active
+  */
+  /*!
+    \var int Output_Handler::m_type
+  */
+  /*!
+    \fn Output_Handler::Output_Handler(int type=1)
+  */
+  /*!
+    \fn Output_Handler::~Output_Handler()
+  */
+  /*!
+    \fn void Output_Handler::OutputToFormat(ATOOLS::Blob_List *)
+  */
+  /*!
+    \fn bool Output_Handler::Active()
+  */
 }
 #endif

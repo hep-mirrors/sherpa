@@ -8,6 +8,12 @@ namespace SHERPA {
     double               m_width, m_BR;
     ATOOLS::Flavour * fl;
   };
+  /*!
+    \class Decay_Channel
+    \brief So far not being used
+
+    This class is not used so far; work is ongoing.
+  */
 }
 
 #endif

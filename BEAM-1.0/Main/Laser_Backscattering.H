@@ -35,7 +35,7 @@ namespace BEAM {
     void            PrintSpectra(std::string);
     bool            CalculateWeight(double,double);
     double          Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
-    ATOOLS::Vec4D OutMomentum();
+    ATOOLS::Vec4D   OutMomentum();
 
     double          PolarisationDegree() { return m_polar; }
     void            SetMode(int _mode)   { m_mode = _mode; }
