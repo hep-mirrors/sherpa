@@ -133,6 +133,8 @@ namespace ATOOLS {
     inline const double Eta() const; 
 
     inline Vec4D Perp() const;
+    inline Vec4D Plus() const;
+    inline Vec4D Minus() const;
 
     Vec4D& operator+= (const Vec4D& v);
     Vec4D& operator-= (const Vec4D& v);
@@ -519,6 +521,18 @@ namespace ATOOLS {
   inline Vec4D Vec4D::Perp() const 
   { 
     return Vec4D(0.,m_x[1],m_x[2],0.);
+  }
+
+  inline Vec4D Vec4D::Plus() const 
+  { 
+    double pplus=PPlus();
+    return Vec4D(pplus,0.0,0.0,pplus);
+  }
+
+  inline Vec4D Vec4D::Minus() const 
+  { 
+    double pminus=PMinus();
+    return Vec4D(pminus,0.0,0.0,-pminus);
   }
 
   // output streams:
