@@ -27,7 +27,7 @@ namespace ATOOLS {
   public:
 
     // constructor
-    Random(long nid): p_outstream(NULL) { SetSeed(nid); }
+    Random(long nid);
 
     // destructor
     ~Random();

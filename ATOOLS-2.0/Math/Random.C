@@ -24,6 +24,13 @@ using namespace std;
 
 ATOOLS::Random ATOOLS::ran(1234);
 
+Random::Random(long nid): 
+  p_outstream(NULL) 
+{ 
+  SetSeed(nid); 
+  Exception_Handler::AddTerminatorObject(this);
+}
+
 Random::~Random() 
 { 
   if (p_outstream!=NULL) {
