@@ -116,13 +116,13 @@ void Four_Particle_Observable_Base::Evaluate(int nout,const Vec4D * moms,const F
 
 void Four_Particle_Observable_Base::Evaluate(const Particle_List & plist,double weight,int ncount)
 {
-  for (Particle_Const_Iterator plit1=plist.begin();plit1!=plist.end();++plit1) {
+  for (Particle_List::const_iterator plit1=plist.begin();plit1!=plist.end();++plit1) {
     if ((*plit1)->Flav()==m_flavs[0]) {
-      for (Particle_Const_Iterator plit2=plist.begin();plit2!=plist.end();++plit2) {
+      for (Particle_List::const_iterator plit2=plist.begin();plit2!=plist.end();++plit2) {
 	if ((*plit2)->Flav()==m_flavs[1] && plit1!=plit2) {
-	  for (Particle_Const_Iterator plit3=plist.begin();plit3!=plist.end();++plit3) {
+	  for (Particle_List::const_iterator plit3=plist.begin();plit3!=plist.end();++plit3) {
 	    if ((*plit3)->Flav()==m_flavs[2] && plit3!=plit2 && plit3!=plit1) {
-	      for (Particle_Const_Iterator plit4=plist.begin();plit4!=plist.end();++plit4) {
+	      for (Particle_List::const_iterator plit4=plist.begin();plit4!=plist.end();++plit4) {
 		if ((*plit4)->Flav()==m_flavs[3] && plit4!=plit3 && plit4!=plit2 && plit4!=plit1) {
 		  Evaluate((*plit1)->Momentum(),(*plit2)->Momentum(),
 			   (*plit3)->Momentum(),(*plit4)->Momentum(),weight,ncount);

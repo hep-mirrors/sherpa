@@ -336,7 +336,7 @@ int main() {
 	  for(list<Particle_List>::iterator loc=lists.begin();
 	      loc!=lists.end(); ++loc) {
 	    cout<<(*loc);
-	    for(Particle_Iterator pit=(*loc).begin(); pit!=(*loc).end(); ++pit)
+	    for(Particle_List::iterator pit=(*loc).begin(); pit!=(*loc).end(); ++pit)
 	      if(*pit) delete (*pit);
 	  }
 	}

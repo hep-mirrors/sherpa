@@ -105,7 +105,7 @@ void JetMass_Broadening_Calculator::Evaluate(const Blob_List & ,double weight, i
   Vec4D sum1;
   Vec4D sum2;
   double totalb=0., b1=0., b2=0.;
-  for (Particle_Const_Iterator pit=pl->begin();pit!=pl->end();++pit) {
+  for (Particle_List::const_iterator pit=pl->begin();pit!=pl->end();++pit) {
     Vec4D mom = (*pit)->Momentum();
     Vec3D v   = Vec3D(mom);
     totalsum+=mom;

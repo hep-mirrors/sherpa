@@ -2,6 +2,7 @@
 #define Blob_List_H
 
 #include "Blob.H"
+#include "Particle_List.H"
 #include <deque>
 #include <set>
 #include <iostream>
@@ -10,6 +11,24 @@ namespace ATOOLS {
 
   class Blob_List: public std::deque<Blob*> {
   private:
+
+    class Destructor {
+    private:
+
+      Blob_List *p_list;
+
+    public:
+
+      // destructor
+      Destructor(): p_list(NULL) {}
+      Destructor(Blob_List *const list): p_list(list) {}
+
+      // destructor
+      inline ~Destructor() { if (p_list!=NULL) p_list->Clear(); }
+
+    };// end of class Destructor
+
+    Destructor m_destructor;
 
     friend std::ostream &operator<<(std::ostream &str,const Blob_List &list);
 
@@ -22,6 +41,10 @@ namespace ATOOLS {
 			   Vec4D &inisum,Vec4D &finsum,const int mode) const;
 
   public:
+
+    // constructor
+    Blob_List();
+    Blob_List(const bool destruct);
 
     // member functions
     Vec4D TotalFourMomentum() const;
@@ -42,6 +65,10 @@ namespace ATOOLS {
 
     size_t DeleteConnected(Blob *blob);
     size_t DeleteConnected(Particle *particle);
+
+    Particle_List ExtractParticles(const int status,
+				   const int mode=0) const;
+    Particle_List ExtractLooseParticles(const int mode=0) const;
     
     void Clear();
 

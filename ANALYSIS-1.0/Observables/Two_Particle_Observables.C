@@ -103,9 +103,9 @@ void Two_Particle_Observable_Base::Evaluate(int nout,const ATOOLS::Vec4D * moms,
 
 void Two_Particle_Observable_Base::Evaluate(const Particle_List & plist,double weight, int ncount)
 {
-  for (Particle_Const_Iterator plit1=plist.begin();plit1!=plist.end();++plit1) {
+  for (Particle_List::const_iterator plit1=plist.begin();plit1!=plist.end();++plit1) {
     if ((*plit1)->Flav()==m_flav1) {
-      for (Particle_Const_Iterator plit2=plist.begin();plit2!=plist.end();++plit2) {
+      for (Particle_List::const_iterator plit2=plist.begin();plit2!=plist.end();++plit2) {
 	if ((*plit2)->Flav()==m_flav2 && plit1!=plit2) {
 	  Evaluate((*plit1)->Momentum(),(*plit2)->Momentum(),weight,ncount);
 	  return;

@@ -79,7 +79,7 @@ void Scaled_Observable_Base::Evaluate(int nout,const ATOOLS::Vec4D * moms,
 
 void Scaled_Observable_Base::Evaluate(const Particle_List & plist,double weight,int ncount )
 {
-  for (Particle_Const_Iterator plit=plist.begin();plit!=plist.end();++plit) {
+  for (Particle_List::const_iterator plit=plist.begin();plit!=plist.end();++plit) {
     Evaluate((*plit)->Momentum(),weight, ncount);
   }
 }

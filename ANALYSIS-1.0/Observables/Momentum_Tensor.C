@@ -13,7 +13,7 @@ void Momentum_Tensor::Calculate(const ATOOLS::Particle_List & pl)
 {
   std::vector<double> scale;
   double denom=0.;
-  for (Particle_Const_Iterator pit=pl.begin();pit!=pl.end();++pit) {
+  for (Particle_List::const_iterator pit=pl.begin();pit!=pl.end();++pit) {
     if (m_power==2.) {
       // quadratic (normed) momentum tensor (i.e. Sphericity, Aplanarity, ...)
       denom+=Vec3D((*pit)->Momentum()).Sqr();

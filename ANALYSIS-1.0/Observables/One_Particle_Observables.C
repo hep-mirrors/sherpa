@@ -88,7 +88,7 @@ void One_Particle_Observable_Base::Evaluate(int nout,const ATOOLS::Vec4D * moms,
 
 void One_Particle_Observable_Base::Evaluate(const Particle_List & plist,double weight,int ncount )
 {
-  for (Particle_Const_Iterator plit=plist.begin();plit!=plist.end();++plit) {
+  for (Particle_List::const_iterator plit=plist.begin();plit!=plist.end();++plit) {
     if ((*plit)->Flav()==m_flav) {
       Evaluate((*plit)->Momentum(),weight, ncount);
       return;
@@ -242,7 +242,7 @@ void One_Particle_EVis::Evaluate(int nout,const ATOOLS::Vec4D * moms,const ATOOL
 void One_Particle_EVis::Evaluate(const Particle_List & plist,double weight,int ncount )
 {
   ATOOLS::Vec4D momsum = Vec4D(0.,0.,0.,0.);
-  for (Particle_Const_Iterator plit=plist.begin();plit!=plist.end();++plit) {
+  for (Particle_List::const_iterator plit=plist.begin();plit!=plist.end();++plit) {
     momsum += (*plit)->Momentum();
   }
   p_histo->Insert(momsum.Abs(),weight,ncount); 

@@ -19,6 +19,12 @@ std::ostream &ATOOLS::operator<<(std::ostream &s,const Blob_List &list)
   return s;
 }
 
+Blob_List::Blob_List():
+  m_destructor(NULL) {}
+
+Blob_List::Blob_List(const bool destruct):
+  m_destructor(destruct?this:NULL) {}
+
 Blob *Blob_List::FindFirst(const btp::code code) const
 {
   for (Blob_List::const_iterator bit=begin();bit!=end();++bit)
@@ -190,6 +196,43 @@ bool Blob_List::FourMomentumConservation() const
 	       <<finsum<<"."<<std::endl;
   }
   return test;
+}
+
+Particle_List Blob_List::ExtractParticles(const int status,
+					  const int mode) const
+{
+  Particle_List particles;
+  for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
+    if (mode>=0)
+      for (int i=0;i<(*bit)->NOutP();++i) {
+	ATOOLS::Particle *part=(*bit)->OutParticle(i);
+	if (part->Status()==status) particles.push_back(part);
+      }
+    if (mode<=0)
+      for (int i=0;i<(*bit)->NInP();++i) {
+	ATOOLS::Particle *part=(*bit)->InParticle(i);
+	if (part->Status()==status) particles.push_back(part);
+      }
+  }
+  return particles;
+}
+
+Particle_List Blob_List::ExtractLooseParticles(const int mode) const
+{
+  Particle_List particles;
+  for (Blob_List::const_iterator bit=begin();bit!=end();++bit) {
+    if (mode>=0)
+      for (int i=0;i<(*bit)->NOutP();++i) {
+	ATOOLS::Particle *part=(*bit)->OutParticle(i);
+	if (part->DecayBlob()==NULL) particles.push_back(part);
+      }
+    if (mode<=0)
+      for (int i=0;i<(*bit)->NInP();++i) {
+	ATOOLS::Particle *part=(*bit)->InParticle(i);
+	if (part->ProductionBlob()==NULL) particles.push_back(part);
+      }
+  }
+  return particles;
 }
 
 void Blob_List::Clear() 

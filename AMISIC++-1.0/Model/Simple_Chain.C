@@ -37,7 +37,6 @@ const std::string normalizedfile=std::string("normalized.dat");
 #endif
 
 static ATOOLS::Info_Key m_spkey, m_ykey, m_isrspkey, m_isrykey;
-static double s_maxoverflow=10.0;
 static double s_epsilon=1.0e-3;
 
 using namespace AMISIC;
@@ -725,11 +724,12 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 			       <<m_ykey[2]<<" "
 			       <<weight*m_maxreduction/max<<"\n";
 		double overflow=weight*m_maxreduction/max;
-		if (overflow>s_maxoverflow) {
+		if (overflow>1.0/m_maxreduction) {
 		  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
 				     <<"overflow = "<<overflow<<" > "
-				     <<"s_maxoverflow = "<<s_maxoverflow
+				     <<"1/m_maxreduction = "<<1.0/m_maxreduction
 				     <<std::endl;
+		  cur->SetBinMax(m_last[0],weight);
 		}
 		cur->SetBinExtra(m_last[0],overflow-1.0);
 		cur->SetBinExtra(m_last[0],m_spkey[3],1);

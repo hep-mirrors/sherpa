@@ -172,7 +172,7 @@ bool Adicic::ExtractPartons(ATOOLS::Blob_List* blobs, ATOOLS::Particle_List*) {
       for(int i=0; i<blob->NInP(); ++i) blob->InParticle(i)->SetStatus(2);
       num=Max(blob->InParticle(0)->Number(),blob->InParticle(1)->Number());
       num=num+1-plist.front()->Number();
-      for(Particle_Iterator piter=plist.begin(); piter!=plist.end(); ++piter) {
+      for(Particle_List::iterator piter=plist.begin(); piter!=plist.end(); ++piter) {
 	blob->AddToOutParticles(*piter);
 	(*piter)->SetInfo('F');
 	(*piter)->SetNumber(-((*piter)->Number()+num/*-2*/));

@@ -346,7 +346,7 @@ const bool Chain::ExtractPartons(Particle_List& parlist) const {
   list<Dipole*>::const_iterator dit=varset.l_dip.begin();
   Particle* par=new Particle( (*dit)->GetTopBranchPointer()->Parton );
   parlist.push_back(par);
-  Particle_Iterator pit=parlist.end(); --pit;
+  Particle_List::iterator pit=parlist.end(); --pit;
   ++dit;
   for(; dit!=varset.l_dip.end(); ++dit) {
     par=new Particle( (*dit)->GetTopBranchPointer()->Parton );
@@ -363,7 +363,7 @@ const bool Chain::ExtractPartons(Particle_List& parlist) const {
       unsigned upflow=(*pit)->GetFlow(1);
       if(upflow==0) { (*pit)->SetFlow(1,-1); upflow=(*pit)->GetFlow(1);}
       ++pit;
-      Particle_Iterator pot=parlist.end();
+      Particle_List::iterator pot=parlist.end();
       --pot;
       for(; pit!=pot; ++pit) {
 	(*pit)->SetFlow(2,upflow);

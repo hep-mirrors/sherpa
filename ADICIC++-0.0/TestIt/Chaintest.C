@@ -381,7 +381,7 @@ int main() {
 	  Particle_List plist;
 	  cha.ExtractPartons(plist);
 	  cout<<plist<<endl;
-	  for(Particle_Iterator pit=plist.begin(); pit!=plist.end(); ++pit)
+	  for(Particle_List::iterator pit=plist.begin(); pit!=plist.end(); ++pit)
 	    if(*pit) delete (*pit);
 	}
 

@@ -1,26 +1,53 @@
 #ifndef Particle_List_H
 #define Particle_List_H
 
-
-#include <deque>
-#include <iostream>
-// Apacic physics includes
 #include "Particle.H"
 #include "List_Algorithms.H"
+#include <deque>
+#include <iostream>
 
 namespace ATOOLS {
 
-  typedef std::deque<Particle*> Particle_List;
-  typedef Particle_List::iterator Particle_Iterator;
-  typedef Particle_List::const_iterator Particle_Const_Iterator;
+  class Particle_List: public std::deque<Particle*> {
+  private:
 
-  std::ostream & operator<<(std::ostream & s, const Particle_List & pl);
+    class Destructor {
+    private:
+
+      Particle_List *p_list;
+
+    public:
+
+      // destructor
+      Destructor(): p_list(NULL) {}
+      Destructor(Particle_List *const list): p_list(list) {}
+
+      // destructor
+      inline ~Destructor() { if (p_list!=NULL) p_list->Clear(); }
+
+    };// end of class Destructor
+
+    Destructor m_destructor;
+
+  public:
+
+    // constructor
+    Particle_List();
+    Particle_List(const bool destruct);
+
+    // member functions
+    void Clear();
+    
+  };// end of class Particle_List
+
+  std::ostream &operator<<(std::ostream &str,const Particle_List &list);
 
   template <class Predicate> 
-  void copy_if(Particle_Iterator first, Particle_Iterator last, std::back_insert_iterator<Particle_List> out, const Predicate & pred) {
-    for ( ; first != last; ++first ) { if ( pred(*first) ) out = new Particle(**first); }
-  }
+  void copy_if(Particle_List::iterator first,Particle_List::iterator last,
+	       std::back_insert_iterator<Particle_List> out,
+	       const Predicate & pred) 
+  { for (;first!=last;++first) if (pred(*first)) out = new Particle(**first); }
 
-}
+}// end of namespace ATOOLS
 
-#endif // Particle_List_H
+#endif
