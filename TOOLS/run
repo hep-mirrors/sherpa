@@ -64,20 +64,21 @@ if [ "$ANALYSIS" = "" ]; then ANALYSIS="analysis/" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
 
 FILE=$BASENAME"_"$TIME
+LOGFILE=$PWD"/"$FILE
 
 echo "" > $FILE
 if [ "$QUEUE" = "TRUE" ] ; then 
-  echo "echo \"\" > $FILE.log" >> $FILE
-  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> $FILE.log" >> $FILE
-  echo "echo \"HOME        = \$HOME\" >> $FILE.log" >> $FILE
-  echo "echo \"USER        = \$USER\" >> $FILE.log" >> $FILE
-  echo "echo \"\" >> $FILE.log" >> $FILE
-  echo "echo \"QUEUE       = \$QUEUE\" >> $FILE.log" >> $FILE
-  echo "echo \"SGE_TASK_ID = \$SGE_TASK_ID\" >> $FILE.log" >> $FILE
-  echo "echo \"JOB_ID      = \$JOB_ID\" >> $FILE.log" >> $FILE
-  echo "echo \"JOB_NAME    = \$JOB_NAME\" >> $FILE.log" >> $FILE
-  echo "echo \"TMPDIR      = \$TMPDIR\" >> $FILE.log" >> $FILE
-  echo "echo \"\" >> $FILE.log" >> $FILE
+  echo "echo \"\" > $LOGFILE.log" >> $FILE
+  echo "echo \"HOSTNAME    = \$HOSTNAME\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"HOME        = \$HOME\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"USER        = \$USER\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"QUEUE       = \$QUEUE\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"SGE_TASK_ID = \$SGE_TASK_ID\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"JOB_ID      = \$JOB_ID\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"JOB_NAME    = \$JOB_NAME\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"TMPDIR      = \$TMPDIR\" >> $LOGFILE.log" >> $FILE
+  echo "echo \"\" >> $LOGFILE.log" >> $FILE
   echo "" >> $FILE
 fi
 echo "cd $BINPATH" >> $FILE
@@ -87,12 +88,13 @@ if [ ! "$RESULTS" = "" ] ; then echo -en "\\ \n         RESULTS=$RESULTS " >> $F
 if [ ! "$ANALYSIS" = "" ] ; then echo -en "\\ \n         ANALYSIS_OUTPUT=$ANALYSIS " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "\\ \n         EVENTS=$EVENTS " >> $FILE ; fi
 if [ ! "$PYTHIA" = "" ] ; then echo -en "\\ \n         PYTHIA=$PYTHIA " >> $FILE ; fi
-echo -e "\n" >> $FILE
+echo -e "\\ \n         >> $LOGFILE.log 2>&1 \n" >> $FILE
 
 if [ "$QUEUE" = "TRUE" ] ; then
   echo qsub $FILE  
 else
-  $FILE
+  chmod 777 $FILE
+  ( nohup $FILE > /dev/null & ) 
 fi
 
 #$ -j y
