@@ -8,19 +8,12 @@ libToolsPhys_la_SOURCES = Flavour.C Particle.C Decay_Table.C \
                           Flavour_List.C Particle_List.C \
 			  Cut_Data.C Selector.C  Combined_Selector.C \
 			  Jet_Finder.C Cone_Finder.C Standard_Selector.C \
-			  Primitive_Analysis.C Primitive_Observable.C Primitive_Observable_Base.C \
-			  Primitive_Detector.C One_Particle_Observables.C \
-			  Two_Particle_Observables.C Four_Particle_Observables.C \
-			  Kt_Algorithm.C Jet_Observables.C Final_Selector.C \
-			  Blob.C Blob_List.C Flow.C  
-noinst_HEADERS = Flavour.H Particle.H Flavour_List.H Particle_List.H Decay_Table.H \
+			  Kt_Algorithm.C Blob.C Blob_List.C Flow.C  
+noinst_HEADERS = Flavour.H Particle.H Decay_Table.H \
+		 Flavour_List.H Particle_List.H \
 		 Cut_Data.H Selector.H Jet_Finder.H Cone_Finder.H \
 		 Combined_Selector.H Standard_Selector.H \
-		 Primitive_Analysis.H Primitive_Observable.H Primitive_Observable_Base.H \
-                 Primitive_Detector.H One_Particle_Observables.H \
-		 Two_Particle_Observables.H Four_Particle_Observables.H \
-		 Kt_Algorithm.H Jet_Observables.H Final_Selector.H \
-		 Flow.H Blob.H Blob_List.H Event.H  
+		 Kt_Algorithm.H Blob.H Blob_List.H Flow.H Event.H
 INCLUDES = -I../Org \
 	   -I../Math \
 	   -I../../MODEL-1.0/Main

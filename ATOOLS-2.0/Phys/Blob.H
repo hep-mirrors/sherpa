@@ -33,7 +33,7 @@ namespace ATOOLS {
   std::ostream& operator<<( std::ostream&, const Blob_Data_Base &);
 
   typedef std::vector<Particle *> Particle_Queue;
-  typedef std::map<std::string,Blob_Data_Base*> Data_Container;
+  typedef std::map<std::string,Blob_Data_Base *> Data_Container;
 
   class Blob {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
