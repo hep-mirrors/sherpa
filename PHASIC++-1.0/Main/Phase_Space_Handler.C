@@ -583,7 +583,7 @@ double Phase_Space_Handler::Differential(Process_Base * process)
   if (ih->On()>0) { 
     isrchannels->GeneratePoint(sprimeI,yI,ih->On());
 
-    msg.Debugging()<<"ISR : "<<sprimeI<<" / "<<yI<<endl;
+    //msg.Out()<<"ISR : "<<sprimeI<<" / "<<yI<<endl;
 
     if (!(ih->MakeISR(p,sprimeI,yI))) return 0.;
     sprime = sprimeI; y += yI;
@@ -593,19 +593,12 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     proc->UpdateCuts(sprime,y);
   }
   
-<<<<<<< Phase_Space_Handler.C
 //   msg.Debugging()<<"Before FSR moms:"<<endl;
 //   for (int i=0;i<nin;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
   
-=======
-  msg.Debugging()<<"Before FSR moms:"<<endl;
-  for (int i=0;i<nin;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
-
->>>>>>> 1.8
   if (proc->NumberOfDiagrams() != IS_XS_FLAG) fsrchannels->GeneratePoint(p,proc->Cuts());
   else fsrchannels->GeneratePoint(p);
 
-<<<<<<< Phase_Space_Handler.C
   msg.Debugging()<<"After FSR moms:"<<endl;
   for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
   
@@ -613,16 +606,6 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     msg.Out()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
     return 0.;
   }
-=======
-  msg.Debugging()<<"After FSR moms:"<<endl;
-  for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
-  
-
-  if (!Check4Momentum(p)) {
-    msg.Out()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
-    return 0.;
-  }
->>>>>>> 1.8
 
   double value = 0., KFactor = 0., Q2 = -1.;
   bool take = 1;
@@ -631,17 +614,10 @@ double Phase_Space_Handler::Differential(Process_Base * process)
 
   if (bh->On()>0) bh->BoostInLab(p,nin+nout);
   if (ih->On()>0) ih->BoostInLab(p,nin+nout);
-<<<<<<< Phase_Space_Handler.C
 
 //   msg.Debugging()<<"After boost in LAB moms:"<<endl;
 //   for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
 
-=======
- 
-  msg.Debugging()<<"After boost in LAB moms:"<<endl;
-  for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
-  
->>>>>>> 1.8
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
 
   bool trigger = 0;
@@ -670,22 +646,12 @@ double Phase_Space_Handler::Differential(Process_Base * process)
 
     if (ih->On()==3) result2 = result1;
 
-<<<<<<< Phase_Space_Handler.C
 //     msg.Debugging()<<"Before Differential A moms:"<<endl;
 //     for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
    
-=======
-    if (ih->On()==3) result2 = result1;
-    
-    msg.Debugging()<<"Before Differential A moms:"<<endl;
-    for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
-    
->>>>>>> 1.8
     result1 *= process->Differential(p);
   }
-  else {
-    msg.Debugging()<<" Trigger A killed Differential A "<<endl;
-  }
+
   // Second part : flin[0] coming from Beam[1] and flin[1] coming from Beam[0]
   if (ih->On()==3 && trigger==1) {
     Rotate(p);
@@ -696,14 +662,9 @@ double Phase_Space_Handler::Differential(Process_Base * process)
       // boost from LAB in CMS missing !!!
           
     ih->CalculateWeight2(Q2);
-<<<<<<< Phase_Space_Handler.C
 
 //     msg.Debugging()<<"Before Differential B moms:"<<endl;
 //     for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
-=======
-//    msg.Debugging()<<"Before Differential B moms:"<<endl;
-//    for (int i=0;i<nin+nout;i++) msg.Debugging()<<" "<<i<<" : "<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
->>>>>>> 1.8
     
     if (result2 > 0.) result2 *= process->Differential2();
     else              result2  = 0.;
