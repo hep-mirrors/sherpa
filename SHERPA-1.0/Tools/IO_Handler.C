@@ -162,13 +162,13 @@ bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weig
 	  break;
 	}
 #ifdef CLHEP_SUPPORT
-      case iotype::HepMC: {
+      case iotype::HepMC: 
 	p_hepmc->Sherpa2HepMC(blobs);
-	return true;}
+	break;
 #endif
       case iotype::HepEvt: 
 	p_hepevt->Sherpa2HepEvt(blobs); 
-	return true;
+	break;
       default:
 	msg.Error()<<"Error in IO_Handler::OutputToFormat."<<std::endl
 		   <<"   Unknown Output format : "<<m_outtype<<std::endl
