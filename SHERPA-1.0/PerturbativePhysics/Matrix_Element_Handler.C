@@ -223,9 +223,9 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   m_readin = p_dataread->GetValue<string>("RESULT_DIRECTORY",string("./Results"));
   switch (m_mode) { 
   case 1: 
-    if (scalechoice>0) p_amegic->Processes()->SetScale(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
+    //    if (scalechoice>0) p_amegic->Processes()->SetScale(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
     if (p_amegic->CalculateTotalXSec(m_readin)) {
-      //RescaleJetrates();
+      PrintTotalXSec();
       return 1;
     }
     msg.Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
@@ -242,51 +242,15 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   abort();
 }
 
-
-void RescaleProcesses(AMEGIC::Process_Base * procs, double fac, double mfac ) {
-  if (fac==1. && mfac==1.) return;
-  if (!procs) return;
-  if ((*procs)[0]==procs) {
-    if (fac!=1.) {
-      double xs=procs->TotalXS();
-      procs->SetTotalXS(xs*fac);
-    }
-    if (mfac!=1.) {
-      double max=procs->Max();
-      procs->SetMax(max*mfac);
-    }
-  }
-  else {
-    double xs=procs->TotalXS();
-    for (size_t i=0; i<procs->Size();++i) {
-      RescaleProcesses((*procs)[i],fac,mfac);
-    }
-    if (fac!=1.) {
-      procs->SetTotal(xs*fac);
-    }
-  }
-}
-
-bool Matrix_Element_Handler::RescaleJetrates() 
+bool Matrix_Element_Handler::PrintTotalXSec() 
 {
-  // processes not rescaled in the moment only status printed
+  // processes not rescaled at the moment only status printed
   AMEGIC::Process_Base * procs = p_amegic->Processes();
 
   double errsum=0;
   for (size_t i=0; i<procs->Size();++i) {
     errsum+= (*procs)[i]->TotalError();
   }
-  //vs.facs[10] = { 1., 1., 1. , 0.1, 1., 1.,1., 1., 1., 1.};
-  double facs[10] = { 1., 1., 1. , 1., 1., 1., 1., 1., 1., 1.};
-  double mfacs[10] = { 1., 1., 1. , 1., .05, .025,.0125, 1., 1., 1.};
-  for (size_t i=0; i<procs->Size();++i) {
-    //    double xstot = (*procs)[i]->Total()*rpa.Picobarn();
-    //    double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
-    int njet  = (*procs)[i]->NOut();
-    RescaleProcesses((*procs)[i],facs[njet],mfacs[njet]);
-  }
-  procs->SetMax(0.);
-
   if (errsum!=0.) {
     MyStrStream sstr;
     int ecms = int(rpa.gen.Ecms()*10.);

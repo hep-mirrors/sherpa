@@ -61,7 +61,7 @@ namespace SHERPA {
 
     std::vector<Particle_Map> m_particle_maps;
 
-    bool  RescaleJetrates() ;
+    bool  PrintTotalXSec() ;
     int   InitializeSimpleXS(MODEL::Model_Base *,
 			      BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     int   InitializeAmegic(MODEL::Model_Base *,
