@@ -105,7 +105,7 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
 
   if (!CheckBeamISRConsistency()) return 0.;
   
-  //  okay = okay && InitializeTheHardDecays();
+  okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
   //  only if events:
   if (rpa.gen.NumberOfEvents()>0) {
@@ -354,12 +354,6 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     ATOOLS::msg.Out()<<endl;
   }
   return ok;
-}
-
-bool Initialization_Handler::InitializeAllHardDecays()
-{
-  return 1;
-  return p_harddecays->InitializeAllHardDecays(m_medat,p_model);
 }
 
 void Initialization_Handler::SetParameter(int nr) {
