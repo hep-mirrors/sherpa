@@ -299,7 +299,10 @@ double XS_gg_q1qbar1::operator()(double s,double t,double u) {
 };
 
 
-bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
+bool XS_gg_q1qbar1::SetColours(double s, double t, double u) 
+{
+  Mt    = u/t;
+  Mu    = t/u;
   scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }
@@ -355,7 +358,10 @@ double XS_q1g_q1g::operator()(double s,double t,double u) {
   return  sqr(4.*M_PI*aS)*( (-4./9.) * ( Ms + Mu + Msu ) + Mt );
 };
 
-bool XS_q1g_q1g::SetColours(double s, double t, double u) {
+bool XS_q1g_q1g::SetColours(double s, double t, double u) 
+{
+  Ms    = u/s;
+  Mu    = s/u;
   scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }

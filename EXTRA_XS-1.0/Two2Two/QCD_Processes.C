@@ -20,7 +20,7 @@ QCD_Processes::QCD_Processes()
   : XS_Group(2,2,std::string(" parton parton -> parton parton"))  
 {
   Init(2,2,0);
-  fl[0] = fl[1] = fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
+  fl[0] = fl[1] = fl[2] = fl[3] = APHYTOOLS::Flavour(APHYTOOLS::kf::jet);
   aS = (*as)(sqr(rpa.gen.Ecms()));
   CreateSelector();
 }
@@ -29,11 +29,14 @@ void QCD_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam
 			       APHYTOOLS::Selector_Data * _seldata, AMEGIC::Process_Group * _broker)
 {
   xsselector = new XS_Selector();
+  
   MakeBroker(isr, beam, _seldata, _broker);
 
   Fill4qmodes();
   Fill2q2gmodes();
   Fill4gmodes();
+
+  broker->SetNStrong(4);
 
   SetISRTypes(fl);
 

@@ -34,34 +34,13 @@ QED_Processes::QED_Processes(int initflag) :
 	       <<"   Mismatch of flavours : "
 	       <<rpa.gen.Beam1()<<" and  "<<rpa.gen.Beam2()<<std::endl;
   }
-  if (initflag) Initialize(fl);
-}
-
-QED_Processes::QED_Processes(APHYTOOLS::Flavour * _fl) : 
-  XS_Group(2,2,std::string(" e+ + e- -> q + qbar "))  
-{
-  Initialize(_fl);
-}
-
-void QED_Processes::Initialize(APHYTOOLS::Flavour * _fl)
-{
-  fl[0] = APHYTOOLS::Flavour(_fl[0]);
-  fl[1] = APHYTOOLS::Flavour(_fl[1]);
-
-  for (int ifl=1;ifl<6;++ifl) {
-    fl[nin+0] = APHYTOOLS::Flavour(ifl);
-    fl[nin+1] = APHYTOOLS::Flavour(ifl).Bar();
-    Add(xsselector->GetXS(nin,nout,fl),false);
-  }
-
-  SetISRTypes(_fl);
 }
 
 void QED_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam,
 			       APHYTOOLS::Selector_Data * _seldata, AMEGIC::Process_Group * _broker)
 {
-  fl[nin+0] = APHYTOOLS::Flavour(kf::code(int(94)));
-  fl[nin+1] = APHYTOOLS::Flavour(kf::code(int(94)));
+  fl[nin+0] = APHYTOOLS::Flavour(kf::quark);
+  fl[nin+1] = APHYTOOLS::Flavour(kf::quark);
 
   MakeBroker(isr, beam, _seldata, _broker);
 
@@ -71,7 +50,6 @@ void QED_Processes::Initialize(ISR::ISR_Handler * isr, BEAM::Beam_Handler * beam
     Add(xsselector->GetXS(nin,nout,fl),true);
   }
   SetISRTypes(fl);
-  //  broker->Initialize(seldata);
 }
 
 

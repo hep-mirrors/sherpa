@@ -11,9 +11,6 @@ namespace EXTRAXS {
   public:
     QED_Processes();
     QED_Processes(int);
-    QED_Processes(APHYTOOLS::Flavour *); 
-    
-    void Initialize(APHYTOOLS::Flavour *);
     void Initialize(ISR::ISR_Handler *, BEAM::Beam_Handler *,
 		    APHYTOOLS::Selector_Data *, AMEGIC::Process_Group *);
   };
