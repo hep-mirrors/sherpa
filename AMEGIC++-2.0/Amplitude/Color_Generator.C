@@ -181,13 +181,13 @@ void Color_Generator::CFKill()
   last = CFlist;
   c = CFlist;
   while (c) {
-    if ((c->Type()==cf::D || c->Type()==cf::G) && ((c->ParticleArg(0)>99) || (c->ParticleArg(1)>99))) {
+    if ((c->Type()==cf::D || c->Type()==cf::G) && ((c->ParticleArg(0)>99) || (c->ParticleArg(1)>99))) { 
       if (c==CFlist) {
-	CFlist = last->Erase(0);
+	c = CFlist = last->Erase(0);
 	last = CFlist;
       }
       else {
-	c=c2->Erase(last);
+	c=c->Erase(last);
       }
     }
     else {
