@@ -238,8 +238,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
     m_kpkey[1][3]=m_kpkey[0][3]=0.;
     m_x[1]=m_x[0]=1.;
     m_zkey[1][2]=m_zkey[0][2]=1.;
-    p[0]=m_fixvecs[0];
-    p[1]=m_fixvecs[1];
+    m_flux=.25;
+    m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
     return true;
   }
   if (m_spkey[3]<m_splimits[0] || m_spkey[3]>m_splimits[1]) {
@@ -397,13 +397,6 @@ double ISR_Handler::Weight2(Flavour *flin)
       CheckRemnantKinematics(flin[1],m_xkey[1],0)) 
     return p_isrbase[0]->Weight(flin[1])*p_isrbase[1]->Weight(flin[0])/m_weight;
   return 0.;
-}
-
-double ISR_Handler::Flux(const ATOOLS::Vec4D *const p)
-{
-  if (m_mode!=0) return m_flux;
-  m_flux=.25;
-  return m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
 }
 
 void  ISR_Handler::BoostInCMS(Vec4D *p,const size_t n) 

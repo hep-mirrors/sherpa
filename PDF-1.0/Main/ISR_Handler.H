@@ -65,8 +65,6 @@ namespace PDF {
     void SetLimits();
     void Reset();
 
-    double Flux(const ATOOLS::Vec4D *const p);
-
     // inline functions 
     inline void SetPole(const double pole)      { m_splimits[2] = pole; }
     inline void SetYMin(const double ymin)      { m_ylimits[0]  = ymin; }
@@ -99,6 +97,8 @@ namespace PDF {
 
     inline double X1() { return m_x[0]; }
     inline double X2() { return m_x[1]; }
+
+    inline double Flux() { return m_flux; }
 
   };// end of class ISR_Handler
   

@@ -221,7 +221,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   p_info->ResetAll();
   p_isrhandler->Reset();
   if (m_nin>1) {
-    if (p_beamhandler && p_beamhandler->On()>0) { 
+    if (p_beamhandler->On()>0) { 
       p_beamhandler->SetLimits();
       p_beamchannels->GeneratePoint(m_beamspkey,m_beamykey,p_beamhandler->On()); 
       if (!(p_beamhandler->MakeBeams(p_lab,m_beamspkey[3],m_beamykey[2]))) return 0.;
@@ -231,18 +231,16 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
 	p_isrhandler->SetPole(m_beamspkey[3]);
       }
     }
-    if (p_isrhandler) {
-      p_isrhandler->SetLimits();
-      if (p_isrhandler->On()>0) { 
-	p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
-	if (p_isrhandler->KMROn()) {
-	  p_kpchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
-	  p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
-	}
-	if (!(p_isrhandler->MakeISR(p_lab,m_nvec))) return 0.;
+    p_isrhandler->SetLimits();
+    if (p_isrhandler->On()>0) { 
+      p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
+      if (p_isrhandler->KMROn()) {
+	p_kpchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
+	p_zchannels->GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
       }
     }
-    if ( (p_beamhandler && p_beamhandler->On()>0) || (p_isrhandler && p_isrhandler->On()>0) ) {
+    if (!(p_isrhandler->MakeISR(p_lab,m_nvec))) return 0.;
+    if (p_beamhandler->On()>0 || p_isrhandler->On()>0) {
       process->Selector()->UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
     }
   }
@@ -256,8 +254,8 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   double KFactor = 1., Q2 = -1.;
   m_result_1 = m_result_2 = 0.;
   for (int i=0;i<m_nvec;++i) p_cms[i]=p_lab[i];
-  if (p_isrhandler && p_isrhandler->On()>0) p_isrhandler->BoostInLab(p_lab,m_nvec);
-  if (p_beamhandler && p_beamhandler->On()>0) p_beamhandler->BoostInLab(p_lab,m_nvec);
+  if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(p_lab,m_nvec);
+  if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(p_lab,m_nvec);
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
   bool trigger = 0;
   if ((process->Selector())->Trigger(p_lab)) {
@@ -265,7 +263,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     if (m_nin>1) {
       trigger = 1;
       Q2 = process->Scale(p_lab);
-      if (p_isrhandler && p_isrhandler->On()>0) {
+      if (p_isrhandler->On()>0) {
 	p_isrhandler->CalculateWeight(Q2);
  	p_isrchannels->GenerateWeight(p_isrhandler->On());
  	m_result_1 *= p_isrchannels->Weight();
@@ -276,7 +274,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   	  m_result_1 *= p_kpchannels->Weight();
 	}
       }
-      if (p_beamhandler && p_beamhandler->On()>0) {
+      if (p_beamhandler->On()>0) {
 	p_beamhandler->CalculateWeight(Q2);
 	p_beamchannels->GenerateWeight(p_beamhandler->On());
 	m_result_1 *= p_beamchannels->Weight() * p_beamhandler->Weight();
@@ -288,15 +286,14 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     if (p_isrhandler && p_isrhandler->On()==3) m_result_2 = m_result_1;
     m_result_1 *= process->Differential(p_cms);
   }
-  if (p_isrhandler && p_isrhandler->On()==3 && trigger==1) {
+  if (p_isrhandler->On()==3 && trigger==1) {
     Rotate(p_cms);
     p_isrhandler->CalculateWeight2(Q2);
     if (m_result_2 > 0.) m_result_2 *= process->Differential2();
     else m_result_2 = 0.;
   }
-  if (m_nin>1 && ((p_isrhandler && p_isrhandler->On()>0) || 
-		  (p_beamhandler && p_beamhandler->On()>0))) {
-    m_flux=p_isrhandler->Flux(p_lab);
+  if (m_nin>1 && (p_isrhandler->On()>0 || p_beamhandler->On()>0)) {
+    m_flux=p_isrhandler->Flux();
   }
   return m_flux*(m_result_1+m_result_2);
 }
