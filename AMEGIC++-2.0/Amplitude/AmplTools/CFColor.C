@@ -300,12 +300,12 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 	    //AORGTOOLS::msg.Out()<<"After D's"<<endl;
 	    CFC[map[c1]][map[c2]] = st.eval(m);
 	    CFC[map[c2]][map[c1]] = conj(CFC[map[c1]][map[c2]]);
-	    msg.Debugging()<<"+";AORGTOOLS::msg.Out().flush();
+	    msg.Tracking()<<"+";AORGTOOLS::msg.Out().flush();
 	  }
 	  m2 = m2->Next;
 	  c2++;
 	}
-	msg.Debugging()<<endl;
+	msg.Tracking()<<endl;
       }
       m1 = m1->Next;
       c1++;
