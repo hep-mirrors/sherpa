@@ -34,6 +34,7 @@ for I in $* ; do
   elif [ "$I" = "-n" ]; then NOEXTRACT=TRUE
   elif [ "$I" = "-o" ]; then ONE=TRUE
   elif [ "$I" = "--clean" ]; then CLEAN=TRUE
+  elif [ "$I" = "--clean-run" ]; then RUNCLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
   elif [ "$I" = "--copt" ]; then DCOPT=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "--mopt" ]; then DMOPT=TRUE 
@@ -53,6 +54,7 @@ for I in $* ; do
     echo "         -n             do not extract tar files" && \
     echo "         -o             install single module" && \
     echo "         --clean        execute 'make clean' in every module before compiling" && \
+    echo "         --clean-run    execute './SHERPA-1.0/Run/makeclean' before compiling" && \
     echo "         --no-abort     ignore exit status of 'make'" && \
     echo "         --copt         define option for 'configure'" && \
     echo "         --mopt         define option for 'make' (default is '-j2')" && \
@@ -179,6 +181,12 @@ else
   echo "**************************************"
   echo "*   Installing the SHERPA package    *"
   echo "**************************************"
+fi
+if [ "$RUNCLEAN" = "TRUE" ] ; then
+  if cd SHERPA-1.0/Run ; then
+    ./makeclean
+    cd ../..
+  fi
 fi
 
 if [ "$SED" = "" ] ; then export SED="sed" ; fi
