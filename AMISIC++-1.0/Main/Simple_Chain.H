@@ -23,7 +23,8 @@ namespace AMISIC {
 
     typedef std::map<std::string,EXTRAXS::XS_Base*> Process_Map;
 
-    typedef std::multimap<double,std::string> Sorter_Map;
+    typedef std::multimap<double,std::string>           Sort_Map;
+    typedef std::map<ATOOLS::kf::code,ATOOLS::kf::code> Map_Map;
 
   private:
 
@@ -32,6 +33,7 @@ namespace AMISIC {
     Grid_Creator       *p_gridcreator;
 
     Process_Map m_processmap;
+    Map_Map     m_mapmap;
 
     double m_norm, m_enhance;
 
@@ -55,7 +57,7 @@ namespace AMISIC {
     double       m_sigmahard, m_error, m_ecms;
     bool         m_external, m_regulate;
 
-    std::string         m_regulator;
+    std::string         m_regulator; 
     std::vector<double> m_regulation;
 
     void CleanUp();

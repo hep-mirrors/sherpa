@@ -5,7 +5,7 @@
 #include "Single_XS.H"
 #include "XS_Selector.H"
 #include "Channel_Elements.H"
-#include "QCD_Processes.H"
+#include "Semihard_QCD.H"
 #include "Particle.H"
 #include "Random.H"
 #include "My_Limits.H"
@@ -145,7 +145,7 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 			      const ATOOLS::Flavour *flavs)
 {
   bool success=false;
-  ATOOLS::Flavour help[4];
+  ATOOLS::Flavour help[4], mapped[4];
   for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
     for (size_t j=0;j<(size_t)flavs[1].Size();++j) {
       for (size_t k=0;k<(size_t)flavs[2].Size();++k) {
@@ -155,27 +155,37 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	  help[2]=flavs[2][k];
 	  help[3]=flavs[3][l];
 	  OrderFlavours(help);
-	  MyStrStream converter;
-	  for (size_t m=0;m<4;++m) converter<<help[m];
-	  std::string name;
-	  converter>>name;
-	  if (m_processmap.find(name)==m_processmap.end()) {
-	    group->XSSelector()->SetOffShell(group->ISR()->KMROn());
-	    EXTRAXS::Single_XS *newxs = group->XSSelector()->GetXS(2,2,help);
-	    if (newxs==NULL) {
-	      msg_Debugging()<<"Simple_Chain::AddProcess(..): "
-			     <<"Cannot add process ' "<<help[0]<<" "<<help[1]
-			     <<" -> "<<help[2]<<" "<<help[3]<<" '."<<std::endl;
-	      continue;
-	    }
-	    msg_Tracking()<<"Simple_Chain::AddProcess(..): "
-			  <<"Added process '"<<newxs->Name()<<"'."<<std::endl;
+	  for (size_t i=0;i<4;++i) {
+	    if (m_mapmap.find(help[i].Kfcode())!=m_mapmap.end()) 
+	      mapped[i]=ATOOLS::Flavour(m_mapmap[help[i].Kfcode()]);
+	    else mapped[i]=ATOOLS::Flavour(help[i].Kfcode());
+	    if (help[i].IsAnti()) mapped[i]=mapped[i].Bar();
+	  }
+	  EXTRAXS::XS_Base *newxs = group->XSSelector()->GetXS(2,2,help);
+	  if (newxs==NULL) continue;
+	  EXTRAXS::XS_Base *testxs=NULL;
+	  EXTRAXS::XS_Selector::FindInGroup(group,testxs,2,2,mapped);
+	  if (testxs==NULL) {
+	    group->Add(newxs);
 	    if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
 	    newxs->SetScaleScheme(m_scalescheme);
 	    newxs->SetKFactorScheme(m_kfactorscheme);
 	    group->Add(newxs);
 	    m_processmap[newxs->Name()]=newxs;
 	    success=true;
+	    msg_Debugging()<<"Simple_Chain::AddProcess(..): "
+			   <<"New process '"<<newxs->Name()<<"'.\n";
+	  }
+	  else {
+	    if (testxs->Name()!=newxs->Name()) {
+	      if (m_processmap.find(newxs->Name())!=
+		  m_processmap.end()) continue;
+	      m_processmap[newxs->Name()]=testxs;
+	      msg_Debugging()<<"Simple_Chain::AddProcess(..): "
+			     <<"Map process '"<<newxs->Name()<<"' -> '"
+			     <<testxs->Name()<<"'.\n";
+	    }
+	    delete newxs;
 	  }
 	}
       }
@@ -210,6 +220,17 @@ bool Simple_Chain::ReadInData()
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
   if (!reader->ReadFromFile(m_error,"ERROR")) m_error=1.e-2;
   GeneratePathName();
+  std::vector<std::vector<int> > helpivv;
+  if (reader->MatrixFromFile(helpivv,"MAP_FLAVOUR")) {
+    msg_Tracking()<<"Simple_Chain::ReadInData(): Mapping flavours {\n";
+    for (size_t i=0;i<helpivv.size();++i) {
+      if (helpivv[i].size()<2) continue;
+      m_mapmap[ATOOLS::kf::code(helpivv[i][0])]=
+	ATOOLS::kf::code(helpivv[i][1]);
+      msg_Tracking()<<"   "<<helpivv[i][0]<<" -> "<<helpivv[i][1]<<"\n";
+    }
+    msg_Tracking()<<"}"<<std::endl;
+  }
   delete reader;
   return true;
 }
@@ -231,12 +252,11 @@ bool Simple_Chain::CreateGrid()
   p_processes->SetKFactorScheme(m_kfactorscheme);
   ATOOLS::Flavour flavour[4];
   flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
-  EXTRAXS::QCD_Processes *group;
-  group = new EXTRAXS::QCD_Processes(p_isr,p_beam,flavour,
-				     p_processes->SelectorData(),
-				     p_processes->ScaleScheme(),
-				     p_processes->KFactorScheme(),
-				     p_processes->ScaleFactor(),false);
+  Semihard_QCD *group;
+  group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
+			   p_processes->ScaleScheme(),
+			   p_processes->KFactorScheme(),
+			   p_processes->ScaleFactor());
   group->XSSelector()->SetOffShell(p_isr->KMROn());
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
@@ -647,17 +667,17 @@ bool Simple_Chain::DiceProcess()
     AddData(criterion,initialdata.flavs,initialdata.help,
 	    m_last[0],initialdata.max);
   p_processes->ResetSelector(p_processes->SelectorData());
-  Sorter_Map sorter;
-  Sorter_Map::key_type norm=0.0, cur=0.0;
+  Sort_Map sorter;
+  Sort_Map::key_type norm=0.0, cur=0.0;
   for (Grid_Function_Map::iterator git=m_differential.begin();
        git!=m_differential.end();++git) {
     cur=(*git->second)(m_last[0]);
-    sorter.insert(Sorter_Map::value_type(cur,git->first));
+    sorter.insert(Sort_Map::value_type(cur,git->first));
     norm+=cur;
   }
   double rannr=ATOOLS::ran.Get();
   cur=0.0;
-  for (Sorter_Map::iterator sit=sorter.begin();
+  for (Sort_Map::iterator sit=sorter.begin();
        sit!=sorter.end();++sit) {
     for (;sit!=sorter.upper_bound(sit->first);++sit) {
       if ((cur+=sit->first/norm)>rannr) {
