@@ -1,6 +1,6 @@
 SHERPASYS = ../..
 
-ATOOLSFLAGS   =	-DUSING__COLOUR # -pedantic -Wall -Winline
+ATOOLSFLAGS   =	-DUSING__COLOUR -pedantic -Wall -Winline -Wno-long-long
 
 ATOOLSINCS    =	-I../Math -I../Phys
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
