@@ -43,7 +43,6 @@ MI_Handler::MI_Handler(std::string path,std::string file,MODEL::Model_Base *mode
       THROW(fatal_error,"Cannot initialize Amisic.");
     }
     m_ycut=p_amisic->HardBase()->Stop(0);
-    PRINT_INFO(m_ycut);
     m_ycut=ATOOLS::sqr(m_ycut/ATOOLS::rpa.gen.Ecms());
     m_type=Amisic;
   }
