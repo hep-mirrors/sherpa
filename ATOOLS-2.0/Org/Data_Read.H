@@ -60,7 +60,7 @@ namespace AORGTOOLS {
 	        SM       = 3, 
 	        MSSM     = 4, 
 	        THDM     = 5,
-	        LED      = 7,
+	        ADD      = 7,
 	        Unknown  = 99
     };
   };
