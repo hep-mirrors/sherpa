@@ -128,15 +128,29 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
   if (m_mode&ANALYSIS::splitt_jetseeds) {
     mode=m_mode^ANALYSIS::splitt_jetseeds;
     mode=mode|ANALYSIS::output_this;
+    /*
     MyStrStream str;
     str<<'j';
     str<<nout;
     str>>key;
+    */
+    switch (nout) {
+    case 2 : key="j2"; break;
+    case 3 : key="j3"; break;
+    case 4 : key="j4"; break;
+    case 5 : key="j5"; break;
+    case 6 : key="j6"; break;
+    case 7 : key="j7"; break;
+    case 8 : key="j8"; break;
+    case 9 : key="j9"; break;
+    }
   }
   else {
     mode=m_mode^ANALYSIS::splitt_process;
-    if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
-    key=name;
+//     if (m_mode&ANALYSIS::output_process) mode=mode|ANALYSIS::output_this;
+//     else 
+      if (m_mode&ANALYSIS::output_this) mode=mode^ANALYSIS::output_this;
+      key=name;
   }
   
   Primitive_Analysis * ana=GetSubAnalysis(key,mode);
@@ -182,6 +196,18 @@ void Primitive_Analysis::DoAnalysis(Blob_List * const bl, double value) {
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
   if (!IsEqual(value,weight)) 
     msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis : weight in Primitive_Analysis ambiguous! "<<std::endl;
+  double weight_one=weight;
+  int    ncount_one=ncount;
+  Blob_Data_Base * info = (*p_partner)["ME_Weight_One"];
+  if (info) {
+    weight_one = info->Get<double>();
+    ncount_one = (*p_partner)["ME_NumberOfTrials_One"]->Get<int>();
+  }
+  m_stats.sum_weight+=weight;
+  m_stats.nevt+=ncount;
+  m_stats.sum_weight_one+=weight_one;
+  m_stats.nevt_one+=ncount_one;
+  
 
   // do nonsplittable (helper and legacy observables) first
   if (m_mode&ANALYSIS::fill_helper) {
@@ -222,7 +248,7 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
   if (!(m_mode&ANALYSIS::splitt_phase)) {
     for (size_t i=0;i<m_observables.size();i++) {
       if (m_mode&ANALYSIS::weighted  && m_mode&ANALYSIS::splitt_all && m_observables[i]->Splittable()) {
-	std::string key =m_observables[i]->Name();
+	std::string key = m_observables[i]->Name();
 	m_observables[i]->Reset();  // just in case someone has filled something in already
       
 	for (Analysis_List::iterator it=m_subanalyses.begin();
@@ -238,7 +264,15 @@ void Primitive_Analysis::FinishAnalysis(const std::string & resdir,long ntotal, 
 	  m_observables[i]->EndEvaluation(double(m_nevt)/double(ntotal)*xs);
 	}
 	else {
-	  m_observables[i]->EndEvaluation();
+	  if (m_stats.nevt_one>0) {
+	    double xshist=m_stats.sum_weight/double(m_stats.nevt);
+	    double xsreal=m_stats.sum_weight_one/double(m_stats.nevt_one);
+	    //	    std::cout<<m_observables[i]->Name()<<"   xshist="<<xshist<<"  xsreal"<<xsreal<<std::endl;
+	    m_observables[i]->EndEvaluation(xsreal/xshist);
+	  }
+	  else {
+	    m_observables[i]->EndEvaluation();
+	  }
 	}
       }
       if (m_mode&ANALYSIS::output_this) m_observables[i]->Output(resdir);
@@ -279,6 +313,14 @@ void Primitive_Analysis::CreateFinalStateParticleList()
 	  m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(info->Get<int>());
 	}
       }
+	info=(*(*blit))["ME_Weight_One"];
+      if (info) {
+	m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(info->Get<double>());
+	info=(*(*blit))["ME_NumberOfTrials_One"];
+	if (info) {
+	  m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(info->Get<int>());
+	}
+      }
     }
     if (SelectBlob(*blit)) {
       for (int i=0;i<(*blit)->NOutP();++i) {
@@ -293,12 +335,18 @@ void Primitive_Analysis::CreateFinalStateParticleList()
     }
   }
 
-  if (!m_datacontainer["ME_Weight"]) {
+  bool found=false;
+  if (m_datacontainer.find("ME_Weight")!=m_datacontainer.end()) found=true;
+  if (!found) {
     m_datacontainer["ME_Weight"]=new Blob_Data<double>(1.);
     m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(1);
+    m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(0.);
+    m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(0);
   }
   else if (!m_datacontainer["ME_NumberOfTrials"]) {
     m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(1);
+    m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(0.);
+    m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(0);
   }
 
   m_pls["FinalState"]=pl;
