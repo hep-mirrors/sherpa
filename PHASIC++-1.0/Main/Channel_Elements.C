@@ -383,8 +383,8 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
 
 
 // new
-double Channel_Elements::DiceYUniform(const double tau,const Double_Container &xinfo,
-				      Double_Container &yinfo,const double ran,const int mode) const
+double Channel_Elements::DiceYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
+				      ATOOLS::Double_Container &yinfo,const double ran,const int mode) const
 {
   double logtau=0.5*log(tau);
   if (mode==1) return logtau;
@@ -421,8 +421,8 @@ double Channel_Elements::DiceYUniform(double tau, double * yrange, double * delt
 }
 
 // new 
-double Channel_Elements::WeightYUniform(const double tau,const Double_Container &xinfo,
-                                      Double_Container &yinfo,const int mode) const
+double Channel_Elements::WeightYUniform(const double tau,const ATOOLS::Double_Container &xinfo,
+                                      ATOOLS::Double_Container &yinfo,const int mode) const
 {
   if (mode!=3) return 1.;
   double logtau=0.5*log(tau);
