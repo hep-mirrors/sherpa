@@ -129,3 +129,145 @@ DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter,
 			"113","neutral xi");
 DEFINE_QUALIFIER_GETTER(Is_Neutral_Xi,Is_Neutral_Xi_Getter_,
 			"NeutralXi","neutral xi");
+
+bool Is_Photon::operator() (const Particle * p) const {
+  if ( p && p->Flav().IsPhoton() ) return 1;
+  return 0;
+};
+
+bool Is_Gluon::operator() (const Particle * p)const {
+  if ( p && p->Flav().IsGluon() ) return 1;
+  return 0;
+};
+
+bool Is_Parton::operator() (const Particle * p)const {
+  if ( p && ( p->Flav().IsGluon() || p->Flav().IsQuark() ) ) return 1;
+  return 0;
+};
+
+bool Is_Charged::operator() (const Particle * p)const{
+  if ( p && (p->Flav().IntCharge() !=0) ) return 1;
+  return 0;
+};
+
+bool Is_Hadron::operator() (const Particle * p)const{
+  if ( p && p->Flav().IsHadron() &&!p->Flav().IsDiQuark()) return 1;
+  return 0;
+};
+
+bool Is_Charged_Hadron::operator() (const Particle * p)const{
+  if ( p && p->Flav().IntCharge() !=0 &&
+       p->Flav().IsHadron() &&!p->Flav().IsDiQuark()) return 1;
+  return 0;
+};
+
+bool Is_Neutral_Hadron::operator() (const Particle * p)const{
+  if ( p && p->Flav().IntCharge() ==0 &&
+       p->Flav().IsHadron() &&!p->Flav().IsDiQuark()) return 1;
+  return 0;
+};
+
+bool Is_Final_State::operator() (const Particle * p)const{
+  if ( p && (p->Status() == 1) ) return 1;
+  return 0;
+};
+
+bool Is_Neutral::operator() (const Particle * p)const{
+  if ( p && p->Flav().IntCharge()==0) return 1;
+  return 0;
+};
+
+bool Is_Charged_Pion::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::pi_plus) return 1;
+  return 0;
+};
+
+bool Is_Neutral_Pion::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::pi) return 1;
+  return 0;
+};
+
+bool Is_Charged_Kaon::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::K_plus) return 1;
+  return 0;
+};
+bool Is_Neutral_Kaon::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::K) return 1;
+  return 0;
+};
+
+bool Is_Charged_KStar::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::K_star_892_plus) return 1;
+  return 0;
+};
+
+bool Is_Neutral_KStar::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::K_star_892) return 1;
+  return 0;
+};
+
+bool Is_Rho0::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::rho_770) return 1;
+  return 0;
+};
+
+bool Is_Eta::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::eta) return 1;
+  return 0;
+};
+
+bool Is_EtaPrime::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::eta_prime_958) return 1;
+  return 0;
+};
+
+bool Is_Phi::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::phi_1020) return 1;
+  return 0;
+};
+
+bool Is_Omega::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::omega_782) return 1;
+  return 0;
+};
+
+bool Is_Lambda::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::Lambda) return 1;
+  return 0;
+};
+
+bool Is_Charged_Sigma::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::Sigma_minus) return 1;
+  return 0;
+};
+
+bool Is_Charged_Xi::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::Xi_minus) return 1;
+  return 0;
+};
+
+bool Is_Neutral_Xi::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==kf::Xi) return 1;
+  return 0;
+};
+
+bool Is_Proton_Antiproton::operator() (const Particle * p) const {
+  if ( p && p->Flav().Kfcode()==2212) return 1;
+  return 0;
+};
+
+bool Is_Not_Lepton::operator() (const Particle * p) const {
+  if ( p && !p->Flav().IsLepton() ) return 1;
+  return 0;
+};
+
+bool Is_Not_Neutrino::operator() (const Particle * p) const {
+  if ( p && !(p->Flav().IsLepton() && p->Flav().IntCharge()==0) ) return 1;
+  return 0;
+};
+
+bool Is_There::operator() (const Particle * p) const {
+  if ( p ) return 1;
+  return 0;
+};
+
