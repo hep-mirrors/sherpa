@@ -96,7 +96,13 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
 
 bool Read_Write_Base::OpenInFile(const unsigned int i)
 {  
-  if (InputFile(i)==nullstring) return false;
+  if (InputFile(i)==nullstring) {
+    if (m_addcommandline && CommandLine().size()>0) {
+      AddFileContent(CommandLine());
+      return true;
+    }
+    return false;
+  }
   if (InFileMode(i)==Unknown) SetInFileMode(Temporary);
   if (m_infile[i]==NULL) {
 #ifdef DEBUG__Read_Write_Base
