@@ -831,7 +831,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
       from.close();
-      p_ps->ReadIn(m_resdir+string("/MC_")+m_name);
+      p_ps->ReadIn(_resdir+string("/MC_")+m_name);
       if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
       if (p_ps->ISRIntegrator()  != 0) p_ps->ISRIntegrator()->Print();
       if (p_ps->FSRIntegrator()  != 0) p_ps->FSRIntegrator()->Print();
