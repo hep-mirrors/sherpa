@@ -21,7 +21,8 @@ Type Get(const std::string & in)
 }
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
-  m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), m_bins(0), m_fills(0)
+  m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), 
+  m_bins(0), m_fills(0), m_finished(false)
 {
   m_logarithmic = int(m_type/10);
   m_depth       = m_type-m_logarithmic*10+1;
@@ -67,6 +68,7 @@ Histogram::Histogram(const Histogram * histo) {
 
   m_binsize = histo->m_binsize;
   m_active  = 1;
+  m_finished = histo->m_finished;
 
   m_bins    = new double*[m_nbin];
   for (int i=0;i<m_nbin;i++) {
@@ -77,6 +79,7 @@ Histogram::Histogram(const Histogram * histo) {
 
 
 Histogram::Histogram(const std::string & pID) {
+  m_finished=false;
   std::ifstream ifile(pID.c_str());
 
   std::string dummy;
@@ -174,11 +177,26 @@ Histogram::~Histogram() {
 
 
 void Histogram::Finalize() {
-  for (int i=0;i<m_nbin;++i) {
-    m_bins[i][0]/=m_fills*m_binsize;
-    if (m_depth>1) {
-      m_bins[i][1]=m_bins[i][1]/(m_fills*m_binsize)-sqr(m_bins[i][0]);
+  if (!m_finished) {
+    for (int i=0;i<m_nbin;++i) {
+      m_bins[i][0]/=m_fills*m_binsize;
+      if (m_depth>1) {
+	m_bins[i][1]=m_bins[i][1]/(m_fills*m_binsize)-sqr(m_bins[i][0]);
+      }
     }
+    m_finished=true;
+  }
+}
+
+void Histogram::Restore() {
+  if (m_finished) {
+    for (int i=0;i<m_nbin;++i) {
+      if (m_depth>1) {
+	m_bins[i][1]=(m_bins[i][1]+sqr(m_bins[i][0]))*(m_fills*m_binsize);
+      }
+      m_bins[i][0]*=m_fills*m_binsize;
+    }
+    m_finished=false;
   }
 }
 
@@ -201,7 +219,6 @@ void Histogram::Scale(double scale) {
 }
 
 void Histogram::Output() {
-  return;
   if (!msg.LevelIsDebugging()) return;
   msg.Out()<<"----------------------------------------"<<std::endl
 	   <<"    "<<m_bins[0][0]<<std::endl
@@ -223,6 +240,7 @@ void Histogram::Output() {
 
 void Histogram::Output(const std::string name) 
 {
+  Finalize();
   msg.LogFile()<<"! Histogram::Output(..): "
 	       <<"Writing ("<<this<<") to '"<<name<<"'"<<std::endl;
   std::ofstream ofile;
@@ -238,6 +256,7 @@ void Histogram::Output(const std::string name)
     ofile<<std::endl;
   }
   ofile.close();
+  Restore();
 }
 
 

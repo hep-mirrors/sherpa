@@ -14,7 +14,7 @@ namespace ATOOLS {
     long int   m_fills;
     double     m_binsize, m_logbase;
     int        m_depth;
-    bool       m_active;
+    bool       m_active, m_finished;
     int        m_logarithmic;
   public :
     Histogram(int type,double xmin, double xmax, int nbins);
@@ -29,6 +29,7 @@ namespace ATOOLS {
     void Output();
     void Output(const std::string);
     void Finalize();
+    void Restore();
     double * Bin(int i);
     double * Bin(double x);
     void Extrapolate(double x, double * ys,int mode);
