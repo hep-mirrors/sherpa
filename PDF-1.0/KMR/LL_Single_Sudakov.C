@@ -41,15 +41,12 @@ bool LL_Single_Sudakov::Initialize(double qmin,double qmax)
 
 double LL_Single_Sudakov::Log(double Q, double q) 
 {
-  ATOOLS::msg.Debugging()<<"checking for sud "<<q<<" "<<Q<<" vs. "
-			 <<m_lastsud[0]<<" "<<m_lastsud[1]<<" at "<<this<<" "<<m_lastsud.Name()<<std::endl;
   if (q==m_lastsud[0] && Q==m_lastsud[1] && 
       m_lastsud.Status()==ATOOLS::si::diced) return m_lastsud[2];
   p_bp->SetQmax(m_lastsud[1]=Q);
   p_bp->SetQmin(m_lastsud[0]=q);
   m_lastsud.SetStatus(ATOOLS::si::diced);
   m_lastsud[2]=m_gauss.Integrate(q,Q,1.e-5,1);
-  ATOOLS::msg.Debugging()<<"calculated sud   "<<q<<" "<<Q<<" "<<this<<" -> "<<m_lastsud[2]<<std::endl;
   return m_lastsud[2];
 }
 
