@@ -216,7 +216,7 @@ Threshold_Central_V::Threshold_Central_V(const double mass,const double sexp,con
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  int rannum=1;
+  rannum=1;
   if (mode==3) rannum=2;
   p_vegas = new Vegas(rannum,100,name,0);
   rans  = new double[2];
@@ -439,7 +439,7 @@ Resonance_Central_V::Resonance_Central_V(const double mass,const double width,
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  int rannum=1;
+  rannum=1;
   if (mode==3) rannum=2;
   p_vegas = new Vegas(rannum,100,name,0);
   rans  = new double[2];
@@ -658,7 +658,7 @@ Simple_Pole_Central_V::Simple_Pole_Central_V(const double exponent,const std::st
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  int rannum=1;
+  rannum=1;
   if (mode==3) rannum=2;
   p_vegas = new Vegas(rannum,100,name,0);
   rans  = new double[2];
@@ -898,7 +898,7 @@ Leading_Log_Central_V::Leading_Log_Central_V(const double beta,const double fact
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  int rannum=1;
+  rannum=1;
   if (mode==3) rannum=2;
   p_vegas = new Vegas(rannum,100,name,0);
   rans  = new double[2];
@@ -1176,7 +1176,7 @@ LBS_Compton_Peak_Central_V::LBS_Compton_Peak_Central_V(const double exponent,con
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  int rannum=1;
+  rannum=1;
   if (mode==3) rannum=2;
   p_vegas = new Vegas(rannum,100,name,0);
   rans  = new double[2];
@@ -1408,7 +1408,7 @@ Simple_Pole_PDF_Central_V::Simple_Pole_PDF_Central_V(const double exponent,const
   m_sgridkey.Assign(m_spkey.Info(),1,0,info);
   m_ygridkey.Assign(m_ykey.Info(),1,0,info);
   m_zchannel=m_spkey.Name().find("z-channel")!=std::string::npos;
-  int rannum=1;
+  rannum=1;
   if (mode==3) rannum=2;
   p_vegas = new Vegas(rannum,300,name,0);
   rans  = new double[2];
