@@ -340,7 +340,7 @@ bool Jet_Finder::Trigger(const Vec4D * p)
   Init(moms);
 
   BoostInFrame(moms);
-
+  
   int    j,k;
   bool   trigger = 1;
   double ymin=0.;

@@ -63,6 +63,16 @@ namespace ATOOLS {
     //virtual double Smin();
     //virtual double Smax(); 
     virtual std::string Name(); 
+    
+    // inline functions
+    inline void SetNIn(const size_t nin)   { m_nin=nin;   }
+    inline void SetNOut(const size_t nout) { m_nout=nout; }
+    inline void SetNTot(const size_t n)    { m_n=n;       }
+
+    inline size_t NIn() const  { return m_nin;  }
+    inline size_t NOut() const { return m_nout; }
+    inline size_t NTot() const { return m_n;    }
+
   };
 
   class Selector_Log {
