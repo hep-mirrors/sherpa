@@ -135,7 +135,7 @@ size_t Data_Reader::Find(std::string input,std::string parameter,size_t &length)
     for (size_t i=0;i<input.length();++i) input[i]=toupper(input[i]);
     for (size_t i=0;i<parameter.length();++i) parameter[i]=toupper(parameter[i]);
   }
-  size_t cutinputblanks=0, cutparameterblanks=0;
+  size_t cutinputblanks=0;
   if (m_ignoreblanks) {
     for (size_t j=0;j<Blank().size();++j) {
       bool lastblank=true;
@@ -160,7 +160,6 @@ size_t Data_Reader::Find(std::string input,std::string parameter,size_t &length)
 	  parameter[i]=Blank()[0];
 	  if (lastblank) {
 	    parameter=parameter.substr(0,i)+parameter.substr(i,parameter.length());
-	    ++cutparameterblanks;
 	  }
 	  lastblank=true;
 	}
@@ -170,12 +169,14 @@ size_t Data_Reader::Find(std::string input,std::string parameter,size_t &length)
       }
     }
   }
-  length=parameter.length()+cutinputblanks-cutparameterblanks;
 #ifdef DEBUG__Data_Reader
   std::cout<<"   input     = '"<<input<<"'("<<cutinputblanks<<")\n"
 	   <<"   parameter = '"<<parameter<<"'("<<cutparameterblanks<<")"<<std::endl;
 #endif
-  return input.find(parameter);
+  length=parameter.length()+cutinputblanks;
+  size_t pos=input.find(parameter);
+  if (pos==std::string::npos) length=0;
+  return pos;
 }
 
 template <class Read_Type>
