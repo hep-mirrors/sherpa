@@ -165,7 +165,7 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
       if ((*sfit)->GetFlB()==flavour) {
 	if ((*sfit)->GetFlA().IsGluon()) {
 	  if (m_z*(1.+sqrt(m_kperp2/m_mu2))<1.) {
-	    m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
+	    m_unintegrated+=2.*(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
 	  }
 	}
 	else {

@@ -8,16 +8,16 @@
  
 using namespace PDF;
 
-const unsigned int PDF::LL_Branching::s_nf=5;
+const unsigned int PDF::LL_Branching::s_nf=3;
 
 LL_Branching::SF_Set PDF::LL_Branching::s_splitting=LL_Branching::SF_Set();
 LL_Branching PDF::LLB;
 
 LL_Branching::LL_Branching() {}
 
-LL_Branching::LL_Branching(const ATOOLS::Flavour _m_flavour,MODEL::Running_AlphaS *_p_alphas):
-  m_flavour(_m_flavour),
-  p_alphas(_p_alphas)
+LL_Branching::LL_Branching(const ATOOLS::Flavour flavour,MODEL::Running_AlphaS *alphas):
+  m_flavour(flavour),
+  p_alphas(alphas)
 {
   APACIC::Splitting_Function *newsplit;
   m_splitting.push_back(new APACIC::Splitting_Group());
@@ -45,20 +45,22 @@ LL_Branching::LL_Branching(const ATOOLS::Flavour _m_flavour,MODEL::Running_Alpha
     }
     m_splitting[0]->Add(newsplit);
     m_splitting.push_back(new APACIC::Splitting_Group());
-    for (int i=1-s_nf;i<(int)s_nf;++i) {
-      if ((sfit=Find(m_flavour,(ATOOLS::kf::code)i+1))==s_splitting.end()) {
-	newsplit = new APACIC::g_qq((ATOOLS::kf::code)i+1);
-	Insert(newsplit);
+    for (int i=-(1+s_nf);i<(int)s_nf;++i) {
+      if (i!=0) {
+	if ((sfit=Find(m_flavour,(ATOOLS::kf::code)i+1))==s_splitting.end()) {
+	  newsplit = new APACIC::g_qq((ATOOLS::kf::code)i+1);
+	  Insert(newsplit);
+	}
+	else {
+	  newsplit=*sfit;
+	}
+	m_splitting[1]->Add(newsplit);
+	m_const.push_back(m_splitting[1]->Integral(0.,1.));
       }
-      else {
-	newsplit=*sfit;
-      }
-      m_splitting[1]->Add(newsplit);
-      m_const.push_back(m_splitting[1]->Integral(0.,1.));
     }
   }
   else {
-    ATOOLS::msg.Error()<<"LL_Branching("<<_m_flavour<<"): "
+    ATOOLS::msg.Error()<<"LL_Branching("<<flavour<<"): "
 		       <<" No splitting function available. Abort."<<std::endl;
     exit(139);
   }
@@ -121,7 +123,7 @@ double LL_Branching::Gamma(double q, double Q)
     splitting=m_splitting[0]->Integral(0.,Q/(Q+q));
   }
   else if (m_flavour.IsGluon()) {
-    // splitting=p_alphas->Nf(q*q)*m_const[0]/s_nf;
+    //splitting=p_alphas->Nf(q*q)*m_const[0]/s_nf;
     splitting=m_const[0];
     splitting+=m_splitting[0]->Integral(q/(Q+q),Q/(Q+q));
   }
