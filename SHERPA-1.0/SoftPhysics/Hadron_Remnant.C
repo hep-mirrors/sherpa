@@ -157,6 +157,9 @@ bool Hadron_Remnant::DiceKinematics()
     double m=m_parton[0][j]->Flav().PSMass();
     double pmax=0.9999999999*sqrt(E*E-m*m);
     double xperp=ATOOLS::Min(xperptot,pmax/ptot.PPerp());
+    if (m_parton[0][j]->Flav().IsDiQuark() && j<m_parton[0].size()-1) {
+      xperp=0.;
+    }
     if (j==m_parton[0].size()-1) xperp=xperptot;
     xperptot-=xperp;
     ATOOLS::Vec4D p=xperp*ptot;
