@@ -251,9 +251,11 @@ double Jet_Finder::MTij2(Vec4D p1,Vec4D p2)
 {
   double mt12_2;
   if (m_type>=2) {
-    double mt1_2  = sqr(p1[1]) + sqr(p1[2]) + p1.Abs2(); 
-    double mt2_2  = sqr(p2[1]) + sqr(p2[2]) + p2.Abs2(); 
-    if (IsZero(mt1_2/(mt1_2+mt2_2))) {
+    double pt1_2  = sqr(p1[1]) + sqr(p1[2]);
+    double mt1_2  = pt1_2 + dabs(p1.Abs2()); 
+    double pt2_2  = sqr(p2[1]) + sqr(p2[2]);
+    double mt2_2  = pt2_2 + dabs(p2.Abs2()); 
+    if (IsZero(pt1_2/(pt1_2+pt2_2))) {
       mt12_2        = mt2_2;
     }
     else 
