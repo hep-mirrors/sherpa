@@ -1,0 +1,79 @@
+#include "Statistics_Observable.H"
+#include "Primitive_Analysis.H"
+
+#include <fstream>
+
+using namespace ANALYSIS;
+using namespace ATOOLS;
+
+Statistics_Observable::Statistics_Observable(const std::string & listname, int mode)
+{
+  m_name  = "Statistics_Observable";
+  m_type  = mode;
+  m_listname    = listname;
+  m_splitt_flag = false;
+}
+
+void Statistics_Observable::Evaluate(const Blob_List &  blobs,double value, int ncount)
+{
+  Particle_List * pl     = p_ana->GetParticleList("FinalState");
+  Particle_List * pl_cut = p_ana->GetParticleList(m_listname);
+
+  std::string key="unknown";
+  unsigned long blcount=0;
+  for (Blob_Const_Iterator bit=blobs.begin();bit!=blobs.end();++bit) {
+    ++blcount;
+    if ((*bit)->Type()==btp::Signal_Process) key  = (*bit)->TypeSpec();
+  }
+
+  Statistics_Map::iterator cit=m_signal_process_statistics.find(key);
+  if (cit==m_signal_process_statistics.end()) {
+    m_signal_process_statistics[key]=Statistics_Data();
+    cit=m_signal_process_statistics.find(key);
+  }
+
+  m_nevt+=ncount;
+  cit->second.nevt+=ncount;
+  cit->second.nblobssum+=blcount;
+  cit->second.nplsum+=pl->size();
+  cit->second.weightsum+=value;
+
+  if (pl_cut) {
+    if (pl_cut->size()>0) {
+      cit->second.nevt_cut+=ncount;
+      cit->second.nblobssum_cut+=blcount;
+      cit->second.nplsum_cut+=pl_cut->size();
+      cit->second.weightsum_cut+=value;
+    }
+  }
+}
+
+void Statistics_Observable::EndEvaluation(double scale) {
+}
+
+void Statistics_Observable::Output(const std::string & pname) {
+  int  mode_dir = 448;
+  mkdir((pname).c_str(),mode_dir); 
+  std::ofstream file((pname+std::string("/")+m_name).c_str());
+
+
+  for (Statistics_Map::const_iterator cit=m_signal_process_statistics.begin();cit!=m_signal_process_statistics.end();++cit) {
+    file<<cit->first<<" : "<<cit->second<<std::endl;
+  }
+  file.close();
+}
+
+Primitive_Observable_Base * Statistics_Observable::Copy() const 
+{
+  return new Statistics_Observable(m_listname,m_type);
+}
+
+std::ostream & ANALYSIS::operator<<(std::ostream & str, const Statistics_Data & sd) {
+  str<<sd.nevt<<","<<double(sd.nblobssum)/double(sd.nevt)<<","
+     <<double(sd.nplsum)/double(sd.nevt)<<","
+     <<sd.weightsum/double(sd.nevt)<<",    ";
+  str<<sd.nevt_cut<<","<<double(sd.nblobssum_cut)/double(sd.nevt_cut)<<","
+     <<double(sd.nplsum_cut)/double(sd.nevt_cut)<<","
+     <<sd.weightsum/double(sd.nevt_cut);
+  return str;
+}
