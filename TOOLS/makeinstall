@@ -274,7 +274,7 @@ do
         fi
         if [ ! "$NOABORT" = "TRUE" ] ; then
           until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
-    	    if ! read -t 300 -p "continue anyway (y/n/r/b) ? " CONTINUE ; then
+    	    if ! read -t 300 -p "continue anyway (y/n/r/b/c/t) ? " CONTINUE ; then
 	      echo ""
 	      CONTINUE="n"
 	    fi
@@ -289,6 +289,16 @@ do
               exit 1
 	    elif [ "$CONTINUE" = "b" ] ; then
               bash
+	      CONTINUE="r"
+	    elif [ "$CONTINUE" = "c" ] ; then
+              ./configure
+	      CONTINUE="r"
+	    elif [ "$CONTINUE" = "t" ] ; then
+	      libtoolize --force
+	      aclocal
+	      automake -a
+	      autoconf
+              ./configure
 	      CONTINUE="r"
 	    fi
 	  done
