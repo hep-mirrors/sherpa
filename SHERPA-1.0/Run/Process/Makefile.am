@@ -1,25 +1,29 @@
+SHERPASYS     =	../../..
+
+SHERPAFLAGS   =	-pedantic -Wall -Winline
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
+AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
+APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
+PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
+		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
+		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
+		-I$(AMEGICDIR)/String 
+
 SUBDIRS = Dummy
 lib_LTLIBRARIES = libProcess.la
-libProcess_la_SOURCES = Set_Channel.C Set_Values.C 
-INCLUDES = -I../../../AMEGIC++-2.0/Amplitude \
-	   -I../../../AMEGIC++-2.0/Amplitude/AmplTools \
-	   -I../../../AMEGIC++-2.0/Amplitude/Zfunctions \
-           -I../../../AMEGIC++-2.0/Phasespace \
-	   -I../../../AMEGIC++-2.0/Main \
-	   -I../../../AMEGIC++-2.0/Model \
-	   -I../../../AMEGIC++-2.0/String \
-	   -I../../../PHASIC++-1.0/Main \
-	   -I../../../PHASIC++-1.0/ISR \
-	   -I../../../PHASIC++-1.0/Beam \
-	   -I../../../MODEL-1.0/Main \
-	   -I../../../MODEL-1.0/Hdecay \
-	   -I../../../MODEL-1.0/Isajet \
-	   -I../../../PDF-1.0/Main \
-	   -I../../../PDF-1.0/LHAPDF \
-	   -I../../../EXTRA_XS-1.0/Main \
-	   -I../../../ATOOLS-2.0/Phys \
-	   -I../../../ATOOLS-2.0/Math \
-	   -I../../../ATOOLS-2.0/Org 
+libProcess_la_SOURCES =	\
+			Set_Channel.C \
+			Set_Values.C 
+AM_CXXFLAGS   =	$(SHERPAFLAGS)
+INCLUDES      = $(AMEGICINCS) $(PHASICINCS) $(MODELINCS) $(PDFINCS) \
+		$(BEAMINCS) $(ATOOLSINCS) 
 EXTRA_DIST = Set_Channel.C.clean Set_Values.C.clean
 
 
