@@ -7,6 +7,10 @@
 #include "CLHEP/Vector/LorentzVector.h"
 #endif
 
+namespace CLHEP { class Dummy {}; }
+
+using namespace CLHEP;
+
 using namespace SHERPA;
 using namespace HepMC;
 using namespace HepPDT;
