@@ -71,6 +71,7 @@ AC_CHECK_FUNCS(mkdir)
 dnl Produce makefiles
 AC_OUTPUT(Tools/Makefile \
 	  LundTools/Makefile \
+	  HerwigTools/Makefile \
           Initialization/Makefile \
           PerturbativePhysics/Makefile \
           SoftPhysics/Makefile \
