@@ -203,7 +203,9 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
   p_pdfa->Calculate(m_x/m_z,0.,0.,q);
-  weight        *= p_pdfa->GetXPDF(GetFlA())/wb_jet;
+  double test = p_pdfa->GetXPDF(GetFlA());
+  if (test==0.) return 1;
+  weight        *= test/wb_jet;
   weight        *= GetWeight(m_z,-m_t,0);
 
   if (ran.Get() > weight) return 1;
