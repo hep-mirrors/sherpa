@@ -132,7 +132,7 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 	      ntrail_one = (*myblob)["ME_NumberOfTrials"]->Get<int>();
 	    }
 	    else {
-	      std::cout<<" ERROR missing call to OneEvent() before SameEvent() !! "<<std::endl;
+	      msg.Error()<<" ERROR missing call to OneEvent() before SameEvent() !! "<<std::endl;
 	    }
 	  }
 
