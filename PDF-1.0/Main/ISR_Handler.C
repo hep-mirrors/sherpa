@@ -384,8 +384,10 @@ void ISR_Handler::SetLimits()
       if (i<2) m_zkey[j][i]=m_zlimits[i];
     }
   }
-  m_xkey[0]=-0.5*std::numeric_limits<double>::max();
-  m_xkey[2]=-0.5*std::numeric_limits<double>::max();
+  m_xkey[0]=m_mass2[0]==0.0?-0.5*std::numeric_limits<double>::max():
+    0.5*log(m_mass2[0]*4.0/sqr(rpa.gen.Ecms()));
+  m_xkey[2]=m_mass2[1]==0.0?-0.5*std::numeric_limits<double>::max():
+    0.5*log(m_mass2[1]*4.0/sqr(rpa.gen.Ecms()));
   m_xkey[1]=log(Upper1());
   m_xkey[3]=log(Upper2());
 }
