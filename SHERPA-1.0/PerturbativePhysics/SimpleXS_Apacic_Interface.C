@@ -59,6 +59,13 @@ bool SimpleXS_Apacic_Interface::InitColours(Blob * blob) {
   return 1;
 }
 
+bool   SimpleXS_Apacic_Interface::FillBlobs(Blob_List * bl)
+{
+  
+
+  return 1;
+}
+
 
 
 

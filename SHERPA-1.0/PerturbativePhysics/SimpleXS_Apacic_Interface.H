@@ -13,6 +13,7 @@ namespace SHERPA {
     SimpleXS_Apacic_Interface(Matrix_Element_Handler *,Shower_Handler *);
     ~SimpleXS_Apacic_Interface();
     bool   DefineInitialConditions(APHYTOOLS::Blob *);
+    bool   FillBlobs(APHYTOOLS::Blob_List *); 
   };
 }
 #endif

@@ -4,6 +4,7 @@
 #include "Matrix_Element_Handler.H"
 #include "Shower_Handler.H"
 #include "Blob.H"
+#include "Blob_List.H"
 
 namespace SHERPA {
   class Perturbative_Interface {
@@ -28,6 +29,7 @@ namespace SHERPA {
       if (p_moms) { delete p_moms; p_moms = NULL; }
     }
     virtual bool   DefineInitialConditions(APHYTOOLS::Blob *) = 0;
+    virtual bool   FillBlobs(APHYTOOLS::Blob_List *) = 0; 
     double GetWeight() { return m_weight; }
   };
 }

@@ -26,7 +26,7 @@ namespace  SHERPA {
 
 Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
 						 Shower_Handler * shower) :
-  Perturbative_Interface(me,shower)
+  Perturbative_Interface(me,shower), p_blob_psme(0)
 {
   p_jf      = 0;
   p_cluster = 0;
@@ -75,6 +75,30 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   for (int i=0;i<4;i++) {
     p_fl[i]   = p_cluster->Flav(i); 
     p_moms[i] = p_cluster->Momentum(i);
+  }
+
+  // prepare Blob , will be inserted later
+  if (p_blob_psme) {
+    delete p_blob_psme; p_blob_psme=0;
+  }
+  if (p_shower->ISROn() || p_shower->FSROn()) {
+    p_blob_psme = new Blob();
+    p_blob_psme->SetType(string("ME PS Interface (Sherpa)"));
+    p_blob_psme->SetStatus(1);
+    if (p_shower->ISROn()) {
+      for (int i=0;i<blob->NInP();++i) {
+	p_blob_psme->AddToOutPartons(blob->InParton(i));
+	blob->InParton(i)->SetProductionBlob(p_blob_psme);
+	p_blob_psme->SetId(-1);
+      }
+    }
+    if (p_shower->FSROn()) {
+      for (int i=0;i<blob->NOutP();++i) {
+	p_blob_psme->AddToInPartons(blob->OutParton(i));
+	blob->OutParton(i)->SetDecayBlob(p_blob_psme);
+	p_blob_psme->SetId(-2);
+      }
+    }
   }
   return 1;  // OK!
 }
@@ -127,4 +151,16 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
     return 1;
   }
   return 0;
+}
+
+bool   Amegic_Apacic_Interface::FillBlobs(APHYTOOLS::Blob_List * bl)
+{
+  if (p_blob_psme) {
+    p_blob_psme->SetId(bl->size());
+
+    // give blob control to bloblist
+    bl->push_back(p_blob_psme);  
+    p_blob_psme=0;
+  }
+  return 1;
 }

@@ -29,11 +29,14 @@ namespace SHERPA {
     EXTRAXS::XS_Base      * p_xs; 
     EXTRAXS::XS_Group     * p_two2two;
 
+    APHYTOOLS::Blob * p_blob_psme;
+
     bool ClusterConfiguration(APHYTOOLS::Blob * blob);
   public :
     Amegic_Apacic_Interface(Matrix_Element_Handler *,Shower_Handler *);
     ~Amegic_Apacic_Interface(); 
     bool   DefineInitialConditions(APHYTOOLS::Blob *);
+    bool   FillBlobs(APHYTOOLS::Blob_List *); 
   };
 
   /*!
