@@ -7,7 +7,6 @@ using namespace AMEGIC;
 std::ostream & AMEGIC::operator<<(std::ostream & s, Pol_Info & pi) 
 {
   s<<" Pol_Info : "<<pi.pol_type<<std::endl;
-  double angle;
   for (int i=0;i<pi.num;++i) {
     s<<pi.type[i]<<":"<<pi.factor[i]<<std::endl;
   }

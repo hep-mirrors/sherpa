@@ -24,7 +24,7 @@ namespace ISAJET {
     void Run(std::string);
     void FillMasses();
     void FillDecays();
-    bool FillDecay(ATOOLS::Decay_Table *) {}
+    bool FillDecay(ATOOLS::Decay_Table *) {return true;}
   };
 
   /*!
