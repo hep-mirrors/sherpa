@@ -46,6 +46,7 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       std::string set       = dataread->GetValue<string>("PDF_SET",std::string("MRST99"));
       std::string grid_path = dataread->GetValue<string>("PDF_GRID_PATH",std::string("MRST99Grid"));
       int         version   = dataread->GetValue<int>("PDF_SET_VERSION",1);
+      grid_path=ATOOLS::rpa.gen.Variable("SHERPA_PDF_PATH")+std::string("/")+grid_path;
       if (set==std::string("MRST99")) {
 	msg_Tracking()<<"Initialize MRST99 : "<<version<<" from "<<grid_path<<endl;
 	pdfbase = new PDF_MRST99(bunch_particle,version,grid_path);
@@ -55,9 +56,9 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
 	pdfbase = new PDF_MRST01LO(bunch_particle,grid_path);
       }
       else if ((set==std::string("cteq6m") ||
-	  set==std::string("cteq6d") ||
-	  set==std::string("cteq6l") ||
-	  set==std::string("cteq6l1")) && grid_path==std::string("CTEQ6Grid") ) {
+		set==std::string("cteq6d") ||
+		set==std::string("cteq6l") ||
+		set==std::string("cteq6l1")) && grid_path.find("CTEQ6Grid") ) {
 	  
 	  msg_Tracking()<<"Initialize CTEQ6 : "<<version<<" from "<<grid_path<<endl;
 	  msg_Tracking()<<"Initialize CTEQ6_Fortran_Interface : "<<set<<"/"<<version<<" from "<<grid_path<<endl;
