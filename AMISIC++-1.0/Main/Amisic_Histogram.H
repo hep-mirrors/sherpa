@@ -75,6 +75,22 @@ namespace AMISIC {
 
     const Argument_Type operator()(const Argument_Type x) const;
 
+    Argument_Type BinXMin(const size_t i); 
+    Argument_Type BinXMax(const size_t i); 
+
+    Argument_Type BinContent(const size_t i);
+    Argument_Type BinSumSqr(const size_t i);
+    Argument_Type BinMax(const size_t i);
+    Argument_Type BinEntries(const size_t i);
+
+    Argument_Type BinXMean(const size_t i); 
+    Argument_Type BinError(const size_t i);
+
+    Argument_Type BinContent(const Argument_Type x);
+    Argument_Type BinSumSqr(const Argument_Type x);
+    Argument_Type BinMax(const Argument_Type x);
+    Argument_Type BinEntries(const Argument_Type x);
+
     // inline functions
     inline Argument_Type XMin() const { return m_xmin; }
     inline Argument_Type XMax() const { return m_xmax; }
@@ -96,37 +112,6 @@ namespace AMISIC {
 
     inline Axis_Type *const XAxis() const { return p_xaxis; }
     inline Axis_Type *const YAxis() const { return p_yaxis; }
-
-    inline Argument_Type BinXMin(const size_t i) 
-    { return m_data[hci::x_value][i]; }
-    inline Argument_Type BinXMax(const size_t i) 
-    { return m_data[hci::x_value][i+1]; }
-
-    inline Argument_Type BinContent(const size_t i)
-    { return (*p_yaxis)[m_data[hci::y_value][i]]; }
-    inline Argument_Type BinSumSqr(const size_t i)
-    { return (*p_yaxis)[m_data[hci::y_square][i]]; }
-    inline Argument_Type BinMax(const size_t i)
-    { return (*p_yaxis)[m_data[hci::maximum][i]]; }
-    inline Argument_Type BinEntries(const size_t i)
-    { return (*p_yaxis)[m_data[hci::entries][i]]; }
-
-    inline Argument_Type BinXMean(const size_t i) 
-    { return (*p_xaxis)[((*p_xaxis)(m_data[hci::x_value][i+1])+
-			 (*p_xaxis)(m_data[hci::x_value][i]))/2.0]; }
-    inline Argument_Type BinError(const size_t i)
-    { return (*p_yaxis)[m_data[hci::y_square][i]/
-			m_data[hci::y_value][i]-
-			m_data[hci::y_value][i]]; }
-
-    inline Argument_Type BinContent(const Argument_Type x)
-    { return BinContent(FindX(x)); }
-    inline Argument_Type BinSumSqr(const Argument_Type x)
-    { return BinSumSqr(FindX(x)); }
-    inline Argument_Type BinMax(const Argument_Type x)
-    { return BinMax(FindX(x)); }
-    inline Argument_Type BinEntries(const Argument_Type x)
-    { return BinEntries(FindX(x)); }
 
   };// end of class Amisic_Histogram
 

@@ -231,9 +231,9 @@ bool Amisic_Histogram<ArgumentType>::ReadIn(const std::string &filename,
     m_data.clear();
     return false;
   }
-  m_nbins=m_data[hci::x_value].size();
+  m_nbins=m_data[hci::x_value].size()-2;
   m_entries=0.0;
-  for (size_t i=0;i<m_nbins;++i) {
+  for (size_t i=0;i<m_nbins+2;++i) {
     m_entries+=m_data[hci::entries][i];
   }
   m_finished=true;
@@ -280,6 +280,81 @@ WriteOut(const std::string &filename,const std::string &datatag,
 		       ATOOLS::nullstring,writer->MNormal,12);
   delete writer;
   return true;
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinXMin(const size_t i) 
+{ 
+  return m_data[hci::x_value][i]; 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinXMax(const size_t i) 
+{ 
+  return m_data[hci::x_value][i+1]; 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinContent(const size_t i)
+{ 
+  return (*p_yaxis)[m_data[hci::y_value][i]]; 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinSumSqr(const size_t i)
+{ 
+  return (*p_yaxis)[m_data[hci::y_square][i]]; 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinMax(const size_t i)
+{ 
+  return (*p_yaxis)[m_data[hci::maximum][i]]; 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinEntries(const size_t i)
+{ 
+  return (*p_yaxis)[m_data[hci::entries][i]]; 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinXMean(const size_t i) 
+{ 
+  return (*p_xaxis)[((*p_xaxis)(m_data[hci::x_value][i+1])+
+		     (*p_xaxis)(m_data[hci::x_value][i]))/2.0]; 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinError(const size_t i)
+{ 
+  return (*p_yaxis)[m_data[hci::y_square][i]/
+		    m_data[hci::y_value][i]-
+		    m_data[hci::y_value][i]]; 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinContent(const Argument_Type x)
+{ 
+  return BinContent(FindX(x)); 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinSumSqr(const Argument_Type x)
+{ 
+  return BinSumSqr(FindX(x)); 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinMax(const Argument_Type x)
+{ 
+  return BinMax(FindX(x)); 
+}
+
+template <class ArgumentType>
+ArgumentType Amisic_Histogram<ArgumentType>::BinEntries(const Argument_Type x)
+{ 
+  return BinEntries(FindX(x)); 
 }
 
 template AMISIC::Amisic_Histogram<double>;
