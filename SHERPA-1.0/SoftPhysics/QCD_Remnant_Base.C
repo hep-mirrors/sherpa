@@ -27,7 +27,6 @@ QCD_Remnant_Base::QCD_Remnant_Base(PDF::ISR_Handler *isrhandler,
     THROW(fatal_error,"QCD remnant needs ISR Handler.");
   }
   p_pdfbase=isrhandler->PDF(m_beam)->GetBasicPDF();
-  m_dupdf=isrhandler->KMROn()>0;
 }
 
 QCD_Remnant_Base::~QCD_Remnant_Base()
@@ -73,14 +72,15 @@ Color_Dipole *QCD_Remnant_Base::FindClosest(const Color_Dipole *dipole,
 					    const qri::type type)
 {
   Color_Dipole *closest=p_start;
-  const ATOOLS::Vec4D &ref=dipole->End(type)->Momentum();
+  const ATOOLS::Vec4D &ref=dipole->End(ANTI(type))->Momentum();
   double min=std::numeric_limits<double>::max();
   std::multimap<double,Color_Dipole*> sorted;
   for (Dipole_Vector::iterator dit=m_attached.begin();
        dit!=m_attached.end();++dit) {
     if (*dit==dipole) continue;
-    double cur=(*dit)->End(ANTI(type))->Momentum().PPerp(ref);
-    sorted.insert(std::pair<double,Color_Dipole*>(cur,*dit));
+    double cur=(*dit)->End(type)->Momentum().PPerp(ref);
+    if (p_string[0]!=1.0) 
+      sorted.insert(std::pair<double,Color_Dipole*>(cur,*dit));
     if (cur<=min) {
       min=cur;
       closest=*dit;
@@ -135,13 +135,12 @@ bool QCD_Remnant_Base::Connect(const bool sorted)
   m_attached.clear();
   m_attached.push_back(p_start);
   std::stable_sort(m_connected.begin(),m_connected.end(),Compare_PT());
-  for (Dipole_Vector::iterator dit=m_connected.begin();
-       dit!=m_connected.end();++dit) {
+  for (Dipole_Vector::reverse_iterator dit=m_connected.rbegin();
+       dit!=m_connected.rend();++dit) {
     qri::type type=(qri::type)((*dit)->End(qri::real)->Momentum().PPerp2()>=
 			       (*dit)->End(qri::anti)->Momentum().PPerp2());
-    
     if (!Find(*dit,type)->Insert(*dit,type)) {
-      for (Dipole_Vector::iterator uit=m_connected.begin();
+      for (Dipole_Vector::reverse_iterator uit=m_connected.rbegin();
 	   uit!=dit;++uit) (*uit)->UnDo();
       return false;
     }
