@@ -103,9 +103,9 @@ namespace APACIC {
 
     void ResetMomenta(Knot*,Tree*,int=0);
 
-    void SetJetvetoPt2(const double pt2) { 
-      jf->SetShowerPt2(pt2); 
-      kink->SetJetvetoPt2(pt2); 
+    void SetJetvetoPt2(const double q2i,const double q2f) { 
+      jf->SetShowerPt2(q2i); 
+      kink->SetJetvetoPt2(q2f); 
     }
   };
 

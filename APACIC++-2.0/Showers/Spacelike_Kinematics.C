@@ -22,8 +22,9 @@ Spacelike_Kinematics::Spacelike_Kinematics(double pt2minFS, Data_Read * const da
 	       <<"   DIS is not yet implemented in the jetfinder, continue with hh-mode."<<endl;
     m_type = 4;
   }
-  jf            = new ATOOLS::Jet_Finder(ycut,m_type);
-  kink          = new Timelike_Kinematics(pt2minFS,dataread);
+  jf   = new ATOOLS::Jet_Finder(ycut,m_type);
+  jf->SetDeltaR(rpa.gen.DeltaR()); 
+  kink = new Timelike_Kinematics(pt2minFS,dataread);
 }
 
 
@@ -70,10 +71,10 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       if (!(o1==v1)) {
 	error=1;
 	msg.Out()<<"WARNING in  Spacelike_Kinematics::InitKinematics : Mismatch."<<endl;
-	msg.Error().precision(12);
+	msg.Out().precision(12);
       }
       trees[0]->BoRo(boost);
-      if (error&&msg.LevelIsTracking()) {
+      if (error) {
 	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
 		  <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<endl
 		  <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<endl;
@@ -94,10 +95,10 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       trees[1]->BoRo(boost);
       if (!(o2==v2)) {
 	error=1;
-	msg.Error()<<"WARNING in Spacelike_Kinematics::InitKinematics : Mismatch."<<endl;
-	msg.Error().precision(12);
+	msg.Out()<<"WARNING in Spacelike_Kinematics::InitKinematics : Mismatch."<<endl;
+	msg.Out().precision(12);
       }
-      if (error&&msg.LevelIsTracking()) {
+      if (error) {
 	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
 		  <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<endl
 		  <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<endl;
@@ -108,7 +109,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
   k1->part->SetMomentum(v1);
   k2->part->SetMomentum(v2);  
 
-  if (error&&msg.LevelIsTracking()) {
+  if (error) {
     msg.Out()<<"Spacelike_Kinematics::InitKinematics : C"<<endl
 	     <<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
 	     <<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
@@ -414,6 +415,7 @@ bool Spacelike_Kinematics::JetVeto(Knot * k1, Knot * k2)
   Vec4D p3=k1->prev->part->Momentum();
   Vec4D p2=k2->part->Momentum();
   double pt2=sqr(p4[1])+sqr(p4[2]);
+
   Vec4D cms = p3+p2;
   Poincare boost(cms);
   boost.Boost(p1);
@@ -426,6 +428,7 @@ bool Spacelike_Kinematics::JetVeto(Knot * k1, Knot * k2)
   rot.Rotate(p3);
   rot.Rotate(p4);
   pt2=sqr(p4[1])+sqr(p4[2]);
+
   if (jf->TwoJets(p4)) return 1;
   return 0;
 }

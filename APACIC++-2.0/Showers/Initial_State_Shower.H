@@ -57,8 +57,8 @@ namespace APACIC {
 
     void OutputTree(Tree *);
     static void SetColours(Knot *);
-    void SetJetvetoPt2(const double pt2) { 
-      p_kin->SetJetvetoPt2(pt2); 
+    void SetJetvetoPt2(const double q2i, const double q2f) {
+      p_kin->SetJetvetoPt2(q2i,q2f); 
     }
     void SetFactorisationScale(const double scale) {
       p_suds[0]->SetFactorisationScale(scale);

@@ -67,7 +67,6 @@ namespace APACIC {
       return ATOOLS::sqr(flav.PSMass()); 
     } //!!!mass
 
-    void SetJetvetoPt2(const double pt2);
     void SetFactorisationScale(const double scale);
   };
 
