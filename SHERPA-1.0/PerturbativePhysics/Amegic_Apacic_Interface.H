@@ -38,7 +38,6 @@ namespace SHERPA {
     ~Amegic_Apacic_Interface(); 
     int  DefineInitialConditions(ATOOLS::Blob *);
     bool FillBlobs(ATOOLS::Blob_List *); 
-    void CleanBlobs(ATOOLS::Blob_List *);
 
     int  PerformShowers();
     int  PerformDecayShowers();

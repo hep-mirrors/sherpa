@@ -249,15 +249,6 @@ bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
   return 1;
 }
 
-void Amegic_Apacic_Interface::CleanBlobs(ATOOLS::Blob_List * bl)
-{
-  for (Blob_Iterator blit=bl->begin();blit!=bl->end();) {
-    if ((*blit)->Type()==btp::ME_PS_Interface_FS || 
-	(*blit)->Type()==btp::ME_PS_Interface_IS) blit=bl->erase(blit);
-    else ++blit;
-  }
-}
-
 int Amegic_Apacic_Interface::PerformShowers()
 {
   // PROFILE_LOCAL("Amegic_Apacic_Interface::PerformShowers");
