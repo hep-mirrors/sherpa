@@ -43,11 +43,14 @@ int main(int argc,char* argv[])
 		       <<"=========================================================================="<<std::endl;
       Generator.InitializeTheEventHandler();
       for (int i=1;i<=nevt;i++) {
-	if (i%500==0) {
-	  msg_Info()<<" Event "<<i<<std::endl;      
+	if (i%100==0) {
+	  msg_Info()<<"  Event "<<i<<" ( "
+		    <<ATOOLS::rpa.gen.Timer().UserTime()
+		    <<" s )  "<<ATOOLS::bm::cr<<std::flush; 
 	}
 	if (Generator.GenerateOneEvent()) msg_Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
       }
+      msg_Info()<<std::endl;      
       Generator.SummarizeRun();
     }
     ATOOLS::msg.Out()<<"=========================================================================="<<std::endl
