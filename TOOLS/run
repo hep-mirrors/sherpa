@@ -152,7 +152,7 @@ else
   echo "cd \$RUNPATH" >> $FILE
   echo "" >> $FILE
 fi
-echo "export PATH=\$PATH:$BINPATH" >> $FILE
+echo "export PATH=$BINPATH:\$PATH" >> $FILE
 echo "" >> $FILE
 
 echo -en "Sherpa " >> $FILE
