@@ -5,6 +5,7 @@
 #include "Particle_List.H"
 #include "Blob.H"
 #include <vector>
+#include <map>
 
 namespace SHERPA {
 
@@ -24,6 +25,8 @@ namespace SHERPA {
     unsigned int m_beam, m_errors;
 
     ATOOLS::Particle_List m_parton[3];
+
+    std::vector<std::pair<ATOOLS::Particle*,std::pair<int,int> > > m_undo;
 
     ATOOLS::Particle *p_last[2];
     Remnant_Base     *p_partner;
@@ -49,7 +52,7 @@ namespace SHERPA {
     virtual bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist) = 0;
     virtual bool AdjustKinematics();
 
-    void UnDo(); 
+    virtual void UnDo(); 
 
     // inline functions 
     inline void SetPartner(SHERPA::Remnant_Base *_p_partner) { p_partner=_p_partner; }

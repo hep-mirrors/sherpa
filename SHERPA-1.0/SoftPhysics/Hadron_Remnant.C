@@ -5,7 +5,7 @@
 
 #ifdef DEBUG__Hadron_Remnant
 #include "Run_Parameter.H"
-#define EVENT 0
+#define EVENT 753
 #endif
 
 using namespace SHERPA;
@@ -66,6 +66,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
   }
   p_beamblob=beamblob;
   m_pbeam=beamblob->InParticle(0)->Momentum();
+  m_undo.clear();
   // decompose hadron
   m_hardpt=ATOOLS::Vec4D();
   for (size_t i=0;i<m_parton[1].size();++i) {
@@ -366,7 +367,11 @@ bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,int oldc,int newc,
   size_t i=1;
   for (;i<3;++i) if (particle->GetFlow(i)==oldc) break;
   bool result=AdjustColours(particle,oldc,newc,singlet,force,i,true);
-  if (result && !singlet) particle->SetFlow(i,newc);
+  if (result && !singlet) { 
+    particle->SetFlow(i,newc);
+    m_undo.push_back(std::pair<ATOOLS::Particle*,
+		     std::pair<int,int> >(particle,std::pair<int,int>(i,oldc)));
+  }
   return result;
 }
 
@@ -497,6 +502,12 @@ bool Hadron_Remnant::TreatGluon(ATOOLS::Particle *cur)
     }
   }
   if (trials==m_maxtrials/10 && m_errors<m_maxtrials/10) success=false;
+#ifdef DEBUG__Hadron_Remnant
+  if (ATOOLS::rpa.gen.NumberOfDicedEvents()==EVENT) {
+    std::cout<<"exited with trials = "<<trials<<", singlet = "<<singlet
+	     <<", m_errors = "<<m_errors<<", m_maxtrials = "<<m_maxtrials<<std::endl;
+  }
+#endif
   m_parton[2].push_back(cur);
   p_beamblob->AddToOutParticles(cur);
   return success;
@@ -529,3 +540,19 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
   return 0.0;
 }
 
+void Hadron_Remnant::UnDo() 
+{
+  ATOOLS::msg.Tracking()<<"Hadron_Remnant::UnDo(): Undoing changes on blob list."<<std::endl;
+#ifdef DEBUG__Hadron_Remnant
+  if (ATOOLS::rpa.gen.NumberOfDicedEvents()==EVENT) {
+    std::cout<<"Hadron_Remnant::UnDo(): ["<<m_errors<<"] Undoing changes on blob list."<<std::endl;
+  }
+#endif
+  for (int i=(int)m_undo.size()-1;i>=0;--i) {
+    bool singlet=false;
+    AdjustColours(m_undo[i].first,m_undo[i].first->GetFlow(m_undo[i].second.first),
+		  m_undo[i].second.second,singlet,true);
+    p_beamblob->RemoveOutParticle(m_undo[i].first);
+  }
+  Remnant_Base::UnDo();
+}
