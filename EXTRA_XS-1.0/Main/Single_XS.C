@@ -45,7 +45,11 @@ Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl) :
 }
 
 
-bool Single_XS::CalculateTotalXSec() { 
+bool Single_XS::CalculateTotalXSec() 
+{ 
+  m_n=0;
+  m_last=m_lastlumi=m_lastdxs=0.0;
+  m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
   if (p_ps) {
     m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn();
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
