@@ -233,19 +233,21 @@ bool Grid_Creator::CreateInitialGrid()
 bool Grid_Creator::ExportHistogram(const std::string &name) const
 {
   Amisic_Histogram_Type *const histo=m_histograms.find(name)->second;
-  Grid_Function_Type *const grid=p_gridhandlers->find(name)->second->Grid();
-  Grid_Function_Type *const max=p_maxhandlers->find(name)->second->Grid();
-  grid->SetMonotony(grid->None);
-  max->SetMonotony(max->None);
+  std::vector<double> xdata(histo->NBins()-2);
+  std::vector<double> ydata(histo->NBins()-2);
+  std::vector<double> ymax(histo->NBins()-2);
   for (size_t i=1;i<histo->NBins()-1;++i) {
-    if (!grid->AddPoint(histo->BinXMean(i),histo->BinContent(i))) {
-      return false;
-    }
-    if (m_storemax) {
-      if (!max->AddPoint(histo->BinXMean(i),histo->BinMax(i))) {
-	return false;
-      }
-    }
+    xdata[i-1]=histo->BinXMean(i);
+    ydata[i-1]=histo->BinContent(i);
+    ymax[i-1]=histo->BinMax(i);
+  }
+  Grid_Function_Type *const grid=p_gridhandlers->find(name)->second->Grid();
+  grid->SetMonotony(grid->None);
+  if (!grid->Import(&xdata,&ydata)) return false;
+  if (m_storemax) {
+    Grid_Function_Type *const max=p_maxhandlers->find(name)->second->Grid();
+    max->SetMonotony(max->None);
+    if (!max->Import(&xdata,&ymax)) return false;
   }
   return true;
 }
