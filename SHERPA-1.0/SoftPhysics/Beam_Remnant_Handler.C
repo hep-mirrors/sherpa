@@ -37,8 +37,6 @@ bool SumMomenta(Blob * bl)
   Vec4D inisum,finsum;
   checked_blobs.clear();
   SumMomenta(bl,inisum,finsum);
-  std::cout<<" inisum="<<inisum<<std::endl;
-  std::cout<<" finsum="<<finsum<<std::endl;
   return (inisum==finsum);
 }
 #endif

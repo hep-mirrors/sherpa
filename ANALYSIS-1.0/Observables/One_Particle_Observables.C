@@ -59,8 +59,6 @@ void One_Particle_ET::Evaluate(const Vec4D & mom,double weight,int ncount)
   double pt2 = sqr(mom[1])+sqr(mom[2]);
   double p2  = sqr(mom[3])+pt2;
   double net = mom[0]*sqrt(pt2/p2);
-  std::cout<<" et = "<<et<<std::endl;
-  std::cout<<" net= "<<net<<std::endl;
 
   p_histo->Insert(net,weight,ncount); 
 } 

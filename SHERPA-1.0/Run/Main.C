@@ -19,13 +19,14 @@ int main(int argc,char* argv[])
   signal(SIGXCPU,ATOOLS::Exception_Handler::SignalHandler);
   try {
     Sherpa Generator;
-    ATOOLS::msg.Out()<<" Process initialization started "<<std::endl;
     Generator.InitializeTheRun(argc,argv);
-    if (ATOOLS::rpa.gen.NumberOfEvents()>0) {
-      ATOOLS::msg.Out()<<"generate "<<ATOOLS::rpa.gen.NumberOfEvents()<<" events"<<std::endl;
+    int nevt=ATOOLS::rpa.gen.NumberOfEvents();
+    if (nevt>0) {
+      ATOOLS::msg.Out()<<"=========================================================================="<<std::endl
+		       <<"Sherpa will start event generation now : "
+		       <<ATOOLS::rpa.gen.NumberOfEvents()<<" events"<<std::endl
+		       <<"=========================================================================="<<std::endl;
       Generator.InitializeTheEventHandler();
-      int nevt=ATOOLS::rpa.gen.NumberOfEvents();
-      if (nevt>0) ATOOLS::msg.Out()<<"Starting event generation now. "<<std::endl;
       for (int i=1;i<=nevt;i++) {
 	if (i%500==0) {
 	  ATOOLS::msg.Out()<<" Event "<<i<<std::endl;      
@@ -33,9 +34,11 @@ int main(int argc,char* argv[])
 	if (Generator.GenerateOneEvent()) ATOOLS::msg.Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
       }
       Generator.SummarizeRun();
-      ATOOLS::msg.Events()<<"Sherpa did "<<nevt<<" with "<<Generator.NumberOfErrors()<<" errors."<<std::endl;
     }
-    ATOOLS::msg.Out()<<" Simulation finished "<<std::endl;
+    ATOOLS::msg.Out()<<"=========================================================================="<<std::endl
+		     <<"Sherpa finished its simulation run with "
+		     <<Generator.NumberOfErrors()<<" errors."<<std::endl
+		     <<"=========================================================================="<<std::endl;
     return 0;
   }
   catch (ATOOLS::Exception exception) {

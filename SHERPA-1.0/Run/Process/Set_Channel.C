@@ -37,8 +37,6 @@ Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flav
 		       <<"Error while loading symbol from library "<<libname<<std::endl<<error<<std::endl;
     return 0;
   }
-
-  ATOOLS::msg.Tracking()<<" calling Getter for library"<<endl;
   return GetterFunction(nin,nout,fl);
 }
 

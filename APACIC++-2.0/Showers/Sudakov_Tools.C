@@ -26,7 +26,6 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin,
     alphaQEDmax = (*p_aqed)(tmax);    
     //    alphaSmax   = AlphaS(tmin);      
     alphaSmax   = AlphaS(0.25*tmin);      
-    msg.Tracking()<<"Sudakov_Tools::Sudakov_Tools(..): asmax="<<alphaSmax<<std::endl;
     FixLambda2(sqr((Flavour(kf::Z)).Mass())); 
     Setscalefac(tmin);   
   }
@@ -35,19 +34,6 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,MODEL::Model_Base * _model,double tmin,
     alphaSmax       = 0.2;         
     beta0 = lambda2 = 0.;          
     scalefac        = 1.;          
-  }
-  if (msg.LevelIsDebugging()) { 
-    msg.Debugging()<<" tmin= "<< tmin<<std::endl
-		   <<" alpha_max="<< alphaSmax <<std::endl
-		   <<" Checking alphaS "<<std::endl;
-    Output();
-    double q2_max=sqr(91.2);
-    double q2_min=sqr(.912);
-    int    n =10;
-    for (int i=0;i<=n;++i) {
-      double q2=q2_min*pow((q2_max/q2_min),double(i)/double(n));
-      msg.Debugging()<<" "<<q2<<" \t"<<CrudeAlphaS(q2)<<" \t"<<AlphaS(q2)<<" \t"<<(*p_as)(q2)<<std::endl;
-    }
   }
 }
 

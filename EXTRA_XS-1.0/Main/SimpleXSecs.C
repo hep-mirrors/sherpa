@@ -108,8 +108,8 @@ bool SimpleXSecs::CalculateTotalXSec()
     okay = okay && m_xsecs[i]->CalculateTotalXSec();
     m_totalxs += m_xsecs[i]->Total();
   }
-  msg.Events()<<"In SimpleXSecs::CalculateTotalXSec() = "
-	      <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb."<<endl;
+  msg.Info()<<"In SimpleXSecs::CalculateTotalXSec() = "
+	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb."<<endl;
   return okay;
 }
 

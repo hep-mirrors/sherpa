@@ -67,8 +67,6 @@ void XS_Group::Add(XS_Base *const xsec)
       return;
     }
   }  
-  ATOOLS::msg.Tracking()<<"XS_Group::Add("<<xsec<<"): ("<<this<<") "
-			<<"Adding '"<<xsec->Name()<<"' to group '"<<m_name<<"'."<<std::endl; 
   m_xsecs.push_back(xsec);
   m_nvector=ATOOLS::Max(m_nvector,xsec->NVector());
   p_selected=m_xsecs[0];
@@ -181,10 +179,10 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       if (infile.good()) {
 	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;
 	do {
-	  ATOOLS::msg.Events()<<"Found result: xs for "<<singlename<<" : "
-			      <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
-			      <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
-			      <<"         max : "<<singlemax<<std::endl;
+	  ATOOLS::msg.Info()<<"Found result: xs for "<<singlename<<" : "
+			    <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
+			    <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
+			    <<"         max : "<<singlemax<<std::endl;
 	  XS_Base *xs=Matching(singlename);
 	  if (xs!=NULL) {
 	    xs->SetTotalXS(singlexs);
@@ -230,12 +228,12 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	std::ofstream to;
 	to.open(filename.c_str(),std::ios::out);
 	to.precision(12);
-	ATOOLS::msg.Events()<<"Store result : xs for "<<m_name<<" : ";
+	ATOOLS::msg.Info()<<"Store result : xs for "<<m_name<<" : ";
 	WriteOutXSecs(to);
-	if (m_nin==2) ATOOLS::msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-	if (m_nin==1) ATOOLS::msg.Events()<<m_totalxs<<" GeV";
-	ATOOLS::msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
-			    <<"       max : "<<m_max<<std::endl;
+	if (m_nin==2) ATOOLS::msg.Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+	if (m_nin==1) ATOOLS::msg.Info()<<m_totalxs<<" GeV";
+	ATOOLS::msg.Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
+			  <<"       max : "<<m_max<<std::endl;
 	p_pshandler->WriteOut(resultpath+std::string("/MC_")+m_name);
 	to.close();
       }
@@ -255,12 +253,12 @@ void XS_Group::PrepareTerminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),std::ios::out);
   to.precision(12);
-  ATOOLS::msg.Events()<<"Store result to "<<m_resultpath<<std::endl;
-  ATOOLS::msg.Events()<<"Store result : xs for "<<m_name<<" : ";
+  ATOOLS::msg.Info()<<"Store result to "<<m_resultpath<<","<<std::endl
+		    <<"   xs for "<<m_name<<" : ";
   WriteOutXSecs(to);
-  if (m_nin==2) ATOOLS::msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-  if (m_nin==1) ATOOLS::msg.Events()<<m_totalxs<<" GeV";
-  ATOOLS::msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
+  if (m_nin==2) ATOOLS::msg.Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+  if (m_nin==1) ATOOLS::msg.Info()<<m_totalxs<<" GeV";
+  ATOOLS::msg.Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
 		      <<"       max : "<<m_max<<std::endl;
   p_pshandler->WriteOut(m_resultpath+std::string("/MC_")+m_name);
   to.close();
@@ -272,21 +270,15 @@ void XS_Group::SetTotal()
   m_totalerr=sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
   if (p_selector) p_selector->Output();
   m_max=0.;
-  ATOOLS::msg.Events()<<ATOOLS::om::bold<<"--------------------------------------------------"
-		      <<ATOOLS::om::reset<<std::endl;
   for (size_t i=0;i<m_xsecs.size();++i) {
     m_xsecs[i]->SetTotal();
     m_max+=m_xsecs[i]->Max();
   }
-  ATOOLS::msg.Events()<<ATOOLS::om::bold<<"--------------------------------------------------"
-		      <<ATOOLS::om::reset<<std::endl;
-  ATOOLS::msg.Events()<<"Total XS for "<<ATOOLS::om::bold<<m_name<<" : "
-		      <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-		      <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red<<m_totalerr<<" pb = "
-		      <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl
-		      <<"      max = "<<m_max<<std::endl;
-  ATOOLS::msg.Events()<<ATOOLS::om::bold<<"--------------------------------------------------"
-		      <<ATOOLS::om::reset<<std::endl;
+  ATOOLS::msg.Info()<<"Total XS for "<<ATOOLS::om::bold<<m_name<<" : "
+		    <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+		    <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red<<m_totalerr<<" pb = "
+		    <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl
+		    <<"      max = "<<m_max<<std::endl;
 }
 
 bool XS_Group::OneEvent() 
@@ -368,11 +360,11 @@ void XS_Group::SetMax(const double max,const int flag)
   }
   if (m_totalxs!=0.) {
     if (!ATOOLS::IsEqual(sum,m_totalxs)) {
-      ATOOLS::msg.Events().precision(12);
-      ATOOLS::msg.Events()<<"XS_Group::SetMax(..): "
-			  <<"'"<<m_name<<"' : Summation does not agree !"<<std::endl
-			  <<"   sum = "<<sum<<" vs. total = "<<m_totalxs
-			  <<" ("<<((sum-m_totalxs)/m_totalxs)<<")"<<std::endl;
+      ATOOLS::msg.Error().precision(12);
+      ATOOLS::msg.Error()<<"XS_Group::SetMax(..): "
+			 <<"'"<<m_name<<"' : Summation does not agree !"<<std::endl
+			 <<"   sum = "<<sum<<" vs. total = "<<m_totalxs
+			 <<" ("<<((sum-m_totalxs)/m_totalxs)<<")"<<std::endl;
     }
     m_totalxs=sum;
   }

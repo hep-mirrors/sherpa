@@ -18,7 +18,7 @@ long int Phase_Space_Integrator::nmax=10000000;
 
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerror) 
 {
-  msg.Tracking()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
+  msg.Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
 
   result = max = error = 0.;
@@ -302,11 +302,11 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if ( ATOOLS::IsZero((psh->FSRIntegrator())->Result()) ) break;
       error = (psh->FSRIntegrator())->Variance()/(psh->FSRIntegrator())->Result() * 
 	(psh->FSRIntegrator())->N();
-      msg.Tracking()<<om::blue
-		    <<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()*rpa.Picobarn()
-		    <<" pb"<<om::reset<<" +- ( "<<om::red
-		    <<(psh->FSRIntegrator())->Variance()*rpa.Picobarn()
-		    <<" pb = "<<error*100<<" %"<<om::reset<<" )."<<endl;
+      msg.Info()<<om::blue
+		<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()*rpa.Picobarn()
+		<<" pb"<<om::reset<<" +- ( "<<om::red
+		<<(psh->FSRIntegrator())->Variance()*rpa.Picobarn()
+		<<" pb = "<<error*100<<" %"<<om::reset<<" )."<<endl;
       if (error<maxerror) break;
 #endif
 
@@ -320,7 +320,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
 double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double mass, double maxerror) 
 { 
-  msg.Tracking()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
+  msg.Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
   iter      = 20000;
   nopt      = 10; 
@@ -369,9 +369,9 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
       }
       if (ATOOLS::IsZero((psh->FSRIntegrator())->Result())) break;
       
-      msg.Out()<<n<<". Result : "<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()<<" GeV";
       error = (psh->FSRIntegrator())->Variance() / (psh->FSRIntegrator())->Result()*(psh->FSRIntegrator())->N();
-      msg.Out()<<" +- "<<error*100<<"%"<<endl;
+      msg.Info()<<n<<". Result : "<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()
+		<<" GeV"<<" +- "<<error*100<<"%"<<endl;
       if (error<maxerror) break;
     }
   }

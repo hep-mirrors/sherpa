@@ -31,25 +31,18 @@ bool NLL_Single_Sudakov::Initialize(double _m_qmin,double _m_qmax)
   if (m_calcmode==Sudakov::table) {
     bool create=true;
     if (p_bp->Name().length()>0) {
-      ATOOLS::msg.Tracking()<<"NLL_Single_Sudakov::NLL_Single_Sudakov(..): "
-			    <<"Try to read table ... "<<std::flush;
       if (!m_log_delta.ReadIn((m_outpath+std::string("/")+p_bp->Name()).c_str())) {
-	ATOOLS::msg.Tracking()<<"failed."<<std::endl;
 	mkdir(m_outpath.c_str(),0755);
       }
       else {
-	ATOOLS::msg.Tracking()<<"ok."<<std::endl;
 	create=false;
       }
     }
     // initialize table
     if (create) {
-      ATOOLS::msg.Tracking()<<"NLL_Single_Sudakov::NLL_Single_Sudakov(..): "
-			    <<"Initializing table ... "<<std::flush;
       m_calcmode=Sudakov::create_table;
       m_log_delta.Init(*this,m_qmin,m_qmax,600);
       m_calcmode=Sudakov::table;
-      ATOOLS::msg.Tracking()<<"done."<<std::endl;
       if (p_bp->Name().length()>0) 
 	m_log_delta.WriteOut((m_outpath+std::string("/")+p_bp->Name()).c_str());
     }
@@ -59,7 +52,6 @@ bool NLL_Single_Sudakov::Initialize(double _m_qmin,double _m_qmax)
 
 double NLL_Single_Sudakov::Log(double Q, double q) 
 {
-  // std::cout<<" set "<<q<<" <-> "<<m_qmin<<" "<<Q<<std::endl;
   if (m_calcmode == Sudakov::analytic) {
     double sum=p_bp->IntGamma(q,Q);
     if (sum!=-1.) {
@@ -86,7 +78,6 @@ double NLL_Single_Sudakov::Log(double Q, double q)
       m_calcmode=Sudakov::create_table;
       m_log_delta.Init(*this,m_qmin,m_qmax,600);
       m_calcmode=Sudakov::table;
-      ATOOLS::msg.Tracking()<<"done."<<std::endl;
     }
     return m_log_delta(Q);
   }

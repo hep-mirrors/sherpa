@@ -8,13 +8,13 @@
 
 namespace SHERPA {
   class EvtReadin_Phase : public Event_Phase_Handler {
-    Output_Handler * p_iohandler;
+    IO_Handler     * p_iohandler;
     Event_Reader   * p_evtreader;
     std::string      m_path;
     bool             m_read;
   public:
     EvtReadin_Phase(Event_Reader *);
-    EvtReadin_Phase(Output_Handler *);
+    EvtReadin_Phase(IO_Handler *);
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
     void Finish(const std::string &);

@@ -63,8 +63,8 @@ namespace SHERPA {
     Fragmentation_Handler      * p_fragmentation;
     Hadron_Decay_Handler       * p_hadrondecays;
     MI_Handler                 * p_mihandler; 
-    Output_Handler             * p_outputhandler;
-    Lund_Interface           * p_pythia;
+    IO_Handler                 * p_iohandler;
+    Lund_Interface             * p_pythia;
   private :
     bool InitializeTheIO();
     bool InitializeTheExternalMC();
@@ -99,7 +99,7 @@ namespace SHERPA {
     const std::string EvtFile() const { return m_evtfile; }
 
     Matrix_Element_Handler      * GetMatrixElementHandler(std::string);
-    Sample_Analysis             * GetSampleAnalysis(std::string);
+    Analysis_Handler            * GetAnalysisHandler(std::string);
     inline PDF::ISR_Handler     * GetISRHandler(const isr::id id) { return m_isrhandlers[id]; }
 
     MEHandlersMap               * GetMatrixElementHandlers() { return &m_mehandlers;     }
@@ -114,7 +114,7 @@ namespace SHERPA {
     Hadron_Decay_Handler        * GetHadronDecayHandler()    { return p_hadrondecays;    }
     ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
     MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
-    Output_Handler              * GetOutputHandler()         { return p_outputhandler;   }
+    IO_Handler                  * GetIOHandler()             { return p_iohandler;       }
     Lund_Interface              * GetPythiaInterface()       { return p_pythia;          }
 
     int     Mode()          { return m_mode; };

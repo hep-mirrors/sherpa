@@ -127,7 +127,6 @@ void Cut_Data::Complete()
   smin = Max(sqr(smin),sqr(e1)-sqr(e2));
   smin = Max(Getscut(str),smin);
 
-  ATOOLS::msg.Tracking()<<"Cut_Data::Complete(): s_{min} = "<<smin<<endl;
   m_smin_map.clear();
 }
 
@@ -170,7 +169,6 @@ double Cut_Data::Getscut(string str)
     return sc;
   }
 
-  //cout<<endl<<"Getscut: "<<str<<endl;
   string help("0"), help2("");
   for (int i=0;i<length;i++) {
     help[0] = ca+legs[i];
@@ -207,7 +205,6 @@ double Cut_Data::Getscut(string str)
 	else help2[j-pos] = ca+legs[j];
       }
 
-      //cout<<help<<" <-> "<<help2<<endl;
       sc = Max(sc,sqr(sqrt(Getscut(help))+sqrt(Getscut(help2))));
       for (int j=i-1;;j--) {
 	if (++ii[j]<length-i+j+1) break;
@@ -273,27 +270,21 @@ void Cut_Data::Update(double sprime,double y)
   double E2     = exp(-y);  
   Poincare Forward(Vec4D(E1+E2,0.,0.,E1-E2));
   Poincare Backward(Vec4D(E1+E2,0.,0.,E2-E1));
-  //cout<<"cos boost: "<<y<<" "<<Vec4D(E1+E2,0.,0.,E1-E2)<<endl;
   Vec4D help;
   for (int i=2;i<ncut;i++) {
     if (cosmax[0][i]<1.) {
-      //cout<<"cos[0]["<<i<<"]: "<< cosmax[0][i]<<"->";
       if (!fl[i].IsMassive() || y>=0.) {
 	help = Vec4D(1.,sqrt(1.-sqr(cosmax[0][i])),0.,cosmax[0][i]);
 	Forward.Boost(help);
 	cosmax[0][i] = cosmax[i][0] = help[3]/help[0];
       } 
       else cosmax[0][i] = cosmax[i][0] = 1.;  // No better estimate for massive particles
-      //cout<<cosmax[0][i]<<endl;
- 
-      //cout<<"cos[1]["<<i<<"]: "<< cosmax[1][i]<<"->";
       if (!fl[i].IsMassive() || y<=0.) {
 	help = Vec4D(1.,sqrt(1.-sqr(cosmax[1][i])),0.,cosmax[1][i]);
 	Backward.Boost(help);
 	cosmax[1][i] = cosmax[i][1] = help[3]/help[0];
       }
       else cosmax[1][i] = cosmax[i][1] = 1.;  // No better estimate for massive particles
-      //cout<<cosmax[1][i]<<endl;
     }
   }
   

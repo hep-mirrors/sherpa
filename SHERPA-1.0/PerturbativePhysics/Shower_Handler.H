@@ -16,16 +16,16 @@ namespace ADICIC { class Chain; }
 namespace SHERPA {
   class Shower_Handler {
   private :
-    std::string                  m_dir,m_file;
-    int                          m_maxjetnumber;
+    std::string          m_dir,m_file;
+    int                  m_maxjetnumber;
 
 
-    std::string                  m_showergenerator;
-    bool                         m_isrshowerswitch,m_fsrshowerswitch;
-    ATOOLS::Data_Read          * p_dataread;
-    APACIC::Hard_Interface     * p_apacic;
-    ADICIC::Adicic             * p_adicic;
-    PDF::ISR_Handler           * p_isr_handler;       
+    std::string          m_showergenerator;
+    bool                 m_isrshowerswitch,m_fsrshowerswitch;
+    ATOOLS::Data_Read  * p_dataread;
+    APACIC::Apacic     * p_apacic;
+    ADICIC::Adicic     * p_adicic;
+    PDF::ISR_Handler   * p_isr_handler;       
   public :
     Shower_Handler(std::string,std::string,MODEL::Model_Base *,
 		   PDF::ISR_Handler *,int);
@@ -40,10 +40,10 @@ namespace SHERPA {
     bool            FSROn()           { return m_fsrshowerswitch; }
     unsigned int    MaxJetNumber()    { return m_maxjetnumber;    }
     PDF::ISR_Handler * GetISRHandler() { return p_isr_handler; }
-    APACIC::Tree  * GetFinTree(); 
-    APACIC::Tree ** GetIniTrees();
-    APACIC::Hard_Interface * GetApacic() { return p_apacic; }
-    ADICIC::Chain * GetChain();
+    APACIC::Tree     * GetFinTree(); 
+    APACIC::Tree    ** GetIniTrees();
+    APACIC::Apacic   * GetApacic() { return p_apacic; }
+    ADICIC::Chain    * GetChain();
     void SetJetvetoPt2(const double pt2) { p_apacic->SetJetvetoPt2(pt2); }
     void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
   };
@@ -99,7 +99,7 @@ namespace SHERPA {
     for further reading of the input file.
   */
   /*!
-    \var APACIC::Hard_Interface * Shower_Handler::p_apacic
+    \var APACIC::Apacic * Shower_Handler::p_apacic
     A pointer to the Apacic object. THis is the only shower handler that is actually
     implemented.
   */

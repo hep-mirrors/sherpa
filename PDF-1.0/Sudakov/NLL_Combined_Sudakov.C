@@ -48,10 +48,6 @@ double NLL_Combined_Sudakov::operator()(double Q, double q)
       if ((sum<0.)&&(m_cutmode&Sudakov::cutatone)) return 1.;
       return exp(-sum);
     }
-    else {
-      cout<<" WARNING integrated branching prob not analytically calculated yet! "<<endl;
-      cout<<"      try numeric integration "<<endl;
-    }
   }
   double sum=0.;
   for (int i=0;i<m_suds.size();++i) {

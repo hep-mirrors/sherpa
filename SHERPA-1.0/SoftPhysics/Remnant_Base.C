@@ -100,10 +100,6 @@ bool Remnant_Base::AdjustKinematics()
 
 void Remnant_Base::UnDo() 
 {
-  ATOOLS::msg.Tracking()<<"Remnant_Base::UnDo(): Undoing changes on blob list."<<std::endl;
-#ifdef DEBUG__Remnant_Base
-  std::cout<<"Remnant_Base::UnDo(): ["<<m_errors<<"] Undoing changes on blob list."<<std::endl;
-#endif
   while (p_beamblob->NOutP()>0) {
     p_beamblob->RemoveOutParticle(p_beamblob->OutParticle(0));
   }

@@ -32,7 +32,6 @@ Multi_Channel::~Multi_Channel()
 }
 
 void Multi_Channel::Add(Single_Channel * Ch) { 
-  ATOOLS::msg.Debugging()<<"Add "<<Ch->Name()<<" to Multi_Channel "<<name<<endl;
   channels.push_back(Ch); 
 }
 
@@ -63,7 +62,6 @@ void Multi_Channel::DropAllChannels()
     if (channels[i-1]) delete channels[i-1];
   }
   channels.clear();
-  ATOOLS::msg.Debugging()<<"Dropped all channels for Multi_Channel : "<<name<<endl;
 }
 
 void Multi_Channel::Reset() 
@@ -300,8 +298,6 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts)
 
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
-  //  cout<<"Multi_Channel::GenerateWeight"<<endl;
-
   if (channels.size()==1) {
     channels[0]->GenerateWeight(p,cuts);
     if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
@@ -448,18 +444,13 @@ void Multi_Channel::GeneratePoint(int n,double & sprime,double & y,int mode) {
 
 void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode) 
 {
-//   std::cout<<"in MC: "<<name<<std::endl;
   for(size_t i=0;i<channels.size();++i) channels[i]->SetWeight(0.);
   double disc=ran.Get();
   double sum=0.;
   for (size_t n=0;n<channels.size();++n) {
     sum+=channels[n]->Alpha();
     if (sum>disc) {
-      for (size_t i=0;i<2;++i) { 
-	rans[i]=ran.Get();
-// 	std::cout<<"MC rans : "<<i<<" "<<rans[i]<<std::endl;
-      }
-//       std::cout<<"winner : "<<channels[n]->Name()<<std::endl;
+      for (size_t i=0;i<2;++i) rans[i]=ran.Get();
       channels[n]->GeneratePoint(spkey,ykey,rans,mode);
       return;
     }
@@ -502,6 +493,7 @@ void Multi_Channel::ISRInfo(int i,int & type,double & mass,double & width)
 
 
 void Multi_Channel::Print() {
+  if (!msg.LevelIsTracking()) return;
   ATOOLS::msg.Out()<<"----------------------------------------------"<<endl
 		      <<"Multi_Channel with "<<channels.size()<<" channels."<<endl;
   for (size_t i=0;i<channels.size();i++) 
@@ -577,6 +569,5 @@ void Multi_Channel::SetRange(double *_sprimerange,double *_yrange)
 
 void Multi_Channel::GetRange() 
 {
-  ATOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
   for (unsigned int i=0;i<channels.size();i++) channels[i]->GetRange();
 }

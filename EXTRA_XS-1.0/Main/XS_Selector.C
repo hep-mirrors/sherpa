@@ -5,10 +5,6 @@
 #include "Off_Shell_QCD.H"
 #include "Run_Parameter.H"
 
-using std::cout;
-using std::cerr;
-using std::endl;
-
 using namespace EXTRAXS;
 using namespace ATOOLS;
 

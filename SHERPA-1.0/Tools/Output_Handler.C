@@ -20,16 +20,16 @@ const iotype::code SHERPA::operator&(const iotype::code code1,const iotype::code
   return (iotype::code)((int)code1&(int)code2);
 }  
 
-Output_Handler::Output_Handler():
+IO_Handler::IO_Handler():
   m_io(0), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
 #ifdef _USE_HEPMC_
   p_hepmc(NULL), p_event(NULL),
 #endif
   p_hepevt(NULL), p_instream(NULL) {}
 
-Output_Handler::Output_Handler(const std::vector<std::string> & outfiles,
-			       const std::vector<std::string> & infiles,
-			       const std::string _path):
+IO_Handler::IO_Handler(const std::vector<std::string> & outfiles,
+		       const std::vector<std::string> & infiles,
+		       const std::string _path):
   m_on(true), m_outtype(iotype::Unknown), m_intype(iotype::Unknown), 
 #ifdef _USE_HEPMC_
   p_hepmc(NULL), p_event(NULL),
@@ -56,7 +56,7 @@ Output_Handler::Output_Handler(const std::vector<std::string> & outfiles,
     m_filename = m_path+std::string("/")+m_file+std::string(".evts"); 
     m_outstream.open(m_filename.c_str());
     if (!m_outstream.good()) { 
-      msg.Error()<<"ERROR in Output_Handler."<<std::endl
+      msg.Error()<<"ERROR in IO_Handler."<<std::endl
 		 <<"   Could not open event file "<<m_filename<<"."<<std::endl
 		 <<"   Will abort the run."<<std::endl;
       abort();
@@ -71,8 +71,8 @@ Output_Handler::Output_Handler(const std::vector<std::string> & outfiles,
     p_hepevt = new HepEvt_Interface(true,1,m_path,outfiles[2]);
     break;
   default :
-    msg.Error()<<"Potential Error in Output_Handler::Output_Handler("<<m_outtype<<")"<<std::endl
-	       <<"   No output format specified. Continue run."<<std::endl;
+    msg.LogFile()<<"Potential Error in IO_Handler::IO_Handler("<<m_outtype<<")"<<std::endl
+		 <<"   No output format specified. Continue run."<<std::endl;
     break;
   }
 
@@ -82,7 +82,7 @@ Output_Handler::Output_Handler(const std::vector<std::string> & outfiles,
     m_filename = m_path+std::string("/")+infiles[0]+std::string(".evts"); 
     p_instream = new std::ifstream(m_filename.c_str()); 
     if (!p_instream->good()) {
-      msg.Error()<<"ERROR in Output_Handler."<<std::endl
+      msg.Error()<<"ERROR in IO_Handler."<<std::endl
 		 <<"   Event file "<<m_filename<<" not found."<<std::endl
 		 <<"   Will abort the run."<<std::endl;
       abort();
@@ -110,7 +110,7 @@ Output_Handler::Output_Handler(const std::vector<std::string> & outfiles,
   }
 }
 
-Output_Handler::~Output_Handler() 
+IO_Handler::~IO_Handler() 
 {
 #ifdef _USE_HEPMC_
   if (p_hepmc!=NULL)  { delete p_hepmc;  p_hepmc=NULL;  }
@@ -123,22 +123,22 @@ Output_Handler::~Output_Handler()
   }
 }
 
-void Output_Handler::AddOutputMode(const iotype::code c1) 
+void IO_Handler::AddOutputMode(const iotype::code c1) 
 {
   if (m_on==false) return;
-  msg.Error()<<"Error in Output_Handler::AddOutputMode("<<c1<<")"<<std::endl
+  msg.Error()<<"Error in IO_Handler::AddOutputMode("<<c1<<")"<<std::endl
 	     <<"   Method not yet implemented. Continue run."<<std::endl;
 }
 
-void Output_Handler::AddInputMode(const iotype::code c1) 
+void IO_Handler::AddInputMode(const iotype::code c1) 
 {
   if (m_on==false) return;
-  msg.Error()<<"Error in Output_Handler::AddInputMode("<<c1<<")"<<std::endl
+  msg.Error()<<"Error in IO_Handler::AddInputMode("<<c1<<")"<<std::endl
 	     <<"   Method not yet implemented. Continue run."<<std::endl;
 }
 
 
-bool Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weight) 
+bool IO_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double weight) 
 {
   if (m_on==false) return false;
   if (!(m_io&1)) return false;
@@ -151,7 +151,7 @@ bool Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double 
 	}
 	if (!blobs->empty()) { SherpaOutput(blobs,weight); return true; }
 	else { 
-	  msg.Error()<<"Error in Output_Handler::OutputToFormat."<<std::endl
+	  msg.Error()<<"Error in IO_Handler::OutputToFormat."<<std::endl
 		     <<"   empty bloblist."<<std::endl
 		     <<"   No output, continue run ..."<<std::endl;
 	  break;
@@ -167,7 +167,7 @@ bool Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double 
       case iotype::HepEvt: 
 	p_hepevt->Sherpa2HepEvt(blobs); return true;
       default:
-	msg.Error()<<"Error in Output_Handler::OutputToFormat."<<std::endl
+	msg.Error()<<"Error in IO_Handler::OutputToFormat."<<std::endl
 		   <<"   Unknown Output format : "<<m_outtype<<std::endl
 		   <<"   No output, continue run ..."<<std::endl;
 	break;
@@ -177,7 +177,7 @@ bool Output_Handler::OutputToFormat(ATOOLS::Blob_List *const blobs,const double 
   return false;
 }
 
-bool Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs) 
+bool IO_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs) 
 {
   if (m_on==false) return false;
   if (!(m_io&2)) return false;
@@ -189,7 +189,7 @@ bool Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
 #endif
   case iotype::HepEvt: return p_hepevt->HepEvt2Sherpa(blobs); 
   default:
-    msg.Error()<<"Error in Output_Handler::InputFromFormat."<<std::endl
+    msg.Error()<<"Error in IO_Handler::InputFromFormat."<<std::endl
 	       <<"   Unknown Input format : "<<m_intype<<std::endl
 	       <<"   No input, continue run ... ."<<std::endl;
     break;
@@ -201,7 +201,7 @@ bool Output_Handler::InputFromFormat(ATOOLS::Blob_List *const blobs)
   Sherpa-specific I/O methods : Output is ASCII-format
   ------------------------------------------------------------------*/
 
-void Output_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double weight) 
+void IO_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double weight) 
 { 
   if (m_on==false) return;
   ATOOLS::Particle_Int_Map           P2I;
@@ -248,7 +248,7 @@ void Output_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double we
     m_filename = m_path+std::string("/")+m_filename+std::string(".evts");
     m_outstream.open(m_filename.c_str());
     if (!m_outstream.good()) { 
-      msg.Error()<<"ERROR in Output_Handler."<<std::endl
+      msg.Error()<<"ERROR in IO_Handler."<<std::endl
 		 <<"   Could not open event file "<<m_filename<<"."<<std::endl
 		 <<"   Will abort the run."<<std::endl;
       abort();
@@ -256,7 +256,7 @@ void Output_Handler::SherpaOutput(ATOOLS::Blob_List *const blobs,const double we
   }
 }
 
-bool Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs) 
+bool IO_Handler::SherpaInput(ATOOLS::Blob_List *const blobs) 
 { 
   if (m_on==false) return false;
   blobs->clear();
@@ -304,7 +304,7 @@ bool Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
       (*p_instream)>>paid;
       I2Piter = I2P.find(paid);
       if (I2Piter==I2P.end()) {
-	msg.Error()<<"Error in Output_Handler::SherpaInput."<<std::endl
+	msg.Error()<<"Error in IO_Handler::SherpaInput."<<std::endl
 		   <<"   Particle with number "<<paid<<" not found in event."<<std::endl
 		   <<"   Will return false, continue & hope for the best."<<std::endl;
 	blobs->clear();
@@ -316,7 +316,7 @@ bool Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
       (*p_instream)>>paid;
       I2Piter = I2P.find(paid);
       if (I2Piter==I2P.end()) {
-	msg.Error()<<"Error in Output_Handler::SherpaInput."<<std::endl
+	msg.Error()<<"Error in IO_Handler::SherpaInput."<<std::endl
 		   <<"   Particle with number "<<paid<<" not found in event."<<std::endl
 		   <<"   Will return false, continue & hope for the best."<<std::endl;
 	blobs->clear();
@@ -351,7 +351,5 @@ bool Output_Handler::SherpaInput(ATOOLS::Blob_List *const blobs)
     }
     m_evtcount=0;
   }
-
-  //  std::cout<<(*blobs)<<std::endl;
   return true;
 }

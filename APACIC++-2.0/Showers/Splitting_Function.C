@@ -48,7 +48,8 @@ ATOOLS::Flavour & Splitting_Function::GetFlC()
 }
 
 void Splitting_Function::PrintStat(int mode) {
-  if (mode>0) for(int i=0;i<mode;++i) ATOOLS::msg.Debugging()<<' ';
-  ATOOLS::msg.Debugging()<<"Splitting Function: "
-			    <<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl;
+  if (!ATOOLS::msg.LevelIsDebugging()) return;
+  if (mode>0) for(int i=0;i<mode;++i) ATOOLS::msg.Out()<<' ';
+  ATOOLS::msg.Out()<<"Splitting Function: "
+		   <<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl;
 }

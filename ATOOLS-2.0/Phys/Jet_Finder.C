@@ -157,7 +157,6 @@ bool Jet_Finder::ConstructJets(const Particle_List * parts,
 			       const std::vector<int> & jets,std::vector<double> & lastys,bool final_only) 
 {
   PROFILE_HERE;
-  //  std::cout<<" in Jet_Finder::ConstructJets with "<<parts->size()<<" particles "<<std::endl;
 
   std::vector<Vec4D>   momsout;
   Vec4D   momsin[2];
@@ -201,11 +200,9 @@ bool Jet_Finder::ConstructJets(const Particle_List * parts,
 
   bool ordered = 1;
   while ((momsout.size()<=jets[lastys.size()]) && (lastys.size()<jets.size())) {
-    //    std::cout<<" A: "<<momsout.size()<<" <=? "<<jets[lastys.size()]<<std::endl;
     lastys.push_back(-1.);
   }
   while (momsout.size()>jets.back()) {
-    //    std::cout<<" B: "<<momsout.size()<<" >? "<<jets.back()<<std::endl;
     if (!ConstructJetSystem(momsin,flavsin,momsout,jets,lastys)) ordered = 0;
   }
   return ordered;
@@ -215,7 +212,6 @@ bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector
 				    std::vector<int> jets,std::vector<double> & lastys) 
 {
   PROFILE_HERE;
-  //  std::cout<<" in Jet_Finder::ConstructJetSystem with "<<momsout.size()<<" momenta "<<std::endl;
   int j,k;
   bool ordered = 1;
   // Calculate ymin and store for comparison
@@ -237,9 +233,6 @@ bool Jet_Finder::ConstructJetSystem(Vec4D * momsin,Flavour * flavsin,std::vector
   }
   for (int i=k;i<momsout.size()-1;i++) momsout[i] = momsout[i+1];
   momsout.pop_back();
-
-//   std::cout<<"============================================================"<<std::endl;
-//   for (int i=0;i<momsout.size();++i) std::cout<<i<<" : "<<momsout[i]<<std::endl;
 
   return ordered;
 }
@@ -418,8 +411,8 @@ bool Jet_Finder::TwoJets(const Vec4D & p1)
     if (sqr(p1[1]) + sqr(p1[2])  < m_shower_pt2 ) return 0;
   }
   else {
-    msg.Out()<<"Jet_Finder::TwoJets(Vec4D &) "<<std::endl;
-    msg.Out()<<"    JETFINDER METHOD STILL NOT IMPLEMENTED for mode "<<m_type<<std::endl;
+    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
+	     <<"    Still not implemented for mode "<<m_type<<std::endl;
   }
   return 1;
 }
@@ -459,7 +452,8 @@ bool Jet_Finder::TwoJets(double & E2,double & z,double & costheta,bool mode)
   double pt12_2;
   if (mode == 1) {
     pt12_2 = -1000.;
-    msg.Debugging()<<"JETFINDER METHOD STILL NOT IMPLEMENTED !!!!"<<std::endl;
+    msg.Out()<<"WARNING in Jet_Finder::TwoJets(Vec4D &) "<<std::endl
+	     <<"    Still not implemented for mode "<<m_type<<std::endl;
   }
   else {
     pt12_2 = 2.*E2*sqr(Min(z,1.- z))*(1.-costheta);

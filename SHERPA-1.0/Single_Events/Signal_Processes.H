@@ -4,7 +4,6 @@
 #include "Event_Phase_Handler.H"
 #include "Matrix_Element_Handler.H"
 #include "Hard_Decay_Handler.H"
-#include "Sample_Analysis.H"
 
 namespace SHERPA {
   class Signal_Processes : public Event_Phase_Handler {

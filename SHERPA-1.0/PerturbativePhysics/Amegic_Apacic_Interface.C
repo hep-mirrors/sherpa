@@ -37,19 +37,9 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
 
   m_ycut    = rpa.gen.Ycut();
 
-  if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
-    msg.Debugging()<<" Jet_Finder in Amegic_Apacic_Interface set up to deal"
-		   <<" with lepton-lepton collisions "<<endl;
-    m_type = 1;
-  }
-  else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) {
-    msg.Debugging()<<" Jet_Finder in Amegic_Apacic_Interface set up to deal"
-		   <<" with hadron-hadron collisions "<<endl;
-    m_type = 4;
-  }
-  else {
-    m_type = 4;
-  }
+  if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) m_type = 1;
+  else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) m_type = 4;
+  else m_type = 4;
 
   p_jf       = new ATOOLS::Jet_Finder(m_ycut,m_type);
   p_cluster  = new Cluster_Partons(p_mehandler,p_jf,m_maxjetnumber,
@@ -196,7 +186,8 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 	  blob->AddData("ME_Weight",new Blob_Data<double>(weight));
 	}
 	else {
-	  msg.Out()<<" WARNING: ME_Weight not found in Amegic_Apacic_Interface::DefineInitialCondition() "<<std::endl;
+	  msg.Out()<<"WARNING in Amegic_Apacic_Interface::DefineInitialConditions: "<<std::endl
+		   <<"   ME_Weight not found in Amegic_Apacic_Interface::DefineInitialCondition() "<<std::endl;
 	}
 
       }
@@ -213,13 +204,13 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     }
     if (p_xs) {
       if (!(p_xs->SetColours(p_moms))) {
-	msg.Error()<<"Error in Amegic_Apacic_Interface::DefineInitialConditions."<<std::endl
+	msg.Error()<<"ERROR in Amegic_Apacic_Interface::DefineInitialConditions."<<std::endl
 		   <<"   Extra_XS was unable to define colour flow. Return 0."<<std::endl;
 	return 0;
       }
     }
     else {
-      msg.Error()<<"Error in Amegic_Apacic_Interface::DefineInitialConditions."<<std::endl
+      msg.Error()<<"ERROR in Amegic_Apacic_Interface::DefineInitialConditions."<<std::endl
 		 <<"   No Extra_XS found to define colour flow. Return 0."<<std::endl;
       return 0;
     }

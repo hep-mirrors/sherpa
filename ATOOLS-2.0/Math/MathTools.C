@@ -44,13 +44,11 @@ namespace ATOOLS {
      Fuer positive argumente ist die funktion alternierend
    */
 
-    //    cout<<" called ReIncompletGamma0("<<x<<")"<<endl;
     double sum= -euler_gamma -log(dabs(x));
     double i  = 1;
     double ai = -x;  
     for (;;) {
       sum-=ai;
-      //      cout<<i<<" sum = "<<sum<<endl;
       ai*=-x*i/sqr(i+1);
       i+=1.;
       if (dabs(ai/sum)<prec) break;
@@ -63,7 +61,6 @@ namespace ATOOLS {
     }
     sum-=ai;
 
-    //    cout<<" "<<i<<" iterations: "<<sum<<endl;
     return sum;
 
   }

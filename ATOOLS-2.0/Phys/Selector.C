@@ -178,7 +178,7 @@ bool Selector_Data::ReadInData(std::string filename) {
 
 void Selector_Data::ControlOutput() {
   if (data.size()<=0) {
-    msg.Debugging()<<"Selector_Data empty."<<endl;
+    msg.Tracking()<<"Selector_Data empty."<<endl;
     return;
   }
   msg.Debugging()<<"Selector_Data : "<<endl;

@@ -67,7 +67,6 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spac
 
 bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pdf) {
   mo->tmax = mo->t;  // last start t
-  msg.Tracking()<<" tstart="<<mo->tmax<<" ("<<mo->kn_no<<")"<<std::endl;
   m_last_veto = 0;
   m_inflav = mo->part->Flav(); 
   m_t      = mo->t;
@@ -178,7 +177,6 @@ bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf)
   // 6. energy conservation for multiple iteractions
   if (m_miveto_scheme) {
     if (MIVeto(mo->part->Flav(),mo->x,mo->t)) {
-      // std::cout<<"mi veto caught ("<<this<<") "<<rem_weight<<" "<<rem_ran<<std::endl;
       m_last_veto=7;
       return 1;
     }
@@ -190,7 +188,6 @@ bool Spacelike_Sudakov::MIVeto(const ATOOLS::Flavour &flavour,
 			       const double x,const double scale) 
 {
   p_pdf->Calculate(x,0,0,scale);
-  // std::cout<<"mi veto check ("<<this<<") "<<p_pdf->GetXPDF(flavour)<<std::endl;
   if (p_pdf->GetXPDF(flavour)==0.) return true;
   return false;
 }
@@ -222,9 +219,6 @@ bool Spacelike_Sudakov::MassVeto(int extra_pdf)
   if (!extra_pdf) {
     wb_jet   = p_pdf->GetXPDF(GetFlB());
   }
-  if (m_x/m_z>=1.) {
-    std::cout<<"x="<<m_x<<"    z="<<m_z<<"  x/z="<<m_x/m_z<<std::endl;
-  }
   p_pdfa->Calculate(m_x/m_z,0.,0.,q);
   weight        *= p_pdfa->GetXPDF(GetFlA())/wb_jet;
   weight        *= GetWeight(m_z,-m_t,0);
@@ -243,9 +237,6 @@ bool Spacelike_Sudakov::CplVeto()
   case 3 : {
     double a3 = GetCoupling();
     double b3 = GetCoupling(0.25*m_pt2);
-//     std::cout<<" coupling "<<a3<<"  bigger? than "<<b3;
-//     if (b3>a3) std::cout<<"IS!!!"<<std::endl;
-//     else  std::cout<<std::endl;
     double r3 = ran.Get();
     double w3 = b3/a3;
     return (w3 > r3) ? 0 : 1;
@@ -286,14 +277,10 @@ bool Spacelike_Sudakov::PTVeto(Knot * mo)
 
 bool Spacelike_Sudakov::JetVeto(Knot * mo) 
 {
-  std::cout<<" Spacelike_Sudakov::JetVeto("<<mo->kn_no<<") called "<<m_pt2<<" vs. "<<m_qjet;
   if (m_pt2>m_qjet) {
-    std::cout<<"would be veto "<<std::endl;
     return 0;  // test only!!!!
-
     return 1;
   }
-  std::cout<<std::endl;
   return 0;
 }
 

@@ -1,5 +1,5 @@
-#ifndef Output_Handler_H
-#define Output_Handler_H
+#ifndef IO_Handler_H
+#define IO_Handler_H
 
 #ifdef _USE_HEPMC_
 #include "HepMC_Interface.H"
@@ -25,7 +25,7 @@ namespace SHERPA {
     const iotype::code operator|(const iotype::code code1,const iotype::code code2);  
     const iotype::code operator&(const iotype::code code1,const iotype::code code2);  
 
-  class Output_Handler {
+  class IO_Handler {
   private :
     bool            m_on;
     int             m_io;
@@ -46,13 +46,13 @@ namespace SHERPA {
   public :
 
     // constructors
-    Output_Handler();
-    Output_Handler(const std::vector<std::string> &outfiles,
-		   const std::vector<std::string> &infiles,
-		   const std::string=std::string("."));
+    IO_Handler();
+    IO_Handler(const std::vector<std::string> &outfiles,
+	       const std::vector<std::string> &infiles,
+	       const std::string=std::string("."));
 
     // destructor
-    ~Output_Handler();
+    ~IO_Handler();
 
     // member functions
     void AddOutputMode(const iotype::code);
@@ -66,7 +66,7 @@ namespace SHERPA {
   };
 
   /*!
-    \class Output_Handler
+    \class IO_Handler
     \brief Handles the output of single events to an output format.
 
     This class steers the output of single events to a specific output selected
@@ -74,28 +74,28 @@ namespace SHERPA {
     HepMC through the HepMC_Interface and HepEvt through the HepEvt_Interface.
   */
   /*!
-    \var HepMC_Interface * Output_Handler::p_hepmc
+    \var HepMC_Interface * IO_Handler::p_hepmc
   */
   /*!
-    \var HepMC::GenEvent * Output_Handler::p_event
+    \var HepMC::GenEvent * IO_Handler::p_event
   */
   /*!
-    \var bool Output_Handler::m_active
+    \var bool IO_Handler::m_active
   */
   /*!
-    \var int Output_Handler::m_type
+    \var int IO_Handler::m_type
   */
   /*!
-    \fn Output_Handler::Output_Handler(int type=1)
+    \fn IO_Handler::IO_Handler(int type=1)
   */
   /*!
-    \fn Output_Handler::~Output_Handler()
+    \fn IO_Handler::~IO_Handler()
   */
   /*!
-    \fn void Output_Handler::OutputToFormat(ATOOLS::Blob_List *)
+    \fn void IO_Handler::OutputToFormat(ATOOLS::Blob_List *)
   */
   /*!
-    \fn bool Output_Handler::Active()
+    \fn bool IO_Handler::Active()
   */
 }
 #endif

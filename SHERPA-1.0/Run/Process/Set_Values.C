@@ -20,20 +20,11 @@ Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
   // try loading library 
   module = dlopen(libname.c_str(),RTLD_LAZY);
   error  = dlerror();
-  if (module==NULL) {
-    ATOOLS::msg.Error()<<"String_Handler::Set_Values("<<pID<<","<<BS<<"): "
-		       <<"Error while loading library "<<libname<<std::endl<<error<<std::endl;
-    return 0;
-  }
+  if (module==NULL) return 0;
 
   GetterFunction = (Getter_Function)dlsym(module,gettername.c_str());
   error  = dlerror();
-  if (error!=NULL) {
-    ATOOLS::msg.Error()<<"String_Handler::Set_Values("<<pID<<","<<BS<<"): "
-		       <<"Error while loading symbol from library "<<libname<<std::endl<<error<<std::endl;
-    return 0;
-  }
+  if (error!=NULL) return 0;
 
-  ATOOLS::msg.Tracking()<<" calling Getter for library"<<endl;
   return GetterFunction(BS);
 }

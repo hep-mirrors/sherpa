@@ -185,7 +185,7 @@ int Random::WriteOutStatus(const char * filename){
     p_outstream = 0;
   }
   if (p_outstream == 0){
-    msg.Tracking()<<" Saving Random Number Generator Status to "<<filename<<endl;
+    msg.Info()<<"Random::WriteOutStatus : Saving Random Number Generator Status to "<<filename<<endl;
     long int count=0;
     std::ifstream *myinstream = new std::ifstream(filename,std::ios::in);
     if (myinstream->good()) {
@@ -214,7 +214,7 @@ int Random::WriteOutStatus(const char * filename){
 
 void Random::ReadInStatus(const char * filename, long int index){
   // read in every Statusregister of Random Number generator
-  msg.Events()<<"reading file "<<filename<<" index "<<index<<endl;
+  msg.Info()<<"Random::ReadInStatus from "<<filename<<" index "<<index<<endl;
   std::ifstream myinstream(filename);
   long int count;
   if (myinstream.good()) {
@@ -225,14 +225,13 @@ void Random::ReadInStatus(const char * filename, long int index){
       (myinstream)>>count;    
     };
     if (count==index) {
-      msg.Events()<<" index="<<index<<" found"<<endl;
       (myinstream)>>m_id; (myinstream)>>m_inext; (myinstream)>>m_inextp;
       for (int i=0;i<56;++i) (myinstream)>>m_ma[i];    
     } 
-    else msg.Error()<<" index="<<index<<" not found in "<<filename<<endl;
+    else msg.Error()<<"ERROR in Random::ReadInStatus : index="<<index<<" not found in "<<filename<<endl;
     myinstream.close();
   } 
-  else msg.Error()<<filename<<" not found!!"<<endl;
+  else msg.Error()<<"ERROR in Random::ReadInStatus : "<<filename<<" not found!!"<<endl;
 }
 
 double Random::GetNZ() 

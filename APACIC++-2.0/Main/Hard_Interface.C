@@ -13,8 +13,8 @@ using namespace PDF;
 using namespace ATOOLS;
 
 
-Hard_Interface::Hard_Interface(ISR_Handler * _isr,MODEL::Model_Base * _model,int _maxjetnumber,
-			       bool _isron,bool _fsron,Data_Read * _dataread):
+Apacic::Apacic(ISR_Handler * _isr,MODEL::Model_Base * _model,int _maxjetnumber,
+	       bool _isron,bool _fsron,Data_Read * _dataread):
   m_isron(_isron), m_fsron(_fsron), m_showers(_isron||_fsron),
   p_inishower(NULL), p_finshower(NULL), p_initrees(NULL), p_fintree(NULL)
 {
@@ -29,7 +29,7 @@ Hard_Interface::Hard_Interface(ISR_Handler * _isr,MODEL::Model_Base * _model,int
   }
 }
   
-Hard_Interface::~Hard_Interface() 
+Apacic::~Apacic() 
 {
   if (p_fintree)     { delete p_fintree; p_fintree = 0; }
   if (p_initrees)    {
@@ -40,12 +40,12 @@ Hard_Interface::~Hard_Interface()
   if (p_finshower)   { delete p_finshower; p_finshower = 0; }
 }
 
-void Hard_Interface::PrepareTrees() {
+void Apacic::PrepareTrees() {
   if (m_fsron) p_fintree->Reset(); 
   if (m_isron) for (int i=0;i<2;i++) p_initrees[i]->Reset();
 }
 
-void Hard_Interface::SetJetvetoPt2(const double pt2)
+void Apacic::SetJetvetoPt2(const double pt2)
 { 
   if (m_fsron) 
     p_finshower->SetJetvetoPt2(pt2); 
@@ -53,14 +53,14 @@ void Hard_Interface::SetJetvetoPt2(const double pt2)
     p_inishower->SetJetvetoPt2(pt2); 
 }
 
-void Hard_Interface::SetFactorisationScale(const double scale)
+void Apacic::SetFactorisationScale(const double scale)
 {
   if (m_isron) {
     p_inishower->SetFactorisationScale(scale);
   }
 }
 
-int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
+int Apacic::PerformShowers(bool ini,bool fin,int jetveto,double x1,double x2) {
   if (!m_showers) return 1;
   if (msg.LevelIsDebugging()) {
     if (m_fsron) 
@@ -84,7 +84,6 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,doubl
       double s  = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
       SetJetvetoPt2(s*ycut);
       if (!p_finshower->ExtraJetCheck()) {
-	//	std::cout<<" lose jet veto called FS "<<std::endl;
 	return 3;
       }
     }
@@ -127,12 +126,9 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,doubl
       double s  = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
       SetJetvetoPt2(s*ycut);
       if (!p_finshower->ExtraJetCheck()) {
-	//	std::cout<<" lose jet veto called IS "<<std::endl;
 	return 3;
       }
     }
-
-    msg.Debugging()<<"Initial State Shower successful !"<<std::endl;
   }
 
   if (msg.LevelIsDebugging()) {
@@ -146,7 +142,7 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,int jetveto,double x1,doubl
   return 1;
 }
 
-bool Hard_Interface::ExtractPartons(bool ini,bool fin,Blob_List * bl,Particle_List * pl) {
+bool Apacic::ExtractPartons(bool ini,bool fin,Blob_List * bl,Particle_List * pl) {
   if (fin) p_finshower->ExtractPartons(p_fintree->GetRoot(),0,bl,pl);
 
   if (ini) {

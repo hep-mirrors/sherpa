@@ -33,7 +33,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
-  p_pythia(NULL)
+  p_iohandler(NULL), p_pythia(NULL)
 {
   m_scan_istep=-1;  
 
@@ -57,7 +57,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_mode(0), p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
-  p_pythia(NULL)
+  p_iohandler(NULL), p_pythia(NULL)
 {
   m_path=std::string("./");
   m_file=std::string("Run.dat");
@@ -93,7 +93,7 @@ Initialization_Handler::~Initialization_Handler()
     delete m_analyses.begin()->second;
     m_analyses.erase(m_analyses.begin());
   }
-  if (p_outputhandler) { delete p_outputhandler; p_outputhandler = NULL; }
+  if (p_iohandler)     { delete p_iohandler;     p_iohandler     = NULL; }
   if (p_hadrondecays)  { delete p_hadrondecays;  p_hadrondecays  = NULL; }
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
@@ -129,7 +129,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
 
   bool okay = InitializeTheIO();
-  std::cout<<"m_mode = "<<m_mode<<std::endl;
   if (m_mode>8999) {
     okay &= InitializeTheExternalMC();
     InitializeTheAnalyses();
@@ -172,8 +171,8 @@ bool Initialization_Handler::CheckBeamISRConsistency()
   if (p_model->Name()==std::string("ADD")) {
     double ms = p_model->ScalarConstant("M_s");
     if (ms<rpa.gen.Ecms()) {
-      msg.Out()<<" WARNING : You are using the ADD model beyond its valid range ! "<<endl;
-      msg.Out()<<" WARNING : You are using the ADD model beyond its valid range ! "<<endl;
+      msg.Out()<<"WARNING in Initialization_Handler::CheckBeamISRConsistency :"<<std::endl
+	       <<"   You are using the ADD model beyond its valid range ! "<<endl;
     }
   }
 
@@ -230,7 +229,7 @@ bool Initialization_Handler::InitializeTheIO()
   outfiles.push_back(p_dataread->GetValue<string>("HEPMC_OUTPUT",string("")));
   outfiles.push_back(p_dataread->GetValue<string>("HEPEVT_OUTPUT",string("")));
   filesize  = p_dataread->GetValue<int>("FILE_SIZE",1000);
-  p_outputhandler = new Output_Handler(outfiles,infiles);
+  p_iohandler = new IO_Handler(outfiles,infiles);
   return true;
 }
 
@@ -243,8 +242,8 @@ bool Initialization_Handler::InitializeTheExternalMC()
     return true;
   default: 
     m_mode = 9999;
-    msg.Out()<<"SHERPA will read in the events."<<std::endl
-	     <<"   The full framework is not needed."<<std::endl;
+    msg.Info()<<"Initialization_Handler::InitializeTheExternalMC :"<<std::endl
+	      <<"   SHERPA will read in the events, the full framework is not needed."<<std::endl;
   }
   return false;
 }
@@ -262,7 +261,6 @@ bool Initialization_Handler::InitializeTheModel()
 	       <<"    RunSpectrumGenerator() delivered false. Abort()."<<endl;
     abort();
   }
-  msg.Events()<<"Initialized the model : "<<p_model->Name()<<endl;
 
   delete modelhandler;
   delete dataread;  
@@ -275,7 +273,7 @@ bool Initialization_Handler::InitializeTheBeams()
   if (p_beamspectra) { delete p_beamspectra; p_beamspectra = NULL; }
   Data_Read * dataread = new Data_Read(m_path+m_beamdat);
   p_beamspectra        = new Beam_Spectra_Handler(dataread);
-  msg.Events()<<"Initialized the beams "<<p_beamspectra->Type()<<endl;
+  msg.Info()<<"Initialized the beams "<<p_beamspectra->Type()<<endl;
   delete dataread;  
   return 1;
 }
@@ -303,6 +301,7 @@ bool Initialization_Handler::InitializeThePDFs()
     kplimits[0] = dataread->GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
     kplimits[1] = dataread->GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
     m_isrhandlers[id] = new ISR_Handler(isrbases,m_bunch_splimits,kplimits);
+    msg.Info()<<"Initialized the ISR["<<id<<"] : "<<m_isrhandlers[id]->Type()<<endl;
     delete pdfhandler;
     delete dataread;
     if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
@@ -320,9 +319,9 @@ bool Initialization_Handler::InitializeTheHardDecays()
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   p_harddecays = new Hard_Decay_Handler(m_path,m_decaydat,m_medat,p_model);
   if (p_harddecays->GetMEHandler()!=NULL) {
-    ATOOLS::msg.Tracking()<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
-			  <<p_harddecays->GetMEHandler()->Name()<<"/"
-			  <<p_harddecays->GetMEHandler()<<std::endl;
+    ATOOLS::msg.Info()<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
+		      <<p_harddecays->GetMEHandler()->Name()<<"/"
+		      <<p_harddecays->GetMEHandler()<<std::endl;
     m_mehandlers.insert(std::make_pair(std::string("HardDecays"),p_harddecays->GetMEHandler()));
   }
   return 1;
@@ -341,8 +340,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
 				    m_isrhandlers[isr::hard_process],NULL);
   }
   m_mehandlers.insert(std::make_pair(std::string("SignalMEs"),me)); 
-  ATOOLS::msg.Tracking()<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
-			<<me->Name()<<"/"<<me<<endl;
+  ATOOLS::msg.Info()<<"Initialized the Matrix_Element_Handler for the hard processes :"<<me->Name()<<endl;
   return 1;
 }
 
@@ -359,9 +357,12 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
+  if (p_mihandler->Type()!=0)
+    ATOOLS::msg.Info()<<"Initialized the Multiple_Interactions_Handler (MI_Handler)."<<endl;
   Matrix_Element_Handler *mehandler;
   if ((mehandler=p_mihandler->HardMEHandler())!=NULL) {
     m_mehandlers.insert(std::make_pair(std::string("MIMEs"),mehandler)); 
+    ATOOLS::msg.Info()<<"Added the Matrix_Element_Handler for the u.e. :"<<mehandler->Name()<<endl;
   }
   else {
     ISR_Handler_Map::iterator iit=m_isrhandlers.find(isr::hard_subprocess);
@@ -377,6 +378,7 @@ bool Initialization_Handler::InitializeTheShowers()
   int maxjets     = GetMatrixElementHandler(std::string("SignalMEs"))->MaxJets();
   p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,
 				       m_isrhandlers[isr::hard_process],maxjets);
+  ATOOLS::msg.Info()<<"Initialized the Shower_Handler."<<endl;
   return 1;
 }
 
@@ -393,6 +395,7 @@ bool Initialization_Handler::InitializeTheBeamRemnants()
   p_beamremnants = new Beam_Remnant_Handler(m_path,m_beamremnantdat,
 					    m_isrhandlers[isr::hard_process],
 					    p_beamspectra,scale);
+  ATOOLS::msg.Info()<<"Initialized the Beam_Remnant_Handler."<<endl;
   return 1;
 }
 
@@ -400,6 +403,7 @@ bool Initialization_Handler::InitializeTheFragmentation()
 {
   if (p_fragmentation) { delete p_fragmentation; p_fragmentation = NULL; }
   p_fragmentation = new Fragmentation_Handler(m_path,m_fragmentationdat);
+  ATOOLS::msg.Info()<<"Initialized the Fragmentation_Handler."<<endl;
   return 1;
 }
 
@@ -413,11 +417,7 @@ bool Initialization_Handler::InitializeTheHadronDecays()
 
 bool Initialization_Handler::InitializeTheAnalyses()
 {
-  if (rpa.gen.Analysis()<=0) {
-    msg.Error()<<"Warning in Initialization_Handler::InitializeTheAnalyses()."<<std::endl
-	       <<"   Analysis is switched off - continue run."<<std::endl;
-    return 1;
-  } 
+  if (rpa.gen.Analysis()<=0) return 1;
 
   std::string prefix=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT");
   if (prefix==NotDefined<std::string>()) prefix="";
@@ -430,7 +430,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
     abort();
   }
   std::string buffer, phase;
-  Sample_Analysis * sa = NULL;
+  Analysis_Handler * sa = NULL;
   unsigned int pos;
   bool add;
   for (;;) {
@@ -451,7 +451,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	}
 	add = false;
 	if (phase!=std::string("")) {
-	  sa  = new Sample_Analysis(from,phase,prefix);
+	  sa  = new Analysis_Handler(from,phase,prefix);
 	  if (sa->On()) add = true;
 	  else delete sa;
 	}
@@ -462,7 +462,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	    name=phase+std::string("_")+ATOOLS::ToString(++i);
 	  } while (m_analyses.find(name)!=m_analyses.end());
 	  m_analyses.insert(std::make_pair(name,sa)); 
-	  ATOOLS::msg.Tracking()<<"Initialized Sample_Analysis "<<name<<std::endl;
+	  ATOOLS::msg.Info()<<"Initialized Analysis_Handler "<<name<<std::endl;
 	}
       }
     }
@@ -490,6 +490,8 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     if (p_showerhandler->FSROn()) scalechoice += 2;
   }
   Matrix_Element_Handler * me = GetMatrixElementHandler(std::string("SignalMEs"));
+  msg.Out()<<"=========================================================================="<<std::endl
+	   <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
   int ok = me->CalculateTotalXSecs(scalechoice);
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
@@ -503,6 +505,12 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     }
     ATOOLS::msg.Out()<<endl;
   }
+  if (ok) 
+    msg.Out()<<"Calculating the hard cross sections has been successful.                  "<<std::endl
+	     <<"=========================================================================="<<std::endl;
+  else
+    msg.Out()<<"Calculating the hard cross sections failed. Check this carefully.         "<<std::endl
+	     <<"=========================================================================="<<std::endl;
   return ok;
 }
 
@@ -519,7 +527,6 @@ void Initialization_Handler::SetParameter(int nr) {
   if (m_scan_variable==string("ECMS")) {
     s<<value/2.;
     s>>sval;
-    ATOOLS::msg.Out()<<" Setting Ecms/2 to : "<<sval<<endl;
     Data_Read::SetCommandLine("BEAM_ENERGY_1",sval);
     Data_Read::SetCommandLine("BEAM_ENERGY_2",sval);
   }

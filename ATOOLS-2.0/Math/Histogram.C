@@ -95,7 +95,6 @@ Histogram::Histogram(const std::string & pID) {
     }
 
     MyStrStream str;
-    //    std::cout<<dummy<<std::endl;
     str<<dummy;
     str>>m_type>>m_nbin>>m_lower>>m_upper;
     k=4;
@@ -520,7 +519,6 @@ double Histogram::LogCoeff() const
     double sigl2=meanly2-sqr(meanly);
     double ly0=0.5*(lymax+lymin);
     if (sigl2!=0.) rl=sigl2/sqr(ly0-meanly);
-    //    std::cout<<" rl="<<rl<<std::endl;
   }
   if (nl!=0) {
     meany   = meany/nl;
@@ -528,14 +526,12 @@ double Histogram::LogCoeff() const
     double sig2=meany2-sqr(meany);
     double y0=0.5*(ymax+ymin);
     if (sig2!=0) rn=sig2/sqr(y0-meany);
-    //    std::cout<<" rn="<<rn<<std::endl;
   }
   double r;
   if (rl==0. && rn==0.) r=1.;
   else if (rl==0.)      r=0.;
   else if (rn==0.)      r=20.;
   else r=rl/rn;
-  //  std::cout<<" r="<<r<<std::endl;
   return r;
 }
 

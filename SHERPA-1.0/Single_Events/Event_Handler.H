@@ -21,10 +21,10 @@ namespace SHERPA {
     Event_Handler();
     ~Event_Handler();
 
-    void AddEventPhase(Event_Phase_Handler *);
+    void                  AddEventPhase(Event_Phase_Handler *);
     Event_Phase_Handler * GetEventPhase(const size_t);
-    size_t  NumberOfEventPhases();
-    void EmptyEventPhases();
+    size_t                NumberOfEventPhases();
+    void                  EmptyEventPhases();
 
     void PrintGenericEventStructure();
 
@@ -64,7 +64,7 @@ namespace SHERPA {
     standard library, the corresponding iterator is defined to be Phase_Iterator.
   */ 
   /*!
-    \var Sample_Analysis * Event_Handler::p_analysis
+    \var Analysis_Handler * Event_Handler::p_analysis
     A pointer to some analysis.
   */ 
   /*!
@@ -125,7 +125,7 @@ namespace SHERPA {
     Prints the actual blob list.
   */ 
   /*!
-    \fn void Event_Handler::SetAnalysis(Sample_Analysis *)
+    \fn void Event_Handler::SetAnalysis(Analysis_Handler *)
     To set the analysis from outside.
   */ 
   /*!

@@ -176,11 +176,11 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
   if (nlegs>4) {
     if (msg.LevelIsDebugging()) {
       for (int k=0;k<nampl;++k) {
-	std::cout<<"Combine_Table for Graph "<<k<<std::endl
+	msg.Out()<<"Combine_Table for Graph "<<k<<std::endl
 		 <<"=============================="<<endl
 		 <<(&legs[k][0]);
       }
-      std::cout<<"=============================="<<endl;
+      msg.Out()<<"=============================="<<endl;
     }
     int start=0;
     // cluster initial state only if isrshower and isr_x is on. 
@@ -366,7 +366,7 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
     
   } 
   else {
-    msg.Error()<<" ERROR:  nlegs < 4 !!!!!!!!!"<<std::endl;
+    msg.Error()<<"ERROR in Combine_Table::CalcJet :  nlegs < 4. Abort."<<std::endl;
     abort();
   }
   return ct;

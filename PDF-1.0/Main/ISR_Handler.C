@@ -139,11 +139,6 @@ void ISR_Handler::Init(const double *splimits,const double *kplimits)
   double E2=E-E1;
   m_fixvecs[0]=Vec4D(E1,0.,0.,sqrt(sqr(E1)-m_mass2[0]));
   m_fixvecs[1]=Vec4D(E2,0.,0.,-m_fixvecs[0][3]);
-  if (m_mode>0) msg.Tracking()<<"ISR is on:  ";
-  else msg.Tracking()<<"ISR is off: ";
-  msg.Tracking()<<"type = "<<m_type<<" for "<<p_isrbase[0]->Flavour()<<" / "
-		<<p_isrbase[1]->Flavour()<<endl<<"   Range = "<<m_splimits[0]
-		<<" ... "<<m_splimits[1]<<" from "<<m_splimits[2]<<endl;
 }
 
 void ISR_Handler::SetSprimeMin(const double spmin)       
@@ -243,8 +238,9 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
     return true;
   }
   if (m_spkey[3]<m_splimits[0] || m_spkey[3]>m_splimits[1]) {
-    msg.Error()<<"ISR_Handler::MakeISR(..): "<<om::red<<" sprime out of bounds !"
-	       <<om::reset<<endl<<"   s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
+    msg.Error()<<"ERROR in ISR_Handler::MakeISR(..): "<<std::endl
+	       <<om::red<<" sprime out of bounds :"<<om::reset
+	       <<" s'_{min}, s'_{max 1,2} vs. s': "<<m_splimits[0]
 	       <<", "<<m_splimits[1]<<", "<<m_splimits[2]<<" vs. "<<m_spkey[3]<<endl;
     return false;
   }
@@ -315,8 +311,6 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n)
 
 void ISR_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
 {
-  ATOOLS::msg.Tracking()<<"ISR_Handler::AssignKeys(..):"
-			<<"Creating initial mapping keys ...\n";
   m_spkey.Assign("s' isr",4,0,info);
   m_ykey.Assign("y isr",3,0,info);
   m_xkey.Assign("x isr",5,0,info);
@@ -324,7 +318,6 @@ void ISR_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
   m_zkey[1].Assign("z_2",3,0,info);
   m_kpkey[0].Assign("k_perp_1",4,0,info);
   m_kpkey[1].Assign("k_perp_2",4,0,info);
-  ATOOLS::msg.Tracking()<<"... done."<<std::endl;
 }
 
 void ISR_Handler::Reset() 

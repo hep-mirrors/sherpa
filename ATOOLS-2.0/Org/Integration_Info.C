@@ -42,11 +42,6 @@ void Integration_Info::AssignKey(Info_Key &key,const size_t doubles,const size_t
   }
   key.m_weightkey=kit->second.first;
   kit->second.second.push_back(&key);
-  ATOOLS::msg.Tracking()<<om::bold<<"key mapping: "<<om::reset<<"("
-			<<om::red<<key.m_valuekey<<om::reset<<","
-			<<om::red<<key.m_weightkey<<om::reset<<") <=> (\""
-			<<om::green<<key.m_name<<om::reset<<"\",\""
-			<<om::blue<<key.m_info<<om::reset<<"\")\n";
 }
 
 void Integration_Info::ReleaseKey(Info_Key &key)
@@ -65,22 +60,6 @@ void Integration_Info::ReleaseKey(Info_Key &key)
        kit!=wit->second.second.end();++kit) {
     if (*kit==&key) { 
       wit->second.second.erase(kit);
-      ATOOLS::msg.Tracking()<<om::bold<<"erased key: "<<om::reset<<"("
-			    <<om::red<<key.m_valuekey<<om::reset<<","
-			    <<om::red<<key.m_weightkey<<om::reset<<") <=> (\""
-			    <<om::green<<key.m_name<<om::reset<<"\",\""
-			    <<om::blue<<key.m_info<<om::reset<<"\")\n";
-      if (wit->second.second.size()==0) {
-	// keys.erase(wit);
-	ATOOLS::msg.Tracking()<<om::bold<<"emptied weight map: "<<om::reset<<"("
-			      <<om::red<<key.m_valuekey<<om::reset<<","
-			      <<om::red<<key.m_weightkey<<om::reset<<")\n";
-	if (keys.size()==0) {
-	  // m_keymap.erase(vit); 
-	  ATOOLS::msg.Tracking()<<om::bold<<"emptied value map: "<<om::reset<<"("
-				<<om::red<<key.m_valuekey<<om::reset<<")\n";
-	}
-      }
       return;
     }
   }

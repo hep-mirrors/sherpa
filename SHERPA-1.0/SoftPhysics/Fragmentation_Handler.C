@@ -17,15 +17,11 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
   m_fragmentationmodel=dr.GetValue<std::string>("FRAGMENTATION",std::string("Lund"));
   if (m_fragmentationmodel==std::string("Lund")) {
     std::string lundfile=dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
-    ATOOLS::msg.Events()<<"Fragmentation_Handler::Fragmentation_Handler(..): "
-			<<"Initialize Lund Fragmentation according to "<<lundfile<<std::endl;
     p_lund = new Lund_Interface(m_dir,lundfile);
     m_mode=1;
     return;
   }
   if (m_fragmentationmodel==std::string("Off")) {
-    ATOOLS::msg.Out()<<"Fragmentation_Handler::Fragmentation_Handler(..): "
-		     <<"WARNING: The Fragmentation is switched off "<<std::endl;
     return;
   }
   throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Fragmentation model not implemented.",

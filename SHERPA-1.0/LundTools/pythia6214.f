@@ -913,7 +913,7 @@ C...Reset MINT and VINT arrays. Write headers.
         VINT(J)=0D0
   100 CONTINUE
       IF(MSTU(12).GE.1) CALL PYLIST(0)
-      IF(MSTP(122).GE.1) WRITE(MSTU(11),5100)
+c      IF(MSTP(122).GE.1) WRITE(MSTU(11),5100)
  
 C...Call user process initialization routine.
       IF(FRAME(1:1).EQ.'u'.OR.FRAME(1:1).EQ.'U') THEN
@@ -1134,7 +1134,8 @@ C...Initialization finished.
           MSTI(53)=1
         ENDIF
       ENDIF
-  170 IF(MSTP(122).GE.1) WRITE(MSTU(11),5600)
+  170 continue
+c      IF(MSTP(122).GE.1) WRITE(MSTU(11),5600)
  
 C...Formats for initialization information.
  5100 FORMAT('1',18('*'),1X,'PYINIT: initialization of PYTHIA ',
@@ -2546,8 +2547,8 @@ C...Identify incoming beam and target particles.
           VINT(302+I)=PM(I)
         ENDIF
   160 CONTINUE
-      IF(MINT(11).EQ.0) WRITE(MSTU(11),5000) CHBEAM(1:LEN(2))
-      IF(MINT(12).EQ.0) WRITE(MSTU(11),5100) CHTARG(1:LEN(3))
+c      IF(MINT(11).EQ.0) WRITE(MSTU(11),5000) CHBEAM(1:LEN(2))
+c      IF(MINT(12).EQ.0) WRITE(MSTU(11),5100) CHTARG(1:LEN(3))
       IF(MINT(11).EQ.0.OR.MINT(12).EQ.0) STOP
  
 C...Identify choice of frame and input energies.
@@ -2569,8 +2570,8 @@ C...Events defined in the CM frame.
      &      CHCOM(2)(1:LEN(2))//' on '//CHCOM(3)(1:LEN(3))//
      &      ' collider'//' '
           ENDIF
-          WRITE(MSTU(11),5200) CHINIT
-          WRITE(MSTU(11),5300) WIN
+c          WRITE(MSTU(11),5200) CHINIT
+c          WRITE(MSTU(11),5300) WIN
         ENDIF
  
 C...Events defined in fixed target frame.
@@ -2582,9 +2583,9 @@ C...Events defined in fixed target frame.
           CHINIT(LOFFS+1:76)='PYTHIA will be initialized for '//
      &    CHCOM(2)(1:LEN(2))//' on '//CHCOM(3)(1:LEN(3))//
      &    ' fixed target'//' '
-          WRITE(MSTU(11),5200) CHINIT
-          WRITE(MSTU(11),5400) WIN
-          WRITE(MSTU(11),5500) SQRT(S)
+c          WRITE(MSTU(11),5200) CHINIT
+c          WRITE(MSTU(11),5400) WIN
+c          WRITE(MSTU(11),5500) SQRT(S)
         ENDIF
  
 C...Frame defined by user three-vectors.
@@ -2601,11 +2602,11 @@ C...Frame defined by user three-vectors.
           CHINIT(LOFFS+1:76)='PYTHIA will be initialized for '//
      &    CHCOM(2)(1:LEN(2))//' on '//CHCOM(3)(1:LEN(3))//
      &    ' user configuration'//' '
-          WRITE(MSTU(11),5200) CHINIT
-          WRITE(MSTU(11),5600)
-          WRITE(MSTU(11),5700) CHCOM(2),P(1,1),P(1,2),P(1,3),P(1,4)
-          WRITE(MSTU(11),5700) CHCOM(3),P(2,1),P(2,2),P(2,3),P(2,4)
-          WRITE(MSTU(11),5500) SQRT(MAX(0D0,S))
+c          WRITE(MSTU(11),5200) CHINIT
+c          WRITE(MSTU(11),5600)
+c          WRITE(MSTU(11),5700) CHCOM(2),P(1,1),P(1,2),P(1,3),P(1,4)
+c          WRITE(MSTU(11),5700) CHCOM(3),P(2,1),P(2,2),P(2,3),P(2,4)
+c          WRITE(MSTU(11),5500) SQRT(MAX(0D0,S))
         ENDIF
  
 C...Frame defined by user four-vectors.
@@ -2622,11 +2623,11 @@ C...Frame defined by user four-vectors.
           CHINIT(LOFFS+1:76)='PYTHIA will be initialized for '//
      &    CHCOM(2)(1:LEN(2))//' on '//CHCOM(3)(1:LEN(3))//
      &    ' user configuration'//' '
-          WRITE(MSTU(11),5200) CHINIT
-          WRITE(MSTU(11),5600)
-          WRITE(MSTU(11),5700) CHCOM(2),P(1,1),P(1,2),P(1,3),P(1,4)
-          WRITE(MSTU(11),5700) CHCOM(3),P(2,1),P(2,2),P(2,3),P(2,4)
-          WRITE(MSTU(11),5500) SQRT(MAX(0D0,S))
+c          WRITE(MSTU(11),5200) CHINIT
+c          WRITE(MSTU(11),5600)
+c          WRITE(MSTU(11),5700) CHCOM(2),P(1,1),P(1,2),P(1,3),P(1,4)
+c          WRITE(MSTU(11),5700) CHCOM(3),P(2,1),P(2,2),P(2,3),P(2,4)
+c          WRITE(MSTU(11),5500) SQRT(MAX(0D0,S))
         ENDIF
  
 C...Frame defined by user five-vectors.
@@ -2639,11 +2640,11 @@ C...Frame defined by user five-vectors.
           CHINIT(LOFFS+1:76)='PYTHIA will be initialized for '//
      &    CHCOM(2)(1:LEN(2))//' on '//CHCOM(3)(1:LEN(3))//
      &    ' user configuration'//' '
-          WRITE(MSTU(11),5200) CHINIT
-          WRITE(MSTU(11),5600)
-          WRITE(MSTU(11),5700) CHCOM(2),P(1,1),P(1,2),P(1,3),P(1,4)
-          WRITE(MSTU(11),5700) CHCOM(3),P(2,1),P(2,2),P(2,3),P(2,4)
-          WRITE(MSTU(11),5500) SQRT(MAX(0D0,S))
+c          WRITE(MSTU(11),5200) CHINIT
+c          WRITE(MSTU(11),5600)
+c          WRITE(MSTU(11),5700) CHCOM(2),P(1,1),P(1,2),P(1,3),P(1,4)
+c          WRITE(MSTU(11),5700) CHCOM(3),P(2,1),P(2,2),P(2,3),P(2,4)
+c          WRITE(MSTU(11),5500) SQRT(MAX(0D0,S))
         ENDIF
  
 C...Frame defined by HEPRUP common block.
@@ -2655,18 +2656,18 @@ C...Frame defined by HEPRUP common block.
           CHINIT(LOFFS+1:76)='PYTHIA will be initialized for '//
      &    CHCOM(2)(1:LEN(2))//' on '//CHCOM(3)(1:LEN(3))//
      &    ' user configuration'//' '
-          WRITE(MSTU(11),5200) CHINIT
-          WRITE(MSTU(11),6000) EBMUP(1),EBMUP(2)
-          WRITE(MSTU(11),5500) SQRT(MAX(0D0,S))
+c          WRITE(MSTU(11),5200) CHINIT
+c          WRITE(MSTU(11),6000) EBMUP(1),EBMUP(2)
+c          WRITE(MSTU(11),5500) SQRT(MAX(0D0,S))
         ENDIF
  
 C...Unknown frame. Error for too low CM energy.
       ELSE
-        WRITE(MSTU(11),5800) CHFRAM(1:LEN(1))
+c        WRITE(MSTU(11),5800) CHFRAM(1:LEN(1))
         STOP
       ENDIF
       IF(S.LT.PARP(2)**2) THEN
-        WRITE(MSTU(11),5900) SQRT(S)
+c        WRITE(MSTU(11),5900) SQRT(S)
         STOP
       ENDIF
  
@@ -4989,8 +4990,8 @@ C...Print summary table.
         ENDIF
       ENDIF
       IF(MSTP(122).GE.1) THEN
-        WRITE(MSTU(11),6000)
-        WRITE(MSTU(11),6100)
+c        WRITE(MSTU(11),6000)
+c        WRITE(MSTU(11),6100)
         DO 470 ISUB=1,500
           IF(MSUB(ISUB).NE.1.AND.ISUB.NE.96) GOTO 470
           IF(ISUB.EQ.96.AND.MINT(50).EQ.0) GOTO 470
@@ -4999,9 +5000,9 @@ C...Print summary table.
           IF(MSUB(95).EQ.1.AND.(ISUB.EQ.11.OR.ISUB.EQ.12.OR.ISUB.EQ.13
      &    .OR.ISUB.EQ.28.OR.ISUB.EQ.53.OR.ISUB.EQ.68)) GOTO 470
           IF(MSUB(95).EQ.1.AND.ISUB.GE.381.AND.ISUB.LE.386) GOTO 470
-          WRITE(MSTU(11),6200) ISUB,PROC(ISUB),XSEC(ISUB,1)
+c          WRITE(MSTU(11),6200) ISUB,PROC(ISUB),XSEC(ISUB,1)
   470   CONTINUE
-        WRITE(MSTU(11),6300)
+c        WRITE(MSTU(11),6300)
       ENDIF
  
 C...Format statements for maximization results.
@@ -53285,7 +53286,7 @@ C...Data on months, logo, titles, and references.
      &'-223 62 Lund, Sweden;               ',
      &'  phone: + 46 - 46 - 222 31 92; e-ma',
      &'il: zeiler@thep.lu.se               '/
- 
+      return 
 C...Check that PYDATA linked.
       IF(MSTP(183)/10.NE.199.AND.MSTP(183)/10.NE.200) THEN
         WRITE(*,'(1X,A)')

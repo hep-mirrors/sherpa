@@ -39,11 +39,12 @@ extern "C" {
 }
 
 Sherpa::Sherpa() :
-  p_inithandler(NULL), p_eventhandler(NULL), p_output(NULL), p_analysis(NULL)  
+  p_inithandler(NULL), p_eventhandler(NULL), p_iohandler(NULL), p_analysis(NULL)  
 {
   PROFILE_HERE;
   m_errors = 0;
   m_trials = 100;
+  DrawLogo();
 }
 
 Sherpa::~Sherpa() 
@@ -57,7 +58,6 @@ Sherpa::~Sherpa()
 bool Sherpa::InitializeTheRun(int argc,char * argv[]) 
 { 
   PROFILE_HERE;
-  DrawLogo();
   m_path = std::string("./");
   p_inithandler  = new Initialization_Handler(argc, argv);
   int mode = p_inithandler->Mode();  
@@ -78,7 +78,7 @@ bool Sherpa::InitializeTheRun(int argc,char * argv[])
 
 bool Sherpa::InitializeTheEventHandler() 
 {
-  p_output        = p_inithandler->GetOutputHandler();
+  p_iohandler     = p_inithandler->GetIOHandler();
   int mode        = p_inithandler->Mode();
   p_eventhandler  = new Event_Handler();
   
@@ -88,13 +88,11 @@ bool Sherpa::InitializeTheEventHandler()
     p_eventhandler->AddEventPhase(new MC_Interface(p_inithandler->GetPythiaInterface())); 
     break;
   case 9999: 
-    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_output)); 
+    p_eventhandler->AddEventPhase(new EvtReadin_Phase(p_iohandler)); 
     break;
   default:
     p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(sme),
 						       p_inithandler->GetHardDecayHandler()));
-    //p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
-    p_eventhandler->AddEventPhase(new Multiple_Interactions(p_inithandler->GetMIHandler()));
     p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
 						    p_inithandler->GetShowerHandler()));
     p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
@@ -119,9 +117,10 @@ bool Sherpa::GenerateOneEvent()
   ATOOLS::rpa.gen.SetNumberOfDicedEvents(ATOOLS::rpa.gen.NumberOfDicedEvents()+1);
   for (int i=0;i<m_trials;i++) {
     if (p_eventhandler->GenerateEvent(p_inithandler->Mode())) {
-      if (p_output->OutputOn()) {
-	p_output->OutputToFormat(p_eventhandler->GetBlobs());
+      if (p_iohandler->OutputOn()) {
+	p_iohandler->OutputToFormat(p_eventhandler->GetBlobs());
       }
+      p_eventhandler->PrintEvent(1);
       return 1;
     }
     m_errors++;
@@ -139,53 +138,55 @@ bool Sherpa::SummarizeRun()
 
 void Sherpa::DrawLogo() 
 { 
-  msg.Out()<<"-----------------------------------------------------------------------------"<<std::endl
-	   <<"................................................ |       +                   "<<std::endl
-	   <<"................................................ ||  |       +  +            "<<std::endl
-	   <<"...................................        ....  | |         /   +           "<<std::endl
-	   <<"................. ................   _,_ |  ....  ||         +|  +  +        "<<std::endl
-	   <<"...............................  __.'  ,\\|  ...  ||    /    +|          +    "<<std::endl
-	   <<".............................. (´  \\  ´  \\   ...  | |  |   + + \\         +   "<<std::endl
-	   <<".............................  (    \\   -/  .... ||       +    |          +  "<<std::endl
-	   <<"........ ...................  <S   /()))))~~~~~~~~##     +     /\\    +       "<<std::endl
-	   <<"............................ (!H   (~~)))))~~~~~~#/     +  +    |  +         "<<std::endl
-	   <<"................ ........... (!E   (~~~)))))     /|/    +         +          "<<std::endl
-	   <<"............................ (!R   (~~~)))))   |||   + +            +        "<<std::endl
-	   <<"..... ...................... (!P    (~~~~)))   /|  + +          +            "<<std::endl
-	   <<"............................ (!A>    (~~~~~~~~~##        + +        +        "<<std::endl
-	   <<"............................. ~~(!    '~~~~~~~ \\       +     + +      +      "<<std::endl
-	   <<"...............................  `~~~QQQQQDb //   |         + + +        +   "<<std::endl
-	   <<"........................ ..........   IDDDDP||     \\  + + + + +             +"<<std::endl
-	   <<"....................................  IDDDI||       \\                      + "<<std::endl
-	   <<".................................... IHD HD||         \\ + +  + + + + +      +"<<std::endl
-	   <<"...................................  IHD ##|            :-) + +\\          +  "<<std::endl
-	   <<"......... ............... ......... IHI ## /      /   +  + + + +\\       +    "<<std::endl
-	   <<"................................... IHI/ /       /      + + + +        +     "<<std::endl
-	   <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
-	   <<"....................... /TT\\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
-	   <<"......................./TTT/T\\ ... /TT\\/\\\\\\ / + + + + + + +/   \\         +   "<<std::endl
-	   <<"version 1.0.4 ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /                  "<<std::endl
-	   <<"-----------------------------------------------------------------------------"<<std::endl
-	   <<std::endl
-	   <<"          SHERPA version 1.0.4.                                              "<<std::endl
-	   <<"                                                                             "<<std::endl
-	   <<"          AUTHORS: Tanju Gleisberg, Stefan Hoeche, Frank Krauss,             "<<std::endl
-	   <<"               Andreas Schaelicke, Steffen Schumann, Jan Winter              "<<std::endl
-	   <<"                                                                             "<<std::endl
-	   <<"                                                                             "<<std::endl
-	   <<"          This program uses a lot of genuine and original research           "<<std::endl
-	   <<"          work by other people. Users are encouraged to refer to             "<<std::endl
-	   <<"          the various original publications.                                 "<<std::endl
-	   <<"                                                                             "<<std::endl
-	   <<"          Users are kindly asked to refer to the documentation               "<<std::endl
-	   <<"          published under JHEP 0402 (2004) 056.                              "<<std::endl
-	   <<"                                                                             "<<std::endl
-	   <<"          Please visit also our homepage                                     "<<std::endl
-	   <<"          http://www.physik.tu-dresden.de/~krauss/hep/index.html             "<<std::endl
-	   <<"          for news, bugreports, updates and new releases.                    "<<std::endl
-	   <<"                                                                             "<<std::endl
-	   <<"-----------------------------------------------------------------------------"<<std::endl
-	   <<std::endl;
+  msg.Info()<<"-----------------------------------------------------------------------------"<<std::endl;
+  msg.Out()<<"-----------    Event generation run with SHERPA started .......   -----------"<<std::endl;
+  msg.Info()<<"-----------------------------------------------------------------------------"<<std::endl
+	    <<"................................................ |       +                   "<<std::endl
+	    <<"................................................ ||  |       +  +            "<<std::endl
+	    <<"...................................        ....  | |         /   +           "<<std::endl
+	    <<"................. ................   _,_ |  ....  ||         +|  +  +        "<<std::endl
+	    <<"...............................  __.'  ,\\|  ...  ||    /    +|          +    "<<std::endl
+	    <<".............................. (´  \\  ´  \\   ...  | |  |   + + \\         +   "<<std::endl
+	    <<".............................  (    \\   -/  .... ||       +    |          +  "<<std::endl
+	    <<"........ ...................  <S   /()))))~~~~~~~~##     +     /\\    +       "<<std::endl
+	    <<"............................ (!H   (~~)))))~~~~~~#/     +  +    |  +         "<<std::endl
+	    <<"................ ........... (!E   (~~~)))))     /|/    +         +          "<<std::endl
+	    <<"............................ (!R   (~~~)))))   |||   + +            +        "<<std::endl
+	    <<"..... ...................... (!P    (~~~~)))   /|  + +          +            "<<std::endl
+	    <<"............................ (!A>    (~~~~~~~~~##        + +        +        "<<std::endl
+	    <<"............................. ~~(!    '~~~~~~~ \\       +     + +      +      "<<std::endl
+	    <<"...............................  `~~~QQQQQDb //   |         + + +        +   "<<std::endl
+	    <<"........................ ..........   IDDDDP||     \\  + + + + +             +"<<std::endl
+	    <<"....................................  IDDDI||       \\                      + "<<std::endl
+	    <<".................................... IHD HD||         \\ + +  + + + + +      +"<<std::endl
+	    <<"...................................  IHD ##|            :-) + +\\          +  "<<std::endl
+	    <<"......... ............... ......... IHI ## /      /   +  + + + +\\       +    "<<std::endl
+	    <<"................................... IHI/ /       /      + + + +        +     "<<std::endl
+	    <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
+	    <<"....................... /TT\\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
+	    <<"......................./TTT/T\\ ... /TT\\/\\\\\\ / + + + + + + +/   \\         +   "<<std::endl
+	    <<"version 1.0.4 ......../TTT/TTTT\\...|TT/T\\\\\\/   +    ++  + /                  "<<std::endl
+	    <<"-----------------------------------------------------------------------------"<<std::endl
+	    <<std::endl
+	    <<"          SHERPA version 1.0.4.                                              "<<std::endl
+	    <<"                                                                             "<<std::endl
+	    <<"          AUTHORS: Tanju Gleisberg, Stefan Hoeche, Frank Krauss,             "<<std::endl
+	    <<"               Andreas Schaelicke, Steffen Schumann, Jan Winter              "<<std::endl
+	    <<"                                                                             "<<std::endl
+	    <<"                                                                             "<<std::endl
+	    <<"          This program uses a lot of genuine and original research           "<<std::endl
+	    <<"          work by other people. Users are encouraged to refer to             "<<std::endl
+	    <<"          the various original publications.                                 "<<std::endl
+	    <<"                                                                             "<<std::endl
+	    <<"          Users are kindly asked to refer to the documentation               "<<std::endl
+	    <<"          published under JHEP 0402 (2004) 056.                              "<<std::endl
+	    <<"                                                                             "<<std::endl
+	    <<"          Please visit also our homepage                                     "<<std::endl
+	    <<"          http://www.physik.tu-dresden.de/~krauss/hep/index.html             "<<std::endl
+	    <<"          for news, bugreports, updates and new releases.                    "<<std::endl
+	    <<"                                                                             "<<std::endl
+	    <<"-----------------------------------------------------------------------------"<<std::endl
+	    <<std::endl;
 }
 
 bool Sherpa::PerformScan() 

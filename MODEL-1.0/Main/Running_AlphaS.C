@@ -110,7 +110,6 @@ Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ,const int
       }
     }
   }
-  for (int i=0;i<m_nth+1;++i) ATOOLS::msg.Tracking()<<"thres["<<i<<"] "<<p_thresh[i]<<std::endl;
 }
 
 

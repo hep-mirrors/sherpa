@@ -6,7 +6,7 @@ using namespace std;
 
 
 
-EvtReadin_Phase::EvtReadin_Phase(Output_Handler * _iohandler) :
+EvtReadin_Phase::EvtReadin_Phase(IO_Handler * _iohandler) :
   p_iohandler(_iohandler), p_evtreader(NULL), m_path(".")
 {
   m_type = eph::Read_In;

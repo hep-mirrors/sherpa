@@ -53,7 +53,8 @@ namespace SHERPA {
     if (sit!=m_sud_map.end()) {
       return *(sit->second);
     }
-    ATOOLS::msg.Out()<<" ERROR: did not find sudakov for "<<fl<<std::endl;
+    ATOOLS::msg.Out()<<"ERROR in  NLL_Sudakov::Delta : "<<std::endl
+		     <<"   Did not find sudakov form factor for "<<fl<<", return default."<<std::endl;
     return *(m_sud_map[ATOOLS::Flavour(ATOOLS::kf::none)]);
   }
 

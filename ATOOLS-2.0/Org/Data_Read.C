@@ -30,14 +30,15 @@ template <class Type>
 Type  Data_Read::GetValue(std::string name, Type default_value) {
   Shorten(name);
   if (name.length()==0) {
-    msg.Info()<<"Could not find any value for empty name. Return "<<default_value<<"."<<endl;
+    msg.LogFile()<<"Could not find any value for empty name. Return "<<default_value<<"."<<endl;
     return ReturnData(name,default_value);
   }
   Type dummy = GetValue<Type>(name);
   if (dummy!=NotDefined<Type>()) { 
     return ReturnData(name,dummy); 
   }
-  msg.Info()<<"Could not find any allowed value for "<<name<<". Return "<<default_value<<"."<<endl;
+  msg.LogFile()<<"WARNING: Could not find any allowed value for "<<name
+	       <<". Return "<<default_value<<"."<<endl;
   MyStrStream str;      
   std::string default_value_str;
   str<<default_value;
@@ -83,7 +84,6 @@ void Data_Read::FillIn(std::string buffer) {
 }
 
 void Data_Read::ReadIn(std::string filename) {
-  msg.Debugging()<<"reading "<<filename<<endl;
   std::ifstream file;
   file.open(filename.c_str());
   if (!file.good()) {
@@ -110,7 +110,6 @@ void Data_Read::SetCommandLine(std::string name, std::string value)
 void Data_Read::AddCommandLine()
 {
   for (Parameter_Iterator it = s_commandlineparameters.begin(); it!=s_commandlineparameters.end() ; ++it) {
-    msg.Debugging()<<" adding command line parameter : "<<it->first<<" = "<<it->second<<endl;
     m_parameters[it->first]=it->second;
   }
 }

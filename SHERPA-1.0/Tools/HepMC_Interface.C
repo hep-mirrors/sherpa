@@ -46,9 +46,11 @@ void HepMC_Interface::InitTheMap()
       }
     }
   }
-  msg.Debugging()<<"#######################################################"<<endl;
-  p_particledatatable->print();
-  msg.Debugging()<<"#######################################################"<<endl;
+  if (msg.LevelIsInfo()) {
+    msg.Out()<<"#######################################################"<<endl;
+    p_particledatatable->print();
+    msg.Out()<<"#######################################################"<<endl;
+  }
 }
 
 void HepMC_Interface::ResetTheLinks()

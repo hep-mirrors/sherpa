@@ -92,8 +92,8 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,int _jetveto) {
   }
     
   msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
-	     <<"Initial_State_Shower::PerformShower : "
-	     <<"  Could not initialize any system and perform the shower."<<std::endl;
+	     <<"   Initial_State_Shower::PerformShower : "
+	     <<" Could not initialize any system and perform the shower."<<std::endl;
 
   return 0;
 }
@@ -130,8 +130,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
   }
   if (m_bl_meps_is==NULL) {
     ATOOLS::msg.Error()<<"Initial_State_Shower::ExtractPartons(..): "
-		       <<"No ME PS Interface found!"<<std::endl
-		       <<"   Cannot proceed. Abort."<<std::endl;
+		       <<"No ME PS Interface found. Cannot proceed. Abort."<<std::endl;
     exit(126);
   }
   m_bl_meps_is->SetStatus(0);
@@ -258,11 +257,6 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     return 0;
   }
 
-  if (msg.LevelIsDebugging()) {
-    cout<<" Initialize System : "<<endl;
-    cout<<*k1<<*k2<<endl;;
-  }
-
   bool decay1 = (k1->stat>=1), decay2 = (k2->stat>=1);
   int first = 0;
   if ((!decay1 && decay2)||(decay1 && !decay2)) first=1;
@@ -283,11 +277,9 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     // Parton 1/Tree 1 is the one to decay.
     if (decay1 && caught_jetveto!=3) {
       m_to_be_diced[0]=0;
-      msg.Debugging()<<" call A "<<endl;
       if (FillBranch(trees,k1,k2,0)) {
 	if (k1->z>0.) {
 	  m_sprime = m_sprime/k1->z;
-	  msg.Tracking()<<" z="<<k1->z<<"   ("<<k1->kn_no<<") "<<endl;
 	}
       }
       else {
@@ -297,11 +289,9 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     // Parton 2/Tree 2 is the one to decay.    
     if (decay2 && caught_jetveto!=2) {
       m_to_be_diced[1]=0;
-      msg.Debugging()<<" call B "<<endl;
       if (FillBranch(trees,k2,k1,1)) {
 	if (k2->z > 0.) {
 	  m_sprime = m_sprime/k2->z;
-	  msg.Tracking()<<" z="<<k2->z<<"   ("<<k2->kn_no<<") "<<endl;
 	}
       }
       else {
@@ -320,19 +310,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 	return 1;
       }
       else if (stat==2 || stat==3) {
-	if (msg.LevelIsDebugging()) {
-	  cout<<" EvolveSystem returned with : "<<stat<<endl;
-	  cout<<trees[0];
-	  cout<<trees[1];
-	}
-	if (stat==2) { 
-	  m_sprime = m_sprime*k1->z;
-	  msg.Tracking()<<" uz="<<k1->z<<" ("<<k1->kn_no<<") "<<endl;
-	}
-	else {
-	  m_sprime = m_sprime*k2->z;
-	  msg.Tracking()<<" uz="<<k2->z<<" ("<<k2->kn_no<<") "<<endl;
-	}
+	if (stat==2) m_sprime = m_sprime*k1->z;
+    	        else m_sprime = m_sprime*k2->z;
 	caught_jetveto=stat;
       }
       else {
@@ -348,11 +327,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     if (caught_jetveto==0) {
       ++mismatch;
       if (mismatch > m_allowed) {
-	msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
-		   <<"---------------------------------------"<<std::endl
-		   <<"Initial_State_Shower::InitializeSystem failed. "
-		   <<mismatch<<" trials."<<std::endl
-		   <<"---------------------------------------"<<std::endl;
+	msg.Out()<<"WARNING in Initial_State_Shower::InitializeSystem failed, "
+		 <<mismatch<<" trials."<<std::endl;
 	return 0;
       }
       trees[0]->Restore();
@@ -371,12 +347,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 
 int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 {
-  msg.Debugging()<<"EvolveSystem("<<k1->kn_no<<","<<k2->kn_no<<")  ["
-		 <<m_to_be_diced[0]<<","<<m_to_be_diced[1]<<"]"<<endl;
   double sprime_aa = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
-  msg.Debugging()<<" sprime="<<m_sprime<<"  "<<sprime_aa<<endl;
-
-
   if ((k1->t == k1->tout) && (k2->t == k2->tout)) return 1;  
 
   bool decay1 = (k1->stat>=1), decay2 = (k2->stat>=1);
@@ -399,9 +370,7 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
   int caught_jetveto=0;
 
   for (;;) {
-    msg.Debugging()<<" ntree="<<ntree0<<endl;
     if (k1->stat>0 || caught_jetveto) {
-      msg.Debugging()<<" prepare (I) "<<ntree0<<endl;
       k1->stat           = 0;
       k1->E2             = sqr(k1->part->Momentum()[0]);
       k1->prev->E2       = k1->E2/sqr(k1->z);                      
@@ -412,39 +381,15 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
       double sprime_b = (k1->prev->part->Momentum()+k2->part->Momentum()).Abs2();
       k1->z=sprime_a/sprime_b;
-      msg.Tracking()<<" detz="<<k1->z<<" ("<<k1->kn_no<<")"<<endl;
       k1->prev->x=k1->x/k1->z;
       m_sprime/=k1->z;
-      if (msg.LevelIsDebugging()) {
-	cout<<" prepare (II) "<<ntree0<<endl;
-	cout<<" ac : "<<k1->part->Momentum()<<" ("<<k1->part->Momentum().Abs2()<<")"<<endl;
-	cout<<" mo : "<<k1->prev->part->Momentum()<<" ("<<k1->prev->part->Momentum().Abs2()<<")"<<endl;
-	cout<<" pa : "<<k2->part->Momentum()<<" ("<<k2->part->Momentum().Abs2()<<")"<<endl;
-	cout<<" sa, sb, z, x "<<sprime_a<<","<<sprime_b<<"  ,"<<k1->z<<","<<k1->prev->x<<endl;
-      }
-
-      //double pt2max = sqr(rpa.gen.Ecms());
-      //double th     = 4.*k1->z*k1->z*k1->t/(4.*k1->z*k1->z*k1->t-(1.-k1->z)*k1->x*k1->x*pt2max);
-
       /*  // *AS*
       if (m_to_be_diced[ntree0]) {
-	if (msg.LevelIsDebugging()) {
-	  cout<<" set scales: "<<k1->t<<" vs. "<<k1->prev->part->Momentum().Abs2()<<endl;
-	  cout<<" from "<<endl<<*k1;
-	  cout<<" fixing sister "<<endl<<*k1->prev->left;
-	  cout<<" fixing mother "<<endl<<*k1->prev<<endl;
-	}
 	k1->prev->thcrit       = k1->thcrit;
 	k1->prev->t            = k1->t;
 
 	k1->prev->left->thcrit = th;  
 	k1->prev->left->t      = k1->prev->part->Momentum().Abs2();
-
-	if (msg.LevelIsDebugging()) {
-	  cout<<" to "<<endl<<*k1;
-	  cout<<" fixing sister "<<endl<<*k1->prev->left;
-	  cout<<" fixing mother "<<endl<<*k1->prev<<endl;
-	}
       }
       */
     }
@@ -455,7 +400,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
       if (k1->prev->part->Info()=='H') {
 	if (k1->prev->prev) {
 	  if (k1->prev->prev->part->Info()=='H') {
-	    msg.Debugging()<<" internal line "<<endl;
 	    fill=false;
 	  }
 	}
@@ -464,14 +408,12 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 
       if (fill) {
 	if (!FillBranch(trees,k1->prev,k2,ntree0)) {
-	  msg.Debugging()<<" fillbranch failed "<<endl;
 	  return 0; 
 	}
       }
     }
     double maxt = p_kin->CalculateMaxT(k1,k2);
     if (maxt<k1->prev->left->tout) {
-      msg.Debugging()<<" calc max t failed "<<endl;
       // *AS* what about massless ME and PSMass >0 ? 
       return 0;
       if (k1->prev->t==k1->prev->tout) return 0; 
@@ -480,7 +422,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     }
     else {
       if (k1->prev->left->stat>0) {
-	//cout<<" setting startscale for sister ("<<k1->prev->left->kn_no<<") to : "<<dabs(k1->t)<<" vs. "<<maxt<<endl;
 	k1->prev->left->t = dabs(k1->t);
 	k1->prev->left->tmax = maxt;
       }
@@ -494,7 +435,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 	// in case mass already known from ME:
 	// determine real daughter momenta first!
 	if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first,true)) {
-	  msg.Debugging()<<" C2 do kinematics failed "<<endl;
 	  return 0;
 	}
 	p_fin->FirstTimelikeFromSpacelike(trees[ntree0],k1->prev->left,m_jetveto,sprime_a,k1->z);
@@ -509,7 +449,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 
 
     if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first,false)) {
-      msg.Debugging()<<" do kinematics failed "<<endl;
       return 0;
       if (k1->prev->t==k1->prev->tout) return 0; 
       p_kin->ResetMomenta(k1,trees[ntree0]);
@@ -520,9 +459,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     //      if (p_kin->JetVeto(k1->prev->left->part->Momentum()) {
       if (p_kin->JetVeto(k1,k2)) {
 	//	if (k2->stat==1) k2->stat=2; 
-	//	msg.Debugging()<<" JetVeto : "<<ntree0+2<<endl;
-	//	cout<<" JetVeto : "<<ntree0+2<<endl;
-
 	// caught_jetveto=ntree0+2;
 	m_to_be_diced[ntree0]=1;
 	p_kin->ResetMomenta(k1,trees[ntree0]);
@@ -534,7 +470,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
   
     if (k1->prev->z>0.) {
       m_sprime = m_sprime/k1->prev->z;
-      msg.Tracking()<<" z="<<k1->prev->z<<"   ("<<k1->prev->kn_no<<") "<<endl;
     }
     
     if (ntree0==0) {
@@ -550,17 +485,10 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     
     if (caught_jetveto && k1->prev->z>0.) {
       m_sprime = m_sprime*k1->prev->z;
-      msg.Tracking()<<" uz="<<k1->prev->z<<"   ("<<k1->prev->kn_no<<") "<<endl;
     }
 
     if (caught_jetveto!=ntree0+2) {
-      if (msg.LevelIsDebugging()) {
-	cout<<" jetveto=="<<caught_jetveto<<"  ntree0="<<ntree0<<"  leaving Evolve"<<endl;
-	cout<<" k1="<<*k1;
-	cout<<" k2="<<*k2;
-      }
       m_to_be_diced[ntree0]=1;
-      msg.Tracking()<<" rtstart="<<k1->prev->tmax<<" <- "<<k1->prev->t<<" ("<<k1->prev->kn_no<<" )"<<endl;
       k1->prev->t=k1->prev->tmax;
       p_kin->ResetMomenta(k1,trees[ntree0]);
       return caught_jetveto;
@@ -569,7 +497,6 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     else {
       //      if (k1->prev && k2->prev)
       if (((k1->prev->t) > (k2->t)) && (k2->t != k2->tout)) {  
-	cout<<"SWAP"<<endl;
 	Knot * kh=k1;
 	k1 =k2;
 	k2 =kh;
@@ -578,20 +505,12 @@ int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 	ntree1=nh;
 	
       }
-      else {
-	cout<<"DONT SWAP"<<endl;
-	cout<<" t1="<<k1->t<<" t2="<<k2->t<<endl;
-      }
     }
     */
   }
 }  
 
 int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg) {
-  if (msg.LevelIsDebugging()) {
-    cout<<" FillBranch "<<endl;
-    cout<<*active<<*partner<<endl;
-  }
   Flavour flavs[2];
   if (p_suds[leg]->Dice(active,m_sprime,m_jetveto && m_jetveto_scheme==1  ,m_extra_pdf[leg])) {
 
@@ -628,16 +547,10 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
     if (mother->part->Flav()!=k_flavs[0]) {
       mother->part->SetFlow(1,0);
       mother->part->SetFlow(2,0);
-      //      cout<<" mo flav changed from "<<mother->part->Flav()<<" to "<<k_flavs[0]<<endl;
     }
     if (mother->prev) {
-      if (msg.LevelIsDebugging()) {
-	cout<<" deleting mother tree : "<<endl;
-	cout<<*mother<<endl;
-      }
       mother->prev=0;
       // *AS* check sure no 'H' can be lost
-
     }
   }
   else {
@@ -664,10 +577,8 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
     if (sister->part->Flav()!=k_flavs[1]) {
       sister->part->SetFlow(1,0);
       sister->part->SetFlow(2,0);
-      //      cout<<" si flav changed from "<<sister->part->Flav()<<" to "<<k_flavs[1]<<endl;
     }
     if (sister->left) {
-      msg.Debugging()<<" deleting sister tree : "<<endl<<*sister<<endl;
       sister->left=0;
       sister->right=0;
 
@@ -692,13 +603,6 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   if (k->part->Info() != 'G' && k->part->Info() != 'H') k->part->SetInfo('i');
   k->part->SetStatus(2);
   SetColours(k);
-
-  if (msg.LevelIsDebugging()) {
-    cout<<" FillMotherAndSister: "<<endl;
-    cout<<" k  : "<<*k;
-    cout<<" mo : "<<*mother;
-    cout<<" si : "<<*sister<<endl;
-  }
 }
 
 void Initial_State_Shower::SetColours(Knot * k)
@@ -737,7 +641,8 @@ void Initial_State_Shower::SetColours(Knot * k)
 	}
       }
       else {
-	msg.Error()<<" ERROR: strong particle "<<test->part->Flav()<<" not covered by SetColours "<<endl;
+	msg.Error()<<"ERROR in Initial_State_Shower::SetColours:"<<std::endl
+		   <<"   Strongly interacting particle "<<test->part->Flav()<<" not covered by SetColours "<<endl;
       }
     }      
   }
@@ -982,186 +887,3 @@ void Initial_State_Shower::OutputTree(Tree * tree)
     msg.Out()<<" for "<<number<<" FS particles."<<std::endl;
   }
 }
-
-
-/*
-void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
-					  Blob_List * bl,Particle_List * pl) 
-{
-  if (!kn) return;
-
-  // fetch last PSME blobs
-  m_bl_meps_is=0;
-  m_bl_meps_fs=0;
-  for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
-    if ((*blit)->Type().find(string("ME PS Interface (Sherpa, IS)"))!=string::npos) {
-      m_bl_meps_is=(*blit);
-    }
-    if ((*blit)->Type().find(string("ME PS Interface (Sherpa, FS)"))!=string::npos) {
-      m_bl_meps_fs=(*blit);
-    }
-  }
-  if (m_bl_meps_is==NULL) {
-    ATOOLS::msg.Error()<<"Initial_State_Shower::ExtractPartons(..): "
-		       <<"No ME PS Interface found!"<<std::endl
-		       <<"   Cannot proceed. Abort."<<std::endl;
-    exit(126);
-  }
-  m_bl_meps_is->SetStatus(0);
-
-
-  int number=-1;;
-  Particle * p=NULL;
-  if (!kn->prev) {
-// 
-//       New jet : kn = incoming parton from hadron info = 'I'
-//
-    if (kn->part->Info() != 'G') {
-      if (pl) number = pl->size();
-         else number = int(kn->part);
-      kn->part->SetNumber(number);
-      kn->part->SetStatus(2);
-      if (pl) pl->push_back(kn->part);
-    }
-    jet = new Blob();
-    jet->SetStatus(1);
-    p = new Particle(kn->part);
-    p->SetStatus(2);
-    jet->AddToInParticles(p);
-    jet->SetId(bl->size());
-    jet->SetType(std::string("IS Shower (APACIC++2.0)"));
-    jet->SetBeam(beam);
-    bl->insert(bl->begin(),jet);
-    if (!(kn->left)) {
-      if (kn->part->Info() != 'G') {
-	msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
-		   <<"Initial_State_Shower::ExtractPartons : "<<std::endl
-		   <<" Mislabelling of parton "<<kn->part->Number()<<std::endl;
-	if (pl) number = pl->size();
-	else    number = int(kn->part);
-	kn->part->SetNumber(number);
-      }
-      p = new Particle(kn->part);
-      p->SetStatus(2);
-      jet->AddToOutParticles(p);
-      if (m_bl_meps_is) {
-	m_bl_meps_is->AddToInParticles(p);
-      }
-      jet->SetStatus(1);
-      return;
-    }
-    else if (kn->part->Info()=='H') {
-      p = new Particle(kn->part);
-      p->SetStatus(2);
-      jet->AddToOutParticles(p);
-      if (m_bl_meps_is) {
-	m_bl_meps_is->AddToInParticles(p);
-      }
-      jet->SetStatus(1);
-    }
-  }
-  else if (kn->part->Info() == 'H') {
-// 
-//        New jet : kn = hard parton from ME info = 'H'
-//                  and kn outgoing
-// 		 or kn->left or kn->right not from ME
-
-//        a) fs  and left and right not from ME add to bl_meps_fs
-//              create new blob (FSR like ISR blob)
-//        b) fs  and left also ME ignore
-//        c) is  and prev and prev->left not from ME add to bl_meps_is->in and to jet->out
-//              do NOT create any new blob
-//        d) is  AND prev also ME ignore kn
-
-//
-    bool is_fs=false;
-    Knot * k=kn;
-    do {
-      if (k==k->prev->left) {
-	is_fs=true;
-	break;
-      }
-      k=k->prev;
-    } while (k->prev);
-
-    int fillin=0;
-    if (is_fs) {
-      // fs
-      if (!kn->left) fillin=1;
-      else if (kn->left->part->Info()!='H') fillin=1;
-    }
-    else {
-      // is
-      if (kn->prev->part->Info()!='G' && kn->prev->part->Info()!='H') fillin=2;
-    }
-
-    if (fillin) {
-      if (fillin==1) {
-	jet = new Blob();
-	jet->SetStatus(1);
-	jet->SetId(bl->size());
-	jet->SetType(std::string("IS Shower (APACIC++2.0)"));
-	bl->insert(bl->begin(),jet);
-      }
-      p = new Particle(kn->part);
-      p->SetStatus(2);
-      if (fillin==1 && m_bl_meps_fs) {
-	jet->AddToInParticles(p);
-	m_bl_meps_fs->AddToOutParticles(p);
-      }
-      else if (fillin==2 && m_bl_meps_is) {
-	jet->AddToOutParticles(p);
-	m_bl_meps_is->AddToInParticles(p);
-      }
-      if (kn->left) {
-	kn->part->SetStatus(2);
-      }
-      else {
-	kn->part->SetStatus(1);
-	p = new Particle(kn->part);
-	jet->AddToOutParticles(p);
-	jet->SetStatus(1);
-	return;
-      }
-    }
-  }
-  else {
-    if (!kn->left) {
-      if (!jet) {
-	msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
-		   <<"Initial_State_Shower::ExtractPartons : "<<std::endl
-		   <<"No jet for Parton "<<kn->part->Number()<<std::endl;
-      }
-      if (kn->part->Info() != 'G') {
-	if (pl) number = pl->size();
-	else    number = int(kn->part);
-	kn->part->SetNumber(number);
-	if (pl) pl->push_back(kn->part);
-	p = new Particle(kn->part);
-      } 
-      else {
-	int
-	p = new Particle(kn->part);
-	if (m_bl_meps_is) {
-	  m_bl_meps_is->AddToInParticles(p);
-	}
-      }
-      if (p->Info() == 'G') p->SetStatus(2);
-                       else p->SetStatus(1);
-      jet->AddToOutParticles(p);
-    }
-    else {
-      kn->part->SetStatus(2);
-    }
-  }
-  ExtractPartons(kn->left,beam,jet,bl,pl); 
-  ExtractPartons(kn->right,beam,jet,bl,pl); 
-}
-*/
-
-
-
-
-
-
-

@@ -20,15 +20,14 @@ Timelike_Kinematics::Timelike_Kinematics(double _pt2min, Data_Read * const datar
   double ycut   = ATOOLS::rpa.gen.Ycut();
   m_type = 1;
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
-    msg.Debugging()<<" Jet_Finder in Timelike_Kinematics set up  to deal with lepton-lepton collisions "<<endl;
     m_type = 1;
   }
   else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) {
-    msg.Debugging()<<" Jet_Finder in Timelike_Kinematics set up  to deal with hadron-hadron collisions "<<endl;
     m_type = 4;
   }
   else {
-    msg.Error()<<"Error in Timelike_Kinematics DIS is not yet implemented in the Jetfinder "<<endl;
+    msg.Error()<<"ERROR in Timelike_Kinematics : "<<std::endl
+	       <<"   DIS is not yet implemented in the jetfinder, continue with hh-mode."<<endl;
     m_type = 4;
     throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,"DIS is not implemented yet",
 			    "Timelike_Kinematics","Timelike_Kinematics"));

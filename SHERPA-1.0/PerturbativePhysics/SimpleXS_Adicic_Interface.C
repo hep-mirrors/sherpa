@@ -26,7 +26,6 @@ int SimpleXS_Adicic_Interface::DefineInitialConditions(Blob * blob)
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Cannot handle blobs with more than 4 legs.",
 			    "SimpleXS_Adicic_Interface","DefineInitialConditions"));
   }
-  std::cout<<"SimpleXS_Adicic_Interface : DefineInitialConditions."<<std::endl;
   return InitColours(blob);
 }
 
@@ -40,7 +39,6 @@ bool SimpleXS_Adicic_Interface::InitColours(Blob * blob)
     }
     for (int i=0;i<blob->NOutP();++i) blob->OutParticle(i)->SetFlow(j+1,xs->Colours()[i+blob->NInP()][j]);
   }
-  std::cout<<"SimpleXS_Adicic_Interface : InitColours:"<<std::endl<<blob<<std::endl;
   Chain    * chain;
   if(Valid(blob)) {
     myblob = new Blob();
@@ -74,10 +72,8 @@ bool SimpleXS_Adicic_Interface::Valid(Blob* blob) {
 
 bool SimpleXS_Adicic_Interface::FillBlobs(Blob_List * blobs)
 {
-  std::cout<<"FillBlobs : "<<blobs->size()<<" "<<myblob->TypeSpec()<<std::endl;
   myblob->SetId(blobs->size());
   blobs->push_back(myblob);
-  std::cout<<"FillBlobs : "<<blobs->size()<<" "<<myblob->TypeSpec()<<std::endl;
   return true;
 }
 

@@ -208,7 +208,6 @@ void Primitive_Detector::CalcJets()
     if (ii==-1) break;
     if (maxet<etstop) break;
 
-    //    std::cout<<" found jetseed "<<m_jets.size()<<" at: ("<<ii<<","<<jj<<")"<<std::endl;
 
     // add jet:
     Vec4D   jetmom;
@@ -270,9 +269,6 @@ void Primitive_Detector::Evaluate(const Particle_List & pl,double value, int nco
 
     p_ana->AddParticleList(m_name,pl_jets);
   }
-  else {
-    std::cout<<" SimpleConeJets particle list already defined "<<std::endl;
-  }
 }
 
 void Primitive_Detector::Print(std::ostream & s)
@@ -291,7 +287,6 @@ void Primitive_Detector::Print(std::ostream & s)
       s<<" --- no entries in detector!!! --- "<<std::endl;
       return;
     }
-    std::cout<<"maxet="<<maxet<<std::endl;
     maxet*=.11;
     for (int i=0; i<m_neta;++i) {
       for (int j=0; j<m_nphi;++j) {

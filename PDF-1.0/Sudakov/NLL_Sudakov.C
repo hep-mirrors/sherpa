@@ -32,17 +32,6 @@ NLL_Sudakov::NLL_Sudakov(int mode, double _tmax,double _tmin,MODEL::Running_Alph
 {
 
   FixLambda2();
-
-  msg.Debugging()<<"Init the NLL_Sudakov :"<<std::endl
-		 <<"  lambda = "<<m_lambda<<"   --->  "<<std::endl
-		 <<"  as(mue  ="<<sqrt(m_mu2)<<") = "<<m_asmu<<std::endl;
-  // --------------------------------------------------
-
-
-  // jetmode=0;  // 0, 3 ("1+2"), 4
-  if (jetmode>=0) msg.Debugging()<<" jetmode="<<jetmode<<endl;
-  // p_jetrate = new NLL_JetRate(4,sqrt(_tmin),sqrt(_tmax),jetmode&7);
-  //   p_jetrate = new NLL_JetRate(3,sqrt(0.001*_tmax),sqrt(_tmax),jetmode&7);
   
   if (jetmode==0 || jetmode==-2) PrepareMap(runas);
   else PrepareMassiveMap(runas,jetmode&7);

@@ -12,15 +12,14 @@ Spacelike_Kinematics::Spacelike_Kinematics(double pt2minFS, Data_Read * const da
   double ycut   = ATOOLS::rpa.gen.Ycut();
   m_type = 1;
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
-    msg.Debugging()<<" Jet_Finder in Spacelike_Kinematics set up  to deal with lepton-lepton collisions "<<endl;
     m_type = 1;
   }
   else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) {
-    msg.Debugging()<<" Jet_Finder in Spacelike_Kinematics set up  to deal with hadron-hadron collisions "<<endl;
     m_type = 4;
   }
   else {
-    msg.Error()<<"Error in Spacelike_Kinematics DIS is not yet implemented in the Jetfinder "<<endl;
+    msg.Error()<<"ERROR in Spacelike_Kinematics : "<<std::endl
+	       <<"   DIS is not yet implemented in the jetfinder, continue with hh-mode."<<endl;
     m_type = 4;
   }
   jf            = new ATOOLS::Jet_Finder(ycut,m_type);
@@ -39,19 +38,7 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
   double t1 = k1->part->Momentum().Abs2();
   double t2 = k2->part->Momentum().Abs2();
 
- if (msg.LevelIsDebugging()) {
-    cout<<"InitKinematics before boost"<<endl;
-    cout<<*k1<<*k2;
- }
-  if (first)
-    BoostInCMS(trees,k1, k2);
-  if (msg.LevelIsDebugging()) {
-    cout<<" after boost "<<endl;
-    cout<<*k1<<*k2<<endl;
-
-    cout<<"INI 0:"<<trees[0];
-    cout<<"INI 1:"<<trees[1];
-  }
+  if (first) BoostInCMS(trees,k1, k2);
 
   Vec4D o1 = k1->part->Momentum();
   Vec4D o2 = k2->part->Momentum();
@@ -82,14 +69,14 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       boost.Boost(o1);
       if (!(o1==v1)) {
 	error=1;
-	msg.Out()<<" ERROR in  Spacelike_Kinematics::InitKinematics "<<endl;
+	msg.Out()<<"WARNING in  Spacelike_Kinematics::InitKinematics : Mismatch."<<endl;
 	msg.Error().precision(12);
       }
       trees[0]->BoRo(boost);
-      if (error||msg.LevelIsDebugging()) {
-	msg.Error() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
-		    <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<endl
-		    <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<endl;
+      if (error&&msg.LevelIsTracking()) {
+	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
+		  <<"   Vec1 : "<<o1<<" : "<<o1.Abs2()<<" / "<<k1->t<<endl
+		  <<"   Boo1 : "<<b1<<" : "<<b1.Abs2()<<endl;
       }
     }
 
@@ -107,13 +94,13 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
       trees[1]->BoRo(boost);
       if (!(o2==v2)) {
 	error=1;
-	msg.Error()<<" ERROR in Spacelike_Kinematics::InitKinematics "<<endl;
+	msg.Error()<<"WARNING in Spacelike_Kinematics::InitKinematics : Mismatch."<<endl;
 	msg.Error().precision(12);
       }
-      if (error||msg.LevelIsDebugging()) {
-	msg.Error() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
-		    <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<endl
-		    <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<endl;
+      if (error&&msg.LevelIsTracking()) {
+	msg.Out() <<"Spacelike_Kinematics::InitKinematics : B "<<endl
+		  <<"   Vec2 : "<<o2<<" : "<<o2.Abs2()<<" / "<<k2->t<<endl
+		  <<"   Boo2 : "<<b2<<" : "<<b2.Abs2()<<endl;
       }
     }
   }
@@ -121,11 +108,11 @@ void Spacelike_Kinematics::InitKinematics(Tree ** trees,Knot * k1, Knot * k2, in
   k1->part->SetMomentum(v1);
   k2->part->SetMomentum(v2);  
 
-  if (error||msg.LevelIsDebugging()) {
-    msg.Error() <<"Spacelike_Kinematics::InitKinematics : C"<<endl
-		<<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
-		<<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
-		<<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<endl;
+  if (error&&msg.LevelIsTracking()) {
+    msg.Out()<<"Spacelike_Kinematics::InitKinematics : C"<<endl
+	     <<"   Vec1 : "<<v1<<" : "<<v1.Abs2()<<" / "<<k1->t<<endl
+	     <<"   Vec2 : "<<v2<<" : "<<v2.Abs2()<<" / "<<k2->t<<endl
+	     <<"   S    : "<<(v1+v2).Abs2()<<" / "<<sprime<<endl;
   }
 
 
@@ -158,15 +145,6 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
     }
   }
 
-  if (msg.LevelIsDebugging()) {
-    switch (mode) {
-    case 1: cout<<" DoKinematics B"<<endl; break;
-    case 3: cout<<" DoKinematics C1"<<endl; break;
-    case 5: cout<<" DoKinematics C2"<<endl; break;
-    case 7: cout<<" DoKinematics C3"<<endl; break;
-    default : cout<<" DoKinematics A "<<mode<<endl; break;
-    }
-  }
 
   if (test && mode!=5) return 1;
 
@@ -228,8 +206,8 @@ bool Spacelike_Kinematics::DoKinematics(Tree ** trees,Knot * active, Knot * part
 		 <<"  nominal e_sis :"<<(1./active->z-1.)*sqrt(sprime/4.)
 		 <<" / "<<(1./active->z-1.)*sqrt(sprime/4.)-sister->t/sqrt(4.*sprime)<<endl
 		 <<"  Test s' "<<sprime/active->z<<" =?= "
-		 <<(v_mo+partner->part->Momentum()).Abs2()<<endl;
-      msg.Error()<<" (spr,z,t4) : " <<sprime<<","<<active->z<<","<<sister->t<<endl;
+		 <<(v_mo+partner->part->Momentum()).Abs2()<<endl
+		 <<" (spr,z,t4) : " <<sprime<<","<<active->z<<","<<sister->t<<endl;
     }
   
     BoostPartial(mode,mother,sister,v_mo,v_si);
@@ -257,8 +235,8 @@ void Spacelike_Kinematics::BoostPartial(const int mode, Knot * si, const Vec4D &
   double t1 = p_si.Abs2();
 
   if (dabs((t1-v_si.Abs2())/t1)>1.e-7) {
-    msg.Error()<<" Warning: mass deviation in Spacelike_Kinematics::BoostPartial "<<std::endl;
-    msg.Error()<<" t1="<<t1<<"   t1'="<<v_si.Abs2()<<"  ("<<t1-v_si.Abs2()<<std::endl;
+    msg.Error()<<" Warning: mass deviation in Spacelike_Kinematics::BoostPartial "<<std::endl
+	       <<" t1="<<t1<<"   t1'="<<v_si.Abs2()<<"  ("<<t1-v_si.Abs2()<<std::endl;
   }
 
   // rotation
@@ -435,12 +413,6 @@ bool Spacelike_Kinematics::JetVeto(Knot * k1, Knot * k2)
   Vec4D p3=k1->prev->part->Momentum();
   Vec4D p2=k2->part->Momentum();
   double pt2=sqr(p4[1])+sqr(p4[2]);
-  msg.Debugging()<<"  ("<<k1->prev->left->kn_no<<") "<<pt2<<endl;
-  msg.Debugging()<<" si "<<p4<<endl;
-  msg.Debugging()<<" mo "<<p3<<endl;
-  msg.Debugging()<<" k1 "<<p1<<endl;
-  msg.Debugging()<<" k2 "<<p2<<endl;
-
   Vec4D cms = p3+p2;
   Poincare boost(cms);
   boost.Boost(p1);
@@ -453,11 +425,6 @@ bool Spacelike_Kinematics::JetVeto(Knot * k1, Knot * k2)
   rot.Rotate(p3);
   rot.Rotate(p4);
   pt2=sqr(p4[1])+sqr(p4[2]);
-  msg.Debugging()<<"  ("<<k1->prev->left->kn_no<<") "<<pt2<<endl;
-  msg.Debugging()<<" B si "<<p4<<endl;
-  msg.Debugging()<<" B mo "<<p3<<endl;
-  msg.Debugging()<<" B k1 "<<p1<<endl;
-  msg.Debugging()<<" B k2 "<<p2<<endl;
   if (jf->TwoJets(p4)) return 1;
   return 0;
 }
@@ -535,8 +502,6 @@ void Spacelike_Kinematics::ResetMomenta(Knot* k, Tree* tree, int mode)
     Knot *si=k;
     if (si->left) {
       if (si->left->part->Info()!='H') {
-	//	cout<<" cutting "<<si->left->kn_no<<endl;
-	//	cout<<" cutting "<<si->right->kn_no<<endl;
 	si->left=0;
 	si->right=0;
 	si->stat=3;
@@ -556,14 +521,9 @@ void Spacelike_Kinematics::ResetMomenta(Knot* k, Tree* tree, int mode)
     Knot *mo=k;
     if (mo->prev) {
       if (mo->prev->part->Info()!='H') {
-	//	cout<<" cutting "<<mo->prev->kn_no<<endl;
 	mo->prev=0;
 	mo->stat=3;
       }
-//       else {
-// 	Reset(mo->left,tree,1);
-// 	Reset(mo->prev,tree,2);
-//       }      
     }
     else {
       mo->stat=3;

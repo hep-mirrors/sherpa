@@ -19,9 +19,7 @@ using namespace std;
 Kt_Algorithm::Kt_Algorithm(double rmin) : 
   m_matrixsize(0), p_ktij(NULL), p_imap(NULL), p_kis(NULL), p_jets(NULL),
   p_kts(NULL)
-{
-  msg.Tracking()<<" Init Kt_Algorithm "<<std::endl;
-}
+{ }
 
 Kt_Algorithm::~Kt_Algorithm()
 {
@@ -39,7 +37,7 @@ Kt_Algorithm::~Kt_Algorithm()
 void Kt_Algorithm::AddToKtlist(double kt2) {
   if (p_kts) {
     if (p_kts->size()>0) if (p_kts->back()==kt2) 
-      msg.Events()<<" WARNING something fishy in AddToKtlist "<<std::endl;
+      msg.Out()<<" WARNING something fishy in AddToKtlist "<<std::endl;
     p_kts->push_back(kt2);
   }
 }
@@ -53,8 +51,8 @@ void Kt_Algorithm::AddToJetlist(const Vec4D & mom, bool bf) {
 
 
 
-bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets, std::vector<double> * kts, double rmin) {
-  //cout<<" in Kt_Algorithm::ConstructJets(("<<pl->size()<<"),("<<jets->size()<<"),"<<kts<<","<<rmin<<") "<<endl;
+bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets, 
+				 std::vector<double> * kts, double rmin) {
   // assume empty containers
   p_jets = jets;
   p_kts  = kts;
@@ -62,7 +60,6 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
 
   // create vector list from particle list
   int n=0;
-  //  cout<<" create vector "<<endl;
   Vec4D * moms = new Vec4D[pl->size()];
   bool * bflag = new bool[pl->size()];
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
@@ -73,17 +70,12 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
     }
   }
 
-  //cout<<" cluster vector "<<n<<endl;
   // cluster
   Ktmin(moms,bflag,n);
-
-  //cout<<" finish "<<endl;
   delete [] moms;
   delete [] bflag;
-  // finalize (sort and release used containers)
 
   SortPT();
-  //  cout<<" done "<<endl;
 
   p_jets=0;
   p_kts =0;
@@ -129,44 +121,24 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
   int ii=0, jj=0;
   double dmin=Kt2(p[0]);
   double rmin=R2(p[0],p[1]);
-  //cout<<"Ktmin start: "  << dmin<<" "<<rmin<<endl;
   {
-  PROFILE_LOCAL(" first loop ");
-
-  for (int i=0;i<n;++i) {
-    double di = p_ktij[i][i] = Kt2(p[i]);
-    if (di<dmin) { dmin=di; ii=i; jj=i;}
-    for (int j=0;j<i;++j) {
-      double dj  = p_ktij[j][j]; 
-      double rij = p_ktij[i][j] = R2(p[i],p[j]);
-      double dij = Min(di,dj)* rij /m_r2min;
-      if (dij<dmin) {dmin=dij; ii=i; jj=j;}
-      if (rij<rmin) rmin=rij;
+    PROFILE_LOCAL(" first loop ");
+    
+    for (int i=0;i<n;++i) {
+      double di = p_ktij[i][i] = Kt2(p[i]);
+      if (di<dmin) { dmin=di; ii=i; jj=i;}
+      for (int j=0;j<i;++j) {
+	double dj  = p_ktij[j][j]; 
+	double rij = p_ktij[i][j] = R2(p[i],p[j]);
+	double dij = Min(di,dj)* rij /m_r2min;
+	if (dij<dmin) {dmin=dij; ii=i; jj=j;}
+	if (rij<rmin) rmin=rij;
+      }
     }
   }
-  }
-  //cout<<"Ktmin after: "  << dmin<<" "<<rmin<<"("<<ii<<","<<jj<<")"<<endl;
 
-  // recalc matrix
   while (n>0) {
     PROFILE_LOCAL(" main loop ");
-
-//     cout<<" winner is "<<ii<<","<<jj<<std::endl;
-//     cout<<" current list is :"<<std::endl;
-//     for (int i=0;i<n;++i) {
-//       cout<<i<<" "<<p_imap[i]<<" : "<<p[p_imap[i]]<<endl;
-//     }
-//     cout.precision(6);
-//     std::cout<<resetiosflags(ios::scientific);
-//     for (int i=0; i<n;++i) {
-//       for (int j=0; j<n;++j) {
-// 	if (j<=i) cout<<setw(12)<<p_ktij[p_imap[i]][p_imap[j]];
-// 	else      cout<<"            ";
-//       }
-//       cout<<endl;
-//     }
-// ----------------------------------------
-
     if (ii!=jj) {
       // combine precluster
       p[p_imap[jj]]+=p[p_imap[ii]];
@@ -195,16 +167,7 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
     for (int j=0;j<jj;++j)   p_ktij[jjx][p_imap[j]] = R2(p[jjx],p[p_imap[j]]);
     for (int i=jj+1;i<n;++i) p_ktij[p_imap[i]][jjx] = R2(p[p_imap[i]],p[jjx]);
     }
-//     cout.precision(6);
-//     std::cout<<resetiosflags(ios::scientific);
-//     for (int i=0; i<n;++i) {
-//       for (int j=0; j<n;++j) {
-// 	if (j<=i) cout<<setw(12)<<p_ktij[p_imap[i]][p_imap[j]];
-// 	else      cout<<"            ";
-//       }
-//       cout<<endl;
-//     }
-    // redetermin rmin and dmin
+    // redetermine rmin and dmin
     ii=0, jj=0;
     {
       PROFILE_LOCAL(" second loop ");
@@ -221,7 +184,6 @@ double Kt_Algorithm::Ktmin(Vec4D * p, bool * bf, int n)
 	double rij = p_ktij[ix][jx];
 	double dij = Min(di,dj)* rij/m_r2min;
 	if (dij<dmin) {
-// 	  cout<<" check: "<<i<<","<<j<<" dij="<<dij<<"   di="<<di<<"  dj="<<dj<<"  r2="<<rij<<endl;
 	  dmin=dij; ii=i; jj=j;}
 	if (rij<rmin) rmin=rij;
       }

@@ -232,7 +232,6 @@ bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
 
 void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double jetscale) 
 {
-  msg.Tracking()<<" CalculateWeight("<<hardscale<<","<<asscale<<","<<jetscale<<")"<<endl;
   double qmin = sqrt(jetscale);
   double qmax = sqrt(hardscale);
 
@@ -245,8 +244,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     ct_test=ct_test->Up();
     ++njet;
   }
-
-  msg.Tracking()<<"njet :"<<njet<<endl;
 
   m_weight      = 1.;
 
@@ -273,8 +270,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   // weight with correct alphas at hard scale (if needed).
   if (strong>2 && m_sud_mode%10>0) {
     m_weight *= pow(as_hard/as_jet,strong-2);
-    msg.Tracking()<<" whardas - as("<<sqrt(asscale)<<")/as("<<sqrt(jetscale)
-		  <<")^"<<strong-2<<" = "<<as_hard/as_jet<<std::endl;
     if (asscale<m_jetvetopt2) m_jetvetopt2=asscale;
   }
 
@@ -290,7 +285,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     m_jetvetopt2=asscale;
     FixJetvetoPt2();
     qmin=sqrt(m_jetvetopt2);
-    //    std::cout<<"qmin="<<qmin<<std::endl;
   }
 
 
@@ -315,8 +309,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     if (m_sud_mode%10>1 && ct_down->GetLeg(i)->fl.Strong()) {  // sudakov form factor
       double w_in =  p_sud->Delta(ct_down->GetLeg(i)->fl)(last_q[i],qmin)/
 	             p_sud->Delta(ct_down->GetLeg(i)->fl)(ptij,qmin);
-      msg.Tracking()<<" win -"<<ct_down->GetLeg(i)->fl
-		    <<"- Delta("<<last_q[i]<<")/Delta("<<ptij<<") = "<<w_in<<std::endl;
       m_weight *= w_in;
       ++count_startscale;
     }
@@ -326,7 +318,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       double a = (*p_runas)(ptij*ptij);
       double w_in_as = a/as_jet;
       if (m_kfac!=0.) 	w_in_as *= 1. + a/(2. * M_PI)*m_kfac;
-      msg.Tracking()<<" winas - as("<<ptij<<")/as("<<sqrt(jetscale)<<") = "<<w_in_as<<std::endl;
       m_weight *= w_in_as;
     }
 
@@ -356,7 +347,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     for (int l=0; l<nlegs; ++l) {
       if (p_ct->GetLeg(l)->fl.Strong() && last_q[l]>qmin) {//  sudakov form factor
 	double w_out = p_sud->Delta(p_ct->GetLeg(l)->fl)(last_q[l],qmin);
-	msg.Tracking()<<" wout "<<p_ct->GetLeg(l)->fl<<"-Delta("<<last_q[l]<<","<<qmin<<") = "<<w_out<<std::endl;
 	m_weight *= w_out;
       }    
 
@@ -374,7 +364,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     }
   }
 
-  msg.Tracking()<<" jetvetopt2= "<<m_jetvetopt2<<std::endl<<" sudakov weight="<<m_weight<<std::endl;
 
   p_ct = ct_tmp;
 
@@ -470,19 +459,12 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   m_scale = s;
   m_asscale = m_scale;
 
-  if (ncol==4) msg.Out()<<" WARNING: Cluster_Partons::SetColours() called for 4 coloured objects \n"
+  if (ncol==4) msg.Out()<<"WARNING in Cluster_Partons::SetColours() : called for 4 coloured objects \n"
 			<<"          Don't know how to handle this ! "<<std::endl;
 
   // (a) no colors
   if (ncol==0) return 0;
 
-//   if (ncol==1) {
-//     msg.Error()<<"Error in Cluster_Partons::SetColours:"<<std::endl
-// 	       <<"   Cannot handle single color in 2 -> 2 process :"
-//                <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<std::endl
-// 	       <<"   Will abort the run."<<std::endl;
-//     abort();
-//   }  
   
   int cols[3]={0,0,0};
 
@@ -498,7 +480,6 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     // naive:    m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
     // massive into account:
     m_asscale = 0.5*(sqr(p[2][1])+sqr(p[2][2])+sqr(p[3][1])+sqr(p[3][2]));
-    msg.Tracking()<<"q1^2 = "<<m_asscale<<endl;
 
     // --- better determine pt in the right system  ---
 
@@ -509,7 +490,6 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     Poincare rot(q[0],Vec4D::ZVEC);
     for (int i=0;i<4;++i)      rot.Rotate(q[i]);
     m_asscale = 0.5*(sqr(q[2][1])+sqr(q[2][2])+sqr(q[3][1])+sqr(q[3][2]));
-    msg.Tracking()<<"q1^2 = "<<m_asscale<<endl;
 
     // --- end ---
 
@@ -532,13 +512,6 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   }
 
 
-//   if (cols[0]==0) {
-//     msg.Error()<<"Error in Cluster_Partons::SetColours:"<<std::endl
-// 	       <<"   Cannot handle color structure in 2 -> 2 process :"
-//                <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<std::endl
-// 	       <<"   Will abort the run."<<std::endl;
-//     abort();
-//   }
 
   ncol=0;
   int antis[3]={0,1,0};
@@ -859,13 +832,13 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
 
 
   if (msg.LevelIsDebugging()) {
-    std::cout<<" in Cluster_Partons::FillTrees("<<m_isrshoweron<<","
+    msg.Out()<<" in Cluster_Partons::FillTrees("<<m_isrshoweron<<","
 	     <<m_fsrshoweron<<")"<<endl;
     if (ini_trees) {
-      std::cout<<"initree[0]:"<<endl<<ini_trees[0]
+      msg.Out()<<"initree[0]:"<<endl<<ini_trees[0]
 	       <<"initree[1]:"<<endl<<ini_trees[1];
     }
-    std::cout<<"fin_tree:"<<endl<<fin_tree
+    msg.Out()<<"fin_tree:"<<endl<<fin_tree
 	     <<"****************************************"<<endl;
   }
 }

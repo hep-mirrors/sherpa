@@ -2,6 +2,7 @@
 #define Decay_Table_h
 
 #include "Flavour.H"
+#include "Message.H"
 #include <set>
 
 namespace ATOOLS {
@@ -43,7 +44,7 @@ namespace ATOOLS {
   inline FlavourSet  Decay_Channel::GetDecayProducts() const                  { return m_flouts;  }
   inline Flavour     Decay_Channel::GetDecayProduct(int i) const {
     if (i<0 || i>(int)m_flouts.size()) {
-      std::cout<<"Error in Decay_Channel::GetDecayProduct("<<i<<") :"<<std::endl
+      msg.Out()<<"WARNING in Decay_Channel::GetDecayProduct("<<i<<") :"<<std::endl
 	       <<"   out of bounds, return no flavour."<<std::endl;
       return Flavour(kf::none);
     }

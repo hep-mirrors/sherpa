@@ -70,10 +70,8 @@ Message::~Message()
 void Message::Init(const int level,const std::string &logfile) 
 { 
   m_level = level; 
-  if (m_level&&4) {
-    InitLogFile(logfile);
-    (*p_output)<<"Initialize output module Message. Level "<<m_level<<std::endl;
-  }
+  if (m_level&4) InitLogFile(logfile);
+  if (m_level&2) (*p_output)<<"Initialize output module Message. Level "<<m_level<<std::endl;
 }
 
 void Message::InitLogFile(const std::string &logfile) 

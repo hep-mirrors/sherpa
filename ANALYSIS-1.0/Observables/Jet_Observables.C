@@ -26,16 +26,12 @@ Jet_Observable_Base::Jet_Observable_Base(unsigned int type,double xmin,double xm
 
 void Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int ncount)
 {
-  
-  //std::cout<<"pl size is : "<<pl.size()<<std::endl;
-
   if ((m_mode==1 && pl.size()>=m_minn) ||
       (m_mode==2 && pl.size()==m_minn)) {
     // fuelle
     size_t i=1;
     for (Particle_List::const_iterator it=pl.begin();it!=pl.end() && i<m_maxn;++it,++i) {
       double value=Calc(*it);
-      //std::cout<<"Insert : "<<value<<std::endl;
       m_histos[0]->Insert(value,weight,ncount);
       m_histos[i]->Insert(value,weight,ncount);
     }
@@ -56,7 +52,6 @@ void Jet_Observable_Base::Evaluate(const Particle_List & pl,double weight, int n
 void Jet_Observable_Base::Evaluate(const Blob_List & blobs,double value, int ncount)
 {
   Particle_List * pl=p_ana->GetParticleList(m_listname);
-  //std::cout<<"Evaluate for "<<m_listname<<" : "<<pl->size()<<" from "<<p_ana<<std::endl;
   Evaluate(*pl,value, ncount);
 }
 
@@ -84,7 +79,8 @@ void Jet_Observable_Base::Output(const std::string & pname) {
 Primitive_Observable_Base & Jet_Observable_Base::operator+=(const Primitive_Observable_Base & ob)
 {
   if (m_xmin!=ob.Xmin() || m_xmax!=ob.Xmax() || m_nbins!=ob.Nbins()) {
-    std::cout<<" ERROR: in Jet_Observable_Base::operator+=  in"<<m_name<<std::endl;
+    msg.Error()<<"ERROR: in Jet_Observable_Base::operator+=  in"<<m_name<<std::endl
+	       <<"   Continue and hope for the best."<<std::endl;
     return *this;
   }
 
@@ -197,7 +193,7 @@ void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, int
 
   Blob_Data_Base * rates=(*p_ana)[key];
   if (!rates) {
-    msg.Out()<<" WARNING "<<key<<" not found "<<std::endl;
+    msg.Out()<<"WARNING in Jet_Differential_Rates::Evaluate : "<<key<<" not found "<<std::endl;
     return;
   }
   std::vector<double> * jd=rates->Get<std::vector<double> *>();

@@ -10,18 +10,17 @@ Structure_Function::Structure_Function(PDF::PDF_Base * _p_pdf,ATOOLS::Flavour _m
 {
   m_bunch = _m_bunch;
   m_type  = std::string("(SF)");
-  p_pdf->Output();
 }
 
 bool Structure_Function::CalculateWeight(double x,double z,double kp2,double q2) 
 {
   if ( (x  > p_pdf->XMax()) || (x<= p_pdf->XMin()) ) {
-    ATOOLS::msg.Error()<<"SF : x out of bounds "<<x<<" at "<<q2<<", "
+    ATOOLS::msg.Error()<<"SF::CalculateWeight : x out of bounds "<<x<<" at "<<q2<<", "
 	       <<"xrange = "<<p_pdf->XMin()<<" ... "<<p_pdf->XMax()<<std::endl;
     return 0; 
   }
   if ( (q2 >= p_pdf->Q2Max()) || (q2<= p_pdf->Q2Min()) ) { 
-    ATOOLS::msg.Error()<<"SF : q2 out of bounds "<<x<<" at "<<q2<<", "
+    ATOOLS::msg.Error()<<"SF::CalculateWeight : q2 out of bounds "<<x<<" at "<<q2<<", "
 	       <<"q2range = "<<p_pdf->Q2Min()<<" ... "<<p_pdf->Q2Max()<<std::endl;
     return 0; 
   }

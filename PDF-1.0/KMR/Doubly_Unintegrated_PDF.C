@@ -209,9 +209,6 @@ void Doubly_Unintegrated_PDF::Calculate(double x,double z,double kperp2,double m
   m_calculate=true;
   if (m_z<m_x || m_kperp2>p_pdf->Q2Max() ||
       (m_mu2<p_pdf->Q2Min() && m_mu02<m_kperp2)) {
-    ATOOLS::msg.Debugging()<<"Doubly_Unintegrated_PDF::Calculate("
-			   <<m_x<<","<<m_z<<","<<m_kperp2<<","<<m_mu2<<"): "<<ATOOLS::om::red
-			   <<"Variables exceed naive boundaries !"<<ATOOLS::om::reset<<std::endl;
     m_calculate=false;
     return; 
   }

@@ -88,15 +88,6 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
       if (cur->Flav().Kfcode()==ATOOLS::kf::gluon) TreatFirstGluon(cur);
       else TreatFirstQuark(cur);
     }
-#ifdef DEBUG__Hadron_Remnant
-    if (ATOOLS::rpa.gen.NumberOfDicedEvents()==EVENT) {
-      std::cout<<"particle ["<<i<<"]("<<m_parton[1].size()<<") {\n";
-      for (size_t j=0;j<m_parton[0].size();++j) std::cout<<m_parton[0][j]<<std::endl;
-      std::cout<<"\n";
-      for (size_t j=0;j<m_parton[2].size();++j) std::cout<<m_parton[2][j]<<std::endl;
-      std::cout<<"}\n";
-    }
-#endif
   }
   // select x's according to pdf
   DiceKinematics();

@@ -21,10 +21,10 @@ Event_Reader::Event_Reader(const std::string & path,const std::string & file) :
     abort();
   }
   InitialSettings();
-  msg.Events()<<"Generator  = "<<m_generator<<std::endl
-	      <<"Input mode = "<<m_inputmode<<std::endl
-	      <<"Event mode = "<<m_eventmode<<std::endl
-	      <<"Phase mode = "<<m_phasemode<<std::endl;
+  msg.Out()<<"Generator  = "<<m_generator<<std::endl
+	   <<"Input mode = "<<m_inputmode<<std::endl
+	   <<"Event mode = "<<m_eventmode<<std::endl
+	   <<"Phase mode = "<<m_phasemode<<std::endl;
 }
   
 
@@ -133,7 +133,7 @@ bool Event_Reader::ReadInEvent(Blob_List * blobs)
 	if (buffer.find("Next file  =")!=std::string::npos) {
 	  pos = buffer.find("Next file  =");
 	  tmp = buffer.substr(pos+12);
-	  msg.Events()<<"End of file. Go to next file |"<<tmp<<"|"<<std::endl;
+	  msg.Info()<<"End of file. Go to next file |"<<tmp<<"|"<<std::endl;
 	  while(tmp.length()>0) {
 	    if (tmp[0]==' ') tmp = tmp.substr(1);
 	    else {

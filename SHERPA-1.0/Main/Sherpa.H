@@ -15,8 +15,8 @@ namespace SHERPA {
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
-    Output_Handler         * p_output;
-    Sample_Analysis        * p_analysis;
+    IO_Handler             * p_iohandler;
+    Analysis_Handler       * p_analysis;
 
     void DrawLogo();  
   public:
@@ -92,13 +92,13 @@ namespace SHERPA {
     A pointer to the handler of single event production.
   */
   /*!
-    \var Output_Handler * Sherpa::p_output
+    \var IO_Handler * Sherpa::p_iohandler
     A pointer to the handler of the global output. This module is not very evolved so far, 
     actual input by our clients is needed.
     \todo List all publications that should be cited when running Sherpa.
   */
   /*!
-    \var Sample_Analysis * Sherpa::p_analysis
+    \var Analysis_Handler * Sherpa::p_analysis
     A pointer to the internal analysis modules.
   */
   /*!
@@ -111,7 +111,7 @@ namespace SHERPA {
   */
   /*!
     \fn Sherpa::~Sherpa()
-    Deletes the following objects: Sample_Analysis, Event_Handler, Output_Handler.
+    Deletes the following objects: Analysis_Handler, Event_Handler, Output_Handler.
   */
   /*!
     \fn bool Sherpa::InitializeTheRun(std::string _path = std::string("./"))

@@ -71,8 +71,9 @@ void Primitive_Analysis::AddSubAnalysis(const std::string & key,Primitive_Analys
 {
   Analysis_List::const_iterator cit=m_subanalyses.find(key);
   if (cit!=m_subanalyses.end()) {
-    msg.Out()<<" WARNING: Analysis "<<key<<" already existent;"<<std::endl
-	     <<"          sub analysis not added!"<<std::endl;
+    msg.Out()<<"WARNING in Primitive_Analysis::AddSubAnalysis :"<<std::endl
+	     <<"   Analysis "<<key<<" already existent;"<<std::endl
+	     <<" sub analysis not added, will be deleted."<<std::endl;
     if (ana) delete ana;
     return;
   }
@@ -118,7 +119,7 @@ void Primitive_Analysis::CallSubAnalysis(Blob_List * const bl, double value)
     }
   }
   if (nout==-1) {
-    msg.Out()<<" no Signal process found "<<std::endl;
+    msg.Out()<<"WARNING in Primitive_Analysis::CallSubAnalysis: no Signal process found "<<std::endl;
     return;
   }
 
@@ -179,7 +180,8 @@ void Primitive_Analysis::DoAnalysis(Blob_List * const bl, double value) {
   Init();
   double weight=(*p_partner)["ME_Weight"]->Get<double>();
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
-  if (!IsEqual(value,weight)) std::cout<<" WARNING: weight in Primitive_Analysis ambiguous! "<<std::endl;
+  if (!IsEqual(value,weight)) 
+    msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis : weight in Primitive_Analysis ambiguous! "<<std::endl;
 
   // do nonsplittable (helper and legacy observables) first
   if (m_mode&ANALYSIS::fill_helper) {
@@ -265,7 +267,6 @@ void Primitive_Analysis::CreateFinalStateParticleList()
   PL_Container::const_iterator cit=m_pls.find("FinalState");
   if (cit!=m_pls.end()) return;
 
-  //  msg.Out()<<" creating FinalState particle list "<<std::endl;
   Particle_List * pl = new Particle_List;
 
   for (Blob_Const_Iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
@@ -293,7 +294,6 @@ void Primitive_Analysis::CreateFinalStateParticleList()
   }
 
   if (!m_datacontainer["ME_Weight"]) {
-    std::cout<<" ME_Weight not in data container! "<<std::endl;
     m_datacontainer["ME_Weight"]=new Blob_Data<double>(1.);
     m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(1);
   }
@@ -335,7 +335,6 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
 
-  //  msg.Out()<<key<<" not found in particle list container, Primitive_Analysis::GetParticleList failed "<<std::endl;
   return 0;
 }
 
@@ -381,7 +380,6 @@ void Primitive_Analysis::ClearAllData()
 void Primitive_Analysis::PrintStatus() 
 {
   if (!msg.LevelIsTracking()) return; 
-  //  std::cout<<" ana name: "<<m_name<<" "<<m_mode<<std::endl;
 
   msg.Out()<<"Particle_Lists:"<<std::endl;
   for (PL_Container::iterator it=m_pls.begin();

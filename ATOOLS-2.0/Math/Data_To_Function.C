@@ -584,9 +584,6 @@ namespace ATOOLS {
     PROFILE_HERE;
 #endif
     if (p_xydata->size()<2) {
-      ATOOLS::msg.Debugging()<<"Data_To_Function::Y("<<x<<","<<tempmode<<"): "
-			     <<"Less than 2 data points available."<<std::endl
-			     <<"   Returning (ResultType)0."<<std::endl;
       return (ResultType)0.0;
     }
     if (tempmode==AUnknown) tempmode=m_acquisitionmode;
@@ -617,9 +614,6 @@ namespace ATOOLS {
     PROFILE_HERE;
 #endif
     if (p_xydata->size()<2) {
-      ATOOLS::msg.Debugging()<<"Data_To_Function::X("<<y<<","<<tempmode<<"): "
-			     <<"Less than 2 data points available."<<std::endl
-			     <<"   Returning (ArgumentType)0."<<std::endl;
       return (ArgumentType)0.0;
     }
     if (tempmode==AUnknown) tempmode=m_acquisitionmode;

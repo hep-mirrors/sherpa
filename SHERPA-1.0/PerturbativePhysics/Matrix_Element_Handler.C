@@ -84,8 +84,6 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 {
   if (_me) p_amegic = _me->GetAmegic(); 
   m_mode      = InitializeAmegic(_model,NULL,NULL);
-  msg.Debugging()<<"Run Matrix_Element_Handler in mode :"<<m_mode
-		 <<" and event generation mode : "<<m_eventmode<<endl;
   if (m_mode>0) return;
   throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to initialize ")
 			  +m_signalgenerator+std::string(" for hard interactions."),
@@ -119,9 +117,6 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
   p_flavs = new Flavour[MaxJets()+2];
   p_moms  = new Vec4D[MaxJets()+2];
   if (m_apply_hhmf) SetupHHMF();
-
-  msg.Debugging()<<"Run Matrix_Element_Handler in mode :"<<m_mode
-		 <<" and event generation mode : "<<m_eventmode<<endl;
   if (m_mode>0) return;
   throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to initialize ")
 			  +m_signalgenerator+std::string(" for hard interactions."),
@@ -255,12 +250,10 @@ void RescaleProcesses(AMEGIC::Process_Base * procs, double fac, double mfac ) {
     if (fac!=1.) {
       double xs=procs->TotalXS();
       procs->SetTotalXS(xs*fac);
-      std::cout<<" changing xs from "<<xs<<" to "<<procs->TotalXS()<<std::endl;
     }
     if (mfac!=1.) {
       double max=procs->Max();
       procs->SetMax(max*mfac);
-      std::cout<<" changing xs-max from "<<max<<" to "<<procs->Max()<<std::endl;
     }
   }
   else {
@@ -270,7 +263,6 @@ void RescaleProcesses(AMEGIC::Process_Base * procs, double fac, double mfac ) {
     }
     if (fac!=1.) {
       procs->SetTotal(xs*fac);
-      std::cout<<" changing xs from "<<xs<<" to "<<procs->TotalXS()<<std::endl;
     }
   }
 }
@@ -284,8 +276,6 @@ bool Matrix_Element_Handler::RescaleJetrates()
   for (size_t i=0; i<procs->Size();++i) {
     errsum+= (*procs)[i]->TotalError();
   }
-
-  cout<<" rescale Jetrates : "<<endl;
   //vs.facs[10] = { 1., 1., 1. , 0.1, 1., 1.,1., 1., 1., 1.};
   double facs[10] = { 1., 1., 1. , 1., 1., 1., 1., 1., 1., 1.};
   double mfacs[10] = { 1., 1., 1. , 1., .05, .025,.0125, 1., 1., 1.};
@@ -304,7 +294,6 @@ bool Matrix_Element_Handler::RescaleJetrates()
     sstr<<"xsections_"<<ecms<<".dat"<<endl;
     std::string filename;
     sstr>>filename;
-    msg.Debugging()<<" looking for "<<filename<<endl;
     std::ofstream  rfile(filename.c_str(),std::ios::app);
     rfile<<"# ";
     for (size_t i=0; i<procs->Size();++i) {
@@ -367,7 +356,7 @@ bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double
 double Matrix_Element_Handler::FactorisationScale()
 {
   if (m_mode==1) return static_cast<AMEGIC::Process_Base*>(p_amegic->GetProcess())->FactorisationScale();
-  msg.Out()<<" Warning: Matrix_Element_Handler::FactorisationScale() called without AMEGIC!"<<std::endl;
+  msg.Out()<<"Warning: Matrix_Element_Handler::FactorisationScale() called without AMEGIC!"<<std::endl;
   return 0.;
 }
 

@@ -1,5 +1,5 @@
-#ifndef Sample_Analysis_H
-#define Sample_Analysis_H
+#ifndef Analysis_Handler_H
+#define Analysis_Handler_H
 
 #include "Primitive_Analysis.H"
 #include "Final_Selector.H"
@@ -20,7 +20,7 @@ namespace SHERPA {
     void Output();
   };
 
-  class Sample_Analysis  {
+  class Analysis_Handler  {
     std::string  m_phase, m_outputpath;
     std::string  m_prefix;
 
@@ -36,8 +36,8 @@ namespace SHERPA {
     // This is the place to add specific observables ....
     void SetUpSubSamples();
   public:
-    Sample_Analysis(std::ifstream *,std::string=std::string("Hadrons"),const std::string& =std::string(""));
-    ~Sample_Analysis();
+    Analysis_Handler(std::ifstream *,std::string=std::string("Hadrons"),const std::string& =std::string(""));
+    ~Analysis_Handler();
     void DoAnalysis(ATOOLS::Blob_List * const, double);
     void Clear()        { p_analysis->ClearAllData(); }
     void Finish();
@@ -47,8 +47,8 @@ namespace SHERPA {
     bool On()           { return (p_analysis->NumberOfObservables()>0); }
   };   
 
-  typedef std::map<std::string,Sample_Analysis *> AnalysesMap;
-  typedef AnalysesMap::iterator                   AnalysesIter;
+  typedef std::map<std::string,Analysis_Handler *> AnalysesMap;
+  typedef AnalysesMap::iterator                    AnalysesIter;
 }
 
 #endif

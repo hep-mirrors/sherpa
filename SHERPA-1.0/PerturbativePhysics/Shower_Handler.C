@@ -21,14 +21,14 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
   }
   m_fsrshowerswitch = p_dataread->GetValue<int>("FSR_SHOWER",1);
   if (m_isrshowerswitch && !m_fsrshowerswitch) {
-    msg.Out()<<"WARNING: final state shower is switched on,"
-	     <<" since initial state shower is turned on as well."<<std::endl;
+    msg.Out()<<"WARNING in Shower_Handler : "<<std::endl
+	     <<"   final state shower is switched on, since initial state shower is turned on as well."<<std::endl;
     m_fsrshowerswitch=true;
   }
 
   if (m_showergenerator==std::string("Apacic")) {
-    p_apacic = new APACIC::Hard_Interface(_isr,_model,m_maxjetnumber,
-					  m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
+    p_apacic = new APACIC::Apacic(_isr,_model,m_maxjetnumber,
+				  m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
   }
   else if (m_showergenerator==std::string("Adicic")) {
     p_adicic = new ADICIC::Adicic(_model);

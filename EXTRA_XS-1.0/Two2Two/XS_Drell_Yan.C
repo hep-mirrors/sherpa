@@ -78,8 +78,6 @@ Single_XS *Single_XS::GetProcess<XS_ee_ffbar>(const size_t nin,const size_t nout
 XS_ee_ffbar::XS_ee_ffbar(const size_t nin,const size_t nout,const ATOOLS::Flavour *fl) 
   : Single_XS(nin,nout,fl) 
 {
-  msg.Debugging()<<"In XS_ee_ffbar."<<std::endl;
-
   MZ2    = sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
   GZ2    = sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width());
  

@@ -76,8 +76,6 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
     mo->thcrit=th1c;
   }
 
-//   cout<<" starting FS from IS knot : "<<mo->kn_no<<"  t="<<mo->t<<" tmax="<<mo->tmax<<endl;
-//    cout<<*mo;
   if (mo->left && mo->right) {
     EstablishRelations(mo,mo->left,mo->right);
 
@@ -321,9 +319,6 @@ void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
   
   double t_mo = mo->part->Momentum().Abs2();
   double E_mo= mo->part->Momentum()[0];
-
-  //  cout<<"Final_State_Shower:Est: "<<t_mo<<" vs. "<<mo->t<<endl;
-  
   double th  = sqrt( t_mo/(mo->z*(1.- mo->z)))/E_mo;
   if (mo->part->Flav().IsQuark() && d1->part->Flav().Strong() && d2->part->Flav().Strong()) {
     if (d1->part->Flav().IsQuark()) {
@@ -396,8 +391,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
   }
   if (bl_meps==NULL) {
     ATOOLS::msg.Error()<<"Final_State_Shower::ExtractPartons(..): "
-		       <<"No ME PS Interface found!"<<std::endl
-		       <<"   Cannot proceed. Abort."<<std::endl;
+		       <<"   No ME PS Interface found. Cannot proceed. Abort."<<std::endl;
     exit(127);
   }
   // deactivate in partons!
@@ -467,7 +461,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
     if (!kn->left) {
       if (!jet) {
 	msg.Error()<<"ERROR in Final_State_Shower ::ExtractPartons :"<<std::endl
-		   <<" No jet for Parton : "<<kn->part->Number()<<std::endl;
+		   <<"    No jet for Parton : "<<kn->part->Number()<<std::endl;
 	abort();
       }
       if (pl) number = pl->size();
@@ -525,12 +519,12 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo,int init_rel)
 {
   if (!mo) {
     msg.Error()<<"Error in Final_State_Shower : "<<std::endl
-	       <<"Final_State_Shower::InitializeJets : No mother found !"<<std::endl;
+	       <<"   Final_State_Shower::InitializeJets : No mother found !"<<std::endl;
     return 0;
   }
   if ((!mo->left) || (!mo->right)) {
     msg.Error()<<"Error in Final_State_Shower : "<<std::endl
-	       <<"Final_State_Shower::InitializeJets : No daughters found !"<<std::endl
+	       <<"   Final_State_Shower::InitializeJets : No daughters found !"<<std::endl
 	       <<" for "<<*mo<<std::endl;
     return 0;
   }
@@ -958,10 +952,10 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number) {
     Vec4D p     = GetMomentum(mo->left,number) + GetMomentum(mo->right,number);
     Vec4D ptest = mo->left->part->Momentum() + mo->right->part->Momentum();
     if (!(ptest==mo->part->Momentum())) 
-      msg.Events()<<" momentum conservation violation in Knot :"<<mo->kn_no<<std::endl
-		  <<"          is: "<<ptest<<"  "<<p.Abs2()<<std::endl
-		  <<"   should be:"<<mo->part->Momentum()
-		  <<"  "<<mo->part->Momentum().Abs2()<<std::endl;
+      msg.Out()<<"WARNING in Final_State_Shower :"<<std::endl
+	       <<"   Momentum conservation violation in Knot :"<<mo->kn_no<<std::endl
+	       <<"          is: "<<ptest<<"  "<<p.Abs2()<<std::endl
+	       <<"   should be:"<<mo->part->Momentum()<<"  "<<mo->part->Momentum().Abs2()<<std::endl;
     return p;
   }
   number++;
@@ -983,7 +977,6 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
 
   Blob * bl = mo->part->ProductionBlob();
   if (!bl) {
-    msg.Out()<<" no blob ! return normal aunt"<<endl;
     return au->part;
   }
   
@@ -997,7 +990,5 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
     if (found) return aup;
   }
 
-  msg.Events()<<" no aunt in blob  found ! return normal aunt"<<endl;
   return au->part;
-
 }

@@ -20,9 +20,6 @@ Primitive_Observable_Base::Primitive_Observable_Base(int _type,double _xmin,doub
   m_listname(std::string("Analysed")), m_splitt_flag(true), p_ana(NULL), p_sel(_sel)
 { 
   p_histo = new Histogram(m_type,m_xmin,m_xmax,m_nbins);
-  /*
-  msg.Error()<<"LAGACY WARNING  Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
-  */
 }
 
 
@@ -30,7 +27,7 @@ Primitive_Observable_Base::Primitive_Observable_Base(Primitive_Observable_Base *
   m_type(old->m_type), m_nbins(old->m_nbins), m_xmin(old->m_xmin), m_xmax(old->m_xmax), 
   m_name(old->m_name), m_listname(old->m_listname), p_sel(old->p_sel)
 { 
-  msg.Error()<<"LAGACY WARNING  Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
+  msg.Out()<<"LEGACY WARNING  Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
   p_histo = new Histogram(old->p_histo);
 }
 
@@ -49,13 +46,13 @@ void Primitive_Observable_Base::SetBlobType(const std::string & _btype)
 
 void Primitive_Observable_Base::Evaluate(int,const Vec4D *,const Flavour *,double) 
 {
-  msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : A "<<m_name<<std::endl;
+  msg.Error()<<"Error in Primitive_Observable_Base::Evaluate (vecs) "<<m_name<<std::endl;
 }
 
 void Primitive_Observable_Base::Evaluate(const Particle_List & pl,double weight,int ncount) 
 {
   if (ncount>1) {
-    msg.Out()<<" WARNING: "<<Name()
+    msg.Out()<<"WARNING: "<<Name()
 	     <<"::Evaluate(const Particle_List & pl,const double weight,"<<ncount<<") "<<std::endl;
     Evaluate(pl,weight);
     for (int i=2;i<=ncount;++i) {
@@ -63,8 +60,7 @@ void Primitive_Observable_Base::Evaluate(const Particle_List & pl,double weight,
     }
     return;
   }
-
-  msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : B "<<m_name<<std::endl;
+  msg.Error()<<"Error in Primitive_Observable_Base::Evaluate (pl) "<<m_name<<std::endl;
 }
 
 void Primitive_Observable_Base::Evaluate(const Blob_List & blobs,double value, int ncount)
@@ -112,7 +108,8 @@ Primitive_Observable_Base & Primitive_Observable_Base::operator+=(const Primitiv
     (*p_histo)+=(*ob.p_histo);
   }
   else {
-    msg.Out()<<" warning "<<Name()<<" has not overloaded the operator+="<<std::endl;
+    msg.Out()<<"Warning in Primitive_Observable_Base::operator+= :"<<std::endl<<"   "
+	     <<Name()<<" has not overloaded the operator+="<<std::endl;
   }
   return *this;
 }

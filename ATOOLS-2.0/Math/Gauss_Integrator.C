@@ -13,9 +13,6 @@
 #include <fstream>
 
 using namespace ATOOLS;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 int Gauss_Integrator::s_ngauleg=0;
 int Gauss_Integrator::s_ngaulag=0;

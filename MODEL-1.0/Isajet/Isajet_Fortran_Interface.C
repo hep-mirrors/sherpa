@@ -152,9 +152,7 @@ void Isajet_Fortran_Interface::FillMasses() {
 }
 
 void Isajet_Fortran_Interface::FillDecays() {
-  
-  msg.Tracking()<<endl;
-  msg.Tracking()<<"---------- Set particles widths according to Isasusy ! ---------"<<endl;
+  msg.Info()<<"---------- Set particles widths according to Isasusy ! ---------"<<endl;
   
   Decays(Flavour(kf::Chargino1));
   Decays(Flavour(kf::Chargino2));
@@ -195,8 +193,6 @@ void Isajet_Fortran_Interface::FillDecays() {
   Decays(Flavour(kf::sDownR));
   Decays(Flavour(kf::sStrangeR));
   Decays(Flavour(kf::sBottom1));
-    
-  msg.Tracking()<<"----------------------------------------------------------------"<<endl;
 }
 
 int Isajet_Fortran_Interface::FlavourToIsaID(Flavour flav) {

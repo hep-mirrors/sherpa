@@ -43,9 +43,9 @@ void Hdecay_Fortran_Interface::Run(std::string _mode) {
 
   if (yukawas[2]==0. || yukawas[3]==0. || yukawas[4]==0. || 
       yukawas[5]==0. || yukawas[7]==0. || yukawas[8]==0.)
-    msg.Error()<<"Potential error in Hdecay : "<<std::endl
-	       <<"   The yukawas for muon, tau, s, c, b, t MUST be larger than 0. !!!!"<<std::endl
-	       <<"   Expect nonsense results from Hdecay."<<std::endl;
+    msg.Out()<<"Potential error in Hdecay : "<<std::endl
+	     <<"   The yukawas for muon, tau, s, c, b, t MUST be larger than 0. !!!!"<<std::endl
+	     <<"   Expect nonsense results from Hdecay."<<std::endl;
 
 
   double * ckms      = new double[3];
@@ -84,7 +84,6 @@ void Hdecay_Fortran_Interface::CalculateEffectiveCouplings(std::string _mode)
     higgs.SetWidth(hwidth);
     double hggw=brVV[1]*hwidth;
     double ceff=sqrt(64.*M_PI*hggw/(hmass*hmass*hmass));
-    std::cout<<"HIGGS->PP width: "<<hggw<<" "<<hwidth<<" "<<hmass<<std::endl;
     p_model->GetScalarConstants()->insert(std::make_pair(std::string("HIGGS_GG_EFF"),ceff));
 
     delete [] brff;

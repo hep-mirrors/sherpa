@@ -85,9 +85,9 @@ namespace ATOOLS {
   inline int  Selector_Log::Rejections() { return m_rejected; }
   inline int  Selector_Log::Passed()     { return m_passed; }
   inline void Selector_Log::Output() { 
-    msg.Out()<<"  Selector "<<m_name<<" rejection quota  : "
-			<<double(m_rejected)/double(m_rejected+m_passed)
-			<<"  ("<<m_rejected<<" / "<<m_passed+m_rejected<<")"<<std::endl;
+    msg.Info()<<"  Selector "<<m_name<<" rejection quota  : "
+	      <<double(m_rejected)/double(m_rejected+m_passed)
+	      <<"  ("<<m_rejected<<" / "<<m_passed+m_rejected<<")"<<std::endl;
   }
 }
 

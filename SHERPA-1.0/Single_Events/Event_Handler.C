@@ -34,12 +34,12 @@ void Event_Handler::AddEventPhase(Event_Phase_Handler * phase)
   std::string name = phase->Name();
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) { 
     if ((type==(*pit)->Type()) && (name==(*pit)->Name())) {
-      msg.Events()<<"Event_Handler::AddEventPhase("<<type<<":"<<name<<") "
+      msg.Out()<<"WARNING in Event_Handler::AddEventPhase("<<type<<":"<<name<<") "
 		  <<"already included."<<std::endl;
       return;
     }
   }
-  msg.Events()<<"Event_Handler::AddEventPhase("<<type<<":"<<name<<")."<<std::endl;
+  msg.Tracking()<<"Event_Handler::AddEventPhase("<<type<<":"<<name<<")."<<std::endl;
   p_phases->push_back(phase);
 }
 
@@ -71,15 +71,16 @@ void Event_Handler::EmptyEventPhases()
 
 void Event_Handler::PrintGenericEventStructure() 
 {
-  msg.Events()<<"----------------------------------------------------------"<<std::endl
-	      <<"-- SHERPA generates events with the following structure --"<<std::endl
-	      <<"----------------------------------------------------------"<<std::endl;
+  if (!msg.LevelIsInfo()) return;
+  msg.Out()<<"----------------------------------------------------------"<<std::endl
+	    <<"-- SHERPA generates events with the following structure --"<<std::endl
+	    <<"----------------------------------------------------------"<<std::endl;
   if (!p_phases->empty()) {
     for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
-      msg.Events()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
+      msg.Out()<<(*pit)->Type()<<" : "<<(*pit)->Name()<<std::endl;
     }
   }
-  msg.Events()<<"---------------------------------------------------------"<<std::endl;
+  msg.Out()<<"---------------------------------------------------------"<<std::endl;
 }
 
 bool Event_Handler::GenerateEvent(int mode) 
@@ -204,7 +205,7 @@ void Event_Handler::PrintBlobs() {
 
 
 void Event_Handler::Finish() {
-  std::cout<<"In SummarizeRun()"<<std::endl;
+  msg.Info()<<"In Event_Handler::Finish : Summarizing the run may take some time."<<std::endl;
   for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) 
     (*pit)->Finish(std::string("Results"));
 }

@@ -71,10 +71,10 @@ int Observable_Data::Specify() {
 
 
 
-Sample_Analysis::Sample_Analysis(std::ifstream * readin, std::string _phase, const std::string & prefix) :
+Analysis_Handler::Analysis_Handler(std::ifstream * readin, std::string _phase, const std::string & prefix) :
   m_phase(_phase), m_outputpath(std::string("./")+_phase), m_prefix(prefix), p_analysis(NULL)
 {  
-  std::cout<<"Initialize new Sample_Analysis for "<<_phase<<std::endl;
+  msg.Info()<<"Initialize new Analysis_Handler for "<<_phase<<std::endl;
   std::string phasemode;
   int  mode  = ANALYSIS::fill_all|ANALYSIS::splitt_jetseeds;
   bool split = false;
@@ -115,11 +115,13 @@ Sample_Analysis::Sample_Analysis(std::ifstream * readin, std::string _phase, con
   ReadInObservables(readin);
   SetUpObservables();
 
-  std::cout<<"Initialized new Sample_Analysis for "<<m_phase<<","<<mode<<std::endl;
-  fsel->Output();
+  if (msg.LevelIsInfo()) {
+    msg.Out()<<"Initialized new Analysis_Handler for "<<m_phase<<","<<mode<<std::endl;
+    fsel->Output();
+  }
 }
 
-Sample_Analysis::~Sample_Analysis() 
+Analysis_Handler::~Analysis_Handler() 
 {
   if (p_analysis) { delete p_analysis; p_analysis = NULL; }
   for (int i=m_obsdata.size()-1;i>=0;i--) {
@@ -127,17 +129,17 @@ Sample_Analysis::~Sample_Analysis()
   }
 }
 
-void Sample_Analysis::SetOutputPath(const std::string & path)
+void Analysis_Handler::SetOutputPath(const std::string & path)
 {
   m_outputpath = path+std::string("/")+m_phase;
 }
 
-void Sample_Analysis::DoAnalysis(ATOOLS::Blob_List * const blist, double weight) 
+void Analysis_Handler::DoAnalysis(ATOOLS::Blob_List * const blist, double weight) 
 {
   p_analysis->DoAnalysis(blist,weight);
 }
 
-void Sample_Analysis::Finish() 
+void Analysis_Handler::Finish() 
 {
   int  mode_dir = 448;
   mkdir(m_outputpath.c_str(),mode_dir); 
@@ -150,8 +152,8 @@ Read in routines.
 
 ---------------------------------------------------------------------------------------*/
 
-void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,
-					   Final_Selector *& fsel)
+void Analysis_Handler::ReadInFinalSelectors(std::ifstream * readin,
+					    Final_Selector *& fsel)
 {  
   std::string buffer, arg;
   unsigned int pos;
@@ -212,7 +214,7 @@ void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,
 		ini_fsel = true;
 	      }
 	      else {
-		msg.Error()<<"ERROR in Sample_Analysis::ReadInFinalSelectors"<<std::endl
+		msg.Error()<<"ERROR in Analysis_Handler::ReadInFinalSelectors"<<std::endl
 			   <<"   Try to initialize event shape variables for non-electron incoming beams."<<std::endl
 			   <<"   Abort."<<std::endl;
 		abort();
@@ -280,7 +282,7 @@ void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,
   }
 }
 
-void Sample_Analysis::ReadInObservables(std::ifstream * readin)
+void Analysis_Handler::ReadInObservables(std::ifstream * readin)
 {
   std::string buffer, arg;
   unsigned int pos;
@@ -337,7 +339,7 @@ void Sample_Analysis::ReadInObservables(std::ifstream * readin)
   }
 }
 
-void Sample_Analysis::SetUpObservables()
+void Analysis_Handler::SetUpObservables()
 {
   Primitive_Observable_Base * obs;
   Observable_Data * od;
@@ -356,7 +358,7 @@ void Sample_Analysis::SetUpObservables()
     switch (odn) {
     case 1: // One-Particle Observables
       if (!(od->ints.size()==2 && od->numbers.size()==2 && od->keywords.size()==1)) {
-	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+	msg.Error()<<"Potential Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
 		   <<"   One particle observable with "
 		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
 		   <<". Continue and hope for the best."<<std::endl;
@@ -388,7 +390,7 @@ void Sample_Analysis::SetUpObservables()
       }
     case 2:
       if (!(od->ints.size()==3 && od->numbers.size()==2 && od->keywords.size()==1)) {
-	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+	msg.Error()<<"Potential Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
 		   <<"   One particle observable with "
 		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
 		   <<". Continue and hope for the best."<<std::endl;
@@ -418,7 +420,7 @@ void Sample_Analysis::SetUpObservables()
       }
     case 10:
       if (!(od->ints.size()==5 && od->numbers.size()==2 && od->keywords.size()==1)) {
-	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+	msg.Error()<<"Potential Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
 		   <<"   One particle observable with "
 		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
 		   <<". Continue and hope for the best."<<std::endl;
@@ -470,7 +472,7 @@ void Sample_Analysis::SetUpObservables()
       }
     case 20:
       if (!(od->ints.size()==1 && od->numbers.size()==2 && od->keywords.size()==1)) {
-	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+	msg.Error()<<"Potential Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
 		   <<"   Event shape observable with "
 		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
 		   <<". Continue and hope for the best."<<std::endl;
@@ -502,7 +504,7 @@ void Sample_Analysis::SetUpObservables()
 	break; 
       }
     default:
-      msg.Error()<<"Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+      msg.Error()<<"Error in Analysis_Handler::SetUpSubObservables()"<<std::endl
 		 <<"   "<<odn<<"-Particle Observables not yet realized for "<<type<<"."<<std::endl;
       abort();
     }
@@ -511,7 +513,7 @@ void Sample_Analysis::SetUpObservables()
   SetUpSubSamples();
 } 
 
-void Sample_Analysis::SetUpSubSamples()
+void Analysis_Handler::SetUpSubSamples()
 {
   // This is the place to add specific observables ....
 } 

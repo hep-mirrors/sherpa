@@ -23,19 +23,10 @@ Running_AlphaQED::Running_AlphaQED(const double _alpha0,const double _MZ2,const 
   m_alpha0(_alpha0),m_MZ2(_MZ2),m_split_scale(_split_scale)
 {
   m_type = std::string("Running Coupling");
-
-  if (m_alpha0!=1./137.03599976) { // Thomson limit (basis for running coupling)
-    msg.Events()<<" WARNING: using value for alpha_QED(0)="<<m_alpha0<<" different from Thomson limit."<<std::endl;
-  } 
-
   m_split_scale = sqr(m_split_scale);
   m_ecms2       = sqr(rpa.gen.Ecms());
   m_alpha_MZ    = Aqed(m_MZ2);
   m_defval      = Aqed(m_MZ2);
-
-  msg.Tracking()<<" alpha_QED(0)    = 1./"<<1./m_alpha0<<std::endl
-		<<" alpha_QED(MZ)   = 1./"<<1./m_alpha_MZ<<std::endl
-		<<" alpha_QED_fixed = 1./"<<1./m_defval<<std::endl;
 }
 
 

@@ -28,7 +28,7 @@ Analysis_Phase::Analysis_Phase() :
   m_type = eph::Analysis;
 }
 
-Analysis_Phase::Analysis_Phase(Sample_Analysis * ana,const std::string  & iter) :
+Analysis_Phase::Analysis_Phase(Analysis_Handler * ana,const std::string  & iter) :
   Event_Phase_Handler(std::string("Analysis:")+ana->Phase()), 
   p_analysis(ana) 
 {

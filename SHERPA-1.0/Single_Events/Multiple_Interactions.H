@@ -2,7 +2,6 @@
 #define Multiple_Interactions_H
 
 #include "Event_Phase_Handler.H"
-#include "Sample_Analysis.H"
 #include "MI_Handler.H"
 
 namespace SHERPA {

@@ -145,9 +145,8 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 bool Primordial_KPerp::BoostConnected(ATOOLS::Blob *blob,unsigned int catcher)
 { 
   if (++catcher>100) {
-    msg.Error()<<"Primordial_KPerp::BoostConnected(..): "
-		       <<"Blob nesting is too deep!"<<std::endl
-		       <<"   Cannot boost connected parton."<<std::endl;
+    msg.Error()<<"ERROR in Primordial_KPerp::BoostConnected(..): "
+	       <<"   Blob nesting is too deep, cannot boost connected parton."<<std::endl;
     return false;
   }
   if ((blob==NULL)||(p_boosted->find(blob)!=p_boosted->end())) return true;
@@ -168,9 +167,8 @@ bool Primordial_KPerp::FindConnected(ATOOLS::Particle *particle,ATOOLS::Particle
                                      bool forward,unsigned int catcher)
 {
   if (++catcher>100) {
-    msg.Error()<<"Primordial_KPerp::FindConnected(..): "
-                       <<"Blob nesting is too deep!"<<std::endl
-                       <<"   Cannot find connected parton."<<std::endl;
+    msg.Error()<<"ERROR in Primordial_KPerp::FindConnected(..): "
+	       <<"   Blob nesting is too deep, cannot boost connected parton."<<std::endl;
     return false;
   }
   if (!forward) {

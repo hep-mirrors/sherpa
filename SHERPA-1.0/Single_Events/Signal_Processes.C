@@ -47,7 +47,6 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
       if ((*blit)->Type()==btp::Signal_Process && (*blit)->Status()==2) {
 	myblob = (*blit);
 	found  = 1;
-	msg.Tracking()<<" calling GenerateOneEvent() "<<endl;
 	if (p_mehandler->GenerateOneEvent()) {
 	  weight=p_mehandler->Weight();
 	  int  ntrial =p_mehandler->NumberOfTrials();
@@ -58,7 +57,6 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
       else if (((*blit)->Type()==btp::Signal_Process) && ((*blit)->Status()==-1)) {
 	myblob = (*blit);
 	found  = 1;
-	msg.Tracking()<<" calling GenerateSameEvent() "<<endl;
 	if (p_mehandler->GenerateSameEvent()) {
 	  weight=p_mehandler->Weight();
 	  int  ntrial =p_mehandler->NumberOfTrials();
@@ -118,8 +116,6 @@ void Signal_Processes::FillBlob(Blob * blob, const double, const int)
       abort();
     }
   }
-  msg.Tracking()<<" ME_Weight = "<<p_mehandler->Weight()<<std::endl;
-  msg.Tracking()<<" Blob: "<<blob<<std::endl;
 
   // store some additional information
   blob->AddData("ME_Weight",new Blob_Data<double>(p_mehandler->Weight()));

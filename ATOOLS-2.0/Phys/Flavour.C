@@ -43,6 +43,7 @@ int Kf_To_Int::ToInt(kf::code kfc)
   for(int i=0;i<anz+1;i++) { if (kf_tab[i]==kfc) return i; }
   std::cerr<<"ERROR in Kf_To_Int::to_int(): Particle type unknown ! "
 	   <<kfc<<" in "<<anz<<std::endl;
+  abort();
   return -1;
 }
 

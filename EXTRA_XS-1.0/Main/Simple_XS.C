@@ -100,7 +100,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		buf      = string(buffer);
 		position = buf.find(string("End process"));
 		if (!from) {
-		  msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+processfile<<")."<<endl
+		  msg.Error()<<"Error in Simple_XS::InitializeProcesses("<<m_path+processfile<<")."<<endl
 			     <<"   End of file reached without 'End process'-tag."<<endl
 			     <<"   Continue and hope for the best."<<endl;
 		  position     = 0;
@@ -108,11 +108,6 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      }
 	    }
 	    while (position==std::string::npos);
-	    msg.Debugging()<<"Read in process :";
-	    for (short int i=0;i<nIS;i++) msg.Debugging()<<" "<<IS[i];
-	    msg.Debugging()<<" -> ";
-	    for (short int i=0;i<nFS;i++) msg.Debugging()<<FS[i].Name()<<" ";
-	    msg.Debugging()<<" EW("<<order_ew<<"), QCD("<<order_strong<<")"<<endl;
 	    if (nIS+nFS>(int)m_nmax) m_nmax = nIS+nFS;
 	    flavs              = new Flavour[nIS+nFS];
 	    for (int i=0;i<nIS;i++) flavs[i]     = IS[i]; 
@@ -146,13 +141,6 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	      }
 	      p_selected=group;
 	    }
-	    else {
-	      msg.Out()<<"Kicked Process: ";
-	      for (short int i=0;i<nIS;i++) msg.Out()<<" "<<IS[i].Name();
-	      msg.Out()<<" -> ";
-	      for (short int i=0;i<nFS;i++) msg.Out()<<FS[i].Name()<<" ";
-	      msg.Out()<<", kinematically not allowed."<<endl;
-	    }	    
 	    delete [] flavs;
 	  }
 	}
@@ -256,8 +244,8 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
     p_activepshandler=m_xsecs[i]->PSHandler(false);
     m_totalxs += m_xsecs[i]->TotalXS();
   }
-  msg.Events()<<"In Simple_XS::CalculateTotalXSec() = "
-	      <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb."<<endl;
+  msg.Info()<<"In Simple_XS::CalculateTotalXSec() = "
+	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb."<<endl;
   return okay;
 }
 

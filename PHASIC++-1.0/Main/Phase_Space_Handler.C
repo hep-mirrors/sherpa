@@ -75,13 +75,10 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
       }
     }
   }
-  ATOOLS::msg.Tracking()<<"Phase_Space_Handler::Phase_Space_Handler(..): "
-			<<"Creating initial mapping keys ...\n";
   m_isrspkey.Assign("s' isr",4,0,p_info);
   m_isrykey.Assign("y isr",3,0,p_info);
   m_beamspkey.Assign("s' beam",4,0,p_info);
   m_beamykey.Assign("y beam",3,0,p_info);
-  ATOOLS::msg.Tracking()<<"... done."<<std::endl;
   p_beamhandler->AssignKeys(p_info);
   p_isrhandler->AssignKeys(p_info);
 }
@@ -115,23 +112,6 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
     p_cms = new Vec4D[m_nvec];  
     p_lab = new Vec4D[m_nvec];  
   }
-  msg.Debugging()<<"Phase_Space_Handler::Integrate with : "<<endl;
-  if (m_nin>1) {
-    if (p_beamchannels) 
-      msg.Debugging()<<"  Beam   : "<<p_beamchannels->Name()<<" ("<<p_beamchannels<<") "
-		     <<"  ("<<p_beamchannels->Number()<<","<<p_beamchannels->N()<<")"<<endl;
-    if (p_isrchannels) 
-      msg.Debugging()<<"  ISR    : "<<p_isrchannels->Name()<<" ("<<p_isrchannels<<") "
-		     <<"  ("<<p_isrchannels->Number()<<","<<p_isrchannels->N()<<")"<<endl;
-    if (p_zchannels) 
-      msg.Debugging()<<"  KMR Z  : "<<p_zchannels->Name()<<" ("<<p_zchannels<<") "
- 		     <<"  ("<<p_zchannels->Number()<<","<<p_zchannels->N()<<")"<<endl;
-    if (p_kpchannels) 
-      msg.Debugging()<<"  KMR kp : "<<p_kpchannels->Name()<<" ("<<p_kpchannels<<") "
- 		     <<"  ("<<p_kpchannels->Number()<<","<<p_kpchannels->N()<<")"<<endl;
-  }
-  msg.Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
-		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<endl;
   if (!(MakeIncoming(p_lab)) ) {
     msg.Error()<<"Phase_Space_Handler::Integrate : Error !"<<endl
 	       <<"  Either too little energy for initial state"
@@ -142,15 +122,6 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
   if (m_nin>1) {
     InitCuts();
     m_smin=ATOOLS::Max(sqr(p_process->ISRThreshold()),p_cuts->Smin());
-    if (p_isrhandler->On()>0) {
-      msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<p_beamhandler->On()<<":"
-		     <<p_isrhandler->On()<<endl
-		     <<"   "<<p_isrhandler->SprimeMin()<<" ... "<<p_isrhandler->SprimeMax()
-		     <<" ... "<<p_isrhandler->Pole()<<endl
-		     <<"  for Threshold = "<<p_process->ISRThreshold()<<"  "
-		     <<p_process->Name()<<endl;
-    }
-    msg.SetPrecision(6);
   }
   m_initialized=1;
   return 1;
@@ -172,6 +143,23 @@ double Phase_Space_Handler::Integrate()
       return 0.;
     }
   }
+  msg.Debugging()<<"Phase_Space_Handler::Integrate with : "<<endl;
+  if (m_nin>1) {
+    if (p_beamchannels) 
+      msg.Debugging()<<"  Beam   : "<<p_beamchannels->Name()<<" ("<<p_beamchannels<<") "
+		     <<"  ("<<p_beamchannels->Number()<<","<<p_beamchannels->N()<<")"<<endl;
+    if (p_isrchannels) 
+      msg.Debugging()<<"  ISR    : "<<p_isrchannels->Name()<<" ("<<p_isrchannels<<") "
+		     <<"  ("<<p_isrchannels->Number()<<","<<p_isrchannels->N()<<")"<<endl;
+    if (p_zchannels) 
+      msg.Debugging()<<"  KMR Z  : "<<p_zchannels->Name()<<" ("<<p_zchannels<<") "
+ 		     <<"  ("<<p_zchannels->Number()<<","<<p_zchannels->N()<<")"<<endl;
+    if (p_kpchannels) 
+      msg.Debugging()<<"  KMR kp : "<<p_kpchannels->Name()<<" ("<<p_kpchannels<<") "
+ 		     <<"  ("<<p_kpchannels->Number()<<","<<p_kpchannels->N()<<")"<<endl;
+  }
+  msg.Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
+		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<endl;
   if (m_nin==2) return p_integrator->Calculate(this,m_error);
   if (m_nin==1) return p_integrator->CalculateDecay(this,sqrt(p_lab[0].Abs2()),m_error);
   return 0.;
@@ -239,7 +227,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   }
   p_fsrchannels->GeneratePoint(p_lab,p_cuts);
   if (!Check4Momentum(p_lab)) {
-    msg.Events()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
+    msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<endl;
     for (int i=0;i<m_nin+m_nout;++i) msg.Events()<<i<<":"<<p_lab[i]
  						 <<" ("<<p_lab[i].Abs2()<<")"<<endl;
     return 0.;
@@ -366,8 +354,9 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
       if (value > max) {
 	if (use_overflow) {
 	  // don't use overflow
-	  msg.Events()<<"Shifted maximum in "<<p_process->Selected()->Name()<<" : "
-		      <<p_process->Selected()->Max()<<" -> "<<value<<endl;
+	  msg.Out()<<"WARNING in Phase_Space_Handler::OneEvent :"<<std::endl
+		   <<"   Shifted maximum in "<<p_process->Selected()->Name()<<" : "
+		    <<p_process->Selected()->Max()<<" -> "<<value<<endl;
 	  p_process->Selected()->SetMax(value*1.001);
 	  p_process->SetMax(0.);
 	}
@@ -395,15 +384,12 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
 	}
 	return true;
       }
-      else {
-	msg.Tracking()<<" rejected "<<std::endl;
-      }
     }
   }
   m_sumtrials += m_maxtrials;
-  msg.Error()<<"Phase_Space_Handler::OneEvent() : "
-	     <<" too many trials for "<<p_process->Selected()->Name()<<endl
-	     <<"   Efficiency = "<<double(m_events)/double(m_sumtrials)*100.<<" %."<<endl;
+  msg.Out()<<"WARNING in Phase_Space_Handler::OneEvent() : "
+	   <<" too many trials for "<<p_process->Selected()->Name()<<endl
+	   <<"   Efficiency = "<<double(m_events)/double(m_sumtrials)*100.<<" %."<<endl;
   return false;
 }
 
@@ -441,8 +427,8 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       return new Blob_Data<Weight_Info>(Weight_Info(m_weight,m_trials));
     }
   }
-  msg.Error()<<"Phase_Space_Handler::WeightedEvent() : "
-	     <<" too many trials for "<<p_process->Selected()->Name()<<endl;
+  msg.Out()<<"WARNING in Phase_Space_Handler::WeightedEvent() : "
+	   <<" too many trials for "<<p_process->Selected()->Name()<<endl;
   m_weight=0.;
   return 0;
 } 
@@ -463,7 +449,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
-  msg.Debugging()<<"Write out channels into directory : "<<pID<<endl;
+  msg.Info()<<"Write out channels into directory : "<<pID<<endl;
   int  mode_dir = 448;
   mkdir(pID.c_str(),mode_dir); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+string("/MC_Beam"));
@@ -477,7 +463,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
 
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
 {
-  msg.Debugging()<<"Read in channels from directory : "<<pID<<endl;
+  msg.Info()<<"Read in channels from directory : "<<pID<<endl;
   bool okay = 1;
   if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+string("/MC_Beam"));
   if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+string("/MC_ISR"));
@@ -556,12 +542,12 @@ bool Phase_Space_Handler::CreateIntegrators()
     msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<endl;
     p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
   }  
-  msg.Debugging()<<"Initialized Phase_Space_Integrator (\n\t";
-  if (p_beamchannels) msg.Debugging()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
-  if (p_isrchannels) msg.Debugging()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
-  if (p_zchannels) msg.Debugging()<<p_zchannels->Name()<<","<<p_zchannels->Number()<<";\n\t";
-  if (p_kpchannels) msg.Debugging()<<p_kpchannels->Name()<<","<<p_kpchannels->Number()<<";\n\t";
-  if (p_fsrchannels) msg.Debugging()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<endl;
+  msg.Tracking()<<"Initialized Phase_Space_Integrator (\n\t";
+  if (p_beamchannels) msg.Tracking()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
+  if (p_isrchannels) msg.Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
+  if (p_zchannels) msg.Tracking()<<p_zchannels->Name()<<","<<p_zchannels->Number()<<";\n\t";
+  if (p_kpchannels) msg.Tracking()<<p_kpchannels->Name()<<","<<p_kpchannels->Number()<<";\n\t";
+  if (p_fsrchannels) msg.Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<endl;
   return 1;
 }
 
@@ -569,9 +555,6 @@ void Phase_Space_Handler::DropRedundantChannels()
 {
   p_fsrchannels->Reset();
   int number = p_fsrchannels->Number();
-  msg.Debugging()<<"In Phase_Space_Handler::DropRedundantChannels"
-		 <<"("<<p_fsrchannels->Name()<<")."<<endl
-		 <<"    Start with "<<number<<" added channel(s)."<<endl;
   if (number<2) return;
   int *marker = new int[number];  
   for (short int i=0;i<number;i++) marker[i] = 0; 
@@ -601,9 +584,6 @@ void Phase_Space_Handler::DropRedundantChannels()
 	  //if ( (Compare(perm_vec[i],perm_vec[j])) && 
 	  //     (ATOOLS::IsEqual(res[i],res[j])) ) {
 	  if (CompareCh(p_fsrchannels->ChID(i),p_fsrchannels->ChID(j))) {
-	    msg.Debugging()<<"  "<<(p_fsrchannels->Channel(i))->Name()
-			   <<" and "<<(p_fsrchannels->Channel(j))->Name()
-			   <<" are identical."<<endl;
 	    marker[j] = 1; 
 	  }
 	}
@@ -646,7 +626,6 @@ void Phase_Space_Handler::DropRedundantChannels()
       count++;
     }
   }
-  msg.Debugging()<<"    "<<count<<" channel(s) were deleted."<<endl;
   //delete [] res;
   delete [] marker; 
   //for (short int i=0;i<number;i++) delete [] perm_vec[i];

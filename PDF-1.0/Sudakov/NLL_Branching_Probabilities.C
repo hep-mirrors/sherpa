@@ -37,9 +37,6 @@ Gamma_Lambda_Base::Gamma_Lambda_Base(BP::code mode,double lambda,
     m_kfac=  CA*(67./18.-M_PI*M_PI/6.)-10./9.*TR*NF;
     m_nlo =1;
   }
-//   std::cout<<" Kfactor = "<<m_kfac<<std::endl;
-//   std::cout<<" m_mode="<<m_mode<<std::endl;
-
   switch (m_mode & 11) {
   case BP::gammaq_powercorr : 
     m_powercorr=1;
@@ -67,8 +64,6 @@ Gamma_Lambda_Base::Gamma_Lambda_Base(BP::code mode,double lambda,
     break;
   }
   if ((m_mode & BP::gamma_corr) && ((m_mode & 3)==BP::gammaq)) {
-//     std::cout<<" ME corrections "<<std::endl;
-//     std::cout<<" m_mode="<<m_mode<<std::endl;
     m_f2=0.973527; // c1
     m_f3=0.306434; // c2
     m_f4=-2.;      // c4/2
@@ -105,13 +100,8 @@ double Gamma_Lambda_Base::IntGammaF(double Q0, double Q) {
 }
 
 double Gamma_Lambda_Base::Gamma(double q, double Q) {
-//   if (q==20. && Q==2000.)  std::cout<<"Gamma("<<q<<","<<Q<<",  m="<<m_mode<<")"<<std::endl;
   if ((m_mode & BP::gamma_kinlim) && (q>m_qlimit)) return 0.;
-//   double val=(4.*m_cc*(m_f1 + m_f2*q/Q  + log(Q/q)))/
-//     (BETA0*q*log(q/m_lambda));
-
   double a   = AlphaS(sqr(q));
-  //  double val = 2.*m_cc/q * a/M_PI * (m_f1 + m_f2*q/Q  + (1.+a/(2.*M_PI)*m_kfac)*log(Q/q));
   double val = 2.*m_cc* a/M_PI *(1./q * (m_f1 + m_f2*q/Q  + m_f3*sqr(q/Q)  + (1.+a/(2.*M_PI)*m_kfac)*log(Q/q))
 				 + m_f4 * q/sqr(Q) * log(Q/q));
   if ((m_mode & BP::gamma_cut) && (val<0.)) return 0.;
@@ -119,8 +109,6 @@ double Gamma_Lambda_Base::Gamma(double q, double Q) {
 }
 
 double Gamma_Lambda_Base::IntGamma(double Q0, double Q) {
-//   std::cout<<" IntGamma "<<m_mode<<" called "<<std::endl;
-
   double xi0 = log(Q0/m_lambda);
   double xi1 = log(Q/m_lambda);
   double fac = 4.*m_cc/BETA0;
@@ -132,7 +120,6 @@ double Gamma_Lambda_Base::IntGamma(double Q0, double Q) {
   
   if (xi0<=0.) {
     part1=1.e3;
-    std::cout<<" WARNING: Q0 smaller than Lambda! "<<std::endl;
   }  
   return part1+part2;
 }

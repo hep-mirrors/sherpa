@@ -27,34 +27,28 @@ int IO_Handler::SetFileName(std::string _name) {
     m_file.close();
   }
   m_filename=_name;
-  msg.Tracking()<<" opened file "<<m_filename<<endl;
   m_file.open(m_filename.c_str(),ios::out);
 
   if (!(m_file.good())) {
-    msg.Tracking()<<" ERROR: opening "<<m_filename<<endl;
+    msg.Out()<<" ERROR: opening "<<m_filename<<endl;
     return 0;
   }
   m_file.precision(15);
-  msg.Tracking()<<" done "<<endl;
   return 1;
 }
     
 // set input filename
 int IO_Handler::SetFileNameRO(string _name) {
   if (!(m_filename==std::string(""))) {
-    msg.Tracking()<<"before closing"<<endl;
-    msg.Tracking()<<m_file;
     m_file.close();
   }
   m_filename=_name;
-  msg.Tracking()<<" opened file "<<m_filename<<endl;
   m_file.open(m_filename.c_str(),ios::in);
 
   if (!(m_file.good())) {
-    msg.Error()<<" ERROR: opening "<<m_filename<<endl;
+    msg.Error()<<"ERROR: opening "<<m_filename<<endl;
     return 0;
   }
-  msg.Tracking()<<" done "<<endl;
   return 1;
 }
 
@@ -93,7 +87,6 @@ IO_Handler & IO_Handler::operator<<(const Type & value) {
 
 template <class Type> 
 void IO_Handler::MatrixOutput(const std::string name,Type ** const  values,const int nx, const int ny) {
-  msg.Tracking()<<" output "<<name<<endl;
   if (name!=std::string("")) 
     m_file<<" "<<name<<" = "<<endl;
 
@@ -153,12 +146,10 @@ Type * IO_Handler::ArrayInput(const std::string name,int nx) {
     int beg = m_buffer.find("[");
     int end = m_buffer.find("]");
     if (beg==-1 || end==-1) {
-      msg.Tracking()<<" Error size not found "<<endl;
       nx=0;
     }
     else {
       string ssize = m_buffer.substr(beg+1,end-1);
-      msg.Tracking()<<" ssize="<<ssize<<endl;
       str<<ssize;
       str>>nx;
     }
@@ -258,8 +249,7 @@ void IO_Handler::Output(const std::string name,const Type & value) {
 
 template <class Type> 
 Type IO_Handler::Input(const std::string name) {
- if (name!=std::string("")) 
-   msg.Tracking()<<" "<<name<<" =  ?????????"<<endl;
+  if (name!=std::string("")) {}
  else {
   MyStrStream str; 
   do {
@@ -292,10 +282,8 @@ template <class Type>
 int IO_Handler::ValueInput(std::string name, Type & value) {
   if (m_vars.size()==0) {
     // create variable map
-    msg.Tracking()<<m_file.gcount()<<endl;
     for (int i=0;m_file;++i) {       
       getline(m_file,m_buffer);
-      msg.Tracking()<<i<<"## "<<m_buffer<<" ##"<<endl;
       FillIn(m_buffer);
     }
   } 

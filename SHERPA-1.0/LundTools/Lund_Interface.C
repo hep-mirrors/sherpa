@@ -143,7 +143,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
     pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
   }
   // replacement ends here
-  if (ATOOLS::msg.LevelIsDebugging()) ListLundParameters();
+  //if (ATOOLS::msg.LevelIsTracking()) ListLundParameters();
   if (!sherpa) {
     p_hepevt = new ATOOLS::HepEvt_Interface(ATOOLS::gtp::Pythia);
     if (pypars.mstp[105-1]==0) p_hepevt->SetHadronized(false);
@@ -182,7 +182,7 @@ Lund_Interface::~Lund_Interface()
 bool Lund_Interface::ConvertParticles(std::map<int,ATOOLS::Particle*> &converted)
 {
   for (int i=0;i<hepevt.nhep;++i) {
-    if (ATOOLS::msg.LevelIsDebugging()) {
+    if (ATOOLS::msg.LevelIsTracking()) {
       ATOOLS::msg.Debugging()<<i<<" "<<hepevt.isthep[i]<<" "<<hepevt.idhep[i]<<" "
 			     <<hepevt.jmohep[i][0]<<" "
 			     <<hepevt.jdahep[i][0]<<" "<<hepevt.jdahep[i][1]<<" "
@@ -272,7 +272,7 @@ bool Lund_Interface::DeleteObsolete(std::map<int,ATOOLS::Particle*> &converted)
 
 bool Lund_Interface::ConvertEvent(ATOOLS::Blob_List *bloblist)
 {
-  if (ATOOLS::msg.Level()>2) pylist(1);
+  if (ATOOLS::msg.LevelIsDebugging()) pylist(1);
   bool success=true;
   std::map<int,ATOOLS::Particle*> converted;
   bloblist->clear();
@@ -319,8 +319,6 @@ bool Lund_Interface::Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,
   pydat1.mstu[70-1]=2;
   pydat1.mstu[72-1]=hepevt.nhep;
   if (ATOOLS::msg.LevelIsDebugging()) {
-    ATOOLS::msg.Tracking()<<"Lund_Interface::Hadronize(..): "
-			  <<"Passed hadronisation (Pythia 6.214)."<<std::endl;
     pylist(dummy);
     ATOOLS::msg.Out()<<std::endl<<std::endl;
   }
@@ -443,7 +441,7 @@ void Lund_Interface::Error(const int error)
   else {
     ATOOLS::msg.Error()<<"Lund_Interface::Error("<<error<<") "<<ATOOLS::om::red
 		       <<"Pythia calls PYERRM("<<error<<")."<<ATOOLS::om::reset<<std::endl;
-    if (ATOOLS::msg.LevelIsTracking()) {
+    if (ATOOLS::msg.LevelIsDebugging()) {
       ATOOLS::msg.Tracking()<<*s_bloblist<<std::endl;
       pylist(2);
     }
@@ -508,6 +506,5 @@ bool Lund_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
     p_hepevt->SetVhep(p_vhep);
     if (p_hepevt->HepEvt2Sherpa(blobs)) { okay = true; break; }
   }
-  if (ATOOLS::msg.LevelIsTracking()) pylist(2);
   return okay;
 } 

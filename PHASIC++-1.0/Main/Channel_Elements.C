@@ -273,7 +273,6 @@ double Channel_Elements::MassivePropMomenta(double mass,double width,int lim,
     double ymax=atan((smin-mass2)/mw);
     double ymin=atan((smax-mass2)/mw);
     s = mass2+mw*tan(ymin + ran*(ymax-ymin));
-//     std::cout<<" smin/max "<<smin<<" "<<smax<<" "<<mass<<" "<<width<<" "<<ran<<" => "<<s<<std::endl;
   }
   if (!(s>0) && !(s<0) && s!=0) 
     ATOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
