@@ -809,6 +809,44 @@ void Interaction_Model_sQuark_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
   Flavour flavPhoton(kf::photon);
   Kabbala kcpl0,kcpl1;
   
+  for (short int i=51;i<67;i++) {
+    if (i==57) i=61;
+    Flavour flav = Flavour(kf::code(i));
+       if (flav.IsOn() && flavPhoton.IsOn()) {
+	// P - U/D - U/D - P  
+	 vertex[vanz].in[0] = flavPhoton;
+	 vertex[vanz].in[1] = flav.Bar();
+	 vertex[vanz].in[2] = flav;
+	 vertex[vanz].in[3] = flavPhoton;
+	 
+	 vertex[vanz].nleg     = 4;
+	 
+	 kcpl0 = M_I*flav.Charge()*flav.Charge()*num_2*g1*g1;;
+	 kcpl1 = kcpl0;
+	 
+	 vertex[vanz].cpl[0]  = kcpl0.Value();
+	 vertex[vanz].cpl[1]  = kcpl1.Value();
+	 vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	 vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	 
+	 vertex[vanz].ncf   = 1;
+	 vertex[vanz].Color = new Color_Function; 
+	 
+	 vertex[vanz].Color->type       = cf::D;     
+	 vertex[vanz].Color->SetParticleArg(1,2);     
+	 vertex[vanz].Color->SetStringArg('1','2');     
+	 
+	 vertex[vanz].nlf     = 1;
+	 vertex[vanz].Lorentz = new Lorentz_Function; 
+	 
+	 vertex[vanz].Lorentz->type = lf::VVSS;     
+	 vertex[vanz].Lorentz->SetParticleArg(0,3);     
+	 
+	 vertex[vanz].on      = 1;
+	 vanz++;
+       }
+  }
+  
   // W - D - U - P/Z  
   for (short int i=51;i<57;i++) {
     Flavour flav1 = Flavour(kf::code(i));
