@@ -6,6 +6,7 @@
 #include "Initial_State_Shower.H"
 #include "Final_State_Shower.H"
 #include "Running_AlphaS.H"
+#include "Amegic.H"
 #include <iomanip>
 
 using namespace SHERPA;
@@ -123,10 +124,14 @@ Cluster_Partons::~Cluster_Partons()
 }
 
 bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
+//   std::cout<<" cluster configuration "<<std::endl;
+//   std::cout<<*_blob<<std::endl;
   p_blob          = _blob;
   int nin         = p_me->NIn();
   int nout        = p_me->NOut();
   int nampl       = p_me->NumberOfDiagrams();
+//   std::cout<<" nin,nout,nampl="<<nin<<", "<<nout<<", "<<nampl<<std::endl;
+
   int    nlegs    = nin + nout;
   Leg ** legs     = 0;
   bool reuse      = 0;
@@ -152,6 +157,8 @@ bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
       }
     }
   }  
+//   std::cout<<" done "<<endl;
+
 
   p_ct = 0;
   // if no combination table exist, create it
@@ -233,7 +240,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     ++njet;
   }
 
-  std::cout<<ct_test<<std::endl;
+  //  std::cout<<ct_test<<std::endl;
 
   m_weight      = 1.;
 
@@ -342,7 +349,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     if (count_startscale==2) {
       for (int l=j+1; l<nlegs; ++l ) {
 	if (last_q[l]==qmax) {
-	  std::cout<<" manip: "<<l<<std::endl;
+// 	  std::cout<<" manip: "<<l<<std::endl;
 	  last_q[l]=facnlly*sqrt(asscale);
 	}
       }      
@@ -491,8 +498,8 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
 
     //    m_asscale = Min(dabs(t),dabs(u));
  
-    std::cout<<" ms="<<m_scale<<endl;
-    std::cout<<" as="<<m_asscale<<endl;
+//     std::cout<<" ms="<<m_scale<<endl;
+//     std::cout<<" as="<<m_asscale<<endl;
     
   }
   
@@ -635,6 +642,7 @@ void Cluster_Partons::FillDecayTree(Tree * fin_tree)
 
 void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
 {
+//   std::cout<<"FillTrees"<<endl;
   if ((!ini_trees && m_isrshoweron) || (!fin_tree && m_fsrshoweron)) {
     msg.Error()<<"ERROR in Cluster_Partons::FillTrees: no trees! no shower to be performed! "<<std::endl;
     return;
@@ -658,6 +666,8 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     n[0]=1;
     n[1]=0;
   }
+
+  CreateFlavourMap();
 
   std::vector<Knot *> knots;
   std::vector<Knot *> ini_knots; // production points
@@ -789,17 +799,20 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     p_blob->OutParticle(j-2)->SetFlow(k, knots[j]->part->GetFlow(k));
   }
 
-  
-  std::cout<<" in Cluster_Partons::FillTrees("<<m_isrshoweron<<","
-	   <<m_fsrshoweron<<")"<<endl;
-  if (ini_trees) {
-    std::cout<<"initree[0]:"<<endl;
-    std::cout<<ini_trees[0];
-    std::cout<<"initree[1]:"<<endl;
-    std::cout<<ini_trees[1];
+
+  //  std::cout<<" done "<<endl;
+  if (rpa.gen.Debugging()) {
+    std::cout<<" in Cluster_Partons::FillTrees("<<m_isrshoweron<<","
+	     <<m_fsrshoweron<<")"<<endl;
+    if (ini_trees) {
+      std::cout<<"initree[0]:"<<endl;
+      std::cout<<ini_trees[0];
+      std::cout<<"initree[1]:"<<endl;
+      std::cout<<ini_trees[1];
+    }
+    std::cout<<"fin_tree:"<<endl;
+    std::cout<<fin_tree<<"****************************************"<<endl;
   }
-  std::cout<<"fin_tree:"<<endl;
-  std::cout<<fin_tree<<"****************************************"<<endl;
   
 }
 
@@ -809,6 +822,11 @@ Knot * Cluster_Partons::Point2Knot(Tree * tree, const Leg & po,
 				   const Vec4D & mom, char info='M') 
 {
   Flavour flav(po->fl);
+  // check in map
+  Flavour_Map::const_iterator cit=m_flmap.find(flav);
+  if (cit!=m_flmap.end()) flav=cit->second;
+
+
   if (po.ExtraAnti() == -1) flav = flav.Bar();
 
   Knot * k   = tree->NewKnot();
@@ -1045,4 +1063,42 @@ void Cluster_Partons::DetermineColourAngles(const std::vector<APACIC::Knot *> & 
     knots[i]->part->SetMomentum(moms[i]);
   }
   delete [] moms;
+}
+
+
+void Cluster_Partons::CreateFlavourMap() {
+  if (p_me->GetAmegic()->GetProcess()!=p_me->GetAmegic()->GetProcess()->Partner()) {
+    int n[2]={0,1};
+    if (p_me->InSwaped()) {
+      n[0]=1;
+      n[1]=0;
+    }
+
+    Process_Base * proc=p_me->GetAmegic()->GetProcess();
+    Process_Base * partner=proc->Partner();
+    Flavour * flavs=proc->Flavs();
+    Flavour * partner_flavs=partner->Flavs();
+
+    // create new map
+//     std::cout<<" create new flmap "<<std::endl;
+    m_flmap.clear();
+    for (int i=0;i<proc->Nin();++i) {
+      if (partner_flavs[i]!=flavs[n[i]]) {
+// 	std::cout<<partner_flavs[i]<<" -> "<<flavs[n[i]]<<std::endl;
+	m_flmap[partner_flavs[i]]=flavs[n[i]];
+      }
+    }
+    for (int i=proc->Nin();i<proc->Nin()+proc->Nout();++i) {
+      if (partner_flavs[i]!=flavs[i]) {
+// 	std::cout<<partner_flavs[i]<<" -> "<<flavs[i]<<std::endl;
+	m_flmap[partner_flavs[i]]=flavs[i];
+      }
+    }
+
+  }
+  else {
+    // delete old map
+//     std::cout<<" clear flmap "<<std::endl;
+    m_flmap.clear();
+  }
 }

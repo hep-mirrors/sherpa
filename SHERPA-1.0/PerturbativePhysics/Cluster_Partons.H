@@ -14,11 +14,15 @@
 
 #include "Blob.H"
 
+#include <map>
+
 namespace MODEL {
   class Running_AlphaS;
 }
 
 namespace SHERPA {
+
+  typedef std::map<ATOOLS::Flavour,ATOOLS::Flavour> Flavour_Map;
   class Matrix_Element_Handler;
 
   class Cluster_Partons {
@@ -52,6 +56,7 @@ namespace SHERPA {
     double  * p_weight_sum;
     double  * p_weight_sum_sqr;
 
+    Flavour_Map m_flmap;
 
     bool            FillLegs(Leg *, AMEGIC::Point *, int &, int);
     APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char);
@@ -61,6 +66,8 @@ namespace SHERPA {
     double  ColourAngle(const std::vector<APACIC::Knot *> &, const int);
     void    EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,int);
     void    DetermineColourAngles(const std::vector<APACIC::Knot *> &);
+
+    void    CreateFlavourMap();
 
     void    WriteOutSudakovWeights();
   public :
