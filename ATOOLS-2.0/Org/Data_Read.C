@@ -3,6 +3,7 @@
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Type.H"
+#include <iomanip>
 
 using namespace ATOOLS;
 using namespace std;
@@ -12,11 +13,10 @@ Parameter_Map ATOOLS::Data_Read::s_commandlineparameters;
 template <class Type> 
 const Type Data_Read::ReturnData(const std::string &name,const Type type) 
 {
-  ATOOLS::msg.LogFile()<<name<<" \t= \t"<<type<<"\t! Type<"
-		       <<ATOOLS::Type::GetType(type)<<"> "<<std::endl;
+  ATOOLS::msg.LogFile()<<name<<" \t= \t"<<type<<"! "
+		       <<"Type<"<<ATOOLS::Type::GetType(type)<<"> "<<std::endl;
   return type;
 }
-
 
 void Data_Read::SetValue(std::string name, std::string value) {
   Shorten(name);
@@ -113,8 +113,6 @@ void Data_Read::AddCommandLine()
   }
 }
 
-
-
 // definition  (specialisation), explicit instanciation
 template <> std::string Data_Read::GetValue<std::string>(std::string name) 
 {
@@ -126,7 +124,6 @@ template <> std::string Data_Read::GetValue<std::string>(std::string name)
   if (value.length()==0) return ReturnData(name,NotDefined<std::string>());
   return ReturnData(name,value);
 }
-
 
 template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   Shorten(name);
@@ -146,7 +143,7 @@ template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
 template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<Beam_Type::code>();
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Beam_Type::code>());
   std::string value = m_parameters[name];
   
   if (value==std::string("Monochromatic")) return ReturnData(name,Beam_Type::Monochromatic); 
@@ -170,9 +167,6 @@ template <> Beam_Generator::code Data_Read::GetValue<Beam_Generator::code>(std::
   return ReturnData(name,NotDefined<Beam_Generator::code>());
 }
 
-
-
-
 template <> Beam_Shape::code Data_Read::GetValue<Beam_Shape::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=m_parameters.find(name);
@@ -185,77 +179,71 @@ template <> Beam_Shape::code Data_Read::GetValue<Beam_Shape::code>(std::string n
   return ReturnData(name,NotDefined<Beam_Shape::code>());
 }
 
-
-
 template <> ISR_Type::code Data_Read::GetValue<ISR_Type::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<ISR_Type::code>();
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<ISR_Type::code>());
 
   std::string value = m_parameters[name];
   
-  if (value==std::string("No"))                   return ISR_Type::No;    
-  if (value==std::string("simple Struct"))        return ISR_Type::Simple_Struc;    
-  if (value==std::string("extended Struct"))      return ISR_Type::Extended_Struc;    
-  if (value==std::string("Projection"))           return ISR_Type::PA;    
-  if (value==std::string("mod. Proj."))           return ISR_Type::MPA;    
-  if (value==std::string("Extrapolation"))        return ISR_Type::EA;    
-  if (value==std::string("KoralZ"))               return ISR_Type::KoralZ;    
-  if (value==std::string("Pythia"))               return ISR_Type::Pythia;   
-  if (value==std::string("KKMC"))                 return ISR_Type::KKMC;    
+  if (value==std::string("No"))              return ReturnData(name,ISR_Type::No);    
+  if (value==std::string("simple Struct"))   return ReturnData(name,ISR_Type::Simple_Struc);    
+  if (value==std::string("extended Struct")) return ReturnData(name,ISR_Type::Extended_Struc);    
+  if (value==std::string("Projection"))      return ReturnData(name,ISR_Type::PA);    
+  if (value==std::string("mod. Proj."))      return ReturnData(name,ISR_Type::MPA);    
+  if (value==std::string("Extrapolation"))   return ReturnData(name,ISR_Type::EA);    
+  if (value==std::string("KoralZ"))          return ReturnData(name,ISR_Type::KoralZ);    
+  if (value==std::string("Pythia"))          return ReturnData(name,ISR_Type::Pythia);   
+  if (value==std::string("KKMC"))            return ReturnData(name,ISR_Type::KKMC);    
   
   msg.Error()<<"Error in Data_Read::GetValue<ISR_Type::code>:"<<endl
 	     <<"   Unknown ISR type  "<<name<<" = "<<value<<" !!!"<<endl;
-  return NotDefined<ISR_Type::code>();
+  return ReturnData(name,NotDefined<ISR_Type::code>());
 }
-
 
 template <> String_Type::code Data_Read::GetValue<String_Type::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<String_Type::code>();
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<String_Type::code>());
 
   std::string value = m_parameters[name];
 
-  if (value==std::string("NoString")) return String_Type::NoString;    
-  if (value==std::string("String"))   return String_Type::String;    
-  if (value==std::string("Library"))  return String_Type::Library;    
+  if (value==std::string("NoString")) return ReturnData(name,String_Type::NoString);    
+  if (value==std::string("String"))   return ReturnData(name,String_Type::String);    
+  if (value==std::string("Library"))  return ReturnData(name,String_Type::Library);    
 
   msg.Error()<<"Error in Data_Read::GetValue<String_Type::code>:"<<endl
 	     <<"   Unknown String_Type  "<<name<<" = "<<value<<" !!!"<<endl;
-  return NotDefined<String_Type::code>();
+  return ReturnData(name,NotDefined<String_Type::code>());
 }
 
-// definition (specialisation), explicit instanciation
 template <> Model_Type::code Data_Read::GetValue<Model_Type::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<Model_Type::code>();
-
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Model_Type::code>());
   std::string value = m_parameters[name];
-  if (value==std::string("pure_QCD")) return Model_Type::pure_QCD;
-  if (value==std::string("QCD"))      return Model_Type::QCD;
-  if (value==std::string("pure_EW"))  return Model_Type::pure_EW;
-  if (value==std::string("SM"))       return Model_Type::SM;
-  if (value==std::string("MSSM"))     return Model_Type::MSSM;
-  if (value==std::string("THDM"))     return Model_Type::THDM;
-  if (value==std::string("ADD"))      return Model_Type::ADD;
-  if (value==std::string("SMHL"))     return Model_Type::SMHL;
-
+  if (value==std::string("pure_QCD")) return ReturnData(name,Model_Type::pure_QCD);
+  if (value==std::string("QCD"))      return ReturnData(name,Model_Type::QCD);
+  if (value==std::string("pure_EW"))  return ReturnData(name,Model_Type::pure_EW);
+  if (value==std::string("SM"))       return ReturnData(name,Model_Type::SM);
+  if (value==std::string("MSSM"))     return ReturnData(name,Model_Type::MSSM);
+  if (value==std::string("THDM"))     return ReturnData(name,Model_Type::THDM);
+  if (value==std::string("ADD"))      return ReturnData(name,Model_Type::ADD);
+  if (value==std::string("SMHL"))     return ReturnData(name,Model_Type::SMHL);
   msg.Error()<<"Error in Data_Read::GetValue<Model_Type::code>:"<<endl
 	     <<"   Unknown Model "<<name<<" = "<<value<<" !!!"<<endl;
-  return NotDefined<Model_Type::code>();
+  return ReturnData(name,NotDefined<Model_Type::code>());
 }
 
 template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   Shorten(name);
   
   Parameter_Map::const_iterator cit=m_parameters.find(name);
-  if (cit==m_parameters.end()) return  NotDefined<Flavour>();
+  if (cit==m_parameters.end()) return ReturnData(name,NotDefined<Flavour>());
   if (!kf_table.IsInitialised()) {
     msg.Error()<<"Warning in Flavour Data_Read::GetValue."<<endl
 	       <<"   kf table not initialized yet. Return undefined flavour."<<endl;
-    return NotDefined<Flavour>();
+    return ReturnData(name,NotDefined<Flavour>());
   }
 
   std::string value = m_parameters[name];
@@ -269,7 +257,7 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   
   kf::code kfc;
   kfc = kf_table.FromString(value);
-  if (kfc!=kf::none) return Flavour(kfc);
+  if (kfc!=kf::none) return ReturnData(name,Flavour(kfc));
   else {
     hit = value.find(std::string("+"));
     if (hit!=-1) {
@@ -286,13 +274,13 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   }
   kfc = kf_table.FromString(value);
   if (kfc!=kf::none) {
-    if (anti) return (Flavour(kfc).Bar());
+    if (anti) return ReturnData(name,(Flavour(kfc).Bar()));
     return Flavour(kfc);
   }
   int kfci = GetValue<int>(name);
   Flavour fl = Flavour(kf::code(abs(kfci)));
   if (kfci<0) fl = fl.Bar();
-  return fl;
+  return ReturnData(name,fl);
 }
  
 int Data_Read::Crossfoot(string name) {
