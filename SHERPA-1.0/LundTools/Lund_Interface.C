@@ -78,12 +78,6 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
   reader->AddIgnore(")");
   reader->AddIgnore(",");
   if (!sherpa) {
-    sherpa=false;
-    if (!reader->ReadFromFile(frame,"FRAME")) frame=std::string("CMS");
-    if (!reader->ReadFromFile(beam[0],"BEAM")) beam[0]=std::string("P+");
-    if (!reader->ReadFromFile(beam[1],"TARGET")) beam[1]=std::string("PBAR-");
-    if (!reader->ReadFromFile(win,"WIN")) win=1800.0;
-    ATOOLS::rpa.gen.SetEcms(win);
     if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
   }
   else {
