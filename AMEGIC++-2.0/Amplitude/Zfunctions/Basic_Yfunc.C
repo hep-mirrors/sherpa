@@ -16,22 +16,6 @@ Kabbala Basic_Yfunc::Y(const int z)
 				 coupl[2*z],coupl[2*z+1]));
 }
 
-template <>
-Complex  Basic_Yfunc::YT<+1,+1>(const int t1,const int t2,const Complex& cR,const Complex& cL)
-{ return BS->Mu(t1)*cR*BS->Eta(t2)+BS->Mu(t2)*cL*BS->Eta(t1); }
-
-template <>
-Complex  Basic_Yfunc::YT<-1,-1>(const int t1,const int t2,const Complex& cR,const Complex& cL)
-{ return BS->Mu(t1)*cL*BS->Eta(t2)+BS->Mu(t2)*cR*BS->Eta(t1); }
-
-template <>
-Complex  Basic_Yfunc::YT<+1,-1>(const int t1,const int t2,const Complex& cR,const Complex& cL)
-{ return cL*BS->S0d(t1,t2); }
-
-template <>
-Complex  Basic_Yfunc::YT<-1,+1>(const int t1,const int t2,const Complex& cR,const Complex& cL)
-{ return cR*BS->S1d(t1,t2); }
-
 Complex Basic_Yfunc::Ycalc(const int t1,const int sign1,
 			   const int t2,const int sign2,
 			   const Complex& cR,const Complex& cL)

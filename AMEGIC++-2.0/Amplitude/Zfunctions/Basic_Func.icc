@@ -1,4 +1,21 @@
 namespace AMEGIC {
+
+  template <>
+  inline Complex Basic_Yfunc::YT<+1,+1>(const int t1,const int t2,const Complex& cR,const Complex& cL)
+  { return BS->Mu(t1)*cR*BS->Eta(t2)+BS->Mu(t2)*cL*BS->Eta(t1); }
+
+  template <>
+  inline Complex Basic_Yfunc::YT<-1,-1>(const int t1,const int t2,const Complex& cR,const Complex& cL)
+  { return BS->Mu(t1)*cL*BS->Eta(t2)+BS->Mu(t2)*cR*BS->Eta(t1); }
+
+  template <>
+  inline Complex Basic_Yfunc::YT<+1,-1>(const int t1,const int t2,const Complex& cR,const Complex& cL)
+  { return cL*BS->S0d(t1,t2); }
+
+  template <>
+  inline Complex Basic_Yfunc::YT<-1,+1>(const int t1,const int t2,const Complex& cR,const Complex& cL)
+  { return cR*BS->S1d(t1,t2); }
+
   template <>
   inline Complex Basic_Xfunc::XT<+1,+1>(const int t1,const int t2,const int t3,const Complex& cR,const Complex& cL)
   {   return cL*BS->Eta(t2)*BS->Eta(t2)*BS->Mu(t1)*BS->Mu(t3)+
