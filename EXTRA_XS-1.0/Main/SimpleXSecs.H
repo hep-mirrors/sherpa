@@ -33,9 +33,10 @@ namespace EXTRAXS {
     bool CalculateTotalXSec();
 
     void        SelectOne();
-    bool        UnweightedEvent();
-    bool        WeightedEvent() {}
-    bool        SameEvent()     {}
+    bool        UnweightedEvent(int mode=0);
+    double      WeightedEvent(int mode=0);
+    bool        SameEvent()    ;
+    double      SameWeightedEvent();
 
     std::string          ProcessName() { return p_selected->Selected()->Name();    }
     int                  Nin()         { return p_selected->Selected()->Nin();     }

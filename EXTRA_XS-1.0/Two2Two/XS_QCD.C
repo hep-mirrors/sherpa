@@ -174,6 +174,7 @@ double XS_q1qbar1_gg::operator()(double s,double t,double u) {
 bool XS_q1qbar1_gg::SetColours(double s, double t, double u) {
   Mt    = u/t;
   Mu    = t/u;
+  // *AS* set to pt2 in as set in BASE .by commenting out the next line  
   m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
   return SetColours();
 }

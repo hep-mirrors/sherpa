@@ -138,7 +138,7 @@ void  SimpleXSecs::SelectOne() {
   }
 }
 
-bool SimpleXSecs::UnweightedEvent()
+bool SimpleXSecs::UnweightedEvent(int mode)
 {
   SelectOne();
   if (p_selected->OneEvent()) {
@@ -157,6 +157,28 @@ bool SimpleXSecs::UnweightedEvent()
     return 1;
   }
   return 0;
+}
+
+double SimpleXSecs::WeightedEvent(int mode)
+{
+  SelectOne();
+  double weight=p_selected->OneEvent();
+  if (weight>0.) {
+    msg.Debugging()<<"OneEvent for "<<p_selected->Name()<<" successful !"<<endl
+		   <<"    Selected "<<p_selected->Selected()->Name()<<" as subprocess."<<endl;
+    for (int j = 0;j<p_selected->Selected()->Nin(); j++) {
+      msg.Debugging()<<p_selected->Selected()->Flavs()[j]<<" : "
+		     <<p_selected->Selected()->Momenta()[j]<<endl;
+    }
+    msg.Debugging()<<"                      -> "<<endl;
+    for (int j = 0;j<p_selected->Selected()->Nout(); j++) {
+      msg.Debugging()<<p_selected->Selected()->Flavs()[j+p_selected->Selected()->Nin()]<<" : "
+		     <<p_selected->Selected()->Momenta()[j+p_selected->Selected()->Nin()]<<endl;
+    }
+    msg.Debugging()<<endl;
+    return weight;
+  }
+  return 0.;
 }
 
 

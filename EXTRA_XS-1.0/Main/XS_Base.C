@@ -140,6 +140,8 @@ bool XS_Base::SetColours(AMATOOLS::Vec4D * p) {
   m_s = (p[0]+p[1]).Abs2();
   m_t = (p[0]-p[2]).Abs2();
   m_u = (p[0]-p[3]).Abs2();
+  // scale can be overwritten in SetColors(s,t,u)
+  m_scale = sqr(p[2][1])+sqr(p[2][2]);  
   return SetColours(m_s,m_t,m_u);
 }
 
