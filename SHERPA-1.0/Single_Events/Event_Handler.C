@@ -128,7 +128,6 @@ bool Event_Handler::GenerateEvent(int mode)
 	ATOOLS::msg.Tracking()<<ATOOLS::om::blue<<"Event_Handler::GenerateEvent("<<mode<<"): "<<ATOOLS::om::reset
 			      <<"Event phase "<<ATOOLS::om::bold<<(*pit)->Name()<<ATOOLS::om::reset
 			      <<" yields "<<ATOOLS::om::bold<<result<<ATOOLS::om::reset<<std::endl;
-	std::cout<<m_blobs<<std::endl;
  	if (result) flag = 1;
       }
     }
