@@ -148,9 +148,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     return okay;
   }
   else {
-    m_n=0;
-    m_last=m_lastlumi=m_lastdxs=0.0;
-    m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
+    Reset();
     if (p_isrhandler) {
       if (m_nin==2) {
 	if (p_flavours[0].Mass()!=p_isrhandler->Flav(0).Mass() ||
