@@ -22,6 +22,8 @@ typedef std::map<std::string,std::string> Decls;
     int         nin,nout;
     Point     * plist;
     int         tcount;
+    String_List m_idc;
+    std::string m_idstr;
 
     void        Step0(int,Point *,int&,std::ofstream&,ATOOLS::Flavour*,int&);
     bool        StepS(int,Point *,int&,std::ofstream&,ATOOLS::Flavour*,int&);
@@ -33,7 +35,6 @@ typedef std::map<std::string,std::string> Decls;
     std::string LinkedMasses(Point *);
     void        SetProps(Point *,Point **,Point **,int&);
     void        CalcSmin(int,char*,std::string,std::ofstream&,Point*);
-    void        CalcSmin2(Point*,std::string&);
     void        CalcTSmin(int,String_List&,std::ofstream&);
     void        IdentifyProps(Point *);
     void        BackLinks(Point *,Point * &);
@@ -42,13 +43,14 @@ typedef std::map<std::string,std::string> Decls;
     std::string Order(std::string);
     std::string IString(int);
     void        AddToVariables(int,const std::string&,const std::string&,const int&,std::ofstream&); 
-    void        ClearDeclarations() { declarations.clear(); }  
+    void        ClearDeclarations() { declarations.clear(); } 
   public:
     Channel_Generator(int,int,ATOOLS::Flavour *,Point *);
     ~Channel_Generator();
     int         MakeChannel(int&,int,std::string&,std::string&);
     Point     * GetPointlist()             { return plist; }
     void        SetName(std::string _name) { name = _name; }
+    std::string CreateChannelID(int);
   };
       //! The usual identifiers, number of incoming and outgoing legs.
     /*!

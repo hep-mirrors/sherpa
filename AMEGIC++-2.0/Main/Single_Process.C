@@ -52,7 +52,6 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_pslibname = m_libname;
 
   PolarizationNorm();
-  InitCuts();
   if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
   else {
     if (m_nout>2)
@@ -715,8 +714,8 @@ bool Single_Process::FoundMappingFile(std::string & MEname, std::string & PSname
   ------------------------------------------------------------------------------*/
 
 
-bool Single_Process::SetUpIntegrator() {  
-  p_sel->BuildCuts(p_cuts);
+bool Single_Process::SetUpIntegrator() 
+{  
   if (m_nin==2) {
     if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
 	 (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
@@ -734,7 +733,7 @@ bool Single_Process::CreateChannelLibrary()
   bool newch  = 0;
   if (m_nin>1)  newch = p_psgen->Construct(p_ps->FSRIntegrator(),m_ptypename,m_pslibname,p_fl,this); 
 
-  if (newch) {
+  if (newch>0) {
     msg.Error()<<p_ps->NumberOfFSRIntegrators()<<" new Channels produced for "<<m_pslibname<<" ! "<<endl
 	       <<"After program termination please enter \"make install\" and rerun !"<<endl;
     return 0;
@@ -760,12 +759,10 @@ void Single_Process::Minimize()
 
   if (p_moms)     { delete [] p_moms;  p_moms     = 0; }
   if (p_sel)      { delete p_sel;      p_sel      = 0; }
-  if (p_cuts)     { delete p_cuts;     p_cuts     = 0; }
   if (p_ps)       { delete p_ps;       p_ps       = 0; }
 }
 
 void Single_Process::Empty() {
-  if (p_cuts)        { delete p_cuts; p_cuts = 0; }
   if (p_ps)          { delete p_ps; p_ps = 0; } 
   if (p_partner != this) {
     return;

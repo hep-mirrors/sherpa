@@ -55,7 +55,6 @@ namespace AMEGIC {
 
     BEAM::Beam_Spectra_Handler     * p_beam;
     PDF::ISR_Handler               * p_isr;
-    ATOOLS::Cut_Data               * p_cuts;
     ATOOLS::Selector_Base          * p_sel;
 
     AMEGIC::Process_Base           * p_selected;
@@ -95,8 +94,6 @@ namespace AMEGIC {
     virtual bool   SetUpIntegrator()                                                 =0; 
     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
     			       PHASIC::channelinfos &,PHASIC::channelinfos &);
-    virtual void   UpdateCuts(double,double);
-    virtual void   InitCuts();
     virtual double Result()   {return 0.;}
     /*------------------------------------------------------------------------------
 
@@ -121,7 +118,6 @@ namespace AMEGIC {
 
     virtual void             SetBeam(BEAM::Beam_Spectra_Handler *);
     virtual void             SetISR(PDF::ISR_Handler *);
-    virtual void             SetCuts(ATOOLS::Cut_Data *);
     virtual void             SetSelector(ATOOLS::Selector_Base *);
     virtual void             SetMomenta(ATOOLS::Vec4D *);
 
@@ -190,7 +186,6 @@ namespace AMEGIC {
 
     virtual BEAM::Beam_Spectra_Handler    * Beam();
     virtual PDF::ISR_Handler              * ISR();
-    virtual ATOOLS::Cut_Data              * Cuts();
     virtual ATOOLS::Selector_Base         * Selector();
     virtual Phase_Space_Generator         * PSGenerator();
     virtual void                            ISRChannels(int,PHASIC::Channel_Info & );

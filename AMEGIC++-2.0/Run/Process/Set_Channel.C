@@ -5,7 +5,7 @@ using namespace PHASIC;
 using namespace std;
 
 Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flavour* fl,
-						   int chn,string& pID)
+						   string& pID)
 {
   return 0;
 }

@@ -26,7 +26,7 @@ using namespace std;
 
 Process_Base::Process_Base(): 
   m_gen_str(3),p_b(0),m_nvec(0),m_nin(0),m_nout(0),p_fl(0),p_flin(0),p_flout(0),
-  p_pl(0),p_plin(0),p_plout(0),p_moms(0),p_ps(0),p_beam(0),p_isr(0),p_cuts(0),
+  p_pl(0),p_plin(0),p_plout(0),p_moms(0),p_ps(0),p_beam(0),p_isr(0), 
   p_sel(0),p_selected(0),
   m_rfactor(1.), m_swaped(0), p_psgen(0)
 {
@@ -54,7 +54,7 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   int _nex,ATOOLS::Flavour * _ex_fl) :
   m_nin(_nin), m_nout(_nout), m_nvec(_nin+_nout), m_nex(_nex),m_gen_str(_gen_str),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
-  p_isr(_isr), p_beam(_beam), p_cuts(NULL), 
+  p_isr(_isr), p_beam(_beam), 
   p_selected(this), p_ex_fl(_ex_fl),p_moms(NULL), 
   m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),m_asscale(_scale),
   m_facscale(_scale),m_n(0), m_totalxs(0.), m_totalerr(0.), m_totalsum(0.), m_totalsumsqr(0.), m_rfactor(1.),
@@ -101,7 +101,6 @@ Process_Base::~Process_Base() {
   if (p_plout)    { delete [] p_plout; p_plout    = 0; }
   if (p_moms)     { delete [] p_moms;  p_moms     = 0; }
   if (p_sel)      { delete p_sel;      p_sel      = 0; }
-  if (p_cuts)     { delete p_cuts;     p_cuts     = 0; }
   if (p_ps)       { delete p_ps;       p_ps       = 0; }
 }
 
@@ -446,9 +445,8 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 	  if ( (chname!=string("Rambo")) && (chname!=string("RamboKK")) 
 	       && (chname!=string("Sarge")) && (chname!=string("Decay2-Channel 1")) ) { 
 	    next   = chname.find(string("--"));
-	    chname = chname.substr(0,next);
-	    sc     = (*_proc)[i]->PSGenerator()->SetChannel(m_nin,m_nout,p_fl,
-							    ((*_proc)[i]->FSRIntegrator(j))->ChNumber(),chname);
+	    chname = chname.substr(next+2);
+	    sc     = (*_proc)[i]->PSGenerator()->SetChannel(m_nin,m_nout,p_fl,chname);
 	    sc->SetName(((*_proc)[i]->FSRIntegrator(j))->Name());
 	    _fsr->Add( sc );
 	  }
@@ -485,37 +483,6 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-void Process_Base::InitCuts() {
-  if (p_cuts == 0) {
-    p_cuts = new Cut_Data();
-    p_cuts->Init(m_nin+m_nout,p_fl);
-  }
-}
-
-
-void Process_Base::UpdateCuts(double sprime,double y)
-{
-  p_cuts->Update(sprime,y);
-  p_sel->UpdateCuts(sprime,y,p_cuts);
-}
-
-
-
-
-
 /*------------------------------------------------------------------------------
 
   Process management
@@ -528,7 +495,6 @@ void Process_Base::SetAtoms(bool _atoms)                { m_atoms   = _atoms;  }
 void Process_Base::SetTables(bool _tables)              { m_tables  = _tables; }
 void Process_Base::SetBeam(Beam_Spectra_Handler * _beam){ p_beam    = _beam;   }
 void Process_Base::SetISR(ISR_Handler * _isr)           { p_isr     = _isr;    }
-void Process_Base::SetCuts(Cut_Data * _cuts)            { p_cuts    = _cuts;   }
 void Process_Base::SetSelector(Selector_Base * _sel)    { p_sel     = _sel;    }
 void Process_Base::SetMomenta(ATOOLS::Vec4D * _moms)  { p_moms    = _moms;   }
 void Process_Base::SetNStrong(int _nstrong)             { m_nstrong = _nstrong;}
@@ -696,7 +662,6 @@ Point                 * Process_Base::Diagram(int i)                 { return 0;
 bool                    Process_Base::IsFreeOfFourVertex(Point * _p) { return 1; }
 Beam_Spectra_Handler  * Process_Base::Beam()                         { return p_beam;     }
 ISR_Handler           * Process_Base::ISR()                          { return p_isr;      }
-Cut_Data              * Process_Base::Cuts()                         { return p_cuts;     }
 Selector_Base         * Process_Base::Selector()                     { return p_sel;      }
 Phase_Space_Generator * Process_Base::PSGenerator()                  { return p_psgen; }
 double                  Process_Base::Scale()                        { return m_asscale; }

@@ -10,29 +10,26 @@ namespace AMEGIC {
 
   class Phase_Space_Generator {
     static const int buffersize = 512*32;
+    static const int maxchannels = 2048;
     int         nin,nout;
     char        filename[12], procname[12];
     std::string path,pathID,pID;
-    std::string headername,cfilename;
     int m_mode;
 
-    bool  CheckForOldChannels(int,ATOOLS::Flavour *,PHASIC::Multi_Channel *);
+    bool  LoadChannels(ATOOLS::Flavour *,PHASIC::Multi_Channel *);
     bool  IsFile(std::string &);
     bool  Search(std::ifstream &,std::string);
+    bool  RSearch(std::ifstream &,std::string &);
     int   Search(std::string file,std::string search);
+    int   RSearch(std::string file,std::string &search);
     void  Copy(std::string,std::string);
-    bool  MakeHeader(std::string &,char*,int);
-    bool  MakeCfile(std::string &,char*,int,int);
-    int   AddToHeader(std::string &,char*,bool);
-    int   AddToCfile(std::string &,char*,int,bool);
     void  AddToMakefile(std::string Makefile,std::string pathID,std::string fileID);
     void  AddToMakefileAM(std::string, std::string, std::string);
-    void  AddToSetChannel();
   public:
     Phase_Space_Generator(int,int);
     bool Construct(PHASIC::Multi_Channel *,std::string,std::string,ATOOLS::Flavour *, 
 		   Process_Base *);
-    PHASIC::Single_Channel * SetChannel(int,int,ATOOLS::Flavour* fl,int,std::string&);
+    PHASIC::Single_Channel * SetChannel(int,int,ATOOLS::Flavour* fl,std::string&);
   };
 
   //! The numbers of incoming and outgoing momenta.

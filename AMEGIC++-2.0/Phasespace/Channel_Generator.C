@@ -21,12 +21,14 @@ Channel_Generator::Channel_Generator(int _nin,int _nout,Flavour * _fl,
   int ll = 0;
   top.Copy(_plist,plist,ll);
   IdentifyProps(plist);
+  m_idstr = string("");
 }
 
 Channel_Generator::~Channel_Generator() { delete[] plist; }
 
 int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
 {  
+  if (m_idstr==string("")) CreateChannelID(echflag);
   int oldflag      = echflag;
   extrachannelflag = echflag;
 
@@ -47,16 +49,37 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   ofstream chf;
   chf.open((filename).c_str());
 
-  chf<<"#include "<<'"'<<"P.H"<<'"'<<endl;
+  chf<<"#include "<<'"'<<"Single_Channel.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"Channel_Elements.H"<<'"'<<endl<<endl;  
+
   chf<<"using namespace PHASIC;"<<endl;  
   chf<<"using namespace ATOOLS;"<<endl<<endl;
 
+  chf<<"namespace PHASIC {"<<endl
+     <<"  class "<<name<<" : public Single_Channel {"<<endl;
+
+  //actual Channel
+  chf	<<"  public:"<<endl
+	<<"    "<<name<<"(int nin,int nout,ATOOLS::Flavour* fl)"<<endl
+	<<"       : Single_Channel(nin,nout,fl)"<<endl
+	<<"    { name = std::string(\""<<name<<"\"); };"<<endl
+	<<"    void   GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);"<<endl
+	<<"    void   GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);"<<endl
+	<<"    int    CountResonances(ATOOLS::Flavour*&);"<<endl
+	<<"    void   ISRInfo(int &,double &,double &);"<<endl
+	<<"    std::string ChID();"<<endl
+	<<"  };"<<endl
+	<<"}"<<endl<<endl;
+
+  chf<<"extern "<<'"'<<"C"<<'"'<<" Single_Channel * Getter_"<<name
+     <<"(int nin,int nout,ATOOLS::Flavour* fl) {"<<endl
+     <<"  return new "<<name<<"(nin,nout,fl);"<<endl
+     <<"}"<<endl<<endl;
 
   //Momenta
-  chf<<"void "<<pID.c_str()<<"::"<<name;
-  chf<<"Momenta(Vec4D * p,Cut_Data * cuts,double * ran)"<<endl;
+  chf<<"void "<<name<<"::";
+  chf<<"GeneratePoint(Vec4D * p,Cut_Data * cuts,double * ran)"<<endl;
   chf<<"{"<<endl;
   
   Flavour * flav    = new Flavour[nout];  
@@ -74,8 +97,8 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   extrachannelflag = oldflag;
 
   //Weight
-  chf<<"double "<<pID.c_str()<<"::"<<name;
-  chf<<"Weight(Vec4D* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
+  chf<<"void "<<name<<"::";
+  chf<<"GenerateWeight(Vec4D* p,Cut_Data * cuts)"<<endl<<"{"<<endl;
   chf<<"  double wt = 1.;"<<endl;
 
   maxnumb = 0;
@@ -83,11 +106,11 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   Step0(1,plist,rannum,chf,flav,maxnumb);
   ClearDeclarations();
   chf<<"  if (wt!=0.) wt = 1./wt/pow(2.*M_PI,"<<nout<<"*3.-4.);"<<endl;
-  chf<<endl<<"  return wt;"<<endl; 
+  chf<<endl<<"  weight = wt;"<<endl; 
   chf<<"}"<<endl<<endl;
   
   
-  chf<<"int "<<pID.c_str()<<"::"<<name<<"Resonances(Flavour*& res_fl)"<<endl<<"{"<<endl;  
+  chf<<"int "<<name<<"::CountResonances(Flavour*& res_fl)"<<endl<<"{"<<endl;  
   chf<<"  res_fl = new Flavour["<<maxnumb<<"];"<<endl;
   for (short int i=0;i<maxnumb;i++) {    
     int hi = flav[i].Kfcode();
@@ -96,12 +119,19 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   chf<<"  return "<<maxnumb<<";"<<endl;
   chf<<"}"<<endl<<endl;
   
-  chf<<"void "<<pID.c_str()<<"::"<<name<<"ISRtype(int & type,double & mass,double & width)";
+  chf<<"void "<<name<<"::ISRInfo(int & type,double & mass,double & width)";
   chf<<endl<<"{"<<endl;  
   Step0(2,plist,rannum,chf,flav,maxnumb);
+  chf<<"}"<<endl<<endl;
+
+
+  chf<<"std::string "<<name<<"::ChID()";
+  chf<<endl<<"{"<<endl;  
+  chf<<"  return std::string(\""<<m_idstr<<"\");"<<endl;  
   chf<<"}"<<endl;
 
-  chf.close();
+  chf.close();  
+
   delete[] flav;
   return rannumber;
 }
@@ -185,17 +215,19 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
 
 
   bool first = 0;
-  if (flag>9) { first = 1; flag -= 10; }
+  if (flag>9 || flag==-1) { first = 1; flag -= 10; }
 
   // Check for decay type.
   if ((!first) && (l->left==0) && (l->fl.IsVector()) && 
       (!(l->fl.IsMassive())) && (r->fl.IsFermion()) ) {
-    if (flag==0) {
+    switch (flag) {
+    case -11: m_idc.push_back(string("AI_")+Order(lm)+string("_")+Order(rm)); break;
+    case 0: 
       sf<<"  CE.Anisotropic2Momenta(p"<<Order(mummy)
 	<<",s"<<Order(lm)<<",s"<<Order(rm)<<",1.,-1.,1."<<","<<moml<<","<<momr<<","
 	<<"ran["<<rannum<<"],ran["<<rannum+1<<"]);"<<endl;
-    }
-    else {
+      break;
+    default:
       sf<<"  wt *= CE.Anisotropic2Weight(1,-1.,1.,"<<moml<<",";
       sf<<momr<<");"<<endl;
     }
@@ -204,31 +236,37 @@ bool Channel_Generator::StepS(int flag,Point* p,int& rannum,
     if ((!first) && (r->left==0) && (r->fl.IsVector()) && 
 	(!(r->fl.IsMassive())) && (l->fl.IsFermion()) ) {
       //anisotropic decay for left outgoing massless vectors
-      if (flag==0) {
+      switch (flag) {
+      case -11: m_idc.push_back(string("AI_")+Order(rm)+string("_")+Order(lm)); break;
+      case 0:
 	sf<<"  CE.Anisotropic2Momenta(p"<<Order(mummy)
 	  <<",s"<<Order(rm)<<",s"<<Order(lm)<<",1.,-1.,1."<<","<<momr<<","<<moml<<","
 	  <<"ran["<<rannum<<"],"<<"ran["<<rannum+1<<"]);"<<endl;
-      }
-      else {
+	break;	
+      default:      
 	sf<<"  wt *= CE.Anisotropic2Weight(1.,-1.,1.,"<<momr<<","<<moml<<");"<<endl;
       }
     }
     else {
       if ((l->number) < (r->number)) {
-	if (flag==0) {
+	switch (flag) {
+	case -11: m_idc.push_back(string("I_")+mummy); break;
+	case 0:
 	  sf<<"  CE.Isotropic2Momenta(p"<<mummy<<",s"<<Order(lm)<<",s"<<Order(rm)
 	    <<","<<moml<<","<<momr<<",ran["<<rannum<<"],"<<"ran["<<rannum+1<<"]);"<<endl;
-	}
-	else {
+	  break;	
+	default:      
 	  sf<<"  wt *= CE.Isotropic2Weight("<<moml<<","<<momr<<");"<<endl;
 	}
       }
       else {
-	if (flag==0) {
+	switch (flag) {
+	case -11: m_idc.push_back(string("I_")+mummy); break;
+	case 0:
 	  sf<<"  CE.Isotropic2Momenta(p"<<mummy<<",s"<<Order(rm)<<",s"<<Order(lm)
 	    <<","<<momr<<","<<moml<<",ran["<<rannum<<"],"<<"ran["<<rannum+1<<"]);"<<endl;
-	}
-	else {
+	  break;	
+	default:      
 	  sf<<"  wt *= CE.Isotropic2Weight("<<momr<<","<<moml<<");"<<endl;
 	}
       }
@@ -278,10 +316,12 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
   AddToVariables(flag,m,string("p[0] + p[1]"),1,sf);
   AddToVariables(flag,m,string("dabs(p")+Order(m)+string(".Abs2())"),0,sf);
 
-  sf<<"  double amct  = 1.;"<<endl;
-  sf<<"  double alpha = 0.5;"<<endl;
-  sf<<"  double ctmax = 0.;"<<endl;
-  sf<<"  double ctmin = 2.;"<<endl;
+  if (flag>=0) {
+    sf<<"  double amct  = 1.;"<<endl;
+    sf<<"  double alpha = .5;"<<endl;
+    sf<<"  double ctmax = 1.;"<<endl;
+    sf<<"  double ctmin = -1.;"<<endl;
+  }
 
   GenerateMasses(flag,props,tcount+1,rannum,sf);
 
@@ -294,7 +334,9 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
     
   int count = 0;
 
-  if (props[tcount]->number<99 && props[tcount]->fl.IsVector()) {
+  if (props[tcount]->number<99 && 
+      (props[tcount]->fl.IsVector() || props[0]->number>99 || 
+       !(props[0]->fl.Strong() || (props[0]->fl.IsLepton() && props[0]->fl.IntCharge()!=0)) )) {
     for (short int i=0;i<tcount;i++) pout0.push_back(s[i]);
     pout1.push_back(s[tcount]);
     count = tcount - 1;
@@ -322,7 +364,7 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 				    vector<string> pout0,vector<string> pout1)
 { 
   int hi = propt[count]->fl.Kfcode(); 
-  sf<<"  double tmass"<<count<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
+  if (flag>=0) sf<<"  double tmass"<<count<<" = Flavour(kf::code("<<hi<<")).Mass();"<<endl;
 
   string pout0sum;
   for (short int i=0;i<pout0.size();i++) pout0sum += pout0[i];
@@ -333,26 +375,38 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   string pin1sum = string("1_");
   for (short int i=1;i<pin1.size();i++) pin1sum += pin1[i];
 
-  //mins
-  if (pout0.size()>1) CalcTSmin(flag,pout0,sf); 
-  if (pout1.size()>1) CalcTSmin(flag,pout1,sf); 
-  //maxs
-  if (pout0.size()>1) { 
-    string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
-               Order(pin1sum)+string(").Abs2()))-");
+  if (flag>=0) {
+    //mins
+    if (pout0.size()>1) CalcTSmin(flag,pout0,sf); 
+    if (pout1.size()>1) CalcTSmin(flag,pout1,sf); 
+    //maxs
+    if (pout0.size()>1) { 
+      string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
+	         Order(pin1sum)+string(").Abs2()))-");
     if (pout1.size()==1) {
-       if (pout1[0].length()==1) s += string("sqrt(ms[")+pout1[0]+string("])");
-                           else s += string("sqrt(s")+Order(pout1[0])+string(")");    
+      if (pout1[0].length()==1) s += string("sqrt(ms[")+pout1[0]+string("])");
+      else                      s += string("sqrt(s")+Order(pout1[0])+string(")");    
     }
     else s += string("sqrt(s")+Order(pout1sum)+string("_min)");  
     s += ")";
-
+    
     AddToVariables(flag,Order(pout0sum) + string("_max"),s,0,sf);
     //sf<<"  double s"<<Order(pout0sum)<<"_max = "<<s<<";"<<endl;
+    }
   }
   //first dice
   if (pout0.size()>1) {
-    if (flag==0) {
+    switch (flag) {
+    case -11:
+      if (pout1.size()==1 && pin1.size()==1 && pout1[0].length()==1 && extrachannelflag==1) {
+	m_idc.push_back(string("LLP_")+Order(pout0sum));
+	extrachannelflag = 0;
+      }
+      else {
+	m_idc.push_back(string("MlP_")+Order(pout0sum));
+      }
+      break;
+    case 0:
       sf<<"  Vec4D  p"<<Order(pout0sum)<<";"<<endl;
       sf<<"  double s"<<Order(pout0sum);
 
@@ -375,8 +429,8 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	  <<"s"<<Order(pout0sum)<<"_max,ran["<<rannum<<"]);"<<endl;
       }
       rannum++;
-    }
-    else {
+      break;
+    default:
       string s;
       for (short int i=0;i<pout0sum.length()-1;i++)
 	s += string("p[")+pout0sum[i]+string("]+");
@@ -400,26 +454,31 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
   } 
   //second dice
   if (pout1.size()>1) {
-    string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
-               Order(pin1sum)+string(").Abs2()))-");
-    if (pout0.size()==1) {
-      if (pout0[0].size()==1) s += string("sqrt(ms[")+pout0[0]+string("])");
-                         else s += string("sqrt(s")+Order(pout0[0])+string(")");    
+    if (flag>=0) {
+      string s = string("sqr(sqrt(dabs((p")+Order(pin0sum)+string("+p")+
+	Order(pin1sum)+string(").Abs2()))-");
+      if (pout0.size()==1) {
+	if (pout0[0].size()==1) s += string("sqrt(ms[")+pout0[0]+string("])");
+	else                    s += string("sqrt(s")+Order(pout0[0])+string(")");    
+      }
+      else s += string("sqrt(s")+Order(pout1sum)+string(")");  
+           s += string(")");
+      
+      AddToVariables(flag,pout1sum + string("_max"),s,0,sf);
+      //sf<<"  double s"<<Order(pout1sum)<<"_max = "<<s<<";"<<endl;
     }
-    else s += string("sqrt(s")+Order(pout1sum)+string(")");  
-    s += string(")");
-    
-    AddToVariables(flag,pout1sum + string("_max"),s,0,sf);
-    //sf<<"  double s"<<Order(pout1sum)<<"_max = "<<s<<";"<<endl;
 
-    if (flag==0) {
+    switch (flag) {
+    case -11:   
+      m_idc.push_back(string("MlP_")+Order(pout1sum)); break;
+    case 0:
       sf<<"  Vec4D  p"<<Order(pout1sum)<<";"<<endl
 	<<"  double s"<<Order(pout1sum)
 	<<" = CE.MasslessPropMomenta(0.5,s"<<Order(pout1sum)<<"_min,"
 	<<"s"<<Order(pout1sum)<<"_max,ran["<<rannum<<"]);"<<endl;
       rannum++;
-    }
-    else {
+      break;
+    default:
       string s;
       for (short int i=0;i<pout1sum.length()-1;i++)
 	s += string("p[")+pout1sum[i]+string("]+");
@@ -432,25 +491,48 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
 	<<"s"<<Order(pout1sum)<<"_max,s"<<Order(pout1sum)<<");"<<endl;
     }
   }
-
-
-  if (flag==0) {  
+  
+  string sctmax("ctmax");
+  if (flag>=0) {
+    if (pin0.size()==1 && pout0sum.length()==1 && pin1.size()==1 && pout1sum.length()==1) {
+      sf<<"  ctmax = Min(cuts->cosmax[0]["<<pout0sum<<"],cuts->cosmax[1]["<<pout1sum<<"]);"<<endl;
+    }
+    else if (pin0.size()==1 && pin1.size()==1 && pout0sum.length()==1) {
+      sf<<"  ctmax = cuts->cosmax[0]["<<pout0sum<<"];"<<endl;
+    }
+    else if (pin0.size()==1 && pin1.size()==1 && pout1sum.length()==1) {
+      sf<<"  ctmax = cuts->cosmax[1]["<<pout1sum<<"];"<<endl;
+    }
+    else sctmax = string("1.");
+  }
+  switch (flag) {
+  case -11:
+    char hs[4];
+    if (flag<0) {
+      if(!IsZero(propt[count]->fl.Mass())) sprintf(hs,"%i",hi);
+      else sprintf(hs,"");
+    }
+    m_idc.push_back(string("TC")+string(hs)+
+		    string("_")+Order(pin0sum)+string("_")+Order(pin1sum)+
+		    string("_")+Order(pout0sum)+string("_")+Order(pout1sum));
+    break;
+  case 0:
     sf<<"  CE.TChannelMomenta(p"<<Order(pin0sum)<<",p"<<Order(pin1sum);
     if (pout0.size()==1 && pout0[0].length()==1) sf<<",p["<<pout0[0]<<"]";
                                             else sf<<",p"<<Order(pout0sum);
     if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<pout1[0]<<"]";
                                             else sf<<",p"<<Order(pout1sum);
     sf<<",s"<<Order(pout0sum)<<",s"<<Order(pout1sum);
-    sf<<",tmass"<<count<<",alpha,ctmax,ctmin,amct,0,ran["<<rannum++<<"],ran[";
+    sf<<",tmass"<<count<<",alpha,"<<sctmax<<",ctmin,amct,0,ran["<<rannum++<<"],ran[";
     sf<<rannum++<<"]);"<<endl;
-  }
-  else {
+    break;
+  default:
     sf<<"  wt *= CE.TChannelWeight(p"<<Order(pin0sum)<<",p"<<Order(pin1sum);
     if (pout0.size()==1 && pout0[0].length()==1) sf<<",p["<<pout0[0]<<"]";
                                               else sf<<",p"<<Order(pout0sum);
     if (pout1.size()==1 && pout1[0].length()==1) sf<<",p["<<pout1[0]<<"]";
                                               else sf<<",p"<<Order(pout1sum);
-    sf<<",tmass"<<count<<",alpha,ctmax,ctmin,amct,0);"<<endl;
+    sf<<",tmass"<<count<<",alpha,"<<sctmax<<",ctmin,amct,0);"<<endl;
   }
 
   //dice new
@@ -554,8 +636,10 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     }
   }
   if (help.length()>0) {
-    CalcSmin(flag,"restmin",help,sf,0);
-    sum_s_i = string("-sqrt(s")+Order(help)+string("_restmin)");
+    //CalcSmin(flag,"restmin",help,sf,0);
+    //sum_s_i = string("-sqrt(s")+Order(help)+string("_restmin)");
+    CalcSmin(flag,"min",help,sf,0);
+    sum_s_i = string("-sqrt(s")+Order(help)+string("_min)");
   }
   int hit;
   double maxpole;
@@ -593,11 +677,23 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     AddToVariables(flag,lm[hit] +string("_max"),smax,0,sf);
     //sf<<"  double s"<<Order(lm[hit])<<"_max = "<<smax<<endl;
 
+    int hi = 0;
     if (maxpole>0.) {
-      int hi = (_plist[hit]->fl).Kfcode();
-      sf<<"  Flavour fl"<<lm[hit]<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
+      hi = (_plist[hit]->fl).Kfcode();
+      if (flag>=0) sf<<"  Flavour fl"<<lm[hit]<<" = "<<"Flavour(kf::code("<<hi<<"));"<<endl;
     }
-    if ((flag==0) || (flag==10)) {
+    switch (flag) {
+    case -11: case -1:
+      if (maxpole>0.) {
+	char hs[4];
+	sprintf(hs,"%i",hi);
+	m_idc.push_back(string("MP")+string(hs)+string("_")+Order(lm[hit]));
+      }
+      else {
+	m_idc.push_back(string("MlP_")+Order(lm[hit]));
+      }
+      break;
+    case 0: case 10:
       sf<<"  Vec4D  "<<momp[hit]<<";"<<endl
 	<<"  double s"<<Order(lm[hit])<<";"<<endl;
       if (maxpole>0.) {
@@ -610,9 +706,8 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
 	  <<"s"<<Order(lm[hit])<<"_max,ran["<<rannum<<"]);"<<endl;
       }
       rannum++;
-    }
-    //    if ((flag==1) || (flag==11)) {
-    else {
+      break;
+    default:
       string s(""); 
       for (short int i=0;i<lm[hit].length()-1;i++) s += string("p[")+lm[hit][i]+string("]+");
       s += string("p[")+lm[hit][lm[hit].length()-1]+string("]");
@@ -678,8 +773,8 @@ void Channel_Generator::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
       CalcSmin(flag,"min",help,sf,0);
       return;
     }
-    else CalcSmin(flag,"tmpmin",help,sf,0);    
-    s = string("sqr(sqrt(s")+Order(help)+string("_tmpmin)");
+    else CalcSmin(flag,"min",help,sf,0);    
+    s = string("sqr(sqrt(s")+Order(help)+string("_min)");
   }
   else s = string("sqr(");
 
@@ -693,37 +788,15 @@ void Channel_Generator::CalcTSmin(int flag,vector<string>& p,ofstream& sf)
 }
 
 
-void Channel_Generator::CalcSmin2(Point* p,string& s)
-{
-  if (p->left==0) return;
-
-  if (p->left->left==0 && p->right->left==0) {    
-    s += string("+sqrt(cuts->scut[")+IString(p->left->number)+
-         string("][")+IString(p->right->number)+string("])");
-    return;
-  }
-
-  if (p->left->left==0 && p->right->left!=0) {
-    s += string("+sqrt(ms[")+IString(p->left->number)+string("])");
-    CalcSmin2(p->right,s);
-    return;
-  }
-
-  if (p->left->left!=0 && p->right->left==0) {
-    s += string("+sqrt(ms[")+IString(p->right->number)+string("])");
-    CalcSmin2(p->left,s);
-    return;
-  }
-
-  CalcSmin2(p->left,s);
-  CalcSmin2(p->right,s);
-}
 
 void Channel_Generator::CalcSmin(int flag,char* min,string lm,ofstream& sf,Point* p)
 {
   // sum_{i<j} sij + (2-n)*sum_i m_i^2
 
-  string s("");
+  AddToVariables(flag,Order(lm) + string("_") + string(min),
+		 string("cuts->Getscut(std::string(\"") + Order(lm) + string("\"))"),0,sf);
+
+  /*  string s("");
 
   for (short int i=0;i<lm.length();i++) {
     for (short int j=i+1;j<lm.length();j++) 
@@ -756,7 +829,7 @@ void Channel_Generator::CalcSmin(int flag,char* min,string lm,ofstream& sf,Point
   }
   else {
     AddToVariables(flag,lm + string("_") + string(min),s,0,sf);
-  }
+    }*/
 }
 
 
@@ -841,6 +914,7 @@ string Channel_Generator::Order(string s)
 void  Channel_Generator::AddToVariables(int flag,const string& lhs,const string& rhs,const int& type,
 					ofstream& sf)
 {
+  if (flag<0) return;
   string lhso = Order(lhs);
   std::string name;
   if (type ==0) name=string("s")+lhso;
@@ -863,4 +937,34 @@ void  Channel_Generator::AddToVariables(int flag,const string& lhs,const string&
     }
   }
 }
+
+namespace AMEGIC {
+  class Compare_String {
+  public:
+    int operator()(const string & a, const string & b) {
+      return (a<b);
+    }
+  };
+}
+
+std::string Channel_Generator::CreateChannelID(int echflag)
+{
+  extrachannelflag = echflag;
+  int    rannum = 1;
+  int   maxnumb = 0;
+  ofstream chf;
+  Flavour * flav    = new Flavour[nout];  
+  Step0(-11,plist,rannum,chf,flav,maxnumb);
+  delete[] flav;
+
+  string idstr;
+  std::sort(m_idc.begin(),m_idc.end(),Compare_String());
+  for (String_List::iterator it = m_idc.begin();it!=m_idc.end();++it) {
+    idstr+=(*it);
+    idstr+=string("$");
+  }
+  m_idstr = idstr;
+  return idstr;
+}
+
 

@@ -35,7 +35,6 @@ Process_Group::Process_Group() :
   p_pl    = 0;
 
   p_sel   = 0; 
-  p_cuts  = 0;
   p_ps    = 0;
   p_moms  = 0;
   m_procs.clear();
@@ -77,7 +76,6 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
   ConstructProcesses(_seldata);
   GroupProcesses();
 
-  InitCuts();
   if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
   else {
     if (m_nout>2) 
@@ -676,7 +674,6 @@ bool Process_Group::SetUpIntegrator()
     return okay;
   }
   
-  p_sel->BuildCuts(p_cuts);
   if (m_nin==2) {
     if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
 	 (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
@@ -759,7 +756,6 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
       if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
 	   (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
     }
-    p_sel->BuildCuts(p_cuts);
     m_tables  = 0;
     
     m_totalxs = p_ps->Integrate();
@@ -856,7 +852,6 @@ bool Process_Group::PrepareXSecTables()
       if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
 	   (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
     }
-    p_sel->BuildCuts(p_cuts);
     m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl;
