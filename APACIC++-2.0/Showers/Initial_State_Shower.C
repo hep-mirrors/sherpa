@@ -194,7 +194,7 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
       p->SetProductionBlob(jet);
       p->SetDecayBlob(NULL);
       jet->AddToOutPartons(p);
-      jet->SetStatus(0);
+      jet->SetStatus(1);
       return;
     }
   }
