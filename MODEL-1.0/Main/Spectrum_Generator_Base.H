@@ -2,10 +2,9 @@
 #define Spectrum_Generator_Base_h
 
 #include "Model_Base.H"
-#include "Decay_Table.H"
 #include "MathTools.H"
 #include "Data_Read.H"
-#include <set>
+#include "Decay_Table.H"
 
 namespace MODEL {
   class Spectrum_Generator_Base {
@@ -16,7 +15,7 @@ namespace MODEL {
     std::vector<double>          m_masses;
     std::vector<double>          m_widths;
     std::vector<ATOOLS::Flavour> m_particles;
-    std::vector<Decay_Table *>    m_decays;
+    std::vector<ATOOLS::Decay_Table *> m_decays;
   public:
     Spectrum_Generator_Base(ATOOLS::Data_Read *,Model_Base *);
     virtual ~Spectrum_Generator_Base();

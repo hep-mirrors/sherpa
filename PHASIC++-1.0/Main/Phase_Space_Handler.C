@@ -119,7 +119,7 @@ double Phase_Space_Handler::Integrate()
 {
   psi        = new Phase_Space_Integrator();
 
-  if (!InitIncomming()) return 0;
+  if (!InitIncoming()) return 0;
   if (rpa.gen.ModelName()==std::string("ADD") && ih->On()==0 && bh->On()==0) {
     if (rpa.gen.Ecms()>rpa.gen.ScalarConstant(std::string("M_cut"))) {
       msg.Error()<<"Warning in Phase_Space_Handler::Integrate() :"<<endl
@@ -272,7 +272,7 @@ double Phase_Space_Handler::SameWeightedEvent() {
 
 bool Phase_Space_Handler::OneEvent(int mode)
 {
-  if (!m_initialized) InitIncomming();
+  if (!m_initialized) InitIncoming();
 
   m_weight=1.;
 

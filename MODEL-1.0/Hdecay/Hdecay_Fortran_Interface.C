@@ -115,6 +115,8 @@ void Hdecay_Fortran_Interface::FillDecays() {
   decay->SetWidth(brVV[4]*hwidth);
   dt->AddDecayChannel(decay);
   
+  dt->Output();
+
   for (int i=0;i<m_decays.size();i++) m_decays[i]->Output();
 
   delete [] brff;

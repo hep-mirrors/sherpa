@@ -1,7 +1,7 @@
 !-------------------------------------------------------
 !-- Model parameters -----------------------------------
 !-------------------------------------------------------
-MODEL                 = SM       ! Model 
+MODEL                 = MSSM     ! Model 
 !
 GENERATOR_ON          = 1        ! use external spectrum generator
 !
