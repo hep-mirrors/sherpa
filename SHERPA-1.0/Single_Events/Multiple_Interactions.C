@@ -52,15 +52,38 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 	       <<"Retry event "<<rpa.gen.NumberOfDicedEvents()<<std::endl;
     p_bloblist->Clear();
   }
-  for (size_t i=0;i<2;++i) {
-    m_emax[i]=p_remnants[i]->BeamEnergy();
-    p_remnants[i]->QuickClear();
-  }
   for (Blob_List::const_iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
     if ((*bit)->Type()==btp::Hard_Collision ||
 	(*bit)->Type()==btp::Signal_Process) 
       if ((*bit)->Status()!=0) return false;
+  }
+  for (short unsigned int i=0;i<2;++i) {
+    m_emax[i]=p_remnants[i]->BeamEnergy();
+    p_remnants[i]->QuickClear();
+  }
+  Blob_List isr=bloblist->Find(btp::IS_Shower);
+  for (Blob_List::reverse_iterator iit=isr.rbegin();
+       iit!=isr.rend();++iit) {
+    m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
+    p_mihandler->ISRHandler()->
+      Extract((*iit)->InParticle(0)->Flav(),
+	      (*iit)->InParticle(0)->Momentum()[0],(*iit)->Beam());
+    if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
+      ATOOLS::msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
+			 <<"Cannot extract parton from hadron. \n"
+			 <<*(*iit)->InParticle(0)<<std::endl;
+      p_bloblist->DeleteConnected(*iit);
+      if (bloblist->empty()) {
+	Blob *blob = new Blob();
+	blob->SetType(btp::Signal_Process);
+	blob->SetStatus(-1);
+	blob->SetId();
+	blob->SetStatus(2);
+	bloblist->push_back(blob);	  
+      }
+      return true;
+    } 
   }
   Blob *signal=bloblist->FindFirst(btp::Signal_Process);
 //     if (!m_diced && VetoHardProcess(signal)) {
@@ -92,28 +115,6 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     break;
   }
   default: THROW(not_implemented,"Wrong mi scale scheme.");
-  }
-  Blob_List isr=bloblist->Find(btp::IS_Shower);
-  for (Blob_List::const_iterator iit=isr.begin();iit!=isr.end();++iit) {
-    m_emax[(*iit)->Beam()]-=(*iit)->InParticle(0)->Momentum()[0];
-    p_mihandler->ISRHandler()->
-      Extract((*iit)->InParticle(0)->Flav(),
-	      (*iit)->InParticle(0)->Momentum()[0],(*iit)->Beam());
-    if (!p_remnants[(*iit)->Beam()]->Extract((*iit)->InParticle(0))) {
-      msg_Tracking()<<"Multiple_Interactions::CheckBlobList(..): "
-		    <<"Cannot extract parton from hadron. \n"
-		    <<*(*iit)->InParticle(0)<<std::endl;
-      p_bloblist->DeleteConnected(*iit);
-      if (bloblist->empty()) {
-	Blob *blob = new Blob();
-	blob->SetType(btp::Signal_Process);
-	blob->SetStatus(-1);
-	blob->SetId();
-	blob->SetStatus(2);
-	bloblist->push_back(blob);	  
-      }
-      return true;
-    } 
   }
 #ifdef ANALYSE__Multiple_Interactions
   if (!m_diced) {
