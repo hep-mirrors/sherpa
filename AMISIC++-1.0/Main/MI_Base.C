@@ -20,6 +20,8 @@ long int MI_Base::m_particlecounter=0;
 bool MI_Base::m_stophard=true;
 bool MI_Base::m_stopsoft=true;
 
+double MI_Base::s_stopscale=0.;
+
 MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 		 unsigned int infiles,unsigned int outfiles):
   File_IO_Base(infiles,outfiles),

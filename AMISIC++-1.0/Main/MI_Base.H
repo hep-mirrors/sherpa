@@ -54,6 +54,8 @@ namespace AMISIC {
     static bool m_stophard;
     static bool m_stopsoft;
 
+    static double s_stopscale;
+
   public:
 
     // constructor
@@ -97,6 +99,8 @@ namespace AMISIC {
     static std::string TypeToString(TypeID type);
     static TypeID StringToType(std::string type);
 
+    static double StopScale();
+    
   }; // end of class MI_Base
 
   class MI_None: public MI_Base {

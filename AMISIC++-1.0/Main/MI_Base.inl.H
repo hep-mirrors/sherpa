@@ -40,6 +40,9 @@ namespace AMISIC {
   inline EXTRAXS::XS_Base *MI_Base::XS()
   { return p_xs; }
 
+  inline double MI_Base::StopScale()
+  { return s_stopscale; }
+
 } // end of namespace AMISIC
 
 #endif

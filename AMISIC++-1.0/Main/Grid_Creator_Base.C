@@ -160,7 +160,7 @@ namespace AMISIC {
 		       <<"Sorry, grid cannot be written to '"<<OutputFile()<<"'"<<std::endl;
       success=false;
     }
-    ATOOLS::msg.Out()<<"Grid_Creator_Base: Wrote grid to '"<<OutputFile()<<"'"<<std::endl;
+    ATOOLS::msg.Info()<<"Grid_Creator_Base: Wrote grid to '"<<OutputFile()<<"'"<<std::endl;
     ATOOLS::msg.SetLevel(formerlevel);
     return success;
   }
