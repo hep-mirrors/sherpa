@@ -4,6 +4,7 @@
 
 #include "Initialization_Handler.H"
 #include "Event_Handler.H"
+#include "Output_Handler.H"
 #include "Sample_Analysis.H"
 
 namespace SHERPA {
@@ -14,6 +15,7 @@ namespace SHERPA {
 
     Initialization_Handler * p_inithandler;
     Event_Handler          * p_eventhandler;
+    Output_Handler         * p_output;
     Sample_Analysis        * p_analysis;
 
     void DrawLogo();  

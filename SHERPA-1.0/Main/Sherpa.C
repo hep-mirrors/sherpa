@@ -10,13 +10,11 @@ using namespace APHYTOOLS;
 using namespace AMATOOLS;
 using namespace std;
 
-Sherpa::Sherpa()
+Sherpa::Sherpa() :
+  p_inithandler(NULL), p_eventhandler(NULL), p_analysis(NULL)  
 {
   m_errors = 0;
   m_trials = 100;
-  p_inithandler  = NULL;
-  p_eventhandler = NULL;
-  p_analysis     = NULL;
 }
 
 Sherpa::~Sherpa() 
@@ -31,6 +29,7 @@ bool Sherpa::InitializeTheRun(std::string _path) {
   m_path = _path;
   p_inithandler  = new Initialization_Handler(m_path);
   if (p_inithandler->InitializeTheFramework()) {
+    p_output     = new Output_Handler(1);
     return p_inithandler->CalculateTheHardProcesses();
   }
   msg.Error()<<"Error in Sherpa::InitializeRun("<<_path<<")"<<endl
@@ -59,7 +58,10 @@ bool Sherpa::InitializeTheEventHandler() {
 bool Sherpa::GenerateOneEvent() {
    //  msg.Out()<<"Starting event generation now. "<<std::endl;
   for (int i=0;i<m_trials;i++) {
-    if (p_eventhandler->GenerateEvent()) return 1;
+    if (p_eventhandler->GenerateEvent()) {
+      if (p_output->Active()) p_output->OutputToFormat(p_eventhandler->GetBlobs());
+      return 1;
+    }
     m_errors++;
   }
   return 0;
