@@ -44,7 +44,7 @@ namespace SHERPA {
     PDF::ISR_Handler   * p_isr;
     int                  m_mode;
     double               m_weight;
-    unsigned long          m_ntrial;
+    unsigned long          m_ntrial, m_sntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
  
@@ -132,6 +132,8 @@ namespace SHERPA {
     double               FactorisationScale();
 
     inline void SetUseSudakovWeight(const int on) { m_sudakovon=on; }
+    inline void SaveNumberOfTrials() { m_sntrial+=m_ntrial; }
+    inline void ResetNumberOfTrials() { m_sntrial=0; }
   };
 
   typedef std::map<std::string,Matrix_Element_Handler *> MEHandlersMap;

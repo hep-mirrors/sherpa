@@ -58,8 +58,6 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 	while (!success) {
 	  success=true;
 	  if (p_mehandler->GenerateOneEvent()) {
-	    weight=p_mehandler->Weight();
-	    int  ntrial =p_mehandler->NumberOfTrials();
 	    EXTRAXS::XS_Base *xs=p_mehandler->GetXS(1);
 	    if (xs!=NULL && xs->NAddOut()!=0) {
 	      for (size_t stop=xs->NAddOut(), i=0;i<stop;++i) {
@@ -83,13 +81,18 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 				    +xs->Momenta()[i]);
 		isr[i]->AddToInParticles(parton);
 		isr[i]->SetBeam(i);
- 		p_remnants[i]->QuickClear();
- 		if (!p_remnants[i]->Extract(parton)) success=false;
+		if (p_remnants[i]!=NULL) {
+		  p_remnants[i]->QuickClear();
+		  if (!p_remnants[i]->Extract(parton)) success=false;
+		}
+		else THROW(fatal_error,"No remnant found.");
 	      }
 	      blit=bloblist->begin();
 	    }
 	    if (success) {
-	      FillBlob(myblob,weight,ntrial);
+	      if (!FillBlob(myblob)) success=false;
+	      else p_mehandler->ResetNumberOfTrials();
+	      weight = p_mehandler->Weight();
 	      if (isr[0]!=NULL && isr[1]!=NULL) {
 		for (short unsigned int i=0;i<2;++i) {
 		  bloblist->push_front(isr[i]);
@@ -115,29 +118,14 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 	       ((*blit)->Status()==-1)) {
 	myblob = (*blit);
 	found  = 1;
-	if (p_mehandler->GenerateSameEvent()) {
-	  weight = p_mehandler->Weight();
-	  int  ntrial = p_mehandler->NumberOfTrials();
-	  Blob_Data_Base * info=(*myblob)["ME_Weight_One"];
-	  double weight_one=0.;
-	  int ntrail_one=0;
-	  if (info) {
-	    weight_one = info->Get<double>();
-	    ntrail_one = (*myblob)["ME_NumberOfTrials_One"]->Get<int>();
+	bool success=false;
+	while (!success) {
+	  success=true;
+	  if (p_mehandler->GenerateSameEvent()) {
+	    if (!FillBlob(myblob,true)) success=false;
+	    weight = p_mehandler->Weight();
+	    hit = 1;
 	  }
-	  else {
-	    info=(*myblob)["ME_Weight"];
-	    if (info) {
-	      weight_one = info->Get<double>();
-	      ntrail_one = (*myblob)["ME_NumberOfTrials"]->Get<int>();
-	    }
-	    else {
-	      msg.Error()<<" ERROR missing call to OneEvent() before SameEvent() !! "<<std::endl;
-	    }
-	  }
-
-	  FillBlob(myblob,weight,ntrial,weight_one,ntrail_one);
-	  hit = 1;
 	}
       }
     }
@@ -147,10 +135,32 @@ bool Signal_Processes::Treat(Blob_List * bloblist, double & weight)
 
 void Signal_Processes::CleanUp() { return; }
 
-void Signal_Processes::FillBlob(Blob * blob, const double weight, const int ntrial, 
-				const double weight_one, const int ntrial_one)
+bool Signal_Processes::FillBlob(Blob * blob,const bool sameevent)
 {
-  PROFILE_HERE;
+  PROFILE_HERE; 
+
+  double  weight = p_mehandler->Weight();
+  int  ntrial = p_mehandler->NumberOfTrials();
+
+  double weight_one=0.;
+  int ntrial_one=0;
+  if (sameevent) {
+    Blob_Data_Base * info=(*blob)["ME_Weight_One"];
+    if (info) {
+      weight_one = info->Get<double>();
+      ntrial_one = (*blob)["ME_NumberOfTrials_One"]->Get<int>();
+    }
+    else {
+      info=(*blob)["ME_Weight"];
+      if (info) {
+	weight_one = info->Get<double>();
+	ntrial_one = (*blob)["ME_NumberOfTrials"]->Get<int>();
+      }
+      else {
+	msg.Error()<<" ERROR missing call to OneEvent() before SameEvent() !! "<<std::endl;
+      }
+    }
+  }
   blob->SetPosition(Vec4D(0.,0.,0.,0.));
   blob->SetTypeSpec(p_mehandler->ProcessName());
   blob->SetStatus(1);
@@ -164,6 +174,8 @@ void Signal_Processes::FillBlob(Blob * blob, const double weight, const int ntri
   blob->DeleteOwnedParticles();
   blob->ClearAllData();
 
+  bool success=true;
+
   Particle * particle;
   for (unsigned int i=0;i<p_mehandler->NIn();i++) {
     particle = new Particle(i,p_mehandler->Flavours()[i],p_mehandler->Momenta()[i]);
@@ -171,6 +183,11 @@ void Signal_Processes::FillBlob(Blob * blob, const double weight, const int ntri
     particle->SetStatus(2);
     particle->SetInfo('G');
     blob->AddToInParticles(particle);
+    if (p_remnants[i]!=NULL) {
+      p_remnants[i]->QuickClear();
+      if (!p_remnants[i]->Extract(particle)) success=false;
+    }
+    else THROW(fatal_error,"No remnant found.");
   }
   bool unstable = false; 
   for (unsigned int i=p_mehandler->NIn();i<p_mehandler->NIn()+p_mehandler->NOut();i++) {
@@ -185,7 +202,9 @@ void Signal_Processes::FillBlob(Blob * blob, const double weight, const int ntri
     if (p_hdhandler->On()) {
       p_hdhandler->ResetTables();
       p_hdhandler->DefineSecondaryDecays(blob);
-      return;
+
+      // consider rejection by remnants !!
+      return success;
     }
     else {
       msg.Error()<<"Error in Signal_Processes::FillBlob."<<endl
@@ -195,15 +214,22 @@ void Signal_Processes::FillBlob(Blob * blob, const double weight, const int ntri
     }
   }
 
+  if (!success && p_mehandler->Weight()!=1.) {
+    p_mehandler->SaveNumberOfTrials();
+  }
+  else p_mehandler->ResetNumberOfTrials();
+
   // store some additional information
-  blob->AddData("ME_Weight",new Blob_Data<double>(weight));
-  blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
-  if (ntrial_one!=-1) {
+  if (sameevent) {
     blob->AddData("ME_Weight_One",new Blob_Data<double>(weight_one));
     blob->AddData("ME_NumberOfTrials_One",new Blob_Data<int>(ntrial_one));
   }
+  blob->AddData("ME_Weight",new Blob_Data<double>(weight));
+  blob->AddData("ME_NumberOfTrials",new Blob_Data<int>(ntrial));
+
 //   blob->AddData("ISR_Info_cms",p_mehandler->GetISR_Handler()->Info(0));
 //   blob->AddData("ISR_Info_lab",p_mehandler->GetISR_Handler()->Info(1));
+  return success;
 }
 
 void Signal_Processes::Finish(const std::string &) {}

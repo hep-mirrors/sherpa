@@ -72,14 +72,14 @@ bool Particle_Map::Apply(int n, ATOOLS::Flavour * flavs, ATOOLS::Vec4D * moms)
 
 Matrix_Element_Handler::Matrix_Element_Handler() :
   m_dir("./"), m_file(""), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_name(""), m_eventmode(1), 
+  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_sntrial(0), m_name(""), m_eventmode(1), 
   m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) {}
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
 					       Matrix_Element_Handler * _me) :
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_name(""), m_eventmode(1),
+  p_isr(NULL), m_mode(0), m_weight(1.), m_ntrial(1), m_sntrial(0), m_name(""), m_eventmode(1),
   m_sudakovon(0), m_apply_hhmf(0), m_ini_swaped(0), p_dataread(NULL), p_flavs(NULL), p_moms(NULL) 
 {
   if (_me) p_amegic = _me->GetAmegic(); 
@@ -95,7 +95,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       PDF::ISR_Handler * _isr,
 					       Matrix_Element_Handler * _me) :
   m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL),
-  p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1), m_sudakovon(0), m_apply_hhmf(0),
+  p_isr(_isr), m_mode(0), m_weight(1.), m_ntrial(1), m_sntrial(0), m_sudakovon(0), m_apply_hhmf(0),
   m_ini_swaped(0), p_flavs(NULL), p_moms(NULL)
 {
   p_dataread        = new Data_Read(m_dir+m_file);
@@ -570,7 +570,7 @@ double  Matrix_Element_Handler::Weight()
 
 unsigned long Matrix_Element_Handler::NumberOfTrials()
 {
-  return m_ntrial;
+  return m_ntrial+m_sntrial;
 }
 
 int Matrix_Element_Handler::OrderStrong()
