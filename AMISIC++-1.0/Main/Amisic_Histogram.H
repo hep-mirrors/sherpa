@@ -50,7 +50,7 @@ namespace AMISIC {
     ~Amisic_Histogram();
 
     // member functions
-    void Initialize(const Argument_Type xmin=0.0,
+    bool Initialize(const Argument_Type xmin=0.0,
 		    const Argument_Type xmax=0.0,
 		    const size_t nbins=0);
 

@@ -33,9 +33,9 @@ const std::string normalizedfile=std::string("normalized.dat");
 using namespace AMISIC;
 
 Simple_Chain::Simple_Chain():
-  MI_Base("Simple Chain",MI_Base::HardEvent,4,4,1),
+  MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_total(NULL), p_differential(NULL), m_norm(1.0), m_enhance(1.0), 
-  m_xsextension("_xs.dat"), m_maxextension("_max.dat"), m_mcextension("_mc"), 
+  m_xsextension("_xs.dat"), m_maxextension("_max.dat"), m_mcextension("MC"), 
   p_processes(NULL), p_fsrinterface(NULL), p_environment(NULL), p_model(NULL),
   p_beam(NULL), p_isr(NULL), p_profile(NULL), m_nflavour(5), m_maxtrials(100), 
   m_scalescheme(2), m_kfactorscheme(1), m_ecms(ATOOLS::rpa.gen.Ecms()),
@@ -49,16 +49,17 @@ Simple_Chain::Simple_Chain():
   SetStart(0.0,0);
   SetStop(1.0,0);
   SetStart(ATOOLS::rpa.gen.Ecms(),1);
+  SetStart(ATOOLS::rpa.gen.Ecms(),4);
   SetStop(0.0,1);
 }
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
 			   BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isr):
-  MI_Base("Simple Chain",MI_Base::HardEvent,4,4,1),
+  MI_Base("Simple Chain",MI_Base::HardEvent,5,4,1),
   p_total(NULL), p_differential(NULL), m_norm(1.0), m_enhance(1.0),
   m_xsfile("XS.dat"), m_xsextension("_xs.dat"), m_maxextension("_max.dat"),
-  m_mcextension("_mc"), p_processes(NULL), p_fsrinterface(NULL), 
+  m_mcextension("MC"), p_processes(NULL), p_fsrinterface(NULL), 
   p_environment(NULL), p_model(model), p_beam(beam), p_isr(isr), 
   p_profile(NULL), m_nflavour(5), m_maxtrials(100), m_scalescheme(2), 
   m_kfactorscheme(1), m_ecms(ATOOLS::rpa.gen.Ecms()),
@@ -72,6 +73,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   SetStart(0.0,0);
   SetStop(1.0,0);
   SetStart(ATOOLS::rpa.gen.Ecms(),1);
+  SetStart(ATOOLS::rpa.gen.Ecms(),4);
   SetStop(0.0,1);
 }
 
@@ -357,7 +359,7 @@ bool Simple_Chain::CreateGrid()
   group->SetFSRMode(2);
   group->CreateFSRChannels();
   group->InitIntegrators();
-  group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension,16);
+  group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension,16|32);
 #ifdef USING__Sherpa
   p_mehandler = new SHERPA::Matrix_Element_Handler();
   p_mehandler->SetXS(p_processes);
@@ -377,6 +379,7 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
     initialdata.flavs.push_back(ATOOLS::Flavour(ATOOLS::kf::jet));
   group->SelectorData()->AddData(criterion,initialdata.flavs,
 				 initialdata.help,(double)min,(double)max);
+  std::cout<<min<<" "<<max<<std::endl;
   group->ResetSelector(group->SelectorData());
   int level=ATOOLS::msg.Level();
   ATOOLS::msg.SetLevel(0);
@@ -388,9 +391,9 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
   double total=group->TotalXS();
   msg_Tracking()<<"Simple_Chain::CheckConsistency(): {\n"
 		<<"   \\sigma_{hard xs}   = "
-		<<total*ATOOLS::rpa.Picobarn()<<" pb\n"
+		<<(total*ATOOLS::rpa.Picobarn()/1.e9)<<" mb\n"
 		<<"   \\sigma_{hard grid} = "
-		<<integral*ATOOLS::rpa.Picobarn()<<" pb\n"
+		<<(integral*ATOOLS::rpa.Picobarn()/1.e9)<<" mb\n"
 		<<"   relative error     = "
 		<<ATOOLS::dabs((total-integral)/(total))*100.0
 		<<" %\n}"<<std::endl;
@@ -483,21 +486,35 @@ bool Simple_Chain::CalculateTotal()
       }
       y+=diffit->second->Y(*xit,diffit->second->Interpolation);
     }
+    PRINT_INFO(*xit<<" "<<y);
     p_differential->AddPoint(*xit,y);
   }
   delete xvalue;
 #ifdef DEBUG__Simple_Chain
   std::vector<std::string> comments(1,"  Differential XS   "); 
-  Grid_Handler_Type *gridhandler = new Grid_Handler_Type(p_differential);
+  Grid_Function_Type *external = new Grid_Function_Type(*p_differential,false);
+  Grid_Handler_Type *gridhandler = new Grid_Handler_Type(external);
   gridhandler->SetStreamName(OutputPath()+differentialfile);
   gridhandler->WriteOut(ATOOLS::Type::TFStream,"",comments);
   delete gridhandler;
+  delete external;
 #endif
   SetStart(p_differential->XMax(),0);
-  SetStop(ATOOLS::Max(p_differential->XMin(),m_stop[0]),0);
+  SetStart(p_differential->XMax(),4);
+  SetStop(ATOOLS::Max(p_differential->XMin(),m_stop[4]),0);
   p_total = p_differential->
-    IntegralY(m_stop[0],m_start[0],ATOOLS::nullstring,
+    IntegralY(m_stop[4],m_start[0],ATOOLS::nullstring,
 	      ATOOLS::nullstring,false);
+#ifdef DEBUG__Simple_Chain
+  comments.back()="   Integrated XS    "; 
+  Grid_Function_Type *total = 
+    p_differential->IntegralY(m_stop[4],m_start[0],"Id","Id",false);
+  gridhandler = new Grid_Handler_Type(total);
+  gridhandler->SetStreamName(OutputPath()+integralfile);
+  gridhandler->WriteOut(ATOOLS::Type::TFStream,"",comments);
+  delete gridhandler;
+  delete total;
+#endif
   m_sigmahard=p_total->YMax();
   msg_Tracking()<<"Simple_Chain::CalculateTotal(): Result is {\n"
 		<<"   \\sigma_{hard} = "
@@ -523,8 +540,8 @@ bool Simple_Chain::CalculateTotal()
 	 pit!=m_processmap.end();++pit) {
       group->Add(pit->second);
     }
-    CheckConsistency(group,p_total,m_stop[0],m_start[0],
-		     p_total->Y(m_stop[0]));
+    CheckConsistency(group,p_total,m_stop[4],m_start[4],
+		     p_total->Y(m_stop[4]));
     for (Process_Map::iterator pit=m_processmap.begin();
 	 pit!=m_processmap.end();++pit) {
       group->Remove(pit->second);
@@ -533,14 +550,6 @@ bool Simple_Chain::CalculateTotal()
   }
   p_total->ScaleY(1.0/m_norm);
 #ifdef DEBUG__Simple_Chain
-  comments.back()="   Integrated XS    "; 
-  Grid_Function_Type *total = 
-    p_differential->IntegralY(m_stop[0],m_start[0],"Id","Id",false);
-  gridhandler = new Grid_Handler_Type(total);
-  gridhandler->SetStreamName(OutputPath()+integralfile);
-  gridhandler->WriteOut(ATOOLS::Type::TFStream,"",comments);
-  delete gridhandler;
-  delete total;
   comments.back()="   Normalized XS    "; 
   gridhandler = new Grid_Handler_Type(p_total);
   gridhandler->SetStreamName(OutputPath()+normalizedfile);
@@ -573,8 +582,10 @@ bool Simple_Chain::Initialize()
   SetInputFile(xsfile,1);
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
-  if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
   SetStop(stop,0);
+  if (!reader->ReadFromFile(stop,"GRID_X_MIN")) stop=Stop(0);
+  SetStop(stop,4);
+  if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=0;
   std::string function;
   if (reader->ReadFromFile(function,"PROFILE_FUNCTION")) {
     std::vector<double> parameters;

@@ -23,11 +23,12 @@ namespace AMISIC {
   }
   
   template <class ArgumentType>
-  void Amisic_Histogram<ArgumentType>::Initialize(const Argument_Type xmin,
+  bool Amisic_Histogram<ArgumentType>::Initialize(const Argument_Type xmin,
 					   const Argument_Type xmax,
 					   const size_t nbins)
   {
-    if (nbins!=0) m_nbins=nbins;
+    if (nbins<1 || nbins>10000) return false;
+    m_nbins=nbins;
     if (xmin!=xmax) {
       m_xmin=xmin;
       m_xmax=xmax;
@@ -42,6 +43,7 @@ namespace AMISIC {
     }
     m_data[hci::x_value][0]=-std::numeric_limits<Argument_Type>::max();
     m_data[hci::x_value].back()=std::numeric_limits<Argument_Type>::max();
+    return true;
   }
   
   template <class ArgumentType>
@@ -114,10 +116,9 @@ namespace AMISIC {
   ArgumentType Amisic_Histogram<ArgumentType>::Norm() const
   {
     Argument_Type integral=0.0;
-    for (size_t i=0;i<m_data[hci::x_value].size()-1;++i) {
-      integral+=((*p_xaxis)[m_data[hci::x_value][i+1]]-
-		 (*p_xaxis)[m_data[hci::x_value][i]])*
-	(*p_yaxis)[m_data[hci::yvalue][i]];
+    for (size_t i=1;i<m_data[hci::x_value].size()-1;++i) {
+      integral+=(m_data[hci::x_value][i+1]-m_data[hci::x_value][i])*
+	(*p_yaxis)[m_data[hci::y_value][i]];
     }
     return integral;
   }

@@ -49,8 +49,7 @@ namespace AMISIC {
     
     bool CollectProcesses(EXTRAXS::XS_Base *const process);
 
-    bool UpdateHistogram(EXTRAXS::XS_Base *const process,
-			 const size_t trials);
+    bool UpdateHistogram(EXTRAXS::XS_Base *const process);
 
     bool ExportHistogram(const std::string &name) const;
 

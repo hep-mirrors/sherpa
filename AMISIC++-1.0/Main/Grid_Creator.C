@@ -16,6 +16,7 @@ Grid_Creator::Grid_Creator(Grid_Handler_Map *gridhandlers,
   p_processes(processes),
   m_xsextension("_xs.dat"),
   m_maxextension("_max.dat"),
+  m_mcextension("MC"),
   m_storemax(true)
 {
   if (p_processes==NULL) {
@@ -81,6 +82,7 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   if (!reader->ReadFromFile(m_gridxmin,"GRID_X_MIN")) 
     m_gridxmin=sqrt(ATOOLS::Max(p_processes->ISR()->PDF(0)->Q2Min(),
 				p_processes->ISR()->PDF(1)->Q2Min()));
+  m_gridxmin=ATOOLS::Max(m_gridxmin,1.e-3);
   if (!reader->ReadFromFile(m_gridxmax,"GRID_X_MAX")) 
     m_gridxmax=ATOOLS::rpa.gen.Ecms()/2.0;
   if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) 
@@ -107,9 +109,10 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
     hit->second->XAxis()->SetScaling(m_gridxscaling);
     hit->second->YAxis()->SetScaling(m_gridyscaling);
     Amisic_Histogram_Type::Axis_Type *axis=hit->second->XAxis();
-    hit->second->Initialize(m_gridxmin,m_gridxmax,
-			    abs((int)(((*axis)(m_gridxmax)-
-				       (*axis)(m_gridxmin))/m_griddeltax)));
+    if (!hit->second->Initialize(m_gridxmin,m_gridxmax,
+				 abs((int)(((*axis)(m_gridxmax)-
+					    (*axis)(m_gridxmin))/m_griddeltax))))
+      return false;
   }
   if (!reader->ReadFromFile(m_gridxscaling,
 			    "GRID_X_SCALING")) m_gridxscaling="Log_B_10";
@@ -172,28 +175,23 @@ bool Grid_Creator::InitializeCalculation()
   return true;
 }
 
-bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process,
-				   const size_t trials)
+bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
 {
   if (process->Size()==0) return false;
   if ((*process)[0]==process) {
+    p_processes->SetSelected(process);
+    ATOOLS::Blob_Data_Base *xsdata=p_processes->SameWeightedEvent();
+    PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
     Amisic_Histogram_Type *histo=m_histograms[process->Name()];
-    double weight=process->Differential(p_momenta)*
-      process->PSHandler(false)->PSWeight();
-    if (process->ISR()->On()==3) {
-      weight+=process->Differential2()*process->PSHandler(false)->PSWeight();
-    }
     const ATOOLS::Vec4D *p=process->Momenta();
     double value=p[0].PPerp();
-    for (size_t i=1;i<4;++i) {
-      value=ATOOLS::Max(value,p[i].PPerp());
-    }
-    histo->Add(value,weight);
-    for (size_t i=1;i<trials;++i) histo->Add(value,0.0); 
+    for (size_t i=1;i<4;++i) value=ATOOLS::Max(value,p[i].PPerp());
+    histo->Add(value,info.weight);
+    for (size_t i=1;i<info.ntrial;++i) histo->Add(value,0.0); 
     return true;
   }
   for (size_t i=0;i<process->Size();++i) {
-    if (!UpdateHistogram((*process)[i],trials)) return false;
+    if (!UpdateHistogram((*process)[i])) return false;
   }
   return true;
 }
@@ -201,13 +199,7 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process,
 bool Grid_Creator::CreateOptimizedGrid()
 {
   for (;m_events<m_maxevents;++m_events) {
-    ATOOLS::Blob_Data_Base *xsdata=p_processes->WeightedEvent();
-    PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
-    p_momenta=p_processes->Selected()->Momenta();
-    if (!UpdateHistogram(p_processes,info.ntrial)) return false;
-    if (m_events%1000==0) 
-      msg_Tracking()<<"Grid_Creator::CreateOptimizedGrid(): "
-		    <<"Event "<<m_events<<std::endl;
+    if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_maxevents/100))==0) {
       ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents<<" % ( "
 		       <<ATOOLS::rpa.gen.Timer().UserTime()
@@ -220,18 +212,13 @@ bool Grid_Creator::CreateOptimizedGrid()
 bool Grid_Creator::CreateInitialGrid()
 {
   ATOOLS::rpa.gen.Timer().Start();
-  for (m_events=0;m_events<m_initevents;++m_events) {
-    ATOOLS::Blob_Data_Base *xsdata=p_processes->WeightedEvent();
-    PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
-    p_momenta=p_processes->Selected()->Momenta();
-    if (!UpdateHistogram(p_processes,info.ntrial)) return false;
-    if (m_events%1000==0) 
-      msg_Tracking()<<"Grid_Creator::CreateInitialGrid(): "
-		    <<"Event "<<m_events<<std::endl;
-    if ((m_events%(m_maxevents/100))==0) 
+  for (;m_events<m_maxevents;++m_events) {
+    if (!UpdateHistogram(p_processes)) return false;
+    if ((m_events%(m_maxevents/100))==0) {
       ATOOLS::msg.Out()<<"\r   "<<(100*m_events)/m_maxevents<<" % ( "
 		       <<ATOOLS::rpa.gen.Timer().UserTime()
 		       <<" s )   "<<std::flush;
+    }
   }
   return true;
 }
@@ -248,7 +235,6 @@ bool Grid_Creator::ExportHistogram(const std::string &name) const
     ymax[i-1]=histo->BinMax(i);
   }
   Grid_Function_Type *const grid=p_gridhandlers->find(name)->second->Grid();
-  grid->SetMonotony(grid->None);
   if (!grid->Import(&xdata,&ydata)) return false;
   if (m_storemax) {
     Grid_Function_Type *const max=p_maxhandlers->find(name)->second->Grid();
@@ -312,6 +298,7 @@ bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments,
 {
   if (tempopath!="") SetOutputPath(tempopath);
   bool success=true;
+  p_processes->PSHandler(false)->WriteOut(OutputPath()+MCExtension());
   addcomments.push_back("--------------------");
   addcomments.push_back("--------------------");
   for (Grid_Handler_Map::iterator git=p_gridhandlers->begin();
