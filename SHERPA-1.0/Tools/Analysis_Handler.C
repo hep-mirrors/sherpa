@@ -790,5 +790,9 @@ void Analysis_Handler::SetUpSubSamples()
 
 } 
 
+void Analysis_Handler::PrepareTerminate()
+{
+  Finish();
+}
 
 
