@@ -612,7 +612,7 @@ void Phase_Space_Handler::DropRedundantChannels()
 	if (marker[j]==0) {
 	  //if ( (Compare(perm_vec[i],perm_vec[j])) && 
 	  //     (ATOOLS::IsEqual(res[i],res[j])) ) {
-	  if (p_fsrchannels->ChID(i)==p_fsrchannels->ChID(j)) {
+	  if (CompareCh(p_fsrchannels->ChID(i),p_fsrchannels->ChID(j))) {
 	    msg.Debugging()<<"  "<<(p_fsrchannels->Channel(i))->Name()
 			   <<" and "<<(p_fsrchannels->Channel(j))->Name()
 			   <<" are identical."<<endl;
@@ -665,6 +665,17 @@ void Phase_Space_Handler::DropRedundantChannels()
   //delete [] perm_vec; 
 }
   
+bool Phase_Space_Handler::CompareCh(std::string C1,std::string C2)
+{
+  int l=Min(C1.length(),C1.length());
+  for (int i=0;i<l;i++) {
+    if (C1[i]!=C2[i]) return 0;
+    if (C1[i]=='Z') return 1;
+  }
+  return 1;
+}
+
+
 bool Phase_Space_Handler::Compare(const Vec4D *p1,const Vec4D *p2)
 {
   if (m_nout==2) {

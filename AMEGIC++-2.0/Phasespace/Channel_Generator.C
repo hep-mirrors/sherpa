@@ -144,6 +144,18 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
   if (nin == 2) {
     switch (tcount) {
       case 0 : {
+	if (flag==-11) {
+	  Point* ph = p->left;
+	  if (ph->left==0) {
+	    ph = p->right;
+	    if (ph->left==0 && p->middle) ph = p->middle;
+	  }
+	  if (ph && !IsZero(ph->fl.Mass())) {
+	    char hs[4];
+	    sprintf(hs,"%i",ph->fl.Kfcode());
+	    m_idc.push_back(string("ZR")+string(hs));
+	  }
+	}
 	if (flag<2) {
 	  m = LinkedMasses(p->left);
 	  if (m.length()<2) m = LinkedMasses(p->right);
