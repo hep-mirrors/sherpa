@@ -335,6 +335,8 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
     p[n-2+i]=m_fixvecs[i];
     m_kmrboost.Boost(p[n-2+i]);
     m_kmrrot.RotateBack(p[n-2+i]);
+    m_kmrboost.Boost(p_kmrlast[i]);
+    m_kmrrot.RotateBack(p_kmrlast[i]);
   }
   return true;
 }
