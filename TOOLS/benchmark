@@ -6,8 +6,7 @@ STATUS="Benchmarking report: "
 DATE=`date +'%y-%m-%d'`
 CVSROOT=":ext:141.30.17.250:/usr/local/cvsroot"
 CVS_RSH="ssh"
-COMPILECOMMAND="TOOLS/makeinstall"
-# -t --clean"
+COMPILECOMMAND="TOOLS/makeinstall-t"
 FILE="Benchmark.dat"
 SHERPAPATH="SHERPA-1.0/Run/"
 MEHANDLEREXIT=201
@@ -128,7 +127,7 @@ for I in $LIST ; do
     CleanUp "Results Analysis"
     RUNPATH=$PWD
     cd ../$SHERPAPATH
-#    makeclean >> $RUNPATH"/../"$OUTPUTFILE 2>&1
+    makeclean >> $RUNPATH"/../"$OUTPUTFILE 2>&1
     Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
 	   RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$OUTPUTFILE 2>&1
     while (( $? == $MEHANDLEREXIT )) ; do
