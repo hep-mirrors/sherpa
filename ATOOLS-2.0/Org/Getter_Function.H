@@ -20,7 +20,10 @@ namespace ATOOLS {
 
   protected:
 
-    virtual Object_Type *const operator()(const Parameter_Type &parameters) const;
+    virtual Object_Type *const 
+    operator()(const Parameter_Type &parameters) const;
+
+    virtual void PrintInfo(std::ostream &str) const;
 
   public:
     
@@ -31,6 +34,8 @@ namespace ATOOLS {
     virtual ~Getter_Function();
 
     // member functions
+    static void PrintGetterInfo(std::ostream &str);
+
     static Object_Type *const GetObject(const std::string &name,
 					const Parameter_Type &parameters);
     

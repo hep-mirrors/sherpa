@@ -19,15 +19,21 @@ typename Getter_Function<ObjectType,ParameterType>::String_Getter_Map *
 Getter_Function<ObjectType,ParameterType>::s_getters=NULL;
 
 template<class ObjectType,class ParameterType>
-Getter_Function<ObjectType,ParameterType>::Getter_Function(const std::string &name)
+Getter_Function<ObjectType,ParameterType>::
+Getter_Function(const std::string &name)
 {
   static bool initialized=false;
   if (!initialized) {
     s_getters = new String_Getter_Map();
     initialized=true;
   }
+#ifdef DEBUG__Getter_Function
+  std::cout<<"Getter_Function::Getter_Function(..): "
+	   <<"Added getter '"<<this<<"' -> \""<<name<<"\"."<<std::endl;
+#endif
   if (s_getters->find(name)==s_getters->end()) {
-    s_getters->insert(std::pair<const std::string,Getter_Function *const>(name,this));
+    s_getters->insert(std::pair<const std::string,
+		      Getter_Function *const>(name,this));
   }
   else {
     std::cout<<"Getter_Function::Getter_Function(\""<<name<<"\"): "
@@ -49,12 +55,30 @@ Getter_Function<ObjectType,ParameterType>::~Getter_Function()
 }
 
 template<class ObjectType,class ParameterType>
+void Getter_Function<ObjectType,ParameterType>::
+PrintInfo(std::ostream &str) const
+{
+  str<<"No Information";
+}
+
+template<class ObjectType,class ParameterType>
 ObjectType *const Getter_Function<ObjectType,ParameterType>::
 operator()(const Parameter_Type &parameters) const
 {
-  ATOOLS::msg.Error()<<"Getter_Function<OBJECT_TYPE,PARAMETER_TYPE>::operator(): "
-		     <<"Virtual function called."<<std::endl;
+  std::cout<<"Getter_Function::operator(): "
+	   <<"Virtual function called."<<std::endl;
   return NULL;
+}
+
+template<class ObjectType,class ParameterType>
+void Getter_Function<ObjectType,ParameterType>::
+PrintGetterInfo(std::ostream &str)
+{
+  for (typename String_Getter_Map::const_iterator git=s_getters->begin();
+       git!=s_getters->end();++git) {
+    str<<"   \""<<git->first<<"\" ";
+    git->second->PrintInfo(str);
+  }
 }
 
 template<class ObjectType,class ParameterType>
