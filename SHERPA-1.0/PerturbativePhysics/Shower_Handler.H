@@ -40,6 +40,7 @@ namespace SHERPA {
     APACIC::Tree  * GetFinTree(); 
     APACIC::Tree ** GetIniTrees();
     APACIC::Hard_Interface *GetApacic() { return p_apacic; }
+    void SetJetvetoPt2(const double pt2) { p_apacic->SetJetvetoPt2(pt2); }
   };
 
 

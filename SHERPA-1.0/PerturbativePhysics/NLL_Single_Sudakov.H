@@ -18,7 +18,7 @@ namespace SHERPA {
     double m_qlimit;
     NLL_Branching_Probability_Base * p_bp;
     ATOOLS::Gauss_Integrator m_gauss;
-    ATOOLS::Fast_Function    log_delta;
+    ATOOLS::Fast_Function    m_log_delta;
   public:
     NLL_Single_Sudakov(NLL_Branching_Probability_Base *,int);
 

@@ -18,11 +18,11 @@ NLL_Single_Sudakov::NLL_Single_Sudakov(NLL_Branching_Probability_Base * bp,int m
     // initialize table
     std::cout<<" Initializing table "<<std::endl;
     m_calcmode=Sudakov::create_table;
-    log_delta.Init(*this,m_qmin,m_qmax,600);
+    m_log_delta.Init(*this,m_qmin,m_qmax,600);
     m_calcmode=Sudakov::table;
     std::cout<<" done "<<std::endl;
 
-    //    log_delta.WriteOut("Sudakov-test.dat");
+    //    m_log_delta.WriteOut("Sudakov-test.dat");
   }
 }
 
@@ -41,17 +41,24 @@ double NLL_Single_Sudakov::Log(double Q, double q)
     }
   }
   else if (m_calcmode == Sudakov::table) {
-    if (q!=m_qmin) {
+    if (!IsEqual(q,m_qmin)) {
+      // -------------- use numeric routine -------------
+      m_calcmode=Sudakov::numeric;
+      double logdelta=Log(Q,q);
+      m_calcmode=Sudakov::table;
+      return logdelta;
+
+      // ---------------- default: recreate table: -------------
       std::cout<<"ERROR: table calculated with qmin="<<m_qmin<<" but called with "<<q<<std::endl;
       m_qmin=q;
       // reinit
       std::cout<<" Initializing table "<<std::endl;
       m_calcmode=Sudakov::create_table;
-      log_delta.Init(*this,m_qmin,m_qmax,600);
+      m_log_delta.Init(*this,m_qmin,m_qmax,600);
       m_calcmode=Sudakov::table;
       std::cout<<" done "<<std::endl;
     }
-    return log_delta(Q);
+    return m_log_delta(Q);
   }
 
   // m_calcmode == Sudakov::numeric || m_calcmode == Sudakov::create_table

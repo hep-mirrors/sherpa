@@ -99,6 +99,10 @@ namespace SHERPA {
   typedef MEHandlersMap::iterator                        MEHandlerIter;
 
   /*!
+    \file 
+    \brief Contains the class SHERPA::Matrix_Element_Handler
+  */
+  /*!
     \class Matrix_Element_Handler
     \brief A wrapper around matrix element generators.
 
