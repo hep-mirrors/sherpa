@@ -513,9 +513,10 @@ void Process_Group::SetTables(bool _tables)
 void Process_Group::SetTotal(int flag, int depth)  { 
   if (flag!=2) {
     m_totalxs  = TotalResult(); 
+    RescaleXSec(1.);
     m_totalerr = TotalVar();
-//     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-// 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+    //     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
+    // 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
     if ((m_nin==1 && m_nout==2) || m_n==1) m_totalerr = 0.;
     if (p_selector) p_selector->Output();
     m_max = 0.;
@@ -795,13 +796,18 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     ATOOLS::Exception_Handler::AddTerminatorObject(this);
     long unsigned int points=m_n;
     m_totalxs = p_pshandler->Integrate();
+    
     if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn(); 
+    
+        
     if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
       msg.Error()<<"ERROR in Process_Group::CalculateTotalXSec :"
 		 <<"Result of PS-Integrator and internal summation do not coincide!"<<endl
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<endl;
     }
+
     SetTotal(0);
+    RescaleXSec(1.);
     if (m_totalxs>0.) {
       if (points==m_n) {
 	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
@@ -847,10 +853,14 @@ void Process_Group::PrepareTerminate()
 }
 
 void  Process_Group::RescaleXSec(double fac) {
-  Process_Base::RescaleXSec(fac);
+  double sumxs=0.;
+  for (size_t i=0;i<m_procs.size();++i) sumxs +=m_procs[i]->TotalXS();
+  m_totalxs = sumxs;
+  
   for (size_t i=0;i<m_procs.size();i++) {
     m_procs[i]->RescaleXSec(fac);
   }
+  Process_Base::RescaleXSec(fac);
 }
 
 void Process_Group::SetupEnhance() {
