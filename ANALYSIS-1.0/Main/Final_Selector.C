@@ -1,6 +1,7 @@
 #include "Final_Selector.H"
 #include "Primitive_Analysis.H"
 #include "Message.H"
+#include "MyStrStream.H"
 
 #include <algorithm>
 
@@ -267,12 +268,18 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
   Final_Data_Map::iterator it =m_fmap.find(Flavour(kf::jet));
   if (it!=m_fmap.end()) {
     if (it->second.r_min>0.) {
-      p_ktalg->ConstructJets(pl_in,pl_out,0,it->second.r_min);
+      std::vector<double> * diffrates=new std::vector<double>();
+      p_ktalg->ConstructJets(pl_in,pl_out,diffrates,it->second.r_min);
       // add leptons
       for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
 	if ((*pit)->Flav().IsLepton()) pl_out->push_back(new Particle(*pit));
       }
       m_ownlist=true;
+      MyStrStream str;
+      str<<"KtJetrates("<<it->second.r_min<<")"<<m_listname;
+      std::string key;
+      str>>key;
+      p_ana->AddData(key,new Blob_Data<std::vector<double> *>(diffrates));
     }
     else {
       // else look only for other selectors

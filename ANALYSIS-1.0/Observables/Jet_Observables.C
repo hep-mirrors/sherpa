@@ -151,3 +151,47 @@ Primitive_Observable_Base * Jet_PT_Distribution::Copy() const
 {
   return new Jet_PT_Distribution(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
 }
+
+
+
+Jet_Differential_Rates::Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,
+					       unsigned int mode,unsigned int minn,unsigned int maxn, 
+					       const std::string & lname) :
+  Jet_Observable_Base(type,xmin,xmax,nbins,mode,minn,maxn,lname) 
+{
+  m_name="KtJetrates(1)"+m_name;
+}
+
+
+void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, int ncount)
+{
+  std::string key="KtJetrates(1)"+m_listname;
+  Blob_Data_Base * rates=(*p_ana)[key];
+  if (!rates) {
+    msg.Out()<<" WARNING "<<key<<" not found "<<std::endl;
+    return;
+  }
+  std::vector<double> * jd=rates->Get<std::vector<double> *>();
+
+  size_t j=jd->size();
+  for (size_t i=0; i<m_histos.size();++i) {
+    if (j>0) {
+      --j;
+      m_histos[i]->Insert(sqrt((*jd)[j]),weight,ncount);
+    }
+    else {
+      m_histos[i]->Insert(0.,0.,ncount);
+    }
+  }
+}
+
+double Jet_Differential_Rates::Calc(const Particle *) 
+{
+  return 0.;
+}
+
+
+Primitive_Observable_Base * Jet_Differential_Rates::Copy() const 
+{
+  return new Jet_Differential_Rates(m_type,m_xmin,m_xmax,m_nbins,m_mode,m_minn,m_maxn,m_listname);
+}

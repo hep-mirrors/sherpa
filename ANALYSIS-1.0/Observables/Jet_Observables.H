@@ -58,5 +58,16 @@ namespace ANALYSIS {
     Primitive_Observable_Base * Copy() const ;
   };
 
+  class Jet_Differential_Rates : public Jet_Observable_Base {
+  public:
+    Jet_Differential_Rates(unsigned int type,double xmin,double xmax,int nbins,
+			   unsigned int mode, unsigned int minn,unsigned int maxn, 
+			   const std::string & =std::string("FinalState"));
+    double Calc(const ATOOLS::Particle *);
+    void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
+
+    Primitive_Observable_Base * Copy() const ;
+  };
+
 }
 #endif
