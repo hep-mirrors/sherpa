@@ -59,6 +59,7 @@ namespace ANALYSIS {
     double                  Xmin()  const;
     double                  Xmax()  const;
     std::string             Name()  const;
+    void SetName(const std::string &);
     ATOOLS::Histogram     * Histo() const;
     ATOOLS::Selector_Base * Sel()   const;
     bool                    Splittable() const;
@@ -70,6 +71,9 @@ namespace ANALYSIS {
   inline double                  Primitive_Observable_Base::Xmin()       const { return m_xmin; }
   inline double                  Primitive_Observable_Base::Xmax()       const { return m_xmax; }
   inline std::string             Primitive_Observable_Base::Name()       const { return m_name; }
+
+  inline void Primitive_Observable_Base::SetName(const std::string & name ) { m_name=name; }
+
   inline ATOOLS::Histogram     * Primitive_Observable_Base::Histo()      const { return p_histo; }
   inline ATOOLS::Selector_Base * Primitive_Observable_Base::Sel()        const { return p_sel; }
   inline bool                    Primitive_Observable_Base::Splittable() const { return m_splitt_flag; }

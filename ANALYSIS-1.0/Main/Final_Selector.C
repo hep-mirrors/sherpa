@@ -288,6 +288,17 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
       str>>key;
       //      std::cout<<" creating : "<<key<<" with "<<diffrates->size()<<" elements "<<std::endl;
       p_ana->AddData(key,new Blob_Data<std::vector<double> *>(diffrates));
+
+      Blob_Data_Base * ktdrs=(*p_ana)["KtDeltaRs"];
+      if (ktdrs) {
+	ktdrs->Get<std::vector<double> *>()->push_back(it->second.r_min);
+      }
+      else {
+	std::vector<double> * drs = new std::vector<double>;
+	drs->push_back(it->second.r_min);
+	p_ana->AddData("KtDeltaRs",new Blob_Data<std::vector<double> *>(drs));
+      }
+
     }
     else {
       // else look only for other selectors

@@ -50,6 +50,16 @@ Primitive_Analysis::~Primitive_Analysis()
 void Primitive_Analysis::AddObservable(Primitive_Observable_Base * obs) 
 {
   obs->SetAnalysis(p_partner);
+  std::string oname=obs->Name();
+  std::string id="_A";
+  size_t pos=oname.find(".dat");
+  for(size_t i=0;i<m_observables.size();++i) {
+    if (m_observables[i]->Name()==obs->Name()) {
+      std::string pname=oname.substr(0,pos)+id+oname.substr(pos);
+      obs->SetName(pname);
+      ++id[1];
+    }
+  }
   m_observables.push_back(obs);
 }
 

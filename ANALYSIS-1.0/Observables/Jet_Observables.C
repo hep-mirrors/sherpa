@@ -186,7 +186,15 @@ Jet_Differential_Rates::Jet_Differential_Rates(unsigned int type,double xmin,dou
 
 void Jet_Differential_Rates::Evaluate(const Blob_List & blobs,double weight, int ncount)
 {
+  Blob_Data_Base * ktdrs=(*p_ana)["KtDeltaRs"];
   std::string key="KtJetrates(1)"+m_listname;
+  if (ktdrs) {
+    std::vector<double> * drs=ktdrs->Get<std::vector<double> *>();
+    MyStrStream str;
+    str<<"KtJetrates("<<(*drs)[0]<<")"<<m_listname;
+    str>>key;
+  }
+
   Blob_Data_Base * rates=(*p_ana)[key];
   if (!rates) {
     msg.Out()<<" WARNING "<<key<<" not found "<<std::endl;
