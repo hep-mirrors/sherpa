@@ -96,16 +96,18 @@ echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n"
 echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n" >> $OUTPUTFILE
 LIST=""
 
-echo -en "checking out current benchmarking points from cvs ... " >> $LOGFILE
-echo -e "checking out current benchmarking points from cvs {\n" >> $OUTPUTFILE
-if ! cvs update -d benchmark >> $OUTPUTFILE 2>&1 ; then
-  echo -e "checkout failed\n\nbenchmark: cvs checkout failed" >> $LOGFILE
-  echo -e "\n} checkout failed\n\nbenchmark: cvs checkout failed" >> $OUTPUTFILE
-  CVS_ERROR=TRUE
-  SendMail 1
-else 
-  echo -e "finished" >> $LOGFILE
-  echo -e "\n} finished checkout\n" >> $OUTPUTFILE
+if [ "$UPDATE" = "TRUE" ] ; then
+  echo -en "checking out current benchmarking points from cvs ... " >> $LOGFILE
+  echo -e "checking out current benchmarking points from cvs {\n" >> $OUTPUTFILE
+  if ! cvs update -d benchmark >> $OUTPUTFILE 2>&1 ; then
+    echo -e "checkout failed\n\nbenchmark: cvs checkout failed" >> $LOGFILE
+    echo -e "\n} checkout failed\n\nbenchmark: cvs checkout failed" >> $OUTPUTFILE
+    CVS_ERROR=TRUE
+    SendMail 1
+  else 
+    echo -e "finished" >> $LOGFILE
+    echo -e "\n} finished checkout\n" >> $OUTPUTFILE
+  fi
 fi
 if [ -f $DIR/$FILE ] ; then
   GetList < $DIR/$FILE
