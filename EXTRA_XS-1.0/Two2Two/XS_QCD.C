@@ -2,6 +2,7 @@
 #include "Random.H"
 #include "Run_Parameter.H"
 #include "Running_AlphaS.H"
+#include "Flow.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -13,17 +14,39 @@ using namespace ATOOLS;
    by the factor 4 Pi for each alpha
 */
 
-XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) : 
-  Single_XS(_nin,_nout,_fl) 
+XS_pp_ffbar::XS_pp_ffbar(const size_t nin,const size_t nout,
+			 const ATOOLS::Flavour *fl) :
+  Single_XS(nin,nout,fl)  
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  a  = _fl[0].IsAnti();
-  p = _fl[1].IsAnti();
+  if (p_flavours[2].Strong()) {
+    int a  = p_flavours[2].IsAnti();
+    p_colours[2][a] = 500;
+    p_colours[3][1-a] = 500;
+  }
+}
+double XS_pp_ffbar::operator()(double s,double t,double u) 
+{ 
+  return 0.0; 
+}
+
+bool XS_pp_ffbar::SetColours(double s,double t,double u) 
+{ 
+  m_scale = s;
+  return 1; 
+}
+
+XS_q1q2_q1q2::XS_q1q2_q1q2(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
+  Single_XS(nin,nout,fl) 
+{
+  for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
+  a  = fl[0].IsAnti();
+  p = fl[1].IsAnti();
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
 double XS_q1q2_q1q2::operator()(double s,double t,double u) {
-  if (s<m_thres) return 0.;
+  if (s<m_threshold) return 0.;
   return sqr(4.*M_PI*aS)* 4. * (s*s + u*u) / ( 9. * t*t);
 }
 
@@ -31,7 +54,7 @@ bool XS_q1q2_q1q2::SetColours(double s,double t,double u)
 { 
   bool swap=m_swaped;
   RestoreInOrder();
-  int r = !(p_fl[0] == p_fl[2]);
+  int r = !(p_flavours[0] == p_flavours[2]);
   if (a==p) {
     p_colours[0][a] = p_colours[3-r][a] = Flow::Counter();
     p_colours[1][a] = p_colours[2+r][a] = Flow::Counter();
@@ -48,20 +71,20 @@ bool XS_q1q2_q1q2::SetColours()                           { return 1; }
 
 //----------------------------------------------------------------------
 
-XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(int _nin,int _nout, 
-				       Flavour * _fl)  : 
-  Single_XS(_nin,_nout,_fl) 
+XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(const size_t nin,const size_t nout, 
+				       const ATOOLS::Flavour *fl)  : 
+  Single_XS(nin,nout,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
-  a = _fl[0].IsAnti();
+  a = fl[0].IsAnti();
   p = 1-a;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
 double XS_q1qbar1_q2qbar2::operator()(double s,double t,double u) {
-  if (s<m_thres) return 0.;
+  if (s<m_threshold) return 0.;
   return sqr(4.*M_PI*aS)* 4. * (t*t + u*u) / ( 9. * s*s); 
 }
 
@@ -69,9 +92,7 @@ bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u)
 { 
   bool swap=m_swaped;
   RestoreInOrder();
-  int r = !(p_fl[0].IsAnti() == p_fl[2].IsAnti());
-
-  // !!! 1 und 2  swap !
+  int r = !(p_flavours[0].IsAnti() == p_flavours[2].IsAnti());
   p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
   p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
 
@@ -84,18 +105,18 @@ bool XS_q1qbar1_q2qbar2::SetColours()                           { return 1; }
 //----------------------------------------------------------------------
 // Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
 
-XS_q1q1_q1q1::XS_q1q1_q1q1(int _nin,int _nout, Flavour * _fl) : 
-  Single_XS(_nin,_nout,_fl) 
+XS_q1q1_q1q1::XS_q1q1_q1q1(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
+  Single_XS(nin,nout,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
-  a  = _fl[0].IsAnti();
+  a  = fl[0].IsAnti();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
 double XS_q1q1_q1q1::operator()(double s,double t,double u) {
-  if (s<m_thres) return 0.;
+  if (s<m_threshold) return 0.;
   Mt    = (s*s + u*u) / (t*t);
   Mu    = (s*s + t*t) / (u*u);
   return sqr(4.*M_PI*aS) * 4./9.*(Mt + Mu - 2./3. * (s*s) / (u*t)) /2.;
@@ -131,21 +152,21 @@ bool XS_q1q1_q1q1::SetColours()
 
 //----------------------------------------------------------------------
 
-XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(int _nin,int _nout, 
-				       Flavour * _fl) : 
-  Single_XS(_nin,_nout,_fl) 
+XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(const size_t nin,const size_t nout, 
+				       const ATOOLS::Flavour *fl) : 
+  Single_XS(nin,nout,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
-  a  = _fl[0].IsAnti();
+  a  = fl[0].IsAnti();
   p  = 1-a;
-  r = !(_fl[0] == _fl[2]);
+  r = !(fl[0] == fl[2]);
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
 double XS_q1qbar1_q1qbar1::operator()(double s,double t,double u) {
-  if (s<m_thres) return 0.;
+  if (s<m_threshold) return 0.;
   Mt = 1. - 2.*(u*s)/(t*t); 
   Ms = 1. - 2.*(t*u)/(s*s); 
   return sqr(4.*M_PI*aS)*4./9.*(Mt + Ms - 2./3. * (u*u) / (s*t));
@@ -181,20 +202,20 @@ bool XS_q1qbar1_q1qbar1::SetColours()
 //----------------------------------------------------------------------
 // Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
 
-XS_q1qbar1_gg::XS_q1qbar1_gg(int _nin,int _nout, 
-			     Flavour * _fl) : 
-  Single_XS(_nin,_nout,_fl) 
+XS_q1qbar1_gg::XS_q1qbar1_gg(const size_t nin,const size_t nout, 
+			     const ATOOLS::Flavour *fl) : 
+  Single_XS(nin,nout,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
-  a = _fl[0].IsAnti();
+  a = fl[0].IsAnti();
   p = 1-a;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
 double XS_q1qbar1_gg::operator()(double s,double t,double u) {
-  if (s<m_thres) return 0.;
+  if (s<m_threshold) return 0.;
   Mt = u/t;
   Mu = t/u;
   return sqr(4.*M_PI*aS)* (32./27.*(Mt+Mu) - 8./3.*(t*t +u*u)/ (s*s)) /2.;
@@ -233,10 +254,10 @@ bool XS_q1qbar1_gg::SetColours()
 
 //----------------------------------------------------------------------
 
-XS_gg_q1qbar1::XS_gg_q1qbar1(int _nin,int _nout, Flavour * _fl) : 
-  Single_XS(_nin,_nout,_fl) 
+XS_gg_q1qbar1::XS_gg_q1qbar1(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
+  Single_XS(nin,nout,fl) 
 {
-  r = _fl[2].IsAnti();
+  r = fl[2].IsAnti();
 
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
@@ -244,7 +265,7 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(int _nin,int _nout, Flavour * _fl) :
 }
 
 double XS_gg_q1qbar1::operator()(double s,double t,double u) {
-  if (s<m_thres) return 0.;
+  if (s<m_threshold) return 0.;
   Mt = u/t;
   Mu = t/u;
   return sqr(4.*M_PI*aS)*(1./6.* ( Mt + Mu )   - 3./8. *(t*t +u*u)/ (s*s)); 
@@ -282,32 +303,32 @@ bool XS_gg_q1qbar1::SetColours()
 
 //----------------------------------------------------------------------
 
-XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) : 
-  Single_XS(_nin,_nout,_fl) 
+XS_q1g_q1g::XS_q1g_q1g(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
+  Single_XS(nin,nout,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   ini_q=0;
   swap_ut=0;
-  if (_fl[1].IsQuark()){
+  if (fl[1].IsQuark()){
     ini_q=1;
     swap_ut=1;
   }
 
   fin_q=2;
-  if (_fl[3].IsQuark()) {
+  if (fl[3].IsQuark()) {
     fin_q=3;
     if (swap_ut) swap_ut=0;
     else swap_ut=1;
   }
 
-  a = _fl[ini_q].IsAnti();
+  a = fl[ini_q].IsAnti();
   p = 1-a;
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
 double XS_q1g_q1g::operator()(double s,double t,double u) {
-  if (s<m_thres) return 0.;
+  if (s<m_threshold) return 0.;
   if (swap_ut) {
     Ms = t/s;
     Mu = s/t;
@@ -358,8 +379,8 @@ bool XS_q1g_q1g::SetColours()
 //----------------------------------------------------------------------
 // Note : Combinatorical factor of 2 for identical outgoing particles explicitly added
 
-XS_gg_gg::XS_gg_gg(int _nin,int _nout, Flavour * _fl) : 
-  Single_XS(_nin,_nout,_fl) 
+XS_gg_gg::XS_gg_gg(const size_t nin,const size_t nout, const ATOOLS::Flavour *fl) : 
+  Single_XS(nin,nout,fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
@@ -367,7 +388,7 @@ XS_gg_gg::XS_gg_gg(int _nin,int _nout, Flavour * _fl) :
 }
 
 double XS_gg_gg::operator()(double s,double t,double u) {
-  if (s<m_thres) return 0.;
+  if (s<m_threshold) return 0.;
   Ms = 1 - t*u/(s*s);
   Mt = 1 - s*u/(t*t);
   Mu = 1 - s*t/(u*u);

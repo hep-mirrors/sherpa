@@ -2,46 +2,44 @@
 #define Single_XS_H
 
 #include "XS_Base.H"
-#include "Standard_Selector.H"
+
+namespace ATOOLS { class Blob_Data_Base; }
 
 namespace EXTRAXS {
 
   class Single_XS : public XS_Base {
-  protected:
-    double m_thres;
   public:
-    Single_XS(int,int,ATOOLS::Flavour *,
-	      PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,ATOOLS::Selector_Data *,
-	      int,int,double);
-    Single_XS(int,int,ATOOLS::Flavour *);
 
-    virtual int                        Size();
-    virtual XS_Base                  * operator[](int idx);
-    virtual void                       SetISR(PDF::ISR_Handler *);
+    // constructors
+    Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours);
+    Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
+	      const int scalescheme,const int kfactorscheme,const double scalefactor,
+	      BEAM::Beam_Spectra_Handler *const beamhandler,
+	      PDF::ISR_Handler *const isrhandler,
+	      ATOOLS::Selector_Data *const selectordata);
 
-    bool                               CalculateTotalXSec();
-    void                               SetTotalXS();
-    void                               AddPoint(const double);
+    // member functions
+    size_t Size();
 
-    virtual double                     Differential2();
-    virtual double                     Differential(double,double,double);
-    virtual double                     operator()(double,double,double);
-    virtual bool                       SetColours(double, double, double) = 0;
+    double Differential2();
 
-    virtual bool                       OneEvent();
-    virtual void                       UpdateCuts(double,double)           {}
-    virtual void                       DeSelect()                          {}
-    virtual void                       SelectOne()                         {}
-  };
+    void SetISR(PDF::ISR_Handler *const isrhandler);
+    void SetTotalXS();
 
-  inline int Single_XS::Size() { return 1; }
-  inline XS_Base * Single_XS::operator[](int idx) {
-    ATOOLS::msg.Error()<<"Error in XS_Base * Single_XS::operator[]. "<<std::endl
-			  <<"   This is absolutely meaningless. Return this."<<std::endl;
-    return this;
-  }
-  inline void Single_XS::SetISR(PDF::ISR_Handler * _isr) { p_isr     = _isr; }
-}
+    double Differential(const double s,const double t,const double u);
+    double operator()(const double s,const double t,const double u);
+    void   AddPoint(const double xs);
+
+    bool CalculateTotalXSec(const std::string &resultpath);
+    void WriteOutXSecs(std::ofstream &outfile);
+
+    bool   OneEvent();
+
+    ATOOLS::Blob_Data_Base *WeightedEvent();
+
+  };// end of class Single_XS
+
+}// end of namespace EXTRAXS
 
 #endif
 

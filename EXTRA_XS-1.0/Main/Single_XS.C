@@ -1,117 +1,119 @@
 #include "Single_XS.H"
+
+#include "Phase_Space_Handler.H"
 #include "Run_Parameter.H"
-#include "ISR_Base.H"
-#include "Running_AlphaS.H"
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
+#include "Message.H"
 
 using namespace EXTRAXS;
-using namespace PHASIC;
-using namespace ATOOLS;
-using namespace std;
 
-int fak(int N)
+Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
+		     const int scalescheme,const int kfactorscheme,const double scalefactor,
+		     BEAM::Beam_Spectra_Handler *const beamhandler,
+		     PDF::ISR_Handler *const isrhandler,
+		     ATOOLS::Selector_Data *const selectordata):
+  XS_Base(nin,nout,flavours,scalescheme,kfactorscheme,scalefactor,
+	  beamhandler,isrhandler,selectordata)
 {
-  if (N == 0) return 1;
-  if (N < 0) return 0;  
-  int res =1;
-  for (int i=1;i<=N;i++) res *= i;
-  return res;
+  p_selected=this;
 }
 
-Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl,
-		     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
-		     ATOOLS::Selector_Data * _seldata,
-		     int _scalescheme,int _kfactorscheme,double _scalefactor) :
-  XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor)
+Single_XS::Single_XS(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
+  XS_Base(nin,nout,flavours)
 {
-  double mass = 0.;
-  for (int i=0;i<m_nin;i++)  mass += _fl[i].PSMass(); 
-  m_thres     = ATOOLS::sqr(mass);
-  mass        = 0.;
-  for (int i=2;i<2+m_nout;i++) mass += _fl[i].PSMass();
-  m_thres     = ATOOLS::Max(m_thres,sqr(mass));
-
-  p_selected = this;
+  p_selected=this;
 }
 
-Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl) :
-  XS_Base(_nin,_nout,_fl),
-  m_thres(0.)
+void Single_XS::WriteOutXSecs(std::ofstream &outfile)
 {
-  p_selected = this;
+  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<std::endl;
 }
 
-
-bool Single_XS::CalculateTotalXSec() 
+bool Single_XS::CalculateTotalXSec(const std::string &resultpath) 
 { 
   m_n=0;
   m_last=m_lastlumi=m_lastdxs=0.0;
   m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
-  if (p_ps) {
-    m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn();
+  if (p_pshandler) {
+    m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn();
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
-      msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
-		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
+      ATOOLS::msg.Error()<<"Single_XS::CalculateTotalXSec(..): ("<<this<<")"<<std::endl
+			 <<ATOOLS::om::red<<"   Integrator result and internal summation "
+			 <<"do not coincide!"<<ATOOLS::om::reset<<std::endl
+			 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<std::endl;
     }
-    if (m_totalxs>0.) return 1;
-    return 0;
+    if (m_totalxs>0.) return true;
+    return false;
   }
-  msg.Error()<<"Error in Single_Process::CalculateTotalXSec()."<<endl
-	     <<"   No pointer to Phase_Space_Handler, implies abuse of this Single_XS."<<endl;
-  return 0;
+  ATOOLS::msg.Error()<<"Single_XS::CalculateTotalXSec(): ("<<this<<")"<<ATOOLS::om::red
+		     <<"No pointer to Phase_Space_Handler ! Abort."<<ATOOLS::om::reset<<std::endl;
+  return false;
 }
 
-bool Single_XS::OneEvent()        { return (p_ps->OneEvent()); }
-
-void Single_XS::SetTotalXS() {
-  m_totalxs  = m_totalsum/m_n; 
-  m_totalerr = sqrt( (m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
-  ATOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
-			 <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
-			 <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
-			 <<"       max : "<<m_max<<endl;
+bool Single_XS::OneEvent() 
+{ 
+  return (p_pshandler->OneEvent()); 
 }
 
-void Single_XS::AddPoint(const double value) {
-  m_n++;
-  m_totalsum             += value;
-  m_totalsumsqr          += value*value;
-  if (value>m_max) m_max  = value;
+ATOOLS::Blob_Data_Base *Single_XS::WeightedEvent() 
+{ 
+  return (p_pshandler->WeightedEvent()); 
 }
 
-double Single_XS::Differential(double s,double t,double u)
+void Single_XS::SetTotalXS() 
 {
-  m_lastdxs = operator()(s,t,u);
-  if (m_lastdxs <= 0.) return m_lastdxs = m_last = 0.;
-  if ((p_isr) && m_nin==2) { 
-    if (p_isr->On()) m_lastlumi = p_isr->Weight(p_fl); 
-    else m_lastlumi = 1.;
-  }
-  else  m_lastlumi = 1.;
-
-  return m_last = m_lastdxs * m_lastlumi;
+  m_totalxs=m_totalsum/m_n; 
+  m_totalerr=sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
+  ATOOLS::msg.Events()<<"      xs for "<<ATOOLS::om::bold<<m_name<<" : "
+		      <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+		      <<ATOOLS::om::reset<<" +/- ("<<ATOOLS::om::red<<m_totalerr<<" pb = "
+		      <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl
+		      <<"       max : "<<m_max<<std::endl;
 }
 
+void Single_XS::AddPoint(const double value) 
+{
+  m_n++;
+  m_totalsum+=value;
+  m_totalsumsqr+=value*value;
+  if (value>m_max) m_max=value;
+}
 
+double Single_XS::Differential(const double s,const double t,const double u)
+{
+  m_lastdxs=operator()(s,t,u);
+  if (m_lastdxs<=0.) return m_lastdxs=m_last=0.;
+  if (p_isrhandler && m_nin==2) { 
+    if (p_isrhandler->On()) m_lastlumi=p_isrhandler->Weight(p_flavours); 
+    else m_lastlumi=1.;
+  }
+  else m_lastlumi=1.;
+  return m_last=m_lastdxs*m_lastlumi;
+}
 
-double Single_XS::Differential2() {
-  if ((p_isr) && m_nin==2) {
-    if ((p_fl[0]==p_fl[1]) || (p_isr->On()==0) ) return 0.;
-    double tmp = m_lastdxs * p_isr->Weight2(p_fl); 
-    m_last    += tmp;
+double Single_XS::Differential2() 
+{
+  if (p_isrhandler && m_nin==2) {
+    if (p_flavours[0]==p_flavours[1] || p_isrhandler->On()==0) return 0.;
+    double tmp=m_lastdxs*p_isrhandler->Weight2(p_flavours); 
+    m_last+=tmp;
     return tmp;
   }
   return 0;
 }
 
-
-double Single_XS::operator()(double s,double t,double u) 
+double Single_XS::operator()(const double s,const double t,const double u) 
 {
   ATOOLS::msg.Error()<<"Single_XS::operator()("<<s<<","<<t<<","<<u<<"): "
 		     <<"Virtual method called!"<<std::endl;
-  return 0.0;
+  return 0.;
+}
+
+size_t Single_XS::Size() 
+{ 
+  return 1; 
+}
+
+void Single_XS::SetISR(PDF::ISR_Handler *const isrhandler) 
+{ 
+  p_isrhandler=isrhandler; 
 }

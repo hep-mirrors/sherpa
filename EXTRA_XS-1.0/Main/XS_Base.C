@@ -1,233 +1,218 @@
 #include "XS_Base.H"
 
-#include "Run_Parameter.H"
+#include "Phase_Space_Handler.H"
 #include "Running_AlphaS.H"
+#include "Combined_Selector.H"
+#include "Standard_Selector.H"
+#include "Run_Parameter.H"
 #include "Message.H"
+
 #include <stdio.h>
 
 using namespace EXTRAXS;
-using namespace MODEL;
-using namespace ATOOLS;
-using namespace std;
 
-
-XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
-		 PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
-		 ATOOLS::Selector_Data * _seldata,
-		 int _scalescheme,int _kfactorscheme,double _scalefactor) :
-  m_nin(_nin), m_nout(_nout),m_name(std::string("")),
-  m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),
-  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
-  m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.),
-  p_selected(NULL), p_beam(_beam), p_isr(_isr), p_sel(NULL), p_ps(NULL), 
-  p_fl(NULL), p_colours(NULL), p_moms(NULL), m_swaped(false)
+XS_Base::XS_Base()
 {
-  Init(_fl);
-  ResetSelector(_seldata);
-  p_ps   = new PHASIC::Phase_Space_Handler(this,p_isr,p_beam);
-  p_moms = new ATOOLS::Vec4D[m_nin+m_nout];
+  m_name="Empty XS";
+} 
+
+XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
+		 const int scalescheme,const int kfactorscheme,const double scalefactor,
+		 BEAM::Beam_Spectra_Handler *const beamhandler,PDF::ISR_Handler *const isrhandler,
+		 ATOOLS::Selector_Data *const selectordata):
+  Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,scalefactor,
+		  beamhandler,isrhandler,selectordata),
+  p_colours(NULL)
+{
+  Init(flavours);
+  ResetSelector(selectordata);
+  p_pshandler = new PHASIC::Phase_Space_Handler(this,isrhandler,beamhandler);
 }
 
-XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl) :
-  m_nin(_nin), m_nout(_nout),m_name(std::string("")),
-  m_scalescheme(0), m_kfactorscheme(0), m_scalefactor(1.),
-  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
-  m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.),
-  p_selected(NULL), p_sel(NULL), p_beam(NULL), p_isr(NULL), p_ps(NULL), 
-  p_fl(NULL), p_colours(NULL), p_moms(NULL), m_swaped(false)
+XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
+  Integrable_Base(nin,nout,flavours),
+  p_colours(NULL)
 {
-  Init(_fl);
-  p_sel = new No_Selector();
-  p_moms = new ATOOLS::Vec4D[m_nin+m_nout];
+  Init(flavours);
+  p_selector = new ATOOLS::No_Selector();
 }
 
-XS_Base::~XS_Base() {
-  if (p_fl)       { delete [] p_fl;   p_fl   = 0; }
-  if (p_moms)     { delete [] p_moms; p_moms = 0; }
-  if (p_sel)     { delete    p_sel;  p_sel  = 0; }
-  if (p_colours) { 
-    for (int i=0;i<m_nin+m_nout;i++) delete p_colours[i];
-    delete [] p_colours; p_colours = 0;
+XS_Base::~XS_Base() 
+{
+  if (p_colours!=NULL) { 
+    for (size_t i=0;i<m_nin+m_nout;++i) delete p_colours[i];
+    delete [] p_colours;
   }
 }
 
-void XS_Base::Init(Flavour * _fl)
+void XS_Base::Init(const ATOOLS::Flavour *flavours)
 {
-  p_fl = new Flavour[m_nin+m_nout];
-  if (_fl) {
-    for (short int i=0;i<m_nin+m_nout;i++) p_fl[i]  = _fl[i];
-    GenerateName();
+  p_flavours = new ATOOLS::Flavour[m_nin+m_nout];
+  if (flavours!=NULL) {
+    for (size_t i=0;i<m_nin+m_nout;++i) p_flavours[i]=flavours[i];
+    m_name=GenerateName(m_nin,m_nout,flavours);
   }
   p_colours = new int*[m_nin+m_nout];
-  for (int i=0;i<m_nin+m_nout;i++) { 
-    p_colours[i]    = new int[2]; 
-    p_colours[i][0] = p_colours[i][1] = 0; 
+  for (size_t i=0;i<m_nin+m_nout;++i) { 
+    p_colours[i] = new int[2]; 
+    p_colours[i][0]=p_colours[i][1]=0; 
   }  
-
-  double massin = 0., massout =0.;
-  for (int i=0;i<m_nin;i++)      massin  += p_fl[i].Mass();
-  for (int i=m_nin;i<m_nout;i++) massout += p_fl[i].Mass();
-  if (massin>massout) m_thres = ATOOLS::sqr(massin);
-                 else m_thres = ATOOLS::sqr(massout);
+  double massin=0.0, massout=0.0;
+  for (size_t i=0;i<m_nin;++i) massin+=p_flavours[i].Mass();
+  for (size_t i=m_nin;i<m_nout;++i) massout+=p_flavours[i].Mass();
+  if (massin>massout) m_threshold=ATOOLS::sqr(massin);
+  else m_threshold=ATOOLS::sqr(massout);
 }
 
-void XS_Base::GenerateName() {
+std::string XS_Base::GenerateName(const size_t nin,const size_t nout,
+				  const ATOOLS::Flavour *flavours) 
+{
   char help[20];
-  sprintf(help,"%i",m_nin);
-  m_name       = string(help);
-  m_name      += string("_");
-  sprintf(help,"%i",m_nout);
-  m_name      += string(help);
-  m_name      += string("_");
-
-  for (int i=0;i<m_nin;i++) {
-    m_name    += string(p_fl[i].Name());
-    if ((p_fl[i].Kfcode()==kf::e)   ||
-	(p_fl[i].Kfcode()==kf::mu)  ||
-	(p_fl[i].Kfcode()==kf::tau) ||
-	(p_fl[i].Kfcode()==kf::Hmin)) {
-      //kill last
-      m_name.erase(m_name.length()-1,1);
-      if (p_fl[i].IsAnti()) m_name += string("+");
-                       else m_name += string("-");      
+  std::string name;
+  sprintf(help,"%i",nin);
+  name=std::string(help);
+  name+=std::string("_");
+  sprintf(help,"%i",nout);
+  name+=std::string(help);
+  name+=std::string("__");
+  for (size_t i=0;i<nin+nout;) {
+    name+=std::string(flavours[i].Name());
+    if (flavours[i].IsAnti()) {
+      if (flavours[i].Kfcode()==ATOOLS::kf::e ||
+	  flavours[i].Kfcode()==ATOOLS::kf::mu ||
+	  flavours[i].Kfcode()==ATOOLS::kf::tau ||
+	  flavours[i].Kfcode()==ATOOLS::kf::Hmin) {
+	name.replace(name.length()-1,1,"+");
+      }
+      else {
+	name+=std::string("b"); 
+      }
     }
-    else {
-      if (p_fl[i].IsAnti()) m_name += string("b"); 
-    }
-    m_name += string("_");
+    name+=std::string("_");
+    if (++i==nin) name+=std::string("_");
   }
-  m_name.erase(m_name.length()-1,1);
-
-  m_name      += string(" -> ");
-  for (int i=m_nin;i<m_nin+m_nout;i++) {
-    m_name    += string(p_fl[i].Name());
-    if ((p_fl[i].Kfcode()==kf::e)   ||
-	(p_fl[i].Kfcode()==kf::mu)  ||
-	(p_fl[i].Kfcode()==kf::tau) ||
-	(p_fl[i].Kfcode()==kf::Hmin)) {
-      //kill last
-      m_name.erase(m_name.length()-1,1);
-      if (p_fl[i].IsAnti()) m_name += string("+");
-                       else m_name += string("-");      
-    }
-    else {
-      if (p_fl[i].IsAnti()) m_name += string("b"); 
-    }
-    m_name += string("_");
-  }
-  m_name.erase(m_name.length()-1,1);
+  return name.substr(0,name.length()-1);
 }
 
-double XS_Base::Differential(ATOOLS::Vec4D * p) {
-  for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
-  m_s = (p[0]+p[1]).Abs2();
-  m_t = (p[0]-p[2]).Abs2();
-  m_u = (p[0]-p[3]).Abs2();
+double XS_Base::Differential(const ATOOLS::Vec4D *momenta) 
+{
+  SetMomenta(momenta);
+  SetSTU(momenta);
   return Differential(m_s,m_t,m_u);
 }
 
-bool XS_Base::SetColours(ATOOLS::Vec4D * p) {
-  for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
-  m_s = (p[0]+p[1]).Abs2();
-  m_t = (p[0]-p[2]).Abs2();
-  m_u = (p[0]-p[3]).Abs2();
-  // scale can be overwritten in SetColors(s,t,u)
-  m_scale = sqr(p[2][1])+sqr(p[2][2]);  
+bool XS_Base::SetColours(const ATOOLS::Vec4D *momenta) 
+{
+  SetMomenta(momenta);
+  SetSTU(momenta);
+  SetScale(momenta[2].PPerp2());  
   return SetColours(m_s,m_t,m_u);
 }
 
-double XS_Base::Scale(ATOOLS::Vec4D * p) {
-  for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
-  if (m_nin==1) return p[0].Abs2();
-  m_s = (p[0]+p[1]).Abs2();
-  m_t = (p[0]-p[2]).Abs2();
-  m_u = (p[0]-p[3]).Abs2();
-
+double XS_Base::Scale(const ATOOLS::Vec4D *momenta) 
+{
+  SetMomenta(momenta);
+  if (m_nin==1) return momenta[0].Abs2();
+  SetSTU(momenta);
   double pt2;
+  double MZ=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
   switch (m_scalescheme) {
-  case 1  :
-    if (m_nin+m_nout==4) {
-      pt2 = ATOOLS::sqr(p[2][1])+ATOOLS::sqr(p[2][2]);
-      //pt2 = 2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
-    }
-    return m_scale = pt2;
-  case 2  :
+  case 1:
+    if (m_nin+m_nout==4) m_scale=momenta[2].PPerp2();
     return m_scale;
+  case 2:
+    return m_scale;
+  case 10:
+    m_scale=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale=pow(pow(m_scale,6.)*pow(MZ,1.),2./(12.+1.));
   case 11:
-    pt2 = 4.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
-    return m_scale = pt2;
-  default :
-    return m_scale = m_s;
+    pt2=4.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
+    return m_scale=pt2;
+  case 12:
+    return m_scale=(momenta[0]+momenta[1]).PPerp2();
+  default:
+    return m_scale=m_s;
   }
 }
 
-double XS_Base::KFactor(double _scale) {
+double XS_Base::KFactor(const double scale) 
+{
   switch (m_kfactorscheme) {
-  case 1  :
-    return pow(as->AlphaS(_scale * m_scalefactor)/
-	       as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nin+m_nout-2);
-  default :
+  case 1:
+    return pow(MODEL::as->AlphaS(scale*m_scalefactor)/
+	       MODEL::as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nin+m_nout-2);
+  default:
     return 1.;
   }
 }
 
-void XS_Base::SwapInOrder() {
-  Flavour help = p_fl[0];
-  p_fl[0] = p_fl[1];
-  p_fl[1] = help;
-  Vec4D mom = p_moms[0];
-  p_moms[0] = p_moms[1];
-  p_moms[1] = mom;
-  int *col = p_colours[0];
-  p_colours[0] = p_colours[1];
-  p_colours[1] = col;
-  m_swaped = true;
+void XS_Base::SwapInOrder() 
+{
+  std::swap(p_flavours[0],p_flavours[1]);
+  std::swap(p_momenta[0],p_momenta[1]);
+  std::swap(p_colours[0],p_colours[1]);
+  m_swaped=true;
 }
 
-void XS_Base::RestoreInOrder() {
+void XS_Base::RestoreInOrder() 
+{
   if (m_swaped) {
-    Flavour help = p_fl[0];
-    p_fl[0] = p_fl[1];
-    p_fl[1] = help;
-    int *col = p_colours[0];
-    p_colours[0] = p_colours[1];
-    p_colours[1] = col;
-    m_swaped = false;
+    std::swap(p_flavours[0],p_flavours[1]);
+    std::swap(p_momenta[0],p_momenta[1]);
+    std::swap(p_colours[0],p_colours[1]);
+    m_swaped=false;
   }
 }
 
-void XS_Base::ResetSelector(ATOOLS::Selector_Data *_seldata)
+void XS_Base::ResetSelector(ATOOLS::Selector_Data *const selectordata)
 {
-  if (p_sel!=NULL) delete p_sel;
-  if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
+  if (p_selector!=NULL) delete p_selector;
+  if (selectordata!=NULL) {
+    p_selector = new ATOOLS::Combined_Selector(m_nin,m_nout,p_flavours,selectordata);
+  }
   else {
-    msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
-	       <<"   No selection cuts specified. Init No_Selector !"<<endl;
-    p_sel = new No_Selector();
+    ATOOLS::msg.Error()<<"XS_Base::ResetSelector("<<selectordata<<"): "
+		       <<"(\""<<m_name<<"\")"<<std::endl
+		       <<"   No cuts specified. Initialize 'No_Selector'."<<std::endl;
+    p_selector = new ATOOLS::No_Selector();
   }
 }
 
-void XS_Base::SetMomenta(ATOOLS::Vec4D *_p_moms)
+void XS_Base::SetSTU(const ATOOLS::Vec4D *momenta)
 {
-  for (unsigned int i=0;i<m_nin+m_nout;++i) p_moms[i]=_p_moms[i];
+  m_s=(momenta[0]+momenta[1]).Abs2();
+  m_t=(momenta[0]-momenta[2]).Abs2();
+  m_u=(momenta[0]-momenta[3]).Abs2();
 }
 
-void XS_Base::SetMax(double _max,int flag)             
+void XS_Base::SetMax(const double max,const int flag)             
 { 
-  SetMax(_max);
+  SetMax();
 }
 
-void XS_Base::SetMax(double _max)             
+void XS_Base::SetMax()             
 { 
-  m_max = _max;   
 }
 
-long int XS_Base::Points() 
-{ 
-  return m_n; 
-}
-
-double XS_Base::TotalError() 
+XS_Base *const XS_Base::operator[](const size_t i) const 
 {
-  return m_totalsumsqr;
+  return NULL;
 }
+
+size_t XS_Base::Size() const
+{ 
+  return 0; 
+}
+
+void XS_Base::UpdateCuts(const double sprime,const double y)  
+{ 
+}
+
+void XS_Base::SelectOne()
+{ 
+}
+
+void XS_Base::DeSelect()
+{ 
+}
+

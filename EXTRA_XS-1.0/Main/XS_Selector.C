@@ -1,6 +1,8 @@
 #include "XS_Selector.H"
 #include "XS_QCD.H"
 #include "XS_Drell_Yan.H"
+#include "Off_Shell_EW.H"
+#include "Off_Shell_QCD.H"
 #include "Run_Parameter.H"
 
 using std::cout;
@@ -10,76 +12,113 @@ using std::endl;
 using namespace EXTRAXS;
 using namespace ATOOLS;
 
-Single_XS * XS_Selector::GetXS(int nin,int nout,Flavour * fl)
+XS_Selector::XS_Selector(XS_Base *const owner):
+  p_owner(owner) {}
+
+Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
+			      const ATOOLS::Flavour *flavours,const bool offshell)
 { 
   Single_XS * xs = 0;
-  if (nin !=2 && nout !=2) {
-    ATOOLS::msg.Error()<<"Such a XS is not available as FastFunc!"<<endl
-			  <<"nin, nout = "<<nin<<", "<<nout<<endl;
-    return xs;
+  if (offshell) {
+    if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && 
+	 flavours[0].IsQuark() && flavours[1]==flavours[0].Bar()) ||
+	(flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && 
+	 flavours[2].IsQuark() && flavours[3]==flavours[2].Bar())){ 
+      return new Off_Shell_qqb_llb(nin,nout,flavours,p_owner->ScaleScheme(),
+				   p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
+    }
+    if ((flavours[2].IsUptype() && flavours[2].IntCharge()==0 && flavours[3].IsDowntype() && 
+	 flavours[0].IsUptype() && flavours[1].IsDowntype()) ||
+	(flavours[3].IsUptype() && flavours[3].IntCharge()==0 && flavours[2].IsDowntype() && 
+	 flavours[1].IsUptype() && flavours[0].IsDowntype())){ 
+      return new Off_Shell_q1q2b_lnulb(nin,nout,flavours,p_owner->ScaleScheme(),
+				       p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
+    }
+    if (flavours[2].IsQuark() && flavours[3]==flavours[2].Bar() && 
+	flavours[0].IsGluon() && flavours[1].IsGluon()){ 
+      return new Off_Shell_gg_qqb(nin,nout,flavours,p_owner->ScaleScheme(),
+				  p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
+    }
+    ATOOLS::msg.Error()<<"XS_Selector::GetXS("<<nin<<","<<nout<<",["
+		       <<flavours[0]<<","<<flavours[1]<<","
+		       <<flavours[2]<<","<<flavours[3]<<"]):"<<std::endl
+		       <<"   The corresponding process is not impelemented yet ! Abort."<<std::endl;
+    exit(174);
   }
-
-  if (fl[2].IsFermion() && fl[3]==fl[2].Bar() &&
-      fl[0].IsPhoton()  && fl[1]==fl[0])    { return new XS_pp_ffbar(nin,nout,fl); }
-
-  if (fl[2].IsLepton() && fl[3]==fl[2].Bar() &&
-      fl[0].IsQuark()  && fl[1]==fl[0].Bar())    { return new XS_ee_ffbar(nin,nout,fl); }
-  if (fl[0].IsLepton() && fl[1]==fl[0].Bar() &&
-      fl[2].IsQuark()  && fl[3]==fl[2].Bar())    { return new XS_ee_ffbar(nin,nout,fl); 
+  if (flavours[2].IsFermion() && flavours[3]==flavours[2].Bar() &&
+      flavours[0].IsPhoton()  && flavours[1]==flavours[0]) { 
+    return new XS_pp_ffbar(nin,nout,flavours); 
   }
-
-  if (((fl[0].IsQuark() && fl[1].IsGluon()) ||
-       (fl[1].IsQuark() && fl[0].IsGluon()) )   &&
-      (((fl[2] == fl[0]) && (fl[3]==fl[1])) ||
-       ((fl[3] == fl[0]) && (fl[2]==fl[1])) ) )  { return new XS_q1g_q1g(nin,nout,fl); }
-  if (fl[0].IsGluon() && fl[1].IsGluon()) {
-    if (fl[2].IsQuark() && (fl[3]==fl[2].Bar())) { return new XS_gg_q1qbar1(nin,nout,fl); }
-    if (fl[2].IsGluon() && fl[3].IsGluon())      { return new XS_gg_gg(nin,nout,fl); }
+  if ((flavours[2].IsLepton() && flavours[3]==flavours[2].Bar() && flavours[0].IsQuark() && 
+       flavours[1]==flavours[0].Bar()) ||   
+      (flavours[0].IsLepton() && flavours[1]==flavours[0].Bar() && flavours[2].IsQuark() && 
+       flavours[3]==flavours[2].Bar())) { 
+    return new XS_ee_ffbar(nin,nout,flavours); 
   }
-  if (fl[0].IsQuark() && (fl[1]==fl[0].Bar())) {
-    if (fl[2].IsGluon() && fl[3].IsGluon())      { return new XS_q1qbar1_gg(nin,nout,fl); }
-    if ( ((fl[2]==fl[0]) && (fl[3]==fl[1])) ||
-      ((fl[2]==fl[1]) && (fl[2]==fl[1])) )       { return new XS_q1qbar1_q1qbar1(nin,nout,fl); }
-    if (fl[2].IsQuark() && (fl[3]==fl[2].Bar())) { return new XS_q1qbar1_q2qbar2(nin,nout,fl); }
+  if (((flavours[0].IsQuark() && flavours[1].IsGluon()) ||
+       (flavours[1].IsQuark() && flavours[0].IsGluon()) )   &&
+      (((flavours[2] == flavours[0]) && (flavours[3]==flavours[1])) ||
+       ((flavours[3] == flavours[0]) && (flavours[2]==flavours[1])) ) )  { 
+    return new XS_q1g_q1g(nin,nout,flavours); 
   }
-  if ( fl[0].IsQuark() && (fl[1]==fl[0]) &&
-	(fl[2]==fl[0]) && (fl[3]==fl[0]) )       { return new XS_q1q1_q1q1(nin,nout,fl); }
-  if ( fl[0].IsQuark() && fl[1].IsQuark() &&
-       ( ((fl[2]==fl[0]) && (fl[3]==fl[1])) ||
-	 ((fl[3]==fl[0]) && (fl[2]==fl[1]))) )   { return new XS_q1q2_q1q2(nin,nout,fl); }
-
-
-  ATOOLS::msg.Tracking()<<"Such a XS is not yet available as FastFunc!"<<endl;
-  return 0;
+  if (flavours[0].IsGluon() && flavours[1].IsGluon()) {
+    if (flavours[2].IsQuark() && (flavours[3]==flavours[2].Bar())) { 
+      return new XS_gg_q1qbar1(nin,nout,flavours); 
+    }
+    if (flavours[2].IsGluon() && flavours[3].IsGluon()) { 
+      return new XS_gg_gg(nin,nout,flavours); 
+    }
+  }
+  if (flavours[0].IsQuark() && (flavours[1]==flavours[0].Bar())) {
+    if (flavours[2].IsGluon() && flavours[3].IsGluon()) { 
+      return new XS_q1qbar1_gg(nin,nout,flavours); 
+    }
+    if ( ((flavours[2]==flavours[0]) && (flavours[3]==flavours[1])) ||
+      ((flavours[2]==flavours[1]) && (flavours[2]==flavours[1])) ) { 
+      return new XS_q1qbar1_q1qbar1(nin,nout,flavours); 
+    }
+    if (flavours[2].IsQuark() && (flavours[3]==flavours[2].Bar())) { 
+      return new XS_q1qbar1_q2qbar2(nin,nout,flavours); 
+    }
+  }
+  if ( flavours[0].IsQuark() && (flavours[1]==flavours[0]) &&
+	(flavours[2]==flavours[0]) && (flavours[3]==flavours[0]) ) { 
+    return new XS_q1q1_q1q1(nin,nout,flavours); 
+  }
+  if ( flavours[0].IsQuark() && flavours[1].IsQuark() &&
+       ( ((flavours[2]==flavours[0]) && (flavours[3]==flavours[1])) ||
+	 ((flavours[3]==flavours[0]) && (flavours[2]==flavours[1]))) ) { 
+    return new XS_q1q2_q1q2(nin,nout,flavours); 
+  }
+    ATOOLS::msg.Error()<<"XS_Selector::GetXS("<<nin<<","<<nout<<",["
+		       <<flavours[0]<<","<<flavours[1]<<","
+		       <<flavours[2]<<","<<flavours[3]<<"]):"<<std::endl
+		       <<"   The corresponding process is not impelemented yet ! Abort."<<std::endl;
+    exit(174);
 }
 
-
-
-bool XS_Selector::FindInGroup(XS_Group * group,XS_Base *& xs,
-			      int nin,int nout,Flavour * fl) {
-  if ((nin != group->Nin()) || (nout != group->Nout())) {
-    xs = 0; 
-    return 0; 
-  }
-  XS_Base * xsi = 0;
-  for (int i=0;i<group->Size();i++) {
-    xsi = (*group)[i];
-    if ( (xsi->Nin()==nin) && (xsi->Nout()==nout)) {
-      bool found = 1;
-      for (int j=0;j<nin+nout;j++) {
-	if (xsi->Flavs()[j] != fl[j]) {
-	  found = 0; 
-	  break;
+size_t XS_Selector::FindInGroup(XS_Group *const group,XS_Base *&xs,
+				const size_t nin,const size_t nout,
+				const ATOOLS::Flavour *fl) 
+{
+  if (nin==group->NIn() && nout==group->NOut()) {
+    XS_Base *xsi=NULL;
+    for (size_t i=0;i<group->Size();i++) {
+      xsi=dynamic_cast<XS_Base*>((*group)[i]);
+      if (xsi->NIn()==nin && xsi->NOut()==nout) {
+	size_t pos=i;
+	for (size_t j=0;j<nin+nout;j++) {
+	  if (xsi->Flavours()[j] != fl[j]) pos=std::string::npos;
 	}
-      }
-      if (found==1) {
-	xs = xsi;
-	return 1;
+	if (pos==std::string::npos) {
+	  xs=xsi;
+	  return pos;
+	}
       }
     }
   }
-  xs = 0;
-  return 0;
+  xs=NULL;
+  return std::string::npos;
 }
 
 

@@ -19,13 +19,13 @@ libExtraXS_la_SOURCES =	\
 			XS_Base.C \
 			Single_XS.C \
 			XS_Group.C \
-			SimpleXSecs.C \
+			Simple_XS.C \
 			XS_Selector.C
 noinst_HEADERS        =	\
 			XS_Base.H \
 			Single_XS.H \
 			XS_Group.H \
-			SimpleXSecs.H \
+			Simple_XS.H \
 			XS_Selector.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(EXTRAXSFLAGS)

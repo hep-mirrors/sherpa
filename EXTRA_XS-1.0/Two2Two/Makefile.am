@@ -18,11 +18,15 @@ lib_LTLIBRARIES       =	libExtraXS2_2.la
 libExtraXS2_2_la_SOURCES      =	\
 				XS_QCD.C \
 				XS_Drell_Yan.C \
+				Off_Shell_EW.C \
+				Off_Shell_QCD.C \
 				QED_Processes.C \
 				QCD_Processes.C
 noinst_HEADERS        =	\
 			XS_QCD.H \
 			XS_Drell_Yan.H \
+			Off_Shell_EW.H \
+			Off_Shell_QCD.H \
 			QED_Processes.H \
 			QCD_Processes.H
 EXTRA_DIST    = $(CVSINCLUDE)
