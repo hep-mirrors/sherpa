@@ -46,8 +46,28 @@ namespace ATOOLS {
 
   };// end of struct om
 
+  struct mm {
+
+    enum code {
+      none  = 0,
+      up    = 1,
+      down  = 2,
+      left  = 4,
+      right = 8
+    };
+
+    int m_num, m_code;
+
+    // constructor
+    inline mm(const int num,const code type): 
+      m_num(num), m_code(type) {}
+
+  };// end of struct bm
+
   std::ostream &operator<<(std::ostream &str,const bm::code modifier); 
   std::ostream &operator<<(std::ostream &str,const om::code modifier);
+
+  std::ostream &operator<<(std::ostream &str,const mm modifier); 
 
   class Indentation;
 

@@ -62,6 +62,23 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier)
   return str;
 }
  
+std::ostream &ATOOLS::operator<<(std::ostream &str,const mm modifier)
+{
+  if (!msg.Modifiable()) return str;
+  switch (modifier.m_code) {
+#ifdef USING__COLOUR
+  case mm::up:    return str<<"\e["<<modifier.m_num<<"A";
+  case mm::down:  return str<<"\e["<<modifier.m_num<<"B";
+  case mm::right: return str<<"\e["<<modifier.m_num<<"C";
+  case mm::left:  return str<<"\e["<<modifier.m_num<<"D";
+  case mm::none:  return str;
+#else
+  default: return str;
+#endif
+  }
+  return str;
+}
+
 Message::Message() 
 {      
   p_output = &std::cout;
