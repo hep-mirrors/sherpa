@@ -88,17 +88,16 @@ if [ "$SUBMIT" = "TRUE" ] ; then
   echo "echo \"USER        = \$USER\" >> \$RUNPATH\$LOGFILE" >> $FILE
   echo "echo \"\" >> \$RUNPATH\$LOGFILE" >> $FILE
   if [ "$BATCH" = "SGE" ] ; then
-    echo "echo \"QUEUE       = \$QUEUE\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_TASK_ID = \$"$BATCH"_TASK_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
     echo "echo \"JOB_ID      = \$JOB_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
     echo "echo \"JOB_NAME    = \$JOB_NAME\" >> \$RUNPATH\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_TASK_ID = \$"$BATCH"_TASK_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
+    echo "echo \"QUEUE       = \$QUEUE\" >> \$RUNPATH\$LOGFILE" >> $FILE
     echo "echo \"TMPDIR      = \$TMPDIR\" >> \$RUNPATH\$LOGFILE" >> $FILE
   else
-    echo "echo \""$BATCH"_O_HOST    = \$"$BATCH"_O_HOST\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_O_HOME    = \$"$BATCH"_O_HOME\" >> \$RUNPATH\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_JOBID     = \$"$BATCH"_JOBID\" >> \$RUNPATH\$LOGFILE" >> $FILE
+    echo "echo \""$BATCH"_JOBNAME   = \$"$BATCH"_JOBNAME\" >> \$RUNPATH\$LOGFILE" >> $FILE
     echo "echo \""$BATCH"_O_QUEUE   = \$"$BATCH"_O_QUEUE\" >> \$RUNPATH\$LOGFILE" >> $FILE
     echo "echo \""$BATCH"_O_WORKDIR = \$"$BATCH"_O_WORKDIR\" >> \$RUNPATH\$LOGFILE" >> $FILE
-    echo "echo \""$BATCH"_O_PATH    = \$"$BATCH"_O_PATH\" >> \$RUNPATH\$LOGFILE" >> $FILE
   fi
   echo "echo \"\" >> \$RUNPATH\$LOGFILE" >> $FILE
   echo "" >> $FILE
@@ -119,7 +118,7 @@ echo -e ">> \$RUNPATH\$LOGFILE 2>&1 \n\n" >> $FILE
 
 chmod 777 $FILE
 if [ "$SUBMIT" = "TRUE" ] ; then
-  qsub $FILE  
+  qsub $FILE -l host=ptpp86 
 else
   ( nohup $FILE > /dev/null & ) 
 fi
