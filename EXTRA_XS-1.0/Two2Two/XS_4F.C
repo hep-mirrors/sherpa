@@ -422,7 +422,7 @@ XS_f1f2_f1f2::XS_f1f2_f1f2(const size_t nin,const size_t nout,
   Single_XS(nin,nout,flavours), 
   m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
   m_W_on(ATOOLS::Flavour(ATOOLS::kf::W).IsOn()),
-  m_anti(int(flavours[0].IsAnti())),m_rev(int(flavours[0]==flavours[2])),
+  m_anti(int(flavours[0].IsAnti())),m_rev(int(flavours[0]!=flavours[2])),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
@@ -584,7 +584,7 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const size_t nin,const size_t nout,
   Single_XS(nin,nout,flavours), 
   m_Z_on(ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()), m_P_on(ATOOLS::Flavour(ATOOLS::kf::photon).IsOn()),
   m_W_on(ATOOLS::Flavour(ATOOLS::kf::W).IsOn()),
-  m_anti(int(flavours[0].IsAnti())),m_rev(int(flavours[0]==flavours[2])),
+  m_anti(int(flavours[0].IsAnti())),m_rev(int(flavours[0]!=flavours[2])),
   m_mz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass())),
   m_wz2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width())),
   m_mw2(ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::W).Mass())),
@@ -612,7 +612,8 @@ XS_f1f2b_f1f2b::XS_f1f2b_f1f2b(const size_t nin,const size_t nout,
     }
     if (abs(m_ckm)==0.) m_W_on = false;
   }
-  //   std::cout<<"Init f1f2 -> f1f2 : anti = "<<m_anti
+  //   for (short int i=0;i<4;i++) std::cout<<flavours[i]<<" ";
+  //   std::cout<<"\nInit f1f2 -> f1f2 : anti = "<<m_anti<<" rev="<<m_rev
   // 	   <<" : Z_on = "<<m_Z_on<<", photon_on = "<<m_P_on<<" : W_on = "<<m_W_on<<std::endl
   // 	   <<"(pref_Z = "<<m_pref_Z<<", pref_QED = "<<m_pref_qed<<" -> "<<sqrt(m_pref_qed)
   // 	   <<", aqed("<<ATOOLS::rpa.gen.Ecms()<<" ) = "<<m_aqed<<", sin2tw, cos2tw = "
@@ -778,14 +779,6 @@ XS_f1f2_f3f4::XS_f1f2_f3f4(const size_t nin,const size_t nout,
       m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2-1,kfc4/2);
     }
   }
-  if (m_rev) {
-    p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-    p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
-  }
-  else {
-    p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
-    p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
-  }
 }
 
 double XS_f1f2_f3f4::operator()(double s,double t,double u) 
@@ -798,6 +791,14 @@ bool XS_f1f2_f3f4::SetColours(double s, double t, double u)
 {
   bool swap  = m_swaped;
   RestoreInOrder();
+  if (m_rev) {
+    p_colours[3][m_anti] = p_colours[0][m_anti] = Flow::Counter();
+    p_colours[2][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+  }
+  else {
+    p_colours[2][m_anti] = p_colours[0][m_anti] = Flow::Counter();
+    p_colours[3][m_anti] = p_colours[1][m_anti] = Flow::Counter();
+  }
   if (m_rev) m_scale[PHASIC::stp::as] = dabs(u);
         else m_scale[PHASIC::stp::as] = dabs(t);
   if (swap) SwapInOrder();
@@ -910,8 +911,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
       m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
       m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc4/2-1);
     }
-    p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = Flow::Counter();
-    p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = Flow::Counter();
+    p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = 500;
+    p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = 501;
   }
   else if (flavours[0].IsDowntype() && flavours[1].IsUptype()) {
     if (flavours[2].IsDowntype()) {
@@ -923,8 +924,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
       m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1);
       m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc4/2-1);
     }
-    p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = Flow::Counter();
-    p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = Flow::Counter();
+    p_colours[1][1-m_anti]       = p_colours[0][m_anti]       = 500;
+    p_colours[3-m_rev][1-m_anti] = p_colours[2+m_rev][m_anti] = 501;
   }
   else if (flavours[0].IsUptype() && flavours[1].IsUptype()) {
     m_schannel = false;
@@ -937,8 +938,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
       m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2,kfc1/2-1);
       m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2,kfc2/2-1);
     }    
-    p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
-    p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
+    p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = 500;
+    p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = 501;
   }
   else if (flavours[0].IsDowntype() && flavours[1].IsDowntype()) {
     m_schannel = false;
@@ -951,8 +952,8 @@ XS_f1f2b_f3f4b::XS_f1f2b_f3f4b(const size_t nin,const size_t nout,
       m_ckm1 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc4/2-1,kfc1/2);
       m_ckm2 = rpa.gen.ComplexMatrixElement(string("CKM"),kfc3/2-1,kfc2/2);
     }    
-    p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = Flow::Counter();
-    p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = Flow::Counter();
+    p_colours[2+m_rev][m_anti]   = p_colours[0][m_anti]   = 500;
+    p_colours[3-m_rev][1-m_anti] = p_colours[1][1-m_anti] = 501;
   }
 }
 
