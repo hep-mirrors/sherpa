@@ -2,12 +2,12 @@
 #include "Blob.H"
 #include "Random.H"
 #include "Run_Parameter.H"
-#include <iomanip.h>
+#include <iomanip>
 
 using namespace ATOOLS;
 
 std::ostream& ATOOLS::operator<<(std::ostream& str,Parton* part) {
-  str<<std::setprecision(4)<<std::setiosflags(ios::left);
+  str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
   switch (part->Status()) {
   case 0 : // null entry
     return str<<"--- empty entry ---"<<std::endl;
@@ -27,7 +27,7 @@ std::ostream& ATOOLS::operator<<(std::ostream& str,Parton* part) {
   default : // user defined or reserved
     return str<<"--- unrecognized status:"<<part->Status()<<" ---"<<std::endl;
   }
-  str<<setiosflags(ios::scientific)
+  str<<setiosflags(std::ios::scientific)
      <<" ["<<part->Momentum()<<", "<<part->Momentum().Abs2()<<"]"
      <<" ("<<part->GetFlow(1)<<","<<part->GetFlow(2)<<")";
   return str;
