@@ -34,7 +34,7 @@ namespace ATOOLS {
     virtual ~Getter_Function();
 
     // member functions
-    static void PrintGetterInfo(std::ostream &str);
+    static void PrintGetterInfo(std::ostream &str,const size_t width);
 
     static Object_Type *const GetObject(const std::string &name,
 					const Parameter_Type &parameters);
@@ -49,14 +49,18 @@ namespace ATOOLS {
   private:						 \
     							 \
     static NAME s_initializer;				 \
-    							 \
-  public:						 \
-    							 \
-    NAME(): Getter_Function<OBJECT,PARAMETER>(TAG) {}	 \
+							 \
+  protected:						 \
+							 \
+    void PrintInfo(std::ostream &str) const;		 \
     							 \
     Object_Type *const					 \
     operator()(const Parameter_Type &parameters) const;	 \
     							 \
+  public:						 \
+    							 \
+    NAME(): Getter_Function<OBJECT,PARAMETER>(TAG) {}	 \
+      							 \
   };							 \
   NAME NAME::s_initializer				 
 
