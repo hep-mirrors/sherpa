@@ -548,8 +548,18 @@ void ATOOLS::ParticleInit(std::string path)
       particles[idx].Add(addit.Bar());
     }
   }
+  test = Flavour(kf::neutrino);
+  idx      = kf_table.ToInt(test.Kfcode());
+  particles[idx].SetGroup();
+  for (int i=12;i<18;i+=2) {
+    addit = Flavour(kf::code(i));
+    if (addit.Mass()==0.) {
+      particles[idx].Add(addit);
+      particles[idx].Add(addit.Bar());
+    }
+  }
 }
-
+  
 // Unique Identifier of Particle.dat
 // aaaaaa-bbbbbb-ccccccc 
 // a   SM   - partons
