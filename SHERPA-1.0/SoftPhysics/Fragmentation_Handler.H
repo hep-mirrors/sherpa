@@ -18,8 +18,7 @@ namespace SHERPA {
     Lund_Interface *p_lund;
     ATOOLS::Blob   *p_blob;
 
-    ATOOLS::Particle *FindConnected(ATOOLS::Particle *particle,unsigned int color,
-				    bool anti,bool forward,unsigned int catcher);
+    std::set<ATOOLS::Particle*> m_used;
 
   public:
 
@@ -48,7 +47,7 @@ namespace SHERPA {
     handler will then select and initialize one of them according to the input from the 
     corresponding data file. During event generation, the method PerformFragmentation
     will hand over the task of the actual fragmentation to this particular model. So far, however,
-    only the Lund string fragmentation is implemented through an interface to Pythia 6.163,
+    only the Lund string fragmentation is implemented through an interface to Pythia 6.214,
     the Lund_Fortran_Interface.
   */
   /*!

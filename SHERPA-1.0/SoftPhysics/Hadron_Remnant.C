@@ -229,12 +229,16 @@ bool Hadron_Remnant::TreatFirstQuark(ATOOLS::Particle *cur)
 }
 
 bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,unsigned int newc,
-				   unsigned int catcher)
+				   bool &singlet,unsigned int catcher)
 {
-  if (oldc==newc) return;
+  if (oldc==newc) return true;
+  if (particle->GetFlow(1)==particle->GetFlow(2)) {
+    singlet=true;
+    return true;
+  }
   if (++catcher>100) {
     ATOOLS::msg.Error()<<"Hadron_Remnant::AdjustColours(..): "
-		       <<"Colour nesting is too deep (more than "<<catcher<<" steps)."<<std::endl
+		       <<"Colour nesting is too deep (more than "<<catcher-1<<" levels)."<<std::endl
 		       <<"   Cannot adjust colours completely. "
 		       <<"Result might be unreliable."<<std::endl;
     return false;
@@ -249,9 +253,16 @@ bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,
 	  ATOOLS::Particle *help=cur->OutParticle(i);
 	  if (help->GetFlow(j)==(int)oldc) {
 	    help->SetFlow(j,newc);
-	    if (!AdjustColours(help,oldc,newc,catcher)) {
+	    if (!AdjustColours(help,oldc,newc,singlet,catcher)) {
 	      ATOOLS::msg.Error()<<"   ("<<oldc<<" -> "<<newc<<") for:"<<help<<std::endl;
+	      help->SetFlow(j,oldc);
 	      return false;
+	    }
+	    if (singlet) {
+	      ATOOLS::msg.Tracking()<<"Hadron_Remnant::AdjustColours(..): "
+				    <<"Created colour singlet. Try to correct."<<std::endl;
+	      help->SetFlow(j,oldc);
+	      return true;
 	    }
 	  }
 	}
@@ -261,9 +272,16 @@ bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,
 	  ATOOLS::Particle *help=cur->InParticle(i);
 	  if (help->GetFlow(j)==(int)oldc) {
 	    help->SetFlow(j,newc);
-	    if (!AdjustColours(help,oldc,newc,catcher)) {
-	      ATOOLS::msg.Error()<<"   ("<<oldc<<" -> "<<newc<<") for:"<<help<<std::endl;
+	    if (!AdjustColours(help,oldc,newc,singlet,catcher)) {
+ 	      ATOOLS::msg.Error()<<"   ("<<oldc<<" -> "<<newc<<") for:"<<help<<std::endl;
 	      return false;
+	      help->SetFlow(j,oldc);
+	    }
+	    if (singlet) {
+	      ATOOLS::msg.Tracking()<<"Hadron_Remnant::AdjustColours(..): "
+				    <<"Created colour singlet. Try to correct."<<std::endl;
+	      help->SetFlow(j,oldc);
+	      return true;
 	    }
 	  }
 	}
@@ -290,32 +308,63 @@ ATOOLS::Particle *Hadron_Remnant::FindConnected(ATOOLS::Particle *particle,bool 
 
 ATOOLS::Particle *Hadron_Remnant::SelectCompanion(ATOOLS::Particle *cur) 
 {
-  size_t set=2*(size_t)ATOOLS::ran.Get();
-  return m_parton[set][(size_t)(ATOOLS::ran.Get()*((int)m_parton[set].size()-1))];
+  size_t trials=0;
+  bool tested=true;
+  ATOOLS::Particle *companion=cur;
+  while (tested && trials<m_maxtrials/10) {
+    ++trials;
+    tested=false;
+    size_t set=2*(size_t)ATOOLS::ran.Get();
+    companion=m_parton[set][(size_t)(ATOOLS::ran.Get()*((int)m_parton[set].size()-1))];
+    if (m_companions.find(companion)!=m_companions.end()) tested=true;
+  }
+  if (trials==m_maxtrials/10) {
+    for (size_t i=0;i<3;++i) {
+      for (size_t j=0;j<m_parton[i].size();++j) {
+	if (m_companions.find(m_parton[i][j])==m_companions.end()) companion=m_parton[i][j];
+      }
+    }
+  }
+  m_companions.insert(companion);
+  return companion;
 }
 
 bool Hadron_Remnant::TreatQuark(ATOOLS::Particle *cur) 
 {
-  bool success=true;
+  unsigned int trials=0;
+  bool success=true, singlet=true;
   ATOOLS::Particle *comp[2];
-  do { comp[0]=SelectCompanion(cur); } while ((comp[1]=FindConnected(comp[0]))==NULL);
   ATOOLS::Particle *newpart = new ATOOLS::Particle(-1,cur->Flav().Bar());
   newpart->SetFlow(1+(int)newpart->Flav().IsAnti(),-1);
-  bool anticol=comp[0]->Flav().IsAnti()^comp[0]->Flav().IsDiQuark();
-  if (!(cur->Flav().IsAnti()^anticol)) {
+  m_companions.clear();
+  while (singlet && success && trials<m_maxtrials/10) {
+    ++trials;
+    singlet=false;
+    do { comp[0]=SelectCompanion(cur); } while ((comp[1]=FindConnected(comp[0]))==NULL);
+    bool anticol=comp[0]->Flav().IsAnti()^comp[0]->Flav().IsDiQuark();
+    if (!(cur->Flav().IsAnti()^anticol)) {
       ATOOLS::Particle *rem=comp[0]; comp[0]=comp[1]; comp[1]=rem;
-  }
-  if (cur->Flav().IsAnti()) {
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),newpart->GetFlow(1),0);
-    success=success&&AdjustColours(cur,cur->GetFlow(2),comp[0]->GetFlow(1),0);
-    comp[1]->SetFlow(2,newpart->GetFlow(1));
-    cur->SetFlow(2,comp[0]->GetFlow(1));
-  }
-  else {
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),newpart->GetFlow(2),0);
-    success=success&&AdjustColours(cur,cur->GetFlow(1),comp[0]->GetFlow(2),0);
-    comp[1]->SetFlow(1,newpart->GetFlow(2));
-    cur->SetFlow(1,comp[0]->GetFlow(2));
+    }
+    if (cur->Flav().IsAnti()) {
+      unsigned int old1=comp[1]->GetFlow(2), new1=newpart->GetFlow(1);
+      unsigned int old2=comp[0]->GetFlow(1), new2=cur->GetFlow(2);
+      success=success&&AdjustColours(comp[1],old1,new1,singlet,0);
+      if (singlet) continue;
+      success=success&&AdjustColours(comp[0],old2,new2,singlet,0);
+      if (singlet) continue;
+      comp[1]->SetFlow(2,new1);
+      comp[0]->SetFlow(1,new2);
+    }
+    else {
+      unsigned int old1=comp[1]->GetFlow(1), new1=newpart->GetFlow(2);
+      unsigned int old2=comp[0]->GetFlow(2), new2=cur->GetFlow(1);
+      success=success&&AdjustColours(comp[1],old1,new1,singlet,0);
+      if (singlet) continue;
+      success=success&&AdjustColours(comp[0],old2,new2,singlet,0);
+      if (singlet) continue;
+      comp[1]->SetFlow(1,new1);
+      comp[0]->SetFlow(2,new2);
+    }
   }
   m_parton[0].push_back(newpart);
   m_parton[2].push_back(cur);
@@ -324,20 +373,34 @@ bool Hadron_Remnant::TreatQuark(ATOOLS::Particle *cur)
 
 bool Hadron_Remnant::TreatGluon(ATOOLS::Particle *cur) 
 {
-  bool success=true;
+  unsigned int trials=0;
+  bool success=true, singlet=true;
   ATOOLS::Particle *comp[2];
-  do { comp[0]=SelectCompanion(cur); } while ((comp[1]=FindConnected(comp[0]))==NULL);
-  if (comp[0]->Flav().IsAnti()^comp[0]->Flav().IsDiQuark()) {
-    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(2),cur->GetFlow(1),0);
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),cur->GetFlow(2),0);
-    comp[0]->SetFlow(2,cur->GetFlow(1));
-    comp[1]->SetFlow(1,cur->GetFlow(2));
-  }
-  else {
-    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(1),cur->GetFlow(2),0);
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),cur->GetFlow(1),0);
-    comp[0]->SetFlow(1,cur->GetFlow(2));
-    comp[1]->SetFlow(2,cur->GetFlow(1));
+  m_companions.clear();
+  while (singlet && success && trials<m_maxtrials/10) {
+    ++trials;
+    singlet=false;
+    do { comp[0]=SelectCompanion(cur); } while ((comp[1]=FindConnected(comp[0]))==NULL);
+    if (comp[0]->Flav().IsAnti()^comp[0]->Flav().IsDiQuark()) {
+      unsigned int old1=comp[0]->GetFlow(2), new1=cur->GetFlow(1);
+      unsigned int old2=comp[1]->GetFlow(1), new2=cur->GetFlow(2);
+      success=success&&AdjustColours(comp[0],old1,new1,singlet,0);
+      if (singlet) continue;
+      success=success&&AdjustColours(comp[1],old2,new2,singlet,0);
+      if (singlet) continue;
+      comp[0]->SetFlow(2,new1);
+      comp[1]->SetFlow(1,new2);
+    }
+    else {
+      unsigned int old1=comp[0]->GetFlow(1), new1=cur->GetFlow(2);
+      unsigned int old2=comp[1]->GetFlow(2), new2=cur->GetFlow(1);
+      success=success&&AdjustColours(comp[0],old1,new1,singlet,0);
+      if (singlet) continue;
+      success=success&&AdjustColours(comp[1],old2,new2,singlet,0);
+      if (singlet) continue;
+      comp[0]->SetFlow(1,new1);
+      comp[1]->SetFlow(2,new2);
+    }
   }
   m_parton[2].push_back(cur);
   return success;

@@ -82,6 +82,7 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Particle_List * 
 	  ((*biter)->Type()==btp::Beam || (*biter)->Type()==btp::IS_Shower)) {
 	(*biter)->SetStatus(2);
 	blob = new ATOOLS::Blob();
+	_bloblist->insert(_bloblist->begin(),blob);
 	blob->SetId(_bloblist->size());
 	blob->SetType(btp::Bunch);
 	blob->SetBeam(i);
@@ -108,7 +109,6 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Particle_List * 
 	  p->SetNumber(number);
 	  blob->AddToOutParticles(p);
 	}
-	_bloblist->insert(_bloblist->begin(),blob);
 	flag=true;
       }
     }
@@ -135,6 +135,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _
 	if (p_beampart[i]->Type()==Remnant_Base::Hadron) {
 	  if (flag) {
 	    blob = new ATOOLS::Blob();
+	    _bloblist->insert(_bloblist->begin(),blob);
 	    blob->SetId(_bloblist->size());
 	    blob->SetType(btp::Beam);
 	    blob->SetBeam(i);
@@ -142,7 +143,6 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _
 	    Particle *p = new Particle(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum());
 	    p->SetStatus(2);
 	    blob->AddToInParticles(p);
-	    _bloblist->insert(_bloblist->begin(),blob);
 	    p_beamblob[i]=blob;
 	    flag=false;
 	    okay=true;
