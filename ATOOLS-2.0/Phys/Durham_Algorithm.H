@@ -3,20 +3,18 @@
 
 #include "Vector.H"
 #include "Particle_List.H"
+#include "Kt_Algorithm.H"
 #include <vector>
 
 namespace ATOOLS {
 
-  class Durham_Algorithm  {
+  class Durham_Algorithm : public Jet_Algorithm_Base {
     int    m_mode;
     double m_ycut;//, m_r2min;
     double m_sprime;
 
     int    m_matrixsize;
-    //double ** p_ktij;
     int    *  p_imap;
-    //double *  p_kis;
-    bool   m_bflag;
 
     Particle_List       * p_jets;
     std::vector<double> * p_kts;
@@ -39,7 +37,6 @@ namespace ATOOLS {
     bool   ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double);
 
     void   Ymin(Vec4D *,bool *,int);
-    void   Setbflag(bool bf) { m_bflag=bf; }
   };
 
   inline double Durham_Algorithm::Kt2(const Vec4D & p)

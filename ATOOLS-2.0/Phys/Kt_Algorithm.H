@@ -7,7 +7,18 @@
 
 namespace ATOOLS {
 
-  class Kt_Algorithm  {
+  class Jet_Algorithm_Base {
+  protected:
+    bool   m_bflag;
+  public:
+    virtual bool ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double)=0;
+
+    void   Setbflag(bool bf) { m_bflag=bf; }
+    
+    virtual ~Jet_Algorithm_Base();
+  };
+
+  class Kt_Algorithm : public Jet_Algorithm_Base  {
     int    m_mode;
     double m_ymin, m_r2min;
 
@@ -15,7 +26,6 @@ namespace ATOOLS {
     double ** p_ktij;
     int    *  p_imap;
     double *  p_kis;
-    bool   m_bflag;
 
     Particle_List       * p_jets;
     std::vector<double> * p_kts;
@@ -43,7 +53,6 @@ namespace ATOOLS {
     bool   ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double);
 
     double Ktmin(Vec4D *,bool *,int);
-    void   Setbflag(bool bf) { m_bflag=bf; }
   };
 
 

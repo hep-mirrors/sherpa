@@ -20,7 +20,7 @@ Kt_Algorithm::Kt_Algorithm(double rmin) :
   m_matrixsize(0), p_ktij(NULL), p_imap(NULL), p_kis(NULL), p_jets(NULL),
   p_kts(NULL)
 {
-
+  std::cout<<" Init Kt_Algorithm "<<std::endl;
 }
 
 Kt_Algorithm::~Kt_Algorithm()
@@ -290,4 +290,8 @@ double Kt_Algorithm::DPhi12(const Vec4D & p1,const Vec4D & p2) const
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
   return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
+}
+
+Jet_Algorithm_Base::~Jet_Algorithm_Base()
+{
 }
