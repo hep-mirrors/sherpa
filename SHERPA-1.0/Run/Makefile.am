@@ -8,14 +8,16 @@ AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
 		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
-		-I../LundTools -I../Tools 
+		-I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
 PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
 MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Two2Two -I$(EXTRAXSDIR)/Main
+if AMISIC_SUPPORT
 AMISICINCS    =	-I$(SHERPASYS)/AMISIC++-1.0/Main
+endif
 AMEGICINCS    =	-I$(AMEGICDIR)/Main -I$(AMEGICDIR)/Amplitude/Zfunctions \
 		-I$(AMEGICDIR)/Amplitude/AmplTools -I$(AMEGICDIR)/Amplitude \
 		-I$(AMEGICDIR)/Phasespace -I$(AMEGICDIR)/Model \
@@ -29,13 +31,15 @@ BEAMLIBS      =	-L@libdir@ -lBeam
 PHASICLIBS    =	-L@libdir@ -lPhasespace 
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
+if AMISIC_SUPPORT
 AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicAnalysis
+endif
 AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 		-lZfunctions -lAmplTools -lModel -lProcess -lString 
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lSherpaTools 
+		-lSherpaSoftPhysics -lLundInterface -lSherpaTools 
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
