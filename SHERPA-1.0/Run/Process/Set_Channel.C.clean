@@ -22,68 +22,11 @@ Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flav
   // try loading library 
   module = dlopen(libname.c_str(),RTLD_LAZY);
   error  = dlerror();
-  if (module==NULL) {
-    ATOOLS::msg.Error()<<"Phase_Space_Generator::SetChannel("
-		       <<nin<<","<<nout<<","<<fl<<","<<pID<<"): "
-		       <<"Error in loading library "<<libname<<std::endl<<error<<std::endl;
-    return 0;
-  }
+  if (module==NULL) return 0;
 
   GetterFunction = (Getter_Function)dlsym(module,gettername.c_str());
   error  = dlerror();
-  if (error!=NULL) {
-    ATOOLS::msg.Error()<<"Phase_Space_Generator::SetChannel("
-		       <<nin<<","<<nout<<","<<fl<<","<<pID<<"): "
-		       <<"Error while loading symbol from library "<<libname<<std::endl<<error<<std::endl;
-    return 0;
-  }
+  if (error!=NULL) return 0;
+
   return GetterFunction(nin,nout,fl);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -3,6 +3,7 @@
 #include "prof.hh"
 #include "Random.H"
 #include "Exception.H"
+#include "Run_Parameter.H"
 
 using namespace SHERPA;
 
@@ -24,12 +25,12 @@ int main(int argc,char* argv[])
     if (nevt>0) {
       ATOOLS::msg.Out()<<"=========================================================================="<<std::endl
 		       <<"Sherpa will start event generation now : "
-		       <<ATOOLS::rpa.gen.NumberOfEvents()<<" events"<<std::endl
+		       <<nevt<<" events"<<std::endl
 		       <<"=========================================================================="<<std::endl;
       Generator.InitializeTheEventHandler();
       for (int i=1;i<=nevt;i++) {
 	if (i%500==0) {
-	  ATOOLS::msg.Out()<<" Event "<<i<<std::endl;      
+	  ATOOLS::msg.Info()<<" Event "<<i<<std::endl;      
 	}
 	if (Generator.GenerateOneEvent()) ATOOLS::msg.Events()<<"Sherpa : Passed "<<i<<" events."<<std::endl;
       }
@@ -43,7 +44,7 @@ int main(int argc,char* argv[])
   }
   catch (ATOOLS::Exception exception) {
     exception.UpdateLogFile();
-    std::cout<<exception<<std::endl;
+    ATOOLS::msg.Error()<<exception<<std::endl;
     std::terminate();
   }
   catch (std::exception exception) {

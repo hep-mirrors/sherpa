@@ -15,7 +15,7 @@ String_Library::String_Library(int mode):m_mode(mode)
 
 void String_Library::UpdateConfigure(std::string pathID)
 {
-  ATOOLS::msg.Tracking()<<"String_Library::UpdateConfigure("<<pathID<<") called :"<<std::endl;
+  ATOOLS::msg.Debugging()<<"String_Library::UpdateConfigure("<<pathID<<") called :"<<std::endl;
 
   string cnf("/configure.in");
   string mkam("/Makefile.am");
@@ -113,7 +113,7 @@ void String_Library::CreateExtraFiles(std::string path)
 
 void String_Library::AddToMakefileAM(string makefilename,string pathID,string fileID)
 {
-  ATOOLS::msg.Tracking()<<"String_Library::AddToMakefileAM("<<makefilename<<","
+  ATOOLS::msg.Debugging()<<"String_Library::AddToMakefileAM("<<makefilename<<","
 			<<pathID<<","<<fileID<<")"<<endl;
 
   unsigned int hit=pathID.find("/");
