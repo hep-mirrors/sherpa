@@ -48,7 +48,7 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   bool gen_colors=true;
   // look for file
   char name[100];
-  sprintf(name,"%s.col",(string("Process/")+pID).c_str());
+  sprintf(name,"%s.col",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
   fstream test;
   test.open(name,ios::in); 
   if (test) { 
@@ -481,8 +481,8 @@ bool Amplitude_Handler::ExistFourVertex(Point* p)
 void Amplitude_Handler::Kicker(int* Switch_Vector,int ngraph,std::string pID)
 {
   char name[100];
-  sprintf(name,"%s.kick",(string("Process/")+pID).c_str());
-  //  sprintf(name,"%s/Kicker.dat",(string("Process/")+pID).c_str());
+  sprintf(name,"%s.kick",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
+  //  sprintf(name,"%s/Kicker.dat",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
   fstream test;
   test.open(name,ios::in);
 

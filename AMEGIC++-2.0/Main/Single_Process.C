@@ -46,6 +46,12 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
+  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
+  if (mkdir(newpath.c_str(),448)==0) {
+    system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+	    string("/Process/Dummy ")+newpath).c_str());
+  }
+
   m_newlib   = false;
   m_libnumb  = 0;
   m_save_max = 0.;
@@ -71,7 +77,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   // making directory
   if (m_gen_str>1) {
     unsigned int  mode_dir = 0755;
-    mkdir((string("Process/")+m_ptypename).c_str(),mode_dir); 
+    mkdir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
 }
@@ -103,17 +109,17 @@ void Single_Process::PolarizationNorm() {
   p_flavours   = new Flavour[m_nvector];
   p_pl   = new Pol_Info[m_nvector];
   p_b    = new int[m_nvector];
-  for (short int i=0;i<m_nin;i++) { 
+  for (size_t i=0;i<m_nin;i++) { 
     p_flavours[i] = p_flin[i]; 
     p_pl[i]       = p_plin[i]; 
     p_b[i]        = -1; 
   }
-  for (short int i=m_nin;i<m_nin+m_nout;i++)  { 
+  for (size_t i=m_nin;i<m_nin+m_nout;i++)  { 
     p_flavours[i] = p_flout[i-m_nin]; 
     p_pl[i]       = p_plout[i-m_nin]; 
     p_b[i]        = 1; 
   } 
-  for (short int i=m_nin+m_nout;i<m_nvector;i++) { 
+  for (size_t i=m_nin+m_nout;i<m_nvector;i++) { 
     p_flavours[i] = Flavour(kf::pol); 
     p_b[i]        = 1; 
   }
@@ -218,11 +224,11 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 	msg_Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
-	  if (IsFile(string("Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map"))) { 
-	    system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map ")
-		    +string("Process/")+m_ptypename+string("/")+Name()+string(".map")).c_str());
-	    system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".col ")
-		    +string("Process/")+m_ptypename+string("/")+Name()+string(".col")).c_str());
+	  if (IsFile(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map"))) { 
+	    system((string("cp ")+rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map ")
+		    +rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+Name()+string(".map")).c_str());
+	    system((string("cp ")+rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+links[j]->Name()+string(".col ")
+		    +rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+Name()+string(".col")).c_str());
 	  }
 	}
 	
@@ -457,13 +463,16 @@ int Single_Process::Tests() {
       gauge_test = string_test = 0;
     }
     else {
-      string searchfilename = string("Process/")+m_ptypename+string("/")+testname+string("/V.H");
+      string searchfilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+testname+string("/V.H");
       if (IsFile(searchfilename)) {
       	ATOOLS::msg.Error()<<"ERROR in Single_Process::Tests()"<<std::endl
 			   <<"   No compiled & linked library found for process "<<testname<<std::endl
 			   <<"   but files already written out !"<<std::endl
-			   <<om::bold<<"   Interrupt run and execute \"makelibs\" in Run-directory."
+			   <<om::bold<<"   Interrupt run and execute \"makelibs\" in '"
+			   <<rpa.gen.Variable("SHERPA_CPP_PATH")<<"'."
 			   <<om::reset<<std::endl;
+	system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
+		string("/makelibs ")+rpa.gen.Variable("SHERPA_CPP_PATH")).c_str());
 	throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,std::string("Failed to load library."),
 				"Single_Process","Tests"));
       }
@@ -566,7 +575,7 @@ int Single_Process::CheckLibraries() {
   shand1      = new String_Handler(p_shand->Get_Generator());
   
   m_libnumb  = 0;
-  string proc = string("Process/")+m_ptypename+string("/V");
+  string proc = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/V");
   string testname;
   double M2s, helvalue;
 
@@ -637,17 +646,18 @@ void Single_Process::WriteLibrary()
   if (m_gen_str<2) return;
   char help[20];
   string testname;
+  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
   for (;;) {
     sprintf(help,"%i",m_libnumb);
     testname    = CreateLibName()+string("_")+string(help);
-    if (!(IsFile(string("Process/")+m_ptypename+string("/")+testname+string("/V.H")))) break;
+    if (!(IsFile(newpath+m_ptypename+string("/")+testname+string("/V.H")))) break;
     ++m_libnumb;
   }
   m_libname = testname;
+  int  mode_dir = 448;
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  int  mode_dir = 448;
-  mkdir((string("Process/")+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
+  mkdir((newpath+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile();
   m_newlib=true;
@@ -681,7 +691,7 @@ std::string  Single_Process::CreateLibName()
 void Single_Process::CreateMappingFile() {
   if (m_gen_str<2) return;
   char outname[100];
-  sprintf(outname,"%s.map",(string("Process/")+m_ptypename+string("/")+m_name).c_str());
+  sprintf(outname,"%s.map",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+m_name).c_str());
   if (IsFile(outname)) {
     string MEname,PSname;
     FoundMappingFile(MEname,PSname);
@@ -705,7 +715,7 @@ bool Single_Process::FoundMappingFile(std::string & MEname, std::string & PSname
   char buffer[100];
   string buf;
   int pos;
-  sprintf(outname,"%s.map",(string("Process/")+m_ptypename+string("/")+m_name).c_str());
+  sprintf(outname,"%s.map",(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename+string("/")+m_name).c_str());
   if (IsFile(outname)) {
     ifstream from;
     from.open(outname);

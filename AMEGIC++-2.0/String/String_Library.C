@@ -1,4 +1,5 @@
 #include "String_Library.H"
+#include "Run_Parameter.H"
 #include <fstream>
 #include "Message.H"
 #include <stdio.h>
@@ -22,7 +23,7 @@ void String_Library::UpdateConfigure(std::string pathID)
   unsigned int hit=pathID.find("/");
   string base=pathID.substr(0,hit);
   string subdirname=pathID.substr(hit+1);
-  string name=string("Process/")+base+cnf;
+  string name=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+base+cnf;
   if (!IsFile(name)) {
     msg_Tracking()<<"   file "<<name<<" does not exist, create it."<<endl;
 
@@ -33,8 +34,8 @@ void String_Library::UpdateConfigure(std::string pathID)
     file<<"AC_INIT"<<endl; 
     file<<"AM_INIT_AUTOMAKE("<<base<<",1.0)"<<endl;
     file<<"AM_DISABLE_STATIC"<<endl;
-    file<<"AC_PREFIX_DEFAULT(${PWD}/../../../..)"<<endl;
-    file<<"dnl AC_TOP_SRCDIR_DEFAULT(${PWD}/../../../../..)"<<endl;
+    file<<"AC_PREFIX_DEFAULT("<<ATOOLS::rpa.gen.Variable("SHERPA_RUN_PATH")<<"/"
+	<<ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")<<"/Process)"<<endl;
     file<<"dnl Checks for programs."<<endl;
     file<<"AC_PROG_INSTALL"<<endl;
     file<<"AC_PROG_MAKE_SET"<<endl;
@@ -44,7 +45,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     file<<"\t"<<subdirname<<"/Makefile "<<'\\'<<endl;
     file<<"\tMakefile )"<<endl;
 
-    CreateExtraFiles(string("Process/")+base);
+    CreateExtraFiles(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+base);
   } 
   else {
     ifstream from(name.c_str());
@@ -65,7 +66,7 @@ void String_Library::UpdateConfigure(std::string pathID)
     system(mv.c_str());
   }
   
-  name=string("Process/")+base+mkam;
+  name=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+base+mkam;
   if (!IsFile(name)) {
     msg_Tracking()<<"   file "<<name<<" does not exist, create it."<<endl;
 
@@ -126,18 +127,19 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
     file<<"lib_LTLIBRARIES = libProc_"<<subdirname<<".la"<<endl;
     file<<"libProc_"<<subdirname<<"_la_SOURCES = "<<'\\'<<endl;
     file<<"\t"<<fileID<<".C"<<endl;
-    file<<"INCLUDES = -I../../../../../AMEGIC++-2.0/Amplitude "<<'\\'<<endl;
-    file<<"\t-I../../../../../AMEGIC++-2.0/Amplitude/AmplTools "<<'\\'<<endl; 
-    file<<"\t-I../../../../../AMEGIC++-2.0/Amplitude/Zfunctions "<<'\\'<<endl;
-    file<<"\t-I../../../../../AMEGIC++-2.0/Main "<<'\\'<<endl;
-    file<<"\t-I../../../../../AMEGIC++-2.0/Model "<<'\\'<<endl;
-    file<<"\t-I../../../../../AMEGIC++-2.0/String "<<'\\'<<endl;
-    file<<"\t-I../../../../../PHASIC++-1.0/Main "<<'\\'<<endl;
-    file<<"\t-I../../../../../PHASIC++-1.0/ISR "<<'\\'<<endl;
-    file<<"\t-I../../../../../ATOOLS-2.0/Phys "<<'\\'<<endl;
-    file<<"\t-I../../../../../ATOOLS-2.0/Math "<<'\\'<<endl;
-    file<<"\t-I../../../../../ATOOLS-2.0/Org "<<'\\'<<endl;
-    file<<"\t-I../../../../../MODEL-1.0/Main "<<endl;
+    file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa.gen.Variable("CURRENT_SHERPASYS")<<endl;
+    file<<"INCLUDES = -I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude/AmplTools "<<'\\'<<endl; 
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude/Zfunctions "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Main "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Model "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/String "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1.0/Main "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1.0/ISR "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Phys "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Math "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Org "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/MODEL-1.0/Main "<<endl;
     file<<"noinst_HEADERS = V.H"<<endl;
   }
   else {
@@ -165,11 +167,11 @@ void String_Library::AddToMakefileAM(string makefilename,string pathID,string fi
 
 void String_Library::InitMakefile(string pathID)
 {
-  string newMakefile = string("Process/")+pathID+string("/Makefile");
+  string newMakefile = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/Makefile");
 
   if (IsFile(newMakefile)) return;
 
-  system((string("cd Process;cp Dummy/Makefile ")+pathID).c_str());
+  system((string("cd ")+rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process ; cp Dummy/Makefile ")+pathID).c_str());
 
   string pID;
   pID=pathID;
@@ -196,7 +198,7 @@ void String_Library::InitMakefile(string pathID)
     string buf = string(buffer);
     
     //change subdir structure  
-    Replace(buf,string("../../.."),string("../../../.."));
+    Replace(buf,string("$(CURRENT_SHERPASYS)/"),string("$(CURRENT_SHERPASYS)/../"));
  
     //replace libDummy
     Replace(buf,string("libDummy"),string("libProc_")+pID);
@@ -223,8 +225,8 @@ void String_Library::InitMakefile(string pathID)
   ofstream to2;  
   ifstream from2;
   
-  from2.open("Process/Makefile");
-  to2.open("Process/Makefile.tmp");
+  from2.open((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Makefile")).c_str());
+  to2.open((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Makefile.tmp")).c_str());
   
   for(;from2;) {
     from2.getline(buffer,buffersize);
@@ -237,7 +239,7 @@ void String_Library::InitMakefile(string pathID)
   from2.close();
   to2.close();
   //copy back
-  Copy(string("Process/Makefile.tmp"),string("Process/Makefile"));
+  Copy(rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Makefile.tmp"),rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/Makefile"));
   
 
   UpdateConfigure(pathID);

@@ -131,7 +131,8 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
   case 0  : 
     msg.Error()<<"Amegic::InitializeProcesses : "<<std::endl
 	       <<"   Some new libraries were created and have to be compiled and linked."<<std::endl
-	       <<om::bold<<"   Type \"./makelibs\" and rerun."<<om::reset<<endl;
+	       <<om::bold<<"   Type \"./makelibs\" in '"
+	       <<rpa.gen.Variable("SHERPA_CPP_PATH")<<"' and rerun."<<om::reset<<endl;
     return 0;
   default :
     return 0;

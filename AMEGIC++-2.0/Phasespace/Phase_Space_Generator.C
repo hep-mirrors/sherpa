@@ -34,8 +34,8 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
     abort();
   }
 
-  string lmapname = string("Process/")+pathID+string("/fsrchannels");
-  string mapname  = string("Process/")+path+string("/fsrchannels.map");
+  string lmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID+string("/fsrchannels");
+  string mapname  = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path+string("/fsrchannels.map");
   
   if (IsFile(lmapname)) return 1-LoadChannels(fl,Ch);
 
@@ -80,7 +80,7 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
 	do {
 	  if (extrachannel) sprintf(procname,"C%ia",cnt);
 	  else              sprintf(procname,"C%i",cnt);
-	  string help = string("Process/")+fsrp+string(procname);
+	  string help = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string(procname);
 	  hit = IsFile(help);
 	  if (hit) cnt++;
 	} while (hit);
@@ -93,7 +93,7 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
 	    fsrp = path+string("/")+fsrpath;
 	  }
 	  unsigned int  mode_dir = 0755;
-	  mkdir((string("Process/")+fsrp).c_str(),mode_dir);
+	  mkdir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp).c_str(),mode_dir);
 	  String_Library slib(1);
 	  slib.InitMakefile(fsrp);
 	}
@@ -103,7 +103,7 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
 	cg->SetName(string(procname));
 	rannumber    = cg->MakeChannel(extrachannel,cnt,fsrp,pID);
 	if (rannumber>0) {
-	  string makefilename = string("Process/")+fsrp+string("/Makefile.am");
+	  string makefilename = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp+string("/Makefile.am");
 	  AddToMakefileAM(makefilename,fsrp,procname);
 	  cnt++;
 	  newchannels = 1;;
@@ -151,18 +151,19 @@ void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,st
     file<<"lib_LTLIBRARIES = libProc_"<<subdirname<<".la"<<endl;
     file<<"libProc_"<<subdirname<<"_la_SOURCES = "<<'\\'<<endl;
     file<<"\t"<<fileID<<".C"<<endl;
-    file<<"INCLUDES = -I../../../../../AMEGIC++-2.0/Amplitude "<<'\\'<<endl;
-    file<<"\t-I../../../../../AMEGIC++-2.0/Amplitude/AmplTools "<<'\\'<<endl; 
-    file<<"\t-I../../../../../AMEGIC++-2.0/Amplitude/Zfunctions "<<'\\'<<endl;
-    file<<"\t-I../../../../../AMEGIC++-2.0/Main "<<'\\'<<endl;
-    file<<"\t-I../../../../../AMEGIC++-2.0/Model "<<'\\'<<endl;
-    file<<"\t-I../../../../../AMEGIC++-2.0/String "<<'\\'<<endl;
-    file<<"\t-I../../../../../PHASIC++-1.0/Main "<<'\\'<<endl;
-    file<<"\t-I../../../../../PHASIC++-1.0/ISR "<<'\\'<<endl;
-    file<<"\t-I../../../../../ATOOLS-2.0/Phys "<<'\\'<<endl;
-    file<<"\t-I../../../../../ATOOLS-2.0/Math "<<'\\'<<endl;
-    file<<"\t-I../../../../../ATOOLS-2.0/Org "<<'\\'<<endl;
-    file<<"\t-I../../../../../MODEL-1.0/Main "<<endl;
+    file<<"CURRENT_SHERPASYS = "<<ATOOLS::rpa.gen.Variable("CURRENT_SHERPASYS")<<endl;
+    file<<"INCLUDES = -I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude/AmplTools "<<'\\'<<endl; 
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Amplitude/Zfunctions "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Main "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/Model "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/AMEGIC++-2.0/String "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1.0/Main "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/PHASIC++-1.0/ISR "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Phys "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Math "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/ATOOLS-2.0/Org "<<'\\'<<endl;
+    file<<"\t-I$(CURRENT_SHERPASYS)/MODEL-1.0/Main "<<endl;
   }
   else {
     ifstream from(makefilename.c_str());
@@ -257,8 +258,8 @@ void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,str
 
 bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch)
 {
-  string chlname   = string("Process/")+pathID + string("/fsrchannels");
-  string chmapname = string("Process/")+path   + string("/fsrchannels.map");
+  string chlname   = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pathID + string("/fsrchannels");
+  string chmapname = rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+path   + string("/fsrchannels.map");
  
  ifstream chlist;
   chlist.open(chlname.c_str());
