@@ -13,23 +13,21 @@ namespace ATOOLS {
     
     Type *p_this;
 
-    bool m_owned;
-
-    Smart_Pointer *p_copy;
+    Smart_Pointer *p_copy, *p_owner;
 
     inline void New();   
     inline void Delete(); 
 
-    inline void Reset(); 
+    inline void Reset();
     inline void Assign(const Smart_Pointer &pointer); 
 
   public:
 
     // constructors
-    inline Smart_Pointer(): 
-      p_this(new Type()), m_owned(true), m_copied(false) {}
+    inline Smart_Pointer(Type *const type): 
+      p_this(type), p_owner(this), p_copy(NULL) {}
     inline Smart_Pointer(const Smart_Pointer &pointer): 
-      p_this(&pointer), m_owned(false), m_copied(false) {}
+      p_this(-pointer), p_owner(&pointer), p_copy(NULL) { pointer.p_copy=this; }
 
     // destructor
     inline ~Smart_Pointer() { Delete(); }

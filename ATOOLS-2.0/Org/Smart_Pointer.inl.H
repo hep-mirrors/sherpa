@@ -6,9 +6,9 @@ namespace ATOOLS {
   template <class Class_Type> 
   inline void Smart_Pointer<Class_Type>::Reset() 
   { 
-    p_this = NULL; 
-    m_owned=true; 
+    p_this=NULL; 
     p_copy=NULL; 
+    p_owner=this;
   }
   
   template <class Class_Type> 
@@ -21,10 +21,13 @@ namespace ATOOLS {
   template <class Class_Type> 
   inline void Smart_Pointer<Class_Type>::Delete() 
   { 
-    if (m_owned) { 
+    if (p_owner==this) { 
       if (p_copy==NULL) delete p_this; 
-      else p_copy.m_owned=true; 
+      else p_copy.p_owner=p_copy; 
     } 
+    else {
+      p_owner->p_copy=p_copy;
+    }
     Reset(); 
   } 
   
@@ -32,8 +35,8 @@ namespace ATOOLS {
   inline void Smart_Pointer<Class_Type>::Assign(const Smart_Pointer &pointer) 
   { 
     p_this=pointer.p_this; 
-    if (pointer.p_copy!=NULL) p_copy=pointer.p_copy.p_copy;
-    else p_copy=NULL;
+    p_copy=pointer.p_copy;
+    if (pointer.p_copy!=NULL) pointer.p_copy.p_owner=this;
     pointer.p_copy=this; 
     m_owned=false; 
   }
