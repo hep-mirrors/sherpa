@@ -307,7 +307,7 @@ Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,Vector
     }
   }
   if (!OpenInFile()) {
-    msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
+    msg_Tracking()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
     return values;
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
@@ -401,7 +401,7 @@ Data_Reader::M_MatrixFromFile(std::string parameter,std::string filename,MatrixT
     }
   }
   if (!OpenInFile()) {
-    msg.Out()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
+    msg_Tracking()<<"Data_Reader: Error opening "<<filename<<" !"<<std::endl;
     return transposedvalues;
   }
   for (unsigned int i=0;i<FileContent().size();++i) {
