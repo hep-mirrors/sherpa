@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/06
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //This structure supports the evolution of a Chain of Dipoles.
 
@@ -139,7 +139,6 @@ namespace ADICIC {
     inline const ATOOLS::Vec4D& Momentum() const;
     inline const bool           IsHandled() const;
     inline const bool           IsHandledBy(const Chain_Handler&) const;
-    inline const Type           ChainType() const;
     inline const bool           IsLine() const;
     inline const bool           IsRing() const;
     inline const Dipole&        ChainRoot() const;
@@ -158,6 +157,7 @@ namespace ADICIC {
     //Public methods:
     //===============
     void Print() const;
+    const Type ChainType() const;
     const bool CheckMomentumConservation(ATOOLS::Vec4D&) const;
     const bool ExtractPartons(ATOOLS::Particle_List&) const;
 

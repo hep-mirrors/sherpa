@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/08
+//Version: 1 ADICIC++-0.0/2004/07/12
 
 //Implementation of Sudakov_Calculator.H.
 
@@ -25,6 +25,47 @@ using namespace ADICIC;
 #include "Sudakov_Calculator.tpt.cc"
 
 
+
+
+
+//=============================================================================
+
+
+
+template struct Sudakov_Info<Dipole::qqbar>;
+template struct Sudakov_Info<Dipole::qg>;
+template struct Sudakov_Info<Dipole::gqbar>;
+template struct Sudakov_Info<Dipole::gg>;
+
+
+
+template<Dipole::Type D>
+const Dipole::Type Sudakov_Info<D>::Dipoletype=Dipole::qqbar;
+template<Dipole::Type D> const short Sudakov_Info<D>::X1power=2;
+template<Dipole::Type D> const short Sudakov_Info<D>::X3power=2;
+template<Dipole::Type D>
+const double Sudakov_Info<D>::Colourfactor=1.5/*0.75*/*M_PI;
+
+template<>
+const Dipole::Type Sudakov_Info<Dipole::qg>::Dipoletype=Dipole::qg;
+template<> const short Sudakov_Info<Dipole::qg>::X1power=2;
+template<> const short Sudakov_Info<Dipole::qg>::X3power=3;
+template<>
+const double Sudakov_Info<Dipole::qg>::Colourfactor=4.0/*2.0*/*M_PI/3.0;
+
+template<>
+const Dipole::Type Sudakov_Info<Dipole::gqbar>::Dipoletype=Dipole::gqbar;
+template<> const short Sudakov_Info<Dipole::gqbar>::X1power=3;
+template<> const short Sudakov_Info<Dipole::gqbar>::X3power=2;
+template<>
+const double Sudakov_Info<Dipole::gqbar>::Colourfactor=4.0/*2.0*/*M_PI/3.0;
+
+template<>
+const Dipole::Type Sudakov_Info<Dipole::gg>::Dipoletype=Dipole::gg;
+template<> const short Sudakov_Info<Dipole::gg>::X1power=3;
+template<> const short Sudakov_Info<Dipole::gg>::X3power=3;
+template<>
+const double Sudakov_Info<Dipole::gg>::Colourfactor=4.0/*2.0*/*M_PI/3.0;
 
 
 

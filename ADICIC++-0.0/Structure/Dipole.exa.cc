@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/05
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //Implementation of the Dipole_Particle structure of Dipole.H.
 
@@ -32,11 +32,25 @@ const int& Dipole_Particle::InStore=Dipole_Particle::s_count;
 
 
 
+Dipole_Particle::Dipole_Particle()
+  : m_num(++s_maxcount),
+    m_typ(Nil), m_tag(info.gluon.g.Tag()),
+    m_pac( ATOOLS::Particle(m_num,info.gluon.g()) ),
+    m_tow(std::list<Dipole*>()),
+    Name(m_num), Parton(m_pac) {
+
+  ++s_count; this->sc_info();
+}
+
+
+
+
+
 Dipole_Particle::Dipole_Particle(const Dipole_Particle& dipa)
-  : m_num(++s_maxcount), Name(m_num),
-    m_typ(dipa.m_typ), m_tag(dipa.m_tag),
-    m_pac(dipa.m_pac), Parton(m_pac),
-    m_tow(list<Dipole*>()) {
+  : m_num(++s_maxcount),
+    m_typ(dipa.m_typ), m_tag(dipa.m_tag), m_pac(dipa.m_pac),
+    m_tow(list<Dipole*>()),
+    Name(m_num), Parton(m_pac) {
 
   //It cannot belong to any dipole since it is just created, right now.
   //Thus, we use an empty tower.
@@ -49,10 +63,10 @@ Dipole_Particle::Dipole_Particle(const Dipole_Particle& dipa)
 
 
 Dipole_Particle::Dipole_Particle(const Dipole_Quark_Base& Q, const Vec4D& P)
-  : m_num(++s_maxcount), Name(m_num),
-    m_typ(Positive), m_tag(Q.Tag()),
-    m_pac( Particle(m_num,Q(),P) ), Parton(m_pac),
-    m_tow(std::list<Dipole*>()) {
+  : m_num(++s_maxcount),
+    m_typ(Positive), m_tag(Q.Tag()), m_pac( Particle(m_num,Q(),P) ),
+    m_tow(std::list<Dipole*>()),
+    Name(m_num), Parton(m_pac) {
 
   ++s_count; this->bc_info();
 }
@@ -63,10 +77,10 @@ Dipole_Particle::Dipole_Particle(const Dipole_Quark_Base& Q, const Vec4D& P)
 
 Dipole_Particle::Dipole_Particle(const Dipole_Antiquark_Base& A,
 				 const Vec4D& P)
-  : m_num(++s_maxcount), Name(m_num),
-    m_typ(Negative), m_tag(A.Tag()),
-    m_pac( Particle(m_num,A(),P) ), Parton(m_pac),
-    m_tow(std::list<Dipole*>()) {
+  : m_num(++s_maxcount),
+    m_typ(Negative), m_tag(A.Tag()), m_pac( Particle(m_num,A(),P) ),
+    m_tow(std::list<Dipole*>()),
+    Name(m_num), Parton(m_pac) {
 
   ++s_count; this->bc_info();
 }
@@ -76,10 +90,10 @@ Dipole_Particle::Dipole_Particle(const Dipole_Antiquark_Base& A,
 
 
 Dipole_Particle::Dipole_Particle(const Dipole_Gluon_Base& G, const Vec4D& P)
-  : m_num(++s_maxcount), Name(m_num),
-    m_typ(Nil), m_tag(G.Tag()),
-    m_pac( Particle(m_num,G(),P) ), Parton(m_pac),
-    m_tow(std::list<Dipole*>()) {
+  : m_num(++s_maxcount),
+    m_typ(Nil), m_tag(G.Tag()), m_pac( Particle(m_num,G(),P) ),
+    m_tow(std::list<Dipole*>()),
+    Name(m_num), Parton(m_pac) {
 
   ++s_count; this->bc_info();
 }
@@ -233,6 +247,29 @@ const Particle& Dipole_Particle::Gluonize() {
 
 
 //=============================================================================
+
+
+
+void Dipole_Particle::Test() const {
+  Dipole::Gate gate;
+  for(std::list<Dipole*>::const_iterator it=m_tow.begin();
+      it!=m_tow.end(); ++it) {
+    short ph=(*it)->PointerHandling();
+    if(gate(*it,this)) {    //top branch
+      if(ph==2 || ph==3) {
+	std::cerr<<"\nBug: TopBranch physically belongs to a Dipole!\n";
+	assert((ph==2 || ph==3)==false);
+      }
+    } else {    //bot branch
+      if(ph==1 || ph==3) {
+	std::cerr<<"\nBug: BotBranch physically belongs to a Dipole!\n";
+	assert((ph==1 || ph==3)==false);
+      }
+    }
+  }
+}
+
+
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/06
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //Implementation of Chain.H.
 
@@ -438,6 +438,23 @@ void Chain::Print() const {
   cout<<"Number of branches = "<<ParticleNumber()<<endl;
   cout<<"Number of  dipoles = "<<DipoleNumber()<<endl;
   cout<<om::bold<<string(80,'O')<<om::reset<<endl;
+}
+
+
+
+
+
+const Chain::Type Chain::ChainType() const {
+  if(varset.l_dip.empty()) return Chain::incorrect;
+  if(varset.l_dip.front()->GetTopBranchPointer().operator->()==varset.p_quab
+     &&
+     varset.l_dip.back()->GetBotBranchPointer().operator->()==varset.p_atib)
+    return Chain::line;
+  if(varset.l_dip.front()->GetTopBranchPointer().operator->()==varset.p_1glu
+     &&
+     varset.l_dip.back()->GetBotBranchPointer().operator->()==varset.p_1glu)
+    return Chain::ring;
+  return Chain::incorrect;
 }
 
 

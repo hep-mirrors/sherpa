@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/07    (surely preliminarily)
+//Version: 1 ADICIC++-0.0/2004/07/12    (surely preliminarily)
 
 //Classes are provided, which manage the Sudakov calculation needed for the
 //gluon emission or splitting of a specific dipole.
@@ -128,7 +128,7 @@ namespace ADICIC {
 
   public:
 
-    inline Sudakov();
+    Sudakov();
     ~Sudakov() {}
 
     //Public (inline) methods:

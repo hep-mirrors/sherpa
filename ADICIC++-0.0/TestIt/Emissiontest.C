@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/08
+//Version: 1 ADICIC++-0.0/2004/07/12
 
 //Emissiontest.C - testing the first emission.
 
@@ -10,6 +10,7 @@
 #include <iostream>
 #include <ioextra>
 #include <enumextra>
+#include <mathextra>
 #include "Message.H"
 #include "Dipole.H"
 #include "Dipole_Handler.H"
@@ -62,7 +63,24 @@ public:
 
 int main() {
 
+  //for(int q=0; q<=30000000; q++) factorial(56);
+  //for(int q=0; q<=30000000; q++) Factorial<56>::RET;
+  cout<<"RuntimeTest1: 53! = "
+      <<factorial(53)<<" | "<<Factorial<53>::RET<<endl;
+
+  //for(int q=0; q<=60000000; q++) power(5.67,22);
+  //for(int q=0; q<=60000000; q++) power<22>(5.67);
+
+  cout<<"RuntimeTest2: 5.67^22 = "
+      <<power(5.67,22)<<" | "<<power<22>(5.67)<<endl;
+
+  //abort();
+
   msg.SetModifiable(true);
+  cout<<Dipole_Flavour_Init::Status()<<endl;
+  cout<<Dipole_Flavour_Init::DoIt(true)<<endl;
+  cout<<Dipole_Flavour_Init::DoIt()<<endl;
+  cout<<Dipole_Flavour_Init::Status()<<endl;
 
   cout<<endl;
 
@@ -284,6 +302,7 @@ int main() {
   }
 
   cout<<"=============================================================="<<endl;
+  cout<<"Test: 5^8="<<power<8>(5)<<endl;
   cout<<"Test: 8.123^7="<<power<7>(8.123)<<endl;
   cout<<"Test: 4.573^3="<<power<3>(4.573)<<endl;
   cout<<"Test: 7.000^2="<<power<2>(7.000);
@@ -332,9 +351,9 @@ int main() {
 
 	H.DecoupleNewDipole(pDin,dummy); assert(pDin);
 	H.DecoupleGlubranch(pGlu); assert(pGlu);
-	const Dipole& Din=*pDin;
 
 #ifdef EMISSIONTEST_OUTPUT
+	const Dipole& Din=*pDin;
 	if(Dip.IsType()==Dipole::qg) cout<<Dip<<endl<<Din<<endl;
 	else cout<<Din<<endl<<Dip<<endl;
 #endif

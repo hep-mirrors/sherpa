@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/07
+//Version: 1 ADICIC++-0.0/2004/07/12
 
 //Inline methods of Sudakov_Calculator.H.
 
@@ -100,18 +100,6 @@ namespace ADICIC {
 
 
   //===========================================================================
-
-
-
-  template<Dipole::Type DT> inline Sudakov<DT>::Sudakov()
-    : Sudakov_Calculator(),
-      m_s(Sudakov_Calculator::MaxOfK2t()),
-      m_x2tmin(Sudakov_Calculator::MinOfK2t()/m_s), m_x2t(1.0),
-      m_rap(0.0), m_corr(1.0) {}
-
-
-
-  //---------------------------------------------------------------------------
 
 
 

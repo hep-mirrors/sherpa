@@ -20,7 +20,7 @@ endif
 
 
 lib_LTLIBRARIES = libAdicicTool.la
-libAdicicTool_la_SOURCES = Xio.C \
+libAdicicTool_la_SOURCES = Xio.C Xmath.C \
                            Sudakov_Calculator.C Recoil_Calculator.C
 
 

@@ -40,7 +40,7 @@ noinst_HEADERS = Dipole_Handler.H Chain_Handler.H
 
 
 EXTRA_DIST = $(CVSINCLUDE) \
-             Dipole_Handler.inl.hh Dipole_Handler.dat.cc \
+             Dipole_Handler.inl.hh \
              Chain_Handler.dat.hh Chain_Handler.inl.hh
 
 

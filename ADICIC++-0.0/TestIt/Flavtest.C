@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/08
+//Version: 1 ADICIC++-0.0/2004/07/12
 
 //Flavtest.C - testing the dipole-flavour structure.
 
@@ -47,7 +47,12 @@ public:
 
 int main() {
 
+  //Initialization.
   msg.SetModifiable(true);
+  cout<<Dipole_Flavour_Init::Status()<<endl;
+  cout<<Dipole_Flavour_Init::DoIt(true)<<endl;
+  cout<<Dipole_Flavour_Init::DoIt()<<endl;
+  cout<<Dipole_Flavour_Init::Status()<<endl;
 
   cout<<endl;
   cout<<"=============================================================="<<endl;
@@ -622,7 +627,7 @@ int main() {
     Dipole D3(b0,a0,33);
 
     Dipole::Particle_Pointer b;
-    Dipole::Particle_Pointer* bp;
+    //Dipole::Particle_Pointer* bp;
     //bp=new Dipole::Particle_Pointer(b);
     //  error: `ADICIC::Dipole::Branch_Pointer::Branch_Pointer(const
     //  ADICIC::Dipole::Branch_Pointer&)' is private
@@ -657,7 +662,7 @@ int main() {
 
     cout<<"Branch_Pointer test 6"<<endl;
     //delete D2.GetTopBranchPointer();    //does not work :)
-    Dipole::Particle_Pointer* ptest;
+    //Dipole::Particle_Pointer* ptest;
     //ptest=&(D2.GetTopBranchPointer);
     //  error: ISO C++ forbids taking the address of a bound member
     //  function to form a pointer to member function.  Say `&ADICIC::Dipole::
@@ -675,7 +680,7 @@ int main() {
     //  error: invalid conversion from `ADICIC::Dipole_Particle*' to `
     //  ADICIC::Dipole_Branch*'
     Dipole_Particle* pB=D2.GetTopBranchPointer().operator->();
-    Dipole_Particle* pA=D2.GetBotBranchPointer().operator->();
+    //Dipole_Particle* pA=D2.GetBotBranchPointer().operator->();
     //  who really wants to do that?
 
     D2.GetTopBranchPointer()->ShowParticle();
@@ -701,8 +706,8 @@ int main() {
     //  Pain in the ass(1)  //
     //////////////////////////
     cout<<"Branch_Pointer test 8"<<endl;
-    double fake;
-    double* pfake=&fake;
+    //double fake;
+    //double* pfake=&fake;
     //delete pfake;    //results in free(): invalid pointer ...! or segm. fault
     pB=D2.GetTopBranchPointer().operator->();
     //delete pB;    //results in a segmentation fault, since
@@ -732,7 +737,7 @@ int main() {
  
   cout<<"=============================================================="<<endl;
 
- n1:
+  // n1:
 
   //goto n2;
 
@@ -817,7 +822,7 @@ int main() {
 
   cout<<"=============================================================="<<endl;
 
- n2:
+  // n2:
 
   cout<<"=============================================================="<<endl;
   cout<<endl;

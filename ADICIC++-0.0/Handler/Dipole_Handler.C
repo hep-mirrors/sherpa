@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/07
+//Version: 1 ADICIC++-0.0/2004/07/12
 
 //Implementation of Dipole_Handler.H.
 
@@ -8,7 +8,6 @@
 #include "Random.H"
 #include "Poincare.H"
 #include "Dipole_Handler.H"
-#include "Dipole_Handler.dat.cc"
 
 #include "Sudakov_Calculator.H"
 #include "Recoil_Calculator.H"

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/08
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //Implementation of Dipole.H.
 
@@ -123,13 +123,12 @@ const int& Dipole::InStore=Dipole::s_count;
 
 Dipole::Dipole()
   : f_top(true), f_bot(true),
-    m_name(++s_maxcount), Name(m_name),
-    m_copy(0), CopyOf(m_copy),
-    m_nchg(0), StateNumber(m_nchg),
+    m_name(++s_maxcount), m_copy(0), m_nchg(0),
     m_memory(0), f_active(Blocked),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect), m_p2t(0.0), m_k2t(0.0), m_l2t(0.0),
-    m_mass(0.0), m_invmass(0.0), m_momentum(Vec4D()) {
+    m_mass(0.0), m_invmass(0.0), m_momentum(Vec4D()),
+    Name(m_name), CopyOf(m_copy), StateNumber(m_nchg) {
 
   ++s_count;
 
@@ -149,13 +148,12 @@ Dipole::Dipole()
 
 Dipole::Dipole(const Dipole& dip, bool phdl)
   : f_top(phdl), f_bot(phdl),
-    m_name(++s_maxcount), Name(m_name),
-    m_copy(dip.m_name), CopyOf(m_copy),
-    m_nchg(1), StateNumber(m_nchg),
+    m_name(++s_maxcount), m_copy(dip.m_name), m_nchg(1),
     m_memory(dip.m_memory), f_active(dip.f_active),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(dip.m_type), m_p2t(dip.m_p2t), m_k2t(dip.m_k2t), m_l2t(dip.m_l2t),
-    m_mass(dip.m_mass), m_invmass(dip.m_invmass), m_momentum(dip.m_momentum) {
+    m_mass(dip.m_mass), m_invmass(dip.m_invmass), m_momentum(dip.m_momentum),
+    Name(m_name), CopyOf(m_copy), StateNumber(m_nchg) {
 
   //Due to "towering" type and momentum of Dipole dip are already up-to-date.
 
@@ -192,12 +190,11 @@ Dipole::Dipole(const Dipole& dip, bool phdl)
 Dipole::Dipole(Dipole::Branch& ban, Dipole::Antibranch& ati,
 	       int source, bool phdl)
   : f_top(phdl), f_bot(phdl),
-    m_name(++s_maxcount), Name(m_name),
-    m_copy(0), CopyOf(m_copy),
-    m_nchg(-1), StateNumber(m_nchg),
+    m_name(++s_maxcount), m_copy(0), m_nchg(-1),
     m_memory(source), f_active(On),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(incorrect) {
+    m_type(incorrect),
+    Name(m_name), CopyOf(m_copy), StateNumber(m_nchg) {
 
   ++s_count;
 
@@ -227,12 +224,11 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Antibranch& ati,
 Dipole::Dipole(Dipole::Branch& ban, Dipole::Glubranch& glu,
 	       int source, bool phdl)
   : f_top(phdl), f_bot(phdl),
-    m_name(++s_maxcount), Name(m_name),
-    m_copy(0), CopyOf(m_copy),
-    m_nchg(-1), StateNumber(m_nchg),
+    m_name(++s_maxcount), m_copy(0), m_nchg(-1),
     m_memory(source), f_active(On),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(incorrect) {
+    m_type(incorrect),
+    Name(m_name), CopyOf(m_copy), StateNumber(m_nchg) {
 
   ++s_count;
 
@@ -262,12 +258,11 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Glubranch& glu,
 Dipole::Dipole(Dipole::Glubranch& glu, Dipole::Antibranch& ati,
 	       int source, bool phdl)
   : f_top(phdl), f_bot(phdl),
-    m_name(++s_maxcount), Name(m_name),
-    m_copy(0), CopyOf(m_copy),
-    m_nchg(-1), StateNumber(m_nchg),
+    m_name(++s_maxcount), m_copy(0), m_nchg(-1),
     m_memory(source), f_active(On),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(incorrect) {
+    m_type(incorrect),
+    Name(m_name), CopyOf(m_copy), StateNumber(m_nchg) {
 
   ++s_count;
 
@@ -297,12 +292,11 @@ Dipole::Dipole(Dipole::Glubranch& glu, Dipole::Antibranch& ati,
 Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
 	       int source, bool phdl)
   : f_top(phdl), f_bot(phdl),
-    m_name(++s_maxcount), Name(m_name),
-    m_copy(0), CopyOf(m_copy),
-    m_nchg(-1), StateNumber(m_nchg),
+    m_name(++s_maxcount), m_copy(0), m_nchg(-1),
     m_memory(source), f_active(On),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(incorrect) {
+    m_type(incorrect),
+    Name(m_name), CopyOf(m_copy), StateNumber(m_nchg) {
 
   if(&glut==&glub && !f_top) {
     cerr<<"\nError: TopBranch and BotBranch point to a single gluon!\n";
@@ -477,6 +471,49 @@ void Dipole::Print() const {
 
 
 
+const Dipole::Type Dipole::UpdateType() {
+  if(p_top->OrgType()==-1 || p_bot->OrgType()==1) {    //Cast protector!
+    cerr<<"\nError: Demand will produce invalid Dipole type!\n";
+    assert( (p_top->OrgType()==-1 || p_bot->OrgType()==1) == false );
+  }
+  ++m_nchg;
+#ifdef DIPOLE_STRICT_VERSION
+  m_type=Type( (10*p_top->Tag()+p_bot->Tag()) );
+  return m_type;
+  //Does that sufficiently work? No.
+  //Only if invalid Dipoles are really excluded.
+#else
+  short t = 10*p_top->Tag() + p_bot->Tag();
+  if(t==9 || t==10 || t==-1 || t==0); else {
+    cerr<<"\nError: Algorithm used produces invalid Dipole type!\n";
+    assert(t==9 || t==10 || t==-1 || t==0);
+  }
+  m_type=Type(t);
+  return m_type;
+#endif
+}
+
+
+
+
+
+const double Dipole::UpdateMass() {
+  ++m_nchg;
+  m_momentum=p_top->Momentum()+p_bot->Momentum();
+  m_invmass=m_momentum.Abs2();
+  if(m_invmass<0.0) {
+    cerr<<"\nMethod: const double ADICIC::Dipole::UpdateMass(): "
+	<<"Warning: Negative invariant mass!\n"<<endl;
+    m_mass=-1*sqrt(-1*m_invmass);
+  }
+  else m_mass=sqrt(m_invmass);
+  return m_mass;
+}
+
+
+
+
+
 void Dipole::RenewBranch(Branch& ban) {
 
   //This method is only concerned with p_top.
@@ -613,6 +650,34 @@ const bool Dipole::RenewBranch(bool top, const Dipole& dip, bool diptop) {
   return false;
   //if(this!=&dip)    //Maybe dropping that to allow for cross assignments.
   //gg check
+}
+
+
+
+//=============================================================================
+
+
+
+void Dipole::Test(const std::list<Dipole*>& L, const Dipole_Particle* P,
+		  const std::string& s) const {
+  for(std::list<Dipole*>::const_iterator it=L.begin(); it!=L.end(); ++it) {
+    if( (*it)->p_top==P ) {
+      if( (*it)->f_top ) {
+	cerr<<"\nBug: "<<s
+	    <<"Branch physically belongs to several Dipoles!\n";
+	assert((*it)->f_top==false);}
+    } else {
+      if( (*it)->p_bot==P ) {
+	if( (*it)->f_bot ) {
+	  cerr<<"\nBug: "<<s
+	      <<"Branch physically belongs to several Dipoles!\n";
+	  assert((*it)->f_bot==false);}
+      } else {
+	cerr<<"\nBug: Dipole_Particle's tower carries external Dipole!";
+	cerr<<endl; assert(0);
+      }
+    }
+  }
 }
 
 

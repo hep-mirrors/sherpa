@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/05
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //The Dipole structure is a carrier of information.
 
@@ -114,8 +114,11 @@ namespace ADICIC {
     inline std::list<Dipole*>& AccessBotBranch() const;
     inline void AddDipoleToTowers();
     inline void RemoveDipoleFromTowers();
-    inline void Test(const std::list<Dipole*>&, const Dipole_Particle*,
-		     const std::string&) const;
+
+    //Private methods:
+    //================
+    void Test(const std::list<Dipole*>&, const Dipole_Particle*,
+	      const std::string&) const;
 
   public:
 
@@ -162,15 +165,16 @@ namespace ADICIC {
     inline const bool operator|(Dipole_Handler&);
     inline void       operator|(bool);
 
-    inline const Type   UpdateType();
-    inline const double UpdateMass();
-
     inline Particle_Pointer GetTopBranchPointer() const;
     inline Particle_Pointer GetBotBranchPointer() const;
 
     //Public methods:
     //===============
     void Print() const;
+    
+    const Type   UpdateType();
+    const double UpdateMass();
+
     void RenewBranch(Branch&);
     void RenewBranch(Antibranch&);
     void RenewBranch(bool, Glubranch&);
@@ -201,11 +205,11 @@ namespace ADICIC {
 
     //Private inline methods:
     //=======================
-    inline void Test() const;
     inline void SetPacNum();
 
     //Private methods:
     //================
+    void Test() const;
     Dipole_Particle* Copy() const;
 
   protected:
@@ -227,7 +231,7 @@ namespace ADICIC {
 
   public:
 
-    inline Dipole_Particle();    //Standard particle is the SM gluon!
+    Dipole_Particle();    //Standard particle is the SM gluon!
     Dipole_Particle(const Dipole_Particle&);
     Dipole_Particle(const Dipole_Quark_Base&, const ATOOLS::Vec4D&);
     Dipole_Particle(const Dipole_Antiquark_Base&, const ATOOLS::Vec4D&);
@@ -296,10 +300,12 @@ namespace ADICIC {
     Dipole_Branch& operator=(const Dipole_Glubranch&);
 
     //Blocking of group-changing methods:
-    const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {}
-    const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {}
+    const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {
+      return this->Parton;}
+    const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {
+      return this->Parton;}
 #ifdef DIPOLE_STRICT_VERSION
-    const ATOOLS::Particle& Gluonize() {}
+    const ATOOLS::Particle& Gluonize() { return this->Parton;}
 #endif
 
   public:
@@ -341,10 +347,12 @@ namespace ADICIC {
     Dipole_Antibranch& operator=(const Dipole_Glubranch&);
 
     //Blocking of group-changing methods:
-    const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {}
-    const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {}
+    const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {
+      return this->Parton;}
+    const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {
+      return this->Parton;}
 #ifdef DIPOLE_STRICT_VERSION
-    const ATOOLS::Particle& Gluonize() {}
+    const ATOOLS::Particle& Gluonize() { return this->Parton;}
 #endif
 
   public:
@@ -387,10 +395,12 @@ namespace ADICIC {
 
     //Blocking of group-changing methods:
 #ifdef DIPOLE_STRICT_VERSION
-    const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {}
-    const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {}
+    const ATOOLS::Particle& Quarkize(const Dipole_Quark_Base&) {
+      return this->Parton;}
+    const ATOOLS::Particle& Antiquarkize(const Dipole_Antiquark_Base&) {
+      return this->Parton;}
 #endif
-    const ATOOLS::Particle& Gluonize() {}
+    const ATOOLS::Particle& Gluonize() { return this->Parton;}
 
   public:
 

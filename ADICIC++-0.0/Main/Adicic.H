@@ -1,7 +1,7 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/08
+//Version: 1 ADICIC++-0.0/2004/07/05
 
-//
+//The main Adicic object.
 
 
 
@@ -23,6 +23,25 @@
 
 
 namespace ADICIC {
+
+
+
+  class Adicic_Data_Init {
+  private:
+    static bool s_status;
+  public:
+    Adicic_Data_Init() {}
+    ~Adicic_Data_Init() {}
+  public:
+    static inline const bool Status();
+    static const bool DoIt();
+  };
+
+  inline const bool Adicic_Data_Init::Status() {    //Static.
+    return s_status;
+  }
+
+
 
 
 

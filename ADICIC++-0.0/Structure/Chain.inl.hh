@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/06
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //Inline methods of Chain.H.
 
@@ -62,20 +62,6 @@ namespace ADICIC {
 
 
 
-
-
-  inline const Chain::Type Chain::ChainType() const {
-    if(varset.l_dip.empty()) return Chain::incorrect;
-    if(varset.l_dip.front()->GetTopBranchPointer().operator->()==varset.p_quab
-       &&
-       varset.l_dip.back()->GetBotBranchPointer().operator->()==varset.p_atib)
-      return Chain::line;
-    if(varset.l_dip.front()->GetTopBranchPointer().operator->()==varset.p_1glu
-       &&
-       varset.l_dip.back()->GetBotBranchPointer().operator->()==varset.p_1glu)
-      return Chain::ring;
-    return Chain::incorrect;
-  }
 
 
   inline const bool Chain::IsLine() const {

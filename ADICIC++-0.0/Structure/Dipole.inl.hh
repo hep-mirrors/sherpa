@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/05
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //Inline methods of Dipole.H.
 
@@ -136,46 +136,6 @@ namespace ADICIC {
 
 
 
-  inline const Dipole::Type Dipole::UpdateType() {
-    if(p_top->OrgType()==-1 || p_bot->OrgType()==1) {    //Cast protector!
-      std::cerr<<"\nError: Demand will produce invalid Dipole type!\n";
-      assert( (p_top->OrgType()==-1 || p_bot->OrgType()==1) == false );
-    }
-    ++m_nchg;
-#ifdef DIPOLE_STRICT_VERSION
-    m_type=Type( (10*p_top->Tag()+p_bot->Tag()) );
-    return m_type;
-    //Does that sufficiently work? No.
-    //Only if invalid Dipoles are really excluded.
-#else
-    short t = 10*p_top->Tag() + p_bot->Tag();
-    if(t==9 || t==10 || t==-1 || t==0); else {
-      std::cerr<<"\nError: Algorithm used produces invalid Dipole type!\n";
-      assert(t==9 || t==10 || t==-1 || t==0);
-    }
-    m_type=Type(t);
-    return m_type;
-#endif
-  }
-
-
-  inline const double Dipole::UpdateMass() {
-    ++m_nchg;
-    m_momentum=p_top->Momentum()+p_bot->Momentum();
-    m_invmass=m_momentum.Abs2();
-    if(m_invmass<0.0) {
-      std::cerr<<"\nMethod: const double ADICIC::Dipole::UpdateMass(): "
-	       <<"Warning: Negative invariant mass!\n"<<std::endl;
-      m_mass=-1*sqrt(-1*m_invmass);
-    }
-    else m_mass=sqrt(m_invmass);
-    return m_mass;
-  }
-
-
-
-
-
   inline Dipole::Particle_Pointer Dipole::GetTopBranchPointer() const {
     Particle_Pointer pB;
     if(p_top->OrgType()==Positive) pB.p_dipa=static_cast<Branch*>(p_top);
@@ -216,33 +176,6 @@ namespace ADICIC {
 
 
 
-
-
-  inline void Dipole::Test(const std::list<Dipole*>& L,
-			   const Dipole_Particle* P,
-			   const std::string& s) const {
-    for(std::list<Dipole*>::const_iterator it=L.begin(); it!=L.end(); ++it) {
-      if( (*it)->p_top==P ) {
-	if( (*it)->f_top ) {
-	  std::cerr<<"\nBug: "<<s
-		   <<"Branch physically belongs to several Dipoles!\n";
-	  assert((*it)->f_top==false);}
-      } else {
-	if( (*it)->p_bot==P ) {
-	  if( (*it)->f_bot ) {
-	    std::cerr<<"\nBug: "<<s
-		     <<"Branch physically belongs to several Dipoles!\n";
-	    assert((*it)->f_bot==false);}
-	} else {
-	  std::cerr<<"\nBug: Dipole_Particle's tower carries external Dipole!";
-	  std::cerr<<std::endl; assert(0);
-	}
-      }
-    }
-  }
-
-
-
   //===========================================================================
 
 
@@ -258,29 +191,6 @@ namespace ADICIC {
 
 
   //===========================================================================
-
-
-
-  inline void Dipole_Particle::Test() const {
-    Dipole::Gate gate;
-    for(std::list<Dipole*>::const_iterator it=m_tow.begin();
-	it!=m_tow.end(); ++it) {
-      short ph=(*it)->PointerHandling();
-      if(gate(*it,this)) {    //top branch
-	if(ph==2 || ph==3) {
-	  std::cerr<<"\nBug: TopBranch physically belongs to a Dipole!\n";
-	  assert((ph==2 || ph==3)==false);
-	}
-      } else {    //bot branch
-	if(ph==1 || ph==3) {
-	  std::cerr<<"\nBug: BotBranch physically belongs to a Dipole!\n";
-	  assert((ph==1 || ph==3)==false);
-	}
-      }
-    }
-  }
-
-
 
 
 
@@ -330,10 +240,10 @@ namespace ADICIC {
 
 
   inline Dipole_Particle::Dipole_Particle(Trio i, const ATOOLS::Particle& par)
-    : m_num(++s_maxcount), Name(m_num),
-      m_typ(i), m_tag(i),
-      m_pac(par), Parton(m_pac),
-      m_tow(std::list<Dipole*>()) {
+    : m_num(++s_maxcount),
+      m_typ(i), m_tag(i), m_pac(par),
+      m_tow(std::list<Dipole*>()),
+      Name(m_num), Parton(m_pac) {
 
     ++s_count; this->SetPacNum(); this->if_info();
   }
@@ -353,19 +263,6 @@ namespace ADICIC {
 
 
   //===========================================================================
-
-
-
-  inline Dipole_Particle::Dipole_Particle()
-    : m_num(++s_maxcount), Name(m_num),
-      m_typ(Nil), m_tag(info.gluon.g.Tag()),
-      m_pac( ATOOLS::Particle(m_num,info.gluon.g()) ), Parton(m_pac),
-      m_tow(std::list<Dipole*>()) {
-
-    ++s_count; this->sc_info();
-  }
-
-
 
 
 

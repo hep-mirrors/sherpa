@@ -1,5 +1,5 @@
 //bof
-//Version: ADICIC++-0.0/2004/01/28
+//Version: 1 ADICIC++-0.0/2004/07/12
 
 //Implementation of Xio.H.
 
@@ -33,7 +33,7 @@ using std::ends;
 //=================================================
 
 sformat::sformat(unsigned short w, unsigned short d, bool a, bool c)
-  : wth(w), dgt(d), adj(a), cmm(c), adjust(adj) {
+  : wth(w), adj(a), dgt(d), cmm(c), adjust(adj) {
 
   //digits is the crucial option
   if(wth>80) wth=80; if(dgt>77) dgt=77;

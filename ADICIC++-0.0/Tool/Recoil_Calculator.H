@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/11    (surely preliminarily)
+//Version: 1 ADICIC++-0.0/2004/07/12    (surely preliminarily)
 
 //Classes are provided, which manage the calculation of the kinematics
 //according to given recoil strategies.
@@ -104,15 +104,15 @@ namespace ADICIC {
 
     //Private methods:
 
-    inline const bool Initialize();
-    inline void RotateOnto(const ATOOLS::Vec4D&);
-    inline void Rotate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&);
+    const bool Initialize();
+    void RotateOnto(const ATOOLS::Vec4D&);
+    void Rotate(const ATOOLS::Vec4D&, const ATOOLS::Vec4D&);
 
     const bool Calculate();
 
   public:
 
-    inline Recoil();
+    Recoil();
     ~Recoil() {}
 
     //Public (inline) methods:

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/08
+//Version: 1 ADICIC++-0.0/2004/07/05
 
 //Implementation of Adicic.H.
 
@@ -26,23 +26,55 @@ using namespace ADICIC;
 
 
 
+bool Adicic_Data_Init::s_status=false;
+
+
+const bool Adicic_Data_Init::DoIt() {    //Static.
+
+  if(s_status) return false;
+
+  //
+
+  s_status=true;
+  return true;
+
+}
+
+
+
+//=============================================================================
+
+
+
 Adicic::Adicic() : p_chain(new Chain()) {
   cout<<om::green;/////////////////////////////////////////////////////////////
-  cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;//////////////
-  cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;/////////////////////
-  cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;/////////////////////
-  cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;///////////////////////
-  cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;////////////////////
-  cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;/////////////////
-  cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;////////////////
+  cout<<"Dipole Flavour Initialization ......."<<endl;/////////////////////////
+  cout<<"  "<<Dipole_Flavour_Init::Status()<<endl;/////////////////////////////
+  cout<<"  "<<Dipole_Flavour_Init::DoIt()<<endl;
+  cout<<"  "<<Dipole_Flavour_Init::DoIt()<<endl;///////////////////////////////
+  cout<<"  "<<Dipole_Flavour_Init::Status()<<endl;/////////////////////////////
+  cout<<"Adicic Data Initialization ......."<<endl;////////////////////////////
+  cout<<"  "<<Adicic_Data_Init::Status()<<endl;////////////////////////////////
+  cout<<"  "<<Adicic_Data_Init::DoIt()<<endl;
+  cout<<"  "<<Adicic_Data_Init::DoIt()<<endl;//////////////////////////////////
+  cout<<"  "<<Adicic_Data_Init::Status()<<endl;////////////////////////////////
+  cout<<"Sudakov Calculator Initialization ......."<<endl;/////////////////////
+  cout<<"  Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;////////////
+  cout<<"  MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;///////////////////
+  cout<<"  MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;///////////////////
+  cout<<"  ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;/////////////////////
+  cout<<"  ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;//////////////////
+  cout<<"  ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;///////////////
+  cout<<"  ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;//////////////
   cout<<om::brown;/////////////////////////////////////////////////////////////
-  cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
+  cout<<"  SudakovInit(NULL)="<<Sudakov_Calculator::Init(NULL)<<endl;
   cout<<om::green;/////////////////////////////////////////////////////////////
-  cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;//////////////
-  cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;///////////////////////
-  cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;////////////////////
-  cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;/////////////////
-  cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;////////////////
+  cout<<"  Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;////////////
+  cout<<"  ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;/////////////////////
+  cout<<"  ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;//////////////////
+  cout<<"  ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;///////////////
+  cout<<"  ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;//////////////
+  cout<<"Dipole Initializations ....... finished."<<endl;//////////////////////
   cout<<om::reset;/////////////////////////////////////////////////////////////
 }
 
@@ -52,24 +84,36 @@ Adicic::Adicic() : p_chain(new Chain()) {
 
 Adicic::Adicic(MODEL::Model_Base* pmod) : p_chain(new Chain()) {
   cout<<om::green;/////////////////////////////////////////////////////////////
-  cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;//////////////
-  cout<<"MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;/////////////////////
-  cout<<"MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;/////////////////////
-  cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;///////////////////////
-  cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;////////////////////
-  cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;/////////////////
-  cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;////////////////
+  cout<<"Dipole Flavour Initialization ......."<<endl;/////////////////////////
+  cout<<"  "<<Dipole_Flavour_Init::Status()<<endl;/////////////////////////////
+  cout<<"  "<<Dipole_Flavour_Init::DoIt()<<endl;
+  cout<<"  "<<Dipole_Flavour_Init::DoIt()<<endl;///////////////////////////////
+  cout<<"  "<<Dipole_Flavour_Init::Status()<<endl;/////////////////////////////
+  cout<<"Adicic Data Initialization ......."<<endl;////////////////////////////
+  cout<<"  "<<Adicic_Data_Init::Status()<<endl;////////////////////////////////
+  cout<<"  "<<Adicic_Data_Init::DoIt()<<endl;
+  cout<<"  "<<Adicic_Data_Init::DoIt()<<endl;//////////////////////////////////
+  cout<<"  "<<Adicic_Data_Init::Status()<<endl;////////////////////////////////
+  cout<<"Sudakov Calculator Initialization ......."<<endl;/////////////////////
+  cout<<"  Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;////////////
+  cout<<"  MinScale="<<Sudakov_Calculator::MinOfK2t()<<endl;///////////////////
+  cout<<"  MaxScale="<<Sudakov_Calculator::MaxOfK2t()<<endl;///////////////////
+  cout<<"  ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;/////////////////////
+  cout<<"  ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;//////////////////
+  cout<<"  ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;///////////////
+  cout<<"  ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;//////////////
   cout<<om::red;///////////////////////////////////////////////////////////////
   //cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
   //cout<<"SudakovInit="<<Sudakov_Calculator::Init(pmod)<<endl;
   //cout<<"SudakovInit="<<Sudakov_Calculator::Init(NULL)<<endl;
-  cout<<"SudakovInit="<<Sudakov_Calculator::Init(pmod)<<endl;
+  cout<<"  SudakovInit(MODEL)="<<Sudakov_Calculator::Init(pmod)<<endl;
   cout<<om::green;/////////////////////////////////////////////////////////////
-  cout<<"Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;//////////////
-  cout<<"ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;///////////////////////
-  cout<<"ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;////////////////////
-  cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;/////////////////
-  cout<<"ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;////////////////
+  cout<<"  Running?="<<Sudakov_Calculator::IsAlphaSRunning()<<endl;////////////
+  cout<<"  ASFix="<<Sudakov_Calculator::AlphaSFix()<<endl;/////////////////////
+  cout<<"  ASApp="<<Sudakov_Calculator::AlphaSApprox()<<endl;//////////////////
+  cout<<"  ASCor="<<Sudakov_Calculator::AlphaSCorr(700.0)<<endl;///////////////
+  cout<<"  ASCor="<<Sudakov_Calculator::AlphaSCorr(8100.0)<<endl;//////////////
+  cout<<"Dipole Initializations ....... finished."<<endl;//////////////////////
   cout<<om::reset;/////////////////////////////////////////////////////////////
   //assert(0);
 }

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/06/08
+//Version: 1 ADICIC++-0.0/2004/07/12
 
 //Chaintest.C - testing the first chaining.
 
@@ -64,6 +64,10 @@ public:
 int main() {
 
   msg.SetModifiable(true);
+  cout<<Dipole_Flavour_Init::Status()<<endl;
+  cout<<Dipole_Flavour_Init::DoIt(true)<<endl;
+  cout<<Dipole_Flavour_Init::DoIt()<<endl;
+  cout<<Dipole_Flavour_Init::Status()<<endl;
 
   cout<<endl;
   cout<<cout.precision(6)<<endl;
@@ -378,9 +382,9 @@ int main() {
 
 	H.DecoupleNewDipole(pDin,dummy); assert(pDin);
 	H.DecoupleGlubranch(pGlu); assert(pGlu);
-	const Dipole& Din=*pDin;
 
 #ifdef EMISSIONTEST_OUTPUT
+	const Dipole& Din=*pDin;
 	if(Dip.IsType()==Dipole::qg) cout<<Dip<<endl<<Din<<endl;
 	else cout<<Din<<endl<<Dip<<endl;
 #endif
