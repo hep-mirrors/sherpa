@@ -35,7 +35,7 @@ AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
 APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
+		-lSherpaSoftPhysics -lSherpaTools 
 
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
