@@ -62,14 +62,7 @@ Single_XS * XS_Selector::GetXS(int nin,int nout,Flavour * fl)
 	 ((fl[3]==fl[0]) && (fl[2]==fl[1]))) )   { return new XS_q1q2_q1q2(nin,nout,fl); }
 
 
-  //  if (rpa.gen.Error()) {
-    cout<<"looking for: ";
-    for (int i=0; i<nin; ++i) cout<<fl[i]<<' ';
-    cout<<"-> ";
-    for (int i=0; i<nout; ++i) cout<<fl[i+nin]<<' ';
-    cout<<endl;
-    //  }
-  AORGTOOLS::msg.Error()<<"Such a XS is not yet available as FastFunc!"<<endl;
+  AORGTOOLS::msg.Tracking()<<"Such a XS is not yet available as FastFunc!"<<endl;
   return 0;
 }
 

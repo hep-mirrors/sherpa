@@ -241,6 +241,7 @@ XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) :
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
   a = _fl[0].IsAnti();
+  p = 1-a;
 
   p_colours[0][a] = 500;
   p_colours[2][a] = 501;
