@@ -259,6 +259,19 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Function)
   return p_interpreter->Iterate(left+func->Evaluate(args)+right);
 }
 
+size_t FindBinaryPlus(const std::string &expr,const bool fwd,
+		      size_t cpos=std::string::npos)
+{
+  if (cpos==std::string::npos && fwd) cpos=0;
+  size_t pos(fwd?expr.find("+",cpos):expr.rfind("+",cpos));
+  if (pos==std::string::npos || (pos==0 && !fwd)) return std::string::npos;
+  if (pos==0) return FindBinaryPlus(expr,fwd,1);
+  if (expr[pos-1]=='e' || expr[pos-1]=='E' ||
+      expr[pos-1]<48 || expr[pos-1]>57) 
+    return FindBinaryPlus(expr,fwd,fwd?pos+1:pos-1);
+  return pos;  
+}
+
 size_t FindBinaryMinus(const std::string &expr,const bool fwd,
 		       size_t cpos=std::string::npos)
 {
@@ -294,6 +307,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) {
     if (oit->second->Tag()=="!") pos=FindUnaryNot(expr,false);
     else if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,false);
+    else if (oit->second->Tag()=="+") pos=FindBinaryPlus(expr,false);
     else pos=expr.find(oit->second->Tag());
     if (pos!=std::string::npos) {
       if (oit->second->Binary() && pos!=0) {
@@ -315,7 +329,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t tlfpos=std::string::npos;
     if (oit->second->Tag()=="-") tlfpos=FindBinaryMinus(lstr,false);
-    else if (oit->second->Tag()=="-") pos=FindBinaryMinus(expr,false);
+    else if (oit->second->Tag()=="+") tlfpos=FindBinaryPlus(lstr,false);
     else tlfpos=lstr.rfind(oit->second->Tag());
     if (tlfpos!=std::string::npos) 
       lfpos=Max(lfpos,tlfpos+oit->second->Tag().length());
@@ -329,6 +343,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Binary)
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t trfpos=std::string::npos;
     if (oit->second->Tag()=="-") trfpos=FindBinaryMinus(rstr,true);
+    else if (oit->second->Tag()=="+") trfpos=FindBinaryPlus(rstr,true);
     else trfpos=rstr.find(oit->second->Tag());
     if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
@@ -375,6 +390,7 @@ DEFINE_INTERPRETER_FUNCTION(Interprete_Unary)
        oit!=p_interpreter->Operators().rend();++oit) {
     size_t trfpos=std::string::npos;
     if (oit->second->Tag()=="-") trfpos=FindBinaryMinus(rstr,true);
+    else if (oit->second->Tag()=="+") trfpos=FindBinaryPlus(rstr,true);
     else trfpos=rstr.find(oit->second->Tag());
     if (trfpos!=std::string::npos) rfpos=Min(rfpos,trfpos);
   }
