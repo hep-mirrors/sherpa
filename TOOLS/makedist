@@ -59,7 +59,7 @@ do
 	echo "makeinstall: error: \"make install\" in $I failed"
         if test ! "$NOABORT" = "TRUE" ; then
           until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
-    	    if ! read -t 60 -p "continue anyway (y/n/r) ? " CONTINUE ; then
+    	    if ! read -t 300 -p "continue anyway (y/n/r) ? " CONTINUE ; then
 	      CONTINUE="n"
 	    fi
 	    if test "$CONTINUE" = "n" ; then
