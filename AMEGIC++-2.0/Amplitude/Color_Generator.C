@@ -3,10 +3,10 @@
 using namespace AMEGIC;
 using namespace std;
 
-void Color_Generator::CFConvert(Point* p)
+void Color_Generator::CFConvert(int N, int& dummy, Point* p)
 {
   if ((p->left==0) && (p->right==0)) return;
-
+    
   if (p->Color->Type()!=cf::None) {
     Color_Function* CFh  = new Color_Function;
     *CFh = *(p->Color); 
@@ -23,10 +23,11 @@ void Color_Generator::CFConvert(Point* p)
 	for (short int i=0;i<3;i++) {
 	  if ((CFh->Type()==cf::D || CFh->Type()==cf::G) && i==2) break;
 	  switch (CFh->ParticleArg(i)) {
-	  case 0: partarg[i] = p->number;break;
-	  case 1: partarg[i] = p->left->number;break;
-	  case 2: partarg[i] = p->right->number;break;
-	  case 3: partarg[i] = p->middle->number;break;
+	  case 0: partarg[i]  = p->number;break;
+	  case 1: partarg[i]  = p->left->number;break;
+	  case 2: partarg[i]  = p->right->number;break;
+	  case 3: partarg[i]  = p->middle->number;break;
+	  default: partarg[i] = N+1+dummy/2;dummy++;
 	  }
 	}
 	CFh->SetParticleArg(partarg[0],partarg[1],partarg[2]);
@@ -42,9 +43,9 @@ void Color_Generator::CFConvert(Point* p)
       CFlist = clhead;
     }
   }
-  CFConvert(p->right);
-  if (p->middle) CFConvert(p->middle);
-  CFConvert(p->left);
+  CFConvert(N,dummy,p->right);
+  if (p->middle) CFConvert(N,dummy,p->middle);
+  CFConvert(N,dummy,p->left);
 }
 
 string Color_Generator::CF2String(Color_Function* cflist)
@@ -58,7 +59,6 @@ string Color_Generator::CF2String(Color_Function* cflist)
     stringchain += CFh->String();
     CFh = CFh->Next();
   }
-
   return stringchain;
 }
 
@@ -75,33 +75,35 @@ void Color_Generator::FillString(int N, Color_Function* cflist,int& prop)
       if ((CFh->Type()==cf::D || CFh->Type()==cf::G) && i==2) break;
       if ((CFh->StringArg(i)>=48 && CFh->StringArg(i)<=52)) {
 	char chelp;
+	int arg = CFh->ParticleArg(i);
 	switch (CFh->Type()) {
 	case cf::F: {
-	  if (CFh->ParticleArg(i)<99) chelp = ca+CFh->ParticleArg(i);
-  	                     else chelp = ca+(prop++)+N;
+	  if (arg<99) {
+	    if (arg>N) chelp = ca+(prop++)+N;
+	      else chelp = ca+arg;
+	  }
+	  else chelp = ca+(prop++)+N;
 	}
 	  break;
 	case cf::T: 
 	  if (i==0) {
-	  if (CFh->ParticleArg(i)<99) chelp = ca+CFh->ParticleArg(i);
-  	                     else chelp = ca+(prop++)+N;
+	    if (arg<99) chelp = ca+arg;
+	                   else chelp = ca+(prop++)+N;
 	  }
 	  else {
-	    if (CFh->ParticleArg(i)<99) chelp = ci+CFh->ParticleArg(i);
+	    if (arg<99) chelp = ci+arg;
 	                       else chelp = ci+(prop++)+N;
 	  }
 	  break; 
 	case cf::D: 
-	  if (CFh->ParticleArg(i)<99) chelp = ci+CFh->ParticleArg(i);
+	  if (arg<99) chelp = ci+arg;
 	                     else chelp = ci+(prop++)+N;
 	  
 	  break;
 	case cf::G: 
-	  if (CFh->ParticleArg(i)<99) chelp = ca+CFh->ParticleArg(i);
+	  if (arg<99) chelp = ca+arg;
 	                     else chelp = ca+(prop++)+N;
 	  
-	  break;
-	default :
 	  break;
 	}
 	

@@ -33,7 +33,7 @@ namespace AMEGIC {
     void FillString(int,Color_Function*,int&); 
 
     void CFKill();
-    void CFConvert(Point* p);
+    void CFConvert(int,int&,Point* p);
     void CFBuildString(int);
     Color_Function* Get_CF() {return CFlist;}
     Color_Function* Get_CCF(){return CCFlist;}
