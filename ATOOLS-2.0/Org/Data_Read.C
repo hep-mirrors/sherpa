@@ -102,6 +102,7 @@ void Data_Read::ReadIn(std::string filename) {
 
 void Data_Read::SetCommandLine(std::string name, std::string value)
 {
+  Shorten(name);
   s_commandlineparameters[name]=value;
 }
 

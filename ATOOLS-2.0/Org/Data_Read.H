@@ -92,7 +92,7 @@ namespace ATOOLS {
     Parameter_Map m_parameters;
     static Parameter_Map s_commandlineparameters;
     void FillIn(std::string buffer) ;
-    void Shorten(std::string& str);
+    static void Shorten(std::string& str);
     // returns sum of digits
     int Crossfoot(std::string name);
     void AddCommandLine();
