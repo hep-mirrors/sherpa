@@ -43,7 +43,7 @@ void LL_Sudakov::Initialize()
   int smode=Sudakov::numeric;
   // add quark sudakovs
   LL_Single_Sudakov *ssud=NULL;
-  for (int k=1;k<=5;++k) {
+  for (int k=1;k<=3;++k) {
     ATOOLS::Flavour fl=ATOOLS::Flavour(ATOOLS::kf::code(k));
     ssud = new LL_Single_Sudakov(new PDF::LL_Branching(fl,p_alphas),smode);
     //     ssud->SetOutPath(m_outpath);
