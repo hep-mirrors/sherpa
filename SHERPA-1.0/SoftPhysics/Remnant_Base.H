@@ -50,7 +50,8 @@ namespace SHERPA {
     virtual ~Remnant_Base();
 
     // member functions
-    virtual void Clear();
+    void Clear();
+    void DeleteRemnants();
 
     virtual double MinimalEnergy(const ATOOLS::Flavour &flavour);
 

@@ -22,6 +22,14 @@ void Remnant_Base::Clear()
   m_initialized=false;
 }
 
+void Remnant_Base::DeleteRemnants()
+{
+  while (m_parton[0].size()>0) {
+    delete *m_parton[0].begin();
+    m_parton[0].erase(m_parton[0].begin());
+  }
+}
+
 bool Remnant_Base::AdjustKinematics()
   {
   if (!m_active) return true;
