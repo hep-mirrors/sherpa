@@ -46,7 +46,7 @@ do
     fi
     if test "$NOCVS" = "TRUE" ; then
       ./configure --disable-cvsinclude
-    else 
+    elif test "$CONFIGURE" = "TRUE" ; then 
       ./configure 
     fi
     if test "$ALLCLEAN" = "TRUE" ; then 
@@ -57,7 +57,12 @@ do
       if test "$I" = "SHERPA-1.0" ; then
         echo "                 try the '-c' option or get help with '-h'"
       fi 
-      exit 1
+      until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" ; do
+	read -t 300 -p "continue anyway (y/n) ? " CONTINUE 
+	if test "$CONTINUE" = "n" ; then
+          exit 1
+	fi
+      done
     fi
     mv $I.tar.gz ../$I.tar.gz
     cd ..
