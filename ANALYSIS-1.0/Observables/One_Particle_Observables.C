@@ -53,9 +53,6 @@ One_Particle_ET::One_Particle_ET(const Flavour & _flav,
 
 void One_Particle_ET::Evaluate(const Vec4D & mom,double weight,int ncount) 
 {
-  double sintheta = sqrt(1.-sqr(mom[3])/(sqr(mom[1])+sqr(mom[2])));
-  double et = mom[0]*sintheta;
-
   double pt2 = sqr(mom[1])+sqr(mom[2]);
   double p2  = sqr(mom[3])+pt2;
   double net = mom[0]*sqrt(pt2/p2);
@@ -97,9 +94,6 @@ One_Particle_Eta::One_Particle_Eta(const Flavour & _flav,
 
 void One_Particle_Eta::Evaluate(const Vec4D & mom,double weight, int ncount) 
 {
-  //  double eta = -log(tan(sqrt(sqr(mom[1])+sqr(mom[2]))/(2.*mom[3])));;
-  //  p_histo->Insert(eta,weight,ncount);
-
   double pt2=sqr(mom[1])+sqr(mom[2]);
   double pp =sqrt(pt2+sqr(mom[3]));
   double pz =dabs(mom[3]);
