@@ -6,6 +6,22 @@
 #include <vector>
 
 namespace ATOOLS {
+  class Order_PT {
+  public:
+    int operator()(ATOOLS::Particle * a, ATOOLS::Particle * b) {
+      if (a->Momentum()[1]*a->Momentum()[1]+a->Momentum()[2]*a->Momentum()[2] >
+	  b->Momentum()[1]*b->Momentum()[1]+b->Momentum()[2]*b->Momentum()[2]) return 1;
+      return 0;
+    }
+  };
+  
+  class Order_E {
+  public:
+    int operator()(ATOOLS::Particle * a, ATOOLS::Particle * b) {
+      if (a->Momentum()[0] > b->Momentum()[0]) return 1;
+      return 0;
+    }
+  };
 
   class Jet_Algorithm_Base {
   protected:
@@ -13,7 +29,9 @@ namespace ATOOLS {
   public:
     virtual bool ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double)=0;
 
-    void   Setbflag(bool bf) { m_bflag=bf; }
+    void Setbflag(bool bf) { m_bflag=bf; }
+    void SortE(Particle_List *);
+    void SortPT(Particle_List *);
     
     virtual ~Jet_Algorithm_Base();
   };
@@ -40,9 +58,6 @@ namespace ATOOLS {
       
     void AddToKtlist(double );
     void AddToJetlist(const Vec4D &, bool);
-
-    void SortE();
-    void SortPT();
   public:
     static double Kt2(const Vec4D & p);    
 
@@ -50,7 +65,7 @@ namespace ATOOLS {
     ~Kt_Algorithm();
 
     void   Init(int);
-    bool   ConstructJets(const Particle_List * ,Particle_List * ,std::vector<double> * ,double);
+    bool   ConstructJets(const Particle_List *,Particle_List * ,std::vector<double> * ,double);
 
     double Ktmin(Vec4D *,bool *,int);
   };

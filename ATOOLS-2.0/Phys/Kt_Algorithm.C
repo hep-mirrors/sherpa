@@ -16,6 +16,20 @@ using namespace ATOOLS;
 using namespace std;
 
 
+void Jet_Algorithm_Base::SortE(Particle_List * jets)
+{
+  if (jets) {
+    std::sort(jets->begin(), jets->end(),Order_E());
+  }
+}
+void Jet_Algorithm_Base::SortPT(Particle_List * jets)
+{
+  if (jets) {
+    std::sort(jets->begin(), jets->end(),Order_PT());
+  }
+}
+
+
 Kt_Algorithm::Kt_Algorithm(double rmin) : 
   m_matrixsize(0), p_ktij(NULL), p_imap(NULL), p_kis(NULL), p_jets(NULL),
   p_kts(NULL)
@@ -74,7 +88,7 @@ bool Kt_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * jets,
   delete [] bflag;
 
   // finalize (sort and release used containers)
-  SortPT();
+  SortPT(p_jets);
 
   p_jets=0;
   p_kts =0;
@@ -214,19 +228,6 @@ public:
     return 0;
   }
 };
-
-void Kt_Algorithm::SortE()
-{
-  if (p_jets) {
-    std::sort(p_jets->begin(), p_jets->end(),Order_E());
-  }
-}
-void Kt_Algorithm::SortPT()
-{
-  if (p_jets) {
-    std::sort(p_jets->begin(), p_jets->end(),Order_PT());
-  }
-}
 
 double Kt_Algorithm::CosDPhi12(const Vec4D & p1,const Vec4D & p2) const
 {

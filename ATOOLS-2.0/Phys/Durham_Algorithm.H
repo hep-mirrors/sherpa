@@ -24,9 +24,6 @@ namespace ATOOLS {
 
     void AddToKtlist(double );
     void AddToJetlist(const Vec4D &, bool);
-
-    void SortE();
-    void SortPT();
   public:
     static double Kt2(const Vec4D & p);    
 

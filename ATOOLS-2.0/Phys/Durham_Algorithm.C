@@ -78,7 +78,7 @@ bool Durham_Algorithm::ConstructJets(const Particle_List * pl, Particle_List * j
   delete [] bflag;
   // finalize (sort and release used containers)
 
-  SortE();
+  SortE(p_jets);
 
   p_jets=0;
   p_kts =0;
@@ -150,19 +150,6 @@ public:
     return 0;
   }
 };
-
-void Durham_Algorithm::SortE()
-{
-  if (p_jets) {
-    std::sort(p_jets->begin(), p_jets->end(),Order_E());
-  }
-}
-void Durham_Algorithm::SortPT()
-{
-  if (p_jets) {
-    std::sort(p_jets->begin(), p_jets->end(),Order_PT());
-  }
-}
 
 double Durham_Algorithm::DCos12(const Vec4D & p1,const Vec4D & p2) const
 {
