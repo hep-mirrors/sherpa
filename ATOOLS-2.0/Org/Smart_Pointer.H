@@ -29,10 +29,9 @@ namespace ATOOLS {
     inline void Assign(Smart_Pointer &ref)
     { 
       p_owner=&ref;
-      p_this=ref.p_this; 
-      p_copy=ref.p_copy;
+      p_this=ref.p_this;
+      if ((p_copy=ref.p_copy)!=NULL) p_copy->p_owner=this;
       ref.p_copy=this; 
-      if (p_copy!=NULL) p_copy->p_owner=this;
     }
 
     inline void Remove()
@@ -47,6 +46,8 @@ namespace ATOOLS {
 
     void RemoveBackward(); 
     void RemoveForward();  
+
+    inline Smart_Pointer(const Smart_Pointer &ref) { }
 
   public:
 
@@ -134,6 +135,12 @@ namespace ATOOLS {
     INSTANTIATE_SMART_POINTER(Class_Name) statement in its C-file
     in order to instantiate the appropriate delete methods.
   */
+
+#ifdef _CPP_IOSTREAM
+  template <class Type> std::ostream &
+  operator<<(std::ostream &str,const Smart_Pointer<Type> &p)
+  { return str<<"SP("<<p<<")"; }
+#endif
 
 }// end of namespace ATOOLS
 
