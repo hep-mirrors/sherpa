@@ -57,7 +57,7 @@ namespace MODEL {
     inline double Beta0(const double t) { return Beta0(Nf(t)); }
     inline double AsMZ()                { return m_as_MZ;      }
     inline double AsFixed()             { return m_defval;     }
-    int    Nf(const double);
+    inline int    Nf(const double);
 
   };
 
