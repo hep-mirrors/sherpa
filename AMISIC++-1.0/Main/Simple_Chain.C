@@ -435,7 +435,7 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
 			  <<"   Empty group and start with QCD_Processes."<<std::endl;
     p_processes->Clear();
   }
-  p_processes->InitializeProcesses(p_beam,p_isr);  
+  p_processes->InitializeProcesses(p_beam,p_isr,false);  
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
   ATOOLS::Flavour flavour[4];
