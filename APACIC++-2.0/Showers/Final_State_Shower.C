@@ -977,6 +977,7 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
 
   Blob * bl = mo->part->ProductionBlob();
   if (!bl) {
+    msg.Tracking()<<" no blob ! return normal aunt"<<endl;
     return au->part;
   }
   
@@ -990,5 +991,6 @@ Particle * Final_State_Shower::FindAuntParton(Knot * mo)
     if (found) return aup;
   }
 
+  msg.Tracking()<<" no aunt in blob  found ! return normal aunt"<<endl;
   return au->part;
 }
