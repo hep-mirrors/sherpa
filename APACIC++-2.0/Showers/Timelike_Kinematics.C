@@ -33,7 +33,7 @@ Timelike_Kinematics::Timelike_Kinematics(double _pt2min, Data_Read * const datar
 			    "Timelike_Kinematics","Timelike_Kinematics"));
   }
   jf            = new ATOOLS::Jet_Finder(ycut,m_type); 
-  m_losejet_veto = dataread->GetValue<int>("FS LOSEJETVETO",1);
+  m_losejet_veto = dataread->GetValue<int>("FS LOSEJETVETO",0);
 }
 
 
