@@ -9,7 +9,7 @@ namespace EXTRAXS {
   private:
     
     double m_ckm2[2], m_mw2, m_ww2, m_aqed, m_sin2tw, m_kappa, m_colfac;
-    bool   m_barred;
+    bool   m_barred[2];
 
   public:
  

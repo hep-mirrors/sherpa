@@ -36,6 +36,8 @@ XS_q1q2b_q3q4b::XS_q1q2b_q3q4b(const size_t nin,const size_t nout,
 {
   int ints[4];
   for (short int i=0;i<4;++i) ints[i]=ATOOLS::kf_table.ToInt(flavours[i].Kfcode());
+  m_barred[0]=flavours[0].IsAnti();
+  m_barred[1]=flavours[2].IsAnti();
   if (flavours[0].IsDowntype()) std::swap(ints[0],ints[1]);
   if (flavours[2].IsDowntype()) std::swap(ints[2],ints[3]);
   m_ckm2[0]=std::abs(ATOOLS::rpa.gen.ComplexMatrixElement("CKM",ints[0]/2-1,ints[1]/2));
@@ -62,6 +64,10 @@ double XS_q1q2b_q3q4b::operator()(double s,double t,double u)
 bool XS_q1q2b_q3q4b::SetColours(double s,double t,double u) 
 { 
   m_scale[PHASIC::stp::fac]=s;
+  p_colours[0][m_barred[0]]=ATOOLS::Flow::Counter();
+  p_colours[1][1-m_barred[0]]=p_colours[0][m_barred[0]];
+  p_colours[2][m_barred[1]]=ATOOLS::Flow::Counter();
+  p_colours[3][1-m_barred[1]]=p_colours[2][m_barred[1]];
   return true; 
 }
 
