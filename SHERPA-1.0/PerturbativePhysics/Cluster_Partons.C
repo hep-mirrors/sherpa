@@ -25,10 +25,12 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder
   m_fsrshoweron(fsrshoweron), m_kfac(0.), p_local_tree(NULL) 
 {
   // read in some parameters
-  Data_Read dr(rpa.GetPath()+"Shower.dat");
+  Data_Read dr(rpa.GetPath()+"Shower.dat");     // !!!!!!!! SHOWER_DATA_FILE
+
   m_bp_mode  = dr.GetValue<int>("SUDAKOVTYPE",0);
   m_as_order = dr.GetValue<int>("SUDAKOVASORDER",0);
-  int jetratemode =dr.GetValue<int>("CALCJETRATE",-1);
+  double as_fac = dr.GetValue<double>("SUDAKOVASFAC",1.);
+  int jetratemode = dr.GetValue<int>("CALCJETRATE",-1);
   if ((m_bp_mode&(7+8+16+32+64))!=m_bp_mode) {
     msg.Error()<<"WARNING in Cluster_Partons :"<<endl
 	       <<"   Wrong mode for NLL_Sudakovs: "<<m_bp_mode<<" vs "<<(m_bp_mode&127)<<std::endl
@@ -40,14 +42,15 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder
   msg_Tracking()<<"Cluster_Partons runs in mode : "<<endl
 		<<"   SUDAKOVTYPE    = "<<m_bp_mode<<std::endl
 		<<"   SUDAKOVASORDER = "<<m_as_order<<std::endl
+		<<"   SUDAKOVASFAC   = "<<as_fac<<std::endl
 		<<"   CALCJETRATE    = "<<jetratemode<<std::endl
 		<<"   kfac           = "<<m_kfac<<std::endl;
 
   p_runas = 0;
-  if (m_as_order!=-1) {
+  if (m_as_order!=-1 || as_fac!=1.) {
     double mz2 = sqr(Flavour(kf::Z).Mass());
     double as_mz = (*as)(mz2);
-    p_runas = new Running_AlphaS(as_mz,mz2,m_as_order);
+    p_runas = new Running_AlphaS(as_mz,mz2,m_as_order,as_fac);
   }
 
   p_combi = 0;
@@ -252,7 +255,7 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   std::vector<double> last_q(nlegs,qmax);
   std::vector<int>    last_i(nlegs,si);
   double as_jet  = (*as)(jetscale);
-  double as_hard = (*as)(asscale);
+  double as_hard = (*p_runas)(asscale);
 
   if (jetscale<1.e-6 || asscale<1.e-6) {
     as_jet  = 1.;
@@ -463,9 +466,14 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   m_scale = s;
   m_asscale = m_scale;
 
-  if (ncol==4) msg.Out()<<"WARNING in Cluster_Partons::SetColours() : called for 4 coloured objects \n"
-			<<"          Don't know how to handle this ! "<<std::endl;
-
+  if (ncol==4) {
+    msg.Out()<<"WARNING in Cluster_Partons::SetColours() : called for 4 coloured objects \n"
+	     <<"          Don't know how to handle this ! "<<std::endl;
+    for (int i=0; i<4; ++i) {
+      std::cout<<i<<" : "<<fl[i]<<"\n";
+    }
+    return 1;
+  }
   // (a) no colors
   if (ncol==0) return 0;
 
@@ -1084,7 +1092,18 @@ double Cluster_Partons::ColourAngle(const std::vector<Knot *> & knots, const int
 	double E_mo = mvec[0];
 	double z = j4vec[0]/E_mo;
 	th_crude  = sqrt( t_mo/(z*(1.- z)))/E_mo;
-	double th_ex=acos(ivec*jvec/(ivec.Abs()*jvec.Abs()));
+	double test=ivec*jvec/(ivec.Abs()*jvec.Abs());
+	double th_ex=M_PI;
+	if (test<=-1.) {
+	  test = -1.;
+	}
+	else if (test>=1.) {
+	  th_ex=0;
+	  test = 1.;
+	}
+	else {
+	  th_ex = acos(test);
+	}
 
 	angle = Max(angle,th_ex);
 
@@ -1136,7 +1155,6 @@ void Cluster_Partons::CreateFlavourMap() {
   //
 
   if (1)  {
-
     Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
     Process_Base * partner=proc->Partner();
     const Flavour * flavs=proc->Flavours();
