@@ -187,16 +187,20 @@ MI_Base::TypeID MI_Base::StringToType(std::string type)
 bool MI_Base::StopGeneration(TypeID type)
 { 
   switch (type) {
-  case HardEvent:
-    return s_stophard;
-  case SoftEvent:
-    return s_stopsoft;
-  case Unknown:
-    return s_stophard&&s_stopsoft;
-  default:	
-    return false;
+  case HardEvent: return s_stophard;
+  case SoftEvent: return s_stopsoft;
+  case Unknown:   return s_stophard&&s_stopsoft;
   }
   return true;
+}
+
+void MI_Base::SetStopGeneration(TypeID type,const bool stop)
+{ 
+  switch (type) {
+  case HardEvent: s_stophard=stop;
+  case SoftEvent: s_stopsoft=stop;
+  case Unknown:   s_stophard=s_stopsoft=stop;
+  }
 }
 
 MI_None::MI_None(TypeID _m_type):

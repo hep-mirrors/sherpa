@@ -79,6 +79,8 @@ namespace AMISIC {
     static std::string TypeToString(TypeID type);
     static TypeID StringToType(std::string type);
 
+    static void SetStopGeneration(TypeID type=Unknown,const bool stop=false);
+
     // inline functions
     inline void SetStart(const double _m_start,unsigned int i=0)
     { if (i<m_nparameter) m_start[i]=_m_start; }
