@@ -42,7 +42,7 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
 
 #define DEFINE_PRINT_METHOD(NAME)					\
   void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
-  { str<<"min max bins Lin|Log [ref list]"; }
+  { str<<"min max bins Lin|Log [list]"; }
 
 #define DEFINE_OBSERVABLE_GETTER(CLASS,NAME,TAG)			\
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
@@ -57,9 +57,7 @@ Scaled_Observable_Base::Scaled_Observable_Base(int type,double xmin,double xmax,
 					       double ecms) :
   Primitive_Observable_Base(type,xmin,xmax,nbins,NULL), m_ecms(ecms)
 {
-  MyStrStream str;
-  str<<name<<".dat";
-  str>>m_name;
+  m_name=listname+name+".dat";
 
   if (listname!=std::string("")) m_listname = listname;
   m_blobtype = std::string("");
