@@ -26,7 +26,7 @@ Analysis_Phase::Analysis_Phase() :
   Event_Phase_Handler(std::string("Analysis")), p_analysis(NULL) { }
 
 Analysis_Phase::Analysis_Phase(Sample_Analysis * ana,const std::string  & btype) :
-  Event_Phase_Handler(std::string("Analysis")), p_analysis(ana) 
+  Event_Phase_Handler(std::string("Analysis_")+btype), p_analysis(ana) 
 {
   m_type   = ana->Type();
 }

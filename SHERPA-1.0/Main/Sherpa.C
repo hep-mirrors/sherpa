@@ -92,7 +92,7 @@ bool Sherpa::InitializeTheEventHandler()
   }
   AnalysesMap * analyses = p_inithandler->GetSampleAnalyses();
   for (AnalysesIter ana=analyses->begin();ana!=analyses->end();ana++) {
-    p_eventhandler->AddEventPhase(new Analysis_Phase(ana->second));
+    p_eventhandler->AddEventPhase(new Analysis_Phase(ana->second,ana->first));
   }
 
   return 1;

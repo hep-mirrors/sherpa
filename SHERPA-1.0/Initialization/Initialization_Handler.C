@@ -10,6 +10,7 @@
 
 #include "Data_Read.H"
 #include "Message.H"
+#include "Scaling.H"
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -427,8 +428,13 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	  else delete sa;
 	}
 	if (add) { 
-	  m_analyses.insert(std::make_pair(phase,sa)); 
-	  ATOOLS::msg.Tracking()<<"Initialized a Sample_Analysis for "<<phase<<std::endl;
+	  int i=0;
+	  std::string name;
+	  do {
+	    name=phase+std::string("_")+ATOOLS::ToString(++i);
+	  } while (m_analyses.find(name)!=m_analyses.end());
+	  m_analyses.insert(std::make_pair(name,sa)); 
+	  ATOOLS::msg.Tracking()<<"Initialized Sample_Analysis "<<name<<std::endl;
 	}
       }
     }
