@@ -22,6 +22,7 @@ SOPTIONS=""
 BASENAME=""
 BATCH="PBS"
 BOPTIONS=""
+NICE=""
 for I in $* ; do
   if [ "$I" = "-p" ]; then DRUNPATH=TRUE 
   elif [ "$I" = "-b" ]; then DBINPATH=TRUE 
@@ -33,6 +34,7 @@ for I in $* ; do
   elif [ "$I" = "-B" ]; then DBATCH=TRUE 
   elif [ "$I" = "-O" ]; then DBOPTIONS=TRUE 
   elif [ "$I" = "-H" ]; then DHOST=TRUE
+  elif [ "$I" = "-N" ]; then DNICE=TRUE
   elif [ "$I" = "-S" ]; then SUBMIT=TRUE 
   elif [ "$I" = "-R" ]; then RUN=TRUE
   elif [ "$I" = "-h" ]; then echo && \
@@ -47,6 +49,7 @@ for I in $* ; do
     echo "         -B <system>    select batch system <system>" && \
     echo "         -O <option>    define batch system option <option>" && \
     echo "         -H <host>      run job locally on <host>" && \
+    echo "         -N <level>     set nice level for nohup" && \
     echo "         -S             submit job to batch system" && \
     echo "         -R             run job via nohup" && \
     echo "         -h             display this help and exit" && echo && \
@@ -61,6 +64,7 @@ for I in $* ; do
   elif [ "$DBATCH" = "TRUE" ]; then DBATCH="" && BATCH=$I
   elif [ "$DBOPTIONS" = "TRUE" ]; then DBOPTIONS="" && BOPTIONS=$BOPTIONS" "$I
   elif [ "$DHOST" = "TRUE" ]; then DHOST="" && RHOST=$I
+  elif [ "$DNICE" = "TRUE" ]; then DNICE="" && NICE=$I
   else echo "run: error: unrecognized option '$I'. try '-h'" && \
     exit 1 
   fi
@@ -181,7 +185,11 @@ elif [ "$RUN" = "TRUE" ] ; then
   done
   ssh -q $RHOST exit 
   if (( $? ==0 )) ; then
-    ( ssh $RHOST "sync && ( nohup $SETUPPATH/$FILE > /dev/null ) &" ) &
+    if [ "$NICE" = "" ] ; then
+      ( ssh $RHOST "sync && ( nohup $SETUPPATH/$FILE > /dev/null ) &" ) &
+    else 
+      ( ssh $RHOST "sync && ( nohup nice -$NICE $SETUPPATH/$FILE > /dev/null ) &" ) &
+    fi
   else 
     echo "run: error: cannot submit job '"$BASENAME"_"$COUNTER"'"
   fi 
