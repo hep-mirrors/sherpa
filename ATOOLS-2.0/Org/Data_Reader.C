@@ -253,7 +253,6 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
   std::string value;
   std::vector<Read_Type> values;
   inputstring = ReplaceTags(inputstring);
-  size_t pos;
 #ifdef DEBUG__Data_Reader
   std::cout<<"Data_Reader::M_VectorFromString("<<parameter<<","<<inputstring<<","<<tempvtype<<")"<<std::endl;
 #endif
