@@ -125,20 +125,19 @@ void Poincare::RotateBack(Vec4D& v)         // rotate back
 
 bool Poincare::CheckBoost() 
 {
-  if (m_beta.Abs2()<0.) return false;
+  if (m_beta.Abs2()<=0.) return false;
   return true;
 }
 
 bool Poincare::CheckRotation() 
 {
-  bool okay=true;
   for (short unsigned i=0;i<3;++i) {
     for (short unsigned j=0;j<3;++j) {
       double test=dabs(m_mat[i+1][j+1]);
-      if ((test>1.)||!(test>=0.)) okay=false; 
+      if (test>1.0 || test<-1.0) return false; 
     }
   } 
-  return okay;
+  return true;
 }
 
 void Poincare::Invert() 

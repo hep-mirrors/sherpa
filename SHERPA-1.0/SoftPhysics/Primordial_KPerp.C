@@ -335,9 +335,9 @@ bool Primordial_KPerp::CheckBoost(ATOOLS::Particle *cur1,unsigned int beam)
   m_newcms.Boost(mom2);
   if (mom2[3]>0.0) m_rotate=Poincare(Vec4D::ZVEC,mom2);
   else m_rotate=Poincare(Vec4D::ZVEC,mom1);
-  if (m_newcms.CheckBoost() && 
-      m_oldcms.CheckBoost() && 
-      m_rotate.CheckRotation()) return false;
+  if (!(m_newcms.CheckBoost() && 
+	m_oldcms.CheckBoost() && 
+	m_rotate.CheckRotation())) return false;
   return true;
 }
 
