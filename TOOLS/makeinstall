@@ -147,6 +147,35 @@ if [ "$EXTRACT" = "TRUE" ] ; then
     fi
   done
   rm -f $ALL
+else
+  INFORM=""
+  for I in $DIRS;
+  do
+    if test ! -d $I && test -s $I.tar.gz ; then
+      if [ ! "$INFORM" = "TRUE" ] ; then
+        if [ "$RELEASE" = "TRUE" ] ; then
+          echo -e "\n\e[1m\e[31m******************************************************\e[0m"
+          echo -e "\e[1m\e[31m*\e[0m\e[1m           Extracting the SHERPA package            \e[31m*\e[0m"
+          echo -e "\e[1m\e[31m******************************************************\e[0m\n"
+        else
+          echo "**************************************"
+          echo "*   Extracting the SHERPA package    *"
+          echo "**************************************"
+        fi
+      fi
+      INFORM="TRUE"
+      if [ ! "$RELEASE" = "TRUE" ] ; then
+        echo "======================================"
+        echo " extracting $I"
+        echo "======================================"
+        tar -xzvf $I.tar.gz
+      else
+	echo -ne "extracting module $I ...\r"
+        tar -xzf $I.tar.gz > /dev/null
+        echo -e "\e[32m\t\t\t\t\t\t  done\e[0m"
+      fi
+    fi
+  done
 fi
 
 if [ "$RELEASE" = "TRUE" ] ; then
