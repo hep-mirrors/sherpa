@@ -36,7 +36,7 @@ namespace ATOOLS {
       long int            m_seed;
       double              m_ecms, m_ycut;
       double              m_accu;
-      Flavour  m_beam1, m_beam2;
+      Flavour  m_beam1, m_beam2, p_bunch[2];
       std::string         m_rpa_id, m_flavour_id;
 #ifndef USING__ATOOLS_only
       Model_Type::code    m_modelcode;
@@ -44,6 +44,7 @@ namespace ATOOLS {
 #endif
       MyTiming m_timer;
       double m_timeout;
+      bool m_batchmode;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   RandomSeed()                          { return m_seed;    }
@@ -54,13 +55,16 @@ namespace ATOOLS {
       inline void   SetEcms(double _ecms)                 { m_ecms      = _ecms;}
       inline double Ycut()                                { return m_ycut; }
       inline void   SetYcut(double _ycut)                 { m_ycut      = _ycut;}
-      inline const  Flavour Beam1()            { return m_beam1; }
-      inline const  Flavour Beam2()            { return m_beam2; }
-      inline void   SetBeam1(const Flavour _b) { m_beam1     = _b; }
-      inline void   SetBeam2(const Flavour _b) { m_beam2     = _b; }
-      inline void      SetTimeOut(const long int timeout) { m_timeout=timeout; }
-      inline double    TimeOut()                          { return m_timeout;  }
-      inline MyTiming &Timer()                            { return m_timer;    }
+      inline const  Flavour Beam1()           { return m_beam1; }
+      inline const  Flavour Beam2()           { return m_beam2; }
+      inline void   SetBeam1(const Flavour b) { m_beam1  = b;   }
+      inline void   SetBeam2(const Flavour b) { m_beam2  = b;   }
+      inline const  Flavour Bunch(const size_t i)            { return p_bunch[i]; }
+      inline void   SetBunch(const Flavour b,const size_t i) { p_bunch[i] = b;    }
+      inline void      SetTimeOut(const long int timeout) { m_timeout=timeout;  }
+      inline double    TimeOut()                          { return m_timeout;   }
+      inline MyTiming &Timer()                            { return m_timer;     }
+      inline bool   BatchMode()                           { return m_batchmode; }
       bool CheckTime(const double limit=0.);
 #ifndef USING__ATOOLS_only
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }

@@ -48,6 +48,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_timeout            = dr.GetValue<double>("TIMEOUT");
   if (gen.m_timeout<0.) gen.m_timeout=0.;
   rpa.gen.m_timer.Start();
+  gen.m_batchmode          = dr.GetValue<int>("BATCH_MODE");
+  if (gen.m_batchmode==NotDefined<int>()) gen.m_batchmode=1;
   double ycut=dr.GetValue<double>("YCUT");
   if (ycut!=NotDefined<double>()) gen.m_ycut=ycut;
   gen.m_accu               = dr.GetValue<double>("Num. Accuracy",1.e-10);
