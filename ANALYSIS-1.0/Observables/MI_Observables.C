@@ -158,6 +158,7 @@ Forward_Backward_Eta_Correlation(const int type,
   m_etafw.Initialize(detamin,detamax,nbins);
   m_etafwsq.Initialize(detamin,detamax,nbins);
   m_etafwbw.Initialize(detamin,detamax,nbins);
+  m_splitt_flag=false;
 }
 
 void Forward_Backward_Eta_Correlation::
@@ -205,32 +206,36 @@ void Forward_Backward_Eta_Correlation::EndEvaluation(double scale)
 #define SORT_LIST(LISTNAME,PREDICATE)
 #endif
 
-#define TRANSFER_DATA(SCALE)						\
-  for (size_t i=0;i<(size_t)m_nbins+2;++i)				\
-    m_histogram.Add(histo.BinXMean(i),histo.BinEntries(i)!=0?		\
-		    histo.BinContent(i)/histo.BinEntries(i)*SCALE:0)
-
+#define TRANSFER_DATA							\
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) {				\
+    double x=histo.BinXMean(i);						\
+    m_histogram.Add(x,histo.BinContent(i)*weight);			\
+    m_histogram.AddBinExtra(x,weight);					\
+  }
 
 #define FINISH_HISTOGRAM					\
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) {		\
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) {			\
     p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?	\
-      m_histogram.BinContent(i)/m_histogram.BinEntries(i):0;	\
+      m_histogram.BinContent(i)/m_histogram.BinExtra(i):0.0;	\
   }								\
   p_histo->Output()
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_JetPT,
 			 Multiplicity_vs_JetPT_Getter,"NvsJetPT");
 
-Multiplicity_vs_JetPT::Multiplicity_vs_JetPT(const int type,
-					     const double ptmin,const double ptmax,
-					     const int nbins,const std::string &jetlist,
-					     const std::string &listname):
+Multiplicity_vs_JetPT::
+Multiplicity_vs_JetPT(const int type,
+		      const double ptmin,const double ptmax,
+		      const int nbins,const std::string &jetlist,
+		      const std::string &listname):
   Primitive_Observable_Base(type,ptmin,ptmax,nbins,NULL),
-  m_jetlist(jetlist)
+  m_jetlist(jetlist),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="N"+m_listname+"_vs_PT"+m_jetlist+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Multiplicity_vs_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -238,17 +243,29 @@ void Multiplicity_vs_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  m_histogram.Add((*jetlist)[0]->Momentum().PPerp(),weight*particlelist.size());
+  SORT_LIST(jetlist,Order_PT);
+  double ptjet=(*jetlist)[0]->Momentum().PPerp();
+  m_histogram.Add(ptjet,particlelist.size()*weight);
+  m_histogram.AddBinExtra(ptjet,weight);
+//   static double all=0., wgt=0.;
+//   if (ptjet>5. && ptjet<6.) {
+//     all+=particlelist.size()*weight;
+//     wgt+=weight;
+//     std::cout<<"\r "<<(all/wgt)<<" "
+// 	     <<(m_histogram.BinContent(ptjet)/
+// 		m_histogram.BinExtra(ptjet))<<" "<<std::endl;
+//   }
 }
     
-Primitive_Observable_Base *Multiplicity_vs_JetPT::Copy() const
-{
-  return new Multiplicity_vs_JetPT(m_type,m_xmin,m_xmax,m_nbins,m_jetlist,m_listname);
-}
-
 void Multiplicity_vs_JetPT::EndEvaluation(double scale)
 {
   FINISH_HISTOGRAM;
+}
+
+Primitive_Observable_Base *Multiplicity_vs_JetPT::Copy() const
+{
+  return new Multiplicity_vs_JetPT(m_type,m_xmin,m_xmax,m_nbins,
+				   m_jetlist,m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_JetPT,
@@ -260,11 +277,13 @@ Scalar_PT_Sum_vs_JetPT(const int type,
 		       const int nbins,const std::string &jetlist,
 		       const std::string &listname):
   Primitive_Observable_Base(type,ptmin,ptmax,nbins,NULL),
-  m_jetlist(jetlist)
+  m_jetlist(jetlist),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="SPT"+m_listname+"_vs_PT"+m_jetlist+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Scalar_PT_Sum_vs_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -274,18 +293,22 @@ void Scalar_PT_Sum_vs_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
   if (jetlist->size()==0) return;
   SORT_LIST(jetlist,Order_PT);
   double pt=0.0;
-  for (size_t i=0;i<particlelist.size();++i) pt+=particlelist[i]->Momentum().PPerp();
-  m_histogram.Add((*jetlist)[0]->Momentum().PPerp(),weight*pt);
+  for (size_t i=0;i<particlelist.size();++i) 
+    pt+=particlelist[i]->Momentum().PPerp();
+  double ptjet=(*jetlist)[0]->Momentum().PPerp();
+  m_histogram.Add(ptjet,pt*weight);
+  m_histogram.AddBinExtra(ptjet,weight);
 }
     
-Primitive_Observable_Base *Scalar_PT_Sum_vs_JetPT::Copy() const
-{
-  return new Scalar_PT_Sum_vs_JetPT(m_type,m_xmin,m_xmax,m_nbins,m_jetlist,m_listname);
-}
-
 void Scalar_PT_Sum_vs_JetPT::EndEvaluation(double scale)
 {
   FINISH_HISTOGRAM;
+}
+
+Primitive_Observable_Base *Scalar_PT_Sum_vs_JetPT::Copy() const
+{
+  return new Scalar_PT_Sum_vs_JetPT(m_type,m_xmin,m_xmax,m_nbins,
+				    m_jetlist,m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_JetET,
@@ -297,11 +320,13 @@ Scalar_PT_Sum_vs_JetET(const int type,
 		       const int nbins,const std::string &jetlist,
 		       const std::string &listname):
   Primitive_Observable_Base(type,ptmin,ptmax,nbins,NULL),
-  m_jetlist(jetlist)
+  m_jetlist(jetlist),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="SPT"+m_listname+"_vs_ET"+m_jetlist+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Scalar_PT_Sum_vs_JetET::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -311,18 +336,22 @@ void Scalar_PT_Sum_vs_JetET::Evaluate(const ATOOLS::Particle_List &particlelist,
   if (jetlist->size()==0) return;
   SORT_LIST(jetlist,Order_ET);
   double pt=0.0;
-  for (size_t i=0;i<particlelist.size();++i) pt+=particlelist[i]->Momentum().PPerp();
-  m_histogram.Add((*jetlist)[0]->Momentum().EPerp(),weight*pt);
+  for (size_t i=0;i<particlelist.size();++i) 
+    pt+=particlelist[i]->Momentum().PPerp();
+  double etjet=(*jetlist)[0]->Momentum().PPerp();
+  m_histogram.Add(etjet,pt*weight);
+  m_histogram.AddBinExtra(etjet,weight);
 }
     
-Primitive_Observable_Base *Scalar_PT_Sum_vs_JetET::Copy() const
-{
-  return new Scalar_PT_Sum_vs_JetET(m_type,m_xmin,m_xmax,m_nbins,m_jetlist,m_listname);
-}
-
 void Scalar_PT_Sum_vs_JetET::EndEvaluation(double scale)
 {
   FINISH_HISTOGRAM;
+}
+
+Primitive_Observable_Base *Scalar_PT_Sum_vs_JetET::Copy() const
+{
+  return new Scalar_PT_Sum_vs_JetET(m_type,m_xmin,m_xmax,m_nbins,
+				    m_jetlist,m_listname);
 }
 
 DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_PT,
@@ -330,14 +359,17 @@ DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_PT,
 
 Multiplicity_vs_PT::Multiplicity_vs_PT(const int type,
 				       const double ptmin,const double ptmax,
-				       const int nbins,const std::string &jetlist,
+				       const int nbins,
+				       const std::string &jetlist,
 				       const std::string &listname):
   Primitive_Observable_Base(type,ptmin,ptmax,nbins,NULL),
-  m_jetlist(jetlist)
+  m_jetlist(jetlist),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="N"+m_listname+"_vs_PT_"+m_jetlist+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Multiplicity_vs_PT::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -345,44 +377,47 @@ void Multiplicity_vs_PT::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  SORT_LIST(jetlist,Order_PT);
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().PPerp(),weight);
+    histo.Add((*pit)->Momentum().PPerp(),1.0);
   }
-  TRANSFER_DATA(1.0);
+  TRANSFER_DATA;
 }
     
-Primitive_Observable_Base *Multiplicity_vs_PT::Copy() const
-{
-  return new Multiplicity_vs_PT(m_type,m_xmin,m_xmax,m_nbins,m_jetlist,m_listname);
-}
-
 void Multiplicity_vs_PT::EndEvaluation(double scale)
 {
   m_histogram.Scale(m_nbins/(m_xmax-m_xmin));			
   FINISH_HISTOGRAM;
 }
 
+Primitive_Observable_Base *Multiplicity_vs_PT::Copy() const
+{
+  return new Multiplicity_vs_PT(m_type,m_xmin,m_xmax,m_nbins,
+				m_jetlist,m_listname);
+}
+
 DEFINE_OFFSET_OBSERVABLE_GETTER(Multiplicity_vs_DPhi,
 				Multiplicity_vs_DPhi_Getter,"NvsDPhi");
 
-Multiplicity_vs_DPhi::Multiplicity_vs_DPhi(const int type,
-					   const double dphimin,const double dphimax,
-					   const int nbins,const double offset,
-					   const std::vector<std::string> &jetlists,
-					   const std::string &listname):
+Multiplicity_vs_DPhi::
+Multiplicity_vs_DPhi(const int type,
+		     const double dphimin,const double dphimax,
+		     const int nbins,const double offset,
+		     const std::vector<std::string> &jetlists,
+		     const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
   m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
-  m_offset(offset)
+  m_offset(offset),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="N"+m_listname+"_vs_DPhi_"+m_jetlists[0]+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
   while (m_offset>=360.0) m_offset-=360.0;
   while (m_offset<0.0) m_offset+=360.0;
+  m_splitt_flag=false;
 }
     
 void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -407,42 +442,45 @@ void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
     if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
     double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
     if (cosdphi2>=0.0)
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight);
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,1.0);
     if (cosdphi2<=0.0) {
       dphi1*=-1.0;
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight);
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,1.0);
     }
   }
-  TRANSFER_DATA(1.0);
+  TRANSFER_DATA;
 }
     
-Primitive_Observable_Base *Multiplicity_vs_DPhi::Copy() const
-{
-  return new Multiplicity_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				  m_jetlists,m_listname);
-}
-
 void Multiplicity_vs_DPhi::EndEvaluation(double scale)
 {
   m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
   FINISH_HISTOGRAM;
 }
 
+Primitive_Observable_Base *Multiplicity_vs_DPhi::Copy() const
+{
+  return new Multiplicity_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
+				  m_jetlists,m_listname);
+}
+
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_DPhi,
 				Scalar_PT_Sum_vs_DPhi_Getter,"ScPTvsDPhi");
 
-Scalar_PT_Sum_vs_DPhi::Scalar_PT_Sum_vs_DPhi(const int type,
-					     const double dphimin,const double dphimax,
-					     const int nbins,const double offset,
-					     const std::vector<std::string> &jetlists,
-					     const std::string &listname):
+Scalar_PT_Sum_vs_DPhi::
+Scalar_PT_Sum_vs_DPhi(const int type,
+		      const double dphimin,const double dphimax,
+		      const int nbins,const double offset,
+		      const std::vector<std::string> &jetlists,
+		      const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
   m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
-  m_offset(offset)
+  m_offset(offset),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="SPT"+m_listname+"_vs_DPhi_"+m_jetlists[0]+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -468,42 +506,45 @@ void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
     if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
     double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
     if (cosdphi2>=0.0)
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight*pt);
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,pt);
     if (cosdphi2<=0.0) {
       dphi1*=-1.0;
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight*pt);
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,pt);
     }
   }
-  TRANSFER_DATA(1.0);
+  TRANSFER_DATA;
 }
     
-Primitive_Observable_Base *Scalar_PT_Sum_vs_DPhi::Copy() const
-{
-  return new Scalar_PT_Sum_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				   m_jetlists,m_listname);
-}
-
 void Scalar_PT_Sum_vs_DPhi::EndEvaluation(double scale)
 {
   m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
   FINISH_HISTOGRAM;
 }
 
+Primitive_Observable_Base *Scalar_PT_Sum_vs_DPhi::Copy() const
+{
+  return new Scalar_PT_Sum_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
+				   m_jetlists,m_listname);
+}
+
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_DPhi,
 				Scalar_ET_Sum_vs_DPhi_Getter,"ScETvsDPhi");
 
-Scalar_ET_Sum_vs_DPhi::Scalar_ET_Sum_vs_DPhi(const int type,
-					     const double dphimin,const double dphimax,
-					     const int nbins,const double offset,
-					     const std::vector<std::string> &jetlists,
-					     const std::string &listname):
+Scalar_ET_Sum_vs_DPhi::
+Scalar_ET_Sum_vs_DPhi(const int type,
+		      const double dphimin,const double dphimax,
+		      const int nbins,const double offset,
+		      const std::vector<std::string> &jetlists,
+		      const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
   m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
-  m_offset(offset)
+  m_offset(offset),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="SET"+m_listname+"_vs_DPhi_"+m_jetlists[0]+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -529,43 +570,45 @@ void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
     if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
     double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
     if (cosdphi2>=0.0)
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight*et);
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,et);
     if (cosdphi2<=0.0) {
       dphi1*=-1.0;
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight*et);
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,et);
     }
   }
-  TRANSFER_DATA(1.0);
+  TRANSFER_DATA;
 }
     
-Primitive_Observable_Base *Scalar_ET_Sum_vs_DPhi::Copy() const
-{
-  return new Scalar_ET_Sum_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				   m_jetlists,m_listname);
-}
-
 void Scalar_ET_Sum_vs_DPhi::EndEvaluation(double scale)
 {
   m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
   FINISH_HISTOGRAM;
 }
 
+Primitive_Observable_Base *Scalar_ET_Sum_vs_DPhi::Copy() const
+{
+  return new Scalar_ET_Sum_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
+				   m_jetlists,m_listname);
+}
 
 DEFINE_OFFSET_OBSERVABLE_GETTER(Multiplicity_vs_DEta,
 				Multiplicity_vs_DEta_Getter,"NvsDEta");
 
-Multiplicity_vs_DEta::Multiplicity_vs_DEta(const int type,
-					   const double dphimin,const double dphimax,
-					   const int nbins,const double offset,
-					   const std::vector<std::string> &jetlists,
-					   const std::string &listname):
+Multiplicity_vs_DEta::
+Multiplicity_vs_DEta(const int type,
+		     const double dphimin,const double dphimax,
+		     const int nbins,const double offset,
+		     const std::vector<std::string> &jetlists,
+		     const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
   m_jetlist(jetlists.empty()?"":jetlists[0]),
-  m_offset(offset)
+  m_offset(offset),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="N"+m_listname+"_vs_DEta_"+m_jetlist+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Multiplicity_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -579,11 +622,17 @@ void Multiplicity_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,weight);
+    histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,1.0);
   }
-  TRANSFER_DATA(1.0);
+  TRANSFER_DATA;
 }
     
+void Multiplicity_vs_DEta::EndEvaluation(double scale)
+{
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
+}
+
 Primitive_Observable_Base *Multiplicity_vs_DEta::Copy() const
 {
   return new Multiplicity_vs_DEta(m_type,m_xmin,m_xmax,m_nbins,m_offset,
@@ -591,27 +640,24 @@ Primitive_Observable_Base *Multiplicity_vs_DEta::Copy() const
 				  m_listname);
 }
 
-void Multiplicity_vs_DEta::EndEvaluation(double scale)
-{
-  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
-  FINISH_HISTOGRAM;
-}
-
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_DEta,
 				Scalar_PT_Sum_vs_DEta_Getter,"ScPTvsDEta");
 
-Scalar_PT_Sum_vs_DEta::Scalar_PT_Sum_vs_DEta(const int type,
-					   const double dphimin,const double dphimax,
-					   const int nbins,const double offset,
-					   const std::vector<std::string> &jetlists,
-					   const std::string &listname):
+Scalar_PT_Sum_vs_DEta::
+Scalar_PT_Sum_vs_DEta(const int type,
+		      const double dphimin,const double dphimax,
+		      const int nbins,const double offset,
+		      const std::vector<std::string> &jetlists,
+		      const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
   m_jetlist(jetlists.empty()?"":jetlists[0]),
-  m_offset(offset)
+  m_offset(offset),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="SPT"+m_listname+"_vs_DEta_"+m_jetlist+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Scalar_PT_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -626,11 +672,17 @@ void Scalar_PT_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
     histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,
-	      weight*(*pit)->Momentum().PPerp());
+	      (*pit)->Momentum().PPerp());
   }
-  TRANSFER_DATA(1.0);
+  TRANSFER_DATA;
 }
     
+void Scalar_PT_Sum_vs_DEta::EndEvaluation(double scale)
+{
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
+}
+
 Primitive_Observable_Base *Scalar_PT_Sum_vs_DEta::Copy() const
 {
   return new Scalar_PT_Sum_vs_DEta(m_type,m_xmin,m_xmax,m_nbins,m_offset,
@@ -638,27 +690,24 @@ Primitive_Observable_Base *Scalar_PT_Sum_vs_DEta::Copy() const
 				  m_listname);
 }
 
-void Scalar_PT_Sum_vs_DEta::EndEvaluation(double scale)
-{
-  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
-  FINISH_HISTOGRAM;
-}
-
 DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_DEta,
 				Scalar_ET_Sum_vs_DEta_Getter,"ScETvsDEta");
 
-Scalar_ET_Sum_vs_DEta::Scalar_ET_Sum_vs_DEta(const int type,
-					   const double dphimin,const double dphimax,
-					   const int nbins,const double offset,
-					   const std::vector<std::string> &jetlists,
-					   const std::string &listname):
+Scalar_ET_Sum_vs_DEta::
+Scalar_ET_Sum_vs_DEta(const int type,
+		      const double dphimin,const double dphimax,
+		      const int nbins,const double offset,
+		      const std::vector<std::string> &jetlists,
+		      const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
   m_jetlist(jetlists.empty()?"":jetlists[0]),
-  m_offset(offset)
+  m_offset(offset),
+  m_histogram(1)
 {
   m_listname=listname;
   m_name="SET"+m_listname+"_vs_DEta_"+m_jetlist+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
 }
     
 void Scalar_ET_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -673,11 +722,17 @@ void Scalar_ET_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
     histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,
-	      weight*(*pit)->Momentum().EPerp());
+	      (*pit)->Momentum().EPerp());
   }
-  TRANSFER_DATA(1.0);
+  TRANSFER_DATA;
 }
     
+void Scalar_ET_Sum_vs_DEta::EndEvaluation(double scale)
+{
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
+}
+
 Primitive_Observable_Base *Scalar_ET_Sum_vs_DEta::Copy() const
 {
   return new Scalar_ET_Sum_vs_DEta(m_type,m_xmin,m_xmax,m_nbins,m_offset,
@@ -685,9 +740,135 @@ Primitive_Observable_Base *Scalar_ET_Sum_vs_DEta::Copy() const
 				   m_listname);
 }
 
-void Scalar_ET_Sum_vs_DEta::EndEvaluation(double scale)
+DEFINE_OBSERVABLE_GETTER(Multiplicity_vs_Eta,
+			 Multiplicity_vs_Eta_Getter,"NvsEta");
+
+Multiplicity_vs_Eta::
+Multiplicity_vs_Eta(const int type,
+		      const double ptmin,const double ptmax,
+		      const int nbins,const std::string &jetlist,
+		      const std::string &listname):
+  Primitive_Observable_Base(type,ptmin,ptmax,nbins,NULL),
+  m_jetlist(jetlist),
+  m_histogram(1)
+{
+  m_listname=listname;
+  m_name="N"+m_listname+"_vs_Eta_"+m_jetlist+".dat";
+  m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
+}
+    
+void Multiplicity_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
+				     double weight,int ncount)
+{
+  ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
+  if (jetlist->size()==0) return;
+  AMISIC::Amisic_Histogram<double> histo;
+  histo.Initialize(m_xmin,m_xmax,m_nbins);
+  for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
+       pit!=particlelist.end();++pit) {
+    histo.Add((*pit)->Momentum().Eta(),1.0);
+  }
+  TRANSFER_DATA;
+}
+    
+void Multiplicity_vs_Eta::EndEvaluation(double scale)
 {
   m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
   FINISH_HISTOGRAM;
+}
+
+Primitive_Observable_Base *Multiplicity_vs_Eta::Copy() const
+{
+  return new Multiplicity_vs_Eta(m_type,m_xmin,m_xmax,m_nbins,
+				 m_jetlist,m_listname);
+}
+
+DEFINE_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_Eta,
+			 Scalar_PT_Sum_vs_Eta_Getter,"ScPTvsEta");
+
+Scalar_PT_Sum_vs_Eta::
+Scalar_PT_Sum_vs_Eta(const int type,
+		     const double ptmin,const double ptmax,
+		     const int nbins,const std::string &jetlist,
+		     const std::string &listname):
+  Primitive_Observable_Base(type,ptmin,ptmax,nbins,NULL),
+  m_jetlist(jetlist),
+  m_histogram(1)
+{
+  m_listname=listname;
+  m_name="SPT"+m_listname+"_vs_Eta_"+m_jetlist+".dat";
+  m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
+}
+    
+void Scalar_PT_Sum_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
+				    double weight,int ncount)
+{
+  ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
+  if (jetlist->size()==0) return;
+  AMISIC::Amisic_Histogram<double> histo;
+  histo.Initialize(m_xmin,m_xmax,m_nbins);
+  for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
+       pit!=particlelist.end();++pit) {
+    histo.Add((*pit)->Momentum().Eta(),(*pit)->Momentum().PPerp());
+  }
+  TRANSFER_DATA;
+}
+    
+void Scalar_PT_Sum_vs_Eta::EndEvaluation(double scale)
+{
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
+}
+
+Primitive_Observable_Base *Scalar_PT_Sum_vs_Eta::Copy() const
+{
+  return new Scalar_PT_Sum_vs_Eta(m_type,m_xmin,m_xmax,m_nbins,
+				  m_jetlist,m_listname);
+}
+
+DEFINE_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_Eta,
+			 Scalar_ET_Sum_vs_Eta_Getter,"ScETvsEta");
+
+Scalar_ET_Sum_vs_Eta::
+Scalar_ET_Sum_vs_Eta(const int type,
+		     const double ptmin,const double ptmax,
+		     const int nbins,const std::string &jetlist,
+		     const std::string &listname):
+  Primitive_Observable_Base(type,ptmin,ptmax,nbins,NULL),
+  m_jetlist(jetlist),
+  m_histogram(1)
+{
+  m_listname=listname;
+  m_name="SET"+m_listname+"_vs_Eta_"+m_jetlist+".dat";
+  m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
+}
+    
+void Scalar_ET_Sum_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
+				    double weight,int ncount)
+{
+  ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
+  if (jetlist->size()==0) return;
+  AMISIC::Amisic_Histogram<double> histo;
+  histo.Initialize(m_xmin,m_xmax,m_nbins);
+  for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
+       pit!=particlelist.end();++pit) {
+    histo.Add((*pit)->Momentum().Eta(),(*pit)->Momentum().EPerp());
+  }
+  TRANSFER_DATA;
+}
+    
+void Scalar_ET_Sum_vs_Eta::EndEvaluation(double scale)
+{
+  m_histogram.Scale(m_nbins/(m_xmax-m_xmin));
+  FINISH_HISTOGRAM;
+}
+
+Primitive_Observable_Base *Scalar_ET_Sum_vs_Eta::Copy() const
+{
+  return new Scalar_ET_Sum_vs_Eta(m_type,m_xmin,m_xmax,m_nbins,
+				  m_jetlist,m_listname);
 }
 

@@ -33,7 +33,7 @@ namespace AMISIC {
 
   private:
 
-    size_t        m_nbins;
+    size_t        m_nbins, m_extradim;
     Argument_Type m_xmin, m_xmax, m_entries;
 
     Argument_Matrix  m_data;
@@ -53,7 +53,7 @@ namespace AMISIC {
   public:
 
     // constructor
-    Amisic_Histogram();
+    Amisic_Histogram(const size_t extradim=0);
 
     // destructor
     ~Amisic_Histogram();
@@ -91,21 +91,41 @@ namespace AMISIC {
     Argument_Type BinSumSqr(const size_t i);
     Argument_Type BinMax(const size_t i);
     Argument_Type BinEntries(const size_t i);
+    Argument_Type BinExtra(const size_t i,const size_t dim=0);
 
-    Argument_Type BinContent(const Argument_Type x);
-    Argument_Type BinSumSqr(const Argument_Type x);
-    Argument_Type BinMax(const Argument_Type x);
-    Argument_Type BinEntries(const Argument_Type x);
+    Argument_Type BinContent(const Argument_Type &x);
+    Argument_Type BinSumSqr(const Argument_Type &x);
+    Argument_Type BinMax(const Argument_Type &x);
+    Argument_Type BinEntries(const Argument_Type &x);
+    Argument_Type BinExtra(const Argument_Type &x,const size_t dim=0);
 
-    void SetBinContent(const size_t i,const Argument_Type content);
-    void SetBinSumSqr(const size_t i,const Argument_Type sumsqr);
-    void SetBinMax(const size_t i,const Argument_Type max);
-    void SetBinEntries(const size_t i,const Argument_Type entries);
+    void SetBinContent(const size_t i,const Argument_Type &content);
+    void SetBinSumSqr(const size_t i,const Argument_Type &sumsqr);
+    void SetBinMax(const size_t i,const Argument_Type &max);
+    void SetBinEntries(const size_t i,const Argument_Type &entries);
+    void SetBinExtra(const size_t i,const Argument_Type &extra,
+		     const size_t dim=0);
 
-    void SetBinContent(const Argument_Type x,const Argument_Type content);
-    void SetBinSumSqr(const Argument_Type x,const Argument_Type sumsqr);
-    void SetBinMax(const Argument_Type x,const Argument_Type max);
-    void SetBinEntries(const Argument_Type x,const Argument_Type entries);
+    void SetBinContent(const Argument_Type &x,const Argument_Type &content);
+    void SetBinSumSqr(const Argument_Type &x,const Argument_Type &sumsqr);
+    void SetBinMax(const Argument_Type &x,const Argument_Type &max);
+    void SetBinEntries(const Argument_Type &x,const Argument_Type &entries);
+    void SetBinExtra(const Argument_Type &x,const Argument_Type &extra,
+		     const size_t dim=0);
+
+    void AddBinContent(const size_t i,const Argument_Type &content);
+    void AddBinSumSqr(const size_t i,const Argument_Type &sumsqr);
+    void AddBinMax(const size_t i,const Argument_Type &max);
+    void AddBinEntries(const size_t i,const Argument_Type &entries);
+    void AddBinExtra(const size_t i,const Argument_Type &extra,
+		     const size_t dim=0);
+
+    void AddBinContent(const Argument_Type &x,const Argument_Type &content);
+    void AddBinSumSqr(const Argument_Type &x,const Argument_Type &sumsqr);
+    void AddBinMax(const Argument_Type &x,const Argument_Type &max);
+    void AddBinEntries(const Argument_Type &x,const Argument_Type &entries);
+    void AddBinExtra(const Argument_Type &x,const Argument_Type &extra,
+		     const size_t dim=0);
 
     Axis_Type *const XAxis() const;
     Axis_Type *const YAxis() const;

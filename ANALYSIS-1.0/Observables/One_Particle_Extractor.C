@@ -78,6 +78,7 @@ One_Particle_Extractor(const std::string &type,const ATOOLS::Flavour flav,
   m_xmin=min;
   m_xmax=max;
   m_listname=inlist;
+  m_splitt_flag=false;
 }
 
 void One_Particle_Extractor::Evaluate(const ATOOLS::Particle_List &particlelist,

@@ -635,7 +635,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     double weight=1.;
     size_t pstrials=0, trials=0;
     if (!m_weighted) {
-      double max=m_differentials[m_selected]->BinMax(m_last[0]);
+      Amisic_Histogram<double> *cur=m_differentials[m_selected];
+      double max=cur->BinMax(m_last[0]);
       p_fsrinterface->SetTrigger(false);
       while (++pstrials<m_maxtrials) {
 	ATOOLS::Blob_Data_Base *data=selected->WeightedEvent(2);
@@ -654,61 +655,50 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	    double ran=ATOOLS::ran.Get();
 	    if (weight*m_maxreduction>=max*ran) {
 	      if (weight*m_maxreduction<max) break;
-	      else {
-		if (m_overflow.find(m_selected)==m_overflow.end()) {
-		  Amisic_Histogram<double> *sample=m_differentials[m_selected];
-		  Amisic_Histogram<double> *newhisto = 
-		    new Amisic_Histogram<double>();
-		  newhisto->Initialize(sample->XMin(),sample->XMax(),
-				       sample->NBins());
-		  m_overflow[m_selected]=newhisto;
-		}
-		Amisic_Histogram<double> *cur=m_overflow[m_selected];
-		double value=cur->BinContent(m_last[0]);
-		if (value>0.0) {
-		  if (value>=1.0 ||
-		      (value<1.0 && value>ATOOLS::ran.Get())) {
-		    cur->SetBinContent(m_last[0],ATOOLS::Max(0.0,value-1.0));
-		    m_spkey[3]=
-		      ATOOLS::Max(cur->BinSumSqr(m_last[0]),
-				  4.0*(1.0+s_epsilon)*m_last[0]*m_last[0]);
-		    m_ykey[2]=cur->BinMax(m_last[0]);
-		    double logtau=log(m_spkey[3]/m_spkey[2]);
-		    if (-logtau<m_ykey[2]) m_ykey[2]=-logtau;
-		    else if (m_ykey[2]<logtau) m_ykey[2]=logtau;
-		    msg_Debugging()<<"hit "<<m_selected<<" "<<m_last[0]<<" "
-				   <<value<<" "<<cur->BinEntries(m_last[0])
-				   <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
-		    selected->WeightedEvent(3);
-		    cur->SetBinEntries(m_last[0],cur->BinEntries(m_last[0])+1);
-		  }
-		  else {
-		    msg_Debugging()<<"no hit "<<m_selected<<" "
-				   <<m_last[0]<<" "<<value<<" "
-				   <<cur->BinEntries(m_last[0])<<" "
-				   <<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
-		    if (value<1.0) cur->SetBinContent(m_last[0],0.0);
-		    return false;
-		  }
+	      double value=cur->BinExtra(m_last[0]);
+	      if (value>0.0) {
+		if (value>=1.0 || (value<1.0 && value>ATOOLS::ran.Get())) {
+		  cur->SetBinExtra(m_last[0],ATOOLS::Max(0.0,value-1.0));
+		  m_spkey[3]=
+		    ATOOLS::Max(cur->BinExtra(m_last[0],1),
+				4.0*(1.0+s_epsilon)*m_last[0]*m_last[0]);
+		  m_ykey[2]=cur->BinExtra(m_last[0],2);
+		  double logtau=log(m_spkey[3]/m_spkey[2]);
+		  if (-logtau<m_ykey[2]) m_ykey[2]=-logtau;
+		  else if (m_ykey[2]<logtau) m_ykey[2]=logtau;
+		  msg_Debugging()<<"hit "<<m_selected<<" "<<m_last[0]<<" "
+				 <<value<<" "<<cur->BinExtra(m_last[0])
+				 <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
+		  selected->WeightedEvent(3);
+		  cur->AddBinExtra(m_last[0],1.0,3);
 		}
 		else {
-		  msg_Debugging()<<"set "<<m_selected<<" "<<m_last[0]<<" "
-				 <<value<<" "<<m_spkey[3]<<" "
-				 <<m_ykey[2]<<"\n";
-		  double overflow=weight*m_maxreduction/max;
-		  if (overflow>s_maxoverflow) {
-		    ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
-				       <<"overflow = "<<overflow<<" > "
-				       <<"s_maxoverflow = "<<s_maxoverflow
-				       <<std::endl;
-		  }
-		  cur->SetBinContent(m_last[0],overflow-1.0);
-		  cur->SetBinSumSqr(m_last[0],m_spkey[3]);
-		  cur->SetBinMax(m_last[0],m_ykey[2]);
-		  cur->SetBinEntries(m_last[0],1);
+		  msg_Debugging()<<"no hit "<<m_selected<<" "
+				 <<m_last[0]<<" "<<value<<" "
+				 <<cur->BinExtra(m_last[0])<<" "
+				 <<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
+		  if (value<1.0) cur->SetBinExtra(m_last[0],0.0);
+		  return false;
 		}
-		break;
 	      }
+	      else {
+		msg_Debugging()<<"set "<<m_selected<<" "<<m_last[0]<<" "
+			       <<value<<" "<<m_spkey[3]<<" "
+			       <<m_ykey[2]<<" "
+			       <<weight*m_maxreduction/max<<"\n";
+		double overflow=weight*m_maxreduction/max;
+		if (overflow>s_maxoverflow) {
+		  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
+				     <<"overflow = "<<overflow<<" > "
+				     <<"s_maxoverflow = "<<s_maxoverflow
+				     <<std::endl;
+		}
+		cur->SetBinExtra(m_last[0],overflow-1.0);
+		cur->SetBinExtra(m_last[0],m_spkey[3],1);
+		cur->SetBinExtra(m_last[0],m_ykey[2],2);
+		cur->SetBinExtra(m_last[0],1.0,3);
+	      }
+	      break;
 	    }
 	  }
 	}

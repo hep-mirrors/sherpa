@@ -43,7 +43,7 @@ bool Grid_Creator::CollectProcesses(EXTRAXS::XS_Base *const process)
 {
   if (process->Size()==0) return false;
   if ((*process)[0]==process) {
-    (*p_histograms)[process->Name()] = new Amisic_Histogram<double>();
+    (*p_histograms)[process->Name()] = new Amisic_Histogram<double>(4);
     return true;
   }
   for (size_t i=0;i<process->Size();++i) {

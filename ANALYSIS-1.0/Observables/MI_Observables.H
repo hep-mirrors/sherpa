@@ -284,6 +284,75 @@ namespace ANALYSIS {
 
   };// end of class Scalar_ET_Sum_vs_DEta
 
+  class Multiplicity_vs_Eta: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Multiplicity_vs_Eta(const int type,
+			const double ptmin,const double ptmax,
+			const int nbins,const std::string &jetlist,
+			const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Multiplicity_vs_Eta
+
+  class Scalar_PT_Sum_vs_Eta: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Scalar_PT_Sum_vs_Eta(const int type,
+			 const double ptmin,const double ptmax,
+			 const int nbins,const std::string &jetlist,
+			 const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Scalar_PT_Sum_vs_Eta
+
+  class Scalar_ET_Sum_vs_Eta: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    Scalar_ET_Sum_vs_Eta(const int type,
+			 const double ptmin,const double ptmax,
+			 const int nbins,const std::string &jetlist,
+			 const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Particle_List &particlelist,
+		  double weight=1.,int ncount=1);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class Scalar_ET_Sum_vs_Eta
+
 }// end of namespace ANALYSIS
 
 #endif

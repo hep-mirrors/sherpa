@@ -32,7 +32,7 @@ namespace AMISIC {
 
   private:
 
-    Amisic_Histogram_Map   m_differentials, m_overflow;
+    Amisic_Histogram_Map   m_differentials;
     Grid_Function_Type    *p_total;
     Amisic_Histogram_Type *p_differential;
     Grid_Creator          *p_gridcreator;

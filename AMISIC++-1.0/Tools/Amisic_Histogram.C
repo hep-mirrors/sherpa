@@ -21,22 +21,30 @@ AMISIC::operator<<(std::ostream &str,
        <<std::setw(14)<<"weight"
        <<std::setw(14)<<"square weight"
        <<std::setw(14)<<"maximum"
-       <<std::setw(14)<<"entries\n";
+       <<std::setw(14)<<"entries";
+    for (size_t i=0;i<histogram.m_extradim;++i) 
+      str<<std::setw(14)<<"extra "<<ATOOLS::ToString(i);
+    str<<"\n";
     ATOOLS::Axis<ArgumentType> &yaxis=*histogram.YAxis();
-    for (size_t i=0;i<histogram.m_data[hci::x_value].size();++i)
+    for (size_t i=0;i<histogram.m_data[hci::x_value].size();++i) {
       str<<std::setw(14)<<histogram.m_data[hci::x_value][i]<<" "
 	 <<std::setw(14)<<yaxis[histogram.m_data[hci::y_value][i]]<<" "
 	 <<std::setw(14)<<yaxis[histogram.m_data[hci::y_square][i]]<<" "
 	 <<std::setw(14)<<yaxis[histogram.m_data[hci::maximum][i]]<<" "
-	 <<std::setw(14)<<histogram.m_data[hci::entries][i]<<"\n";
+	 <<std::setw(14)<<histogram.m_data[hci::entries][i];
+      for (size_t j=0;j<histogram.m_extradim;++j) 
+	str<<std::setw(14)<<" "<<histogram.m_data[hci::size+j][i];
+      str<<"\n";
+    }
   }
   return str<<"}"<<std::endl;
 }
 
 template <class ArgumentType>
-Amisic_Histogram<ArgumentType>::Amisic_Histogram():
+Amisic_Histogram<ArgumentType>::Amisic_Histogram(const size_t extradim):
+  m_extradim(extradim),
   m_entries(0.0),
-  m_data(Argument_Matrix(hci::size)),
+  m_data(Argument_Matrix(hci::size+m_extradim)),
   p_xaxis(new Axis_Type()),
   p_yaxis(new Axis_Type()),
   m_finished(false) {}
@@ -52,7 +60,7 @@ template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::Clear() 
 {
   m_entries=0.0;
-  for (size_t i=0;i<hci::size;++i) {
+  for (size_t i=0;i<m_data.size();++i) {
     if (i!=hci::x_value) {
       m_data[i]=Argument_Vector(m_data[hci::x_value].size());
     }
@@ -347,7 +355,7 @@ ArgumentType Amisic_Histogram<ArgumentType>::BinMax(const size_t i)
 template <class ArgumentType>
 ArgumentType Amisic_Histogram<ArgumentType>::BinEntries(const size_t i)
 { 
-  return (*p_yaxis)[m_data[hci::entries][i]]; 
+  return m_data[hci::entries][i]; 
 }
 
 template <class ArgumentType>
@@ -365,84 +373,178 @@ ArgumentType Amisic_Histogram<ArgumentType>::BinError(const size_t i)
 		    m_data[hci::y_value][i]]; 
 }
 
+template <class ArgumentType> ArgumentType Amisic_Histogram<ArgumentType>::
+BinExtra(const size_t i,const size_t dim)
+{
+  return dim<m_extradim?m_data[hci::size+dim][i]:0.0;
+}
+
 template <class ArgumentType>
-ArgumentType Amisic_Histogram<ArgumentType>::BinContent(const Argument_Type x)
+ArgumentType Amisic_Histogram<ArgumentType>::BinContent(const Argument_Type &x)
 { 
   return BinContent(FindX(x)); 
 }
 
 template <class ArgumentType>
-ArgumentType Amisic_Histogram<ArgumentType>::BinSumSqr(const Argument_Type x)
+ArgumentType Amisic_Histogram<ArgumentType>::BinSumSqr(const Argument_Type &x)
 { 
   return BinSumSqr(FindX(x)); 
 }
 
 template <class ArgumentType>
-ArgumentType Amisic_Histogram<ArgumentType>::BinMax(const Argument_Type x)
+ArgumentType Amisic_Histogram<ArgumentType>::BinMax(const Argument_Type &x)
 { 
   return BinMax(FindX(x)); 
 }
 
 template <class ArgumentType>
-ArgumentType Amisic_Histogram<ArgumentType>::BinEntries(const Argument_Type x)
+ArgumentType Amisic_Histogram<ArgumentType>::BinEntries(const Argument_Type &x)
 { 
   return BinEntries(FindX(x)); 
 }
 
-template <class ArgumentType>
-void Amisic_Histogram<ArgumentType>::
-SetBinContent(const size_t i,const Argument_Type content)
+template <class ArgumentType> ArgumentType Amisic_Histogram<ArgumentType>::
+BinExtra(const Argument_Type &x,const size_t dim)
 {
-  m_data[hci::y_value][i]=content;
+  return BinExtra(FindX(x),dim); 
 }
 
 template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::
-SetBinSumSqr(const size_t i,const Argument_Type sumsqr)
+SetBinContent(const size_t i,const Argument_Type &content)
 {
-  m_data[hci::y_square][i]=sumsqr;
+  m_data[hci::y_value][i]=(*p_yaxis)(content);
 }
 
 template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::
-SetBinMax(const size_t i,const Argument_Type max)
+SetBinSumSqr(const size_t i,const Argument_Type &sumsqr)
 {
-  m_data[hci::maximum][i]=max;
+  m_data[hci::y_square][i]=(*p_yaxis)(sumsqr);
 }
 
 template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::
-SetBinEntries(const size_t i,const Argument_Type entries)
+SetBinMax(const size_t i,const Argument_Type &max)
+{
+  m_data[hci::maximum][i]=(*p_yaxis)(max);
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinEntries(const size_t i,const Argument_Type &entries)
 {
   m_data[hci::entries][i]=entries;
 }
 
-template <class ArgumentType>
-void Amisic_Histogram<ArgumentType>::
-SetBinContent(const Argument_Type x,const Argument_Type content)
+template <class ArgumentType> void Amisic_Histogram<ArgumentType>::
+SetBinExtra(const size_t i,const Argument_Type &extra,const size_t dim)
 {
-  m_data[hci::y_value][FindX(x)]=content;
+  if (dim<m_extradim) m_data[hci::size+dim][i]=extra;
 }
 
 template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::
-SetBinSumSqr(const Argument_Type x,const Argument_Type sumsqr)
+SetBinContent(const Argument_Type &x,const Argument_Type &content)
 {
-  m_data[hci::y_square][FindX(x)]=sumsqr;
+  m_data[hci::y_value][FindX(x)]=(*p_yaxis)(content);
 }
 
 template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::
-SetBinMax(const Argument_Type x,const Argument_Type max)
+SetBinSumSqr(const Argument_Type &x,const Argument_Type &sumsqr)
 {
-  m_data[hci::maximum][FindX(x)]=max;
+  m_data[hci::y_square][FindX(x)]=(*p_yaxis)(sumsqr);
 }
 
 template <class ArgumentType>
 void Amisic_Histogram<ArgumentType>::
-SetBinEntries(const Argument_Type x,const Argument_Type entries)
+SetBinMax(const Argument_Type &x,const Argument_Type &max)
+{
+  m_data[hci::maximum][FindX(x)]=(*p_yaxis)(max);
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinEntries(const Argument_Type &x,const Argument_Type &entries)
 {
   m_data[hci::entries][FindX(x)]=entries;
+}
+
+template <class ArgumentType> void Amisic_Histogram<ArgumentType>::
+SetBinExtra(const Argument_Type &x,const Argument_Type &extra,
+	    const size_t dim)
+{
+  if (dim<m_extradim) m_data[hci::size+dim][FindX(x)]=extra;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+AddBinContent(const size_t i,const Argument_Type &content)
+{
+  m_data[hci::y_value][i]+=(*p_yaxis)(content);
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+AddBinSumSqr(const size_t i,const Argument_Type &sumsqr)
+{
+  m_data[hci::y_square][i]+=(*p_yaxis)(sumsqr);
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+AddBinMax(const size_t i,const Argument_Type &max)
+{
+  m_data[hci::maximum][i]+=(*p_yaxis)(max);
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+AddBinEntries(const size_t i,const Argument_Type &entries)
+{
+  m_data[hci::entries][i]+=entries;
+}
+
+template <class ArgumentType> void Amisic_Histogram<ArgumentType>::
+AddBinExtra(const size_t i,const Argument_Type &extra,const size_t dim)
+{
+  if (dim<m_extradim) m_data[hci::size+dim][i]+=extra;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+AddBinContent(const Argument_Type &x,const Argument_Type &content)
+{
+  m_data[hci::y_value][FindX(x)]+=(*p_yaxis)(content);
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+AddBinSumSqr(const Argument_Type &x,const Argument_Type &sumsqr)
+{
+  m_data[hci::y_square][FindX(x)]+=(*p_yaxis)(sumsqr);
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+AddBinMax(const Argument_Type &x,const Argument_Type &max)
+{
+  m_data[hci::maximum][FindX(x)]+=(*p_yaxis)(max);
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+AddBinEntries(const Argument_Type &x,const Argument_Type &entries)
+{
+  m_data[hci::entries][FindX(x)]+=entries;
+}
+
+template <class ArgumentType> void Amisic_Histogram<ArgumentType>::
+AddBinExtra(const Argument_Type &x,const Argument_Type &extra,
+	    const size_t dim)
+{
+  if (dim<m_extradim) m_data[hci::size+dim][FindX(x)]+=extra;
 }
 
 template <class ArgumentType> ATOOLS::Axis<ArgumentType> *const 
