@@ -14,7 +14,7 @@ Primitive_Detector_Element::Primitive_Detector_Element(int nx,int ny,std::string
   m_nx(nx), m_ny(ny), m_name(name)
 {
   p_cells = new double*[m_nx];
-  for (int i=0; i<m_ny;++i) p_cells[i] = new double[m_ny];
+  for (int i=0; i<m_nx;++i) p_cells[i] = new double[m_ny];
 }
 
 Primitive_Detector_Element::~Primitive_Detector_Element()

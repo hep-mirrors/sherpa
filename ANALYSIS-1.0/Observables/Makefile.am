@@ -23,6 +23,7 @@ libObservables_la_SOURCES = \
 			    Two_Particle_Observables.C \
 			    Four_Particle_Observables.C \
 			    Calorimeter_Cone.C \
+			    Jet_Cone_Distribution.C \
 			    Jet_Observables.C \
 			    Event_Shapes_EE.C \
 			    Shape_Observables_EE.C \
@@ -34,6 +35,7 @@ noinst_HEADERS            = \
 			    Two_Particle_Observables.H \
 			    Four_Particle_Observables.H \
 			    Calorimeter_Cone.H \
+			    Jet_Cone_Distribution.H \
 			    Jet_Observables.H \
 			    Event_Shapes_EE.H \
 			    Shape_Observables_EE.H \

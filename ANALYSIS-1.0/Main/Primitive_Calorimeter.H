@@ -14,7 +14,6 @@ namespace ANALYSIS {
 
     void   SmearEnergy(const ATOOLS::Flavour &, double &);
     void   Reset();
-    double PseudoRapidityNAzimuthalAngle(const ATOOLS::Vec4D & p, double & phi);
   public:
     Primitive_Calorimeter(int,int,std::string) { abort(); }
     Primitive_Calorimeter(const double mineta=-2.5,const double maxeta=2.5,
@@ -23,10 +22,11 @@ namespace ANALYSIS {
     void Fill(const ATOOLS::Particle_List *);
     void Print(std::ostream & =std::cout);
 
-    void GetDimensions(int & neta,int & nphi,
-		       double & mineta, double & maxeta); 
-    void GetCosSinTheta(const int i,double & costheta,double & sintheta);  
-    void GetCosSinPhi(const int i,double & cosphi,double & sinphi);  
+    double PseudoRapidityNAzimuthalAngle(const ATOOLS::Vec4D & p, double & phi);
+    void   GetDimensions(int & neta,int & nphi,
+			 double & mineta, double & maxeta); 
+    void   GetCosSinTheta(const int i,double & costheta,double & sintheta);  
+    void   GetCosSinPhi(const int i,double & cosphi,double & sinphi);  
   };
 
 

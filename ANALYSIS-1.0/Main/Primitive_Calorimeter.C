@@ -28,8 +28,6 @@ Primitive_Calorimeter::Primitive_Calorimeter(const double mineta,const double ma
     p_cosphi[j]   = cos(phi);
     p_sinphi[j]   = sin(phi);
   }
-  std::cout<<"Initialize Primitive_Calorimeter"
-	   <<"("<<mineta<<","<<maxeta<<","<<neta<<","<<nphi<<")"<<std::endl;
 }
 
 Primitive_Calorimeter::~Primitive_Calorimeter() 
@@ -53,9 +51,16 @@ double Primitive_Calorimeter::PseudoRapidityNAzimuthalAngle(const Vec4D & p, dou
            else phi = 1.5*M_PI;
   }
   else {
-    phi = atan2(p[2],p[1]);
+    phi = atan2(p[1],p[2]);
     if (phi<0) phi+=2.*M_PI;
   }
+  /*
+    std::cout<<"Check : "<<p<<" : "<<std::endl
+    <<sn*0.5*log(sqr(pp+pz)/pt2)<<"  "
+    <<pt2<<" "<<pz<<" ... "<<atan2(sqrt(pt2),pz)<<"->"
+    <<tan(atan2(sqrt(pt2),pz))<<"->"
+    <<log(tan(atan2(sqrt(pt2),pz)/2.))<<std::endl;
+  */
   return sn*0.5*log(sqr(pp+pz)/pt2);
 }
 
@@ -67,6 +72,9 @@ void Primitive_Calorimeter::SmearEnergy(const Flavour & fl, double & E)
 void Primitive_Calorimeter::Fill(const Particle_List * pl)
 {
   Reset();
+  double maxet=0.;
+  Vec4D  mom=Vec4D(0.,0.,0.,0.);
+  int ii,jj;
   for (Particle_List::const_iterator it=pl->begin(); it!=pl->end();++it) {
     if (!((*it)->Flav().IsLepton()) ) {
       double phi = 0;
@@ -77,7 +85,10 @@ void Primitive_Calorimeter::Fill(const Particle_List * pl)
 
       int i = int((y-m_mineta)/m_delta_eta);
       int j = int(phi/m_delta_phi);
-      if (i>=0&&i<m_nx) p_cells[i][j] += p_sintheta[i]*E;
+      if (i>=0&&i<m_nx) {
+	p_cells[i][j] += p_sintheta[i]*E;
+	if (maxet<p_sintheta[i]*E) { maxet = p_sintheta[i]*E; mom=(*it)->Momentum(); ii=i; jj=j; }
+      }
     }
   }  
 }

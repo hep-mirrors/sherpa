@@ -18,6 +18,7 @@ namespace ANALYSIS {
     Primitive_Detector_Element(int neta,int nphi,std::string name);
     virtual ~Primitive_Detector_Element();
     virtual void Fill(const ATOOLS::Particle_List *) = NULL;
+    virtual void Reset()                             = NULL;
     double       Cell(const int i,const int j);
     std::string  Name() const;
   };
@@ -50,6 +51,7 @@ namespace ANALYSIS {
 
     std::string Name() const;
     void        Print();
+    void        Reset();
   };
 
   inline std::string Primitive_Detector::Name() const { return m_name; }
@@ -64,6 +66,12 @@ namespace ANALYSIS {
     }
     ATOOLS::msg.Out()<<"==================================================="<<std::endl;
   }
+  inline void Primitive_Detector::Reset() {
+    for (String_DetectorElement_Iter sdeiter=m_elements.begin();
+	 sdeiter!=m_elements.end();sdeiter++) {
+      sdeiter->second->Reset();
+    }
+  };
 }
 
 #endif

@@ -6,7 +6,7 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 
-Calorimeter_Cone::Calorimeter_Cone(const double dR,const double Etcut,
+Calorimeter_Cone::Calorimeter_Cone(const double Etcut,const double dR,
 				   Primitive_Calorimeter * const calorimeter) : 
   m_dR(dR), m_dR2(dR*dR), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1), 
   p_calorimeter(calorimeter)
@@ -31,8 +31,22 @@ Calorimeter_Cone::~Calorimeter_Cone()
   }
 }
 
+void Calorimeter_Cone::Test()
+{
+  Particle_List * pl = new Particle_List;
+  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(sqrt(500.),20.,10.,0.)));
+  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(50.,40.,0.,30.)));
+  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(10.,5.,3.,4.)));
+  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(50.,-40.,0.,30.)));
+  pl->push_back(new Particle(1,Flavour(kf::p_plus),Vec4D(50.,20.,-20.,30.)));
 
-void  Calorimeter_Cone::CalcJets()
+  p_calorimeter->Fill(pl);
+  p_calorimeter->Print();
+  CalcJets();
+  abort();
+}
+
+void Calorimeter_Cone::CalcJets()
 {
   for (int i=0; i<m_neta; ++i) {
     for (int j=0; j<m_nphi; ++j) {
@@ -40,7 +54,7 @@ void  Calorimeter_Cone::CalcJets()
     }
   }
   m_jets.clear();
-  double maxet, jetet;
+  double maxet, jetet, eta;
   double costheta, sintheta, cosphi, sinphi;
   Vec4D  jetmom;
   for (;;) {  
@@ -53,7 +67,7 @@ void  Calorimeter_Cone::CalcJets()
 	    m_mineta+i*m_delta_eta>m_maxetajet) continue;
       }
       for (int j=0; j<m_nphi; ++j) {
-	if (p_jetno[i][j]>0)                 continue;
+	if (p_jetno[i][j]>0)                continue;
 	if (p_calorimeter->Cell(i,j)<maxet) continue;
 	maxet = p_calorimeter->Cell(i,j);
 	ii = i; jj = j;
@@ -63,8 +77,8 @@ void  Calorimeter_Cone::CalcJets()
     if (maxet<m_Etstop) break;
 
     // add jet:
-    jetet = 0.;
-
+    jetet  = 0.;
+    jetmom = Vec4D(0.,0.,0.,0.);
     for (int i=ii-m_dneta;i<=ii+m_dneta;++i) {
       if (i<0) i=0;
       if (i>=m_neta) break; 
@@ -80,39 +94,85 @@ void  Calorimeter_Cone::CalcJets()
 	p_jetno[i][j] = m_jets.size()+1;
 	// add to jet
 	double pt  = p_calorimeter->Cell(i,j);
-	p_calorimeter->GetCosSinTheta(i,costheta,sintheta);
-	p_calorimeter->GetCosSinPhi(j,cosphi,sinphi);
-	double px  = pt/sintheta;
-	jetmom[0] += px;
-	jetmom[1] += pt*cosphi;
-	jetmom[2] += pt*sinphi;
-	jetmom[3] += px*costheta;
-	jetet     += pt;
+	if (pt>0.) {
+	  p_calorimeter->GetCosSinTheta(i,costheta,sintheta);
+	  p_calorimeter->GetCosSinPhi(j,cosphi,sinphi);
+	  double px  = pt/sintheta;
+	  jetmom[0] += px;
+	  jetmom[1] += pt*sinphi;
+	  jetmom[2] += pt*cosphi;
+	  jetmom[3] += px*costheta;
+	  jetet     += pt;
+	}
       }
     }
     if (jetet<m_Etcut) break;
-    m_jets.push_back(Jet_Data(ii,jj,jetmom,jetet));
+    if (m_etamode==1) {
+      eta = jetmom.Eta();
+      if (!(eta>m_minetajet && eta<m_maxetajet)) continue; 
+    }
+    if (jetet>m_Etcut) {
+      m_jets.push_back(Jet_Data(ii,jj,m_jets.size()+1,jetmom,jetet));
+      //std::cout<<"New jet : "<<ii<<"/"<<jj<<" "<<jetmom<<std::endl;
+    }
   }
+  SortPT();
 }
 
 
-bool  Calorimeter_Cone::ConstructJets(Particle_List * jets,std::vector<double> * kt2)
+bool Calorimeter_Cone::ConstructJets(Particle_List * jets,std::vector<double> * kt2)
 {
   CalcJets();
   int i=1;
-  double eta;
   for (std::vector<Jet_Data>::iterator it=m_jets.begin();it!=m_jets.end();++it,++i) {
-    if (m_etamode==1) {
-      eta = it->mom.Eta();
-      if (eta>m_minetajet && eta<m_maxetajet) 
-	jets->push_back(new Particle(i,Flavour(kf::jet),it->mom));
-    }
-    else jets->push_back(new Particle(i,Flavour(kf::jet),it->mom));
-  }    
-
-  SortPT(jets);
-  for (Particle_Iterator pit=jets->begin();pit!=jets->end();++pit) {
-    kt2->push_back((*pit)->Momentum().PPerp2());
+    jets->push_back(new Particle(i,Flavour(kf::jet),it->mom));
+    kt2->push_back(it->mom.PPerp2());
   }
   return true;
+}
+
+void Calorimeter_Cone::SortPT()
+{
+  std::sort(m_jets.begin(),m_jets.end(),Order_PT_JData());
+}
+
+void Calorimeter_Cone::FillShape(int jetno,ATOOLS::Histogram * histo,
+				 double weight=1.,int ncount=1)
+{
+  if (jetno>m_jets.size()) return;
+
+  double dR, phi, et = m_jets[jetno-1].et;
+
+  Vec4D  mom         = m_jets[jetno-1].mom;
+  int    number      = m_jets[jetno-1].orig;
+  double y           = p_calorimeter->PseudoRapidityNAzimuthalAngle(mom,phi);
+  if (phi<0) phi    += 2.*M_PI;
+
+  int ipos=m_jets[jetno-1].i, jpos=m_jets[jetno-1].j;
+
+
+  int itest = int((y-m_mineta)/m_delta_eta);
+  int jtest = int(phi/m_delta_phi);
+
+  //std::cout<<"Check this out : "<<ipos<<"/"<<jpos<<" -> "<<mom<<","<<et<<","
+  //	   <<itest<<"/"<<jtest<<"("<<number<<")"<<std::endl;
+  //p_calorimeter->Print();
+  for (int i=ipos-m_dneta;i<=ipos+m_dneta;++i) {
+    if (i<0) i=0;
+    if (i>=m_neta) break; 
+    for (int jp=jpos-m_dnphi;jp<=jpos+m_dnphi;++jp) {
+      int j=jp;
+      if (j<0) j+=m_nphi;
+      else if (j>=m_nphi) j-=m_nphi;
+      //if (p_calorimeter->Cell(i,j)>0.) {
+      //	std::cout<<"("<<i<<","<<j<<") : "<<p_calorimeter->Cell(i,j)
+      //<<" -> "<<p_jetno[i][j]<<std::endl;
+      //}
+      if (p_jetno[i][j]!=number) continue;
+      double dphi = sqr(j*m_delta_phi-phi);
+      double deta = sqr(m_mineta+m_delta_eta*i-y);
+      dR    = sqrt(dphi+deta);
+      histo->Insert(dR,p_calorimeter->Cell(i,j)*weight/et,ncount);
+    }
+  }
 }
