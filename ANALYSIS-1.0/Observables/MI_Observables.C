@@ -152,73 +152,74 @@ void Forward_Backward_Eta_Correlation::EndEvaluation(double scale)
 
 
 
-Transversal_PT_Jet::Transversal_PT_Jet(const int type,
-				       const double jetptmin,const double jetptmax,
-				       const double ptmin,const double ptmax,
-				       const double phiconesize,
-				       const int nbins,const std::string &listname,
-				       const std::string &jetlistname) :
-  Primitive_Observable_Base(0,jetptmin,jetptmax,nbins,NULL), 
-  m_ptmin(ptmin), m_ptmax(ptmax), m_phiconesize(phiconesize),
+Transverse_JetPT::Transverse_JetPT(const int type,const double ptmin,
+				   const double ptmax,const int nbins,
+				   const double pptmin,const double pptmax,
+				   const double phirange,
+				   const std::string &jetlistname,
+				   const std::string &listname) :
+  Primitive_Observable_Base(0,ptmin,ptmax,nbins,NULL), 
+  m_ptmin(pptmin), m_ptmax(pptmax), m_phirange(phirange),
   m_jetlistname(jetlistname)
 {
-  m_name=listname+"Transversal_PT_Jet.dat";
+  m_name=listname+"pt_trans.dat";
   m_listname=listname;
 }
 
-void Transversal_PT_Jet::Evaluate(const ATOOLS::Particle_List &particlelist,
-				  double weight=1.,int ncount=1)
+void Transverse_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
+				double weight,int ncount)
 {
-  double pt, weight=weight/(4*M_PI);
-  Particle_List::const_iterator firstjet = p_ana->GetParticleList(m_jetlistname)->begin();
-  if (firstjet==p_ana->GetParticleList(m_jetlistname)->end()) return;
-  double jetpt  = (*firstjet)->Momentum().PPerp();
-  double jetphi =;
-  for (Particle_Const_Iterator plit=particlelist.begin();plit!=particlelist.end();++plit) {
-    // Phi !!!!!
-    pt=(*plit)->PPerp();
-    if (pt>ptmin&&pt<ptmax) p_histo->Insert(jetpt,weight,ncount);
+  ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlistname);
+  if (jetlist->begin()==jetlist->end()) return;
+  const ATOOLS::Vec4D &jetmom=(*jetlist->begin())->Momentum();
+  for (Particle_List::const_iterator pit=particlelist.begin();
+       pit!=particlelist.end();++pit) {
+    double phi;//=(*plit)->Momentum().Phi(jetmom);
+    if (phi<(M_PI+m_phirange)/2.0) {
+      double pt=(*pit)->Momentum().PPerp();
+      if (pt>m_ptmin && pt<m_ptmax) p_histo->Insert(jetmom.PPerp(),weight,ncount);
+    }
   }
 }
 
-Primitive_Observable_Base *Transversal_PT_Jet::Copy() const
+Primitive_Observable_Base *Transverse_JetPT::Copy() const
 {
-  return new Transversal_PT_Jet(m_type,m_xmin,m_xmax,m_ptmin,m_ptmax,
-				m_phiconesize,m_nbins,m_listname,m_jetlistname);
+  return new Transverse_JetPT(m_type,m_xmin,m_xmax,m_ptmin,m_ptmax,
+			      m_phirange,m_nbins,m_listname,m_jetlistname);
 }
 
-Azimuthal_PT::Azimuthal_PT(const int type,
-						     const double philocation,const double phiconesize,
-						     const int nbins,const std::string &listname)
-{}
+// Azimuthal_PT::Azimuthal_PT(const int type,
+// 						     const double philocation,const double phiconesize,
+// 						     const int nbins,const std::string &listname)
+// {}
 
-void Azimuthal_PT::Evaluate(const ATOOLS::Particle_List &particlelist,
-					 double weight=1.,int ncount=1)
-{}
+// void Azimuthal_PT::Evaluate(const ATOOLS::Particle_List &particlelist,
+// 					 double weight=1.,int ncount=1)
+// {}
 
-Primitive_Observable_Base *Azimuthal_PT::Copy() const
-{}
+// Primitive_Observable_Base *Azimuthal_PT::Copy() const
+// {}
 
-void Azimuthal_PT::EndEvaluation(double scale)
-{}
+// void Azimuthal_PT::EndEvaluation(double scale)
+// {}
 
 
-Transversal_PT_Particle::Transversal_PT_Particle(const int type,
-						 const double jetptmin,const double jetptmax,
-						 const double ptmin,const double ptmax,
-						 const double phiconesize,
-						 const int nbins,const std::string &listname)
-{}
+// Transversal_PT_Particle::Transversal_PT_Particle(const int type,
+// 						 const double jetptmin,const double jetptmax,
+// 						 const double ptmin,const double ptmax,
+// 						 const double phiconesize,
+// 						 const int nbins,const std::string &listname)
+// {}
 
-void Transversal_PT_Particle::Evaluate(const ATOOLS::Particle_List &particlelist,
-						    double weight=1.,int ncount=1)
-{}
+// void Transversal_PT_Particle::Evaluate(const ATOOLS::Particle_List &particlelist,
+// 						    double weight=1.,int ncount=1)
+// {}
 
-Primitive_Observable_Base *Transversal_PT_Particle::Copy() const
-{}
+// Primitive_Observable_Base *Transversal_PT_Particle::Copy() const
+// {}
 
-void Transversal_PT_Particle::EndEvaluation(double scale)
-{}
+// void Transversal_PT_Particle::EndEvaluation(double scale)
+// {}
 
 
 
