@@ -8,6 +8,8 @@
 #include "Histogram.H"
 
 namespace ANALYSIS {
+  class Primitive_Analysis;
+
   struct Jet_Data {
     int           i,j,orig;
     ATOOLS::Vec4D mom;
@@ -40,14 +42,11 @@ namespace ANALYSIS {
     void SortPT();
     void Test();
   public:
-    Calorimeter_Cone(const double Etcut, const double dR, 
-		     Primitive_Calorimeter * const);
+    Calorimeter_Cone(const double Etcut, Primitive_Analysis * ana, double sep=1.);
     ~Calorimeter_Cone();
 
-    void ConstructJets();
-    bool ConstructJets(ATOOLS::Particle_List *,std::vector<double> *);
-    bool ConstructJets(const ATOOLS::Particle_List * pl,ATOOLS::Particle_List * jets,
-		       std::vector<double> * kt2,double sep);
+    bool ConstructJets(const ATOOLS::Particle_List * pl = 0,ATOOLS::Particle_List * jets = 0,
+		       std::vector<double> * kt2 = 0,double rmin=-1.);
     void SetEtaRangeForJets(const double mineta,const double maxeta,const int mode);
     void FillShape(int jetno,ATOOLS::Histogram * histo,double weight=1.,int ncount=1);
 
@@ -56,14 +55,7 @@ namespace ANALYSIS {
     double Et_cut();
   };
 
-  inline bool Calorimeter_Cone::ConstructJets(const ATOOLS::Particle_List * pl,
-					      ATOOLS::Particle_List * jets,
-					      std::vector<double> * kt2,double sep) 
-  {
-    return ConstructJets(jets,kt2);
-  }
 
-  inline void Calorimeter_Cone::ConstructJets() { CalcJets(); }
   inline void Calorimeter_Cone::SetEtaRangeForJets(const double mineta,
 						   const double maxeta,const int mode) 
   {

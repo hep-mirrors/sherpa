@@ -1,4 +1,5 @@
 #include "Calorimeter_Cone.H"
+#include "Primitive_Analysis.H"
 #include "Particle_List.H"
 #include "MathTools.H"
 
@@ -6,16 +7,30 @@ using namespace ANALYSIS;
 using namespace ATOOLS;
 
 
-Calorimeter_Cone::Calorimeter_Cone(const double Etcut,const double dR,
-				   Primitive_Calorimeter * const calorimeter) : 
-  Jet_Algorithm_Base(NULL), m_dR(dR), m_dR2(dR*dR), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1), 
-  p_calorimeter(calorimeter)
+Calorimeter_Cone::Calorimeter_Cone(const double Etcut, Primitive_Analysis * ana, double sep) : 
+  Jet_Algorithm_Base(NULL), m_dR(sep), m_dR2(sep*sep), m_Etcut(Etcut), m_Etstop(1.5), m_etamode(1)
 {
-  p_calorimeter->GetDimensions(m_neta,m_nphi,m_mineta,m_maxeta);
+  // give analysis
+  Primitive_Detector * detector =  
+    dynamic_cast<Primitive_Detector *>(ana->GetObservable("Full Detector"));
+
+  // get calorimeter
+  if (detector) {
+    p_calorimeter= 
+      dynamic_cast<Primitive_Calorimeter *>(detector->GetElement("Hadronic Calorimeter"));
+
+    if (p_calorimeter)
+      p_calorimeter->GetDimensions(m_neta,m_nphi,m_mineta,m_maxeta);
+    else {
+      msg.Out()<<"WARNING  Calorimeter_Cone::Calorimeter_Cone no ""Hadronic Calorimeter"" "<<std::endl;
+    }
+  }
+  else {
+    msg.Out()<<"WARNING  Calorimeter_Cone::Calorimeter_Cone no ""Full Detector"" "<<std::endl;
+  }
+
   m_minetajet = m_mineta;
   m_maxetajet = m_maxeta;
-  m_dneta     = int(m_neta*m_dR/(m_maxeta-m_mineta));
-  m_dnphi     = int(m_nphi*m_dR/(2.*M_PI));
   m_delta_eta = (m_maxeta-m_mineta)/double(m_neta);
   m_delta_phi = 2.*M_PI/double(m_nphi);
 
@@ -48,6 +63,9 @@ void Calorimeter_Cone::Test()
 
 void Calorimeter_Cone::CalcJets()
 {
+  m_dneta     = int(m_neta*m_dR/(m_maxeta-m_mineta));
+  m_dnphi     = int(m_nphi*m_dR/(2.*M_PI));
+  
   for (int i=0; i<m_neta; ++i) {
     for (int j=0; j<m_nphi; ++j) {
       p_jetno[i][j]=0;
@@ -113,20 +131,31 @@ void Calorimeter_Cone::CalcJets()
     }
     if (jetet>m_Etcut) {
       m_jets.push_back(Jet_Data(ii,jj,m_jets.size()+1,jetmom,jetet));
-      //std::cout<<"New jet : "<<ii<<"/"<<jj<<" "<<jetmom<<std::endl;
     }
   }
   SortPT();
 }
 
 
-bool Calorimeter_Cone::ConstructJets(Particle_List * jets,std::vector<double> * kt2)
+bool Calorimeter_Cone::ConstructJets(const Particle_List *, Particle_List * jets,
+				     std::vector<double> * kt2, double rmin)
 {
+  if (rmin!=-1.) {
+    m_dR  = rmin;
+    m_dR2 = rmin*rmin;
+  }
+  /*
+  m_dneta     = int(m_neta*rmin/(m_maxeta-m_mineta));
+  m_dnphi     = int(m_nphi*rmin/(2.*M_PI));
+  */
   CalcJets();
-  int i=1;
-  for (std::vector<Jet_Data>::iterator it=m_jets.begin();it!=m_jets.end();++it,++i) {
-    jets->push_back(new Particle(i,Flavour(kf::jet),it->mom));
-    kt2->push_back(it->mom.PPerp2());
+  
+  if (jets) {
+    int i=1;
+    for (std::vector<Jet_Data>::iterator it=m_jets.begin();it!=m_jets.end();++it,++i) {
+      jets->push_back(new Particle(i,Flavour(kf::jet),it->mom));
+      kt2->push_back(it->mom.PPerp2());
+    }
   }
   return true;
 }
