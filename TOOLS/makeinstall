@@ -3,13 +3,13 @@ RELEASE=#"TRUE"
 LOGFILE="sherpa_install.log"
 
 DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
-DIRS=$DIRS" EXTRA_XS-1.0 APACIC++-2.0 AMEGIC++-2.0 ADICIC++-0.0 AMISIC++-1.0"
-DIRS=$DIRS" AHADIC++-0.0 ANALYSIS-1.0 SHERPA-1.0 COMPARE-1.0"
+DIRS=$DIRS" EXTRA_XS-1.0 APACIC++-2.0 AMEGIC++-2.0 AMISIC++-1.0"
+DIRS=$DIRS" ANALYSIS-1.0 SHERPA-1.0"
 
 rmr () { 
-  for file in `ls -a` ; do                                                          
+  for file in `ls -a` ; do   
     if [ $file != . ] && [ $file != .. ]; then
-      if [ -d $file ] ; then                                                       
+      if [ -d $file ] ; then
         cd $file  
         rmr "$1" $2
         cd ..                                                             
@@ -17,9 +17,9 @@ rmr () {
     fi
   done  
   for i in $1 ; do    
-    rm -f $2 $i                                                                         
+    rm -f $2 $i
   done
-}                                                                               
+}
 
 ECXXFLAGS=""
 EFFLAGS=""
@@ -32,10 +32,10 @@ for I in $* ; do
   elif [ "$I" = "-r" ]; then RELEASE=TRUE
   elif [ "$I" = "-s" ]; then SCRIPT=TRUE
   elif [ "$I" = "-n" ]; then NOEXTRACT=TRUE
+  elif [ "$I" = "-o" ]; then ONE=TRUE
   elif [ "$I" = "--clean" ]; then CLEAN=TRUE
-  elif [ "$I" = "--clean-run" ]; then RUNCLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
-  elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
+  elif [ "$I" = "--copt" ]; then DCOPT=TRUE && CONFIGURE=TRUE
   elif [ "$I" = "--mopt" ]; then DMOPT=TRUE 
   elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
   elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
@@ -51,8 +51,8 @@ for I in $* ; do
     echo "         -r             display minimal information but write a logfile instead" && \
     echo "         -s             create simple install scripts to be customized by the user" && \
     echo "         -n             do not extract tar files" && \
+    echo "         -o             install single module" && \
     echo "         --clean        execute 'make clean' in every module before compiling" && \
-    echo "         --clean-run    execute './SHERPA-1.0/Run/makeclean' before compiling" && \
     echo "         --no-abort     ignore exit status of 'make'" && \
     echo "         --copt         define option for 'configure'" && \
     echo "         --mopt         define option for 'make' (default is '-j2')" && \
@@ -75,6 +75,17 @@ done
 if [ ! "$ECXXFLAGS" = "" ]; then ECXXFLAGS="CXXFLAGS="$ECXXFLAGS ; fi
 if [ ! "$EFFLAGS" = "" ]; then EFFLAGS="FFLAGS="$EFFLAGS ; fi
 if [ "$EMOPT" = "" ]; then EMOPT="-j2" ; fi
+
+if [ "$ONE" = "TRUE" ] ; then 
+  echo "makeinstall: select module ( q) to quit )"
+  select DIRS in $DIRS ; do
+    if [ "$DIRS" != "" ] ; then 
+      break
+    else 
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
+    fi
+  done
+fi
 
 if [ "$SCRIPT" = "TRUE" ] ; then 
   echo "makeinstall: creating simple install scripts"
@@ -168,12 +179,6 @@ else
   echo "**************************************"
   echo "*   Installing the SHERPA package    *"
   echo "**************************************"
-fi
-if [ "$RUNCLEAN" = "TRUE" ] ; then
-  if cd SHERPA-1.0/Run ; then
-    ./makeclean
-    cd ../..
-  fi
 fi
 
 if [ "$SED" = "" ] ; then export SED="sed" ; fi
@@ -292,10 +297,10 @@ do
         fi
         if [ ! "$NOABORT" = "TRUE" ] ; then
           until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
-    	    if ! read -t 300 -p "continue anyway (y/n/r/b/c/t) ? " CONTINUE ; then
-	      echo ""
+    	    if ! read -t 300 -n 1 -p "continue anyway (y/n/r/b/c/t) ? " CONTINUE ; then
 	      CONTINUE="n"
 	    fi
+            echo ""
 	    if [ "$CONTINUE" = "n" ] ; then
 	      if [ "$RELEASE" = "TRUE" ] ; then
                 `echo clear`

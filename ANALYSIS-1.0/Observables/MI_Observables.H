@@ -2,7 +2,7 @@
 #define MI_Observables_H
 
 #include "Primitive_Observable_Base.H"
-#include "../../AMISIC++-1.0/Main/Amisic_Histogram.H"
+#include "../../AMISIC++-1.0/Tools/Amisic_Histogram.H"
 
 namespace ANALYSIS {
 
@@ -134,8 +134,9 @@ namespace ANALYSIS {
   class Multiplicity_vs_DPhi: public Primitive_Observable_Base {  
   private:
 
-    std::string m_jetlist;
-    double      m_offset;
+    std::vector<std::string> m_jetlists;
+
+    double m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
     
@@ -144,7 +145,7 @@ namespace ANALYSIS {
     Multiplicity_vs_DPhi(const int type,
 			 const double dphimin,const double dphimax,
 			 const int nbins,const double offset,
-			 const std::string &jetlist,
+			 const std::vector<std::string> &jetlists,
 			 const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -159,8 +160,9 @@ namespace ANALYSIS {
   class Scalar_PT_Sum_vs_DPhi: public Primitive_Observable_Base {  
   private:
 
-    std::string m_jetlist;
-    double      m_offset;
+    std::vector<std::string> m_jetlists;
+
+    double m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
     
@@ -169,7 +171,7 @@ namespace ANALYSIS {
     Scalar_PT_Sum_vs_DPhi(const int type,
 			  const double dphimin,const double dphimax,
 			  const int nbins,const double offset,
-			  const std::string &jetlist,
+			  const std::vector<std::string> &jetlists,
 			  const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -184,8 +186,9 @@ namespace ANALYSIS {
   class Scalar_ET_Sum_vs_DPhi: public Primitive_Observable_Base {  
   private:
 
-    std::string m_jetlist;
-    double      m_offset;
+    std::vector<std::string> m_jetlists;
+
+    double m_offset;
 
     AMISIC::Amisic_Histogram<double> m_histogram;
     
@@ -194,7 +197,7 @@ namespace ANALYSIS {
     Scalar_ET_Sum_vs_DPhi(const int type,
 			  const double dphimin,const double dphimax,
 			  const int nbins,const double offset,
-			  const std::string &jetlist,
+			  const std::vector<std::string> &jetlists,
 			  const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -219,7 +222,7 @@ namespace ANALYSIS {
     Multiplicity_vs_DEta(const int type,
 			 const double dphimin,const double dphimax,
 			 const int nbins,const double offset,
-			 const std::string &jetlist,
+			 const std::vector<std::string> &jetlists,
 			 const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
@@ -242,10 +245,10 @@ namespace ANALYSIS {
   public:
 
     Scalar_PT_Sum_vs_DEta(const int type,
-			 const double dphimin,const double dphimax,
-			 const int nbins,const double offset,
-			 const std::string &jetlist,
-			 const std::string &listname);
+			  const double dphimin,const double dphimax,
+			  const int nbins,const double offset,
+			  const std::vector<std::string> &jetlists,
+			  const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
@@ -267,10 +270,10 @@ namespace ANALYSIS {
   public:
 
     Scalar_ET_Sum_vs_DEta(const int type,
-			 const double dphimin,const double dphimax,
-			 const int nbins,const double offset,
-			 const std::string &jetlist,
-			 const std::string &listname);
+			  const double dphimin,const double dphimax,
+			  const int nbins,const double offset,
+			  const std::vector<std::string> &jetlists,
+			  const std::string &listname);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);

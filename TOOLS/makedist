@@ -1,15 +1,15 @@
 #!/bin/bash
 
 DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
-DIRS=$DIRS" EXTRA_XS-1.0 AMEGIC++-2.0 APACIC++-2.0 ADICIC++-0.0 AMISIC++-1.0"
-DIRS=$DIRS" AHADIC++-0.0 ANALYSIS-1.0 SHERPA-1.0 COMPARE-1.0"
+DIRS=$DIRS" EXTRA_XS-1.0 AMEGIC++-2.0 APACIC++-2.0 AMISIC++-1.0"
+DIRS=$DIRS" ANALYSIS-1.0 SHERPA-1.0"
 DISTDIR=`date +'%y-%m-%d'`
 
 ECOPT=""
 for I in $* ; do
-  if [ "$I" = "-c" ]; then CLEAN=TRUE 
-  elif [ "$I" = "-f" ]; then DISTDIR=$DISTDIR"_"`date +'%H-%M'` 
+  if [ "$I" = "-f" ]; then DISTDIR=$DISTDIR"_"`date +'%H-%M'` 
   elif [ "$I" = "-n" ]; then DNAME=TRUE
+  elif [ "$I" = "-o" ]; then ONE=TRUE
   elif [ "$I" = "--clean" ]; then ALLCLEAN=TRUE 
   elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
   elif [ "$I" = "--hide-cvs" ]; then ECOPT=$ECOPT" --disable-cvsinclude" && CONFIGURE=TRUE
@@ -18,13 +18,12 @@ for I in $* ; do
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "makedist version 1.0 " && echo && \
-    echo "options: -c             execute './SHERPA-1.0/Run/makeclean' first" && \
-    echo "         -f             include full time information in distribution name" && \
+    echo "options: -f             include full time information in distribution name" && \
     echo "         -n <name>      write compressed distribution to <name>.tar.gz" && \
+    echo "         -o             install single module" && \
     echo "         --clean        execute 'make clean' before 'make dist'" && \
     echo "         --configure    configure before 'make dist' (enabled with '--total')" && \
-    echo "         --hide-cvs     do not include cvs directories in distribution" && \
-    echo "         --total        rebuild 'Makefile.in's and 'configure' before 'make dist'" && \
+    echo "         --total        rebuild 'Makefile.in's' and 'configure's' before 'make dist'" && \
     echo "         --copt         define option for 'configure'" && \
     echo "         --no-abort     ignore exit status of 'make'" && \
     echo "         -h             display this help and exit" && echo && \
@@ -35,15 +34,20 @@ for I in $* ; do
   fi
 done
 
+if [ "$ONE" = "TRUE" ] ; then 
+  echo "makeinstall: select module ( q) to quit )"
+  select DIRS in $DIRS ; do
+    if [ "$DIRS" != "" ] ; then 
+      break
+    else 
+      if [ "$REPLY" = "q" ] || [ "$REPLY" = "Q" ]  ; then exit ; fi
+    fi
+  done
+fi
+
 echo "*************************************"
 echo "*  creating distribution of SHERPA  *"
 echo "*************************************"
-if test "$CLEAN" = "TRUE" || test "$ALLCLEAN" = "TRUE" ; then
-  if cd SHERPA-1.0/Run ; then 
-    ./makeclean
-    cd ../..
-  fi
-fi
 ALL=
 for I in $DIRS;
 do
@@ -72,9 +76,10 @@ do
 	echo "makedist: error: \"make dist\" in $I failed"
         if [ ! "$NOABORT" = "TRUE" ]; then
           until [ "$CONTINUE" = "y" ] || [ "$CONTINUE" = "n" ] || [ "$CONTINUE" = "r" ]; do
-    	    if ! read -t 300 -p "continue anyway (y/n/r/b) ? " CONTINUE ; then
+    	    if ! read -t 300 -n 1 -p "continue anyway (y/n/r/b) ? " CONTINUE ; then
 	      CONTINUE="n"
 	    fi
+	    echo ""
 	    if [ "$CONTINUE" = "n" ]; then
               exit 1
 	    elif [ "$CONTINUE" = "b" ]; then 

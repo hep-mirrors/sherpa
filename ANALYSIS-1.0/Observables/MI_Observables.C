@@ -24,12 +24,12 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   std::string list="Charged", jetlist="AnalysedJets", scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
-    else if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="JETLIST") jetlist=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+    else if (parameters[i][0]=="Min") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="Max") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="Bins") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="Scale") scale=parameters[i][1];
+    else if (parameters[i][0]=="JetList") jetlist=parameters[i][1];
+    else if (parameters[i][0]=="List") list=parameters[i][1];
   }
   return new Class((scale=="Log")*10,min,max,bins,jetlist,list);
 }									
@@ -60,23 +60,26 @@ Primitive_Observable_Base *const GetOffsetObservable(const String_Matrix &parame
 		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
 		     ATOOLS::ToType<int>(parameters[0][2]),
-		     ATOOLS::ToType<double>(parameters[0][4]),jetlist,list);
+		     ATOOLS::ToType<double>(parameters[0][4]),
+		     std::vector<std::string>(1,jetlist),list);
   }
   else if (parameters.size()<5) return NULL;
   double min=0.0, max=1.0, offset=0.0;
   size_t bins=100;
-  std::string list="Charged", jetlist="AnalysedJets", scale="Lin";
+  std::string list="Charged", scale="Lin";
+  std::vector<std::string> jetlists;
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
-    else if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="OFFSET") offset=ATOOLS::ToType<double>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
-    else if (parameters[i][0]=="JETLIST") jetlist=parameters[i][1];
-    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+    else if (parameters[i][0]=="Min") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="Max") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="Bins") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="Offset") offset=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="Scale") scale=parameters[i][1];
+    else if (parameters[i][0]=="JetList") jetlists.push_back(parameters[i][1]);
+    else if (parameters[i][0]=="List") list=parameters[i][1];
   }
-  return new Class((scale=="Log")*10,min,max,bins,offset,jetlist,list);
+  if (jetlists.size()==0) jetlists.push_back("Jets");
+  return new Class((scale=="Log")*10,min,max,bins,offset,jetlists,list);
 }									
 
 #define DEFINE_OFFSET_GETTER_METHOD(CLASS,NAME)				\
@@ -369,14 +372,14 @@ DEFINE_OFFSET_OBSERVABLE_GETTER(Multiplicity_vs_DPhi,
 Multiplicity_vs_DPhi::Multiplicity_vs_DPhi(const int type,
 					   const double dphimin,const double dphimax,
 					   const int nbins,const double offset,
-					   const std::string &jetlist,
+					   const std::vector<std::string> &jetlists,
 					   const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
-  m_jetlist(jetlist),
+  m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
   m_offset(offset)
 {
   m_listname=listname;
-  m_name="N"+m_listname+"_vs_DPhi_"+m_jetlist+".dat";
+  m_name="N"+m_listname+"_vs_DPhi_"+m_jetlists[0]+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
   while (m_offset>=360.0) m_offset-=360.0;
   while (m_offset<0.0) m_offset+=360.0;
@@ -385,19 +388,30 @@ Multiplicity_vs_DPhi::Multiplicity_vs_DPhi(const int type,
 void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 				    double weight,int ncount)
 {
-  ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
-  if (jetlist->size()==0) return;
-  SORT_LIST(jetlist,Order_PT);
-  ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
+  ATOOLS::Particle_List *jetlist1=p_ana->GetParticleList(m_jetlists[0]);
+  if (jetlist1->empty()) return;
+  ATOOLS::Particle_List *jetlist2=NULL;
+  ATOOLS::Vec4D leadingjet2;
+  if (m_jetlists.size()>1) {
+    if ((jetlist2=p_ana->GetParticleList(m_jetlists[1]))->empty()) return;
+    SORT_LIST(jetlist2,Order_PT);
+    leadingjet2=(*jetlist2)[0]->Momentum();
+  }
+  SORT_LIST(jetlist1,Order_PT);
+  ATOOLS::Vec4D leadingjet1=(*jetlist1)[0]->Momentum();
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    double phi=(*pit)->Momentum().DPhi(leadingjet)/M_PI*180.0;
-    if (!(phi>0.0) && !(phi<=0.0)) continue;
-    histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight);
-    phi*=-1.0;
-    histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight);
+    double dphi1=(*pit)->Momentum().DPhi(leadingjet1)/M_PI*180.0;
+    if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
+    double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
+    if (cosdphi2>=0.0)
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight);
+    if (cosdphi2<=0.0) {
+      dphi1*=-1.0;
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight);
+    }
   }
   TRANSFER_DATA(1.0);
 }
@@ -405,7 +419,7 @@ void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 Primitive_Observable_Base *Multiplicity_vs_DPhi::Copy() const
 {
   return new Multiplicity_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				  m_jetlist,m_listname);
+				  m_jetlists,m_listname);
 }
 
 void Multiplicity_vs_DPhi::EndEvaluation(double scale)
@@ -420,34 +434,45 @@ DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_DPhi,
 Scalar_PT_Sum_vs_DPhi::Scalar_PT_Sum_vs_DPhi(const int type,
 					     const double dphimin,const double dphimax,
 					     const int nbins,const double offset,
-					     const std::string &jetlist,
+					     const std::vector<std::string> &jetlists,
 					     const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
-  m_jetlist(jetlist),
+  m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
   m_offset(offset)
 {
   m_listname=listname;
-  m_name="SPT"+m_listname+"_vs_DPhi_"+m_jetlist+".dat";
+  m_name="SPT"+m_listname+"_vs_DPhi_"+m_jetlists[0]+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
 }
     
 void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 				    double weight,int ncount)
 {
-  ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
-  if (jetlist->size()==0) return;
-  SORT_LIST(jetlist,Order_PT);
-  ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
+  ATOOLS::Particle_List *jetlist1=p_ana->GetParticleList(m_jetlists[0]);
+  if (jetlist1->empty()) return;
+  ATOOLS::Particle_List *jetlist2=NULL;
+  ATOOLS::Vec4D leadingjet2;
+  if (m_jetlists.size()>1) {
+    if ((jetlist2=p_ana->GetParticleList(m_jetlists[1]))->empty()) return;
+    SORT_LIST(jetlist2,Order_PT);
+    leadingjet2=(*jetlist2)[0]->Momentum();
+  }
+  SORT_LIST(jetlist1,Order_PT);
+  ATOOLS::Vec4D leadingjet1=(*jetlist1)[0]->Momentum();
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
     double pt=(*pit)->Momentum().PPerp();
-    double phi=(*pit)->Momentum().DPhi(leadingjet)/M_PI*180.0;
-    if (!(phi>0.0) && !(phi<=0.0)) continue;
-    histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight*pt);
-    phi*=-1.0;
-    histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight*pt);
+    double dphi1=(*pit)->Momentum().DPhi(leadingjet1)/M_PI*180.0;
+    if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
+    double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
+    if (cosdphi2>=0.0)
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight*pt);
+    if (cosdphi2<=0.0) {
+      dphi1*=-1.0;
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight*pt);
+    }
   }
   TRANSFER_DATA(1.0);
 }
@@ -455,7 +480,7 @@ void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 Primitive_Observable_Base *Scalar_PT_Sum_vs_DPhi::Copy() const
 {
   return new Scalar_PT_Sum_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				   m_jetlist,m_listname);
+				   m_jetlists,m_listname);
 }
 
 void Scalar_PT_Sum_vs_DPhi::EndEvaluation(double scale)
@@ -470,34 +495,45 @@ DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_DPhi,
 Scalar_ET_Sum_vs_DPhi::Scalar_ET_Sum_vs_DPhi(const int type,
 					     const double dphimin,const double dphimax,
 					     const int nbins,const double offset,
-					     const std::string &jetlist,
+					     const std::vector<std::string> &jetlists,
 					     const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
-  m_jetlist(jetlist),
+  m_jetlists(jetlists.empty()?std::vector<std::string>(1,"Jets"):jetlists),
   m_offset(offset)
 {
   m_listname=listname;
-  m_name="SET"+m_listname+"_vs_DPhi_"+m_jetlist+".dat";
+  m_name="SET"+m_listname+"_vs_DPhi_"+m_jetlists[0]+".dat";
   m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
 }
     
 void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 				    double weight,int ncount)
 {
-  ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
-  if (jetlist->size()==0) return;
-  SORT_LIST(jetlist,Order_PT);
-  ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
+  ATOOLS::Particle_List *jetlist1=p_ana->GetParticleList(m_jetlists[0]);
+  if (jetlist1->empty()) return;
+  ATOOLS::Particle_List *jetlist2=NULL;
+  ATOOLS::Vec4D leadingjet2;
+  if (m_jetlists.size()>1) {
+    if ((jetlist2=p_ana->GetParticleList(m_jetlists[1]))->empty()) return;
+    SORT_LIST(jetlist2,Order_PT);
+    leadingjet2=(*jetlist2)[0]->Momentum();
+  }
+  SORT_LIST(jetlist1,Order_PT);
+  ATOOLS::Vec4D leadingjet1=(*jetlist1)[0]->Momentum();
   AMISIC::Amisic_Histogram<double> histo;
   histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    double pt=(*pit)->Momentum().PPerp();
-    double phi=(*pit)->Momentum().DPhi(leadingjet)/M_PI*180.0;
-    if (!(phi>0.0) && !(phi<=0.0)) continue;
-    histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight*pt);
-    phi*=-1.0;
-    histo.Add(phi+m_offset-((int)(phi+m_offset)/360)*360.0,weight*pt);
+    double et=(*pit)->Momentum().EPerp();
+    double dphi1=(*pit)->Momentum().DPhi(leadingjet1)/M_PI*180.0;
+    if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
+    double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
+    if (cosdphi2>=0.0)
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight*et);
+    if (cosdphi2<=0.0) {
+      dphi1*=-1.0;
+      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight*et);
+    }
   }
   TRANSFER_DATA(1.0);
 }
@@ -505,7 +541,7 @@ void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
 Primitive_Observable_Base *Scalar_ET_Sum_vs_DPhi::Copy() const
 {
   return new Scalar_ET_Sum_vs_DPhi(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				   m_jetlist,m_listname);
+				   m_jetlists,m_listname);
 }
 
 void Scalar_ET_Sum_vs_DPhi::EndEvaluation(double scale)
@@ -521,10 +557,10 @@ DEFINE_OFFSET_OBSERVABLE_GETTER(Multiplicity_vs_DEta,
 Multiplicity_vs_DEta::Multiplicity_vs_DEta(const int type,
 					   const double dphimin,const double dphimax,
 					   const int nbins,const double offset,
-					   const std::string &jetlist,
+					   const std::vector<std::string> &jetlists,
 					   const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
-  m_jetlist(jetlist),
+  m_jetlist(jetlists.empty()?"":jetlists[0]),
   m_offset(offset)
 {
   m_listname=listname;
@@ -551,7 +587,8 @@ void Multiplicity_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
 Primitive_Observable_Base *Multiplicity_vs_DEta::Copy() const
 {
   return new Multiplicity_vs_DEta(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				  m_jetlist,m_listname);
+				  std::vector<std::string>(1,m_jetlist),
+				  m_listname);
 }
 
 void Multiplicity_vs_DEta::EndEvaluation(double scale)
@@ -566,10 +603,10 @@ DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_PT_Sum_vs_DEta,
 Scalar_PT_Sum_vs_DEta::Scalar_PT_Sum_vs_DEta(const int type,
 					   const double dphimin,const double dphimax,
 					   const int nbins,const double offset,
-					   const std::string &jetlist,
+					   const std::vector<std::string> &jetlists,
 					   const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
-  m_jetlist(jetlist),
+  m_jetlist(jetlists.empty()?"":jetlists[0]),
   m_offset(offset)
 {
   m_listname=listname;
@@ -597,7 +634,8 @@ void Scalar_PT_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
 Primitive_Observable_Base *Scalar_PT_Sum_vs_DEta::Copy() const
 {
   return new Scalar_PT_Sum_vs_DEta(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				  m_jetlist,m_listname);
+				  std::vector<std::string>(1,m_jetlist),
+				  m_listname);
 }
 
 void Scalar_PT_Sum_vs_DEta::EndEvaluation(double scale)
@@ -612,10 +650,10 @@ DEFINE_OFFSET_OBSERVABLE_GETTER(Scalar_ET_Sum_vs_DEta,
 Scalar_ET_Sum_vs_DEta::Scalar_ET_Sum_vs_DEta(const int type,
 					   const double dphimin,const double dphimax,
 					   const int nbins,const double offset,
-					   const std::string &jetlist,
+					   const std::vector<std::string> &jetlists,
 					   const std::string &listname):
   Primitive_Observable_Base(type,dphimin,dphimax,nbins,NULL),
-  m_jetlist(jetlist),
+  m_jetlist(jetlists.empty()?"":jetlists[0]),
   m_offset(offset)
 {
   m_listname=listname;
@@ -643,7 +681,8 @@ void Scalar_ET_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
 Primitive_Observable_Base *Scalar_ET_Sum_vs_DEta::Copy() const
 {
   return new Scalar_ET_Sum_vs_DEta(m_type,m_xmin,m_xmax,m_nbins,m_offset,
-				  m_jetlist,m_listname);
+				   std::vector<std::string>(1,m_jetlist),
+				   m_listname);
 }
 
 void Scalar_ET_Sum_vs_DEta::EndEvaluation(double scale)
