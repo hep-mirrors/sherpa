@@ -1,6 +1,7 @@
 #include "Primitive_Analysis.H"
 #include "Primitive_Observable_Base.H"
 #include "Particle_Selector.H"
+#include "Universal_Selector.H"
 #include "Message.H"
 #include "MyStrStream.H"
 #include "Shell_Tools.H"
@@ -16,8 +17,8 @@
 using namespace ANALYSIS;
 using namespace ATOOLS;
 
-Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode)
-  //  : m_nevt(0), p_partner(this)
+Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode) :
+  , p_bfinder(0)
 {
   m_nevt = 0;
   p_partner = this;
@@ -28,7 +29,7 @@ Primitive_Analysis::Primitive_Analysis(const std::string _name, const int mode)
 }
 
 Primitive_Analysis::Primitive_Analysis(const int mode) :
-  m_nevt(0), p_partner(this)
+  m_nevt(0), p_partner(this), p_bfinder(0)
 {
   m_mode = mode;
 
@@ -46,6 +47,7 @@ Primitive_Analysis::~Primitive_Analysis()
   for (Analysis_List::iterator it=m_subanalyses.begin();it!=m_subanalyses.end();++it) 
     delete it->second;
   m_subanalyses.clear();
+  if (p_bfinder) delete p_bfinder;
 }
 
 void Primitive_Analysis::AddObservable(Primitive_Observable_Base * obs) 
@@ -199,7 +201,7 @@ void Primitive_Analysis::DoAnalysis(const Blob_List * const bl, const double val
   int    ncount=(*p_partner)["ME_NumberOfTrials"]->Get<int>();
   if (!IsEqual(value,weight)) 
     msg.Out()<<"WARNING in Primitive_Analysis::DoAnalysis :"<<std::endl
-	     <<"   Weight in Primitive_Analysis ambiguous! "<<std::endl;
+	     <<"   Weight in Primitive_Analysis ambiguous! ("<<value<<","<<weight<<")"<<std::endl;
   double weight_one=weight;
   int    ncount_one=ncount;
   Blob_Data_Base * info = (*p_partner)["ME_Weight_One"];
@@ -302,39 +304,47 @@ bool Primitive_Analysis::SelectBlob(const ATOOLS::Blob *blob)
   return false;
 }
 
-void Primitive_Analysis::CreateFinalStateParticleList()
+void Primitive_Analysis::CreateFinalStateParticleList(bool markb)
 {
-  PL_Container::const_iterator cit=m_pls.find("FinalState");
+  std::string key="FinalState";
+  if (markb) {
+    key="FinalStateB";
+    if (!p_bfinder) p_bfinder = ATOOLS::Particle_Qualifier_Getter::GetObject("DecayedBHadron","DecayedBHadron");
+  }
+
+  PL_Container::const_iterator cit=m_pls.find(key);
   if (cit!=m_pls.end()) return;
 
   Particle_List * pl = new Particle_List;
 
   for (Blob_List::const_iterator blit=p_blobs->begin();blit!=p_blobs->end();++blit) {
-    if ((*blit)->Type()==btp::Signal_Process) {
-      Blob_Data_Base * info=(*(*blit))["ME_Weight"];
-      if (info) {
-	m_datacontainer["ME_Weight"]=new Blob_Data<double>(info->Get<double>());
-	info=(*(*blit))["ME_NumberOfTrials"];
+    if (!markb) {
+      if ((*blit)->Type()==btp::Signal_Process) {
+	Blob_Data_Base * info=(*(*blit))["ME_Weight"];
 	if (info) {
-	  m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(info->Get<int>());
+	  m_datacontainer["ME_Weight"]=new Blob_Data<double>(info->Get<double>());
+	  info=(*(*blit))["ME_NumberOfTrials"];
+	  if (info) {
+	    m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(info->Get<int>());
+	  }
 	}
-      }
 	info=(*(*blit))["ME_Weight_One"];
-      if (info) {
-	m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(info->Get<double>());
-	info=(*(*blit))["ME_NumberOfTrials_One"];
 	if (info) {
-	  m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(info->Get<int>());
+	  m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(info->Get<double>());
+	  info=(*(*blit))["ME_NumberOfTrials_One"];
+	  if (info) {
+	    m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(info->Get<int>());
+	  }
 	}
       }
-    }
-    if ((*blit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
-      Blob_Data_Base * info=(*(*blit))["OrderStrong"];
-      if (info &&m_datacontainer.find("OrderStrong")==m_datacontainer.end()) {
-	m_datacontainer["OrderStrong"]=new Blob_Data<double>(info->Get<double>());
-	info=(*(*blit))["OrderEWeak"];
-	if (info) {
-	  m_datacontainer["OrderEWeak"]=new Blob_Data<double>(info->Get<double>());
+      if ((*blit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
+	Blob_Data_Base * info=(*(*blit))["OrderStrong"];
+	if (info &&m_datacontainer.find("OrderStrong")==m_datacontainer.end()) {
+	  m_datacontainer["OrderStrong"]=new Blob_Data<double>(info->Get<double>());
+	  info=(*(*blit))["OrderEWeak"];
+	  if (info) {
+	    m_datacontainer["OrderEWeak"]=new Blob_Data<double>(info->Get<double>());
+	  }
 	}
       }
     }
@@ -344,28 +354,33 @@ void Primitive_Analysis::CreateFinalStateParticleList()
 	if (p->DecayBlob()==NULL || 
 	    (m_mode&ANALYSIS::do_hadron)==0 && p->Info()!='G') {
 	  if ((p->Info()!='G' &&  p->Info()!='H')
-	      || (*blit)->Type()!=btp::IS_Shower)
+	      || (*blit)->Type()!=btp::IS_Shower) {
 	    pl->push_back(new Particle(*p));
+	    if (markb && p_bfinder && (*p_bfinder)(p)) {
+	      pl->back()->SetFlav(Flavour(kf::bjet));
+	    }
+	  }
 	}
       }
     }
   }
 
-  bool found=false;
-  if (m_datacontainer.find("ME_Weight")!=m_datacontainer.end()) found=true;
-  if (!found) {
-    m_datacontainer["ME_Weight"]=new Blob_Data<double>(1.);
-    m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(1);
-    m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(0.);
-    m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(0);
+  if (!markb) {
+    bool found=false;
+    if (m_datacontainer.find("ME_Weight")!=m_datacontainer.end()) found=true;
+    if (!found) {
+      m_datacontainer["ME_Weight"]=new Blob_Data<double>(1.);
+      m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(1);
+      m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(0.);
+      m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(0);
+    }
+    else if (!m_datacontainer["ME_NumberOfTrials"]) {
+      m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(1);
+      m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(0.);
+      m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(0);
+    }
   }
-  else if (!m_datacontainer["ME_NumberOfTrials"]) {
-    m_datacontainer["ME_NumberOfTrials"]=new Blob_Data<int>(1);
-    m_datacontainer["ME_Weight_One"]=new Blob_Data<double>(0.);
-    m_datacontainer["ME_NumberOfTrials_One"]=new Blob_Data<int>(0);
-  }
-
-  m_pls["FinalState"]=pl;
+  m_pls[key]=pl;
 }
 
 void Primitive_Analysis::CreateIntermediateHadronsList()
@@ -412,6 +427,7 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   if (cit!=m_pls.end()) return cit->second;
 
   if (key=="FinalState") CreateFinalStateParticleList();
+  else if (key=="FinalStateB") CreateFinalStateParticleList(true);
   else if (key=="IntermediateHadrons") CreateIntermediateHadronsList();
   //  else if (key=="ChargedParticle") CreateChargedParticleList();
   if (key=="Analysed") return 0;
@@ -420,22 +436,30 @@ Particle_List * Primitive_Analysis::GetParticleList(const std::string & key)
   if (cit!=m_pls.end()) return cit->second;
 
   Particle_Selector * ps=0;
-  std::string testname=std::string("ParticleSelector_")+key;
+  Universal_Selector * us=0;
+  std::string testname1=std::string("ParticleSelector_")+key;
+  std::string testname2=std::string("UniversalSelector_")+key;
   for(size_t i=0;i<m_observables.size();++i) {
-    if (m_observables[i]->Name()==testname) {
+    if (m_observables[i]->Name()==testname1) {
       msg.Error()<<"WARNING in Primitive_Analysis::GetParticleList:"<<std::endl
-		 <<"   "<<testname<<" already present, will continue."<<std::endl;
+		 <<"   "<<testname1<<" already present, will continue."<<std::endl;
       ps = static_cast<Particle_Selector*>(m_observables[i]);
+      break;
+    } 
+    if (m_observables[i]->Name()==testname2) {
+      msg_Tracking()<<"found matching universal selector"<<std::endl;
+      us = static_cast<Universal_Selector*>(m_observables[i]);
       break;
     } 
   }
 
-  if (ps==0) {
+  if (ps==0 && us==0) {
     ps = new Particle_Selector("FinalState","IntermediateHadrons",key);
     AddObservable(ps);
   }
+  if (ps) ps->CreateParticleList();
+  if (us) us->CreateParticleList();
 
-  ps->CreateParticleList();
   cit=m_pls.find(key);
   if (cit!=m_pls.end()) return cit->second;
   msg.Error()<<"WARNING in Primitive_Analysis::GetParticleList:"<<std::endl

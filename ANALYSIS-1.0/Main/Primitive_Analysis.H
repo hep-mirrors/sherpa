@@ -8,6 +8,10 @@
 #include "Blob.H"
 #include "File_IO_Base.H"
 
+namespace ATOOLS {
+  class Particle_Qualifier_Base;
+}
+
 namespace ANALYSIS {
   enum code {
     unweighted      = 0,
@@ -69,10 +73,12 @@ namespace ANALYSIS {
     Primitive_Analysis   * p_partner;
 
     Weight_Statistics      m_stats;
+
+    ATOOLS::Particle_Qualifier_Base * p_bfinder;
     
     void Init();
     bool SelectBlob(const ATOOLS::Blob *blob); 
-    void CreateFinalStateParticleList();
+    void CreateFinalStateParticleList(bool markb=false);
     void CreateChargedParticleList();
     void CreateIntermediateHadronsList();
 
@@ -116,7 +122,7 @@ namespace ANALYSIS {
     
     // inline methods
     inline const std::string &Name() const { return m_name; }
-
+    inline const int          Mode() const { return m_mode; }
   };
 }
 
