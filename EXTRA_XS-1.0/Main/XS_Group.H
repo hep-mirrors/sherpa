@@ -65,7 +65,7 @@ namespace EXTRAXS {
     void SelectOne();
     void DeSelect();
 
-    bool   OneEvent();
+    bool OneEvent();
 
     ATOOLS::Blob_Data_Base *WeightedEvent();
 

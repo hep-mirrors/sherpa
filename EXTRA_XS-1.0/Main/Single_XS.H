@@ -33,7 +33,7 @@ namespace EXTRAXS {
     bool CalculateTotalXSec(const std::string &resultpath);
     void WriteOutXSecs(std::ofstream &outfile);
 
-    bool   OneEvent();
+    bool OneEvent();
 
     ATOOLS::Blob_Data_Base *WeightedEvent();
 

@@ -25,6 +25,7 @@ Simple_XS::Simple_XS(const std::string &path,const std::string &file,
 {
   m_atoms=1;
   p_dataread = new Data_Read(m_path+m_file);
+  m_scalefactor=1.;
 }
 
 Simple_XS::~Simple_XS() 
@@ -119,7 +120,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		  ATOOLS::Flavour help[4];
 		  help[2]=flavs[2];
 		  help[3]=flavs[3];
-		  for (size_t i=0;i<flavs[0].Size();++i) {
+		  for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
 		    help[0]=flavs[0][i];
 		    help[1]=flavs[0][i].Bar();
 		    group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
@@ -129,10 +130,9 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		  ATOOLS::Flavour help[4];
 		  help[0]=flavs[0];
 		  help[1]=flavs[1];
-		  for (size_t i=0;i<flavs[2].Size();++i) {
+		  for (size_t i=0;i<(size_t)flavs[2].Size();++i) {
 		    help[2]=flavs[2][i];
 		    help[3]=flavs[2][i].Bar();
-		    std::cout<<ATOOLS::om::greenbg<<"SXS "<<help[2]<<ATOOLS::om::reset<<std::endl;
 		    group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
 		  }
 		}
