@@ -209,6 +209,9 @@ bool Cluster_Partons::ClusterConfiguration(Blob * blob,double x1,double x2) {
 
   CreateFlavourMap();
 
+//   msg_Info()<<"========================================\n";
+//   msg_Info()<<*p_combi<<std::endl;
+
   return 1;
 }
 

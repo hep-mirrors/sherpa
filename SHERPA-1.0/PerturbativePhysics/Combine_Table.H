@@ -55,91 +55,123 @@ namespace SHERPA {
 
     ---------------------------------------------------------------------------*/
   //! Stores the data of one row of the Combine_Table.
+  class Combine_Key {
+    int      i,j;       // combine leg "i" and "j"
+    ATOOLS::Flavour  flav;   // resuts in propagator flavor
+  public:
+    Combine_Key();
+    Combine_Key(int _i, int _j, const ATOOLS::Flavour & _flav=ATOOLS::Flavour(ATOOLS::kf::none));
+    friend class Combine_Table;
+    friend std::ostream& operator<< (std::ostream&,const Combine_Key &);
+    friend std::ostream& operator<< (std::ostream&,const Combine_Table &);
+    friend bool operator<(const Combine_Key & a, const Combine_Key & b);
+  };
+
   class Combine_Data {
-    int                i,j;       // combine leg "i" and "j"
-    double             pt2ij;
-    int                strong;    // there is a strong graph for this
+    double  pt2ij;
+    double  sij;
+    double  prop;
+    double  coupling;
+    double  weight;
+    int     strong;    // there is a strong graph for this
+
     std::vector<int>   graphs;    // all graphs where this combination is possible
     Combine_Table    * down;      // new Combine table with n-1 legs (i and j combined)
   public:
     Combine_Data();
     Combine_Data(const Combine_Data &);
-    Combine_Data(int, int, double, int);
+    Combine_Data(double, int);
     ~Combine_Data();
     friend class Combine_Table;
-    friend std::ostream& operator<< (std::ostream&,Combine_Data &);
-    friend std::ostream& operator<< (std::ostream&,Combine_Table *);
+    friend std::ostream& operator<< (std::ostream&,const Combine_Data &);
+    friend std::ostream& operator<< (std::ostream&,const Combine_Table &);
   };
 
   //! standard list and iterator for Combine_Data
-  typedef  std::list<Combine_Data>  CD_List;
+  typedef  std::map<Combine_Key,Combine_Data>  CD_List;
   typedef  CD_List::iterator        CD_Iterator;
+  typedef  CD_List::const_iterator  CD_Const_Iterator;
 
+  struct Vertex_Info {
+    ATOOLS::Flavour fl;
+    Complex * cpl;
+    AMEGIC::Color_Function * color;
+    unsigned int mode;
+    inline Vertex_Info();
+  };
 
-
-
-  std::ostream & operator<<(std::ostream &,Combine_Table *);
+  std::ostream & operator<<(std::ostream &,const Combine_Table &);
 
   class Combine_Table {
-    static int        all;
-    int               no;
+    int        m_mode;
+    static int        s_all;
+    int               m_no;
 
-    Combine_Table  *  up;
-    Leg            ** legs;
-    int               nlegs, nampl;
-    CD_List           combinations;
+    Combine_Table  *  p_up;
+    Leg            ** p_legs;
+    int               m_nlegs, m_nampl;
+    CD_List           m_combinations;
 
-    CD_Iterator       cwin;
-    int               gwin;
+    CD_Iterator       m_cwin;
+    int               m_gwin;
 
     int               m_isr1on, m_isr2on, m_isrshoweron;
 
-    ATOOLS::Jet_Finder * jf;
-    ATOOLS::Vec4D       * moms;
+    ATOOLS::Jet_Finder  * p_jf;
+    ATOOLS::Vec4D       * p_moms;
 
-    double x1,x2;
+    double m_x1, m_x2;
 
-    bool  Combinable(const Leg &, const Leg &, int & strong) const ;
-    Leg * CombineLegs(Leg *, int, int, int );
-    Leg   CombinedLeg(Leg *, int, int);
+    bool  Combinable(const Leg &, const Leg &, 
+		     Vertex_Info &) const ;
+    static Leg * CombineLegs(Leg *, int, int, int );
+    static Leg   CombinedLeg(Leg *, int, int);
 
     void CombineMoms(ATOOLS::Vec4D *, int, int, int);
-    void CombineMoms(ATOOLS::Vec4D *, int, int, int, ATOOLS::Vec4D * &);
+    static void CombineMoms(ATOOLS::Vec4D *, int, int, int, ATOOLS::Vec4D * &);
 
-    void AddPossibility(int, int, int, int);
-    double Sprime();
+    void AddPossibility(int i, int j, int ngraph, 
+			const Vertex_Info & vinfo);
+    double ColorFactor(int i, int j, AMEGIC::Color_Function * const color,
+		       unsigned int mode);
+    double Sprime() const;
   public:
     Combine_Table(ATOOLS::Jet_Finder *, ATOOLS::Vec4D *, Combine_Table *, int, int);
     ~Combine_Table();
 
 
     void            FillTable(Leg **,int, int); 
-    Combine_Table * CalcJet(int, double, double, ATOOLS::Vec4D * _moms=0);
+    Combine_Table * CalcJet(int, double, double, ATOOLS::Vec4D * moms=0);
+    CD_Iterator     CalcPropagator(CD_Iterator & cit);
 
     //! general access routines (return value is determined by winner combination 
     //! and winner graph number)
     //@{
-    const int   NLegs()                   { return nlegs; }
-    const Leg & GetLeg(int ngraph, int l) { return legs[ngraph][l]; }
-    const Leg & GetLeg(int l)             { return legs[gwin][l]; }
+    const int   NLegs()                   { return m_nlegs; }
+    const Leg & GetLeg(int ngraph, int l) { return p_legs[ngraph][l]; }
+    const Leg & GetLeg(int l)             { return p_legs[m_gwin][l]; }
     double GetWinner(int & i, int & j)    { 
-      i = cwin->i;j = cwin->j;
-      return sqrt(cwin->pt2ij);
+      i = m_cwin->first.i; 
+      j = m_cwin->first.j;
+      return sqrt(m_cwin->second.pt2ij);
     }
-    void GetX1X2(double & _x1, double & _x2) {
-      _x1=x1;
-      _x2=x2;
+    void GetX1X2(double & x1, double & x2) {
+      x1=m_x1;
+      x2=m_x2;
     }
 
-    ATOOLS::Flavour   Flav(int i)      { return legs[gwin][i].Flav(); }
-    ATOOLS::Vec4D    & Momentum(int i)  { return moms[i]; }
-    Combine_Table      * Up()             { return up; }
+    ATOOLS::Flavour  Flav(int i)      { return p_legs[m_gwin][i].Flav(); }
+    ATOOLS::Vec4D  & Momentum(int i)  { return p_moms[i]; }
+    Combine_Table  * Up()             { return p_up; }
     //@}
 
     // only friends can access internal data
-    friend std::ostream & operator<< (std::ostream&,Combine_Table *);
-    friend std::ostream & operator<< (std::ostream& s ,Combine_Data& cd);
+    friend std::ostream & operator<< (std::ostream&,const Combine_Table &);
+    friend std::ostream & operator<< (std::ostream&,const Combine_Data &);
   };
+
+  inline Vertex_Info::Vertex_Info() :
+    cpl(0), color(0), mode(0) {}
 
   /*!
     \file Combine_Table.H
