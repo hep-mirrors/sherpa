@@ -54,6 +54,12 @@ namespace ATOOLS {
   inline void Read_Write_Base::AddBlank(const std::vector<int> &_m_blank)    
   { for (unsigned int i=0; i<_m_blank.size();m_blank.push_back(_m_blank[i++])); }
 
+  inline void Read_Write_Base::SetFileBegin(const std::string _m_filebegin)       
+  { m_filebegin = _m_filebegin; }
+
+  inline void Read_Write_Base::SetFileEnd(const std::string _m_fileend)       
+  { m_fileend = _m_fileend; }
+
   inline void Read_Write_Base::SetString(const std::string _m_string)       
   { m_string = _m_string; }
 
@@ -74,6 +80,12 @@ namespace ATOOLS {
   
   inline const std::vector<int> &Read_Write_Base::Blank() const            
   { return m_blank; }
+  
+  inline const std::string Read_Write_Base::FileBegin() const           
+  { return m_filebegin; }
+  
+  inline const std::string Read_Write_Base::FileEnd() const           
+  { return m_fileend; }
   
   inline const std::string Read_Write_Base::String() const           
   { return m_string; }

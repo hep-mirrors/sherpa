@@ -51,9 +51,29 @@ namespace ATOOLS {
       m_infile[i]=new std::ifstream();	
       m_infile[i]->open((m_inputpath[i]+m_inputfile[i]).c_str()); 
       m_filecontent.clear();
+      std::string lastline;
+      bool checkbegin=(bool)(m_filebegin!=ATOOLS::nullstring);
+      bool checkend=(bool)(m_fileend!=ATOOLS::nullstring);
+      bool filebegin=false;
       while (*m_infile[i]) {
-	m_filecontent.push_back(std::string(""));
-	getline(*m_infile[i],m_filecontent.back());
+	getline(*m_infile[i],lastline);
+	if (checkbegin) {
+	  if (!filebegin) {
+	    if (lastline.find(m_filebegin)!=std::string::npos) filebegin=true;
+	  }
+	  else {
+	    m_filecontent.push_back(lastline);
+	    if (checkend) {
+	      if (lastline.find(m_fileend)!=std::string::npos) {
+		filebegin=false;
+		m_filecontent.erase(m_filecontent.end());
+	      }
+	    }
+	  }
+	}
+	else {
+	  m_filecontent.push_back(lastline);
+	}
       }
     }
     return !m_infile[i]->bad();
@@ -70,6 +90,9 @@ namespace ATOOLS {
 #endif
       m_outfile[i]=new std::ofstream();	
       m_outfile[i]->open((m_outputpath[i]+m_outputfile[i]).c_str());
+      if (m_filebegin!=std::string("") && !m_outfile[i]->bad()) {
+	(*m_outfile[i])<<m_filebegin<<std::endl;
+      }
     }
     return !m_outfile[i]->bad();
   }
@@ -96,6 +119,9 @@ namespace ATOOLS {
     std::cout<<"Read_Write_Base::CloseOutFile("<<i<<","<<force<<"): "
 	     <<"Closing file '"<<m_outputpath[i]+m_outputfile[i]<<"'."<<std::endl;
 #endif
+    if (m_fileend!=std::string("") && !m_outfile[i]->bad()) {
+      (*m_outfile[i])<<m_fileend<<std::endl;
+    }
     m_outfile[i]->close(); 
     delete m_outfile[i]; 
     m_outfile[i]=NULL;

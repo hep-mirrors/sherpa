@@ -70,11 +70,13 @@ do
 	echo "makedist: error: \"make dist\" in $I failed"
         if [ ! "$NOABORT" = "TRUE" ]; then
           until [ "$CONTINUE" = "y" ] || [ "$CONTINUE" = "n" ] || [ "$CONTINUE" = "r" ]; do
-    	    if ! read -t 300 -p "continue anyway (y/n/r) ? " CONTINUE ; then
+    	    if ! read -t 300 -p "continue anyway (y/n/r/b) ? " CONTINUE ; then
 	      CONTINUE="n"
 	    fi
 	    if [ "$CONTINUE" = "n" ]; then
               exit 1
+	    elif [ "$CONTINUE" = "b" ]; then 
+              bash 
 	    fi
 	  done
         fi

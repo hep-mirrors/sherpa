@@ -11,12 +11,12 @@ rmr () {
   for file in * ; do                                                          
     if [ -d $file ] ; then                                                       
       cd $file                                                                  
-      rmr "$1"
+      rmr "$1" $2
       cd ..                                                             
     fi
   done  
   for i in $1 ; do    
-    rm -f $i                                                                         
+    rm -f $2 $i                                                                         
   done
 }                                                                               
 
@@ -177,8 +177,10 @@ if [ "$TOTAL" = "TRUE" ] ; then
   rmr "Makefile Makefile.in \
        aclocal.m4 config.guess config.log config.status config.sub configure \
        depcomp install-sh libtool ltconfig ltmain.sh missing mkinstalldirs"
+  rmr ".deps .libs autom4te.cache" -r
 fi
 
+if [ "$SED" = "" ] ; then export SED="sed" ; fi
 if [ "$CLEANUP" = "TRUE" ] ; then 
   for I in $DIRS;
   do
@@ -255,7 +257,7 @@ do
         fi
         if [ ! "$NOABORT" = "TRUE" ] ; then
           until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
-    	    if ! read -t 300 -p "continue anyway (y/n/r) ? " CONTINUE ; then
+    	    if ! read -t 300 -p "continue anyway (y/n/r/b) ? " CONTINUE ; then
 	      echo ""
 	      CONTINUE="n"
 	    fi
@@ -268,6 +270,8 @@ do
 		echo -e "Please send us the complete installation logfile '$LOGFILE'\n"
 	      fi
               exit 1
+	    elif [ "$CONTINUE" = "b" ] ; then
+              bash
 	    fi
 	  done
         fi

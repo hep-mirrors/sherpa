@@ -29,7 +29,7 @@ namespace ATOOLS {
     std::vector<std::string> m_comment, m_ignore, m_seperator, m_filecontent;
     std::vector<int>         m_blank;
 
-    std::string              m_string;
+    std::string              m_string, m_filebegin, m_fileend;
 
     VectorTypeID m_vectortype;
     MatrixTypeID m_matrixtype;
@@ -88,6 +88,9 @@ namespace ATOOLS {
     void AddBlank(const int _m_blank);
     void AddBlank(const std::vector<int> &_m_blank);
 
+    void SetFileBegin(const std::string _m_filebegin);
+    void SetFileEnd(const std::string _m_fileend);
+
     void SetString(const std::string _m_string);
 
     void SetOpenMode(const OpenModeID _m_openmode);
@@ -103,6 +106,9 @@ namespace ATOOLS {
     const std::vector<std::string> &Seperator() const;
 
     const std::vector<int> &Blank() const;
+
+    const std::string FileBegin() const;
+    const std::string FileEnd() const;
 
     const std::string String() const;
 
