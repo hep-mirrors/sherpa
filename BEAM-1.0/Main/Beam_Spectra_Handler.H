@@ -40,8 +40,8 @@ namespace BEAM {
     void   BoostInLab(ATOOLS::Vec4D *,int);
 
     void   SetName(std::string _name)     { m_name         = _name; }
-    void   SetSprimeMin(double _spl)      { m_splimits[0]  = _spl; }
-    void   SetSprimeMax(double _spl)      { m_splimits[1]  = _spl; }
+    void   SetSprimeMin(double _spl);
+    void   SetSprimeMax(double _spl);
     void   SetYMin(double _yl)            { m_ylimits[0]   = _yl; }
     void   SetYMax(double _yl)            { m_ylimits[1]   = _yl; }
     std::string     Name()                { return m_name; }

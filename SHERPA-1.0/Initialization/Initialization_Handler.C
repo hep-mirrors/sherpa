@@ -83,12 +83,19 @@ bool Initialization_Handler::InitializeTheFramework()
     // if beam only -> apply mcut on Beam
     smax = Min(smax,mcut2);
     if (p_isrhandler->On()) {
-      p_isrhandler->SetSprimeMax(smax);
+      p_isrhandler->SetFixedSprimeMax(smax);
     } 
     else if (p_beamspectra->On()) {
       p_beamspectra->SetSprimeMax(smax);
     }
   }
+
+  cout<<" smin smax "<<endl;
+  cout<<p_beamspectra->SprimeMin()<<endl;
+  cout<<p_beamspectra->SprimeMax()<<endl;
+  cout<<p_isrhandler->SprimeMin()<<endl;
+  cout<<p_isrhandler->SprimeMax()<<endl;
+
 
   if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
     msg.Error()<<"Error in Initialization of the Sherpa framework : "<<endl

@@ -313,3 +313,6 @@ void  Beam_Spectra_Handler::BoostInCMS(Vec4D* p,int n) {
 void  Beam_Spectra_Handler::BoostInLab(Vec4D* p,int n) {
   for (int i=0; i<n; ++i) m_CMSBoost.BoostBack(p[i]);
 }
+
+void   Beam_Spectra_Handler::SetSprimeMin(double _spl)      { m_splimits[0]  = Max(m_splimits[0],_spl); }
+void   Beam_Spectra_Handler::SetSprimeMax(double _spl)      { m_splimits[1]  = Min(m_splimits[1],_spl); }
