@@ -199,10 +199,10 @@ int Random::WriteOutStatus(const char * filename){
     long int count=0;
     std::ifstream *myinstream = new std::ifstream(filename,std::ios::in);
     if (myinstream->good()) {
-      char * buffer[600];
+      std::string buffer;
       while (!myinstream->eof()) {
 	(*myinstream)>>count;
-	myinstream->getline((char*)buffer,600);
+	getline(*myinstream,buffer);
       }
       ++count;
       myinstream->close();
