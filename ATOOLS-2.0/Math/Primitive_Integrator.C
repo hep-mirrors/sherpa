@@ -480,7 +480,10 @@ bool Primitive_Integrator::Shuffle()
 {
   if (m_shuffle==0) {
     for (size_t i=0;i<m_channels.size();++i) 
-      if (!m_channels[i]->Boundary()) m_channels[i]->Store();
+      if (!m_channels[i]->Boundary()) {
+	m_channels[i]->Store();
+	m_channels[i]->Reset();
+      }
     return true;
   }
   size_t diced=0;
