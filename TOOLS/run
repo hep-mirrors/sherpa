@@ -1,0 +1,83 @@
+#!/bin/bash
+TIME=`date +'%y-%m-%d'`"_"`date +'%H-%M'`
+
+rmr () {  
+  for file in * ; do                                                          
+    if [ -d $file ] ; then                                                       
+      cd $file                                                                  
+      rmr "$1" $2
+      cd ..                                                             
+    fi
+  done  
+  for i in $1 ; do    
+    rm -f $2 $i                                                                         
+  done
+}                                                                               
+
+RUNPATH=""
+RUNFILE=""
+BINPATH=""
+RESULTS=""
+ANALYSIS=""
+BASENAME=""
+PYTHIA=""
+for I in $* ; do
+  if [ "$I" = "-p" ]; then DRUNPATH=TRUE 
+  elif [ "$I" = "-f" ]; then DRUNFILE=TRUE 
+  elif [ "$I" = "-b" ]; then DBINPATH=TRUE 
+  elif [ "$I" = "-r" ]; then DRESULTS=TRUE 
+  elif [ "$I" = "-a" ]; then DANALYSIS=TRUE 
+  elif [ "$I" = "-e" ]; then DEVENTS=TRUE 
+  elif [ "$I" = "-n" ]; then DBASENAME=TRUE 
+  elif [ "$I" = "-q" ]; then QUEUE=TRUE 
+  elif [ "$I" = "-P" ]; then DPYTHIA=TRUE 
+  elif [ "$I" = "-h" ]; then echo && \
+    echo "run version 1.0" && echo && \
+    echo "options: -p <path>      read configuration from path <path>" && \
+    echo "         -f <file>      read basic configuration from file <file>" && \
+    echo "         -b <binpath>   take executeable from path <binpath>" && \
+    echo "         -r <results>   write results to path <path>/<results>" && \
+    echo "         -e <events>    generate <events> events" && \
+    echo "         -a <analysis>  write analysis output to path <path>/<analysis>" && \
+    echo "         -n <name>      set basic filename to <name>" && \
+    echo "         -q             submit job to batch system" && \
+    echo "         -P <file>      generate pythia events according to <file>" && \
+    echo "         -h             display this help and exit" && echo && \
+    exit 0
+  elif [ "$DRUNPATH" = "TRUE" ]; then DRUNPATH="" && RUNPATH=$I
+  elif [ "$DRUNFILE" = "TRUE" ]; then DRUNFILE="" && RUNFILE=$I
+  elif [ "$DBINPATH" = "TRUE" ]; then DBINPATH="" && BINPATH=$I
+  elif [ "$DRESULTS" = "TRUE" ]; then DRESULTS="" && RESULTS=$I
+  elif [ "$DANALYSIS" = "TRUE" ]; then DANALYSIS="" && ANALYSIS=$I
+  elif [ "$DBASENAME" = "TRUE" ]; then DBASENAME="" && BASENAME=$I
+  elif [ "$DEVENTS" = "TRUE" ]; then DEVENTS="" && EVENTS=$I
+  elif [ "$DPYTHIA" = "TRUE" ]; then DPYTHIA="" && PYTHIA=$I
+  else echo "run: error: unrecognized option '$I'. try '-h'" && \
+    exit 1 
+  fi
+done
+if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
+if [ "$RUNFILE" = "" ]; then RUNPATH="Run.dat" ; fi
+if [ "$BINPATH" = "" ]; then BINPATH="./" ; fi
+if [ "$RESULTS" = "" ]; then RESULTS="results/" ; fi
+if [ "$ANALYSIS" = "" ]; then ANALYSIS="analysis/" ; fi
+if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
+
+FILE=$BASENAME"_"$TIME
+
+touch $FILE
+echo "cd $BINPATH" >> $FILE
+echo "./Sherpa PATH=$RUNPATH \\" >> $FILE
+echo "         RUNDATA=$RUNNFILE \\" >> $FILE ; fi
+if [ ! "$EVENTS" = "" ] ; then echo "          EVENTS=$EVENTS \\" >> $FILE ; fi
+if [ ! "$PYTHIA" = "" ] ; then echo "          PYTHIA=$PYTHIA \\" >> $FILE ; fi
+echo "" >> $FILE
+
+if [ "$QUEUE" = "TRUE" ] ; then
+  echo qsub $COMMAND  
+else
+  $COMMAND
+fi
+
+# mode:shell-script
+# sh-indentation:2
