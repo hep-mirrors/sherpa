@@ -115,6 +115,14 @@ Fast_Function::Data_Iter Fast_Function::Insert(double x, double y) {
     return win;
   }
 }
+int Fast_Function::Nesting(int a, int b, double x) {
+  if (b <=a+1) return a;
+  int c=(a+b)/2;
+  if (m_data[c].x<=x) 
+    return Nesting(c,b,x);
+  else 
+    return Nesting(a,c,x);
+}
 
 double Fast_Function::Invers(double y) {
   if (m_data.empty()) {
@@ -164,6 +172,13 @@ double Fast_Function::operator()(double x) {
     }
   }
   // at least two elements
+  // new
+  if (m_data.front().x>=x) return LinInter(0,x);
+  if (m_data.back().x<=x) return LinInter(m_data.size()-1,x);
+  return LinInter(Nesting(0,m_data.size()-1,x),x);
+  
+  /* 
+  //old
   Data_Iter it=m_data.begin();
   while (((*it).x < x)&&(it!=m_data.end())) {++it; }
 
@@ -172,10 +187,11 @@ double Fast_Function::operator()(double x) {
     --it;
   }
   return LinInter(it,x);
+  */
 }
 
 
-void Fast_Function::WriteOut(char * name) {
+void Fast_Function::WriteOut(const char * name) {
   std::ofstream to(name);
   to.precision(10);
   
@@ -185,7 +201,7 @@ void Fast_Function::WriteOut(char * name) {
 }
 
 
-bool Fast_Function::ReadIn(char * name) {
+bool Fast_Function::ReadIn(const char * name) {
   std::ifstream from(name);
   if (!from) return 0; // fail
 
@@ -202,6 +218,18 @@ bool Fast_Function::ReadIn(char * name) {
   return 1; // success
 }
 
+
+double Fast_Function::LinInter(int i, double x) 
+{
+  double x1 = m_data[i].x;
+  double y1 = m_data[i].y;
+
+  if (i<m_data.size()-1) ++i; else --i;
+  double x2 = m_data[i].x;
+  double y2 = m_data[i].y;
+
+  return y1+(y2-y1)*(x-x1)/(x2-x1);
+}
 
 
 double Fast_Function::LinInter(Data_Iter & it, double x) {

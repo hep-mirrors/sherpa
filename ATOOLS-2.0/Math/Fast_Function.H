@@ -41,6 +41,10 @@ namespace ATOOLS {
 
     double LinInter(Data_Iter & it, double x);
     double LinInterInv(Data_Iter & it, double y);
+    double LinInter(int, double x);
+    double LinInterInv(int, double y);
+
+    int Nesting(int,int,double);
   public:
     Fast_Function();
     Fast_Function(int size);
@@ -70,8 +74,8 @@ namespace ATOOLS {
       m_ymax = -1.e99;
     }
 
-    void   WriteOut(char * name);
-    bool   ReadIn(char * name);
+    void   WriteOut(const char * name);
+    bool   ReadIn(const char * name);
 
     //
     int    Length()  const {return m_data.size();}
