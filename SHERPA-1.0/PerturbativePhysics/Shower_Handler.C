@@ -9,14 +9,14 @@ using namespace ATOOLS;
 Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 			       MODEL::Model_Base * _model,
 			       PDF::ISR_Handler * _isr,int _maxjet) :
-  m_dir(_dir), m_file(_file), m_maxjetnumber(_maxjet),
+  m_dir(_dir), m_file(_file), m_maxjetnumber(_maxjet), m_showermi(true), 
   p_apacic(NULL), p_adicic(NULL), p_isr_handler(_isr)
 {
   p_dataread        = new Data_Read(m_dir+m_file);
   m_showergenerator = p_dataread->GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
   m_isrshowerswitch = 0;
   if (_isr) {
-     if (_isr->On()>0) m_isrshowerswitch = p_dataread->GetValue<int>("ISR_SHOWER",1);
+    if (_isr->On()>0) m_isrshowerswitch = p_dataread->GetValue<int>("ISR_SHOWER",1);
      if (m_showergenerator==std::string("Adicic")) m_isrshowerswitch = false;
   }
   m_fsrshowerswitch = p_dataread->GetValue<int>("FSR_SHOWER",1);
@@ -25,6 +25,7 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 	     <<"   final state shower is switched on, since initial state shower is turned on as well."<<std::endl;
     m_fsrshowerswitch=true;
   }
+  m_showermi = p_dataread->GetValue<int>("SHOWER_MI",1);
 
   if (m_showergenerator==std::string("Apacic")) {
     p_apacic = new APACIC::Apacic(_isr,_model,m_maxjetnumber,

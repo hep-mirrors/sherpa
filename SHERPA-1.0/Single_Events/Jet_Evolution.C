@@ -81,7 +81,8 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->Weight();
       }  
-      if (blob->Status()==1 && blob->Type()==btp::Hard_Collision) {
+      if (p_showerhandler->ShowerMI() &&
+	  blob->Status()==1 && blob->Type()==btp::Hard_Collision) {
 	FillDecayBlobMap(blob,_bloblist);
 	piIter = m_interfaces.find(string("MIMEs"));
 	if (piIter==m_interfaces.end()) {

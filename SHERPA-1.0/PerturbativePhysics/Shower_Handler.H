@@ -20,7 +20,7 @@ namespace SHERPA {
     int                  m_maxjetnumber;
 
     std::string          m_showergenerator;
-    bool                 m_isrshowerswitch,m_fsrshowerswitch;
+    bool                 m_isrshowerswitch,m_fsrshowerswitch,m_showermi;
     ATOOLS::Data_Read  * p_dataread;
     APACIC::Apacic     * p_apacic;
     ADICIC::Adicic     * p_adicic;
@@ -45,6 +45,7 @@ namespace SHERPA {
     ADICIC::Chain    * GetChain();
     void SetJetvetoPt2(const double q2i,const double q2f) { p_apacic->SetJetvetoPt2(q2i,q2f); }
     void SetFactorisationScale(const double scale) { p_apacic->SetFactorisationScale(scale); }
+    inline bool ShowerMI() const { return m_showermi; }
   };
 
 
