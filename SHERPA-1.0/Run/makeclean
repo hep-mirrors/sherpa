@@ -1,3 +1,4 @@
+rm -rf Results/*
 rm -rf Tuning*
 cd Process
 rm -rf 2_* V2* P2*
