@@ -30,7 +30,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 
   if (pID!=noname) {
     char name[100];
-    sprintf(name,"%s.col",(string("Process/")+pID).c_str());
+    sprintf(name,"%s.col",(ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+pID).c_str());
     if (!gc) { 
       IO_Handler ioh;
       ioh.SetFileNameRO(name);
@@ -488,7 +488,7 @@ string CFColor::MapFChain(vector<string> fstring_list)
 
 void CFColor::Output(string & dirname) {
   char name[100];
-  sprintf(name,"%s.col",(string("Process/")+dirname).c_str());
+  sprintf(name,"%s.col",(ATOOLS::rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+dirname).c_str());
   IO_Handler ioh;
   ioh.SetFileName(name);
 
