@@ -13,7 +13,7 @@ namespace SHERPA {
   class Event_Handler {
   private:
 
-    long int m_lastparticlecounter;
+    long int m_lastparticlecounter, m_lastblobcounter;
 
     Phase_List        * p_phases;
     ATOOLS::Blob_List   m_blobs;
