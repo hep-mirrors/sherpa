@@ -141,9 +141,7 @@ bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _
 
 void Phase_Space_Generator::AddToMakefileAM(string makefilename,string pathID,string fileID)
 {
-  ATOOLS::msg.Tracking()<<"Phase_Space_Generator::AddToMakefileAM("<<makefilename<<","<<pathID<<","<<fileID<<")"<<endl;
-
-  unsigned int hit=pathID.find("/");
+  size_t hit=pathID.find("/");
   string base=pathID.substr(0,hit);
   string subdirname=pathID.substr(hit+1);
 
