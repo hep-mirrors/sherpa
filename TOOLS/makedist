@@ -86,6 +86,7 @@ do
     cd ..
   fi
 done;
+rm TOOLS/*~ TOOLS/\#*
 tar -czvf $DISTDIR.tar.gz $ALL TOOLS
 rm -rf $ALL
 echo -e "\nwrote distribution to '$DISTDIR".tar.gz"'\n"
