@@ -38,6 +38,14 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
       m_one=true;
       if ((*bit)->Status()==2) {
 	myblob=*bit;
+	m_xmax[1]=m_xmax[0]=1.0;
+	for (Blob_Iterator xit=bloblist->begin();xit!=bloblist->end();++xit) {
+	  if ((*xit)->Type()==btp::IS_Shower) {
+	    m_xmax[(*xit)->Beam()]-=2.0*(*xit)->InParticle(0)->Momentum()[0]/ATOOLS::rpa.gen.Ecms();
+	  }
+	}
+	p_mihandler->SetScaleMax(m_xmax[0],2);
+	p_mihandler->SetScaleMax(m_xmax[1],3);
 	if (p_mihandler->GenerateHardProcess(myblob)) {
 	  CompleteBlob(myblob);
 	  myblob->SetStatus(1);
@@ -85,12 +93,8 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
     if (myblob->Status()!=0) return false;
     m_pperpmax=1.0e37; 
     m_ecmsmax=ATOOLS::rpa.gen.Ecms();
-    m_xmax[1]=m_xmax[0]=1.0;
     double val=0.0;
     ATOOLS::Vec4D cur, ptot;
-    for (int i=0;i<myblob->NInP();++i) {
-      m_xmax[i]-=2.0*myblob->InParticle(i)->Momentum()[0]/ATOOLS::rpa.gen.Ecms();
-    }
     for (int i=0;i<myblob->NOutP();++i) {
       ptot+=cur=myblob->OutParticle(i)->Momentum();
       val=ATOOLS::Max(val,cur.PPerp());
@@ -104,8 +108,6 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
     bloblist->push_back(myblob);
     p_mihandler->SetScaleMax(m_pperpmax,0);
     p_mihandler->SetScaleMax(m_ecmsmax,1);
-    p_mihandler->SetScaleMax(m_xmax[0],2);
-    p_mihandler->SetScaleMax(m_xmax[1],3);
     p_mihandler->Reset();
     hit=true;
   }
