@@ -138,7 +138,6 @@ namespace AMEGIC {
     virtual bool   LookUpXSec(double,bool,std::string)                             =0;
     virtual void   RescaleXSec(double);
     virtual bool   PrepareXSecTables()                                             =0;
-    virtual void   AddPoint(const double value)                                    =0;
     virtual double Differential(const ATOOLS::Vec4D *)                             =0;
     virtual double Differential2()                                                 =0;
     virtual double DSigma(const ATOOLS::Vec4D *,bool)                              =0;
