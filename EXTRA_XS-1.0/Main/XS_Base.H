@@ -15,6 +15,8 @@ namespace EXTRAXS {
 
     int **p_colours;
 
+    unsigned int m_foam;
+
     double m_s, m_t, m_u;
     double m_scalefactor;
 
@@ -84,11 +86,15 @@ namespace EXTRAXS {
     // inline functions
     inline int **const Colours() const { return p_colours; }
 
-    inline const std::vector<ATOOLS::Flavour> &Resonances() const { return m_resonances; }
+    inline const std::vector<ATOOLS::Flavour> &Resonances() const 
+    { return m_resonances; }
 
     inline double ScaleFactor() const   { return m_scalefactor;   }
     inline void SetScaleFactor(const double scalefactor)  
     { m_scalefactor=scalefactor;     }
+
+    inline Regulator_Base *const Regulator() const { return p_regulator; }
+
   };// end of class XS_Base
 
 }// end of namespace EXTRAXS

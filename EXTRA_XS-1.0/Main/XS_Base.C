@@ -23,7 +23,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
   Integrable_Base(nin,nout,flavours,scalescheme,kfactorscheme,
 		  beamhandler,isrhandler,selectordata),
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
-  p_colours(NULL),m_scalefactor(scalefactor)
+  p_colours(NULL), m_foam(0), m_scalefactor(scalefactor)
 {
   Init(flavours);
   ResetSelector(selectordata);
@@ -34,7 +34,7 @@ XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavo
 XS_Base::XS_Base(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours):
   Integrable_Base(nin,nout,flavours),
   p_regulator(Regulator_Base::GetRegulator(this,"Identity",std::vector<double>())),
-  p_colours(NULL)
+  p_colours(NULL), m_foam(0)
 {
   Init(flavours);
   p_selector = new ATOOLS::No_Selector();
@@ -165,6 +165,10 @@ double XS_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
   default:
     m_scale[PHASIC::stp::as]=m_s;
     break;
+  }
+  if (operator[](0)!=NULL && operator[](0)!=this) {
+    if (operator[](0)->p_regulator->Type()!=p_regulator->Type()) 
+      return (*operator[](0)->p_regulator)[m_scale[PHASIC::stp::as]]; 
   }
   return (*p_regulator)[m_scale[PHASIC::stp::as]];
 }
