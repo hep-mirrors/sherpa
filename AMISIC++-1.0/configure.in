@@ -4,6 +4,31 @@ AM_INIT_AUTOMAKE(AMISIC++,1.0)
 AM_DISABLE_STATIC
 AC_PREFIX_DEFAULT(${PWD}/..)
 
+dnl Conditional compiling and linking
+AC_ARG_ENABLE(sherpa,
+[  --disable-sherpa        Disable SHERPA Support ],
+[ sherpa=true
+  SHERPADIR="../SHERPA-1.0"
+  if test -d $SHERPADIR ; then
+    echo "checking for SHERPA package... yes"
+    case "${enableval}" in
+      no) echo "disable SHERPA support anyway... yes";
+          sherpa=false ;;
+    esac
+  else
+    echo "checking for SHERPA package... no"
+    sherpa=false
+  fi ],
+[ SHERPADIR="../SHERPA-1.0"
+  if test ! -d $SHERPADIR ; then
+    echo "configure: warning: $SHERPADIR is not a valid path."
+    sherpa=false
+  else 
+    echo "checking for SHERPA package... yes"
+    sherpa=true 
+  fi ])
+AM_CONDITIONAL(SHERPA_SUPPORT, test "$sherpa" = "true" )
+
 dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
@@ -21,8 +46,8 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
-AC_OUTPUT(Main/Makefile \
-	  Run/Makefile \
+AC_OUTPUT(DUPDF/Makefile \
+	  Main/Makefile \
 	  Analysis/Makefile \
           Makefile )
 

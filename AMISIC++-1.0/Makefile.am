@@ -1,5 +1,5 @@
 MAKE  =	make
 SUBDIRS       =	\
+		DUPDF \
 		Main \
-		Run \
 		Analysis

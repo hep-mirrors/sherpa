@@ -1,12 +1,19 @@
-SHERPASYS  = ../..
+SHERPASYS     =	../..
 
-ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
-PDFINC     = $(SHERPASYS)/PDF-1.0
-BEAMINC    = $(SHERPASYS)/BEAM-1.0
-PHASICINC  = $(SHERPASYS)/PHASIC++-1.0
-MODELINC   = $(SHERPASYS)/MODEL-1.0
-EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
-SHERPAINC  = $(SHERPASYS)/SHERPA-1.0
+AMISICFLAGS   =	-pedantic -Wall -Winline
+
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
+BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
+PHASICINCS    =	-I$(SHERPASYS)/PHASIC++-1.0/Main
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+EXTRAXSDIR    =	$(SHERPASYS)/EXTRA_XS-1.0
+EXTRAXSINCS   =	-I$(EXTRAXSDIR)/Main -I$(EXTRAXSDIR)/Two2Two
+if SHERPA_SUPPORT
+SHERPAINCS    =	-I$(SHERPASYS)/SHERPA-1.0/PerturbativePhysics
+USING__Sherpa = TRUE
+endif
 
 lib_LTLIBRARIES       = libAmisic.la
 libAmisic_la_SOURCES  = \
@@ -14,21 +21,6 @@ libAmisic_la_SOURCES  = \
 			Environment.C \
 			Simple_Chain.C \
 			Amisic.C 
-AM_CXXFLAGS   =	-pedantic -Wall -Winline -DUSING__SHERPA
-INCLUDES      =	\
-		-I../Tools \
-		-I../Other \
-		-I$(SHERPAINC)/LundTools \
-		-I$(SHERPAINC)/PerturbativePhysics \
-		-I$(EXTRAXSINC)/Two2Two \
-		-I$(EXTRAXSINC)/Main \
-		-I$(PHASICINC)/Main \
-		-I$(MODELINC)/Main \
-		-I$(PDFINC)/Main \
-		-I$(BEAMINC)/Main \
-		-I$(ATOOLSINC)/Phys \
-		-I$(ATOOLSINC)/Math \
-		-I$(ATOOLSINC)/Org 
 noinst_HEADERS        = \
 			Grid_Handler.H \
 			Grid_Handler.IC \
@@ -49,3 +41,6 @@ noinst_HEADERS        = \
 			Simple_Chain.IC \
 			Amisic.H \
 			Amisic.IC 
+AM_CXXFLAGS   =	$(AMISICFLAGS)
+INCLUDES      =	$(SHERPAINCS) $(EXTRAXSINCS) $(PHASICINCS) $(PDFINCS) \
+		$(BEAMINCS) $(MODELINCS) $(ATOOLSINCS)
