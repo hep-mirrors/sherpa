@@ -5,13 +5,11 @@
 using std::endl;
 
 using namespace APACIC;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Spacelike_Kinematics::Spacelike_Kinematics(double pt2minFS, Data_Read * const dataread) {
-  double ycut   = AORGTOOLS::rpa.gen.Ycut();
+  double ycut   = ATOOLS::rpa.gen.Ycut();
   m_type = 1;
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
     msg.Debugging()<<" Jet_Finder in Spacelike_Kinematics set up  to deal with lepton-lepton collisions "<<endl;
@@ -25,7 +23,7 @@ Spacelike_Kinematics::Spacelike_Kinematics(double pt2minFS, Data_Read * const da
     msg.Error()<<"Error in Spacelike_Kinematics DIS is not yet implemented in the Jetfinder "<<endl;
     m_type = 4;
   }
-  jf            = new APHYTOOLS::Jet_Finder(ycut,m_type);
+  jf            = new ATOOLS::Jet_Finder(ycut,m_type);
   kink          = new Timelike_Kinematics(pt2minFS,dataread);
 }
 

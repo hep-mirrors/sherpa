@@ -12,20 +12,20 @@ namespace PDF {
     int         m_anti;
     double      m_f[11];
   public:
-    CTEQ6_Fortran_Interface(const APHYTOOLS::Flavour,std::string,int,std::string);
+    CTEQ6_Fortran_Interface(const ATOOLS::Flavour,std::string,int,std::string);
     PDF_Base * GetCopy();
     void   Output();
 
     void   Calculate(const double, const double);
     double AlphaSPDF(double);
-    double GetXPDF(const APHYTOOLS::Flavour &);
+    double GetXPDF(const ATOOLS::Flavour &);
 
     double GetXMin()   { return 0.; }
     double GetXMax()   { return 1.; }
     double GetQ2Min()  { return 1.; }
     double GetQ2Max()  { return 1.e12; }
-    APHYTOOLS::Flavour Bunch()                { return m_bunch; }
-    std::vector<APHYTOOLS::Flavour> Partons() { return m_partons; }
+    ATOOLS::Flavour Bunch()                { return m_bunch; }
+    std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
   };
 
 

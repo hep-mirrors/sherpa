@@ -17,7 +17,7 @@
 #endif
 
 
-namespace AORGTOOLS {  
+namespace ATOOLS {  
 
   class Run_Parameter {
     std::string         path;
@@ -32,7 +32,7 @@ namespace AORGTOOLS {
       long                m_nevents;
       double              m_ecms, m_ycut;
       double              m_accu;
-      APHYTOOLS::Flavour  m_beam1, m_beam2;
+      Flavour  m_beam1, m_beam2;
       std::string         m_rpa_id, m_flavour_id;
       Model_Type::code    m_modelcode;
       MODEL::Model_Base * p_model;
@@ -45,10 +45,10 @@ namespace AORGTOOLS {
       inline void   SetEcms(double _ecms)                 { m_ecms      = _ecms;}
       inline double Ycut()                                { return m_ycut; }
       inline void   SetYcut(double _ycut)                 { m_ycut      = _ycut;}
-      inline const  APHYTOOLS::Flavour Beam1()            { return m_beam1; }
-      inline const  APHYTOOLS::Flavour Beam2()            { return m_beam2; }
-      inline void   SetBeam1(const APHYTOOLS::Flavour _b) { m_beam1     = _b; }
-      inline void   SetBeam2(const APHYTOOLS::Flavour _b) { m_beam2     = _b; }
+      inline const  Flavour Beam1()            { return m_beam1; }
+      inline const  Flavour Beam2()            { return m_beam2; }
+      inline void   SetBeam1(const Flavour _b) { m_beam1     = _b; }
+      inline void   SetBeam2(const Flavour _b) { m_beam2     = _b; }
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
       inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }
       inline Model_Type::code Model()                     { return m_modelcode; }
@@ -56,11 +56,11 @@ namespace AORGTOOLS {
       inline double ScalarConstant(const std::string _name)           { return p_model->ScalarConstant(_name); }
       inline double ScalarFunction(const std::string _name,double _t) { return p_model->ScalarFunction(_name,_t); }
       inline double ScalarFunction(const std::string _name)           { return p_model->ScalarFunction(_name); }
-      inline AMATOOLS::CMatrix ComplexMatrix(const std::string _name) { return p_model->ComplexMatrix(_name); }
+      inline CMatrix ComplexMatrix(const std::string _name) { return p_model->ComplexMatrix(_name); }
       inline Complex ComplexMatrixElement(const std::string _name,const int _i,const int _j) { 
 	return p_model->ComplexMatrixElement(_name,_i,_j); 
       }
-      inline AMATOOLS::Function_Base * GetScalarFunction(const std::string _name) { 
+      inline Function_Base * GetScalarFunction(const std::string _name) { 
 	return p_model->GetScalarFunction(_name); 
       }
 
@@ -110,12 +110,12 @@ namespace AORGTOOLS {
   std::string SetPath(std::string _path)  { path = _path;} 
 */
 
-}  // namespace AORGTOOLS
+}  // namespace ATOOLS
 
 
 /*!
  \file
- \brief   contains AORGTOOLS::Run_Parameter and the description the whole ATOOLS package
+ \brief   contains Run_Parameter and the description the whole ATOOLS package
 
 */
 
@@ -126,33 +126,33 @@ namespace AORGTOOLS {
   Three main libraries are defined.
 
   \section amatools Mathematical Tools
-  In the namespace AMATOOLS all classes with a pure mathematical meaning are collected.
+  In the namespace ATOOLS all classes with a pure mathematical meaning are collected.
 
   \section aphytools Physical Tools
-  In the namespace APHYTOOLS all basic classes needed for physics descriptions are collected.
-  Here you can find APHYTOOLS::Flavour, APHYTOOLS::Blob, etc.
+  In the namespace ATOOLS all basic classes needed for physics descriptions are collected.
+  Here you can find Flavour, Blob, etc.
 
   \section aorgtools Organisation Tools
-  In the namespace AORGTOOLS all basic classes needed organisational purposes are collected.
+  In the namespace ATOOLS all basic classes needed organisational purposes are collected.
   Here you can find classes for reading in and writing out variables (IO_Handler), accessing
   runtime parameters (Run_Parameter), etc.
 */
 
 
 /*!
- \namespace AMATOOLS
-  In the namespace AMATOOLS all classes with a pure mathematical meaning are collected.
+ \namespace ATOOLS
+  In the namespace ATOOLS all classes with a pure mathematical meaning are collected.
 */
 
 /*!
- \namespace APHYTOOLS
-  In the namespace APHYTOOLS all basic classes needed for physics descriptions are collected.
-  Here you can find APHYTOOLS::Flavour, APHYTOOLS::Blob, etc.
+ \namespace ATOOLS
+  In the namespace ATOOLS all basic classes needed for physics descriptions are collected.
+  Here you can find Flavour, Blob, etc.
 */
 
 /*!
- \namespace AORGTOOLS
-  In the namespace AORGTOOLS all basic classes needed organisational purposes are collected.
+ \namespace ATOOLS
+  In the namespace ATOOLS all basic classes needed organisational purposes are collected.
   Here you can find classes for reading in and writing out variables (IO_Handler), accessing
   runtime parameters (Run_Parameter), etc.
 */

@@ -5,9 +5,7 @@
 
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Interaction_Model_EW::Interaction_Model_EW(MODEL::Model_Base * _model,
@@ -56,7 +54,7 @@ void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
 	    if (flphoton.IsOn()) {
 	      kcpl0             = -g1*M_I*charge1;
 	      kcpl1             = kcpl0;
-	      if (!AMATOOLS::IsZero(kcpl0.Value())) {
+	      if (!ATOOLS::IsZero(kcpl0.Value())) {
 		vertex[vanz].in[0]   = flav1;
 		vertex[vanz].in[1]   = Flavour(kf::photon);
 		vertex[vanz].in[2]   = flav2;
@@ -141,7 +139,7 @@ void Interaction_Model_EW::c_FFV(Single_Vertex * vertex,int & vanz)
 		else 	    
 		kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2);		
 	      }
-	      if (!AMATOOLS::IsZero(kcpl1.Value())) {
+	      if (!ATOOLS::IsZero(kcpl1.Value())) {
 		vertex[vanz].in[1] = Flavour(kf::W);
 		if (flav1.IsDowntype()) {
 		  vertex[vanz].in[0] = flav1;
@@ -265,7 +263,7 @@ void Interaction_Model_EW::c_FFS(Single_Vertex* vertex,int& vanz)
       kcpl0 = -M_I*M_h/vev;
       kcpl1 = kcpl0;
       
-      if (!AMATOOLS::IsZero(kcpl0.Value())) {
+      if (!ATOOLS::IsZero(kcpl0.Value())) {
 	vertex[vanz].in[0] = flav;
 	vertex[vanz].in[1] = flh;
 	vertex[vanz].in[2] = flav;

@@ -55,10 +55,10 @@ namespace SHERPA {
     };
   };
 
-  class NLL_Sudakov : public AMATOOLS::Function_Base {
+  class NLL_Sudakov : public ATOOLS::Function_Base {
     double tmax,tmin;
     NLL::code            inte;    // specifies integration algorithm used for Deltas
-    AMATOOLS::Gauss_Integrator gauss;    // integrator routine
+    ATOOLS::Gauss_Integrator gauss;    // integrator routine
     double qmax,qmin,qstat;
     int    Nc,Nf;
     double CA,CF,TR;
@@ -71,7 +71,7 @@ namespace SHERPA {
     NLL::code            type;    // specifies return value of operator()
 
     // logs of sudakovs
-    AMATOOLS::Fast_Function log_delta_q, log_delta_g;
+    ATOOLS::Fast_Function log_delta_q, log_delta_g;
 
     // branching probabilities (branch at q, with start scale Q)
     double GammaQ(double q, double Q);

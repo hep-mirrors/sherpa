@@ -22,7 +22,7 @@ namespace SHERPA {
     Hadron_Decay_Handler(std::string,std::string);
     Hadron_Decay_Handler(std::string,std::string,Lund_Fortran_Interface *);
     ~Hadron_Decay_Handler();
-    bool FillHadronDecayBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
+    bool FillHadronDecayBlobs(ATOOLS::Blob_List *,ATOOLS::Parton_List *);
   };
 }
 #endif

@@ -6,8 +6,8 @@
 namespace PHASIC {
   class Channel_Basics {
   public:
-    static void   Rotat(int lflag,AMATOOLS::Vec4D& p1,AMATOOLS::Vec4D p2,double** rot);
-    static void   Boost(int lflag,AMATOOLS::Vec4D q,AMATOOLS::Vec4D& ph,AMATOOLS::Vec4D& p);
+    static void   Rotat(int lflag,ATOOLS::Vec4D& p1,ATOOLS::Vec4D p2,double** rot);
+    static void   Boost(int lflag,ATOOLS::Vec4D q,ATOOLS::Vec4D& ph,ATOOLS::Vec4D& p);
     static double SqLam(double,double,double);
     static double PeakedDist(double,double,double,double,int,double);
     static double PeakedWeight(double,double,double,double,int);

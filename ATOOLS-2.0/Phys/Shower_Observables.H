@@ -5,7 +5,7 @@
 
 #include "Jet_Finder.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
 
   class Jetrates;
   class Multiplicity;
@@ -30,8 +30,8 @@ namespace APHYTOOLS {
     void InitObservables();
   public:
     Shower_Observables(int _type,double _xmin,double _xmax,int _nbins,
-		      APHYTOOLS::Selector_Base * _sel,int _njet=0,int _nflavs=0,int _dohad=0);
-    void Evaluate(const APHYTOOLS::Blob_List &,double);
+		      Selector_Base * _sel,int _njet=0,int _nflavs=0,int _dohad=0);
+    void Evaluate(const Blob_List &,double);
 
     void EndEvaluation();
     void Output(std::string pname);
@@ -40,24 +40,24 @@ namespace APHYTOOLS {
 
 
   class Jetrates : public Primitive_Observable_Base {  
-    APHYTOOLS::Jet_Finder  *jfind;  //(2.,1);
+    Jet_Finder  *jfind;  //(2.,1);
     std::vector<int> jets; 
     std::vector<double> ys;
-    std::vector<AMATOOLS::Histogram*> histos;
-    std::vector<AMATOOLS::Histogram*> rates;
+    std::vector<Histogram*> histos;
+    std::vector<Histogram*> rates;
     Jetrates      *partner;
     
   public:
     double ymin,ymax, sprime;
 
     Jetrates(int _type,double _xmin,double _xmax,int _nbins,
-		      APHYTOOLS::Selector_Base * _sel);
+		      Selector_Base * _sel);
     Jetrates(Jetrates * _partner, std::string _prefix);
 //     Jetrates * GetCopy() {
 //       return new Jetrates(this);
 //     }
 
-    void Evaluate(const APHYTOOLS::Parton_List & pl,double);
+    void Evaluate(const Parton_List & pl,double);
 
     void EndEvaluation();
     void EndEvaluation(double);
@@ -75,11 +75,11 @@ namespace APHYTOOLS {
     Multiplicity * partner;
   public:
     Multiplicity(int _type,double _xmin,double _xmax,int _nbins,
-			 APHYTOOLS::Selector_Base * _sel)
+			 Selector_Base * _sel)
     {
       type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = _sel;
       name  = std::string("multi.dat");
-      histo = new AMATOOLS::Histogram(type,xmin,xmax,nbins);
+      histo = new Histogram(type,xmin,xmax,nbins);
     };
 
     Multiplicity(Multiplicity * old) {
@@ -89,16 +89,16 @@ namespace APHYTOOLS {
       xmax  = old->Xmax();
       nbins = old->Nbins();
       name  = old->Name();
-      histo = new AMATOOLS::Histogram(old->Histo());
+      histo = new Histogram(old->Histo());
       histo -> Reset();
     }
 
     Multiplicity(Multiplicity * _partner, std::string _prefix);
 
-    void Evaluate(const APHYTOOLS::Parton_List & pl,double);
-    void Evaluate(const APHYTOOLS::Blob_List &,double);
+    void Evaluate(const Parton_List & pl,double);
+    void Evaluate(const Blob_List &,double);
 
-    void Evaluate(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double);
+    void Evaluate(Vec4D *,Flavour *,double);
   };
 
 
@@ -107,7 +107,7 @@ namespace APHYTOOLS {
     double                sum;
     Flavour               flavs[3];
     std::string           name;
-    AMATOOLS::Histogram * histo;
+    Histogram * histo;
   };
 
 
@@ -119,7 +119,7 @@ namespace APHYTOOLS {
     {
       type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = 0;
       name  = prefix+std::string("_rates.dat");
-      histo = new AMATOOLS::Histogram(type,xmin,xmax,nbins);
+      histo = new Histogram(type,xmin,xmax,nbins);
       sum =0.;
     };
 
@@ -130,11 +130,11 @@ namespace APHYTOOLS {
       xmax  = old->Xmax();
       nbins = old->Nbins();
       name  = old->Name();
-      histo = new AMATOOLS::Histogram(old->Histo());
+      histo = new Histogram(old->Histo());
       histo -> Reset();
     }
 
-    void Evaluate(const APHYTOOLS::Blob_List & bl,double);
+    void Evaluate(const Blob_List & bl,double);
 
     void EndEvaluation();
     void EndEvaluation(double);
@@ -144,7 +144,7 @@ namespace APHYTOOLS {
 
 
   class PT_Distribution : public Primitive_Observable_Base {  
-    std::vector<AMATOOLS::Histogram*> histos;
+    std::vector<Histogram*> histos;
     Flavour checkfl;
     int maxn;
   public:
@@ -153,8 +153,8 @@ namespace APHYTOOLS {
     PT_Distribution(PT_Distribution * _partner, std::string _prefix);
 
 
-    void Evaluate(const APHYTOOLS::Parton_List &,double);
-    void Evaluate(const APHYTOOLS::Blob_List & blobs,double value);
+    void Evaluate(const Parton_List &,double);
+    void Evaluate(const Blob_List & blobs,double value);
 
     void EndEvaluation();
     void EndEvaluation(double);

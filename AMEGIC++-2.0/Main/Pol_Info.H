@@ -69,7 +69,7 @@ namespace AMEGIC {
   class Pol_Info{
   public:
     Pol_Info();
-    Pol_Info(const APHYTOOLS::Flavour &);
+    Pol_Info(const ATOOLS::Flavour &);
     Pol_Info(const Pol_Info &);
     Pol_Info& operator=(const Pol_Info &);
    ~Pol_Info();

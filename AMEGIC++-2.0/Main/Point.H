@@ -12,8 +12,8 @@ public:
   int             b;
   int             t;
   int             m;
-  APHYTOOLS::Flavour   fl;
-  APHYTOOLS::Flavour * extrafl;
+  ATOOLS::Flavour   fl;
+  ATOOLS::Flavour * extrafl;
   int                  nextra;
   Point              * left;
   Point              * right;
@@ -33,7 +33,7 @@ public:
     middle  = 0;
     ncpl = 4;
     cpl = new Complex[4];
-    if (nextra>0) extrafl = new APHYTOOLS::Flavour[nextra]; 
+    if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
   }
   Point(const Point& copy) { 
     extrafl = 0;
@@ -42,7 +42,7 @@ public:
     middle  = 0;
     ncpl = 4;
     cpl = new Complex[4];
-    if (nextra>0) extrafl = new APHYTOOLS::Flavour[nextra]; 
+    if (nextra>0) extrafl = new ATOOLS::Flavour[nextra]; 
 
     *this = copy;
   } 
@@ -79,7 +79,7 @@ public:
       if (nextra>0) delete[] extrafl;
       nextra = p.nextra;
       if (nextra>0) {
-	extrafl = new APHYTOOLS::Flavour[nextra]; 
+	extrafl = new ATOOLS::Flavour[nextra]; 
 	for(short int i=0;i<nextra;i++) extrafl[i] = p.extrafl[i];
       }
       left   = p.left;

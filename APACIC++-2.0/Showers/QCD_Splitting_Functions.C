@@ -7,20 +7,20 @@ using namespace APACIC;
 using namespace std;
 
 // quark to quark + gluon  splitting function
-q_qg::q_qg(APHYTOOLS::Flavour quarkflavour) : p_tools(0) 
+q_qg::q_qg(ATOOLS::Flavour quarkflavour) : p_tools(0) 
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
-  m_flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
+  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon);
   m_alpha    = 1.;
 }
 
-q_qg::q_qg(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
+q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
   p_tools(_tools) 
 {
   m_flavs[0] = quarkflavour; 
   m_flavs[1] = quarkflavour; 
-  m_flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
+  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon);
   m_alpha    = p_tools->GetASmax();
 }
 
@@ -28,7 +28,7 @@ double q_qg::operator()(double z) {return s_CF*(1.+z*z)/(1.-z);};
 
 double q_qg::GetZ()
 {
-  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),AMATOOLS::ran.Get());   
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),ATOOLS::ran.Get());   
 }
 
 double q_qg::GetCoupling()         { return m_alpha;}
@@ -38,8 +38,8 @@ double q_qg::GetWeight(double z,double pt2,bool massterm)
 { 
   if (!massterm) return 0.5*(1.+z*z);
   return ( (1.+z*z)/2. - 
-	   z*AMATOOLS::sqr((1.-z)*m_flavs[0].PSMass())/
-	   (pt2+AMATOOLS::sqr((1.-z)*m_flavs[0].PSMass())) );
+	   z*ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())/
+	   (pt2+ATOOLS::sqr((1.-z)*m_flavs[0].PSMass())) );
 }
                    
 double q_qg::CrudeInt(double _zmin, double _zmax) 
@@ -52,36 +52,36 @@ double q_qg::CrudeInt(double _zmin, double _zmax)
 // gluon to gluon + gluon splitting function (needed twice for initial state shower)
 g_gg::g_gg() : p_tools(0) 
 {
-  m_flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-  m_flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-  m_flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_alpha    = 1.;
 }
 
 g_gg::g_gg(Sudakov_Tools * _tools) : p_tools(_tools) 
 { 
-  m_flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-  m_flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-  m_flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
+  m_flavs[2] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_alpha    = p_tools->GetASmax();
 }
 
 double g_gg::operator()(double z) 
 {
-  return s_CA*AMATOOLS::sqr(1.-z*(1.-z))/(z*(1.-z));
+  return s_CA*ATOOLS::sqr(1.-z*(1.-z))/(z*(1.-z));
 }
 
 double g_gg::GetZ() 
 {
   return 1./(1. + ((1.-m_zmin)/m_zmin) *
-	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), AMATOOLS::ran.Get()));
+	     pow( m_zmin*(1.-m_zmax)/((1.-m_zmin)*m_zmax), ATOOLS::ran.Get()));
 }
 
 double g_gg::GetCoupling()         { return m_alpha;}
 double g_gg::GetCoupling(double t) { return p_tools->AlphaS(t);}
 double g_gg::GetWeight(double z,double pt2,bool masses)   
 { 
-  return AMATOOLS::sqr(1.-z*(1.-z));
+  return ATOOLS::sqr(1.-z*(1.-z));
 }
     
 double g_gg::CrudeInt(double _zmin, double _zmax) 
@@ -92,18 +92,18 @@ double g_gg::CrudeInt(double _zmin, double _zmax)
 } 
 
 //! gluon to quark + anti-quark splitting function
-g_qq::g_qq(APHYTOOLS::Flavour quarkflavour): p_tools(0) 
+g_qq::g_qq(ATOOLS::Flavour quarkflavour): p_tools(0) 
 {
-  m_flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[1] = quarkflavour; 
   m_flavs[2] = quarkflavour.Bar(); 
   m_alpha    = 1.;
 }
 
-g_qq::g_qq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
+g_qq::g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
   p_tools (_tools) 
 {
-  m_flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
+  m_flavs[0] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[1] = quarkflavour; 
   m_flavs[2] = quarkflavour.Bar(); 
   m_alpha    = p_tools->GetASmax();
@@ -116,7 +116,7 @@ double g_qq::operator()(double z)
 
 double g_qq::GetZ()      
 {
-  return m_zmin+(m_zmax-m_zmin)*AMATOOLS::ran.Get();                       
+  return m_zmin+(m_zmax-m_zmin)*ATOOLS::ran.Get();                       
 }
 
 double g_qq::GetCoupling()         { return m_alpha; }
@@ -124,7 +124,7 @@ double g_qq::GetCoupling(double t) { return p_tools->AlphaS(t); }
 double g_qq::GetWeight(double z,double pt2,bool masses) 
 { 
   if (!masses) return (*this)(z)/s_TR;
-  return (1. - 2.*z*(1.-z)*(1.- pt2/(pt2+AMATOOLS::sqr(m_flavs[1].PSMass())))); // /s_TR;
+  return (1. - 2.*z*(1.-z)*(1.- pt2/(pt2+ATOOLS::sqr(m_flavs[1].PSMass())))); // /s_TR;
 }
                  
 double g_qq::CrudeInt(double _zmin, double _zmax) 
@@ -135,19 +135,19 @@ double g_qq::CrudeInt(double _zmin, double _zmax)
 }
 
 // quark to qluon + quark splitting function (only used in Initial State Shower)
-q_gq::q_gq(APHYTOOLS::Flavour quarkflavour) 
+q_gq::q_gq(ATOOLS::Flavour quarkflavour) 
 {
   m_flavs[0] = quarkflavour; 
-  m_flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
+  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[2] = quarkflavour; 
   m_alpha    = 1.;
 }
 
-q_gq::q_gq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) : 
+q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) : 
   p_tools(_tools) 
 {
   m_flavs[0] = quarkflavour; 
-  m_flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
+  m_flavs[1] = ATOOLS::Flavour(ATOOLS::kf::gluon); 
   m_flavs[2] = quarkflavour; 
   m_alpha    = p_tools->GetASmax();
 }
@@ -155,17 +155,17 @@ q_gq::q_gq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
 double q_gq::operator()(double z) {return s_CF*(1.+(1.-z)*(1.-z))/z;} 
 double q_gq::GetZ()      
 {
-  return m_zmin*pow(m_zmax/m_zmin,AMATOOLS::ran.Get());
+  return m_zmin*pow(m_zmax/m_zmin,ATOOLS::ran.Get());
 }
 
 double q_gq::GetCoupling()         { return m_alpha;}
 double q_gq::GetCoupling(double t) { return p_tools->AlphaS(t);}
 double q_gq::GetWeight(double z,double pt2,bool massterm) 
 { 
-  if (!massterm) return 0.5*(1.+AMATOOLS::sqr(1.-z));
-  return ( (1.+AMATOOLS::sqr(1.-z))/2. - 
-	   (1.-z)*AMATOOLS::sqr(z*m_flavs[0].PSMass())/
-	   (pt2+AMATOOLS::sqr(z*m_flavs[0].PSMass())) );
+  if (!massterm) return 0.5*(1.+ATOOLS::sqr(1.-z));
+  return ( (1.+ATOOLS::sqr(1.-z))/2. - 
+	   (1.-z)*ATOOLS::sqr(z*m_flavs[0].PSMass())/
+	   (pt2+ATOOLS::sqr(z*m_flavs[0].PSMass())) );
 }
                    
 double q_gq::CrudeInt(double _zmin, double _zmax) {

@@ -7,8 +7,8 @@
 
 namespace APACIC {
   // to be replaced with STL vector
-  typedef AORGTOOLS::FastList<Splitting_Function> SplFunList; 
-  typedef AORGTOOLS::FastList<Splitting_Function>::Iterator SplFunIter;
+  typedef ATOOLS::FastList<Splitting_Function> SplFunList; 
+  typedef ATOOLS::FastList<Splitting_Function>::Iterator SplFunIter;
 
   class Splitting_Group : public Splitting_Function {
   protected:
@@ -36,9 +36,9 @@ namespace APACIC {
     double GetCoupling();
     double GetCoupling(double t);
     double GetWeight(double z,double pt2,bool masses);
-    APHYTOOLS::Flavour & GetFlA();
-    APHYTOOLS::Flavour & GetFlB();
-    APHYTOOLS::Flavour & GetFlC();
+    ATOOLS::Flavour & GetFlA();
+    ATOOLS::Flavour & GetFlB();
+    ATOOLS::Flavour & GetFlC();
     //! Adds a splitting function to some exisiting group.
     virtual void Add(Splitting_Function * spl);
     //! Selects one splitting function out of the group.
@@ -107,9 +107,9 @@ namespace APACIC {
     double Splitting_Group::GetCoupling();
     double Splitting_Group::GetCoupling(double t);
     double Splitting_Group::GetWeight(double z,double pt2,bool masses);
-    APHYTOOLS::Flavour & Splitting_Group::GetFlA();
-    APHYTOOLS::Flavour & Splitting_Group::GetFlB();
-    APHYTOOLS::Flavour & Splitting_Group::GetFlC();
+    ATOOLS::Flavour & Splitting_Group::GetFlA();
+    ATOOLS::Flavour & Splitting_Group::GetFlB();
+    ATOOLS::Flavour & Splitting_Group::GetFlC();
   */
   
   /*!

@@ -1,8 +1,7 @@
 #include "Tree.H"
 
 using namespace APACIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using std::flush;
 using std::endl;
 
@@ -68,7 +67,7 @@ void Tree::Links(Knot * act,Knot * ink) {
   }
 }
 
-Knot * Tree::NewKnot(APHYTOOLS::Flavour fl, AMATOOLS::Vec4D p, double t, double x1) {
+Knot * Tree::NewKnot(ATOOLS::Flavour fl, ATOOLS::Vec4D p, double t, double x1) {
   Knot * newk = new Knot;
   p_knots->push_back(newk);
   newk->kn_no     = p_knots->size();
@@ -166,7 +165,7 @@ Knot * Tree::GetRoot() { return p_root; } ;
 //--------------------------- New frames for the tree -------------------
 //----------------------------------------------------------------------- 
 
-void Tree::BoRo(AMATOOLS::Poincare & lorenz) 
+void Tree::BoRo(ATOOLS::Poincare & lorenz) 
 {
   Knot * mo= GetRoot();
   if (mo)  while (mo->prev) mo = mo->prev;
@@ -174,7 +173,7 @@ void Tree::BoRo(AMATOOLS::Poincare & lorenz)
   BoRoDaughters(lorenz,mo);
 }
 
-void Tree::BoRoDaughters(AMATOOLS::Poincare & lorenz, Knot * mo) 
+void Tree::BoRoDaughters(ATOOLS::Poincare & lorenz, Knot * mo) 
 {
   if (mo->left) {
     mo->left->part->SetMomentum(lorenz*mo->left->part->Momentum());
@@ -186,7 +185,7 @@ void Tree::BoRoDaughters(AMATOOLS::Poincare & lorenz, Knot * mo)
   }
 }
 
-void Tree::BoRo(AMATOOLS::Poincare & lorenz, Knot * mo) 
+void Tree::BoRo(ATOOLS::Poincare & lorenz, Knot * mo) 
 {
   mo->part->SetMomentum(lorenz*mo->part->Momentum());
   BoRoDaughters(lorenz,mo);

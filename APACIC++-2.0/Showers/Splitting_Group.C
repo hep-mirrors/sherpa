@@ -27,7 +27,7 @@ double Splitting_Group::CrudeInt(double _zmin, double _zmax)
 
 
 void Splitting_Group::SelectOne() {
-  double rr = m_lastint*AMATOOLS::ran.Get();
+  double rr = m_lastint*ATOOLS::ran.Get();
   int i;
   for (i=0;p_partsums[i]<rr;++i) {  
   }
@@ -36,8 +36,8 @@ void Splitting_Group::SelectOne() {
 
 
 void Splitting_Group::PrintStat(int mode) {
-  if (mode>0) for(int i=0;i<mode;++i) AORGTOOLS::msg.Debugging()<<' ';
-  AORGTOOLS::msg.Debugging()<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
+  if (mode>0) for(int i=0;i<mode;++i) ATOOLS::msg.Debugging()<<' ';
+  ATOOLS::msg.Debugging()<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
   for (SplFunIter iter(m_group);iter();++iter) {
     iter()->PrintStat(mode+4);
   }
@@ -70,17 +70,17 @@ double Splitting_Group::GetWeight(double z,double pt2,bool masses)
   return p_selected->GetWeight(z,pt2,masses);
 }
 
-APHYTOOLS::Flavour & Splitting_Group::GetFlA()                      
+ATOOLS::Flavour & Splitting_Group::GetFlA()                      
 { 
   return p_selected->GetFlA();
 }
 
-APHYTOOLS::Flavour & Splitting_Group::GetFlB() 
+ATOOLS::Flavour & Splitting_Group::GetFlB() 
 { 
   return p_selected->GetFlB();
 }
 
-APHYTOOLS::Flavour & Splitting_Group::GetFlC() 
+ATOOLS::Flavour & Splitting_Group::GetFlC() 
 { 
   return p_selected->GetFlC();
 }  

@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class Parton;
   class Flow {  
     friend std::ostream& operator<<( std::ostream& ostr, const Flow& f );

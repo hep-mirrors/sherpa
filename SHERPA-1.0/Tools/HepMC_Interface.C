@@ -7,9 +7,7 @@
 #endif
 
 using namespace SHERPA;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace HepMC;
 
 HepMC_Interface::HepMC_Interface()

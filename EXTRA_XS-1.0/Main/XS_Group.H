@@ -22,10 +22,10 @@ namespace EXTRAXS {
   private :
     virtual void CreateFSRChannels() {}
   public :
-    XS_Group(int,int,APHYTOOLS::Flavour *,
-	     PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+    XS_Group(int,int,ATOOLS::Flavour *,
+	     PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,ATOOLS::Selector_Data *,
 	     int,int,double);
-    XS_Group(int,int,APHYTOOLS::Flavour *);
+    XS_Group(int,int,ATOOLS::Flavour *);
     XS_Group(int,int,std::string);
     XS_Group();
     ~XS_Group();

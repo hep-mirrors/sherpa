@@ -22,28 +22,28 @@ double Splitting_Function::GetLastInt()
 }
 
 void Splitting_Function::Add(Splitting_Function *) {
-  AORGTOOLS::msg.Error()<<" Error in Spliting_Function: something nasty is going on"<<std::endl;
+  ATOOLS::msg.Error()<<" Error in Spliting_Function: something nasty is going on"<<std::endl;
 }
 
 void Splitting_Function::SelectOne() {}
 
-APHYTOOLS::Flavour & Splitting_Function::GetFlA() 
+ATOOLS::Flavour & Splitting_Function::GetFlA() 
 { 
   return m_flavs[0];
 }
 
-APHYTOOLS::Flavour & Splitting_Function::GetFlB() 
+ATOOLS::Flavour & Splitting_Function::GetFlB() 
 { 
   return m_flavs[1];
 }
 
-APHYTOOLS::Flavour & Splitting_Function::GetFlC() 
+ATOOLS::Flavour & Splitting_Function::GetFlC() 
 { 
   return m_flavs[2];
 }
 
 void Splitting_Function::PrintStat(int mode) {
-  if (mode>0) for(int i=0;i<mode;++i) AORGTOOLS::msg.Debugging()<<' ';
-  AORGTOOLS::msg.Debugging()<<"Splitting Function: "
+  if (mode>0) for(int i=0;i<mode;++i) ATOOLS::msg.Debugging()<<' ';
+  ATOOLS::msg.Debugging()<<"Splitting Function: "
 			    <<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl;
 }

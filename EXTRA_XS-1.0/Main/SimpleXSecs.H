@@ -22,8 +22,8 @@ namespace EXTRAXS {
 
     int                          m_nmax,m_count,m_maxjet;
 
-    AORGTOOLS::Data_Read       * p_dataread;
-    APHYTOOLS::Selector_Data   * p_seldata;
+    ATOOLS::Data_Read       * p_dataread;
+    ATOOLS::Selector_Data   * p_seldata;
     BEAM::Beam_Spectra_Handler * p_beam;
     PDF::ISR_Handler           * p_isr;
   public :
@@ -42,8 +42,8 @@ namespace EXTRAXS {
     int                  Nin()         { return p_selected->Selected()->Nin();     }
     int                  Nout()        { return p_selected->Selected()->Nout();    }
     int               ** Colours()     { return p_selected->Selected()->Colours(); }
-    APHYTOOLS::Flavour * Flavs()       { return p_selected->Selected()->Flavs();   }
-    AMATOOLS::Vec4D    * Momenta()     { return p_selected->Selected()->Momenta(); }
+    ATOOLS::Flavour * Flavs()       { return p_selected->Selected()->Flavs();   }
+    ATOOLS::Vec4D    * Momenta()     { return p_selected->Selected()->Momenta(); }
     int                  MaxJets()     { return m_maxjet;                          }
 
     void SingleEvents();

@@ -5,9 +5,8 @@
 
 using namespace EXTRAXS;
 using namespace MODEL;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
+
 
 /* 
    In all the differential cross sections the factor 1/16 Pi is cancelled

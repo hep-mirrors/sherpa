@@ -29,14 +29,14 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
 
-    Single_Process(int,int,APHYTOOLS::Flavour *,
+    Single_Process(int,int,ATOOLS::Flavour *,
 		   PDF::ISR_Handler * =NULL,BEAM::Beam_Spectra_Handler * =NULL,
-		   APHYTOOLS::Selector_Data * =NULL,
+		   ATOOLS::Selector_Data * =NULL,
 		   int=0,int=99,int=99,int=0,int=0,
-		   double=1.,Pol_Info* _pl=0,int _nex=0,APHYTOOLS::Flavour * _ex_fl=0);
+		   double=1.,Pol_Info* _pl=0,int _nex=0,ATOOLS::Flavour * _ex_fl=0);
     ~Single_Process();
     void Add(Process_Base *) {
-      AORGTOOLS::msg.Error()<<"Error in Single_Process. Method Add called."<<std::endl;
+      ATOOLS::msg.Error()<<"Error in Single_Process. Method Add called."<<std::endl;
       abort();
     }
 
@@ -60,10 +60,10 @@ namespace AMEGIC {
     bool           FoundMappingFile(std::string &);
     bool           CreateChannelLibrary();
   public:
-    int            InitAmplitude(Interaction_Model_Base *,Topology *,AMATOOLS::Vec4D *&,
+    int            InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
 				 std::vector<double> &,std::vector<Single_Process *> &);
     int            InitAmplitude(Interaction_Model_Base *,Topology *);
-    void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
+    void           InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>);
     void           InitDecay(Topology* top); 
     bool           SetUpIntegrator();
     bool           IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); };
@@ -101,11 +101,11 @@ namespace AMEGIC {
     bool           LookUpXSec(double,bool,std::string);
     bool           PrepareXSecTables();
     void           AddPoint(const double value); 
-    double         Differential(AMATOOLS::Vec4D *);
+    double         Differential(ATOOLS::Vec4D *);
     double         Differential2();
-    double         DSigma(AMATOOLS::Vec4D *,bool);
+    double         DSigma(ATOOLS::Vec4D *,bool);
     double         DSigma2();
-    double         operator()(AMATOOLS::Vec4D *);
+    double         operator()(ATOOLS::Vec4D *);
     bool           OneEvent();
     bool           SameEvent();
     double         WeightedEvent();

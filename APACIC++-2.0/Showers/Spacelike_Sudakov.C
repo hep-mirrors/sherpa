@@ -13,13 +13,11 @@
 
 using namespace APACIC;
 using namespace PDF;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 
 Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spacelike_Kinematics * _kin,
-				     double _pt2min,AORGTOOLS::Data_Read * _dataread) : 
+				     double _pt2min,ATOOLS::Data_Read * _dataread) : 
   Backward_Splitting_Group(0,0), p_tools(_tools), p_kin(_kin), m_pt2min(dabs(_pt2min)), m_last_veto(0)
 {
   p_pdf             = _pdf; 

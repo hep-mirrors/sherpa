@@ -3,8 +3,7 @@
 #include <iomanip>
 
 
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 template<int _rank>

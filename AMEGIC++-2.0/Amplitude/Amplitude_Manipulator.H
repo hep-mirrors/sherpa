@@ -9,7 +9,7 @@ namespace AMEGIC {
 
   class Amplitude_Manipulator {
     int N;
-    APHYTOOLS::Flavour* fl;
+    ATOOLS::Flavour* fl;
     int* b;
     
     void   SetPrev(Point*);
@@ -29,7 +29,7 @@ namespace AMEGIC {
     void SetBackwardFNFlow(Point*,int);
     
   public:
-    Amplitude_Manipulator(int _no,APHYTOOLS::Flavour* _fl,int* _b): N(_no), fl(_fl), b(_b) {}
+    Amplitude_Manipulator(int _no,ATOOLS::Flavour* _fl,int* _b): N(_no), fl(_fl), b(_b) {}
     void   FixSign(Single_Amplitude*);  
   };
 

@@ -45,8 +45,8 @@ namespace AMEGIC {
     }
 
     void    PrintGraph() {
-      if (!AORGTOOLS::rpa.gen.Tracking()) return;
-      AORGTOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;
+      if (!ATOOLS::rpa.gen.Tracking()) return;
+      ATOOLS::msg.Tracking()<<"Group: "<<groupname<<std::endl;
       for (int i=0;i<graphs.size();i++) graphs[i]->PrintGraph();
     }
 
@@ -73,7 +73,7 @@ namespace AMEGIC {
       return 0;
     }
 
-    void BuildGlobalString(int*,int,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*);
+    void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
   };
 
   /*! 
@@ -112,7 +112,7 @@ namespace AMEGIC {
     Amplitude_Base* operator[](const int i) 
 
     Amplitude_Base* GetAmplitude(const int n)
-    void BuildGlobalString(int*,int,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*)
+    void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*)
 
   */
 

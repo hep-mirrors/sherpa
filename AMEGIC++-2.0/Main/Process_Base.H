@@ -34,10 +34,10 @@ namespace AMEGIC {
     int                              m_gen_str;
 
     int                              m_nvec,   m_nin,    m_nout,    m_nex;
-    APHYTOOLS::Flavour             * p_fl,   * p_flin, * p_flout, * p_ex_fl;
+    ATOOLS::Flavour             * p_fl,   * p_flin, * p_flout, * p_ex_fl;
     AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
     int                            * p_b;
-    AMATOOLS::Vec4D                * p_moms;
+    ATOOLS::Vec4D                * p_moms;
 
     bool                             m_atoms, m_analyse, m_tables;
     long int                         m_n;
@@ -54,9 +54,9 @@ namespace AMEGIC {
 
     BEAM::Beam_Spectra_Handler     * p_beam;
     PDF::ISR_Handler               * p_isr;
-    APHYTOOLS::Cut_Data            * p_cuts;
-    APHYTOOLS::Selector_Base       * p_sel;
-    APHYTOOLS::Primitive_Analysis  * p_analysis;
+    ATOOLS::Cut_Data            * p_cuts;
+    ATOOLS::Selector_Base       * p_sel;
+    ATOOLS::Primitive_Analysis  * p_analysis;
 
     AMEGIC::Process_Base           * p_selected;
     
@@ -67,13 +67,13 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    bool           CheckExternalFlavours(int,APHYTOOLS::Flavour *,
-					 int,APHYTOOLS::Flavour *);
+    bool           CheckExternalFlavours(int,ATOOLS::Flavour *,
+					 int,ATOOLS::Flavour *);
   protected:
-    std::string *  GenerateNames(int,APHYTOOLS::Flavour *,AMEGIC::Pol_Info *,
-				 int,APHYTOOLS::Flavour *,Pol_Info *,
+    std::string *  GenerateNames(int,ATOOLS::Flavour *,AMEGIC::Pol_Info *,
+				 int,ATOOLS::Flavour *,Pol_Info *,
 				 std::string &,std::string &,std::string &);
-    void           Reshuffle(int,APHYTOOLS::Flavour *,AMEGIC::Pol_Info *);
+    void           Reshuffle(int,ATOOLS::Flavour *,AMEGIC::Pol_Info *);
     bool           IsFile(std::string);
     /*------------------------------------------------------------------------------
 
@@ -82,17 +82,17 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     Process_Base();
-    Process_Base(int,int,APHYTOOLS::Flavour *,
+    Process_Base(int,int,ATOOLS::Flavour *,
 		 PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		 int,int,int,int,int,double,Pol_Info * _pl = 0,
-		 int _nex = 0,APHYTOOLS::Flavour * _ex_fl = 0);
+		 int _nex = 0,ATOOLS::Flavour * _ex_fl = 0);
     virtual ~Process_Base();
 
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,
-				 AMATOOLS::Vec4D *&,std::vector<double> &,
+				 ATOOLS::Vec4D *&,std::vector<double> &,
 				 std::vector<AMEGIC::Single_Process *> &)            =0;
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
-    virtual void   InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>) =0;
+    virtual void   InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>) =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
     			       PHASIC::channelinfos &,PHASIC::channelinfos &);
@@ -121,9 +121,9 @@ namespace AMEGIC {
 
     virtual void             SetBeam(BEAM::Beam_Spectra_Handler *);
     virtual void             SetISR(PDF::ISR_Handler *);
-    virtual void             SetCuts(APHYTOOLS::Cut_Data *);
-    virtual void             SetSelector(APHYTOOLS::Selector_Base *);
-    virtual void             SetMomenta(AMATOOLS::Vec4D *);
+    virtual void             SetCuts(ATOOLS::Cut_Data *);
+    virtual void             SetSelector(ATOOLS::Selector_Base *);
+    virtual void             SetMomenta(ATOOLS::Vec4D *);
 
     virtual void             SetNStrong(int);
     virtual void             SetNEWeak(int);
@@ -147,12 +147,12 @@ namespace AMEGIC {
     virtual void   RescaleXSec(double);
     virtual bool   PrepareXSecTables()                                             =0;
     virtual void   AddPoint(const double value)                                    =0;
-    virtual double Differential(AMATOOLS::Vec4D *)                                 =0;
+    virtual double Differential(ATOOLS::Vec4D *)                                 =0;
     virtual double Differential2()                                                 =0;
-    virtual double DSigma(AMATOOLS::Vec4D *,bool)                                  =0;
+    virtual double DSigma(ATOOLS::Vec4D *,bool)                                  =0;
     virtual double DSigma2()                                                       =0;
-    virtual double operator()(AMATOOLS::Vec4D *) { return 0.; }
-    virtual double Scale(AMATOOLS::Vec4D *);
+    virtual double operator()(ATOOLS::Vec4D *) { return 0.; }
+    virtual double Scale(ATOOLS::Vec4D *);
     virtual double Scale();
     virtual bool   OneEvent()                                                      =0;
     virtual bool   SameEvent()                                                     =0;
@@ -167,8 +167,8 @@ namespace AMEGIC {
     virtual int                             Nin();
     virtual int                             Nout();
     virtual int                             Nvec();
-    virtual APHYTOOLS::Flavour            * Flavs();
-    virtual AMATOOLS::Vec4D               * Momenta();
+    virtual ATOOLS::Flavour            * Flavs();
+    virtual ATOOLS::Vec4D               * Momenta();
 
     virtual int                             NStrong();
     virtual int                             NEWeak();
@@ -185,9 +185,9 @@ namespace AMEGIC {
 
     virtual BEAM::Beam_Spectra_Handler    * Beam();
     virtual PDF::ISR_Handler              * ISR();
-    virtual APHYTOOLS::Cut_Data           * Cuts();
-    virtual APHYTOOLS::Selector_Base      * Selector();
-    virtual APHYTOOLS::Primitive_Analysis * Analysis();
+    virtual ATOOLS::Cut_Data           * Cuts();
+    virtual ATOOLS::Selector_Base      * Selector();
+    virtual ATOOLS::Primitive_Analysis * Analysis();
     virtual Phase_Space_Generator         * PSGenerator();
     virtual void                            ISRChannels(int,PHASIC::Channel_Info & );
     virtual void                            BeamChannels(int,PHASIC::Channel_Info & );
@@ -483,12 +483,12 @@ namespace AMEGIC {
 
 
     virtual int     NumberOfDiagrams() { 
-      AORGTOOLS::msg.Error()<<"Virtual Method : Process_Base::NumberOfDiagrams()"<<std::endl; 
+      ATOOLS::msg.Error()<<"Virtual Method : Process_Base::NumberOfDiagrams()"<<std::endl; 
     }
     virtual Point * Diagram(int i) { 
-      AORGTOOLS::msg.Error()<<"Virtual Method : Process_Base::Diagram()"<<std::endl; 
+      ATOOLS::msg.Error()<<"Virtual Method : Process_Base::Diagram()"<<std::endl; 
     }
     virtual bool    IsFreeOfFourVertex(Point * _p) { 
-      AORGTOOLS::msg.Error()<<"Virtual Method : Process_Base::IsFreeOfFourVertex()"<<std::endl; 
+      ATOOLS::msg.Error()<<"Virtual Method : Process_Base::IsFreeOfFourVertex()"<<std::endl; 
     }
     */

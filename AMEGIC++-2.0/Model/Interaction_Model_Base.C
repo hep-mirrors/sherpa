@@ -20,7 +20,7 @@ double Interaction_Model_Base::ScalarConstant(const std::string _name) {
   return p_model->ScalarConstant(_name);
 }
 
-AMATOOLS::CMatrix Interaction_Model_Base::ComplexMatrix(const std::string _name) {
+ATOOLS::CMatrix Interaction_Model_Base::ComplexMatrix(const std::string _name) {
   return p_model->ComplexMatrix(_name);
 }
 
@@ -28,7 +28,7 @@ Complex Interaction_Model_Base::ComplexMatrixElement(const std::string _name,con
   return p_model->ComplexMatrixElement(_name,_i,_j);
 }
 
-AMATOOLS::Function_Base * Interaction_Model_Base::ScalarFunction(const std::string _name) {
+ATOOLS::Function_Base * Interaction_Model_Base::ScalarFunction(const std::string _name) {
   return p_model->GetScalarFunction(_name);
 }
 

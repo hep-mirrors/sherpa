@@ -3,7 +3,7 @@
 
 #include<string>
 
-namespace AMATOOLS {
+namespace ATOOLS {
   class Function_Base {
   protected :
     double      m_defval;
@@ -26,7 +26,7 @@ namespace AMATOOLS {
 
 /*!
  \file
- \brief contains the class AMATOOLS::Function_Base
+ \brief contains the class Function_Base
 */
 
 

@@ -29,7 +29,7 @@ namespace SHERPA {
     int                           m_mode;
     double                        m_weight;
 
-    AORGTOOLS::Data_Read        * p_dataread;
+    ATOOLS::Data_Read        * p_dataread;
     AMEGIC::Amegic              * p_amegic;
     EXTRAXS::SimpleXSecs        * p_simplexs;
 
@@ -60,8 +60,8 @@ namespace SHERPA {
     int                  Nin();
     int                  Nout();
     int                  MaxJets();
-    AMATOOLS::Vec4D    * Momenta();
-    APHYTOOLS::Flavour * Flavs();
+    ATOOLS::Vec4D    * Momenta();
+    ATOOLS::Flavour * Flavs();
 
     int                  NumberOfDiagrams();
     AMEGIC::Point      * GetDiagram(int);

@@ -11,7 +11,7 @@
 #include <vector>
 #include <iostream>
 
-namespace APHYTOOLS {
+namespace ATOOLS {
 
   /////////////////////////////////////////////////////////////////////////////////////
 
@@ -780,7 +780,7 @@ namespace APHYTOOLS {
 
   /*!
     \file 
-    \brief contains APHYTOOLS::Flavour
+    \brief contains Flavour
   */
 
   /*!

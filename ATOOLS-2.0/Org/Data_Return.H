@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-namespace AORGTOOLS {
+namespace ATOOLS {
 #define UNDEF_DOUBLE 1234.56e-78
 #define UNDEF_INT    -32767
 #define UNDEF_LONG   -32767
@@ -52,11 +52,11 @@ namespace AORGTOOLS {
     return Model_Type::Unknown; 
   } 
 
-  template <> inline APHYTOOLS::Flavour NotDefined<APHYTOOLS::Flavour>() { 
-    return APHYTOOLS::Flavour(APHYTOOLS::kf::none); 
+  template <> inline Flavour NotDefined<Flavour>() { 
+    return Flavour(kf::none); 
   } 
 
 
-} // namespace AORGTOOLS
+} // namespace ATOOLS
 
 #endif // Data_Return_H

@@ -4,8 +4,7 @@
 #include "Pfunc.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 void Basic_Func::SetArgCouplProp(int narg,int* _arg,Complex* _coupl,
@@ -24,7 +23,7 @@ void Basic_Func::Map(int& numb)
     Pfunc* p;
     for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
       p = *pit;
-      if (p->arg[0]==AMATOOLS::iabs(numb)) break;
+      if (p->arg[0]==ATOOLS::iabs(numb)) break;
     }
     numb = (numb>0) ? p->momnum:-p->momnum;
   }
@@ -37,7 +36,7 @@ void Basic_Func::Map(int& numb,bool& maped)
   maped=true;
 
   if (numb<0) {
-    AORGTOOLS::msg.Error()<<"Negative Number in Basic_Func::Map() -> numb = "<<numb<<endl;
+    ATOOLS::msg.Error()<<"Negative Number in Basic_Func::Map() -> numb = "<<numb<<endl;
     abort();
   }
   if (numb>99) {
@@ -54,20 +53,20 @@ double Basic_Func::GetPMass(int a,int sign)
 {
   if (sign!=mt::p_s)return 0.;
   int b;
-  for(b=0;b<pn;b++)if(ps[b].numb==AMATOOLS::iabs(a))break;
+  for(b=0;b<pn;b++)if(ps[b].numb==ATOOLS::iabs(a))break;
   Pfunc* p1;
   int hit = 0;
   for (Pfunc_Iterator pit=pl->begin();pit!=pl->end();++pit) {
     p1 = *pit;
-    if (p1->momnum==AMATOOLS::iabs(a) && (p1->fl).Kfcode()==ps[b].kfcode) {
+    if (p1->momnum==ATOOLS::iabs(a) && (p1->fl).Kfcode()==ps[b].kfcode) {
       hit = 1;
       break;
     }
   }
   //cout<<"Basic_Func::GetPMass: "<<ps[b].numb<<" "<<a<<" Hit:"<<hit<<" "<<p1->fl<<endl;
   if(hit) return (p1->fl).Mass();
-  AORGTOOLS::msg.Error()<<"Basic_Func::GetPMass: Propagator not found! "<<a<<","<<b<<endl;
-  AORGTOOLS::msg.Error()<<ps[0].numb<<"."<<ps[1].numb<<"."<<pn<<endl;
+  ATOOLS::msg.Error()<<"Basic_Func::GetPMass: Propagator not found! "<<a<<","<<b<<endl;
+  ATOOLS::msg.Error()<<ps[0].numb<<"."<<ps[1].numb<<"."<<pn<<endl;
   abort();
   return 0.;
 }

@@ -9,8 +9,7 @@
 
 using namespace AMEGIC;
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Channel_Generator::Channel_Generator(int _nin,int _nout,Flavour * _fl,
@@ -52,9 +51,7 @@ int Channel_Generator::MakeChannel(int& echflag,int n,string& path,string& pID)
   chf<<"#include "<<'"'<<"Run_Parameter.H"<<'"'<<endl;
   chf<<"#include "<<'"'<<"Channel_Elements.H"<<'"'<<endl<<endl;  
   chf<<"using namespace PHASIC;"<<endl;  
-  chf<<"using namespace APHYTOOLS;"<<endl;
-  chf<<"using namespace AORGTOOLS;"<<endl;
-  chf<<"using namespace AMATOOLS;"<<endl<<endl;
+  chf<<"using namespace ATOOLS;"<<endl<<endl;
 
 
   //Momenta
@@ -571,8 +568,8 @@ void Channel_Generator::GenerateMasses(int flag,Point** _plist,int pcount,
     for (short int j=0;j<pcount;j++) {
       if (sflag[j]==0) {
 	flav = _plist[j]->fl;
-	res  = AMATOOLS::sqr(flav.Width()*flav.Mass());
-	if (!AMATOOLS::IsZero(res) && Massive(flav)) {
+	res  = ATOOLS::sqr(flav.Width()*flav.Mass());
+	if (!ATOOLS::IsZero(res) && Massive(flav)) {
 	  if (1./res>maxpole) {
 	    maxpole = 1./res;
 	    hit = j;

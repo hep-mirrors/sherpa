@@ -8,9 +8,7 @@
 #include <stdio.h>
 
 using namespace SHERPA;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 
 Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file) :
@@ -42,8 +40,8 @@ Fragmentation_Handler::~Fragmentation_Handler() {
 
 
 
-bool Fragmentation_Handler::PerformFragmentation(APHYTOOLS::Blob_List * bl,
-						 APHYTOOLS::Parton_List * pl) 
+bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
+						 ATOOLS::Parton_List * pl) 
 {
   if (!ExtractSinglets(bl,pl)) return 0;
   bool okay = 1;

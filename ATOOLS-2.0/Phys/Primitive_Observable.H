@@ -5,15 +5,15 @@
 
 #include "Jet_Finder.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class Differential_Jetrate : public Primitive_Observable_Base {  
   public:
     Differential_Jetrate(int _type,double _xmin,double _xmax,int _nbins,
-			 APHYTOOLS::Selector_Base * _sel)
+			 Selector_Base * _sel)
     {
       type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = _sel;
       name  = std::string("dY_cut");
-      histo = new AMATOOLS::Histogram(11,xmin,xmax,nbins);
+      histo = new Histogram(11,xmin,xmax,nbins);
     };
 
     Differential_Jetrate(Differential_Jetrate * old) {
@@ -23,7 +23,7 @@ namespace APHYTOOLS {
       xmax  = old->Xmax();
       nbins = old->Nbins();
       name  = old->Name();
-      histo = new AMATOOLS::Histogram(old->Histo());
+      histo = new Histogram(old->Histo());
     }
 
     Differential_Jetrate * GetCopy() {
@@ -31,8 +31,8 @@ namespace APHYTOOLS {
     }
 
     void Evaluate(double); 
-    void Evaluate(int,AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double);
-    void Evaluate(const APHYTOOLS::Parton_List &,double);
+    void Evaluate(int,Vec4D *,Flavour *,double);
+    void Evaluate(const Parton_List &,double);
   };
 
 }

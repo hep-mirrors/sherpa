@@ -1,7 +1,7 @@
 #ifndef List_Algorithms_H
 #define List_Algorithms_H
 
-namespace AORGTOOLS {
+namespace ATOOLS {
 
     // To create a list from an iterator, use: (i.e. for a list of particles);
     // #include <algorithm>

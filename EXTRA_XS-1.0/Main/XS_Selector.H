@@ -10,8 +10,8 @@ namespace EXTRAXS {
   class XS_Selector {
   public:
     XS_Selector() {};
-    static Single_XS * GetXS(int,int,APHYTOOLS::Flavour *);
-    static bool FindInGroup(XS_Group *,XS_Base *&,int,int,APHYTOOLS::Flavour *);
+    static Single_XS * GetXS(int,int,ATOOLS::Flavour *);
+    static bool FindInGroup(XS_Group *,XS_Base *&,int,int,ATOOLS::Flavour *);
   };
 }
 

@@ -8,27 +8,26 @@
 
 namespace SHERPA {
 
-  class PHard_Observable : public APHYTOOLS::Primitive_Observable_Base {  
+  class PHard_Observable : public ATOOLS::Primitive_Observable_Base {  
   public:
     PHard_Observable(int _type,double _xmin,double _xmax,int _nbins)
     {
       type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins;
       name  = std::string("pt_hard.dat");
-      histo = new AMATOOLS::Histogram(type,xmin,xmax,nbins);
+      histo = new ATOOLS::Histogram(type,xmin,xmax,nbins);
     };
 
     void Evaluate(double); 
-    void Evaluate(int,AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double w);
-    void Evaluate(const APHYTOOLS::Parton_List &,double w);
-    void Evaluate(const APHYTOOLS::Blob_List &,double w); 
+    void Evaluate(int,ATOOLS::Vec4D *,ATOOLS::Flavour *,double w);
+    void Evaluate(const ATOOLS::Parton_List &,double w);
+    void Evaluate(const ATOOLS::Blob_List &,double w); 
   };
 
   extern double amegic_apacic_interface_last_hard_scale;
 }
 
 using namespace SHERPA;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -37,16 +36,16 @@ void PHard_Observable::Evaluate(double w)
 //   cout<<" put" <<sqrt(amegic_apacic_interface_last_hard_scale)<<endl;
   histo->Insert(sqrt(amegic_apacic_interface_last_hard_scale),w); 
 }
-void PHard_Observable::Evaluate(int,AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double w)
+void PHard_Observable::Evaluate(int,ATOOLS::Vec4D *,ATOOLS::Flavour *,double w)
 {
   Evaluate(w);
 }
 
-void PHard_Observable::Evaluate(const APHYTOOLS::Parton_List &,double w)
+void PHard_Observable::Evaluate(const ATOOLS::Parton_List &,double w)
 {
   Evaluate(w);
 }
-void PHard_Observable::Evaluate(const APHYTOOLS::Blob_List &,double w)
+void PHard_Observable::Evaluate(const ATOOLS::Blob_List &,double w)
 {
   Evaluate(w);
 }
@@ -83,7 +82,7 @@ Sample_Analysis::Sample_Analysis(IO_HepEvt *& _convert,bool _hepevt) :
 
 
 
-void Sample_Analysis::AfterME(APHYTOOLS::Blob_List * blobs, double weight) {
+void Sample_Analysis::AfterME(ATOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
   if (hepevt) {
     convert->Blobs2HepEvt(blobs,std::string("Beam"),nhep);
@@ -100,7 +99,7 @@ void Sample_Analysis::AfterME(APHYTOOLS::Blob_List * blobs, double weight) {
   obs[0]->Evaluate(*blobs,weight);
 }
 
-void Sample_Analysis::AfterPartonShower(APHYTOOLS::Blob_List * blobs, double weight) {
+void Sample_Analysis::AfterPartonShower(ATOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
   //  cout<<" in Sample_Analysis::AfterPartonShower with "<<blobs->size()<<" ("<<status<<")"<<endl;
   if (hepevt) {
@@ -121,7 +120,7 @@ void Sample_Analysis::AfterPartonShower(APHYTOOLS::Blob_List * blobs, double wei
   ana->DoAnalysis(*blobs,weight);
 }
 
-void Sample_Analysis::AfterHadronization(APHYTOOLS::Blob_List * blobs, double weight) {
+void Sample_Analysis::AfterHadronization(ATOOLS::Blob_List * blobs, double weight) {
   // fill partons into FORTRAN HEPEVT and print it 
   if (hepevt) {
     convert->Blobs2HepEvt(blobs,std::string("ISR"),nhep);
@@ -202,7 +201,7 @@ Analysis_Phase::Analysis_Phase(Sample_Analysis * ana, int mode) :
 
 
 
-bool  Analysis_Phase::Treat(APHYTOOLS::Blob_List * bl, double & weight) 
+bool  Analysis_Phase::Treat(ATOOLS::Blob_List * bl, double & weight) 
 {
   switch (m_mode) {
   case 1:

@@ -8,33 +8,33 @@
 namespace MODEL {
   class DecayChannel {
   private :
-    APHYTOOLS::Flavour              m_flin;
-    std::vector<APHYTOOLS::Flavour> m_flouts;
+    ATOOLS::Flavour              m_flin;
+    std::vector<ATOOLS::Flavour> m_flouts;
     double                          m_width;
   public :
-    DecayChannel(const APHYTOOLS::Flavour);
-    void AddDecayProduct(const APHYTOOLS::Flavour);
+    DecayChannel(const ATOOLS::Flavour);
+    void AddDecayProduct(const ATOOLS::Flavour);
     void SetDecayWidth(const double);
     void Output();
     int                Nout();
-    APHYTOOLS::Flavour Flin();
-    APHYTOOLS::Flavour Flout(const int i);
+    ATOOLS::Flavour Flin();
+    ATOOLS::Flavour Flout(const int i);
     double             DecayWidth();
   };
 
 
   class Spectrum_Generator_Base {
   protected:
-    AORGTOOLS::Data_Read * p_dataread;
+    ATOOLS::Data_Read * p_dataread;
     Model_Base           * p_model;
 
     std::vector<double>             widths;
     std::vector<double>             masses;
-    std::vector<APHYTOOLS::Flavour> particles;
+    std::vector<ATOOLS::Flavour> particles;
 
     std::vector<DecayChannel *>     decayproducts;
   public:
-    Spectrum_Generator_Base(AORGTOOLS::Data_Read *,Model_Base *);
+    Spectrum_Generator_Base(ATOOLS::Data_Read *,Model_Base *);
     virtual ~Spectrum_Generator_Base();
     virtual void Run(std::string) = 0;
     virtual void FillMasses()     = 0;
@@ -58,7 +58,7 @@ namespace MODEL {
     simple transfer of the data already contained in the model class.
   */
   /*!
-    AORGTOOLS::Data_Read * Spectrum_Generator_Base::p_dataread
+    ATOOLS::Data_Read * Spectrum_Generator_Base::p_dataread
     A pointer to the model's dataread object. It is handed over through the constructor.
     This might become important, if moer information is needed.
   */
@@ -73,7 +73,7 @@ namespace MODEL {
     with the particle vector.
   */
   /*!
-    std::vector<APHYTOOLS::Flavour> Spectrum_Generator_Base::particles
+    std::vector<ATOOLS::Flavour> Spectrum_Generator_Base::particles
     A vector containing all particles that have been dealt with.
   */
   /*!
@@ -83,8 +83,8 @@ namespace MODEL {
           couplnigs have to be extracted, branching ratios transmitted to the rest of the code.
   */
   /*!
-    Spectrum_Generator_Base::Spectrum_Generator_Base(AORGTOOLS::Data_Read *,Model_Base *)
-    This constructor fills the pointers to the AORGTOOLS::Data_Read object and to the model
+    Spectrum_Generator_Base::Spectrum_Generator_Base(ATOOLS::Data_Read *,Model_Base *)
+    This constructor fills the pointers to the ATOOLS::Data_Read object and to the model
     that owns the spectrum generator.
   */
   /*!

@@ -6,9 +6,9 @@
 namespace PDF {
   class Intact : public ISR_Base {
   public:
-    Intact(APHYTOOLS::Flavour);     
+    Intact(ATOOLS::Flavour);     
     bool       CalculateWeight(double,double);
-    double     Weight(APHYTOOLS::Flavour);
+    double     Weight(ATOOLS::Flavour);
     bool       On()           { return 0; }
     PDF_Base * PDF()          { return 0; }
   };
@@ -35,7 +35,7 @@ namespace PDF {
     No weight has to be calculated here.
   */
   /*!
-    \fn double Intact::Weight(APHYTOOLS::Flavour)
+    \fn double Intact::Weight(ATOOLS::Flavour)
     The trivial weight is returned.
   */
 

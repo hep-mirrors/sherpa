@@ -16,7 +16,7 @@ namespace SHERPA {
     int m_status;
   public:
     Analysis_Phase(Sample_Analysis *,int);
-    bool Treat(APHYTOOLS::Blob_List *, double &);
+    bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
   };
 
@@ -26,16 +26,16 @@ namespace SHERPA {
     int                             status,hepevtmode;
     int                             nhep;
     IO_HepEvt                     * convert;
-    APHYTOOLS::Primitive_Analysis * ana;
-    std::vector<APHYTOOLS::Primitive_Observable_Base *> obs;
+    ATOOLS::Primitive_Analysis * ana;
+    std::vector<ATOOLS::Primitive_Observable_Base *> obs;
   public:
     Sample_Analysis(IO_HepEvt *&,bool);
     ~Sample_Analysis();
     void Init();
 
-    void AfterME(APHYTOOLS::Blob_List *,double);
-    void AfterPartonShower(APHYTOOLS::Blob_List *,double);
-    void AfterHadronization(APHYTOOLS::Blob_List *,double );
+    void AfterME(ATOOLS::Blob_List *,double);
+    void AfterPartonShower(ATOOLS::Blob_List *,double);
+    void AfterHadronization(ATOOLS::Blob_List *,double );
     void Finish();
   };   
 }

@@ -4,7 +4,7 @@
 #include "prof.hh"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 string sknot::emptystring = string("");
@@ -742,7 +742,7 @@ void String_Tree::Simplify(sknot*& m)
     Complex vleft  = Evaluate(m->left);
     Complex vright = Evaluate(m->right);
     
-    if (AMATOOLS::IsZero(vleft/(vleft+vright))) {
+    if (ATOOLS::IsZero(vleft/(vleft+vright))) {
       //kill left part
       if (m->op=='-') {
 	if (m->left->op!=0) m->left  = String2Tree(string("0"));
@@ -750,7 +750,7 @@ void String_Tree::Simplify(sknot*& m)
       else m = m->right;
     }
 
-    if (AMATOOLS::IsZero(abs(vright/(vleft+vright))))
+    if (ATOOLS::IsZero(abs(vright/(vleft+vright))))
       //kill right part
       m = m->left;
   }

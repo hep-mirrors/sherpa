@@ -3,8 +3,7 @@
 #include "Run_Parameter.H"
 #include <stdio.h>
 
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 Histogram::Histogram(int _type,double _lower,double _upper,int _nbin) :
   m_type(_type), m_nbin(_nbin), m_lower(_lower), m_upper(_upper), m_bins(0), m_fills(0)
@@ -371,7 +370,7 @@ void Histogram::Extrapolate(double coordinate,double * res,int mode) {
 	  if (m_depth) {
 	    res[1]=0.;
 	    for (int j=i;j<m_nbin;j++) {
-	      res[1] = AMATOOLS::Max(res[1],m_bins[j][1]);
+	      res[1] = Max(res[1],m_bins[j][1]);
 	    }
 	  }
 
@@ -390,7 +389,7 @@ void Histogram::Extrapolate(double coordinate,double * res,int mode) {
 	/*
 	if (m_depth>0) {
 	  for (int j=1;j<=m_depth;j++) 
-	    res[j] = AMATOOLS::Max(m_bins[i][j],m_bins[i-1][j]);
+	    res[j] = Max(m_bins[i][j],m_bins[i-1][j]);
 	}
 	*/
 

@@ -8,8 +8,7 @@
 #include "Intact.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace MODEL;
 using namespace BEAM;
 using namespace PDF;
@@ -36,7 +35,7 @@ Environment::~Environment() {
 }
 
 void Environment::InitializeTheEnvironment() {
-  APHYTOOLS::ParticleInit(m_path); 
+  ATOOLS::ParticleInit(m_path); 
   rpa.Init(m_path);
 
   bool okay =         InitializeTheModel();  

@@ -34,14 +34,14 @@ namespace APACIC {
     double m_ta, m_tb, m_tc, m_t0;
     double m_z, m_phi, m_pt2;
     double m_maxpt;
-    APHYTOOLS::Flavour m_inflav;
+    ATOOLS::Flavour m_inflav;
 
     // veto
     int m_last_veto;
 
     void CheckSplittings();
   public:
-    Timelike_Sudakov(Timelike_Kinematics *,double,MODEL::Model_Base *,AORGTOOLS::Data_Read *);
+    Timelike_Sudakov(Timelike_Kinematics *,double,MODEL::Model_Base *,ATOOLS::Data_Read *);
     ~Timelike_Sudakov();
 
     bool Dice(Knot * mother,Knot * granny=0);
@@ -61,7 +61,7 @@ namespace APACIC {
     bool MassVeto();
     bool JetVeto(Knot *);
 
-    void UniformPhi() { m_phi = 2.*M_PI*AMATOOLS::ran.Get(); }
+    void UniformPhi() { m_phi = 2.*M_PI*ATOOLS::ran.Get(); }
   };
 
 

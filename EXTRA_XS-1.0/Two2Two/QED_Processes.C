@@ -7,20 +7,19 @@
 
 using namespace EXTRAXS;
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
+
 
 QED_Processes::QED_Processes(PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
-			     APHYTOOLS::Flavour * _fl,APHYTOOLS::Selector_Data * _seldata,
+			     ATOOLS::Flavour * _fl,ATOOLS::Selector_Data * _seldata,
 			     int _scalescheme,int _kfactorscheme,double _scalefactor) : 
   XS_Group(2,2,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor)
 {
   m_name       = std::string("ee -> qqbar");
   p_xsselector = new XS_Selector();
   for (int ifl=1;ifl<6;++ifl) {
-    p_fl[2] = APHYTOOLS::Flavour(kf::code(ifl));
-    p_fl[3] = APHYTOOLS::Flavour(kf::code(ifl)).Bar();
+    p_fl[2] = ATOOLS::Flavour(kf::code(ifl));
+    p_fl[3] = ATOOLS::Flavour(kf::code(ifl)).Bar();
     Add(p_xsselector->GetXS(m_nin,m_nout,p_fl));
   }
   p_fl[2] = Flavour(kf::jet);

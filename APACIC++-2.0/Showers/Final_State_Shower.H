@@ -10,7 +10,7 @@
 #include "Blob_List.H"
 #include "Parton_List.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class Flavour;
 }
 
@@ -26,7 +26,7 @@ namespace APACIC {
     Timelike_Kinematics    * p_kin;
     std::vector<Knot*> m_ini_partons;
   public:
-    Final_State_Shower(MODEL::Model_Base *,AORGTOOLS::Data_Read * const);
+    Final_State_Shower(MODEL::Model_Base *,ATOOLS::Data_Read * const);
     ~Final_State_Shower();
 
     int PerformShower(Tree *,bool);
@@ -36,12 +36,12 @@ namespace APACIC {
     static void EstablishRelations(Knot * mo, Knot * d1,Knot * d2);
 
 
-    void ExtractPartons(Knot *,APHYTOOLS::Blob *,
-			APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
-    void ExtractPartons(Knot *,APHYTOOLS::Parton_List * = NULL);
+    void ExtractPartons(Knot *,ATOOLS::Blob *,
+			ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
+    void ExtractPartons(Knot *,ATOOLS::Parton_List * = NULL);
 
     bool TestShower(Tree *) ;
-    AMATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
+    ATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
     void OutputTree(Tree *);
     bool ExtraJetCheck() const;
     double                PT2Min()        { return m_pt2min; }
@@ -56,7 +56,7 @@ namespace APACIC {
 
     bool ChooseDaughter(Knot *);
 
-    void InitDaughters(Tree *,Knot *,APHYTOOLS::Flavour *,bool);
+    void InitDaughters(Tree *,Knot *,ATOOLS::Flavour *,bool);
     void ResetDaughters(Knot *);
 
     void Reset(Knot *);
@@ -125,13 +125,13 @@ namespace APACIC {
   */
   
   /*
-    \fn void Final_State_Shower::ExtractPartons(Knot *,APHYTOOLS::Parton_List *);
+    \fn void Final_State_Shower::ExtractPartons(Knot *,ATOOLS::Parton_List *);
     \brief a simpler version of the method below (collects only final state partons)
   */
 
   /*!
-    \fn void Final_State_Shower::ExtractPartons(Knot *,APHYTOOLS::Blob *,
-		APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
+    \fn void Final_State_Shower::ExtractPartons(Knot *,ATOOLS::Blob *,
+		ATOOLS::Blob_List *,ATOOLS::Parton_List *);
     \brief After the shower is complete the outgoing knots of the tree are put into
     the parton list. Moreover, blobs are filled.
   */
@@ -147,7 +147,7 @@ namespace APACIC {
   */
 
   /*!
-    \fn AMATOOLS::Vec4D Final_State_Shower::GetMomentum(Knot * mo, int & number);
+    \fn ATOOLS::Vec4D Final_State_Shower::GetMomentum(Knot * mo, int & number);
     \brief check momentum conservation (adds daughter momenta recursively)
   */
 
@@ -244,7 +244,7 @@ namespace APACIC {
 
 
   /*!
-    \fn void Final_State_Shower::InitDaughters(Tree *,Knot *,APHYTOOLS::Flavour *,bool);
+    \fn void Final_State_Shower::InitDaughters(Tree *,Knot *,ATOOLS::Flavour *,bool);
     \brief
       Initializes new daughters. If knots do not exist so far,
       they are initialized including there mother-daughter relation

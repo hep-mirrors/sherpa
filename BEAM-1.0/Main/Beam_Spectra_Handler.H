@@ -10,34 +10,34 @@ namespace BEAM {
   class Beam_Spectra_Handler {
   protected:
     Beam_Base          ** p_BeamBase;
-    AMATOOLS::Poincare    m_CMSBoost;
-    AMATOOLS::Poincare    m_LABBoost;
+    ATOOLS::Poincare    m_CMSBoost;
+    ATOOLS::Poincare    m_LABBoost;
 
     bool                  m_asymmetric;
     int                   m_mode; 
     double                m_mass12, m_mass22, m_x1, m_x2;
     double                m_exponent[2];
     double                m_splimits[3],m_ylimits[2];
-    AMATOOLS::Vec4D       m_fiXVECs[2];
+    ATOOLS::Vec4D       m_fiXVECs[2];
     std::string           m_name,m_type;
   private:
-    bool InitKinematics(AORGTOOLS::Data_Read *);
-    bool SpecifySpectra(AORGTOOLS::Data_Read *);
-    bool InitializeLaserBackscattering(AORGTOOLS::Data_Read *,int);
-    bool InitializeMonochromatic(AORGTOOLS::Data_Read *,int);
+    bool InitKinematics(ATOOLS::Data_Read *);
+    bool SpecifySpectra(ATOOLS::Data_Read *);
+    bool InitializeLaserBackscattering(ATOOLS::Data_Read *,int);
+    bool InitializeMonochromatic(ATOOLS::Data_Read *,int);
   public:
-    Beam_Spectra_Handler(AORGTOOLS::Data_Read *);
+    Beam_Spectra_Handler(ATOOLS::Data_Read *);
     ~Beam_Spectra_Handler();
     
     void   Output();
-    bool   CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *);
-    bool   CheckConsistency(APHYTOOLS::Flavour *);
-    bool   MakeBeams(AMATOOLS::Vec4D *,double,double);
+    bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
+    bool   CheckConsistency(ATOOLS::Flavour *);
+    bool   MakeBeams(ATOOLS::Vec4D *,double,double);
     bool   CalculateWeight(double);
-    double Weight(APHYTOOLS::Flavour * flin = NULL);
+    double Weight(ATOOLS::Flavour * flin = NULL);
 
-    void   BoostInCMS(AMATOOLS::Vec4D *,int);
-    void   BoostInLab(AMATOOLS::Vec4D *,int);
+    void   BoostInCMS(ATOOLS::Vec4D *,int);
+    void   BoostInLab(ATOOLS::Vec4D *,int);
 
     void   SetName(std::string _name)     { m_name         = _name; }
     void   SetSprimeMin(double _spl)      { m_splimits[0]  = _spl; }
@@ -111,12 +111,12 @@ namespace BEAM {
     \todo include more types of BeamBases
   */
   /*!
-    \var AMATOOLS::Poincare Beam_Spectra_Handler::m_CMSBoost
+    \var ATOOLS::Poincare Beam_Spectra_Handler::m_CMSBoost
     A boost from the c.m. system of the incoming beams to the c.m. system of the
     outgoing bunches.
   */
   /*!
-    \var AMATOOLS::Poincare Beam_Spectra_Handler::m_LABBoost
+    \var ATOOLS::Poincare Beam_Spectra_Handler::m_LABBoost
     A boost from the lab system of the incoming beams to their c.m. system.
   */
   /*!
@@ -187,13 +187,13 @@ namespace BEAM {
     Type of the Beam_Spectra_Handler, it consists of the types of the BeamBases.
   */
   /*!
-    \var AMATOOLS::Vec4D Beam_Spectra_Handler::m_fiXVECs[2]
+    \var ATOOLS::Vec4D Beam_Spectra_Handler::m_fiXVECs[2]
     The c.m. momenta of the two incoming beams.
   */
   /*!
-    \fn Beam_Spectra_Handler::Beam_Spectra_Handler(AORGTOOLS::Data_Read *)
+    \fn Beam_Spectra_Handler::Beam_Spectra_Handler(ATOOLS::Data_Read *)
     The explicit constructor managing the initialisation of the beams through calls to
-    SpecifySpectra(AORGTOOLS::Data_Read *) and InitKinematics(AORGTOOLS::Data_Read *).
+    SpecifySpectra(ATOOLS::Data_Read *) and InitKinematics(ATOOLS::Data_Read *).
     Having succeeded in the initialization of the two Beam_Bases, m_mode is also
     determined. It is foreseen that at this point also the beam geometries - if
     necessary - will be fixed. Having read in the incoming energies also the c.m. energy
@@ -202,43 +202,43 @@ namespace BEAM {
     \todo Enable beam geometries, especially for pile-up events etc.
   */
   /*!
-    \fn bool Beam_Spectra_Handler::SpecifySpectra(AORGTOOLS::Data_Read *);
+    \fn bool Beam_Spectra_Handler::SpecifySpectra(ATOOLS::Data_Read *);
     SpecifySpectra reads in the specific spectra of the beams and the corresponding generator 
     and initializes the spectra through appropriate InitializeXXX methods. At the moment, two 
-    such methods are available, namely InitializeLaserBackscattering(AORGTOOLS::Data_Read *,int)
-    and InitializeMonochromatic(AORGTOOLS::Data_Read *,int). For every new spectrum, such
+    such methods are available, namely InitializeLaserBackscattering(ATOOLS::Data_Read *,int)
+    and InitializeMonochromatic(ATOOLS::Data_Read *,int). For every new spectrum, such
     a method has to be provided as well and SpecifySpectra has to be modified accordingly.
     The idea is that in the long run, beam generators might be linked from outside by
     experimenters aiming at higher precision/better fit to beam data.
   */
   /*!
-    \fn bool Beam_Spectra_Handler::InitializeLaserBackscattering(AORGTOOLS::Data_Read *,int)
+    \fn bool Beam_Spectra_Handler::InitializeLaserBackscattering(ATOOLS::Data_Read *,int)
     Characteristic parameters for laser back scattering are read in and the spectrum is
     instantiated through a call to 
-    Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour,const double,const double,
+    Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour,const double,const double,
                                                const double,const double,const int,
 					       const int,const int,bool &)
   */
   /*!
-    \fn bool Beam_Spectra_Handler::InitializeMonochromatic(AORGTOOLS::Data_Read *,int);
+    \fn bool Beam_Spectra_Handler::InitializeMonochromatic(ATOOLS::Data_Read *,int);
     Characteristic parameters for monochromatic beams are read in and the spectrum is
     instantiated through a call to 
-    Monochromatic::Monochromatic(const APHYTOOLS::Flavour,const double,const double,bool &)
+    Monochromatic::Monochromatic(const ATOOLS::Flavour,const double,const double,bool &)
   */
   /*!
-    \fn bool Beam_Spectra_Handler::InitKinematics(AORGTOOLS::Data_Read *);
+    \fn bool Beam_Spectra_Handler::InitKinematics(ATOOLS::Data_Read *);
     Here the two lab momenta of the BeamBases are combined to determnie the c.m. energy of
     the process in their c.m. frame. Furthermore, the two corresponding c.m. momenta of the
     incoming beams are constructed and it is decided whether additional boosts to the lab frame
     are mandatory. Also, the characteristic exponents are filled. 
   */
   /*!
-    \fn bool Beam_Spectra_Handler::CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *)
+    \fn bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *)
     This checks whether the two sets of flavours match the flaovurs inherent to the
     two BeamBases. If this is the case, true is returned.
   */
   /*!
-    \fn bool Beam_Spectra_Handler::CheckConsistency(APHYTOOLS::Flavour *)
+    \fn bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour *)
     This checks whether the flavours match the bunches of the two BeamBases. If this is the case, 
     true is returned.
   */
@@ -247,15 +247,15 @@ namespace BEAM {
     Some control output of the type and name of this Handler and the setup of the BeamBases.
   */
   /*!
-    \fn void Beam_Spectra_Handler::BoostInCMS(AMATOOLS::Vec4D *,int)
+    \fn void Beam_Spectra_Handler::BoostInCMS(ATOOLS::Vec4D *,int)
     Boosts the n vectors into the CMS frame of the beam particles.
   */
   /*!
-    \fn void Beam_Spectra_Handler::BoostInLab(AMATOOLS::Vec4D *,int)
+    \fn void Beam_Spectra_Handler::BoostInLab(ATOOLS::Vec4D *,int)
     Boosts the n vectors into the lab frame.
   */
   /*!
-    \fn bool Beam_Spectra_Handler::MakeBeams(AMATOOLS::Vec4D *,double,double);
+    \fn bool Beam_Spectra_Handler::MakeBeams(ATOOLS::Vec4D *,double,double);
     Depending on the \f$s'\f$-value handed over as arguments, two matching vectors for the
     outgoing bunches in their c.m. frame (out) are constructed. Then the energy fractions in the
     c.m. system (in) of the incoming beams are determined with help of the other argument, the
@@ -279,7 +279,7 @@ namespace BEAM {
     where the energy fractions and the scale are passed as arguments.
   */
   /*!
-    \fn double Beam_Spectra_Handler::Weight(APHYTOOLS::Flavour * flin = NULL)
+    \fn double Beam_Spectra_Handler::Weight(ATOOLS::Flavour * flin = NULL)
     The weight corresponding to CalculateWeight(double), basically the product of the two
     individual weights. This clearly depends on the flavours of the bunch particles here
     and might therefore allow to have, e.g., a spectrum of the outgoing electrons in

@@ -1,11 +1,11 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 
-namespace AORGTOOLS {
+namespace ATOOLS {
   Message       msg;
 }
 
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 
 Message::Message() {      

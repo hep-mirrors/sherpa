@@ -8,7 +8,7 @@
 #include "Message.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 #define lorentz_type
@@ -32,7 +32,7 @@ void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _
   zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
   zcalc.push_back(new SSSS_Calc(_sgen,_BS));
   
-  if(rpa.gen.Model()==AORGTOOLS::Model_Type::ADD){
+  if(rpa.gen.Model()==ATOOLS::Model_Type::ADD){
     zcalc.push_back(new FFT_Calc(_sgen,_BS));
     zcalc.push_back(new VVT_Calc(_sgen,_BS));
     zcalc.push_back(new SST_Calc(_sgen,_BS));
@@ -76,7 +76,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
       //      cout<<"MarkCut: "<<p->number<<" not cutted"<<endl;
       p->m=0;
       }
-    if(AMATOOLS::IsZero(p->fl.Mass())){
+    if(ATOOLS::IsZero(p->fl.Mass())){
       p->m=0;
       }	
   }
@@ -87,7 +87,7 @@ void Zfunc_Generator::MarkCut(Point* p,int notcut,bool fromfermion)
 
   // "new gauge test" cut all massless propagators
   if (p->fl.IsVector() && p->number>99  && rpa.gen.CutScheme()==1) {
-    if(AMATOOLS::IsZero(p->fl.Mass())) {
+    if(ATOOLS::IsZero(p->fl.Mass())) {
       p->m=1;
     }	
   }
@@ -206,19 +206,19 @@ void Zfunc_Generator::Lorentz_Sequence(Point* pb,vector<Lorentz_Function> &lflis
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function> &lflist)
 {
   if (!rpa.gen.Tracking()) return;
-  AORGTOOLS::msg.Out()<<"LorentzList: "<<endl;
+  ATOOLS::msg.Out()<<"LorentzList: "<<endl;
   for (short int i=0;i<lflist.size();i++)
-    AORGTOOLS::msg.Out()<<lflist[i].String(1)<<endl;
-  AORGTOOLS::msg.Out()<<endl;
+    ATOOLS::msg.Out()<<lflist[i].String(1)<<endl;
+  ATOOLS::msg.Out()<<endl;
 }
 
 void Zfunc_Generator::LFPrint(const vector<Lorentz_Function*> &lflist)
 {
   if (!rpa.gen.Tracking()) return;
-  AORGTOOLS::msg.Out()<<"LorentzList: "<<endl;
+  ATOOLS::msg.Out()<<"LorentzList: "<<endl;
   for (short int i=0;i<lflist.size();i++)
-    AORGTOOLS::msg.Out()<<lflist[i]->String(1)<<endl;
-  AORGTOOLS::msg.Out()<<endl;
+    ATOOLS::msg.Out()<<lflist[i]->String(1)<<endl;
+  ATOOLS::msg.Out()<<endl;
 }
 
 lf::code Zfunc_Generator::LFEff(lf::code type)
@@ -288,7 +288,7 @@ int Zfunc_Generator::LFDetermine_Zfunc(Zfunc* Zh,Point* p,Point* pf,Point* pb)
   }
   if (Zh->m_type==-10) {
     return 0;
-    AORGTOOLS::msg.Error()<<"No Lorentzfunction found!"<<endl;
+    ATOOLS::msg.Error()<<"No Lorentzfunction found!"<<endl;
     LFPrint(lflist);  
     abort();
   }
@@ -451,7 +451,7 @@ void Zfunc_Generator::LFFill_Zfunc(Zfunc* Zh,vector<Lorentz_Function> &lflist,Po
 
 	if (max<typemin) i = typemin-1;
 	if (i<0) {
-	  AORGTOOLS::msg.Error()<<"Error in Zfunc_Generator::LFFill_Zfunc()!!"<<endl;
+	  ATOOLS::msg.Error()<<"Error in Zfunc_Generator::LFFill_Zfunc()!!"<<endl;
 	  abort();
 	}
 	//LFPrint(lfpointer);
@@ -732,7 +732,7 @@ void Zfunc_Generator::Set_In(Zfunc* Zh,int number, Point* p, Point* pf,Point* pb
 	Zh->p_couplings[number*2+1] = Complex(0.,0.);
       }
       else {
-	if (p->fl.IsVector() && !AMATOOLS::IsZero(p->fl.Mass())) Zh->p_arguments[number*2] = p->number+20;
+	if (p->fl.IsVector() && !ATOOLS::IsZero(p->fl.Mass())) Zh->p_arguments[number*2] = p->number+20;
 	                                                    else Zh->p_arguments[number*2] = p->number+10+1;
 	Zh->p_couplings[number*2]   = Complex(1.,0.);
 	Zh->p_couplings[number*2+1] = Complex(1.,0.);
@@ -783,11 +783,11 @@ void Zfunc_Generator::Set_Out(Zfunc* Zh,int number,Point* pg,Point* p)
       Zh->p_arguments[number*2]     = pg->number;
       if (BS->Sign(pg->number)==-1) {
 	Zh->p_arguments[number*2+1]     = pg->number;
-	if (pg->fl.IsVector() && !AMATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2] = pg->number+20;
+	if (pg->fl.IsVector() && !ATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2] = pg->number+20;
 	                                                      else Zh->p_arguments[number*2] = pg->number+10+1;
       }
       else {
-	if (pg->fl.IsVector() && !AMATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2+1] = pg->number+20;
+	if (pg->fl.IsVector() && !ATOOLS::IsZero(pg->fl.Mass())) Zh->p_arguments[number*2+1] = pg->number+20;
 	else Zh->p_arguments[number*2+1] = pg->number+10+1;
       }
       Zh->p_couplings[number*2]   = Complex(1.,0.);

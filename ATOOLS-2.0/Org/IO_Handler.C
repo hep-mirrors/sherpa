@@ -5,7 +5,7 @@
 #include "MyComplex.H"
 #include "Message.H"
 
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 IO_Handler::IO_Handler() { filename=std::string(""); };
@@ -289,4 +289,4 @@ template Complex IO_Handler::Input<Complex>(const std::string);
 template Complex ** IO_Handler::MatrixInput<Complex>(const std::string, int, int);
 
 
-//template <> void IO_Handler::operator<< (const AMATOOLS::Histogram &);
+//template <> void IO_Handler::operator<< (const Histogram &);

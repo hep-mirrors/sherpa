@@ -17,7 +17,7 @@ namespace ISAJET {
     void sLeptonMasses();
 
   public:
-    Isajet_Fortran_Interface(AORGTOOLS::Data_Read *,MODEL::Model_Base *);
+    Isajet_Fortran_Interface(ATOOLS::Data_Read *,MODEL::Model_Base *);
     ~Isajet_Fortran_Interface();
     void Run(std::string);
     void FillMasses();
@@ -81,9 +81,9 @@ namespace ISAJET {
     the model.
   */
   /*!
-    Isajet_Fortran_Interface(AORGTOOLS::Data_Read *,MODEL::Model_Base *)
+    Isajet_Fortran_Interface(ATOOLS::Data_Read *,MODEL::Model_Base *)
     Copies the pointers to the model that owns this spectrum generator and to the
-    AORGTOOLS::Data_Read object.
+    ATOOLS::Data_Read object.
   */
   /*!
     \fn void Isajet_Fortran_Interface::Run(std::string)

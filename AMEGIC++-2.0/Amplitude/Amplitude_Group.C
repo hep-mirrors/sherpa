@@ -7,8 +7,7 @@
 #include <algorithm>
 
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 

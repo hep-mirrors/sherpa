@@ -1,7 +1,7 @@
 #ifndef Sort_H
 #define Sort_H
 
-namespace AORGTOOLS {
+namespace ATOOLS {
 
   class Bubble_Sort {
   public:
@@ -14,7 +14,7 @@ namespace AORGTOOLS {
 
   /*!
     \file
-    \brief contains the class AORGTOOLS::Bubble_Sort
+    \brief contains the class Bubble_Sort
   */
 
   /*!

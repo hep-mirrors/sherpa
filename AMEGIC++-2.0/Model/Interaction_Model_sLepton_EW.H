@@ -23,9 +23,9 @@ namespace AMEGIC {
     Kabbala K_Z_L(short int i,short int j);
     Kabbala K_k_S(short int i,short int j);
     Kabbala K_l_S(short int i,short int j);
-    Kabbala K_yuk(APHYTOOLS::Flavour fl);           
-    Kabbala K_yuk_sign(APHYTOOLS::Flavour fl);          
-    int gen_sLep(APHYTOOLS::Flavour fl);
+    Kabbala K_yuk(ATOOLS::Flavour fl);           
+    Kabbala K_yuk_sign(ATOOLS::Flavour fl);          
+    int gen_sLep(ATOOLS::Flavour fl);
   public:
     Interaction_Model_sLepton_EW(MODEL::Model_Base *,std::string,std::string);
  

@@ -9,10 +9,10 @@ namespace PDF {
   private:
     PDF_Base * p_pdf;
   public:
-    Structure_Function(PDF::PDF_Base *,APHYTOOLS::Flavour); 
+    Structure_Function(PDF::PDF_Base *,ATOOLS::Flavour); 
     ~Structure_Function();
     bool   CalculateWeight(double,double);
-    double Weight(APHYTOOLS::Flavour);
+    double Weight(ATOOLS::Flavour);
     bool            On()       { return 1;  }
     PDF_Base      * PDF()      { return p_pdf; }
     double          Exponent() { return p_pdf->Exponent(); }

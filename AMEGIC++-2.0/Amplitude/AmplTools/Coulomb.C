@@ -3,8 +3,7 @@
 #include "Run_Parameter.H"
 
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Coulomb::Coulomb(Single_Amplitude* _first_ampl) : first_ampl(_first_ampl)
@@ -27,7 +26,7 @@ void Coulomb::Build_Matrix()
 {
   /*
   icoulomb = 0;
-  if (AORGTOOLS::rpa.me.UsingCoulombCorr()) {
+  if (ATOOLS::rpa.me.UsingCoulombCorr()) {
     Single_Amplitude* m;
     int wcount;
     //tops later on
@@ -94,8 +93,8 @@ void Coulomb::Calculate(int* b,Vec4D* mom)
     }
   }
   double s      = (mom[0]+mom[1]).Abs2();
-  double MW     = AORGTOOLS::rpa.consts.Mass(Flavour(kf::W),s);
-  double GW     = AORGTOOLS::rpa.consts.Width(Flavour(kf::W),s);
+  double MW     = ATOOLS::rpa.consts.Mass(Flavour(kf::W),s);
+  double GW     = ATOOLS::rpa.consts.Width(Flavour(kf::W),s);
   double beta   = sqrt((s-sqr(mp-mm))*(s-sqr(mp+mm)))/s;
   Complex betam = sqrt(Complex(1.-4.*MW*MW/s,4*MW*GW/s)); 
   double delta  = dabs(sqr(mp)-sqr(mm))/s;

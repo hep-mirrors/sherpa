@@ -15,7 +15,7 @@ namespace AMEGIC {
     std::string path,pathID,pID;
     std::string headername,cfilename;
 
-    bool  CheckForOldChannels(int,APHYTOOLS::Flavour *,PHASIC::Multi_Channel *);
+    bool  CheckForOldChannels(int,ATOOLS::Flavour *,PHASIC::Multi_Channel *);
     bool  IsFile(std::string &);
     bool  Search(std::ifstream &,std::string);
     int   Search(std::string file,std::string search);
@@ -28,9 +28,9 @@ namespace AMEGIC {
     void  AddToSetChannel();
   public:
     Phase_Space_Generator(int,int);
-    bool Construct(PHASIC::Multi_Channel *,std::string,std::string,APHYTOOLS::Flavour *, 
+    bool Construct(PHASIC::Multi_Channel *,std::string,std::string,ATOOLS::Flavour *, 
 		   Process_Base *);
-    PHASIC::Single_Channel * SetChannel(int,int,APHYTOOLS::Flavour* fl,int,std::string&);
+    PHASIC::Single_Channel * SetChannel(int,int,ATOOLS::Flavour* fl,int,std::string&);
   };
 
   //! The numbers of incoming and outgoing momenta.

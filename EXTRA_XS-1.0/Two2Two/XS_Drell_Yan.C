@@ -5,9 +5,7 @@
 
 using namespace EXTRAXS;
 using namespace MODEL;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -16,7 +14,7 @@ using namespace std;
    by the factor 4 Pi for each alpha. Hence one Pi remains in the game.
 */
 
-XS_qqbar_pg::XS_qqbar_pg(int _nin,int _nout,APHYTOOLS::Flavour * _fl)
+XS_qqbar_pg::XS_qqbar_pg(int _nin,int _nout,ATOOLS::Flavour * _fl)
   : Single_XS(_nin,_nout,_fl) 
 { 
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0; 
@@ -40,7 +38,7 @@ bool XS_qqbar_pg::SetColours(double s,double t,double u) {
 
 //======================================================================
 
-XS_qg_qp::XS_qg_qp (int _nin,int _nout,APHYTOOLS::Flavour * _fl)
+XS_qg_qp::XS_qg_qp (int _nin,int _nout,ATOOLS::Flavour * _fl)
   : Single_XS(_nin,_nout,_fl) 
 { 
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0; 
@@ -64,17 +62,17 @@ bool XS_qg_qp::SetColours(double s,double t,double u) {
 
 //======================================================================
 
-XS_ee_ffbar::XS_ee_ffbar(int _nin,int _nout,APHYTOOLS::Flavour * _fl) 
+XS_ee_ffbar::XS_ee_ffbar(int _nin,int _nout,ATOOLS::Flavour * _fl) 
   : Single_XS(_nin,_nout,_fl) 
 {
   msg.Debugging()<<"In XS_ee_ffbar."<<std::endl;
 
-  MZ2    = sqr(APHYTOOLS::Flavour(APHYTOOLS::kf::Z).Mass());
-  GZ2    = sqr(APHYTOOLS::Flavour(APHYTOOLS::kf::Z).Width());
+  MZ2    = sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
+  GZ2    = sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Width());
  
   alpha  = aqed->Aqed((sqr(rpa.gen.Ecms())));
   sin2tw = rpa.gen.ScalarConstant(string("sin2_thetaW"));
-  if (APHYTOOLS::Flavour(APHYTOOLS::kf::Z).IsOn()) 
+  if (ATOOLS::Flavour(ATOOLS::kf::Z).IsOn()) 
     kappa  = 1./(4.*sin2tw*(1.-sin2tw));
   else
     kappa  = 0.;

@@ -13,15 +13,15 @@
 
 namespace MOCAIC {
   class Soft_Interface {
-    APHYTOOLS::Flavour ** constituents;
+    ATOOLS::Flavour ** constituents;
     int     *  n_const;
 
     /*!
       Intrinsic partonlist: After ExtractSinglets it will be colour-ordered.
     */
-    APHYTOOLS::Parton_List * mypartons;
-    APHYTOOLS::Blob_List   * myblobs;
-    APHYTOOLS::Blob        * myblob;
+    ATOOLS::Parton_List * mypartons;
+    ATOOLS::Blob_List   * myblobs;
+    ATOOLS::Blob        * myblob;
     /*!
       Interface to the Lund String. More fine-tuning needed.
     */
@@ -31,22 +31,22 @@ namespace MOCAIC {
       Method compare colour component no 1 of parton with colour component no 2
       of list to fill singlets.
     */
-    bool   ExtractSinglets(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
-    bool   FindConnected(APHYTOOLS::Parton_List *,APHYTOOLS::Parton *,
-			 APHYTOOLS::Blob *);
-    int    Constituents(APHYTOOLS::Flavour,APHYTOOLS::Flavour *); 
-    bool   FillHadron(APHYTOOLS::Parton_List *,APHYTOOLS::Blob *,APHYTOOLS::Parton *);
-    double GetX(APHYTOOLS::Flavour,APHYTOOLS::Flavour,double);
+    bool   ExtractSinglets(ATOOLS::Blob_List *,ATOOLS::Parton_List *);
+    bool   FindConnected(ATOOLS::Parton_List *,ATOOLS::Parton *,
+			 ATOOLS::Blob *);
+    int    Constituents(ATOOLS::Flavour,ATOOLS::Flavour *); 
+    bool   FillHadron(ATOOLS::Parton_List *,ATOOLS::Blob *,ATOOLS::Parton *);
+    double GetX(ATOOLS::Flavour,ATOOLS::Flavour,double);
   public :
     Soft_Interface();
     ~Soft_Interface();
     /*!
       Generic methods to extract singlets from the parton/bloblist
     */
-    bool PerformFragmentation(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
+    bool PerformFragmentation(ATOOLS::Blob_List *,ATOOLS::Parton_List *);
 
-    bool HadronsToPartons(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
-    // bool ExtractSinglets(APHYTOOLS::Blob_List *);
+    bool HadronsToPartons(ATOOLS::Blob_List *,ATOOLS::Parton_List *);
+    // bool ExtractSinglets(ATOOLS::Blob_List *);
     void EmptyMyLists();
   };
 

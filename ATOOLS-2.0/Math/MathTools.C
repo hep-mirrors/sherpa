@@ -1,7 +1,7 @@
 #include "MathTools.H"
 // calculates the logarithm of the Gammafunction
 
-namespace AMATOOLS {
+namespace ATOOLS {
   double Gammln(double xx)
   {
     double x,y,tmp,ser;

@@ -8,13 +8,13 @@ namespace PDF {
   class ISR_Base { 
   protected:
     std::string        m_type;
-    APHYTOOLS::Flavour m_bunch;
+    ATOOLS::Flavour m_bunch;
     double             m_weight;
   public:
     virtual ~ISR_Base()          {};
     virtual bool   CalculateWeight(double,double) =0;
-    virtual double Weight(APHYTOOLS::Flavour)     =0;
-    virtual APHYTOOLS::Flavour Flav()     { return m_bunch; }
+    virtual double Weight(ATOOLS::Flavour)     =0;
+    virtual ATOOLS::Flavour Flav()     { return m_bunch; }
     virtual bool               On()       { return 0; }
     virtual std::string        Type()     { return m_type; }
     virtual double             Exponent() { return 0.; }
@@ -41,10 +41,10 @@ namespace PDF {
     The type of the ISR_Base, either "(None)" or "(SF)" for partonic bunches or
     a handling through PDFs/structure functions.
 
-    \sa AORGTOOLS::ISR_Type
+    \sa ATOOLS::ISR_Type
   */
   /*!
-    \var APHYTOOLS::Flavour ISR_Base::m_bunch.
+    \var ATOOLS::Flavour ISR_Base::m_bunch.
     The flavour of the incoming bunch particle.
   */
   /*!
@@ -59,7 +59,7 @@ namespace PDF {
     and in dependence on the scale of the process. 
   */
   /*!
-    \fn double ISR_Base::Weight(APHYTOOLS::Flavour)
+    \fn double ISR_Base::Weight(ATOOLS::Flavour)
     Returns the weight after the flavours are checked.
   */
   /*!

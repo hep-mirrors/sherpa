@@ -12,15 +12,13 @@
 
 using namespace AMEGIC;
 using namespace PHASIC;
-using namespace AORGTOOLS; 
-using namespace AMATOOLS; 
-using namespace APHYTOOLS; 
+using namespace ATOOLS; 
 using namespace std;
 
 Phase_Space_Generator::Phase_Space_Generator(int _nin,int _nout) : nin(_nin), nout(_nout) {}
 
 bool Phase_Space_Generator::Construct(Multi_Channel * Ch,string _pathID,string _pID,
-				      APHYTOOLS::Flavour* fl,Process_Base * proc)
+				      ATOOLS::Flavour* fl,Process_Base * proc)
 { 
   //  pathID = _pathID;
   pathID = _pathID + string("/") + _pID;
@@ -94,17 +92,17 @@ bool Phase_Space_Generator::MakeHeader(string &headername,char* name,int rannum)
 	<<"    int     chnumber;"<<endl;
 
   //actual Channel
-  header<<"    void   "<<name<<"Momenta(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);"<<endl
-	<<"    double "<<name<<"Weight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);"<<endl
-	<<"    int    "<<name<<"Resonances(APHYTOOLS::Flavour*&);"<<endl
+  header<<"    void   "<<name<<"Momenta(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);"<<endl
+	<<"    double "<<name<<"Weight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);"<<endl
+	<<"    int    "<<name<<"Resonances(ATOOLS::Flavour*&);"<<endl
 	<<"    void   "<<name<<"ISRtype(int &,double &,double &);"<<endl
 	<<"  public:"<<endl
-	<<"    "<<pID.c_str()<<"(int nin,int nout,APHYTOOLS::Flavour* fl,int _chn)"<<endl
+	<<"    "<<pID.c_str()<<"(int nin,int nout,ATOOLS::Flavour* fl,int _chn)"<<endl
 	<<"       : Single_Channel(nin,nout,fl), chnumber(_chn)"<<endl
 	<<"    { name = std::string(\""<<pID.c_str()<<"\"); };"<<endl
-	<<"    void   GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);"<<endl
-	<<"    void   GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);"<<endl
-	<<"    int    CountResonances(APHYTOOLS::Flavour*&);"<<endl
+	<<"    void   GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);"<<endl
+	<<"    void   GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);"<<endl
+	<<"    int    CountResonances(ATOOLS::Flavour*&);"<<endl
 	<<"    void   ISRInfo(int &,double &,double &);"<<endl
 	<<"    int    ChNumber()           { return chnumber; };"<<endl
 	<<"    void   SetChNumber(int _ch) { chnumber = _ch; };"<<endl
@@ -135,7 +133,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"#include "<<'"'<<"Random.H"<<'"'<<endl<<endl
        <<"using namespace PHASIC;"<<endl<<endl
        <<"void "<<pID.c_str()<<"::GeneratePoint("
-       <<"AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data * cuts,double* ran)"<<endl 
+       <<"ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts,double* ran)"<<endl 
        <<"{"<<endl  
        <<"  switch (chnumber) {"<<endl
        <<"    case "<<chnumber<<": "<<name<<"Momenta(p,cuts,ran);break;"<<endl
@@ -144,7 +142,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"  }"<<endl
        <<"}"<<endl<<endl
        <<"void "<<pID.c_str()<<"::GenerateWeight("
-       <<"AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data * cuts)"<<endl 
+       <<"ATOOLS::Vec4D * p,ATOOLS::Cut_Data * cuts)"<<endl 
        <<"{"<<endl  
        <<"  switch (chnumber) {"<<endl
        <<"    case "<<chnumber<<": weight = "<<name<<"Weight(p,cuts);break;"<<endl
@@ -152,7 +150,7 @@ bool Phase_Space_Generator::MakeCfile(string &cfilename,char* name,
        <<"Channel Number"<<'"'<<"<<chnumber<<"<<'"'<<" not found !"<<'"'<<"<<std::endl;"<<endl
        <<"  }"<<endl
        <<"}"<<endl<<endl
-       <<"int "<<pID.c_str()<<"::CountResonances(APHYTOOLS::Flavour*& fl_res)"<<endl 
+       <<"int "<<pID.c_str()<<"::CountResonances(ATOOLS::Flavour*& fl_res)"<<endl 
        <<"{"<<endl  
        <<"  switch (chnumber) {"<<endl
        <<"    case "<<chnumber<<": return "<<name<<"Resonances(fl_res);"<<endl
@@ -200,9 +198,9 @@ int Phase_Space_Generator::AddToHeader(string &headername,char* name,bool constr
   for(;from2;) {
     from2.getline(buffer,buffersize);
     if (string(buffer).find(string("public:"))!=-1) {
-      to<<"    void   "<<name<<"Momenta(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);"<<endl
-	<<"    double "<<name<<"Weight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);"<<endl
-	<<"    int    "<<name<<"Resonances(APHYTOOLS::Flavour*&);"<<endl
+      to<<"    void   "<<name<<"Momenta(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);"<<endl
+	<<"    double "<<name<<"Weight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);"<<endl
+	<<"    int    "<<name<<"Resonances(ATOOLS::Flavour*&);"<<endl
 	<<"    void   "<<name<<"ISRtype(int &,double &,double &);"<<endl;
     }
     to<<buffer<<endl;
@@ -382,7 +380,7 @@ void Phase_Space_Generator::AddToSetChannel()
 
 
 
-bool Phase_Space_Generator::CheckForOldChannels(int n,APHYTOOLS::Flavour * fl,Multi_Channel * Ch)
+bool Phase_Space_Generator::CheckForOldChannels(int n,ATOOLS::Flavour * fl,Multi_Channel * Ch)
 {
   int  hit;
   bool oldch = 0;
@@ -402,7 +400,7 @@ bool Phase_Space_Generator::CheckForOldChannels(int n,APHYTOOLS::Flavour * fl,Mu
   if (hit==2) {
     Single_Channel * sc = SetChannel(nin,nout,fl,Ch->Number(),pID);
     if (sc==0) {
-      AORGTOOLS::msg.Error()<<"Phase_Space_Generator:"
+      ATOOLS::msg.Error()<<"Phase_Space_Generator:"
 			    <<"Channels are not compiled and linked yet."<<endl
 			    <<"Type 'make install' and run again."<<endl;
       return 0;
@@ -414,7 +412,7 @@ bool Phase_Space_Generator::CheckForOldChannels(int n,APHYTOOLS::Flavour * fl,Mu
     oldch = 1;
   }
   if (hit==1) {
-    AORGTOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
+    ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
 			  <<"C- or H-file not found. Abort."<<endl;
     return 0;
   }

@@ -5,9 +5,7 @@
 #include "Message.H"
 
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 //const double min_BR = 0.05;

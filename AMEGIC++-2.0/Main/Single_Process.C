@@ -16,9 +16,7 @@ using namespace AMEGIC;
 using namespace PHASIC;
 using namespace PDF;
 using namespace BEAM;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 int fak(int N)
@@ -60,7 +58,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   double sum_massin = 0.,sum_massout = 0.;
   for (int i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
   for (int i=0;i<m_nout;i++) sum_massout += p_flout[i].Mass();
-  m_isrthreshold = AMATOOLS::Max(sum_massin,sum_massout);
+  m_isrthreshold = ATOOLS::Max(sum_massin,sum_massout);
 
   p_ps   = new Phase_Space_Handler(this,p_isr,p_beam);
   
@@ -138,7 +136,7 @@ void Single_Process::FixISRThreshold()
   for (int i = 0;i<m_nin;i++)  m_mass_in  += p_flin[i].Mass(); 
   for (int i = 0;i<m_nout;i++) m_mass_out += p_flout[i].Mass(); 
   
-  double isrth = AMATOOLS::Max(m_mass_in,m_mass_out);
+  double isrth = ATOOLS::Max(m_mass_in,m_mass_out);
   
   SetISRThreshold(isrth);
 
@@ -181,7 +179,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
   switch (Tests(result)) {
   case 2 : 
     for (int j=0;j<results.size();j++) {
-      if (AMATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
+      if (ATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
 	msg.Tracking()<<"Test : 2.  Can map "<<m_name<<" on "<<links[j]->Name()<<endl;
 	p_partner = links[j];
       }
@@ -193,7 +191,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     return 1;
   case 1 :
     for (int j=0;j<results.size();j++) {
-      if (AMATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
+      if (ATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
 	msg.Tracking()<<"Test : 1.  Can map "<<m_name<<" on "<<links[j]->Name()<<endl;
 	p_partner = links[j];
       }
@@ -287,7 +285,7 @@ int Single_Process::Tests(double & result) {
     p_BS->CalcEtaMu(p_moms);  
     p_BS->InitGaugeTest(.9);
 
-    msg.Debugging()<<number<<" :";AORGTOOLS::msg.Debugging().flush();
+    msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
     for (short int i=0;i<p_hel->Max_Hel();i++) { 
       if (p_hel->On(i)) {
 	M2 +=  p_ampl->Differential(i,(*p_hel)[i])*p_hel->PolarizationFactor(i); 
@@ -362,7 +360,7 @@ int Single_Process::Tests(double & result) {
     msg.Debugging()<<"Gauge(1): "<<abs(M2)<<endl
 		   <<"Gauge(2): "<<abs(M2g)<<endl
 		   <<"Gauge test: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-    if (!AMATOOLS::IsZero(abs(M2/M2g-1.))) {
+    if (!ATOOLS::IsZero(abs(M2/M2g-1.))) {
       msg.Tracking()<<"Gauge test not satisfied: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
     }
   }
@@ -381,7 +379,7 @@ int Single_Process::Tests(double & result) {
     msg.Debugging()<<"Mapping file(1) : "<<abs(M2)<<endl
 		   <<"Original    (2) : "<<abs(M2g)<<endl
 		   <<"Cross check     : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-    if (!AMATOOLS::IsZero(abs(M2/M2g-1.))) {
+    if (!ATOOLS::IsZero(abs(M2/M2g-1.))) {
       msg.Tracking()<<"Cross check not satisfied: "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
       return 0;
     }
@@ -414,7 +412,7 @@ int Single_Process::Tests(double & result) {
       msg.Debugging()<<endl;
       M2S *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
       msg.Tracking()<<"String test: "<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
-      if (!AMATOOLS::IsZero(abs(M2g/M2S-1.))) {
+      if (!ATOOLS::IsZero(abs(M2g/M2S-1.))) {
 	msg.Tracking()<<"String test not satisfied!!"<<endl;
 	return 0;
       }
@@ -464,17 +462,17 @@ int Single_Process::InitLibrary(double result) {
       shand1->Calculate();
       
       M2s = 0.;
-      AORGTOOLS::msg.Debugging()<<"Check "<<number<<" :";AORGTOOLS::msg.Debugging().flush();
+      ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
       for (short int i=0;i<p_hel->Max_Hel();i++) {
 	M2s     += p_ampl->Differential(shand1,i) * p_hel->PolarizationFactor(i) *
 	  p_hel->Multiplicity(i);
-	msg.Debugging()<<"*";AORGTOOLS::msg.Debugging().flush();
+	msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
       }
       msg.Debugging()<<endl;
       M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
       msg.Debugging()<<"Cross check: "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
 		     <<M2s<<"/"<<result<<endl;
-      if (AMATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
+      if (ATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
 	msg.Tracking()<<"Found a suitable string."<<endl;
 	m_libname = testname;
 	if (p_shand->SearchValues(m_gen_str,testname,p_BS)) {
@@ -484,11 +482,11 @@ int Single_Process::InitLibrary(double result) {
 	  
 	  p_shand->Calculate();
 	  M2s = 0.;
-	  AORGTOOLS::msg.Debugging()<<number<<" :";AORGTOOLS::msg.Debugging().flush();
+	  ATOOLS::msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
 	  for (short int i=0;i<p_hel->Max_Hel();i++) {
 	    M2s     += p_ampl->Differential(p_shand,i) * p_hel->PolarizationFactor(i) * 
 	      p_hel->Multiplicity(i);
-	    msg.Debugging()<<"*";AORGTOOLS::msg.Debugging().flush();
+	    msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
 	  }
 	  msg.Debugging()<<endl;
 	  M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
@@ -533,17 +531,17 @@ int Single_Process::InitLibrary(double result) {
 	p_partner->p_shand->Calculate();
 	
 	M2s = 0.;
-	AORGTOOLS::msg.Debugging()<<"Check "<<number<<" :";AORGTOOLS::msg.Debugging().flush();
+	ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
 	for (short int i=0;i<p_hel->Max_Hel();i++) {
 	  M2s     += p_ampl->Differential(p_partner->p_shand,i) * p_hel->PolarizationFactor(i) *
 	    p_hel->Multiplicity(i);
-	  msg.Debugging()<<"*";AORGTOOLS::msg.Debugging().flush();
+	  msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
 	}
 	msg.Debugging()<<endl;
 	M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
 	msg.Debugging()<<"Cross check: "<<abs(M2s/result-1.)*100.<<"%"<<"  : "
 		       <<M2s<<"/"<<result<<endl;
-	if (AMATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
+	if (ATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
 	  m_libname = p_partner->m_libname;
 	  CreateMappingFile();
 	}
@@ -602,8 +600,8 @@ bool Single_Process::FoundMappingFile(std::string & tempname) {
 }
 
 
-void Single_Process::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *> _obs) {
-  p_analysis = new APHYTOOLS::Primitive_Analysis(this->Name());
+void Single_Process::InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *> _obs) {
+  p_analysis = new ATOOLS::Primitive_Analysis(this->Name());
   for (int i=0;i<_obs.size();i++) {
     p_analysis->AddObservable(_obs[i]->GetCopy());
   }
@@ -665,7 +663,7 @@ void Single_Process::SetTotalXS(int _tables)  {
     if (m_analyse) p_analysis->FinishAnalysis(m_resdir+string("/Tab")+m_name,_tables);
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-			(AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
   }
   else {
     //   _tables==2  means  check xs with sum of subprocesses
@@ -673,7 +671,7 @@ void Single_Process::SetTotalXS(int _tables)  {
   }
   if (m_nin==2) {
     msg.Events()<<"      xs for "<<m_name<<" : "
-			   <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+			   <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 			   <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 			   <<"       max : "<<m_max<<endl;
     msg.Events()<<"   exp. eff: "<<(100.*m_totalxs/m_max)<<"%"<<endl;
@@ -710,7 +708,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 	m_max      = _max;
       }
       msg.Events()<<"Found result : xs for "<<m_name<<" : "
-		  <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+		  <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
       from.close();
@@ -724,8 +722,8 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
     }
   }
   m_totalxs = p_ps->Integrate();
-  if (m_nin==2) m_totalxs /= AORGTOOLS::rpa.Picobarn();
-  if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+  if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
+  if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
     msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
 	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
@@ -736,7 +734,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       to.open(filename,ios::out);
       WriteOutXSecs(to);
       msg.Events()<<"Store result : xs for "<<m_name<<" : "
-		  <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+		  <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
       p_ps->WriteOut(_resdir+string("/MC_")+m_name);
@@ -799,9 +797,9 @@ bool Single_Process::PrepareXSecTables() {
   }
 
   m_totalxs = p_ps->Integrate();
-  if (m_nin==2) m_totalxs /= AORGTOOLS::rpa.Picobarn();
+  if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
 
-  if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+  if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
     msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl;
     msg.Error()<<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
@@ -828,14 +826,14 @@ void Single_Process::AddPoint(const double value) {
   if (m_analyse) p_analysis->DoAnalysis(value*rpa.Picobarn());
 }
 
-double Single_Process::Differential(AMATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
+double Single_Process::Differential(ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
 
 double Single_Process::Differential2() { 
   if (p_isr->On()==0) return 0.;
   return DSigma2(); 
 }
 
-double Single_Process::DSigma(AMATOOLS::Vec4D* _moms,bool lookup)
+double Single_Process::DSigma(ATOOLS::Vec4D* _moms,bool lookup)
 {
   m_last = m_lastdxs = 0.;
   if (p_partner == this) {
@@ -863,7 +861,7 @@ double Single_Process::DSigma2() {
   return tmp;
 }
 
-double Single_Process::operator()(AMATOOLS::Vec4D * mom)
+double Single_Process::operator()(ATOOLS::Vec4D * mom)
 {
   double M2 = 0.;
 
@@ -922,7 +920,7 @@ Point * Single_Process::Diagram(int i) { return p_ampl->GetPointlist(i); }
 
 void Single_Process::PrintDifferential()
 {
-  if (!(AORGTOOLS::rpa.gen.Tracking())) return;
-  AORGTOOLS::msg.Out()<<m_name<<" : "<<m_last<<" -> "
+  if (!(ATOOLS::rpa.gen.Tracking())) return;
+  ATOOLS::msg.Out()<<m_name<<" : "<<m_last<<" -> "
 		      <<m_lastdxs<<" @ "<<m_lastlumi<<", "<<endl;
 }

@@ -4,7 +4,7 @@
 #include "Message.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 

@@ -14,16 +14,16 @@ namespace AMEGIC {
   public:
     Polarisation();
     ~Polarisation();
-    double Spin_Average(int,APHYTOOLS::Flavour*);
-    int    Massless_Vectors(int,APHYTOOLS::Flavour*);
-    int    Massive_Vectors(int,APHYTOOLS::Flavour*);
-    void   Add_Extern_Polarisations(Basic_Sfuncs*,APHYTOOLS::Flavour*,Helicity*);
-    void   Attach(int,APHYTOOLS::Flavour*);
-    void   Reset_Gauge_Vectors(int,AMATOOLS::Vec4D*,AMATOOLS::Vec4D);
-    void   Set_Gauge_Vectors(int,AMATOOLS::Vec4D*,AMATOOLS::Vec4D);
-    double Massless_Norm(int,APHYTOOLS::Flavour*,Basic_Sfuncs*);
+    double Spin_Average(int,ATOOLS::Flavour*);
+    int    Massless_Vectors(int,ATOOLS::Flavour*);
+    int    Massive_Vectors(int,ATOOLS::Flavour*);
+    void   Add_Extern_Polarisations(Basic_Sfuncs*,ATOOLS::Flavour*,Helicity*);
+    void   Attach(int,ATOOLS::Flavour*);
+    void   Reset_Gauge_Vectors(int,ATOOLS::Vec4D*,ATOOLS::Vec4D);
+    void   Set_Gauge_Vectors(int,ATOOLS::Vec4D*,ATOOLS::Vec4D);
+    double Massless_Norm(int,ATOOLS::Flavour*,Basic_Sfuncs*);
     double Massive_Norm() { return Mass_Norm; }
-    void   Replace_Numbers(int,APHYTOOLS::Flavour*,Single_Amplitude*);
+    void   Replace_Numbers(int,ATOOLS::Flavour*,Single_Amplitude*);
   };
 }
 #endif

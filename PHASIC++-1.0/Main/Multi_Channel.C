@@ -2,9 +2,7 @@
 #include "Random.H"
 
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 //#define _USE_MPI_
@@ -34,7 +32,7 @@ Multi_Channel::~Multi_Channel()
 }
 
 void Multi_Channel::Add(Single_Channel * Ch) { 
-  AORGTOOLS::msg.Debugging()<<"Add "<<Ch->Name()<<" to the multi-channel."<<endl;
+  ATOOLS::msg.Debugging()<<"Add "<<Ch->Name()<<" to the multi-channel."<<endl;
   channels.push_back(Ch); 
 }
 
@@ -65,7 +63,7 @@ void Multi_Channel::DropAllChannels()
     if (channels[i-1]) delete channels[i-1];
   }
   channels.clear();
-  AORGTOOLS::msg.Debugging()<<"Dropped all channels for Multi_Channel : "<<name<<endl;
+  ATOOLS::msg.Debugging()<<"Dropped all channels for Multi_Channel : "<<name<<endl;
 }
 
 void Multi_Channel::Reset() 
@@ -250,7 +248,7 @@ void Multi_Channel::EndOptimize(double error)
 
 void Multi_Channel::AddPoint(double value)
 {
-  if (!AMATOOLS::IsZero(value)) n_contrib++;
+  if (!ATOOLS::IsZero(value)) n_contrib++;
 
   n_points++;
   m_result  += value;
@@ -271,12 +269,12 @@ void Multi_Channel::AddPoint(double value)
 }
 
 double Multi_Channel::Variance() {
-  double disc = (n_points*m_result2)/((n_points-1)*AMATOOLS::sqr(m_result)) - 1./(n_points-1);
+  double disc = (n_points*m_result2)/((n_points-1)*ATOOLS::sqr(m_result)) - 1./(n_points-1);
   if (disc>0.) return m_result/n_points * sqrt(disc);
-  disc = m_result2/(n_points*(n_points-1)) - AMATOOLS::sqr(m_result/n_points)/(n_points-1);
+  disc = m_result2/(n_points*(n_points-1)) - ATOOLS::sqr(m_result/n_points)/(n_points-1);
   if (disc>0.) return sqrt(disc);
   
-  AORGTOOLS::msg.Error()<<"Variance yielded a NaN !"<<endl
+  ATOOLS::msg.Error()<<"Variance yielded a NaN !"<<endl
 			<<"   res,res2 = "<<m_result<<", "<<m_result2
 			<<" after "<<n_points<<" points."<<endl; 
   
@@ -365,7 +363,7 @@ void Multi_Channel::GenerateWeight(Vec4D * p)
 	m_weight += channels[i]->Alpha()/channels[i]->Weight();
     }
   }
-  if (!AMATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
+  if (!ATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
 }
 
 
@@ -395,13 +393,13 @@ void Multi_Channel::GenerateWeight(double sprime,double y,int mode) {
       channels[i]->GenerateWeight(sprime,y,mode);
       if (!(channels[i]->Weight()>0) && 
 	  !(channels[i]->Weight()<0) && (channels[i]->Weight()!=0)) {
-	AORGTOOLS::msg.Error()<<"Channel "<<i<<" produces a nan!"<<endl;
+	ATOOLS::msg.Error()<<"Channel "<<i<<" produces a nan!"<<endl;
       }
       if (channels[i]->Weight()!=0.) 
 	m_weight += channels[i]->Alpha()/channels[i]->Weight();
     }
   }
-  if (!AMATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
+  if (!ATOOLS::IsZero(m_weight)) m_weight = 1./m_weight;
 }
 
 void Multi_Channel::GenerateWeight(int n,double sprime,double y,int mode) {
@@ -446,11 +444,11 @@ void Multi_Channel::ISRInfo(int i,int & type,double & mass,double & width)
 
 
 void Multi_Channel::Print() {
-  AORGTOOLS::msg.Out()<<"----------------------------------------------"<<endl
+  ATOOLS::msg.Out()<<"----------------------------------------------"<<endl
 		      <<"Multi_Channel with "<<channels.size()<<" channels."<<endl;
   for (int i=0;i<channels.size();i++) 
-    AORGTOOLS::msg.Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<endl;
-  AORGTOOLS::msg.Out()<<"----------------------------------------------"<<endl;
+    ATOOLS::msg.Out()<<"  "<<channels[i]->Name()<<" : "<<channels[i]->Alpha()<<endl;
+  ATOOLS::msg.Out()<<"----------------------------------------------"<<endl;
 }                 
 
 void Multi_Channel::WriteOut(std::string pID) {

@@ -21,7 +21,7 @@ namespace PHASIC {
     channelinfos                 beam_params;
     channelinfos                 isr_params;
     int                          nin,nout,nvec;
-    APHYTOOLS::Flavour         * psflavs;
+    ATOOLS::Flavour         * psflavs;
     std::string                  name;
     int                          int_type;
     double                       error;
@@ -30,16 +30,16 @@ namespace PHASIC {
     double                       sprimeB,yB,sprimeI,yI;
     double                       result1,result2,flux;
     double                       m_weight; 
-    AMATOOLS::Vec4D            * p;
+    ATOOLS::Vec4D            * p;
     Phase_Space_Integrator     * psi;    
     bool  m_initialized;
 
     void TestIntegration(double);
-    bool MakeIncoming(AMATOOLS::Vec4D *);
-    void Rotate(AMATOOLS::Vec4D *);
-    bool Check4Momentum(AMATOOLS::Vec4D *);
+    bool MakeIncoming(ATOOLS::Vec4D *);
+    void Rotate(ATOOLS::Vec4D *);
+    bool Check4Momentum(ATOOLS::Vec4D *);
     void DropRedundantChannels();
-    bool Compare(AMATOOLS::Vec4D *,AMATOOLS::Vec4D *);
+    bool Compare(ATOOLS::Vec4D *,ATOOLS::Vec4D *);
     bool MakeBeamChannels();
     bool MakeISRChannels();
     bool CreateBeamChannels();
@@ -61,12 +61,12 @@ namespace PHASIC {
     double WeightedEvent(int mode =0);
     double SameWeightedEvent();
     void   AddPoint(double);
-    void   TestPoint(AMATOOLS::Vec4D *);
+    void   TestPoint(ATOOLS::Vec4D *);
 
     // Simple access methods.
 
-    inline AMATOOLS::Vec4D *     Point()        { return p; }
-    inline APHYTOOLS::Flavour *  Flavs()        { return psflavs; }
+    inline ATOOLS::Vec4D *     Point()        { return p; }
+    inline ATOOLS::Flavour *  Flavs()        { return psflavs; }
     inline double                Weight()       { return m_weight; }
 
 
@@ -87,7 +87,7 @@ namespace PHASIC {
 	return;
       }
       else {
-	AORGTOOLS::msg.Error()<<"Error in Phase_Space_Handler::ISRChannels("<<i<<")"<<std::endl
+	ATOOLS::msg.Error()<<"Error in Phase_Space_Handler::ISRChannels("<<i<<")"<<std::endl
 			      <<"  delimiter out of bounds."<<std::endl;
 	abort();
       }
@@ -100,7 +100,7 @@ namespace PHASIC {
 	return;
       }
       else {
-	AORGTOOLS::msg.Error()<<"Error in Phase_Space_Handler::BeamChannels("<<i<<")"<<std::endl
+	ATOOLS::msg.Error()<<"Error in Phase_Space_Handler::BeamChannels("<<i<<")"<<std::endl
 			      <<"  delimiter out of bounds."<<std::endl;
 	abort();
       }

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <map>
 
-namespace AORGTOOLS {  
+namespace ATOOLS {  
 
   typedef std::map<std::string,std::string> Variable_Map;
   typedef Variable_Map::iterator           Variable_Iterator;
@@ -73,4 +73,4 @@ namespace AORGTOOLS {
   };
 }
 
-#endif //  AORGTOOLS
+#endif //  ATOOLS

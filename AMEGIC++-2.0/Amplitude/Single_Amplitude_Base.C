@@ -6,9 +6,7 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace AMEGIC;
 using namespace std;
 
@@ -295,7 +293,7 @@ void Single_Amplitude_Base::SetLoopVar(vector<int>& iz,vector<vector<int> >& iar
 
       if (p->fl.IsAnti()) particlemass = -particlemass;
 
-      if (AMATOOLS::IsEqual(particlemass,mass) && (p->fl).Width()==0.) {
+      if (ATOOLS::IsEqual(particlemass,mass) && (p->fl).Width()==0.) {
 	for (short j=1;j<p->argnum;j++)	iargs[2*i].push_back(p->arg[j]);
 	//mark this special propagator as negative
 	iz[i] = -iz[i];

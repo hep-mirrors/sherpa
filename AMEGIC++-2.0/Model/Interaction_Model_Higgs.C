@@ -5,9 +5,7 @@
 
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Interaction_Model_Higgs::Interaction_Model_Higgs(MODEL::Model_Base * _model,

@@ -7,7 +7,7 @@
 #define CLK_TCK CLOCKS_PER_SEC
 #endif
 
-namespace AORGTOOLS {
+namespace ATOOLS {
   class MyTiming {
     tms starttms, currenttms, stoptms;
     clock_t startclock, currentclock, stopclock;
@@ -22,7 +22,7 @@ namespace AORGTOOLS {
 
   /*!
     \file
-    \brief Contains the class AORGTOOLS::MyTiming
+    \brief Contains the class MyTiming
   */
 
   /*!

@@ -7,15 +7,13 @@
 
 using namespace EXTRAXS;
 using namespace MODEL;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
 XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
 		 PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
-		 APHYTOOLS::Selector_Data * _seldata,
+		 ATOOLS::Selector_Data * _seldata,
 		 int _scalescheme,int _kfactorscheme,double _scalefactor) :
   m_nin(_nin), m_nout(_nout),m_name(std::string("")),
   m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),
@@ -33,7 +31,7 @@ XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
   }
 
   p_ps   = new PHASIC::Phase_Space_Handler(this,p_isr,p_beam);
-  p_moms = new AMATOOLS::Vec4D[m_nin+m_nout];
+  p_moms = new ATOOLS::Vec4D[m_nin+m_nout];
 }
 
 XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl) :
@@ -46,7 +44,7 @@ XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl) :
 {
   Init(_fl);
   p_sel = new No_Selector();
-  p_moms = new AMATOOLS::Vec4D[m_nin+m_nout];
+  p_moms = new ATOOLS::Vec4D[m_nin+m_nout];
 }
 
 XS_Base::~XS_Base() {
@@ -75,8 +73,8 @@ void XS_Base::Init(Flavour * _fl)
   double massin = 0., massout =0.;
   for (int i=0;i<m_nin;i++)      massin  += p_fl[i].Mass();
   for (int i=m_nin;i<m_nout;i++) massout += p_fl[i].Mass();
-  if (massin>massout) m_thres = AMATOOLS::sqr(massin);
-                 else m_thres = AMATOOLS::sqr(massout);
+  if (massin>massout) m_thres = ATOOLS::sqr(massin);
+                 else m_thres = ATOOLS::sqr(massout);
 }
 
 void XS_Base::GenerateName() {
@@ -126,7 +124,7 @@ void XS_Base::GenerateName() {
   m_name.erase(m_name.length()-1,1);
 }
 
-double XS_Base::Differential(AMATOOLS::Vec4D * p) {
+double XS_Base::Differential(ATOOLS::Vec4D * p) {
   for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
   m_s = (p[0]+p[1]).Abs2();
   m_t = (p[0]-p[2]).Abs2();
@@ -134,7 +132,7 @@ double XS_Base::Differential(AMATOOLS::Vec4D * p) {
   return Differential(m_s,m_t,m_u);
 }
 
-bool XS_Base::SetColours(AMATOOLS::Vec4D * p) {
+bool XS_Base::SetColours(ATOOLS::Vec4D * p) {
   for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
   m_s = (p[0]+p[1]).Abs2();
   m_t = (p[0]-p[2]).Abs2();
@@ -144,7 +142,7 @@ bool XS_Base::SetColours(AMATOOLS::Vec4D * p) {
   return SetColours(m_s,m_t,m_u);
 }
 
-double XS_Base::Scale(AMATOOLS::Vec4D * p) {
+double XS_Base::Scale(ATOOLS::Vec4D * p) {
   for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = p[i];
   if (m_nin==1) return p[0].Abs2();
   m_s = (p[0]+p[1]).Abs2();
@@ -155,7 +153,7 @@ double XS_Base::Scale(AMATOOLS::Vec4D * p) {
   switch (m_scalescheme) {
   case 1  :
     if (m_nin+m_nout==4) {
-      pt2 = AMATOOLS::sqr(p[2][1])+AMATOOLS::sqr(p[2][2]);
+      pt2 = ATOOLS::sqr(p[2][1])+ATOOLS::sqr(p[2][2]);
       //pt2 = 2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
     }
     return m_scale = pt2;
@@ -170,7 +168,7 @@ double XS_Base::KFactor(double _scale) {
   switch (m_kfactorscheme) {
   case 1  :
     return pow(as->AlphaS(_scale * m_scalefactor)/
-	       as->AlphaS(AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms())),m_nin+m_nout-2);
+	       as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nin+m_nout-2);
   default :
     return 1.;
   }

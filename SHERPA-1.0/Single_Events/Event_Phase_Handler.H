@@ -13,7 +13,7 @@ namespace SHERPA {
   public :
     Event_Phase_Handler();
     virtual ~Event_Phase_Handler();
-    virtual bool Treat(APHYTOOLS::Blob_List *, double &) = 0;
+    virtual bool Treat(ATOOLS::Blob_List *, double &) = 0;
     virtual void        CleanUp()                        = 0;
     virtual std::string Type();
     virtual void        SetType(std::string);
@@ -27,7 +27,7 @@ namespace SHERPA {
 
     This is the - mainly abstract - base class for all event phases. Apart from the name and type and 
     methods to access these characteristics, and apart from constructors and destructors, this class 
-    contains two central methods, namely Treat(APHYTOOLS::Blob_List *, double &) and CleanUp(). The 
+    contains two central methods, namely Treat(ATOOLS::Blob_List *, double &) and CleanUp(). The 
     former is the one through which the concrete event phases interact during the event generation. This 
     happens by modifying individual blobs of the list or adding or removing blobs from the list. The
     latter method is used to reset the event phase handlers between two events.
@@ -46,7 +46,7 @@ namespace SHERPA {
     Here, the type and name are set - by default - to "Unspecified" and "No Name", respectively.
   */
   /*!
-    \fn virtual bool Event_Phase_Handler::Treat(APHYTOOLS::Blob_List *, double &)
+    \fn virtual bool Event_Phase_Handler::Treat(ATOOLS::Blob_List *, double &)
     Virtual method to be filled by the specific Event_Phase_Handler. this method basically defines
     the role, any of these handlers plays in the event generation process. 
   */

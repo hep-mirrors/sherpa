@@ -4,9 +4,7 @@
 
 
 using namespace SHERPA;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Jet_Evolution::Jet_Evolution(Matrix_Element_Handler * _mehandler,

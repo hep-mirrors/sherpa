@@ -18,16 +18,16 @@ namespace SHERPA {
     int       nk, * kfjet, * mothers, * daughters;
 
     void Init();
-    void AddPartonToString(APHYTOOLS::Parton *,int &);
-    void FillPrimaryHadronsInBlob(APHYTOOLS::Blob *,APHYTOOLS::Blob_List *,
-				  APHYTOOLS::Parton_List * = NULL);
-    void FillSecondaryHadronsInBlob(APHYTOOLS::Blob *,APHYTOOLS::Blob_List *,int,int,
-				    APHYTOOLS::Parton_List * = NULL);
+    void AddPartonToString(ATOOLS::Parton *,int &);
+    void FillPrimaryHadronsInBlob(ATOOLS::Blob *,ATOOLS::Blob_List *,
+				  ATOOLS::Parton_List * = NULL);
+    void FillSecondaryHadronsInBlob(ATOOLS::Blob *,ATOOLS::Blob_List *,int,int,
+				    ATOOLS::Parton_List * = NULL);
   public:
     Lund_Fortran_Interface(double,double,double);
     ~Lund_Fortran_Interface();
-    bool Hadronize(APHYTOOLS::Blob *,APHYTOOLS::Blob_List *,
-		   APHYTOOLS::Parton_List * = NULL);
+    bool Hadronize(ATOOLS::Blob *,ATOOLS::Blob_List *,
+		   ATOOLS::Parton_List * = NULL);
   };
 
   extern Lund_Fortran_Interface LFInterface;

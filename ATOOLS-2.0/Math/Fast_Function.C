@@ -3,7 +3,7 @@
 #include <list>
 #include <fstream>
 
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 
 Fast_Function::Fast_Function() {
@@ -227,7 +227,7 @@ double Fast_Function::LinInterInv(Data_Iter & it, double y) {
 }
 
 
-std::ostream & AMATOOLS::operator<<(std::ostream & s, const Fast_Function & ff) {
+std::ostream & ATOOLS::operator<<(std::ostream & s, const Fast_Function & ff) {
   s<<"----------------"<<std::endl;
   for (Fast_Function::Data_List::const_iterator it=ff.m_data.begin();it!=ff.m_data.end();++it) 
     s<<(*it);
@@ -235,13 +235,13 @@ std::ostream & AMATOOLS::operator<<(std::ostream & s, const Fast_Function & ff) 
 }
 
 
-std::ostream & AMATOOLS::operator<<(std::ostream & s, const  Fast_Function::Pair & p) {
+std::ostream & ATOOLS::operator<<(std::ostream & s, const  Fast_Function::Pair & p) {
   s<<'('<<p.x<<','<<p.y<<')'<<std::endl;
   return s;
 }
 
 
-std::ostream & AMATOOLS::operator<<(std::ostream & s, const Intervall & i) {
+std::ostream & ATOOLS::operator<<(std::ostream & s, const Intervall & i) {
   s<<'['<<i.m_minval<<','<<i.m_maxval<<']'<<std::endl;
   return s;
 }

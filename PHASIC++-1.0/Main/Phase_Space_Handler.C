@@ -15,9 +15,7 @@
 #include "Random.H"
 
 using namespace PHASIC;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace BEAM;
 using namespace PDF;
 using namespace std;
@@ -25,7 +23,7 @@ using namespace std;
 Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
 					 ISR_Handler * _ih,Beam_Spectra_Handler * _bh) 
   : proc(_proc), ih(_ih), bh(_bh),
-    E(AORGTOOLS::rpa.gen.Ecms()), s(E*E), sprime(s),
+    E(ATOOLS::rpa.gen.Ecms()), s(E*E), sprime(s),
     maxtrials(100000), sumtrials(0),
     events(0), psi(NULL), p(NULL),
     beamchannels(NULL), isrchannels(NULL), fsrchannels(NULL), psflavs(NULL),
@@ -103,7 +101,7 @@ bool Phase_Space_Handler::InitIncomming()
   }
   if (ih) {
     if (ih->On()>0) {
-      ih->SetSprimeMin(AMATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
+      ih->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
       msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
 		     <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
 		     <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
@@ -250,7 +248,7 @@ bool Phase_Space_Handler::Check4Momentum(Vec4D * _p) {
   for (int i=0;i<nin;i++)        pin  += _p[i];
   for (int i=nin;i<nin+nout;i++) pout += _p[i];
   double sin = pin.Abs2(),sout = pout.Abs2();
-  if (!(AMATOOLS::IsZero((sin-sout)/(sin+sout)))) return 0;
+  if (!(ATOOLS::IsZero((sin-sout)/(sin+sout)))) return 0;
   return 1;
 }
 
@@ -295,10 +293,10 @@ bool Phase_Space_Handler::OneEvent(int mode)
 	// update max sums!
 	proc->SetMax(0.);
       }
-      else disc  = max*AMATOOLS::ran.Get();
+      else disc  = max*ATOOLS::ran.Get();
       if (value >= disc) {
 	sumtrials += i;events ++;
-	if (result1 < (result1+result2)*AMATOOLS::ran.Get()) Rotate(p);
+	if (result1 < (result1+result2)*ATOOLS::ran.Get()) Rotate(p);
 	proc->Selected()->SetMomenta(p);
 	return 1;
       }
@@ -334,7 +332,7 @@ double Phase_Space_Handler::WeightedEvent(int mode)
 
     if (value > 0.) {
       sumtrials += i;events ++;
-      if (result1 < (result1+result2)*AMATOOLS::ran.Get()) Rotate(p);
+      if (result1 < (result1+result2)*ATOOLS::ran.Get()) Rotate(p);
       proc->Selected()->SetMomenta(p);
       m_weight=value;
       return m_weight;
@@ -362,7 +360,7 @@ void Phase_Space_Handler::AddPoint(const double value) {
 
 void Phase_Space_Handler::TestPoint(Vec4D * _p)
 {
-  sprime                  = sqr(AORGTOOLS::rpa.gen.Ecms());
+  sprime                  = sqr(ATOOLS::rpa.gen.Ecms());
   Single_Channel * TestCh = new Rambo(nin,nout,psflavs);
   MakeIncoming(_p);
   TestCh->GeneratePoint(_p,proc->Cuts());
@@ -512,7 +510,7 @@ void Phase_Space_Handler::DropRedundantChannels()
       for (short int j=i+1;j<number;j++) {
 	if (marker[j]==0) {
 	  if ( (Compare(perm_vec[i],perm_vec[j])) && 
-	       (AMATOOLS::IsEqual(res[i],res[j])) ) {
+	       (ATOOLS::IsEqual(res[i],res[j])) ) {
 	    msg.Debugging()<<"  "<<(fsrchannels->Channel(i))->Name()
 			   <<" and "<<(fsrchannels->Channel(j))->Name()
 			   <<" are identical."<<endl;
@@ -676,8 +674,8 @@ bool Phase_Space_Handler::MakeBeamChannels()
     if (proc) fsrchannels->ISRInfo(i,type,mass,width);
     
     if ((type==0) || (type==3))                                           continue;
-    if ((type==1) && (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width))) continue;
-    if ((type==2) && AMATOOLS::IsZero(mass))                              continue;
+    if ((type==1) && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) continue;
+    if ((type==2) && ATOOLS::IsZero(mass))                              continue;
 
     ci.type = type;
     (ci.parameters).push_back(mass);
@@ -771,8 +769,8 @@ bool Phase_Space_Handler::MakeISRChannels()
     fsrchannels->ISRInfo(i,type,mass,width);
     
     if ((type==0) || (type==3))                                           continue;
-    if ((type==1) && (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width))) continue;
-    if ((type==2) && AMATOOLS::IsZero(mass))                              continue;
+    if ((type==1) && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) continue;
+    if ((type==2) && ATOOLS::IsZero(mass))                              continue;
 
     ci.type = type;
     (ci.parameters).push_back(mass);

@@ -27,7 +27,7 @@ namespace PHASIC {
   class Multi_Channel {
   protected :
     int                           nin, nout;
-    APHYTOOLS::Flavour          * fl;
+    ATOOLS::Flavour          * fl;
     std::string                   name;
     long int                      n_points,n_contrib;
     double    m_weight,m_result,m_result2;
@@ -55,15 +55,15 @@ namespace PHASIC {
     void    EndOptimize(double);
     void    AddPoint(double);
     double  Variance();
-    void    GeneratePoint(int,AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
-    void    GenerateWeight(int,AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
-    void    GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
-    void    GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);     
+    void    GeneratePoint(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
+    void    GenerateWeight(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
+    void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
+    void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);     
 
-    void    GeneratePoint(int,AMATOOLS::Vec4D *,double *);
-    void    GenerateWeight(int,AMATOOLS::Vec4D *);
-    void    GeneratePoint(AMATOOLS::Vec4D *);
-    void    GenerateWeight(AMATOOLS::Vec4D *);     
+    void    GeneratePoint(int,ATOOLS::Vec4D *,double *);
+    void    GenerateWeight(int,ATOOLS::Vec4D *);
+    void    GeneratePoint(ATOOLS::Vec4D *);
+    void    GenerateWeight(ATOOLS::Vec4D *);     
 
     void    GeneratePoint(int n,double & sprime,double & y,int mode);
     void    GenerateWeight(int n,double sprime,double y,int mode);
@@ -71,14 +71,14 @@ namespace PHASIC {
     void    GenerateWeight(double sprime,double y,int mode);
 
     void    ISRInfo(int,int &,double &,double &);
-    int     CountResonances(int,APHYTOOLS::Flavour*&);
+    int     CountResonances(int,ATOOLS::Flavour*&);
 
     void    Print();
     void    SetRange(double * sprimerange,double * yrange) {
       for (int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
     }
     void    GetRange() {
-      AORGTOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
+      ATOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
       for (int i=0;i<channels.size();i++) channels[i]->GetRange();
     }
     void    WriteOut(std::string);
@@ -89,7 +89,7 @@ namespace PHASIC {
     inline int                  ValidN()    { return n_contrib; }
     inline int                  Nin()       { return nin; }
     inline int                  Nout()      { return nout; }
-    inline APHYTOOLS::Flavour * Flavs()     { return fl; }
+    inline ATOOLS::Flavour * Flavs()     { return fl; }
     inline double               Weight()    { return m_weight; }
     inline double               Result()    { return m_result; }
     inline std::string          Name()      { return name; }

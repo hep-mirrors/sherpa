@@ -7,10 +7,10 @@
 namespace BEAM {
   class Monochromatic : public Beam_Base {
   public:
-    Monochromatic(const APHYTOOLS::Flavour,const double,const double,const int);
+    Monochromatic(const ATOOLS::Flavour,const double,const double,const int);
     Beam_Base * Copy();     
     bool        CalculateWeight(const double,const double);
-    double      Weight(APHYTOOLS::Flavour=APHYTOOLS::Flavour(APHYTOOLS::kf::none));
+    double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
     bool        On() { return 0; }
   };
   /*!
@@ -30,7 +30,7 @@ namespace BEAM {
     \todo This is still to be implemented !
   */
   /*!
-    \fn Monochromatic::Monochromatic(const APHYTOOLS::Flavour,const double,const double,const int)
+    \fn Monochromatic::Monochromatic(const ATOOLS::Flavour,const double,const double,const int)
     This is the constructor of the class. Vectors are constructed through a call to the 
     constructor of the Beam_Base.
   */
@@ -44,7 +44,7 @@ namespace BEAM {
     No weight is calculated so far.
   */  
   /*!
-    \fn double Monochromatic::Weight(APHYTOOLS::Flavour=APHYTOOLS::Flavour(kf::none))
+    \fn double Monochromatic::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf::none))
     The weight is returned. It has been initialised in the constructor.
   */  
 }

@@ -8,14 +8,12 @@ using namespace SHERPA;
 using namespace APACIC;
 using namespace EXTRAXS;
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace MODEL;
 
 using std::endl;
 
-Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, APHYTOOLS::Jet_Finder * jf,
+Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf,
 				 int maxjetnumber, int isron, int fsron) :
   p_me(me),p_jf(jf),m_maxjetnumber(maxjetnumber),m_isron(isron), m_fsron(fsron) 
 {
@@ -239,7 +237,7 @@ void Cluster_Partons::CalculateWeight(double hard,double jet)
 }
 
 
-int  Cluster_Partons::SetColours(AMATOOLS::Vec4D * p, Flavour * fl)
+int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
 {
   // *** 2 -> 2 processes with unambiguous coulor structure
   // (a) no colors

@@ -1,8 +1,7 @@
 #include "All_Decays.H"
 
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 All_Decays::All_Decays(Interaction_Model_Base * _model,Topology * _top) :

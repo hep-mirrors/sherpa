@@ -13,20 +13,20 @@ namespace PDF {
     int         m_anti;
     double      m_f[13];
   public:
-    LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour,std::string,int,std::string,bool &);
+    LHAPDF_Fortran_Interface(const ATOOLS::Flavour,std::string,int,std::string,bool &);
     PDF_Base * GetCopy();
     void   Output();
 
     void   Calculate(const double, const double);
     double AlphaSPDF(double);
-    double GetXPDF(const APHYTOOLS::Flavour &);
+    double GetXPDF(const ATOOLS::Flavour &);
 
     double GetXMin()   { return 0.; }
     double GetXMax()   { return 1.; }
     double GetQ2Min()  { return 1.; }
     double GetQ2Max()  { return 1.e12; }
-    APHYTOOLS::Flavour Bunch()                { return m_bunch; }
-    std::vector<APHYTOOLS::Flavour> Partons() { return m_partons; }
+    ATOOLS::Flavour Bunch()                { return m_bunch; }
+    std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
   };
 
 
@@ -83,7 +83,7 @@ namespace PDF {
     The array of the 13 pdfs.
   */
   /*!
-    \fn LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour,
+    \fn LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const ATOOLS::Flavour,
                                                            std::string,int,std::string,bool &)
     In the constructor the corresponding PDF of the LHAPDF package is initialized. This results
     in either a read-in of an already prepared grid or its calculation.
@@ -107,7 +107,7 @@ namespace PDF {
     the scales come without squaring.
   */
   /*!
-    \fn double LHAPDF_Fortran_Interface::GetXPDF(const APHYTOOLS::Flavour &)
+    \fn double LHAPDF_Fortran_Interface::GetXPDF(const ATOOLS::Flavour &)
     This returns x times one specific pdf out of the set of all calculated ones - it checks 
     whether the flavour passed over as argument is included in the list of legitimate constituents, 
     PDF_Base::m_partons and selects the appropriate one.

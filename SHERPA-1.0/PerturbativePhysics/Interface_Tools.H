@@ -21,15 +21,15 @@ namespace SHERPA {
     APACIC::Tree ** p_initrees; 
     APACIC::Tree  * p_fintree; 
 
-    bool IsColourConnected(APHYTOOLS::Parton *,APHYTOOLS::Parton *) ;
+    bool IsColourConnected(ATOOLS::Parton *,ATOOLS::Parton *) ;
   public :
     Interface_Tools(APACIC::Tree **,APACIC::Tree *); 
     ~Interface_Tools(); 
 
-    void InitializeIncoming(APHYTOOLS::Blob *,double,double,double);
-    void InitializeOutGoing(APHYTOOLS::Blob *,double,double,double);
+    void InitializeIncoming(ATOOLS::Blob *,double,double,double);
+    void InitializeOutGoing(ATOOLS::Blob *,double,double,double);
 
-    double ColourAngle(APHYTOOLS::Parton *,APHYTOOLS::Blob *);
+    double ColourAngle(ATOOLS::Parton *,ATOOLS::Blob *);
   };
 }
 #endif

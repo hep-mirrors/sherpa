@@ -5,9 +5,7 @@
 #include "MathTools.H"
 
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Kabbala Basic_Pfunc::P(Pfunc* p1)
@@ -88,7 +86,7 @@ Complex Basic_Pfunc::KKProp(double p2)
   double vr,vv;
   switch(rpa.gen.ScalarNumber(std::string("KK_mode"))){
   case 1:
-    if(ed==2)vr=log(msq/AMATOOLS::dabs(p2));
+    if(ed==2)vr=log(msq/ATOOLS::dabs(p2));
     else vr=2./(ed-2);
     return Complex(-0.5*vr/sqr(msq)/gn,0.);
 

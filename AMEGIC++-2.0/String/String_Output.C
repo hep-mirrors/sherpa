@@ -9,9 +9,7 @@
 #include "prof.hh"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 #define use_templates
@@ -95,8 +93,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
   
   cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
   cfile<<"using namespace AMEGIC;"<<endl;
-  cfile<<"using namespace APHYTOOLS;"<<endl;
-  cfile<<"using namespace AMATOOLS;"<<endl;
+  cfile<<"using namespace ATOOLS;"<<endl;
   cfile<<"using namespace std;"<<endl<<endl;
   cfile<<"Complex "<<pID<<"::Evaluate"<<"(int& m,int& n)"<<endl;
   cfile<<"{"<<endl;
@@ -160,8 +157,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
 	header<<"  Complex M"<<igraph<<"_"<<divnum<<"(const int&);"<<endl;
 	cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
 	cfile<<"using namespace AMEGIC;"<<endl;  
-	cfile<<"using namespace APHYTOOLS;"<<endl;
-	cfile<<"using namespace AMATOOLS;"<<endl;
+	cfile<<"using namespace ATOOLS;"<<endl;
 	cfile<<"using namespace std;"<<endl<<endl;  
 
 	cfile<<"Complex "<<pID<<"::M"<<igraph<<"_"<<divnum<<"(const int& n)"<<endl;
@@ -187,8 +183,7 @@ void String_Output::Cform(ofstream& header,int maxlines,int tolerance,
       slib.AddToMakefile(Makefile,pathID,string("V_")+string(numb));
       cfile<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
       cfile<<"using namespace AMEGIC;"<<endl;  
-      cfile<<"using namespace APHYTOOLS;"<<endl;
-      cfile<<"using namespace AMATOOLS;"<<endl;
+      cfile<<"using namespace ATOOLS;"<<endl;
       cfile<<"using namespace std;"<<endl<<endl;  
     }
   }
@@ -210,8 +205,7 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
   int lines = 0;
   zf<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
   zf<<"using namespace AMEGIC;"<<endl;  
-  zf<<"using namespace APHYTOOLS;"<<endl;
-  zf<<"using namespace AMATOOLS;"<<endl;
+  zf<<"using namespace ATOOLS;"<<endl;
   zf<<"using namespace std;"<<endl<<endl;  
 
   //Flavours and Couplings
@@ -273,10 +267,10 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
 	hit = 0;
 	//couplings
 	for (short int j=0;j<sgen->Coupl_Max_Number();j++) {
-	  if ( AMATOOLS::IsEqual(norm,sgen->Get_Coupl(j)) ||
-	       AMATOOLS::IsEqual(norm,-sgen->Get_Coupl(j)) ) {
+	  if ( ATOOLS::IsEqual(norm,sgen->Get_Coupl(j)) ||
+	       ATOOLS::IsEqual(norm,-sgen->Get_Coupl(j)) ) {
 	    hit = 1;
-	    if (AMATOOLS::IsEqual(norm,-sgen->Get_Coupl(j))) zf<<"-";
+	    if (ATOOLS::IsEqual(norm,-sgen->Get_Coupl(j))) zf<<"-";
 	    zf<<"c["<<j<<"];"<<endl;
 	    break;
 	  }
@@ -287,89 +281,89 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
 	  zf<<"-";
 	  norm = -norm;
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()))) { 
 	  hit = 1;
 	  zf<<"Complex(1./sqr(Flavour(kf::Z).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
-	if (AMATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Z).Mass()),
+	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::Z).Mass()),
 			      -Flavour(kf::Z).Mass()*Flavour(kf::Z).Width())))) { 
 	    hit = 1;
 	    zf<<"(1./Complex(sqr(Flavour(kf::Z).Mass()),"
 	      <<"-Flavour(kf::Z).Mass()*Flavour(kf::Z).Width()));"<<endl;
 	    break;
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()))) { 
 	  hit = 1;
 	  zf<<"Complex(1./sqr(Flavour(kf::W).Mass()),0.);"<<endl;
 	  break;
 	}
 	//new
-	if (AMATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::W).Mass()),
+	if (ATOOLS::IsEqual(norm,1./(Complex(sqr(Flavour(kf::W).Mass()),
 			      -Flavour(kf::W).Mass()*Flavour(kf::W).Width())))) { 
 	    hit = 1;
 	    zf<<"(1./Complex(sqr(Flavour(kf::W).Mass()),"
 	      <<"-Flavour(kf::W).Mass()*Flavour(kf::W).Width()));"<<endl;
 	    break;
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::h).Mass()))) { 
 	  hit = 1;
 	  zf<<"Complex(1./sqr(Flavour(kf::h).Mass()),0.);"<<endl;
 	  break;
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf::Z).Mass())))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(sqr(Flavour(kf::Z).Mass())))) { 
 	  hit = 1;
 	  zf<<"Complex(1./sqr(sqr(Flavour(kf::Z).Mass())),0.);"<<endl;
 	  break;
 	}	  
 	// double masses
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()))) { 
 	  hit = 1;
 	  zf<<"Complex(1./sqr(Flavour(kf::Z).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
 	  break;	
 	}
-	if (AMATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()))) { 
+	if (ATOOLS::IsEqual(norm,1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()))) { 
 	  hit = 1;
 	  zf<<"Complex(1./sqr(Flavour(kf::W).Mass()*Flavour(kf::W).Mass()),0.);"<<endl;
 	  break;
 	}
-	if (AMATOOLS::IsEqual(norm,0.5)) {
+	if (ATOOLS::IsEqual(norm,0.5)) {
           hit = 1;
           zf<<"Complex(0.5,0.);"<<endl;
           break;
 	}
-	if (AMATOOLS::IsEqual(norm,-0.5)) {
+	if (ATOOLS::IsEqual(norm,-0.5)) {
           hit = 1;
           zf<<"Complex(-0.5,0.);"<<endl;
 	  break;        
 	}
-	if (AMATOOLS::IsEqual(norm,1./3.)) {
+	if (ATOOLS::IsEqual(norm,1./3.)) {
           hit = 1;
           zf<<"Complex(1./3.,0.);"<<endl;
           break;
 	}
-	if (AMATOOLS::IsEqual(norm,1.)) { 
+	if (ATOOLS::IsEqual(norm,1.)) { 
 	  hit = 1;
 	  zf<<"Complex(1.,0.);"<<endl;
 	    break;
 	}
-	if (AMATOOLS::IsEqual(norm,2.)) { 
+	if (ATOOLS::IsEqual(norm,2.)) { 
 	  hit = 1;
 	  zf<<"Complex(2.,0.);"<<endl;
 	  break;
 	}
-	if (AMATOOLS::IsEqual(norm,Complex(0.,1.))) { 
+	if (ATOOLS::IsEqual(norm,Complex(0.,1.))) { 
 	  hit = 1;
 	  zf<<"Complex(0.,1.);"<<endl;
 	  break;
 	}
-	if (AMATOOLS::IsEqual(norm,Complex(0.,-1.))) { 
+	if (ATOOLS::IsEqual(norm,Complex(0.,-1.))) { 
 	  hit = 1;
 	  zf<<"Complex(0.,-1.);"<<endl;
 	  break;
 	}
-	if (AMATOOLS::IsEqual(norm,Complex(0.,-1./4.))) { 
+	if (ATOOLS::IsEqual(norm,Complex(0.,-1./4.))) { 
 	  hit = 1;
 	  zf<<"Complex(0.,-1./4.);"<<endl;
 	  break;
@@ -416,8 +410,7 @@ void String_Output::Zform(ofstream& header,int &maxlines,int &tolerance,
       slib.AddToMakefile(Makefile,pathID,string("V_Z_")+string(numb));
       zf<<"#include "<<'"'<<"V.H"<<'"'<<endl<<endl;  
       zf<<"using namespace AMEGIC;"<<endl;  
-      zf<<"using namespace APHYTOOLS;"<<endl;
-      zf<<"using namespace AMATOOLS;"<<endl;
+      zf<<"using namespace ATOOLS;"<<endl;
       zf<<"using namespace std;"<<endl<<endl;  
       zf<<"void "<<pID.c_str()<<"::Calculate_"<<divnum
 	<<"(vector<Complex>& c)"<<endl;

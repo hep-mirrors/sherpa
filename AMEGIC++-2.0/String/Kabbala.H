@@ -126,11 +126,11 @@ namespace AMEGIC {
   };
   
   inline int IsZero(const Kabbala& a) {
-  return AMATOOLS::IsZero(a.Value());
+  return ATOOLS::IsZero(a.Value());
 }
 
 inline int IsEqual(const Kabbala& a,const Complex& b) {
-  return AMATOOLS::IsEqual(a.Value(),b);
+  return ATOOLS::IsEqual(a.Value(),b);
 }
 
 inline Kabbala operator+(const Kabbala& k1,const Kabbala& k2)

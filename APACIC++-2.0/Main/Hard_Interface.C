@@ -10,9 +10,7 @@
 
 using namespace APACIC;
 using namespace PDF;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 
 Hard_Interface::Hard_Interface(ISR_Handler * _isr,MODEL::Model_Base * _model,int _maxjetnumber,

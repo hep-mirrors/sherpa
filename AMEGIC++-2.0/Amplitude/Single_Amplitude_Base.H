@@ -19,7 +19,7 @@ namespace AMEGIC {
 
     String_Handler     * shand;
     Basic_Sfuncs       * BS;
-    APHYTOOLS::Flavour * fl;
+    ATOOLS::Flavour * fl;
 
     virtual Kabbala SingleZvalue(Zfunc*,std::vector<int>*,std::vector<int>*,int last=0);
     Kabbala SingleZGroupvalue(Zfunc* z, std::vector<int>* iz, std::vector<int>* iargs,int last=0);
@@ -28,13 +28,13 @@ namespace AMEGIC {
     void    SetLoopVar(std::vector<int>&,std::vector<std::vector<int> >&);
 
     Kabbala SingleMassTerms(int iz,int iarg);
-    APHYTOOLS::Flavour* GetPflav(int pn);
+    ATOOLS::Flavour* GetPflav(int pn);
     Kabbala GetProp(Zfunc* z);
     void    GroupZfuncs();
   public:
     int sign;
     Single_Amplitude_Base(int* _b,int _n, Basic_Sfuncs* _BS,
-			  APHYTOOLS::Flavour* _fl,
+			  ATOOLS::Flavour* _fl,
 			  String_Handler* _shand) 
       : b(_b), N(_n), shand(_shand), BS(_BS), fl(_fl) {}
 
@@ -137,7 +137,7 @@ namespace AMEGIC {
     Calculates the mass term for the decomposition of fermionic propagators.
   */
   /*!
-    \fn APHYTOOLS::Flavour* Single_Amplitude_Base::GetPflav(int pn)
+    \fn ATOOLS::Flavour* Single_Amplitude_Base::GetPflav(int pn)
     Returns the flavour of the propagator with label pn.
   */
   /*!

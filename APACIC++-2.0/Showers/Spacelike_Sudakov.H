@@ -37,7 +37,7 @@ namespace APACIC {
     double m_E2;
     double m_x, m_z, m_t, m_phi,m_pt2;
     double m_maxpt;
-    APHYTOOLS::Flavour m_inflav;
+    ATOOLS::Flavour m_inflav;
 
     void Add(Splitting_Function * spl) ;
     double CrudeInt(double _zmin, double _zmax);
@@ -49,18 +49,18 @@ namespace APACIC {
     bool PTVeto(Knot *);
     bool JetVeto(Knot *);
     bool MassVeto(int);
-    void UniformPhi() { m_phi =  2.*M_PI*AMATOOLS::ran.Get(); };
+    void UniformPhi() { m_phi =  2.*M_PI*ATOOLS::ran.Get(); };
   public:
     Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools *, Spacelike_Kinematics *,
-		      double,AORGTOOLS::Data_Read *); 
+		      double,ATOOLS::Data_Read *); 
     ~Spacelike_Sudakov() {};
     bool Dice(Knot * mother,double sprime,bool jetveto, int & extra_pdf);
 
-    static double Q02(APHYTOOLS::Flavour const & flav) { 
-      return AMATOOLS::sqr(flav.PSMass()); 
+    static double Q02(ATOOLS::Flavour const & flav) { 
+      return ATOOLS::sqr(flav.PSMass()); 
     } // !!!
-    static double MinE2(APHYTOOLS::Flavour const & flav) { 
-      return AMATOOLS::sqr(flav.PSMass()); 
+    static double MinE2(ATOOLS::Flavour const & flav) { 
+      return ATOOLS::sqr(flav.PSMass()); 
     } //!!!mass
 
   };
@@ -143,12 +143,12 @@ namespace APACIC {
   */
   
   /*!
-    \fn static double Spacelike_Sudakov::Q02(APHYTOOLS::Flavour const & flav);
+    \fn static double Spacelike_Sudakov::Q02(ATOOLS::Flavour const & flav);
     \brief returns flavour dependent Q0
   */
 
   /*!
-    \fn static double Spacelike_Sudakov::MinE2(APHYTOOLS::Flavour const & flav)
+    \fn static double Spacelike_Sudakov::MinE2(ATOOLS::Flavour const & flav)
     \brief returns flavour dependent Emin
   */
 

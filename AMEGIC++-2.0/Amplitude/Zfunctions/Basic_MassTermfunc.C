@@ -4,8 +4,7 @@
 //#include "Run_Parameter.H"
 
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 using namespace std;
 
@@ -26,7 +25,7 @@ Kabbala Basic_MassTermfunc::MassTerm(int a)
 
   double mass = (p1->fl).Mass();
 
-  if (AMATOOLS::IsZero(mass)) return Kabbala(string("1"),Complex(1.,0.));
+  if (ATOOLS::IsZero(mass)) return Kabbala(string("1"),Complex(1.,0.));
 
   return sgen->Get_Massnumber(Sign(a)*p1->momnum,p1->fl,MassTermCalc(Sign(a)*p1->momnum,p1->fl));
 }

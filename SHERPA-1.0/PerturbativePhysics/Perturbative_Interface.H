@@ -16,8 +16,8 @@ namespace SHERPA {
     double                   m_weight;
 
     int                      m_nin,m_nout;
-    APHYTOOLS::Flavour     * p_fl;
-    AMATOOLS::Vec4D        * p_moms;
+    ATOOLS::Flavour     * p_fl;
+    ATOOLS::Vec4D        * p_moms;
   public :
     Perturbative_Interface(Matrix_Element_Handler * _me,Shower_Handler * _shower) :
       p_me(_me), p_shower(_shower), 
@@ -29,8 +29,8 @@ namespace SHERPA {
       if (p_fl)   { delete p_fl;   p_fl   = NULL; }
       if (p_moms) { delete p_moms; p_moms = NULL; }
     }
-    virtual bool   DefineInitialConditions(APHYTOOLS::Blob *) = 0;
-    virtual bool   FillBlobs(APHYTOOLS::Blob_List *) = 0; 
+    virtual bool   DefineInitialConditions(ATOOLS::Blob *) = 0;
+    virtual bool   FillBlobs(ATOOLS::Blob_List *) = 0; 
     double GetWeight() { return m_weight; }
   };
 }

@@ -7,9 +7,7 @@
 
 using namespace SHERPA;
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace MODEL;
 using namespace std;
 

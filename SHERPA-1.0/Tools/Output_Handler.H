@@ -14,7 +14,7 @@ namespace SHERPA {
   public :
     Output_Handler(int type=1);
     ~Output_Handler();
-    void OutputToFormat(APHYTOOLS::Blob_List *);
+    void OutputToFormat(ATOOLS::Blob_List *);
     bool Active() { return m_active; }
   };
 }

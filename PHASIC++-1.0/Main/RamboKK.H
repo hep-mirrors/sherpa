@@ -34,7 +34,7 @@ namespace PHASIC {
     */
     void Set_KKmass();
   public:
-    RamboKK(int,int,APHYTOOLS::Flavour *);
+    RamboKK(int,int,ATOOLS::Flavour *);
     ~RamboKK();
     /*!
       Generates the weight. In case of massless Rambo this is given by
@@ -49,19 +49,19 @@ namespace PHASIC {
       \f]
       due to the multiplicity of the mass states
     */
-    void GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);  
+    void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);  
     /*!
       To generate a phase space point according to a uniform distribution.
       In case massive vectors are needed this point gets modified by 
       MassivePoint.
       /sa MassivePoint
     */
-    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
+    void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     /*!
       This method is only a dummy method meant to comply with the multi-channel.
       In fact it calls the GeneratePoint method without random numbers.
     */
-    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
+    void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
     /*!
       To generate a massive weight. The idea is to invert the generation of
       massive vectors, i.e. we start with massive vectors and force them
@@ -69,7 +69,7 @@ namespace PHASIC {
       factors, such that both four momentum conservation and mass shell 
       conditions are fulfilled.
     */
-    void MassiveWeight(AMATOOLS::Vec4D *,double);
+    void MassiveWeight(ATOOLS::Vec4D *,double);
     /*!
       To generate a massive point. The idea is to start from a massless point
       given by ordinary RAMBO::GeneratePoint and then to force them
@@ -77,9 +77,9 @@ namespace PHASIC {
       factors, such that both four momentum conservation and mass shell 
       conditions are fulfilled.
     */
-    void MassivePoint(AMATOOLS::Vec4D *,double);
+    void MassivePoint(ATOOLS::Vec4D *,double);
     std::string Name() { return std::string("RamboKK"); }
-    int CountResonances(APHYTOOLS::Flavour *&) { return 0; }
+    int CountResonances(ATOOLS::Flavour *&) { return 0; }
   };
 }
 

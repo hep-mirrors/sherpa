@@ -27,15 +27,15 @@ namespace BEAM {
     double SimpleCompton(double,double,double);
     double Polarization(double,double,double,double);
   public:
-    Laser_Backscattering(const APHYTOOLS::Flavour,const double,const double,
+    Laser_Backscattering(const ATOOLS::Flavour,const double,const double,
 			 const double,const double,const int,const int,const int,const int);
     ~Laser_Backscattering();
 
     Beam_Base     * Copy();
     void            PrintSpectra(std::string);
     bool            CalculateWeight(double,double);
-    double          Weight(APHYTOOLS::Flavour=APHYTOOLS::Flavour(APHYTOOLS::kf::none));
-    AMATOOLS::Vec4D OutMomentum();
+    double          Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
+    ATOOLS::Vec4D OutMomentum();
 
     double          PolarisationDegree() { return m_polar; }
     void            SetMode(int _mode)   { m_mode = _mode; }
@@ -191,7 +191,7 @@ namespace BEAM {
     The polarization degree.
   */
   /*!
-    \fn Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour,const double,const double,
+    \fn Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour,const double,const double,
                                                    const double,const double,const int,
 						   const int,const int,bool &);
     This is the constructor of the class. It initializes a large variety of internal parameters.
@@ -212,7 +212,7 @@ namespace BEAM {
     incoming lepton and in accordance with the mode given by Laser_Backscattering::m_mode.
   */
   /*!
-    \fn double Laser_Backscattering::Weight(APHYTOOLS::Flavour=APHYTOOLS::Flavour(kf::none));
+    \fn double Laser_Backscattering::Weight(ATOOLS::Flavour=ATOOLS::Flavour(kf::none));
     After checking that the outgoing particle indeed is a photon, the calculated weight
     is returned. In principle, from there one could also return an electron energy distribution,
     but this has not been implmeneted yet.

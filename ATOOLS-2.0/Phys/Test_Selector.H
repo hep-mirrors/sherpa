@@ -7,14 +7,14 @@
 #include <vector>
 #include "Selector.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
 
   // old version to be replaced soon !
 
   class Test_Selector : public Selector_Base {
     //    Flavour * flavs;
     //    int Nin,Nout;
-    const AMATOOLS::Vec4D* cur_vecs;
+    const Vec4D* cur_vecs;
     double  max_cos_l_beam, max_cos_l_l, max_cos_l_p, max_cos_l_g;
     double  max_cos_pg_l ,max_cos_g_beam, max_cos_p_beam;
     double  min_m2_q_q;
@@ -23,14 +23,14 @@ namespace APHYTOOLS {
     const double m2_ij(const int i,const int j)  const 
     { return (cur_vecs[i] + cur_vecs[j]).Abs2();}
     const double cos_ij(const int i, const int j)  const 
-    { AMATOOLS::Vec3D a= cur_vecs[i];
-      AMATOOLS::Vec3D b= cur_vecs[j];
+    { Vec3D a= cur_vecs[i];
+      Vec3D b= cur_vecs[j];
      return (a*b/(a.Abs()*b.Abs())); }
 
     std::vector<Selector_Log*> sel_logs;
   public:
     Test_Selector(int _Nin,int _Nout, Flavour * _flavs);
-    bool Trigger(const AMATOOLS::Vec4D*);
+    bool Trigger(const Vec4D*);
     virtual void Output() { 
       int count = 0;
       for (std::vector<Selector_Log*>::iterator it = sel_logs.begin(); it!=sel_logs.end(); ++it) {

@@ -3,9 +3,7 @@
 
 #include <iostream>
 
-
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 //explicite template instatiatations
 //template class list<Flavour>;

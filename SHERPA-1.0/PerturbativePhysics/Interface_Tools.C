@@ -3,9 +3,7 @@
 
 using namespace SHERPA;
 using namespace APACIC;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 
 Interface_Tools::Interface_Tools(Tree ** _ini_trees,Tree * _fin_tree) :

@@ -33,7 +33,7 @@ namespace SHERPA {
     const AMEGIC::Point * operator&()  const { return point; }
     const AMEGIC::Point * operator->() const { return point; }
 
-    APHYTOOLS::Flavour Flav()              
+    ATOOLS::Flavour Flav()              
     { 
       if (anti==-1) return point->fl.Bar(); 
       return point->fl;
@@ -98,27 +98,27 @@ namespace SHERPA {
 
     int               m_isron, m_isrshoweron;
 
-    APHYTOOLS::Jet_Finder * jf;
-    AMATOOLS::Vec4D       * moms;
+    ATOOLS::Jet_Finder * jf;
+    ATOOLS::Vec4D       * moms;
 
     double x1,x2;
 
     bool  Combinable(const Leg &, const Leg &, int & strong) const ;
     Leg * CombineLegs(Leg *, int, int, int );
 
-    void CombineMoms(AMATOOLS::Vec4D *, int, int, int);
-    void CombineMoms(AMATOOLS::Vec4D *, int, int, int, AMATOOLS::Vec4D * &);
+    void CombineMoms(ATOOLS::Vec4D *, int, int, int);
+    void CombineMoms(ATOOLS::Vec4D *, int, int, int, ATOOLS::Vec4D * &);
 
     void AddPossibility(int, int, int, int);
     Leg  CombinedLeg(Leg *, int, int);
     double Sprime();
   public:
-    Combine_Table(APHYTOOLS::Jet_Finder *, AMATOOLS::Vec4D *, Combine_Table *, int, int);
+    Combine_Table(ATOOLS::Jet_Finder *, ATOOLS::Vec4D *, Combine_Table *, int, int);
     ~Combine_Table();
 
 
     void            FillTable(Leg **,int, int); 
-    Combine_Table * CalcJet(int, AMATOOLS::Vec4D * _moms=0);
+    Combine_Table * CalcJet(int, ATOOLS::Vec4D * _moms=0);
 
     //! general access routines (return value is determined by winner combination 
     //! and winner graph number)
@@ -135,8 +135,8 @@ namespace SHERPA {
       _x2=x2;
     }
 
-    APHYTOOLS::Flavour   Flav(int i)      { return legs[gwin][i].Flav(); }
-    AMATOOLS::Vec4D    & Momentum(int i)  { return moms[i]; }
+    ATOOLS::Flavour   Flav(int i)      { return legs[gwin][i].Flav(); }
+    ATOOLS::Vec4D    & Momentum(int i)  { return moms[i]; }
     Combine_Table      * Up()             { return up; }
     //@}
 

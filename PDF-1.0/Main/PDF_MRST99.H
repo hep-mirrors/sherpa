@@ -14,17 +14,17 @@ namespace PDF {
     std::string     m_path;
     int             m_anti;
   public:
-    PDF_MRST99(const APHYTOOLS::Flavour,const int,const std::string); 
+    PDF_MRST99(const ATOOLS::Flavour,const int,const std::string); 
     void               Output();
     void               Calculate(const double, const double);
-    double             GetXPDF(const APHYTOOLS::Flavour & fl); 
+    double             GetXPDF(const ATOOLS::Flavour & fl); 
     PDF_Base         * GetCopy();
     double             GetXMin()  { return MRST99::xmin; };
     double             GetXMax()  { return MRST99::xmax; };
     double             GetQ2Min() { return MRST99::qsqmin; };
     double             GetQ2Max() { return MRST99::qsqmax; };
-    APHYTOOLS::Flavour Bunch()    { return m_bunch; } 
-    std::vector<APHYTOOLS::Flavour> Partons() { return m_partons; }
+    ATOOLS::Flavour Bunch()    { return m_bunch; } 
+    std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
   };
   /*!
     \class PDF_MRST99
@@ -68,7 +68,7 @@ namespace PDF {
     To denote particles and antiparticles, m_anti = 1, -1, respectively.
   */
   /*!
-    \fn PDF_MRST99::PDF_MRST99(const APHYTOOLS::Flavour,const int,const std::string); 
+    \fn PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour,const int,const std::string); 
     In the constructor the mrst99 class is initialized and the list of partons is filled.
   */
   /*!
@@ -79,7 +79,7 @@ namespace PDF {
     method of the c_mrst class and by updating the parton densities of m_content accordingly. 
   */
   /*!
-    \fn double PDF_Base::GetXPDF(const APHYTOOLS::Flavour &)
+    \fn double PDF_Base::GetXPDF(const ATOOLS::Flavour &)
     This returns x times one specific pdf out of the set of all calculated ones - it checks 
     whether the flavour passed over as argument is included in the list of legitimate constituents, 
     PDF_Base::m_partons and selects the appropriate one. In this case, the corresponding parton

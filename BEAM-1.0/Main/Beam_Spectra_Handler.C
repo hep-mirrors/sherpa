@@ -6,9 +6,7 @@
 #include <stdio.h>
 
 
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace BEAM;
 using namespace std;
 
@@ -29,8 +27,8 @@ Beam_Spectra_Handler::Beam_Spectra_Handler(Data_Read * dataread) :
   for (short int i=0;i<2;i++) {
     if (p_BeamBase[i]->On()) m_mode += i+1;
   }
-  AORGTOOLS::rpa.gen.SetBeam1(p_BeamBase[0]->Flav());
-  AORGTOOLS::rpa.gen.SetBeam2(p_BeamBase[1]->Flav());
+  ATOOLS::rpa.gen.SetBeam1(p_BeamBase[0]->Flav());
+  ATOOLS::rpa.gen.SetBeam2(p_BeamBase[1]->Flav());
 }
 
 Beam_Spectra_Handler::~Beam_Spectra_Handler() { 
@@ -128,7 +126,7 @@ bool Beam_Spectra_Handler::InitKinematics(Data_Read * dataread) {
   rpa.gen.SetEcms(E);
 
   m_splimits[0] = s*dataread->GetValue<double>("BEAM_SMIN");
-  m_splimits[1] = s*AMATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX"),Upper1()*Upper2());
+  m_splimits[1] = s*ATOOLS::Min(dataread->GetValue<double>("BEAM_SMAX"),Upper1()*Upper2());
   m_splimits[2] = s;
   m_ylimits[0]  = -10.;
   m_ylimits[1]  = 10.;
@@ -160,8 +158,8 @@ void Beam_Spectra_Handler::Output() {
 }
 
 
-bool Beam_Spectra_Handler::CheckConsistency(APHYTOOLS::Flavour * _beams,
-					    APHYTOOLS::Flavour * _bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _beams,
+					    ATOOLS::Flavour * _bunches) {
   bool fit = 1;
   for (int i=0;i<2;i++) {
     if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {
@@ -189,7 +187,7 @@ bool Beam_Spectra_Handler::CheckConsistency(APHYTOOLS::Flavour * _beams,
   return fit;
 }
 
-bool Beam_Spectra_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches) {
+bool Beam_Spectra_Handler::CheckConsistency(ATOOLS::Flavour * _bunches) {
   bool fit = 1;
   for (int i=0;i<2;i++) {
     if (p_BeamBase[i]->Type() == string("Laser_Backscattering")) {

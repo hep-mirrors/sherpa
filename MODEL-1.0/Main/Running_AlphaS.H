@@ -19,7 +19,7 @@ namespace MODEL {
   // cf. T. van Ritbergen, J. Varmaseren, S. Larin PLB 400 (1997) 379
   // up to factor 4^(i+1)
 
-  class Running_AlphaS : public AMATOOLS::Function_Base {
+  class Running_AlphaS : public ATOOLS::Function_Base {
   protected:
     int         m_order;
     int         m_nth,m_mzset;

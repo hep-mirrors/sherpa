@@ -7,7 +7,7 @@
 #include "Vector.H"
 #include "MyComplex.H"
 
-namespace AMATOOLS {
+namespace ATOOLS {
 
   template<int _rank>
   class Matrix {
@@ -98,7 +98,7 @@ namespace AMATOOLS {
 
   /*!
     \file 
-    \brief contains class AMATOOLS::Matrix
+    \brief contains class Matrix
   */
 
   /*!

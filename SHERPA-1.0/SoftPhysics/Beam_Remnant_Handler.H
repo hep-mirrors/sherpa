@@ -19,20 +19,20 @@ namespace SHERPA {
     std::string                   m_dir,m_file;
     PDF::ISR_Handler            * p_isr;
     BEAM::Beam_Spectra_Handler  * p_beam;
-    APHYTOOLS::Flavour         ** p_constituents;
+    ATOOLS::Flavour         ** p_constituents;
     int                         * p_numberofconstituents;
 
-    int    Constituents(APHYTOOLS::Flavour,APHYTOOLS::Flavour *&); 
-    bool   FillHadron(APHYTOOLS::Blob *,int,APHYTOOLS::Parton_List * = NULL);
-    double GetX_Lund(APHYTOOLS::Flavour,APHYTOOLS::Flavour,double);
-    double GetX_PDF(APHYTOOLS::Flavour,APHYTOOLS::Flavour,double,int);
-    double GetPT(APHYTOOLS::Flavour,APHYTOOLS::Flavour,double);
+    int    Constituents(ATOOLS::Flavour,ATOOLS::Flavour *&); 
+    bool   FillHadron(ATOOLS::Blob *,int,ATOOLS::Parton_List * = NULL);
+    double GetX_Lund(ATOOLS::Flavour,ATOOLS::Flavour,double);
+    double GetX_PDF(ATOOLS::Flavour,ATOOLS::Flavour,double,int);
+    double GetPT(ATOOLS::Flavour,ATOOLS::Flavour,double);
   public :
     Beam_Remnant_Handler(std::string,std::string,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Beam_Remnant_Handler();
 
-    bool FillBunchBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
-    bool FillBeamBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
+    bool FillBunchBlobs(ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
+    bool FillBeamBlobs(ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
   };
 }
 #endif

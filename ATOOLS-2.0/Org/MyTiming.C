@@ -2,7 +2,7 @@
 #include "Message.H"
 #include <iostream>
 using std::endl;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 MyTiming::MyTiming()
 {

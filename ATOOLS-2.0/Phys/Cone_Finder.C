@@ -2,12 +2,10 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 
-void Cone_Finder::Init(const AMATOOLS::Vec4D * p)
+void Cone_Finder::Init(const Vec4D * p)
 {
   //nothing has to be done for hadronic collisions
   //think about lepton-lepton collisions
@@ -33,7 +31,7 @@ Cone_Finder::Cone_Finder(int _n,Flavour * _fl,double _rcone) :
   m_sel_log = new Selector_Log(m_name);
 }
 
-double Cone_Finder::Rmin(AMATOOLS::Vec4D * p)
+double Cone_Finder::Rmin(Vec4D * p)
 {
   double r2min = 100000.;
   double r2jk, deta, dphi;
@@ -54,7 +52,7 @@ double Cone_Finder::Rmin(AMATOOLS::Vec4D * p)
   return sqrt(r2min);
 } 
 
-bool Cone_Finder::Trigger(const AMATOOLS::Vec4D * p)
+bool Cone_Finder::Trigger(const Vec4D * p)
 {
   // create copy
   Vec4D * moms = new Vec4D[m_nin+m_nout];
@@ -81,12 +79,12 @@ void Cone_Finder::BuildCuts(Cut_Data * cuts)
 void   Cone_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
 }
 
-double Cone_Finder::DEta12(AMATOOLS::Vec4D & p1,AMATOOLS::Vec4D & p2)
+double Cone_Finder::DEta12(Vec4D & p1,Vec4D & p2)
 {
   return log(sqrt( (sqr(p2[1])+sqr(p2[2]))/(sqr(p1[1])+sqr(p1[2])) ) * dabs(p1[3]/p2[3]));
 }
 
-double Cone_Finder::DPhi12(AMATOOLS::Vec4D & p1,AMATOOLS::Vec4D & p2)
+double Cone_Finder::DPhi12(Vec4D & p1,Vec4D & p2)
 {
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);

@@ -3,7 +3,7 @@
 #include "Message.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Topology::Topology() 
@@ -50,14 +50,14 @@ void Topology::Build_All(int N)
 void Topology::Print(Point* p)
 {
   if (!rpa.gen.Debugging()) return;
-  if (p==0) {AORGTOOLS::msg.Out()<<"End."<<endl;return;}
+  if (p==0) {ATOOLS::msg.Out()<<"End."<<endl;return;}
 
-  AORGTOOLS::msg.Out()<<"Left - ";
+  ATOOLS::msg.Out()<<"Left - ";
   Print(p->left);
-  AORGTOOLS::msg.Out()<<"Right - ";  
+  ATOOLS::msg.Out()<<"Right - ";  
   Print(p->right);
   if (p->middle!=0) { 
-    AORGTOOLS::msg.Out()<<"Middle - ";  
+    ATOOLS::msg.Out()<<"Middle - ";  
     Print(p->middle);
   }
 }

@@ -3,8 +3,7 @@
 #include "MathTools.H"
 #include <iostream>
 
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 #define IM1 2147483563
@@ -22,7 +21,7 @@ using namespace std;
 #define EPS 1.2e-7
 #define RNMX (1.0-EPS)
 
-AMATOOLS::Random AMATOOLS::ran(1234);
+ATOOLS::Random ATOOLS::ran(1234);
 
 double Random::Ran2(long *idum)
 {

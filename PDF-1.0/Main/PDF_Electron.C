@@ -7,9 +7,7 @@
 
 
 using namespace MODEL;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace PDF;
 
 PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _order) : 
@@ -26,7 +24,7 @@ PDF_Electron::PDF_Electron(const Flavour _bunch,const int _izetta,const int _ord
   m_beta   = (*aqed)(sqr(m_bunch.PSMass()))/M_PI*(L-1.);
 }
 
-double PDF_Electron::GetXPDF(const APHYTOOLS::Flavour & fl) {
+double PDF_Electron::GetXPDF(const ATOOLS::Flavour & fl) {
   if (fl==m_bunch) return m_xpdf;
   return 0.;
 }

@@ -4,7 +4,7 @@
 #include <fstream>
 #include "MathTools.H"
 
-namespace AMATOOLS {
+namespace ATOOLS {
   class Random {
     long     m_id;
     int      m_inext,m_inextp;
@@ -67,7 +67,7 @@ namespace AMATOOLS {
 
   /*!
     \file
-    \brief contains the class AMATOOLS::Random
+    \brief contains the class Random
   */
 
   /*!

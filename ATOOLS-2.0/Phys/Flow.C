@@ -2,11 +2,11 @@
 #include "Parton.H"
 
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   long Flow::qcd_counter = 600;
 }
 
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 
 Flow::Flow(Parton * _owner) : m_owner(_owner) { 
   m_code.insert(std::make_pair<int,int>(1,0)); 

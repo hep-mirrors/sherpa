@@ -4,9 +4,7 @@
 #include <stdio.h>
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Interaction_Model_sQCD::Interaction_Model_sQCD(MODEL::Model_Base * _model,

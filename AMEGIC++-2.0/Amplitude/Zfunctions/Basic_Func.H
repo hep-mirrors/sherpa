@@ -31,7 +31,7 @@ namespace AMEGIC {
 
   class Argument {
   public:
-    APHYTOOLS::kf::code        kfcode;
+    ATOOLS::kf::code        kfcode;
     Spinor::code    spinortype;
     Direction::code direction;
     int             numb;
@@ -149,7 +149,7 @@ namespace AMEGIC {
     Basic_MassTermfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {}    
     Kabbala MassTerm(int);
     Complex MassTermCalc(int,int);
-    Complex MassTermCalc(int,APHYTOOLS::Flavour);
+    Complex MassTermCalc(int,ATOOLS::Flavour);
   };
 
   class Basic_Vfunc : public virtual Basic_Func {
@@ -167,9 +167,9 @@ namespace AMEGIC {
     Complex KKProp(double);
   public:
     Basic_Pfunc(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS) : Basic_Func(_sgen,_BS)  {} 
-    Complex Propagator(double,APHYTOOLS::Flavour);
+    Complex Propagator(double,ATOOLS::Flavour);
     Complex Pcalc(const int,const int);
-    Complex Pcalc(const APHYTOOLS::Flavour&,const int);
+    Complex Pcalc(const ATOOLS::Flavour&,const int);
     Kabbala P(Pfunc*);
   };
 

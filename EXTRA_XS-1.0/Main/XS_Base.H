@@ -23,8 +23,8 @@ namespace EXTRAXS {
   class XS_Base : public PHASIC::Integrable_Base {
   protected:
     int                    m_nin, m_nout;
-    APHYTOOLS::Flavour   * p_fl;
-    AMATOOLS::Vec4D      * p_moms;
+    ATOOLS::Flavour   * p_fl;
+    ATOOLS::Vec4D      * p_moms;
     std::string            m_name;
 
     double                 m_s, m_t, m_u;
@@ -41,32 +41,32 @@ namespace EXTRAXS {
     PHASIC::Phase_Space_Handler    * p_ps; 
     BEAM::Beam_Spectra_Handler     * p_beam;
     PDF::ISR_Handler               * p_isr;
-    APHYTOOLS::Selector_Base       * p_sel;
+    ATOOLS::Selector_Base       * p_sel;
 
-    void                             Init(APHYTOOLS::Flavour *);
+    void                             Init(ATOOLS::Flavour *);
     void                             GenerateName();
    public:
-    XS_Base(int,int,APHYTOOLS::Flavour *,
-	    PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+    XS_Base(int,int,ATOOLS::Flavour *,
+	    PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,ATOOLS::Selector_Data *,
 	    int,int,double);
-    XS_Base(int,int,APHYTOOLS::Flavour *);
+    XS_Base(int,int,ATOOLS::Flavour *);
     XS_Base() {   m_name     = std::string("Empty XS"); }
 
     
     virtual ~XS_Base();
 
     virtual int    Size() { return 0; }
-    virtual double Differential(AMATOOLS::Vec4D *);
+    virtual double Differential(ATOOLS::Vec4D *);
     virtual double Differential2()                              = 0;
-    virtual double Scale(AMATOOLS::Vec4D *);
-    virtual bool   SetColours(AMATOOLS::Vec4D *);
+    virtual double Scale(ATOOLS::Vec4D *);
+    virtual bool   SetColours(ATOOLS::Vec4D *);
     virtual double KFactor(double);
 
     int                        Nin();
     int                        Nout();
     int                        Nvec();
     std::string                Name();
-    APHYTOOLS::Flavour       * Flavs();
+    ATOOLS::Flavour       * Flavs();
     double                     ISRThreshold();
     double                     Max();
     double                     Total();
@@ -74,11 +74,11 @@ namespace EXTRAXS {
     double                     LastXS();
     double                     LastLumi();
     double                     Scale();
-    AMATOOLS::Vec4D          * Momenta(); 
+    ATOOLS::Vec4D          * Momenta(); 
     int                     ** Colours();
     XS_Base                  * Selected();
-    APHYTOOLS::Cut_Data      * Cuts();
-    APHYTOOLS::Selector_Base * Selector();
+    ATOOLS::Cut_Data      * Cuts();
+    ATOOLS::Selector_Base * Selector();
     void                       UpdateCuts(double,double)  {};
     void                       SetMax(double);
     void                       SetTotal(double);
@@ -93,7 +93,7 @@ namespace EXTRAXS {
     virtual void               AddPoint(double)                    = 0;
     virtual void               DeSelect()                          = 0;
     virtual void               SelectOne()                         = 0;
-    virtual void               SetMomenta(AMATOOLS::Vec4D *) {} //      = 0;
+    virtual void               SetMomenta(ATOOLS::Vec4D *) {} //      = 0;
     virtual bool               OneEvent()                          = 0;
     //virtual bool               SameEvent()                         = 0;
     //virtual double             WeightedEvent()                     = 0;
@@ -104,7 +104,7 @@ namespace EXTRAXS {
   inline int                        XS_Base::Nout()                  { return m_nout; }  
   inline int                        XS_Base::Nvec()                  { return m_nin+m_nout; }  
   inline std::string                XS_Base::Name()                  { return m_name; }
-  inline APHYTOOLS::Flavour       * XS_Base::Flavs()                 { return p_fl; }
+  inline ATOOLS::Flavour       * XS_Base::Flavs()                 { return p_fl; }
   inline double                     XS_Base::ISRThreshold()          { return m_thres; }
   inline double                     XS_Base::Max()                   { return m_max; }
   inline double                     XS_Base::Total()                 { return m_totalxs; }
@@ -112,11 +112,11 @@ namespace EXTRAXS {
   inline double                     XS_Base::LastXS()                { return m_lastdxs; }
   inline double                     XS_Base::LastLumi()              { return m_lastlumi; }
   inline double                     XS_Base::Scale()                 { return m_scale; }   
-  inline AMATOOLS::Vec4D          * XS_Base::Momenta()               { return p_moms; } 
+  inline ATOOLS::Vec4D          * XS_Base::Momenta()               { return p_moms; } 
   inline int                     ** XS_Base::Colours()               { return p_colours; }
   inline XS_Base                  * XS_Base::Selected()              { return p_selected; }
-  inline APHYTOOLS::Cut_Data      * XS_Base::Cuts()                  { return NULL; }
-  inline APHYTOOLS::Selector_Base * XS_Base::Selector()              { return p_sel; }
+  inline ATOOLS::Cut_Data      * XS_Base::Cuts()                  { return NULL; }
+  inline ATOOLS::Selector_Base * XS_Base::Selector()              { return p_sel; }
 
   inline void                       XS_Base::SetMax(double _max)             { m_max     = _max;   }
   inline void                       XS_Base::SetTotal(double _total)         { m_totalxs = _total; }

@@ -13,8 +13,8 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha;
   public:
-    q_qg(APHYTOOLS::Flavour quarkflavour);
-    q_qg(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    q_qg(ATOOLS::Flavour quarkflavour);
+    q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -43,8 +43,8 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha;
   public:
-    g_qq(APHYTOOLS::Flavour quarkflavour);
-    g_qq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    g_qq(ATOOLS::Flavour quarkflavour);
+    g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -59,8 +59,8 @@ namespace APACIC {
     Sudakov_Tools * p_tools;
     double          m_alpha;
   public:
-    q_gq(APHYTOOLS::Flavour quarkflavour);
-    q_gq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    q_gq(ATOOLS::Flavour quarkflavour);
+    q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -86,11 +86,11 @@ namespace APACIC {
     \f]
   */
   /*!
-    \fn q_qg::q_qg(APHYTOOLS::Flavour quarkflavour);
+    \fn q_qg::q_qg(ATOOLS::Flavour quarkflavour);
     \brief Constructor, taking the quark flavour as argument (obsolete)
   */
   /*!
-    \fn q_qg::q_qg(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    \fn q_qg::q_qg(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     \brief Constructor, takng the quark flavour and a class to
            deliver running alpha_s 
   */
@@ -127,11 +127,11 @@ namespace APACIC {
 
  */
   /*!
-    \fn g_qq::g_qq(APHYTOOLS::Flavour quarkflavour);
+    \fn g_qq::g_qq(ATOOLS::Flavour quarkflavour);
     \brief Constructor, taking the quark flavour as argument (obsolete)
   */
   /*!
-    \fn g_qq::g_qq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    \fn g_qq::g_qq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     \brief Constructor, takng the quark flavour and a class to
            deliver running alpha_qed 
   */
@@ -150,11 +150,11 @@ namespace APACIC {
 
   */
   /*!
-    \fn q_gq::q_gq(APHYTOOLS::Flavour quarkflavour);
+    \fn q_gq::q_gq(ATOOLS::Flavour quarkflavour);
     \brief Constructor, taking the quark flavour as argument (obsolete)
   */
   /*!
-    \fn q_gq::q_gq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    \fn q_gq::q_gq(ATOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
     \brief Constructor, takng the quark flavour and a class to
            deliver running alpha_qed 
   */

@@ -2,8 +2,7 @@
 #include "Message.H"
 
 using namespace SHERPA;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 Output_Handler::Output_Handler(int type) :
   m_type(type), p_hepmc(NULL), p_event(NULL), m_active(0)

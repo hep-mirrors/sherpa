@@ -10,7 +10,7 @@ namespace AMEGIC {
   //! The container for a list of processes.
   class All_Processes : public Process_Group {
   public:
-    int  InitAllProcesses(Interaction_Model_Base *,Topology *,AMATOOLS::Vec4D *&,
+    int  InitAllProcesses(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
 			  std::vector<double> &,std::vector<Single_Process *> &);
 
     void Add(Process_Base *);
@@ -23,8 +23,8 @@ namespace AMEGIC {
 
     int                  Nin()     { return p_selected->Nin(); }
     int                  Nout()    { return p_selected->Nout(); } 
-    APHYTOOLS::Flavour * Flavs()   { return p_selected->Flavs(); } 
-    AMATOOLS::Vec4D    * Momenta() { return p_selected->Momenta(); }
+    ATOOLS::Flavour * Flavs()   { return p_selected->Flavs(); } 
+    ATOOLS::Vec4D    * Momenta() { return p_selected->Momenta(); }
   };
 }
 

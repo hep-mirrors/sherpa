@@ -7,7 +7,7 @@
 #include "Parton_List.H"
 #include "Blob_List.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class Primitive_Analysis {
   private :
     std::vector<Primitive_Observable_Base *>   observables;
@@ -22,9 +22,9 @@ namespace APHYTOOLS {
     // most simple analysis, assume the observables a know how to handle a single value
     void DoAnalysis(double);
     // simple analysis based on a list of partons (basically flavs, moms)
-    void DoAnalysis(const APHYTOOLS::Parton_List &, double);
+    void DoAnalysis(const Parton_List &, double);
     // advanced analysis, working with a bloblist, thus event generation properties can be exploit
-    void DoAnalysis(const APHYTOOLS::Blob_List &, double);
+    void DoAnalysis(const Blob_List &, double);
     // finialise and write out results of analysis
     void FinishAnalysis(std::string,int);
   };

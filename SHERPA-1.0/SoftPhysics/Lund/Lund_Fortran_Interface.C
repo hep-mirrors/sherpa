@@ -5,9 +5,7 @@
 #include "Blob.H"
 
 using namespace SHERPA;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 
 extern "C" {
   void fhawface_(int&, int*, int*, int*, double*, double*);
@@ -20,7 +18,7 @@ Lund_Fortran_Interface::Lund_Fortran_Interface(double _a,double _b, double _sigm
   a(_a), b(_b), sigma(_sigma)
 { 
   Init();
-  apyinit_(AORGTOOLS::rpa.gen.Ecms(),a,b,sigma,1,0);
+  apyinit_(ATOOLS::rpa.gen.Ecms(),a,b,sigma,1,0);
   pyinit = 1;
 } 
 
@@ -43,9 +41,9 @@ void Lund_Fortran_Interface::Init()
   idhep  = new int[maxentries];
 }
 
-bool Lund_Fortran_Interface::Hadronize(APHYTOOLS::Blob * blob,
-				       APHYTOOLS::Blob_List * bloblist,
-				       APHYTOOLS::Parton_List * pl) {
+bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
+				       ATOOLS::Blob_List * bloblist,
+				       ATOOLS::Parton_List * pl) {
   blob->SetType(std::string("Fragmentation (Lund : Pythia 6.163)"));
   int nhep = 0;
 
@@ -115,9 +113,9 @@ void Lund_Fortran_Interface::AddPartonToString(Parton * parton,int & nhep)
   nhep++;
 }
 
-void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(APHYTOOLS::Blob * blob,
-						      APHYTOOLS::Blob_List * bloblist,
-						      APHYTOOLS::Parton_List * pl)
+void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
+						      ATOOLS::Blob_List * bloblist,
+						      ATOOLS::Parton_List * pl)
 {
   pjet      = new double[4*maxentries];
   xjet      = new double[4*maxentries];
@@ -176,10 +174,10 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(APHYTOOLS::Blob * blob,
   delete daughters;
 }
 
-void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(APHYTOOLS::Blob * blob,
-							APHYTOOLS::Blob_List * bloblist,
+void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
+							ATOOLS::Blob_List * bloblist,
 							int daughter1,int daughter2,
-							APHYTOOLS::Parton_List * pl) 
+							ATOOLS::Parton_List * pl) 
 {
   Blob    * decay;
   Parton  * parton;

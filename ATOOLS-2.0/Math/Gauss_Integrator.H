@@ -3,7 +3,7 @@
 
 #include "Function_Base.H"    
 
-namespace AMATOOLS {
+namespace ATOOLS {
 
   struct Weight_Module {
     int      methode;
@@ -37,7 +37,7 @@ namespace AMATOOLS {
 
   /*!
     \file
-    \brief contains the class AMATOOLS::Gauss_Integrator
+    \brief contains the class Gauss_Integrator
   */
 
   /*!

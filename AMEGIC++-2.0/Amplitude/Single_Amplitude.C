@@ -7,8 +7,7 @@
 #include "Zfunc_Generator.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 #define Cut_Fermion_Prop
@@ -148,27 +147,27 @@ void Single_Amplitude::PrintGraph()
 {
   if (!rpa.gen.Debugging()) return;
   
-  AORGTOOLS::msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
+  ATOOLS::msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
 
   Single_Amplitude_Base::PrintGraph();
 
   Color_Function* c;
   c = CFlist;
-  AORGTOOLS::msg.Out()<<"Color-matrix: ";
+  ATOOLS::msg.Out()<<"Color-matrix: ";
   while(c) {
     switch (c->type) {
       case  0: {
-	AORGTOOLS::msg.Out()<<"T("<<c->partarg[0]<<" "<<c->partarg[1]
+	ATOOLS::msg.Out()<<"T("<<c->partarg[0]<<" "<<c->partarg[1]
 			    <<" "<<c->partarg[2]<<") ";
 	break;
       }
       case  1: {
-	AORGTOOLS::msg.Out()<<"F("<<c->partarg[0]<<" "<<c->partarg[1]
+	ATOOLS::msg.Out()<<"F("<<c->partarg[0]<<" "<<c->partarg[1]
 			    <<" "<<c->partarg[2]<<") ";
 	break;
       }
       case 10: {
-	AORGTOOLS::msg.Out()<<"TP("<<c->partarg[0]<<" "<<c->partarg[1]
+	ATOOLS::msg.Out()<<"TP("<<c->partarg[0]<<" "<<c->partarg[1]
 			    <<" "<<c->partarg[2]<<") ";
 	break;
       }
@@ -176,13 +175,13 @@ void Single_Amplitude::PrintGraph()
     }
     c = c->Next;     
   }
-  AORGTOOLS::msg.Out()<<endl<<"Color-string: "<<Colstring<<endl<<endl<<"Spinflow:"<<endl;
+  ATOOLS::msg.Out()<<endl<<"Color-string: "<<Colstring<<endl<<endl<<"Spinflow:"<<endl;
   SpinorDirection* sd = spind;
   while(sd) {
-    AORGTOOLS::msg.Out()<<sd->from<<" -> "<<sd->to<<endl;
+    ATOOLS::msg.Out()<<sd->from<<" -> "<<sd->to<<endl;
     sd = sd->Next;     
   }
-  AORGTOOLS::msg.Out()<<"Overall sign "<<sign<<endl;
+  ATOOLS::msg.Out()<<"Overall sign "<<sign<<endl;
 }
 
 void Single_Amplitude::Zprojecting(Flavour* fl,int ngraph)

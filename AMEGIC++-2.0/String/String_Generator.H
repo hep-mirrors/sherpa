@@ -56,7 +56,7 @@ namespace AMEGIC {
       std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));} 
     virtual Kabbala Get_Pnumber(Pfunc*,int) {   
       std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));} 
-    virtual Kabbala Get_Massnumber(int,APHYTOOLS::Flavour,Complex) {
+    virtual Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex) {
       std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}  
     virtual Kabbala Get_Enumber(Complex) {
       std::cerr<<"Virtual Method called !"<<std::endl;return Kabbala(std::string(""),Complex(0.,0.));}
@@ -75,7 +75,7 @@ namespace AMEGIC {
       std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);} 
     virtual Kabbala Get_Pnumber(Pfunc*,int) {   
       std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);} 
-    virtual Kabbala Get_Massnumber(int,APHYTOOLS::Flavour,Complex) {
+    virtual Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex) {
       std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}  
     virtual Kabbala Get_Enumber(Complex) {
       std::cerr<<"Virtual Method called !"<<std::endl;return Complex(0.,0.);}
@@ -164,7 +164,7 @@ namespace AMEGIC {
     Kabbala Get_Xnumber(int*,Complex*,Complex); 
     Kabbala Get_Ynumber(int*,Complex*,Complex); 
     Kabbala Get_Pnumber(Pfunc*,int);
-    Kabbala Get_Massnumber(int,APHYTOOLS::Flavour,Complex);
+    Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex);
     Kabbala Get_Enumber(Complex); 
     Kabbala Get_Snumber(int,int,Complex); 
     Kabbala Get_Scplxnumber(const int,const int,Complex); 
@@ -199,7 +199,7 @@ namespace AMEGIC {
     Kabbala Get_Xnumber(int*,Complex*,Complex value) {return Kabbala(std::string(""),value);} 
     Kabbala Get_Ynumber(int*,Complex*,Complex value) {return Kabbala(std::string(""),value);} 
     Kabbala Get_Pnumber(Pfunc* pl,int)               {return Kabbala(std::string(""),pl->value);} 
-    Kabbala Get_Massnumber(int,APHYTOOLS::Flavour,Complex value){return Kabbala(std::string(""),value);}
+    Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex value){return Kabbala(std::string(""),value);}
     Kabbala Get_Enumber(Complex value)               {return Kabbala(std::string(""),value);}
     Kabbala Get_Snumber(int,int,Complex value)     {return Kabbala(std::string(""),value);}
     Kabbala Get_Scplxnumber(const int,const int,Complex value)     {return Kabbala(std::string(""),value);}
@@ -209,7 +209,7 @@ namespace AMEGIC {
     Kabbala Get_Xnumber(int*,Complex*,Complex value) {return value;} 
     Kabbala Get_Ynumber(int*,Complex*,Complex value) {return value;} 
     Kabbala Get_Pnumber(Pfunc* pl,int)               {return pl->value;} 
-    Kabbala Get_Massnumber(int,APHYTOOLS::Flavour,Complex value){return value;}
+    Kabbala Get_Massnumber(int,ATOOLS::Flavour,Complex value){return value;}
     Kabbala Get_Enumber(Complex value)               {return value;}
     Kabbala Get_Scplxnumber(const int&,const int&,Complex value)     {return value;}
 #endif    

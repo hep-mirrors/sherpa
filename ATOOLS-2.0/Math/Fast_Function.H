@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 
-namespace AMATOOLS {
+namespace ATOOLS {
 
   class Intervall {
     double m_minval;
@@ -92,7 +92,7 @@ namespace AMATOOLS {
 
   /*!
     \file 
-    \brief Contains the class AMATOOLS::Fast_Function
+    \brief Contains the class Fast_Function
   */
   
   /*!

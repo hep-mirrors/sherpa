@@ -5,9 +5,7 @@
 #include <stdio.h>
 
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Interaction_Model_EW_Grav::Interaction_Model_EW_Grav(MODEL::Model_Base * _model,
@@ -162,7 +160,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 	      kcpl0 = g1*M_I*charge1*kap/num2;
 	      kcpl1 = kcpl0;
 	      
-	      if (!AMATOOLS::IsZero(charge1.Value())) {
+	      if (!ATOOLS::IsZero(charge1.Value())) {
 		vertex[vanz].nleg     = 4;
 		vertex[vanz].in[0] = flav1;
 		vertex[vanz].in[1] = Flavour(kf::photon);
@@ -236,7 +234,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 	      kcpl0 = -g1*M_I*charge1*om*kap*num15;
 	      kcpl1 = kcpl0;
 	      
-	      if (!AMATOOLS::IsZero(charge1.Value())) {
+	      if (!ATOOLS::IsZero(charge1.Value())) {
 		vertex[vanz].nleg     = 4;
 		vertex[vanz].in[0] = flav1;
 		vertex[vanz].in[1] = Flavour(kf::photon);
@@ -324,7 +322,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		else 	    
 		kcpl1 = M_I/root2*g2*K_CKM(i/2-1,(j-1)/2)*kap/num2;		
 	      }
-	      if (!AMATOOLS::IsZero(kcpl1.Value()/kap.Value())) {
+	      if (!ATOOLS::IsZero(kcpl1.Value()/kap.Value())) {
 		vertex[vanz].nleg     = 4;
 		vertex[vanz].in[1] = Flavour(kf::W);
 		if (flav1.IsDowntype()) {
@@ -383,7 +381,7 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		else 	    
 		kcpl1 = -M_I/root2*g2*K_CKM(i/2-1,(j-1)/2)*om*kap*num15;		
 	      }
-	      if (!AMATOOLS::IsZero(kcpl1.Value()/kap.Value())) {
+	      if (!ATOOLS::IsZero(kcpl1.Value()/kap.Value())) {
 		vertex[vanz].nleg     = 4;
 		vertex[vanz].in[1] = Flavour(kf::W);
 		if (flav1.IsDowntype()) {

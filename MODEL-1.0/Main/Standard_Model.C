@@ -6,9 +6,8 @@
 #include "Hdecay_Fortran_Interface.H"
 
 using namespace MODEL;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
+
 
 Standard_Model::Standard_Model(std::string _dir,std::string _file) :
   Model_Base(_dir,_file)

@@ -15,7 +15,7 @@ namespace AMEGIC {
     //! The branching ratio
     double BR;
     //! fl[0] is the incoming flavour fl[1..fn] are the outgoings.
-    APHYTOOLS::Flavour* fl;
+    ATOOLS::Flavour* fl;
     //! The number of flavours.
     int fn;
     //! Particle is decaying into the MORE list.
@@ -30,11 +30,11 @@ namespace AMEGIC {
     //! The decay table, where all informations are stored.
     DecayTable* dtfirst;
     //! Checks, if a certain flavour is included in the list of vertices.
-    int  CheckInVertex(APHYTOOLS::Flavour);
+    int  CheckInVertex(ATOOLS::Flavour);
     //! Checks, if a vertex with this flavour combination exists.
-    int  CheckVertex(APHYTOOLS::Flavour,APHYTOOLS::Flavour,APHYTOOLS::Flavour);
+    int  CheckVertex(ATOOLS::Flavour,ATOOLS::Flavour,ATOOLS::Flavour);
     //! Adds a new DecayTable to the list.
-    void Add(DecayTable*,APHYTOOLS::Flavour,APHYTOOLS::Flavour,APHYTOOLS::Flavour);
+    void Add(DecayTable*,ATOOLS::Flavour,ATOOLS::Flavour,ATOOLS::Flavour);
     //! Finds every 1->2 decay for the unstable particles.
     void FindDecayProducts2();
     //! Finds every 1->3 decay.

@@ -11,7 +11,7 @@
 #include <iostream>
 #include "MathTools.H"
  
-namespace AMATOOLS {
+namespace ATOOLS {
   class Vec4D;
   class Vec3D;
 
@@ -353,13 +353,13 @@ namespace AMATOOLS {
 
 /*!
  \file
- \brief   contains class AMATOOLS::Vec3D and class AMATOOLS::Vec4D 
+ \brief   contains class Vec3D and class Vec4D 
 */
 
 // --- class Vec3D ---
 
 /*!
- \class AMATOOLS::Vec3D
+ \class Vec3D
  \brief implementation of a 3 dimensional vector and its algebraic operations
 
  This class can be used as a (real) 3 dimensional vector. All necessary
@@ -367,44 +367,44 @@ namespace AMATOOLS {
 */
 
 /*!
- \fn AMATOOLS::Vec3D::Vec3D()
+ \fn Vec3D::Vec3D()
  \brief Standard Constructor
 */
 
 /*!
- \fn AMATOOLS::Vec3D::Vec3D(double x, double y, double z){
+ \fn Vec3D::Vec3D(double x, double y, double z){
  \brief Special Constructor taking 3 single components
 */
 
 /*!
- \fn AMATOOLS::Vec3D::Vec3D(const Vec4D& v)
+ \fn Vec3D::Vec3D(const Vec4D& v)
  \brief Special Constructor extracting the space part of a minkowski vector
 */
 
 /*!
- \fn inline const double AMATOOLS::Vec3D::Abs() const
+ \fn inline const double Vec3D::Abs() const
  \brief returns \f$ \sqrt{x^2 + y^2 + z^2} \f$.
 */
 
 /*!
- \fn inline const double AMATOOLS::Vec3D::Sqr() const
+ \fn inline const double Vec3D::Sqr() const
  \brief returns \f$ x^2 + y^2 + z^2 \f$.
 */
 
 /*!
- \fn   inline double& AMATOOLS::Vec3D::operator[] (int i)
+ \fn   inline double& Vec3D::operator[] (int i)
  \brief returns x,y,z for i=1,2,3 resp. (May be manipulated.)
 */
 
 /*!
- \fn   inline const double AMATOOLS::Vec3D::operator[] (int i) const
+ \fn   inline const double Vec3D::operator[] (int i) const
  \brief returns x,y,z for i=1,2,3 resp.
 */
 
 // --- class Vec4D ---
 
 /*!
- \class AMATOOLS::Vec4D
+ \class Vec4D
  \brief implementation of a 4 dimensional (Minkowski) vector and its algebraic operations
 
  This class can be used as Minkowski vector. All necessary  operations, e.g. addition,
@@ -412,32 +412,32 @@ namespace AMATOOLS {
 */
 
 /*!
- \fn AMATOOLS::Vec4D::Vec4D()
+ \fn Vec4D::Vec4D()
  \brief Standard Constructor
 */
 
 /*!
- \fn AMATOOLS::Vec4D::Vec4D(double x0,double x1, double x2, double x3){
+ \fn Vec4D::Vec4D(double x0,double x1, double x2, double x3){
  \brief Special Constructor taking 4 single components
 */
 
 /*!
- \fn AMATOOLS::Vec4D::Vec4D(const double E, const Vec3D& v)
+ \fn Vec4D::Vec4D(const double E, const Vec3D& v)
  \brief Special Constructor taking the space part and a Energie
 */
 
 /*!
- \fn inline const double AMATOOLS::Vec4D::Abs2() const
+ \fn inline const double Vec4D::Abs2() const
  \brief returns \f$ x_0^2 - (x_1^2 + x_2^2 + x_3^2) \f$.
 */
 
 /*!
- \fn   inline double& AMATOOLS::Vec4D::operator[] (int i)
+ \fn   inline double& Vec4D::operator[] (int i)
  \brief returns \f$x_i\f$. (May be manipulated.)
 */
 
 /*!
- \fn   inline const double AMATOOLS::Vec4D::operator[] (int i) const
+ \fn   inline const double Vec4D::operator[] (int i) const
  \brief returns \f$x_i\f$.
 */
 

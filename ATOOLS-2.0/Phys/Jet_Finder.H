@@ -5,7 +5,7 @@
 #include "Selector.H"
 #include "Poincare.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class Jet_Finder : public Selector_Base {
     double m_ycut;
     int    m_type,m_jet_alg;
@@ -14,43 +14,43 @@ namespace APHYTOOLS {
     /*
       The vectors related to the frame
     */
-    AMATOOLS::Vec4D *  p_frame;
-    AMATOOLS::Poincare m_cms_boost;
-    AMATOOLS::Poincare m_zrot;
+    Vec4D *  p_frame;
+    Poincare m_cms_boost;
+    Poincare m_zrot;
 
-    void BoostInFrame(AMATOOLS::Vec4D *);
-    void BoostBack(AMATOOLS::Vec4D *);
-    void BoostInFrame(std::vector<AMATOOLS::Vec4D>);
-    void BoostBack(std::vector<AMATOOLS::Vec4D>);
-    void BoostInFrame(AMATOOLS::Vec4D &);
-    void BoostBack(AMATOOLS::Vec4D &);
+    void BoostInFrame(Vec4D *);
+    void BoostBack(Vec4D *);
+    void BoostInFrame(std::vector<Vec4D>);
+    void BoostBack(std::vector<Vec4D>);
+    void BoostInFrame(Vec4D &);
+    void BoostBack(Vec4D &);
 
-    bool ConstructJetSystem(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,std::vector<AMATOOLS::Vec4D> &,
+    bool ConstructJetSystem(Vec4D *,Flavour *,std::vector<Vec4D> &,
 			    std::vector<int> jets,std::vector<double> & lastys);
 
-    double YminKt(AMATOOLS::Vec4D *,int &,int &);
-    double YminKt(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,
-		   std::vector<AMATOOLS::Vec4D>,int &,int &);
+    double YminKt(Vec4D *,int &,int &);
+    double YminKt(Vec4D *,Flavour *,
+		   std::vector<Vec4D>,int &,int &);
 
-    double DEta12(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
-    double DPhi12(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
-    double DCos12(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
+    double DEta12(Vec4D &,Vec4D &);
+    double DPhi12(Vec4D &,Vec4D &);
+    double DCos12(Vec4D &,Vec4D &);
     double Coshyp(double);
   public:
     Jet_Finder(double,int);
     Jet_Finder(int,Flavour *,double,int,int);
     ~Jet_Finder();
 
-    void   Init(const AMATOOLS::Vec4D *);
-    bool   ConstructJets(const APHYTOOLS::Parton_List *,
+    void   Init(const Vec4D *);
+    bool   ConstructJets(const Parton_List *,
 			 const std::vector<int> &,std::vector<double> &);
 
-    bool   Trigger(const AMATOOLS::Vec4D *);
-    bool   TwoJets(const AMATOOLS::Vec4D &);
-    bool   TwoJets(const AMATOOLS::Vec4D &, const AMATOOLS::Vec4D &);
+    bool   Trigger(const Vec4D *);
+    bool   TwoJets(const Vec4D &);
+    bool   TwoJets(const Vec4D &, const Vec4D &);
     bool   TwoJets(double &,double &,double &,bool);
-    double PTij(AMATOOLS::Vec4D,AMATOOLS::Vec4D);
-    double Yij(AMATOOLS::Vec4D,AMATOOLS::Vec4D);
+    double PTij(Vec4D,Vec4D);
+    double Yij(Vec4D,Vec4D);
     void   BuildCuts(Cut_Data *);
     void   UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -118,7 +118,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   AMATOOLS::Vec4D * Jet_Finder::m_frame;
+  \var   Vec4D * Jet_Finder::m_frame;
   \brief The vectors related to the frame.
 
   These vectors span the corresponding frame in which the jet-algorithm is
@@ -127,7 +127,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \fn    double Jet_Finder::YminKt(AMATOOLS::Vec4D *,int &,int &);
+  \fn    double Jet_Finder::YminKt(Vec4D *,int &,int &);
   \brief Find the minimal y for a number of vectors, fill in the appropriate 
          numbers.
 
@@ -162,7 +162,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \fn    void Jet_Finder::Init(AMATOOLS::Vec4D *);
+  \fn    void Jet_Finder::Init(Vec4D *);
   \brief Setting up the reference system for a number of vectors.
 
   In this method, only the initial momenta are analysed and
@@ -178,7 +178,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   bool Jet_Finder::Trigger(AMATOOLS::Vec4D *);
+  \var   bool Jet_Finder::Trigger(Vec4D *);
   \brief Checks for pairs of vectors to belong to one jet only.
 
   This method yields a zero if any pair of momenta of strong 
@@ -187,7 +187,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   bool Jet_Finder::TwoJets(AMATOOLS::Vec4D &,AMATOOLS::Vec4D &);
+  \var   bool Jet_Finder::TwoJets(Vec4D &,Vec4D &);
   \brief Checks, if the two vectors belong to one jet.
 
   This method returns a zero if the two vectors do not fulfil the 
@@ -206,7 +206,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   double Jet_Finder::PTij(AMATOOLS::Vec4D,AMATOOLS::Vec4D);
+  \var   double Jet_Finder::PTij(Vec4D,Vec4D);
   \brief Returns the actual p_t of two vectors.
 
   Depending on the set-up of the jet-finder the actual value of
@@ -214,7 +214,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   double Jet_Finder::PTi(AMATOOLS::Vec4D);
+  \var   double Jet_Finder::PTi(Vec4D);
   \brief Returns the actual p_t of a vector w.r.t. the beam.
 
   Depending on the set-up of the jet-finder the actual value of

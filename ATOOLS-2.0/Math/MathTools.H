@@ -29,7 +29,7 @@
 
 #include "MyComplex.H"
 
-namespace AMATOOLS {
+namespace ATOOLS {
 
   template <class Type>
   inline Type Min(Type a, Type b) { return a<b ? a : b; }
@@ -54,7 +54,7 @@ namespace AMATOOLS {
   inline double      sqr(double x) {return x*x;} 
   inline double      Accu() {return 1.e-12;};
   inline int IsZero(const double a) {
-    return (AMATOOLS::dabs(a)<Accu()) ? 1 : 0;
+    return (dabs(a)<Accu()) ? 1 : 0;
   }
   inline int IsZero(const Complex& a) {
     return (std::abs(a)<Accu()) ? 1 : 0;
@@ -121,22 +121,22 @@ namespace AMATOOLS {
 
   /*! 
     \fn  inline int IsZero(const double a) 
-    \brief returns \em true if argument is smaller than AMATOOLS::Accu()
+    \brief returns \em true if argument is smaller than Accu()
   */
 
   /*! 
     \fn  inline int IsZero(const Complex& a)
-    \brief  returns \em true if argument is smaller than AMATOOLS::Accu()
+    \brief  returns \em true if argument is smaller than Accu()
   */
 
   /*! 
     \fn  inline int IsEqual(const double a,const double b)
-    \brief  returns \em true if arguments are equal (compared to AMATOOLS::Accu())
+    \brief  returns \em true if arguments are equal (compared to Accu())
   */
 
   /*! 
     \fn  inline int IsEqual(const Complex& a,const Complex& b)
-    \brief  returns \em true if arguments are equal (compared to AMATOOLS::Accu())
+    \brief  returns \em true if arguments are equal (compared to Accu())
   */
 
   /*! 

@@ -8,12 +8,12 @@ namespace AMEGIC {
   class Extra_XS {
     double  s,MZ2,DZZ,ReDZZ,P_PL,P_MI;
     int     xs;
-    APHYTOOLS::Flavour flout[2];
+    ATOOLS::Flavour flout[2];
     double Lambda(double,double,double);
 
     double Pqr(double,double);
-    double DiffBhabhaScattering(AMATOOLS::Vec4D*);
-    double DiffMollerScattering(AMATOOLS::Vec4D*);
+    double DiffBhabhaScattering(ATOOLS::Vec4D*);
+    double DiffMollerScattering(ATOOLS::Vec4D*);
     double NeutralinoPairProduction();
     double SelectronPairProduction();
     double CharginoPairProduction();
@@ -24,11 +24,11 @@ namespace AMEGIC {
     double ZPairProduction();   
     double sFermionPairProduction();
  public: 
-    void Init(int,int,APHYTOOLS::Flavour*,APHYTOOLS::Flavour*);
+    void Init(int,int,ATOOLS::Flavour*,ATOOLS::Flavour*);
     double Calculate();
     
-    void   InitDiff(int,int,APHYTOOLS::Flavour*,APHYTOOLS::Flavour*);
-    double Differential(AMATOOLS::Vec4D*);
+    void   InitDiff(int,int,ATOOLS::Flavour*,ATOOLS::Flavour*);
+    double Differential(ATOOLS::Vec4D*);
   };
 }
 #endif

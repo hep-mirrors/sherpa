@@ -9,7 +9,7 @@ namespace APACIC {
   class Knot {
   public: 
     Knot * left, * right, * prev;
-    APHYTOOLS::Parton * part;
+    ATOOLS::Parton * part;
     int stat;
     double t, tout, E2, costh, phi, z, thcrit, maxpt2, x;
     int kn_no;
@@ -34,8 +34,8 @@ namespace APACIC {
     left   = ink->left;
     right  = ink->right;
 
-    APHYTOOLS::Parton * newp;
-    newp   = new APHYTOOLS::Parton(ink->part);
+    ATOOLS::Parton * newp;
+    newp   = new ATOOLS::Parton(ink->part);
     part   = newp;
     stat   = ink->stat;
 

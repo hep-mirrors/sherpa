@@ -9,9 +9,7 @@
 #include "MyStrStream.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 void out_pfunc(Pfunc & pf) {

@@ -26,11 +26,11 @@ namespace APACIC {
     Tree                ** p_initrees;
     Tree                 * p_fintree;
   public :
-    Hard_Interface(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,AORGTOOLS::Data_Read *); 
+    Hard_Interface(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,ATOOLS::Data_Read *); 
     ~Hard_Interface(); 
     void PrepareTrees();
     int  PerformShowers(bool,bool,bool);
-    bool ExtractPartons(bool,bool,APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
+    bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
 
     Tree             * FinTree()  { return p_fintree; }
     Tree            ** IniTrees() { return p_initrees; }

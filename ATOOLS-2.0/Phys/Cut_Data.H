@@ -3,7 +3,7 @@
 
 #include "Flavour.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
 
   class Cut_Data {
     Flavour * fl;

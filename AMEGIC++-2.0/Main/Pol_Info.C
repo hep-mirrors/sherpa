@@ -35,12 +35,12 @@ Pol_Info& Pol_Info::operator=(const Pol_Info& p)
   return *this;
 }
 Pol_Info::Pol_Info() { num=0; type=0; factor=0; p_type=' '; angle=0.;}
-Pol_Info::Pol_Info(const APHYTOOLS::Flavour& fl)
+Pol_Info::Pol_Info(const ATOOLS::Flavour& fl)
 {
   int dof = 1;
   if(fl.IsFermion())                                 { dof = 2;p_type='h';};
-  if(fl.IsVector() &&  AMATOOLS::IsZero(fl.Mass()))  { dof = 2;p_type='c';}
-  if(fl.IsVector() && !AMATOOLS::IsZero(fl.Mass()))  {
+  if(fl.IsVector() &&  ATOOLS::IsZero(fl.Mass()))  { dof = 2;p_type='c';}
+  if(fl.IsVector() && !ATOOLS::IsZero(fl.Mass()))  {
 
 #ifdef Explicit_Pols
     dof=3;
@@ -93,7 +93,7 @@ void Tensor_Struc::GetPolCombos(int num, std::vector<std::vector<int> >* pol, st
     cc[0]=mt::p_m;cc[1]=mt::p_m;
     pol->push_back(cc);
     break;
-  default: AORGTOOLS::msg.Error()<<"Invalid tensor type: "<<num<<std::endl;
+  default: ATOOLS::msg.Error()<<"Invalid tensor type: "<<num<<std::endl;
     abort();
   }
 }

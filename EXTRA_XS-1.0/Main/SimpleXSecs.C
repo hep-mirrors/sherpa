@@ -8,9 +8,7 @@
 
 using namespace EXTRAXS;
 using namespace MODEL;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -70,13 +68,13 @@ bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
       if (position>-1 && position<buf.length()) {
 	if ((p_isr->Flav(0)== Flavour(kf::e)) &&
 	    (p_isr->Flav(1)== Flavour(kf::e).Bar())) {
-	  flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::e);
-	  flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::e).Bar();
+	  flavs[0] = ATOOLS::Flavour(ATOOLS::kf::e);
+	  flavs[1] = ATOOLS::Flavour(ATOOLS::kf::e).Bar();
 	}
 	else if ((p_isr->Flav(0)== Flavour(kf::e).Bar()) &&
 		 (p_isr->Flav(1)== Flavour(kf::e))) {
-	  flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::e).Bar();
-	  flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::e);
+	  flavs[0] = ATOOLS::Flavour(ATOOLS::kf::e).Bar();
+	  flavs[1] = ATOOLS::Flavour(ATOOLS::kf::e);
 	}
 	else {
 	  msg.Error()<<"ERROR in EXTRAXS::QED_Processes() : "<<std::endl
@@ -107,7 +105,7 @@ bool SimpleXSecs::CalculateTotalXSec()
     m_totalxs += m_xsecs[i]->Total();
   }
   msg.Events()<<"In SimpleXSecs::CalculateTotalXSec() = "
-	      <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb."<<endl;
+	      <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb."<<endl;
   return okay;
 }
 

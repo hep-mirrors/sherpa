@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 using namespace PHASIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 SimplePoleUniform::SimplePoleUniform(double _sprimeexp, double _deltay1, double _deltay2) :
@@ -343,7 +343,7 @@ void ThresholdBackward::GenerateWeight(double sprime,double y,int mode)
 void LLUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];
-  if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
+  if (ATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
   sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],rans[0]);
   y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
@@ -353,7 +353,7 @@ void LLUniform::GenerateWeight(double sprime,double y,int mode)
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
   double pole = sprimerange[2];
-  if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
+  if (ATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
   weight  = 1./CE.LLPropWeight(1.-beta,pole,sprimerange[0],sprimerange[1],sprime);
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYUniform(sprime/sprimerange[2], yrange, deltay, mode, y);
@@ -364,7 +364,7 @@ void LLUniform::GenerateWeight(double sprime,double y,int mode)
 void LLCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];
-  if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
+  if (ATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
   sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],rans[0]);
   y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
 }
@@ -374,7 +374,7 @@ void LLCentral::GenerateWeight(double sprime,double y,int mode)
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
   double pole = sprimerange[2];
-  if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
+  if (ATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
   weight  = 1./CE.LLPropWeight(1.-beta,pole,sprimerange[0],sprimerange[1],sprime);
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYCentral(sprime/sprimerange[2], yrange, deltay, mode, y);
@@ -385,7 +385,7 @@ void LLCentral::GenerateWeight(double sprime,double y,int mode)
 void LLForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];
-  if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
+  if (ATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
   sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],rans[0]);
   y      = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
@@ -395,7 +395,7 @@ void LLForward::GenerateWeight(double sprime,double y,int mode)
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
   double pole = sprimerange[2];
-  if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
+  if (ATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
   weight  = 1./CE.LLPropWeight(1.-beta,pole,sprimerange[0],sprimerange[1],sprime);
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
@@ -406,7 +406,7 @@ void LLForward::GenerateWeight(double sprime,double y,int mode)
 void LLBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];
-  if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
+  if (ATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
   sprime = CE.LLPropMomenta(1.-beta,pole,sprimerange[0],sprimerange[1],rans[0]);
   y      = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
 }
@@ -416,7 +416,7 @@ void LLBackward::GenerateWeight(double sprime,double y,int mode)
   weight  = 0.;
   if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
   double pole = sprimerange[2];
-  if (AMATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
+  if (ATOOLS::IsEqual(sprimerange[2],sprimerange[1])) pole *= factor;
   weight  = 1./CE.LLPropWeight(1.-beta,pole,sprimerange[0],sprimerange[1],sprime);
   weight *= 1./sprimerange[2];
   weight *= CE.WeightYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);

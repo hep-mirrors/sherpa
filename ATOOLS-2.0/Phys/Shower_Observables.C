@@ -6,8 +6,11 @@
 
 #include <algorithm>
 
+using namespace ATOOLS;
+using namespace std;
 
-bool PartonIsInList(const APHYTOOLS::Parton * const p,  const APHYTOOLS::Parton_List & pl) 
+
+bool PartonIsInList(const Parton * const p,  const Parton_List & pl) 
 {
   bool hit=0;
   for (int j=0;j<pl.size();++j) {
@@ -18,11 +21,6 @@ bool PartonIsInList(const APHYTOOLS::Parton * const p,  const APHYTOOLS::Parton_
   }
   return hit;
 }
-
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace std;
 
 
 
@@ -39,7 +37,7 @@ void Shower_Observables::InitObservables() {
 
 
 Shower_Observables::Shower_Observables(int _type,double _xmin,double _xmax,int _nbins,
-      APHYTOOLS::Selector_Base * _sel,int _njet,int _nflavs,int _dohad) 
+      Selector_Base * _sel,int _njet,int _nflavs,int _dohad) 
 {
   histo=0;
   type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = _sel;
@@ -47,7 +45,7 @@ Shower_Observables::Shower_Observables(int _type,double _xmin,double _xmax,int _
   InitObservables();
 }
 
-void Shower_Observables::Evaluate(const APHYTOOLS::Blob_List & blobs ,double value) {
+void Shower_Observables::Evaluate(const Blob_List & blobs ,double value) {
   bool do_fl=0,do_jet=1;
 
 
@@ -230,13 +228,13 @@ void Shower_Observables::Output(std::string pname) {
 //----------------------------------------------------------------------
 
 Jetrates::Jetrates(int _type,double _xmin,double _xmax,int _nbins,
-				     APHYTOOLS::Selector_Base * _sel)
+				     Selector_Base * _sel)
 {
   partner = 0;
   type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = _sel;
   name  = std::string("jetrate");
   histo = 0;
-  jfind = new APHYTOOLS::Jet_Finder(rpa.gen.Ycut(),1);
+  jfind = new Jet_Finder(rpa.gen.Ycut(),1);
 
   int had=0;
   if (rpa.gen.Beam1()==Flavour(kf::p_plus) || rpa.gen.Beam1()==Flavour(kf::p_plus).Bar()) {
@@ -246,27 +244,27 @@ Jetrates::Jetrates(int _type,double _xmin,double _xmax,int _nbins,
   }
 
   jets.push_back(6);
-  histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
-  rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+  histos.push_back(new Histogram(11,xmin,xmax,nbins));
+  rates.push_back(new Histogram(11,xmin,xmax,nbins));
   jets.push_back(5);
-  histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
-  rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+  histos.push_back(new Histogram(11,xmin,xmax,nbins));
+  rates.push_back(new Histogram(11,xmin,xmax,nbins));
   jets.push_back(4);
-  histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
-  rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+  histos.push_back(new Histogram(11,xmin,xmax,nbins));
+  rates.push_back(new Histogram(11,xmin,xmax,nbins));
   jets.push_back(3);
-  histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
-  rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+  histos.push_back(new Histogram(11,xmin,xmax,nbins));
+  rates.push_back(new Histogram(11,xmin,xmax,nbins));
   jets.push_back(2);
-  histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
-  rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+  histos.push_back(new Histogram(11,xmin,xmax,nbins));
+  rates.push_back(new Histogram(11,xmin,xmax,nbins));
   if (had) {
     jets.push_back(1);
-    histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
-    rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+    histos.push_back(new Histogram(11,xmin,xmax,nbins));
+    rates.push_back(new Histogram(11,xmin,xmax,nbins));
     jets.push_back(0);
-    histos.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
-    rates.push_back(new AMATOOLS::Histogram(11,xmin,xmax,nbins));
+    histos.push_back(new Histogram(11,xmin,xmax,nbins));
+    rates.push_back(new Histogram(11,xmin,xmax,nbins));
   }
   ymax=-1;
   ymin=2;
@@ -283,9 +281,9 @@ Jetrates::Jetrates(Jetrates * _partner, std::string _prefix)
 
   for (int i=0;i<partner->jets.size();++i) {
     jets.push_back(partner->jets[i]);
-    histos.push_back(new AMATOOLS::Histogram(partner->histos[i]));
+    histos.push_back(new Histogram(partner->histos[i]));
     histos.back()->Reset();  
-    rates.push_back(new AMATOOLS::Histogram(partner->rates[i]));
+    rates.push_back(new Histogram(partner->rates[i]));
     rates.back()->Reset();
   }
 
@@ -295,7 +293,7 @@ Jetrates::Jetrates(Jetrates * _partner, std::string _prefix)
 
 
 
-void Jetrates::Evaluate(const APHYTOOLS::Parton_List & pl,double value) {
+void Jetrates::Evaluate(const Parton_List & pl,double value) {
   ys.clear();
   if (partner==0)  jfind->ConstructJets(&pl,jets,ys);
   else ys=partner->ys;
@@ -310,23 +308,23 @@ void Jetrates::Evaluate(const APHYTOOLS::Parton_List & pl,double value) {
   }
   rates.back()->InsertRange(ys.back(),1., value);
 
-  ymax=AMATOOLS::Max(ymax,ys.back());
+  ymax=Max(ymax,ys.back());
   ymin=ys.back();
 }
 
 void  Jetrates::EndEvaluation() {
-  AORGTOOLS::msg.Debugging()<<"  "<<name<<" : "<<std::endl;
+  msg.Debugging()<<"  "<<name<<" : "<<std::endl;
   for (int i=0; i<histos.size();++i) {
     histos[i]->Finalize();
     histos[i]->Output();
     rates[i]->Finalize();
     rates[i]->Output();
   }
-  AORGTOOLS::msg.Debugging()<<std::endl<<std::endl;
+  msg.Debugging()<<std::endl<<std::endl;
 }
 
 void  Jetrates::EndEvaluation(double scale) {
-  AORGTOOLS::msg.Debugging()<<"  "<<name<<" : "<<std::endl;
+  msg.Debugging()<<"  "<<name<<" : "<<std::endl;
   for (int i=0; i<histos.size();++i) {
     histos[i]->Finalize();
     histos[i]->Scale(scale);
@@ -335,7 +333,7 @@ void  Jetrates::EndEvaluation(double scale) {
     rates[i]->Scale(scale);
     rates[i]->Output();
   }
-  AORGTOOLS::msg.Debugging()<<std::endl<<std::endl;
+  msg.Debugging()<<std::endl<<std::endl;
 }
 
 void Jetrates::Output(std::string pname) {
@@ -365,18 +363,18 @@ Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix)
   partner = _partner;
   type = partner->type; xmin = partner->xmin; xmax = partner->xmax; nbins = partner->nbins; sel = partner->sel;
   name  = _prefix+std::string("multi.dat");
-  histo = new AMATOOLS::Histogram(type,xmin,xmax,nbins);
+  histo = new Histogram(type,xmin,xmax,nbins);
 }
 
 
-void Multiplicity::Evaluate(const APHYTOOLS::Parton_List & pl,double value) {
+void Multiplicity::Evaluate(const Parton_List & pl,double value) {
   histo->Insert(pl.size()-2,value);
 }
 
-void  Multiplicity::Evaluate(AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double value) {
+void  Multiplicity::Evaluate(Vec4D *,Flavour *,double value) {
 }
 
-void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
+void  Multiplicity::Evaluate(const Blob_List & blobs,double value) {
   Parton_List pl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     if ((*blit)->Type()[0]=='S') {
@@ -405,7 +403,7 @@ void  Multiplicity::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
 
 
 
-void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
+void ME_Rate::Evaluate(const Blob_List & blobs,double value) {
   for (Blob_Const_Iterator bit=blobs.begin();bit!=blobs.end();++bit) {
     if ((*bit)->Type().find("Signal") !=-1 ) {
       histo->Insert((*bit)->NOutP(),value);
@@ -442,7 +440,7 @@ void ME_Rate::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
 	  me_data.name     = string(flavs[0].Name())
 	    +string(flavs[1].Name())+ string(flavs[2].Name())+name;
 	}
-	me_data.histo    = new AMATOOLS::Histogram(type,xmin,xmax,nbins);
+	me_data.histo    = new Histogram(type,xmin,xmax,nbins);
 	all_rates.push_back(me_data);
       }
       all_rates[nc].histo->Insert((*bit)->NOutP(),value);
@@ -488,7 +486,7 @@ PT_Distribution::PT_Distribution(int _type,double _xmin,double _xmax,int _nbins,
   name  = std::string("pt_dist_")+string(checkfl.Name())+string("_");
   histo =  0;
   for (int i=0;i<maxn+1;++i)
-    histos.push_back(new AMATOOLS::Histogram(type,xmin,xmax,nbins));
+    histos.push_back(new Histogram(type,xmin,xmax,nbins));
 }
 
 PT_Distribution::PT_Distribution(PT_Distribution * partner, std::string _prefix)
@@ -500,18 +498,18 @@ PT_Distribution::PT_Distribution(PT_Distribution * partner, std::string _prefix)
   name  = _prefix+std::string("pt_dist_")+string(checkfl.Name())+string("_");
   histo =  0;
   for (int i=0;i<partner->histos.size();++i) {
-    histos.push_back(new AMATOOLS::Histogram(partner->histos[i]));
+    histos.push_back(new Histogram(partner->histos[i]));
     histos.back()->Reset();
   }
 }
 
 
 
-void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) {
+void PT_Distribution::Evaluate(const Parton_List & pl,double weight) {
 
   if (checkfl==Flavour(kf::Z) || checkfl==Flavour(kf::W) || checkfl==Flavour(kf::W).Bar()) {
-    AMATOOLS::Vec4D mom;
-    AMATOOLS::Vec4D mom_w;
+    Vec4D mom;
+    Vec4D mom_w;
     int count=0;
     for (int i=2;i<pl.size();i++) {
       if (pl[i]->Flav().IsLepton()) {
@@ -552,7 +550,7 @@ void PT_Distribution::Evaluate(const APHYTOOLS::Parton_List & pl,double weight) 
   }
 }
 
-void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value) {
+void  PT_Distribution::Evaluate(const Blob_List & blobs,double value) {
   Parton_List pl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     if ((*blit)->Type()[0]=='S') {
@@ -579,7 +577,7 @@ void  PT_Distribution::Evaluate(const APHYTOOLS::Blob_List & blobs,double value)
 
 
 void  PT_Distribution::EndEvaluation() {
-  AORGTOOLS::msg.Debugging()<<"  "<<name<<" : "<<std::endl;
+  msg.Debugging()<<"  "<<name<<" : "<<std::endl;
   for (int i=0; i<histos.size();++i) {
     histos[i]->Finalize();
     histos[i]->Output();
@@ -587,7 +585,7 @@ void  PT_Distribution::EndEvaluation() {
 }
 
 void  PT_Distribution::EndEvaluation(double scale) {
-  AORGTOOLS::msg.Debugging()<<"  "<<name<<" : "<<std::endl;
+  msg.Debugging()<<"  "<<name<<" : "<<std::endl;
   for (int i=0; i<histos.size();++i) {
     histos[i]->Finalize();
     histos[i]->Scale(scale);

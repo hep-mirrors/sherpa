@@ -4,9 +4,7 @@
 #include "Random.H"
 
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 Sarge::Sarge(int _nin,int _nout) : 
   nin(_nin), nout(_nout), x(NULL), rot(NULL)
@@ -222,7 +220,7 @@ void Sarge::rotat(int lflag,Vec4D& p1 ,Vec4D p2,double** _rot)
     for (i=0;i<2;i++) {
       ct[i] = pp[i][3];
       st[i] = sqrt(1.-sqr(ct[i]));
-      if (AMATOOLS::IsEqual(dabs(ct[i]),1.)) {
+      if (ATOOLS::IsEqual(dabs(ct[i]),1.)) {
 	cp[i] = 1.;
 	sp[i] = 0.;
       }

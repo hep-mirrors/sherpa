@@ -2,19 +2,17 @@
 #include "Message.H"
 #include "Run_Parameter.H"
 
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
 Selector_Base::~Selector_Base() { }
 
 void Selector_Base::Output() { 
-  if (!(AORGTOOLS::rpa.gen.Debugging())) return;
+  if (!(rpa.gen.Debugging())) return;
   if(m_sel_log) {
     m_sel_log->Output();
-    AORGTOOLS::msg.Out()<<m_name<<"  total number of rejections: "<<m_sel_log->Rejections()<<std::endl;
+    msg.Out()<<m_name<<"  total number of rejections: "<<m_sel_log->Rejections()<<std::endl;
   }
 }
 
@@ -27,7 +25,7 @@ void Selector_Base::Output() {
 
 Selector_Data::Selector_Data(std::string path) {
   if (!ReadInData(path)) {
-    AORGTOOLS::msg.Error()<<"Error in Selector_Data::Selector_Data("<<path<<")."<<endl
+    msg.Error()<<"Error in Selector_Data::Selector_Data("<<path<<")."<<endl
 			  <<"Cannot initialise any selector. Abort."<<endl;
     abort();
   }
@@ -37,7 +35,7 @@ Selector_Data::Selector_Data(std::string path) {
 bool Selector_Data::ReadInData(std::string filename) {
   ifstream from(filename.c_str());
   if (!from) {
-    AORGTOOLS::msg.Error()<<"Error in Selector_Data::ReadInData("<<filename<<"). "
+    msg.Error()<<"Error in Selector_Data::ReadInData("<<filename<<"). "
 			  <<"File does not exist."<<endl;
     return 0;
   }
@@ -146,35 +144,35 @@ bool Selector_Data::ReadInData(std::string filename) {
 
 void Selector_Data::ControlOutput() {
   if (data.size()<=0) {
-    AORGTOOLS::msg.Debugging()<<"Selector_Data empty."<<endl;
+    msg.Debugging()<<"Selector_Data empty."<<endl;
     return;
   }
-  AORGTOOLS::msg.Debugging()<<"Selector_Data : "<<endl;
+  msg.Debugging()<<"Selector_Data : "<<endl;
   for (int i=0;i<data.size();i++) {
     switch (data[i].type) {
-    case 1:  AORGTOOLS::msg.Debugging()<<"Jet_Finder : "; break;
-    case 2:  AORGTOOLS::msg.Debugging()<<"Cone_Finder: "; break;
-    case 11: AORGTOOLS::msg.Debugging()<<"Energies   : "; break;
-    case 12: AORGTOOLS::msg.Debugging()<<"PTs        : "; break;
-    case 13: AORGTOOLS::msg.Debugging()<<"Rapidities : "; break;
-    case 14: AORGTOOLS::msg.Debugging()<<"BeamAngles : "; break;
-    case 15: AORGTOOLS::msg.Debugging()<<"ETs        : "; break;
-    case 16: AORGTOOLS::msg.Debugging()<<"PseudoRaps : "; break;  
-    case 21: AORGTOOLS::msg.Debugging()<<"Masses     : "; break;
-    case 22: AORGTOOLS::msg.Debugging()<<"Angles     : "; break;
-    case 32: AORGTOOLS::msg.Debugging()<<"SummedPT   : "; break;
+    case 1:  msg.Debugging()<<"Jet_Finder : "; break;
+    case 2:  msg.Debugging()<<"Cone_Finder: "; break;
+    case 11: msg.Debugging()<<"Energies   : "; break;
+    case 12: msg.Debugging()<<"PTs        : "; break;
+    case 13: msg.Debugging()<<"Rapidities : "; break;
+    case 14: msg.Debugging()<<"BeamAngles : "; break;
+    case 15: msg.Debugging()<<"ETs        : "; break;
+    case 16: msg.Debugging()<<"PseudoRaps : "; break;  
+    case 21: msg.Debugging()<<"Masses     : "; break;
+    case 22: msg.Debugging()<<"Angles     : "; break;
+    case 32: msg.Debugging()<<"SummedPT   : "; break;
     } 
-    AORGTOOLS::msg.Debugging()<<data[i].min<<" ... "<<data[i].max<<" : ";
-    for (int j=0;j<(data[i].flavs).size();j++) AORGTOOLS::msg.Debugging()<<(data[i]).flavs[j]<<" ";
-    if (data[i].type == 14) AORGTOOLS::msg.Debugging()<<" with "<<data[i].help;
-    AORGTOOLS::msg.Debugging()<<endl;
+    msg.Debugging()<<data[i].min<<" ... "<<data[i].max<<" : ";
+    for (int j=0;j<(data[i].flavs).size();j++) msg.Debugging()<<(data[i]).flavs[j]<<" ";
+    if (data[i].type == 14) msg.Debugging()<<" with "<<data[i].help;
+    msg.Debugging()<<endl;
   }
 }
 
-void Selector_Data::Data(int i,int & type,std::vector<APHYTOOLS::Flavour> & flavs,
+void Selector_Data::Data(int i,int & type,std::vector<Flavour> & flavs,
 			 int & help,double & min,double & max) {
   if ( (i<0) || (i>data.size()) ) {
-    AORGTOOLS::msg.Error()<<"Error in Selector_Data::Data("<<i<<"). "
+    msg.Error()<<"Error in Selector_Data::Data("<<i<<"). "
 			  <<"Delimiter out of bounds."<<endl
 			  <<"   Size : "<<data.size()<<endl;
     abort();

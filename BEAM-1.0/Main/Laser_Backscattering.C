@@ -4,12 +4,10 @@
 #include "Random.H"
 
 using namespace BEAM;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
-Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
+Laser_Backscattering::Laser_Backscattering(const ATOOLS::Flavour _beam,
 					   const double _energy,const double _polarization,
 					   const double _energyL,const double _polarizationL,
 					   const int _mode,const int _angles,
@@ -42,7 +40,7 @@ Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
   m_delta  = 1.387423/2.;
   if (_nonlin==1) { m_nonlin1 = 0.06594662; m_nonlin2 = 0.7060851e-3; }
              else { m_nonlin1 = 0.;         m_nonlin2 = 0.;           }
-  m_xe     = 4.*m_energy*m_energyL/sqr(APHYTOOLS::Flavour(kf::e).PSMass());
+  m_xe     = 4.*m_energy*m_energyL/sqr(ATOOLS::Flavour(kf::e).PSMass());
   m_xi     = m_nonlin1 + m_nonlin2 * m_energy;
   m_xe    /= (1+m_xi);
   m_xmax   = m_xe/(1.+m_xe);
@@ -62,7 +60,7 @@ Laser_Backscattering::Laser_Backscattering(const APHYTOOLS::Flavour _beam,
 
   msg.Debugging()<<"Initialised Laser-Backscattering ("<<m_mode<<") : "<<endl
 		 <<" xe,xmax = "<<m_xe<<", "<<m_xmax
-		 <<" for energyL,mass ="<<m_energyL<<", "<<APHYTOOLS::Flavour(kf::e).PSMass()<<endl
+		 <<" for energyL,mass ="<<m_energyL<<", "<<ATOOLS::Flavour(kf::e).PSMass()<<endl
 		 <<" with xi = "<<m_xi<<", norms   = "<<m_totalC<<"  /  "<<m_total2<<endl
 		 <<" with polarization = "<<m_polarization<<", polarizationL = "<<m_polarizationL<<endl;
 }
@@ -143,9 +141,9 @@ double Laser_Backscattering::Weight(Flavour flin)
   return m_weight;
 }
 
-AMATOOLS::Vec4D Laser_Backscattering::OutMomentum() {
+ATOOLS::Vec4D Laser_Backscattering::OutMomentum() {
   if (m_angles==0) return m_x*m_vecout;
-  AORGTOOLS::msg.Error()<<"Error in Laser_Backscattering::OutMomentum()."<<endl
+  ATOOLS::msg.Error()<<"Error in Laser_Backscattering::OutMomentum()."<<endl
 			<<"    m_angles != 0 not implemented yet."<<endl;
   return m_x*m_vecout; 
 }

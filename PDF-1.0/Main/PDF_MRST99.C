@@ -3,12 +3,11 @@
 
 using namespace std;
 using namespace PDF;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 c_mrst * PDF_MRST99::p_proton = NULL;
 
 
-PDF_MRST99::PDF_MRST99(const APHYTOOLS::Flavour _bunch,
+PDF_MRST99::PDF_MRST99(const ATOOLS::Flavour _bunch,
 		       const int _set,const std::string _path) :
   m_set(_set), m_path(_path)//, p_proton(NULL)
 {
@@ -63,21 +62,21 @@ void PDF_MRST99::Calculate(const double x, const double Q2) {
 }
 
 
-double PDF_MRST99::GetXPDF(const APHYTOOLS::Flavour & infl) {
+double PDF_MRST99::GetXPDF(const ATOOLS::Flavour & infl) {
   int kfc=m_anti*int(infl);
   switch (kfc) {
-  case  APHYTOOLS::kf::d : return (m_content.dnv + m_content.dsea);
-  case -APHYTOOLS::kf::d : return m_content.dsea; 
-  case  APHYTOOLS::kf::u : return (m_content.upv + m_content.usea);
-  case -APHYTOOLS::kf::u : return m_content.usea; 
-  case  APHYTOOLS::kf::s :
-  case -APHYTOOLS::kf::s : return m_content.str;
-  case  APHYTOOLS::kf::c : 
-  case -APHYTOOLS::kf::c : return m_content.chm;
-  case  APHYTOOLS::kf::b : 
-  case -APHYTOOLS::kf::b : return m_content.bot;
-  case APHYTOOLS::kf::gluon : 
-  case -APHYTOOLS::kf::gluon :return m_content.glu; // pseudo anti gluon for anti-proton
+  case  ATOOLS::kf::d : return (m_content.dnv + m_content.dsea);
+  case -ATOOLS::kf::d : return m_content.dsea; 
+  case  ATOOLS::kf::u : return (m_content.upv + m_content.usea);
+  case -ATOOLS::kf::u : return m_content.usea; 
+  case  ATOOLS::kf::s :
+  case -ATOOLS::kf::s : return m_content.str;
+  case  ATOOLS::kf::c : 
+  case -ATOOLS::kf::c : return m_content.chm;
+  case  ATOOLS::kf::b : 
+  case -ATOOLS::kf::b : return m_content.bot;
+  case ATOOLS::kf::gluon : 
+  case -ATOOLS::kf::gluon :return m_content.glu; // pseudo anti gluon for anti-proton
   default: return 0.;
   }
 }

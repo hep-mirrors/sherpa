@@ -10,20 +10,20 @@ namespace PDF {
     double m_xpdf;
     int    m_izetta,m_order;
   public:
-    PDF_Electron(const APHYTOOLS::Flavour,const int,const int);
+    PDF_Electron(const ATOOLS::Flavour,const int,const int);
     ~PDF_Electron() {}
     PDF_Base * GetCopy();
 
     void   Output();
     void   Calculate(const double, const double);
-    double GetXPDF(const APHYTOOLS::Flavour &);
+    double GetXPDF(const ATOOLS::Flavour &);
     double GetXMin()                          { return 1.e-6; }
     double GetXMax()                          { return .999999; }
     double GetQ2Min()                         { return 0.25; }
     double GetQ2Max()                         { return 1.e14; }
     double Exponent()                         { return m_beta; }
-    APHYTOOLS::Flavour Bunch()                { return m_bunch; }
-    std::vector<APHYTOOLS::Flavour> Partons() { return m_partons; }
+    ATOOLS::Flavour Bunch()                { return m_bunch; }
+    std::vector<ATOOLS::Flavour> Partons() { return m_partons; }
   };
   /*!
     \class PDF_Electron
@@ -63,7 +63,7 @@ namespace PDF {
     The \f$\zeta\f$-scheme for the definition of how the logarithms enter the exponentiation.
   */
   /*!
-    \fn PDF_Electron::PDF_Electron(const APHYTOOLS::Flavour,const int,const int)
+    \fn PDF_Electron::PDF_Electron(const ATOOLS::Flavour,const int,const int)
     The constructor, initializes all constant parameters for evaluation in Calculate.
   */
   /*!

@@ -1,7 +1,7 @@
 #include "Primitive_Analysis.H"
 
 
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 
 Primitive_Analysis::Primitive_Analysis(std::string _name)
 {
@@ -29,13 +29,13 @@ void Primitive_Analysis::DoAnalysis(double value) {
   }
 }
 
-void Primitive_Analysis::DoAnalysis(const APHYTOOLS::Parton_List & pl, double value) {
+void Primitive_Analysis::DoAnalysis(const Parton_List & pl, double value) {
   for (int i=0;i<observables.size();i++) {
     observables[i]->Evaluate(pl,value);
   }
 }
 
-void Primitive_Analysis::DoAnalysis(const APHYTOOLS::Blob_List & bl, double value) {
+void Primitive_Analysis::DoAnalysis(const Blob_List & bl, double value) {
   for (int i=0;i<observables.size();i++) {
     observables[i]->Evaluate(bl,value);
   }

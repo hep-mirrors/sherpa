@@ -9,17 +9,14 @@
 using std::endl;
 
 using namespace APACIC;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-
+using namespace ATOOLS;
 
 
 
 Timelike_Kinematics::Timelike_Kinematics(double _pt2min, Data_Read * const dataread) : 
   pt2min(_pt2min), t0(4.*pt2min),pt_scheme(1),mass_scheme(1)
 {
-  double ycut   = AORGTOOLS::rpa.gen.Ycut();
+  double ycut   = ATOOLS::rpa.gen.Ycut();
   m_type = 1;
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
     msg.Debugging()<<" Jet_Finder in Timelike_Kinematics set up  to deal with lepton-lepton collisions "<<endl;
@@ -33,7 +30,7 @@ Timelike_Kinematics::Timelike_Kinematics(double _pt2min, Data_Read * const datar
     msg.Error()<<"Error in Timelike_Kinematics DIS is not yet implemented in the Jetfinder "<<endl;
     m_type = 4;
   }
-  jf            = new APHYTOOLS::Jet_Finder(ycut,m_type); 
+  jf            = new ATOOLS::Jet_Finder(ycut,m_type); 
   if (m_type==1) m_losejet_veto = dataread->GetValue<int>("FS LOSEJETVETO",1);
   else m_losejet_veto = dataread->GetValue<int>("FS LOSEJETVETO",0);
 }

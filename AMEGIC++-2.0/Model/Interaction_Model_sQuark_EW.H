@@ -25,10 +25,10 @@ namespace AMEGIC {
     Kabbala K_u_S(short int i,short int j);
     Kabbala K_e_S(short int i,short int j);
     Kabbala K_d_S(short int i,short int j);
-    Kabbala K_yuk(APHYTOOLS::Flavour fl);           
-    Kabbala K_yuk_sign(APHYTOOLS::Flavour fl);          
-    int gen_sUp(APHYTOOLS::Flavour fl);
-    int gen_sDown(APHYTOOLS::Flavour fl);
+    Kabbala K_yuk(ATOOLS::Flavour fl);           
+    Kabbala K_yuk_sign(ATOOLS::Flavour fl);          
+    int gen_sUp(ATOOLS::Flavour fl);
+    int gen_sDown(ATOOLS::Flavour fl);
   public:
     Interaction_Model_sQuark_EW(MODEL::Model_Base *,std::string,std::string);
  

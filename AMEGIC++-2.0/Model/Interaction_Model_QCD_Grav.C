@@ -3,9 +3,7 @@
 #include "Message.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Interaction_Model_QCD_Grav::Interaction_Model_QCD_Grav(MODEL::Model_Base * _model,

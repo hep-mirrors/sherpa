@@ -27,14 +27,14 @@ namespace AMEGIC {
     void   Set_Coulomb() {icoul = 1;}
     int    Get_Coulomb() {return icoul;}  
     Single_Amplitude* Next;
-    Single_Amplitude(Point*,int,int,int*,int,int,Topology*,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*);
-    Single_Amplitude(Point*,int*,int,int,Topology*,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*);
+    Single_Amplitude(Point*,int,int,int*,int,int,Topology*,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
+    Single_Amplitude(Point*,int*,int,int,Topology*,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*);
     ~Single_Amplitude(); 
     void PrintGraph(); 
-    void Zprojecting(APHYTOOLS::Flavour*,int);
+    void Zprojecting(ATOOLS::Flavour*,int);
     void FillCoupling(String_Handler*);
     void MPolconvert(int,int);
-    void Prop_Replace(APHYTOOLS::Flavour,int,int,int);
+    void Prop_Replace(ATOOLS::Flavour,int,int,int);
     Point*  GetPointlist() {return Pointlist;} 
     inline  Color_Function* Get_CFlist()  {return CFlist;}
     inline  Color_Function* Get_CCFlist() {return CCFlist;}

@@ -9,39 +9,39 @@ namespace BEAM {
   class Beam_Base { 
   protected:
     std::string        m_type;
-    APHYTOOLS::Flavour m_beam;
+    ATOOLS::Flavour m_beam;
     double             m_energy,m_polarization;
-    AMATOOLS::Vec4D    m_lab,m_vecout;
+    ATOOLS::Vec4D    m_lab,m_vecout;
     int                m_dir;
     double             m_x,m_Q2,m_weight;
   public:
-    Beam_Base(std::string _type,const APHYTOOLS::Flavour _beam,
+    Beam_Base(std::string _type,const ATOOLS::Flavour _beam,
 	      const double _energy,const double _polarization,const int _dir) :
       m_type(_type), m_beam(_beam), m_energy(_energy),m_polarization(_polarization),
       m_dir(_dir),m_x(1.),m_Q2(0.),m_weight(1.)
     {
-      double disc      =  1.-AMATOOLS::sqr(m_beam.PSMass()/m_energy);
+      double disc      =  1.-ATOOLS::sqr(m_beam.PSMass()/m_energy);
       if (disc<0) {
-	AORGTOOLS::msg.Error()<<"Error in Beam_Base :"<<m_type<<std::endl
+	ATOOLS::msg.Error()<<"Error in Beam_Base :"<<m_type<<std::endl
 			      <<"   Mismatch of energy and mass of beam particle : "
 			      <<m_beam<<" / "<<m_energy<<std::endl
 			      <<"   Will lead to termination of program."<<std::endl;
 	abort();
       }
-      m_lab    = AMATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
-      m_vecout = AMATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
+      m_lab    = ATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
+      m_vecout = ATOOLS::Vec4D(m_energy,0.,0.,_dir*m_energy*sqrt(disc));
     }
 
     virtual ~Beam_Base() {};
     virtual Beam_Base * Copy()                                     = 0;
     virtual bool        CalculateWeight(const double,const double) = 0;
 
-    virtual APHYTOOLS::Flavour Flav()         { return m_beam; }
-    virtual AMATOOLS::Vec4D    OutMomentum()  { return m_vecout; }
-    virtual AMATOOLS::Vec4D    Momentum()     { return m_lab; }
+    virtual ATOOLS::Flavour Flav()         { return m_beam; }
+    virtual ATOOLS::Vec4D    OutMomentum()  { return m_vecout; }
+    virtual ATOOLS::Vec4D    Momentum()     { return m_lab; }
     virtual double             Energy()       { return m_energy; }
     virtual double             Polarization() { return m_polarization; }
-    virtual double             Weight(APHYTOOLS::Flavour fl = APHYTOOLS::Flavour(APHYTOOLS::kf::none)) 
+    virtual double             Weight(ATOOLS::Flavour fl = ATOOLS::Flavour(ATOOLS::kf::none)) 
                                               { return m_weight; }
     virtual bool               On()           { return 0; }
     virtual std::string        Type()         { return m_type; }
@@ -71,10 +71,10 @@ namespace BEAM {
     The type of the Beam_Base, either "Monochromatic", "LaserBackScattering",
     "Gaussian", or "Beamstrahlung". The latter two have not been implemented yet.
     The handling of different beam types is closely related to the class Beam_Type. 
-    \sa AORGTOOLS::Beam_Type
+    \sa ATOOLS::Beam_Type
   */
   /*!
-    \var APHYTOOLS::Flavour Beam_Base::m_beam
+    \var ATOOLS::Flavour Beam_Base::m_beam
     The flavour of the incoming beam particle.
   */
   /*!
@@ -87,11 +87,11 @@ namespace BEAM {
     range between -1 and 1 and it should - preferably - be a helicity.
   */
   /*!
-    \var AMATOOLS::Vec4D Beam_Base::m_lab
+    \var ATOOLS::Vec4D Beam_Base::m_lab
     The momentum of the incoming beam particle, i.e. before the spectrum becomes effective.
   */
   /*!
-    \var AMATOOLS::Vec4D Beam_Base::m_vecout
+    \var ATOOLS::Vec4D Beam_Base::m_vecout
     The momentum of the outgoing bunch particle, i.e. after the spectrum becomes effective.
   */
   /*!
@@ -116,7 +116,7 @@ namespace BEAM {
     only.
   */
   /*!
-    \fn Beam_Base::Beam_Base(std::string,const APHYTOOLS::Flavour,const double,const double,const int)
+    \fn Beam_Base::Beam_Base(std::string,const ATOOLS::Flavour,const double,const double,const int)
     \brief The constructor, initializes the full structure of this beam spectrum.
 
     In this constructor the incoming vectors are constructed from the direction flag, the energy of
@@ -136,7 +136,7 @@ namespace BEAM {
     important once Weizsaecker-Williams type spectra are considered.
   */
   /*!
-    \fn double Beam_Base::Weight(APHYTOOLS::Flavour fl=Flavour(kf::none))
+    \fn double Beam_Base::Weight(ATOOLS::Flavour fl=Flavour(kf::none))
     Returns the weight. A flavour checking could be included in the future.
   */
   /*!

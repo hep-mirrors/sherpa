@@ -4,8 +4,7 @@
 #include "MathTools.H"
 #include "Flavour.H"
 
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 /*--------------------------------------------------------------------
@@ -18,9 +17,9 @@ Energy_Selector::Energy_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("Energy_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
-  double E = AORGTOOLS::rpa.gen.Ecms();
+  double E = rpa.gen.Ecms();
   emin  = new double[m_n];
   emax  = new double[m_n];
   value  = new double[m_n];
@@ -71,11 +70,11 @@ void Energy_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
   }
 }
  
-void Energy_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, 
-			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+void Energy_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in Energy_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in Energy_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -83,8 +82,8 @@ void Energy_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
   double MaxEmin = 0.;
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
-      emin[i] = AMATOOLS::Max(_min,m_fl[i].Mass()); 
-      emax[i] = AMATOOLS::Min(_max,AORGTOOLS::rpa.gen.Ecms());
+      emin[i] = Max(_min,m_fl[i].Mass()); 
+      emax[i] = Min(_max,rpa.gen.Ecms());
       if (emin[i]>MaxEmin ) MaxEmin = emin[i];
     }
   }
@@ -104,9 +103,9 @@ ET_Selector::ET_Selector(int _nin,int _nout, Flavour * _fl)
   m_name = std::string("ET_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
-  double E = AORGTOOLS::rpa.gen.Ecms();
+  double E = rpa.gen.Ecms();
   etmin  = new double[m_n];
   etmax  = new double[m_n];
   value  = new double[m_n];
@@ -152,11 +151,11 @@ void ET_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
   }
 }
  
-void ET_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, 
-			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+void ET_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in ET_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in ET_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -183,9 +182,9 @@ PT_Selector::PT_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("PT_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
-  double E = AORGTOOLS::rpa.gen.Ecms();
+  double E = rpa.gen.Ecms();
   ptmin  = new double[m_n];
   ptmax  = new double[m_n];
   value = new double[m_n];
@@ -235,11 +234,11 @@ void PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
   }
 }
  
-void PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, 
-			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+void PT_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in PT_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in PT_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -248,7 +247,7 @@ void PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       ptmin[i] = _min; 
-      ptmax[i] = AMATOOLS::Min(_max,AORGTOOLS::rpa.gen.Ecms());
+      ptmax[i] = Min(_max,rpa.gen.Ecms());
       if (ptmin[i]>MaxPTmin) MaxPTmin = ptmin[i];
     }
   }
@@ -268,9 +267,9 @@ Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) {
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
-  double E = AORGTOOLS::rpa.gen.Ecms();
+  double E = rpa.gen.Ecms();
   double pl;
 
   ymin  = new double[m_n];
@@ -309,24 +308,24 @@ void Rapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {}
  
 
 
-void Rapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, 
-			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+void Rapidity_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in Rapidity_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in Rapidity_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
 
-  double E = AORGTOOLS::rpa.gen.Ecms()/2;
+  double E = rpa.gen.Ecms()/2;
   double pl,y;
 
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) ) {
       pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
       y       = log((E+pl)/(E-pl));
-      ymin[i] = AMATOOLS::Max(_min,-y);
-      ymax[i] = AMATOOLS::Min(_max,y);
+      ymin[i] = Max(_min,-y);
+      ymax[i] = Min(_max,y);
     }
   }
 }
@@ -344,7 +343,7 @@ PseudoRapidity_Selector::PseudoRapidity_Selector(int _nin,int _nout, Flavour * _
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
  
   etamin  = new double[m_n];
   etamax  = new double[m_n];
@@ -383,11 +382,11 @@ void PseudoRapidity_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
  
 
 
-void PseudoRapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, 
-			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+void PseudoRapidity_Selector::SetRange(std::vector<Flavour> crit,double _min, 
+			       double _max=0.5*rpa.gen.Ecms())
 {
   if (crit.size() != 1) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in PseudoRapidity_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in PseudoRapidity_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -412,7 +411,7 @@ Angle_Selector::Angle_Selector(int _nin,int _nout, Flavour * _fl) {
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
 
   cosmin = new double*[m_n];
   cosmax = new double*[m_n];
@@ -483,18 +482,18 @@ void Angle_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
 }
 
 
-void Angle_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,
+void Angle_Selector::SetRange(std::vector<Flavour> crit,
 			      double _min, double _max)
 {
   if (crit.size() != 2) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in Angle_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in Angle_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
 
   //for numerical reasons exact +1 or -1 may be prolematic as borders
-  if (AMATOOLS::IsEqual(_min,-1.)) _min = -1.1;
-  if (AMATOOLS::IsEqual(_max,1.))  _max = 1.1;
+  if (IsEqual(_min,-1.)) _min = -1.1;
+  if (IsEqual(_max,1.))  _max = 1.1;
 
 
   for (int i=m_nin;i<m_n;i++) {
@@ -508,18 +507,18 @@ void Angle_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,
   }
 }
 
-void Angle_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,int beam,
+void Angle_Selector::SetRange(std::vector<Flavour> crit,int beam,
 			      double _min, double _max)
 {
   if (crit.size() != 1) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in Angle_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in Angle_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
-      cosmin[i][beam] = cosmin[beam][i] = AMATOOLS::Max(_min,-1.); 
-      cosmax[i][beam] = cosmax[beam][i] = AMATOOLS::Min(_max, 1.); 
+      cosmin[i][beam] = cosmin[beam][i] = Max(_min,-1.); 
+      cosmax[i][beam] = cosmax[beam][i] = Min(_max, 1.); 
     }
   }
 }
@@ -535,7 +534,7 @@ Mass_Selector::Mass_Selector(int _nin,int _nout, Flavour * _fl) {
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
   massmin = new double*[m_n];
   massmax = new double*[m_n];
@@ -549,7 +548,7 @@ Mass_Selector::Mass_Selector(int _nin,int _nout, Flavour * _fl) {
   for (int i=m_nin;i<m_n;i++) {
     for (int j=i+1;j<m_n;j++) {
       massmin[i][j] = massmin[j][i] = 0.; 
-      massmax[i][j] = massmax[j][i] = 2.*AORGTOOLS::rpa.gen.Ecms(); 
+      massmax[i][j] = massmax[j][i] = 2.*rpa.gen.Ecms(); 
     }
   }
   m_sel_log = new Selector_Log(m_name);
@@ -609,10 +608,10 @@ void Mass_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 }
 
 
-void Mass_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, double _max)
+void Mass_Selector::SetRange(std::vector<Flavour> crit,double _min, double _max)
 {
   if (crit.size() != 2) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in Mass_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in Mass_Selector::SetRange : "
 			  <<crit.size()<<endl;
     return;
   }
@@ -621,7 +620,7 @@ void Mass_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, d
     for (int j=m_nin+1;i<m_n;i++) {
       if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
 	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
-	massmin[i][j] = massmin[j][i] = AMATOOLS::Max(_min,m_fl[i].Mass()+m_fl[j].Mass()); 
+	massmin[i][j] = massmin[j][i] = Max(_min,m_fl[i].Mass()+m_fl[j].Mass()); 
 	massmax[i][j] = massmax[j][i] = _max;
 	if (massmin[i][j]>m_smin) m_smin = Max(massmin[i][j],m_smin);
       }
@@ -642,9 +641,9 @@ Summed_PT_Selector::Summed_PT_Selector(int _nin,int _nout, Flavour * _fl) {
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
   m_smin = 0.;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
-  double E = AORGTOOLS::rpa.gen.Ecms();
+  double E = rpa.gen.Ecms();
   ptmin    = 0.; ptmax    = E;
   m_sel_log = new Selector_Log(m_name);
 }
@@ -670,11 +669,11 @@ void Summed_PT_Selector::BuildCuts(Cut_Data * cuts) { }
 
 void Summed_PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) { }
  
-void Summed_PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> _crit,double _min, 
-			       double _max=0.5*AORGTOOLS::rpa.gen.Ecms())
+void Summed_PT_Selector::SetRange(std::vector<Flavour> _crit,double _min, 
+			       double _max=0.5*rpa.gen.Ecms())
 {
   if (_crit.size() != 1) {
-    AORGTOOLS::msg.Error()<<"Wrong number of arguments in Summed_PT_Selector::SetRange : "
+    msg.Error()<<"Wrong number of arguments in Summed_PT_Selector::SetRange : "
 			  <<_crit.size()<<endl;
     return;
   }

@@ -32,14 +32,14 @@ namespace AMEGIC {
 
     std::ostream               * p_fifo;
 
-    AORGTOOLS::Data_Read       * p_dataread;
-    APHYTOOLS::Selector_Data   * p_seldata;
+    ATOOLS::Data_Read       * p_dataread;
+    ATOOLS::Selector_Data   * p_seldata;
     BEAM::Beam_Spectra_Handler * p_beam;
     PDF::ISR_Handler           * p_isr;
 
     void InitializeInteractionModel(MODEL::Model_Base *);
     void ReadInProcessfile(std::string); 
-    int  ExtractFlavours(APHYTOOLS::Flavour *&,Pol_Info *&,std::string);
+    int  ExtractFlavours(ATOOLS::Flavour *&,Pol_Info *&,std::string);
     void Shorten(std::string&);
   public :
     Amegic(std::string,std::string,MODEL::Model_Base * _model);
@@ -59,8 +59,8 @@ namespace AMEGIC {
     std::string          ProcessName()      { return p_procs->Selected()->Name(); }
     int                  Nin()              { return p_procs->Selected()->Nin(); }
     int                  Nout()             { return p_procs->Selected()->Nout(); }
-    APHYTOOLS::Flavour * Flavs()            { return p_procs->Selected()->Flavs(); }
-    AMATOOLS::Vec4D    * Momenta()          { return p_procs->Selected()->Momenta(); }
+    ATOOLS::Flavour * Flavs()            { return p_procs->Selected()->Flavs(); }
+    ATOOLS::Vec4D    * Momenta()          { return p_procs->Selected()->Momenta(); }
     int                  NumberOfDiagrams() { return p_procs->Selected()->NumberOfDiagrams(); }
     AMEGIC::Point      * Diagram(int _diag) { return p_procs->Selected()->Diagram(_diag); }
     int                  MaxJets()          { return m_maxjet; }
@@ -82,3 +82,5 @@ namespace AMEGIC {
 }
 
 #endif
+
+

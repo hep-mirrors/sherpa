@@ -14,7 +14,7 @@ namespace APACIC {
   */
   class Sudakov_Tools {
   private :
-    AMATOOLS::Function_Base * p_as, * p_aqed;
+    ATOOLS::Function_Base * p_as, * p_aqed;
     int    scheme;
     double lambda2, beta0, scalefac;
     double alphaSmax;

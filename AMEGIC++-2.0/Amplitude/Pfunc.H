@@ -13,7 +13,7 @@ namespace AMEGIC {
     Complex value;
     int     on;
     int     haspol;
-    APHYTOOLS::Flavour fl;
+    ATOOLS::Flavour fl;
 
 
     Pfunc() {argnum = 0;}

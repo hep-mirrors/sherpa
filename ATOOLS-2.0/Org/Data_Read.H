@@ -7,7 +7,7 @@
 
 #include "Flavour.H"
 
-namespace AORGTOOLS {  
+namespace ATOOLS {  
   //! The On/Off switch.
   class Switch {
   public:
@@ -114,7 +114,7 @@ namespace AORGTOOLS {
   template <>  std::string        Data_Read::GetValue<std::string>(std::string);
   template <>  Switch::code       Data_Read::GetValue<Switch::code>(std::string);
   template <>  Model_Type::code   Data_Read::GetValue<Model_Type::code>(std::string);
-  template <>  APHYTOOLS::Flavour Data_Read::GetValue<APHYTOOLS::Flavour>(std::string);
+  template <>  Flavour Data_Read::GetValue<Flavour>(std::string);
   template <>  Beam_Type::code    Data_Read::GetValue<Beam_Type::code>(std::string);
   template <>  ISR_Type::code     Data_Read::GetValue<ISR_Type::code>(std::string);
   template <>  String_Type::code  Data_Read::GetValue<String_Type::code>(std::string);
@@ -123,14 +123,14 @@ namespace AORGTOOLS {
   // do we need those:  
   template <>  Switch::code       Data_Read::GetValue<Switch::code>(std::string,Switch::code);
   template <>  Model_Type::code   Data_Read::GetValue<Model_Type::code>(std::string,Model_Type::code);
-  template <>  APHYTOOLS::Flavour Data_Read::GetValue<APHYTOOLS::Flavour>(std::string,APHYTOOLS::Flavour);
+  template <>  Flavour Data_Read::GetValue<Flavour>(std::string,Flavour);
   template <>  Beam_Type::code    Data_Read::GetValue<Beam_Type::code>(std::string,Beam_Type::code);
   template <>  ISR_Type::code     Data_Read::GetValue<ISR_Type::code>(std::string,ISR_Type::code);
   template <>  String_Type::code  Data_Read::GetValue<String_Type::code>(std::string,String_Type::code);
   
 
   /*!
-    \file contains the class AORGTOOLS::Data_Read
+    \file contains the class Data_Read
   */
 
   /*!
@@ -198,6 +198,6 @@ namespace AORGTOOLS {
     \brief returns sum of digits
 
   */
-} // namespace AORGTOOLS
+} // namespace ATOOLS
 
 #endif  // Data_Read_H

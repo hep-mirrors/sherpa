@@ -12,12 +12,12 @@
 
 namespace AMEGIC {
   typedef  std::vector<Single_Vertex *>              VertexList;
-  typedef  std::map<APHYTOOLS::Flavour, Vertex_List> VertexTable;
-  typedef  std::deque<APHYTOOLS::Flavour>            DecayingParticleList;
+  typedef  std::map<ATOOLS::Flavour, Vertex_List> VertexTable;
+  typedef  std::deque<ATOOLS::Flavour>            DecayingParticleList;
   typedef  DecayingParticleList::iterator            DecayingParticleIterator;
   typedef  std::vector<Process_Base *>               DecayList;
   typedef  DecayList::iterator                       DecayIterator;
-  typedef  std::map<APHYTOOLS::Flavour, DecayList>   Decay_Table;
+  typedef  std::map<ATOOLS::Flavour, DecayList>   Decay_Table;
   typedef  Decay_Table::iterator                     DTIterator;
 
   //! The container for a list of processes.
@@ -30,7 +30,7 @@ namespace AMEGIC {
     Decay_Table                  m_decaytable;
 
     void FindUnstableParticles();
-    bool CheckInVertex(APHYTOOLS::Flavour);
+    bool CheckInVertex(ATOOLS::Flavour);
     void InitializeDecayTables();
     void BinaryDecays();
   public:

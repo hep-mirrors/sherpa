@@ -3,7 +3,7 @@
 //#include "Run_Parameter.H"
 
 using namespace AMEGIC;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Kabbala Basic_Mfunc::M(const int a)
@@ -31,7 +31,7 @@ Kabbala Basic_Mfunc::M(const int a)
 	  mass2 -= Complex(0,p1->fl.Mass()*
 	  p1->fl.Width());
   }
-  if (AMATOOLS::IsZero(mass2)) return sgen->Get_Enumber(0.);
+  if (ATOOLS::IsZero(mass2)) return sgen->Get_Enumber(0.);
 
   return sgen->Get_Enumber(1./mass2);
 

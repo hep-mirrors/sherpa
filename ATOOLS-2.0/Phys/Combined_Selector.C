@@ -5,8 +5,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
@@ -16,12 +15,12 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
   m_fl    = _fl;
   m_count = 0;
   m_smin = 0.;
-  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
+  m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
 
   if (_seldata==NULL) return; 
   int                               type;
   std::vector<int>                  activetypes;
-  std::vector<APHYTOOLS::Flavour>   critflavs;
+  std::vector<Flavour>   critflavs;
   double                            rmin,rmax;
   int                               help;
   bool                              init;
@@ -97,7 +96,7 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
 	break;
       default :
 	sel = NULL;
-	AORGTOOLS::msg.Error()<<"Error in Combined_Selector::Combined_Selector."<<endl
+	msg.Error()<<"Error in Combined_Selector::Combined_Selector."<<endl
 			      <<"  Unknown type of selector-data : "<<type<<endl; 
       } 
       Add(sel);
@@ -146,8 +145,8 @@ void Combined_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts)
 
 void Combined_Selector::Output()
 {
-  AORGTOOLS::msg.Debugging()<<"========================================="<<std::endl
+  msg.Debugging()<<"========================================="<<std::endl
 			    <<"Efficiency of the Selector : "<<m_name<<std::endl;
   for (short int i=0; i<m_sels.size(); ++i) m_sels[i]->Output();
-  AORGTOOLS::msg.Debugging()<<"========================================="<<std::endl;
+  msg.Debugging()<<"========================================="<<std::endl;
 }

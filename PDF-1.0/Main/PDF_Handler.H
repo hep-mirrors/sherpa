@@ -10,7 +10,7 @@ namespace PDF {
     bool m_initlhapdf;
   public:
     PDF_Handler() : m_initlhapdf(0) {};
-    PDF_Base * GetPDFLib(AORGTOOLS::Data_Read *,APHYTOOLS::Flavour &,const int);
+    PDF_Base * GetPDFLib(ATOOLS::Data_Read *,ATOOLS::Flavour &,const int);
   };
   /*!
     \namespace PDF
@@ -40,7 +40,7 @@ namespace PDF {
     The constructor is basically empty, it just sets the "is already initialised"-flags.
   */
   /*!
-    \fn PDF_Base * PDF_Handler::GetPDFLib(const AORGTOOLS::Data_Read *,APHYTOOLS::Flavour &,const int)
+    \fn PDF_Base * PDF_Handler::GetPDFLib(const ATOOLS::Data_Read *,ATOOLS::Flavour &,const int)
     
     This is the only method in the PDF_Handler. According to the file read in through
     the Data_Read object and according to the actual flavour, a suitable parton density or structure 

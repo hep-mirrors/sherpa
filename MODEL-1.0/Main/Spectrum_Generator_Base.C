@@ -2,9 +2,8 @@
 #include "Message.H"
 
 using namespace MODEL;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
+
 
 DecayChannel::DecayChannel(const Flavour _flin) : 
   m_flin(_flin), m_width(0.) 
@@ -48,7 +47,7 @@ double DecayChannel::DecayWidth() {
 
 
 
-Spectrum_Generator_Base::Spectrum_Generator_Base(AORGTOOLS::Data_Read * _dataread,Model_Base * _model) :
+Spectrum_Generator_Base::Spectrum_Generator_Base(ATOOLS::Data_Read * _dataread,Model_Base * _model) :
   p_dataread(_dataread), p_model(_model)  {};
 
 Spectrum_Generator_Base::~Spectrum_Generator_Base() 

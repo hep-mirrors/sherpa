@@ -4,7 +4,7 @@
 #define NDMX 50
 #define MXDIM 10
 
-namespace AMATOOLS {
+namespace ATOOLS {
 
   class Vegas {
     int     i,it,j,k,mds,nd,ndo,ng,npg,ia[MXDIM+1],kg[MXDIM+1];

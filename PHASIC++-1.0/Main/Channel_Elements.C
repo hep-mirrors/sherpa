@@ -9,7 +9,7 @@
 
 
 using namespace PHASIC;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Channel_Elements PHASIC::CE;
@@ -17,9 +17,9 @@ Channel_Elements PHASIC::CE;
 double Channel_Elements::Isotropic2Weight(const Vec4D& p1,const Vec4D& p2)
 {
   double massfactor = Channel_Basics::SqLam((p1+p2).Abs2(),p1.Abs2(),p2.Abs2());
-  if (AMATOOLS::IsZero(massfactor)) return 0.;  
+  if (ATOOLS::IsZero(massfactor)) return 0.;  
   if (!(massfactor>0) && !(massfactor<0)) 
-    AORGTOOLS::msg.Error()<<"Isotropic2Weight produces a nan!"<<endl;
+    ATOOLS::msg.Error()<<"Isotropic2Weight produces a nan!"<<endl;
   
   return 2./M_PI/massfactor;
 }
@@ -66,7 +66,7 @@ double Channel_Elements::Anisotropic2Weight(double ctexp,
   double wt = 1./(M_PI*Channel_Basics::SqLam(s,s1,s2)/4.*
                     pow(a+ct,ctexp)*Channel_Basics::PeakedWeight(a,ctexp,ctmin,ctmax,1));
   if (!(wt>0) && !(wt<0)) 
-    AORGTOOLS::msg.Error()<<"Anisotropic2Weight produces a nan!"<<endl;
+    ATOOLS::msg.Error()<<"Anisotropic2Weight produces a nan!"<<endl;
 
   return wt;
 }
@@ -100,11 +100,11 @@ void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
   p2 = p+(-1.)*p1;  
 
   if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicitly not relative!
-    AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
+    ATOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
 			  <<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
   }
   if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicitly not relative!
-    AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
+    ATOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : "
 			  <<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
   }
 }
@@ -171,7 +171,7 @@ double Channel_Elements::MasslessPropWeight(double sexp,
 
   double wt = 1./(pow(s,sexp)*Channel_Basics::PeakedWeight(0.,sexp,smin,smax,1));
   if (!(wt>0) && !(wt<0) && wt!=0) { 
-    AORGTOOLS::msg.Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl
+    ATOOLS::msg.Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl
 			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 			  <<"   sexp = "<<sexp<<endl;
   }
@@ -184,7 +184,7 @@ double Channel_Elements::MasslessPropMomenta(double sexp,
 {
   double s = Channel_Basics::PeakedDist(0.,sexp,smin,smax,1,ran);
   if (!(s>0) && !(s<0) && s!=0) 
-    AORGTOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
+    ATOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
   return s;
 }
 
@@ -196,7 +196,7 @@ double Channel_Elements::ThresholdWeight(double mass,double smin,double smax,dou
 		 Channel_Basics::PeakedWeight(pow(mass,4.),1.,sqr(smin),sqr(smax),1)/2.);
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
-    AORGTOOLS::msg.Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
+    ATOOLS::msg.Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
 			  <<smax<<" ^ "<<2.<<", "<<mass*mass<<" wt = "<<wt<<endl
 			  <<"ThresholdWeight produces a nan: "<<wt<<endl;
   }
@@ -206,8 +206,8 @@ double Channel_Elements::ThresholdWeight(double mass,double smin,double smax,dou
 double Channel_Elements::ThresholdMomenta(double mass,double smin,double smax,double ran)
 {
   double s = sqrt(Channel_Basics::PeakedDist(pow(mass,4.),1.,sqr(smin),sqr(smax),1,ran));
-  if (!(s>0) && !(s<0) && s!=0) AORGTOOLS::msg.Error()<<"ThresholdMomenta produced a nan !"<<endl;
-  if ((s<smin) || (s>smax))     AORGTOOLS::msg.Error()<<"ThresholdMomenta out of bounds !"<<endl;
+  if (!(s>0) && !(s<0) && s!=0) ATOOLS::msg.Error()<<"ThresholdMomenta produced a nan !"<<endl;
+  if ((s<smin) || (s>smax))     ATOOLS::msg.Error()<<"ThresholdMomenta out of bounds !"<<endl;
   return s;
 }
 
@@ -219,7 +219,7 @@ double Channel_Elements::LLPropWeight(double sexp,double pole,
   double wt = 1./(pow(pole-s,sexp)*Channel_Basics::PeakedWeight(pole,sexp,smin,smax,-1));
 
   if (!(wt>0) && !(wt<0) && wt!=0 ) {
-    AORGTOOLS::msg.Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
+    ATOOLS::msg.Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
 			  <<smax<<" ^ "<<sexp<<", "<<pole<<" wt = "<<wt<<endl
 			  <<"LLPropWeight produces a nan: "<<wt<<endl;
   }
@@ -231,8 +231,8 @@ double Channel_Elements::LLPropMomenta(double sexp,double pole,
 				       double ran)
 {
   double s = Channel_Basics::PeakedDist(pole,sexp,smin,smax,-1,ran);
-  if (!(s>0) && !(s<0) && s!=0) AORGTOOLS::msg.Error()<<"LLPropMomenta produced a nan !"<<endl;
-  if ((s<smin) || (s>smax))     AORGTOOLS::msg.Error()<<"LLPropMomenta out of bounds !"<<endl;
+  if (!(s>0) && !(s<0) && s!=0) ATOOLS::msg.Error()<<"LLPropMomenta produced a nan !"<<endl;
+  if ((s<smin) || (s>smax))     ATOOLS::msg.Error()<<"LLPropMomenta out of bounds !"<<endl;
   return s;
 }
 
@@ -257,7 +257,7 @@ double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
     double wt = mw/(yrange*((s-mass2)*(s-mass2)+mw*mw));
 
     if (!(wt>0) && !(wt<0) && wt!=0) {
-      AORGTOOLS::msg.Error()<<"MassivePropWeight produces a nan!"<<endl;
+      ATOOLS::msg.Error()<<"MassivePropWeight produces a nan!"<<endl;
     }
     return wt;
   }
@@ -285,7 +285,7 @@ double Channel_Elements::MassivePropMomenta(double mass,double width,int lim,
     s = mass2+mw*tan(ran*yrange + ymin);
   }
   if (!(s>0) && !(s<0) && s!=0) 
-    AORGTOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
+    ATOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
   return s;
 }
 
@@ -312,7 +312,7 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
   double aminct0   = aminct; 
   double ctmax_tmp = ctmax;
   if (aminctflag==1) {
-    if (AMATOOLS::IsZero(ctmax)) {
+    if (ATOOLS::IsZero(ctmax)) {
       if ( (sqr(p1outh[0])-s1in<0.) ) return 0.;
       ctmax_tmp = Channel_Basics::PseudoAngleCut(s1in,p1inh[0],s1out,p1outh[0]);
       if (ctmin < ctmax_tmp) return 0.;
@@ -330,7 +330,7 @@ double Channel_Elements::TChannelWeight(const Vec4D& p1in,const Vec4D& p2in,
 			Channel_Basics::Hj1(ctexp,ctmin+a-1.,ctmax_tmp+a-1.)*p1outmass*M_PI);
 
   if (!(wt>0) && !(wt<0)) 
-    AORGTOOLS::msg.Error()<<"TChannelWeight produces a nan!"<<endl;
+    ATOOLS::msg.Error()<<"TChannelWeight produces a nan!"<<endl;
 
   return wt;
 }
@@ -358,7 +358,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   double a         = 1.;
   double ctmax_tmp = ctmax;
   if (aminctflag==1) {
-    if (AMATOOLS::IsZero(ctmax)) {
+    if (ATOOLS::IsZero(ctmax)) {
       if ( (sqr(p1outh[0])-s1in<0.) ) return 0;
       ctmax_tmp = Channel_Basics::PseudoAngleCut(s1in,p1inh[0],s1out,p1outh[0]);
       if (ctmin < ctmax_tmp) return 0;
@@ -387,7 +387,7 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
   p2out = pin+(-1.)*p1out;
 
   if (dabs(s1out-p1out.Abs2())>1.e-5) {
-    AORGTOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
+    ATOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : "
 			  <<"s1,p1: "<<s1out<<";"<<p1out.Abs2()<<" : "<<dabs(s1out-p1out.Abs2())<<endl;
   }
   s1out = Max(0.,p1out.Abs2());
@@ -400,12 +400,12 @@ double Channel_Elements::DiceYUniform(double tau, double * yrange, double * delt
   double y0   = 0.5 * log(tau);
   if (fixed==1) return y0;
   if (fixed==2) return -y0;
-  double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
+  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
+  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
   double y    = ymin+(ymax-ymin)*ran;
-  if (AMATOOLS::IsZero(y)) y = 0.;
+  if (ATOOLS::IsZero(y)) y = 0.;
   if ((y<y0) || (y>-y0)){
-    AORGTOOLS::msg.Error()<<"y out of bounds in DiceYUniform : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
+    ATOOLS::msg.Error()<<"y out of bounds in DiceYUniform : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
   }
   return y;
 }
@@ -415,10 +415,10 @@ double Channel_Elements::WeightYUniform(double tau, double * yrange,
 {
   if (fixed<3) return 1.;
   double y0   = 0.5 * log(tau);
-  double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
+  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
+  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
   if ((y<yrange[0]) || (y>yrange[1])) {
-    AORGTOOLS::msg.Error()<<"y out of trivial bounds in CE.WeightYUniform : "
+    ATOOLS::msg.Error()<<"y out of trivial bounds in CE.WeightYUniform : "
 			  <<yrange[0]<<" < "<<y<<" < "<<yrange[1]<<endl;
   }
   return (ymax-ymin);
@@ -430,12 +430,12 @@ double Channel_Elements::DiceYCentral(double tau, double * yrange, double * delt
   double y0   = 0.5 * log(tau);
   if (fixed==1) return y0;
   if (fixed==2) return -y0;
-  double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
+  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
+  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
   double y    = log(tan(ran*atan(exp(ymax))+(1.-ran)*atan(exp(ymin))));
-  if (AMATOOLS::IsZero(y)) y = 0.;
+  if (ATOOLS::IsZero(y)) y = 0.;
   if ((y<y0) || (y>-y0)){
-    AORGTOOLS::msg.Error()<<"y out of bounds in DiceYCentral : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
+    ATOOLS::msg.Error()<<"y out of bounds in DiceYCentral : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
   }
   return y;
 }
@@ -445,10 +445,10 @@ double Channel_Elements::WeightYCentral(double tau, double * yrange,
 {
   if (fixed<3) return 1.;
   double y0   = 0.5 * log(tau);
-  double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
+  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
+  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
   if ((y<yrange[0]) || (y>yrange[1])) {
-    AORGTOOLS::msg.Error()<<"y out of trivial bounds in CE.WeightYCentral : "
+    ATOOLS::msg.Error()<<"y out of trivial bounds in CE.WeightYCentral : "
 			  <<yrange[0]<<" < "<<y<<" < "<<yrange[1]<<endl;
   }
   return (atan(exp(ymax))-atan(exp(ymin)))*2.*cosh(y);
@@ -460,12 +460,12 @@ double Channel_Elements::DiceYForward(double tau, double * yrange, double * delt
   double y0   = 0.5 * log(tau);
   if (fixed==1) return y0;
   if (fixed==2) return -y0;
-  double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
+  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
+  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
   double y    = Channel_Basics::PeakedDist(ymax-deltay[0],yexp,ymin,ymax,-1,ran);
-  if (AMATOOLS::IsZero(y)) y = 0.;
+  if (ATOOLS::IsZero(y)) y = 0.;
   if ((y<y0) || (y>-y0)){ 
-    AORGTOOLS::msg.Error()<<"y out of bounds in DiceYForward : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
+    ATOOLS::msg.Error()<<"y out of bounds in DiceYForward : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
   }
   return y;
 }
@@ -475,8 +475,8 @@ double Channel_Elements::WeightYForward(double tau, double * yrange, double * de
 {
   if (fixed<3) return 1;
   double y0   = 0.5 * log(tau);
-  double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
+  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
+  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
   return Channel_Basics::PeakedWeight(ymax-deltay[0],yexp,ymin,ymax,-1) * pow(ymax-deltay[0]-y,yexp);
 }
 
@@ -486,11 +486,11 @@ double Channel_Elements::DiceYBackward(double tau, double * yrange, double * del
   double y0   = 0.5 * log(tau);
   if (fixed==1) return y0;
   if (fixed==2) return -y0;
-  double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
+  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
+  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
   double y= -Channel_Basics::PeakedDist(-ymin-deltay[1],yexp,-ymax,-ymin,-1,ran);
   if ((y<y0) || (y>-y0)){ 
-    AORGTOOLS::msg.Error()<<"y out of bounds in DiceYBackward : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
+    ATOOLS::msg.Error()<<"y out of bounds in DiceYBackward : "<<ymin<<" < "<<y<<" < "<<ymax<<endl;
   }
   return y;
 }
@@ -500,8 +500,8 @@ double Channel_Elements::WeightYBackward(double tau, double * yrange, double * d
 {
   if (fixed<3) return 1;
   double y0   = 0.5 * log(tau);
-  double ymax = AMATOOLS::Min(yrange[1],-y0+deltay[0]);
-  double ymin = AMATOOLS::Max(yrange[0],y0-deltay[1]);
+  double ymax = ATOOLS::Min(yrange[1],-y0+deltay[0]);
+  double ymin = ATOOLS::Max(yrange[0],y0-deltay[1]);
   return Channel_Basics::PeakedWeight(-ymin-deltay[1],yexp,-ymax,-ymin,-1) * pow(-ymin-deltay[1]+y,yexp);
 }
 

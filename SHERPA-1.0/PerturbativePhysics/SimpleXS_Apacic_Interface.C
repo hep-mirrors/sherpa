@@ -3,8 +3,7 @@
 
 using namespace SHERPA;
 using namespace EXTRAXS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 
 SimpleXS_Apacic_Interface::SimpleXS_Apacic_Interface(Matrix_Element_Handler * _me,
@@ -19,7 +18,7 @@ SimpleXS_Apacic_Interface::~SimpleXS_Apacic_Interface()
   if (p_tools) delete p_tools;
 }
 
-bool SimpleXS_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob) 
+bool SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob) 
 {
   if (!blob) return 0;
   blob->BoostInCMS();

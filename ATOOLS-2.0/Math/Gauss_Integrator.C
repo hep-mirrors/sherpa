@@ -12,7 +12,7 @@
 #include <iostream>
 #include <fstream>
 
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using std::cout;
 using std::cerr;
 using std::endl;

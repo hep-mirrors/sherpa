@@ -4,11 +4,9 @@
 #include "Run_Parameter.H"
 #include <iomanip.h>
 
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
-std::ostream& APHYTOOLS::operator<<(std::ostream& str,Parton* part) {
+std::ostream& ATOOLS::operator<<(std::ostream& str,Parton* part) {
   str<<std::setprecision(4)<<std::setiosflags(ios::left);
   switch (part->Status()) {
   case 0 : // null entry
@@ -123,29 +121,29 @@ double Parton::ProperTime() {
   double m2    = sqr(m_fl.Mass());
   double tau2  = 1.e6;
   if (!( (q2-m2 < rpa.gen.Accu()) && (m_fl.Width() < rpa.gen.Accu()))) { 
-    if (m2>AORGTOOLS::rpa.gen.Accu()) { 
+    if (m2>rpa.gen.Accu()) { 
       tau2 = q2/(sqr(q2-m2)+sqr(q2*m_fl.Width())/m2);
     }
     else {
-      if (dabs(q2)>AORGTOOLS::rpa.gen.Accu()) tau2 = 1/dabs(q2);
+      if (dabs(q2)>rpa.gen.Accu()) tau2 = 1/dabs(q2);
     }
   }
   else {
     if (m_fl.Strong()) tau2 = 1./sqr(0.2); 
   }
-  return AORGTOOLS::rpa.hBar() * sqrt(tau2);
+  return rpa.hBar() * sqrt(tau2);
 }
 
 double Parton::LifeTime() {
   double t   = -ProperTime()*log(1.-ran.Get());  
   if (t>1.e6) t = 1.e6;
-  double gamma = 1./AORGTOOLS::rpa.gen.Accu();
-  if (m_fl.Mass()>AORGTOOLS::rpa.gen.Accu()) gamma = E()/m_fl.Mass();
+  double gamma = 1./rpa.gen.Accu();
+  if (m_fl.Mass()>rpa.gen.Accu()) gamma = E()/m_fl.Mass();
   return gamma * t;      
 }
 
 Vec3D Parton::Distance() {
-  Vec3D v = Vec3D(m_momentum)/E()*AORGTOOLS::rpa.c();
+  Vec3D v = Vec3D(m_momentum)/E()*rpa.c();
   return v*LifeTime();
 }
 
@@ -179,7 +177,7 @@ void   Parton::SetDecayBlob(Blob * _blob)       { p_endblob = _blob; }
 
 // Flavour and flow
 Flavour   Parton::Flav() const                     { return m_fl; }
-void      Parton::SetFlav(APHYTOOLS::Flavour & fl) { m_fl      = fl; }
+void      Parton::SetFlav(Flavour & fl) { m_fl      = fl; }
 Flow    * Parton::GetFlow() const                  { return p_flow; }
 int       Parton::GetFlow(const int index) const   { return p_flow->Code(index); }
 void      Parton::SetFlow(Flow * _flow)            { p_flow    = _flow; }

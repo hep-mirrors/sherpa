@@ -3,9 +3,7 @@
 
 using namespace HDECAY;
 using namespace MODEL;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 
 
@@ -14,7 +12,7 @@ extern "C" {
   void hdecaysm_(double *,double *,double &);
 }
 
-Hdecay_Fortran_Interface::Hdecay_Fortran_Interface(AORGTOOLS::Data_Read * _dataread,
+Hdecay_Fortran_Interface::Hdecay_Fortran_Interface(ATOOLS::Data_Read * _dataread,
 						   Model_Base * _model) :
   Spectrum_Generator_Base(_dataread,_model) {
 }

@@ -5,9 +5,7 @@
 #include "Message.H"
 #include "Pol_Info.H"
 
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace AMEGIC;
 using namespace std;
 

@@ -3,9 +3,7 @@
 #include "MathTools.H"
 #include "Run_Parameter.H"
 
-using namespace APHYTOOLS;
-using namespace AORGTOOLS; // scut init
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 Test_Selector::Test_Selector(int _nin,int _nout, Flavour * _fl) { 
   m_nin  = _nin;

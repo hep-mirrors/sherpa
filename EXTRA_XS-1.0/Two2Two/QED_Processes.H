@@ -10,7 +10,7 @@ namespace EXTRAXS {
     void CreateFSRChannels();
   public:
     QED_Processes(PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
-		  APHYTOOLS::Flavour *,APHYTOOLS::Selector_Data *,int,int,double);
+		  ATOOLS::Flavour *,ATOOLS::Selector_Data *,int,int,double);
   };
 }
 

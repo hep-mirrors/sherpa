@@ -4,9 +4,7 @@
 
 
 using namespace MODEL;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 
 Model_Base::Model_Base(std::string _dir,std::string _file) :

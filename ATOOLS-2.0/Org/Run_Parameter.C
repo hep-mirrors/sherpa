@@ -3,11 +3,9 @@
 #include "MathTools.H"
 #include "Message.H"
 
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 
-Run_Parameter AORGTOOLS::rpa;
+Run_Parameter ATOOLS::rpa;
 
 Run_Parameter::Run_Parameter() 
 {

@@ -10,9 +10,7 @@
 
 using namespace EXTRAXS;
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 int fak(int N)
@@ -26,16 +24,16 @@ int fak(int N)
 
 Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl,
 		     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
-		     APHYTOOLS::Selector_Data * _seldata,
+		     ATOOLS::Selector_Data * _seldata,
 		     int _scalescheme,int _kfactorscheme,double _scalefactor) :
   XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor)
 {
   double mass = 0.;
   for (int i=0;i<m_nin;i++)   mass += _fl[i].PSMass();
-  m_thres     = AMATOOLS::sqr(mass);
+  m_thres     = ATOOLS::sqr(mass);
   mass        = 0.;
   for (int i=2;i<2+m_nout;i++) mass += _fl[i].PSMass();
-  m_thres     = AMATOOLS::Max(m_thres,sqr(mass));
+  m_thres     = ATOOLS::Max(m_thres,sqr(mass));
 
   p_selected = this;
 }
@@ -49,8 +47,8 @@ Single_XS::Single_XS(int _nin,int _nout,Flavour * _fl) :
 
 bool Single_XS::CalculateTotalXSec() { 
   if (p_ps) {
-    m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn();
-    if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+    m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn();
+    if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
@@ -66,9 +64,9 @@ bool Single_XS::OneEvent()        { return (p_ps->OneEvent()); }
 
 void Single_XS::SetTotalXS() {
   m_totalxs  = m_totalsum/m_n; 
-  m_totalerr = sqrt( (m_n*m_totalsumsqr-AMATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
-  AORGTOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
-			 <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+  m_totalerr = sqrt( (m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
+  ATOOLS::msg.Events()<<"      xs for "<<m_name<<" : "
+			 <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 			 <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 			 <<"       max : "<<m_max<<endl;
 }

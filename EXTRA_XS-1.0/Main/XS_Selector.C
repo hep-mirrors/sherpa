@@ -8,14 +8,13 @@ using std::cerr;
 using std::endl;
 
 using namespace EXTRAXS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 Single_XS * XS_Selector::GetXS(int nin,int nout,Flavour * fl)
 { 
   Single_XS * xs = 0;
   if (nin !=2 && nout !=2) {
-    AORGTOOLS::msg.Error()<<"Such a XS is not available as FastFunc!"<<endl
+    ATOOLS::msg.Error()<<"Such a XS is not available as FastFunc!"<<endl
 			  <<"nin, nout = "<<nin<<", "<<nout<<endl;
     return xs;
   }
@@ -50,7 +49,7 @@ Single_XS * XS_Selector::GetXS(int nin,int nout,Flavour * fl)
 	 ((fl[3]==fl[0]) && (fl[2]==fl[1]))) )   { return new XS_q1q2_q1q2(nin,nout,fl); }
 
 
-  AORGTOOLS::msg.Tracking()<<"Such a XS is not yet available as FastFunc!"<<endl;
+  ATOOLS::msg.Tracking()<<"Such a XS is not yet available as FastFunc!"<<endl;
   return 0;
 }
 

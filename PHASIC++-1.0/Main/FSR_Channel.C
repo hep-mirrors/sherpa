@@ -7,9 +7,7 @@
 #include <stdio.h>
 
 using namespace PHASIC;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -21,11 +19,11 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
   rannum = 3;
   rans   = new double[rannum];
 
-  s      = smax  = pt2max = sqr(AORGTOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
   name   = "S-Channel 1";
@@ -37,11 +35,11 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
 }
 
-void S1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran=0) {
+void S1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran=0) {
   CE.Isotropic2Momenta(p[0]+p[1],ms[2],ms[3],p[2],p[3],_ran[1],_ran[2]);
 }
 
-void S1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
+void S1Channel::GenerateWeight(ATOOLS::Vec4D * p) {
   weight = 1. / ( CE.Isotropic2Weight(p[2],p[3]) * pow(2.*M_PI,2.*3.-4.) );
 }
 
@@ -61,11 +59,11 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
   rannum = 3;
   rans   = new double[rannum];
 
-  s      = smax  = pt2max = sqr(AORGTOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
   name   = "T-Channel 1";
@@ -76,12 +74,12 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
 }
 
-void T1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
+void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran =0) {
   CE.TChannelMomenta(p[0],p[1],p[2],p[3],ms[2],ms[3],0.,
 		     0.5,0.,2.,1.,0,_ran[1],_ran[2]);
 }
 
-void T1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
+void T1Channel::GenerateWeight(ATOOLS::Vec4D * p) {
   weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,0.5,0.,2.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 }
 
@@ -101,11 +99,11 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
   rannum = 3;
   rans   = new double[rannum];
 
-  s      = smax  = pt2max = sqr(AORGTOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
   name   = "U-Channel 1";
@@ -116,12 +114,12 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
 }
 
-void U1Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran =0) {
+void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran =0) {
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],ms[3],ms[2],0.,
 		     0.5,0.,2.,1.,0,_ran[1],_ran[2]);
 }
 
-void U1Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
+void U1Channel::GenerateWeight(ATOOLS::Vec4D * p) {
   weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,0.5,0.,2.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 }
 
@@ -140,11 +138,11 @@ Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
   rannum = 2;
   rans   = new double[rannum];
 
-  s      = smax  = pt2max = sqr(AORGTOOLS::rpa.gen.Ecms());
+  s      = smax  = pt2max = sqr(ATOOLS::rpa.gen.Ecms());
   pt2min = 0.;
   E      = 0.5 * sqrt(s);
   name   = "Decay2-Channel 1";
@@ -155,11 +153,11 @@ Decay2Channel::Decay2Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
 }
 
-void Decay2Channel::GeneratePoint(AMATOOLS::Vec4D * p,double * _ran=0) {
+void Decay2Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran=0) {
   CE.Isotropic2Momenta(p[0],ms[1],ms[2],p[1],p[2],_ran[0],_ran[1]);
 }
 
-void Decay2Channel::GenerateWeight(AMATOOLS::Vec4D * p) {
+void Decay2Channel::GenerateWeight(ATOOLS::Vec4D * p) {
   weight = 1. / ( CE.Isotropic2Weight(p[1],p[2]) * pow(2.*M_PI,2.*3.-4.) );
 }
 

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 
-namespace AORGTOOLS {
+namespace ATOOLS {
   class Message {
     std::ofstream * no; 
     std::ostream  * output;
@@ -48,7 +48,7 @@ namespace AORGTOOLS {
 
   /*!
     \file
-    \brief contains the class AORGTOOLS::Message
+    \brief contains the class Message
   */
 
   /*!

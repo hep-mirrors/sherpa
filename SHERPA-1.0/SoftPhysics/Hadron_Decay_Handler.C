@@ -5,10 +5,7 @@
 #include "Data_Read.H"
 
 using namespace SHERPA;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-
+using namespace ATOOLS;
 
 
 Hadron_Decay_Handler::Hadron_Decay_Handler(std::string,std::string) :
@@ -31,7 +28,7 @@ Hadron_Decay_Handler::~Hadron_Decay_Handler()
 {
 }
 
-bool Hadron_Decay_Handler::FillHadronDecayBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *)
+bool Hadron_Decay_Handler::FillHadronDecayBlobs(ATOOLS::Blob_List *,ATOOLS::Parton_List *)
 {
   return 1;
 }

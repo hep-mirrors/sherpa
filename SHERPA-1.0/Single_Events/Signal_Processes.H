@@ -9,11 +9,11 @@ namespace SHERPA {
   class Signal_Processes : public Event_Phase_Handler {
   private :
     Matrix_Element_Handler * p_mehandler;
-    void FillBlob(APHYTOOLS::Blob *);
+    void FillBlob(ATOOLS::Blob *);
   public :
     Signal_Processes(Matrix_Element_Handler *);
     ~Signal_Processes();
-    bool Treat(APHYTOOLS::Blob_List *, double &);
+    bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
   };
 
@@ -25,7 +25,7 @@ namespace SHERPA {
     This class is concerned with the generation of the hardest sub-process in each event through
     the Matrix_Element_Handler that was specified before in the initialization. The idea here is that 
     a blob list containing exactly one blob is passed into this class. This blob is then dealt with
-    accordingly by the methods Treat(APHYTOOLS::Blob_List *, double &) and FillBlob().
+    accordingly by the methods Treat(ATOOLS::Blob_List *, double &) and FillBlob().
 
     In principle with this one could have various hard interactions of different pairs of incoming 
     particles as well, but at the moment only the possibility for one such hard subprocess per bunch 
@@ -44,7 +44,7 @@ namespace SHERPA {
     \todo Expand the internal list of processes.
   */
   /*!
-    \fn void Signal_Processes::FillBlob(APHYTOOLS::Blob *)
+    \fn void Signal_Processes::FillBlob(ATOOLS::Blob *)
     Filling the blob means:
     - Setting the position (to the origin),
     - setting its type (actually, this should be made prettier) and its status (to 1)
@@ -64,7 +64,7 @@ namespace SHERPA {
     Deletes the Matrix_Element_Handler. This might lead to trouble.
   */
   /*!
-    \fn bool Signal_Processes::Treat(APHYTOOLS::Blob_List *, double &)
+    \fn bool Signal_Processes::Treat(ATOOLS::Blob_List *, double &)
     The blob list is checked if it contains exactly one blob. This starting blob must have status
     equal to 0 or -1 and it must be of the type "Signal Process : ". Then this Event_Phase_Handler
     will come into action (it should be noted however that structurally more blobs can be treated after

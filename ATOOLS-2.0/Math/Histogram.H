@@ -4,7 +4,7 @@
 #include <string>
 
 
-namespace AMATOOLS {
+namespace ATOOLS {
 
   class Histogram {
   private :
@@ -44,7 +44,7 @@ namespace AMATOOLS {
 
   /*! 
     \file 
-    \brief contains class AMATOOLS::Histogram
+    \brief contains class Histogram
   */
 
   /*!
@@ -52,7 +52,7 @@ namespace AMATOOLS {
     \brief simple histogramm class
     
     This class can be used to create, file, and write out simple
-    histograms. It is used in the APHYTOOLS::Primitive_Analysis.
+    histograms. It is used in the Primitive_Analysis.
     It can store values, and maxima. Equidistant and
     logarithmic bining is supported.
   */

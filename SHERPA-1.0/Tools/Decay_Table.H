@@ -6,7 +6,7 @@
 namespace SHERPA {
   class Decay_Channel {
     double               m_width, m_BR;
-    APHYTOOLS::Flavour * fl;
+    ATOOLS::Flavour * fl;
   };
 }
 

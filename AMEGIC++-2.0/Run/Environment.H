@@ -21,15 +21,15 @@ namespace AMEGIC {
     std::string m_path,m_file;
     std::string m_modeldat,m_beamdat, m_isrdat, m_medat;
 
-    AORGTOOLS::Data_Read       * p_dataread;
+    ATOOLS::Data_Read       * p_dataread;
 
     MODEL::Model_Base          * p_model;
 
     BEAM::Beam_Spectra_Handler * p_beamspectra;
-    APHYTOOLS::Flavour           m_beam_particles[2];
+    ATOOLS::Flavour           m_beam_particles[2];
 
     PDF::ISR_Handler           * p_isrhandler;
-    APHYTOOLS::Flavour           m_bunch_particles[2];
+    ATOOLS::Flavour           m_bunch_particles[2];
     double                       m_bunch_splimits[2];
 
   private :

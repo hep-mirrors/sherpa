@@ -6,7 +6,7 @@
 #include "Message.H"
 
 using namespace AMEGIC;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 void Prop_Generator::Convert(Point* p)

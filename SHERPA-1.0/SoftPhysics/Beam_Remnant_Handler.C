@@ -6,9 +6,7 @@
 #include "Data_Read.H"
 
 using namespace SHERPA;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -89,7 +87,7 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _p
       match = 1;
       if (m_fill) match = ((*biter)->Type()==std::string("Beam Remnant"));
       if ((*biter)->Status()==1 && (*biter)->Beam()==i && match) {
-	blob = new APHYTOOLS::Blob();
+	blob = new ATOOLS::Blob();
 	blob->SetId(_bloblist->size());
 	blob->SetType(std::string("Bunch"));
 	blob->SetBeam(i);
@@ -130,7 +128,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Parton_List * _pa
       if ((*biter)->Beam()==i && (*biter)->Status()==1 && 
 	  (p_numberofconstituents[i]>0) && pos>-1 ) {
 	if (flag) {
-	  blob = new APHYTOOLS::Blob();
+	  blob = new ATOOLS::Blob();
 	  blob->SetId(_bloblist->size());
 	  blob->SetType(std::string("Beam Remnant"));
 	  blob->SetBeam(i);

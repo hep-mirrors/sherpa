@@ -18,12 +18,12 @@ namespace PHASIC {
     int    type;
     int    chnumber;
   public :
-    S1Channel(int,int,APHYTOOLS::Flavour *,
-	      APHYTOOLS::Flavour=APHYTOOLS::Flavour(APHYTOOLS::kf::none)); 
-    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
-    void GenerateWeight(AMATOOLS::Vec4D * p);
-    void GeneratePoint(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
-    void GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *)              { GenerateWeight(p); }
+    S1Channel(int,int,ATOOLS::Flavour *,
+	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    void GeneratePoint(ATOOLS::Vec4D * p,double *);
+    void GenerateWeight(ATOOLS::Vec4D * p);
+    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
+    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *)              { GenerateWeight(p); }
     void ISRInfo(int &,double &,double &);
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
@@ -44,12 +44,12 @@ namespace PHASIC {
     int    type;
     int    chnumber;
   public :
-    T1Channel(int,int,APHYTOOLS::Flavour *,
-	      APHYTOOLS::Flavour=APHYTOOLS::Flavour(APHYTOOLS::kf::none)); 
-    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
-    void GenerateWeight(AMATOOLS::Vec4D * p);
-    void GeneratePoint(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
-    void GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *)              { GenerateWeight(p); }
+    T1Channel(int,int,ATOOLS::Flavour *,
+	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    void GeneratePoint(ATOOLS::Vec4D * p,double *);
+    void GenerateWeight(ATOOLS::Vec4D * p);
+    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
+    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *)              { GenerateWeight(p); }
     void ISRInfo(int &,double &,double &);
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
@@ -71,12 +71,12 @@ namespace PHASIC {
     int    type;
     int    chnumber;
   public :
-    U1Channel(int,int,APHYTOOLS::Flavour *,
-	      APHYTOOLS::Flavour=APHYTOOLS::Flavour(APHYTOOLS::kf::none)); 
-    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
-    void GenerateWeight(AMATOOLS::Vec4D * p);
-    void GeneratePoint(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
-    void GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *)              { GenerateWeight(p); }
+    U1Channel(int,int,ATOOLS::Flavour *,
+	      ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    void GeneratePoint(ATOOLS::Vec4D * p,double *);
+    void GenerateWeight(ATOOLS::Vec4D * p);
+    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
+    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *)              { GenerateWeight(p); }
     void ISRInfo(int &,double &,double &);
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }
@@ -97,12 +97,12 @@ namespace PHASIC {
     int    type;
     int    chnumber;
   public :
-    Decay2Channel(int,int,APHYTOOLS::Flavour *,
-		  APHYTOOLS::Flavour=APHYTOOLS::Flavour(APHYTOOLS::kf::none)); 
-    void GeneratePoint(AMATOOLS::Vec4D * p,double *);
-    void GenerateWeight(AMATOOLS::Vec4D * p);
-    void GeneratePoint(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
-    void GenerateWeight(AMATOOLS::Vec4D * p,APHYTOOLS::Cut_Data *)              { GenerateWeight(p); }
+    Decay2Channel(int,int,ATOOLS::Flavour *,
+		  ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none)); 
+    void GeneratePoint(ATOOLS::Vec4D * p,double *);
+    void GenerateWeight(ATOOLS::Vec4D * p);
+    void GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *,double * _ran) { GeneratePoint(p,_ran); } 
+    void GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *)              { GenerateWeight(p); }
     void ISRInfo(int &,double &,double &);
     int  ChNumber()                 { return chnumber;      }
     void SetChNumber(int _chnumber) { chnumber = _chnumber; }

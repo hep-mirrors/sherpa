@@ -8,7 +8,7 @@
 #include "Knot_List.H"
 #include "Parton_List.H"
 
-//using namespace APHYTOOLS;
+//using namespace ATOOLS;
 
 namespace APACIC {
   class Tree {
@@ -38,8 +38,8 @@ namespace APACIC {
       Returns a pointer to a free knot with a halfway specified parton,
       i.e. momentum and flavour will be set.
     */
-    Knot * NewKnot(APHYTOOLS::Flavour, AMATOOLS::Vec4D, double, double);
-    Knot * NewKnot(APHYTOOLS::Parton * _inpart=NULL);
+    Knot * NewKnot(ATOOLS::Flavour, ATOOLS::Vec4D, double, double);
+    Knot * NewKnot(ATOOLS::Parton * _inpart=NULL);
     /*! 
       Returns a pointer to a free knot in the list while copying another knot with
       zero links into it.
@@ -72,16 +72,16 @@ namespace APACIC {
     //-----------------------------------------------------------------------
     //--------------------------- Extracting partons ------------------------
     //----------------------------------------------------------------------- 
-    void ExtractPartons(APHYTOOLS::Parton_List *);
+    void ExtractPartons(ATOOLS::Parton_List *);
     //-----------------------------------------------------------------------
     //--------------------------- New frames for the tree -------------------
     //----------------------------------------------------------------------- 
     //! Boost the entire tree
-    void BoRo(AMATOOLS::Poincare &);
+    void BoRo(ATOOLS::Poincare &);
     //! Boost the branch only
-    static void BoRo(AMATOOLS::Poincare &, Knot * );
+    static void BoRo(ATOOLS::Poincare &, Knot * );
   private:
-    static void BoRoDaughters(AMATOOLS::Poincare &, Knot *);
+    static void BoRoDaughters(ATOOLS::Poincare &, Knot *);
 
     // some recursive helpers
     Knot * CopyKnot(Knot *,Knot *);

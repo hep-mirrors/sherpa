@@ -6,9 +6,7 @@
 #include <stdio.h>
 
 
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace PDF;
 using namespace std;
 
@@ -25,9 +23,9 @@ ISR_Handler::ISR_Handler(ISR_Base ** _ISRBase,double * _splimits) :
 void ISR_Handler::Init(double * _splimits) {
   m_type = p_ISRBase[0]->Type() + std::string("*") + p_ISRBase[1]->Type();
 
-  double s      = sqr(AORGTOOLS::rpa.gen.Ecms());
+  double s      = sqr(ATOOLS::rpa.gen.Ecms());
   m_splimits[0] = s*_splimits[0];
-  m_splimits[1] = AMATOOLS::Min(s*_splimits[1],s*Upper1()*Upper2());
+  m_splimits[1] = ATOOLS::Min(s*_splimits[1],s*Upper1()*Upper2());
   m_splimits[2] = s;
   m_ylimits[0]  = -10.;
   m_ylimits[1]  = 10.;
@@ -51,8 +49,8 @@ ISR_Handler::~ISR_Handler() {
   }
 }
 
-bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches,
-				   APHYTOOLS::Flavour * _partons) {
+bool ISR_Handler::CheckConsistency(ATOOLS::Flavour * _bunches,
+				   ATOOLS::Flavour * _partons) {
   
     bool fit = 1;
   for (int i=0;i<2;i++) {
@@ -77,7 +75,7 @@ bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _bunches,
   return fit;
 }
 
-bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _partons) {
+bool ISR_Handler::CheckConsistency(ATOOLS::Flavour * _partons) {
   bool fit = 1;
   for (int i=0;i<2;i++) {
     if (p_ISRBase[i]->On()) {
@@ -103,7 +101,7 @@ bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _partons) {
 void ISR_Handler::SetPartonMasses(Flavour * _fl) { 
   m_mass12     = sqr(_fl[0].Mass());
   m_mass22     = sqr(_fl[1].Mass());
-  double E     = AORGTOOLS::rpa.gen.Ecms();
+  double E     = ATOOLS::rpa.gen.Ecms();
   double x     = 1./2.+(m_mass12-m_mass22)/(2.*E*E);
   double E1    = x*E;
   double E2    = E-E1;

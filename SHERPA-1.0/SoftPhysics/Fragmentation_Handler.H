@@ -18,13 +18,13 @@ namespace SHERPA {
     double                   m_lund_a,m_lund_b,m_lund_sigma;
     int                      m_mode;
     Lund_Fortran_Interface * p_lund; 
-    bool   ExtractSinglets(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
-    bool   FindConnected(APHYTOOLS::Blob_List *,APHYTOOLS::Parton *,
-			 APHYTOOLS::Blob *);
+    bool   ExtractSinglets(ATOOLS::Blob_List *,ATOOLS::Parton_List *);
+    bool   FindConnected(ATOOLS::Blob_List *,ATOOLS::Parton *,
+			 ATOOLS::Blob *);
   public :
     Fragmentation_Handler(std::string,std::string);
     ~Fragmentation_Handler();
-    bool PerformFragmentation(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
+    bool PerformFragmentation(ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
     void EmptyMyLists();
 
     Lund_Fortran_Interface * GetLundFortranInterface();

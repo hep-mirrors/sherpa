@@ -5,12 +5,12 @@
 
 
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class No_Selector : public Selector_Base {
   public:
     No_Selector()                       { m_name = std::string ("No_Selector"); m_sel_log = 0; }
     No_Selector(int,int,Flavour *)      { m_name = std::string ("No_Selector"); m_sel_log = 0; }
-    bool Trigger(const AMATOOLS::Vec4D*)                    { return 1; }
+    bool Trigger(const Vec4D*)                    { return 1; }
     void BuildCuts(Cut_Data * cuts)                         { }
     void UpdateCuts(double sprime,double y,Cut_Data * cuts) { }
     void Output()                                           { }
@@ -21,8 +21,8 @@ namespace APHYTOOLS {
   public:
     Energy_Selector(int,int,Flavour *);
     ~Energy_Selector();
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -33,8 +33,8 @@ namespace APHYTOOLS {
   public:
     ET_Selector(int,int,Flavour *);
     ~ET_Selector();
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -45,8 +45,8 @@ namespace APHYTOOLS {
   public:
     PT_Selector(int,int,Flavour *);
     ~PT_Selector();
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -57,8 +57,8 @@ namespace APHYTOOLS {
   public:
     Rapidity_Selector(int,int,Flavour *);
     ~Rapidity_Selector();
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -69,8 +69,8 @@ namespace APHYTOOLS {
   public:
     PseudoRapidity_Selector(int,int,Flavour *);
     ~PseudoRapidity_Selector();
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -81,9 +81,9 @@ namespace APHYTOOLS {
   public:
     Angle_Selector(int,int,Flavour *);
     ~Angle_Selector();
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,int,double,double);
-    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     SetRange(std::vector<Flavour>,double,double);
+    void     SetRange(std::vector<Flavour>,int,double,double);
+    bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -94,8 +94,8 @@ namespace APHYTOOLS {
   public:
     Mass_Selector(int,int,Flavour *);
     ~Mass_Selector();
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -103,12 +103,12 @@ namespace APHYTOOLS {
 
   class Summed_PT_Selector : public Selector_Base {
     double             ptmin, ptmax;
-    APHYTOOLS::Flavour crit;
+    Flavour crit;
   public:
     Summed_PT_Selector(int,int,Flavour *);
     ~Summed_PT_Selector();
-    void     SetRange(std::vector<APHYTOOLS::Flavour>,double,double);
-    bool     Trigger(const AMATOOLS::Vec4D * );
+    void     SetRange(std::vector<Flavour>,double,double);
+    bool     Trigger(const Vec4D * );
     void     BuildCuts(Cut_Data *);
     void     UpdateCuts(double,double,Cut_Data *);
     double * ActualValue();
@@ -119,7 +119,7 @@ namespace APHYTOOLS {
 
 
 /*!
-  \class APHYTOOLS::No_Selector
+  \class No_Selector
   \brief Dummy Selector, does not select anything.
 
   This is a dummy selector that does not apply any cuts on the
@@ -127,7 +127,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \class APHYTOOLS::Energy_Selector
+  \class Energy_Selector
   \brief Selector used for energy cuts on final state particles
 
   Selects according to energy ranges for the particles.
@@ -139,7 +139,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \class APHYTOOLS::Angle_Selector
+  \class Angle_Selector
   \brief Selector used to apply cuts on angle between two final state particles
 
   Selects according to angular ranges (cosines) for pairs of particles.
@@ -153,7 +153,7 @@ namespace APHYTOOLS {
 
 
 /*!
-  \class APHYTOOLS::Mass_Selector
+  \class Mass_Selector
   \brief Selector used to apply cuts on invariant mass of two final state particles
 
   Selects according to invariant-mass ranges for pairs of particles.

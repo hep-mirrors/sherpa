@@ -8,12 +8,12 @@ namespace SHERPA {
   class SimpleXS_Apacic_Interface : public Perturbative_Interface {
     Interface_Tools  * p_tools;
 
-    bool InitColours(APHYTOOLS::Blob *);
+    bool InitColours(ATOOLS::Blob *);
   public :
     SimpleXS_Apacic_Interface(Matrix_Element_Handler *,Shower_Handler *);
     ~SimpleXS_Apacic_Interface();
-    bool   DefineInitialConditions(APHYTOOLS::Blob *);
-    bool   FillBlobs(APHYTOOLS::Blob_List *); 
+    bool   DefineInitialConditions(ATOOLS::Blob *);
+    bool   FillBlobs(ATOOLS::Blob_List *); 
   };
 }
 #endif

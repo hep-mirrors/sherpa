@@ -18,9 +18,7 @@
 using namespace AMEGIC;
 using namespace MODEL;
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 /*----------------------------------------------------------------------------------
@@ -107,7 +105,7 @@ Process_Group::~Process_Group()
 
   ----------------------------------------------------------------------------------*/
 
-void Process_Group::ConstructProcesses(APHYTOOLS::Selector_Data * _seldata) {
+void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   int * flindex;
   flindex = new int[m_nin+m_nout];
   for (int i=0;i<m_nin+m_nout;i++) flindex[i] = 0;
@@ -204,7 +202,7 @@ void Process_Group::GroupProcesses() {
   bool massok = 1;
   for (int i=0;i<m_procs.size();i++) {
     for (int j=0;j<m_procs[i]->Nin();j++) {
-      if (!(AMATOOLS::IsEqual(massin[j],(m_procs[i]->Flavs()[j]).Mass()))) {
+      if (!(ATOOLS::IsEqual(massin[j],(m_procs[i]->Flavs()[j]).Mass()))) {
 	msg.Error()<<"Error in Incoming masses ; "<<massin[j]<<" vs. "<<(m_procs[i]->Flavs()[j]).Mass()
 		   <<" for "<<p_flin[j]<<" "<<m_procs[i]->Flavs()[j]<<endl;
 	massok = 0; break;
@@ -212,7 +210,7 @@ void Process_Group::GroupProcesses() {
     }
     if (!massok) break;
     for (int j=0;j<m_procs[i]->Nout();j++) {
-      if (!(AMATOOLS::IsEqual(massout[j],(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()))) {
+      if (!(ATOOLS::IsEqual(massout[j],(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()))) {
 	msg.Error()<<"Error in Incoming masses ; "<<massout[j]<<" vs. "<<(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()
 		   <<"for "<<p_flout[j]<<" "<<m_procs[i]->Flavs()[j+m_procs[i]->Nin()]<<endl;
 	massok = 0; break;
@@ -221,7 +219,7 @@ void Process_Group::GroupProcesses() {
     if (!massok) break;
   }
   if (massok) {
-    SetISRThreshold(AMATOOLS::Max(sum_massin,sum_massout));
+    SetISRThreshold(ATOOLS::Max(sum_massin,sum_massout));
   }
   else {
     msg.Error()<<"Error in Process_Group : "<<m_name<<endl
@@ -405,7 +403,7 @@ void Process_Group::SelectOne()
       for (int i=0;i<m_procs.size();i++) {
 	m+= m_procs[i]->Max();
       }
-      if (!AMATOOLS::IsEqual(m,m_max)) {
+      if (!ATOOLS::IsEqual(m,m_max)) {
 	SetMax(0.);
       }
       disc = m_max * ran.Get();
@@ -480,7 +478,7 @@ void Process_Group::SetTotalXS(int tables)  {
 
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
-			(AMATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
+			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
     if (p_sel) p_sel->Output();
     m_max = 0.;
     for (int i=0;i<m_procs.size();i++) {
@@ -512,7 +510,7 @@ void Process_Group::SetMax(double max) {
     m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
   }
   if (m_totalxs!=0.) {
-    if (!AMATOOLS::IsEqual(sum,m_totalxs)) {
+    if (!ATOOLS::IsEqual(sum,m_totalxs)) {
       msg.Events().precision(12);
       msg.Events()<<" WARNING: group "<<Name()<<": xs and sum of daughters does not agree ! "<<endl
 		  <<" sum="<<sum<<"  total:"<<m_totalxs
@@ -618,8 +616,8 @@ bool Process_Group::SetUpIntegrator()
 
 
 
-void Process_Group::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *> _obs) {
-  p_analysis = new APHYTOOLS::Primitive_Analysis(this->Name());//check this
+void Process_Group::InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *> _obs) {
+  p_analysis = new ATOOLS::Primitive_Analysis(this->Name());//check this
   for (int i=0;i<_obs.size();i++) {
     p_analysis->AddObservable(_obs[i]->GetCopy());
   }
@@ -659,7 +657,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	  from>>_name>>_totalxs>>_max>>_totalerr;
 	  m_totalxs += _totalxs;
 	  msg.Events()<<"Found result : xs for "<<_name<<" : "
-		      <<_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+		      <<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		      <<" +/- "<<_totalerr/_totalxs*100.<<"%,"<<endl
 		      <<"       max : "<<_max<<endl;
 	  Process_Base * _proc = NULL;
@@ -699,8 +697,8 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     p_sel->BuildCuts(p_cuts);
     m_tables  = 0;
     
-    m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
-    if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+    m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn(); 
+    if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl
 		 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
@@ -711,7 +709,7 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	to.open(filename,ios::out);
 	to.precision(12);
 	msg.Events()<<"Store result : xs for "<<m_name<<" : "
-		    <<m_totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
+		    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		    <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		    <<"       max : "<<m_max<<endl;
 	WriteOutXSecs(to);
@@ -792,8 +790,8 @@ bool Process_Group::PrepareXSecTables()
 	   (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
     }
     p_sel->BuildCuts(p_cuts);
-    m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
-    if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+    m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn(); 
+    if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl;
       msg.Error()<<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
@@ -956,7 +954,7 @@ void Process_Group::ControlOutput(Vec4D * p)
   double s   = (p[0]+p[1]).Abs2();
   double t   = (p[0]-p[2]).Abs2();
   double u   = (p[0]-p[3]).Abs2();
-  m_scale    = AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms());
+  m_scale    = ATOOLS::sqr(ATOOLS::rpa.gen.Ecms());
   double a_s = as->AlphaS(m_scale);
   msg.Out()<<"-------- Process_Group : "<<m_name<<" : DSigma -------------------"<<endl
 	   <<"         scale = "<<m_scale<<" = "<<2.*s*t*u/(s*s+u*u+t*t)<<endl

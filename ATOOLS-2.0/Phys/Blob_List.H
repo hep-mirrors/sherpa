@@ -6,7 +6,7 @@
 #include "Blob.H"
 #include "List_Algorithms.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   typedef std::deque<Blob*> Blob_List;
   typedef Blob_List::iterator Blob_Iterator;
   typedef Blob_List::const_iterator Blob_Const_Iterator;

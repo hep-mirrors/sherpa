@@ -5,9 +5,7 @@
 #include "ADD.H"
 
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
@@ -21,8 +19,8 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
   rannum=0;
   massflag = 0;
   for (short int i=0;i<nin+nout;i++) {
-    ms[i] = AMATOOLS::sqr(fl[i].Mass());
-    if (!AMATOOLS::IsZero(ms[i])) massflag = 1;
+    ms[i] = ATOOLS::sqr(fl[i].Mass());
+    if (!ATOOLS::IsZero(ms[i])) massflag = 1;
   } 
 
   double   pi2log = log(M_PI/2.);
@@ -36,7 +34,7 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
   kkp=-1;mpss=1.;
   for (int i=nin;i<nin+nout;i++) {
     if(fl[i].IsKK()){
-      if(AMATOOLS::IsZero(ms[i])){
+      if(ATOOLS::IsZero(ms[i])){
 	msg.Error()<<"Error in RamboKK: "<<endl
 		   <<"   Please initialize with nonzero particle mass ("<<fl[i]<<") !"<<std::endl;
 	abort();

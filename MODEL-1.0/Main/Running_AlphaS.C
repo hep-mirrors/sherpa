@@ -12,12 +12,8 @@ namespace MODEL {
 }
 
 using namespace MODEL;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
-
+using namespace ATOOLS;
 using namespace std;
-
 
 
 Running_AlphaS::Running_AlphaS(const double _as_MZ,const double _m2_MZ) : 

@@ -7,8 +7,7 @@
 #include "IO_Handler.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 

@@ -11,8 +11,7 @@
 #endif
 
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Phase_Space_Integrator::Phase_Space_Integrator() {
@@ -273,7 +272,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 	msg.Error()<<"FS - Channel result is a NaN. Knockout!!!!"<<endl;
 	break;
       }
-      if ( AMATOOLS::IsZero((psh->FSRIntegrator())->Result()) ) break;
+      if ( ATOOLS::IsZero((psh->FSRIntegrator())->Result()) ) break;
       error = (psh->FSRIntegrator())->Variance()/(psh->FSRIntegrator())->Result() * 
 	(psh->FSRIntegrator())->N();
       msg.Tracking()<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N() * rpa.Picobarn()<<" pb"
@@ -311,7 +310,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
 
   for (n=1;n<=nmax;n++) {
     do {value = psh->Differential();}
-    while (value > 1./AMATOOLS::Accu());
+    while (value > 1./ATOOLS::Accu());
     (psh->FSRIntegrator())->AddPoint(value);
     
     //new SS
@@ -339,7 +338,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
 	msg.Out()<<"NaN knockout!!!!"<<endl;
 	break;
       }
-      if (AMATOOLS::IsZero((psh->FSRIntegrator())->Result())) break;
+      if (ATOOLS::IsZero((psh->FSRIntegrator())->Result())) break;
       
       msg.Out()<<n<<". Result : "<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()<<" GeV";
       error = (psh->FSRIntegrator())->Variance() / (psh->FSRIntegrator())->Result()*(psh->FSRIntegrator())->N();

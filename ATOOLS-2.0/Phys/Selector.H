@@ -8,9 +8,9 @@
 
 #include <vector>
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   struct Mom_Data {
-    std::vector<APHYTOOLS::Flavour> flavs;
+    std::vector<Flavour> flavs;
     double min,max;
     int    help; 
     int    type;
@@ -25,7 +25,7 @@ namespace APHYTOOLS {
     Selector_Data(std::string path);
     ~Selector_Data()     {};
     int  Size()          { return data.size(); }
-    void Data(int,int &,std::vector<APHYTOOLS::Flavour> &,int &,double &,double &);
+    void Data(int,int &,std::vector<Flavour> &,int &,double &,double &);
     void ControlOutput();
   };
 
@@ -40,30 +40,30 @@ namespace APHYTOOLS {
     std::string    m_name;
     Selector_Log * m_sel_log;
 
-    virtual void Init(const AMATOOLS::Vec4D *) { }
+    virtual void Init(const Vec4D *) { }
   public :
     Selector_Base() { m_sel_log=0; m_name=std::string("noname"); }
     virtual ~Selector_Base();
-    virtual bool Trigger(const AMATOOLS::Vec4D *) = 0;
+    virtual bool Trigger(const Vec4D *) = 0;
     virtual void Add(Selector_Base *) {
-      AORGTOOLS::msg.Error()<<"Selector_Base::Add : Virtual method."<<std::endl;
+      msg.Error()<<"Selector_Base::Add : Virtual method."<<std::endl;
     }
     virtual double * ActualValue() {
-      AORGTOOLS::msg.Error()<<"Selector_Base::ActualValue :"
+      msg.Error()<<"Selector_Base::ActualValue :"
 			    <<m_name<<" Virtual method."<<std::endl;
       return 0;
     }
     virtual void BuildCuts(Cut_Data *) { 
-      AORGTOOLS::msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
+      msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
     }
     virtual void UpdateCuts(double,double,Cut_Data *) { 
-      AORGTOOLS::msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
+      msg.Error()<<"Selector_Base::BuildCuts : Virtual method."<<std::endl;
     }
-    virtual void   SetRange(std::vector<APHYTOOLS::Flavour>,double,double) { 
-      AORGTOOLS::msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
+    virtual void   SetRange(std::vector<Flavour>,double,double) { 
+      msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
     }
-    virtual void   SetRange(std::vector<APHYTOOLS::Flavour>,int,double,double) { 
-      AORGTOOLS::msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
+    virtual void   SetRange(std::vector<Flavour>,int,double,double) { 
+      msg.Error()<<"Selector_Base::SetRange : Virtual method."<<std::endl;
     }
     virtual void   Output();
 
@@ -94,7 +94,7 @@ namespace APHYTOOLS {
   inline int  Selector_Log::Rejections() { return m_rejected; }
   inline int  Selector_Log::Passed()     { return m_passed; }
   inline void Selector_Log::Output() { 
-    AORGTOOLS::msg.Out()<<"  Selector "<<m_name<<" rejection quota  : "
+    msg.Out()<<"  Selector "<<m_name<<" rejection quota  : "
 			<<double(m_rejected)/double(m_rejected+m_passed)
 			<<"  ("<<m_rejected<<" / "<<m_passed+m_rejected<<")"<<std::endl;
   }
@@ -106,7 +106,7 @@ namespace APHYTOOLS {
 
 
 /*!
-  \class APHYTOOLS::Selector_Base 
+  \class Selector_Base 
   \brief The base class for all selectors.
 
   This is the base class for all selectors to be built.
@@ -116,7 +116,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \var   APHYTOOLS::Selector_Base::Selector_Log * sel_log
+  \var   Selector_Base::Selector_Log * sel_log
   \brief The log of the actual selector - keeps track of hits and misses.
 
   This keeps track of the performance of the selector during its calls, in other 
@@ -124,7 +124,7 @@ namespace APHYTOOLS {
 */  
 
 /*!
-  \fn    virtual void APHYTOOLS::Selector_Base::Init(const AMATOOLS::Vec4D *)
+  \fn    virtual void Selector_Base::Init(const Vec4D *)
   \brief Boost the vectors in the coorect frame for the Selector to act on them.
 
   Before cuts are applied in Trigger the system might have to be boosted to 
@@ -132,7 +132,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \fn    virtual bool APHYTOOLS::Selector_Base::Trigger(const AMATOOLS::Vec4D *)
+  \fn    virtual bool Selector_Base::Trigger(const Vec4D *)
   \brief The selectors central method - do the vectors pass the selector or not.
 
   This is the triggering method of the selector. Depending on whether the set of 
@@ -141,7 +141,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \fn    virtual void APHYTOOLS::Selector_Base::Add(Selector_Base *)
+  \fn    virtual void Selector_Base::Add(Selector_Base *)
   \brief Adding individual selectors to a Combined_Selector
 
   It is used only by the Combined_Selector to fill the list of individual 
@@ -149,7 +149,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \fn    virtual void APHYTOOLS::Selector_Base::BuildCuts(Cut_Data *) 
+  \fn    virtual void Selector_Base::BuildCuts(Cut_Data *) 
   \brief Construct a-priori cuts on the phase space.
 
   This method tries to create a priori cuts on the phase space to be
@@ -161,7 +161,7 @@ namespace APHYTOOLS {
 */
 
 /*!
-  \fn    virtual void APHYTOOLS::Selector_Base::Output()
+  \fn    virtual void Selector_Base::Output()
   \brief performance checks of the selector.
 
   This outputs the logs of the individual selectors.
@@ -171,14 +171,14 @@ namespace APHYTOOLS {
 
 
 /*!
-  \class APHYTOOLS::Selector_Log
+  \class Selector_Log
   This class is the logbook for the performance of the selector.
   It just counts, how often a given selector returned a zero and
   how often it returned a one.
 */
 
 /*
-  \fn    int APHYTOOLS::Selector_Log::Hit(bool hit);
+  \fn    int Selector_Log::Hit(bool hit);
   \brief returns hit and increments rejected or passed counters. 
 */
 

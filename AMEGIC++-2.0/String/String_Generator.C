@@ -5,8 +5,7 @@
 #include "MyStrStream.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 #ifdef __GNUC__
 #include <stdio.h>
@@ -106,7 +105,7 @@ int String_Generator::ZXY_Number(int type,int narg,int* arg,int ncoupl,int* coup
 int String_Generator::Get_Cnumber(Complex coupl)
 {
   for (short int i=0;i<couplings.size();i++) {
-    if (AMATOOLS::IsEqual(coupl,couplings[i])) return i;
+    if (ATOOLS::IsEqual(coupl,couplings[i])) return i;
   }
   couplings.push_back(coupl);
   return couplings.size()-1;
@@ -134,11 +133,11 @@ Kabbala String_Generator::Number(int n,Complex value)
 
 int String_Generator::GetNumber(int type,Complex value)
 {
-  if (AMATOOLS::IsEqual(zxl[0].value.Value(),value)) return 0;
+  if (ATOOLS::IsEqual(zxl[0].value.Value(),value)) return 0;
 
   for (long int i=1;i<zxl.size();i++) {
     if (zxl[i].zlist==type) {
-      if (AMATOOLS::IsEqual(zxl[i].value.Value(),value)) return i;
+      if (ATOOLS::IsEqual(zxl[i].value.Value(),value)) return i;
     }
   }
   return zxl.size();
@@ -272,7 +271,7 @@ Kabbala String_Generator::Get_Pnumber(Pfunc* pl,int numb)
 {
   for (long int i=0;i<zxl.size();i++) {
     if (zxl[i].zlist==5) {
-      if( AMATOOLS::IsEqual(zxl[i].value.Value(),pl->value) &&
+      if( ATOOLS::IsEqual(zxl[i].value.Value(),pl->value) &&
 	  (flavours[int(zxl[i].arg[0])]==(pl->fl).Kfcode()) )
 	return zxl[i].value;
     }
@@ -297,7 +296,7 @@ Kabbala String_Generator::Get_Massnumber(int numb,Flavour fl,Complex value)
 {
   for (long int i=0;i<zxl.size();i++) {
     if (zxl[i].zlist==7) {
-      if( AMATOOLS::IsEqual(zxl[i].value.Value(),value) &&
+      if( ATOOLS::IsEqual(zxl[i].value.Value(),value) &&
 	  ( (flavours[int(zxl[i].arg[0])]==fl.Kfcode()) ||
 	    (flavours[int(zxl[i].arg[0])]==-fl.Kfcode() && fl.IsAnti()) )
 	  ) 
@@ -347,7 +346,7 @@ Kabbala String_Generator::Get_Snumber(const int a1,const int a2,Complex value)
 
 Kabbala String_Generator::Get_Scplxnumber(const int a1,const int a2,Complex value) 
 {
-  if (AMATOOLS::IsZero(value)) return zxl[0].value;
+  if (ATOOLS::IsZero(value)) return zxl[0].value;
   for (long int i=0;i<zxl.size();i++) {
     if (zxl[i].zlist==9) {
       if ((zxl[i].arg[0]==a1) && (zxl[i].arg[1]==a2)) return zxl[i].value;

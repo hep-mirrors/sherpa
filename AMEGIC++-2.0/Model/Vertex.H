@@ -15,7 +15,7 @@ namespace AMEGIC {
       \brief Array of Flavour objects according to the particles 
       participating in the considered interaction
     */
-   APHYTOOLS::Flavour   in[4];
+   ATOOLS::Flavour   in[4];
     //!number of external legs the Single_Vertex possesses
     int       nleg;
     //!On/Off switch of a Single_Vertex 
@@ -85,7 +85,7 @@ namespace AMEGIC {
     //!The total number of \f$ 1\to 3\f$ interactions present 
     int            m_n4vertex;
     
-    void           CheckEqual(APHYTOOLS::Flavour**,short int&);
+    void           CheckEqual(ATOOLS::Flavour**,short int&);
     void           GenerateVertex();
     int            CheckExistence(Single_Vertex&);
     int            FermionRule(Single_Vertex& probe);

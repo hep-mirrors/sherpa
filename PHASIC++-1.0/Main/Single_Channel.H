@@ -15,7 +15,7 @@ namespace PHASIC {
   class Single_Channel {
   protected:
     int                  nin, nout;
-    APHYTOOLS::Flavour * fl;
+    ATOOLS::Flavour * fl;
     double             * ms;
     std::string          name;
     long int             n_points,n_contrib;
@@ -29,7 +29,7 @@ namespace PHASIC {
   public:
     Single_Channel():ms(0),rans(0) { };
     Single_Channel(Single_Channel *);
-    Single_Channel(int,int,APHYTOOLS::Flavour *);
+    Single_Channel(int,int,ATOOLS::Flavour *);
     virtual ~Single_Channel() {
       if (ms)   { delete[] ms; }
       if (rans) { delete[] rans; }
@@ -37,35 +37,35 @@ namespace PHASIC {
     void AddPoint(double);
     void Reset(double value);
     void ResetOpt();
-    virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
-    virtual void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : "
+    virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
+    virtual void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *) {
+      ATOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GeneratePoint(Vec4D,Cut_Data,double)."<<std::endl; 
     }
-    virtual void GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : "
+    virtual void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *) {
+      ATOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GenerateWeight(Vec4D,Cut_Data)"<<std::endl; 
     }
 
-    virtual void GeneratePoint(AMATOOLS::Vec4D *);
-    virtual void GeneratePoint(AMATOOLS::Vec4D *,double *) { 
-      AORGTOOLS::msg.Error()<<"Virtual Method : "
+    virtual void GeneratePoint(ATOOLS::Vec4D *);
+    virtual void GeneratePoint(ATOOLS::Vec4D *,double *) { 
+      ATOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GeneratePoint(Vec4D,double)."<<std::endl; 
     }
-    virtual void GenerateWeight(AMATOOLS::Vec4D *) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : "
+    virtual void GenerateWeight(ATOOLS::Vec4D *) {
+      ATOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GenerateWeight(Vec4D)"<<std::endl; 
     }
     virtual void GeneratePoint(double &,double &,int,double *) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : "
+      ATOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GeneratePoint(double,double,double)"<<std::endl; 
     }
     virtual void GeneratePoint(double &,double &,int) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : "
+      ATOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GeneratePoint(double,double)"<<std::endl; 
     }
     virtual void GenerateWeight(double,double,int) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : "
+      ATOOLS::msg.Error()<<"Virtual Method : "
 			    <<"Single_Channel::GenerateWeight(double,double)"<<std::endl; 
     }
     /*!
@@ -80,30 +80,30 @@ namespace PHASIC {
     };
 
     virtual void GetRange() {
-      AORGTOOLS::msg.Debugging()<<"  sprime : "<<sprimerange[0]<<" "<<sprimerange[1]<<" / "<<sprimerange[2]<<" / "
+      ATOOLS::msg.Debugging()<<"  sprime : "<<sprimerange[0]<<" "<<sprimerange[1]<<" / "<<sprimerange[2]<<" / "
 				<<"  y : "<<yrange[0]<<" ... "<<yrange[1]<<std::endl;
     }
 
     virtual void ISRInfo(int &,double &,double &) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : Single_Channel::ISRInfo()"<<std::endl;
+      ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::ISRInfo()"<<std::endl;
     }
-    virtual int CountResonances(APHYTOOLS::Flavour*&) { 
-      AORGTOOLS::msg.Error()<<"Virtual Method : Single_Channel::CountResonances()"<<std::endl; 
+    virtual int CountResonances(ATOOLS::Flavour*&) { 
+      ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::CountResonances()"<<std::endl; 
       return 0;
     }
     virtual int ChNumber() {
-      AORGTOOLS::msg.Error()<<"Virtual Method : Single_Channel::ChNumber()"<<std::endl;
+      ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::ChNumber()"<<std::endl;
       return 0;
     }
     virtual void SetChNumber(int) {
-      AORGTOOLS::msg.Error()<<"Virtual Method : Single_Channel::SetChNumber()"<<std::endl;
+      ATOOLS::msg.Error()<<"Virtual Method : Single_Channel::SetChNumber()"<<std::endl;
     }
 
     virtual int                  N()         { return n_points; }
     virtual int                  ValidN()    { return n_contrib; }
     virtual int                  Nin()       { return nin; }
     virtual int                  Nout()      { return nout; }
-    virtual APHYTOOLS::Flavour * Flavs()     { return fl; }
+    virtual ATOOLS::Flavour * Flavs()     { return fl; }
     virtual double               Res1()      { return res1; }
     virtual double               Res2()      { return res2; }
     virtual double               Res3()      { return res3; }

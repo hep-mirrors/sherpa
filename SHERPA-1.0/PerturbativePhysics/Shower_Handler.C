@@ -3,9 +3,7 @@
 #include "ISR_Handler.H"
 
 using namespace SHERPA;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 			       MODEL::Model_Base * _model,
@@ -50,7 +48,7 @@ int Shower_Handler::PerformShowers(bool jetveto) {
   return 0;
 }
 
-void Shower_Handler::FillBlobs(APHYTOOLS::Blob_List * _bloblist) 
+void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist) 
 {
   if (p_apacic) {
     if (!(p_apacic->ExtractPartons(m_isrshowerswitch,m_fsrshowerswitch,_bloblist))) {

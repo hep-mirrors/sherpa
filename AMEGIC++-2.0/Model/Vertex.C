@@ -11,9 +11,7 @@
 #include "String_Tree.H"
 
 using namespace AMEGIC;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -346,37 +344,37 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   int vanz  = 0;
   int vanz4 = 0;
 
-  AORGTOOLS::msg.Tracking()<<"   Setting vertices..."<<endl;
+  ATOOLS::msg.Tracking()<<"   Setting vertices..."<<endl;
   _model->c_FFV(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_FFS(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVV(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSV(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVS(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSS(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVVV(m_v4,vanz4);
-  AORGTOOLS::msg.Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSVV(m_v4,vanz4);
-  AORGTOOLS::msg.Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSSS(m_v4,vanz4);
-  AORGTOOLS::msg.Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_FFT(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   FFT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVT(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   VVT  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SST(m_v,vanz);
-  AORGTOOLS::msg.Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   SST  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_VVVT(m_v4,vanz4);
-  AORGTOOLS::msg.Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   VVVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_FFVT(m_v4,vanz4);
-  AORGTOOLS::msg.Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   FFVT : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
   _model->c_SSST(m_v4,vanz4);
-  AORGTOOLS::msg.Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  ATOOLS::msg.Debugging()<<"   SSST : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
 
   m_nvertex  = vanz;
   m_n4vertex = vanz4;
@@ -401,7 +399,7 @@ Vertex::Vertex(Interaction_Model_Base * _model)
       abort();
   }
   
-  AORGTOOLS::msg.Debugging()<<"... done with it ("<<vanz<<")."<<endl
+  ATOOLS::msg.Debugging()<<"... done with it ("<<vanz<<")."<<endl
 			    <<"... done with the 4 legs ("<<vanz4<<")."<<endl;
   m_nvertex  = vanz;
   m_n4vertex = vanz4;
@@ -424,34 +422,34 @@ void Vertex::Print()
   if (!rpa.gen.Debugging()) return;
   //3 legs
   for (int i=0;i<m_nvertex;i++) {
-    AORGTOOLS::msg.Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];
-    if (m_v[i].on) AORGTOOLS::msg.Out()<<"...On  ";
-    else  AORGTOOLS::msg.Out()<<"...Off ";
-    AORGTOOLS::msg.Out()<<m_v[i].cpl[0]<<";"<<m_v[i].cpl[1];
-    AORGTOOLS::msg.Out()<<"; "<<m_v[i].Color->String();
-    AORGTOOLS::msg.Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
+    ATOOLS::msg.Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];
+    if (m_v[i].on) ATOOLS::msg.Out()<<"...On  ";
+    else  ATOOLS::msg.Out()<<"...Off ";
+    ATOOLS::msg.Out()<<m_v[i].cpl[0]<<";"<<m_v[i].cpl[1];
+    ATOOLS::msg.Out()<<"; "<<m_v[i].Color->String();
+    ATOOLS::msg.Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
   }
   //4 legs
   for (int i=m_nvertex;i<(m_n4vertex+m_nvertex);i++) {
     if (m_v4[i-m_nvertex].ncf==1) {
-    AORGTOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
+    ATOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
 	<<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
-    if (m_v4[i-m_nvertex].on) AORGTOOLS::msg.Out()<<"...On  ";
-    else  AORGTOOLS::msg.Out()<<"...Off ";
-    AORGTOOLS::msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
-    AORGTOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
-    AORGTOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
+    if (m_v4[i-m_nvertex].on) ATOOLS::msg.Out()<<"...On  ";
+    else  ATOOLS::msg.Out()<<"...Off ";
+    ATOOLS::msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+    ATOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
+    ATOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
     }
     else {
       for (short int k=0;k<m_v4[i-m_nvertex].ncf;k++) {
-      AORGTOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
+      ATOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
 	  <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
-      if (m_v4[i-m_nvertex].on) AORGTOOLS::msg.Out()<<"...On  ";
-      else  AORGTOOLS::msg.Out()<<"...Off ";
-      AORGTOOLS::msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
-      AORGTOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
-      if (m_v4[i-m_nvertex].Color[k].Next!=0) AORGTOOLS::msg.Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next->String();
-      AORGTOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k].String()<<endl;
+      if (m_v4[i-m_nvertex].on) ATOOLS::msg.Out()<<"...On  ";
+      else  ATOOLS::msg.Out()<<"...Off ";
+      ATOOLS::msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+      ATOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
+      if (m_v4[i-m_nvertex].Color[k].Next!=0) ATOOLS::msg.Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next->String();
+      ATOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k].String()<<endl;
       }
     }
   }
@@ -663,9 +661,9 @@ int Vertex::FindVertex(Single_Vertex* v_tofind)
 	    }
       }
     }
-    AORGTOOLS::msg.Debugging()<<"Vertex not found!"<<endl;
+    ATOOLS::msg.Debugging()<<"Vertex not found!"<<endl;
   }
-  else AORGTOOLS::msg.Debugging()<<"no routine to search for 4 legs"<<endl;
+  else ATOOLS::msg.Debugging()<<"no routine to search for 4 legs"<<endl;
   return 0;
 }
 

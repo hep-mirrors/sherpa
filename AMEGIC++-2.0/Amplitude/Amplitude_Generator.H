@@ -31,7 +31,7 @@ namespace AMEGIC {
 
 
   typedef  std::vector<Single_Vertex *>  Vertex_List;
-  typedef  std::map<APHYTOOLS::Flavour, Vertex_List> Vertex_Table;
+  typedef  std::map<ATOOLS::Flavour, Vertex_List> Vertex_Table;
   typedef  std::vector<Pre_Amplitude> Pre_Ampl_List;
 
 
@@ -59,7 +59,7 @@ namespace AMEGIC {
   
   class Amplitude_Generator {
     static int NMAX;
-    APHYTOOLS::Flavour     * fl;
+    ATOOLS::Flavour     * fl;
     int                    * b;
     Interaction_Model_Base * p_model;
     Topology               * top;
@@ -81,8 +81,8 @@ namespace AMEGIC {
     void Set_End(Point*,int* &,int&);
     void Next_P(Point*,Point* &);
     void Print_P(Point*);
-    int  Match_Vertex(Single_Vertex*,APHYTOOLS::Flavour*,Complex*);
-    int  Check_End(Point*,APHYTOOLS::Flavour);  
+    int  Match_Vertex(Single_Vertex*,ATOOLS::Flavour*,Complex*);
+    int  Check_End(Point*,ATOOLS::Flavour);  
     void Set_Props(Point*,int,Single_Amplitude* &,int*, int, int);
     int  Kill_Off(Single_Amplitude* &);
     int  Single_Compare(Point*,Point*);
@@ -111,7 +111,7 @@ namespace AMEGIC {
     int CountRealAmplitudes(Single_Amplitude* first);
   public:
     static int * DivideComparisons(int cpu_size, int nampl, int rank);
-    Amplitude_Generator(int,APHYTOOLS::Flavour *,int *,Interaction_Model_Base *,Topology *,
+    Amplitude_Generator(int,ATOOLS::Flavour *,int *,Interaction_Model_Base *,Topology *,
 			int,int,Basic_Sfuncs *,String_Handler *);
     ~Amplitude_Generator(); 
     Single_Amplitude* Matching();

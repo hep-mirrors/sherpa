@@ -32,8 +32,7 @@ namespace AMEGIC {
 }
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
@@ -145,17 +144,17 @@ void Amplitude_Generator::Next_P(Point* p,Point* &hit)
 
 void Amplitude_Generator::Print_P(Point* p)
 {
-  if (!(AORGTOOLS::rpa.gen.Debugging())) return;
+  if (!(ATOOLS::rpa.gen.Debugging())) return;
   if ((p->left==0) && (p->right==0)) {
-    AORGTOOLS::msg.Out()<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<endl;
+    ATOOLS::msg.Out()<<"EndPoint : "<<p->fl<<"("<<p->b<<")"<<endl;
     return;
   }
-  AORGTOOLS::msg.Out()<<"left : ";
+  ATOOLS::msg.Out()<<"left : ";
   Print_P(p->left);
-  AORGTOOLS::msg.Out()<<"right : ";
+  ATOOLS::msg.Out()<<"right : ";
   Print_P(p->right);
   if(p->middle){
-    AORGTOOLS::msg.Out()<<" middle : ";
+    ATOOLS::msg.Out()<<" middle : ";
     Print_P(p->middle);
   }
 }
@@ -397,7 +396,7 @@ void Amplitude_Generator::CreateSingleAmplitudes(Single_Amplitude * & first) {
   
   for (int i=0;i<prea_table.size();i++) {
     int sw1 = 1;
-    if (AORGTOOLS::rpa.gen.Model()==AORGTOOLS::Model_Type::pure_QCD) {
+    if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) {
       for (int j=0;j<dep;j++) {
 	if (((prea_table[i].p[j].fl).IsBoson()) && 
 	    (prea_table[i].p[j].fl!=Flavour(kf::gluon))) { sw1 = 0; break; }
@@ -764,7 +763,7 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
 	      p[hit].cpl[count+j] = pdel[hit].cpl[j];			
 	    p[hit].ncpl = ncpl;	  
 	  }
-	  else AORGTOOLS::msg.Error()<<"Error in Amplitude_Generator"<<endl;
+	  else ATOOLS::msg.Error()<<"Error in Amplitude_Generator"<<endl;
 	}
       }
     }

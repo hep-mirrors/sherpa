@@ -15,7 +15,7 @@ namespace AMEGIC {
     void    SetZfuncSign();
   public:
     Super_Amplitude(int* _b,int _n,Basic_Sfuncs* _BS,
-		    APHYTOOLS::Flavour* _fl,String_Handler* _shand) 
+		    ATOOLS::Flavour* _fl,String_Handler* _shand) 
       : Single_Amplitude_Base(_b,_n,_BS,_fl,_shand) {groupname = std::string("Super-Amplitude");}
     void Init(std::string);
 

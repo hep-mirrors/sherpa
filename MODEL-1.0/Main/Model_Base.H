@@ -14,8 +14,8 @@ namespace MODEL { class Spectrum_Generator_Base; }
 namespace MODEL {
   typedef std::map<std::string,int>                       ScalarNumbersMap; 
   typedef std::map<std::string,double>                    ScalarConstantsMap; 
-  typedef std::map<std::string,AMATOOLS::Function_Base *> ScalarFunctionsMap; 
-  typedef std::map<std::string,AMATOOLS::CMatrix>         ComplexMatricesMap; 
+  typedef std::map<std::string,ATOOLS::Function_Base *> ScalarFunctionsMap; 
+  typedef std::map<std::string,ATOOLS::CMatrix>         ComplexMatricesMap; 
 
 
   class Model_Base {
@@ -23,7 +23,7 @@ namespace MODEL {
     std::string               m_dir,m_file;
     std::string               m_name;
 
-    AORGTOOLS::Data_Read    * p_dataread;
+    ATOOLS::Data_Read    * p_dataread;
 
     ScalarNumbersMap        * p_numbers;
     ScalarConstantsMap      * p_constants;
@@ -49,10 +49,10 @@ namespace MODEL {
 
     virtual int                       ScalarNumber(const std::string);
     virtual double                    ScalarConstant(const std::string);
-    virtual AMATOOLS::Function_Base * GetScalarFunction(const std::string);
+    virtual ATOOLS::Function_Base * GetScalarFunction(const std::string);
     virtual double                    ScalarFunction(const std::string,double);
     virtual double                    ScalarFunction(const std::string);
-    virtual AMATOOLS::CMatrix         ComplexMatrix(const std::string);
+    virtual ATOOLS::CMatrix         ComplexMatrix(const std::string);
     virtual Complex                   ComplexMatrixElement(const std::string,const int,const int);
   };
 
@@ -114,7 +114,7 @@ namespace MODEL {
     be an option.
   */
   /*!
-    \var AORGTOOLS::Data_Read * Model_Base::p_dataread
+    \var ATOOLS::Data_Read * Model_Base::p_dataread
     A pointer to the Data_Read object used to read in all parameters needed to define the model.
   */
   /*!
@@ -171,7 +171,7 @@ namespace MODEL {
     after an error message, zero is returned.
   */
   /*!
-    \fn virtual AMATOOLS::Function_Base * Model_Base::GetScalarFunction(const std::string)
+    \fn virtual ATOOLS::Function_Base * Model_Base::GetScalarFunction(const std::string)
     Through this method the pointers to the function base objects can be accessed from outside. Within 
     the map, it is looked for the string, if found, the corresponding function is returned. Otherwise,
     after an error message, a NULL-pointer is returned.
@@ -189,7 +189,7 @@ namespace MODEL {
     within the function base and returned. Otherwise, after an error message, zero is returned.
   */
   /*!
-    \fn virtual AMATOOLS::CMatrix Model_Base::ComplexMatrix(const std::string)
+    \fn virtual ATOOLS::CMatrix Model_Base::ComplexMatrix(const std::string)
     Through this method the complex matrices can be accessed from outside. Within the map, it is looked 
     for the string, if found, the corresponding matrix is returned. Otherwise, after an error message, an 
     idendity matrix of rank 1 is returned.

@@ -9,17 +9,15 @@
 #include "Message.H"
 #include "MyStrStream.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   Part_Info particles[MAX_PARTICLES];
   Kf_To_Int kf_table;
 }
 
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
-int APHYTOOLS::Kf_To_Int::is_initialised=0;
+int Kf_To_Int::is_initialised=0;
 
 void Kf_To_Int::Init()
 {
@@ -322,7 +320,7 @@ std::string Flavour::TexName()
   return name;
 }
 
-std::ostream& APHYTOOLS::operator<<(std::ostream& os, const Flavour& f)
+std::ostream& ATOOLS::operator<<(std::ostream& os, const Flavour& f)
 {
   if(f.anti) {
     if (f==Flavour(kf::e).Bar())      return os<<"e+";
@@ -363,7 +361,7 @@ std::ostream& APHYTOOLS::operator<<(std::ostream& os, const Flavour& f)
 
 // Definitions of all particles
 
-void APHYTOOLS::ParticleInit(std::string path)
+void ATOOLS::ParticleInit(std::string path)
 {
   Part_Info * pi = particles;
 
@@ -490,7 +488,7 @@ void APHYTOOLS::ParticleInit(std::string path)
 
 // Switch off masses for SM fermions
 
-void APHYTOOLS::SetMassless()
+void SetMassless()
 {
   particles[ kf_table.ToInt(kf::d) ].msv=0;
   particles[ kf_table.ToInt(kf::u) ].msv=0;

@@ -3,9 +3,7 @@
 
 using namespace SHERPA;
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 int Combine_Table::all=0;
 
@@ -218,7 +216,7 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, int strong)
 }
 
 
-Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) 
+Combine_Table * Combine_Table::CalcJet(int nl, ATOOLS::Vec4D * _moms) 
 {
   int prefer_ew_clustering = 0;
 

@@ -7,10 +7,7 @@
 
 
 using namespace MODEL;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
-
+using namespace ATOOLS;
 
 
 namespace MODEL {

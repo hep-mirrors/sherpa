@@ -19,7 +19,7 @@ namespace SHERPA {
     int                          m_maxjetnumber;
     bool                         m_isrshowerswitch,m_fsrshowerswitch;
 
-    AORGTOOLS::Data_Read       * p_dataread;
+    ATOOLS::Data_Read       * p_dataread;
     MODEL::Model_Base          * p_model;
     PDF::ISR_Handler           * p_isr;
     APACIC::Hard_Interface     * p_apacic;
@@ -28,7 +28,7 @@ namespace SHERPA {
 		   PDF::ISR_Handler *,int);
     ~Shower_Handler();
     int             PerformShowers(bool);
-    void            FillBlobs(APHYTOOLS::Blob_List *);
+    void            FillBlobs(ATOOLS::Blob_List *);
     void            CleanUp();
     std::string     ShowerGenerator() { return m_showergenerator; }
     bool            ISROn()           { return m_isrshowerswitch; }

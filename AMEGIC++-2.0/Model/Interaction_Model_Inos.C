@@ -4,9 +4,7 @@
 #include <stdio.h>
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Interaction_Model_Inos::Interaction_Model_Inos(MODEL::Model_Base * _model,

@@ -7,7 +7,7 @@
 
 
 
-namespace AORGTOOLS {
+namespace ATOOLS {
   
   /*
   template<class>
@@ -81,6 +81,6 @@ namespace AORGTOOLS {
   };
 
 
-  template<class F>  std::ostream & operator<< (std::ostream & s, AORGTOOLS::FastList<F> & list);
+  template<class F>  std::ostream & operator<< (std::ostream & s, FastList<F> & list);
 }
 #endif

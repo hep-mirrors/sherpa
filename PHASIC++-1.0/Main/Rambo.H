@@ -12,15 +12,15 @@ namespace PHASIC {
     short int itmax;
     double accu;
   public:
-    Rambo(int,int,APHYTOOLS::Flavour *);
+    Rambo(int,int,ATOOLS::Flavour *);
     ~Rambo();
-    void GenerateWeight(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);  
-    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *);
-    void GeneratePoint(AMATOOLS::Vec4D *,APHYTOOLS::Cut_Data *,double *);
-    void MassiveWeight(AMATOOLS::Vec4D *,double);
-    void MassivePoint(AMATOOLS::Vec4D *,double);
+    void GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);  
+    void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
+    void GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
+    void MassiveWeight(ATOOLS::Vec4D *,double);
+    void MassivePoint(ATOOLS::Vec4D *,double);
     std::string Name() { return std::string("Rambo"); }
-    int CountResonances(APHYTOOLS::Flavour *&) { return 0; }
+    int CountResonances(ATOOLS::Flavour *&) { return 0; }
   };
   //! Flag to see wether massive or massless points are to be generated.
   //! Constants needed for the weight and the phase space distribution.

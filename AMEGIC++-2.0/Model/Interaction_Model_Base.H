@@ -41,9 +41,9 @@ namespace AMEGIC {
 
     virtual int                       ScalarNumber(const std::string);
     virtual double                    ScalarConstant(const std::string);
-    virtual AMATOOLS::Function_Base * ScalarFunction(const std::string);
+    virtual ATOOLS::Function_Base * ScalarFunction(const std::string);
     virtual double                    ScalarFunction(const std::string,double);
-    virtual AMATOOLS::CMatrix         ComplexMatrix(const std::string);
+    virtual ATOOLS::CMatrix         ComplexMatrix(const std::string);
     virtual Complex                   ComplexMatrixElement(const std::string,const int,const int);
   };
 }

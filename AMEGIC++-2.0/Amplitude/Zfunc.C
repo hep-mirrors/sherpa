@@ -5,7 +5,7 @@
 #include "Message.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 #define new_calc
@@ -105,7 +105,7 @@ void Zfunc::ClearCalcList()
 
 void Zfunc::Print() 
 {
-  if (!AORGTOOLS::rpa.gen.Tracking()) return;
+  if (!ATOOLS::rpa.gen.Tracking()) return;
   msg.Out()<<"Z(["<<m_type<<"],";
   msg.Out()<<"[";
   for (int i=0;i<m_narg-1;i++) msg.Out()<<p_arguments[i]<<";";
@@ -114,30 +114,30 @@ void Zfunc::Print()
   msg.Out()<<"][";
   msg.Out().precision(2);
   for (int i=0;i<m_ncoupl-1;i++) {
-    if ( !AMATOOLS::IsZero(real(p_couplings[i])) &&
-	    AMATOOLS::IsZero(imag(p_couplings[i])) )
+    if ( !ATOOLS::IsZero(real(p_couplings[i])) &&
+	    ATOOLS::IsZero(imag(p_couplings[i])) )
       msg.Out()<<real(p_couplings[i])<<";";
-    if (  AMATOOLS::IsZero(real(p_couplings[i])) &&
-	  !AMATOOLS::IsZero(imag(p_couplings[i])) )
+    if (  ATOOLS::IsZero(real(p_couplings[i])) &&
+	  !ATOOLS::IsZero(imag(p_couplings[i])) )
       msg.Out()<<imag(p_couplings[i])<<" I;";
-    if ( !AMATOOLS::IsZero(real(p_couplings[i])) &&
-	 !AMATOOLS::IsZero(imag(p_couplings[i])) )
+    if ( !ATOOLS::IsZero(real(p_couplings[i])) &&
+	 !ATOOLS::IsZero(imag(p_couplings[i])) )
       msg.Out()<<real(p_couplings[i])<<"+"<<imag(p_couplings[i])<<" I;";
-    if (  AMATOOLS::IsZero(real(p_couplings[i])) &&
-	  AMATOOLS::IsZero(imag(p_couplings[i])) )
+    if (  ATOOLS::IsZero(real(p_couplings[i])) &&
+	  ATOOLS::IsZero(imag(p_couplings[i])) )
       msg.Out()<<"0;";
   }
-  if ( !AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
-       AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+  if ( !ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
+       ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
       msg.Out()<<real(p_couplings[m_ncoupl-1])<<"])";
-  if (  AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
-	!AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+  if (  ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
+	!ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
     msg.Out()<<imag(p_couplings[m_ncoupl-1])<<" I])";
-  if ( !AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
-       !AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+  if ( !ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
+       !ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
     msg.Out()<<real(p_couplings[m_ncoupl-1])<<"+"<<imag(p_couplings[m_ncoupl-1])<<" I])";
-  if (  AMATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
-	AMATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
+  if (  ATOOLS::IsZero(real(p_couplings[m_ncoupl-1])) &&
+	ATOOLS::IsZero(imag(p_couplings[m_ncoupl-1])) )
 	msg.Out()<<"0])";
   msg.Out()<<endl;
   msg.Out().precision(6);

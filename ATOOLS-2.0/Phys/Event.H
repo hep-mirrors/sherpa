@@ -10,7 +10,7 @@
 #include "Blob.H"
 #include "Particle.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
 
   class Event {
 

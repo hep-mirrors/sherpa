@@ -1,9 +1,7 @@
 #include "Hadronization.H"
 
 using namespace SHERPA;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Hadronization::Hadronization(Beam_Remnant_Handler * _beamremnant,Fragmentation_Handler * _fragmentation) :
@@ -21,7 +19,7 @@ Hadronization::~Hadronization() {
 
 }
 
-bool Hadronization::Treat(APHYTOOLS::Blob_List * _bloblist, double &) {
+bool Hadronization::Treat(ATOOLS::Blob_List * _bloblist, double &) {
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Hadronization::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl

@@ -7,9 +7,7 @@
 
 using namespace APACIC;
 using namespace MODEL;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 
 Sudakov_Tools::Sudakov_Tools(MODEL::Model_Base * _model) {

@@ -6,9 +6,7 @@
 #include "Data_Read.H"
 
 using namespace MOCAIC;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
 
 Soft_Interface::Soft_Interface() {
@@ -70,8 +68,8 @@ void Soft_Interface::EmptyMyLists() {
   }
 }
 
-bool Soft_Interface::PerformFragmentation(APHYTOOLS::Blob_List * bl,
-					  APHYTOOLS::Parton_List * pl) {
+bool Soft_Interface::PerformFragmentation(ATOOLS::Blob_List * bl,
+					  ATOOLS::Parton_List * pl) {
 
   EmptyMyLists();
   if (!ExtractSinglets(bl,pl)) return 0;
@@ -197,7 +195,7 @@ bool Soft_Interface::HadronsToPartons(Blob_List * bl,Parton_List * pl) {
     if (((*biter)->Beam() == 0) || ((*biter)->Beam() == 1)) {
       Parton * inpart = (*biter)->InParton(0);
 
-      blob = new APHYTOOLS::Blob();
+      blob = new ATOOLS::Blob();
       blob->SetId(bl->size());
       blob->SetType(std::string("Beam Remnant"));
       bl->push_back(blob);

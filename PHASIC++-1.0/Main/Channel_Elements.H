@@ -11,23 +11,23 @@ namespace PHASIC {
   class Channel_Elements {
     Channel_Basics CB;
   public:
-    double Isotropic2Weight(const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&);
-    void Isotropic2Momenta(AMATOOLS::Vec4D,double&,double&,
-			   AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,double,double);
+    double Isotropic2Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
+    void Isotropic2Momenta(ATOOLS::Vec4D,double&,double&,
+			   ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double);
     double Anisotropic2Weight(double,double,double,
-			      const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&);
-    void Anisotropic2Momenta(AMATOOLS::Vec4D,double,double,double,double,double,
-			     AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,double,double);
-    double TChannelWeight(const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&,
-			  const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&,
+			      const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
+    void Anisotropic2Momenta(ATOOLS::Vec4D,double,double,double,double,double,
+			     ATOOLS::Vec4D&,ATOOLS::Vec4D&,double,double);
+    double TChannelWeight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
+			  const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,
 			  double,double,double,double,double,int);
-    int TChannelMomenta(AMATOOLS::Vec4D,AMATOOLS::Vec4D,AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,
+    int TChannelMomenta(ATOOLS::Vec4D,ATOOLS::Vec4D,ATOOLS::Vec4D&,ATOOLS::Vec4D&,
 			double&,double&,double,double,double,double,double,int,double,double);
     double BremsstrahlungWeight(double,double,double,
-				const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&);
-    void BremsstrahlungMomenta(AMATOOLS::Vec4D&,const double,const double,const double,
+				const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
+    void BremsstrahlungMomenta(ATOOLS::Vec4D&,const double,const double,const double,
 			       const double,const double,const double,
-			       AMATOOLS::Vec4D &, AMATOOLS::Vec4D &,const double,const double);
+			       ATOOLS::Vec4D &, ATOOLS::Vec4D &,const double,const double);
     double MasslessPropWeight(double,double,double,const double&);
     double MasslessPropMomenta(double,double,double,double);
     double MassivePropWeight(double,double,int,double,double,double);
@@ -83,9 +83,9 @@ namespace PHASIC {
     at the maximal scale that is kinematically allowed.
   */
   /*
-    double Isotropic3Weight(const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&,const AMATOOLS::Vec4D&);
-    void Isotropic3Momenta(const AMATOOLS::Vec4D&,const double,
-    AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,AMATOOLS::Vec4D&,
+    double Isotropic3Weight(const ATOOLS::Vec4D&,const ATOOLS::Vec4D&,const ATOOLS::Vec4D&);
+    void Isotropic3Momenta(const ATOOLS::Vec4D&,const double,
+    ATOOLS::Vec4D&,ATOOLS::Vec4D&,ATOOLS::Vec4D&,
     const double,const double,const double);
   */
 }

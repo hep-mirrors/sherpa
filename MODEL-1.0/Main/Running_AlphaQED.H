@@ -5,13 +5,13 @@
 #include "Function_Base.H"
 
 namespace MODEL {
-  class Running_AlphaQED : public AMATOOLS::Function_Base {
+  class Running_AlphaQED : public ATOOLS::Function_Base {
     const static double m_A[4],m_B[4],m_C[4];
     double m_alpha0,m_alpha_MZ,m_alpha_eff;
     double m_MZ2,m_ecms2,m_split_scale;
   
 
-    double  PiGamma(const APHYTOOLS::Flavour &, double);
+    double  PiGamma(const ATOOLS::Flavour &, double);
   public:
     Running_AlphaQED(const double,const double,const double=0.);
 
@@ -76,7 +76,7 @@ namespace MODEL {
     \todo Not used at the moment.
   */
   /*!
-    \fn double Running_AlphaQED::PiGamma(const APHYTOOLS::Flavour &, double)
+    \fn double Running_AlphaQED::PiGamma(const ATOOLS::Flavour &, double)
     With the mass of the particle and the scale the vacuum polarization is given by
     \f[\Pi_\gamma(m^2,s)] = \left\{ \begin{array}{lcl}
                     -5/3-\log(m^2/s)\;& \;\mbox{\rm if}\;& \; 4m^2/s<10^{-3}\\

@@ -3,8 +3,7 @@
 #include "Message.H"
 #include "MyStrStream.H"
 
-using namespace AORGTOOLS;  
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 void Data_Read::SetValue(std::string name, std::string value) {

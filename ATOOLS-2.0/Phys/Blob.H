@@ -10,7 +10,7 @@
 #include "Poincare.H"
 
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class Parton; 
 
   typedef std::vector<Parton *> Parton_Queue;
@@ -19,17 +19,17 @@ namespace APHYTOOLS {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
     friend std::ostream& operator<<( std::ostream&, const Blob *);
   private:
-    AMATOOLS::Vec4D     m_position;
+    Vec4D     m_position;
     int                 m_id;
     double              m_weight;
     int                 m_status,m_beam;
     std::string         m_type;
     std::vector<double> m_weightcontainer;
     Parton_Queue        m_inpartons, m_outpartons;
-    AMATOOLS::Vec4D     m_cms_vec;
-    AMATOOLS::Poincare  m_cms_boost;
+    Vec4D     m_cms_vec;
+    Poincare  m_cms_boost;
   public:
-    Blob(const AMATOOLS::Vec4D _pos = AMATOOLS::Vec4D(0.,0.,0.,0.), const int _id=0) : 
+    Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=0) : 
       m_position(_pos), m_id(_id), m_weight(1.) { m_beam = -1; m_status = 0; };
     ~Blob();
     void     AddToInPartons(Parton *);
@@ -49,8 +49,8 @@ namespace APHYTOOLS {
     void     BoostInLab();
 
     void     SetVecs();
-    void     SetPosition(AMATOOLS::Vec4D pos)  { m_position = pos; }
-    void     SetCMS(AMATOOLS::Vec4D _cms)      { m_cms_vec  = _cms; }
+    void     SetPosition(Vec4D pos)  { m_position = pos; }
+    void     SetCMS(Vec4D _cms)      { m_cms_vec  = _cms; }
     void     SetId(int _id)                    { m_id       = _id; }
     void     SetStatus(int _status)            { m_status   = _status; }
     void     SetType(std::string _type)        { m_type     = _type; }
@@ -73,16 +73,16 @@ namespace APHYTOOLS {
  
     double              const Weight()   const { return m_weight; }
     std::vector<double> WeightContainer()      { return m_weightcontainer; } 
-    AMATOOLS::Vec4D     CheckMomentumConservation();
-    AMATOOLS::Vec4D     const Position() const { return m_position; }
-    AMATOOLS::Vec4D    const CMS()      const { return m_cms_vec; }
+    Vec4D     CheckMomentumConservation();
+    Vec4D     const Position() const { return m_position; }
+    Vec4D    const CMS()      const { return m_cms_vec; }
     std::string        const Type()     const { return m_type; }
   };
 
 
   /*!
     \file 
-    \brief  contains the class APHYTOOLS::Blob
+    \brief  contains the class Blob
   */
   
   /*!

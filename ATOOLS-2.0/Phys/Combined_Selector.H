@@ -4,7 +4,7 @@
 #include "Selector.H"
 
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class Combined_Selector : public Selector_Base {
   protected: 
     long int       m_count;
@@ -14,7 +14,7 @@ namespace APHYTOOLS {
     Combined_Selector(int,int,Flavour *,Selector_Data *);
     ~Combined_Selector();
     void Add(Selector_Base *);
-    bool Trigger(const AMATOOLS::Vec4D *);
+    bool Trigger(const Vec4D *);
     void BuildCuts(Cut_Data *);
     void UpdateCuts(double,double,Cut_Data *);
     void Output();
@@ -22,7 +22,7 @@ namespace APHYTOOLS {
 
 
 /*!
-  \file contains APHYTOOLS::Combined_Selector
+  \file contains Combined_Selector
 */
 
 /*!

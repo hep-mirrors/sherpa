@@ -12,7 +12,7 @@
 // Apacic physics includes
 #include "Flavour.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
 
   //typedef vector<Flavour> Flavour_List;
   //typedef list<Flavour> Flavour_List;

@@ -9,29 +9,29 @@ namespace PDF {
   class ISR_Handler {
   protected:
     ISR_Base           ** p_ISRBase;
-    AMATOOLS::Poincare    m_CMSBoost;
+    ATOOLS::Poincare    m_CMSBoost;
     int                   m_mode; 
     double                m_mass12, m_mass22, m_x1, m_x2;
     double                m_exponent[2];
     double                m_splimits[3],m_ylimits[2];
-    AMATOOLS::Vec4D       m_fiXVECs[2];
+    ATOOLS::Vec4D       m_fiXVECs[2];
     std::string           m_name, m_type;
   public:
-    ISR_Handler(int *,APHYTOOLS::Flavour *,APHYTOOLS::Flavour *,double *);
+    ISR_Handler(int *,ATOOLS::Flavour *,ATOOLS::Flavour *,double *);
     ISR_Handler(ISR_Base **,double *);
     ~ISR_Handler();
     void   Init(double *);
-    bool   CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *);
-    bool   CheckConsistency(APHYTOOLS::Flavour *);
-    void   SetPartonMasses(APHYTOOLS::Flavour * _fl); 
-    bool   MakeISR(AMATOOLS::Vec4D *,double,double);
+    bool   CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *);
+    bool   CheckConsistency(ATOOLS::Flavour *);
+    void   SetPartonMasses(ATOOLS::Flavour * _fl); 
+    bool   MakeISR(ATOOLS::Vec4D *,double,double);
     bool   CalculateWeight(double);
     bool   CalculateWeight2(double);
-    double Weight(APHYTOOLS::Flavour *);
-    double Weight2(APHYTOOLS::Flavour *);
+    double Weight(ATOOLS::Flavour *);
+    double Weight2(ATOOLS::Flavour *);
 
-    void   BoostInCMS(AMATOOLS::Vec4D *,int);
-    void   BoostInLab(AMATOOLS::Vec4D *,int);
+    void   BoostInCMS(ATOOLS::Vec4D *,int);
+    void   BoostInLab(ATOOLS::Vec4D *,int);
 
     void   SetName(std::string _name) { m_name = _name; }
     void   SetSprimeMin(double _spl)  { m_splimits[0]  = _spl; }
@@ -56,7 +56,7 @@ namespace PDF {
     double               Upper2()          { return p_ISRBase[1]->Xmax(); }
   
     PDF_Base           * PDF(int beam)     { return p_ISRBase[beam]->PDF(); }
-    APHYTOOLS::Flavour   Flav(int beam)    { return p_ISRBase[beam]->Flav(); }
+    ATOOLS::Flavour   Flav(int beam)    { return p_ISRBase[beam]->Flav(); }
     int                  On()              { return m_mode; }
   };
 
@@ -102,7 +102,7 @@ namespace PDF {
      - 3 both bunches experience ISR.     
   */  
   /*!
-    \var AMATOOLS::Poincare ISR_Handler::m_CMSBoost
+    \var ATOOLS::Poincare ISR_Handler::m_CMSBoost
     A boost from the c.m. system of the incoming bunches to the c.m. system of the
     outgoing partons, which form the initial state of the hard interaction.
   */
@@ -150,28 +150,28 @@ namespace PDF {
     Type of the ISR_Handler, it consists of the types of the BeamBases.
   */
   /*!
-    \var AMATOOLS::Vec4D ISR_Handler::m_fiXVECs[2]
+    \var ATOOLS::Vec4D ISR_Handler::m_fiXVECs[2]
     The c.m. momenta of the two incoming bunches.
   */
   /*!
-    \fn bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour *,APHYTOOLS::Flavour *)
+    \fn bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *,ATOOLS::Flavour *)
     This checks whether the two sets of flavours match the flavours of the incoming
     and outgonig particles of the two p_ISRBases. If this is the case, true is returned.
     This method is largely similar to the corresponding one in the BEAM::Beam_Spectra_Handler.
   */
   /*!
-    \fn bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour *)
+    \fn bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *)
     This checks whether the flavours are allowed to be used as outgonig flavours in the
     two p_ISRBases. If this is the case, true is returned. This method is largely similar to 
     the corresponding one in the BEAM::Beam_Spectra_Handler.
   */  
   /*!
-    \fn void ISR_Handler::SetPartonMasses(APHYTOOLS::Flavour * _fl)
+    \fn void ISR_Handler::SetPartonMasses(ATOOLS::Flavour * _fl)
     This sets the masses squared and the vectors such that they fit to the masses of the
     flavours.
   */
   /*!
-    \fn bool ISR_Handler::MakeISR(AMATOOLS::Vec4D *,double,double);
+    \fn bool ISR_Handler::MakeISR(ATOOLS::Vec4D *,double,double);
     Depending on the \f$s'\f$-value handed over as arguments, two matching vectors for the
     outgoing partons in their c.m. frame (out) are constructed. Then the energy fractions in the
     c.m. system (in) of the incoming bunches are determined with help of the other argument, the
@@ -205,12 +205,12 @@ namespace PDF {
     and vice versa.
   */  
   /*!
-    \fn double ISR_Handler::Weight(APHYTOOLS::Flavour * fl)
+    \fn double ISR_Handler::Weight(ATOOLS::Flavour * fl)
     This is the product of the actual values of the pdf's for the specific initial state 
     partons. It corresponds to the "untwisted" weight.
   */
   /*!
-    \fn double ISR_Handler::Weight2(APHYTOOLS::Flavour * fl)
+    \fn double ISR_Handler::Weight2(ATOOLS::Flavour * fl)
     This is the product of the actual values of the pdf's for the specific initial state 
     partons. It corresponds to the "twisted" weight, i.e. for parton 1 stemming from
     bunch 2 and vice versa.

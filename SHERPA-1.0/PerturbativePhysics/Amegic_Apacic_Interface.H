@@ -19,7 +19,7 @@ namespace SHERPA {
     double m_type;
     double m_ycut,m_jetscale;
 
-    APHYTOOLS::Jet_Finder * p_jf;
+    ATOOLS::Jet_Finder * p_jf;
     Cluster_Partons       * p_cluster;
     /*! 
       Library of 2 -> 2 processes from Extra distribution (to extract the
@@ -29,14 +29,14 @@ namespace SHERPA {
     EXTRAXS::XS_Base      * p_xs; 
     EXTRAXS::XS_Group     * p_two2two;
 
-    APHYTOOLS::Blob * p_blob_psme;
+    ATOOLS::Blob * p_blob_psme;
 
-    bool ClusterConfiguration(APHYTOOLS::Blob * blob);
+    bool ClusterConfiguration(ATOOLS::Blob * blob);
   public :
     Amegic_Apacic_Interface(Matrix_Element_Handler *,Shower_Handler *);
     ~Amegic_Apacic_Interface(); 
-    bool   DefineInitialConditions(APHYTOOLS::Blob *);
-    bool   FillBlobs(APHYTOOLS::Blob_List *); 
+    bool   DefineInitialConditions(ATOOLS::Blob *);
+    bool   FillBlobs(ATOOLS::Blob_List *); 
   };
 
   /*!
@@ -61,13 +61,13 @@ namespace SHERPA {
   */
 
   /*!
-    \fn bool Amegic_Apacic_Interface::ClusterConfiguration(APHYTOOLS::Blob * blob);
+    \fn bool Amegic_Apacic_Interface::ClusterConfiguration(ATOOLS::Blob * blob);
     \brief Wrapper around the class Cluster_Partons, using a jet algoritm to 
            obtain a shower history.
   */
 
   /*!
-    \fn bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob *);
+    \fn bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *);
     \brief Calculates Sudakov weights and -- if accepted -- initializes
            the partonshower and returns 1, or -- if rejected -- returns 0.
   */

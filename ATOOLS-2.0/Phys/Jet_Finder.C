@@ -2,9 +2,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 
 Jet_Finder::~Jet_Finder() {
@@ -12,7 +10,7 @@ Jet_Finder::~Jet_Finder() {
   if (p_value)   delete [] p_value;
 }
 
-void Jet_Finder::Init(const AMATOOLS::Vec4D * p)
+void Jet_Finder::Init(const Vec4D * p)
 {
   if (m_nin==2) {
     switch (m_type) {
@@ -57,7 +55,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
 
   m_name    = std::string("Jetfinder");
 
-  m_ene     = AORGTOOLS::rpa.gen.Ecms()/2;
+  m_ene     = rpa.gen.Ecms()/2;
   m_sprime  = m_s = sqr(2.*m_ene); 
   m_smin    = m_ycut * m_s;
   m_smax    = m_s;
@@ -67,7 +65,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_sel_log = new Selector_Log(m_name);
 }
 
-bool Jet_Finder::ConstructJets(const APHYTOOLS::Parton_List * parts,
+bool Jet_Finder::ConstructJets(const Parton_List * parts,
 			       const std::vector<int> & jets,std::vector<double> & lastys) {
   std::vector<Vec4D>   momsout;
   Vec4D   momsin[2];
@@ -199,7 +197,7 @@ Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) 
   }
   if (m_nin==2) {
     if((m_type>=3) || (m_type==1)) {
-      m_ene      = AORGTOOLS::rpa.gen.Ecms()/2.;
+      m_ene      = rpa.gen.Ecms()/2.;
       m_sprime   = m_s = sqr(2.*m_ene); 
 	p_frame[0] = Vec4D(m_ene,0.,0., sqrt(sqr(m_ene)-sqr(m_fl[0].Mass())));
 	p_frame[1] = Vec4D(m_ene,0.,0.,-sqrt(sqr(m_ene)-sqr(m_fl[1].Mass())));
@@ -215,7 +213,7 @@ Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) 
   m_sel_log = new Selector_Log(m_name);
 }
 
-bool Jet_Finder::Trigger(const AMATOOLS::Vec4D * p)
+bool Jet_Finder::Trigger(const Vec4D * p)
 {
   // create copy
   Vec4D * moms = new Vec4D[m_nin+m_nout];
@@ -249,7 +247,7 @@ bool Jet_Finder::Trigger(const AMATOOLS::Vec4D * p)
   return (1-m_sel_log->Hit(1-trigger));
 }
 
-double Jet_Finder::PTij(AMATOOLS::Vec4D p1,AMATOOLS::Vec4D p2)
+double Jet_Finder::PTij(Vec4D p1,Vec4D p2)
 {
   double pt12_2;
   if (m_type>=2) {
@@ -268,7 +266,7 @@ double Jet_Finder::PTij(AMATOOLS::Vec4D p1,AMATOOLS::Vec4D p2)
 }
 
 
-bool Jet_Finder::TwoJets(const AMATOOLS::Vec4D & p1) 
+bool Jet_Finder::TwoJets(const Vec4D & p1) 
 {
   if (m_type>=2) {
     if (sqr(p1[1]) + sqr(p1[2])  < m_s * m_ycut) return 0;
@@ -280,7 +278,7 @@ bool Jet_Finder::TwoJets(const AMATOOLS::Vec4D & p1)
   return 1;
 }
 
-bool Jet_Finder::TwoJets(const AMATOOLS::Vec4D & _p1,const AMATOOLS::Vec4D & _p2)
+bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2)
 {
   Vec4D p1=_p1;
   Vec4D p2=_p2;
@@ -388,7 +386,7 @@ void   Jet_Finder::UpdateCuts(double sprime,double y,Cut_Data * cuts) {
   }
 }
 
-double Jet_Finder::YminKt(AMATOOLS::Vec4D * p,int & j1,int & k1)
+double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 {
   double ymin = 2.;
   double pt2jk,pt2j,pt2k;
@@ -427,7 +425,7 @@ double Jet_Finder::YminKt(AMATOOLS::Vec4D * p,int & j1,int & k1)
   return ymin;
 }
 
-double Jet_Finder::DEta12(AMATOOLS::Vec4D & p1,AMATOOLS::Vec4D & p2)
+double Jet_Finder::DEta12(Vec4D & p1,Vec4D & p2)
 {
   // eta1,2 = -log(tan(theta_1,2)/2)   
   // => eta1 - eta2 
@@ -435,14 +433,14 @@ double Jet_Finder::DEta12(AMATOOLS::Vec4D & p1,AMATOOLS::Vec4D & p2)
   return log(sqrt( (sqr(p2[1])+sqr(p2[2]))/(sqr(p1[1])+sqr(p1[2])) ) * dabs(p1[3]/p2[3]));
 }
 
-double Jet_Finder::DPhi12(AMATOOLS::Vec4D & p1,AMATOOLS::Vec4D & p2)
+double Jet_Finder::DPhi12(Vec4D & p1,Vec4D & p2)
 {
   // cos(phi1-phi2) = cos(phi1) cos(phi2) + sin(phi1) sin(phi2)
   //                = (p1_x p2_x + p1_y p2_y)/(p1_z * p2_z)
   return (p1[1]*p2[1]+p1[2]*p2[2])/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
 
-double Jet_Finder::DCos12(AMATOOLS::Vec4D & p1,AMATOOLS::Vec4D & p2)
+double Jet_Finder::DCos12(Vec4D & p1,Vec4D & p2)
 {
   return Vec3D(p1)*Vec3D(p2)/(Vec3D(p1).Abs()*Vec3D(p2).Abs());
 }
@@ -454,32 +452,32 @@ double Jet_Finder::Coshyp(double x)
   return cosh(x);
 }
 
-void Jet_Finder::BoostInFrame(AMATOOLS::Vec4D * p)
+void Jet_Finder::BoostInFrame(Vec4D * p)
 {
   for (int i=0;i<m_n;i++) m_cms_boost.Boost(p[i]);
 }
 
-void Jet_Finder::BoostBack(AMATOOLS::Vec4D * p)
+void Jet_Finder::BoostBack(Vec4D * p)
 {
   for (int i=0;i<m_n;i++) m_cms_boost.BoostBack(p[i]);
 }
 
-void Jet_Finder::BoostInFrame(std::vector<AMATOOLS::Vec4D> p)
+void Jet_Finder::BoostInFrame(std::vector<Vec4D> p)
 {
   for (int i=0;i<p.size();i++) m_cms_boost.Boost(p[i]);
 }
 
-void Jet_Finder::BoostBack(std::vector<AMATOOLS::Vec4D> p)
+void Jet_Finder::BoostBack(std::vector<Vec4D> p)
 {
   for (int i=0;i<p.size();i++) m_cms_boost.BoostBack(p[i]);
 }
 
-void Jet_Finder::BoostInFrame(AMATOOLS::Vec4D & p)
+void Jet_Finder::BoostInFrame(Vec4D & p)
 {
   m_cms_boost.Boost(p);
 }
 
-void Jet_Finder::BoostBack(AMATOOLS::Vec4D & p)
+void Jet_Finder::BoostBack(Vec4D & p)
 {
   m_cms_boost.BoostBack(p);
 }

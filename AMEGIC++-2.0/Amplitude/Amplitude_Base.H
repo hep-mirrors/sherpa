@@ -47,7 +47,7 @@ namespace AMEGIC {
     virtual void SetSign(int)
       {std::cerr<<"Error: Virtual  Amplitude_Base::SetSign() called!"<<std::endl;}
 
-    virtual void BuildGlobalString(int*,int,Basic_Sfuncs*,APHYTOOLS::Flavour*,String_Handler*)
+    virtual void BuildGlobalString(int*,int,Basic_Sfuncs*,ATOOLS::Flavour*,String_Handler*)
       {std::cerr<<"Error: Virtual  Amplitude_Base::BuildGlobalString() called!"<<std::endl;}
   };
 }

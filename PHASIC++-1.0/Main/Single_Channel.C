@@ -3,16 +3,14 @@
 #include "MathTools.H"
 
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Single_Channel::Single_Channel(int _nin,int _nout,Flavour * fl) 
 { 
   nin  = _nin; nout = _nout;
   ms   = new double[nin+nout+1];
-  for (short int i=0;i<nin+nout;i++) ms[i] = AMATOOLS::sqr(fl[i].Mass());
+  for (short int i=0;i<nin+nout;i++) ms[i] = ATOOLS::sqr(fl[i].Mass());
 
   if (nin == 1) rannum = 2 + 3*(nout-2);
   if (nin == 2) rannum = 1 + 2 + 3*(nout-2);
@@ -45,7 +43,7 @@ void Single_Channel::ResetOpt() {
 };
 
 void Single_Channel::AddPoint(double Value) {
-  if (!AMATOOLS::IsZero(Value)) n_contrib++;
+  if (!ATOOLS::IsZero(Value)) n_contrib++;
   n_points++;
   result  += Value;
   result2 += Value*Value;

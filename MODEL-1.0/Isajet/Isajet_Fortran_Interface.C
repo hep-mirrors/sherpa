@@ -5,9 +5,7 @@
 
 using namespace ISAJET;
 using namespace MODEL;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 extern "C" {

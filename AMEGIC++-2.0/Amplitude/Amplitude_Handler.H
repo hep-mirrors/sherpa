@@ -33,7 +33,7 @@ namespace AMEGIC {
     void OptimizeProps(int,Single_Amplitude*);
     int  TOrder(Single_Amplitude* a);
   public:
-    Amplitude_Handler(int,APHYTOOLS::Flavour *,int *,Polarisation *,
+    Amplitude_Handler(int,ATOOLS::Flavour *,int *,Polarisation *,
 		      Interaction_Model_Base *,Topology *,int,int,
 		      Basic_Sfuncs *,String_Handler *,std::string);
     ~Amplitude_Handler();

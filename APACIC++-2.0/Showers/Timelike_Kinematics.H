@@ -5,7 +5,7 @@
 #include "Jet_Finder.H"
 #include "Run_Parameter.H"
 
-namespace AORGTOOLS {
+namespace ATOOLS {
   class Data_Read;
 }
 
@@ -14,7 +14,7 @@ namespace APACIC {
     //! For vetos on extra jet from Shower.
     double                  pt2min,t0;
     bool                    jetveto;
-    APHYTOOLS::Jet_Finder * jf;
+    ATOOLS::Jet_Finder * jf;
     int                     pt_scheme; 
     int                     mass_scheme;
     int      m_type;
@@ -24,7 +24,7 @@ namespace APACIC {
     //----------------------- Constructors ----------------------------------
     //----------------------------------------------------------------------- 
     //! Constructor to initialise the Jet_Finder
-     Timelike_Kinematics(double _pt2min, AORGTOOLS::Data_Read * const );
+     Timelike_Kinematics(double _pt2min, ATOOLS::Data_Read * const );
     //! Destructor to delete the Jet_Finder
     ~Timelike_Kinematics() {
       if (jf)   delete jf;
@@ -85,13 +85,13 @@ namespace APACIC {
       Check individual momenta :
       nan values, negative energies ?
     */
-    bool CheckVector(AMATOOLS::Vec4D);
+    bool CheckVector(ATOOLS::Vec4D);
     /*!
       Boost/Rotate daughters of given knot, according to difference in pold and pnew.
      */
     void BoostDaughters(Knot * ); 
-    void BoostDaughters(AMATOOLS::Vec4D pold, AMATOOLS::Vec4D pnew, 
-			const AMATOOLS::Vec4D & pmom, Knot * mo);
+    void BoostDaughters(ATOOLS::Vec4D pold, ATOOLS::Vec4D pnew, 
+			const ATOOLS::Vec4D & pmom, Knot * mo);
 
   };
 }

@@ -14,7 +14,7 @@
 #include "Parton_List.H"
 #include "Blob_List.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
 
   class Primitive_Observable_Base {  
   protected:
@@ -22,11 +22,11 @@ namespace APHYTOOLS {
     double      xmin,xmax;
 
     std::string name;
-    AMATOOLS::Histogram      * histo;
-    APHYTOOLS::Selector_Base * sel;
+    Histogram      * histo;
+    Selector_Base * sel;
     int          nout;
     Flavour    * flavs;
-    AMATOOLS::Vec4D * moms;
+    Vec4D * moms;
   public:
     Primitive_Observable_Base() {
       xmin  = xmax  = 0.;
@@ -46,14 +46,14 @@ namespace APHYTOOLS {
       xmax  = old->xmax;
       nbins = old->nbins;
       name  = old->name;
-      histo = new AMATOOLS::Histogram(old->histo);
+      histo = new Histogram(old->histo);
     }
 
     Primitive_Observable_Base(int _type,double _xmin,double _xmax,int _nbins,
-			      APHYTOOLS::Selector_Base * _sel) :
+			      Selector_Base * _sel) :
       type(_type), nbins(_nbins), xmin(_xmin), xmax(_xmax), sel(_sel) 
     { 
-      AORGTOOLS::msg.Error()<<"Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
+      msg.Error()<<"Primitive_Observable_Base::Primitive_Observable_Base."<<std::endl;
     };
 
     virtual ~Primitive_Observable_Base() {
@@ -61,44 +61,44 @@ namespace APHYTOOLS {
     }
 
     virtual void Evaluate(double ) {
-      AORGTOOLS::msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : 0 "<<name<<std::endl;
+      msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : 0 "<<name<<std::endl;
     }
 
-    virtual void SetFlavInfo(int _nout,AMATOOLS::Vec4D * _moms,APHYTOOLS::Flavour * _flavs) {
+    virtual void SetFlavInfo(int _nout,Vec4D * _moms,Flavour * _flavs) {
       nout=_nout;
       moms=_moms;
       flavs=_flavs;
     }
 
-    virtual void Evaluate(int,AMATOOLS::Vec4D *,APHYTOOLS::Flavour *,double) {
-      AORGTOOLS::msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : A "<<name<<std::endl;
+    virtual void Evaluate(int,Vec4D *,Flavour *,double) {
+      msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : A "<<name<<std::endl;
     }
 
-    virtual void Evaluate(const APHYTOOLS::Parton_List &,double) {
-      AORGTOOLS::msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : B "<<name<<std::endl;
+    virtual void Evaluate(const Parton_List &,double) {
+      msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : B "<<name<<std::endl;
     }
 
-    virtual void Evaluate(const APHYTOOLS::Blob_List &,double) {
-      AORGTOOLS::msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : C "<<name<<std::endl;
+    virtual void Evaluate(const Blob_List &,double) {
+      msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : C "<<name<<std::endl;
     }
 
     virtual void EndEvaluation() {
       histo->Finalize();
-      AORGTOOLS::msg.Events()<<"  "<<name<<" : "<<std::endl;
+      msg.Events()<<"  "<<name<<" : "<<std::endl;
       histo->Output();
-      AORGTOOLS::msg.Events()<<std::endl<<std::endl;
+      msg.Events()<<std::endl<<std::endl;
     }
 
     virtual void EndEvaluation(double scale) {
       histo->Finalize();
       histo->Scale(scale);
-      AORGTOOLS::msg.Events()<<"  "<<name<<" : "<<std::endl;
+      msg.Events()<<"  "<<name<<" : "<<std::endl;
       histo->Output();
-      AORGTOOLS::msg.Events()<<std::endl<<std::endl;
+      msg.Events()<<std::endl<<std::endl;
     }
 
     virtual Primitive_Observable_Base * GetCopy() {
-      AORGTOOLS::msg.Error()<<"Error in Primitive_Observable_Base::GetCopy."<<std::endl;
+      msg.Error()<<"Error in Primitive_Observable_Base::GetCopy."<<std::endl;
       return 0;
     }
 
@@ -113,8 +113,8 @@ namespace APHYTOOLS {
     double                     Xmin()  { return xmin; }
     double                     Xmax()  { return xmax; }
     std::string                Name()  { return name; }
-    AMATOOLS::Histogram      * Histo() { return histo; }
-    APHYTOOLS::Selector_Base * Sel()   { return sel; }
+    Histogram      * Histo() { return histo; }
+    Selector_Base * Sel()   { return sel; }
   };
 }
 

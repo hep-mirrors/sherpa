@@ -10,9 +10,7 @@ using namespace SHERPA;
 using namespace EXTRAXS;
 using namespace AMEGIC;
 using namespace APACIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace MODEL;
 using namespace std;
 
@@ -50,7 +48,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
     m_type = 4;
   }
 
-  p_jf       = new APHYTOOLS::Jet_Finder(m_ycut,m_type);
+  p_jf       = new ATOOLS::Jet_Finder(m_ycut,m_type);
   p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber,p_shower->ISROn(),p_shower->FSROn());
   m_jetscale = m_ycut * sqr(rpa.gen.Ecms());
 }  
@@ -103,7 +101,7 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
   return 1;  // OK!
 }
 
-bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
+bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 {
   ClusterConfiguration(blob);
 
@@ -153,7 +151,7 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
   return 0;
 }
 
-bool   Amegic_Apacic_Interface::FillBlobs(APHYTOOLS::Blob_List * bl)
+bool   Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 {
   if (p_blob_psme) {
     p_blob_psme->SetId(bl->size());

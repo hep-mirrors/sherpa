@@ -2,7 +2,7 @@
 #include "MathTools.H"
 #include "Random.H"
 
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 #define NRANSI
 #define ALPH 1.5

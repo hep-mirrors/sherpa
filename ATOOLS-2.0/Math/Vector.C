@@ -8,7 +8,7 @@
 #include "Vector.H"
 
 
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 // "reference" to tags for computational constructors
 const Tag::Tsum Tag::sum={};
@@ -24,12 +24,12 @@ const Vec3D Vec3D::XVEC=Vec3D(1.,0.,0.);
 const Vec3D Vec3D::YVEC=Vec3D(0.,1.,0.);
 const Vec3D Vec3D::ZVEC=Vec3D(0.,0.,1.);
 
-std::ostream& AMATOOLS::operator<< (std::ostream& s, const Vec4D& vec)
+std::ostream& ATOOLS::operator<< (std::ostream& s, const Vec4D& vec)
 {
   return s<<'('<<vec[0]<<','<<vec[1]<<','<<vec[2]<<','<<vec[3]<<')';
 }
 
-std::ostream& AMATOOLS::operator<< (std::ostream& s, const Vec3D& vec)
+std::ostream& ATOOLS::operator<< (std::ostream& s, const Vec3D& vec)
 {
   return s<<'('<<vec[1]<<','<<vec[2]<<','<<vec[3]<<')';
 }

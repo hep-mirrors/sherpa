@@ -8,7 +8,7 @@
 #include "Parton.H"
 #include "List_Algorithms.H"
 
-namespace APHYTOOLS {
+namespace ATOOLS {
 
   typedef std::deque<Parton*> Parton_List;
   typedef Parton_List::iterator Parton_Iterator;

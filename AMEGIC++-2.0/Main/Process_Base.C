@@ -13,7 +13,7 @@ using namespace PHASIC;
 using namespace MODEL;
 using namespace BEAM;
 using namespace PDF;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -43,12 +43,12 @@ Process_Base::Process_Base():
 
 
 
-Process_Base::Process_Base(int _nin,int _nout,APHYTOOLS::Flavour * _fl,
+Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			   int _gen_str, int _orderQCD, int _orderEW,
 			   int _scalescheme,int _kfactorscheme,double _scalefactor,
 			   Pol_Info * _pl,
-			   int _nex,APHYTOOLS::Flavour * _ex_fl) :
+			   int _nex,ATOOLS::Flavour * _ex_fl) :
   m_nin(_nin), m_nout(_nout), m_nvec(_nin+_nout), m_nex(_nex),m_gen_str(_gen_str),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
   p_isr(_isr), p_beam(_beam), p_cuts(NULL), p_analysis(NULL),
@@ -381,7 +381,7 @@ bool Process_Base::CheckExternalFlavours(int _nin,Flavour * _in,
   qin = qin%9; qout = qout%9;
 
   /*
-    AORGTOOLS::msg.Debugging()<<"Check "<<_in[0]<<" "<<_in[1]<<" -> "
+    ATOOLS::msg.Debugging()<<"Check "<<_in[0]<<" "<<_in[1]<<" -> "
     <<_out[0]<<" "<<_out[1]<<"  "
     <<cin<<" <-> "<<cout<<"  "
     <<sin<<" <-> "<<sout<<"  "
@@ -520,7 +520,7 @@ void Process_Base::SetBeam(Beam_Spectra_Handler * _beam){ p_beam    = _beam;   }
 void Process_Base::SetISR(ISR_Handler * _isr)           { p_isr     = _isr;    }
 void Process_Base::SetCuts(Cut_Data * _cuts)            { p_cuts    = _cuts;   }
 void Process_Base::SetSelector(Selector_Base * _sel)    { p_sel     = _sel;    }
-void Process_Base::SetMomenta(AMATOOLS::Vec4D * _moms)  { p_moms    = _moms;   }
+void Process_Base::SetMomenta(ATOOLS::Vec4D * _moms)  { p_moms    = _moms;   }
 void Process_Base::SetNStrong(int _nstrong)             { m_nstrong = _nstrong;}
 void Process_Base::SetNEWeak(int _neweak)               { m_neweak  = _neweak; }
 void Process_Base::SetTotal(double _total)              { m_totalxs = _total;  } 
@@ -545,10 +545,10 @@ void Process_Base::RescaleXSec(double fac) {
 }
 
 
-double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
+double Process_Base::Scale(ATOOLS::Vec4D * _p) {
   if (m_nin==1) return _p[0].Abs2();
   if (m_nin!=2) {
-    AORGTOOLS::msg.Error()<<"Error in Process_Base::Scale. "
+    ATOOLS::msg.Error()<<"Error in Process_Base::Scale. "
 			  <<"Do not know how to handle more than 2 incoming particles."<<endl;
     abort();
   }
@@ -561,8 +561,8 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
   switch (m_scalescheme) {
   case 1  :
     if (m_nin+m_nout==4) {
-      double t = (_p[0]-_p[2]).Abs2()-(AMATOOLS::sqr(p_fl[2].PSMass())+AMATOOLS::sqr(p_fl[3].PSMass()))/2.;
-      double u = (_p[0]-_p[3]).Abs2()-(AMATOOLS::sqr(p_fl[2].PSMass())+AMATOOLS::sqr(p_fl[3].PSMass()))/2.;
+      double t = (_p[0]-_p[2]).Abs2()-(ATOOLS::sqr(p_fl[2].PSMass())+ATOOLS::sqr(p_fl[3].PSMass()))/2.;
+      double u = (_p[0]-_p[3]).Abs2()-(ATOOLS::sqr(p_fl[2].PSMass())+ATOOLS::sqr(p_fl[3].PSMass()))/2.;
       pt2 = 4.*s*t*u/(s*s+t*t+u*u);
       return pt2;
     }
@@ -572,7 +572,7 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
     pt2 = s;
     double pt2i;
     for (int i=m_nin;i<m_nin+m_nout;i++) {
-      pt2i = AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]);
+      pt2i = ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
       if (pt2i<pt2) pt2 = pt2i;
     }
     break;
@@ -580,22 +580,22 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
     pt2 = m_scale;
     break;
   case 4  :
-    pt2 = AMATOOLS::sqr(175.);
+    pt2 = ATOOLS::sqr(175.);
     break;
   case 5  :
-    pt2 = AMATOOLS::sqr(10.);
+    pt2 = ATOOLS::sqr(10.);
     break;
   case 6  :
-    pt2 = AMATOOLS::sqr(91.188);
+    pt2 = ATOOLS::sqr(91.188);
     break;
   case 7  :
     pt2 = 0.;
     for (int i=m_nin;i<m_nin+m_nout;i++) {
-      pt2 += AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]);
+      pt2 += ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
     }
     break;
   case  8 :
-    pt2 = AMATOOLS::sqr(3.162);
+    pt2 = ATOOLS::sqr(3.162);
     break;
   case 42 :
     pt2 = m_scale;
@@ -605,19 +605,19 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
      pt2 = m_scale;
     }
     else {
-      pt2 = AMATOOLS::sqr(_p[m_nin][1])+AMATOOLS::sqr(_p[m_nin][2]);
+      pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
       for (int i=m_nin+1;i<m_nin+m_nout;++i) {
 	// better would be probably min yij*s with yij given by the covariant E scheme clustering algorithm
 	if (p_fl[i].Strong())
-	  pt2 =  AMATOOLS::Min(pt2,AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]));
+	  pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
       }
     }
     break;
   case 64 :
-    pt2 = AMATOOLS::sqr(_p[m_nin][1])+AMATOOLS::sqr(_p[m_nin][2]);
+    pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
     for (int i=m_nin+1;i<m_nin+m_nout;++i) {
       // better would be min yij*s with yij given by the covariant E scheme clustering algorithm
-      pt2 =  AMATOOLS::Min(pt2,AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]));
+      pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
     }
     break;
   default :
@@ -631,7 +631,7 @@ double Process_Base::KFactor(double _scale) {
   case 2  :
     if (m_nstrong>2) {
       double f= m_rfactor*pow(as->AlphaS(m_scale * m_scalefactor)/
-			 as->AlphaS(AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms())),m_nstrong-2);
+			 as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
       return f;
     } 
     else 
@@ -639,7 +639,7 @@ double Process_Base::KFactor(double _scale) {
   case 1  :
     if (m_nstrong>2) {
       return m_rfactor*pow(as->AlphaS(_scale * m_scalefactor)/
-			   as->AlphaS(AMATOOLS::sqr(AORGTOOLS::rpa.gen.Ecms())),m_nstrong-2);
+			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
     } 
     else 
       return m_rfactor;
@@ -658,7 +658,7 @@ int                     Process_Base::Nin()                          { return m_
 int                     Process_Base::Nout()                         { return m_nout; }
 int                     Process_Base::Nvec()                         { return m_nvec; }
 Flavour               * Process_Base::Flavs()                        { return p_fl; }
-AMATOOLS::Vec4D       * Process_Base::Momenta()                      { return p_moms; }
+ATOOLS::Vec4D       * Process_Base::Momenta()                      { return p_moms; }
 int                     Process_Base::NStrong()                      { return m_nstrong; }
 int                     Process_Base::NEWeak()                       { return m_neweak; }
 string                  Process_Base::Name()                         { return m_name; }

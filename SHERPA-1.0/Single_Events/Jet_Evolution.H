@@ -15,7 +15,7 @@ namespace SHERPA {
   public :
     Jet_Evolution(Matrix_Element_Handler *,Shower_Handler *);
     ~Jet_Evolution();
-    bool Treat(APHYTOOLS::Blob_List *, double &);
+    bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();
   };
   /*!
@@ -68,7 +68,7 @@ namespace SHERPA {
     Deletes the Perturbative_Interface.
   */
   /*!
-    \fn bool Jet_Evolution::Treat(APHYTOOLS::Blob_List *, double &)
+    \fn bool Jet_Evolution::Treat(ATOOLS::Blob_List *, double &)
     In this method all blobs with status equal to one and of type "Signal Process :" are dealt with by
     the follwonig steps:
     \todo Andreas, we have to fill this.

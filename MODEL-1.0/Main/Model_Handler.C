@@ -7,8 +7,7 @@
 
 
 using namespace MODEL;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 
 Model_Base * Model_Handler::GetModel(Data_Read * _dataread,std::string _path,std::string _file) {
   std::string model     = _dataread->GetValue("MODEL",std::string("SM"));

@@ -31,20 +31,20 @@ namespace APACIC {
     int    m_extra_pdf[2];
     int    m_to_be_diced[2];
 
-    AMATOOLS::Vec4D m_lab;
+    ATOOLS::Vec4D m_lab;
 
   public:
     Initial_State_Shower(PDF::ISR_Handler *,Final_State_Shower *,
-			 MODEL::Model_Base *,AORGTOOLS::Data_Read * const );
+			 MODEL::Model_Base *,ATOOLS::Data_Read * const );
     ~Initial_State_Shower();
     bool PerformShower(Tree **,bool);
     void InitShowerPT(double pt2max);
-    void ExtractPartons(Knot *,int,APHYTOOLS::Blob *,
-			APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);
+    void ExtractPartons(Knot *,int,ATOOLS::Blob *,
+			ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
     bool TestShower(Tree **) ;
 
-    AMATOOLS::Vec4D GetLab();
-    AMATOOLS::Vec4D GetMomentum(Knot * mo,int & number);
+    ATOOLS::Vec4D GetLab();
+    ATOOLS::Vec4D GetMomentum(Knot * mo,int & number);
 
     Knot * GetInitiator(int);
     Knot * GetInitiator(Tree *);
@@ -57,7 +57,7 @@ namespace APACIC {
     int  EvolveSystem(Tree **,Knot *,Knot *);
     int  FillBranch(Tree **,Knot *,Knot *,int);
 
-    void FillMotherAndSister(Tree *,Knot *,APHYTOOLS::Flavour *);
+    void FillMotherAndSister(Tree *,Knot *,ATOOLS::Flavour *);
     void SetStartingConditions(double,double,int) ;
 
   };
@@ -75,14 +75,14 @@ namespace APACIC {
     };
   }
 
-  inline AMATOOLS::Vec4D Initial_State_Shower::GetLab() { return m_lab; }
+  inline ATOOLS::Vec4D Initial_State_Shower::GetLab() { return m_lab; }
 
   inline Knot * Initial_State_Shower::GetInitiator(Tree * tree) 
   {
     return tree->GetInitiator();
   }
 
-  inline AMATOOLS::Vec4D Initial_State_Shower::GetMomentum(Knot * mo,int & number) 
+  inline ATOOLS::Vec4D Initial_State_Shower::GetMomentum(Knot * mo,int & number) 
   {
     if (mo->left) return GetMomentum(mo->left,number) + GetMomentum(mo->right,number);
     ++number;
@@ -183,7 +183,7 @@ namespace APACIC {
   */
 
   /*!
-    \fn void Initial_State_Shower::FillMotherAndSister(Tree *,Knot *,APHYTOOLS::Flavour *)
+    \fn void Initial_State_Shower::FillMotherAndSister(Tree *,Knot *,ATOOLS::Flavour *)
     \brief extends a tree by the given information
 
     For a Knot beloning to a given tree a mother and a sister are initalized
@@ -207,8 +207,8 @@ namespace APACIC {
 
 
   /*!
-    \fn void Initial_State_Shower::ExtractPartons(Knot *, APHYTOOLS::Blob *, 
-                         APHYTOOLS::Blob_List *, APHYTOOLS::Parton_List *, int)
+    \fn void Initial_State_Shower::ExtractPartons(Knot *, ATOOLS::Blob *, 
+                         ATOOLS::Blob_List *, ATOOLS::Parton_List *, int)
     \brief fills blobs and parton list according to the result of the shower evolution
     
     After the shower is complete the outgoing knots of the tree are put into
@@ -243,12 +243,12 @@ namespace APACIC {
   */
 
   /*!
-    \fn AMATOOLS::Vec4D Initial_State_Shower::GetLab();
+    \fn ATOOLS::Vec4D Initial_State_Shower::GetLab();
     \brief retruns a vetor to the LAB system
   */
 
   /*!
-    \fn AMATOOLS::Vec4D Initial_State_Shower::GetMomentum(Knot * mo,int & number);
+    \fn ATOOLS::Vec4D Initial_State_Shower::GetMomentum(Knot * mo,int & number);
     \brief adds all daughter momenta. Used for check four momentum conservation.
   */
 

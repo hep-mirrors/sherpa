@@ -43,7 +43,7 @@ namespace AMEGIC {
       (where the sum over the polarizations is carried out differently to the 
       massless vector bosons).
     */
-    Helicity(int,int,APHYTOOLS::Flavour*,Pol_Info*);
+    Helicity(int,int,ATOOLS::Flavour*,Pol_Info*);
     //! Returns the maximum number of helicities.
     int Max_Hel() {return nsign;}
     //! Returns the maximum number of helicities for calculation of physical fermion helicities.

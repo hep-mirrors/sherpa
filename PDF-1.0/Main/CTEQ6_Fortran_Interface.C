@@ -4,16 +4,15 @@
 #include <unistd.h> 
 
 using namespace PDF;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
+
 
 extern "C" {
     void    ctq6initset_(int &);
     double  ctq6evolve_(int &,double &, double &);
 }
 
-CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const APHYTOOLS::Flavour _bunch,
+CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						   const std::string _set,const int _member,
 						   const std::string _path) :
   m_set(_set), m_member(_member), m_path(_path), m_anti(1) 
@@ -89,7 +88,7 @@ void CTEQ6_Fortran_Interface::Calculate(const double _x, const double _Q2)
   }
 }
 
-double CTEQ6_Fortran_Interface::GetXPDF(const APHYTOOLS::Flavour & infl) 
+double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour & infl) 
 {
   if (infl == Flavour(kf::gluon)) return m_f[5];
   if (infl.Kfcode()==2)   return m_f[5-m_anti*int(infl)/2];     // +/- 1

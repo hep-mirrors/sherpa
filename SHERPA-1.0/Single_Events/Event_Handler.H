@@ -14,7 +14,7 @@ namespace SHERPA {
   class Event_Handler {
     Phase_List             * p_phases;
     Sample_Analysis        * p_analysis;
-    APHYTOOLS::Blob_List     m_blobs;
+    ATOOLS::Blob_List     m_blobs;
 
     void PrintBlobs();
     void CleanUpEvent();
@@ -31,7 +31,7 @@ namespace SHERPA {
     void PrintEvent(int);
 
     void SetAnalysis(Sample_Analysis *);
-    APHYTOOLS::Blob_List * GetBlobs() { return &m_blobs; }
+    ATOOLS::Blob_List * GetBlobs() { return &m_blobs; }
   };
 
   /*!
@@ -61,7 +61,7 @@ namespace SHERPA {
     A pointer to some analysis.
   */ 
   /*!
-    \var APHYTOOLS::Blob_List Event_Handler::m_blobs
+    \var ATOOLS::Blob_List Event_Handler::m_blobs
     The internal list of blobs constituting the event. This list is emptied before any new event
     is generated.
   */ 

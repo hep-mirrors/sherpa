@@ -5,9 +5,7 @@
 #include "Message.H"
 
 using namespace SHERPA;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Sherpa::Sherpa() :

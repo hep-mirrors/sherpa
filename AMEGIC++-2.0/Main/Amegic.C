@@ -11,8 +11,7 @@
 //#define _DECAYS_
 
 using namespace AMEGIC;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 /*----------------------------------------------------------------------------------
@@ -70,12 +69,12 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
   m_count            = p_procs->Size();
   msg.Tracking()<<"All together : "<<m_count<<" processes with up to "<<m_nmax<<" legs."<<endl;
 
-  m_nmax             = AMATOOLS::Max(m_nmax,4);
+  m_nmax             = ATOOLS::Max(m_nmax,4);
   p_top              = new Topology(m_nmax);
 
   vector<double>           results;
   vector<Single_Process *> links;
-  AMATOOLS::Vec4D * moms  = 0;
+  ATOOLS::Vec4D * moms  = 0;
 
   switch (p_procs->InitAllProcesses(p_model,p_top,moms,results,links)) { 
   case 1  : 
@@ -379,11 +378,11 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
       default  : type = t1;
     }
     if(fl[i].IsFermion()) dof=2;
-    if(fl[i].IsVector() &&  AMATOOLS::IsZero(fl[i].Mass())) dof=2;
-    if(fl[i].IsVector() && !AMATOOLS::IsZero(fl[i].Mass())) dof=3;
+    if(fl[i].IsVector() &&  ATOOLS::IsZero(fl[i].Mass())) dof=2;
+    if(fl[i].IsVector() && !ATOOLS::IsZero(fl[i].Mass())) dof=3;
     if(fl[i].IsTensor()) dof=5;
  
-    if (AMATOOLS::IsZero(pd[i]-1.)) pl[i].Init(1);
+    if (ATOOLS::IsZero(pd[i]-1.)) pl[i].Init(1);
                                else pl[i].Init(dof);
 
     if(!fl[i].IsTensor()){

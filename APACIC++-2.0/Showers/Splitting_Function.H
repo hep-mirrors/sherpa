@@ -12,7 +12,7 @@ namespace APACIC {
     const static double s_CA;
     const static double s_TR;
     // Flavours of this particular splitting function
-    APHYTOOLS::Flavour m_flavs[3]; // a -> b c
+    ATOOLS::Flavour m_flavs[3]; // a -> b c
     // Domain of last intergral
     double m_zmin,m_zmax;
     // Last integral
@@ -33,9 +33,9 @@ namespace APACIC {
     virtual void Add(Splitting_Function *);
     virtual void SelectOne();
   
-    virtual APHYTOOLS::Flavour & GetFlA();
-    virtual APHYTOOLS::Flavour & GetFlB();
-    virtual APHYTOOLS::Flavour & GetFlC();
+    virtual ATOOLS::Flavour & GetFlA();
+    virtual ATOOLS::Flavour & GetFlB();
+    virtual ATOOLS::Flavour & GetFlC();
 
     virtual void PrintStat(int mode=0);
   };
@@ -112,17 +112,17 @@ namespace APACIC {
   */
 
   /*!
-    \fn virtual APHYTOOLS::Flavour & Splitting_Function::GetFlA()
+    \fn virtual ATOOLS::Flavour & Splitting_Function::GetFlA()
     \brief returns flavour \f$a\f$ in the splitting \f$a \to b \; c\f$.
   */
 
   /*!
-    \fn virtual APHYTOOLS::Flavour & Splitting_Function::GetFlB()
+    \fn virtual ATOOLS::Flavour & Splitting_Function::GetFlB()
     \brief returns flavour \f$b\f$ in the splitting \f$a \to b \; c\f$.
   */
     
   /*!
-    \fn virtual APHYTOOLS::Flavour & Splitting_Function::GetFlC()
+    \fn virtual ATOOLS::Flavour & Splitting_Function::GetFlC()
     \brief returns flavour \f$c\f$ in the splitting \f$a \to b \; c\f$.
   */
 

@@ -13,9 +13,7 @@
 #include "Random.H"
 
 using namespace APACIC;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 //-----------------------------------------------------------------------

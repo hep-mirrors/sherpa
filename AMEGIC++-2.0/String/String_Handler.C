@@ -5,7 +5,7 @@
 #include "prof.hh"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 String_Handler::String_Handler(const int &_gen_str,const string& _path,Basic_Sfuncs* _BS) 

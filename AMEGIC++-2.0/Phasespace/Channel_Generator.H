@@ -23,9 +23,9 @@ typedef std::map<std::string,std::string> Decls;
     Point     * plist;
     int         tcount;
 
-    void        Step0(int,Point *,int&,std::ofstream&,APHYTOOLS::Flavour*,int&);
-    bool        StepS(int,Point *,int&,std::ofstream&,APHYTOOLS::Flavour*,int&);
-    void        StepNT(int,int,Point *,int&,std::ofstream& sf,APHYTOOLS::Flavour*,int&);
+    void        Step0(int,Point *,int&,std::ofstream&,ATOOLS::Flavour*,int&);
+    bool        StepS(int,Point *,int&,std::ofstream&,ATOOLS::Flavour*,int&);
+    void        StepNT(int,int,Point *,int&,std::ofstream& sf,ATOOLS::Flavour*,int&);
     void        SingleTStep(int,std::string*,Point **,int,int&,std::ofstream&,int,
 			    String_List,String_List,String_List,String_List);
 
@@ -38,13 +38,13 @@ typedef std::map<std::string,std::string> Decls;
     void        IdentifyProps(Point *);
     void        BackLinks(Point *,Point * &);
     void        InitT(Point *);
-    bool        Massive(APHYTOOLS::Flavour fl) { return (fl.Mass()!=0.) ? 1:0; }
+    bool        Massive(ATOOLS::Flavour fl) { return (fl.Mass()!=0.) ? 1:0; }
     std::string Order(std::string);
     std::string IString(int);
     void        AddToVariables(int,const std::string&,const std::string&,const int&,std::ofstream&); 
     void        ClearDeclarations() { declarations.clear(); }  
   public:
-    Channel_Generator(int,int,APHYTOOLS::Flavour *,Point *);
+    Channel_Generator(int,int,ATOOLS::Flavour *,Point *);
     ~Channel_Generator();
     int         MakeChannel(int&,int,std::string&,std::string&);
     Point     * GetPointlist()             { return plist; }
@@ -135,7 +135,7 @@ typedef std::map<std::string,std::string> Decls;
       Vec4D   GetVector(std::string);
       void    Clean();
       void    PrintSettings();
-      ostream Translate(APHYTOOLS::Flavour);
+      ostream Translate(ATOOLS::Flavour);
     */
     /*!
       Copies the pointlist to make sure that we can work on it, identifies the types of 

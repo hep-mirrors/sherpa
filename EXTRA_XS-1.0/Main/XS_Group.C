@@ -10,14 +10,12 @@
 
 using namespace EXTRAXS;
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace AMATOOLS;
-using namespace APHYTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 XS_Group::XS_Group(int _nin,int _nout,Flavour * _fl,
 		   PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
-		   APHYTOOLS::Selector_Data * _seldata,
+		   ATOOLS::Selector_Data * _seldata,
 		   int _scalescheme,int _kfactorscheme,double _scalefactor) :
   XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor),
   p_xsselector(NULL), m_atoms(0)
@@ -64,7 +62,7 @@ void XS_Group::Add(XS_Base * _xsec)
   }
   else {
     if ( (m_nin!=_xsec->Nin()) || (m_nout!=_xsec->Nout())) {
-      AORGTOOLS::msg.Error()<<"Error : Cannot add Process "<<_xsec->Name()
+      ATOOLS::msg.Error()<<"Error : Cannot add Process "<<_xsec->Name()
 			    <<" to group "<<m_name<<" ! "<<endl
 			    <<"   Inconsistent number of external legs."<<endl 
 			    <<"  Before : ("<<m_nin<<" -> "<<m_nout<<" )"<<endl
@@ -72,7 +70,7 @@ void XS_Group::Add(XS_Base * _xsec)
       return;
     }
   }  
-  AORGTOOLS::msg.Debugging()<<"Add xs "<<_xsec->Name()<<" to group "<<m_name<<" ! "<<endl; 
+  ATOOLS::msg.Debugging()<<"Add xs "<<_xsec->Name()<<" to group "<<m_name<<" ! "<<endl; 
   m_xsecs.push_back(_xsec);
 }
 
@@ -150,8 +148,8 @@ bool XS_Group::CalculateTotalXSec()
   CreateFSRChannels();
   p_ps->CreateIntegrators();
 
-  m_totalxs = p_ps->Integrate()/AORGTOOLS::rpa.Picobarn(); 
-  if (!(AMATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
+  m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn(); 
+  if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
     msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl
 	       <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
@@ -163,7 +161,7 @@ bool XS_Group::CalculateTotalXSec()
 
 void XS_Group::SetTotalXS()  { 
   m_totalxs  = m_totalsum/m_n; 
-  m_totalerr = sqrt( (m_n*m_totalsumsqr-AMATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
+  m_totalerr = sqrt( (m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
   if (p_sel) p_sel->Output();
 
   m_max = 0.;

@@ -3,9 +3,8 @@
 #include "Random.H"
 
 using namespace PHASIC;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
+
 
 Rambo::Rambo(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
 {
@@ -18,8 +17,8 @@ Rambo::Rambo(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
   rannum=0;
   massflag = 0;
   for (short int i=0;i<nin+nout;i++) {
-    ms[i] = AMATOOLS::sqr(fl[i].Mass());
-    if (!AMATOOLS::IsZero(ms[i])) massflag = 1;
+    ms[i] = ATOOLS::sqr(fl[i].Mass());
+    if (!ATOOLS::IsZero(ms[i])) massflag = 1;
   } 
 
   double   pi2log = log(M_PI/2.);

@@ -35,7 +35,6 @@ Sherpa_LDADD =  \
 	 @libdir@/libToolsPhys.la \
 	 @libdir@/libToolsMath.la \
 	 @libdir@/libToolsOrg.la \
-	 @libdir@/libHepMC.so \
 	 -lg2c -lm 
 #	 -L$(rootlibdir) -lCore -lCint -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
 Sherpa_LDFLAGS =  -rdynamic

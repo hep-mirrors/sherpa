@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 
-namespace AORGTOOLS{
+namespace ATOOLS{
 
   class Exeption {
     std::string mesg;
@@ -21,5 +21,5 @@ namespace AORGTOOLS{
     TestExeption():Exeption("This is a test exeption") {}; 
   };
 
-} // AORGTOOLS
+} // ATOOLS
 #endif // Exeptions_H

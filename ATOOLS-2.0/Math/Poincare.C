@@ -1,7 +1,7 @@
 #include "Poincare.H"
 #include "MathTools.H"
 
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
 Poincare::Poincare(): m_status(0),m_beta(1.,0.,0.,0.)        // standard constructor Unity
 {

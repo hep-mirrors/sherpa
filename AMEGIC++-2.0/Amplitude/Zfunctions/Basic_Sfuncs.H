@@ -31,9 +31,9 @@ namespace AMEGIC {
     */
     int*      arg;
     //!real part of the vector
-    AMATOOLS::Vec4D     mom;
+    ATOOLS::Vec4D     mom;
     //!imaginary part of the vector
-    AMATOOLS::Vec4D     mom_img;
+    ATOOLS::Vec4D     mom_img;
     //! polarization angle for external linear polarized vector bosons 
     double    angle;
     //! mass of the particle, described by the vector (polarizations only)
@@ -74,9 +74,9 @@ namespace AMEGIC {
   class Basic_Sfuncs {
     std::vector<Momfunc> Momlist;
     int  momcount;
-    APHYTOOLS::Flavour* fl;
+    ATOOLS::Flavour* fl;
     int  nmom,nvec;
-    AMATOOLS::Vec4D* p;
+    ATOOLS::Vec4D* p;
     int* b;
     Complex* _eta;
     Complex* _mu;
@@ -90,13 +90,13 @@ namespace AMEGIC {
     void CalcS(int i, int j);
     void PrecalcS();
   public:
-    Basic_Sfuncs(int,int, APHYTOOLS::Flavour*,int*);
+    Basic_Sfuncs(int,int, ATOOLS::Flavour*,int*);
     ~Basic_Sfuncs();
 
     int    BuildMomlist(Pfunc_List&); 
     int    BuildTensorPolarisations(int); 
     int    BuildPolarisations(int,char,double angle=0.);
-    int    BuildPolarisations(int,APHYTOOLS::Flavour);
+    int    BuildPolarisations(int,ATOOLS::Flavour);
 
     void   PrintMomlist();
     int    GetMomNumber(Pfunc*);
@@ -105,30 +105,30 @@ namespace AMEGIC {
 
     void   Setk0(int);
     void   Initialize();
-    int    CalcEtaMu(AMATOOLS::Vec4D*);//setS
+    int    CalcEtaMu(ATOOLS::Vec4D*);//setS
     void   InitGaugeTest(double);//ResetS_GT
 
     inline Complex Mu(int i)  { return (i>=0) ? _mu[i] : -_mu[-i]; }
-    inline Complex Eta(int i) { return _eta[AMATOOLS::iabs(i)]; }
-    inline Complex S0d(int i,int j) { return _S0[AMATOOLS::iabs(i)][AMATOOLS::iabs(j)]; }
-    inline Complex S1d(int i,int j) { return _S1[AMATOOLS::iabs(i)][AMATOOLS::iabs(j)]; }
+    inline Complex Eta(int i) { return _eta[ATOOLS::iabs(i)]; }
+    inline Complex S0d(int i,int j) { return _S0[ATOOLS::iabs(i)][ATOOLS::iabs(j)]; }
+    inline Complex S1d(int i,int j) { return _S1[ATOOLS::iabs(i)][ATOOLS::iabs(j)]; }
     inline Complex S0(int i,int j) {
-      i=AMATOOLS::iabs(i);j=AMATOOLS::iabs(j);
+      i=ATOOLS::iabs(i);j=ATOOLS::iabs(j);
       if (!calc_st[i][j]) CalcS(i,j); 
       return _S0[i][j];
     }
     inline Complex S1(int i,int j) {
-      i=AMATOOLS::iabs(i);j=AMATOOLS::iabs(j);
+      i=ATOOLS::iabs(i);j=ATOOLS::iabs(j);
       if (!calc_st[i][j]) CalcS(i,j); 
       return _S1[i][j];
     }
     double Norm(int,int);//N
 
     inline int  GetNmomenta() { return nmom; }
-    inline int  Sign(int i)   { return b[AMATOOLS::iabs(i)]; }
-    inline APHYTOOLS::Flavour GetFlavour(int i)   { return fl[AMATOOLS::iabs(i)]; }
-    inline AMATOOLS::Vec4D  Momentum(int i)     { return Momlist[i].mom; }
-    inline AMATOOLS::Vec4D  MomentumImg(int i) { return Momlist[i].mom_img; }
+    inline int  Sign(int i)   { return b[ATOOLS::iabs(i)]; }
+    inline ATOOLS::Flavour GetFlavour(int i)   { return fl[ATOOLS::iabs(i)]; }
+    inline ATOOLS::Vec4D  Momentum(int i)     { return Momlist[i].mom; }
+    inline ATOOLS::Vec4D  MomentumImg(int i) { return Momlist[i].mom_img; }
     inline bool IsComplex(const int i) {
       return ( Momlist[i].type==mt::p_p || Momlist[i].type==mt::p_m || 
 	       Momlist[i].type==mt::p_l || Momlist[i].type==mt::p_s || Momlist[i].type==mt::p_si);
@@ -151,7 +151,7 @@ namespace AMEGIC {
     List of all momentums and polarization vectors.
   */
   /*!
-    \var APHYTOOLS::Flavour* Basic_Sfuncs::fl
+    \var ATOOLS::Flavour* Basic_Sfuncs::fl
     Array of Flavours for external particles.
   */
   /*!
@@ -163,7 +163,7 @@ namespace AMEGIC {
     Numbers of vectors for external particles (nmom + extra vectors for the old gauge boson treatment)
   */
   /*!
-    \var AMATOOLS::Vec4D* Basic_Sfuncs::p
+    \var ATOOLS::Vec4D* Basic_Sfuncs::p
     Array of momentums for external particles
   */
   /*!
@@ -175,12 +175,12 @@ namespace AMEGIC {
   /*!
     \var Complex* Basic_Sfuncs::_eta
     Array of \f$\eta\f$'s for each vector in Momlist. 
-    It is calculated in Basic_Sfuncs::CalcEtaMu(AMATOOLS::Vec4D*).
+    It is calculated in Basic_Sfuncs::CalcEtaMu(ATOOLS::Vec4D*).
   */
   /*!
     \var Complex* Basic_Sfuncs::_mu
     Array of \f$\mu\f$'s for each vector in Momlist. 
-    It is calculated in Basic_Sfuncs::CalcEtaMu(AMATOOLS::Vec4D*).
+    It is calculated in Basic_Sfuncs::CalcEtaMu(ATOOLS::Vec4D*).
   */
   /*!
     \var Complex** Basic_Sfuncs::_S0
@@ -334,7 +334,7 @@ namespace AMEGIC {
     Initializes polarizations for external vector bosons in Basic_Sfuncs::Momlist.
   */
   /*!
-    \fn int    Basic_Sfuncs::BuildPolarisations(int,APHYTOOLS::Flavour)
+    \fn int    Basic_Sfuncs::BuildPolarisations(int,ATOOLS::Flavour)
     Initializes polarizations for vector boson and spin-2 propagators in Basic_Sfuncs::Momlist.
   */
 
@@ -376,7 +376,7 @@ namespace AMEGIC {
     Basic_Sfuncs::_S1 and Basic_Sfuncs::calc_st.
   */
   /*!
-    \fn int    Basic_Sfuncs::CalcEtaMu(AMATOOLS::Vec4D*)
+    \fn int    Basic_Sfuncs::CalcEtaMu(ATOOLS::Vec4D*)
     Calculation of \f$\eta\f$ and \f$\mu\f$ for every vector in Basic_Sfuncs::Momlist.
 
     \f$\eta_i=\sqrt{2p_ik_0}\f$ 
@@ -487,15 +487,15 @@ namespace AMEGIC {
     Returns a sign for external particles (see Basic_Sfuncs::b).
   */
   /*!
-    \fn inline APHYTOOLS::Flavour  Basic_Sfuncs::GetFlavour(int i)
+    \fn inline ATOOLS::Flavour  Basic_Sfuncs::GetFlavour(int i)
     Returns the flavour of an external particle.
   */
   /*!
-    \fn inline AMATOOLS::Vec4D  Basic_Sfuncs::Momentum(int i)
+    \fn inline ATOOLS::Vec4D  Basic_Sfuncs::Momentum(int i)
     Returns the real part of a momentum in Basic_Sfuncs::Momlist.
   */
   /*!
-    \fn inline AMATOOLS::Vec4D  Basic_Sfuncs::MomentumImg(int i) 
+    \fn inline ATOOLS::Vec4D  Basic_Sfuncs::MomentumImg(int i) 
     Returns the imaginary part of a momentum in Basic_Sfuncs::Momlist.
   */
   /*!

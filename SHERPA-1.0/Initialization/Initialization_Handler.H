@@ -23,9 +23,9 @@ namespace SHERPA {
     std::string m_beamremnantdat, m_fragmentationdat,m_hadrondecaysdat;
 
     double                 m_bunch_splimits[2];
-    APHYTOOLS::Flavour     m_bunch_particles[2];
+    ATOOLS::Flavour     m_bunch_particles[2];
 
-    AORGTOOLS::Data_Read * p_dataread;
+    ATOOLS::Data_Read * p_dataread;
 
     MODEL::Model_Base                  * p_model;
     BEAM::Beam_Spectra_Handler         * p_beamspectra;
@@ -62,7 +62,7 @@ namespace SHERPA {
     Beam_Remnant_Handler        * GetBeamRemnantHandler()   { return p_beamremnants;    }
     Fragmentation_Handler       * GetFragmentationHandler() { return p_fragmentation;   }
     Hadron_Decay_Handler        * GetHadronDecayHandler()   { return p_hadrondecays;    }
-    APHYTOOLS::Flavour          * GetBunches()              { return m_bunch_particles; }
+    ATOOLS::Flavour          * GetBunches()              { return m_bunch_particles; }
   };
 
   /*!
@@ -147,11 +147,11 @@ namespace SHERPA {
     consideration.
   */
   /*!
-    \var APHYTOOLS::Flavour Initialization_Handler::m_bunch_particles[2]
+    \var ATOOLS::Flavour Initialization_Handler::m_bunch_particles[2]
     The bunch particles, i.e. the particles that are resolved into their constituents by the pdf's.
   */
   /*!
-    \var AORGTOOLS::Data_Read * Initialization_Handler::p_dataread
+    \var ATOOLS::Data_Read * Initialization_Handler::p_dataread
     A pointer to the data read object used all over the class. 
   */
   /*!

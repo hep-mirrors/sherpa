@@ -16,16 +16,16 @@ namespace SHERPA {
     int    * jmohep, * jdahep, * isthep, * idhep;
     int      nhep;
     
-    void Parton2HepEvt(APHYTOOLS::Parton *,int *,int *,int);
+    void Parton2HepEvt(ATOOLS::Parton *,int *,int *,int);
     void MakeColorChain();
   public:
     IO_HepEvt();
     ~IO_HepEvt();
     
-    void Blobs2HepEvt(APHYTOOLS::Blob_List *, std::string, int &);
-    void Blob2HepEvt(APHYTOOLS::Blob *, int);
-    void Entry2HepEvt(APHYTOOLS::Flavour,AMATOOLS::Vec4D,AMATOOLS::Vec4D,int);
-    void Parton2HepEvt(APHYTOOLS::Parton *,int);
+    void Blobs2HepEvt(ATOOLS::Blob_List *, std::string, int &);
+    void Blob2HepEvt(ATOOLS::Blob *, int);
+    void Entry2HepEvt(ATOOLS::Flavour,ATOOLS::Vec4D,ATOOLS::Vec4D,int);
+    void Parton2HepEvt(ATOOLS::Parton *,int);
 
     int      Nhep()   { return nhep; }
     double * Phep()   { return phep; }

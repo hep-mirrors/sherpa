@@ -7,9 +7,7 @@ using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
 using namespace PDF;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
@@ -187,7 +185,7 @@ std::string Matrix_Element_Handler::ProcessName()
   return string("Error - no process name!");
 }
 
-AMATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
+ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
   switch (m_mode) {
   case 1: return p_amegic->Momenta();
   case 2: return p_simplexs->Momenta();
@@ -195,7 +193,7 @@ AMATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
   return NULL;
 }
 
-APHYTOOLS::Flavour * Matrix_Element_Handler::Flavs() {
+ATOOLS::Flavour * Matrix_Element_Handler::Flavs() {
   switch (m_mode) {
   case 1: return p_amegic->Flavs();
   case 2: return p_simplexs->Flavs();

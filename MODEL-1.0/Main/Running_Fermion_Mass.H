@@ -6,14 +6,14 @@
 #include "Function_Base.H"
 
 namespace MODEL {
-  class Running_Fermion_Mass : public AMATOOLS::Function_Base {
+  class Running_Fermion_Mass : public ATOOLS::Function_Base {
   protected:
     int              m_order;
     double           m_gamma,m_beta;
     double           m_polemass,m_alphahat;
     Running_AlphaS * p_as;
   public:
-    Running_Fermion_Mass(APHYTOOLS::Flavour,double,Running_AlphaS *);
+    Running_Fermion_Mass(ATOOLS::Flavour,double,Running_AlphaS *);
     ~Running_Fermion_Mass() {}
     double operator()(double); 
     void SelfTest();
@@ -54,7 +54,7 @@ namespace MODEL {
     A pointer to the running \f$\alpha_s\f$ used in the code.
   */
   /*!
-    \fn Running_Fermion_Mass::Running_Fermion_Mass(APHYTOOLS::Flavour,double,Running_AlphaS *)
+    \fn Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour,double,Running_AlphaS *)
     In the constructor of this class, the quark in question, its polemass and a poniter to
     the running \f$\alpha_s\f$ are needed.
   */

@@ -7,7 +7,7 @@ namespace EXTRAXS {
   class XS_qqbar_pg : public Single_XS {
     bool barred;
   public: 
-    XS_qqbar_pg(int _nin,int _nout,APHYTOOLS::Flavour * _fl);
+    XS_qqbar_pg(int _nin,int _nout,ATOOLS::Flavour * _fl);
     double operator()(double s,double t,double u);
     bool   SetColours(double,double,double);
   }; 
@@ -15,7 +15,7 @@ namespace EXTRAXS {
   class XS_qg_qp : public Single_XS {
     bool barred;
   public: 
-    XS_qg_qp (int _nin,int _nout,APHYTOOLS::Flavour * _fl);
+    XS_qg_qp (int _nin,int _nout,ATOOLS::Flavour * _fl);
     double operator()(double s,double t,double u);
     bool   SetColours(double,double,double);
   }; 
@@ -30,7 +30,7 @@ namespace EXTRAXS {
     int    kswitch;
     double fac,fin;
   public:
-    XS_ee_ffbar(int _nin,int _nout,APHYTOOLS::Flavour * _fl) ;
+    XS_ee_ffbar(int _nin,int _nout,ATOOLS::Flavour * _fl) ;
     double operator()(double,double,double);
     bool   SetColours(double,double,double);
     /*! 

@@ -2,7 +2,7 @@
 #define poincare_h
 #include "Vector.H"
 
-namespace AMATOOLS {
+namespace ATOOLS {
   class Poincare {
     int    m_status;               // 0 no operation, 1 boost, 2 rot, 3 boost+rot
     double m_mat[4][4];               
@@ -28,7 +28,7 @@ namespace AMATOOLS {
 
   /*!
     \file
-    \brief  contains the class AMATOOLS::Poincare
+    \brief  contains the class Poincare
   */
 
   /*!

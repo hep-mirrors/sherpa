@@ -1,9 +1,7 @@
 #include "Monochromatic.H"
 #include "Message.H"
 
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace BEAM;
 using namespace std;
 

@@ -2,9 +2,7 @@
 
 
 using namespace SHERPA;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 Signal_Processes::Signal_Processes(Matrix_Element_Handler * _mehandler) :

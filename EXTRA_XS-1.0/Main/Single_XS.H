@@ -10,10 +10,10 @@ namespace EXTRAXS {
   protected:
     double m_thres;
   public:
-    Single_XS(int,int,APHYTOOLS::Flavour *,
-	      PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+    Single_XS(int,int,ATOOLS::Flavour *,
+	      PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,ATOOLS::Selector_Data *,
 	      int,int,double);
-    Single_XS(int,int,APHYTOOLS::Flavour *);
+    Single_XS(int,int,ATOOLS::Flavour *);
 
     virtual int                        Size();
     virtual XS_Base                  * operator[](int idx);
@@ -36,7 +36,7 @@ namespace EXTRAXS {
 
   inline int Single_XS::Size() { return 1; }
   inline XS_Base * Single_XS::operator[](int idx) {
-    AORGTOOLS::msg.Error()<<"Error in XS_Base * Single_XS::operator[]. "<<std::endl
+    ATOOLS::msg.Error()<<"Error in XS_Base * Single_XS::operator[]. "<<std::endl
 			  <<"   This is absolutely meaningless. Return this."<<std::endl;
     return this;
   }

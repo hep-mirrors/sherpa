@@ -14,8 +14,8 @@ namespace APACIC {
     double          m_alpha;
     double          m_qsqr;
   public:
-    f_fp(APHYTOOLS::Flavour fermionflavour);
-    f_fp(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    f_fp(ATOOLS::Flavour fermionflavour);
+    f_fp(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -31,8 +31,8 @@ namespace APACIC {
     double          m_alpha;
     double          m_qsqr;
   public:
-    f_pf(APHYTOOLS::Flavour fermionflavour);
-    f_pf(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    f_pf(ATOOLS::Flavour fermionflavour);
+    f_pf(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -47,8 +47,8 @@ namespace APACIC {
     double          m_alpha;
     double          m_qsqr;
   public:
-    p_ff(APHYTOOLS::Flavour fermionflavour);
-    p_ff(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    p_ff(ATOOLS::Flavour fermionflavour);
+    p_ff(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     double operator()(double z);
     double GetZ();
     double GetCoupling();
@@ -75,12 +75,12 @@ namespace APACIC {
   */
 
   /*!
-    \fn f_fp::f_fp(APHYTOOLS::Flavour fermionflavour);
+    \fn f_fp::f_fp(ATOOLS::Flavour fermionflavour);
     \brief Constructor, taking the fermion flavour as argument (obsolete)
   */
 
   /*!
-    \fn f_fp::f_fp(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    \fn f_fp::f_fp(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     \brief Constructor, takng the fermion flavour and a class to
            deliver running alpha_qed 
   */
@@ -97,11 +97,11 @@ namespace APACIC {
     \f]
   */
   /*!
-    \fn f_pf::f_pf(APHYTOOLS::Flavour fermionflavour);
+    \fn f_pf::f_pf(ATOOLS::Flavour fermionflavour);
     \brief Constructor, taking the fermion flavour as argument (obsolete)
   */
   /*!
-    \fn f_pf::f_pf(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    \fn f_pf::f_pf(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     \brief Constructor, takng the fermion flavour and a class to
            deliver running alpha_qed 
   */
@@ -119,11 +119,11 @@ namespace APACIC {
   */
 
   /*!
-    \fn p_ff::p_ff(APHYTOOLS::Flavour fermionflavour);
+    \fn p_ff::p_ff(ATOOLS::Flavour fermionflavour);
     \brief Constructor, taking the fermion flavour as argument (obsolete)
   */
   /*!
-    \fn p_ff::p_ff(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    \fn p_ff::p_ff(ATOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
     \brief Constructor, takng the fermion flavour and a class to
            deliver running alpha_qed 
   */

@@ -11,7 +11,7 @@
 
 // compare with       HepMC_Version1.01/HepMC/*.h !!
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   class Blob;
    
   class Parton {
@@ -22,7 +22,7 @@ namespace APHYTOOLS {
     int               m_jetnumber; 
     Flavour           m_fl;         
     Flow            * p_flow;
-    AMATOOLS::Vec4D   m_momentum; 
+    Vec4D   m_momentum; 
     Blob            * p_startblob;
     Blob            * p_endblob;
     double            m_dec_time;      
@@ -31,37 +31,37 @@ namespace APHYTOOLS {
     Parton(const Parton * );
     Parton(const Parton & );
     Parton& operator=(const Parton &);
-    Parton(int,Flavour=Flavour(kf::none),AMATOOLS::Vec4D=AMATOOLS::Vec4D(0.,0.,0.,0.));
+    Parton(int,Flavour=Flavour(kf::none),Vec4D=Vec4D(0.,0.,0.,0.));
     ~Parton();
     friend std::ostream& operator<<(std::ostream &,Parton*);
 
     void Copy(Parton * );
     double ProperTime();
     double LifeTime();
-    AMATOOLS::Vec3D Distance();
-    AMATOOLS::Vec4D    Momentum() const;
+    Vec3D Distance();
+    Vec4D    Momentum() const;
     double             E();
     int                Status() const;
     char               Info() const;
-    AMATOOLS::Vec4D    XProd();
+    Vec4D    XProd();
     Blob             * ProductionBlob();
-    AMATOOLS::Vec4D    XDec();
+    Vec4D    XDec();
     Blob             * DecayBlob();
     double             Time() const ;
-    APHYTOOLS::Flavour Flav() const ;
-    APHYTOOLS::Flow  * GetFlow() const ;
+    Flavour Flav() const ;
+    Flow  * GetFlow() const ;
     int                GetFlow( int ) const ;
     int                Number() const;
     int                JetNumber() const;
-    void   SetMomentum(const AMATOOLS::Vec4D &);
+    void   SetMomentum(const Vec4D &);
     void   SetStatus( int status = 0 );
     void   SetInfo(char);
     void   SetProductionBlob(Blob *);
     void   SetDecayBlob(Blob *);
     void   SetTime(const int);
     void   SetTime();
-    void   SetFlav(APHYTOOLS::Flavour &);
-    void   SetFlow(APHYTOOLS::Flow *);
+    void   SetFlav(Flavour &);
+    void   SetFlow(Flow *);
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int);
     void   SetJetNumber(const int);
@@ -180,7 +180,7 @@ namespace APHYTOOLS {
   */
   
   /*!
-    \var   AMATOOLS::Vec4D   m_momentum
+    \var   Vec4D   m_momentum
     \brief The parton's momentum.
   */
   
@@ -216,7 +216,7 @@ namespace APHYTOOLS {
   */
   
   /*!
-    \fn    AMATOOLS::Vec3D Parton::Distance()
+    \fn    Vec3D Parton::Distance()
     \brief Calculate decay length.
     
     Calculate the distance travelled by the particle during its lifetime.

@@ -3,7 +3,7 @@
 #include "Message.H"
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 void Amplitude_Manipulator::SetPrev(Point* p)
@@ -239,17 +239,17 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
   if (p->prev==0) {
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      // AORGTOOLS::msg.Debugging()<<p->number<<" is vbar"<<endl;
+      // ATOOLS::msg.Debugging()<<p->number<<" is vbar"<<endl;
     }
   }
   if (p->left==0) {
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      // AORGTOOLS::msg.Debugging()<<p->number<<" is u"<<endl;
+      // ATOOLS::msg.Debugging()<<p->number<<" is u"<<endl;
     }
     if (b[p->number]==1) {
       // O----<--- Orientation
-      // AORGTOOLS::msg.Debugging()<<p->number<<" is v"<<endl;
+      // ATOOLS::msg.Debugging()<<p->number<<" is v"<<endl;
     }
     return;
   }
@@ -301,11 +301,11 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
 
   if (minus==-1) {
     sign *= -1;
-    //AORGTOOLS::msg.Debugging()<<"FL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
+    //ATOOLS::msg.Debugging()<<"FL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
   }
   else {
     if (p->number>99) {
-      //AORGTOOLS::msg.Debugging()<<"FL Flavour in spin flow: "<<p->fl<<";"<<p->t<<endl;
+      //ATOOLS::msg.Debugging()<<"FL Flavour in spin flow: "<<p->fl<<";"<<p->t<<endl;
     }
   }
 
@@ -324,17 +324,17 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
   if (p->left==0) {  
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      // AORGTOOLS::msg.Debugging()<<p->number<<" is vbar"<<endl;
+      // ATOOLS::msg.Debugging()<<p->number<<" is vbar"<<endl;
     }
     if (b[p->number]==1) {
       // O----<--- Orientation
-      // AORGTOOLS::msg.Debugging()<<p->number<<" is ubar"<<endl;
+      // ATOOLS::msg.Debugging()<<p->number<<" is ubar"<<endl;
     }    
   }
   if (p->prev==0) {  
     if (b[p->number]==-1) {
       // ----<---O Orientation
-      // AORGTOOLS::msg.Debugging()<<p->number<<" is u"<<endl;
+      // ATOOLS::msg.Debugging()<<p->number<<" is u"<<endl;
     }
     return;
   }
@@ -384,11 +384,11 @@ void Amplitude_Manipulator::BackwardLineOrientation(Point* p,int& sign)
 
   if (minus==-1) {
     sign *= -1;
-    // AORGTOOLS::msg.Debugging()<<"BL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
+    // ATOOLS::msg.Debugging()<<"BL Flavour(-1) opposite to spin flow: "<<p->fl<<";"<<p->t<<endl;
   }
   else {
     if (p->number>99) {
-      // AORGTOOLS::msg.Debugging()<<"BL Flavour in spin flow             : "<<p->fl<<";"<<p->t<<endl;
+      // ATOOLS::msg.Debugging()<<"BL Flavour in spin flow             : "<<p->fl<<";"<<p->t<<endl;
     }
   }
 
@@ -448,7 +448,7 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
   }
   
   if (majoflag) {
-    //AORGTOOLS::msg.Debugging()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
+    //ATOOLS::msg.Debugging()<<"Fermion Flow(Majo): "<<pb->number<<" <-> "<<pe->number<<endl;
     if (!pb->fl.IsAnti() && b[pb->number]==-1) majoflag=1;
     if (pb->fl.IsAnti()  && b[pb->number]==-1) majoflag=-1;
     if (!pb->fl.IsAnti() && b[pb->number]==1)  majoflag=-1;
@@ -466,7 +466,7 @@ void Amplitude_Manipulator::SetFermionNumberFlow(Point* pb,Point* pe)
     else SetBackwardFNFlow(pe,majoflag);
   }
   else {   
-    //AORGTOOLS::msg.Debugging()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
+    //ATOOLS::msg.Debugging()<<"Fermion Flow: "<<pb->number<<" -> "<<pe->number<<endl;
     if (pb->prev==0) SetForwardFNFlow(pb,0);
     else SetBackwardFNFlow(pb,0);
   }

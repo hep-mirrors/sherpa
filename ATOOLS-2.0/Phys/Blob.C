@@ -4,11 +4,9 @@
 #include "Message.H"
 #include <iomanip.h>
 
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 
-namespace APHYTOOLS {
+namespace ATOOLS {
   std::ostream& operator<<( std::ostream& ostr, const Blob & bl) {
     ostr<<std::setw(4)<<std::setprecision(4);
     ostr<<"Blob ( "<<bl.Id()<<", "<<bl.Type()<<", ";

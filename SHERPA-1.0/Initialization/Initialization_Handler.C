@@ -13,9 +13,7 @@ using namespace SHERPA;
 using namespace MODEL;
 using namespace BEAM;
 using namespace PDF;
-using namespace AORGTOOLS;
-using namespace APHYTOOLS;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 
@@ -52,7 +50,7 @@ Initialization_Handler::~Initialization_Handler()
 
 bool Initialization_Handler::InitializeTheFramework()
 {
-  APHYTOOLS::ParticleInit(m_path); 
+  ATOOLS::ParticleInit(m_path); 
   rpa.Init(m_path);
 
   bool okay = InitializeTheModel();  

@@ -25,8 +25,8 @@ namespace SHERPA {
 
     //    AMEGIC::Process_Base   * p_lastproc;
     Matrix_Element_Handler  * p_me;
-    APHYTOOLS::Jet_Finder   * p_jf;
-    APHYTOOLS::Blob         * p_blob;
+    ATOOLS::Jet_Finder   * p_jf;
+    ATOOLS::Blob         * p_blob;
 
     int     m_maxjetnumber;
     double  m_weight;
@@ -44,28 +44,28 @@ namespace SHERPA {
 
 
     bool            FillLegs(Leg *, AMEGIC::Point *, int &, int);
-    APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const AMATOOLS::Vec4D &,char);
-    AMATOOLS::Vec4D Momentum(APACIC::Knot *, int &);
+    APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char);
+    ATOOLS::Vec4D Momentum(APACIC::Knot *, int &);
 
-    bool    IsColourConnected(APHYTOOLS::Parton *,APHYTOOLS::Parton *);
+    bool    IsColourConnected(ATOOLS::Parton *,ATOOLS::Parton *);
     double  ColourAngle(const std::vector<APACIC::Knot *> &, const int);
     void    EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,int);
     void    DetermineColourAngles(const std::vector<APACIC::Knot *> &);
 
   public :
-    Cluster_Partons(Matrix_Element_Handler * me, APHYTOOLS::Jet_Finder * jf, 
+    Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf, 
 		    int maxjetnumber, int isron, int fsron) ;
     ~Cluster_Partons();
-    bool ClusterConfiguration(APHYTOOLS::Blob *);
+    bool ClusterConfiguration(ATOOLS::Blob *);
     void CalculateWeight(double,double);
     void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);
 
-    int     SetColours(AMATOOLS::Vec4D *, APHYTOOLS::Flavour *);
+    int     SetColours(ATOOLS::Vec4D *, ATOOLS::Flavour *);
     double  Weight();
     double  Scale();
 
-    APHYTOOLS::Flavour Flav(int);
-    AMATOOLS::Vec4D    Momentum(int); 
+    ATOOLS::Flavour Flav(int);
+    ATOOLS::Vec4D    Momentum(int); 
   };
 
   inline double  Cluster_Partons::Weight() { return m_weight; }
@@ -89,7 +89,7 @@ namespace SHERPA {
   */
 
   /*!
-    \fn  bool Cluster_Partons::Cluster_Configuration(APHYTOOLS::Blob *)
+    \fn  bool Cluster_Partons::Cluster_Configuration(ATOOLS::Blob *)
     \brief Applys a jet cluster algorithm one a given process until
            2 \to 2 Process is obtained
 
@@ -119,7 +119,7 @@ namespace SHERPA {
   */
 
   /*!
-    \fn  int  Cluster_Partons::SetColours(AMATOOLS::Vec4D *, APHYTOOLS::Flavour *)
+    \fn  int  Cluster_Partons::SetColours(ATOOLS::Vec4D *, ATOOLS::Flavour *)
     \brief Determines a Colour Structure for a given hard 2 \to 2 process
     and fixes a hard scale. These can be used as initial condition for 
     CalculateWeight()

@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 using namespace AMEGIC;
-using namespace AORGTOOLS;
+using namespace ATOOLS;
 using namespace std;
 
 void String_Library::InitMakefile(string pathID)

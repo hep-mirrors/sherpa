@@ -2,9 +2,9 @@
 #include "MathTools.H"
 
 using namespace MODEL;
-using namespace AMATOOLS;
+using namespace ATOOLS;
 
-Running_Fermion_Mass::Running_Fermion_Mass(APHYTOOLS::Flavour _flav,double _polemass,
+Running_Fermion_Mass::Running_Fermion_Mass(ATOOLS::Flavour _flav,double _polemass,
 					   Running_AlphaS * _as) :
   m_polemass(_polemass), p_as(as)
 {
