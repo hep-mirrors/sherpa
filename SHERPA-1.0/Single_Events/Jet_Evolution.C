@@ -140,7 +140,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  if (Sign(_blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
 	  else myblob->SetBeam(1-i);
 	  myblob->SetStatus(1);
-	  Particle * p = new Particle(_blob->InParticle(i));
+	  Particle * p = new Particle(*_blob->InParticle(i));
 	  p->SetStatus(2);
 	  myblob->AddToInParticles(p);
 	  myblob->AddToOutParticles(_blob->InParticle(i));
@@ -155,7 +155,7 @@ int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
 	  myblob->SetType(btp::FS_Shower);
 	  myblob->SetBeam(i);
 	  myblob->SetStatus(1);
-	  Particle * p = new Particle(_blob->OutParticle(i));
+	  Particle * p = new Particle(*_blob->OutParticle(i));
 	  if (_blob->OutParticle(i)->DecayBlob()) {
 	    Blob * dec  = _blob->OutParticle(i)->DecayBlob();
 	    if (dec->Type()==btp::Hard_Decay) {

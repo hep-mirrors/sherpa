@@ -56,7 +56,7 @@ void Event_Shapes_EE::Select(const Particle_List & pl_in,double value,int ncount
   Particle_List * pl_out = new Particle_List;
   for (Particle_List::const_iterator pit=pl_in.begin();pit!=pl_in.end();++pit) {
     if ((*p_qualifier)(*pit)) {
-      pl_out->push_back(new Particle(*pit));
+      pl_out->push_back(new Particle(**pit));
       mom = Vec3D((*pit)->Momentum());
       m_vectors.push_back(mom); m_vectors_save.push_back(mom);
     }

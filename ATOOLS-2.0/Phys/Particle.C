@@ -86,24 +86,9 @@ Particle::Particle():
   p_flow      = new Flow(this);
 }
 
-Particle::Particle(const Particle *in):
+Particle::Particle(const Particle &in): 
   p_startblob(NULL),
   p_endblob(NULL)
-{
-  ++s_totalnumber;
-  m_number    = in->m_number;
-  m_info      = in->m_info;
-  m_status    = in->Status();
-  m_fl        = in->m_fl;
-  m_momentum  = in->m_momentum;
-  m_dec_time  = in->m_dec_time;
-  m_finalmass = in->m_finalmass;
-  p_flow      = new Flow(this);
-  p_flow->SetCode(1,in->GetFlow(1));
-  p_flow->SetCode(2,in->GetFlow(2));
-}
-
-Particle::Particle(const Particle &in)  
 {
   ++s_totalnumber;
   m_number    = in.m_number;

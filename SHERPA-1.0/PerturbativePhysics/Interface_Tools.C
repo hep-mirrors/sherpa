@@ -21,7 +21,7 @@ void Interface_Tools::InitializeIncoming(Blob *blob,double scale,double E,
 {
   p_initrees[0]->Reset();  
   Knot * m1      = p_initrees[0]->NewKnot();
-  *(m1->part)    = blob->InParticle(0);
+  *(m1->part)    = *blob->InParticle(0);
   m1->part->SetInfo('G');
   m1->part->SetStatus(1);
   m1->t          = -scale;
@@ -35,7 +35,7 @@ void Interface_Tools::InitializeIncoming(Blob *blob,double scale,double E,
   m1->part->SetDecayBlob(blob);
   p_initrees[1]->Reset();  
   Knot * m2      = p_initrees[1]->NewKnot();
-  *(m2->part)    = blob->InParticle(1);
+  *(m2->part)    = *blob->InParticle(1);
   m2->part->SetInfo('G');
   m2->part->SetStatus(1);
   m2->t          = -scale;

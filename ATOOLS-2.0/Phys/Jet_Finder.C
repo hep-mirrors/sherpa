@@ -144,7 +144,7 @@ bool Jet_Finder::ConstructJets(Particle_List * pl, double y_res, bool final_only
   // create "complete new particle list"
   int j=0;
   for (Particle_List::iterator it=pl->begin(); it!=pl->end();++it,++j) {
-    (*it)= new Particle(*it);
+    (*it)= new Particle(**it);
     (*it)->SetFlav(Flavour(kf::jet));
     (*it)->SetMomentum(momsout[j]);
   }
@@ -343,7 +343,7 @@ bool Jet_Finder::Trigger(const Vec4D * p)
 
   int    j,k;
   bool   trigger = 1;
-  double ymin;
+  double ymin=0.;
 
   switch (m_jet_alg) {
   case 1 : 

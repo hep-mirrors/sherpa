@@ -27,7 +27,6 @@ namespace ATOOLS {
     static int s_totalnumber;
   public:
     Particle();
-    Particle(const Particle * );
     Particle(const Particle & );
     Particle& operator=(const Particle &);
     Particle(int, Flavour=Flavour(kf::none), Vec4D=Vec4D(0.,0.,0.,0.));

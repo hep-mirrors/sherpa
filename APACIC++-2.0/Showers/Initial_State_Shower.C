@@ -183,7 +183,7 @@ void Initial_State_Shower::SingleExtract(Knot * kn,int beam,Blob * jet,
     bl->insert(bl->begin(),jet);
 
     if (!kn->prev) jet->SetBeam(beam);
-    p = new Particle(kn->part);
+    p = new Particle(*kn->part);
     p->SetStatus(2);
     jet->AddToInParticles(p);
   }
@@ -191,14 +191,14 @@ void Initial_State_Shower::SingleExtract(Knot * kn,int beam,Blob * jet,
   // --- add to MEPS blob ---
   if (!ignore && (kn->part->Info()=='H' || kn->part->Info()=='G')) {
     if  (is_is && m_bl_meps_is) {
-      p = new Particle(kn->part);
+      p = new Particle(*kn->part);
       jet->AddToOutParticles(p);
       p->SetStatus(2);
       m_bl_meps_is->AddToInParticles(p);
     }
     else if (!is_is && m_bl_meps_fs) {
       if (!p) {
-	p = new Particle(kn->part);
+	p = new Particle(*kn->part);
 	jet->AddToInParticles(p);
       }
       p->SetStatus(2);
@@ -208,7 +208,7 @@ void Initial_State_Shower::SingleExtract(Knot * kn,int beam,Blob * jet,
 
   // --- add final state particle ---
   if (lastknot && !is_is) {
-    p = new Particle(kn->part);
+    p = new Particle(*kn->part);
     p->SetStatus(1);
     jet->AddToOutParticles(p);
   }

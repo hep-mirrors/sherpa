@@ -347,7 +347,7 @@ bool Event_Reader::ReadInSimpleHepEvtEvent(Blob_List * blobs)
 		showerblob->AddToOutParticles(part);
 		hadronblob->AddToInParticles(part);
 		if (!part->Flav().Strong() &&
-		    !part->Flav().IsDiQuark()) hadronblob->AddToOutParticles(new Particle(part));
+		    !part->Flav().IsDiQuark()) hadronblob->AddToOutParticles(new Particle(*part));
 		minhadron = part->Number();
 		shower = true;
 	      }

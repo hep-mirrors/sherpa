@@ -598,7 +598,7 @@ void Cluster_Partons::FillDecayTree(Tree * fin_tree,XS_Base * xs)
   knots.reserve(3);
 
   Knot * knot  = fin_tree->NewKnot();
-  *knot->part  = p_blob->InParticle(0);
+  *knot->part  = *p_blob->InParticle(0);
   knot->part->SetStatus(2);
   knot->part->SetInfo('h');
   knot->stat   = 0;

@@ -413,14 +413,14 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       if (pl) pl->push_back(kn->part);
       jet = new Blob();
       jet->SetStatus(1);
-      p = new Particle(kn->part);
+      p = new Particle(*kn->part);
       jet->AddToInParticles(p);
       if (bl_meps) {
 	bl_meps->AddToOutParticles(p);
 	bl_meps->SetStatus(0);
       }
 
-      p = new Particle(kn->part);
+      p = new Particle(*kn->part);
       jet->AddToOutParticles(p);
       if (pl) number = pl->size();
       else number = (long int)(kn->part);
@@ -437,7 +437,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
 	jet = new Blob();
 	jet->SetStatus(1);
-	p = new Particle(kn->part);
+	p = new Particle(*kn->part);
       	p->SetStatus(2);
 	if (pl) pl->push_back(p);
 	jet->AddToInParticles(p);
@@ -469,7 +469,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       kn->part->SetNumber(number);
       kn->part->SetStatus(1);
       if (pl) pl->push_back(kn->part);
-      jet->AddToOutParticles(new Particle(kn->part));
+      jet->AddToOutParticles(new Particle(*kn->part));
     }
   }
   ExtractPartons(kn->left,jet,bl,pl); 
@@ -481,7 +481,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn, Particle_List * pl)
 {
   if (!kn) return;
   if (kn->left==0) {
-    if (pl) pl->push_back(new Particle(kn->part));
+    if (pl) pl->push_back(new Particle(*kn->part));
     return;
   }
 

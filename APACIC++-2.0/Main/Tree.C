@@ -104,7 +104,7 @@ Knot * Tree::NewKnot(Knot * ink) {
   if (!p_root) {
     p_root = newk;
   }
-  newk->part      = new Particle(ink->part);
+  newk->part      = new Particle(*ink->part);
   return newk;
 }
 
@@ -117,7 +117,7 @@ Knot * Tree::NewKnot(Particle * _inpart)
     newk->part    = new Particle(newk->kn_no);
   }
   else {
-    newk->part    = new Particle(_inpart);
+    newk->part    = new Particle(*_inpart);
   }
   newk->left      = 0;
   newk->right     = 0;

@@ -296,7 +296,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
       p_jetalg->ConstructJets(pl_in,pl_out,diffrates,it->second.r_min);
       // add leptons
       for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
-	if ((*pit)->Flav().IsLepton()) pl_out->push_back(new Particle(*pit));
+	if ((*pit)->Flav().IsLepton()) pl_out->push_back(new Particle(**pit));
       }
       m_ownlist=true;
       std::string key;
@@ -346,7 +346,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
 
   if (!m_ownlist) {
     for (Particle_List::iterator itp=pl_out->begin(); itp!=pl_out->end();++itp) {
-      *itp = new Particle(*itp);
+      *itp = new Particle(**itp);
     }
   }
   

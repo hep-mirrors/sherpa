@@ -35,7 +35,7 @@ namespace APACIC {
     right  = ink->right;
 
     ATOOLS::Particle * newp;
-    newp   = new ATOOLS::Particle(ink->part);
+    newp   = new ATOOLS::Particle(*ink->part);
     part   = newp;
     stat   = ink->stat;
 

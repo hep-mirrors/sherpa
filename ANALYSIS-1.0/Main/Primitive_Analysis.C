@@ -329,7 +329,7 @@ void Primitive_Analysis::CreateFinalStateParticleList()
 	    (m_mode&ANALYSIS::do_hadron)==0 && p->Info()!='G') {
 	  if ((p->Info()!='G' &&  p->Info()!='H')
 	      || (*blit)->Type()!=btp::IS_Shower)
-	    pl->push_back(new Particle(p));
+	    pl->push_back(new Particle(*p));
 	}
       }
     }
@@ -365,7 +365,7 @@ void Primitive_Analysis::CreateChargedParticleList()
 	  back_inserter(*pl),Is_Charged());
 
   for (Particle_List::iterator it=pl->begin(); it!=pl->end();++it) {
-    (*it)= new Particle(*it);
+    (*it)= new Particle(**it);
   }
   
   m_pls["ChargedParticle"]=pl;

@@ -103,7 +103,7 @@ bool Beam_Remnant_Handler::FillBunchBlobs(ATOOLS::Blob_List * bloblist,
 	if ((*biter)->InParticle(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
 	    ATOOLS::IsEqual((*biter)->InParticle(0)->E(),
 			    p_beam->GetBeam(i)->InMomentum()[0])) {
-	  p = new ATOOLS::Particle((*biter)->InParticle(0));
+	  p = new ATOOLS::Particle(*(*biter)->InParticle(0));
 	  if (particlelist!=NULL) p->SetNumber(-particlelist->size());
 	  else p->SetNumber(0);
 	  blob->AddToInParticles(p);
