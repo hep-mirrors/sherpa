@@ -65,17 +65,19 @@ if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
 if [ ! "$RESULTS" = "" ]; then RESULTS=$RUNPATH$RESULTS ; fi
 if [ ! "$ANALYSIS" = "" ]; then ANALYSIS=$RUNPATH$ANALYSIS ; fi
 
-FILE=$BASENAME"_"$TIME
 LOGPATH=$PWD
-LOGFILE=$PWD"/"$FILE
+SETUPPATH=$LOGPATH"/"$BASENAME"_"$TIME"/"
+LOGFILE=$SETUPPATH"run.log"
+FILE="submit_"$TIME".sh"
 
+cp -r $RUNPATH $SETUPPATH
 echo "" > $FILE
 if [ "$QUEUE" = "TRUE" ] ; then 
   echo "#$ -j y" >> $FILE
   echo "#$ -o $LOGPATH/" >> $FILE
   echo "#$ -N $FILE.sge" >> $FILE
   echo "" >> $FILE
-  echo "LOGFILE=$LOGFILE.log" >> $FILE
+  echo "LOGFILE=$LOGFILE" >> $FILE
   echo "" >> $FILE
   echo "echo \"\" > \$LOGFILE" >> $FILE
   echo "echo \"HOSTNAME    = \$HOSTNAME\" >> \$LOGFILE" >> $FILE
@@ -92,11 +94,11 @@ if [ "$QUEUE" = "TRUE" ] ; then
 else
   echo "#!/bin/bash" >> $FILE
   echo "" >> $FILE
-  echo "LOGFILE=$LOGFILE.log" >> $FILE
+  echo "LOGFILE=$LOGFILE" >> $FILE
   echo "" >> $FILE
 fi
 echo "cd $BINPATH" >> $FILE
-echo -en "./Sherpa PATH=$RUNPATH " >> $FILE
+echo -en "./Sherpa PATH=$SETUPPATH " >> $FILE
 if [ ! "$RUNFILE" = "" ] ; then echo -en "RUNDATA=$RUNFILE " >> $FILE ; fi
 if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=$RESULTS " >> $FILE ; fi
 if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=$ANALYSIS " >> $FILE ; fi
@@ -105,11 +107,15 @@ if [ ! "$PYTHIA" = "" ] ; then echo -en "PYTHIA=$PYTHIA " >> $FILE ; fi
 echo -e ">> \$LOGFILE 2>&1 \n" >> $FILE
 
 if [ "$QUEUE" = "TRUE" ] ; then
+  echo "" >> $FILE
+  echo "cp $FILE.sge $SETUPPATH" >> $FILE
+  echo "" >> $FILE
   qsub $FILE  
 else
   chmod 777 $FILE
   ( nohup $FILE > /dev/null & ) 
 fi
+cp $FILE $SETUPPATH
 
 # mode:shell-script
 # sh-indentation:2
