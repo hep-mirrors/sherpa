@@ -202,6 +202,7 @@ void Forward_Backward_Eta_Correlation::EndEvaluation(double scale)
   p_histo->Output();
 }
 
+#define SORT
 #ifdef SORT
 #define SORT_LIST(LISTNAME,PREDICATE)					\
   std::sort(LISTNAME->begin(),LISTNAME->end(),ATOOLS::PREDICATE())	
