@@ -72,8 +72,8 @@ for I in $* ; do
   elif [ "$I" = "-u" ]; then UPDATE=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "benchmark version 1.0" && echo && \
-    echo "options: -p <path>      specifiy benchmark points in path <path>" && \
-    echo "         -f <file>      specifiy benchmark points in file <file>" && \
+    echo "options: -p <path>      specify benchmark points in path <path>" && \
+    echo "         -f <file>      specify benchmark points in file <file>" && \
     echo "         -l <logfile>   write benchmarking output to <logfile>" && \
     echo "         -m <address>   send benchmarking report to <address>" && \
     echo "         -u             update from cvs before benchmarking" && \
