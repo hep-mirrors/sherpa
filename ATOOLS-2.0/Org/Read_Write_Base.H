@@ -35,6 +35,7 @@ namespace ATOOLS {
 
     std::vector<std::string> m_comment, m_ignore, m_separator, m_filecontent;
     std::vector<int>         m_blank;
+    std::vector<bool>        m_ifresults;
 
     std::string              m_string;
     std::vector<std::string> m_filebegin, m_fileend;
@@ -68,6 +69,7 @@ namespace ATOOLS {
     size_t Find(std::string input,std::string parameter,size_t &length) const;
 
     std::string ReplaceTags(std::string &expr) const;    
+    std::string &Interprete(std::string &lastline);
 
   public:
 

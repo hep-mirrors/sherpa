@@ -127,6 +127,53 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
 
 #include "Message.H"
 
+std::string &Read_Write_Base::Interprete(std::string &lastline) 
+{
+  if (!m_cmode) return lastline;
+  if (!m_ifresults.empty()) {
+    size_t pos=lastline.find("}");
+    if (pos!=std::string::npos) {
+      if (m_ifresults.back()) lastline.replace(pos,1,"");
+      else lastline=lastline.substr(pos+1);
+      m_ifresults.pop_back();
+    }
+    if (!m_ifresults.empty() && 
+	!m_ifresults.back()) lastline="";
+  }
+  size_t pos=lastline.find("if");
+  if (pos!=std::string::npos) {
+    size_t opos=pos, cpos=lastline.find(")");
+    for (;opos<lastline.length();++opos) 
+      if (lastline[opos]=='(') break;
+    if (opos<cpos) {
+      Algebra_Interpreter interpreter;
+      interpreter.SetTagReplacer(this);
+      bool result=ToType<int>
+	(interpreter.Interprete(lastline.
+				substr(opos+1,cpos-opos-1)));
+      for (opos=cpos+1;opos<lastline.length();++opos) 
+	if (lastline[opos]=='{') {
+	  m_ifresults.push_back(result);
+	  ++opos;
+	  break;
+	}
+	else {
+	  bool blank=false;
+	  for (size_t i=0;i<m_blank.size();++i) 
+	    if (lastline[opos]==m_blank[i]) {
+	      blank=true;
+	      break;
+	    }
+	  if (!blank) break;
+	}
+      if (opos==lastline.length()) opos=cpos;
+      if (result) lastline=lastline.substr(opos);
+      else lastline="";
+    }
+  }
+  return lastline;
+}
+
 bool Read_Write_Base::OpenInFile(const unsigned int i)
 {  
   if (InputFile(i)==nullstring) {
@@ -149,7 +196,6 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
     bool checkbegin=(bool)(m_filebegin.size()>0);
     bool checkend=(bool)(m_fileend.size()>0);
     int filebegin=0;
-    std::vector<bool> ifresults;
     unsigned int occurrence=0;
     if (*m_infile[i]) {
       getline(*m_infile[i],lastline);
@@ -182,55 +228,12 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 	      }
 	    }
 	  }
-	  if (m_cmode) {
-	    if (!ifresults.empty()) {
-	      size_t pos=lastline.find("}");
-	      if (pos!=std::string::npos) {
-		if (ifresults.back()) lastline.replace(pos,1,"");
-		else lastline=lastline.substr(pos+1);
-		ifresults.pop_back();
-	      }
-	      if (!ifresults.empty() && 
-		  !ifresults.back()) lastline="";
-	    }
-	    size_t pos=lastline.find("if");
-	    if (pos!=std::string::npos) {
-	      size_t opos=pos, cpos=lastline.find(")");
-	      for (;opos<lastline.length();++opos) 
-		if (lastline[opos]=='(') break;
-	      if (opos<cpos) {
-		Algebra_Interpreter interpreter;
-		interpreter.SetTagReplacer(this);
-		bool result=ToType<int>
-		  (interpreter.Interprete(lastline.
-					  substr(opos+1,cpos-opos-1)));
-		for (opos=cpos+1;opos<lastline.length();++opos) 
-		  if (lastline[opos]=='{') {
-		    ifresults.push_back(result);
-		    ++opos;
-		    break;
-		  }
-		  else {
-		    bool blank=false;
-		    for (size_t i=0;i<m_blank.size();++i) 
-		      if (lastline[opos]==m_blank[i]) {
-			blank=true;
-			break;
-		      }
-		    if (!blank) break;
-		  }
-		if (opos==lastline.length()) opos=cpos;
-		if (result) lastline=lastline.substr(opos);
-		else lastline="";
-	      }
-	    }
-	  }
-	  if (lastline.length()>0) {
-	    m_filecontent.push_back(lastline);
-	  }
+	  Interprete(lastline);
+	  if (lastline.length()>0) m_filecontent.push_back(lastline);
 	}
 	else if (lastline.length()>0) {
-	  m_filecontent.push_back(lastline);
+	  Interprete(lastline);
+	  if (lastline.length()>0) m_filecontent.push_back(lastline);
 	}
 	getline(*m_infile[i],lastline);
       } while (*m_infile[i]);
