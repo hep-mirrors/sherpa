@@ -129,7 +129,23 @@ void Amplitude_Handler::CompleteAmplitudes(int N,Flavour* fl,int* b,Polarisation
   SetNumber(dummy);  
   namplitude = dummy;
 
-  if (msg.LevelIsTracking()) PrintGraph();
+  if (msg.LevelIsTracking()) {
+    PrintGraph();
+    /*
+    Amplitude_Output ao(pID,top);
+    for (int i=0;i<namplitude;i++) {
+      Amplitude_Base * am = GetAmplitude(i);
+      if (am->Size()==1) {
+        ao.WriteOut(am->GetPointlist());
+      }
+      else {
+        ao.BeginSuperAmplitude();
+        for (int j=0;j<am->Size();++j) ao.WriteOut((*am)[j]->GetPointlist());
+        ao.EndSuperAmplitude();
+      }
+    }
+    */
+  }
 
   CheckEqualInGroup();
   
