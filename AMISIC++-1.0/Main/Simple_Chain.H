@@ -12,6 +12,8 @@
 #include "Remnant_Base.H"
 #endif
 
+namespace SHERPA { class Remnant_Base; }
+
 namespace AMISIC {
 
   class Simple_Chain: public MI_Base {
@@ -65,7 +67,12 @@ namespace AMISIC {
     std::string         m_regulator; 
     std::vector<double> m_regulation;
 
+    SHERPA::Remnant_Base *p_remnants[2];
+
     void CleanUp();
+
+    EXTRAXS::XS_Group *FindPDFGroup(const size_t nin,const size_t nout,
+				    const ATOOLS::Flavour *flavours);
 
     bool GeneratePathName();
     void OrderFlavours(ATOOLS::Flavour *flavours);

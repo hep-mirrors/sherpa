@@ -162,8 +162,8 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
 {
   if (process->Size()==0) return false;
   if ((*process)[0]==process) {
-    p_processes->SetSelected(process);
-    ATOOLS::Blob_Data_Base *xsdata=p_processes->SameWeightedEvent();
+    process->Parent()->SetSelected(process);
+    ATOOLS::Blob_Data_Base *xsdata=process->Parent()->SameWeightedEvent();
     PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
     Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
     const ATOOLS::Vec4D *p=process->Momenta();
@@ -181,12 +181,16 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
 
 bool Grid_Creator::CreateOptimizedGrid()
 {
+  double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_maxevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_maxevents/100))==0) {
-      ATOOLS::msg.Out()<<"   "<<(100*m_events)/m_maxevents<<" % ( "
-		       <<ATOOLS::rpa.gen.Timer().UserTime()
-		       <<" s )   "<<ATOOLS::bm::cr<<std::flush;
+      double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
+      ATOOLS::msg.Out()<<"   "<<((100*m_events)/m_maxevents)<<" % ( "
+ 		       <<int(diff)<<" s elapsed / "
+ 		       <<int((m_maxevents-m_events)/(double)m_events*diff)
+ 		       <<" s left / "<<int(m_maxevents/(double)m_events*diff)
+		       <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
   return true;
@@ -194,13 +198,16 @@ bool Grid_Creator::CreateOptimizedGrid()
 
 bool Grid_Creator::CreateInitialGrid()
 {
-  ATOOLS::rpa.gen.Timer().Start();
+  double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_initevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
     if ((m_events%(m_initevents/100))==0) {
-      ATOOLS::msg.Out()<<"   "<<(100*m_events)/m_initevents<<" % ( "
-		       <<ATOOLS::rpa.gen.Timer().UserTime()
-		       <<" s )   "<<ATOOLS::bm::cr<<std::flush;
+      double diff=ATOOLS::rpa.gen.Timer().UserTime()-starttime;
+      ATOOLS::msg.Out()<<"   "<<((100*m_events)/m_initevents)<<" % ( "
+		       <<int(diff)<<" s elapsed / "
+		       <<int((m_initevents-m_events)/(double)m_events*diff)
+		       <<" s left / "<<int(m_initevents/(double)m_events*diff)
+		       <<" s total )   "<<ATOOLS::bm::cr<<std::flush;
     }
   }
   return true;

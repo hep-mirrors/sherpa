@@ -16,6 +16,7 @@
 #include "Matrix_Element_Handler.H"
 #endif
 #include "Shell_Tools.H"
+#include "Remnant_Base.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_Chain
@@ -25,6 +26,8 @@
 #else
 #define PROFILE_HERE
 #endif
+
+#define DEBUG__Simple_Chain
 
 #ifdef DEBUG__Simple_Chain
 #include "Debugger.H"
@@ -49,6 +52,7 @@ Simple_Chain::Simple_Chain():
   SetInputFile("Run.dat",2);
   SetInputFile("Model.dat",3);
   SetOutputFile("SC.log");
+  p_remnants[1]=p_remnants[0]=NULL;
 }
 
 Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
@@ -72,6 +76,12 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   m_stop[4]=m_stop[0]=0.0;
   m_start[3]=m_start[2]=1.0;
   m_stop[3]=m_stop[2]=0.0;
+  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
+  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
+  if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
+    ATOOLS::msg.Error()<<"Simple_XS::Simple_XS(..): "
+		       <<"No beam remnant handler found."<<std::endl;
+  }
 }
 
 Simple_Chain::~Simple_Chain()
@@ -142,6 +152,36 @@ void Simple_Chain::OrderFlavours(ATOOLS::Flavour *flavs)
     std::swap<ATOOLS::Flavour>(flavs[2],flavs[3]);
 }
 
+EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout,
+					      const ATOOLS::Flavour *flavours)
+{
+  if (p_remnants[0]==NULL || p_remnants[1]==NULL) return p_processes;
+  for (size_t i=0;i<p_processes->Size();++i) {
+    if (nin==2 && nout==(*p_processes)[i]->NOut()) {
+      ATOOLS::Flavour ref[2], test[2];
+      for (size_t j=0;j<2;++j) {
+	ref[j]=p_remnants[j]->ConstituentType((*p_processes)[i]->Flavours()[j]);
+	test[j]=p_remnants[j]->ConstituentType(flavours[j]);
+      }
+      if (ref[0]==test[0] && ref[1]==test[1])
+	return dynamic_cast<EXTRAXS::XS_Group*>((*p_processes)[i]);
+    }
+  }
+  ATOOLS::Flavour *copy = new ATOOLS::Flavour[nin+nout];
+  for (short unsigned int i=0;i<nin;++i) 
+    copy[i]=p_remnants[i]->ConstituentType(flavours[i]);
+  for (short unsigned int i=nin;i<nin+nout;++i) copy[i]=ATOOLS::kf::jet;
+  Semihard_QCD *newgroup = 
+    new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
+		     copy,m_scalescheme,m_kfactorscheme,p_processes->ScaleFactor());
+  newgroup->XSSelector()->SetOffShell(p_isr->KMROn());
+  newgroup->PSHandler(false)->SetError(m_error);
+  p_processes->Add(newgroup);
+  p_processes->SetAtoms(1);
+  delete [] copy;
+  return newgroup;
+}
+
 bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 			      const ATOOLS::Flavour *flavs)
 {
@@ -178,15 +218,16 @@ bool Simple_Chain::AddProcess(EXTRAXS::XS_Group *const group,
 	      }
 	    }
 	  }
-	  EXTRAXS::XS_Base *newxs = group->XSSelector()->GetXS(2,2,help);
+	  EXTRAXS::XS_Group *pdfgroup = FindPDFGroup(2,2,help);
+	  EXTRAXS::XS_Base *newxs = pdfgroup->XSSelector()->GetXS(2,2,help);
 	  if (newxs==NULL) continue;
 	  EXTRAXS::XS_Base *testxs=NULL;
-	  EXTRAXS::XS_Selector::FindInGroup(group,testxs,2,2,mapped);
+	  EXTRAXS::XS_Selector::FindInGroup(pdfgroup,testxs,2,2,mapped);
 	  if (testxs==NULL) {
 	    if (m_regulate) newxs->AssignRegulator(m_regulator,m_regulation);
 	    newxs->SetScaleScheme(m_scalescheme);
 	    newxs->SetKFactorScheme(m_kfactorscheme);
-	    group->Add(newxs);
+	    pdfgroup->Add(newxs);
 	    m_processmap[newxs->Name()]=newxs;
 	    success=true;
 	    msg_Debugging()<<"Simple_Chain::AddProcess(..): "
@@ -234,7 +275,7 @@ bool Simple_Chain::ReadInData()
   if (!reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME")) 
     m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=5;
-  if (!reader->ReadFromFile(m_error,"ERROR")) m_error=1.e-2;
+  if (!reader->ReadFromFile(m_error,"PS_ERROR")) m_error=1.e-2;
   GeneratePathName();
   std::vector<std::vector<int> > helpivv;
   if (reader->MatrixFromFile(helpivv,"MAP_FLAVOUR")) {
@@ -266,15 +307,6 @@ bool Simple_Chain::CreateGrid()
   p_processes->InitializeProcesses(p_beam,p_isr,false);  
   p_processes->SetScaleScheme(m_scalescheme);
   p_processes->SetKFactorScheme(m_kfactorscheme);
-  ATOOLS::Flavour flavour[4];
-  flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
-  Semihard_QCD *group;
-  group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
-			   p_processes->ScaleScheme(),
-			   p_processes->KFactorScheme(),
-			   p_processes->ScaleFactor());
-  group->XSSelector()->SetOffShell(p_isr->KMROn());
-  group->PSHandler(false)->SetMaxTrials(m_maxtrials);
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
@@ -300,7 +332,7 @@ bool Simple_Chain::CreateGrid()
 	}
       }
       if (!success) continue;
-      if (AddProcess(group,flavour)) found=true;
+      if (AddProcess(p_processes,flavour)) found=true;
     }
   }
   delete reader;
@@ -311,17 +343,19 @@ bool Simple_Chain::CreateGrid()
     PHASIC::Vegas::SetOnExternal(vegas);
     return false;
   }
-  group->SetScaleScheme(m_scalescheme);
-  group->SetKFactorScheme(m_kfactorscheme);
-  group->PSHandler(false)->SetError(m_error);
-  p_processes->PushBack(group);
   p_isr->SetSprimeMin(4.0*m_stop[0]*m_stop[0]);
   p_isr->SetSprimeMax(4.0*m_start[0]*m_start[0]);
-  p_gridcreator = new Grid_Creator(&m_differentials,group);
+  p_gridcreator = new Grid_Creator(&m_differentials,p_processes);
   p_gridcreator->ReadInArguments(InputFile(),InputPath());
   p_gridcreator->SetXSExtension(m_xsextension);
   p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
+  if (ATOOLS::msg.LevelIsTracking()) {
+    ATOOLS::msg.Out()<<"Simple_Chain::CreateGrid(..): Process group {\n";
+    msg_Indentation(3);
+    p_processes->Print();
+  }
+  msg_Tracking()<<"}"<<std::endl;
   if (!p_gridcreator->ReadInGrid()) {
     if (ATOOLS::MakeDir(OutputPath().c_str(),448)==0) {
       msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
@@ -330,7 +364,6 @@ bool Simple_Chain::CreateGrid()
     }
     ATOOLS::Exception_Handler::AddTerminatorObject(this);
     p_gridcreator->CreateGrid();
-    group->PSHandler(false)->WriteOut(OutputPath()+m_mcextension);
     ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
   }
   delete p_gridcreator;
@@ -341,18 +374,21 @@ bool Simple_Chain::CreateGrid()
 bool Simple_Chain::SetUpInterface()
 {
   p_processes->Reset();
-  Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[0]);
-  group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension,16|32);
   ATOOLS::Flavour flavour[4];
   flavour[0]=flavour[1]=flavour[2]=flavour[3]=ATOOLS::kf::jet;
   p_fsrinterface = new FSR_Channel(2,2,flavour,
 				   p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
   p_fsrinterface->SetAlphaSave(1.0);
-  group->SetFSRInterface(p_fsrinterface);
-  group->SetFSRMode(2);
-  group->CreateFSRChannels();
-  group->InitIntegrators();
+  for (size_t i=0;i<p_processes->Size();++i) {
+    Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
+    if (!group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension,16|32))
+      group->CalculateTotalXSec(OutputPath()+m_mcextension);
+    group->SetFSRInterface(p_fsrinterface);
+    group->SetFSRMode(2);
+    group->CreateFSRChannels();
+    group->InitIntegrators();
+  }
 #ifdef USING__Sherpa
   p_mehandler = new SHERPA::Matrix_Element_Handler();
   p_mehandler->SetXS(p_processes);
@@ -500,8 +536,10 @@ bool Simple_Chain::CalculateTotal()
 		       <<" mb !"<<ATOOLS::om::reset<<std::endl;
   }
   if (m_check) {
+    ATOOLS::Flavour help[4]={ATOOLS::kf::jet,ATOOLS::kf::jet,
+			     ATOOLS::kf::jet,ATOOLS::kf::jet};
     Semihard_QCD *group;
-    group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),
+    group = new Semihard_QCD(p_beam,p_isr,p_processes->SelectorData(),help,
 			     p_processes->ScaleScheme(),
 			     p_processes->KFactorScheme(),
 			     p_processes->ScaleFactor());
@@ -607,12 +645,13 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
   blob->DeleteOwnedParticles();
   if (m_processmap.find(m_selected)!=m_processmap.end()) {
     EXTRAXS::XS_Base *selected=m_processmap[m_selected];
-    (*p_processes)[0]->SetSelected(selected);
+    selected->Parent()->SetSelected(selected);
     double weight=1.;
     size_t pstrials=0, trials=0;
     if (!m_weighted) {
       double max=m_differentials[m_selected]->BinMax(m_last[0]);
       p_fsrinterface->SetTrigger(false);
+#ifndef USING_Max_Reduction
       while (++pstrials<m_maxtrials) {
 	ATOOLS::Blob_Data_Base *data=selected->WeightedEvent(2);
 	if (data==NULL) return false;
@@ -627,6 +666,17 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	}
 	if (p_fsrinterface->Trigger() && weight>max*ATOOLS::ran.Get()) break;
       }
+#else
+      while (true) {
+	if (selected->Overflow()>10.0*max) {
+	  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): '"
+			     <<selected->Name<<"'"<<std::endl;
+	}
+	selected->SetMax(max/100.0,1);
+	selected->SameEvent();
+	if (p_fsrinterface->Trigger()) break;
+      }      
+#endif
     }
     else {
       throw(ATOOLS::Exception(ATOOLS::ex::not_implemented,
@@ -788,6 +838,8 @@ void Simple_Chain::Update(const MI_Base *mibase)
 void Simple_Chain::PrepareTerminate() 
 {
   p_gridcreator->WriteOutGrid();
+  for (size_t i=0;i<p_processes->Size();++i)
+    (*p_processes)[i]->PSHandler(false)->WriteOut(OutputPath()+m_mcextension);
 }
 
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)

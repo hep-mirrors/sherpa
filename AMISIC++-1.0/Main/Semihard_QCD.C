@@ -8,20 +8,18 @@
 
 using namespace AMISIC;
 
-static ATOOLS::Flavour sqcdinit[4] = {INIFL,INIFL,INIFL,INIFL};
-
 Semihard_QCD::Semihard_QCD(BEAM::Beam_Spectra_Handler *const beam,
 			   PDF::ISR_Handler *const isr,
 			   ATOOLS::Selector_Data *const seldata,
+			   const ATOOLS::Flavour *flavours,
 			   const int scalescheme,
 			   const int kfactorscheme,
 			   const double scalefactor):
-  XS_Group(2,2,sqcdinit,scalescheme,kfactorscheme,scalefactor,
+  XS_Group(2,2,flavours,scalescheme,kfactorscheme,scalefactor,
 	   beam,isr,seldata)
 {
   SetFSRInterface(NULL);
   SetFSRMode(0);
-  m_name=std::string("parton parton -> parton parton");
 }
 
 Semihard_QCD::~Semihard_QCD()

@@ -19,6 +19,7 @@ namespace AMISIC {
     Semihard_QCD(BEAM::Beam_Spectra_Handler *const beam,
 		 PDF::ISR_Handler *const isr,
 		 ATOOLS::Selector_Data *const seldata,
+		 const ATOOLS::Flavour *flavours,
 		 const int scalescheme,
 		 const int kfactorscheme,
 		 const double scalefactor);
