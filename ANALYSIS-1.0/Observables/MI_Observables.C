@@ -11,24 +11,24 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   if (parameters.size()==1) {
     if (parameters[0].size()<4) return NULL;
     std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
-    return new Class(10*(int)(parameters[0][4]=="Log"),
+    return new Class(10*(int)(parameters[0][3]=="Log"),
+		     ATOOLS::ToType<double>(parameters[0][0]),
 		     ATOOLS::ToType<double>(parameters[0][1]),
-		     ATOOLS::ToType<double>(parameters[0][2]),
-		     ATOOLS::ToType<int>(parameters[0][3]),list);
+		     ATOOLS::ToType<int>(parameters[0][2]),list);
   }
   else if (parameters.size()<4) return NULL;
   double min=0.0, max=1.0;
-  size_t bins=100, scale=0;
-  std::string list="Analysed";
+  size_t bins=100;
+  std::string list="Analysed", scale="Lin";
   for (size_t i=0;i<parameters.size();++i) {
     if (parameters[i].size()<2) continue;
     else if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
     else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
     else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
-    else if (parameters[i][0]=="SCALE") scale=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
     else if (parameters[i][0]=="LIST") list=parameters[i][1];
   }
-  return new Class(scale,min,max,bins,list);
+  return new Class((scale=="Log")*10,min,max,bins,list);
 }									
 
 #define DEFINE_GETTER_METHOD(CLASS,NAME,TAG)				\
@@ -44,6 +44,8 @@ Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
   DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
   DEFINE_GETTER_METHOD(CLASS,NAME,TAG);					\
   DEFINE_PRINT_METHOD(CLASS,NAME)
+
+#include "Primitive_Analysis.H"
 
 DECLARE_GETTER(MI_Statistics_Getter,"MIStats",
 	       Primitive_Observable_Base,String_Matrix);
@@ -93,38 +95,58 @@ Primitive_Observable_Base * MI_Statistics::Copy() const
 }
 
 DEFINE_OBSERVABLE_GETTER(Forward_Backward_Eta_Correlation,
-			 Forward_Backward_Eta_Correlation_Getter,"EtaCorr");
+			 Forward_Backward_Eta_Correlation_Getter,"FwBwEta");
 
 Forward_Backward_Eta_Correlation::
 Forward_Backward_Eta_Correlation(const int type,
 				 const double detamin,const double detamax,
 				 const int nbins,const std::string &listname):
-  Primitive_Observable_Base(type,detamin,detamax,nbins,NULL),
-  m_etafw(0,detamin/2.,detamax/2.+1.,nbins+1),
-  m_etabw(0,detamin/2.,detamax/2.+1.,nbins+1)
+  Primitive_Observable_Base(0,detamin,detamax,nbins,NULL)
 {
-  m_name="Eta_Correlator.dat";
-  m_type=type;
+  m_name="FwBwEtaCorr.dat";
   m_listname=listname;
   m_splitt_flag=false;
+  m_etafw.Initialize(detamin,detamax,nbins);
+  m_etafwsq.Initialize(detamin,detamax,nbins);
+  m_etafwbw.Initialize(detamin,detamax,nbins);
 }
 
 void Forward_Backward_Eta_Correlation::
-Evaluate(const ATOOLS::Particle_List &particles,double weight,int ncount)
+Evaluate(const ATOOLS::Blob_List &bloblist,double weight,int ncount)
 {
-  for (Particle_List::const_iterator pit=particles.begin();
-       pit!=particles.end();++pit) {
-    if (!(*pit)->Flav().Charge()!=0.) continue;
+  ATOOLS::Histogram etafw(0,m_xmin,m_xmax,m_nbins);
+  ATOOLS::Histogram etabw(0,m_xmin,m_xmax,m_nbins);
+  ATOOLS::Particle_List *list=p_ana->GetParticleList(m_listname);
+  for (Particle_List::const_iterator pit=list->begin();
+       pit!=list->end();++pit) {
     double eta=(*pit)->Momentum().Eta();
-    if (eta>0.) m_etafw.Insert(eta,1.);
-    else m_etabw.Insert(eta,1.);
+    if (eta>0.) etafw.Insert(eta,1.);
+    else etabw.Insert(-eta,1.);
   }
-  m_etafw.Reset();
-  m_etabw.Reset();
+  double width=(p_histo->Xmax()-p_histo->Xmin())/p_histo->Nbin();
+  for (int i=1;i<=p_histo->Nbin();++i) {
+    double eta=p_histo->Xmin()+(i-1)*width;
+    double nfw=etafw.Value(i), nbw=etabw.Value(i);
+    m_etafw.Add(eta,nfw);
+    m_etafwsq.Add(eta,nfw*nfw);
+    m_etafwbw.Add(eta,nfw*nbw);
+  }
 }
 
 Primitive_Observable_Base *Forward_Backward_Eta_Correlation::Copy() const
 {
-  return new Forward_Backward_Eta_Correlation(m_type,m_xmin,m_xmax,m_nbins,NULL);
+  return new Forward_Backward_Eta_Correlation(m_type,m_xmin,m_xmax,m_nbins,
+					      m_listname);
+}
+
+void Forward_Backward_Eta_Correlation::EndEvaluation(double scale) 
+{
+  for (unsigned int i=1;i<=(unsigned int)p_histo->Nbin();++i) {
+    double nfwm=m_etafw.BinContent(i)/m_etafw.BinEntries(i);
+    p_histo->Bin((int)i)[0]=
+      (m_etafwbw.BinContent(i)/m_etafwbw.BinEntries(i)-nfwm*nfwm)/
+      (m_etafwsq.BinContent(i)/m_etafwsq.BinEntries(i)-nfwm*nfwm);
+  }
+  p_histo->Output();
 }
 

@@ -2,6 +2,7 @@
 #define MI_Observables_H
 
 #include "Primitive_Observable_Base.H"
+#include "../../AMISIC++-1.0/Main/Amisic_Histogram.H"
 
 namespace ANALYSIS {
 
@@ -19,7 +20,7 @@ namespace ANALYSIS {
   class Forward_Backward_Eta_Correlation: public Primitive_Observable_Base {  
   private:
 
-    ATOOLS::Histogram m_etafw, m_etabw;
+    AMISIC::Amisic_Histogram<double> m_etafw, m_etafwsq, m_etafwbw;
 
   public:
 
@@ -27,10 +28,12 @@ namespace ANALYSIS {
 				     const double detamin,const double detamax,
 				     const int nbins,const std::string &listname);
 
-    void Evaluate(const ATOOLS::Particle_List &particles,
+    void Evaluate(const ATOOLS::Blob_List &bloblist,
 		  double weight=1.,int ncount=1);
 
     Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
 
   };// end of class Forward_Backward_Eta_Correlation
 
