@@ -263,13 +263,6 @@ void Forward_Backward_Eta_Correlation::EndEvaluation(double scale)
 #define SORT_LIST(LISTNAME,PREDICATE)
 #endif
 
-#define TRANSFER_DATA							\
-  for (size_t i=0;i<(size_t)m_nbins+2;++i) {				\
-    double x=histo.BinXMean(i);						\
-    m_histogram.Add(x,histo.BinContent(i)*weight);			\
-    m_histogram.AddBinExtra(x,weight);					\
-  }
-
 #define FINISH_HISTOGRAM					\
   for (size_t i=0;i<(size_t)m_nbins+2;++i) {			\
     p_histo->SetBin((int)i,m_histogram.BinEntries(i)!=0?	\
@@ -304,14 +297,6 @@ void Multiplicity_vs_JetPT::Evaluate(const ATOOLS::Particle_List &particlelist,
   double ptjet=(*jetlist)[0]->Momentum().PPerp();
   m_histogram.Add(ptjet,particlelist.size()*weight);
   m_histogram.AddBinExtra(ptjet,weight);
-//   static double all=0., wgt=0.;
-//   if (ptjet>5. && ptjet<6.) {
-//     all+=particlelist.size()*weight;
-//     wgt+=weight;
-//     std::cout<<"\r "<<(all/wgt)<<" "
-// 	     <<(m_histogram.BinContent(ptjet)/
-// 		m_histogram.BinExtra(ptjet))<<" "<<std::endl;
-//   }
 }
     
 void Multiplicity_vs_JetPT::EndEvaluation(double scale)
@@ -434,13 +419,11 @@ void Multiplicity_vs_PT::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().PPerp(),1.0);
+    m_histogram.Add((*pit)->Momentum().PPerp(),weight);
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Multiplicity_vs_PT::EndEvaluation(double scale)
@@ -491,21 +474,19 @@ void Multiplicity_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
   }
   SORT_LIST(jetlist1,Order_PT);
   ATOOLS::Vec4D leadingjet1=(*jetlist1)[0]->Momentum();
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
     double dphi1=(*pit)->Momentum().DPhi(leadingjet1)/M_PI*180.0;
     if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
     double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
     if (cosdphi2>=0.0)
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,1.0);
+      m_histogram.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight);
     if (cosdphi2<=0.0) {
       dphi1*=-1.0;
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,1.0);
+      m_histogram.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,weight);
     }
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Multiplicity_vs_DPhi::EndEvaluation(double scale)
@@ -554,8 +535,6 @@ void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
   }
   SORT_LIST(jetlist1,Order_PT);
   ATOOLS::Vec4D leadingjet1=(*jetlist1)[0]->Momentum();
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
     double pt=(*pit)->Momentum().PPerp();
@@ -563,13 +542,13 @@ void Scalar_PT_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
     if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
     double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
     if (cosdphi2>=0.0)
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,pt);
+      m_histogram.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,pt*weight);
     if (cosdphi2<=0.0) {
       dphi1*=-1.0;
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,pt);
+      m_histogram.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,pt*weight);
     }
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Scalar_PT_Sum_vs_DPhi::EndEvaluation(double scale)
@@ -618,8 +597,6 @@ void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
   }
   SORT_LIST(jetlist1,Order_PT);
   ATOOLS::Vec4D leadingjet1=(*jetlist1)[0]->Momentum();
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
     double et=(*pit)->Momentum().EPerp();
@@ -627,13 +604,13 @@ void Scalar_ET_Sum_vs_DPhi::Evaluate(const ATOOLS::Particle_List &particlelist,
     if (!(dphi1>0.0) && !(dphi1<=0.0)) continue;
     double cosdphi2=jetlist2==NULL?0.0:(*pit)->Momentum().CosDPhi(leadingjet2);
     if (cosdphi2>=0.0)
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,et);
+      m_histogram.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,et*weight);
     if (cosdphi2<=0.0) {
       dphi1*=-1.0;
-      histo.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,et);
+      m_histogram.Add(dphi1+m_offset-((int)(dphi1+m_offset)/360)*360.0,et*weight);
     }
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Scalar_ET_Sum_vs_DPhi::EndEvaluation(double scale)
@@ -675,13 +652,11 @@ void Multiplicity_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
   if (jetlist->size()==0) return;
   SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,1.0);
+    m_histogram.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,weight);
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Multiplicity_vs_DEta::EndEvaluation(double scale)
@@ -724,14 +699,12 @@ void Scalar_PT_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
   if (jetlist->size()==0) return;
   SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,
-	      (*pit)->Momentum().PPerp());
+    m_histogram.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,
+		    (*pit)->Momentum().PPerp()*weight);
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Scalar_PT_Sum_vs_DEta::EndEvaluation(double scale)
@@ -774,14 +747,12 @@ void Scalar_ET_Sum_vs_DEta::Evaluate(const ATOOLS::Particle_List &particlelist,
   if (jetlist->size()==0) return;
   SORT_LIST(jetlist,Order_PT);
   ATOOLS::Vec4D leadingjet=(*jetlist)[0]->Momentum();
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,
-	      (*pit)->Momentum().EPerp());
+    m_histogram.Add((*pit)->Momentum().DEta(leadingjet)-m_offset,
+		    (*pit)->Momentum().EPerp()*weight);
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Scalar_ET_Sum_vs_DEta::EndEvaluation(double scale)
@@ -820,13 +791,11 @@ void Multiplicity_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().Eta(),1.0);
+    m_histogram.Add((*pit)->Momentum().Eta(),weight);
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Multiplicity_vs_Eta::EndEvaluation(double scale)
@@ -864,13 +833,11 @@ void Scalar_PT_Sum_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().Eta(),(*pit)->Momentum().PPerp());
+    m_histogram.Add((*pit)->Momentum().Eta(),(*pit)->Momentum().PPerp()*weight);
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Scalar_PT_Sum_vs_Eta::EndEvaluation(double scale)
@@ -908,13 +875,11 @@ void Scalar_ET_Sum_vs_Eta::Evaluate(const ATOOLS::Particle_List &particlelist,
 {
   ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
   if (jetlist->size()==0) return;
-  AMISIC::Amisic_Histogram<double> histo;
-  histo.Initialize(m_xmin,m_xmax,m_nbins);
   for (ATOOLS::Particle_List::const_iterator pit=particlelist.begin();
        pit!=particlelist.end();++pit) {
-    histo.Add((*pit)->Momentum().Eta(),(*pit)->Momentum().EPerp());
+    m_histogram.Add((*pit)->Momentum().Eta(),(*pit)->Momentum().EPerp()*weight);
   }
-  TRANSFER_DATA;
+  for (size_t i=0;i<(size_t)m_nbins+2;++i) m_histogram.AddBinExtra(i,weight);
 }
     
 void Scalar_ET_Sum_vs_Eta::EndEvaluation(double scale)

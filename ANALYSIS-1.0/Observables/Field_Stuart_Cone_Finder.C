@@ -53,6 +53,15 @@ public:
       // E scheme
       p1->SetMomentum(p1->Momentum()+p2->Momentum());
       break;
+    case 1: {
+      // scalar P_T scheme
+      ATOOLS::Vec4D jet(p1->Momentum()+p2->Momentum());
+      jet*=1.0/jet.PSpat();
+      jet[0]=1.0;
+      p1->SetMomentum((p1->Momentum().PPerp()+p2->Momentum().PPerp())/
+		      ATOOLS::dabs(jet.SinTheta())*jet);
+      break;
+    }
     default:
       THROW(critical_error,"Recombination scheme invalid");
     }
