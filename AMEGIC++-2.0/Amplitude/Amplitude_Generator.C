@@ -797,7 +797,8 @@ int Amplitude_Generator::CompareColors(Color_Function* c1,vector<int> blindlist1
     }
   }
   else {
-    if (l1[0]!=l2[1] && l1[1]!=l2[0]) return 0; 
+    if ((l1[0]!=l2[0] && l1[1]!=l2[1]) &&
+	(l1[0]!=l2[1] && l1[1]!=l2[0])) return 0; 
   }
   return 1;  
 }
@@ -821,6 +822,9 @@ int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
     if (p1->number!=p2->number) return 0;
                            else return 1;
   }
+
+  if ((p1->left==0) && (p2->left!=0)) return 0;
+  if ((p1->left!=0) && (p2->left==0)) return 0;
 
   //Check extended Color_Functions
   if (p1->Color->type!=p2->Color->type) return 0;
