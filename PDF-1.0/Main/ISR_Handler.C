@@ -424,7 +424,7 @@ bool ISR_Handler::CalculateWeight2(const double scale)
   return 0;
 }
 
-double ISR_Handler::Weight(Flavour *flin)
+double ISR_Handler::Weight(const Flavour *const flin)
 {
   if (m_mode!=3 || (CheckRemnantKinematics(flin[0],m_xkey[0],0) &&
 		    CheckRemnantKinematics(flin[1],m_xkey[1],1))) 
@@ -432,7 +432,7 @@ double ISR_Handler::Weight(Flavour *flin)
   return 0.;
 }
 
-double ISR_Handler::Weight2(Flavour *flin)
+double ISR_Handler::Weight2(const Flavour *const flin)
 {
   if (CheckRemnantKinematics(flin[0],m_xkey[0],1) &&
       CheckRemnantKinematics(flin[1],m_xkey[1],0)) 

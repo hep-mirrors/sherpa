@@ -54,8 +54,8 @@ namespace PDF {
     bool CalculateWeight(const double scale);
     bool CalculateWeight2(const double scale);
 
-    double Weight(ATOOLS::Flavour *flavour);
-    double Weight2(ATOOLS::Flavour *flavour);
+    double Weight(const ATOOLS::Flavour *const flavour);
+    double Weight2(const ATOOLS::Flavour *const flavour);
 
     void BoostInCMS(ATOOLS::Vec4D *p,const size_t n);
     void BoostInLab(ATOOLS::Vec4D *p,const size_t n);
@@ -85,8 +85,10 @@ namespace PDF {
     inline std::string Name() { return m_name; }
     inline std::string Type() { return m_type; }
 
-    inline PDF_Base        *PDF(const size_t beam)  { return p_isrbase[beam]->PDF();     }
-    inline ATOOLS::Flavour  Flav(const size_t beam) { return p_isrbase[beam]->Flavour(); }
+    inline PDF_Base        *PDF(const size_t beam)  
+    { return p_isrbase[beam]->PDF();     }
+    inline ATOOLS::Flavour  Flav(const size_t beam) 
+    { return p_isrbase[beam]->Flavour(); }
 
     inline int On()    { return m_mode;    }
     inline int KMROn() { return m_kmrmode; }
