@@ -26,7 +26,7 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   gen.m_accu               = dr.GetValue<double>("Num. Accuracy",1.e-10);
-  gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
+  //gen.m_runtime            = dr.GetValue<std::string>("Runtime"); // Time
 
   msg.Init(gen.Output());
   gen.m_rpa_id = dr.GenerateKey();

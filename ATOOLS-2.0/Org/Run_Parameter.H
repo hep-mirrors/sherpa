@@ -28,7 +28,7 @@ namespace ATOOLS {
     
     class Gen {  // general parameters
       int                 m_output, m_analysis, m_cutscheme;
-      std::string         m_runtime;
+      //std::string         m_runtime;
       long                m_nevents;
       double              m_ecms, m_ycut;
       double              m_accu;
@@ -142,19 +142,10 @@ namespace ATOOLS {
 /*!
  \namespace ATOOLS
   In the namespace ATOOLS all classes with a pure mathematical meaning are collected.
-*/
-
-/*!
- \namespace ATOOLS
-  In the namespace ATOOLS all basic classes needed for physics descriptions are collected.
-  Here you can find Flavour, Blob, etc.
-*/
-
-/*!
- \namespace ATOOLS
-  In the namespace ATOOLS all basic classes needed organisational purposes are collected.
-  Here you can find classes for reading in and writing out variables (IO_Handler), accessing
-  runtime parameters (Run_Parameter), etc.
+  In addition all basic classes needed for physics descriptions are collected here, 
+  e.g. Flavour, Blob, etc.
+  Classes needed for organisational purposes can be found as well, e.g. for reading in and 
+  writing out variables (IO_Handler), accessing runtime parameters (Run_Parameter), etc.
 */
 
 #endif  // Run_Parameter_h
