@@ -40,6 +40,12 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour _bun
   m_partons.push_back(Flavour(kf::quark).Bar());                               
 }
 
+PDF_Base * LHAPDF_Fortran_Interface::GetCopy() 
+{
+  return new LHAPDF_Fortran_Interface(m_bunch,m_set,m_member,m_path);
+}
+
+
 double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
   double scale = sqrt(scale2);
   double as    = lhapdfalphas_(scale);
