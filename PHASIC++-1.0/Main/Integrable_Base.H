@@ -46,9 +46,9 @@ namespace PHASIC {
     double m_threshold, m_overflow, m_rfactor;
     bool   m_updatescales;
 
-    std::map<stp::id,double> m_scale;
-
-    std::vector<double> m_xinfo;
+    std::map<stp::id,double>     m_scale;
+    std::vector<ATOOLS::Flavour> m_resonances;
+    std::vector<double>          m_xinfo;
 
     long unsigned int m_n;
 

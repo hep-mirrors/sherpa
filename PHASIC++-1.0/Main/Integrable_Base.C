@@ -174,7 +174,8 @@ void Integrable_Base::AddPoint(const double value)
 
 void Integrable_Base::SetScale(const double scale) 
 { 
-  std::cout<<"Integrable_Base::SetScale("<<scale<<"): Virtual function called."<<std::endl;
+  ATOOLS::msg.Error()<<"Integrable_Base::SetScale("<<scale
+		     <<"): Virtual function called."<<std::endl;
 }
 
 void Integrable_Base::SetMax(const double max, int depth) 
@@ -360,9 +361,9 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     break;
   case 101: {// pp->V scheme
     double M2=0.;
-//     if (m_resonances.size()>0) {
-//       M2=ATOOLS::sqr(m_resonances[0].Mass());
-//     }
+    if (m_resonances.size()>0) {
+      M2=ATOOLS::sqr(m_resonances[0].Mass());
+    }
     ATOOLS::Vec4D *p=p_momenta;
     double S2=p[4]*p[5], x1=p[5]*p[0]/S2, x2=p[4]*p[1]/S2;
     double xi=(p[0]+p[1]).PMinus()/(p[0]+p[1]).PPlus();
@@ -370,7 +371,7 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     m_scale[PHASIC::stp::kp22]=x2*x2*2.*S2/xi;
     // ew scale a la watt
     double sc=(p[0]+p[1]).PPerp2();
-    m_scale[PHASIC::stp::as]=pow(sc,2./3.)*pow(M2,1./3.);
+    pt2=m_scale[PHASIC::stp::as]=pow(sc,2./3.)*pow(M2,1./3.);
     break;
   }
   case 102: {// g*g*->qqb scheme
@@ -384,7 +385,7 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     double s=(p[0]+p[1]).Abs2();
     double t=(p[0]-p[2]).Abs2();
     double u=(p[0]-p[3]).Abs2();
-    m_scale[PHASIC::stp::as]=2.*s*t*u/(s*s+t*t+u*u);
+    pt2=m_scale[PHASIC::stp::as]=2.*s*t*u/(s*s+t*t+u*u);
     break;
   }
   case 103: {// g*g*->gg scheme
@@ -392,16 +393,16 @@ double Integrable_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     m_scale[PHASIC::stp::kp21]=p[2].PPerp2();
     m_scale[PHASIC::stp::kp22]=p[3].PPerp2();
     // qcd scale
-    m_scale[PHASIC::stp::as]=ATOOLS::sqr((p[2].PPerp()+p[3].PPerp())/2.0);
+    pt2=m_scale[PHASIC::stp::as]=
+      ATOOLS::sqr((p[2].PPerp()+p[3].PPerp())/2.0);
     break;
   }
   default :
     pt2 = s;
   }
-  //  if (Selected()->p_regulator->Type()!=rf::identity) 
-  //    return (*Selected()->p_regulator)[m_scale[PHASIC::stp::as]]; 
-  m_scale[stp::fac]= pt2;
-  return m_scale[stp::fac];
+  m_scale[stp::fac]=pt2;
+  if (Selected()==NULL) return m_scale[stp::fac];
+  return (*Selected()->p_regulator)[m_scale[PHASIC::stp::fac]]; 
 }
 
 double Integrable_Base::KFactor(const double scale) 
@@ -414,10 +415,6 @@ double Integrable_Base::KFactor(const double scale)
     } 
     else 
       return m_rfactor;
-  case 11:{
-    const double CF=4./3.;
-    return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
-  }
   case 65:
     m_scale[stp::fac]=scale;
 //     cout<<Name()<<" : "<<std::endl;
@@ -429,6 +426,10 @@ double Integrable_Base::KFactor(const double scale)
     } 
     else 
       return m_rfactor;
+  case 101:{// pp -> V scheme
+    const double CF=4./3.;
+    return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
+  }
   default :
     return 1.;
   }

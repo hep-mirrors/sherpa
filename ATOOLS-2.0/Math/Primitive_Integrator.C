@@ -22,10 +22,16 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
      <<"   m_weight = "<<DFORMAT<<channel.Weight()<<"\n"
      <<"   m_sum    = "<<DFORMAT<<channel.Sum()
      <<" -> integral   = "<<DFORMAT<<channel.Mean()<<"\n"
+     <<"   m_ssum   = "<<DFORMAT<<channel.SSum()
+     <<" -> integral   = "<<DFORMAT<<channel.SMean()<<"\n"
      <<"   m_sum2   = "<<DFORMAT<<channel.Sum2()
      <<" -> error      = "<<DFORMAT<<channel.Sigma()<<"\n"
+     <<"   m_ssum2  = "<<DFORMAT<<channel.SSum2()
+     <<" -> error      = "<<DFORMAT<<channel.SSigma()<<"\n"
      <<"   m_np     = "<<DFORMAT<<channel.Points()
      <<" -> rel. error = "<<DFORMAT<<channel.Sigma()/channel.Mean()<<"\n"
+     <<"   m_snp    = "<<DFORMAT<<channel.SPoints()
+     <<" -> rel. error = "<<DFORMAT<<channel.SSigma()/channel.SMean()<<"\n"
      <<"   m_this   = ";
   for (size_t i=0;i<channel.m_this.size();++i) 
     str<<DFORMAT<<channel.m_this[i]<<" ";
@@ -41,13 +47,15 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,
 
 Primitive_Channel::Primitive_Channel():
   m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
-  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), m_pos(0) {}
+  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0),
+  m_ssum(0.0), m_ssum2(0.0), m_snp(0.0), m_pos(0) {}
 
 Primitive_Channel::
 Primitive_Channel(Primitive_Channel *const prev,const size_t i,
 		  const double &pos):
   m_alpha(0.0), m_oldalpha(0.0), m_weight(0.0), 
-  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), m_pos(0)
+  m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
+  m_ssum(0.0), m_ssum2(0.0), m_snp(0.0), m_pos(0)
 {
   if (prev->Boundary()) THROW(fatal_error,"Attempt to split boundary cell.");
   if (i>=prev->m_this.size()) THROW(fatal_error,"Inconsistent dimensions.");
@@ -66,6 +74,8 @@ Primitive_Channel(Primitive_Channel *const prev,const size_t i,
   m_alpha=(prev->m_alpha/=2.0);
   msg_Debugging()<<"Primitive_Channel::Primitive_Channel("
 		 <<prev<<","<<i<<"): {\n"<<*prev<<*this<<"}"<<std::endl;
+  if (m_weight<=0.0 || prev->m_weight<=0.0) 
+    THROW(fatal_error,"New cell has nonpositive weight.");
 }
     
 Primitive_Channel::~Primitive_Channel()
@@ -123,6 +133,11 @@ void Primitive_Channel::Reset()
   m_sum=m_sum2=m_max=m_np=0.0;
 }
 
+void Primitive_Channel::ResetAll()
+{
+  m_sum=m_sum2=m_max=m_np=m_ssum=m_ssum2=0.0;
+}
+
 void Primitive_Channel::SetWeight()
 {
   if (m_next[0]==NULL) {
@@ -140,12 +155,20 @@ void Primitive_Channel::SetAlpha(const double &alpha)
   m_alpha=alpha;
 }
 
+void Primitive_Channel::Store(const double &alpha)
+{
+  m_snp+=m_np;
+  m_ssum+=m_sum/alpha;
+  m_ssum2+=m_sum2/sqr(alpha);
+}
+
 bool Primitive_Channel::
 WriteOut(std::fstream *const file,
 	 std::map<Primitive_Channel*,size_t> &pmap) const
 {
-  (*file)<<"[ "<<m_alpha<<" "<<m_oldalpha<<" "<<m_sum<<" "<<m_sum2
-	 <<" "<<m_max<<" "<<m_np<<" ( ";
+  (*file)<<"[ "<<m_alpha<<" "<<m_oldalpha<<" "<<m_sum<<" "
+	 <<m_sum2<<" "<<m_max<<" "<<m_np<<" "<<m_ssum<<" "
+	 <<m_ssum2<<" "<<m_snp<<" ( ";
   for (size_t i=0;i<m_this.size();++i) (*file)<<m_this[i]<<" ";
   (*file)<<") ( ";
   for (size_t i=0;i<m_next.size();++i) (*file)<<pmap[m_next[i]]<<" ";
@@ -158,7 +181,8 @@ bool Primitive_Channel::ReadIn(std::fstream *const file,
 {
   if (file->eof()) return false;
   std::string dummy;
-  (*file)>>dummy>>m_alpha>>m_oldalpha>>m_sum>>m_sum2>>m_max>>m_np>>dummy;
+  (*file)>>dummy>>m_alpha>>m_oldalpha>>m_sum>>m_sum2
+	 >>m_max>>m_np>>m_ssum>>m_ssum2>>m_snp>>dummy;
   for (size_t i=0;i<m_this.size();++i) {
     if (file->eof()) return false;
     (*file)>>m_this[i];
@@ -201,7 +225,8 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 Primitive_Integrator::Primitive_Integrator():
   m_nopt(10000), m_nmax(1000000), m_error(0.01), m_scale (1.0), 
   m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
-  m_ncells(1000), m_lastdim(0), m_mode(0), m_vname("I") {}
+  m_ncells(1000), m_lastdim(0), m_mode(0), 
+  m_split(1), m_shuffle(1), m_vname("I") {}
 
 Primitive_Integrator::~Primitive_Integrator()
 {
@@ -245,71 +270,81 @@ double Primitive_Integrator::Integrate(const Primitive_Integrand *function)
   Split();
   for (size_t i=0;i<m_channels.size();++i) 
     if (m_channels[i]->Alpha()!=0.5) m_channels[i]->SetAlpha(0.0);
-  double error=1.0;
-  while (((long unsigned int)m_np)<m_nmax && error>m_error &&
+  while (((long unsigned int)m_np)<m_nmax &&
 	 m_channels.size()-m_point.size()<m_ncells) {
     for (long unsigned int n=0;n<m_nopt;++n) Point();
     double alpha=1.0/(m_channels.size()-m_point.size());
     for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
-    if (!Update()) continue;
-    if (!rpa.gen.CheckTime()) {
-      msg.Error()<<om::bold<<"Primitive_Integrator::Integrate(..): "
-		 <<om::reset<<om::red<<"Timeout. Interrupt integration."
-		 <<om::reset<<std::endl;
-      kill(getpid(),SIGINT);
-    }
-    error=dabs(Sigma()/Mean());
-    msg_Info()<<om::bold<<m_vname<<om::reset<<" = "<<om::blue<<Mean()*m_scale
-	      <<" "<<m_uname<<om::reset<<" +- ( "<<error*Mean()*m_scale
-	      <<" "<<m_uname<<" = "<<om::red<<error*100.0<<" %"
-	      <<om::reset<<" ), n = "<<m_np<<", "
-	      <<m_channels.size()-m_point.size()<<" cells"<<std::endl;
+    CheckTime();
+    if (Update(0)<m_error) break;
     Split();
   }
   for (long unsigned int n=0;n<m_nopt;++n) Point();
   m_opt.clear();
   double alpha=1.0/(m_channels.size()-m_point.size());
-  for (size_t i=0;i<m_channels.size();++i) m_channels[i]->SetAlpha(alpha);
-  while (((long unsigned int)m_np)<m_nmax && error>m_error) {
-    for (long unsigned int n=0;n<m_nopt;++n) Point();
-    if (!Update()) continue;
-    if (!rpa.gen.CheckTime()) {
-      msg.Error()<<om::bold<<"Primitive_Integrator::Integrate(..): "
-		 <<om::reset<<om::red<<"Timeout. Interrupt integration."
-		 <<om::reset<<std::endl;
-      kill(getpid(),SIGINT);
+  for (size_t i=0;i<m_channels.size();++i) 
+    if (!m_channels[i]->Boundary()) {
+      m_channels[i]->SetAlpha(alpha);
+      m_channels[i]->Store(alpha);
+      m_channels[i]->Reset();
     }
-    error=dabs(Sigma()/Mean());
-    msg_Info()<<om::bold<<m_vname<<om::reset<<" = "<<om::blue<<Mean()*m_scale
-	      <<" "<<m_uname<<om::reset<<" +- ( "<<error*Mean()*m_scale
-	      <<" "<<m_uname<<" = "<<om::red<<error*100.0<<" %"
-	      <<om::reset<<" ), n = "<<m_np<<", "
-	      <<m_channels.size()-m_point.size()<<" cells"<<std::endl;
+  size_t add=0;
+  while (((long unsigned int)m_np)<2.0*m_nmax) {
+    for (long unsigned int n=0;n<m_point.size()*m_nopt;++n) Point();
+    CheckTime();
+    if (Update(1)<m_error && 
+	add++>=ATOOLS::Max((size_t)5,m_point.size())) break;
+    Shuffle();
   }
+  msg_Info()<<std::endl;
   return m_sum/m_np;
 }
 
-bool Primitive_Integrator::Update()
+void Primitive_Integrator::CheckTime() const 
+{
+  if (rpa.gen.CheckTime()) return;
+  msg.Error()<<om::bold<<"Primitive_Integrator::Integrate(..): "
+	     <<om::reset<<om::red<<"Timeout. Interrupt integration."
+	     <<om::reset<<std::endl;
+  kill(getpid(),SIGINT);
+}
+
+double Primitive_Integrator::Update(const int mode)
 {
   double sum=0.0;
   m_sum=m_sum2=m_max=m_np=0.0;
   for (size_t i=0;i<m_channels.size();++i) {
     if (!m_channels[i]->Boundary()) {
-      // test for bad statistics
-      if (m_channels[i]->Points()<m_nopt/3)
- 	msg.Error()<<"Primitive_Integrator::Update(): "
-		   <<"Few points in cell. Increase NOpt."<<std::endl;
       double alpha=m_channels[i]->Alpha();
       sum+=alpha;
-      m_np+=m_channels[i]->Points();
-      m_sum+=m_channels[i]->Sum()/alpha;
-      m_sum2+=m_channels[i]->Sum2()/sqr(alpha);
+      switch (mode) {
+      case 0:
+	if (m_channels[i]->Points()<m_nopt/3)
+	  msg.Error()<<"Primitive_Integrator::Update(): "
+		     <<"Few points in cell. Increase NOpt."<<std::endl;
+	m_np+=m_channels[i]->Points();
+	m_sum+=m_channels[i]->Sum()/alpha;
+	m_sum2+=m_channels[i]->Sum2()/sqr(alpha);
+	break;
+      case 1:
+	m_np+=m_channels[i]->SPoints();
+	m_sum+=m_channels[i]->SSum();
+	m_sum2+=m_channels[i]->SSum2();
+	break;
+      }
       m_max=ATOOLS::Max(m_max,m_channels[i]->Max());
     }
   }
   if (!IsEqual(sum,1.0)) 
     THROW(critical_error,"Summation does not agree.");
-  return true;
+  double error=dabs(Sigma()/Mean());
+  msg_Info()<<"  "<<om::bold<<m_vname<<om::reset<<" = "<<om::blue
+	    <<Mean()*m_scale<<" "<<m_uname<<om::reset<<" +- ( "
+	    <<error*Mean()*m_scale<<" "<<m_uname<<" = "<<om::red
+	    <<error*100.0<<" %"<<om::reset<<" ), n = "<<m_np<<", "
+	    <<m_channels.size()-m_point.size()
+	    <<" cells      "<<bm::cr<<std::flush;
+  return error;
 }
 
 void Primitive_Integrator::Point()
@@ -350,6 +385,7 @@ double Primitive_Integrator::Weight(const std::vector<double> &x) const
 
 void Primitive_Integrator::Split()
 {
+  if (m_split==0) return;
   if (msg.LevelIsDebugging()) {
     msg_Debugging()<<"Primitive_Integrator::Split(): {\n";
     {
@@ -391,7 +427,7 @@ void Primitive_Integrator::Split()
   selected->SaveAlpha();
   selected->SetAlpha(0.5);
   selected->SetPosition(0);
-  selected->Reset();
+  selected->ResetAll();
 }
 
 void Primitive_Integrator::SelectDimension(const size_t pos)
@@ -422,6 +458,35 @@ void Primitive_Integrator::SelectDimension(const size_t pos)
     }
     if (!(cur<0) && !(cur>=0)) THROW(fatal_error,"Criterion is nan.")
   } 
+}
+
+bool Primitive_Integrator::Shuffle()
+{
+  if (m_shuffle==0) {
+    for (size_t i=0;i<m_channels.size();++i) 
+      if (!m_channels[i]->Boundary()) 
+	m_channels[i]->Store(m_channels[i]->Alpha());
+    return true;
+  }
+  double norm=0.0;
+  for (size_t i=0;i<m_channels.size();++i) {
+    if (!m_channels[i]->Boundary()) {
+      double alpha=m_channels[i]->Alpha();
+      m_channels[i]->Store(alpha);
+      alpha=(m_channels[i]->Sum2()>Accu()?
+	     sqrt(m_channels[i]->Sum2()/m_channels[i]->Points()):
+	     sqrt(m_channels[i]->SSum2()/m_channels[i]->SPoints()));
+      if (!(alpha>0)) THROW(fatal_error,"Invalid weight.");
+      m_channels[i]->SetAlpha(alpha);
+      m_channels[i]->Reset();
+      norm+=alpha;
+    }
+  }
+  for (size_t i=0;i<m_channels.size();++i) {
+    if (!m_channels[i]->Boundary()) 
+      m_channels[i]->SetAlpha(m_channels[i]->Alpha()/norm);
+  }
+  return true;
 }
 
 bool Primitive_Integrator::WriteOut(const std::string &filename) const

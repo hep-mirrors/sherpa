@@ -218,10 +218,10 @@ double Phase_Space_Handler::Differential()
 }
 
 double Phase_Space_Handler::Differential(Integrable_Base *const process,
-					 const int mode) 
+					 const psm::code mode) 
 { 
   PROFILE_HERE;
-  if (mode>=0 && p_pi!=NULL) {
+  if (!(mode&psm::pi_call) && p_pi!=NULL) {
     p_active=process;
     p_pi->GeneratePoint();
     return p_pi->GenerateWeight();
@@ -235,26 +235,27 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       p_beamchannels->GeneratePoint(m_beamspkey,m_beamykey,
 				    p_beamhandler->On()); 
       if (!p_beamhandler->MakeBeams(p_lab)) return 0.;
-      if (mode<2) p_isrhandler->SetSprimeMax(m_beamspkey[3]*
-					     p_isrhandler->Upper1()*
-					     p_isrhandler->Upper2());
+      if (!(mode&psm::no_lim_isr)) 
+	p_isrhandler->SetSprimeMax(m_beamspkey[3]*
+				   p_isrhandler->Upper1()*
+				   p_isrhandler->Upper2());
       p_isrhandler->SetPole(m_beamspkey[3]);
     }
-    if (mode<2) p_isrhandler->SetSprimeMin(m_smin);
-    if (mode<3) {
+    if (!(mode&psm::no_lim_isr)) p_isrhandler->SetSprimeMin(m_smin);
+    if (!(mode&psm::no_dice_isr)) {
       p_isrhandler->SetLimits();
       if (p_isrhandler->On()>0) { 
-	if ((-mode)&1) 
+	if (mode&psm::pi_isr) 
 	  p_isrchannels->GeneratePoint(m_isrspkey,m_isrykey, 
 				       p_isrhandler->On(),p_pi);
 	else p_isrchannels->
 	  GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->On());
 	if (p_isrhandler->KMROn()) {
-	  if ((-mode)&8) p_kpchannels->
+	  if (mode&psm::pi_kp) p_kpchannels->
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn(),p_pi);
 	  else p_kpchannels->
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
-	  if ((-mode)&4) p_zchannels->
+	  if (mode&psm::pi_z) p_zchannels->
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn(),p_pi);
 	  else p_zchannels->
 	    GeneratePoint(m_isrspkey,m_isrykey,p_isrhandler->KMROn());
@@ -288,7 +289,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
       process->Selector()->UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
     }
   }
-  if ((-mode)&2) p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_pi);
+  if (mode&psm::pi_fsr) p_fsrchannels->GeneratePoint(p_lab,p_cuts,p_pi);
   else p_fsrchannels->GeneratePoint(p_lab,p_cuts);
   if (!Check4Momentum(p_lab)) {
     msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<std::endl;
@@ -316,7 +317,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
 	m_mu2key[0][0] = process->Scale(stp::kp21);
 	m_mu2key[1][0] = process->Scale(stp::kp22);
       }
-      if (p_isrhandler->On()>0 && mode<3) {
+      if (p_isrhandler->On()>0 && !(mode&psm::no_dice_isr)) {
 	p_isrhandler->CalculateWeight(Q2);
 	p_isrchannels->GenerateWeight(p_isrhandler->On());
  	m_result_1 *= p_isrchannels->Weight();
@@ -507,7 +508,7 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       }
     }
     p_process->Selected()->RestoreInOrder();
-    value = Differential(p_process->Selected(),mode);
+    value = Differential(p_process->Selected(),(psm::code)mode);
     if (value > 0.) {
       m_sumtrials+=i;
       ++m_events;
@@ -527,7 +528,9 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       m_trials=i;
       return new Blob_Data<Weight_Info>(Weight_Info(m_weight,m_trials));
     }
-    if (mode>=2) return NULL;
+    // call from amisic
+    if ((psm::code)mode&psm::no_lim_isr ||
+	(psm::code)mode&psm::no_dice_isr) return NULL;
   }
   msg.Out()<<"WARNING in Phase_Space_Handler::WeightedEvent() : "
 	   <<" too many trials for "<<p_process->Selected()->Name()<<std::endl;
@@ -586,7 +589,7 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
     std::string key;
     piinfo>>key>>dim;
     p_pi = new PI_Interface(this,key,dim);
-    p_pi->SetMode(m_use_pi);
+    p_pi->SetMode((psm::code)m_use_pi);
     p_pi->ReadIn(pID+"/PI/");
   }
   if (rpa.gen.RandomSeed()==1234 && !(exclude&32)) {
@@ -872,7 +875,7 @@ bool Phase_Space_Handler::MakeBeamChannels()
   int    type;
   double mass,width;
   double thmin=0.,thmax=0.;
-  for (int i=0;i<p_fsrchannels->Number();i++) {
+  for (size_t i=0;i<p_fsrchannels->Number();i++) {
     type=0; 
     mass=width=0.;
     if (p_process) p_fsrchannels->ISRInfo(i,type,mass,width);
@@ -919,7 +922,7 @@ bool Phase_Space_Handler::MakeISRChannels()
   int    type;
   double mass,width;
   double thmin=0.,thmax=0.;
-  for (int i=0;i<p_fsrchannels->Number();i++) {
+  for (size_t i=0;i<p_fsrchannels->Number();i++) {
     type=0; 
     mass=width=0.;
     p_fsrchannels->ISRInfo(i,type,mass,width);
@@ -1317,57 +1320,73 @@ void Phase_Space_Handler::DeleteInfo()
 bool Phase_Space_Handler::CreatePI()
 {
   size_t dim=0, sdim[4]={0,0,0,0};
-  if (m_use_pi&1) {
-    if (p_isrchannels==NULL || p_isrchannels->Number()==0) return false;
-    dim+=sdim[0]=(*p_isrchannels)[0]->Dimension()+1;
-  }
-  if (m_use_pi&2) {
-    if (p_fsrchannels==NULL || p_fsrchannels->Number()==0) return false;
-    dim+=sdim[1]=(*p_fsrchannels)[0]->Dimension()+1;
-  }
-  if (m_use_pi&4) {
-    if (p_zchannels==NULL || p_zchannels->Number()==0) return false;
-    dim+=sdim[2]=(*p_zchannels)[0]->Dimension()+1;
-  }
-  if (m_use_pi&8) {
-    if (p_kpchannels==NULL || p_kpchannels->Number()==0) return false;
-    dim+=sdim[3]=(*p_kpchannels)[0]->Dimension()+1;
-  }
+  if ((psm::code)m_use_pi&psm::pi_isr) 
+    if (p_isrchannels!=NULL && p_isrchannels->Number()!=0) 
+      dim+=sdim[0]=(*p_isrchannels)[0]->Dimension()+1;
+  if ((psm::code)m_use_pi&psm::pi_fsr) 
+    if (p_fsrchannels!=NULL && p_fsrchannels->Number()!=0) 
+      dim+=sdim[1]=(*p_fsrchannels)[0]->Dimension()+1;
+  if ((psm::code)m_use_pi&psm::pi_z) 
+    if (p_zchannels!=NULL && p_zchannels->Number()!=0) 
+      dim+=sdim[2]=(*p_zchannels)[0]->Dimension()+1;
+  if ((psm::code)m_use_pi&psm::pi_kp) 
+    if (p_kpchannels!=NULL && p_kpchannels->Number()!=0) 
+      dim+=sdim[3]=(*p_kpchannels)[0]->Dimension()+1;
   if (dim>25) THROW(critical_error,"Dimension too large for PI.");
-  if (dim==0) return false;
+  if (dim==0) {
+    ATOOLS::msg.Error()<<"Phase_Space_Handler::CreatePI(): "
+		       <<"Zero dimensional phase space. Abort.";
+    return false;
+  }
   msg_Info()<<"Phase_Space_Handler::CreatePI(..): "
 	    <<"Creating "<<dim<<"-dimensional PI\n";
   msg_Tracking()<<"   '"<<p_process->Name()<<"'\n";
   p_pi = new PI_Interface(this,p_process->Name(),dim);
-  p_pi->SetMode(m_use_pi);
+  p_pi->SetMode((psm::code)m_use_pi);
   (*p_pi)->Initialize();
   if (sdim[0]>0) {
+    double sum=0.0;
     std::vector<double> alpha(p_isrchannels->Number()-1);
-    for (size_t i=0;i<alpha.size();++i) 
-      alpha[i]=(i+1.0)/(double)(alpha.size()+1);
+    for (size_t j=0, i=0;i<p_isrchannels->Number()-1;++i) 
+      if ((*p_isrchannels)[i]->Alpha()>0.0)
+	alpha[j++]=sum+=(*p_isrchannels)[i]->Alpha();
+      else alpha.pop_back();
     (*p_pi)->Reserve(p_isrchannels->Name(),sdim[0],1);
     (*p_pi)->Split(p_isrchannels->Name(),0,alpha);
+    p_isrchannels->FixAlpha();
   }
   if (sdim[1]>0) {
+    double sum=0.0;
     std::vector<double> alpha(p_fsrchannels->Number()-1);
-    for (size_t i=0;i<alpha.size();++i) 
-      alpha[i]=(i+1)/(double)(alpha.size()+1);
+    for (size_t j=0, i=0;i<p_fsrchannels->Number()-1;++i) 
+      if ((*p_fsrchannels)[i]->Alpha()>0.0)
+	alpha[j++]=sum+=(*p_fsrchannels)[i]->Alpha();
+      else alpha.pop_back();
     (*p_pi)->Reserve(p_fsrchannels->Name(),sdim[1],1);
     (*p_pi)->Split(p_fsrchannels->Name(),0,alpha);
+    p_fsrchannels->FixAlpha();
   }
   if (sdim[2]>0) {
+    double sum=0.0;
     std::vector<double> alpha(p_zchannels->Number()-1);
-    for (size_t i=0;i<alpha.size();++i) 
-      alpha[i]=(i+1)/(double)(alpha.size()+1);
+    for (size_t j=0, i=0;i<p_zchannels->Number()-1;++i)
+      if ((*p_zchannels)[i]->Alpha()>0.0)
+	alpha[j++]=sum+=(*p_zchannels)[i]->Alpha();
+      else alpha.pop_back();
     (*p_pi)->Reserve(p_zchannels->Name(),sdim[2],1);
     (*p_pi)->Split(p_zchannels->Name(),0,alpha);
+    p_zchannels->FixAlpha();
   }
   if (sdim[3]>0) {
+    double sum=0.0;
     std::vector<double> alpha(p_kpchannels->Number()-1);
-    for (size_t i=0;i<alpha.size();++i) 
-      alpha[i]=(i+1)/(double)(alpha.size()+1);
+    for (size_t j=0, i=0;i<p_kpchannels->Number()-1;++i)
+      if ((*p_kpchannels)[i]->Alpha()>0.0)
+	alpha[j++]=sum+=(*p_kpchannels)[i]->Alpha();
+      else alpha.pop_back();
     (*p_pi)->Reserve(p_kpchannels->Name(),sdim[3],1);
     (*p_pi)->Split(p_kpchannels->Name(),0,alpha);
+    p_kpchannels->FixAlpha();
   }
   return true;
 }

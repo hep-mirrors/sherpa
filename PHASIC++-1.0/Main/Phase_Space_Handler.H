@@ -10,6 +10,28 @@ namespace ATOOLS { class Blob_Data_Base; }
 
 namespace PHASIC {
 
+  struct psm {
+    
+    enum code {
+      normal_call = 0,
+      pi_call     = 1,
+      pi_isr      = 2,
+      pi_fsr      = 4,
+      pi_z        = 8,
+      pi_kp       = 16,
+      no_lim_isr  = 32,
+      no_dice_isr = 64
+    };
+
+  };// end of struct psm
+
+  inline const psm::code 
+  operator|(const psm::code &c1,const psm::code &c2)
+  { return (psm::code)((int)c1|(int)c2); }
+  inline const psm::code 
+  operator&(const psm::code &c1,const psm::code &c2)
+  { return (psm::code)((int)c1&(int)c2); }
+
   struct Weight_Info {
     
     double        weight;
@@ -103,12 +125,13 @@ namespace PHASIC {
     
     double Integrate();
     double Differential();
-    double Differential(Integrable_Base *const process,const int mode=0);
+    double Differential(Integrable_Base *const process,
+			const psm::code mode=psm::normal_call);
 
     bool OneEvent(const double mass=-1.,const int mode=0);
     bool SameEvent();
 
-    ATOOLS::Blob_Data_Base *WeightedEvent(const int mode =0);
+    ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
     ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
     void AddPoint(const double xs);
@@ -131,7 +154,7 @@ namespace PHASIC {
     inline double   Weight() const    { return m_weight;    }
     inline double   Error() const     { return m_error;     }
     inline long int MaxTrials() const { return m_maxtrials; }
-    inline int      UsePI() const   { return m_use_pi;  }
+    inline int      UsePI() const     { return m_use_pi;    }
  
     inline Multi_Channel *const BeamIntegrator() const  
     { return p_beamchannels; }

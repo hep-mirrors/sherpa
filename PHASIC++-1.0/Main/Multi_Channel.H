@@ -93,7 +93,7 @@ namespace PHASIC {
 
     inline void FixAlpha() { m_fixalpha=true; }
 
-    inline int                  Number()    { return channels.size(); }
+    inline size_t               Number()    { return channels.size(); }
     inline int                  N()         { return n_points; }
     inline int                  ValidN()    { return n_contrib; }
     inline int                  Nin()       { return nin; }

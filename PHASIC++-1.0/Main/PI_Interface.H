@@ -2,10 +2,9 @@
 #define PI_Interface_H
 
 #include "Primitive_Integrator.H"
+#include "Phase_Space_Handler.H"
 
 namespace PHASIC {
-
-  class Phase_Space_Handler;
 
   class PI_Interface: public ATOOLS::Primitive_Integrand {
   private:
@@ -16,7 +15,7 @@ namespace PHASIC {
 
     std::string m_key;
     bool        m_initialize;
-    int         m_mode;
+    psm::code   m_mode;
 
     std::vector<double> m_point;
     double              m_integral;
@@ -47,8 +46,8 @@ namespace PHASIC {
     inline const std::string         &Key() const   { return m_key;   }
     inline const std::vector<double> &Point() const { return m_point; }
 
-    inline void SetMode(const int mode) { m_mode=mode;   }
-    inline int  Mode() const            { return m_mode; }
+    inline void SetMode(const psm::code mode) { m_mode=mode;   }
+    inline psm::code Mode() const             { return m_mode; }
 
     inline ATOOLS::Primitive_Integrator *operator->() const 
     { return p_integrator; }

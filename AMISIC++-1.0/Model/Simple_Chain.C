@@ -356,7 +356,6 @@ bool Simple_Chain::SetUpInterface()
     Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
     group->InitIntegrators();
     if (m_pi==0) group->CreateISRChannels();
-    else group->CalculateTotalXSec("");
     group->SetFSRInterface(p_fsrinterface);
     group->SetFSRMode(2);
     group->CreateFSRChannels();
@@ -591,6 +590,8 @@ bool Simple_Chain::Initialize()
   if (!reader->ReadFromFile(m_check,"CHECK_CONSISTENCY")) m_check=1;
   if (!reader->ReadFromFile(m_vegas,"VEGAS_MI")) m_vegas=0;
   if (!reader->ReadFromFile(m_pi,"PI_MI")) m_pi=0;
+  m_pi=m_pi&PHASIC::psm::pi_isr;
+  if (m_pi!=0) m_vegas=0;
   if (!reader->ReadFromFile(m_maxreduction,"MI_MAX_REDUCTION")) 
     m_maxreduction=10.0;
   std::string function;
@@ -641,7 +642,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       double max=cur->BinMax(m_last[0]);
       p_fsrinterface->SetTrigger(false);
       while (++pstrials<m_maxtrials) {
-	ATOOLS::Blob_Data_Base *data=selected->WeightedEvent(2);
+	ATOOLS::Blob_Data_Base *data=selected->
+	  WeightedEvent(PHASIC::psm::no_lim_isr);
 	if (data!=NULL) {
 	  weight=data->Get<PHASIC::Weight_Info>().weight;
 	  trials=data->Get<PHASIC::Weight_Info>().ntrial;
@@ -671,7 +673,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 		  msg_Debugging()<<"hit "<<m_selected<<" "<<m_last[0]<<" "
 				 <<value<<" "<<cur->BinExtra(m_last[0])
 				 <<" "<<m_spkey[3]<<" "<<m_ykey[2]<<"\n";
-		  selected->WeightedEvent(3);
+		  selected->WeightedEvent(PHASIC::psm::no_lim_isr|
+					  PHASIC::psm::no_dice_isr);
 		  cur->AddBinExtra(m_last[0],1.0,3);
 		}
 		else {

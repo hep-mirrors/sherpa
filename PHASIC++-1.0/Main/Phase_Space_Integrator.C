@@ -328,15 +328,12 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
-      if (p_psh->PI()!=NULL && ncontrib/iter1<6) allowbreak = false;
+      if (p_psh->PI()!=NULL && ncontrib/iter<10) allowbreak = false;
       if (error<maxerror && allowbreak) break;
-      if (ncontrib/iter1==1 && p_psh->UsePI()>0 && p_psh->PI()==NULL) {
+      if (ncontrib/iter0==5 && p_psh->UsePI()>0 && p_psh->PI()==NULL) {
 	p_psh->CreatePI();
+	if (p_psh->PI()==NULL) THROW(fatal_error,"Cannot initialize PI.");
 	p_psh->PI()->Initialize();
-	if (psh->ISRIntegrator()) psh->ISRIntegrator()->FixAlpha();
-	if (psh->FSRIntegrator()) psh->FSRIntegrator()->FixAlpha();
-	if (psh->KMRZIntegrator()) psh->KMRZIntegrator()->FixAlpha();
-	if (psh->KMRKPIntegrator()) psh->KMRKPIntegrator()->FixAlpha();
       }
 #endif
 

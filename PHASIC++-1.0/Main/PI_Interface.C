@@ -1,6 +1,5 @@
 #include "PI_Interface.H"
 
-#include "Phase_Space_Handler.H"
 #include "Run_Parameter.H"
 
 using namespace PHASIC;
@@ -49,13 +48,8 @@ double PI_Interface::operator()(const std::vector<double> &x) const
 {
   PI_Interface *cur=(PI_Interface*)this;
   cur->m_point=x;
-  double value=p_pshandler->Differential(p_pshandler->Active(),-m_mode);
-//   p_pshandler->AddPoint(value);
-//   size_t points=(size_t)(*this)->Points();
-//   if (points%m_nopt==0) {
-//     if (points<m_nmaxopt) p_pshandler->Process()->ResetMax(2);
-//     else p_pshandler->Process()->ResetMax(0);
-//   }
+  double value=p_pshandler->
+    Differential(p_pshandler->Active(),m_mode|psm::pi_call);
   return value;
 }
 

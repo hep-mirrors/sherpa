@@ -22,7 +22,7 @@ namespace ATOOLS {
   private:
     
     double m_alpha, m_oldalpha, m_weight;
-    double m_sum, m_sum2, m_max, m_np;
+    double m_sum, m_sum2, m_max, m_np, m_ssum, m_ssum2, m_snp;
 
     std::vector<double>             m_this;
     std::vector<Primitive_Channel*> m_next;
@@ -52,8 +52,10 @@ namespace ATOOLS {
     bool Find(const std::vector<double> &point) const;
     
     void Reset();
+    void ResetAll();
     void SetWeight();
     void SetAlpha(const double &alpha);
+    void Store(const double &alpha);
 
     bool WriteOut(std::fstream *const file,
 		  std::map<Primitive_Channel*,size_t> &pmap) const;
@@ -72,16 +74,24 @@ namespace ATOOLS {
     inline double Weight() const   { return m_weight;   }
     inline size_t Position() const { return m_pos;      }
 
-    inline double Sum() const    { return m_sum;  }
-    inline double Sum2() const   { return m_sum2; }
-    inline double Max() const    { return m_max;  }
-    inline double Points() const { return m_np;   }
+    inline double Sum() const     { return m_sum;   }
+    inline double Sum2() const    { return m_sum2;  }
+    inline double SSum() const    { return m_ssum;  }
+    inline double SSum2() const   { return m_ssum2; }
+    inline double Max() const     { return m_max;   }
+    inline double Points() const  { return m_np;    }
+    inline double SPoints() const { return m_snp;   }
 
-    inline double Mean() const   { return m_sum/m_np; }
+    inline double Mean() const     { return m_sum/m_np;   }
+    inline double SMean() const    { return m_ssum/m_snp; }
     inline double Variance() const    
     { return (m_sum2-m_sum*m_sum/m_np)/(m_np-1.0); }
+    inline double SVariance() const    
+    { return (m_ssum2-m_ssum*m_ssum/m_snp)/(m_snp-1.0); }
     inline double Sigma() const  
     { return sqrt(Variance()/m_np); }
+    inline double SSigma() const  
+    { return sqrt(SVariance()/m_snp); }
 
     inline bool Boundary() const { return m_next[0]==NULL; }
     inline void SaveAlpha()      { m_oldalpha=m_alpha;     }
@@ -111,7 +121,7 @@ namespace ATOOLS {
 
     const Primitive_Integrand *p_function;
 
-    size_t m_ncells, m_lastdim, m_mode;
+    size_t m_ncells, m_lastdim, m_mode, m_split, m_shuffle;
 
     std::string  m_vname, m_uname;
     Position_Map m_reserved;
@@ -120,7 +130,11 @@ namespace ATOOLS {
 
     void Point();
     void Split();
-    bool Update();
+    bool Shuffle();
+
+    double Update(const int mode);
+
+    void CheckTime() const;
 
   public:
 
@@ -162,6 +176,9 @@ namespace ATOOLS {
 
     inline void SetVariableName(const std::string &vname) { m_vname=vname; }
     inline void SetUnitName(const std::string &uname)     { m_uname=uname; } 
+
+    inline void SetSplitMode(const size_t split)     { m_split=split;     }
+    inline void SetShuffleMode(const size_t shuffle) { m_shuffle=shuffle; }
 
     inline void SetFunction(const Primitive_Integrand *function)
     { p_function=function; }
