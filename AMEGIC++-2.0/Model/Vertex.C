@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <iomanip>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "Vertex.H"
 #include "Interaction_Model_Base.H"
@@ -416,12 +417,12 @@ Vertex::Vertex(Interaction_Model_Base * _model)
   m_nvertex  = vanz;
   m_n4vertex = vanz4;
   //Print();
+  //TexOutput();
   GenerateVertex();
   Print();
   vanz = m_nvertex;
   vanz4 = m_n4vertex;
   //Kill_Off(); to be written....
-  //TexOutput();
   m_nvertex = 10000;
   m_n4vertex = 30000;
   
@@ -501,31 +502,32 @@ void Vertex::TexOutput()
 {
   mkdir("./tex",448);
   
-  ofstream sf;
+  system("rm ./tex/Vertex_*");  
 
+  ofstream sf;
+  
   String_Tree st;
   
   //Print();
   
   int fmfcount = 0;  
-  
   for (int i=0;i<m_nvertex;i++) {
+    if (m_v[i].cpl[0]!=Complex(0.,0.) && m_v[i].cpl[1]!=Complex(0.,0.)) {
     st.Reset();
     sknot* shelp = st.String2Tree(m_v[i].Str);
-    st.Delete(shelp,string("zero"));
-
+    //st.Delete(shelp,string("zero"));
     string newstr = st.Tree2Tex(shelp,0);
     
-    if (i%90==0) {
+    if (i%200==0) {
       if (i!=0) {
 	sf<<"\\end{fmffile}"<<endl;
 	sf<<"\\end{document}"<<endl;
 	
 	sf.close();
       }
-
+      
       char help[17];
-      sprintf(help,"./tex/Vertex_%i.tex",fmfcount);
+      sprintf(help,"./tex/Vertex3_%i.tex",fmfcount);
 
       sf.open(help);
       sf<<"\\documentclass[a4paper,10pt]{article}"<<endl;
@@ -574,7 +576,6 @@ void Vertex::TexOutput()
 	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<",\\;r^\\mu$}{r2}"<<endl;
       }
       
-     
       if (m_v[i].in[0].IsVector() && m_v[i].in[2].IsVector() ){
 	if (m_v[i].in[1]==Flavour(kf::gluon)) {
 	  sf<<"\\fmf{curly}{r1,v1,r2}"<<endl;
@@ -606,6 +607,7 @@ void Vertex::TexOutput()
 	sf<<"\\fmflabel{$"<<m_v[i].in[0].TexName()<<"$}{l1}"<<endl;
 	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<",\\;r^\\mu $}{r2}"<<endl;
       }
+      //end of is vector 
     }
     
     if (m_v[i].in[1].IsScalar()) {
@@ -646,20 +648,131 @@ void Vertex::TexOutput()
 	sf<<"\\fmflabel{$"<<m_v[i].in[2].TexName()<<"$}{r1}"<<endl;
 	sf<<"\\fmflabel{$"<<m_v[i].in[1].TexName()<<"$}{r2}"<<endl;
       }
+      //end of isscalar
+    }
+    
+    sf<<"\\fmfdot{v1}"<<endl;
+    sf<<"\\end{fmfgraph*}} "<<endl;
+    sf<<"\\end{picture}} &"<<endl; 
+    sf<<"\\begin{minipage}[tl]{8cm}{"<<endl; 
+    sf<<"$\\displaystyle "<<newstr<<"$"<<endl;
+    sf<<"}\\end{minipage} \\\\"<<endl;  
+    sf<<"\\et\\\\[5mm]"<<endl;
+    }
+  }
+  sf<<"\\end{fmffile}"<<endl;
+  sf<<"\\end{document}"<<endl;
+  sf.close();  
+
+  for (int i=0;i<m_n4vertex;i++) {
+    if (m_v4[i].cpl[0]!=Complex(0.,0.) && m_v4[i].cpl[1]!=Complex(0.,0.)) {
+    st.Reset();
+    sknot* shelp = st.String2Tree(m_v4[i].Str);
+    //st.Delete(shelp,string("zero"));
+   
+    string newstr = st.Tree2Tex(shelp,0);
+    
+    if (i%200==0) {
+      if (i!=0) {
+	sf<<"\\end{fmffile}"<<endl;
+	sf<<"\\end{document}"<<endl;
+	
+	sf.close();
+      }
+      
+      char help[17];
+      sprintf(help,"./tex/Vertex4_%i.tex",fmfcount);
+      sf.open(help);
+      sf<<"\\documentclass[a4paper,10pt]{article}"<<endl;
+      sf<<"\\newcommand{\\nnb}{\\nonumber}"<<endl;
+      sf<<"\\newcommand{\\bea}{\\begin{eqnarray*}}"<<endl;
+      sf<<"\\newcommand{\\eea}{\\end{eqnarray*}}"<<endl;
+      sf<<"\\newcommand{\\ba}{\\begin{array}}"<<endl;
+      sf<<"\\newcommand{\\ea}{\\end{array}}"<<endl;
+      sf<<"\\newcommand{\\bt}{\\begin{tabular}}"<<endl;
+      sf<<"\\newcommand{\\et}{\\end{tabular}}"<<endl;
+      sf<<"\\newcommand{\\m}{-}"<<endl;
+      sf<<"\\newcommand{\\p}{+}"<<endl;
+      sf<<"\\newcommand{\\ti}{*}"<<endl;
+      sf<<"\\usepackage{feynmf}"<<endl;
+      sf<<"\\begin{document}"<<endl;
+      sf<<"\\begin{center}"<<endl;
+      sf<<"\\underline{Amplitudes for job}";
+      sf<<"\\end{center}"<<endl;
+      sf<<"\\begin{fmffile}{vertpics"<<fmfcount<<"}"<<endl;
+      fmfcount++;
+    }
+    
+    sf<<"\\bt{cc}"<<endl;
+    sf<<"\\parbox{4cm}{";
+    sf<<"\\begin{picture}(100,100)"<<endl;
+    sf<<"{\\begin{fmfgraph*}(80,80)"<<endl;
+    sf<<" \\fmfleft{l1,l2}\\fmfright{r1,r2}"<<endl; 
+    sf<<"\\fmfpen{thin}"<<endl;
+    sf<<"\\fmf{phantom}{r1,v1,r2}"<<endl;
+    sf<<"\\fmf{phantom}{l1,v1,l2}"<<endl;
+    sf<<"\\fmffreeze"<<endl;
+    
+    if (m_v4[i].in[0].IsVector()) {
+      if (m_v4[i].in[1].IsVector()) {
+      if (m_v4[i].in[1]==Flavour(kf::gluon)) {
+	sf<<"\\fmf{curly}{r1,v1,r2}"<<endl;
+	sf<<"\\fmf{curly}{l1,v1,l2}"<<endl;
+      }
+      else { 
+	sf<<"\\fmf{photon}{r1,v1,r2}"<<endl;
+	sf<<"\\fmf{photon}{l1,v1,l2}"<<endl;}
+      sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
+      sf<<"\\fmf{phantom_arrow}{v1,l2}"<<endl;
+      sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
+      sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
+      sf<<"\\fmflabel{$"<<m_v4[i].in[0].TexName()<<",\\;k^\\lambda $}{l1}"<<endl;
+      sf<<"\\fmflabel{$"<<m_v4[i].in[1].TexName()<<",\\;r^\\mu $}{l2}"<<endl;
+      sf<<"\\fmflabel{$"<<m_v4[i].in[2].TexName()<<",\\;p^\\nu $}{r1}"<<endl;
+      sf<<"\\fmflabel{$"<<m_v4[i].in[3].TexName()<<",\\;l^\\kappa $}{r2}"<<endl;
+      }
+      
+      if (m_v4[i].in[1].IsScalar()) {
+	sf<<"\\fmf{photon}{l1,v1,r1}"<<endl;
+	sf<<"\\fmf{dashes}{l2,v1,r2}"<<endl;
+	if (m_v4[i].in[0].Charge()!=0) {
+	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
+	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;}
+	if (m_v4[i].in[1].Charge()!=0) {
+	  sf<<"\\fmf{phantom_arrow}{v1,l2}"<<endl;
+	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;}
+	sf<<"\\fmflabel{$"<<m_v4[i].in[0].TexName()<<",\\;k^\\lambda $}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v4[i].in[1].TexName()<<"$}{l2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v4[i].in[2].TexName()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v4[i].in[3].TexName()<<",\\;l^\\kappa $}{r1}"<<endl;
+      }
+      //end of Isvector 
+    }  
+    
+    if (m_v4[i].in[0].IsScalar()) {
+      if (m_v4[i].in[1].IsScalar() && m_v4[i].in[2].IsScalar() && m_v4[i].in[3].IsScalar()) {
+	sf<<"\\fmf{dashes}{l1,v1,r1}"<<endl; 
+	sf<<"\\fmf{dashes}{r2,v1,l2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v4[i].in[0].TexName()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v4[i].in[1].TexName()<<"$}{l2}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v4[i].in[2].TexName()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<m_v4[i].in[3].TexName()<<"$}{r2}"<<endl;
+      }
+      //end of Isscalar
     }
     
     sf<<"\\fmfdot{v1}"<<endl;
     sf<<"\\end{fmfgraph*}} "<<endl;
     sf<<"\\end{picture}} &"<<endl;  
-    //sf<<"} &"<<endl;  
     sf<<"\\begin{minipage}[tl]{8cm}{"<<endl;
     sf<<"$\\displaystyle "<<newstr<<"$"<<endl;
     sf<<"}\\end{minipage} \\\\"<<endl;  
     sf<<"\\et\\\\[5mm]"<<endl;
+    }
   }
   sf<<"\\end{fmffile}"<<endl;
   sf<<"\\end{document}"<<endl;
-  
+  sf.close();
 }
 
 void Vertex::AddVertex(Single_Vertex* addv){
