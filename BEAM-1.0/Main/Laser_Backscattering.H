@@ -43,7 +43,7 @@ namespace BEAM {
     bool            On()                 { return 1;  }
     int             Mode()               { return m_mode; }
     bool            Pol()                { return m_pol; }
-    double          Exponent()           { return 2.; }
+    double          Exponent()           { return 0.5; }
     double          Xmax()               { return m_upper; }
     double          Peak()               { return m_peak; }
   };
