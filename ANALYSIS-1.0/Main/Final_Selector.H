@@ -35,7 +35,6 @@ namespace ANALYSIS {
     bool                   m_ownlist,m_extract;
 
     ATOOLS::Kt_Algorithm * p_ktalg;
-    ATOOLS::Durham_Algorithm * p_dhalg;
     Final_Data_Map         m_fmap;
     Final_Correlator_Map   m_cmap;
 
