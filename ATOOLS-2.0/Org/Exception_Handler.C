@@ -132,6 +132,7 @@ void Exception_Handler::SignalHandler(int signal)
       std::cin>>input;
       if (input=="y" || input=="Y") {
 	system((std::string("gdb Sherpa ")+ATOOLS::ToString(getpid())).c_str());
+	kill(getpid(),9);
       }
     }
     if (s_nsegv>3) {
