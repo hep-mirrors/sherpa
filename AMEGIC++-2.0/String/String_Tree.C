@@ -31,7 +31,7 @@ sknot* String_Tree::newsk()
 { 
   ++skpos;
   if (skpos%block_size==0) {
-    if (skpos/block_size==sblocks.size()) {
+    if (skpos/block_size==(int)sblocks.size()) {
       sblocks.push_back(new sknot[block_size]);
     }    
   }
@@ -70,7 +70,7 @@ sknot* String_Tree::String2Tree(string term,int fixed)
     sw1 = 1;
     //plus search
     kl = 0;
-    for (i=0;i<term.length();i++) {
+    for (i=0;i<(int)term.length();i++) {
       switch (term[i]) {
       case '(':kl++;break;
       case ')':kl--;break;
@@ -96,7 +96,7 @@ sknot* String_Tree::String2Tree(string term,int fixed)
     }
     //times search
     kl = 0;
-    for (i=0;i<term.length();i++) {
+    for (i=0;i<(int)term.length();i++) {
       switch (term[i]) {
       case '(':kl++;break;
       case ')':kl--;break;
@@ -126,7 +126,7 @@ sknot* String_Tree::String2Tree(string term,int fixed)
     }
     //divided search !!!!!!!!!!!!! (a/b/c goes wrong) 
     kl = 0;
-    for (i=0;i<term.length();i++) {
+    for (i=0;i<(int)term.length();i++) {
       switch (term[i]) {
       case '(':kl++;break;
       case ')':kl--;break;
@@ -408,13 +408,13 @@ void String_Tree::CollectLeafs(sknot* leaf,vector<sknot*>& sklist,int full)
 
   //setting Tree2String's
   if (full) {
-    for (int i=0;i<sklist.size();i++) {
+    for (size_t i=0;i<sklist.size();i++) {
       sklist[i]->SetString(Tree2String(sklist[i],0));
     }
   }
 
-  for (int i=0;i<sklist.size();i++) 
-    for (int j=i+1;j<sklist.size();j++) {
+  for (size_t i=0;i<sklist.size();i++) 
+    for (size_t j=i+1;j<sklist.size();j++) {
       if (full) {
 	if (sklist[i]->Str()>sklist[j]->Str()) {
 	  //change
@@ -480,15 +480,15 @@ int String_Tree::CountFactorNumber(sknot* leaf1,vector<sknot*>*& list1,
                                             else j++;
     }
   }
-  while (i<list1->size() && j<list2->size());
+  while (i<(int)(list1->size()) && j<(int)(list2->size()));
 
   //equal lists will not be clustered at this stage
-  if (count==list1->size() || count==list2->size()) count = 0;
+  if (count==(int)(list1->size()) || count==(int)(list2->size())) count = 0;
 
   // *AS* *TG*
   // beschleunigung clustern bei superamplitude
   if (full) {
-    if (count!=list1->size()-1 || count!=list2->size()-1 )
+    if (count!=(int)(list1->size())-1 || count!=(int)(list2->size())-1 )
       count =0;
       }
 
@@ -601,7 +601,7 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 	sknot* si = leaf2;
 	sknot* sj = leaf1;
 	sknot* sprev;
-	if (winner<winnerlist1->size()) {
+	if (winner<(int)(winnerlist1->size())) {
 	  for (int i=0;i<winner;i++) {
 	    si->right = (*winnerlist1)[i];    
 	    sprev = si;
@@ -615,7 +615,7 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 	  //left side = winner2
 	  if (winnerlist2->size()-winner>1) {
 	    spm->left = si;
-	    for (int i=winner;i<winnerlist2->size()-1;i++) {
+	    for (size_t i=winner;i<winnerlist2->size()-1;i++) {
 	      si->right = (*winnerlist2)[i];   
 	      sprev = si;
 	      si    = si->left;
@@ -626,7 +626,7 @@ void String_Tree::Cluster(sknot* m,sknot* g,int full)
 	  
 	  if (winnerlist1->size()-winner>1) {
 	    spm->right = sj;
-	    for (int i=winner;i<winnerlist1->size()-1;i++) {
+	    for (int i=winner;i<(int)(winnerlist1->size())-1;i++) {
 	      sj->right = (*winnerlist1)[i];   
 	      sprev     = sj;
 	      sj        = sj->left;
@@ -1073,7 +1073,7 @@ void String_Tree::SetLeafAndSign(sknot* m,vector<sknot*>&pmleafs,vector<int>&pms
                       else m->op = '-';
     count++;
    
-    if (count==pmleafs.size()-1) {
+    if (count==(int)pmleafs.size()-1) {
       m->right = pmleafs[count];
       count++;
     }
@@ -1085,7 +1085,7 @@ void String_Tree::DeleteEquals(vector<sknot*>&pmleafs,vector<int>&pmsigns)
 {
   int signchange = 0;
 
-  for (int i=0;i<pmleafs.size()-1;i++) {
+  for (int i=0;i<(int)pmleafs.size()-1;i++) {
     if (pmsigns[i+1]==-1 && pmsigns[i]==+1) {
       signchange = i+1;
       break;
@@ -1099,15 +1099,15 @@ void String_Tree::DeleteEquals(vector<sknot*>&pmleafs,vector<int>&pmsigns)
   do {
     hit = 0;
     for (int i=0;i<signchange;i++) {
-      for (int j=signchange;j<pmleafs.size();j++) {
+      for (int j=signchange;j<(int)pmleafs.size();j++) {
 	if (pmleafs[i]->op==0 && pmleafs[j]->op==0) {
 	  if (pmleafs[i]->Str()==pmleafs[j]->Str()) {
 	    //kick them
-	    for (short int k=i;k<j-1;k++) {
+	    for (int k=i;k<j-1;k++) {
 	      pmleafs[k] = pmleafs[k+1];
 	      pmsigns[k] = pmsigns[k+1];
 	    }
-	    for (short int k=j-1;k<pmleafs.size()-2;k++) {
+	    for (size_t k=j-1;k<pmleafs.size()-2;k++) {
 	      pmleafs[k] = pmleafs[k+2];
 	      pmsigns[k] = pmsigns[k+2];
 	    }    
@@ -1148,8 +1148,8 @@ void String_Tree::OrderPM(sknot* m,sknot* g)
       int currentsign = 1;
       DetermineLeafAndSign(m,pmleafs,pmsigns,currentsign);
       //order leaf and sign
-      for (int i=0;i<pmleafs.size();i++)
-	for (int j=i+1;j<pmleafs.size();j++) {
+      for (size_t i=0;i<pmleafs.size();i++)
+	for (size_t j=i+1;j<pmleafs.size();j++) {
 	  if (pmsigns[i]==-1 && pmsigns[j]==1) {
 	    //exchange
 	    sknot* shelp = pmleafs[i];
@@ -1177,7 +1177,7 @@ void String_Tree::OrderPM(sknot* m,sknot* g)
 	  startknot = m->right;
 	}
 
-	for (int i=0;i<pmleafs.size()-1;i++) {
+	for (int i=0;i<(int)pmleafs.size()-1;i++) {
 	  if (pmsigns[i+1]==-1 && pmsigns[i]==+1) pmsigns[i] = -1;
 	                                     else pmsigns[i] = +1;
 	}

@@ -23,7 +23,7 @@ void Super_Amplitude::SetNumber(int & n)
 
 Zfunc_List* Super_Amplitude::GetZlist()                    
 {
-  Single_Amplitude_Base::GetZlist();
+  return Single_Amplitude_Base::GetZlist();
 }
 
 void Super_Amplitude::Init(string _str)

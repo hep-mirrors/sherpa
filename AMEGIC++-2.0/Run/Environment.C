@@ -86,7 +86,6 @@ bool Environment::InitializeThePDFs()
   PDF_Base *  pdfbase;
   ISR_Base ** isrbases     = new ISR_Base*[2];
   Flavour bunch_particles[2];
-  double  bunch_splimits[2];
 
   for (int i=0;i<2;++i) {
     pdfbase = pdfhandler->GetPDFLib(dataread,bunch_particles[i],i);
