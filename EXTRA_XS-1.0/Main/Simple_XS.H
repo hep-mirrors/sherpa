@@ -40,8 +40,6 @@ namespace EXTRAXS {
     ~Simple_XS();
 
     // member functions
-    void ResetSelector(ATOOLS::Selector_Data *const selectordata);
-
     bool InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandler,
 			     PDF::ISR_Handler *const isrhandler,const bool construct=true);
     bool CalculateTotalXSec(const std::string &resultpath);

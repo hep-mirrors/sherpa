@@ -51,6 +51,7 @@ XS_Group::~XS_Group()
 
 void XS_Group::Add(XS_Base *const xsec) 
 {
+  if (xsec==NULL) return;
   if (m_xsecs.size()==0) {
     m_nin=xsec->NIn();
     m_nout=xsec->NOut();
@@ -428,3 +429,10 @@ void XS_Group::SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler)
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->SetPSHandler(pshandler);
   p_activepshandler=pshandler;
 } 
+
+void XS_Group::ResetSelector(ATOOLS::Selector_Data *const selectordata)
+{
+  for (unsigned int i=0;i<m_xsecs.size();++i) m_xsecs[i]->ResetSelector(selectordata);
+  XS_Base::ResetSelector(selectordata);
+}
+

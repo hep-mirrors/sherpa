@@ -10,6 +10,8 @@ namespace SHERPA {
   class Lund_Interface {
   private:
 
+    static size_t s_errors, s_maxerrors;
+
     std::string m_path, m_file;
 
     // tools for converting a whole event
@@ -36,6 +38,8 @@ namespace SHERPA {
     // member functions
     bool Hadronize(ATOOLS::Blob *blob,ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *pl=NULL);
     bool ConvertEvent(ATOOLS::Blob_List *bloblist);
+
+    static void Error(const int error);
 
   };// end of class Lund_Interface
 

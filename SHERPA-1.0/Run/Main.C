@@ -40,6 +40,7 @@ int main(int argc,char* argv[])
   }
   catch (ATOOLS::Exception exception) {
     exception.UpdateLogFile();
+    std::cout<<exception<<std::endl;
     std::terminate();
   }
   catch (std::exception exception) {

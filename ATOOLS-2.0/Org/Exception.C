@@ -50,7 +50,10 @@ Exception::Exception(const ex::type type,const std::string info,
 
 Exception::~Exception() 
 {
-  if (Exception_Handler::s_exception==this) Exception_Handler::s_exception=NULL;
+  if (Exception_Handler::s_exception==this) {
+    Exception_Handler::SetExitCode();
+    Exception_Handler::s_exception=NULL;
+  }
 }
 
 void Exception::UpdateLogFile() const 

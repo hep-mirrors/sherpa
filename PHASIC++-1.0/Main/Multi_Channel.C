@@ -346,7 +346,6 @@ void Multi_Channel::GeneratePoint(Vec4D * p,Cut_Data * cuts)
     }
     sum += channels[i]->Alpha();
     if (sum>rn) {
-      //      cout<<" choosen : "<<i<<" "<<channels[i]->Name()<<endl;
       channels[i]->GeneratePoint(p,cuts);
       break;
     }

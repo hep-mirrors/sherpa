@@ -9,8 +9,12 @@
 #ifndef NO_EXPORT__AlphaS
 #include "Running_AlphaS.H"
 #endif
+#include "Scaling.H"
 
 using namespace SHERPA;
+
+size_t Lund_Interface::s_errors=0;
+size_t Lund_Interface::s_maxerrors=0;
 
 Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   m_path(_m_path),
@@ -372,5 +376,18 @@ void Lund_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob *blob,ATOOLS::Blob_
       bloblist->push_back(decay);
       FillSecondaryHadronsInBlob(decay,bloblist,hepevt.jdahep[i][0]-1,hepevt.jdahep[i][1],pl);
     }
+  }
+}
+
+void Lund_Interface::Error(const int error)
+{
+  ++s_errors;
+  if (s_errors>s_maxerrors) {
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Pythia calls PYERRM(")+
+			    ATOOLS::ToString(error)+std::string(")"),"Lund_Interface","Error"));
+  }
+  else {
+    ATOOLS::msg.Error()<<"Lund_Interface::Error("<<error<<") "<<ATOOLS::om::red
+		       <<"Pythia calls PYERRM("<<error<<")."<<ATOOLS::om::reset<<std::endl;
   }
 }

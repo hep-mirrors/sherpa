@@ -35,11 +35,11 @@ S1Channel::S1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
 }
 
-void S1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran=0) {
+void S1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran=0) {
   CE.Isotropic2Momenta(p[0]+p[1],ms[2],ms[3],p[2],p[3],_ran[1],_ran[2]);
 }
 
-void S1Channel::GenerateWeight(ATOOLS::Vec4D * p) {
+void S1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) {
   weight = 1. / ( CE.Isotropic2Weight(p[2],p[3]) * pow(2.*M_PI,2.*3.-4.) );
 }
 
@@ -75,13 +75,18 @@ T1Channel::T1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
 }
 
-void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran =0) {
+void T1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran =0) 
+{
+  double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
   CE.TChannelMomenta(p[0],p[1],p[2],p[3],ms[2],ms[3],0.,
-		     0.5,1.,-1.,1.,0,_ran[1],_ran[2]);
+		     .5,ctmax,-1.,1.,0,_ran[1],_ran[2]);
 }
 
-void T1Channel::GenerateWeight(ATOOLS::Vec4D * p) {
-  weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,0.5,1.,-1.,1.,0) * pow(2.*M_PI,2*3.-4.) );
+void T1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) 
+{
+  double ctmax=Min(cuts->cosmax[0][2],cuts->cosmax[1][3]);
+  weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[2],p[3],0.,
+				    .5,ctmax,-1.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 }
 
 void T1Channel::ISRInfo(int & _type,double & _mass,double & _width) {
@@ -116,13 +121,18 @@ U1Channel::U1Channel(int _nin,int _nout,Flavour * fl,Flavour res)
   }
 }
 
-void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,double * _ran =0) {
+void U1Channel::GeneratePoint(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts,double * _ran =0) 
+{
+  double ctmax=Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
   CE.TChannelMomenta(p[0],p[1],p[3],p[2],ms[3],ms[2],0.,
-		     0.5,1.,-1.,1.,0,_ran[1],_ran[2]);
+		     0.5,ctmax,-1.,1.,0,_ran[1],_ran[2]);
 }
 
-void U1Channel::GenerateWeight(ATOOLS::Vec4D * p) {
-  weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,0.5,1.,-1.,1.,0) * pow(2.*M_PI,2*3.-4.) );
+void U1Channel::GenerateWeight(ATOOLS::Vec4D * p,ATOOLS::Cut_Data *cuts) 
+{
+  double ctmax=Min(cuts->cosmax[0][3],cuts->cosmax[1][2]);
+  weight = 1. / ( CE.TChannelWeight(p[0],p[1],p[3],p[2],0.,
+				    .5,ctmax,-1.,1.,0) * pow(2.*M_PI,2*3.-4.) );
 }
 
 void U1Channel::ISRInfo(int & _type,double & _mass,double & _width) {

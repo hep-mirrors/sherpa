@@ -72,7 +72,6 @@ void Exception_Handler::Terminate()
   PrepareTerminate();
   s_prepared=true;
   if (!s_active) abort();
-  SetExitCode();
   Exit(s_exitcode);
 }
 

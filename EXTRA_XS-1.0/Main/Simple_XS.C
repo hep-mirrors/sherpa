@@ -109,37 +109,25 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 	    flavs              = new Flavour[nIS+nFS];
 	    for (int i=0;i<nIS;i++) flavs[i]     = IS[i]; 
 	    for (int i=0;i<nFS;i++) flavs[i+nIS] = FS[i]; 
-	    bool single        = 1;
 	    double summass = 0.;
 	    for (int i=0;i<nFS;i++) summass += flavs[i+nIS].Mass();
 	    if (summass<rpa.gen.Ecms()) {
-	      if (single) {
- 		XS_Group *group=FindGroup(nIS,nFS,flavs,m_scalescheme,m_kfactorscheme,m_scalefactor);
-		if (flavs[0].Kfcode()==ATOOLS::kf::quark && flavs[1].Kfcode()==ATOOLS::kf::quark) {
-		  ATOOLS::Flavour help[4];
-		  help[2]=flavs[2];
-		  help[3]=flavs[3];
-		  for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
-		    help[0]=flavs[0][i];
-		    help[1]=flavs[0][i].Bar();
-		    group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
+	      Flavour help[4];
+	      XS_Group *group=FindGroup(nIS,nFS,flavs,m_scalescheme,m_kfactorscheme,m_scalefactor);
+	      for (size_t i=0;i<(size_t)flavs[0].Size();++i) {
+		help[0]=flavs[0][i];
+		for (size_t j=0;j<(size_t)flavs[1].Size();++j) {
+		  help[1]=flavs[1][j];
+		  for (size_t k=0;k<(size_t)flavs[2].Size();++k) {
+		    help[2]=flavs[2][k];
+		    for (size_t l=0;l<(size_t)flavs[3].Size();++l) {
+		      help[3]=flavs[3][l];
+		      group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
+		    }
 		  }
 		}
-		else if (flavs[2].Kfcode()==ATOOLS::kf::quark && flavs[3].Kfcode()==ATOOLS::kf::quark) {
-		  ATOOLS::Flavour help[4];
-		  help[0]=flavs[0];
-		  help[1]=flavs[1];
-		  for (size_t i=0;i<(size_t)flavs[2].Size();++i) {
-		    help[2]=flavs[2][i];
-		    help[3]=flavs[2][i].Bar();
-		    group->Add(group->XSSelector()->GetXS(nIS,nFS,help,p_isrhandler->KMROn()));
-		  }
-		}
-		else {
-		  group->Add(group->XSSelector()->GetXS(nIS,nFS,flavs,p_isrhandler->KMROn()));
-		}
-		p_selected=group;
 	      }
+	      p_selected=group;
 	    }
 	    else {
 	      msg.Out()<<"Kicked Process: ";
@@ -154,6 +142,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
       }
     }
   }
+  ResetSelector(p_selectordata);
   if (m_xsecs.size()>0) return true;
   msg.Error()<<"Simple_XS::InitializeProcesses("<<beamhandler<<","<<isrhandler<<"):"<<std::endl
 	     <<"   Did not find any process in '"<<m_path+processfile<<"' !"<<std::endl;
@@ -286,11 +275,6 @@ ATOOLS::Blob_Data_Base *Simple_XS::WeightedEvent(const int mode)
 {
   SelectOne();
   return p_selected->WeightedEvent();
-}
-
-void Simple_XS::ResetSelector(ATOOLS::Selector_Data *_seldata)
-{
-  for (unsigned int i=0;i<m_xsecs.size();++i) m_xsecs[i]->ResetSelector(_seldata);
 }
 
 bool Simple_XS::PrepareXSecTables() 

@@ -70,6 +70,7 @@ namespace EXTRAXS {
     ATOOLS::Blob_Data_Base *WeightedEvent();
 
     void SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler); 
+    void ResetSelector(ATOOLS::Selector_Data *const selectordata);
 
     // inline functions 
     inline void PushBack(XS_Base *const xsec) { m_xsecs.push_back(xsec); }

@@ -58,9 +58,7 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   delete reader;
   std::cout<<"Welcome to Sherpa, "<<gen.m_username<<std::endl;
   system("if test -f sherpa_user_test; then rm sherpa_user_test; fi");
-  std::cout<<"After user_test system"<<std::endl;
-
-  m_path        = path;
+  m_path=path;
   Data_Read dr(m_path+file);
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));

@@ -1,8 +1,9 @@
 #include "Off_Shell_QCD.H"
 
 #include "Run_Parameter.H"
-#include "Running_AlphaQED.H"
 #include "Running_AlphaS.H"
+#include "Random.H"
+#include "Flow.H"
 #include "gggg.H"
 
 #define NC 3
@@ -41,7 +42,24 @@ double Off_Shell_gg_qqb::operator()(double s,double t,double u)
 
 bool Off_Shell_gg_qqb::SetColours(double s,double t,double u) 
 { 
-  return true; 
+  RestoreInOrder();
+  int r=(int)p_flavours[2].IsAnti();
+  double Mt=u/t;
+  double Mu=t/u;
+  m_scale=(2.*s*t*u)/(s*s+t*t+u*u);
+  p_colours[0][0]=ATOOLS::Flow::Counter();
+  p_colours[0][1]=ATOOLS::Flow::Counter();
+  if (Mt*(1-r)+Mu*r>(Mt+Mu)*ATOOLS::ran.Get()) {
+    p_colours[2+r][0]=p_colours[0][0];
+    p_colours[3-r][1]=p_colours[1][1]=ATOOLS::Flow::Counter();
+    p_colours[1][0]=p_colours[0][1];
+  }
+  else {
+    p_colours[2+r][0]=p_colours[1][0]=ATOOLS::Flow::Counter();
+    p_colours[3-r][1]=p_colours[0][1];
+    p_colours[1][1]=p_colours[0][0];
+  }
+  return true;
 }
 
 Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,

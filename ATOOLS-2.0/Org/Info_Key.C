@@ -19,7 +19,7 @@ void Info_Key::Assign(const std::string name,const size_t doubles,
 
 Info_Key::~Info_Key()
 {
-  p_info->ReleaseKey(*this);
+  if (p_info!=NULL) p_info->ReleaseKey(*this);
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &str,const Info_Key &key)

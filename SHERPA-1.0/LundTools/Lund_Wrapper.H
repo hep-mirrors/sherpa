@@ -4,6 +4,7 @@
 #ifndef NO_EXPORT__AlphaS
 #include "Running_AlphaS.H"
 #endif
+#include "Lund_Interface.H"
 
 extern "C" {
   void pyhepc_(int*);
@@ -19,6 +20,7 @@ extern "C" {
 #ifndef NO_EXPORT__AlphaS
   double shalps_(double*);
 #endif
+  void sherrm_(int*);
 }
 
 void pyhepc(int mconv) { 
@@ -62,6 +64,10 @@ double shalps_(double *q2) {
   return (*MODEL::as)(*q2);
 }
 #endif
+
+void sherrm_(int *error) {
+  SHERPA::Lund_Interface::Error(*error);
+}
 
 void ListLundParameters() { 
   pyplst_(); 

@@ -315,9 +315,14 @@ bool Simple_Chain::ReadInData()
   if (!reader->ReadFromFile(m_scalescheme,"SCALE_SCHEME")) m_scalescheme=11;
   if (!reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME")) m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=3;
-  std::string outputpath;
-  outputpath=std::string("MI-Grid__")+
-    ATOOLS::rpa.gen.Bunch(0).Name()+std::string("_")+ATOOLS::rpa.gen.Bunch(1).Name()+
+  std::string outputpath, help[2];
+  MyStrStream converter;
+  converter<<ATOOLS::rpa.gen.Bunch(0);
+  converter>>help[0];
+  converter.clear();
+  converter<<ATOOLS::rpa.gen.Bunch(1);
+  converter>>help[1];
+  outputpath=std::string("MI-Grid__")+help[0]+std::string("_")+help[1]+
     std::string("__")+ATOOLS::ToString(ATOOLS::rpa.gen.Ecms())+std::string("_GeV/");
   SetOutputPath(OutputPath()+outputpath);
   std::vector<std::string> comments;
@@ -565,18 +570,6 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
   }
-//   if (ATOOLS::msg.Level()>2) {
-  if (false) {
-    p_processes->CalculateTotalXSec("");
-    double total=p_processes->TotalXS();
-    ATOOLS::msg.Tracking()<<"Simple_Chain::InitializeBlobList(): \\sigma_{hard} = "
-			  <<total*ATOOLS::rpa.Picobarn()<<" pb vs."
-			  <<m_sigmahard*ATOOLS::rpa.Picobarn()<<" pb. "<<std::endl
-			  <<"   Relative error : "
-			  <<ATOOLS::dabs((total-m_sigmahard)/(total+m_sigmahard))*100.0
-			  <<"%."<<std::endl;
-    if ((m_sigmahard-total)/(m_sigmahard+total)>5.0e-2) exit(211);
-  }
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
   p_fsrinterface->SetAlphaSave(1.0);
@@ -585,6 +578,7 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->SetFSRMode(2);
     group[i]->CreateFSRChannels();
     group[i]->InitIntegrators();
+    group[i]->PSHandler(false)->ReadIn(OutputPath()+m_filename[i]+m_mcextension,16);
   }
 #ifdef USING__Sherpa
   p_mehandler = new SHERPA::Matrix_Element_Handler();
@@ -855,10 +849,6 @@ bool Simple_Chain::DiceProcess()
       m_selected=sorter.XYData(i).second;
 #ifdef USING__Sherpa
       p_processes->SetSelected((*p_processes)[m_selected]);
-      std::string path=OutputPath()+m_filename[i]+m_mcextension+std::string("/")+
-	ATOOLS::ToString(m_differential[i]->XData(m_differential[i]->XPosition(sorter.XData(i))));
-      p_processes->Selected()->PSHandler(false)->ReadIn(path,16);
-      p_processes->Selected()->PSHandler(false)->InitIncoming();
 #endif
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
 	ATOOLS::msg.Error()<<"Simple_Chain::DiceProcess(): s' out of bounds: "
