@@ -51,8 +51,8 @@ void Polarisation::Add_Extern_Polarisations(Basic_Sfuncs* BS,Flavour* fl,Helicit
 {
 #ifdef Explicit_Pols
   for(short int i=0;i<BS->GetNmomenta();i++){
-    if(fl[i].IsVector())BS->Build_Polarisations(i,hel->p_type[i],hel->angle[i]);
-    if(fl[i].IsTensor())BS->Build_TensorPolarisations(i);
+    if(fl[i].IsVector())BS->BuildPolarisations(i,hel->p_type[i],hel->angle[i]);
+    if(fl[i].IsTensor())BS->BuildTensorPolarisations(i);
   } 
 #endif
 }
@@ -159,7 +159,7 @@ double Polarisation::Massless_Norm(int N,Flavour* fl,Basic_Sfuncs* BS)
         for (short int j=i+1;j<N+1;j++) {
 	  if ((fl[j].IsVector() && AMATOOLS::IsZero(fl[j].Mass()) ) || 
 	      (fl[j]==Flavour(kf::pol))) {
-	    norm *= BS->N(i,j);
+	    norm *= BS->Norm(i,j);
 	    break;
 	  }
 	}

@@ -49,7 +49,7 @@ Process_Group::Process_Group() {
 }
 
 Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
-			     ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+			     ISR::ISR_Handler * _isr,BEAM::Beam_Handler * _beam,
 			     APHYTOOLS::Selector_Data * _seldata,
 			     int _gen_str,int _kfactorscheme, int _scalescheme, 
 			     Pol_Info * _pl, int _runmode) 
@@ -639,6 +639,7 @@ bool Process_Group::CalculateTotalXSec()
     SetTotalXS(0);
     if (totalxs>0.) return 1;
   }
+  return 0;
 }
 
 
@@ -729,6 +730,7 @@ bool Process_Group::PrepareXSecTables()
     ps->WriteOut(resdir+string("/MC_")+name);
     if (totalxs>0.) return 1;
   }
+  return 0;
 }
 
 

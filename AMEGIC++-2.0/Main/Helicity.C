@@ -3,6 +3,7 @@
 #include "Vector.H"
 #include "MathTools.H"
 #include "Message.H"
+#include "Pol_Info.H"
 
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
@@ -54,8 +55,8 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
 	//msg.Debugging()<<div<<","<<l<<";";
 	Slist[i].s[j] = pl[j].type[l];
 	if(j<Nin)Slist[i].polfactor *= pl[j].factor[l];
-	tensor_struc ts;
-	Slist[i].polfactor*=ts.Get_Tfactor(pl[j].type[l]);          //extra factor for spin2 polarisation tensor 
+	Tensor_Struc ts;
+	Slist[i].polfactor*=ts.GetTfactor(pl[j].type[l]);          //extra factor for spin2 polarisation tensor 
 	msg.Debugging()<<Slist[i].s[j]<<";";
       } 
       msg.Debugging()<<" "<<Slist[i].polfactor<<std::endl;

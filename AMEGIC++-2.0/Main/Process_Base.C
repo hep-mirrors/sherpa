@@ -128,6 +128,7 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
     hname = _name;
     _name = hname.substr(0,i) + string("P") + hname.substr(i+6); 
   }
+  return &_name;
 }
 
 void Process_Base::Reshuffle(int n, Flavour* flav, Pol_Info* plav)
@@ -241,7 +242,7 @@ void Process_Base::SetResDir(string _resdir)            { resdir  = _resdir; }
 void Process_Base::SetAtoms(bool _atoms)                { atoms   = _atoms;  }
 void Process_Base::SetTables(bool _tables)              { tables  = _tables; }
 
-void Process_Base::SetBeam(Beam_Spectra_Handler * _beam)       { beam    = _beam;   }
+void Process_Base::SetBeam(Beam_Handler * _beam)        { beam    = _beam;   }
 void Process_Base::SetISR(ISR_Handler * _isr)           { isr     = _isr;    }
 void Process_Base::SetCuts(Cut_Data * _cuts)            { cuts    = _cuts;   }
 void Process_Base::SetSelector(Selector_Base * _sel)    { sel     = _sel;    }
@@ -360,14 +361,6 @@ Point              * Process_Base::Diagram(int i)                 { return 0; }
 bool                 Process_Base::IsFreeOfFourVertex(Point * _p) { return 1; }
 
 
-<<<<<<< Process_Base.C
-Beam_Spectra_Handler                  * Process_Base::Beam()     { return beam;     }
-ISR_Handler                   * Process_Base::ISR()      { return isr;      }
-Cut_Data                      * Process_Base::Cuts()     { return cuts;     }
-Selector_Base                 * Process_Base::Selector() { return sel;      }
-APHYTOOLS::Primitive_Analysis * Process_Base::Analysis() { return analysis; }
-double                          Process_Base::Scale()    { return scale;    }
-=======
 Beam_Handler                  * Process_Base::Beam()            { return beam;     }
 ISR_Handler                   * Process_Base::ISR()             { return isr;      }
 Cut_Data                      * Process_Base::Cuts()            { return cuts;     }
@@ -376,7 +369,6 @@ APHYTOOLS::Primitive_Analysis * Process_Base::Analysis()        { return analysi
 double                          Process_Base::Scale()           { return scale;    }
 
 double                          Process_Base::ISRThreshold()    { return isrthreshold;}
->>>>>>> 1.9
 
 
 void Process_Base::BeamChannels(int i,Channel_Info & ci) { ps->BeamChannels(i,ci); }

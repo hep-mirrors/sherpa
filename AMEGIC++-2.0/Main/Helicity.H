@@ -2,9 +2,11 @@
 #define Helicity_h
 
 #include "Flavour.H"
-#include "Pol_Info.H"
+//#include "Pol_Info.H"
 
 namespace AMEGIC {
+
+  class Pol_Info;
   //! A list of signs, i.e. helicities.(ready)
   struct signlist {
     //! The list og signs

@@ -8,7 +8,7 @@
 
 #include "Phase_Space_Handler.H"
 #include "Multi_Channel.H"
-#include "Beam_Spectra_Handler.H"
+#include "Beam_Handler.H"
 #include "ISR_Handler.H"
 #include "Selector.H"
 #include "Flavour.H"
@@ -44,7 +44,7 @@ namespace AMEGIC {
     
     PHASIC::Phase_Space_Handler    * ps; 
 
-    BEAM::Beam_Spectra_Handler             * beam;
+    BEAM::Beam_Handler             * beam;
     ISR::ISR_Handler               * isr;
     APHYTOOLS::Cut_Data            * cuts;
     APHYTOOLS::Selector_Base       * sel;
@@ -98,7 +98,7 @@ namespace AMEGIC {
     virtual int              Size()                                                =0;
     virtual Process_Base  *  operator[] (int idx)                                  =0;
 
-    virtual void             SetBeam(BEAM::Beam_Spectra_Handler *);
+    virtual void             SetBeam(BEAM::Beam_Handler *);
     virtual void             SetISR(ISR::ISR_Handler *);
     virtual void             SetCuts(APHYTOOLS::Cut_Data *);
     virtual void             SetSelector(APHYTOOLS::Selector_Base *);
@@ -128,7 +128,7 @@ namespace AMEGIC {
     virtual double Differential2()                                                 =0;
     virtual double DSigma(AMATOOLS::Vec4D *,bool)                                  =0;
     virtual double DSigma2()                                                       =0;
-    virtual double operator()(AMATOOLS::Vec4D *) {}
+    virtual double operator()(AMATOOLS::Vec4D *) { return 0.; }
     virtual double Scale(AMATOOLS::Vec4D *);
     virtual double Scale();
     virtual bool   OneEvent()                                                      =0;
@@ -162,7 +162,7 @@ namespace AMEGIC {
     virtual AMEGIC::Point                 * Diagram(int i);
     virtual bool                            IsFreeOfFourVertex(AMEGIC::Point * _p);
 
-    virtual BEAM::Beam_Spectra_Handler            * Beam();
+    virtual BEAM::Beam_Handler            * Beam();
     virtual ISR::ISR_Handler              * ISR();
     virtual APHYTOOLS::Cut_Data           * Cuts();
     virtual APHYTOOLS::Selector_Base      * Selector();

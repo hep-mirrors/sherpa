@@ -22,7 +22,7 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public :
     Process_Group(int,int,APHYTOOLS::Flavour *&,
-		  ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+		  ISR::ISR_Handler *,BEAM::Beam_Handler *,
 		  APHYTOOLS::Selector_Data *,
 		  int,int,int,Pol_Info* _pl=0,int _runmode=AMPLITUDE_MODE);
     Process_Group();

@@ -39,7 +39,7 @@ int fak(int N)
   ------------------------------------------------------------------------------- */
 
 Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
-			       ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+			       ISR::ISR_Handler * _isr,BEAM::Beam_Handler * _beam,
 			       APHYTOOLS::Selector_Data * _seldata,
 			       int _gen_str,int _kfactorscheme, int _scalescheme, 
 			       Pol_Info * _pl, int _runmode) 
@@ -48,6 +48,74 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
   kfactorscheme = _kfactorscheme;
   scalescheme   = _scalescheme;
   runmode       = _runmode; 
+
+  flin  = new Flavour[nin];
+  flout = new Flavour[nout];  
+  plin  = new Pol_Info[nin];
+  plout = new Pol_Info[nout]; 
+  for (short int i=0;i<nin;i++) {
+    flin[i]  = _fl[i];
+    if (_pl!=0) plin[i] = _pl[i];
+           else plin[i] = Pol_Info(flin[i]); 
+
+  }
+  for (short int i=0;i<nout;i++) { 
+    flout[i] = _fl[i+nin]; 
+    if (_pl!=0) plout[i] = _pl[i+nin];
+           else plout[i] = Pol_Info(flout[i]); 
+  }
+
+  nstrong = 0;
+  neweak  = 0;
+  for (int i=0;i<nin;i++) {
+    if (flin[i].Strong())      nstrong++;
+    if (flin[i].IntCharge()!=0)  neweak++;
+  }
+  for (int i=0;i<nout;i++) {
+    if (flout[i].Strong())     nstrong++;
+    if (flout[i].IntCharge()!=0) neweak++;
+  }
+
+  xsflag = 0;
+  if (_runmode!=AMPLITUDE_MODE) {
+    if ((xsflag = FindXS()) != 0) {
+      msg.Debugging()<<"In Single_Process : xs is available as fast function "<<std::endl;
+    }
+    if ((_runmode==XS_MODE) && (xsflag == 0)) {
+      msg.Debugging()<<"Error in Single_Process : xs not available as fast function ! "<<std::endl
+		     <<"                          Delete this process ! "<<std::endl;
+      return;
+    }
+  }
+  
+  GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
+  
+  PolarizationNorm();
+  
+  Initialize(_seldata);
+
+  FixISRThreshold();
+  
+  // making directory
+  int  mode_dir = 448;
+
+  mkdir((string("Process/")+ptypename).c_str(),mode_dir); 
+
+  msg.Tracking()<<"Initialized Single_Process : "<<name
+		<<", "<<nvec<<", 1/norm = "<<1./Norm<<endl;
+
+}
+
+Single_Process::Single_Process(int _nin,int _nout,
+			       Flavour* _fl,Pol_Info * _pl,
+			       int _gen_str,int _runmode) 
+{
+  nin     = _nin; 
+  nout    = _nout; 
+  gen_str = _gen_str;
+  runmode = _runmode;
+  isr     = 0;
+  beam    = 0;
 
   flin  = new Flavour[nin];
   flout = new Flavour[nout];  
@@ -89,16 +157,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
   }
 
   GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
-
   PolarizationNorm();
-  
-  Initialize(_seldata);
-
-  cout<<"Before FixISRThreshold "<<isrthreshold<<endl;
-  
-  FixISRThreshold();
-
-  cout<<"Past FixISRThreshold "<<isrthreshold<<endl;
+  Initialize();
 
   // making directory
   int  mode_dir = 448;
@@ -124,7 +184,8 @@ Single_Process::~Single_Process()
   if (sel)      { delete sel;      sel      = 0; }
   if (cuts)     { delete cuts;     cuts     = 0; }
   if (ps)       { delete ps;       ps       = 0; }
-  if (analysis) { delete analysis; analysis = 0; }
+  if (analyse) 
+    {if (analysis) { delete analysis; analysis = 0; }}
 
   if (hel)      delete hel;
   if (BS)       delete BS;
@@ -141,8 +202,9 @@ Single_Process::~Single_Process()
 void Single_Process::Initialize(APHYTOOLS::Selector_Data * _seldata) {
   cuts = 0;
   InitCuts();
-  ps   = new Phase_Space_Handler(this,isr,beam);
 
+  ps   = new Phase_Space_Handler(this,isr,beam);
+  
   if (_seldata) sel = new Combined_Selector(nin,nout,fl,_seldata);
   else {
     msg.Error()<<"Potential Error in Single_Process "<<name<<endl
@@ -215,8 +277,6 @@ void Single_Process::FixISRThreshold()
   for (int i = 0;i<nin;i++)  m_mass_in  += flin[i].Mass(); 
   for (int i = 0;i<nout;i++) m_mass_out += flout[i].Mass(); 
   
-  //cout<<"threshold would be : "<<AMATOOLS::Max(m_mass_in,m_mass_out)<<endl;
-
   double isrth = AMATOOLS::Max(m_mass_in,m_mass_out);
   
   SetISRThreshold(isrth);
@@ -250,7 +310,10 @@ int Single_Process::InitAmplitude(Topology* top,Vec4D *& _testmoms,
     msg.Debugging()<<"Init moms : "<<_testmoms<<" : "<<nin+nout<<endl;
     _testmoms = new Vec4D[nvec];
     ps->TestPoint(_testmoms);
-    for (int i=0;i<nin+nout;i++) msg.Debugging()<<i<<" th mom : "<<_testmoms[i]<<" ("<<_testmoms[i].Abs2()<<")"<<endl;
+    for (int i=0;i<nin+nout;i++) 
+      msg.Debugging()<<i<<" th mom : "<<_testmoms[i]<<" ("<<_testmoms[i].Abs2()<<")"<<endl;
+    for (int i=0;i<nin+nout;i++) 
+      msg.Debugging()<<i<<" th mom : "<<_testmoms[i]<<" ("<<_testmoms[i].Abs2()<<endl;
   }
   if (moms) { delete [] moms; }
   moms = new Vec4D[nvec]; 
@@ -268,7 +331,7 @@ int Single_Process::InitAmplitude(Topology* top,Vec4D *& _testmoms,
   }
   pol.Add_Extern_Polarisations(BS,fl,hel);
   BS->Initialize();
-  shand->Initialize(ampl->GetGraphNumber(),hel->Max_Hel());
+  shand->Initialize(ampl->GetRealGraphNumber(),hel->Max_Hel());
 
   switch (Tests(result)) {
   case 2 : 
@@ -301,6 +364,24 @@ int Single_Process::InitAmplitude(Topology* top,Vec4D *& _testmoms,
   }
 }
 
+void Single_Process::InitDecay(Topology* top)
+{
+  top          = new Topology(nin+nout);
+
+  hel    = new Helicity(nin,nout,fl,pl);
+  BS     = new Basic_Sfuncs(nin+nout,nvec,fl,b);  
+  shand  = new String_Handler(gen_str,BS);
+
+  ampl   = new Amplitude_Handler(nin+nout,fl,b,&pol,top,BS,shand,ptypename+string("/")+name);
+  if (ampl->GetGraphNumber()==0) {
+    msg.Error()<<"Single_Process::InitDecays : No diagrams for "<<name<<"."<<endl;
+    return;
+  }
+  pol.Add_Extern_Polarisations(BS,fl,hel);
+  BS->Initialize();
+  shand->Initialize(ampl->GetGraphNumber(),hel->Max_Hel());
+}
+
 int Single_Process::Tests(double & result) {
   int number      = 1;
   int gauge_test  = 1;
@@ -319,17 +400,16 @@ int Single_Process::Tests(double & result) {
     }
   }
   
+  ampl->SetStringOff();
 
   double M2 = 0.;
   if (gauge_test) {
     pol.Set_Gauge_Vectors(nin+nout,moms,Vec4D(sqrt(3.),1.,1.,-1.));
-    BS->set_k0(0);
-    BS->setS(moms);  
-    BS->ResetS_GT(.9);
+    BS->Setk0(0);
+    BS->CalcEtaMu(moms);  
+    BS->InitGaugeTest(.9);
 
-    ampl->SetStringOff();
-
-    msg.Tracking()<<number<<" :";AORGTOOLS::msg.Tracking().flush();
+   msg.Tracking()<<number<<" :";AORGTOOLS::msg.Tracking().flush();
     for (short int i=0;i<hel->Max_Hel();i++) { 
       if (hel->On(i)) {
 	M2 +=  ampl->Differential(i,(*hel)[i])*hel->PolarizationFactor(i); 
@@ -341,14 +421,14 @@ int Single_Process::Tests(double & result) {
     }
     msg.Tracking()<<endl;
     M2     *= sqr(pol.Massless_Norm(nin+nout,fl,BS));
-    result  = M2;
-  }
+    result  = M2;  
 
-  ampl->ClearCalcList();
-  // To prepare for the string test.
-  ampl->SetStringOn();
-  (shand->Get_Generator())->Reset();
-  ampl->FillCoupling(shand);
+    ampl->ClearCalcList();
+    // To prepare for the string test.
+    ampl->SetStringOn();
+    (shand->Get_Generator())->Reset();
+    ampl->FillCoupling(shand);
+  }
 
   /* ---------------------------------------------------
      
@@ -363,12 +443,14 @@ int Single_Process::Tests(double & result) {
   if (nout==6) gauge = moms[4];  
   pol.Reset_Gauge_Vectors(nin+nout,moms,gauge);
 #else
-  BS->set_k0(1);
+  BS->Setk0(1);
 #endif
 
-  BS->setS(moms);
+  BS->CalcEtaMu(moms);
   number++;
   msg.Tracking()<<number<<" :";
+
+  if (!gauge_test) ampl->SetStringOff();  //second test without string production 
 
   double M2g = 0.;
   double * M_doub = new double[hel->Max_Hel()];
@@ -381,13 +463,13 @@ int Single_Process::Tests(double & result) {
     }
   }
   msg.Tracking()<<endl;
-
+  
   //shorten helicities
   for (short int i=0;i<hel->Max_Hel();i++) {
     if (M_doub[i]/M2g<1.e-30) {
       hel->switch_off(i);
       msg.Debugging()<<"Switch off zero helicity "<<i<<" : "
-		     <<ampl->Differential(i,(*hel)[i])<<"/"<<M_doub[i]/M2g<<endl;
+		     <</*ampl->Differential(i,(*hel)[i])<<"/"<<*/M_doub[i]/M2g<<endl;
     }
     /*
       //may cause problems due to numerics
@@ -412,7 +494,7 @@ int Single_Process::Tests(double & result) {
 
   delete[] M_doub;
   ampl->ClearCalcList();  
-  
+  BS->StartPrecalc();
 
   if (gauge_test) {
     msg.Tracking()<<"Gauge(1): "<<abs(M2)<<endl
@@ -426,8 +508,8 @@ int Single_Process::Tests(double & result) {
     number++;
     if (shand->SearchValues(gen_str,testname,BS)) {
       pol.Set_Gauge_Vectors(nin+nout,moms,Vec4D(sqrt(3.),1.,1.,-1.));
-      BS->setS(moms);  
-      shand->Initialize(ampl->GetGraphNumber(),hel->Max_Hel());
+      BS->CalcEtaMu(moms);  
+      shand->Initialize(ampl->GetRealGraphNumber(),hel->Max_Hel());
       (shand->Get_Generator())->Reset();
       ampl->FillCoupling(shand);
       shand->Complete(hel);
@@ -468,6 +550,7 @@ int Single_Process::Tests(double & result) {
 	}
       }
       msg.Debugging()<<endl;
+
       M2S *= sqr(pol.Massless_Norm(nin+nout,fl,BS));
       msg.Tracking()<<"String test: "<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
       if (!AMATOOLS::IsZero(abs(M2g/M2S-1.))) {
@@ -515,7 +598,7 @@ int Single_Process::InitLibrary(double result) {
     sprintf(help,"%i",number);
     testname  = libname+string("_")+string(help);
     if (shand1->SearchValues(gen_str,testname,BS)) {
-      shand1->Initialize(ampl->GetGraphNumber(),hel->Max_Hel());
+      shand1->Initialize(ampl->GetRealGraphNumber(),hel->Max_Hel());
       (shand1->Get_Generator())->Reset();
       ampl->FillCoupling(shand1);
       shand1->Calculate();
@@ -535,7 +618,7 @@ int Single_Process::InitLibrary(double result) {
 	msg.Tracking()<<"Found a suitable string."<<endl;
 	libname = testname;
 	if (shand->SearchValues(gen_str,testname,BS)) {
-	  shand->Initialize(ampl->GetGraphNumber(),hel->Max_Hel());
+	  shand->Initialize(ampl->GetRealGraphNumber(),hel->Max_Hel());
 	  (shand->Get_Generator())->Reset();
 	  ampl->FillCoupling(shand);
 	  
@@ -584,7 +667,7 @@ int Single_Process::InitLibrary(double result) {
   else {
     if (partner->shand->IsLibrary()) {
       if (partner->shand->SearchValues(gen_str,partner->libname,BS)) {
-	partner->shand->Initialize(ampl->GetGraphNumber(),hel->Max_Hel());
+	partner->shand->Initialize(ampl->GetRealGraphNumber(),hel->Max_Hel());
 	(partner->shand->Get_Generator())->Reset();
 	ampl->FillCoupling(partner->shand);
 	partner->shand->Calculate();
@@ -733,10 +816,19 @@ void Single_Process::SetTotalXS(int tables)  {
   totalxs  = totalsum/n; 
   totalerr = sqrt( (totalsumsqr/n - 
 		    (AMATOOLS::sqr(totalsum)-totalsumsqr)/n/(n-1) )  / n); 
+  if (nin==2) {
   AORGTOOLS::msg.Events()<<"      xs for "<<name<<" : "
 			 <<totalxs*AORGTOOLS::rpa.Picobarn()<<" pb"
 			 <<" +/- "<<totalerr/totalxs*100.<<"%,"<<endl
 			 <<"       max : "<<max<<endl;
+  }
+  if (nin==1) {
+  AORGTOOLS::msg.Events()<<"      xs for "<<name<<" : "
+			 <<totalxs<<" GeV"
+			 <<" +/- "<<totalerr/totalxs*100.<<"%,"<<endl
+			 <<"       max : "<<max<<endl;
+ 
+  }
 }
 
 /*------------------------------------------------------------------------------
@@ -747,8 +839,10 @@ void Single_Process::SetTotalXS(int tables)  {
 
 bool Single_Process::CalculateTotalXSec() { 
   msg.Events()<<"In Single_Process::CalculateTotalXSec() for "<<name<<endl; 
-
-  totalxs = ps->Integrate()/AORGTOOLS::rpa.Picobarn();
+  
+  
+  totalxs = ps->Integrate();
+  if (nin==2) totalxs /= AORGTOOLS::rpa.Picobarn();
   if (!(AMATOOLS::IsZero((n*totalxs-totalsum)/(n*totalxs+totalsum)))) {
     msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
 	       <<"  "<<name<<" : "<<totalxs<<" vs. "<<totalsum/n<<endl;
@@ -796,7 +890,9 @@ bool Single_Process::PrepareXSecTables() {
     msg.Events()<<"Found "<<filename<<endl;
   }
 
-  totalxs = ps->Integrate()/AORGTOOLS::rpa.Picobarn();
+  totalxs = ps->Integrate();
+  if (nin==2) totalxs /= AORGTOOLS::rpa.Picobarn();
+
   if (!(AMATOOLS::IsZero((n*totalxs-totalsum)/(n*totalxs+totalsum)))) {
     msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl;
     msg.Error()<<"  "<<name<<" : "<<totalxs<<" vs. "<<totalsum/n<<endl;
@@ -806,8 +902,6 @@ bool Single_Process::PrepareXSecTables() {
   if (totalxs>0.) return 1;
   return 0;
 }
-
-
 
 void Single_Process::AddPoint(const double value) {
   if (rpa.gen.Debugging()) {
@@ -836,7 +930,6 @@ double Single_Process::DSigma(AMATOOLS::Vec4D* _moms,bool lookup)
   last = lastdxs = 0.;
   if (partner == this) {
     lastdxs = operator()(_moms);
-    //    msg.Out()<<"Check this : "<<name<<" : "<<lastdxs * Norm<<" @ "<<isr->Weight(flin)<<endl;
   }
   else {
     if (lookup)        lastdxs = partner->LastXS();
@@ -876,7 +969,7 @@ double Single_Process::operator()(AMATOOLS::Vec4D * mom)
   
   pol.Set_Gauge_Vectors(nin+nout,mom,gauge);
 #endif
-  BS->setS(mom);
+  BS->CalcEtaMu(mom);
   
   if (shand->Is_String()) {
     shand->Calculate();

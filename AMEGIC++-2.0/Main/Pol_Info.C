@@ -63,11 +63,11 @@ void Pol_Info::Init(int i){num=i;type=new int[num];factor=new double[num];}
 
 
 
-void Tensor_Struc::GetPolCombos(int num, vector<vector<int> >* pol, vector<int>* sign)
+void Tensor_Struc::GetPolCombos(int num, std::vector<std::vector<int> >* pol, std::vector<int>* sign)
 {
   pol->clear();
   sign->clear();
-  vector<int> cc;cc.push_back(8);cc.push_back(8); 
+  std::vector<int> cc;cc.push_back(8);cc.push_back(8); 
   sign->push_back(1);
   switch(num){
   case mt::p_t1:
@@ -93,13 +93,13 @@ void Tensor_Struc::GetPolCombos(int num, vector<vector<int> >* pol, vector<int>*
     cc[0]=mt::p_m;cc[1]=mt::p_m;
     pol->push_back(cc);
     break;
-  default: AORGTOOLS::msg.Error()<<"Invalid tensor type: "<<num<<endl;abort();
+  default: AORGTOOLS::msg.Error()<<"Invalid tensor type: "<<num<<std::endl;
+    abort();
   }
 }
 
 double Tensor_Struc::GetTfactor(int num)
 {
-  if(num<mt::p_t1) return 1.;
   switch(num){
   case mt::p_t1:return 1.;
   case mt::p_t2:return 2.;
@@ -107,4 +107,5 @@ double Tensor_Struc::GetTfactor(int num)
   case mt::p_t4:return 2.;
   case mt::p_t5:return 1.;
   }
+  return 1.;
 }

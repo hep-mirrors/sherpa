@@ -41,9 +41,14 @@ namespace AMEGIC {
   public:
 
     Single_Process(int,int,APHYTOOLS::Flavour*,
-		   ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+		   ISR::ISR_Handler *,BEAM::Beam_Handler *,
 		   APHYTOOLS::Selector_Data *,
 		   int,int,int,Pol_Info* _pl=0,int _runmode=AMPLITUDE_MODE);
+   
+    Single_Process(int,int,
+		   APHYTOOLS::Flavour*,Pol_Info* _plin=0,
+		   int _gen_str=1,int _runmode=AMPLITUDE_MODE);
+   
     ~Single_Process();
 
     int FindXS();
@@ -81,6 +86,7 @@ namespace AMEGIC {
     virtual int            InitAmplitude(Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
 					 std::vector<Single_Process *> &);
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
+    void           InitDecay(Topology* top); 
     bool           SetUpIntegrator();
     virtual bool   IsFreeOfFourVertex(Point * _p) { return 1-ampl->ExistFourVertex(_p); }
 
@@ -139,7 +145,8 @@ namespace AMEGIC {
     void           PrintDifferential();
     int            ISRNumber() { return xsec->ISRNumber(); }
     void           ISRInfo(int i,int & type, double & mass, double & width)
-                               { return xsec->ISRInfo(i,type,mass,width); }
+                               {  xsec->ISRInfo(i,type,mass,width); 
+				 return;}
     void           SetXS(EXTRAXS::Single_XS *);
 
    };
