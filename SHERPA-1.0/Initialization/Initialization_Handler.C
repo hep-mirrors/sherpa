@@ -392,7 +392,7 @@ bool Initialization_Handler::InitializeTheMatrixElements()
   m_mehandlers["SignalMEs"]=me; 
   msg_Info()<<"Initialized the Matrix_Element_Handler for the hard processes :"<<me->Name()<<endl;
   if (p_analysis) {
-    bool weighted=me->EventGenerationMode()==0;
+    int weighted=1-me->EventGenerationMode();
     msg_Info()<<"Initialization_Handler::InitializeTheMatrixElements(): "
 	      <<"Setting analysis mode "<<(weighted?"weighted":"unweighted")<<endl;
     p_analysis->SetWeighted(weighted);
