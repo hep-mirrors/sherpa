@@ -357,7 +357,7 @@ bool Final_State_Shower::TestShower(Tree * tree)
     
 
   }
-  ana.FinishAnalysis("testout_shower_FB",0);
+  ana.FinishAnalysis("testout_shower_GE125a",0);
   msg.Events()<<"Final_State_Shower::TestShower : "
 	      <<"Terminated loops over events successfully."<<std::endl;
   return 1;

@@ -65,6 +65,67 @@ namespace APACIC {
      \f[
        P_q(z) = P_{q \to qg}(z) + P_{q \to q\gamma}(z)
      \f]
+
+     A usual calling sequence is
+      -# CrudeInt() -- detemines integrals of the splitting functions 
+         at logarithmic accuracy
+      -# SelectOne() -- chooses one group member according to the calculated 
+                        \em crude integral
+      -# GetZ() -- dices \f$z\f$ according to an aproximated version of the 
+              selected splitting function with in the domain used for the CrudeInt()
+      -# GetWeight(), GetCoupling(), GetFlA(), etc. -- provide all information
+          about the selected splitting function and the neccessary rejection weights
+          in order to obtain an exact splitting functions
+     .
+  */
+
+  /*!
+   \fn Splitting_Group::Splitting_Group(Splitting_Function * spl=0);
+   \brief  Standard Constructor, if a Splitting_Function is specified it will
+      be appended to the list of this particular group.
+  */
+
+  /*!
+    \fn Splitting_Group::~Splitting_Group();
+    \brief Destructor
+  */
+
+  /*!
+    \fn virtual double Splitting_Group::CrudeInt(double _zmin, double _zmax);
+    \brief Summing over all splittings, filling individual values and total sum
+  */
+
+  /*!
+    \fn double Splitting_Group::operator()(double z);
+    \brief  A load of various functions to return values of the particular
+      selected function out of the group, see Splitting_Function.H
+      for more details.
+  */
+
+  /*
+    double Splitting_Group::GetZ();
+    double Splitting_Group::GetCoupling();
+    double Splitting_Group::GetCoupling(double t);
+    double Splitting_Group::GetWeight(double z,double pt2,bool masses);
+    APHYTOOLS::Flavour & Splitting_Group::GetFlA();
+    APHYTOOLS::Flavour & Splitting_Group::GetFlB();
+    APHYTOOLS::Flavour & Splitting_Group::GetFlC();
+  */
+  
+  /*!
+    \fn virtual void Splitting_Group::Add(Splitting_Function * spl);
+    \brief Adds a splitting function to the group.
+  */
+
+  /*
+    \fn virtual void Splitting_Group::SelectOne();
+    \brief Selects one splitting function out of the group.
+  */
+
+  /*!
+    \fn void Splitting_Group::PrintStat(int mode=0);
+    \brief prints all splitting functions contained in this 
+           group to the screen.
   */
 }
 #endif

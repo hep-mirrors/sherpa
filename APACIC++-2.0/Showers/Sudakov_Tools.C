@@ -59,7 +59,7 @@ double Sudakov_Tools::AlphaS(double t){
   if (t<0.) t = -t;
 
   // exact (LO) alphaS
-  //  return (*as)(t);
+  return (*as)(t);
 
   const double b   =0.6100939485; // 1/(12 Pi) * (33 - 2*5)
   const double lam2=sqr(0.29); 

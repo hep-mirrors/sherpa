@@ -14,117 +14,47 @@ namespace APACIC {
     double          alpha;
     double          qsqr;
   public:
-    f_fp(APHYTOOLS::Flavour fermionflavour) {
-      flavs[0] = fermionflavour; // a
-      flavs[1] = fermionflavour; // b
-      flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // c
-      qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-      alpha    = 1.;
-    };
-    f_fp(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-      tools (_tools) {
-      flavs[0] = fermionflavour; // a
-      flavs[1] = fermionflavour; // b
-      flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // c
-      qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-      alpha    = tools->GetAQEDmax();
-    };
-    double operator()(double z) {return qsqr*(1.+z*z)/(1.-z);}; 
-    double GetZ()      {
-      return 1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),AMATOOLS::ran.Get());
-    };
-    double GetCoupling()         { return alpha;};
-    double GetCoupling(double t) { return tools->Alpha(t);};
-    double GetWeight(double z,double pt2,bool massterm) { 
-      if (!massterm) return 0.5*(1.+z*z);
-      return ( (1.+z*z)/2. - 
-	       z*AMATOOLS::sqr((1.-z)*flavs[0].PSMass())/
-	       (pt2+AMATOOLS::sqr((1.-z)*flavs[0].PSMass())) );
-    };                   
-    double CrudeInt(double _zmin, double _zmax) {
-      zmin = _zmin;
-      zmax = _zmax;
-      return 2.*qsqr*alpha*log((1.-zmin)/(1.-zmax));
-    };
+    f_fp(APHYTOOLS::Flavour fermionflavour);
+    f_fp(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    double operator()(double z);
+    double GetZ();
+    double GetCoupling();
+    double GetCoupling(double t);
+    double GetWeight(double z,double pt2,bool massterm);
+    double CrudeInt(double _zmin, double _zmax);
   };
 
-  //! fermion to photon + fermion splitting function (only used in Initial State Shower)
+
+  // fermion to photon + fermion splitting function (only used in Initial State Shower)
   class f_pf : public Splitting_Function {
     Sudakov_Tools * tools;
     double          alpha;
     double          qsqr;
   public:
-    f_pf(APHYTOOLS::Flavour fermionflavour) {
-      flavs[0] = fermionflavour; // a
-      flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // b
-      flavs[2] = fermionflavour; // c
-      qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-      alpha    = 1.;
-    };
-    f_pf(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-      tools (_tools) {
-      flavs[0] = fermionflavour; // a
-      flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // b
-      flavs[2] = fermionflavour; // c
-      qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-      alpha    = tools->GetAQEDmax();
-    };
-    double operator()(double z) {return qsqr*(1.+(1.-z)*(1.-z))/z;}; 
-    double GetZ()      {
-      return zmin*pow(zmax/zmin,AMATOOLS::ran.Get());
-    };
-    double GetCoupling()         { return alpha;};
-    double GetCoupling(double t) { return tools->Alpha(t);};
-    double GetWeight(double z,double pt2,bool massterm) { 
-      if (!massterm) return 0.5*(1.+AMATOOLS::sqr(1.-z));
-      return ( (1.+AMATOOLS::sqr(1.-z))/2. - 
-	       (1.-z)*AMATOOLS::sqr(z*flavs[0].PSMass())/
-	       (pt2+AMATOOLS::sqr(z*flavs[0].PSMass())) );
-    };                   
-    double CrudeInt(double _zmin, double _zmax) {
-      zmin = _zmin;
-      zmax = _zmax;
-      return 2.*qsqr*alpha*log(zmax/zmin);
-    };
+    f_pf(APHYTOOLS::Flavour fermionflavour);
+    f_pf(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    double operator()(double z);
+    double GetZ();
+    double GetCoupling();
+    double GetCoupling(double t);
+    double GetWeight(double z,double pt2,bool massterm);
+    double CrudeInt(double _zmin, double _zmax);
   };
 
-  //! photon to fermion + anti-fermion splitting function
+  // photon to fermion + anti-fermion splitting function
   class p_ff : public Splitting_Function {
     Sudakov_Tools * tools;
     double          alpha;
     double          qsqr;
   public:
-    p_ff(APHYTOOLS::Flavour fermionflavour) {
-      flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // a
-      flavs[1] = fermionflavour; // b
-      flavs[2] = fermionflavour.Bar(); // c
-      qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-      alpha    = 1.;
-    };
-    p_ff(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-      tools (_tools) {
-      flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // a
-      flavs[1] = fermionflavour; // b
-      flavs[2] = fermionflavour.Bar(); // c
-      qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-      alpha    = tools->GetAQEDmax();
-    };
-    double operator()(double z) {
-      return qsqr*(z*z+ AMATOOLS::sqr(1-z));};
-    double GetZ()      {
-      return zmin+(zmax-zmin)*AMATOOLS::ran.Get();
-    };
-    double GetCoupling()         { return alpha;};
-    double GetCoupling(double t) { return tools->Alpha(t);};
-    double GetWeight(double z,double pt2,bool masses) { 
-      if (masses) return (*this)(z)/qsqr;
-      return (1. - 2.*z*(1.-z)*pt2/(pt2+AMATOOLS::sqr(flavs[1].PSMass())));
-    };                 
-    double CrudeInt(double _zmin, double _zmax) {
-      zmin = _zmin;
-      zmax = _zmax;
-      return (zmax-zmin)*alpha*qsqr;
-    };
+    p_ff(APHYTOOLS::Flavour fermionflavour);
+    p_ff(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    double operator()(double z);
+    double GetZ();
+    double GetCoupling();
+    double GetCoupling(double t);
+    double GetWeight(double z,double pt2,bool masses);
+    double CrudeInt(double _zmin, double _zmax);
   };
 
 
@@ -135,25 +65,69 @@ namespace APACIC {
 
   /*!
     \class f_fp
-    \brief fermion to fermion + photon  splitting function
+    \brief represents fermion to fermion + photon  splitting function
 
+    This class represents the splitting function for a \f$f \to f \; \gamma\f$
+    splitting:
+    \f[
+       P_{f \to f \gamma} (z) = Q_f^2 \frac{1 + z^2}{1 -z}
+    \f]
+  */
 
+  /*!
+    \fn f_fp::f_fp(APHYTOOLS::Flavour fermionflavour);
+    \brief Constructor, taking the fermion flavour as argument (obsolete)
+  */
+
+  /*!
+    \fn f_fp::f_fp(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    \brief Constructor, takng the fermion flavour and a class to
+           deliver running alpha_qed 
   */
 
   /*!
     \class f_pf
-    \brief
+    \brief represents fermion to photon + fermion splitting function 
+         (only used in Initial State Shower)
 
+    This class represents the splitting function for a \f$f \to \gamma \; f \f$
+    splitting:
+    \f[
+       P_{f \to \gamma f} (z) = Q_f^2 \frac{1 + (1-z)^2}{z}
+    \f]
   */
+  /*!
+    \fn f_pf::f_pf(APHYTOOLS::Flavour fermionflavour);
+    \brief Constructor, taking the fermion flavour as argument (obsolete)
+  */
+  /*!
+    \fn f_pf::f_pf(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    \brief Constructor, takng the fermion flavour and a class to
+           deliver running alpha_qed 
+  */
+
 
   /*!
     \class p_ff
-    \brief
+    \brief represents photon to fermion + anti-fermion splitting function
 
+    This class represents the splitting function for a \f$\gamma \to f \; \bar f\f$
+    splitting:
+    \f[
+       P_{\gamma \to f \bar f} (z) = Q_f^2 [ z^2 + (1 -z)^2 ]
+    \f]
   */
 
+  /*!
+    \fn p_ff::p_ff(APHYTOOLS::Flavour fermionflavour);
+    \brief Constructor, taking the fermion flavour as argument (obsolete)
+  */
+  /*!
+    \fn p_ff::p_ff(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
+    \brief Constructor, takng the fermion flavour and a class to
+           deliver running alpha_qed 
+  */
 
-
-}
+} // namespace APACIC
 #endif
 

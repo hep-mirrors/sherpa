@@ -98,14 +98,14 @@ bool Timelike_Sudakov::Dice(Knot * mother, Knot * granny) {
   double z0; 
 
   while (ta>tend) {
-    if (last_veto==0 || last_veto==7) {
+    //    if (last_veto==0 || last_veto==7) {
     z0 = 0.5 * (1. - sqrt(1.-t0/ta)) ; // condition that pt^2 > t0 !!!
     
       if (z0<rpa.gen.Accu()) {
         msg.Error()<<"In Timelike_Sudakov::Dice : z0 out of bounds : "<<z0<<" !"<<std::endl;
       }
       CrudeInt(z0,1.-z0);
-    }
+      //    }
 
     if (mass_scheme == 2) ta -= mother->tout;
     ProduceT();
@@ -236,7 +236,7 @@ bool Timelike_Sudakov::MassVeto()
 {
 
   // *FK*  double newt0  = sqr( sqrt(tb+0.25*t0) + sqrt(tc+0.25*t0));
-  double z0 = 0.5 * (1. - sqrt(1.-t0/ta)) ; // condition that pt^2 > t0 !!!
+  double z0 = 0.5 * (1. - sqrt(1.-t0/ta)) ; // condition that pt^2 > t0/4 !!!
   double zm = z0;
   double zp = 1. - z0;
   // *FK*  if (z<zm || zp<z) return 1;

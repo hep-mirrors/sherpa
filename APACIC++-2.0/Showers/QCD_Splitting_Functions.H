@@ -9,156 +9,159 @@
 
 namespace APACIC {
 
-  //! quark to quark + gluon  splitting function
+  // quark to quark + gluon  splitting function
   class q_qg : public Splitting_Function {
     Sudakov_Tools * tools;
     double          alpha;
   public:
-    q_qg(APHYTOOLS::Flavour quarkflavour) : tools(0) {
-      flavs[0] = quarkflavour; 
-      flavs[1] = quarkflavour; 
-      flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
-      alpha    = 1.;
-    };
-    q_qg(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
-      tools(_tools) {
-      flavs[0] = quarkflavour; 
-      flavs[1] = quarkflavour; 
-      flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon);
-      alpha    = tools->GetASmax();
-      cout<<" q_qg: alpha ="<<alpha<<endl;
-    };
-    double operator()(double z) {return CF*(1.+z*z)/(1.-z);};             
-    double GetZ()      {
-      return 1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),AMATOOLS::ran.Get());   
-    };
-    double GetCoupling()         { return alpha;};
-    double GetCoupling(double t) { return tools->AlphaS(t);};
-    double GetWeight(double z,double pt2,bool massterm) { 
-      if (!massterm) return 0.5*(1.+z*z);
-      return ( (1.+z*z)/2. - 
-	       z*AMATOOLS::sqr((1.-z)*flavs[0].PSMass())/
-	       (pt2+AMATOOLS::sqr((1.-z)*flavs[0].PSMass())) );
-    };                   
-    double CrudeInt(double _zmin, double _zmax) {
-      zmin = _zmin;
-      zmax = _zmax;
-      return 2.*CF*alpha*log((1.-zmin)/(1.-zmax));                              
-    };
+    q_qg(APHYTOOLS::Flavour quarkflavour);
+    q_qg(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    double operator()(double z);
+    double GetZ();
+    double GetCoupling();
+    double GetCoupling(double t);
+    double GetWeight(double z,double pt2,bool massterm);
+    double CrudeInt(double _zmin, double _zmax);
   };
 
-  //! gluon to gluon + gluon splitting function (needed twice for initial state shower)
+  // gluon to gluon + gluon splitting function (needed twice for initial state shower)
   class g_gg : public Splitting_Function {
     Sudakov_Tools * tools;
     double          alpha;
   public:
-    g_gg() : tools(0) {
-      flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      alpha    = 1.;
-    };
-    g_gg(Sudakov_Tools * _tools) : tools(_tools) { 
-      flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      alpha    = tools->GetASmax();
-      cout<<" q_gg: alpha ="<<alpha<<endl;
-
-    };
-    double operator()(double z) {
-      return CA*AMATOOLS::sqr(1.-z*(1.-z))/(z*(1.-z));};                 
-    double GetZ() {
-      return 1./(1. + ((1.-zmin)/zmin) *
-      		 pow( zmin*(1.-zmax)/((1.-zmin)*zmax), AMATOOLS::ran.Get()));
-    };
-    double GetCoupling()         { return alpha;};
-    double GetCoupling(double t) { return tools->AlphaS(t);};
-    double GetWeight(double z,double pt2,bool masses)   { 
-      return AMATOOLS::sqr(1.-z*(1.-z));
-    };    
-    double CrudeInt(double _zmin, double _zmax) {
-      zmin = _zmin;
-      zmax = _zmax;
-      return CA*alpha*log((1.-zmin)*zmax/(zmin*(1.-zmax)));                    
-    } 
+    g_gg();
+    g_gg(Sudakov_Tools * _tools);
+    double operator()(double z);
+    double GetZ();
+    double GetCoupling();
+    double GetCoupling(double t);
+    double GetWeight(double z,double pt2,bool masses);
+    double CrudeInt(double _zmin, double _zmax);
   };
 
-  //! gluon to quark + anti-quark splitting function
+  // gluon to quark + anti-quark splitting function
   class g_qq : public Splitting_Function {
     Sudakov_Tools * tools;
     double          alpha;
   public:
-    g_qq(APHYTOOLS::Flavour quarkflavour): tools(0) {
-      flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      flavs[1] = quarkflavour; 
-      flavs[2] = quarkflavour.Bar(); 
-      alpha    = 1.;
-    };
-    g_qq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) :
-      tools (_tools) {
-      flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      flavs[1] = quarkflavour; 
-      flavs[2] = quarkflavour.Bar(); 
-      alpha    = tools->GetASmax();
-    };
-    double operator()(double z) {
-      return TR*(z*z + (1.-z)*(1.-z));};                                 
-    double GetZ()      {
-      return zmin+(zmax-zmin)*AMATOOLS::ran.Get();                       
-    };
-    double GetCoupling()         { return alpha;};
-    double GetCoupling(double t) { return tools->AlphaS(t);};
-    double GetWeight(double z,double pt2,bool masses) { 
-      if (!masses) return (*this)(z)/TR;
-      return (1. - 2.*z*(1.-z)*(1.- pt2/(pt2+AMATOOLS::sqr(flavs[1].PSMass())))); // /TR;
-    };                 
-    double CrudeInt(double _zmin, double _zmax) {
-      zmin = _zmin;
-      zmax = _zmax;
-      return TR*alpha*(zmax-zmin);                                             
-    };
+    g_qq(APHYTOOLS::Flavour quarkflavour);
+    g_qq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    double operator()(double z);
+    double GetZ();
+    double GetCoupling();
+    double GetCoupling(double t);
+    double GetWeight(double z,double pt2,bool masses);
+    double CrudeInt(double _zmin, double _zmax);
   };
 
 
-  //! quark to qluon + quark splitting function (only used in Initial State Shower)
+  // quark to qluon + quark splitting function (only used in Initial State Shower)
   class q_gq : public Splitting_Function {
     Sudakov_Tools * tools;
     double          alpha;
   public:
-    q_gq(APHYTOOLS::Flavour quarkflavour) {
-      flavs[0] = quarkflavour; 
-      flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      flavs[2] = quarkflavour; 
-      alpha    = 1.;
-    };
-    q_gq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools) : 
-      tools(_tools) {
-      flavs[0] = quarkflavour; 
-      flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::gluon); 
-      flavs[2] = quarkflavour; 
-      alpha    = tools->GetASmax();
-    };
-    double operator()(double z) {return CF*(1.+(1.-z)*(1.-z))/z;}; 
-    double GetZ()      {
-      return zmin*pow(zmax/zmin,AMATOOLS::ran.Get());
-    };
-    double GetCoupling()         { return alpha;};
-    double GetCoupling(double t) { return tools->AlphaS(t);};
-    double GetWeight(double z,double pt2,bool massterm) { 
-      if (!massterm) return 0.5*(1.+AMATOOLS::sqr(1.-z));
-      return ( (1.+AMATOOLS::sqr(1.-z))/2. - 
-	       (1.-z)*AMATOOLS::sqr(z*flavs[0].PSMass())/
-	       (pt2+AMATOOLS::sqr(z*flavs[0].PSMass())) );
-    };                   
-    double CrudeInt(double _zmin, double _zmax) {
-      zmin = _zmin;
-      zmax = _zmax;
-      return 2.*CF*alpha*log(zmax/zmin);
-    };
+    q_gq(APHYTOOLS::Flavour quarkflavour);
+    q_gq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    double operator()(double z);
+    double GetZ();
+    double GetCoupling();
+    double GetCoupling(double t);
+    double GetWeight(double z,double pt2,bool massterm);
+    double CrudeInt(double _zmin, double _zmax);
   };
 
-}
+  /*!
+    \file
+    \brief contains the classes APACIC::q_qg, APACIC::q_gq, 
+           APACIC::g_gg and APACIC::g_qq
+  */
+
+  /*!
+    \class q_qg
+    \brief represents a quark to quark + gluon  splitting function
+
+    This class represents the splitting function for a \f$q \to q \; g \f$
+    splitting:
+    \f[
+       P_{q \to q g} (z) = C_F \frac{1 + z^2}{1-z}
+    \f]
+  */
+  /*!
+    \fn q_qg::q_qg(APHYTOOLS::Flavour quarkflavour);
+    \brief Constructor, taking the quark flavour as argument (obsolete)
+  */
+  /*!
+    \fn q_qg::q_qg(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    \brief Constructor, takng the quark flavour and a class to
+           deliver running alpha_s 
+  */
+
+  /*!
+    \class g_gg
+    \brief represents a gluon to gluon + gluon splitting function 
+           (needed twice for initial state shower)
+
+    This class represents the splitting function for a \f$g \to g \; g \f$
+    splitting:
+    \f[
+       P_{g \to g g} (z) = C_A \frac{[1 - z (1 - z)]^2}{z(1-z)}
+    \f]
+  */
+  /*!
+    \fn g_gg::g_gg();
+    \brief Standard Constructor
+  */
+  /*!
+    \fn g_gg::g_gg(Sudakov_Tools * _tools);
+    \brief Constructor, taking a class to deliver running alpha_s
+  */
+
+  /*!
+    \class g_qq
+    \brief represents gluon to quark + anti-quark splitting function
+ 
+    This class represents the splitting function for a \f$g \to q \; \bar q \f$
+    splitting:
+    \f[
+       P_{g \to q \bar q} (z) = T_R [z^2 + (1-z)^2]
+    \f]
+
+ */
+  /*!
+    \fn g_qq::g_qq(APHYTOOLS::Flavour quarkflavour);
+    \brief Constructor, taking the quark flavour as argument (obsolete)
+  */
+  /*!
+    \fn g_qq::g_qq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    \brief Constructor, takng the quark flavour and a class to
+           deliver running alpha_qed 
+  */
+
+  /*!
+    \class q_gq
+    \brief quark to qluon + quark splitting function 
+           (only used in Initial State Shower)
+
+
+    This class represents the splitting function for a \f$q \to g \; q \f$
+    splitting:
+    \f[
+       P_{q \to g q} (z) = CF \frac{1 + (1-z)^2}{z}
+    \f]
+
+  */
+  /*!
+    \fn q_gq::q_gq(APHYTOOLS::Flavour quarkflavour);
+    \brief Constructor, taking the quark flavour as argument (obsolete)
+  */
+  /*!
+    \fn q_gq::q_gq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
+    \brief Constructor, takng the quark flavour and a class to
+           deliver running alpha_qed 
+  */
+
+
+} // namespace APACIC
 #endif
 
 
