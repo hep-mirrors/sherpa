@@ -38,7 +38,7 @@ using namespace APHYTOOLS;
 using namespace std;
 
 Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
-					 Interaction_Model_Base * _model,Topology* _top,
+					 Interaction_Model_Base * _model,Topology * _top,
 					 int _nQCD,int _nEW,
 					 Basic_Sfuncs* _BS,String_Handler* _shand) 
   : N(_no), fl(_fl), b(_b), p_model(_model), top(_top), nEW(_nEW), nQCD(_nQCD),
@@ -54,7 +54,7 @@ Amplitude_Generator::Amplitude_Generator(int _no,Flavour* _fl,int* _b,
 
   // fill hash table
   
-  Vertex* v = p_model->GetVertex();
+  Vertex * v = p_model->GetVertex();
 
   for (int i=0;i<v->MaxNumber();++i) {
     if ((*v)[i]->on) {
@@ -1652,10 +1652,10 @@ Single_Amplitude* Amplitude_Generator::Matching()
 
   //  if (rank==0)
   CreateSingleAmplitudes(first_amp);
-//   else {
-//     int dummy;
-//     MPI::COMM_WORLD.Recv(&dummy,1,MPI::INT, 0,MPI::ANY_TAG);
-// }
+  //   else {
+  //     int dummy;
+  //     MPI::COMM_WORLD.Recv(&dummy,1,MPI::INT, 0,MPI::ANY_TAG);
+  // }
 
   msg.Debugging()<<"Now CheckFor4Vertices()"<<endl;
 
