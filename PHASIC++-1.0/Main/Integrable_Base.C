@@ -17,11 +17,12 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
   m_swaped(false), p_selected(this), p_beamhandler(beamhandler), p_isrhandler(isrhandler), 
-  p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), p_cuts(NULL) {}
+  p_pshandler(NULL), p_activepshandler(NULL), p_selector(NULL), p_cuts(NULL),
+  m_ownselector(true) {}
 
 Integrable_Base::~Integrable_Base()
 {
-  if (p_selector!=NULL) delete p_selector;
+  if (p_selector!=NULL && m_ownselector) delete p_selector;
   if (p_flavours!=NULL) delete [] p_flavours;
   if (p_momenta!=NULL) delete [] p_momenta;
 }
@@ -34,12 +35,16 @@ Integrable_Base *const Integrable_Base::Selected()
 
 void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta) 
 { 
+  if (!p_momenta) {
+    std::cout<<" ERROR in Integrable_Base::SetMomenta "<<std::endl;
+    abort();
+  }
   for (size_t i=0;i<NVector();++i) p_momenta[i]=momenta[i];
 }
 
-void Integrable_Base::SetMax(const double max) 
+void Integrable_Base::SetMax(const double max, int depth) 
 {
-  m_max=max;
+  if (max!=0.) m_max=max;
 } 
 
 void Integrable_Base::SetMax() 

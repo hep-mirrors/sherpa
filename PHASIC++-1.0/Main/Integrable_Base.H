@@ -59,6 +59,8 @@ namespace PHASIC {
     ATOOLS::Selector_Base       *p_selector;
     ATOOLS::Cut_Data            *p_cuts;
 
+    bool m_ownselector;
+
   public:
 
     // constructor
@@ -88,7 +90,7 @@ namespace PHASIC {
     virtual void DeSelect() = 0;
     virtual void SelectOne() = 0;
 
-    virtual void SetMax(const double max);
+    virtual void SetMax(const double max, int depth=0);
     virtual void SetMax();  
     virtual bool OneEvent();
     virtual bool SameEvent();
