@@ -3,6 +3,7 @@
 //#include "Standard_Selector.H"
 #include "Combined_Selector.H"
 #include "Message.H"
+#include "Data_Collector.H"
 
 #include "Running_AlphaS.H"
 #include "Running_AlphaQED.H"
@@ -525,6 +526,16 @@ void Process_Base::SetScales(double q2_fac, double q2_ren)
   m_scale[stp::as]  = q2_ren;
 } 
 void Process_Base::SetISRThreshold(double threshold)    { m_threshold  = threshold;}
+
+void Process_Base::AddToDataCollector(int i)
+{
+  std::string name;
+  for (int i=0; i<m_nin; ++i) name+=p_flavours[i].TexName()+"\\,";
+  name+="\\to\\,";
+  for (int i=m_nin; i<m_nin+m_nout; ++i) name+=p_flavours[i].TexName()+"\\,";
+  Process_Info pi(name,m_totalxs,m_totalerr);
+  Data_Collector::AddData("PROCESS",new Blob_Data<Process_Info>(pi));
+}
 
 /*------------------------------------------------------------------------------
 
