@@ -30,7 +30,7 @@ namespace ATOOLS {
 
     void Complete();
     void Reset(bool);
-    double Smin() { return smin; }
+    const double Smin() const { return smin; }
     double Getscut(std::string);
   };    
 
