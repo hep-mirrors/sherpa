@@ -29,16 +29,29 @@ Lund_Fortran_Interface::~Lund_Fortran_Interface() {
   if (jdahep) delete [] jdahep;
   if (isthep) delete [] isthep;
   if (idhep)  delete [] idhep;
+
+  if (daughters) delete [] daughters;
+  if (mothers)   delete [] mothers;
+  if (kfjet)     delete [] kfjet;
+  if (xjet)      delete [] xjet;
+  if (pjet)      delete [] pjet;
 }
 
 void Lund_Fortran_Interface::Init()
 {
+  cout<<" Lund_Fortran_Interface::Init() "<<endl;
   phep   = new double[5*maxentries];
   vhep   = new double[4*maxentries];
   jmohep = new int[2*maxentries];
   jdahep = new int[2*maxentries];
   isthep = new int[maxentries];
   idhep  = new int[maxentries];
+
+  pjet      = new double[4*maxentries];
+  xjet      = new double[4*maxentries];
+  kfjet     = new int[maxentries];
+  mothers   = new int[maxentries];
+  daughters = new int[2*maxentries];
 }
 
 bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
@@ -112,11 +125,6 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 						      ATOOLS::Blob_List * bloblist,
 						      ATOOLS::Particle_List * pl)
 {
-  pjet      = new double[4*maxentries];
-  xjet      = new double[4*maxentries];
-  kfjet     = new int[maxentries];
-  mothers   = new int[maxentries];
-  daughters = new int[2*maxentries];
   
   fhawface_(nk,kfjet,mothers,daughters,pjet,xjet);
     
@@ -164,10 +172,6 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
   }
   blob->SetStatus(0);
     
-  delete kfjet;
-  delete pjet;
-  delete mothers;
-  delete daughters;
 }
 
 void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
