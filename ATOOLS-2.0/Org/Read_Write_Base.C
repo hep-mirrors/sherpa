@@ -155,15 +155,14 @@ std::string &Read_Write_Base::Interprete(std::string &lastline)
   if (pos>0 && 
       lastline[pos-1]!=32 && lastline[pos-1]!=9) pos=std::string::npos;
   if (pos!=std::string::npos) {
-    size_t opos=pos, cpos=lastline.find(")");
-    for (;opos<lastline.length();++opos) 
-      if (lastline[opos]=='(') break;
-    if (opos<cpos) {
+    size_t opos=lastline.find("(",pos), cpos=lastline.find(")",pos);
+    if (cpos!=std::string::npos && opos<cpos) {
       Algebra_Interpreter interpreter;
       interpreter.SetTagReplacer(this);
       bool result=ToType<int>
 	(interpreter.Interprete(lastline.
 				substr(opos+1,cpos-opos-1)));
+      opos=lastline.find("{",cpos);
       for (opos=cpos+1;opos<lastline.length();++opos) 
 	if (lastline[opos]=='{') {
 	  m_ifresults.push_back(std::pair<int,size_t>(result,1));
