@@ -2,6 +2,7 @@
 
 #include "Intact.H"
 #include "Structure_Function.H"
+#include "Doubly_Unintegrated_PDF.H"
 #include "Run_Parameter.H" 
 #include "Info_Key.H"
 #include "Exception.H"
@@ -9,6 +10,8 @@
 #include "ISR_Info.H"
 #include "Blob.H"
 #include <stdio.h>
+
+#define USING__No_Exact_Kinematics
 
 #ifdef TEST__ISR_Handler
 #include "Gauss_Integrator.H"
@@ -58,6 +61,7 @@ double Lambda2(double sp,double sp1,double sp2)
 ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double *kplimits):
   p_isrbase(isrbase),
   p_info(new ATOOLS::Integration_Info()),
+  m_kperpscheme((int)kps::constant),
   m_weight(1.),
   m_info_lab(8),
   m_info_cms(8)
@@ -75,6 +79,9 @@ ISR_Handler::ISR_Handler(ISR_Base **isrbase,const double *splimits,const double 
   m_mass2[1]=sqr(p_isrbase[1]->Flavour().Mass());
   m_x[1]=m_x[0]=1.; 
   Init(splimits,kplimits);
+  Doubly_Unintegrated_PDF *dupdf=
+    dynamic_cast<Doubly_Unintegrated_PDF*>(p_isrbase[0]->PDF());
+  if (dupdf!=NULL) m_kperpscheme=dupdf->KPerpScheme();
 #ifdef TEST__ISR_Handler
   TestPDF testpdf;
   testpdf.p_pdf=p_isrbase[0]->PDF();
@@ -275,7 +282,10 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   for (size_t i=0;i<2;++i) {
     phi+=2.0*M_PI*ran.Get();
     double kp=sqrt(m_kpkey[i][3]); 
-    // if (p_isrbase[i]->Collinear(m_kpkey[i][3])) m_zkey[i][2]=0.;
+#ifndef USING__No_Exact_Kinematics
+    if (m_kperpscheme==(int)kps::constant &&
+    	p_isrbase[i]->Collinear(m_kpkey[i][3])) m_zkey[i][2]=0.;
+#endif
     m_kp[i]=Vec4D(0.0,cos(phi)*kp,sin(phi)*kp,0.0);
   }
   E=sqrt(m_spkey[3]-(m_kp[0]+m_kp[1]).Abs2());
@@ -294,10 +304,10 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   if (b1<0. || b2<0.) return false;
   p[0]=Vec4D((m_x[0]-b1)*Q/2.,m_kp[0][1],m_kp[0][2],(m_x[0]+b1)*Q/2.);
   p[1]=Vec4D((m_x[1]-b2)*Q/2.,m_kp[1][1],m_kp[1][2],-(m_x[1]+b2)*Q/2.);
-  p_kmrlast[0]=Vec4D((m_x[0]*(1./m_zkey[0][2]-1.)+b1)*Q/2.,-m_kp[0][1],
-		     -m_kp[0][2],(m_x[0]*(1./m_zkey[0][2]-1.)-b1)*Q/2.);
-  p_kmrlast[1]=Vec4D((m_x[1]*(1./m_zkey[1][2]-1.)+b2)*Q/2.,-m_kp[1][1],
-		     -m_kp[1][2],-(m_x[1]*(1./m_zkey[1][2]-1.)-b2)*Q/2.);
+  double a1=m_zkey[0][2]==0.0?0.0:m_x[0]*(1./m_zkey[0][2]-1.);
+  p_kmrlast[0]=Vec4D((a1+b1)*Q/2.,-m_kp[0][1],-m_kp[0][2],(a1-b1)*Q/2.);
+  double a2=m_zkey[1][2]==0.0?0.0:m_x[1]*(1./m_zkey[1][2]-1.);
+  p_kmrlast[1]=Vec4D((a2+b2)*Q/2.,-m_kp[1][1],-m_kp[1][2],-(a2-b2)*Q/2.);
   double min=0.0;
   for (size_t i=2;i<nflavs;++i) min+=flavs[i].Mass();
   if ((p[0]+p[1]).Abs2()<min*min) return false;
