@@ -118,9 +118,9 @@ bool Amegic::InitializeDecays(bool constructall) {
 void Amegic::InitializeInteractionModel(MODEL::Model_Base * _model)
 {
   string modeltype   = p_dataread->GetValue<string>("SIGNAL_MODEL",string("SM"));
-  string cplscheme   = p_dataread->GetValue<string>("COUPLING SCHEME",string("Running"));
-  string massscheme  = p_dataread->GetValue<string>("YUKAWA MASSES",string("Running"));
-  string widthscheme = p_dataread->GetValue<string>("WIDTH SCHEME",string("Fixed"));
+  string cplscheme   = p_dataread->GetValue<string>("COUPLING_SCHEME",string("Running"));
+  string massscheme  = p_dataread->GetValue<string>("YUKAWA_MASSES",string("Running"));
+  string widthscheme = p_dataread->GetValue<string>("WIDTH_SCHEME",string("Fixed"));
 
   Interaction_Model_Handler mh(_model);
   p_model = mh.GetModel(modeltype,cplscheme,massscheme);
@@ -129,10 +129,10 @@ void Amegic::InitializeInteractionModel(MODEL::Model_Base * _model)
 
 void Amegic::ReadInProcessfile(string file) 
 {
-  int    _scale_scheme   = p_dataread->GetValue<int>("SCALE SCHEME",0);
-  int    _kfactor_scheme = p_dataread->GetValue<int>("KFACTOR SCHEME",0);
-  double _scale_factor   = p_dataread->GetValue<double>("SCALE FACTOR",1.);
-  double _scale          = p_dataread->GetValue<double>("FIXED SCALE",sqr(rpa.gen.Ecms()));
+  int    _scale_scheme   = p_dataread->GetValue<int>("SCALE_SCHEME",0);
+  int    _kfactor_scheme = p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
+  double _scale_factor   = p_dataread->GetValue<double>("SCALE_FACTOR",1.);
+  double _scale          = p_dataread->GetValue<double>("FIXED_SCALE",sqr(rpa.gen.Ecms()));
 
 
   ifstream from((m_path+file).c_str());

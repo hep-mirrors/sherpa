@@ -30,7 +30,7 @@ namespace AMEGIC {
   private :
     int            SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled);
     void           ConstructProcesses(ATOOLS::Selector_Data *);
-    void           Terminate();
+    void           PrepareTerminate();
   public :
     bool           Find(std::string,Process_Base *&);
     void           Add(Process_Base *);

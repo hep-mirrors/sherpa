@@ -37,9 +37,9 @@ ATOOLS::Function_Base * Interaction_Model_Base::ScalarFunction(const std::string
 double Interaction_Model_Base::ScalarFunction(const std::string _name,double _t) {
   if (p_model->GetScalarFunction(_name)->Type()==std::string("Running Coupling")) {
     if (m_cplscheme==std::string("Running")) return p_model->ScalarFunction(_name,_t);
-    if (m_cplscheme==std::string("Running alpha_S")&&_name==std::string("alpha_S"))
+    if (m_cplscheme==std::string("Running_alpha_S")&&_name==std::string("alpha_S"))
 	return p_model->ScalarFunction(_name,_t);
-    if (m_cplscheme==std::string("Running alpha_QED")&&_name==std::string("alpha_QED"))
+    if (m_cplscheme==std::string("Running_alpha_QED")&&_name==std::string("alpha_QED"))
 	return p_model->ScalarFunction(_name,_t);
     return p_model->ScalarFunction(_name);
   }

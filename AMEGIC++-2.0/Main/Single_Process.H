@@ -52,7 +52,7 @@ namespace AMEGIC {
   private:
     void           PolarizationNorm();
     double         SymmetryFactors();
-    void           Terminate();
+    void           PrepareTerminate();
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.

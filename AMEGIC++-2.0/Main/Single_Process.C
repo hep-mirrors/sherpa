@@ -839,7 +839,7 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   }
   m_resultpath=_resdir;
   m_resultfile=filename;
-  ATOOLS::Exception::AddObject(this);
+  ATOOLS::Exception_Handler::AddTerminatorObject(this);
   m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
   if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
@@ -859,14 +859,14 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
       to.close();
     }
-    ATOOLS::Exception::RemoveObject(this);
+    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
     return 1;
   }
-  ATOOLS::Exception::RemoveObject(this);
+  ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
   return 0;      
 }
 
-void Single_Process::Terminate()
+void Single_Process::PrepareTerminate()
 {
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   std::ofstream to;

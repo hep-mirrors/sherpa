@@ -741,15 +741,15 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	}
       }
     }
-
     if (m_nin==2) {
-      if ( (p_flavours[0].Mass() != p_isrhandler->Flav(0).Mass()) ||
-	   (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
+      if (p_flavours[0].Mass()!=p_isrhandler->Flav(0).Mass() ||
+	  p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) 
+	p_isrhandler->SetPartonMasses(p_flavours);
     }
-    m_tables  = 0;
+    m_tables = 0;
     m_resultpath=_resdir;
     m_resultfile=filename;
-    ATOOLS::Exception::AddObject(this);
+    ATOOLS::Exception_Handler::AddTerminatorObject(this);
     m_totalxs = p_pshandler->Integrate();
     if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
@@ -771,15 +771,15 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
 	to.close();
       }
-      ATOOLS::Exception::RemoveObject(this);
+      ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
       return 1;
     }
-    ATOOLS::Exception::RemoveObject(this);
+    ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
   }
   return 0;
 }
 
-void Process_Group::Terminate()
+void Process_Group::PrepareTerminate()
 {
   if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
   SetTotalXS(0);

@@ -372,6 +372,8 @@ void Data_Read::Shorten(std::string& str) {
 	int(str[str.length()-1])==9) str = str.substr(0,str.length()-1);
     else break;
   }
+  size_t pos=std::string::npos;
+  while ((pos=str.find(" "))!=std::string::npos) str[pos]='_'; 
 }
 
 // explicit instanciation for standard types:
