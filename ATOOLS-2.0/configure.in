@@ -77,8 +77,9 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir)
 
 
-AC_OUTPUT(		Math/Makefile \
-			Phys/Makefile \
-			Org/Makefile \
-			Makefile )
+AC_OUTPUT(Math/Makefile \
+	  Phys/Makefile \
+	  Org/Makefile \
+	  Run/Makefile \
+	  Makefile )
 
