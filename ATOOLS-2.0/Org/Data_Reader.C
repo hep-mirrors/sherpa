@@ -97,7 +97,7 @@ std::string Data_Reader::HighlightSeparator(std::string& buffer)
   std::cout<<"Data_Reader::HighlightSeparator("<<buffer<<")"<<std::endl;
 #endif
   if (buffer==nullstring) return buffer;
-  size_t pos=std::string::npos, next=0;
+  size_t pos=std::string::npos, next=0, min=pos;
   for (unsigned int j=0; j<Separator().size(); ++j) {
     while (pos!=next &&
 	   (next=pos=buffer.find(Separator()[j],next))!=std::string::npos) {
@@ -105,13 +105,14 @@ std::string Data_Reader::HighlightSeparator(std::string& buffer)
       else {
 	buffer.insert(pos+1," ",1);
 	buffer.insert(pos," ",1);
+	if (pos<min) min=pos+1;
       }
     }
   }
 #ifdef DEBUG__Data_Reader
   std::cout<<"   returning '"<<buffer<<"'"<<std::endl;
 #endif
-  return buffer;
+  return buffer.substr(0,min);
 }
 
 std::string Data_Reader::StripEscapes(const std::string &buffer) const
@@ -195,7 +196,7 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
  	  tempstring.replace(pos,3,"0");
       }
       if (Interprete()) tempstring=Interpreter()->
-	Interprete(StripEscapes(tempstring));
+	  Interprete(StripEscapes(tempstring));
     }
     value=ATOOLS::ToType<Read_Type>(tempstring);
 #ifdef DEBUG__Data_Reader
