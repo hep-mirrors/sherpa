@@ -270,6 +270,16 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 	    nopart->part->SetFlow(2,mo->part->GetFlow(2));
 	  }
 	}
+	else {
+	  if ( (d1->part->Flav().IsGluon()) && (!d2->part->Flav().Strong())) {
+	    d1->part->SetFlow(1,mo->part->GetFlow(1));
+	    d1->part->SetFlow(2,mo->part->GetFlow(2));
+	  }
+	  else if ( (d2->part->Flav().IsGluon()) && (!d1->part->Flav().Strong())) {
+	    d2->part->SetFlow(1,mo->part->GetFlow(1));
+	    d2->part->SetFlow(2,mo->part->GetFlow(2));
+	  }
+	}
       }
     }
     else {
