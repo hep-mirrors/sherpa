@@ -350,6 +350,13 @@ Primitive_Interpreter::~Primitive_Interpreter()
   }
 }
 
+std::string &Primitive_Interpreter::KillBlanks(std::string& expr) const
+{
+  for (size_t i=0;i<expr.length();++i) 
+    if (expr[i]==' ') expr.replace(i--,1,"");
+  return expr;
+}
+
 std::string &Primitive_Interpreter::ReplaceTags(std::string &expr) const
 {
   size_t pos=std::string::npos;
@@ -363,6 +370,7 @@ std::string &Primitive_Interpreter::ReplaceTags(std::string &expr) const
 std::string Primitive_Interpreter::Interprete(const std::string &expr)
 {
   std::string res=expr;
+  KillBlanks(res);
   ReplaceTags(res);
   return Iterate(res);
 }

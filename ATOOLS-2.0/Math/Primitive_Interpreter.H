@@ -93,6 +93,7 @@ namespace ATOOLS {
 
     String_Map m_tags;
 
+    std::string &KillBlanks(std::string& expr) const;
     std::string &ReplaceTags(std::string &expr) const;
 
   public:
