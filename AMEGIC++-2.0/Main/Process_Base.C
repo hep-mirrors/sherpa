@@ -598,11 +598,8 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
       if (pt2i<pt2) pt2 = pt2i;
     }
     break;
-  case 3  :
-    pt2 = 0.;
-    for (int i=m_nin;i<m_nin+m_nout;i++) {
-      pt2 += AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]);
-    }
+  case 3 :   // swaped with 7 (to match ME.dat)
+    pt2 = m_scale;
     break;
   case 4  :
     pt2 = AMATOOLS::sqr(175.);
@@ -612,6 +609,12 @@ double Process_Base::Scale(AMATOOLS::Vec4D * _p) {
     break;
   case 6  :
     pt2 = AMATOOLS::sqr(91.188);
+    break;
+  case 7  :
+    pt2 = 0.;
+    for (int i=m_nin;i<m_nin+m_nout;i++) {
+      pt2 += AMATOOLS::sqr(_p[i][1])+AMATOOLS::sqr(_p[i][2]);
+    }
     break;
   case  8 :
     pt2 = AMATOOLS::sqr(3.162);
