@@ -2,6 +2,8 @@
 #include "Phase_Space_Handler.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include "Single_Channel.H"
+#include "Foam_Interface.H"
 
 #include "Random.H"
 
@@ -18,6 +20,7 @@ long int Phase_Space_Integrator::nmax=10000000;
 
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerror, int fin_opt) 
 {
+  p_psh=psh;
   msg_Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
 
@@ -293,6 +296,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       else {
 	(psh->Process())->ResetMax(0);
       }
+      if (ncontrib/iter1==5) CreateFoamChannels();
       if ((ncontrib==maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->EndOptimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->EndOptimize(maxerror);
@@ -399,3 +403,37 @@ long int Phase_Space_Integrator::MaxPoints()
 void     Phase_Space_Integrator::SetMaxPoints(long int _nmax) 
 { nmax=_nmax;  };
 
+void Phase_Space_Integrator::CreateFoamChannels()
+{
+  msg_Tracking()<<"Phase_Space_Integrator::CreateFoamChannels(): {\n";
+  {
+    msg_Indentation(3);
+    const std::vector<Single_Channel*> &bestisr=p_psh->ISRIntegrator()->Best();
+    const std::vector<Single_Channel*> &bestfsr=p_psh->FSRIntegrator()->Best();
+    std::vector<Single_Channel*> channels(2);
+    for (size_t i=0;i<bestisr.size();++i) {
+      msg_Tracking()<<bestisr[i]->Name()<<" {\n";
+      channels[0]=bestisr[i];
+      {
+	msg_Indent();
+	for (size_t j=0;j<bestfsr.size();++j) {
+	  msg_Tracking()<<bestfsr[j]->Name()<<" {\n";
+	  {
+	    msg_Indent();
+	    channels[1]=bestfsr[j];
+	    p_psh->CreateFoamChannel(channels);
+	    // for testing purposes
+	    if (p_psh->Foams().size()>0) {
+	      p_psh->SetActive(p_psh->Foams().back());
+	      p_psh->Foams().back()->Initialize();
+	      p_psh->Active()->ResetMax(3);
+	    }
+	  }
+	  msg_Tracking()<<"}\n";
+	}
+      }
+      msg_Tracking()<<"}\n";
+    }
+  }
+  msg_Tracking()<<"}"<<std::endl;
+}

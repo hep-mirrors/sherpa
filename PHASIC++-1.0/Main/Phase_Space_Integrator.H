@@ -13,6 +13,8 @@ namespace PHASIC {
     long int        maxopt;
     static long int nmax;
 
+    Phase_Space_Handler *p_psh;
+
   public:
 
     double Calculate(Phase_Space_Handler*,double,int); 
@@ -24,6 +26,8 @@ namespace PHASIC {
 
     static long int MaxPoints();
     static void     SetMaxPoints(long int _nmax);
+
+    void CreateFoamChannels();
 
   };
   /*!
