@@ -48,8 +48,6 @@ void Fixed_Variable_Channel<Value_Type>::GenerateWeight(ATOOLS::Vec4D *_p)
 {
   weight/=PHASIC::CE.Isotropic2Weight(_p[2],_p[3])*
     pow(2.0*M_PI,2.0*3.0-4.0);
-  if (!(weight<std::numeric_limits<double>::max())) weight=0.0;
-  msg_Debugging()<<"miw: "<<weight<<std::endl;
 }
 
 template Fixed_Variable_Channel<double>;
