@@ -15,10 +15,14 @@ if AHADIC_SUPPORT
 AHADICDIR     =	$(SHERPASYS)/AHADIC++-0.0
 AHADICFLAGS   = -DUSING__Ahadic
 endif
+if MCATNLO_SUPPORT
+MCATNLOLIBS   = -lHerwigTools
+MCATNLOFLAGS  = -DUSING__MCatNLO
+endif
 
 SHERPAINCS    =	-I../Main -I../Initialization -I../PerturbativePhysics \
 		-I../SoftPhysics -I../LundTools -I../Single_Events \
-		-I../Tools 
+		-I../HerwigTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
@@ -68,7 +72,7 @@ AHADICLIBS    =	-L@libdir@ -lAhadicMain -lClusterFormation -lClusterDecays
 endif
 SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
 		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
-		-lSherpaSoftPhysics -lLundTools -lSherpaTools 
+		-lSherpaSoftPhysics -lLundTools $(MCATNLOLIBS) -lSherpaTools 
 
 if AMISIC_SUPPORT
 AMISICFLAGS   =	-DUSING__Amisic

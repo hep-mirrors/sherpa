@@ -9,7 +9,7 @@ AMEGICDIR     =	$(SHERPASYS)/AMEGIC++-2.0
 APACICDIR     =	$(SHERPASYS)/APACIC++-2.0
 SHERPAINCS    =	-I../Initialization -I../PerturbativePhysics \
 		-I../SoftPhysics -I../SoftPhysics/Lund -I../Single_Events \
-		-I../LundTools -I../Tools 
+		-I../LundTools -I../HerwigTools -I../Tools 
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 ANALYSISINCS  = -I$(ANALYSISDIR)/Main -I$(ANALYSISDIR)/Observables
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main

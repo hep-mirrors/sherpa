@@ -89,6 +89,7 @@ AM_CONDITIONAL(CVS_INCLUDE, test "$cvsinclude" = "true" )
 AM_CONDITIONAL(AMISIC_SUPPORT, test -d "../AMISIC++-1.0")
 
 AC_CONFIG_COMMANDS_POST([touch PerturbativePhysics/Shower_Handler.H &&
+			 touch HerwigTools/Herwig_Wrapper.H &&
 			 touch Run/Main.C])
 
 dnl Checks for programs.
