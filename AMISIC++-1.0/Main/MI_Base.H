@@ -5,7 +5,7 @@
 #include "Blob_List.H"
 #include <map>
 
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
 namespace SHERPA { class Matrix_Element_Handler; }
 #endif
 
@@ -44,7 +44,7 @@ namespace AMISIC {
 
     ATOOLS::Blob *p_blob;
 
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
     SHERPA::Matrix_Element_Handler *p_mehandler;
 #endif
 
@@ -71,7 +71,7 @@ namespace AMISIC {
     const double Start(unsigned int i=0) const;
     const double Stop(unsigned int i=0) const;
 
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
     SHERPA::Matrix_Element_Handler *MEHandler();
 #endif
 

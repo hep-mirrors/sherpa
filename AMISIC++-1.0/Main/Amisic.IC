@@ -11,7 +11,7 @@ namespace AMISIC {
   inline MI_Base *Amisic::SoftBase()
   { return p_softbase; }
 
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
   inline SHERPA::Matrix_Element_Handler *Amisic::HardMEHandler()
   { return p_hardbase->MEHandler(); }
 

@@ -4,7 +4,7 @@
 #include "Random.H"
 #include "Channel_Elements.H"
 #include "Lund_Wrapper.H"
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
 #include "Matrix_Element_Handler.H"
 #endif
 
@@ -82,7 +82,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 Simple_Chain::~Simple_Chain()
 {
   CleanUp();
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
   delete p_mehandler;
 #endif
 }
@@ -90,7 +90,7 @@ Simple_Chain::~Simple_Chain()
 void Simple_Chain::CleanUp() 
 {
   if (p_fsrinterface!=NULL) delete p_fsrinterface;
-#ifndef USING_SHERPA
+#ifndef USING__SHERPA
   if (p_processes!=NULL) delete p_processes;
 #endif
   if (!m_external) {
@@ -594,7 +594,7 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->CreateFSRChannels();
     group[i]->InitIntegrators();
   }
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
   p_mehandler = new SHERPA::Matrix_Element_Handler();
   p_mehandler->SetXS(p_processes);
 #endif
@@ -878,7 +878,7 @@ bool Simple_Chain::DiceProcess()
   for (int i=sorter.XDataSize()-1;i>=0;--i) {
     if ((cur+=sorter.XData(i)/norm)>rannr) {
       m_selected=sorter.XYData(i).second;
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
       p_processes->SetSelected((*p_processes)[m_selected]);
 #endif
       if (m_last[1]<(*p_processes)[m_selected]->ISR()->SprimeMin()) {
@@ -891,7 +891,7 @@ bool Simple_Chain::DiceProcess()
       double sprimemin=isr->SprimeMin(), sprimemax=isr->SprimeMax();
       isr->SetSprimeMax(m_last[1]*m_last[1]);
       isr->SetSprimeMin(4.0*m_last[0]*m_last[0]);
-      // think about setting y_{min} and y_{max} to \pm\ln{\frac{\sqrt{s'}}{2*p_\perp}}
+      // think about setting y_{min} and y_{max} to \pm\ln{\frac{\sqrt{s'}}{2*p_\perp}} (massless)
       (*p_processes)[m_selected]->SetMax((*m_maximum[m_selected])(m_last[0]),1);
       FillBlob(p_blob);
       isr->SetSprimeMax(sprimemax);

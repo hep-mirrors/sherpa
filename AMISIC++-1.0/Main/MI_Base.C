@@ -5,7 +5,7 @@
 #ifdef PROFILE__MI_Base
 #include "prof.hh"
 #endif
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
 #include "Matrix_Element_Handler.H"
 #endif
 
@@ -181,7 +181,7 @@ MI_None::MI_None(TypeID _m_type):
 
 MI_None::~MI_None() 
 {
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
   delete p_mehandler;
 #endif
 }
@@ -193,7 +193,7 @@ void MI_None::Update(const MI_Base *mibase)
 
 bool MI_None::Initialize()
 {
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
   p_mehandler = new SHERPA::Matrix_Element_Handler();
 #endif
   return true;

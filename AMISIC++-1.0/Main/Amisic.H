@@ -43,7 +43,7 @@ namespace AMISIC {
     MI_Base *HardBase();
     MI_Base *SoftBase();
 
-#ifdef USING_SHERPA
+#ifdef USING__SHERPA
     SHERPA::Matrix_Element_Handler *HardMEHandler();
     SHERPA::Matrix_Element_Handler *SoftMEHandler();
 #endif

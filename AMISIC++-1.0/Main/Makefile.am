@@ -14,7 +14,7 @@ libAmisic_la_SOURCES  = \
 			Environment.C \
 			Simple_Chain.C \
 			Amisic.C 
-AM_CXXFLAGS   =	-pedantic -Wall -Winline -DUSING_SHERPA
+AM_CXXFLAGS   =	-pedantic -Wall -Winline -DUSING__SHERPA
 INCLUDES      =	\
 		-I../Tools \
 		-I../Other \
