@@ -55,9 +55,10 @@ bool Amisic::Initialize()
   p_softbase->SetInputPath(InputPath());
   p_softbase->SetInputFile(file);
   delete reader;
-  p_hardbase->Initialize();
-  p_softbase->Initialize();
-  return true;
+  bool success=true;
+  success=success&&p_hardbase->Initialize();
+  success=success&&p_softbase->Initialize();
+  return success;
 }
 
 void Amisic::SameHardProcess(ATOOLS::Blob *blob)
