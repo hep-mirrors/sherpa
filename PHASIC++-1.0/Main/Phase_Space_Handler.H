@@ -97,7 +97,7 @@ namespace PHASIC {
     // member functions
     Single_Channel * SetChannel(int,int,ATOOLS::Flavour *fl,
 				std::string&,ATOOLS::Integration_Info *const);
-    void WriteOut(const std::string &path);
+    void WriteOut(const std::string &path,const bool force=false);
     bool ReadIn(const std::string &path,const size_t exclude=0);
     bool InitIncoming(const double mass=-1.);
     bool CreateIntegrators();

@@ -508,12 +508,12 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
   delete TestCh;
 }
 
-void Phase_Space_Handler::WriteOut(const std::string &pID) 
+void Phase_Space_Handler::WriteOut(const std::string &pID,const bool force) 
 {
   if (m_use_foam) return;
   msg_Tracking()<<"Write out channels into directory : "<<pID<<endl;
   int  mode_dir = 448;
-  ATOOLS::MakeDir(pID.c_str(),mode_dir); 
+  ATOOLS::MakeDir(pID.c_str(),mode_dir,force); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+string("/MC_Beam"));
   if (p_isrchannels  != 0) p_isrchannels->WriteOut(pID+string("/MC_ISR"));
   if (p_zchannels != 0) p_zchannels->WriteOut(pID+string("/MC_KMR_Z"));
