@@ -1,4 +1,3 @@
-
 #include "Simple_Chain.H"
 
 #include "Phase_Space_Handler.H"
@@ -176,6 +175,8 @@ EXTRAXS::XS_Group *Simple_Chain::FindPDFGroup(const size_t nin,const size_t nout
 		     copy,m_scalescheme,m_kfactorscheme,p_processes->ScaleFactor());
   newgroup->XSSelector()->SetOffShell(p_isr->KMROn());
   newgroup->PSHandler(false)->SetError(m_error);
+  newgroup->SetScaleScheme(m_scalescheme);
+  newgroup->SetKFactorScheme(m_kfactorscheme);
   p_processes->Add(newgroup);
   p_processes->SetAtoms(1);
   delete [] copy;
@@ -382,8 +383,13 @@ bool Simple_Chain::SetUpInterface()
   p_fsrinterface->SetAlphaSave(1.0);
   for (size_t i=0;i<p_processes->Size();++i) {
     Semihard_QCD *group = dynamic_cast<Semihard_QCD*>((*p_processes)[i]);
-    if (!group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension,16|32))
+    if (!group->PSHandler(false)->ReadIn(OutputPath()+m_mcextension+
+					 "/MC_"+group->Name(),16|32))
       group->CalculateTotalXSec(OutputPath()+m_mcextension);
+    const std::vector<PHASIC::Single_Channel*> &best=group->PSHandler(false)->
+      FSRIntegrator()->Best();    
+    if (best.size()>0) p_fsrinterface->SetChID(best[0]->Name());
+    else p_fsrinterface->SetChID("T-Channel");
     group->SetFSRInterface(p_fsrinterface);
     group->SetFSRMode(2);
     group->CreateFSRChannels();
@@ -401,13 +407,10 @@ bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,
 				    const double min,const double max,
 				    const double integral)
 {  
-  int criterion=ATOOLS::Variable::
+  int helpi=0, criterion=ATOOLS::Variable::
     TypeToSelectorID(grid->XAxis()->Variable().Type());
-  ATOOLS::Mom_Data initialdata=group->SelectorData()->RemoveData(criterion);
-  if (initialdata.flavs.empty()) 
-    initialdata.flavs.push_back(ATOOLS::Flavour(ATOOLS::kf::jet));
-  group->SelectorData()->AddData(criterion,initialdata.flavs,
-				 initialdata.help,(double)min,(double)max);
+  std::vector<ATOOLS::Flavour> flavours(1,(ATOOLS::kf::jet));
+  group->SelectorData()->AddData(criterion,flavours,helpi,(double)min,(double)max);
   group->ResetSelector(group->SelectorData());
   int level=ATOOLS::msg.Level();
   ATOOLS::msg.SetLevel(0);
@@ -672,7 +675,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): '"
 			     <<selected->Name<<"'"<<std::endl;
 	}
-	selected->SetMax(max/100.0,1);
+	selected->SetMax(max/10.0,1);
 	selected->SameEvent();
 	if (p_fsrinterface->Trigger()) break;
       }      
@@ -855,8 +858,15 @@ bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)
       ptmax=ATOOLS::Min(ptmax,blob->InParticle(i)->Momentum().PPerp());
   }
   bool veto=ptmax<m_stop[0];
+#ifdef REWEIGHT_HARDEST
+  if (!veto) {
+    m_last[0]=m_start[0]=m_ecms/2.0;
+    DiceOrderingParameter();
+    veto=m_dicedparameter;
+  }
+#endif
   if (veto) {
-    s_soft->SetStart(ptmax,1); 
+    s_soft->SetStart(ptmax,0); 
     s_soft->SetStart((*p_differential)(m_stop[0]),2); 
   }
   return s_stophard=veto;
