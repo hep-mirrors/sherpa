@@ -37,11 +37,16 @@ namespace BEAM {
     int m_mode;
     double m_polar;
     double m_upper, m_peak;
+    ATOOLS::Flavour  m_remnant;
+    double m_x;
   public:
     Spectrum_Reader(const ATOOLS::Flavour,const double,const double,
 		    const double, const double, const std::string fname,const int);
     Beam_Base * Copy();     
+
+    ATOOLS::Vec4D   OutMomentum();
     ATOOLS::Flavour Remnant();
+
     bool        CalculateWeight(const double,const double);
     double      Weight(ATOOLS::Flavour=ATOOLS::Flavour(ATOOLS::kf::none));
     double          Polarisation()       { return m_polar; }

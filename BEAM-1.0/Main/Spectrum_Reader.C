@@ -102,11 +102,16 @@ Spectrum_Reader::Spectrum_Reader(const Flavour beam, const double energy,
 {
   m_weight=1.;
   m_mode=0;
+  m_remnant = m_beam;
+  m_bunch   = Flavour(kf::photon);  // may be overwritten from file below!
+
   ReadFromFile();
 
-  m_bunch        = Flavour(kf::photon);  // to be read in!
+  m_x=1.;
   double disc    = 1.-sqr(m_bunch.PSMass()/m_energy);
+  //  m_lab          = Vec4D(m_energy,0.,0.,dir*m_energy*sqrt(disc));
   m_vecout       = Vec4D(m_energy,0.,0.,dir*m_energy*sqrt(disc));
+  std::cout<<m_vecout<<" ("<<m_vecout.Abs2()<<" )"<<std::endl;
 }
 
 void Spectrum_Reader::ReadFromFile()
@@ -143,6 +148,14 @@ void Spectrum_Reader::ReadFromFile()
       if (buffer.find("histo")!=std::string::npos ||
 	  buffer.find("histogram")!=std::string::npos)
 	m_mode=0;
+      if (buffer.find("electron_spectrum")!=std::string::npos ||
+	  buffer.find("electron_spec")!=std::string::npos) {
+	m_bunch=Flavour(kf::e);
+	if (m_bunch==m_beam) m_remnant=Flavour(kf::photon);
+	else {
+	  msg.Out()<<"ERROR: Spectrum_Reader: something wrong in beam definition"<<std::endl;
+	}
+      }
       if (buffer.find("beampol")!=std::string::npos) {
 	  unsigned int hit=buffer.find("beampol");
 	  buffer=buffer.substr(hit+8);
@@ -249,6 +262,23 @@ void Spectrum_Reader::ReadFromFile()
   msg.Out()<<" m_upper="<<m_upper<<std::endl;
   msg.Out()<<" m_peak ="<<m_peak<<std::endl;
 
+  if (m_upper>0.999999) {
+    Spectrum_Point sp =m_spectrum_histo.back();
+    double y=sp.Y();
+    double x2=0.999999;
+    if (sp.X1()<x2) {
+      m_spectrum_histo.pop_back();
+      y*=(sp.X2()-sp.X1())/(x2-sp.X1());
+      sp=Spectrum_Point(sp.X1(),x2,y,sp.Pol());
+      m_spectrum_histo.push_back(sp);
+      m_upper=x2;
+    }
+    else { 
+      msg.Error()<<" ERROR: Spectrum has a pole at one! "<<std::endl;
+      msg.Out()<<" m_upper="<<m_upper<<std::endl;
+    }
+  }
+
   // --- this is a test ---
   PrintSpectra("tspec");
   //  exit(0);
@@ -261,8 +291,13 @@ Beam_Base * Spectrum_Reader::Copy()
 }
 
 ATOOLS::Flavour Spectrum_Reader::Remnant() {
-  return m_beam;
+  return m_remnant;
 }
+
+ATOOLS::Vec4D Spectrum_Reader::OutMomentum() {
+  return m_x*m_vecout; 
+}
+
 
 bool Spectrum_Reader::CalculateWeight(const double x,const double scale)
 {
@@ -270,6 +305,7 @@ bool Spectrum_Reader::CalculateWeight(const double x,const double scale)
     msg.Out()<<" Error: x out of range! ("<<x<<")"<<std::endl;
     return 0.;
   }
+  m_x=x;
 
   if (m_mode==0) {
     for (Spectrum_Data_List::const_iterator sd=m_spectrum_histo.begin();
