@@ -11,9 +11,12 @@ namespace SHERPA {
   class Remnant_Base {
   public:
 
-    enum TypeID { Hadron   =  1,
-		  Electron =  2,
-		  Photon   =  3 };
+    enum TypeID { 
+      Intact   =  0,
+      Hadron   =  1,
+      Electron =  2,
+      Photon   =  3 
+    };
 
   protected:
     

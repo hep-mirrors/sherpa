@@ -21,6 +21,7 @@ lib_LTLIBRARIES       =	libSherpaSoftPhysics.la
 libSherpaSoftPhysics_la_SOURCES	      =	\
 					Primordial_KPerp.C \
 					Remnant_Base.C \
+					No_Remnant.C \
 					Hadron_Remnant.C \
 					Electron_Remnant.C \
 					Photon_Remnant.C \
@@ -31,6 +32,7 @@ noinst_HEADERS        =	\
 			Primordial_KPerp.H \
 			Primordial_KPerp.IC \
 			Remnant_Base.H \
+			No_Remnant.H \
 			Hadron_Remnant.H \
 			Electron_Remnant.H \
 			Photon_Remnant.H \

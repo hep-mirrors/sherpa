@@ -3,6 +3,7 @@
 #include "Hadron_Remnant.H"
 #include "Electron_Remnant.H"
 #include "Photon_Remnant.H"
+#include "No_Remnant.H"
 #include "Data_Read.H"
 
 using namespace SHERPA;
@@ -55,11 +56,7 @@ Beam_Remnant_Handler::Beam_Remnant_Handler(std::string _m_path,std::string _m_fi
     if (p_isr->Flav(i).IsHadron()) p_beampart[i] = new Hadron_Remnant(p_isr,i,_m_scale);
     else if (p_isr->Flav(i).IsLepton()) p_beampart[i] = new Electron_Remnant(p_isr,i,_m_scale);
     else if (p_isr->Flav(i).IsPhoton()) p_beampart[i] = new Photon_Remnant(i);
-    else {
-      ATOOLS::msg.Error()<<"Beam_Remnant_Handler::Beam_Remnant_Handler(..): "
-			 <<"Cannot determine type of beam "<<i<<"! Abort."<<std::endl;
-      exit(129);
-    }
+    else p_beampart[i] = new No_Remnant(i);
   }
   for (size_t i=0;i<2;++i) p_beampart[i]->SetPartner(p_beampart[1-i]);
   p_kperp = new Primordial_KPerp(_m_path,_m_file);
