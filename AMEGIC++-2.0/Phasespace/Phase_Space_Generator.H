@@ -9,23 +9,23 @@ namespace AMEGIC {
   class Process_Base;
 
   class Phase_Space_Generator {
-    int    nin,nout;
-    std::string path,pathID,pID;
-    char   filename[12], procname[12];
-    std::string headername,cfilename;
     static const int buffersize = 512*32;
+    int         nin,nout;
+    char        filename[12], procname[12];
+    std::string path,pathID,pID;
+    std::string headername,cfilename;
+
     bool  CheckForOldChannels(int,APHYTOOLS::Flavour *,PHASIC::Multi_Channel *);
     bool  IsFile(std::string &);
     bool  Search(std::ifstream &,std::string);
     int   Search(std::string file,std::string search);
-    void Copy(std::string,std::string);
-    bool MakeHeader(std::string &,char*,int);
-    bool MakeCfile(std::string &,char*,int,int);
-    int  AddToHeader(std::string &,char*,bool);
-    int  AddToCfile(std::string &,char*,int,bool);
-    void AddToMakefile(std::string Makefile,std::string pathID,std::string fileID);
-    //    void AddToMakefile(std::string,std::string);
-    void AddToSetChannel();
+    void  Copy(std::string,std::string);
+    bool  MakeHeader(std::string &,char*,int);
+    bool  MakeCfile(std::string &,char*,int,int);
+    int   AddToHeader(std::string &,char*,bool);
+    int   AddToCfile(std::string &,char*,int,bool);
+    void  AddToMakefile(std::string Makefile,std::string pathID,std::string fileID);
+    void  AddToSetChannel();
   public:
     Phase_Space_Generator(int,int);
     bool Construct(PHASIC::Multi_Channel *,std::string,std::string,APHYTOOLS::Flavour *, 

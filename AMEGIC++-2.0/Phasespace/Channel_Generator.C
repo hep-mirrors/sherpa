@@ -123,9 +123,6 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	  AddToVariables(flag,m,string("p[0] + p[1]"),1,sf);
 	  AddToVariables(flag,m,string("dabs(p")+Order(m)+string(".Abs2())"),0,sf);
     
-	  //sf<<"  Vec4D  p"<<Order(m)<<" = p[0] + p[1];"<<endl
-	  //<<"  double s"<<Order(m)<<" = dabs(p"<<Order(m)<<".Abs2());"<<endl;
-	  
 	  flag += 10;
 	  if (!StepS(flag,p->left,rannum,sf,flav,maxnumb)) {
 	    if (!StepS(flag,p->right,rannum,sf,flav,maxnumb)) {
@@ -146,11 +143,10 @@ void Channel_Generator::Step0(int flag,Point* p,int& rannum,ofstream& sf,
 	}
       }
       default : {
-	if (flag<2) {
+	if (flag<=2) {
 	  StepNT(flag,tcount,p,rannum,sf,flav,maxnumb);
 	  break;
 	}
-	if (flag==2) return;
       }
     }
     return;
@@ -262,6 +258,17 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
 
   SetProps(p,props,propt,counts);
 
+  if (flag==2) {
+    sf<<"  type  = 2;"<<endl
+      <<"  mass  = ";
+    for (int i=0;i<tcount;i++) {
+      sf<<"Flavour(kf::code("<<props[i]->fl.Kfcode()<<")).Mass() + ";
+    } 
+    sf<<"Flavour(kf::code("<<props[tcount]->fl.Kfcode()<<")).Mass();"<<endl;
+    sf<<"  width = 0.;"<<endl;
+    return;
+  }
+
   string* s    = new string[tcount+1];
   string  m;  
 
@@ -274,8 +281,6 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
   AddToVariables(flag,m,string("p[0] + p[1]"),1,sf);
   AddToVariables(flag,m,string("dabs(p")+Order(m)+string(".Abs2())"),0,sf);
 
-  //sf<<"  Vec4D  p"<<Order(m)<<" = p[0] + p[1];"<<endl
-  //  <<"  double s"<<Order(m)<<" = dabs(p"<<Order(m)<<".Abs2());"<<endl
   sf<<"  double amct  = 1.;"<<endl;
   sf<<"  double alpha = 0.5;"<<endl;
   sf<<"  double ctmax = 0.;"<<endl;
@@ -304,9 +309,6 @@ void Channel_Generator::StepNT(int flag,int tcount,Point* p,int& rannum,ofstream
   
   AddToVariables(flag,string("0_"),string("p[0]"),1,sf);
   AddToVariables(flag,string("1_"),string("p[1]"),1,sf);
-
-  //sf<<"  Vec4D  p0_ = p[0];"<<endl
-  //  <<"  Vec4D  p1_ = p[1];"<<endl;
 
   SingleTStep(flag,s,propt,tcount,rannum,sf,count,pin0,pin1,pout0,pout1);
 
@@ -435,9 +437,6 @@ void Channel_Generator::SingleTStep(int flag,string* s,Point** propt,int tcount,
       
       AddToVariables(flag,pout1sum,s,1,sf);
       AddToVariables(flag,pout1sum,string("dabs(p")+Order(pout1sum)+string(".Abs2())"),0,sf);
-      
-      //sf<<"  Vec4D p"<<Order(pout1sum)<<" = "<<s<<";"<<endl
-      //<<"  double s"<<Order(pout1sum)<<" = dabs(p"<<Order(pout1sum)<<".Abs2());"<<endl;
 
       sf<<"  wt *= CE.MasslessPropWeight(0.5,s"<<Order(pout1sum)<<"_min,"
 	<<"s"<<Order(pout1sum)<<"_max,s"<<Order(pout1sum)<<");"<<endl;
