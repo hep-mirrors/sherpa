@@ -1,5 +1,6 @@
 #include "Beam_Spectra_Handler.H"
 #include "Monochromatic.H"
+#include "Spectrum_Reader.H"
 #include "Laser_Backscattering.H"
 #include "Run_Parameter.H" 
 #include "Message.H"
@@ -68,6 +69,9 @@ bool Beam_Spectra_Handler::SpecifySpectra(Data_Read * dataread)
     case Beam_Type::Laser_Back :
       okay = okay&&InitializeLaserBackscattering(dataread,num);
       break;
+    case Beam_Type::Spec_Read :
+      okay = okay&&InitializeSpectrumReader(dataread,num);
+      break;
     default :
       msg.Error()<<"Warning in Beam_Initialization::SpecifySpectra :"<<endl
 		 <<"   No beam sprectum specified for beam "<<num+1<<endl
@@ -104,6 +108,26 @@ bool Beam_Spectra_Handler::InitializeLaserBackscattering(Data_Read * dataread,in
   p_BeamBase[num]          = new Laser_Backscattering(beam_particle,beam_energy,beam_polarization,
 						      Laser_energy,Laser_polarization,
 						      mode,angles,nonlin,1-2*num);
+  return 1;
+}
+
+bool Beam_Spectra_Handler::InitializeSpectrumReader(Data_Read * dataread,int num) {
+  char help[20];
+  sprintf(help,"%i",num+1);
+  std::string number        = string(help); 
+  int     flav              = dataread->GetValue<int>("BEAM_"+number);  
+  Flavour beam_particle     = Flavour(kf::code(abs(flav)));
+  if (flav<0) beam_particle = beam_particle.Bar();
+  double beam_energy        = dataread->GetValue<double>("BEAM_ENERGY_"+number);
+  double beam_polarization  = dataread->GetValue<double>("BEAM_POL_"+number);
+  double laser_energy       = dataread->GetValue<double>("E_LASER_"+number);
+  double laser_polarization = dataread->GetValue<double>("P_LASER_"+number);
+
+  std::string spectrumfile  = dataread->GetValue<std::string>("SPECTRUM_FILE_"+number);
+
+  p_BeamBase[num] = new Spectrum_Reader(beam_particle,beam_energy,beam_polarization,
+					laser_energy, laser_polarization,
+					spectrumfile,1-2*num);
   return 1;
 }
 

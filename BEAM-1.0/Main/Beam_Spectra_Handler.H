@@ -24,6 +24,7 @@ namespace BEAM {
     bool InitKinematics(ATOOLS::Data_Read *);
     bool SpecifySpectra(ATOOLS::Data_Read *);
     bool InitializeLaserBackscattering(ATOOLS::Data_Read *,int);
+    bool InitializeSpectrumReader(ATOOLS::Data_Read *,int);
     bool InitializeMonochromatic(ATOOLS::Data_Read *,int);
   public:
     Beam_Spectra_Handler(ATOOLS::Data_Read *);
