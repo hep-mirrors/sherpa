@@ -45,7 +45,10 @@ void ISR_Handler::Init(double * _splimits) {
 
 void   ISR_Handler::SetSprimeMin(double _spl)       { m_splimits[0]  = Max(m_splimits[0],_spl); }
 void   ISR_Handler::SetSprimeMax(double _spl)       { m_splimits[1]  = Min(m_fixed_smax,_spl); }
-void   ISR_Handler::SetFixedSprimeMax(double _spl)  { m_fixed_smax  = Min(m_fixed_smax,_spl); }
+void   ISR_Handler::SetFixedSprimeMax(double _spl)  { 
+  m_fixed_smax  = Min(m_fixed_smax,_spl); 
+  m_splimits[1] = Min(m_splimits[1],_spl); 
+}
 
 
 ISR_Handler::~ISR_Handler() {
