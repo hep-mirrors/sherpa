@@ -115,6 +115,7 @@ Fast_Function::Data_Iter Fast_Function::Insert(double x, double y) {
     return win;
   }
 }
+
 int Fast_Function::Nesting(int a, int b, double x) {
   if (b <=a+1) return a;
   int c=(a+b)/2;
