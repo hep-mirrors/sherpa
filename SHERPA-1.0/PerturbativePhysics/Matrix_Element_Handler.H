@@ -22,16 +22,16 @@
 namespace SHERPA {
   class Matrix_Element_Handler {
   private :
-    std::string                   m_dir,m_file,m_signalgenerator;
-    std::string                   m_name;
-    std::string                   m_readin;
-    bool                          m_eventmode;
-    int                           m_mode;
-    double                        m_weight;
+    std::string            m_dir,m_file;
+    AMEGIC::Amegic       * p_amegic;
+    EXTRAXS::SimpleXSecs * p_simplexs;
+    int                    m_mode;
+    double                 m_weight;
 
-    ATOOLS::Data_Read        * p_dataread;
-    AMEGIC::Amegic              * p_amegic;
-    EXTRAXS::SimpleXSecs        * p_simplexs;
+    std::string            m_name,m_signalgenerator,m_readin;
+    bool                   m_eventmode;
+
+    ATOOLS::Data_Read    * p_dataread;
 
     bool RescaleJetrates() ;
 
@@ -60,14 +60,227 @@ namespace SHERPA {
     int                  Nin();
     int                  Nout();
     int                  MaxJets();
-    ATOOLS::Vec4D    * Momenta();
-    ATOOLS::Flavour * Flavs();
+    ATOOLS::Vec4D      * Momenta();
+    ATOOLS::Flavour    * Flavs();
 
     int                  NumberOfDiagrams();
     AMEGIC::Point      * GetDiagram(int);
     EXTRAXS::XS_Base   * GetXS();
     double               Weight();
   };
+
+  /*!
+    \class Matrix_Element_Handler
+    \brief A wrapper around matrix element generators.
+
+    This class provides the generic interface of variuos matrix element generators
+    with the rest of the SHERPA framework. As it stands, SHERPA employs their
+    matrix elements in the Event_Phase_Handler Signal_Processes and in the
+    Event_Phase_Handler Jet_Evolution for the interface with the corresponding
+    Shower_Handler. Therefore this handler class provides methods:
+    - to initialize the specific matrix element generators selected by the user
+      including the initialization of corresponding processes,
+    - to calculate their total cross sections within some cuts specified by 
+      appropriate selector data (files)
+    - to generate weighted and unweighted single events on the parton level
+    - to pass more information to other places in the program, like for instance
+      into the interface with the shower. This information includes not only 
+      the flavours and momenta of the partons but also the Feynman graphs. 
+      It is anticipated that in the future methods to extract the colour flow
+      will also become available.
+
+    In case the user wants to niterface to another matrix element generator, this 
+    handler has to be modified accordingly. Also, an interface to the shower has to 
+    be provided to take full advantage of the event generator structure of SHERPA.
+  */
+  /*!
+    \var std::string Matrix_Element_Handler::m_dir
+    The directory for the file with the matrix element data.
+  */
+  /*!
+    \var std::string Matrix_Element_Handler::m_file
+    The name of the data file with the matrix element specificiations.
+  */
+  /*!
+    \var AMEGIC::Amegic * Matrix_Element_Handler::p_amegic
+    A pointer to the AMEGIC object.
+  */
+  /*!
+    \var EXTRAXS::SimpleXSecs * Matrix_Element_Handler::p_simplexs
+    A pointer to the list of internal simple \f$2\to 2\f$ processes.
+  */
+  /*!
+    \var int Matrix_Element_Handler::m_mode
+    The mode in which the matrix elements are used:
+    0 - the initialization did not work out. 
+    1 - Amegic is being used.
+    2 - The simple internal matrix elements are used.
+  */
+  /*!
+    \var double Matrix_Element_Handler::m_weight
+    The weight if the run is in the "weighted events"-mode. The weight is given in
+    picobarns.
+  */
+  /*!
+    \var std::string Matrix_Element_Handler::m_name
+    The name of the matrix elements used. At the moment, two different matrix element
+    objects are available, namely Amegic and some internal simple ones. The respective
+    names are "Amegic" and "Simple X-section".
+  */
+  /*!
+    \var std::string Matrix_Element_Handler::m_signalgenerator
+    The user's choice of signal generator to be read in through the matrix element data.
+    The default is "Amegic", at the moment, also "Internal" for the very limited set of simple 
+    processes can be chosen as well.
+  */
+  /*!
+    \var std::string Matrix_Element_Handler::m_readin
+    The directory with stored results. This is an extremely dangerous option to use, because
+    no real check is done whether the results stored there (and therefore used throughout the run)
+    coincide with the actual set-up of the program.
+  */
+  /*!
+    \var bool Matrix_Element_Handler::m_eventmode
+    The mode in which events are generated, either "Weighted" or "Unweighted", the latter is the
+    default.
+  */
+  /*!
+    \var ATOOLS::Data_Read * Matrix_Element_Handler::p_dataread
+    A pointer to the Data_Read object.
+  */
+  /*!
+    \fn bool Matrix_Element_Handler::RescaleJetrates() 
+    A method to be filled later. It is meant to rescale jetrates etc..
+  */
+  /*!
+    \fn int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base *,
+                                                       BEAM::Beam_Spectra_Handler *,
+                                                       PDF::ISR_Handler *)
+    Initializes the user-defined set of simple matrix elements available in  EXTRAXS. More work
+    has to be spent there. In principle, the idea is similar to the one for Amegic. First
+    the wrapper around hte individual processes is instantiated, then the processes themselves
+    are initialized through a call to InitializeProcesses. If this was successful, a 2 is returned, 
+    otherwise a 0 is returned, resulting in a controlled end of the run.
+  */
+  /*!
+    \fn int Matrix_Element_Handler::InitializeAmegic(MODEL::Model_Base *,
+			                             BEAM::Beam_Spectra_Handler *,
+                                                     PDF::ISR_Handler *)
+    Initializes the Amegic object, i.e. in this method this object is instantiated. By calling its
+    method InitializeProcesses the processes will be read in and their amplitudes and libraries
+    will be constructed and eventually stored in libraries. If the libraries are already
+    available, i.e. constructed, compiled and linked, obviuosly this step of storing them is
+    unneccessary. In this case, Amegic and te Matrix_Element_Handler are ready for the run
+    and 1 is returned. If some libraries still have to be compiled, 0 is returned, resulting in 
+    a controlled end of the run.
+  */
+  /*!
+    \fn bool Matrix_Element_Handler::UnweightedEvent()
+    Returns .true. if the generation of an unweighted event succeeded in a user-defined number of
+    trials.
+  */
+  /*!
+    \fn double Matrix_Element_Handler::WeightedEvent()
+    Returns the weight of a new weighted event in \f$1/GeV^2\f$.
+  */
+  /*!
+    \fn Matrix_Element_Handler::Matrix_Element_Handler(std::string,std::string,
+                                                       MODEL::Model_Base *,
+	    		                               BEAM::Beam_Spectra_Handler *,
+                                                       PDF::ISR_Handler *)
+    In the constructor the Data_Read object is initialized and the way to calculate
+    matrix elements is read in. At the moment this is either through Amegic or through some 
+    simple matrix lements of EXTRAXS. These matrix elements are immediately instantiated,
+    via either InitializeAmegic or through InitializeSimpleXS. Also, the mode for single 
+    event generation is defined to be either "Unweighted" or "Weighted".
+  */
+  /*!
+    \fn Matrix_Element_Handler::~Matrix_Element_Handler()
+    Here the initialized matrix elements are deleted.
+  */
+  /*!
+    \fn bool Matrix_Element_Handler::CalculateTotalXSecs()
+    This method evaluates the total cross sections for the processes initialized before.
+    For the case of Amegic an option is available - but not yet fully implemented and tested -
+    to read in the total cross sections, maxima and the a-priori weights for the multi-channel 
+    integrator as well as the random number seed. It can not be overstressed that this is quite
+    a dangerous option and that it is hte users duty to ensure that the parameters of the
+    actual and reference run coincide.
+  */
+  /*!
+    \fn bool Matrix_Element_Handler::PrepareXSecTables()
+    Empty at the moment. We have to think whether we need this.
+  */
+  /*!
+    \fn bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string)
+    Empty at the moment. We have to think whether we need this.
+  */
+  /*!
+    \fn bool Matrix_Element_Handler::GenerateOneEvent()
+    Generates one event, according to m_eventmode this is either a weighted or an unweighted event.
+    This is done by the corresponding methods.
+  */
+  /*!
+    \fn bool Matrix_Element_Handler::GenerateSameEvent()
+    Generates a new kinematical configuration for a given flavour composition of an event. This is
+    important if the matrix elements are merged with the parton showers.
+  */
+  /*!
+    \fn std::string Matrix_Element_Handler::SignalGenerator()
+    Returns the user-defined name of the signal process generator he chose.
+  */
+  /*!
+    \fn std::string Matrix_Element_Handler::Name()
+    The name of the initialized matrix elements.
+  */
+  /*!
+    \fn std::string Matrix_Element_Handler::ProcessName()
+    The name of the actual process for which an event was generated through GenerateOneEvent() or
+    GenerateSameEvent(). 
+  */
+  /*!
+    \fn int Matrix_Element_Handler::Nin()
+    The number of incoming particles of the actual process for which an event was generated through 
+    GenerateOneEvent() or GenerateSameEvent(). 
+  */
+  /*!
+    \fn int Matrix_Element_Handler::Nout()
+    The number of outgoing particles of the actual process for which an event was generated through 
+    GenerateOneEvent() or GenerateSameEvent(). 
+  */
+  /*!
+    \fn ATOOLS::Vec4D * Matrix_Element_Handler::Momenta()
+    The momenta of all particles of the actual process for which an event was generated through 
+    GenerateOneEvent() or GenerateSameEvent(). 
+  */
+  /*!
+    \fn ATOOLS::Flavour * Matrix_Element_Handler::Flavs()
+    The flavours of all particles of the actual process for which an event was generated through 
+    GenerateOneEvent() or GenerateSameEvent(). 
+  */
+  /*!
+    \fn int Matrix_Element_Handler::NumberOfDiagrams()
+    This is a method to extract the number of diagrams if the matrix elements generator of choice 
+    is Amegic.
+  */
+  /*!
+    \fn AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int)
+    This is a method to extract an actual diagrams if the matrix elements generator of choice 
+    is Amegic.
+  */
+  /*!
+    \fn EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS()
+    This is a method to extract the EXTRAXS::XS_Base in case the simple matrix elements are the user's
+    choice.
+  */
+  /*!
+    \fn int Matrix_Element_Handler::MaxJets()
+    The maximal number of jets of all hard processes.
+  */
+  /*!
+    \fn double Matrix_Element_Handler::Weight()
+    The weight of the last weighted event.
+  */    
 }
 #endif
 

@@ -8,21 +8,19 @@ using namespace ATOOLS;
 Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
 			       MODEL::Model_Base * _model,
 			       PDF::ISR_Handler * _isr,int _maxjet) :
-  m_dir(_dir), m_file(_file), p_isr(_isr), m_maxjetnumber(_maxjet),
+  m_dir(_dir), m_file(_file), m_maxjetnumber(_maxjet),
   p_apacic(NULL)
 {
-  p_dataread = new Data_Read(m_dir+m_file);
-  Switch::code flag = Switch::On;
-  
+  p_dataread        = new Data_Read(m_dir+m_file);
   m_showergenerator = p_dataread->GetValue<std::string>("SHOWER_GENERATOR",std::string("Apacic"));
   m_isrshowerswitch = 0;
-  if (p_isr) {
-     if (p_isr->On()>0) m_isrshowerswitch = p_dataread->GetValue<int>("ISR_SHOWER",1);
+  if (_isr) {
+     if (_isr->On()>0) m_isrshowerswitch = p_dataread->GetValue<int>("ISR_SHOWER",1);
   }
   m_fsrshowerswitch = p_dataread->GetValue<int>("FSR_SHOWER",1);
   
   if (m_showergenerator==std::string("Apacic")) {
-    p_apacic = new APACIC::Hard_Interface(p_isr,_model,
+    p_apacic = new APACIC::Hard_Interface(_isr,_model,
 					  m_maxjetnumber,m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
   }
   else {

@@ -14,7 +14,7 @@ Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _fil
 					       MODEL::Model_Base * _model,
 					       BEAM::Beam_Spectra_Handler * _beam,
 					       PDF::ISR_Handler * _isr) :
-  p_amegic(NULL), p_simplexs(NULL), m_dir(_dir), m_file(_file), m_mode(0), m_weight(1.)
+  m_dir(_dir), m_file(_file), p_amegic(NULL), p_simplexs(NULL), m_mode(0), m_weight(1.)
 {
   p_dataread = new Data_Read(m_dir+m_file);
   m_signalgenerator  = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
@@ -58,7 +58,7 @@ int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
 						BEAM::Beam_Spectra_Handler * _beam,
 						PDF::ISR_Handler * _isr) 
 {
-  m_name    = string("Simple X-section");
+  m_name     = string("Simple X-section");
   p_simplexs = new EXTRAXS::SimpleXSecs(m_dir,m_file,_model);
   if (p_simplexs->InitializeProcesses(_beam,_isr)) return 2;
   return 0;
@@ -106,8 +106,7 @@ bool Matrix_Element_Handler::LookUpXSec(double,bool,std::string) {};
 bool Matrix_Element_Handler::GenerateOneEvent() 
 {
   if (m_eventmode) return UnweightedEvent();
-  m_weight=WeightedEvent();
-  m_weight*=rpa.Picobarn();
+  m_weight = WeightedEvent() * rpa.Picobarn();
   return (m_weight>0.);
 }
 
