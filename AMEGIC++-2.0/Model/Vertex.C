@@ -523,7 +523,7 @@ void Vertex::TexOutput()
 	sf.close();
       }
       
-      char help[17];
+      char help[30];
       sprintf(help,"./tex/Vertex3_%i.tex",fmfcount);
 
       sf.open(help);
@@ -677,7 +677,7 @@ void Vertex::TexOutput()
 	sf.close();
       }
       
-      char help[17];
+      char help[30];
       sprintf(help,"./tex/Vertex4_%i.tex",fmfcount);
       sf.open(help);
       sf<<"\\documentclass[a4paper,10pt]{article}"<<endl;
