@@ -97,6 +97,12 @@ void Single_XS::OptimizeResult()
 
 void Single_XS::ResetMax(int flag)
 {
+  if (flag==3) {
+    m_vsmax.clear();
+    m_vsn.clear();
+    m_max=0.0;
+    return;
+  }
   if (flag==0) {
     if (m_vsmax.size()>1) {
       m_vsmax.erase(m_vsmax.begin());
