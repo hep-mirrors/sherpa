@@ -50,6 +50,10 @@ namespace PHASIC {
     // inline functions
     inline void   SetOverflow(double overflow) { m_overflow=overflow; }
     inline double Overflow()                   { return m_overflow;   }
+    
+    virtual long int Points() = 0;
+    virtual double   Total() = 0;
+    virtual double   TotalError() = 0;
 
   };// end of class Integrable_Base
 

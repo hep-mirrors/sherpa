@@ -122,7 +122,13 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   int over = 0;
   int saveiter = 0;
 
-  for (n=1;n<=nmax;n++) {
+  for (n=psh->Process()->Points();n<=nmax;n++) {
+    if (!rpa.gen.CheckTime()) {
+      ATOOLS::msg.Error()<<om::bold<<"Phase_Space_Integrator::Calculate(): "
+			 <<om::reset<<om::red<<" Timeout ! Abort calculation."<<om::reset<<std::endl;
+      break;
+    }
+
     value = psh->Differential();
 
     if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->AddPoint(value);    
@@ -248,7 +254,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
     }
 #endif
 
-    if ((!(n%iter)) || (n==maxopt)) {
+    if (!(n%iter) || n==maxopt) {
 #ifndef _USE_MPI_ // non MPI mode
       msg.Tracking()<<" n="<<n<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
       if ((n<=maxopt) && (endopt<2)) {

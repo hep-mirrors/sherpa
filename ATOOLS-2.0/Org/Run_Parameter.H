@@ -9,6 +9,7 @@
 #include "Flavour.H"
 #include "Matrix.H"
 #include "Function_Base.H"
+#include "MyTiming.H"
 
 #define DEVELOP
 #ifndef DEVELOP
@@ -41,6 +42,8 @@ namespace ATOOLS {
       Model_Type::code    m_modelcode;
       MODEL::Model_Base * p_model;
 #endif
+      MyTiming m_timer;
+      double m_timeout;
     public:
       inline long   NumberOfEvents()                      { return m_nevents; }
       inline long   RandomSeed()                          { return m_seed;    }
@@ -55,6 +58,10 @@ namespace ATOOLS {
       inline const  Flavour Beam2()            { return m_beam2; }
       inline void   SetBeam1(const Flavour _b) { m_beam1     = _b; }
       inline void   SetBeam2(const Flavour _b) { m_beam2     = _b; }
+      inline void      SetTimeOut(const long int timeout) { m_timeout=timeout; }
+      inline double    TimeOut()                          { return m_timeout;  }
+      inline MyTiming &Timer()                            { return m_timer;    }
+      bool CheckTime(const double limit=0.);
 #ifndef USING__ATOOLS_only
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
       inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }

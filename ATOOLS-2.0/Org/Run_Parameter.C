@@ -23,6 +23,7 @@ Run_Parameter::Run_Parameter()
 
 void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
 {
+  gen.m_timer.Start();
   m_path        = path;
   Data_Read dr(m_path+file);
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);
@@ -31,6 +32,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   // read only if defined (no error message if not defined)
   gen.m_seed               = dr.GetValue<long>("RANDOM_SEED");
   if (gen.m_seed==NotDefined<long>()) gen.m_seed=1234;
+  gen.m_timeout            = dr.GetValue<double>("TIMEOUT");
+  if (gen.m_timeout<0.) gen.m_timeout=0.;
+  rpa.gen.m_timer.Start();
   double ycut=dr.GetValue<double>("YCUT");
   if (ycut!=NotDefined<double>()) gen.m_ycut=ycut;
 
@@ -45,6 +49,19 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   if (gen.m_seed!=1234) ran.SetSeed(gen.m_seed);
 }
 
-Run_Parameter::~Run_Parameter() { }
+Run_Parameter::~Run_Parameter() 
+{ 
+  if (msg.Level()>=1) gen.m_timer.PrintTime();
+}
+
+bool Run_Parameter::Gen::CheckTime(const double limit)
+{ 
+  if (limit==0.) {
+    if (m_timeout>0.) return m_timer.UserTime()<m_timeout;
+  }
+  else {
+    return m_timer.UserTime()<limit;
+  }
+}
 
 

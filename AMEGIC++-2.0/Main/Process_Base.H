@@ -215,6 +215,12 @@ namespace AMEGIC {
 
     virtual void               PrintDifferential() = 0;
 
+    inline void SetSum(const double sum)       { m_totalsum=sum;       }
+    inline void SetSqrSum(const double sqrsum) { m_totalsumsqr=sqrsum; }
+    inline void SetPoints(const long int n)    { m_n=n;                }
+
+    long int Points();
+
   };
 }
 

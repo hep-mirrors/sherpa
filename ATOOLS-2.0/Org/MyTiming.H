@@ -18,6 +18,8 @@ namespace ATOOLS {
     void Start();
     void Stop();
     void PrintTime();
+    double SystemTime();
+    double UserTime();
   };
 
   /*!

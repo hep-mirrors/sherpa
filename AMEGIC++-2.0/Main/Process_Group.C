@@ -405,7 +405,8 @@ bool Process_Group::Find(string _name,Process_Base *& _proc)
 
 void Process_Group::WriteOutXSecs(std::ofstream & _to)
 {
-  _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl;
+  _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
+     <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<endl;
   for (int i=0;i<m_procs.size();i++) m_procs[i]->WriteOutXSecs(_to);
 }
 
@@ -705,16 +706,17 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
   }
   else {
     char filename[100];
-    sprintf(filename,"%s.xstotal",(_resdir+string("/")+m_name).c_str());
+    sprintf(filename,"%s.xs_tot",(_resdir+string("/")+m_name).c_str());
     string _name;
-    double _totalxs,_totalerr,_max;
+    double _totalxs,_totalerr,_max, sum, sqrsum;
+    long int n;
     if (_resdir!=string("")) {
       if (IsFile(filename)) {
 	ifstream from;
 	bool okay=1;
 	from.open(filename);
 	while (from) {
-	  from>>_name>>_totalxs>>_max>>_totalerr;
+	  from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n;
 	  if (_name==m_name) m_totalxs += _totalxs;
 	  msg.Events()<<"Found result : xs for "<<_name<<" : "
 		      <<_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -724,6 +726,9 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	  if (Find(_name,_proc)) {
 	    _proc->SetTotal(_totalxs);
 	    _proc->SetMax(_max);
+	    _proc->SetSum(sum);
+	    _proc->SetSqrSum(sqrsum);
+	    _proc->SetPoints(n);
 	  }
 	  else {
 	    okay = 0;
@@ -731,22 +736,21 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	}
 	from.close();
 	p_ps->ReadIn(_resdir+string("/MC_")+m_name);
-
 	if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
 	if (p_ps->ISRIntegrator() != 0)  p_ps->ISRIntegrator()->Print();
 	if (p_ps->FSRIntegrator() != 0)  p_ps->FSRIntegrator()->Print();
-	if (m_totalxs>0.) {
+	p_ps->InitIncoming();
+	if (m_totalxs<=0.) {
+	  msg.Error()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
+		     <<"   Something went wrong : Negative xsec : "<<m_totalxs<<endl;
+	  return 0;
+	}
+	else {
 	  if (okay) {
 	    msg.Debugging()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
 			   <<"   Found all xsecs. Continue"<<endl;
 	    SetTotalXS(2);
-	    return 1;
 	  }
-	}
-	else {
-	  msg.Error()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
-		     <<"   Something went wrong : Negative xsec : "<<m_totalxs<<endl;
-	  return 0;
 	}
       }
     }

@@ -63,3 +63,16 @@ void MyTiming::PrintTime()
   }
 }
 
+double MyTiming::SystemTime()
+{
+  double clk_tck=100.;
+  SetCurrent();
+  return (currenttms.tms_stime-starttms.tms_stime)/clk_tck;
+}
+
+double MyTiming::UserTime()
+{
+  double clk_tck=100.;
+  SetCurrent();
+  return (currenttms.tms_utime-starttms.tms_utime)/clk_tck;
+}

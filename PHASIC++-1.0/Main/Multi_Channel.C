@@ -10,7 +10,7 @@ using namespace std;
 #include <mpi++.h>
 #endif
 
-Multi_Channel::Multi_Channel(string _name) : fl(NULL), s1(NULL), s2(NULL)
+Multi_Channel::Multi_Channel(string _name) : fl(NULL), s1(NULL), s2(NULL), m_readin(false)
 {
   string help;
   int    pos;
@@ -70,20 +70,21 @@ void Multi_Channel::Reset()
 {
   if (s1==0) s1 =  new double[channels.size()];
   if (s2==0) s2 =  new double[channels.size()];
-
-  s1xmin     = 1.e32;
-  n_points   = 0;  
-  n_contrib  = 0;
-  m_result     = 0.;
-  m_result2    = 0.;
-
+  if (!m_readin) {
+    s1xmin     = 1.e32;
+    n_points   = 0;  
+    n_contrib  = 0;
+    m_result     = 0.;
+    m_result2    = 0.;
+  }
   msg.Tracking()<<"Channels for "<<name<<endl
 		<<"----------------- "<<n_points<<" --------------------"<<endl;
   for(short int i=0;i<channels.size();i++) {
-    channels[i]->Reset(1./channels.size());
+    if (!m_readin) channels[i]->Reset(1./channels.size());
     msg.Tracking()<<" "<<i<<" : "<<channels[i]->Name()<<"  : "<<channels[i]->Alpha()<<endl;
   }
   msg.Tracking()<<"----------------- "<<n_points<<" --------------------"<<endl;
+  m_readin=false;
 }
 
 void Multi_Channel::ResetOpt() 
@@ -471,7 +472,7 @@ void Multi_Channel::WriteOut(std::string pID) {
   ofstream ofile;
   ofile.open(pID.c_str());
 
-  ofile<<channels.size()<<" "<<name<<endl;
+  ofile<<channels.size()<<" "<<name<<" "<<n_points<<" "<<n_contrib<<" "<<m_result<<" "<<m_result2<<endl;
   ofile.precision(12);
   for (int i=0;i<channels.size();i++) 
     ofile<<channels[i]->Name()<<" "<<channels[i]->Alpha()<<endl;
@@ -481,7 +482,7 @@ void Multi_Channel::WriteOut(std::string pID) {
 bool Multi_Channel::ReadIn(std::string pID) {
   ifstream ifile;
   ifile.open(pID.c_str());
-
+  if (ifile.bad()) return false;
   int         _size;
   std::string _name;
   double      _alpha;
@@ -493,6 +494,8 @@ bool Multi_Channel::ReadIn(std::string pID) {
 	       <<"  "<<_name<<" vs. "<<name<<endl;
     return 0;
   }
+  m_readin=true;
+  ifile>>n_points>>n_contrib>>m_result>>m_result2;
 
   double sum=0;
   for (int i=0;i<channels.size();i++) {

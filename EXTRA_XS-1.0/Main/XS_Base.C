@@ -221,3 +221,13 @@ void XS_Base::SetMax(double _max)
 { 
   m_max = _max;   
 }
+
+long int XS_Base::Points() 
+{ 
+  return m_n; 
+}
+
+double XS_Base::TotalError() 
+{
+  return m_totalsumsqr;
+}

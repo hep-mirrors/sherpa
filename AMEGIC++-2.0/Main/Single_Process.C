@@ -806,18 +806,22 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
   msg.Events()<<"In Single_Process::CalculateTotalXSec("<<_resdir<<") for "<<m_name<<endl; 
   
   string _name;
-  double _totalxs,_totalerr,_max;
+  double _totalxs,_totalerr,_max,sum,sqrsum;
+  long int n;
   char filename[100];
   sprintf(filename,"%s.xstotal",(_resdir+string("/")+m_name).c_str());
   if (_resdir!=string("")) {
     if (IsFile(filename)) {
       ifstream from;
       from.open(filename,ios::in);
-      from>>_name>>_totalxs>>_totalerr>>_max;
+      from>>_name>>_totalxs>>_max>>_totalerr>>sum>>sqrsum>>n;
       if (_name==m_name) {
 	m_totalxs  = _totalxs;
 	m_totalerr = _totalerr; 
 	m_max      = _max;
+	m_n        = n;
+	m_totalsum = sum;
+	m_totalsumsqr = sqrsum;
       }
       msg.Events()<<"Found result : xs for "<<m_name<<" : "
 		  <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -828,9 +832,9 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
       if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
       if (p_ps->ISRIntegrator()  != 0) p_ps->ISRIntegrator()->Print();
       if (p_ps->FSRIntegrator()  != 0) p_ps->FSRIntegrator()->Print();
+      p_ps->InitIncoming();
 
-      if (m_totalxs>=0.) return 1;
-      return 0;
+      if (m_totalerr<=p_ps->Error()*m_totalxs) return 1;
     }
   }
   m_totalxs = p_ps->Integrate();
@@ -859,7 +863,8 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 
 void Single_Process::WriteOutXSecs(std::ofstream & _to)    
 { 
-  _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<endl; 
+  _to<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
+     <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<endl; 
 }
 
 bool Single_Process::Find(std::string _name,Process_Base *& _proc)  

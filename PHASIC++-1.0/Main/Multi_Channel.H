@@ -34,6 +34,7 @@ namespace PHASIC {
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
     std::vector<Single_Channel *> channels;
+    bool m_readin;
   public:
     Multi_Channel(std::string);
     ~Multi_Channel();
@@ -97,6 +98,7 @@ namespace PHASIC {
     inline double               Result()    { return m_result; }
     inline std::string          Name()      { return name; }
     std::string                 ChID(int);
+
   };
 
 

@@ -60,7 +60,6 @@ namespace PHASIC {
     bool MakeISRChannels();
     bool CreateBeamChannels();
     bool CreateISRChannels();
-    bool InitIncoming(double _mass=-1.);
   public:
     Phase_Space_Handler(Integrable_Base *,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Phase_Space_Handler();
@@ -78,6 +77,7 @@ namespace PHASIC {
     ATOOLS::Blob_Data_Base *  SameWeightedEvent();
     void   AddPoint(double);
     void   TestPoint(ATOOLS::Vec4D *);
+    bool   InitIncoming(double _mass=-1.);
 
     // Simple access methods.
 
@@ -95,6 +95,10 @@ namespace PHASIC {
     inline Single_Channel * FSRIntegrator(int i)      { return fsrchannels->Channel(i); }
     inline channelinfos   & BeamParameters()          { return beam_params; } 
     inline channelinfos   & ISRParameters()           { return isr_params; } 
+
+    inline Integrable_Base *const Process() const { return proc; }
+
+    inline double Error() const { return error; }
 
     void ISRChannels(int i,Channel_Info & ci) {
       if (i<(int)isr_params.size()) {

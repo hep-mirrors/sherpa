@@ -115,6 +115,10 @@ namespace EXTRAXS {
     virtual void SwapInOrder();
     virtual void RestoreInOrder();
     int InSwaped();
+
+    long int Points();
+    double   TotalError();
+
   };
 
   inline int                        XS_Base::Nin()                   { return m_nin; }
@@ -140,6 +144,7 @@ namespace EXTRAXS {
   inline void XS_Base::SetTotal(double _total)           { m_totalxs = _total;       }
   inline void XS_Base::SetName(std::string _name)        { m_name    = _name;        }
   inline void XS_Base::SetSelected(XS_Base *_p_selected) { p_selected = _p_selected; }
+
 }
 
 #endif
