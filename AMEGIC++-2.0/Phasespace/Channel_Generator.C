@@ -16,11 +16,12 @@ using namespace ATOOLS;
 using namespace std;
 
 Channel_Generator::Channel_Generator(int _nin,int _nout,Flavour * _fl,
-                                     Point * _plist,int) 
+                                     Point * _plist,int _aid) 
   : Channel_Generator_Base(_nin,_nout,_fl,_plist)
 {
   IdentifyProps(plist);
   m_idstr = string("");
+  m_aid = _aid;
 }
 
 Channel_Generator::~Channel_Generator() { }
