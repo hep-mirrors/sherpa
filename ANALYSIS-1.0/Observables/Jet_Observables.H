@@ -22,7 +22,7 @@ namespace ANALYSIS {
 
     Jet_Observable_Base(unsigned int type,double xmin,double xmax,int nbins,
 			unsigned int mode, unsigned int minn, unsigned int maxn, 
-			const std::string & =std::string("FinalState"));
+			const std::string & =std::string("Jets"));
 
     void Evaluate(const ATOOLS::Particle_List &,double, int);
     void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
@@ -42,7 +42,7 @@ namespace ANALYSIS {
   public:
     Jet_Eta_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 			 unsigned int mode,unsigned int minn,unsigned int maxn, 
-			 const std::string & =std::string("FinalState"));
+			 const std::string & =std::string("Jets"));
 
     double Calc(const ATOOLS::Particle *);
     Primitive_Observable_Base * Copy() const ;
@@ -53,7 +53,7 @@ namespace ANALYSIS {
   public:
     Jet_PT_Distribution(unsigned int type,double xmin,double xmax,int nbins,
 			unsigned int mode,unsigned int minn,unsigned int maxn, 
-			const std::string & =std::string("FinalState"));
+			const std::string & =std::string("Jets"));
     double Calc(const ATOOLS::Particle *);
     Primitive_Observable_Base * Copy() const ;
   };
