@@ -15,6 +15,13 @@ using namespace std;
 using namespace ATOOLS;
 using namespace ADICIC;
 
+  Recoil_Calculator::~Recoil_Calculator() {
+    --s_count;
+#ifdef RECOIL_CALCULATOR_OUTPUT
+    std::cout<<"  ~Recoil_Calculator\n";
+#endif
+  }
+
 
 
 
