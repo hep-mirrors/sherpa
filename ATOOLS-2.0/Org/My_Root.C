@@ -69,7 +69,6 @@ void My_Root::PrepareTerminate()
 
 bool My_Root::AddObject(TObject *const object,const std::string &key) 
 { 
-  std::cout<<key<<" "<<object<<std::endl;
   if (m_objects.find(key)==m_objects.end()) {
     m_objects.insert(String_Object_Map::value_type(key,object)); 
     return true;
