@@ -3,6 +3,8 @@
 
 using namespace MYROOT;
 
+My_Root *MYROOT::myroot=NULL;
+
 My_Root::My_Root(const int argc,char **const argv):
   p_file(NULL),
   m_draw(false)
@@ -15,6 +17,9 @@ My_Root::My_Root(const int argc,char **const argv):
   reader->SetString(inputstring);
   if (!reader->ReadFromString(path,"ROOT_PATH")) path="./";
   if (!reader->ReadFromString(file,"ROOT_FILE")) file="output.root";
+  if (reader->ReadFromString(inputstring,"DRAW_ROOT_RESULTS")) {
+    if (inputstring=="YES") m_draw=true;
+  }
   delete reader;
 #else
   path="./";
@@ -36,7 +41,6 @@ My_Root::My_Root(const int argc,char **const argv):
 My_Root::~My_Root() 
 {
   Draw();
-  p_root->Run(kTRUE);
   if (p_file!=NULL) {
     p_file->Write();
     delete p_file;
@@ -52,19 +56,20 @@ void My_Root::Draw()
     new TCanvas(oit->first.c_str(),oit->first.c_str());
     oit->second->Draw();
   }
+  p_root->Run(kTRUE);
 }
 
 #ifndef USING__My_Root_only
 void My_Root::PrepareTerminate()
 {
   Draw();
-  p_root->Run(kTRUE);
   if (p_file!=NULL) p_file->Write();
 }
 #endif
 
 bool My_Root::AddObject(TObject *const object,const std::string &key) 
 { 
+  std::cout<<key<<" "<<object<<std::endl;
   if (m_objects.find(key)==m_objects.end()) {
     m_objects.insert(String_Object_Map::value_type(key,object)); 
     return true;

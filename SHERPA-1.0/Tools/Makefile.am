@@ -21,6 +21,11 @@ if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
 
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+endif
+
 lib_LTLIBRARIES       =	libSherpaTools.la
 libSherpaTools_la_SOURCES     =	\
 				Kinematics.C \
@@ -41,9 +46,10 @@ noinst_HEADERS        =	\
 			Event_Reader.H
 
 EXTRA_DIST    =	$(CVSINCLUDE)
-AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS)
+AM_CXXFLAGS   =	$(SHERPAFLAGS) $(CLHEPFLAGS) $(ROOTFLAGS)
 INCLUDES      =	$(SHERPAINCS) $(AMISICINCS) $(APACICINCS) $(MODELINCS) \
-		$(PDFINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ANALYSISINCS)
+		$(PDFINCS) $(ATOOLSINCS) $(CLHEPINCS) $(ANALYSISINCS) \
+		$(ROOTINCS)
 
 
 

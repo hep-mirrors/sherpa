@@ -1,4 +1,5 @@
 #ifdef ROOT_SUPPORT
+
 #ifndef My_Root_H
 #define My_Root_H
 
@@ -15,14 +16,14 @@
 #endif
 
 namespace MYROOT {
-
+  
 #ifndef USING__My_Root_only
   class My_Root: public ATOOLS::Terminator_Object, public ATOOLS::File_IO_Base {
 #else
   class My_Root {
 #endif
   public:
-    
+      
     typedef std::map<const std::string,TObject *const> String_Object_Map;
 
   private: 
@@ -67,9 +68,10 @@ namespace MYROOT {
 
   };// end of class My_Root
 
-  My_Root *myroot;
+  extern My_Root *myroot;
   
 }// end of namespace MYROOT
 
 #endif
+
 #endif
