@@ -2,6 +2,7 @@
 #define Analysis_Handler_H
 
 #include "Exception.H"
+#include "Primitive_Detector.H"
 #include "Primitive_Analysis.H"
 #include "Final_Selector.H"
 #include "Particle_List.H"
@@ -21,10 +22,11 @@ namespace SHERPA {
     void Output();
   };
 
-  class Analysis_Handler: public ATOOLS::Terminator_Object  {
+  class Analysis_Handler { //: public ATOOLS::Terminator_Object  {
     std::string  m_phase, m_outputpath;
     std::string  m_prefix;
 
+    ANALYSIS::Primitive_Detector             * p_detector;
     ANALYSIS::Primitive_Analysis             * p_analysis;
     std::vector<Observable_Data *>             m_obsdata;
     std::multimap<ATOOLS::Flavour,std::string> m_subsamples;
@@ -32,14 +34,15 @@ namespace SHERPA {
     int  m_qualifier;
     int  m_mode;
 
+    void ReadInDetector(std::ifstream *);
     void ReadInFinalSelectors(std::ifstream *,ANALYSIS::Final_Selector *&);
     void ReadInObservables(std::ifstream *);
     void SetUpObservables();
-    // This is the place to add specific observables ....
     void SetUpSubSamples();
     void PrepareTerminate();
   public:
-    Analysis_Handler(std::ifstream *,std::string=std::string("Hadrons"),const std::string& =std::string(""));
+    Analysis_Handler(std::ifstream *,std::string=std::string("Hadrons"),
+		     const std::string& =std::string(""));
     ~Analysis_Handler();
     void DoAnalysis(ATOOLS::Blob_List * const, double);
     void Clear()        { p_analysis->ClearAllData(); }
