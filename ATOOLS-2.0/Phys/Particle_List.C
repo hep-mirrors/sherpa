@@ -20,7 +20,7 @@ namespace ATOOLS {
   std::ostream & operator<<(std::ostream & s, const Particle_List & pl) {
     s<<"Particle List with "<<pl.size()<<" elements"<<std::endl;
     for (Particle_List::const_iterator pit=pl.begin(); pit!=pl.end(); ++pit) {
-      s<<(*pit)<<std::endl; // note still pointer of particle!
+      s<<**pit<<std::endl;
     }
     return s;
   }
