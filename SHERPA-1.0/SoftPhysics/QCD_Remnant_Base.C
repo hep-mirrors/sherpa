@@ -58,11 +58,11 @@ bool QCD_Remnant_Base::AdjustColours(ATOOLS::Particle *particle,unsigned int old
   if (m_adjusted.find(particle)!=m_adjusted.end()) m_singlet.insert(particle);
   m_adjusted.insert(particle);
   if (!force && (particle->GetFlow(1)==newc || particle->GetFlow(2)==newc)) {
-//     msg_Tracking()<<"QCD_Remnant_Base::AdjustColours(..): "
-// 			  <<"Created colour singlet. Retry."<<std::endl;
+    msg_Tracking()<<"QCD_Remnant_Base::AdjustColours(..): "
+		  <<"Created colour singlet. Retry."<<std::endl;
     return singlet=true;
   }
-  //  msg_Debugging()<<*particle<<" "<<oldc<<" -> "<<newc<<" "<<anti<<" "<<forward<<std::endl;
+  msg_Debugging()<<*particle<<" "<<oldc<<" -> "<<newc<<" "<<anti<<" "<<forward<<std::endl;
   if ((forward && particle->DecayBlob()==NULL) ||
       (!forward && particle->ProductionBlob()==NULL)) {
     return true;
@@ -166,7 +166,7 @@ ATOOLS::Particle *QCD_Remnant_Base::FindDisconnected(ATOOLS::Particle *final,
   for (short unsigned int set=0;set<2;++set) {
     for (size_t i=0;i<m_parton[set].size();++i) {
       if (m_adjusted.find(m_parton[set][i])==m_adjusted.end()) {
-	//	msg_Debugging()<<"take "<<m_parton[set][i]<<" "<<" "<<final<<std::endl;
+	msg_Debugging()<<"take "<<m_parton[set][i]<<" "<<" "<<final<<std::endl;
 	selected=m_parton[set][i];
       }
       else if (m_initial==2) {
@@ -189,7 +189,7 @@ ATOOLS::Particle *QCD_Remnant_Base::FindClosest(ATOOLS::Particle *final,
 	ATOOLS::Particle *end=m_finder.FindConnected(m_parton[set][i]);
 	double dist=end->Momentum().PPerp(final->Momentum());
 	if (min>dist && dist>0. && m_parton[set][i]->GetFlow(2-anti)!=0) {
-	  //	  msg_Debugging()<<"compare "<<m_parton[set][i]<<" "<<end<<" "<<" "<<final<<std::endl;
+	  msg_Debugging()<<"compare "<<m_parton[set][i]<<" "<<end<<" "<<" "<<final<<std::endl;
 	  min=dist;
 	  selected=m_parton[set][i];
 	}
@@ -202,7 +202,7 @@ ATOOLS::Particle *QCD_Remnant_Base::FindClosest(ATOOLS::Particle *final,
 bool QCD_Remnant_Base::SelectCompanion(QCD_Remnant_Info *const cur) 
 {
   PROFILE_HERE;
-  //  msg_Debugging()<<"look for "<<*cur<<std::endl;
+  msg_Debugging()<<"look for "<<*cur<<std::endl;
   m_finder.SetColour(1+!*cur,(*cur)->GetFlow(1+!cur));
   ++*cur=m_finder.FindConnected((*cur)(),true);
   m_adjusted.clear();

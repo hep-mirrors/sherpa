@@ -74,7 +74,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
   }
   // decompose hadron
   SortRemnants();
-  //  msg_Debugging()<<*p_beamblob<<std::endl;
+  msg_Debugging()<<*p_beamblob<<std::endl;
   if (!SelectCompanions()) return false;
   if (m_initial>1) if (!ConnectRemnants()) return false;
   if (!AttachLastRemnants()) return false;
@@ -93,7 +93,7 @@ bool Hadron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
       }
     }
   }
-  //  msg_Debugging()<<*p_beamblob<<p_beamblob->CheckMomentumConservation()<<std::endl;
+  msg_Debugging()<<*p_beamblob<<p_beamblob->CheckMomentumConservation()<<std::endl;
   return true;
 }
 
@@ -203,18 +203,19 @@ bool Hadron_Remnant::AttachLastRemnants()
   if (m_constit[0].IsAnti()) anti=anti.Bar();
   if (constit==NULL) {
     constit=m_sorted[m_sorted.size()-1];
-    //  if (constit!=NULL) msg_Debugging()<<"c<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n"<<*constit<<std::endl;
+    if (constit!=NULL) msg_Debugging()<<"c<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n"<<*constit<<std::endl;
     ATOOLS::Particle *newpart[3];
     newpart[0] = new ATOOLS::Particle(-1,part); 
     newpart[1] = new ATOOLS::Particle(-1,anti); 
     if (newpart[0]->Flav().IsAnti()) std::swap<ATOOLS::Particle*>(newpart[0],newpart[1]);
     newpart[0]->SetFlow(1,ATOOLS::Flow::Counter());
+//     newpart[0]->SetFlow(1,(*constit)(1)->GetFlow(2));
     p_beamblob->RemoveOutParticle((*constit)(1));
-    //    msg_Debugging()<<"-> "<<*newpart[0]<<"\n-> "<<*newpart[1]<<"\n-> "<<*(*(*constit)[1])(0)<<"\n-> "<<*(*(*constit)[0])(1)<<std::endl;
+    msg_Debugging()<<"-> "<<*newpart[0]<<"\n-> "<<*newpart[1]<<"\n-> "<<*(*(*constit)[1])(0)<<"\n-> "<<*(*(*constit)[0])(1)<<std::endl;
     bool singlet=false;
     unsigned int old=(*constit)(1)->GetFlow(2);
     if (!AdjustColours((*constit)(1),old,newpart[0]->GetFlow(1),singlet,false)) return false;
-    //    msg_Debugging()<<"singlet: "<<old<<" "<<newpart[0]->GetFlow(1)<<" "<<singlet<<" "<<*(*constit)(1)<<std::endl;
+    msg_Debugging()<<"singlet: "<<old<<" "<<newpart[0]->GetFlow(1)<<" "<<singlet<<" "<<*(*constit)(1)<<std::endl;
     if (singlet) {
       newpart[2] = new ATOOLS::Particle(-1,ATOOLS::kf::gluon);
       m_parton[0].push_back(newpart[2]);
@@ -222,7 +223,7 @@ bool Hadron_Remnant::AttachLastRemnants()
       newpart[2]->SetFlow(2,newpart[0]->GetFlow(1));
       p_beamblob->AddToOutParticles(newpart[2]);
       ++m_last;
-      //      msg_Debugging()<<"inserted "<<newpart[2]<<std::endl;
+      msg_Debugging()<<"inserted "<<newpart[2]<<std::endl;
     }
     newpart[1]->SetFlow(2,(*(*constit)[1])(0)->GetFlow(1)); 
     p_beamblob->AddToOutParticles((*constit)(1));
