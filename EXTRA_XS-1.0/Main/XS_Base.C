@@ -126,10 +126,12 @@ double XS_Base::Scale(const ATOOLS::Vec4D *momenta)
     m_scale=(momenta[0]+momenta[1]).PPerp2();
     return m_scale=pow(pow(m_scale,6.)*pow(MZ,1.),2./(12.+1.));
   case 11:
-    pt2=4.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
+    pt2=2.*m_s*m_t*m_u/(m_s*m_s+m_t*m_t+m_u*m_u);
     return m_scale=pt2;
   case 12:
     return m_scale=(momenta[0]+momenta[1]).PPerp2();
+  case 20:
+    return 1.;
   default:
     return m_scale=m_s;
   }

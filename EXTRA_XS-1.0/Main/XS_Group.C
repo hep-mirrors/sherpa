@@ -119,7 +119,8 @@ void XS_Group::SelectOne()
 
 void XS_Group::WriteOutXSecs(std::ofstream &outfile)
 {
-  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "<<m_n<<std::endl;
+  outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
+	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<std::endl;
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->WriteOutXSecs(outfile);
 }
 
@@ -164,7 +165,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       m_channels = true;
     }
     std::string filename=resultpath+std::string("/")+m_name+std::string(".xstotal"), singlename;
-    double singlexs, singleerr, singlemax;
+    double singlexs, singleerr, singlemax, singlesum, singlesumsqr;
     long unsigned int singlen;
     if (resultpath!=std::string("")) {
       std::ifstream infile;
@@ -172,7 +173,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       infile.open(filename.c_str());
       if (infile.good()) {
 	do {
-	  infile>>singlename>>singlexs>>singlemax>>singleerr>>singlen;
+	  infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;
 	  ATOOLS::msg.Events()<<"Found result: xs for "<<singlename<<" : "
 			      <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
 			      <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
@@ -180,9 +181,10 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	  XS_Base *xs=Matching(singlename);
 	  if (xs!=NULL) {
 	    xs->SetTotalXS(singlexs);
+	    xs->SetTotalError(singleerr);
 	    xs->SetMax(singlemax,false);
-	    xs->SetSum(singlemax);
-	    xs->SetSumSqr(singlemax);
+	    xs->SetSum(singlesum);
+	    xs->SetSumSqr(singlesumsqr);
 	    xs->SetPoints(singlen);
 	    --hits;
 	  }
