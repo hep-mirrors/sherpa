@@ -8,7 +8,10 @@
 
 #include "Running_AlphaS.H"
 #include "Combined_Selector.H"
+
+#include "Random.H"
 #include "prof.hh"
+
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -39,7 +42,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
 			       Pol_Info * _pl,int _nex,Flavour * _ex_fl) :
   Process_Base(_nin,_nout,_fl,_isr,_beam,_gen_str,_orderQCD,_orderEW,
 	       _scalescheme,_kfactorscheme,_scalefactor,_scale,_pl,_nex,_ex_fl),
-  p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this)
+  p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
+  m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
   m_newlib   = false;
   m_libnumb  = 0;
@@ -703,13 +707,6 @@ bool Single_Process::FoundMappingFile(std::string & MEname, std::string & PSname
 }
 
 
-void Single_Process::InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *> _obs) {
-  p_analysis = new ATOOLS::Primitive_Analysis(this->Name());
-  for (int i=0;i<_obs.size();i++) {
-    p_analysis->AddObservable(_obs[i]->GetCopy());
-  }
-  m_analyse  = 1;
-}
 
 /*------------------------------------------------------------------------------
   
@@ -765,7 +762,6 @@ void Single_Process::Minimize()
   if (p_sel)      { delete p_sel;      p_sel      = 0; }
   if (p_cuts)     { delete p_cuts;     p_cuts     = 0; }
   if (p_ps)       { delete p_ps;       p_ps       = 0; }
-  if (p_analysis) { delete p_analysis; p_analysis = 0; }
 }
 
 void Single_Process::Empty() {
@@ -778,7 +774,6 @@ void Single_Process::Empty() {
 
 void Single_Process::SetTotalXS(int _tables)  { 
   if (_tables!=2) {
-    if (m_analyse) p_analysis->FinishAnalysis(m_resdir+string("/Tab")+m_name,_tables);
     m_totalxs  = m_totalsum/m_n; 
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
@@ -942,7 +937,6 @@ void Single_Process::AddPoint(const double value) {
   //     m_save_max = 0.;
   //   }
   if (value>m_save_max) m_save_max = value;
-  if (m_analyse) p_analysis->DoAnalysis(value*rpa.Picobarn());
 }
 
 double Single_Process::Differential(ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
@@ -960,13 +954,17 @@ double Single_Process::DSigma(ATOOLS::Vec4D* _moms,bool lookup)
     if (_moms[i][0] < p_fl[i].PSMass()) return m_last = 0.;
   }
   if (p_partner == this) {
-    m_lastdxs = operator()(_moms);
+    if (m_helsample) {
+      if (!m_inithelsample) InitializeHelicityWeights();
+      m_lastdxs = operator()(_moms,SelectedHelicity());
+    }
+    else m_lastdxs = operator()(_moms);
   }
   else {
     if (lookup) m_lastdxs = p_partner->LastXS();
            else m_lastdxs = p_partner->operator()(_moms);
   }
-  if (m_lastdxs <= 0.)                  return m_lastdxs = m_last = 0.;
+  if (m_lastdxs <= 0.) return m_lastdxs = m_last = 0.;
   if (m_nin==2) {
     m_lastlumi = p_isr->Weight(p_flin);
     int    pols[2] = {p_pl[0].type[0],p_pl[1].type[0]};
@@ -1030,9 +1028,9 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
 
 
 bool   Single_Process::OneEvent(double _mass) { return p_ps->OneEvent(_mass); }
-bool   Single_Process::SameEvent()            { return (p_ps->SameEvent()); }
-double Single_Process::WeightedEvent()        { return (p_ps->WeightedEvent()); }
-double Single_Process::SameWeightedEvent()    { return (p_ps->SameWeightedEvent()); }
+bool   Single_Process::SameEvent()            { return p_ps->SameEvent(); }
+ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent()     { return p_ps->WeightedEvent(); }
+ATOOLS::Blob_Data_Base * Single_Process::SameWeightedEvent() { return p_ps->SameWeightedEvent(); }
 
 
 
@@ -1061,3 +1059,151 @@ void Single_Process::PrintDifferential()
   ATOOLS::msg.Out()<<m_name<<" : "<<m_last<<" -> "
 		      <<m_lastdxs<<" @ "<<m_lastlumi<<", "<<endl;
 }
+
+
+/*------------------------------------------------------------------------------
+  
+  Stuff to sample over helicities
+
+  ------------------------------------------------------------------------------*/
+
+void Single_Process::InitializeHelicityWeights()
+{
+  int activehels = 0, active = 0;
+  for (int i=0;i<p_hel->MaxHel();i++) {
+    if (p_hel->On(i)) {
+      active++,
+      activehels += p_hel->Multiplicity(i);
+    }
+  }
+
+  double alpha_start = 1./activehels;
+  double alpha;
+  for (int i=0;i<p_hel->MaxHel();i++) {
+    if (p_hel->On(i)) {
+      alpha = alpha_start * p_hel->Multiplicity(i);
+      m_helnumbers.push_back(i);
+      m_helalphas.push_back(alpha);
+      m_helalphasaves.push_back(alpha);
+      m_helresults.push_back(0.);
+      m_helresults2.push_back(0.);
+      m_helthrows.push_back(0);
+    }
+  }
+  m_throws        = 0;
+  m_helnumber     = m_helnumbers.size();
+  m_inithelsample = true;
+  if (msg.Level()>1) {
+    msg.Out()<<"Initialize sampling over helicities."<<std::endl
+	     <<"   Found "<<active<<" active helicities with the following weights: "<<std::endl;
+    for (int i=0;i<m_helnumber;i++) {
+      msg.Out()<<"   "<<i<<"("<<m_helnumber<<") : "<<m_helnumbers[i]<<" * "
+	       <<p_hel->Multiplicity(m_helnumbers[i])<<" -> "<<m_helalphas[i]<<std::endl;
+    }
+  }
+}
+
+const int Single_Process::SelectedHelicity()
+{
+  if (m_throws>0 && (!(m_throws%1000))) OptimizeHelicityWeights();
+  double disc = ran.Get();
+  int hel;
+  for (hel=0;hel<m_helnumber;hel++) {
+    disc -= m_helalphas[hel];
+    if (disc<=0.) break;
+  }
+  if (hel>=m_helnumber) {
+    msg.Error()<<"Warning in Single_Process::SelectedHelicity() after "<<m_throws<<std::endl;
+    hel = m_helnumber-1;
+  }
+  return hel;
+}
+
+void Single_Process::OptimizeHelicityWeights()
+{
+  short int i;
+
+  double aptot = 0.;
+  for (i=0;i<m_helnumber;i++) {
+    if (m_helthrows[i]>0) m_helresults2[i]  = sqrt(m_helresults[i]/m_helthrows[i]);
+                     else m_helresults2[i]  = 0.;
+    aptot              += m_helalphas[i]*m_helresults2[i];
+  }
+
+  double s1x = 0.;  
+  for (i=0;i<m_helnumber;i++) {
+    if (dabs(aptot-m_helresults2[i])>s1x) s1x = dabs(aptot-m_helresults2[i]);
+    if (m_helthrows[i]>0)        m_helalphas[i] *= m_helresults2[i]/aptot;
+    if (m_helalphas[i] < 1.e-8 ) m_helalphas[i] = 0.;
+  }
+
+  double norm = 0;
+  for (i=0;i<m_helnumber;i++) norm += m_helalphas[i];
+  for (i=0;i<m_helnumber;i++) {
+    m_helresults[i] = 0.;
+    m_helthrows[i]  = 0;
+    m_helalphas[i] /= norm;
+  }
+
+  msg.Tracking()<<"After Optimize Helicity Weights for "<<m_name<<" after "<<m_throws<<" throws: "<<std::endl; 
+  for (i=0;i<m_helnumber;i++) {
+    msg.Tracking()<<i<<" th helicity: "<<m_helnumbers[i]<<"("<<p_hel->Multiplicity(m_helnumbers[i])
+		  <<"), alpha = "<<m_helalphas[i]<<std::endl;
+  }
+
+  double variance = (m_throws*m_helresult2)/((m_throws-1)*ATOOLS::sqr(m_helresult)) - 1./(m_throws-1);
+  if (variance>0.) variance = m_helresult/m_throws * sqrt(variance);
+  else {
+    msg.Error()<<"Negative variance."<<std::endl;
+    variance = m_helresult/m_throws * sqrt(-variance);
+  }
+
+  msg.Tracking()<<"S1X: "<<s1x<<", variance : "<<variance<<std::endl
+		<<"result,result2,n: "<<m_helresult<<", "
+		<<m_helresult2<<", "<<m_throws<<std::endl
+		<<"-----------------------------------------------"<<endl;
+}
+
+
+double Single_Process::operator()(ATOOLS::Vec4D * mom,const int hel)
+{
+  if (!p_shand->Is_String()) {
+    msg.Error()<<"Error in Single_Process::operator()(ATOOLS::Vec4D * p,int hel)"<<std::endl
+	       <<"   Sampling over helicities in processes implemented only for libs."<<std::endl
+	       <<"   Will abort the run. Check for libraries."<<std::endl;
+    abort();
+  }
+#ifndef Explicit_Pols   
+  Vec4D gauge(sqrt(3.),1.,1.,1.);
+  
+  if (m_nout==4) gauge = mom[4];
+  if (m_nout==5) gauge = mom[4];
+  if (m_nout==6) gauge = mom[4];
+  
+  m_pol.Set_Gauge_Vectors(m_nin+m_nout,mom,gauge);
+#endif
+
+  p_BS->CalcEtaMu(mom);
+  p_shand->Calculate();
+
+  int acthel = m_helnumbers[hel];
+
+  double M2  = p_ampl->Differential(acthel) * 
+               p_hel->PolarizationFactor(acthel) * 
+               sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS))/m_helalphas[hel]; 
+
+  AddToHelicity(M2,hel);
+  return M2;
+}
+
+
+void Single_Process::AddToHelicity(const double M2,const int hel)
+{
+  m_throws++;
+  m_helresult        += M2;
+  m_helresult2       += M2*M2;
+
+  m_helthrows[hel]++;
+  m_helresults[hel]  += M2;
+}
+

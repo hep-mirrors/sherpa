@@ -7,6 +7,7 @@
 #include "Helicity.H"
 #include "Amplitude_Handler.H"
 #include "Standard_Selector.H"
+#include <vector>
 
 namespace AMEGIC {
   class Single_Process : public Process_Base {
@@ -57,28 +58,27 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   protected :
-    int              Tests();
-    int              CheckLibraries();
-    int              CheckStrings(Single_Process*);
-    void             WriteLibrary();
-    std::string      CreateLibName();
-    void             CreateMappingFile();
-    bool             CreateChannelLibrary();
+    int                 Tests();
+    int                 CheckLibraries();
+    int                 CheckStrings(Single_Process*);
+    void                WriteLibrary();
+    std::string         CreateLibName();
+    void                CreateMappingFile();
+    bool                CreateChannelLibrary();
   public:
-    bool             NewLibs() {return m_newlib;}
-    bool             FoundMappingFile(std::string &,std::string &);
-    int              InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
-				   std::vector<Single_Process *> &,std::vector<Single_Process *> &,
-				   int &,int &);
-    int              InitAmplitude(Interaction_Model_Base *,Topology *);
-    void             InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>);
-    void             InitDecay(Topology* top); 
-    bool             SetUpIntegrator();
-    bool             IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); }
-    String_Handler * GetStringHandler()             { return p_shand;}
-    Amplitude_Handler * GetAmplitudeHandler()       { return p_ampl;}
-    Helicity *       GetHelicity()                  { return p_hel; }    
-    double           Result()                       { return m_iresult; } 
+    bool                NewLibs() {return m_newlib;}
+    bool                FoundMappingFile(std::string &,std::string &);
+    int                 InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
+				      std::vector<Single_Process *> &,std::vector<Single_Process *> &,
+				      int &,int &);
+    int                 InitAmplitude(Interaction_Model_Base *,Topology *);
+    void                InitDecay(Topology* top); 
+    bool                SetUpIntegrator();
+    bool                IsFreeOfFourVertex(Point * _p) { return 1-p_ampl->ExistFourVertex(_p); }
+    String_Handler    * GetStringHandler()             { return p_shand;}
+    Amplitude_Handler * GetAmplitudeHandler()          { return p_ampl;}
+    Helicity *          GetHelicity()                  { return p_hel; }    
+    double              Result()                       { return m_iresult; } 
 
     /*------------------------------------------------------------------------------
 
@@ -120,8 +120,8 @@ namespace AMEGIC {
     double         operator()(ATOOLS::Vec4D *);
     bool           OneEvent(double = -1.);
     bool           SameEvent();
-    double         WeightedEvent();
-    double         SameWeightedEvent();
+    ATOOLS::Blob_Data_Base * WeightedEvent();
+    ATOOLS::Blob_Data_Base * SameWeightedEvent();
     int            NumberOfDiagrams();
     Point        * Diagram(int i);
 
@@ -132,7 +132,29 @@ namespace AMEGIC {
       ------------------------------------------------------------------------------*/
   public:
     void           PrintDifferential();
-   };
+    /*------------------------------------------------------------------------------
+
+      Stuff to sample over helicities
+      
+      ------------------------------------------------------------------------------*/
+  private:
+    bool                    m_helsample,m_inithelsample;
+    std::vector<int>        m_helnumbers;
+    std::vector<double>     m_helalphas, m_helalphasaves;
+    std::vector<double>     m_helresults, m_helresults2;
+    std::vector<long int>   m_helthrows;
+    long int                m_throws;
+    int                     m_helnumber;
+    double                  m_helresult, m_helresult2;
+
+    void           InitializeHelicityWeights();
+    const int      SelectedHelicity();
+    void           AddToHelicity(const double,const int);
+    void           OptimizeHelicityWeights();
+    double         operator()(ATOOLS::Vec4D *,const int);
+  public:
+    void           SetHelicitySampling(bool _helsample) { m_helsample = _helsample; }
+  };
 }
 
 
