@@ -505,10 +505,10 @@ bool Final_State_Shower::TestShower(Tree * tree)
 {
   bool do_ana=1;
   
-  Primitive_Analysis ana;
+  Primitive_Analysis ana("testanalysis",0);
   Jetrates * sobs =new Jetrates(11,1.e-6,1.,180,0);
   ana.AddObservable(sobs);
-  ana.AddObservable(new Multiplicity(00,-0.5,50.5,51,0));
+  ana.AddObservable(new Multiplicity(00,-0.5,50.5,51,0,"FinalState"));
   
   double E2 = sqr(rpa.gen.Ecms());
   double E  =rpa.gen.Ecms()*0.5;

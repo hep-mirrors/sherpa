@@ -173,7 +173,10 @@ void Initial_State_Shower::SingleExtract(Knot * kn,int beam,Blob * jet,
     jet = new Blob();
     jet->SetStatus(1);
     jet->SetId(bl->size());
-    jet->SetType(std::string("IS Shower (APACIC++2.0)"));
+    if (is_is)
+      jet->SetType(std::string("IS Shower (APACIC++2.0)"));
+    else 
+      jet->SetType(std::string("FS Shower *(APACIC++2.0)"));
     bl->insert(bl->begin(),jet);
 
     if (!kn->prev) jet->SetBeam(beam);
