@@ -1,0 +1,34 @@
+#ifndef Amisic_IC
+#define Amisic_IC
+
+#include "Amisic.H"
+
+namespace AMISIC {
+
+  inline void Amisic::SetInputFile(std::string _m_inputfile)
+  { m_inputfile=_m_inputfile; }
+
+  inline std::string Amisic::GetInputFile()
+  { return m_inputfile; }
+
+  inline void Amisic::SetEnvironmentFile(std::string _m_environmentfile)
+  { m_environmentfile=_m_environmentfile; }
+
+  inline std::string Amisic::GetEnvironmentFile()
+  { return m_environmentfile; }
+
+  inline void Amisic::SetInputDirectory(std::string _m_inputdirectory)
+  { m_inputdirectory=_m_inputdirectory; }
+
+  inline std::string Amisic::GetInputDirectory()
+  { return m_inputdirectory; }
+
+  inline void Amisic::SetOutputDirectory(std::string _m_outputdirectory)
+  { m_outputdirectory=_m_outputdirectory; }
+
+  inline std::string Amisic::GetOutputDirectory()
+  { return m_outputdirectory; }
+
+} // end of namespace AMISIC
+
+#endif

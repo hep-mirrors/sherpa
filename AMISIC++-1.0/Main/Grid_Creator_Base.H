@@ -1,0 +1,118 @@
+#ifndef Grid_Creator_Base_H
+#define Grid_Creator_Base_H
+
+#include "Grid_Handler.H"
+
+namespace AMISIC { template <class Argument_Type,class Result_Type>
+		   class Grid_Handler;                              }
+
+namespace AMISIC {
+
+  template <class Argument_Type,class Result_Type>
+  class Grid_Creator_Arguments {
+  public:
+    
+    typedef Argument_Type GridArgumentType;
+    typedef Result_Type GridResultType;
+    
+  protected:
+    
+    GridArgumentType m_gridxmin, m_gridxmax, m_griddeltaxmax, m_griddeltaxmin;
+    GridResultType   m_gridymin, m_gridymax, m_griddeltaymax, m_griddeltaymin;
+    
+  public:
+    
+    std::string m_gridxvariable, m_gridxscaling;
+    std::string m_gridyvariable, m_gridyscaling;
+    
+    bool m_useymax, m_useymin;
+    
+    bool m_relativexmin, m_relativedeltaxmin;
+    bool m_relativeymin, m_relativedeltaymin;
+    
+    int m_outputlevel;
+    
+  public:
+    
+    // constructor
+    Grid_Creator_Arguments();
+    
+    // setters
+    void SetGridXMin(GridArgumentType _m_gridxmin);
+    void SetGridXMax(GridArgumentType _m_gridxmax);
+    void SetGridDeltaXMin(GridArgumentType _m_griddeltaxmin);
+    void SetGridDeltaXMax(GridArgumentType _m_griddeltaxmax);
+    void SetGridYMin(GridResultType _m_gridymin);
+    void SetGridYMax(GridResultType _m_gridymax);
+    void SetGridDeltaYMin(GridResultType _m_griddeltaymin);
+    void SetGridDeltaYMax(GridResultType _m_griddeltaymax);
+    
+    // getters
+    GridArgumentType GridXMin();
+    GridArgumentType GridXMax();
+    GridArgumentType GridDeltaXMin();
+    GridArgumentType GridDeltaXMax();
+    GridResultType   GridYMin();
+    GridResultType   GridYMax();
+    GridResultType   GridDeltaYMin();
+    GridResultType   GridDeltaYMax();
+    
+  }; // end of class Arguments
+
+  template <class Argument_Type,class Result_Type>
+  class Grid_Creator_Base: public Grid_Creator_Arguments<Argument_Type,Result_Type> {
+  public:
+    
+    typedef Argument_Type GridArgumentType;
+    typedef Result_Type GridResultType;
+
+    typedef Grid_Handler<GridArgumentType,GridResultType> GridHandlerType;
+    typedef Grid_Creator_Arguments<GridArgumentType,GridResultType> ArgumentsType;
+
+  protected:
+
+    GridHandlerType      *p_gridhandler;
+
+    virtual bool InitializeCalculation();
+    virtual GridResultType CalculateSingleValue(GridArgumentType nextleft,
+						GridArgumentType nextright);
+    
+  private:
+
+    std::string m_inputfile, m_outputfile;
+
+    bool CreateInitialGrid();
+    bool CreateOptimizedGrid();
+
+  public:
+
+    // constructors
+    Grid_Creator_Base(GridHandlerType *_p_gridhandler);
+
+    // destructor
+    virtual ~Grid_Creator_Base();
+    
+    // setters
+    void SetInputFile(std::string _m_outputfile);
+    void SetOutputFile(std::string _m_outputfile);
+    bool SetArguments(ArgumentsType _m_arguments);
+
+    // getters
+    std::string InputFile();
+    std::string OutputFile();
+    ArgumentsType Arguments();
+
+    // member functions
+    bool ReadInArguments(std::string tempifile=ATOOLS::nullstring);
+    bool CreateGrid(std::string tempofile=ATOOLS::nullstring);
+    bool WriteOutGrid(std::string tempofile=ATOOLS::nullstring,
+		      std::vector<std::string> addcomments=std::vector<std::string>(0));
+    
+  }; // end of class Grid_Creator_Base
+
+} // end of namespace AMISIC
+
+#include "Grid_Creator_Base.IC"
+#include "Grid_Creator_Base.C"
+
+#endif

@@ -1,0 +1,42 @@
+#ifndef Axis_IC
+#define Axis_IC
+
+#include "Axis.H"
+
+namespace ATOOLS {
+
+  template <class Value_Type>
+  inline void Axis<Value_Type>::SetVariable(ATOOLS::Variable _m_variable)
+  { m_variable=_m_variable; }
+
+  template <class Value_Type>
+  inline ATOOLS::Variable Axis<Value_Type>::GetVariable()
+  { return m_variable; }
+
+  template <class Value_Type>
+  inline void Axis<Value_Type>::SetScalingMode(ScalingMode _m_scalingmode)
+  { m_scalingmode=_m_scalingmode; }
+
+  template <class Value_Type>
+  inline typename ATOOLS::Axis<Value_Type>::ScalingMode Axis<Value_Type>::GetScalingMode()
+  { return m_scalingmode; }
+
+  template <class Value_Type>
+  inline void Axis<Value_Type>::SetScaling(ATOOLS::Scaling_Base<ValueType> *_p_scaling)
+  { delete p_scaling; p_scaling=_p_scaling; }
+
+  template <class Value_Type>
+  inline Scaling_Base<Value_Type> *Axis<Value_Type>::GetScaling()
+  { return p_scaling; }
+
+  template <class Value_Type>
+  inline Value_Type Axis<Value_Type>::operator()(ValueType realvalue)
+  { return DisplayedValue(realvalue,Unknown); }
+  
+  template <class Value_Type>
+  inline Value_Type Axis<Value_Type>::operator[](ValueType displayedvalue)
+  { return RealValue(displayedvalue,Unknown); }
+  
+} //end of namespace ATOOLS
+
+#endif

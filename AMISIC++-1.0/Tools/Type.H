@@ -1,0 +1,50 @@
+#ifndef Type_H
+#define Type_H
+
+#include "My_String.H"
+#include "My_Stringstream.H"
+#include "My_Filestream.H"
+
+namespace ATOOLS {
+
+  class Type {
+  public:
+
+    enum ID { TChar     =  1,
+	      TShort    =  2,
+	      TInt      =  3,
+	      TLong     =  4,
+	      TFloat    =  5,
+	      TDouble   =  6,
+	      TString   =  7,
+	      TIStream  = 11,
+	      TOStream  = 12,
+	      TIFStream = 13,
+	      TOFStream = 14,
+	      TFStream  = 15,
+	      TUnknown  = 99 };
+
+  public:
+
+    // member functions
+    ID GetType();
+    ID GetType(char&);
+    ID GetType(short int&);
+    ID GetType(int&);
+    ID GetType(long int&);
+    ID GetType(float&);
+    ID GetType(double&);
+    ID GetType(std::string&);
+    ID GetType(std::istream&);
+    ID GetType(std::ostream&);
+    ID GetType(std::ifstream&);
+    ID GetType(std::ofstream&);
+    ID GetType(std::fstream&);
+
+  }; // end of class Type
+
+} // end of namespace ATOOLS
+
+#include "Type.IC"
+
+#endif

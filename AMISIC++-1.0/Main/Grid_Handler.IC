@@ -1,0 +1,45 @@
+#ifndef Grid_Handler_IC
+#define Grid_Handler_IC
+
+#include "Grid_Handler.H"
+
+namespace AMISIC {
+
+  template <class Argument_Type,class Result_Type>
+  inline void Grid_Handler<Argument_Type,Result_Type>::
+  SetStreamType(ATOOLS::Type::ID _m_streamtype)
+  { m_streamtype=_m_streamtype; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline ATOOLS::Type::ID Grid_Handler<Argument_Type,Result_Type>::
+  GetStreamType()
+  { return m_streamtype; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline void Grid_Handler<Argument_Type,Result_Type>::
+  SetStreamName(std::string _m_streamname)
+  { m_streamname=_m_streamname; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline std::string Grid_Handler<Argument_Type,Result_Type>::
+  GetStreamName()
+  { return m_streamname; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline ATOOLS::Data_To_Function<Argument_Type,Result_Type> 
+  *Grid_Handler<Argument_Type,Result_Type>::Grid()
+  { return p_grid; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type Grid_Handler<Argument_Type,Result_Type>::
+  operator()(GridArgumentType x)
+  { return (*p_grid)(x); }
+  
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type Grid_Handler<Argument_Type,Result_Type>::
+  operator[](GridResultType y)
+  { return (*p_grid)[y]; }
+  
+} // end of namespace AMISIC
+
+#endif

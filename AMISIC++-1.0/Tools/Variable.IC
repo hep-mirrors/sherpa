@@ -1,0 +1,28 @@
+#ifndef Variable_IC
+#define Variable_IC
+
+#include "Variable.H"
+
+namespace ATOOLS {
+
+  inline void Variable::SetType(Type _m_type)
+  { SetName(TypeToString(m_type=_m_type)); }
+
+  inline Variable::Type Variable::GetType()
+  { return m_type; }
+  
+  inline void Variable::SetName(std::string _m_name)
+  { m_name=_m_name; }
+
+  inline std::string Variable::GetName()
+  { return m_name; }
+
+  inline unsigned int Variable::TypeToInt(Type type)
+  { return (int)type; }
+
+  inline Variable::Type Variable::IntToType(unsigned int type)
+  { return (Type)type; }
+
+} // end of namespace ATOOLS
+
+#endif

@@ -1,0 +1,10 @@
+!-------------------------------------------------------
+!-- Phase space setup ----------------------------------
+!-------------------------------------------------------
+ERROR =  4.0e-2   ! Error by calculating matrix-elements              
+!
+INTEGRATOR = 4   ! Phasespace : Rambo=0, Rambo+Sarge=1,
+                 !              Rambo + Sarge=3,
+	         !              Rambo + Multichannel=4,
+		 !              pure Multichannel=4
+		 !              RamboKK=5 

@@ -1,0 +1,230 @@
+#ifndef Data_To_Function_IC
+#define Data_To_Function_IC
+
+#include "Data_To_Function.H"
+
+using namespace ATOOLS;
+
+namespace ATOOLS {
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::
+  SetAcquisitionMode(AcquisitionMode _m_acquisitionmode)
+  { m_acquisitionmode = _m_acquisitionmode; }
+
+  template <class Argument_Type,class Result_Type>
+  inline typename Data_To_Function<Argument_Type,Result_Type>::AcquisitionMode
+  Data_To_Function<Argument_Type,Result_Type>::GetAcquisitionMode()
+  { return m_acquisitionmode; }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::
+  SetInterpolationMode(InterpolationMode _m_interpolationmode)
+  { m_interpolationmode = _m_interpolationmode; }
+
+  template <class Argument_Type,class Result_Type>
+  inline typename Data_To_Function<Argument_Type,Result_Type>::InterpolationMode 
+  Data_To_Function<Argument_Type,Result_Type>::GetInterpolationMode()
+  { return m_interpolationmode; }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::
+  Import(Data_To_Function<ArgumentType,ResultType> &reference)
+  { Import(reference.p_xydata); }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::Sort()
+  { SortX(); SortY(); }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::Resize(unsigned int newsize)
+  {
+    p_xdata->resize(newsize); 
+    p_ydata->resize(newsize); 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline bool Data_To_Function<Argument_Type,Result_Type>::
+  AddPoint(Argument_Type x,Result_Type y)
+  {
+    ArgumentType _x=(*p_xaxis)(x);
+    ResultType _y=(*p_yaxis)(y);
+    if (p_xydata->size()!=0) {
+      if (((*p_xdata)[ClosestX(_x)]==_x)||
+	  ((*p_ydata)[ClosestY(_y)]==_y)) return false;
+    }
+    p_xdata->push_back(_x); 
+    p_ydata->push_back(_y);
+    (*p_xydata)[_x]=_y; 
+    (*p_yxdata)[_y]=_x; 
+    Sort();
+    return true;
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type Data_To_Function<Argument_Type,Result_Type>::
+  LinearY(ArgumentType x,unsigned int &left,unsigned int &right)
+  { 
+    ArgumentType xleft=(*p_xdata)[left], xright=(*p_xdata)[right];
+    ResultType yleft=(*p_xydata)[xleft], yright=(*p_xydata)[xright];
+    return yleft+(x-xleft)*((yright-yleft)/(xright-xleft)); 
+  }
+  
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type Data_To_Function<Argument_Type,Result_Type>::
+  LinearX(ResultType y,unsigned int &left,unsigned int &right)
+  { 
+    ResultType yleft=(*p_ydata)[left], yright=(*p_ydata)[right];
+    ArgumentType xleft=(*p_yxdata)[yleft], xright=(*p_yxdata)[yright];
+    return xleft+(y-yleft)*((xright-xleft)/(yright-yleft)); 
+  }
+  
+  template <class Argument_Type,class Result_Type>
+  inline unsigned int Data_To_Function<Argument_Type,Result_Type>::ClosestX(ArgumentType x)
+  {
+    unsigned int dummyleft, dummyright;
+    return ClosestX(x,dummyleft,dummyright);
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline unsigned int Data_To_Function<Argument_Type,Result_Type>::ClosestY(ResultType y)
+  {
+    unsigned int dummyleft, dummyright;
+    return ClosestY(y,dummyleft,dummyright);
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type Data_To_Function<Argument_Type,Result_Type>::DataY(ArgumentType x)
+  { return (*p_xydata)[(*p_xdata)[ClosestX(x)]]; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type Data_To_Function<Argument_Type,Result_Type>::DataX(ResultType y)
+  { return (*p_yxdata)[(*p_ydata)[ClosestY(y)]]; }
+
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type Data_To_Function<Argument_Type,Result_Type>::operator()(ArgumentType x)
+  { return Y(x,m_acquisitionmode); }
+  
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type Data_To_Function<Argument_Type,Result_Type>::operator[](ResultType y)
+  { return X(y,m_acquisitionmode); }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::
+  NormalizeY(ArgumentType xmin,ArgumentType xmax,ResultType norm)
+  { 
+    if (xmin==xmax) {
+      xmin=(*p_xdata)[0];
+      xmax=(*p_xdata)[p_xdata->size()-1];
+    }
+    ScaleY(norm/IntegrateY(xmin,xmax)); 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::
+  NormalizeX(ResultType ymin,ResultType ymax,ArgumentType norm)
+  { 
+    if (ymin==ymax) {
+      ymin=(*p_ydata)[0];
+      ymax=(*p_ydata)[p_ydata->size()-1];
+    }
+    ScaleX(norm/IntegrateX(ymin,ymax)); 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type  Data_To_Function<Argument_Type,Result_Type>::GetXMin()
+  { 
+    if (p_xdata->size()>0) return (*p_xaxis)[(*p_xdata)[0]]; 
+    else return (ArgumentType)0.0; 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type  Data_To_Function<Argument_Type,Result_Type>::GetXMax()
+  { 
+    if (p_xdata->size()>0) return (*p_xaxis)[(*p_xdata)[p_xdata->size()-1]]; 
+    else return (ArgumentType)0.0; 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type  Data_To_Function<Argument_Type,Result_Type>::GetYMin()
+  { 
+    if (p_ydata->size()>0) return (*p_yaxis)[(*p_ydata)[0]]; 
+    else return (ResultType)0.0; 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type  Data_To_Function<Argument_Type,Result_Type>::GetYMax()
+  { 
+    if (p_ydata->size()>0) return (*p_yaxis)[(*p_ydata)[p_ydata->size()-1]]; 
+    else return (ResultType)0.0; 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline int Data_To_Function<Argument_Type,Result_Type>::XPosition(ArgumentType x)
+  { 
+    int position=(int)ClosestX((*p_xaxis)(x)); 
+    if ((*p_xdata)[position]==(*p_xaxis)(x)) return position; 
+    else return -1; 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline int Data_To_Function<Argument_Type,Result_Type>::YPosition(ResultType y)
+  { 
+    int position=(int)ClosestY((*p_yaxis)(y)); 
+    if ((*p_ydata)[position]==(*p_yaxis)(y)) return position; 
+    else return -1; 
+  }
+
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type Data_To_Function<Argument_Type,Result_Type>::XData(unsigned int i)
+  { return (*p_xaxis)[(*p_xdata)[i%p_xdata->size()]]; }
+
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type Data_To_Function<Argument_Type,Result_Type>::YData(unsigned int i)
+  { return (*p_yaxis)[(*p_ydata)[i%p_ydata->size()]]; }
+
+  template <class Argument_Type,class Result_Type>
+  inline unsigned int Data_To_Function<Argument_Type,Result_Type>::XDataSize()
+  { return p_xdata->size(); }
+
+  template <class Argument_Type,class Result_Type>
+  inline unsigned int Data_To_Function<Argument_Type,Result_Type>::YDataSize()
+  { return p_ydata->size(); }
+
+  template <class Argument_Type,class Result_Type>
+  inline bool Data_To_Function<Argument_Type,Result_Type>::
+  ReplaceXPoint(ArgumentType x,ResultType y)
+  { bool success=DeleteXPoint(x); AddPoint(x,y); return success; }
+
+  template <class Argument_Type,class Result_Type>
+  inline bool Data_To_Function<Argument_Type,Result_Type>::
+  ReplaceYPoint(ArgumentType x,ResultType y)
+  { bool success=DeleteYPoint(y); AddPoint(x,y); return success; }
+
+  template <class Argument_Type,class Result_Type>
+  inline ATOOLS::Axis<Argument_Type> *Data_To_Function<Argument_Type,Result_Type>::XAxis()
+  { return p_xaxis; }
+
+  template <class Argument_Type,class Result_Type>
+  inline ATOOLS::Axis<Result_Type> *Data_To_Function<Argument_Type,Result_Type>::YAxis()
+  { return p_yaxis; }
+
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type Data_To_Function<Argument_Type,Result_Type>::GetDeltaXMax()
+  { ResultType dummyleft, dummyright; return GetDeltaXMax(dummyleft,dummyright); }
+
+  template <class Argument_Type,class Result_Type>
+  inline Argument_Type Data_To_Function<Argument_Type,Result_Type>::GetDeltaXMin()
+  { ResultType dummyleft, dummyright; return GetDeltaXMin(dummyleft,dummyright); }
+
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type Data_To_Function<Argument_Type,Result_Type>::GetDeltaYMax()
+  { ArgumentType dummyleft, dummyright; return GetDeltaYMax(dummyleft,dummyright); }
+
+  template <class Argument_Type,class Result_Type>
+  inline Result_Type Data_To_Function<Argument_Type,Result_Type>::GetDeltaYMin()
+  { ArgumentType dummyleft, dummyright; return GetDeltaYMin(dummyleft,dummyright); }
+
+} // end of namespace ATOOLS
+
+#endif
