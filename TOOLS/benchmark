@@ -10,6 +10,7 @@ ROOTSYS="/usr/local/root"
 CLHEPSYS="/usr/local/CLHEP"
 CLHEPDIR="/usr/local/CLHEP"
 COMPILECOMMAND="TOOLS/makeinstall -t"
+DIR="BENCHMARK"
 FILE="Benchmark.dat"
 SHERPAPATH="SHERPA-1.0/Run/"
 MEHANDLEREXIT=201
@@ -19,12 +20,16 @@ SetStatus() {
 }
 
 SendMail() {
-  if [ "$IO_ERROR" = "TRUE" ] ; then SetStatus "IO error " ; fi
-  if [ "$CVS_ERROR" = "TRUE" ] ; then SetStatus "CVS error " ; fi
-  if [ "$COMPILE_ERROR" = "TRUE" ] ; then SetStatus "Compile error " ; fi
-  if [ "$SETUP_ERROR" = "TRUE" ] ; then SetStatus "Setup error " ; fi
-  if [ "$BENCHMARK_ERROR" = "TRUE" ] ; then SetStatus "Benchmark error " ; fi
   echo -e "\nbenchmark: for details consider\n\n           '$PWD/$OUTPUTFILE'\n" >> $LOGFILE
+  if [ "$IO_ERROR" = "TRUE" ] ; then SetStatus "IO error " 
+  elif [ "$CVS_ERROR" = "TRUE" ] ; then SetStatus "CVS error " 
+  elif [ "$COMPILE_ERROR" = "TRUE" ] ; then SetStatus "Compile error " 
+  elif [ "$SETUP_ERROR" = "TRUE" ] ; then SetStatus "Setup error " 
+  elif [ "$BENCHMARK_ERROR" = "TRUE" ] ; then SetStatus "Benchmark error " 
+  else 
+   SetStatus "Benchmarking succeeded "
+   exit 0 
+  fi
   nail -s "$STATUS" $MAILADDRESS < $LOGFILE
   exit $1
 }
@@ -58,14 +63,17 @@ export CLHEPSYS
 export CLHEPDIR
 
 for I in $* ; do
-  if [ "$I" = "-f" ]; then DFILE=TRUE
+  if [ "$I" = "-p" ]; then DDIR=TRUE
+  elif [ "$I" = "-f" ]; then DFILE=TRUE
   elif [ "$I" = "-f" ]; then DLOGFILE=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "benchmark version 1.0" && echo && \
-    echo "options: -f <file>      specifiy benchmark points in file <file>" && \
+    echo "options: -p <path>      specifiy benchmark points in path <path>" && \
+    echo "         -f <file>      specifiy benchmark points in file <file>" && \
     echo "         -l <logfile>   write benchmarking output to <logfile>" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
+  elif [ "$DDIR" = "TRUE" ]; then DDIR="" && DIR=$I
   elif [ "$DFILE" = "TRUE" ]; then DFILE="" && FILE=$I
   elif [ "$DLOGFILE" = "TRUE" ]; then DLOGFILE="" && LOGFILE=$I
   else echo "benchmark: error: unrecognized option '$I'. try '-h'" && \
@@ -81,8 +89,21 @@ echo "" > $OUTPUTFILE
 echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n" >> $LOGFILE
 echo -e "benchmark: benchmarking started at '$HOSTNAME' ($HOSTTYPE) on `date`\n" >> $OUTPUTFILE
 LIST=""
-if [ -f $FILE ] ; then
-  GetList < $FILE
+
+rm -rf BENCHMARK
+echo -en "checking out current benchmarking points from cvs ... " >> $LOGFILE
+echo -e "checking out current benchmarking points from cvs {\n" >> $OUTPUTFILE
+if ! cvs co benchmark >> $OUTPUTFILE 2>&1 ; then
+  echo -e "checkout failed\n\nbenchmark: cvs checkout failed" >> $LOGFILE
+  echo -e "\n} checkout failed\n\nbenchmark: cvs checkout failed" >> $OUTPUTFILE
+  CVS_ERROR=TRUE
+  SendMail 1
+else 
+  echo -e "finished" >> $LOGFILE
+  echo -e "\n} finished checkout\n" >> $OUTPUTFILE
+fi
+if [ -f $DIR/$FILE ] ; then
+  GetList < $DIR/$FILE
 else
   echo -e "benchmark: reading from input file '$FILE' failed" >> $LOGFILE
   echo -e "benchmark: reading from input file '$FILE' failed\n" >> $OUTPUTFILE
@@ -114,15 +135,16 @@ else
   echo -e "\n} finished compilation\n" >> $OUTPUTFILE
 fi
 
+MAINPATH=$PWD
 for I in $LIST ; do
-  if [ ! -d $I ] ; then
+  if [ ! -d $DIR/$I ] ; then
     echo "benchmark: setup directory '$I' is missing" >> $LOGFILE
     echo "benchmark: setup directory '$I' is missing" >> $OUTPUTFILE
     SETUP_ERROR=TRUE
   else
     echo -e "benchmark: benchmarking in '$I' ... " >> $LOGFILE
     echo -e "benchmark: benchmarking in '$I' {\n" >> $OUTPUTFILE
-    cd $I
+    cd $DIR/$I
     BENCHMARK=""
     if [ -f $FILE ] ; then
       GetFiles < $FILE
@@ -133,14 +155,14 @@ for I in $LIST ; do
     fi
     CleanUp "Results Analysis"
     RUNPATH=$PWD
-    cd ../$SHERPAPATH
-    makeclean >> $RUNPATH"/../"$OUTPUTFILE 2>&1
+    cd $MAINPATH/$SHERPAPATH
+    makeclean >> $MAINPATH/$OUTPUTFILE 2>&1
     Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
-	   RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$OUTPUTFILE 2>&1
+	   RESULT_DIRECTORY=$RUNPATH"/Results/" >> $MAINPATH/$OUTPUTFILE 2>&1
     while (( $? == $MEHANDLEREXIT )) ; do
-      makelibs >> $RUNPATH"/../"$OUTPUTFILE 2>&1
+      makelibs >> $MAINPATH/$OUTPUTFILE 2>&1
       Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
-             RESULT_DIRECTORY=$RUNPATH"/Results/" >> $RUNPATH"/../"$OUTPUTFILE 2>&1
+             RESULT_DIRECTORY=$RUNPATH"/Results/" >> $MAINPATH/$OUTPUTFILE 2>&1
     done 
     cd $RUNPATH
     COUNTER=0
@@ -148,7 +170,7 @@ for I in $LIST ; do
       (( ++COUNTER ))
       if (( $COUNTER%2 == 0 )) ; then 
         NEW=$I 
-	diff -cb $NEW $OLD >> "../"$OUTPUTFILE 2>&1
+	diff -cb $NEW $OLD >> $MAINPATH/$OUTPUTFILE 2>&1
 	if (( $? != 0 )) ; then
 	  BENCHMARK_ERROR=TRUE
 	fi
@@ -158,14 +180,10 @@ for I in $LIST ; do
         echo -n
       fi
     done
-    cd ..
+    cd $MAINPATH
     echo -e "... finished" >> $LOGFILE
     echo -e "\n} benchmarking finished \n" >> $OUTPUTFILE
   fi
 done
 
-if [ ! "$BENCHMARK_ERROR" = "TRUE" ] ; then
-  SetStatus "Benchmarking succeeded "
-  exit 0
-fi
 SendMail 4
