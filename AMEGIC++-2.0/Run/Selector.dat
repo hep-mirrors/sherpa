@@ -33,6 +33,10 @@ ET        93       10.   10000.
 !PT         -23      10.   10000.
 !PT         24      10.   10000.
 !PT         21      10.   10000.
+BeamAngle   22   0  -0.9  0.9
+Angle       22   43 -0.9  0.9
+Angle       22   44 -0.9  0.9
+Energy      22       10.  100000.
 ConeFinder        0.4
 Rapidity  11     -2.5      2.5
 Rapidity -11     -2.5      2.5

@@ -1,4 +1,4 @@
-MODEL                 = SM             ! Model 
+MODEL                 = MSSM            ! Model 
 !
 GENERATOR_ON          = 1              ! use external spectrum generator
 !
@@ -37,8 +37,8 @@ HIGGS_NF_LIGHT_Q_IN_G = 5        ! Number of light flavours in higgs decays h->g
 !
 SUSY_SCENARIO         = mSUGRA  ! also available : AMSB, mGMSB, non-minimal GMSB, non-universal SUGRA,
 			        !                  SUGRA with enforced unification 
-M0                    = 200.    !
-M12                   = 200.    !
-A0                    = 100.    !
-TAN(BETA)             = 3.      !
-SIGN(MU)              = -1      !
+M0                    = 100.    !
+M12                   = 250.    !
+A0                    = -100.    !
+TAN(BETA)             = 10.      !
+SIGN(MU)              = 1      !
