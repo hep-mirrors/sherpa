@@ -18,6 +18,7 @@ namespace APHYTOOLS {
   const long int MAX_PARTICLES=50000;
 
   void ParticleInit(std::string);
+  void SetMassless();
 
   /////////////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +50,13 @@ namespace APHYTOOLS {
       Z                      = 24,
       h                      = 25,
       
+      /* ------------------------------------------
+	LED - has to get other numbers to comply 
+	       with the PDG numbering scheme
+      ------------------------------------------ */
+      graviton               = 27,
+      gscalar                = 28,
+
       /* ------------------------------------------
 	THDM - has to get other numbers to comply 
 	       with the PDG numbering scheme
@@ -554,13 +562,16 @@ namespace APHYTOOLS {
       return (IntSpin()==1);
     }
     inline bool IsBoson() const {
-      return ((IntSpin()==2) || (IntSpin()==0)); 
+      return ((IntSpin()==4) || (IntSpin()==2) || (IntSpin()==0)); 
     }
     inline bool IsScalar() const {
       return (IntSpin()==0); 
     }
     inline bool IsVector() const {
       return (IntSpin()==2); 
+    }
+    inline bool IsTensor() const {
+      return (IntSpin()==4); 
     }
     inline int LeptonFamily() const {
       if (IsLepton()) return ((abs(kfc)-9)/2);
@@ -600,7 +611,10 @@ namespace APHYTOOLS {
     }
     inline bool IsIno() {
       return (IsGluino() || IsNeutralino() || IsChargino());
-    }                                                                             
+    }                              
+    inline bool IsKK() const {
+      return (kfc==kf::graviton || kfc==kf::gscalar);
+    }
     inline bool IsLepton() const {
       if ((abs(kfc)>10) && (abs(kfc)<20)) return 1;
       return 0;      

@@ -144,6 +144,8 @@ Flavour Flavour::Bar() {
   if (flbar==Flavour(kf::h0))     return flbar;
   if (flbar==Flavour(kf::H0))     return flbar;
   if (flbar==Flavour(kf::A0))     return flbar;
+  if (flbar==Flavour(kf::graviton)) return flbar;
+  if (flbar==Flavour(kf::gscalar))  return flbar;
   if (flbar==Flavour(kf::none))   return flbar;
   if (Majorana())                 return flbar;
 
@@ -465,11 +467,30 @@ void APHYTOOLS::ParticleInit(std::string path)
 // aaaaaa-bbbbbb-ccccccc 
 // a   SM   - partons
 // b    MSSM - partons
-// c    everyting els
+// c    everything else
 // each
-// (n)nn  numer of particles in this section 
+// (n)nn  number of particles in this section 
 //      xxxx 
 // double 0.mmmmm00000 * 10^ee => int ((ee+mmmmm)&0xFFFF)rot(kf::code * number of flags + flag)
+
+// Switch off masses for SM fermions
+
+void APHYTOOLS::SetMassless()
+{
+  particles[ kf_table.ToInt(kf::d) ].msv=0;
+  particles[ kf_table.ToInt(kf::u) ].msv=0;
+  particles[ kf_table.ToInt(kf::s) ].msv=0;
+  particles[ kf_table.ToInt(kf::c) ].msv=0;
+  particles[ kf_table.ToInt(kf::b) ].msv=0;
+  //particles[ kf_table.ToInt(kf::t) ].msv=0;
+
+  particles[ kf_table.ToInt(kf::e) ].msv=0;
+  particles[ kf_table.ToInt(kf::mu) ].msv=0;
+  particles[ kf_table.ToInt(kf::tau) ].msv=0;
+  particles[ kf_table.ToInt(kf::nue) ].msv=0;
+  particles[ kf_table.ToInt(kf::numu) ].msv=0;
+  particles[ kf_table.ToInt(kf::nutau) ].msv=0;
+}
 
 int Flavour::GetIntID(double value) {
 // double 0.mmmmm00000 * 10^ee

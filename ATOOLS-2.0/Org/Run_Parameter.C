@@ -48,6 +48,8 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
   me.coulomb_corr        = dr.GetValue<Switch::code>("COULOMB");
   me.kfactorscheme       = dr.GetValue<int>("KFACTORSCHEME");
   me.scalescheme         = dr.GetValue<int>("SCALESCHEME");
+  me.orderalpha12        = dr.GetValue<int>("OrderAlpha12");
+  me.orderalphas         = dr.GetValue<int>("OrderAlphaS");
 
   // read in some consts
   dr.ReadIn(path+std::string("/")+me.model_file);
@@ -120,6 +122,8 @@ void Run_Parameter::Init(std::string _path,int argc,char* argv[])
   gen.rpa_id = dr.GenerateKey();
   //  dr.WriteOut("current_flags.log");
   //  dr.WriteOut(string("save/rpa/")+gen.rpa_id+string(".dat"));
+
+  if(gen.Masses()==Switch::Off) APHYTOOLS::SetMassless();
 }
 
 Run_Parameter::~Run_Parameter() { }
