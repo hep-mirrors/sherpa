@@ -26,7 +26,7 @@ void  All_Processes::SelectOne() {
   if (m_totalxs==0) p_selected = m_procs[int(ran.Get()*m_procs.size())];
   else {
     double disc = m_totalxs * ran.Get(); 
-    for (int i=0;i<m_procs.size();i++) {
+    for (size_t i=0;i<m_procs.size();i++) {
       disc -= m_procs[i]->TotalXS();
       if (disc<0.) {
 	p_selected = m_procs[i];
@@ -44,7 +44,7 @@ void  All_Processes::SelectOne() {
 
 void All_Processes::RescaleXSec(double) {
   double sumxs=0., summax=0.;
-  for (int i=0;i<m_procs.size();++i) {
+  for (size_t i=0;i<m_procs.size();++i) {
     sumxs +=m_procs[i]->TotalXS();
     summax+=m_procs[i]->Max();
   }
@@ -53,7 +53,7 @@ void All_Processes::RescaleXSec(double) {
 }
 
 void All_Processes::SetupEnhance() {
-  for (int i=0;i<m_procs.size();++i) {
+  for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->SetupEnhance();
   }
 }
@@ -72,7 +72,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
   bool okay     = 1;
   int totalsize = 0;
   int procs     = 0;
-  for (int i=0;i<m_procs.size();i++) {
+  for (size_t i=0;i<m_procs.size();i++) {
     msg.Tracking()<<"========================================================="<<endl
 		  <<"========================================================="<<endl
 		  <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
@@ -95,7 +95,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
   }
 
   if (okay) {
-    for (int i=0;i<links.size();i++) {
+    for (size_t i=0;i<links.size();i++) {
       msg.Tracking()<<"========================================================="<<endl
 		    <<"========================================================="<<endl
 		    <<"All_Processes::SetUpIntegrator for "<<links[i]->Name()<<endl;
@@ -104,7 +104,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
   }
   
   if (okay) {
-    for (int i=0;i<m_procs.size();i++) {
+    for (size_t i=0;i<m_procs.size();i++) {
       msg.Tracking()<<"========================================================="<<endl
 		    <<"========================================================="<<endl
 		    <<"Process_Group::SetUpIntegrator for "<<m_procs[i]->Name()<<endl;
@@ -134,7 +134,7 @@ int All_Processes::InitAllProcesses(Interaction_Model_Base * model,Topology * to
 bool All_Processes::CalculateTotalXSec(string _resdir)
 {
   bool okay = 1;
-  for (int i=0;i<m_procs.size();i++) {
+  for (size_t i=0;i<m_procs.size();i++) {
     msg.Info()<<"All_Processes::CalculateTotalXSec for "<<m_procs[i]->Name()<<endl;
     if (!(m_procs[i]->CalculateTotalXSec(_resdir))) okay = 0;
     else m_totalxs += m_procs[i]->TotalXS();
