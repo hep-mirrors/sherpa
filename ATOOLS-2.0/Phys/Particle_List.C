@@ -43,12 +43,14 @@ void Particle_List::Clear()
 
 void Particle_List::Keep(Particle_Qualifier_Base *const qual)
 {
-  for (iterator pit=begin();pit!=end();++pit) 
+  for (iterator pit=begin();pit!=end();) 
     if (!(*qual)(*pit)) pit=erase(pit);
+    else ++pit;
 }
 
-void Particle_List::Delete(Particle_Qualifier_Base *const qual)
+void Particle_List::Erase(Particle_Qualifier_Base *const qual)
 {
-  for (iterator pit=begin();pit!=end();++pit) 
+  for (iterator pit=begin();pit!=end();) 
     if ((*qual)(*pit)) pit=erase(pit);
+    else ++pit;
 }

@@ -41,7 +41,7 @@ namespace ATOOLS {
     void Clear();
 
     void Keep(Particle_Qualifier_Base *const qual);
-    void Delete(Particle_Qualifier_Base *const qual);
+    void Erase(Particle_Qualifier_Base *const qual);
     
   };// end of class Particle_List
 
