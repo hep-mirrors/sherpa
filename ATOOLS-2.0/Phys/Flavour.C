@@ -257,7 +257,8 @@ void Flavour::FromHepEvt(int code) {
   case 37:      kfc = kf::Hmin; anti = 1-anti; return; 
   case 39:      kfc = kf::graviton; return;
   case 89:      kfc = kf::gscalar; return;
-  case 92:      kfc = kf::string; return;    // string ....
+  case 91:      kfc = kf::cluster; return;   // pythia cluster ....
+  case 92:      kfc = kf::string; return;    // pythia string ....
   case 1000001: kfc = kf::sDownL; return;
   case 1000002: kfc = kf::sUpL; return;
   case 1000003: kfc = kf::sStrangeL; return;
@@ -508,6 +509,9 @@ void ATOOLS::ParticleInit(std::string path)
   *(pi++) = Part_Info( kf::fermion,  0.,0., 0, 0,0, 2,0,1,1,0,"fermion",1);
   *(pi++) = Part_Info( kf::jet,      0.,0., 0, 0,1, 0,0,1,1,0,"jet",1);
   *(pi++) = Part_Info( kf::quark,    0.,0., 0, 0,1, 2,0,1,1,0,"quark",1);
+
+  *(pi++) = Part_Info( kf::cluster,    0.,0., 0, 0,0, 0,0,1,1,0,"cluster",1);
+  *(pi++) = Part_Info( kf::string,    0.,0., 0, 0,0, 0,0,1,1,0,"string",1);
 
   *(pi++)=Part_Info( kf::none, -1,0,0,0,0,0,0,0,1,0, "no particle",1);
 

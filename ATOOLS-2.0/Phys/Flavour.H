@@ -117,6 +117,7 @@ namespace ATOOLS {
       jet                    = 93,
       quark                  = 94,
       string                 = 95,
+      cluster                = 96,
       /* ------------------------------------------
 	unspecified hadrons
       ------------------------------------------ */
