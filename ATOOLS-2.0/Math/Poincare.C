@@ -134,7 +134,7 @@ bool Poincare::CheckRotation()
   for (short unsigned i=0;i<3;++i) {
     for (short unsigned j=0;j<3;++j) {
       double test=dabs(m_mat[i+1][j+1]);
-      if (test>1.0 || test<-1.0) return false; 
+      if (test>1.0 || !(test>=0.0)) return false; 
     }
   } 
   return true;
