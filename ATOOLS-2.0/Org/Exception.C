@@ -155,7 +155,7 @@ std::ostream &ATOOLS::operator<<(std::ostream &str,const Exception &exception)
        <<"::"<<exception.m_method;
   }
   return str<<om::reset<<" throws "<<om::bold<<om::red
-	    <<exception.m_type<<om::reset<<om::bold<<": "<<om::reset<<om::red
+	    <<exception.m_type<<om::reset<<om::bold<<": "<<std::endl<<om::reset<<om::red
 	    <<exception.m_info<<om::reset;
 }
 
