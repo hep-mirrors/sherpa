@@ -66,7 +66,6 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   string      buf,ini,fin;
   int         nIS,   nFS;
   Flavour   * IS,  * FS, * flavs;
-  int         order_ew,order_strong; 
   while(from) {
     from.getline(buffer,100);
     if (buffer[0] != '%' && strlen(buffer)>0) {
@@ -244,7 +243,7 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
     p_activepshandler=m_xsecs[i]->PSHandler(false);
     m_totalxs += m_xsecs[i]->TotalXS();
   }
-  msg.Info()<<"In Simple_XS::CalculateTotalXSec() = "
+  msg_Info()<<"In Simple_XS::CalculateTotalXSec() = "
 	    <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb."<<endl;
   return okay;
 }
@@ -274,12 +273,6 @@ bool Simple_XS::OneEvent(const int mode)
   SelectOne();
   if (p_selected->OneEvent()) return 1;
   return 0;
-}
-
-ATOOLS::Blob_Data_Base *Simple_XS::WeightedEvent(const int mode)
-{
-  SelectOne();
-  return p_selected->WeightedEvent();
 }
 
 bool Simple_XS::PrepareXSecTables() 

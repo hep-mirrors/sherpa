@@ -18,7 +18,7 @@ long int Phase_Space_Integrator::nmax=10000000;
 
 double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerror) 
 {
-  msg.Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
+  msg_Info()<<"Starting the calculation. Lean back and enjoy ... ."<<endl; 
   if (maxerror >= 1.) nmax = 1;
 
   result = max = error = 0.;
@@ -41,36 +41,36 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
   int numberofchannels = 1;
 
-  msg.Tracking()<<"Integrators : "<<psh->BeamIntegrator()<<" / "
+  msg_Tracking()<<"Integrators : "<<psh->BeamIntegrator()<<" / "
 		<<psh->ISRIntegrator()<<" / "<<psh->FSRIntegrator()
 		<<" / "<<psh->KMRZIntegrator()<<" / "<<psh->KMRKPIntegrator()<<endl;
   
   if ((psh->BeamIntegrator())) {
     (psh->BeamIntegrator())->Reset();
     numberofchannels *= psh->NumberOfBeamIntegrators();
-    msg.Tracking()<<"   Found "<<psh->NumberOfBeamIntegrators()<<" Beam Integrators."<<endl;
+    msg_Tracking()<<"   Found "<<psh->NumberOfBeamIntegrators()<<" Beam Integrators."<<endl;
   }
   if ((psh->ISRIntegrator())) {
     (psh->ISRIntegrator())->Reset();
     numberofchannels *= psh->NumberOfISRIntegrators();
-    msg.Tracking()<<"   Found "<<psh->NumberOfISRIntegrators()<<" ISR Integrators."<<endl;
+    msg_Tracking()<<"   Found "<<psh->NumberOfISRIntegrators()<<" ISR Integrators."<<endl;
   }
 
   if ((psh->KMRZIntegrator())) {
     (psh->KMRZIntegrator())->Reset();
     numberofchannels *= psh->NumberOfKMRZIntegrators();
-    msg.Tracking()<<"   Found "<<psh->NumberOfKMRZIntegrators()<<" KMR z Integrators."<<endl;
+    msg_Tracking()<<"   Found "<<psh->NumberOfKMRZIntegrators()<<" KMR z Integrators."<<endl;
   }
   if ((psh->KMRKPIntegrator())) {
     (psh->KMRKPIntegrator())->Reset();
     numberofchannels *= psh->NumberOfKMRKPIntegrators();
-    msg.Tracking()<<"   Found "<<psh->NumberOfKMRKPIntegrators()<<" KMR k_\\perp Integrators."<<endl;
+    msg_Tracking()<<"   Found "<<psh->NumberOfKMRKPIntegrators()<<" KMR k_\\perp Integrators."<<endl;
   }
 
 
   (psh->FSRIntegrator())->Reset();
   numberofchannels *= psh->NumberOfFSRIntegrators();
-  msg.Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
+  msg_Tracking()<<"   Found "<<psh->NumberOfFSRIntegrators()<<" FSR integrators."<<endl;
 
   iter      = Max(1+10*int(numberofchannels),20000);
   nopt      = 25; 
@@ -274,7 +274,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
     if ((n%iter)==0 || n==maxopt) {
 #ifndef _USE_MPI_ // non MPI mode
-      msg.Tracking()<<" n="<<n<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
+      msg_Tracking()<<" n="<<n<<"  iter="<<iter<<"  maxopt="<<maxopt<<endl;
       if ((n<=maxopt) && (endopt<2)) {
 	if ((psh->BeamIntegrator())) (psh->BeamIntegrator())->Optimize(maxerror);
 	if ((psh->ISRIntegrator()))  (psh->ISRIntegrator())->Optimize(maxerror);
@@ -301,7 +301,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if ( ATOOLS::IsZero((psh->FSRIntegrator())->Result()) ) break;
       error = (psh->FSRIntegrator())->Variance()/(psh->FSRIntegrator())->Result() * 
 	(psh->FSRIntegrator())->N();
-      msg.Info()<<om::blue
+      msg_Info()<<om::blue
 		<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()*rpa.Picobarn()
 		<<" pb"<<om::reset<<" +- ( "<<om::red
 		<<(psh->FSRIntegrator())->Variance()*rpa.Picobarn()
@@ -319,7 +319,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
 
 double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double mass, double maxerror) 
 { 
-  msg.Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
+  msg_Info()<<"Starting the calculation for a decay. Lean back and enjoy ... ."<<endl; 
   
   iter      = 20000;
   nopt      = 10; 
@@ -369,7 +369,7 @@ double Phase_Space_Integrator::CalculateDecay(Phase_Space_Handler* psh,double ma
       if (ATOOLS::IsZero((psh->FSRIntegrator())->Result())) break;
       
       error = (psh->FSRIntegrator())->Variance() / (psh->FSRIntegrator())->Result()*(psh->FSRIntegrator())->N();
-      msg.Info()<<n<<". Result : "<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()
+      msg_Info()<<n<<". Result : "<<(psh->FSRIntegrator())->Result()/(psh->FSRIntegrator())->N()
 		<<" GeV"<<" +- "<<error*100<<"%"<<endl;
       if (error<maxerror) break;
     }

@@ -222,3 +222,8 @@ void XS_Base::Reset()
   m_last=m_lastlumi=m_lastdxs=0.0;
   m_totalxs=m_totalsum=m_totalsumsqr=m_totalerr=0.0;
 }
+
+ATOOLS::Blob_Data_Base *XS_Base::SameWeightedEvent()
+{
+  return p_activepshandler->SameWeightedEvent();
+}

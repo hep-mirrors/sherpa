@@ -19,21 +19,20 @@
 #include "Running_AlphaS.H"
 
 #include "Run_Parameter.H"
+#include "Blob.H"
 #include "Message.H"  
 #include "Random.H"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef PROFILE__All
-#include "prof.hh"
-#else
-#include "Blob.H"
+#ifdef PROFILE__all
+#define PROFILE__Phase_Space_Handler
+#endif
 #ifdef PROFILE__Phase_Space_Handler
 #include "prof.hh"
 #else
 #define PROFILE_HERE ;
-#endif
 #endif
 
 using namespace PHASIC;
@@ -145,22 +144,22 @@ double Phase_Space_Handler::Integrate()
       return 0.;
     }
   }
-  msg.Debugging()<<"Phase_Space_Handler::Integrate with : "<<endl;
+  msg_Debugging()<<"Phase_Space_Handler::Integrate with : "<<endl;
   if (m_nin>1) {
     if (p_beamchannels) 
-      msg.Debugging()<<"  Beam   : "<<p_beamchannels->Name()<<" ("<<p_beamchannels<<") "
+      msg_Debugging()<<"  Beam   : "<<p_beamchannels->Name()<<" ("<<p_beamchannels<<") "
 		     <<"  ("<<p_beamchannels->Number()<<","<<p_beamchannels->N()<<")"<<endl;
     if (p_isrchannels) 
-      msg.Debugging()<<"  ISR    : "<<p_isrchannels->Name()<<" ("<<p_isrchannels<<") "
+      msg_Debugging()<<"  ISR    : "<<p_isrchannels->Name()<<" ("<<p_isrchannels<<") "
 		     <<"  ("<<p_isrchannels->Number()<<","<<p_isrchannels->N()<<")"<<endl;
     if (p_zchannels) 
-      msg.Debugging()<<"  KMR Z  : "<<p_zchannels->Name()<<" ("<<p_zchannels<<") "
+      msg_Debugging()<<"  KMR Z  : "<<p_zchannels->Name()<<" ("<<p_zchannels<<") "
  		     <<"  ("<<p_zchannels->Number()<<","<<p_zchannels->N()<<")"<<endl;
     if (p_kpchannels) 
-      msg.Debugging()<<"  KMR kp : "<<p_kpchannels->Name()<<" ("<<p_kpchannels<<") "
+      msg_Debugging()<<"  KMR kp : "<<p_kpchannels->Name()<<" ("<<p_kpchannels<<") "
  		     <<"  ("<<p_kpchannels->Number()<<","<<p_kpchannels->N()<<")"<<endl;
   }
-  msg.Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
+  msg_Debugging()<<"  FSR    : "<<p_fsrchannels->Name()<<" ("<<p_fsrchannels<<") "
 		 <<"  ("<<p_fsrchannels->Number()<<","<<p_fsrchannels->N()<<")"<<endl;
   if (m_nin==2) return p_integrator->Calculate(this,m_error);
   if (m_nin==1) return p_integrator->CalculateDecay(this,sqrt(p_lab[0].Abs2()),m_error);
@@ -230,7 +229,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   p_fsrchannels->GeneratePoint(p_lab,p_cuts);
   if (!Check4Momentum(p_lab)) {
     msg.Out()<<"WARNING in Phase_Space_Handler::Differential : Check4Momentum(p) failed"<<endl;
-    for (int i=0;i<m_nin+m_nout;++i) msg.Events()<<i<<":"<<p_lab[i]
+    for (int i=0;i<m_nin+m_nout;++i) msg_Events()<<i<<":"<<p_lab[i]
  						 <<" ("<<p_lab[i].Abs2()<<")"<<endl;
     return 0.;
   }
@@ -457,7 +456,7 @@ void Phase_Space_Handler::TestPoint(ATOOLS::Vec4D *const p)
 
 void Phase_Space_Handler::WriteOut(const std::string &pID) 
 {
-  msg.Tracking()<<"Write out channels into directory : "<<pID<<endl;
+  msg_Tracking()<<"Write out channels into directory : "<<pID<<endl;
   int  mode_dir = 448;
   mkdir(pID.c_str(),mode_dir); 
   if (p_beamchannels != 0) p_beamchannels->WriteOut(pID+string("/MC_Beam"));
@@ -471,7 +470,7 @@ void Phase_Space_Handler::WriteOut(const std::string &pID)
 
 bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude) 
 {
-  msg.Info()<<"Read in channels from directory : "<<pID<<endl;
+  msg_Info()<<"Read in channels from directory : "<<pID<<endl;
   bool okay = 1;
   if (p_beamchannels!=NULL && !(exclude&1)) okay = okay && p_beamchannels->ReadIn(pID+string("/MC_Beam"));
   if (p_isrchannels!=NULL && !(exclude&2)) okay = okay && p_isrchannels->ReadIn(pID+string("/MC_ISR"));
@@ -550,12 +549,12 @@ bool Phase_Space_Handler::CreateIntegrators()
     msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<endl;
     p_fsrchannels->Add(new Rambo(m_nin,m_nout,p_flavours));
   }  
-  msg.Tracking()<<"Initialized Phase_Space_Integrator (\n\t";
-  if (p_beamchannels) msg.Tracking()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
-  if (p_isrchannels) msg.Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
-  if (p_zchannels) msg.Tracking()<<p_zchannels->Name()<<","<<p_zchannels->Number()<<";\n\t";
-  if (p_kpchannels) msg.Tracking()<<p_kpchannels->Name()<<","<<p_kpchannels->Number()<<";\n\t";
-  if (p_fsrchannels) msg.Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<endl;
+  msg_Tracking()<<"Initialized Phase_Space_Integrator (\n\t";
+  if (p_beamchannels) msg_Tracking()<<p_beamchannels->Name()<<","<<p_beamchannels->Number()<<";\n\t";
+  if (p_isrchannels) msg_Tracking()<<p_isrchannels->Name()<<","<<p_isrchannels->Number()<<";\n\t";
+  if (p_zchannels) msg_Tracking()<<p_zchannels->Name()<<","<<p_zchannels->Number()<<";\n\t";
+  if (p_kpchannels) msg_Tracking()<<p_kpchannels->Name()<<","<<p_kpchannels->Number()<<";\n\t";
+  if (p_fsrchannels) msg_Tracking()<<p_fsrchannels->Name()<<","<<p_fsrchannels->Number()<<")"<<endl;
   return 1;
 }
 

@@ -8,6 +8,15 @@
 #include "MathTools.H"
 #include "FSR_Channel.H"
 
+#ifdef PROFILE__all
+#define PROFILE__XS_Group
+#endif
+#ifdef PROFILE__XS_Group
+#include "prof.hh"
+#else
+#define PROFILE_HERE
+#endif
+
 using namespace EXTRAXS;
 
 XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *flavours,
@@ -106,8 +115,8 @@ void XS_Group::SelectOne()
       else disc-=m_xsecs[i]->TotalXS();
       if (disc<=0.) {
 	p_selected=m_xsecs[i];
-	p_selected->SelectOne();
 	p_selected->SetPSHandler(p_pshandler);
+	p_selected->SelectOne();
 	return;
       }
     }
@@ -179,7 +188,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       if (infile.good()) {
 	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;
 	do {
-	  ATOOLS::msg.Info()<<"Found result: xs for "<<singlename<<" : "
+	  msg_Info()<<"Found result: xs for "<<singlename<<" : "
 			    <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
 			    <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
 			    <<"         max : "<<singlemax<<std::endl;
@@ -228,11 +237,11 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	std::ofstream to;
 	to.open(filename.c_str(),std::ios::out);
 	to.precision(12);
-	ATOOLS::msg.Info()<<"Store result : xs for "<<m_name<<" : ";
+	msg_Info()<<"Store result : xs for "<<m_name<<" : ";
 	WriteOutXSecs(to);
-	if (m_nin==2) ATOOLS::msg.Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-	if (m_nin==1) ATOOLS::msg.Info()<<m_totalxs<<" GeV";
-	ATOOLS::msg.Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
+	if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+	if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
+	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
 			  <<"       max : "<<m_max<<std::endl;
 	p_pshandler->WriteOut(resultpath+std::string("/MC_")+m_name);
 	to.close();
@@ -253,12 +262,12 @@ void XS_Group::PrepareTerminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),std::ios::out);
   to.precision(12);
-  ATOOLS::msg.Info()<<"Store result to "<<m_resultpath<<","<<std::endl
+  msg_Info()<<"Store result to "<<m_resultpath<<","<<std::endl
 		    <<"   xs for "<<m_name<<" : ";
   WriteOutXSecs(to);
-  if (m_nin==2) ATOOLS::msg.Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
-  if (m_nin==1) ATOOLS::msg.Info()<<m_totalxs<<" GeV";
-  ATOOLS::msg.Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
+  if (m_nin==2) msg_Info()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+  if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
+  msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
 		      <<"       max : "<<m_max<<std::endl;
   p_pshandler->WriteOut(m_resultpath+std::string("/MC_")+m_name);
   to.close();
@@ -274,7 +283,7 @@ void XS_Group::SetTotal()
     m_xsecs[i]->SetTotal();
     m_max+=m_xsecs[i]->Max();
   }
-  ATOOLS::msg.Info()<<"Total XS for "<<ATOOLS::om::bold<<m_name<<" : "
+  msg_Info()<<"Total XS for "<<ATOOLS::om::bold<<m_name<<" : "
 		    <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		    <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red<<m_totalerr<<" pb = "
 		    <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl
@@ -287,16 +296,16 @@ bool XS_Group::OneEvent()
     SelectOne();
     return p_selected->OneEvent();
   }
-  return p_pshandler->OneEvent();
+  return p_activepshandler->OneEvent();
 }
 
 ATOOLS::Blob_Data_Base *XS_Group::WeightedEvent() 
 {
   if (m_atoms) {
     SelectOne();
-     return p_selected->WeightedEvent();
+    return p_selected->WeightedEvent();
   }
-  return p_pshandler->WeightedEvent();
+  return p_activepshandler->WeightedEvent();
 }
 
 void XS_Group::AddPoint(const double value) 
@@ -431,6 +440,7 @@ void XS_Group::SetPSHandler(PHASIC::Phase_Space_Handler *const pshandler)
 
 void XS_Group::ResetSelector(ATOOLS::Selector_Data *const selectordata)
 {
+  PROFILE_HERE;
   for (unsigned int i=0;i<m_xsecs.size();++i) m_xsecs[i]->ResetSelector(selectordata);
   XS_Base::ResetSelector(selectordata);
 }

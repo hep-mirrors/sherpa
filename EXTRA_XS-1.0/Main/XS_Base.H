@@ -49,6 +49,8 @@ namespace EXTRAXS {
     void SelectOne();
     void DeSelect();
 
+    ATOOLS::Blob_Data_Base *SameWeightedEvent();
+
     virtual void Reset();
     virtual void ResetSelector(ATOOLS::Selector_Data *const selectordata);
     

@@ -75,13 +75,13 @@ void Multi_Channel::Reset()
     m_result     = 0.;
     m_result2    = 0.;
   }
-  msg.Tracking()<<"Channels for "<<name<<endl
+  msg_Tracking()<<"Channels for "<<name<<endl
 		<<"----------------- "<<n_points<<" --------------------"<<endl;
   for(size_t i=0;i<channels.size();i++) {
     if (!m_readin) channels[i]->Reset(1./channels.size());
-    msg.Tracking()<<" "<<i<<" : "<<channels[i]->Name()<<"  : "<<channels[i]->Alpha()<<endl;
+    msg_Tracking()<<" "<<i<<" : "<<channels[i]->Name()<<"  : "<<channels[i]->Alpha()<<endl;
   }
-  msg.Tracking()<<"----------------- "<<n_points<<" --------------------"<<endl;
+  msg_Tracking()<<"----------------- "<<n_points<<" --------------------"<<endl;
   m_readin=false;
 }
 
@@ -142,7 +142,7 @@ void Multi_Channel::MPIOptimize(double error)
 
 void Multi_Channel::Optimize(double error)
 {
-  msg.Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
+  msg_Tracking()<<"Optimize Multi_Channel : "<<name<<endl; 
 
   double aptot = 0.;
   size_t i;
@@ -168,15 +168,15 @@ void Multi_Channel::Optimize(double error)
     for (i=0;i<channels.size();i++) channels[i]->SetAlphaSave(channels[i]->Alpha());
   }  
   for(i=0;i<channels.size();i++) channels[i]->ResetOpt();
-  msg.Tracking()<<"New weights for : "<<name<<endl
+  msg_Tracking()<<"New weights for : "<<name<<endl
 		<<"----------------- "<<n_points<<" ----------------"<<endl;
   for (i=0;i<channels.size();i++) {
     if (channels[i]->Alpha() > 0) {
-      msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()<<" : "
+      msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()<<" : "
 		    <<channels[i]->Alpha()<<" -> "<<channels[i]->AlphaSave()<<endl;
     }
   }
-  msg.Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl
+  msg_Tracking()<<"S1X: "<<s1x<<" -> "<<s1xmin<<endl
 		<<"Variance : "<<Variance()<<endl
 		<<"result,result2,n,n_contrib : "<<m_result<<", "
 		<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl
@@ -197,14 +197,14 @@ void Multi_Channel::EndOptimize(double error)
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
   for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
 
-  msg.Tracking()<<"Best weights:-------------------------------"<<endl;
+  msg_Tracking()<<"Best weights:-------------------------------"<<endl;
   for (i=0;i<channels.size();i++) {
     if (channels[i]->Alpha() > 0) {
-      msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()
+      msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<", "<<channels[i]->N()
 		    <<" : "<<channels[i]->Alpha()<<endl;
     }
   }
-  msg.Tracking()<<"S1X: "<<s1xmin<<endl
+  msg_Tracking()<<"S1X: "<<s1xmin<<endl
 		<<"Variance : "<<Variance()<<endl
 		<<"result,result2,n,n_contrib : "<<m_result<<", "
 		<<m_result2<<", "<<n_points<<", "<<n_contrib<<endl
@@ -225,10 +225,10 @@ void Multi_Channel::EndOptimize(double error)
     for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
     for (i=0;i<channels.size();i++) channels[i]->SetAlpha(channels[i]->Alpha() / norm);
 
-    msg.Tracking()<<"Best weights:-------------------------------"<<endl;
+    msg_Tracking()<<"Best weights:-------------------------------"<<endl;
     for (i=0;i<channels.size();i++)
       if (channels[i]->Alpha() > 0) {
-	msg.Tracking()<<i<<" channel "<<channels[i]->Name()<<" :"<<channels[i]->Alpha()<<endl
+	msg_Tracking()<<i<<" channel "<<channels[i]->Name()<<" :"<<channels[i]->Alpha()<<endl
 		      <<"S1X: "<<s1xmin<<endl
 		      <<"-------------------------------------------"<<endl;
       }

@@ -40,8 +40,6 @@ namespace EXTRAXS {
     void SelectOne();
     bool OneEvent(const int mode=0);
 
-    ATOOLS::Blob_Data_Base *WeightedEvent(const int mode=0);
-
     void SingleEvents();
     bool PrepareXSecTables();
     bool LookUpXSec(double dummy1,bool dummy2,std::string dummy3);

@@ -52,19 +52,19 @@ bool Single_XS::CalculateTotalXSec(const std::string &resultpath)
 
 bool Single_XS::OneEvent() 
 { 
-  return (p_pshandler->OneEvent()); 
+  return p_activepshandler->OneEvent(); 
 }
 
 ATOOLS::Blob_Data_Base *Single_XS::WeightedEvent() 
 { 
-  return (p_pshandler->WeightedEvent()); 
+  return p_activepshandler->WeightedEvent(); 
 }
 
 void Single_XS::SetTotal() 
 {
   m_totalxs=m_totalsum/m_n; 
   m_totalerr=sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
-  ATOOLS::msg.Info()<<"      xs for "<<ATOOLS::om::bold<<m_name<<" : "
+  msg_Info()<<"      xs for "<<ATOOLS::om::bold<<m_name<<" : "
 		    <<ATOOLS::om::blue<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		    <<ATOOLS::om::reset<<" +/- ( "<<ATOOLS::om::red<<m_totalerr<<" pb = "
 		    <<m_totalerr/m_totalxs*100.<<" %"<<ATOOLS::om::reset<<" )"<<std::endl

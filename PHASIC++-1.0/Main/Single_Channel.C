@@ -157,7 +157,7 @@ void Single_Channel::CalculateLimits()
 
 void Single_Channel::GetRange() 
 {
-  ATOOLS::msg.Debugging()<<"  sprime : "<<sprimerange[0]<<" "<<sprimerange[1]<<" / "<<sprimerange[2]<<" / "
+  msg_Debugging()<<"  sprime : "<<sprimerange[0]<<" "<<sprimerange[1]<<" / "<<sprimerange[2]<<" / "
 			 <<"  y : "<<yrange[0]<<" ... "<<yrange[1]<<std::endl;
 }
 
