@@ -81,6 +81,9 @@ bool ISR_Handler::CheckConsistency(APHYTOOLS::Flavour * _beams,
 void ISR_Handler::SetPartonMasses(Flavour * _fl) { 
   mass12      = sqr(_fl[0].Mass());
   mass22      = sqr(_fl[1].Mass());
+  //mass12      = sqr(rpa.consts.Mass(_fl[0],sqr(rpa.gen.Ecms())));
+  //mass22      = sqr(rpa.consts.Mass(_fl[1],sqr(rpa.gen.Ecms())));
+  
   double E    = AORGTOOLS::rpa.gen.Ecms();
   double x    = 1./2.+(mass12-mass22)/(2.*E*E);
   double E1   = x*E;

@@ -13,6 +13,7 @@
 #include "Message.H"  
 #include "Random.H"
 #include "Rambo.H"
+#include "RamboKK.H"
 #include "Sarge.H"
 
 using namespace PHASIC;
@@ -176,8 +177,8 @@ bool Phase_Space_Handler::CreateIntegrators()
     msg.Debugging()<<" "<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl
 		   <<" integration mode = "<<int_type<<endl;
     
-    if (int_type < 3) fsrchannels->DropAllChannels();
-    
+    if (int_type < 3 || int_type ==5) fsrchannels->DropAllChannels();
+    cout<<"Integrator: "<<int_type<<endl;
     switch (int_type) {
     case 0: 
       fsrchannels->Add(new Rambo(nin,nout,psflavs));
@@ -197,10 +198,14 @@ bool Phase_Space_Handler::CreateIntegrators()
     case 4: 
       DropRedundantChannels();
       break;
+    case 5:
+      msg.Out()<<"using RAMBO with KK-Sum for phasespace integration\n";
+      fsrchannels->Add(new RamboKK(nin,nout,psflavs));
+      break;    
     default:
       msg.Error()<<"Wrong phasespace integration switch ! ";
       msg.Error()<<"Using as default : RAMBO ."<<endl;
-      fsrchannels->Add(new Rambo(nin,nout,psflavs));
+			       fsrchannels->Add(new Rambo(nin,nout,psflavs));
     }  
     
     msg.Debugging()<<"Initialized Phase_Space_Integrator (";
