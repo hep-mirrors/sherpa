@@ -12,7 +12,7 @@ Structure_Function::Structure_Function(PDF::PDF_Base * _pdf,Flavour _bunch) :
 {
   m_bunch = _bunch;
   m_type  = std::string("(SF)");
-  msg.Tracking()<<"Initialised structure function for bunch "<<m_bunch<<" with  :"<<endl;
+  msg.Tracking()<<"Initialised structure function for bunch "<<m_bunch<<" with  :"<<std::endl;
   p_pdf->Output();
 }
 

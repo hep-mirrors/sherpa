@@ -22,19 +22,19 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour _bun
 {
   m_bunch = _bunch; 
   if (m_bunch==Flavour(kf::p_plus).Bar()) m_anti=-1;
-  msg.Tracking()<<"Try to initialize PDF set according to the Les Houches Accord."<<endl
-		<<"  Set = "<<m_set<<" v "<<m_member<<" for "<<m_bunch<<" "<<"/"<<m_anti<<":"<<initlhapdf<<endl;
+  msg.Tracking()<<"Try to initialize PDF set according to the Les Houches Accord."<<std::endl
+		<<"  Set = "<<m_set<<" v "<<m_member<<" for "<<m_bunch<<" "<<"/"<<m_anti<<":"<<initlhapdf<<std::endl;
   
   if (!initlhapdf) {
     initlhapdf = 1;
-    msg.Tracking()<<"Init fortran piece."<<endl;
-    std::string full = m_path+string("/")+m_set+string(".LHpdf");
+    msg.Tracking()<<"Init fortran piece."<<std::endl;
+    std::string full = m_path+std::string("/")+m_set+std::string(".LHpdf");
     const char * help;
     help = full.c_str();
     lhapdfinitset_(help);
     lhapdfinit_(m_member);
   }
-  else msg.Tracking()<<"Fortran piece already initialized."<<endl;
+  else msg.Tracking()<<"Fortran piece already initialized."<<std::endl;
 
   for (int i=1;i<6;i++) {
     m_partons.push_back(Flavour(kf::code(i)));
@@ -48,7 +48,8 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour _bun
 
 PDF_Base * LHAPDF_Fortran_Interface::GetCopy() 
 {
-  return new LHAPDF_Fortran_Interface(m_bunch,m_set,m_member,m_path);
+  bool init=0;
+  return new LHAPDF_Fortran_Interface(m_bunch,m_set,m_member,m_path,init);
 }
 
 
@@ -60,8 +61,8 @@ double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
 
 void LHAPDF_Fortran_Interface::Output() {
   double scale = 91.2;
-  msg.Out()<<" LHAPDF : "<<m_set<<" / "<<m_member<<endl
-	   <<"          alpha_s(MZ) = "<<lhapdfalphas_(scale)<<endl;
+  msg.Out()<<" LHAPDF : "<<m_set<<" / "<<m_member<<std::endl
+	   <<"          alpha_s(MZ) = "<<lhapdfalphas_(scale)<<std::endl;
 }
 
 void LHAPDF_Fortran_Interface::Calculate(const double _x, const double _Q2) {

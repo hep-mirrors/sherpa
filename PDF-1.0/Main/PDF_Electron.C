@@ -34,9 +34,9 @@ double PDF_Electron::GetXPDF(const APHYTOOLS::Flavour & fl) {
 PDF_Base * PDF_Electron::GetCopy() { return new PDF_Electron(m_bunch,m_order,m_izetta); }
 
 void PDF_Electron::Output() {
-  msg.Out()<<" internal PDF_Electron : "<<endl
-	   <<"          Order = "<<m_order<<", scheme = "<<m_izetta<<endl
-	   <<"          alpha(MZ) = "<<(*aqed)(sqr(91.2))<<endl;
+  msg.Out()<<" internal PDF_Electron : "<<std::endl
+	   <<"          Order = "<<m_order<<", scheme = "<<m_izetta<<std::endl
+	   <<"          alpha(MZ) = "<<(*aqed)(sqr(91.2))<<std::endl;
 }
 
 void PDF_Electron::Calculate(const double x, const double Q2) 
