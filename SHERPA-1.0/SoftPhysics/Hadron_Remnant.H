@@ -23,8 +23,7 @@ namespace SHERPA {
     ATOOLS::Particle *FindConnected(ATOOLS::Particle*,bool=false,int=1); 
     ATOOLS::Particle *SelectCompanion(ATOOLS::Particle*);
 
-    bool AdjustColours(ATOOLS::Particle*,unsigned int,unsigned int,
-		       bool,bool,unsigned int);
+    bool AdjustColours(ATOOLS::Particle*,unsigned int,unsigned int,unsigned int);
 
     double GetXPDF(ATOOLS::Flavour flavour,double scale);
     void   DiceKinematics();

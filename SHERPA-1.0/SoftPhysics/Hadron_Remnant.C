@@ -229,44 +229,48 @@ bool Hadron_Remnant::TreatFirstQuark(ATOOLS::Particle *cur)
 }
 
 bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,unsigned int newc,
-				   bool anti,bool forward,unsigned int catcher)
+				   unsigned int catcher)
 {
-  if (oldc==newc) return true;
+  if (oldc==newc) return;
   if (++catcher>100) {
-    ATOOLS::msg.Tracking()<<"Hadron_Remnant::AdjustColours(..): "
-			  <<"Colour nesting is too deep!"<<std::endl
-			  <<"   Cannot adjust colours completely. Result might be unreliable."<<std::endl;
+    ATOOLS::msg.Error()<<"Hadron_Remnant::AdjustColours(..): "
+		       <<"Colour nesting is too deep (more than "<<catcher<<" steps)."<<std::endl
+		       <<"   Cannot adjust colours completely. "
+		       <<"Result might be unreliable."<<std::endl;
     return false;
   }
   ATOOLS::Blob *cur;
-  if (forward) cur=particle->DecayBlob();
-  else cur=particle->ProductionBlob();
-  if (cur!=NULL) {
-    for (int i=0;i<cur->NOutP();++i) {
-      for (int j=1;j<3;++j) {
-	ATOOLS::Particle *help=cur->OutParticle(i);
-	if (help->GetFlow(j)==(int)oldc && 
-	    (help->Flav().IsAnti()!=anti || help->Flav().IsGluon())) {
-	  help->SetFlow(j,newc);
-	  return AdjustColours(help,oldc,newc,anti,true,catcher);
+  for (size_t step=0;step<2;++step) {
+    if (step==0) cur=particle->DecayBlob();
+    else cur=particle->ProductionBlob();
+    if (cur!=NULL) {
+      for (int i=0;i<cur->NOutP();++i) {
+	for (int j=1;j<3;++j) {
+	  ATOOLS::Particle *help=cur->OutParticle(i);
+	  if (help->GetFlow(j)==(int)oldc) {
+	    help->SetFlow(j,newc);
+	    if (!AdjustColours(help,oldc,newc,catcher)) {
+	      ATOOLS::msg.Error()<<"   ("<<oldc<<" -> "<<newc<<") for:"<<help<<std::endl;
+	      return false;
+	    }
+	  }
 	}
       }
-    }
-    for (int i=0;i<cur->NInP();++i) {
-      for (int j=1;j<3;++j) {
-	ATOOLS::Particle *help=cur->InParticle(i);
-	if (help->GetFlow(j)==(int)oldc && 
-	    (help->Flav().IsAnti()!=anti || help->Flav().IsGluon())) {
-	  help->SetFlow(j,newc);
-	  return AdjustColours(help,oldc,newc,anti,true,catcher);
+      for (int i=0;i<cur->NInP();++i) {
+	for (int j=1;j<3;++j) {
+	  ATOOLS::Particle *help=cur->InParticle(i);
+	  if (help->GetFlow(j)==(int)oldc) {
+	    help->SetFlow(j,newc);
+	    if (!AdjustColours(help,oldc,newc,catcher)) {
+	      ATOOLS::msg.Error()<<"   ("<<oldc<<" -> "<<newc<<") for:"<<help<<std::endl;
+	      return false;
+	    }
+	  }
 	}
       }
     }
   }
-  else {
-    return true;
-  }
-  return false;
+  return true;
 }
 
 ATOOLS::Particle *Hadron_Remnant::FindConnected(ATOOLS::Particle *particle,bool same,int orig) 
@@ -302,20 +306,14 @@ bool Hadron_Remnant::TreatQuark(ATOOLS::Particle *cur)
       ATOOLS::Particle *rem=comp[0]; comp[0]=comp[1]; comp[1]=rem;
   }
   if (cur->Flav().IsAnti()) {
-    int catcher=0;
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),newpart->GetFlow(1),
-				   false,true,catcher);
-    success=success&&AdjustColours(cur,cur->GetFlow(2),comp[0]->GetFlow(1),
-				   false,true,catcher);
+    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),newpart->GetFlow(1),0);
+    success=success&&AdjustColours(cur,cur->GetFlow(2),comp[0]->GetFlow(1),0);
     comp[1]->SetFlow(2,newpart->GetFlow(1));
     cur->SetFlow(2,comp[0]->GetFlow(1));
   }
   else {
-    int catcher=0;
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),newpart->GetFlow(2),
-				   true,true,catcher);
-    success=success&&AdjustColours(cur,cur->GetFlow(1),comp[0]->GetFlow(2),
-				   true,true,catcher);
+    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),newpart->GetFlow(2),0);
+    success=success&&AdjustColours(cur,cur->GetFlow(1),comp[0]->GetFlow(2),0);
     comp[1]->SetFlow(1,newpart->GetFlow(2));
     cur->SetFlow(1,comp[0]->GetFlow(2));
   }
@@ -330,20 +328,14 @@ bool Hadron_Remnant::TreatGluon(ATOOLS::Particle *cur)
   ATOOLS::Particle *comp[2];
   do { comp[0]=SelectCompanion(cur); } while ((comp[1]=FindConnected(comp[0]))==NULL);
   if (comp[0]->Flav().IsAnti()^comp[0]->Flav().IsDiQuark()) {
-    int catcher=0;
-    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(2),cur->GetFlow(1),
-				   false,true,catcher);
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),cur->GetFlow(2),
-				   true,true,catcher);
+    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(2),cur->GetFlow(1),0);
+    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),cur->GetFlow(2),0);
     comp[0]->SetFlow(2,cur->GetFlow(1));
     comp[1]->SetFlow(1,cur->GetFlow(2));
   }
   else {
-    int catcher=0;
-    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(1),cur->GetFlow(2),
-				   true,true,catcher);
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),cur->GetFlow(1),
-				   false,true,catcher);
+    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(1),cur->GetFlow(2),0);
+    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),cur->GetFlow(1),0);
     comp[0]->SetFlow(1,cur->GetFlow(2));
     comp[1]->SetFlow(2,cur->GetFlow(1));
   }
