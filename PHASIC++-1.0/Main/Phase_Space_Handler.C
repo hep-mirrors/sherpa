@@ -296,7 +296,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
   }
   if (m_nin>1 && ((p_isrhandler && p_isrhandler->On()>0) || 
 		  (p_beamhandler && p_beamhandler->On()>0))) {
-    m_flux=p_isrhandler->Flux();
+    m_flux=p_isrhandler->Flux(p_lab);
   }
   return m_flux*(m_result_1+m_result_2);
 }
