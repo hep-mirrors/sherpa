@@ -53,9 +53,12 @@ void All_Processes::RescaleXSec(double) {
 }
 
 void All_Processes::SetupEnhance() {
+  double sum = 0.;
   for (size_t i=0;i<m_procs.size();++i) {
     m_procs[i]->SetupEnhance();
+    sum += m_procs[i]->TotalXS();
   }
+  SetTotalXS(sum);
 }
 
 
