@@ -19,8 +19,12 @@ namespace SHERPA {
     NLL_Branching_Probability_Base * p_bp;
     ATOOLS::Gauss_Integrator m_gauss;
     ATOOLS::Fast_Function    m_log_delta;
+    std::string m_outpath;
+    double m_lastsud;
   public:
     NLL_Single_Sudakov(NLL_Branching_Probability_Base *,int);
+    bool Initialize(double =0.,double =0.);
+    void   AssignKey(ATOOLS::Integration_Info *const info) {};
 
     double operator()(double, double);
     double operator()(double);
@@ -30,6 +34,7 @@ namespace SHERPA {
     double Qmin();
     void SetQmax(double);
     void SetQmin(double);
+    void SetOutPath(const std::string);
 
     ATOOLS::Gauss_Integrator & GetIntegrator();
 
@@ -45,6 +50,9 @@ namespace SHERPA {
   inline void NLL_Single_Sudakov::SetQmax(double q) {
     m_qmax = q;
     p_bp->SetQmax(q);
+  }
+  inline void NLL_Single_Sudakov::SetOutPath(const std::string _m_outpath) {
+    m_outpath=_m_outpath;
   }
   inline double NLL_Single_Sudakov::IntGamma(double q,double Q) {
     return  p_bp->IntGamma(q,Q);

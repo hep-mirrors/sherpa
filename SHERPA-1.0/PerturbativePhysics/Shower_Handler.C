@@ -1,6 +1,7 @@
 #include "Shower_Handler.H"
 #include "Tree.H"
 #include "ISR_Handler.H"
+#include "Message.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;

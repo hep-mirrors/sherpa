@@ -2,7 +2,7 @@
 #include "Data_Read.H"
 #include "Message.H"
 #include "Amegic.H"
-#include "SimpleXSecs.H"
+#include "Simple_XS.H"
 #include "Random.H"
 #include <iomanip>
 
@@ -161,7 +161,7 @@ int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
 					       PDF::ISR_Handler * _isr) 
 {
   m_name     = string("SimpleXS");
-  p_simplexs = new EXTRAXS::SimpleXSecs(m_dir,m_file,_model);
+  p_simplexs = new EXTRAXS::Simple_XS(m_dir,m_file,_model);
   if (p_simplexs->InitializeProcesses(_beam,_isr)) return 2;
   return 0;
 }
@@ -240,7 +240,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
 	       <<"   Failed to Calculate total XSec through Amegic. Abort."<<endl;
     abort();
   case 2:
-    if (p_simplexs->CalculateTotalXSec()) return 1;
+    if (p_simplexs->CalculateTotalXSec(m_readin)) return 1;
     msg.Error()<<"Error in Matrix_Element_Handler::CalculateTotalXSecs()."<<endl
 	       <<"   Failed to Calculate total XSec through SimpleXS. Abort."<<endl;
     abort();
@@ -255,17 +255,17 @@ void RescaleProcesses(AMEGIC::Process_Base * procs, double fac ) {
   if (fac==1.) return;
   if (!procs) return;
   if ((*procs)[0]==procs) {
-    double xs=procs->Total();
+    double xs=procs->TotalXS();
     procs->SetTotal(xs*fac);
-    std::cout<<" changing xs from "<<xs<<" to "<<procs->Total()<<std::endl;
+    std::cout<<" changing xs from "<<xs<<" to "<<procs->TotalXS()<<std::endl;
   }
   else {
-    double xs=procs->Total();
-    for (int i=0; i<procs->Size();++i) {
+    double xs=procs->TotalXS();
+    for (size_t i=0; i<procs->Size();++i) {
       RescaleProcesses((*procs)[i],fac);
     }
     procs->SetTotal(xs*fac);
-    std::cout<<" changing xs from "<<xs<<" to "<<procs->Total()<<std::endl;
+    std::cout<<" changing xs from "<<xs<<" to "<<procs->TotalXS()<<std::endl;
   }
 }
 
@@ -275,17 +275,17 @@ bool Matrix_Element_Handler::RescaleJetrates()
   AMEGIC::Process_Base * procs = p_amegic->Processes();
 
   double errsum=0;
-  for (int i=0; i<procs->Size();++i) {
+  for (size_t i=0; i<procs->Size();++i) {
     errsum+= (*procs)[i]->TotalError();
   }
 
   cout<<" rescale Jetrates : "<<endl;
   //vs.facs[10] = { 1., 1., 1. , 0.1, 1., 1.,1., 1., 1., 1.};
   double facs[10] = { 1., 1., 1. , 1., 1., 1.,1., 1., 1., 1.};
-  for (int i=0; i<procs->Size();++i) {
+  for (size_t i=0; i<procs->Size();++i) {
     //    double xstot = (*procs)[i]->Total()*rpa.Picobarn();
     //    double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
-    int njet  = (*procs)[i]->Nout();
+    int njet  = (*procs)[i]->NOut();
     RescaleProcesses((*procs)[i],facs[njet]);
   }
   procs->SetMax(0.);
@@ -300,7 +300,7 @@ bool Matrix_Element_Handler::RescaleJetrates()
     msg.Debugging()<<" looking for "<<filename<<endl;
     std::ofstream  rfile(filename.c_str(),std::ios::app);
     rfile<<"# ";
-    for (int i=0; i<procs->Size();++i) {
+    for (size_t i=0; i<procs->Size();++i) {
       rfile<<(*procs)[i]->Name()<<" ";
     }
     rfile<<endl;
@@ -309,8 +309,8 @@ bool Matrix_Element_Handler::RescaleJetrates()
     rfile.precision(6);
     rfile<<setw(10)<<ycut<<" ";
 
-    for (int i=0; i<procs->Size();++i) {
-      double xstot = (*procs)[i]->Total()*rpa.Picobarn();
+    for (size_t i=0; i<procs->Size();++i) {
+      double xstot = (*procs)[i]->TotalXS()*rpa.Picobarn();
       double xserr = (*procs)[i]->TotalError()*rpa.Picobarn();
       //      double njet  = (*procs)[i]->Nout();
       rfile<<setw(10)<<xstot<<" "<<setw(10)<<xserr<<" ";
@@ -359,7 +359,7 @@ bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double
 
 double Matrix_Element_Handler::FactorisationScale()
 {
-  if (m_mode==1) return p_amegic->GetProcess()->FactorisationScale();
+  if (m_mode==1) return static_cast<AMEGIC::Process_Base*>(p_amegic->GetProcess())->FactorisationScale();
   msg.Out()<<" Warning: Matrix_Element_Handler::FactorisationScale() called without AMEGIC!"<<std::endl;
   return 0.;
 }
@@ -391,17 +391,17 @@ bool Matrix_Element_Handler::GenerateSameEvent()
 void Matrix_Element_Handler::GetMomentaNFlavours() {    
   switch (m_mode) {
   case 1: 
-    m_nmoms = p_amegic->Nin()+p_amegic->Nout();
-    if (p_amegic->Flavs() && p_amegic->Momenta()) {
-      for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_amegic->Flavs()[i];
+    m_nmoms = p_amegic->NIn()+p_amegic->NOut();
+    if (p_amegic->Flavours() && p_amegic->Momenta()) {
+      for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_amegic->Flavours()[i];
       for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_amegic->Momenta()[i];
       return;
     }
     break;
   case 2: 
-    m_nmoms = p_simplexs->Nin()+p_simplexs->Nout();
-    if (p_simplexs->Flavs() && p_simplexs->Momenta()) {
-      for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_simplexs->Flavs()[i];
+    m_nmoms = p_simplexs->NIn()+p_simplexs->NOut();
+    if (p_simplexs->Flavours() && p_simplexs->Momenta()) {
+      for (int i=0;i<m_nmoms;++i) p_flavs[i] = p_simplexs->Flavours()[i];
       for (int i=0;i<m_nmoms;++i) p_moms[i]  = p_simplexs->Momenta()[i];
       return;
     }
@@ -435,7 +435,7 @@ bool Matrix_Element_Handler::UnweightedEvent()
 {
   switch (m_mode) {
   case 1: return p_amegic->UnweightedEvent();
-  case 2: return p_simplexs->UnweightedEvent();
+  case 2: return p_simplexs->OneEvent();
   }
   return 0;
 }
@@ -464,23 +464,23 @@ std::string Matrix_Element_Handler::Name() { return m_name; }
 
 unsigned int Matrix_Element_Handler::NIn() {
   switch (m_mode) {
-  case 1: return p_amegic->Nin();
-  case 2: return p_simplexs->Nin();
+  case 1: return p_amegic->NIn();
+  case 2: return p_simplexs->NIn();
   }
   return 0;
 }
 
 unsigned int Matrix_Element_Handler::NOut() {
   switch (m_mode) {
-  case 1: return p_amegic->Nout();
-  case 2: return p_simplexs->Nout();
+  case 1: return p_amegic->NOut();
+  case 2: return p_simplexs->NOut();
   }
   return 0;
 }
 
 unsigned int Matrix_Element_Handler::NDecOut() {
   switch (m_mode) {
-  case 1: return p_amegic->GetAllDecays()->Nout();
+  case 1: return p_amegic->GetAllDecays()->NOut();
   }
   return 0;
 }
@@ -496,20 +496,26 @@ std::string Matrix_Element_Handler::ProcessName()
   return string("Error - no process name!");
 }
 
-ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
+const ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
   switch (m_mode) {
   case 1: return p_amegic->GetAllDecays()->Momenta();
   }
   return NULL;
 }
 
-
-ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
-  return p_moms;
+const ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
+  switch (m_mode) {
+  case 1: return p_amegic->Momenta();
+  }
+  return NULL;
 }
 
-ATOOLS::Flavour * Matrix_Element_Handler::Flavs() {
-  return p_flavs;
+const ATOOLS::Flavour * Matrix_Element_Handler::Flavours() {
+  switch (m_mode) {
+  case 1: return p_amegic->Flavours();
+  case 2: return p_simplexs->Flavours();
+  }
+  return NULL;
 }
 
 void  Matrix_Element_Handler::SetupHHMF() 
@@ -541,7 +547,7 @@ bool  Matrix_Element_Handler::ApplyHHMF()
 {
   if (!m_apply_hhmf || m_particle_maps.size()==0) return 1;
 
-  size_t no=(size_t)(m_particle_maps.size()*ran.Get());
+  size_t no=(size_t)(m_particle_maps.size()*ATOOLS::ran.Get());
   if (no==m_particle_maps.size()) no=0;
 
   m_ini_swaped=m_particle_maps[no].Apply(m_nmoms,p_flavs,p_moms);
@@ -583,10 +589,9 @@ AMEGIC::Point * Matrix_Element_Handler::GetDiagram(int _diag)
 
 EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS() 
 {
-  if (m_mode==2) return p_simplexs->Selected();
+  if (m_mode==2) return static_cast<EXTRAXS::XS_Base*>(p_simplexs->Selected());
   msg.Error()<<"Error in Matrix_Element_Handler::GetXS()."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
-  msg.Debugging()<<p_simplexs<<std::endl;
   abort();
 }
 
@@ -600,19 +605,19 @@ unsigned long Matrix_Element_Handler::NumberOfTrials()
   return m_ntrial;
 }
 
-void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *_p_amegic)
+void Matrix_Element_Handler::SetAmegic(AMEGIC::Amegic *amegic)
 {
-  if ((p_amegic!=NULL)||(p_simplexs!=NULL)) return;
-  p_amegic=_p_amegic;
+  if (p_amegic!=NULL || p_simplexs!=NULL) return;
+  p_amegic=amegic;
   p_isr=p_amegic->Processes()->ISR();
   m_name=string("Amegic");
   m_mode=1;
 }
 
-void Matrix_Element_Handler::SetXS(EXTRAXS::SimpleXSecs *_p_simplexs)
+void Matrix_Element_Handler::SetXS(EXTRAXS::Simple_XS *simplexs)
 {
-  if ((p_amegic!=NULL)||(p_simplexs!=NULL)) return;
-  p_simplexs=_p_simplexs;
+  if (p_amegic!=NULL || p_simplexs!=NULL) return;
+  p_simplexs=simplexs;
   p_isr=p_simplexs->ISR();
   m_name=string("SimpleXS");
   m_mode=2;

@@ -57,10 +57,12 @@ bool SimpleXS_Apacic_Interface::InitColours(Blob * blob)
   XS_Base * xs = p_mehandler->GetXS();
   if (!(xs->SetColours(p_mehandler->Momenta()))) return false;
   for (int j=0;j<2;j++) {
-    for (int i=0;i<blob->NInP();++i) blob->InParticle(i)->SetFlow(j+1,xs->Colours()[i][j]);
+    for (int i=0;i<blob->NInP();++i) {
+      blob->InParticle(i)->SetFlow(j+1,xs->Colours()[i][j]);
+    }
     for (int i=0;i<blob->NOutP();++i) blob->OutParticle(i)->SetFlow(j+1,xs->Colours()[i+blob->NInP()][j]);
   }
-  double scale=xs->Scale();
+  double scale=dynamic_cast<PHASIC::Integrable_Base*>(xs)->Scale();
   double E=sqrt(p_mehandler->GetISR_Handler()->Pole())/2.;
   double th1,th2;
   if (m_ini) {

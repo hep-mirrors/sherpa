@@ -473,13 +473,13 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   // (a) no colors
   if (ncol==0) return 0;
 
-  if (ncol==1) {
-    msg.Error()<<"Error in Cluster_Partons::SetColours:"<<std::endl
-	       <<"   Cannot handle single color in 2 -> 2 process :"
-               <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<std::endl
-	       <<"   Will abort the run."<<std::endl;
-    abort();
-  }  
+//   if (ncol==1) {
+//     msg.Error()<<"Error in Cluster_Partons::SetColours:"<<std::endl
+// 	       <<"   Cannot handle single color in 2 -> 2 process :"
+//                <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<std::endl
+// 	       <<"   Will abort the run."<<std::endl;
+//     abort();
+//   }  
   
   int cols[3]={0,0,0};
 
@@ -529,13 +529,13 @@ int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   }
 
 
-  if (cols[0]==0) {
-    msg.Error()<<"Error in Cluster_Partons::SetColours:"<<std::endl
-	       <<"   Cannot handle color structure in 2 -> 2 process :"
-               <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<std::endl
-	       <<"   Will abort the run."<<std::endl;
-    abort();
-  }
+//   if (cols[0]==0) {
+//     msg.Error()<<"Error in Cluster_Partons::SetColours:"<<std::endl
+// 	       <<"   Cannot handle color structure in 2 -> 2 process :"
+//                <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<std::endl
+// 	       <<"   Will abort the run."<<std::endl;
+//     abort();
+//   }
 
   ncol=0;
   int antis[3]={0,1,0};
@@ -776,7 +776,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
     mo->thcrit = M_PI;
 
     double scale = Scale();
-    if (xs) scale = xs->Scale();          // *AS* perhaps additional factor but 
+    if (xs) scale = dynamic_cast<PHASIC::Integrable_Base*>(xs)->Scale();          // *AS* perhaps additional factor but 
     mo->t      = scale;                   // s for drell-yan and e+e- seems fine
     mo->t      = mo->part->Momentum().Abs2();  // ????? *FK* 
   }
@@ -1126,11 +1126,10 @@ void Cluster_Partons::CreateFlavourMap() {
   //  if (p_me->GetAmegic()->GetProcess()!=p_me->GetAmegic()->GetProcess()->Partner()) {
   if (1)  {
 
-    Process_Base * proc=p_me->GetAmegic()->GetProcess();
+    Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
     Process_Base * partner=proc->Partner();
-    //    Flavour * flavs=proc->Flavs();
-    Flavour * flavs=p_me->Flavs();
-    Flavour * partner_flavs=partner->Flavs();
+    const Flavour * flavs=proc->Flavours();
+    const Flavour * partner_flavs=partner->Flavours();
 
     int n[2]={0,1};
     //    if (proc->InSwaped()^partner->InSwaped()) {
@@ -1141,21 +1140,19 @@ void Cluster_Partons::CreateFlavourMap() {
 
     // create new map
     m_flmap.clear();
-    for (int i=0;i<proc->Nin();++i) {
-      //      std::cout<<" flinmap "<<partner_flavs[i]<<" -> "<<flavs[n[i]]<<std::endl;
+    for (size_t i=0;i<proc->NIn();++i) {
       if (partner_flavs[i]!=flavs[n[i]]) {
 	m_flmap[partner_flavs[i]]=flavs[n[i]];
-	if (partner_flavs[i]!=partner_flavs[i].Bar()) {
-	  m_flmap[partner_flavs[i].Bar()]=flavs[n[i]].Bar();	  
+	if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
+	  m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[n[i]])).Bar();
 	}
       }
     }
-    for (int i=proc->Nin();i<proc->Nin()+proc->Nout();++i) {
-      //      std::cout<<" floutmap "<<partner_flavs[i]<<" -> "<<flavs[i]<<std::endl;
+    for (size_t i=proc->NIn();i<proc->NIn()+proc->NOut();++i) {
       if (partner_flavs[i]!=flavs[i]) {
 	m_flmap[partner_flavs[i]]=flavs[i];
-	if (partner_flavs[i]!=partner_flavs[i].Bar()) {
-	  m_flmap[partner_flavs[i].Bar()]=flavs[i].Bar();	  
+	if (partner_flavs[i]!=(Flavour(partner_flavs[i])).Bar()) {
+	  m_flmap[(Flavour(partner_flavs[i])).Bar()]=(Flavour(flavs[i])).Bar();	  
 	}
       }
     }

@@ -6,6 +6,12 @@
 #include "Gauss_Integrator.H"
 #include "Flavour.H"
 
+namespace ATOOLS {
+
+  class Integration_Info;
+
+}
+
 namespace SHERPA {
   class Sudakov {
   public:
@@ -27,6 +33,7 @@ namespace SHERPA {
     virtual double operator()(double Q, double q) = 0;
     virtual double operator()(double) =0;
     virtual double Log(double,double) = 0;
+    virtual void AssignKey(ATOOLS::Integration_Info *const info) = 0;
     virtual ~NLL_Sudakov_Base() {};
   };  
 
@@ -35,6 +42,7 @@ namespace SHERPA {
   public:
     double operator()(double,double) { return 1.; }
     double operator()(double) { return 1.; }
+    void   AssignKey(ATOOLS::Integration_Info *info) {};
     double Log(double,double) { return 0; }
 
   };

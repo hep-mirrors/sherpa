@@ -142,8 +142,8 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 
   if (!m_isdecay) {
     p_xs = 0;
-    if (!(XS_Selector::FindInGroup(p_two2two,p_xs,nin,2,p_fl))) {
-      p_xs = XS_Selector::GetXS(nin,2,p_fl);
+    if (!(p_two2two->XSSelector()->FindInGroup(p_two2two,p_xs,nin,2,p_fl))) {
+      p_xs = p_two2two->XSSelector()->GetXS(nin,2,p_fl,false);
       if (p_xs) p_two2two->Add(p_xs);
     }
 
@@ -159,7 +159,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     }
     
     double scale,asscale;
-    if (p_xs) asscale=scale = p_xs->Scale();
+    if (p_xs) asscale=scale = dynamic_cast<PHASIC::Integrable_Base*>(p_xs)->Scale();
     else {
       scale   = p_cluster->Scale();
       asscale = p_cluster->AsScale();
@@ -205,7 +205,8 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   if (m_isdecay) {
     p_xs = 0;
     if (!(XS_Selector::FindInGroup(p_one2N,p_xs,nin,nout,p_fl))) {
-      p_xs = XS_Selector::GetXS(nin,2,p_fl);
+      EXTRAXS::XS_Selector selector(p_xs);
+      p_xs = selector.GetXS(nin,2,p_fl,false);
       if (p_xs) p_one2N->Add(p_xs);
     }
     if (p_xs) {

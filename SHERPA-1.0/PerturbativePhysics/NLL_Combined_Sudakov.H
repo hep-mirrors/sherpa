@@ -15,6 +15,7 @@ namespace SHERPA {
   public:
     NLL_Combined_Sudakov(int);
     void Add(NLL_Single_Sudakov*);
+    void AssignKey(ATOOLS::Integration_Info *const info) {};
 
     double operator()(double q, double Q);
     double operator()(double);

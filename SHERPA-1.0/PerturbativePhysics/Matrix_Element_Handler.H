@@ -16,7 +16,7 @@
 namespace AMEGIC { class Amegic; 
                    class Point;  }
 
-namespace EXTRAXS { class SimpleXSecs; 
+namespace EXTRAXS { class Simple_XS; 
                     class XS_Base;     }
 
 namespace SHERPA {
@@ -37,12 +37,13 @@ namespace SHERPA {
 
   class Matrix_Element_Handler {
   private :
-    std::string            m_dir,m_file;
-    AMEGIC::Amegic       * p_amegic;
-    EXTRAXS::SimpleXSecs * p_simplexs;
-    PDF::ISR_Handler     * p_isr;
-    int                    m_mode;
-    double                 m_weight;
+
+    std::string          m_dir,m_file;
+    AMEGIC::Amegic     * p_amegic;
+    EXTRAXS::Simple_XS * p_simplexs;
+    PDF::ISR_Handler   * p_isr;
+    int                  m_mode;
+    double               m_weight;
     unsigned long          m_ntrial;
 
     std::string            m_name,m_signalgenerator,m_readin;
@@ -103,7 +104,7 @@ namespace SHERPA {
     bool GenerateSameEvent();
 
     void SetAmegic(AMEGIC::Amegic *);
-    void SetXS(EXTRAXS::SimpleXSecs *);
+    void SetXS(EXTRAXS::Simple_XS *);
 
     std::string          SignalGenerator();
     std::string          ProcessName();
@@ -112,9 +113,9 @@ namespace SHERPA {
     unsigned int         NOut();
     unsigned int         NDecOut();
     unsigned int         MaxJets();
-    ATOOLS::Vec4D      * Momenta();
-    ATOOLS::Vec4D      * DecMomenta();
-    ATOOLS::Flavour    * Flavs();
+    const ATOOLS::Vec4D      * Momenta();
+    const ATOOLS::Vec4D      * DecMomenta();
+    const ATOOLS::Flavour    * Flavours();
     int                  InSwaped();
 
     unsigned int         NumberOfDiagrams();

@@ -192,7 +192,7 @@ unsigned int MI_Handler::NIn()
   switch (m_type) {
 #ifdef USING__Amisic
   case Amisic:
-    return p_amisic->HardXS()->Nin();
+    return p_amisic->HardXS()->NIn();
     break;
 #endif
   default:

@@ -4,18 +4,23 @@
 #include "Function_Base.H"
 
 namespace SHERPA {
+
   class NLL_Branching_Probability_Base : public ATOOLS::Function_Base {
-    double m_qmax, m_qmin;
+  private:
+    double      m_qmax, m_qmin;
+  protected:
+    std::string m_name;
   public:
     virtual double Gamma(double q, double Q) = 0;
     virtual double IntGamma(double q, double Q) = 0;
     virtual double operator()(double q, double Q);
     virtual double operator()(double);
-
+    virtual double operator()() { return m_defval; }
     double Qmax();
     double Qmin();
     void SetQmax(double);
     void SetQmin(double);
+    std::string Name();
   };
 
   inline double NLL_Branching_Probability_Base::Qmax() { return m_qmax; }
@@ -26,6 +31,8 @@ namespace SHERPA {
   inline void NLL_Branching_Probability_Base::SetQmin(double q) {
     m_qmin = q;
   }
+
+  inline std::string NLL_Branching_Probability_Base::Name() { return m_name; }
 
   /*!
     \file 
@@ -93,7 +100,7 @@ namespace SHERPA {
     \fn void NLL_Branching_Probability_Base::SetQmin(double);
     \brief defines the fixed lower scale 
   */
-}
 
+}
 
 #endif

@@ -1,42 +1,74 @@
 #include "NLL_Single_Sudakov.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include <sys/stat.h>
 
 using namespace SHERPA;
 using namespace ATOOLS;
 
 NLL_Single_Sudakov::NLL_Single_Sudakov(NLL_Branching_Probability_Base * bp,int mode):
-  p_bp(bp),m_gauss(bp) 
-{
-  m_calcmode = (Sudakov::code)(mode&896);
-  m_cutmode  = (Sudakov::code)(mode&7);
+  m_qmax(0.),
+  m_qmin(0.),
+  m_calcmode((Sudakov::code)mode),
+  m_cutmode((Sudakov::code)mode),
+  p_bp(bp),
+  m_gauss(bp) {}
 
-  m_qmin=sqrt(rpa.gen.Ycut())*rpa.gen.Ecms();
-  m_qmax=2.*rpa.gen.Ecms();
+bool NLL_Single_Sudakov::Initialize(double _m_qmin,double _m_qmax) 
+{
+  m_qmin=_m_qmin;
+  m_qmax=_m_qmax;
+
+  m_calcmode = (Sudakov::code)(m_calcmode&896);
+  m_cutmode  = (Sudakov::code)(m_cutmode&7);
+
+  if (m_qmin==m_qmax) {
+    m_qmin=sqrt(rpa.gen.Ycut())*rpa.gen.Ecms();
+    m_qmax=2.*rpa.gen.Ecms();
+  }
 
   m_qlimit = rpa.gen.Ecms() * sqrt(1./3.); 
   if (m_calcmode==Sudakov::table) {
+    bool create=true;
+    if (p_bp->Name().length()>0) {
+      ATOOLS::msg.Tracking()<<"NLL_Single_Sudakov::NLL_Single_Sudakov(..): "
+			    <<"Try to read table ... "<<std::flush;
+      if (!m_log_delta.ReadIn((m_outpath+std::string("/")+p_bp->Name()).c_str())) {
+	ATOOLS::msg.Tracking()<<"failed."<<std::endl;
+	mkdir(m_outpath.c_str(),0755);
+      }
+      else {
+	ATOOLS::msg.Tracking()<<"ok."<<std::endl;
+	create=false;
+      }
+    }
     // initialize table
-    m_calcmode=Sudakov::create_table;
-    m_log_delta.Init(*this,m_qmin,m_qmax,600);
-    m_calcmode=Sudakov::table;
-    //    m_log_delta.WriteOut("Sudakov-test.dat");
+    if (create) {
+      ATOOLS::msg.Tracking()<<"NLL_Single_Sudakov::NLL_Single_Sudakov(..): "
+			    <<"Initializing table ... "<<std::flush;
+      m_calcmode=Sudakov::create_table;
+      m_log_delta.Init(*this,m_qmin,m_qmax,600);
+      m_calcmode=Sudakov::table;
+      ATOOLS::msg.Tracking()<<"done."<<std::endl;
+      if (p_bp->Name().length()>0) 
+	m_log_delta.WriteOut((m_outpath+std::string("/")+p_bp->Name()).c_str());
+    }
   }
+  return true;
 }
 
 double NLL_Single_Sudakov::Log(double Q, double q) 
 {
-  // using m_qmin
-
+  // std::cout<<" set "<<q<<" <-> "<<m_qmin<<" "<<Q<<std::endl;
   if (m_calcmode == Sudakov::analytic) {
     double sum=p_bp->IntGamma(q,Q);
     if (sum!=-1.) {
       return sum;
     }
     else {
-      msg.Error()<<" WARNING in NLL_Single_Sudakov : "<<std::endl
-		 <<"   Integrated branching prob not analytically calculated yet! "<<std::endl
-		 <<"   Try numerical integration "<<std::endl;
+      ATOOLS::msg.Error()<<"NLL_Single_Sudakov::Log(..): "
+			 <<"Integrated branching probability not analytically calculated yet! "<<std::endl
+			 <<"      try numeric integration "<<std::endl;
     }
   }
   else if (m_calcmode == Sudakov::table) {
@@ -51,14 +83,13 @@ double NLL_Single_Sudakov::Log(double Q, double q)
       msg.Error()<<"ERROR in NLL_Single_Sudakov : "<<std::endl
 		 <<"   Table calculated with qmin="<<m_qmin<<" but called with "<<q<<std::endl;
       m_qmin=q;
-      // reinit
       m_calcmode=Sudakov::create_table;
       m_log_delta.Init(*this,m_qmin,m_qmax,600);
       m_calcmode=Sudakov::table;
+      ATOOLS::msg.Tracking()<<"done."<<std::endl;
     }
     return m_log_delta(Q);
   }
-
   // m_calcmode == Sudakov::numeric || m_calcmode == Sudakov::create_table
   p_bp->SetQmax(Q);
   p_bp->SetQmin(q);
