@@ -5,7 +5,7 @@ using namespace ATOOLS;
 using namespace std;
 
 Full_Decay_Channel::Full_Decay_Channel(Decay_Channel * _dec) :
-  p_proc(NULL), p_dec(_dec) { }
+ p_dec(_dec), p_proc(NULL) { }
 
 
 Full_Decay_Channel::Full_Decay_Channel(const Flavour _fl) :
@@ -54,6 +54,7 @@ bool Full_Decay_Channel::CreateDecay()
 
 bool Full_Decay_Channel::CalculateWidth() 
 {
+  return true;
 }
 
 
@@ -69,7 +70,7 @@ void Full_Decay_Channel::SetWidth(double _w )
 //-----------------------------------------------------------------------
 
 Full_Decay_Table::Full_Decay_Table(const Flavour _fl,bool _overwrite) :
-  m_flin(_fl), m_width(0.), m_isevaluated(0), m_overwrite(_overwrite) { }
+  m_width(0.), m_flin(_fl), m_isevaluated(0), m_overwrite(_overwrite) { }
 
 
 void Full_Decay_Table::AddDecayChannel(Decay_Channel * _dc)
@@ -97,12 +98,12 @@ bool Full_Decay_Table::InitAllDecays(Interaction_Model_Base * _model,Topology * 
   int procs     = 0;
 
   bool okay = 1;
-  for (int i=0;i<m_decaymodes.size();i++) {
+  for (size_t i=0;i<m_decaymodes.size();i++) {
     msg.Tracking()<<"============================================================"<<endl;
     if (moms) { delete [] moms; moms = NULL; }
     links.clear();
     okay = okay && m_decaymodes[i]->InitAmplitude(_model,_top,moms,links,errs,totalsize,procs);
-    for (int j=0;j<links.size();j++) {
+    for (size_t j=0;j<links.size();j++) {
       msg.Tracking()<<"Set up integrator of "<<j<<" : "<<links[j]->Name()<<endl;
       if (!(links[j]->SetUpIntegrator())) okay = 0;
     }
@@ -119,21 +120,21 @@ void Full_Decay_Table::ArrangeDecays()
 {
   if (m_isevaluated) return;
   Process_Group * group;
-  Process_Base  * proc, * test;
-  int             nout;
+  Process_Base  * proc;
+  size_t             nout;
 //   Flavour       * flavs;
   bool newgroup = 1;
   bool alreadyin,match,initgroup;
   while (newgroup) {
     newgroup = 0;
-    for (int i=0;i<m_channels.size();i++) {
+    for (size_t i=0;i<m_channels.size();i++) {
       proc     = m_channels[i]->GetProcessBase();
       nout     = proc->NOut();
       initgroup = 1;
       if (m_decaymodes.size()>0) {
-	for (int j=0;j<m_decaymodes.size();j++) {
+	for (size_t j=0;j<m_decaymodes.size();j++) {
 	  alreadyin = 0;
-	  for (int k=0;k<m_decaymodes[j]->Size();k++) {
+	  for (size_t k=0;k<m_decaymodes[j]->Size();k++) {
 	    if (proc->Name()==(*m_decaymodes[j])[k]->Name()) {
 	      alreadyin = 1;
 	      break;
@@ -142,7 +143,7 @@ void Full_Decay_Table::ArrangeDecays()
 	  if (alreadyin) { initgroup = 0; break; }
 	  if (m_decaymodes[j]->NOut()==nout) {
 	    match = 1;
-	    for (int k=0;k<m_decaymodes[j]->NOut();k++) {
+	    for (size_t k=0;k<m_decaymodes[j]->NOut();k++) {
 	      if ((((*m_decaymodes[j])[0]->Flavours())[k+1]).Mass()!=((proc->Flavours())[k+1]).Mass()) {
 		match = 0;
 		break;
@@ -175,19 +176,19 @@ void Full_Decay_Table::ArrangeDecays()
 void Full_Decay_Table::CalculateWidths()
 {
   if (m_isevaluated) return;
-  for (int i=0;i<m_decaymodes.size();i++) {
+  for (size_t i=0;i<m_decaymodes.size();i++) {
     msg.Tracking()<<"Full_Decay_Table::CalculateWidths for "
 		  <<m_decaymodes[i]->Size()<<" decay(s)."<<endl;
     m_decaymodes[i]->CalculateTotalXSec(string(""));
   }
-  for (int i=0;i<m_channels.size();i++) {
+  for (size_t i=0;i<m_channels.size();i++) {
     m_channels[i]->SetWidth();
     m_width += m_channels[i]->Width();
   }
   Output();
   if (m_overwrite) m_flin.SetWidth(m_width);
   else {
-    for (int i=0;i<m_channels.size();i++) 
+    for (size_t i=0;i<m_channels.size();i++) 
       m_channels[i]->SetWidth(m_channels[i]->Width()/m_width*m_flin.Width());
   }
   m_isevaluated = 1;
@@ -195,7 +196,7 @@ void Full_Decay_Table::CalculateWidths()
 
 Decay_Channel * Full_Decay_Table::GetChannel(int _ch) 
 {
-  if (_ch<0 || _ch>=m_channels.size()) {
+  if (_ch<0 || _ch>=(int)m_channels.size()) {
     msg.Error()<<"Error in Full_Decay_Table::Channel("<<_ch<<")."<<endl
 	       <<"    Out of bounds : 0 ... "<<m_channels.size()-1<<"."<<endl
 	       <<"    Return NULL."<<endl;
@@ -206,7 +207,7 @@ Decay_Channel * Full_Decay_Table::GetChannel(int _ch)
 
 Full_Decay_Channel * Full_Decay_Table::GetFullChannel(int _ch) 
 {
-  if (_ch<0 || _ch>=m_channels.size()) {
+  if (_ch<0 || _ch>=(int)m_channels.size()) {
     msg.Error()<<"Error in Full_Decay_Table::GetFullChannel("<<_ch<<")."<<endl
 	       <<"    Out of bounds : 0 ... "<<m_channels.size()-1<<"."<<endl
 	       <<"    Return NULL."<<endl;
@@ -219,7 +220,7 @@ void Full_Decay_Table::Output() {
   msg.Out()<<"Decay table for : "<<m_flin<<", total width : "<<m_width<<" GeV ("
 	   <<m_flin.Width()<<" GeV)."<<endl
 	   <<"----------------------------------------------------------------"<<endl;
-  for (int i=0;i<m_channels.size();i++) m_channels[i]->Output();
+  for (size_t i=0;i<m_channels.size();i++) m_channels[i]->Output();
   msg.Out()<<"----------------------------------------------------------------"<<endl;
 }
 

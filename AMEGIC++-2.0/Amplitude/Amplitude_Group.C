@@ -202,7 +202,7 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
     }
 
     // if only one family cluster finished
-    if (family_table.size()==zncount) break;
+    if ((int)family_table.size()==zncount) break;
 
     // combine families
     if (combine_step==0) {
@@ -265,7 +265,7 @@ void Amplitude_Group::BuildGlobalString(int* _b,int _n,
 
   globalstr=family_table.front()->banner;
   if (family_table.size()>1) {
-    for (int i=1;i<family_table.size();++i)
+    for (size_t i=1;i<family_table.size();++i)
       globalstr+=string("+") + family_table[i]->banner;
   }
 

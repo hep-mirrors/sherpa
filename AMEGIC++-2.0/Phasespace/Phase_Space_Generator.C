@@ -222,7 +222,7 @@ void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,str
   for(;from;) {
     from.getline(buffer,buffersize);
     if (string(buffer).find(lib+string("_la_SOURCES"))==0) {
-      if (string(buffer).find(string("\\"))==-1) {
+      if (string(buffer).find(string("\\"))==string::npos) {
 	//no backslash
 	to<<buffer<<"\\"<<endl
 	  <<"\t"<<(fileID+string(".C")).c_str()<<endl; 
@@ -234,7 +234,7 @@ void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,str
     }
     else {
       if (string(buffer).find(lib+string("_la_OBJECTS"))==0) {
-	if (string(buffer).find(string("\\"))==-1) {
+	if (string(buffer).find(string("\\"))==string::npos) {
 	  //no backslash
 	  to<<buffer<<"\\"<<endl
 	    <<"\t"<<(fileID+string(".lo")).c_str()<<endl; 
@@ -259,8 +259,6 @@ void  Phase_Space_Generator::AddToMakefile(string makefilename,string pathID,str
 
 bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch)
 {
-  int  hit;
-
   string chlname   = string("Process/")+pathID + string("/fsrchannels");
   string chmapname = string("Process/")+path   + string("/fsrchannels.map");
  
@@ -279,7 +277,7 @@ bool Phase_Space_Generator::LoadChannels(ATOOLS::Flavour * fl,Multi_Channel * Ch
     libname = string(buffer);
     if (chlist && libname[0]!='%') {
       ifstream chmap(chmapname.c_str());
-      if (!RSearch(chmap,libname) || libname.find(string(": "))==-1) {
+      if (!RSearch(chmap,libname) || libname.find(string(": "))==string::npos) {
 	ATOOLS::msg.Error()<<"Error in Phase_Space_Generator:"
 			   <<"Mapping for "<<libname<<" not found."<<endl;	
 	return 0;
@@ -321,7 +319,7 @@ bool Phase_Space_Generator::Search(ifstream &from,string search)
   char buffer[buffersize];
   for(;from;) {
     from.getline(buffer,buffersize);    
-    if (string(buffer).find(string(search))!=-1) return 1;
+    if (string(buffer).find(string(search))!=string::npos) return 1;
   }
   return 0;
 }
@@ -331,7 +329,7 @@ bool Phase_Space_Generator::RSearch(ifstream &from,string &search)
   char buffer[buffersize];
   for(;from;) {
     from.getline(buffer,buffersize);    
-    if (string(buffer).find(string(search))!=-1) {
+    if (string(buffer).find(string(search))!=string::npos) {
       search = string(buffer);
       return 1;
     }
@@ -350,7 +348,7 @@ int  Phase_Space_Generator::Search(string file,string search)
 
   for(;from;) {
     from.getline(buffer,buffersize);    
-    if (string(buffer).find(string(search))!=-1) {
+    if (string(buffer).find(string(search))!=string::npos) {
       from.close();
       return 1;
     }
@@ -370,7 +368,7 @@ int  Phase_Space_Generator::RSearch(string file,string &search)
 
   for(;from;) {
     from.getline(buffer,buffersize);    
-    if (string(buffer).find(string(search))!=-1) {
+    if (string(buffer).find(string(search))!=string::npos) {
       search = string(buffer);
       from.close();
       return 1;

@@ -40,7 +40,6 @@ bool All_Decays::AddToDecays(ATOOLS::Decay_Channel * _dec)
     return 0;
   }
   if (CheckInVertex(flav)) {
-    double mass = 0.;
     Full_Decay_Channel * dc = new Full_Decay_Channel(_dec);
     if (dc->CreateDecay()) {
       Full_Decay_Table * dt = new Full_Decay_Table(flav,false);
@@ -111,6 +110,7 @@ bool All_Decays::UnweightedEvent(ATOOLS::Decay_Channel * _dec,double _mass)
       return p_decay->OneEvent(_mass);
     } 
   }
+  return true;
 }
 
 bool All_Decays::InitializeDecayTables() 
@@ -144,7 +144,7 @@ void All_Decays::BinaryDecays()
       dt = NULL;
       if (!dt) dt = new Full_Decay_Table((*flit));
 
-      for (int i=0;i<vertexlist.size();i++) {
+      for (size_t i=0;i<vertexlist.size();i++) {
 	for (int j=0;j<3;j++) flavs[j] = vertexlist[i]->in[j];
 	if (flavs[0].Mass()>flavs[1].Mass()+flavs[2].Mass()) {
 	  dc = new Full_Decay_Channel((*flit));
@@ -185,7 +185,7 @@ void All_Decays::ThreeBodyDecays()
       if (!dt) {
 	dt = new Full_Decay_Table((*flit));
       }
-      for (int i=0;i<primarylist.size();i++) {
+      for (size_t i=0;i<primarylist.size();i++) {
 	for (int j=0;j<3;j++) primaries[j] = primarylist[i]->in[j];
 	if (primaries[0].Mass()<primaries[1].Mass()+primaries[2].Mass() &&
 	    primaries[0]!=primaries[1] && primaries[0]!=primaries[2]) {
@@ -193,7 +193,7 @@ void All_Decays::ThreeBodyDecays()
 	    secondarylist = m_vertextable[primaries[k]];
 	    flavs[2]      = primaries[3-k];
 	    if (secondarylist.size()==0) continue;
-	    for (int l=0;l<secondarylist.size();l++) {
+	    for (size_t l=0;l<secondarylist.size();l++) {
 	      flavs[0] = secondarylist[l]->in[1];
 	      flavs[1] = secondarylist[l]->in[2];
 	      if (!(primaries[0].Mass()<flavs[0].Mass()+flavs[1].Mass()+flavs[2].Mass())) {
