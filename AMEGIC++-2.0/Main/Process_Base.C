@@ -54,11 +54,12 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   Pol_Info * _pl,
 			   int _nex,ATOOLS::Flavour * _ex_fl) :
   Integrable_Base(_nin,_nout,_fl,_scalescheme,_kfactorscheme,_scalefactor,_beam,_isr),
-  m_nex(_nex),m_gen_str(_gen_str),
-  m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
-  p_ex_fl(_ex_fl),m_asscale(_scale),
-  m_facscale(_scale), m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.),
-  m_atoms(0), m_analyse(0), m_tables(0), p_psgen(0)
+  m_gen_str(_gen_str),m_nex(_nex),
+  p_ex_fl(_ex_fl),
+  m_atoms(0), m_analyse(0), m_tables(0), 
+  m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.),
+  m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0), 
+  m_asscale(_scale), m_facscale(_scale), p_psgen(0)
 {
   p_flin    = new Flavour[m_nin];
   p_flout   = new Flavour[m_nout];  
@@ -70,14 +71,14 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   p_pshandler = 0;
   p_selector = 0;
   
-  for (short int i=0;i<m_nin;i++) {
+  for (size_t i=0;i<m_nin;i++) {
     p_flin[i]  = _fl[i];
     if (_pl!=0) p_plin[i] = _pl[i];
            else p_plin[i] = Pol_Info(p_flin[i]); 
     if (p_flin[i].Strong())        m_nstrong++;
     if (p_flin[i].IntCharge()!=0)  m_neweak++;
   }
-  for (short int i=0;i<m_nout;i++) { 
+  for (size_t i=0;i<m_nout;i++) { 
     p_flout[i] = _fl[i+m_nin]; 
     if (_pl!=0) p_plout[i] = _pl[i+m_nin];
            else p_plout[i] = Pol_Info(p_flout[i]); 
@@ -136,9 +137,7 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   _lib        = _name;
   _name      += string("_");
 
-  short int i;
-
-  for (i=0;i<m_nin;i++) {
+  for (size_t i=0;i<m_nin;i++) {
     _name += string(_flin[i].Name());
     if ((_flin[i].Kfcode()==kf::e)   ||
 	(_flin[i].Kfcode()==kf::mu)  ||
@@ -167,7 +166,7 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   }
   _name += string("__");
 
-  for (i=0;i<m_nout;i++) {
+  for (size_t i=0;i<m_nout;i++) {
     _name += string(_flout[i].Name());
     if (_flout[i].Kfcode()==kf::e  ||
 	_flout[i].Kfcode()==kf::mu ||
@@ -198,38 +197,39 @@ string * Process_Base::GenerateNames(int _nin, Flavour * _flin, Pol_Info * _plin
   _name.erase(_name.length()-1,1);
 
   string hname;
+  size_t i;
   // erase _quark
   for (;;) {
     i = _name.find("_quark");
-    if (i==-1) break;
+    if (i==string::npos) break;
     hname = _name;
     _name = hname.substr(0,i) + hname.substr(i+6); 
   }
   // gluon -> G
   for (;;) {
     i = _name.find("gluon");
-    if (i==-1) break;
+    if (i==string::npos) break;
     hname = _name;
     _name = hname.substr(0,i) + string("G") + hname.substr(i+5); 
   }
   // jet -> j
   for (;;) {
     i = _name.find("jet");
-    if (i==-1) break;
+    if (i==string::npos) break;
     hname = _name;
     _name = hname.substr(0,i) + string("j") + hname.substr(i+3); 
   }
   // Quark -> Q
   for (;;) {
     i = _name.find("Quark");
-    if (i==-1) break;
+    if (i==string::npos) break;
     hname = _name;
     _name = hname.substr(0,i) + string("Q") + hname.substr(i+5); 
   }
   // photon -> P
   for (;;) {
     i = _name.find("photon");
-    if (i==-1) break;
+    if (i==string::npos) break;
     hname = _name;
     _name = hname.substr(0,i) + string("P") + hname.substr(i+6); 
   }
@@ -418,7 +418,7 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
   bool         addit;
   Channel_Info ci;
 
-  for (int i=0;i<_proc->Size();i++) {
+  for (size_t i=0;i<_proc->Size();i++) {
     if ((*_proc)[i]->Partner()==NULL) AddChannels((*_proc)[i],_fsr,_beamparams,_isrparams);
     else {
       if ((*_proc)[i]->Partner()==(*_proc)[i]) {
@@ -441,7 +441,7 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 	    for (int j=0;j<(*_proc)[i]->NumberOfBeamIntegrators()/3;j++) {
 	      (*_proc)[i]->BeamChannels(j,ci);
 	      addit = 1;
-	      for (int k=0;k<_beamparams.size();k++) {
+	      for (size_t k=0;k<_beamparams.size();k++) {
 		if (_beamparams[k]==ci) { addit = 0; break; }
 	      }
 	      if (addit) _beamparams.push_back(ci);
@@ -453,7 +453,7 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 	    for (int j=0;j<(*_proc)[i]->NumberOfISRIntegrators()/3;j++) {
 	      (*_proc)[i]->ISRChannels(j,ci);
 	      addit = 1;
-	      for (int k=0;k<_isrparams.size();k++) {
+	      for (size_t k=0;k<_isrparams.size();k++) {
 		if (_isrparams[k]==ci) { addit = 0; break; }
 	      }
 	      if (addit) _isrparams.push_back(ci);
@@ -543,7 +543,7 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     }
     else {
       pt2 = 0.;
-      for (int i=m_nin;i<m_nin+m_nout;i++) {
+      for (size_t i=m_nin;i<m_nin+m_nout;i++) {
 	pt2 += ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
       }
     }
@@ -551,18 +551,18 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
   case 3  :
     pt2 = s;
     double pt2i;
-    for (int i=m_nin;i<m_nin+m_nout;i++) {
+    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
       pt2i = ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
       if (pt2i<pt2) pt2 = pt2i;
     }
     break;
   case 63 :
-    if (m_nout!=m_maxjetnumber) {
+    if ((int)m_nout!=m_maxjetnumber) {
       pt2 = m_asscale;
     }
     else {
       pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
-      for (int i=m_nin+1;i<m_nin+m_nout;++i) {
+      for (size_t i=m_nin+1;i<m_nin+m_nout;++i) {
 	if (p_flavours[i].Strong())
 	  pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
       }
@@ -570,7 +570,7 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     break;
   case 64 :
     pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
-    for (int i=m_nin+1;i<m_nin+m_nout;++i) {
+    for (size_t i=m_nin+1;i<m_nin+m_nout;++i) {
       pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
     }
     break;
@@ -578,7 +578,7 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     pt2 = m_asscale;
 
     // if highest number of jets
-    if (m_nout==m_maxjetnumber) {
+    if ((int)m_nout==m_maxjetnumber) {
       if (p_selector->Name()=="Combined_Selector") {
 	Selector_Base * jf = ((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
 	if (jf) {
@@ -601,7 +601,7 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     }
     else {
       pt2 = 0.;
-      for (int i=m_nin;i<m_nin+m_nout;i++) {
+      for (size_t i=m_nin;i<m_nin+m_nout;i++) {
 	pt2 += ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]);
       }
     }
