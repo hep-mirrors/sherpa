@@ -127,7 +127,8 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
 
   bool okay = InitializeTheIO();
 
-  okay      = okay && InitializeTheModel();  
+  okay = okay && InitializeTheAnalyses();
+  okay = okay && InitializeTheModel();  
 
   //  set masses and widths from command line
   SetParameter(nr);
@@ -146,7 +147,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   
   if (m_mode>8999) {
     okay &= InitializeTheExternalMC();
-    InitializeTheAnalyses();
     return true;
   }
 
@@ -159,7 +159,6 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
     okay = okay && InitializeTheHadronDecays();
     okay = okay && InitializeTheBeamRemnants();
     okay = okay && InitializeTheUnderlyingEvents();
-    okay = okay && InitializeTheAnalyses();
   }
   return okay;
 }
