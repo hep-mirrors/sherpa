@@ -101,11 +101,13 @@ C===========================================================================
 
       If (X .lt. 0D0 .or. X .gt. 1D0) Then
         Print *, 'X out of range in Ctq6Pdf: ', X
-        Stop
+C        Stop
+        CALL ERRMSG()
       Endif
       If (Q .lt. Alambda) Then
         Print *, 'Q out of range in Ctq6Pdf: ', Q
-        Stop
+C        Stop
+       CALL ERRMSG()
       Endif
 C      Print *, Iparton
       If ((Iparton .lt. -NfMx .or. Iparton .gt. NfMx)) Then
@@ -152,8 +154,9 @@ C             If data file not initialized, do so.
             Tablefile=Flnm(5)//nn(2:3)//'.tbl'
          Else
             Print *, 'Invalid Iset number in SetCtq6 :', Iset
-            Stop
-         Endif
+C            Stop
+            CALL ERRMSG() 
+        Endif
          Open(IU, File=Tablefile, Status='OLD', Err=100)
  21      Call ReadTbl (IU)
          Close (IU)
@@ -163,7 +166,8 @@ C             If data file not initialized, do so.
 
  100  Print *, ' Data file ', Tablefile, ' cannot be opened '
      >//'in SetCtq6!!'
-      Stop
+C      Stop
+      CALL ERRMSG()
 C                             ********************
       End
 
@@ -223,7 +227,9 @@ C
             Return
          Endif
  10   Continue
-      Stop ' There is no available I/O unit. '
+C      Stop ' There is no available I/O unit. '
+      Print ' There is no available I/O unit. '
+      CALL ERRMSG()
 C               *************************
       End
 C
@@ -326,7 +332,8 @@ C                     x     0  Xmin               x                 1
 C
       If     (JLx .LE. -1) Then
         Print '(A,1pE12.4)', 'Severe error: x <= 0 in PartonX6! x = ', x
-        Stop
+C        Stop
+        CALL ERRMSG()
       ElseIf (JLx .Eq. 0) Then
          Jx = 0
       Elseif (JLx .LE. Nx-2) Then
@@ -341,7 +348,8 @@ C                                      Keep at least 4 points >= Jx
          Jx = JLx - 2
       Else
         Print '(A,1pE12.4)', 'Severe error: x > 1 in PartonX6! x = ', x
-        Stop
+C     Stop
+        CALL ERRMSG()
       Endif
 C          ---------- Note: JLx uniquely identifies the x-bin; Jx does not.
 

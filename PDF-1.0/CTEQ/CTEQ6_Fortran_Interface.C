@@ -1,15 +1,23 @@
 #include "CTEQ6_Fortran_Interface.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include "Exception.H"
+#include "MyStrStream.H"
 #include <unistd.h> 
 
 using namespace PDF;
 using namespace ATOOLS;
 
 extern "C" {
-    void    ctq6initset_(int &);
-    double  ctq6evolve_(int &,double &, double &);
+  void    ctq6initset_(int &);
+  double  ctq6evolve_(int &,double &, double &);
+  void    errmsg_();
 }
+
+void errmsg_() {
+  CTEQ6_Fortran_Interface::Error();
+}
+
 
 CTEQ6_Fortran_Interface::CTEQ6_Fortran_Interface(const ATOOLS::Flavour _bunch,
 						 const std::string _set,const int _member,
@@ -108,4 +116,12 @@ double CTEQ6_Fortran_Interface::GetXPDF(const ATOOLS::Flavour infl)
 
 void CTEQ6_Fortran_Interface::AssignKeys(ATOOLS::Integration_Info *const info)
 {
+}
+
+
+void CTEQ6_Fortran_Interface::Error()
+{
+  throw(ATOOLS::Exception(ATOOLS::ex::critical_error,std::string("Cteq6Pdf called ERRORMSG "),
+			  "CTEQ6_Fortran_Interface","Error"));
+
 }

@@ -8,7 +8,6 @@ namespace PDF {
 
   class CTEQ6_Fortran_Interface : public PDF_Base {
   private:
-
     std::string m_set,m_path;
     int         m_member;
     int         m_anti;
@@ -27,6 +26,8 @@ namespace PDF {
     double GetXPDF(const ATOOLS::Flavour);
 
     void AssignKeys(ATOOLS::Integration_Info *const info);
+
+    static void Error();
 
   };
 
