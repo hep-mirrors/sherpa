@@ -6,6 +6,7 @@
 namespace PHASIC {
 
   class Single_Channel;
+  class Foam_Interface;
 
   struct Channel_Info {
     int                  type;
@@ -33,7 +34,7 @@ namespace PHASIC {
     double                        m_weight;
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
-    std::vector<Single_Channel *> channels;
+    std::vector<Single_Channel *> channels, m_best;
     bool m_readin;
     int m_lastdice,m_optcnt;
     double m_pol;
@@ -55,12 +56,16 @@ namespace PHASIC {
       Channels, whose a-priori weight drops under a critical value are discarded
       in the follwoing by setting their a-priori weights to 0.
     */
+    std::string SelectChannel();
+
     void    EndOptimize(double);
     void    AddPoint(double);
     void    GeneratePoint(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *,double *);
     void    GenerateWeight(int,ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
     void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);
+    void    GeneratePoint(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,Foam_Interface*);
     void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *);     
+    void    GenerateWeight(ATOOLS::Vec4D *,ATOOLS::Cut_Data *,Foam_Interface*);     
 
     void    GeneratePoint(int,ATOOLS::Vec4D *,double *);
     void    GenerateWeight(int,ATOOLS::Vec4D *);
@@ -73,7 +78,10 @@ namespace PHASIC {
     void    GenerateWeight(double sprime,double y,int mode);
 
     void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode);
+    void    GeneratePoint(ATOOLS::Info_Key &spkey,ATOOLS::Info_Key &ykey,int mode,
+			  Foam_Interface *foam);
     void    GenerateWeight(int mode);
+    void    GenerateWeight(int mode,Foam_Interface*);
 
     void    ISRInfo(int,int &,double &,double &);
 
@@ -96,6 +104,8 @@ namespace PHASIC {
     std::string                 ChID(int);
     Single_Channel*             LastChannel() { if (m_lastdice>=0) return Channel(m_lastdice); return 0;}
     void                        NoDice()    { m_lastdice=-1; }
+    inline const std::vector<Single_Channel*> &Best() const { return m_best; }
+
   };
 
 
