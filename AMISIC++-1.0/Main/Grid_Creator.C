@@ -188,7 +188,8 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
 
 bool Grid_Creator::CreateOptimizedGrid()
 {
-  msg_Info()<<"Grid_Creator::CreateInitialGrid(): Optimizing grid for MI.";
+  msg_Info()<<"Grid_Creator::CreateInitialGrid(): "
+	    <<"Optimizing grid for MI.\n";
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_maxevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
@@ -206,7 +207,8 @@ bool Grid_Creator::CreateOptimizedGrid()
 
 bool Grid_Creator::CreateInitialGrid()
 {
-  msg_Info()<<"Grid_Creator::CreateInitialGrid(): Initializing grid for MI.";
+  msg_Info()<<"Grid_Creator::CreateInitialGrid(): "
+	    <<"Initializing grid for MI.\n";
   double starttime=ATOOLS::rpa.gen.Timer().UserTime();
   for (;m_events<m_initevents;++m_events) {
     if (!UpdateHistogram(p_processes)) return false;
