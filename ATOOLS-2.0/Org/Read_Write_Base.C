@@ -126,8 +126,6 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
   return pos;
 }
 
-#include "Message.H"
-
 bool Read_Write_Base::OpenInFile(const unsigned int i)
 {  
   if (InputFile(i)==nullstring) {
