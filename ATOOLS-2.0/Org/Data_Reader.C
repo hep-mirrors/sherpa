@@ -146,8 +146,8 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
       inputstring=String();
     }
     else {
-      msg_Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
-			    <<"   Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
+		     <<"   Abort reading."<<std::endl;
       return Default<Read_Type>();
     }
   }
@@ -198,9 +198,9 @@ Read_Type Data_Reader::M_ReadFromFile(std::string parameter,std::string filename
       filename=InputFile();
     }
     else {
-      msg_Tracking()<<"Data_Reader: No input file specified. "
-		    <<"No default available."<<std::endl
-		    <<"   Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input file specified. "
+		     <<"No default available."<<std::endl
+		     <<"   Abort reading."<<std::endl;
       return value;
     }
   }
@@ -237,9 +237,9 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
       inputstring=String();
     }
     else {
-      msg_Tracking()<<"Data_Reader: No input string specified. "
-		    <<"No default available !"<<std::endl
-		    <<"   Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input string specified. "
+		     <<"No default available !"<<std::endl
+		     <<"   Abort reading."<<std::endl;
       return values;
     }
   }
@@ -279,8 +279,8 @@ Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,Vector
       filename=InputFile();
     }
     else {
-      msg_Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
-			    <<"   Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
+		     <<"   Abort reading."<<std::endl;
       return values;
     }
   }
@@ -302,7 +302,8 @@ Data_Reader::M_VectorFromFile(std::string parameter, std::string filename,Vector
   }
   CloseInFile();
   if (values.size() != 0) return values;
-  msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+  msg_Debugging()<<"Data_Reader: Parameter "
+		 <<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   return values;
 }
 
@@ -320,8 +321,8 @@ Data_Reader::M_MatrixFromString(std::string parameter,std::string inputstring,Ma
       inputstring=String();
     }
     else {
-      msg_Tracking()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
-			    <<"   Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input string specified ! No default available !"<<std::endl
+		     <<"   Abort reading."<<std::endl;
       return transposedvalues;
     }
   }
@@ -373,8 +374,8 @@ Data_Reader::M_MatrixFromFile(std::string parameter,std::string filename,MatrixT
       filename=InputFile();
     }
     else {
-      msg_Tracking()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
-			    <<"    Abort reading."<<std::endl;
+      msg_Debugging()<<"Data_Reader: No input file specified ! No default available !"<<std::endl
+		     <<"    Abort reading."<<std::endl;
       return transposedvalues;
     }
   }
@@ -408,7 +409,8 @@ Data_Reader::M_MatrixFromFile(std::string parameter,std::string filename,MatrixT
     }
     else return transposedvalues;
   }
-  msg_Tracking()<<"Data_Reader: Parameter "<<parameter<<" not specified in "<<filename<<" !"<<std::endl;
+  msg_Debugging()<<"Data_Reader: Parameter "
+		 <<parameter<<" not specified in "<<filename<<" !"<<std::endl;
   return transposedvalues;
 }
 
