@@ -24,6 +24,7 @@ libPDF_la_SOURCES     =	\
 			cteq6_inter.f \
 		    	CTEQ6_Fortran_Interface.C \
 			GRVph_Fortran_Interface.C \
+			grvphoton.f \
 		    	PDF_Handler.C 
 noinst_HEADERS        =	\
 			ISR_Base.H \
