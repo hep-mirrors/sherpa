@@ -182,7 +182,7 @@ void Selector_Data::ControlOutput() {
     return;
   }
   msg.Debugging()<<"Selector_Data : "<<endl;
-  for (int i=0;i<data.size();i++) {
+  for (size_t i=0;i<data.size();i++) {
     switch (data[i].type) {
     case 1:  msg.Debugging()<<"Jet_Finder : "; break;
     case 2:  msg.Debugging()<<"Cone_Finder: "; break;
@@ -197,7 +197,7 @@ void Selector_Data::ControlOutput() {
     case 32: msg.Debugging()<<"SummedPT   : "; break;
     } 
     msg.Debugging()<<data[i].min<<" ... "<<data[i].max<<" : ";
-    for (int j=0;j<(data[i].flavs).size();j++) msg.Debugging()<<(data[i]).flavs[j]<<" ";
+    for (size_t j=0;j<(data[i].flavs).size();j++) msg.Debugging()<<(data[i]).flavs[j]<<" ";
     if (data[i].type == 14) msg.Debugging()<<" with "<<data[i].help;
     msg.Debugging()<<endl;
   }
@@ -205,7 +205,7 @@ void Selector_Data::ControlOutput() {
 
 void Selector_Data::Data(int i,int & type,std::vector<Flavour> & flavs,
 			 int & help,double & min,double & max) {
-  if ( (i<0) || (i>data.size()) ) {
+  if ( (i<0) || (i>(int)data.size()) ) {
     msg.Error()<<"Error in Selector_Data::Data("<<i<<"). "
 			  <<"Delimiter out of bounds."<<endl
 			  <<"   Size : "<<data.size()<<endl;
