@@ -46,7 +46,7 @@ double LL_Single_Sudakov::Log(double Q, double q)
   p_bp->SetQmax(m_lastsud[1]=Q);
   p_bp->SetQmin(m_lastsud[0]=q);
   m_lastsud.SetStatus(ATOOLS::si::diced);
-  m_lastsud[2]=m_gauss.Integrate(q,Q,1.e-5,1);
+  m_lastsud[2]=m_gauss.Integrate(q,Q,1.e-3,1);
   return m_lastsud[2];
 }
 
