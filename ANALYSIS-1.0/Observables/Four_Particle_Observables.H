@@ -25,6 +25,17 @@ namespace ANALYSIS {
 			     const std::string & =std::string("NRAngle:"));
     Primitive_Observable_Base * Copy() const;
   };
+
+  // ======================================================================
+
+  class Di_Mass : public Primitive_Observable_Base {
+  public:
+    Di_Mass(unsigned int type,double xmin,double xmax,int nbins,
+	   const std::string & =std::string("Jets"));
+    void Evaluate(const ATOOLS::Blob_List & blobs,double value, int);
+    Primitive_Observable_Base * Copy() const ;
+  };
+
 }
 
 #endif

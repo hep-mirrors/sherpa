@@ -325,6 +325,16 @@ void Primitive_Analysis::CreateFinalStateParticleList()
 	}
       }
     }
+    if ((*blit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
+      Blob_Data_Base * info=(*(*blit))["OrderStrong"];
+      if (info &&m_datacontainer.find("OrderStrong")==m_datacontainer.end()) {
+	m_datacontainer["OrderStrong"]=new Blob_Data<double>(info->Get<double>());
+	info=(*(*blit))["OrderEWeak"];
+	if (info) {
+	  m_datacontainer["OrderEWeak"]=new Blob_Data<double>(info->Get<double>());
+	}
+      }
+    }
     if (SelectBlob(*blit)) {
       for (int i=0;i<(*blit)->NOutP();++i) {
 	Particle * p = (*blit)->OutParticle(i);

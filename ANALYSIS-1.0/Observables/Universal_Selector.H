@@ -1,0 +1,23 @@
+#ifndef Universal_Selector_H
+#define Universal_Selector_H
+
+#include "Primitive_Observable_Base.H"
+
+namespace ANALYSIS {
+
+  class Universal_Selector: public Primitive_Observable_Base {  
+  private:
+    std::string m_outlist;
+    std::string m_key;
+    double m_keymin, m_keymax;
+  public:
+    Universal_Selector(const std::string & obskey, const double keymin, const double keymax, 
+		       const std::string & inlistname, const std::string & outlistname);
+    void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
+    Primitive_Observable_Base *Copy() const;
+
+  };// end of class Universal_Selector
+
+}// end of namespace ANALYSIS
+
+#endif

@@ -1,6 +1,8 @@
 #include "Four_Particle_Observables.H"
+#include "Primitive_Analysis.H"
 
 using namespace ANALYSIS;
+using namespace ATOOLS;
 
 #include "MyStrStream.H"
 
@@ -159,3 +161,103 @@ Primitive_Observable_Base * Four_Particle_PlaneAngle::Copy() const
   return new Four_Particle_PlaneAngle(m_flavs,m_type,m_xmin,m_xmax,m_nbins,m_name);
 }
 
+// ======================================================================
+template <class Class>
+Primitive_Observable_Base *const GetObservable2(const String_Matrix &parameters)
+{									
+  if (parameters.size()<1) return NULL;
+  if (parameters.size()==1) {
+    if (parameters[0].size()<4) return NULL;
+    std::string list=parameters[0].size()>4?parameters[0][4]:"Analysed";
+    return new Class(10*(int)(parameters[0][3]=="Log"),
+		     ATOOLS::ToType<double>(parameters[0][0]),
+		     ATOOLS::ToType<double>(parameters[0][1]),
+		     ATOOLS::ToType<int>(parameters[0][2]),list);
+  }
+  else if (parameters.size()<4) return NULL;
+  double min=0.0, max=1.0;
+  size_t bins=100;
+  std::string list="Analysed", scale="Lin";
+  for (size_t i=0;i<parameters.size();++i) {
+    if (parameters[i].size()<2) continue;
+    if (parameters[i][0]=="MIN") min=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="MAX") max=ATOOLS::ToType<double>(parameters[i][1]);
+    else if (parameters[i][0]=="BINS") bins=ATOOLS::ToType<int>(parameters[i][1]);
+    else if (parameters[i][0]=="SCALE") scale=parameters[i][1];
+    else if (parameters[i][0]=="LIST") list=parameters[i][1];
+  }
+  return new Class((scale=="Log")*10,min,max,bins,list);
+}									
+
+#define DEFINE_GETTER_METHOD2(CLASS,NAME)				\
+  Primitive_Observable_Base *					\
+  NAME::operator()(const String_Matrix &parameters) const		\
+  { return GetObservable2<CLASS>(parameters); }
+
+#define DEFINE_PRINT_METHOD2(NAME)					\
+  void NAME::PrintInfo(std::ostream &str,const size_t width) const	\
+  { str<<"min max bins Lin|Log [list]"; }
+
+#define DEFINE_OBSERVABLE_GETTER2(CLASS,NAME,TAG)			\
+  DECLARE_GETTER(NAME,TAG,Primitive_Observable_Base,String_Matrix);	\
+  DEFINE_GETTER_METHOD2(CLASS,NAME);					\
+  DEFINE_PRINT_METHOD2(NAME)
+
+
+DEFINE_OBSERVABLE_GETTER2(Di_Mass,
+			 Di_Mass_Getter,"DiMass");
+
+Di_Mass::Di_Mass(unsigned int type,double xmin,double xmax,int nbins,
+	       const std::string & lname) :
+  Primitive_Observable_Base(type,xmin,xmax,nbins,NULL)
+{
+  m_listname=lname;
+  m_name  = std::string("4jet_");
+  if (lname!="Analysed") m_name=lname+std::string("_")+m_name;
+  m_name += "DiMass.dat";
+}
+
+void Di_Mass::Evaluate(const ATOOLS::Blob_List & blobs,double weight, int ncount)
+{
+  Particle_List * pl=p_ana->GetParticleList(m_listname);
+
+  if (pl->size()!=4) {
+    p_histo->Insert(0.,0.,2*ncount);
+    return;
+  }
+
+  std::vector<Vec4D> moms;
+  for (Particle_List::const_iterator pit=pl->begin();pit!=pl->end();++pit) {
+    moms.push_back((*pit)->Momentum());
+  }
+
+  double m1a = (moms[0]+moms[1]).Abs2();
+  double m1b = (moms[2]+moms[3]).Abs2();
+  double d1 = dabs(m1a-m1b);
+
+  double m2a = (moms[0]+moms[2]).Abs2();
+  double m2b = (moms[1]+moms[3]).Abs2();
+  double d2 = dabs(m2a-m2b);
+
+  double m3a = (moms[0]+moms[3]).Abs2();
+  double m3b = (moms[1]+moms[2]).Abs2();
+  double d3 = dabs(m3a-m3b);
+
+  if (d1<d2 && d1<d3) {
+    p_histo->Insert(sqrt(m1a),weight,ncount);
+    p_histo->Insert(sqrt(m1b),weight,ncount);
+  }
+  else if (d2<d3) {
+    p_histo->Insert(sqrt(m2a),weight,ncount);
+    p_histo->Insert(sqrt(m2b),weight,ncount);
+  }
+  else {
+    p_histo->Insert(sqrt(m3a),weight,ncount);
+    p_histo->Insert(sqrt(m3b),weight,ncount);
+  }
+}
+
+Primitive_Observable_Base * Di_Mass::Copy() const 
+{
+  return new Di_Mass(m_type,m_xmin,m_xmax,m_nbins,m_listname);
+}
