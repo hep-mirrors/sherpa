@@ -70,11 +70,6 @@ bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
   }
 
   int dummy=2;
-  if (rpa.gen.Debugging()) {
-    msg.Out()<<"before hadronisation"<<std::endl;
-    pylist_(dummy);
-    msg.Out()<<"~~~~~~~~~~~~~~~~~~~~"<<std::endl;
-  }
   finterf_(nhep, isthep, idhep, jmohep, jdahep, phep, vhep);
   if (rpa.gen.Debugging()) {
     msg.Out()<<"after hadronisation"<<std::endl;
@@ -122,7 +117,7 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
   kfjet     = new int[maxentries];
   mothers   = new int[maxentries];
   daughters = new int[2*maxentries];
-    
+  
   fhawface_(nk,kfjet,mothers,daughters,pjet,xjet);
     
   Blob    * decay;

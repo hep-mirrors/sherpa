@@ -448,6 +448,7 @@ double Beam_Remnant_Handler::GetX_Lund(Flavour f1,Flavour f2,double E) {
   if (f1.IsQuark() && f2.IsDiQuark()) {
     mass = 0.3;
     cut  = 2.*mass/E;
+    if (cut>0.49) return 0.5;
     for (;;) {
       rn = ran.Get();
       // Check the boundaries.
