@@ -16,7 +16,7 @@ Run_Parameter::Run_Parameter()
   gen.m_ecms      = gen.m_ycut       = gen.m_accu        = 0.;
   gen.m_beam1     = gen.m_beam2      = Flavour(kf::none);
   gen.m_rpa_id    = gen.m_flavour_id = std::string("");
-#ifdef USING__ATOOLS_only
+#ifndef USING__ATOOLS_only
   gen.p_model     = NULL;
 #endif
 } 
