@@ -171,14 +171,14 @@ void ISR_Handler::SetSprimeMax(const double spmax)
 
 void ISR_Handler::SetFixedSprimeMin(const double spmin)  
 { 
-  m_fixed_smin = Max(m_fixed_smin,spmin);
-  m_splimits[0] = Max(m_splimits[0],spmin);
+  m_fixed_smin = spmin;
+  m_splimits[0] = spmin;
 }
 
 void ISR_Handler::SetFixedSprimeMax(const double spmax)  
 {
-  m_fixed_smax = Min(m_fixed_smax,spmax);
-  m_splimits[1] = Min(m_splimits[1],spmax);
+  m_fixed_smax = spmax;
+  m_splimits[1] = spmax;
 }
 
 bool ISR_Handler::CheckConsistency(ATOOLS::Flavour *bunches,ATOOLS::Flavour *partons) 
