@@ -101,7 +101,6 @@ Two_Particle_Scalar_PT::Two_Particle_Scalar_PT(const Flavour & _flav1,const Flav
 				 const std::string & _name, const std::string & _lname) :
   Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"SPT",_lname) { }
 
-
 void Two_Particle_Scalar_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
 {
   p_histo->Insert((mom1.PPerp()+mom2.PPerp())/2.,weight,ncount); 
@@ -110,6 +109,32 @@ void Two_Particle_Scalar_PT::Evaluate(const Vec4D & mom1,const Vec4D & mom2,doub
 Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const 
 {
   return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
+}
+
+#include "Scaling.H"
+#include "My_Root.H"
+#include "TH2D.h"
+
+Two_Particle_Angles::Two_Particle_Angles(const Flavour & _flav1,const Flavour & _flav2,
+					 int _type,double _xmin,double _xmax,int _nbins,
+					 const std::string & _name, const std::string & _lname) :
+  Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"Angles",_lname) 
+{ 
+  (*MYROOT::myroot)(new TH2D(ATOOLS::ToString(this).c_str(),
+			     (_flav1.Name()+std::string("_")+_flav2.Name()+
+			      std::string("_Angles")).c_str(),
+			     64,0.,M_PI,64,0.,M_PI),
+		    "BB_Angles");
+}
+
+void Two_Particle_Angles::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
+{
+  ((TH2D*)(*MYROOT::myroot)["BB_Angles"])->Fill(mom1.Theta(),mom2.Theta(),weight);
+} 
+
+Primitive_Observable_Base * Two_Particle_Angles::Copy() const 
+{
+  return new Two_Particle_Angles(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
 }
 
 Two_Particle_Eta::Two_Particle_Eta(const Flavour & _flav1,const Flavour & _flav2,
