@@ -72,7 +72,7 @@ size_t XS_Selector::FindInGroup(XS_Group *const group,XS_Base *&xs,
 	for (size_t j=0;j<nin+nout;j++) {
 	  if (xsi->Flavours()[j] != fl[j]) pos=std::string::npos;
 	}
-	if (pos==std::string::npos) {
+	if (pos!=std::string::npos) {
 	  xs=xsi;
 	  return pos;
 	}
