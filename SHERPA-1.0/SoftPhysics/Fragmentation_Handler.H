@@ -12,32 +12,23 @@
 #include "Blob.H"
 
 namespace SHERPA {
-
   class Fragmentation_Handler {
-
-    std::string     m_dir,m_file;
-    std::string     m_fragmentationmodel;
-    int             m_mode;
-    Lund_Interface *p_lund;
-
+    std::string              m_dir,m_file;
+    std::string              m_fragmentationmodel;
+    double                   m_lund_a,m_lund_b,m_lund_sigma;
+    int                      m_mode;
+    Lund_Interface         * p_lund;
+    bool   ExtractSinglets(ATOOLS::Blob_List *,ATOOLS::Particle_List *);
+    bool   FindConnected(ATOOLS::Blob_List *,ATOOLS::Particle *,
+			 ATOOLS::Blob *);
   public :
-
-    //constructor
-    Fragmentation_Handler(const std::string &path,const std::string &file);
-
-    //destructor
+    Fragmentation_Handler(std::string,std::string);
     ~Fragmentation_Handler();
-
-    // member functions
-    bool PerformFragmentation(ATOOLS::Blob_List *const bloblist,
-			      ATOOLS::Particle_List *const list=NULL);
-
-    // inline functions
-    inline const std::string &FragmentationModel() { return m_fragmentationmodel; }
-
-    inline Lund_Interface *const GetLundInterface() { return p_lund; }
-    
-  };// end of class Fragmentation_Handler
+    bool PerformFragmentation(ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
+    void EmptyMyLists();
+    Lund_Interface * GetLundInterface();
+    std::string FragmentationModel() { return m_fragmentationmodel; }
+  };
 
   /*!
     \class Fragmentation_Handler

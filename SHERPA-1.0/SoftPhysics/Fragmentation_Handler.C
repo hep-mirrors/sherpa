@@ -1,51 +1,166 @@
 #include "Fragmentation_Handler.H"
-
+#include "Run_Parameter.H"
 #include "Message.H"
+#include "Random.H"
+#include "Vector.H"
 #include "Data_Read.H"
-#include "Exception.H"
+
+#include <stdio.h>
 
 using namespace SHERPA;
+using namespace ATOOLS;
 
-Fragmentation_Handler::Fragmentation_Handler(const std::string &_dir,const std::string &_file):
-  m_dir(_dir), 
-  m_file(_file),
-  m_mode(0),
-  p_lund(NULL)
+
+Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file):
+  m_dir(_dir), m_file(_file)
 {
-  ATOOLS::Data_Read dr(m_dir+m_file);
-  m_fragmentationmodel=dr.GetValue<std::string>("FRAGMENTATION",std::string("Lund"));
+  Data_Read dr(m_dir+m_file);
+  m_fragmentationmodel = dr.GetValue<std::string>("FRAGMENTATION",std::string("Lund"));
   std::string lundfile;
   if (m_fragmentationmodel==std::string("Lund")) {
-    lundfile=dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
+    lundfile     = dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
     ATOOLS::msg.Events()<<"Fragmentation_Handler::Fragmentation_Handler(..): "
 			<<"Initialize Lund Fragmentation according to "<<lundfile<<std::endl;
-    p_lund = new Lund_Interface(m_dir,lundfile);
-    m_mode = 1;
+    p_lund       = new Lund_Interface(m_dir,lundfile);
+    m_mode       = 1;
     return;
   }
-  else if (m_fragmentationmodel==std::string("Off")) {
-    ATOOLS::msg.Out()<<"Fragmentation_Handler::Fragmentation_Handler(..): "
-		     <<"WARNING: The Fragmentation is switched off "<<std::endl;
+  if (m_fragmentationmodel==std::string("Off") ||
+      m_fragmentationmodel==std::string("off") ) {
+    msg.Out()<<"WARNING : The Fragmentation is switched off "<<std::endl;
+    p_lund       = 0;
+    m_mode       = 0;
     return;
   }
-  throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,std::string("Fragmentation model '")+
-			  m_fragmentationmodel+std::string("' not implemented."),
-			  "Fragmentation_Handler","Fragmentation_Handler"));
+  msg.Error()<<"ERROR in Fragmentation_Handler::Fragmentation_Handler."<<std::endl
+	     <<"    please choose between <Lund> and <Off> as Fragmentation model"<<std::endl
+	     <<"    the Fragmentation model <"<<m_fragmentationmodel
+	     <<"> is not implemented yet. Abort."<<std::endl;
+  abort();
 }
    
 Fragmentation_Handler::~Fragmentation_Handler() 
 {
-  if (p_lund!=NULL) delete p_lund;
+  if (p_lund)      delete p_lund;
 }
 
-bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,ATOOLS::Particle_List *list) 
+bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
+						 ATOOLS::Particle_List * pl) 
 {
-  if (m_mode==0) return true;
-  ATOOLS::Blob *fragmentation = new ATOOLS::Blob();
-  bloblist->push_back(fragmentation);
-  fragmentation->SetId(bloblist->size());
-  fragmentation->SetStatus(0);
-  return p_lund->Hadronize(fragmentation,bloblist,list);
+  if (m_mode==0) return 1;
+  if (!ExtractSinglets(bl,pl)) return 0;
+  bool okay = 1;
+  for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {
+    if ( (*biter)->Type()==btp::Fragmentation && (*biter)->Status()==1 ) {
+      //(*biter)->BoostInCMS();
+      (*biter)->SetCMS();
+      okay = okay && p_lund->Hadronize((*biter),bl,pl);
+      (*biter)->SetStatus(0);
+    }
+  }
+  return okay;
 }
 
+bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List * pl) 
+{
+  Blob       * newb = NULL;
+  Particle     * part;
+  bool use_one_blob = 1;
+  bool foundatall   = 0;
+  bool found        = 1;
+  bool active;
+  while (found) {
+    found = 0;
+    for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
+      if (((*blit)->Status()==1) || ((*blit)->Status()==2)) {
+	for (int i=0;i<(*blit)->NOutP();i++) {
+	  part = (*blit)->OutParticle(i);
+	  if ( (part->Info()=='F' || part->Info()=='H') && part->Status()==1) {
+	    if (( (part->Flav().IsQuark()   && !part->Flav().IsAnti() ) ||
+		  (part->Flav().IsDiQuark() && part->Flav().IsAnti())) && part->GetFlow(1)>0 ) {
+	      if (use_one_blob==0 || newb==0) {
+		newb = new Blob();
+		newb->SetId(_bloblist->size());
+		newb->SetStatus(1);
+		newb->SetType(btp::Fragmentation);
+		_bloblist->push_back(newb);
+	      }
+	      part->SetStatus(2);
+	      newb->AddToInParticles(part);
+	      foundatall = found = 1;
+	      if (!(FindConnected(_bloblist,part,newb))) {
+		msg.Error()<<"Fragmentation_Handler::ExtractSinglets :"
+			   <<"Could not find connected parton for quark:"<<std::endl
+			   <<part<<std::endl;
+		return 0;
+	      }
+	    }
+	  }
+	}      
+      }
+    }
+    for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
+      if (!(*blit)->Type()==btp::Fragmentation) {
+	active = 0;
+	for (int i=0;i<(*blit)->NOutP();i++) {
+	  if ((*blit)->OutParticle(i)->Status()==1) { 
+	    active = 1; 
+	    break; 
+	  }
+	}
+	if (!active) (*blit)->SetStatus(0);
+      }
+    }
+  }
+  for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
+    if (!(*blit)->Type()==btp::Fragmentation) {
+      active = 0;
+      for (int i=0;i<(*blit)->NOutP();i++) {
+	if ((*blit)->OutParticle(i)->Status()==1) { 
+	  active = 1; 
+	  break; 
+	}
+      }
+      if (!active) (*blit)->SetStatus(0);
+    }
+  }
+  return foundatall;
+}
+
+
+bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
+					  Particle * compare,Blob * blob) {
+  Particle * part;
+  for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
+    for (int i=0;i<(*blit)->NOutP();i++) {
+      part = (*blit)->OutParticle(i);
+      if (part==compare || part->Status()!=1 || part->DecayBlob()!=NULL) continue;
+      if (part->Info()=='F' || part->Info() == 'H') {
+	if (part->GetFlow(2)==compare->GetFlow(1)) {
+	  part->SetStatus(2);
+	  blob->AddToInParticles(part);
+	  if (part->GetFlow(1)==0) {
+	    if ( part->Flav().IsQuark() && part->Flav().IsAnti()) {
+	      return 1;
+	    }
+	    if ( part->Flav().IsDiQuark() && (!part->Flav().IsAnti()) ) {
+	      return 1;
+	    }
+	  }
+	  else { return FindConnected(_bloblist,part,blob); }
+	}
+      }
+    }
+  }
+  msg.Error()<<"Fragmentation_Handler::FindConnected : No closed singlet line !"<<std::endl;
+  return 0;
+}
+
+Lund_Interface * Fragmentation_Handler::GetLundInterface() 
+{ 
+  if (p_lund) return p_lund; 
+  msg.Out()<<"WARNING: in Fragmentation_Handler::GetLundFortranInterface()."<<std::endl
+	   <<"   Not yet initialized. This is an inconsistent option at the moment."<<std::endl;
+  return p_lund;
+}
 
