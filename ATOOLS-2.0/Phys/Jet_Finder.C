@@ -141,7 +141,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
       for (int k=j+1;k<momsout.size();k++) {
 	pt2k  = (sqr(momsout[k][1]) + sqr(momsout[k][2]));
 	pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(momsout[j],momsout[k])) - 
-				     DPhi12(momsout[j],momsout[k]));
+				     CosDPhi12(momsout[j],momsout[k]));
 	if (pt2jk<ymin*m_s) {
 	  ymin = pt2jk/m_s;
 	  j1 = j;k1 = k;
@@ -257,7 +257,7 @@ double Jet_Finder::PTij(Vec4D p1,Vec4D p2)
       pt12_2        = pt2_2;
     }
     else 
-      pt12_2        = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - DPhi12(p1,p2));
+      pt12_2        = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
   }
   else {
     pt12_2        = 2.*sqr(Min(p1[0],p2[0]))*(1.-DCos12(p1,p2));
@@ -291,7 +291,7 @@ bool Jet_Finder::TwoJets(const Vec4D & _p1,const Vec4D & _p2)
     double pt2_2  = sqr(p2[1]) + sqr(p2[2]); 
     if (pt1_2  < m_s * m_ycut) return 0;
     if (pt2_2  < m_s * m_ycut) return 0;
-    double pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - DPhi12(p1,p2));
+    double pt12_2 = 2.*Min(pt1_2,pt2_2) * (Coshyp(DEta12(p1,p2)) - CosDPhi12(p1,p2));
     if (pt12_2 < m_s * m_ycut) return 0;
   }
   else {
@@ -403,7 +403,7 @@ double Jet_Finder::YminKt(Vec4D * p,int & j1,int & k1)
 	for (int k=j+1;k<m_n;k++) {
 	  if (m_fl[k].Strong()) {
 	    pt2k  = (sqr(p[k][1]) + sqr(p[k][2]));
-	    pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(p[j],p[k])) - DPhi12(p[j],p[k]));
+	    pt2jk = 2.*Min(pt2j,pt2k) * (Coshyp(DEta12(p[j],p[k])) - CosDPhi12(p[j],p[k]));
 	    if (pt2jk<ymin*m_s) {
 	      ymin = pt2jk/m_s;j1 = j;k1 = k;
 	    }
@@ -436,11 +436,11 @@ double Jet_Finder::DEta12(Vec4D & p1,Vec4D & p2)
   return  0.5 *log( (1 + c1)*(1 - c2)/((1-c1)*(1+c2)));
 }
 
-double Jet_Finder::DPhi12(Vec4D & p1,Vec4D & p2)
+double Jet_Finder::CosDPhi12(Vec4D & p1,Vec4D & p2)
 {
   double pt1=sqrt(p1[1]*p1[1]+p1[2]*p1[2]);
   double pt2=sqrt(p2[1]*p2[1]+p2[2]*p2[2]);
-  return acos((p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2));
+  return (p1[1]*p2[1]+p1[2]*p2[2])/(pt1*pt2);
 
   // cos(phi1-phi2) = cos(phi1) cos(phi2) + sin(phi1) sin(phi2)
   //                = (p1_x p2_x + p1_y p2_y)/(p1_z * p2_z)
