@@ -9,6 +9,8 @@
 using namespace SHERPA;
 using namespace ATOOLS;
 
+#define DEBUG__Beam_Remnant_Handler
+
 #ifdef DEBUG__Beam_Remnant_Handler
 std::set<Blob*> checked_blobs;
 
@@ -20,13 +22,13 @@ void SumMomenta(Blob * bl, Vec4D & inisum, Vec4D & finsum,bool iterate=true)
   checked_blobs.insert(bl);
   for (int i=0;i<bl->NInP();++i) {
     Particle * p =bl->InParticle(i);
-    if (p->ProductionBlob()==NULL) inisum+=p->Momentum();
+    if (p->ProductionBlob()==NULL) inisum+=p->Momentum(); 
     else if (iterate) SumMomenta(p->ProductionBlob(),inisum,finsum);
     else inisum+=p->Momentum();
   }
   for (int i=0;i<bl->NOutP();++i) {
     Particle * p =bl->OutParticle(i);
-    if (p->DecayBlob()==NULL) finsum+=p->Momentum();
+    if (p->DecayBlob()==NULL) finsum+=p->Momentum(); 
     else if (iterate) SumMomenta(p->DecayBlob(),inisum,finsum);
     else finsum+=p->Momentum();
   }
@@ -37,6 +39,17 @@ bool SumMomenta(Blob * bl)
   Vec4D inisum,finsum;
   checked_blobs.clear();
   SumMomenta(bl,inisum,finsum);
+  bool test=true;
+  for (short unsigned int i=0;i<4;++i) {
+    if ((ATOOLS::IsZero(inisum[i]) && !ATOOLS::IsZero(finsum[i])) ||
+	(!ATOOLS::IsZero(inisum[i]) && ATOOLS::IsZero(finsum[i])) ||
+	(!ATOOLS::IsZero(inisum[i]) && !ATOOLS::IsZero(finsum[i]) &&
+	 !ATOOLS::IsEqual(inisum[i],finsum[i]))) test=false;
+  }
+  if (!test) {
+    ATOOLS::msg.Error()<<"SumMomenta(..): Summation does not agree."<<std::endl
+		       <<"initial = "<<inisum<<" vs. final = "<<finsum<<std::endl;
+  }
   return (inisum==finsum);
 }
 #endif
@@ -154,7 +167,6 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * bloblist,Particle_List * pa
 	else if (!IsEqual((*biter)->InParticle(0)->E(),p_beam->GetBeam(i)->OutMomentum()[0])) {
 	  (*biter)->SetStatus(2);
 	  blob = new ATOOLS::Blob();
-	  blob->SetId();
 	  blob->SetType(btp::Beam);
 	  blob->SetBeam(i);
 	  blob->SetStatus(1);
@@ -166,6 +178,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * bloblist,Particle_List * pa
 	  p->SetStatus(2);
 	  blob->AddToInParticles(p);
 	  bloblist->insert(bloblist->begin(),blob);
+	  blob->SetId();
 	  p_beamblob[i]=blob;
 	  flag=false;
 	  okay=true;
