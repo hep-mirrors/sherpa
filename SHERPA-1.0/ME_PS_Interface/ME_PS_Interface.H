@@ -40,6 +40,7 @@ namespace SHERPA {
 
 
     APACIC::Hard_Interface * ps;
+    APHYTOOLS::Blob        * blob;
   public :
     ME_PS_Interface(ISR::ISR_Handler *,int); 
     ~ME_PS_Interface(); 

@@ -26,6 +26,7 @@ void Sample_Analysis::Init() {
 
   ana = new Primitive_Analysis();
   ana->AddObservable(new Shower_Observables(11,1.e-6,1.,180,0));
+  //  ana->AddObservable(new Multiplicity(00,-0.5,50.5,51,0));
 
   // not (yet) included in analysis
   obs.push_back(new ME_Rate(00,1.5,7.5,6,"me"));
@@ -34,6 +35,7 @@ void Sample_Analysis::Init() {
 
 void Sample_Analysis::AfterME(APHYTOOLS::Blob_List * blobs) {
   // extra statistics
+  if (!(status)) return;
   obs[0]->Evaluate(*blobs,1.);
 }
 
@@ -105,7 +107,7 @@ void Sample_Analysis::Finish() {
     s3<<nllf;
     s3>>snllf;
 
-    string name=string("sh_GO_") + salf + string("_") + syf + string("_") + snllf;
+    string name=string("sh_FE_") + salf + string("_") + syf + string("_") + snllf;
 
     //    ana->FinishAnalysis("testout_sherpa_GE125g",0);
     ana->FinishAnalysis(name,0);

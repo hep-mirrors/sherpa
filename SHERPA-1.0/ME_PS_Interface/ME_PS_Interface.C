@@ -27,15 +27,18 @@ ME_PS_Interface::ME_PS_Interface(ISR_Handler * _isr,int _number) :
   cluster   = new Cluster_Partons(jf,maxjetnumber);
   jetscale  = ycut * sqr(rpa.gen.Ecms());
 
-  ini       = 0;
-  fin       = 1;
+  // *AS* switch on initial and/or final state shower
+  ini       = 1;
+  fin       = 0;
   NLLweight = 1;
 }
   
 ME_PS_Interface::~ME_PS_Interface() {}
 
-bool ME_PS_Interface::Treat(Process_Base * proc,Blob * blob,int type) 
+bool ME_PS_Interface::Treat(Process_Base * proc,Blob * _blob,int type) 
 {
+  blob=_blob;
+
   if (proc->Nout()>=2) {
     if (!(cluster->ClusterConfiguration(proc,blob))) {
       msg.Debugging()<<"Clustering failed !"<<std::endl;
@@ -88,7 +91,7 @@ int ME_PS_Interface::PerformShower(Process_Base * proc,int type)
 {
   ps->PrepareTrees();
   cluster->FillTrees(ps->IniTrees(),ps->FinTree(),xs);
-  int stat=ps->PerformShowers(ini,fin);
+  int stat=ps->PerformShowers(ini,fin,blob->NOutP());
   if (!stat) {
     msg.Error()<<"ERROR in ME_PS_Interface::PerformShower."<<std::endl
 	       <<"   Parton shower did not work out !!!"<<std::endl;

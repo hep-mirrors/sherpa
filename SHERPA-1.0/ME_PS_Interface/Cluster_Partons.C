@@ -28,6 +28,9 @@ bool Cluster_Partons::ClusterConfiguration(Process_Base * proc,Blob * _blob) {
 
   blob            = _blob;
 
+
+  lastproc=0;  // *AS* reusing combi does not work in the moment (mismatch of momenta!!!)
+
   // start cluster algorithm :
   if (proc!=lastproc) {
     lastproc = proc;
@@ -269,6 +272,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   mo->thcrit = M_PI;
 
   EstablishRelations(mo,knots[2],knots[3],1);      
+  EstablishRelations(mo,knots[0],knots[1],0);
 
   for (int l=0; l<4; ++l) ini_knots.push_back(knots[l]);
 
@@ -505,6 +509,45 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,bool mod
     msg.Events()<<"Established relations (FS) : "<<std::endl
 		   <<*d1->prev<<std::endl<<*d1<<std::endl<<*d2<<std::endl<<std::endl;
     return;
+  }
+  else {
+    // initial state initialization
+    //  status:
+    //  blob->CMS()          - Vec4D hard event in LAB system
+    //  d1->part->Momentum() - in the moment also in LAB system
+    //  blob->InParton(0)->Momentum() - in CMS system
+
+    double q2      = mo->t;
+    Vec4D cms      = d1->part->Momentum() + d2->part->Momentum();
+    Vec4D cms_blob = blob->CMS();
+    msg.Debugging()<<" ======================================== "<<endl;
+    msg.Debugging()<<" Establish relations (IS):"<<endl; 
+    msg.Debugging()<<" ---------------------------------------- "<<endl;   
+    msg.Debugging()<<" q2 = "<<q2;
+    msg.Debugging()<<" cms= "<<cms<<" / "<<cms_blob<<endl;
+    msg.Debugging()<<" cms_3 = "<<blob->InParton(0)->Momentum()+ blob->InParton(1)->Momentum()<<endl;
+    // naive 
+    double ebeam  = 0.5*rpa.gen.Ecms();
+    double s      = sqr(2.*ebeam);
+    double sprime = cms.Abs2();
+    double x1=d1->part->Momentum()[0]/ebeam;
+    double x2=d2->part->Momentum()[0]/ebeam;
+    
+    msg.Debugging()<<" x1 = " << x1 <<endl;
+    msg.Debugging()<<" x2 = " << x2 <<endl;    
+    msg.Debugging()<<" sprime = "<<sprime<<" / "<<x1*x2*s<<endl;
+
+    // set naive x
+    d1->x=x1;
+    d2->x=x2;
+
+    // set naive start t
+    d1->t = -q2;
+    d2->t = -q2;
+
+    // set cms momenta?!
+//     d1->part->SetMomentum(blob->InParton(0)->Momentum());
+//     d2->part->SetMomentum(blob->InParton(1)->Momentum());
   }
 }
 

@@ -82,7 +82,7 @@ bool Sherpa::Init(int argc,char* argv[]) {
   blobs             = new Blob_List;
   AM                = new Amegic("./"); // ,isr;
 
-  int jetnumber     = 4;   // *AS* WARNING this influences the jetveto! Have to apply
+  int jetnumber     = 2;   // *AS* WARNING this influences the jetveto! Have to apply
   // modified sudakovs as well!
   
   isr=0; // NO Initial-Shower (isr has to be initialised by Amegic)
@@ -214,6 +214,8 @@ bool Sherpa::RescaleJetrates() {
 }
 
 bool Sherpa::CrossSections() {
+  msg.SetLevel(0);
+
   if (AM->InitializeProcesses()) { 
     msg.Out()<<" Matching: yf   = "<<rpa.test.FactorYcut()<<endl;
     msg.Out()<<" Matching: nllf = "<<rpa.test.FactorNLLQ()<<endl;
@@ -247,7 +249,7 @@ bool Sherpa::CrossSections() {
 bool Sherpa::GenerateEvents() {
   if (rpa.gen.NumberOfEvents()==0) return 1;
   if (MPIGenerateEvents()) return 1;
-
+  msg.SetLevel(rpa.gen.Output());
   //  RunPythiaTest(); 
 
   msg.Tracking()<<"Start generating events : "<<std::endl
@@ -290,8 +292,8 @@ bool Sherpa::GenerateEvents() {
 	FillBlob(blob,proc);
 	blob->SetId(blobs->size());
 	blobs->push_back(blob);
-	blob->BoostInCMS();
 
+	blob->BoostInCMS();
 
 	// determine sudakov factors	
 	if (!(hard_interface->Treat(proc,blob,1))) {
@@ -299,7 +301,7 @@ bool Sherpa::GenerateEvents() {
 	  stat=4;
 	  //	  continue; 
 	}
-	else {
+	//*AS*	else {
 	  // perform parton shower
 	  stat=hard_interface->PerformShower(proc,1);
 	  if ((stat==3)  ) {
@@ -307,17 +309,20 @@ bool Sherpa::GenerateEvents() {
 	    //	    cout<<" stat==3"<<endl;
 	    CleanUpEvent();
 	  }
-	}
+	  //*AS*	}
       } while (stat==3);
 
      analysis.AfterME(blobs);
 
+     /*
+       // *AS* switched of sudakov weight !!!!
       if ((stat==4)  ) {
 	// event rejected due to Sudakov-n-AlphaS-weight	
 	--n;
 	CleanUpEvent();
 	continue;
       }
+     */
 
       if ((stat==0)  ) {
 	msg.Error()<<"ERROR in Sherpa::GenerateEvents"<<std::endl
@@ -336,7 +341,7 @@ bool Sherpa::GenerateEvents() {
 
       analysis.AfterPartonShower(blobs);
 
-      soft_interface->PerformFragmentation(blobs,partons);
+      //      soft_interface->PerformFragmentation(blobs,partons);
 //          analysis.AfterHadronization(blobs);
 
       msg.SetPrecision(4);
@@ -377,6 +382,9 @@ void Sherpa::OneEvent() {
 
 	Blob * blob= new Blob();
 	FillBlob(blob,proc);
+	cout<<"a: "<<proc->Momenta()[0]+proc->Momenta()[1]<<endl;
+	cout<<"   "<<blob->InParton(0)->Momentum()+blob->InParton(1)->Momentum()<<endl;
+
 	blob->SetId(blobs->size());
 	blobs->push_back(blob);
 	blob->BoostInCMS();
