@@ -241,9 +241,9 @@ void Forward_Backward_Eta_Correlation::EndEvaluation(double scale)
   for (size_t i=0;i<(size_t)m_nbins+2;++i) {
     double wgt=m_etafw.BinExtra(i);
     double nfwm=m_etafw.BinContent(i)/wgt;
-    p_histo->Bin((int)i)[0]=
+    p_histo->SetBin((int)i,
       (m_etafwbw.BinContent(i)/wgt-nfwm*nfwm)/
-      (m_etafwsq.BinContent(i)/wgt-nfwm*nfwm);
+      (m_etafwsq.BinContent(i)/wgt-nfwm*nfwm));
   }
   p_histo->Output();
 }
@@ -265,8 +265,8 @@ void Forward_Backward_Eta_Correlation::EndEvaluation(double scale)
 
 #define FINISH_HISTOGRAM					\
   for (size_t i=0;i<(size_t)m_nbins+2;++i) {			\
-    p_histo->Bin((int)i)[0]=m_histogram.BinEntries(i)!=0?	\
-      m_histogram.BinContent(i)/m_histogram.BinExtra(i):0.0;	\
+    p_histo->SetBin((int)i,m_histogram.BinEntries(i)!=0?	\
+      m_histogram.BinContent(i)/m_histogram.BinExtra(i):0.0);	\
   }								\
   p_histo->Output()
 

@@ -10,11 +10,13 @@ namespace ATOOLS {
   private :
     int        m_type, m_nbin;
     double     m_lower, m_upper;
-    double  ** m_bins;
+    double   * m_yvalues;
+    double   * m_y2values;
+    int      * m_ntries;
     long int   m_fills;
     double     m_binsize, m_logbase;
     int        m_depth;
-    bool       m_active, m_finished;
+    bool       m_active, m_finished, m_initialized;
     int        m_logarithmic;
   public :
     Histogram(int type,double xmin, double xmax, int nbins);
@@ -31,8 +33,8 @@ namespace ATOOLS {
     void Finalize();
     void Restore();
     double Mean() const;
-    double * Bin(int i);
-    double * Bin(double x);
+    void SetBin(int i, double y)  { m_yvalues[i]=y; }
+//     double * Bin(double x);
     void Extrapolate(double x, double * ys,int mode);
 
     // basic access methods
@@ -41,7 +43,7 @@ namespace ATOOLS {
     int    Nbin() const { return m_nbin-2; }
     double Xmin() const { return m_lower; }
     double Xmax() const { return m_upper; }
-    double Value(int i) const { return m_bins[i][0]; }
+    double Value(int i) const { return m_yvalues[i]; }
     double Fills() const { return m_fills; }
     double BinSize() const { return m_binsize; }
 
