@@ -4,6 +4,8 @@
 
 #ifdef PROFILE__MI_Base
 #include "prof.hh"
+#else 
+#define PROFILE_HERE
 #endif
 #ifdef USING__Sherpa
 #include "Matrix_Element_Handler.H"
@@ -63,9 +65,7 @@ MI_Base::~MI_Base()
 
 void MI_Base::UpdateAll(const MI_Base *mibase)
 {
-#ifdef PROFILE__MI_Base
   PROFILE_HERE;
-#endif
   for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
     nbit->second->Update(mibase);
   }  
@@ -108,9 +108,7 @@ bool MI_Base::DiceProcess()
 
 void MI_Base::ResetAll()
 {
-#ifdef PROFILE__MI_Base
   PROFILE_HERE;
-#endif
   m_particlecounter=0;
   for (NameMIBaseMapIterator nbit=m_bases.begin();nbit!=m_bases.end();++nbit) {
     nbit->second->Reset();
@@ -119,9 +117,7 @@ void MI_Base::ResetAll()
 
 bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
 {
-#ifdef PROFILE__MI_Base
   PROFILE_HERE;
-#endif
   if (blob==NULL) {
     ATOOLS::msg.Error()<<"MI_Base::CreateBlob(..): "
 		       <<"Blob is not initialized!"<<std::endl

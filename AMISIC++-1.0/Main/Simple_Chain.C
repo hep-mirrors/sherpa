@@ -13,6 +13,8 @@
 
 #ifdef PROFILE__Simple_Chain
 #include "prof.hh"
+#else
+#define PROFILE_HERE
 #endif
 
 #ifdef DEBUG__Simple_Chain
@@ -154,9 +156,7 @@ ATOOLS::Blob *Simple_Chain::GetBlob(ATOOLS::Flavour *flavour)
 
 void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
 {
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   ATOOLS::Flavour temp[4];
   ATOOLS::Blob *newblob;
   unsigned int i, j;
@@ -307,9 +307,7 @@ void Simple_Chain::FillMode(EXTRAXS::QCD_Processes::Mode mode)
 
 bool Simple_Chain::ReadInData()
 {
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
   reader->SetInputFile(InputFile());
@@ -418,9 +416,7 @@ bool Simple_Chain::ReadInData()
 
 bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
 {
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   if (!m_external) {
     p_environment = new AMEGIC::Environment(InputPath(),InputFile(2));
     p_environment->InitializeTheEnvironment();
@@ -513,9 +509,7 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
 
 bool Simple_Chain::InitializeBlobList()
 {  
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   if (!m_external) {
     p_environment = new AMEGIC::Environment(InputPath(),InputFile(2));
     p_environment->InitializeTheEnvironment();
@@ -633,9 +627,7 @@ void Simple_Chain::CalculateSigmaND()
 
 bool Simple_Chain::CalculateTotal()
 {
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   if (m_differential.size()==0) return false;
   GridFunctionType *differential;
   differential = new GridHandlerType::GridFunctionType();
@@ -696,9 +688,7 @@ bool Simple_Chain::CalculateTotal()
 
 bool Simple_Chain::Initialize()
 {
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
   CleanUp();
@@ -777,9 +767,7 @@ bool Simple_Chain::Initialize()
 
 bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 {
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   m_filledblob=false;
   if (p_processes==NULL) {
     ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
@@ -794,11 +782,11 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
   blob->DeleteOwnedParticles();
   if (m_selected<(unsigned int)p_processes->Size()) {
 #ifdef DEBUG__Simple_Chain
-//     std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
+    std::cout<<"Simple_Chain::FillBlob(..): Generating one event."<<std::endl;
 #endif
-    if ((*p_processes)[m_selected]->OneEvent()) {
+    if ((*p_processes)[m_selected]->OneEvent(-1.,1)) {
 #ifdef DEBUG__Simple_Chain
-//       std::cout<<"   Completed one event."<<std::endl;
+      std::cout<<"   Completed one event."<<std::endl;
 #endif
       p_xs=dynamic_cast<EXTRAXS::XS_Base*>((*p_processes)[m_selected]->Selected());
       ATOOLS::Vec4D ptot;
@@ -839,9 +827,7 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 
 bool Simple_Chain::DiceProcess()
 {
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   if (m_differential.size()==0) return false;
   if (m_dicedparameter) m_dicedparameter=false;
   else {
@@ -900,9 +886,7 @@ bool Simple_Chain::DiceProcess()
 
 bool Simple_Chain::DiceOrderingParameter()
 { 
-#ifdef PROFILE__Simple_Chain
   PROFILE_HERE;
-#endif
   if (m_last[0]<=m_stop[0]) {
     ATOOLS::msg.Tracking()<<"Simple_Chain::DiceOrderingParameter(): "
 			  <<"Ordering parameter exceeded allowed range."<<std::endl
