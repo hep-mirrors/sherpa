@@ -5,11 +5,11 @@ using namespace ATOOLS;
 
 void Kinematics::ShuffleMomenta(std::vector<Vec4D> _moms,std::vector<double> _newmasses2)
 {
-  int number = _moms.size();
+  const int number = _moms.size();
 
   double xmt     = 0.;
-  double oldenergies2[number];
-  double energies[number];
+  double * oldenergies2 = new double[number];
+  double * energies     = new double[number];
   Vec4D cms      = Vec4D(0.,0.,0.,0.);
   for (short int i=0;i<number;i++) {
     xmt            += sqrt(_newmasses2[i]);
@@ -34,12 +34,14 @@ void Kinematics::ShuffleMomenta(std::vector<Vec4D> _moms,std::vector<double> _ne
   
   // Construct Momenta
   for (short int i=0;i<number;i++) _moms[i] = Vec4D(energies[i],x*Vec3D(_moms[i]));
+  delete [] oldenergies2;
+  delete [] energies;
 }
 
 
 void Kinematics::ShuffleMomenta(std::vector<Particle *> _parts)
 {
-  int number = _parts.size();
+  const int number = _parts.size();
   for (int i=0;i<number;i++) {
     if (_parts[i]->Flav().IsStable()) _parts[i]->SetFinalMass(_parts[i]->Flav().Mass()); 
   }
@@ -56,8 +58,8 @@ void Kinematics::ShuffleMomenta(std::vector<Particle *> _parts)
   }
 
   double xmt     = 0.;
-  double oldenergies2[number];
-  double energies[number];
+  double * oldenergies2 = new double[number];
+  double * energies     = new double[number];
   Vec4D cms      = Vec4D(0.,0.,0.,0.);
   for (short int i=0;i<number;i++) {
     xmt            += _parts[i]->FinalMass();
@@ -82,4 +84,6 @@ void Kinematics::ShuffleMomenta(std::vector<Particle *> _parts)
   
   // Construct Momenta
   for (short int i=0;i<number;i++) _parts[i]->SetMomentum(Vec4D(energies[i],x*Vec3D(_parts[i]->Momentum())));
+  delete [] oldenergies2;
+  delete [] energies;
 }
