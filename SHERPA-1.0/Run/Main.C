@@ -10,13 +10,15 @@ extern "C" {
 using namespace SHERPA;
 
 int main(int argc,char* argv[]) {  
+  int nevt=10;
+
   Sherpa Generator;
   Generator.InitializeTheRun(std::string("./"));
   Generator.InitializeTheEventHandler();
-  for (int i=0;i<1;i++) {
+  for (int i=0;i<nevt;i++) {
     if (Generator.GenerateOneEvent()) AORGTOOLS::msg.Events()<<"Sherpa : Passed "<<i<<" events."<<endl;
   }
-  AORGTOOLS::msg.Events()<<"Sherpa did "<<10<<" with "<<Generator.NumberOfErrors()<<" errors."<<endl;
+  AORGTOOLS::msg.Events()<<"Sherpa did "<<nevt<<" with "<<Generator.NumberOfErrors()<<" errors."<<endl;
 }
 
 

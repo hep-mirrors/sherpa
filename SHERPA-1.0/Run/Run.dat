@@ -1,7 +1,7 @@
 EVENTS          = 500000    ! Number of Events
 Num. Accuracy  = 1.e-10     !
 Runtime        = 0          ! maximal runtime (min); 0 means off
-OUTPUT          = 4         ! Output level :
+OUTPUT          = 3         ! Output level :
 !                           ! 0=errors,1=events,2=tracking,3=debug,4=everything
 BEAM_DATA_FILE   = Beam.dat
 ISR_DATA_FILE    = ISR.dat
@@ -37,7 +37,7 @@ RUN_ALPHA_S    = Off            ! running alpha_S
 PT2MIN         = 100.           ! Minimum pt for hard process 	
 LAMBDA_QCD     = 0.4            ! not used
 ! ------------- Tuning Parameters -------------------------------------
-YCUT           = 0.01  !0.0031622776602 !0.0015848931925  ! ycut initial
+YCUT           = 1.e-7  !0.0031622776602 !0.0015848931925  ! ycut initial
 FINAL_Q02      = 0.25           ! minimal virtualitaet in parton shower
 ! --- Hadronisation ---
 LUND_A         = 0.4            ! Lund=parmaeter a, default 0.3
