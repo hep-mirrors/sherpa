@@ -12,7 +12,7 @@ Threshold_Uniform::Threshold_Uniform(const double mass,const std::string cinfo,
 				     ATOOLS::Integration_Info *info):
   m_mass(mass)
 {
-  name=std::string("Threshold_Uniform_")+ATOOLS::ToString(mass);
+  name=std::string("Threshold_Uniform_")+ATOOLS::ToString((int)(100.*mass));
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -48,8 +48,7 @@ Threshold_Forward::Threshold_Forward(const double mass,const double yexponent,
   m_mass(mass), 
   m_yexponent(yexponent)
 {
-  name=std::string("Threshold_Forward_")+ATOOLS::ToString(mass)
-    +std::string("_")+ATOOLS::ToString(yexponent);
+  name=std::string("Threshold_Forward_")+ATOOLS::ToString((int)(100.*mass));
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -87,8 +86,7 @@ Threshold_Backward::Threshold_Backward(const double mass,const double yexponent,
   m_mass(mass), 
   m_yexponent(yexponent)
 {
-  name=std::string("Threshold_Backward_")+ATOOLS::ToString(mass)
-    +std::string("_")+ATOOLS::ToString(yexponent);
+  name=std::string("Threshold_Backward_")+ATOOLS::ToString((int)(100.*mass));
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -125,7 +123,7 @@ Threshold_Central::Threshold_Central(const double mass,const std::string cinfo,
 				     ATOOLS::Integration_Info *info):
   m_mass(mass)
 {
-  name=std::string("Threshold_Central_")+ATOOLS::ToString(mass);
+  name=std::string("Threshold_Central_")+ATOOLS::ToString((int)(100.*mass));
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(mass));
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);

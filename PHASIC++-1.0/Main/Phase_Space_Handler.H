@@ -87,7 +87,8 @@ namespace PHASIC {
     bool ReadIn(const std::string &path);
     bool InitIncoming(const double mass=-1.);
     bool CreateIntegrators();
-
+    void InitCuts();
+    
     double Integrate();
     double Differential();
     double Differential(Integrable_Base *const process);
@@ -102,8 +103,9 @@ namespace PHASIC {
     void TestPoint(ATOOLS::Vec4D *const p);
 
     // inline functions
-    inline ATOOLS::Vec4D *const   Point() const { return p_lab;      }
-    inline ATOOLS::Flavour *const Flavs() const { return p_flavours; }
+    inline ATOOLS::Vec4D *const    Point() const { return p_lab;      }
+    inline ATOOLS::Flavour *const  Flavs() const { return p_flavours; }
+    inline ATOOLS::Cut_Data *const Cuts() const  { return p_cuts;     }
 
     inline double Weight() const { return m_weight;   }
     inline double Error() const  { return m_error;    }

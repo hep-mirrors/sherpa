@@ -12,7 +12,7 @@ Simple_Pole_Uniform::Simple_Pole_Uniform(const double exponent,const std::string
 					 ATOOLS::Integration_Info *info):
   m_exponent(exponent)
 {
-  name=std::string("Simple_Pole_Uniform_")+ATOOLS::ToString(exponent);
+  name=std::string("Simple_Pole_Uniform_")+ATOOLS::ToString((int)(100.*exponent));
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -48,8 +48,7 @@ Simple_Pole_Forward::Simple_Pole_Forward(const double sexponent,const double yex
   m_sexponent(sexponent), 
   m_yexponent(yexponent)
 {
-  name=std::string("Simple_Pole_Forward_")+ATOOLS::ToString(sexponent)
-    +std::string("_")+ATOOLS::ToString(yexponent);
+  name=std::string("Simple_Pole_Forward_")+ATOOLS::ToString((int)(100.*sexponent));
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(sexponent));
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -87,8 +86,7 @@ Simple_Pole_Backward::Simple_Pole_Backward(const double sexponent,const double y
   m_sexponent(sexponent), 
   m_yexponent(yexponent)
 {
-  name=std::string("Simple_Pole_Backward_")+ATOOLS::ToString(sexponent)+
-    std::string("_")+ATOOLS::ToString(yexponent);
+  name=std::string("Simple_Pole_Backward_")+ATOOLS::ToString((int)(100.*sexponent));
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(sexponent));
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -125,7 +123,7 @@ Simple_Pole_Central::Simple_Pole_Central(const double exponent,const std::string
 					 ATOOLS::Integration_Info *info):
   m_exponent(exponent)
 {
-  name=std::string("Simple_Pole_Central_")+ATOOLS::ToString(exponent);
+  name=std::string("Simple_Pole_Central_")+ATOOLS::ToString((int)(100.*exponent));
   m_spkey.SetInfo(std::string("Simple_Pole_")+ATOOLS::ToString(exponent));
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);

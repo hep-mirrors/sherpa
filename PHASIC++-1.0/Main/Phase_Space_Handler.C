@@ -100,6 +100,14 @@ Phase_Space_Handler::~Phase_Space_Handler()
   delete p_integrator;
 }
 
+void Phase_Space_Handler::InitCuts() 
+{
+  if (p_cuts!=NULL) delete p_cuts;
+  p_cuts = new ATOOLS::Cut_Data();
+  p_cuts->Init(m_nin+m_nout,p_flavours);
+  if (p_process->Selector()) (p_process->Selector())->BuildCuts(p_cuts);
+}
+
 bool Phase_Space_Handler::InitIncoming(const double _mass) 
 {
   if (m_nvec==0) {
@@ -132,11 +140,7 @@ bool Phase_Space_Handler::InitIncoming(const double _mass)
     return 0;
   } 
   if (m_nin>1) {
-    if (p_cuts == 0) {
-      p_cuts = new ATOOLS::Cut_Data();
-      p_cuts->Init(m_nin+m_nout,p_flavours);
-      if (p_process->Selector()) (p_process->Selector())->BuildCuts(p_cuts);
-    } 
+    InitCuts();
     if (p_beamhandler) {
       if (p_beamhandler->On()>0) {
 	p_beamhandler->SetSprimeMin(ATOOLS::Max(sqr(p_process->ISRThreshold()),

@@ -147,6 +147,8 @@ namespace PHASIC {
     inline BEAM::Beam_Spectra_Handler *const Beam() const { return p_beamhandler; }
     inline PDF::ISR_Handler           *const ISR() const  { return p_isrhandler;  }
 
+    inline Phase_Space_Handler *const PSHandler() const { return p_pshandler;  }
+
   };// end of class Integrable_Base
 
 }// end of namespace PHASIC

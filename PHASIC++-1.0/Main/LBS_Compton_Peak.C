@@ -16,7 +16,7 @@ LBS_Compton_Peak_Uniform::LBS_Compton_Peak_Uniform(const double exponent,const d
   std::string help=ATOOLS::ToString(exponent)+
     std::string("_")+ATOOLS::ToString(pole);
   m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+help);
-  name=std::string("LBS_Compton_Peak_Uniform_")+help;
+  name=std::string("LBS_Compton_Peak_Uniform");
   m_ykey.SetInfo("Uniform");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
@@ -69,7 +69,7 @@ LBS_Compton_Peak_Forward::LBS_Compton_Peak_Forward(const double exponent,const d
   std::string help=ATOOLS::ToString(exponent)+
     std::string("_")+ATOOLS::ToString(pole);
   m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+help);
-  name=std::string("LBS_Compton_Peak_Forward")+help+ATOOLS::ToString(yexponent);
+  name=std::string("LBS_Compton_Peak_Forward");
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
@@ -124,7 +124,7 @@ LBS_Compton_Peak_Backward::LBS_Compton_Peak_Backward(const double exponent,const
   std::string help=ATOOLS::ToString(exponent)+
     std::string("_")+ATOOLS::ToString(pole);
   m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+help);
-  name=std::string("LBS_Compton_Peak_Backward_")+help+ATOOLS::ToString(yexponent);
+  name=std::string("LBS_Compton_Peak_Backward");
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
@@ -177,7 +177,7 @@ LBS_Compton_Peak_Central::LBS_Compton_Peak_Central(const double exponent,const d
   std::string help=ATOOLS::ToString(exponent)+
     std::string("_")+ATOOLS::ToString(pole);
   m_spkey.SetInfo(std::string("LBS_Compton_Peak_")+help);
-  name=std::string("LBS_Compton_Peak_Central_")+help;
+  name=std::string("LBS_Compton_Peak_Central");
   m_ykey.SetInfo("Central");
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
   m_ykey.Assign(std::string("y")+cinfo,3,0,info);
