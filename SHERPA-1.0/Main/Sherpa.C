@@ -135,7 +135,56 @@ bool Sherpa::SummarizeRun()
   return true; 
 }
 
-void Sherpa::DrawLogo() { }
+void Sherpa::DrawLogo() 
+{ 
+  msg.Out()<<"-----------------------------------------------------------------------------"<<std::endl
+	   <<"................................................ |       +                   "<<std::endl
+	   <<"................................................ ||  |       +  +            "<<std::endl
+	   <<"...................................        ....  | |         /   +           "<<std::endl
+	   <<"................. ................   _,_ |  ....  ||         +|  +  +        "<<std::endl
+	   <<"...............................  __.'  ,\|  ...  ||    /    +|          +    "<<std::endl
+	   <<".............................. (´  \  ´  \   ...  | |  |   + + \         +   "<<std::endl
+	   <<".............................  (    \   -/  .... ||       +    |          +  "<<std::endl
+	   <<"........ ...................  <S   /()))))~~~~~~~~##     +     /\    +       "<<std::endl
+	   <<"............................ (!H   (~~)))))~~~~~~#/     +  +    |  +         "<<std::endl
+	   <<"................ ........... (!E   (~~~)))))     /|/    +         +          "<<std::endl
+	   <<"............................ (!R   (~~~)))))   |||   + +            +        "<<std::endl
+	   <<"..... ...................... (!P    (~~~~)))   /|  + +          +            "<<std::endl
+	   <<"............................ (!A>    (~~~~~~~~~##        + +        +        "<<std::endl
+	   <<"............................. ~~(!    '~~~~~~~ \       +     + +      +      "<<std::endl
+	   <<"...............................  `~~~QQQQQDb //   |         + + +        +   "<<std::endl
+	   <<"........................ ..........   IDDDDP||     \  + + + + +             +"<<std::endl
+	   <<"....................................  IDDDI||       \                      + "<<std::endl
+	   <<".................................... IHD HD||         \ + +  + + + + +      +"<<std::endl
+	   <<"...................................  IHD ##|            :-) + +\          +  "<<std::endl
+	   <<"......... ............... ......... IHI ## /      /   +  + + + +\       +    "<<std::endl
+	   <<"................................... IHI/ /       /      + + + +        +     "<<std::endl
+	   <<"................................... ## | | /    / + +      + + /      +      "<<std::endl
+	   <<"....................... /TT\ .....  ##/ ///  / + + + + + + +/       +        "<<std::endl
+	   <<"......................./TTT/T\ ... /TT\/\\\ / + + + + + + +/   \         +   "<<std::endl
+	   <<"version 1.0.4 ......../TTT/TTTT\...|TT/T\\\/   +    ++  + /                  "<<std::endl
+	   <<"-----------------------------------------------------------------------------"<<std::endl
+	   <<std::endl
+	   <<"          SHERPA version 1.0.4.                                              "<<std::endl
+	   <<"                                                                             "<<std::endl
+	   <<"          AUTHORS: Tanju Gleisberg, Stefan Hoeche, Frank Krauss,             "<<std::endl
+	   <<"               Andreas Schaelicke, Steffen Schumann, Jan Winter              "<<std::endl
+	   <<"                                                                             "<<std::endl
+	   <<"                                                                             "<<std::endl
+	   <<"          This program uses a lot of genuine and original research           "<<std::endl
+	   <<"          work by other people. Users are encouraged to refer to             "<<std::endl
+	   <<"          the various original publications.                                 "<<std::endl
+	   <<"                                                                             "<<std::endl
+	   <<"          Users are kindly asked to refer to the documentation               "<<std::endl
+	   <<"          published under JHEP 0402 (2004) 056.                              "<<std::endl
+	   <<"                                                                             "<<std::endl
+	   <<"          Please visit also our homepage                                     "<<std::endl
+	   <<"          http://www.physik.tu-dresden.de/~krauss/hep/index.html             "<<std::endl
+	   <<"          for news, bugreports, updates and new releases.                    "<<std::endl
+	   <<"                                                                             "<<std::endl
+	   <<"-----------------------------------------------------------------------------"<<std::endl
+	   <<std::endl;
+}
 
 bool Sherpa::PerformScan() 
 {
