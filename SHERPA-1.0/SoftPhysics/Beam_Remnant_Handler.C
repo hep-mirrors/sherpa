@@ -203,6 +203,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
     success=false;
     for (short unsigned int i=0;i<2;++i) {
       p_beampart[i]->Clear();
+      p_beampart[i]->ClearErrors();
       okay=false;
       treat[i]=false;
       for (ATOOLS::Blob_List::iterator biter=bloblist->begin();biter!=endblob;++biter) {
@@ -250,7 +251,6 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 	}
       }
     }
-    for (size_t i=0;i<2;++i) p_beampart[i]->ClearErrors();
     while (!success) {
       success=true;
       if (treat[0]) success=success&&p_beampart[0]->FillBlob(p_beamblob[0],particlelist);
@@ -264,8 +264,8 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
     bool empty=false;
     for (size_t i=0;i<2;++i) {
       if (!(success=success&&p_beampart[i]->AdjustKinematics())) {
+	for (short unsigned int i=0; i<2;++i) p_beampart[i]->UnDo();
 	if (!RemoveLast()) empty=true;
-	else for (short unsigned int i=0; i<2;++i) p_beampart[i]->UnDo();
 	break;
       }
     }
