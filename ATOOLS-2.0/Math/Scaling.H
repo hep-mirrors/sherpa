@@ -8,15 +8,6 @@
 namespace ATOOLS {
 
   template <class Value_Type>
-  std::string ToString(const Value_Type value) {
-    MyStrStream converter;
-    std::string converted;
-    converter<<value;
-    converter>>converted;
-    return converted;
-  }
-
-  template <class Value_Type>
   class Scaling_Base: public std::unary_function<Value_Type,Value_Type> {
   public:
 
