@@ -8,12 +8,15 @@
 #include <map>
 
 namespace SHERPA {
+  inline void MakeFortranString(char * output,std::string input,unsigned int length)
+  {
+    for (unsigned int i=0;i<length;++i)   output[i]=(char)32;
+    for (size_t j=0;j<input.length();++j) output[j]=(char)input[j];
+  }
+
 
   class Herwig_Interface {
   private:
-
-  private:
-
     static size_t s_errors, s_maxerrors;
 
     std::string m_path, m_file, m_outfilename;
@@ -30,18 +33,18 @@ namespace SHERPA {
 
     static bool s_exportas, s_exportpdf;
 
-
+    void ReadInTheParameters();
     // tools for converting a whole event
     bool ConvertParticles(std::map<int,ATOOLS::Particle*> &converted);
     bool ConstructBlobs(ATOOLS::Blob_List *blobs,std::map<int,ATOOLS::Particle*> &converted);
     bool SetTypes(ATOOLS::Blob_List *blobs);
     bool DeleteObsolete(std::map<int,ATOOLS::Particle*> &converted);
     void NextFile(const bool newfile);
-
   public:
     Herwig_Interface(std::string _m_path,std::string _m_file,bool sherpa);
     ~Herwig_Interface();
 
+    bool Initialize();
     bool ConvertEvent(ATOOLS::Blob_List *blobs);
     static void Error(const int error);
     bool OneEvent(ATOOLS::Blob_List *const bloblist,double &weight);

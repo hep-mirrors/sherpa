@@ -102,37 +102,17 @@ extern struct {
 } hwprop_;
 #define hwprop hwprop_
 
-#define hwigin hwigin_
-#define hwuinc hwuinc_
-#define hwaini hwaini_
-#define hwudpr hwudpr_
-#define hwuine hwuine_
-#define hwepro hwepro_
-#define hwbgen hwbgen_
-#define hwdhob hwdhob_
-#define hwcfor hwcfor_
-#define hwcdec hwcdec_
-#define hwdhad hwdhad_
-#define hwdhvy hwdhvy_
-#define hwmevt hwmevt_
-#define hwufne hwufne_
+#define hwcint hwcint_
+#define hwcgse hwcgse_
+#define hwctrm hwctrm_
 
 extern "C" {
-  void hwigin();
-  void hwuinc();
-  void hwaini();
-  void hwudpr();
-  void hwuine();
-  void hwepro();
-  void hwbgen();
-  void hwdhob();
-  void hwcfor();
-  void hwcdec();
-  void hwdhad();
-  void hwdhvy();
-  void hwmevt();
-  void hwufne();
+  void hwcint();
+  void hwcgse();
+  void hwctrm();
 }
+
+inline void hwinit() { hwcint(); }
 
 //////////////////
 // Doxygen part //
