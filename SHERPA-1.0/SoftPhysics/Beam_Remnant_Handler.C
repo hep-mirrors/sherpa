@@ -265,7 +265,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
     for (size_t i=0;i<2;++i) {
       if (!(success=success&&p_beampart[i]->AdjustKinematics())) {
 	if (!RemoveLast()) empty=true;
-	else for (short unsigned int i=0; i<2;++i) p_beampart[i]->DeleteRemnants();
+	else for (short unsigned int i=0; i<2;++i) p_beampart[i]->UnDo();
 	break;
       }
     }
