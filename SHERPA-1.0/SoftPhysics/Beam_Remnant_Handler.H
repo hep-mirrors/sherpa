@@ -9,6 +9,8 @@
 
 namespace SHERPA {
 
+  class Matrix_Element_Handler;
+
   class Beam_Remnant_Handler {
   private:
 
@@ -22,6 +24,8 @@ namespace SHERPA {
 
     ATOOLS::Blob_List     *p_bloblist;
     ATOOLS::Particle_List *p_particlelist;
+
+    Matrix_Element_Handler *p_mehandler;
 
     std::string  m_path, m_file;
     bool         m_fill;

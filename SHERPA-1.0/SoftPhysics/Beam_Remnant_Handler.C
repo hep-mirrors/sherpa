@@ -6,6 +6,8 @@
 #include "No_Remnant.H"
 #include "Data_Reader.H"
 #include "Run_Parameter.H"
+#include "Matrix_Element_Handler.H"
+#include "Exception.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Beam_Remnant_Handler
@@ -22,7 +24,8 @@ Beam_Remnant_Handler::
 Beam_Remnant_Handler(const std::string path,const std::string file,
 		     PDF::ISR_Handler *const isr,
 		     BEAM::Beam_Spectra_Handler *const beam):
-  p_isr(isr), p_beam(beam), m_path(path), m_file(file), m_fill(true)
+  p_isr(isr), p_beam(beam), 
+  p_mehandler(NULL), m_path(path), m_file(file), m_fill(true)
 {
   for (size_t i=0;i<2;++i) {
     if (p_isr->Flav(i).IsHadron()) {
@@ -46,6 +49,7 @@ Beam_Remnant_Handler(const std::string path,const std::string file,
   }
   for (size_t i=0;i<2;++i) p_beampart[i]->SetPartner(p_beampart[1-i]);
   p_kperp = new Primordial_KPerp(path,file);
+  for (size_t i=0;i<2;++i) p_kperp->SetRemnant(p_beampart[i],i);
 }
 
 Beam_Remnant_Handler::~Beam_Remnant_Handler() 
@@ -115,6 +119,10 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   PROFILE_HERE;
   p_bloblist=bloblist;
   p_particlelist=particlelist;
+  if (p_mehandler==NULL) {
+    p_mehandler=GET_OBJECT(Matrix_Element_Handler,"ME_Handler");
+    if (p_mehandler==NULL) THROW(fatal_error,"No matrix element handler found.");
+  }
   if (!m_fill) return false;
   bool adjusted=false;
   bool okay=false;
@@ -147,7 +155,16 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
 	      p_beamblob[i]=blob;
 	      okay=true;
 	    }
-	    p_beampart[i]->Extract((*biter)->InParticle(0));
+	    if (!p_beampart[i]->Extract((*biter)->InParticle(0))) {
+	      ATOOLS::msg.Error()<<"Beam_Remnant_Handler::FillBeamBlobs(..): "
+				 <<"Extract parton failed.\n   Retry event "
+				 <<ATOOLS::rpa.gen.NumberOfDicedEvents()
+				 <<"."<<std::endl;
+	      msg_Tracking()<<*bloblist<<std::endl;
+	      bloblist->Clear();
+	      if (p_mehandler->Weight()!=1.) p_mehandler->SaveNumberOfTrials();
+	      return false;
+	    }
 	    (*biter)->SetStatus(2);
 	    treat[i]=true;
 	  }
@@ -175,14 +192,13 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
 	}
       }
     }
+    if (p_beamblob[0]==NULL || p_beamblob[1]==NULL) return false;
     for (short unsigned int i=0;i<2;++i) 
       if (p_beamblob[i]) if (!p_beampart[i]->FillBlob(p_beamblob[i],particlelist)) {
 	ATOOLS::msg.Error()<<*bloblist<<std::endl;
 	if (i==0) p_beampart[1]->FillBlob(p_beamblob[i],particlelist);
-	while (bloblist->size()>0) {
-	  delete *bloblist->begin();
-	  bloblist->erase(bloblist->begin());
-	}
+	bloblist->Clear();
+	if (p_mehandler->Weight()!=1.) p_mehandler->SaveNumberOfTrials();
 	return false;
       }
     if (p_beampart[0]->Type()==rtp::hadron || 
@@ -204,9 +220,11 @@ FillBeamBlobs(ATOOLS::Blob_List *const bloblist,
   }
   if (!bloblist->FourMomentumConservation()) {
     msg_Info()<<"Beam_Remnant_Handler::FillBeamBlobs(..): Retry event "
-	      <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"."<<std::endl;
+	      <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<".\n"
+	      <<*bloblist<<std::endl;
     bloblist->Clear();
   }
+  p_mehandler->ResetNumberOfTrials();
   return okay;
 }
 
