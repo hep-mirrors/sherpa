@@ -34,7 +34,8 @@ namespace EXTRAXS {
     void   ResetMax(int);
     void   OptimizeResult();
 
-    bool CalculateTotalXSec(const std::string &resultpath);
+    bool CalculateTotalXSec(const std::string &resultpath,
+			    const bool create=false);
     void WriteOutXSecs(std::ofstream &outfile);
 
     bool OneEvent();

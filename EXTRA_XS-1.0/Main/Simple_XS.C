@@ -72,7 +72,7 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   int regulate=p_dataread->GetValue<int>("REGULATE_XS",0);
   if (regulate>0) {
     m_regulator=p_dataread->GetValue<std::string>
-      ("XS_REGULATOR",std::string("Massive_Propagator"));
+      ("XS_REGULATOR",std::string("QCD_Trivial"));
     double param=p_dataread->GetValue<double>("XS_REGULATION",0.71);
     m_regulation.push_back(param);
   }
@@ -292,7 +292,7 @@ bool Simple_XS::CalculateTotalXSec(const std::string &resultpath)
   Reset();
   bool okay = 1;
   for (size_t i=0;i<m_xsecs.size();++i) {
-    okay = okay && m_xsecs[i]->CalculateTotalXSec(resultpath);
+    okay = okay && m_xsecs[i]->CalculateTotalXSec(resultpath,false);
     p_activepshandler=m_xsecs[i]->PSHandler(false);
     m_totalxs += m_xsecs[i]->TotalXS();
   }

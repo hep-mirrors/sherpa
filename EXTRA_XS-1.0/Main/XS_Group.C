@@ -177,12 +177,13 @@ XS_Base *XS_Group::Matching(const std::string &name)
   return NULL;
 }
 
-bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
+bool XS_Group::CalculateTotalXSec(const std::string &resultpath,
+				  const bool create)
 {
   if (m_atoms) {
     bool okay=true;
     for (size_t i=0;i<m_xsecs.size();++i) {
-      if (!m_xsecs[i]->CalculateTotalXSec(resultpath)) okay=false;
+      if (!m_xsecs[i]->CalculateTotalXSec(resultpath,create)) okay=false;
     }
     return okay;
   }
@@ -263,7 +264,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     m_resultfile=filename;
     ATOOLS::Exception_Handler::AddTerminatorObject(this);
     p_pshandler->InitIncoming();
-    long unsigned int points=m_n;
+    double var=TotalVar();
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
       ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
@@ -271,7 +272,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     }
     if (m_totalxs>0.) {
       SetTotal();
-      if (points==m_n) {
+      if (var==TotalVar()) {
 	ATOOLS::Exception_Handler::RemoveTerminatorObject(this);
 	return 1;
       }
@@ -285,7 +286,8 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	if (m_nin==1) msg_Info()<<m_totalxs<<" GeV";
 	msg_Info()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<std::endl
 		  <<"       max : "<<m_max<<std::endl;
-	p_pshandler->WriteOut(resultpath+std::string("/MC_")+m_name);
+	p_pshandler->WriteOut(resultpath+std::string("/MC_")
+			      +m_name,create);
 	to.close();
       }
       ATOOLS::Exception_Handler::RemoveTerminatorObject(this);

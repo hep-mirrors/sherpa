@@ -31,7 +31,8 @@ void Single_XS::WriteOutXSecs(std::ofstream &outfile)
 	 <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<" "<<m_wmin<<" "<<m_son<<std::endl; 
 }
 
-bool Single_XS::CalculateTotalXSec(const std::string &resultpath) 
+bool Single_XS::CalculateTotalXSec(const std::string &resultpath,
+				   const bool create) 
 { 
   m_n=0;
   m_last=m_lastlumi=m_lastdxs=0.0;

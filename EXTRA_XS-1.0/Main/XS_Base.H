@@ -76,7 +76,8 @@ namespace EXTRAXS {
     virtual bool   SetColours(const double s,const double t,const double u) = 0;
     virtual double operator()(const double s,const double t,const double u) = 0;
 
-    virtual bool CalculateTotalXSec(const std::string &resultpath) = 0;
+    virtual bool CalculateTotalXSec(const std::string &resultpath,
+				    const bool create) = 0;
     virtual void WriteOutXSecs(std::ofstream &outfile) = 0;
 
     // inline functions
