@@ -2,6 +2,7 @@
 #include "Run_Parameter.H"
 #include "MyStrStream.H"
 #include "Poincare.H"
+#include "Message.H"
 
 using namespace ATOOLS;
 using namespace std;
