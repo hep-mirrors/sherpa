@@ -41,7 +41,8 @@ libObservables_la_SOURCES     =	\
 			    	Shape_Observables_EE.C \
 				Jet_Mass_and_Broadening.C \
 			    	Scaled_Observables.C \
-				Four_Jet_Angles.C
+				Four_Jet_Angles.C \
+				Field_Stuart_Cone_Finder.C
 noinst_HEADERS        =	\
 			HT.H \
 			Multiplicity.H \
