@@ -16,6 +16,8 @@ namespace ANALYSIS {
     Particle_Selector(const std::string & inlistname1,
 		      const std::string & inlistname2,
 		      const std::string & outlistname, int mode=0);
+    Particle_Selector(const std::string &inlist,const std::string &outlist,
+		      ATOOLS::Particle_Qualifier_Base *const qualifier);
     void CreateParticleList();
     void Evaluate(const ATOOLS::Blob_List & ,double weight, int ncout);
     Primitive_Observable_Base * Copy() const;    
