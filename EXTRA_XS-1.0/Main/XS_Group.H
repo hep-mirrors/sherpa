@@ -61,6 +61,8 @@ namespace EXTRAXS {
     bool   SetColours(const double s,const double t,const double u);
     double operator()(const double s,const double t,const double u);
     void   AddPoint(const double xs);
+    void           ResetMax(int);
+    void           OptimizeResult();
 
     bool CalculateTotalXSec(const std::string &resultpath);
     void WriteOutXSecs(std::ofstream &outfile);

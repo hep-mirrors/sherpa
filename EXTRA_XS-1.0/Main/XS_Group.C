@@ -1,5 +1,6 @@
 #include "XS_Group.H"
 
+#include "ISR_Handler.H"
 #include "Phase_Space_Handler.H"
 #include "XS_Selector.H"
 #include "Run_Parameter.H"
@@ -140,8 +141,12 @@ void XS_Group::SelectOne()
 
 void XS_Group::WriteOutXSecs(std::ofstream &outfile)
 {
+  outfile.precision(12);
+//   outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
+// 	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<std::endl;
   outfile<<m_name<<"  "<<m_totalxs<<"  "<<m_max<<"  "<<m_totalerr<<" "
-	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<std::endl;
+	 <<m_totalsum<<" "<<m_totalsumsqr<<" "<<m_n<<" "
+	 <<m_ssum<<" "<<m_ssumsqr<<" "<<m_ssigma2<<" "<<m_sn<<std::endl; 
   for (size_t i=0;i<m_xsecs.size();++i) m_xsecs[i]->WriteOutXSecs(outfile);
 }
 
@@ -188,15 +193,16 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       m_channels = true;
     }
     std::string filename=resultpath+std::string("/")+m_name+std::string(".xs_tot"), singlename;
-    double singlexs, singleerr, singlemax, singlesum, singlesumsqr;
-    long unsigned int singlen;
+    double singlexs, singleerr, singlemax, singlesum, singlesumsqr,ssum,ssqrsum,ss2;
+    long unsigned int singlen,sn;
     m_foundown=false;
     if (resultpath!=std::string("")) {
       std::ifstream infile;
       int hits=m_xsecs.size()+1;
       infile.open(filename.c_str());
       if (infile.good()) {
-	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;
+	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen
+	      >>ssum>>ssqrsum>>ss2>>sn;
 	do {
 	  msg_Info()<<"Found result: xs for "<<singlename<<" : "
 			    <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
@@ -210,9 +216,14 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	    xs->SetSum(singlesum);
 	    xs->SetSumSqr(singlesumsqr);
 	    xs->SetPoints(singlen);
+	    xs->SetSSum(ssum);
+	    xs->SetSSumSqr(ssqrsum);
+	    xs->SetSigmaSum(ss2);
+	    xs->SetSPoints(sn);
 	    --hits;
 	  }
-	  infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;
+	  infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen
+		>>ssum>>ssqrsum>>ss2>>sn;
 	} while (infile);
       }
       infile.close();
@@ -285,8 +296,8 @@ void XS_Group::PrepareTerminate()
 
 void XS_Group::SetTotal()  
 { 
-  m_totalxs=m_totalsum/m_n; 
-  m_totalerr=sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
+  m_totalxs=TotalResult();//m_totalsum/m_n; 
+  m_totalerr=TotalVar();//sqrt((m_n*m_totalsumsqr-ATOOLS::sqr(m_totalsum))/(m_n-1))/m_n;
   if (p_selector) p_selector->Output();
   m_max=0.;
   for (size_t i=0;i<m_xsecs.size();++i) {
@@ -321,9 +332,12 @@ ATOOLS::Blob_Data_Base *XS_Group::WeightedEvent()
 void XS_Group::AddPoint(const double value) 
 {
   m_n++;
-  m_totalsum    += value;
-  m_totalsumsqr += value*value;
-  if (value>m_max) m_max = value;
+  m_sn++;
+  m_ssum    += value;
+  m_ssumsqr += value*value;
+  if (value>m_max)  m_max  = value;
+  if (value>m_smax) m_smax = value;
+
   for (size_t i=0;i<m_xsecs.size();++i) {
     if (ATOOLS::dabs(m_last)>0.) {
       m_xsecs[i]->AddPoint(value*m_xsecs[i]->Last()/m_last);
@@ -332,6 +346,25 @@ void XS_Group::AddPoint(const double value)
       m_xsecs[i]->AddPoint(0.);
     }  
   }
+}
+
+void XS_Group::ResetMax(int flag) {
+  m_max = 0.;
+  for (int i=0;i<m_xsecs.size();i++) {
+    m_xsecs[i]->ResetMax(flag);
+  }
+}
+
+void XS_Group::OptimizeResult() 
+{
+  double ssigma2 = (m_ssumsqr/m_sn - ATOOLS::sqr(m_ssum/m_sn))/(m_sn-1);
+  m_ssigma2  += 1./ssigma2; 
+  m_totalsum += m_ssum/ssigma2/m_sn;
+  m_totalsumsqr+= m_ssumsqr/ssigma2/m_sn;
+  m_ssum     = 0.;
+  m_ssumsqr  = 0.;
+  m_sn       = 0;
+  for (int i=0;i<m_xsecs.size();i++) m_xsecs[i]->OptimizeResult();
 }
 
 double XS_Group::Differential(double s,double t,double u)

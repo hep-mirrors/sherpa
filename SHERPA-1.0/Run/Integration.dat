@@ -5,7 +5,7 @@ ERROR =  2.e-3   ! Error by calculating matrix-elements
 !      
 FINISH_OPTIMIZATION = On ! Integrate until optimization is completed      
 !
-INTEGRATOR = 6   ! Phasespace : Rambo=0, Sarge=1,
+INTEGRATOR = 4   ! Phasespace : Rambo=0, Sarge=1,
                  !              Rambo + Sarge=2,
 	         !              Rambo + Multichannel=3,
 		 !              Multichannel:
