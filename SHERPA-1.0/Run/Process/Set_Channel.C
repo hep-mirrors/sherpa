@@ -1,5 +1,6 @@
 #include "Phase_Space_Generator.H"
 
+#include "Run_Parameter.H"
 #include <dlfcn.h>
 
 using namespace AMEGIC;
@@ -12,14 +13,15 @@ Single_Channel * Phase_Space_Generator::SetChannel(int nin,int nout,ATOOLS::Flav
 						   string& pID)
 {
   int pos=pID.find(string("/"));
-  string libname=string("libProc_")+pID.substr(0,pos)+string(".so");
+  string libname=ATOOLS::rpa.gen.Variable("SHERPA_LIB_PATH")+
+    string("/libProc_")+pID.substr(0,pos)+string(".so");
   string gettername=string("Getter_")+pID.substr(pos+1); 
 
   char * error;
   void * module;
   Getter_Function GetterFunction;
 
-  // try loading library 
+  // try loading library
   module = dlopen(libname.c_str(),RTLD_LAZY);
   error  = dlerror();
   if (module==NULL) return 0;

@@ -1,6 +1,7 @@
 #include "String_Handler.H"
 
 #include "Message.H"
+#include "Run_Parameter.H"
 #include <dlfcn.h>
 
 using namespace AMEGIC;
@@ -10,7 +11,8 @@ typedef Values* (*Getter_Function)(Basic_Sfuncs*);
 
 Values* String_Handler::Set_Values(std::string& pID,Basic_Sfuncs* BS)
 {
-  std::string libname=std::string("libProc_")+pID.substr(1)+std::string(".so");
+  std::string libname=ATOOLS::rpa.gen.Variable("SHERPA_LIB_PATH")+
+    std::string("/libProc_")+pID.substr(1)+std::string(".so");
   std::string gettername=std::string("Getter_")+pID;
 
   char * error;
