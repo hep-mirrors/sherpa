@@ -11,7 +11,6 @@ endif
 
 lib_LTLIBRARIES = libToolsOrg.la
 libToolsOrg_la_SOURCES        = \
-				Type.C \
 				Exception.C \
 				Exception_Handler.C \
 				File_IO_Base.C \
@@ -26,6 +25,7 @@ libToolsOrg_la_SOURCES        = \
 		 		Sort.C \
 				prof.cc \
 				IO_Handler.C \
+				Type.C \
 				Info_Key.C \
 				Integration_Info.C \
 				Debugger.C
@@ -53,7 +53,6 @@ noinst_HEADERS        =	\
 			IO_Handler.H \
 			MyStrStream.H \
 			Type.H \
-			Type.inl.H \
 			Info_Key.H \
 			Info_Key.inl.H \
 			Integration_Info.H \
