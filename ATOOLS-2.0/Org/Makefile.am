@@ -41,7 +41,7 @@ noinst_HEADERS        =	\
 			IO_Handler.H \
 			MyStrStream.H \
 			Type.H \
-			Type.IC \
+			Type.inl.H \
 			Info_Key.H \
 			Info_Key.inl.H \
 			Integration_Info.H \
