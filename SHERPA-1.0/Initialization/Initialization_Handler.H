@@ -12,7 +12,6 @@
 #include "Hadron_Decay_Handler.H"
 #include "MI_Handler.H"
 #include "Output_Handler.H"
-#include "Pythia_Interface.H"
 #include "Sample_Analysis.H"
 #include "Data_Read.H"
 
@@ -65,7 +64,7 @@ namespace SHERPA {
     Hadron_Decay_Handler       * p_hadrondecays;
     MI_Handler                 * p_mihandler; 
     Output_Handler             * p_outputhandler;
-    Pythia_Interface           * p_pythia;
+    Lund_Interface           * p_pythia;
   private :
     bool InitializeTheIO();
     bool InitializeTheExternalMC();
@@ -116,7 +115,7 @@ namespace SHERPA {
     ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
     MI_Handler                  * GetMIHandler()             { return p_mihandler;       }
     Output_Handler              * GetOutputHandler()         { return p_outputhandler;   }
-    Pythia_Interface            * GetPythiaInterface()       { return p_pythia;          }
+    Lund_Interface              * GetPythiaInterface()       { return p_pythia;          }
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

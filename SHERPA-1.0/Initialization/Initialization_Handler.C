@@ -239,7 +239,7 @@ bool Initialization_Handler::InitializeTheExternalMC()
   std::string file;
   switch (m_mode) {
   case 9000: 
-    p_pythia = new Pythia_Interface(m_path,m_evtfile);
+    p_pythia = new Lund_Interface(m_path,m_evtfile);
     return true;
   default: 
     m_mode = 9999;
@@ -418,6 +418,7 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	       <<"   Analysis is switched off - continue run."<<std::endl;
     return 1;
   } 
+
   std::string prefix=p_dataread->GetValue<std::string>("ANALYSIS_OUTPUT");
   if (prefix==NotDefined<std::string>()) prefix="";
 

@@ -12,7 +12,7 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-MC_Interface::MC_Interface(Pythia_Interface * _pythia) :
+MC_Interface::MC_Interface(Lund_Interface * _pythia) :
   p_pythia(_pythia)
 {
   m_name      = std::string("MC_Interface:Pythia");
