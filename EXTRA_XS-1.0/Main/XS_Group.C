@@ -257,9 +257,9 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     p_pshandler->InitIncoming();
     long unsigned int points=m_n;
     m_totalxs=p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
-    if ((m_totalxs-m_totalsum)>1.e-10*(m_totalxs+m_totalsum)) {
+    if (!(ATOOLS::IsZero((m_totalxs-TotalResult())/(m_totalxs+TotalResult())))) {
       ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
-			 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<std::endl;
+			 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<TotalResult()<<std::endl;
     }
     if (m_totalxs>0.) {
       SetTotal();
@@ -351,7 +351,6 @@ void XS_Group::AddPoint(const double value)
   m_ssumsqr += value*value;
   if (value>m_max)  m_max  = value;
   if (value>m_smax) m_smax = value;
-
   for (size_t i=0;i<m_xsecs.size();++i) {
     if (ATOOLS::dabs(m_last)>0.) {
       m_xsecs[i]->AddPoint(value*m_xsecs[i]->Last()/m_last);
