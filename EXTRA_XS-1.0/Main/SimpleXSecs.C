@@ -34,8 +34,8 @@ bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
   p_beam         = _beam; 
   p_isr          = _isr;
   
-  string xsfile  = p_dataread->GetValue<string>("XSFILE",string("XS.dat"));
-  string selfile = p_dataread->GetValue<string>("XS-SELECTORFILE",string("XSSelector.dat"));
+  string xsfile  = p_dataread->GetValue<string>("XS_FILE",string("XS.dat"));
+  string selfile = p_dataread->GetValue<string>("XS_SELECTOR_FILE",string("XSSelector.dat"));
   p_seldata      = new Selector_Data(m_path+selfile);
 
   int    _scale_scheme   = p_dataread->GetValue<int>("SCALE SCHEME",0);
