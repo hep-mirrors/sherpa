@@ -507,11 +507,11 @@ void ATOOLS::ParticleInit(std::string path)
   }
   // kfcode,mass,width,charge,icharge,strong,spin,majorana,take,stable,massive,name,1
   *(pi++) = Part_Info( kf::pol,      0.,0., 0, 0,0, 0,0,0,1,0,"polarisation",1);
-  *(pi++) = Part_Info( kf::lepton,   0.,0.,-3,-1,0, 2,0,1,1,0,"lepton",1);
-  *(pi++) = Part_Info( kf::neutrino, 0.,0., 0, 1,0, 2,0,1,1,0,"neutrino",1);
-  *(pi++) = Part_Info( kf::fermion,  0.,0., 0, 0,0, 2,0,1,1,0,"fermion",1);
-  *(pi++) = Part_Info( kf::jet,      0.,0., 0, 0,1, 0,0,1,1,0,"jet",1);
-  *(pi++) = Part_Info( kf::quark,    0.,0., 0, 0,1, 2,0,1,1,0,"quark",1);
+  *(pi++) = Part_Info( kf::lepton,   0.,0.,-3,-1,0, 1,0,1,1,0,"lepton",1);
+  *(pi++) = Part_Info( kf::neutrino, 0.,0., 0, 1,0, 1,0,1,1,0,"neutrino",1);
+  *(pi++) = Part_Info( kf::fermion,  0.,0., 0, 0,0, 1,0,1,1,0,"fermion",1);
+  *(pi++) = Part_Info( kf::jet,      0.,0., 0, 0,1, 2,0,1,1,0,"jet",1);
+  *(pi++) = Part_Info( kf::quark,    0.,0., 0, 0,1, 1,0,1,1,0,"quark",1);
 
   *(pi++) = Part_Info( kf::cluster,    0.,0., 0, 0,0, 0,0,1,1,0,"cluster",1);
   *(pi++) = Part_Info( kf::string,    0.,0., 0, 0,0, 0,0,1,1,0,"string",1);
