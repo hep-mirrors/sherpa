@@ -30,7 +30,7 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base * _proc,
     events(0), psi(NULL), p(NULL),
     beamchannels(NULL), isrchannels(NULL), fsrchannels(NULL), psflavs(NULL),
     nin(proc->Nin()), nout(proc->Nout()), nvec(proc->Nvec()+1), name(proc->Name()),
-    m_weight(1.)
+    m_weight(1.), m_initialized(0)
 {
   Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
   
@@ -76,10 +76,8 @@ Phase_Space_Handler::~Phase_Space_Handler()
 
    ---------------------------------------------------------------------- */
 
-double Phase_Space_Handler::Integrate() 
+bool Phase_Space_Handler::InitIncomming() 
 {
-  psi        = new Phase_Space_Integrator();
-  
   msg.Debugging()<<"Phase_Space_Handler::Integrate with : "<<endl;
   if (beamchannels) 
     msg.Debugging()<<"  Beam : "<<beamchannels->Name()<<" ("<<beamchannels<<") "
@@ -103,7 +101,7 @@ double Phase_Space_Handler::Integrate()
   msg.SetPrecision(12);
   if (bh) {
     if (bh->On()>0) {
-      beamchannels->GetRange();
+      //      beamchannels->GetRange();
       beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
       beamchannels->GetRange();
     }
@@ -111,7 +109,7 @@ double Phase_Space_Handler::Integrate()
   if (ih) {
     if (ih->On()>0) {
       ih->SetSprimeMin(AMATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
-      isrchannels->GetRange();
+      //      isrchannels->GetRange();
       msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
 		     <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
 		     <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
@@ -120,6 +118,16 @@ double Phase_Space_Handler::Integrate()
     }
   }
   msg.SetPrecision(6);
+  m_initialized=1;
+  return 1;
+}
+
+
+double Phase_Space_Handler::Integrate() 
+{
+  psi        = new Phase_Space_Integrator();
+
+  if (!InitIncomming()) return 0;
 
   if (nin==2) return psi->Calculate(this,error);
   if (nin==1) return psi->CalculateDecay(this,sqrt(p[0].Abs2()),error);
@@ -181,7 +189,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
 
   if (!Check4Momentum(p)) {
     msg.Out()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
-    //for (int i=0;i<nin+nout;++i) msg.Out()<<i<<":"<<p[i]<<endl;
+    for (int i=0;i<nin+nout;++i) msg.Out()<<i<<":"<<p[i]<<endl;
     return 0.;
   }
 
@@ -262,6 +270,8 @@ double Phase_Space_Handler::SameWeightedEvent() {
 
 bool Phase_Space_Handler::OneEvent(int mode)
 {
+  if (!m_initialized) InitIncomming();
+
   m_weight=1.;
 
   double value;
@@ -276,7 +286,7 @@ bool Phase_Space_Handler::OneEvent(int mode)
 	return 0;
       }
     }
-    ih->SetSprimeMin(sqr(proc->ISRThreshold()));
+    // *AS*    ih->SetSprimeMin(sqr(proc->ISRThreshold()));
     
     if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
     value = Differential(proc->Selected());

@@ -32,6 +32,7 @@ namespace PHASIC {
     double                       m_weight; 
     AMATOOLS::Vec4D            * p;
     Phase_Space_Integrator     * psi;    
+    bool  m_initialized;
 
     void TestIntegration(double);
     bool MakeIncoming(AMATOOLS::Vec4D *);
@@ -43,7 +44,7 @@ namespace PHASIC {
     bool MakeISRChannels();
     bool CreateBeamChannels();
     bool CreateISRChannels();
-
+    bool InitIncomming();
   public:
     Phase_Space_Handler(Integrable_Base *,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Phase_Space_Handler();
