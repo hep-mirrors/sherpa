@@ -26,13 +26,13 @@ ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
 ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
-bin_PROGRAMS  =	Integrator_Test Interpreter_Test
+bin_PROGRAMS  =	Integrator_Test Calc
 Integrator_Test_SOURCES       =	Integrator_Test.C
 Integrator_Test_LDADD         =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS) 
 Integrator_Test_LDFLAGS       =	-rdynamic
-Interpreter_Test_SOURCES      =	Interpreter_Test.C
-Interpreter_Test_LDADD        =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS)
-Interpreter_Test_LDFLAGS      =	-rdynamic
+Calc_SOURCES  =	Calc.C
+Calc_LDADD    =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS)
+Calc_LDFLAGS  =	-rdynamic
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS) $(ROOTFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
