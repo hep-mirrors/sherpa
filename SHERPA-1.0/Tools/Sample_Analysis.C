@@ -4,12 +4,13 @@
 #include "Message.H"
 
 
-#include "Final_Selector.H"
 #include "Primitive_Detector.H"
 #include "Jet_Observables.H"
 #include "One_Particle_Observables.H"
 #include "Two_Particle_Observables.H"
 #include "Four_Particle_Observables.H"
+#include "Event_Shapes_EE.H"
+#include "Shape_Observables_EE.H"
 
 //#include <ctype.h>
 
@@ -23,14 +24,15 @@ Observable_Data::Observable_Data(std::string _type) : type(_type) {}
 
 void Observable_Data::Output() {
   Flavour flav1,flav2;
-  if (Specify()==1) {
+  switch (Specify()) {
+  case 1:
     flav1 = Flavour(kf::code(abs(ints[0])));
     if (ints[0]<0) flav1=flav1.Bar();
     msg.Out()<<"Obs : "<<type<<" for "<<flav1<<" : "
 	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[1]<<" bins,"
 	     <<" extra : "<<keywords[0]<<std::endl;
-  }
-  if (Specify()==2) {
+    break;
+  case 2:
     flav1 = Flavour(kf::code(abs(ints[0])));
     if (ints[0]<0) flav1=flav1.Bar();
     flav2 = Flavour(kf::code(abs(ints[1])));
@@ -38,24 +40,32 @@ void Observable_Data::Output() {
     msg.Out()<<"Obs : "<<type<<" for "<<flav1<<" "<<flav2<<" : "
 	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[2]<<" bins,"
 	     <<" extra : "<<keywords[0]<<std::endl;
-  }
-  if (Specify()==10) {
+    break;
+  case 10:
     flav1 = Flavour(kf::code(abs(ints[0])));
     if (ints[0]<0) flav1=flav1.Bar();
     msg.Out()<<"Obs : "<<type<<"("<<ints[2]<<", min :"<<ints[3]<<" jets, max : "<<ints[4]<<"jets), "
 	     <<"Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[1]<<" bins,"
 	     <<" extra : "<<keywords[0]<<std::endl;
+    break;
+  case 20:
+    msg.Out()<<"Obs : "<<type<<" Range : "<<numbers[0]<<" ... "<<numbers[1]<<" in "<<ints[0]<<" bins,"
+	     <<" extra : "<<keywords[0]<<std::endl;
+    break;
   }
 }
 
 int Observable_Data::Specify() {
   if (type==std::string("ET") || type==std::string("PT") ||
       type==std::string("Eta") || type==std::string("E") ||
-      type==std::string("EVis"))                                 return 1;
+      type==std::string("EVis"))                                        return 1;
   if (type==std::string("Mass") || type==std::string("PT2") ||
-      type==std::string("Eta2") || type==std::string("SPT2")) return 2;
+      type==std::string("Eta2") || type==std::string("SPT2"))           return 2;
   if (type==std::string("JetPT") || type==std::string("JetEta") || 
-      type==std::string("JetE") || type==std::string("JetDR")) return 10;
+      type==std::string("JetE") || type==std::string("JetDR"))          return 10;
+  if (type==std::string("Thrust") || type==std::string("Major") || 
+      type==std::string("Minor") || type==std::string("Oblateness") || 
+      type==std::string("PT_in_T") || type==std::string("PT_out_T"))    return 20;
   return -1;
 }
 
@@ -93,7 +103,7 @@ Sample_Analysis::Sample_Analysis(std::ifstream * readin, std::string _phase, con
     }
   }
   p_analysis            = new Primitive_Analysis(m_phase,mode);
-  Final_Selector * fsel = new Final_Selector("FinalState","Analysed",(rpa.gen.Beam1()==Flavour(kf::e)));
+  Final_Selector * fsel = NULL;
   ReadInFinalSelectors(readin,fsel);
   p_analysis->AddObservable(fsel);
   ReadInObservables(readin);
@@ -134,7 +144,8 @@ Read in routines.
 
 ---------------------------------------------------------------------------------------*/
 
-void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,Final_Selector * fsel)
+void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,
+					   Final_Selector *& fsel)
 {  
   std::string buffer, arg;
   unsigned int pos;
@@ -144,7 +155,10 @@ void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,Final_Selector
   std::vector<double> numbers; 
   Flavour flav,flav2;
   Final_Selector_Data fd;
+  bool ini_fsel = false;
 
+  m_qualifier                         = -1;
+  Particle_Qualifier_Base * qualifier = NULL;
   for (;;) {
     if (readin->eof()) return;
     getline(*readin,buffer);
@@ -165,7 +179,42 @@ void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,Final_Selector
 	  }
 	}
       }
+      else if (buffer.find("EVENT_SHAPES")!=std::string::npos) {
+	buffer=buffer.substr(buffer.find("EVENT_SHAPES")+12);
+	while(buffer.length()>0) {
+	  if (buffer[0]==' ') buffer = buffer.substr(1);
+	  else {
+	    pos = buffer.find(std::string(" "));
+	    if (pos!=std::string::npos) {
+	      arg         = buffer.substr(0,pos);
+	      m_qualifier = std::atoi(arg.c_str());
+	    }
+	    if (m_qualifier>0) {
+	      if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
+		switch (m_qualifier) {
+		case 1:  qualifier = new Is_Charged_Hadron(); break;
+		case 2:  qualifier = new Is_Neutral_Hadron(); break;
+		case 3:  qualifier = new Is_Hadron(); break;
+		}
+		fsel     = new Event_Shapes_EE("FinalState","EvtShapes",qualifier);
+		ini_fsel = true;
+	      }
+	      else {
+		msg.Error()<<"ERROR in Sample_Analysis::ReadInFinalSelectors"<<std::endl
+			   <<"   Try to initialize event shape variables for non-electron incoming beams."<<std::endl
+			   <<"   Abort."<<std::endl;
+		abort();
+	      }
+	    }
+	    break;
+	  }
+	}
+      }
       else {
+	if (!ini_fsel) {
+	  fsel     = new Final_Selector("FinalState","Analysed",(rpa.gen.Beam1()==Flavour(kf::e)));
+	  ini_fsel = true;
+	}
 	kfcs.clear();
 	numbers.clear();
 	while(buffer.length()>0) {
@@ -289,7 +338,6 @@ void Sample_Analysis::SetUpObservables()
   for (size_t i=0;i<m_obsdata.size();++i) {
     msg.Tracking()<<"Try to initialize another observable from read in :"<<std::endl;
     od   = m_obsdata[i];
-    od->Output();
     odn  = od->Specify();
     type = od->type;
 
@@ -406,6 +454,39 @@ void Sample_Analysis::SetUpObservables()
       if (type==std::string("JetDR"))  { 
 	obs = new Jet_Differential_Rates(linlog,od->numbers[0],od->numbers[1],
 				       od->ints[1],od->ints[2],od->ints[3],od->ints[4],listname); 
+	break; 
+      }
+    case 20:
+      if (!(od->ints.size()==1 && od->numbers.size()==2 && od->keywords.size()==1)) {
+	msg.Error()<<"Potential Error in Sample_Analysis::SetUpSubObservables()"<<std::endl
+		   <<"   Event shape observable with "
+		   <<od->ints.size()<<" "<<od->numbers.size()<<" "<<od->keywords.size()
+		   <<". Continue and hope for the best."<<std::endl;
+      }
+      linlog = 0;
+      if (od->keywords[0]==std::string("Log")) linlog = 10;
+      if (type==std::string("Thrust"))  { 
+	obs = new Thrust(linlog,od->numbers[0],od->numbers[1],od->ints[0]);
+	break; 
+      }
+      if (type==std::string("Major"))  { 
+	obs = new Major(linlog,od->numbers[0],od->numbers[1],od->ints[0]);
+	break; 
+      }
+      if (type==std::string("Minor"))  { 
+	obs = new Minor(linlog,od->numbers[0],od->numbers[1],od->ints[0]);
+	break; 
+      }
+      if (type==std::string("Oblateness"))  { 
+	obs = new Oblateness(linlog,od->numbers[0],od->numbers[1],od->ints[0]);
+	break; 
+      }
+      if (type==std::string("PT_in_T"))  { 
+	obs = new PT_In_Thrust(linlog,od->numbers[0],od->numbers[1],od->ints[0],"EvtShapes");
+	break; 
+      }
+      if (type==std::string("PT_out_T"))  { 
+	obs = new PT_Out_Thrust(linlog,od->numbers[0],od->numbers[1],od->ints[0],"EvtShapes");
 	break; 
       }
     default:

@@ -28,7 +28,9 @@ namespace SHERPA {
     std::vector<Observable_Data *>             m_obsdata;
     std::multimap<ATOOLS::Flavour,std::string> m_subsamples;
 
-    void ReadInFinalSelectors(std::ifstream *,ANALYSIS::Final_Selector *);
+    int  m_qualifier;
+
+    void ReadInFinalSelectors(std::ifstream *,ANALYSIS::Final_Selector *&);
     void ReadInObservables(std::ifstream *);
     void SetUpObservables();
     // This is the place to add specific observables ....

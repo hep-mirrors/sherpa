@@ -31,16 +31,13 @@ namespace ANALYSIS {
 
 
   class Final_Selector : public Primitive_Observable_Base {
-    std::string            m_inlistname, m_outlistname;
-
-    bool m_ownlist, m_extract;
-    int  m_mode;
-
-    //    ATOOLS::Kt_Algorithm * p_ktalg;
+  protected:
+    std::string                  m_inlistname, m_outlistname;
+    bool                         m_ownlist, m_extract;
+    int                          m_mode;
     ATOOLS::Jet_Algorithm_Base * p_jetalg;
-
-    Final_Data_Map         m_fmap;
-    Final_Correlator_Map   m_cmap;
+    Final_Data_Map               m_fmap;
+    Final_Correlator_Map         m_cmap;
 
 
 
@@ -56,6 +53,7 @@ namespace ANALYSIS {
     void   SelectN(ATOOLS::Particle_List *,Final_Data_Map::iterator);   
     void   Extract(ATOOLS::Particle_List *); 
  public:
+    Final_Selector(const std::string &,const std::string &);
     Final_Selector(const std::string &,const std::string &, int mode=0);
 
     void AddSelector(const ATOOLS::Flavour &, const Final_Selector_Data &);

@@ -20,6 +20,14 @@ namespace ANALYSIS {
 }
 
 Final_Selector::Final_Selector(const std::string & inlistname,
+			       const std::string & outlistname) :
+  m_inlistname(inlistname),m_outlistname(outlistname),m_ownlist(false), m_extract(false),
+  m_mode(-1), p_jetalg(NULL)
+{
+  m_splitt_flag = false;
+}
+
+Final_Selector::Final_Selector(const std::string & inlistname,
 			       const std::string & outlistname,
 			       int mode) :
   m_inlistname(inlistname),m_outlistname(outlistname),m_ownlist(false), m_extract(false),
@@ -27,11 +35,10 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 {
   msg.Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<")"<<std::endl;
   m_splitt_flag = false;
-  if (mode) {
-    p_jetalg = new Durham_Algorithm();  
-  }
-  else {
-    p_jetalg = new Kt_Algorithm();
+  switch (mode) {
+    case 1: p_jetalg = new Durham_Algorithm(); break;
+    case 0: p_jetalg = new Kt_Algorithm(); break;
+    default: break;
   }
 }
 

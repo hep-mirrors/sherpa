@@ -15,12 +15,17 @@ libObservables_la_SOURCES = \
 			    One_Particle_Observables.C \
 			    Two_Particle_Observables.C \
 			    Four_Particle_Observables.C \
-			    Jet_Observables.C
+			    Jet_Observables.C \
+			    Event_Shapes_EE.C \
+			    Shape_Observables_EE.C 
 noinst_HEADERS            = \
 			    One_Particle_Observables.H \
 			    Two_Particle_Observables.H \
 			    Four_Particle_Observables.H \
-			    Jet_Observables.H
+			    Jet_Observables.H \
+			    Event_Shapes_EE.H \
+			    Shape_Observables_EE.H
+
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ANALYSISFLAGS)
 INCLUDES      =	$(ANALYSISINCS) $(ATOOLSINCS)
