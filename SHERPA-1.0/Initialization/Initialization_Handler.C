@@ -59,7 +59,36 @@ bool Initialization_Handler::InitializeTheFramework()
   okay      = okay && InitializeTheBeams();
   okay      = okay && InitializeThePDFs();
 
-  /*  A warning has to come here for ADD !!!!!! */
+  if (p_model->Name()==std::string("ADD")) {
+    double ms = p_model->ScalarConstant("M_s");
+    if (ms<rpa.gen.Ecms()) {
+      msg.Out()<<" WARNING : You are using the ADD model beyond its valid range ! "<<endl;
+      msg.Out()<<" WARNING : You are using the ADD model beyond its valid range ! "<<endl;
+    }
+  }
+
+  double smin=0;
+  double smax=sqr(rpa.gen.Ecms());
+  smin = Max(smin,p_beamspectra->SprimeMin());
+  smax = Min(smax,p_beamspectra->SprimeMax());
+  smin = Max(smin,p_isrhandler->SprimeMin());
+  smax = Min(smax,p_isrhandler->SprimeMax());
+  if (p_beamspectra->On()) {
+    p_beamspectra->SetSprimeMin(smin);
+  }
+  string name=p_model->Name();
+  if (name==std::string("ADD")) {
+    double mcut2=sqr(p_model->ScalarConstant("M_cut"));
+    // if ISR & beam -> apply mcut on ISR only
+    // if beam only -> apply mcut on Beam
+    smax = Min(smax,mcut2);
+    if (p_isrhandler->On()) {
+      p_isrhandler->SetSprimeMax(smax);
+    } 
+    else if (p_beamspectra->On()) {
+      p_beamspectra->SetSprimeMax(smax);
+    }
+  }
 
   if (!(p_beamspectra->CheckConsistency(m_bunch_particles))) {
     msg.Error()<<"Error in Initialization of the Sherpa framework : "<<endl
