@@ -13,6 +13,7 @@ using namespace ATOOLS;
 
 bool Exception_Handler::s_active=true;
 bool Exception_Handler::s_prepared=false;
+bool Exception_Handler::s_stacktrace=true;
 
 unsigned int Exception_Handler::s_exitcode=0;
 Exception *Exception_Handler::s_exception=0;
@@ -73,7 +74,7 @@ void Exception_Handler::Exit(int exitcode)
 void Exception_Handler::Terminate() 
 {
   GenerateStackTrace(msg.LogFile(),true,"! ");
-  GenerateStackTrace(msg.Error());
+  if (s_stacktrace) GenerateStackTrace(msg.Error());
   if (!ApproveTerminate()) {
     s_exception=NULL;
     return;

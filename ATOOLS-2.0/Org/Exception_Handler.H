@@ -18,7 +18,7 @@ namespace ATOOLS {
     
   private:
 
-    static bool          s_active, s_prepared;
+    static bool          s_active, s_prepared, s_stacktrace;
     static unsigned int  s_exitcode;
     static Exception    *s_exception;
     
@@ -58,8 +58,11 @@ namespace ATOOLS {
     static void AddTesterObject(Tester_Object *const object);     
     static void AddTerminatorObject(Terminator_Object *const object);     
 
-    inline static void SetActive(const bool active) { s_active=active;  }
-    inline static bool Active()                     { return s_active;  }
+    inline static void SetActive(const bool active)    { s_active=active;     }
+    inline static void SetStackTrace(const bool trace) { s_stacktrace=trace;  }
+
+    inline static bool Active()     { return s_active;      }
+    inline static bool StackTrace() { return s_stacktrace;  }
 
   };// end of class Exception_Handler
   
