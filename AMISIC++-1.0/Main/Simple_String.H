@@ -9,12 +9,16 @@
 
 namespace AMISIC {
 
+  class Reggeon_Trajectory;
+
   class Simple_String: public MI_Base {
   private:
 
 #ifdef USING__Sherpa
     SHERPA::Remnant_Base  *p_remnants[2];
 #endif
+
+    std::vector<Reggeon_Trajectory*> m_reggeons;
 
     void CleanUp();
     void PrepareTerminate();

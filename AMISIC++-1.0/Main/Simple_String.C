@@ -2,7 +2,12 @@
 
 #include "Data_Reader.H"
 #include "Hadron_Remnant.H"
+#include "Reggeon_Trajectory.H"
+#include "Run_Parameter.H"
+#include "MyStrStream.H"
+#include "Random.H"
 #include "Object.H"
+#include <iomanip>
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_String
@@ -36,18 +41,42 @@ Simple_String::~Simple_String()
 
 void Simple_String::CleanUp() 
 {
+  while (m_reggeons.size()>0) {
+    delete m_reggeons.front();
+    m_reggeons.erase(m_reggeons.begin());
+  }
 }
 
 bool Simple_String::Initialize()
 {
   PROFILE_HERE;
   CleanUp();
-  //   if (!CheckInputPath()) return false;
-  //   if (!CheckInputFile()) return false;
-  //   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  //   reader->SetInputPath(InputPath());
-  //   reader->SetInputFile(InputFile());
-  //   reader->SetVectorType(reader->VHorizontal);
+  if (!CheckInputPath()) return false;
+  if (!CheckInputFile()) return false;
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  reader->SetInputPath(InputPath());
+  reader->SetInputFile(InputFile());
+  reader->SetVectorType(reader->VHorizontal);
+  reader->SetMatrixType(reader->MTransposed);
+  std::vector<std::vector<std::string> > helpsvv;
+  if (!reader->MatrixFromFile(helpsvv,"REGGE_TRAJECTORY")) {
+    helpsvv.push_back(std::vector<std::string>(3));
+    helpsvv.back()[0]="Pomeron";
+    helpsvv.back()[1]="1.0808";
+    helpsvv.back()[2]="0.25";
+  }
+  msg_Tracking()<<"Simple_String::Initialize(): Adding Reggeon {\n";
+  for (size_t i=0;i<helpsvv.size();++i) {
+    if (helpsvv[i].size()<3) continue;
+    m_reggeons.push_back(new Reggeon_Trajectory
+			 (ATOOLS::ToType<double>(helpsvv[i][1]),
+			  ATOOLS::ToType<double>(helpsvv[i][2])));
+    m_reggeons.back()->SetS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms()));
+    msg_Tracking()<<"   "<<std::setw(10)<<std::left<<helpsvv[i][0]
+		  <<" "<<std::setw(8)<<helpsvv[i][1]
+		  <<" "<<std::setw(8)<<helpsvv[i][2]<<"\n";
+  }
+  msg_Tracking()<<"}"<<std::endl;
   p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
   p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
   if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
@@ -66,8 +95,11 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
 		       <<"No remnant found."<<std::endl;
     return false;
   }
+  m_reggeons[0]->Fit(m_start[0]*m_start[0],m_start[2]);
+  m_start[1]=sqrt(m_reggeons[0]->GetT(0.0,m_start[0]*m_start[0],ATOOLS::ran.Get()));
   blob->DeleteOwnedParticles();
   const unsigned int flow=ATOOLS::Flow::Counter();
+  const double type=ATOOLS::ran.Get();
   for (short unsigned int i=0;i<2;++i) {
     SHERPA::Hadron_Remnant *hadron=dynamic_cast<SHERPA::Hadron_Remnant*>(p_remnants[i]);
     if (hadron==NULL) {
@@ -77,15 +109,23 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
     }
     const std::vector<ATOOLS::Flavour> &constit=
       hadron->GetConstituents(ATOOLS::kf::none);
+    double pz=0.0, phi=ATOOLS::ran.Get()*2.0*M_PI;
     for (size_t j=0;j<constit.size();++j) {
       if (constit[j].IsQuark() && constit[j].IsAnti()==i) {
 	ATOOLS::Particle *particle = new ATOOLS::Particle(0,constit[j]);
-	double E=hadron->GetXPDF(constit[j],m_start[0]*m_start[0]);
-	double pz=sqrt(E*E-ATOOLS::sqr(constit[j].Mass()));
-	if (i==1) pz*=-1.0;
-	particle->SetMomentum(ATOOLS::Vec4D(E,0.0,0.0,pz));
+	do {
+	  double E=hadron->BeamEnergy()*
+	    hadron->GetXPDF(constit[j],m_start[0]*m_start[0]);
+	  pz=sqrt(E*E-ATOOLS::sqr(constit[j].Mass())-m_start[1]*m_start[1]);
+	  if (i==1) pz*=-1.0;
+	  particle->SetMomentum(ATOOLS::Vec4D(E,(i==0?1.0:-1.0)*m_start[1]*cos(phi),
+					      (i==0?1.0:-1.0)*m_start[1]*sin(phi),pz));
+	} while (!(ATOOLS::dabs(pz)>0.0));
 	particle->SetFlow(1+constit[j].IsAnti(),flow);
-	particle->SetFlow(2-constit[j].IsAnti(),0);
+ 	particle->SetFlow(2-constit[j].IsAnti(),0);
+//  	// double gluon exchange
+// 	if (i==1 && type<2./6.) 
+// 	  particle->SetFlow(1+constit[j].IsAnti(),ATOOLS::Flow::Counter());
 	particle->SetStatus(1);
 	blob->AddToInParticles(particle);
 	blob->AddToOutParticles(particle);

@@ -1,3 +1,4 @@
+
 #include "Simple_Chain.H"
 
 #include "Phase_Space_Handler.H"
@@ -791,7 +792,7 @@ void Simple_Chain::PrepareTerminate()
 
 bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)
 {
-  if (!s_soft) return false;
+  if (s_soft==NULL) return false;
   double ptmax=std::numeric_limits<double>::max();
   if (blob->Type()==ATOOLS::btp::Signal_Process) {
     for (size_t i=0;i<(size_t)blob->NOutP();++i) 
@@ -802,5 +803,9 @@ bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)
       ptmax=ATOOLS::Min(ptmax,blob->InParticle(i)->Momentum().PPerp());
   }
   bool veto=ptmax<m_stop[0];
+  if (veto) {
+    s_soft->SetStart(ptmax,1); 
+    s_soft->SetStart((*p_differential)(m_stop[0]),2); 
+  }
   return s_stophard=veto;
 }
