@@ -328,6 +328,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
+      if (!p_psh->PIs().empty() && ncontrib/iter1<4) allowbreak = false;
       if (error<maxerror && allowbreak) break;
       if (ncontrib/iter1==1) {
 	CreatePIChannels();
