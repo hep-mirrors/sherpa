@@ -143,8 +143,6 @@ namespace AMEGIC {
     virtual double FactorisationScale();
     virtual bool   OneEvent(double = -1.)                                          =0;
     virtual bool   SameEvent()                                                     =0;
-    virtual ATOOLS::Blob_Data_Base * WeightedEvent()                               =0;
-    virtual ATOOLS::Blob_Data_Base * SameWeightedEvent()                           =0;
 
     virtual void SwapInOrder();
     virtual void RestoreInOrder();
