@@ -145,7 +145,59 @@ namespace ATOOLS {
   public:
     bool operator()(const Particle *) const;
   };
+  class Is_Neutral_Pion : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
   class Is_Charged_Kaon : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Neutral_Kaon : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Charged_KStar : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Neutral_KStar : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Rho0 : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Eta : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_EtaPrime : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Phi : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Omega : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Lambda : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Charged_Sigma : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Charged_Xi : public Particle_Qualifier_Base {
+  public:
+    bool operator()(const Particle *) const;
+  };
+  class Is_Neutral_Xi : public Particle_Qualifier_Base {
   public:
     bool operator()(const Particle *) const;
   };
@@ -224,12 +276,68 @@ namespace ATOOLS {
   };
 
   inline bool Is_Charged_Pion::operator() (const Particle * p) const {
-    if ( p && p->Flav().Kfcode()==211) return 1;
+    if ( p && p->Flav().Kfcode()==kf::pi_plus) return 1;
+    return 0;
+  };
+  inline bool Is_Neutral_Pion::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::pi) return 1;
     return 0;
   };
 
   inline bool Is_Charged_Kaon::operator() (const Particle * p) const {
-    if ( p && p->Flav().Kfcode()==321) return 1;
+    if ( p && p->Flav().Kfcode()==kf::K_plus) return 1;
+    return 0;
+  };
+  inline bool Is_Neutral_Kaon::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::K) return 1;
+    return 0;
+  };
+
+
+  inline bool Is_Charged_KStar::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::K_star_892_plus) return 1;
+    return 0;
+  };
+  inline bool Is_Neutral_KStar::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::K_star_892) return 1;
+    return 0;
+  };
+
+  inline bool Is_Rho0::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::rho_770) return 1;
+    return 0;
+  };
+  inline bool Is_Eta::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::eta) return 1;
+    return 0;
+  };
+  inline bool Is_EtaPrime::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::eta_prime_958) return 1;
+    return 0;
+  };
+
+  inline bool Is_Phi::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::phi_1020) return 1;
+    return 0;
+  };
+  inline bool Is_Omega::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::omega_782) return 1;
+    return 0;
+  };
+  inline bool Is_Lambda::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::Lambda) return 1;
+    return 0;
+  };
+  inline bool Is_Charged_Sigma::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::Sigma_minus) return 1;
+    return 0;
+  };
+  inline bool Is_Charged_Xi::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::Xi_minus) return 1;
+    return 0;
+  };
+  inline bool Is_Neutral_Xi::operator() (const Particle * p) const {
+    if ( p && p->Flav().Kfcode()==kf::Xi) return 1;
     return 0;
   };
 
