@@ -27,6 +27,9 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libIsajet.la \
 	       @libdir@/libModel.la \
 	       @libdir@/libDUPDF.la \
+	       @libdir@/libCTEQ.la \
+	       @libdir@/libMRST.la \
+	       @libdir@/libGRV.la \
 	       @libdir@/libApacicMain.la \
 	       @libdir@/libApacicShowers.la \
 	       @libdir@/libPDF.la \
