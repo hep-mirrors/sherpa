@@ -134,7 +134,6 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
 		<<"   SHERPA_CPP_PATH = "<<s_variables["SHERPA_CPP_PATH"]<<"\n"
 		<<"   SHERPA_LIB_PATH = "<<s_variables["SHERPA_LIB_PATH"]<<"\n"
 		<<"}"<<std::endl;
-  abort();
   s_variables["CURRENT_SHERPASYS"]=s_variables["SHERPA_BIN_PATH"]+std::string("/../..");
   setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
 			    s_variables["SHERPA_LIB_PATH"]).c_str(),1);
