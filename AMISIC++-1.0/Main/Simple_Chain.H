@@ -36,9 +36,6 @@ namespace AMISIC {
     Grid_Function_Type    *p_total;
     Amisic_Histogram_Type *p_differential;
     Grid_Creator          *p_gridcreator;
-#ifdef USING__Sherpa
-    SHERPA::Remnant_Base  *p_remnants[2];
-#endif
 
     Process_Map m_processmap;
     Map_Map     m_mapmap;

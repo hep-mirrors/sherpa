@@ -1,7 +1,8 @@
 #ifndef Amisic_H
 #define Amisic_H
 
-#include "Simple_Chain.H"
+#include "MI_Base.H"
+#include "Model_Base.H"
 #include "XS_Base.H"
 
 namespace AMISIC {

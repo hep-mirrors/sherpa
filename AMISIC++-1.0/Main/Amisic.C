@@ -1,5 +1,8 @@
 #include "Amisic.H"
 
+#include "Simple_Chain.H"
+#include "Simple_String.H"
+
 using namespace AMISIC;
 
 Amisic::Amisic():
@@ -199,9 +202,9 @@ bool Amisic::SelectSoftModel(ModelID _m_softmodel)
   switch (m_softmodel) {
   case SimpleChain:
     msg_Tracking()<<"Amisic::SelectSoftModel("<<_m_softmodel<<"): "
-			  <<"Initialize simple hard underlying event model."<<std::endl;
-    if (m_external) p_softbase = new Simple_Chain(p_model,p_beam,p_isr);
-    else p_softbase = new Simple_Chain();
+			  <<"Initialize simple soft underlying event model."<<std::endl;
+    if (m_external) p_softbase = new Simple_String();
+    else p_softbase = new Simple_String();
     break;
   case None:
     msg_Tracking()<<"Amisic::SelectSoftModel("<<_m_softmodel<<"): "

@@ -1,6 +1,8 @@
 #include "Simple_String.H"
 
 #include "Data_Reader.H"
+#include "Hadron_Remnant.H"
+#include "Object.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_String
@@ -35,13 +37,19 @@ void Simple_String::CleanUp()
 bool Simple_String::Initialize()
 {
   PROFILE_HERE;
-  if (!CheckInputPath()) return false;
-  if (!CheckInputFile()) return false;
   CleanUp();
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
-  reader->SetInputPath(InputPath());
-  reader->SetInputFile(InputFile());
-  reader->SetVectorType(reader->VHorizontal);
+  //   if (!CheckInputPath()) return false;
+  //   if (!CheckInputFile()) return false;
+  //   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
+  //   reader->SetInputPath(InputPath());
+  //   reader->SetInputFile(InputFile());
+  //   reader->SetVectorType(reader->VHorizontal);
+  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
+  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
+  if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"No beam remnant handler found.",
+			    "Simple_String","Initialize"));
+  }
   return true;
 }
 
@@ -49,9 +57,39 @@ bool Simple_String::FillBlob(ATOOLS::Blob *blob)
 {
   PROFILE_HERE;
   m_filledblob=false;
-  ATOOLS::msg.Error()<<"Simple_String::FillBlob(..): "
-		     <<"Cannot create momentum configuration."<<std::endl;
-  return false;
+  if (p_remnants[0]==NULL || p_remnants[1]==NULL) {
+    ATOOLS::msg.Error()<<"Simple_String::FillBlob(..): "
+		       <<"No remnant found."<<std::endl;
+    return false;
+  }
+  blob->DeleteOwnedParticles();
+  const unsigned int flow=ATOOLS::Flow::Counter();
+  for (short unsigned int i=0;i<2;++i) {
+    SHERPA::Hadron_Remnant *hadron=dynamic_cast<SHERPA::Hadron_Remnant*>(p_remnants[i]);
+    if (hadron==NULL) {
+      ATOOLS::msg.Error()<<"Simple_String::FillBlob(..): "
+			 <<"Incoming particle is no hadron."<<std::endl;
+      return false;
+    }
+    const std::vector<ATOOLS::Flavour> &constit=
+      hadron->GetConstituents(ATOOLS::kf::none);
+    for (size_t j=0;j<constit.size();++j) {
+      if (constit[j].IsQuark()) {
+	ATOOLS::Particle *particle = new ATOOLS::Particle(0,constit[j]);
+	double E=hadron->GetXPDF(constit[j],m_start[0]*m_start[0]);
+	particle->SetMomentum(ATOOLS::Vec4D(E,0.0,0.0,
+					    sqrt(E*E-ATOOLS::sqr(constit[j].Mass()))));
+	particle->SetFlow(1+constit[j].IsAnti(),flow);
+	particle->SetFlow(2-constit[j].IsAnti(),0);
+	particle->SetStatus(1);
+	blob->AddToInParticles(particle);
+	blob->AddToOutParticles(particle);
+	break;
+      }
+    }
+  }
+  m_filledblob=true;
+  return true;
 }
 
 void Simple_String::Reset()
