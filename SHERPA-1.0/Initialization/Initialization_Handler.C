@@ -84,7 +84,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   CheckFlagConsitency();
 
-  rpa.Init(m_path,m_file);
+  rpa.Init(m_path,m_file,argc,argv);
 }
 
 

@@ -108,8 +108,11 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg.Init(gen.m_output,logfile);
   if (argc>0) {
-    if (!system((std::string("test -f ")+std::string(argv[0])+std::string("/Sherpa")).c_str())) {
+    if (!system((std::string("test -f ")+std::string(argv[0])).c_str())) {
       s_variables["SHERPA_BIN_PATH"]=argv[0];
+      if (s_variables["SHERPA_PDF_PATH"]==std::string("")) {
+	s_variables["SHERPA_PDF_PATH"]=argv[0];
+      }
     }
   }
   s_variables["SHERPA_CPP_PATH"] = dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
