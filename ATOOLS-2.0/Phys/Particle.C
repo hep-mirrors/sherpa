@@ -122,11 +122,11 @@ Particle& Particle::operator=(const Particle &in)
 }
 
 
-Particle::Particle(int number,Flavour fl,Vec4D p)  {
+Particle::Particle(int number, Flavour fl, Vec4D p, char a) {
   ++s_totalnumber;
   m_number    = number;
   m_status    = 1;
-  m_info      = 'X';
+  m_info      = a;
   m_fl        = fl;
   m_momentum  = p;
   m_dec_time  = 0.;

@@ -29,9 +29,10 @@ namespace ATOOLS {
     Particle();
     Particle(const Particle & );
     Particle& operator=(const Particle &);
-    Particle(int, Flavour=Flavour(kf::none), Vec4D=Vec4D(0.,0.,0.,0.));
+    Particle(int, Flavour=Flavour(kf::none), Vec4D=Vec4D(0.,0.,0.,0.),
+	     char='a');
     ~Particle();
-    friend std::ostream& operator<<(std::ostream &, const Particle &);
+    friend std::ostream& operator<<(std::ostream &,const Particle &);
 
     void           Copy(Particle * );
     double         ProperTime();
