@@ -315,6 +315,7 @@ bool Simple_Chain::ReadInData()
   if (!reader->ReadFromFile(m_scalescheme,"SCALE_SCHEME")) m_scalescheme=11;
   if (!reader->ReadFromFile(m_kfactorscheme,"K_FACTOR_SCHEME")) m_kfactorscheme=1;
   if (!reader->ReadFromFile(m_nflavour,"N_FLAVOUR")) m_nflavour=3;
+  if (!reader->ReadFromFile(m_error,"ERROR")) m_error=1.e-2;
   std::string outputpath, help[2];
   MyStrStream converter;
   converter<<ATOOLS::rpa.gen.Bunch(0);
@@ -470,6 +471,7 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
   }
   group->SetScaleScheme(m_scalescheme);
   group->SetKFactorScheme(m_kfactorscheme);
+  group->PSHandler(false)->SetError(m_error);
   p_processes->PushBack(group);
   m_comments.clear();
   std::string processname=filename.substr(0,filename.length()-4);

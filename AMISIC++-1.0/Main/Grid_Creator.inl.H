@@ -5,7 +5,10 @@ namespace AMISIC {
 
   template <class Argument_Type,class Result_Type>
   bool Grid_Creator<Argument_Type,Result_Type>::CreateInitialGrid()
-  { return InitializeSingleGrid(p_gridhandler[0]); }
+  { 
+    if (p_gridhandler[0]->Grid()->XDataSize()>2) return true;
+    return InitializeSingleGrid(p_gridhandler[0]); 
+  }
 
   template <class Argument_Type,class Result_Type>
   bool Grid_Creator<Argument_Type,Result_Type>::CreateOptimizedGrid()

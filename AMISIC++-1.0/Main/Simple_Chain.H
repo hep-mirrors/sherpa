@@ -44,7 +44,7 @@ namespace AMISIC {
     PDF::ISR_Handler           *p_isr;
 
     unsigned int m_selected, m_nflavour, m_scalescheme, m_kfactorscheme;
-    double       m_sigmahard;
+    double       m_sigmahard, m_error;
     bool         m_external;
 
     ATOOLS::Blob *GetBlob(ATOOLS::Flavour *flavour);
