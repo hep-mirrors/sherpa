@@ -81,7 +81,7 @@ bool Grid_Creator::ReadInArguments(std::string tempifile,
   double helpd;
   if (!reader->ReadFromFile(helpd,"INITIAL_EVENTS")) helpd=0;
   m_initevents=(long unsigned)helpd;
-  if (!reader->ReadFromFile(helpd,"MAX_EVENTS")) helpd=1000000;
+  if (!reader->ReadFromFile(helpd,"MAX_EVENTS")) helpd=100000;
   m_maxevents=(long unsigned)helpd;
   if (!reader->ReadFromFile(m_binerror,"GRID_ERROR")) m_binerror=0.05;
   if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) {
@@ -164,6 +164,7 @@ bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process)
     process->Parent()->SetSelected(process);
     ATOOLS::Blob_Data_Base *xsdata=process->Parent()->SameWeightedEvent();
     PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
+    delete xsdata;
     Amisic_Histogram_Type *histo=(*p_histograms)[process->Name()];
     const ATOOLS::Vec4D *p=process->Momenta();
     double value=p[0].PPerp();
