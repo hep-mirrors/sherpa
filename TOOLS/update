@@ -94,10 +94,10 @@ if [ ! "$CHANGES" = "TRUE" ] ; then
   echo -e "\e[1m==================================================\e[0m"
 fi
 
-#if test -f $TEMPFILE ; then rm $TEMPFILE ; fi
-#if [ ! "$CLOGFILE" = "TRUE" ] ; then
-#  rm $LOGFILE
-#fi
+if test -f $TEMPFILE ; then rm $TEMPFILE ; fi
+if [ ! "$CLOGFILE" = "TRUE" ] ; then
+  rm $LOGFILE
+fi
 
 # mode:shell-script
 # sh-indentation:2
