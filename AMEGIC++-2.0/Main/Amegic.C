@@ -141,10 +141,15 @@ void Amegic::ReadInProcessfile(string file)
 	  nIS    = ExtractFlavours(IS,plIS,ini);
 	  nFS    = ExtractFlavours(FS,plFS,fin);
 	  njets  = 0;
-	  for (int i=0;i<nIS;i++)       { if (IS[i].Strong()) njets++; } 
-	  for (int i=nIS;i<nIS+nFS;i++) { if (FS[i].Strong()) njets++; } 
-	  if (njets>m_maxjet) m_maxjet = njets;
-
+	  /*
+	  for (int i=0;i<nFS;i++) { if (FS[i].Strong()) njets++; } 
+	  if (njets>m_maxjet) {
+	    for (int i=0;i<nFS;i++) msg.Out()<<FS[i]<<" ";
+	    msg.Out()<<" -> "<<njets<<endl;
+	    m_maxjet = njets;
+	  }
+	  */
+	  if (nFS>m_maxjet) m_maxjet = nFS;
 	  if ((nIS< 1) || (nIS > 2)) {
 	    msg.Error()<<"Error in Amegic::InitializeProcesses("<<m_path+file<<")."<<endl
 		       <<"   Wrong number of partons in "<<string(buffer)<<endl;
