@@ -128,6 +128,7 @@ bool HepEvt_Interface::Sherpa2HepEvt(Blob_List * const _blobs) {
 
   switch (m_mode) {
   case 2 :  WriteReducedHepEvt(nhep); break;
+  case 3 :  WriteFormatedHepEvt(nhep); break;
   default:  WriteFullHepEvt(nhep);
   }
   return true;
@@ -156,6 +157,23 @@ void HepEvt_Interface::WriteReducedHepEvt(int nhep)
     (*p_outstream)<<"\n ";
     for (int j=0;j<4;++j) (*p_outstream)<<p_vhep[4*i+j]<<" ";
     (*p_outstream)<<"\n";
+  }
+}
+
+void HepEvt_Interface::WriteFormatedHepEvt(int nhep)
+{
+  (*p_outstream)<<" "<<std::setw(4)<<nhep<<" \n";
+  for (int i=0;i<nhep;++i) {
+    (*p_outstream)<<" "<<std::setw(8)<<p_isthep[i]<<" "<<std::setw(8)<<p_idhep[i]
+		  <<" "<<std::setw(4)<<p_jmohep[2*i]<<" "<<std::setw(4)<<p_jmohep[2*i+1]
+		  <<" "<<std::setw(4)<<p_jdahep[2*i]<<" "<<std::setw(4)<<p_jdahep[2*i+1]<<" \n ";
+    (*p_outstream)<<std::setprecision(10);
+    (*p_outstream)<<std::setiosflags(std::ios::fixed);
+    for (int j=0;j<5;++j) (*p_outstream)<<std::setw(16)<<p_phep[5*i+j]<<" ";
+    (*p_outstream)<<"\n ";
+    for (int j=0;j<4;++j) (*p_outstream)<<std::setw(16)<<p_vhep[4*i+j]<<" ";
+    (*p_outstream)<<"\n";
+    (*p_outstream)<<std::resetiosflags(std::ios::fixed);
   }
 }
 

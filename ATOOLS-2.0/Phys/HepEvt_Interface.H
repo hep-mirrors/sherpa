@@ -40,6 +40,7 @@ namespace ATOOLS {
     double   m_weight;
     
     void WriteFullHepEvt(int nevt);
+    void WriteFormatedHepEvt(int nevt);
     void WriteReducedHepEvt(int nevt);
     void ISBlobs2HepEvt(ATOOLS::Blob_List * const,int &);
     void HardBlob2HepEvt(ATOOLS::Blob_List * const,int &);
