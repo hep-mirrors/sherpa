@@ -30,14 +30,14 @@ template <class Type>
 Type  Data_Read::GetValue(std::string name, Type default_value) {
   Shorten(name);
   if (name.length()==0) {
-    msg.Events()<<"Could not find any value for empty name. Return "<<default_value<<"."<<endl;
+    msg.Info()<<"Could not find any value for empty name. Return "<<default_value<<"."<<endl;
     return ReturnData(name,default_value);
   }
   Type dummy = GetValue<Type>(name);
   if (dummy!=NotDefined<Type>()) { 
     return ReturnData(name,dummy); 
   }
-  msg.Error()<<"Could not find any allowed value for "<<name<<". Return "<<default_value<<"."<<endl;
+  msg.Info()<<"Could not find any allowed value for "<<name<<". Return "<<default_value<<"."<<endl;
   MyStrStream str;      
   std::string default_value_str;
   str<<default_value;
