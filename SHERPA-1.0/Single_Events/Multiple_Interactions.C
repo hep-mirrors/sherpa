@@ -37,7 +37,7 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
 {
   p_bloblist=bloblist;
   for (size_t i=0;i<2;++i) {
-    m_xmax[i]=1.0;
+    m_emax[i]=p_remnants[i]->BeamEnergy();
     p_remnants[i]->QuickClear();
   }
   for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
@@ -69,7 +69,7 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
       }
     }
     else if ((*bit)->Type()==ATOOLS::btp::IS_Shower) {
-      m_xmax[(*bit)->Beam()]-=2.0*(*bit)->InParticle(0)->Momentum()[0]/m_ecms;
+      m_emax[(*bit)->Beam()]-=(*bit)->InParticle(0)->Momentum()[0];
       p_mihandler->ISRHandler()->
 	Extract((*bit)->InParticle(0)->Flav(),
 		(*bit)->InParticle(0)->Momentum()[0],(*bit)->Beam());
@@ -127,8 +127,8 @@ bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
   if (!CheckBlobList(bloblist)) return false;
   p_mihandler->SetScaleMax(m_ptmax,0);
   p_mihandler->SetScaleMin(p_mihandler->ScaleMin(0),0);
-  p_mihandler->SetScaleMax(m_xmax[0],2);
-  p_mihandler->SetScaleMax(m_xmax[1],3);
+  p_mihandler->SetScaleMax(m_emax[0],2);
+  p_mihandler->SetScaleMax(m_emax[1],3);
   ATOOLS::Blob *blob = new ATOOLS::Blob();
   p_mihandler->Reset();
   bool success=false;
