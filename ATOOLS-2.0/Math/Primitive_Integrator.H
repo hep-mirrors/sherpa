@@ -11,6 +11,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <deque>
 #include <map>
 
 namespace ATOOLS {
@@ -309,6 +310,8 @@ namespace ATOOLS {
 
     double m_error, m_scale, m_apweight;
     double m_sum, m_sum2, m_max, m_np;
+
+    std::deque<double> m_smax;
 
     std::vector<double>   m_rmin, m_rmax, m_point, m_opt;
     std::map<size_t,bool> m_nosplit;

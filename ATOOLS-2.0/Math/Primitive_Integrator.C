@@ -235,6 +235,7 @@ void Primitive_Channel::CreateRoot(const std::vector<double> &min,
 Primitive_Integrator::Primitive_Integrator():
   m_nopt(10000), m_nmax(1000000), m_error(0.01), m_scale (1.0),
   m_apweight(1.0), m_sum(0.0), m_sum2(0.0), m_max(0.0), m_np(0.0), 
+  m_smax(std::deque<double>(3,0.0)), 
   m_ncells(1000), m_mode(0), m_split(1), m_shuffle(1), m_last(0), 
   m_vname("I") {}
 
@@ -329,7 +330,8 @@ void Primitive_Integrator::CheckTime() const
 double Primitive_Integrator::Update(const int mode)
 {
   double sum=0.0;
-  if (mode==0) m_sum=m_sum2=m_max=m_np=0.0;
+  if (mode==0) m_sum=m_sum2=m_np=0.0;
+  m_max=0.0;
   for (size_t i=0;i<m_channels.size();++i) {
     if (!m_channels[i]->Boundary()) {
       double alpha=m_channels[i]->Alpha();
@@ -346,6 +348,10 @@ double Primitive_Integrator::Update(const int mode)
       m_max=ATOOLS::Max(m_max,m_channels[i]->Max()/alpha);
     }
   }
+  m_smax.pop_back();
+  m_smax.push_front(m_max);
+  for (size_t i=0;i<m_smax.size();++i) 
+    m_max=ATOOLS::Max(m_max,m_smax[i]);
   if (!IsEqual(sum,1.0)) 
     THROW(fatal_error,"Summation does not agree.");
   double error=dabs(Sigma()/Mean());
@@ -422,7 +428,6 @@ void Primitive_Integrator::Split()
     switch (m_mode) {
     case 1:
       cur=m_channels[i]->Max();
-
       break;
     case 0: 
     default:
