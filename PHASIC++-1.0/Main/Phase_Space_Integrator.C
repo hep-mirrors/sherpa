@@ -143,6 +143,12 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
   int saveiter = 0;
 #endif
 
+  if (psh->UsePI()>0 && psh->PI()==NULL) {
+    psh->CreatePI();
+    if (psh->PI()==NULL) THROW(fatal_error,"Cannot initialize PI.");
+    psh->PI()->Initialize();
+  }
+
   for (n=ATOOLS::Max(psh->Process()->Points(),(long int)0)+1;n<=nmax;n++) {
     if (!rpa.gen.CheckTime()) {
       ATOOLS::msg.Error()<<ATOOLS::om::bold
@@ -153,8 +159,8 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler *_psh,double _maxer
       kill(getpid(),SIGINT);
     }
 
+    if (psh->PI()!=NULL && psh->PI()->Stop()) break;
     value = psh->Differential();
-
     if (AddPoint(value)) break;
 
   }
@@ -358,16 +364,7 @@ bool Phase_Space_Integrator::AddPoint(const double value)
 
       if (ncontrib/iter0==5) iter=iter1;
       bool allowbreak = true;
-      if (psh->UsePI()>0 && psh->PI()==NULL) {
-	if (ncontrib/iter0==5) {
-	  psh->CreatePI();
-	  if (psh->PI()==NULL) THROW(fatal_error,"Cannot initialize PI.");
-	  psh->PI()->Initialize();
-	}
-	allowbreak=false;
-      }
       if (fin_opt==1 && (endopt<2||ncontrib<maxopt)) allowbreak = false;
-      if (psh->PI()!=NULL && ncontrib/iter<10) allowbreak = false;
       if (error<maxerror && allowbreak) return true;
 #endif
 
