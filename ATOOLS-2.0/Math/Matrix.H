@@ -15,7 +15,7 @@ namespace ATOOLS {
     double ** p_m;
     void NumRecipesNotation();
     void AmegicNotation();
-    void Jacobi(double d[], Matrix<_rank>&, int *);  
+    void Jacobi(double d[], Matrix<_rank>&, int *) const;  
   public:
     Matrix();
     Matrix(const double ma[_rank][_rank]);
@@ -28,8 +28,8 @@ namespace ATOOLS {
     const double * operator[](int i) const { return p_m[i]; }
     void MatrixOut() const;  
     const int Rank() const {return _rank;}
-    void Diagonalize(double *,Matrix<_rank>&);
-    void DiagonalizeSort(double *,Matrix<_rank>&);
+    void Diagonalize(double *,Matrix<_rank>&) const;
+    void DiagonalizeSort(double *,Matrix<_rank>&) const;
     Matrix<_rank> Dagger();
     //Vec4D operator*(const Vec4D&); 
   };

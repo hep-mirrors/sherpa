@@ -149,7 +149,7 @@ void Matrix<_rank>::AmegicNotation() {
 }
 
 template<int _rank>
-void Matrix<_rank>::Diagonalize(double* evalues,Matrix<_rank>& evectors)
+void Matrix<_rank>::Diagonalize(double* evalues,Matrix<_rank>& evectors) const
 {
   double trace = 0.;
   int hit = 0;
@@ -169,25 +169,24 @@ void Matrix<_rank>::Diagonalize(double* evalues,Matrix<_rank>& evectors)
     }
     return;
   } 
-  Matrix<_rank> Save(*this);
+
+  Matrix<_rank> dummy(*this);
   //minus 1  
-  NumRecipesNotation();
   evectors.NumRecipesNotation();
   evalues--;
   
   int rot;
   
-  Jacobi(evalues,evectors,&rot);
+  dummy.NumRecipesNotation();
+  dummy.Jacobi(evalues,evectors,&rot);
+  dummy.AmegicNotation();
   
   evalues++;
-  AmegicNotation();
   evectors.AmegicNotation();
-  for (short int i=0;i<_rank;i++)
-    for (short int j=0;j<_rank;j++) p_m[i][j] = Save[i][j];
 }
 
 template<int _rank>
-void Matrix<_rank>::DiagonalizeSort(double* evalues,Matrix<_rank>& evectors)
+void Matrix<_rank>::DiagonalizeSort(double* evalues,Matrix<_rank>& evectors) const
 {
   int flips[_rank];
   Diagonalize(evalues, evectors);
@@ -224,7 +223,7 @@ void Matrix<_rank>::DiagonalizeSort(double* evalues,Matrix<_rank>& evectors)
 	a[k][l]=h+s*(g-h*tau);
 
 template<int _rank>
-void Matrix<_rank>::Jacobi(double d[], Matrix<_rank>& v, int *nrot)
+void Matrix<_rank>::Jacobi(double d[], Matrix<_rank>& v, int *nrot) const
 {
   int j,iq,ip,i;
   double tresh,theta,tau,t,sm,s,h,g,c;
