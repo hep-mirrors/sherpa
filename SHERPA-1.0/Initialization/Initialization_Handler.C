@@ -71,9 +71,6 @@ bool Initialization_Handler::InitializeTheFramework()
   
   okay = okay && InitializeTheHardDecays();
   okay = okay && InitializeTheMatrixElements();
-
-  abort();
-
   okay = okay && InitializeTheShowers();
   okay = okay && InitializeTheBeamRemnants();
   okay = okay && InitializeTheFragmentation();
