@@ -674,8 +674,9 @@ bool Phase_Space_Handler::MakeBeamChannels()
     if (proc) fsrchannels->ISRInfo(i,type,mass,width);
     
     msg.Debugging()<<i<<" : "<<type<<"/"<<mass<<"/"<<width<<endl;
-    if (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width)) continue;
-    if ((type == 0) || (type == 3))                        continue;
+    if ((type==0) || (type==3))                                           continue;
+    if ((type==1) && (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width))) continue;
+    if ((type==2) && AMATOOLS::IsZero(mass))                              continue;
 
     ci.type = type;
     (ci.parameters).push_back(mass);
@@ -773,8 +774,9 @@ bool Phase_Space_Handler::MakeISRChannels()
     fsrchannels->ISRInfo(i,type,mass,width);
     
     msg.Debugging()<<i<<" : "<<type<<"/"<<mass<<"/"<<width<<endl;
-    if (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width)) continue;
-    if ((type == 0) || (type == 3))                        continue;
+    if ((type==0) || (type==3))                                           continue;
+    if ((type==1) && (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width))) continue;
+    if ((type==2) && AMATOOLS::IsZero(mass))                              continue;
 
     ci.type = type;
     (ci.parameters).push_back(mass);
@@ -904,6 +906,22 @@ bool Phase_Space_Handler::CreateISRChannels()
       isrchannels->Add(channel);
       channel = new ResonanceBackward(isr_params[i].parameters[0],
 				      isr_params[i].parameters[1],
+				      isr_params[i].parameters[2],
+				      isr_params[i].parameters[3],
+				      isr_params[i].parameters[4]);
+      isrchannels->Add(channel);
+    } 
+    if ((isr_params[i]).type==2) {
+      channel = new ThresholdCentral(isr_params[i].parameters[0],
+				     isr_params[i].parameters[3],
+				     isr_params[i].parameters[4]);
+      isrchannels->Add(channel);
+      channel = new ThresholdForward(isr_params[i].parameters[0],
+				     isr_params[i].parameters[2],
+				     isr_params[i].parameters[3],
+				     isr_params[i].parameters[4]);
+      isrchannels->Add(channel);
+      channel = new ThresholdBackward(isr_params[i].parameters[0],
 				      isr_params[i].parameters[2],
 				      isr_params[i].parameters[3],
 				      isr_params[i].parameters[4]);

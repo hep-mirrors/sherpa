@@ -106,6 +106,51 @@ namespace PHASIC {
 
 
 
+  class ThresholdUniform : public Single_Channel {
+  protected :
+    double mass;
+    double deltay[2];
+  public :
+    ThresholdUniform(double _mass,double _deltay1, double _deltay2);
+    void GenerateWeight(double,double,int); 
+    void GeneratePoint(double &,double &,int,double *);
+  };
+
+  class ThresholdCentral : public Single_Channel {
+  protected :
+    double mass;
+    double deltay[2];
+  public :
+    ThresholdCentral(double _mass,double _deltay1, double _deltay2);
+    void GenerateWeight(double,double,int); 
+    void GeneratePoint(double &,double &,int,double *);
+  };
+
+  class ThresholdForward : public Single_Channel {
+  protected :
+    double norm,yexp;
+    double deltay[2];
+    double mass;
+  public :
+    ThresholdForward(double _mass,double _yexp,double _deltay1, double _deltay2);
+    void GenerateWeight(double,double,int); 
+    void GeneratePoint(double &,double &,int,double *);
+  };
+
+
+  class ThresholdBackward : public Single_Channel {
+  protected :
+    double norm,yexp;
+    double deltay[2];
+    double mass;
+  public :
+    ThresholdBackward(double _mass,double _yexp,double _deltay1, double _deltay2);
+    void GenerateWeight(double,double,int); 
+    void GeneratePoint(double &,double &,int,double *);
+  };
+
+
+
   class LLUniform : public Single_Channel {
   protected :
     double beta,factor;

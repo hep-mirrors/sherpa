@@ -34,8 +34,8 @@ namespace PHASIC {
     double MassivePropMomenta(double,double,int,double,double,double);
     double LLPropWeight(double,double,double,double,const double&);
     double LLPropMomenta(double,double,double,double,double);
-    double ThresMomenta(double,double,double,double,double);
-    double ThresWeight(double,double,double,double,double);
+    double ThresholdMomenta(double,double,double,double);
+    double ThresholdWeight(double,double,double,double);
     double DiceYUniform(double, double *, double *, int, double);
     double WeightYUniform(double, double *, double *, int, double);
     double DiceYCentral(double, double *, double *, int, double);

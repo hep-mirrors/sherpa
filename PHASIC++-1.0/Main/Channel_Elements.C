@@ -117,16 +117,12 @@ void Channel_Elements::Anisotropic2Momenta(Vec4D p,double s1,double s2,
   p2 = p+(-1.)*p1;  
 
   if ((dabs(p1.Abs2()-s1)>1.e-5)) {  // explicit not relative!
-    //  if ((dabs(p1.Abs2()/s1-1.)>1.e-5) && (!AMATOOLS::IsZero(s1))) {
     AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : ";
     AORGTOOLS::msg.Error()<<"s1,p1: "<<s1<<";"<<p1.Abs2()<<" : "<<dabs(s1-p1.Abs2())<<endl;
-    //    abort();
   }
   if ((dabs(p2.Abs2()-s2)>1.e-5)) {  // explicit not relative!
-    //  if ((dabs(p2.Abs2()/s2-1.)>1.e-5) && (!AMATOOLS::IsZero(s2))) {
     AORGTOOLS::msg.Error()<<"Channel_Elements::Anisotropic2Momenta : Strong deviation in masses : ";
     AORGTOOLS::msg.Error()<<"s2,p2: "<<s2<<";"<<p2.Abs2()<<" : "<<dabs(s2-p2.Abs2())<<endl;
-    //    abort();
   }
 }
 
@@ -191,14 +187,6 @@ double Channel_Elements::MasslessPropWeight(double sexp,
   if ((s<=smin) && (s>=smax)) return 0;
 
   double wt = 1./(pow(s,sexp)*Channel_Basics::PeakedWeight(0.,sexp,smin,smax,1));
-  /*
-  cout<<" s="<<s<<endl;
-  cout<<" sexp="<<sexp<<endl;
-  cout<<" smin="<<smin<<endl;
-  cout<<" smax="<<smax<<endl;
-  cout<<"   wt="<<wt<<endl;
-  */
-
   if (!(wt>0) && !(wt<0) && wt!=0) { 
     AORGTOOLS::msg.Error()<<"MasslessPropWeight produces a nan: "<<wt<<endl;
     AORGTOOLS::msg.Debugging()<<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax;
@@ -217,6 +205,53 @@ double Channel_Elements::MasslessPropMomenta(double sexp,
   return s;
 }
 
+
+double Channel_Elements::ThresholdWeight(double mass,double smin,double smax,double s)
+{
+  if ((s<=smin) && (s>=smax)) return 0;
+  double wt = s/((sqr(s)+pow(mass,4.)) * 
+		 Channel_Basics::PeakedWeight(pow(mass,4.),1.,sqr(smin),sqr(smax),1)/2.);
+
+  if (!(wt>0) && !(wt<0) && wt!=0 ) {
+    AORGTOOLS::msg.Error()<<" In ThresholdWeight : "<<smin<<" < "<<s<<" < "
+			  <<smax<<" ^ "<<2.<<", "<<mass*mass<<" wt = "<<wt<<endl;
+    AORGTOOLS::msg.Error()<<"ThresholdWeight produces a nan: "<<wt<<endl;
+  }
+  return wt;
+}
+
+double Channel_Elements::ThresholdMomenta(double mass,double smin,double smax,double ran)
+{
+  double s = sqrt(Channel_Basics::PeakedDist(pow(mass,4.),1.,sqr(smin),sqr(smax),1,ran));
+  if (!(s>0) && !(s<0) && s!=0) AORGTOOLS::msg.Error()<<"ThresholdMomenta produced a nan !"<<endl;
+  if ((s<smin) || (s>smax))     AORGTOOLS::msg.Error()<<"ThresholdMomenta out of bounds !"<<endl;
+  return s;
+}
+
+double Channel_Elements::LLPropWeight(double sexp,double pole,
+				      double smin,double smax,
+				      const double& s)
+{
+  if ((s<=smin) && (s>=smax)) return 0;
+  double wt = 1./(pow(pole-s,sexp)*Channel_Basics::PeakedWeight(pole,sexp,smin,smax,-1));
+
+  if (!(wt>0) && !(wt<0) && wt!=0 ) {
+    AORGTOOLS::msg.Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
+			  <<smax<<" ^ "<<sexp<<", "<<pole<<" wt = "<<wt<<endl;
+    AORGTOOLS::msg.Error()<<"LLPropWeight produces a nan: "<<wt<<endl;
+  }
+  return wt;
+}
+
+double Channel_Elements::LLPropMomenta(double sexp,double pole,
+				       double smin,double smax,
+				       double ran)
+{
+  double s = Channel_Basics::PeakedDist(pole,sexp,smin,smax,-1,ran);
+  if (!(s>0) && !(s<0) && s!=0) AORGTOOLS::msg.Error()<<"LLPropMomenta produced a nan !"<<endl;
+  if ((s<smin) || (s>smax))     AORGTOOLS::msg.Error()<<"LLPropMomenta out of bounds !"<<endl;
+  return s;
+}
 
 double Channel_Elements::MassivePropWeight(double mass,double width,int lim,
 					   double smin,double smax,double s)
@@ -390,93 +425,8 @@ int Channel_Elements::TChannelMomenta(Vec4D p1in,Vec4D p2in,Vec4D &p1out,Vec4D &
     AORGTOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : ";
     AORGTOOLS::msg.Error()<<"s1,p1: "<<s1out<<";"<<p1out.Abs2()<<" : "<<dabs(s1out-p1out.Abs2())<<endl;
   }
-
-  /*
-  if ((dabs(p2out.Abs2()/s2out-1.)>1.e-5) && (!AMATOOLS::IsZero(s1out))) {
-    AORGTOOLS::msg.Error()<<"Channel_Elements::TChannelMomenta : Strong deviation in masses : ";
-    AORGTOOLS::msg.Error()<<"s2,p2: "<<s2out<<";"<<p2out.Abs2()<<" : "<<dabs(s2out-p2out.Abs2())<<endl;
-  }
-  */
-
   s1out = Max(0.,p1out.Abs2());
   s2out = Max(0.,p2out.Abs2());
-
-
-  /*
-  cout.precision(10);
-  cout<<" os1= "<<s1out<<endl;
-  cout<<" os2= "<<s2out<<endl;
-  cout.precision(6);
-  */
-}
-
-double Channel_Elements::ThresMomenta(double smin,double smax,
-				      double mass,double width,double ran)
-{
-  double mass2   = mass*mass;
-  double width2  = width*width;
-  double mw      = mass*width;
-  double region1 = atan((mass2-smin)/mw) / mw;
-  double region2 = (smax-mass2)/(2.*mass2*width2);
-
-  double value   = ran*(region1+region2);
-  double s;
-  if (value>region1) {
-    s = 2.*width2*mass2*(value-region1)+mass2;
-    if ( (s<mass2) || (s>smax)) 
-      cout<<"Something wrong in region2 of ThresMomenta : "<<mass2<<" < "<<s<<" < "<<smax<<endl;
-  }
-  else {
-    s = mass2 + mw * tan(mw * (value - region1));
-    if ( (s>mass2) || (s<smin)) 
-      cout<<"Something wrong in region1 of ThresMomenta : "<<smin<<" < "<<s<<" < "<<mass2<<endl;
-  }
-  return s;
-}
-
-double Channel_Elements::ThresWeight(double smin,double smax,
-				     double mass,double width,double s)
-{
-  double mass2   = mass*mass;
-  double width2  = width*width;
-  double mw      = mass*width;
-  double region1 = atan((mass2-smin)/mw) / mw;
-  double region2 = (smax-mass2)/(2.*mass2*width2);
-
-  double wt = 1/(region1+region2);
-  if (s<mass2) {
-    wt *= (smax-s)/(mass2*width2*(smax-mass2));
-  }
-  else {
-    wt *= 1./(sqr(s-mass2)+mass2*width2);
-  }
-  return wt;
-}
-
-double Channel_Elements::LLPropWeight(double sexp,double pole,
-				      double smin,double smax,
-				      const double& s)
-{
-  if ((s<=smin) && (s>=smax)) return 0;
-
-  double wt = 1./(pow(pole-s,sexp)*Channel_Basics::PeakedWeight(pole,sexp,smin,smax,-1));
-
-  if (!(wt>0) && !(wt<0) && wt!=0 ) {
-    AORGTOOLS::msg.Error()<<" In LL_Weight : "<<smin<<" < "<<s<<" < "
-			  <<smax<<" ^ "<<sexp<<", "<<pole<<" wt = "<<wt<<endl;
-    AORGTOOLS::msg.Error()<<"LLPropWeight produces a nan: "<<wt<<endl;
-  }
-  return wt;
-}
-
-double Channel_Elements::LLPropMomenta(double sexp,double pole,
-				       double smin,double smax,
-				       double ran)
-{
-  double s = Channel_Basics::PeakedDist(pole,sexp,smin,smax,-1,ran);
-  if (!(s>0) && !(s<0) && s!=0) AORGTOOLS::msg.Error()<<"LLPropMomenta produced a nan !"<<endl;
-  if ((s<smin) || (s>smax))     AORGTOOLS::msg.Error()<<"LLPropMomenta out of bounds !"<<endl;
-  return s;
 }
 
 double Channel_Elements::DiceYUniform(double tau, double * yrange, double * deltay, 

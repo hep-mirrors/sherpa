@@ -270,6 +270,115 @@ void ResonanceBackward::GenerateWeight(double sprime,double y,int mode)
 } 
 
 
+ThresholdUniform::ThresholdUniform(double _mass,double _deltay1, double _deltay2) :
+  mass(_mass)
+{
+  deltay[0] = _deltay1;
+  deltay[1] = _deltay2;
+  name     = std::string("ThresholdUniform");
+  ms = rans = 0;
+};
+
+
+void ThresholdUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
+{
+  sprime = CE.ThresholdMomenta(mass,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYUniform(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
+}
+
+void ThresholdUniform::GenerateWeight(double sprime,double y,int mode)
+{
+  weight  = 0.;
+  if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
+  weight  = 1./CE.ThresholdWeight(mass,sprimerange[0],sprimerange[1],sprime);
+  weight *= 1./sprimerange[2];
+  weight *= CE.WeightYUniform(sprime/sprimerange[2], yrange, deltay, mode, y);
+  if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
+} 
+
+
+ThresholdCentral::ThresholdCentral(double _mass,double _deltay1, double _deltay2) :
+  mass(_mass)
+{
+  deltay[0] = _deltay1;
+  deltay[1] = _deltay2;
+  cout<<"Initialize new Threshold : "<<mass<<" : "<<deltay[0]<<"/"<<deltay[1]<<endl;
+  name     = std::string("ThresholdCentral");
+  ms = rans = 0;
+};
+
+
+void ThresholdCentral::GeneratePoint(double & sprime,double & y,int mode,double * rans)
+{
+  sprime = CE.ThresholdMomenta(mass,sprimerange[0],sprimerange[1],rans[0]);
+  y      = CE.DiceYCentral(sprime/sprimerange[2], yrange, deltay, mode, rans[1]);
+}
+
+void ThresholdCentral::GenerateWeight(double sprime,double y,int mode)
+{
+  weight  = 0.;
+  if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
+  weight  = 1./CE.ThresholdWeight(mass,sprimerange[0],sprimerange[1],sprime);
+  weight *= 1./sprimerange[2];
+  weight *= CE.WeightYCentral(sprime/sprimerange[2], yrange, deltay, mode, y);
+  if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
+} 
+
+
+
+ThresholdForward::ThresholdForward(double _mass,double _yexp,double _deltay1, double _deltay2) :
+  mass(_mass), yexp(_yexp)
+{
+  deltay[0] = _deltay1;
+  deltay[1] = _deltay2;
+  name     = std::string("ThresholdForward");
+  ms = rans = 0;
+};
+
+
+void ThresholdForward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
+{
+  sprime = CE.ThresholdMomenta(mass,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
+}
+
+void ThresholdForward::GenerateWeight(double sprime,double y,int mode)
+{
+  weight  = 0.;
+  if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
+  weight  = 1./CE.ThresholdWeight(mass,sprimerange[0],sprimerange[1],sprime);
+  weight *= 1./sprimerange[2];
+  weight *= CE.WeightYForward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
+  if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
+} 
+
+ThresholdBackward::ThresholdBackward(double _mass,double _yexp,double _deltay1, double _deltay2) :
+  mass(_mass), yexp(_yexp)
+{
+  deltay[0] = _deltay1;
+  deltay[1] = _deltay2;
+  name     = std::string("ThresholdBackward");
+  ms = rans = 0;
+};
+
+
+void ThresholdBackward::GeneratePoint(double & sprime,double & y,int mode,double * rans)
+{
+  sprime = CE.ThresholdMomenta(mass,sprimerange[0],sprimerange[1],rans[0]);
+  y = CE.DiceYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, rans[1]);
+}
+
+void ThresholdBackward::GenerateWeight(double sprime,double y,int mode)
+{
+  weight  = 0.;
+  if ((sprime<sprimerange[0]) || (sprime>sprimerange[1])) return;
+  weight  = 1./CE.ThresholdWeight(mass,sprimerange[0],sprimerange[1],sprime);
+  weight *= 1./sprimerange[2];
+  weight *= CE.WeightYBackward(sprime/sprimerange[2], yrange, deltay, yexp, mode, y);
+  if (weight<0.) msg.Error()<<"Negative weight in "<<name<<"::GenerateWeight."<<endl;
+} 
+
+
 void LLUniform::GeneratePoint(double & sprime,double & y,int mode,double * rans)
 {
   double pole = sprimerange[2];

@@ -97,8 +97,6 @@ double Channel_Basics::SqLam(double s,double s1, double s2)
 double Channel_Basics::PeakedDist(double a,double cn,
 				  double cxm,double cxp,int k,double ran)
 {
-  //  cout<<" in PeakedDist "<<a<<", "<<cn<<", "<<cxm<<", "<<cxp<<endl;
-
   double ce  = 1.-cn;
   double res = 0.;
   if (!IsZero(ce)) {
@@ -114,10 +112,6 @@ double Channel_Basics::PeakedDist(double a,double cn,
 double Channel_Basics::PeakedWeight(double a,double cn,
 				    double cxm,double cxp,int k)
 {
-  //  cout<<" in PeakedDist "<<a<<", "<<cn<<", "<<cxm<<", "<<cxp<<endl;
-  /*
-    as in the original version ...
-  */
   double ce = 1.-cn;
   double wt;
   if (!IsZero(ce)) wt = (pow(a+k*cxp,ce)-pow(a+k*cxm,ce))/(k*ce);
@@ -127,9 +121,6 @@ double Channel_Basics::PeakedWeight(double a,double cn,
 
 double Channel_Basics::Tj1(double cn,double amcxm,double amcxp,double ran)
 {
-  /*
-    as in the original version ...
-  */
   double ce= 1.-cn;
   double res = 0.;
   if (!AMATOOLS::IsZero(ce)) res = pow(ran*pow(amcxm,ce)+(1.-ran)*pow(amcxp,ce),1./ce);
@@ -142,9 +133,6 @@ double Channel_Basics::Tj1(double cn,double amcxm,double amcxp,double ran)
 
 double Channel_Basics::Hj1(double cn,double amcxm,double amcxp)
 {
-  /*
-    as in the original version ...
-  */
   double ce= 1.-cn;
   if (!AMATOOLS::IsZero(ce)) return (pow(amcxp,ce)-pow(amcxm,ce))/ce;
   return log(amcxp/amcxm);
