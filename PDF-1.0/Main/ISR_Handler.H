@@ -17,7 +17,7 @@ namespace PDF {
 
     ATOOLS::Integration_Info *p_info;
     ATOOLS::Info_Key          m_spkey, m_ykey, m_xkey, m_zkey[2], m_kpkey[2];
-    ATOOLS::Info_Key          m_mu2key[2];
+    ATOOLS::Info_Key          m_mu2key[2], m_beamspkey, m_beamykey;
 
     std::string m_name, m_type;
 

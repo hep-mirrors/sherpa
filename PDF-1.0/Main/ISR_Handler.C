@@ -272,8 +272,16 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   m_cmsboost=Poincare(Vec4D(cosh(m_ykey[2]),0.,0.,sinh(m_ykey[2])));
   m_cmsboost.BoostBack(p_cms[0]);
   m_cmsboost.BoostBack(p_cms[1]);
-  m_x[0]=p_cms[0].PPlus()/(2.0*m_ebeam[0]);
-  m_x[1]=p_cms[1].PMinus()/(2.0*m_ebeam[1]);
+  double xb1=sqrt(m_beamspkey[3]/m_beamspkey[2]);
+  double xb2=xb1*exp(-m_beamykey[2]);
+  xb1*=exp(m_beamykey[2]);
+  Vec4D lab1=p_cms[0], lab2=p_cms[1];
+  ATOOLS::Poincare cmsboost=
+    Poincare(Vec4D(cosh(m_beamykey[2]),0.,0.,sinh(m_beamykey[2])));
+  cmsboost.BoostBack(lab1);
+  cmsboost.BoostBack(lab2);
+  m_x[0]=lab1.PPlus()/(2.0*xb1*m_ebeam[0]);
+  m_x[1]=lab2.PMinus()/(2.0*xb2*m_ebeam[1]);
   m_flux=.25;
   m_flux/=sqrt(sqr(p[0]*p[1])-p[0].Abs2()*p[1].Abs2());
   if (!m_kmrmode) {
@@ -360,6 +368,8 @@ void ISR_Handler::AssignKeys(ATOOLS::Integration_Info *const info)
 {
   m_spkey.Assign("s' isr",4,0,info);
   m_ykey.Assign("y isr",3,0,info);
+  m_beamspkey.Assign("s' beam",4,0,info);
+  m_beamykey.Assign("y beam",3,0,info);
   m_xkey.Assign("x isr",5,0,info);
   m_zkey[0].Assign("z_1",3,0,info);
   m_zkey[1].Assign("z_2",3,0,info);
