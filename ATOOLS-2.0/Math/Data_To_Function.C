@@ -904,8 +904,8 @@ namespace ATOOLS {
 #endif
     unsigned int left, right;
     ClosestX(x,left,right);
-    return ((*p_yaxis)[p_xydata[right].second]-(*p_yaxis)[p_xydata[left].second])/(GridResultType)
-           ((*p_xaxis)[p_xydata[right].first]-(*p_xaxis)[p_xydata[left].first]);	
+    return ((*p_yaxis)[(*p_xydata)[right].second]-(*p_yaxis)[(*p_xydata)[left].second])/(ResultType)
+      ((*p_xaxis)[(*p_xydata)[right].first]-(*p_xaxis)[(*p_xydata)[left].first]);	
   }
   
   template <class Argument_Type,class Result_Type>
@@ -916,8 +916,8 @@ namespace ATOOLS {
 #endif
     unsigned int left, right;
     ClosestY(y,left,right);
-    return ((*p_xaxis)[p_yxdata[right].second]-(*p_xaxis)[p_yxdata[left].second])/(GridResultType)
-           ((*p_yaxis)[p_yxdata[right].first]-(*p_yaxis)[p_yxdata[left].first]);	
+    return ((*p_xaxis)[(*p_yxdata)[right].second]-(*p_xaxis)[(*p_yxdata)[left].second])/(ResultType)
+           ((*p_yaxis)[(*p_yxdata)[right].first]-(*p_yaxis)[(*p_yxdata)[left].first]);	
   }
   
   template <class Argument_Type,class Result_Type>
