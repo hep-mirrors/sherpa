@@ -2,11 +2,15 @@
 #define One_Particle_Extractor_H
 
 #include "Primitive_Observable_Base.H"
+#include "Smart_Pointer.H"
+#include "Variable.H"
 
 namespace ANALYSIS {
 
-  class One_PT_Extractor: public Primitive_Observable_Base {  
+  class One_Particle_Extractor: public Primitive_Observable_Base {  
   private:
+
+    SP(ATOOLS::Variable_Base<double>) p_variable;
 
     std::string     m_reflist, m_outlist;
     ATOOLS::Flavour m_flavour;
@@ -15,10 +19,10 @@ namespace ANALYSIS {
 
   public:
 
-    One_PT_Extractor(const ATOOLS::Flavour flav,
-		     const size_t item,const double min,const double max,
-		     const std::string &inlist,const std::string &reflist,
-		     const std::string &outlist);
+    One_Particle_Extractor(const std::string &type,const ATOOLS::Flavour flav,
+			   const size_t item,const double min,const double max,
+			   const std::string &inlist,const std::string &reflist,
+			   const std::string &outlist);
     
     void Evaluate(const ATOOLS::Particle_List &particlelist,
 		  double weight=1.,int ncount=1);
@@ -27,7 +31,7 @@ namespace ANALYSIS {
     
     void EndEvaluation(double scale);
 
-  };// end of class One_PT_Extractor
+  };// end of class One_Particle_Extractor
 
 }// end of namespace ANALYSIS
 
