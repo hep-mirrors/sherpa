@@ -24,7 +24,7 @@ Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spac
   p_pdfa            = p_pdf->GetCopy();
   m_ordering_scheme = _dataread->GetValue<int>("IS ORDERING",0);  /* Switch for ordering due to coherence:  
                                                                      0 = none, 1 = pt^2, 2 = pt^2/E^2     */
-  m_cpl_scheme      = _dataread->GetValue<int>("IS COUPLINGS",1); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
+  m_cpl_scheme      = _dataread->GetValue<int>("IS COUPLINGS",3); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
   m_jetveto_scheme  = _dataread->GetValue<int>("IS JETVETOSCHEME",2);
 
   m_emin            = .5;
