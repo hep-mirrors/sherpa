@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/24
+//Version: 1 ADICIC++-0.0/2004/06/02
 
 //This structure supports the evolution of a Chain of Dipoles.
 
@@ -74,6 +74,8 @@ namespace ADICIC {
       double        m_invmass;
       ATOOLS::Vec4D m_momentum;
 
+      const Dipole* p_root;
+
       Chain_Handler* p_hdl;
 
       Dipole::Branch*               p_quab;
@@ -84,6 +86,7 @@ namespace ADICIC {
       void Init() {
 	f_active=Blocked;
 	m_k2tlast=m_mass=m_invmass=0.0;	m_momentum=ATOOLS::Vec4D();
+	p_root=NULL;
 	p_hdl=NULL;
 	p_quab=NULL; p_atib=NULL;
 	l_glub.clear();	l_dip.clear();
@@ -132,9 +135,10 @@ namespace ADICIC {
     inline const double         InvMass() const;
     inline const ATOOLS::Vec4D& Momentum() const;
     inline const bool           IsHandled() const;
-    inline const bool           IsHandledBy(const Chain_Handler&) const;///////
+    inline const bool           IsHandledBy(const Chain_Handler&) const;
     inline const Type           ChainType() const;
     inline const bool           IsRing() const;
+    inline const Dipole&        ChainRoot() const;
 
     inline std::size_t ParticleNumber() const;
     inline std::size_t MaxParticleNumber() const;
@@ -144,13 +148,13 @@ namespace ADICIC {
     inline Bool&      SetStatus();
     inline double&    SetLastScale();
 
-    inline const bool operator|(Chain_Handler&);///////////////////////////////
-    inline void       operator|(bool);/////////////////////////////////////////
+    inline const bool operator|(Chain_Handler&);
+    inline void       operator|(bool);
 
     //Public methods:
     //===============
     void Print() const;
-    const bool CheckMomentum(ATOOLS::Vec4D&) const;
+    const bool CheckMomentumConservation(ATOOLS::Vec4D&) const;
     const bool Clear();
     const bool Initialize(const Dipole::Branch&, const Dipole::Antibranch&);
 

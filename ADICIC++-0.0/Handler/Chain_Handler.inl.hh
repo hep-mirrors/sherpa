@@ -1,14 +1,15 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/27
+//Version: 1 ADICIC++-0.0/2004/06/03
 
 //Inline methods of Chain_Handler.H.
 
 
-////////////////////////////////////////////////////
+
 
 
 #include <cassert>
 #include <cstdlib>
+#include "Sudakov_Calculator.H"
 
 
 
@@ -22,21 +23,23 @@ namespace ADICIC {
 
 
 
-  inline const bool4::level Dipole_Handler::Status() const {
-    if(!p_dix && !p_ban && !p_ati && !p_glu) return bool4::zero;
-    if( p_dix && !p_ban && !p_ati &&  p_glu) return bool4::one;
-    if(!p_dix &&  p_ban &&  p_ati && !p_glu) return bool4::two;
-    return bool4::three;
+  inline const bool Chain_Handler::IsNewChain() const {
+    return bool(p_cix);
   }
 
 
-  inline const int Dipole_Handler::IsDocked() const {
-    if(p_dip) return p_dip->Name; return 0;
+  inline const bool Chain_Handler::IsDocked() const {
+    return bool(p_cha);
   }
 
 
-  inline const bool Dipole_Handler::IsDockedAt(const Dipole& dip) const {
-    if(p_dip==&dip) return true; return false;
+  inline const bool Chain_Handler::IsDockedAt(const Chain& cha) const {
+    if(p_cha==&cha) return true; return false;
+  }
+
+
+  inline const double Chain_Handler::CompScale() const {
+    return m_k2tcomp;
   }
 
 
@@ -45,24 +48,19 @@ namespace ADICIC {
 
 
 
-  inline const bool Dipole_Handler::AttachDipole(Dipole* pD) {
-    if( p_dip==NULL && pD->IsHandledBy(*this) ) {
-      p_dip=pD;
-      p_tempa=s_map[p_dip->IsType()];
-      p_sudakov=p_tempa->p_sud;
-      p_recoil=p_tempa->p_rec;
+  inline const bool Chain_Handler::AttachChain(Chain* pC) {
+    if( p_cha==NULL && pC->IsHandledBy(*this) ) {
+      p_cha=pC;
       return true;
     }
     return false;
   }
 
 
-  inline const bool Dipole_Handler::DetachDipole(const Dipole* pD) {
-    if(p_dip==pD && pD->IsHandled()==false) {
-      p_recoil=NULL;
-      p_sudakov=NULL;
-      p_tempa=NULL;
-      p_dip=NULL;
+  inline const bool Chain_Handler::DetachChain(const Chain* pC) {
+    if(p_cha==pC && pC->IsHandled()==false) {
+      this->Reset();
+      p_cha=NULL;
       return true;
     }
     return false;
@@ -74,18 +72,36 @@ namespace ADICIC {
 
 
 
-  inline void Dipole_Handler::DecoupleNewDipole(Dipole*& pD, bool& below) {
-    if(pD || !p_dix) return; pD=p_dix; p_dix=NULL; below=f_below;
-  }
-
-
-  inline void Dipole_Handler::DecoupleGlubranch(Dipole::Glubranch*& pG) {
-    if(pG || !p_glu) return; pG=p_glu; p_glu=NULL;
+  inline void Chain_Handler::DecoupleNewChain(Chain*& pC, bool& below) {
+    if(pC || !p_cix) return;
+    pC=p_cix; p_cix=NULL;
+    below=f_below;
   }
 
 
 
   //===========================================================================
+
+
+
+  inline void Chain_Handler::PresetCompScale() {
+    m_k2tcomp=Sudakov_Calculator::MinOfK2t();
+  }
+
+
+
+  template<>
+  const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Production>();
+  //template<>
+  //const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Emission>();
+  //template<>
+  //const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Mass>();
+
+
+
+  inline const bool Chain_Handler::FindDipole() {
+    return FindDipole<Chain_Evolution_Strategy::Ret>();
+  }
 
 
 

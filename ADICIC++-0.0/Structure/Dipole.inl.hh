@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/21
+//Version: 1 ADICIC++-0.0/2004/06/02
 
 //Inline methods of Dipole.H.
 
@@ -39,6 +39,9 @@ namespace ADICIC {
 
 
   inline const double Dipole::ProdScale() const {
+    return m_p2t;
+  }
+  inline const double Dipole::BootScale() const {
     return m_k2t;
   }
   inline const double Dipole::EmitScale() const {
@@ -86,19 +89,27 @@ namespace ADICIC {
 
 
   inline int& Dipole::SetSource() {
+    ++m_nchg;
     return m_memory;
   }
 
 
   inline Bool& Dipole::SetStatus() {
+    ++m_nchg;
     return f_active;
   }
 
 
   inline double& Dipole::SetProdScale() {
+    ++m_nchg;
+    return m_p2t;
+  }
+  inline double& Dipole::SetBootScale() {
+    ++m_nchg;
     return m_k2t;
   }
   inline double& Dipole::SetEmitScale() {
+    ++m_nchg;
     return m_l2t;
   }
 
@@ -106,7 +117,8 @@ namespace ADICIC {
   inline const bool Dipole::operator|(Dipole_Handler& DH) {
     if(p_hdl || DH.IsDocked()) return false;
     p_hdl=&DH;
-    return p_hdl->AttachDipole(this);
+    if(p_hdl->AttachDipole(this)) return true;
+    p_hdl=NULL; return false;
   }
 
 
@@ -129,6 +141,7 @@ namespace ADICIC {
       std::cerr<<"\nError: Demand will produce invalid Dipole type!\n";
       assert( (p_top->OrgType()==-1 || p_bot->OrgType()==1) == false );
     }
+    ++m_nchg;
 #ifdef DIPOLE_STRICT_VERSION
     m_type=Type( (10*p_top->Tag()+p_bot->Tag()) );
     return m_type;
@@ -147,6 +160,7 @@ namespace ADICIC {
 
 
   inline const double Dipole::UpdateMass() {
+    ++m_nchg;
     m_momentum=p_top->Momentum()+p_bot->Momentum();
     m_invmass=m_momentum.Abs2();
     if(m_invmass<0.0) {

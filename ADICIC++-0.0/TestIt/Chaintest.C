@@ -1,7 +1,7 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/24
+//Version: 1 ADICIC++-0.0/2004/06/03
 
-//Emissiontest.C - testing the first emission.
+//Chaintest.C - testing the first chaining.
 
 
 
@@ -14,6 +14,7 @@
 #include "Dipole_Handler.H"
 #include "Sudakov_Calculator.H"
 #include "Chain.H"
+#include "Chain_Handler.H"
 
 
 #define CHAINTEST_OUTPUT CHAINTEST_OUTPUT
@@ -78,9 +79,9 @@ int main() {
   cout<<"=============================================================="<<endl;
   cout<<endl;
 
-  cout<<"======================="<<endl;
-  cout<<" Testing the chaining. "<<endl;
-  cout<<"======================="<<endl;
+  cout<<"======================================"<<endl;
+  cout<<" Testing the chaining - Preparations. "<<endl;
+  cout<<"======================================"<<endl;
 
   {
 
@@ -129,158 +130,158 @@ int main() {
       cout<<"Number of Chain's           = "<<Chain::InStore<<endl;
     }
 
-    cout<<"==="<<endl;
+    cout<<"============================================================"<<endl;
+
     cout<<"Number of Dipole_Particle's = "<<Dipole_Particle::InStore<<endl;
     cout<<"Number of Dipole's          = "<<Dipole::InStore<<endl;
     cout<<"Number of Chain's           = "<<Chain::InStore<<endl;
 
     cout<<endl; cin>>enter; cout<<endl;
 
-    Dipole D1;
-    Dipole D2(b1,a1);
-    cout<<D1<<endl<<D2<<endl;
-    D1.PrintTowers(); D2.PrintTowers();
-    cout<<"D1 handling="<<D1.IsHandled()<<endl;
-    cout<<"D2 handling="<<D2.IsHandled()<<endl;
-    D1|0; D2|0;
-    cout<<"D1 handling="<<D1.IsHandled()<<endl;
-    cout<<"D2 handling="<<D2.IsHandled()<<endl;
+    Chain ch1(b1,a1,Chain::Initiator::simple_epem);
+    cout<<ch1<<endl;
+    cout<<"cha handling="<<cha.IsHandled()<<endl;
+    cout<<"ch1 handling="<<ch1.IsHandled()<<endl;
+    cha|0; ch1|0;
+    cout<<"cha handling="<<cha.IsHandled()<<endl;
+    cout<<"ch1 handling="<<ch1.IsHandled()<<endl;
 
     {
-      Dipole_Handler H1;
-      H1.ShowSudakov();
-      H1.ShowRecoilStrategy();
-      Dipole_Handler H2(D2);
-      H2.ShowSudakov();
-      H2.ShowRecoilStrategy();
+      Chain_Handler H1;
+      Chain_Handler H2(ch1);
 
       cout<<"H1 docking="<<H1.IsDocked()<<endl;
       cout<<"H2 docking="<<H2.IsDocked()<<endl;
-      cout<<"H2 docking D1? "<<H2.IsDockedAt(D1)<<endl;
-      cout<<"H2 docking D2? "<<H2.IsDockedAt(D2)<<endl;
-      cout<<"D2 handled by H1? "<<D2.IsHandledBy(H1)<<endl;
-      cout<<"D2 handled by H2? "<<D2.IsHandledBy(H2)<<endl;
+      cout<<"H2 docking cha? "<<H2.IsDockedAt(cha)<<endl;
+      cout<<"H2 docking ch1? "<<H2.IsDockedAt(ch1)<<endl;
+      cout<<"ch1 handled by H1? "<<ch1.IsHandledBy(H1)<<endl;
+      cout<<"ch1 handled by H2? "<<ch1.IsHandledBy(H2)<<endl;
       cout<<endl;
-      cout<<H1.DetachDipole(&D1)<<endl;
-      cout<<H1.DetachDipole(&D2)<<endl;
-      cout<<H2.DetachDipole(&D1)<<endl;
-      cout<<H2.DetachDipole(&D2)<<endl;
-      cout<<H1.AttachDipole(&D1)<<endl;
-      cout<<H1.AttachDipole(&D2)<<endl;
-      cout<<H2.AttachDipole(&D1)<<endl;
-      cout<<H2.AttachDipole(&D2)<<endl;
+      cout<<H1.DetachChain(&cha)<<endl;
+      cout<<H1.DetachChain(&ch1)<<endl;
+      cout<<H2.DetachChain(&cha)<<endl;
+      cout<<H2.DetachChain(&ch1)<<endl;
+      cout<<H1.AttachChain(&cha)<<endl;
+      cout<<H1.AttachChain(&ch1)<<endl;
+      cout<<H2.AttachChain(&cha)<<endl;
+      cout<<H2.AttachChain(&ch1)<<endl;
       cout<<endl;
 
-      Dipole_Handler H3;
-      H3.ShowSudakov();
-      H3.ShowRecoilStrategy();
+      Chain_Handler H3;
       {
-	Dipole E(b1,a1);
+	Chain E(g1,g2,Chain::Initiator::simple_epem);
 	E|H3;
 	cout<<"H3 docking="<<H3.IsDocked()<<endl;
-	H3.ShowSudakov();
-	H3.ShowRecoilStrategy();
+	cout<<E.IsRing()<<endl;
 	cout<<E<<endl;
       }
       cout<<"H3 docking="<<H3.IsDocked()<<endl;
       cout<<endl;
 
-      cout<<(D1|H3)<<endl;
-      cout<<H3.DetachDipole(&D1)<<endl;
-      cout<<H3.DetachDipole(&D2)<<endl;
-      cout<<H3.AttachDipole(&D1)<<endl;
-      cout<<H3.AttachDipole(&D2)<<endl;
-      cout<<(D1|H1)<<endl;
-      cout<<(D1|H2)<<endl;
-      cout<<(D1|H3)<<endl;
-      cout<<(D2|H1)<<endl;
-      cout<<(D2|H2)<<endl;
-      cout<<(D2|H3)<<endl;
+      cout<<(cha|H3)<<endl;
+      cout<<H3.DetachChain(&cha)<<endl;
+      cout<<H3.DetachChain(&ch1)<<endl;
+      cout<<H3.AttachChain(&cha)<<endl;
+      cout<<H3.AttachChain(&ch1)<<endl;
+      cout<<(cha|H1)<<endl;
+      cout<<(cha|H2)<<endl;
+      cout<<(cha|H3)<<endl;
+      cout<<(ch1|H1)<<endl;
+      cout<<(ch1|H2)<<endl;
+      cout<<(ch1|H3)<<endl;
       cout<<endl;
-      D2|0;
-      cout<<(D2|H3)<<endl;
-      cout<<(D2|H1)<<endl;
-      cout<<(D2|H2)<<endl;
-      cout<<D1<<endl<<D2<<endl;
-      cout<<"D1 handled by H1? "<<D1.IsHandledBy(H1)<<endl;
-      cout<<"D1 handled by H2? "<<D1.IsHandledBy(H2)<<endl;
-      cout<<"D1 handled by H3? "<<D1.IsHandledBy(H3)<<endl;
-      cout<<"D2 handled by H1? "<<D2.IsHandledBy(H1)<<endl;
-      cout<<"D2 handled by H2? "<<D2.IsHandledBy(H2)<<endl;
-      cout<<"D2 handled by H3? "<<D2.IsHandledBy(H3)<<endl;
+      ch1|0;
+      cout<<(ch1|H3)<<endl;
+      cout<<(ch1|H1)<<endl;
+      cout<<(ch1|H2)<<endl;
+      cout<<cha<<endl<<ch1<<endl;
+      cout<<"cha handled by H1? "<<cha.IsHandledBy(H1)<<endl;
+      cout<<"cha handled by H2? "<<cha.IsHandledBy(H2)<<endl;
+      cout<<"cha handled by H3? "<<cha.IsHandledBy(H3)<<endl;
+      cout<<"ch1 handled by H1? "<<ch1.IsHandledBy(H1)<<endl;
+      cout<<"ch1 handled by H2? "<<ch1.IsHandledBy(H2)<<endl;
+      cout<<"ch1 handled by H3? "<<ch1.IsHandledBy(H3)<<endl;
 
-      Dipole_Handler::ShowCalcBox();
-      cout<<"Number of Dipole_Handler's = "<<Dipole_Handler::InStore<<endl;
+      cout<<cha.IsEmpty()<<endl;
+      cout<<ch1.IsEmpty()<<endl;
+      cout<<cha.IsRing()<<endl;
+      cout<<ch1.IsRing()<<endl;
+      cout<<cha.ChainType()<<endl;
+      cout<<ch1.ChainType()<<endl;
+      cout<<ch1.ChainRoot()<<endl;
+
+      cout<<H1.CompScale()<<endl;
+      cout<<H2.CompScale()<<endl;
+      cout<<H3.CompScale()<<endl;
+      H1.Reset();
+      H2.Reset();
+      H3.Reset();
+
+      cout<<"Number of Chain_Handler's = "<<Chain_Handler::InStore<<endl;
     }
 
-    cout<<"D1 handling="<<D1.IsHandled()<<endl;
-    cout<<"D2 handling="<<D2.IsHandled()<<endl;
-    cout<<"Number of Dipole_Handler's = "<<Dipole_Handler::InStore<<endl;
+    cout<<"cha handling="<<cha.IsHandled()<<endl;
+    cout<<"ch1 handling="<<ch1.IsHandled()<<endl;
+    cout<<"Number of Chain_Handler's = "<<Chain_Handler::InStore<<endl;
 
   }
 
   cout<<"=============================================================="<<endl;
+  cout<<endl; cin>>enter; cout<<endl;
+  cout<<"=============================================================="<<endl;
   cout<<endl;
 
-  cout<<"============================="<<endl;
-  cout<<" Testing the first emission. "<<endl;
-  cout<<"============================="<<endl;
+  cout<<"=================================="<<endl;
+  cout<<" Testing the chaining stepwisely. "<<endl;
+  cout<<"=================================="<<endl;
 
   {
+
     Vec4D pl(45.0, 20.0,-5.0, 40.0);
     Vec4D pr(45.0,-20.0, 5.0,-40.0);
+    Dipole::Branch     b1(info.quark.u,pl);
+    Dipole::Glubranch  g1(pl);
+    Dipole::Antibranch a1(info.antiquark.u,pr);
+    Dipole::Glubranch  g2(pr);
 
-    //Dipole::Branch     b1(info.quark.u,pl);
-    Dipole::Glubranch  b1(pl);
-    //Dipole::Antibranch a1(info.antiquark.u,pr);
-    Dipole::Glubranch  a1(pr);
+    Chain cha(b1,a1,Chain::Initiator::simple_epem);
+    Chain_Handler H(cha);
 
-    Dipole* pDin=NULL;
-    Dipole::Glubranch* pGlu=NULL;
+    cha.Print();
+    cout<<cha.MaxParticleNumber()<<endl;
+    cout<<cha.MaxDipoleNumber()<<endl;
+    cout<<endl;
+    cout<<"\e[7m\e[31m                    \e[0m";
+    cout<<"\e[1m\e[40m\e[33mSTART\e[0m";
+    cout<<"\e[7m\e[31m                    \e[0m"<<endl;
 
-    {
-
-      bool below;
-      Dipole Dip(b1,a1);
-      Dipole_Handler H(Dip);
-
-      H.ShowSudakov(); H.ShowRecoilStrategy();
-      cout<<Dip<<endl; Dip.PrintTowers();
-
-      assert(H.InduceGluonEmission());
-
-      H.DecoupleNewDipole(pDin,below); assert(pDin);
-      H.DecoupleGlubranch(pGlu); assert(pGlu);
-
-      cout<<"\t  p1="<<b1.Momentum()<<" \t "<<b1.Momentum().Abs2()<<endl;
-      cout<<"\t  p2="<<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2()<<endl;
-      cout<<"\t  p3="<<a1.Momentum()<<" \t "<<a1.Momentum().Abs2()<<endl;
-      cout<<"\t sum="<<b1.Momentum()+pGlu->Momentum()+a1.Momentum()<<endl;
-
-      cout<<"\t       ";
-      for(char i=0; i<4; ++i) cout<<b1.Momentum()[i]/pl[i]<<" \t ";
-      cout<<endl<<"\t       ";
-      for(char i=0; i<4; ++i) cout<<pGlu->Momentum()[i]/pl[i]<<" \t ";
-      cout<<endl<<"\t       ";
-      for(char i=0; i<4; ++i) cout<<a1.Momentum()[i]/pl[i]<<" \t ";
-      cout<<endl;
-
-      const Dipole& Din=*pDin;
-
-      cout<<"Is order given as olddip newdip? "<<below<<endl;
-
-      if(below) {
-	cout<<Dip<<endl<<Din<<endl;
-	Dip.PrintTowers(); Din.PrintTowers();
-      } else {
-	cout<<Din<<endl<<Dip<<endl;
-	Din.PrintTowers(); Dip.PrintTowers();
-      }
-
+    while(H.EvolveChainByOneStep()) {
+      cout<<cha<<endl;
+      Vec4D test;
+      cha.CheckMomentumConservation(test);
+      cout<<test<<endl<<endl;
     }
 
-    delete pDin;
-    delete pGlu;
+    cout<<"\e[7m\e[31m                    \e[0m";
+    cout<<"\e[1m\e[40m\e[33mSTOP\e[0m";
+    cout<<"\e[7m\e[31m                    \e[0m"<<endl;
+    cha.Print();
+    cout<<cha.MaxParticleNumber()<<endl;
+    cout<<cha.MaxDipoleNumber()<<endl;
+
+    /*
+    cout<<"\t  p1="<<b1.Momentum()<<" \t "<<b1.Momentum().Abs2()<<endl;
+    cout<<"\t  p2="<<pGlu->Momentum()<<" \t "<<pGlu->Momentum().Abs2()<<endl;
+    cout<<"\t  p3="<<a1.Momentum()<<" \t "<<a1.Momentum().Abs2()<<endl;
+    cout<<"\t sum="<<b1.Momentum()+pGlu->Momentum()+a1.Momentum()<<endl;
+    cout<<"\t       ";
+    for(char i=0; i<4; ++i) cout<<b1.Momentum()[i]/pl[i]<<" \t ";
+    cout<<endl<<"\t       ";
+    for(char i=0; i<4; ++i) cout<<pGlu->Momentum()[i]/pl[i]<<" \t ";
+    cout<<endl<<"\t       ";
+    for(char i=0; i<4; ++i) cout<<a1.Momentum()[i]/pl[i]<<" \t ";
+    cout<<endl;
+    */
 
   }
 

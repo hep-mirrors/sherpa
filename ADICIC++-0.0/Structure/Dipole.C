@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/18
+//Version: 1 ADICIC++-0.0/2004/06/02
 
 //Implementation of Dipole.H.
 
@@ -45,14 +45,14 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
   ost<<"   hdl:"<<bool(dip.p_hdl);
   ost<<"   state:";
   switch(dip.f_active) {
-  case -1 : ost<<"blocked"; break;
-  case 0  : ost<<"off"; break;
-  default : ost<<"on";
+  case -1 : ost<<"blocked,"<<dip.m_nchg; break;
+  case 0  : ost<<"off,"<<dip.m_nchg; break;
+  default : ost<<"on,"<<dip.m_nchg;
   }
   ost<<endl<<setiosflags(ios::left)<<"  "
-     <<"mass :"<<setw(10)<<dip.m_mass
+     <<"mass :"<<setw(12)<<dip.m_mass
      <<"sqrm :"<<setw(12)<<dip.m_invmass
-     <<"ph "<<setw(8)<<dip.PointerHandling()
+     <<"ph "<<setw(15)<<dip.PointerHandling()
      <<"P="<<dip.m_momentum;
   string st1, st2, st3, st4; stringstream cv1, cv2, cv3, cv4;
   cv1<<dip.m_memory; cv2<<dip.m_copy; cv1>>st1; cv2>>st2;
@@ -60,13 +60,13 @@ ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Dipole& dip) {
   st1=string("(memo:")+st1+string(")");
   st2=string("[copy:")+st2+string("]");
   st3+=string("]"); st4+=string("]");
-  ost<<endl<<"  pscal:"<<setw(10)<<dip.m_k2t
+  ost<<endl<<"  pscal:"<<setw(12)<<dip.m_p2t
+     <<"sscal:"<<setw(12)<<dip.m_k2t
      <<"escal:"<<setw(12)<<dip.m_l2t
-     <<"br["<<setw(8)<<st3<<"p="<<dip.p_top->Momentum()
-     <<"\t"<<dip.p_top->Momentum().Abs2();
-  ost<<endl<<"  "<<setw(16)<<st1<<setw(18)<<st2
-     <<"ab["<<setw(8)<<st4<<"q="<<dip.p_bot->Momentum()
-     <<"\t"<<dip.p_bot->Momentum().Abs2();
+     <<"p="<<dip.p_top->Momentum()<<"\t"<<dip.p_top->Momentum().Abs2();
+  ost<<endl<<"  "<<setw(18)<<st1<<setw(18)<<st2
+     <<"br["<<setw(6)<<st3<<"ab["<<setw(6)<<st4
+     <<"q="<<dip.p_bot->Momentum()<<"\t"<<dip.p_bot->Momentum().Abs2();
   ost<<resetiosflags(ios::left);
   return ost;
 }
@@ -124,9 +124,10 @@ Dipole::Dipole()
   : f_top(true), f_bot(true),
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
+    m_nchg(0), StateNumber(m_nchg),
     m_memory(0), f_active(Blocked),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(incorrect), m_k2t(0.0), m_l2t(0.0),
+    m_type(incorrect), m_p2t(0.0), m_k2t(0.0), m_l2t(0.0),
     m_mass(0.0), m_invmass(0.0), m_momentum(Vec4D()) {
 
   ++s_count;
@@ -134,7 +135,7 @@ Dipole::Dipole()
   p_top=new Glubranch(); assert(p_top);
   p_bot=new Glubranch(); assert(p_bot);
 
-  UpdateType();
+  UpdateType();    //Increments the StateNumber by one.
   //UpdateMass();    //Is not necessary because nil Vec4Ds are used.
 
   AddDipoleToTowers();
@@ -149,9 +150,10 @@ Dipole::Dipole(const Dipole& dip, bool phdl)
   : f_top(phdl), f_bot(phdl),
     m_name(++s_maxcount), Name(m_name),
     m_copy(dip.m_name), CopyOf(m_copy),
+    m_nchg(1), StateNumber(m_nchg),
     m_memory(dip.m_memory), f_active(dip.f_active),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
-    m_type(dip.m_type), m_k2t(dip.m_k2t), m_l2t(dip.m_l2t),
+    m_type(dip.m_type), m_p2t(dip.m_p2t), m_k2t(dip.m_k2t), m_l2t(dip.m_l2t),
     m_mass(dip.m_mass), m_invmass(dip.m_invmass), m_momentum(dip.m_momentum) {
 
   //Due to "towering" type and momentum of Dipole dip are already up-to-date.
@@ -191,6 +193,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Antibranch& ati,
   : f_top(phdl), f_bot(phdl),
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
+    m_nchg(-1), StateNumber(m_nchg),
     m_memory(source), f_active(On),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect) {
@@ -208,9 +211,9 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Antibranch& ati,
   assert(p_bot);
 
   UpdateType();
-  UpdateMass();
+  UpdateMass();    //Increments the StateNumber by two altogether.
 
-  m_k2t=m_l2t=m_invmass;
+  m_p2t=m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -225,6 +228,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Glubranch& glu,
   : f_top(phdl), f_bot(phdl),
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
+    m_nchg(-1), StateNumber(m_nchg),
     m_memory(source), f_active(On),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect) {
@@ -244,7 +248,7 @@ Dipole::Dipole(Dipole::Branch& ban, Dipole::Glubranch& glu,
   UpdateType();
   UpdateMass();
 
-  m_k2t=m_l2t=m_invmass;
+  m_p2t=m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -259,6 +263,7 @@ Dipole::Dipole(Dipole::Glubranch& glu, Dipole::Antibranch& ati,
   : f_top(phdl), f_bot(phdl),
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
+    m_nchg(-1), StateNumber(m_nchg),
     m_memory(source), f_active(On),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect) {
@@ -278,7 +283,7 @@ Dipole::Dipole(Dipole::Glubranch& glu, Dipole::Antibranch& ati,
   UpdateType();
   UpdateMass();
 
-  m_k2t=m_l2t=m_invmass;
+  m_p2t=m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -293,6 +298,7 @@ Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
   : f_top(phdl), f_bot(phdl),
     m_name(++s_maxcount), Name(m_name),
     m_copy(0), CopyOf(m_copy),
+    m_nchg(-1), StateNumber(m_nchg),
     m_memory(source), f_active(On),
     p_top(NULL), p_bot(NULL), p_hdl(NULL),
     m_type(incorrect) {
@@ -317,7 +323,7 @@ Dipole::Dipole(Dipole::Glubranch& glut, Dipole::Glubranch& glub,
   UpdateType();
   UpdateMass();
 
-  m_k2t=m_l2t=m_invmass;
+  m_p2t=m_k2t=m_l2t=m_invmass;
 
   AddDipoleToTowers();
 
@@ -386,10 +392,12 @@ Dipole& Dipole::operator=(const Dipole& dip) {
   if(this==&dip) return *this;
 
   m_copy=dip.m_name;
+  ++m_nchg;
   m_memory=dip.m_memory;
   f_active=dip.f_active;
 
   m_type=dip.m_type;
+  m_p2t=dip.m_p2t;
   m_k2t=dip.m_k2t;
   m_l2t=dip.m_l2t;
   m_mass=dip.m_mass;
@@ -488,6 +496,7 @@ void Dipole::RenewBranch(Branch& ban) {
   }
   else p_top=&ban;
 
+  --m_nchg;
   UpdateType();    //That concerns only this dipole.
   UpdateMass();
 
@@ -521,6 +530,7 @@ void Dipole::RenewBranch(Antibranch& ati) {
   }
   else p_bot=&ati;
 
+  --m_nchg;
   UpdateType();    //That concerns only this dipole.
   UpdateMass();
 
@@ -585,6 +595,7 @@ void Dipole::RenewBranch(bool top, Glubranch& glu) {
 
   }
 
+  --m_nchg;
   UpdateType();    //That concerns only this dipole.
   UpdateMass();
 

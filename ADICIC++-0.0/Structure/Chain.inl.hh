@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/21
+//Version: 1 ADICIC++-0.0/2004/06/02
 
 //Inline methods of Chain.H.
 
@@ -9,7 +9,7 @@
 
 #include <cassert>
 #include <cstdlib>
-//#include "Chain_Handler.H"
+#include "Chain_Handler.H"
 
 
 
@@ -56,9 +56,9 @@ namespace ADICIC {
   inline const bool Chain::IsHandled() const {
     return bool(varset.p_hdl);
   }
-  //inline const bool Chain::IsHandledBy(const Chain_Handler& CH) const {
-  //  if(varset.p_hdl==&CH) return true; return false;
-  //}
+  inline const bool Chain::IsHandledBy(const Chain_Handler& CH) const {
+    if(varset.p_hdl==&CH) return true; return false;
+  }
 
 
 
@@ -66,13 +66,18 @@ namespace ADICIC {
 
   inline const Chain::Type Chain::ChainType() const {
     if( varset.p_quab &&  varset.p_atib) return Chain::line;
-    if(!varset.p_quab && !varset.p_atib &&
-       !varset.l_dip.empty()) return Chain::ring;
+    if(!varset.p_quab && !varset.p_atib && !varset.l_dip.empty())
+      return Chain::ring;
     return Chain::incorrect;
   }
   inline const bool Chain::IsRing() const {
-    return bool(!varset.p_quab && !varset.p_atib &&
-		!varset.l_dip.empty());
+    return bool(!varset.p_quab && !varset.p_atib && !varset.l_dip.empty());
+  }
+
+
+  inline const Dipole& Chain::ChainRoot() const {
+    assert(varset.p_root);
+    return *varset.p_root;
   }
 
 
@@ -101,11 +106,13 @@ namespace ADICIC {
 
 
   inline Bool& Chain::SetStatus() {
+    if(varset.p_hdl) varset.p_hdl->Reset();
     return varset.f_active;
   }
 
 
   inline double& Chain::SetLastScale() {
+    if(varset.p_hdl) varset.p_hdl->Reset();
     return varset.m_k2tlast;
   }
 
@@ -115,22 +122,25 @@ namespace ADICIC {
 
 
 
-  //inline const bool Dipole::operator|(Dipole_Handler& DH) {
-  //  if(varset.p_hdl || DH.IsDocked()) return false;
-  //  varset.p_hdl=&DH;
-  //  return varset.p_hdl->AttachDipole(this);
-  //}
+  inline const bool Chain::operator|(Chain_Handler& CH) {
+    if(varset.p_hdl || CH.IsDocked()) return false;
+    varset.p_hdl=&CH;
+    if(varset.p_hdl->AttachChain(this)) return true;
+    varset.p_hdl=NULL; return false;
+  }
 
 
-  //inline void Dipole::operator|(bool s) {
-  //  if(!varset.p_hdl) return;
-  //  Dipole_Handler* phand=varset.p_hdl;
-  //  if(varset.p_hdl->IsDockedAt(*this)) {
-  //    varset.p_hdl=NULL; phand->DetachDipole(this); return;
-  //  }
-  //  std::cerr<<"\nBug: Wrong Dipole-Dipole_Handler connection emerged!\n";
-  //  assert(varset.p_hdl->IsDockedAt(*this));
-  //}
+  inline void Chain::operator|(bool s) {
+    if(!varset.p_hdl) return;
+    Chain_Handler* phand=varset.p_hdl;
+    if(varset.p_hdl->IsDockedAt(*this)) {
+      varset.p_hdl=NULL;
+      phand->DetachChain(this);
+      return;
+    }
+    std::cerr<<"\nBug: Wrong Chain-Chain_Handler connection emerged!\n";
+    assert(varset.p_hdl->IsDockedAt(*this));
+  }
 
 
 

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/27    (surely preliminarily)
+//Version: 1 ADICIC++-0.0/2004/06/03    (surely preliminarily)
 
 //Only the Chain_Handler structure can reasonably modify the state of a Chain.
 
@@ -13,6 +13,7 @@
 
 
 //#include <map>
+#include "Chain_Handler.dat.hh"
 
 
 #define CHAIN_HANDLER_OUTPUT CHAIN_HANDLER_OUTPUT
@@ -63,22 +64,31 @@ namespace ADICIC {
     bool f_below;
     Chain* p_cix;
 
+    double m_k2tcomp;
     Chain* p_cha;
-
-    Dipole_Handler* p_dhwait;
-    Dipole_Handler* p_dhaciv;
 
     Dipole_Handler m_dh1;
     Dipole_Handler m_dh2;
+
+    Dipole_Handler* p_dhwait;
+    Dipole_Handler* p_dhaciv;
+    Dipole_Handler* p_dhtemp;
+
+    std::list<Dipole*>::iterator i_fix;
+    std::list<Dipole*>::iterator i_run;
 
     //Private static methods:
     //=======================
 
     //Private inline methods:
     //=======================
+    inline void PresetCompScale();
+    inline const bool FindDipole();
 
     //Private methods:
     //================
+    template<class _Strategy> const bool FindDipole();
+    const bool SplitDipole();
 
   public:
 
@@ -95,9 +105,10 @@ namespace ADICIC {
 
     //Public inline methods:
     //======================
-    inline const bool IsNewChain() const;
-    inline const bool IsDocked() const;
-    inline const bool IsDockedAt(const Chain&) const;
+    inline const bool   IsNewChain() const;
+    inline const bool   IsDocked() const;
+    inline const bool   IsDockedAt(const Chain&) const;
+    inline const double CompScale() const;
 
     //Only useful in interplay with the Chain::operator|'s.
     inline const bool AttachChain(Chain*);
@@ -107,6 +118,9 @@ namespace ADICIC {
 
     //Public methods:
     //===============
+    void Reset();
+    const bool EvolveChainByOneStep();
+    const bool EvolveChain();
 
   };
 

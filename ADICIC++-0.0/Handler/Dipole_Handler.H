@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/27    (surely preliminarily)
+//Version: 1 ADICIC++-0.0/2004/06/01    (surely preliminarily)
 
 //The Dipole_Handler structure has the task of a Dipole modifier.
 
@@ -88,6 +88,7 @@ namespace ADICIC {
 
     bool f_below;
     Trio f_recoil;    //Positive = top branch, Negative = bottom branch, Nil
+    int  f_gate;
 
     double m_p2t;
     double m_x1;
@@ -129,11 +130,13 @@ namespace ADICIC {
     inline const bool4::level Status() const;
     inline const int          IsDocked() const;
     inline const bool         IsDockedAt(const Dipole&) const;
+    inline const bool         IsWaiting() const;
 
     //Only useful in interplay with the Dipole::operator|'s.
     inline const bool AttachDipole(Dipole*);
     inline const bool DetachDipole(const Dipole*);
 
+    inline void ResetStatus();
     inline void DecoupleNewDipole(Dipole*&, bool&);
     inline void DecoupleGlubranch(Dipole::Glubranch*&);
 
@@ -142,6 +145,8 @@ namespace ADICIC {
     void ShowSudakov() const;
     void ShowRecoilStrategy() const;
     const bool InduceGluonEmission();
+    const bool FinishGluonEmission();
+    const bool ManageGluonEmission();
 
   };
 

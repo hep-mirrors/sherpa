@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/11
+//Version: 1 ADICIC++-0.0/2004/06/02
 
 //Implementation of Dipole_Handler.H.
 
@@ -60,7 +60,8 @@ const bool Dipole_Handler::sf_init=Dipole_Handler::InitCalcBox();
 Dipole_Handler::Dipole_Handler()
   : p_sudakov(NULL), p_recoil(NULL),
     p_dip(NULL),
-    p_dix(NULL), p_ban(NULL), p_ati(NULL), p_glu(NULL) {
+    p_dix(NULL), p_ban(NULL), p_ati(NULL), p_glu(NULL),
+    f_below(false), f_gate(0) {
   ++s_count;
 }
 
@@ -71,7 +72,8 @@ Dipole_Handler::Dipole_Handler()
 Dipole_Handler::Dipole_Handler(Dipole& dip)
   : p_sudakov(NULL), p_recoil(NULL),
     p_dip(NULL),
-    p_dix(NULL), p_ban(NULL), p_ati(NULL), p_glu(NULL) {
+    p_dix(NULL), p_ban(NULL), p_ati(NULL), p_glu(NULL),
+    f_below(false) {
 
   ++s_count;
 
@@ -95,6 +97,11 @@ Dipole_Handler::~Dipole_Handler() {
 
   --s_count;
 
+  if(p_dix) delete p_dix;
+  if(p_ban) delete p_ban;
+  if(p_ati) delete p_ati;
+  if(p_glu) delete p_glu;
+
   assert(p_sudakov && p_recoil && p_dip || !p_sudakov && !p_recoil && !p_dip);
 
   if(!p_dip) return;
@@ -104,11 +111,6 @@ Dipole_Handler::~Dipole_Handler() {
   }
 
   *p_dip|0;
-
-  if(p_dix) delete p_dix;
-  if(p_ban) delete p_ban;
-  if(p_ati) delete p_ati;
-  if(p_glu) delete p_glu;
 
 }
 
@@ -180,11 +182,91 @@ void Dipole_Handler::ShowRecoilStrategy() const {
 
 const bool Dipole_Handler::InduceGluonEmission() {
 
+  f_gate=0;
+
   if(!p_dip) return false;
 
   if(p_dip->Status() && p_dip->PointerHandling()==0 &&
      p_dip->IsType()!=Dipole::incorrect);
-  else return false;
+  else { p_dip->SetEmitScale()=0.0; return false;}
+
+  if(p_dix) { delete p_dix; p_dix=NULL;}
+  if(p_ban) { delete p_ban; p_ban=NULL;}
+  if(p_ati) { delete p_ati; p_ati=NULL;}
+  if(p_glu) { delete p_glu; p_glu=NULL;}
+
+  //No testing of global parameters.
+
+  //assert( p_dip->InvMass() > Sudakov_Calculator::MinOfK2t() );
+  //assert( p_dip->ProdScale() > Sudakov_Calculator::MinOfK2t() );
+
+  if( p_sudakov->GenerateEfracsFor(*p_dip) ) {
+    bool dummygsplit;
+    p_sudakov->GetResult(dummygsplit,m_p2t,m_x1,m_x3);
+    p_dip->SetEmitScale()=m_p2t;
+    f_gate=p_dip->StateNumber;
+  }
+  else {
+    p_dip->SetEmitScale()=Sudakov_Calculator::MinOfK2t();
+    return false;
+  }
+
+#ifdef DIPOLE_HANDLER_OUTPUT
+  cout<<"\ttransverse momentum and energy fractions:\n\t\t p2t=";
+  cout<<m_p2t<<endl;
+  cout<<"\t\t x1="<<m_x1<<endl;
+  cout<<"\t\t x3="<<m_x3<<endl;
+#endif
+
+  return true;
+
+}
+
+
+
+
+
+const bool Dipole_Handler::FinishGluonEmission() {
+
+  if(f_gate!=p_dip->StateNumber || m_p2t!=p_dip->EmitScale() ||
+     this->Status()!=bool4::zero) {
+    f_gate=0; return false;
+  }
+
+  assert((p_dip->TotP())[0] > 0.0);
+
+  m_p1=p_dip->GetTopBranchPointer()->Momentum();
+  m_p3=p_dip->GetBotBranchPointer()->Momentum();
+  //cout<<m_p1.Abs2()<<endl;
+  assert(m_p1.Abs2() > -1.0e-11);
+  assert(m_p3.Abs2() > -1.0e-11);
+  assert(m_p1[0] > 0.0);
+  assert(m_p3[0] > 0.0);
+
+  assert(GenerateMomenta());
+  assert(GenerateSplitting());
+
+  //Probably, due to the dipole settings in GenerateSplitting, the following is
+  //actually not necessary.
+  f_gate=0;
+
+  return true;
+
+}
+
+
+
+
+
+const bool Dipole_Handler::ManageGluonEmission() {
+
+  f_gate=0;
+
+  if(!p_dip) return false;
+
+  if(p_dip->Status() && p_dip->PointerHandling()==0 &&
+     p_dip->IsType()!=Dipole::incorrect);
+  else { p_dip->SetEmitScale()=0.0; return false;}
 
   if(p_dix) { delete p_dix; p_dix=NULL;}
   if(p_ban) { delete p_ban; p_ban=NULL;}
@@ -194,6 +276,7 @@ const bool Dipole_Handler::InduceGluonEmission() {
   //No testing of global parameters.
 
   assert( p_dip->InvMass() > Sudakov_Calculator::MinOfK2t() );
+  assert( p_dip->ProdScale() > Sudakov_Calculator::MinOfK2t() );
 
   //assert(GenerateEfracs()); assert(TestEfracs());
 
@@ -211,8 +294,12 @@ const bool Dipole_Handler::InduceGluonEmission() {
   if( p_sudakov->GenerateEfracsFor(*p_dip) ) {
     bool dummygsplit;
     p_sudakov->GetResult(dummygsplit,m_p2t,m_x1,m_x3);
+    p_dip->SetEmitScale()=m_p2t;
   }
-  else return false;
+  else {
+    p_dip->SetEmitScale()=Sudakov_Calculator::MinOfK2t();
+    return false;
+  }
 
 #ifdef DIPOLE_HANDLER_OUTPUT
   cout<<"\ttransverse momentum and energy fractions:\n\t\t p2t=";
@@ -225,8 +312,8 @@ const bool Dipole_Handler::InduceGluonEmission() {
 
   m_p1=p_dip->GetTopBranchPointer()->Momentum();
   m_p3=p_dip->GetBotBranchPointer()->Momentum();
-  assert(m_p1.Abs2() >= 0.0);
-  assert(m_p3.Abs2() >= 0.0);
+  assert(m_p1.Abs2() > -1.0e-12);
+  assert(m_p3.Abs2() > -1.0e-12);
   assert(m_p1[0] > 0.0);
   assert(m_p3[0] > 0.0);
 
@@ -296,7 +383,7 @@ const bool Dipole_Handler::InitCalcBox() {    //Static.
 const bool Dipole_Handler::GenerateMomenta() {
 
   const Vec4D& Plab=p_dip->TotP();
-  //Preliminary approach - already done in EmitGluon():
+  //Preliminary approach - already done e.g. in FinishGluonEmission():
   //m_p1=p_dip->GetTopBranchPointer()->Momentum();
   //m_p3=p_dip->GetBotBranchPointer()->Momentum();
 
@@ -352,6 +439,7 @@ const bool Dipole_Handler::GenerateMomenta() {
 
 const bool Dipole_Handler::GenerateSplitting() {
 
+  //That updates the dipole as well as the neighbouring ones.
   p_dip->GetTopBranchPointer()->SetMomentum(m_p1);
   p_dip->GetBotBranchPointer()->SetMomentum(m_p3);
 
@@ -370,9 +458,15 @@ const bool Dipole_Handler::GenerateSplitting() {
 
   p_dix->SetSource()=p_dip->Name;
   p_dip->SetProdScale()=m_p2t;
+  p_dip->SetBootScale()=m_p2t;
   p_dip->SetEmitScale()=m_p2t;
   p_dix->SetProdScale()=m_p2t;
+  p_dix->SetBootScale()=m_p2t;
   p_dix->SetEmitScale()=m_p2t;
+
+  p_tempa=s_map[p_dip->IsType()];
+  p_sudakov=p_tempa->p_sud;
+  p_recoil=p_tempa->p_rec;
 
   return true;
 

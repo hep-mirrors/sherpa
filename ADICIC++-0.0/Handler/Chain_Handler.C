@@ -1,17 +1,13 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/27
+//Version: 1 ADICIC++-0.0/2004/06/03
 
 //Implementation of Chain_Handler.H.
 
-///////////////////////////////////////////////////////////
 
-#include "Random.H"
+
+//#include "Random.H"
 #include "Poincare.H"
-#include "Dipole_Handler.H"
-#include "Dipole_Handler.dat.cc"
-
-#include "Sudakov_Calculator.H"
-#include "Recoil_Calculator.H"
+#include "Chain_Handler.H"
 
 
 
@@ -44,12 +40,9 @@ using namespace ADICIC;
 
 
 
-//So far there is no static Dipole_Handler.
-int Dipole_Handler::s_count=0;
-const int& Dipole_Handler::InStore=Dipole_Handler::s_count;
-
-Dipole_Handler::Calcbox Dipole_Handler::s_map=Dipole_Handler::Calcbox();
-const bool Dipole_Handler::sf_init=Dipole_Handler::InitCalcBox();
+//So far there is no static Chain_Handler.
+int Chain_Handler::s_count=0;
+const int& Chain_Handler::InStore=Chain_Handler::s_count;
 
 
 
@@ -57,32 +50,54 @@ const bool Dipole_Handler::sf_init=Dipole_Handler::InitCalcBox();
 
 
 
-Dipole_Handler::Dipole_Handler()
-  : p_sudakov(NULL), p_recoil(NULL),
-    p_dip(NULL),
-    p_dix(NULL), p_ban(NULL), p_ati(NULL), p_glu(NULL) {
+template
+const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Unknown>();
+//template
+//const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Production>();
+template
+const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Emission>();
+template
+const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Mass>();
+
+
+
+//=============================================================================
+
+
+
+Chain_Handler::Chain_Handler()
+  : f_below(false), p_cix(NULL),
+    m_k2tcomp(0.0), p_cha(NULL),
+    m_dh1(), m_dh2(),
+    p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
+    i_fix(NULL), i_run(NULL) {
   ++s_count;
+  PresetCompScale();
 }
 
 
 
 
 
-Dipole_Handler::Dipole_Handler(Dipole& dip)
-  : p_sudakov(NULL), p_recoil(NULL),
-    p_dip(NULL),
-    p_dix(NULL), p_ban(NULL), p_ati(NULL), p_glu(NULL) {
+Chain_Handler::Chain_Handler(Chain& cha)
+  :  f_below(false), p_cix(NULL),
+     m_k2tcomp(0.0), p_cha(NULL),
+     m_dh1(), m_dh2(),
+     p_dhwait(&m_dh1), p_dhaciv(&m_dh2), p_dhtemp(NULL),
+     i_fix(NULL), i_run(NULL) {
 
   ++s_count;
+  PresetCompScale();
 
-  if(dip|*this) {
-    if(dip.IsHandledBy(*this)); else {
-      cerr<<"\nBug: Wrong Dipole-Dipole_Handler connection emerged!\n";
-      assert(dip.IsHandledBy(*this));
+  if(cha|*this) {
+    if(cha.IsHandledBy(*this)); else {
+      cerr<<"\nBug: Wrong Chain-Chain_Handler connection emerged!\n";
+      assert(cha.IsHandledBy(*this));
     }
-  } else {
-    cerr<<"\nMethod: ADICIC::Dipole_Handler::Dipole_Handler(ADICIC::Dipole&): "
-	<<"Warning: Attaching Dipole failed!\n"<<endl;
+  }
+  else {
+    cerr<<"\nMethod: ADICIC::Chain_Handler::Chain_Handler(ADICIC::Chain&): "
+	<<"Warning: Attaching Chain failed!\n"<<endl;
   }
 
 }
@@ -91,24 +106,51 @@ Dipole_Handler::Dipole_Handler(Dipole& dip)
 
 
 
-Dipole_Handler::~Dipole_Handler() {
+Chain_Handler::~Chain_Handler() {
 
   --s_count;
 
-  assert(p_sudakov && p_recoil && p_dip || !p_sudakov && !p_recoil && !p_dip);
+  if(p_cix) delete p_cix;
 
-  if(!p_dip) return;
-  if(p_dip->IsHandledBy(*this)==false) {
-    cerr<<"\nBug: Wrong Dipole-Dipole_Handler connection emerged!\n";
-    assert(p_dip->IsHandledBy(*this));
+  if(!p_cha) return;
+  if(p_cha->IsHandledBy(*this)==false) {
+    cerr<<"\nBug: Wrong Chain-Chain_Handler connection emerged!\n";
+    assert(p_cha->IsHandledBy(*this));
   }
 
-  *p_dip|0;
+  *p_cha|0;
 
-  if(p_dix) delete p_dix;
-  if(p_ban) delete p_ban;
-  if(p_ati) delete p_ati;
-  if(p_glu) delete p_glu;
+}
+
+
+
+//=============================================================================
+
+
+
+void Chain_Handler::Reset() {
+
+  f_below=false;
+  if(p_cix) { delete p_cix; p_cix=NULL;}
+
+  PresetCompScale();
+
+  p_dhwait=&m_dh1;
+  p_dhaciv=&m_dh2;
+  p_dhtemp=NULL;
+
+  i_fix=NULL;
+  i_run=NULL;
+
+  m_dh1.ResetStatus();
+  m_dh2.ResetStatus();
+
+  if(m_dh1.IsDocked() || m_dh2.IsDocked()) {
+    assert(p_cha);
+    for(list<Dipole*>::const_iterator it=p_cha->DipolePointerList().begin();
+	it!=p_cha->DipolePointerList().end(); ++it)
+      **it|0;
+  }
 
 }
 
@@ -116,302 +158,168 @@ Dipole_Handler::~Dipole_Handler() {
 
 
 
-void Dipole_Handler::ShowCalcBox() {    //Static.
-  cout<<endl;
-  cout<<"======================================="<<endl;
-  cout<<"Calculator box for the Dipole_Handler's"<<endl;
-  cout<<"---------------------------------------"<<endl;
-  cout<<"Number of Sudakov_Calculators in store = "
-      <<Sudakov_Calculator::InStore<<"."<<endl;
-  cout<<"Number of  Recoil_Calculators in store = "
-      <<Recoil_Calculator::InStore<<"."<<endl;
-  cout<<"---------------------------------------"<<endl;
-  s_map[Dipole::qqbar]->p_sud->Which();
-  s_map[Dipole::qqbar]->p_sud->ShowSpecification();
-  s_map[Dipole::qg]->p_sud->Which();
-  s_map[Dipole::qg]->p_sud->ShowSpecification();
-  s_map[Dipole::gqbar]->p_sud->Which();
-  s_map[Dipole::gqbar]->p_sud->ShowSpecification();
-  s_map[Dipole::gg]->p_sud->Which();
-  s_map[Dipole::gg]->p_sud->ShowSpecification();
-  cout<<"---------------------------------------"<<endl;
-  s_map[Dipole::qqbar]->p_rec->Which();
-  s_map[Dipole::qg]->p_rec->Which();
-  s_map[Dipole::gqbar]->p_rec->Which();
-  s_map[Dipole::gg]->p_rec->Which();
-  cout<<"======================================="<<endl;
-}
+const bool Chain_Handler::EvolveChainByOneStep() {
 
+  if(!p_cha) return false;
+  if(p_cha->IsEmpty()) return false;
 
+  assert(!m_dh1.IsDocked() && !m_dh2.IsDocked());
 
+  PresetCompScale();
 
-
-void Dipole_Handler::ShowSudakov() const {
-  cout<<endl;
-  cout<<"=========================================="<<endl;
-  cout<<"Sudakov_Calculator for this Dipole_Handler"<<endl;
-  cout<<"------------------------------------------"<<endl;
-  if(p_sudakov) { p_sudakov->Which(); p_sudakov->ShowSpecification();}
-  else cout<<"Not initialized."<<endl;
-  cout<<"Number of Sudakov_Calculators in store = "
-      <<Sudakov_Calculator::InStore<<"."<<endl;
-  cout<<"=========================================="<<endl;
-}
-
-
-
-
-
-void Dipole_Handler::ShowRecoilStrategy() const {
-  cout<<endl;
-  cout<<"========================================="<<endl;
-  cout<<"Recoil_Calculator for this Dipole_Handler"<<endl;
-  cout<<"-----------------------------------------"<<endl;
-  if(p_recoil) p_recoil->Which();
-  else cout<<"Not initialized."<<endl;
-  cout<<"Number of Recoil_Calculators in store = "
-      <<Recoil_Calculator::InStore<<"."<<endl;
-  cout<<"========================================="<<endl;
-}
-
-
-
-
-
-const bool Dipole_Handler::InduceGluonEmission() {
-
-  if(!p_dip) return false;
-
-  if(p_dip->Status() && p_dip->PointerHandling()==0 &&
-     p_dip->IsType()!=Dipole::incorrect);
+  if(p_cha->Status() && p_cha->ChainType()!=Chain::incorrect &&
+     p_cha->LastScale()>m_k2tcomp);
   else return false;
 
-  if(p_dix) { delete p_dix; p_dix=NULL;}
-  if(p_ban) { delete p_ban; p_ban=NULL;}
-  if(p_ati) { delete p_ati; p_ati=NULL;}
-  if(p_glu) { delete p_glu; p_glu=NULL;}
+  f_below=false;
+  if(p_cix) { delete p_cix; p_cix=NULL;}
 
   //No testing of global parameters.
+  //assert( p_dip->InvMass() > Sudakov_Calculator::MinOfK2t() );
 
-  assert( p_dip->InvMass() > Sudakov_Calculator::MinOfK2t() );
-
-  //assert(GenerateEfracs()); assert(TestEfracs());
-
-  /*
-  //OLD APPROACH.
-  if( !GenerateEfracs() || !TestEfracs() ) {
-    //cerr<<"\n"
-    //<<"Method: const bool ADICIC::Dipole_Handler::InduceGluonEmission(): "
-    //<<" Warning: Could not generate energy fractions!\n"<<endl;
-    return false;
-  }
-  */
-
-  //NEW APPROACH.
-  if( p_sudakov->GenerateEfracsFor(*p_dip) ) {
-    bool dummygsplit;
-    p_sudakov->GetResult(dummygsplit,m_p2t,m_x1,m_x3);
-  }
-  else return false;
-
-#ifdef DIPOLE_HANDLER_OUTPUT
-  cout<<"\ttransverse momentum and energy fractions:\n\t\t p2t=";
-  cout<<m_p2t<<endl;
-  cout<<"\t\t x1="<<m_x1<<endl;
-  cout<<"\t\t x3="<<m_x3<<endl;
-#endif
-
-  assert((p_dip->TotP())[0] > 0.0);
-
-  m_p1=p_dip->GetTopBranchPointer()->Momentum();
-  m_p3=p_dip->GetBotBranchPointer()->Momentum();
-  assert(m_p1.Abs2() >= 0.0);
-  assert(m_p3.Abs2() >= 0.0);
-  assert(m_p1[0] > 0.0);
-  assert(m_p3[0] > 0.0);
-
-  assert(GenerateMomenta());
-  assert(GenerateSplitting());
-
-  return true;
-
-}
-
-
-
-//=============================================================================
-
-
-
-const bool Dipole_Handler::InitCalcBox() {    //Static.
-
-  static Calcpair qqpa, qgpa, gqpa, ggpa;
-
-  if(Sudakov_Calculator::IsAlphaSRunning()==false) {
-
-    //Arrange the Sudakov's.
-    qqpa.p_sud=new Sudakov<Dipole::qqbar,Alpha_S_Fix>;
-    qgpa.p_sud=new Sudakov<Dipole::qg,Alpha_S_Fix>;
-    gqpa.p_sud=new Sudakov<Dipole::gqbar,Alpha_S_Fix>;
-    ggpa.p_sud=new Sudakov<Dipole::gg,Alpha_S_Fix>;
-    assert(qqpa.p_sud);
-    assert(qgpa.p_sud);
-    assert(gqpa.p_sud);
-    assert(ggpa.p_sud);
-
-    //Establish the overall recoil strategy right now and here.
-    qqpa.p_rec=new Recoil<Kleiss_Strategy>;
-    qgpa.p_rec=new Recoil<FixDir3_Strategy>;
-    gqpa.p_rec=new Recoil<FixDir1_Strategy>;
-    ggpa.p_rec=
-      new Recoil<MinimizePt_Strategy>;
-      //new Recoil<Lonnblad_Strategy>;
-      //new Recoil<OldAdicic_Strategy>;
-      //new Recoil<Test_Strategy>;
-    assert(qqpa.p_rec);
-    assert(qgpa.p_rec);
-    assert(gqpa.p_rec);
-    assert(ggpa.p_rec);
-
-    //Fix the whole map - finishing arrangement of the calculator box.
-    s_map[Dipole::qqbar] = &qqpa;
-    s_map[Dipole::qg]    = &qgpa;
-    s_map[Dipole::gqbar] = &gqpa;
-    s_map[Dipole::gg]    = &ggpa;
-
+  if(this->FindDipole()) {
+    this->SplitDipole();
+    double tem=m_k2tcomp;
+    p_cha->SetLastScale()=tem;
     return true;
+  }
+
+#ifdef CHAIN_HANDLER_OUTPUT
+#endif
+
+  return false;
+
+}
+
+
+
+
+
+const bool Chain_Handler::EvolveChain() {
+  return true;
+}
+
+
+
+//=============================================================================
+
+
+
+template<class _Strategy>
+const bool Chain_Handler::FindDipole() {
+  cerr<<"\nMethod: const bool ADICIC::Chain_Handler::FindDipole(): "
+      <<"Warning: Method has not been specified!\n"<<endl;
+  return false;
+}
+
+
+
+
+
+template<>
+const bool Chain_Handler::FindDipole<Chain_Evolution_Strategy::Production>() {
+
+  static bool confirm=true;
+  if(confirm) {
+    confirm=false;
+    cout<<"\nFor the purpose of confirmation: "
+	<<"Chain_Evolution_Strategy::Production has been chosen!"<<endl;
+  }
+
+  i_fix=NULL;
+  i_run=p_cha->DipolePointerList().begin();
+
+  for(; i_run!=p_cha->DipolePointerList().end(); ++i_run) {
+
+    Dipole& dip=**i_run;
+    assert(dip|*p_dhaciv);
+
+    if(p_dhaciv->InduceGluonEmission()==false) { dip|0; continue;}
+
+    if(dip.EmitScale() >= p_cha->LastScale()) {
+      bool result;
+      do {
+	dip.SetBootScale()=dip.EmitScale();
+	result=p_dhaciv->InduceGluonEmission();
+	if(result==false) break;
+      }
+      while(dip.EmitScale() >= p_cha->LastScale());
+      if(result==false) {
+	dip.SetBootScale()=dip.ProdScale();
+	dip|0; continue;
+      }
+    }
+
+    if(dip.EmitScale() < m_k2tcomp) {
+      dip.SetBootScale()=dip.ProdScale();
+      dip|0; continue;
+    }
+
+    m_k2tcomp=dip.EmitScale();
+    p_dhtemp=p_dhwait;
+    p_dhwait=p_dhaciv;
+    p_dhaciv=p_dhtemp;
+    if(p_dhtemp->IsDocked()) {
+      Dipole& loser=**i_fix;
+      loser.SetBootScale()=loser.ProdScale();
+      loser|0;
+    }
+    i_fix=i_run;
 
   }
 
-  cerr<<"\nSorry :o( Option of using a running alpha_s ";
-  cerr<<" has not been implemented yet.\n";
-  assert(0);
+  return bool(i_fix!=NULL);
 
 }
 
 
 
-
-
-const bool Dipole_Handler::GenerateMomenta() {
-
-  const Vec4D& Plab=p_dip->TotP();
-  //Preliminary approach - already done in EmitGluon():
-  //m_p1=p_dip->GetTopBranchPointer()->Momentum();
-  //m_p3=p_dip->GetBotBranchPointer()->Momentum();
-
-#ifdef DIPOLE_HANDLER_OUTPUT
-  cout<<"\tlab frame - before:\n\t\t P =";
-  cout<<Plab<<"\t"<<p_dip->InvMass()<<"  "<<p_dip->Mass()<<endl;
-  cout<<"\t\t q1="<<m_p1<<"\t "<<m_p1.Abs2()<<endl;
-  cout<<"\t\t q3="<<m_p3<<"\t "<<m_p3.Abs2()<<endl;
-#endif
-
-  Recoil_Setup Iset;
-  Iset.E2=sqrt(p_dip->InvMass());
-  Iset.E1=0.5*Iset.E2*m_x1;
-  Iset.E3=0.5*Iset.E2*m_x3;
-  Iset.E2=Iset.E2-Iset.E1-Iset.E3;
-
-  Vec4D& axis=m_p2;
-  axis=m_p1;    //lab frame
-  Poincare fly(Plab);
-  fly.Boost(axis);    //This is always the initial cms frame axis.
-
-  if(p_recoil->GenerateCmsMomenta(Iset,axis))
-    p_recoil->GetResult(f_recoil,m_p1,m_p3);
-  else return false;
-
-#ifdef DIPOLE_HANDLER_OUTPUT
-  cout<<"\tcms frame - after:\n";
-  cout<<"\t\t p1="<<m_p1<<"\t "<<m_p1.Abs2()<<endl;
-  cout<<"\t\t p3="<<m_p3<<"\t "<<m_p3.Abs2()<<endl;
-#endif
-
-  if(TEMP::CPTEST) CrossProductTest(axis);/////////////////////////////////////
-
-  fly.BoostBack(m_p1);
-  fly.BoostBack(m_p3);
-
-  m_p2=Plab+(-1.0)*(m_p1+m_p3);
-
-#ifdef DIPOLE_HANDLER_OUTPUT
-  cout<<"\tlab frame - after:\n";
-  cout<<"\t\t p1="<<m_p1<<"\t "<<m_p1.Abs2()<<endl;
-  cout<<"\t\t p2="<<m_p2<<"\t "<<m_p2.Abs2()<<endl;
-  cout<<"\t\t p3="<<m_p3<<"\t "<<m_p3.Abs2()<<endl;
-#endif
-
-  return true;
-
-}
+//=============================================================================
 
 
 
+const bool Chain_Handler::SplitDipole() {
 
+  Dipole& winner=**i_fix;
 
-const bool Dipole_Handler::GenerateSplitting() {
+  Vec4D momm=winner.GetTopBranchPointer()->Momentum();
+  momm+=winner.GetBotBranchPointer()->Momentum();cout<<momm<<endl;/////////////
+  p_cha->UpdateMomentum(-1.0,momm);cout<<p_cha->Momentum()<<endl;//////////////
 
-  p_dip->GetTopBranchPointer()->SetMomentum(m_p1);
-  p_dip->GetBotBranchPointer()->SetMomentum(m_p3);
+  assert(p_dhwait->FinishGluonEmission());
 
-  p_glu=new Dipole::Glubranch(m_p2); assert(p_glu);
-  p_dix=new Dipole(*p_dip); assert(p_dix);
+  bool below;
+  Dipole* pnewdip=NULL;
+  Dipole::Glubranch* pglu=NULL;
 
-  if(f_recoil==Positive) {
-    f_below=false;
-    p_dix->RenewBranch(false,*p_glu);    //dixbot
-    p_dip->RenewBranch(true,*p_glu);    //diptop
+  p_dhwait->DecoupleNewDipole(pnewdip,below);
+  assert(pnewdip);
+  p_dhwait->DecoupleGlubranch(pglu);
+  assert(pglu);
+
+  winner|0;
+
+  momm=pglu->Momentum();
+  p_cha->GlubranchPointerList().push_back(pglu);
+
+  if(below) {
+    i_run=i_fix;
+    ++i_run;
+    i_run=p_cha->DipolePointerList().insert(i_run,pnewdip);
+    momm+=winner.GetTopBranchPointer()->Momentum();
+    momm+=pnewdip->GetBotBranchPointer()->Momentum();
   } else {
-    f_below=true;
-    p_dip->RenewBranch(false,*p_glu);    //dipbot
-    p_dix->RenewBranch(true,*p_glu);    //dixtop
+    i_run=p_cha->DipolePointerList().insert(i_fix,pnewdip);
+    ++i_run;
+    i_fix=i_run;
+    momm+=pnewdip->GetTopBranchPointer()->Momentum();
+    momm+=winner.GetBotBranchPointer()->Momentum();
   }
 
-  p_dix->SetSource()=p_dip->Name;
-  p_dip->SetProdScale()=m_p2t;
-  p_dip->SetEmitScale()=m_p2t;
-  p_dix->SetProdScale()=m_p2t;
-  p_dix->SetEmitScale()=m_p2t;
+  p_cha->UpdateMomentum(1.0,momm);
 
   return true;
 
-}
-
-
-
-//=============================================================================
-
-
-
-void Dipole_Handler::CrossProductTest(const Vec4D& axis) const {
-  Vec3D q1(m_p1);
-  Vec3D q3(m_p3);
-  Vec3D ax(axis);
-  Vec3D B=cross(q1,q3);
-  Vec3D A=cross(ax,q1);
-  cout<<"  Cross product test."<<endl;
-  cout<<"  ax="<<ax<<endl;
-  cout<<"  q1="<<q1<<endl;
-  cout<<"  q3="<<q3<<endl;
-  cout<<"   A="<<A<<endl;
-  cout<<"   B="<<B<<endl;
-  cout<<"     ";
-  for(char i=1; i<4; ++i) cout<<A[i]/B[i]<<" : ";
-  cout<<"     : ";
-  for(char i=1; i<4; ++i) cout<<B[i]/A[i]<<" : ";
-  cout<<endl;
-  cout<<"  +++++++++++++++++++"<<endl;
-}
-
-
-
-//=============================================================================
-
-
-
-Dipole_Handler::Calcpair::~Calcpair() {
-  if(p_sud) delete p_sud; if(p_rec) delete p_rec;
 }
 
 

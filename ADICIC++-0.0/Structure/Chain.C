@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/24
+//Version: 1 ADICIC++-0.0/2004/06/03
 
 //Implementation of Chain.H.
 
@@ -35,34 +35,36 @@ using namespace ADICIC;
 
 ostream& ADICIC::operator<<(ostream& ost, const ADICIC::Chain& cha) {
   unsigned i=0;
-  ost<<endl<<"\e[1m"<<string(80,'=')<<"\e[0m"<<endl;
+  ost<<endl<<"\e[1m"<<string(80,'O')<<"\e[0m"<<endl;
   for(list<Dipole*>::const_iterator it=cha.DipolePointerList().begin();
       it!=cha.DipolePointerList().end(); ++it) {
     ++i;
-    ost<<setiosflags(ios::left)<<setw(4)<<"\e[33m\e[1m"<<i<<"\e[0m"
+    if(*it==&cha.ChainRoot()) ost<<"\e[1m\e[31m";
+    else ost<<"\e[1m\e[34m";
+    ost<<setiosflags(ios::left)<<setw(4)<<i<<"\e[0m"
        <<resetiosflags(ios::left)<<(**it)<<endl;
   }
-  ost<<"\e[1m"<<string(80,'=')<<"\e[0m"<<endl;
+  ost<<"\e[1m"<<string(80,'o')<<"\e[0m"<<endl;
   ost<<"Chain type: ";
   switch(cha.ChainType()) {
   case 1: ost<<"Ring"; break;
   case 0: ost<<"Line"; break;
   default : ost<<"incorrect";
   }
-  ost<<"    State: ";
+  ost<<"    Chain state: ";
   switch(cha.Status()) {
   case -1 : ost<<"blocked"; break;
   case 0  : ost<<"off"; break;
   default : ost<<"on";
   }
-  ost<<"    Handler: "<<bool(cha.IsHandled())<<endl;
+  ost<<"    Chain handler: "<<bool(cha.IsHandled())<<endl;
   ost<<setiosflags(ios::left)
      <<"Scale="<<setw(12)<<cha.LastScale()
      <<"Mass="<<setw(12)<<cha.Mass()
      <<"SqrMass="<<setw(12)<<cha.InvMass()
      <<"P="<<cha.Momentum();
   ost<<resetiosflags(ios::left)<<endl;
-  ost<<"\e[1m"<<string(80,'=')<<"\e[0m";
+  ost<<"\e[1m"<<string(80,'O')<<"\e[0m";
   return ost;
 }
 
@@ -116,6 +118,7 @@ Chain::Chain(const Chain& cha) {
   for(list<Dipole*>::const_iterator dit=cha.varset.l_dip.begin();
       dit!=cha.varset.l_dip.end(); ++dit) {
     key=0; topb=NULL; bota=NULL; topg=botg=NULL;
+    bool root=false; if(*dit==cha.varset.p_root) root=true;
     Dipole_Particle* to=(*dit)->GetTopBranchPointer().operator->();
     Dipole_Particle* bo=(*dit)->GetBotBranchPointer().operator->();
     if(to->OrgType()==Nil) topg=static_cast<Dipole::Glubranch*>(to);
@@ -149,9 +152,10 @@ Chain::Chain(const Chain& cha) {
     }
     assert(dip);
     varset.l_dip.push_back(dip);
+    if(root) varset.p_root=dip;
   }
 
-  if(cha.CheckMomentum(varset.m_momentum)) {
+  if(cha.CheckMomentumConservation(varset.m_momentum)) {
     varset.m_mass=cha.varset.m_mass;
     varset.m_invmass=cha.varset.m_invmass;
   } else {
@@ -188,6 +192,7 @@ Chain::Chain(const Dipole::Branch& ban, const Dipole::Antibranch& ati,
   Dipole* root=new Dipole(*varset.p_quab,*varset.p_atib);
   assert(root);
   varset.l_dip.push_front(root);
+  varset.p_root=root;
 
   varset.m_k2tlast=root->ProdScale();
   varset.m_mass=root->Mass();
@@ -233,6 +238,7 @@ Chain::Chain(const Dipole::Glubranch& glut, const Dipole::Glubranch& glub,
   Dipole* root=new Dipole(*top,*bot);
   assert(root);
   varset.l_dip.push_front(root);
+  varset.p_root=root;
 
   varset.m_k2tlast=root->ProdScale();
   varset.m_mass=root->Mass();
@@ -251,16 +257,16 @@ Chain::Chain(const Dipole::Glubranch& glut, const Dipole::Glubranch& glub,
 
 Chain::~Chain() {
 
-  if(varset.p_hdl) {    //Check for Dipole_Handler.
+  if(varset.p_hdl) {    //Check for Chain_Handler.
     cerr<<"\nMethod: ADICIC::Chain::~Chain(): "
-	<<"Warning: Detaching Chain_Handler from Dipole!\n"<<endl;
-    //if(varset.p_hdl->IsDockedAt(*this)==false) {
-    //  cerr<<"\nBug: Wrong Chain-Chain_Handler connection emerged!\n";
-    //  assert(varset.p_hdl->IsDockedAt(*this));
-    //}
+	<<"Warning: Detaching Chain_Handler from Chain!\n"<<endl;
+    if(varset.p_hdl->IsDockedAt(*this)==false) {
+      cerr<<"\nBug: Wrong Chain-Chain_Handler connection emerged!\n";
+      assert(varset.p_hdl->IsDockedAt(*this));
+    }
     Chain_Handler* phand=varset.p_hdl;
     varset.p_hdl=NULL;
-    //phand->DetachDipole(this);
+    phand->DetachChain(this);
   }
 
   for(list<Dipole*>::iterator dit=varset.l_dip.begin();
@@ -287,7 +293,8 @@ Chain::~Chain() {
 
 Chain& Chain::operator=(const Chain& cha) {
 
-  if( this==&cha || !this->Clear() ) return *this;
+  if(this==&cha) return *this;
+  if(this->Clear()==false) return *this;
 
   varset.f_active=cha.varset.f_active;
   varset.m_k2tlast=cha.varset.m_k2tlast;
@@ -302,6 +309,7 @@ Chain& Chain::operator=(const Chain& cha) {
   for(list<Dipole*>::const_iterator dit=cha.varset.l_dip.begin();
       dit!=cha.varset.l_dip.end(); ++dit) {
     key=0; topb=NULL; bota=NULL; topg=botg=NULL;
+    bool root=false; if(*dit==cha.varset.p_root) root=true;
     Dipole_Particle* to=(*dit)->GetTopBranchPointer().operator->();
     Dipole_Particle* bo=(*dit)->GetBotBranchPointer().operator->();
     if(to->OrgType()==Nil) topg=static_cast<Dipole::Glubranch*>(to);
@@ -331,9 +339,10 @@ Chain& Chain::operator=(const Chain& cha) {
     }
     assert(dip);
     varset.l_dip.push_back(dip);
+    if(root) varset.p_root=dip;
   }
 
-  if(cha.CheckMomentum(varset.m_momentum)) {
+  if(cha.CheckMomentumConservation(varset.m_momentum)) {
     varset.m_mass=cha.varset.m_mass;
     varset.m_invmass=cha.varset.m_invmass;
   } else {
@@ -369,24 +378,27 @@ Chain& Chain::operator=(const Chain& cha) {
 
 void Chain::Print() const {
   cout<<(*this)<<endl;
-  if(varset.p_quab) cout<<"Branch:"<<endl<<&(varset.p_quab->Parton)<<endl;
-  if(varset.p_atib) cout<<"Antibranch:"<<endl<<&(varset.p_atib->Parton)<<endl;
-  if(!varset.l_glub.empty()) cout<<"Glubranches:"<<endl;
+  if(varset.p_quab)
+    cout<<"\e[1mBranch:\e[0m"<<endl<<&(varset.p_quab->Parton)<<endl;
+  if(varset.p_atib)
+    cout<<"\e[1mAntibranch:\e[0m"<<endl<<&(varset.p_atib->Parton)<<endl;
+  if(!varset.l_glub.empty())
+    cout<<"\e[1mGlubranches:\e[0m"<<endl;
   for(list<Dipole::Glubranch*>::const_iterator gut=varset.l_glub.begin();
       gut!=varset.l_glub.end(); ++gut) {
     cout<<&((*gut)->Parton)<<endl;
   }
-  cout<<"\e[1m"<<string(80,'=')<<"\e[0m"<<endl;
+  cout<<"\e[1m"<<string(80,'o')<<"\e[0m"<<endl;
   cout<<"Number of branches = "<<ParticleNumber()<<endl;
   cout<<"Number of  dipoles = "<<DipoleNumber()<<endl;
-  cout<<"\e[1m"<<string(80,'=')<<"\e[0m"<<endl;
+  cout<<"\e[1m"<<string(80,'O')<<"\e[0m"<<endl;
 }
 
 
 
 
 
-const bool Chain::CheckMomentum(ATOOLS::Vec4D& sum) const {
+const bool Chain::CheckMomentumConservation(ATOOLS::Vec4D& sum) const {
   sum=Vec4D();
   if(varset.p_quab) sum+=varset.p_quab->Momentum();
   if(varset.p_atib) sum+=varset.p_atib->Momentum();
@@ -439,6 +451,7 @@ const bool Chain::Initialize(const Dipole::Branch& ban,
   Dipole* root=new Dipole(*varset.p_quab,*varset.p_atib);
   assert(root);
   varset.l_dip.push_front(root);
+  varset.p_root=root;
 
   varset.m_k2tlast=root->ProdScale();
   varset.m_mass=root->Mass();
@@ -465,7 +478,8 @@ const ATOOLS::Vec4D& Chain::UpdateMomentum(double k, const ATOOLS::Vec4D& p) {
   if(varset.m_invmass<0.0) {
     cerr<<"\nMethod: const ATOOLS::Vec4D& ADICIC::Chain::UpdateMomentum("
 	<<"double, const ATOOLS::Vec4D&): "
-	<<"Warning: Negative invariant mass!\n"<<endl;
+	<<"Warning: Negative invariant mass ("<<varset.m_invmass<<") !\n"
+	<<endl;
     varset.m_mass=-1*sqrt(-1*varset.m_invmass);
   }
   else varset.m_mass=sqrt(varset.m_invmass);

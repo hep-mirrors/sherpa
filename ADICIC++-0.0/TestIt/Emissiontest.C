@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/24
+//Version: 1 ADICIC++-0.0/2004/06/01
 
 //Emissiontest.C - testing the first emission.
 
@@ -13,6 +13,7 @@
 #include "Dipole.H"
 #include "Dipole_Handler.H"
 #include "Sudakov_Calculator.H"
+#include "Recoil_Calculator.H"
 #include "Chain.H"
 
 
@@ -204,13 +205,15 @@ int main() {
   cout<<"============================="<<endl;
 
   {
+    TEMP::CPTEST=true;
+
     Vec4D pl(45.0, 20.0,-5.0, 40.0);
     Vec4D pr(45.0,-20.0, 5.0,-40.0);
 
-    //Dipole::Branch     b1(info.quark.u,pl);
-    Dipole::Glubranch  b1(pl);
-    //Dipole::Antibranch a1(info.antiquark.u,pr);
-    Dipole::Glubranch  a1(pr);
+    Dipole::Branch     b1(info.quark.u,pl);
+    //Dipole::Glubranch  b1(pl);
+    Dipole::Antibranch a1(info.antiquark.u,pr);
+    //Dipole::Glubranch  a1(pr);
 
     Dipole* pDin=NULL;
     Dipole::Glubranch* pGlu=NULL;
@@ -224,7 +227,7 @@ int main() {
       H.ShowSudakov(); H.ShowRecoilStrategy();
       cout<<Dip<<endl; Dip.PrintTowers();
 
-      assert(H.InduceGluonEmission());
+      assert(H.ManageGluonEmission());// && H.ManageGluonEmission());
 
       H.DecoupleNewDipole(pDin,below); assert(pDin);
       H.DecoupleGlubranch(pGlu); assert(pGlu);
@@ -253,12 +256,14 @@ int main() {
 	cout<<Din<<endl<<Dip<<endl;
 	Din.PrintTowers(); Dip.PrintTowers();
       }
+      H.ShowSudakov(); H.ShowRecoilStrategy();
 
     }
 
     delete pDin;
     delete pGlu;
 
+    TEMP::CPTEST=false;
   }
 
   cout<<"=============================================================="<<endl;
@@ -281,10 +286,10 @@ int main() {
 
       Vec4D pl(45.0, 20.0,-5.0, 40.0);
       Vec4D pr(45.0,-20.0, 5.0,-40.0);
-      //Dipole::Branch     b1(info.quark.u,pl);
-      Dipole::Glubranch  b1(pl);
-      //Dipole::Antibranch a1(info.antiquark.u,pr);
-      Dipole::Glubranch  a1(pr);
+      Dipole::Branch     b1(info.quark.u,pl);
+      //Dipole::Glubranch  b1(pl);
+      Dipole::Antibranch a1(info.antiquark.u,pr);
+      //Dipole::Glubranch  a1(pr);
 
       Dipole* pDin=NULL;
       Dipole::Glubranch* pGlu=NULL;
@@ -299,7 +304,8 @@ int main() {
 	cout<<Dip<<endl;
 #endif
 
-	if(!H.InduceGluonEmission()) {
+	if( H.InduceGluonEmission() && H.FinishGluonEmission() );
+	else {
 	  ++count;
 	  if(control) cout<<i<<"\t\t"<<count<<"\t\t"<<Dip.ProdScale()<<endl;
 	  continue;

@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/05/07
+//Version: 1 ADICIC++-0.0/2004/06/02
 
 //Inline methods of Sudakov_Calculator.H.
 
@@ -30,7 +30,7 @@ namespace ADICIC {
   }
 
 
-  Sudakov_Calculator::~Sudakov_Calculator() {
+  inline Sudakov_Calculator::~Sudakov_Calculator() {
     --s_count;
   }
 
@@ -40,7 +40,7 @@ namespace ADICIC {
 
 
 
-  inline const bool Sudakov_Calculator::IsAlphaSRunning() {
+  inline const bool Sudakov_Calculator::IsAlphaSRunning() {    //Static.
     return sf_alphasrun;
   }
   inline const double Sudakov_Calculator::MinOfK2t() {    //Static.
@@ -68,7 +68,7 @@ namespace ADICIC {
   }
 
 
-  void Sudakov_Calculator::Which() const {
+  inline void Sudakov_Calculator::Which() const {
     std::cout<<"Incomplete Sudakov_Calculator."<<std::endl;
   }
 
@@ -132,7 +132,9 @@ namespace ADICIC {
 
     m_s=dip.InvMass();
     m_x2tmin=Sudakov_Calculator::MinOfK2t()/m_s;
-    m_x2t=Min(1.0,Sudakov_Calculator::MaxOfK2t()/m_s);
+    //m_x2t=Min(1.0,Sudakov_Calculator::MaxOfK2t()/m_s);
+    //m_x2t=Min(dip.ProdScale()/m_s,Sudakov_Calculator::MaxOfK2t()/m_s);
+    m_x2t=Min(dip.BootScale()/m_s,Sudakov_Calculator::MaxOfK2t()/m_s);
     m_rap=0.0;
     m_corr=1.0;
 
