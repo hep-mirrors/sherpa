@@ -46,10 +46,10 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   p_hel(0), p_BS(0), p_ampl(0), p_shand(0), p_partner(this), 
   m_helsample(false), m_inithelsample(false), m_throws(0), m_helresult(0.), m_helresult2(0.)
 {
-  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/");
+  string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
   if (mkdir(newpath.c_str(),448)==0) {
     system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
-	    string("/Process/Dummy ")+newpath).c_str());
+	    string("/Process/Dummy ")+newpath+string("/Process")).c_str());
     system((string("cp ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
 	    string("/makelibs ")+newpath).c_str());
   }
