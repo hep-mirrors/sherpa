@@ -77,6 +77,13 @@ namespace ATOOLS {
 	 part != bl.m_outparticles.end(); ++part) {
       ostr<<**part<<std::endl;
     }
+    if (bl.m_datacontainer.size()>0) {
+      msg.Out()<<"Data_Container:"<<std::endl;
+      for (String_BlobDataBase_Map::const_iterator it=bl.m_datacontainer.begin();
+	   it!=bl.m_datacontainer.end(); ++it) {
+	msg.Out()<<"   * "<<it->first<<" ("<<*(it->second)<<")"<<std::endl;
+      }
+    }
     ostr.setf(flags);
     return ostr;
   }
