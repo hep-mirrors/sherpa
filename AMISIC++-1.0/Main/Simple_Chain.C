@@ -546,10 +546,6 @@ bool Simple_Chain::Initialize()
     m_stop[4]=m_stop[0]=0.0;
     m_stop[3]=m_stop[2]=0.0;
   }
-#ifdef USING__Sherpa
-  p_remnants[0]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_0");
-  p_remnants[1]=GET_OBJECT(SHERPA::Remnant_Base,"Remnant_Base_1");
-#endif
   if (!ReadInData()) return false;
   std::string xsfile=std::string("XS.dat");
   reader->ReadFromFile(xsfile,"XS_FILE");
@@ -638,41 +634,8 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     }
     (*p_blob)["MI_Weight"]->Set(weight);
     (*p_blob)["MI_Trials"]->Set(trials);
-    double x[2], xrem[2];
-    bool test=true;
-    for (size_t j=0;j<selected->NIn();++j) {
-      x[j]=2.0*selected->Momenta()[j][0]/m_ecms;
-#ifdef USING__Sherpa
-      if (p_remnants[j]!=NULL) {
-	xrem[j]=2.0*p_remnants[j]->
-	  MinimalEnergy(selected->Flavours()[j])/m_ecms;
-	if (m_last[j+2]-x[j]<xrem[j]) {
-	  test=false;
-	  msg_Tracking()<<"Simple_Chain::FillBlob(..): Remnant ["
-			<<j<<"] says: "<<"x_{rem min} = "<<xrem[j]
-			<<" vs. x_{old} = "<<m_last[j+2]<<" -> x_{new} = "
-			<<m_last[j+2]-x[j]-xrem[j]<<" from "
-			<<selected->Flavours()[j]<<" => ("
-			<<test<<")"<<std::endl;
-	}
-      }
-      else {
-	if (m_last[j+2]<=x[j]+.01) test=false;
-	// default: need 1 GeV per process and beam to adjust remnants
-	xrem[1]=xrem[0]=1./m_ecms;
-      }
-#else
-      if (m_last[j+2]<=x[j]+.01) test=false;
-      // default: need 1 GeV per process and beam to adjust remnants
-      xrem[1]=xrem[0]=1./m_ecms;
-#endif
-    }
-    if (!test) {
-      s_stophard=true;
-      return true;
-    }
-    m_last[2]-=x[0]+xrem[0];
-    m_last[3]-=x[1]+xrem[1];
+    for (size_t j=0;j<selected->NIn();++j) 
+      m_last[2+j]-=2.0*selected->Momenta()[j][0]/m_ecms;
     selected->SetColours(selected->Momenta());
     ATOOLS::Particle *particle;
     for (size_t j=0;j<selected->NIn();++j) {
@@ -709,7 +672,7 @@ bool Simple_Chain::DiceProcess()
     return true;
   }
   double xmin=2.0*m_last[0]/m_ecms;
-  if (m_last[2]<xmin || m_last[3]<xmin) {
+  if (m_last[2]+m_last[3]<2.0*xmin) {
     m_dicedprocess=false;
     return true;
   }
@@ -731,15 +694,7 @@ bool Simple_Chain::DiceProcess()
 	m_selected=sit->second;
 	double xrem[2];
 	for (short unsigned int k=0;k<2;++k) {
-#ifdef USING__Sherpa
-	  if (p_remnants[k]!=NULL) {
-	    xrem[k]=2.0*p_remnants[k]->
-	      MinimalEnergy(m_processmap[m_selected]->Flavours()[k])/m_ecms;
-	  }
-	  else xrem[k]=0.0;
-#else
 	  xrem[k]=0.0;
-#endif
 	  if (m_last[3-k]<xmin+xrem[k]) {
 	    s_stophard=true;
 	    m_dicedprocess=false;
