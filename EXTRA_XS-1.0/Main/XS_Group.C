@@ -169,7 +169,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       p_pshandler->CreateIntegrators();
       m_channels = true;
     }
-    std::string filename=resultpath+std::string("/")+m_name+std::string(".xstotal"), singlename;
+    std::string filename=resultpath+std::string("/")+m_name+std::string(".xs_tot"), singlename;
     double singlexs, singleerr, singlemax, singlesum, singlesumsqr;
     long unsigned int singlen;
     m_foundown=false;
