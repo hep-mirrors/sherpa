@@ -139,8 +139,13 @@ if ! $COMPILECOMMAND >> $OUTPUTFILE 2>&1 ; then
   COMPILE_ERROR=TRUE
   SendMail 3
 else 
-  echo -e "finished" >> $LOGFILE
-  echo -e "\n} finished compilation\n" >> $OUTPUTFILE
+  WARNINGS=`cat $OUTPUTFILE | grep warning | wc -l`
+  if (( $WARNINGS != 0 )) ; then
+    echo -e "finished with $WARNINGS warnings" >> $LOGFILE
+  else
+    echo -e "finished" >> $LOGFILE
+  fi
+  echo -e "\n} finished compilation with $WARNINGS warnings\n" >> $OUTPUTFILE
 fi
 
 MAINPATH=$PWD
