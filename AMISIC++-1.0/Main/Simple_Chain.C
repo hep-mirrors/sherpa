@@ -294,7 +294,9 @@ bool Simple_Chain::ReadInData()
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetFileName(m_inputpath+m_inputfile);
   reader->AddIgnore(comments);
-  if (!reader->ReadFromFile(m_outputpath,"GRID DIRECTORY")) m_outputpath=std::string("./");
+  std::string outputpath;
+  reader->ReadFromFile(outputpath,"GRID DIRECTORY");
+  m_outputpath+=outputpath;
   std::vector<std::vector<std::string> > temp;
   reader->ArrayFromFile(temp,"CREATE GRID",ATOOLS::noinputtag,reader->MTransposed);
   for (unsigned int i=0;i<temp.size();++i) {

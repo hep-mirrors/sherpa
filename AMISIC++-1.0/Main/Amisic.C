@@ -158,6 +158,9 @@ bool Amisic::SelectHardModel(ModelID _m_hardmodel)
     p_hardbase = new MI_None(MI_Base::HardEvent);
     break;
   }
+  p_hardbase->SetInputPath(m_inputpath);
+  p_hardbase->SetOutputPath(m_outputpath);
+  p_hardbase->SetInputFile(m_inputfile);
   return true;
 }
 
@@ -181,6 +184,9 @@ bool Amisic::SelectSoftModel(ModelID _m_softmodel)
     p_softbase = new MI_None(MI_Base::SoftEvent);
     break;
   }
+  p_softbase->SetInputPath(m_inputpath);
+  p_softbase->SetOutputPath(m_outputpath);
+  p_softbase->SetInputFile(m_inputfile);
   return true;
 }
 
