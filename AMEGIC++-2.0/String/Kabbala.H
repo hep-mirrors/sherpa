@@ -48,19 +48,10 @@ namespace AMEGIC {
     
     Kabbala operator-() {
       return Kabbala(std::string("-")+std::string("(")+shem+std::string(")"),-rishbon);
-      /*
-	rishbon *= -1.;
-	shem = std::string("-")+std::string("(")+shem+std::string(")");
-	return *this;
-      */
     }
+
     Kabbala operator+() {
       return Kabbala(shem,rishbon);
-      /*
-	rishbon *= -1.;
-	shem = std::string("-")+std::string("(")+shem+std::string(")");
-	return *this;
-      */
     }
     
     Kabbala& operator*=(const Kabbala& k) {
@@ -77,8 +68,7 @@ namespace AMEGIC {
       std::string save = shem;
       shem  = std::string("(") + save + std::string(")*(");
       
-      MyStrStream sstr;  
-      // std::stringstream sstr;
+      std::strstream sstr;
       sstr<<i;
       std::string istr;
       sstr>>istr;
@@ -88,14 +78,12 @@ namespace AMEGIC {
       return *this;
     }
 
-    /*
-    Kabbala& operator*=(const double d) {
+    Kabbala& operator*=(const double& d) {
       rishbon *= d;
       std::string save = shem;
       shem  = std::string("(") + save + std::string(")*(");
       
       std::strstream sstr;  
-      // std::stringstream sstr;
       sstr<<d;
       std::string dstr;
       sstr>>dstr;
@@ -104,8 +92,7 @@ namespace AMEGIC {
       shem += std::string(")");
       return *this;
     }
-    */    
-
+    
     Kabbala& operator/=(const Kabbala& k) {
       rishbon /= k.Value();
       std::string save = shem;
@@ -166,7 +153,6 @@ inline Kabbala operator* (const Kabbala& k1,const int& i2)
   return i2*k1;
 }
 
-/*
 inline Kabbala operator* (const double d1, const Kabbala& k2) 
 {
   Kabbala k(k2); 
@@ -178,7 +164,6 @@ inline Kabbala operator* (const Kabbala& k1,const double d2)
 {
   return d2*k1;
 }
-*/
 
 inline Kabbala operator/ (const Kabbala& k1, const Kabbala& k2) 
 {
@@ -219,25 +204,10 @@ inline Kabbala sin(const Kabbala& k1)
   return k;
 }
 
-/*
-ostream& operator<<(ostream& s, const Kabbala& k) 
-{
-  return s<<"("<<k.String()<<";"<<k.Value()<<")";
-}
-*/
-
 #else
 typedef Complex Kabbala;
 #endif
 }
 #endif
-
-
-
-
-
-
-
-
 
 
