@@ -133,13 +133,13 @@ bool Off_Shell_gg_gg::Trigger(const ATOOLS::Vec4D *const momenta)
   double x2=momenta[1]*momenta[4]/(momenta[4]*momenta[5]);
   double b1=m_zkey[0][2]/(1.-m_zkey[0][2])*momenta[0].PPerp2()/x1/p_isrhandler->Pole();
   double b2=m_zkey[1][2]/(1.-m_zkey[1][2])*momenta[1].PPerp2()/x2/p_isrhandler->Pole();
-//   std::cout<<x1<<" "<<m_zkey[0][2]<<" "<<b1<<std::endl;
-//   std::cout<<x2<<" "<<m_zkey[1][2]<<" "<<b2<<std::endl;
   temp[2]=x1*(1./m_zkey[0][2]-1.)*momenta[4]+b1*momenta[5]-momenta[0].Perp();
   temp[3]=x2*(1./m_zkey[1][2]-1.)*momenta[5]+b2*momenta[4]-momenta[1].Perp();
+  p_selector->SetNOut(m_nvector-m_nin);
+  p_selector->SetNTot(m_nvector);
   bool result=p_selector->Trigger(temp);
-  delete temp;
-  p_selector->SetNOut(m_nout);
   p_selector->SetNTot(m_nin+m_nout);
+  p_selector->SetNOut(m_nout);
+  delete temp;
   return result;
 }
