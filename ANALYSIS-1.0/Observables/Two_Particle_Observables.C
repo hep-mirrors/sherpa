@@ -1,4 +1,5 @@
 #include "Two_Particle_Observables.H"
+#include "Primitive_Analysis.H"
 
 using namespace ANALYSIS;
 
@@ -82,23 +83,13 @@ Two_Particle_Observable_Base::Two_Particle_Observable_Base(const Flavour & flav1
   m_blobdisc = false;
 }
 
+/*
 void Two_Particle_Observable_Base::Evaluate(double value,double weight, int ncount) 
 {
   p_histo->Insert(value,weight,ncount); 
 }
-
+*/
  
-void Two_Particle_Observable_Base::Evaluate(int nout,const ATOOLS::Vec4D * moms, const ATOOLS::Flavour * flavs,
-					    double weight, int ncount) 
-{
-  for (int i=0;i<nout;i++) { 
-    if (flavs[i]==m_flav1) {
-      for (int j=0;j<nout;j++) { 
-	if (flavs[j]==m_flav2 && i!=j) Evaluate(moms[i],moms[j],weight,ncount); 
-      }
-    }
-  }
-}
 
 
 void Two_Particle_Observable_Base::Evaluate(const Particle_List & plist,double weight, int ncount)
@@ -132,6 +123,9 @@ void Two_Particle_Mass::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double we
 {
   double mass = sqrt((mom1+mom2).Abs2());
   p_histo->Insert(mass,weight,ncount); 
+  if (weight!=0) {
+    p_ana->AddData(m_name,new Blob_Data<double>(mass));
+  }
 } 
 
 Primitive_Observable_Base * Two_Particle_Mass::Copy() const

@@ -9,15 +9,15 @@ namespace ANALYSIS {
     ATOOLS::Flavour      m_flav1,m_flav2;
     void virtual Evaluate(const ATOOLS::Vec4D & mom1, const ATOOLS::Vec4D & mom2, 
 			  double weight, int ncount) = 0; 
-    void virtual Evaluate(double value, double weight, int ncount); 
+    //    void virtual Evaluate(double value, double weight, int ncount); 
   public:
     Two_Particle_Observable_Base(const ATOOLS::Flavour & flav1, const ATOOLS::Flavour & flav2,
 				 int type, double xmin, double xmax, int nbins, 
 				 const std::string & listname,
 				 const std::string & name);
-    void virtual Evaluate(int nout, const ATOOLS::Vec4D * moms,
-			  const ATOOLS::Flavour * flavs,
-			  double weight, int ncount);
+//     void virtual Evaluate(int nout, const ATOOLS::Vec4D * moms,
+// 			  const ATOOLS::Flavour * flavs,
+// 			  double weight, int ncount);
     void virtual Evaluate(const ATOOLS::Particle_List & plist, 
 			  double weight, int ncount);
   };
