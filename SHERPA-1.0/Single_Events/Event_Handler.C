@@ -176,6 +176,7 @@ void Event_Handler::CleanUpEvent()
     m_blobs.clear();
   }
   Flow::ResetCounter();
+  Particle::Reset();
 }
 
 

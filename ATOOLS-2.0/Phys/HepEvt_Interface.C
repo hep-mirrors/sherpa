@@ -661,6 +661,7 @@ bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
     default : break;
     }
   }
+  return true;
 }
 
 bool HepEvt_Interface::ConstructBlobsFromPythia(ATOOLS::Blob_List * const blobs)
@@ -1073,7 +1074,7 @@ bool HepEvt_Interface::IdentifyBlobs(ATOOLS::Blob_List * const blobs)
       }
       else {
 	ATOOLS::kf::code in=incoming->Flav().Kfcode();
-	for (size_t i=0;i<beam->NOutP();++i) {
+	for (size_t i=0;i<(size_t)beam->NOutP();++i) {
 	  ATOOLS::kf::code out=beam->OutParticle(i)->Flav().Kfcode();
 	  if (in==kf::e && out==kf::photon) {
 	    beam->SetType(btp::Bunch);

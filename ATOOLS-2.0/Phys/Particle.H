@@ -12,6 +12,7 @@ namespace ATOOLS {
    
   class Particle {
   private : 
+    static long unsigned int s_currentnumber;
     int       m_number;       
     int       m_status;         
     char      m_info;   
@@ -66,11 +67,10 @@ namespace ATOOLS {
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int);
     void   SetJetNumber(const int);
-
     bool operator==(Particle part);
-
     static void   ResetCounter() { s_totalnumber = 0; }
     static int    Counter()      { return s_totalnumber; }
+    inline void Reset() { s_currentnumber = 0; }
   };
 
   typedef std::vector<Particle *>          Particle_Vector;

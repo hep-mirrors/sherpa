@@ -6,7 +6,8 @@
 #include <iomanip>
 
 namespace ATOOLS {
-  int Particle::s_totalnumber;
+  int Particle::s_totalnumber=0;
+  long unsigned int Particle::s_currentnumber=0;
 }
 
 using namespace ATOOLS;
@@ -222,9 +223,15 @@ void   Particle::SetDecayBlob(Blob * _blob)
   p_endblob = _blob; 
 }
 
+void Particle::SetNumber(const int n)           
+{ 
+  m_number = ++s_currentnumber; 
+  if (n<0) m_number = -n;
+}
+
+
 // Numbers etc.
 int  Particle::Number() const                   { return m_number; }
-void Particle::SetNumber(const int n)           { m_number    = n; }
 int  Particle::JetNumber() const                { return m_jetnumber; }
 void Particle::SetJetNumber(const int n)        { m_jetnumber = n; }
 
