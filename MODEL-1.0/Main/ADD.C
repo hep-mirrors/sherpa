@@ -58,12 +58,12 @@ void ADD::ReadInFile() {
     
     //If Radius is set but not the scale M_s, M_s is calculated
     if (IsZero(ms) && rad > 0.) {
-      ms=pow(gam*pow(4.*M_PI,.5*ed)/pow(rad,1.*ed)/gn,1./(2.+ed));
+      ms=pow(gam*pow(4.*M_PI,.5*ed)/pow(2.*M_PI*rad,1.*ed)/gn,1./(2.+ed));
       (*p_constants)[std::string("M_s")] = ms;
     }
     
     (*p_constants)[std::string("Radius")] = 
-      pow(gam*pow(4.*M_PI,.5*ed)/pow(ms,2.+(double(ed)))/gn/2.,1./(double(ed)));
+      pow(gam*pow(4.*M_PI,.5*ed)/pow(ms,2.+(double(ed)))/gn/2.,1./(double(ed)))/2/M_PI;
     break;
   case 5:                                   //GRW
     //If Radius is set but not the scale M_s, M_s is calculated
