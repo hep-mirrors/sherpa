@@ -2,20 +2,19 @@
 %
 % W-
 %
-Process : 93 93 -> 11 -12
-End process
-Process : 93 93 -> 11 -12 93   
-Order electroweak : 2
-Order strong : 99
-End process
-%
-%
-%
-%Process : 11 -11 -> 93 93
-%Excluded particles : 1 2 3
-%Order electroweak : 2
-%Order strong      : 0
+%Process : 93 93 -> 11 -12
 %End process
+%Process : 93 93 -> 11 -12 93   
+%Order electroweak : 2
+%Order strong : 99
+%End process
+%
+%
+%
+Process : 2 -2 -> 21 21 21
+Order electroweak : 0
+Order strong : 3
+End process
 %
 %11 -11 -> 93 93 93 93 93
 %2212 -2212 -> 93 93 -> 11 -11 93 93

@@ -94,7 +94,7 @@ bool Initialization_Handler::InitializeTheModel()
 {
   Data_Read     * dataread     = new Data_Read(m_path+m_modeldat);
   Model_Handler * modelhandler = new Model_Handler();
-  p_model                      = modelhandler->GetModel(dataread,m_path);
+  p_model                      = modelhandler->GetModel(dataread,m_path,m_modeldat);
 
   if (!p_model->RunSpectrumGenerator()) {
     msg.Error()<<"Error in Model_Initialization::Model_Initialization."<<endl

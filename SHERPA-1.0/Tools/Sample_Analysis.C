@@ -69,7 +69,7 @@ Sample_Analysis::Sample_Analysis(IO_HepEvt *& _convert,bool _hepevt) :
     }
   } 
 
-  status     = rpa.test.Analysis();
+  status     = rpa.gen.Analysis();
   if (!(status)) { ana = 0; return; }
   ana        = new Primitive_Analysis();
   ana->AddObservable(new Shower_Observables(11,1.e-6,1.,180,0));
@@ -146,19 +146,21 @@ void Sample_Analysis::Finish() {
 
     //    ana->FinishAnalysis("testout_sherpa_GE130c",0);
     MyStrStream s1;
-    int   alf = int(1000.*rpa.consts.FixedAlphaS()+0.5);
+    int   alf = int(1000.*rpa.gen.ScalarFunction(string("alpha_S"))+0.5);
     string salf;
     s1<<alf;
     s1>>salf;
 
     MyStrStream s2;
-    int   yf = int(100.*rpa.test.FactorYcut()+0.5);
+    // FK ****** int   yf = int(100.*rpa.test.FactorYcut()+0.5);
+    int yf = 1;
     string syf;
     s2<<yf;
     s2>>syf;
 
     MyStrStream s3;
-    int   nllf = int(100.*rpa.test.FactorNLLQ()+0.5);
+    // FK ****** int   nllf = int(100.*rpa.test.FactorNLLQ()+0.5);
+    int nllf = 1;
     string snllf;
     s3<<nllf;
     s3>>snllf;

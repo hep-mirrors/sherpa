@@ -71,10 +71,7 @@ bool Matrix_Element_Handler::CalculateTotalXSecs()
   switch (m_mode) {
   case 1: 
     m_readin = p_dataread->GetValue<string>("RESULT DIRECTORY",string(""));
-    cout<<" fac "<<rpa.test.FactorYcut()<<endl;
-    cout<<" ycut "<<(rpa.integ.Ycut()*sqr(rpa.gen.Ecms()))<<endl;
-    cout<<" seting scale in Amegic : "<<rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms())<<endl;
-    p_amegic->Processes()->SetScale(rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
+    // FK ****** p_amegic->Processes()->SetScale(rpa.test.FactorYcut()*rpa.integ.Ycut()*sqr(rpa.gen.Ecms()));
     if (p_amegic->CalculateTotalXSec(m_readin)) {
       RescaleJetrates();
       return 1;

@@ -33,7 +33,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,
   m1->maxpt2     = scale;
   m1->costh      = -1.;
   m1->thcrit     = th1;
-  m1->tout       = rpa.pshower.InitialQ02();
+  m1->tout       = sqr((m1->part->Flav()).PSMass());
   m1->x          = x1;
   m1->E2         = sqr(x1*E);
   m1->stat       = 1;
@@ -47,7 +47,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,
   m2->maxpt2     = scale;
   m2->costh      = -1.; 
   m2->thcrit     = th2;
-  m2->tout       = rpa.pshower.InitialQ02();
+  m2->tout       = sqr((m2->part->Flav()).PSMass());
   m2->x          = x2;
   m2->E2         = sqr(x2*E);
   m2->stat       = 1;

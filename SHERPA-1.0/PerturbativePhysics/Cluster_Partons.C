@@ -149,8 +149,8 @@ bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
 void Cluster_Partons::CalculateWeight(double hard,double jet) 
 {
   msg.Tracking()<<"In Cluster_Partons::CalculateWeight("<<hard<<","<<jet<<")"<<std::endl;
-  double facycut=rpa.test.FactorYcut();
-  double facnlly=rpa.test.FactorNLLQ();
+  double facycut = 1.; // FK **** rpa.test.FactorYcut();
+  double facnlly = 1.; // FK **** rpa.test.FactorNLLQ();
 
   double qmin = facnlly*sqrt(jet);
   double qmax = facnlly*sqrt(hard);

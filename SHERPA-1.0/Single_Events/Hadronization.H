@@ -16,6 +16,29 @@ namespace SHERPA {
     bool Treat(APHYTOOLS::Blob_List *, double &);
     void CleanUp();
   };
+  /*!
+    \class Hadronization
+    \brief
+  */
+  /*!
+    \var Beam_Remnant_Handler * Hadronization::p_beamremnanthandler
+  */
+  /*!
+    \var Fragmentation_Handler * Hadronization::p_fragmentationhandler
+  */
+  /*!
+    \fn Hadronization::Hadronization(Beam_Remnant_Handler *,Fragmentation_Handler *)
+  */
+  /*!
+    \fn Hadronization::~Hadronization()
+  */
+  /*!
+    \fn bool Hadronization::Treat(APHYTOOLS::Blob_List *, double &)
+  */
+  /*!
+    \fn void Hadronization::CleanUp()
+    Nothing has to be done here.
+  */
 }
 #endif
 

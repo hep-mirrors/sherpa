@@ -54,7 +54,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	msg.Debugging()<<"Found blob to deal with "<<(*blit)<<" -> "<<_bloblist->size()<<endl<<(*blit)<<endl; 
 	myblob = (*blit);
 	int stat = p_interface->DefineInitialConditions(myblob);
-	weight*= p_interface->GetWeight();
+	weight  *= p_interface->GetWeight();
 	if (stat) {
 	  //	  cout<<" jetmax = "<<p_showerhandler->MaxJetNumber()<<"  nout="<<p_mehandler->Nout()<<endl;
 	  shower = p_showerhandler->PerformShowers(p_showerhandler->MaxJetNumber()!=p_mehandler->Nout());
@@ -121,7 +121,6 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
       }
     }
   }
-  //  cout<<"Return "<<hit<<endl;
   return hit;
 }
 

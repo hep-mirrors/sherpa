@@ -7,6 +7,7 @@
 #include "Running_AlphaS.H"
 
 using namespace SHERPA;
+using namespace EXTRAXS;
 using namespace AMEGIC;
 using namespace APACIC;
 using namespace AORGTOOLS;
@@ -35,12 +36,8 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   p_fl      = new Flavour[4];
   p_moms    = new Vec4D[4];
 
-  m_ycut    = rpa.integ.Ycut();
+  m_ycut    = rpa.gen.Ycut();
 
-  // *AS* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-  m_type    = 4; 
-  // *AS* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-  /*
   if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
     msg.Out()<<" Jet_Finder in Amegic_Apacic_Interface set up  to deal with lepton-lepton collisions "<<endl;
     m_type = 1;
@@ -53,7 +50,6 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
     cout<<"ERROR: ME_PS_Interface - DIS is not yet implemented in the Jetfinder "<<endl;
     m_type = 4;
   }
-  */
 
   p_jf       = new APHYTOOLS::Jet_Finder(m_ycut,m_type);
   p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber);
@@ -92,11 +88,12 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
   ClusterConfiguration(blob);
 
   p_xs = 0;
+  /*
   if (!(XS_Selector::FindInGroup(p_two2two,p_xs,2,2,p_fl))) {
     p_xs = XS_Selector::GetXS(2,2,p_fl);
     if (p_xs) p_two2two->Add(p_xs);
   }
-
+  */
   if (!p_xs) {
     msg.Tracking()<<" no xs found "<<endl;
     p_cluster->SetColours(p_moms,p_fl);

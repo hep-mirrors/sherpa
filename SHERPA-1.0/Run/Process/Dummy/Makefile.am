@@ -10,7 +10,8 @@ INCLUDES = -I../../../../AMEGIC++-2.0/Amplitude \
 	   -I../../../../PHASIC++-1.0/ISR \
 	   -I../../../../ATOOLS-2.0/Phys \
 	   -I../../../../ATOOLS-2.0/Math \
-	   -I../../../../ATOOLS-2.0/Org 
+	   -I../../../../ATOOLS-2.0/Org \
+	   -I../../../../MODEL-1.0/Main 
 EXTRA_DIST = Dummy.H
 
 
