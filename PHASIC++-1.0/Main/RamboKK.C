@@ -55,7 +55,7 @@ RamboKK::RamboKK(int _nin,int _nout,Flavour * fl)// : nin(_nin), nout(_nout)
       for(int j=nin;j<nin+nout;j++)
 	if(j!=i) mm -= sqrt(ms[j]);
       maxm2=sqr(mm);
-      maxn=sqrt(maxm2*r2/4./sqr(M_PI));
+      maxn=sqrt(maxm2*r2);
       mpss=2.*pow(sqrt(M_PI)*maxn,double(ed))/ed/gam;
       break;
     }
@@ -115,7 +115,7 @@ void RamboKK::GeneratePoint(Vec4D * p,Cut_Data * cuts)
     for(int j=nin;j<nin+nout;j++)
       if(j!=kkp) mm -= sqrt(ms[j]);
     maxm2=sqr(mm);
-    maxn=sqrt(maxm2*r2/4./sqr(M_PI));
+    maxn=sqrt(maxm2*r2);
     mpss=2.*pow(sqrt(M_PI)*maxn,double(ed))/ed/gam;
   }
 
