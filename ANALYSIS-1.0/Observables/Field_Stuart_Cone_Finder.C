@@ -4,6 +4,7 @@
 #include "Primitive_Analysis.H"
 #include "MyStrStream.H"
 #include "Exception.H"
+#include <algorithm>
 
 using namespace ANALYSIS;
 

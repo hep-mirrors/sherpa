@@ -619,8 +619,11 @@ void Amisic_Histogram<ArgumentType>::SetFinished(const bool finished)
   m_finished=finished; 
 }
 
-template class AMISIC::Amisic_Histogram<double>;
-template std::ostream &
-AMISIC::operator<<<double>(std::ostream &str,
-			   const Amisic_Histogram<double> &histogram);
+namespace AMISIC {
 
+  template class AMISIC::Amisic_Histogram<double>;
+  template std::ostream &
+  operator<<<double>(std::ostream &str,
+		     const Amisic_Histogram<double> &histogram);
+  
+}
