@@ -45,6 +45,8 @@ namespace ATOOLS {
 
     static void Terminate();
 
+    static void RemoveTesterFunction(bool (*function)(void));
+    static void RemoveTerminatorFunction(void (*function)(void));
     static void RemoveTesterObject(Tester_Object *const object);
     static void RemoveTerminatorObject(Terminator_Object *const object);
     
@@ -53,17 +55,19 @@ namespace ATOOLS {
 				   const std::string &comment="");
 
     // inline functions
-    static void AddTesterFunction(bool (*function)(void))
+    inline static void AddTesterFunction(bool (*function)(void))
     { s_testerfunctions.push_back(function); }
-    static void AddTerminatorFunction(void (*function)(void))
+    inline static void AddTerminatorFunction(void (*function)(void))
     { s_terminatorfunctions.push_back(function); }
-    static void AddTesterObject(Tester_Object *const object)
+    inline static void AddTesterObject(Tester_Object *const object)
     { s_testerobjects.push_back(object); }
-    static void AddTerminatorObject(Terminator_Object *const object)
+    inline static void AddTerminatorObject(Terminator_Object *const object)
     { s_terminatorobjects.push_back(object); }
 
-    inline static void SetActive(const bool active)    { s_active=active;     }
-    inline static void SetStackTrace(const bool trace) { s_stacktrace=trace;  }
+    inline static void SetActive(const bool active)    
+    { s_active=active; }
+    inline static void SetStackTrace(const bool trace) 
+    { s_stacktrace=trace;  }
 
     inline static bool Active()     { return s_active;      }
     inline static bool StackTrace() { return s_stacktrace;  }
