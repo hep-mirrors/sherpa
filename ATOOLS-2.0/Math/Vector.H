@@ -104,6 +104,8 @@ namespace ATOOLS {
     inline const double PPerp() const; 
     inline const double EPerp2() const;
     inline const double EPerp() const; 
+    inline const double PPlus() const; 
+    inline const double PMinus() const; 
 
     Vec4D& operator+= (const Vec4D& v);
     Vec4D& operator-= (const Vec4D& v);
@@ -376,6 +378,16 @@ namespace ATOOLS {
     return sqrt(EPerp2()); 
   }
 
+  inline const double Vec4D::PPlus() const 
+  { 
+    return m_x[0]+m_x[3]; 
+  }
+  
+  inline const double Vec4D::PMinus() const 
+  { 
+    return m_x[0]-m_x[3]; 
+  }
+  
   // output streams:
   std::ostream& operator<<(std::ostream& s, const Vec4D& vec);
   std::ostream& operator<<(std::ostream& s, const Vec3D& vec);
