@@ -157,8 +157,7 @@ void Single_XS::SetISR(PDF::ISR_Handler *const isrhandler)
 
 XS_Base *const Single_XS::operator[](const size_t i) const 
 {
-  const XS_Base *value=this;
-  return (XS_Base*)value;
+  return (XS_Base*)this;
 }
 
 size_t Single_XS::Size() const

@@ -1109,10 +1109,7 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
   
   m_pol.Set_Gauge_Vectors(m_nin+m_nout,mom,gauge);
 #endif
-  ATOOLS::Vec4D *cpmom = new ATOOLS::Vec4D[m_nvector];
-  for (size_t i=0;i<m_nvector;++i) cpmom[i]=mom[i];
-  p_BS->CalcEtaMu(cpmom);
-  delete [] cpmom;
+  p_BS->CalcEtaMu((ATOOLS::Vec4D*)mom);
 
   double helvalue;
   if (p_shand->Is_String()) {
