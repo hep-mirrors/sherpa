@@ -49,6 +49,7 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
     if (p_xs) p_twototwo->Add(p_xs);
   }
   p_hard=blob;
+  p_shower->CleanUp();
   return InitColours(blob);
 }
 
