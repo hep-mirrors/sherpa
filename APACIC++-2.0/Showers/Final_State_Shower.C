@@ -390,7 +390,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
   // fetch last ME PS blob
   Blob *bl_meps=NULL;
   for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
-    if((*blit)->Type().find(string("ME PS Interface (Sherpa, FS)"))!=-1) {
+    if((*blit)->Type()==btp::ME_PS_Interface_FS) {
       bl_meps=*blit;
     }
   }
@@ -433,7 +433,8 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 
       kn->part->SetNumber(number);
       jet->SetId(bl->size());
-      jet->SetType(std::string("FS Shower (APACIC++2.0)"));
+      jet->SetType(btp::FS_Shower);
+      jet->SetTypeSpec("APACIC++2.0");
       jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
       bl->push_back(jet);
       return;
@@ -455,7 +456,8 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 	p->SetNumber(number);
 	kn->part->SetNumber(number);
 	jet->SetId(bl->size());
-	jet->SetType(std::string("FS Shower (APACIC++2.0)"));
+	jet->SetType(btp::FS_Shower);
+	jet->SetTypeSpec("APACIC++2.0");
 	jet->SetPosition(p->XProd() + Vec4D(p->LifeTime(),p->Distance()));
 	bl->push_back(jet);
       }

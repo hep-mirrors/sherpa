@@ -118,10 +118,10 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
   m_bl_meps_is=0;
   m_bl_meps_fs=0;
   for (Blob_Iterator blit=bl->begin();blit!=bl->end();++blit) {
-    if ((*blit)->Type().find(string("ME PS Interface (Sherpa, IS)"))!=string::npos) {
+    if ((*blit)->Type()==btp::ME_PS_Interface_IS) {
       m_bl_meps_is=(*blit);
     }
-    if ((*blit)->Type().find(string("ME PS Interface (Sherpa, FS)"))!=string::npos) {
+    if ((*blit)->Type()==btp::ME_PS_Interface_FS) {
       m_bl_meps_fs=(*blit);
     }
   }
@@ -173,10 +173,14 @@ void Initial_State_Shower::SingleExtract(Knot * kn,int beam,Blob * jet,
     jet = new Blob();
     jet->SetStatus(1);
     jet->SetId(bl->size());
-    if (is_is)
-      jet->SetType(std::string("IS Shower (APACIC++2.0)"));
-    else 
-      jet->SetType(std::string("FS Shower *(APACIC++2.0)"));
+    if (is_is) {
+      jet->SetType(btp::IS_Shower);
+      jet->SetTypeSpec("APACIC++2.0");
+    }
+    else {
+      jet->SetType(btp::FS_Shower);
+      jet->SetTypeSpec("APACIC++-2.0");
+    }
     bl->insert(bl->begin(),jet);
 
     if (!kn->prev) jet->SetBeam(beam);
