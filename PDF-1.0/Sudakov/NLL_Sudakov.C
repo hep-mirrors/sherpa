@@ -108,7 +108,7 @@ void NLL_Sudakov::PrepareMassiveMap(MODEL::Running_AlphaS * runas, int mode)
   // ----------------------------------------
   // add 5 ( massive) quark sudakovs
   NLL_Single_Sudakov * ssud=0;
-  for (int k=1;k<=5;++k) {
+  for (int k=1;k<=6;++k) {
     Flavour fl = Flavour(kf::code(k));
     bp =    new GammaQ_Lambda_Massive(bpmode,m_lambda,runas,fl);
     ssud = new NLL_Single_Sudakov(bp,smode);
