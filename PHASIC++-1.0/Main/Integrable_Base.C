@@ -36,10 +36,16 @@ Integrable_Base *const Integrable_Base::Selected()
 void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta) 
 { 
   if (!p_momenta) {
-    std::cout<<" ERROR in Integrable_Base::SetMomenta "<<std::endl;
+    ATOOLS::msg.Error()<<"Integrable_Base::SetMomenta("<<momenta<<"): "
+		       <<"p_momenta = NULL. Abort."<<std::endl;
     abort();
   }
   for (size_t i=0;i<NVector();++i) p_momenta[i]=momenta[i];
+}
+
+void Integrable_Base::SetScale(const double scale) 
+{ 
+  std::cout<<"Integrable_Base::SetScale("<<scale<<"): Virtual function called."<<std::endl;
 }
 
 void Integrable_Base::SetMax(const double max, int depth) 
@@ -85,6 +91,4 @@ void Integrable_Base::SetPSHandler(Phase_Space_Handler *const pshandler)
 {
   p_activepshandler=pshandler;
 } 
-
-
 

@@ -248,7 +248,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     m_result_1 = 1.;
     if (m_nin>1) {
       trigger = 1;
-      Q2 = process->Scale(p_lab);
+      Q2 = process->CalculateScale(p_lab);
       if (p_isrhandler->KMROn()>0) {
 	m_mu2key[0][0] = process->Scale(stp::kp21);
 	m_mu2key[1][0] = process->Scale(stp::kp22);

@@ -39,8 +39,8 @@ Process_Base::Process_Base():
   m_totalxs=m_totalerr=m_totalsum=m_totalsumsqr=m_max=0.;
   m_last=m_lastdxs=0.;
   m_lastlumi=1.;
-  m_asscale=sqr(rpa.gen.Ecms());
-  m_facscale=sqr(rpa.gen.Ecms());
+  m_scale[stp::as]=sqr(rpa.gen.Ecms());
+  m_scale[stp::fac]=sqr(rpa.gen.Ecms());
   m_scalefactor=1.;
   m_threshold=0.;
 }
@@ -59,8 +59,10 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   m_atoms(0), m_analyse(0), m_tables(0), 
   m_rfactor(1.), m_enhancefac(1.), m_maxfac(1.),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0), 
-  m_asscale(_scale), m_facscale(_scale), p_psgen(0)
+  p_psgen(0)
 {
+  m_scale[stp::as]=m_scale[stp::fac]=_scale;
+
   p_flin    = new Flavour[m_nin];
   p_flout   = new Flavour[m_nout];  
   p_plin    = new Pol_Info[m_nin];
@@ -86,8 +88,8 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
     if (p_flout[i].IntCharge()!=0) m_neweak++;
   }
 
-  if (m_asscale<0.) {
-    m_asscale=m_facscale=sqr(rpa.gen.Ecms());
+  if (m_scale[stp::as]<0.) {
+    m_scale[stp::as]=m_scale[stp::fac]=sqr(rpa.gen.Ecms());
   }
 }
 
@@ -489,11 +491,10 @@ void Process_Base::SetMax(const double max, int depth)
   if (max!=0.) m_max     = max;     
 } 
 void Process_Base::SetMaxJetNumber(int max)             { m_maxjetnumber  = max;    } 
-void Process_Base::SetScale(double _scale)              { m_asscale=m_facscale=_scale;  } 
 void Process_Base::SetScales(double q2_fac, double q2_ren)
 { 
-  m_facscale = q2_fac;  
-  m_asscale  = q2_ren;
+  m_scale[stp::fac] = q2_fac;  
+  m_scale[stp::as]  = q2_ren;
 } 
 void Process_Base::SetISRThreshold(double threshold)    { m_threshold  = threshold;}
 
@@ -524,7 +525,7 @@ void Process_Base::SetupEnhance() {
   }
 }
 
-double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
+double Process_Base::CalculateScale(const ATOOLS::Vec4D * _p) {
   if (m_nin==1) return _p[0].Abs2();
   if (m_nin!=2) {
     ATOOLS::msg.Error()<<"ERROR in Process_Base::Scale. "
@@ -539,7 +540,7 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
   //new
   switch (m_scalescheme) {
   case 1 :   
-    pt2 = m_asscale;
+    pt2 = m_scale[stp::as];
     break;
   case 2  :
     if (m_nin+m_nout==4) {
@@ -566,7 +567,7 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     break;
   case 63 :
     if ((int)m_nout!=m_maxjetnumber) {
-      pt2 = m_asscale;
+      pt2 = m_scale[stp::as];
     }
     else {
       pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
@@ -583,8 +584,8 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
     }
     break;
   case 65:
-  //    pt2 = m_asscale;
-    pt2 = m_facscale;
+  //    pt2 = m_scale[stp::as];
+    pt2 = m_scale[stp::fac];
 
     // if highest number of jets
     if ((int)m_nout==m_maxjetnumber) {
@@ -618,9 +619,9 @@ double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
   default :
     pt2 = s;
   }
-  m_facscale=m_scalefactor * pt2;
+  m_scale[stp::fac]=m_scalefactor * pt2;
   FactorisationScale();
-  return m_facscale;
+  return m_scale[stp::fac];
 }
 
 double Process_Base::KFactor(double _scale) {
@@ -633,9 +634,9 @@ double Process_Base::KFactor(double _scale) {
     else 
       return m_rfactor;
   case 65:
-    m_facscale=_scale;
+    m_scale[stp::fac]=_scale;
     if (m_nstrong>2) {
-      return m_rfactor*pow(as->AlphaS(m_asscale)/
+      return m_rfactor*pow(as->AlphaS(m_scale[stp::as])/
 			   as->AlphaS(ATOOLS::sqr(ATOOLS::rpa.gen.Ecms())),m_nstrong-2);
     } 
     else 
@@ -658,14 +659,18 @@ void Process_Base::SetEnhance(double enhancefac, double maxfac)
   
   ------------------------------------------------------------------------------*/
 
-double                  Process_Base::Scale()                        { return m_asscale; }
+void Process_Base::SetScale(const double scale)         
+{ 
+  m_scale[stp::as]=m_scale[stp::fac]=scale; 
+}
+
 string                  Process_Base::ResDir()                       { return m_resdir; }
 string                  Process_Base::LibName()                      { return string("error"); }
 int                     Process_Base::NumberOfDiagrams()             { return 0; }
 Point                 * Process_Base::Diagram(int i)                 { return 0; }
 bool                    Process_Base::IsFreeOfFourVertex(Point * _p) { return 1; }
 Phase_Space_Generator * Process_Base::PSGenerator()                  { return p_psgen; }
-double                  Process_Base::FactorisationScale()           { return m_facscale; }
+double                  Process_Base::FactorisationScale()           { return m_scale[stp::fac]; }
 
 int                     Process_Base::ISRNumber()                                        { return 0; }
 int                     Process_Base::BeamNumber()                                       { return 0; }

@@ -24,9 +24,6 @@ namespace EXTRAXS {
     double operator()(double s,double t,double u);
     bool   SetColours(double s,double t,double u);
 
-    double Scale(const ATOOLS::Vec4D *momenta);
-    double KFactor(double scale);
-
   };// end of class Off_Shell_qqb_llb
  
   class Off_Shell_q1q2b_lnulb: public Single_XS {  
@@ -43,9 +40,6 @@ namespace EXTRAXS {
     double operator()(double s,double t,double u);
     bool   SetColours(double s,double t,double u);
 
-    double Scale(const ATOOLS::Vec4D *momenta);
-    double KFactor(double scale);
-
   };// end of class Off_Shell_q1q2b_llb
  
   class Off_Shell_q1q2b_q3q4b: public Single_XS {  
@@ -61,9 +55,6 @@ namespace EXTRAXS {
     // member functions
     double operator()(double s,double t,double u);
     bool   SetColours(double s,double t,double u);
-
-    double Scale(const ATOOLS::Vec4D *momenta);
-    double KFactor(double scale);
 
   };// end of class Off_Shell_q1q2b_llb
 

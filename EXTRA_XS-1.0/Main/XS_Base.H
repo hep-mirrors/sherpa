@@ -50,7 +50,7 @@ namespace EXTRAXS {
     double Differential(const ATOOLS::Vec4D *momenta);
     void   SetMax();
 
-    double Scale(const ATOOLS::Vec4D *momenta);
+    double CalculateScale(const ATOOLS::Vec4D *momenta);
     double KFactor(const double scale);
 
     void SwapInOrder();

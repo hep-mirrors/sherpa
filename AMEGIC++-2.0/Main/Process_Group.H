@@ -42,7 +42,7 @@ namespace AMEGIC {
     size_t         Size()                          { return m_procs.size(); }
     Process_Base * operator[] (int idx)            { return m_procs[idx]; } 
     void           SetResDir(std::string);
-    void           SetScale(double);
+    void           SetScale(const double);
     void           SetScales(double q2_fac, double q2_ren);
     void           SetISRThreshold(double);
     void           SetTables(bool);

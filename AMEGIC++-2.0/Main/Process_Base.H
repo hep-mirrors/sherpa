@@ -38,7 +38,6 @@ namespace AMEGIC {
     bool    m_atoms, m_analyse, m_tables;
     double  m_rfactor, m_enhancefac, m_maxfac;
     int     m_orderQCD, m_orderEW,m_nstrong,m_neweak;
-    double  m_asscale,m_facscale;
 
     Phase_Space_Generator          * p_psgen;
     
@@ -111,7 +110,7 @@ namespace AMEGIC {
 
     virtual void             Empty()                                               =0;
     virtual void             SetTotal(int flag, int depth=0)                       =0;
-    virtual void             SetScale(double);
+    virtual void             SetScale(const double);
     virtual void             SetScales(double q2_fac, double q2_ren);
     virtual void             SetISRThreshold(double)                               =0;
     virtual void             SetMax(const double max, int depth=0);
@@ -133,8 +132,7 @@ namespace AMEGIC {
     virtual double DSigma(const ATOOLS::Vec4D *,bool)                              =0;
     virtual double DSigma2()                                                       =0;
     virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
-    virtual double Scale(const ATOOLS::Vec4D *);
-    virtual double Scale();
+    virtual double CalculateScale(const ATOOLS::Vec4D *);
     virtual double FactorisationScale();
     virtual bool   OneEvent(double = -1.)                                          =0;
     virtual bool   SameEvent()                                                     =0;

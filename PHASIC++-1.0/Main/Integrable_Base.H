@@ -23,6 +23,7 @@ namespace PHASIC {
       fac     =  2,
       kp21    =  3,
       kp22    =  4,
+      as      = 10,
       unknown = 99
     };
 
@@ -87,12 +88,13 @@ namespace PHASIC {
     virtual double Differential2() = 0;
     virtual void   AddPoint(const double xs) = 0;
 
-    virtual double Scale(const ATOOLS::Vec4D *momenta) = 0;
+    virtual double CalculateScale(const ATOOLS::Vec4D *momenta) = 0;
     virtual double KFactor(const double scale) = 0;
 
     virtual void DeSelect() = 0;
     virtual void SelectOne() = 0;
 
+    virtual void SetScale(const double scale);
     virtual void SetMax(const double max, int depth=0);
     virtual void SetMax();  
     virtual bool OneEvent();
@@ -119,8 +121,7 @@ namespace PHASIC {
     inline void SetPoints(const long int points)   { m_n=points;           }
     inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
 
-    inline void SetScale(const double scale,const stp::id type=stp::fac) 
-    { m_scale[type]=scale; }
+    inline void SetScale(const double scale,const stp::id type) { m_scale[type]=scale; }
 
     inline void SetSelected(Integrable_Base *const selected) { p_selected=selected; }
     
@@ -145,12 +146,13 @@ namespace PHASIC {
     inline double Max() const        { return m_max;      }
     inline double Overflow() const   { return m_overflow; }
 
-    inline double Scale(const stp::id type=stp::fac) { return m_scale[type]; }
     inline double ISRThreshold() const      { return m_threshold;   }
 
     inline int    KFactorScheme() const { return m_kfactorscheme; }
     inline int    ScaleScheme() const   { return m_scalescheme;   }
     inline double ScaleFactor() const   { return m_scalefactor;   }
+
+    inline const double Scale(const stp::id type=stp::as) { return m_scale[type]; }
 
     inline int InSwaped() const { return m_swaped; }
 
