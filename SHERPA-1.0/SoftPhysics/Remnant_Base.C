@@ -87,9 +87,9 @@ bool Remnant_Base::AdjustKinematics()
   for (size_t i=0;i<2;++i) {
     // the brackets are necessary for 'nan'-values
     if (!(p_last[i]->Momentum()[0]>0.)) {
-      ATOOLS::msg.Tracking()<<"Remnant_Base::AdjustKinematics(): "
-			    <<"Parton ("<<p_last[i]->Number()<<") has non-positive energy "
-			    <<p_last[i]->Momentum()<<std::endl;
+      ATOOLS::msg.Error()<<"Remnant_Base::AdjustKinematics(): "
+			 <<"Parton ("<<p_last[i]->Number()<<") has non-positive energy "
+			 <<p_last[i]->Momentum()<<std::endl;
       UnDo();
       p_partner->UnDo();
       return false;
