@@ -65,6 +65,8 @@ namespace ATOOLS {
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int);
     void   SetJetNumber(const int);
+
+    bool operator==(Particle part);
   };
 
   // Format of a particle to transport via MPI:

@@ -6,6 +6,18 @@
 
 using namespace ATOOLS;
 
+bool ATOOLS::Particle::operator==(Particle part)
+{
+  if ((part.m_status==m_status)&&         
+      (part.m_info==m_info)&&
+      (part.m_fl==m_fl)&&         
+      (part.m_momentum==m_momentum)&&
+      (part.m_dec_time==m_dec_time)) {
+    return true;
+  }
+  return false;
+}
+
 std::ostream& ATOOLS::operator<<(std::ostream& str,Particle* part) {
   str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
   switch (part->Status()) {

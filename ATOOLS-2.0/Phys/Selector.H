@@ -25,6 +25,9 @@ namespace ATOOLS {
     Selector_Data(std::string path);
     ~Selector_Data()     {};
     int  Size()          { return data.size(); }
+    Mom_Data RemoveData(int &);
+    void SetData(int &,std::vector<Flavour> &,int &,double &,double &);
+    void AddData(int &,std::vector<Flavour> &,int &,double &,double &);
     void Data(int,int &,std::vector<Flavour> &,int &,double &,double &);
     void ControlOutput();
   };

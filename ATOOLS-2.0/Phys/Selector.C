@@ -45,7 +45,7 @@ bool Selector_Data::ReadInData(std::string filename) {
   int         crit1,crit2;
   Flavour     flav;
   for(;from;) {
-    dat.flavs.erase(dat.flavs.begin(),dat.flavs.end());
+    dat.flavs.clear();
     keyword=string("");
     from>>keyword;
     if (keyword == string("JetFinder")) {
@@ -182,4 +182,35 @@ void Selector_Data::Data(int i,int & type,std::vector<Flavour> & flavs,
   min   = data[i].min;
   max   = data[i].max;
   help  = data[i].help;
+}
+
+void Selector_Data::SetData(int & _type,std::vector<Flavour> & _flavs,
+			    int & _help,double & _min,double & _max) 
+{
+  RemoveData(_type);
+  AddData(_type,_flavs,_help,_min,_max);
+}
+
+void Selector_Data::AddData(int & _type,std::vector<Flavour> & _flavs,
+			    int & _help,double & _min,double & _max) 
+{
+  Mom_Data dat;
+  dat.type  = _type;
+  dat.flavs = _flavs;
+  dat.help  = _help;
+  dat.min   = _min;
+  dat.max   = _max;
+  data.push_back(dat);
+}
+
+Mom_Data Selector_Data::RemoveData(int & _type) 
+{
+  Mom_Data last;
+  for (std::vector<Mom_Data>::iterator it=data.begin();it!=data.end();++it) {
+    if (it->type==_type) {
+      last=*it; 
+      data.erase(it--);
+    }
+  }
+  return last;
 }

@@ -17,6 +17,8 @@ namespace ATOOLS {
     Message();
     void Init(int _level);
 
+    int  Level() { return level; }
+
     void SetLevel(int _level) { level = _level; }
     void SetFile(char *);
     void SetStandard();
