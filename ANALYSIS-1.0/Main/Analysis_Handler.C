@@ -167,7 +167,6 @@ void Analysis_Handler::PrepareTerminate()
 
 void Analysis_Handler::Finish(const std::string &path)
 {
-  SetOutputPath(OutputPath());
   if (!ATOOLS::MakeDir(OutputPath(),448)) {
     ATOOLS::msg.Error()<<"Analysis_Handler::Finish(..): "
 		       <<"Cannot create directory '"<<OutputPath()
