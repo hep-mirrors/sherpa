@@ -1,5 +1,7 @@
 #include "QCD_Remnant_Info.H"
 
+#include "Color_Tester.H"
+#include "Message.H"
 #include <iomanip>
 
 #ifdef PROFILE__all
@@ -13,78 +15,186 @@
 
 using namespace SHERPA;
 
-std::set<QCD_Remnant_Info*> QCD_Remnant_Info::m_tested;
-
-std::ostream &SHERPA::operator<<(std::ostream &ostr,QCD_Remnant_Info &info)
+std::ostream &SHERPA::operator<<(std::ostream &str,const qri::type type)
 {
-  ostr<<"m_this = ("<<info()<<") {\n";
-  for (short unsigned int i=0;i<2;++i) ostr<<"   m_this["<<i<<"]      = "<<*info(i)<<"\n";
-  for (short unsigned int i=0;i<2;++i) {
-    if (info[i]!=NULL) ostr<<"   m_connected["<<i<<"] = "<<*(*info[i])(1-i)<<" <-> ("
-			   <<std::setw(3)<<(info-i)<<" -> "<<std::setw(3)<<(info+i)<<")\n";
+  switch (type) {
+  case qri::real: return str<<"real";
+  case qri::anti: return str<<"anti";
+  default: break;
   }
-  if (++info!=NULL) ostr<<"   m_finalstate   = "<<*++info<<"\n";
-  return ostr<<"   m_anti         = "<<!info<<"\n}"<<std::flush;
+  return str;
 }
 
-QCD_Remnant_Info::QCD_Remnant_Info(ATOOLS::Particle *const particle): 
-  p_finalstate(NULL),
-  m_anti(particle->Flav().IsAnti()^particle->Flav().IsDiQuark())
-{ 
-  for (short unsigned int i=0;i<2;++i) { 
-    p_connected[i]=NULL; 
-    m_oldcolor[i]=0; 
-  } 
-  p_this[m_anti]=particle;
-  SelectCompanion();
+std::ostream &SHERPA::operator<<(std::ostream &str,
+				 const QCD_Remnant_Info &info)
+{
+  str<<"QCD_Remnant_Info("<<&info<<"): ";
+  for (short unsigned int i=0;i<2;++i) {
+    qri::type type((qri::type)i);
+    str<<"\n\n   p_begin["<<type<<"]    = "<<*info.p_begin[type]
+       <<"\n   p_end["<<type<<"]      = "<<*info.p_end[type];
+    size_t i=0;
+    for (QCD_Remnant_Info::Particle_Flow_Map::const_iterator 
+	   fit=info.m_flows[type].begin();
+	 fit!=info.m_flows[type].end();++fit) {
+      str<<"\n   m_flows["<<type<<"]["<<i++<<"] = "<<*fit->first<<" -> ("
+	 <<std::setw(3)<<fit->second->Code(COLOR(qri::real))<<","
+	 <<std::setw(3)<<fit->second->Code(COLOR(qri::anti))<<")";
+    }
+  }
+  str<<"\n";
+  size_t i=0;
+  for (QCD_Remnant_Info::Particle_Flow_Map::const_iterator 
+	 fit=info.m_treated.begin();fit!=info.m_treated.end();++fit) {
+    str<<"\n   m_treated["<<i++<<"]     = "<<*fit->first<<" -> ("
+       <<std::setw(3)<<fit->second->Code(COLOR(qri::real))<<","
+       <<std::setw(3)<<fit->second->Code(COLOR(qri::anti))<<")";
+  }
+  return str<<"\n\n}"<<std::endl;
 }
 
-void QCD_Remnant_Info::SelectCompanion() 
-{ 
-  if (p_this[m_anti]->Flav().IsGluon()) {
-    p_this[1-m_anti]=p_this[m_anti];
+QCD_Remnant_Info::QCD_Remnant_Info(ATOOLS::Particle *const begin,
+				   ATOOLS::Particle_List *const companions)
+{
+  SelectCompanion(begin,companions);
+  CollectString(qri::real);
+  CollectString(qri::anti);
+}
+
+QCD_Remnant_Info::~QCD_Remnant_Info()
+{
+  for (short unsigned int i=0;i<2;++i) {
+    qri::type type((qri::type)i);
+    while (m_flows[type].size()>0) {
+      delete m_flows[type].begin()->second;
+      m_flows[type].erase(m_flows[type].begin());
+    }
+    if (m_delete[type]) delete p_begin[type];
+  }
+}
+
+void QCD_Remnant_Info::SelectCompanion(ATOOLS::Particle *const begin,
+				       ATOOLS::Particle_List *const companions)
+{
+  qri::type anti((qri::type)(begin->Flav().IsAnti()^
+			     begin->Flav().IsDiQuark()));
+  m_delete[ANTI(anti)]=m_delete[anti]=false;
+  p_begin[anti]=begin;
+  if (p_begin[anti]->Flav().IsGluon()) {
+    p_begin[ANTI(anti)]=begin;
+    begin->GetFlow()->SetCode(COMPANIONTAG,0);
   }
   else {
-    p_this[1-m_anti] = new ATOOLS::Particle(1,p_this[m_anti]->Flav().Bar());
-    p_this[1-m_anti]->SetFlow(2-m_anti,ATOOLS::Flow::Counter());
+    p_begin[ANTI(anti)] = 
+      new ATOOLS::Particle(1,p_begin[anti]->Flav().Bar());
+    ATOOLS::Flow *flow=p_begin[ANTI(anti)]->GetFlow();
+    flow->SetCode(COLOR(ANTI(anti)),
+		  p_begin[anti]->GetFlow()->Code(COLOR(anti)));
+    flow->SetCode(COMPANIONTAG,-1);
+    if (companions!=NULL) companions->push_back(p_begin[ANTI(anti)]);
+    else m_delete[ANTI(anti)]=true;
   }
 }
 
-bool QCD_Remnant_Info::Find(const QCD_Remnant_Info *info,const bool forward) 
+void QCD_Remnant_Info::CollectString(const qri::type type) 
 {
-  if (this==info) return true;
-  if (m_tested.find(this)!=m_tested.end()) return false;
-  m_tested.insert(this);
-  if ((*this)[forward]!=NULL) return (*this)[forward]->Find(info,forward);
+  ATOOLS::Color_Tester tester(COLOR(type),p_begin[type]->GetFlow(COLOR(type)));
+  ATOOLS::Parton_Finder finder(tester);
+  p_end[type]=finder.FindConnected(p_begin[type],true);
+  if (p_end[type]==NULL) p_end[type]=finder.FindConnected(p_begin[type],false);
+  for (std::set<const ATOOLS::Particle *>::const_iterator 
+	 pit=finder.Track().begin(); pit!=finder.Track().end();++pit) {
+    m_flows[type][(ATOOLS::Particle*)*pit] = 
+      new ATOOLS::Flow(*(*pit)->GetFlow());
+  }
+}
+
+bool QCD_Remnant_Info::AssignColor(Particle_Flow_Map::iterator fit,
+				   const unsigned int oldc,
+				   const unsigned int newc)
+{
+  if (fit==m_flows[qri::real].end() ||
+      fit==m_flows[qri::anti].end()) return true;
+  int index=fit->second->Index(oldc);
+  if (index<0) {
+    ATOOLS::msg.Error()<<"QCD_Remnant_Info::AssignColor(..): "
+		       <<"Incorrect color flow."<<std::endl//;
+    //    msg_Tracking()
+		       <<"   "<<*fit->first<<" => "
+		       <<oldc<<" -> "<<newc<<std::endl;
+    return false;
+  }
+  if (fit->second->Code(3-index)!=newc) {
+    Particle_Flow_Map::iterator next=fit;
+    if (AssignColor(++next,oldc,newc)) {
+      fit->second->SetCode(index,newc);
+      return true;
+    }
+  }
   return false;
 }
 
-int QCD_Remnant_Info::Find(const QCD_Remnant_Info *info) 
+bool QCD_Remnant_Info::AssignColors(const qri::type type,const int color)
 {
-  PROFILE_HERE;
-  m_tested.clear();
-  for (short unsigned int i=0;i<2;++i) if (Find(info,i)) return i;
-  return -1;
+  unsigned int oldc=p_begin[type]->GetFlow()->Code(COLOR(type));
+  return m_status[type]=AssignColor(m_flows[type].begin(),oldc,color);
 }
 
-bool QCD_Remnant_Info::Find(const ATOOLS::Particle *particle,const bool forward) 
+void QCD_Remnant_Info::SetColors()
 {
-  if (p_this[0]==particle || p_this[1]==particle) return true;
-  if (m_tested.find(this)!=m_tested.end()) return false;
-  m_tested.insert(this);
-  //  msg_Debugging()<<"   "<<forward<<" "<<*p_this[m_anti]<<std::endl;
-  if ((*this)[forward]!=NULL) return (*this)[forward]->Find(particle,forward);
-  return false;
-}
-
-int QCD_Remnant_Info::Find(const ATOOLS::Particle *particle) 
-{
-  //  msg_Debugging()<<"Find "<<*particle<<" {"<<std::endl;
-  PROFILE_HERE;
   for (short unsigned int i=0;i<2;++i) {
-      m_tested.clear();
-      if (Find(particle,i)) return i;
+    qri::type type((qri::type)i);
+    for (Particle_Flow_Map::iterator fit=m_flows[type].begin();
+	 fit!=m_flows[type].end();++fit) {
+      fit->first->GetFlow()->SetCode(*fit->second);
+    }
   }
-  return -1;
+  for (Particle_Flow_Map::iterator fit=m_treated.begin();
+       fit!=m_treated.end();++fit) {
+    fit->first->GetFlow()->SetCode(*fit->second);
+  }
+}
+
+void QCD_Remnant_Info::Cat(Particle_Flow_Map::iterator fit)
+{
+  Particle_Flow_Map::iterator pos=m_treated.find(fit->first);
+  if (pos==m_treated.end()) {
+    m_treated[fit->first] = new ATOOLS::Flow(*fit->second);
+  }
+  else {
+    ATOOLS::Flow *flow=pos->second;
+    if (flow->Code(COLOR(qri::real))==
+	fit->first->GetFlow()->Code(COLOR(qri::real))) 
+      flow->SetCode(COLOR(qri::real),fit->second->Code(COLOR(qri::real)));
+    else flow->SetCode(COLOR(qri::anti),fit->second->Code(COLOR(qri::anti)));
+    flow->SetCode(COMPANIONTAG,fit->second->Code(0));
+  }
+  PRINT_INFO(*fit->first<<" "<<*m_treated[fit->first]);
+}
+
+bool QCD_Remnant_Info::Cat(QCD_Remnant_Info *const info,const qri::type type)
+{
+  qri::type anti=ANTI(type);
+
+//   std::cout<<*info<<*this<<type<<ANTI(type)<<COLOR(anti)<<std::endl;
+
+  AssignColors(type,info->Begin(anti)->GetFlow()->Code(COLOR(anti)));
+  for (Particle_Flow_Map::iterator fit=info->m_flows[anti].begin();
+       fit!=info->m_flows[anti].end();++fit) Cat(fit);
+  for (Particle_Flow_Map::iterator fit=m_flows[type].begin();
+       fit!=m_flows[type].end();++fit) Cat(fit);
+  m_flows[type].clear();
+  for (Particle_Flow_Map::iterator fit=info->m_flows[type].begin();
+       fit!=info->m_flows[type].end();++fit) {
+    m_flows[type][fit->first] = new ATOOLS::Flow(*fit->second);
+  }
+  p_begin[type]=info->p_begin[type];
+  p_end[type]=info->p_end[type];
+  delete info;
+
+//   std::cout<<*this<<std::endl;
+//   abort();
+
+  return true;
 }
 

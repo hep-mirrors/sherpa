@@ -7,18 +7,19 @@ using namespace SHERPA;
 Photon_Remnant::Photon_Remnant(const unsigned int _m_beam):
   Remnant_Base(rtp::photon,_m_beam) {}
 
-bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist)
+bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,
+			      ATOOLS::Particle_List *particlelist)
 {
   if (p_partner==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Partner Remnant not set.",
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
+			    "Partner Remnant not set.",
 			    "Photon_Remnant","FillBlob"));
   }
-  // fill blob
-  for (size_t j=0;j<m_parton[1].size();++j) {
-    beamblob->AddToOutParticles(m_parton[1][j]);
+  for (size_t j=0;j<m_extracted.size();++j) {
+    beamblob->AddToOutParticles(m_extracted[j]);
     if (particlelist!=NULL) {
-      m_parton[1][j]->SetNumber(particlelist->size());
-      particlelist->push_back(m_parton[1][j]);
+      m_extracted[j]->SetNumber(particlelist->size());
+      particlelist->push_back(m_extracted[j]);
     }
   }
   return true;

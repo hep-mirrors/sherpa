@@ -33,7 +33,7 @@ namespace SHERPA {
     rtp::code    m_type;
     unsigned int m_beam, m_errors;
 
-    ATOOLS::Particle_List m_parton[2];
+    ATOOLS::Particle_List m_extracted, m_companions;
 
     ATOOLS::Particle *p_last[2];
     Remnant_Base     *p_partner;
@@ -53,6 +53,8 @@ namespace SHERPA {
 		     const ATOOLS::Particle *right,const double newsp);
 
     bool AdjustEnergy();
+
+    friend class QCD_Remnant_Info;
 
   public:
 
@@ -88,7 +90,8 @@ namespace SHERPA {
 
     inline void ClearErrors() { m_errors=0; }
 
-    inline void Extract(ATOOLS::Particle *parton) { m_parton[1].push_back(parton); }
+    inline void Extract(ATOOLS::Particle *parton) 
+    { m_extracted.push_back(parton); }
 
   };// end of class Remnant_Base
 

@@ -38,7 +38,8 @@ Remnant_Base::~Remnant_Base() {}
 
 void Remnant_Base::Clear()
 {
-  for (short unsigned int i=0;i<2;++i) m_parton[i].clear();
+  m_extracted.clear();
+  m_companions.clear();
   m_active=true;
   p_last[1]=p_last[0]=NULL;
   p_beamblob=NULL;
@@ -50,7 +51,8 @@ bool Remnant_Base::AdjustKinematics()
   PROFILE_HERE;
   if (!m_active) return true;
   if (p_partner==NULL) {
-    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"No partner remnant found.",
+    throw(ATOOLS::Exception(ATOOLS::ex::critical_error,
+			    "No partner remnant found.",
 			    "Remnant_Base","AdjustKinematics"));
   }
   p_last[1]=p_partner->Last();
@@ -77,7 +79,8 @@ bool Remnant_Base::AdjustKinematics()
   shift.SetSPerp(ATOOLS::sqr(p_last[0]->Flav().PSMass())+pr1.PPerp2(),1);
   shift.SetSPerp(ATOOLS::sqr(p_last[1]->Flav().PSMass())+pr2.PPerp2(),2);
   if (!ATOOLS::IsZero(m_pzrem-(pr1+pr2)[3])) {
-    shift.SetShift(ATOOLS::Vec4D(m_erem-(pr1+pr2)[0],0.,0.,m_pzrem-(pr1+pr2)[3]));
+    shift.SetShift(ATOOLS::Vec4D(m_erem-(pr1+pr2)[0],0.,0.,
+				 m_pzrem-(pr1+pr2)[3]));
   }
   else {
     shift.SetDirection(ATOOLS::Vec4D(0.,0.,0.,1.));
@@ -100,13 +103,14 @@ bool Remnant_Base::AdjustKinematics()
 
 void Remnant_Base::UnDo() 
 {
-  msg_Tracking()<<"Remnant_Base::UnDo(): Undoing changes on blob list."<<std::endl;
+  msg_Tracking()<<"Remnant_Base::UnDo(): "
+		<<"Undoing changes on blob list."<<std::endl;
   while (p_beamblob->NOutP()>0) {
     p_beamblob->RemoveOutParticle(p_beamblob->OutParticle(0));
   }
-  while (m_parton[0].size()>0) {
-    delete *m_parton[0].begin();
-    m_parton[0].erase(m_parton[0].begin());
+  while (m_companions.size()>0) {
+    delete *m_companions.begin();
+    m_companions.erase(m_companions.begin());
   }
   ++m_errors;
 }
@@ -116,7 +120,8 @@ double Remnant_Base::MinimalEnergy(const ATOOLS::Flavour &flavour)
   return 0.;
 }
 
-bool Remnant_Base::FindHardProcess(ATOOLS::Particle *const initiator,ATOOLS::Blob *&process)
+bool Remnant_Base::FindHardProcess(ATOOLS::Particle *const initiator,
+				   ATOOLS::Blob *&process)
 {
   ATOOLS::Blob *cur=initiator->DecayBlob();
   if (cur!=NULL) {
@@ -149,12 +154,15 @@ void Remnant_Base::FindIncoming(ATOOLS::Blob *const blob,const size_t beam,
 }
 
 bool Remnant_Base::AcquireMass(const ATOOLS::Particle *left,
-			       const ATOOLS::Particle *right,const double newsp)
+			       const ATOOLS::Particle *right,
+			       const double newsp)
 { 
   PROFILE_HERE;
   ATOOLS::Vec4D P=left->Momentum()+right->Momentum();
   ATOOLS::Vec4D p=p_last[0]->Momentum()+p_last[1]->Momentum();
-  double C=(P[0]+p[0])/(P[3]+p[3]), D=0.5*(p.MPerp2()-newsp)/(P[3]+p[3]), E=P[0]-C*(P[3]-D);
+  double C=(P[0]+p[0])/(P[3]+p[3]);
+  double D=0.5*(p.MPerp2()-newsp)/(P[3]+p[3]);
+  double E=P[0]-C*(P[3]-D);
   m_deltae=(E-sqrt(E*E+(1.0-C*C)*D*(D-2.0*P[3])))/(1.0-C*C);
   if (ATOOLS::Sign(P[3]-m_deltap)!=ATOOLS::Sign(P[3])) m_deltap*=-1.0;
   if (!(m_deltae>0.0) || P[0]<m_deltae) return false;
@@ -167,11 +175,13 @@ bool Remnant_Base::AdjustEnergy()
 {
   PROFILE_HERE;
   ATOOLS::Blob *process=NULL;
-  double sp1=ATOOLS::sqr(p_last[0]->Flav().PSMass())+p_last[0]->Momentum().PPerp2();
-  double sp2=ATOOLS::sqr(p_last[1]->Flav().PSMass())+p_last[1]->Momentum().PPerp2();
+  double sp1=ATOOLS::sqr(p_last[0]->Flav().PSMass())+
+    p_last[0]->Momentum().PPerp2();
+  double sp2=ATOOLS::sqr(p_last[1]->Flav().PSMass())+
+    p_last[1]->Momentum().PPerp2();
   double spmin=2.*sqrt(sp1*sp2)+sp1+sp2;
-  for (size_t i=0;i<m_parton[1].size();++i) {
-    if (!FindHardProcess(m_parton[1][i],process)) return false;
+  for (size_t i=0;i<m_extracted.size();++i) {
+    if (!FindHardProcess(m_extracted[i],process)) return false;
     ATOOLS::Particle *in[2];
     for (short unsigned int i=0;i<2;++i) FindIncoming(process,i,in[i]);
     if (AcquireMass(in[0],in[1],spmin)) {

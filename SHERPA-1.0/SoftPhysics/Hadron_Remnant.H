@@ -17,7 +17,10 @@ namespace SHERPA {
     double GetXPDF(ATOOLS::Flavour flavour,double scale);
     bool   DiceKinematics();
 
-    bool AttachLastRemnants();
+    ATOOLS::Flavour Opposite(ATOOLS::Flavour flav) const; 
+
+    bool ValenceQuark(ATOOLS::Particle *const quark); 
+    bool DecomposeHadron();
 
   public:
     
