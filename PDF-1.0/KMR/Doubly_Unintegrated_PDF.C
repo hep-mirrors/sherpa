@@ -13,8 +13,8 @@
 #endif
 #endif
 
-//#include "Exception.H"
-//#include "MyRoot.H"
+// #include "Exception.H"
+// #include "MyRoot.H"
 
 using namespace PDF;
 
@@ -35,8 +35,9 @@ Doubly_Unintegrated_PDF::Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running
   m_partons=p_pdf->Partons();
   for (size_t i=0;i<m_partons.size();++i) {
     if (m_partons[i].Size()>1) {
-      for (int j=0;j<m_partons[i].Size();++j) 
+      for (int j=0;j<m_partons[i].Size();++j) {
 	m_branching[m_partons[i][j]] = new LL_Branching(m_partons[i][j],p_alphas);
+      }
     }
     else {
       m_branching[m_partons[i]] = new LL_Branching(m_partons[i],p_alphas);
@@ -62,18 +63,18 @@ Doubly_Unintegrated_PDF::~Doubly_Unintegrated_PDF()
 
   delete [] argvf;
 
-  MYROOT::myfile = new TFile("output.root");
-  MYROOT::mystyle = new TStyle("MyStyle","Plain");
+  MYROOT::myfile = new TFile("sudakov.root");
+  MYROOT::mystyle = new TStyle("Plain","Plain");
   MYROOT::mystyle->SetOptStat(0);
   MYROOT::mystyle->cd();
 
   MYROOT::sudu = new TH1D("up","Sudakov",40,0,8);
   MYROOT::sudg = new TH1D("gluon","Sudakov",40,0,8);
 
-  for (double logkt=log(1.5);logkt<7.5;logkt+=.2) {
+  for (double logkt=log(1.5);logkt<log(1800);logkt+=.1) {
     double kt=exp(logkt);
-    MYROOT::sudu->Fill(logkt,p_sudakov->Delta(ATOOLS::kf::u)(kt,sqrt(m_mu02)));          
-    MYROOT::sudg->Fill(logkt,p_sudakov->Delta(ATOOLS::kf::gluon)(kt,sqrt(m_mu02)));          
+    MYROOT::sudu->Fill(logkt,p_sudakov->Delta(ATOOLS::kf::u)(1800,kt));          
+    MYROOT::sudg->Fill(logkt,p_sudakov->Delta(ATOOLS::kf::gluon)(1800,kt));          
   }
 
   TCanvas *c1 = new TCanvas("Sudakovs","Sudakovs");
@@ -86,13 +87,16 @@ Doubly_Unintegrated_PDF::~Doubly_Unintegrated_PDF()
   MYROOT::sudu->SetXTitle("log k_{#perp}");
   MYROOT::sudu->SetYTitle("#Delta(k_{#perp } ,k_{#perp min} )");
 
-  TLegend *l1 = new TLegend(.7,.75,.85,.85);
+  TLegend *l1 = new TLegend(.15,.75,.3,.85);
   l1->AddEntry(MYROOT::sudu,"up");
   l1->AddEntry(MYROOT::sudg,"gluon");
+  l1->SetFillColor(0);
   l1->Draw();
 
+  c1->Print("sudakovs.ps");
+
   MYROOT::myfile->Write();
-  MYROOT::myroot->Run(kTRUE);
+  //MYROOT::myroot->Run(kTRUE);
   MYROOT::myfile->Write();
   delete MYROOT::myroot;
 
@@ -165,7 +169,7 @@ bool Doubly_Unintegrated_PDF::Unintegrate(ATOOLS::Flavour flavour)
 	  }
 	}
 	else {
-	    m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
+	  m_unintegrated+=(*(*sfit))(m_z)*p_pdf->GetXPDF((*sfit)->GetFlA());
 	} 
       }
     }
