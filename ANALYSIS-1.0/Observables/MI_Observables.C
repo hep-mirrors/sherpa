@@ -341,7 +341,7 @@ void Scalar_PT_Sum_vs_JetET::Evaluate(const ATOOLS::Particle_List &particlelist,
   double pt=0.0;
   for (size_t i=0;i<particlelist.size();++i) 
     pt+=particlelist[i]->Momentum().PPerp();
-  double etjet=(*jetlist)[0]->Momentum().PPerp();
+  double etjet=(*jetlist)[0]->Momentum().EPerp();
   m_histogram.Add(etjet,pt*weight);
   m_histogram.AddBinExtra(etjet,weight);
 }
