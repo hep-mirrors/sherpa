@@ -69,7 +69,9 @@ bool SimpleXS_Apacic_Interface::InitColours(Blob * blob)
   if (m_ini) {
     th1=p_tools->ColourAngle(blob->InParticle(0),blob);
     th2=p_tools->ColourAngle(blob->InParticle(1),blob);
-    p_tools->InitializeIncoming(blob,scale,E,th1,th2,p_mehandler->GetISR_Handler()->X1(),p_mehandler->GetISR_Handler()->X2());
+    double x1=blob->InParticle(0)->Momentum()[0]/E;
+    double x2=blob->InParticle(1)->Momentum()[0]/E;
+    p_tools->InitializeIncoming(blob,scale,E,th1,th2,x1,x2);
   }
   if (m_fin) {
     th1=p_tools->ColourAngle(blob->OutParticle(0),blob);
