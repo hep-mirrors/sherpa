@@ -51,3 +51,13 @@ Object::~Object()
     }
   }  
 }
+
+void Object::PrintObjects(std::ofstream &str)
+{
+  str<<"Object::PrintObjects(..): {\n";
+  for (String_Object_Map::iterator oit=s_objects.begin();
+       oit!=s_objects.end();++oit) {
+    str<<"   '"<<oit->first<<"' -> ("<<oit->second<<")\n";
+  }  
+  str<<"}"<<std::endl;
+}

@@ -42,6 +42,8 @@ namespace ATOOLS {
       return "";
     }
 
+    static void PrintObjects(std::ofstream &str);
+
   };//end of class Object
 
 #define GET_OBJECT(TYPE,NAME) ATOOLS::Object::GetObject<TYPE>(NAME)
