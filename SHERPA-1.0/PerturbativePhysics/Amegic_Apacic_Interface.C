@@ -162,8 +162,10 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     }
     
     double scale,asscale;
-    if (p_xs) asscale=scale = 
-      p_xs->Scale(PHASIC::stp::fac);
+    if (p_xs) {
+      p_xs->CalculateScale(p_moms);
+      asscale=scale = p_xs->Scale(PHASIC::stp::as);
+    }
     else {
       scale   = p_cluster->Scale();
       asscale = p_cluster->AsScale();
