@@ -225,9 +225,9 @@ bool Matrix_Element_Handler::FillDecayTable(ATOOLS::Decay_Table * _dt,bool _ow)
 
 bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice) 
 {
+  m_readin = p_dataread->GetValue<string>("RESULT_DIRECTORY",string("./Results"));
   switch (m_mode) { 
   case 1: 
-    m_readin = p_dataread->GetValue<string>("RESULT DIRECTORY",string("./Results"));
     if (scalechoice>0) p_amegic->Processes()->SetScale(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
     if (p_amegic->CalculateTotalXSec(m_readin)) {
       RescaleJetrates();
