@@ -7,8 +7,6 @@
 
 namespace ATOOLS {
 
-  class Debugger;
-
   template <class ValueType>
   class Value_Carrier;
 
@@ -60,8 +58,8 @@ namespace ATOOLS {
   class Debugger {
   private:
 
-    static std::vector<Debugger*>   s_objects;
-    static std::ostream            *s_output;
+    static std::vector<Debugger*>  s_objects;
+    static std::ostream           *s_output;
 
     long unsigned int m_address;
     std::string       m_name, m_type;
@@ -81,9 +79,18 @@ namespace ATOOLS {
     // members
     static void PrintStatus(const std::string &type="");
 
+    template <class ValueType> void AddValue(const std::string &spec,ValueType &value);
+
     // inline functions
     inline std::map<std::string,Value_Carrier_Base*> &Values() { return m_values; }
 
+    inline Value_Carrier_Base *Value(const std::string &spec) { return m_values[spec]; }
+
+    template <class ValueType> inline ValueType *Address(const std::string &spec)
+    { return m_values[spec]->Address<ValueType>(); }
+    template <class ValueType> inline ValueType  Value(const std::string &spec)
+    { return m_values[spec]->Value<ValueType>();   }
+    
     inline const std::string &Type()              { return m_type; }
     inline void  SetType(const std::string &type) { m_type=type;   }
 

@@ -56,6 +56,12 @@ namespace ATOOLS {
     ostr<<Value();
   }
   
+  template <class ValueType>
+  void Debugger::AddValue(const std::string &spec,ValueType &value) 
+  { 
+    m_values[spec] = new Value_Carrier<ValueType>(value); 
+  }
+
 }// end of namespace ATOOLS
 
 #endif

@@ -29,7 +29,6 @@ libToolsOrg_la_SOURCES        = \
 				Integration_Info.C \
 				Debugger.C
 noinst_HEADERS        =	\
-			Debug.H \
 			Exception.H \
 			Exception_Handler.H \
 			Exception_Handler.inl.H \
@@ -58,8 +57,7 @@ noinst_HEADERS        =	\
 			Info_Key.inl.H \
 			Integration_Info.H \
 			Integration_Info.inl.H \
-			Debugger.H \
-			Debugger.inl.H
+			Debugger.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
