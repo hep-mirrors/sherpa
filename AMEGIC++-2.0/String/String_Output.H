@@ -1,0 +1,31 @@
+#ifndef String_Output_h
+#define String_Output_h
+
+
+#include "String_Generator.H"
+#include "String_Tree.H"
+#include "Helicity.H"
+#include "String_Library.H"
+
+namespace AMEGIC {
+class String_Output {
+  String_Library slib;
+
+  std::string path;
+  int maxgraph,maxhel;
+  std::string pID,pathID;
+
+  void Cform(std::ofstream&,int,int,sknot***,String_Tree*,const std::string&,Helicity*);
+  void Zform(std::ofstream&,int &,int &,Virtual_String_Generator*,String_Tree*);
+  void Make_Header(std::ofstream &);
+  int  Line_Form(std::ofstream&,const std::string &);
+  void Add_To_Set_Values();
+public:
+  String_Output(const std::string&,int,int); 
+  void Output(sknot***,String_Tree*,Virtual_String_Generator*,Helicity*);
+};
+}
+#endif
+
+
+

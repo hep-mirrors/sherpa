@@ -1,0 +1,243 @@
+namespace AMEGIC {
+  template <>
+  inline Complex Basic_Xfunc::XT<+1,+1>(const int& t1,const int& t2,const int& t3,const Complex& cR,const Complex& cL)
+  {   return cL*BS->eta(t2)*BS->eta(t2)*BS->mu(t1)*BS->mu(t3)+
+             cR*(BS->eta(t1)*BS->eta(t3)*BS->mu(t2)*BS->mu(t2)+
+             BS->S0(t1,t2)*BS->S1(t2,t3));
+  /*
+    return ((BS->mu(t1)*BS->eta(t2)+BS->mu(t2)*BS->eta(t1))*
+	    (cR*BS->mu(t2)*BS->eta(t3)+cL*BS->mu(t3)*BS->eta(t2))+
+	    cR*BS->S0(t1,t2)*BS->S1(t2,t3)
+	    +	    
+	    ((BS->mu(t1)*BS->eta(t2)-BS->mu(t2)*BS->eta(t1))*
+	     (-cR*BS->mu(t2)*BS->eta(t3)+cL*BS->mu(t3)*BS->eta(t2))+
+	     cR*BS->S0(t1,t2)*BS->S1(t2,t3))
+	    )/2.;
+  */
+  }
+  
+  template <>
+  inline Complex Basic_Xfunc::XT<-1,-1>(const int& t1,const int& t2,const int& t3,const Complex& cR,const Complex& cL)
+  { return cR*BS->eta(t2)*BS->eta(t2)*BS->mu(t1)*BS->mu(t3)+
+           cL*(BS->eta(t1)*BS->eta(t3)*BS->mu(t2)*BS->mu(t2)+
+               BS->S1(t1,t2)*BS->S0(t2,t3));
+   /*
+    return  ((BS->mu(t1)*BS->eta(t2)+BS->mu(t2)*BS->eta(t1))*
+	     (cL*BS->mu(t2)*BS->eta(t3)+cR*BS->mu(t3)*BS->eta(t2))+
+	     cL*BS->S1(t1,t2)*BS->S0(t2,t3)
+	     +
+	     ((BS->mu(t1)*BS->eta(t2)-BS->mu(t2)*BS->eta(t1))*
+	     (-cL*BS->mu(t2)*BS->eta(t3)+cR*BS->mu(t3)*BS->eta(t2))+
+	      cL*BS->S1(t1,t2)*BS->S0(t2,t3))
+	     )/2.;
+  */
+  }
+
+  template <>
+  inline Complex Basic_Xfunc::XT<+1,-1>(const int& t1,const int& t2,const int& t3,const Complex& cR,const Complex& cL)
+  { 
+    return BS->eta(t2)*(cL*BS->mu(t1)*BS->S0(t2,t3)+
+                        cR*BS->mu(t3)*BS->S0(t1,t2));
+    /*
+    return (cL*(BS->mu(t1)*BS->eta(t2)+BS->mu(t2)*BS->eta(t1))
+	    *BS->S0(t2,t3)+
+	    (cL*BS->mu(t2)*BS->eta(t3)+cR*BS->mu(t3)*BS->eta(t2))
+	    *BS->S0(t1,t2)
+	    +
+	    (cL*(BS->mu(t1)*BS->eta(t2)-BS->mu(t2)*BS->eta(t1))
+	     *BS->S0(t2,t3)+
+	     (-cL*BS->mu(t2)*BS->eta(t3)+cR*BS->mu(t3)*BS->eta(t2))
+	     *BS->S0(t1,t2))
+	    )/2.;
+  */
+  }
+  
+  template <>
+  inline Complex  Basic_Xfunc::XT<-1,+1>(const int& t1,const int& t2,const int& t3,const Complex& cR,const Complex& cL)
+  { return BS->eta(t2)*(cR*BS->mu(t1)*BS->S1(t2,t3)+
+                        cL*BS->mu(t3)*BS->S1(t1,t2));
+    /*
+    return (cR*(BS->mu(t1)*BS->eta(t2)+BS->mu(t2)*BS->eta(t1))
+	    *BS->S1(t2,t3)+
+	    (cR*BS->mu(t2)*BS->eta(t3)+cL*BS->mu(t3)*BS->eta(t2))
+	    *BS->S1(t1,t2)
+	    +
+	    (cR*(BS->mu(t1)*BS->eta(t2)-BS->mu(t2)*BS->eta(t1))
+	     *BS->S1(t2,t3)+
+	     (-cR*BS->mu(t2)*BS->eta(t3)+cL*BS->mu(t3)*BS->eta(t2))
+	     *BS->S1(t1,t2))
+	    )/2.;
+    */
+  } 
+
+//massive ZT's
+
+template<>
+inline Complex Basic_Zfunc::ZTM<+1,+1,+1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*(BS->S0(t3,t1)*BS->S1(t4,t2)*cR1*cR2
+	      -BS->mu(t1)*BS->mu(t2)*BS->eta(t3)*BS->eta(t4)*cR2*cL1
+	      -BS->mu(t3)*BS->mu(t4)*BS->eta(t1)*BS->eta(t2)*cR1*cL2);
+}
+
+
+template<>
+inline Complex Basic_Zfunc::ZTM<-1,-1,-1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*( BS->S1(t3,t1)*BS->S0(t4,t2)*cL1*cL2
+	      -BS->mu(t1)*BS->mu(t2)*BS->eta(t3)*BS->eta(t4)*cL2*cR1
+	      -BS->mu(t3)*BS->mu(t4)*BS->eta(t1)*BS->eta(t2)*cL1*cR2);
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<+1,+1,+1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->eta(t2)*cR1*( BS->S0(t4,t1)*BS->mu(t3)*cL2 -
+			       BS->S0(t3,t1)*BS->mu(t4)*cR2 );
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<+1,+1,-1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->eta(t1)*cR1*( BS->S1(t2,t3)*BS->mu(t4)*cL2 -
+			       BS->S1(t2,t4)*BS->mu(t3)*cR2 );
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<+1,-1,+1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->eta(t4)*cR2*( BS->S0(t3,t1)*BS->mu(t2)*cR1 -
+			       BS->S0(t3,t2)*BS->mu(t1)*cL1 );
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<-1,+1,+1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->eta(t3)*cR2*( BS->S1(t2,t4)*BS->mu(t1)*cR1 -
+			       BS->S1(t1,t4)*BS->mu(t2)*cL1 );
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<-1,-1,-1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->eta(t2)*cL1*( BS->S1(t4,t1)*BS->mu(t3)*cR2 -
+			       BS->S1(t3,t1)*BS->mu(t4)*cL2 );
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<-1,-1,+1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->eta(t1)*cL1*( BS->S0(t2,t3)*BS->mu(t4)*cR2 -
+			       BS->S0(t2,t4)*BS->mu(t3)*cL2 );
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<-1,+1,-1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->eta(t4)*cL2*( BS->S1(t3,t1)*BS->mu(t2)*cL1 -
+			       BS->S1(t3,t2)*BS->mu(t1)*cR1 );
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<+1,-1,-1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->eta(t3)*cL2*( BS->S0(t2,t4)*BS->mu(t1)*cL1 -
+			       BS->S0(t1,t4)*BS->mu(t2)*cR1 );
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<+1,-1,-1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*(BS->mu(t1)*BS->mu(t4)*BS->eta(t2)*BS->eta(t3)*cL2*cL1 +
+	      BS->mu(t2)*BS->mu(t3)*BS->eta(t1)*BS->eta(t4)*cR2*cR1 -
+	      BS->mu(t1)*BS->mu(t3)*BS->eta(t2)*BS->eta(t4)*cR2*cL1 -
+	      BS->mu(t2)*BS->mu(t4)*BS->eta(t1)*BS->eta(t3)*cL2*cR1);
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<-1,+1,+1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*(BS->mu(t1)*BS->mu(t4)*BS->eta(t2)*BS->eta(t3)*cR2*cR1 +
+	      BS->mu(t2)*BS->mu(t3)*BS->eta(t1)*BS->eta(t4)*cL2*cL1 -
+	      BS->mu(t1)*BS->mu(t3)*BS->eta(t2)*BS->eta(t4)*cL2*cR1 -
+	      BS->mu(t2)*BS->mu(t4)*BS->eta(t1)*BS->eta(t3)*cR2*cL1);
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<+1,-1,+1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return Complex(0.,0.);
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<-1,+1,-1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return Complex(0.,0.);
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<+1,+1,-1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*(BS->S0(t1,t4)*BS->S1(t2,t3)*cL2*cR1
+	      -BS->mu(t1)*BS->mu(t2)*BS->eta(t3)*BS->eta(t4)*cL2*cL1
+	      -BS->mu(t3)*BS->mu(t4)*BS->eta(t1)*BS->eta(t2)*cR2*cR1);
+}
+
+template<>
+inline Complex Basic_Zfunc::ZTM<-1,-1,+1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*(BS->S1(t1,t4)*BS->S0(t2,t3)*cR2*cL1
+	      -BS->mu(t1)*BS->mu(t2)*BS->eta(t3)*BS->eta(t4)*cR2*cR1
+	      -BS->mu(t3)*BS->mu(t4)*BS->eta(t1)*BS->eta(t2)*cL2*cL1);
+}
+
+//massless ZT's
+
+template<>
+inline Complex Basic_Zfunc::ZT<+1,+1,+1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->S0(t3,t1)*BS->S1(t4,t2)*cR1*cR2;
+}
+
+template<>
+inline Complex Basic_Zfunc::ZT<-1,-1,-1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->S1(t3,t1)*BS->S0(t4,t2)*cL1*cL2;
+}
+
+template<>
+inline Complex Basic_Zfunc::ZT<+1,+1,-1,-1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->S0(t1,t4)*BS->S1(t2,t3)*cL2*cR1;
+}
+
+template<>
+inline Complex Basic_Zfunc::ZT<-1,-1,+1,+1>(const int& t1,const int& t2,const int& t3,const int& t4,
+				     const Complex& cR1,const Complex& cL1,
+				     const Complex& cR2,const Complex& cL2) {
+  return -2.*BS->S1(t1,t4)*BS->S0(t2,t3)*cR2*cL1;
+}
+
+
+
+}
+  

@@ -1,0 +1,94 @@
+#ifndef String_Tree_h
+#define String_Tree_h
+
+#include "MyString.H"
+#include "Kabbala.H"
+#include "MyComplex.H"
+#include <list>
+#include <vector>
+
+namespace AMEGIC {
+  class sknot {
+    std::string*   strp;
+    static std::string emptystring;
+  public:
+    sknot*   left;
+    sknot*   right;
+    Kabbala* value;
+    char     op;
+
+    sknot() {strp = 0;}
+    sknot(const sknot& cp) {
+      left  = cp.left;
+      right = cp.right;
+      value = cp.value;
+      op    = cp.op;
+      if (cp.strp!=0) strp = new std::string(cp.Str());
+                 else strp = 0;
+    }
+    ~sknot() {if (strp!=0) delete strp;}
+    const std::string& Str() const { if (strp!=0) return *strp;return emptystring;}
+    void SetString(const std::string& str) {
+      if (strp!=0) delete strp;
+      strp = new std::string(str);
+    }
+    sknot& operator=(const sknot& cp) {
+      left  = cp.left;
+      right = cp.right;
+      value = cp.value;
+      op    = cp.op;
+      if (strp!=0) delete strp;
+      if (cp.strp!=0) strp = new std::string(cp.Str());
+                 else strp = 0;
+    }
+
+  };
+
+  class String_Tree {
+    std::list<sknot> sknotlist;
+    std::list<sknot*> leaflist;
+    sknot* Leaf(std::string&,sknot*,int);
+   
+    void Single_Expand(sknot*,int&);
+    void Single_Delete(sknot*&,sknot*,const std::string&); 
+
+    void SingleDeleteMinus(sknot* &,int&);
+    int  CountMinus(sknot* &); 
+
+
+    void    LinearPM(sknot*);
+    void    OrderPM(sknot*,sknot*);
+    void    DetermineLeafAndSign(sknot*,std::vector<sknot*>&,std::vector<int>&,int&);
+    void    SetLeafAndSign(sknot*,std::vector<sknot*>&,std::vector<int>&,int&);
+    void    DeleteEquals(std::vector<sknot*>&,std::vector<int>&);
+
+    int     CountFactorNumber(sknot*,std::vector<sknot*>*&,sknot*,std::vector<sknot*>*&,int);
+    void    CollectLeafs(sknot*,std::vector<sknot*>&,int);
+    
+  public:
+    void Reset() {sknotlist.clear();}
+    sknot*  newsk(); 
+    sknot*  String2Tree(std::string,int fixed = 0); 
+    Complex eval(sknot*);
+    Complex Evaluate(sknot*);
+    std::string  Tree2String(sknot*,sknot*);
+    std::string  Tree2Tex(sknot*,sknot*);
+    void    Expand(sknot*);
+    void    DetermineDepth(sknot*,char,int&);
+    void    ExpandToDepth(sknot*,int,std::list<sknot*>&);
+    void    Linear(sknot*);
+    void    LinearOrderPM(sknot*);
+    sknot*  Copy(sknot*,int fixed = 0);
+    void    Sort(sknot*);
+    void    Delete(sknot*&,const std::string&); 
+    void    GetEnd(sknot*,std::list<sknot*> &);
+    void    Find(sknot*,const std::string&,int&);
+    void    Simplify(sknot*&);
+    void    DeleteMinus(sknot* &);
+    int     SknotListSize() {return sknotlist.size();}
+    void    Cluster(sknot*,sknot*,int full = 0);
+    void    Addends(sknot*,std::list<sknot*> &);
+    void    Factors(sknot*,std::list<sknot*> &);
+  };
+}
+#endif

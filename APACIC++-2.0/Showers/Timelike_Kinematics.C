@@ -1,0 +1,824 @@
+#include "Timelike_Kinematics.H"
+#include "Run_Parameter.H"
+#include "Poincare.H"
+#include "Tree.H"
+#include <iomanip>
+
+
+using std::endl;
+using std::cout;
+
+using namespace APACIC;
+using namespace AMATOOLS;
+using namespace APHYTOOLS;
+using namespace AORGTOOLS;
+
+
+//-----------------------------------------------------------------------
+//------------------- Checks for kinematics : The shuffles --------------
+//----------------------------------------------------------------------- 
+
+bool Timelike_Kinematics::CheckZRange(Knot * mo) {
+  Knot * d1=mo->left;
+  Knot * d2=mo->right;
+  
+  // if one daughter has to be diced anyway return "nothing changed"
+  if ((d1->stat == 3) || (d2->stat == 3)) return 1; 
+
+  double t  =mo->t;  double t1 =d1->t;  double t2 =d2->t;
+  // minimal (t1/t2) eff. mass
+  double t0 = 4.*rpa.pshower.FinalQ02();
+
+  t1  = Max(t1,mo->left->tout);
+  t2  = Max(t2,mo->right->tout);
+  t1  = (t1+0.25*t0);   // teff1
+  t2  = (t2+0.25*t0);   // teff2
+  /*
+  double teff1=(mo->right->tout+0.25*t0);
+  double teff2=(mo->left->tout+0.25*t0);
+  t1  = Max(t1,teff1);
+  t2  = Max(t2,teff2);
+  */
+
+  msg.Debugging()<<" Timelike_Kinematics::CheckZRange("<<t<<","<<t1<<","<<t2<<") "<<endl;
+  if (t  < t1+t2+2.*sqrt(t1*t2)) {
+    msg.Debugging()<<" Timelike_Kinematics::CheckZRange() A "<<endl;
+    if (d1->stat==0 && d2->stat==0) return 0;
+    msg.Debugging()<<" a "<<endl;
+    if (d1->stat==0 && d2->stat!=0) {
+      d2->stat=3;
+      return 0;
+    }
+    msg.Debugging()<<" b "<<endl;
+    if (d1->stat!=0 && d2->stat==0) {
+      d1->stat=3;
+      return 0;
+    }
+    msg.Debugging()<<" c "<<endl;
+    // select one of the two to be diced again and return "daughter selected"
+    if (d1->t > d2->t) d1->stat=3;
+    else d2->stat=3;
+    return 0;
+  }
+
+  // determine real Energy fractions 
+  // *AS* this works only for massless momenta!!!! (cf. also problems in Shuffle routines)
+
+
+
+  double lambda   = sqrt(sqr(t-t1-t2)-4.*t1*t2);   
+  double z        = mo->z;
+  double r1 = (t+t2-t1-lambda)/(2.*t);
+  double r2 = (t-t2+t1-lambda)/(2.*t);
+  z     = z - r1*z + r2*(1.-z);
+  double e1= z*sqrt(mo->E2);
+  double p1=0;
+  if (sqr(e1)>t1) p1=sqrt(sqr(e1)-t1);
+  double e2= (1-z)*sqrt(mo->E2);
+  double p2=0;
+  if (sqr(e2)>t2) p2=sqrt(sqr(e2)-t2);
+
+  double zp,zm,zdelta;  
+  bool do1=0, do2=0;
+  // check z-range of daugther one (unconstrained)
+  if (d1->stat) {
+    zdelta=p1/e1;
+    zm=0.5*(1.-zdelta);
+    zp=0.5*(1.+zdelta);
+    //    double th1=sqrt( t1/(d1->z*(1.- d1->z)*e1*e1) );
+    if ((d1->z<zm) || (zp<d1->z))  do1=1;
+//     else if (th1>mo->thcrit) {
+//       do1=1;
+//       msg.Debugging()<<" Timelike_Kinematics::CheckZRange() E 1 "<<endl;
+//     }
+  }
+
+  // check z-range of daugther two (unconstrained)
+  if (d2->stat) {
+    zdelta=p2/e2;
+    zm=0.5*(1.-zdelta);
+    zp=0.5*(1.+zdelta);
+    //    double th2=sqrt( t2/(d2->z*(1.- d2->z)*e2*e2) );
+    if ((d2->z<zm) || (zp<d2->z))   do2=1;
+//     else if (th2>mo->thcrit) {
+//       do2=1;
+//       msg.Debugging()<<" Timelike_Kinematics::CheckZRange() E 2 "<<endl;
+//     }
+  }
+
+  // if necessary select a daughter to be diced again.
+  if (!do1 && !do2) return 1; // all fine
+
+  if (!do1 && do2) {
+    msg.Debugging()<<" Timelike_Kinematics::CheckZRange() B "<<endl;
+    d2->stat=3;
+    return 0; // dice d2 again!
+  }
+
+  if (do1 && !do2) {
+    msg.Debugging()<<" Timelike_Kinematics::CheckZRange() C "<<endl;
+    d1->stat=3;
+    return 0; // dice d1 again!
+  }
+
+  // if (do1 && do2)
+  // select one of the two to be diced again and return "daughter selected"
+  if (d1->t > d2->t) d1->stat=3;
+  else d2->stat=3;
+
+  msg.Debugging()<<" Timelike_Kinematics::CheckZRange() D "<<endl;
+  return 0;
+}
+
+bool Timelike_Kinematics::Shuffle(Knot * mo, int first)
+{
+  if (first) return ShuffleMoms(mo);
+  return ShuffleZ(mo);
+} 
+
+bool Timelike_Kinematics::ShuffleZ(Knot * mo) 
+{
+  // this applies if both daughters are "free"
+  double t      = mo->t;
+  double t1     = mo->left->t;
+  double t2     = mo->right->t;
+
+  // minimal (t1/t2) eff. mass
+  double t0 = 4.*rpa.pshower.FinalQ02();
+
+
+  t1  = Max(t1,mo->left->tout);
+  t2  = Max(t2,mo->right->tout);
+  t1  = (t1+0.25*t0);   // teff1
+  t2  = (t2+0.25*t0);   // teff2
+
+  /*
+  double teff1=(mo->right->tout+0.25*t0);
+  double teff2=(mo->left->tout+0.25*t0);
+  t1  = Max(t1,teff1);
+  t2  = Max(t2,teff2);
+  */
+
+  // decay kinematically not allowed
+  if (t - (t1+t2+2.*sqrt(t1*t2)) < rpa.gen.Accu()) {
+    msg.Debugging()<<"ShuffleZ::Conflicting Kinematics in decay : "
+		   <<t<<" "<<t1<<" "<<t2<<endl;
+    return 0; 
+  }
+
+  double lambda = sqrt(sqr(t-t1-t2)-4.*t1*t2); 
+  double r1     = (t+t2-t1-lambda)/(2.*t);
+  double r2     = (t-t2+t1-lambda)/(2.*t);
+  double z      = mo->z;
+  mo->z         = z - r1*z + r2*(1.-z);
+
+  // check for more kinematics
+  t1  = (t1-0.25*t0);   // teff1
+  t2  = (t2-0.25*t0);   // teff2
+  double pt2 = z*(1.-z)*t;
+  //  if (pt_scheme == 1)
+  pt2 -= (1.-z)*t1 + z*t2;
+  double  pt2min = rpa.pshower.FinalQ02();
+  if (pt2<pt2min) {
+    mo->z = z;
+    msg.Debugging()<<"ShuffleZ::Failed PtminCheck :"<<pt2<<endl;
+    //return 0;
+  }
+  if (KinCheck(0,mo)) {
+    mo->z = z;
+    msg.Debugging()<<"ShuffleZ::Failed KinCheck"<<endl;
+    return 0;
+  }
+  // set shuffled energies of daughters 
+  mo->left->E2  = mo->z*mo->z*mo->E2;
+  mo->right->E2 = (1.-mo->z)*(1.-mo->z)*mo->E2;
+  return 1;
+};
+
+bool Timelike_Kinematics::ShuffleMoms(Knot * mo) 
+{ 
+  msg.Tracking()<<" in Timelike_Kinematics::ShuffleMoms  ("<<mo->kn_no<<")"<<endl;
+  // this applies if one of the daughters is already "fixed"
+  Knot * d1       = mo->left;
+  Knot * d2       = mo->right;
+
+  double t        = mo->t;
+  double t1       = d1->t;
+  double t2       = d2->t;
+
+
+  // minimal (t1/t2) eff. mass
+  double t0 = 4.*rpa.pshower.FinalQ02();
+  /*  smooth
+  t1  = Max(t1,mo->left->tout);
+  t2  = Max(t2,mo->right->tout);
+  t1  = (t1+0.25*t0);   // teff1
+  t2  = (t2+0.25*t0);   // teff2
+  */
+  /*  first
+  double teff1=(mo->right->tout+0.25*t0);
+  double teff2=(mo->left->tout+0.25*t0);
+  t1  = Max(t1,teff1);
+  t2  = Max(t2,teff2);
+  */
+
+  // decay kinematically not allowed
+  if (t - (t1+t2+2.*sqrt(t1*t2)) < rpa.gen.Accu()) {
+    msg.Debugging()<<"ShuffleMoms::Conflicting Kinematics in decay : "
+		   <<t<<" "<<t1<<" "<<t2<<endl;
+    return 0; 
+  }
+
+  //  cout<<"t="<<t<<"   t1="<<t1<<"   t2="<<t2<<endl;
+
+
+  double lambda   = sqrt(sqr(t-t1-t2)-4.*t1*t2);   
+  double z        = mo->z;
+
+  /* 
+     New try for the r's, use them as if the p's were massless
+     and then use rescaled massless p's pointing into the same direction
+     as the massive ones.
+  */
+
+  double r1 = (t+t2-t1-lambda)/(2.*t);
+  double r2 = (t-t2+t1-lambda)/(2.*t);
+  mo->z     = z - r1*z + r2*(1.-z);
+
+  // did we change kinematics after all ? if not, there's nothing to check.
+  if (dabs(mo->z-z) < rpa.gen.Accu()) {
+    msg.Debugging()<<"Passed ShuffleMoms"<<endl;
+    return 1;
+  }
+  else {
+    //    cout<<" z= "<<z<<"  ->  "<<mo->z<<endl;
+  }
+
+
+  msg.Debugging()<<"Check shuffling of z : mother : "<<mo->z<<" "<<z<<endl;
+  // check for more kinematics
+  if (KinCheck(1,mo)) {
+    mo->z = z;
+    msg.Debugging()<<"ShuffleMoms::Failed KinCheck"<<endl;
+    return 0;
+  }
+
+  // set shuffled fourvectors of daughters - and the energies squared 
+  vec4d p1 = d1->part->momentum();
+  vec4d p2 = d2->part->momentum();
+
+  /*
+    redetermine r1, r2, z:
+  */
+  if ((p1.abs2()/d1->E2 > rpa.gen.Accu()) ||
+      (p2.abs2()/d2->E2 > rpa.gen.Accu())) {
+    double t1n = p1.abs2();
+    double t2n = p2.abs2();
+    double A   =  ((t2 - t2n) - (t1 -t1n)) / (t + t1n - t2n);
+    double B   =  (t + t2n-t1n)/ (t + t1n -t2n);
+    double C   =  t - t1n - t2n;
+    double D   =  (2.*t2n - 2. * A*B*t1n + (A - B)*C)/(2.*(t2n + B*B*t1n - B*C));
+    double E   =  (t2n - t2 + A*A*t1n + A*C)/(t2n + B*B*t1n - B*C);
+
+    r2 = D - sqrt(D*D- E);
+    r1 = A + r2*B;
+    vec4d p1a( (1.-r1)*p1 + r2*p2 );
+    vec4d p2a( (1.-r2)*p2 + r1*p1 );
+    vec4d p =mo->part->momentum();
+    mo->z= p1a[0]/p[0];
+
+    // check for more kinematics again
+    //    cout<<" (2) z= "<<z<<"  ->  "<<mo->z<<endl;
+    if (KinCheck(1,mo)) {
+      mo->z = z;
+      msg.Debugging()<<"ShuffleMoms::Failed 2nd KinCheck"<<endl;
+      return 0;
+    }
+  }
+
+  d1->part->set_momentum( (1.-r1)*p1 + r2*p2 );
+  d2->part->set_momentum( (1.-r2)*p2 + r1*p1 );
+  d1->E2   = mo->z*mo->z*mo->E2;
+  d2->E2   = (1.-mo->z)*(1.-mo->z)*mo->E2;
+
+
+
+  /*
+    msg.Debugging()<<"Timelike_Kinematics::ShuffleMoms ("
+                   <<d1->kn_no<<", "<<d2->kn_no<<")"<<endl
+		   <<"      Rs and Es: "<<r1<<", "<<r2<<" : "
+		   <<mo->z*sqrt(mo->E2)<<", "<<(1.-mo->z)*sqrt(mo->E2)<<endl
+		   <<"      should be :"<<sqrt(d1->E2)<<", "<<sqrt(d2->E2)<<endl
+		   <<"      t, p "<<d1->t<<", "<<d1->part->momentum()<<", "
+		   <<d1->part->momentum().abs2()<<endl
+		   <<"      t, p "<<d2->t<<", "<<d2->part->momentum()<<", "
+		   <<d2->part->momentum().abs2()<<endl;
+  */
+
+  return 1;
+};
+
+bool Timelike_Kinematics::KinCheck(int first,Knot * mo) 
+{
+  // KinCheck returns 1 in case the kinematics does not work out,
+  //                  0 in case everything is fine.
+  //  cout<<" KinCheck "<<first<<" ("<<mo->kn_no<<")"<<endl;
+  Knot * d1      = mo->left;
+  Knot * d2      = mo->right;
+  // no daughters no checks
+  if ((d1==0) || (d2==0)) return 0;
+  
+  double w1      = mo->z*mo->z*mo->E2;
+  double w2      = (1.-mo->z)*(1.-mo->z)*mo->E2;
+  double t1      = d1->t;
+  double t2      = d2->t;
+  /*
+  cout<<" ("<<d1->kn_no<<")   w1="<<w1<<"  t1="<<t1<<endl;
+  cout<<" ("<<d2->kn_no<<")   w2="<<w2<<"  t2="<<t2<<endl;
+  {
+    double t      = mo->t, z=mo->z, E2=mo->E2;
+    double p      = sqrt(E2-t);
+    double p1     = sqrt(w1-t1);
+    double p1real = mo->left->part->momentum()[1]; 
+    double p2     = sqrt(w2-t2);
+    double p2real = mo->right->part->momentum()[1]; 
+
+    double cth1 = (p*p-p2*p2+p1*p1)/(2.*p*p1);
+    double sth1 = sqrt(1.-sqr(cth1));
+    cout<<" cth1="<<cth1<<endl;
+  }
+  */
+  // timelike daughters
+  if ((t1>w1) || (t2>w2)) {
+    msg.Debugging()<<"  No timelike daughters:"<<endl
+		   <<"   MO: "<<(*mo)
+		   <<"   dA: "<<(*d1)
+		   <<"   dB: "<<(*d2)<<endl;
+    return 1;
+  }
+
+  double p1p2    = sqrt((w1-t1)*(w2-t2));
+
+  // triangular three momementum relation             //*E2 ?!
+  if (mo->E2-mo->t - (w1-t1 + w2-t2 + 2.*p1p2) > first*rpa.gen.Accu() ) return 1;
+
+  double cosreal = (2.*mo->z*(1.-mo->z)*mo->E2-mo->t+t1+t2)/(2.*p1p2); 
+  // physical opening angle
+  if ((dabs(cosreal) > 1.) && !(first)) {
+    msg.Debugging()<<"Timelike_Kinematics::KinCheck : cosreal = "<<cosreal<<endl
+		   <<"      d1,d2       : "<<t1<<", "<<t2<<endl
+		   <<"      mo(z,E2)    : "<<mo->z<<", "<<mo->E2<<endl;
+    msg.SetPrecision(12);
+    msg.Debugging()<<"      check : "<<2*p1p2*cosreal
+		   <<"    "<<(2.*mo->z*(1.-mo->z)*mo->E2-mo->t+t1+t2)<<endl;
+    msg.SetPrecision(6);
+    return 1;
+  }
+  if (cosreal > 1.)  {
+    //    cout<<" set cosreal="<<cosreal<<"  1"<<endl;
+    cosreal = 1.; 
+  }
+  if (cosreal < -1.) {
+    //    cout<<" set cosreal="<<cosreal<<" -1"<<endl;
+    cosreal = -1.; 
+  }
+  mo->costh = cosreal;
+
+  // physical deflection angle
+  if (cosreal >  1.) mo->costh = 1.;
+  if (cosreal < -1.) mo->costh = -1.;
+  double coth1;
+  if (dabs(mo->E2-mo->t)<rpa.gen.Accu()) {
+    //    cout<<" in     coth1 = -1.; E2= "<<mo->E2<<" t="<<mo->t<<endl;
+    coth1 = -1.;
+  }
+  else { 
+    coth1 = (mo->costh*p1p2+w1-t1)/(sqrt((mo->E2-mo->t)*(w1-t1)));
+  }
+
+  //  if (dabs(coth1)-1 > rpa.gen.Accu()) return 1;
+  if (dabs(coth1) > 1.+rpa.gen.Accu()) return 1;
+
+
+
+  if (!first) {
+    // Test for extra Jet
+    if (jetveto) {      
+      // using pt2
+      double pt2 = mo->z*(1.-mo->z)*mo->t;
+      double tb  = d1->tout;         
+      double tc  = d2->tout;         
+      //      if (pt_scheme == 1) 
+      pt2       -= (1.-mo->z)*tb + mo->z*tc;
+      double pt2th    = sqrt(pt2/mo->E2)/(mo->z*(1.- mo->z));
+      double crudeth  = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );
+      
+      double coscrude = cos(crudeth);
+      msg.Tracking()<<" cos cru = "<<coscrude<<"    ("<<crudeth<<","<<mo->z<<")"<<endl;
+      coscrude        = cos(pt2th);  // *AS* *FK* new choise !!!
+      msg.Tracking()<<" cos cru = "<<coscrude<<"    ("<<pt2th<<","<<pt2<<")"<<endl;
+      
+      int hit=0;
+      if (jf->TwoJets(mo->E2,mo->z,coscrude,0)) {
+	msg.Tracking()<<"      Failed by trigger. coscrude = "<<coscrude<<endl
+		      <<"      "<<mo->kn_no<<" --> "<<d1->kn_no<<" "<<d2->kn_no<<endl;
+	return 1;
+      }
+    }
+    return 0;
+  }
+  else {
+    // check for loosing jets
+    // using pt2
+    /*
+    double pt2 = mo->z*(1.-mo->z)*mo->t;
+    double tb  = d1->tout;         
+    double tc  = d2->tout;         
+    //      if (pt_scheme == 1) 
+    pt2 -= (1.-mo->z)*tb + mo->z*tc;
+    double pt2th  = sqrt(pt2/mo->E2)/(mo->z*(1.- mo->z));
+    double crudeth  = sqrt( mo->t/(mo->z*(1.- mo->z)*mo->E2) );
+      
+    double coscrude=cos(crudeth);
+    coscrude=cos(pt2th);  // *AS* *FK* new choise !!!
+      
+    int hit=0;
+    if (! (jf->TwoJets(mo->E2,mo->z,coscrude,0))) {
+      msg.Tracking()<<"      Failed by trigger. coscrude = "<<coscrude<<endl
+		    <<"      "<<mo->kn_no<<" --> "<<d1->kn_no<<" "<<d2->kn_no<<endl;
+      return 1;
+    }
+    */
+
+    return 0;
+  }
+
+
+  // already known daughters to be checked
+  // *AS* only if momenta not jet set!
+  if (first) { 
+    // one might have gand daughters with already fixed momenta
+    if (d1->stat!=0) { if (KinCheck(first,d1)) return 1; }
+    if (d2->stat!=0) { if (KinCheck(first,d2)) return 1; }
+    return 0;
+  }
+ 
+  if (KinCheck(first,d1)) return 1; 
+  if (KinCheck(first,d2)) return 1;
+  return 0;
+};
+
+
+bool Timelike_Kinematics::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
+  // check for loosing jets
+  // using pt2
+  double z;
+  double E2;
+  double t;
+  if (mo) {
+    z  = mo->z;
+    E2 = mo->E2;
+    t  = mo->t;
+  } 
+  else {
+    vec4d mom = d1->part->momentum() + d2->part->momentum();
+    msg.Debugging()<<" E2="<<E2;
+    E2   = sqr(mom[0]);
+    msg.Debugging()<<" vs. "<<E2<<endl;
+    msg.Debugging()<<" z="<<z;
+    z    = d1->part->momentum()[0]/mom[0];
+    msg.Debugging()<<" vs. "<<z<<endl;
+    msg.Debugging()<<" t="<<t;
+    t    = mom.abs2();
+    msg.Debugging()<<" vs. "<<t<<endl;
+  }
+
+  double pt2 = z*(1.-z)*t;
+  double tb  = d1->tout;         
+  double tc  = d2->tout;         
+  //      if (pt_scheme == 1) 
+  pt2 -= (1.-z)*tb + z*tc;
+  double pt2th  = sqrt(pt2/E2)/(z*(1.- z));
+  double crudeth  = sqrt( t/(z*(1.- z)*E2) );
+  
+  double coscrude=cos(crudeth);
+  coscrude=cos(pt2th);  // *AS* *FK* new choise !!!
+  
+  int hit=0;
+  if (! (jf->TwoJets(E2,z,coscrude,0))) {
+    msg.Tracking()<<"      Failed by trigger. coscrude = "<<coscrude<<endl
+		  <<"      "<<d1->kn_no<<" "<<d2->kn_no<<endl;
+    return 0;
+  }
+  return 1;
+}
+
+
+bool Timelike_Kinematics::JetVeto(double mo_t, double mo_e2, double mo_z, 
+				  double tb, double tc) 
+{
+  if (jetveto) {      
+    // using pt2
+    double pt2 = mo_z*(1.-mo_z)*mo_t;
+//     double tb  = d1->tout;         
+//     double tc  = d2->tout;         
+    //      if (pt_scheme == 1) 
+    pt2       -= (1.-mo_z)*tb + mo_z*tc;
+    double pt2th    = sqrt(pt2/mo_e2)/(mo_z*(1.- mo_z));
+    double crudeth  = sqrt( mo_t/(mo_z*(1.- mo_z)*mo_e2) );
+    
+    double coscrude = cos(crudeth);
+//     cout<<" cos cru = "<<coscrude<<"    ("<<crudeth<<","<<mo_z<<")"<<endl;
+//     cout<<" cos cru = "<<coscrude<<"    ("<<pt2th<<","<<mo_z<<")"<<endl;
+    coscrude        = cos(pt2th);  // *AS* *FK* new choise !!!
+    
+    if (jf->TwoJets(mo_e2,mo_z,coscrude,0)) {
+      msg.Tracking()<<"      Failed by JetVeto. coscrude = "<<coscrude<<endl;
+      return 1;
+    }
+  }
+  return 0;
+}
+
+//-----------------------------------------------------------------------
+//--------------------- Evaluation of the kinematics --------------------
+//----------------------------------------------------------------------- 
+ 
+bool Timelike_Kinematics::DoKinematics(Knot * mo) 
+{
+  if (!(mo)) return 1;
+  
+  msg.Debugging()<<"Timelike_Kinematics::DoKinematics : ("<<mo->kn_no<<")"<<endl
+		 <<"t, p, E   "<<mo->t<<", "<<mo->part->momentum()<<", "
+		 <<mo->part->momentum().abs2()<<", "<<sqrt(mo->E2)<<endl;
+  if (!(mo->left)) {
+    if (mo->part->info()==' ') {
+      mo->part->set_status(1);
+      mo->part->set_info('F');
+    }
+
+    msg.Debugging()<<"t, p "<<mo->t<<", "<<mo->part->momentum()<<", "
+		   <<mo->part->momentum().abs2()<<endl;
+
+    return 1;
+  }
+  
+  double t      = mo->t, z=mo->z, E2=mo->E2;
+  double p      = sqrt(E2-t);
+  double t1     = mo->left->t, w1 = mo->left->E2;
+  double p1     = sqrt(w1-t1);
+  double p1real = mo->left->part->momentum()[1]; 
+  double t2     = mo->right->t,w2 = mo->right->E2;
+  double p2     = sqrt(w2-t2);
+  double p2real = mo->right->part->momentum()[1]; 
+  
+  if (p1real!=0.) {
+    // cure momenta of incoming particles!!!  
+    // assuming only two initial partons!!!  ::>  if (!(mo->prev)
+    
+    // *AS*: the following does not work! cf. ShuffleMoms
+    //       but (hopefully) there is nothing to cure anyway
+  }
+  else {
+    mo->part->set_status(2);
+    // get sister of mother
+    Knot * au = mo->prev->left;
+    int sign  = 0;
+    if (mo==au) {
+      au      = mo->prev->right;
+      sign    = 1;
+    }
+    // get normalised vecs
+    vec3d na(au->part->momentum()); // aunt
+    vec3d nm(mo->part->momentum()); // mother
+    na = na/na.abs();
+    nm = nm/nm.abs();
+    
+    // define local frame (3D root vectors:  nm, n1, n2 )
+    // note (1): n1 in aunt kinematics is (-n1) in mother kinematics!
+    vec3d n1     = cross(na,nm);
+    double n1abs = n1.abs();
+    // definite axes ???
+    // try z axis if "na" and "nm" too collinear
+    if (n1abs<1.e-5) {
+      n1         = cross(vec3d(0.,0.,1.),nm);
+      n1abs      = n1.abs();
+    }
+    // try y axis if "z-axis" and "nm" too collinear
+    if (n1abs<1.e-5) {
+      n1         = cross(vec3d(0.,1.,0.),nm);
+      n1abs      = n1.abs();
+    }
+    
+    n1           = n1/n1abs;
+    if (sign) n1 = -1.*n1;  //!!!
+    vec3d n2     = cross(nm,n1);
+    
+    // use angles
+    double sph=sin(mo->phi),cph=cos(mo->phi);
+    // decay plane spanned by es and nm
+    // check sign!!! cf. also note (1) above
+    vec3d es   = cph*n1 + sph*n2;
+    
+    double cth1 = (p*p-p2*p2+p1*p1)/(2.*p*p1);
+    double sth1 = sqrt(1.-sqr(cth1));
+    // daughter2 angle (possibly negative?!)
+    double cth2 = (p*p+p2*p2-p1*p1)/(2.*p*p2);
+    double sth2 = sqrt(1.-sqr(cth2));
+    
+    // update costh of mother
+    // (splitting angle might be enlarged due to reduced virtuality of daughters)
+    mo->costh   = cth1*cth2-sth1*sth2;
+ 
+    vec3d p1vec = p1*(cth1*nm - sth1*es);
+    mo->left->part->set_momentum(vec4d(sqrt(w1),p1vec));
+    
+    vec3d p2vec = p2*(cth2*nm + sth2*es);
+    mo->right->part->set_momentum(vec4d(sqrt(w2),p2vec));
+    
+    bool error = (CheckVector(mo->part->momentum()) || 
+                  CheckVector(mo->left->part->momentum()) || 
+                  CheckVector(mo->right->part->momentum()));
+    if (error) msg.Error()<<"Error after CheckVector() !"<<endl;
+    if ( (mo->part->momentum()-mo->left->part->momentum()-
+	  mo->right->part->momentum()).abs2() > rpa.gen.Accu()) error = 1;
+
+    // *AS* 
+    /*
+    cout<<"creation:"<<mo->kn_no<<endl;
+    cout<<" mo: "<<mo->part->momentum()<<endl
+	<<" d1: "<<mo->left->part->momentum()<<endl 
+        <<" d2: "<<mo->right->part->momentum()<<endl;
+    */    
+
+    double py=mo->left->part->momentum()[2];
+    if (!(py<0) && !(py>0)) error =1;
+
+
+    if (error) {
+      msg.Error()<<"Error in Timelike_Kinematics."<<endl;
+      cout<<" cth1 = "<<cth1<<"  sth1 = "<<sth1<<endl
+	  <<" cth2 = "<<cth2<<"  sth2 = "<<sth2<<endl;
+      cout<<" nm = "<<nm<<endl;
+      cout<<" na = "<<na<<endl;
+      cout<<" n1 = "<<n1<<endl;
+      cout<<" n2 = "<<n2<<endl;
+      cout<<" es = "<<es<<endl;
+      cout<<" es = "<<es<<endl;
+      msg.Error()<<"Timelike_Kinematics::DoKinematics : After moms set"<<endl
+		 <<"    Mother & Daughters :"<<endl
+		 <<"    mother : "<<t<<","<<z<<","<<E2<<endl
+		 <<"    d1     : "<<t1<<","<<w1<<" ("<<(z*z*E2)<<")"<<endl
+		 <<"    d2     : "<<t2<<","<<w2<<" ("<<((1.-z)*(1.-z)*E2)<<")"<<endl
+		 <<"    no, p "<<mo->kn_no<<", "<<mo->part->momentum()<<", "<<endl
+		 <<"      "<<mo->part->momentum().abs2()<<"("<<mo->t<<")"<<endl
+		 <<"    flav : "<<mo->part->flav()<<endl
+		 <<"    no, p "<<mo->left->kn_no<<", "<<mo->left->part->momentum()<<", "<<endl
+		 <<"      "<<mo->left->part->momentum().abs2()
+		 <<"("<<mo->left->t<<", "<<mo->left->E2<<", "<<p1<<") "<<endl
+		 <<"    flav : "<<mo->left->part->flav()<<endl
+		 <<"    no, p "<<mo->right->kn_no<<", "<<mo->right->part->momentum()<<", "<<endl
+		 <<"      "<<mo->right->part->momentum().abs2()
+		 <<"("<<mo->right->t<<", "<<mo->right->E2<<", "<<p2<<") "<<endl
+		 <<"    flav : "<<mo->right->part->flav()<<endl
+		 <<"    Three Vectors :"<<endl
+		 <<"    "<<es<<endl<<"    "<<na<<endl<<"    "<<nm<<endl
+		 <<"    Just for fun : prev :"<<endl
+		 <<"    no, p "<<mo->prev->kn_no<<", "<<mo->prev->part->momentum()<<", "<<endl
+		 <<"      "<<mo->prev->part->momentum().abs2()<<"("<<mo->prev->t<<")"<<endl
+		 <<"    flav : "<<mo->prev->part->flav()<<endl;
+      if (mo->prev->left == mo) {
+	msg.Error()<<"    Just for fun : prev->right :"<<endl
+		   <<"    no, p "<<mo->prev->right->kn_no<<", "
+		   <<mo->prev->right->part->momentum()<<", "<<endl
+		   <<"      "<<mo->prev->right->part->momentum().abs2()
+		   <<"("<<mo->prev->right->t<<")"<<endl
+		   <<"    flav : "<<mo->prev->right->part->flav()<<endl;
+      }
+      else {
+	msg.Error()<<"    Just for fun : prev->left :"<<endl
+		   <<"    no, p "<<mo->prev->left->kn_no<<", "
+		   <<mo->prev->left->part->momentum()<<", "<<endl
+		   <<"      "<<mo->prev->left->part->momentum().abs2()
+		   <<"("<<mo->prev->left->t<<")"<<endl
+		   <<"    flav : "<<mo->prev->left->part->flav()<<endl;
+      }
+      return 0;
+    }
+  }
+
+  if (!DoKinematics(mo->left))  return 0;
+  if (!DoKinematics(mo->right)) return 0;
+
+
+
+  // *AS* daughter trees are perhaps to be boosted/rotated, checking...
+  /*
+  cout<<" before boost:"<<mo->kn_no<<endl;
+  cout<<" mo: "<<mo->part->momentum()<<endl
+      <<" d1: "<<mo->left->part->momentum()<<endl 
+      <<" d2: "<<mo->right->part->momentum()<<endl;
+  */
+  BoostDaughters(mo);
+  /*
+  cout<<" after boost:"<<mo->kn_no<<endl;
+  cout<<" mo: "<<mo->part->momentum()<<endl
+      <<" d1: "<<mo->left->part->momentum()<<endl 
+      <<" d2: "<<mo->right->part->momentum()<<endl;
+  */
+  
+  return 1;
+};
+
+
+bool Timelike_Kinematics::ArrangeColourPartners(Knot * au,Knot * d1,Knot * d2) {
+  // if (au->part->flav() != Flavour(kf::gluon)) return 0;
+  if (!au) return 0;
+  if (!d1) return 0;
+  if (!d2) return 0;
+  if (jf->PTij(au->part->momentum(),d1->part->momentum()) <
+      jf->PTij(au->part->momentum(),d2->part->momentum()) ) {
+    msg.Debugging()<<"ReArrangeColourPartners for :"<<endl
+		   <<au->part<<endl<<d1->part<<endl<<d2->part<<endl;
+    return 0;
+  }
+  return 1;
+}
+
+
+
+
+bool Timelike_Kinematics::CheckVector(vec4d vec) {
+  if ( (vec.abs2() > 0) && (vec.abs2() < 0) ) return 1;
+  if (vec[0] < 0) return 1;
+  return 0;
+}
+ 
+ 
+void Timelike_Kinematics::BoostDaughters(vec4d pold, vec4d pnew, 
+					 const vec4d & pmom, Knot * mo) {
+
+  int bigboost=0;
+  vec3d prot = cross(vec3d(pnew),vec3d(pold));
+  msg.Debugging()<<" pnew x pold="<<prot<<endl;
+
+  Poincare bmom;  // boost into/ out off mother system
+  msg.Debugging()<<" pold="<<pold<<endl<<" pnew="<<pnew<<endl;
+
+  if (prot.abs()>rpa.gen.Accu()) { 
+    // comparison should be relative (perhaps write "sin" routine)
+    // "rotate and boost"
+    bigboost=1;
+    // determine rotation
+    bmom= Poincare(pmom);
+
+    msg.Debugging()<<" p...="<<mo->left->part->momentum()+mo->right->part->momentum()<<endl;
+    Tree::BoRo(bmom,mo->left);
+    Tree::BoRo(bmom,mo->right);
+    bmom.Boost(pold);
+    bmom.Boost(pnew);
+
+    bmom=Poincare(vec4d(pmom[0],-1.*vec3d(pmom)));
+  }
+  // boost only
+
+  msg.Debugging()<<" pold="<<pold<<endl<<" pnew="<<pnew<<endl;
+  
+  // determine boost
+  Poincare bos1(pnew);
+  Poincare bos(bos1*pold);
+  
+  // Boost daughters
+  msg.Debugging()<<" p...="<<mo->left->part->momentum()+mo->right->part->momentum()<<endl;
+  Tree::BoRo(bos,mo->left);
+  Tree::BoRo(bos,mo->right);
+  
+  if (bigboost) {
+    msg.Debugging()<<" p...="<<mo->left->part->momentum()+mo->right->part->momentum()<<endl;
+    Tree::BoRo(bmom,mo->left);
+    Tree::BoRo(bmom,mo->right);
+  }
+
+  msg.Debugging()<<" p   ="<<mo->left->part->momentum()+mo->right->part->momentum()<<endl;
+}
+
+void Timelike_Kinematics::BoostDaughters(Knot * mo) {
+  Knot * d1= mo->left;
+  Knot * d2= mo->right;
+  vec4d p=d1->part->momentum()+d2->part->momentum();
+  if (d1->left) {
+    vec4d p1old = d1->left->part->momentum() + d1->right->part->momentum();
+    vec4d p1new = d1->part->momentum();
+    if (p1new != p1old) {
+      BoostDaughters(p1old,p1new,p,d1);
+    }
+  }
+  if (d2->left) {
+    vec4d p2old = d2->left->part->momentum() + d2->right->part->momentum();
+    vec4d p2new = d2->part->momentum();
+    if (p2new != p2old) {
+      BoostDaughters(p2old,p2new,p,d2);
+    }
+  }
+
+}

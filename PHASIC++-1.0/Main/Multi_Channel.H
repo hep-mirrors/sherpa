@@ -1,0 +1,160 @@
+#ifndef Multi_Channel_h
+#define Multi_Channel_h
+
+#include "Single_Channel.H"
+#include <vector>
+
+namespace PHASIC {
+  struct Channel_Info {
+    int                  type;
+    std::vector <double> parameters;
+
+    bool operator==(const Channel_Info & ci) {
+      if (type != ci.type)                           return 0;
+      if (parameters.size() != ci.parameters.size()) return 0;
+      for (int i=0;i<parameters.size();i++) {
+	if (parameters[i] != ci.parameters[i])       return 0;
+      }
+      return 1;
+    }
+    bool operator!=(const Channel_Info & ci) { return (!(operator==(ci))); }
+  };
+
+  /*!
+    This is the Multi_Channel, AMEGICs preferred integration
+    tool. The idea is to have a vector of Single_Channels
+    that are repeatedly called according to their a priori 
+    weights (alpha in the channels). These weights are optimized
+    during integration such that the overall variance is minimized.
+  */
+  class Multi_Channel {
+  protected :
+    /*!
+      Some basic ingredients for all channels :
+      numbers of legs and their flavours (not needed for isr)
+      and the name of the channel. This name might be given explicitly 
+      (for instance for ISR_Channels) or it may be constructed from amplitudes 
+      in the Phase_Space/Channel_Generator.
+    */
+    int                           nin, nout;
+    APHYTOOLS::Flavour          * fl;
+    std::string                   name;
+    /*!
+      Stuff for the immediate integration 
+    */
+    long int                      n_points,n_contrib;
+    double                        weight,result,result2;
+
+    double                        rans[2];
+    double                        s1xmin, * s1, * s2;
+    std::vector<Single_Channel *> channels;
+  public:
+    Multi_Channel(std::string);
+    ~Multi_Channel();
+
+    /*!
+      Managing the multichannel, adding and dropping channels as well as
+      access to individual channels.
+    */
+    void             Add(Single_Channel *);  
+    void             DropAllChannels();    
+    void             DropChannel(int);     
+    Single_Channel * Channel(int); 
+
+    /*!
+      Reset does a complete reset of the multi-channel. All a-priori weights are reset
+      to uniform probabilities, the individual channels are reset, and the actual weights
+      of all channels are set to 0. Furthermore, the result and the result2 within
+      the multi-channel are set to 0, the minimal spread so far is set to some 
+      arbitrary high value. If not existing so far, spread-vectors are initialized.      
+    */
+    void    Reset();
+    /*!
+      Here the counters within an iterations are reset to 0. 
+      I doubt whether we need this.
+    */
+    void    ResetOpt();
+    /*!
+      Optimzing the a-priori weights of the multi-channel.
+      The idea is to compare the individual variance with their average and
+      reshuffle the a-priori weights such that all variances would equal the
+      average. What I find strange in this method at the moment is the occurence
+      of s2 ... . I'll have to check this ... .
+    */
+    void    Optimize(double);
+    /*!
+      Endoptimize replaces, after an ordinary optimization step, the set of a-priori weights
+      with the best set so far which has been stored during the optimization procedure.
+      Channels, whose a-priori weight drops under a critical value are discarded
+      in the follwoing by setting their a-priori weights to 0.
+    */
+    void    EndOptimize(double);
+    /*!
+      A value is added to the multi-channel, and, in due proportion, to the
+      individual channels. This amounts to incrementing the results and the results squared
+      of the channels, for the multi-channel, the global result(2) is incremented,
+      for the individual channels within, the res(1,2,3) are incremented that are valid
+      only during one iteration.
+    */
+    void    AddPoint(double);
+
+    /*!
+      The variance of a statistical distribution (values accumulated in result and their
+      squares in result2) over a number of trials. This is equivalent to one Standard deviation
+      and thus a measure for the quality of an integral-estimate.
+    */
+    double Variance();
+    /*!
+      Methods for the generation of phase space points
+    */
+    void   GeneratePoint(int,AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *,double *);
+    void   GenerateWeight(int,AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);
+    void   GeneratePoint(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);
+    void   GenerateWeight(AMATOOLS::vec4d *,APHYTOOLS::Cut_Data *);     
+
+    void   GeneratePoint(int,AMATOOLS::vec4d *,double *);
+    void   GenerateWeight(int,AMATOOLS::vec4d *);
+    void   GeneratePoint(AMATOOLS::vec4d *);
+    void   GenerateWeight(AMATOOLS::vec4d *);     
+
+    void   GeneratePoint(int n,double & sprime,double & y,int mode);
+    void   GenerateWeight(int n,double sprime,double y,int mode);
+    void   GeneratePoint(double & sprime,double & y,int mode);
+    void   GenerateWeight(double sprime,double y,int mode);
+
+    void ISRInfo(int,int &,double &,double &);
+    int  CountResonances(int,APHYTOOLS::Flavour*&);
+
+    void Print();
+
+    /*!
+      This is used for ISR Channels to set the y and s' range.
+    */
+    void SetRange(double * sprimerange,double * yrange) {
+      for (int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
+    };
+    void GetRange() {
+      AORGTOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
+      for (int i=0;i<channels.size();i++) channels[i]->GetRange();
+    }
+    void WriteOut(std::string);
+    bool ReadIn(std::string);
+
+    /*!
+      Simple access methods
+    */
+
+    inline int                  Number()    { return channels.size(); }
+    inline int                  N()         { return n_points; }
+    inline int                  ValidN()    { return n_contrib; }
+    inline int                  Nin()       { return nin; }
+    inline int                  Nout()      { return nout; }
+    inline APHYTOOLS::Flavour * Flavs()     { return fl; }
+    inline double               Weight()    { return weight; }
+    inline double               Result()    { return result; }
+    inline std::string          Name()      { return name; }
+  };
+}
+
+
+#endif

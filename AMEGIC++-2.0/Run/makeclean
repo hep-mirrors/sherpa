@@ -1,0 +1,7 @@
+cd Process
+rm -rf 2_* V2* P2*
+cp -f Set_Values.C.clean Set_Values.C
+cp -f Set_Channel.C.clean Set_Channel.C 
+cd ../..; automake; cd Run/Process
+make install
+cd ..

@@ -1,0 +1,216 @@
+#include "Run_Parameter.H"
+#include "Message.H"
+#include "Single_Amplitude.H"
+#include "Kabbala.H"
+#include "Zfunc_Generator.H"
+
+using namespace AMEGIC;
+using namespace AORGTOOLS;
+using namespace APHYTOOLS;
+using namespace std;
+
+#define Cut_Fermion_Prop
+
+Single_Amplitude::Single_Amplitude(Point* _p,int* _b,int dep,int _no,
+				   Topology* top,
+				   Basic_Sfuncs* _BS,
+				   Flavour* _fl,
+				   String_Handler* _shand) 
+  : Single_Amplitude_Base(_b,_no,_BS,_fl,_shand)
+{
+
+  static int first = 1;
+
+  if (first) {
+    first = 0;
+#ifdef Cut_Fermion_Prop
+    msg.Debugging()<<"Cutting Fermions according to the outer particle version."<<endl;
+#else
+    msg.Debugging()<<"Cutting Fermions according to the Propagator version."<<endl;
+#endif
+  }
+  icoul = 0;
+  on = 1;
+  Pointlist = new Point[dep];
+  Next = 0;
+  int ll = 0;
+  top->Copy(_p,Pointlist,ll);
+
+  CFlist  = NULL;
+  CCFlist = NULL;
+  spind   = NULL;
+  SetStringOn(); 
+
+  static int ampltotalnumber = 0;
+  ampltotalnumber++;
+  amplnumber = ampltotalnumber;
+}
+
+Single_Amplitude::~Single_Amplitude() 
+{
+  delete[] Pointlist;
+  //Zlist,Clist,Plist
+
+  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) delete (*zit);
+  for (list<Pfunc*>::iterator pit=plist.begin();pit!=plist.end();++pit) delete (*pit);
+  
+  SpinorDirection* sd;
+  SpinorDirection* sd2;
+  sd = spind;
+  while (sd) {
+    sd2 = sd;
+    sd = sd->Next;
+    delete sd2;
+  }
+
+  Color_Function* c;
+  Color_Function* c2;
+  c = CFlist;
+  while (c) {
+    c2 = c;
+    c = c->Next;
+    delete c2;
+  }
+
+  c = CCFlist;
+  while (c) {
+    c2 = c;
+    c = c->Next;
+    delete c2;
+  }
+  
+
+}
+
+void Single_Amplitude::AddSpinorDirection(const int& from,const int& to)
+{
+  SpinorDirection* sd = new SpinorDirection;
+  sd->from = from;
+  sd->to   = to;
+  sd->Next = 0;
+
+  if (spind) {
+    SpinorDirection* help;
+    help = spind;
+    while (help->Next) help = help->Next; 
+    help->Next = sd;  
+  }
+  else spind = sd;
+}
+
+
+
+void Single_Amplitude::PrintGraph() 
+{
+  if (!rpa.gen.Debugging()) return;
+  cout<<"rpa.gen.Debugging()="<<rpa.gen.Debugging()<<endl;
+
+  AORGTOOLS::msg.Out()<<"--------"<<amplnumber+1<<". Amplitude----------"<<endl;
+
+  Single_Amplitude_Base::PrintGraph();
+
+  Color_Function* c;
+  c = CFlist;
+  AORGTOOLS::msg.Out()<<"Color-matrix: ";
+  while(c) {
+    switch (c->type) {
+      case  0: {
+	AORGTOOLS::msg.Out()<<"T("<<c->partarg[0]<<" "<<c->partarg[1]
+			    <<" "<<c->partarg[2]<<") ";
+	break;
+      }
+      case  1: {
+	AORGTOOLS::msg.Out()<<"F("<<c->partarg[0]<<" "<<c->partarg[1]
+			    <<" "<<c->partarg[2]<<") ";
+	break;
+      }
+      case 10: {
+	AORGTOOLS::msg.Out()<<"TP("<<c->partarg[0]<<" "<<c->partarg[1]
+			    <<" "<<c->partarg[2]<<") ";
+	break;
+      }
+    }
+    c = c->Next;     
+  }
+  AORGTOOLS::msg.Out()<<endl<<"Color-string: "<<Colstring<<endl<<endl<<"Spinflow:"<<endl;
+  SpinorDirection* sd = spind;
+  while(sd) {
+    AORGTOOLS::msg.Out()<<sd->from<<" -> "<<sd->to<<endl;
+    sd = sd->Next;     
+  }
+
+  AORGTOOLS::msg.Out()<<"Overall sign "<<sign<<endl;
+}
+
+void Single_Amplitude::Zprojecting(Flavour* fl,int ngraph)
+{
+  CFlist  = NULL;
+  CCFlist = NULL;
+  
+  Color_Generator cgen;
+  cgen.CFConvert(Pointlist);  
+  cgen.CFKill();
+  cgen.CFBuildString(N);  
+  CFlist  = cgen.Get_CF();
+  CCFlist = cgen.Get_CCF();
+  CFColstring = cgen.CF2String(CFlist);
+  CFColstringC = cgen.CF2String(CCFlist);
+        
+  Zfunc_Generator zgen(BS);
+  zgen.BuildZlist(shand->Get_Generator(),BS);
+  zgen.LorentzConvert(Pointlist);
+  zgen.MarkCut(Pointlist,0);
+  zgen.Convert(Pointlist);
+  zgen.SetDirection(N,spind);
+  zgen.Get(zlist);
+  
+  Prop_Generator pgen;
+  pgen.Convert(Pointlist);
+  pgen.Fill();
+  pgen.Kill(zlist);
+  pgen.Get(plist);
+}
+
+void Single_Amplitude::FillCoupling(String_Handler* _shand) 
+{
+  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+    Zfunc* z = (*zit);
+    for (short int i=0;i<z->ncoupl;i++) {
+      (_shand->Get_Generator())->Get_Cnumber(z->coupl[i]);
+    }
+  }
+}
+
+void Single_Amplitude::MPolconvert(int alt,int neu)
+{
+  for (list<Zfunc*>::iterator zit=zlist.begin();zit!=zlist.end();++zit) {
+    Zfunc* z = (*zit);
+    for (int i=0;i<z->narg;i++) {
+      if (z->arg[i]==alt) z->arg[i]=neu;
+    } 
+  }  
+}
+
+void Single_Amplitude::Prop_Replace(Flavour falt,int alt,int neu1,int neu2)
+{
+  Pfunc* Ph = new Pfunc;
+
+  Ph->on = 0;
+  Ph->fl = falt;
+  Ph->arg = new int[3];
+  Ph->argnum = 3;
+  Ph->arg[0] = alt;
+  Ph->arg[1] = neu1;
+  Ph->arg[2] = neu2;
+
+  plist.push_back(Ph);
+}
+
+
+
+
+
+
+
+
+

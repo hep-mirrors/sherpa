@@ -1,0 +1,68 @@
+!---------------------------------------------------------
+!-- Parameters of the SM ---------------------------------
+!---------------------------------------------------------
+m_up          = .005	! mass of up-quark
+m_down        = .01	! mass of down-quark
+m_e-          = .000511	! mass of electron
+m_charm       = 1.35    ! mass of charm-quark
+m_strange     = .2	! mass of strange-quark
+m_mu          = .105	! mass of muon
+m_top         = 175.	! mass of top-quark
+m_bottom      = 5.	! mass of bottom-quark
+m_tau         = 1.777	! mass of tauon	
+!Racoon Parameter
+alpha_S(MZ)  = .11     ! alpha_s(M_Z) (initialisation for running)
+alpha_S_fixed = .11     ! effective coupling 
+v             = 246.0   ! vev of SM Higgs-field
+m_H_SM        = 115.0   ! SM Higgs mass (only for non-SUSY)
+alpha_QED(MZ) = 128.    ! 1/alpha_QED(M_Z)
+!alpha_QED(MZ) = 122.84 ! 1/alpha_QED(M_Z)
+sinTW^2       = .23     ! Sin^2(Theta_Weinberg)
+!sinTW^2      = .2319   ! Sin^2(Theta_Weinberg)
+!sinTW^2       = .225912 ! Sin^2(Theta_Weinberg)
+lambda        = .0      ! lambda of Wolfenstein's CKM                             
+A             = .0      ! A of Wolfenstein's CKM                             
+rho           = .0      ! rho of Wolfenstein's CKM                             
+eta           = .0      ! eta of Wolfenstein's CKM                             
+!----------------------------------------------------------
+!--- Parameters of SUSY -----------------------------------
+!----------------------------------------------------------
+!  float M0    = float(dr.GetValue<double>("M_0"));
+!  float M12   = float(dr.GetValue<double>("M_(1/2)"));
+!  float A0    = float(dr.GetValue<double>("A0"));
+!  float tanb  = float(dr.GetValue<double>("tanb"));
+!  float sgnmu = float(dr.GetValue<double>("sgn(mu)"));
+!  float Mt    = float(dr.GetValue<double>("M_t"));
+tan(beta)     = 10.	! ratio of vevs  v2/v1
+m_2           = 156.    ! former 27. mass related to SU(2)
+m_3           = 81.     ! former 27. mass related to SU(2)
+mu            = 504.0   ! mu (h in Rosiek)  
+M_A0          = 683.412 ! Mass of pseudoscalar Higgs
+!ML2(1)        = 470.75 ! Soft breaking sLepton-Left mass (1. generation)
+!ML2(2)        = 470.75 ! Soft breaking sLepton-Left mass (2. generation)
+ML2(1)        = 479.3   ! Soft breaking sLepton-Left mass (1. generation)
+ML2(2)        = 479.3   ! Soft breaking sLepton-Left mass (2. generation)
+ML2(3)        = 477.47  ! Soft breaking sLepton-Left mass (3. generation)
+MR2(1)        = 425.5   ! Soft breaking sLepton-Right mass (1. generation)
+MR2(2)        = 425.5   ! Soft breaking sLepton-Right mass (2. generation)
+MR2(3)        = 421.21  ! Soft breaking sLepton-Right mass (3. generation)
+!ls(1,2)       = 0.      ! Soft breaking Yukawa (superpotential-like) (1.,2. generation)
+!ls(3)         = 0.      ! Soft breaking Yukawa (superpotential-like) (3. generation)
+!ks(1,2)       = 0.      ! Soft breaking Yukawa (1.,2. generation)
+!ks(3)         = 0.      ! Soft breaking Yukawa (3. generation)
+A_l           = -244.92 
+MQ2(1)        = 902.    !
+MQ2(2)        = 902.    !
+MQ2(3)        = 817.    !
+MU2(1)        = 875.25  ! 
+MU2(2)        = 875.25  !
+MU2(3)        = 697.43  !
+!us(1,2)       = 0.     !
+!us(3)         = 0.     !
+!ws(1,2)       = 0.     !
+!ws(3)         = 0.     !
+A_t           = -727.
+MD2(1)        = 872.    ! 
+MD2(2)        = 872.    ! 
+MD2(3)        = 866.72  ! 
+A_b           = -1038.37

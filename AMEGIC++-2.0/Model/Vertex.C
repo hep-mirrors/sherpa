@@ -1,0 +1,693 @@
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <iomanip>
+#include <stdio.h>
+
+#include "Vertex.H"
+#include "Model.H"
+#include "Run_Parameter.H"
+#include "Message.H"
+#include "Vector.H"
+#include "String_Tree.H"
+
+using namespace AMEGIC;
+using namespace AMATOOLS;
+using namespace APHYTOOLS;
+using namespace AORGTOOLS;
+using namespace std;
+
+
+void Vertex::GenerateVertex()
+{
+  int vanz_save = nvertex; 
+  int vanz4_save = n4vertex; 
+  
+  Single_Vertex dummy;
+  
+  for (int i=0;i<vanz4_save;++i) {
+    int hit = 1;
+    if (hit) {
+      if (AMATOOLS::IsZero(v4[i].cpl[0]) && AMATOOLS::IsZero(v4[i].cpl[1]))
+	v4[i].on = 0;
+      else { 
+	if(v4[i].nleg==4) {
+	  for (short int k=1;k<5;k++) {
+	    for (short int l=1;l<5;l++) {
+	      if (l!=k) {
+		for (short int m=1;m<5;m++) {
+		  if (m!=l && m!=k) {
+		    for (short int n=1;n<5;n++) {
+		      if (n!=l && n!=k && n!=m) {
+			if (k!=1) k = -k;
+			if (l==1) l = -l;
+			if (m==1) m = -m;
+			if (n==1) n = -n;
+			if (SetVertex(v4[i],dummy,k,l,m,n)) {
+			  v4[n4vertex] = dummy;
+			  n4vertex++;
+			}
+			if (SetVertex(v4[i],dummy,-k,-l,-m,-n)) {
+			  v4[n4vertex] = dummy;
+			  n4vertex++;
+			}
+			k = abs(k);l=abs(l);m=abs(m);n=abs(n);
+		      }
+		    }
+		  }
+		}
+	      } 
+	    }
+	  }
+	}
+      }
+    }
+  }
+  for (int i=0;i<vanz_save;++i) {
+    int hit = 1;
+    if (hit) {
+      if (AMATOOLS::IsZero(v[i].cpl[0]) && AMATOOLS::IsZero(v[i].cpl[1]))
+	v[i].on = 0;
+      if (v[i].nleg==3) {  
+	  for (short int k=1;k<4;k++) {
+	    for (short int l=1;l<4;l++) {
+	      if (l!=k) {
+		for (short int m=1;m<4;m++) {
+		  if (m!=l && m!=k) {
+		    if (k!=1) k = -k;
+		    if (l==1) l = -l;
+		    if (m==1) m = -m;
+		    if (SetVertex(v[i],dummy,k,l,m)) {
+		      v[nvertex] = dummy;
+		      nvertex++;
+		    }
+		    if (SetVertex(v[i],dummy,-k,-l,-m)) {
+		      v[nvertex] = dummy;
+		      nvertex++;
+		    }
+		    k = abs(k);l=abs(l);m=abs(m);
+		  }
+		}
+	      }
+	    }
+	  }
+      }
+    }
+  }
+}
+
+
+int Vertex::CheckExistence(Single_Vertex& probe)
+{
+  //4 leg vertices
+  if (probe.nleg==4) {
+    for (short int i=0;i<n4vertex;++i) {     
+      // 0 -> 1 2 3
+      if (v4[i].in[0]==probe.in[0] &&
+	  v4[i].in[1]==probe.in[1] &&
+	  v4[i].in[2]==probe.in[2] &&
+	  v4[i].in[3]==probe.in[3]) return 0;
+      /*
+      // 0 -> 1 3 2
+      if (v4[i].in[0]==probe.in[0] &&
+	  v4[i].in[1]==probe.in[1] &&
+	  v4[i].in[2]==probe.in[3] &&
+	  v4[i].in[3]==probe.in[2]) return 0;
+      // 0 -> 2 1 3
+      if (v4[i].in[0]==probe.in[0] &&
+	  v4[i].in[1]==probe.in[2] &&
+	  v4[i].in[2]==probe.in[1] &&
+	  v4[i].in[3]==probe.in[3]) return 0;
+      // 0 -> 2 3 1
+      if (v4[i].in[0]==probe.in[0] &&
+	  v4[i].in[1]==probe.in[2] &&
+	  v4[i].in[2]==probe.in[3] &&
+	  v4[i].in[3]==probe.in[1]) return 0;
+      // 0 -> 3 1 2
+      if (v4[i].in[0]==probe.in[0] &&
+	  v4[i].in[1]==probe.in[3] &&
+	  v4[i].in[2]==probe.in[1] &&
+	  v4[i].in[3]==probe.in[2]) return 0;
+      // 0 -> 3 2 1
+      if (v4[i].in[0]==probe.in[0] &&
+	  v4[i].in[1]==probe.in[3] &&
+	  v4[i].in[2]==probe.in[2] &&
+	  v4[i].in[3]==probe.in[1]) return 0;
+      */
+    }
+  }
+  //3 leg vertices
+  if (probe.nleg==3) {
+    // 0 -> 1 2
+    for (short int i=0;i<nvertex;++i) {
+      if (v[i].in[0]==probe.in[0] &&
+	  v[i].in[1]==probe.in[1] &&
+	  v[i].in[2]==probe.in[2]) return 0;
+      // 0 -> 2 1
+      if (v[i].in[0]==probe.in[0] &&
+	  v[i].in[1]==probe.in[2] &&
+	  v[i].in[2]==probe.in[1]) return 0;
+    }
+  }
+  return 1;
+}
+  
+int Vertex::FermionRule(Single_Vertex& probe)
+{
+  // fermionic: particles left, anti-particles right
+  if (probe.in[1].isfermion() && !probe.in[1].isanti() && !probe.in[1].Majorana()) return 0;
+  if (probe.in[2].isfermion() &&  probe.in[2].isanti() && !probe.in[2].Majorana()) return 0;
+
+  return 1;
+}
+
+int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1, int i2, int i3)
+{
+  probe = orig;
+  
+  if (i0<0) probe.in[0] = orig.in[-i0-1].bar();
+       else probe.in[0] = orig.in[i0-1];
+  if (i1<0) probe.in[1] = orig.in[-i1-1].bar();
+       else probe.in[1] = orig.in[i1-1];
+  if (i2<0) probe.in[2] = orig.in[-i2-1].bar();
+       else probe.in[2] = orig.in[i2-1];
+  if (orig.nleg==4) {
+    if (i3<0) probe.in[3] = orig.in[-i3-1].bar();
+         else if (i3<99) probe.in[3] = orig.in[i3-1];
+  }
+    
+  if (CheckExistence(probe)==0) return 0;
+  if (probe.nleg==3) {
+    if (FermionRule(probe)==0) return 0;}
+  
+  // h.c. ????
+  int hc = 0;
+
+  for (short int i=0;i<orig.nleg;i++) {
+    // All incoming
+    Flavour flav = orig.in[i];
+    if (flav!=flav.bar()) {
+      if (i==0) flav = flav.bar();
+      int hit = 1;
+      for (short int j=i+1;j<orig.nleg;j++) {
+	if (flav.bar()==orig.in[j]) {
+	  hit = 1;
+	  break;
+	}
+	else hit = 0; 
+      }
+      if (hit==0) {
+	hc = 1;
+	break;
+      }
+    }
+  }
+
+  
+  int probehc = 0;
+  if (hc) {
+    // probe = h.c. ???
+    for (short int i=0;i<orig.nleg;i++) { 
+      Flavour flav = orig.in[i];
+      if (flav!=flav.bar()) {
+	if (i==0) flav = flav.bar();
+	for (short int j=0;j<orig.nleg;j++) {
+	  Flavour flav2 = probe.in[j];
+	  if (j==0) flav2 = flav2.bar();
+	  if (flav2!=flav2.bar()) {
+	    if (flav==flav2.bar()) {
+	      probehc = 1;
+	      break;
+	    }
+	  }
+	}
+	if (probehc) break;
+      }
+    }
+    if (probehc) {
+      int conjugate = 1;
+
+      for (short int i=0;i<orig.nleg;i++) {
+	//pseudoscalar
+	if (orig.in[i]==Flavour(kf::A0)) conjugate *= -1;
+      }
+      
+      if (orig.Lorentz->type==lf::SSV ||
+	  orig.Lorentz->type==lf::Gauge3) conjugate *= -1;
+      
+      if (conjugate==-1) {
+	for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];
+      }
+
+      Conjugate(probe.Color);
+
+      if (probe.Lorentz->String()==string("1")) {
+	//exchange left and right
+	Complex help = probe.cpl[0];
+	probe.cpl[0] = probe.cpl[1];
+	probe.cpl[1] = help;
+      }
+    }
+  }
+  //Color and Lorentz structure changes....
+  int newIndex[4];
+  
+  for (short int i=0;i<4;i++) newIndex[i] = -1;
+  
+  for (short int i=0;i<orig.nleg;i++) { 
+      Flavour flav = orig.in[i];
+      if (i==0) flav = flav.bar();
+      for (short int j=0;j<orig.nleg;j++) {
+	Flavour flav2 = probe.in[j];
+	if (j==0) flav2 = flav2.bar();
+	if (flav==flav2 || 
+	    (flav==flav2.bar() && probehc)) {
+	  int hit = 1;
+	  for (short int k=0;k<i;k++) {
+	    if (newIndex[k]==j) {
+	      hit = 0;
+	      break;
+	    }
+	  } 
+	  if (hit) {
+	    newIndex[i] = j;
+	    break;
+	  }
+	}
+      }
+    }
+    
+  ColorExchange(probe.Color,newIndex[0],newIndex[1],newIndex[2]);
+  LorentzExchange(probe.Lorentz,newIndex[0],newIndex[1],newIndex[2],newIndex[3]);
+  
+  return 1;
+}
+    
+void Vertex::ColorExchange(Color_Function* colfunc,int new0,int new1,int new2)
+{
+  // T[0,2,1]
+  for (short int i=0;i<3;i++) {
+    if (colfunc->type==cf::D && i==2) break;
+    switch (colfunc->partarg[i]) {
+      case 0: colfunc->partarg[i] = new0;
+         colfunc->strarg[i]  = new0+48;
+	 break;
+      case 1: colfunc->partarg[i] = new1;
+         colfunc->strarg[i]  = new1+48;
+         break;
+      case 2: colfunc->partarg[i] = new2;
+         colfunc->strarg[i]  = new2+48;
+         break;
+    }
+  }
+}
+
+void Vertex::LorentzExchange(Lorentz_Function* lorfunc,int new0,int new1,int new2,int new3)
+{
+  for (short int i=0;i<lorfunc->NofIndex();i++) {
+    switch (lorfunc->partarg[i]) {
+      case 0: lorfunc->partarg[i] = new0;break;
+      case 1: lorfunc->partarg[i] = new1;break;
+      case 2: lorfunc->partarg[i] = new2;break;
+      case 3: lorfunc->partarg[i] = new3;break;
+    }
+  }
+}
+
+void Vertex::Conjugate(Color_Function* colfunc)
+{
+  if (colfunc->type!=cf::T) return;
+
+  int help = colfunc->partarg[1];
+  colfunc->partarg[1] = colfunc->partarg[2];
+  colfunc->partarg[2] = help;
+
+  char help2 = colfunc->strarg[1];
+  colfunc->strarg[1] = colfunc->strarg[2];
+  colfunc->strarg[2] = help2;  
+}
+
+Vertex::Vertex() 
+{
+  /* 
+     use (roughly) notation and Vertices of J. Rosiek, PRD41 (1990) 3464
+     pull out common factor -i of all Vertices
+  */ 
+  AORGTOOLS::msg.Debugging()<<"In Vertex::Vertex()."<<endl;
+
+  nvertex  = 10000;
+  n4vertex = 10000;
+  v  = new Single_Vertex[nvertex];
+  v4 = new Single_Vertex[n4vertex];
+  int vanz  = 0;
+  int vanz4 = 0;
+
+  AORGTOOLS::msg.Tracking()<<"   Setting vertices..."<<endl;
+  mo->c_FFV(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   FFV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_FFS(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   FFS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_VVV(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   VVV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_SSV(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   SSV  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_VVS(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   VVS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_SSS(v,vanz);
+  AORGTOOLS::msg.Debugging()<<"   SSS  : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_VVVV(v4,vanz4);
+  AORGTOOLS::msg.Debugging()<<"   VVVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_SSVV(v4,vanz4);
+  AORGTOOLS::msg.Debugging()<<"   SSVV : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+  mo->c_SSSS(v4,vanz4);
+  AORGTOOLS::msg.Debugging()<<"   SSSS : vanz, vanz4: "<<vanz<<", "<<vanz4<<endl;
+
+  nvertex = vanz;
+  n4vertex = vanz4;
+  //Print();
+  GenerateVertex();
+  Print();
+  vanz = nvertex;
+  vanz4 = n4vertex;
+  //Kill_Off(); to be written....
+  //TexOutput();
+  nvertex = 10000;
+  n4vertex = 10000;
+  
+  //Uffpeppen
+
+  int vanz_save = vanz;
+  int vanz4_save = vanz4;
+  
+  if (vanz>nvertex) {
+      msg.Error()<<"Number of vertices to large"<<endl;
+      abort();
+  }
+  if (vanz4>n4vertex) {
+      msg.Error()<<"Number of 4 leg vertices to large"<<endl;
+      abort();
+  }
+  
+  AORGTOOLS::msg.Debugging()<<"... done with it ("<<vanz<<")."<<endl;
+  AORGTOOLS::msg.Debugging()<<"... done with the 4 legs ("<<vanz4<<")."<<endl;
+  nvertex = vanz;
+  n4vertex = vanz4;
+}
+
+void Vertex::CheckEqual(Flavour** fl,short int& count)
+{
+  for (short int i=0;i<count-1;++i) {
+    if (fl[i][0]==fl[count-1][0] &&
+	fl[i][1]==fl[count-1][1] &&
+	fl[i][2]==fl[count-1][2]) {
+      count--;
+      break;
+    }
+    //if (fl[i][1].Majorana() && (fl[i][2].Majorana()))) {
+
+    /*
+    if (fl[i][0]==fl[count-1][0] &&
+	fl[i][1]==fl[count-1][2] &&
+	fl[i][2]==fl[count-1][1]) {
+      count--;
+      break;
+      //}
+    }
+    */
+  }
+}
+
+void Vertex::Print()
+{
+  if (!rpa.gen.Debugging()) return;
+  //3 legs
+  for (int i=0;i<nvertex;i++) {
+    AORGTOOLS::msg.Out()<<i+1<<". vertex for :"<<v[i].in[0]<<":"<<v[i].in[1]<<":"<<v[i].in[2];
+    if (v[i].on) AORGTOOLS::msg.Out()<<"...On  ";
+    else  AORGTOOLS::msg.Out()<<"...Off ";
+    AORGTOOLS::msg.Out()<<v[i].cpl[0]<<";"<<v[i].cpl[1];
+    AORGTOOLS::msg.Out()<<"; "<<v[i].Color->String();
+    AORGTOOLS::msg.Out()<<"; "<<v[i].Lorentz->String()<<endl;
+  }
+  //4 legs
+  for (int i=nvertex;i<(n4vertex+nvertex);i++) {
+    if (v4[i-nvertex].ncf==1) {
+    AORGTOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<v4[i-nvertex].in[0]<<":"
+	<<v4[i-nvertex].in[1]<<":"<<v4[i-nvertex].in[2]<<":"<<v4[i-nvertex].in[3];
+    if (v4[i-nvertex].on) AORGTOOLS::msg.Out()<<"...On  ";
+    else  AORGTOOLS::msg.Out()<<"...Off ";
+    AORGTOOLS::msg.Out()<<v4[i-nvertex].cpl[0]<<";"<<v4[i-nvertex].cpl[1];
+    AORGTOOLS::msg.Out()<<"; "<<v4[i-nvertex].Color->String();
+    AORGTOOLS::msg.Out()<<"; "<<v4[i-nvertex].Lorentz->String()<<endl;
+    }
+    else {
+      for (short int k=0;k<v4[i-nvertex].ncf;k++) {
+      AORGTOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<v4[i-nvertex].in[0]<<":"
+	  <<v4[i-nvertex].in[1]<<":"<<v4[i-nvertex].in[2]<<":"<<v4[i-nvertex].in[3];
+      if (v4[i-nvertex].on) AORGTOOLS::msg.Out()<<"...On  ";
+      else  AORGTOOLS::msg.Out()<<"...Off ";
+      AORGTOOLS::msg.Out()<<v4[i-nvertex].cpl[0]<<";"<<v4[i-nvertex].cpl[1];
+      AORGTOOLS::msg.Out()<<"; "<<v4[i-nvertex].Color[k].String();
+      if (v4[i-nvertex].Color[k].Next!=0) AORGTOOLS::msg.Out()<<" "<<v4[i-nvertex].Color[k].Next->String();
+      AORGTOOLS::msg.Out()<<"; "<<v4[i-nvertex].Lorentz[k].String()<<endl;
+      }
+    }
+  }
+}
+Vertex::~Vertex() {delete[] v;delete[] v4;}
+
+void Vertex::TexOutput()
+{
+  mkdir("./tex",448);
+  
+  ofstream sf;
+
+  String_Tree st;
+  
+  //Print();
+  
+  int fmfcount = 0;  
+  
+  for (int i=0;i<nvertex;i++) {
+    st.Reset();
+    sknot* shelp = st.String2Tree(v[i].Str);
+    st.Delete(shelp,string("zero"));
+
+    string newstr = st.Tree2Tex(shelp,0);
+    
+    if (i%90==0) {
+      if (i!=0) {
+	sf<<"\\end{fmffile}"<<endl;
+	sf<<"\\end{document}"<<endl;
+	
+	sf.close();
+      }
+
+      char help[17];
+      sprintf(help,"./tex/Vertex_%i.tex",fmfcount);
+
+      sf.open(help);
+      sf<<"\\documentclass[a4paper,10pt]{article}"<<endl;
+      sf<<"\\newcommand{\\nnb}{\\nonumber}"<<endl;
+      sf<<"\\newcommand{\\bea}{\\begin{eqnarray*}}"<<endl;
+      sf<<"\\newcommand{\\eea}{\\end{eqnarray*}}"<<endl;
+      sf<<"\\newcommand{\\ba}{\\begin{array}}"<<endl;
+      sf<<"\\newcommand{\\ea}{\\end{array}}"<<endl;
+      sf<<"\\newcommand{\\bt}{\\begin{tabular}}"<<endl;
+      sf<<"\\newcommand{\\et}{\\end{tabular}}"<<endl;
+      sf<<"\\newcommand{\\m}{-}"<<endl;
+      sf<<"\\newcommand{\\p}{+}"<<endl;
+      sf<<"\\newcommand{\\ti}{*}"<<endl;
+      sf<<"\\usepackage{feynmf}"<<endl;
+      sf<<"\\begin{document}"<<endl;
+      sf<<"\\begin{center}"<<endl;
+      sf<<"\\underline{Amplitudes for job}";
+      sf<<"\\end{center}"<<endl;
+      sf<<"\\begin{fmffile}{vertpics"<<fmfcount<<"}"<<endl;
+      fmfcount++;
+    }
+    
+    sf<<"\\bt{cc}"<<endl;
+    sf<<"\\parbox{4cm}{";
+    sf<<"\\begin{picture}(100,100)"<<endl;
+    sf<<"{\\begin{fmfgraph*}(80,80)"<<endl;
+    sf<<" \\fmfleft{l1}\\fmfright{r1,r2}"<<endl; 
+    sf<<"\\fmfpen{thin}"<<endl;
+    sf<<"\\fmf{phantom}{r1,v1,r2}"<<endl;
+    sf<<"\\fmf{phantom}{l1,v1}"<<endl;
+    sf<<"\\fmffreeze"<<endl;
+
+    if (v[i].in[1].isvector()) {
+      if (v[i].in[0].isfermion() && v[i].in[2].isfermion()) {
+	sf<<"\\fmf{plain}{l1,v1,r1}"<<endl; 
+	if (v[i].in[1]==Flavour(kf::gluon))
+	  sf<<"\\fmf{curly}{v1,r2}"<<endl;
+	else 
+	  sf<<"\\fmf{photon}{v1,r2}"<<endl;
+	if (v[i].in[1].charge() != 0)
+	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
+	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
+	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<",\\;r^\\mu$}{r2}"<<endl;
+      }
+      
+     
+      if (v[i].in[0].isvector() && v[i].in[2].isvector() ){
+	if (v[i].in[1]==Flavour(kf::gluon)) {
+	  sf<<"\\fmf{curly}{r1,v1,r2}"<<endl;
+	  sf<<"\\fmf{curly}{v1,l1}"<<endl;
+	}
+	else { 
+	  sf<<"\\fmf{photon}{r1,v1,r2}"<<endl;
+	  sf<<"\\fmf{photon}{v1,l1}"<<endl;}
+	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
+	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
+	sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<",\\;k^\\lambda $}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<(v[i].in[2].bar()).texname()<<",\\;p^\\nu $}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<",\\;r^\\mu $}{l1}"<<endl;
+      }   
+      
+      if (v[i].in[0].isscalar() && v[i].in[2].isscalar()) {
+	if (v[i].in[1]==Flavour(kf::gluon))
+	  sf<<"\\fmf{curly}{v1,r2}"<<endl;
+	else 
+	  sf<<"\\fmf{photon}{v1,r2}"<<endl;
+	sf<<"\\fmf{dashes}{l1,v1,r1}"<<endl; 
+	if (v[i].in[1].charge() != 0)
+	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
+	if (v[i].in[0].charge() !=0 || v[i].in[2].charge() !=0){
+	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
+	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl; }
+	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<",\\;r^\\mu $}{r2}"<<endl;
+      }
+    }
+    
+    if (v[i].in[1].isscalar()) {
+      if (v[i].in[0].isvector() && v[i].in[2].isvector()) {
+	sf<<"\\fmf{dashes}{r2,v1}"<<endl; 
+	if (v[i].in[1].charge() != 0) {
+	  sf<<"\\fmf{phantom_arrow}{r2,v1}"<<endl;
+	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;}
+	if (v[i].in[0].charge() !=0 || v[i].in[2].charge() !=0)
+	  {sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
+	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;}
+	sf<<"\\fmf{photon}{l1,v1,r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<",\\;p^\\nu $}{l1}"<<endl;	  
+	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<",\\;r^\\mu $}{r1}"<<endl;
+      } 
+      
+      if (v[i].in[0].isfermion() && v[i].in[2].isfermion()) {
+	sf<<"\\fmf{plain}{l1,v1,r1}"<<endl;
+	sf<<"\\fmf{dashes}{v1,r2}"<<endl;
+	if (v[i].in[1].charge() != 0)
+	  sf<<"\\fmf{phantom_arrow}{v1,r2}"<<endl;
+	
+	sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl;
+	sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<"$}{r2}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<"$}{r1}"<<endl;
+      }
+      
+      if (v[i].in[0].isscalar() && v[i].in[2].isscalar()) {
+	sf<<"\\fmf{dashes}{r1,v1,r2}"<<endl; 
+	sf<<"\\fmf{dashes}{v1,l1}"<<endl;
+	if (v[i].in[0].charge() != 0) {
+	  sf<<"\\fmf{phantom_arrow}{l1,v1}"<<endl; 
+	  sf<<"\\fmf{phantom_arrow}{v1,r1}"<<endl;}
+	sf<<"\\fmflabel{$"<<v[i].in[0].texname()<<"$}{l1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[2].texname()<<"$}{r1}"<<endl;
+	sf<<"\\fmflabel{$"<<v[i].in[1].texname()<<"$}{r2}"<<endl;
+      }
+    }
+    
+    sf<<"\\fmfdot{v1}"<<endl;
+    sf<<"\\end{fmfgraph*}} "<<endl;
+    sf<<"\\end{picture}} &"<<endl;  
+    //sf<<"} &"<<endl;  
+    sf<<"\\begin{minipage}[tl]{8cm}{"<<endl;
+    sf<<"$\\displaystyle "<<newstr<<"$"<<endl;
+    sf<<"}\\end{minipage} \\\\"<<endl;  
+    sf<<"\\et\\\\[5mm]"<<endl;
+  }
+  sf<<"\\end{fmffile}"<<endl;
+  sf<<"\\end{document}"<<endl;
+  
+}
+
+void Vertex::AddVertex(Single_Vertex* addv){
+  int oldnvertex=nvertex;
+  Single_Vertex * oldv=v;
+  v = new Single_Vertex[nvertex+1];
+  for (int i=0;i<nvertex;++i) {
+    v[i].on=oldv[i].on;
+    for (int j=0;j<4;++j) v[i].in[j]=oldv[i].in[j];
+    for (int j=0;j<4;++j) v[i].cpl[j]=oldv[i].cpl[j];
+  }
+  v[nvertex].on=addv->on;
+  for (int j=0;j<4;++j) v[nvertex].in[j]=addv->in[j];
+  for (int j=0;j<4;++j) v[nvertex].cpl[j]=addv->cpl[j];
+  ++nvertex;
+  //  for (int i=0;i<nvertex;++i) printvertex(&v[i]);
+}
+
+int Vertex::FindVertex(Single_Vertex* v_tofind)
+{
+  int nr=-1;
+  Flavour help;
+  if (v_tofind->nleg==3) {
+    for (int j=0;j<3;++j){
+      // rotate flavours
+      help           =v_tofind->in[0];
+      v_tofind->in[0]=v_tofind->in[1];
+      v_tofind->in[1]=v_tofind->in[2];
+      v_tofind->in[2]=help;
+      //    printvertex(v_tofind);
+      for (int i=0;i<nvertex;++i) {
+	//   printvertex(&v[i]);
+	if (v_tofind->in[0].kfcode()==v[i].in[0].kfcode())
+	  if (v_tofind->in[1].kfcode()==v[i].in[1].kfcode())
+	    if (v_tofind->in[2].kfcode()==v[i].in[2].kfcode()) {
+	    //    v_tofind=&v[i];
+	      nr=i;
+	      //break;
+	      v_tofind=&v[nr];
+	      return nr;
+	    }
+      }
+    }
+    AORGTOOLS::msg.Debugging()<<"Vertex not found!"<<endl;
+  }
+  else AORGTOOLS::msg.Debugging()<<"no routine to search for 4 legs"<<endl;
+}
+
+ostream& AMEGIC::operator<<(ostream& s, const Single_Vertex& sv)
+{
+  return s<<'('<<sv.in[0]<<','<<sv.in[1]<<','<<sv.in[2]<<','<<sv.in[3]
+          <<") with cpl["<<sv.cpl[0]<<','<<sv.cpl[1]<<','<<sv.cpl[2]<<','<<sv.cpl[3]<<']'
+          <<" is "<<((sv.on) ? "on" : "off");
+}
+ 
+ostream& AMEGIC::operator<<(ostream& s, const Vertex& v)
+{
+  s<<"---------------- Vertices --------------------------------"<<endl;
+
+  int n=v.Max_Number();
+  s<<n<<" verticies found"<<endl;
+  for (int i=0;i<n;++i)
+    s<<(*v[i])<<endl;
+  s<<"-----------------------------------------------------------"<<endl;
+
+  return s;
+}
+
+
+
+
+
+

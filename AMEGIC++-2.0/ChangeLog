@@ -1,0 +1,206 @@
+
+What we still have to do :
+
+
+	13/11/02
+
+	In Single_Process.C, line 528 :
+	This is a line which I had to comment out.
+	Deleting the shand1 is not too smart, since when constructing
+	it, I hand the String_Generator etc. over. This stuff is needed
+	by the original shand of the Single_Process, killing it is fatal.
+
+	A smarter idea is needed, for instance one could tell the shand1
+	in constructing it that it is only a "backup" and therefore not
+	allowed to kill String_Generators, Basic_Sfuncs etc..
+  
+	... done 10.12.02, AS
+
+
+	13/11/02
+
+	In the interplay of Phase_Space_Handler and Differential2/DSigma2
+	extra care and thought has to be spend to enable assymetric cuts,
+	and make sure that everything is well-defined ...
+	This boils down to ISR->CalculateWeight2 after rotating the
+	vectors.
+
+
+19.11.02
+========
+      *	removed "using namespace" from Headerfiles
+
+10.12.02
+========
+      *	Test-Start: 11 -11 -> leptonic -> 2_jets (91.2 GeV, QCD)
+	Missing files
+		- Fast_Functions.H
+		- Gauss_Integrator.H
+		=> ATOOLS/Math/Makefile.am     changed.
+	        XS_Library
+		=> Phase_Space_Handler.H/.C    changed.
+	Segmentation-faults:
+		- Destructor ~Single_Process() kills too much
+		      fl, ps, sel, cuts;
+		      (=> again in ~Process_Base)
+		- in Single_Process::InitLibrary(double)
+		      shand1 delted again.
+		      (line 528 & 583, cf. to-do-list)
+		- String_Handler deletes generator only, if it produced
+	          the generator itself.
+		- Constructor Single_Channel()
+	              ms=0, ran=0;
+	ERRORS:	- "particle type does not exist!"
+		      Model_EE_QCD.C  i<=6 or i==11
+		      Model_QCD.C     i<=6
+		      Flavour.C
+		        * fl_iter didn't work, because of wrong treatment of
+	                  Flavour(int) anti-flag !!
+	                * particle_init()
+	                   - no particles to be read in twice.
+	                * Hadron.dat
+	                   - comment line as first line nicluded, otherwise no 
+			     neutral pion
+	                * constructor kf_to_init() no without init().
+		      Single_Process.C
+		        * use fl_iter for SymmetryFactors()
+
+	=> now without SEGFAULT libfiles.
+      	Test-Start: 11 -11 -> leptonic -> 2_jets (91.2 GeV, QCD) run
+
+	ERRORS:	- "SF : x out of bounds"
+		Structure_Function.C          ... (x  >pdf->GetXMax()) 
+		PDF_Electron.H               double GetXMax()  { return 1.; }
+
+=> Ergo and Events:
+	SegFault in
+	Dropped all channels for Multi_Channel : isr_e+ e- -> 2 jets
+	Deleted isr_e+ e- -> 2 jets
+
+	#3  0x40a7cebb in PHASIC::Single_Channel::~Single_Channel (this=0x8351330, 
+    __in_chrg=3) at Single_Channel.H:51
+            if (ran) { delete[] ran; }
+
+everything compiled once more:
+	 running (incl. 10 Events)
+	=> this version is backup021210
+	   check also calc_ee_2jet.log & create_ee_2jet.log
+
+Further changes to evade SegFaults:
+      *	Multi_Channel.C in void Multi_Channel::DropAllChannels()
+	  add  "channels.clear();" 
+	  (in case DropAllChannels is called twice, e.g. once directly and
+	   once in the destructor)
+       * ISR_Handler.H
+	  changed def., init, and delete of ISRBase !!!
+	  (Did overwrite some space before and deleted it later.
+	   Lead to double delete's).
+
+More comments
+	* Rambo has ran-variable without using it.
+	* Phase_Space_Handler
+	      -	vec4d * p   might still be too small for massive outgoing
+	        vector bosons. Check it !
+	      -	Some "new" could overwrite existing variables.
+		Cure : check "if (var) delete"
+
+Testrun:
+      	Test-Start: 11 -11 -> leptonic -> 2_jets (91.2 GeV, QCD)
+
+	=> Version is backup021210b
+	 cf. calc_ee_2jet_new.log & create_ee_2jet_new.log
+
+Testrun:
+	Test: 2212 2212 > hadronic -> 2_jets (91.2 GeV, pure QCD)
+	 produces nans
+
+	Problem:
+	 1.) Flavour mismatch beam-parton in ISR_Handler = Proton  
+	       => Masse != Quark_Mass !=0 !!!!!!!!!!!!!!!!!!!!!!!!!
+             cured, 10.01.03, FK.
+	2.) smin/smax - cut has wrong handling.
+		(is overwritten eg. in Multi_Jet.C or Drell_Yan.C)
+	isr->SetTauMin(AMATOOLS::Max(isr->TauMin(),mll2/s));
+	      or
+	isr->SetTauMin(AMATOOLS::Max(isr->TauMin(),ycut));
+              
+	      instead of 
+	
+	isr->SetTauMin(AMATOOLS::Min(isr->TauMin(),mll2/s));
+	      or
+  	isr->SetTauMin(ycut);		
+
+	smax analog!
+
+
+
+TODO:
+ Problem 1! Important :
+
+SF : q2 out of bounds 0.745825 at 0.216733, q2range = 1.25 ... 1e+07
+SF : q2 out of bounds 0.846608 at 0.620382, q2range = 1.25 ... 1e+07
+
+
+	
+12.12.02
+========
+	* changes in Alpha_QED und Alpha_S
+	  - reciprocal for QED! 
+	  - running
+	* running masses!
+	  - limit for yukawas 1.GeV or 0.05 GeV (in Flavour.C und Model_Higgs.C)
+	* Spektra do not initialise Masses of the Model any longer, but only
+	    the Yukawas 
+	    Cure :  Maybe a Switch how to treat masses/yukawas ???
+	* Within the Models loops of the type for (i=1;i<20;++i)
+	  are used for flavours instead of iterators. Has to be done !!!
+	* Readin of ISAJET 
+	  - Changes in Switches, filenames etc.
+	
+        no  - Color.H / Color.C
+	    - Elementary_* Composite_* Mathematica_*
+
+
+Check for Process/P2_3/V2_3_4_8_48_1.H
+Write Library for 2_3_e-_e+___d_db_G = 2_3_4_8_48_1
+
+
+
+07.01.03
+========
+	Main : 
+	* Changed constructor of Amegic class : ISR_Handler included as argument
+	  to run together with MOCAIC. Also affects main.C in Run-directory.
+	* In Single_Process : The Amplitude_Handler is not deleted any more when
+	  the process is "emptied" (via Empty()). Also, the method Diagram(int i)
+	  directly returns a suitable PointList from the Amplitude_Handler.
+	Model :
+	* Changed couplings in the Models to be more consistent with Running_Alpha's.
+
+10.01.03
+========
+	* Added a Primitive_Analysis, Primitive_Observable to the Main directory.
+	  These are pretty close to the Analysis - tool but use another Histogram.
+	  They are meant to be a quick'n'dirty solution. The analysis consists
+	  of a list of observables which might or might not have a pointer to
+	  a Selector-object. 
+	* Added a pointer "analysis" pointing to a Primitive_Analysis-object in
+	  every Process_Base. The analysis is steered with a flag "analyse".
+	  The Analysis is filled with observables in the Process_Group, Single_Process
+	  in Create_Selector.
+        * Fills in Histograms when integrating: This is manages in the
+	  AddPoint(double value) method by calling the analysis.
+	* Added an UpdateCuts() method to the Process_Base to update the cuts,
+	  once the ISR-point (sprime,y) is fixed in the integration.
+	* The problem of the incoming masses in the ISR_Handler is - hopefully -
+	  cured by calling SetPartonMasses before integration.
+	* Added a method CalculateDifferentialXSecs() that is meant to fill tables
+	  for a tuning. For this also a flag is added to CreateSelector to partially
+	  overwrite Selector-Cuts to enable tunings. For instance in Lept_Multi_Jet
+	  this flag overwrites the ycut value of the data file and sets it to
+	  0.004 which seems to be a good one for tunings at the Z-pole.
+
+28.01.03
+========
+	* Changed ExistFourVertex in Amplitude_Handler to bool and corrected it.
+	

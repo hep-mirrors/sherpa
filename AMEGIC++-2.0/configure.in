@@ -1,0 +1,59 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(Run/main.C)
+AM_INIT_AUTOMAKE(AMEGIC++, 2.0)
+AM_DISABLE_STATIC
+AC_PREFIX_DEFAULT(${PWD}/..)
+
+dnl Checks for programs.
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_F77
+AM_PROG_LIBTOOL
+
+dnl Checks for libraries.
+dnl Replace `main' with a function in -lAmegic:
+AC_CHECK_LIB(Amegic, main)
+dnl Replace `main' with a function in -lAmplitude:
+AC_CHECK_LIB(Amplitude, main)
+dnl Replace `main' with a function in -lModel:
+AC_CHECK_LIB(Model, main)
+dnl Replace `main' with a function in -lString:
+AC_CHECK_LIB(String, main)
+dnl Replace `main' with a function in -lZfunctions:
+AC_CHECK_LIB(Zfunctions, main)
+dnl Replace `main' with a function in -lTools:
+AC_CHECK_LIB(Tools, main)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+AC_CHECK_FUNCS(mkdir)
+
+AC_OUTPUT(Main/Makefile \
+          Amplitude/AmplTools/Makefile \
+	  Amplitude/Makefile \
+	  Run/Makefile \
+	  String/Makefile \
+	  Amplitude/Zfunctions/Makefile \
+	  Model/Makefile \
+	  Model/Isajet/Makefile \
+          Run/Process/Makefile \
+          Run/Process/Dummy/Makefile \
+	  Makefile )
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,14 @@
+!-------------------------------------------------------
+!-- Phase space parameters -----------------------------
+!-------------------------------------------------------
+!YCUT  = 0.004073802778   ! ycut initial, double 10^-2.39
+YCUT  = 0.01        ! ycut initial, double 
+ERROR = 10.e-2      ! Error by calculating matrix-elements              
+!-------------------------------------------------------
+!-- General switches -----------------------------------
+!-------------------------------------------------------    
+INTEGRATOR = 4     ! Phasespace : Rambo=0, Rambo+Sarge=1,
+	           !              Multichannel+Rambo=2,
+		   !              pure Multichannel=3
+JETFINDER  = 1     ! Jet initial: DURHAM=1,JADE=2,
+                   !              GENEVA=3

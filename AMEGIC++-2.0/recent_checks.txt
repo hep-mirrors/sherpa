@@ -1,0 +1,220 @@
+49500000 113125 +- 0.918681%.
+Starting a test calculation (ISR only) for P2_2_e_e___mu_mu--C0_2.
+f(s') = 1, s = 36100, result should read : 103586
+49500000 111092 +- 1.06157%.
+Starting a test calculation (ISR only) for P2_2_e_e___mu_mu--C1_3.
+f(s') = 1, s = 36100, result should read : 103586
+7000000 1.38773e+10 +- 0.0997039%.
+Starting the calculation. Lean back and enjoy ... .
+
+
+// y integration:   (save cut 0.1)
+
+uniform:
+20000. LO-2-Jet: 0.00341276 pb +- 0.427299%; Efficiency: 100%
+peaked:
+ channel 1 :
+20000. LO-2-Jet: 0.00340175 pb +- 0.559776%; Efficiency: 100%
+ channel 2 :
+20000. LO-2-Jet: 0.00340175 pb +- 0.559776%; Efficiency: 100%
+
+1+2:
+20000. LO-2-Jet: 0.00342736 pb +- 0.323176%
+
+1+2+0:
+20000. LO-2-Jet: 0.00341922 pb +- 0.343509%; Efficiency: 100%
+
+// y integration:   (save cut 0.01)
+
+1+2+0:
+20000. LO-2-Jet: 0.006895 pb +- 0.433308%; Efficiency: 100%
+1+2:
+20000. LO-2-Jet: 0.00690522 pb +- 0.362837%; Efficiency: 100%
+50000. LO-2-Jet: 0.00690289 pb +- 0.231199%; Efficiency: 100%
+
+
+// y integration:   (save cut 0.1 & 0.005)
+1+2:
+50000. LO-2-Jet: 0.00562499 pb +- 0.258002%; Efficiency: 100%
+2:
+50000. LO-2-Jet: 0.00560746 pb +- 0.366172%; Efficiency: 100%
+100000. LO-2-Jet: 0.00563773 pb +- 0.261082%; Efficiency: 100%
+0:
+150000. LO-2-Jet: 0.00563253 pb +- 0.455394%; Efficiency: 100%
+200000. LO-2-Jet: 0.0056374 pb +- 0.395875%; Efficiency: 100%
+1:
+1850000. LO-2-Jet: 0.00564606 pb +- 0.188293%; Efficiency: 100%
+
+
+ s=289^2   smin=0.2 smax =0.5:   (e+e- -> Z -> mu+mu-)
+
+See any operating system documentat
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_2 :1
+S1X: 0
+-------------------------------------------
+50000. LO-2-Jet: 0.0229565 pb +- 0.424476%; Efficiency: 100%
+100000. LO-2-Jet: 0.0229161 pb +- 0.3003%; Efficiency: 100%
+150000. LO-2-Jet: 0.0229436 pb +- 0.245366%; Efficiency: 100%
+200000. LO-2-Jet: 0.0229623 pb +- 0.212544%; Efficiency: 100%
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_3 :1
+S1X: 0
+-------------------------------------------
+50000. LO-2-Jet: 0.0229785 pb +- 0.454567%; Efficiency: 100%
+100000. LO-2-Jet: 0.0229221 pb +- 0.321391%; Efficiency: 100%
+150000. LO-2-Jet: 0.0229295 pb +- 0.262242%; Efficiency: 100%
+200000. LO-2-Jet: 0.0229579 pb +- 0.227287%; Efficiency: 100%
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.304548
+1 channel P2_2_e_e___mu_mu--C0_2 :0.433906
+2 channel P2_2_e_e___mu_mu--C0_3 :0.261545
+S1X: 2.06376e-07
+-------------------------------------------
+50000. LO-2-Jet: 0.0230066 pb +- 0.344472%; Efficiency: 100%
+100000. LO-2-Jet: 0.0229591 pb +- 0.243155%; Efficiency: 100%
+150000. LO-2-Jet: 0.0229792 pb +- 0.198239%; Efficiency: 100%
+200000. LO-2-Jet: 0.0229917 pb +- 0.171713%; Efficiency: 100%
+250000. LO-2-Jet: 0.0229972 pb +- 0.153544%; Efficiency: 100%
+Best weights:-------------------------------  (without uniform in y!)
+0 channel P2_2_e_e___mu_mu--C0_1 :0.305951
+1 channel P2_2_e_e___mu_mu--C0_2 :0.428496
+2 channel P2_2_e_e___mu_mu--C0_3 :0.265553
+S1X: 2.44594e-08
+-------------------------------------------
+50000. LO-2-Jet: 0.0229591 pb +- 0.194835%; Efficiency: 100%
+100000. LO-2-Jet: 0.0229384 pb +- 0.136891%; Efficiency: 100%
+150000. LO-2-Jet: 0.022954 pb +- 0.111629%; Efficiency: 100%
+200000. LO-2-Jet: 0.0229627 pb +- 0.0967058%; Efficiency: 100%
+250000. LO-2-Jet: 0.0229615 pb +- 0.0864073%; Efficiency: 100%
+
+
+
+ s=289^2     smin=0.2 smax =0.5:   (e+e- -> Z,p -> mu+mu-)
+
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.352147
+1 channel P2_2_e_e___mu_mu--C0_2 :0.375534
+2 channel P2_2_e_e___mu_mu--C1_2 :0.272319
+S1X: 4.14377e-07
+-------------------------------------------
+50000. LO-2-Jet: 0.106255 pb +- 0.384676%; Efficiency: 100%
+100000. LO-2-Jet: 0.10599 pb +- 0.27219%; Efficiency: 100%
+150000. LO-2-Jet: 0.10603 pb +- 0.222974%; Efficiency: 100%
+200000. LO-2-Jet: 0.106039 pb +- 0.193226%; Efficiency: 100%
+
+ s=189^2     smin=0.2 smax =0.5:   (e+e- -> Z,p -> mu+mu-)
+
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.0902879
+1 channel P2_2_e_e___mu_mu--C0_2 :0.0554966
+2 channel P2_2_e_e___mu_mu--C1_2 :0.854216
+S1X: 1.02982e-05
+-------------------------------------------
+50000. LO-2-Jet: 2.46199 pb +- 0.315942%; Efficiency: 100%
+100000. LO-2-Jet: 2.46023 pb +- 0.208001%; Efficiency: 100%
+150000. LO-2-Jet: 2.46111 pb +- 0.165856%; Efficiency: 100%
+200000. LO-2-Jet: 2.46016 pb +- 0.141834%; Efficiency: 100%
+
+ s=189^2     smin=0.5 smax =0.9:   (e+e- -> Z,p -> mu+mu-)
+
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.265771
+1 channel P2_2_e_e___mu_mu--C0_2 :0.617255
+2 channel P2_2_e_e___mu_mu--C1_2 :0.116974
+S1X: 7.02013e-06
+-------------------------------------------
+50000. LO-2-Jet: 0.445497 pb +- 0.400931%; Efficiency: 100%
+100000. LO-2-Jet: 0.44443 pb +- 0.279162%; Efficiency: 100%
+150000. LO-2-Jet: 0.444387 pb +- 0.227012%; Efficiency: 100%
+200000. LO-2-Jet: 0.444532 pb +- 0.196155%; Efficiency: 100%
+
+ s=189^2     smin=0.9 smax =0.99:   (e+e- -> Z,p -> mu+mu-)
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.174476
+1 channel P2_2_e_e___mu_mu--C0_2 :0.67409
+2 channel P2_2_e_e___mu_mu--C1_2 :0.151434
+S1X: 6.33714e-06
+-------------------------------------------
+50000. LO-2-Jet: 0.416876 pb +- 0.396605%; Efficiency: 100%
+100000. LO-2-Jet: 0.41603 pb +- 0.274179%; Efficiency: 100%
+150000. LO-2-Jet: 0.415858 pb +- 0.222135%; Efficiency: 100%
+200000. LO-2-Jet: 0.415991 pb +- 0.19162%; Efficiency: 100%
+250000. LO-2-Jet: 0.41668 pb +- 0.171012%; Efficiency: 100%
+
+ s=189^2     smin=0.9 smax =0.999998:   (e+e- -> Z,p -> mu+mu-)
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.0200317
+1 channel P2_2_e_e___mu_mu--C0_2 :0.962209
+2 channel P2_2_e_e___mu_mu--C1_2 :0.0177592
+S1X: 2.89866e-05
+-------------------------------------------
+50000. LO-2-Jet: 1.25965 pb +- 0.460888%; Efficiency: 100%
+100000. LO-2-Jet: 1.25855 pb +- 0.304972%; Efficiency: 100%
+150000. LO-2-Jet: 1.25659 pb +- 0.243226%; Efficiency: 100%
+200000. LO-2-Jet: 1.25743 pb +- 0.208024%; Efficiency: 100%
+
+ s=189^2     smin=0.9 smax =0.9999985:   (e+e- -> Z,p -> mu+mu-)
+
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.0202369
+1 channel P2_2_e_e___mu_mu--C0_2 :0.96183
+2 channel P2_2_e_e___mu_mu--C1_2 :0.0179336
+S1X: 2.84655e-05
+-------------------------------------------
+50000. LO-2-Jet: 1.26185 pb +- 0.469751%; Efficiency: 98.948%
+100000. LO-2-Jet: 1.25977 pb +- 0.310095%; Efficiency: 98.866%
+150000. LO-2-Jet: 1.25742 pb +- 0.247129%; Efficiency: 98.8353%
+200000. LO-2-Jet: 1.25793 pb +- 0.211207%; Efficiency: 98.833%
+
+ s=189^2     smin=0.5 smax =0.9999985:   (e+e- -> Z,p -> mu+mu-)
+
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.046842
+1 channel P2_2_e_e___mu_mu--C0_2 :0.932301
+2 channel P2_2_e_e___mu_mu--C1_2 :0.0208567
+S1X: 1.3549e-05
+-------------------------------------------
+50000. LO-2-Jet: 1.69953 pb +- 0.453185%; Efficiency: 99.212%
+100000. LO-2-Jet: 1.70296 pb +- 0.301596%; Efficiency: 99.165%
+150000. LO-2-Jet: 1.70167 pb +- 0.240883%; Efficiency: 99.1547%
+200000. LO-2-Jet: 1.70151 pb +- 0.206144%; Efficiency: 99.144%
+250000. LO-2-Jet: 1.70471 pb +- 0.183061%; Efficiency: 99.1412%
+
+
+ s=189^2     smin=0.2 smax =0.9999985:   (e+e- -> Z,p -> mu+mu-)
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.0782378
+1 channel P2_2_e_e___mu_mu--C0_2 :0.439729
+2 channel P2_2_e_e___mu_mu--C1_2 :0.482033
+S1X: 4.10805e-06
+-------------------------------------------
+50000. LO-2-Jet: 4.17362 pb +- 0.338925%; Efficiency: 99.626%
+100000. LO-2-Jet: 4.16194 pb +- 0.23614%; Efficiency: 99.597%
+150000. LO-2-Jet: 4.16457 pb +- 0.191879%; Efficiency: 99.6033%
+200000. LO-2-Jet: 4.16484 pb +- 0.165776%; Efficiency: 99.613%
+
+ s=189^2     smin=0.2 smax =0.999998:   (e+e- -> Z,p -> mu+mu-)
+Best weights:-------------------------------
+0 channel P2_2_e_e___mu_mu--C0_1 :0.079106
+1 channel P2_2_e_e___mu_mu--C0_2 :0.438887
+2 channel P2_2_e_e___mu_mu--C1_2 :0.482007
+S1X: 1.21086e-05
+-------------------------------------------
+50000. LO-2-Jet: 4.16852 pb +- 0.336127%; Efficiency: 100%
+
+
+
+150  .7225:
+200000. LO-2-Jet: 2.63316 pb +- 0.223835%; Efficiency: 100%
+ // factor 2 in StrucFunc, alpha and order in PDF:
+200000. LO-2-Jet: 5.31443 pb +- 0.223352%; Efficiency: 100%  
+
+
+YFS:   150     5.46742 0.00218027
+
+150  .25:
+200000. LO-2-Jet: 7.78827 pb +- 0.169375%; Efficiency: 100%
+
+250000. LO-2-Jet: 15.6668 pb +- 0.150721%; Efficiency: 100%
+150     12.5733 0.00502811
