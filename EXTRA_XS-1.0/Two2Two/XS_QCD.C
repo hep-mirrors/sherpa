@@ -11,6 +11,18 @@ using namespace AMATOOLS;
 /* 
    In all the differential cross sections the factor 1/16 Pi is cancelled
    by the factor 4 Pi for each alpha
+   
+   AlphaS is set to a fixed value since we intend to calculate it really 'running' 
+   which can only be guaranteed, if we obtain the value on each sprime and y
+   independently. 
+   This statement is not a paradox, you simply have to set 
+   
+    KFactorScheme = 1
+    Schalescheme  = 1
+
+   in 'Run.dat'
+   This will perform appropriate changes for calculations with XS' as well as for those with 
+   generated Amplitudes.
 */
 
 XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) : 
@@ -21,7 +33,7 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) :
   colours[0][a] = colours[2][a] = 500;
   colours[1][a] = colours[3][a] = 501;
 
-  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+  aS = as->AsFixed();
 
   SetISRTypes(_fl);
 };
@@ -51,7 +63,7 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(int _nin,int _nout,
   colours[0][a] = colours[1][p] = 500;
   colours[2][0] = colours[3][1] = 501;
 
-  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+  aS = as->AsFixed();
 
   SetISRTypes(_fl);
 };
@@ -76,7 +88,7 @@ XS_q1q1_q1q1::XS_q1q1_q1q1(int _nin,int _nout, Flavour * _fl) :
 
   a  = _fl[0].IsAnti();
 
-  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+  aS = as->AsFixed();
 
   SetISRTypes(_fl);
 };
@@ -120,7 +132,7 @@ XS_q1qbar1_q1qbar1::XS_q1qbar1_q1qbar1(int _nin,int _nout,
   a  = _fl[0].IsAnti();
   p  = 1-a;
 
-  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+  aS = as->AsFixed();
 
   SetISRTypes(_fl);
 };
@@ -166,7 +178,7 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(int _nin,int _nout,
   colours[0][a] = 500;
   colours[1][p] = 501;
 
-  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+  aS = as->AsFixed();
 
   SetISRTypes(_fl);
 };
@@ -210,7 +222,7 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(int _nin,int _nout, Flavour * _fl) :
   colours[0][0] = 500;
   colours[0][1] = 501;
 
-  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+  aS = as->AsFixed();
 
   SetISRTypes(_fl);
 };
@@ -255,7 +267,7 @@ XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) :
   colours[0][a] = 500;
   colours[2][a] = 501;
 
-  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+  aS = as->AsFixed();
 
   SetISRTypes(_fl);
 };
@@ -297,7 +309,7 @@ XS_gg_gg::XS_gg_gg(int _nin,int _nout, Flavour * _fl) :
   colours[0][0] = 500;
   colours[1][1] = 501;
 
-  aS = (*as).AlphaS(sqr(rpa.gen.Ecms()));
+  aS = as->AsFixed();
 
   SetISRTypes(_fl);
 };
@@ -306,7 +318,7 @@ double XS_gg_gg::operator()(double s,double t,double u) {
   if (s<Thres()) return 0.;
   Ms = 1 - t*u/(s*s);
   Mt = 1 - s*u/(t*t);
-  Mu = 1 - s*t/(u*u);
+  Mu = 1 - s*t/(u*u);  
   return sqr(4.*M_PI*aS)*9./2. * ( Ms + Mt + Mu );
 };
   
