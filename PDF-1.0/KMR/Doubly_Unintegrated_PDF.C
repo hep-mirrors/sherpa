@@ -14,8 +14,17 @@
 #endif
 
 #include "Exception.H"
-
-// #include "MyRoot.H"
+#ifdef TEST__Sudakov
+#ifdef ROOT_SUPPORT
+#include "Scaling.H"
+#include "My_Root.H"
+#include "TH1D.h"
+#include "TH2D.h"
+static bool initialized=false;
+#else
+#error ROOT is disabled
+#endif
+#endif
 
 using namespace PDF;
 
@@ -55,55 +64,71 @@ Doubly_Unintegrated_PDF::Doubly_Unintegrated_PDF(PDF_Base *_p_pdf,MODEL::Running
 
 Doubly_Unintegrated_PDF::~Doubly_Unintegrated_PDF()
 {
-  /*/////////////////////////////////////////////////
-  int argcf=1;
-  char **argvf = new char*[1];
-  argvf[0]="MyRoot";
-  
-  MYROOT::myroot = new TApplication("MyRoot",&argcf,argvf);
-
-  delete [] argvf;
-
-  MYROOT::myfile = new TFile("sudakov.root");
-  MYROOT::mystyle = new TStyle("Plain","Plain");
-  MYROOT::mystyle->SetOptStat(0);
-  MYROOT::mystyle->cd();
-
-  MYROOT::sudu = new TH1D("up","Sudakov",40,0,8);
-  MYROOT::sudg = new TH1D("gluon","Sudakov",40,0,8);
-
-  for (double logkt=log(1.5);logkt<log(1800);logkt+=.1) {
-    double kt=exp(logkt);
-    MYROOT::sudu->Fill(logkt,p_sudakov->Delta(ATOOLS::kf::u)(1800,kt));          
-    MYROOT::sudg->Fill(logkt,p_sudakov->Delta(ATOOLS::kf::gluon)(1800,kt));          
+#ifdef TEST__Sudakov
+#ifdef ROOT_SUPPORT
+  if (!initialized) {
+    initialized=true;
+    double min=0.082, max=91.0, step=0.1;
+    TH1D *sudu = new TH1D(ATOOLS::ToString((long int)this).c_str(),
+			  "Quark_Sudakov",(int)((log(max)-log(min))/step),
+			  log(min/max),0.);
+    TH1D *sudg = new TH1D(ATOOLS::ToString(1+(long int)this).c_str(),
+			  "Gluon_Sudakov",(int)((log(max)-log(min))/step),
+			  log(min/max),0.);
+    TH2D *sudu2 = new TH2D(ATOOLS::ToString(2+(long int)this).c_str(),
+			   "Quark_Sudakov_2D",
+			   (int)((log(max)-log(min))/step),
+			   log(min/max),0.,(int)((log(max)-log(min))/step),
+			   log(min/max),0.);
+    TH2D *sudg2 = new TH2D(ATOOLS::ToString(3+(long int)this).c_str(),
+			   "Gluon_Sudakov_2D",
+			   (int)((log(max)-log(min))/step),
+			   log(min/max),0.,(int)((log(max)-log(min))/step),
+			   log(min/max),0.);
+    MYROOT::myroot->AddObject(sudu,"sudu");
+    MYROOT::myroot->AddObject(sudg,"sudg");
+    MYROOT::myroot->AddObject(sudu2,"sudu2");
+    MYROOT::myroot->AddObject(sudg2,"sudg2");
+    for (double logkt=log(min)+step;logkt<log(max);logkt+=step) {
+      double kt=exp(logkt);
+      sudu->Fill(log(kt/91.),p_sudakov->Delta(ATOOLS::kf::u)(91.,kt));
+      sudg->Fill(log(kt/91.),p_sudakov->Delta(ATOOLS::kf::gluon)(91.,kt));
+    }
+    for (double logmu=log(min)+step;logmu<log(max);logmu+=step) {
+      for (double logkt=log(min)+step;logkt<log(max);logkt+=step) {
+	double kt=exp(logkt), mu=exp(logmu);
+	if (logkt<logmu) {
+	  sudu2->Fill(log(kt/91.),log(mu/91.),
+		      p_sudakov->Delta(ATOOLS::kf::u)(mu,kt));
+	  sudg2->Fill(log(kt/91.),log(mu/91.),
+		      p_sudakov->Delta(ATOOLS::kf::gluon)(mu,kt));
+	}
+      }
+    }
+    double linstep=.002;
+    TH2D *jetrate = new TH2D(ATOOLS::ToString(4+(long int)this).c_str(),
+			     "Jet_Rate",
+			     (int)(1./linstep),0.,1.,
+			     (int)(1./linstep),0.,1.);
+    MYROOT::myroot->AddObject(jetrate,"jetrate");
+    for (double x1=linstep;x1<1.;x1+=linstep) {
+      for (double x2=linstep;x2<1.;x2+=linstep) {
+	double x3=2.-x1-x2;
+	if (x3>linstep && x1>linstep && x2>linstep &&
+	    x3<1.-linstep) {
+	  jetrate->Fill(x1,x2,1./(1.-x1)/(1.-x2)*
+			((1.-x1)/x3*(1.+pow((x1/(2.-x2)),2)) 
+			 +(1.-x2)/x3*(1.+pow((x2/(2.-x1)),2))));
+	}
+      }
+    }
+    throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,
+			    "Finished Sudakov histograms","DUPDF","DUPDF"));
   }
-
-  TCanvas *c1 = new TCanvas("Sudakovs","Sudakovs");
-  c1->cd();
-  MYROOT::sudu->SetLineColor(2);
-  MYROOT::sudg->SetLineColor(4);
-  MYROOT::sudu->Draw();
-  MYROOT::sudg->Draw("same");
-  MYROOT::sudu->SetTitle("");
-  MYROOT::sudu->SetXTitle("log k_{#perp}");
-  MYROOT::sudu->SetYTitle("#Delta(k_{#perp } ,k_{#perp min} )");
-
-  TLegend *l1 = new TLegend(.15,.75,.3,.85);
-  l1->AddEntry(MYROOT::sudu,"up");
-  l1->AddEntry(MYROOT::sudg,"gluon");
-  l1->SetFillColor(0);
-  l1->Draw();
-
-  c1->Print("sudakovs.ps");
-
-  MYROOT::myfile->Write();
-  //MYROOT::myroot->Run(kTRUE);
-  MYROOT::myfile->Write();
-  delete MYROOT::myroot;
-
-  throw(ATOOLS::Exception(ATOOLS::ex::normal_exit,
-                          "finished histogram","DUPDF","DUPDF"));
-  *//////////////////////////////////////////////////
+#else
+#error ROOT is disabled
+#endif
+#endif
   while (m_branching.size()>0) {
     delete (*m_branching.begin()).second;
     m_branching.erase(m_branching.begin());

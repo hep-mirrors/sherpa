@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-PDFFLAGS   =	-pedantic -Wall -Winline
+PDFFLAGS      =	-pedantic -Wall -Winline
 
 PDFINCS       =	-I../Main -I../Sudakov
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
@@ -10,6 +10,11 @@ APACICINCS    =	-I$(SHERPASYS)/APACIC++-2.0/Showers
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
+endif
+
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
 lib_LTLIBRARIES       = libDUPDF.la
@@ -24,5 +29,6 @@ noinst_HEADERS        = \
 			LL_Sudakov.H \
 			Doubly_Unintegrated_PDF.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(PDFFLAGS)
-INCLUDES      =	$(APACICINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
+AM_CXXFLAGS   =	$(PDFFLAGS) $(ROOTFLAGS)
+INCLUDES      =	$(APACICINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS) \
+		$(ROOTINCS)
