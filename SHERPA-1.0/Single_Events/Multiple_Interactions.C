@@ -28,34 +28,39 @@ Multiple_Interactions::~Multiple_Interactions() {}
 bool Multiple_Interactions::CheckBlobList(const ATOOLS::Blob_List *bloblist) 
 {
   m_xmax[1]=m_xmax[0]=1.0;
-  m_pperpmax=std::numeric_limits<double>::max();
-  for (Blob_List::const_iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-    if ((*bit)->Type()==btp::Hard_Collision || 
-	(*bit)->Type()==btp::Signal_Process) {
+  double pperpmax=std::numeric_limits<double>::max();
+  for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
+       bit!=bloblist->end();++bit) {
+    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision || 
+	(*bit)->Type()==ATOOLS::btp::Signal_Process) {
       if ((*bit)->Status()!=0) return false;
     }
-    else if ((*bit)->Type()==btp::ME_PS_Interface_FS) {
+    else if ((*bit)->Type()==ATOOLS::btp::ME_PS_Interface_FS) {
       for (int i=0;i<(*bit)->NInP();++i) {
-	m_pperpmax=ATOOLS::Min(m_pperpmax,(*bit)->InParticle(i)->Momentum().PPerp());
+	pperpmax=ATOOLS::Min(pperpmax,
+			     (*bit)->InParticle(i)->Momentum().PPerp());
       }
     }
-    else if ((*bit)->Type()==btp::IS_Shower) {
+    else if ((*bit)->Type()==ATOOLS::btp::IS_Shower) {
       m_xmax[(*bit)->Beam()]-=2.0*(*bit)->InParticle(0)->Momentum()[0]/m_ecms;
-      p_mihandler->ISRHandler()->Extract((*bit)->InParticle(0)->Flav(),
-					 (*bit)->InParticle(0)->Momentum()[0],(*bit)->Beam());
+      p_mihandler->ISRHandler()->
+	Extract((*bit)->InParticle(0)->Flav(),
+		(*bit)->InParticle(0)->Momentum()[0],(*bit)->Beam());
     }
   }
-  if (m_pperpmax==std::numeric_limits<double>::max()) {
-    for (Blob_List::const_iterator bit=bloblist->begin();bit!=bloblist->end();++bit) {
-      if ((*bit)->Type()==btp::Hard_Collision || 
-	  (*bit)->Type()==btp::Signal_Process) {
+  if (pperpmax>=m_pperpmax) {
+    for (ATOOLS::Blob_List::const_iterator bit=bloblist->begin();
+	 bit!=bloblist->end();++bit) {
+      if ((*bit)->Type()==ATOOLS::btp::Hard_Collision || 
+	  (*bit)->Type()==ATOOLS::btp::Signal_Process) {
 	for (int i=0;i<(*bit)->NOutP();++i) {
-	  m_pperpmax=ATOOLS::Min(m_pperpmax,(*bit)->OutParticle(i)->Momentum().PPerp());
+	  pperpmax=ATOOLS::Min(pperpmax,
+			       (*bit)->OutParticle(i)->Momentum().PPerp());
 	}
       }
     }
   }
-  return m_pperpmax!=std::numeric_limits<double>::max();
+  return (m_pperpmax=pperpmax)!=std::numeric_limits<double>::max();
 }
 
 bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
@@ -95,4 +100,5 @@ void Multiple_Interactions::Finish(const std::string &resultpath)
 void Multiple_Interactions::CleanUp() 
 {
   p_mihandler->CleanUp();
+  m_pperpmax==std::numeric_limits<double>::max();
 }

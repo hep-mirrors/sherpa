@@ -81,8 +81,7 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 	found   = AttachShowers(blob,_bloblist,piIter->second);
 	weight *= piIter->second->Weight();
       }  
-      if (p_showerhandler->ShowerMI() &&
-	  blob->Status()==1 && blob->Type()==btp::Hard_Collision) {
+      if (blob->Status()==1 && blob->Type()==btp::Hard_Collision) {
 	FillDecayBlobMap(blob,_bloblist);
 	piIter = m_interfaces.find(string("MIMEs"));
 	if (piIter==m_interfaces.end()) {
@@ -114,8 +113,39 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 }
 
 int Jet_Evolution::AttachShowers(Blob * _blob,Blob_List * _bloblist,
-				  Perturbative_Interface * interface) 
+				 Perturbative_Interface * interface) 
 {
+  if (_blob->Type()==btp::Hard_Collision && !p_showerhandler->ShowerMI()) {
+    Blob * myblob;
+    for (int i=0;i<2;i++) {
+      myblob = new Blob();
+      myblob->SetType(btp::IS_Shower);
+      if (Sign(_blob->InParticle(i)->Momentum()[3])==1-2*i) myblob->SetBeam(i);
+      else myblob->SetBeam(1-i);
+      myblob->SetStatus(1);
+      Particle * p = new Particle(*_blob->InParticle(i));
+      p->SetStatus(2);
+      myblob->AddToInParticles(p);
+      myblob->AddToOutParticles(_blob->InParticle(i));
+      _blob->InParticle(i)->SetStatus(2);
+      myblob->SetId();
+      _bloblist->insert(_bloblist->begin(),myblob);
+    }
+    for (int i=0;i<_blob->NOutP();i++) {
+      myblob = new Blob();
+      myblob->SetType(btp::FS_Shower);
+      myblob->SetBeam(i);
+      myblob->SetStatus(1);
+      Particle * p = new Particle(*_blob->OutParticle(i));
+      myblob->AddToInParticles(_blob->OutParticle(i));
+      _blob->OutParticle(i)->SetStatus(2);
+      myblob->AddToOutParticles(p);
+      myblob->SetId();
+      _bloblist->push_back(myblob);
+    }
+    _blob->SetStatus(0);
+    return 1;
+  }
   bool decayblob   = (_blob->NInP()==1);
   int shower, stat = interface->DefineInitialConditions(_blob);
   if (stat==3) {
