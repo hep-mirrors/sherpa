@@ -144,6 +144,12 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
     else m_totalxs += m_procs[i]->TotalXS();
   }
   if (m_totalxs<=0.) okay=0;
+
+  if (m_procs.size()>0) {
+    m_procs[0]->AddToDataCollector(0);
+  }
+
+
   return okay;
 }
 

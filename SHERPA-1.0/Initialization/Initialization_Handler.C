@@ -14,6 +14,7 @@
 #include "Scaling.H"
 #include "MCatNLO_Wrapper.H"
 #include "Particle_Qualifier.H"
+#include "Data_Collector.H"
 
 using namespace SHERPA;
 using namespace MODEL;
@@ -480,6 +481,9 @@ bool Initialization_Handler::CalculateTheHardProcesses()
   msg.Out()<<"=========================================================================="<<std::endl
 	   <<"Start calculating the hard cross sections. This may take some time.       "<<std::endl;
   int ok = me->CalculateTotalXSecs(scalechoice);
+
+  //  Data_Collector::Print();
+
   if (ok && m_scan_istep!=-1) {
     AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
     msg.Out()<<ParameterValue()<<" ";

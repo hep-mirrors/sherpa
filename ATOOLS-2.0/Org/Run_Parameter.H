@@ -63,15 +63,15 @@ namespace ATOOLS {
       inline int    CutScheme()                           { return m_cutscheme; }
       inline void   SetNumberOfEvents(long N)             { m_nevents    = N; }
       inline double Ecms()                                { return m_ecms; }
-      inline void   SetEcms(double _ecms)                 { m_ecms    = _ecms;}
+      void   SetEcms(double _ecms);
       inline double Ycut()                                { return m_ycut; }
       inline void   SetYcut(double _ycut)                 { m_ycut    = _ycut;}
       inline double DeltaR()                              { return m_delta_r; }
       inline void   SetDeltaR(double dr)                  { m_delta_r   = dr;}
       inline const  Flavour Beam1()           { return m_beam1; }
       inline const  Flavour Beam2()           { return m_beam2; }
-      inline void   SetBeam1(const Flavour b) { m_beam1  = b;   }
-      inline void   SetBeam2(const Flavour b) { m_beam2  = b;   }
+      void   SetBeam1(const Flavour b);
+      void   SetBeam2(const Flavour b);
       inline const  Flavour Bunch(const size_t i)            { return p_bunch[i]; }
       inline void   SetBunch(const Flavour b,const size_t i) { p_bunch[i] = b;    }
       inline void      SetTimeOut(const long int timeout) { m_timeout=timeout;  }

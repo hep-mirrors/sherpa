@@ -5,6 +5,7 @@
 #include "Exception.H"
 #include "Random.H"
 #include "Data_Reader.H"
+#include "Data_Collector.H"
 #include <stdlib.h>
 
 using namespace ATOOLS;
@@ -179,3 +180,16 @@ bool Run_Parameter::Gen::CheckTime(const double limit)
 }
 
 
+
+void   Run_Parameter::Gen::SetEcms(double _ecms)     { 
+  m_ecms    = _ecms;
+  Data_Collector::AddData("ECMS",new Blob_Data<double>(m_ecms));
+}
+void   Run_Parameter::Gen::SetBeam1(const Flavour b) { 
+  Data_Collector::AddData("BEAM1",new Blob_Data<std::string>(b.TexName()));
+  m_beam1  = b;   
+}
+void   Run_Parameter::Gen::SetBeam2(const Flavour b) { 
+  Data_Collector::AddData("ECMS",new Blob_Data<std::string>(b.TexName()));
+  m_beam2  = b;   
+}
