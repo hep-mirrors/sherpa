@@ -2,6 +2,7 @@
 
 #include "My_Root.H"
 #include "Shell_Tools.H"
+#include "TStyle.h"
 
 using namespace MYROOT;
 
@@ -52,9 +53,10 @@ My_Root::~My_Root()
 void My_Root::Draw() 
 {
   if (m_drawmode==0) return;
+  gStyle->SetPalette(1);
   for (String_Object_Map::const_iterator oit=m_objects.begin();
        oit!=m_objects.end();++oit) {
-    new TCanvas(oit->first.c_str(),oit->first.c_str());
+    new TCanvas((oit->first+"_c").c_str(),(oit->first+"_c").c_str());
     if (m_drawmode&2) gPad->SetLogx();
     if (m_drawmode&4) gPad->SetLogy();
     if (m_drawmode&8) gPad->SetLogz();
