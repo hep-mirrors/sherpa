@@ -62,6 +62,11 @@ namespace AMATOOLS {
     inline const double Sqr() const;
     inline double& operator[] (int i);
     inline const double operator[] (int i) const;
+
+    // standard vectors:
+    const static Vec3D XVEC;
+    const static Vec3D YVEC;
+    const static Vec3D ZVEC;
   };
 
   class Vec4D {
@@ -98,6 +103,10 @@ namespace AMATOOLS {
     Vec4D& operator-= (const Vec4D& v);
     Vec4D& operator*= (const double scal);
 
+    // standard vectors:
+    const static Vec4D XVEC;
+    const static Vec4D YVEC;
+    const static Vec4D ZVEC;
   };
 
 
@@ -186,6 +195,17 @@ namespace AMATOOLS {
 
   inline Vec3D operator* (const Vec3D& v, const double scal) {
     return Vec3D(v,scal,Tag::smul);
+  }
+
+  inline bool operator==(const Vec3D& v1, const Vec3D& v2) 
+  {
+    double maxp=Max(v1[1],Max(v1[2],v1[3])); 
+    double q=1.;
+    if (!IsZero(maxp)) q=1./maxp;
+    for(short int i=1;i<4;i++) {
+      if (!IsZero(q*(v1[i]-v2[i]))) return false;
+    }
+    return true;
   }
 
   inline Vec3D operator/ (const Vec3D& v, const double scal) {
@@ -321,10 +341,6 @@ namespace AMATOOLS {
   std::ostream& operator<<(std::ostream& s, const Vec3D& vec);
 
 
-  // standard vectors:
-  const static Vec4D XVEC;
-  const static Vec4D YVEC;
-  const static Vec4D ZVEC;
 
   // end of namespace
 }

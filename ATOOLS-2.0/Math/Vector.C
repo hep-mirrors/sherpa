@@ -16,9 +16,13 @@ const Tag::Tdiff Tag::diff={};
 const Tag::Tsmul Tag::smul={};
 const Tag::Tcross Tag::cross={};
 
-const Vec4D XVEC=Vec4D(1.,1.,0.,0.);
-const Vec4D YVEC=Vec4D(1.,0.,1.,0.);
-const Vec4D ZVEC=Vec4D(1.,0.,0.,1.);
+const Vec4D Vec4D::XVEC=Vec4D(1.,1.,0.,0.);
+const Vec4D Vec4D::YVEC=Vec4D(1.,0.,1.,0.);
+const Vec4D Vec4D::ZVEC=Vec4D(1.,0.,0.,1.);
+
+const Vec3D Vec3D::XVEC=Vec3D(1.,0.,0.);
+const Vec3D Vec3D::YVEC=Vec3D(0.,1.,0.);
+const Vec3D Vec3D::ZVEC=Vec3D(0.,0.,1.);
 
 std::ostream& AMATOOLS::operator<< (std::ostream& s, const Vec4D& vec)
 {
