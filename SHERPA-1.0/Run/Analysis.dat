@@ -1,6 +1,7 @@
 ANALYSIS_PHASE = Showers    ! Available: ME, Showers, Hadrons, added by "+", no spaces.
 OUTPUT = OutputS
-93   10. -4.5   4.5  0.7
+93   10. -4.5   4.5  0.7 1.
+! last parameter: 1.(default): jets include b   0.: b's produce kf::bjet (97)
 11   1. -4.5   4.5  0. 
 % 93 11 0.8 min rmin separation
 % 93 1 1    min1-max1 jets.
