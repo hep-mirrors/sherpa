@@ -132,6 +132,7 @@ bool Event_Handler::GenerateEvent(int mode)
     }
     return 1;
   case 9000:
+    CleanUpEvent();
     while (flag) {
       flag = 0;
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
@@ -148,6 +149,7 @@ bool Event_Handler::GenerateEvent(int mode)
 
     return 1;
   case 9999:
+    CleanUpEvent();
     while (flag) {
       flag = 0;
       for (Phase_Iterator pit=p_phases->begin();pit!=p_phases->end();++pit) {
