@@ -8,32 +8,33 @@ DIRS=$DIRS" SHERPA-1.0"
 ECXXFLAGS=""
 EFFLAGS=""
 ECOPT=""
-EMOPT="-j2"
+EMOPT=""
 for I in $* ; do
   if [ "$I" = "-c" ]; then CONFIGURE=TRUE 
-  elif [ "$I" = "-e" ]; then EXTRACT=TRUE
   elif [ "$I" = "-t" ]; then TOTAL=TRUE && CONFIGURE=TRUE
-  elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
-  elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
+  elif [ "$I" = "-e" ]; then EXTRACT=TRUE
   elif [ "$I" = "--clean" ]; then CLEAN=TRUE
   elif [ "$I" = "--clean-run" ]; then RUNCLEAN=TRUE
   elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
   elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
   elif [ "$I" = "--mopt" ]; then DMOPT=TRUE 
+  elif [ "$I" = "--cxx" ]; then DCXXFLAGS=TRUE 
+  elif [ "$I" = "--f" ]; then DFFLAGS=TRUE 
   elif [ "$I" = "--force-tar" ]; then FORCE=TRUE && EXTRACT=TRUE
-  elif [ "$I" = "-h" ]; then \
-    echo "makeinstall options: -c             configure before compiling (enabled with '-t')" && \
-    echo "                     -e             extract tar files" && \
-    echo "                     -t             apply libtool and aclocal before compiling" && \
-    echo "                     --cxx          define cxx flag for 'make'" && \
-    echo "                     --f            define fortran flag for 'make'" && \
-    echo "                     --clean        \"make clean\" before compiling" && \
-    echo "                     --clean-run    apply \"makeclean\" in SHERPA-1.0/Run before compiling" && \
-    echo "                     --no-abort     force installation in every module" && \
-    echo "                     --copt         define option for 'configure'" && \
-    echo "                     --mopt         define option for 'make'" && \
-    echo "                     --force-tar    force extraction of tar files (enables '-e')" && \
-    echo "                     -h             display this help and exit" && \
+  elif [ "$I" = "-h" ]; then echo && \
+    echo "makeinstall version 1.0" && echo && \
+    echo "options: -c             configure before compiling (enabled with '-t')" && \
+    echo "         -t             rebuild 'Makefile.in's and 'configure' before compiling" && \
+    echo "         -e             extract tar files" && \
+    echo "         --clean        execute 'make clean' in every module before compiling" && \
+    echo "         --clean-run    execute './SHERPA-1.0/Run/makeclean' before compiling" && \
+    echo "         --no-abort     ignore exit status of 'make'" && \
+    echo "         --copt         define option for 'configure'" && \
+    echo "         --mopt         define option for 'make' (default is '-j2')" && \
+    echo "         --cxx          define cxx flag for 'make'" && \
+    echo "         --f            define fortran flag for 'make'" && \
+    echo "         --force-tar    force extraction of tar files (enables '-e')" && \
+    echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DCXXFLAGS" = "TRUE" ]; then DCXXFLAGS="" && ECXXFLAGS=$ECXXFLAGS" "$I
   elif [ "$DFFLAGS" = "TRUE" ]; then DFFLAGS="" && EFFLAGS=$EFFLAGS" "$I
@@ -45,6 +46,7 @@ for I in $* ; do
 done
 if [ ! "$ECXXFLAGS" = "" ]; then ECXXFLAGS="CXXFLAGS="$ECXXFLAGS ; fi
 if [ ! "$EFFLAGS" = "" ]; then EFFLAGS="FFLAGS="$EFFLAGS ; fi
+if [ "$EMOPT" = "" ]; then EMOPT="-j2" ; fi
 
 if test "$EXTRACT" = "TRUE" ; then
   echo "**************************************"
@@ -94,7 +96,7 @@ do
       autoconf
     fi
     if test "$CONFIGURE" = "TRUE" ; then
-      ./configure "$ECOPT" 
+      ./configure "$ECOPT"
     fi
     if `test "$CLEAN" = "TRUE"` ; then 
       make clean

@@ -5,18 +5,25 @@ DIRS=$DIRS" MODEL-1.0 AMEGIC++-2.0 APACIC++-2.0 SHERPA-1.0"
 #DIRS=$DIRS" AMISIC++-1.0 COMPARE-1.0"
 DISTDIR=`date +'%y-%m-%d'`
 
+ECOPT=""
 for I in $* ; do
   if [ "$I" = "-c" ]; then CLEAN=TRUE 
-  elif [ "$I" = "-C" ]; then ALLCLEAN=TRUE 
-  elif [ "$I" = "--hide-cvs" ]; then NOCVS=TRUE 
+  elif [ "$I" = "--clean" ]; then ALLCLEAN=TRUE 
   elif [ "$I" = "--configure" ]; then CONFIGURE=TRUE 
-  elif [ "$I" = "-h" ]; then \
-    echo "makedist options: -c             apply \"makeclean\" in SHERPA-1.0/Run first" && \
-    echo "                  -C             apply \"make clean\" before \"make dist\"" && \
-    echo "                  --hide-cvs     do not include cvs directories in distribution" && \
-    echo "                  --configure    apply libtool and aclocal before \"make dist\"" && \
-    echo "                  -h             display this help and exit" && \
+  elif [ "$I" = "--total" ]; then TOTAL=TRUE && CONFIGURE=TRUE
+  elif [ "$I" = "--copt" ]; then DCOPT=TRUE 
+  elif [ "$I" = "--no-abort" ]; then NOABORT=TRUE
+  elif [ "$I" = "-h" ]; then echo && \
+    echo "makedist version 1.0 " && echo && \
+    echo "options: -c             execute './SHERPA-1.0/Run/makeclean' first" && \
+    echo "         --clean        execute 'make clean' before 'make dist'" && \
+    echo "         --configure    configure before 'make dist' (enabled with '-t')" && \
+    echo "         --total        rebuild 'Makefile.in's and 'configure' before 'make dist'" && \
+    echo "         --copt         define option for 'configure'" && \
+    echo "         --no-abort     ignore exit status of 'make'" && \
+    echo "         -h             display this help and exit" && echo && \
     exit 0
+  elif [ "$DCOPT" = "TRUE" ]; then DCOPT="" && ECOPT=$ECOPT" "$I
   else echo "makeinstall: error: unrecognized option $I" && exit 1 ;
   fi
 done
@@ -39,31 +46,29 @@ do
     echo "====================================="
     ALL=$ALL" "$I.tar.gz
     cd $I 
-    if test "$CONFIGURE" = "TRUE" ; then
+    if [ "$TOTAL" = "TRUE" ]; then
       libtoolize --force
       aclocal
       automake -a
       autoconf
     fi
-    if test "$NOCVS" = "TRUE" ; then
-      ./configure --disable-cvsinclude
-    elif test "$CONFIGURE" = "TRUE" ; then 
-      ./configure 
+    if [ "$CONFIGURE" = "TRUE" ]; then 
+      ./configure "$ECOPT"
     fi
-    if test "$ALLCLEAN" = "TRUE" ; then 
+    if [ "$ALLCLEAN" = "TRUE" ]; then 
       make clean 
     fi
     CONTINUE="r"
-    while test "$CONTINUE" = "r" ; do 
+    while [ "$CONTINUE" = "r" ]; do 
       CONTINUE=""
       if ! make dist ; then 
 	echo "makedist: error: \"make dist\" in $I failed"
-        if test ! "$NOABORT" = "TRUE" ; then
-          until test "$CONTINUE" = "y" || test "$CONTINUE" = "n" || test "$CONTINUE" = "r" ; do
+        if [ ! "$NOABORT" = "TRUE" ]; then
+          until [ "$CONTINUE" = "y" ] || [ "$CONTINUE" = "n" ] || [ "$CONTINUE" = "r" ]; do
     	    if ! read -t 300 -p "continue anyway (y/n/r) ? " CONTINUE ; then
 	      CONTINUE="n"
 	    fi
-	    if test "$CONTINUE" = "n" ; then
+	    if [ "$CONTINUE" = "n" ]; then
               exit 1
 	    fi
 	  done
