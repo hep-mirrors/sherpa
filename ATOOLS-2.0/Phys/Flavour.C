@@ -128,7 +128,7 @@ Flavour Flavour::operator[](int idx) const  {
 
 
 
-Flavour Flavour::Bar() { 
+const Flavour Flavour::Bar() const { 
   Flavour flbar = *this;
   
   if (flbar==Flavour(kf::photon))   return flbar;
@@ -297,7 +297,7 @@ void Flavour::FromHepEvt(int code) {
   return;
 }
 
-std::string Flavour::TexName() 
+std::string Flavour::TexName() const 
 {
   std::string name;
 

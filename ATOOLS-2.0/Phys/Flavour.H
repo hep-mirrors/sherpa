@@ -471,13 +471,13 @@ namespace ATOOLS {
     Flavour()                          { kfc=kf::none; anti=0;}
     Flavour(kf::code kfc_) : kfc(kfc_) { anti=0; }
     Flavour(int kfint);
-    Flavour Bar();
+    const Flavour Bar() const;
     kf::code Kfcode()     const { return kfc; }
     inline operator int() const { return (anti)? -int(kfc) : int(kfc) ; }
 
     int  Ctq();
     void FromCtq(int code);
-    std::string TexName();
+    std::string TexName() const;
 
     const int  Size() const {
       return particles[ Index() ].Size();
