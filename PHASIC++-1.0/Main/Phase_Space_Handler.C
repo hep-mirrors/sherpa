@@ -38,6 +38,7 @@
 #ifdef ANALYSE__Phase_Space_Handler
 #include "My_Root.H"
 #include "TH2D.h"
+static ATOOLS::Info_Key m_isrzkey[2], m_isrkpkey[2];
 #endif
 
 using namespace PHASIC;
@@ -91,6 +92,12 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
     m_beamykey.Assign("y beam",3,0,p_info);
     m_mu2key[0].Assign("mu2_1",1,0,p_info);
     m_mu2key[1].Assign("mu2_2",1,0,p_info);
+#ifdef ANALYSE__Phase_Space_Handler
+    m_isrzkey[0].Assign("z_1",3,0,p_info);
+    m_isrzkey[1].Assign("z_2",3,0,p_info);
+    m_isrkpkey[0].Assign("k_perp_1",4,0,p_info);
+    m_isrkpkey[1].Assign("k_perp_2",4,0,p_info);
+#endif
     p_beamhandler->AssignKeys(p_info);
     p_isrhandler->AssignKeys(p_info);
   }
@@ -251,6 +258,14 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     TH2D* spyps=((TH2D*)(*MYROOT::myroot)["Sprime_Y_PS"]);
     if (spyps!=NULL) spyps->
       Fill(log(m_isrspkey[3]/m_isrspkey[2])/log(10.),m_isrykey[2],1.0);
+    TH2D* z1z2ps=((TH2D*)(*MYROOT::myroot)["Z1_Z2_PS"]);
+    if (z1z2ps!=NULL) z1z2ps->
+      Fill(log(m_isrzkey[0][2]*m_isrzkey[1][2])/log(10.),
+	   log(m_isrzkey[0][2]/m_isrzkey[1][2])/log(10.),1.0);
+    TH2D* kperpps=((TH2D*)(*MYROOT::myroot)["KPerp_PS"]);
+    if (kperpps!=NULL) kperpps->
+      Fill(log(m_isrkpkey[0][3]/m_isrkpkey[0][2])/log(10.0),
+	   log(m_isrkpkey[1][3]/m_isrkpkey[1][2])/log(10.0),1.0);
 #endif
     if (!p_isrhandler->MakeISR(p_lab,m_nvec,
 			       p_process->Selected()->Flavours(),m_nin+m_nout)) {
@@ -281,6 +296,8 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
     if (p_isrhandler->On()>0) p_isrhandler->BoostInLab(p_lab,m_nvec);
     if (p_beamhandler->On()>0) p_beamhandler->BoostInLab(p_lab,m_nvec);
   }
+  if (p_process->NAddOut()>0) 
+    p_process->Selected()->SetAddMomenta(p_isrhandler->KMRMomenta());
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
   bool trigger = 0;
   if (process->Trigger(p_lab)) {
@@ -334,6 +351,16 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process,
   TH2D* spyme=((TH2D*)(*MYROOT::myroot)["Sprime_Y_ME"]);
   if (spyme!=NULL) spyme->
     Fill(log(m_isrspkey[3]/m_isrspkey[2])/log(10.),m_isrykey[2],
+	 m_flux*(m_result_1+m_result_2));
+  TH2D* z1z2ps=((TH2D*)(*MYROOT::myroot)["Z1_Z2_ME"]);
+  if (z1z2ps!=NULL) z1z2ps->
+    Fill(log(m_isrzkey[0][2]*m_isrzkey[1][2])/log(10.),
+	 log(m_isrzkey[0][2]/m_isrzkey[1][2])/log(10.),
+	 m_flux*(m_result_1+m_result_2));
+  TH2D* kperpps=((TH2D*)(*MYROOT::myroot)["KPerp_ME"]);
+  if (kperpps!=NULL) kperpps->
+    Fill(log(m_isrkpkey[0][3]/m_isrkpkey[0][2])/log(10.0),
+	 log(m_isrkpkey[1][3]/m_isrkpkey[1][2])/log(10.0),
 	 m_flux*(m_result_1+m_result_2));
 #endif
   return m_flux*(m_result_1+m_result_2);
@@ -435,6 +462,10 @@ bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
 	m_sumtrials += i;m_events ++;
 	if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	  Rotate(p_lab);
+	  if (p_process->NAddOut()>0) {
+	    ATOOLS::Vec4D *addvecs=(ATOOLS::Vec4D*)p_process->AddMomenta();
+	    Rotate(addvecs,p_process->NAddOut());
+	  }
 	  p_process->Selected()->SetMomenta(p_lab);
 	  p_process->Selected()->SwapInOrder();
 	}
@@ -476,6 +507,10 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::WeightedEvent(int mode)
       ++m_events;
       if (m_result_1 < (m_result_1+m_result_2)*ATOOLS::ran.Get()) {
 	Rotate(p_lab);
+	if (p_process->NAddOut()>0) {
+	  ATOOLS::Vec4D* addvecs=(ATOOLS::Vec4D*)p_process->AddMomenta();
+	  Rotate(addvecs,p_process->NAddOut());
+	}
 	p_process->Selected()->SetMomenta(p_lab);
 	p_process->Selected()->SwapInOrder();
       }
@@ -544,9 +579,10 @@ bool Phase_Space_Handler::ReadIn(const std::string &pID,const size_t exclude)
   return okay;
 }
 
-void Phase_Space_Handler::Rotate(Vec4D *const p) 
+void Phase_Space_Handler::Rotate(ATOOLS::Vec4D *const p,const size_t n)
 {
-  for (int i=0;i<m_nin+m_nout;i++) p[i] = Vec4D(p[i][0],(-1.)*Vec3D(p[i]));
+  int nvec=n==0?m_nin+m_nout:n;
+  for (int i=0;i<nvec;i++) p[i] = Vec4D(p[i][0],(-1.)*Vec3D(p[i]));
 }
 
 bool Phase_Space_Handler::LoadChannelLibraries() 

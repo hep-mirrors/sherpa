@@ -12,9 +12,11 @@ Integrable_Base::Integrable_Base(const size_t nin,const size_t nout,const ATOOLS
 				 BEAM::Beam_Spectra_Handler *const beamhandler,
 				 PDF::ISR_Handler *const isrhandler,
 				 ATOOLS::Selector_Data *const selectordata):
-  m_name(""), m_nin(nin), m_nout(nout), m_nvector(nin+nout), p_flavours(NULL), 
-  p_momenta(new ATOOLS::Vec4D[nin+nout]), m_scalescheme(scalescheme), 
-  m_kfactorscheme(kfactorscheme), m_scalefactor(scalefactor), m_threshold(0.), 
+  m_name(""), m_nin(nin), m_nout(nout), m_naddin(0), m_naddout(0), 
+  m_nvector(nin+nout), p_flavours(NULL), p_addflavours(NULL), 
+  p_momenta(new ATOOLS::Vec4D[nin+nout]), p_addmomenta(NULL), 
+  m_scalescheme(scalescheme), m_kfactorscheme(kfactorscheme), 
+  m_scalefactor(scalefactor), m_threshold(0.), 
   m_overflow(0.), m_xinfo(std::vector<double>(4)),
   m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.), 
@@ -29,6 +31,8 @@ Integrable_Base::~Integrable_Base()
   if (p_selector!=NULL && m_ownselector) delete p_selector;
   if (p_flavours!=NULL) delete [] p_flavours;
   if (p_momenta!=NULL) delete [] p_momenta;
+  if (p_addflavours!=NULL) delete [] p_addflavours;
+  if (p_addmomenta!=NULL) delete [] p_addmomenta;
 }
 
 Integrable_Base *const Integrable_Base::Selected()
@@ -77,6 +81,26 @@ void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta)
     abort();
   }
   for (size_t i=0;i<NVector();++i) p_momenta[i]=momenta[i];
+}
+
+void Integrable_Base::SetAddMomenta(const ATOOLS::Vec4D *momenta) 
+{ 
+  if (!p_addmomenta) {
+    ATOOLS::msg.Error()<<"Integrable_Base::SetAddMomenta("<<momenta<<"): "
+		       <<"p_addmomenta = NULL. Abort."<<std::endl;
+    abort();
+  }
+  for (size_t i=0;i<NAddIn()+NAddOut();++i) p_addmomenta[i]=momenta[i];
+}
+
+void Integrable_Base::SetAddFlavours(const ATOOLS::Flavour *flavours) 
+{ 
+  if (!p_addflavours) {
+    ATOOLS::msg.Error()<<"Integrable_Base::SetAddFlavours("<<flavours<<"): "
+		       <<"p_addflavours = NULL. Abort."<<std::endl;
+    abort();
+  }
+  for (size_t i=0;i<NAddIn()+NAddOut();++i) p_addflavours[i]=flavours[i];
 }
 
 void Integrable_Base::SetScale(const double scale) 

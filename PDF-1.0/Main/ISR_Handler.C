@@ -275,7 +275,7 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   for (size_t i=0;i<2;++i) {
     phi+=2.0*M_PI*ran.Get();
     double kp=sqrt(m_kpkey[i][3]); 
-    if (p_isrbase[i]->Collinear(m_kpkey[i][3])) m_zkey[i][2]=0.;
+    // if (p_isrbase[i]->Collinear(m_kpkey[i][3])) m_zkey[i][2]=0.;
     m_kp[i]=Vec4D(0.0,cos(phi)*kp,sin(phi)*kp,0.0);
   }
   E=sqrt(m_spkey[3]-(m_kp[0]+m_kp[1]).Abs2());
@@ -294,6 +294,10 @@ bool ISR_Handler::MakeISR(Vec4D *const p,const size_t n,
   if (b1<0. || b2<0.) return false;
   p[0]=Vec4D((m_x[0]-b1)*Q/2.,m_kp[0][1],m_kp[0][2],(m_x[0]+b1)*Q/2.);
   p[1]=Vec4D((m_x[1]-b2)*Q/2.,m_kp[1][1],m_kp[1][2],-(m_x[1]+b2)*Q/2.);
+  p_kmrlast[0]=Vec4D((m_x[0]*(1./m_zkey[0][2]-1.)+b1)*Q/2.,-m_kp[0][1],
+		     -m_kp[0][2],(m_x[0]*(1./m_zkey[0][2]-1.)-b1)*Q/2.);
+  p_kmrlast[1]=Vec4D((m_x[1]*(1./m_zkey[1][2]-1.)+b2)*Q/2.,-m_kp[1][1],
+		     -m_kp[1][2],-(m_x[1]*(1./m_zkey[1][2]-1.)-b2)*Q/2.);
   double min=0.0;
   for (size_t i=2;i<nflavs;++i) min+=flavs[i].Mass();
   if ((p[0]+p[1]).Abs2()<min*min) return false;
@@ -461,6 +465,12 @@ bool ISR_Handler::BoostInCMS(Vec4D *p,const size_t n)
       m_kmrrot.RotateBack(p[i]);
     }
   }
+  if (m_kmrmode) {
+    for (size_t i=0; i<2; ++i) {
+      m_kmrboost.Boost(p_kmrlast[i]);
+      m_kmrrot.RotateBack(p_kmrlast[i]);
+    }
+  }
   return true;
 }
 
@@ -473,6 +483,12 @@ bool ISR_Handler::BoostInLab(Vec4D* p,const size_t n)
     else {
       m_kmrrot.Rotate(p[i]);
       m_kmrboost.BoostBack(p[i]);
+    }
+  }
+  if (m_kmrmode) {
+    for (size_t i=0; i<2; ++i) {
+      m_kmrrot.Rotate(p_kmrlast[i]);
+      m_kmrboost.BoostBack(p_kmrlast[i]);
     }
   }
   return true;

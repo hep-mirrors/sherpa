@@ -69,7 +69,7 @@ namespace PHASIC {
     void TestIntegration(const double);
     void DropRedundantChannels();
 
-    void Rotate(ATOOLS::Vec4D *const p);
+    void Rotate(ATOOLS::Vec4D *const p,const size_t n=0);
     bool Check4Momentum(const ATOOLS::Vec4D *p);
     bool CompareCh(std::string C1,std::string C2);
     bool Compare(const ATOOLS::Vec4D *p1,const ATOOLS::Vec4D *p2);

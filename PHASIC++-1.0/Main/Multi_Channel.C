@@ -483,6 +483,9 @@ void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode)
       return;
     }
   }  
+  msg.Error()<<"Multi_Channel::GeneratePoint(..): ("<<this
+	     <<") No channel selected. \n"
+	     <<"   disc = "<<disc<<", sum = "<<sum<<std::endl;
 }
 
 void Multi_Channel::GeneratePoint(Info_Key &spkey,Info_Key &ykey,int mode,
