@@ -5,13 +5,17 @@
 #include "Exception.H"
 #include "Random.H"
 #include "Data_Reader.H"
+#include <stdlib.h>
 
 using namespace ATOOLS;
 
+bool ATOOLS::Run_Parameter::s_initialized;
+std::map<std::string,std::string> ATOOLS::Run_Parameter::s_variables;
 Run_Parameter ATOOLS::rpa;
 
 Run_Parameter::Run_Parameter() 
 {
+  AnalyseEnvironment();
   gen.m_output    = gen.m_analysis   = 0;
   gen.m_nevents   = 0;
   gen.m_cutscheme = 0;
@@ -25,14 +29,14 @@ Run_Parameter::Run_Parameter()
   gen.m_ndicedevents = 0;
 } 
 
-void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
+void Run_Parameter::AnalyseEnvironment() 
 {
+  if (s_initialized) return;
 #ifdef __GNUC__
 #if __GNUC__ == 2 && __GNUC_MINOR__ == 96
 #error Sherpa was not designed for gcc 2.96
 #endif
 #endif
-  gen.m_timer.Start();
   std::string gccversion;
   system("gcc -dumpversion > sherpa_gcc_test");
   std::ifstream *test = new std::ifstream("sherpa_gcc_test");
@@ -43,6 +47,43 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
     throw(Exception(ex::fatal_error,"Sherpa must not be run on gcc version 2.96 !",
 		    "Run_Parameter","Init"));
   }
+  char *var=NULL;
+  s_variables["PATH"]=std::string(((var=getenv("PATH"))==NULL?"":var));
+  s_variables["SHERPASYS"]=std::string(((var=getenv("SHERPASYS"))==NULL?"":var));
+  s_variables["SHERPA_PDF_PATH"]=std::string(((var=getenv("SHERPA_PDF_PATH"))==NULL?"":var));
+  s_variables["SHERPA_CPP_PATH"]=std::string(((var=getenv("SHERPA_CPP_PATH"))==NULL?"":var));
+  s_variables["SHERPA_LIB_PATH"]=std::string(((var=getenv("SHERPA_LIB_PATH"))==NULL?"":var));
+  s_variables["LD_LIBRARY_PATH"]=std::string(((var=getenv("LD_LIBRARY_PATH"))==NULL?"":var));
+  if (system("test -f Sherpa")) {
+    std::string paths=s_variables["PATH"];
+    do {
+      size_t pos=ATOOLS::Min(paths.length(),paths.find(":"));
+      std::string cur=paths.substr(0,pos);
+      if (!system((std::string("test -f ")+cur+std::string("/Sherpa")).c_str())) {
+	s_variables["SHERPA_BIN_PATH"]=cur;
+	break;
+      }
+      paths=paths.substr(pos+1);
+    } while (paths.length()>0);
+  }
+  else {
+    s_variables["SHERPA_BIN_PATH"]=std::string(".");
+  }
+  if (s_variables["SHERPA_PDF_PATH"]==std::string("")) {
+    s_variables["SHERPA_PDF_PATH"]=s_variables["SHERPA_BIN_PATH"];
+  }
+  std::string runpath;
+  system("echo $PWD > sherpa_path_test");
+  test = new std::ifstream("sherpa_path_test");
+  if (*test) (*test)>>s_variables["SHERPA_RUN_PATH"];
+  delete test;
+  system("if test -f sherpa_path_test; then rm sherpa_path_test; fi");
+  s_initialized=true;
+}
+
+void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[])
+{
+  gen.m_timer.Start();
   system("finger `whoami` > sherpa_user_test");
   Data_Reader *reader = new Data_Reader();
   reader->SetInputFile("sherpa_user_test");
@@ -62,9 +103,26 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   system("if test -f sherpa_user_test; then rm sherpa_user_test; fi");
   m_path = path;
   Data_Read dr(m_path+file);
-  gen.m_output             = dr.GetValue<int>("OUTPUT",0);
+  gen.m_output = dr.GetValue<int>("OUTPUT",0);
   std::string logfile=dr.GetValue<std::string>("LOG_FILE",std::string(""));
   msg.Init(gen.m_output,logfile);
+  s_variables["SHERPA_CPP_PATH"] = dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
+  s_variables["SHERPA_LIB_PATH"] = dr.GetValue<std::string>("SHERPA_LIB_PATH",std::string(""));
+  if (s_variables["SHERPA_CPP_PATH"]=="") s_variables["SHERPA_CPP_PATH"]=m_path;
+  // temporary
+  if (s_variables["SHERPA_LIB_PATH"]=="") {
+    s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_RUN_PATH"]+std::string("/")+
+      s_variables["SHERPA_CPP_PATH"]+std::string("/Process/lib");
+  }
+  msg_Tracking()<<"Run_Parameter::Init(..): Paths are {\n"
+		<<"   SHERPA_BIN_PATH = "<<s_variables["SHERPA_BIN_PATH"]<<"\n"
+		<<"   SHERPA_PDF_PATH = "<<s_variables["SHERPA_PDF_PATH"]<<"\n"
+		<<"   SHERPA_CPP_PATH = "<<s_variables["SHERPA_CPP_PATH"]<<"\n"
+		<<"   SHERPA_LIB_PATH = "<<s_variables["SHERPA_LIB_PATH"]<<"\n"
+		<<"}"<<std::endl;
+  s_variables["CURRENT_SHERPASYS"]=s_variables["SHERPA_BIN_PATH"]+std::string("/../..");
+  setenv("LD_LIBRARY_PATH",(s_variables["LD_LIBRARY_PATH"]+std::string(":")+
+			    s_variables["SHERPA_LIB_PATH"]).c_str(),1);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
   // read only if defined (no error message if not defined)

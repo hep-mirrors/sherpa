@@ -2,6 +2,7 @@
 #define Run_Parameter_H
 
 #include <string>
+#include <map>
 #ifndef USING__ATOOLS_only
 #include "Model_Base.H"
 #endif
@@ -24,10 +25,13 @@ namespace ATOOLS {
 
   class Run_Parameter {
     std::string         m_path, m_file;
+    static bool s_initialized;
+    static std::map<std::string,std::string> s_variables;
   public:
     Run_Parameter();
     ~Run_Parameter();
     void Init(std::string,std::string,int argc=0,char* argv[]=0);
+    static void AnalyseEnvironment();
     
     class Gen {  // general parameters
       int                 m_output, m_analysis, m_cutscheme;
@@ -72,6 +76,7 @@ namespace ATOOLS {
       bool CheckTime(const double limit=0.);
       inline void   SetNumberOfDicedEvents(const long diced) { m_ndicedevents=diced; }
       inline const std::string &UserName() { return m_username; }
+      inline const std::string &Variable(const std::string &key) { return s_variables[key]; }
 #ifndef USING__ATOOLS_only
       inline void SetModel(MODEL::Model_Base * _mo)       { p_model     = _mo; }
       inline void SetModelType(Model_Type::code _code)    { m_modelcode = _code; }
