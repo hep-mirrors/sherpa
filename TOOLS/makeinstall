@@ -211,7 +211,7 @@ do
       echo -ne "installing module $I ...\r"
     fi
     cd $I 
-    if [ "$TOTAL" = "TRUE" ] ; then
+    if test ! -f Makefile.in || test "$TOTAL" = "TRUE" ; then
       if [ "$RELEASE" = "TRUE" ] ; then
         libtoolize --force >> ../$LOGFILE 2>&1
         aclocal >> ../$LOGFILE 2>&1
@@ -224,7 +224,7 @@ do
         autoconf
       fi
     fi
-    if test "$CONFIGURE" = "TRUE" ; then
+    if test ! -f Makefile || test "$CONFIGURE" = "TRUE" ; then
       if [ "$RELEASE" = "TRUE" ] ; then
         ./configure "$ECOPT" >> ../$LOGFILE 2>&1
       else
