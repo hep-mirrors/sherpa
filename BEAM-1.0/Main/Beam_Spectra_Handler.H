@@ -87,19 +87,29 @@ namespace BEAM {
   */
   /*!
     \class Beam_Spectra_Handler 
-    \brief Manager of all Beam.
-    This class manages all initial state radiation (Beam) according to the strategy 
-    named in the file that is inherently passed through the pointer to the Data_Read object. 
-    Before coming into full efect during integration or event generation, it initalises suitable 
-    Beam treatment (Beam_Bases) for both beams and uses them to generate corresponding weights,
-    i.e. energy distributions. At the moment, all beams are still collinear, but this is
-    going to change in the future.
+    \brief Handler of all Beam related issues.
+    This class manages the set-up of the incoming (bunch-)particles from the beams according to 
+    the strategy named in the file that is inherently passed to the Beam_Spectra_Handler through 
+    the pointer to the Data_Read object. Before coming into full efect during integration or 
+    event generation, this handler initalises a suitable Beam treatment (Beam_Bases) for both 
+    beams and uses them to generate corresponding weights, i.e. energy distributions. At the moment, 
+    all outgonig bunch particles are still collinear to the incoming beams, but this is going 
+    to change in the (near) future.
+    \todo Allow for non-collinear bunches
   */  
   /*!
     \var Beam_Base * Beam_Spectra_Handler::BeamBase[2]
-    The two beam bases, one for each beam,
-
+    The two beam bases, one for each beam. They are initialized (through the method SpecifiySpectra)
+    and owned by the Beam_Spectra_Handler which in turn has to delete them after the run. At the 
+    moment two types are supported, namely 
+    - monochromatic beams
+    - photon beams stemming from electron through Laser backscattering.
+    More types will be implemented soon, exmples include
+    - Weizsaecker-Williams photons
+    - electrons after Beamstrahlung
+    - beams with a Gaussian energy-spread.
     \sa Beam_Base.
+    \todo include more types of BeamBases
   */
   /*!
     \var AMATOOLS::Poincare Beam_Spectra_Handler::m_m_CMSBoost
@@ -124,19 +134,36 @@ namespace BEAM {
     - 1 beam one is not monochromatic, beam two is.
     - 2 beam one is monochromatic, beam two is not.
     - 3 both beams are not monochromatic.
-
   */
   /*!
     \var double Beam_Spectra_Handler::m_exponent[2]
-    Characteristic exponents used for the integration.
+    Characteristic exponents used for the integration. This is mainly a service for better
+    performance of the phase space integration. At the moment,
+    \verbatim
+    m_exponent[0] = 0.5
+    \endverbatim
+    and
+    \verbatim
+    m_exponent[1] = 0.98 * ( p_BeamBase[0]->Exponent() + p_BeamBase[1]->Exponent()) 
+    \endverbatim
+    is given by characteristic exponents of the BeamBases.
   */
   /*!
     \var double Beam_Spectra_Handler::m_splimits[3]
-    \f$s'\f$-limits and characteristics.
+    \f$s'\f$-limits and characteristics:
+    \verbatim
+    m_splimits[0,1] = \endverbatim
+    \f$s'_{\rm min, max}\f$
+    and 
+    \verbatim
+    m_splimits[2] = \endverbatim
+    \f$s_{\rm beams}\f$.
   */ 
   /*!
     \var Beam_Spectra_Handler::m_ylimits[2]
-    The rapidity region covered. It is set to the range \f$y \in [-10,10]\f$.
+    The rapidity region covered. It is per default set to the range \f$y \in [-10,10]\f$. In fact 
+    this range should be calculated from the range of the BeamBases.
+    \todo Rapidity range from BeamBases.
   */
   /*!
     \var AMATOOLS::Vec4D Beam_Spectra_Handler::m_fiXVECs[2]
