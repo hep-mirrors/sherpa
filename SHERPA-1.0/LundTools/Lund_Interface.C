@@ -114,12 +114,7 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
   }
   reader->MatrixFromFile(help,"MFUDGE");
   for (size_t i=0;i<help.size();++i) {
-    if (help[i].size()>1) {
-      if ((int)help[i][0]>0) cfudge.mfudge[(int)help[i][0]-1]=(int)help[i][1];
-    }
-    else {
-      cfudge.mfudge[(int)help[i][0]-1]=0;
-    }
+    if (help[i].size()>1) if ((int)help[i][0]>0) cfudge.mfudge[(int)help[i][0]-1]=(int)help[i][1];
   }
   reader->MatrixFromFile(help,"PARP");
   for (size_t i=0;i<help.size();++i) {
