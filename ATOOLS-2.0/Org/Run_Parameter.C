@@ -114,7 +114,10 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   s_variables["SHERPA_PDF_PATH"] = dr.GetValue<std::string>("SHERPA_PDF_PATH",std::string(""));
   s_variables["SHERPA_CPP_PATH"] = dr.GetValue<std::string>("SHERPA_CPP_PATH",std::string(""));
   s_variables["SHERPA_LIB_PATH"] = dr.GetValue<std::string>("SHERPA_LIB_PATH",std::string(""));
-  if (s_variables["SHERPA_CPP_PATH"]=="") s_variables["SHERPA_CPP_PATH"]=m_path;
+  if (s_variables["SHERPA_CPP_PATH"]=="") {
+    if (path[path.length()-1]=='/') path=path.substr(0,path.length()-1); 
+    s_variables["SHERPA_CPP_PATH"]=path;
+  }
   if (s_variables["SHERPA_PDF_PATH"]==std::string("")) {
     s_variables["SHERPA_PDF_PATH"]=s_variables["SHERPA_BIN_PATH"];
   }
