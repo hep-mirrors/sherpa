@@ -31,6 +31,7 @@ noinst_HEADERS        =	\
 			ISR_Base.H \
 			Intact.H \
 			Structure_Function.H\
+			ISR_Info.H \
 		 	ISR_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(PDFFLAGS)
