@@ -97,8 +97,8 @@ namespace ATOOLS {
 }
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
-  m_position(_pos), m_id(_id), m_weight(1.), m_hasboost(false), m_status(0), 
-  m_beam(-1), m_type(btp::Unspecified), m_typespec(std::string("none")) {}
+  m_position(_pos), m_id(_id), m_weight(1.), m_status(0), m_beam(-1), m_hasboost(false), 
+  m_type(btp::Unspecified), m_typespec(std::string("none")) {}
 
 Blob::~Blob() {
   DeleteOwnedParticles();
@@ -119,12 +119,12 @@ void Blob::AddToOutParticles(Particle * Newp) {
 }
 
 Particle * Blob::InParticle(int _pos) {
-  if (_pos>m_inparticles.size()-1 || _pos<0) { return NULL; }
+  if (_pos>(int)m_inparticles.size()-1 || _pos<0) { return NULL; }
   return m_inparticles[_pos];
 }
 
 Particle * Blob::OutParticle(int _pos) {
-  if (_pos>m_outparticles.size()-1 || _pos<0) { return NULL; }
+  if (_pos>(int)m_outparticles.size()-1 || _pos<0) { return NULL; }
   return m_outparticles[_pos];
 }
 
@@ -141,7 +141,7 @@ const Particle *Blob::ConstOutParticle(const size_t i) const
 }
 
 Particle * Blob::RemoveInParticle(int _pos,bool setit) {
-  if (_pos>m_inparticles.size()-1 || _pos<0) { return NULL; }
+  if (_pos>(int)m_inparticles.size()-1 || _pos<0) { return NULL; }
   for (Particle_Vector::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     if ((*part)==m_inparticles[_pos]) {
@@ -154,7 +154,7 @@ Particle * Blob::RemoveInParticle(int _pos,bool setit) {
 }
 
 Particle * Blob::RemoveOutParticle(int _pos,bool setit) {
-  if (_pos>m_outparticles.size()-1 || _pos<0) { return NULL; }
+  if (_pos>(int)m_outparticles.size()-1 || _pos<0) { return NULL; }
   for (Particle_Vector::iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     if ((*part)==m_outparticles[_pos]) {
