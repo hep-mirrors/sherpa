@@ -22,7 +22,7 @@ namespace AMISIC {
     typedef Amisic_Histogram<double> Amisic_Histogram_Type;
     typedef std::map<std::string,Amisic_Histogram_Type*>  Amisic_Histogram_Map;
 
-    typedef PHASIC::Fixed_Variable_Channel<double> FSR_Channel;
+    typedef PHASIC::Fixed_Variable_Channel FSR_Channel;
 
     typedef std::map<std::string,EXTRAXS::XS_Base*> Process_Map;
 

@@ -101,27 +101,27 @@ namespace AMISIC {
     void SetBinMax(const Argument_Type x,const Argument_Type max);
     void SetBinEntries(const Argument_Type x,const Argument_Type entries);
 
+    Axis_Type *const XAxis() const;
+    Axis_Type *const YAxis() const;
+
+    Argument_Type XMin() const;
+    Argument_Type XMax() const;
+
     // inline functions
-    inline Argument_Type XMin() const { return m_xmin; }
-    inline Argument_Type XMax() const { return m_xmax; }
+    size_t NBins() const;
+    
+    Argument_Type Entries() const;
 
-    inline size_t NBins() const { return m_nbins; }
+    const std::string &Name() const;
 
-    inline Argument_Type Entries() const { return m_entries; }
+    void SetXMin(const Argument_Type xmin);
+    void SetXMax(const Argument_Type xmax);
 
-    inline const std::string &Name() const { return m_name; }
+    void SetNBins(const size_t nbins);
 
-    inline void SetXMin(const Argument_Type xmin) { m_xmin=xmin; }
-    inline void SetXMax(const Argument_Type xmax) { m_xmax=xmax; }
+    void SetName(const std::string &name);
 
-    inline void SetNBins(const size_t nbins) { m_nbins=nbins; }
-
-    inline void SetName(const std::string &name) { m_name=name; }
-
-    inline void SetFinished(const bool finished) {m_finished=finished; }
-
-    inline Axis_Type *const XAxis() const { return p_xaxis; }
-    inline Axis_Type *const YAxis() const { return p_yaxis; }
+    void SetFinished(const bool finished);
 
   };// end of class Amisic_Histogram
 

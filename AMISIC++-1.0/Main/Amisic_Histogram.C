@@ -413,4 +413,76 @@ SetBinEntries(const Argument_Type x,const Argument_Type entries)
   m_data[hci::entries][FindX(x)]=entries;
 }
 
+template <class ArgumentType> ATOOLS::Axis<ArgumentType> *const 
+Amisic_Histogram<ArgumentType>::XAxis() const 
+{ 
+  return p_xaxis; 
+}
+
+template <class ArgumentType> ATOOLS::Axis<ArgumentType> *const 
+Amisic_Histogram<ArgumentType>::YAxis() const 
+{ 
+  return p_yaxis; 
+}
+
+template <class ArgumentType> 
+ArgumentType Amisic_Histogram<ArgumentType>::XMin() const 
+{ 
+  return m_xmin; 
+}
+
+template <class ArgumentType> 
+ArgumentType Amisic_Histogram<ArgumentType>::XMax() const 
+{ 
+  return m_xmax; 
+}
+
+template <class ArgumentType> 
+size_t Amisic_Histogram<ArgumentType>::NBins() const 
+{ 
+  return m_nbins; 
+}
+    
+template <class ArgumentType> 
+ArgumentType Amisic_Histogram<ArgumentType>::Entries() const 
+{ 
+  return m_entries; 
+}
+
+template <class ArgumentType> 
+const std::string &Amisic_Histogram<ArgumentType>::Name() const 
+{ 
+  return m_name; 
+}
+
+template <class ArgumentType> 
+void Amisic_Histogram<ArgumentType>::SetXMin(const Argument_Type xmin) 
+{ 
+  m_xmin=xmin; 
+}
+
+template <class ArgumentType> 
+void Amisic_Histogram<ArgumentType>::SetXMax(const Argument_Type xmax) 
+{
+  m_xmax=xmax; 
+}
+
+template <class ArgumentType> 
+void Amisic_Histogram<ArgumentType>::SetNBins(const size_t nbins) 
+{
+  m_nbins=nbins; 
+}
+
+template <class ArgumentType> 
+void Amisic_Histogram<ArgumentType>::SetName(const std::string &name) 
+{ 
+  m_name=name; 
+}
+
+template <class ArgumentType> 
+void Amisic_Histogram<ArgumentType>::SetFinished(const bool finished) 
+{ 
+  m_finished=finished; 
+}
+
 template AMISIC::Amisic_Histogram<double>;
