@@ -127,8 +127,8 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   }
   // temporary
   if (s_variables["SHERPA_LIB_PATH"]=="") {
-    s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_RUN_PATH"]+std::string("/")+
-      s_variables["SHERPA_CPP_PATH"]+std::string("/Process/lib");
+    s_variables["SHERPA_LIB_PATH"]=s_variables["SHERPA_CPP_PATH"]+
+      std::string("/Process/lib");
   }
   msg_Tracking()<<"Run_Parameter::Init(..): Paths are {\n"
 		<<"   SHERPA_BIN_PATH = "<<s_variables["SHERPA_BIN_PATH"]<<"\n"
