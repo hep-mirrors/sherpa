@@ -80,7 +80,7 @@ Beam_Remnant_Handler::~Beam_Remnant_Handler() {
 }
 
 
-bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _partonlist)
+bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Particle_List * _particlelist)
 {
   Blob_Iterator endblob = _bloblist->end(); 
   Blob * blob;
@@ -97,28 +97,28 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _p
 	blob->SetId(_bloblist->size());
 	blob->SetType(std::string("Bunch"));
 	blob->SetBeam(i);
-	blob->AddToOutPartons((*biter)->InParton(0));
-	(*biter)->InParton(0)->SetProductionBlob(blob);
-	if ((*biter)->InParton(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
-	    IsEqual((*biter)->InParton(0)->E(),p_beam->GetBeam(i)->InMomentum()[0])) {
-	  Parton * p = new Parton((*biter)->InParton(0));
+	blob->AddToOutParticles((*biter)->InParticle(0));
+	(*biter)->InParticle(0)->SetProductionBlob(blob);
+	if ((*biter)->InParticle(0)->Flav()==p_beam->GetBeam(i)->Beam() &&
+	    IsEqual((*biter)->InParticle(0)->E(),p_beam->GetBeam(i)->InMomentum()[0])) {
+	  Particle * p = new Particle((*biter)->InParticle(0));
 	  p->SetDecayBlob(blob);
 	  p->SetProductionBlob(NULL);
-	  blob->AddToInPartons(p);
+	  blob->AddToInParticles(p);
 	}
 	else {
-	  blob->AddToInPartons(new Parton(-1,p_beam->GetBeam(i)->Beam(),p_beam->GetBeam(i)->InMomentum()));
-	  blob->InParton(0)->SetDecayBlob(blob);
-	  blob->InParton(0)->SetStatus(2);
-	  (*biter)->InParton(0)->SetProductionBlob(blob);
-	  Parton * p = new Parton(-1,p_beam->GetBeam(i)->Remnant(),
-				  p_beam->GetBeam(i)->InMomentum()+(-1.)*(*biter)->InParton(0)->Momentum());
-	  if (_partonlist) number = _partonlist->size();
+	  blob->AddToInParticles(new Particle(-1,p_beam->GetBeam(i)->Beam(),p_beam->GetBeam(i)->InMomentum()));
+	  blob->InParticle(0)->SetDecayBlob(blob);
+	  blob->InParticle(0)->SetStatus(2);
+	  (*biter)->InParticle(0)->SetProductionBlob(blob);
+	  Particle * p = new Particle(-1,p_beam->GetBeam(i)->Remnant(),
+				  p_beam->GetBeam(i)->InMomentum()+(-1.)*(*biter)->InParticle(0)->Momentum());
+	  if (_particlelist) number = _particlelist->size();
 	  else number = int(p);
 	  p->SetNumber(number);
 	  p->SetDecayBlob(NULL);
 	  p->SetProductionBlob(blob);
-	  blob->AddToOutPartons(p);
+	  blob->AddToOutParticles(p);
 	}
 	_bloblist->insert(_bloblist->begin(),blob);
 	flag = 1;
@@ -128,7 +128,7 @@ bool Beam_Remnant_Handler::FillBunchBlobs(Blob_List * _bloblist,Parton_List * _p
   return flag;
 }
 
-bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Parton_List * _partonlist)
+bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Particle_List * _particlelist)
 {
   if (!m_fill) return 0;
   Blob_Iterator endblob = _bloblist->end(); 
@@ -148,42 +148,42 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Parton_List * _pa
 	      blob->SetType(std::string("Beam Remnant"));
 	      blob->SetBeam(i);
 	      blob->SetStatus(1);
-	      blob->AddToInPartons(new Parton(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum()));
-	      blob->InParton(0)->SetStatus(2);
+	      blob->AddToInParticles(new Particle(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum()));
+	      blob->InParticle(0)->SetStatus(2);
 	      _bloblist->insert(_bloblist->begin(),blob);
 	      flag = 0;
 	      okay = 1;
 	    }
-	    blob->AddToOutPartons((*biter)->InParton(0));
+	    blob->AddToOutParticles((*biter)->InParticle(0));
 	    (*biter)->SetStatus(2);
 	    // Similar things are needed for photons, leptons, etc. !!!!
-	    if (p_isr->Flav(i).IsHadron()) okay == okay && FillHadron(blob,i,_partonlist);
+	    if (p_isr->Flav(i).IsHadron()) okay == okay && FillHadron(blob,i,_particlelist);
 	  }
-	  else if (!IsEqual((*biter)->InParton(0)->E(),p_beam->GetBeam(i)->OutMomentum()[0])) {
+	  else if (!IsEqual((*biter)->InParticle(0)->E(),p_beam->GetBeam(i)->OutMomentum()[0])) {
 	    (*biter)->SetStatus(2);
 	    blob = new ATOOLS::Blob();
 	    blob->SetId(_bloblist->size());
 	    blob->SetType(std::string("Beam Remnant"));
 	    blob->SetBeam(i);
 	    blob->SetStatus(1);
-	    blob->AddToOutPartons((*biter)->InParton(0));
-	    (*biter)->InParton(0)->SetProductionBlob(blob);
-	    Parton * p = new Parton(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum());
-	    if (_partonlist) number = _partonlist->size();
+	    blob->AddToOutParticles((*biter)->InParticle(0));
+	    (*biter)->InParticle(0)->SetProductionBlob(blob);
+	    Particle * p = new Particle(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum());
+	    if (_particlelist) number = _particlelist->size();
 	                else number = int(p);
 	    p->SetNumber(number);
 	    p->SetStatus(2);
 	    p->SetDecayBlob(blob);
 	    p->SetProductionBlob(NULL);
-	    blob->AddToInPartons(p);
-	    p = new Parton(-1,Flavour(kf::photon),
-			   p_beam->GetBeam(i)->OutMomentum()+(-1.)*(*biter)->InParton(0)->Momentum());
-	    if (_partonlist) number = _partonlist->size();
+	    blob->AddToInParticles(p);
+	    p = new Particle(-1,Flavour(kf::photon),
+			   p_beam->GetBeam(i)->OutMomentum()+(-1.)*(*biter)->InParticle(0)->Momentum());
+	    if (_particlelist) number = _particlelist->size();
 	                else number = int(p);
 	    p->SetNumber(number);
 	    p->SetDecayBlob(NULL);
 	    p->SetProductionBlob(blob);
-	    blob->AddToOutPartons(p);
+	    blob->AddToOutParticles(p);
 	    _bloblist->insert(_bloblist->begin(),blob);
 	    flag = 0;
 	    okay = 1;
@@ -196,7 +196,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(Blob_List * _bloblist,Parton_List * _pa
 }
 		   
 		   
-bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
+bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Particle_List * pl)
 {
   if (blob->NOutP()!=1) {
     msg.Error()<<"Error in Beam_Remnant_Handler::FillHadron("<<blob->NOutP()<<")"<<std::endl
@@ -209,8 +209,8 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
   int di[2];
   int pos;
 
-  Parton * part = blob->OutParton(0);
-  Vec4D   vec   = blob->InParton(0)->Momentum() + (-1.)*(part->Momentum());
+  Particle * part = blob->OutParticle(0);
+  Vec4D   vec   = blob->InParticle(0)->Momentum() + (-1.)*(part->Momentum());
 
 
   /*  
@@ -243,7 +243,7 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
       else difl = Flavour(kf::code(di[0]*1100+3));
       if (p_constituents[blob->Beam()][0].IsAnti()) difl = difl.Bar();
 
-      Parton * newpart1 = new Parton(-1,difl,vec); 
+      Particle * newpart1 = new Particle(-1,difl,vec); 
       if (pl) number = pl->size();
       else    number = int(newpart1);
       newpart1->SetNumber(number);
@@ -251,7 +251,7 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
       newpart1->SetFlow(2,part->GetFlow(1));
       newpart1->SetProductionBlob(blob);
       newpart1->SetInfo('F');
-      blob->AddToOutPartons(newpart1);
+      blob->AddToOutParticles(newpart1);
       if (pl) pl->push_back(newpart1);
       return 1;
     }
@@ -292,22 +292,22 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
     vec1 = GetX_Lund(fl,difl,vec[0]) * vec;
     vec2 = vec + (-1.)*vec1;
 
-    Parton * newpart1 = new Parton(-1,fl,vec1); 
+    Particle * newpart1 = new Particle(-1,fl,vec1); 
     if (pl) number = pl->size();
     else    number = int(newpart1);
     newpart1->SetNumber(number);
     newpart1->SetProductionBlob(blob);
     newpart1->SetInfo('F');
-    blob->AddToOutPartons(newpart1);
+    blob->AddToOutParticles(newpart1);
     if (pl) pl->push_back(newpart1);
 
-    Parton * newpart2 = new Parton(-1,difl,vec2); 
+    Particle * newpart2 = new Particle(-1,difl,vec2); 
     if (pl) number = pl->size();
     else    number = int(newpart2);
     newpart2->SetNumber(number);
     newpart2->SetProductionBlob(blob);
     newpart2->SetInfo('F');
-    blob->AddToOutPartons(newpart2);
+    blob->AddToOutParticles(newpart2);
     if (pl) pl->push_back(newpart2);
 
     if (fl.IsAnti()) {
@@ -363,31 +363,31 @@ bool Beam_Remnant_Handler::FillHadron(Blob * blob,int _beam,Parton_List * pl)
     vec1 = GetX_Lund(fl,difl,vec[0]) * vec;
     vec2 = GetX_Lund((part->Flav()).Bar(),difl,vec[0]) * vec;
 
-    Parton * newpart1 = new Parton(-1,fl,vec1); 
+    Particle * newpart1 = new Particle(-1,fl,vec1); 
     if (pl) number = pl->size();
     else    number = int(newpart1);
     newpart1->SetNumber(number);
     newpart1->SetProductionBlob(blob);
     newpart1->SetInfo('F');
-    blob->AddToOutPartons(newpart1);
+    blob->AddToOutParticles(newpart1);
     if (pl) pl->push_back(newpart1);
 
-    Parton * newpart2 = new Parton(-1,(part->Flav()).Bar(),vec2); 
+    Particle * newpart2 = new Particle(-1,(part->Flav()).Bar(),vec2); 
     if (pl) number = pl->size();
     else    number = int(newpart2);
     newpart2->SetNumber(number);
     newpart2->SetProductionBlob(blob);
     newpart2->SetInfo('F');
-    blob->AddToOutPartons(newpart2);
+    blob->AddToOutParticles(newpart2);
     if (pl) pl->push_back(newpart2);
 
-    Parton * newpart3 = new Parton(-1,difl,vec + (-1.)*(vec1+vec2)); 
+    Particle * newpart3 = new Particle(-1,difl,vec + (-1.)*(vec1+vec2)); 
     if (pl) number = pl->size();
     else    number = int(newpart3);
     newpart3->SetNumber(number);
     newpart3->SetProductionBlob(blob);
     newpart3->SetInfo('F');
-    blob->AddToOutPartons(newpart3);
+    blob->AddToOutParticles(newpart3);
     if (pl) pl->push_back(newpart3);
 
     if ( (fl.IsAnti() && !((part->Flav()).IsAnti()) ) ||

@@ -57,7 +57,7 @@ namespace ATOOLS {
 //       return new Jetrates(this);
 //     }
 
-    void Evaluate(const Parton_List & pl,double);
+    void Evaluate(const Particle_List & pl,double);
 
     void EndEvaluation();
     void EndEvaluation(double);
@@ -95,7 +95,7 @@ namespace ATOOLS {
 
     Multiplicity(Multiplicity * _partner, std::string _prefix);
 
-    void Evaluate(const Parton_List & pl,double);
+    void Evaluate(const Particle_List & pl,double);
     void Evaluate(const Blob_List &,double);
 
     void Evaluate(Vec4D *,Flavour *,double);
@@ -153,7 +153,7 @@ namespace ATOOLS {
     PT_Distribution(PT_Distribution * _partner, std::string _prefix);
 
 
-    void Evaluate(const Parton_List &,double);
+    void Evaluate(const Particle_List &,double);
     void Evaluate(const Blob_List & blobs,double value);
 
     void EndEvaluation();

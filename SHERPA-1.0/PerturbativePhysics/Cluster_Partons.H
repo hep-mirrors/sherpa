@@ -49,7 +49,7 @@ namespace SHERPA {
     APACIC::Knot  * Point2Knot(APACIC::Tree *,const Leg &,const ATOOLS::Vec4D &,char);
     ATOOLS::Vec4D Momentum(APACIC::Knot *, int &);
 
-    bool    IsColourConnected(ATOOLS::Parton *,ATOOLS::Parton *);
+    bool    IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *);
     double  ColourAngle(const std::vector<APACIC::Knot *> &, const int);
     void    EstablishRelations(APACIC::Knot *,APACIC::Knot *,APACIC::Knot *,int);
     void    DetermineColourAngles(const std::vector<APACIC::Knot *> &);

@@ -32,7 +32,7 @@ namespace ATOOLS {
 
     void Evaluate(double); 
     void Evaluate(int,Vec4D *,Flavour *,double);
-    void Evaluate(const Parton_List &,double);
+    void Evaluate(const Particle_List &,double);
   };
 
 }

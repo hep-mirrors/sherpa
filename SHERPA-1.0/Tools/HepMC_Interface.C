@@ -89,13 +89,13 @@ bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex)
   bool okay = 1;
   GenParticle * _particle;
   for (int i=0;i<_blob->NInP();i++) {
-    if (Sherpa2HepMC(_blob->InParton(i),_particle)) {
+    if (Sherpa2HepMC(_blob->InParticle(i),_particle)) {
       _vertex->add_particle_in(_particle);
     }
     else okay = 0;
   }
   for (int i=0;i<_blob->NOutP();i++) {
-    if (Sherpa2HepMC(_blob->OutParton(i),_particle)) {
+    if (Sherpa2HepMC(_blob->OutParticle(i),_particle)) {
       _vertex->add_particle_out(_particle);
     }
     else okay = 0;
@@ -111,24 +111,24 @@ bool HepMC_Interface::Sherpa2HepMC(Blob * _blob,GenVertex *& _vertex)
 #endif
 }
 
-bool HepMC_Interface::Sherpa2HepMC(Parton * _parton,GenParticle *& _particle) 
+bool HepMC_Interface::Sherpa2HepMC(Particle * _SHparticle,GenParticle *& _particle) 
 {
 #ifdef _USE_HEPMC_
-  int count = m_parton2particle.count(_parton->Number());
+  int count = m_particle2particle.count(_SHparticle->Number());
   if (count>0) {
-    _particle = m_parton2particle[_parton->Number()];
+    _particle = m_particle2particle[_SHparticle->Number()];
     return 1;
   }
 
-  Vec4D mom  = _parton->Momentum();
+  Vec4D mom  = _particle->Momentum();
   HepLorentzVector momentum(mom[1],mom[2],mom[3],mom[0]);
-  int pdg_id = m_flavour2particle[_parton->Flav()]->pdg_id();
-  _particle  = new GenParticle(momentum,pdg_id,_parton->Status());
-  _particle->suggest_barcode(_parton->Number());
+  int pdg_id = m_flavour2particle[_SHparticle->Flav()]->pdg_id();
+  _particle  = new GenParticle(momentum,pdg_id,_SHparticle->Status());
+  _particle->suggest_barcode(_SHparticle->Number());
   for (int i=1;i<3;i++) {
-    if (_parton->GetFlow(i)>0) _particle->set_flow(i,_parton->GetFlow(i));
+    if (_SHparticle->GetFlow(i)>0) _particle->set_flow(i,_SHparticle->GetFlow(i));
   }
-  m_parton2particle.insert(std::make_pair(_parton->Number(),_particle));
+  m_particle2particle.insert(std::make_pair(_SHparticle->Number(),_particle));
 #endif
   return 1;
 }

@@ -1,4 +1,4 @@
-#include "Parton.H"
+#include "Particle.H"
 #include "Blob.H"
 #include "Random.H"
 #include "Run_Parameter.H"
@@ -6,7 +6,7 @@
 
 using namespace ATOOLS;
 
-std::ostream& ATOOLS::operator<<(std::ostream& str,Parton* part) {
+std::ostream& ATOOLS::operator<<(std::ostream& str,Particle* part) {
   str<<std::setprecision(4)<<std::setiosflags(std::ios::left);
   switch (part->Status()) {
   case 0 : // null entry
@@ -33,11 +33,11 @@ std::ostream& ATOOLS::operator<<(std::ostream& str,Parton* part) {
   return str;
 }
 
-Parton::~Parton() {
+Particle::~Particle() {
   if (p_flow) { delete p_flow; p_flow = NULL; } 
 }
 
-Parton::Parton() {
+Particle::Particle() {
   m_number    = -1;
   m_info      = ' ';
   m_status    = 1;
@@ -49,7 +49,7 @@ Parton::Parton() {
   p_flow      = new Flow(this);
 }
 
-Parton::Parton(const Parton * in)  {
+Particle::Particle(const Particle * in)  {
   m_number    = in->m_number;
   m_info      = in->m_info;
   m_status    = in->Status();
@@ -63,13 +63,13 @@ Parton::Parton(const Parton * in)  {
   p_flow->SetCode(2,in->GetFlow(2));
 }
 
-Parton::Parton(const Parton & in)  
+Particle::Particle(const Particle & in)  
 {
   p_flow=0;
   *this = in;
 }
 
-Parton& Parton::operator=(const Parton & in)
+Particle& Particle::operator=(const Particle & in)
 {
   if (this!=&in) {
     m_number    = in.m_number;
@@ -90,7 +90,7 @@ Parton& Parton::operator=(const Parton & in)
 }
 
 
-Parton::Parton(int number,Flavour fl,Vec4D p)  {
+Particle::Particle(int number,Flavour fl,Vec4D p)  {
   m_number    = number;
   m_status    = 1;
   m_info      = ' ';
@@ -102,7 +102,7 @@ Parton::Parton(int number,Flavour fl,Vec4D p)  {
   p_flow      = new Flow(this);
 }
 
-void Parton::Copy(Parton * in)  {
+void Particle::Copy(Particle * in)  {
   m_number    = in->m_number;
   m_info      = in->m_info;
   m_status    = in->Status();
@@ -116,7 +116,7 @@ void Parton::Copy(Parton * in)  {
   p_flow->SetCode(2,in->GetFlow(2));
 }
 
-double Parton::ProperTime() {
+double Particle::ProperTime() {
   double q2    = m_momentum.Abs2();
   double m2    = sqr(m_fl.Mass());
   double tau2  = 1.e96;
@@ -134,7 +134,7 @@ double Parton::ProperTime() {
   return rpa.hBar() * sqrt(tau2);
 }
 
-double Parton::LifeTime() {
+double Particle::LifeTime() {
   double t   = -ProperTime()*log(1.-ran.Get());  
   if (t>1.e6) t = 1.e6;
   double gamma = 1./rpa.gen.Accu();
@@ -146,53 +146,53 @@ double Parton::LifeTime() {
   return gamma * t;      
 }
 
-Vec3D Parton::Distance() {
+Vec3D Particle::Distance() {
   Vec3D v = Vec3D(m_momentum)/E()*rpa.c();
   return v*LifeTime();
 }
 
 // Numbers etc.
-int    Parton::Number()   const                 { return m_number; }
-void   Parton::SetNumber(const int n)           { m_number    = n; }
-int    Parton::JetNumber()   const              { return m_jetnumber; }
-void   Parton::SetJetNumber(const int n)        { m_jetnumber = n; }
+int    Particle::Number()   const                 { return m_number; }
+void   Particle::SetNumber(const int n)           { m_number    = n; }
+int    Particle::JetNumber()   const              { return m_jetnumber; }
+void   Particle::SetJetNumber(const int n)        { m_jetnumber = n; }
 
   // Status etc.
-int    Parton::Status() const                   { return m_status; }
-void   Parton::SetStatus( int status )          { m_status = status; }
-char   Parton::Info() const                     { return m_info;}
-void   Parton::SetInfo(char info)               { m_info = info; }
+int    Particle::Status() const                   { return m_status; }
+void   Particle::SetStatus( int status )          { m_status = status; }
+char   Particle::Info() const                     { return m_info;}
+void   Particle::SetInfo(char info)               { m_info = info; }
 
   // Momentum, energy, and lifetime
-Vec4D  Parton::Momentum() const                 { return m_momentum; }
-double Parton::E()                              { return m_momentum[0];}
-void   Parton::SetMomentum(const Vec4D & vec4 ) { m_momentum = vec4; } 
-double Parton::Time() const                     { return m_dec_time; }
-void   Parton::SetTime(const int t)             { m_dec_time = t; }
-void   Parton::SetTime()                        { m_dec_time = LifeTime(); }
+Vec4D  Particle::Momentum() const                 { return m_momentum; }
+double Particle::E()                              { return m_momentum[0];}
+void   Particle::SetMomentum(const Vec4D & vec4 ) { m_momentum = vec4; } 
+double Particle::Time() const                     { return m_dec_time; }
+void   Particle::SetTime(const int t)             { m_dec_time = t; }
+void   Particle::SetTime()                        { m_dec_time = LifeTime(); }
 
 // Production and decay vertices
-Vec4D  Parton::XProd()                          { return p_startblob->Position(); }
-Blob * Parton::ProductionBlob()                 { return p_startblob; }
-void   Parton::SetProductionBlob(Blob * _blob)  { p_startblob = _blob; }
-Vec4D  Parton::XDec()                           { return p_endblob->Position(); }
-Blob * Parton::DecayBlob()                      { return p_endblob; }
-void   Parton::SetDecayBlob(Blob * _blob)       { p_endblob = _blob; }
+Vec4D  Particle::XProd()                          { return p_startblob->Position(); }
+Blob * Particle::ProductionBlob()                 { return p_startblob; }
+void   Particle::SetProductionBlob(Blob * _blob)  { p_startblob = _blob; }
+Vec4D  Particle::XDec()                           { return p_endblob->Position(); }
+Blob * Particle::DecayBlob()                      { return p_endblob; }
+void   Particle::SetDecayBlob(Blob * _blob)       { p_endblob = _blob; }
 
 // Flavour and flow
-Flavour   Parton::Flav() const                     { return m_fl; }
-void      Parton::SetFlav(Flavour & fl) { m_fl      = fl; }
-Flow    * Parton::GetFlow() const                  { return p_flow; }
-int       Parton::GetFlow(const int index) const   { return p_flow->Code(index); }
-void      Parton::SetFlow(Flow * _flow)            { p_flow    = _flow; }
-void      Parton::SetFlow(const int index, const int code) {
+Flavour   Particle::Flav() const                     { return m_fl; }
+void      Particle::SetFlav(Flavour & fl) { m_fl      = fl; }
+Flow    * Particle::GetFlow() const                  { return p_flow; }
+int       Particle::GetFlow(const int index) const   { return p_flow->Code(index); }
+void      Particle::SetFlow(Flow * _flow)            { p_flow    = _flow; }
+void      Particle::SetFlow(const int index, const int code) {
   if ((!m_fl.IsDiQuark()) && (!m_fl.Strong())) return;
   p_flow->SetCode(index,code);
 }
 
 
 
-void Parton2MPI(const Parton * p , MPI_Parton & mpi_p) {
+void Particle2MPI(const Particle * p , MPI_Particle & mpi_p) {
   mpi_p.id  =p->Number();
   mpi_p.m_fl=int(p->Flav());
   for (int i=0; i<4; ++i)  
@@ -201,11 +201,11 @@ void Parton2MPI(const Parton * p , MPI_Parton & mpi_p) {
   mpi_p.m_flow[1]=p->GetFlow(2);
 }
   
-Parton * MPI2Parton(const MPI_Parton & mpi_p ) {
-  Parton * p ;
-  if (mpi_p.m_fl>0) p= new Parton(mpi_p.id, Flavour((kf::code)mpi_p.m_fl),
+Particle * MPI2Particle(const MPI_Particle & mpi_p ) {
+  Particle * p ;
+  if (mpi_p.m_fl>0) p= new Particle(mpi_p.id, Flavour((kf::code)mpi_p.m_fl),
 			  Vec4D(mpi_p.m_mom[0],mpi_p.m_mom[1],mpi_p.m_mom[2],mpi_p.m_mom[3]));
-  else p= new Parton(mpi_p.id, Flavour((kf::code)(-mpi_p.m_fl)).Bar(),
+  else p= new Particle(mpi_p.id, Flavour((kf::code)(-mpi_p.m_fl)).Bar(),
 			  Vec4D(mpi_p.m_mom[0],mpi_p.m_mom[1],mpi_p.m_mom[2],mpi_p.m_mom[3]));
   if (mpi_p.m_flow[0]) p->SetFlow(1,mpi_p.m_flow[0]);
   if (mpi_p.m_flow[1]) p->SetFlow(2,mpi_p.m_flow[1]);

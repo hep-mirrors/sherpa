@@ -2,14 +2,14 @@
 #define Knot_H
 
 #include "MathTools.H"
-#include "Parton.H"
+#include "Particle.H"
 
 namespace APACIC {
   // defines one parton splitting (basic element of a Tree)
   class Knot {
   public: 
     Knot * left, * right, * prev;
-    ATOOLS::Parton * part;
+    ATOOLS::Particle * part;
     int stat;
     double t, tout, E2, costh, phi, z, thcrit, maxpt2, x;
     int kn_no;
@@ -34,8 +34,8 @@ namespace APACIC {
     left   = ink->left;
     right  = ink->right;
 
-    ATOOLS::Parton * newp;
-    newp   = new ATOOLS::Parton(ink->part);
+    ATOOLS::Particle * newp;
+    newp   = new ATOOLS::Particle(ink->part);
     part   = newp;
     stat   = ink->stat;
 

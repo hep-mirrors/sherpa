@@ -71,7 +71,7 @@ Knot * Tree::NewKnot(ATOOLS::Flavour fl, ATOOLS::Vec4D p, double t, double x1) {
   Knot * newk = new Knot;
   p_knots->push_back(newk);
   newk->kn_no     = p_knots->size();
-  Parton * newp   = new Parton(newk->kn_no,fl,p);
+  Particle * newp = new Particle(newk->kn_no,fl,p);
   newk->part      = newp;
   newk->t         = t;
   newk->x         = x1;
@@ -104,20 +104,20 @@ Knot * Tree::NewKnot(Knot * ink) {
   if (!p_root) {
     p_root = newk;
   }
-  newk->part      = new Parton(ink->part);
+  newk->part      = new Particle(ink->part);
   return newk;
 }
 
-Knot * Tree::NewKnot(Parton * _inpart)
+Knot * Tree::NewKnot(Particle * _inpart)
 {
   Knot * newk     = new Knot;
   p_knots->push_back(newk);
   newk->kn_no     = p_knots->size();
   if (_inpart==NULL) {
-    newk->part    = new Parton(newk->kn_no);
+    newk->part    = new Particle(newk->kn_no);
   }
   else {
-    newk->part    = new Parton(_inpart);
+    newk->part    = new Particle(_inpart);
   }
   newk->left      = 0;
   newk->right     = 0;

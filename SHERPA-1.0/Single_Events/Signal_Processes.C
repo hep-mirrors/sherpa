@@ -73,22 +73,22 @@ void Signal_Processes::FillBlob(Blob * _blob)
   _blob->SetBeam(-1);
 
   // make sure that blob is empty
-  _blob->DeleteOwnedPartons();
+  _blob->DeleteOwnedParticles();
 
-  Parton * parton;
+  Particle * particle;
   for (int i=0;i<p_mehandler->Nin();i++) {
-    parton = new Parton(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
-    parton->SetNumber(int(parton));
-    parton->SetDecayBlob(_blob);
-    parton->SetStatus(2);
-    parton->SetInfo('G');
-    _blob->AddToInPartons(parton);
+    particle = new Particle(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
+    particle->SetNumber(int(particle));
+    particle->SetDecayBlob(_blob);
+    particle->SetStatus(2);
+    particle->SetInfo('G');
+    _blob->AddToInParticles(particle);
   }
   for (int i=p_mehandler->Nin();i<p_mehandler->Nin()+p_mehandler->Nout();i++) {
-    parton = new Parton(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
-    parton->SetProductionBlob(_blob);
-    parton->SetStatus(1);
-    parton->SetInfo('H');
-    _blob->AddToOutPartons(parton);
+    particle = new Particle(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
+    particle->SetProductionBlob(_blob);
+    particle->SetStatus(1);
+    particle->SetInfo('H');
+    _blob->AddToOutParticles(particle);
   }
 }

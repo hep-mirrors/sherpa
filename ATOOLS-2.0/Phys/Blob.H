@@ -11,9 +11,9 @@
 
 
 namespace ATOOLS {
-  class Parton; 
+  class Particle; 
 
-  typedef std::vector<Parton *> Parton_Queue;
+  typedef std::vector<Particle *> Particle_Queue;
 
   class Blob {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
@@ -25,25 +25,25 @@ namespace ATOOLS {
     int                 m_status,m_beam;
     std::string         m_type;
     std::vector<double> m_weightcontainer;
-    Parton_Queue        m_inpartons, m_outpartons;
+    Particle_Queue        m_inparticles, m_outparticles;
     Vec4D     m_cms_vec;
     Poincare  m_cms_boost;
   public:
     Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=0) : 
       m_position(_pos), m_id(_id), m_weight(1.) { m_beam = -1; m_status = 0; };
     ~Blob();
-    void     AddToInPartons(Parton *);
-    void     AddToOutPartons(Parton *);
-    Parton * OutParton(int);
-    Parton * InParton(int);
-    Parton * RemoveInParton(int);
-    Parton * RemoveInParton(Parton *);
-    Parton * RemoveOutParton(int);
-    Parton * RemoveOutParton(Parton *);
-    void     DeleteInParton(Parton *);
-    void     DeleteOutParton(Parton *);
-    void     RemoveOwnedPartons();
-    void     DeleteOwnedPartons();
+    void     AddToInParticles(Particle *);
+    void     AddToOutParticles(Particle *);
+    Particle * OutParticle(int);
+    Particle * InParticle(int);
+    Particle * RemoveInParticle(int);
+    Particle * RemoveInParticle(Particle *);
+    Particle * RemoveOutParticle(int);
+    Particle * RemoveOutParticle(Particle *);
+    void     DeleteInParticle(Particle *);
+    void     DeleteOutParticle(Particle *);
+    void     RemoveOwnedParticles();
+    void     DeleteOwnedParticles();
 
     void     BoostInCMS();
     void     BoostInLab();
@@ -69,8 +69,8 @@ namespace ATOOLS {
     int      Id()                        const { return m_id; }
     int      Status()                    const { return m_status; }
     int      Beam()                      const { return m_beam; }
-    int      NInP()                      const { return m_inpartons.size(); }
-    int      NOutP()                     const { return m_outpartons.size(); }
+    int      NInP()                      const { return m_inparticles.size(); }
+    int      NOutP()                     const { return m_outparticles.size(); }
  
     double              const Weight()   const { return m_weight; }
     std::vector<double> WeightContainer()      { return m_weightcontainer; } 
@@ -88,10 +88,10 @@ namespace ATOOLS {
   
   /*!
     \class Blob 
-    \brief This class contains a point where a given number of incomming and outgoing Parton interact
+    \brief This class contains a point where a given number of incomming and outgoing Particle interact
     
     A typical Blob is the hard process at a center of a collision. Another Blob
-    might be the transition between a hard partons and soft partons, i.e. the parton
+    might be the transition between a hard particles and soft particles, i.e. the particle
     shower.
   */
   
@@ -111,7 +111,7 @@ namespace ATOOLS {
     d = soft decay, like in fragmentation
     F = final state shower for H
     I = initial state shower for H
-    i = hadron to parton transition
+    i = hadron to particle transition
   */
   
   /*!

@@ -11,7 +11,7 @@
 #include "Histogram.H"
 #include "Message.H"
 
-#include "Parton_List.H"
+#include "Particle_List.H"
 #include "Blob_List.H"
 
 namespace ATOOLS {
@@ -74,7 +74,7 @@ namespace ATOOLS {
       msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : A "<<name<<std::endl;
     }
 
-    virtual void Evaluate(const Parton_List &,double) {
+    virtual void Evaluate(const Particle_List &,double) {
       msg.Error()<<"Error in Primitive_Observable_Base::Evaluate : B "<<name<<std::endl;
     }
 

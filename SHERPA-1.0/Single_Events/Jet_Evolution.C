@@ -64,14 +64,14 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		myblob->SetType(string("IS Shower (none)"));
 		myblob->SetBeam(i);
 		myblob->SetStatus(1);
- 		Parton * p = new Parton((*blit)->InParton(i));
+ 		Particle * p = new Particle((*blit)->InParticle(i));
 		p->SetProductionBlob(NULL);
 		p->SetDecayBlob(myblob);
 		p->SetStatus(2);
-		myblob->AddToInPartons(p);
-		myblob->AddToOutPartons((*blit)->InParton(i));
-		(*blit)->InParton(i)->SetProductionBlob(myblob);
-		(*blit)->InParton(i)->SetStatus(2);
+		myblob->AddToInParticles(p);
+		myblob->AddToOutParticles((*blit)->InParticle(i));
+		(*blit)->InParticle(i)->SetProductionBlob(myblob);
+		(*blit)->InParticle(i)->SetStatus(2);
 		myblob->SetId(_bloblist->size());
 		_bloblist->insert(_bloblist->begin(),myblob);
 	      }
@@ -82,13 +82,13 @@ bool Jet_Evolution::Treat(Blob_List * _bloblist, double & weight)
 		myblob->SetType(string("FS Shower (none)"));
 		myblob->SetBeam(i);
 		myblob->SetStatus(1);
- 		Parton * p = new Parton((*blit)->OutParton(i));
+ 		Particle * p = new Particle((*blit)->OutParticle(i));
 		p->SetProductionBlob(myblob);
 		p->SetDecayBlob(NULL);
-		myblob->AddToInPartons((*blit)->OutParton(i));
-		(*blit)->OutParton(i)->SetDecayBlob(myblob);
-		(*blit)->OutParton(i)->SetStatus(2);
-		myblob->AddToOutPartons(p);
+		myblob->AddToInParticles((*blit)->OutParticle(i));
+		(*blit)->OutParticle(i)->SetDecayBlob(myblob);
+		(*blit)->OutParticle(i)->SetStatus(2);
+		myblob->AddToOutParticles(p);
 		myblob->SetId(_bloblist->size());
 		_bloblist->push_back(myblob);
 	      }

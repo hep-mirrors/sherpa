@@ -1,5 +1,5 @@
 #include "Flow.H"
-#include "Parton.H"
+#include "Particle.H"
 
 
 namespace ATOOLS {
@@ -8,7 +8,7 @@ namespace ATOOLS {
 
 using namespace ATOOLS;
 
-Flow::Flow(Parton * _owner) : m_owner(_owner) { 
+Flow::Flow(Particle * _owner) : m_owner(_owner) { 
   m_code.insert(std::make_pair<int,int>(1,0)); 
   m_code.insert(std::make_pair<int,int>(2,0)); 
 }
@@ -18,7 +18,7 @@ Flow::~Flow() {
 }
 
 
-const Parton * Flow::Owner() const { return m_owner; }
+const Particle * Flow::Owner() const { return m_owner; }
 
 int Flow::Code(int _index) {
   int count = m_code.count(_index);

@@ -16,7 +16,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
 					 double th1,double th2,double x1,double x2)
 {
   Knot * m1      = p_initrees[0]->NewKnot();
-  *(m1->part)    = blob->InParton(0);
+  *(m1->part)    = blob->InParticle(0);
   m1->part->SetInfo('G');
   m1->part->SetStatus(1);
   m1->t          = -scale;
@@ -29,7 +29,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
   m1->stat       = 1;
 
   Knot * m2      = p_initrees[1]->NewKnot();
-  *(m2->part)    = blob->InParton(1);
+  *(m2->part)    = blob->InParticle(1);
   m2->part->SetInfo('G');
   m2->part->SetStatus(1);
   m2->t          = -scale;
@@ -45,7 +45,7 @@ void Interface_Tools::InitializeIncoming(Blob * blob,double scale,double E,
 void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
 					 double th1,double th2)
 {
-  Knot * dummy   = p_fintree->NewKnot(new Parton(0,Flavour(kf::none),blob->CMS()));
+  Knot * dummy   = p_fintree->NewKnot(new Particle(0,Flavour(kf::none),blob->CMS()));
   dummy->part->SetInfo('M');
   dummy->part->SetStatus(2);
   dummy->t       = scale;
@@ -54,7 +54,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   dummy->thcrit  = M_PI;
   dummy->stat    = 1;
     
-  Knot * d1      = p_fintree->NewKnot(blob->OutParton(0));
+  Knot * d1      = p_fintree->NewKnot(blob->OutParticle(0));
   d1->part->SetInfo('H');
   d1->part->SetStatus(1);
   d1->t          = scale;
@@ -65,7 +65,7 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   d1->E2         = sqr(d1->part->Momentum()[0]);
   d1->stat       = 1;
 
-  Knot * d2      = p_fintree->NewKnot(blob->OutParton(1));
+  Knot * d2      = p_fintree->NewKnot(blob->OutParticle(1));
   d2->part->SetInfo('H');
   d2->part->SetStatus(1);
   d2->t          = scale;
@@ -85,22 +85,22 @@ void Interface_Tools::InitializeOutGoing(Blob * blob,double scale,double E,
   dummy->right   = d2;
 }
 
-bool Interface_Tools::IsColourConnected(Parton * a, Parton * b) {
+bool Interface_Tools::IsColourConnected(Particle * a, Particle * b) {
   return (( (a->GetFlow(1)!=0) && ( (a->GetFlow(1)==b->GetFlow(1)) || 
 				 (a->GetFlow(1)==b->GetFlow(2)))  ) ||
 	  ( (a->GetFlow(2)!=0) && ( (a->GetFlow(2)==b->GetFlow(2)) ||
 				 (a->GetFlow(2)==b->GetFlow(1)))  )    );
 }
 
-double Interface_Tools::ColourAngle(Parton * a,Blob * blob) {
+double Interface_Tools::ColourAngle(Particle * a,Blob * blob) {
   double angle = M_PI;
   if (!((a->Flav()).Strong())) return angle;
 
-  Parton * b;
+  Particle * b;
   angle = 0.;
   Vec3D avec,bvec;
   for (int i=0;i<blob->NInP();i++) {
-    b = blob->InParton(i);
+    b = blob->InParticle(i);
     if (b != a) {
       if (IsColourConnected(a,b)) {
 	avec = Vec3D(a->Momentum());
@@ -110,7 +110,7 @@ double Interface_Tools::ColourAngle(Parton * a,Blob * blob) {
     }
   }
   for (int i=0;i<blob->NOutP();i++) {
-    b = blob->OutParton(i);
+    b = blob->OutParticle(i);
     if (b != a) {
       if (IsColourConnected(a,b)) {
 	avec = Vec3D(a->Momentum());

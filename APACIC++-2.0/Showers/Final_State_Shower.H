@@ -8,7 +8,7 @@
 #include "Vector.H"
 #include "Blob.H"
 #include "Blob_List.H"
-#include "Parton_List.H"
+#include "Particle_List.H"
 
 namespace ATOOLS {
   class Flavour;
@@ -25,7 +25,7 @@ namespace APACIC {
     Timelike_Sudakov       * p_sud;
     Timelike_Kinematics    * p_kin;
     std::vector<Knot*> m_ini_partons;
-    static ATOOLS::Parton * FindAuntParton(Knot *);
+    static ATOOLS::Particle * FindAuntParton(Knot *);
   public:
     Final_State_Shower(MODEL::Model_Base *,ATOOLS::Data_Read * const);
     ~Final_State_Shower();
@@ -38,8 +38,8 @@ namespace APACIC {
 
 
     void ExtractPartons(Knot *,ATOOLS::Blob *,
-			ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
-    void ExtractPartons(Knot *,ATOOLS::Parton_List * = NULL);
+			ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
+    void ExtractPartons(Knot *,ATOOLS::Particle_List * = NULL);
 
     bool TestShower(Tree *) ;
     ATOOLS::Vec4D GetMomentum(Knot * mo, int & number);
@@ -126,13 +126,13 @@ namespace APACIC {
   */
   
   /*
-    \fn void Final_State_Shower::ExtractPartons(Knot *,ATOOLS::Parton_List *);
+    \fn void Final_State_Shower::ExtractPartons(Knot *,ATOOLS::Particle_List *);
     \brief a simpler version of the method below (collects only final state partons)
   */
 
   /*!
     \fn void Final_State_Shower::ExtractPartons(Knot *,ATOOLS::Blob *,
-		ATOOLS::Blob_List *,ATOOLS::Parton_List *);
+		ATOOLS::Blob_List *,ATOOLS::Particle_List *);
     \brief After the shower is complete the outgoing knots of the tree are put into
     the parton list. Moreover, blobs are filled.
   */

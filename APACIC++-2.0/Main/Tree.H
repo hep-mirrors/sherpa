@@ -6,7 +6,7 @@
 #include "Knot.H"
 #include "Poincare.H"
 #include "Knot_List.H"
-#include "Parton_List.H"
+#include "Particle_List.H"
 
 //using namespace ATOOLS;
 
@@ -39,7 +39,7 @@ namespace APACIC {
       i.e. momentum and flavour will be set.
     */
     Knot * NewKnot(ATOOLS::Flavour, ATOOLS::Vec4D, double, double);
-    Knot * NewKnot(ATOOLS::Parton * _inpart=NULL);
+    Knot * NewKnot(ATOOLS::Particle * _inpart=NULL);
     /*! 
       Returns a pointer to a free knot in the list while copying another knot with
       zero links into it.
@@ -72,7 +72,7 @@ namespace APACIC {
     //-----------------------------------------------------------------------
     //--------------------------- Extracting partons ------------------------
     //----------------------------------------------------------------------- 
-    void ExtractPartons(ATOOLS::Parton_List *);
+    void ExtractPartons(ATOOLS::Particle_List *);
     //-----------------------------------------------------------------------
     //--------------------------- New frames for the tree -------------------
     //----------------------------------------------------------------------- 

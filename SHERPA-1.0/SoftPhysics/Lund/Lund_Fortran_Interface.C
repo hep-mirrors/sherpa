@@ -43,7 +43,7 @@ void Lund_Fortran_Interface::Init()
 
 bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
 				       ATOOLS::Blob_List * bloblist,
-				       ATOOLS::Parton_List * pl) {
+				       ATOOLS::Particle_List * pl) {
   blob->SetType(std::string("Fragmentation (Lund : Pythia 6.163)"));
   int nhep = 0;
 
@@ -66,7 +66,7 @@ bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
   }
 
   for (int i=0;i<blob->NInP();++i) {
-    AddPartonToString(blob->InParton(i),nhep);
+    AddPartonToString(blob->InParticle(i),nhep);
   }
 
   int dummy=2;
@@ -83,7 +83,7 @@ bool Lund_Fortran_Interface::Hadronize(ATOOLS::Blob * blob,
 }
 
 
-void Lund_Fortran_Interface::AddPartonToString(Parton * parton,int & nhep)
+void Lund_Fortran_Interface::AddPartonToString(Particle * parton,int & nhep)
 {
   idhep[nhep] = parton->Flav().HepEvt();
         
@@ -110,7 +110,7 @@ void Lund_Fortran_Interface::AddPartonToString(Parton * parton,int & nhep)
 
 void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 						      ATOOLS::Blob_List * bloblist,
-						      ATOOLS::Parton_List * pl)
+						      ATOOLS::Particle_List * pl)
 {
   pjet      = new double[4*maxentries];
   xjet      = new double[4*maxentries];
@@ -121,7 +121,7 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
   fhawface_(nk,kfjet,mothers,daughters,pjet,xjet);
     
   Blob    * decay;
-  Parton  * parton;
+  Particle  * particle;
   Flavour   flav;
   Vec4D     momentum,position;
 
@@ -137,25 +137,25 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 	// if ((*(kfjet+j))<0)    flav        = flav.Bar();
 	for(int k=0; k<4; ++k) momentum[k] = *(pjet+j+k*2000);
 	for(int k=0; k<4; ++k) position[k] = *(xjet+j+k*2000);
-	parton         = new Parton(-1,flav,momentum);
+	particle         = new Particle(-1,flav,momentum);
 	if (pl) number = pl->size();
-	else number    = int(parton);
-	parton->SetNumber(number);
-	parton->SetStatus(1);
-	parton->SetProductionBlob(blob);      
-	parton->SetInfo('P');
+	else number    = int(particle);
+	particle->SetNumber(number);
+	particle->SetStatus(1);
+	particle->SetProductionBlob(blob);      
+	particle->SetInfo('P');
 	blob->SetPosition(position);
-	if (pl) pl->push_back(parton);
-	blob->AddToOutPartons(parton);
+	if (pl) pl->push_back(particle);
+	blob->AddToOutParticles(particle);
 	if (*(daughters+2*j)!=0 && *(daughters+2*j+1)!=0) {
 	  decay = new Blob();
 	  decay->SetStatus(1);
 	  decay->SetType(std::string("Hadron decay"));
 	  decay->SetId(bloblist->size());
-	  decay->AddToInPartons(parton);
-	  if (parton->Info()=='P') parton->SetInfo('p');
-	  if (parton->Info()=='D') parton->SetInfo('d');
-	  parton->SetDecayBlob(decay);
+	  decay->AddToInParticles(particle);
+	  if (particle->Info()=='P') particle->SetInfo('p');
+	  if (particle->Info()=='D') particle->SetInfo('d');
+	  particle->SetDecayBlob(decay);
 	  bloblist->push_back(decay);
 	  FillSecondaryHadronsInBlob(decay,bloblist,(*(daughters+2*j))-1,(*(daughters+2*j+1)),pl);
 	}
@@ -173,10 +173,10 @@ void Lund_Fortran_Interface::FillPrimaryHadronsInBlob(ATOOLS::Blob * blob,
 void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
 							ATOOLS::Blob_List * bloblist,
 							int daughter1,int daughter2,
-							ATOOLS::Parton_List * pl) 
+							ATOOLS::Particle_List * pl) 
 {
   Blob    * decay;
-  Parton  * parton;
+  Particle  * particle;
   Flavour   flav;
   Vec4D     momentum, position;
   int number;
@@ -187,25 +187,25 @@ void Lund_Fortran_Interface::FillSecondaryHadronsInBlob(ATOOLS::Blob * blob,
     for(int k=0; k<4; ++k) momentum[k] = *(pjet+i+k*2000);
     for(int k=0; k<4; ++k) position[k] = *(xjet+i+k*2000);
 
-    parton         = new Parton(-1,flav,momentum);
+    particle         = new Particle(-1,flav,momentum);
     if (pl) number = pl->size();
-    else number    = int(parton);
-    parton->SetNumber(number);
-    parton->SetStatus(1);
-    parton->SetProductionBlob(blob);  
-    parton->SetInfo('D');
+    else number    = int(particle);
+    particle->SetNumber(number);
+    particle->SetStatus(1);
+    particle->SetProductionBlob(blob);  
+    particle->SetInfo('D');
     blob->SetPosition(position);
-    if (pl) pl->push_back(parton);
-    blob->AddToOutPartons(parton);
+    if (pl) pl->push_back(particle);
+    blob->AddToOutParticles(particle);
     if (*(daughters+2*i)!=0 && *(daughters+2*i+1)!=0) {
       decay = new Blob();
       decay->SetStatus(1);
       decay->SetType(std::string("Hadron decay"));
       decay->SetId(bloblist->size());
-      decay->AddToInPartons(parton);
-      if (parton->Info()=='P') parton->SetInfo('p');
-      if (parton->Info()=='D') parton->SetInfo('d');
-      parton->SetDecayBlob(decay);
+      decay->AddToInParticles(particle);
+      if (particle->Info()=='P') particle->SetInfo('p');
+      if (particle->Info()=='D') particle->SetInfo('d');
+      particle->SetDecayBlob(decay);
       bloblist->push_back(decay);
       FillSecondaryHadronsInBlob(decay,bloblist,(*(daughters+2*i))-1,(*(daughters+2*i+1)),pl);
     }

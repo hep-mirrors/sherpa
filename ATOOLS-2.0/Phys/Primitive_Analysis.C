@@ -29,7 +29,7 @@ void Primitive_Analysis::DoAnalysis(double value) {
   }
 }
 
-void Primitive_Analysis::DoAnalysis(const Parton_List & pl, double value) {
+void Primitive_Analysis::DoAnalysis(const Particle_List & pl, double value) {
   for (int i=0;i<observables.size();i++) {
     observables[i]->Evaluate(pl,value);
   }

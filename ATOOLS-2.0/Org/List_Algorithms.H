@@ -5,7 +5,7 @@ namespace ATOOLS {
 
     // To create a list from an iterator, use: (i.e. for a list of particles);
     // #include <algorithm>
-    //     list<Parton*> thelist;
+    //     list<Particle*> thelist;
     //     copy( evt->particles_begin(), evt->particles_end(), 
     //           back_inserter(thelist) );
     // to create a list subject to a condition (predicate) use:
@@ -15,7 +15,7 @@ namespace ATOOLS {
     // where is_photon() is a predicate like:
     //     class is_photon {
     //       public:
-    //         bool operator() ( const Parton* p ) {
+    //         bool operator() ( const Particle* p ) {
     //             if ( p && p->pdg_id() == 22 ) return 1;
     //             return 0;
     //         }

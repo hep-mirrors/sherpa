@@ -1,5 +1,5 @@
-#ifndef Parton_H
-#define Parton_H
+#ifndef Particle_H
+#define Particle_H
 
 #include "Vector.H"
 #include "Flavour.H"
@@ -14,7 +14,7 @@
 namespace ATOOLS {
   class Blob;
    
-  class Parton {
+  class Particle {
   private : 
     int               m_number;       
     int               m_status;         
@@ -27,15 +27,15 @@ namespace ATOOLS {
     Blob            * p_endblob;
     double            m_dec_time;      
   public:
-    Parton();
-    Parton(const Parton * );
-    Parton(const Parton & );
-    Parton& operator=(const Parton &);
-    Parton(int,Flavour=Flavour(kf::none),Vec4D=Vec4D(0.,0.,0.,0.));
-    ~Parton();
-    friend std::ostream& operator<<(std::ostream &,Parton*);
+    Particle();
+    Particle(const Particle * );
+    Particle(const Particle & );
+    Particle& operator=(const Particle &);
+    Particle(int,Flavour=Flavour(kf::none),Vec4D=Vec4D(0.,0.,0.,0.));
+    ~Particle();
+    friend std::ostream& operator<<(std::ostream &,Particle*);
 
-    void   Copy(Parton * );
+    void   Copy(Particle * );
     double ProperTime();
     double LifeTime();
     Vec3D Distance();
@@ -67,8 +67,8 @@ namespace ATOOLS {
     void   SetJetNumber(const int);
   };
 
-  // Format of a parton to transport via MPI:
-  struct MPI_Parton {
+  // Format of a particle to transport via MPI:
+  struct MPI_Particle {
     int     id;     
     int     m_status;         
     char    m_info;   
@@ -76,15 +76,15 @@ namespace ATOOLS {
     int     m_flow[2];
     double  m_mom[4];  
     int     blob_owned_by;
-    int     is_initial;           // 1 - is initial parton of this blob, 0 - is final parton of this
+    int     is_initial;           // 1 - is initial particle of this blob, 0 - is final particle of this
   };
 
-  void Parton2MPI(const Parton * , MPI_Parton &);  
-  Parton * MPI2Parton(const MPI_Parton &);
+  void Particle2MPI(const Particle * , MPI_Particle &);  
+  Particle * MPI2Particle(const MPI_Particle &);
 
   class Is_Photon {
   public:
-    bool operator() ( Parton* p ) {
+    bool operator() ( Particle* p ) {
       if ( p && p->Flav().IsPhoton() ) return 1;
       return 0;
     }
@@ -92,7 +92,7 @@ namespace ATOOLS {
 
   class Is_Gluon {
   public:
-    bool operator() ( Parton* p ) {
+    bool operator() ( Particle* p ) {
       if ( p && p->Flav().IsGluon() ) return 1;
       return 0;
     }
@@ -100,30 +100,30 @@ namespace ATOOLS {
 
   class Is_Final_State {
   public:
-    bool operator() ( const Parton* p ) {
+    bool operator() ( const Particle* p ) {
       if ( p && (p->Status() == 1) ) return 1;
       return 0;
     }
   };
 
   /*! 
-    \class Parton
-    \brief Characterising individual partons occuring in event generation.
+    \class Particle
+    \brief Characterising individual particles occuring in event generation.
     
     This class contains all information needed for an Event Record based 
-    on partons and methods to manipulate this information. 
-    The partons defined here are close to the particles of the HepMC format
+    on particles and methods to manipulate this information. 
+    The particles defined here are close to the particles of the HepMC format
     by Matt Dobbs. ( http://cern.ch/HepMC/ )
   */
   
   /*! 
-    \var   int Parton::m_number     
-    \brief The parton's number (integer >0)
+    \var   int Particle::m_number     
+    \brief The particle's number (integer >0)
   */
   
   /*! 
-    \var   char Parton::info
-    \brief What the parton really does and where it stems from.
+    \var   char Particle::info
+    \brief What the particle really does and where it stems from.
     
     info flag, marks production step: 
     \verbatim
@@ -137,14 +137,14 @@ namespace ATOOLS {
   */ 
   
   /*!
-    \var   int Parton::m_status;
-    \brief The parton status (HepMC 1.01).
+    \var   int Particle::m_status;
+    \brief The particle status (HepMC 1.01).
     
     The status flag can take the following values:
     \verbatim
     0       null entry
     1       existing entry (not decayed or fragmented), i.e. final state
-    2       decayed or fragmented parton
+    2       decayed or fragmented particle
     3       documentation line
     4-10    reserved
     11-200  at disposal of each model builder
@@ -153,8 +153,8 @@ namespace ATOOLS {
   */
   
   /*!
-    \var   int Parton::m_info
-    \brief The parton info, just for jun!
+    \var   int Particle::m_info
+    \brief The particle info, just for jun!
     
     info flag, marks production step: 
     G - IS for hard interaction, H - FS from hard interaction, 
@@ -165,15 +165,15 @@ namespace ATOOLS {
   
   
   /*!
-    \var   int Parton::m_jetnumber
-    \brief number of jet the parton belongs to (Maybe obsolete)
+    \var   int Particle::m_jetnumber
+    \brief number of jet the particle belongs to (Maybe obsolete)
   */
   
   /*!
     \var     Flavour m_fl
-    \brief The parton's flavour. 
+    \brief The particle's flavour. 
     
-    The parton's flavour. 
+    The particle's flavour. 
     
     Additional information can be obtained using methods 
     related to the class Flavour.
@@ -181,21 +181,21 @@ namespace ATOOLS {
   
   /*!
     \var   Vec4D   m_momentum
-    \brief The parton's momentum.
+    \brief The particle's momentum.
   */
   
   /*! 
-    \var  Blob * Parton::m_startblob, * Parton::m_endblob
-    \brief Pointers to the parton's production and decay vertex.
+    \var  Blob * Particle::m_startblob, * Particle::m_endblob
+    \brief Pointers to the particle's production and decay vertex.
   */
   
   /*!
-    \var   double Parton::m_dec_time
-    \brief The proper decay time of the parton.
+    \var   double Particle::m_dec_time
+    \brief The proper decay time of the particle.
   */
   
   /*!  
-    \fn    double Parton::ProperTime()
+    \fn    double Particle::ProperTime()
     \brief Calculate m_dec_time.
     
     Calculate proper decay time \f$\tau^*\f$ of particle in its rest frame via
@@ -206,17 +206,17 @@ namespace ATOOLS {
   */
   
   /*!
-    \fn    double Parton::LifeTime()
+    \fn    double Particle::LifeTime()
     \brief Calculate lifetime.
     
     Calculate lifetime of the particle according to an exponential
     decay law (like radioactive decays). Lifetime is given in cm-system of
-    the hard process (where the parton list is filled), boost taken care of
+    the hard process (where the particle list is filled), boost taken care of
     by factor gamma.
   */
   
   /*!
-    \fn    Vec3D Parton::Distance()
+    \fn    Vec3D Particle::Distance()
     \brief Calculate decay length.
     
     Calculate the distance travelled by the particle during its lifetime.

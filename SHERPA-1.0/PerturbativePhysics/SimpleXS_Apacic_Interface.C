@@ -38,8 +38,8 @@ bool SimpleXS_Apacic_Interface::InitColours(Blob * blob) {
   if (!(xs->SetColours(p_me->Momenta()))) return 0;
   for (int j=0;j<2;j++) {
     for (int i=0;i<2;i++) {
-      blob->InParton(i)->SetFlow(j+1,xs->Colours()[i][j]);
-      blob->OutParton(i)->SetFlow(j+1,xs->Colours()[i+2][j]);
+      blob->InParticle(i)->SetFlow(j+1,xs->Colours()[i][j]);
+      blob->OutParticle(i)->SetFlow(j+1,xs->Colours()[i+2][j]);
     }
   }
  
@@ -47,13 +47,13 @@ bool SimpleXS_Apacic_Interface::InitColours(Blob * blob) {
   double E     = sqrt(p_me->GetISR_Handler()->Pole())/2.;
   double th1,th2;
   if (m_ini) {
-    th1   = p_tools->ColourAngle(blob->InParton(0),blob);
-    th2   = p_tools->ColourAngle(blob->InParton(1),blob);
+    th1   = p_tools->ColourAngle(blob->InParticle(0),blob);
+    th2   = p_tools->ColourAngle(blob->InParticle(1),blob);
     p_tools->InitializeIncoming(blob,scale,E,th1,th2,p_me->GetISR_Handler()->X1(),p_me->GetISR_Handler()->X2());
   }
   if (m_fin) {
-    th1   = p_tools->ColourAngle(blob->OutParton(0),blob);
-    th2   = p_tools->ColourAngle(blob->OutParton(1),blob);
+    th1   = p_tools->ColourAngle(blob->OutParticle(0),blob);
+    th2   = p_tools->ColourAngle(blob->OutParticle(1),blob);
     p_tools->InitializeOutGoing(blob,scale,E,th1,th2);
   }
   return 1;

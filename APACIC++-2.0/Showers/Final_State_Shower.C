@@ -1,7 +1,7 @@
 #include "Final_State_Shower.H"
 #include "Blob_List.H"
 #include "Blob.H"
-#include "Parton_List.H"
+#include "Particle_List.H"
 #include "Tree.H"
 #include "Timelike_Sudakov.H"
 #include "Timelike_Kinematics.H"
@@ -216,7 +216,7 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 	  }
 	}
 	else if ( (d1->part->Flav().IsGluon()) && (d2->part->Flav().IsGluon())) {
-	  Parton * aup = FindAuntParton(mo);
+	  Particle * aup = FindAuntParton(mo);
 
 	  partner = d1; nopart = d2;
 	  if (aup->Flav().Strong() && kin) {
@@ -362,7 +362,7 @@ void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
 }
 
 
-void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Parton_List * pl) 
+void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Particle_List * pl) 
 {
   // fetch PSME blob
   Blob * bl_meps=0;
@@ -372,7 +372,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       bl_meps=(*blit);
       // deactivate in partons!
       for (int i=0;i<bl_meps->NInP();++i) {
-	bl_meps->InParton(i)->SetStatus(2);
+	bl_meps->InParticle(i)->SetStatus(2);
       }
       break;
     }
@@ -383,7 +383,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 
   if (!kn) return;
   int number;
-  Parton * p = 0;
+  Particle * p = 0;
   if (kn->part->Info()=='H') {
     /* 
        New jet : kn = hard parton from ME info = 'HF'
@@ -394,17 +394,17 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       if (pl) pl->push_back(kn->part);
       jet = new Blob();
       jet->SetStatus(1);
-      p=new Parton(kn->part);
-      jet->AddToInPartons(p);
+      p=new Particle(kn->part);
+      jet->AddToInParticles(p);
       p->SetDecayBlob(jet);
       if (bl_meps) {
-	bl_meps->AddToOutPartons(p);
+	bl_meps->AddToOutParticles(p);
 	p->SetProductionBlob(bl_meps);
 	bl_meps->SetStatus(0);
       }
 
-      p=new Parton(kn->part);
-      jet->AddToOutPartons(p);
+      p=new Particle(kn->part);
+      jet->AddToOutParticles(p);
       if (pl) number = pl->size();
          else number = int(kn->part);
       p->SetNumber(number);
@@ -422,13 +422,13 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       if ((kn->left->part->Info() != 'H') || (kn->right->part->Info() != 'H')) {
 	jet = new Blob();
 	jet->SetStatus(1);
-	p = new Parton(kn->part);
+	p = new Particle(kn->part);
       	p->SetDecayBlob(jet);
       	p->SetStatus(2);
 	if (pl) pl->push_back(p);
-	jet->AddToInPartons(p);
+	jet->AddToInParticles(p);
 	if (bl_meps) {
-	  bl_meps->AddToOutPartons(p);
+	  bl_meps->AddToOutParticles(p);
 	  p->SetProductionBlob(bl_meps);
 	  bl_meps->SetStatus(0);
 	}
@@ -456,7 +456,7 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
       kn->part->SetProductionBlob(jet);
       kn->part->SetStatus(1);
       if (pl) pl->push_back(kn->part);
-      jet->AddToOutPartons(new Parton(kn->part));
+      jet->AddToOutParticles(new Particle(kn->part));
     }
   }
   ExtractPartons(kn->left,jet,bl,pl); 
@@ -464,11 +464,11 @@ void Final_State_Shower::ExtractPartons(Knot * kn,Blob * jet,Blob_List * bl,Part
 }
 
 
-void Final_State_Shower::ExtractPartons(Knot * kn, Parton_List * pl) 
+void Final_State_Shower::ExtractPartons(Knot * kn, Particle_List * pl) 
 {
   if (!kn) return;
   if (kn->left==0) {
-    if (pl) pl->push_back(new Parton(kn->part));
+    if (pl) pl->push_back(new Particle(kn->part));
     return;
   }
 
@@ -503,9 +503,9 @@ bool Final_State_Shower::TestShower(Tree * tree)
     if (rpa.gen.Tracking()) OutputTree(tree);
     if (do_ana) {
       // Fill Histos
-      Parton_List pl;
-      pl.push_back(new Parton(0,Flavour(kf::e),Vec4D(E,0,0,E)));
-      pl.push_back(new Parton(1,Flavour(kf::e).Bar(),Vec4D(E,0,0,-E)));
+      Particle_List pl;
+      pl.push_back(new Particle(0,Flavour(kf::e),Vec4D(E,0,0,E)));
+      pl.push_back(new Particle(1,Flavour(kf::e).Bar(),Vec4D(E,0,0,-E)));
       ExtractPartons(tree->GetRoot(),&pl);
       ana.DoAnalysis(pl,1.);
             
@@ -680,7 +680,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   double start_th=200;
 
   Knot * mo   = tree->NewKnot();
-  *(mo->part) = Parton(1,Flavour(kf::photon),Vec4D(sqrt(scale),0,0,0));
+  *(mo->part) = Particle(1,Flavour(kf::photon),Vec4D(sqrt(scale),0,0,0));
   mo->part->SetStatus(2);
   mo->part->SetInfo('M');
   mo->t       = scale;
@@ -715,7 +715,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->left             = tree->NewKnot();
   mo->left->prev       = mo;
   mo->left->stat       = 3;    
-  *(mo->left->part)    = Parton(2,mo_flavs[0],Vec4D(E,p1));
+  *(mo->left->part)    = Particle(2,mo_flavs[0],Vec4D(E,p1));
   mo->left->part->SetStatus(1);
   mo->left->part->SetInfo('H');
   mo->left->part->SetFlow(1,-1);
@@ -730,7 +730,7 @@ void Final_State_Shower::InitTwojetTree(Tree * tree,double scale) {
   mo->right            = tree->NewKnot();
   mo->right->prev      = mo;
   mo->right->stat      = 3;     
-  *(mo->right->part) = Parton(3,mo_flavs[1],Vec4D(E,(-1.)*p1)); 
+  *(mo->right->part) = Particle(3,mo_flavs[1],Vec4D(E,(-1.)*p1)); 
   mo->right->part->SetStatus(1);
   mo->right->part->SetInfo('H');
   mo->right->part->SetFlow(2,mo->left->part->GetFlow(1));
@@ -971,7 +971,7 @@ Vec4D  Final_State_Shower::GetMomentum(Knot * mo, int & number) {
 }
 
 
-Parton * Final_State_Shower::FindAuntParton(Knot * mo) 
+Particle * Final_State_Shower::FindAuntParton(Knot * mo) 
 {
   Knot * au = mo->prev->left;
   if (au == mo) au = mo->prev->right;
@@ -989,9 +989,9 @@ Parton * Final_State_Shower::FindAuntParton(Knot * mo)
     return au->part;
   }
 
-  Parton * aup=0;
+  Particle * aup=0;
   for (int i=0; i<bl->NInP();++i) {
-    aup=bl->InParton(i);
+    aup=bl->InParticle(i);
     for (int k1=1;k1<=2;++k1)
       for (int k2=1;k2<=2;++k2)
 	if ((mo->part->GetFlow(k1) > 0 ) &&

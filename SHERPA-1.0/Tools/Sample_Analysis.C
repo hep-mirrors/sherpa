@@ -19,7 +19,7 @@ namespace SHERPA {
 
     void Evaluate(double); 
     void Evaluate(int,ATOOLS::Vec4D *,ATOOLS::Flavour *,double w);
-    void Evaluate(const ATOOLS::Parton_List &,double w);
+    void Evaluate(const ATOOLS::Particle_List &,double w);
     void Evaluate(const ATOOLS::Blob_List &,double w); 
   };
 
@@ -40,7 +40,7 @@ void PHard_Observable::Evaluate(int,ATOOLS::Vec4D *,ATOOLS::Flavour *,double w)
   Evaluate(w);
 }
 
-void PHard_Observable::Evaluate(const ATOOLS::Parton_List &,double w)
+void PHard_Observable::Evaluate(const ATOOLS::Particle_List &,double w)
 {
   Evaluate(w);
 }

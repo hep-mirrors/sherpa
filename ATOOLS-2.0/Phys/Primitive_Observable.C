@@ -15,7 +15,7 @@ void Differential_Jetrate::Evaluate(int,Vec4D *,
   histo->Insert(sel->ActualValue()[0],value);
 }
 
-void Differential_Jetrate::Evaluate(const Parton_List &,double value) 
+void Differential_Jetrate::Evaluate(const Particle_List &,double value) 
 {
   histo->Insert(sel->ActualValue()[0],value);
 }

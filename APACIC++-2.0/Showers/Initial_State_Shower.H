@@ -8,7 +8,7 @@
 #include "Final_State_Shower.H"
 #include "Timelike_Kinematics.H"
 #include "Sudakov_Tools.H"
-#include "Parton_List.H"
+#include "Particle_List.H"
 #include "Tree.H"
 #include "Run_Parameter.H"
 
@@ -40,7 +40,7 @@ namespace APACIC {
     bool PerformShower(Tree **,bool);
     void InitShowerPT(double pt2max);
     void ExtractPartons(Knot *,int,ATOOLS::Blob *,
-			ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
+			ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
     bool TestShower(Tree **) ;
 
     ATOOLS::Vec4D GetLab();
@@ -208,7 +208,7 @@ namespace APACIC {
 
   /*!
     \fn void Initial_State_Shower::ExtractPartons(Knot *, ATOOLS::Blob *, 
-                         ATOOLS::Blob_List *, ATOOLS::Parton_List *, int)
+                         ATOOLS::Blob_List *, ATOOLS::Particle_List *, int)
     \brief fills blobs and parton list according to the result of the shower evolution
     
     After the shower is complete the outgoing knots of the tree are put into

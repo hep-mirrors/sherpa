@@ -87,8 +87,8 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     p_blob_psme_IS->SetType(string("ME PS Interface (Sherpa, IS)"));
     p_blob_psme_IS->SetStatus(1);
     for (int i=0;i<blob->NInP();++i) {
-      p_blob_psme_IS->AddToOutPartons(blob->InParton(i));
-      blob->InParton(i)->SetProductionBlob(p_blob_psme_IS);
+      p_blob_psme_IS->AddToOutParticles(blob->InParticle(i));
+      blob->InParticle(i)->SetProductionBlob(p_blob_psme_IS);
       p_blob_psme_IS->SetId(-1);
     }
   }
@@ -97,8 +97,8 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
     p_blob_psme_FS->SetType(string("ME PS Interface (Sherpa, FS)"));
     p_blob_psme_FS->SetStatus(1);
     for (int i=0;i<blob->NOutP();++i) {
-      p_blob_psme_FS->AddToInPartons(blob->OutParton(i));
-      blob->OutParton(i)->SetDecayBlob(p_blob_psme_FS);
+      p_blob_psme_FS->AddToInParticles(blob->OutParticle(i));
+      blob->OutParticle(i)->SetDecayBlob(p_blob_psme_FS);
       p_blob_psme_FS->SetId(-2);
     }
   }

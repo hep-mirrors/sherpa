@@ -7,8 +7,8 @@
 #include <iostream> 
 
 #include "Lund_Fortran_Interface.H"
-#include "Parton_List.H"
-#include "Parton.H"
+#include "Particle_List.H"
+#include "Particle.H"
 #include "Blob_List.H"
 #include "Blob.H"
 
@@ -22,7 +22,7 @@ namespace SHERPA {
     Hadron_Decay_Handler(std::string,std::string);
     Hadron_Decay_Handler(std::string,std::string,Lund_Fortran_Interface *);
     ~Hadron_Decay_Handler();
-    bool FillHadronDecayBlobs(ATOOLS::Blob_List *,ATOOLS::Parton_List *);
+    bool FillHadronDecayBlobs(ATOOLS::Blob_List *,ATOOLS::Particle_List *);
   };
 }
 #endif

@@ -2,8 +2,8 @@
 #define Lund_Fortran_Interface_h
 
 #include "Blob_List.H"
-#include "Parton_List.H"
-#include "Parton.H"
+#include "Particle_List.H"
+#include "Particle.H"
 
 namespace SHERPA {
   class Lund_Fortran_Interface {
@@ -18,16 +18,16 @@ namespace SHERPA {
     int       nk, * kfjet, * mothers, * daughters;
 
     void Init();
-    void AddPartonToString(ATOOLS::Parton *,int &);
+    void AddPartonToString(ATOOLS::Particle *,int &);
     void FillPrimaryHadronsInBlob(ATOOLS::Blob *,ATOOLS::Blob_List *,
-				  ATOOLS::Parton_List * = NULL);
+				  ATOOLS::Particle_List * = NULL);
     void FillSecondaryHadronsInBlob(ATOOLS::Blob *,ATOOLS::Blob_List *,int,int,
-				    ATOOLS::Parton_List * = NULL);
+				    ATOOLS::Particle_List * = NULL);
   public:
     Lund_Fortran_Interface(double,double,double);
     ~Lund_Fortran_Interface();
     bool Hadronize(ATOOLS::Blob *,ATOOLS::Blob_List *,
-		   ATOOLS::Parton_List * = NULL);
+		   ATOOLS::Particle_List * = NULL);
   };
 
   extern Lund_Fortran_Interface LFInterface;

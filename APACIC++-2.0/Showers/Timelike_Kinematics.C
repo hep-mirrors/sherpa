@@ -472,7 +472,7 @@ bool Timelike_Kinematics::DoKinematics(Knot * mo)
 }
 
 
-bool Timelike_Kinematics::ArrangeColourPartners(Parton * aup,Knot * d1,Knot * d2) {
+bool Timelike_Kinematics::ArrangeColourPartners(Particle * aup,Knot * d1,Knot * d2) {
   if (!aup) return 0;
   if (!d1) return 0;
   if (!d2) return 0;

@@ -44,7 +44,7 @@ double * Jet_Finder::ActualValue() {
 
 /*---------------------------------------------------------------------
 
-  General form - flavours etc are unknown, will operate on a Parton_List.
+  General form - flavours etc are unknown, will operate on a Particle_List.
 
   --------------------------------------------------------------------- */
 
@@ -65,7 +65,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_sel_log = new Selector_Log(m_name);
 }
 
-bool Jet_Finder::ConstructJets(const Parton_List * parts,
+bool Jet_Finder::ConstructJets(const Particle_List * parts,
 			       const std::vector<int> & jets,std::vector<double> & lastys) {
   std::vector<Vec4D>   momsout;
   Vec4D   momsin[2];

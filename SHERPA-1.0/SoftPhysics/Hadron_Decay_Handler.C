@@ -28,7 +28,7 @@ Hadron_Decay_Handler::~Hadron_Decay_Handler()
 {
 }
 
-bool Hadron_Decay_Handler::FillHadronDecayBlobs(ATOOLS::Blob_List *,ATOOLS::Parton_List *)
+bool Hadron_Decay_Handler::FillHadronDecayBlobs(ATOOLS::Blob_List *,ATOOLS::Particle_List *)
 {
   return 1;
 }

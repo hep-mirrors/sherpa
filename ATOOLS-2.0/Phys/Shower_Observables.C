@@ -10,7 +10,7 @@ using namespace ATOOLS;
 using namespace std;
 
 
-bool PartonIsInList(const Parton * const p,  const Parton_List & pl) 
+bool ParticleIsInList(const Particle * const p,  const Particle_List & pl) 
 {
   bool hit=0;
   for (int j=0;j<pl.size();++j) {
@@ -49,26 +49,26 @@ void Shower_Observables::Evaluate(const Blob_List & blobs ,double value) {
   bool do_fl=0,do_jet=1;
 
 
-  Parton_List pl;
+  Particle_List pl;
 
   int njet_ini=0;
   Flavour lfl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     if ((*blit)->Type()[0]=='S') {
       njet_ini=(*blit)->NOutP();
-      lfl =(*blit)->OutParton(0)->Flav();
+      lfl =(*blit)->OutParticle(0)->Flav();
       for (int i=0;i<(*blit)->NInP();++i) {
-	Parton * p =(*blit)->InParton(i);
-	if (!PartonIsInList(p,pl)) pl.push_back(p);
+	Particle * p =(*blit)->InParticle(i);
+	if (!ParticleIsInList(p,pl)) pl.push_back(p);
       }
     }
   }
 
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
-      Parton * p = (*blit)->OutParton(i);
+      Particle * p = (*blit)->OutParticle(i);
 
-      if (!PartonIsInList(p,pl) && (*blit)->Status()==1 && 
+      if (!ParticleIsInList(p,pl) && (*blit)->Status()==1 && 
 	  (((p->Info()=='F') || (p->Info()==' ') || p->Info()=='H') && p->Status()!=2 )) {
 	pl.push_back(p);
       }
@@ -293,7 +293,7 @@ Jetrates::Jetrates(Jetrates * _partner, std::string _prefix)
 
 
 
-void Jetrates::Evaluate(const Parton_List & pl,double value) {
+void Jetrates::Evaluate(const Particle_List & pl,double value) {
   ys.clear();
   if (partner==0)  jfind->ConstructJets(&pl,jets,ys);
   else ys=partner->ys;
@@ -367,7 +367,7 @@ Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix)
 }
 
 
-void Multiplicity::Evaluate(const Parton_List & pl,double value) {
+void Multiplicity::Evaluate(const Particle_List & pl,double value) {
   histo->Insert(pl.size()-2,value);
 }
 
@@ -375,20 +375,20 @@ void  Multiplicity::Evaluate(Vec4D *,Flavour *,double value) {
 }
 
 void  Multiplicity::Evaluate(const Blob_List & blobs,double value) {
-  Parton_List pl;
+  Particle_List pl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     if ((*blit)->Type()[0]=='S') {
       for (int i=0;i<(*blit)->NInP();++i) {
-	Parton * p = (*blit)->InParton(i);
-	if (!PartonIsInList(p,pl)) pl.push_back(p);
+	Particle * p = (*blit)->InParticle(i);
+	if (!ParticleIsInList(p,pl)) pl.push_back(p);
       }
     }
   }
 
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
-      Parton * p = (*blit)->OutParton(i);
-      if (!PartonIsInList(p,pl) && (*blit)->Status()==1 && 
+      Particle * p = (*blit)->OutParticle(i);
+      if (!ParticleIsInList(p,pl) && (*blit)->Status()==1 && 
 	  ((p->Info()=='F') || ((*blit)->Type()[0]!='S' &&  p->Info()=='H')))
 	pl.push_back(p);
     }
@@ -411,9 +411,9 @@ void ME_Rate::Evaluate(const Blob_List & blobs,double value) {
 
       int jets=(*bit)->NOutP();
       Flavour flavs[3];
-      flavs[0]=(*bit)->OutParton(0)->Flav();
-      if (jets>=3)       flavs[1]=(*bit)->OutParton(2)->Flav();
-      if (jets>=5)       flavs[2]=(*bit)->OutParton(4)->Flav();
+      flavs[0]=(*bit)->OutParticle(0)->Flav();
+      if (jets>=3)       flavs[1]=(*bit)->OutParticle(2)->Flav();
+      if (jets>=5)       flavs[2]=(*bit)->OutParticle(4)->Flav();
       int nc=all_rates.size();
       for (int i=0;i<nc;++i) {
 	if (all_rates[i].flavs[0]==flavs[0]
@@ -505,7 +505,7 @@ PT_Distribution::PT_Distribution(PT_Distribution * partner, std::string _prefix)
 
 
 
-void PT_Distribution::Evaluate(const Parton_List & pl,double weight) {
+void PT_Distribution::Evaluate(const Particle_List & pl,double weight) {
 
   if (checkfl==Flavour(kf::Z) || checkfl==Flavour(kf::W) || checkfl==Flavour(kf::W).Bar()) {
     Vec4D mom;
@@ -551,12 +551,12 @@ void PT_Distribution::Evaluate(const Parton_List & pl,double weight) {
 }
 
 void  PT_Distribution::Evaluate(const Blob_List & blobs,double value) {
-  Parton_List pl;
+  Particle_List pl;
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     if ((*blit)->Type()[0]=='S') {
       for (int i=0;i<(*blit)->NInP();++i) {
-	Parton * p = (*blit)->InParton(i);
-	if (!PartonIsInList(p,pl)) pl.push_back(p);
+	Particle * p = (*blit)->InParticle(i);
+	if (!ParticleIsInList(p,pl)) pl.push_back(p);
       }
     }
   }
@@ -564,10 +564,10 @@ void  PT_Distribution::Evaluate(const Blob_List & blobs,double value) {
   // looking for Final State Shower blob
   for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
     for (int i=0;i<(*blit)->NOutP();++i) {
-      Parton * p = (*blit)->OutParton(i);
+      Particle * p = (*blit)->OutParticle(i);
       if ((p->Info()=='F') ||  
 	  (p->Info()=='H' && p->Status()!=2 ) && (*blit)->Status()==1 ){
-	if (!PartonIsInList(p,pl)) pl.push_back(p);
+	if (!ParticleIsInList(p,pl)) pl.push_back(p);
       }
     }
   }

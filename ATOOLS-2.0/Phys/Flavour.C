@@ -566,8 +566,8 @@ void ATOOLS::ParticleInit(std::string path)
   
 // Unique Identifier of Particle.dat
 // aaaaaa-bbbbbb-ccccccc 
-// a   SM   - partons
-// b    MSSM - partons
+// a   SM   - particles
+// b    MSSM - particles
 // c    everything else
 // each
 // (n)nn  number of particles in this section 

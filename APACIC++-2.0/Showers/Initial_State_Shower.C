@@ -101,7 +101,7 @@ void   Initial_State_Shower::InitShowerPT(double pt2max) {
 //----------------------------------------------------------------------- 
 
 void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
-					  Blob_List * bl,Parton_List * pl) 
+					  Blob_List * bl,Particle_List * pl) 
 {
   if (!kn) return;
 
@@ -114,14 +114,10 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
       bl_meps->SetStatus(0);
       break;
     }
-    // deactivate out partons!
-//     for (int i=0;i<bl_meps->NOutP();++i) {
-//       bl_meps->OutParton(i)->SetStatus(2);
-//     }
   }
 
   int number;
-  Parton * p;
+  Particle * p;
   if (!kn->prev) {
     /* 
        New jet : kn = incoming parton from hadron info = 'I'
@@ -135,10 +131,10 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
     }
     jet = new Blob();
     jet->SetStatus(1);
-    p = new Parton(kn->part);
+    p = new Particle(kn->part);
     p->SetDecayBlob(jet);
     p->SetStatus(2);
-    jet->AddToInPartons(p);
+    jet->AddToInParticles(p);
     jet->SetId(bl->size());
     jet->SetType(std::string("IS Shower (APACIC++2.0)"));
     jet->SetBeam(beam);
@@ -153,13 +149,13 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
 	else    number = int(kn->part);
 	kn->part->SetNumber(number);
       }
-      p = new Parton(kn->part);
+      p = new Particle(kn->part);
       p->SetStatus(2);
-      jet->AddToOutPartons(p);
+      jet->AddToOutParticles(p);
       p->SetProductionBlob(jet);
       if (bl_meps) {
 	p->SetDecayBlob(bl_meps);
-	bl_meps->AddToInPartons(p);
+	bl_meps->AddToInParticles(p);
       }
       jet->SetStatus(1);
       return;
@@ -173,13 +169,13 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
     */
     jet = new Blob();
     jet->SetStatus(1);
-    p = new Parton(kn->part);
+    p = new Particle(kn->part);
     p->SetStatus(2);
-    jet->AddToInPartons(p);
+    jet->AddToInParticles(p);
     p -> SetDecayBlob(jet);
     if (bl_meps) {
       p -> SetProductionBlob(bl_meps);
-      bl_meps->AddToOutPartons(p);
+      bl_meps->AddToOutParticles(p);
     }
     jet->SetId(bl->size());
     jet->SetType(std::string("IS Shower (APACIC++2.0)"));
@@ -190,10 +186,10 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
     }
     else {
       kn->part->SetStatus(1);
-      p = new Parton(kn->part);
+      p = new Particle(kn->part);
       p->SetProductionBlob(jet);
       p->SetDecayBlob(NULL);
-      jet->AddToOutPartons(p);
+      jet->AddToOutParticles(p);
       jet->SetStatus(1);
       return;
     }
@@ -210,20 +206,20 @@ void Initial_State_Shower::ExtractPartons(Knot * kn,int beam,Blob * jet,
 	else    number = int(kn->part);
 	kn->part->SetNumber(number);
 	if (pl) pl->push_back(kn->part);
-	p = new Parton(kn->part);
+	p = new Particle(kn->part);
       } 
       else {
-	p = new Parton(kn->part);
+	p = new Particle(kn->part);
 	if (bl_meps) {
 	  p -> SetDecayBlob(bl_meps);
-	  bl_meps->AddToInPartons(p);
+	  bl_meps->AddToInParticles(p);
 	}
 	else p -> SetDecayBlob(NULL);
       }
       p->SetProductionBlob(jet);
       if (p->Info() == 'G') p->SetStatus(2);
                        else p->SetStatus(1);
-      jet->AddToOutPartons(p);
+      jet->AddToOutParticles(p);
     }
     else {
       kn->part->SetStatus(2);
@@ -709,7 +705,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   m_th_1  = m_th_2  = M_PI;
 
   Knot * d1   = trees[0]->NewKnot();
-  *(d1->part) = Parton(1,Flavour(kf::u),x1*E*Vec4D(1.,0.,0.,1.));
+  *(d1->part) = Particle(1,Flavour(kf::u),x1*E*Vec4D(1.,0.,0.,1.));
   d1->part->SetStatus(1);
   d1->part->SetInfo('G');
   d1->part->SetFlow(1,500);
@@ -724,7 +720,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   d1->stat    = 1;
   
   Knot * d2   = trees[1]->NewKnot();
-  *(d2->part) = Parton(2,Flavour(kf::u).Bar(),x2*E*Vec4D(1.,0.,0.,-1.));
+  *(d2->part) = Particle(2,Flavour(kf::u).Bar(),x2*E*Vec4D(1.,0.,0.,-1.));
   d2->part->SetStatus(1);
   d2->part->SetInfo('G');
   d2->part->SetFlow(1,502);

@@ -3,7 +3,7 @@
 
 #include "Model_Base.H"
 
-#include "Parton_List.H"
+#include "Particle_List.H"
 #include "Blob_List.H"
 
 #include "Data_Read.H"
@@ -30,7 +30,7 @@ namespace APACIC {
     ~Hard_Interface(); 
     void PrepareTrees();
     int  PerformShowers(bool,bool,bool,double,double);
-    bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
+    bool ExtractPartons(bool,bool,ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
 
     Tree             * FinTree()  { return p_fintree; }
     Tree            ** IniTrees() { return p_initrees; }

@@ -1,7 +1,7 @@
 #ifndef Jet_Finder_h
 #define Jet_Finder_h
 
-#include "Parton_List.H"
+#include "Particle_List.H"
 #include "Selector.H"
 #include "Poincare.H"
 
@@ -42,7 +42,7 @@ namespace ATOOLS {
     ~Jet_Finder();
 
     void   Init(const Vec4D *);
-    bool   ConstructJets(const Parton_List *,
+    bool   ConstructJets(const Particle_List *,
 			 const std::vector<int> &,std::vector<double> &);
 
     bool   Trigger(const Vec4D *);
@@ -138,17 +138,17 @@ namespace ATOOLS {
 
 /*!
   \fn    Jet_Finder::Jet_Finder(double,int);
-  \brief The explicit constructor for the usage in the Parton Shower.
+  \brief The explicit constructor for the usage in the Parton shower.
 
   This explicit constructor just sets the ycut of the jet criterion,
   and it has to be stgressed again, this is a "quick'n'dirty" jet criterion
-  that works SOLELY within the Parton Shower. 
+  that works SOLELY within the Parton shower. 
 */
 
 /*!
   \fn    Jet_Finder::Jet_Finder(int,Flavour *,double,int,int);
   \brief The explicit constructor for the usage in matrix elements and their 
-         interface to the Parton Shower.
+         interface to the Parton shower.
 
   This explicit constructor sets the flavours of the process
   (here, care has to be taken to extract "good" flavours, i.e.

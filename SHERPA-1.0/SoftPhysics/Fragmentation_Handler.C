@@ -41,7 +41,7 @@ Fragmentation_Handler::~Fragmentation_Handler() {
 
 
 bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
-						 ATOOLS::Parton_List * pl) 
+						 ATOOLS::Particle_List * pl) 
 {
   if (!ExtractSinglets(bl,pl)) return 0;
   bool okay = 1;
@@ -58,10 +58,10 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
   return okay;
 }
 
-bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * pl) 
+bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Particle_List * pl) 
 {
   Blob       * newb = NULL;
-  Parton     * part;
+  Particle     * part;
   bool use_one_blob = 1;
 
   bool foundatall   = 0;
@@ -72,7 +72,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
       if (((*blit)->Status()==1) || ((*blit)->Status()==2)) {
 	for (int i=0;i<(*blit)->NOutP();i++) {
-	  part = (*blit)->OutParton(i);
+	  part = (*blit)->OutParticle(i);
 	  if ( (part->Info()=='F' || part->Info()=='H') && part->Status()==1) {
 	    if (( (part->Flav().IsQuark()    && !part->Flav().IsAnti() ) ||
 		  (part->Flav().IsDiQuark()) && part->Flav().IsAnti()       ) && part->GetFlow(1)>0 ) {
@@ -85,7 +85,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
 	      }
 	      part->SetStatus(2);
 	      part->SetDecayBlob(newb);
-	      newb->AddToInPartons(part);
+	      newb->AddToInParticles(part);
 	      foundatall = found = 1;
 	      if (!(FindConnected(_bloblist,part,newb))) {
 		msg.Error()<<"Fragmentation_Handler::ExtractSinglets :"
@@ -102,7 +102,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
       if (!((*blit)->Type()==std::string("Fragmentation"))) {
 	active = 0;
 	for (int i=0;i<(*blit)->NOutP();i++) {
-	  if ((*blit)->OutParton(i)->Status()==1) { 
+	  if ((*blit)->OutParticle(i)->Status()==1) { 
 	    active = 1; 
 	    break; 
 	  }
@@ -115,7 +115,7 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
     if (!((*blit)->Type()==std::string("Fragmentation"))) {
       active = 0;
       for (int i=0;i<(*blit)->NOutP();i++) {
-	if ((*blit)->OutParton(i)->Status()==1) { 
+	if ((*blit)->OutParticle(i)->Status()==1) { 
 	  active = 1; 
 	  break; 
 	}
@@ -128,19 +128,19 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
 
 
 bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
-					  Parton * compare,Blob * blob) {
-  Parton * part;
+					  Particle * compare,Blob * blob) {
+  Particle * part;
   for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
     if ((*blit)->Status()==1 || (*blit)->Status()==2) {
       for (int i=0;i<(*blit)->NOutP();i++) {
-	part = (*blit)->OutParton(i);
+	part = (*blit)->OutParticle(i);
 	if (part==compare) continue;
 	if (part->Info()!='F' && part->Info() != 'H') continue;
 	if (part->Status()!=1) continue; 
 	if (part->GetFlow(2)==compare->GetFlow(1)) {
 	  part->SetStatus(2);
 	  part->SetDecayBlob(blob);
-	  blob->AddToInPartons(part);
+	  blob->AddToInParticles(part);
 	  if (part->GetFlow(1)==0) {
 	    if ( part->Flav().IsQuark() && part->Flav().IsAnti()) {
 	      return 1;

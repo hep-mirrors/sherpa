@@ -10,8 +10,8 @@
 
 #include "Tree.H"
 #include "Knot.H"
-#include "Parton_List.H"
-#include "Parton.H"
+#include "Particle_List.H"
+#include "Particle.H"
 #include "Flow.H"
 #include "Blob.H"
 
@@ -21,7 +21,7 @@ namespace SHERPA {
     APACIC::Tree ** p_initrees; 
     APACIC::Tree  * p_fintree; 
 
-    bool IsColourConnected(ATOOLS::Parton *,ATOOLS::Parton *) ;
+    bool IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *) ;
   public :
     Interface_Tools(APACIC::Tree **,APACIC::Tree *); 
     ~Interface_Tools(); 
@@ -29,7 +29,7 @@ namespace SHERPA {
     void InitializeIncoming(ATOOLS::Blob *,double,double,double,double,double,double);
     void InitializeOutGoing(ATOOLS::Blob *,double,double,double,double);
 
-    double ColourAngle(ATOOLS::Parton *,ATOOLS::Blob *);
+    double ColourAngle(ATOOLS::Particle *,ATOOLS::Blob *);
   };
 
   /*!
@@ -45,7 +45,7 @@ namespace SHERPA {
     A pointer to Apacic's final state tree that is to be filled.
   */
   /*!
-    \fn bool Interface_Tools::IsColourConnected(ATOOLS::Parton *,ATOOLS::Parton *) 
+    \fn bool Interface_Tools::IsColourConnected(ATOOLS::Particle *,ATOOLS::Particle *) 
     Check's the colour flow objects of both partons and returns .true. if some
     elements coincide, i.e. if they are colour connected.
   */
@@ -78,7 +78,7 @@ namespace SHERPA {
     knot serving as their mother.
   */
   /*!
-    \fn double Interface_Tools::ColourAngle(ATOOLS::Parton *,ATOOLS::Blob *)
+    \fn double Interface_Tools::ColourAngle(ATOOLS::Particle *,ATOOLS::Blob *)
     Calculates the angle of a specific parton with respect to its colour connected partner.
     Basically, all partons in the blob are considered, if two partons are colour connected
     to the initial one, which might be the case for gluons, the larger angle is returned.

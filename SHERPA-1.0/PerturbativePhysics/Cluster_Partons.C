@@ -429,7 +429,7 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   }
 
   if (mo) {
-  *(mo->part) = Parton(0,Flavour(kf::none),p_ct->Momentum(2)+p_ct->Momentum(3));
+  *(mo->part) = Particle(0,Flavour(kf::none),p_ct->Momentum(2)+p_ct->Momentum(3));
   mo->part->SetInfo('M');
   mo->part->SetStatus(2);
   mo->stat   = 0;
@@ -496,18 +496,18 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   for (int i=0; i<4 ; ++i) {
     int j=i/2;
     int k=i%2+1;
-    if (p_blob->InParton(j)->Flav()==knots[j]->part->Flav()) {
-      p_blob->InParton(j)->SetFlow(k, knots[j]->part->GetFlow(k));
+    if (p_blob->InParticle(j)->Flav()==knots[j]->part->Flav()) {
+      p_blob->InParticle(j)->SetFlow(k, knots[j]->part->GetFlow(k));
     }
     else {
-      p_blob->InParton(1-j)->SetFlow(k, knots[j]->part->GetFlow(k));
+      p_blob->InParticle(1-j)->SetFlow(k, knots[j]->part->GetFlow(k));
     }
   }
   
   for (int i=4; i<2*nlegs ; ++i) {
     int j=i/2;
     int k=i%2+1;
-    p_blob->OutParton(j-2)->SetFlow(k, knots[j]->part->GetFlow(k));
+    p_blob->OutParticle(j-2)->SetFlow(k, knots[j]->part->GetFlow(k));
   }
 }
 
@@ -523,24 +523,24 @@ Knot * Cluster_Partons::Point2Knot(Tree * tree, const Leg & po,
 
   bool found = 0;
   for (int i=0;i<p_blob->NInP();i++) {
-    if ( (p_blob->InParton(i)->Flav() == flav) &&
-	 (p_blob->InParton(i)->Momentum() == mom) ) { 
-      *(k->part)   = p_blob->InParton(i);
+    if ( (p_blob->InParticle(i)->Flav() == flav) &&
+	 (p_blob->InParticle(i)->Momentum() == mom) ) { 
+      *(k->part)   = p_blob->InParticle(i);
       found = 1;
     }
   }
   for (int i=0;i<p_blob->NOutP();i++) {
-    if ( (p_blob->OutParton(i)->Flav() == flav) &&
-	 (p_blob->OutParton(i)->Momentum() == mom) ) {
+    if ( (p_blob->OutParticle(i)->Flav() == flav) &&
+	 (p_blob->OutParticle(i)->Momentum() == mom) ) {
       if (found) {
 	msg.Error()<<"Blob with in- and outgoing particle identical !!!"<<std::endl
 		   <<p_blob<<std::endl;
       }
-      *(k->part)   = p_blob->OutParton(i);
+      *(k->part)   = p_blob->OutParticle(i);
       found = 1;
     }
   }
-  if (!found) *(k->part)   = Parton(0,flav,mom);
+  if (!found) *(k->part)   = Particle(0,flav,mom);
 
   // preliminary parton status!!!
   double scale = sqr(mom[0]);
@@ -578,7 +578,7 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode
     //  status:
     //  p_blob->CMS()          - Vec4D hard event in LAB system
     //  d1->part->Momentum() - in the moment also in LAB system
-    //  p_blob->InParton(0)->Momentum() - in CMS system
+    //  p_blob->InParticle(0)->Momentum() - in CMS system
 
     double q2      = mo->t;
     // set x1 and x2
@@ -634,7 +634,7 @@ void Cluster_Partons::EstablishRelations(Knot * mo, Knot * d1,Knot * d2,int mode
 
 Flavour Cluster_Partons::Flav(int i) {
   if (p_ct) return p_ct->Flav(i);
-  msg.Error()<<"ERROR in Cluster_Partons::Flav. No ct."<<std::endl;
+  msg.Error()<<"ERROR in Cluster_Particles::Flav. No ct."<<std::endl;
   return 0;
 }
 
@@ -654,7 +654,7 @@ Vec4D Cluster_Partons::Momentum(Knot * mo, int & number) {
 }
 
 
-bool Cluster_Partons::IsColourConnected(Parton * a, Parton * b) {
+bool Cluster_Partons::IsColourConnected(Particle * a, Particle * b) {
   return (( (a->GetFlow(1)!=0) && ( (a->GetFlow(1)==b->GetFlow(1)) || 
 				 (a->GetFlow(1)==b->GetFlow(2)))  ) ||
 	  ( (a->GetFlow(2)!=0) && ( (a->GetFlow(2)==b->GetFlow(2)) ||

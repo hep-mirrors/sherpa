@@ -7,8 +7,8 @@
 
 #include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
-#include "Parton_List.H"
-#include "Parton.H"
+#include "Particle_List.H"
+#include "Particle.H"
 #include "Blob_List.H"
 #include "Blob.H"
 
@@ -23,7 +23,7 @@ namespace SHERPA {
     int                         * p_numberofconstituents;
 
     int    Constituents(ATOOLS::Flavour,ATOOLS::Flavour *&); 
-    bool   FillHadron(ATOOLS::Blob *,int,ATOOLS::Parton_List * = NULL);
+    bool   FillHadron(ATOOLS::Blob *,int,ATOOLS::Particle_List * = NULL);
     double GetX_Lund(ATOOLS::Flavour,ATOOLS::Flavour,double);
     double GetX_PDF(ATOOLS::Flavour,ATOOLS::Flavour,double,int);
     double GetPT(ATOOLS::Flavour,ATOOLS::Flavour,double);
@@ -31,8 +31,8 @@ namespace SHERPA {
     Beam_Remnant_Handler(std::string,std::string,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Beam_Remnant_Handler();
 
-    bool FillBunchBlobs(ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
-    bool FillBeamBlobs(ATOOLS::Blob_List *,ATOOLS::Parton_List * = NULL);
+    bool FillBunchBlobs(ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
+    bool FillBeamBlobs(ATOOLS::Blob_List *,ATOOLS::Particle_List * = NULL);
   };
 }
 #endif

@@ -111,7 +111,7 @@ int Hard_Interface::PerformShowers(bool ini,bool fin,bool jetveto,double x1,doub
   return 1;
 }
 
-bool Hard_Interface::ExtractPartons(bool ini,bool fin,Blob_List * bl,Parton_List * pl) {
+bool Hard_Interface::ExtractPartons(bool ini,bool fin,Blob_List * bl,Particle_List * pl) {
   if (fin) p_finshower->ExtractPartons(p_fintree->GetRoot(),0,bl,pl);
 
   if (ini) {
