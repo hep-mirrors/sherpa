@@ -192,3 +192,37 @@ double Channel_Basics::PseudoAngleCut(double m1_sq,double E1,
   return (del1*(del1*E2/E1 - 2.*beta1*del2)-mu1_sq*arg)/2.;
   //checked
 }
+
+
+double Channel_Basics::PDFPeakedDist(double a,double cn,double cxm,double cxp,int k,double ran)
+{
+  double ce=1.0+cn;
+  double Imax=pow(log(cxp),ce), Imin=pow(log(cxm),ce);
+  return exp(pow(Imax*ran+(1.-ran)*Imin,1.0/ce));
+}
+
+double Channel_Basics::PDFPeakedGrid(double a,double cn,double cxm,double cxp,double res,int k,double &ran)
+{
+  double ce=1.0+cn;
+  double logcxm=pow(log(cxm),ce);
+  ran=(pow(log(res),ce)-logcxm)/(pow(log(cxp),ce)-logcxm);
+  return res;
+}
+
+double Channel_Basics::PDFPeakedWeight(double a,double cn,
+				       double cxm,double cxp,int k)
+{
+  double ce=1.+cn;
+  return (pow(log(cxp),ce)-pow(log(cxm),ce))/ce;
+}
+
+double Channel_Basics::PDFPeakedWeight(double a,double cn,
+				       double cxm,double cxp,double res,int k,double &ran)
+{
+  double ce=1.+cn;
+  double logcxm=pow(log(cxm),ce), logcxp=pow(log(cxp),ce);
+  ran=(pow(log(res),ce)-logcxm)/(logcxp-logcxm);
+  return (logcxp-logcxm)/ce;
+}
+
+
