@@ -12,9 +12,10 @@ using namespace AORGTOOLS;
 
 
 Beam_Remnant_Handler::Beam_Remnant_Handler(std::string _dir,std::string _file,
-					   ISR::ISR_Handler * _isr,
+					   PDF::ISR_Handler * _isr,
 					   BEAM::Beam_Spectra_Handler * _beam) :
-  m_dir(_dir), m_file(_file), p_isr(_isr), p_beam(_beam) 
+  m_dir(_dir), m_file(_file), p_isr(_isr), p_beam(_beam),
+  p_constituents(NULL), p_numberofconstituents(NULL)
 {
   if (p_isr->Flav(0).IsHadron() || p_isr->Flav(1).IsHadron()) {
     p_constituents         = new Flavour *[2];
@@ -27,10 +28,7 @@ Beam_Remnant_Handler::Beam_Remnant_Handler(std::string _dir,std::string _file,
     }
     m_fill = 1;
   }
-  else {
-    p_constituents = NULL; p_numberofconstituents = NULL;
-    m_fill = 0;
-  }
+  else m_fill = 0;
 
   m_q2min = 1.;
 }

@@ -17,7 +17,7 @@ namespace SHERPA {
     bool                          m_fill;
     double                        m_q2min;
     std::string                   m_dir,m_file;
-    ISR::ISR_Handler            * p_isr;
+    PDF::ISR_Handler            * p_isr;
     BEAM::Beam_Spectra_Handler  * p_beam;
     APHYTOOLS::Flavour         ** p_constituents;
     int                         * p_numberofconstituents;
@@ -28,7 +28,7 @@ namespace SHERPA {
     double GetX_PDF(APHYTOOLS::Flavour,APHYTOOLS::Flavour,double,int);
     double GetPT(APHYTOOLS::Flavour,APHYTOOLS::Flavour,double);
   public :
-    Beam_Remnant_Handler(string,string,ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
+    Beam_Remnant_Handler(string,string,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Beam_Remnant_Handler();
 
     bool FillBunchBlobs(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List * = NULL);

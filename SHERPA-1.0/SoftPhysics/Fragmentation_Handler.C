@@ -14,9 +14,6 @@ using namespace AORGTOOLS;
 Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file) :
   m_dir(_dir), m_file(_file)
 {
-  p_mypartons = new Parton_List;
-  p_myblobs   = new Blob_List;
-
   Data_Read dr(m_dir+m_file);
   m_fragmentationmodel = dr.GetValue<string>("FRAGMENTATION",string("Lund"));
   
@@ -39,9 +36,6 @@ Fragmentation_Handler::Fragmentation_Handler(string _dir,string _file) :
 Fragmentation_Handler::~Fragmentation_Handler() {
   msg.Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
   msg.Tracking()<<"In Fragmentation_Handler::~Fragmentation_Handler :"<<std::endl;
-  EmptyMyLists();
-  if (p_mypartons) delete p_mypartons;
-  if (p_myblobs)   delete p_myblobs;
   if (p_lund)      delete p_lund;
   
   msg.Tracking()<<"Out Fragmentation_Handler::~Fragmentation_Handler :"<<std::endl;
@@ -51,21 +45,9 @@ Fragmentation_Handler::~Fragmentation_Handler() {
 
 
 
-void Fragmentation_Handler::EmptyMyLists() {
-  if (!(p_mypartons->empty())) {
-    p_mypartons->erase(p_mypartons->begin(),p_mypartons->end());
-    msg.Debugging()<<"   Deleted partons of internal parton list."<<std::endl;
-  }
-  if (!(p_myblobs->empty())) {
-    p_myblobs->erase(p_myblobs->begin(),p_myblobs->end());
-    msg.Debugging()<<"   Deleted partons of internal parton list."<<std::endl;
-  }
-}
-
 bool Fragmentation_Handler::PerformFragmentation(APHYTOOLS::Blob_List * bl,
 						 APHYTOOLS::Parton_List * pl) 
 {
-  EmptyMyLists();
   if (!ExtractSinglets(bl,pl)) return 0;
   bool okay = 1;
   for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {

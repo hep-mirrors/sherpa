@@ -17,9 +17,6 @@ namespace SHERPA {
     std::string              m_fragmentationmodel;
     double                   m_lund_a,m_lund_b,m_lund_sigma;
     int                      m_mode;
-    APHYTOOLS::Parton_List * p_mypartons;
-    APHYTOOLS::Blob_List   * p_myblobs;
-    APHYTOOLS::Blob        * p_myblob;
     Lund_Fortran_Interface * p_lund; 
     bool   ExtractSinglets(APHYTOOLS::Blob_List *,APHYTOOLS::Parton_List *);
     bool   FindConnected(APHYTOOLS::Blob_List *,APHYTOOLS::Parton *,
