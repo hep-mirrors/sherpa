@@ -10,7 +10,7 @@
 
 using namespace ATOOLS;
 
-bool ATOOLS::Run_Parameter::s_initialized;
+bool ATOOLS::Run_Parameter::s_initialized=false;
 std::map<std::string,std::string> ATOOLS::Run_Parameter::s_variables;
 Run_Parameter ATOOLS::rpa;
 
