@@ -230,7 +230,7 @@ double Channel_Elements::MasslessPropMomenta(double sexp,
 					     double ran)
 {
   double s = Channel_Basics::PeakedDist(0.,sexp,smin,smax,1,ran);
-  cout.precision(12);
+  //  cout.precision(12);
 //   cout<<"MlPMom : "<<sexp<<" "<<smin<<" "<<smax<<" "<<s<<" "<<ran<<endl;
   if (!(s>0) && !(s<0) && s!=0) 
     ATOOLS::msg.Error()<<"MasslessPropMomenta produced a nan !"<<endl;
