@@ -50,6 +50,10 @@ Hadron_Decay_Handler::Hadron_Decay_Handler(std::string _dir,std::string _file,
     return;
   }
 #endif
+  else {
+    std::string frag=dr.GetValue<string>("FRAGMENTATION",string("Off"));
+    if (frag=="Off") return;
+  }
   THROW(critical_error,"Fragmentation model not implemented.");
 }
 
