@@ -194,6 +194,10 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
   if (bh->On()>0) bh->BoostInLab(p,nin+nout);
   if (ih->On()>0) ih->BoostInLab(p,nin+nout);
 
+  Vec4D * p_save = new Vec4D[nin+nout];
+  for (int i=0;i<nin+nout;++i) p_save[i]=p[i];
+  
+
   // First part : flin[0] coming from Beam[0] and flin[1] coming from Beam[1]
 
   bool trigger = 0;
@@ -223,7 +227,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
 
     result1 *= process->Differential(p);
   }
-
+ 
   // Second part : flin[0] coming from Beam[1] and flin[1] coming from Beam[0]
   if (ih && ih->On()==3 && trigger==1) {
     Rotate(p);
@@ -234,6 +238,9 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
 
   if ( (ih && ih->On()>0) || (bh && bh->On()>0) ) 
     flux = 1./(2.*sqrt(sqr(sprime-m12-m22)-4.*m12*m22));
+
+  for (int i=0;i<nin+nout;++i) p[i]=p_save[i];
+  delete [] p_save;
 
   return flux*(result1+result2);
 }
