@@ -9,7 +9,7 @@ namespace EXTRAXS {
   class QED_Processes: public XS_Group {
     void CreateFSRChannels();
   public:
-    QED_Processes(ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+    QED_Processes(PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		  APHYTOOLS::Flavour *,APHYTOOLS::Selector_Data *,int,int,double);
   };
 }

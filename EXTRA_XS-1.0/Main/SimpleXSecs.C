@@ -33,7 +33,7 @@ SimpleXSecs::~SimpleXSecs()
 }
 
 bool SimpleXSecs::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,
-				      ISR::ISR_Handler * _isr) {
+				      PDF::ISR_Handler * _isr) {
   p_beam         = _beam; 
   p_isr          = _isr;
   

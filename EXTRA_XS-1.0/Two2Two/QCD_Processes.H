@@ -12,7 +12,7 @@ namespace EXTRAXS {
     void Fill4gmodes();
     void CreateFSRChannels();
   public:
-    QCD_Processes(ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
+    QCD_Processes(PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		  APHYTOOLS::Flavour *,APHYTOOLS::Selector_Data *,int,int,double);
   };
 }

@@ -40,14 +40,14 @@ namespace EXTRAXS {
 
     PHASIC::Phase_Space_Handler    * p_ps; 
     BEAM::Beam_Spectra_Handler     * p_beam;
-    ISR::ISR_Handler               * p_isr;
+    PDF::ISR_Handler               * p_isr;
     APHYTOOLS::Selector_Base       * p_sel;
 
     void                             Init(APHYTOOLS::Flavour *);
     void                             GenerateName();
    public:
     XS_Base(int,int,APHYTOOLS::Flavour *,
-	    ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+	    PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
 	    int,int,double);
     XS_Base(int,int,APHYTOOLS::Flavour *);
     XS_Base() {   m_name     = std::string("Empty XS"); }
@@ -83,7 +83,7 @@ namespace EXTRAXS {
     void                       SetMax(double);
     void                       SetTotal(double);
     void                       SetName(std::string);
-    virtual void               SetISR(ISR::ISR_Handler *)          = 0;
+    virtual void               SetISR(PDF::ISR_Handler *)          = 0;
     virtual void               SetTotalXS()                        = 0;
     virtual double             Differential(double,double,double)  = 0;
     virtual double             operator()(double,double,double)    = 0;

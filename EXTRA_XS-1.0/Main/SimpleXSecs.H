@@ -25,11 +25,11 @@ namespace EXTRAXS {
     AORGTOOLS::Data_Read       * p_dataread;
     APHYTOOLS::Selector_Data   * p_seldata;
     BEAM::Beam_Spectra_Handler * p_beam;
-    ISR::ISR_Handler           * p_isr;
+    PDF::ISR_Handler           * p_isr;
   public :
     SimpleXSecs(std::string,std::string,MODEL::Model_Base * _model);
     ~SimpleXSecs();
-    bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,ISR::ISR_Handler *);
+    bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     bool CalculateTotalXSec();
 
     void        SelectOne();

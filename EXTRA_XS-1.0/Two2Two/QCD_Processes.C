@@ -16,7 +16,7 @@ using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
-QCD_Processes::QCD_Processes(ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+QCD_Processes::QCD_Processes(PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 			     APHYTOOLS::Flavour * _fl,APHYTOOLS::Selector_Data * _seldata,
 			     int _scalescheme,int _kfactorscheme,double _scalefactor) : 
   XS_Group(2,2,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor)

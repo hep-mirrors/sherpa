@@ -16,7 +16,7 @@ using namespace APHYTOOLS;
 using namespace std;
 
 XS_Group::XS_Group(int _nin,int _nout,Flavour * _fl,
-		   ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+		   PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 		   APHYTOOLS::Selector_Data * _seldata,
 		   int _scalescheme,int _kfactorscheme,double _scalefactor) :
   XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor),
@@ -134,7 +134,7 @@ XS_Base * XS_Group::Selected() {
   return p_selected->Selected(); 
 }    
 
-void XS_Group::SetISR(ISR::ISR_Handler * _isr) {
+void XS_Group::SetISR(PDF::ISR_Handler * _isr) {
   p_isr = _isr;
   for (int i=0;i<m_xsecs.size();i++) m_xsecs[i]->SetISR(_isr);
 }

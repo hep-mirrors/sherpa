@@ -14,7 +14,7 @@ using namespace std;
 
 
 XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
-		 ISR::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
+		 PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,
 		 APHYTOOLS::Selector_Data * _seldata,
 		 int _scalescheme,int _kfactorscheme,double _scalefactor) :
   m_nin(_nin), m_nout(_nout),m_name(std::string("")),

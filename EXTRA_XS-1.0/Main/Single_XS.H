@@ -11,13 +11,13 @@ namespace EXTRAXS {
     double m_thres;
   public:
     Single_XS(int,int,APHYTOOLS::Flavour *,
-	      ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+	      PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
 	      int,int,double);
     Single_XS(int,int,APHYTOOLS::Flavour *);
 
     virtual int                        Size();
     virtual XS_Base                  * operator[](int idx);
-    virtual void                       SetISR(ISR::ISR_Handler *);
+    virtual void                       SetISR(PDF::ISR_Handler *);
 
     bool                               CalculateTotalXSec();
     void                               SetTotalXS();
@@ -40,7 +40,7 @@ namespace EXTRAXS {
 			  <<"   This is absolutely meaningless. Return this."<<endl;
     return this;
   }
-  inline void Single_XS::SetISR(ISR::ISR_Handler * _isr) { p_isr     = _isr; }
+  inline void Single_XS::SetISR(PDF::ISR_Handler * _isr) { p_isr     = _isr; }
 }
 
 #endif

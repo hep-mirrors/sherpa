@@ -23,7 +23,7 @@ namespace EXTRAXS {
     virtual void CreateFSRChannels() {}
   public :
     XS_Group(int,int,APHYTOOLS::Flavour *,
-	     ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
+	     PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,APHYTOOLS::Selector_Data *,
 	     int,int,double);
     XS_Group(int,int,APHYTOOLS::Flavour *);
     XS_Group(int,int,std::string);
@@ -50,7 +50,7 @@ namespace EXTRAXS {
     void      UpdateCuts(double,double)           {}
     void      DeSelect();
     void      SelectOne();
-    void      SetISR(ISR::ISR_Handler *);
+    void      SetISR(PDF::ISR_Handler *);
   };
 }
 
