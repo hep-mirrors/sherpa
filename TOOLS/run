@@ -15,57 +15,57 @@ rmr () {
 }                                                                               
 
 RUNPATH=""
-RUNFILE=""
 BINPATH=""
 RESULTS=""
 ANALYSIS=""
 OPTIONS=""
 BASENAME=""
-PYTHIA=""
+BATCH="PBS"
 for I in $* ; do
   if [ "$I" = "-p" ]; then DRUNPATH=TRUE 
-  elif [ "$I" = "-f" ]; then DRUNFILE=TRUE 
   elif [ "$I" = "-b" ]; then DBINPATH=TRUE 
   elif [ "$I" = "-r" ]; then DRESULTS=TRUE 
   elif [ "$I" = "-a" ]; then DANALYSIS=TRUE 
   elif [ "$I" = "-e" ]; then DEVENTS=TRUE 
-  elif [ "$I" = "-o" ]; then DOPTIONS=TRUE 
   elif [ "$I" = "-n" ]; then DBASENAME=TRUE 
-  elif [ "$I" = "-P" ]; then DPYTHIA=TRUE 
-  elif [ "$I" = "-q" ]; then QUEUE=TRUE 
+  elif [ "$I" = "-o" ]; then DOPTIONS=TRUE 
+  elif [ "$I" = "-B" ]; then DBATCH=TRUE 
+  elif [ "$I" = "-S" ]; then SUBMIT=TRUE 
   elif [ "$I" = "-h" ]; then echo && \
     echo "run version 1.0" && echo && \
     echo "options: -p <path>      read configuration from path <path>" && \
-    echo "         -f <file>      read basic configuration from file <file>" && \
     echo "         -b <binpath>   take executeable from path <binpath>" && \
     echo "         -r <results>   write results to path <path>/<results>" && \
-    echo "         -e <events>    generate <events> events" && \
     echo "         -a <analysis>  write analysis output to path <path>/<analysis>" && \
+    echo "         -e <events>    generate <events> events" && \
     echo "         -n <name>      set basic filename to <name>" && \
-    echo "         -o <option>    define option <option> for Sherpa" && \
-    echo "         -P <file>      generate pythia events according to <file>" && \
-    echo "         -q             submit job to batch system" && \
+    echo "         -o <option>    define commandline option <option>" && \
+    echo "         -B <system>    select batch system <system>" && \
+    echo "         -S             submit job to batch system" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DRUNPATH" = "TRUE" ]; then DRUNPATH="" && RUNPATH=$I
-  elif [ "$DRUNFILE" = "TRUE" ]; then DRUNFILE="" && RUNFILE=$I
   elif [ "$DBINPATH" = "TRUE" ]; then DBINPATH="" && BINPATH=$I
   elif [ "$DRESULTS" = "TRUE" ]; then DRESULTS="" && RESULTS=$I
   elif [ "$DANALYSIS" = "TRUE" ]; then DANALYSIS="" && ANALYSIS=$I
-  elif [ "$DOPTIONS" = "TRUE" ]; then DOPTIONS="" && OPTIONS=$OPTIONS" "$I
-  elif [ "$DBASENAME" = "TRUE" ]; then DBASENAME="" && BASENAME=$I
   elif [ "$DEVENTS" = "TRUE" ]; then DEVENTS="" && EVENTS=$I
-  elif [ "$DPYTHIA" = "TRUE" ]; then DPYTHIA="" && PYTHIA=$I
+  elif [ "$DBASENAME" = "TRUE" ]; then DBASENAME="" && BASENAME=$I
+  elif [ "$DOPTIONS" = "TRUE" ]; then DOPTIONS="" && OPTONS=$OPTIONS" "$I
+  elif [ "$DBATCH" = "TRUE" ]; then DBATCH="" && BATCH=$I
   else echo "run: error: unrecognized option '$I'. try '-h'" && \
     exit 1 
   fi
 done
 if [ "$RUNPATH" = "" ]; then RUNPATH="./" ; fi
-if [ "$RUNFILE" = "" ]; then RUNFILE="Run.dat" ; fi
 if [ "$BINPATH" = "" ]; then BINPATH="./" ; fi
 if [ "$RESULTS" = "" ]; then RESULTS="./" ; fi
 if [ "$ANALYSIS" = "" ]; then ANALYSIS="./" ; fi
 if [ "$BASENAME" = "" ]; then BASENAME="job" ; fi
+if [ ! "$BATCH" = "PBS" ] && [ ! "$BATCH" = "SGE" ] ; then 
+  echo "run: error: invalid batch system: '$BATCH'"
+  echo "run: supported batch systems are: 'PBS' / 'SGE'"
+  exit 0
+fi
 
 LOGPATH=$PWD
 SETUPPATH=$LOGPATH"/"$BASENAME"_"$TIME"/"
@@ -74,10 +74,10 @@ FILE=$BASENAME"_"$TIME".sh"
 
 cp -r $RUNPATH $SETUPPATH
 echo "" > $FILE
-if [ "$QUEUE" = "TRUE" ] ; then 
+if [ "$SUBMIT" = "TRUE" ] ; then 
   echo "#$ -j y" >> $FILE
   echo "#$ -o $SETUPPATH" >> $FILE
-  echo "#$ -N $FILE.sge" >> $FILE
+  echo "#$ -N $FILE.$BATCH" >> $FILE
   echo "" >> $FILE
   echo "RUNPATH=$SETUPPATH" >> $FILE
   echo "LOGFILE=\$SETUPPATH\"$LOGFILE\"" >> $FILE
@@ -88,7 +88,7 @@ if [ "$QUEUE" = "TRUE" ] ; then
   echo "echo \"USER        = \$USER\" >> \$RUNPATH\$LOGFILE" >> $FILE
   echo "echo \"\" >> \$RUNPATH\$LOGFILE" >> $FILE
   echo "echo \"QUEUE       = \$QUEUE\" >> \$RUNPATH\$LOGFILE" >> $FILE
-  echo "echo \"SGE_TASK_ID = \$SGE_TASK_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
+  echo "echo \""$BATCH"_TASK_ID = \$"$BATCH"_TASK_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
   echo "echo \"JOB_ID      = \$JOB_ID\" >> \$RUNPATH\$LOGFILE" >> $FILE
   echo "echo \"JOB_NAME    = \$JOB_NAME\" >> \$RUNPATH\$LOGFILE" >> $FILE
   echo "echo \"TMPDIR      = \$TMPDIR\" >> \$RUNPATH\$LOGFILE" >> $FILE
@@ -103,16 +103,14 @@ else
 fi
 echo "cd $BINPATH" >> $FILE
 echo -en "./Sherpa PATH=\$RUNPATH " >> $FILE
-if [ ! "$RUNFILE" = "" ] ; then echo -en "RUNDATA=$RUNFILE " >> $FILE ; fi
 if [ ! "$RESULTS" = "" ] ; then echo -en "RESULTS=\$RUNPATH\"$RESULTS\" " >> $FILE ; fi
 if [ ! "$ANALYSIS" = "" ] ; then echo -en "ANALYSIS_OUTPUT=\$RUNPATH\"$ANALYSIS\" " >> $FILE ; fi
 if [ ! "$EVENTS" = "" ] ; then echo -en "EVENTS=$EVENTS " >> $FILE ; fi
-if [ ! "$PYTHIA" = "" ] ; then echo -en "PYTHIA=$PYTHIA " >> $FILE ; fi
 if [ ! "$OPTIONS" = "" ] ; then echo -en "$OPTIONS " >> $FILE ; fi
 echo -e ">> \$RUNPATH\$LOGFILE 2>&1 \n\n" >> $FILE
 
 chmod 777 $FILE
-if [ "$QUEUE" = "TRUE" ] ; then
+if [ "$SUBMIT" = "TRUE" ] ; then
   qsub $FILE  
 else
   ( nohup $FILE > /dev/null & ) 
