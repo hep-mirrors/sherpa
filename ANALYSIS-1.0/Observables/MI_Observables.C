@@ -922,3 +922,52 @@ Primitive_Observable_Base *Scalar_ET_Sum_vs_Eta::Copy() const
 				  m_jetlist,m_listname);
 }
 
+DEFINE_OBSERVABLE_GETTER(MIScale_vs_JetPT,
+			 MIScale_vs_JetPT_Getter,"MISvsJetPT");
+
+MIScale_vs_JetPT::
+MIScale_vs_JetPT(const int type,
+		      const double ptmin,const double ptmax,
+		      const int nbins,const std::string &jetlist,
+		      const std::string &listname):
+  Primitive_Observable_Base(type,ptmin,ptmax,nbins,NULL),
+  m_jetlist(jetlist),
+  m_histogram(1)
+{
+  m_listname=listname;
+  m_name="MIScale"+m_listname+"_vs_PT"+m_jetlist+".dat";
+  m_histogram.Initialize(m_xmin,m_xmax,m_nbins);
+  m_splitt_flag=false;
+}
+    
+void MIScale_vs_JetPT::Evaluate(const ATOOLS::Blob_List &bloblist, 
+				double weight,int ncount)
+{
+  ATOOLS::Particle_List *jetlist=p_ana->GetParticleList(m_jetlist);
+  if (jetlist->size()==0) return;
+  SORT_LIST(jetlist,Order_PT);
+  double ptjet=(*jetlist)[0]->Momentum().PPerp();
+  for (ATOOLS::Blob_List::const_iterator bit=bloblist.begin();
+       bit!=bloblist.end();++bit)
+    if ((*bit)->Type()==ATOOLS::btp::Hard_Collision) {
+      ATOOLS::Blob_Data_Base *info=(*(*bit))["MI_Scale"];
+      if (info!=NULL) {
+	double scale=info->Get<double>();
+	m_histogram.Add(ptjet,scale*weight);
+	m_histogram.AddBinExtra(ptjet,weight);
+      }
+      break;
+    }
+}
+    
+void MIScale_vs_JetPT::EndEvaluation(double scale)
+{
+  FINISH_HISTOGRAM;
+}
+
+Primitive_Observable_Base *MIScale_vs_JetPT::Copy() const
+{
+  return new MIScale_vs_JetPT(m_type,m_xmin,m_xmax,m_nbins,
+				   m_jetlist,m_listname);
+}
+

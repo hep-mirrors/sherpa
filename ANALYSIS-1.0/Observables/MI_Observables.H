@@ -360,6 +360,28 @@ namespace ANALYSIS {
 
   };// end of class Scalar_ET_Sum_vs_Eta
 
+  class MIScale_vs_JetPT: public Primitive_Observable_Base {  
+  private:
+
+    std::string m_jetlist;
+
+    AMISIC::Amisic_Histogram<double> m_histogram;
+    
+  public:
+
+    MIScale_vs_JetPT(const int type,
+			  const double ptmin,const double ptmax,
+			  const int nbins,const std::string &jetlist,
+			  const std::string &listname);
+    
+    void Evaluate(const ATOOLS::Blob_List & blobs,double value,int ncount);
+    
+    Primitive_Observable_Base *Copy() const;
+
+    void EndEvaluation(double scale);
+
+  };// end of class MIScale_vs_JetPT
+
 }// end of namespace ANALYSIS
 
 #endif
