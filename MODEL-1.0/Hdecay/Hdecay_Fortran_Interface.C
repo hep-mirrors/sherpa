@@ -72,7 +72,25 @@ void Hdecay_Fortran_Interface::Run(std::string _mode) {
   delete [] couplings;
 }
 
-void Hdecay_Fortran_Interface::CalculateEffectiveCouplings(std::string _mode) {}
+void Hdecay_Fortran_Interface::CalculateEffectiveCouplings(std::string _mode) 
+{
+  if (_mode==std::string("SM")) {
+    double * brff = new double[9];
+    double * brVV = new double[5];
+    double hwidth;
+    hdecaysm_(brff,brVV,hwidth);
+
+    Flavour  higgs = Flavour(kf::h);
+    higgs.SetWidth(hwidth);
+    double hggw=brVV[1]*hwidth;
+    double ceff=sqrt(64.*M_PI*hggw/(hmass*hmass*hmass));
+    std::cout<<"HIGGS->PP width: "<<hggw<<" "<<hwidth<<" "<<hmass<<std::endl;
+    p_model->GetScalarConstants()->insert(std::make_pair(std::string("HIGGS_GG_EFF"),ceff));
+
+    delete [] brff;
+    delete [] brVV;
+  }
+}
 
 bool Hdecay_Fortran_Interface::FillDecay(Decay_Table * dt) {
   Flavour  higgs = dt->Flav();
