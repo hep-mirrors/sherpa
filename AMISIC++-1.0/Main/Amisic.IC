@@ -4,15 +4,32 @@
 #include "Amisic.H"
 
 namespace AMISIC {
-
-  template <class Argument_Type,class Result_Type>
-  inline Grid_Handler<Argument_Type,Result_Type> *Amisic::
-  Grid_Creator<Argument_Type,Result_Type>::RelevantGrid()
-  { if (p_gridhandler.size()>0) return p_gridhandler[0]; else return NULL; }
 	
   template <class Argument_Type,class Result_Type>
+  bool Amisic::Grid_Creator<Argument_Type,Result_Type>::CreateInitialGrid()
+  { return InitializeSingleGrid(p_gridhandler[0]); }
+
+  template <class Argument_Type,class Result_Type>
   inline bool Amisic::Grid_Creator<Argument_Type,Result_Type>::CreateOptimizedGrid()
-  { return OptimizeSingleGrid(RelevantGrid()); }
+  { return OptimizeSingleGrid(p_gridhandler[0]); }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Amisic::Grid_Creator<Argument_Type,Result_Type>::
+  SetMaxExtension(std::string _m_maxextension)
+  { m_maxextension=_m_maxextension; }
+
+  template <class Argument_Type,class Result_Type>
+  inline std::string Amisic::Grid_Creator<Argument_Type,Result_Type>::MaxExtension()
+  { return m_maxextension; }
+
+  template <class Argument_Type,class Result_Type>
+  inline void Amisic::Grid_Creator<Argument_Type,Result_Type>::
+  SetXSExtension(std::string _m_xsextension)
+  { m_xsextension=_m_xsextension; }
+
+  template <class Argument_Type,class Result_Type>
+  inline std::string Amisic::Grid_Creator<Argument_Type,Result_Type>::XSExtension()
+  { return m_xsextension; }
 
   inline void Amisic::SetInputFile(std::string _m_inputfile)
   { m_inputfile=_m_inputfile; }
@@ -26,17 +43,17 @@ namespace AMISIC {
   inline std::string Amisic::EnvironmentFile()
   { return m_environmentfile; }
 
-  inline void Amisic::SetInputDirectory(std::string _m_inputdirectory)
-  { m_inputdirectory=_m_inputdirectory; }
+  inline void Amisic::SetInputPath(std::string _m_inputpath)
+  { m_inputpath=_m_inputpath; }
 
-  inline std::string Amisic::InputDirectory()
-  { return m_inputdirectory; }
+  inline std::string Amisic::InputPath()
+  { return m_inputpath; }
 
-  inline void Amisic::SetOutputDirectory(std::string _m_outputdirectory)
-  { m_outputdirectory=_m_outputdirectory; }
+  inline void Amisic::SetOutputPath(std::string _m_outputpath)
+  { m_outputpath=_m_outputpath; }
 
-  inline std::string Amisic::OutputDirectory()
-  { return m_outputdirectory; }
+  inline std::string Amisic::OutputPath()
+  { return m_outputpath; }
 
   inline void Amisic::SetStart(GridArgumentType _m_start)
   { m_start=_m_start; }

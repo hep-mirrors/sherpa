@@ -7,6 +7,16 @@ namespace AMISIC {
 
   template <class Argument_Type,class Result_Type>
   inline void Grid_Creator_Base<Argument_Type,Result_Type>::
+  SetInputPath(std::string _m_inputpath)
+  { m_inputpath=_m_inputpath; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline std::string Grid_Creator_Base<Argument_Type,Result_Type>::
+  InputPath()
+  { return m_inputpath; }
+  
+  template <class Argument_Type,class Result_Type>
+  inline void Grid_Creator_Base<Argument_Type,Result_Type>::
   SetInputFile(std::string _m_inputfile)
   { m_inputfile=_m_inputfile; }
   

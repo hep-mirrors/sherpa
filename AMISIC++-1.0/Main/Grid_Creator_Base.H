@@ -77,54 +77,54 @@ namespace AMISIC {
 
   protected:
 
-    GridHandlerVector p_gridhandler;
-
     virtual bool InitializeCalculation();
     virtual unsigned int CreateSinglePoint(GridArgumentType *boundary,
 					   bool newpoint=true,bool force=false);
 
-    bool         OptimizeSingleGrid(GridHandlerType *grid);
+    bool InitializeSingleGrid(GridHandlerType *grid);
+    bool OptimizeSingleGrid(GridHandlerType *grid);
+
+    virtual bool CreateInitialGrid();
     virtual bool CreateOptimizedGrid();
 
-    virtual GridHandlerType *RelevantGrid();
-    
-    bool WriteOutSingleGrid(GridHandlerType *grid,std::vector<std::string> addcomments);
+    bool ReadSingleArguments(GridHandlerType *grid);
+    bool WriteSingleGrid(GridHandlerType *grid,std::vector<std::string> addcomments);
 
   private:
 
-    std::string m_inputfile, m_outputpath, m_outputfile;
-
-    bool CreateInitialGrid();
+    std::string m_inputpath, m_inputfile, m_outputpath, m_outputfile;
 
   public:
 
     // constructors
-    Grid_Creator_Base(GridHandlerVector _p_gridhandler);
+    Grid_Creator_Base();
 
     // destructor
     virtual ~Grid_Creator_Base();
     
     // setters
+    void SetInputPath(std::string _m_outputfile);
     void SetInputFile(std::string _m_outputfile);
     void SetOutputPath(std::string _m_outputpath);
     void SetOutputFile(std::string _m_outputfile);
-    bool SetArguments(ArgumentsType _m_arguments);
+    bool SetArguments(GridHandlerType *grid,ArgumentsType _m_arguments);
 
     // getters
+    std::string InputPath();
     std::string InputFile();
     std::string OutputPath();
     std::string OutputFile();
     ArgumentsType Arguments();
 
     // member functions
-    bool ReadInArguments(std::string tempifile=ATOOLS::nullstring);
-    bool CreateGrid(std::string tempofile=ATOOLS::nullstring,
-		    std::string tempopath=ATOOLS::nullstring);
-
+    virtual bool ReadInArguments(std::string tempifile=ATOOLS::nullstring,
+				 std::string tempipath=ATOOLS::nullstring);
     virtual bool WriteOutGrid(std::vector<std::string> addcomments=std::vector<std::string>(0),
 			      std::string tempofile=ATOOLS::nullstring,
 			      std::string tempopath=ATOOLS::nullstring);
     
+    bool CreateGrid();
+
   }; // end of class Grid_Creator_Base
 
 } // end of namespace AMISIC
