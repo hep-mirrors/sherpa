@@ -30,6 +30,7 @@ namespace ATOOLS {
     void Output(const std::string);
     void Finalize();
     void Restore();
+    double Mean() const;
     double * Bin(int i);
     double * Bin(double x);
     void Extrapolate(double x, double * ys,int mode);

@@ -200,6 +200,19 @@ void Histogram::Restore() {
   }
 }
 
+double Histogram::Mean() const
+{
+  double sum=0., range=0.;
+  for (int i=1;i<m_nbin-1;++i) {
+    double width=(m_upper-m_lower)/m_nbin;
+    if (m_logarithmic) 
+      width=pow(m_logbase,m_lower+i*width)-pow(m_logbase,m_lower+(i-1)*width);  
+    sum+=m_bins[i][0]*width;
+    range+=width;
+  }
+  return sum/range;
+}
+
 void Histogram::Reset() {
   for (int i=0;i<m_nbin;i++) { 
     m_bins[i][0]=0.;
