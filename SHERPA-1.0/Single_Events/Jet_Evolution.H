@@ -15,7 +15,7 @@ namespace SHERPA {
   public :
     Jet_Evolution(Matrix_Element_Handler *,Shower_Handler *);
     ~Jet_Evolution();
-    bool Treat(APHYTOOLS::Blob_List *);
+    bool Treat(APHYTOOLS::Blob_List *, double &);
     void CleanUp();
   };
 }

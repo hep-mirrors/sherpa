@@ -20,7 +20,7 @@ Signal_Processes::~Signal_Processes()
 }
 
 
-bool Signal_Processes::Treat(Blob_List * _bloblist)
+bool Signal_Processes::Treat(Blob_List * _bloblist, double & weight)
 {
   if (_bloblist->size()>1) return 0;
   if (_bloblist->empty()) {
@@ -45,6 +45,7 @@ bool Signal_Processes::Treat(Blob_List * _bloblist)
 	found  = 1;
 	if (p_mehandler->GenerateOneEvent()) {
 	  FillBlob(myblob);
+	  weight=p_mehandler->Weight();
 	  hit = 1;
 	}
       }
@@ -54,6 +55,7 @@ bool Signal_Processes::Treat(Blob_List * _bloblist)
 	found  = 1;
 	if (p_mehandler->GenerateSameEvent()) {
 	  FillBlob(myblob);
+	  weight=p_mehandler->Weight();
 	  hit = 1;
 	}
       }

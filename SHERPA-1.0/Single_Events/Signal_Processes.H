@@ -13,7 +13,7 @@ namespace SHERPA {
   public :
     Signal_Processes(Matrix_Element_Handler *);
     ~Signal_Processes();
-    bool Treat(APHYTOOLS::Blob_List *);
+    bool Treat(APHYTOOLS::Blob_List *, double &);
     void CleanUp();
   };
 }

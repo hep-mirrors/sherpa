@@ -16,8 +16,6 @@ Event_Handler::Event_Handler() :
 
 Event_Handler::~Event_Handler() 
 {
-  std::cout<<"in  Event_Handler::~Event_Handler() "<<std::endl;
-
   CleanUpEvent();
   EmptyEventPhases();
   
@@ -67,6 +65,7 @@ bool Event_Handler::GenerateEvent()
   m_blobs.push_back(hardblob);
 
   bool flag = 1;
+  double weight=1.;
   msg.Debugging()<<"#################################################################"<<std::endl
 		 <<"#################################################################"<<std::endl;
   while (flag) {
@@ -75,7 +74,7 @@ bool Event_Handler::GenerateEvent()
       if ((*pit)->Type()==std::string("Perturbative")) {
 	msg.Debugging()<<"#############"<<std::endl
 		       <<"   Try "<<(*pit)->Name()<<" : "<<m_blobs.size()<<std::endl;
-	if ((*pit)->Treat(&m_blobs)) flag = 1;
+	if ((*pit)->Treat(&m_blobs,weight)) flag = 1;
       }
     }
   }
@@ -87,7 +86,7 @@ bool Event_Handler::GenerateEvent()
       if ((*pit)->Type()==std::string("Hadronization")) {
 	msg.Debugging()<<"#############"
 		       <<"   Try "<<(*pit)->Name()<<" : "<<m_blobs.size()<<std::endl;
-	if ((*pit)->Treat(&m_blobs)) flag = 1;
+	if ((*pit)->Treat(&m_blobs,weight)) flag = 1;
       }
     }
   }

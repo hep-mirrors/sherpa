@@ -17,7 +17,7 @@ namespace SHERPA {
   public :
     Event_Phase_Handler();
     virtual ~Event_Phase_Handler();
-    virtual bool Treat(APHYTOOLS::Blob_List *) = 0;
+    virtual bool Treat(APHYTOOLS::Blob_List *, double &) = 0;
     virtual void CleanUp()                     = 0;
     virtual std::string              Type();
     virtual void                     SetType(std::string);

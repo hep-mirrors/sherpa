@@ -13,7 +13,7 @@ namespace SHERPA {
   public :
     Hadronization(Beam_Remnant_Handler *,Fragmentation_Handler *);
     ~Hadronization();
-    bool Treat(APHYTOOLS::Blob_List *);
+    bool Treat(APHYTOOLS::Blob_List *, double &);
     void CleanUp();
   };
 }

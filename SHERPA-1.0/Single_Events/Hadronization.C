@@ -20,7 +20,7 @@ Hadronization::~Hadronization() {
   if (p_fragmentationhandler) { delete p_fragmentationhandler; p_fragmentationhandler = NULL; }
 }
 
-bool Hadronization::Treat(APHYTOOLS::Blob_List * _bloblist) {
+bool Hadronization::Treat(APHYTOOLS::Blob_List * _bloblist, double &) {
   if (_bloblist->empty()) {
     msg.Error()<<"Potential error in Hadronization::Treat."<<endl
 	       <<"   Incoming blob list contains "<<_bloblist->size()<<" entries."<<endl
