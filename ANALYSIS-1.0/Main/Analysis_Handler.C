@@ -113,7 +113,7 @@ bool Analysis_Handler::ReadIn()
   reader.SetMatrixType(reader.MTransposed);
   reader.SetInputPath(InputPath());
   reader.SetInputFile(InputFile());
-  reader.AddComment("!");
+  //  reader.AddComment("!");
   reader.AddComment("%");
   reader.AddComment("//");
   reader.AddIgnore("+");
