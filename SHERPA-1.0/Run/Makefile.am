@@ -48,7 +48,7 @@ ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg
 PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lLHAPDF -lCTEQ -lMRST -lGRV
 ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
 BEAMLIBS      =	-L@libdir@ -lBeam 
-PHASICLIBS    =	-L@libdir@ -lPhasespace -lFoam
+PHASICLIBS    =	-L@libdir@ -lPhasespace 
 MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
 EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
 if AMISIC_SUPPORT
