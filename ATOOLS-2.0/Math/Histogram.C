@@ -178,7 +178,10 @@ void Histogram::Output() {
 }
 
 
-void Histogram::Output(const std::string name) {
+void Histogram::Output(const std::string name) 
+{
+  msg.LogFile()<<"! Histogram::Output(..): "
+	       <<"Writing ("<<this<<") to '"<<name<<"'"<<std::endl;
   std::ofstream ofile;
   ofile.open(name.c_str());
 
