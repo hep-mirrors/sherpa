@@ -37,14 +37,14 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
   m_fnsign       = 1;
   m_fermion_hels = 0;
   p_slist = new Sign_List[m_nsign];
-  ATOOLS::msg.Tracking()<<"*****Helicity "<<p_pol_types<<":"<<endl;
+  ATOOLS::msg.Debugging()<<"*****Helicity "<<p_pol_types<<":"<<endl;
   for (i=0;i<m_nsign;i++) {
       p_slist[i].s         = new int[N];
       p_slist[i].on        = 1;
       p_slist[i].multi     = 1;
       p_slist[i].polfactor = 1.;
       p_slist[i].partner   = -1;
-      ATOOLS::msg.Tracking()<<i<<":";
+      ATOOLS::msg.Debugging()<<i<<":";
        for (j=0;j<N;j++){
 	int div = 1;
 	for (k=0;k<j;k++) div *= pl[k].num;
@@ -53,9 +53,9 @@ Helicity::Helicity(int Nin,int Nout,Flavour* fl,Pol_Info* pl)
 	if(j<Nin)p_slist[i].polfactor *= pl[j].factor[l];
 	Tensor_Struc ts;
 	p_slist[i].polfactor*=ts.GetTfactor(pl[j].type[l]);          //extra factor for spin2 polarisation tensor 
-	ATOOLS::msg.Tracking()<<p_slist[i].s[j]<<";";
+	ATOOLS::msg.Debugging()<<p_slist[i].s[j]<<";";
       } 
-      ATOOLS::msg.Tracking()<<" "<<p_slist[i].polfactor<<endl;
+      ATOOLS::msg.Debugging()<<" "<<p_slist[i].polfactor<<endl;
   }
 
   if (m_fermion_hels) {
@@ -89,6 +89,8 @@ Helicity::~Helicity()
     if (p_fslist) delete [] p_fslist;
   }
   if (p_slist) delete [] p_fslist;
+  delete [] p_pol_types;
+  delete [] p_angles;
 }
 
 

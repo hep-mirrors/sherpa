@@ -27,6 +27,7 @@ namespace AMEGIC {
                  else strp = 0;
     }
     ~sknot() {if (strp!=0) delete strp;}
+    void KillString() {if (strp!=0) delete strp; strp=0;}
     const std::string& Str() const { if (strp!=0) return *strp;return emptystring;}
     void SetString(const std::string& str) {
       if (strp!=0) delete strp;
@@ -47,8 +48,10 @@ namespace AMEGIC {
   };
 
   class String_Tree {
-    sknot zero;
-    std::list<sknot>  sknotlist;
+    static sknot zero;
+    static const int block_size;
+    int    skpos;
+    std::vector<sknot*> sblocks;
     std::list<sknot*> leaflist;
     sknot* Leaf(std::string&,sknot*,int);
    
@@ -70,8 +73,10 @@ namespace AMEGIC {
     
   public:
     String_Tree();
-    void Reset() {sknotlist.clear();}
+    ~String_Tree();
+    void Reset();
     sknot*  newsk(); 
+    void    popsk(); 
     sknot*  String2Tree(std::string,int fixed = 0); 
     Complex eval(sknot*);
     Complex Evaluate(sknot*);
@@ -89,7 +94,7 @@ namespace AMEGIC {
     void    Find(sknot*,const std::string&,int&);
     void    Simplify(sknot*&);
     void    DeleteMinus(sknot* &);
-    int     SknotListSize() {return sknotlist.size();}
+    int     SknotListSize() {return skpos+1;}
     void    Cluster(sknot*,sknot*,int full = 0);
     void    Addends(sknot*,std::list<sknot*> &);
     void    Factors(sknot*,std::list<sknot*> &);

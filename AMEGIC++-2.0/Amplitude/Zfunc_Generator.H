@@ -13,7 +13,7 @@ namespace AMEGIC {
 
   class Zfunc_Generator {
     Zfunc_List zlist;
-    std::vector<Zfunc_Calc*> zcalc;
+    static std::vector<Zfunc_Calc*> zcalc;
     Basic_Sfuncs* BS;
     void  Set_In(Zfunc*,int,Point*,Point*,Point*);
     void  Set_Out(Zfunc*,int,Point*,Point*);
@@ -43,8 +43,9 @@ namespace AMEGIC {
 			          const std::vector<Lorentz_Function*> &,int*);
   public:
     Zfunc_Generator(Basic_Sfuncs* _BS) : BS(_BS) {}
-
-    void BuildZlist(Virtual_String_Generator*,Basic_Sfuncs*);
+    ~Zfunc_Generator();
+    
+    void BuildZlist(Virtual_String_Generator*,Basic_Sfuncs*,int);
     void LorentzConvert(Point*);
     void MarkCut(Point*,int notcut,bool fromfermion=false);
     void Convert(Point*);

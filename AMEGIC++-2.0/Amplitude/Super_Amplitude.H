@@ -7,7 +7,6 @@
 namespace AMEGIC {
   class Super_Amplitude: public Amplitude_Group, public Single_Amplitude_Base {
     std::string str;
-    std::vector<Argument*> arglist;
 
     int     FindNewNumber(int);
     void    ReduceZfuncs(std::string);

@@ -3,6 +3,7 @@
 #include "Zfunc_Calc.H"
 #include "Random.H"
 #include "Run_Parameter.H"
+#include "Amplitude_Generator.H"
 #include "Color_Group.H"
 #include <iostream>
 #include <stdio.h>
@@ -26,9 +27,22 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 {
   groupname = string("All Amplitudes");
 
-  gen = new Amplitude_Generator(N,fl,b,model,top,_orderQCD,_orderEW,BS,shand);
+  Amplitude_Generator * gen = 
+    new Amplitude_Generator(N,fl,b,model,top,_orderQCD,_orderEW,BS,shand);
+
   Single_Amplitude* firstgraph = gen->Matching();
   delete gen;
+
+  bool gen_colors=true;
+  // look for file
+  char name[100];
+  sprintf(name,"%s.col",(string("Process/")+pID).c_str());
+  fstream test;
+  test.open(name,ios::in); 
+  if (test) { 
+    test.close();
+    gen_colors=false;
+  }
 
   Single_Amplitude* n;
   n = firstgraph;
@@ -36,7 +50,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 
   while (n){ 
     ++ngraph;
-    n->Zprojecting(fl,ngraph);
+    n->Zprojecting(fl,ngraph,gen_colors);
     //n->FillCoupling(shand); 
 
     if (n->on) {
@@ -63,7 +77,7 @@ Amplitude_Handler::Amplitude_Handler(int N,Flavour* fl,int* b,Polarisation* pol,
 
 
   //Colors
-  CFCol_Matrix   = new CFColor(N,firstgraph,pID);
+  CFCol_Matrix   = new CFColor(N,firstgraph,gen_colors,pID);
 
   for (int i=0;i<CFCol_Matrix->MatrixSize();i++) graphs.push_back(new Color_Group());
 
@@ -133,15 +147,7 @@ Amplitude_Handler::~Amplitude_Handler()
     delete CFCol_Matrix;
     delete[] probabs;
     delete[] Mi;
-
-    //    for (int i=0;i<graphs.size();i++) delete[] colfactors[i];
-    //    delete[] colfactors;
   }
-  //Single_Amplitude's
-
-  for (int i=0;i<graphs.size();i++) delete graphs[i];
-
-  
 }
 
 int Amplitude_Handler::PropProject(Amplitude_Base* f,int zarg)

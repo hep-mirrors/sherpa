@@ -33,6 +33,7 @@ namespace AMEGIC {
     Graph_Families          family_table;
     std::string             groupname;          
   public:
+    ~Amplitude_Group();
     Complex Zvalue(String_Handler * sh,int ihel) {
       Complex M(0.,0.);
       for (size_t i=0;i<graphs.size();i++) M += graphs[i]->Zvalue(sh, ihel);

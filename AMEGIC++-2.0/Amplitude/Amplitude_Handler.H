@@ -8,7 +8,6 @@
 #include "String_Handler.H"
 #include "MyComplex.H"
 #include "Point.H"
-#include "Amplitude_Generator.H"
 #include "CFColor.H"
 #include "Amplitude_Group.H"
 
@@ -16,7 +15,6 @@ namespace AMEGIC {
   //! This is the master class for the generation and calculation of an amplitude.
   class Amplitude_Handler : public Amplitude_Group {
     CFColor              * CFCol_Matrix;   
-    Amplitude_Generator  * gen;
     int       ngraph,namplitude;
     int       sw_probabs;
     double  * probabs;

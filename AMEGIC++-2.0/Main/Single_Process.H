@@ -66,7 +66,8 @@ namespace AMEGIC {
     bool             NewLibs() {return m_newlib;}
     bool             FoundMappingFile(std::string &);
     int              InitAmplitude(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&,
-				   std::vector<double> &,std::vector<Single_Process *> &);
+				   std::vector<double> &,std::vector<Single_Process *> &
+				   ,int &,int &);
     int              InitAmplitude(Interaction_Model_Base *,Topology *);
     void             InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>);
     void             InitDecay(Topology* top); 
@@ -88,7 +89,6 @@ namespace AMEGIC {
     void             WriteOutXSecs(std::ofstream & _to);
     Process_Base   * operator[] (int idx)               { return this;          }
     std::string      LibName()                          { return m_libname;     }
-    //void             SetLibName(std::string _libname) { libname = _libname;   }
     void             SetTotalXS(int);
     void             SetScale(double _sc)               { m_scale      = _sc;   }
     void             FixISRThreshold();

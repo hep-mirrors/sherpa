@@ -1050,6 +1050,8 @@ int *  Amplitude_Generator::DivideComparisons(int cpu_size, int nampl, int rank)
     if (cpu>0) no=nampl-start_no[cpu-1];
     start_no[cpu]=no;
   }
+  delete [] compare_share;
+
   return start_no;
 }
 

@@ -5,6 +5,8 @@
 #include "Flavour.H"
 #include "Color_Function.H"
 #include "Lorentz_Function.H"
+#include <map>
+#include <vector>
 
 
 namespace AMEGIC {
@@ -153,6 +155,9 @@ namespace AMEGIC {
   
   std::ostream& operator<<(std::ostream&, const Single_Vertex&);
   std::ostream& operator<<(std::ostream&, const Vertex&);
+
+  typedef  std::vector<Single_Vertex *>  Vertex_List;
+  typedef  std::map<ATOOLS::Flavour, Vertex_List> Vertex_Table;
 
  //Format of a Single_Vertex to transport via MPI:
   struct MPI_Single_Vertex {

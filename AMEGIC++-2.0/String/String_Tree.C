@@ -9,20 +9,48 @@ using namespace std;
 
 string sknot::emptystring = string("");
 
+sknot String_Tree::zero;
+const int String_Tree::block_size = 256;
+
 String_Tree::String_Tree() 
 {
   zero.op    = 0;
   zero.SetString(string("0"));
   zero.left  = 0;
   zero.right = 0;
+  skpos       =-1;
+}
+
+String_Tree::~String_Tree() 
+{
+  for (vector<sknot*>::iterator it=sblocks.begin();it!=sblocks.end();++it) 
+    delete[] (*it);
 }
 
 sknot* String_Tree::newsk() 
 { 
-  //sknot newknot;
-  sknotlist.push_back(sknot());
-  return &sknotlist.back();
+  ++skpos;
+  if (skpos%block_size==0) {
+    if (skpos/block_size==sblocks.size()) {
+      sblocks.push_back(new sknot[block_size]);
+    }    
+  }
+
+  return &sblocks[skpos/block_size][skpos%block_size];
 }
+
+void String_Tree::popsk()
+{
+  sblocks[skpos/block_size][skpos%block_size].KillString();
+  --skpos;
+}
+
+void String_Tree::Reset() 
+{
+  for (int i=0;i<=skpos;i++) sblocks[i/block_size][i%block_size].KillString();
+  skpos=-1;
+}
+
 
 sknot* String_Tree::String2Tree(string term,int fixed) 
 {
@@ -152,7 +180,7 @@ sknot* String_Tree::Leaf(string& term,sknot* m,int fixed)
       if ((*it)->op==0) {
 	if ((*it)->Str()==term) {
 	  //kill the last in the list (since it is equal m)
-	  sknotlist.pop_back();
+	  popsk();
 	  return (*it); 
 	}
       }

@@ -27,7 +27,7 @@ Process_Base::Process_Base():
   m_gen_str(3),p_b(0),m_nvec(0),m_nin(0),m_nout(0),p_fl(0),p_flin(0),p_flout(0),
   p_pl(0),p_plin(0),p_plout(0),p_moms(0),p_ps(0),p_beam(0),p_isr(0),p_cuts(0),
   p_sel(0),p_analysis(0),p_selected(0),
-  m_rfactor(1.), m_swaped(0)
+  m_rfactor(1.), m_swaped(0), p_psgen(0)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
@@ -57,7 +57,7 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
   m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),m_scale(_scale),
   m_n(0), m_totalxs(0.), m_totalerr(0.), m_totalsum(0.), m_totalsumsqr(0.), m_rfactor(1.),
   m_last(0.), m_lastdxs(0.), m_max(0.), m_lastlumi(1.),
-  m_atoms(0), m_analyse(0), m_tables(0), m_swaped(0)
+  m_atoms(0), m_analyse(0), m_tables(0), m_swaped(0), p_psgen(0)
 {
   p_flin    = new Flavour[m_nin];
   p_flout   = new Flavour[m_nout];  
@@ -96,7 +96,7 @@ Process_Base::~Process_Base() {
   if (p_plin)     { delete [] p_plin;  p_plin     = 0; }
   if (p_plout)    { delete [] p_plout; p_plout    = 0; }
   if (p_moms)     { delete [] p_moms;  p_moms     = 0; }
-  //if (p_sel)      { delete p_sel;      p_sel      = 0; }
+  if (p_sel)      { delete p_sel;      p_sel      = 0; }
   if (p_cuts)     { delete p_cuts;     p_cuts     = 0; }
   if (p_ps)       { delete p_ps;       p_ps       = 0; }
   if (p_analysis) { delete p_analysis; p_analysis = 0; }

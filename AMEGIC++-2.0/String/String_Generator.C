@@ -198,25 +198,25 @@ Kabbala String_Generator::GetCZnumber(Complex value,string str)
 
   newz.zlist = 6;
 
-  String_Tree st;
-  newz.sk = st.String2Tree(str);
-  st.Delete(newz.sk,string("Z[0]"));
+  m_sthelp.Reset();
+  newz.sk = m_sthelp.String2Tree(str);
+  m_sthelp.Delete(newz.sk,string("Z[0]"));
   
   if (newz.sk->op==0) {
     if (newz.sk->Str()==string("0")) return (*p_zxl)[0].value;
   }
-  st.DeleteMinus(newz.sk);
+  m_sthelp.DeleteMinus(newz.sk);
 
   if (newz.sk->op==0) {
     if (newz.sk->Str()==string("0")) return (*p_zxl)[0].value;
   }
-  string newstr = st.Tree2String(newz.sk,0);
+  string newstr = m_sthelp.Tree2String(newz.sk,0);
   if ( newstr.find(string("+"))==-1 &&
        newstr.find(string("-"))==-1 &&
        newstr.find(string("*"))==-1 ) return Kabbala(newstr,value);
 
-  newz.sk = st.String2Tree(newstr);
-  st.DeleteMinus(newz.sk);
+  newz.sk = m_sthelp.String2Tree(newstr);
+  m_sthelp.DeleteMinus(newz.sk);
   newz.sk = m_stree.Copy(newz.sk,0);
   newz.value = Number((*p_zxl).size(),value);
   (*p_zxl).push_back(newz);

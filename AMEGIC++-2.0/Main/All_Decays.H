@@ -12,9 +12,7 @@
 #include <deque>
 
 namespace AMEGIC {
-  typedef std::vector<Single_Vertex *>           VertexList;
-  typedef std::map<ATOOLS::Flavour, Vertex_List> VertexTable;
-  typedef VertexTable::iterator                  VTIterator;
+  typedef Vertex_Table::iterator                  VTIterator;
 
   typedef std::map<ATOOLS::Flavour, Full_Decay_Table *> DecayMap;
   typedef DecayMap::iterator                            DMIterator;
@@ -25,7 +23,7 @@ namespace AMEGIC {
   private :
     Interaction_Model_Base * p_model;
     Topology               * p_top;
-    VertexTable              m_vertextable;
+    Vertex_Table             m_vertextable;
     ATOOLS::FlavourSet       m_particles;
     DecayMap                 m_decays;
     Full_Decay_Channel     * p_decay;

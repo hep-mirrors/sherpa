@@ -291,10 +291,12 @@ void Amplitude_Manipulator::ForwardLineOrientation(Point* p,int& sign)
     if (p->right->fl.Majorana())  majo++;
 
     if (vect==1 && ferm==2 && majo!=2) {
+      /*
       Complex h = p->cpl[0];
       p->cpl[0] = -p->cpl[1];
       p->cpl[1] = -h;
-    }    
+      */
+      }    
   }
 
   if (minus==-1) {

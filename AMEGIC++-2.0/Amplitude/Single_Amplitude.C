@@ -109,8 +109,8 @@ Single_Amplitude::~Single_Amplitude()
     delete sd2;
   }
   
-  delete CFlist;
-  delete CCFlist;
+  if (CFlist)  delete CFlist;
+  if (CCFlist) delete CCFlist;
 
 }
 
@@ -173,22 +173,24 @@ void Single_Amplitude::PrintGraph()
   ATOOLS::msg.Out()<<"Overall sign "<<sign<<endl;
 }
 
-void Single_Amplitude::Zprojecting(Flavour* fl,int ngraph)
+void Single_Amplitude::Zprojecting(Flavour* fl,int ngraph,bool gc)
 {
   CFlist  = NULL;
   CCFlist = NULL;
   
-  Color_Generator cgen;
-  cgen.CFConvert(Pointlist);  
-  cgen.CFKill();
-  cgen.CFBuildString(N);  
-  CFlist  = cgen.Get_CF();
-  CCFlist = cgen.Get_CCF();
-  CFColstring = cgen.CF2String(CFlist);
-  CFColstringC = cgen.CF2String(CCFlist);
-        
+  if (gc){
+    Color_Generator cgen;
+    cgen.CFConvert(Pointlist);  
+    cgen.CFKill();
+    cgen.CFBuildString(N);  
+    CFlist  = cgen.Get_CF();
+    CCFlist = cgen.Get_CCF();
+    CFColstring = cgen.CF2String(CFlist);
+    CFColstringC = cgen.CF2String(CCFlist);
+  }        
+
   Zfunc_Generator zgen(BS);
-  zgen.BuildZlist(shand->Get_Generator(),BS);
+  zgen.BuildZlist(shand->Get_Generator(),BS,ngraph);
   zgen.LorentzConvert(Pointlist);
   zgen.MarkCut(Pointlist,0);
   zgen.Convert(Pointlist);

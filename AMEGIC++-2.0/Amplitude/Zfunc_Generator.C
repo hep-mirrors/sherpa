@@ -15,34 +15,43 @@ using namespace std;
 
 extern int iabs(int&);
 
-void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS)
+Zfunc_Generator::~Zfunc_Generator() {}
+
+std::vector<Zfunc_Calc*> Zfunc_Generator::zcalc;
+
+void Zfunc_Generator::BuildZlist(Virtual_String_Generator* _sgen,Basic_Sfuncs* _BS, int ngraph)
 {
-  zcalc.push_back(new Y_Calc(_sgen,_BS));
-  zcalc.push_back(new Z_Calc(_sgen,_BS));
-  zcalc.push_back(new VVV_Calc(_sgen,_BS));
-  zcalc.push_back(new VVVV_Calc(_sgen,_BS));
-  zcalc.push_back(new V4_Calc(_sgen,_BS));
-  zcalc.push_back(new G4_Calc(_sgen,_BS));
-  zcalc.push_back(new V5_Calc(_sgen,_BS));
-  zcalc.push_back(new V4V3_Calc(_sgen,_BS));
-  zcalc.push_back(new VVS_Calc(_sgen,_BS));
-  zcalc.push_back(new SSV_Calc(_sgen,_BS));
-  zcalc.push_back(new SSS_Calc(_sgen,_BS));
-  zcalc.push_back(new VVSS_Calc(_sgen,_BS));
-  zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
-  zcalc.push_back(new SSSS_Calc(_sgen,_BS));
-  
-  if(rpa.gen.Model()==ATOOLS::Model_Type::ADD){
-    zcalc.push_back(new FFT_Calc(_sgen,_BS));
-    zcalc.push_back(new VVT_Calc(_sgen,_BS));
-    zcalc.push_back(new SST_Calc(_sgen,_BS));
-    zcalc.push_back(new FFVT_Calc(_sgen,_BS));
-    zcalc.push_back(new VVVT_Calc(_sgen,_BS));
-    zcalc.push_back(new SSST_Calc(_sgen,_BS));
-    zcalc.push_back(new FFGS_Calc(_sgen,_BS));
-    zcalc.push_back(new VVGS_Calc(_sgen,_BS));
-    zcalc.push_back(new SSGS_Calc(_sgen,_BS));
-    zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
+  if (ngraph==1) {
+    for (size_t i=0;i<zcalc.size();i++) delete zcalc[i];
+    zcalc.clear();
+    
+    zcalc.push_back(new Y_Calc(_sgen,_BS));
+    zcalc.push_back(new Z_Calc(_sgen,_BS));
+    zcalc.push_back(new VVV_Calc(_sgen,_BS));
+    zcalc.push_back(new VVVV_Calc(_sgen,_BS));
+    zcalc.push_back(new V4_Calc(_sgen,_BS));
+    zcalc.push_back(new G4_Calc(_sgen,_BS));
+    zcalc.push_back(new V5_Calc(_sgen,_BS));
+    zcalc.push_back(new V4V3_Calc(_sgen,_BS));
+    zcalc.push_back(new VVS_Calc(_sgen,_BS));
+    zcalc.push_back(new SSV_Calc(_sgen,_BS));
+    zcalc.push_back(new SSS_Calc(_sgen,_BS));
+    zcalc.push_back(new VVSS_Calc(_sgen,_BS));
+    zcalc.push_back(new VVSS4_Calc(_sgen,_BS));
+    zcalc.push_back(new SSSS_Calc(_sgen,_BS));
+    
+    if(rpa.gen.Model()==ATOOLS::Model_Type::ADD){
+      zcalc.push_back(new FFT_Calc(_sgen,_BS));
+      zcalc.push_back(new VVT_Calc(_sgen,_BS));
+      zcalc.push_back(new SST_Calc(_sgen,_BS));
+      zcalc.push_back(new FFVT_Calc(_sgen,_BS));
+      zcalc.push_back(new VVVT_Calc(_sgen,_BS));
+      zcalc.push_back(new SSST_Calc(_sgen,_BS));
+      zcalc.push_back(new FFGS_Calc(_sgen,_BS));
+      zcalc.push_back(new VVGS_Calc(_sgen,_BS));
+      zcalc.push_back(new SSGS_Calc(_sgen,_BS));
+      zcalc.push_back(new FFVGS_Calc(_sgen,_BS));  
+    }
   }
 }
 

@@ -28,6 +28,12 @@ public:
   }
 };
 
+Amplitude_Group::~Amplitude_Group()
+{
+  for (int i=0;i<graphs.size();i++) delete graphs[i];
+  graphs.clear();
+}
+
 Graph_Family *  Amplitude_Group::FindFamily(int zn, int tn, int pn) {
   for (Graph_Families::iterator git=family_table.begin(); git!=family_table.end();++git) {
     if (((*git)->znumber==zn) && ((*git)->topnumber==tn) && ((*git)->permnumber==pn)) {

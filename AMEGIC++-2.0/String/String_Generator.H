@@ -84,7 +84,7 @@ namespace AMEGIC {
     std::vector<ZXlist>  * p_zxl,       * p_zxlsave;
     std::vector<Complex> * p_couplings, * p_couplingssave;
     std::vector<int>     * p_flavours,  * p_flavourssave;
-    String_Tree            m_stree;
+    String_Tree            m_stree,m_sthelp;
     bool                   m_copied;
     int  ZXCount(); 
     int  ZNumber(int *,int *);

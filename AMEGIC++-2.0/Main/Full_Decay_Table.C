@@ -90,6 +90,8 @@ bool Full_Decay_Table::InitAllDecays(Interaction_Model_Base * _model,Topology * 
   Vec4D * moms = NULL;
   vector<double> results;
   vector<Single_Process *> links;
+  int totalsize = 0;
+  int procs     = 0;
 
   bool okay = 1;
   for (int i=0;i<m_decaymodes.size();i++) {
@@ -97,7 +99,7 @@ bool Full_Decay_Table::InitAllDecays(Interaction_Model_Base * _model,Topology * 
     if (moms) { delete [] moms; moms = NULL; }
     results.clear();
     links.clear();
-    okay = okay && m_decaymodes[i]->InitAmplitude(_model,_top,moms,results,links);
+    okay = okay && m_decaymodes[i]->InitAmplitude(_model,_top,moms,results,links,totalsize,procs);
     for (int j=0;j<results.size();j++) {
       msg.Tracking()<<"Set up integrator of "<<j<<" : "<<links[j]->Name()<<endl;
       if (!(links[j]->SetUpIntegrator())) okay = 0;

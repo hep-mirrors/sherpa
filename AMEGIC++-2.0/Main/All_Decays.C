@@ -39,7 +39,7 @@ void All_Decays::PrintDecayings()
 
 bool All_Decays::CheckInVertex(Flavour flav)
 {
-  VertexList & vertexlist = m_vertextable[flav];
+  Vertex_List & vertexlist = m_vertextable[flav];
   if (vertexlist.size()>0) return 1;
   return 0;
 }
@@ -90,7 +90,7 @@ bool All_Decays::InitializeDecayTables() {
 
 void All_Decays::BinaryDecays()
 {
-  VertexList           vertexlist;
+  Vertex_List           vertexlist;
   Flavour              flavs[3];
   Full_Decay_Table   * dt;
   Full_Decay_Channel * dc;
@@ -131,7 +131,7 @@ void All_Decays::BinaryDecays()
 
 void All_Decays::ThreeBodyDecays()
 {
-  VertexList           primarylist,secondarylist;
+  Vertex_List           primarylist,secondarylist;
   Flavour              primaries[3],flavs[3];
   Full_Decay_Table   * dt;
   Full_Decay_Channel * dc;

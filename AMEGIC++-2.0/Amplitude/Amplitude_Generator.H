@@ -10,9 +10,6 @@
 #include "Basic_Sfuncs.H"
 #include "String_Handler.H"
 
-#include <map>
-#include <vector>
-
 //#define _USE_MPI_
 //#ifdef _USE_MPI_
 //#include <mpi++.h>
@@ -30,8 +27,6 @@ namespace AMEGIC {
   };
 
 
-  typedef  std::vector<Single_Vertex *>  Vertex_List;
-  typedef  std::map<ATOOLS::Flavour, Vertex_List> Vertex_Table;
   typedef  std::vector<Pre_Amplitude> Pre_Ampl_List;
 
 
@@ -49,6 +44,7 @@ namespace AMEGIC {
     MPI_Point    * buff;
     int          * counters;
     int            nbuff;
+
     Mpi_Tag::code  tag;
 #ifdef _USE_MPI_
     MPI::Request   req;

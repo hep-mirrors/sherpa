@@ -113,26 +113,26 @@ void String_Handler::KillStrings()
     for (short int i=0;i<maxgraph;i++) delete[] stringsk[i];
     delete[] stringsk;
   }
+  stringsk = NULL;
 }
 
 void String_Handler::Set_String(const int &igraph,const int &ihel,
 				const string& str)
 {
   if (gen_str==0 || val!=0 || working==1) return;
-  String_Tree st;
-  sknot* shelp = st.String2Tree(str);
-  st.Delete(shelp,string("Z[0]"));
-  st.DeleteMinus(shelp);
+  sthelp.Reset();
+  sknot* shelp = sthelp.String2Tree(str);
+  sthelp.Delete(shelp,string("Z[0]"));
+  sthelp.DeleteMinus(shelp);
 
-  stringsk[igraph][ihel] = st.Tree2String(shelp,0);
+  stringsk[igraph][ihel] = sthelp.Tree2String(shelp,0);
 }
 
 sknot* String_Handler::MakeSknotAFill(string & str)
 {
-  String_Tree st;
-  
-  sknot* shelp = st.String2Tree(str);
-  st.DeleteMinus(shelp);
+  sthelp.Reset();
+  sknot* shelp = sthelp.String2Tree(str);
+  sthelp.DeleteMinus(shelp);
   shelp = stree.Copy(shelp,1);
 
   list<sknot*> endpoint;

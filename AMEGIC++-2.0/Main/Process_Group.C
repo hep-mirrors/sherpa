@@ -582,20 +582,22 @@ void Process_Group::SetAtoms(bool _atoms) { m_atoms = _atoms; }
   ----------------------------------------------------------------------------------*/
 
 int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,Vec4D *& testmoms,
-				 vector<double> & results,vector<Single_Process *> & links)
+				 vector<double> & results,vector<Single_Process *> & links,
+				 int & totalsize, int & procs)
 {
   int okay = 1;
   vector <string> deletethem;
+
   for (int i=0;i<m_procs.size();i++) {
     msg.Debugging()<<"========================================================="<<endl
 		   <<"========================================================="<<endl
 		   <<"Process_Group::InitAmplitude for "<<m_procs[i]->Name()<<endl;
     if (m_atoms) { delete [] testmoms; testmoms = 0; }
-    switch (m_procs[i]->InitAmplitude(model,top,testmoms,results,links)) {
+
+    switch (m_procs[i]->InitAmplitude(model,top,testmoms,results,links,totalsize,procs)) {
     case -2 : 
       msg.Error()<<"Error in creation of amplitude "<<m_procs[i]->Name()<<endl;
-      deletethem.push_back(m_procs[i]->Name());
-      break;
+      return -2;
     case -1 : 
       msg.Debugging()<<"No diagrams or amplitudes for "<<m_procs[i]->Name()<<endl
 		     <<"   delete it."<<endl;
@@ -625,6 +627,13 @@ int Process_Group::InitAmplitude(Interaction_Model_Base * model,Topology * top,V
       i--;
       m_procs.pop_back();
     }
+  }
+
+  if (okay==0) {
+    links.clear();
+    results.clear();
+    for (int i=0;i<m_procs.size();i++) if (m_procs[i]) delete (m_procs[i]); 
+    m_procs.clear();
   }
 
   msg.Debugging()<<"Process_Group::Initialize Amplitude for "<<m_name;

@@ -8,7 +8,6 @@
 
 #include "Running_AlphaS.H"
 #include "Combined_Selector.H"
-
 #include "prof.hh"
 
 using namespace AMEGIC;
@@ -77,6 +76,7 @@ Single_Process::~Single_Process()
   if (p_BS)       {delete p_BS;   p_BS=0;}
   if (p_shand)    {delete p_shand;p_shand=0;}
   if (p_ampl)     {delete p_ampl; p_ampl=0;}
+  if (p_psgen)    {delete p_psgen; p_psgen=0;}
 }
 
 /*------------------------------------------------------------------------------
@@ -152,7 +152,8 @@ void Single_Process::FixISRThreshold()
 
 
 int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,Vec4D *& _testmoms,
-				  vector<double> & results,vector<Single_Process *> & links)
+				  vector<double> & results,vector<Single_Process *> & links,
+				  int & totalsize, int & procs)
 {
   if (_testmoms==0) {
     string model_name = model->Name();
@@ -193,9 +194,9 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
+  procs++;
   m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
   p_BS->Initialize();
-  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
 
   switch (Tests(result)) {
   case 2 : 
@@ -209,6 +210,7 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
     if (p_partner==this) {
       results.push_back(result);
       links.push_back(this);
+      totalsize ++;
     }
     Minimize();
     return 1;
@@ -220,6 +222,11 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 	break;
       } 
     }
+    if (p_partner==this) {
+      results.push_back(result);
+      links.push_back(this);
+      totalsize ++;
+    }
     if (CheckLibraries(result)) return 1;
     for (int j=0;j<results.size();j++) {
       if (ATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
@@ -228,11 +235,13 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 	}
       }
     }
-    // if (p_partner==this) {
-    results.push_back(result);
-    links.push_back(this);
-      // }
+    if (p_partner!=this) {
+      results.push_back(result);
+      links.push_back(this);
+      totalsize ++;
+    }
     WriteLibrary();
+    SetUpIntegrator();
     return 0;
   default :
     msg.Error()<<"Error in Single_Process::InitAmplitude : Failed for "<<m_name<<"."<<endl;
@@ -258,7 +267,6 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
   }
   m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
   p_BS->Initialize();
-  p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
 
   double result;
   switch (Tests(result)) {
@@ -293,7 +301,8 @@ int Single_Process::Tests(double & result) {
       gauge_test = string_test = 0;
     }
   }
-  
+  else p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
+
   p_ampl->SetStringOff();
 
   double M2 = 0.;
@@ -326,7 +335,6 @@ int Single_Process::Tests(double & result) {
   // To prepare for the string test.
   p_ampl->SetStringOn();
   (p_shand->Get_Generator())->Reset(1);
-  
   /* ---------------------------------------------------
      
   First test : gauge test
@@ -410,7 +418,7 @@ int Single_Process::Tests(double & result) {
 	       <<"Cross check (T) : "<<abs(M2/M2g-1.)*100.<<"%"<<endl;
       msg.Out()<<"WARNING: Library cross check not satisfied: "
 	       <<M2<<" vs. "<<M2g<<"  difference:"<<abs(M2/M2g-1.)*100.<<"%"<<endl;
-      if (!ATOOLS::IsZero(M2)) return 0;
+      if (M2g>1.E-40) return 0;
       msg.Out()<<"         assuming numerical reasons, continuing "<<endl;
     } 
     else {
@@ -490,7 +498,7 @@ int Single_Process::CheckLibraries(double result) {
     testname  = CreateLibName()+string("_")+string(help);
     if (shand1->SearchValues(m_gen_str,testname,p_BS)) {
 
-      p_shand->Calculate();
+      shand1->Calculate();
       
       M2s = 0.;
       ATOOLS::msg.Debugging()<<"Check "<<number<<" :";ATOOLS::msg.Debugging().flush();
@@ -547,7 +555,6 @@ int Single_Process::CheckStrings(double result,Single_Process* tproc)
   if (ATOOLS::IsZero(abs((M2s-result)/(M2s+result)))) {
     msg.Tracking()<<"Found a suitable string."<<endl;
     m_libname = tproc->LibName();
-    //delete p_shand; p_shand=0;
     Minimize();
     CreateMappingFile();
     return 1;
@@ -595,11 +602,6 @@ std::string  Single_Process::CreateLibName()
   sprintf(help,"%i",p_BS->MomlistSize());
   name += string("_");
   name += string(help);
-  /* int  antis = 0;
-  for (int i=0;i<m_nin;i++) { if (p_flin[i].IsAnti()) antis++; }
-  sprintf(help,"%i",antis);
-  name += string("_");
-  name += string(help);*/
   return name;
 }
 
@@ -693,6 +695,13 @@ void Single_Process::Minimize()
   if (p_BS)       {delete p_BS;   p_BS=0;}
   if (p_shand)    {delete p_shand;p_shand=0;}
   if (p_ampl)     {delete p_ampl; p_ampl=0;}
+  if (p_psgen)    {delete p_psgen; p_psgen=0;}
+
+  if (p_moms)     { delete [] p_moms;  p_moms     = 0; }
+  if (p_sel)      { delete p_sel;      p_sel      = 0; }
+  if (p_cuts)     { delete p_cuts;     p_cuts     = 0; }
+  if (p_ps)       { delete p_ps;       p_ps       = 0; }
+  if (p_analysis) { delete p_analysis; p_analysis = 0; }
 }
 
 void Single_Process::Empty() {

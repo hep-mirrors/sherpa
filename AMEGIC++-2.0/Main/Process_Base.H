@@ -91,9 +91,9 @@ namespace AMEGIC {
 
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *,
 				 ATOOLS::Vec4D *&,std::vector<double> &,
-				 std::vector<AMEGIC::Single_Process *> &)            =0;
+				 std::vector<AMEGIC::Single_Process *> &,int &,int &)=0;
     virtual int    InitAmplitude(Interaction_Model_Base *,AMEGIC::Topology *)        =0;
-    virtual void   InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>) =0;
+    virtual void   InitAnalysis(std::vector<ATOOLS::Primitive_Observable_Base *>)    =0;
     virtual bool   SetUpIntegrator()                                                 =0; 
     virtual void   AddChannels(Process_Base *,PHASIC::Multi_Channel *,
     			       PHASIC::channelinfos &,PHASIC::channelinfos &);

@@ -46,6 +46,7 @@ void Single_Amplitude_Base::KillZList()
     delete (*zit);
   }
   delete zlist;
+  zlist = NULL;
 }
 
 int Single_Amplitude_Base::FillArgs(Zfunc* z, int* args, vector<int>* iz, vector<int>* iargs)  

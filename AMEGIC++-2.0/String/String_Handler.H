@@ -16,7 +16,7 @@ namespace AMEGIC {
     int                           working;
     sknot                     *** sk;
     std::string                ** stringsk;
-    String_Tree                   stree;
+    String_Tree                   stree,sthelp;
     Values                      * val;
     std::string                   path;
     
