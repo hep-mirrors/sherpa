@@ -100,8 +100,12 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_dataread)      { delete p_dataread;      p_dataread      = NULL; }
+  std::set<Matrix_Element_Handler*> deleted;
   while (m_mehandlers.size()>0) {
-    delete m_mehandlers.begin()->second;
+    if (deleted.find(m_mehandlers.begin()->second)==deleted.end()) {
+      deleted.insert(m_mehandlers.begin()->second);
+      delete m_mehandlers.begin()->second;
+    }
     m_mehandlers.erase(m_mehandlers.begin());
   }
   while (m_isrhandlers.size()>0) {
