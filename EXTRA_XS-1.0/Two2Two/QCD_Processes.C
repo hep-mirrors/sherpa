@@ -161,6 +161,8 @@ void QCD_Processes::InitIntegrators()
     p_isrhandler->SetPartonMasses(p_flavours);
     for (unsigned int i=0;i<m_xsecs.size();i++) m_xsecs[i]->SetISR(p_isrhandler);
     p_pshandler->ISRIntegrator()->DropAllChannels();
+    if (p_pshandler->KMRZIntegrator()!=NULL) p_pshandler->KMRZIntegrator()->DropAllChannels();
+    if (p_pshandler->KMRKPIntegrator()!=NULL) p_pshandler->KMRKPIntegrator()->DropAllChannels();
   }
   p_pshandler->CreateIntegrators();
   if (p_isrhandler->On()) p_pshandler->ISRIntegrator()->Reset();
