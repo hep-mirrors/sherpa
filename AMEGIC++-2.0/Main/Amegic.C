@@ -27,6 +27,8 @@ Amegic::Amegic(std::string _path,std::string _file,MODEL::Model_Base * _model) :
   p_dataread         = new Data_Read(m_path+m_file);
   InitializeInteractionModel(_model);
 
+  rpa.SetPath(m_path);
+  
   bool use_fifo=0;
   if (rpa.gen.NumberOfEvents()>0 && use_fifo)
     p_fifo = new ofstream("flap.dat");
