@@ -72,16 +72,10 @@ namespace ATOOLS {
 
 
   class Multiplicity : public Primitive_Observable_Base {  
+    int            m_mode;
     Multiplicity * partner;
   public:
-    Multiplicity(int _type,double _xmin,double _xmax,int _nbins,
-			 Selector_Base * _sel)
-    {
-      type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = _sel;
-      name  = std::string("multi.dat");
-      histo = new Histogram(type,xmin,xmax,nbins);
-    };
-
+    Multiplicity(int _type,double _xmin,double _xmax,int _nbins, int mode);
     Multiplicity(Multiplicity * old) {
       type  = old->Type();
       sel   = old->Sel();

@@ -357,6 +357,22 @@ void Jetrates::Output(std::string pname) {
 }
 
 //----------------------------------------------------------------------
+Multiplicity::Multiplicity(int _type,double _xmin,double _xmax,int _nbins, int mode)
+{
+  type = _type; xmin = _xmin; xmax = _xmax; nbins = _nbins; sel = 0; m_mode=mode;
+  switch (m_mode) {
+  case 0:  
+    name  = std::string("multi.dat");
+    break;
+  case 2:
+    name  = std::string("multi_charged_hadrons.dat");
+    break;
+  default:
+    name  = std::string("multi_total.dat");
+  }
+  histo = new Histogram(type,xmin,xmax,nbins);
+};
+
 
 Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix)
 {
@@ -368,7 +384,8 @@ Multiplicity::Multiplicity(Multiplicity * _partner, std::string _prefix)
 
 
 void Multiplicity::Evaluate(const Particle_List & pl,double value) {
-  histo->Insert(pl.size()-2,value);
+  if (m_mode==0) histo->Insert(pl.size()-2,value);
+  else histo->Insert(pl.size()-2,value);
 }
 
 void  Multiplicity::Evaluate(Vec4D *,Flavour *,double value) {
@@ -376,23 +393,43 @@ void  Multiplicity::Evaluate(Vec4D *,Flavour *,double value) {
 
 void  Multiplicity::Evaluate(const Blob_List & blobs,double value) {
   Particle_List pl;
-  for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
-    if ((*blit)->Type()[0]=='S') {
-      for (int i=0;i<(*blit)->NInP();++i) {
-	Particle * p = (*blit)->InParticle(i);
-	if (!ParticleIsInList(p,pl)) pl.push_back(p);
+
+  if (m_mode==0) { // compatibity mode
+    for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
+      if ((*blit)->Type()[0]=='S') {
+	for (int i=0;i<(*blit)->NInP();++i) {
+	  Particle * p = (*blit)->InParticle(i);
+	  if (!ParticleIsInList(p,pl)) pl.push_back(p);
+	}
+      }
+    }
+    
+    for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
+      for (int i=0;i<(*blit)->NOutP();++i) {
+	Particle * p = (*blit)->OutParticle(i);
+	if (!ParticleIsInList(p,pl) && (*blit)->Status()==1 && 
+	    ((p->Info()=='F') || ((*blit)->Type()[0]!='S' &&  p->Info()=='H')))
+	  pl.push_back(p);
+      }
+    }
+  }
+  else {
+    for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
+      for (int i=0;i<(*blit)->NOutP();++i) {
+	Particle * p = (*blit)->OutParticle(i);
+	if (!ParticleIsInList(p,pl) && (*blit)->Status()==1 && p->DecayBlob()==0) {
+	  if (m_mode==2 && p->Flav().IsHadron() && p->Flav().Charge()!=0.) {
+	    pl.push_back(p);
+	  }
+	  else if (m_mode!=2) {
+	    pl.push_back(p);
+	  }
+	}
       }
     }
   }
 
-  for (Blob_Const_Iterator blit=blobs.begin();blit!=blobs.end();++blit) {
-    for (int i=0;i<(*blit)->NOutP();++i) {
-      Particle * p = (*blit)->OutParticle(i);
-      if (!ParticleIsInList(p,pl) && (*blit)->Status()==1 && 
-	  ((p->Info()=='F') || ((*blit)->Type()[0]!='S' &&  p->Info()=='H')))
-	pl.push_back(p);
-    }
-  }
+
   Evaluate(pl,value);
 
 }
@@ -600,7 +637,7 @@ void PT_Distribution::Output(std::string pname) {
     std::string fname;
     MyStrStream s;
     s<<i;
-    s<<".dat";
+    s<<".dat"; 
     s>>fname;
     if (name==std::string("pt_dist_")) {
       histos[i]->Output((pname+std::string("/pt_dist_")+fname).c_str());
