@@ -378,6 +378,16 @@ namespace ATOOLS {
     return m_ignoreblanks;
   }
   
+  inline void Read_Write_Base::SetExactMatch(const bool exact) 
+  { 
+    m_exactmatch=exact; 
+  }
+
+  inline bool Read_Write_Base::ExactMatch() const 
+  { 
+    return m_exactmatch; 
+  }
+
 } // end of namespace ATOOLS
 
 #endif

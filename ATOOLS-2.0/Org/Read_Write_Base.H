@@ -37,7 +37,7 @@ namespace ATOOLS {
     VectorTypeID m_vectortype;
     MatrixTypeID m_matrixtype;
 
-    bool m_ignorecase, m_ignoreblanks;
+    bool m_ignorecase, m_ignoreblanks, m_exactmatch;
 
     size_t m_occurrence;
 
@@ -135,6 +135,8 @@ namespace ATOOLS {
     inline void SetIgnoreCase(const bool ignorecase);
     inline void SetIgnoreBlanks(const bool ignorecase);
 
+    inline void SetExactMatch(const bool exact);
+
     // getters
     inline const std::vector<std::string> &Comment() const;
     inline const std::vector<std::string> &Ignore() const;
@@ -157,6 +159,8 @@ namespace ATOOLS {
 
     inline bool IgnoreCase() const;
     inline bool IgnoreBlanks() const;
+
+    inline bool ExactMatch() const;
 
     // inline functions
     inline bool RereadInFile(const unsigned int i=0);

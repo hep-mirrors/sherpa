@@ -39,6 +39,7 @@ void Read_Write_Base::Init()
   m_addcommandline=true;
   m_ignorecase=false;
   m_ignoreblanks=false;
+  m_exactmatch=true;
   m_occurrence=std::string::npos;
 }
 
@@ -91,6 +92,7 @@ size_t Read_Write_Base::Find(std::string input,std::string parameter,size_t &len
 #endif
   length=parameter.length()+cutinputblanks;
   size_t pos=input.find(parameter);
+  if (m_exactmatch && pos!=0) pos=std::string::npos;
   if (pos==std::string::npos) length=0;
   return pos;
 }
