@@ -20,6 +20,7 @@ libLundTools_la_SOURCES       =	\
 				pyalps.f \
 				pypdfu.f \
 				pyplst.f \
+				pymult.f \
 				Lund_Interface.C 
 noinst_HEADERS        =	\
 		 	Lund_Wrapper.H \

@@ -93,6 +93,12 @@ const int nmaxpup   = 100;
 const int nmxhep    = 4000;
 
 extern struct {
+  int mfudge[100];
+  double pfudge[100];
+} cfudge_;
+#define cfudge cfudge_
+
+extern struct {
   int nevhep, nhep, isthep[nmxhep], idhep[nmxhep];
   int jmohep[nmxhep][2], jdahep[nmxhep][2];
   double phep[nmxhep][5], vhep[nmxhep][4];

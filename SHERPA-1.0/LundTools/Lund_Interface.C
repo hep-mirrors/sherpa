@@ -112,6 +112,15 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.mstu[(int)help[i][0]-1]=(int)help[i][1];
   }
+  reader->MatrixFromFile(help,"MFUDGE");
+  for (size_t i=0;i<help.size();++i) {
+    if (help[i].size()>1) {
+      if ((int)help[i][0]>0) cfudge.mfudge[(int)help[i][0]-1]=(int)help[i][1];
+    }
+    else {
+      cfudge.mfudge[(int)help[i][0]-1]=0;
+    }
+  }
   reader->MatrixFromFile(help,"PARP");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pypars.parp[(int)help[i][0]-1]=help[i][1];
@@ -123,6 +132,10 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sher
   reader->MatrixFromFile(help,"PARU");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pydat1.paru[(int)help[i][0]-1]=help[i][1];
+  }
+  reader->MatrixFromFile(help,"PFUDGE");
+  for (size_t i=0;i<help.size();++i) {
+    if (help[i].size()>1) if ((int)help[i][0]>0) cfudge.pfudge[(int)help[i][0]-1]=help[i][1];
   }
   reader->MatrixFromFile(help,"MDME");
   for (size_t i=0;i<help.size();++i) {
