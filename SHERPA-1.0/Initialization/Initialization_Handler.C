@@ -32,7 +32,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
   m_path(_path), m_file(_file),
   p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_hadrondecays(NULL), /*p_mihandler(NULL),*/
+  p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
   p_pythia(NULL)
 {
   m_scan_istep=-1;  
@@ -56,7 +56,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
   p_model(NULL), p_beamspectra(NULL), 
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
-  p_fragmentation(NULL), p_hadrondecays(NULL), /*p_mihandler(NULL),*/
+  p_fragmentation(NULL), p_hadrondecays(NULL), p_mihandler(NULL),
   p_pythia(NULL)
 {
   m_path=std::string("./");
@@ -99,7 +99,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
-  //if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
+  if (p_mihandler)     { delete p_mihandler;     p_mihandler     = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
   if (p_pythia)        { delete p_pythia;        p_pythia        = NULL; }
@@ -370,7 +370,6 @@ Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::st
 
 bool Initialization_Handler::InitializeTheUnderlyingEvents()
 {
-  /*
   p_mihandler = new MI_Handler(m_path,m_midat,p_model,p_beamspectra,
 			       m_isrhandlers[isr::hard_subprocess]);
   Matrix_Element_Handler *mehandler;
@@ -382,7 +381,6 @@ bool Initialization_Handler::InitializeTheUnderlyingEvents()
     delete iit->second;
     m_isrhandlers.erase(iit);
   }
-  */
   return true;
 }
 
