@@ -205,7 +205,7 @@ CFColor::CFColor(int N,Single_Amplitude* first,string& pID)
 		}
 		cm1 = cm1->Next;
 	      }
-	      if (hit && hit2) {
+	      if (hit && hit2 && !(hit<0 && n1==0 )) {
 		//equal
 		ncount--;
 		m2 ->on = 0;

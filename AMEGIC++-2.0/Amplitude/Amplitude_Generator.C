@@ -770,6 +770,32 @@ void Amplitude_Generator::Unite(Point* p,Point* pdel)
   } 
 }
 
+int Amplitude_Generator::CompareColors(Color_Function* c1,vector<int> blindlist1,
+				       Color_Function* c2,vector<int> blindlist2)
+{
+  if (c1->type!=c2->type) return 0;
+  if (blindlist1.size()==0){
+    if (c1->String()==c2->String()) return 1;
+    else return 0;
+  }
+   
+  int l1[3],l2[3];
+  for (int i=0;i<3;i++){
+    l1[i]=c1->partarg[i];
+    l2[i]=c2->partarg[i];
+  }
+  for (int i=0;i<blindlist1.size();i++){
+    for (int j=0;j<3;j++)
+      {
+	if (l1[j]>blindlist1[i]) l1[j]--;
+	if (l2[j]>blindlist2[i]) l2[j]--;
+      }
+  }
+  for (int i=0;i<3;i++) if(l1[i]!=l2[i]) return 0;
+  
+  return 1;  
+}
+
 int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
 {
   //zero check
@@ -791,8 +817,38 @@ int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
   }
 
   //Check extended Color_Functions
-  if (p1->Color->String()==p2->Color->String()) {
-    if (p1->Color->Next && p2->Color->Next) {
+  if (p1->Color->type!=p2->Color->type) return 0;
+
+  std::vector<int> blindlist1;
+  std::vector<int> blindlist2;
+  if(!(p1->fl.Strong())) blindlist1.push_back(0);
+  if(!(p1->left->fl.Strong())) blindlist1.push_back(1);
+  if(!(p1->right->fl.Strong())) blindlist1.push_back(2);
+  if(p1->middle) if(!(p1->middle->fl.Strong())) blindlist1.push_back(3);
+  if(!(p2->fl.Strong())) blindlist2.push_back(0);
+  if(!(p2->left->fl.Strong())) blindlist2.push_back(1);
+  if(!(p2->right->fl.Strong())) blindlist2.push_back(2);
+  if(p2->middle) if(!(p2->middle->fl.Strong())) blindlist2.push_back(3);
+  if(blindlist1.size()!=blindlist2.size()) return 0;
+
+  if (CompareColors(p1->Color,blindlist1,p2->Color,blindlist2)) {
+  if (p1->Color->Next && p2->Color->Next) {
+      Color_Function* ctmp1 = p1->Color;
+      Color_Function* ctmp2 = p2->Color;
+      while(ctmp1->Next) {
+	if(!CompareColors(ctmp1->Next,blindlist1,ctmp2->Next,blindlist2)) return 0;
+	ctmp1 = ctmp1->Next;
+	ctmp2 = ctmp2->Next;
+      }
+    }
+    else {
+      if (p1->Color->Next!=0 || p2->Color->Next!=0) return 0;
+    }
+  }
+  else return 0;
+
+  /*  if (p1->Color->String()==p2->Color->String()) {
+  if (p1->Color->Next && p2->Color->Next) {
       Color_Function* ctmp1 = p1->Color;
       Color_Function* ctmp2 = p2->Color;
       while(ctmp1->Next) {
@@ -806,7 +862,7 @@ int Amplitude_Generator::Single_Compare(Point* p1, Point* p2)
     }
   }
   else return 0;
-
+  */
   // return 1 if equal and 0 if different
   
   if (Single_Compare(p1->middle,p2->middle)) {
@@ -1215,6 +1271,7 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	  flav[2]==test.in[3] &&
 	  flav[3]==test.in[2]) 
 	{
+	  
 	  hit = 1;
 	  
 	  pcopy->v      = (*v)(i);
@@ -1239,7 +1296,6 @@ int Amplitude_Generator::ShrinkProps(Point*& p,Point*& pnext, Point*& pcopy, Poi
 	    
 	    *(pcopy->Color)   = *((*v)(i)->Color);
 	    *(pcopy->Lorentz) = *((*v)(i)->Lorentz);
-	    
 	    break;
 	  }
 	  else {

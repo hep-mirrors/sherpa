@@ -91,6 +91,7 @@ namespace AMEGIC {
     void KillHigherOrders(Single_Amplitude* &);
     void Compare(Single_Amplitude* &);
     void Unite(Point*,Point*);
+    int  CompareColors(Color_Function*,vector<int>,Color_Function*,vector<int>);
 
     void CreateSingleAmplitudes(Single_Amplitude* &);
     void CheckFor4Vertices(Single_Amplitude* &);
