@@ -23,7 +23,10 @@
 
 #if defined(__sgi) && !defined(__GNUC__)
 // SGI IRIX C++ Compiler, complex but not double methods need "std::", e.g. Abs() exp()
+//#include <sys/types.h>
+#include <iostream>
 #include <math.h> 
+//#include <cmath.h>        
 #endif
 
 
