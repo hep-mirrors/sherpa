@@ -162,7 +162,8 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     }
     
     double scale,asscale;
-    if (p_xs) asscale=scale = static_cast<PHASIC::Integrable_Base*>(p_xs)->Scale(PHASIC::stp::as);
+    if (p_xs) asscale=scale = 
+      static_cast<PHASIC::Integrable_Base*>(p_xs)->Scale(PHASIC::stp::fac);
     else {
       scale   = p_cluster->Scale();
       asscale = p_cluster->AsScale();

@@ -19,10 +19,11 @@ namespace PHASIC {
   struct stp {
 
     enum id {
-      renormalization =  1,
-      factorization   =  2,
-      as              =  3,
-      unknown         = 99
+      ren     =  1,
+      fac     =  2,
+      kp21    =  3,
+      kp22    =  4,
+      unknown = 99
     };
 
   };// end of struct stp
@@ -39,7 +40,9 @@ namespace PHASIC {
     ATOOLS::Vec4D   *p_momenta;
 
     int    m_scalescheme, m_kfactorscheme;
-    double m_scale, m_scalefactor, m_threshold, m_overflow;
+    double m_scalefactor, m_threshold, m_overflow;
+
+    std::map<stp::id,double> m_scale;
 
     std::vector<double> m_xinfo;
 
@@ -116,7 +119,8 @@ namespace PHASIC {
     inline void SetPoints(const long int points)   { m_n=points;           }
     inline void SetOverflow(const double overflow) { m_overflow=overflow;  }
 
-    inline void SetScale(const double scale) { m_scale=scale; }
+    inline void SetScale(const double scale,const stp::id type=stp::fac) 
+    { m_scale[type]=scale; }
 
     inline void SetSelected(Integrable_Base *const selected) { p_selected=selected; }
     
@@ -141,8 +145,8 @@ namespace PHASIC {
     inline double Max() const        { return m_max;      }
     inline double Overflow() const   { return m_overflow; }
 
-    inline double Scale(const stp::id type) const { return m_scale;     }
-    inline double ISRThreshold() const            { return m_threshold; }
+    inline double Scale(const stp::id type=stp::fac) { return m_scale[type]; }
+    inline double ISRThreshold() const      { return m_threshold;   }
 
     inline int    KFactorScheme() const { return m_kfactorscheme; }
     inline int    ScaleScheme() const   { return m_scalescheme;   }

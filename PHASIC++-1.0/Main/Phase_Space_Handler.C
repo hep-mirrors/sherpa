@@ -79,6 +79,8 @@ Phase_Space_Handler::Phase_Space_Handler(Integrable_Base *proc,
     m_isrykey.Assign("y isr",3,0,p_info);
     m_beamspkey.Assign("s' beam",4,0,p_info);
     m_beamykey.Assign("y beam",3,0,p_info);
+    m_mu2key[0].Assign("mu2_1",1,0,p_info);
+    m_mu2key[1].Assign("mu2_2",1,0,p_info);
     p_beamhandler->AssignKeys(p_info);
     p_isrhandler->AssignKeys(p_info);
   }
@@ -247,6 +249,10 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     if (m_nin>1) {
       trigger = 1;
       Q2 = process->Scale(p_lab);
+      if (p_isrhandler->KMROn()>0) {
+	m_mu2key[0][0] = process->Scale(stp::kp21);
+	m_mu2key[1][0] = process->Scale(stp::kp22);
+      }
       if (p_isrhandler->On()>0) {
 	p_isrhandler->CalculateWeight(Q2);
  	p_isrchannels->GenerateWeight(p_isrhandler->On());
@@ -855,7 +861,7 @@ bool Phase_Space_Handler::MakeKMRChannels()
     }
     else if ((p_flavours[0].IsGluon() && p_flavours[1].IsGluon()) ||
 	     (p_flavours[0].IsJet() && p_flavours[1].IsJet())) {
-      //MakeZChannels(1);
+      MakeZChannels(1);
       MakeZChannels(2);
       MakeZChannels(3);
       MakeZChannels(4);

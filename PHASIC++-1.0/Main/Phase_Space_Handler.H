@@ -35,6 +35,7 @@ namespace PHASIC {
     static ATOOLS::Integration_Info *p_info;
 
     ATOOLS::Info_Key  m_isrspkey, m_isrykey, m_beamspkey, m_beamykey;
+    ATOOLS::Info_Key  m_mu2key[2];
 
     BEAM::Beam_Spectra_Handler *p_beamhandler;
     PDF::ISR_Handler           *p_isrhandler;

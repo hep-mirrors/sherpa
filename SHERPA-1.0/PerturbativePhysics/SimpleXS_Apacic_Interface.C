@@ -64,7 +64,8 @@ int SimpleXS_Apacic_Interface::InitColours(ATOOLS::Blob *blob)
       blob->OutParticle(i)->SetFlow(j+1,p_xs->Colours()[i+blob->NInP()][j]);
     }
   }
-  double scale=dynamic_cast<PHASIC::Integrable_Base*>(p_xs)->Scale(PHASIC::stp::as);
+  double scale=
+    dynamic_cast<PHASIC::Integrable_Base*>(p_xs)->Scale(PHASIC::stp::fac);
   double E=sqrt(p_mehandler->GetISR_Handler()->Pole())/2.;
   double th1,th2;
   if (m_ini) {
