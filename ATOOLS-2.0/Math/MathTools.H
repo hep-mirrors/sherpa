@@ -1,4 +1,4 @@
-/*  Declarations for diskrete functions  */
+/*  Declarations for discrete functions  */
 #ifndef mathtools1_h
 #define mathtools1_h
 
@@ -23,10 +23,8 @@
 
 #if defined(__sgi) && !defined(__GNUC__)
 // SGI IRIX C++ Compiler, complex but not double methods need "std::", e.g. Abs() exp()
-//#include <sys/types.h>
 #include <iostream>
 #include <math.h> 
-//#include <cmath.h>        
 #endif
 
 
@@ -34,61 +32,51 @@
 
 namespace ATOOLS {
 
-  template <class Type>
-  Type Min(Type a, Type b);
-  template <class Type>
-  Type Max(Type a, Type b);
+  template <class Type> inline const Type &
+  Min(const Type &a,const Type &b) { return a<b?a:b; }
+  template <class Type> inline const Type &
+  Max(const Type &a,const Type &b) { return a>b?a:b; }
 
-  /*
-  inline int Min(int a, int b) { return a<b ? a : b; }
-  inline int Max(int a, int b) { return a>b ? a : b; }
-  inline int Min(long int a, long int b) { return a<b ? a : b; }
-  inline int Max(long int a, long int b) { return a>b ? a : b; }
+  template <class Type> inline Type &
+  Min(Type &a,Type &b) { return a<b?a:b; }
+  template <class Type> inline Type &
+  Max(Type &a,Type &b) { return a>b?a:b; }
 
-  inline double Min(double a, double b) { return a<b ? a : b; }
-  inline double Max(double a, double b) { return a>b ? a : b; }
-  inline long double Min(long double a, long double b) { return a<b ? a : b; }
-  inline long double Max(long double a, long double b) { return a>b ? a : b; }
-  */
+  inline double Accu() {return 1.e-12;};
 
-  inline int         Sign(const int& a) {return (a<0) ? -1 : 1;}
-  inline double      Sign(const double& a) {return (a<0) ? -1.0 : 1.0;}
-  inline int         iabs(const int& a) {return a>0 ? a : -a;} 
-  inline double      dabs(const double& a) {return a>0 ? a : -a;} 
-  inline double      sqr(double x) {return x*x;} 
-  inline double      Accu() {return 1.e-12;};
-  inline int IsZero(const double a) {
-    return (dabs(a)<Accu()) ? 1 : 0;
-  }
-  inline int IsZero(const Complex& a) {
-    return (std::abs(a)<Accu()) ? 1 : 0;
-  }
-  inline int IsEqual(const double a,const double b) {
+  inline int    Sign(const int& a)    { return a<0?-1:1;       }
+  inline double Sign(const double& a) { return a<0.0?-1.0:1.0; }
+
+  inline int    iabs(const int& a)    { return a>0?a:-a;   } 
+  inline double dabs(const double& a) { return a>0.0?a:-a; } 
+
+  inline double  sqr(const double &x)   { return x*x; } 
+  inline Complex csqr(const Complex &x) { return x*x; } 
+
+  inline int IsZero(const double &a)  { return dabs(a)<Accu()?1:0;     }
+  inline int IsZero(const Complex &a) { return std::abs(a)<Accu()?1:0; }
+
+  inline int IsEqual(const double &a,const double &b) 
+  {
     if (a==0. && b==0.) return 1;
     return (dabs(a-b)/(dabs(a)+dabs(b))<Accu()) ? 1 : 0;
   }
-  inline int IsEqual(const Complex& a,const Complex& b) {
+  inline int IsEqual(const Complex &a,const Complex &b) 
+  {
     if (a==Complex(0.,0.) && b==Complex(0.,0.)) return 1;
     return (std::abs(a-b)/(std::abs(a)+std::abs(b))<Accu()) ? 1 : 0;
   } 
-  inline Complex csqrt(const double d)
+  inline Complex csqrt(const double &d)
   {
     if (d<0) return Complex(0.,sqrt(-d));
     return sqrt(d);
   }
-  inline Complex csqr(Complex x) {return x*x;} 
 
 #define GAMMA_E 0.5772156649015328606
 
   double Gammln(double xx);
 
   double ReIncompleteGamma0(double x,double prec=1.e-6);
-
-  template <class Type>
-  Type Min(Type a, Type b) { return a<b ? a : b; }
-  
-  template <class Type>
-  Type Max(Type a, Type b) { return a>b ? a : b; }
 
   /*!
     \file
