@@ -1,26 +1,83 @@
 #include "Continued_PDF.H"
 
+#include "MathTools.H"
+
 using namespace PDF;
 
 Continued_PDF::Continued_PDF(PDF_Base *const pdf,const pcs::type scheme):
   p_pdf(pdf),
-  m_scheme(scheme) {}
+  m_scheme(scheme),
+  m_epsilon(1.e-6)
+{
+  m_type=std::string("CPDF(")+p_pdf->Type()+std::string(")");
+  m_xmin=0.0;
+  m_xmax=p_pdf->XMax();
+  m_q2min=0.0;
+  m_q2max=ATOOLS::sqr(p_pdf->Q2Max());
+  m_bunch=p_pdf->Bunch();
+  m_partons=p_pdf->Partons();
+}
+
+Continued_PDF::~Continued_PDF()
+{
+  delete p_pdf;
+}
 
 void Continued_PDF::Output()
 { 
   return p_pdf->Output(); 
 }
 
+double Continued_PDF::ContinueLinear(const ATOOLS::Flavour flavour)
+{
+  double x=ATOOLS::Max(p_pdf->XMin(),m_x);
+  double mu2=ATOOLS::Max(p_pdf->Q2Min(),m_mu2);
+  p_pdf->Calculate(x,m_z,m_kperp2,mu2);
+  double xpdf=p_pdf->GetXPDF(flavour);
+  return ATOOLS::Min(x/p_pdf->XMin(),mu2/p_pdf->Q2Min())*xpdf;
+}
+
+double Continued_PDF::ContinueSquarish(const ATOOLS::Flavour flavour)
+{
+  double x=ATOOLS::Max(p_pdf->XMin(),m_x);
+  double mu2=ATOOLS::Max(p_pdf->Q2Min(),m_mu2);
+  p_pdf->Calculate(x,m_z,m_kperp2,mu2);
+  double xpdf1=p_pdf->GetXPDF(flavour);
+  p_pdf->Calculate(x*(1.+m_epsilon),m_z,m_kperp2,mu2*(1.+m_epsilon));
+  double xpdf2=p_pdf->GetXPDF(flavour);
+  double p1=sqrt(x*x+mu2*mu2), p2=p1*(1.+m_epsilon);
+  double a=(xpdf1-(xpdf2-xpdf1)/(p2-p1)*p1)/(p1*(p1-(p2*p2-p1*p1)/(p2-p1)));
+  double b=((xpdf2-xpdf1)-a*(p2*p2-p1*p1))/(p2-p1);
+  double p=sqrt(m_x*m_x+m_mu2+m_mu2);
+  double res=a*p*p+b*p;
+  std::cout<<xpdf1<<" "<<xpdf2<<" "<<res<<std::endl;
+  return res;
+}
+
 void Continued_PDF::Calculate(double x,double z,double kperp2,double mu2)
 {
-  std::cout<<"continue";
-  p_pdf->Calculate(x,z,kperp2,mu2);
+  if (mu2>p_pdf->Q2Min() && x>p_pdf->XMin()) {
+    p_pdf->Calculate(x,z,kperp2,mu2);
+    m_continue=false;
+  }
+  else {
+    m_continue=true;
+    m_x=x;
+    m_z=z;
+    m_kperp2=kperp2;
+    m_mu2=mu2;
+  }
 }
 
 double Continued_PDF::GetXPDF(const ATOOLS::Flavour flavour)
 {
-  std::cout<<"continued"<<std::endl;
-  return p_pdf->GetXPDF(flavour);
+  if (!m_continue) return p_pdf->GetXPDF(flavour);
+  switch (m_scheme) {
+  case pcs::linear: return ContinueLinear(flavour);
+  case pcs::cubic: return ContinueSquarish(flavour);
+  default: return ContinueLinear(flavour);
+  }
+  return 0.0;
 }
 
 PDF_Base *Continued_PDF::GetCopy()
