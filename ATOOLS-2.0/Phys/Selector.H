@@ -35,7 +35,6 @@ namespace APHYTOOLS {
   class Selector_Base {
   protected :
     int            m_n, m_nin, m_nout;
-    // long int       m_count;
     Flavour      * m_fl;
     double         m_smin,m_smax;
     std::string    m_name;
@@ -70,6 +69,8 @@ namespace APHYTOOLS {
 
     virtual void   SetSRange(double _smin,double _smax) { m_smin = _smin; m_smax = _smax; }
     virtual void   SetName(std::string _name)           { m_name = _name; }
+    virtual double Smin()                               { return m_smin; }
+    virtual double Smax()                               { return m_smax; }
     virtual std::string Name()                          { return m_name; }
   };
 

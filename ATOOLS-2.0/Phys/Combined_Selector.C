@@ -2,6 +2,7 @@
 #include "Standard_Selector.H"
 #include "Jet_Finder.H"
 #include "Cone_Finder.H"
+#include "Run_Parameter.H"
 #include "Message.H"
 
 using namespace APHYTOOLS;
@@ -14,6 +15,8 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
   m_nin   = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl    = _fl;
   m_count = 0;
+  m_smin = 0.;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
 
   if (_seldata==NULL) return; 
   int                               type;
@@ -85,6 +88,10 @@ Combined_Selector::Combined_Selector(int _nin,int _nout, Flavour * _fl,
       } 
       Add(sel);
     }
+  }
+
+  for (int i=0;i<m_sels.size();i++) {
+    if (m_sels[i]->Smin()>m_smin) m_smin = m_sels[i]->Smin();
   }
 }
 

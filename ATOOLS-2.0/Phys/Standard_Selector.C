@@ -18,6 +18,7 @@ Energy_Selector::Energy_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("Energy_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
   
   double E = AORGTOOLS::rpa.gen.Ecms();
   emin  = new double[m_n];
@@ -79,15 +80,17 @@ void Energy_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
     return;
   }
 
+  double Emin = 0.;
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       emin[i] = AMATOOLS::Max(_min,m_fl[i].Mass()); 
-      //emax[i] = AMATOOLS::Min(_max,0.5*AORGTOOLS::rpa.gen.Ecms());
-      emax[i] = _max;
+      emax[i] = AMATOOLS::Min(_max,AORGTOOLS::rpa.gen.Ecms());
+      Emin   += emin[i];
       AORGTOOLS::msg.Debugging()<<"Set e-Range for "<<m_fl[i]<<" : "
 				<<emin[i]<<" ... "<<emax[i]<<endl;
     }
   }
+  m_smin = Emin*Emin;
 }
 
 
@@ -103,6 +106,7 @@ ET_Selector::ET_Selector(int _nin,int _nout, Flavour * _fl)
   m_name = std::string("ET_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
   
   double E = AORGTOOLS::rpa.gen.Ecms();
   etmin  = new double[m_n];
@@ -122,18 +126,9 @@ ET_Selector::~ET_Selector()
 bool ET_Selector::Trigger(const Vec4D * mom) 
 {
   double eti;
-  for (int i=m_nin;i<m_n;i++) {
-   
+  for (int i=m_nin;i<m_n;i++) {   
     double theta = acos(Vec3D(mom[i])*Vec3D(mom[0])/(Vec3D(mom[i]).Abs()*Vec3D(mom[0]).Abs())); 
-
-    //cout<<"theta "<<theta<<endl;
-    
-    //if (theta<0.) theta = -theta; 
-
     eti = value[i] = mom[i][0]*sin(theta);
-
-    //cout<<"et["<<i<<"] : "<<eti<<" range ("<<etmin[i]<<", "<<etmax[i]<<")"<<endl;
-
     if (m_sel_log->Hit( ((eti<etmin[i]) || (eti>etmax[i])) )) return 0;
   }
   return 1;
@@ -168,14 +163,17 @@ void ET_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
     return;
   }
 
+  double Etmin = 0.;
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       etmin[i] = _min; 
       etmax[i] = _max;
+      Etmin   += etmin[i];
       AORGTOOLS::msg.Debugging()<<"Set et-Range for "<<m_fl[i]<<" : "
 				<<etmin[i]<<" ... "<<etmax[i]<<endl;
     }
   }
+  m_smin = Etmin*Etmin;
 }
 
 
@@ -189,6 +187,7 @@ PT_Selector::PT_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("PT_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
   
   double E = AORGTOOLS::rpa.gen.Ecms();
   ptmin  = new double[m_n];
@@ -250,14 +249,20 @@ void PT_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min,
     return;
   }
 
+  double MaxPTmin = 0., PTmin = 0.;
+  int    contrib  = 0;
   for (int i=m_nin;i<m_n;i++) {
     if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i]) ) ) {
       ptmin[i] = _min; 
       ptmax[i] = AMATOOLS::Min(_max,AORGTOOLS::rpa.gen.Ecms());
+      PTmin   += ptmin[i];
+      if (PTmin>MaxPTmin) MaxPTmin = PTmin;
+      contrib++;
       AORGTOOLS::msg.Debugging()<<"Set PT-Range for "<<m_fl[i]<<" : "
 				<<ptmin[i]<<" ... "<<ptmax[i]<<endl;
     }
   }
+  if (contrib>0) m_smin=4.*MaxPTmin*MaxPTmin;
 }
 
 /*--------------------------------------------------------------------
@@ -272,6 +277,8 @@ Rapidity_Selector::Rapidity_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("Rapidity_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
   
   double E = AORGTOOLS::rpa.gen.Ecms();
   double pl;
@@ -326,12 +333,14 @@ void Rapidity_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _mi
   double pl,y;
 
   for (int i=m_nin;i<m_n;i++) {
-    pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
-    y       = log((E+pl)/(E-pl));
-    ymin[i] = _min; //AMATOOLS::Max(_min,-y);
-    ymax[i] = _max; //AMATOOLS::Min(_max,y);
-    AORGTOOLS::msg.Debugging()<<"Set y-Range for "<<m_fl[i]<<" : "
-			      <<ymin[i]<<" ... "<<ymax[i]<<endl;
+    if ( (crit[0].Includes(m_fl[i])) || ((crit[0].Bar()).Includes(m_fl[i])) ) {
+      pl      = sqrt(E*E-sqr(m_fl[i].Mass())); 
+      y       = log((E+pl)/(E-pl));
+      ymin[i] = _min; //AMATOOLS::Max(_min,-y);
+      ymax[i] = _max; //AMATOOLS::Min(_max,y);
+      AORGTOOLS::msg.Debugging()<<"Set y-Range for "<<m_fl[i]<<" : "
+				<<ymin[i]<<" ... "<<ymax[i]<<endl;
+    }
   }
 }
 
@@ -346,6 +355,8 @@ Angle_Selector::Angle_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("Angle_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
 
   cosmin = new double*[m_n];
   cosmax = new double*[m_n];
@@ -472,6 +483,8 @@ Mass_Selector::Mass_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("Mass_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
   
   massmin = new double*[m_n];
   massmax = new double*[m_n];
@@ -553,12 +566,15 @@ void Mass_Selector::SetRange(std::vector<APHYTOOLS::Flavour> crit,double _min, d
 			  <<crit.size()<<endl;
     return;
   }
+
+  double m_smin = 0;
   for (int i=m_nin;i<m_n;i++) {
     for (int j=m_nin+1;i<m_n;i++) {
       if ( ((crit[0].Includes(m_fl[i])) && (crit[1].Includes(m_fl[j])) ) || 
 	   ((crit[0].Includes(m_fl[j])) && (crit[1].Includes(m_fl[i])) ) ) {
 	massmin[i][j] = massmin[j][i] = AMATOOLS::Max(_min,m_fl[i].Mass()+m_fl[j].Mass()); 
-	massmax[i][j] = massmax[j][i] = _max; 
+	massmax[i][j] = massmax[j][i] = _max;
+	if (massmin[i][j]>m_smin) m_smin = massmin[i][j];
 	AORGTOOLS::msg.Debugging()<<"Set mass-Range for "<<m_fl[i]<<"/"<<m_fl[j]<<" : "
 				  <<massmin[i][j]<<" ... "<<massmax[i][j]<<endl;
       }
@@ -578,6 +594,8 @@ Summed_PT_Selector::Summed_PT_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("Summed_PT_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smin = 0.;
+  m_smax = AORGTOOLS::rpa.gen.Ecms()*AORGTOOLS::rpa.gen.Ecms();
   
   double E = AORGTOOLS::rpa.gen.Ecms();
   ptmin    = 0.; ptmax    = E;
