@@ -233,6 +233,7 @@ double Phase_Space_Handler::Differential(Integrable_Base *const process)
     }
     if (!p_isrhandler->MakeISR(p_lab,m_nvec)) return 0.;
     if (p_beamhandler->On()>0 || p_isrhandler->On()>0) {
+      if (p_isrhandler->On()==0) m_isrspkey[3]=m_beamspkey[3];
       process->Selector()->UpdateCuts(m_isrspkey[3],m_beamykey[2]+m_isrykey[2],p_cuts);
     }
   }
