@@ -63,7 +63,7 @@ namespace AMISIC {
     void CalculateSigmaND();
     bool InitializeBlobList();
     bool CheckConsistency(EXTRAXS::XS_Group *const group,GridFunctionType *const grid,
-			  const double integral);
+			  const double min,const double max,const double integral);
 
     bool FillBlob(ATOOLS::Blob *blob);
     void PrepareTerminate();

@@ -555,8 +555,11 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
     m_maxima[(*group)[i-1]->Name()] = new GridFunctionType(*gridhandler[i]->Grid());
     delete gridhandler[i];
   }
-  if (ATOOLS::msg.LevelIsTracking()) CheckConsistency(group,m_differential.back(),
-						      m_differential.back()->IntegrateY());
+  if (ATOOLS::msg.LevelIsTracking()) {
+    CheckConsistency(group,m_differential.back(),
+		     m_differential.back()->XMin(),m_differential.back()->XMax(),
+		     m_differential.back()->IntegrateY());
+  }
   delete p_processes;
   p_processes=NULL;
   if (!m_external) {
@@ -570,13 +573,12 @@ bool Simple_Chain::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename)
 }
 
 bool Simple_Chain::CheckConsistency(EXTRAXS::XS_Group *const group,GridFunctionType *const grid,
-				    const double integral)
+				    const double min,const double max,const double integral)
 {  
   int criterion=ATOOLS::Variable::TypeToSelectorID(grid->XAxis()->Variable().Type());
   ATOOLS::Mom_Data initialdata=group->SelectorData()->RemoveData(criterion);
-  double min=grid->XMin(), max=grid->XMax();
   if (initialdata.flavs.empty()) initialdata.flavs.push_back(ATOOLS::Flavour(ATOOLS::kf::jet));
-  group->SelectorData()->AddData(criterion,initialdata.flavs,initialdata.help,min,max);
+  group->SelectorData()->AddData(criterion,initialdata.flavs,initialdata.help,(double)min,(double)max);
   group->ResetSelector(group->SelectorData());
   group->CalculateTotalXSec("");
   double total=group->TotalXS();
@@ -653,7 +655,9 @@ bool Simple_Chain::InitializeBlobList()
     group[i]->SetKFactorScheme(m_kfactorscheme);
     p_processes->PushBack(group[i]);
   }
-  if (ATOOLS::msg.LevelIsTracking()) CheckConsistency(p_processes,p_total,m_sigmahard);
+  if (ATOOLS::msg.LevelIsTracking()) {
+    CheckConsistency(p_processes,p_total,p_total->XMin(),p_total->XMax(),m_sigmahard);
+  }
   p_fsrinterface = new FSRChannel(2,2,flavour,p_total->XAxis()->Variable());
   p_fsrinterface->SetAlpha(1.0);
   p_fsrinterface->SetAlphaSave(1.0);
@@ -740,8 +744,12 @@ bool Simple_Chain::CalculateTotal()
   gridcreator->WriteSingleGrid(gridhandler,comments);
   delete gridhandler;
 #endif
-  p_total = differential->IntegralY(0.0,0.0,ATOOLS::nullstring,ATOOLS::nullstring,false);
+  SetStart(differential->XMax(),0);
+  SetStop(ATOOLS::Max(differential->XMin(),m_stop[0]),0);
+  p_total = differential->IntegralY(m_stop[0],m_start[0],
+				    ATOOLS::nullstring,ATOOLS::nullstring,false);
   m_sigmahard=p_total->YMax();
+  CalculateSigmaND();
   p_total->ScaleY(1.0/m_norm);
 #ifdef DEBUG__Simple_Chain
   comments.clear();
@@ -770,7 +778,6 @@ bool Simple_Chain::Initialize()
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
   CleanUp();
-  CalculateSigmaND();
   ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetInputPath(InputPath());
   if (!m_external) {
@@ -788,6 +795,7 @@ bool Simple_Chain::Initialize()
   SetInputFile(xsfile,1);
   double stop;
   if (!reader->ReadFromFile(stop,"EVENT_X_MIN")) stop=Stop(0);
+  SetStop(stop,0);
   delete reader;
   for (unsigned int i=0;i<m_blobs.size();++i) {
     if (!CreateGrid(m_blobs[i],m_filename[i])) {
@@ -801,8 +809,6 @@ bool Simple_Chain::Initialize()
     throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Determination of \\sigma_{tot} failed.",
 			    "Simple_Chain","Initialize"));
   }
-  SetStart(p_total->XMax(),0);
-  SetStop(ATOOLS::Max(p_total->XMin(),stop),0);
   if (!InitializeBlobList()) {
     throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"Cannot initialize selected processes.",
 			    "Simple_Chain","Initialize"));
