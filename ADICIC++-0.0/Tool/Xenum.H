@@ -1,5 +1,5 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/03/11
+//Version: 1 ADICIC++-0.0/2005/01/31
 
 //A collection of specific enum structures.
 
@@ -24,6 +24,8 @@
 //===================================================================
 
 
+#ifdef __GNUC__
+#if __GNUC__ > 2
 enum xbool {
   negative=-1,    nil=0,       positive=1,
   minus=-1,                    plus=1,
@@ -31,6 +33,15 @@ enum xbool {
   end=-1,         both=0,      front=1,
                   between=0
 };
+#else
+enum xbool {
+  negative=-1,    nil=0,       positive=1,
+  onn=-1,         off=0,       on=1,
+  end=-1,         both=0,      front=1,
+                  between=0
+};
+#endif
+#endif
 
 
 

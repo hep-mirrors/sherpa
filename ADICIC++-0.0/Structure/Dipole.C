@@ -1,11 +1,14 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/06
+//Version: 2 ADICIC++-0.0/2005/01/31
 
 //Implementation of Dipole.H.
 
 
-
+#ifdef __GNUC__
+#if __GNUC__ >2
 #include <ios>
+#endif
+#endif
 #include <iomanip>
 #include <string>
 #include <sstream>

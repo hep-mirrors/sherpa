@@ -78,6 +78,8 @@ Chain_Handler::Chain_Handler()
 
   PresetCompScale();
 
+#ifdef __GNUC__
+#if __GNUC__ >2
   fp_finddip[0]=&ADICIC::Chain_Handler::
     FindTheDipole<Chain_Evolution_Strategy::Unknown>;
   fp_finddip[1]=&ADICIC::Chain_Handler::
@@ -86,6 +88,8 @@ Chain_Handler::Chain_Handler()
     FindTheDipole<Chain_Evolution_Strategy::Emission>;
   fp_finddip[3]=&ADICIC::Chain_Handler::
     FindTheDipole<Chain_Evolution_Strategy::Mass>;
+#endif
+#endif
 
 }
 
@@ -104,6 +108,8 @@ Chain_Handler::Chain_Handler(Chain& cha)
 
   PresetCompScale();
 
+#ifdef __GNUC__
+#if __GNUC__ >2
   fp_finddip[0]=&ADICIC::Chain_Handler::
     FindTheDipole<Chain_Evolution_Strategy::Unknown>;
   fp_finddip[1]=&ADICIC::Chain_Handler::
@@ -112,6 +118,8 @@ Chain_Handler::Chain_Handler(Chain& cha)
     FindTheDipole<Chain_Evolution_Strategy::Emission>;
   fp_finddip[3]=&ADICIC::Chain_Handler::
     FindTheDipole<Chain_Evolution_Strategy::Mass>;
+#endif
+#endif
 
   if(cha|*this) {
     if(cha.IsHandledBy(*this));

@@ -15,7 +15,7 @@ endif
 
 
 
-AM_CXXFLAGS = -pedantic -Wall -Winline
+AM_CXXFLAGS = -pedantic -Wall -Winline -ftemplate-depth-100
 
 
 

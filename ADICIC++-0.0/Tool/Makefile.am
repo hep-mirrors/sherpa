@@ -27,7 +27,7 @@ libAdicicTool_la_SOURCES = Xio.C Xmath.C \
 
 
 #AM_CXXFLAGS = -pedantic -Wall -Winline -DUSING_SHERPA
-AM_CXXFLAGS = -pedantic -Wall -Winline
+AM_CXXFLAGS = -pedantic -Wall -Winline -ftemplate-depth-100
 
 
 

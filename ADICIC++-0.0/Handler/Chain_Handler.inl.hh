@@ -154,7 +154,22 @@ namespace ADICIC {
 
   inline const bool Chain_Handler::FindDipole() {
     //return FindDecDipole<Chain_Evolution_Strategy::Ret>();
+#ifdef __GNUC__
+#if __GNUC__ >2
     return (this->*fp_finddip[s_param])();
+#else
+    switch(s_param) {
+    case 1:
+      return (this->FindTheDipole<Chain_Evolution_Strategy::Production>());
+    case 2:
+      return (this->FindTheDipole<Chain_Evolution_Strategy::Emission>());
+    case 3:
+      return (this->FindTheDipole<Chain_Evolution_Strategy::Mass>());
+    default:
+      return (this->FindTheDipole<Chain_Evolution_Strategy::Unknown>());
+    }
+#endif
+#endif
   }
 
 

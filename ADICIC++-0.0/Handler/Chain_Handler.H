@@ -1,5 +1,5 @@
 //bof
-//Version: 2 ADICIC++-0.0/2004/09/09    (surely preliminarily)
+//Version: 2 ADICIC++-0.0/2005/01/31    (surely preliminarily)
 
 //Only the Chain_Handler structure can reasonably modify the state of a Chain.
 
@@ -51,7 +51,11 @@ namespace ADICIC {
 
     //enum,class
 
+#ifdef __GNUC__
+#if __GNUC__ >2
     typedef const bool (ADICIC::Chain_Handler::*FindDipole_Func)();
+#endif
+#endif
 
     //Blocked methods:
     //================
@@ -81,7 +85,11 @@ namespace ADICIC {
     std::list<Dipole*>::iterator i_fix;
     std::list<Dipole*>::iterator i_run;
 
+#ifdef __GNUC__
+#if __GNUC__ >2
     FindDipole_Func fp_finddip[4];
+#endif
+#endif
 
     //========================
     bool                f_bot;

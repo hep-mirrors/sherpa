@@ -1,19 +1,18 @@
 //bof
-//Version: 1 ADICIC++-0.0/2004/07/12
+//Version: 1 ADICIC++-0.0/2005/01/31
 
 //Implementation of Xio.H.
 
 
 
-#include <ios>
-#include <iomanip>
-#include <sstream>
 #include "Xio.H"
 
 
-
-
-
+#ifdef __GNUC__
+#if __GNUC__ > 2
+#include <ios>
+#include <iomanip>
+#include <sstream>
 using std::ios;
 using std::istream;
 using std::string;
@@ -24,6 +23,12 @@ using std::cin;
 using std::cout;
 using std::endl;
 using std::ends;
+#else
+#define GCC_295 GCC_295
+#include <iomanip.h>
+#include <strstream.h>
+#endif
+#endif
 
 
 
@@ -98,24 +103,33 @@ string sformat::operator()(const char c) const {
 
 
 string sformat::operator()(const double& D) const {
-  //const short size=80;
-  //char outbuf[size];
-  //ostrstream ostr(outbuf,size);
+
+#ifdef GCC_295
+  const short size=80;
+  char outbuf[size];
+  ostrstream ostr(outbuf,size);
+#else
   stringstream ostr;
+#endif
 
   if(cmm) ostr.setf(ios::fixed|ios::showpoint,ios::floatfield);
   ostr<<std::setprecision(dgt)<<D<<ends;
 
-  //string S(outbuf);
+#ifdef GCC_295
+  string S(outbuf);
+  int white=wth-S.length();
+#else
   string S; ostr>>S;
-
   int white=wth-S.length()+1;
+#endif
+
   if(white>0) {
     if(adj) S.insert(0, string(white,'°'));
     else S.append(white, '°');
   }
 
   return S;
+
 }
 
 
