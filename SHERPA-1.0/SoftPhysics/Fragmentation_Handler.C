@@ -93,7 +93,7 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
 			   <<"Cannot find connected parton for parton ("
 			   <<cur->Number()<<") in event ["
 			   <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]"<<std::endl;
-	ATOOLS::msg.Tracking()<<"   Empty blob list and retry event."<<std::endl;
+	msg_Tracking()<<"   Empty blob list and retry event."<<std::endl;
 	while (bloblist->size()>0) {
 	  delete *bloblist->begin();
 	  bloblist->erase(bloblist->begin());

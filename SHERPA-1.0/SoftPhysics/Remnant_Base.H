@@ -10,22 +10,30 @@ namespace SHERPA {
 
   class MI_Handler;
 
-  class Remnant_Base: public ATOOLS::Remnant_Info {
-  public:
-
-    enum TypeID { 
-      Intact   =  0,
-      Hadron   =  1,
-      Electron =  2,
-      Photon   =  3 
+  struct rtp {
+    
+    enum code { 
+      intact      =  0,
+      qcd_remnant =  1,
+      hadron      =  3,
+      photon      =  5, 
+      electron    =  8
     };
 
+  };//end of struct rtp
+
+  inline bool operator&(const rtp::code code1,const rtp::code code2)
+  { return (rtp::code)((int)code1&(int)code2); }
+
+  std::ostream &operator<<(std::ostream &ostr,const rtp::code code);
+
+  class Remnant_Base: public ATOOLS::Remnant_Info {
   protected:
     
-    TypeID       m_type;
+    rtp::code    m_type;
     unsigned int m_beam, m_errors;
 
-    ATOOLS::Particle_List m_parton[3];
+    ATOOLS::Particle_List m_parton[2];
 
     ATOOLS::Particle *p_last[2];
     Remnant_Base     *p_partner;
@@ -49,7 +57,7 @@ namespace SHERPA {
   public:
 
     // constructor
-    Remnant_Base(const TypeID type,const unsigned int beam);
+    Remnant_Base(const rtp::code type,const unsigned int beam);
 
     // destructor
     virtual ~Remnant_Base();
@@ -71,7 +79,7 @@ namespace SHERPA {
     inline ATOOLS::Particle *Last()     { m_active=false; return p_last[0]; }
     inline ATOOLS::Blob     *BeamBlob() { return p_beamblob;                }
 
-    inline TypeID       Type() const { return m_type; }
+    inline rtp::code    Type() const { return m_type; }
     inline unsigned int Beam() const { return m_beam; }
 
     inline MI_Handler *const MIHandler() { return p_mihandler; }
@@ -80,7 +88,7 @@ namespace SHERPA {
 
     inline void ClearErrors() { m_errors=0; }
 
-    inline void ExtractParton(ATOOLS::Particle *parton) { m_parton[1].push_back(parton); }
+    inline void Extract(ATOOLS::Particle *parton) { m_parton[1].push_back(parton); }
 
   };// end of class Remnant_Base
 

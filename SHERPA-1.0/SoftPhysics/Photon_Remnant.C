@@ -5,7 +5,7 @@
 using namespace SHERPA;
 
 Photon_Remnant::Photon_Remnant(const unsigned int _m_beam):
-  Remnant_Base(Photon_Remnant::Photon,_m_beam) {}
+  Remnant_Base(rtp::photon,_m_beam) {}
 
 bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist)
 {

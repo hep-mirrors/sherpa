@@ -276,12 +276,12 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
   p_filled->insert(cur2);
   p_filled->insert(cur1);
   if (!(cur1->Momentum()[0]>0.)) {
-    ATOOLS::msg.Tracking()<<"Primordial_KPerp::FillKPerp(..): "
+    msg_Tracking()<<"Primordial_KPerp::FillKPerp(..): "
 			  <<"Parton ("<<cur1->Number()<<") has non-positive energy "
 			  <<cur1->Momentum()<<std::endl;
   }
   if (!(cur2->Momentum()[0]>0.)) {
-    ATOOLS::msg.Tracking()<<"Primordial_KPerp::FillKPerp(..): "
+    msg_Tracking()<<"Primordial_KPerp::FillKPerp(..): "
 			  <<"Parton ("<<cur2->Number()<<") has non-positive energy "
 			  <<cur2->Momentum()<<std::endl;
   }

@@ -5,7 +5,7 @@
 using namespace SHERPA;
 
 No_Remnant::No_Remnant(const unsigned int _m_beam):
-  Remnant_Base(No_Remnant::Intact,_m_beam) {}
+  Remnant_Base(rtp::intact,_m_beam) {}
 
 bool No_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist)
 {

@@ -10,15 +10,14 @@ namespace SHERPA {
 
     ATOOLS::Vec4D m_hardpt;
 
+    size_t m_last;
+
     void GetConstituents(ATOOLS::Flavour flav);
 
     double GetXPDF(ATOOLS::Flavour flavour,double scale);
     void   DiceKinematics();
 
-    bool TreatFirstQuark(ATOOLS::Particle *cur);
-    bool TreatFirstGluon(ATOOLS::Particle *cur);
-    bool TreatQuark(ATOOLS::Particle *cur);
-    bool TreatGluon(ATOOLS::Particle *cur);
+    bool AttachLastRemnants();
 
   public:
     
@@ -30,6 +29,8 @@ namespace SHERPA {
     double MinimalEnergy(const ATOOLS::Flavour &flavour); 
     
     bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist);
+
+    void UnDo();
 
   };// end of class Remnant_Base
 

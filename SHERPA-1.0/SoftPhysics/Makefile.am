@@ -22,6 +22,7 @@ libSherpaSoftPhysics_la_SOURCES	      =	\
 					Primordial_KPerp.C \
 					Remnant_Base.C \
 					No_Remnant.C \
+					QCD_Remnant_Info.C \
 					QCD_Remnant_Base.C \
 					Hadron_Remnant.C \
 					Electron_Remnant.C \
@@ -34,6 +35,7 @@ noinst_HEADERS        =	\
 			Primordial_KPerp.IC \
 			Remnant_Base.H \
 			No_Remnant.H \
+			QCD_Remnant_Info.H \
 			QCD_Remnant_Base.H \
 			Hadron_Remnant.H \
 			Electron_Remnant.H \

@@ -6,11 +6,18 @@
 #include "No_Remnant.H"
 #include "Data_Read.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Beam_Remnant_Handler
+#endif
+#ifdef PROFILE__Beam_Remnant_Handler
+#include "prof.hh" 
+#else
+#define PROFILE_HERE
+#endif
+
 using namespace SHERPA;
 
-#include "Run_Parameter.H"
-
-#define DEBUG__Beam_Remnant_Handler
+//#define DEBUG__Beam_Remnant_Handler
 
 #ifndef DEBUG__Beam_Remnant_Handler
 inline void SumMomenta(ATOOLS::Blob *bl) {}
@@ -59,7 +66,7 @@ Beam_Remnant_Handler::Beam_Remnant_Handler(std::string _m_path,std::string _m_fi
   p_beam(_p_beam),
   m_path(_m_path), 
   m_file(_m_file),
-  m_maxtrials(10),
+  m_maxtrials(1),
   m_fill(true)
 {
   for (size_t i=0;i<2;++i) {
@@ -179,6 +186,7 @@ bool Beam_Remnant_Handler::RemoveConnected(ATOOLS::Blob *blob)
 
 bool Beam_Remnant_Handler::RemoveLast()
 {
+  PROFILE_HERE;
   m_removed.clear();
   for (ATOOLS::Blob_List::iterator bit=p_bloblist->end()-1;
        bit!=p_bloblist->begin();--bit) {
@@ -193,6 +201,7 @@ bool Beam_Remnant_Handler::RemoveLast()
 bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 					 ATOOLS::Particle_List *particlelist)
 { 
+  PROFILE_HERE;
   p_bloblist=bloblist;
   p_particlelist=particlelist;
   if (!m_fill) return false;
@@ -208,7 +217,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
       treat[i]=false;
       for (ATOOLS::Blob_List::iterator biter=bloblist->begin();biter!=endblob;++biter) {
 	if ((*biter)->Beam()==i && (*biter)->Type()==ATOOLS::btp::IS_Shower) { 
-	  if (p_beampart[i]->Type()==Remnant_Base::Hadron) {
+	  if (p_beampart[i]->Type()&rtp::qcd_remnant) {
 	    if (trials==0 && !okay) {
 	      blob = new ATOOLS::Blob();
 	      bloblist->insert(bloblist->begin(),blob);
@@ -223,7 +232,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 	      p_beamblob[i]=blob;
 	      okay=true;
 	    }
-	    p_beampart[i]->ExtractParton((*biter)->InParticle(0));
+	    p_beampart[i]->Extract((*biter)->InParticle(0));
 	    if (trials>0) p_beamblob[i]->RemoveOutParticle((*biter)->InParticle(0));
 	    (*biter)->SetStatus(2);
 	    treat[i]=true;
@@ -235,7 +244,7 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 	    blob->SetType(ATOOLS::btp::Beam);
 	    blob->SetBeam(i);
 	    blob->SetStatus(1);
-	    p_beampart[i]->ExtractParton((*biter)->InParticle(0));
+	    p_beampart[i]->Extract((*biter)->InParticle(0));
 	    if (trials>0) p_beamblob[i]->RemoveOutParticle((*biter)->InParticle(0));
 	    ATOOLS::Particle *p = new 
 	      ATOOLS::Particle(-1,p_isr->Flav(i),p_beam->GetBeam(i)->OutMomentum());
@@ -252,13 +261,11 @@ bool Beam_Remnant_Handler::FillBeamBlobs(ATOOLS::Blob_List *bloblist,
 	}
       }
     }
-    while (!success) {
-      success=true;
-      if (treat[0]) success=success&&p_beampart[0]->FillBlob(p_beamblob[0],particlelist);
-      if (treat[1]) success=success&&p_beampart[1]->FillBlob(p_beamblob[1],particlelist);
-    }
-    if ((p_beampart[0]->Type()==Remnant_Base::Hadron)||
-	(p_beampart[1]->Type()==Remnant_Base::Hadron)) {
+    success=true;
+    if (treat[0]) success=success&&p_beampart[0]->FillBlob(p_beamblob[0],particlelist);
+    if (treat[1]) success=success&&p_beampart[1]->FillBlob(p_beamblob[1],particlelist);
+    if ((p_beampart[0]->Type()==rtp::hadron)||
+	(p_beampart[1]->Type()==rtp::hadron)) {
       p_kperp->CreateKPerp(p_beamblob[0],p_beamblob[1]);
       for (size_t i=0;i<2;++i) p_kperp->FillKPerp(p_beamblob[i]);
     }

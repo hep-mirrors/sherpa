@@ -35,23 +35,23 @@ Soft_Interface::Soft_Interface() {
 }
    
 Soft_Interface::~Soft_Interface() {
-  msg.Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
-  msg.Tracking()<<"In Soft_Interface::~Soft_Interface :"<<std::endl;
+  msg_Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
+  msg_Tracking()<<"In Soft_Interface::~Soft_Interface :"<<std::endl;
 
   if (!(mypartons->empty())) {
     mypartons->erase(mypartons->begin(),mypartons->end());
   }
   if (mypartons)    delete mypartons;
-  msg.Tracking()<<"   Deleted mypartons."<<std::endl;
+  msg_Tracking()<<"   Deleted mypartons."<<std::endl;
 
   if (constituents) delete constituents;
-  msg.Tracking()<<"   Deleted constituents."<<std::endl;
+  msg_Tracking()<<"   Deleted constituents."<<std::endl;
 
   if (n_const)      delete n_const;
-  msg.Tracking()<<"   Deleted n_const."<<std::endl;
+  msg_Tracking()<<"   Deleted n_const."<<std::endl;
 
-  msg.Tracking()<<"Out Soft_Interface::~Soft_Interface :"<<std::endl;
-  msg.Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
+  msg_Tracking()<<"Out Soft_Interface::~Soft_Interface :"<<std::endl;
+  msg_Tracking()<<"+++++++++++++++++++++++++++++++++++++++++++++++"<<std::endl;
 }; 
 
 
@@ -60,11 +60,11 @@ Soft_Interface::~Soft_Interface() {
 void Soft_Interface::EmptyMyLists() {
   if (!(mypartons->empty())) {
     mypartons->erase(mypartons->begin(),mypartons->end());
-    msg.Debugging()<<"   Deleted partons of internal parton list."<<std::endl;
+    msg_Debugging()<<"   Deleted partons of internal parton list."<<std::endl;
   }
   if (!(myblobs->empty())) {
     myblobs->erase(myblobs->begin(),myblobs->end());
-    msg.Debugging()<<"   Deleted partons of internal parton list."<<std::endl;
+    msg_Debugging()<<"   Deleted partons of internal parton list."<<std::endl;
   }
 }
 
@@ -89,7 +89,7 @@ bool Soft_Interface::PerformFragmentation(ATOOLS::Blob_List * bl,
 }
 
 bool Soft_Interface::ExtractSinglets(Blob_List * bl,Parton_List * pl) {
-  msg.Debugging()<<"Soft_Interface::ExtractSinglets :"<<std::endl<<(*pl)<<std::endl;
+  msg_Debugging()<<"Soft_Interface::ExtractSinglets :"<<std::endl<<(*pl)<<std::endl;
   bool found = 0;
 
   Blob   * newb=0;
@@ -101,7 +101,7 @@ bool Soft_Interface::ExtractSinglets(Blob_List * bl,Parton_List * pl) {
       if ( ((((*piter)->Flav().IsQuark()) && (!(*piter)->Flav().IsAnti())) ||
 	    (((*piter)->Flav().IsDiQuark()) && (*piter)->Flav().IsAnti())) &&
 	   ((*piter)->GetFlow(1) > 0)) {
-	msg.Debugging()<<"   Start new singlet chain."<<std::endl
+	msg_Debugging()<<"   Start new singlet chain."<<std::endl
 		       <<"   for parton : "<<(*piter)<<std::endl;
 
 	if (use_one_blob==0 || newb==0) {
@@ -131,7 +131,7 @@ bool Soft_Interface::ExtractSinglets(Blob_List * bl,Parton_List * pl) {
     }
   }
   if (!(found)) {
-    msg.Debugging()<<"Soft_Interface::ExtractSinglets :"
+    msg_Debugging()<<"Soft_Interface::ExtractSinglets :"
 		   <<"Could not find any colour singlet in this process."<<std::endl;
     return 1;
   }
@@ -140,14 +140,14 @@ bool Soft_Interface::ExtractSinglets(Blob_List * bl,Parton_List * pl) {
 
 
 bool Soft_Interface::FindConnected(Parton_List * pl,Parton * compare,Blob * blob) {
-  msg.Debugging()<<"Soft_Interface::FindConnected :"<<std::endl;
+  msg_Debugging()<<"Soft_Interface::FindConnected :"<<std::endl;
 
   for (Parton_Iterator piter = pl->begin();piter != pl->end();++piter) {
     if ((*piter) == compare) continue;
     if ( ((*piter)->Info() != 'F') && ((*piter)->Info() != 'H')) continue;
     if ((*piter)->Status() != 1) continue; 
     if ((*piter)->GetFlow(2) == compare->GetFlow(1)) {
-      msg.Debugging()<<"Colour match for "<<compare->GetFlow(1)<<std::endl;
+      msg_Debugging()<<"Colour match for "<<compare->GetFlow(1)<<std::endl;
       Parton * newp = (*piter);
       newp->SetStatus(2);
       newp->SetDec(blob);
@@ -157,11 +157,11 @@ bool Soft_Interface::FindConnected(Parton_List * pl,Parton * compare,Blob * blob
 
       if ((*piter)->GetFlow(1) ==0) {
 	if (((*piter)->Flav().IsQuark()) && ((*piter)->Flav().IsAnti())) {
-	  msg.Debugging()<<"Closed singlet list with an antiquark."<<std::endl;
+	  msg_Debugging()<<"Closed singlet list with an antiquark."<<std::endl;
 	  return 1;
 	}
 	if (((*piter)->Flav().IsDiQuark()) && (!((*piter)->Flav().IsAnti()))) {
-	  msg.Debugging()<<"Closed singlet list with a diquark."<<std::endl;
+	  msg_Debugging()<<"Closed singlet list with a diquark."<<std::endl;
 	  return 1;
 	}
       }
@@ -230,7 +230,7 @@ int Soft_Interface::Constituents(Flavour had,Flavour * flavs) {
     if (had.IsAnti()) {
       for(int i=0;i<3;i++) flavs[i]=flavs[i].Bar();
     }
-    msg.Events()<<"Soft_Interface::Constituents for "<<had<<" is baryon :"
+    msg_Events()<<"Soft_Interface::Constituents for "<<had<<" is baryon :"
 		<<hadint<<std::endl<<"   "<<flavs[0]<<", "<<flavs[1]<<", "<<flavs[2]<<std::endl;
 
     return 3;
@@ -242,7 +242,7 @@ int Soft_Interface::Constituents(Flavour had,Flavour * flavs) {
     if (had.IsAnti()) {
       for(int i=0;i<2;i++) flavs[i]=flavs[i].Bar();
     }
-    msg.Events()<<"Soft_Interface::Constituents for "<<had<<" is meson :"
+    msg_Events()<<"Soft_Interface::Constituents for "<<had<<" is meson :"
 		<<hadint<<std::endl<<"   "<<flavs[0]<<", "<<flavs[1]<<std::endl;
 
     return 2;
@@ -255,7 +255,7 @@ int Soft_Interface::Constituents(Flavour had,Flavour * flavs) {
 }      
 
 bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
-  msg.Tracking()<<"Soft_Interface::FillHadron : "
+  msg_Tracking()<<"Soft_Interface::FillHadron : "
 		<<part->Flav()<<" in "<<blob->InParton(0)->Flav()<<std::endl;
 
 
@@ -284,7 +284,7 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
   */
   for (int i=0;i<3;i++) {
     if (part->Flav() == constituents[blob->Beam()][i]) {
-      msg.Tracking()<<"   Parton is one of the constituents "
+      msg_Tracking()<<"   Parton is one of the constituents "
 		    <<blob->InParton(0)->Flav()<<std::endl;
 
       pos = 0;
@@ -344,7 +344,7 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
     else difl = Flavour(kf::code(di[0]*1100+3));
     if (constituents[blob->Beam()][0].IsAnti()) difl = difl.Bar();
 
-    msg.Tracking()<<"   Parton is a gluon."<<std::endl<<"   Split "
+    msg_Tracking()<<"   Parton is a gluon."<<std::endl<<"   Split "
 		  <<blob->InParton(0)->Flav()<<" into "<<fl<<" and "<<difl<<std::endl;
     
     vec1 = GetX(fl,difl,vec[0]) * vec;
@@ -412,7 +412,7 @@ bool Soft_Interface::FillHadron(Parton_List * pl,Blob * blob,Parton * part) {
     else difl = Flavour(kf::code(di[0]*1100+3));
     if (constituents[blob->Beam()][0].IsAnti()) difl = difl.Bar();
 
-    msg.Tracking()<<"   Parton is a quark."<<std::endl
+    msg_Tracking()<<"   Parton is a quark."<<std::endl
 		  <<"   Split "<<blob->InParton(0)->Flav()
 		  <<" into "<<fl<<" and "<<difl<<std::endl;
     

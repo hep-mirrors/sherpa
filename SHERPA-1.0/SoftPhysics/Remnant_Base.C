@@ -5,9 +5,30 @@
 #include "Momentum_Shifter.H"
 #include "MI_Handler.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Remnant_Base
+#endif
+#ifdef PROFILE__Remnant_Base
+#include "prof.hh" 
+#else
+#define PROFILE_HERE
+#endif
+
 using namespace SHERPA;
 
-Remnant_Base::Remnant_Base(const TypeID type,const unsigned int beam):
+std::ostream &SHERPA::operator<<(std::ostream &ostr,const rtp::code code)
+{
+  switch (code) {
+  case rtp::intact:      return ostr<<"Intact";
+  case rtp::qcd_remnant: return ostr<<"QCD Remnant";
+  case rtp::hadron:      return ostr<<"Hadron";
+  case rtp::photon:      return ostr<<"Photon";
+  case rtp::electron:    return ostr<<"Electron";
+  }
+  return ostr;
+}
+
+Remnant_Base::Remnant_Base(const rtp::code type,const unsigned int beam):
   m_type(type),
   m_beam(beam),
   p_partner(NULL),
@@ -17,7 +38,7 @@ Remnant_Base::~Remnant_Base() {}
 
 void Remnant_Base::Clear()
 {
-  for (size_t i=0;i<3;++i) m_parton[i].clear();
+  for (short unsigned int i=0;i<2;++i) m_parton[i].clear();
   m_active=true;
   p_last[1]=p_last[0]=NULL;
   p_beamblob=NULL;
@@ -25,7 +46,8 @@ void Remnant_Base::Clear()
 }
 
 bool Remnant_Base::AdjustKinematics()
-  {
+{
+  PROFILE_HERE;
   if (!m_active) return true;
   if (p_partner==NULL) {
     throw(ATOOLS::Exception(ATOOLS::ex::critical_error,"No partner remnant found.",
@@ -78,7 +100,7 @@ bool Remnant_Base::AdjustKinematics()
 
 void Remnant_Base::UnDo() 
 {
-  ATOOLS::msg.Tracking()<<"Remnant_Base::UnDo(): Undoing changes on blob list."<<std::endl;
+  msg_Tracking()<<"Remnant_Base::UnDo(): Undoing changes on blob list."<<std::endl;
   while (p_beamblob->NOutP()>0) {
     p_beamblob->RemoveOutParticle(p_beamblob->OutParticle(0));
   }
@@ -86,7 +108,6 @@ void Remnant_Base::UnDo()
     delete *m_parton[0].begin();
     m_parton[0].erase(m_parton[0].begin());
   }
-  m_parton[2].clear();
   ++m_errors;
 }
 
@@ -115,6 +136,7 @@ bool Remnant_Base::FindHardProcess(ATOOLS::Particle *const initiator,ATOOLS::Blo
 void Remnant_Base::FindIncoming(ATOOLS::Blob *const blob,const size_t beam,
 				ATOOLS::Particle *&incoming)
 {
+  PROFILE_HERE;
   for (size_t i=0;i<(size_t)blob->NInP();++i) {
     ATOOLS::Particle *cur=blob->InParticle(i);
     if (cur->ProductionBlob()->Type()==ATOOLS::btp::Beam) {
@@ -128,7 +150,8 @@ void Remnant_Base::FindIncoming(ATOOLS::Blob *const blob,const size_t beam,
 
 bool Remnant_Base::AcquireMass(const ATOOLS::Particle *left,
 			       const ATOOLS::Particle *right,const double newsp)
-{
+{ 
+  PROFILE_HERE;
   ATOOLS::Vec4D P=left->Momentum()+right->Momentum();
   ATOOLS::Vec4D p=p_last[0]->Momentum()+p_last[1]->Momentum();
   double C=(P[0]+p[0])/(P[3]+p[3]), D=0.5*(p.MPerp2()-newsp)/(P[3]+p[3]), E=P[0]-C*(P[3]-D);
@@ -142,6 +165,7 @@ bool Remnant_Base::AcquireMass(const ATOOLS::Particle *left,
 
 bool Remnant_Base::AdjustEnergy()
 {
+  PROFILE_HERE;
   ATOOLS::Blob *process=NULL;
   double sp1=ATOOLS::sqr(p_last[0]->Flav().PSMass())+p_last[0]->Momentum().PPerp2();
   double sp2=ATOOLS::sqr(p_last[1]->Flav().PSMass())+p_last[1]->Momentum().PPerp2();
