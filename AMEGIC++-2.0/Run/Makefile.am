@@ -1,9 +1,12 @@
-rootdir    = $(ROOTSYS)
-rootincdir = $(rootdir)/include
-rootlibdir = $(rootdir)/lib
-CLHEPlibdir   = $(CLHEPDIR)/lib
-CLHEPincdir   = $(CLHEPDIR)/include
 bin_PROGRAMS = Amegic
+
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
+		-lGraf3d -lGpad -lTree -lRint -lPostscript \
+		-lMatrix -lPhysics -lGui -ldl 
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+endif
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
@@ -16,12 +19,11 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libAmplitude.la \
 	       @libdir@/libZfunctions.la \
 	       @libdir@/libAmplTools.la \
+	       @libdir@/libPhasespace.la \
+	       @libdir@/libFoam.la \
 	       @libdir@/libModel.la \
 	       @libdir@/libIsajet.la \
 	       @libdir@/libString.la \
-	       @libdir@/libToolsPhys.la \
-	       @libdir@/libToolsMath.la \
-	       @libdir@/libToolsOrg.la \
 	       @libdir@/libModelMain.la \
 	       @libdir@/libHdecay.la \
 	       @libdir@/libIsajet.la \
@@ -35,10 +37,11 @@ Amegic_LDADD = @libdir@/libProcess.la \
 	       @libdir@/libPDF.la \
 	       @libdir@/libSudakov.la \
 	       @libdir@/libLHAPDF.la \
-	       @libdir@/libPhasespace.la \
 	       @libdir@/libBeam.la \
-	       -lg2c -lm -ldl
-#	       -L$(rootlibdir) -lCint -lCore -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lGui -ldl
+	       @libdir@/libToolsPhys.la \
+	       @libdir@/libToolsMath.la \
+	       @libdir@/libToolsOrg.la \
+	       -lg2c -lm -ldl $(ROOTLIBS)
 Amegic_LDFLAGS =  -rdynamic
 noinst_HEADERS = Environment.H 
 
@@ -59,7 +62,8 @@ INCLUDES = -I../Main \
 	   -I../../EXTRA_XS-1.0/Main \
 	   -I../../ATOOLS-2.0/Phys \
 	   -I../../ATOOLS-2.0/Math \
-	   -I../../ATOOLS-2.0/Org 
+	   -I../../ATOOLS-2.0/Org \
+	   $(ROOTINCS)
 SUBDIRS = Process
 EXTRA_DIST = makeclean $(CVSINCLUDE)
 

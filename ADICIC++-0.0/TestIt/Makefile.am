@@ -1,13 +1,13 @@
 MAKE    = make
 SUBDIRS = data
 
-rootdir     = $(ROOTSYS)
-rootincdir  = $(rootdir)/include
-rootlibdir  = $(rootdir)/lib
-CLHEPlibdir = $(CLHEPDIR)/lib
-CLHEPincdir = $(CLHEPDIR)/include
-
-
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
+		-lGraf3d -lGpad -lTree -lRint -lPostscript \
+		-lMatrix -lPhysics -lGui -ldl 
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+endif
 
 if CVS_INCLUDE
 CVSINCLUDE = CVS
@@ -34,7 +34,7 @@ Flavtest_LDADD = @libdir@/libAdicicTool.la \
                  @libdir@/libModelMain.la \
                  @libdir@/libHdecay.la \
                  @libdir@/libIsajet.la \
-                 -lg2c -lm -ldl
+                 -lg2c -lm -ldl $(ROOTLIBS)
 #Flavtest_LDFLAGS = -rdynamic
 
 
@@ -57,7 +57,7 @@ Emissiontest_LDADD = @libdir@/libAdicicTool.la \
                      @libdir@/libModelMain.la \
                      @libdir@/libHdecay.la \
                      @libdir@/libIsajet.la \
-                     -lg2c -lm -ldl
+                     -lg2c -lm -ldl $(ROOTLIBS)
 
 
 
@@ -73,7 +73,7 @@ Chaintest_LDADD = @libdir@/libAdicicTool.la \
                   @libdir@/libModelMain.la \
                   @libdir@/libHdecay.la \
                   @libdir@/libIsajet.la \
-                  -lg2c -lm -ldl
+                  -lg2c -lm -ldl $(ROOTLIBS)
 
 
 
@@ -89,7 +89,7 @@ Cascadetest_LDADD = @libdir@/libAdicicTool.la \
                     @libdir@/libModelMain.la \
                     @libdir@/libHdecay.la \
                     @libdir@/libIsajet.la \
-                    -lg2c -lm -ldl
+                    -lg2c -lm -ldl $(ROOTLIBS)
 
 
 
