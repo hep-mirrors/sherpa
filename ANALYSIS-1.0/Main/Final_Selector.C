@@ -255,10 +255,10 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
     msg.Error()<<" WARNING: particle list "<<m_inlistname<<" not found "<<std::endl;
     return;
   }
-  if (m_fmap.empty() && m_cmap.empty()) {
-    p_ana->AddParticleList(m_outlistname,pl_in);
-    return;
-  }
+//   if (m_fmap.empty() && m_cmap.empty()) {
+//     p_ana->AddParticleList(m_outlistname,pl_in);
+//     return;
+//   }
 
   Particle_List * pl_out = new Particle_List;
   
