@@ -4,7 +4,8 @@ LOGFILE="sherpa_install.log"
 
 DIRS="ATOOLS-2.0 BEAM-1.0 PDF-1.0 MODEL-1.0 PHASIC++-1.0"
 DIRS=$DIRS" EXTRA_XS-1.0 APACIC++-2.0 AMEGIC++-2.0"
-#DIRS=$DIRS" AMISIC++-1.0 ADICIC++-1.0"
+#DIRS=$DIRS" AMISIC++-1.0"
+#DIRS=$DIRS" ADICIC++-1.0"
 DIRS=$DIRS" SHERPA-1.0"
 #DIRS=$DIRS" COMPARE-1.0"
 
@@ -63,6 +64,7 @@ if [ "$SCRIPT" = "TRUE" ] ; then
   if ! test -f $NAME ; then 
     echo -e "#!/bin/bash\n\nlibtoolize --force\naclocal\nautomake -a\nautoconf\n" > $NAME
     echo -e "./configure\nmake install" >> $NAME
+    chmod 775 $NAME
   else
     echo "makeinstall: error: file '$NAME' already exists"
   fi
@@ -71,6 +73,7 @@ if [ "$SCRIPT" = "TRUE" ] ; then
     echo -e "#!/bin/bash\n\nDIRS=\"$DIRS\"\n\nfor I in \$DIRS ; do\n\n  cd \$I\n" > $NAME
     echo -e "  libtoolize --force\n  aclocal\n  automake -a\n  autoconf\n" >> $NAME
     echo -e "  ./configure\n  make install\n\n  cd ../\n\ndone" >> $NAME
+    chmod 775 $NAME
   else
     echo "makeinstall: error: file '$NAME' already exists"
   fi
