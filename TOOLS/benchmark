@@ -67,12 +67,14 @@ for I in $* ; do
   elif [ "$I" = "-f" ]; then DFILE=TRUE
   elif [ "$I" = "-l" ]; then DLOGFILE=TRUE
   elif [ "$I" = "-m" ]; then DMAILADDRESS=TRUE
+  elif [ "$I" = "-u" ]; then UPDATE=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "benchmark version 1.0" && echo && \
     echo "options: -p <path>      specifiy benchmark points in path <path>" && \
     echo "         -f <file>      specifiy benchmark points in file <file>" && \
     echo "         -l <logfile>   write benchmarking output to <logfile>" && \
     echo "         -m <address>   send benchmarking report to <address>" && \
+    echo "         -u             update from cvs before benchmarking" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DDIR" = "TRUE" ]; then DDIR="" && DIR=$I
@@ -114,16 +116,18 @@ else
   SendMail 1
 fi
 
-echo -en "updating current sherpa version from cvs ... " >> $LOGFILE
-echo -e "updating current sherpa version from cvs {\n" >> $OUTPUTFILE
-if ! cvs update >> $OUTPUTFILE 2>&1 ; then
-  echo -e "update failed\n\nbenchmark: cvs update failed" >> $LOGFILE
-  echo -e "\n} update failed\n\nbenchmark: cvs update failed" >> $OUTPUTFILE
-  CVS_ERROR=TRUE
-  SendMail 2
-else 
-  echo -e "finished" >> $LOGFILE
-  echo -e "\n} finished update\n" >> $OUTPUTFILE
+if [ "$UPDATE" = "TRUE" ] ; then
+  echo -en "updating current sherpa version from cvs ... " >> $LOGFILE
+  echo -e "updating current sherpa version from cvs {\n" >> $OUTPUTFILE
+  if ! cvs update -d >> $OUTPUTFILE 2>&1 ; then
+    echo -e "update failed\n\nbenchmark: cvs update failed" >> $LOGFILE
+    echo -e "\n} update failed\n\nbenchmark: cvs update failed" >> $OUTPUTFILE
+    CVS_ERROR=TRUE
+    SendMail 2
+  else 
+    echo -e "finished" >> $LOGFILE
+    echo -e "\n} finished update\n" >> $OUTPUTFILE
+  fi
 fi
 
 echo -en "compiling current sherpa version via '$COMPILECOMMAND' ... " >> $LOGFILE
