@@ -63,7 +63,7 @@ namespace ATOOLS {
     void   SetDecayBlob(Blob *);
     void   SetTime(const int);
     void   SetTime();
-    void   SetFlav(Flavour &);
+    void   SetFlav(const Flavour &);
     void   SetFlow(Flow *);
     void   SetFlow(int code_index,int code=0);
     void   SetNumber(const int);
@@ -107,6 +107,23 @@ namespace ATOOLS {
   public:
     bool operator() ( const Particle* p ) {
       if ( p && (p->Status() == 1) ) return 1;
+      return 0;
+    }
+  };
+
+  class Is_Charged {
+  public:
+    bool operator() ( const Particle* p ) {
+      if ( p && (p->Flav().IntCharge() !=0) ) return 1;
+      return 0;
+    }
+  };
+
+  class Is_Charged_Hadron {
+  public:
+    bool operator() ( const Particle* p ) {
+      if ( p && (p->Flav().IntCharge() !=0) 
+	   &&  p->Flav().IsHadron() &&  !p->Flav().IsDiQuark()) return 1;
       return 0;
     }
   };

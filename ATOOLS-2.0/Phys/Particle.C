@@ -222,7 +222,7 @@ Blob * Particle::DecayBlob()                      { return p_endblob; }
 
 // Flavour and flow
 Flavour   Particle::Flav() const                     { return m_fl; }
-void      Particle::SetFlav(Flavour & fl)            { m_fl   = fl; }
+void      Particle::SetFlav(const Flavour & fl)      { m_fl   = fl; }
 Flow    * Particle::GetFlow() const                  { return p_flow; }
 int       Particle::GetFlow(const int index) const   { return p_flow->Code(index); }
 void      Particle::SetFlow(Flow * _flow)            { p_flow = _flow; }
