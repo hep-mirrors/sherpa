@@ -114,10 +114,10 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
       getline(*m_infile[i],lastline);
       do {
 	if (checkbegin) {
-	  for (size_t j=0;j<m_filebegin.size();++j) {
-	    if (lastline.find(m_filebegin[j])!=std::string::npos) {
+	  for (size_t length=0,j=0;j<m_filebegin.size();++j) {
+	    if (Find(lastline,m_filebegin[j],length)!=std::string::npos) {
 	      if (filebegin==0) {
-		lastline=lastline.substr(lastline.find(m_filebegin[j])+m_filebegin[j].length());
+		lastline=lastline.substr(Find(lastline,m_filebegin[j],length)+length);
 	      }
 	      ++filebegin;
 	      break;
@@ -125,11 +125,11 @@ bool Read_Write_Base::OpenInFile(const unsigned int i)
 	  }
 	  if (filebegin==0) lastline=ATOOLS::nullstring;
 	  if (checkend && filebegin>0) {
-	    for (size_t j=0;j<m_fileend.size();++j) {
-	      if (lastline.find(m_fileend[j])!=std::string::npos) {
+	    for (size_t length=0,j=0;j<m_fileend.size();++j) {
+	      if (Find(lastline,m_fileend[j],length)!=std::string::npos) {
 		--filebegin;
 		if (filebegin==0) {
-		  lastline=lastline.substr(0,lastline.find(m_fileend[j]));
+		  lastline=lastline.substr(0,Find(lastline,m_fileend[j],length));
 		}
 		break;
 	      }
