@@ -154,7 +154,7 @@ double Hard_Decay_Handler::DefineSecondaryDecays(ATOOLS::Blob * _blob,bool _add)
 } 
 
 bool Hard_Decay_Handler::PerformDecay(ATOOLS::Blob * _blob) {
-  Decay_Channel * dc;
+  Decay_Channel * dc=0;
   Particle      * part = _blob->InParticle(0);
   for (DPTIt dptit=m_table.begin();dptit!=m_table.end();++dptit) {
     if (dptit->first->Flav()==part->Flav() &&
