@@ -50,7 +50,7 @@ namespace SHERPA {
     ~Matrix_Element_Handler();
 
     bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
-    bool CalculateTotalXSecs();
+    bool CalculateTotalXSecs(int);
     bool PrepareXSecTables();
     bool LookUpXSec(double,bool,std::string);
 
