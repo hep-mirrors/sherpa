@@ -10,7 +10,7 @@
 
 using namespace ATOOLS;
 
-bool ATOOLS::MakeDir(std::string path,const mode_t mode)
+bool ATOOLS::MakeDir(std::string path,const mode_t mode,const bool create_tree)
 {
   if (path=="") return false;
 #ifdef DEBUG__Shell_Tools
@@ -19,7 +19,13 @@ bool ATOOLS::MakeDir(std::string path,const mode_t mode)
   std::string piece;
   size_t pos=std::string::npos;
   if (path[path.length()-1]!='/') path+="/";
+  if (!create_tree) return !mkdir(path.c_str(),mode);
   while ((pos=path.find("/"))!=std::string::npos) {
+    if (pos==0) {
+      piece+=std::string("/");
+      path=path.substr(pos+1);      
+      pos=path.find("/");
+    }
     piece+=path.substr(0,pos)+std::string("/");
     path=path.substr(pos+1);
 #ifdef DEBUG__Shell_Tools

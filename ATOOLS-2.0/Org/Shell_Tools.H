@@ -6,7 +6,7 @@
 
 namespace ATOOLS {
 
-  bool MakeDir(std::string path,const mode_t mode);
+  bool MakeDir(std::string path,const mode_t mode,const bool create_tree=1);
 
   std::vector<std::string> EnvironmentVariable(const std::string &name,
 					       std::string entry="");
