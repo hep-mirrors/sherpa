@@ -20,9 +20,9 @@ Sherpa::Sherpa()
 
 Sherpa::~Sherpa() 
 {
-  if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
-  if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
   if (p_analysis)     { delete p_analysis;     p_analysis     = NULL; }
+  if (p_eventhandler) { delete p_eventhandler; p_eventhandler = NULL; }
+  if (p_inithandler)  { delete p_inithandler;  p_inithandler  = NULL; }
 }
 
 bool Sherpa::InitializeTheRun(std::string _path) { 
@@ -34,7 +34,7 @@ bool Sherpa::InitializeTheRun(std::string _path) {
   }
   msg.Error()<<"Error in Sherpa::InitializeRun("<<_path<<")"<<endl
 	     <<"   Did not manage to initialize the framework."<<endl
-	     <<"   Try to run neverthelesse ... ."<<endl;
+	     <<"   Try to run nevertheless ... ."<<endl;
   return 0;
 }
 
@@ -44,8 +44,8 @@ bool Sherpa::InitializeTheEventHandler() {
   p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
   p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
 						  p_inithandler->GetShowerHandler()));
-  p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
-						  p_inithandler->GetFragmentationHandler()));
+  //  p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
+  //						  p_inithandler->GetFragmentationHandler()));
   return 1;
 }
 
