@@ -22,9 +22,16 @@ Regulator_Base::~Regulator_Base() {}
 
 double Regulator_Base::operator()(const double dsigma) const
 {
-  ATOOLS::msg.Error()<<"Regulator_Base::operator[](..): "
+  ATOOLS::msg.Error()<<"Regulator_Base::operator()(..): "
 		     <<"Virtual method called."<<std::endl;
   return 0.0;
+}
+
+double Regulator_Base::operator[](const double scale) const
+{
+  ATOOLS::msg.Error()<<"Regulator_Base::operator[](..): "
+		     <<"Virtual method called."<<std::endl;
+  return scale;
 }
 
 Regulator_Base *Regulator_Base::GetRegulator(Single_XS *const xs,const std::string &regulator,

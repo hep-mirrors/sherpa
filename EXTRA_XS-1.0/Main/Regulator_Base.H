@@ -41,6 +41,7 @@ namespace EXTRAXS {
 
     // member functions
     virtual double operator()(const double dsigma) const;
+    virtual double operator[](const double scale) const;
     
     static Regulator_Base *GetRegulator(Single_XS *const xs,const std::string &regulator,
 					const std::vector<double> &parameters);

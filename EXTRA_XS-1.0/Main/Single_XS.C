@@ -111,6 +111,11 @@ double Single_XS::operator()(const double s,const double t,const double u)
   return 0.;
 }
 
+double Single_XS::Scale(const ATOOLS::Vec4D *momenta)
+{
+  return (*p_regulator)[XS_Base::Scale(momenta)];
+}
+
 size_t Single_XS::Size() 
 { 
   return 1; 

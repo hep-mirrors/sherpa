@@ -37,6 +37,8 @@ namespace EXTRAXS {
     double operator()(const double s,const double t,const double u);
     void   AddPoint(const double xs);
 
+    double Scale(const ATOOLS::Vec4D *momenta);
+
     bool CalculateTotalXSec(const std::string &resultpath);
     void WriteOutXSecs(std::ofstream &outfile);
 

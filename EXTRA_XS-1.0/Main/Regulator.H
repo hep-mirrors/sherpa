@@ -13,6 +13,7 @@ namespace EXTRAXS {
     
     // member functions
     double operator()(const double dsigma) const;
+    double operator[](const double scale) const;
     
     friend class Regulator_Base;
 
@@ -27,6 +28,7 @@ namespace EXTRAXS {
 
     // member functions
     double operator()(const double dsigma) const;
+    double operator[](const double scale) const;
     
     friend class Regulator_Base;
 
