@@ -31,8 +31,13 @@ void One_Particle_Observable_Base::Evaluate(int nout,const ATOOLS::Vec4D * moms,
 void One_Particle_Observable_Base::Evaluate(const Particle_List & plist,double weight,int ncount )
 {
   for (Particle_Const_Iterator plit=plist.begin();plit!=plist.end();++plit) {
-    if ((*plit)->Flav()==m_flav) Evaluate((*plit)->Momentum(),weight, ncount);
+    if ((*plit)->Flav()==m_flav) {
+      Evaluate((*plit)->Momentum(),weight, ncount);
+      return;
+    }
   }
+  
+  Evaluate(Vec4D(1.,0,0,1.),0, ncount);
 }
 
 

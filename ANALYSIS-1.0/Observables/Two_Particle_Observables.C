@@ -45,10 +45,12 @@ void Two_Particle_Observable_Base::Evaluate(const Particle_List & plist,double w
       for (Particle_Const_Iterator plit2=plist.begin();plit2!=plist.end();++plit2) {
 	if ((*plit2)->Flav()==m_flav2 && plit1!=plit2) {
 	  Evaluate((*plit1)->Momentum(),(*plit2)->Momentum(),weight,ncount);
+	  return;
 	}
       }
     }
   }
+  Evaluate(Vec4D(1.,0,0,1.),Vec4D(1.,0,0,-1.),0, ncount);
 }
 
 
