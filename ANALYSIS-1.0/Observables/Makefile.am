@@ -1,6 +1,6 @@
 SHERPASYS     =	../..
 
-ANALYSISFLAGS =	-pedantic -Wall -Winline -Wno-long-long
+ANALYSISFLAGS =	-pedantic -Wall -Winline
 
 ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
 ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
@@ -9,8 +9,10 @@ ANALYSISINCS  =	-I../Main
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
 endif
+
 if ROOT_SUPPORT
 ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
 lib_LTLIBRARIES           = libObservables.la
@@ -35,5 +37,5 @@ noinst_HEADERS            = \
 			    Shape_Observables_EE.H \
 			    Scaled_Observables.H
 EXTRA_DIST    = $(CVSINCLUDE)
-AM_CXXFLAGS   =	$(ANALYSISFLAGS)
+AM_CXXFLAGS   =	$(ANALYSISFLAGS) $(ROOTFLAGS)
 INCLUDES      =	$(ANALYSISINCS) $(ATOOLSINCS) $(ROOTINCS)

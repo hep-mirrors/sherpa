@@ -1,6 +1,12 @@
 #include "Two_Particle_Observables.H"
 #include "MyStrStream.H"
 
+#ifdef ROOT_SUPPORT
+#include "Scaling.H"
+#include "My_Root.H"
+#include "TH2D.h"
+#endif 
+
 using namespace ANALYSIS;
 using namespace ATOOLS;
 using namespace std;
@@ -111,26 +117,26 @@ Primitive_Observable_Base * Two_Particle_Scalar_PT::Copy() const
   return new Two_Particle_Scalar_PT(m_flav1,m_flav2,m_type,m_xmin,m_xmax,m_nbins,m_name,m_listname);
 }
 
-#include "Scaling.H"
-#include "My_Root.H"
-#include "TH2D.h"
-
+#ifdef ROOT_SUPPORT
 Two_Particle_Angles::Two_Particle_Angles(const Flavour & _flav1,const Flavour & _flav2,
 					 int _type,double _xmin,double _xmax,int _nbins,
 					 const std::string & _name, const std::string & _lname) :
   Two_Particle_Observable_Base(_flav1,_flav2,_type,_xmin,_xmax,_nbins,"Angles",_lname) 
 { 
   (*MYROOT::myroot)(new TH2D(ATOOLS::ToString(this).c_str(),
-			     (_flav1.Name()+std::string("_")+_flav2.Name()+
+			     (m_flav1.Name()+std::string("_")+m_flav2.Name()+
 			      std::string("_Angles")).c_str(),
 			     64,0.,M_PI,64,0.,M_PI),
-		    "BB_Angles");
+		    m_flav1.Name()+std::string("_")+m_flav2.Name()+
+		    std::string("_Angles"));
 }
 
 void Two_Particle_Angles::Evaluate(const Vec4D & mom1,const Vec4D & mom2,double weight, int ncount) 
 {
-  ((TH2D*)(*MYROOT::myroot)["BB_Angles"])->Fill(mom1.Theta(),mom2.Theta(),weight);
+  ((TH2D*)(*MYROOT::myroot)[m_flav1.Name()+std::string("_")+m_flav2.Name()+
+			    std::string("_Angles")])->Fill(mom1.Theta(),mom2.Theta(),weight);
 } 
+#endif
 
 Primitive_Observable_Base * Two_Particle_Angles::Copy() const 
 {
