@@ -4,6 +4,7 @@ using namespace ANALYSIS;
 
 #include "MyStrStream.H"
 #include "Kt_Algorithm.H"
+#include <algorithm>
 
 template <class Class>
 Primitive_Observable_Base *const GetObservable(const String_Matrix &parameters)
