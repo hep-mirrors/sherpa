@@ -24,6 +24,12 @@ Integrable_Base::~Integrable_Base()
   if (p_momenta!=NULL) delete [] p_momenta;
 }
 
+Integrable_Base *const Integrable_Base::Selected()
+{ 
+  if (p_selected!=this) return p_selected->Selected(); 
+  return this; 
+}
+
 void Integrable_Base::SetMomenta(const ATOOLS::Vec4D *momenta) 
 { 
   for (size_t i=0;i<NVector();++i) p_momenta[i]=momenta[i];

@@ -89,6 +89,8 @@ namespace PHASIC {
     virtual ATOOLS::Blob_Data_Base *WeightedEvent();
     virtual ATOOLS::Blob_Data_Base *SameWeightedEvent();
 
+    Integrable_Base *const Selected();
+
     // inline functions
     inline void SetName(const std::string &name) { m_name=name; }
 
@@ -139,8 +141,6 @@ namespace PHASIC {
 
     inline BEAM::Beam_Spectra_Handler *const Beam() const { return p_beamhandler; }
     inline PDF::ISR_Handler           *const ISR() const  { return p_isrhandler;  }
-
-    inline Integrable_Base *const Selected() const { return p_selected; }
 
   };// end of class Integrable_Base
 
