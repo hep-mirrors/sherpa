@@ -12,39 +12,38 @@ namespace SHERPA {
   class Perturbative_Interface {
   protected :
 
-    Matrix_Element_Handler * p_mehandler;
-    Shower_Handler         * p_shower;        
-    bool                     m_ini,m_fin;
-    int                      m_maxjetnumber;
-    double                   m_weight,m_scale;
-    ATOOLS::Flavour        * p_fl;
-    ATOOLS::Vec4D          * p_moms;
+    Matrix_Element_Handler *p_mehandler;
+    Shower_Handler         *p_shower;        
 
-    int                      m_nin,m_nout;
+    bool   m_ini, m_fin;
+    int    m_maxjetnumber, m_nin, m_nout;
+    double m_weight, m_scale;
+
+    ATOOLS::Flavour *p_fl;
+    ATOOLS::Vec4D   *p_moms;
 
   public :
 
-    Perturbative_Interface(Matrix_Element_Handler * _me,Shower_Handler * _shower) :
-      p_mehandler(_me), p_shower(_shower), 
-      m_ini(_shower->ISROn()), m_fin(_shower->FSROn()), m_maxjetnumber(_me->MaxJets()), m_weight(1.),
-      p_fl(NULL), p_moms(NULL) {}
+    // constructor
+    Perturbative_Interface(Matrix_Element_Handler * _me,Shower_Handler * _shower);
 
-    virtual ~Perturbative_Interface() 
-    {
-      if (p_fl)   { delete p_fl;   p_fl   = NULL; }
-      if (p_moms) { delete p_moms; p_moms = NULL; }
-    }
+    // destructor
+    virtual ~Perturbative_Interface();
+ 
+    // member fundctions
     virtual int  DefineInitialConditions(ATOOLS::Blob *) = 0;
     virtual bool FillBlobs(ATOOLS::Blob_List *) = 0; 
-    virtual void CleanBlobs(ATOOLS::Blob_List *) {}; 
 
     virtual int  PerformShowers() = 0;
     virtual int  PerformDecayShowers() = 0;
 
-    double GetWeight() { return m_weight; }
-    double GetScale()  { return m_scale;  }
+    void CleanBlobs(ATOOLS::Blob_List *); 
 
-    Matrix_Element_Handler * GetMEHandler() { return p_mehandler; }
+    // inline functions
+    inline double Weight() const { return m_weight; }
+    inline double Scale() const { return m_scale;  }
+
+    inline Matrix_Element_Handler *MEHandler() { return p_mehandler; }
 
   };
 

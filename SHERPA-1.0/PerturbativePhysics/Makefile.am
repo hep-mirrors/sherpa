@@ -39,6 +39,7 @@ libSherpaPerturbativePhysics_la_SOURCES       =	\
 						Hard_Decay_Handler.C \
 						Interface_Tools.C \
 					   	Cluster_Partons.C \
+					 	Perturbative_Interface.C \
 					   	SimpleXS_Apacic_Interface.C \
 					   	SimpleXS_Adicic_Interface.C \
 						Amegic_Apacic_Interface.C \

@@ -27,6 +27,7 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 {
   if (blob==NULL) return false;
   if ((blob->NInP()!=2) || (blob->NOutP()!=2)) {
+    ATOOLS::msg.Error()<<*blob;
     throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,"Cannot handle blobs with more than 4 legs.",
 			    "SimpleXS_Apacic_Interface","DefineInitialConditions"));
   }
