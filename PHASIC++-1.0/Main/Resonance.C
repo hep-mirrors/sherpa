@@ -50,7 +50,8 @@ Resonance_Forward::Resonance_Forward(const double mass,const double width,const 
   m_width(width),
   m_yexponent(yexponent)
 {
-  name=std::string("Resonance_Forward_")+ATOOLS::ToString(100.*mass);
+  name=std::string("Resonance_Forward_")+ATOOLS::ToString(100.*mass)
+    +std::string("_")+ATOOLS::ToString(100.*yexponent);
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(100.*mass));
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(100.*yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -89,7 +90,8 @@ Resonance_Backward::Resonance_Backward(const double mass,const double width,cons
   m_width(width),
   m_yexponent(yexponent)
 {
-  name=std::string("Resonance_Backward_")+ATOOLS::ToString(100.*mass);
+  name=std::string("Resonance_Backward_")+ATOOLS::ToString(100.*mass)
+    +std::string("_")+ATOOLS::ToString(100.*yexponent);
   m_spkey.SetInfo(std::string("Resonance_")+ATOOLS::ToString(100.*mass));
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(100.*yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);

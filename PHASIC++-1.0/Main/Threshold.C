@@ -48,7 +48,8 @@ Threshold_Forward::Threshold_Forward(const double mass,const double yexponent,
   m_mass(mass), 
   m_yexponent(yexponent)
 {
-  name=std::string("Threshold_Forward_")+ATOOLS::ToString(100.*mass);
+  name=std::string("Threshold_Forward_")+ATOOLS::ToString(100.*mass)
+    +std::string("_")+ATOOLS::ToString(100.*yexponent);
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(100.*mass));
   m_ykey.SetInfo(std::string("Forward_")+ATOOLS::ToString(100.*yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
@@ -86,7 +87,8 @@ Threshold_Backward::Threshold_Backward(const double mass,const double yexponent,
   m_mass(mass), 
   m_yexponent(yexponent)
 {
-  name=std::string("Threshold_Backward_")+ATOOLS::ToString(100.*mass);
+  name=std::string("Threshold_Backward_")+ATOOLS::ToString(100.*mass)
+    +std::string("_")+ATOOLS::ToString(100.*yexponent);
   m_spkey.SetInfo(std::string("Threshold_")+ATOOLS::ToString(100.*mass));
   m_ykey.SetInfo(std::string("Backward_")+ATOOLS::ToString(100.*yexponent));
   m_spkey.Assign(std::string("s'")+cinfo,4,0,info);
