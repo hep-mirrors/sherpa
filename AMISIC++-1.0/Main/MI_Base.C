@@ -181,9 +181,6 @@ MI_None::MI_None(TypeID _m_type):
 
 MI_None::~MI_None() 
 {
-#ifdef USING__Sherpa
-  delete p_mehandler;
-#endif
 }
 
 void MI_None::Update(const MI_Base *mibase) 

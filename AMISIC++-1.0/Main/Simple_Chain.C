@@ -86,7 +86,7 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *_p_model,
 Simple_Chain::~Simple_Chain()
 {
   CleanUp();
-#ifdef USING__Sherpa
+#ifndef USING__Sherpa
   delete p_mehandler;
 #endif
 }
