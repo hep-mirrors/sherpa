@@ -18,6 +18,12 @@ Flow::Flow(Particle *owner):
   for (short unsigned int i=1;i<3;++i) m_code[i]=0;
 }
 
+Flow::Flow(const Flow &flow): 
+  p_owner(flow.p_owner) 
+{ 
+  for (unsigned int i=1;i<3;++i) m_code[i]=flow.m_code.find(i)->second;
+}
+
 Flow::~Flow() 
 { 
   m_code.clear(); 

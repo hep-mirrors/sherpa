@@ -24,6 +24,7 @@ namespace ATOOLS {
 
     // constructor
     Flow(Particle *const owner=NULL);
+    Flow(const Flow &flow);
 
     // destructor
     ~Flow();
