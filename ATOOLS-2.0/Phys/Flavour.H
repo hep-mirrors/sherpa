@@ -610,6 +610,9 @@ namespace ATOOLS {
     inline bool IsGluon() const {
       return (kfc==kf::gluon); 
     }
+    inline bool IsJet() const {
+      return (kfc==kf::jet); 
+    }
     inline bool IsPhoton() const {
       return ((kfc==kf::photon) || (kfc==kf::isrphoton));
     }
