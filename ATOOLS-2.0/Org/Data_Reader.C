@@ -148,14 +148,9 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
     inputstring=parameter+inputstring;
   }
   size_t length=0;
-//   pos=Find(inputstring,parameter,length);
-//   if(((pos=inputstring.find(parameter))!=std::string::npos)&&
-//      ((inputstring=inputstring.substr(pos+parameter.length())).length()>0)) {
   if(((pos=Find(inputstring,parameter,length))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+length)).length()>0)) {
-    MyStrStream converter;
-    converter<<ReplaceTags(HighlightSeparator(inputstring));
-    converter>>value;
+    value=ATOOLS::ToType<Read_Type>(ReplaceTags(HighlightSeparator(inputstring)));
 #ifdef DEBUG__Data_Reader
     std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<Type::GetType(value)<<" )"<<std::endl;
 #endif
