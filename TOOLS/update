@@ -33,9 +33,9 @@ for I in $* ; do
 done
 
 if [ "$NOUPDATE" = "TRUE" ] ; then 
-  cvs -n update $OPTIONS > $LOGFILE
+  cvs -n update $OPTIONS > $LOGFILE 2>&1
 else 
-  cvs update $OPTIONS > $LOGFILE 
+  cvs update $OPTIONS > $LOGFILE 2>&1
 fi
 
 CHANGES=
