@@ -31,9 +31,11 @@ namespace SHERPA {
     ATOOLS::Blob  *p_beamblob;
     ATOOLS::Vec4D  m_pbeam;
 
+    double m_erem, m_pzrem;
+
     bool m_active, m_initialized;
 
-    double Lambda2(double sp,double sp1,double sp2);
+    void AdjustEnergy();
 
   public:
 
