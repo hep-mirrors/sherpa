@@ -1,17 +1,27 @@
+!-------------------------------------------------------
+!-- Processes to calculate -----------------------------
+!-------------------------------------------------------
 %
-Process : 22 11  -> 11 1 -1
+% photon electron -> selectron neutralino
+%
+Process : 22 11 -> 71 43
 End process
 %
-%   Three jets
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
+% jet jet -> electron electron + n-jets
 %
-%
-% W-
-%
-%Process : 93 93 -> 11 -12
-%End process
-%Process : 93 93 -> 11 -12 93   
+%Process : 93 93 -> 11 -11
 %Order electroweak : 2
-%Order strong : 99
+%Order strong : 0
 %End process
 %
+%Process : 93 93 -> 11 -11 93
+%Order electroweak : 2
+%Order strong : 1
+%End process
+%
+%Process : 93 93 -> 11 -11 93 93 
+%Order electroweak : 2
+%Order strong : 2
+%End process
