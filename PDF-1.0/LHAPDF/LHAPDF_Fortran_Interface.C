@@ -42,7 +42,7 @@ LHAPDF_Fortran_Interface::LHAPDF_Fortran_Interface(const APHYTOOLS::Flavour _bun
 
 double LHAPDF_Fortran_Interface::AlphaSPDF(double scale2) {
   double scale = sqrt(scale2);
-  double as = lhapdfalphas_(scale);
+  double as    = lhapdfalphas_(scale);
   return as;
 }
 
