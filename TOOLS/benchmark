@@ -166,7 +166,7 @@ for I in $LIST ; do
       echo -e "benchmark: no benchmarking points specified in '$PWD'" >> $OUTPUTFILE
       SETUP_ERROR=TRUE
     fi
-    CleanUp "Results Analysis"
+    CleanUp "Results Analysis Output"
     RUNPATH=$PWD
     cd $MAINPATH/$SHERPAPATH
     ./makeclean >> $MAINPATH/$OUTPUTFILE 2>&1
