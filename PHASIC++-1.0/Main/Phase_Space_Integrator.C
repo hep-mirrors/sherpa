@@ -34,7 +34,7 @@ double Phase_Space_Integrator::Calculate(Phase_Space_Handler * psh,double maxerr
   int size = MPI::COMM_WORLD.Get_size();
   
   if (psh->ISRIntegrator() || psh->BeamIntegrator()) {
-    msg.Out()<<" Parallel ISR Integration not supported "<<endl;
+    cerr<<" Parallel ISR Integration not supported yet. Sorry."<<endl;
     if (size>1) abort();
   }
 #else
