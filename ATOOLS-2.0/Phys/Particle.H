@@ -3,13 +3,9 @@
 
 #include "Vector.H"
 #include "Flavour.H"
-//#include "Blob.H"
 #include "Flow.H"
 
 #include <iostream>
-
-
-// compare with       HepMC_Version1.01/HepMC/*.h !!
 
 namespace ATOOLS {
   class Blob;
@@ -75,6 +71,14 @@ namespace ATOOLS {
     static void   ResetCounter() { s_totalnumber = 0; }
     static int    Counter()      { return s_totalnumber; }
   };
+
+  typedef std::vector<Particle *>          Particle_Vector;
+  typedef std::map<ATOOLS::Particle *,int> Particle_Int_Map;
+  typedef std::map<int,ATOOLS::Particle *> Int_Particle_Map;
+
+
+
+
 
   // Format of a particle to transport via MPI:
   struct MPI_Particle {

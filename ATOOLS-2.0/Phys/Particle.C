@@ -41,7 +41,11 @@ std::ostream& ATOOLS::operator<<(std::ostream& str,Particle* part) {
     str<<std::setw(1)<<") ";
     break;
   case 3 : // documentation line
-    return str<<"============================================================"<<std::endl;
+    return     str<<"============================================================"<<std::endl
+		  <<"  "<<std::setw(3)<<part->Info()<<"  "<<std::setw(3)<<part->Status()<<std::setw(1)<<" "
+		  <<std::setw(22)<<part->Flav()<<std::setw(1)<<" "
+		  <<std::setw(10)<<part->Number()<<std::endl
+		  <<"============================================================"<<std::endl;
   default : // user defined or reserved
     return str<<"--- unrecognized status:"<<part->Status()<<" ---"<<std::endl;
   }

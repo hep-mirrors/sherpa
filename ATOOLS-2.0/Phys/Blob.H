@@ -1,18 +1,15 @@
-#ifndef Blob_h
-#define Blob_h
+#ifndef Blob_H
+#define Blob_H
 
 #include <string>
 #include <vector>
 #include <map>
-#include <iterator> 
-#include <iostream> 
 
-#include "Vector.H"
 #include "Poincare.H"
-
+#include "Particle.H"
 
 namespace ATOOLS {
-  class Particle; 
+
   class Blob_Data_Base {
   public:
     template <class Type> Type Get();
@@ -30,33 +27,57 @@ namespace ATOOLS {
     ~Blob_Data();
   };
 
-  std::ostream& operator<<( std::ostream&, const Blob_Data_Base &);
+  std::ostream& operator<<(std::ostream&,const Blob_Data_Base &);
 
-  typedef std::vector<Particle *> Particle_Queue;
-  typedef std::map<std::string,Blob_Data_Base *> Data_Container;
+  typedef std::map<std::string,Blob_Data_Base *> String_BlobDataBase_Map;
+
+  struct btp {
+
+    enum code {
+      Unspecified         =    0,
+      Signal_Process      =    1,
+      Hard_Decay          =    2,
+      Hard_Collision      =    3,
+      Soft_Collision      =    4,
+      ME_PS_Interface_IS  =    9,
+      ME_PS_Interface_FS  =   10,
+      FS_Shower           =   11,
+      IS_Shower           =   12,
+      Beam                =  101,
+      Bunch               =  102,
+      Fragmentation       =  201,
+      Cluster_Formation   =  202,
+      Cluster_Decay       =  250,
+      Hadron_Decay        = 1001
+    };
+
+  };// end of struct btp
+
+  std::ostream& operator<<(std::ostream&,const btp::code);
 
   class Blob {
     friend std::ostream& operator<<( std::ostream&, const Blob &);
     friend std::ostream& operator<<( std::ostream&, const Blob *);
   private:
-    Vec4D               m_position;
-    int                 m_id;
-    double              m_weight;
-    int                 m_status,m_beam;
-    bool                m_hasboost;
-    std::string         m_type;
-    std::vector<double> m_weightcontainer;
-    Data_Container      m_datacontainer;
-    Particle_Queue      m_inparticles, m_outparticles;
-    Vec4D               m_cms_vec;
-    Poincare            m_cms_boost;
+    Vec4D                   m_position;
+    int                     m_id;
+    double                  m_weight;
+    int                     m_status,m_beam;
+    bool                    m_hasboost;
+    btp::code               m_type;
+    std::string             m_typespec;
+    std::vector<double>     m_weightcontainer;
+    String_BlobDataBase_Map m_datacontainer;
+    Particle_Vector         m_inparticles, m_outparticles;
+    Vec4D                   m_cms_vec;
+    Poincare                m_cms_boost;
   public:
     Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=-1);
     ~Blob();
     void     AddToInParticles(Particle *);
     void     AddToOutParticles(Particle *);
-    Particle_Queue GetOutParticles() { return m_outparticles; }
-    Particle_Queue GetInParticles()  { return m_inparticles;  }
+    Particle_Vector GetOutParticles() { return m_outparticles; }
+    Particle_Vector GetInParticles()  { return m_inparticles;  }
     Particle * OutParticle(int);
     Particle * InParticle(int);
     Particle * RemoveInParticle(int,bool = true);
@@ -77,7 +98,8 @@ namespace ATOOLS {
     void     SetCMS();
     void     SetId(int _id)                    { m_id       = _id; }
     void     SetStatus(int _status)            { m_status   = _status; }
-    void     SetType(std::string _type)        { m_type     = _type; }
+    void     SetType(btp::code _type)          { m_type     = _type; }
+    void     SetTypeSpec(std::string _type)    { m_typespec = _type; }
     void     SetBeam(int _beam)                { m_beam     = _beam; }
     void     SetWeight(double _weight)         { 
       m_weightcontainer.clear();
@@ -90,7 +112,7 @@ namespace ATOOLS {
     }
     Blob_Data_Base * operator[](const std::string name) 
     {
-      Data_Container::const_iterator cit=m_datacontainer.find(name);
+      String_BlobDataBase_Map::const_iterator cit=m_datacontainer.find(name);
       if (cit==m_datacontainer.end()) return 0;
       return cit->second;
     } 
@@ -108,8 +130,12 @@ namespace ATOOLS {
     Vec4D       CheckMomentumConservation();
     Vec4D       const Position()         const { return m_position; }
     Vec4D       const CMS()              const { return m_cms_vec; }
-    std::string const Type()             const { return m_type; }
+    btp::code   const Type()             const { return m_type; }
+    std::string const TypeSpec()         const { return m_typespec; }
   };
+
+
+  typedef std::map<int,ATOOLS::Blob *> Int_Blob_Map;
 
 
   template <class Type>

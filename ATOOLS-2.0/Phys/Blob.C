@@ -6,7 +6,29 @@
 
 using namespace ATOOLS;
 
+std::ostream& ATOOLS::operator<<(std::ostream& ostr, const btp::code btpc) {
+  switch (btpc) {
+  case btp::Unspecified:        return ostr<<"Unspecified       ";
+  case btp::Signal_Process:     return ostr<<"Signal Process    ";
+  case btp::Hard_Decay:         return ostr<<"Hard Decay        ";
+  case btp::Hard_Collision:     return ostr<<"Hard Collision    ";
+  case btp::Soft_Collision:     return ostr<<"Soft Collision    "; 
+  case btp::ME_PS_Interface_IS: return ostr<<"ME PS Interface   ";
+  case btp::ME_PS_Interface_FS: return ostr<<"ME PS Interface   ";
+  case btp::FS_Shower:          return ostr<<"FS Shower         ";
+  case btp::IS_Shower:          return ostr<<"IS Shower         ";
+  case btp::Beam:               return ostr<<"Beam              ";
+  case btp::Bunch:              return ostr<<"Bunch             ";
+  case btp::Fragmentation:      return ostr<<"Fragmentation     ";
+  case btp::Cluster_Formation:  return ostr<<"Cluster Formation ";
+  case btp::Cluster_Decay:      return ostr<<"Cluster Decay     ";
+  case btp::Hadron_Decay:       return ostr<<"Hadron Decay      ";
+  default:                      return ostr<<"Unknown           ";
+  }
+}
+
 namespace ATOOLS {
+
   std::ostream& operator<<( std::ostream& ostr, const Blob & bl) {
     ostr<<std::setw(4)<<std::setprecision(4);
     ostr<<"Blob ["<<bl.Status()<<"]( "<<bl.Id()<<", "<<bl.Type()<<", ";
@@ -16,12 +38,12 @@ namespace ATOOLS {
     }
     ostr<<bl.NInP()<<" -> "<<bl.NOutP()<<" @ "<<bl.Position()<<std::endl;
     ostr<<"Incoming particles :"<<std::endl;
-    for (Particle_Queue::const_iterator part = bl.m_inparticles.begin();
+    for (Particle_Vector::const_iterator part = bl.m_inparticles.begin();
 	 part != bl.m_inparticles.end(); ++part) {
       ostr<<*part<<std::endl;
     }
     ostr<<"Outgoing particles :"<<std::endl;
-    for (Particle_Queue::const_iterator part = bl.m_outparticles.begin();
+    for (Particle_Vector::const_iterator part = bl.m_outparticles.begin();
 	 part != bl.m_outparticles.end(); ++part) {
       ostr<<*part<<std::endl;
     }
@@ -37,12 +59,12 @@ namespace ATOOLS {
     }
     ostr<<bl->NInP()<<" -> "<<bl->NOutP()<<" @ "<<bl->Position()<<std::endl;
     ostr<<"Incoming particles :"<<std::endl;
-    for (Particle_Queue::const_iterator part = bl->m_inparticles.begin();
+    for (Particle_Vector::const_iterator part = bl->m_inparticles.begin();
 	 part != bl->m_inparticles.end(); ++part) {
       ostr<<*part<<std::endl;
     }
     ostr<<"Outgoing particles :"<<std::endl;
-    for (Particle_Queue::const_iterator part = bl->m_outparticles.begin();
+    for (Particle_Vector::const_iterator part = bl->m_outparticles.begin();
 	 part != bl->m_outparticles.end(); ++part) {
       ostr<<*part<<std::endl;
     }
@@ -51,7 +73,13 @@ namespace ATOOLS {
 }
 
 Blob::Blob(const Vec4D _pos, const int _id) : 
-  m_position(_pos), m_id(_id), m_weight(1.), m_hasboost(false) { m_beam = -1; m_status = 0; };
+  m_position(_pos), 
+  m_id(_id), 
+  m_weight(1.), 
+  m_hasboost(false), 
+  m_status(0), 
+  m_beam(-1), 
+  m_type(btp::Unspecified) {}
 
 Blob::~Blob() {
   DeleteOwnedParticles();
@@ -83,7 +111,7 @@ Particle * Blob::OutParticle(int _pos) {
 
 Particle * Blob::RemoveInParticle(int _pos,bool setit) {
   if (_pos>m_inparticles.size()-1 || _pos<0) { return NULL; }
-  for (Particle_Queue::iterator part = m_inparticles.begin();
+  for (Particle_Vector::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     if ((*part)==m_inparticles[_pos]) {
       m_inparticles.erase(part);
@@ -96,7 +124,7 @@ Particle * Blob::RemoveInParticle(int _pos,bool setit) {
 
 Particle * Blob::RemoveOutParticle(int _pos,bool setit) {
   if (_pos>m_outparticles.size()-1 || _pos<0) { return NULL; }
-  for (Particle_Queue::iterator part = m_outparticles.begin();
+  for (Particle_Vector::iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     if ((*part)==m_outparticles[_pos]) {
       m_outparticles.erase(part);
@@ -110,7 +138,7 @@ Particle * Blob::RemoveOutParticle(int _pos,bool setit) {
 
 Particle * Blob::RemoveInParticle(Particle * _part,bool setit) {
   if (!_part) return 0;
-  for (Particle_Queue::iterator part = m_inparticles.begin();
+  for (Particle_Vector::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     if ((*part)==_part) {
       Particle * p = (*part);
@@ -124,7 +152,7 @@ Particle * Blob::RemoveInParticle(Particle * _part,bool setit) {
 
 Particle * Blob::RemoveOutParticle(Particle * _part,bool setit) {
   if (!_part) return 0;
-  for (Particle_Queue::iterator part = m_outparticles.begin();
+  for (Particle_Vector::iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     if ((*part)==_part) {
       Particle * p = (*part);
@@ -139,7 +167,7 @@ Particle * Blob::RemoveOutParticle(Particle * _part,bool setit) {
 
 void Blob::DeleteInParticle(Particle * _part) {
   if (!_part) return;
-  for (Particle_Queue::iterator part = m_inparticles.begin();
+  for (Particle_Vector::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     if ((*part)==_part) {
       m_inparticles.erase(part);
@@ -158,7 +186,7 @@ void Blob::DeleteInParticle(Particle * _part) {
 
 void Blob::DeleteOutParticle(Particle * _part) {
   if (!_part) return;
-  for (Particle_Queue::iterator part = m_outparticles.begin();
+  for (Particle_Vector::iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     if ((*part)==_part) {
       m_outparticles.erase(part);
@@ -191,11 +219,11 @@ void Blob::DeleteOwnedParticles() {
 
 Vec4D Blob::CheckMomentumConservation() {
   Vec4D sump = Vec4D(0.,0.,0.,0.);
-  for (Particle_Queue::iterator part = m_inparticles.begin();
+  for (Particle_Vector::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     sump = sump + (*part)->Momentum();
   }
-  for (Particle_Queue::iterator part = m_outparticles.begin();
+  for (Particle_Vector::iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     sump = sump + (-1.)*((*part)->Momentum());
   }
@@ -255,7 +283,7 @@ void Blob::SetVecs() {
 
 void  Blob::AddData(const std::string name, Blob_Data_Base * data) 
 {
-  Data_Container::iterator it=m_datacontainer.find(name);
+  String_BlobDataBase_Map::iterator it=m_datacontainer.find(name);
   if (it==m_datacontainer.end()) {
     m_datacontainer[name]=data;
   }
@@ -267,7 +295,7 @@ void  Blob::AddData(const std::string name, Blob_Data_Base * data)
 
 void Blob::ClearAllData() 
 {
-  for (Data_Container::iterator it=m_datacontainer.begin();
+  for (String_BlobDataBase_Map::iterator it=m_datacontainer.begin();
        it!=m_datacontainer.end(); ++it) delete it->second;
   m_datacontainer.clear();
 }
