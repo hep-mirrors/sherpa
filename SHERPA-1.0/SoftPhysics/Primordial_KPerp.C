@@ -77,6 +77,17 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 	  // calculate k_\perp
 	  kperp[0]=m_kperpmean[0]+Sign(0.5-ran.Get())*m_kperpsigma[0]*ran1*r12;
 	  kperp[1]=m_kperpmean[1]+Sign(0.5-ran.Get())*m_kperpsigma[1]*ran2*r12;
+#ifdef ANALYSE__Primordial_KPerp
+	  static TH1D *pkp[2]={NULL,NULL};
+	  if (pkp[0]==NULL) {
+	    pkp[0] = new TH1D("ikperp_1","ikperp_1",200,0.0,10.0);
+	    pkp[1] = new TH1D("ikperp_2","ikperp_2",200,0.0,10.0);
+	    MYROOT::myroot->AddObject(pkp[0],"ikperp_1");
+	    MYROOT::myroot->AddObject(pkp[1],"ikperp_2");
+	  }
+	  pkp[0]->Fill(kperp[0]);
+	  pkp[1]->Fill(kperp[1]);
+#endif
 	  for (size_t j=0;j<2;++j) {
 	    // dice angle
 	    do {
@@ -92,6 +103,17 @@ bool Primordial_KPerp::CreateKPerp(ATOOLS::Blob *blob1,ATOOLS::Blob *blob2)
 		min[j]=i;
 	      }
 	    }
+#ifdef ANALYSE__Primordial_KPerp
+	    static TH1D *phi[2]={NULL,NULL};
+	    if (phi[0]==NULL) {
+	      phi[0] = new TH1D("phi_1","phi_1",100,0.0,M_PI);
+	      phi[1] = new TH1D("phi_2","phi_2",100,-M_PI/2.0,M_PI/2.0);
+	      MYROOT::myroot->AddObject(phi[0],"phi_1");
+	      MYROOT::myroot->AddObject(phi[1],"phi_2");
+	    }
+	    phi[0]->Fill(acos((ran1*ran1-ran2*ran2)/r12));
+	    phi[1]->Fill(asin(2.0*ran1*ran2/r12));
+#endif
 	  }
 	}
 	for (size_t j=0;j<2;++j) (*p_kperp[j])[blob[j]->NOutP()-1]=sum[j];
@@ -292,8 +314,8 @@ void Primordial_KPerp::FillKPerp(ATOOLS::Particle *cur1,unsigned int beam)
 #ifdef ANALYSE__Primordial_KPerp
   static TH1D *pkp[2]={NULL,NULL};
   if (pkp[0]==NULL) {
-    pkp[0] = new TH1D("kperp_1","kperp_1",100,0.0,10.0);
-    pkp[1] = new TH1D("kperp_2","kperp_2",100,0.0,10.0);
+    pkp[0] = new TH1D("kperp_1","kperp_1",200,0.0,10.0);
+    pkp[1] = new TH1D("kperp_2","kperp_2",200,0.0,10.0);
     MYROOT::myroot->AddObject(pkp[0],"kperp_1");
     MYROOT::myroot->AddObject(pkp[1],"kperp_2");
   }
