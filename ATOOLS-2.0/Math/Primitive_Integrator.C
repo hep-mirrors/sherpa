@@ -90,10 +90,10 @@ Point(const Primitive_Integrand *function,
   if (opt.size()<m_pos+8*m_this.size())
     THROW(fatal_error,"Inconsistent dimensions.");
   double cur=Point(function,point);
+  cur*=m_weight;
   for (size_t i=0;i<m_this.size();++i) {
     double mid=(m_this[i]+m_next[i]->m_this[i])/2.0;
     size_t pos=8*(m_this.size()*m_pos+i)+4*(size_t)(point[i]<mid);
-    cur*=m_weight;
     ++opt[pos];
     opt[pos+1]+=cur;
     opt[pos+2]+=sqr(cur);
@@ -136,7 +136,7 @@ void Primitive_Channel::Reset()
 
 void Primitive_Channel::ResetAll()
 {
-  m_sum=m_sum2=m_max=m_np=m_ssum=m_ssum2=0.0;
+  m_sum=m_sum2=m_max=m_np=m_ssum=m_ssum2=m_snp=0.0;
 }
 
 void Primitive_Channel::SetWeight()
@@ -246,8 +246,18 @@ void Primitive_Integrator::SetDimension(const size_t dim)
   for (size_t i=0;i<dim;++i) m_nosplit[i]=false;
 }
 
+void Primitive_Integrator::Reset()
+{
+  m_sum=m_sum2=m_max=m_np=0.0; 
+  while (!m_channels.empty()) {
+    delete m_channels.back();
+    m_channels.pop_back();
+  }
+}
+
 void Primitive_Integrator::Initialize()
 {
+  Reset();
   if (m_rmin.empty() || m_rmax.empty())
     THROW(fatal_error,"Zero dimensional integral request.");
   if (m_rmin.size()!=m_rmax.size())
@@ -441,10 +451,7 @@ void Primitive_Integrator::SelectDimension(const size_t pos)
     size_t l=8*(m_point.size()*pos+i);
     switch (m_mode) {
     case 1: 
-      if ((cur=ATOOLS::Max(m_opt[l+3],m_opt[l+7]))>max) {
-	max=cur;
-	m_lastdim=i;
-      }
+      cur=ATOOLS::Max(m_opt[l+3],m_opt[l+7]);
       break;
     case 0: 
     default:
@@ -452,11 +459,11 @@ void Primitive_Integrator::SelectDimension(const size_t pos)
 		      /(m_opt[l]-1.0),
 		      (m_opt[l+6]-m_opt[l+5]*m_opt[l+5]/m_opt[l+4])
 		      /(m_opt[l+4]-1.0));
-      if (cur>max) {
-	max=cur;
-	m_lastdim=i;
-      }
       break;
+    }
+    if (cur>max || (IsEqual(cur,max) && ran.Get()>0.5)) {
+      max=cur;
+      m_lastdim=i;
     }
     if (!(cur<0) && !(cur>=0)) THROW(fatal_error,"Criterion is nan.")
   } 
@@ -475,9 +482,13 @@ bool Primitive_Integrator::Shuffle()
     if (!m_channels[i]->Boundary()) {
       double alpha=m_channels[i]->Alpha();
       m_channels[i]->Store(alpha);
+#ifdef USING__Old_Shufflemode
       alpha=(m_channels[i]->Sum2()>Accu()?
-	     sqrt(m_channels[i]->Sum2()/m_channels[i]->Points()):
+	     sqrt(m_channels[i]->Sum2()/m_channels[i]->Points())/alpha:
 	     sqrt(m_channels[i]->SSum2()/m_channels[i]->SPoints()));
+#else
+      alpha=sqrt(m_channels[i]->SSum2()/m_channels[i]->SPoints());
+#endif
       if (!(alpha>=0.0)) THROW(fatal_error,"Invalid weight.");
       m_channels[i]->SetAlpha(alpha);
       m_channels[i]->Reset();

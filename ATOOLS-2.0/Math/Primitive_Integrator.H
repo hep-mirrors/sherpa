@@ -403,6 +403,11 @@ namespace ATOOLS {
       \brief Sets the upper edge of the integration domain.
     */ 
 
+    void   Reset();
+    /*!
+      \fn void   Reset()
+      \brief Resets the integrator by deleting all cells.
+    */
     void   Initialize();
     /*!
       \fn void   Initialize()
