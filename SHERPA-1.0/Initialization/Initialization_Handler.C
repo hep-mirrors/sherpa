@@ -364,6 +364,11 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	       <<"   Analysis is switched off - continue run."<<std::endl;
     return 1;
   } 
+  Data_Read dr(m_path+"/Run.dat");
+  std::string prefix=dr.GetValue<std::string>("ANALYSIS_OUTPUT");
+  if (prefix==NotDefined<std::string>()) prefix="";
+
+
   ifstream * from = new ifstream((m_path+m_analysisdat).c_str());
   if (!from->good()) {
     msg.Error()<<"Error in Initialization_Handler::InitializeTheAnalyses()."<<std::endl
@@ -393,9 +398,9 @@ bool Initialization_Handler::InitializeTheAnalyses()
 	}
 	add = false;
 	if (phase!=std::string("")) {
-	  sa  = new Sample_Analysis(from,phase);
+	  sa  = new Sample_Analysis(from,phase,prefix);
 	  if (sa->On()) add = true;
-	           else delete sa;
+	  else delete sa;
 	}
 	if (add) { 
 	  m_analyses.insert(std::make_pair(phase,sa)); 

@@ -10,7 +10,8 @@
 #include "One_Particle_Observables.H"
 #include "Two_Particle_Observables.H"
 #include "Four_Particle_Observables.H"
-#include <ctype.h>
+
+//#include <ctype.h>
 
 using namespace SHERPA;
 using namespace ANALYSIS;
@@ -60,10 +61,8 @@ int Observable_Data::Specify() {
 
 
 
-
-
-Sample_Analysis::Sample_Analysis(std::ifstream * readin,std::string _phase) :
-  m_phase(_phase), m_outputpath(std::string("./")+_phase), p_analysis(NULL)
+Sample_Analysis::Sample_Analysis(std::ifstream * readin, std::string _phase, const std::string & prefix) :
+  m_phase(_phase), m_outputpath(std::string("./")+_phase), m_prefix(prefix), p_analysis(NULL)
 {  
   m_type = std::string("Perturbative");
   std::cout<<"Initialize new Sample_Analysis for "<<_phase<<std::endl;
@@ -96,7 +95,7 @@ Sample_Analysis::Sample_Analysis(std::ifstream * readin,std::string _phase) :
     }
   }
   p_analysis            = new Primitive_Analysis(m_phase,mode);
-  Final_Selector * fsel = new Final_Selector("FinalState","Analysed");
+  Final_Selector * fsel = new Final_Selector("FinalState","Analysed",(rpa.gen.Beam1()==Flavour(kf::e)));
   ReadInFinalSelectors(readin,fsel);
   p_analysis->AddObservable(fsel);
   ReadInObservables(readin);
@@ -114,7 +113,7 @@ Sample_Analysis::~Sample_Analysis()
   }
 }
 
-void Sample_Analysis::SetOutputPath(const std::string path)
+void Sample_Analysis::SetOutputPath(const std::string & path)
 {
   m_outputpath = path+std::string("/")+m_phase;
 }
@@ -128,7 +127,7 @@ void Sample_Analysis::Finish()
 {
   int  mode_dir = 448;
   mkdir(m_outputpath.c_str(),mode_dir); 
-  p_analysis->FinishAnalysis(m_outputpath);
+  p_analysis->FinishAnalysis(m_prefix+m_outputpath);
 }
 
 /*--------------------------------------------------------------------------------------
@@ -152,7 +151,7 @@ void Sample_Analysis::ReadInFinalSelectors(std::ifstream * readin,Final_Selector
     if (readin->eof()) return;
     getline(*readin,buffer);
     buffer += std::string(" ");
-    if (buffer[0] != '%' && buffer.length()>0) {
+    if (buffer[0] != '%' && buffer[0] != '!' && buffer[0] != '#' && buffer.length()>0) {
       if (buffer.find("END_ANALYSIS_PHASE")!=std::string::npos) return;
       if (buffer.find("OBSERVABLES")!=std::string::npos) return;
       if (buffer.find("OUTPUT =")!=std::string::npos) {
@@ -234,7 +233,7 @@ void Sample_Analysis::ReadInObservables(std::ifstream * readin)
     if (readin->eof()) return;
     getline(*readin,buffer);
     buffer += std::string(" ");
-    if (buffer[0] != '%' && buffer.length()>0) {
+    if (buffer[0] != '%' && buffer[0] != '!' && buffer[0] != '#' && buffer.length()>0) {
       if (buffer.find("END_ANALYSIS_PHASE")!=std::string::npos) return;
       if (buffer.find("OUTPUT =")!=std::string::npos) {
 	while(buffer.length()>0) {
@@ -289,7 +288,7 @@ void Sample_Analysis::SetUpObservables()
   Final_Selector *  fsel;
   bool              found;
 
-  for (int i=0;i<m_obsdata.size();++i) {
+  for (size_t i=0;i<m_obsdata.size();++i) {
     msg.Tracking()<<"Try to initialize another observable from read in :"<<std::endl;
     od   = m_obsdata[i];
     od->Output();
@@ -382,7 +381,7 @@ void Sample_Analysis::SetUpObservables()
       }
       if (!found) {
 	msg.Tracking()<<"List "<<listname<<" added to be projected out."<<std::endl;
-	fsel = new Final_Selector("Analysed",listname);
+	fsel = new Final_Selector("Analysed",listname,(rpa.gen.Beam1()==Flavour(kf::e)));
 	fsel->AddKeepFlavour(flav);
 	p_analysis->AddObservable(fsel);
 	m_subsamples.insert(std::make_pair(flav,listname));

@@ -21,7 +21,9 @@ namespace SHERPA {
   };
 
   class Sample_Analysis  {
-    std::string m_phase, m_type,               m_outputpath;
+    std::string  m_phase, m_type, m_outputpath;
+    std::string  m_prefix;
+
     ANALYSIS::Primitive_Analysis             * p_analysis;
     std::vector<Observable_Data *>             m_obsdata;
     std::multimap<ATOOLS::Flavour,std::string> m_subsamples;
@@ -32,13 +34,13 @@ namespace SHERPA {
     // This is the place to add specific observables ....
     void SetUpSubSamples();
   public:
-    Sample_Analysis(std::ifstream *,std::string=std::string("Hadrons"));
+    Sample_Analysis(std::ifstream *,std::string=std::string("Hadrons"),const std::string& =std::string(""));
     ~Sample_Analysis();
     void DoAnalysis(ATOOLS::Blob_List * const, double);
     void Clear()        { p_analysis->ClearAllData(); }
     void Finish();
 
-    void SetOutputPath(const std::string);
+    void SetOutputPath(const std::string &);
     std::string Phase() { return m_phase; }
     std::string Type()  { return m_type; }
     bool On()    { return (p_analysis->NumberOfObservables()>0); }
