@@ -107,7 +107,6 @@ if [ ! "$PYTHIA" = "" ] ; then echo -en "PYTHIA=$PYTHIA " >> $FILE ; fi
 echo -e ">> \$LOGFILE 2>&1 \n" >> $FILE
 
 if [ "$QUEUE" = "TRUE" ] ; then
-  echo "" >> $FILE
   echo "cp $FILE.sge $SETUPPATH" >> $FILE
   echo "" >> $FILE
   qsub $FILE  
@@ -115,7 +114,7 @@ else
   chmod 777 $FILE
   ( nohup $FILE > /dev/null & ) 
 fi
-cp $FILE $SETUPPATH
+mv $FILE $SETUPPATH
 
 # mode:shell-script
 # sh-indentation:2
