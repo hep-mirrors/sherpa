@@ -47,9 +47,9 @@ namespace AMEGIC {
 
   class Full_Decay_Table {
   private :
-    bool                              m_isevaluated,m_overwrite;
     double                            m_width;
     ATOOLS::Flavour                   m_flin;
+    bool                              m_isevaluated,m_overwrite;
     std::vector<Full_Decay_Channel *> m_channels;
     std::vector<Process_Group *>      m_decaymodes;
   public :
