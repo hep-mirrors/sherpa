@@ -10,9 +10,7 @@
 #include "Random.H"
 #include "prof.hh"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
+#include "Shell_Tools.H"
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -48,7 +46,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_sfactor(1.)
 {
   string newpath=rpa.gen.Variable("SHERPA_CPP_PATH");
-  mkdir(newpath.c_str(),448);
+  ATOOLS::MakeDir(newpath.c_str(),448);
   if (system((string("test -d ")+newpath+string("/Process")).c_str())) {
     system((string("cp -r ")+rpa.gen.Variable("SHERPA_BIN_PATH")+
 	    string("/Process/Dummy ")+newpath+string("/Process")).c_str());
@@ -81,7 +79,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   // making directory
   if (m_gen_str>1) {
     unsigned int  mode_dir = 0755;
-    mkdir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
+    ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+m_ptypename).c_str(),mode_dir); 
   }
   msg_Tracking()<<"Initialized Single_Process : "<<m_name<<"."<<std::endl;
 
@@ -674,7 +672,7 @@ void Single_Process::WriteLibrary()
   int  mode_dir = 448;
   if (p_partner==this) m_pslibname = m_libname;
                   else m_pslibname = p_partner->PSLibName();
-  mkdir((newpath+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
+  ATOOLS::MakeDir((newpath+m_ptypename+string("/")+m_libname).c_str(),mode_dir); 
   p_shand->Output(p_hel,m_ptypename+string("/")+m_libname);
   CreateMappingFile();
   m_newlib=true;

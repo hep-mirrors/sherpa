@@ -1,14 +1,13 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <iomanip>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "Vertex.H"
+
 #include "Interaction_Model_Base.H"
 #include "Message.H"
 #include "Vector.H"
 #include "String_Tree.H"
+#include "Shell_Tools.H"
+#include <iomanip>
+#include <stdlib.h>
+
 
 using namespace AMEGIC;
 using namespace ATOOLS;
@@ -497,7 +496,7 @@ Vertex::~Vertex() {delete[] m_v;delete[] m_v4;}
 
 void Vertex::TexOutput()
 {
-  mkdir("./tex",448);
+  ATOOLS::MakeDir("./tex",448);
   
   system("rm ./tex/Vertex_*");  
 

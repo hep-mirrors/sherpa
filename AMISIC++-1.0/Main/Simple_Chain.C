@@ -14,7 +14,7 @@
 #ifdef USING__Sherpa
 #include "Matrix_Element_Handler.H"
 #endif
-#include <sys/stat.h>
+#include "Shell_Tools.H"
 
 #ifdef PROFILE__all
 #define PROFILE__Simple_Chain
@@ -322,7 +322,7 @@ bool Simple_Chain::CreateGrid()
   p_gridcreator->SetMCExtension(m_mcextension);
   p_gridcreator->SetOutputPath(OutputPath());
   if (!p_gridcreator->ReadInGrid()) {
-    if (mkdir(OutputPath().c_str(),448)==0) {
+    if (ATOOLS::MakeDir(OutputPath().c_str(),448)==0) {
       msg_Tracking()<<"Simple_Chain::CreateGrid(..): "
 		    <<"Created output directory "
 		    <<OutputPath()<<"."<<std::endl;

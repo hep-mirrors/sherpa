@@ -8,12 +8,11 @@
 #include "Process_Base.H"
 #include "Run_Parameter.H"
 #include "Message.H"
+#include "Shell_Tools.H"
 #include "String_Library.H"
 
 #include "Running_AlphaQED.H"
 
-#include <stdio.h>
-#include <sys/stat.h>
 
 using namespace AMEGIC;
 using namespace PHASIC;
@@ -114,7 +113,7 @@ bool Phase_Space_Generator::Construct(std::list<std::string>* liblist,string _pa
 	      fsrp = path+string("/")+fsrpath;
 	    }
 	    unsigned int  mode_dir = 0755;
-	    mkdir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp).c_str(),mode_dir);
+	    ATOOLS::MakeDir((rpa.gen.Variable("SHERPA_CPP_PATH")+string("/Process/")+fsrp).c_str(),mode_dir);
 	    String_Library slib(1);
 	    slib.InitMakefile(fsrp);
 	  }
