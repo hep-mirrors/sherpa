@@ -23,6 +23,7 @@ libPDF_la_SOURCES     =	\
 			Cteq61Pdf.f \
 			cteq6_inter.f \
 		    	CTEQ6_Fortran_Interface.C \
+			GRVph_Fortran_Interface.C \
 		    	PDF_Handler.C 
 noinst_HEADERS        =	\
 			ISR_Base.H \
@@ -34,6 +35,7 @@ noinst_HEADERS        =	\
 			PDF_MRST99.H \
 		 	PDF_Electron.H \
 			CTEQ6_Fortran_Interface.H \
+			GRVph_Fortran_Interface.H \
 			PDF_Handler.H 
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(PDFFLAGS)
