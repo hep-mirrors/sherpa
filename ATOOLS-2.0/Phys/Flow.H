@@ -20,6 +20,7 @@ namespace ATOOLS {
     int                Code(int _index=1);
     void               SetCode(int code_index=1,int code=-1);
     static void        ResetCounter() { qcd_counter = 600; }
+    static long        Counter()      { return ++qcd_counter; }    
   };  
 }
 
