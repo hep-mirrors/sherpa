@@ -8,7 +8,7 @@
 namespace ATOOLS {
 #define UNDEF_DOUBLE 1234.56e-78
 #define UNDEF_INT    -32767
-#define UNDEF_LONG   -32767
+#define UNDEF_LONG   -2147483648
 
   template <class Type>
   inline Type NotDefined() { return (Type)0; }

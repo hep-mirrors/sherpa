@@ -26,8 +26,9 @@ void Run_Parameter::Init(std::string path,std::string file,int argc,char* argv[]
   gen.m_output             = dr.GetValue<int>("OUTPUT",0);
   gen.m_analysis           = dr.GetValue<int>("ANALYSIS",0);
   gen.m_nevents            = dr.GetValue<long>("EVENTS",100);
-  gen.m_seed               = dr.GetValue<long>("RANDOM_SEED",1234);
   // read only if defined (no error message if not defined)
+  gen.m_seed               = dr.GetValue<long>("RANDOM_SEED");
+  if (gen.m_seed==NotDefined<long>()) gen.m_seed=1234;
   double ycut=dr.GetValue<double>("YCUT");
   if (ycut!=NotDefined<double>()) gen.m_ycut=ycut;
 
