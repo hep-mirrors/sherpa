@@ -51,6 +51,7 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     msg.Error()<<"Multiple_Interactions::CheckBlobList(..): "
 	       <<"Retry event "<<rpa.gen.NumberOfDicedEvents()<<std::endl;
     p_bloblist->Clear();
+    return false;
   }
   for (Blob_List::const_iterator bit=bloblist->begin();
        bit!=bloblist->end();++bit) {
@@ -114,10 +115,18 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     m_ptmax=Min(m_ptmax,ptmax);
     break;
   }
+  case 0: {
+    Blob_Data_Base *miinfo=
+      (*bloblist->FindLast(btp::ME_PS_Interface_FS))["MI_Scale"];
+    if (miinfo==NULL) THROW(fatal_error,"No mi scale information.");
+    m_ptmax=Min(m_ptmax,miinfo->Get<double>());
+    break;
+  }
   default: THROW(not_implemented,"Wrong mi scale scheme.");
   }
-#ifdef ANALYSE__Multiple_Interactions
   if (!m_diced) {
+    signal->AddData("MI_Scale",new Blob_Data<double>(m_ptmax));
+#ifdef ANALYSE__Multiple_Interactions
     static TH2D *ept=NULL;
     if (ept==NULL) {
       ept = new TH2D("erem_pt","erem_pt",100,0.0,rpa.gen.Ecms(),
@@ -133,8 +142,8 @@ bool Multiple_Interactions::CheckBlobList(ATOOLS::Blob_List *const bloblist)
     }
     mu0->Fill(log10(m_ptmax),
 	      (*signal)["ME_Weight"]->Get<double>());
-  }
 #endif
+  }
   return m_ptmax!=std::numeric_limits<double>::max();
 }
 
