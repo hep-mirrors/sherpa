@@ -18,14 +18,21 @@ libPhasespace_la_SOURCES      =	\
 			   	Channel_Basics.C \
 				Channel_Elements.C \
 				Single_Channel.C \
-			   	Multi_Channel.C \
-			   	ISR_Channel.C \
+			 	ISR_Channel.C \
 				FSR_Channel.C \
 				Rambo.C \
 				RamboKK.C \
 				Sarge.C \
+				Channel_Interface.C \
+			   	Multi_Channel.C \
 				Phase_Space_Handler.C \
 				Phase_Space_Integrator.C 
+#				Simple_Pole.C \
+#			   	Resonance.C \
+#				Threshold.C \
+#				Leading_Log.C \
+#				LBS_Compton_Peak.C \
+#			   	LL_KPerp.C \
 noinst_HEADERS        =	\
 		 	Integrable_Base.H \
 			Integration_Info.H \
@@ -33,14 +40,21 @@ noinst_HEADERS        =	\
 		 	Channel_Basics.H \
 			Channel_Elements.H \
 			Single_Channel.H \
-			Multi_Channel.H \
 		 	ISR_Channel.H \
 			FSR_Channel.H \
+			Channel_Interface.H \
 			Rambo.H \
 			RamboKK.H \
 			Sarge.H \
+			Multi_Channel.H \
 			Phase_Space_Handler.H \
 			Phase_Space_Integrator.H 
+#		 	Simple_Pole.H \
+#		 	Resonance.H \
+#			Threshold.H \
+#			Leading_Log.H \
+#			LBS_Compton_Peak.H \
+#		 	LL_KPerp.H \
 AM_CXXFLAGS   =	$(PHASICFLAGS)
 EXTRA_DIST    = $(CVSINCLUDE)
 INCLUDES      =	$(BEAMINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
