@@ -618,8 +618,14 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
       while (++trials<m_maxtrials) {
 	ATOOLS::Blob_Data_Base *data=selected->SameWeightedEvent();
 	if (data==NULL) return false;
-	weight=data->Get<PHASIC::Weight_Info>().weight/selected->Max();
+	weight=data->Get<PHASIC::Weight_Info>().weight;
 	trials=data->Get<PHASIC::Weight_Info>().ntrial;
+	if (weight>max) {
+	  ATOOLS::msg.Error()<<"Simple_Chain::FillBlob(..): "
+			     <<"Weight exceeded maximum.\n   Setting new maximum "
+			     <<max<<" -> "<<weight<<std::endl;
+	  m_differentials[m_selected]->SetBinMax(m_last[0],weight);
+	}
 	if (p_fsrinterface->Trigger() && weight>max*ATOOLS::ran.Get()) break;
       }
     }

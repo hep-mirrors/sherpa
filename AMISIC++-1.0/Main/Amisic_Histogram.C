@@ -357,4 +357,60 @@ ArgumentType Amisic_Histogram<ArgumentType>::BinEntries(const Argument_Type x)
   return BinEntries(FindX(x)); 
 }
 
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinContent(const size_t i,const Argument_Type content)
+{
+  m_data[hci::y_value][i]=content;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinSumSqr(const size_t i,const Argument_Type sumsqr)
+{
+  m_data[hci::y_square][i]=sumsqr;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinMax(const size_t i,const Argument_Type max)
+{
+  m_data[hci::maximum][i]=max;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinEntries(const size_t i,const Argument_Type entries)
+{
+  m_data[hci::entries][i]=entries;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinContent(const Argument_Type x,const Argument_Type content)
+{
+  m_data[hci::y_value][FindX(x)]=content;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinSumSqr(const Argument_Type x,const Argument_Type sumsqr)
+{
+  m_data[hci::y_square][FindX(x)]=sumsqr;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinMax(const Argument_Type x,const Argument_Type max)
+{
+  m_data[hci::maximum][FindX(x)]=max;
+}
+
+template <class ArgumentType>
+void Amisic_Histogram<ArgumentType>::
+SetBinEntries(const Argument_Type x,const Argument_Type entries)
+{
+  m_data[hci::entries][FindX(x)]=entries;
+}
+
 template AMISIC::Amisic_Histogram<double>;

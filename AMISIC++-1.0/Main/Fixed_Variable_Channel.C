@@ -20,7 +20,7 @@ GeneratePoint(ATOOLS::Vec4D *_p,double *_ran)
     Ehat=sqrt((_p[0]+_p[1]).Abs2());
     pt=(double)m_value;
     if (Ehat/2.0>pt) {
-      weight=1.0/sqrt((Ehat*Ehat)/(pt*pt)-1.0);
+      weight=1.0/sqrt((Ehat*Ehat)/(4.*pt*pt)-1.0);
       _p[2]=ATOOLS::Vec4D(Ehat/2.0,pt*cos(2.0*M_PI*_ran[1]),
 			  pt*sin(2.0*M_PI*_ran[1]),
 			  sqrt(Ehat*Ehat/4.0-pt*pt));
@@ -48,6 +48,8 @@ void Fixed_Variable_Channel<Value_Type>::GenerateWeight(ATOOLS::Vec4D *_p)
 {
   weight/=PHASIC::CE.Isotropic2Weight(_p[2],_p[3])*
     pow(2.0*M_PI,2.0*3.0-4.0);
+  if (!(weight<std::numeric_limits<double>::max())) weight=0.0;
+  msg_Debugging()<<"miw: "<<weight<<std::endl;
 }
 
 template Fixed_Variable_Channel<double>;
