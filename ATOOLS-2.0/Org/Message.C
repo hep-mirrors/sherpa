@@ -133,3 +133,43 @@ void Message::SetPrecision(const int precision)
   if (p_output) p_output->precision(precision);
 }
 
+std::ostream &Message::Out() const 
+{ 
+  return *p_output<<Indent(); 
+}
+
+std::ostream &Message::Error() const     
+{ 
+  if (m_level >= 0) return *p_output<<Indent(); 
+  return *p_no; 
+}
+
+std::ostream &Message::Events() const    
+{ 
+  if (m_level & 1) return *p_output<<Indent(); 
+  return *p_no;  
+}
+
+std::ostream &Message::Info() const      
+{ 
+  if (m_level & 2) return *p_output<<Indent(); 
+  return *p_no;  
+}
+
+std::ostream &Message::Tracking() const  
+{ 
+  if (m_level & 4) return *p_output<<Indent(); 
+  return *p_no;  
+}
+
+std::ostream &Message::Debugging() const 
+{ 
+  if (m_level & 8) return *p_output<<Indent(); 
+  return *p_no;  
+}
+
+std::ostream &Message::LogFile() const   
+{ 
+  if (m_level & 16) return *p_logfile<<Indent(); 
+  return *p_no; 
+}

@@ -65,7 +65,8 @@ namespace ATOOLS {
 
     void InitLogFile(const std::string &logfile); 
 
-    const std::string Indent() { return std::string(m_indent,' '); }
+    inline const std::string Indent() const 
+    { return std::string(m_indent,' '); }
 
     friend class Indentation;
 
@@ -82,38 +83,32 @@ namespace ATOOLS {
     void SetPrecision(const int precision);
     void SetStandard();
 
+    std::ostream &Out() const;
+
+    std::ostream &Error() const;     
+    std::ostream &Events() const;    
+    std::ostream &Info() const;      
+    std::ostream &Tracking() const;  
+    std::ostream &Debugging() const; 
+
+    std::ostream &LogFile() const;   
+
     // inline functions
     inline void SetLevel(const int level)     { m_level = level;    }
     inline void SetModifiable(const bool mod) { m_modifiable = mod; }
 
-    inline int  Level()      { return m_level;      }
-    inline bool Modifiable() { return m_modifiable; }
+    inline int  Level() const      { return m_level;      }
+    inline bool Modifiable() const { return m_modifiable; }
 
     inline void SetNoStream(std::ostream *const no)      { p_no=(std::ofstream*)no; }
     inline void SetOutStream(std::ostream *const output) { p_output=output;         }
     inline void SetErrStream(std::ostream *const error)  { p_error=error;           }
 
-    inline std::ostream &Out() { return *p_output<<Indent(); }
-
-    inline std::ostream &Error()     
-    { if (m_level >= 0) return *p_output<<Indent(); return *p_no; }
-    inline std::ostream &Events()    
-    { if (m_level & 1) return *p_output<<Indent(); return *p_no;  }
-    inline std::ostream &Info()      
-    { if (m_level & 2) return *p_output<<Indent(); return *p_no;  }
-    inline std::ostream &Tracking()  
-    { if (m_level & 4) return *p_output<<Indent(); return *p_no;  }
-    inline std::ostream &Debugging() 
-    { if (m_level & 8) return *p_output<<Indent(); return *p_no;  }
-
-    inline std::ostream &LogFile()   
-    { if (m_level & 16) return *p_logfile<<Indent(); return *p_no; }
-
-    inline bool  LevelIsError()     { return (m_level >= 0); }
-    inline bool  LevelIsEvents()    { return (m_level & 1); }
-    inline bool  LevelIsInfo()      { return (m_level & 2); }
-    inline bool  LevelIsTracking()  { return (m_level & 4); }
-    inline bool  LevelIsDebugging() { return (m_level & 8); }
+    inline bool LevelIsError() const     { return (m_level >= 0); }
+    inline bool LevelIsEvents() const    { return (m_level & 1);  }
+    inline bool LevelIsInfo() const      { return (m_level & 2);  }
+    inline bool LevelIsTracking() const  { return (m_level & 4);  }
+    inline bool LevelIsDebugging() const { return (m_level & 8);  }
 
   };// end of class Message
 
