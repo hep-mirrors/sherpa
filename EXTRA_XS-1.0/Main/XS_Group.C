@@ -108,11 +108,11 @@ void XS_Group::SelectOne()
   if (m_totalxs==0.) p_selected=m_xsecs[int(ATOOLS::ran.Get()*m_xsecs.size())];
   else {
     double disc;
-    if (m_atoms) disc=m_max*ATOOLS::ran.Get();
-    else disc=m_totalxs*ATOOLS::ran.Get();
+    if (m_atoms) disc=m_totalxs*ATOOLS::ran.Get();
+    else disc=m_max*ATOOLS::ran.Get();
     for (size_t i=0;i<m_xsecs.size();++i) {
-      if (m_atoms) disc-=m_xsecs[i]->Max();
-      else disc-=m_xsecs[i]->TotalXS();
+      if (m_atoms) disc-=m_xsecs[i]->TotalXS();
+      else disc-=m_xsecs[i]->Max();
       if (disc<=0.) {
 	p_selected=m_xsecs[i];
 	p_selected->SetPSHandler(p_pshandler);
@@ -121,7 +121,7 @@ void XS_Group::SelectOne()
       }
     }
     if (disc>0.) { 
-      ATOOLS::msg.Error()<<"Process_Group::SelectOne() : Cannot select process !"<<std::endl;
+      ATOOLS::msg.Error()<<"XS_Group::SelectOne() : Cannot select process !"<<std::endl;
       if (m_atoms) ATOOLS::msg.Error()<<"   \\dsigma_{max} = "<<m_max<<std::endl;
       else ATOOLS::msg.Error()<<"   \\sigma_{tot} = "<<m_totalxs<<std::endl;
     }
