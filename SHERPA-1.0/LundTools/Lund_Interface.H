@@ -45,7 +45,7 @@ namespace SHERPA {
   public:
 
     // constructor
-    Lund_Interface(std::string _m_path,std::string _m_file);
+    Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa);
 
     // destructor
     ~Lund_Interface();

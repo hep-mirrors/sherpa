@@ -4,6 +4,15 @@
 #include "Run_Parameter.H"
 #include "Exception.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Fragmentation_Handler
+#endif
+#ifdef PROFILE__Fragmentation_Handler
+#include "prof.hh" 
+#else
+#define PROFILE_HERE
+#endif
+
 using namespace SHERPA;
 
 Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file):
@@ -17,7 +26,7 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
   m_fragmentationmodel=dr.GetValue<std::string>("FRAGMENTATION",std::string("Pythiav6.214"));
   if (m_fragmentationmodel==std::string("Lund")) {
     std::string lundfile=dr.GetValue<std::string>("LUND_FILE",std::string("Lund.dat"));
-    p_lund = new Lund_Interface(m_dir,lundfile);
+    p_lund = new Lund_Interface(m_dir,lundfile,true);
     m_mode=1;
     return;
   }
@@ -36,6 +45,7 @@ Fragmentation_Handler::~Fragmentation_Handler()
 bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
 						 ATOOLS::Particle_List *particlelist) 
 {
+  PROFILE_HERE;
   if (m_mode==0 || bloblist->size()==0) return 1;
   p_blob = new ATOOLS::Blob();
   p_blob->SetId();
@@ -83,6 +93,11 @@ bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List *bloblist,
 			   <<"Cannot find connected parton for parton ("
 			   <<cur->Number()<<") in event ["
 			   <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"]"<<std::endl;
+	ATOOLS::msg.Tracking()<<"   Empty blob list and retry event."<<std::endl;
+	while (bloblist->size()>0) {
+	  delete *bloblist->begin();
+	  bloblist->erase(bloblist->begin());
+	}
 	return false;
       }
     } while ((cur=comp)->Flav().IsGluon());

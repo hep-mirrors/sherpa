@@ -20,7 +20,7 @@ size_t Lund_Interface::s_maxerrors=0;
 ATOOLS::Blob_List *Lund_Interface::s_bloblist=NULL; 
 PDF::ISR_Handler *Lund_Interface::s_isrhandler=NULL; 
 
-Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
+Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file,bool sherpa):
   m_path(_m_path),m_file(_m_file),
   p_hepevt(NULL), 
   m_compress(true),m_writeout(false),
@@ -77,7 +77,6 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
   reader->AddIgnore("(");
   reader->AddIgnore(")");
   reader->AddIgnore(",");
-  bool sherpa=_m_file==std::string("");
   if (!sherpa) {
     sherpa=false;
     if (!reader->ReadFromFile(frame,"FRAME")) frame=std::string("CMS");

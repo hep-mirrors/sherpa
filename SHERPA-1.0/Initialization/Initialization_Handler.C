@@ -237,7 +237,7 @@ bool Initialization_Handler::InitializeTheExternalMC()
   std::string file;
   switch (m_mode) {
   case 9000: 
-    p_pythia = new Lund_Interface(m_path,m_evtfile);
+    p_pythia = new Lund_Interface(m_path,m_evtfile,false);
     return true;
   default: 
     m_mode = 9999;
