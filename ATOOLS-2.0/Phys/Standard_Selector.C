@@ -17,6 +17,7 @@ Energy_Selector::Energy_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("Energy_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smin = 0.;
   m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
   double E = rpa.gen.Ecms();
@@ -103,6 +104,7 @@ ET_Selector::ET_Selector(int _nin,int _nout, Flavour * _fl)
   m_name = std::string("ET_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smin = 0.;
   m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
   double E = rpa.gen.Ecms();
@@ -182,6 +184,7 @@ PT_Selector::PT_Selector(int _nin,int _nout, Flavour * _fl) {
   m_name = std::string("PT_Selector"); 
   m_nin  = _nin; m_nout = _nout; m_n = m_nin+m_nout;
   m_fl   = _fl;
+  m_smin = 0.;
   m_smax = rpa.gen.Ecms()*rpa.gen.Ecms();
   
   double E = rpa.gen.Ecms();

@@ -24,6 +24,7 @@ Cone_Finder::Cone_Finder(int _n,Flavour * _fl,double _rcone) :
   m_nin     = 2; 
   m_nout    = m_n-2; 
 
+  m_smin = 0.;
   m_fl   = _fl;
   
   m_value   = new double[1];
