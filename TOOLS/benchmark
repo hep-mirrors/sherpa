@@ -162,12 +162,12 @@ for I in $LIST ; do
     CleanUp "Results Analysis"
     RUNPATH=$PWD
     cd $MAINPATH/$SHERPAPATH
-    makeclean >> $MAINPATH/$OUTPUTFILE 2>&1
-    Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
+    ./makeclean >> $MAINPATH/$OUTPUTFILE 2>&1
+    ./Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
 	   RESULT_DIRECTORY=$RUNPATH"/Results/" >> $MAINPATH/$OUTPUTFILE 2>&1
     while (( $? == $MEHANDLEREXIT )) ; do
-      makelibs >> $MAINPATH/$OUTPUTFILE 2>&1
-      Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
+      ./makelibs >> $MAINPATH/$OUTPUTFILE 2>&1
+      ./Sherpa PATH=$RUNPATH ANALYSIS_OUTPUT=$RUNPATH \
              RESULT_DIRECTORY=$RUNPATH"/Results/" >> $MAINPATH/$OUTPUTFILE 2>&1
     done 
     cd $RUNPATH
