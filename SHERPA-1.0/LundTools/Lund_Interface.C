@@ -145,8 +145,25 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
     pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
   }
   // replacement ends here
-  //if (ATOOLS::msg.LevelIsTracking()) ListLundParameters();
+  if (ATOOLS::msg.LevelIsTracking()) ListLundParameters();
   if (!sherpa) {
+#ifndef NO_EXPORT__AlphaS
+    int orderas;
+    double asmz, asdef, mz;  
+    reader->SetInputFile("Model.dat");
+    if (!reader->ReadFromFile(orderas,"ORDER_ALPHAS")) orderas=0;
+    if (!reader->ReadFromFile(asmz,"ALPHAS(MZ)")) asmz=0.1188;
+    if (!reader->ReadFromFile(asdef,"ALPHAS(default)")) asdef=asmz;
+    mz=91.188;
+    reader->SetInputFile("Particle.dat");
+    std::vector<std::vector<double> > helpdvv;
+    reader->MatrixFromFile(helpdvv,"");
+    for (size_t i=0;i<helpdvv.size();++i) {
+      if (helpdvv[i][0]==24. && helpdvv.size()>1) mz=helpdvv[i][1];
+    }
+    MODEL::as = new MODEL::Running_AlphaS(asmz,mz*mz,orderas);
+    MODEL::as->SetDefault(asdef);
+#endif
     p_hepevt = new ATOOLS::HepEvt_Interface(ATOOLS::gtp::Pythia);
     if (pypars.mstp[105-1]==0) p_hepevt->SetHadronized(false);
     pyinit(frame.c_str(),beam[0].c_str(),beam[1].c_str(),win);
@@ -444,7 +461,9 @@ void Lund_Interface::Error(const int error)
   }
   else {
     ATOOLS::msg.Error()<<"Lund_Interface::Error("<<error<<") "<<ATOOLS::om::red
-		       <<"Pythia calls PYERRM("<<error<<")."<<ATOOLS::om::reset<<std::endl;
+		       <<"Pythia calls PYERRM("<<error<<") in event "
+		       <<ATOOLS::rpa.gen.NumberOfDicedEvents()<<"."
+		       <<ATOOLS::om::reset<<std::endl;
     if (ATOOLS::msg.LevelIsDebugging()) {
       ATOOLS::msg.Tracking()<<*s_bloblist<<std::endl;
       pylist(2);
@@ -508,7 +527,11 @@ bool Lund_Interface::OneEvent(ATOOLS::Blob_List * const blobs,double &weight)
     p_hepevt->SetJdahep(p_jdahep);
     p_hepevt->SetPhep(p_phep);
     p_hepevt->SetVhep(p_vhep);
-    if (p_hepevt->HepEvt2Sherpa(blobs)) { okay = true; break; }
+    if (ATOOLS::msg.LevelIsDebugging()) pylist(3);
+    if (p_hepevt->HepEvt2Sherpa(blobs)) { 
+      okay = true; 
+      break; 
+    }
   }
   return okay;
 } 
