@@ -29,8 +29,6 @@ namespace SHERPA {
     TypeID      m_type;
     std::string m_name;
 
-    double SigmaND(const std::string path,const std::string file);
-    
   public:
 
     // constructor
