@@ -47,7 +47,7 @@ namespace AMEGIC {
     bool           PrepareXSecTables();
     bool           LookUpXSec(double,bool,std::string);
     void           SingleEvents();
-    bool           InitializeProcesses(int _mode=0);
+    bool           InitializeProcesses(int _mode=AMPLITUDE_MODE);
     Process_Base * Processes();
 
     void           SetResDir(std::string _resdir) { resdir = _resdir; }
