@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAILADDRESS="sherpa@theory.phy.tu-dresden.de"
+MAILADDRESS="`whoami`@theory.phy.tu-dresden.de"
 LOGFILE="sherpa_benchmarking"
 STATUS="Benchmarking report: "
 DATE=`date +'%y-%m-%d'`
@@ -65,17 +65,20 @@ export CLHEPDIR
 for I in $* ; do
   if [ "$I" = "-p" ]; then DDIR=TRUE
   elif [ "$I" = "-f" ]; then DFILE=TRUE
-  elif [ "$I" = "-f" ]; then DLOGFILE=TRUE
+  elif [ "$I" = "-l" ]; then DLOGFILE=TRUE
+  elif [ "$I" = "-m" ]; then DMAILADDRESS=TRUE
   elif [ "$I" = "-h" ]; then echo && \
     echo "benchmark version 1.0" && echo && \
     echo "options: -p <path>      specifiy benchmark points in path <path>" && \
     echo "         -f <file>      specifiy benchmark points in file <file>" && \
     echo "         -l <logfile>   write benchmarking output to <logfile>" && \
+    echo "         -m <address>   send benchmarking report to <address>" && \
     echo "         -h             display this help and exit" && echo && \
     exit 0
   elif [ "$DDIR" = "TRUE" ]; then DDIR="" && DIR=$I
   elif [ "$DFILE" = "TRUE" ]; then DFILE="" && FILE=$I
   elif [ "$DLOGFILE" = "TRUE" ]; then DLOGFILE="" && LOGFILE=$I
+  elif [ "$DMAILADRESS" = "TRUE" ]; then DMAILADRESS="" && MAILADDRESS=$I
   else echo "benchmark: error: unrecognized option '$I'. try '-h'" && \
     exit 1 
   fi
