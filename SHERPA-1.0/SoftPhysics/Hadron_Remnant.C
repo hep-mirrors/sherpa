@@ -151,16 +151,20 @@ void Hadron_Remnant::DiceKinematics()
       it->second*=m_xtot/xtot;
     }
   }
+  double xperptot=0.9999999999;
   for (unsigned int i=0;i<m_parton[1].size();++i) ptot-=m_parton[1][i]->Momentum();
   for (unsigned int j=0;j<m_parton[0].size();++j) {
-    double E=xmap[m_parton[0][j]]*m_pbeam[0];
+    double E=xmap[m_parton[0][j]]*ptot[0];
     double m=m_parton[0][j]->Flav().PSMass();
-    // crude, to be changed soon ...
-    if (m>E) m=0.;
-    double pz=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-ATOOLS::sqr(m)-m_hardpt.PPerp2()/ATOOLS::sqr(m_parton[0].size()));
-    m_parton[0][j]->SetMomentum(ATOOLS::Vec4D(E,-m_hardpt[1]/m_parton[0].size(),
-					      -m_hardpt[2]/m_parton[0].size(),pz));
-    if (!(E>0.) || (!(pz>0.) && !(pz<=0.))) {
+    double pmax=0.9999999999*sqrt(E*E-m*m);
+    double xperp=ATOOLS::Min(xperptot,pmax/ptot.PPerp());
+    if (j==m_parton[0].size()-1) xperp=xperptot;
+    xperptot-=xperp;
+    ATOOLS::Vec4D p=xperp*ptot;
+    p[0]=E;
+    p[3]=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-ATOOLS::sqr(m));
+    m_parton[0][j]->SetMomentum(p);
+    if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
       ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 
                          <<"Parton ("<<m_parton[0][j]<<") has non-positive momentum: p = "
                          <<m_parton[0][j]->Momentum()<<" m_{"<<m_parton[0][j]->Flav()<<"} = "
