@@ -63,7 +63,7 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   p_ps   = new Phase_Space_Handler(this,p_isr,p_beam);
   
   // making directory
-  int  mode_dir = 448;
+  unsigned int  mode_dir = 0755;
   mkdir((string("Process/")+m_ptypename).c_str(),mode_dir); 
   
   msg.Tracking()<<"Initialized Single_Process : "<<m_name<<", "<<m_nvec<<", 1/norm = "<<1./m_Norm<<endl;

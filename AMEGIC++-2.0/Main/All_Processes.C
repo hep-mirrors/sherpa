@@ -116,6 +116,7 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
     if (!(m_procs[i]->CalculateTotalXSec(_resdir))) okay = 0;
                                                else m_totalxs += m_procs[i]->Total();
   }
+  if (m_totalxs<=0.) okay=0;
   return okay;
 }
 
