@@ -18,6 +18,9 @@ if [ "$1" = "local" ] ; then
       echo ---- 
     fi
     echo -en "\e[0m\e[31m" ; ps --no-headers -fp $J 
+    echo -en "\e[0m"
+    grep -e VmSize -e VmRSS -e VmData -e VmLib  /proc/$J/status | awk '{ printf " " $1 " " $2 " " $3 " "} END{ printf "\n"}'
+#    sed -n -e '/VmSize:/p' -e '/VmData:/p'
   fi
   done
   echo -en "\e[0m"
