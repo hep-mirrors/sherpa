@@ -1,48 +1,55 @@
 #include "QED_Splitting_Functions.H"
+#include "MathTools.H"
+#include "Random.H"
+#include "Sudakov_Tools.H"
 
 using namespace APACIC;
 
 // --------- class f_fp -----------------------------
 // * fermion to fermion + photon  splitting function
 // --------------------------------------------------
-f_fp::f_fp(APHYTOOLS::Flavour fermionflavour) {
-  flavs[0] = fermionflavour; // a
-  flavs[1] = fermionflavour; // b
-  flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // c
-  qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-  alpha    = 1.;
+f_fp::f_fp(APHYTOOLS::Flavour fermionflavour) 
+{
+  m_flavs[0] = fermionflavour; // a
+  m_flavs[1] = fermionflavour; // b
+  m_flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // c
+  m_qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
+  m_alpha    = 1.;
 }
 
 f_fp::f_fp(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-  tools (_tools) {
-  flavs[0] = fermionflavour; // a
-  flavs[1] = fermionflavour; // b
-  flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // c
-  qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-  alpha    = tools->GetAQEDmax();
+  p_tools (_tools) {
+  m_flavs[0] = fermionflavour; // a
+  m_flavs[1] = fermionflavour; // b
+  m_flavs[2] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // c
+  m_qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
+  m_alpha    = p_tools->GetAQEDmax();
 }
 
-double f_fp::operator()(double z) {return qsqr*(1.+z*z)/(1.-z);}; 
-double f_fp::GetZ()      {
-  return 1.-(1.-zmin)*pow((1.-zmax)/(1.-zmin),AMATOOLS::ran.Get());
+double f_fp::operator()(double z) {return m_qsqr*(1.+z*z)/(1.-z);} 
+double f_fp::GetZ()      
+{
+  return 1.-(1.-m_zmin)*pow((1.-m_zmax)/(1.-m_zmin),AMATOOLS::ran.Get());
 }
 
-double f_fp::GetCoupling()         { return alpha;}
+double f_fp::GetCoupling()         { return m_alpha;}
 
-double f_fp::GetCoupling(double t) { return tools->Alpha(t);}
+double f_fp::GetCoupling(double t) { return p_tools->Alpha(t);}
 
 
-double f_fp::GetWeight(double z,double pt2,bool massterm) { 
+double f_fp::GetWeight(double z,double pt2,bool massterm) 
+{ 
   if (!massterm) return 0.5*(1.+z*z);
   return ( (1.+z*z)/2. - 
-	   z*AMATOOLS::sqr((1.-z)*flavs[0].PSMass())/
-	   (pt2+AMATOOLS::sqr((1.-z)*flavs[0].PSMass())) );
+	   z*AMATOOLS::sqr((1.-z)*m_flavs[0].PSMass())/
+	   (pt2+AMATOOLS::sqr((1.-z)*m_flavs[0].PSMass())) );
 }
 
-double f_fp::CrudeInt(double _zmin, double _zmax) {
-  zmin = _zmin;
-  zmax = _zmax;
-  return 2.*qsqr*alpha*log((1.-zmin)/(1.-zmax));
+double f_fp::CrudeInt(double _zmin, double _zmax) 
+{
+  m_zmin = _zmin;
+  m_zmax = _zmax;
+  return 2.*m_qsqr*m_alpha*log((1.-m_zmin)/(1.-m_zmax));
 }
 
 
@@ -52,43 +59,47 @@ double f_fp::CrudeInt(double _zmin, double _zmax) {
 //   (only used in Initial State Shower)
 // --------------------------------------------------
 
-f_pf::f_pf(APHYTOOLS::Flavour fermionflavour) {
-  flavs[0] = fermionflavour; // a
-  flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // b
-  flavs[2] = fermionflavour; // c
-  qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-  alpha    = 1.;
+f_pf::f_pf(APHYTOOLS::Flavour fermionflavour) 
+{
+  m_flavs[0] = fermionflavour; // a
+  m_flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // b
+  m_flavs[2] = fermionflavour; // c
+  m_qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
+  m_alpha    = 1.;
 }
 
 f_pf::f_pf(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-  tools (_tools) {
-  flavs[0] = fermionflavour; // a
-  flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // b
-  flavs[2] = fermionflavour; // c
-  qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-  alpha    = tools->GetAQEDmax();
+  p_tools (_tools) 
+{
+  m_flavs[0] = fermionflavour; // a
+  m_flavs[1] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // b
+  m_flavs[2] = fermionflavour; // c
+  m_qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
+  m_alpha    = p_tools->GetAQEDmax();
 }
 
-double f_pf::operator()(double z) {return qsqr*(1.+(1.-z)*(1.-z))/z;} 
+double f_pf::operator()(double z) {return m_qsqr*(1.+(1.-z)*(1.-z))/z;} 
 
 double f_pf::GetZ()      
 {
-  return zmin*pow(zmax/zmin,AMATOOLS::ran.Get());
+  return m_zmin*pow(m_zmax/m_zmin,AMATOOLS::ran.Get());
 }
 
-double f_pf::GetCoupling()         { return alpha;}
-double f_pf::GetCoupling(double t) { return tools->Alpha(t);}
-double f_pf::GetWeight(double z,double pt2,bool massterm) { 
+double f_pf::GetCoupling()         { return m_alpha;}
+double f_pf::GetCoupling(double t) { return p_tools->Alpha(t);}
+
+double f_pf::GetWeight(double z,double pt2,bool massterm) 
+{ 
   if (!massterm) return 0.5*(1.+AMATOOLS::sqr(1.-z));
   return ( (1.+AMATOOLS::sqr(1.-z))/2. - 
-	   (1.-z)*AMATOOLS::sqr(z*flavs[0].PSMass())/
-	   (pt2+AMATOOLS::sqr(z*flavs[0].PSMass())) );
+	   (1.-z)*AMATOOLS::sqr(z*m_flavs[0].PSMass())/
+	   (pt2+AMATOOLS::sqr(z*m_flavs[0].PSMass())) );
 }
 
 double f_pf::CrudeInt(double _zmin, double _zmax) {
-  zmin = _zmin;
-  zmax = _zmax;
-  return 2.*qsqr*alpha*log(zmax/zmin);
+  m_zmin = _zmin;
+  m_zmax = _zmax;
+  return 2.*m_qsqr*m_alpha*log(m_zmax/m_zmin);
 }
 
 
@@ -96,45 +107,47 @@ double f_pf::CrudeInt(double _zmin, double _zmax) {
 // * photon to fermion + anti-fermion splitting function
 // --------------------------------------------------
 
-p_ff::p_ff(APHYTOOLS::Flavour fermionflavour) {
-  flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // a
-  flavs[1] = fermionflavour; // b
-  flavs[2] = fermionflavour.Bar(); // c
-  qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-  alpha    = 1.;
+p_ff::p_ff(APHYTOOLS::Flavour fermionflavour) 
+{
+  m_flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // a
+  m_flavs[1] = fermionflavour; // b
+  m_flavs[2] = fermionflavour.Bar(); // c
+  m_qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
+  m_alpha    = 1.;
 }
 
 p_ff::p_ff(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools) :
-  tools (_tools) {
-  flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // a
-  flavs[1] = fermionflavour; // b
-  flavs[2] = fermionflavour.Bar(); // c
-  qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
-  alpha    = tools->GetAQEDmax();
+  p_tools (_tools) 
+{
+  m_flavs[0] = APHYTOOLS::Flavour(APHYTOOLS::kf::photon); // a
+  m_flavs[1] = fermionflavour; // b
+  m_flavs[2] = fermionflavour.Bar(); // c
+  m_qsqr     = AMATOOLS::sqr(fermionflavour.Charge());
+  m_alpha    = p_tools->GetAQEDmax();
 }
 
 double p_ff::operator()(double z) 
 {
-  return qsqr*(z*z+ AMATOOLS::sqr(1-z));
+  return m_qsqr*(z*z+ AMATOOLS::sqr(1-z));
 }
 
 double p_ff::GetZ()      
 {
-  return zmin+(zmax-zmin)*AMATOOLS::ran.Get();
+  return m_zmin+(m_zmax-m_zmin)*AMATOOLS::ran.Get();
 }
 
-double p_ff::GetCoupling()         { return alpha;}
-double p_ff::GetCoupling(double t) { return tools->Alpha(t);}
+double p_ff::GetCoupling()         { return m_alpha;}
+double p_ff::GetCoupling(double t) { return p_tools->Alpha(t);}
 
 double p_ff::GetWeight(double z,double pt2,bool masses) 
 { 
-  if (masses) return (*this)(z)/qsqr;
-  return (1. - 2.*z*(1.-z)*pt2/(pt2+AMATOOLS::sqr(flavs[1].PSMass())));
+  if (masses) return (*this)(z)/m_qsqr;
+  return (1. - 2.*z*(1.-z)*pt2/(pt2+AMATOOLS::sqr(m_flavs[1].PSMass())));
 }                 
 
 double p_ff::CrudeInt(double _zmin, double _zmax) 
 {
-  zmin = _zmin;
-  zmax = _zmax;
-  return (zmax-zmin)*alpha*qsqr;
+  m_zmin = _zmin;
+  m_zmax = _zmax;
+  return (m_zmax-m_zmin)*m_alpha*m_qsqr;
 }

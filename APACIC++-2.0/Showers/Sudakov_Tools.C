@@ -14,31 +14,31 @@ using namespace std;
 
 
 Sudakov_Tools::Sudakov_Tools() {
-  scalefac = 1.;
+  m_scalefac = 1.;
   FixLambda2(sqr((Flavour(kf::Z)).Mass()));
   if (rpa.gen.Debugging()) Output();
 }
 
 Sudakov_Tools::Sudakov_Tools(int _scheme,double tmin, double tmax) {
-  scheme = _scheme;
-  if (scheme>0) {
-    alphaQEDmax = (*aqed)(tmax);    // max alpha_S 
-    alphaSmax   = AlphaS(tmin);      // max alpha_S 
+  m_scheme = _scheme;
+  if (m_scheme>0) {
+    m_alpha_qed_max = (*aqed)(tmax);    // max alpha_qed 
+    m_alpha_s_max     = AlphaS(tmin);     // max alpha strong
     FixLambda2(sqr((Flavour(kf::Z)).Mass()));                   
     // determine Lambda2 and beta0 at MZ;
     Setscalefac(tmin);              // fix scaling appropriate for q02/4
     //    Setscalefac(sqr((Flavour(kf::Z)).Mass()));              // fix scaling only for pythia alphaS !!!!!!
   }
   else {
-    alphaQEDmax     = 1./128.;      // max alpha_QED has to be read in from
-    alphaSmax       = 0.2;          // max alpha_S has to be read in from
-    beta0 = lambda2 = 0.;           // parameter-file ...
-    scalefac        = 1.;           // won't be used ....
+    m_alpha_qed_max   = 1./128.;      // max alpha_QED has to be read in from
+    m_alpha_s_max       = 0.2;          // max alpha_S has to be read in from
+    m_beta0 = m_lambda2 = 0.;           // parameter-file ...
+    m_scalefac        = 1.;           // won't be used ....
   }
   if (rpa.gen.Debugging()) { 
     Output();
     cout<<" tmin= "<< tmin<<endl;
-    cout<<" alpha_max="<< alphaSmax <<endl;
+    cout<<" alpha_max="<< m_alpha_s_max <<endl;
     cout<<" Checking alphaS "<<endl;
     double q2_max=sqr(91.2);
     double q2_min=sqr(.912);
@@ -53,7 +53,7 @@ Sudakov_Tools::Sudakov_Tools(int _scheme,double tmin, double tmax) {
 
 double Sudakov_Tools::CrudeAlphaS(double t){
   if (t<0.) t = -t;
-  return scalefac/(beta0*log(t/lambda2));
+  return m_scalefac/(m_beta0*log(t/m_lambda2));
 };
 
 double Sudakov_Tools::AlphaS(double t){
@@ -115,25 +115,25 @@ double Sudakov_Tools::Alpha(double t){
 };
 
 void Sudakov_Tools::FixLambda2(double t) { 
-  beta0   = as->Beta0(t)/M_PI;  // additional factor M_PI (since beta0 is "b" on Weber page 29)
-  lambda2 = t*exp(-1./(beta0*AlphaS(t)));
+  m_beta0   = as->Beta0(t)/M_PI;  // additional factor M_PI (since beta0 is "b" on Weber page 29)
+  m_lambda2 = t*exp(-1./(m_beta0*AlphaS(t)));
 };
 
 void Sudakov_Tools::Setscalefac(double t0) {
   if (t0<0.) t0=-t0;
-  scalefac = 1.; // will be used in CrudeAlphaS ...
-  scalefac = AlphaS(t0)/CrudeAlphaS(t0);
+  m_scalefac = 1.; // will be used in CrudeAlphaS ...
+  m_scalefac = AlphaS(t0)/CrudeAlphaS(t0);
 };
 
 void Sudakov_Tools::Output() {
-  msg.Debugging()<<"Initialise Sudakov-Tools with scheme : "<<scheme<<std::endl
-		 <<"beta0      = "<<beta0<<std::endl
-		 <<"lambda2    = "<<lambda2<<std::endl	
+  msg.Debugging()<<"Initialise Sudakov-Tools with scheme : "<<m_scheme<<std::endl
+		 <<"beta0      = "<<m_beta0<<std::endl
+		 <<"lambda2    = "<<m_lambda2<<std::endl	
 		 <<"alphaS(MZ) = "
 		 <<CrudeAlphaS(sqr((Flavour(kf::Z)).Mass()))
 		 <<"  (estimated)"<<std::endl
 		 <<"alphaS(MZ) = "
 		 <<AlphaS(sqr((Flavour(kf::Z)).Mass()))
 		 <<"  (exact)"<<std::endl;
-  msg.Debugging()<<" scalefac="<<scalefac<<endl;
+  msg.Debugging()<<" scalefac="<<m_scalefac<<endl;
 }

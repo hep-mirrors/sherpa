@@ -4,15 +4,14 @@
 //               QCD_Splitting_Functions.H
 //----------------------------------------------------------------------
 #include "Splitting_Function.H"
-#include "MathTools.H"
-#include "Random.H"
 
 namespace APACIC {
+  class Sudakov_Tools;
 
   // quark to quark + gluon  splitting function
   class q_qg : public Splitting_Function {
-    Sudakov_Tools * tools;
-    double          alpha;
+    Sudakov_Tools * p_tools;
+    double          m_alpha;
   public:
     q_qg(APHYTOOLS::Flavour quarkflavour);
     q_qg(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
@@ -26,8 +25,8 @@ namespace APACIC {
 
   // gluon to gluon + gluon splitting function (needed twice for initial state shower)
   class g_gg : public Splitting_Function {
-    Sudakov_Tools * tools;
-    double          alpha;
+    Sudakov_Tools * p_tools;
+    double          m_alpha;
   public:
     g_gg();
     g_gg(Sudakov_Tools * _tools);
@@ -41,8 +40,8 @@ namespace APACIC {
 
   // gluon to quark + anti-quark splitting function
   class g_qq : public Splitting_Function {
-    Sudakov_Tools * tools;
-    double          alpha;
+    Sudakov_Tools * p_tools;
+    double          m_alpha;
   public:
     g_qq(APHYTOOLS::Flavour quarkflavour);
     g_qq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);
@@ -57,8 +56,8 @@ namespace APACIC {
 
   // quark to qluon + quark splitting function (only used in Initial State Shower)
   class q_gq : public Splitting_Function {
-    Sudakov_Tools * tools;
-    double          alpha;
+    Sudakov_Tools * p_tools;
+    double          m_alpha;
   public:
     q_gq(APHYTOOLS::Flavour quarkflavour);
     q_gq(APHYTOOLS::Flavour quarkflavour,Sudakov_Tools * _tools);

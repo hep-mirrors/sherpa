@@ -1,5 +1,11 @@
 #include "Final_State_Shower.H"
-
+#include "Blob_List.H"
+#include "Blob.H"
+#include "Parton_List.H"
+#include "Tree.H"
+#include "Timelike_Sudakov.H"
+#include "Timelike_Kinematics.H"
+#include "Run_Parameter.H"
 
 #include "Primitive_Analysis.H"
 #include "Shower_Observables.H"
@@ -15,14 +21,14 @@ using namespace AORGTOOLS;
 
 Final_State_Shower::Final_State_Shower() 
 {
-  kin  = new Timelike_Kinematics();
-  sud  = new Timelike_Sudakov(kin);
+  p_kin  = new Timelike_Kinematics();
+  p_sud  = new Timelike_Sudakov(p_kin);
 };
 
 Final_State_Shower::~Final_State_Shower() 
 {
-  if (sud) delete sud;
-  if (kin) delete kin;
+  if (p_sud) delete p_sud;
+  if (p_kin) delete p_kin;
 }
 
 //-----------------------------------------------------------------------
@@ -34,7 +40,7 @@ int Final_State_Shower::PerformShower(Tree * tree,bool jetveto)
   msg.Debugging()<<"----------------------------------------------------------"<<std::endl
 		 <<"Final_State_Shower::PerformShower "<<std::endl;
 
-  kin->SetJetVeto(jetveto);
+  p_kin->SetJetVeto(jetveto);
 
   int stat=InitializeJets(tree,tree->GetRoot());
 
@@ -45,7 +51,7 @@ int Final_State_Shower::PerformShower(Tree * tree,bool jetveto)
   */
   if (stat) {
     msg.Tracking()<<" Now DoKinematics "<<std::endl;
-    if (!kin->DoKinematics(tree->GetRoot())) {
+    if (!p_kin->DoKinematics(tree->GetRoot())) {
       msg.Error()<<"Error in Final_State_Shower : "<<std::endl
 		 <<"Final_State_Shower::PerformShower : "
 		 <<"Kinematics did not work out."<<std::endl;
@@ -73,14 +79,14 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
 		 <<"Final_State_Shower::FirstTimelikeFromSpacelike for Knot "
 		 <<mo->kn_no<<":"<<std::endl
 		 <<"    Knot has E2/t : "<<mo->E2<<"/"<<mo->t<<std::endl;
-  kin->SetJetVeto(jetveto);
+  p_kin->SetJetVeto(jetveto);
 
   // *AS* no fs interf.
   //  Reset(mo);
 
   Flavour flavs[2];
   for (;;) {
-    if (sud->Dice(mo)) {
+    if (p_sud->Dice(mo)) {
       // update E2
       msg.Debugging()<<" old (E2,t) = "<<mo->E2<<","<<mo->t<<endl;
       double test_e4  =((1./z-1.)*sprime - mo->t)/(2.*sqrt(sprime));
@@ -88,8 +94,8 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
       msg.Debugging()<<" new (E2,t) = "<<mo->E2<<","<<mo->t<<endl;
 
       // init daughters
-      flavs[0]  = sud->GetFlB();
-      flavs[1]  = sud->GetFlC();
+      flavs[0]  = p_sud->GetFlB();
+      flavs[1]  = p_sud->GetFlC();
       InitDaughters(tree,mo,flavs,1);
       if (EvolveJet(tree,mo)) return;
     }
@@ -168,7 +174,7 @@ bool Final_State_Shower::SetColours(Knot * mo)
 	  if (mo->prev->left == mo) au = mo->prev->right;
 
 	  partner = d1; nopart = d2;
-	  if (kin->ArrangeColourPartners(au,d1,d2)) { partner = d2; nopart = d1; }
+	  if (p_kin->ArrangeColourPartners(au,d1,d2)) { partner = d2; nopart = d1; }
 	  for (int i=1;i<3;i++) {
 	    if (au->part->GetFlow(i) == mo->part->GetFlow(3-i)) {
 	      partner->part->SetFlow(3-i,mo->part->GetFlow(3-i));
@@ -453,7 +459,7 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo)
     ok = ok && ok1;
   }
   else {
-    ini_partons.push_back(d1);
+    m_ini_partons.push_back(d1);
   }
   if (!decay2) {
     int ok2=InitializeJets(tree,d2);
@@ -461,7 +467,7 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo)
     ok = ok && ok2;
   }
   else {
-    ini_partons.push_back(d2);
+    m_ini_partons.push_back(d2);
   }
 
   // *AS*  if (!ExtraJetCheck(mo,d1,d2)) ej=3;
@@ -472,20 +478,20 @@ int Final_State_Shower::InitializeJets(Tree * tree,Knot * mo)
 }
 
 bool  Final_State_Shower::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
-  return kin->ExtraJetCheck(0,d1,d2); // *AS* test E2 dependence
+  return p_kin->ExtraJetCheck(0,d1,d2); // *AS* test E2 dependence
 }
 
 bool  Final_State_Shower::ExtraJetCheck() {
   bool test=1;
-  //  cout<<" (A) "<<ini_partons.size()<<endl;
-  for (int i=0;i<ini_partons.size()-1;++i) {
-    for (int j=i+1;j<ini_partons.size();++j) {
-      test=test & kin->ExtraJetCheck(0,ini_partons[i],ini_partons[j]);
+  //  cout<<" (A) "<<m_ini_partons.size()<<endl;
+  for (int i=0;i<m_ini_partons.size()-1;++i) {
+    for (int j=i+1;j<m_ini_partons.size();++j) {
+      test=test & p_kin->ExtraJetCheck(0,m_ini_partons[i],m_ini_partons[j]);
       if (test==0) break;
     }
     if (test==0) break;
   }
-  ini_partons.clear();
+  m_ini_partons.clear();
   return test;
 }
 
@@ -698,9 +704,9 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
     //    g=mo;
     if (!do12) {
       ResetDaughters(d1);  // if grand children already determined, delete them
-      if (sud->Dice(d1,g)) { // determine t,z, and flavours
-	d1_flavs[0]  = sud->GetFlB();
-	d1_flavs[1]  = sud->GetFlC();
+      if (p_sud->Dice(d1,g)) { // determine t,z, and flavours
+	d1_flavs[0]  = p_sud->GetFlB();
+	d1_flavs[1]  = p_sud->GetFlC();
 	d1->stat=1;   // *AS*
 	diced1=1;
       }   
@@ -708,9 +714,9 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
     }
     else {
       ResetDaughters(d2);  // if grand children already determined, delete them
-      if (sud->Dice(d2,g)) { // determine t,z, and flavours
-	d2_flavs[0]  = sud->GetFlB();
-	d2_flavs[1]  = sud->GetFlC();
+      if (p_sud->Dice(d2,g)) { // determine t,z, and flavours
+	d2_flavs[0]  = p_sud->GetFlB();
+	d2_flavs[1]  = p_sud->GetFlC();
 	d2->stat=1;   // *AS*
 	diced2=1;
       }    
@@ -719,12 +725,12 @@ bool Final_State_Shower::FillBranch(Tree * tree,Knot* mo,int first)
 
     // check zrange first
     if (first==2) 
-      kin->CheckZRange(mo);
+      p_kin->CheckZRange(mo);
     //    std::cout<<"b st"<<d1->stat<<" st"<<d2->stat<<std::endl;
 
       //    std::cout<<"a st"<<d1->stat<<" st"<<d2->stat<<std::endl;
     if ((d1->stat != 3) && (d2->stat != 3)) { // *AS*
-      if (kin->Shuffle(mo,first)) { // check (and adjust) kinematics 
+      if (p_kin->Shuffle(mo,first)) { // check (and adjust) kinematics 
                                   //  (usually both children have to be diced atleast once)
 	// if sucessfull set all grand children as determined above and exit
 	if (d1->stat) {

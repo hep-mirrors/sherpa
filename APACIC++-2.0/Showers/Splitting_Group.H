@@ -3,19 +3,19 @@
 
 #include "Splitting_Function.H"
 #include "FastList.H"
-#include "Random.H"
 
 
 namespace APACIC {
+  // to be replaced with STL vector
   typedef AORGTOOLS::FastList<Splitting_Function> SplFunList; 
   typedef AORGTOOLS::FastList<Splitting_Function>::Iterator SplFunIter;
 
   class Splitting_Group : public Splitting_Function {
   protected:
-    SplFunList group;
-    Splitting_Function * selected;
+    SplFunList  m_group;
+    Splitting_Function * p_selected;
     // partial sums
-    double * partsums;
+    double * p_partsums;
   public:
     /*! 
       Standard Constructor, if a Splitting_Function is specified it will

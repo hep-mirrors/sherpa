@@ -2,22 +2,21 @@
 #define Splitting_Function_H
 
 #include "Flavour.H"
-#include "Sudakov_Tools.H"
 #include <iostream>
 
 namespace APACIC {
   class Splitting_Function {
   protected:
-    const static double Nc;
-    const static double CF;
-    const static double CA;
-    const static double TR;
+    const static double s_Nc;
+    const static double s_CF;
+    const static double s_CA;
+    const static double s_TR;
     // Flavours of this particular splitting function
-    APHYTOOLS::Flavour flavs[3]; // a -> b c
+    APHYTOOLS::Flavour m_flavs[3]; // a -> b c
     // Domain of last intergral
-    double zmin,zmax;
+    double m_zmin,m_zmax;
     // Last integral
-    double lastint;
+    double m_lastint;
   public:
     virtual double operator() (double) = 0;
     virtual double GetZ()=0;             

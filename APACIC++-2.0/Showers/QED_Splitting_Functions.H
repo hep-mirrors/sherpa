@@ -4,15 +4,15 @@
 //               QED_Splitting_Functions.H
 //----------------------------------------------------------------------
 #include "Splitting_Function.H"
-#include "MathTools.H"
-#include "Random.H"
 
 namespace APACIC {
+  class Sudakov_Tools;
+
   // fermion to fermion + photon  splitting function
   class f_fp : public Splitting_Function {
-    Sudakov_Tools * tools;
-    double          alpha;
-    double          qsqr;
+    Sudakov_Tools * p_tools;
+    double          m_alpha;
+    double          m_qsqr;
   public:
     f_fp(APHYTOOLS::Flavour fermionflavour);
     f_fp(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
@@ -27,9 +27,9 @@ namespace APACIC {
 
   // fermion to photon + fermion splitting function (only used in Initial State Shower)
   class f_pf : public Splitting_Function {
-    Sudakov_Tools * tools;
-    double          alpha;
-    double          qsqr;
+    Sudakov_Tools * p_tools;
+    double          m_alpha;
+    double          m_qsqr;
   public:
     f_pf(APHYTOOLS::Flavour fermionflavour);
     f_pf(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);
@@ -43,9 +43,9 @@ namespace APACIC {
 
   // photon to fermion + anti-fermion splitting function
   class p_ff : public Splitting_Function {
-    Sudakov_Tools * tools;
-    double          alpha;
-    double          qsqr;
+    Sudakov_Tools * p_tools;
+    double          m_alpha;
+    double          m_qsqr;
   public:
     p_ff(APHYTOOLS::Flavour fermionflavour);
     p_ff(APHYTOOLS::Flavour fermionflavour,Sudakov_Tools * _tools);

@@ -13,27 +13,27 @@
 namespace APACIC {
   class Backward_Splitting_Group : public Splitting_Group {
   protected:
-    PDF::PDF_Base * pdf;
+    PDF::PDF_Base * p_pdf;
   public:
     Backward_Splitting_Group(Splitting_Function * spl, PDF::PDF_Base * _pdf): 
-      pdf(_pdf),Splitting_Group(spl) {
+      p_pdf(_pdf),Splitting_Group(spl) {
       //    pdf = new PDF::PDF_MRST();  // initialising proton;
     }
 
     // summing over all splittings
     double CrudeInt(double _zmin, double _zmax) {
-      if (!partsums) partsums = new double[group.GetLength()];
-      lastint = 0;
-      int i   = 0;
-      for (SplFunIter iter(group);iter();++iter,++i) {
-	if (pdf->GetXPDF(iter()->GetFlB())==0.) {
-	  partsums[i]=0;
+      if (!p_partsums) p_partsums = new double[m_group.GetLength()];
+      m_lastint = 0;
+      int i     = 0;
+      for (SplFunIter iter(m_group);iter();++iter,++i) {
+	if (p_pdf->GetXPDF(iter()->GetFlB())==0.) {
+	  p_partsums[i]=0;
 	} 
 	else {
-	  partsums[i] = lastint += 
+	  p_partsums[i] = m_lastint += 
 	    iter()->CrudeInt(_zmin,_zmax) *  
-	    pdf->GetXPDF(iter()->GetFlA()) /
-	    pdf->GetXPDF(iter()->GetFlB());
+	    p_pdf->GetXPDF(iter()->GetFlA()) /
+	    p_pdf->GetXPDF(iter()->GetFlB());
 	}
 	/*
 	std::cout<<"In CrudeInt("<<_zmin<<","<<_zmax<<") : "<<std::endl
@@ -44,8 +44,8 @@ namespace APACIC {
 	*/
 
       }
-      return lastint;
-    };        
+      return m_lastint;
+    }        
   };
 
 } // namespace APACIC

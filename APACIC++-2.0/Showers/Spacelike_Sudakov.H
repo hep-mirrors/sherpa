@@ -2,49 +2,47 @@
 #define Spacelike_Sudakov_H
 
 #include "Backward_Splitting_Group.H"
-#include "Flavour.H"
-#include "Knot.H"
-#include "MathTools.H"
+#include "Random.H"
 
 namespace PDF {
   class PDF_Base;
 }
 
-
 namespace APACIC {
   class Sudakov_Tools;
+  class Knot;
 
   // dicing z and t for spacelike (initial state) shower evolution
   class Spacelike_Sudakov : public Backward_Splitting_Group {
     // global parameters
-    Sudakov_Tools * tools;
-    PDF::PDF_Base * pdfa;
-    double          pt2min, pt2max; 
-    double          alphaSmax, alphaSfix; 
-    double          lambda2, b, t0;
-    double          xe, emin, s;
+    Sudakov_Tools * p_tools;
+    PDF::PDF_Base * p_pdfa;
+    double          m_pt2min, m_pt2max; 
+    double          m_alphaSmax, m_alphaSfix; 
+    double          m_lambda2, m_b, m_t0;
+    double          m_xe, m_emin, m_s;
 
-    double          alphaQED;
-    double          pt2minQED;
+    double          m_alphaQED;
+    double          m_pt2minQED;
 
-    int             cpl_scheme;
-    int             ordering_scheme;
+    int             m_cpl_scheme;
+    int             m_ordering_scheme;
     // mother
-    double E2;
-    double x,z,t,phi,pt2;
-    double maxpt;
-    APHYTOOLS::Flavour inflav;
+    double m_E2;
+    double m_x, m_z, m_t, m_phi,m_pt2;
+    double m_maxpt;
+    APHYTOOLS::Flavour m_inflav;
 
     void Add(Splitting_Function * spl) ;
     double CrudeInt(double _zmin, double _zmax);
     
-    void SelectOne() { selected->SelectOne();};
+    void SelectOne() { p_selected->SelectOne();};
     void ProduceT();  
     bool Veto(Knot *); 
     bool CplVeto();
     bool PTVeto(Knot *);
     bool MassVeto();
-    void UniformPhi() { phi =  2.*M_PI*AMATOOLS::ran.Get(); };
+    void UniformPhi() { m_phi =  2.*M_PI*AMATOOLS::ran.Get(); };
   public:
     Spacelike_Sudakov(PDF::PDF_Base *,Sudakov_Tools * _tools);
     ~Spacelike_Sudakov() {};
@@ -103,7 +101,7 @@ namespace APACIC {
     \brief     Corrects for overshot in taking a crude coupling
   */
 
-  /*
+  /*!
     \fn    bool  Spacelike_Sudakov::PTVeto(Knot *);
     \brief Veto from imposed pt ordering of previous branches. Note : pt = (1-z) t
   */
@@ -149,13 +147,4 @@ namespace APACIC {
 
 
 } // namespace APACIC
-#endif // Spacelicke_Sudakov_H
-
-
-
-
-
-
-
-
-
+#endif // Spacelike_Sudakov_H

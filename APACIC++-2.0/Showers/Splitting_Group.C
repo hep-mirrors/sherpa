@@ -1,45 +1,46 @@
 #include "Splitting_Group.H"
+#include "Random.H"
 
 using namespace APACIC;
 
-Splitting_Group::Splitting_Group(Splitting_Function * spl):partsums(0) 
+Splitting_Group::Splitting_Group(Splitting_Function * spl):p_partsums(0) 
 {
-  if (spl) group.Append(spl);
-  selected = spl;
+  if (spl) m_group.Append(spl);
+  p_selected = spl;
 }
 
 Splitting_Group::~Splitting_Group() 
 {
-  if (partsums) delete [] partsums;
+  if (p_partsums) delete [] p_partsums;
 }
 
 double Splitting_Group::CrudeInt(double _zmin, double _zmax) 
 {
-  if (!partsums) partsums = new double[group.GetLength()];
-  lastint = 0;
+  if (!p_partsums) p_partsums = new double[m_group.GetLength()];
+  m_lastint = 0;
   int i   = 0;
-  for (SplFunIter iter(group);iter();++iter,++i)
-    partsums[i] = lastint += iter()->CrudeInt(_zmin,_zmax);
-  return lastint;
+  for (SplFunIter iter(m_group);iter();++iter,++i)
+    p_partsums[i] = m_lastint += iter()->CrudeInt(_zmin,_zmax);
+  return m_lastint;
 }        
 
 
 void Splitting_Group::SelectOne() {
-  double rr = lastint*AMATOOLS::ran.Get();
+  double rr = m_lastint*AMATOOLS::ran.Get();
   int i;
-  for (i=0;partsums[i]<rr;++i) {  
-//     cout<<lastint<<" : "<<partsums[i]<<" : "<<rr<<endl; 
-//     cout<<group[i]->GetFlA()<<" -> "<<group[i]->GetFlB()<<" + "<<group[i]->GetFlC()<<endl;
+  for (i=0;p_partsums[i]<rr;++i) {  
+//     cout<<m_lastint<<" : "<<p_partsums[i]<<" : "<<rr<<endl; 
+//     cout<<m_group[i]->GetFlA()<<" -> "<<m_group[i]->GetFlB()<<" + "<<m_group[i]->GetFlC()<<endl;
   };
 //   cout<<" i = "<<i<<endl;
-  selected=group[i];
+  p_selected=m_group[i];
 }
 
 
 void Splitting_Group::PrintStat(int mode) {
   if (mode>0) for(int i=0;i<mode;++i) std::cout<<' ';
   std::cout<<"Splitting Group:"<<GetFlA()<<" -> "<<GetFlB()<<" + "<<GetFlC()<<std::endl<<std::endl;
-  for (SplFunIter iter(group);iter();++iter) {
+  for (SplFunIter iter(m_group);iter();++iter) {
     iter()->PrintStat(mode+4);
   }
     
@@ -48,45 +49,45 @@ void Splitting_Group::PrintStat(int mode) {
 
 double Splitting_Group::operator()(double z)                        
 { 
-  return (*selected)(z);
+  return (*p_selected)(z);
 }
 
 double Splitting_Group::GetZ()
 { 
-  return selected->GetZ();
+  return p_selected->GetZ();
 }
              
 double Splitting_Group::GetCoupling() 
 { 
-  return selected->GetCoupling();
+  return p_selected->GetCoupling();
 }
 
 double Splitting_Group::GetCoupling(double t) 
 { 
-  return selected->GetCoupling(t);
+  return p_selected->GetCoupling(t);
 }
 
 double Splitting_Group::GetWeight(double z,double pt2,bool masses)  
 { 
-  return selected->GetWeight(z,pt2,masses);
+  return p_selected->GetWeight(z,pt2,masses);
 }
 
 APHYTOOLS::Flavour & Splitting_Group::GetFlA()                      
 { 
-  return selected->GetFlA();
+  return p_selected->GetFlA();
 }
 
 APHYTOOLS::Flavour & Splitting_Group::GetFlB() 
 { 
-  return selected->GetFlB();
+  return p_selected->GetFlB();
 }
 
 APHYTOOLS::Flavour & Splitting_Group::GetFlC() 
 { 
-  return selected->GetFlC();
+  return p_selected->GetFlC();
 }  
 
 void Splitting_Group::Add(Splitting_Function * spl) {
-  group.Append(spl);
-  selected = spl;
+  m_group.Append(spl);
+  p_selected = spl;
 }
