@@ -132,7 +132,7 @@ return (2*q*s1*s2*(s1*s2 - t*u)*z1*z2)/(t*u*(-s1 - s2 + t + u)) +
           2*s1*(s2*((-2 + 6*b4)*pow(t,2) + b4*t*u + 
                 2*(1 + b4)*pow(u,2)) - 
              t*(u*(-t + u) + 2*b4*(pow(t,2) + t*u + pow(u,2))))))*
-   pow(z1,4)*pow(z2,4))/(pow(t,2)*pow(s1 + s2 - t - u,2)*pow(u,2));
+     pow(z1,4)*pow(z2,4))/(pow(t,2)*pow(s1 + s2 - t - u,2)*pow(u,2));
 }
 
 double ggggosmet(double q,double s,double t,double u,double s1,double s2,
@@ -329,7 +329,14 @@ double ggggosmet(double q,double s,double t,double u,double s1,double s2,
 
 double ggggosmeu(double q,double s,double t,double u,double s1,double s2,
 		double z1,double z2,double a4,double b4) {
-  return    (2.*(-1 + a4)*pow(t,2)*u*(-s1 - s2 + t + u)) + 
+return (q*s1*(4*(1 + b4)*pow(s1,2)*s2*u + 
+       t*(-6*pow(u,3) + pow(s2,2)*(3*(-1 + a4)*t + (-3 + a4)*u) + 
+          s2*(-3*(-1 + a4)*pow(t,2) + 2*(5 + 2*a4)*t*u + 
+             (11 - 3*a4)*pow(u,2))) - 
+       s1*(pow(s2,2)*(3*t - 2*u) + t*u*(-3*(-1 + b4)*t + (-2 + b4)*u) + 
+          s2*(-((-4 + a4 + 3*b4)*pow(t,2)) + (10 - 7*a4 + b4)*t*u + 
+             2*a4*pow(u,2))))*z1*z2)/
+   (2.*(-1 + a4)*pow(t,2)*u*(-s1 - s2 + t + u)) + 
   (pow(q,2)*(2*t*pow(u,2)*
         (pow(s2,2)*((-4 + 10*a4 - 7*pow(a4,2) + 3*pow(a4,3))*t + 
              (-2 + a4 + 2*pow(a4,2) - pow(a4,3))*u) + 
@@ -508,6 +515,269 @@ double ggggosmeu(double q,double s,double t,double u,double s1,double s2,
                 8*(2*pow(t,3) + 3*pow(t,2)*u + 3*t*pow(u,2) + 
                    pow(u,3))))))*pow(z1,4)*pow(z2,4))/
    ((-1 + a4)*pow(t,2)*pow(s1 + s2 - t - u,2)*pow(u,2));
+}
+
+double ggggosmee(double q,double s,double t,double u,double s1,double s2,
+		double z1,double z2,double a4,double b4,double a,double b) {
+  return (q*s1*s2*(2*a*b*(s1*s2 - t*u) + 
+		   pow(b,2)*(s1*(s2 - 3*t) - 3*(s2 + t)*u) + 
+       pow(a,2)*(s1*(s2 - 3*u) - 3*t*(s2 + u)))*z1*z2)/
+   (a*b*t*u*(-s1 - s2 + t + u)) + 
+  (pow(q,2)*(2*pow(a,2)*(pow(s2,2)*pow(t,2)*u*
+           ((2 + a4 - pow(a4,2))*t - 3*pow(-1 + a4,2)*u) + 
+          pow(s1,3)*s2*u*((-1 + a4)*t + 2*(2*a4 - pow(1 + b4,2))*u) - 
+          pow(s1,2)*(t*pow(u,2)*
+              (3*pow(-1 + b4,2)*t + (-2 - b4 + pow(b4,2))*u) + 
+             s2*u*((-5 + 4*a4 + pow(b4,2))*pow(t,2) - 
+                (9 - 10*a4 + 4*a4*b4 + pow(b4,2))*t*u - 
+                2*a4*(-1 + b4)*pow(u,2)) + 
+             pow(s2,2)*(2*(1 + a4 - 3*b4 + pow(b4,2))*pow(t,2) + 
+                (2 - 3*a4 - 3*b4)*t*u + 
+                2*(1 - 3*a4 + pow(a4,2) + b4)*pow(u,2))) - 
+          s1*s2*t*(pow(s2,2)*
+              (2*(1 + 2*a4 + pow(a4,2) - 2*b4)*t + u - b4*u) + 
+             u*(-3*(-1 + a4)*pow(t,2) + 
+                2*(4 + a4 + b4 - 2*a4*b4)*t*u - 3*(-1 + b4)*pow(u,2)) + 
+             s2*(u*(-((9 + pow(a4,2))*t) + (-5 + pow(a4,2))*u) + 
+                2*b4*(-((-1 + a4)*pow(t,2)) + (5 - 2*a4)*t*u + 
+                   2*pow(u,2))))) + 
+       a*b*(4*pow(s1,3)*s2*((2 - 3*b4 + pow(b4,2))*pow(t,2) + 
+             t*u + b4*(1 + b4)*pow(u,2)) + 
+          pow(s1,2)*(t*u*(-((-1 + pow(b4,2))*pow(t,2)) + 
+                6*(1 - b4 + pow(b4,2))*t*u - (-2 + b4)*b4*pow(u,2)) \
++ 2*pow(s2,2)*((7 + 2*pow(a4,2) - 4*a4*(-2 + b4) - 8*b4 + 
+                   2*pow(b4,2))*pow(t,2) + 
+                (7 + 2*a4 - 2*pow(a4,2) + 2*b4 - 2*pow(b4,2))*t*u + 
+                (7 + 2*pow(a4,2) + 8*b4 + 2*pow(b4,2) - 
+                   4*a4*(2 + b4))*pow(u,2)) + 
+             2*s2*((-1 + a4)*pow(t,3) + 
+                (-13 + 4*b4 + 2*pow(b4,2) - 2*a4*(2 + b4))*pow(t,2)*
+                 u + (-13 - 2*a4*(-3 + b4) - 6*b4 + 2*pow(b4,2))*t*
+                 pow(u,2) - a4*pow(u,3))) + 
+          t*u*(-(pow(a4,2)*pow(s2,2)*
+                (pow(t,2) - 6*t*u + pow(u,2))) + 
+             2*a4*s2*(-3*pow(t,3) + s2*t*(t - 3*u) - pow(t,2)*u + 
+                t*pow(u,2) + 3*pow(u,3)) + 
+             u*(pow(s2,2)*(6*t + u) + 
+                8*t*(pow(t,2) + t*u + pow(u,2)) - 
+                2*s2*(pow(t,2) + 2*t*u + 3*pow(u,2)))) + 
+          2*s1*(2*pow(a4,2)*pow(s2,2)*
+              (t*u*(t + u) + s2*(pow(t,2) + pow(u,2))) - 
+             u*(-2*pow(s2,3)*(t + 2*u) + 
+                pow(t,2)*(3*pow(t,2) + 2*t*u + pow(u,2)) - 
+                2*s2*t*(pow(t,2) + 5*t*u + pow(u,2)) + 
+                pow(s2,2)*(13*pow(t,2) + 13*t*u + pow(u,2))) + 
+             b4*(t*u*(3*pow(t,3) + pow(t,2)*u - t*pow(u,2) - 
+                   3*pow(u,3)) + 
+                pow(s2,2)*(-pow(t,3) + 6*pow(t,2)*u - 
+                   4*t*pow(u,2) + pow(u,3)) + 
+                s2*t*(pow(t,3) - pow(t,2)*u + 3*t*pow(u,2) + 
+                   pow(u,3))) + 
+             a4*s2*(-2*s2*t*u*((3 + b4)*t + (-2 + b4)*u) + 
+                2*pow(s2,2)*(pow(t,2) - 3*pow(u,2)) + 
+                u*(pow(t,3) + 3*pow(t,2)*u - t*pow(u,2) + 
+                   pow(u,3)) - 
+                b4*(pow(t,4) + 6*pow(t,2)*pow(u,2) + pow(u,4))))) \
+- 2*pow(b,2)*(pow(s1,3)*s2*t*
+           (2*(2 + 2*a4 - 4*b4 + pow(b4,2))*t + a4*u) + 
+          pow(s2,2)*t*pow(u,2)*(-2*u - a4*u + pow(a4,2)*(3*t + u)) + 
+          s1*s2*u*(4*(pow(s2,2) - s2*t + 2*pow(t,2))*u + 
+             pow(a4,2)*s2*(pow(t,2) + 2*s2*u - t*u) + 
+             a4*(-8*pow(s2,2)*u + t*u*(2*t + 3*u) + 
+                s2*(-2*pow(t,2) + 6*t*u + 2*pow(u,2))) + 
+             b4*(pow(s2,2)*(t + 4*u) + 
+                pow(t,2)*(3*t + 2*u - 4*a4*u) - 
+                2*s2*(2*pow(t,2) + (3 + 2*a4)*t*u + a4*pow(u,2)))) + 
+          pow(s1,2)*(2*pow(a4,2)*pow(s2,2)*pow(t,2) - 
+             2*t*(2*pow(s2,2) + 2*s2*t + pow(t,2))*u + 
+             pow(b4,2)*u*(2*pow(s2,2)*u + s2*t*(-t + u) + 
+                pow(t,2)*(t + 3*u)) + 
+             b4*(-(pow(t,3)*u) + 
+                2*s2*t*(pow(t,2) + 3*t*u - pow(u,2)) + 
+                pow(s2,2)*(-2*pow(t,2) + 3*t*u + 2*pow(u,2))) + 
+             a4*s2*(s2*(2*pow(t,2) + 3*t*u - 2*pow(u,2)) - 
+                2*t*(b4*t*(t + 2*u) + u*(3*t + 2*u))))))*pow(z1,2)*
+     pow(z2,2))/(a*b*pow(t,2)*pow(s1 + s2 - t - u,2)*pow(u,2)) - 
+  (4*pow(q,3)*(-(pow(a,2)*
+          (pow(s2,2)*t*((1 + a4)*u*(2*t + u - a4*u) - 
+               b4*(2*(-1 + pow(a4,2))*pow(t,2) + 
+                  (9 - 10*a4 + 5*pow(a4,2))*t*u - 
+                  (-1 + pow(a4,2))*pow(u,2))) + 
+            pow(s1,2)*(u*((-1 + a4)*(-1 + pow(b4,2))*pow(t,2) + 
+                  (2 - 9*a4 + 2*b4 + 10*a4*b4 - 5*a4*pow(b4,2))*t*u - 
+                  2*a4*(-1 + pow(b4,2))*pow(u,2)) + 
+               s2*(2*(-1 + pow(a4,2) + 4*b4 + 2*a4*(-2 + b4)*b4 - 
+                     2*pow(b4,2))*pow(t,2) + 
+                  (-2 + 2*b4 + pow(b4,2) + pow(a4,2)*(1 + 2*b4) + 
+                     2*a4*(3 - 6*b4 + pow(b4,2)))*t*u + 
+                  2*(6*a4 + 2*pow(a4,2)*(-2 + b4) - pow(1 + b4,2))*
+                   pow(u,2))) + 
+            s1*s2*(pow(b4,2)*u*
+                ((-3 + a4)*pow(t,2) + (2 - 5*a4)*t*u - 2*a4*pow(u,2)) \
++ u*((3 - 3*a4 + 2*pow(a4,2))*pow(t,2) + 
+                  (3 - 13*a4 - 3*pow(a4,2))*t*u - 2*a4*pow(u,2)) + 
+               s2*(-2*(1 + pow(a4,2) - 6*b4 + 4*pow(b4,2) - 
+                     2*a4*(-1 + pow(b4,2)))*pow(t,2) + 
+                  (-2 + 6*b4 + pow(b4,2) + pow(a4,2)*(1 + 2*b4) + 
+                     2*a4*(1 - 6*b4 + pow(b4,2)))*t*u + 
+                  2*(-1 + b4)*(1 - 4*a4 + 2*pow(a4,2) + b4)*pow(u,2)) \
++ b4*(-2*pow(-1 + a4,2)*pow(t,3) + 
+                  (-13 + 18*a4 - 5*pow(a4,2))*pow(t,2)*u + 
+                  (-3 + 18*a4 + pow(a4,2))*t*pow(u,2) + 
+                  4*a4*pow(u,3))))) + 
+       a*b*(-2*pow(s1,2)*pow(t,3) - pow(s1,2)*pow(t,2)*u + 
+          3*s1*s2*pow(t,2)*u + s1*pow(t,3)*u + 3*s1*s2*t*pow(u,2) - 
+          pow(s2,2)*t*pow(u,2) - s1*pow(t,2)*pow(u,2) - 
+          s2*pow(t,2)*pow(u,2) - 2*pow(s2,2)*pow(u,3) + 
+          s2*t*pow(u,3) + pow(b4,2)*s1*
+           (-2*pow(t,4) + 2*t*pow(u,3) - 
+             2*pow(s2,2)*(3*pow(t,2) - t*u + pow(u,2)) + 
+             s2*(2*pow(t,3) + pow(t,2)*u + 5*t*pow(u,2) + 
+                2*pow(u,3)) - 
+             s1*(t*(3*t - u)*u + 
+                2*s2*(5*pow(t,2) + t*u + 3*pow(u,2)))) + 
+          pow(a4,2)*s2*(-2*pow(s1,2)*
+              ((1 + 2*b4)*pow(t,2) - t*u + (3 - 2*b4)*pow(u,2)) - 
+             2*b4*(t - u)*(pow(t,3) + 2*pow(t,2)*u + pow(u,3) + 
+                2*t*u*(s2 + u)) + 
+             s1*(2*pow(t,3) + (5 - 4*b4)*pow(t,2)*u + 
+                (1 + 4*b4)*t*pow(u,2) + 2*pow(u,3) - 
+                2*s2*((3 + 2*b4)*pow(t,2) + t*u + 
+                   (5 - 2*b4)*pow(u,2))) + 
+             u*(s2*t*(t - 3*u) + 2*(pow(t,3) - pow(u,3)))) + 
+          b4*(pow(s1,2)*(pow(t,2)*(2*t - u) + 
+                6*s2*(pow(t,2) - pow(u,2))) + 
+             u*(-8*pow(t,2)*(pow(t,2) + t*u + pow(u,2)) + 
+                pow(s2,2)*(-5*pow(t,2) + 2*t*u + 2*pow(u,2)) + 
+                s2*t*(3*pow(t,2) + 4*t*u + 5*pow(u,2))) + 
+             2*s1*(pow(s2,2)*(pow(t,2) - 2*t*u - 5*pow(u,2)) + 
+                s2*(3*pow(t,3) - 2*pow(t,2)*u + 4*t*pow(u,2) + 
+                   pow(u,3)) + 
+                t*(pow(t,3) + pow(t,2)*u + 2*t*pow(u,2) + 
+                   2*pow(u,3)))) + 
+          a4*(pow(s1,2)*(-2*(-1 + b4)*pow(t,3) + 
+                (2 - b4 + 4*pow(b4,2))*pow(t,2)*u + 
+                (-5 + 7*b4 - 4*pow(b4,2))*t*pow(u,2) - 
+                2*b4*pow(u,3) + 
+                2*s2*((-5 + 8*b4 + 2*pow(b4,2))*pow(t,2) + 
+                   2*(-1 + b4)*t*u + 
+                   (1 + 8*b4 - 2*pow(b4,2))*pow(u,2))) + 
+             u*(pow(s2,2)*u*(-t + 2*u) - 
+                8*t*u*(pow(t,2) + t*u + pow(u,2)) + 
+                2*s2*(2*pow(t,3) + 2*pow(t,2)*u + t*pow(u,2) + 
+                   pow(u,3))) + 
+             s1*(t*u*(5*pow(t,2) + 4*t*u + 3*pow(u,2)) + 
+                pow(s2,2)*((-6 + 16*b4 + 4*pow(b4,2))*pow(t,2) + 
+                   4*b4*t*u + 2*(3 + 8*b4 - 2*pow(b4,2))*pow(u,2)) - 
+                2*s2*((-1 + 6*b4)*pow(t,3) + 
+                   (-4 + 5*b4 - 2*pow(b4,2))*pow(t,2)*u + 
+                   (2 + 5*b4 + 2*pow(b4,2))*t*pow(u,2) + 
+                   3*(-1 + 2*b4)*pow(u,3)) + 
+                2*pow(b4,2)*
+                 (pow(t,4) + pow(t,3)*u - t*pow(u,3) - pow(u,4)) \
+- 2*b4*(pow(t,4) + 5*pow(t,3)*u + 4*pow(t,2)*pow(u,2) + 
+                   3*t*pow(u,3) - pow(u,4))) - 
+             b4*(-8*t*u*(pow(t,3) + 2*pow(t,2)*u + 2*t*pow(u,2) + 
+                   pow(u,3)) + 
+                pow(s2,2)*(2*pow(t,3) - 7*pow(t,2)*u + 
+                   t*pow(u,2) + 2*pow(u,3)) + 
+                2*s2*(-pow(t,4) + 3*pow(t,3)*u + 
+                   4*pow(t,2)*pow(u,2) + 5*t*pow(u,3) + pow(u,4)))\
+)) + pow(b,2)*(b4*(-4*pow(s2,2)*t*pow(u,2) + 
+             pow(s1,2)*t*(s2*(2*(-2 + b4)*t - (2 + 3*b4)*u) + 
+                t*(2*(-2 + b4)*t + (2 + 5*b4)*u)) + 
+             s1*s2*(2*u*(s2*t + 5*pow(t,2) + 2*s2*u - 2*t*u) + 
+                b4*(-2*s2*pow(t,2) + 2*pow(t,3) - 3*s2*t*u + 
+                   3*pow(t,2)*u + 4*s2*pow(u,2) + 2*t*pow(u,2)))) + 
+          pow(a4,2)*s2*(pow(s1,2)*
+              (4*(1 + b4)*pow(t,2) + (-3 + 2*b4)*t*u - 2*pow(u,2)) + 
+             s2*u*(u*(5*t + 2*u) + 
+                b4*(pow(t,2) - 5*t*u - 2*pow(u,2))) + 
+             s1*(u*(-3*s2*t + 2*pow(t,2) + 2*s2*u + 3*t*u + 
+                   2*pow(u,2)) + 
+                b4*(2*s2*t*(2*t + u) + 
+                   u*(pow(t,2) - 5*t*u - 2*pow(u,2))))) + 
+          a4*(2*pow(s2,2)*u*
+              ((t - 2*u)*u - b4*(pow(t,2) - 2*pow(u,2))) + 
+             s1*s2*(pow(b4,2)*
+                 (-2*pow(t,3) - 5*pow(t,2)*u + 4*s2*pow(u,2) + 
+                   t*u*(2*s2 + u)) - 
+                2*b4*u*(-2*s2*(t - 2*u) + 5*t*(t + u)) - 
+                2*u*(t*(2*t - 5*u) + s2*(t + 2*u))) + 
+             pow(s1,2)*(2*s2*
+                 ((2 - 4*b4)*pow(t,2) + pow(1 + b4,2)*t*u + 
+                   2*pow(b4,2)*pow(u,2)) + 
+                t*(-4*t*u + b4*(4*pow(t,2) - 2*pow(u,2)) + 
+                   pow(b4,2)*(-2*pow(t,2) - 5*t*u + pow(u,2)))))))*
+     pow(z1,3)*pow(z2,3))/
+   (a*b*pow(t,2)*pow(s1 + s2 - t - u,2)*pow(u,2)) - 
+  (4*pow(q,4)*(2*pow(a,2)*(s1 + s2)*
+        (a4*u*(-(s2*(t + a4*t + 2*u - 2*a4*u)) + 
+             s1*(-t + a4*t - 2*u + 6*a4*u)) - 
+          b4*(s2*(-2*(-1 + pow(a4,2))*pow(t,2) + 
+                (1 - 6*a4 + pow(a4,2))*t*u + 4*(-1 + a4)*a4*pow(u,2)) \
++ s1*(2*pow(-1 + a4,2)*pow(t,2) + (1 - 6*a4 + 5*pow(a4,2))*t*u + 
+                8*pow(a4,2)*pow(u,2))) + 
+          pow(b4,2)*(s2*(2*(3 - 4*a4 + pow(a4,2))*pow(t,2) + 
+                (1 - 5*a4 + 2*pow(a4,2))*t*u + 2*(-1 + a4)*a4*pow(u,2)\
+) + s1*(2*pow(-1 + a4,2)*pow(t,2) + (-1 - a4 + 2*pow(a4,2))*t*u + 
+                2*a4*(1 + a4)*pow(u,2)))) + 
+       2*pow(b,2)*(s1 + s2)*(2*pow(b4,2)*t*(2*s1*t - s2*u) + 
+          pow(a4,2)*(2*u*(-(s1*t) + 2*s2*u) + 
+             2*pow(b4,2)*(s1 + s2)*(pow(t,2) + t*u + pow(u,2)) + 
+             b4*(-3*s2*u*(t + 2*u) + 
+                s1*(4*pow(t,2) + t*u - 2*pow(u,2)))) + 
+          a4*b4*(-(s1*t*((4 + 6*b4)*t + (-2 + 3*b4)*u)) + 
+             s2*(2*(t - 2*u)*u + b4*(-2*pow(t,2) + t*u + 4*pow(u,2))))) \
++ a*b*(2*a4*(pow(s1,2)*(2*(-1 - b4 + 4*pow(b4,2))*pow(t,2) + 
+                (-1 - 7*b4 + 4*pow(b4,2))*t*u - 2*b4*pow(u,2)) + 
+             s2*u*(t*(t - u) + s2*(t + 2*u)) - 
+             b4*(8*t*u*(pow(t,2) + t*u + pow(u,2)) + 
+                pow(s2,2)*(2*pow(t,2) + 7*t*u + 2*pow(u,2)) - 
+                2*s2*(pow(t,3) + 2*pow(t,2)*u + 2*t*pow(u,2) + 
+                   pow(u,3))) + 
+             s1*(t*(t - u)*u + 
+                2*s2*((-1 + 2*b4 + 8*pow(b4,2))*pow(t,2) + 
+                   b4*(-3 + 4*b4)*t*u + (1 + 2*b4)*pow(u,2)) + 
+                2*b4*(pow(t,3) + 2*pow(t,2)*u + 2*t*pow(u,2) + 
+                   pow(u,3)) - 
+                2*pow(b4,2)*
+                 (3*pow(t,3) + 4*pow(t,2)*u + 4*t*pow(u,2) + 
+                   pow(u,3))) + 
+             2*pow(b4,2)*(2*pow(s2,2)*t*(2*t + u) + 
+                4*t*(pow(t,3) + 2*pow(t,2)*u + 2*t*pow(u,2) + 
+                   pow(u,3)) - 
+                s2*(3*pow(t,3) + 4*pow(t,2)*u + 4*t*pow(u,2) + 
+                   pow(u,3)))) - 
+          pow(a4,2)*(pow(s1,2)*
+              (4*(-1 + 2*pow(b4,2))*pow(t,2) + 
+                (-5 - 8*b4 + 8*pow(b4,2))*t*u + 
+                4*(1 - 4*b4 + 2*pow(b4,2))*pow(u,2)) + 
+             8*pow(b4,2)*(pow(t,2) + t*u + pow(u,2))*
+              (pow(s2,2) - s2*(t + u) + pow(t + u,2)) + 
+             u*(-(pow(s2,2)*(t - 8*u)) - 
+                4*s2*(pow(t,2) + t*u + pow(u,2)) + 
+                8*u*(pow(t,2) + t*u + pow(u,2))) - 
+             4*b4*(2*pow(s2,2)*u*(t + 2*u) + 
+                4*u*(pow(t,3) + 2*pow(t,2)*u + 2*t*pow(u,2) + 
+                   pow(u,3)) - 
+                s2*(pow(t,3) + 4*pow(t,2)*u + 4*t*pow(u,2) + 
+                   3*pow(u,3))) + 
+             2*s1*(s2*(2*(1 + 4*pow(b4,2))*pow(t,2) + 
+                   (1 - 8*b4 + 8*pow(b4,2))*t*u + 
+                   2*(5 - 8*b4 + 4*pow(b4,2))*pow(u,2)) - 
+                2*(-1 + 2*b4)*(pow(t,2) + t*u + pow(u,2))*
+                 (-u + b4*(t + u)))) + 
+          b4*(pow(s1,2)*t*((4 - 8*b4)*t + (2 + b4)*u) - 
+             2*s2*u*(t*(t - u) + s2*(t + 2*u)) + 
+             b4*(4*s2*t*(pow(t,2) + t*u + pow(u,2)) - 
+                8*pow(t,2)*(pow(t,2) + t*u + pow(u,2)) + 
+                pow(s2,2)*(-4*pow(t,2) + 5*t*u + 4*pow(u,2))) - 
+             2*s1*(s2*(2*(-1 + 5*b4)*pow(t,2) + b4*t*u + 
+                   2*(1 + b4)*pow(u,2)) - 
+                t*(u*(-t + u) + 2*b4*(pow(t,2) + t*u + pow(u,2)))))))*
+     pow(z1,4)*pow(z2,4))/
+   (a*b*pow(t,2)*pow(s1 + s2 - t - u,2)*pow(u,2));
 }
 
 #endif
