@@ -57,7 +57,8 @@ noinst_HEADERS        =	\
 			Info_Key.inl.H \
 			Integration_Info.H \
 			Integration_Info.inl.H \
-			Debugger.H 
+			Debugger.H \
+			Node.H
 EXTRA_DIST    = $(CVSINCLUDE)
 AM_CXXFLAGS   =	$(ATOOLSFLAGS)
 INCLUDES      = $(MODELINCS) $(ATOOLSINCS)
