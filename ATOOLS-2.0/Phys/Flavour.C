@@ -224,6 +224,9 @@ int Flavour::HepEvt() {
     if (kfc==kf::sMuR)                       pdgnum = 2000013;
     if (kfc==kf::sTau2)                      pdgnum = 2000015;
   
+    if (kfc==kf::Chargino1)                  pdgnum = 1000024; 
+    if (kfc==kf::Chargino2)                  pdgnum = 1000037; 
+    
     if (pdgnum!=-1) return (anti) ? pdgnum: -pdgnum;
   }
 
@@ -231,10 +234,8 @@ int Flavour::HepEvt() {
   if (IsIno()) {
     if (kfc==kf::Neutralino1)                return 1000022; 
     if (kfc==kf::Neutralino2)                return 1000023; 
-    if (kfc==kf::Chargino1)                  return (anti)? 1000024:-1000024; 
     if (kfc==kf::Neutralino3)                return 1000025; 
     if (kfc==kf::Neutralino4)                return 1000035; 
-    if (kfc==kf::Chargino2)                  return (anti)? 1000037:-1000037; 
   }
   cerr<<"Error in Flavour::HepEvt() : No HepEvt number for "<<Flavour(kfc)<<endl;
   return 0;
@@ -286,10 +287,10 @@ void Flavour::FromHepEvt(int code) {
   case 1000021: kfc = kf::Gluino; return;
   case 1000022: kfc = kf::Neutralino1; return;
   case 1000023: kfc = kf::Neutralino2; return;
-  case 1000024: kfc = kf::Chargino1; anti = 1-anti; return;
+  case 1000024: kfc = kf::Chargino1; return;
   case 1000025: kfc = kf::Neutralino3; return;
   case 1000035: kfc = kf::Neutralino4; return;
-  case 1000037: kfc = kf::Chargino2; anti = 1-anti; return;
+  case 1000037: kfc = kf::Chargino2; return;
   default: cerr<<"Error in Flavour::FromHepEvt() : No flavour for "<<code<<endl;
   }
   return;
@@ -323,8 +324,8 @@ std::string Flavour::TexName()
   case kf::H0: {name=std::string("H^0");break;}
   case kf::A0: {name=std::string("A^0");break;}
   case kf::Hmin: {name=std::string("H^\\m");break;}
-  case kf::Chargino1 :{name=std::string("\\chi^\\m_1");break;}
-  case kf::Chargino2 :{name=std::string("\\chi^\\m_2");break;}
+  case kf::Chargino1 :{name=std::string("\\chi^\\p_1");break;}
+  case kf::Chargino2 :{name=std::string("\\chi^\\p_2");break;}
   case kf::Neutralino1 :{name=std::string("\\chi^0_1");break;}
   case kf::Neutralino2 :{name=std::string("\\chi^0_2");break;}
   case kf::Neutralino3 :{name=std::string("\\chi^0_3");break;}
@@ -364,8 +365,8 @@ std::string Flavour::TexName()
   case kf::tau: {name= std::string("\\tau^\\p");break;}
   case kf::W: {name=std::string("W^\\p");break;}
   case kf::Hmin: {name=std::string("H^\\p");break;}
-  case kf::Chargino1 :{name=std::string("\\chi^\\p_1");break;}
-  case kf::Chargino2 :{name=std::string("\\chi^\\p_2");break;}
+  case kf::Chargino1 :{name=std::string("\\chi^\\m_1");break;}
+  case kf::Chargino2 :{name=std::string("\\chi^\\m_2");break;}
   case kf::Neutralino1 :{name=std::string("\\chi^0_1");break;}
   case kf::Neutralino2 :{name=std::string("\\chi^0_2");break;}
   case kf::Neutralino3 :{name=std::string("\\chi^0_3");break;}

@@ -212,9 +212,9 @@ int Isajet_Fortran_Interface::FlavourToIsaID(Flavour flav) {
   }
   
   switch(sherpaID) {
-  case 41 : isaID = 39; //39 equals anti-chargino^-_1
+  case 41 : isaID = 39; //39 equals chargino^-_1
     break;
-  case 42 : isaID = 49; //49 equals anti-chargino^-_2
+  case 42 : isaID = 49; //49 equals chargino^-_2
     break;
   case 43 : isaID = 30; //30 equals neutralino_1
     break;
@@ -390,7 +390,7 @@ Flavour Isajet_Fortran_Interface::IsaIDToFlavour(int isaID) {
     break;
   }
   Flavour flav = Flavour(kf::code(sherpaID));
-  if (sherpaID==23 || sherpaID==41 || sherpaID==42 || sherpaID==34) flav = flav.Bar(); 
+  if (sherpaID==23 || sherpaID==34) flav = flav.Bar(); 
   if (antifl) flav = flav.Bar();
   return flav;
 }
@@ -405,7 +405,7 @@ void Isajet_Fortran_Interface::Decays(Flavour flav) {
  
   mother = FlavourToIsaID(flav);
   /*
-    Take care for decays of chargino1/2 and Hmin
+    Take care for decays Hmin
     there the convention of Sherpa and Isasusy is opposite
     concerning the charge of the particles,
     same holds true for W-boson
@@ -429,8 +429,7 @@ void Isajet_Fortran_Interface::Decays(Flavour flav) {
   }
   dt->Output();  
   flav.SetWidth(totalwidth);
-  //flav.Bar().SetWidth(totalwidth);
-
+  
   delete [] daughters;
   delete [] ndaughters;
   delete [] partialwidths;
@@ -720,7 +719,6 @@ void Isajet_Fortran_Interface::sLeptonMasses()
   sleptons_(msleptons,thetaf,mu_1,_ls22);
 
   double sinth = ::sin(thetaf);
-  //msg.Tracking()<<"thLep :"<<thetaf<<std::endl;
   double costh = cos(thetaf);
 
   Flavour flav;    
