@@ -82,7 +82,7 @@ Message::~Message()
 void Message::Init(const int level,const std::string &logfile) 
 { 
   m_level = level; 
-  if ((m_level&4)||(m_level&16)) {
+  if (m_level&16) {
     InitLogFile(logfile);
     Out()<<"Initialize output module Message. Level "<<m_level<<std::endl;
   }
