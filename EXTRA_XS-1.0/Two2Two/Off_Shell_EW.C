@@ -74,11 +74,28 @@ bool Off_Shell_qqb_llb::SetColours(double s,double t,double u)
   return true; 
 }
 
+double Off_Shell_qqb_llb::Scale(const ATOOLS::Vec4D *momenta) 
+{
+  SetMomenta(momenta);
+  SetSTU(momenta);
+  const double MZ2=ATOOLS::sqr(ATOOLS::Flavour(ATOOLS::kf::Z).Mass());
+  switch (m_scalescheme) {
+  case 10:
+    m_scale=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale=pow(m_scale,2./3.)*pow(MZ2,1./3.);
+  default:
+    m_scale=(momenta[0]+momenta[1]).PPerp2();
+    return m_scale=pow(m_scale,2./3.)*pow(MZ2,1./3.);
+  }
+}
+
 double Off_Shell_qqb_llb::KFactor(double scale) 
 {
-  double CF=3.;
+  double CF=4./3.;
   switch (m_kfactorscheme) {
   case 10:
+    return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
+  default:
     return exp(CF*MODEL::as->AlphaS(scale)*M_PI/2.);
   }
   return 1.;
