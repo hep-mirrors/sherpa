@@ -1,6 +1,7 @@
 #include "PDF_Handler.H"
 #include "PDF_Electron.H"
 #include "PDF_MRST99.H"
+#include "GRVph_Fortran_Interface.H"
 #include "LHAPDF_Fortran_Interface.H"
 #include "CTEQ6_Fortran_Interface.H"
 #include "Exception.H"
@@ -31,6 +32,10 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
 			      "Tried to initialize a structure function for an uncharged particle.",
 			      "PDF_Handler","GetPDFLib"));
+    }
+    if (bunch_particle.IsPhoton()) {
+      msg.Out()<<"PDF_Handler::GetPDFLib : Try to initialize photon PDF."<<endl;
+      return new GRVph_Fortran_Interface(bunch_particle);
     }
     if ((bunch_particle==Flavour(kf::p_plus) || (bunch_particle==Flavour(kf::p_plus).Bar()))) {
       PDF_Base *pdfbase=NULL;
