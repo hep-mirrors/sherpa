@@ -25,7 +25,7 @@ noinst_HEADERS = Interaction_Model_Base.H Interaction_Model_Handler.H \
 		 Interaction_Model_Higgs.H Interaction_Model_THDM.H \
 		 Interaction_Model_Inos.H Interaction_Model_sLepton_EW.H \
 		 Interaction_Model_sQCD.H Interaction_Model_sQuark_EW.H \
-		 Interaction_Model_sLepton_sQuark.C \
+		 Interaction_Model_sLepton_sQuark.H \
 	         Interaction_Model_MSSM.H \
 	         Interaction_Model_QCD_Grav.H Interaction_Model_EW_Grav.H\
 		 Interaction_Model_ADD.H \
