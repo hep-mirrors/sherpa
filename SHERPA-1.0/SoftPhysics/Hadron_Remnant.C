@@ -167,14 +167,13 @@ bool Hadron_Remnant::DiceKinematics()
     p[3]=ATOOLS::Sign(m_pbeam[3])*sqrt(E*E-p.PPerp2()-ATOOLS::sqr(m));
     m_companions[j]->SetMomentum(p);
     if (!(E>0.) || (!(p[3]>0.) && !(p[3]<=0.))) {
-      if (!m_dupdf) {
-	ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): "                 			   <<"Parton ("<<m_companions[j]<<") "
-			   <<" has non-positive momentum: p = "
-			   <<m_companions[j]->Momentum()<<" m_{"
-			   <<m_companions[j]->Flav()<<"} = "
-			   <<m_companions[j]->Flav().PSMass()<<" <- "
-			   <<m_xscheme<<std::endl;
-      }
+      ATOOLS::msg.Error()<<"Hadron_Remnant::DiceKinematics(): " 
+			 <<"Parton ("<<m_companions[j]<<") "
+			 <<" has non-positive momentum: p = "
+			 <<m_companions[j]->Momentum()<<" m_{"
+			 <<m_companions[j]->Flav()<<"} = "
+			 <<m_companions[j]->Flav().PSMass()<<" <- "
+			 <<m_xscheme<<std::endl;
       return false;
     }
   }
@@ -251,9 +250,9 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
   cut=2.0*(flavour.PSMass()+m_hardpt.PPerp2()/
 	   ATOOLS::sqr(m_companions.size()))/sqrt(scale);
   if (scale<p_pdfbase->Q2Min()) {
-    ATOOLS::msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
-		       <<"Scale under-runs minimum given by PDF: "
-		       <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
+    ATOOLS::msg.Tracking()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
+			  <<"Scale under-runs minimum given by PDF: "
+			  <<scale<<" < "<<p_pdfbase->Q2Min()<<std::endl;
     return cut;
   } 
   if (cut>0.49) return 0.5;

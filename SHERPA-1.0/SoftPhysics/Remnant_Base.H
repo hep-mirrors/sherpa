@@ -26,6 +26,10 @@ namespace SHERPA {
   std::ostream &operator<<(std::ostream &ostr,const rtp::code code);
 
   class Remnant_Base: public ATOOLS::Object {
+  private:
+
+    static std::set<ATOOLS::Particle*> s_last[2];
+
   protected:
     
     rtp::code    m_type;
@@ -43,14 +47,8 @@ namespace SHERPA {
 
     bool m_active, m_initialized;
 
-    bool FindHardProcess(ATOOLS::Particle *const initiator,ATOOLS::Blob *&process);
-    void FindIncoming(ATOOLS::Blob *const blob,const size_t beam,ATOOLS::Particle *&incoming);
-    bool AcquireMass(const ATOOLS::Particle *left,
-		     const ATOOLS::Particle *right,const double newsp);
-
-    bool AdjustEnergy();
-
-    friend class QCD_Remnant_Info;
+    bool FindLast(const short unsigned int side);
+    bool ChooseLast();
 
   public:
 

@@ -17,6 +17,8 @@
 
 using namespace SHERPA;
 
+std::set<ATOOLS::Particle*> SHERPA::Remnant_Base::s_last[2];
+
 std::ostream &SHERPA::operator<<(std::ostream &ostr,const rtp::code code)
 {
   switch (code) {
@@ -46,6 +48,8 @@ void Remnant_Base::Clear()
   p_beamblob=NULL;
   m_erem=m_ebeam;
   m_initialized=false;
+  s_last[0].clear();
+  s_last[1].clear();
 }
 
 void Remnant_Base::QuickClear()
@@ -94,8 +98,14 @@ bool Remnant_Base::AdjustKinematics()
   else {
     shift.SetDirection(ATOOLS::Vec4D(0.,0.,0.,1.));
   }
-  if (shift.Scale()!=ATOOLS::ms::no_error) {
-    if (!AdjustEnergy()) return false;
+  ATOOLS::ms::error_code error=shift.Scale();
+  if (error!=ATOOLS::ms::no_error) {
+    ATOOLS::msg.Info()<<"Remnant_Base::AdjustKinematics(): "<<error<<".\n"
+		      <<"   Retry using new remnant pair."<<std::endl;
+    while (ChooseLast()) {
+      if (AdjustKinematics()) return true;
+    }
+    return false;
   }
   for (size_t i=0;i<2;++i) {
     if (!(p_last[i]->Momentum()[0]>0.)) {
@@ -135,6 +145,13 @@ ATOOLS::Flavour Remnant_Base::ConstituentType(const ATOOLS::Flavour &flavour)
 bool Remnant_Base::Extract(ATOOLS::Particle *parton) 
 { 
   m_extracted.push_back(parton); 
+  double E=parton->Momentum()[0];
+  if (E<0.0 || E>m_ebeam) {
+    ATOOLS::msg.Error()<<"Remnant_Base::Extract("<<parton<<"): "
+		       <<"Constituent energy out of range E = "
+		       <<E<<"."<<std::endl;
+    return false;
+  }
   m_erem-=parton->Momentum()[0]+MinimalEnergy(parton->Flav());
   if (m_erem<=0.0) {
     msg_Tracking()<<"Remnant_Base::Extract(..): No remaining energy for "<<parton->Flav()
@@ -145,89 +162,27 @@ bool Remnant_Base::Extract(ATOOLS::Particle *parton)
   return true;
 }
 
-bool Remnant_Base::FindHardProcess(ATOOLS::Particle *const initiator,
-				   ATOOLS::Blob *&process)
+bool Remnant_Base::FindLast(const short unsigned int side)
 {
-  ATOOLS::Blob *cur=initiator->DecayBlob();
-  if (cur!=NULL) {
-    if (cur->Type()==ATOOLS::btp::Hard_Collision) {
-      process=cur;
-      return true;
-    }
-    else {
-      for (size_t i=0;i<(size_t)cur->NOutP();++i) {
-	if (FindHardProcess(cur->OutParticle(i),process)) return true;
-      }
-    }
-  }
-  return false;
-}
-
-void Remnant_Base::FindIncoming(ATOOLS::Blob *const blob,const size_t beam,
-				ATOOLS::Particle *&incoming)
-{
-  PROFILE_HERE;
-  for (size_t i=0;i<(size_t)blob->NInP();++i) {
-    ATOOLS::Particle *cur=blob->InParticle(i);
-    if (cur->ProductionBlob()->Type()==ATOOLS::btp::Beam) {
-      if ((size_t)blob->Beam()==beam) incoming=cur;
-    }
-    else {
-      FindIncoming(cur->ProductionBlob(),beam,incoming);
-    }
-  }
-}
-
-bool Remnant_Base::AcquireMass(const ATOOLS::Particle *left,
-			       const ATOOLS::Particle *right,
-			       const double newsp)
-{ 
-  PROFILE_HERE;
-  ATOOLS::Vec4D P=left->Momentum()+right->Momentum();
-  ATOOLS::Vec4D p=p_last[0]->Momentum()+p_last[1]->Momentum();
-  double C=(P[0]+p[0])/(P[3]+p[3]);
-  double D=0.5*(p.MPerp2()-newsp)/(P[3]+p[3]);
-  double E=P[0]-C*(P[3]-D);
-  m_deltae=(E-sqrt(E*E+(1.0-C*C)*D*(D-2.0*P[3])))/(1.0-C*C);
-  if (ATOOLS::Sign(P[3]-m_deltap)!=ATOOLS::Sign(P[3])) m_deltap*=-1.0;
-  if (!(m_deltae>0.0) || P[0]<m_deltae) return false;
-  // if (p_mihandler!=NULL) if (m_deltae>p_mihandler->ScaleMin(0)) return false;
-  m_deltap=m_deltae*C+D;
-  return true;
-}
-
-bool Remnant_Base::AdjustEnergy()
-{
-  PROFILE_HERE;
-  ATOOLS::Blob *process=NULL;
-  double sp1=ATOOLS::sqr(p_last[0]->Flav().PSMass())+
-    p_last[0]->Momentum().PPerp2();
-  double sp2=ATOOLS::sqr(p_last[1]->Flav().PSMass())+
-    p_last[1]->Momentum().PPerp2();
-  double spmin=2.*sqrt(sp1*sp2)+sp1+sp2;
-  for (size_t i=0;i<m_extracted.size();++i) {
-    if (!FindHardProcess(m_extracted[i],process)) return false;
-    ATOOLS::Particle *in[2];
-    for (short unsigned int i=0;i<2;++i) FindIncoming(process,i,in[i]);
-    if (AcquireMass(in[0],in[1],spmin)) {
-      ATOOLS::Momentum_Shifter boost(in[0],in[1]);
-      boost.SetShift(ATOOLS::Vec4D(-m_deltae,0.,0.,-m_deltap));
-      if (boost.Boost()!=ATOOLS::ms::no_error) continue;
-      ATOOLS::Vec4D pr1=p_last[0]->Momentum(), pr2=p_last[1]->Momentum();
-      ATOOLS::Momentum_Shifter shift(p_last[0],p_last[1]);
-      shift.SetSPerp(sp1,1);
-      shift.SetSPerp(sp2,2);
-      shift.SetShift(ATOOLS::Vec4D(m_erem+m_deltae-(pr1+pr2)[0],0.,0.,
-				   m_pzrem+m_deltap-(pr1+pr2)[3]));
-      if (shift.Scale()!=ATOOLS::ms::no_error) {
-	boost.BoostBack();
-	boost.BoostBack(in[0]);
-	boost.BoostBack(in[1]);
-	continue;
-      }
+  ATOOLS::Blob *cur=p_beamblob;
+  if (side==1) cur=p_partner->p_beamblob;
+  for (int j=0;j<cur->NOutP();++j) {
+    if (cur->OutParticle(j)->DecayBlob()==NULL &&
+	s_last[side].find(cur->OutParticle(j))==s_last[side].end()) {
+      s_last[side].insert(cur->OutParticle(j));
+      p_last[side]=cur->OutParticle(j);
       return true;
     }
   }
   return false;
 }
 
+bool Remnant_Base::ChooseLast()
+{
+  if (FindLast(1)) return true;
+  if (FindLast(0)) {
+    s_last[1].clear();
+    return FindLast(1);
+  }
+  return false;
+}
