@@ -27,20 +27,20 @@ namespace AMEGIC {
     double                  Width()           { return p_dec->Width(); }
     Process_Base          * GetProcessBase()  { return p_proc; }
     ATOOLS::Decay_Channel * GetDecayChannel() { return p_dec; }
-    int                     Nin();
-    int                     Nout();
+    int                     NIn();
+    int                     NOut();
     std::string             Name();
-    ATOOLS::Flavour       * Flavs();            
-    ATOOLS::Vec4D         * Momenta();          
+    const ATOOLS::Flavour * Flavours();            
+    const ATOOLS::Vec4D   * Momenta();          
     int                     NumberOfDiagrams();
     Point                 * Diagram(int i);
   };
   inline bool              Full_Decay_Channel::OneEvent(double _mass) { return p_proc->OneEvent(_mass); }
-  inline int               Full_Decay_Channel::Nin()                  { return p_proc->Nin(); }           
-  inline int               Full_Decay_Channel::Nout()                 { return p_proc->Nout(); }          
+  inline int               Full_Decay_Channel::NIn()                  { return p_proc->NIn(); }           
+  inline int               Full_Decay_Channel::NOut()                 { return p_proc->NOut(); }          
   inline std::string       Full_Decay_Channel::Name()                 { return p_proc->Name(); }          
-  inline ATOOLS::Flavour * Full_Decay_Channel::Flavs()                { return p_proc->Flavs(); }          
-  inline ATOOLS::Vec4D   * Full_Decay_Channel::Momenta()              { return p_proc->Momenta(); }          
+  inline const ATOOLS::Flavour * Full_Decay_Channel::Flavours()             { return p_proc->Flavours(); }          
+  inline const ATOOLS::Vec4D   * Full_Decay_Channel::Momenta()              { return p_proc->Momenta(); }          
   inline int               Full_Decay_Channel::NumberOfDiagrams()     { return p_proc->NumberOfDiagrams(); }
   inline Point *           Full_Decay_Channel::Diagram(int i)         { return p_proc->Diagram(i); }
 

@@ -27,34 +27,22 @@ namespace AMEGIC {
 
   class Process_Base : public PHASIC::Integrable_Base {
   protected:
-    std::string                      m_name, m_resdir;
+    std::string                      m_resdir;
     int                              m_gen_str;
 
-    int                              m_nvec,   m_nin,    m_nout,    m_nex;
-    ATOOLS::Flavour                * p_fl,   * p_flin, * p_flout, * p_ex_fl;
+    int m_nex;
+    ATOOLS::Flavour                * p_flin, * p_flout, * p_ex_fl;
     AMEGIC::Pol_Info               * p_pl,   * p_plin, * p_plout;
     int                            * p_b;
-    ATOOLS::Vec4D                  * p_moms;
 
     bool                             m_atoms, m_analyse, m_tables;
-    long int                         m_n;
-    double                           m_totalxs, m_totalerr, m_totalsum, m_totalsumsqr, m_max, m_rfactor;
-    double                           m_last, m_lastdxs, m_lastlumi;
-    int                              m_kfactorscheme,m_scalescheme;
+    double  m_rfactor;
     int                              m_orderQCD, m_orderEW,m_nstrong,m_neweak;
-    double                           m_asscale,m_facscale,m_scalefactor;
-    double                           m_isrthreshold;
+    double                           m_asscale,m_facscale;
 
     int m_swaped;
 
-    PHASIC::Phase_Space_Handler    * p_ps; 
     Phase_Space_Generator          * p_psgen;
-
-    BEAM::Beam_Spectra_Handler     * p_beam;
-    PDF::ISR_Handler               * p_isr;
-    ATOOLS::Selector_Base          * p_sel;
-
-    AMEGIC::Process_Base           * p_selected;
     
     int m_maxjetnumber;
     /*------------------------------------------------------------------------------
@@ -104,13 +92,12 @@ namespace AMEGIC {
     virtual void             SetTables(bool);
 
     virtual Process_Base  *  Partner()                                             =0;
-    virtual Process_Base  *  Selected()                                            =0;
     virtual void             SelectOne()                                           =0;
     virtual void             DeSelect()                                            =0;
     virtual void             Add(Process_Base *)                                   =0;
     virtual bool             Find(std::string,Process_Base *&)                     =0;
     virtual void             WriteOutXSecs(std::ofstream &)                        =0;
-    virtual int              Size()                                                =0;
+    virtual size_t           Size()                                                =0;
     virtual Process_Base  *  operator[] (int idx)                                  =0;
 
     virtual void             SetBeam(BEAM::Beam_Spectra_Handler *);
@@ -140,12 +127,12 @@ namespace AMEGIC {
     virtual void   RescaleXSec(double);
     virtual bool   PrepareXSecTables()                                             =0;
     virtual void   AddPoint(const double value)                                    =0;
-    virtual double Differential(ATOOLS::Vec4D *)                                   =0;
+    virtual double Differential(const ATOOLS::Vec4D *)                             =0;
     virtual double Differential2()                                                 =0;
-    virtual double DSigma(ATOOLS::Vec4D *,bool)                                    =0;
+    virtual double DSigma(const ATOOLS::Vec4D *,bool)                              =0;
     virtual double DSigma2()                                                       =0;
-    virtual double operator()(ATOOLS::Vec4D *) { return 0.; }
-    virtual double Scale(ATOOLS::Vec4D *);
+    virtual double operator()(const ATOOLS::Vec4D *) { return 0.; }
+    virtual double Scale(const ATOOLS::Vec4D *);
     virtual double Scale();
     virtual double FactorisationScale();
     virtual bool   OneEvent(double = -1.)                                          =0;
@@ -155,19 +142,12 @@ namespace AMEGIC {
 
     virtual void SwapInOrder();
     virtual void RestoreInOrder();
-    int          InSwaped();
 
     /*------------------------------------------------------------------------------
 
       Access methods
 
       ------------------------------------------------------------------------------*/
-    virtual int                             Nin();
-    virtual int                             Nout();
-    virtual int                             Nvec();
-    virtual ATOOLS::Flavour               * Flavs();
-    virtual ATOOLS::Vec4D                 * Momenta();
-
     virtual int                             NStrong();
     virtual int                             NEWeak();
 
@@ -181,9 +161,6 @@ namespace AMEGIC {
     virtual AMEGIC::Point                 * Diagram(int i);
     virtual bool                            IsFreeOfFourVertex(AMEGIC::Point * _p);
 
-    virtual BEAM::Beam_Spectra_Handler    * Beam();
-    virtual PDF::ISR_Handler              * ISR();
-    virtual ATOOLS::Selector_Base         * Selector();
     virtual Phase_Space_Generator         * PSGenerator();
     virtual void                            ISRChannels(int,PHASIC::Channel_Info & );
     virtual void                            BeamChannels(int,PHASIC::Channel_Info & );
@@ -197,14 +174,7 @@ namespace AMEGIC {
     virtual int                             BeamNumber();
     virtual void                            BeamInfo(int,int &,double &,double &);
 
-    virtual double                          Total();
-    virtual double                          TotalError();
-    virtual double                          Max();
-    virtual double                          Last();
-    virtual double                          LastXS();
-    virtual double                          LastLumi();
     virtual double                          KFactor(double);
-    virtual double                          ISRThreshold();
     
 
     /*------------------------------------------------------------------------------
@@ -225,12 +195,6 @@ namespace AMEGIC {
 }
 
 #endif
-
-
-
-
-
-
 
 /*! 
   The mother class of all processes : Single_Process, Process_Group, All_Processes.

@@ -12,7 +12,8 @@
 namespace AMEGIC {
   class Single_Process : public Process_Base {
   private:
-    std::string             m_ptypename,m_libname,m_pslibname; 
+    std::string             m_ptypename,m_libname,m_pslibname;
+    std::string             m_resultfile, m_resultpath;
     Polarisation            m_pol;
     double                  m_Norm;
     double                  m_save_max;
@@ -52,6 +53,7 @@ namespace AMEGIC {
   private:
     void           PolarizationNorm();
     double         SymmetryFactors();
+    void           Terminate();
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.
@@ -86,10 +88,9 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    Process_Base   * Selected()                         { return this;          }
     void             SelectOne()                        {                       }
     void             DeSelect()                         {                       }
-    int              Size()                             { return 1;             }
+    size_t           Size()                             { return 1;             }
     bool             Find(std::string,Process_Base *&);
     void             WriteOutXSecs(std::ofstream & _to);
     Process_Base   * operator[] (int idx)               { return this;          }
@@ -97,7 +98,7 @@ namespace AMEGIC {
     std::string      PSLibName()                        { return m_pslibname;     }
     void             SetTotalXS(int);
     void             FixISRThreshold();
-    void             SetISRThreshold(double _isrth)     { m_isrthreshold = _isrth;}
+    void             SetISRThreshold(double _isrth)     { m_threshold = _isrth;}
     void             Empty();
     void             SetPartner(Single_Process * _p)    { p_partner = _p;       }
     Process_Base   * Partner()                          { return p_partner;     }
@@ -113,11 +114,11 @@ namespace AMEGIC {
     bool           LookUpXSec(double,bool,std::string);
     bool           PrepareXSecTables();
     void           AddPoint(const double value); 
-    double         Differential(ATOOLS::Vec4D *);
+    double         Differential(const ATOOLS::Vec4D *);
     double         Differential2();
-    double         DSigma(ATOOLS::Vec4D *,bool);
+    double         DSigma(const ATOOLS::Vec4D *,bool);
     double         DSigma2();
-    double         operator()(ATOOLS::Vec4D *);
+    double         operator()(const ATOOLS::Vec4D *);
     bool           OneEvent(double = -1.);
     bool           SameEvent();
     ATOOLS::Blob_Data_Base * WeightedEvent();
@@ -151,7 +152,7 @@ namespace AMEGIC {
     const int      SelectedHelicity();
     void           AddToHelicity(const double,const int);
     void           OptimizeHelicityWeights();
-    double         operator()(ATOOLS::Vec4D *,const int);
+    double         operator()(const ATOOLS::Vec4D *,const int);
   public:
     void           SetHelicitySampling(bool _helsample) { m_helsample = _helsample; }
   };

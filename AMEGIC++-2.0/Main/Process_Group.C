@@ -30,16 +30,9 @@ Process_Group::Process_Group() :
   Process_Base(0,0,NULL,NULL,NULL,0,0,0,0,0,1.,-1.)
 { 
   m_name  = "Empty_Group"; 
-  p_fl    = 0;
   p_pl    = 0;
-
-  p_sel   = 0; 
-  p_ps    = 0;
-  p_moms  = 0;
   m_procs.clear();
 }
-
-
 
 Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 			     PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler * _beam,Selector_Data * _seldata,
@@ -54,33 +47,33 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
   string stan,oli;
   GenerateNames(m_nin,p_flin,p_plin,m_nout,p_flout,p_plout,m_name,stan,oli);
 
-  p_fl   = new Flavour[m_nvec];
-  p_pl   = new Pol_Info[m_nvec];
-  p_b    = new int[m_nvec];
+  p_flavours   = new Flavour[m_nvector];
+  p_pl   = new Pol_Info[m_nvector];
+  p_b    = new int[m_nvector];
   for (short int i=0;i<m_nin;i++) { 
-    p_fl[i] = p_flin[i]; 
+    p_flavours[i] = p_flin[i]; 
     p_pl[i] = p_plin[i]; 
     p_b[i]  = -1; 
   }
   for (short int i=m_nin;i<m_nin+m_nout;i++)  { 
-    p_fl[i] = p_flout[i-m_nin]; 
+    p_flavours[i] = p_flout[i-m_nin]; 
     p_pl[i] = p_plout[i-m_nin]; 
     p_b[i]  = 1; 
   } 
-  for (short int i=m_nin+m_nout;i<m_nvec;i++) { 
-    p_fl[i] = Flavour(kf::pol); 
+  for (short int i=m_nin+m_nout;i<m_nvector;i++) { 
+    p_flavours[i] = Flavour(kf::pol); 
     p_b[i]  = 1; 
   }
 
   ConstructProcesses(_seldata);
   GroupProcesses();
 
-  if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
+  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata);
   else {
     if (m_nout>2) 
       msg.Error()<<"Potential Error in Process_Group "<<m_name<<endl
 		 <<"   No selection cuts specified. Init No_Selector !"<<endl;
-    p_sel = new No_Selector();
+    p_selector = new No_Selector();
   }
 }
 
@@ -103,7 +96,7 @@ Process_Group::~Process_Group()
   ----------------------------------------------------------------------------------*/
 
 void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
-  int bsh_pol=p_beam->Polarisation();
+  int bsh_pol=p_beamhandler->Polarisation();
   int beam_is_poled[2]={bsh_pol&1,bsh_pol&2};
   // ====
 
@@ -121,8 +114,8 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
   for (;;) {
     if (!flag) break;
     for (int i=0;i<m_nin+m_nout;++i) {
-      if (p_fl[i].Size() != 1) {
-	_fl[i] = p_fl[i][flindex[i]]; 
+      if (p_flavours[i].Size() != 1) {
+	_fl[i] = p_flavours[i][flindex[i]]; 
 	_pl[i] = Pol_Info(_fl[i]);
 	if (_pl[i].pol_type==p_pl[i].pol_type) {
 	  _pl[i] = p_pl[i];
@@ -135,7 +128,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
 	}
       }
       else {
-	_fl[i] = p_fl[i];
+	_fl[i] = p_flavours[i];
 	_pl[i] = p_pl[i];
       }
     }
@@ -150,7 +143,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
     }
     if (take) {
       if (CheckExternalFlavours(m_nin,_fl,m_nout,_fl+m_nin)) {
-	Add(new Single_Process(m_nin,m_nout,_fl,p_isr,p_beam,_seldata,m_gen_str,m_orderQCD,m_orderEW,
+	Add(new Single_Process(m_nin,m_nout,_fl,p_isrhandler,p_beamhandler,_seldata,m_gen_str,m_orderQCD,m_orderEW,
 			       m_kfactorscheme,m_scalescheme,m_scalefactor,m_asscale,_pl,m_nex,p_ex_fl));
       }
       else {
@@ -160,7 +153,7 @@ void Process_Group::ConstructProcesses(ATOOLS::Selector_Data * _seldata) {
     if (overflow || take==0) {
       for (int i=0; i<m_nin+m_nout; ++i) plindex[i]=' ';
       for (int i=m_nin+m_nout-1;i>=0;--i) {
-	if (p_fl[i].Size()-1>flindex[i]) {
+	if (p_flavours[i].Size()-1>flindex[i]) {
 	  ++flindex[i];
 	  break;
 	}
@@ -231,18 +224,18 @@ void Process_Group::GroupProcesses() {
 
   bool massok = 1;
   for (int i=0;i<m_procs.size();i++) {
-    for (int j=0;j<m_procs[i]->Nin();j++) {
-      if (!(ATOOLS::IsEqual(massin[j],(m_procs[i]->Flavs()[j]).Mass()))) {
-	msg.Error()<<"Error in Incoming masses ; "<<massin[j]<<" vs. "<<(m_procs[i]->Flavs()[j]).Mass()
-		   <<" for "<<p_flin[j]<<" "<<m_procs[i]->Flavs()[j]<<endl;
+    for (int j=0;j<m_procs[i]->NIn();j++) {
+      if (!(ATOOLS::IsEqual(massin[j],(m_procs[i]->Flavours()[j]).Mass()))) {
+	msg.Error()<<"Error in Incoming masses ; "<<massin[j]<<" vs. "<<(m_procs[i]->Flavours()[j]).Mass()
+		   <<" for "<<p_flin[j]<<" "<<m_procs[i]->Flavours()[j]<<endl;
 	massok = 0; break;
 	}
     }
     if (!massok) break;
-    for (int j=0;j<m_procs[i]->Nout();j++) {
-      if (!(ATOOLS::IsEqual(massout[j],(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()))) {
-	msg.Error()<<"Error in outgoing masses ; "<<massout[j]<<" vs. "<<(m_procs[i]->Flavs()[j+m_procs[i]->Nin()]).Mass()
-		   <<"for "<<p_flout[j]<<" "<<m_procs[i]->Flavs()[j+m_procs[i]->Nin()]<<endl;
+    for (int j=0;j<m_procs[i]->NOut();j++) {
+      if (!(ATOOLS::IsEqual(massout[j],(m_procs[i]->Flavours()[j+m_procs[i]->NIn()]).Mass()))) {
+	msg.Error()<<"Error in outgoing masses ; "<<massout[j]<<" vs. "<<(m_procs[i]->Flavours()[j+m_procs[i]->NIn()]).Mass()
+		   <<"for "<<p_flout[j]<<" "<<m_procs[i]->Flavours()[j+m_procs[i]->NIn()]<<endl;
 	massok = 0; break;
       }
     }
@@ -269,9 +262,9 @@ void Process_Group::GroupProcesses() {
   for (int i=0;i<singleprocs.size();i++) {
     sproc      = singleprocs[i];
     help       = string("SG_");
-    if (sproc->Nin()==2) {
-      flav1    = sproc->Flavs()[0]; 
-      flav2    = sproc->Flavs()[1]; 
+    if (sproc->NIn()==2) {
+      flav1    = sproc->Flavours()[0]; 
+      flav2    = sproc->Flavours()[1]; 
       if ( (flav1.IsVector()) && (flav2.IsVector()) ) {
 	if ( (flav1.Bar() == flav1) && (flav2.Bar() == flav2) ) {
 	  if (flav1 == flav2) help += string("V_V_->_");
@@ -317,16 +310,16 @@ void Process_Group::GroupProcesses() {
       }
     }
     else {
-      flav1    = sproc->Flavs()[0]; 
+      flav1    = sproc->Flavours()[0]; 
       if (flav1.IsVector())        help += string("V_->_");
       else if (flav1.IsFermion())  help += string("f_->_");
       else                         help += string("S_->_");
     }
     int scalars = 0,fermions = 0,vectors = 0;
-    for (int j=0;j<sproc->Nout();j++) {
-      if ((sproc->Flavs()[sproc->Nin()+j]).IsScalar())  scalars++;
-      if ((sproc->Flavs()[sproc->Nin()+j]).IsFermion()) fermions++;
-      if ((sproc->Flavs()[sproc->Nin()+j]).IsVector())  vectors++;
+    for (int j=0;j<sproc->NOut();j++) {
+      if ((sproc->Flavours()[sproc->NIn()+j]).IsScalar())  scalars++;
+      if ((sproc->Flavours()[sproc->NIn()+j]).IsFermion()) fermions++;
+      if ((sproc->Flavours()[sproc->NIn()+j]).IsVector())  vectors++;
     }
     char numb[20];
     sprintf(numb,"%i",scalars);
@@ -349,8 +342,8 @@ void Process_Group::GroupProcesses() {
       group = new Process_Group();
       group->SetName(help);
       group->SetAtoms(0);
-      group->SetBeam(p_beam);
-      group->SetISR(p_isr);
+      group->SetBeam(p_beamhandler);
+      group->SetISR(p_isrhandler);
       group->Add(sproc);
       m_procs.push_back(group);
     }
@@ -367,25 +360,25 @@ void Process_Group::GroupProcesses() {
 void Process_Group::Add(Process_Base * _proc) 
 {
   if (m_procs.size()==0) {
-    m_nin     = _proc->Nin();
-    m_nout    = _proc->Nout();
-    m_nvec    = _proc->Nvec();
+    m_nin     = _proc->NIn();
+    m_nout    = _proc->NOut();
+    m_nvector    = _proc->NVector();
     m_nstrong = _proc->NStrong();
     m_neweak  = _proc->NEWeak();
-    if (p_fl==NULL) {
-      p_fl = new Flavour[m_nin+m_nout];
-      for (int i=0;i<m_nin+m_nout;i++) p_fl[i] = (_proc->Flavs())[i];
+    if (p_flavours==NULL) {
+      p_flavours = new Flavour[m_nin+m_nout];
+      for (int i=0;i<m_nin+m_nout;i++) p_flavours[i] = (_proc->Flavours())[i];
     }
   }
   else {
-    if (_proc->Nvec() > m_nvec) m_nvec = _proc->Nvec();
+    if (_proc->NVector() > m_nvector) m_nvector = _proc->NVector();
   }
-  if ( (m_nin != _proc->Nin()) || (m_nout != _proc->Nout())) {
+  if ( (m_nin != _proc->NIn()) || (m_nout != _proc->NOut())) {
     msg.Error()<<"Error : Cannot add process "<<_proc->Name()
 	       <<" to group "<<m_name<<" ! "<<endl
 	       <<"   Inconsistent number of external legs."<<endl
 	       <<"  Before : ("<<m_nin<<" -> "<<m_nout<<" )"<<endl
-	       <<"  Now    : ("<<_proc->Nin()<<" -> "<<_proc->Nout()<<" )"<<endl;
+	       <<"  Now    : ("<<_proc->NIn()<<" -> "<<_proc->NOut()<<" )"<<endl;
     return;
   }
   m_procs.push_back(_proc);
@@ -421,7 +414,7 @@ void Process_Group::SelectOne()
       // select according to total xsecs.
       disc = m_totalxs * ran.Get();
       for (int i=0;i<m_procs.size();i++) {
-	disc -= m_procs[i]->Total();
+	disc -= m_procs[i]->TotalXS();
 	if (disc<0.) {
 	  p_selected = m_procs[i];
 	  p_selected->SelectOne();
@@ -460,21 +453,15 @@ void Process_Group::SelectOne()
   }
 }
 
-
-
 void Process_Group::DeSelect() {
   p_selected = 0;
   for (int i=0;i<m_procs.size();i++) m_procs[i]->DeSelect();
 }
 
-
-
-Process_Base * Process_Group::Selected() { 
-  if (p_selected==this) return this;
-  return p_selected->Selected(); 
+Integrable_Base *const Process_Group::Selected() const 
+{ 
+  return static_cast<Integrable_Base*>(p_selected->Selected()); 
 }    
-
-
 
 void Process_Group::Empty() {
   for (int i=0;i<m_procs.size();i++) m_procs[i]->Empty();
@@ -497,8 +484,8 @@ void Process_Group::SetScale(double _scale)
 
 void Process_Group::SetISRThreshold(double _isrth)
 {
-  m_isrthreshold = _isrth;
-  for (int i=0;i<m_procs.size();i++) m_procs[i]->SetISRThreshold(m_isrthreshold); 
+  m_threshold = _isrth;
+  for (int i=0;i<m_procs.size();i++) m_procs[i]->SetISRThreshold(m_threshold); 
 } 
 
 
@@ -514,7 +501,7 @@ void Process_Group::SetTotalXS(int tables)  {
     m_totalerr = sqrt( (m_totalsumsqr/m_n - 
 			(ATOOLS::sqr(m_totalsum)-m_totalsumsqr)/(m_n*(m_n-1.)) )  / m_n); 
     if ((m_nin==1 && m_nout==2) || m_n==1) m_totalerr = 0.;
-    if (p_sel) p_sel->Output();
+    if (p_selector) p_selector->Output();
     m_max = 0.;
     for (int i=0;i<m_procs.size();i++) {
       m_procs[i]->SetTotalXS(tables);
@@ -546,7 +533,7 @@ void Process_Group::SetMax(double max) {
   m_max = 0.;
   for (int i=0;i<m_procs.size();i++) {
     m_procs[i]->SetTotalXS(2);
-    sum   += m_procs[i]->Total();
+    sum   += m_procs[i]->TotalXS();
     m_max += m_procs[i]->Max(); // naive sum, probably unneccessary large
   }
   if (m_totalxs!=0.) {
@@ -675,12 +662,12 @@ bool Process_Group::SetUpIntegrator()
   }
   
   if (m_nin==2) {
-    if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
-	 (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
+    if ( (p_flavours[0].Mass() != p_isrhandler->Flav(0).Mass()) ||
+	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
   }
-  p_ps  = new Phase_Space_Handler(this,p_isr,p_beam);
-  AddChannels(this,p_ps->FSRIntegrator(),p_ps->BeamParameters(),p_ps->ISRParameters());
-  if (!p_ps->CreateIntegrators()) return 0;
+  p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
+  AddChannels(this,p_pshandler->FSRIntegrator(),p_pshandler->BeamParameters(),p_pshandler->ISRParameters());
+  if (!p_pshandler->CreateIntegrators()) return 0;
   if (m_nin==2) { for (int i=0;i<m_procs.size();i++) m_procs[i]->Empty(); }
   return 1;
 }
@@ -735,11 +722,11 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	  }
 	}
 	from.close();
-	p_ps->ReadIn(_resdir+string("/MC_")+m_name);
-	if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
-	if (p_ps->ISRIntegrator() != 0)  p_ps->ISRIntegrator()->Print();
-	if (p_ps->FSRIntegrator() != 0)  p_ps->FSRIntegrator()->Print();
-	p_ps->InitIncoming();
+	p_pshandler->ReadIn(_resdir+string("/MC_")+m_name);
+	if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
+	if (p_pshandler->ISRIntegrator() != 0)  p_pshandler->ISRIntegrator()->Print();
+	if (p_pshandler->FSRIntegrator() != 0)  p_pshandler->FSRIntegrator()->Print();
+	p_pshandler->InitIncoming();
 	if (m_totalxs<=0.) {
 	  msg.Error()<<"In "<<m_name<<"::CalculateTotalXSec("<<_resdir<<")"<<endl
 		     <<"   Something went wrong : Negative xsec : "<<m_totalxs<<endl;
@@ -756,12 +743,14 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
     }
 
     if (m_nin==2) {
-      if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
-	   (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
+      if ( (p_flavours[0].Mass() != p_isrhandler->Flav(0).Mass()) ||
+	   (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
     }
     m_tables  = 0;
-    
-    m_totalxs = p_ps->Integrate();
+    m_resultpath=_resdir;
+    m_resultfile=filename;
+    ATOOLS::Exception::AddObject(this);
+    m_totalxs = p_pshandler->Integrate();
     if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl
@@ -779,16 +768,34 @@ bool Process_Group::CalculateTotalXSec(std::string _resdir)
 	msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		    <<"       max : "<<m_max<<endl;
 	WriteOutXSecs(to);
-	p_ps->WriteOut(_resdir+string("/MC_")+m_name);
+	p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
 	to.close();
       }
+      ATOOLS::Exception::RemoveObject(this);
       return 1;
     }
+    ATOOLS::Exception::RemoveObject(this);
   }
   return 0;
 }
 
-
+void Process_Group::Terminate()
+{
+  if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
+  SetTotalXS(0);
+  if (m_totalxs<=0.) return;
+  std::ofstream to;
+  to.open(m_resultfile.c_str(),ios::out);
+  to.precision(12);
+  msg.Events()<<"Store result : xs for "<<m_name<<" : ";
+  if (m_nin==2) msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
+  if (m_nin==1) msg.Events()<<m_totalxs<<" GeV";
+  msg.Events()<<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+	      <<"       max : "<<m_max<<endl;
+  WriteOutXSecs(to);
+  p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
+  to.close();
+}
 
 void  Process_Group::RescaleXSec(double fac) {
   Process_Base::RescaleXSec(fac);
@@ -813,13 +820,13 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
     if (okay) {                    
       m_totalxs = 0; m_max = 0;
       for (int i=0;i<m_procs.size();i++) {
-	m_totalxs += m_procs[i]->Total();
+	m_totalxs += m_procs[i]->TotalXS();
 	m_max     += m_procs[i]->Max();
       }
-      p_ps->ReadIn(m_resdir+string("/MC_")+m_name);
-      if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
-      if (p_ps->ISRIntegrator() != 0)  p_ps->ISRIntegrator()->Print();
-      if (p_ps->FSRIntegrator() != 0)  p_ps->FSRIntegrator()->Print();
+      p_pshandler->ReadIn(m_resdir+string("/MC_")+m_name);
+      if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
+      if (p_pshandler->ISRIntegrator() != 0)  p_pshandler->ISRIntegrator()->Print();
+      if (p_pshandler->FSRIntegrator() != 0)  p_pshandler->FSRIntegrator()->Print();
       return 1;
     }
     if (calc) {
@@ -831,7 +838,7 @@ bool Process_Group::LookUpXSec(double ycut,bool calc,string obs) {
       if (okay) {                    
 	m_totalxs = 0; m_max = 0;
 	for (int i=0;i<m_procs.size();i++) {
-	  m_totalxs += m_procs[i]->Total();
+	  m_totalxs += m_procs[i]->TotalXS();
 	  m_max     += m_procs[i]->Max();
 	}
 	return 1;
@@ -852,16 +859,16 @@ bool Process_Group::PrepareXSecTables()
   }
   else {
     if (m_nin==2) {
-      if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
-	   (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
+      if ( (p_flavours[0].Mass() != p_isrhandler->Flav(0).Mass()) ||
+	   (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
     }
-    m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn(); 
+    m_totalxs = p_pshandler->Integrate()/ATOOLS::rpa.Picobarn(); 
     if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
       msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<endl;
       msg.Error()<<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
     }
     SetTotalXS(1);
-    p_ps->WriteOut(m_resdir+string("/MC_")+m_name);
+    p_pshandler->WriteOut(m_resdir+string("/MC_")+m_name);
     if (m_totalxs>0.) return 1;
   }
   return 0;
@@ -894,7 +901,7 @@ void Process_Group::AddPoint(const double value)
 
 
 
-double Process_Group::Differential(Vec4D * p)
+double Process_Group::Differential(const Vec4D * p)
 {
   m_last = 0;
   for (int i=0;i<m_procs.size();i++) {
@@ -915,7 +922,7 @@ double Process_Group::Differential(Vec4D * p)
 
 double Process_Group::Differential2()
 {
-  if (p_isr->On()==0) return 0.;
+  if (p_isrhandler->On()==0) return 0.;
   double tmp = 0.;
   for (int i=0;i<m_procs.size();i++) tmp += m_procs[i]->DSigma2();
 
@@ -929,7 +936,7 @@ double Process_Group::Differential2()
 
 
 
-double Process_Group::DSigma(Vec4D * p,bool lookup)
+double Process_Group::DSigma(const Vec4D * p,bool lookup)
 {
   m_last = 0;
   for (int i=0;i<m_procs.size();i++) m_last += m_procs[i]->DSigma(p,lookup);
@@ -951,9 +958,9 @@ double Process_Group::DSigma2()
 bool Process_Group::OneEvent(double _mass) {
   if (m_atoms) {
     SelectOne();
-    return p_selected->OneEvent(_mass);
+    return dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass);
   }
-  return p_ps->OneEvent(_mass);
+  return p_pshandler->OneEvent(_mass);
 }
 
 bool Process_Group::SameEvent() {
@@ -963,7 +970,7 @@ bool Process_Group::SameEvent() {
     msg.Error()<<" ERROR in bool Process_Group::SameEvent() "<<endl;
     return 0;
   }
-  return p_ps->SameEvent();
+  return p_pshandler->SameEvent();
 }
 
 ATOOLS::Blob_Data_Base *  Process_Group::WeightedEvent() {
@@ -971,14 +978,14 @@ ATOOLS::Blob_Data_Base *  Process_Group::WeightedEvent() {
     SelectOne();
     return p_selected->WeightedEvent();
   }
-  return p_ps->WeightedEvent();
+  return p_pshandler->WeightedEvent();
 }
 
 ATOOLS::Blob_Data_Base *  Process_Group::SameWeightedEvent() {
   if (m_atoms) {
     return p_selected->SameWeightedEvent();
   }
-  return p_ps->SameWeightedEvent();
+  return p_pshandler->SameWeightedEvent();
 }
 
 

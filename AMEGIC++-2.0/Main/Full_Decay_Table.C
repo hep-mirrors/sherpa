@@ -59,7 +59,7 @@ bool Full_Decay_Channel::CalculateWidth()
 
 void Full_Decay_Channel::SetWidth(double _w ) 
 {
-  if (_w<0.) p_dec->SetWidth(p_proc->Total()); 
+  if (_w<0.) p_dec->SetWidth(p_proc->TotalXS()); 
   else p_dec->SetWidth(_w);
   if (rpa.gen.Events()) Output();
 }
@@ -121,14 +121,14 @@ void Full_Decay_Table::ArrangeDecays()
   Process_Group * group;
   Process_Base  * proc, * test;
   int             nout;
-  Flavour       * flavs;
+//   Flavour       * flavs;
   bool newgroup = 1;
   bool alreadyin,match,initgroup;
   while (newgroup) {
     newgroup = 0;
     for (int i=0;i<m_channels.size();i++) {
       proc     = m_channels[i]->GetProcessBase();
-      nout     = proc->Nout();
+      nout     = proc->NOut();
       initgroup = 1;
       if (m_decaymodes.size()>0) {
 	for (int j=0;j<m_decaymodes.size();j++) {
@@ -140,10 +140,10 @@ void Full_Decay_Table::ArrangeDecays()
 	    } 
 	  }
 	  if (alreadyin) { initgroup = 0; break; }
-	  if (m_decaymodes[j]->Nout()==nout) {
+	  if (m_decaymodes[j]->NOut()==nout) {
 	    match = 1;
-	    for (int k=0;k<m_decaymodes[j]->Nout();k++) {
-	      if ((((*m_decaymodes[j])[0]->Flavs())[k+1]).Mass()!=((proc->Flavs())[k+1]).Mass()) {
+	    for (int k=0;k<m_decaymodes[j]->NOut();k++) {
+	      if ((((*m_decaymodes[j])[0]->Flavours())[k+1]).Mass()!=((proc->Flavours())[k+1]).Mass()) {
 		match = 0;
 		break;
 	      }
@@ -158,9 +158,9 @@ void Full_Decay_Table::ArrangeDecays()
       }
       if (initgroup==1) {
 	newgroup = 1;
-	flavs = proc->Flavs();
+// 	flavs = proc->Flavours();
 	group = new Process_Group();
-	group->SetName("Decay for : "+flavs[0].TexName());
+	group->SetName("Decay for : "+proc->Flavours()[0].TexName());
 	group->Add(proc);
 	group->SetAtoms(0);
 	m_decaymodes.push_back(group);

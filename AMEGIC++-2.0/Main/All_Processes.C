@@ -27,7 +27,7 @@ void  All_Processes::SelectOne() {
   else {
     double disc = m_totalxs * ran.Get(); 
     for (int i=0;i<m_procs.size();i++) {
-      disc -= m_procs[i]->Total();
+      disc -= m_procs[i]->TotalXS();
       if (disc<0.) {
 	p_selected = m_procs[i];
 	p_selected->DeSelect();
@@ -44,7 +44,7 @@ void  All_Processes::SelectOne() {
 void All_Processes::RescaleXSec(double) {
   double sumxs=0., summax=0.;
   for (int i=0;i<m_procs.size();++i) {
-    sumxs +=m_procs[i]->Total();
+    sumxs +=m_procs[i]->TotalXS();
     summax+=m_procs[i]->Max();
   }
   m_totalxs = sumxs;
@@ -130,7 +130,7 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
   for (int i=0;i<m_procs.size();i++) {
     msg.Tracking()<<"All_Processes::CalculateTotalXSec for "<<m_procs[i]->Name()<<endl;
     if (!(m_procs[i]->CalculateTotalXSec(_resdir))) okay = 0;
-                                               else m_totalxs += m_procs[i]->Total();
+    else m_totalxs += m_procs[i]->TotalXS();
   }
   if (m_totalxs<=0.) okay=0;
   return okay;
@@ -138,7 +138,7 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
 
 bool All_Processes::OneEvent(double _mass) {
   SelectOne();
-  return p_selected->OneEvent(_mass);
+  return dynamic_cast<Process_Base*>(p_selected)->OneEvent(_mass);
 }
 
 bool All_Processes::SameEvent() {

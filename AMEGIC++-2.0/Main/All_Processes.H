@@ -8,8 +8,10 @@
 
 namespace AMEGIC {
   //! The container for a list of processes.
+
   class All_Processes : public Process_Group {
   public:
+
     int  InitAllProcesses(Interaction_Model_Base *,Topology *,ATOOLS::Vec4D *&);
 
     void Add(Process_Base *);
@@ -20,11 +22,14 @@ namespace AMEGIC {
     bool OneEvent(double = -1.);
     bool SameEvent();
 
-    int               Nin()     { return p_selected->Nin(); }
-    int               Nout()    { return p_selected->Nout(); } 
-    ATOOLS::Flavour * Flavs()   { return p_selected->Flavs(); } 
-    ATOOLS::Vec4D   * Momenta() { return p_selected->Momenta(); }
+    int  NIn()  { return p_selected->NIn();  }
+    int  NOut() { return p_selected->NOut(); } 
+
+    const ATOOLS::Flavour *Flavours() { return p_selected->Flavours(); } 
+    const ATOOLS::Vec4D   *Momenta()  { return p_selected->Momenta();  }
+
   };
+
 }
 
 #endif

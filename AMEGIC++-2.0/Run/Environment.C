@@ -98,9 +98,12 @@ bool Environment::InitializeThePDFs()
       isrbases[i]          = new Structure_Function(pdfbase,bunch_particles[i]);
     }
   }
-  bunch_splimits[0]        = dataread->GetValue<double>("ISR_SMIN",0.);
-  bunch_splimits[1]        = dataread->GetValue<double>("ISR_SMAX",1.);
-  p_isrhandler             = new ISR_Handler(isrbases,bunch_splimits);
+  m_bunch_splimits[0] = dataread->GetValue<double>("ISR_SMIN",0.);
+  m_bunch_splimits[1] = dataread->GetValue<double>("ISR_SMAX",1.);
+  double kplimits[2];
+  kplimits[0] = dataread->GetValue<double>("ISR_KPMIN",m_bunch_splimits[0]);
+  kplimits[1] = dataread->GetValue<double>("ISR_KPMAX",m_bunch_splimits[1]);
+  p_isrhandler = new ISR_Handler(isrbases,m_bunch_splimits,kplimits);
   delete dataread;
 
   if (!(p_beamspectra->CheckConsistency(bunch_particles))) {

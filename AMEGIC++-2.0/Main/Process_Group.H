@@ -9,7 +9,7 @@ namespace AMEGIC {
   class Process_Group : public Process_Base {
   protected :
     std::vector<Process_Base *> m_procs;
-
+    std::string m_resultpath, m_resultfile;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -31,15 +31,16 @@ namespace AMEGIC {
   private :
     int            SetPolarisations(char * plindex, Pol_Info * pl, int * beam_is_poled);
     void           ConstructProcesses(ATOOLS::Selector_Data *);
+    void           Terminate();
   public :
     bool           Find(std::string,Process_Base *&);
     void           Add(Process_Base *);
     void           GroupProcesses();
     void           SelectOne();
     void           DeSelect();
-    Process_Base * Selected();
+    Integrable_Base *const Selected() const;
     void           Empty();
-    int            Size()                          { return m_procs.size(); }
+    size_t         Size()                          { return m_procs.size(); }
     Process_Base * operator[] (int idx)            { return m_procs[idx]; } 
     void           SetResDir(std::string);
     void           SetScale(double);
@@ -74,9 +75,9 @@ namespace AMEGIC {
     bool           PrepareXSecTables();
     void           WriteOutXSecs(std::ofstream &);
     void           AddPoint(const double value); 
-    double         Differential(ATOOLS::Vec4D *);
+    double         Differential(const ATOOLS::Vec4D *);
     double         Differential2();
-    double         DSigma(ATOOLS::Vec4D *,bool);
+    double         DSigma(const ATOOLS::Vec4D *,bool);
     double         DSigma2();
     bool           OneEvent(double = -1.);
     bool           SameEvent();

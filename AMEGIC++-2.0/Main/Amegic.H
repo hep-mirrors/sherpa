@@ -54,17 +54,17 @@ namespace AMEGIC {
     ATOOLS::Blob_Data_Base * WeightedEvent();
     bool              SameEvent();
     ATOOLS::Blob_Data_Base * SameWeightedEvent();
-    Process_Base    * GetProcess()       { return p_procs->Selected(); }
+    PHASIC::Integrable_Base  *const GetProcess() const { return p_procs->Selected(); }
     Process_Base    * Processes();
     All_Decays      * GetAllDecays()     { return p_decs; }
     std::string       ProcessName()      { return p_procs->Selected()->Name(); }
-    int               Nin()              { return p_procs->Selected()->Nin(); }
-    int               Nout()             { return p_procs->Selected()->Nout(); }
-    ATOOLS::Flavour * Flavs()            { return p_procs->Selected()->Flavs(); }
-    ATOOLS::Vec4D   * Momenta()          { return p_procs->Selected()->Momenta(); }
+    int               NIn()              { return p_procs->Selected()->NIn(); }
+    int               NOut()             { return p_procs->Selected()->NOut(); }
+    const ATOOLS::Flavour * Flavours()   { return p_procs->Selected()->Flavours(); }
+    const ATOOLS::Vec4D   * Momenta()    { return p_procs->Selected()->Momenta(); }
     int               InSwaped()         { return p_procs->Selected()->InSwaped(); }
-    int               NumberOfDiagrams() { return p_procs->Selected()->NumberOfDiagrams(); }
-    AMEGIC::Point   * Diagram(int _diag) { return p_procs->Selected()->Diagram(_diag); }
+    int               NumberOfDiagrams() { return static_cast<Process_Base*>(p_procs->Selected())->NumberOfDiagrams(); }
+    AMEGIC::Point   * Diagram(int _diag) { return static_cast<Process_Base*>(p_procs->Selected())->Diagram(_diag); }
     int               MaxJets()          { return m_maxjet; }
 
 

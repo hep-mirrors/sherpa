@@ -44,22 +44,22 @@ namespace AMEGIC {
     Full_Decay_Table * GetFullDecayTable(ATOOLS::Flavour _fl);
 
     bool               UnweightedEvent(ATOOLS::Decay_Channel *,double);
-    int                Nin();
-    int                Nout();
+    int                NIn();
+    int                NOut();
     std::string        Name();
-    ATOOLS::Flavour  * Flavs();            
-    ATOOLS::Vec4D    * Momenta();          
+    const ATOOLS::Flavour  * Flavs();            
+    const ATOOLS::Vec4D    * Momenta();          
     int                NumberOfDiagrams(); 
     AMEGIC::Point    * Diagram(int _diag);
     void               Reset();
   };
-  inline int All_Decays::Nin() { 
-    if (p_decay) return p_decay->Nin(); 
+  inline int All_Decays::NIn() { 
+    if (p_decay) return p_decay->NIn(); 
     ATOOLS::msg.Error()<<"Error in All_Decays::Nin(): no decay selected. Abort run."<<std::endl;
     abort();
   }
-  inline int All_Decays::Nout() { 
-    if (p_decay) return p_decay->Nout(); 
+  inline int All_Decays::NOut() { 
+    if (p_decay) return p_decay->NOut(); 
     ATOOLS::msg.Error()<<"Error in All_Decays::Nout(): no decay selected. Abort run."<<std::endl;
     abort();
   }
@@ -68,12 +68,12 @@ namespace AMEGIC {
     ATOOLS::msg.Error()<<"Error in All_Decays::Name(): no decay selected. Abort run."<<std::endl;
     abort();
   }
-  inline ATOOLS::Flavour * All_Decays::Flavs() { 
-    if (p_decay) return p_decay->Flavs(); 
+  inline const ATOOLS::Flavour * All_Decays::Flavs() { 
+    if (p_decay) return p_decay->Flavours(); 
     ATOOLS::msg.Error()<<"Error in All_Decays::Flavs(): no decay selected. Abort run."<<std::endl;
     abort();
   }
-  inline ATOOLS::Vec4D * All_Decays::Momenta() { 
+  inline const ATOOLS::Vec4D * All_Decays::Momenta() { 
     if (p_decay) return p_decay->Momenta(); 
     ATOOLS::msg.Error()<<"Error in All_Decays::Momenta(): no decay selected. Abort run."<<std::endl;
     abort();

@@ -9,7 +9,7 @@
 #include "Running_AlphaQED.H"
 
 #include <stdio.h>
-
+#include <sys/stat.h>
 
 using namespace AMEGIC;
 using namespace PHASIC;

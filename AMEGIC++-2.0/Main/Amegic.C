@@ -512,8 +512,8 @@ bool Amegic::PrepareXSecTables() {
 void Amegic::FifoOutput(double wt) 
 {
   if (p_fifo) {
-    int nin  = p_procs->Selected()->Nin();
-    int nout = p_procs->Selected()->Nout();
+    int nin  = p_procs->Selected()->NIn();
+    int nout = p_procs->Selected()->NOut();
 
 
     ostream &  fifo = *p_fifo;
@@ -528,14 +528,14 @@ void Amegic::FifoOutput(double wt)
     //<<std::setprecision(9)<<std::setw(16);
 
     for (int j = 0;j<nin; j++) {
-      fifo<<" "<<std::setw(3)<<int(p_procs->Selected()->Flavs()[j])<<" ";
+      fifo<<" "<<std::setw(3)<<int(p_procs->Selected()->Flavours()[j])<<" ";
       for (int k=1;k<4;++k) {
 	fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][k]<<" ";
       }
       fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][0]<<endl;
     }
     for (int j = nin;j<nin+nout; j++) {
-      fifo<<" "<<std::setw(3)<<int(p_procs->Selected()->Flavs()[j])<<" ";
+      fifo<<" "<<std::setw(3)<<int(p_procs->Selected()->Flavours()[j])<<" ";
       for (int k=1;k<4;++k)
 	fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][k]<<" ";
       fifo<<std::setw(16)<<p_procs->Selected()->Momenta()[j][0]<<endl;

@@ -53,27 +53,27 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour * _fl,
   m_pslibname = m_libname;
 
   PolarizationNorm();
-  if (_seldata) p_sel = new Combined_Selector(m_nin,m_nout,p_fl,_seldata);
+  if (_seldata) p_selector = new Combined_Selector(m_nin,m_nout,p_flavours,_seldata);
   else {
     if (m_nout>2)
       msg.Error()<<"Potential Error in Single_Process "<<m_name<<endl
 		 <<"   No selection cuts specified. Init No_Selector !"<<endl;
-    p_sel = new No_Selector();
+    p_selector = new No_Selector();
   }
 
   double sum_massin = 0.,sum_massout = 0.;
   for (int i=0;i<m_nin;i++)  sum_massin  += p_flin[i].Mass();
   for (int i=0;i<m_nout;i++) sum_massout += p_flout[i].Mass();
-  m_isrthreshold = ATOOLS::Max(sum_massin,sum_massout);
+  m_threshold = ATOOLS::Max(sum_massin,sum_massout);
 
-  p_ps   = new Phase_Space_Handler(this,p_isr,p_beam);
+  p_pshandler = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
   
   // making directory
   if (m_gen_str>1) {
     unsigned int  mode_dir = 0755;
     mkdir((string("Process/")+m_ptypename).c_str(),mode_dir); 
   }
-  msg.Tracking()<<"Initialized Single_Process : "<<m_name<<", "<<m_nvec<<", 1/norm = "<<1./m_Norm<<endl;
+  msg.Tracking()<<"Initialized Single_Process : "<<m_name<<", "<<m_nvector<<", 1/norm = "<<1./m_Norm<<endl;
 }
 
 
@@ -99,17 +99,17 @@ void Single_Process::PolarizationNorm() {
   nmassive_pols                         += m_pol.Massive_Vectors(m_nout,p_flout);
 
   // arrange Flavours
-  m_nvec = m_nin+m_nout+is_massless_pol+nmassive_pols;
-  p_fl   = new Flavour[m_nvec];
-  p_pl   = new Pol_Info[m_nvec];
-  p_b    = new int[m_nvec];
-  for (short int i=0;i<m_nin;i++)             { p_fl[i] = p_flin[i]       ; p_pl[i] = p_plin[i]       ; p_b[i] = -1; }
-  for (short int i=m_nin;i<m_nin+m_nout;i++)  { p_fl[i] = p_flout[i-m_nin]; p_pl[i] = p_plout[i-m_nin]; p_b[i] = 1; } 
-  for (short int i=m_nin+m_nout;i<m_nvec;i++) { p_fl[i] = Flavour(kf::pol); p_b[i]  = 1; }
+  m_nvector = m_nin+m_nout+is_massless_pol+nmassive_pols;
+  p_flavours   = new Flavour[m_nvector];
+  p_pl   = new Pol_Info[m_nvector];
+  p_b    = new int[m_nvector];
+  for (short int i=0;i<m_nin;i++)             { p_flavours[i] = p_flin[i]       ; p_pl[i] = p_plin[i]       ; p_b[i] = -1; }
+  for (short int i=m_nin;i<m_nin+m_nout;i++)  { p_flavours[i] = p_flout[i-m_nin]; p_pl[i] = p_plout[i-m_nin]; p_b[i] = 1; } 
+  for (short int i=m_nin+m_nout;i<m_nvector;i++) { p_flavours[i] = Flavour(kf::pol); p_b[i]  = 1; }
 
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,p_flin);
 #ifndef Explicit_Pols
-  m_pol.Attach(m_nin+m_nout,p_fl);
+  m_pol.Attach(m_nin+m_nout,p_flavours);
   m_Norm *= m_pol.Massive_Norm();
 
 #endif
@@ -169,32 +169,32 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
       double ecms=rpa.gen.Ecms();
       if (ms<0.95*ecms) {
 	rpa.gen.SetEcms(0.5*ms);
-	_testmoms = new Vec4D[m_nvec];
-	p_ps->TestPoint(_testmoms);
+	_testmoms = new Vec4D[m_nvector];
+	p_pshandler->TestPoint(_testmoms);
 	rpa.gen.SetEcms(ecms);    
-	Vec4D * dummys = new Vec4D[m_nvec];
-	p_ps->TestPoint(dummys);
+	Vec4D * dummys = new Vec4D[m_nvector];
+	p_pshandler->TestPoint(dummys);
 	delete [] dummys;
       }
       else {
-	_testmoms = new Vec4D[m_nvec];
-	p_ps->TestPoint(_testmoms);
+	_testmoms = new Vec4D[m_nvector];
+	p_pshandler->TestPoint(_testmoms);
       }
     }
     else {
-      _testmoms = new Vec4D[m_nvec];
-      p_ps->TestPoint(_testmoms);
+      _testmoms = new Vec4D[m_nvector];
+      p_pshandler->TestPoint(_testmoms);
     }
   }
-  if (p_moms) { delete [] p_moms; }
-  p_moms = new Vec4D[m_nvec]; 
-  for (int i=0;i<m_nin+m_nout;i++) p_moms[i] = _testmoms[i];
+  if (p_momenta) { delete [] p_momenta; }
+  p_momenta = new Vec4D[m_nvector]; 
+  for (int i=0;i<m_nin+m_nout;i++) p_momenta[i] = _testmoms[i];
 
-  p_hel    = new Helicity(m_nin,m_nout,p_fl,p_pl);
-  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvec,p_fl,p_b);  
+  p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
+  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS);
 
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,model,top,m_orderQCD,m_orderEW,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand);
   if (p_ampl->GetGraphNumber()==0) {
     msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
@@ -219,10 +219,10 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
       }
     }
   }
-  p_ampl->CompleteAmplitudes(m_nin+m_nout,p_fl,p_b,&m_pol,
+  p_ampl->CompleteAmplitudes(m_nin+m_nout,p_flavours,p_b,&m_pol,
 			     top,p_BS,m_ptypename+string("/")+m_name);
 
-  m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
+  m_pol.Add_Extern_Polarisations(p_BS,p_flavours,p_hel);
   p_BS->Initialize();
 
   switch (Tests()) {
@@ -276,23 +276,23 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 
 int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology * top)
 {
-  if (p_moms) { delete [] p_moms; }
-  p_moms   = new Vec4D[m_nvec]; 
-  p_ps->TestPoint(p_moms);
+  if (p_momenta) { delete [] p_momenta; }
+  p_momenta   = new Vec4D[m_nvector]; 
+  p_pshandler->TestPoint(p_momenta);
 
-  p_hel    = new Helicity(m_nin,m_nout,p_fl,p_pl);
-  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvec,p_fl,p_b);  
+  p_hel    = new Helicity(m_nin,m_nout,p_flavours,p_pl);
+  p_BS     = new Basic_Sfuncs(m_nin+m_nout,m_nvector,p_flavours,p_b);  
   p_shand  = new String_Handler(m_gen_str,p_BS);
-  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_fl,p_b,model,top,m_orderQCD,m_orderEW,
+  p_ampl   = new Amplitude_Handler(m_nin+m_nout,p_flavours,p_b,model,top,m_orderQCD,m_orderEW,
 				   p_BS,p_shand);
   if (p_ampl->GetGraphNumber()==0) {
     msg.Tracking()<<"Single_Process::InitAmplitude : No diagrams for "<<m_name<<"."<<endl;
     return -1;
   }
-  p_ampl->CompleteAmplitudes(m_nin+m_nout,p_fl,p_b,&m_pol,
+  p_ampl->CompleteAmplitudes(m_nin+m_nout,p_flavours,p_b,&m_pol,
 			     top,p_BS,m_ptypename+string("/")+m_name);
 
-  m_pol.Add_Extern_Polarisations(p_BS,p_fl,p_hel);
+  m_pol.Add_Extern_Polarisations(p_BS,p_flavours,p_hel);
   p_BS->Initialize();
 
   switch (Tests()) {
@@ -335,9 +335,9 @@ int Single_Process::Tests() {
   double helvalue;
 
   if (gauge_test) {
-    m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_moms,Vec4D(sqrt(3.),1.,1.,-1.));
+    m_pol.Set_Gauge_Vectors(m_nin+m_nout,p_momenta,Vec4D(sqrt(3.),1.,1.,-1.));
     p_BS->Setk0(0);
-    p_BS->CalcEtaMu(p_moms);  
+    p_BS->CalcEtaMu(p_momenta);  
     p_BS->InitGaugeTest(.9);
 
     msg.Debugging()<<number<<" :";ATOOLS::msg.Debugging().flush();
@@ -353,7 +353,7 @@ int Single_Process::Tests() {
       }
     }
     msg.Debugging()<<endl;
-    M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
+    M2     *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
     m_iresult  = M2;
   }
   p_ampl->ClearCalcList();
@@ -367,15 +367,15 @@ int Single_Process::Tests() {
   --------------------------------------------------- */
 #ifndef Explicit_Pols 
   Vec4D gauge(sqrt(3.),1.,1.,1.);
-  if (m_nout==4) gauge = p_moms[4];
-  if (m_nout==5) gauge = p_moms[4];
+  if (m_nout==4) gauge = p_momenta[4];
+  if (m_nout==5) gauge = p_momenta[4];
   //?????????
-  if (m_nout==6) gauge = p_moms[4];  
-  m_pol.Reset_Gauge_Vectors(m_nin+m_nout,p_moms,gauge);
+  if (m_nout==6) gauge = p_momenta[4];  
+  m_pol.Reset_Gauge_Vectors(m_nin+m_nout,p_momenta,gauge);
 #else
   p_BS->Setk0(1);
 #endif
-  p_BS->CalcEtaMu(p_moms);
+  p_BS->CalcEtaMu(p_momenta);
   number++;
   msg.Debugging()<<number<<" :";
 
@@ -403,7 +403,7 @@ int Single_Process::Tests() {
     }
   }
 
-  M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
+  M2g    *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
   m_iresult  = M2g;
 
   p_ampl->ClearCalcList();  
@@ -434,7 +434,7 @@ int Single_Process::Tests() {
       p_shand->Initialize(p_ampl->GetRealGraphNumber(),p_hel->MaxHel());
       (p_shand->Get_Generator())->Reset();
   
-      M2 = operator()(p_moms);
+      M2 = operator()(p_momenta);
       gauge_test = string_test = 0;
     }
     if (!ATOOLS::IsEqual(M2,M2g)) {
@@ -500,7 +500,7 @@ int Single_Process::Tests() {
 	}
       }
       msg.Debugging()<<endl;
-      M2S *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
+      M2S *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
       if (!ATOOLS::IsEqual(M2g,M2S)) {
 	msg.Out()<<"WARNING: String test not satisfied: "
 		 <<M2g<<" vs. "<<M2S<<"  difference:"<<abs(M2g/M2S-1.)*100.<<"%"<<endl;
@@ -551,7 +551,7 @@ int Single_Process::CheckLibraries() {
 	msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
       }
       msg.Debugging()<<endl;
-      M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
+      M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
       if (Result()!=0.)
 	msg.Debugging()<<"Cross check (1): "<<abs(M2s/Result()-1.)*100.<<"%"<<"  : "
 		       <<M2s<<"/"<<Result()<<endl;
@@ -594,7 +594,7 @@ int Single_Process::CheckStrings(Single_Process* tproc)
     msg.Debugging()<<"*";ATOOLS::msg.Debugging().flush();
   }
   msg.Debugging()<<endl;
-  M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
+  M2s *= sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
   if (Result()!=0.)
     msg.Debugging()<<"Cross check (2): "<<abs(M2s/Result()-1.)*100.<<"%"<<"  : "
 		   <<M2s<<"/"<<Result()<<endl;
@@ -718,13 +718,13 @@ bool Single_Process::FoundMappingFile(std::string & MEname, std::string & PSname
 bool Single_Process::SetUpIntegrator() 
 {  
   if (m_nin==2) {
-    if ( (p_fl[0].Mass() != p_isr->Flav(0).Mass()) ||
-	 (p_fl[1].Mass() != p_isr->Flav(1).Mass()) ) p_isr->SetPartonMasses(p_fl);
+    if ( (p_flavours[0].Mass() != p_isrhandler->Flav(0).Mass()) ||
+	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
     if (CreateChannelLibrary()) {
-      if (p_ps->CreateIntegrators()) return 1;
+      if (p_pshandler->CreateIntegrators()) return 1;
     }
   }
-  if (m_nin==1) return p_ps->CreateIntegrators();
+  if (m_nin==1) return p_pshandler->CreateIntegrators();
   return 0;
 }
 
@@ -732,10 +732,10 @@ bool Single_Process::CreateChannelLibrary()
 {
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
-  if (m_nin>1)  newch = p_psgen->Construct(p_ps->FSRIntegrator(),m_ptypename,m_pslibname,p_fl,this); 
+  if (m_nin>1)  newch = p_psgen->Construct(p_pshandler->FSRIntegrator(),m_ptypename,m_pslibname,p_flavours,this); 
 
   if (newch>0) {
-    msg.Error()<<p_ps->NumberOfFSRIntegrators()<<" new Channels produced for "<<m_pslibname<<" ! "<<endl
+    msg.Error()<<p_pshandler->NumberOfFSRIntegrators()<<" new Channels produced for "<<m_pslibname<<" ! "<<endl
 	       <<"After program termination please enter \"make install\" and rerun !"<<endl;
     return 0;
   }
@@ -758,13 +758,13 @@ void Single_Process::Minimize()
   if (p_ampl)     {delete p_ampl; p_ampl=0;}
   if (p_psgen)    {delete p_psgen; p_psgen=0;}
 
-  if (p_moms)     { delete [] p_moms;  p_moms     = 0; }
-  if (p_sel)      { delete p_sel;      p_sel      = 0; }
-  if (p_ps)       { delete p_ps;       p_ps       = 0; }
+  if (p_momenta)     { delete [] p_momenta;  p_momenta     = 0; }
+  if (p_selector)      { delete p_selector;      p_selector      = 0; }
+  if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
 }
 
 void Single_Process::Empty() {
-  if (p_ps)          { delete p_ps; p_ps = 0; } 
+  if (p_pshandler)          { delete p_pshandler; p_pshandler = 0; } 
   if (p_partner != this) {
     return;
   }
@@ -828,16 +828,19 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
       from.close();
-      p_ps->ReadIn(_resdir+string("/MC_")+m_name);
-      if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
-      if (p_ps->ISRIntegrator()  != 0) p_ps->ISRIntegrator()->Print();
-      if (p_ps->FSRIntegrator()  != 0) p_ps->FSRIntegrator()->Print();
-      p_ps->InitIncoming();
+      p_pshandler->ReadIn(_resdir+string("/MC_")+m_name);
+      if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
+      if (p_pshandler->ISRIntegrator()  != 0) p_pshandler->ISRIntegrator()->Print();
+      if (p_pshandler->FSRIntegrator()  != 0) p_pshandler->FSRIntegrator()->Print();
+      p_pshandler->InitIncoming();
 
-      if (m_totalerr<=p_ps->Error()*m_totalxs) return 1;
+      if (m_totalerr<=p_pshandler->Error()*m_totalxs) return 1;
     }
   }
-  m_totalxs = p_ps->Integrate();
+  m_resultpath=_resdir;
+  m_resultfile=filename;
+  ATOOLS::Exception::AddObject(this);
+  m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
   if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
     msg.Error()<<"Result of PS-Integrator and internal summation to not coincide!"<<endl
@@ -853,12 +856,28 @@ bool Single_Process::CalculateTotalXSec(std::string _resdir) {
 		  <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
 		  <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
 		  <<"       max : "<<m_max<<endl;
-      p_ps->WriteOut(_resdir+string("/MC_")+m_name);
+      p_pshandler->WriteOut(_resdir+string("/MC_")+m_name);
       to.close();
     }
+    ATOOLS::Exception::RemoveObject(this);
     return 1;
   }
+  ATOOLS::Exception::RemoveObject(this);
   return 0;      
+}
+
+void Single_Process::Terminate()
+{
+  if (m_resultpath.length()==0 && m_resultfile.length()==0) return;
+  std::ofstream to;
+  to.open(m_resultfile.c_str(),ios::out);
+  WriteOutXSecs(to);
+  msg.Events()<<"Store result : xs for "<<m_name<<" : "
+	      <<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb"
+	      <<" +/- "<<m_totalerr/m_totalxs*100.<<"%,"<<endl
+	      <<"       max : "<<m_max<<endl;
+  p_pshandler->WriteOut(m_resultpath+string("/MC_")+m_name);
+  to.close();
 }
 
 void Single_Process::WriteOutXSecs(std::ofstream & _to)    
@@ -891,10 +910,10 @@ bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) {
     delete res;
 
     if (calc) {
-      p_ps->ReadIn(m_resdir+string("/MC_")+m_name);
-      if (p_ps->BeamIntegrator() != 0) p_ps->BeamIntegrator()->Print();
-      if (p_ps->ISRIntegrator()  != 0) p_ps->ISRIntegrator()->Print();
-      if (p_ps->FSRIntegrator()  != 0) p_ps->FSRIntegrator()->Print();
+      p_pshandler->ReadIn(m_resdir+string("/MC_")+m_name);
+      if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
+      if (p_pshandler->ISRIntegrator()  != 0) p_pshandler->ISRIntegrator()->Print();
+      if (p_pshandler->FSRIntegrator()  != 0) p_pshandler->FSRIntegrator()->Print();
     }
     return 1;
   }
@@ -913,7 +932,7 @@ bool Single_Process::PrepareXSecTables() {
     msg.Events()<<"Found "<<filename<<endl;
   }
 
-  m_totalxs = p_ps->Integrate();
+  m_totalxs = p_pshandler->Integrate();
   if (m_nin==2) m_totalxs /= ATOOLS::rpa.Picobarn();
 
   if (!(ATOOLS::IsZero((m_n*m_totalxs-m_totalsum)/(m_n*m_totalxs+m_totalsum)))) {
@@ -921,7 +940,7 @@ bool Single_Process::PrepareXSecTables() {
     msg.Error()<<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<endl;
   }
   SetTotalXS(1);
-  p_ps->WriteOut(m_resdir+string("/MC_")+m_name);
+  p_pshandler->WriteOut(m_resdir+string("/MC_")+m_name);
   if (m_totalxs>0.) return 1;
   return 0;
 }
@@ -942,19 +961,19 @@ void Single_Process::AddPoint(const double value) {
   if (value>m_save_max) m_save_max = value;
 }
 
-double Single_Process::Differential(ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
+double Single_Process::Differential(const ATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
 
 double Single_Process::Differential2() { 
-  if (p_isr->On()==0) return 0.;
+  if (p_isrhandler->On()==0) return 0.;
   return DSigma2(); 
 }
 
 
-double Single_Process::DSigma(ATOOLS::Vec4D* _moms,bool lookup)
+double Single_Process::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
 {
   m_last = m_lastdxs = 0.;
   for (int i=0;i<m_nin+m_nout;i++) {
-    if (_moms[i][0] < p_fl[i].PSMass()) return m_last = 0.;
+    if (_moms[i][0] < p_flavours[i].PSMass()) return m_last = 0.;
   }
   if (p_partner == this) {
     if (m_helsample) {
@@ -969,12 +988,12 @@ double Single_Process::DSigma(ATOOLS::Vec4D* _moms,bool lookup)
   }
   if (m_lastdxs <= 0.) return m_lastdxs = m_last = 0.;
   if (m_nin==2) {
-    m_lastlumi = p_isr->Weight(p_flin);
+    m_lastlumi = p_isrhandler->Weight(p_flin);
     int    pols[2] = {p_pl[0].type[0],p_pl[1].type[0]};
     double dofs[2] = {p_pl[0].factor[0],p_pl[1].factor[0]};
     if (p_pl[0].num>1) pols[0] = 99;
     if (p_pl[1].num>1) pols[1] = 99;
-    m_lastlumi *= p_beam->Weight(pols,dofs);
+    m_lastlumi *= p_beamhandler->Weight(pols,dofs);
   }
   else  m_lastlumi = 1.;
 
@@ -982,15 +1001,15 @@ double Single_Process::DSigma(ATOOLS::Vec4D* _moms,bool lookup)
 }
 
 double Single_Process::DSigma2() { 
-  if ((p_flin[0]==p_flin[1]) || (p_isr->On()==0) ) return 0.;
+  if ((p_flin[0]==p_flin[1]) || (p_isrhandler->On()==0) ) return 0.;
   if (p_partner == this) {
   }
-  double tmp = m_Norm * m_lastdxs * p_isr->Weight2(p_flin); 
+  double tmp = m_Norm * m_lastdxs * p_isrhandler->Weight2(p_flin); 
   m_last    += tmp;
   return tmp;
 }
 
-double Single_Process::operator()(ATOOLS::Vec4D * mom)
+double Single_Process::operator()(const ATOOLS::Vec4D * mom)
 {
   double M2 = 0.;
 
@@ -1003,7 +1022,10 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
   
   m_pol.Set_Gauge_Vectors(m_nin+m_nout,mom,gauge);
 #endif
-  p_BS->CalcEtaMu(mom);
+  ATOOLS::Vec4D *cpmom = new ATOOLS::Vec4D[m_nvector];
+  for (size_t i=0;i<m_nvector;++i) cpmom[i]=mom[i];
+  p_BS->CalcEtaMu(cpmom);
+  delete [] cpmom;
 
   double helvalue;
   if (p_shand->Is_String()) {
@@ -1026,14 +1048,14 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
     p_ampl->ClearCalcList();
   }
 
-  return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS));
+  return M2 * sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS));
 }
 
 
-bool   Single_Process::OneEvent(double _mass) { return p_ps->OneEvent(_mass); }
-bool   Single_Process::SameEvent()            { return p_ps->SameEvent(); }
-ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent()     { return p_ps->WeightedEvent(); }
-ATOOLS::Blob_Data_Base * Single_Process::SameWeightedEvent() { return p_ps->SameWeightedEvent(); }
+bool   Single_Process::OneEvent(double _mass) { return p_pshandler->OneEvent(_mass); }
+bool   Single_Process::SameEvent()            { return p_pshandler->SameEvent(); }
+ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent()     { return p_pshandler->WeightedEvent(); }
+ATOOLS::Blob_Data_Base * Single_Process::SameWeightedEvent() { return p_pshandler->SameWeightedEvent(); }
 
 
 
@@ -1168,7 +1190,7 @@ void Single_Process::OptimizeHelicityWeights()
 }
 
 
-double Single_Process::operator()(ATOOLS::Vec4D * mom,const int hel)
+double Single_Process::operator()(const ATOOLS::Vec4D * mom,const int hel)
 {
   if (!p_shand->Is_String()) {
     msg.Error()<<"Error in Single_Process::operator()(ATOOLS::Vec4D * p,int hel)"<<std::endl
@@ -1186,14 +1208,17 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom,const int hel)
   m_pol.Set_Gauge_Vectors(m_nin+m_nout,mom,gauge);
 #endif
 
-  p_BS->CalcEtaMu(mom);
+  ATOOLS::Vec4D *cpmom = new ATOOLS::Vec4D[m_nvector];
+  for (size_t i=0;i<m_nvector;++i) cpmom[i]=mom[i];
+  p_BS->CalcEtaMu(cpmom);
+  delete [] cpmom;
   p_shand->Calculate();
 
   int acthel = m_helnumbers[hel];
 
   double M2  = p_ampl->Differential(acthel) * 
                p_hel->PolarizationFactor(acthel) * 
-               sqr(m_pol.Massless_Norm(m_nin+m_nout,p_fl,p_BS))/m_helalphas[hel]; 
+               sqr(m_pol.Massless_Norm(m_nin+m_nout,p_flavours,p_BS))/m_helalphas[hel]; 
 
   AddToHelicity(M2,hel);
   return M2;

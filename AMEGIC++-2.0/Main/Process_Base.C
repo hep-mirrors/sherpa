@@ -26,10 +26,10 @@ using namespace std;
   ------------------------------------------------------------------------------*/
 
 Process_Base::Process_Base(): 
-  m_gen_str(3),p_b(0),m_nvec(0),m_nin(0),m_nout(0),p_fl(0),p_flin(0),p_flout(0),
-  p_pl(0),p_plin(0),p_plout(0),p_moms(0),p_ps(0),p_beam(0),p_isr(0), 
-  p_sel(0),p_selected(0),
-  m_rfactor(1.), m_swaped(0), p_psgen(0)
+  Integrable_Base(0,0),
+  m_gen_str(3),p_b(0),p_flin(0),p_flout(0),
+  p_pl(0),p_plin(0),p_plout(0), 
+  m_rfactor(1.), p_psgen(0)
 {
   m_atoms=1;
   m_analyse=m_tables=0;
@@ -42,7 +42,7 @@ Process_Base::Process_Base():
   m_asscale=sqr(rpa.gen.Ecms());
   m_facscale=sqr(rpa.gen.Ecms());
   m_scalefactor=1.;
-  m_isrthreshold=0.;
+  m_threshold=0.;
 }
 
 
@@ -53,24 +53,22 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 			   int _scalescheme,int _kfactorscheme,double _scalefactor,double _scale,
 			   Pol_Info * _pl,
 			   int _nex,ATOOLS::Flavour * _ex_fl) :
-  m_nin(_nin), m_nout(_nout), m_nvec(_nin+_nout), m_nex(_nex),m_gen_str(_gen_str),
+  Integrable_Base(_nin,_nout,_fl,_scalescheme,_kfactorscheme,_scalefactor,_beam,_isr),
+  m_nex(_nex),m_gen_str(_gen_str),
   m_orderQCD(_orderQCD), m_orderEW(_orderEW),m_nstrong(0),m_neweak(0),
-  p_isr(_isr), p_beam(_beam), 
-  p_selected(this), p_ex_fl(_ex_fl),p_moms(NULL), 
-  m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),m_asscale(_scale),
-  m_facscale(_scale),m_n(0), m_totalxs(0.), m_totalerr(0.), m_totalsum(0.), m_totalsumsqr(0.), m_rfactor(1.),
-  m_last(0.), m_lastdxs(0.), m_max(0.), m_lastlumi(1.),
-  m_atoms(0), m_analyse(0), m_tables(0), m_swaped(0), p_psgen(0)
+  p_ex_fl(_ex_fl),m_asscale(_scale),
+  m_facscale(_scale), m_rfactor(1.),
+  m_atoms(0), m_analyse(0), m_tables(0), p_psgen(0)
 {
   p_flin    = new Flavour[m_nin];
   p_flout   = new Flavour[m_nout];  
   p_plin    = new Pol_Info[m_nin];
   p_plout   = new Pol_Info[m_nout]; 
   
-  p_fl = 0;
+  p_flavours = 0;
   p_pl = 0;
-  p_ps = 0;
-  p_sel = 0;
+  p_pshandler = 0;
+  p_selector = 0;
   
   for (short int i=0;i<m_nin;i++) {
     p_flin[i]  = _fl[i];
@@ -94,15 +92,12 @@ Process_Base::Process_Base(int _nin,int _nout,ATOOLS::Flavour * _fl,
 
 
 Process_Base::~Process_Base() {
-  if (p_fl)       { delete [] p_fl;    p_fl       = 0; }
   if (p_flin)     { delete [] p_flin;  p_flin     = 0; }
   if (p_flout)    { delete [] p_flout; p_flout    = 0; }
   if (p_pl)       { delete [] p_pl;    p_pl       = 0; }
   if (p_plin)     { delete [] p_plin;  p_plin     = 0; }
   if (p_plout)    { delete [] p_plout; p_plout    = 0; }
-  if (p_moms)     { delete [] p_moms;  p_moms     = 0; }
-  if (p_sel)      { delete p_sel;      p_sel      = 0; }
-  if (p_ps)       { delete p_ps;       p_ps       = 0; }
+  if (p_pshandler)       { delete p_pshandler;       p_pshandler       = 0; }
 }
 
 
@@ -447,7 +442,7 @@ void Process_Base::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
 	       && (chname!=string("Sarge")) && (chname!=string("Decay2-Channel 1")) ) { 
 	    next   = chname.find(string("--"));
 	    chname = chname.substr(next+2);
-	    sc     = (*_proc)[i]->PSGenerator()->SetChannel(m_nin,m_nout,p_fl,chname);
+	    sc     = (*_proc)[i]->PSGenerator()->SetChannel(m_nin,m_nout,p_flavours,chname);
 	    sc->SetName(((*_proc)[i]->FSRIntegrator(j))->Name());
 	    _fsr->Add( sc );
 	  }
@@ -494,17 +489,17 @@ void Process_Base::SetName(string _name)                { m_name    = _name;   }
 void Process_Base::SetResDir(string _resdir)            { m_resdir  = _resdir; }
 void Process_Base::SetAtoms(bool _atoms)                { m_atoms   = _atoms;  }
 void Process_Base::SetTables(bool _tables)              { m_tables  = _tables; }
-void Process_Base::SetBeam(Beam_Spectra_Handler * _beam){ p_beam    = _beam;   }
-void Process_Base::SetISR(ISR_Handler * _isr)           { p_isr     = _isr;    }
-void Process_Base::SetSelector(Selector_Base * _sel)    { p_sel     = _sel;    }
-void Process_Base::SetMomenta(ATOOLS::Vec4D * _moms)  { p_moms    = _moms;   }
+void Process_Base::SetBeam(Beam_Spectra_Handler * _beam){ p_beamhandler    = _beam;   }
+void Process_Base::SetISR(ISR_Handler * _isr)           { p_isrhandler     = _isr;    }
+void Process_Base::SetSelector(Selector_Base * _sel)    { p_selector     = _sel;    }
+void Process_Base::SetMomenta(ATOOLS::Vec4D * _moms)  { p_momenta    = _moms;   }
 void Process_Base::SetNStrong(int _nstrong)             { m_nstrong = _nstrong;}
 void Process_Base::SetNEWeak(int _neweak)               { m_neweak  = _neweak; }
 void Process_Base::SetTotal(double _total)              { m_totalxs = _total;  } 
 void Process_Base::SetMax(double _max)                  { m_max     = _max;    } 
 void Process_Base::SetMaxJetNumber(int max)             { m_maxjetnumber  = max;    } 
 void Process_Base::SetScale(double _scale)              { m_asscale=m_facscale=_scale;  } 
-void Process_Base::SetISRThreshold(double _isrthreshold){ m_isrthreshold  = _isrthreshold;}
+void Process_Base::SetISRThreshold(double threshold)    { m_threshold  = threshold;}
 
 /*------------------------------------------------------------------------------
 
@@ -522,7 +517,7 @@ void Process_Base::RescaleXSec(double fac) {
 }
 
 
-double Process_Base::Scale(ATOOLS::Vec4D * _p) {
+double Process_Base::Scale(const ATOOLS::Vec4D * _p) {
   if (m_nin==1) return _p[0].Abs2();
   if (m_nin!=2) {
     ATOOLS::msg.Error()<<"Error in Process_Base::Scale. "
@@ -541,8 +536,8 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
     break;
   case 2  :
     if (m_nin+m_nout==4) {
-      double t = (_p[0]-_p[2]).Abs2()-(ATOOLS::sqr(p_fl[2].PSMass())+ATOOLS::sqr(p_fl[3].PSMass()))/2.;
-      double u = (_p[0]-_p[3]).Abs2()-(ATOOLS::sqr(p_fl[2].PSMass())+ATOOLS::sqr(p_fl[3].PSMass()))/2.;
+      double t = (_p[0]-_p[2]).Abs2()-(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
+      double u = (_p[0]-_p[3]).Abs2()-(ATOOLS::sqr(p_flavours[2].PSMass())+ATOOLS::sqr(p_flavours[3].PSMass()))/2.;
       pt2 = 4.*s*t*u/(s*s+t*t+u*u);
     }
     else {
@@ -567,7 +562,7 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
     else {
       pt2 = ATOOLS::sqr(_p[m_nin][1])+ATOOLS::sqr(_p[m_nin][2]);
       for (int i=m_nin+1;i<m_nin+m_nout;++i) {
-	if (p_fl[i].Strong())
+	if (p_flavours[i].Strong())
 	  pt2 =  ATOOLS::Min(pt2,ATOOLS::sqr(_p[i][1])+ATOOLS::sqr(_p[i][2]));
       }
     }
@@ -582,10 +577,10 @@ double Process_Base::Scale(ATOOLS::Vec4D * _p) {
     pt2 = m_asscale;
 
     // if highest number of jets
-    //cout<<" Scale : "<<pt2<<" "<<m_nout<<" vs. "<<m_maxjetnumber<<" ("<<p_sel->Name()<<")"<<endl;
+    //cout<<" Scale : "<<pt2<<" "<<m_nout<<" vs. "<<m_maxjetnumber<<" ("<<p_selector->Name()<<")"<<endl;
     if (m_nout==m_maxjetnumber) {
-      if (p_sel->Name()=="Combined_Selector") {
-	Selector_Base * jf = ((Combined_Selector*)p_sel)->GetSelector("Jetfinder");
+      if (p_selector->Name()=="Combined_Selector") {
+	Selector_Base * jf = ((Combined_Selector*)p_selector)->GetSelector("Jetfinder");
 	if (jf) {
 	  pt2=jf->ActualValue()[0]*sqr(rpa.gen.Ecms());
 	  //	  cout<<" value="<<pt2<<endl;
@@ -646,11 +641,7 @@ double Process_Base::KFactor(double _scale) {
   
   ------------------------------------------------------------------------------*/
 
-int                     Process_Base::Nin()                          { return m_nin; }
-int                     Process_Base::Nout()                         { return m_nout; }
-int                     Process_Base::Nvec()                         { return m_nvec; }
-Flavour               * Process_Base::Flavs()                        { return p_fl; }
-Vec4D                 * Process_Base::Momenta()                      { return p_moms; }
+double                  Process_Base::Scale()                        { return m_asscale; }
 int                     Process_Base::NStrong()                      { return m_nstrong; }
 int                     Process_Base::NEWeak()                       { return m_neweak; }
 string                  Process_Base::Name()                         { return m_name; }
@@ -661,50 +652,37 @@ bool                    Process_Base::Tables()                       { return m_
 int                     Process_Base::NumberOfDiagrams()             { return 0; }
 Point                 * Process_Base::Diagram(int i)                 { return 0; }
 bool                    Process_Base::IsFreeOfFourVertex(Point * _p) { return 1; }
-Beam_Spectra_Handler  * Process_Base::Beam()                         { return p_beam;     }
-ISR_Handler           * Process_Base::ISR()                          { return p_isr;      }
-Selector_Base         * Process_Base::Selector()                     { return p_sel;      }
 Phase_Space_Generator * Process_Base::PSGenerator()                  { return p_psgen; }
-double                  Process_Base::Scale()                        { return m_asscale; }
 double                  Process_Base::FactorisationScale()           { return m_facscale; }
-double                  Process_Base::Total()                        { return m_totalxs; }
-double                  Process_Base::TotalError()                   { return m_totalerr; }
-double                  Process_Base::Max()                          { return m_max; }
-double                  Process_Base::Last()                         { return m_last; }
-double                  Process_Base::LastXS()                       { return m_lastdxs; }
-double                  Process_Base::LastLumi()                     { return m_lastlumi; }
-
-double                  Process_Base::ISRThreshold()                 { return m_isrthreshold;}
-int                     Process_Base::InSwaped()                     { return m_swaped;}
 
 int                     Process_Base::ISRNumber()                                        { return 0; }
 int                     Process_Base::BeamNumber()                                       { return 0; }
 void                    Process_Base::ISRInfo(int,int &,double &,double &)              { return; }
 void                    Process_Base::BeamInfo(int,int &,double &,double &)             { return; }
 
-void Process_Base::BeamChannels(int i,Channel_Info & ci) { p_ps->BeamChannels(i,ci); }
-void Process_Base::ISRChannels(int i,Channel_Info & ci)  { p_ps->ISRChannels(i,ci); }
-int              Process_Base::NumberOfBeamIntegrators() { return p_ps->NumberOfBeamIntegrators(); }
-int              Process_Base::NumberOfISRIntegrators()  { return p_ps->NumberOfISRIntegrators(); }
-int              Process_Base::NumberOfFSRIntegrators()  { return p_ps->NumberOfFSRIntegrators(); }
-Multi_Channel *  Process_Base::FSRIntegrator()           { return p_ps->FSRIntegrator(); }
-Single_Channel * Process_Base::FSRIntegrator(int i)      { return p_ps->FSRIntegrator(i); }
+void Process_Base::BeamChannels(int i,Channel_Info & ci) { p_pshandler->BeamChannels(i,ci); }
+void Process_Base::ISRChannels(int i,Channel_Info & ci)  { p_pshandler->ISRChannels(i,ci); }
+int              Process_Base::NumberOfBeamIntegrators() { return p_pshandler->NumberOfBeamIntegrators(); }
+int              Process_Base::NumberOfISRIntegrators()  { return p_pshandler->NumberOfISRIntegrators(); }
+int              Process_Base::NumberOfFSRIntegrators()  { return p_pshandler->NumberOfFSRIntegrators(); }
+Multi_Channel *  Process_Base::FSRIntegrator()           { return p_pshandler->FSRIntegrator(); }
+Single_Channel * Process_Base::FSRIntegrator(int i)      { return p_pshandler->FSRIntegrator(i); }
 
 void Process_Base::SwapInOrder() {
-  Flavour help = p_fl[0];
-  p_fl[0] = p_fl[1];
-  p_fl[1] = help;
-  Vec4D mom = p_moms[0];
-  p_moms[0] = p_moms[1];
-  p_moms[1] = mom;
+  Flavour help = p_flavours[0];
+  p_flavours[0] = p_flavours[1];
+  p_flavours[1] = help;
+  Vec4D mom = p_momenta[0];
+  p_momenta[0] = p_momenta[1];
+  p_momenta[1] = mom;
   m_swaped = 1;
 }
 
 void Process_Base::RestoreInOrder() {
   if (m_swaped) {
-    Flavour help = p_fl[0];
-    p_fl[0] = p_fl[1];
-    p_fl[1] = help;
+    Flavour help = p_flavours[0];
+    p_flavours[0] = p_flavours[1];
+    p_flavours[1] = help;
     m_swaped = 0;
   }
 }
@@ -713,6 +691,4 @@ long int Process_Base::Points()
 { 
   return m_n; 
 }
-
-
 
