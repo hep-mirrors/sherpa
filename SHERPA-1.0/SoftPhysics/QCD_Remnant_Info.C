@@ -29,7 +29,7 @@ std::ostream &SHERPA::operator<<(std::ostream &ostr,QCD_Remnant_Info &info)
 
 QCD_Remnant_Info::QCD_Remnant_Info(ATOOLS::Particle *const particle): 
   p_finalstate(NULL),
-  m_anti((unsigned int)(particle->Flav().IsAnti()^particle->Flav().IsDiQuark()))
+  m_anti(particle->Flav().IsAnti()^particle->Flav().IsDiQuark())
 { 
   for (short unsigned int i=0;i<2;++i) { 
     p_connected[i]=NULL; 
