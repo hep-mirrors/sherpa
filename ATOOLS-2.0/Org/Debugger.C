@@ -2,6 +2,7 @@
 #include "Debugger.H"
 #undef COMPILE__Debugger
 
+#include "Data_Reader.H"
 #include "Message.H"
 #include "Type.H"
 
@@ -9,6 +10,7 @@ using namespace ATOOLS;
 
 std::vector<Debugger*> Debugger::s_objects=std::vector<Debugger*>();
 std::ostream *Debugger::s_output=&std::cout;
+unsigned int Debugger::s_print=1;
 
 Debugger ATOOLS::dbg=Debugger(0,"global");
 
@@ -32,16 +34,42 @@ Debugger::~Debugger()
   }
 }
 
-void Debugger::PrintStatus(const std::string &type)
+void Debugger::SetOutputMode(const unsigned int print)
 {
+  if (print!=std::numeric_limits<unsigned int>::max()) {
+    s_print=print;
+    return;
+  }
+  Data_Reader *reader = new Data_Reader();
+  if (!reader->ReadFromFile(s_print,"DEBUGGING_OUTPUT","")) s_print=1;
+  delete reader;
+}
+
+void Debugger::PrintStatus(const std::string &type,const std::string &function)
+{
+  if (s_print==0) return;
   *s_output<<om::bold<<"Debugging output for "<<om::reset<<"\""
-	   <<om::green<<type<<om::reset<<"\""<<om::bold<<": {"
+	   <<om::green<<type<<om::reset<<"\""<<om::bold<<" at '"
+	   <<om::blue<<function<<om::reset<<om::bold<<"': {"
 	   <<om::reset<<std::endl;
   for (std::vector<Debugger*>::iterator oit=s_objects.begin();
        oit!=s_objects.end();++oit) {
     if ((*oit)->Type()==type || type.length()==0) *s_output<<*(*oit)<<std::endl;
   }
   *s_output<<om::bold<<"}"<<om::reset<<std::endl;
+}
+
+void Debugger::PrintMethodInfo(const std::string &method)
+{
+  if (s_print==0) return;
+  *s_output<<om::blue<<method<<om::reset<<std::endl;
+}
+
+void Debugger::PrintLocalInfo(const std::string &method,const std::string &info)
+{
+  if (s_print==0) return;
+  *s_output<<om::blue<<method<<om::reset<<":("	
+	   <<om::green<<"\""<<info<<"\""<<om::reset<<")"<<std::endl;
 }
 
 std::ostream &ATOOLS::operator<<(std::ostream &ostr,const Debugger &debugger)

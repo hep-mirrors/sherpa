@@ -121,5 +121,12 @@ namespace ATOOLS {
 #define msg_Tracking() if (ATOOLS::msg.LevelIsTracking()) ATOOLS::msg.Out()
 #define msg_Debugging() if (ATOOLS::msg.LevelIsDebugging()) ATOOLS::msg.Out()
 
+#define PRINT_METHOD \
+  std::cout<<om::blue<<method<<om::reset<<std::endl
+
+#define PRINT_INFO(INFO) \
+  std::cout<<om::blue<<__FUNCTION__<<om::reset<<":(" \
+	   <<om::green<<"\""<<INFO<<"\""<<om::reset<<")"<<std::endl
+
 #endif
 

@@ -1,6 +1,7 @@
 #ifndef Debugger_H
 #define Debugger_H
 
+#include "Scaling.H"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -8,7 +9,7 @@
 
 namespace ATOOLS {
 
-  template <class ValueType>
+  template <typename ValueType>
   class Value_Carrier;
 
   class Value_Carrier_Base {
@@ -19,11 +20,11 @@ namespace ATOOLS {
   public:
   
     // member functions
-    template <class ValueType>
+    template <typename ValueType>
     Value_Carrier<ValueType> *UpCast();
 
-    template <class ValueType> ValueType *Address();
-    template <class ValueType> ValueType  Value();
+    template <typename ValueType> ValueType *Address();
+    template <typename ValueType> ValueType  Value();
 
     virtual void PrintAddress(std::ostream &ostr) const = 0;
     virtual void PrintValue(std::ostream &ostr) const = 0;
@@ -32,7 +33,7 @@ namespace ATOOLS {
 
   };// end of class Value_Carrier_Base
 
-  template <class ValueType>
+  template <typename ValueType>
   class Value_Carrier: public Value_Carrier_Base {
   public:
 
@@ -62,6 +63,8 @@ namespace ATOOLS {
     static std::vector<Debugger*>  s_objects;
     static std::ostream           *s_output;
 
+    static unsigned int s_print;
+
     long unsigned int m_address;
     std::string       m_name, m_type;
 
@@ -78,18 +81,22 @@ namespace ATOOLS {
     ~Debugger();
 
     // members
-    static void PrintStatus(const std::string &type="");
+    static void PrintStatus(const std::string &type="",const std::string &function="");
+    static void PrintMethodInfo(const std::string &method);
+    static void PrintLocalInfo(const std::string &method,const std::string &info);
 
-    template <class ValueType> void AddValue(const std::string &spec,ValueType &value);
+    static void SetOutputMode(const unsigned int print);
+
+    template <typename ValueType> void AddValue(const std::string &spec,ValueType &value);
 
     // inline functions
     inline std::map<std::string,Value_Carrier_Base*> &Values() { return m_values; }
 
     inline Value_Carrier_Base *Value(const std::string &spec) { return m_values[spec]; }
 
-    template <class ValueType> inline ValueType *Address(const std::string &spec)
+    template <typename ValueType> inline ValueType *Address(const std::string &spec)
     { return m_values[spec]->Address<ValueType>(); }
-    template <class ValueType> inline ValueType  Value(const std::string &spec)
+    template <typename ValueType> inline ValueType  Value(const std::string &spec)
     { return m_values[spec]->Value<ValueType>();   }
     
     inline const std::string &Type()              { return m_type; }
@@ -107,7 +114,14 @@ namespace ATOOLS {
 
 #ifndef COMPILE__Debugger
 #define Debugger() Debugger((long unsigned int)this,__PRETTY_FUNCTION__)
+#define dbg ATOOLS::dbg
+#define SET_DEBUG_MODE dbg.SetOutputMode(std::numeric_limits<unsigned int>::max())
 #endif
+
+#define DEBUG_INFO dbg.PrintStatus("",__PRETTY_FUNCTION__)
+#define SPECIAL_INFO(INFO) dbg.PrintStatus(INFO,__PRETTY_FUNCTION__)
+#define METHOD_INFO dbg.PrintMethodInfo(__PRETTY_FUNCTION__)
+#define LOCAL_INFO(INFO) dbg.PrintLocalInfo(__FUNCTION__,ToString(INFO))
 
 #include "Debugger.inl.H"
 
