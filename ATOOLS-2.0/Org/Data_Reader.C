@@ -160,21 +160,23 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
   if(((pos=Find(inputstring,parameter,length))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+length)).length()>0)) {
     std::string cur=HighlightSeparator(inputstring);
-    std::string tempstring=ReplaceTags(cur);
-    if (typeid(value)==typeid(int) || 
-	typeid(value)==typeid(unsigned int) ||
-	typeid(value)==typeid(float) ||
-	typeid(value)==typeid(double)) {
-      if (!m_allownans) {
- 	if ((pos=tempstring.find("nan"))!=std::string::npos)
- 	  tempstring.replace(pos,3,"1");
- 	else if ((pos=tempstring.find("inf"))!=std::string::npos) 
- 	  tempstring.replace(pos,3,"1");
+    cur=ReplaceTags(cur);
+    cur=KillBlanks(cur);
+    if (typeid(value)==typeid(int) || typeid(value)==typeid(unsigned int) ||
+	typeid(value)==typeid(float) ||	typeid(value)==typeid(double)) {
+      for (size_t i=0;i<Blank().size();++i) {
+	size_t pos=cur.find(Blank()[i]);
+	if (pos!=std::string::npos) cur=cur.substr(0,pos);
       }
-      if (Interprete()) tempstring=Interpreter()->
-	  Interprete(StripEscapes(tempstring));
+      if (!m_allownans) {
+ 	if ((pos=cur.find("nan"))!=std::string::npos) 
+	  cur.replace(pos,3,"1");
+ 	else if ((pos=cur.find("inf"))!=std::string::npos) 
+ 	  cur.replace(pos,3,"1");
+      }
+      if (Interprete()) cur=Interpreter()->Interprete(StripEscapes(cur));
     }
-    value=ATOOLS::ToType<Read_Type>(tempstring);
+    value=ATOOLS::ToType<Read_Type>(cur);
 #ifdef DEBUG__Data_Reader
     std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<typeid(value).name()<<" )"<<std::endl;
 #endif
