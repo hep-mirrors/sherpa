@@ -315,11 +315,12 @@ ATOOLS::Blob_Data_Base *Phase_Space_Handler::SameWeightedEvent()
 bool Phase_Space_Handler::OneEvent(const double mass,const int mode)
 {
   PROFILE_HERE;
-  const bool use_overflow=true;
+  bool use_overflow=true;
+  if (m_nin==1) use_overflow=false;
   if ((mass<0) && (!m_initialized)) InitIncoming();
   if ((mass>0) && (m_nin==1)) InitIncoming(mass);
   m_weight=1.;
-  double value;    
+  double value;
   for (int i=1;i<m_maxtrials+1;i++) {
     if (mode==0) {
       p_process->DeSelect();
