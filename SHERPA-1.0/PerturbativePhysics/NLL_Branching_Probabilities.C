@@ -18,7 +18,10 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace MODEL;
 
-Gamma_Lambda_Base::Gamma_Lambda_Base(BP::code mode,double lambda, MODEL::Running_AlphaS * runas, int nf): m_mode(mode),m_lambda(lambda),p_runas(runas) {
+Gamma_Lambda_Base::Gamma_Lambda_Base(BP::code mode,double lambda, 
+				     MODEL::Running_AlphaS * runas, int nf): 
+  m_mode(mode), m_lambda(lambda), p_runas(runas) 
+{
   m_powercorr=0;
   m_f2=0.;
   m_f3=0.;

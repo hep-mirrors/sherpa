@@ -38,17 +38,19 @@ void Hard_Decay_Handler::ReadInDecays()
     abort();
   }
 
-  char buffer[100];
+  char   buffer[100];
   string buf,number;
-  int pos,kfc;
+  int    kfc, pos;
   Decay_Table * dt = NULL;
-  Flavour flav;
+  Flavour     flav;
+  FlavourSet  decflavs;
   for(;from;) {
     from.getline(buffer,100);
     if (buffer[0] != '%' && strlen(buffer)>0) {
       buf    = string(buffer);
+      // Init decay table for another particle
       pos    = buf.find(string("Decays :")); 
-      if (pos>-1 && pos<(int)buf.length()) {
+      if (pos>-1 && pos<=buf.length()) {
 	buf  = buf.substr(pos+8);
 	while(buf.length()>0) {
 	  if (buf[0]==' ') buf = buf.substr(1);
@@ -65,15 +67,42 @@ void Hard_Decay_Handler::ReadInDecays()
 	dt   = new Decay_Table(Flavour(kf::code(int(abs(double(kfc))))));
 	m_decaytables.insert(dt);
       }
+
+      pos     = buf.find(string("forced channel :"));  
+      if (pos>-1 && pos<=buf.length()) {
+	decflavs.clear();
+	buf  = buf.substr(pos+16);
+	buf  = buf+string(" ");
+	while(buf.length()>0) {
+	  if (buf[0]==' ') buf = buf.substr(1);
+	  else {
+	    pos = buf.find(string(" "));
+	    MyStrStream sstream;
+	    sstream<<buf.substr(0,pos);
+	    sstream>>kfc;
+	    flav = Flavour(kf::code(int(abs(double(kfc)))));
+	    if (kfc<0) flav = flav.Bar();
+	    decflavs.insert(flav);
+	    buf = buf.substr(pos);
+	  }
+	}
+	if (dt) dt->SetSelectedChannel(decflavs);
+      }
+
+      // Check, if width of particle.dat is to be overwritten by total width as calculated
       pos     = buf.find(string("overwrite"));  
-      if (pos>-1 && pos<(int)buf.length() && (dt)) dt->SetOverwrite(); 
+      if (pos>-1 && pos<=buf.length()) dt->SetOverwrite(); 
+
+      // Check, if Breit Wigner smearing is to be applied in event generation
+      pos     = buf.find(string("Breit-Wigner on"));  
+      if (pos>-1 && pos<=buf.length()) dt->SetSmearing(); 
     }
   }
 }
 
 void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _model)
 {
-  Flavour flav;
+  Flavour    flav;
   for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
     if ((*dit)->Overwrite()) {
       if (_model->FillDecay((*dit))) { 
@@ -81,9 +110,7 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
       }
       else {
 	(*dit)->Flav().SetWidth(-1.);
-	if (!p_mehandler) {
-	  p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
-	}
+	if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
 	flav = (*dit)->Flav();
 	if (!p_mehandler->AddToDecays(flav)) {
 	  msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
@@ -93,23 +120,25 @@ void Hard_Decay_Handler::EvaluateWidths(std::string _pfile,MODEL::Model_Base * _
 	}
       }
     }
+    else if ((*dit)->FixedDecay()) {
+      if (!p_mehandler) p_mehandler = new Matrix_Element_Handler(m_path,_pfile,_model,NULL);
+      if (!p_mehandler->AddToDecays((*dit)->GetOneDecayChannel())) {
+	msg.Error()<<"Error in Hard_Decay_Handler::EvaluateWidths("<<_pfile<<")"<<endl
+		   <<"   Could not add "<<flav
+		   <<" to list of decays treated by ME_Handler. Abort run."<<endl;
+	abort();
+      }
+    }
   }
   if (p_mehandler->InitializeDecayTables()) p_mehandler->CalculateWidths();
-  cout<<"##########################################################"<<endl
-      <<"  Width : "<<flav<<" "<<flav.Width()<<endl;
 }
 
 
 void Hard_Decay_Handler::SetWidths(bool flag)
 {
   for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
-    if (!flag) {
-      if ((*dit)->Overwrite()) {
-	if ((*dit)->Flav().Width()<0.) p_mehandler->FillDecayTable((*dit),true);
-      }
-    }
+    if (!flag && (*dit)->Overwrite()) p_mehandler->FillDecayTable((*dit),true);
     if (flag && !(*dit)->Overwrite()) p_mehandler->FillDecayTable((*dit),false);
-    //if (rpa.gen.Tracking()) (*dit)->Output();
   }
 } 
 
@@ -119,7 +148,6 @@ bool Hard_Decay_Handler::InitializeAllHardDecays(std::string _pfile,MODEL::Model
   Flavour flav;
   for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
     flav = (*dit)->Flav();
-    cout<<"Check for "<<flav<<endl;
     if (p_mehandler->AddToDecays(flav)) newones = 1;
   }
   if (newones) {
@@ -149,12 +177,25 @@ double Hard_Decay_Handler::DefineSecondaryDecays(ATOOLS::Blob * _blob,bool _add)
     dptit->second = SpecifyHardDecay(dptit->first,rest);
     m_table.insert(make_pair(dptit->first,dptit->second));
   }
+  bool smearit;
   for (DPTIt dptit=dptable.begin();dptit!=dptable.end();++dptit) {
-    dptit->first->SetFinalMass(dptit->first->FinalMass(),rest);
+    smearit = false;
+    for (DecIt dit=m_decaytables.begin();dit!=m_decaytables.end();++dit) {
+      if ((*dit)->Flav()==dptit->first->Flav() ||
+	  (*dit)->Flav().Bar()==dptit->first->Flav()) {
+	if ((*dit)->Smearing()) smearit = true;
+      }
+    }
+    if (smearit) dptit->first->SetFinalMass(dptit->first->FinalMass(),rest);
+            else dptit->first->SetFinalMass(dptit->first->Flav().Mass());
     Mmin += dptit->first->FinalMass();
     rest -= dptit->first->FinalMass()-dptit->second->MinimalMass();
   }  
-  if (_add) p_tools->ShuffleMomenta(_blob->GetOutParticles());
+  if (_add) {
+    _blob->BoostInCMS();
+    p_tools->ShuffleMomenta(_blob->GetOutParticles());
+    _blob->BoostInLab();
+  }
   return Mmin;
 } 
 
@@ -168,11 +209,15 @@ bool Hard_Decay_Handler::PerformDecay(ATOOLS::Blob * _blob) {
       break;
     }
   }
-  //if (rpa.gen.Tracking()) dc->Output();
   p_mehandler->GenerateOneEvent(dc,part->FinalMass());
+  Poincare lab(_blob->InParticle(0)->Momentum());
+
   bool shuffle = false;
+  Vec4D mom;
   for (unsigned int i=0;i<p_mehandler->NDecOut();i++) {
-    _blob->OutParticle(i)->SetMomentum(p_mehandler->DecMomenta()[i+1]);
+    mom = p_mehandler->DecMomenta()[i+1];
+    lab.BoostBack(mom);
+    _blob->OutParticle(i)->SetMomentum(mom);
     if (!_blob->OutParticle(i)->Flav().IsStable()) shuffle = true;
   }
   if (shuffle) p_tools->ShuffleMomenta(_blob->GetOutParticles());
@@ -204,6 +249,7 @@ Decay_Channel * Hard_Decay_Handler::SpecifyHardDecay(ATOOLS::Particle * _part,do
 	if (barflag) flav = flav.Bar();
 	if (!flav.IsStable()) unstable = true;
 	particle->SetFlav(flav);
+	particle->SetInfo('H');
 	particle->SetProductionBlob(blob);
 	particle->SetNumber((long int)particle);
 	blob->AddToOutParticles(particle);

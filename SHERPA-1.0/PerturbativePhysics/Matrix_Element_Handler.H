@@ -58,7 +58,8 @@ namespace SHERPA {
 
     bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
     bool InitializeDecays(bool);
-    bool AddToDecays(ATOOLS::Flavour &);
+    bool AddToDecays(const ATOOLS::Flavour &);
+    bool AddToDecays(ATOOLS::Decay_Channel *);
     bool InitializeDecayTables(); 
     bool CalculateWidths();
     bool FillDecayTable(ATOOLS::Decay_Table *,bool); 

@@ -12,7 +12,6 @@ NLL_JetRate::NLL_JetRate(int njet ,double q0, double Q, int mass_flag) :
   p_deltaq(NULL), p_deltag(NULL), p_gammaq(NULL),  p_gammag(NULL),  p_gammaf(NULL), 
   p_deltaqm(NULL), p_deltagm(NULL),  p_gammaqm(NULL),  p_gammafm(NULL)
 {
-  std::cout<<" IntJetRate "<<std::endl;
   m_mode = nll::Rate;
   m_table =0;
 }
@@ -27,9 +26,9 @@ NLL_JetRate::~NLL_JetRate()
 
 void NLL_JetRate::Init() 
 {
-  std::cout<<" NLL_JetRate::Init "<<std::endl;
-  std::cout<<" qmin ="<<m_qmin<<std::endl;
-  std::cout<<" qmax ="<<m_qmax<<std::endl;
+  msg.Debugging()<<" NLL_JetRate::Init "<<std::endl
+		 <<" qmin ="<<m_qmin<<std::endl
+		 <<" qmax ="<<m_qmax<<std::endl;
   m_qmin_b=m_qmin;
   
   if (m_massive==0 || m_massive==1 || m_massive==2 || m_massive==3) {
@@ -92,10 +91,11 @@ void NLL_JetRate::InitIntegral(nll::code id, nll::code int_id, std::string name)
   //  fun->Init(*this,m_qmin,m_qmax,640);
   fun->Init(*this,m_qmin,m_qmax,180);
   integrals[name]=fun;
-  std::cout<<" "<<name<<"   done . ";
 
-  std::cout<<Integrate(id,m_qmax)<<" vs. "<<(*integrals[name])(m_qmax)
-      <<" and "<<Integrate(id,sqrt(0.5)*m_qmax)<<" vs. "<<(*integrals[name])(sqrt(0.5)*m_qmax)<<std::endl;
+  msg.Debugging()<<"NLL_JetRate::InitIntegral : "<<std::endl
+		 <<Integrate(id,m_qmax)<<" vs. "<<(*integrals[name])(m_qmax)
+		 <<" and "<<Integrate(id,sqrt(0.5)*m_qmax)<<" vs. "
+		 <<(*integrals[name])(sqrt(0.5)*m_qmax)<<std::endl;
 
 }
 
@@ -125,16 +125,15 @@ void NLL_JetRate::SetGammas(NLL_Branching_Probability_Base * gammaq ,NLL_Branchi
 void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
 {
   if (m_qmin!=m_qmin_b) {
-    std::cout<<" q0 changed from "<<m_qmin<<" to "<<m_qmin_b<<std::endl;
-    std::cout<<" deleting all integration tables "<<std::endl;
+    msg.Error()<<"Warning in NLL_JetRate::Rates : "<<std::endl
+	       <<"  q0 changed from "<<m_qmin<<" to "<<m_qmin_b<<std::endl
+	       <<"  deleting all integration tables "<<std::endl;
     for (Func_List::iterator i=integrals.begin(); i!=integrals.end();++i) 
       delete i->second;
     integrals.clear();
-    std::cout<<" creating new tables "<<std::endl;
     Init();
   }
 
-  std::cout<<" Calculating up to "<<m_njet<<" -Jet rate"<<std::endl;
   r2=r3=r4=r5=0.;
 
   if (m_njet<2) return;
@@ -162,7 +161,7 @@ void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
   // *** R_2^0 == tR_2^0
   if (m_massive==0 || m_massive==2 || m_massive==3) {
     r2   = sqr(sudq);
-    std::cout<<"  r2^0 = "<<r2<<std::endl;
+    //    std::cout<<"  r2^0 = "<<r2<<std::endl;
   }
 
   
@@ -170,14 +169,14 @@ void NLL_JetRate::Rates(double & r2, double & r3, double & r4, double & r5)
     sudqm = (*p_deltaqm)(m_qmax,m_qmin);
     // *** R_2^M == tR_2^M
     double r2M = sqr(sudqm);
-    std::cout<<"  r2^M = "<<r2M<<std::endl;
+    //    std::cout<<"  r2^M = "<<r2M<<std::endl;
     if (m_massive==1 || m_massive==4) r2=r2M;
     else {
       double sig1234 =  9418.8 + 7325.37+ 9418.8 + 7325.37;
       double sig5     = 9317.61;
 
       rb = sig5/(sig1234+sig5);
-      std::cout<<" rb = "<<rb<<std::endl;
+      //      std::cout<<" rb = "<<rb<<std::endl;
       // **** R_2 ****
       r2 = (1.-rb)*r2 + rb*r2M;
       std::cout<<"  r2   = "<<r2<<std::endl;

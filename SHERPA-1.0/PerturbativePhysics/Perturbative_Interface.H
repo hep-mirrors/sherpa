@@ -39,6 +39,7 @@ namespace SHERPA {
     virtual void CleanBlobs(ATOOLS::Blob_List *) {}; 
 
     virtual int  PerformShowers() = 0;
+    virtual int  PerformDecayShowers() = 0;
 
     double GetWeight() { return m_weight; }
     double GetScale()  { return m_scale;  }

@@ -82,7 +82,7 @@ namespace SHERPA {
     bool ClusterConfiguration(ATOOLS::Blob *,double=1.,double=1.);
     void CalculateWeight(double,double,double);
     void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);
-    void FillDecayTree(APACIC::Tree *);
+    void FillDecayTree(APACIC::Tree *,EXTRAXS::XS_Base *);
 
     int     SetColours(ATOOLS::Vec4D *, ATOOLS::Flavour *);
     int     SetDecayColours(ATOOLS::Vec4D *, ATOOLS::Flavour *,int,int);

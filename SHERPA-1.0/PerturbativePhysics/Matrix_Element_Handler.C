@@ -101,7 +101,7 @@ int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
   return 0;
 }
 
-bool Matrix_Element_Handler::AddToDecays(ATOOLS::Flavour & _flav) 
+bool Matrix_Element_Handler::AddToDecays(const ATOOLS::Flavour & _flav) 
 {
   switch (m_mode) {
   case 1 : return p_amegic->GetAllDecays()->AddToDecays(_flav);
@@ -109,13 +109,25 @@ bool Matrix_Element_Handler::AddToDecays(ATOOLS::Flavour & _flav)
   msg.Error()<<"Error in Matrix_Element_Handler::AddToDecays("<<_flav<<") : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
   abort();
+}
+
+bool Matrix_Element_Handler::AddToDecays(ATOOLS::Decay_Channel * _dec)
+{
+  switch (m_mode) {
+  case 1 : return p_amegic->GetAllDecays()->AddToDecays(_dec);
+  }
+  msg.Error()<<"Error in Matrix_Element_Handler::AddToDecays(";_dec->Output();
+  msg.Error()<<"   m_mode = "<<m_mode<<" Abort."<<endl;
+  abort();
 
 }
+
 
 bool Matrix_Element_Handler::InitializeDecayTables()
 {
   switch (m_mode) {
-  case 1 : return p_amegic->GetAllDecays()->InitializeDecayTables();
+  case 1 : 
+    return p_amegic->GetAllDecays()->InitializeDecayTables();
   }
   msg.Error()<<"Error in Matrix_Element_Handler::InitializeDecayTables() : "<<endl
 	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
@@ -151,10 +163,9 @@ bool Matrix_Element_Handler::FillDecayTable(ATOOLS::Decay_Table * _dt,bool _ow)
 
 bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice) 
 {
-  cout<<" scalechoice "<<scalechoice<<endl;
   switch (m_mode) { 
   case 1: 
-    m_readin = p_dataread->GetValue<string>("RESULT DIRECTORY",string(""));
+    m_readin = p_dataread->GetValue<string>("RESULT DIRECTORY",string("./Results"));
     if (scalechoice>0) p_amegic->Processes()->SetScale(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
     if (p_amegic->CalculateTotalXSec(m_readin)) {
       RescaleJetrates();
@@ -191,7 +202,7 @@ bool Matrix_Element_Handler::RescaleJetrates()
     sstr<<"xsections_"<<ecms<<".dat"<<endl;
     std::string filename;
     sstr>>filename;
-    cout<<" looking for "<<filename<<endl;
+    msg.Debugging()<<" looking for "<<filename<<endl;
     std::ofstream  rfile(filename.c_str(),std::ios::app);
     rfile<<"# ";
     for (int i=0; i<procs->Size();++i) {
@@ -323,18 +334,22 @@ std::string Matrix_Element_Handler::ProcessName()
   return string("Error - no process name!");
 }
 
+ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
+  switch (m_mode) {
+  case 1: return p_amegic->GetAllDecays()->Momenta();
+  }
+  return NULL;
+}
+
+
 ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
   switch (m_mode) {
   case 1: return p_amegic->Momenta();
   case 2: return p_simplexs->Momenta();
   }
-  return NULL;
-}
-
-ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
-  switch (m_mode) {
-  case 1: return p_amegic->Momenta();
-  }
+  msg.Error()<<"Warning in Matrix_Element_Handler::SetMomenta()"<<endl
+	     <<"   No ME generator available to get momenta from."<<endl
+	     <<"   Continue run and hope for the best."<<endl;
   return NULL;
 }
 
@@ -382,7 +397,7 @@ EXTRAXS::XS_Base * Matrix_Element_Handler::GetXS()
   if (m_mode==2) return p_simplexs->Selected();
   msg.Error()<<"Error in Matrix_Element_Handler::GetXS()."<<endl
 	     <<"   Wrong mode for "<<m_signalgenerator<<", abort."<<endl;
-  std::cout<<p_simplexs<<std::endl;
+  msg.Debugging()<<p_simplexs<<std::endl;
   abort();
 }
 

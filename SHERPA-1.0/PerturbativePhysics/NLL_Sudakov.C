@@ -40,11 +40,10 @@ NLL_Sudakov::NLL_Sudakov(int mode, double _tmax,double _tmin,MODEL::Running_Alph
 
 
   // jetmode=0;  // 0, 3 ("1+2"), 4
-  if (jetmode>=0)
-    cout<<" jetmode="<<jetmode<<endl;
-    p_jetrate = new NLL_JetRate(4,sqrt(_tmin),sqrt(_tmax),jetmode&7);
+  if (jetmode>=0) msg.Debugging()<<" jetmode="<<jetmode<<endl;
+  // p_jetrate = new NLL_JetRate(4,sqrt(_tmin),sqrt(_tmax),jetmode&7);
   //   p_jetrate = new NLL_JetRate(3,sqrt(0.001*_tmax),sqrt(_tmax),jetmode&7);
-
+  
   if (jetmode==0 || jetmode==-2) PrepareMap(runas);
   else PrepareMassiveMap(runas,jetmode&7);
 
@@ -101,7 +100,6 @@ void NLL_Sudakov::PrepareMap(MODEL::Running_AlphaS * runas)
 void NLL_Sudakov::PrepareMassiveMap(MODEL::Running_AlphaS * runas, int mode) 
 {
   NLL_Branching_Probability_Base * bp=NULL;
-  //  std::cout<<" prepare massive map "<<endl;
 
   Sudakov::code smode=Sudakov::numeric;
   smode=Sudakov::table;
@@ -122,7 +120,6 @@ void NLL_Sudakov::PrepareMassiveMap(MODEL::Running_AlphaS * runas, int mode)
   for (int k=1;k<=5;++k) {
     Flavour fl = Flavour(kf::code(k));
     bp =    new GammaQ_Lambda_Massive(bpmode,m_lambda,runas,fl);
-    //    cout<<" gamma("<<fl<<")="<<bp->Gamma(20.,2000.)<<endl;
     ssud = new NLL_Single_Sudakov(bp,smode);
     m_all_suds.push_back(ssud);
     m_sud_map[fl]=ssud;
@@ -135,19 +132,14 @@ void NLL_Sudakov::PrepareMassiveMap(MODEL::Running_AlphaS * runas, int mode)
   NLL_Combined_Sudakov * csud=0;
   csud = new NLL_Combined_Sudakov(smode);
   bp = new GammaG_Lambda_Massive(bpmode,m_lambda,runas);
-  //  cout<<" gamma("<<Flavour(kf::gluon)<<")="<<bp->Gamma(20.,2000.)<<endl;
   csud->Add(new NLL_Single_Sudakov(bp,smode));
   for (int k=1;k<=5;++k) {
     Flavour fl = Flavour(kf::code(k));
     bp = new GammaF_Lambda_Massive(bpmode,m_lambda,runas,fl);
-    //    cout<<" gamma("<<fl<<")="<<bp->Gamma(20.,2000.)<<endl;
-    csud->Add(new NLL_Single_Sudakov(bp,smode));
+     csud->Add(new NLL_Single_Sudakov(bp,smode));
   }
   m_all_suds.push_back(csud);
   m_sud_map[Flavour(kf::gluon)]=csud;
-
-  //  cout<<" added "<<m_all_suds.size()<<" objects to sudakov list "<<endl;
-
 
   // ----------------------------------------
   // only 4 light flavours
@@ -160,9 +152,6 @@ void NLL_Sudakov::PrepareMassiveMap(MODEL::Running_AlphaS * runas, int mode)
   gsudm->Add(new NLL_Single_Sudakov(new GammaF_Lambda_Massive(bpmode,m_lambda,runas,Flavour(kf::b)),smode));
   m_all_suds.push_back(gsudm);
 
-  //  cout<<" added ("<<m_all_suds.size()<<") alternative gluon sudakov to sudakov list "<<endl;
-  
-
   // ----------------------------------------
   // provide massless gluon sudakov
   NLL_Combined_Sudakov * gsud=0;
@@ -171,18 +160,11 @@ void NLL_Sudakov::PrepareMassiveMap(MODEL::Running_AlphaS * runas, int mode)
   gsud->Add(new NLL_Single_Sudakov(new GammaF_Lambda(bpmode,m_lambda,runas),smode));
   m_all_suds.push_back(gsud);
 
-  //  cout<<" added ("<<m_all_suds.size()<<") massless gluon sudakov to sudakov list "<<endl;
-
-
   // ----------------------------------------
   // provide massless quark sudakov
   NLL_Single_Sudakov * qsud=0;
   qsud = new NLL_Single_Sudakov(new GammaQ_Lambda(bpmode,m_lambda,runas),smode);
   m_all_suds.push_back(qsud);
-
-  //  cout<<" added ("<<m_all_suds.size()<<") massless quark sudakov to sudakov list "<<endl;
-
-
 
   // initialize nll jetrates
   if (p_jetrate) {
@@ -216,14 +198,6 @@ void NLL_Sudakov::FixLambda2()
   m_mu2    = sqr(Flavour(kf::Z).Mass());
   m_asmu   = (*as)(m_mu2);
   m_lambda = sqrt( m_mu2 * exp(-4.*M_PI/(BETA0 * m_asmu)));
-//   cout<<" mu2="<<m_mu2<<endl;
-//   cout<<"asmu="<<m_asmu<<endl;
-//   cout<<"lam ="<<m_lambda<<endl;
-//   // test only:
-//   double t=m_mu2;
-//   cout<<" astest = "<<4.*M_PI/(BETA0*log(t/sqr(m_lambda)));
-//   t=sqr(91.2);
-//   cout<<" aastest = "<<4.*M_PI/(BETA0*log(t/sqr(m_lambda)));
 }                 
 
 

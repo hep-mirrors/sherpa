@@ -1,5 +1,6 @@
 #include "NLL_Single_Sudakov.H"
 #include "Run_Parameter.H"
+#include "Message.H"
 
 using namespace SHERPA;
 using namespace ATOOLS;
@@ -16,12 +17,9 @@ NLL_Single_Sudakov::NLL_Single_Sudakov(NLL_Branching_Probability_Base * bp,int m
   m_qlimit = rpa.gen.Ecms() * sqrt(1./3.); 
   if (m_calcmode==Sudakov::table) {
     // initialize table
-    std::cout<<" Initializing table "<<std::endl;
     m_calcmode=Sudakov::create_table;
     m_log_delta.Init(*this,m_qmin,m_qmax,600);
     m_calcmode=Sudakov::table;
-    std::cout<<" done "<<std::endl;
-
     //    m_log_delta.WriteOut("Sudakov-test.dat");
   }
 }
@@ -36,8 +34,9 @@ double NLL_Single_Sudakov::Log(double Q, double q)
       return sum;
     }
     else {
-      std::cout<<" WARNING integrated branching prob not analytically calculated yet! "<<std::endl;
-      std::cout<<"      try numeric integration "<<std::endl;
+      msg.Error()<<" WARNING in NLL_Single_Sudakov : "<<std::endl
+		 <<"   Integrated branching prob not analytically calculated yet! "<<std::endl
+		 <<"   Try numerical integration "<<std::endl;
     }
   }
   else if (m_calcmode == Sudakov::table) {
@@ -49,14 +48,13 @@ double NLL_Single_Sudakov::Log(double Q, double q)
       return logdelta;
 
       // ---------------- default: recreate table: -------------
-      std::cout<<"ERROR: table calculated with qmin="<<m_qmin<<" but called with "<<q<<std::endl;
+      msg.Error()<<"ERROR in NLL_Single_Sudakov : "<<std::endl
+		 <<"   Table calculated with qmin="<<m_qmin<<" but called with "<<q<<std::endl;
       m_qmin=q;
       // reinit
-      std::cout<<" Initializing table "<<std::endl;
       m_calcmode=Sudakov::create_table;
       m_log_delta.Init(*this,m_qmin,m_qmax,600);
       m_calcmode=Sudakov::table;
-      std::cout<<" done "<<std::endl;
     }
     return m_log_delta(Q);
   }

@@ -58,12 +58,10 @@ Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up
 
 bool Combine_Table::Combinable(const Leg & a , const Leg & b, int & strong) const 
 {
-  //std::cout<<"Combinable("<<a->fl<<","<<b->fl<<") : ";
   strong = 0;
   // 1.) check if both points have common mother
   if ((a->prev == b->prev) && (a->prev != 0)) {
     strong=a->prev->fl.Strong();
-    //std::cout<<" Yes! "<<std::endl;
     return 1;
   }
 
@@ -71,18 +69,14 @@ bool Combine_Table::Combinable(const Leg & a , const Leg & b, int & strong) cons
   if (a->prev == &b)   {
     if (&a==b->left) strong=b->right->fl.Strong();
     else if (&a==b->right) strong=b->left->fl.Strong();
-    //std::cout<<" Yes! "<<std::endl;
     return 1;
   }
   // 3.) check if "b" is daughter of "a"
   if (b->prev == &a)  {
     if (&b==a->left) strong=a->right->fl.Strong();
     else if (&b==a->right) strong=a->left->fl.Strong();
-    //std::cout<<" Yes! "<<std::endl;
     return 1;
   }
-
-  //std::cout<<" No! "<<std::endl;
   // else legs not combinable
   return 0;
 }
@@ -180,17 +174,17 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 
   // determine possible combinations and corresponding y_ij  if nlegs>4
   if (nlegs>4) {
-    for (int k=0;k<nampl;++k) {
-      //std::cout<<" Graph "<<k<<std::endl;
-      //std::cout<<"=============================="<<endl;
-      //std::cout<<(&legs[k][0]);
+    if (rpa.gen.Debugging()) {
+      for (int k=0;k<nampl;++k) {
+	std::cout<<"Combine_Table for Graph "<<k<<std::endl
+		 <<"=============================="<<endl
+		 <<(&legs[k][0]);
+      }
+      std::cout<<"=============================="<<endl;
     }
-    //std::cout<<"=============================="<<endl;
-
     int start=0;
     // cluster initial state only if isrshower and isr_x is on. 
     if (!m_isrshoweron) start=2;
-    //std::cout<<" isr : "<<m_isrshoweron<<","<<m_isr1on<<","<<m_isr2on<<" ."<<std::endl;
     for (int i=start; i<nlegs; ++i) {  
       if (!m_isr1on && i==0) i=1;
       if (!m_isr2on && i==1) i=2;
@@ -200,7 +194,6 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 	// check if leg i is combinable with leg j in any graph
 	for (int k=0;k<nampl;++k) {
 	  int strong = 0;
-	  //std::cout<<" gr : "<<k<<"  (i,j) : ("<<i<<","<<j<<")"<<endl;
 	  if (Combinable(legs[k][i],legs[k][j],strong)) {  
 	    AddPossibility(i,j,k,strong); // insert graph k with combination i&j in table
 	  } 
@@ -265,7 +258,6 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
     zaxis = Poincare(moms[0],Vec4D::ZVEC);
     for (int i=0;i<nl;++i) zaxis.Rotate(moms[i]);
     did_boost=1;
-    //      for (int i=0;i<nl;++i) std::cout<<i<<" : "<<moms[i]<<" ("<<moms[i].Abs2()<<std::endl;
   }
   
   // calculate pt2ij and determine "best" combination
@@ -286,7 +278,6 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
       // check if combined momenta is physical even in LAB frame
       double e = save_moms[cit->i][0] - save_moms[cit->j][0];
       if (e<0. ) {
-	//	  std::cout<<"lv ("<<cit->i<<","<<cit->j<<") "<<pt2ij<<endl;
 	cit->pt2ij = pt2ij = pt2max;
       }
       else {
@@ -297,7 +288,6 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
 	test.Boost(s1);
 	test.Boost(s2);
 	if (s1[0]<0. || s2[0]<0.) {
-	  //	    std::cout<<"cv ("<<cit->i<<","<<cit->j<<") "<<pt2ij<<endl; 
 	  cit->pt2ij = pt2ij = pt2max;
 	}
       }
@@ -315,7 +305,6 @@ Combine_Table * Combine_Table::CalcJet(int nl,double _x1,double _x2, ATOOLS::Vec
     }
     
     if (pt2ij<pt2min) {
-      //	std::cout<<"or: ("<<cit->i<<","<<cit->j<<") "<<pt2ij<<" vs. "<<pt2min<<endl;       
       pt2min = pt2ij;
       cwin = cit;
     }

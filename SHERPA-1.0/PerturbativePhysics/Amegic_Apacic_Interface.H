@@ -16,6 +16,7 @@
 namespace SHERPA {
   class Amegic_Apacic_Interface : public Perturbative_Interface {
   private :
+    bool   m_isdecay;
     int    m_type, m_lastshowerveto;
     double m_ycut,m_jetscale;
 
@@ -27,7 +28,7 @@ namespace SHERPA {
       This library extends itself.
     */
     EXTRAXS::XS_Base      * p_xs; 
-    EXTRAXS::XS_Group     * p_two2two;
+    EXTRAXS::XS_Group     * p_two2two, * p_one2N;
 
     ATOOLS::Blob * p_blob_psme_IS,* p_blob_psme_FS;
 
@@ -40,7 +41,7 @@ namespace SHERPA {
     void CleanBlobs(ATOOLS::Blob_List *);
 
     int  PerformShowers();
-
+    int  PerformDecayShowers();
   };
 
   /*!
