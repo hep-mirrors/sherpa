@@ -18,7 +18,8 @@ using namespace ATOOLS;
 
 Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spacelike_Kinematics * _kin,
 				     double _pt2min,ATOOLS::Data_Read * _dataread) : 
-  Backward_Splitting_Group(0,0), p_tools(_tools), p_kin(_kin), m_pt2min(dabs(_pt2min)), m_last_veto(0)
+  Backward_Splitting_Group(0,0), p_tools(_tools), p_kin(_kin), m_pt2min(dabs(_pt2min)), 
+  m_miveto_scheme(0), m_last_veto(0)
 {
   p_pdf             = _pdf->GetBasicPDF(); 
   p_pdfa            = p_pdf->GetBasicPDF()->GetCopy();
@@ -130,6 +131,8 @@ void Spacelike_Sudakov::ProduceT() {
   return;
 }
 
+static double rem_ran, rem_weight;
+
 bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf) 
 {  
   m_last_veto=0;
@@ -172,7 +175,24 @@ bool Spacelike_Sudakov::Veto(Knot * mo,bool jetveto,int & extra_pdf)
     }
     extra_pdf=0;
   }
+  // 6. energy conservation for multiple iteractions
+  if (m_miveto_scheme) {
+    if (MIVeto(mo->part->Flav(),mo->x,mo->t)) {
+      // std::cout<<"mi veto caught ("<<this<<") "<<rem_weight<<" "<<rem_ran<<std::endl;
+      m_last_veto=7;
+      return 1;
+    }
+  }
   return 0;
+}
+
+bool Spacelike_Sudakov::MIVeto(const ATOOLS::Flavour &flavour,
+			       const double x,const double scale) 
+{
+  p_pdf->Calculate(x,0,0,scale);
+  // std::cout<<"mi veto check ("<<this<<") "<<p_pdf->GetXPDF(flavour)<<std::endl;
+  if (p_pdf->GetXPDF(flavour)==0.) return true;
+  return false;
 }
 
 bool Spacelike_Sudakov::MassVeto(int extra_pdf) 
