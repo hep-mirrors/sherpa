@@ -229,7 +229,7 @@ bool Hadron_Remnant::TreatFirstQuark(ATOOLS::Particle *cur)
 }
 
 bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,unsigned int newc,
-					 unsigned int catcher,bool forward)
+				   bool anti,bool forward,unsigned int catcher)
 {
   if (oldc==newc) return true;
   if (++catcher>100) {
@@ -244,17 +244,21 @@ bool Hadron_Remnant::AdjustColours(ATOOLS::Particle *particle,unsigned int oldc,
   if (cur!=NULL) {
     for (int i=0;i<cur->NOutP();++i) {
       for (int j=1;j<3;++j) {
-	if (cur->OutParticle(i)->GetFlow(j)==(int)oldc) {
-	  cur->OutParticle(i)->SetFlow(j,newc);
-	  return AdjustColours(cur->OutParticle(i),oldc,newc,catcher,true);
+	ATOOLS::Particle *help=cur->OutParticle(i);
+	if (help->GetFlow(j)==(int)oldc && 
+	    (help->Flav().IsAnti()!=anti || help->Flav().IsGluon())) {
+	  help->SetFlow(j,newc);
+	  return AdjustColours(help,oldc,newc,anti,true,catcher);
 	}
       }
     }
     for (int i=0;i<cur->NInP();++i) {
       for (int j=1;j<3;++j) {
-	if (cur->InParticle(i)->GetFlow(j)==(int)oldc) {
-	  cur->InParticle(i)->SetFlow(j,newc);
-	  return AdjustColours(cur->InParticle(i),oldc,newc,catcher,false);
+	ATOOLS::Particle *help=cur->InParticle(i);
+	if (help->GetFlow(j)==(int)oldc && 
+	    (help->Flav().IsAnti()!=anti || help->Flav().IsGluon())) {
+	  help->SetFlow(j,newc);
+	  return AdjustColours(help,oldc,newc,anti,true,catcher);
 	}
       }
     }
@@ -299,15 +303,19 @@ bool Hadron_Remnant::TreatQuark(ATOOLS::Particle *cur)
   }
   if (cur->Flav().IsAnti()) {
     int catcher=0;
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),newpart->GetFlow(1),catcher);
-    success=success&&AdjustColours(cur,cur->GetFlow(2),comp[0]->GetFlow(1),catcher);
+    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),newpart->GetFlow(1),
+				   false,true,catcher);
+    success=success&&AdjustColours(cur,cur->GetFlow(2),comp[0]->GetFlow(1),
+				   false,true,catcher);
     comp[1]->SetFlow(2,newpart->GetFlow(1));
     cur->SetFlow(2,comp[0]->GetFlow(1));
   }
   else {
     int catcher=0;
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),newpart->GetFlow(2),catcher);
-    success=success&&AdjustColours(cur,cur->GetFlow(1),comp[0]->GetFlow(2),catcher);
+    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),newpart->GetFlow(2),
+				   true,true,catcher);
+    success=success&&AdjustColours(cur,cur->GetFlow(1),comp[0]->GetFlow(2),
+				   true,true,catcher);
     comp[1]->SetFlow(1,newpart->GetFlow(2));
     cur->SetFlow(1,comp[0]->GetFlow(2));
   }
@@ -323,15 +331,19 @@ bool Hadron_Remnant::TreatGluon(ATOOLS::Particle *cur)
   do { comp[0]=SelectCompanion(cur); } while ((comp[1]=FindConnected(comp[0]))==NULL);
   if (comp[0]->Flav().IsAnti()^comp[0]->Flav().IsDiQuark()) {
     int catcher=0;
-    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(2),cur->GetFlow(1),catcher);
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),cur->GetFlow(2),catcher);
+    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(2),cur->GetFlow(1),
+				   false,true,catcher);
+    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(1),cur->GetFlow(2),
+				   true,true,catcher);
     comp[0]->SetFlow(2,cur->GetFlow(1));
     comp[1]->SetFlow(1,cur->GetFlow(2));
   }
   else {
     int catcher=0;
-    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(1),cur->GetFlow(2),catcher);
-    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),cur->GetFlow(1),catcher);
+    success=success&&AdjustColours(comp[0],comp[0]->GetFlow(1),cur->GetFlow(2),
+				   true,true,catcher);
+    success=success&&AdjustColours(comp[1],comp[1]->GetFlow(2),cur->GetFlow(1),
+				   false,true,catcher);
     comp[0]->SetFlow(1,cur->GetFlow(2));
     comp[1]->SetFlow(2,cur->GetFlow(1));
   }
