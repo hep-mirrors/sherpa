@@ -172,8 +172,8 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
     std::string filename=resultpath+std::string("/")+m_name+std::string(".xstotal"), singlename;
     double singlexs, singleerr, singlemax, singlesum, singlesumsqr;
     long unsigned int singlen;
+    m_foundown=false;
     if (resultpath!=std::string("")) {
-      m_foundown=false;
       std::ifstream infile;
       int hits=m_xsecs.size()+1;
       infile.open(filename.c_str());
