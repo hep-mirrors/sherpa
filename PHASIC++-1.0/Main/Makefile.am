@@ -2,14 +2,20 @@ SHERPASYS     =	../..
 
 PHASICFLAGS   =	-pedantic -Wall -Winline
 
-ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
-ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
+PHASICINCS    =	-I../Foam
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
 PDFINCS       =	-I$(SHERPASYS)/PDF-1.0/Main
 BEAMINCS      =	-I$(SHERPASYS)/BEAM-1.0/Main
-MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main
+ATOOLSDIR     =	$(SHERPASYS)/ATOOLS-2.0
+ATOOLSINCS    =	-I$(ATOOLSDIR)/Phys -I$(ATOOLSDIR)/Math -I$(ATOOLSDIR)/Org
 
 if CVS_INCLUDE
 CVSINCLUDE    =	CVS
+endif
+
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
 endif
 
 lib_LTLIBRARIES       =	libPhasespace.la
@@ -33,6 +39,7 @@ libPhasespace_la_SOURCES      =	\
 				Vegas.C ISR_Vegas.C \
 				Channel_Interface.C \
 			   	Multi_Channel.C \
+				Foam_Interface.C \
 				Phase_Space_Handler.C \
 				Phase_Space_Integrator.C 
 noinst_HEADERS        =	\
@@ -55,8 +62,10 @@ noinst_HEADERS        =	\
 			Vegas.H ISR_Vegas.H \
 			Multi_Channel.H \
 		 	Integrable_Base.H \
+			Foam_Interface.H \
 			Phase_Space_Handler.H \
 			Phase_Space_Integrator.H 
-AM_CXXFLAGS   =	$(PHASICFLAGS)
+AM_CXXFLAGS   =	$(PHASICFLAGS) $(ROOTFLAGS)
+INCLUDES      =	$(PHASICINCS) $(MODELINCS) $(PDFINCS) $(BEAMINCS) \
+		$(ATOOLSINCS) $(ROOTINCS)
 EXTRA_DIST    = $(CVSINCLUDE)
-INCLUDES      =	$(BEAMINCS) $(PDFINCS) $(MODELINCS) $(ATOOLSINCS)
