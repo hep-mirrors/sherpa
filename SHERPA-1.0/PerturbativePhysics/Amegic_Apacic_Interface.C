@@ -146,7 +146,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
   if (!m_isdecay) {
     p_xs = 0;
     if (p_two2two->XSSelector()->FindInGroup(p_two2two,p_xs,nin,2,p_fl)==std::string::npos) {
-      p_xs = p_two2two->XSSelector()->GetXS(nin,2,p_fl,false);
+      p_xs = p_two2two->XSSelector()->GetXS(nin,2,p_fl);
       if (p_xs) p_two2two->Add(p_xs);
     }
 
@@ -210,7 +210,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     p_xs = 0;
     if (XS_Selector::FindInGroup(p_one2N,p_xs,nin,nout,p_fl)==std::string::npos) {
       EXTRAXS::XS_Selector selector(p_xs);
-      p_xs = selector.GetXS(nin,nout,p_fl,false);
+      p_xs = selector.GetXS(nin,nout,p_fl);
       if (p_xs) p_one2N->Add(p_xs);
     }
     if (p_xs) {

@@ -42,7 +42,7 @@ int SimpleXS_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob *blob)
   p_xs=NULL;
   if (p_twototwo->XSSelector()->
       FindInGroup(p_twototwo,p_xs,blob->NInP(),2,p_flavours)==std::string::npos) {
-    p_xs = p_twototwo->XSSelector()->GetXS(blob->NInP(),2,p_flavours,false);
+    p_xs = p_twototwo->XSSelector()->GetXS(blob->NInP(),2,p_flavours);
     if (p_xs) p_twototwo->Add(p_xs);
   }
   p_hard=blob;
