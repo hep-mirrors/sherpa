@@ -12,12 +12,15 @@ Interaction_Model_sQCD::Interaction_Model_sQCD(MODEL::Model_Base * _model,
   Interaction_Model_Base(_model,_cplscheme,_yukscheme)
 { 
   double Ecms2 = sqr(rpa.gen.Ecms());
+  g1       = Kabbala(string("g_1"),
+		     sqrt(4.*M_PI*ScalarFunction(string("alpha_QED"),Ecms2)));
   g3    = Kabbala(string("g_3"),
 		  sqrt(4.*M_PI*ScalarFunction(std::string("alpha_S"),Ecms2)));
   PL    = Kabbala(string("P_L"),1.);
   PR    = Kabbala(string("P_R"),1.);
   M_I   = Kabbala(string("i"),Complex(0.,1.)); 
   root2 = Kabbala(string("\\sqrt{2}"),sqrt(2.));
+  num_2    = Kabbala(string("2"),2.);    
 }
 
 void Interaction_Model_sQCD::c_FFS(Single_Vertex* vertex,int& vanz)
@@ -187,6 +190,95 @@ void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].nlf     = 1;
 	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
+	
+	vertex[vanz].on      = 1;
+	vanz++;
+      } 
+    }
+  }
+}
+
+void Interaction_Model_sQCD::c_SSVV(Single_Vertex* vertex,int& vanz)
+{
+  Kabbala kcpl0,kcpl1;
+  Flavour flgl = Flavour(kf::gluon); 
+  Flavour flph = Flavour(kf::photon); 
+  
+  //sQuark - Gluon - Gluon - sQuark
+  if (flgl.IsOn()) {    
+    for (short int i=51;i<67;i++) {
+      if (i==57) i=61;
+      Flavour flav = Flavour(kf::code(i));
+      if (flav.IsOn()) {
+	vertex[vanz].in[0] = flgl;
+	vertex[vanz].in[1] = flav.Bar();
+	vertex[vanz].in[2] = flav;
+	vertex[vanz].in[3] = flgl;
+	
+	vertex[vanz].nleg     = 4;
+	
+	kcpl0 = M_I*g3*g3;
+	kcpl1 = kcpl0;
+		
+	vertex[vanz].cpl[0]  = kcpl0.Value();
+	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	
+	vertex[vanz].ncf     = 2;
+	vertex[vanz].nlf     = 2;
+	vertex[vanz].Color   = new Color_Function[2]; 
+	vertex[vanz].Lorentz = new Lorentz_Function[2]; 
+
+	vertex[vanz].Color[0]        = Color_Function(cf::T,0,1,4,'0','1','4',
+						      new Color_Function(cf::T,3,4,2,'3','4','2');
+		
+	vertex[vanz].Color[1]        = Color_Function(cf::T,3,1,4,'3','1','4',
+						      new Color_Function(cf::T,0,4,2,'0','4','2');
+						      
+						      
+	vertex[vanz].Lorentz[0] = Lorentz_Function(lf::VVSS);     
+	vertex[vanz].Lorentz[0].SetParticleArg(0,3);     
+	vertex[vanz].Lorentz[1] = Lorentz_Function(lf::VVSS);     
+	vertex[vanz].Lorentz[1].SetParticleArg(0,3);     
+	
+	vertex[vanz].on      = 1;
+	vanz++;
+      } 
+    }
+  }
+ 
+  //sQuark - Gluon - Photon - sQuark
+  if (flgl.IsOn() && flph.IsOn()) {    
+    for (short int i=51;i<67;i++) {
+      if (i==57) i=61;
+      Flavour flav = Flavour(kf::code(i));
+      if (flav.IsOn()) {
+	vertex[vanz].in[0] = flgl;
+	vertex[vanz].in[1] = flav.Bar();
+	vertex[vanz].in[2] = flav;
+	vertex[vanz].in[3] = flph;
+	
+	vertex[vanz].nleg     = 4;
+	
+	Kabbala charge = Kabbala(string("Q_{"+flav.TexName()+"}"),flav.Charge());
+	
+	kcpl0 = M_I*num_2*charge*g1*g3;
+	kcpl1 = kcpl0;
+	
+	vertex[vanz].cpl[0]  = kcpl0.Value();
+	vertex[vanz].cpl[1]  = kcpl1.Value();
+	vertex[vanz].Str     = (kcpl0*PR+kcpl1*PL).String();
+	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
+	
+	vertex[vanz].ncf     = 1;
+	vertex[vanz].Color   = new Color_Function(cf::T); 
+	vertex[vanz].Color->SetParticleArg(0,1,2);     
+	vertex[vanz].Color->SetStringArg('0','1','2');     
+	
+	vertex[vanz].nlf     = 1;
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
+	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
 	vanz++;
