@@ -10,6 +10,7 @@
 #include "Data_Read.H"
 #include "Model_Base.H"
 #include "XS_Selector.H"
+#include "Regulator_Base.H"
 
 using namespace EXTRAXS;
 using namespace MODEL;
@@ -55,6 +56,12 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
   m_scalescheme=p_dataread->GetValue<int>("SCALE_SCHEME",0);
   m_kfactorscheme=p_dataread->GetValue<int>("KFACTOR_SCHEME",0);
   m_scalefactor=p_dataread->GetValue<double>("SCALE_FACTOR",1.);
+  int regulate=p_dataread->GetValue<int>("REGULATE_XS",0);
+  if (regulate>0) {
+    m_regulator=p_dataread->GetValue<std::string>("XS_REGULATOR",std::string("Massive_Propagator"));
+    double param=p_dataread->GetValue<double>("XS_REGULATION",0.71);
+    m_regulation.push_back(param);
+  }
   if (!construct) return true;
   ifstream from((m_path+processfile).c_str());
   if (!from) {
@@ -133,7 +140,10 @@ bool Simple_XS::InitializeProcesses(BEAM::Beam_Spectra_Handler *const beamhandle
 		      converter>>name;
 		      if (setup.find(name)==setup.end()) {
 			group->XSSelector()->SetOffShell(p_isrhandler->KMROn());
-			group->Add(group->XSSelector()->GetXS(nIS,nFS,help));
+			XS_Base *newxs = group->XSSelector()->GetXS(nIS,nFS,help);			
+			if (newxs!=NULL && m_regulator.length()>0) 
+			  newxs->AssignRegulator(m_regulator,m_regulation);
+			group->Add(newxs);
 			setup.insert(name);
 		      }
 		    }

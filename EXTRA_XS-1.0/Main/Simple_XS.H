@@ -17,6 +17,9 @@ namespace EXTRAXS {
 
     ATOOLS::Data_Read *p_dataread;
 
+    std::string         m_regulator;
+    std::vector<double> m_regulation;
+
     int  ExtractFlavours(ATOOLS::Flavour *&flavours,std::string buffer);
     void OrderFlavours(ATOOLS::Flavour *flavours);
 
