@@ -25,6 +25,7 @@ namespace EXTRAXS {
     void Init(const ATOOLS::Flavour *flavours);
 
     friend class XS_Selector;
+    friend class XS_Group;
 
    public:
 
