@@ -96,6 +96,8 @@ namespace SHERPA {
     CD_Iterator       cwin;
     int               gwin;
 
+    int               m_isron, m_isrshoweron;
+
     APHYTOOLS::Jet_Finder * jf;
     AMATOOLS::Vec4D       * moms;
 
@@ -111,7 +113,7 @@ namespace SHERPA {
     Leg  CombinedLeg(Leg *, int, int);
     double Sprime();
   public:
-    Combine_Table(APHYTOOLS::Jet_Finder *, AMATOOLS::Vec4D *, Combine_Table *);
+    Combine_Table(APHYTOOLS::Jet_Finder *, AMATOOLS::Vec4D *, Combine_Table *, int, int);
     ~Combine_Table();
 
 

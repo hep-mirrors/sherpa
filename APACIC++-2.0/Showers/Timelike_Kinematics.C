@@ -2,6 +2,7 @@
 #include "Run_Parameter.H"
 #include "Poincare.H"
 #include "Tree.H"
+#include "Data_Read.H"
 #include <iomanip>
 
 
@@ -13,11 +14,29 @@ using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
-Timelike_Kinematics::Timelike_Kinematics(double _pt2min) : 
+
+
+
+Timelike_Kinematics::Timelike_Kinematics(double _pt2min, Data_Read * const dataread) : 
   pt2min(_pt2min), t0(4.*pt2min),pt_scheme(1),mass_scheme(1)
 {
   double ycut   = AORGTOOLS::rpa.gen.Ycut();
-  jf            = new APHYTOOLS::Jet_Finder(ycut,4);  //// *AS* !!!! fixed to Hadron Hadron
+  m_type = 1;
+  if (rpa.gen.Beam1().IsLepton() && rpa.gen.Beam2().IsLepton()) {
+    msg.Out()<<" Jet_Finder in Timelike_Kinematics set up  to deal with lepton-lepton collisions "<<endl;
+    m_type = 1;
+  }
+  else if ((!rpa.gen.Beam1().IsLepton() && !rpa.gen.Beam2().IsLepton())) {
+    msg.Out()<<" Jet_Finder in Timelike_Kinematics set up  to deal with hadron-hadron collisions "<<endl;
+    m_type = 4;
+  }
+  else {
+    cout<<"ERROR: ME_PS_Interface - DIS is not yet implemented in the Jetfinder "<<endl;
+    m_type = 4;
+  }
+  jf            = new APHYTOOLS::Jet_Finder(ycut,m_type); 
+  if (m_type==1) m_losejet_veto = dataread->GetValue<int>("FS LOSEJETVETO",1);
+  else m_losejet_veto = dataread->GetValue<int>("FS LOSEJETVETO",0);
 }
 
 
@@ -450,9 +469,14 @@ bool Timelike_Kinematics::KinCheck(int first,Knot * mo)
 };
 
 
-bool Timelike_Kinematics::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
+bool Timelike_Kinematics::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) 
+{
+  if (!m_losejet_veto) return 1;
+
   // check for loosing jets
+
   //     hadron - hadron check:
+  if (m_type==4) {
   if (d1==0 && d2 ==0) {
     cout<<" ERROR in Timelike_Kinematics::ExtraJetCheck "<<endl;
   }
@@ -475,9 +499,10 @@ bool Timelike_Kinematics::ExtraJetCheck(Knot * mo, Knot * d1, Knot * d2) {
     return 0;
   }
   return 1;
+  }
 
-  // =====================  old e+ e- jetveto ====================
-  // using pt2
+  // =====================  e+ e- jetveto ====================
+  // using pt2 .... to be moved inside Jet_Finder
   double z;
   double E2;
   double t;

@@ -23,10 +23,10 @@ using std::cout;
 //--------------------------- Constructors ------------------------------
 //----------------------------------------------------------------------- 
 
-Final_State_Shower::Final_State_Shower(MODEL::Model_Base * _model,Data_Read * _dataread) 
+Final_State_Shower::Final_State_Shower(MODEL::Model_Base * _model,Data_Read * const _dataread) 
 {
   m_pt2min = _dataread->GetValue<double>("FS PT2MIN",1.);
-  p_kin    = new Timelike_Kinematics(m_pt2min);
+  p_kin    = new Timelike_Kinematics(m_pt2min,_dataread);
   p_sud    = new Timelike_Sudakov(p_kin,m_pt2min,_model,_dataread);
 }
 
@@ -90,7 +90,7 @@ void Final_State_Shower::FirstTimelikeFromSpacelike(Tree * tree,Knot* mo,bool je
   msg.Tracking()<<"("<<si->kn_no<<")  : "<<si->part->Momentum()<<endl;
   if (mo->thcrit!=M_PI) {
     double th1c   = sqrt( dabs(si->t)/((1.- si->z)*si->E2));
-    cout<<" setting thcrit from "<<mo->thcrit<<" to "<<th1c<<endl;
+    //    cout<<" setting thcrit from "<<mo->thcrit<<" to "<<th1c<<endl;
     mo->thcrit=th1c;
   }
 
@@ -347,6 +347,13 @@ bool Final_State_Shower::SetColours(Knot * mo, Timelike_Kinematics * kin)
 
 
 void Final_State_Shower::EstablishRelations(Knot * mo, Knot * d1,Knot * d2) {
+  if (!d1 || !d2 || !mo) {
+    cout<<" WARNING:Final_State_Shower::EstablishRelations() called with"<<endl;
+    if (mo) cout<<"mo :"<<mo<<endl; else cout<<"mo : 0x0"<<endl;
+    if (d1) cout<<"d1 :"<<d1<<endl; else cout<<"d1 : 0x0"<<endl;
+    if (d2) cout<<"d2 :"<<d2<<endl; else cout<<"d2 : 0x0"<<endl;
+    return;
+  }
     // set color conections (if not jet known)
     APACIC::Final_State_Shower::SetColours(mo,0);
 
@@ -972,7 +979,7 @@ void Final_State_Shower::InitDaughters(Tree * tree,Knot * mo,Flavour * mo_flavs,
 { 
   if (!mo->left) {
     // Initialize new knots, provide them with flavours and link them
-    cout<<"new knots..."<<diced<<endl;
+    //    cout<<"new knots..."<<diced<<endl;
     mo->left        = tree->NewKnot();
     mo->right       = tree->NewKnot();
   }

@@ -29,6 +29,7 @@ namespace APACIC {
 
     int             m_cpl_scheme;
     int             m_ordering_scheme;
+    int             m_jetveto_scheme;
     int             m_last_veto;
     double          m_qjet;
     double          m_pdf_fac;

@@ -5,6 +5,10 @@
 #include "Jet_Finder.H"
 #include "Run_Parameter.H"
 
+namespace AORGTOOLS {
+  class Data_Read;
+}
+
 namespace APACIC {
   class Timelike_Kinematics {
     //! For vetos on extra jet from Shower.
@@ -13,12 +17,14 @@ namespace APACIC {
     APHYTOOLS::Jet_Finder * jf;
     int                     pt_scheme; 
     int                     mass_scheme;
+    int      m_type;
+    int      m_losejet_veto;
   public:
     //-----------------------------------------------------------------------
     //----------------------- Constructors ----------------------------------
     //----------------------------------------------------------------------- 
     //! Constructor to initialise the Jet_Finder
-     Timelike_Kinematics(double _pt2min);
+     Timelike_Kinematics(double _pt2min, AORGTOOLS::Data_Read * const );
     //! Destructor to delete the Jet_Finder
     ~Timelike_Kinematics() {
       if (jf)   delete jf;

@@ -144,31 +144,16 @@ void Sample_Analysis::Finish() {
       ana->AddObservable(obs[i]);
     }
 
-    //    ana->FinishAnalysis("testout_sherpa_GE130c",0);
     MyStrStream s1;
     int   alf = int(1000.*rpa.gen.ScalarFunction(string("alpha_S"))+0.5);
     string salf;
     s1<<alf;
     s1>>salf;
 
-    MyStrStream s2;
-    // FK ****** int   yf = int(100.*rpa.test.FactorYcut()+0.5);
-    int yf = 1;
-    string syf;
-    s2<<yf;
-    s2>>syf;
-
-    MyStrStream s3;
-    // FK ****** int   nllf = int(100.*rpa.test.FactorNLLQ()+0.5);
-    int nllf = 1;
-    string snllf;
-    s3<<nllf;
-    s3>>snllf;
-
-    string name=string("sh_VI_") + salf + string("_") + syf + string("_") + snllf;
+    //    string name=string("output_") + salf;
+    string name=string("output");
 
     msg.Out()<<" FinishAnalysis("<<name<<");"<<endl;
-    //    ana->FinishAnalysis("testout_sherpa_GE125g",0);
     ana->FinishAnalysis(name,0);
   }
 

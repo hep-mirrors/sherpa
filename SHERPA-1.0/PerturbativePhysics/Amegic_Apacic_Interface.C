@@ -52,7 +52,7 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   }
 
   p_jf       = new APHYTOOLS::Jet_Finder(m_ycut,m_type);
-  p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber);
+  p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber,p_shower->ISROn(),p_shower->FSROn());
   m_jetscale = m_ycut * sqr(rpa.gen.Ecms());
 }  
 
@@ -88,12 +88,12 @@ bool Amegic_Apacic_Interface::DefineInitialConditions(APHYTOOLS::Blob * blob)
   ClusterConfiguration(blob);
 
   p_xs = 0;
-  /*
+
   if (!(XS_Selector::FindInGroup(p_two2two,p_xs,2,2,p_fl))) {
     p_xs = XS_Selector::GetXS(2,2,p_fl);
     if (p_xs) p_two2two->Add(p_xs);
   }
-  */
+
   if (!p_xs) {
     msg.Tracking()<<" no xs found "<<endl;
     p_cluster->SetColours(p_moms,p_fl);

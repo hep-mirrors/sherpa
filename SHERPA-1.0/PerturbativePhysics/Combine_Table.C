@@ -50,8 +50,9 @@ std::ostream& SHERPA::operator<< (std::ostream & s ,Combine_Data & cd)
     s<<" #"<<std::endl;
 }
 
-Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up):
-  jf(_jf),moms(_moms),legs(0),gwin(0),up(_up)
+Combine_Table::Combine_Table(Jet_Finder * _jf,Vec4D * _moms, Combine_Table * _up,
+			     int isron, int isrshoweron):
+  jf(_jf),moms(_moms),legs(0),gwin(0),up(_up),m_isron(isron),m_isrshoweron(isrshoweron)
 {
   msg.Debugging()<<"creating new Combine_Table::Combine_Table() "<<std::endl;
   no=all++;
@@ -192,7 +193,9 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
 
   // determine possible combinations and corresponding y_ij  if nlegs>4
   if (nlegs>4) {
-    for (int i=0; i<nlegs; ++i) {   // *AS* start with 2 for outgoing only
+    int start=0;
+    if (!m_isron) start=2;
+    for (int i=start; i<nlegs; ++i) {   // *AS* start with 2 for outgoing only , 0 for all
       for (int j=i+1; j<nlegs; ++j) {
 	// never combine "0&1" !
 	if (j==1) j=2;
@@ -233,7 +236,7 @@ void Combine_Table::AddPossibility(int i, int j, int ngraph, int strong)
 
 Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms) 
 {
-  int prefer_ew_clustering = 1;
+  int prefer_ew_clustering = 0;
 
   Combine_Table * ct=0;
   CD_List & cl=combinations;
@@ -364,7 +367,7 @@ Combine_Table * Combine_Table::CalcJet(int nl, AMATOOLS::Vec4D * _moms)
 	}
 	Vec4D * amoms;
 	CombineMoms(moms,cwin->i,cwin->j,nl,amoms); // generate new momenta
-	cwin->down=new Combine_Table(jf,amoms,this);
+	cwin->down=new Combine_Table(jf,amoms,this,m_isron,m_isrshoweron);
 	cwin->down->FillTable(alegs,nl,cwin->graphs.size());   // initialise Combine_Table
       } 
       else {

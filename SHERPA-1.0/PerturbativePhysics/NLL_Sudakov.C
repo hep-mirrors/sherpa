@@ -42,7 +42,7 @@ NLL_Sudakov::NLL_Sudakov(double _tmax,double _tmin) :
 		 <<"               as(qmin = "<<qmin<<") = "<<AlphaS(qmin*qmin)<<std::endl
 		 <<"               as(qmax = "<<qmax<<") = "<<AlphaS(qmax*qmax)<<std::endl;
 
-  if (rpa.gen.Events()) CheckSudakovs();
+  //  if (rpa.gen.Events()) CheckSudakovs();
 };
 
 

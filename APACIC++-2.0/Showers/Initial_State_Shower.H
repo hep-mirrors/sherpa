@@ -26,14 +26,16 @@ namespace APACIC {
 
     double m_pt2_1, m_pt2_2, m_th_1, m_th_2;
 
+    int    m_jetveto_scheme;
     int    m_allowed;
     int    m_extra_pdf[2];
+    int    m_to_be_diced[2];
 
     AMATOOLS::Vec4D m_lab;
 
   public:
     Initial_State_Shower(PDF::ISR_Handler *,Final_State_Shower *,
-			 MODEL::Model_Base *,AORGTOOLS::Data_Read *);// for testing purposes
+			 MODEL::Model_Base *,AORGTOOLS::Data_Read * const );
     ~Initial_State_Shower();
     bool PerformShower(Tree **,bool);
     void InitShowerPT(double pt2max);
@@ -52,8 +54,8 @@ namespace APACIC {
   private:
     bool InitializeSystem(Tree **,Knot *,Knot *);
     void InitTwoTrees(Tree **,double);
-    bool EvolveSystem(Tree **,Knot *,Knot *);
-    bool FillBranch(Tree **,Knot *,Knot *,int);
+    int  EvolveSystem(Tree **,Knot *,Knot *);
+    int  FillBranch(Tree **,Knot *,Knot *,int);
 
     void FillMotherAndSister(Tree *,Knot *,APHYTOOLS::Flavour *);
     void SetStartingConditions(double,double,int) ;

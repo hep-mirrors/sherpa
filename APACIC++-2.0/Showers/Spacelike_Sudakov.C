@@ -20,13 +20,15 @@ using namespace AORGTOOLS;
 
 Spacelike_Sudakov::Spacelike_Sudakov(PDF_Base * _pdf,Sudakov_Tools * _tools,Spacelike_Kinematics * _kin,
 				     double _pt2min,AORGTOOLS::Data_Read * _dataread) : 
-  m_last_veto(0), p_tools(_tools), p_kin(_kin), Backward_Splitting_Group(0,0), m_pt2min(_pt2min) 
+  m_last_veto(0), p_tools(_tools), p_kin(_kin), Backward_Splitting_Group(0,0), m_pt2min(dabs(_pt2min)) 
 {
   p_pdf             = _pdf; 
   p_pdfa            = p_pdf->GetCopy();
   m_ordering_scheme = _dataread->GetValue<int>("IS ORDERING",0);  /* Switch for ordering due to coherence:  
                                                                      0 = none, 1 = pt^2, 2 = pt^2/E^2     */
   m_cpl_scheme      = _dataread->GetValue<int>("IS COUPLINGS",1); /*  (0=fix, 1=pt^2, 2=t/4)              */ 
+  m_jetveto_scheme  = _dataread->GetValue<int>("IS JETVETOSCHEME",2);
+  //  m_pt2min          = _dataread->GetValue<double>("IS PT2MIN",4.);
 
   m_emin            = .5;
   m_pt2max          = sqr(rpa.gen.Ecms());
@@ -72,7 +74,7 @@ bool Spacelike_Sudakov::Dice(Knot * mo,double sprime,bool jetveto,int & extra_pd
   m_inflav = mo->part->Flav(); 
   m_t      = mo->t;
   m_x      = mo->x;
-  m_t0     = m_pt2min;
+  m_t0     = - m_pt2min;
   
   msg.Debugging()<<"Spacelike_Sudakov::Dice (t,x): "<<m_t<<" / "<<m_x<<" / for ("<<mo->kn_no
 		 <<"), "<<m_inflav<<std::endl;
@@ -278,8 +280,10 @@ bool Spacelike_Sudakov::CplVeto()
     double b = GetCoupling(m_pt2);
     double r = ran.Get();
     double w = b/a;
-    if (w>1.+1.e-6) 
+    if (w>1.+1.e-6) {
       msg.Out()<<"WARINIG: in Spacelike_Sudakov::CplVeto weight > 1. ! "<<w<<endl;
+      msg.Out()<<" t="<<m_t<<"  pt2="<<m_pt2<<"  a="<<a<<"  b="<<b<<endl;
+    }
     return (w > r) ? 0 : 1;
     return (GetCoupling(m_pt2)/GetCoupling() > ran.Get()) ? 0 : 1;   
   }

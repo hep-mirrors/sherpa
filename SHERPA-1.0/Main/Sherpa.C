@@ -45,10 +45,10 @@ bool Sherpa::InitializeTheEventHandler() {
 
   p_eventhandler    = new Event_Handler();
   p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
-  //p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,1));
+  p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,1));
   p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
 						  p_inithandler->GetShowerHandler()));
-  //p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));
+  p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));
   //  p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),
   //						  p_inithandler->GetFragmentationHandler()));
   return 1;

@@ -17,7 +17,7 @@ using namespace std;
 Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * _isr, 
 					   Final_State_Shower * _fin,
 					   MODEL::Model_Base * _model,
-					   Data_Read * _dataread) : 
+					   Data_Read * const _dataread) : 
   p_fin(_fin), m_fsron(0) 
 {
   if (p_fin) m_fsron      = 1;
@@ -25,14 +25,22 @@ Initial_State_Shower::Initial_State_Shower(PDF::ISR_Handler * _isr,
     double pt2fin     = 0.;
     if (p_fin) pt2fin = p_fin->PT2Min();  
     m_t0              = _dataread->GetValue<double>("IS PT2MIN",4.);
+    m_t0 = dabs(m_t0);
+    m_jetveto_scheme  = _dataread->GetValue<int>("IS JETVETOSCHEME",1);
+
     p_tools           = new Sudakov_Tools(1,_model,m_t0,(rpa.gen.Ecms())*(rpa.gen.Ecms()));
-    p_kin             = new Spacelike_Kinematics(pt2fin);
+    p_kin             = new Spacelike_Kinematics(pt2fin, _dataread);
     p_suds            = new Spacelike_Sudakov*[2];
     p_suds[0]         = new Spacelike_Sudakov(_isr->PDF(0),p_tools,p_kin,m_t0,_dataread);
     p_suds[1]         = new Spacelike_Sudakov(_isr->PDF(1),p_tools,p_kin,m_t0,_dataread);
+
     m_allowed         = 200;
+
     m_extra_pdf[0]    = 1;
     m_extra_pdf[1]    = 1;
+    m_to_be_diced[0]  = 1;
+    m_to_be_diced[1]  = 1;
+    m_t0 = - dabs(m_t0);
     return;
   }
 
@@ -72,6 +80,7 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
           trees[1]->GetInitiator()->part->Momentum();
     x1  = trees[0]->GetInitiator()->x;
     x2  = trees[1]->GetInitiator()->x;
+    /*
     if ((dabs(m_sprime - cms.Abs2())/m_sprime > 2.e-5 ) ||
 	(dabs(m_sprime - x1*x2*E2)/m_sprime > 2.e-5 )) {
       msg.Out()<<"ERROR in Initial_State_Shower : "<<std::endl;
@@ -86,6 +95,7 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
 
       return 0;
     }
+    */
     msg.Tracking()<<" In CMS "<<std::endl
 		  <<" s after shower : "<<cms.Abs2()<<" == "<<m_sprime<<std::endl;
     m_lab = p_kin->BoostInLab(trees);
@@ -93,6 +103,7 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
       trees[1]->GetInitiator()->part->Momentum();
     x1    = trees[0]->GetInitiator()->x;
     x2    = trees[1]->GetInitiator()->x;
+    /*
     if ((dabs(m_sprime - cms.Abs2())/m_sprime > 2.e-5 ) ||
 	(dabs(m_sprime - x1*x2*E2)/m_sprime > 2.e-5 )) {
       msg.Error()<<setprecision(12)
@@ -105,17 +116,17 @@ bool Initial_State_Shower::PerformShower(Tree ** trees,bool _jetveto) {
     }
     else if ((dabs(m_sprime - cms.Abs2())/m_sprime > rpa.gen.Accu()) ||
 	(dabs(m_sprime - x1*x2*E2)/m_sprime > rpa.gen.Accu())) {
-      /* *AS*
-      msg.Error()<<setprecision(12)
-		 <<"WARNING in Initial_State_Shower : "<<std::endl
-		 <<"Initial_State_Shower::PerformShower : "
-		 <<"Mismatch of sprimes in LAB !"<<std::endl
-		 <<"   "<<m_sprime<<" / "<<x1*x2*E2<<std::endl
-		 <<"   "<<cms<<" / "<<cms.Abs2()<<std::endl;
+// *AS*
+//        msg.Error()<<setprecision(12)
+//        	 <<"WARNING in Initial_State_Shower : "<<std::endl
+// 		 <<"Initial_State_Shower::PerformShower : "
+// 		 <<"Mismatch of sprimes in LAB !"<<std::endl
+// 		 <<"   "<<m_sprime<<" / "<<x1*x2*E2<<std::endl
+// 		 <<"   "<<cms<<" / "<<cms.Abs2()<<std::endl;
       //      return 0;
-      */
-    }
 
+    }
+*/
     return 1;
   }
     
@@ -264,6 +275,8 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 
   m_extra_pdf[0]    = 1;
   m_extra_pdf[1]    = 1;
+  m_to_be_diced[0]  = 1;
+  m_to_be_diced[1]  = 1;
 
   if ( (!k1) || (!k2) ) {
     msg.Error()<<"ERROR: Initial_State_Shower::InitializeSystem : No trees found !"<<std::endl;
@@ -287,6 +300,7 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 
   int mismatch  = 0;
   bool accepted =1; 
+  int caught_jetveto=0;
 
   int asc1 = 0;
 
@@ -298,9 +312,10 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 
     accepted = 1;  
     // Parton 1/Tree 1 is the one to decay.
-    if (decay1) {
-	msg.Debugging()<<"------------------------------"<<endl;
-	msg.Debugging()<<"  * calling FillBranch  I ("<<k1->kn_no<<")"<<endl;
+    if (decay1 && caught_jetveto!=3) {
+	msg.Tracking()<<"------------------------------"<<endl;
+	msg.Tracking()<<"  * calling FillBranch  I ("<<k1->kn_no<<")"<<endl;
+	m_to_be_diced[1]=0;
 	if (FillBranch(trees,k1,k2,0)) {
 	  if (k1->z>0.) m_sprime = m_sprime/k1->z;
 	}
@@ -309,9 +324,10 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 	}
     }
     // Parton 2/Tree 2 is the one to decay.    
-    if (decay2) {
-	msg.Debugging()<<"------------------------------"<<endl;
-	msg.Debugging()<<"  * calling FillBranch II ("<<k2->kn_no<<")"<<endl;
+    if (decay2 && caught_jetveto!=2) {
+	msg.Tracking()<<"------------------------------"<<endl;
+	msg.Tracking()<<"  * calling FillBranch II ("<<k2->kn_no<<")"<<endl;
+	m_to_be_diced[1]=0;
 	if (FillBranch(trees,k2,k1,1)) {
 	  if (k2->z > 0.) m_sprime = m_sprime/k2->z;
 	}
@@ -322,51 +338,63 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
     
     if (accepted) {
 
-      p_kin->InitKinematics(trees,k1,k2,first);
+      p_kin->InitKinematics(trees,k1,k2,first||caught_jetveto);
       if (!decay1) SetColours(k1);
       if (!decay2) SetColours(k2);
 
-      msg.Debugging()<<"------------------------------"<<endl;
+      msg.Tracking()<<"------------------------------"<<endl;
       msg.Debugging()<<"  * calling EvolveSystem ("<<k1->kn_no<<")  ("<<k2->kn_no<<")"<<endl;
-	
-      if (EvolveSystem(trees,k1,k2)) {
+      
+      int stat=EvolveSystem(trees,k1,k2);
+      if (stat==1) {
 	//	  if (k1save) delete k1save;
 	//	  if (k2save) delete k2save;
 	msg.Events()<<"Initial_State_Shower::InitializeSystem complete after "
 		    <<mismatch<<" trials"<<std::endl;
 	return 1;
       }
+      else if (stat==2 || stat==3) {
+	caught_jetveto=stat;
+      }
+      else {
+	caught_jetveto=0;
+      }
+	
     }
     else {
-
+      caught_jetveto=0;
 	  
       
     }
-    ++mismatch;
-    if (mismatch > m_allowed) {
-      msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
-		 <<"---------------------------------------"<<std::endl
-		 <<"Initial_State_Shower::InitializeSystem failed. "
-		 <<mismatch<<" trials."<<std::endl
-	//		 <<" Knots :"<<std::endl
-	//		 <<*(k1save)<<std::endl<<*(k2save)<<std::endl
-		 <<"---------------------------------------"<<std::endl;
-      //      if (k1save) delete k1save;
-      //      if (k2save) delete k2save;
-      return 0;
-    }
-    msg.Debugging()<<"---------------------------------------"<<std::endl
-		   <<"Initial_State_Shower::InitializeSystem failed "
+    if (caught_jetveto==0) {
+      ++mismatch;
+      if (mismatch > m_allowed) {
+	msg.Error()<<"Error in Initial_State_Shower : "<<std::endl
+		   <<"---------------------------------------"<<std::endl
+		   <<"Initial_State_Shower::InitializeSystem failed. "
 		   <<mismatch<<" trials."<<std::endl
+	  //		 <<" Knots :"<<std::endl
+	  //		 <<*(k1save)<<std::endl<<*(k2save)<<std::endl
 		   <<"---------------------------------------"<<std::endl;
-    msg.Debugging()<<" Restoring Trees "<<endl;
-    trees[0]->Restore();
-    trees[1]->Restore();
-    if (rpa.gen.Events()) {
-      OutputTree(trees[0]);
-      OutputTree(trees[1]);
+	//      if (k1save) delete k1save;
+	//      if (k2save) delete k2save;
+	return 0;
+      }
+      msg.Debugging()<<"---------------------------------------"<<std::endl
+		     <<"Initial_State_Shower::InitializeSystem failed "
+		     <<mismatch<<" trials."<<std::endl
+		     <<"---------------------------------------"<<std::endl;
+      msg.Debugging()<<" Restoring Trees "<<endl;
+      trees[0]->Restore();
+      trees[1]->Restore();
+      if (rpa.gen.Events()) {
+	OutputTree(trees[0]);
+	OutputTree(trees[1]);
+      }
     }
-
+    else {
+       msg.Tracking()<<" caught jetveto "<<caught_jetveto<<" in Initialize "<<endl;
+    }
   }
 }
 
@@ -374,14 +402,16 @@ bool Initial_State_Shower::InitializeSystem(Tree ** trees,Knot * k1,Knot * k2){
 //------------------------ Evolution of the Shower ----------------------
 //----------------------------------------------------------------------- 
 
-bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
+int Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
 {
+  msg.Debugging()<<"===================================================="<<std::endl;
   msg.Debugging()<<" Initial_State_Shower::EvolveSystem( ("<<k1->kn_no<<"), ("<<k2->kn_no<<") );"<<endl;
-
   msg.Debugging()<<"===================================================="<<std::endl
 		 <<"Initial_State_Shower::EvolveSystem for Knots:"<<std::endl
 		 <<k1->kn_no<<"("<<k1->stat<<") with "<<k1->t<<" and "
 		 <<k2->kn_no<<"("<<k2->stat<<") with "<<k2->t<<std::endl;
+  msg.Debugging()<<"vec1 : "<<k1->part->Momentum()<<std::endl;
+  msg.Debugging()<<"vec2 : "<<k2->part->Momentum()<<std::endl;
 
 
   bool decay1 = (k1->stat>=1), decay2 = (k2->stat>=1);
@@ -405,93 +435,144 @@ bool Initial_State_Shower::EvolveSystem(Tree ** trees,Knot * k1,Knot * k2)
     msg.Debugging()<<"    - calling FillBranch  a "<<endl;
   }
 
+  int caught_jetveto=0;
 
-  if (k1->stat>0) {
-    k1->stat           = 0;
-    k1->E2             = sqr(k1->part->Momentum()[0]);
-    k1->prev->E2       = k1->E2/sqr(k1->z);                        // ? exact ?
-    k1->prev->left->E2 = k1->prev->E2*sqr(1.-k1->z);
-  }  
-  else {
-    //    determine z and update x
-    double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
-    double sprime_b = (k1->prev->part->Momentum()+k2->part->Momentum()).Abs2();
-    //    cout<<" z,x old = "<<k1->z<<","<<k1->prev->x<<endl;
-    k1->z=sprime_a/sprime_b;
-    k1->prev->x=k1->x/k1->z;
-//     double s = sqr(rpa.gen.Ecms());
-//     double sprime_c = k1->x  * k2 ->x * s;
-//     double sprime_d = k1->prev->x  * k2 ->x * s;
-//     cout<<" sprime I  mom/x1x2 : "<<sprime_a<<"/"<<sprime_c<<endl;
-//     cout<<" sprime II mom/x1x2 : "<<sprime_b<<"/"<<sprime_d<<endl;
-//     cout<<" z,x fac = "<<k1->z<<","<<k1->prev->x<<endl;
-    m_sprime/=k1->z;
-
-
-    double pt2max = sqr(rpa.gen.Ecms());
-    double th     = 4.*k1->z*k1->z*k1->t/(4.*k1->z*k1->z*k1->t-(1.-k1->z)*k1->x*k1->x*pt2max);
-
-    //   cout<<" update thcrit = "<<k1->thcrit<<endl;
-    k1->prev->thcrit       = k1->thcrit;
-    k1->prev->t            = k1->t;
-    k1->prev->left->thcrit = th;  // will be updated in FirstTimelike...
-    k1->prev->left->t      = k1->prev->part->Momentum().Abs2();
-  }
-
-  if (k1->prev->stat>0) {
-    if (!FillBranch(trees,k1->prev,k2,ntree0)) return 0; // try from beginning
-  }
-  double maxt = p_kin->CalculateMaxT(k1,k2);
-  if (maxt<k1->prev->left->tout) {
-    msg.Debugging()<<"Initial_State_Shower::FillBranch : for "<<k1->kn_no<<std::endl
-		   <<"    No timelike branch possible here : "
-		   <<maxt<<" < "<<k1->prev->left->tout<<std::endl;
-    return 0; // try from beginning
-  }
-  else {
-    if (k1->prev->left->stat>0)
-      k1->prev->left->t = maxt;
+  for (;;) {
+    if (k1->stat>0 || caught_jetveto) {
+      msg.Tracking()<<"  k1->stat = "<<k1->stat<<endl;
+      k1->stat           = 0;
+      k1->E2             = sqr(k1->part->Momentum()[0]);
+      k1->prev->E2       = k1->E2/sqr(k1->z);                        // ? exact ?
+      k1->prev->left->E2 = k1->prev->E2*sqr(1.-k1->z);
+    }  
     else {
-      msg.Debugging()<<" timelike daughter already known "<<endl;
+      msg.Tracking()<<"* k1->stat = "<<k1->stat<<endl;
+      //    determine z and update x
+      msg.Tracking()<<" v1_p :"<<     k1->prev->part->Momentum()<<endl;
+      msg.Tracking()<<" v1 :"<<     k1->part->Momentum()<<endl;
+      msg.Tracking()<<" v2 :"<<     k2->part->Momentum()<<endl;
+      double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
+      double sprime_b = (k1->prev->part->Momentum()+k2->part->Momentum()).Abs2();
+      msg.Tracking()<<" z,x old = "<<k1->z<<","<<k1->prev->x<<endl;
+      k1->z=sprime_a/sprime_b;
+      k1->prev->x=k1->x/k1->z;
+      double s = sqr(rpa.gen.Ecms());
+      double sprime_c = k1->x  * k2 ->x * s;
+      double sprime_d = k1->prev->x  * k2 ->x * s;
+      msg.Tracking()<<" sprime I  mom/x1x2 : "<<sprime_a<<"/"<<sprime_c<<endl;
+      msg.Tracking()<<" sprime II mom/x1x2 : "<<sprime_b<<"/"<<sprime_d<<endl;
+      msg.Tracking()<<" z,x fac = "<<k1->z<<","<<k1->prev->x<<endl;
+      m_sprime/=k1->z;
+
+
+      double pt2max = sqr(rpa.gen.Ecms());
+      double th     = 4.*k1->z*k1->z*k1->t/(4.*k1->z*k1->z*k1->t-(1.-k1->z)*k1->x*k1->x*pt2max);
+
+      //   msg.Tracking()<<" update thcrit = "<<k1->thcrit<<endl;
+      msg.Tracking()<<" to be diced = "<<m_to_be_diced[ntree0]<<endl;
+      if (m_to_be_diced[ntree0]) {
+	k1->prev->thcrit       = k1->thcrit;
+	k1->prev->t            = k1->t;
+	k1->prev->left->thcrit = th;  // will be updated in FirstTimelike...
+	k1->prev->left->t      = k1->prev->part->Momentum().Abs2();
+      }
     }
-  } 
+
+    msg.Tracking()<<" k1->prev->stat = "<<k1->prev->stat<<endl;
+
+    if (k1->prev->stat>0 || caught_jetveto) {
+      m_to_be_diced[ntree0]=0;
+      if (k1->prev->stat!=2) {  // some don't have to be diced again
+	if (!FillBranch(trees,k1->prev,k2,ntree0)) return 0; // try from beginning
+      }
+    }
+    double maxt = p_kin->CalculateMaxT(k1,k2);
+    if (maxt<k1->prev->left->tout) {
+      msg.Debugging()<<"Initial_State_Shower::FillBranch : for "<<k1->kn_no<<std::endl
+		     <<"    No timelike branch possible here : "
+		     <<maxt<<" < "<<k1->prev->left->tout<<std::endl;
+      return 0; // try from beginning
+    }
+    else {
+      if (k1->prev->left->stat>0)
+	k1->prev->left->t = maxt;
+      else {
+	msg.Debugging()<<" timelike daughter already known "<<endl;
+      }
+    } 
   
-  double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
-  p_fin->FirstTimelikeFromSpacelike(trees[ntree0],k1->prev->left,m_jetveto,sprime_a,k1->z);
+    double sprime_a = (k1->part->Momentum()+k2->part->Momentum()).Abs2();
+    //    ============================================================
+    //    =      only adapt kinematics if jetveto was thrown        =
+    //    ============================================================
+    if (caught_jetveto==0) {
+      if (k1->prev->stat!=2) {  // some don't have to be diced again
+	p_fin->FirstTimelikeFromSpacelike(trees[ntree0],k1->prev->left,m_jetveto,sprime_a,k1->z);
+      }
+    }
 
-  if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first)) {
-    msg.Debugging()<<"Initial_State_Shower::EvolveSystem for knots"
-		   <<k1->kn_no<<", "<<k2->kn_no<<std::endl
-		   <<"   Couldn't do the kinematics."<<std::endl;
-    return 0; // try from beginning
-  }
-  // *AS* extra output
-//   OutputTree(trees[0]);
-//   OutputTree(trees[1]);
+    if (k1->prev->stat==2) {
+      k1->prev->stat=1;
+    }
 
-  /* *AS* calling Color routine should be called with (k1->prev) */
-  p_fin->SetAllColours(k1->prev->left);
+    if (!p_kin->DoKinematics(trees,k1,k2,ntree0,first)) {
+      msg.Debugging()<<"Initial_State_Shower::EvolveSystem for knots"
+		     <<k1->kn_no<<", "<<k2->kn_no<<std::endl
+		     <<"   Couldn't do the kinematics."<<std::endl;
+      return 0; // try from beginning
+    }
+    // *AS* extra output
+    //   OutputTree(trees[0]);
+    //   OutputTree(trees[1]);
+
+    //    ============================================================
+    //    =      call jetveto routine here                           =
+    //    ============================================================
+    if (m_jetveto && m_jetveto_scheme==2 && p_kin->JetVeto(k1->prev->left->part->Momentum())) {
+      if (k2->stat==1) k2->stat=2;  // i.e. not to be diced
+      return (ntree0+2);
+    }
+
+    /* *AS* calling Color routine should be called with (k1->prev) */
+    p_fin->SetAllColours(k1->prev->left);
   
-  if (k1->prev->z>0.) m_sprime = m_sprime/k1->prev->z;
+    if (k1->prev->z>0.) m_sprime = m_sprime/k1->prev->z;
 
-  if (ntree0==0) {
-    msg.Debugging()<<"    - calling EvolveSystem  a"<<endl;
-    return EvolveSystem(trees,k1->prev,k2);
+    if (ntree0==0) {
+      msg.Debugging()<<"    - calling EvolveSystem  a"<<endl;
+      int stat = EvolveSystem(trees,k1->prev,k2);
+      if (stat==0 || stat ==1) return stat;
+      caught_jetveto=stat;
+    }
+    else {  
+      msg.Debugging()<<"    - calling EvolveSystem  b"<<endl;
+      int stat=EvolveSystem(trees,k2,k1->prev);
+      if (stat==0 || stat ==1) return stat;
+      caught_jetveto=stat;
+    }
+
+    //  ==============================================================
+    //  =  if caught_jetveto was not diced here go further back      =
+    //  ==============================================================
+    msg.Tracking()<<" caught jetveto "<<caught_jetveto<<" in Evolve "<<ntree0+2<<endl;
+    if (caught_jetveto!=ntree0+2) {
+      
+      //  ==============================================================
+      //  =         perhaps undo what was diced here!!!                =
+      //  ==============================================================
+      
+      return caught_jetveto;
+    }
   }
-  else {  
-    msg.Debugging()<<"    - calling EvolveSystem  b"<<endl;
-    return EvolveSystem(trees,k2,k1->prev);
-  }
-   
 }  
 
-bool Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg) {
+int Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner,int leg) {
   if (leg==0) msg.Debugging()<<" Initial_State_Shower::FillBranch( I ";
   else msg.Debugging()<<" Initial_State_Shower::FillBranch( II ";
   msg.Debugging()<<",("<<active->kn_no<<"), <"<<partner->kn_no<<"> );"<<endl;
 
   Flavour flavs[2];
-  if (p_suds[leg]->Dice(active,m_sprime,m_jetveto,m_extra_pdf[leg])) {
+  if (p_suds[leg]->Dice(active,m_sprime,m_jetveto && m_jetveto_scheme==1  ,m_extra_pdf[leg])) {
 
     if (p_kin->KinCheck(active,m_jetveto)) return 0;
 
@@ -502,6 +583,11 @@ bool Initial_State_Shower::FillBranch(Tree ** trees,Knot * active,Knot * partner
 
     return 1;
   }
+
+//     ============================================================
+//     =   remove mother and sister if already avaliable          =
+//     ============================================================
+
   active->prev   = 0;
   active->stat   = 0;
   active->t      = active->tout;
@@ -520,26 +606,53 @@ void Initial_State_Shower::FillMotherAndSister(Tree * tree,Knot * k,Flavour * k_
   msg.Debugging()<<"Initial_State_Shower::FillMotherAndSister(";
   msg.Debugging()<<" ("<<k->kn_no<<") )   t="<<k->t<<endl;
 
-  Knot * mother  = tree->NewKnot();
-  k->prev        = mother;
+  //    ============================================================
+  //    =     use mother and sister if already avaliable           =
+  //    ============================================================
+
+  Knot * mother = 0;
+  if (k->prev) {
+    msg.Tracking()<<" using existing mother "<<endl;
+    mother = k->prev;
+    if (mother->prev) {
+      msg.Tracking()<<"WARNING cutting further development "<<endl;
+      mother->prev=0;
+    }
+  }
+  else {
+    mother  = tree->NewKnot();
+    k->prev = mother;
+  }
 
   mother->right  = k;
   mother->part->SetFlav(k_flavs[0]);
   mother->part->SetInfo('I');
   mother->part->SetStatus(1);
   mother->t      = k->t;
-  mother->tout   = m_t0;
+  mother->tout   = sqr(k_flavs[0].PSMass()); //m_t0;
   mother->x      = k->x/k->z;
   mother->stat   = 1;
   mother->E2     = 0.;
-  //  cout<<" FMS update thcrit"<<k->thcrit<<endl;
+  //  msg.Tracking()<<" FMS update thcrit"<<k->thcrit<<endl;
   mother->thcrit = k->thcrit;
 
   //  mother->E2     = sqr(1./k->z) * k->E2;
 
-  Knot * sister  = tree->NewKnot();
-  sister->prev   = mother;
-  mother->left   = sister;
+
+  Knot * sister = 0;
+  if (mother->left) {
+    sister = mother->left;
+    if (sister->left) {
+      msg.Tracking()<<"Note: cutting further development of sister"<<endl;
+      sister->left=0;
+      sister->right=0;
+    }
+  }
+  else {
+    sister=tree->NewKnot();
+    sister->prev   = mother;
+    mother->left   = sister;
+  }
   sister->part->SetFlav(k_flavs[1]);
   sister->part->SetInfo('F');
   sister->part->SetStatus(1);
@@ -596,7 +709,7 @@ void Initial_State_Shower::SetColours(Knot * k)
 	}
       }
       else {
-	cout<<" ERROR: strong particle "<<test->part->Flav()<<" not covered by SetColours "<<endl;
+	msg.Error()<<" ERROR: strong particle "<<test->part->Flav()<<" not covered by SetColours "<<endl;
       }
     }      
   }
@@ -746,7 +859,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   d1->part->SetFlow(1,500);
   d1->part->SetFlow(2,501);
   d1->t       = -scale;
-  d1->tout    = m_t0;
+  d1->tout    = sqr(Flavour(kf::u).PSMass()); //m_t0;
   d1->x       = x1;
   d1->E2      = sqr(x1*E);
   d1->maxpt2  = scale;
@@ -761,7 +874,7 @@ void Initial_State_Shower::InitTwoTrees(Tree ** trees,double E2) {
   d2->part->SetFlow(1,502);
   d2->part->SetFlow(2,d1->part->GetFlow(1));
   d2->t       = -scale;
-  d2->tout    = m_t0;
+  d2->tout    = d1->tout;  //m_t0;
   d2->x       = x2;
   d2->E2      = sqr(x2*E);
   d2->maxpt2  = scale;

@@ -26,7 +26,7 @@ namespace APACIC {
     Timelike_Kinematics    * p_kin;
     std::vector<Knot*> m_ini_partons;
   public:
-    Final_State_Shower(MODEL::Model_Base *,AORGTOOLS::Data_Read *);
+    Final_State_Shower(MODEL::Model_Base *,AORGTOOLS::Data_Read * const);
     ~Final_State_Shower();
 
     int PerformShower(Tree *,bool);
