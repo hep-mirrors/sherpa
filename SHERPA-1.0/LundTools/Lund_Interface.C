@@ -390,6 +390,6 @@ void Lund_Interface::Error(const int error)
   else {
     ATOOLS::msg.Error()<<"Lund_Interface::Error("<<error<<") "<<ATOOLS::om::red
 		       <<"Pythia calls PYERRM("<<error<<")."<<ATOOLS::om::reset<<std::endl;
-    if (ATOOLS::msg.LevelIsErrors()) pylist(2);
+    if (ATOOLS::msg.LevelIsError()) pylist(2);
   }
 }
