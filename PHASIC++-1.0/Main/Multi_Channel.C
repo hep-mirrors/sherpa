@@ -158,7 +158,7 @@ void Multi_Channel::Optimize(double error)
   for (i=0;i<channels.size();i++) {
     if (dabs(aptot-sqrt(s1[i]))>s1x) s1x = dabs(aptot-sqrt(s1[i]));
     channels[i]->SetAlpha(channels[i]->Alpha() * sqrt(s1[i])/aptot);
-    if (channels[i]->Alpha() < 1.e-3/(double)channels.size() ) channels[i]->SetAlpha(0.);
+    if (channels[i]->Alpha() < Min(1.e-4,1.e-3/(double)channels.size()) ) channels[i]->SetAlpha(0.);
   }
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
@@ -192,7 +192,7 @@ void Multi_Channel::EndOptimize(double error)
 
   for (i=0;i<channels.size();i++) {
     channels[i]->SetAlpha(channels[i]->AlphaSave());
-    if (channels[i]->Alpha() < 1.e-2/(double)channels.size()) channels[i]->SetAlpha(0.);
+    if (channels[i]->Alpha() < Min(1.e-4,1.e-2/(double)channels.size())) channels[i]->SetAlpha(0.);
   }
   double norm = 0;
   for (i=0;i<channels.size();i++) norm += channels[i]->Alpha();
@@ -248,12 +248,12 @@ void Multi_Channel::EndOptimize(double error)
 
 void Multi_Channel::AddPoint(double value)
 {
-  if (!ATOOLS::IsZero(value)) n_contrib++;
-
+  //if (!ATOOLS::IsZero(value)) n_contrib++;
+  if (value>0.) n_contrib++;
   n_points++;
   m_result  += value;
   m_result2 += value*value;
-  
+  //if (!ATOOLS::IsZero(value/m_result*(double)n_points)) n_contrib++;
   double var;
   for (short int i=0;i<channels.size();i++) {
     if (value!=0.) {

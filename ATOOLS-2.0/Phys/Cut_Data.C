@@ -277,14 +277,21 @@ void Cut_Data::Update(double sprime,double y)
   for (int i=2;i<ncut;i++) {
     if (cosmax[0][i]<1.) {
       //cout<<"cos[0]["<<i<<"]: "<< cosmax[0][i]<<"->";
-      help = Vec4D(1.,sqrt(1.-sqr(cosmax[0][i])),0.,cosmax[0][i]);
-      Forward.Boost(help);
-      cosmax[0][i] = cosmax[i][0] = help[3]/help[0];
+      if (!fl[i].IsMassive() || y>=0.) {
+	help = Vec4D(1.,sqrt(1.-sqr(cosmax[0][i])),0.,cosmax[0][i]);
+	Forward.Boost(help);
+	cosmax[0][i] = cosmax[i][0] = help[3]/help[0];
+      } 
+      else cosmax[0][i] = cosmax[i][0] = 1.;  // No better estimate for massive particles
       //cout<<cosmax[0][i]<<endl;
+ 
       //cout<<"cos[1]["<<i<<"]: "<< cosmax[1][i]<<"->";
-      help = Vec4D(1.,sqrt(1.-sqr(cosmax[1][i])),0.,cosmax[1][i]);
-      Backward.Boost(help);
-      cosmax[1][i] = cosmax[i][1] = help[3]/help[0];
+      if (!fl[i].IsMassive() || y<=0.) {
+	help = Vec4D(1.,sqrt(1.-sqr(cosmax[1][i])),0.,cosmax[1][i]);
+	Backward.Boost(help);
+	cosmax[1][i] = cosmax[i][1] = help[3]/help[0];
+      }
+      else cosmax[1][i] = cosmax[i][1] = 1.;  // No better estimate for massive particles
       //cout<<cosmax[1][i]<<endl;
     }
   }

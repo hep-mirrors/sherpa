@@ -226,7 +226,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
     }
   }
   fsrchannels->GeneratePoint(p,p_cuts);
-
+  
   if (!Check4Momentum(p)) {
     msg.Events()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
     for (int i=0;i<nin+nout;++i) msg.Events()<<i<<":"<<p[i]<<" ("<<p[i].Abs2()<<")"<<endl;
@@ -269,7 +269,6 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
     fsrchannels->GenerateWeight(p,p_cuts);
     result1 *= KFactor * fsrchannels->Weight();
     if (ih && ih->On()==3) result2 = result1;
-
     result1 *= process->Differential(p);
   }
  
@@ -286,7 +285,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
 
   for (int i=0;i<nin+nout;++i) p[i]=p_save[i];
   delete [] p_save;
-
+  
   return flux*(result1+result2);
 }
 
@@ -766,6 +765,8 @@ bool Phase_Space_Handler::MakeBeamChannels()
   for (int i=0;i<fsrchannels->Number();i++) {
     type = 0; mass = width = 0.;
     if (proc) fsrchannels->ISRInfo(i,type,mass,width);
+//     std::cout<<"FSR : "<<i<<"("<<fsrchannels->Number()<<", "
+// 	     <<type<<"/"<<mass<<"/"<<width<<std::endl;
     
     if ((type==0) || (type==3))                                           continue;
     if ((type==1) && (ATOOLS::IsZero(mass) || ATOOLS::IsZero(width))) continue;
@@ -927,26 +928,42 @@ bool Phase_Space_Handler::CreateBeamChannels()
 				      beam_params[i].parameters[4]);
       beamchannels->Add(channel);
     }
+    if ((beam_params[i]).type==2) {
+      channel = new ThresholdCentral(beam_params[i].parameters[0],
+				     beam_params[i].parameters[3],
+				     beam_params[i].parameters[4]);
+      beamchannels->Add(channel);
+      channel = new ThresholdForward(beam_params[i].parameters[0],
+				     beam_params[i].parameters[2],
+				     beam_params[i].parameters[3],
+				     beam_params[i].parameters[4]);
+      beamchannels->Add(channel);
+      channel = new ThresholdBackward(beam_params[i].parameters[0],
+				      beam_params[i].parameters[2],
+				      beam_params[i].parameters[3],
+				      beam_params[i].parameters[4]);
+      beamchannels->Add(channel);
+    }
     if ((beam_params[i]).type==3) {
       //if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
-	channel = new LBSComptonPeakCentral(beam_params[i].parameters[0],
-					    beam_params[i].parameters[1],
-					    beam_params[i].parameters[2],
-					    beam_params[i].parameters[3]);
-	  beamchannels->Add(channel);
-	  channel = new LBSComptonPeakForward(beam_params[i].parameters[0],
-					      beam_params[i].parameters[1],
-					      beam_params[i].parameters[2],
-					      beam_params[i].parameters[3],
-					      beam_params[i].parameters[4]);
-	  beamchannels->Add(channel);
-	  channel = new LBSComptonPeakBackward(beam_params[i].parameters[0],
-					       beam_params[i].parameters[1],
-					       beam_params[i].parameters[2],
-					       beam_params[i].parameters[3],
-					       beam_params[i].parameters[4]);
-	  beamchannels->Add(channel);
-	  // }
+      channel = new LBSComptonPeakCentral(beam_params[i].parameters[0],
+					  beam_params[i].parameters[1],
+					  beam_params[i].parameters[2],
+					  beam_params[i].parameters[3]);
+      beamchannels->Add(channel);
+      channel = new LBSComptonPeakForward(beam_params[i].parameters[0],
+					  beam_params[i].parameters[1],
+					  beam_params[i].parameters[2],
+					  beam_params[i].parameters[3],
+					  beam_params[i].parameters[4]);
+      beamchannels->Add(channel);
+      channel = new LBSComptonPeakBackward(beam_params[i].parameters[0],
+					   beam_params[i].parameters[1],
+					   beam_params[i].parameters[2],
+					   beam_params[i].parameters[3],
+					   beam_params[i].parameters[4]);
+      beamchannels->Add(channel);
+      // }
     }
   }
   return 1;
