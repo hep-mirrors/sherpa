@@ -42,37 +42,34 @@ namespace ATOOLS {
     // destructor
     virtual ~File_IO_Base();
 
-    // setters
-    inline void SetInputPath(const std::string _m_inputpath,const unsigned int i=0);
-    inline void SetInputFile(const std::string _m_inputfile,const unsigned int i=0);
-    inline void SetOutputPath(const std::string _m_outputpath,const unsigned int i=0);
-    inline void SetOutputFile(const std::string _m_outputfile,const unsigned int i=0);
-
-    inline void SetInFileMode(const OpenModeID _m_infilemode,const unsigned int i=0);
-    inline void SetOutFileMode(const OpenModeID _m_outfilemode,const unsigned int i=0);
-
-    // getters
-    inline const std::string InputPath(const unsigned int i=0) const;
-    inline const std::string InputFile(const unsigned int i=0) const;
-    inline const std::string OutputPath(const unsigned int i=0) const;
-    inline const std::string OutputFile(const unsigned int i=0) const;
-
-    inline const OpenModeID InFileMode(const unsigned int i=0) const;
-    inline const OpenModeID OutFileMode(const unsigned int i=0) const;
-
-    inline std::ifstream *InFile(const unsigned int i=0);
-    inline std::ofstream *OutFile(const unsigned int i=0);
-
     // member functions
+    void SetInputPath(const std::string _m_inputpath,const unsigned int i=0);
+    void SetInputFile(const std::string _m_inputfile,const unsigned int i=0);
+    void SetOutputPath(const std::string _m_outputpath,const unsigned int i=0);
+    void SetOutputFile(const std::string _m_outputfile,const unsigned int i=0);
+
+    void SetInFileMode(const OpenModeID _m_infilemode,const unsigned int i=0);
+    void SetOutFileMode(const OpenModeID _m_outfilemode,const unsigned int i=0);
+
+    const std::string InputPath(const unsigned int i=0) const;
+    const std::string InputFile(const unsigned int i=0) const;
+    const std::string OutputPath(const unsigned int i=0) const;
+    const std::string OutputFile(const unsigned int i=0) const;
+
     bool CheckInputPath(const unsigned int i=0);
     bool CheckInputFile(const unsigned int i=0);
     bool CheckOutputPath(const unsigned int i=0);
     bool CheckOutputFile(const unsigned int i=0);
 
+    // inline functions
+    inline const OpenModeID InFileMode(const unsigned int i=0) const  { return m_infilemode[i];  }
+    inline const OpenModeID OutFileMode(const unsigned int i=0) const { return m_outfilemode[i]; }
+
+    inline std::ifstream *InFile(const unsigned int i=0)  { return m_infile[i];  }
+    inline std::ofstream *OutFile(const unsigned int i=0) { return m_outfile[i]; }
+
   }; // end of class File_IO_Base
 
 } // end of namespace ATOOLS
-
-#include "File_IO_Base.inl.H"
 
 #endif

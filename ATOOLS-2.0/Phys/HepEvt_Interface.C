@@ -537,8 +537,6 @@ void HepEvt_Interface::HepEvt2Particle(const int pos)
 bool HepEvt_Interface::ConstructBlobsFromHerwig(ATOOLS::Blob_List * const blobs)
 {
   ATOOLS::Particle * part, * mother;
-  int helper;
-  bool deleteall;
   ATOOLS::Blob * blob, * help,
     * signal = new ATOOLS::Blob(), 
     * beam1  = new ATOOLS::Blob(), 

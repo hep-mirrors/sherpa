@@ -6,26 +6,26 @@
 
 namespace ATOOLS {
 
-  inline void Read_Write_Base::SetSeperator(const std::string _m_seperator) 
+  inline void Read_Write_Base::SetSeparator(const std::string _m_separator) 
   { 
-    m_seperator.clear(); 
-    m_seperator.push_back(_m_seperator); 
+    m_separator.clear(); 
+    m_separator.push_back(_m_separator); 
   }
   
-  inline void Read_Write_Base::SetSeperator(const std::vector<std::string> &_m_seperator) 
+  inline void Read_Write_Base::SetSeparator(const std::vector<std::string> &_m_separator) 
   { 
-    m_seperator.clear(); 
-    m_seperator=_m_seperator; 
+    m_separator.clear(); 
+    m_separator=_m_separator; 
   }
   
-  inline void Read_Write_Base::AddSeperator(const std::string _m_seperator) 
+  inline void Read_Write_Base::AddSeparator(const std::string _m_separator) 
   { 
-    m_seperator.push_back(_m_seperator); 
+    m_separator.push_back(_m_separator); 
   }
   
-  inline void Read_Write_Base::AddSeperator(const std::vector<std::string> &_m_seperator) 
+  inline void Read_Write_Base::AddSeparator(const std::vector<std::string> &_m_separator) 
   { 
-    for (unsigned int i=0;i<_m_seperator.size();m_seperator.push_back(_m_seperator[i++])); 
+    for (unsigned int i=0;i<_m_separator.size();m_separator.push_back(_m_separator[i++])); 
   }
   
   inline void Read_Write_Base::SetComment(const std::string _m_comment)       
@@ -173,9 +173,9 @@ namespace ATOOLS {
     return m_ignore;     
   }
   
-  inline const std::vector<std::string> &Read_Write_Base::Seperator() const         
+  inline const std::vector<std::string> &Read_Write_Base::Separator() const         
   { 
-    return m_seperator; 
+    return m_separator; 
   }
   
   inline const std::vector<int> &Read_Write_Base::Blank() const            

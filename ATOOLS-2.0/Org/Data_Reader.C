@@ -16,9 +16,9 @@ Data_Reader::Data_Reader():
 }
 
 Data_Reader::Data_Reader(const std::string _m_cut,
-			 const std::string _m_seperator,
+			 const std::string _m_separator,
 			 const std::string _m_comment):
-  Read_Write_Base(1,0,_m_cut,_m_seperator,_m_comment)
+  Read_Write_Base(1,0,_m_cut,_m_separator,_m_comment)
 {
   SetInFileMode(Permanent);
 }
@@ -79,15 +79,15 @@ std::string Data_Reader::KillBlanks(std::string& buffer)
   return buffer;
 }
 
-std::string Data_Reader::HighlightSeperator(std::string& buffer)
+std::string Data_Reader::HighlightSeparator(std::string& buffer)
 {
 #ifdef DEBUG__Data_Reader
-  std::cout<<"Data_Reader::HighlightSeperator("<<buffer<<")"<<std::endl;
+  std::cout<<"Data_Reader::HighlightSeparator("<<buffer<<")"<<std::endl;
 #endif
   size_t pos;
   if (buffer==nullstring) return buffer;
-  for (unsigned int j=0; j<Seperator().size(); ++j) {
-    if ((pos=buffer.find(Seperator()[j]))!=std::string::npos) {
+  for (unsigned int j=0; j<Separator().size(); ++j) {
+    if ((pos=buffer.find(Separator()[j]))!=std::string::npos) {
       buffer.insert(pos+1," ",1);
       buffer.insert(pos," ",1);
     }
@@ -149,7 +149,7 @@ Read_Type Data_Reader::M_ReadFromString(std::string parameter,std::string &input
   if(((pos=inputstring.find(parameter))!=std::string::npos)&&
      ((inputstring=inputstring.substr(pos+parameter.length())).length()>0)) {
     MyStrStream converter;
-    converter<<ReplaceTags(HighlightSeperator(inputstring));
+    converter<<ReplaceTags(HighlightSeparator(inputstring));
     converter>>value;
 #ifdef DEBUG__Data_Reader
     std::cout<<"   returning '"<<value<<"'"<<" ( type = "<<Type::GetType(value)<<" )"<<std::endl;
@@ -225,11 +225,11 @@ Data_Reader::M_VectorFromString(std::string parameter, std::string inputstring,V
   while (value != Default<std::string>()) {
 #ifdef DEBUG__Data_Reader
     std::cout<<"   newline tags are ";
-    for (unsigned int j=0;j<Seperator().size();std::cout<<"'"<<Seperator()[j++]<<"' ");
+    for (unsigned int j=0;j<Separator().size();std::cout<<"'"<<Separator()[j++]<<"' ");
     std::cout<<std::endl;
 #endif
     bool stop=false;
-    for (unsigned int j=0;j<Seperator().size();++j) if (value==Seperator()[j]) stop=true;
+    for (unsigned int j=0;j<Separator().size();++j) if (value==Separator()[j]) stop=true;
     if (stop) break;
     values.push_back(M_ReadFromString<Read_Type>(nullstring,value));
     if (tempvtype==VVertical) break;
@@ -316,12 +316,12 @@ Data_Reader::M_MatrixFromString(std::string parameter,std::string inputstring,Ma
   for(unsigned int i=0;value.size()!=0;++i) {
     transposedvalues.push_back(value);
     if (value.size()<mindim) mindim=value.size();
-    bool foundseperator=false;
+    bool foundseparator=false;
     size_t sep=std::string::npos;
-    for (unsigned int i=0;i<Seperator().size();++i) {
-      if ((sep=inputstring.find(Seperator()[i]))!=std::string::npos) foundseperator=true;
+    for (unsigned int i=0;i<Separator().size();++i) {
+      if ((sep=inputstring.find(Separator()[i]))!=std::string::npos) foundseparator=true;
     }
-    if(foundseperator) inputstring=inputstring.substr(sep+1);
+    if(foundseparator) inputstring=inputstring.substr(sep+1);
     else inputstring=nullstring;
     value=M_VectorFromString<Read_Type>(nullstring,inputstring,VHorizontal);
   }

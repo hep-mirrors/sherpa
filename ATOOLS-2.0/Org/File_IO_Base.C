@@ -51,3 +51,122 @@ void File_IO_Base::CloseOutFile(const unsigned int i,const bool force)
   return;
 }
 
+void File_IO_Base::SetInputPath(const std::string _m_inputpath,
+				const unsigned int i)
+{ 
+  if (_m_inputpath!=m_inputpath[i]) {
+    CloseInFile(i,true);
+    m_inputpath[i]=_m_inputpath; 
+  }
+}
+
+const std::string File_IO_Base::InputPath(const unsigned int i) const
+{ 
+  if (i<m_inputfile.size()) return m_inputpath[i]; 
+  return nullstring; 
+}
+
+void File_IO_Base::SetInputFile(const std::string _m_inputfile,
+				const unsigned int i)
+{ 
+  if (_m_inputfile!=m_inputfile[i]) {
+    CloseInFile(i,true);
+    m_inputfile[i]=_m_inputfile; 
+  }
+}
+
+const std::string File_IO_Base::InputFile(const unsigned int i) const
+{ 
+  if (i<m_inputfile.size()) return m_inputfile[i]; 
+  return nullstring; 
+}
+
+void File_IO_Base::SetOutputPath(const std::string _m_outputpath,
+				 const unsigned int i)
+{ 
+  if (_m_outputpath!=m_outputpath[i]) {
+    CloseOutFile(i,true);
+    m_outputpath[i]=_m_outputpath; 
+  }
+}
+
+const std::string File_IO_Base::OutputPath(const unsigned int i) const
+{ 
+  if (i<m_outputpath.size()) return m_outputpath[i]; 
+  return nullstring; 
+}
+
+void File_IO_Base::SetOutputFile(const std::string _m_outputfile,
+				 const unsigned int i)
+{ 
+  if (_m_outputfile!=m_outputfile[i]) {
+    CloseOutFile(i,true);
+    m_outputfile[i]=_m_outputfile; 
+  }
+}
+
+const std::string File_IO_Base::OutputFile(const unsigned int i) const
+{ 
+  if (i<m_outputfile.size()) return m_outputfile[i]; 
+  return nullstring; 
+}
+
+void File_IO_Base::SetInFileMode(const OpenModeID _m_infilemode,
+				 const unsigned int i)
+{ 
+  m_infilemode[i]=_m_infilemode; 
+  CloseInFile(i);
+}
+
+void File_IO_Base::SetOutFileMode(const OpenModeID _m_outfilemode,
+				  const unsigned int i)
+{ 
+  m_outfilemode[i]=_m_outfilemode; 
+  CloseOutFile(i);
+}
+
+bool File_IO_Base::CheckInputPath(const unsigned int i)
+{	
+  if (i>=m_inputpath.size()) return false;
+  if (m_inputpath[i]==nullstring) {
+    msg_Tracking()<<"File_IO_Base::CheckInputPath(): "
+		  <<"No input path specified!"<<std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool File_IO_Base::CheckInputFile(const unsigned int i)
+{	
+  if (i>=m_inputfile.size()) return false;
+  if (m_inputfile[i]==nullstring) {
+    msg_Tracking()<<"File_IO_Base::CheckInputFile(): "
+		  <<"No input file specified!"<<std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool File_IO_Base::CheckOutputPath(const unsigned int i)
+{	
+  if (i>=m_outputpath.size()) return false;
+  if (m_outputpath[i]==nullstring) {
+    msg_Tracking()<<"File_IO_Base::CheckOutputPath(): "
+		  <<"No output path specified!"<<std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool File_IO_Base::CheckOutputFile(const unsigned int i)
+{	
+  if (i>=m_outputpath.size()) return false;
+  if (m_outputfile[i]==nullstring) {
+    msg_Tracking()<<"File_IO_Base::CheckOutputFile(): "
+		  <<"No output file specified!"<<std::endl;
+    return false;
+  }
+  return true;
+}
+
+

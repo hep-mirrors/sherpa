@@ -34,7 +34,6 @@ noinst_HEADERS        =	\
 			Exception_Handler.H \
 			Exception_Handler.inl.H \
 			File_IO_Base.H \
-			File_IO_Base.inl.H \
 			Read_Write_Base.H \
 			Read_Write_Base.inl.H \
 			Data_Reader.H \

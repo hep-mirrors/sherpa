@@ -14,7 +14,7 @@ namespace ATOOLS {
     void KillComments(std::string& buffer);
 
     std::string KillBlanks(std::string& buffer);
-    std::string HighlightSeperator(std::string& buffer);
+    std::string HighlightSeparator(std::string& buffer);
 
     std::string ReplaceTags(std::string tag);
 
@@ -44,7 +44,7 @@ namespace ATOOLS {
     // constructors
     Data_Reader();
     Data_Reader(const std::string _m_cut,
-		const std::string _m_seperator,
+		const std::string _m_separator,
 		const std::string _m_comment);
 
     // member functions
@@ -108,7 +108,7 @@ namespace ATOOLS {
     \brief Default constructor
 
     Initializes the Data_Reader with the default cut "=", 
-    the default column seperator ";" and the default comment indicator "#".
+    the default column separator ";" and the default comment indicator "#".
   */
 
   /*!
@@ -116,7 +116,7 @@ namespace ATOOLS {
     \brief Special constructor
 
     Initializes the Data_Reader with the given cut, 
-    the given array seperator and the given comment indicator. 
+    the given array separator and the given comment indicator. 
   */
 
   /*!

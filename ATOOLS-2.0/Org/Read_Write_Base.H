@@ -28,7 +28,7 @@ namespace ATOOLS {
 
     static std::vector<std::string> s_commandline;
 
-    std::vector<std::string> m_comment, m_ignore, m_seperator, m_filecontent;
+    std::vector<std::string> m_comment, m_ignore, m_separator, m_filecontent;
     std::vector<int>         m_blank;
 
     std::string              m_string, m_filebegin, m_fileend;
@@ -65,17 +65,17 @@ namespace ATOOLS {
     Read_Write_Base(const unsigned int infiles,
 		    const unsigned int outfiles,
 		    const std::string _m_cut,
-		    const std::string _m_seperator,
+		    const std::string _m_separator,
 		    const std::string _m_comment);
 
     // destructor
     ~Read_Write_Base();
 
     // setters
-    inline void SetSeperator(const std::string _m_seperator);
-    inline void SetSeperator(const std::vector<std::string> &_m_seperator);
-    inline void AddSeperator(const std::string _m_seperator);
-    inline void AddSeperator(const std::vector<std::string> &_m_seperator);
+    inline void SetSeparator(const std::string _m_separator);
+    inline void SetSeparator(const std::vector<std::string> &_m_separator);
+    inline void AddSeparator(const std::string _m_separator);
+    inline void AddSeparator(const std::vector<std::string> &_m_separator);
 
     inline void SetComment(const std::string _m_comment);
     inline void SetComment(const std::vector<std::string> &_m_comment);
@@ -120,7 +120,7 @@ namespace ATOOLS {
     // getters
     inline const std::vector<std::string> &Comment() const;
     inline const std::vector<std::string> &Ignore() const;
-    inline const std::vector<std::string> &Seperator() const;
+    inline const std::vector<std::string> &Separator() const;
 
     inline const std::vector<int> &Blank() const;
 
@@ -163,20 +163,20 @@ namespace ATOOLS {
     \brief Default constructor
 
     Initializes the Read_Write_Base with the default cut "=", 
-    the default column seperator ";" and the default comment indicator "#".
+    the default column separator ";" and the default comment indicator "#".
   */
 
   /*!
     \fn Read_Write_Base::Read_Write_Base(std::string,std::string,std::string)
     \brief Special constructor
 
-    Initializes the Read_Write_Base with the given cut, the given seperator 
+    Initializes the Read_Write_Base with the given cut, the given separator 
     and the given comment indicator. 
   */
 
   /*!
-    \fn Read_Write_Base::SetSeperator(std::string)
-    \brief Sets the seperator
+    \fn Read_Write_Base::SetSeparator(std::string)
+    \brief Sets the separator
   */
 
   /*!
@@ -195,8 +195,8 @@ namespace ATOOLS {
   */
 
   /*!
-    \fn Read_Write_Base::Seperator()
-    \brief Returns the current seperator
+    \fn Read_Write_Base::Separator()
+    \brief Returns the current separator
   */
 
   /*!

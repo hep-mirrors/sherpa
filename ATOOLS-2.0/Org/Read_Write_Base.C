@@ -9,7 +9,7 @@ Read_Write_Base::Read_Write_Base(const unsigned int infiles,
   File_IO_Base(infiles,outfiles),
   m_comment(std::vector<std::string>(1,defaultcom)), 
   m_ignore(std::vector<std::string>(1,defaultcut)),
-  m_seperator(std::vector<std::string>(1,defaultsep))
+  m_separator(std::vector<std::string>(1,defaultsep))
 {
   Init();
 }
@@ -17,12 +17,12 @@ Read_Write_Base::Read_Write_Base(const unsigned int infiles,
 Read_Write_Base::Read_Write_Base(const unsigned int infiles,
 				 const unsigned int outfiles,
 				 const std::string _m_cut,
-				 const std::string _m_seperator,
+				 const std::string _m_separator,
 				 const std::string _m_comment):
   File_IO_Base(infiles,outfiles),
   m_comment(std::vector<std::string>(1,_m_comment)), 
   m_ignore(std::vector<std::string>(1,_m_cut)),
-  m_seperator(std::vector<std::string>(1,_m_seperator))
+  m_separator(std::vector<std::string>(1,_m_separator))
 {
   Init();
 }
