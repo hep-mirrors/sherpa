@@ -180,7 +180,8 @@ void Single_Amplitude::Zprojecting(Flavour* fl,int ngraph,bool gc)
   
   if (gc){
     Color_Generator cgen;
-    cgen.CFConvert(Pointlist);  
+    int dummy = 0;
+    cgen.CFConvert(N,dummy,Pointlist);  
     cgen.CFKill();
     cgen.CFBuildString(N);  
     CFlist  = cgen.Get_CF();
