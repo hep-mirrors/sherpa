@@ -33,12 +33,13 @@ namespace APACIC {
       No links are set so far, in case no root of the knotlist was specified so far, 
       the new knot plays this role.
     */
-    Knot * NewKnot();
+    //    Knot * NewKnot();
     /*! 
       Returns a pointer to a free knot with a halfway specified parton,
       i.e. momentum and flavour will be set.
     */
     Knot * NewKnot(APHYTOOLS::Flavour, AMATOOLS::Vec4D, double, double);
+    Knot * NewKnot(APHYTOOLS::Parton * _inpart=NULL);
     /*! 
       Returns a pointer to a free knot in the list while copying another knot with
       zero links into it.

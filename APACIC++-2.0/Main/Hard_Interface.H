@@ -1,13 +1,15 @@
 #ifndef HardInterface_h
 #define HardInterface_h
 
+#include "Model_Base.H"
+
 #include "Parton_List.H"
 #include "Blob_List.H"
 
 #include "Data_Read.H"
 
 
-namespace ISR {
+namespace PDF {
   class ISR_Handler;
 }
 
@@ -24,7 +26,7 @@ namespace APACIC {
     Tree                 * p_fintree;
     Tree                ** p_initrees;
   public :
-    Hard_Interface(ISR::ISR_Handler *,int,bool,bool,AORGTOOLS::Data_Read *); 
+    Hard_Interface(PDF::ISR_Handler *,MODEL::Model_Base *,int,bool,bool,AORGTOOLS::Data_Read *); 
     ~Hard_Interface(); 
     void PrepareTrees();
     int  PerformShowers(bool,bool,bool);

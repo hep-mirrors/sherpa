@@ -110,23 +110,26 @@ Knot * Tree::NewKnot(Knot * ink) {
   }
   newk->part      = new Parton(ink->part);
   return newk;
-};
+}
 
-
-Knot * Tree::NewKnot()
+Knot * Tree::NewKnot(Parton * _inpart)
 {
   Knot * newk     = new Knot;
   p_knots->push_back(newk);
   newk->kn_no     = p_knots->size();
-  Parton * newp   = new Parton;
-  newk->part      = newp;
-  newk->part->SetNumber(newk->kn_no);
+  if (_inpart==NULL) {
+    Parton * part = new Parton();
+    newk->part    = part; 
+    newk->part->SetNumber(newk->kn_no);
+  }
+  else {
+    newk->part    = _inpart;
+  }
   newk->left      = 0;
   newk->right     = 0;
   newk->prev      = 0;
   if (!p_root) {
     p_root = newk;
-    // msg.Debugging()<<"Knot::NewKnot : "<<newk<<" serves as new root."<<endl;
   }
   return newk;
 }

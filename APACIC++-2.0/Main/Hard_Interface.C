@@ -9,13 +9,13 @@
 #include "Random.H"
 
 using namespace APACIC;
-using namespace ISR;
+using namespace PDF;
 using namespace AMATOOLS;
 using namespace APHYTOOLS;
 using namespace AORGTOOLS;
 
 
-Hard_Interface::Hard_Interface(ISR_Handler * _isr,int _maxjetnumber,
+Hard_Interface::Hard_Interface(ISR_Handler * _isr,MODEL::Model_Base * _model,int _maxjetnumber,
 			       bool _isron,bool _fsron,Data_Read * _dataread):
   m_isron(_isron), m_fsron(_fsron), m_showers(_isron||_fsron),
   p_fintree(NULL), p_finshower(NULL), p_initrees(NULL), p_inishower(NULL)
@@ -23,12 +23,12 @@ Hard_Interface::Hard_Interface(ISR_Handler * _isr,int _maxjetnumber,
   msg.Debugging()<<"Passed isr : "<<_isr<<std::endl;
   if (m_fsron) {
     p_fintree   = new Tree();
-    p_finshower = new Final_State_Shower(_dataread);
+    p_finshower = new Final_State_Shower(_model,_dataread);
   }
   if (m_isron) {
     p_initrees  = new Tree*[2];
     for (int i=0;i<2;i++) p_initrees[i] = new Tree();
-    p_inishower = new Initial_State_Shower(_isr,p_finshower,_dataread);
+    p_inishower = new Initial_State_Shower(_isr,p_finshower,_model,_dataread);
   }
 }
   

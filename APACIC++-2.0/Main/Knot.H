@@ -68,7 +68,6 @@ namespace APACIC {
   };
 
   inline void Knot::CopyData(Knot * ink) {
-
     part->Copy(ink->part);
     stat   = ink->stat;
 
