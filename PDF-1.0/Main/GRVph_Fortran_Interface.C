@@ -13,6 +13,11 @@ extern "C" {
 
 GRVph_Fortran_Interface::GRVph_Fortran_Interface(const ATOOLS::Flavour _bunch) 
 {
+  m_xmin=1.e-5;
+  m_xmax=1.;
+  m_q2min=.25;
+  m_q2max=1.e6;
+
   m_bunch = _bunch;
   m_d = m_u = m_s = m_c = m_b = m_g = 0.;
   
