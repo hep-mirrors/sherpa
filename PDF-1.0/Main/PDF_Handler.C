@@ -2,6 +2,7 @@
 #include "PDF_Electron.H"
 #include "PDF_MRST99.H"
 #include "LHAPDF_Fortran_Interface.H"
+#include "CTEQ6_Fortran_Interface.H"
 #include "Message.H"
 #include <stdio.h>
 
@@ -38,6 +39,15 @@ PDF_Base * PDF_Handler::GetPDFLib(Data_Read * dataread,Flavour & bunch_particle,
       if (set==std::string("MRST99")) {
 	msg.Tracking()<<"Initialize MRST99 : "<<version<<" from "<<grid_path<<endl;
 	return new PDF_MRST99(bunch_particle,version,grid_path);
+      }
+      else if ((set==std::string("cteq6m") ||
+	  set==std::string("cteq6d") ||
+	  set==std::string("cteq6l") ||
+	  set==std::string("cteq6l1")) && grid_path==std::string("CTEQ6Grid") ) {
+	  
+	  msg.Tracking()<<"Initialize CTEQ6 : "<<version<<" from "<<grid_path<<endl;
+	  cout<<"Try to build CTEQ6_Fortran_Interface object"<<endl;
+	  return new CTEQ6_Fortran_Interface(bunch_particle,set,version,grid_path);
       }
       else if (set==std::string("Alekhin_100") ||
 	       set==std::string("Alekhin_1000") ||
