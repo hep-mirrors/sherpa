@@ -37,6 +37,7 @@ Environment::~Environment() {
 }
 
 void Environment::InitializeTheEnvironment() {
+  APHYTOOLS::ParticleInit(m_path); 
   rpa.Init(m_path);
 
   bool okay =         InitializeTheModel();  
