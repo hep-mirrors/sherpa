@@ -33,6 +33,7 @@ namespace ANALYSIS {
 
   class Final_Selector : public Primitive_Observable_Base {
   protected:
+    ATOOLS::Particle_Qualifier_Base * p_qualifier;
     std::string                  m_inlistname, m_outlistname;
     bool                         m_ownlist, m_extract;
     int                          m_mode;
@@ -55,7 +56,8 @@ namespace ANALYSIS {
     void   Extract(ATOOLS::Particle_List *); 
  public:
     Final_Selector(const std::string &,const std::string &);
-    Final_Selector(const std::string &,const std::string &, int mode);
+    Final_Selector(const std::string &,const std::string &, int mode, 
+		   ATOOLS::Particle_Qualifier_Base * const qualifier=NULL);
 
     void AddSelector(const ATOOLS::Flavour &, const Final_Selector_Data &);
     void AddSelector(const ATOOLS::Flavour & ,const ATOOLS::Flavour &, const Final_Selector_Data &);

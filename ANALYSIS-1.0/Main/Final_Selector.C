@@ -30,13 +30,35 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
   if (ATOOLS::rpa.gen.Beam1().Kfcode()==ATOOLS::kf::e && 
       ATOOLS::rpa.gen.Beam2().Kfcode()==ATOOLS::kf::e) jetmode=1;
   std::string inlist="FinalState", outlist="Analysed";
+  ATOOLS::Particle_Qualifier_Base *qualifier=NULL;
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="InList" && cur.size()>1) inlist=cur[1];
     else if (cur[0]=="OutList" && cur.size()>1) outlist=cur[1];
     else if (cur[0]=="JetMode" && cur.size()>1) jetmode=ATOOLS::ToType<int>(cur[1]);
+    else if (cur[0]=="Qual" && cur.size()>1) {
+      int code=ATOOLS::ToType<int>(cur[1]);
+      if (ATOOLS::rpa.gen.Beam1().IsLepton() && 
+	  ATOOLS::rpa.gen.Beam2().IsLepton()) {
+	switch (code) {
+	case  0: qualifier=new ATOOLS::Is_There(); break; 
+	case  1: qualifier=new ATOOLS::Is_Charged_Hadron(); break;
+	case  2: qualifier=new ATOOLS::Is_Neutral_Hadron(); break;
+	case  3: qualifier=new ATOOLS::Is_Hadron(); break;
+	case  4: qualifier=new ATOOLS::Is_Charged(); break;
+	case  5: qualifier=new ATOOLS::Is_Charged_Pion(); break;
+	case  6: qualifier=new ATOOLS::Is_Charged_Kaon(); break;
+	case  7: qualifier=new ATOOLS::Is_Proton_Antiproton(); break;
+	case  9: qualifier=new ATOOLS::Is_Parton(); break;
+	case 42: qualifier=new ATOOLS::Is_Not_Lepton(); break;
+	case 43: qualifier=new ATOOLS::Is_Not_Neutrino(); break;
+	default: qualifier=new ATOOLS::Is_Charged();
+	}
+      }
+    }
   }
-  Final_Selector *selector = new Final_Selector(inlist,outlist,jetmode);
+  if (!qualifier) qualifier=new ATOOLS::Is_Not_Lepton(); 
+  Final_Selector *selector = new Final_Selector(inlist,outlist,jetmode,qualifier);
   for (size_t i=0;i<parameters.size();++i) {
     const std::vector<std::string> &cur=parameters[i];
     if (cur[0]=="Finder" && cur.size()>1) {
@@ -112,15 +134,15 @@ Final_Selector::Final_Selector(const std::string & inlistname,
 
 Final_Selector::Final_Selector(const std::string & inlistname,
 			       const std::string & outlistname,
-			       int mode) :
-  m_inlistname(inlistname),m_outlistname(outlistname),m_ownlist(false), m_extract(false),
-  m_mode(mode), p_jetalg(NULL)
+			       int mode, ATOOLS::Particle_Qualifier_Base * const qualifier) :
+  p_qualifier(qualifier), m_inlistname(inlistname), m_outlistname(outlistname),
+  m_ownlist(false), m_extract(false), m_mode(mode), p_jetalg(NULL)
 {
-  msg_Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<")"<<std::endl;
+  msg_Tracking()<<" init Final_Selector("<<inlistname<<","<<outlistname<<","<<mode<<","<<qualifier<<")"<<std::endl;
   m_splitt_flag = false;
   switch (mode) {
-  case 1: p_jetalg = new Durham_Algorithm(); break;
-  case 0: p_jetalg = new Kt_Algorithm(); break;
+  case 1: p_jetalg = new Durham_Algorithm(p_qualifier); break;
+  case 0: p_jetalg = new Kt_Algorithm(p_qualifier); break;
   default: break;
   }
 }
@@ -399,7 +421,8 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
       p_jetalg->ConstructJets(pl_in,pl_out,diffrates,it->second.r_min);
       // add leptons
       for (Particle_List::iterator pit=pl_in->begin();pit!=pl_in->end();++pit) {
-	if ((*pit)->Flav().IsLepton()) pl_out->push_back(new Particle(**pit));
+	if (!(*p_qualifier)(*pit))  pl_out->push_back(new Particle(**pit));
+	//	if ((*pit)->Flav().IsLepton()) pl_out->push_back(new Particle(**pit));
       }
       m_ownlist=true;
       std::string key;
@@ -453,7 +476,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
     }
   }
   
-  std::sort(pl_out->begin(),pl_out->end(),ATOOLS::Order_PT());
+  //  std::sort(pl_out->begin(),pl_out->end(),ATOOLS::Order_PT());
   
   p_ana->AddParticleList(m_outlistname,pl_out);
 }
@@ -461,7 +484,7 @@ void Final_Selector::Evaluate(const Blob_List &,double value, int ncount) {
 
 Primitive_Observable_Base * Final_Selector::Copy() const 
 {
-  Final_Selector *fs = new Final_Selector(m_inlistname,m_outlistname,m_mode);
+  Final_Selector *fs = new Final_Selector(m_inlistname,m_outlistname,m_mode,p_qualifier);
   for (Final_Data_Map::const_iterator it=m_fmap.begin();it!=m_fmap.end();++it) {
     fs->AddSelector(it->first,it->second);
   }
