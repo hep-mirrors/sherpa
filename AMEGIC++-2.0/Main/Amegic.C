@@ -404,20 +404,33 @@ int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
     if(fl[i].IsFermion()) dof=2;
     if(fl[i].IsVector() &&  AMATOOLS::IsZero(fl[i].Mass())) dof=2;
     if(fl[i].IsVector() && !AMATOOLS::IsZero(fl[i].Mass())) dof=3;
-
+    if(fl[i].IsTensor()) dof=5;
+ 
     if (AMATOOLS::IsZero(pd[i]-1.)) pl[i].init(1);
                                else pl[i].init(dof);
 
-    int tf[3] = {t1,t2,mt::p_l};
-    if (pl[i].num==1) { pl[i].type[0]=type; pl[i].factor[0]=dof; }
-    else{
-      for(int j=0;j<pl[i].num;j++){
-	pl[i].type[j] = tf[j];
-	if (pl[i].type[j]==type)  pl[i].factor[j] = 1.+pd[i]*(dof-1.);
-	                    else  pl[i].factor[j] = 1.-pd[i];
+    if(!fl[i].IsTensor()){
+      int tf[3]={t1,t2,mt::p_l};
+      if(pl[i].num==1) {
+	pl[i].type[0]=type;
+	pl[i].factor[0]=dof;}
+      else{
+	for(int j=0;j<pl[i].num;j++){
+	  pl[i].type[j]=tf[j];
+	  if(pl[i].type[j]==type)
+	    pl[i].factor[j]=1.+pd[i]*(dof-1.);
+	  else pl[i].factor[j]=1.-pd[i];
+	}
       }
     }
-    
+    else {
+      pl[i].type[0]=mt::p_t1;pl[i].factor[0]=1.;
+      pl[i].type[1]=mt::p_t2;pl[i].factor[1]=1.;
+      pl[i].type[2]=mt::p_t3;pl[i].factor[2]=1.;
+      pl[i].type[3]=mt::p_t4;pl[i].factor[3]=1.;
+      pl[i].type[4]=mt::p_t5;pl[i].factor[4]=1.;
+    }
+  
     msg.Debugging()<<"*****Extract_Flavours:Pol:  "
 		   <<pl[i].num<<" "<<pl[i].type[0]<<" "<<pl[i].type[1]<<" "
 		   <<pl[i].factor[0]<<" "<<pl[i].factor[1]<<endl
