@@ -193,36 +193,38 @@ double Channel_Basics::PseudoAngleCut(double m1_sq,double E1,
   //checked
 }
 
-
-double Channel_Basics::PDFPeakedDist(double a,double cn,double cxm,double cxp,int k,double ran)
+double Channel_Basics::
+FlatDist(double alpha,double min,double max,double R)
 {
-  double ce=1.0+cn;
-  double Imax=pow(log(cxp),ce), Imin=pow(log(cxm),ce);
-  return exp(pow(Imax*ran+(1.-ran)*Imin,1.0/ce));
+  double p=1.0+alpha;
+  double Imin=pow(log(min),p), Imax=pow(log(max),p);
+  if (min<1.0) return exp(-pow(Imax*R+(1.0-R)*Imin,1.0/p));
+  return exp(pow(Imax*R+(1.0-R)*Imin,1.0/p));
 }
 
-double Channel_Basics::PDFPeakedGrid(double a,double cn,double cxm,double cxp,double res,int k,double &ran)
+double Channel_Basics::
+FlatGrid(double alpha,double min,double max,double s,double &R)
 {
-  double ce=1.0+cn;
-  double logcxm=pow(log(cxm),ce);
-  ran=(pow(log(res),ce)-logcxm)/(pow(log(cxp),ce)-logcxm);
-  return res;
+  double p=1.0+alpha;
+  double Imin=pow(log(min),p), Imax=pow(log(max),p);
+  R=(pow(log(s),p)-Imin)/(Imax-Imin);
+  return s;
 }
 
-double Channel_Basics::PDFPeakedWeight(double a,double cn,
-				       double cxm,double cxp,int k)
+double Channel_Basics::FlatWeight(double alpha,double min,double max)
 {
-  double ce=1.+cn;
-  return (pow(log(cxp),ce)-pow(log(cxm),ce))/ce;
+  double p=1.0+alpha;
+  double Imin=pow(log(min),p), Imax=pow(log(max),p);
+  return (Imax-Imin)/p;
 }
 
-double Channel_Basics::PDFPeakedWeight(double a,double cn,
-				       double cxm,double cxp,double res,int k,double &ran)
+double Channel_Basics::
+FlatWeight(double alpha,double min,double max,double s,double &R)
 {
-  double ce=1.+cn;
-  double logcxm=pow(log(cxm),ce), logcxp=pow(log(cxp),ce);
-  ran=(pow(log(res),ce)-logcxm)/(logcxp-logcxm);
-  return (logcxp-logcxm)/ce;
+  double p=1.0+alpha;
+  double Imin=pow(log(min),p), Imax=pow(log(max),p);
+  R=(pow(log(s),p)-Imin)/(Imax-Imin);
+  return (Imax-Imin)/p;
 }
 
 

@@ -1024,56 +1024,59 @@ double Channel_Elements::WeightYBackward(const double yexponent,const double tau
   return wt;
 }
 
-double Channel_Elements::MasslessPDFWeight(double sexp,double smin,double smax,double s)
+double Channel_Elements::
+FlatMomenta(double sexp,double smin,double smax,double ran)
+{
+  double tmin=smin/smax, tmax=1.0;
+  double s=smax*Channel_Basics::FlatDist(sexp,tmin,tmax,ran);
+  if (!(s>0) && !(s<0) && s!=0) 
+    ATOOLS::msg.Error()<<"MasslessFlatMomenta produced a nan !"<<endl;
+  return s;
+}
+
+double Channel_Elements::
+FlatWeight(double sexp,double smin,double smax,double s)
 {
   if (s<=smin || s>=smax) return 0;
-  double wt=pow(log(s),sexp)/(s*Channel_Basics::PDFPeakedWeight(0.,sexp,smin,smax,1));
+  double tau=s/smax, tmin=smin/smax, tmax=1.0;
+  double wt=pow(log(tau),sexp)/
+    (tau*smax*Channel_Basics::FlatWeight(sexp,tmin,tmax));
   if (!(wt>0) && !(wt<=0)) { 
-    ATOOLS::msg.Error()<<"MasslessPDFWeight produces a nan: "<<wt<<endl
+    ATOOLS::msg.Error()<<"MasslessFlatWeight produces a nan: "<<wt<<endl
 		       <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 		       <<"   sexp = "<<sexp<<endl;
   }
   return wt;
 }
 
-double Channel_Elements::MasslessPDFWeight(double sexp,double smin,double smax,
-					    const double s,double &ran)
+double Channel_Elements::
+FlatWeight(double sexp,double smin,double smax,const double s,double &ran)
 {
   if (s<smin || s>=smax) {
     ran=-1.;
     return 0.;
   }
-  double wt=pow(log(s),sexp)/
-    (s*Channel_Basics::PDFPeakedWeight(0.,sexp,smin,smax,s,1,ran));
+  double tau=s/smax, tmin=smin/smax, tmax=1.0;
+  double wt=pow(log(tau),sexp)/
+    (tau*smax*Channel_Basics::FlatWeight(sexp,tmin,tmax,tau,ran));
   if (!(wt>0) && !(wt<=0)) { 
-    ATOOLS::msg.Error()<<"MasslessPDFWeight produces a nan: "<<wt<<endl
-			  <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
+    ATOOLS::msg.Error()<<"MasslessFlatWeight produces a nan: "<<wt<<endl
+		       <<"   smin,s,smax = "<<smin<<" < "<<s<<" < "<<smax
 		       <<"   sexp = "<<sexp<<endl;
   }
   return wt;
 }
 
-double Channel_Elements::MasslessPDFMomenta(double sexp,
-					     double smin,double smax,
-					     double ran)
-{
-  double s=Channel_Basics::PDFPeakedDist(0.,sexp,smin,smax,1,ran);
-  if (!(s>0) && !(s<0) && s!=0) 
-    ATOOLS::msg.Error()<<"MasslessPDFMomenta produced a nan !"<<endl;
-  return s;
-}
-
-
-void Channel_Elements::MasslessPDFGrid(double sexp,double smin,double smax,double s,double &ran)
+void Channel_Elements::
+FlatGrid(double sexp,double smin,double smax,double s,double &ran)
 {
   if (s<smin||s>smax) {
     ran=-1.;
     return;
   }
   else {
-    double cn=1.+sexp;
-    double psm=pow(log(smin),cn);
-    ran = (pow(log(s),cn)-psm)/(pow(log(smax),cn)-psm);
+    double tau=s/smax, tmin=smin/smax, tmax=1.0;
+    Channel_Basics::FlatGrid(sexp,tmin,tmax,tau,ran);
   }
 }
 

@@ -50,10 +50,10 @@ namespace PHASIC {
     double MasslessPropMomenta(double,double,double,double);
     void MasslessPropGrid(double,double,double,double,double&);
 
-    double MasslessPDFWeight(double,double,double,double);
-    double MasslessPDFWeight(double,double,double,double,double&);
-    double MasslessPDFMomenta(double,double,double,double);
-    void MasslessPDFGrid(double,double,double,double,double&);
+    double FlatWeight(double,double,double,double);
+    double FlatWeight(double,double,double,double,double&);
+    double FlatMomenta(double,double,double,double);
+    void FlatGrid(double,double,double,double,double&);
 
     double MassivePropWeight(double,double,int,double,double,double);
     double MassivePropWeight(double,double,int,double,double,double,double&);
