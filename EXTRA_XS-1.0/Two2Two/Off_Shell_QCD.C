@@ -90,8 +90,6 @@ Off_Shell_gg_gg::Off_Shell_gg_gg(const size_t nin,const size_t nout,
   m_zkey[1].Assign("z_2",3,0,PHASIC::Phase_Space_Handler::GetInfo());
 }
 
-static double res, num;
-
 double Off_Shell_gg_gg::operator()(double s,double t,double u) 
 {
   const ATOOLS::Vec4D *p=p_momenta;
