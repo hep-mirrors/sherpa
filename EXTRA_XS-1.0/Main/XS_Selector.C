@@ -38,11 +38,12 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
       return new Off_Shell_gg_qqb(nin,nout,flavours,p_owner->ScaleScheme(),
 				  p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
     }
-    ATOOLS::msg.Error()<<"XS_Selector::GetXS("<<nin<<","<<nout<<",["
-		       <<flavours[0]<<","<<flavours[1]<<","
-		       <<flavours[2]<<","<<flavours[3]<<"]):"<<std::endl
-		       <<"   The corresponding process is not impelemented yet ! Abort."<<std::endl;
-    exit(174);
+    if (flavours[2].IsGluon() && flavours[3].IsGluon() && 
+	flavours[0].IsGluon() && flavours[1].IsGluon()){ 
+      return new Off_Shell_gg_gg(nin,nout,flavours,p_owner->ScaleScheme(),
+				 p_owner->KFactorScheme(),p_owner->ScaleFactor()); 
+    }
+    return NULL;
   }
   if (flavours[2].IsFermion() && flavours[3]==flavours[2].Bar() &&
       flavours[0].IsPhoton()  && flavours[1]==flavours[0]) { 
@@ -89,13 +90,7 @@ Single_XS *XS_Selector::GetXS(const size_t nin,const size_t nout,
 	 ((flavours[3]==flavours[0]) && (flavours[2]==flavours[1]))) ) { 
     return new XS_q1q2_q1q2(nin,nout,flavours); 
   }
-
-  return 0;
-    ATOOLS::msg.Error()<<"XS_Selector::GetXS("<<nin<<","<<nout<<",["
-		       <<flavours[0]<<","<<flavours[1]<<","
-		       <<flavours[2]<<","<<flavours[3]<<"]):"<<std::endl
-		       <<"   The corresponding process is not impelemented yet ! Abort."<<std::endl;
-    exit(174);
+  return NULL;
 }
 
 size_t XS_Selector::FindInGroup(XS_Group *const group,XS_Base *&xs,
