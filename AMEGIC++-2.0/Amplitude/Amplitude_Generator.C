@@ -916,21 +916,21 @@ int Amplitude_Generator::FindQEDOrder(Point * p,int & countQED)
   int hit = 0;
   
   //Vector-Boson propagators
-  if (p->number>99 && p->fl.IsVector() && !(p->fl.IsGluon())) {
+  if (p->number>99 && (p->fl.IsVector() || p->fl.IsScalar()) && !(p->fl.IsGluon())) {
     countQED += 2;
     hit       = 1; 
   }    
   //External Vector-Boson 
-  if (p->number<99 && p->fl.IsVector() && !(p->fl.IsGluon())) {
+  if (p->number<99 && (p->fl.IsVector() || p->fl.IsScalar()) && !(p->fl.IsGluon())) {
     countQED += 1;
     hit       = 1;
   }
   
   //triple and quartic Vector-Boson interactions
   if (hit) {
-    if (p->left   && p->left->fl.IsVector() && !(p->left->fl.IsGluon()))     countQED -= 1;
-    if (p->right  && p->right->fl.IsVector() && !(p->right->fl.IsGluon()))   countQED -= 1;
-    if (p->middle && p->middle->fl.IsVector() && !(p->middle->fl.IsGluon())) countQED -= 1;
+    if (p->left   && (p->left->fl.IsVector() || p->left->fl.IsScalar()) && !(p->left->fl.IsGluon()))     countQED -= 1;
+    if (p->right  && (p->right->fl.IsVector() || p->right->fl.IsScalar()) && !(p->right->fl.IsGluon()))   countQED -= 1;
+    if (p->middle && (p->middle->fl.IsVector() || p->middle->fl.IsScalar())&& !(p->middle->fl.IsGluon())) countQED -= 1;
   }
   
   FindQEDOrder(p->left,countQED);
