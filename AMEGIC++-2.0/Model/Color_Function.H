@@ -10,55 +10,139 @@ namespace AMEGIC {
       F=1, 
       D=2, 
       None=3, 
-      G=4, 
+      G=4,  
       Unknown=99}; 
   };
   
 
   class Color_Function {
   public:
+    cf::code  m_type; // Number of args, multi gluons etc.
+    int  m_partarg[3];
+    char m_strarg[3];
+    Color_Function* p_next;
+  public:
     Color_Function()  {
-      type = cf::Unknown;
-      Next = 0;
-      for (short int i=0;i<3;++i) partarg[i] = -1;
-      for (short int i=0;i<3;++i) strarg[i] = '?';
+      m_type = cf::Unknown;
+      p_next = 0;
+      for (short int i=0;i<3;++i) m_partarg[i] = -1;
+      for (short int i=0;i<3;++i) m_strarg[i] = '?';
     }
     
     Color_Function(cf::code _type, 
 		   int _partarg0 = -1, int _partarg1 = -1, int _partarg2 = -1, 
-		   char _strarg0 = '?', char _strarg1 = '?', char _strarg2 = '?') 
-      :type(_type) { 
-      
-      Next = 0;
-      partarg[0] = _partarg0;
-      partarg[1] = _partarg1;
-      partarg[2] = _partarg2;
-      strarg[0]  = _strarg0;
-      strarg[1]  = _strarg1;
-      strarg[2]  = _strarg2;
-      }
-    
-    cf::code  type; // Number of args, multi gluons etc.
-    int  partarg[3];
-    char strarg[3];
-    Color_Function* Next;
+		   char _strarg0 = '?', char _strarg1 = '?', char _strarg2 = '?',
+		   Color_Function* n=NULL) 
+      : m_type(_type), p_next(n) 
+    {       
+      m_partarg[0] = _partarg0;
+      m_partarg[1] = _partarg1;
+      m_partarg[2] = _partarg2;
+      m_strarg[0]  = _strarg0;
+      m_strarg[1]  = _strarg1;
+      m_strarg[2]  = _strarg2;
+    }
 
+    Color_Function(const Color_Function & c) : p_next(NULL)
+    {
+      *this=c;
+    }
+
+    Color_Function & operator=(const Color_Function & c)
+    {
+      if (this!=&c) {
+	m_type       = c.m_type;
+	m_partarg[0] = c.m_partarg[0];
+	m_partarg[1] = c.m_partarg[1];
+	m_partarg[2] = c.m_partarg[2];
+	m_strarg[0]  = c.m_strarg[0];
+	m_strarg[1]  = c.m_strarg[1];
+	m_strarg[2]  = c.m_strarg[2]; 
+	if (p_next) delete p_next; 
+	if (c.p_next!=0)
+	  p_next=new Color_Function(*(c.p_next));
+	else
+	  p_next = 0;
+      }
+      return *this;
+    }
+
+    ~Color_Function() {
+      if (p_next) delete p_next;
+    }
+    
     void SetParticleArg(int a, int b,int c=-1) {
-      partarg[0] = a;partarg[1] = b;
-      if (type!=cf::D && type!=cf::G) partarg[2] = c;
+      m_partarg[0] = a;m_partarg[1] = b;
+      if (m_type!=cf::D && m_type!=cf::G) m_partarg[2] = c;
     }
 
     void SetStringArg(char a, char b, char c='?') {
-      strarg[0] = a;strarg[1] = b;
-      if (type!=cf::D && type!=cf::G) strarg[2] = c;
+      m_strarg[0] = a;m_strarg[1] = b;
+      if (m_type!=cf::D && m_type!=cf::G) m_strarg[2] = c;
     }
+
+    int ParticleArg(int i) const
+    { 
+      return m_partarg[i];
+    }
+    char StringArg(int i) const
+    { 
+      return m_strarg[i];
+    }
+    cf::code Type() const
+    {
+      return m_type;
+    }
+    Color_Function * Next() { 
+      return p_next; 
+    }
+    void Conjugate() 
+    {
+      if (Type()!=cf::T) return;
+
+      int help   = m_partarg[1];
+      m_partarg[1] = m_partarg[2];
+      m_partarg[2] = help;
+
+      char help2 = m_strarg[1];
+      m_strarg[1] = m_strarg[2];
+      m_strarg[2] = help2;  
+    }
+    
+    void Replace(int hit,int prop) {
+      for (short int i=0;i<3;i++) {
+	if ((Type()==cf::D || Type()==cf::G) && i==2) break;    
+	if (ParticleArg(i)==hit) m_partarg[i] = prop;
+      }
+    }
+    void Replace(int hit,char repl) {
+      for (short int j=0;j<3;j++) {
+	if ((Type()==cf::D || Type()==cf::G) && j==2) break;
+	if (ParticleArg(j)==hit) m_strarg[j] = repl;
+      }
+    }
+    void Append(Color_Function * last) 
+    {
+      Color_Function* help = this;
+      while (help->p_next) help = help->p_next;
+      help->p_next = last;  
+    }
+    Color_Function * Erase(Color_Function * granny) 
+    {
+      Color_Function * mo = p_next;
+      if (granny)  granny->p_next=mo;
+      p_next=0;
+      delete this;
+      return mo;
+    }
+
 
     std::string String() {
       
-      if (type==cf::None) return std::string("1");
+      if (m_type==cf::None) return std::string("1");
       
       std::string help;
-      switch (type) {
+      switch (m_type) {
       case 0 :  help = std::string("T[ , , ]");break;
       case 1 :  help = std::string("F[ , , ]");break;
       case 2 :  help = std::string("D[ , ]");break;
@@ -66,8 +150,8 @@ namespace AMEGIC {
       default : return std::string("1");
       }
       for (short int i=0;i<3;i++) {
-	if ((type==cf::D || type==cf::G) && i==2) break;
-	help[2+i*2] = strarg[i];
+	if ((m_type==cf::D || m_type==cf::G) && i==2) break;
+	help[2+i*2] = m_strarg[i];
       }
       return help;
     }

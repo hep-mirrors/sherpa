@@ -68,6 +68,13 @@ void Interaction_Model_ADD::c_FFVT(Single_Vertex* vertex,int& vanz)
   p_moewgrav->c_FFVT(vertex,vanz);
 }
 
+Interaction_Model_ADD::~Interaction_Model_ADD()
+{
+  delete  p_moqcd;
+  delete  p_moew;
+  delete  p_moqcdgrav;
+  delete  p_moewgrav;
+}
 
 
 

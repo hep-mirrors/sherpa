@@ -49,4 +49,8 @@ double Interaction_Model_Base::ScalarFunction(const std::string _name,double _t)
   }
 }
 
+Interaction_Model_Base::~Interaction_Model_Base()
+{
+  if (p_vertex!=NULL) { delete p_vertex; p_vertex = NULL; }
+} 
 

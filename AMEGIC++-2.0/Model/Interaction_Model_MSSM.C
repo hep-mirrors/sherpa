@@ -101,3 +101,12 @@ void Interaction_Model_MSSM::c_SSSS(Single_Vertex* vertex,int& vanz)
   p_mosqcd->c_SSSS(vertex,vanz);
   p_mosquark->c_SSSS(vertex,vanz);
 }
+
+Interaction_Model_MSSM::~Interaction_Model_MSSM()
+{
+  delete p_mothdm;
+  delete p_moinos;
+  delete p_moslepton;
+  delete p_mosqcd;
+  delete p_mosquark;
+}

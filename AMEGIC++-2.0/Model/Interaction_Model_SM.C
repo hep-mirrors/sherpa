@@ -38,3 +38,9 @@ void Interaction_Model_SM::c_VVS(Single_Vertex* vertex,int& vanz)  { p_moew->c_V
 void Interaction_Model_SM::c_SSS(Single_Vertex* vertex,int& vanz)  { p_moew->c_SSS(vertex,vanz); }
 void Interaction_Model_SM::c_SSVV(Single_Vertex* vertex,int& vanz) { p_moew->c_SSVV(vertex,vanz); }
 void Interaction_Model_SM::c_SSSS(Single_Vertex* vertex,int& vanz) { p_moew->c_SSSS(vertex,vanz); }
+
+Interaction_Model_SM::~Interaction_Model_SM()
+{
+  delete p_moqcd;
+  delete p_moew;
+}

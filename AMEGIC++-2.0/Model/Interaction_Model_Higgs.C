@@ -74,19 +74,16 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].on      = 1;
 
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  if (fl1.Strong()) {
-	    vertex[vanz].Color->type       = cf::D;     
+ 	  if (fl1.Strong()) {  
+	    vertex[vanz].Color = new Color_Function(cf::D);     
 	    vertex[vanz].Color->SetParticleArg(0,2);     
 	    vertex[vanz].Color->SetStringArg('0','2');     
 	  }
-	  else vertex[vanz].Color->type = cf::None; 
+	  else 
+	    vertex[vanz].Color = new Color_Function(cf::None);
 	
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  	  
 	  vanz++;
 	  //checked FK & RK	  
@@ -115,16 +112,12 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	  
-	vertex[vanz].Color->type       = cf::D;     
+	vertex[vanz].Color = new Color_Function(cf::D);     
 	vertex[vanz].Color->SetParticleArg(0,2);     
 	vertex[vanz].Color->SetStringArg('0','2');     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::FFS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	vertex[vanz].Lorentz->SetParticleArg(1);     
 	
 	vanz++;
@@ -159,19 +152,16 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	  
-	if (fl1.Strong()) {
-	  vertex[vanz].Color->type       = cf::D;     
+	if (fl1.Strong()) {  
+	  vertex[vanz].Color = new Color_Function(cf::D);     
 	  vertex[vanz].Color->SetParticleArg(0,2);     
 	  vertex[vanz].Color->SetStringArg('0','2');     
-	  }
-	else vertex[vanz].Color->type = cf::None; 
+	}
+	else
+	  vertex[vanz].Color = new Color_Function(cf::None);
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	vertex[vanz].Lorentz->type       = lf::FFS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);     
 	vertex[vanz].Lorentz->SetParticleArg(1);     
 	
 	vanz++;
@@ -199,16 +189,12 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::D;     
+	vertex[vanz].Color = new Color_Function(cf::D);     
 	vertex[vanz].Color->SetParticleArg(0,2);     
 	vertex[vanz].Color->SetStringArg('0','2');     
       
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::FFS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);    
 	vertex[vanz].Lorentz->SetParticleArg(1);     
 
 	vanz++;
@@ -243,14 +229,10 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].on      = 1;
 
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  	  
-	  vertex[vanz].Color->type       = cf::None;     
+	  vertex[vanz].Color = new Color_Function(cf::None);     
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);     
 	  vertex[vanz].Lorentz->SetParticleArg(1);     
 	  
 	  vanz++;
@@ -287,16 +269,12 @@ void Interaction_Model_Higgs::c_FFS(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].on      = 1;
 
 	    vertex[vanz].ncf   = 1;
-	    vertex[vanz].Color = new Color_Function; 
-	  	    
-	    vertex[vanz].Color->type       = cf::D;     
+	    vertex[vanz].Color = new Color_Function(cf::D);     
 	    vertex[vanz].Color->SetParticleArg(0,2);     
 	    vertex[vanz].Color->SetStringArg('0','2');     
 	    
 	    vertex[vanz].nlf     = 1;
-	    vertex[vanz].Lorentz = new Lorentz_Function; 
-	    
-	    vertex[vanz].Lorentz->type       = lf::FFS;     
+	    vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);     
 	    vertex[vanz].Lorentz->SetParticleArg(1);     
 	    
 	    vanz++;
@@ -338,14 +316,10 @@ void Interaction_Model_Higgs::c_VVS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::Gab;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);
 	vertex[vanz].Lorentz->SetParticleArg(0,2);     
 	
 	vanz++;
@@ -375,14 +349,10 @@ void Interaction_Model_Higgs::c_VVS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].on      = 1;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::Gab;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::Gab);
 	vertex[vanz].Lorentz->SetParticleArg(0,2);     
 	
 	vanz++;
@@ -422,14 +392,10 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type = cf::None; 
+	vertex[vanz].Color = new Color_Function(cf::None); 
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::SSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	
 	vertex[vanz].on      = 1;
 	vanz++;
@@ -473,14 +439,10 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	      vertex[vanz].ncf   = 1;
-	      vertex[vanz].Color = new Color_Function; 
-	      
-	      vertex[vanz].Color->type = cf::None; 
+	      vertex[vanz].Color = new Color_Function(cf::None); 
     
 	      vertex[vanz].nlf     = 1;
-	      vertex[vanz].Lorentz = new Lorentz_Function; 
-	      
-	      vertex[vanz].Lorentz->type       = lf::SSS;     
+	      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	      
 	      vertex[vanz].on      = 1;
 	      vanz++;
@@ -517,14 +479,10 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-      
-      vertex[vanz].Color->type = cf::None; 
+      vertex[vanz].Color = new Color_Function(cf::None); 
       
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-      
-      vertex[vanz].Lorentz->type       = lf::SSS;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
       
       vertex[vanz].on      = 1;
       vanz++;
@@ -550,14 +508,10 @@ void Interaction_Model_Higgs::c_SSS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type = cf::None; 
+	vertex[vanz].Color = new Color_Function(cf::None); 
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::SSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	
 	vertex[vanz].on      = 1;
 	vanz++;
@@ -597,14 +551,10 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type = cf::None; 
+	vertex[vanz].Color = new Color_Function(cf::None); 
  
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-      
-	vertex[vanz].Lorentz->type       = lf::SSV;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 
 	vertex[vanz ].on      = 1;
@@ -633,14 +583,10 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-	        
-      vertex[vanz].Color->type = cf::None; 
+      vertex[vanz].Color = new Color_Function(cf::None); 
       
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-      
-      vertex[vanz].Lorentz->type       = lf::SSV;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
       
       vertex[vanz].on      = 1;
@@ -666,14 +612,10 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type = cf::None; 
+    vertex[vanz].Color = new Color_Function(cf::None); 
     
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-    vertex[vanz].Lorentz->type       = lf::SSV;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
           
     vertex[vanz].on      = 1;
@@ -702,14 +644,10 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type = cf::None; 
+	vertex[vanz].Color = new Color_Function(cf::None); 
  
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::SSV;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 	
 	vertex[vanz].on      = 1;
@@ -736,14 +674,10 @@ void Interaction_Model_Higgs::c_SSV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-      
-      vertex[vanz].Color->type = cf::None; 
+      vertex[vanz].Color = new Color_Function(cf::None); 
  
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-      
-      vertex[vanz].Lorentz->type       = lf::SSV;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
       
       vertex[vanz].on      = 1;
@@ -786,14 +720,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type   = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -823,14 +753,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type   = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -857,14 +783,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type   = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
 	
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-    vertex[vanz].Lorentz->type = lf::VVSS;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
     vertex[vanz].Lorentz->SetParticleArg(0,3);     
     
     vertex[vanz].on      = 1;
@@ -892,14 +814,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type   = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -924,14 +842,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type   = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -959,14 +873,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type   = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -990,14 +900,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type   = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -1028,14 +934,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-	
-      vertex[vanz].Color->type   = cf::None;     
+      vertex[vanz].Color = new Color_Function(cf::None);     
       
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-      vertex[vanz].Lorentz->type = lf::VVSS;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
       vertex[vanz].Lorentz->SetParticleArg(0,3);     
       
       vertex[vanz].on      = 1;
@@ -1058,14 +960,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
   
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type   = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -1090,14 +988,10 @@ void Interaction_Model_Higgs::c_SSVV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-      
-      vertex[vanz].Color->type   = cf::None;     
+      vertex[vanz].Color = new Color_Function(cf::None);     
       
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-      
-      vertex[vanz].Lorentz->type = lf::VVSS;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
       vertex[vanz].Lorentz->SetParticleArg(0,3);     
       
       vertex[vanz].on      = 1;

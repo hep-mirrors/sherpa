@@ -70,19 +70,17 @@ void Interaction_Model_EW_Grav::c_FFT(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].cpl[3]  = 0.;
 	      
 	      vertex[vanz].ncf   = 1;
-	      vertex[vanz].Color = new Color_Function; 
-	      
-	      if (flav1.Strong()) {
-		vertex[vanz].Color->type       = cf::D;     
+
+	      if (flav1.Strong()) {  
+		vertex[vanz].Color = new Color_Function(cf::D);     
 		vertex[vanz].Color->SetParticleArg(0,2);     
 		vertex[vanz].Color->SetStringArg('0','2');     
 	      }
-	      else vertex[vanz].Color->type = cf::None; 
+	      else 
+		vertex[vanz].Color = new Color_Function(cf::None);
 	      
 	      vertex[vanz].nlf     = 1;
-	      vertex[vanz].Lorentz = new Lorentz_Function; 
-	      
-	      vertex[vanz].Lorentz->type       = lf::FFT;     
+	      vertex[vanz].Lorentz = new Lorentz_Function(lf::FFT);     
 	      vertex[vanz].Lorentz->SetParticleArg(1);     
 
 	      vertex[vanz].on      = 1;
@@ -106,19 +104,16 @@ void Interaction_Model_EW_Grav::c_FFT(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].cpl[3]  = 0.;
 	
 	      vertex[vanz].ncf   = 1;
-	      vertex[vanz].Color = new Color_Function; 
-	      
-	      if (flav1.Strong()) {
-		vertex[vanz].Color->type       = cf::D;     
+	      if (flav1.Strong()) {  
+		vertex[vanz].Color = new Color_Function(cf::D);     
 		vertex[vanz].Color->SetParticleArg(0,2);     
 		vertex[vanz].Color->SetStringArg('0','2');     
 	      }
-	      else vertex[vanz].Color->type = cf::None; 
+	      else 
+		vertex[vanz].Color = new Color_Function(cf::None);
 	      
 	      vertex[vanz].nlf     = 1;
-	      vertex[vanz].Lorentz = new Lorentz_Function; 
-	      
-	      vertex[vanz].Lorentz->type       = lf::FFGS;     
+	      vertex[vanz].Lorentz = new Lorentz_Function(lf::FFGS);     
 	      vertex[vanz].on     = 1;
 	      vanz++;
 	    }
@@ -172,19 +167,16 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 		vertex[vanz].ncf   = 1;
-		vertex[vanz].Color = new Color_Function; 
-		
 		if (flav1.Strong()) {
-		  vertex[vanz].Color->type       = cf::D;     
+		  vertex[vanz].Color = new Color_Function(cf::D);     
 		  vertex[vanz].Color->SetParticleArg(0,2);     
 		  vertex[vanz].Color->SetStringArg('0','2');     
 		}
-		else vertex[vanz].Color->type = cf::None; 
+		else 
+		  vertex[vanz].Color = new Color_Function(cf::None);
 		
 		vertex[vanz].nlf     = 1;
-		vertex[vanz].Lorentz = new Lorentz_Function; 
-		
-		vertex[vanz].Lorentz->type       = lf::FFVT;     
+		vertex[vanz].Lorentz = new Lorentz_Function(lf::FFVT);     
 		vertex[vanz].Lorentz->SetParticleArg(1,3);     
 
 		vertex[vanz].on      = 1;
@@ -209,19 +201,16 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	      vertex[vanz].ncf   = 1;
-	      vertex[vanz].Color = new Color_Function; 
-	      
 	      if (flav1.Strong()) {
-		vertex[vanz].Color->type       = cf::D;     
+		vertex[vanz].Color = new Color_Function(cf::D);     
 		vertex[vanz].Color->SetParticleArg(0,2);     
 		vertex[vanz].Color->SetStringArg('0','2');     
 	      }
-	      else vertex[vanz].Color->type = cf::None; 
-	      
+	      else 
+		vertex[vanz].Color = new Color_Function(cf::None);
+		
 	      vertex[vanz].nlf     = 1;
-	      vertex[vanz].Lorentz = new Lorentz_Function; 
-	      
-	      vertex[vanz].Lorentz->type       = lf::FFVT;     
+	      vertex[vanz].Lorentz = new Lorentz_Function(lf::FFVT);     
 	      vertex[vanz].Lorentz->SetParticleArg(1,3);     
 
 	      vertex[vanz].on     = 1;
@@ -246,19 +235,16 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 		vertex[vanz].ncf   = 1;
-		vertex[vanz].Color = new Color_Function; 
-		
 		if (flav1.Strong()) {
-		  vertex[vanz].Color->type       = cf::D;     
+		  vertex[vanz].Color = new Color_Function(cf::D);     
 		  vertex[vanz].Color->SetParticleArg(0,2);     
 		  vertex[vanz].Color->SetStringArg('0','2');     
 		}
-		else vertex[vanz].Color->type = cf::None; 
+		else 
+		  vertex[vanz].Color = new Color_Function(cf::None);
 		
 		vertex[vanz].nlf     = 1;
-		vertex[vanz].Lorentz = new Lorentz_Function; 
-		
-		vertex[vanz].Lorentz->type       = lf::FFVGS;     
+		vertex[vanz].Lorentz = new Lorentz_Function(lf::FFVGS);     
 		vertex[vanz].Lorentz->SetParticleArg(1);     
 
 		vertex[vanz].on      = 1;
@@ -283,19 +269,16 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 	      vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	      vertex[vanz].ncf   = 1;
-	      vertex[vanz].Color = new Color_Function; 
-	      
 	      if (flav1.Strong()) {
-		vertex[vanz].Color->type       = cf::D;     
+		vertex[vanz].Color = new Color_Function(cf::D);     
 		vertex[vanz].Color->SetParticleArg(0,2);     
 		vertex[vanz].Color->SetStringArg('0','2');     
 	      }
-	      else vertex[vanz].Color->type = cf::None; 
+	      else 
+		vertex[vanz].Color = new Color_Function(cf::None);
 	      
 	      vertex[vanz].nlf     = 1;
-	      vertex[vanz].Lorentz = new Lorentz_Function; 
-	      
-	      vertex[vanz].Lorentz->type       = lf::FFVGS;     
+	      vertex[vanz].Lorentz = new Lorentz_Function(lf::FFVGS);     
 	      vertex[vanz].Lorentz->SetParticleArg(1);     
 
 	      vertex[vanz].on     = 1;
@@ -341,19 +324,16 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 		vertex[vanz].ncf   = 1;
-		vertex[vanz].Color = new Color_Function; 
-		
 		if (flav1.Strong()) {
-		  vertex[vanz].Color->type       = cf::D;     
+		  vertex[vanz].Color = new Color_Function(cf::D);     
 		  vertex[vanz].Color->SetParticleArg(0,2);     
 		  vertex[vanz].Color->SetStringArg('0','2');     
 		}
-		else vertex[vanz].Color->type = cf::None; 
-		
+		else 
+		  vertex[vanz].Color = new Color_Function(cf::None);
+	      
 		vertex[vanz].nlf     = 1;
-		vertex[vanz].Lorentz = new Lorentz_Function; 
-		
-		vertex[vanz].Lorentz->type       = lf::FFVT;     
+		vertex[vanz].Lorentz = new Lorentz_Function(lf::FFVT);     
 		vertex[vanz].Lorentz->SetParticleArg(1,3);     
 
 		vertex[vanz].on      = 1;
@@ -400,19 +380,16 @@ void Interaction_Model_EW_Grav::c_FFVT(Single_Vertex* vertex,int& vanz)
 		vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 		vertex[vanz].ncf   = 1;
-		vertex[vanz].Color = new Color_Function; 
-		
 		if (flav1.Strong()) {
-		  vertex[vanz].Color->type       = cf::D;     
+		  vertex[vanz].Color = new Color_Function(cf::D);     
 		  vertex[vanz].Color->SetParticleArg(0,2);     
 		  vertex[vanz].Color->SetStringArg('0','2');     
 		}
-		else vertex[vanz].Color->type = cf::None; 
-		
+		else 
+		  vertex[vanz].Color = new Color_Function(cf::None);
+	      
 		vertex[vanz].nlf     = 1;
-		vertex[vanz].Lorentz = new Lorentz_Function; 
-		
-		vertex[vanz].Lorentz->type       = lf::FFVGS;     
+		vertex[vanz].Lorentz = new Lorentz_Function(lf::FFVGS);     
 		vertex[vanz].Lorentz->SetParticleArg(1);     
 
 		vertex[vanz].on      = 1;
@@ -449,14 +426,10 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-      
-      vertex[vanz].Color->type       = cf::None;     
+      vertex[vanz].Color = new Color_Function(cf::None);     
       
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-      vertex[vanz].Lorentz->type = lf::VVT;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::VVT);     
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
       vertex[vanz].on      = 1;
@@ -479,14 +452,10 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-      
-      vertex[vanz].Color->type       = cf::None;     
+      vertex[vanz].Color = new Color_Function(cf::None);     
       
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-      vertex[vanz].Lorentz->type = lf::VVT;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::VVT);     
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
       vertex[vanz].on      = 1;
@@ -508,14 +477,10 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-    
-      vertex[vanz].Color->type       = cf::None;     
+      vertex[vanz].Color = new Color_Function(cf::None);     
 
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-
-      vertex[vanz].Lorentz->type = lf::VVT;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::VVT);     
       vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
       
       vertex[vanz].on      = 1;
@@ -541,14 +506,10 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type       = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
 
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-
-    vertex[vanz].Lorentz->type = lf::VVGS;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVGS);     
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
     vertex[vanz].on      = 1;
@@ -572,14 +533,10 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type       = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
 
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-
-    vertex[vanz].Lorentz->type = lf::VVGS;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVGS);     
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
     vertex[vanz].on      = 1;
@@ -601,14 +558,10 @@ void Interaction_Model_EW_Grav::c_VVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type       = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
 
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-
-    vertex[vanz].Lorentz->type = lf::VVGS;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVGS);     
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 
     vertex[vanz].on      = 1;
@@ -641,14 +594,10 @@ void Interaction_Model_EW_Grav::c_VVVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type       = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-
-    vertex[vanz].Lorentz->type = lf::VVVT;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVVT);     
     vertex[vanz].Lorentz->SetParticleArg(0,1,2,3);     
     
     vertex[vanz].on      = 1;
@@ -670,14 +619,10 @@ void Interaction_Model_EW_Grav::c_VVVT(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
     
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type       = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
 
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-    vertex[vanz].Lorentz->type = lf::VVVT;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVVT);     
     vertex[vanz].Lorentz->SetParticleArg(0,1,2,3);     
     
     vertex[vanz].on      = 1;
@@ -708,14 +653,10 @@ void Interaction_Model_EW_Grav::c_SST(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type   = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-    vertex[vanz].Lorentz->type = lf::SST;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SST);     
     vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 
     vertex[vanz].on      = 1;
@@ -736,14 +677,10 @@ void Interaction_Model_EW_Grav::c_SST(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type   = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-    vertex[vanz].Lorentz->type = lf::SSGS;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSGS);     
     vertex[vanz].Lorentz->SetParticleArg(0,2);     	
 
     vertex[vanz].on      = 1;
@@ -780,14 +717,10 @@ void Interaction_Model_EW_Grav::c_SSST(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type   = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-    vertex[vanz].Lorentz->type = lf::SSST;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSST);     
     vertex[vanz].Lorentz->SetParticleArg(3);     	
 
     vertex[vanz].on      = 1;
@@ -813,14 +746,10 @@ void Interaction_Model_EW_Grav::c_SSST(Single_Vertex* vertex,int& vanz)
     vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
     vertex[vanz].ncf   = 1;
-    vertex[vanz].Color = new Color_Function; 
-    
-    vertex[vanz].Color->type   = cf::None;     
+    vertex[vanz].Color = new Color_Function(cf::None);     
     
     vertex[vanz].nlf     = 1;
-    vertex[vanz].Lorentz = new Lorentz_Function; 
-    
-    vertex[vanz].Lorentz->type = lf::SSSS;     
+    vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 
     vertex[vanz].on      = 1;
     vanz++;

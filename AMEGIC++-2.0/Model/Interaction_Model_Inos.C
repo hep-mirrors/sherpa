@@ -61,14 +61,10 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
 	  vanz++;
@@ -93,14 +89,10 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
 	  vanz++;
@@ -137,14 +129,10 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	 
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
 	  vanz++;
@@ -174,14 +162,10 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
 	  vanz++;
@@ -218,14 +202,10 @@ void Interaction_Model_Inos::c_FFS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
 	  vanz++;
@@ -252,6 +232,9 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   vertex[vanz].in[1] = flph;
 	   vertex[vanz].in[2] = flav2;
 	   
+	   cout<<"Chargino Masses : "<<flav1<<" "<<flav1.Mass()<<endl;
+
+
 	   Kabbala charge1 = Kabbala(string("Q_{")+flav1.TexName()+string("}"),
 				     flav1.Charge());
 	   
@@ -265,14 +248,10 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	   
 	   vertex[vanz].ncf   = 1;
-	   vertex[vanz].Color = new Color_Function; 
-	   
-	   vertex[vanz].Color->type = cf::None; 
+	   vertex[vanz].Color = new Color_Function(cf::None); 
 	   
 	   vertex[vanz].nlf     = 1;
-	   vertex[vanz].Lorentz = new Lorentz_Function; 
-	   
-	   vertex[vanz].Lorentz->type       = lf::Gamma;     
+	   vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
 	   vertex[vanz].Lorentz->SetParticleArg(1);     
 	   
 	   vertex[vanz].on      = 1;
@@ -305,14 +284,10 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	   vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	   
 	   vertex[vanz].ncf   = 1;
-	   vertex[vanz].Color = new Color_Function; 
-	   
-	   vertex[vanz].Color->type = cf::None; 
+	   vertex[vanz].Color = new Color_Function(cf::None); 
 	   
 	   vertex[vanz].nlf     = 1;
-	   vertex[vanz].Lorentz = new Lorentz_Function; 
-	   
-	   vertex[vanz].Lorentz->type       = lf::Gamma;     
+	   vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
 	   vertex[vanz].Lorentz->SetParticleArg(1);     
 	   
 	   vertex[vanz].on     = 1;
@@ -348,14 +323,10 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	 vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	 
 	 vertex[vanz].ncf   = 1;
-	 vertex[vanz].Color = new Color_Function; 
-	 
-	 vertex[vanz].Color->type = cf::None; 
+	 vertex[vanz].Color = new Color_Function(cf::None); 
 	 
 	 vertex[vanz].nlf     = 1;
-	 vertex[vanz].Lorentz = new Lorentz_Function; 
-	 
-	 vertex[vanz].Lorentz->type       = lf::Gamma;     
+	 vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
 	 vertex[vanz].Lorentz->SetParticleArg(1);     
 	 
 	 vertex[vanz].on     = 1;
@@ -388,14 +359,10 @@ void Interaction_Model_Inos::c_FFV(Single_Vertex* vertex,int& vanz)
 	 vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	 
 	 vertex[vanz].ncf   = 1;
-	 vertex[vanz].Color = new Color_Function; 
-	 
-	 vertex[vanz].Color->type = cf::None; 
+	 vertex[vanz].Color = new Color_Function(cf::None); 
 	 
 	 vertex[vanz].nlf     = 1;
-	 vertex[vanz].Lorentz = new Lorentz_Function; 
-	 
-	 vertex[vanz].Lorentz->type       = lf::Gamma;     
+	 vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
 	 vertex[vanz].Lorentz->SetParticleArg(1);     
 	 
 	 vertex[vanz].on      = 1;

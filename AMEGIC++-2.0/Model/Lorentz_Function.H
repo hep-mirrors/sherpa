@@ -2,8 +2,6 @@
 #define Lorentz_Function_h
 
 #include "MyStrStream.H"
-//#include <strstream>
-//#include <sstream>
 #include <vector>
 #include "MyString.H"
 
@@ -37,35 +35,60 @@ namespace AMEGIC {
   };
   
   class Lorentz_Function {
-    int m_permcount;
+    lf::code  m_type; 
+    int       m_partarg[4];
+    int       m_permcount;
     std::vector<int*> m_permlist;
     std::vector<int>  m_signlist;
+    Lorentz_Function* p_next;
 
-    std::string Str(int a) const
-    {
-      MyStrStream sstr;
-      sstr<<partarg[a];
-      std::string help;
-      sstr>>help;
-      return help;
-    } 
+    std::string Str(int a) const;
   public:
-    Lorentz_Function() {
-      type = lf::Unknown;
-      Next = 0;
-      for (short int i=0;i<4;i++) partarg[i] = -1;
+    Lorentz_Function(lf::code type=lf::Unknown) :m_type(type), p_next(NULL) {
+      for (short int i=0;i<4;i++) m_partarg[i] = -1;
     }
 
-    Lorentz_Function(lf::code _type) :type(_type) {
-      Next = 0;
-      for (short int i=0;i<4;i++) partarg[i] = -1;
+    Lorentz_Function(const Lorentz_Function & l) : p_next(NULL)
+    {
+      *this=l;
     }
-    
-    lf::code  type; 
-    int  partarg[4];
-    Lorentz_Function* Next;
-    int NofIndex() {
-      switch (type) {
+
+    Lorentz_Function & operator=(const Lorentz_Function & l)
+    {
+      if (this!=&l) {
+	m_type     =l.m_type;
+	m_permcount=l.m_permcount;
+	int noi=l.NofIndex();
+
+	for (int i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
+	m_permlist.clear();
+	m_signlist.clear();
+	if (p_next) delete p_next;
+
+	for (int i=0; i<l.m_permlist.size();++i) {
+	  m_signlist[i]=l.m_signlist[i];
+	  m_permlist.push_back(new int[noi]);
+	  for (int j=0; j<noi;++j) {
+	    m_permlist[i][j]=l.m_permlist[i][j];
+	  }
+	}
+	for (int i=0; i<4;++i) 
+	  m_partarg[i]=l.m_partarg[i];
+	if (l.p_next!=0) 
+	  p_next = new Lorentz_Function(*(l.p_next));
+	else
+	  p_next = 0;
+      }
+    }
+
+    ~Lorentz_Function() {
+      for (int i=0; i<m_permlist.size();++i) delete [] m_permlist[i];
+      if (p_next) delete p_next;
+    }
+
+
+    int NofIndex() const {
+      switch (m_type) {
       case lf::Gamma : return 1;
       case lf::Gab   : return 2;
       case lf::Gauge3: return 3;
@@ -90,8 +113,17 @@ namespace AMEGIC {
     }
 
     void SetParticleArg(int a=-1, int b=-1,int c=-1,int d=-1) {
-      partarg[0] = a;partarg[1] = b;
-      partarg[2] = c;partarg[3] = d;
+      m_partarg[0] = a;m_partarg[1] = b;
+      m_partarg[2] = c;m_partarg[3] = d;
+    }
+
+    int ParticleArg(int i) const
+    { 
+      return m_partarg[i];
+    }
+    lf::code Type() const
+    {
+      return m_type;
     }
 
     int  GetSign();
@@ -100,95 +132,7 @@ namespace AMEGIC {
     int  ResetPermutation();
     int  NextPermutation();
 
-    std::string String(int shortversion=0) const {
-      if (type==lf::SSS)  return std::string("1");
-      if (type==lf::FFS)  return std::string("1");
-      if (type==lf::SSSS) return std::string("1");
-      std::string help;
-      switch (type) {
-      case lf::Gamma:  
-	// Gam[0]
-	help = std::string("Gam[") + Str(0) + std::string("]");break;
-      case lf::Pol:  
-	// Eps[0]
-	help = std::string("Eps[") + Str(0) + std::string("]");break;
-      case lf::Gab:   
-	// G[0,1]
-	help = std::string("G[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-      case lf::VVSS:   
-	// G(2V2S)[0,1]
-	help = std::string("G(2V2S)[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-      case lf::Gauge3: 
-	// (P[0,2]-P[1,2])*G(0,1)+(P[1,0]-P[2,0])*G(1,2)+(P[2,1]-P[0,1])*G(2,0)
-	if (shortversion) {
-	  help += std::string("V3[") + Str(0) + std::string(",") + 
-	                          Str(1) + std::string(",") + 
-                                  Str(2) + std::string("]");
-	}
-	else {
-	  help  = std::string("(P[") + Str(0) + std::string(",") + Str(2) + std::string("]-");
-	  help += std::string("P[")  + Str(1) + std::string(",") + Str(2) + std::string("])*");
-	  help += std::string("G[")  + Str(0) + std::string(",") + Str(1) + std::string("]");
-	  
-	  help += std::string("+");
-	  
-	  help += std::string("(P[") + Str(1) + std::string(",") + Str(0) + std::string("]-");
-	  help += std::string("P[")  + Str(2) + std::string(",") + Str(0) + std::string("])*");
-	  help += std::string("G[")  + Str(1) + std::string(",") + Str(2) + std::string("]");
-	  
-	  help += std::string("+");
-	  
-	  help += std::string("(P[") + Str(2) + std::string(",") + Str(1) + std::string("]-");
-	  help += std::string("P[")  + Str(0) + std::string(",") + Str(1) + std::string("])*");
-	  help += std::string("G[")  + Str(2) + std::string(",") + Str(0) + std::string("]");
-	}
-	break;
-      case lf::SSV:
-	//P[0,2]-P[1,2]
-	help = std::string("P[") + Str(0) + std::string(",") + Str(2) +std::string("]-"); 
-	help += std::string("P[") + Str(1) + std::string(",") + Str(2) +std::string("]");
-	break;
-      case lf::Gauge4: 
-	//(2G(0,1)*G(2,3)-G(0,2)*G(1,3)-G(0,3)*G(1,2))
-	help  = std::string("(2*G[")  + Str(0) + std::string(",") + Str(1) + std::string("]*");
-	help += std::string("G[")  + Str(2) + std::string(",") + Str(3) + std::string("]-");
-	help += std::string("G[")  + Str(0) + std::string(",") + Str(2) + std::string("]*");
-	help += std::string("G[")  + Str(1) + std::string(",") + Str(3) + std::string("]-");
-	help += std::string("G[")  + Str(0) + std::string(",") + Str(3) + std::string("]*");
-	help += std::string("G[")  + Str(1) + std::string(",") + Str(2) + std::string("])");
-	break;
-      case lf::Gluon4:
-	//G(0,1)*G(2,3)-G(0,3)*G(2,1)
-	if (shortversion) {
-	  help += std::string("G4[") + Str(0) + std::string(",") + 
-	                          Str(1) + std::string(",") + 
-	                          Str(2) + std::string(",") + 
-                                  Str(3) + std::string("]");
-	}
-	else {
-	  help  = std::string("(G[")  + Str(0) + std::string(",") + Str(1) + std::string("]*");
-	  help += std::string("G[")  + Str(2) + std::string(",") + Str(3) + std::string("]-");
-	  help += std::string("G[")  + Str(0) + std::string(",") + Str(3) + std::string("]*");
-	  help += std::string("G[")  + Str(2) + std::string(",") + Str(1) + std::string("])");
-	}
-	break;
-       case lf::FFT:
-	help = std::string("FFT[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-      case lf::FFVT:
-	help = std::string("FFVT[") + Str(0) + std::string(",") + Str(1) + std::string("]");break;
-      case lf::FFVGS:
-	help = std::string("FFVGS[") + Str(0) + std::string("]");break;
-      case lf::VVT:
-	help = std::string("VVT[") + Str(0) + std::string(",") + Str(1) 
-	     + std::string(",") + Str(2) + std::string("]");break;    
-      case lf::VVGS:
-	help = std::string("VVGS[") + Str(0) + std::string(",") + Str(1) 
-	     + std::string(",") + Str(2) + std::string("]");break;
-      default :
-	return std::string("1");
-      }     
-      return help;
-    }
+    std::string String(int shortversion=0) const;
   };
 
   // Format of a Lorentz_Function to transport via MPI:

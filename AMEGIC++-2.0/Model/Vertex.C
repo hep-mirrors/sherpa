@@ -210,14 +210,14 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 	if (orig.in[i]==Flavour(kf::A0)) conjugate *= -1;
       }
       
-      if (orig.Lorentz->type==lf::SSV ||
-	  orig.Lorentz->type==lf::Gauge3) conjugate *= -1;
+      if (orig.Lorentz->Type()==lf::SSV ||
+	  orig.Lorentz->Type()==lf::Gauge3) conjugate *= -1;
       
       if (conjugate==-1) {
 	for (short int i=0;i<4;i++) probe.cpl[i] = -probe.cpl[i];
       }
 
-      Conjugate(probe.Color);
+      probe.Color->Conjugate();
 
        if (probe.Lorentz->String()==string("1")) {
 	//exchange left and right
@@ -264,46 +264,49 @@ int Vertex::SetVertex(Single_Vertex& orig, Single_Vertex& probe, int i0, int i1,
 void Vertex::ColorExchange(Color_Function* colfunc,int new0,int new1,int new2)
 {
   // T[0,2,1]
+  int partarg[3]={-1,-1,-1};
+  char strarg[3]={-1,-1,-1};
   for (short int i=0;i<3;i++) {
-    if (colfunc->type==cf::D && i==2) break;
-    switch (colfunc->partarg[i]) {
-      case 0: colfunc->partarg[i] = new0;
-         colfunc->strarg[i]  = new0+48;
-	 break;
-      case 1: colfunc->partarg[i] = new1;
-         colfunc->strarg[i]  = new1+48;
-         break;
-      case 2: colfunc->partarg[i] = new2;
-         colfunc->strarg[i]  = new2+48;
-         break;
+    if (colfunc->Type()==cf::D && i==2) break;
+    switch (colfunc->ParticleArg(i)) {
+      case 0: 
+	partarg[i] = new0;
+	strarg[i]  = new0+48;
+	break;
+      case 1: 
+	partarg[i] = new1;
+	strarg[i]  = new1+48;
+	break;
+      case 2: 
+	partarg[i] = new2;
+	strarg[i]  = new2+48;
+	break;
     }
   }
+  colfunc->SetStringArg(strarg[0],strarg[1],strarg[2]);
+  colfunc->SetParticleArg(partarg[0],partarg[1],partarg[2]);
 }
 
 void Vertex::LorentzExchange(Lorentz_Function* lorfunc,int new0,int new1,int new2,int new3)
 {
+  int partarg[4]={-1,-1,-1,-1};
   for (short int i=0;i<lorfunc->NofIndex();i++) {
-    switch (lorfunc->partarg[i]) {
-      case 0: lorfunc->partarg[i] = new0;break;
-      case 1: lorfunc->partarg[i] = new1;break;
-      case 2: lorfunc->partarg[i] = new2;break;
-      case 3: lorfunc->partarg[i] = new3;break;
+    switch (lorfunc->ParticleArg(i)) {
+      case 0: partarg[i] = new0;break;
+      case 1: partarg[i] = new1;break;
+      case 2: partarg[i] = new2;break;
+      case 3: partarg[i] = new3;break;
     }
   }
+  lorfunc->SetParticleArg(partarg[0],partarg[1],partarg[2],partarg[3]);
 }
 
+/*
 void Vertex::Conjugate(Color_Function* colfunc)
 {
-  if (colfunc->type!=cf::T) return;
-
-  int help = colfunc->partarg[1];
-  colfunc->partarg[1] = colfunc->partarg[2];
-  colfunc->partarg[2] = help;
-
-  char help2 = colfunc->strarg[1];
-  colfunc->strarg[1] = colfunc->strarg[2];
-  colfunc->strarg[2] = help2;  
+  colfunc->Conjugate();
 }
+*/
 
 Vertex::Vertex(Interaction_Model_Base * _model)
 {
@@ -398,34 +401,38 @@ void Vertex::Print()
   if (!rpa.gen.Debugging()) return;
   //3 legs
   for (int i=0;i<m_nvertex;i++) {
-    ATOOLS::msg.Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];
-    if (m_v[i].on) ATOOLS::msg.Out()<<"...On  ";
-    else  ATOOLS::msg.Out()<<"...Off ";
-    ATOOLS::msg.Out()<<m_v[i].cpl[0]<<";"<<m_v[i].cpl[1];
-    ATOOLS::msg.Out()<<"; "<<m_v[i].Color->String();
-    ATOOLS::msg.Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
+    msg.Out()<<i+1<<". vertex for :"<<m_v[i].in[0]<<":"<<m_v[i].in[1]<<":"<<m_v[i].in[2];
+    if (m_v[i].on) msg.Out()<<"...On  ";
+    else  msg.Out()<<"...Off ";
+    msg.Out()<<m_v[i].cpl[0]<<";"<<m_v[i].cpl[1];
+    msg.Out()<<"; "<<m_v[i].Color->String();
+    msg.Out()<<"; "<<m_v[i].Lorentz->String()<<endl;
   }
   //4 legs
   for (int i=m_nvertex;i<(m_n4vertex+m_nvertex);i++) {
     if (m_v4[i-m_nvertex].ncf==1) {
-    ATOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
-	<<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
-    if (m_v4[i-m_nvertex].on) ATOOLS::msg.Out()<<"...On  ";
-    else  ATOOLS::msg.Out()<<"...Off ";
-    ATOOLS::msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
-    ATOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
-    ATOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
+      msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
+	       <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
+      if (m_v4[i-m_nvertex].on) msg.Out()<<"...On  ";
+      else  
+	msg.Out()<<"...Off ";
+      msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+      msg.Out()<<"; "<<m_v4[i-m_nvertex].Color->String();
+      msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz->String()<<endl;
     }
     else {
       for (short int k=0;k<m_v4[i-m_nvertex].ncf;k++) {
-      ATOOLS::msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
-	  <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
-      if (m_v4[i-m_nvertex].on) ATOOLS::msg.Out()<<"...On  ";
-      else  ATOOLS::msg.Out()<<"...Off ";
-      ATOOLS::msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
-      ATOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
-      if (m_v4[i-m_nvertex].Color[k].Next!=0) ATOOLS::msg.Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next->String();
-      ATOOLS::msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k].String()<<endl;
+	msg.Out()<<i+1<<". 4 leg vertex for :"<<m_v4[i-m_nvertex].in[0]<<":"
+		 <<m_v4[i-m_nvertex].in[1]<<":"<<m_v4[i-m_nvertex].in[2]<<":"<<m_v4[i-m_nvertex].in[3];
+	if (m_v4[i-m_nvertex].on) 
+	  msg.Out()<<"...On  ";
+	else  
+	  msg.Out()<<"...Off ";
+	msg.Out()<<m_v4[i-m_nvertex].cpl[0]<<";"<<m_v4[i-m_nvertex].cpl[1];
+	msg.Out()<<"; "<<m_v4[i-m_nvertex].Color[k].String();
+	if (m_v4[i-m_nvertex].Color[k].Next()!=0) 
+	  msg.Out()<<" "<<m_v4[i-m_nvertex].Color[k].Next()->String();
+	msg.Out()<<"; "<<m_v4[i-m_nvertex].Lorentz[k].String()<<endl;
       }
     }
   }
@@ -598,6 +605,7 @@ void Vertex::TexOutput()
 }
 
 void Vertex::AddVertex(Single_Vertex* addv){
+  cout<<" called AddVertex "<<endl;
   Single_Vertex * oldv=m_v;
   m_v = new Single_Vertex[m_nvertex+1];
   for (int i=0;i<m_nvertex;++i) {

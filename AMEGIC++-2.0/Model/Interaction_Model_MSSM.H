@@ -34,6 +34,7 @@ namespace AMEGIC {
     void c_VVVT(Single_Vertex *,int&)  {} 
     void c_FFVT(Single_Vertex *,int&)  {} 
     void c_SSST(Single_Vertex *,int&)  {}
+    ~Interaction_Model_MSSM();
   };
 }
 

@@ -62,3 +62,9 @@ void Interaction_Model_THDM::c_SSSS(Single_Vertex* vertex,int& vanz)
 { 
   p_mohiggs->c_SSSS(vertex,vanz);
 }
+
+Interaction_Model_THDM::~Interaction_Model_THDM()
+{
+  delete p_mosm;
+  delete p_mohiggs;
+}

@@ -44,18 +44,34 @@ namespace AMEGIC {
 
     Single_Vertex() {
       nleg    = 3;
-      Color   = new Color_Function;
-      Lorentz = new Lorentz_Function;
+      Color   = 0;
+      Lorentz = 0;
+      //      Color   = new Color_Function;
+      //      Lorentz = new Lorentz_Function;
     }
 
+    //! Copy constructor
+    Single_Vertex(const Single_Vertex& v)
+    {
+      *this=v;
+      
+    }
     //! The destructor 
     
     ~Single_Vertex() {
-      delete Color;
-      delete Lorentz;
+      if (Color)   if (ncf==1) delete Color;
+      else delete [] Color;
+      if (Lorentz) if (nlf==1) delete Lorentz;
+      else delete [] Lorentz;
     }
     
+    
+
     Single_Vertex& operator=(const Single_Vertex& v) {
+      if (Color)   if (ncf==1) delete Color;
+      else delete [] Color;
+      if (Lorentz) if (nlf==1) delete Lorentz;
+      else delete [] Lorentz;
       if (this!=&v) {
 	for (short int i=0;i<4;i++) in[i]  = v.in[i];
 	for (short int j=0;j<4;j++) cpl[j] = v.cpl[j];
@@ -65,8 +81,18 @@ namespace AMEGIC {
 	on   = v.on;
 	ncf  = v.ncf;
 	nlf  = v.nlf;
-	*Color   = *v.Color;
-	*Lorentz = *v.Lorentz;
+	if (ncf==1) Color   = new Color_Function(*v.Color);
+	else {
+	  Color = new Color_Function[ncf];
+	  for (int i=0;i<ncf;i++)
+	    Color[i] = v.Color[i];
+	}
+	if (nlf==1) Lorentz = new Lorentz_Function(*v.Lorentz);
+	else {
+	  Lorentz = new Lorentz_Function[nlf];
+	  for (int i=0;i<nlf;i++)
+	    Lorentz[i] = v.Lorentz[i];
+	}
       }
     return *this;
     }
@@ -93,7 +119,7 @@ namespace AMEGIC {
 
     void           ColorExchange(Color_Function*,int,int,int);
     void           LorentzExchange(Lorentz_Function*,int,int,int,int);
-    void           Conjugate(Color_Function*);
+    //    void           Conjugate(Color_Function*);
   public:
     int on;
     Vertex(Interaction_Model_Base *);

@@ -19,9 +19,7 @@ namespace AMEGIC {
     Vertex * GetVertex()   { return p_vertex; }
     void     Init_Vertex();
 
-    virtual ~Interaction_Model_Base() {
-      if (p_vertex!=NULL) { delete p_vertex; p_vertex = NULL; }
-    } 
+    virtual ~Interaction_Model_Base();
 
     virtual void c_FFV(Single_Vertex  *,int&) = 0;
     virtual void c_FFS(Single_Vertex  *,int&) = 0;

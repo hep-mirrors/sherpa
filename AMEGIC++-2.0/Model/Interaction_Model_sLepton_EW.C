@@ -66,14 +66,10 @@ void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	      
-	vertex[vanz].Color->type = cf::None; 
+	vertex[vanz].Color = new Color_Function(cf::None); 
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::SSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	
 	vertex[vanz].on      = 1;
 	vanz++;
@@ -115,14 +111,10 @@ void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	      
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::SSS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  
 	  vertex[vanz].on      = 1;
 	  vanz++;
@@ -165,14 +157,10 @@ void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::SSS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  	  
 	  vertex[vanz].on      = 1;
 	  vanz++;
@@ -234,14 +222,10 @@ void Interaction_Model_sLepton_EW::c_SSS(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	      
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::SSS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSS);
 	  
 	  vertex[vanz].on      = 1;
 	  vanz++;
@@ -275,14 +259,10 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type = cf::None; 
+	vertex[vanz].Color = new Color_Function(cf::None); 
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-      
-	vertex[vanz].Lorentz->type       = lf::SSV;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 
 	vertex[vanz].on      = 1;
@@ -319,14 +299,10 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::SSV;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 	  
 	  vertex[vanz].on      = 1;
@@ -355,14 +331,10 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::SSV;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 	  
 	  vertex[vanz].on      = 1;
@@ -395,14 +367,10 @@ void Interaction_Model_sLepton_EW::c_SSV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::SSV;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	  vertex[vanz].Lorentz->SetParticleArg(0,2,1);     	
 	  
 	  vertex[vanz].on      = 1;
@@ -456,14 +424,10 @@ void Interaction_Model_sLepton_EW::c_SSSS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	      
-	vertex[vanz].Color->type = cf::None; 
+	vertex[vanz].Color = new Color_Function(cf::None); 
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::SSSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSSS);     
 	
 	vertex[vanz].on      = 1;
 	vanz++;
@@ -502,14 +466,10 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-      
-      vertex[vanz].Color->type       = cf::None;     
+      vertex[vanz].Color = new Color_Function(cf::None);     
       
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-      
-      vertex[vanz].Lorentz->type = lf::VVSS;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);     
       vertex[vanz].Lorentz->SetParticleArg(0,3);     
       
       vertex[vanz].on      = 1;
@@ -539,14 +499,10 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -571,14 +527,10 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::None;     
+	vertex[vanz].Color = new Color_Function(cf::None);     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type = lf::VVSS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	
 	vertex[vanz].on      = 1;
@@ -611,14 +563,10 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type       = cf::None;     
+	  vertex[vanz].Color = new Color_Function(cf::None);     
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type = lf::VVSS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	  vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	  
 	  //vertex[vanz].on      = 1;
@@ -656,14 +604,10 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    
 	    vertex[vanz].ncf   = 1;
-	    vertex[vanz].Color = new Color_Function; 
-	    
-	    vertex[vanz].Color->type       = cf::None;     
+	    vertex[vanz].Color = new Color_Function(cf::None);     
 	    
 	    vertex[vanz].nlf     = 1;
-	    vertex[vanz].Lorentz = new Lorentz_Function; 
-	    
-	    vertex[vanz].Lorentz->type = lf::VVSS;     
+	    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    //vertex[vanz].on      = 1;
@@ -690,14 +634,10 @@ void Interaction_Model_sLepton_EW::c_SSVV(Single_Vertex* vertex,int& vanz)
 	    vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	    
 	    vertex[vanz].ncf   = 1;
-	    vertex[vanz].Color = new Color_Function; 
-	    
-	    vertex[vanz].Color->type       = cf::None;     
+	    vertex[vanz].Color = new Color_Function(cf::None);     
 	    
 	    vertex[vanz].nlf     = 1;
-	    vertex[vanz].Lorentz = new Lorentz_Function; 
-	    
-	    vertex[vanz].Lorentz->type = lf::VVSS;     
+	    vertex[vanz].Lorentz = new Lorentz_Function(lf::VVSS);
 	    vertex[vanz].Lorentz->SetParticleArg(0,3);     
 	    
 	    //vertex[vanz].on      = 1;
@@ -746,14 +686,10 @@ void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
 	  vanz++;
@@ -790,14 +726,10 @@ void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
 	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
 	  vanz++;
@@ -833,14 +765,10 @@ void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
 	  vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-	  
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on      = 1;
 	  vanz++;
@@ -880,14 +808,10 @@ void Interaction_Model_sLepton_EW::c_FFS(Single_Vertex* vertex,int& vanz){
 	  vertex[vanz].cpl[2] = 0.;vertex[vanz].cpl[3]  = 0.;
 	  
 	  vertex[vanz].ncf   = 1;
-	  vertex[vanz].Color = new Color_Function; 
-
-	  vertex[vanz].Color->type = cf::None; 
+	  vertex[vanz].Color = new Color_Function(cf::None); 
 	  
 	  vertex[vanz].nlf     = 1;
-	  vertex[vanz].Lorentz = new Lorentz_Function; 
-	  
-	  vertex[vanz].Lorentz->type       = lf::FFS;     
+	  vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	  
 	  vertex[vanz].on     = 1;
 	  vanz++;

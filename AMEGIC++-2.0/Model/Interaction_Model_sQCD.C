@@ -47,16 +47,12 @@ void Interaction_Model_sQCD::c_FFS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::T;     
+	vertex[vanz].Color = new Color_Function(cf::T);     
 	vertex[vanz].Color->SetParticleArg(2,1,0);     
 	vertex[vanz].Color->SetStringArg('2','1','0');     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::FFS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	
 	vertex[vanz].on      = 1;
 	vanz++;
@@ -77,9 +73,7 @@ void Interaction_Model_sQCD::c_FFS(Single_Vertex* vertex,int& vanz)
 	kcpl1 = -M_I*g3*root2*K_Z_D((i-1)/2,j-61);
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::T;     
+	vertex[vanz].Color = new Color_Function(cf::T);     
 	vertex[vanz].Color->SetParticleArg(2,1,0);     
 	vertex[vanz].Color->SetStringArg('2','1','0');     
 
@@ -89,9 +83,7 @@ void Interaction_Model_sQCD::c_FFS(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::FFS;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::FFS);
 	
 	vertex[vanz].on      = 1;
 	vanz++;
@@ -123,16 +115,12 @@ void Interaction_Model_sQCD::c_FFV(Single_Vertex* vertex,int& vanz)
       vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
       
       vertex[vanz].ncf   = 1;
-      vertex[vanz].Color = new Color_Function; 
-      
-      vertex[vanz].Color->type       = cf::F;     
+      vertex[vanz].Color = new Color_Function(cf::F);     
       vertex[vanz].Color->SetParticleArg(0,1,2);     
       vertex[vanz].Color->SetStringArg('0','1','2');     
       
       vertex[vanz].nlf     = 1;
-      vertex[vanz].Lorentz = new Lorentz_Function; 
-      
-      vertex[vanz].Lorentz->type       = lf::Gamma;     
+      vertex[vanz].Lorentz = new Lorentz_Function(lf::Gamma);
       vertex[vanz].Lorentz->SetParticleArg(1);     
       
       vertex[vanz].on      = 1;
@@ -164,16 +152,12 @@ void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::T;     
+	vertex[vanz].Color = new Color_Function(cf::T);     
 	vertex[vanz].Color->SetParticleArg(1,0,2);     
 	vertex[vanz].Color->SetStringArg('1','0','2');     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::SSV;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 	
 	vertex[vanz].on      = 1;
@@ -196,16 +180,12 @@ void Interaction_Model_sQCD::c_SSV(Single_Vertex* vertex,int& vanz)
 	vertex[vanz].cpl[2]  = 0.;vertex[vanz].cpl[3]  = 0.;
 	
 	vertex[vanz].ncf   = 1;
-	vertex[vanz].Color = new Color_Function; 
-	
-	vertex[vanz].Color->type       = cf::T;     
+	vertex[vanz].Color = new Color_Function(cf::T);     
 	vertex[vanz].Color->SetParticleArg(1,0,2);     
 	vertex[vanz].Color->SetStringArg('1','0','2');     
 	
 	vertex[vanz].nlf     = 1;
-	vertex[vanz].Lorentz = new Lorentz_Function; 
-	
-	vertex[vanz].Lorentz->type       = lf::SSV;     
+	vertex[vanz].Lorentz = new Lorentz_Function(lf::SSV);
 	vertex[vanz].Lorentz->SetParticleArg(0,2,1);     
 	
 	vertex[vanz].on      = 1;

@@ -37,15 +37,10 @@ void Interaction_Model_QCD::c_FFV(Single_Vertex * vertex,int & vanz)
       vertex[vanz].Str           = (kcpl0*PR+kcpl1*PL).String();      
 
       vertex[vanz].ncf           = 1;
-      vertex[vanz].Color         = new Color_Function; 
-      vertex[vanz].Color->type   = cf::T;     
-      vertex[vanz].Color->SetParticleArg(1,2,0);     
-      vertex[vanz].Color->SetStringArg('1','2','0');     
-      
+      vertex[vanz].Color         = new Color_Function(cf::T,1,2,0,'1','2','0');     
 
       vertex[vanz].nlf           = 1;
-      vertex[vanz].Lorentz       = new Lorentz_Function; 
-      vertex[vanz].Lorentz->type = lf::Gamma;     
+      vertex[vanz].Lorentz       = new Lorentz_Function(lf::Gamma);     
       vertex[vanz].Lorentz->SetParticleArg(1);     
                   
       vertex[vanz].on            = 1;
@@ -70,14 +65,12 @@ void Interaction_Model_QCD::c_VVV(Single_Vertex * vertex,int& vanz)
   vertex[vanz].Str           = (kcpl0*PR+kcpl1*PL).String();
 
   vertex[vanz].ncf           = 1;
-  vertex[vanz].Color         = new Color_Function; 
-  vertex[vanz].Color->type   = cf::F;     
+  vertex[vanz].Color         = new Color_Function(cf::F);     
   vertex[vanz].Color->SetParticleArg(0,2,1);     
   vertex[vanz].Color->SetStringArg('0','2','1');     
 
   vertex[vanz].nlf           = 1;
-  vertex[vanz].Lorentz       = new Lorentz_Function; 
-  vertex[vanz].Lorentz->type = lf::Gauge3;     
+  vertex[vanz].Lorentz       = new Lorentz_Function(lf::Gauge3);     
   vertex[vanz].Lorentz->SetParticleArg(0,1,2);     
 
   vertex[vanz].on            = 1;
@@ -108,19 +101,19 @@ void Interaction_Model_QCD::c_VVVV(Single_Vertex * vertex,int& vanz)
   vertex[vanz].Color           = new Color_Function[3];
   vertex[vanz].Lorentz         = new Lorentz_Function[3]; 
 
-  vertex[vanz].Color[0]        = Color_Function(cf::F,0,2,4,'0','2','4');
-  (vertex[vanz].Color[0]).Next = new Color_Function(cf::F,1,3,4,'1','3','4');
-  vertex[vanz].Lorentz[0].type = lf::Gluon4;      
+  vertex[vanz].Color[0]        = Color_Function(cf::F,0,2,4,'0','2','4',
+				   new Color_Function(cf::F,1,3,4,'1','3','4'));
+  vertex[vanz].Lorentz[0]      = Lorentz_Function(lf::Gluon4);
   vertex[vanz].Lorentz[0].SetParticleArg(0,1,2,3);     
 
-  vertex[vanz].Color[1]        = Color_Function(cf::F,0,3,4,'0','3','4');
-  (vertex[vanz].Color[1]).Next = new Color_Function(cf::F,1,2,4,'1','2','4');
-  vertex[vanz].Lorentz[1].type = lf::Gluon4;      
+  vertex[vanz].Color[1]        = Color_Function(cf::F,0,3,4,'0','3','4',
+				   new Color_Function(cf::F,1,2,4,'1','2','4'));
+  vertex[vanz].Lorentz[1]      = Lorentz_Function(lf::Gluon4);
   vertex[vanz].Lorentz[1].SetParticleArg(0,1,3,2);     
 
-  vertex[vanz].Color[2]        = Color_Function(cf::F,0,1,4,'0','1','4');
-  (vertex[vanz].Color[2]).Next = new Color_Function(cf::F,3,2,4,'3','2','4'); 
-  vertex[vanz].Lorentz[2].type = lf::Gluon4;     
+  vertex[vanz].Color[2]        = Color_Function(cf::F,0,1,4,'0','1','4',
+				   new Color_Function(cf::F,3,2,4,'3','2','4')); 
+  vertex[vanz].Lorentz[2]      = Lorentz_Function(lf::Gluon4);     
   vertex[vanz].Lorentz[2].SetParticleArg(0,3,1,2);     
   
   vertex[vanz].on              = 1;
