@@ -2,89 +2,102 @@
 #define Grid_Creator_H
 
 #include "Grid_Handler.H"
-#include "Simple_XS.H"
-#include "Environment.H"
-#include "Blob_List.H"
-#include "Fixed_Variable_Channel.H"
+#include "XS_Group.H"
+#include "Amisic_Histogram.H"
 
 namespace AMISIC {
 
-  template <class Argument_Type,class Result_Type>
-  class Grid_Creator: public Grid_Creator_Base<Argument_Type,Result_Type> {
+  class Simple_Chain;
+
+  class Grid_Creator: public ATOOLS::File_IO_Base {
   public:
     
-    typedef Argument_Type GridArgumentType;
-    typedef Result_Type GridResultType;
-    
-    typedef std::vector<GridArgumentType> GridArgumentVector;
-    typedef std::vector<GridResultType> GridResultVector;
+    typedef Amisic_Histogram<double>                Amisic_Histogram_Type;
+    typedef Grid_Handler<double,double>             Grid_Handler_Type;
+    typedef ATOOLS::Data_To_Function<double,double> Grid_Function_Type;
 
-    typedef Grid_Handler<GridArgumentType,GridResultType> GridHandlerType;
-    typedef std::vector<GridHandlerType*> GridHandlerVector;
-    
-    typedef Grid_Creator_Base<GridArgumentType,GridResultType> GridCreatorBaseType;
-    typedef ATOOLS::Data_To_Function<GridArgumentType,GridResultType> GridFunctionType;
+    typedef std::map<std::string,Grid_Handler_Type*>     Grid_Handler_Map;
+    typedef std::map<std::string,Amisic_Histogram_Type*> Amisic_Histogram_Map;
+
+    typedef std::vector<Grid_Handler_Type*> Grid_Handler_Vector;
     
   private:
     
-    GridHandlerVector  p_gridhandler;
+    Grid_Handler_Map     *p_gridhandlers, *p_maxhandlers;
+    Amisic_Histogram_Map  m_histograms;
+
     EXTRAXS::XS_Group *p_processes;
-
-    int  m_criterion;
-    bool m_storemax;
-
-    long int m_maxpoints[2];
+    ATOOLS::Mom_Data   m_momdata;
+   
+    ATOOLS::Axis<double> *p_xaxis, *p_yaxis;
     
-    ATOOLS::Mom_Data m_initialdata;
-    GridResultType m_lastxs;//, m_lastmax;
-    
-    ATOOLS::Axis<GridArgumentType> *p_xaxis;
-    ATOOLS::Axis<GridResultType>   *p_yaxis;
+    double m_gridxmin, m_gridxmax, m_griddeltax, m_binerror;
+
+    std::string m_gridxvariable, m_gridxscaling;
+    std::string m_gridyvariable, m_gridyscaling;
     
     std::string m_xsextension, m_maxextension, m_mcextension;
     
+    bool m_storemax;
+    int  m_criterion, m_outputlevel;
+
+    long unsigned int m_initevents, m_maxevents, m_events;
+    
+    const ATOOLS::Vec4D *p_momenta;
+    
+    std::string MakeString(std::vector<std::string> input) const;
+    
+    bool CollectProcesses(EXTRAXS::XS_Base *const process);
+
+    bool UpdateHistogram(EXTRAXS::XS_Base *const process,
+			 const size_t trials);
+
+    bool ExportHistogram(const std::string &name) const;
+
+    bool InitializeCalculation();
+    bool CreateInitialGrid();
+    bool CreateOptimizedGrid();
+    bool TranslateGrid();
+    
+    bool WriteSingleGrid(Grid_Handler_Type *grid,
+			 std::vector<std::string> addcomments);
+
+    friend class Simple_Chain;
+
   public:
     
     // constructor
-    Grid_Creator(GridHandlerVector _p_gridhandler,EXTRAXS::XS_Group *_p_processes);
+    Grid_Creator(Grid_Handler_Map *gridhandlers,
+		 Grid_Handler_Map *maxhandlers,
+		 EXTRAXS::XS_Group *const processes);
 
     // destructor
     ~Grid_Creator();
     
-    // setters
-    void SetXSExtension(const std::string _m_xsextension);
-    void SetMaxExtension(const std::string _m_maxextension);
-    void SetMCExtension(const std::string _m_mcextension);
-
-    void SetMaxPoints(const long int _m_maxpoints);
-    
-    // getters
-    const std::string XSExtension() const;
-    const std::string MaxExtension() const;
-    const std::string MCExtension() const;
-
-    const long int MaxPoints() const;
-    
     // member functions
-    bool InitializeCalculation();
-    unsigned int CreateSinglePoint(GridArgumentType *boundary,
-				   bool newpoint,bool force);
-    bool RemoveSinglePoint(GridArgumentType x);
-    
-    bool CreateInitialGrid();
-    bool CreateOptimizedGrid();
-    
+    bool ReadInGrid();
+    bool CreateGrid();
+
     bool ReadInArguments(std::string tempifile=ATOOLS::nullstring,
 			 std::string tempipath=ATOOLS::nullstring);
-    bool WriteOutGrid(std::vector<std::string> addcomments=std::vector<std::string>(0),
-		      std::string tempofile=ATOOLS::nullstring,
+    bool WriteOutGrid(std::vector<std::string> addcomments=
+		      std::vector<std::string>(0),
 		      std::string tempopath=ATOOLS::nullstring);
-    
-  }; // end of class Simple_Chain::Grid_Creator
+
+    // inline functions
+    inline const std::string XSExtension() const  { return m_xsextension;  }
+    inline const std::string MaxExtension() const { return m_maxextension; }
+    inline const std::string MCExtension() const  { return m_mcextension;  }
+
+    inline void SetXSExtension(const std::string xsextension)
+    { m_xsextension=xsextension; }
+    inline void SetMaxExtension(const std::string maxextension)
+    { m_maxextension=maxextension; }
+    inline void SetMCExtension(const std::string mcextension)
+    { m_mcextension=mcextension; }
+
+  }; // end of class Grid_Creator
 
 } // end of namespace AMISIC
-
-#include "Grid_Creator.inl.H"
-#include "Grid_Creator.C"
 
 #endif

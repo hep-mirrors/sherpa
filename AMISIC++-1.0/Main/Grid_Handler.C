@@ -14,12 +14,13 @@ namespace AMISIC {
   
   template <class Argument_Type,class Result_Type>
   Grid_Handler<Argument_Type,Result_Type>::
-  Grid_Handler(ATOOLS::Type::ID _m_streamtype,std::string _m_streamname)
-  { Init(); SetStreamType(_m_streamtype); SetStreamName(_m_streamname); }
+  Grid_Handler(ATOOLS::Type::ID streamtype,std::string streamname)
+  { Init(); SetStreamType(streamtype); SetStreamName(streamname); }
   
   template <class Argument_Type,class Result_Type>
-  Grid_Handler<Argument_Type,Result_Type>::Grid_Handler(GridFunctionType *_p_grid)
-  { Init(); Grid()->Import(*_p_grid); }
+  Grid_Handler<Argument_Type,Result_Type>::
+  Grid_Handler(GridFunctionType *grid)
+  { Init(); Grid()->Import(*grid); }
   
   template <class Argument_Type,class Result_Type>
   Grid_Handler<Argument_Type,Result_Type>::~Grid_Handler() 
@@ -44,11 +45,12 @@ namespace AMISIC {
       return ReadFromFile(tempname);
       break;
     case ATOOLS::Type::TString:
-//       return ReadFromString(tempname);
+      // return ReadFromString(tempname);
       break;
     case ATOOLS::Type::TUnknown:
     default:
-      ATOOLS::msg.Error()<<"Grid_Handler::ReadIn(..): No stream type specified."
+      ATOOLS::msg.Error()<<"Grid_Handler::ReadIn(..): "
+			 <<"No stream type specified."
 			 <<"   Abort Reading."<<std::endl;
       return false;
       break;
@@ -58,7 +60,8 @@ namespace AMISIC {
     
   template <class Argument_Type,class Result_Type>
   bool Grid_Handler<Argument_Type,Result_Type>::
-  WriteOut(Type::ID temptype,std::string tempname,std::vector<std::string> comments)
+  WriteOut(Type::ID temptype,std::string tempname,
+	   std::vector<std::string> comments)
   {
     if (temptype==Type::TUnknown) temptype=m_streamtype;
     switch (temptype) {
@@ -66,11 +69,12 @@ namespace AMISIC {
       return WriteToFile(tempname,comments);
       break;
     case ATOOLS::Type::TString:
-//       return WriteToString(tempname,comments);
+      // return WriteToString(tempname,comments);
       break;
     case ATOOLS::Type::TUnknown:
     default:
-      ATOOLS::msg.Error()<<"Grid_Handler::WriteOut(..): No stream type specified."
+      ATOOLS::msg.Error()<<"Grid_Handler::WriteOut(..): "
+			 <<"No stream type specified."
 			 <<"   Abort writing."<<std::endl;
       return false;
       break;
@@ -84,7 +88,8 @@ namespace AMISIC {
   {
     if (tempname!=std::string("")) m_streamname=tempname;
     if (m_streamname==std::string("")) {
-      ATOOLS::msg.Error()<<"Grid_Handler::ReadFromFile(..): No filename specified."<<std::endl
+      ATOOLS::msg.Error()<<"Grid_Handler::ReadFromFile(..): "
+			 <<"No filename specified."<<std::endl
 			 <<"   Abort reading."<<std::endl;
       return false;
     }
@@ -92,60 +97,70 @@ namespace AMISIC {
     ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","#");
     reader->SetInputFile(m_streamname);
     reader->AddIgnore("!");
+    reader->SetVectorType(reader->VHorizontal);
     if (!reader->ReadFromFile(gridxscaling,"x scale :")) {
-      msg_Tracking()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
-			    <<"   No x scaling information in "<<tempname<<"! "<<std::endl;
+      msg_Tracking()<<"Grid_Handler::ReadFromFile("<<tempname
+		    <<"): Aborted reading.\n"
+		    <<"   No x scaling information in "<<tempname
+		    <<"! "<<std::endl;
       return false;
     }
     if (!reader->ReadFromFile(gridyscaling,"y scale :")) {
-      msg_Tracking()<<"Grid_Handler::ReadFromFile("<<tempname<<"): Aborted reading."<<std::endl
-			    <<"   No y scaling information in "<<tempname<<"! "<<std::endl;
+      msg_Tracking()<<"Grid_Handler::ReadFromFile("<<tempname
+		    <<"): Aborted reading.\n"
+		    <<"   No y scaling information in "<<tempname
+		    <<"! "<<std::endl;
       return false;
     }
     std::vector<std::string> temp;
-    if (!reader->VectorFromFile(temp,"x :",ATOOLS::noinputtag,reader->VHorizontal)) {
+    if (!reader->VectorFromFile(temp,"x :")) {
       gridxvariable=std::string("Unknown");
     }
     else {
       gridxvariable=temp[0];
-      for (unsigned int i=1;i<temp.size();++i) gridxvariable+=std::string(" ")+temp[i];
+      for (unsigned int i=1;i<temp.size();++i) 
+	gridxvariable+=std::string(" ")+temp[i];
     }
-    if (!reader->VectorFromFile(temp,"y :",ATOOLS::noinputtag,reader->VHorizontal)) {
+    if (!reader->VectorFromFile(temp,"y :")) {
       gridyvariable=std::string("Unknown");
     }
     else {
       gridyvariable=temp[0];
-      for (unsigned int i=1;i<temp.size();++i) gridyvariable+=std::string(" ")+temp[i];
+      for (unsigned int i=1;i<temp.size();++i) 
+	gridyvariable+=std::string(" ")+temp[i];
     }
     reader->SetComment("!");
     reader->SetIgnore(":");
-    std::vector<std::vector<GridArgumentType> > _m_xydata;
-    reader->MatrixFromFile(_m_xydata,m_datatag);
-    if (_m_xydata.size()<2) return false;
-    std::vector<GridArgumentType> _m_xdata = _m_xydata[0];
-    std::vector<GridResultType> _m_ydata = std::vector<GridResultType>(_m_xydata[1].size());
-    for (unsigned int i=0;i<_m_xydata[1].size();++i) _m_ydata[i]=_m_xydata[1][i];
+    std::vector<std::vector<GridArgumentType> > xydata;
+    reader->MatrixFromFile(xydata,m_datatag);
+    if (xydata.size()<2) return false;
+    std::vector<GridArgumentType> xdata = xydata[0];
+    std::vector<GridResultType> ydata = 
+      std::vector<GridResultType>(xydata[1].size());
+    for (unsigned int i=0;i<xydata[1].size();++i) ydata[i]=xydata[1][i];
     delete reader;
-    if (_m_ydata.size()!=_m_xdata.size()) {
-      _m_xydata[1].clear();
-      _m_xdata.clear();
-      _m_ydata.clear();
+    if (ydata.size()!=xdata.size()) {
+      xydata[1].clear();
+      xdata.clear();
+      ydata.clear();
       return false;
     }
     p_grid->XAxis()->SetScaling(gridxscaling);
     p_grid->YAxis()->SetScaling(gridyscaling);
     p_grid->XAxis()->SetVariable(ATOOLS::Variable(gridxvariable));
     p_grid->YAxis()->SetVariable(ATOOLS::Variable(gridyvariable));    
-    typename ATOOLS::Axis<GridArgumentType>::ScalingModeID xscalingmode=p_grid->XAxis()->ScalingMode();
-    typename ATOOLS::Axis<GridResultType>::ScalingModeID yscalingmode=p_grid->YAxis()->ScalingMode();
+    typename ATOOLS::Axis<GridArgumentType>::ScalingModeID 
+      xscalingmode=p_grid->XAxis()->ScalingMode();
+    typename ATOOLS::Axis<GridResultType>::ScalingModeID 
+      yscalingmode=p_grid->YAxis()->ScalingMode();
     p_grid->XAxis()->SetScalingMode(p_grid->XAxis()->Identical);
     p_grid->YAxis()->SetScalingMode(p_grid->YAxis()->Identical);
-    p_grid->Import(&_m_xdata,&_m_ydata);
+    p_grid->Import(&xdata,&ydata);
     p_grid->XAxis()->SetScalingMode(xscalingmode);
     p_grid->YAxis()->SetScalingMode(yscalingmode);
-    _m_xydata[1].clear();
-    _m_xdata.clear();
-    _m_ydata.clear();
+    xydata[1].clear();
+    xdata.clear();
+    ydata.clear();
     return true;
   }
 
@@ -155,8 +170,9 @@ namespace AMISIC {
   {
     if (tempname!=std::string("")) m_streamname=tempname;
     if (m_streamname==std::string("")) {
-      msg_Tracking()<<"Grid_Handler::WriteToFile(..): No filename specified."<<std::endl
-			    <<"   Writing to last_grid.dat ."<<std::endl;
+      msg_Tracking()<<"Grid_Handler::WriteToFile(..): "
+		    <<"No filename specified.\n"
+		    <<"   Writing to 'last_grid.dat'."<<std::endl;
       m_streamname=std::string("last_grid.dat");
     }
     ATOOLS::Data_Writer *writer = new ATOOLS::Data_Writer(":",";","!");
@@ -167,26 +183,30 @@ namespace AMISIC {
     writer->WriteComment("===================="); 
     writer->WriteComment(comments);
     writer->SetBlank(ATOOLS::defaulttab);
-    std::vector<GridArgumentType> __m_xdata;
-    std::vector<GridResultType> _m_ydata;
-    typename ATOOLS::Axis<GridArgumentType>::ScalingModeID xscalingmode=p_grid->XAxis()->ScalingMode();
-    typename ATOOLS::Axis<GridResultType>::ScalingModeID yscalingmode=p_grid->YAxis()->ScalingMode();
+    std::vector<GridArgumentType> oxdata;
+    std::vector<GridResultType> ydata;
+    typename ATOOLS::Axis<GridArgumentType>::ScalingModeID 
+      xscalingmode=p_grid->XAxis()->ScalingMode();
+    typename ATOOLS::Axis<GridResultType>::ScalingModeID 
+      yscalingmode=p_grid->YAxis()->ScalingMode();
     p_grid->XAxis()->SetScalingMode(p_grid->XAxis()->Identical);
     p_grid->YAxis()->SetScalingMode(p_grid->YAxis()->Identical);
-    p_grid->Export(&__m_xdata,&_m_ydata);
+    p_grid->Export(&oxdata,&ydata);
     p_grid->XAxis()->SetScalingMode(xscalingmode);
     p_grid->YAxis()->SetScalingMode(yscalingmode);
-    std::vector<GridResultType> _m_xdata = std::vector<GridResultType>(__m_xdata.size());
-    for (unsigned int i=0;i<_m_xdata.size();++i) _m_xdata[i]=(GridResultType)__m_xdata[i];
-    __m_xdata.clear();
-    std::vector<std::vector<GridArgumentType> > _m_xydata;
-    _m_xydata.push_back(_m_xdata);
-    _m_xydata.push_back(_m_ydata);
-    writer->MatrixToFile(_m_xydata,m_datatag,true,ATOOLS::nullstring,writer->MNormal,12);
+    std::vector<GridResultType> xdata = 
+      std::vector<GridResultType>(oxdata.size());
+    for (unsigned int i=0;i<oxdata.size();++i) xdata[i]=oxdata[i];
+    oxdata.clear();
+    std::vector<std::vector<GridArgumentType> > xydata;
+    xydata.push_back(xdata);
+    xydata.push_back(ydata);
+    writer->MatrixToFile(xydata,m_datatag,true,
+			 ATOOLS::nullstring,writer->MNormal,12);
     delete writer;
-    _m_xdata.clear();
-    _m_ydata.clear();
-    _m_xydata.clear();
+    xdata.clear();
+    ydata.clear();
+    xydata.clear();
     return true;
   }
 

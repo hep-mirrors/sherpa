@@ -64,21 +64,8 @@ namespace AMISIC {
     // destructor
     virtual ~MI_Base();
 
-    // setters 
-    void SetStart(const double _m_start,unsigned int i=0);
-    void SetStop(const double _m_stop,unsigned int i=0);
-
-    // getters
-    const double Start(unsigned int i=0) const;
-    const double Stop(unsigned int i=0) const;
-
-#ifdef USING__Sherpa
-    SHERPA::Matrix_Element_Handler *MEHandler();
-#endif
-
-    EXTRAXS::XS_Base *XS();
-
     // member functions
+    static void  CleanUp();
     virtual bool Initialize();
 
     virtual void Update(const MI_Base *mibase);
@@ -97,11 +84,29 @@ namespace AMISIC {
     static std::string TypeToString(TypeID type);
     static TypeID StringToType(std::string type);
 
-    static void SetRemnantHandler(ATOOLS::Remnant_Info *const remnanthandler,
-				  const size_t i);
-    static ATOOLS::Remnant_Info *RemnantHandler(const size_t i);
+    // inline functions
+    inline void SetStart(const double _m_start,unsigned int i=0)
+    { if (i<m_nparameter) m_start[i]=_m_start; }
+    inline void SetStop(const double _m_stop,unsigned int i=0)
+    { if (i<m_nparameter) m_stop[i]=_m_stop; }
 
-    static void CleanUp();
+    inline double Start(unsigned int i=0) const { return m_start[i]; }
+    inline double Stop(unsigned int i=0) const  { return m_stop[i];  }
+
+#ifdef USING__Sherpa
+    inline SHERPA::Matrix_Element_Handler *MEHandler() 
+    { return p_mehandler; }
+#endif
+
+    inline EXTRAXS::XS_Base *XS() const { return p_xs; }
+
+    inline static void 
+    SetRemnantHandler(ATOOLS::Remnant_Info *const remnanthandler,
+		      const size_t i)
+    { s_remnanthandlers[i]=remnanthandler; }
+
+    inline static ATOOLS::Remnant_Info *RemnantHandler(const size_t i)
+    { return s_remnanthandlers[i]; }
 
   }; // end of class MI_Base
 
@@ -128,7 +133,5 @@ namespace AMISIC {
   }; // end of class MI_None
 
 } // end of namespace AMISIC
-
-#include "MI_Base.inl.H"
 
 #endif

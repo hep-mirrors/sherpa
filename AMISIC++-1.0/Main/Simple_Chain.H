@@ -3,43 +3,43 @@
 
 #include "MI_Base.H"
 #include "Grid_Creator.H"
-#include "QCD_Processes.H"
 #include "Profile_Function_Base.H"
+#include "Fixed_Variable_Channel.H"
+#include "Simple_XS.H"
+#include "Environment.H"
 
 namespace AMISIC {
-  
+
   class Simple_Chain: public MI_Base {
   public:
 
-    typedef double GridArgumentType;
-    typedef double GridResultType;
+    typedef Grid_Handler<double,double>     Grid_Handler_Type;
+    typedef Data_To_Function<double,double> Grid_Function_Type;
 
-    typedef Grid_Handler<GridArgumentType,GridResultType> GridHandlerType;
-    typedef Grid_Creator<GridArgumentType,GridResultType> GridCreatorType;
-    typedef Grid_Creator_Base<GridArgumentType,GridResultType> GridCreatorBaseType;
-    typedef Data_To_Function<GridArgumentType,GridResultType> GridFunctionType;
-    typedef std::vector<GridHandlerType*> GridHandlerVector;
+    typedef std::map<std::string,Grid_Handler_Type*>  Grid_Handler_Map;
+    typedef std::map<std::string,Grid_Function_Type*> Grid_Function_Map;
 
-    typedef PHASIC::Fixed_Variable_Channel<GridArgumentType> FSRChannel;
+    typedef PHASIC::Fixed_Variable_Channel<double> FSR_Channel;
+
+    typedef std::map<std::string,EXTRAXS::XS_Base*> Process_Map;
+
+    typedef std::multimap<double,std::string> Sorter_Map;
 
   private:
 
-    std::vector<ATOOLS::Blob_List> m_blobs;
-    std::vector<std::string>       m_filename, m_comments;
+    Grid_Function_Map   m_differential, m_maxima;
+    Grid_Function_Type *p_total, *p_differential;
+    Grid_Creator       *p_gridcreator;
 
-    std::vector<GridFunctionType*>          m_differential;
-    std::map<std::string,GridFunctionType*> m_maxima;
+    Process_Map m_processmap;
 
-    GridResultType    m_norm, m_enhance;
-    GridFunctionType *p_total, *p_differential;
-
-    GridCreatorType *p_gridcreator;
+    double m_norm, m_enhance;
 
     std::string m_environmentfile, m_xsfile;
     std::string m_xsextension, m_maxextension, m_mcextension;
 
     EXTRAXS::Simple_XS *p_processes;
-    FSRChannel         *p_fsrinterface;
+    FSR_Channel        *p_fsrinterface;
 
     AMEGIC::Environment        *p_environment;
     MODEL::Model_Base          *p_model;
@@ -48,32 +48,38 @@ namespace AMISIC {
 
     Profile_Function_Base *p_profile;
 
-    unsigned int m_selected, m_nflavour, m_scalescheme;
-    unsigned int m_kfactorscheme, m_maxtrials;
+    std::string m_selected;
+
+    unsigned int m_nflavour, m_maxtrials;
+    unsigned int m_scalescheme, m_kfactorscheme;
     double       m_sigmahard, m_error, m_ecms;
     bool         m_external, m_regulate;
-
-    int m_vegas;
 
     std::string         m_regulator;
     std::vector<double> m_regulation;
 
-    ATOOLS::Blob *GetBlob(ATOOLS::Flavour *flavour);
-
     void CleanUp();
-    bool HaveBlob(ATOOLS::Blob *blob);
-    void FillMode(EXTRAXS::QCD_Processes::Mode mode);
+
+    bool GeneratePathName();
+    void OrderFlavours(ATOOLS::Flavour *flavours);
+    bool AddProcess(EXTRAXS::XS_Group *const group,
+		    const ATOOLS::Flavour *flavours);
+    bool ReadInData();
+
+    bool CreateGrid();
+    bool InitializeProcessList();
+    void CalculateSigmaND();
+    bool CalculateTotal();
+
+    bool CheckConsistency(EXTRAXS::XS_Group *const group,
+			  Grid_Function_Type *const grid,
+			  const double min,const double max,
+			  const double integral);
+
     void SetMaximum(EXTRAXS::XS_Base *process); 
 
-    bool ReadInData();
-    bool CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename);
-    bool CalculateTotal();
-    void CalculateSigmaND();
-    bool InitializeBlobList();
-    bool CheckConsistency(EXTRAXS::XS_Group *const group,GridFunctionType *const grid,
-			  const double min,const double max,const double integral);
-
     bool FillBlob(ATOOLS::Blob *blob);
+
     void PrepareTerminate();
 
   public:
@@ -81,20 +87,11 @@ namespace AMISIC {
     // constructor
     Simple_Chain();
     Simple_Chain(MODEL::Model_Base *_p_model,
-		 BEAM::Beam_Spectra_Handler *_p_beam,PDF::ISR_Handler *_p_isr);
+		 BEAM::Beam_Spectra_Handler *_p_beam,
+		 PDF::ISR_Handler *_p_isr);
 
     // destructor
     ~Simple_Chain();
-
-    // setter
-    inline void SetEnvironmentFile(std::string _m_environmentfile);
-    inline void SetNorm(GridResultType _m_norm);
-
-    // getter
-    inline std::string    EnvironmentFile();
-    inline GridResultType Norm();
-
-    inline Profile_Function_Base *ProfileFunction();
 
     // member functions
     bool Initialize();
@@ -105,10 +102,20 @@ namespace AMISIC {
     bool DiceOrderingParameter();
     bool DiceProcess();
 
+    // inline functions
+    inline double Norm() { return m_norm; }
+
+    inline std::string EnvironmentFile() { return m_environmentfile; }
+
+    inline Profile_Function_Base *ProfileFunction() { return p_profile; }
+
+    inline void SetNorm(double norm) { m_norm=norm; }
+
+    inline void SetEnvironmentFile(std::string environmentfile)
+    { m_environmentfile=environmentfile; }
+
   }; // end of class Simple_Chain
 
 } // end of namespace AMISIC
-
-#include "Simple_Chain.inl.H"
 
 #endif

@@ -1,196 +1,359 @@
-#ifndef Grid_Creator_C
-#define Grid_Creator_C
+#include "Grid_Creator.H"
 
-#include "Phase_Space_Integrator.H"
+#include "Phase_Space_Handler.H"
+#include "ISR_Handler.H"
+#include "Data_Writer.H"
+#include "Blob.H"
 
-namespace AMISIC {
+using namespace AMISIC;
 
-  template <class Argument_Type,class Result_Type>
-  Grid_Creator<Argument_Type,Result_Type>::Grid_Creator(GridHandlerVector _p_gridhandler,
-							EXTRAXS::XS_Group *_p_processes):
-    GridCreatorBaseType(),
-    p_gridhandler(_p_gridhandler),
-    p_processes(_p_processes),
-    m_storemax(true),
-    m_xsextension("_xs.dat"),
-    m_maxextension("_max.dat")
-  {
-    m_maxpoints[0]=2500000;
-    if (p_gridhandler.size()<2) {
-      ATOOLS::msg.Out()<<"Grid_Creator::Grid_Creator("<<&_p_gridhandler<<","<<_p_processes<<"): "
-		       <<"Constructor called with one grid handler only. "<<std::endl
-		       <<"   Maxima will not be stored."<<std::endl;
-      m_storemax=false;
-      if (p_gridhandler.size()==0) {
-	ATOOLS::msg.Error()<<"Grid_Creator_Base::Grid_Creator_Base("<<&_p_gridhandler<<"): "
-			   <<"Grid handler is not initialized! "<<std::endl
-			   <<"   Run cannot continue."<<std::endl;
-	abort();
-      }
-    }
-    if (p_processes==NULL) {
-      ATOOLS::msg.Error()<<"Grid_Creator::Grid_Creator("<<&_p_gridhandler<<","<<_p_processes<<"): "
-			 <<"Process handler is not initialized! "<<std::endl
-			 <<"   Run cannot continue."<<std::endl;
-      abort();
-    }
-    m_maxpoints[1]=PHASIC::Phase_Space_Integrator::MaxPoints();
-    PHASIC::Phase_Space_Integrator::SetMaxPoints(m_maxpoints[0]);
-    for (unsigned int i=0;i<p_gridhandler.size();++i) {
-      p_gridhandler[i]->Grid()->SetMonotony(GridFunctionType::None);
-    }
+Grid_Creator::Grid_Creator(Grid_Handler_Map *gridhandlers,
+			   Grid_Handler_Map *maxhandlers,
+			   EXTRAXS::XS_Group *const processes):
+  p_gridhandlers(gridhandlers),
+  p_maxhandlers(maxhandlers),
+  p_processes(processes),
+  m_xsextension("_xs.dat"),
+  m_maxextension("_max.dat"),
+  m_storemax(true)
+{
+  if (p_processes==NULL) {
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
+			    "Process handler is not initialized",
+			    "Grid_Creator","Grid_Creator"));
   }
-  
-  template <class Argument_Type,class Result_Type>
-  Grid_Creator<Argument_Type,Result_Type>::~Grid_Creator()
-  {
-    PHASIC::Phase_Space_Integrator::SetMaxPoints(m_maxpoints[1]);
+  if (!CollectProcesses(p_processes)) {
+    throw(ATOOLS::Exception(ATOOLS::ex::fatal_error,
+			    "Process handler does not own any process",
+			    "Grid_Creator","Grid_Creator"));
   }
+}
 
-  template <class Argument_Type,class Result_Type>
-  bool Grid_Creator<Argument_Type,Result_Type>::
-  ReadInArguments(std::string tempifile,std::string tempipath)
-  {
-    bool success=true;
-    if (tempipath!=ATOOLS::nullstring) this->SetInputPath(tempipath);
-    if (tempifile!=ATOOLS::nullstring) this->SetInputFile(tempifile);
-    if (this->InputFile()==ATOOLS::nullstring) {
-      ATOOLS::msg.Error()<<"Grid_Creator_Base::Arguments("<<tempifile<<"): "
-			 <<"No input file specified! Abort."<<std::endl;
-      abort();
-    }
-    for (unsigned int i=0;i<p_gridhandler.size();++i) {
-      success=success&&ReadSingleArguments(p_gridhandler[i]);
-    }
-    return success;
+Grid_Creator::~Grid_Creator()
+{
+  while (m_histograms.size()>0) {
+    delete m_histograms.begin()->second;
+    m_histograms.erase(m_histograms.begin());
   }
-  
-  template <class Argument_Type,class Result_Type>
-  bool Grid_Creator<Argument_Type,Result_Type>::InitializeCalculation()
-  {
-    p_xaxis=p_gridhandler[0]->Grid()->XAxis();
-    p_yaxis=p_gridhandler[0]->Grid()->YAxis();
-    m_criterion=ATOOLS::Variable::TypeToSelectorID(p_xaxis->Variable().Type());
-    m_initialdata=p_processes->SelectorData()->RemoveData(m_criterion);
+}
+
+bool Grid_Creator::CollectProcesses(EXTRAXS::XS_Base *const process)
+{
+  if (process->Size()==0) return false;
+  if ((*process)[0]==process) {
+    m_histograms[process->Name()] = new Amisic_Histogram<double>();
+    (*p_gridhandlers)[process->Name()] = new Grid_Handler_Type();
+    if (m_storemax) 
+      (*p_maxhandlers)[process->Name()] = new Grid_Handler_Type();
     return true;
   }
-  
-  template <class Argument_Type,class Result_Type>
-  unsigned int Grid_Creator<Argument_Type,Result_Type>::
-  CreateSinglePoint(GridArgumentType *boundary,bool newpoint,bool force)
-  {
-    unsigned int success=1;
-    GridArgumentType lower, upper;
-    GridResultType newxs;
-    lower=ATOOLS::Max((*p_xaxis)[(*p_xaxis)(boundary[1])*(GridArgumentType)(3.0/4.0)
-				 +(*p_xaxis)(boundary[2])*(GridArgumentType)(1.0/4.0)],(*p_xaxis)[GridXMin()]);
-    upper=ATOOLS::Min((*p_xaxis)[(*p_xaxis)(boundary[1])*(GridArgumentType)(1.0/4.0)
-				 +(*p_xaxis)(boundary[2])*(GridArgumentType)(3.0/4.0)],(*p_xaxis)[GridXMax()]);
-    if (lower==upper) return 0;
-    p_processes->Reset();
-    p_processes->SelectorData()->SetData(m_criterion,m_initialdata.flavs,m_initialdata.help,lower,upper);
-    p_processes->ResetSelector(p_processes->SelectorData());
-    p_processes->SetMax(0.0,1);
-    p_processes->CalculateTotalXSec("");
-    p_processes->SetMax(0.0,0);
-    newxs=(GridResultType)p_processes->TotalXS()/(upper-lower);
-    if (((GridResultType)dabs((*p_yaxis)(newxs)-(*p_yaxis)(m_lastxs))>GridDeltaYMin())||(force)) {
-      if (!newpoint) {
-	if (!p_gridhandler[0]->Grid()->DeleteXPoint(boundary[0])) success=0;
-	if (m_storemax) {
-	  for (unsigned int i=1;i<p_gridhandler.size();++i) {
-	    if (!p_gridhandler[i]->Grid()->DeleteXPoint(boundary[0])) success=0;
-	  }
-	}
-      }
-      if (p_gridhandler[0]->Grid()->AddPoint(boundary[0],newxs)) {
-	p_processes->PSHandler(false)->WriteOut(OutputPath()+OutputFile()+MCExtension());
-	m_lastxs=newxs;
-      }
-      else {
-	ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): Could not add last cross section! "
-			   <<"Ignored it instead."<<std::endl
-			   <<"   Please do either reduce the grid point distance "<<std::endl
-			   <<"   or select higher precision for the integration step."<<std::endl;
-	success=0;
-      }
-      if (m_storemax) {
-	for (unsigned int i=1;i<p_gridhandler.size();++i) {
-	  p_gridhandler[i]->Grid()->AddPoint(boundary[0],(GridResultType)(*p_processes)[i-1]->Max()); 
-	}
-      }
-      else {
-	ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateInitialGrid(): Could not add last maximum! "
-			   <<"Ignored it instead."<<std::endl
-			   <<"   Please do either reduce the grid point distance "<<std::endl
-			   <<"   or select higher precision for the integration step."<<std::endl;
-	success=0;
-      }
-    }
-    msg_Events()<<"Grid_Creator::CalculateSingleValue(): Got value for "
-		<<boundary[0]<<" GeV\n   Calculation for "<<ATOOLS::om::bold
-		<<lower<<" GeV "<<ATOOLS::om::reset
-		<<"< "<<p_xaxis->Variable().Name()<<" < "<<ATOOLS::om::bold
-		<<upper<<" GeV"<<ATOOLS::om::reset<<" yielded\n   "
-		<<ATOOLS::om::blue<<newxs*rpa.Picobarn()<<" pb/GeV "
-		<<ATOOLS::om::reset<<"( "<<ATOOLS::om::red<<"max = "
-		<<p_processes->Max()*rpa.Picobarn()<<" pb/GeV "
-		<<ATOOLS::om::reset<<")"<<std::endl;
-    return success;
+  for (size_t i=0;i<process->Size();++i) {
+    if (!CollectProcesses((*process)[i])) return false;
   }
-  
-  template <class Argument_Type,class Result_Type>
-  bool Grid_Creator<Argument_Type,Result_Type>::
-  RemoveSinglePoint(GridArgumentType x)
-  {
-    bool success=true;
-    if (!p_gridhandler[0]->Grid()->DeleteXPoint(x)) success=false;
-    if (m_storemax) {
-      for (unsigned int i=1;i<p_gridhandler.size();++i) {
-	if (!p_gridhandler[i]->Grid()->DeleteXPoint(x)) success=false; 
-      }
-    }
-    return success;
+  return true;
+}
+
+std::string Grid_Creator::MakeString(std::vector<std::string> input) const
+{
+  for (unsigned int i=1;i<input.size();++i) {
+    input[0]+=std::string(" ")+input[i];
   }
+  return input.size()>0 ? input[0] : "";
+}
 
-  template <class Argument_Type,class Result_Type>
-  bool Grid_Creator<Argument_Type,Result_Type>::WriteOutGrid(std::vector<std::string> addcomments,
-							     std::string tempofile,std::string tempopath)
-  {
-    if (tempopath!=ATOOLS::nullstring) this->SetOutputPath(tempopath);
-    if (tempofile!=ATOOLS::nullstring) this->SetOutputFile(tempofile);
-    if (this->OutputFile()==ATOOLS::nullstring) {
-      ATOOLS::msg.Error()<<"Grid_Creator_Base::WriteOutGrid("<<&addcomments<<","<<tempofile<<","<<tempopath<<"): "
-			 <<"No output file specified!"<<std::endl
-			 <<"   Writing grid to 'output_"<<m_maxextension<<"'"<<std::endl;
-      this->SetOutputFile("output_");
-    }
-    bool success=true;
-    tempofile=this->OutputFile();
-    this->SetOutputFile(tempofile+m_xsextension);
-    if (m_storemax) {
-      addcomments.push_back("--------------------");
-      for (unsigned int i=1;i<p_gridhandler.size();++i) {
-	addcomments.push_back(std::string("max file : ")+(*p_processes)[i-1]->Name()+m_maxextension);
-      }
-    }
-    success=success&&WriteSingleGrid(p_gridhandler[0],addcomments);
-    if (m_storemax) {
-      for (unsigned int i=2;i<p_gridhandler.size();++i) addcomments.erase(addcomments.end()-1);
-      for (unsigned int i=1;i<p_gridhandler.size();++i) {
-	p_gridhandler[i]->Grid()->XAxis()->
-	  SetVariable(p_gridhandler[0]->Grid()->XAxis()->Variable().Name());
-	p_gridhandler[i]->Grid()->YAxis()->
-	  SetVariable(std::string("\\frac{\\partial \\sigma}{\\partial \\Omega}_{max}"));
-	this->SetOutputFile((*p_processes)[i-1]->Name()+m_maxextension);
-	addcomments[addcomments.size()-1]=std::string("xs file : ")+tempofile+m_xsextension;
-	success=success&&WriteSingleGrid(p_gridhandler[i],addcomments);
-      }
-    }
-    this->SetOutputFile(tempofile);
-    return success;
+bool Grid_Creator::ReadInArguments(std::string tempifile,
+				   std::string tempipath)
+{
+  if (tempipath!="") SetInputPath(tempipath);
+  if (tempifile!="") SetInputFile(tempifile);
+  if (!CheckInputFile()) return false;
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
+  reader->SetInputFile(InputPath()+InputFile());
+  reader->SetVectorType(reader->VHorizontal);
+  std::vector<std::string> helps;
+  if (!reader->VectorFromFile(helps,"X_VARIABLE")) m_gridxvariable="";
+  else m_gridxvariable=MakeString(helps);
+  if (!reader->VectorFromFile(helps,"Y_VARIABLE")) m_gridyvariable="";
+  else m_gridyvariable=MakeString(helps);
+  if (!reader->ReadFromFile(m_gridxmin,"GRID_X_MIN")) m_gridxmin=1.3;
+  if (!reader->ReadFromFile(m_gridxmax,"GRID_X_MAX")) m_gridxmax=1.3e3;
+  if (!reader->ReadFromFile(m_griddeltax,"GRID_DELTA_X")) m_griddeltax=.1;
+  double helpd;
+  if (reader->ReadFromFile(helpd,"INITIAL_EVENTS")) 
+    m_initevents=(long unsigned)helpd;
+  else m_initevents=100000;
+  if (reader->ReadFromFile(helpd,"MAX_EVENTS")) 
+    m_maxevents=(long unsigned)helpd;
+  else m_maxevents=1000000;
+  if (!reader->ReadFromFile(m_binerror,"GRID_ERROR")) m_binerror=0.05;
+  if (!reader->ReadFromFile(m_outputlevel,"GRID_CREATOR_OUTPUT")) {
+    m_outputlevel=ATOOLS::msg.Level();
   }
+  if (!reader->ReadFromFile(m_gridxscaling,
+			    "HISTO_X_SCALING")) m_gridxscaling="Id";
+  if (!reader->ReadFromFile(m_gridyscaling,
+			    "HISTO_Y_SCALING")) m_gridyscaling="Id";
+  for (Amisic_Histogram_Map::iterator hit=m_histograms.begin();
+       hit!=m_histograms.end();++hit) {
+    hit->second->XAxis()->SetVariable(m_gridxvariable);
+    hit->second->YAxis()->SetVariable(m_gridyvariable);
+    hit->second->XAxis()->SetScaling(m_gridxscaling);
+    hit->second->YAxis()->SetScaling(m_gridyscaling);
+    Amisic_Histogram_Type::Axis_Type *axis=hit->second->XAxis();
+    hit->second->Initialize(m_gridxmin,m_gridxmax,
+			    abs((int)(((*axis)(m_gridxmax)-
+				       (*axis)(m_gridxmin))/m_griddeltax)));
+  }
+  if (!reader->ReadFromFile(m_gridxscaling,
+			    "GRID_X_SCALING")) m_gridxscaling="Id";
+  if (!reader->ReadFromFile(m_gridyscaling,
+			    "GRID_Y_SCALING")) m_gridyscaling="Id";
+  for (Grid_Handler_Map::iterator git=p_gridhandlers->begin();
+       git!=p_gridhandlers->end();++git) {
+    git->second->Grid()->XAxis()->SetVariable(m_gridxvariable);
+    git->second->Grid()->YAxis()->SetVariable(m_gridyvariable);
+    git->second->Grid()->XAxis()->SetScaling(m_gridxscaling);
+    git->second->Grid()->YAxis()->SetScaling(m_gridyscaling);
+  }
+  if (m_storemax) {
+    for (Grid_Handler_Map::iterator mit=p_maxhandlers->begin();
+	 mit!=p_maxhandlers->end();++mit) {
+      mit->second->Grid()->XAxis()->SetVariable(m_gridxvariable);
+      mit->second->Grid()->YAxis()->SetVariable(m_gridyvariable);
+      mit->second->Grid()->XAxis()->SetScaling(m_gridxscaling);
+      mit->second->Grid()->YAxis()->SetScaling(m_gridyscaling);
+    }
+  }
+  delete reader;
+  p_xaxis=m_histograms.begin()->second->XAxis();
+  p_yaxis=m_histograms.begin()->second->YAxis();
+  return true;
+}
 
-} // end of namespace AMISIC
+bool Grid_Creator::ReadInGrid()
+{
+  Grid_Handler_Map::iterator hit=p_gridhandlers->begin();
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","#");
+  reader->SetInputPath(OutputPath());
+  reader->SetInputFile(hit->first+m_xsextension);
+  double help;
+  if (!reader->ReadFromFile(help,"events")) m_events=0;
+  else m_events=(long unsigned int)help;
+  delete reader;
+  if (m_events<m_maxevents) return false;
+  for (;hit!=p_gridhandlers->end();++hit) {
+    if (!hit->second->ReadIn(ATOOLS::Type::TFStream,OutputPath()+
+			     hit->first+m_xsextension)) return false;
+  }
+  for (Grid_Handler_Map::iterator mit=p_maxhandlers->begin();
+       mit!=p_maxhandlers->end();++mit) {
+    if (!mit->second->ReadIn(ATOOLS::Type::TFStream,OutputPath()+
+			     mit->first+m_xsextension)) return false;
+  }
+  return true;
+}
 
-#endif
+bool Grid_Creator::InitializeCalculation()
+{
+  m_criterion=ATOOLS::Variable::TypeToSelectorID(p_xaxis->Variable().Type());
+  m_momdata=p_processes->SelectorData()->RemoveData(m_criterion);
+  p_processes->SelectorData()->
+    SetData(m_criterion,m_momdata.flavs,m_momdata.help,m_gridxmin,m_gridxmax);
+  p_processes->ResetSelector(p_processes->SelectorData());
+  p_processes->Reset();
+  p_processes->CalculateTotalXSec(OutputPath()+OutputFile()+MCExtension());
+  return true;
+}
+
+bool Grid_Creator::UpdateHistogram(EXTRAXS::XS_Base *const process,
+				   const size_t trials)
+{
+  if (process->Size()==0) return false;
+  if ((*process)[0]==process) {
+    Amisic_Histogram_Type *histo=m_histograms[process->Name()];
+    double weight=process->Differential(p_momenta)*
+      process->PSHandler(false)->PSWeight();
+    if (process->ISR()->On()==3) {
+      weight+=process->Differential2()*process->PSHandler(false)->PSWeight();
+    }
+    double value=process->Momenta()[2].PPerp();
+    histo->Add(value,weight);
+    for (size_t i=1;i<trials;++i) histo->Add(value,0.0); 
+    return true;
+  }
+  for (size_t i=0;i<process->Size();++i) {
+    if (!UpdateHistogram((*process)[i],trials)) return false;
+  }
+  return true;
+}
+
+bool Grid_Creator::CreateOptimizedGrid()
+{
+  for (;m_events<m_maxevents;++m_events) {
+    ATOOLS::Blob_Data_Base *xsdata=p_processes->WeightedEvent();
+    PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
+    p_momenta=p_processes->Selected()->Momenta();
+    if (!UpdateHistogram(p_processes,info.ntrial)) return false;
+    if (m_events%1000==0) 
+      msg_Tracking()<<"Grid_Creator::CreateOptimizedGrid(): "
+		    <<"Event "<<m_events<<std::endl;
+    if ((m_events%(m_maxevents/100))==0) {
+      ATOOLS::msg.Out()<<"\r   "<<m_events/(float)m_maxevents
+		       <<" %"<<std::flush;
+    }
+  }
+  return true;
+}
+
+bool Grid_Creator::CreateInitialGrid()
+{
+  for (m_events=0;m_events<m_initevents;++m_events) {
+    ATOOLS::Blob_Data_Base *xsdata=p_processes->WeightedEvent();
+    PHASIC::Weight_Info info=xsdata->Get<PHASIC::Weight_Info>();
+    p_momenta=p_processes->Selected()->Momenta();
+    if (!UpdateHistogram(p_processes,info.ntrial)) return false;
+    if (m_events%1000==0) 
+      msg_Tracking()<<"Grid_Creator::CreateInitialGrid(): "
+		    <<"Event "<<m_events<<std::endl;
+    if ((m_events%(m_maxevents/100))==0) 
+      ATOOLS::msg.Out()<<"\r   "<<m_events/(float)m_maxevents
+		       <<" %"<<std::flush;
+  }
+  return true;
+}
+
+bool Grid_Creator::ExportHistogram(const std::string &name) const
+{
+  Amisic_Histogram_Type *const histo=m_histograms.find(name)->second;
+  Grid_Function_Type *const grid=p_gridhandlers->find(name)->second->Grid();
+  Grid_Function_Type *const max=p_maxhandlers->find(name)->second->Grid();
+  grid->SetMonotony(grid->None);
+  max->SetMonotony(max->None);
+  for (size_t i=1;i<histo->NBins()-1;++i) {
+    if (!grid->AddPoint(histo->BinXMean(i),histo->BinContent(i))) {
+      return false;
+    }
+    if (m_storemax) {
+      if (!max->AddPoint(histo->BinXMean(i),histo->BinMax(i))) {
+	return false;
+      }
+    }
+  }
+  return true;
+}
+
+bool Grid_Creator::TranslateGrid() 
+{
+  bool success=true;
+  for (Amisic_Histogram_Map::iterator hit=m_histograms.begin();
+       hit!=m_histograms.end();++hit) {
+    hit->second->Finish();
+    if (!ExportHistogram(hit->first)) success=false;
+  }
+  return success;
+}
+
+bool Grid_Creator::CreateGrid()
+{
+  bool success=true;
+  int formerlevel=ATOOLS::msg.Level();
+  msg_Info()<<"Grid_Creator::CreateGrid(): "
+	    <<"Calculating grid {"<<std::endl;
+  ATOOLS::msg.SetLevel(m_outputlevel);
+  if (!InitializeCalculation()) {
+    ATOOLS::msg.Error()<<"Grid_Creator_Base::CreateGrid(..): "
+		       <<"Initialization failed! Abort."<<std::endl;
+    return false;
+  }
+  if (!CreateInitialGrid()) {
+    ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
+		     <<"Initial grid creation failed."<<std::endl;
+    success=false;
+  }
+  if (!CreateOptimizedGrid()) {
+    ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
+		     <<"Sorry, grid cannot be optimized."<<std::endl;
+    success=false;
+  }
+  if (!TranslateGrid()) {
+    ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
+		     <<"Sorry, grid cannot be translated."<<std::endl;
+    success=false;
+  }
+  if (!WriteOutGrid()) {
+    ATOOLS::msg.Out()<<"Grid_Creator_Base::CreateGrid(..): "
+		     <<"Sorry, grid cannot be written to '"
+		     <<OutputFile()<<"'"<<std::endl;
+    success=false;
+  }
+  ATOOLS::msg.SetLevel(formerlevel);
+  msg_Info()<<"}"<<std::endl;
+  return success;
+}
+
+bool Grid_Creator::WriteOutGrid(std::vector<std::string> addcomments,
+				std::string tempopath)
+{
+  if (tempopath!="") SetOutputPath(tempopath);
+  bool success=true;
+  addcomments.push_back("--------------------");
+  addcomments.push_back("--------------------");
+  for (Grid_Handler_Map::iterator git=p_gridhandlers->begin();
+       git!=p_gridhandlers->end();++git) {
+    SetOutputFile(git->first+m_xsextension);
+    if (m_storemax) {
+      addcomments.back()=std::string("max file : ")+
+	git->first+m_maxextension;
+    }
+    if (!WriteSingleGrid(git->second,addcomments)) success=false;
+    if (m_storemax) {
+      SetOutputFile(git->first+m_maxextension);
+      addcomments.back()=std::string("xs file : ")+
+	git->first+m_xsextension;
+      success=success&&WriteSingleGrid((*p_maxhandlers)[git->first],
+				       addcomments);
+    }
+  }
+  SetOutputFile("");
+  return success;
+}
+
+bool Grid_Creator::WriteSingleGrid(Grid_Handler_Type *grid,
+				   std::vector<std::string> addcomments)
+{
+  if (!CheckOutputFile()) return false;
+  std::vector<std::string> comments;
+  std::string xvar, yvar;
+  xvar=grid->Grid()->XAxis()->Variable().Name();
+  yvar=grid->Grid()->YAxis()->Variable().Name();
+  comments.push_back(std::string("x : ")+xvar);
+  comments.push_back(std::string("y : ")+yvar);
+  comments.push_back("--------------------");
+  comments.push_back(std::string("x scale : ")+
+		     grid->Grid()->XAxis()->Scaling()->Name());
+  comments.push_back(std::string("y scale : ")+
+		     grid->Grid()->YAxis()->Scaling()->Name());
+  comments.push_back("--------------------");
+  comments.push_back("boundary conditions ");
+  comments.push_back("--------------------");
+  comments.push_back(std::string("x_{min} = ")+ATOOLS::ToString(m_gridxmin));
+  comments.push_back(std::string("x_{max} = ")+ATOOLS::ToString(m_gridxmax));
+  comments.push_back("--------------------");
+  comments.push_back(std::string("\\Delta x_{max} = ")+
+		     ATOOLS::ToString(m_griddeltax));
+  comments.push_back("--------------------");
+  comments.push_back(std::string("events = ")+
+		     ATOOLS::ToString(m_events));
+  if (addcomments.size()!=0) {
+    comments.push_back("--------------------");
+    for (unsigned int i=0;i<addcomments.size();++i) 
+      comments.push_back(addcomments[i]);
+  }
+  comments.push_back("--------------------");
+  comments.push_back("  Data Set follows  ");
+  comments.push_back("--------------------");
+  msg_Tracking()<<"Grid_Creator::WriteSingleGrid(..): Writing grid to '"
+		<<OutputFile()<<"'"<<std::endl;
+  return grid->WriteOut(ATOOLS::Type::TFStream,
+			OutputPath()+OutputFile(),comments);
+}

@@ -12,15 +12,16 @@ Amisic::Amisic():
   p_isr(NULL),
   m_external(false) {}
 
-Amisic::Amisic(MODEL::Model_Base *_p_model,
-	       BEAM::Beam_Spectra_Handler *_p_beam,PDF::ISR_Handler *_p_isr):
+Amisic::Amisic(MODEL::Model_Base *const model,
+	       BEAM::Beam_Spectra_Handler *const beam,
+	       PDF::ISR_Handler *const isr):
   m_hardmodel(Unknown),
   m_softmodel(Unknown),
   p_hardbase(NULL),
   p_softbase(NULL),
-  p_model(_p_model),
-  p_beam(_p_beam),
-  p_isr(_p_isr),
+  p_model(model),
+  p_beam(beam),
+  p_isr(isr),
   m_external(true) {}
 
 Amisic::~Amisic() 

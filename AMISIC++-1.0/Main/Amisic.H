@@ -30,26 +30,12 @@ namespace AMISIC {
 
     // constructors
     Amisic();
-    Amisic(MODEL::Model_Base *_p_model,
-	   BEAM::Beam_Spectra_Handler *_p_beam,PDF::ISR_Handler *_p_isr);
+    Amisic(MODEL::Model_Base *const model,
+	   BEAM::Beam_Spectra_Handler *const beam,
+	   PDF::ISR_Handler *const isr);
 
     // destructor
     ~Amisic();
-
-    // getters
-    const ModelID HardModel() const;
-    const ModelID SoftModel() const;
-
-    MI_Base *HardBase();
-    MI_Base *SoftBase();
-
-#ifdef USING__Sherpa
-    SHERPA::Matrix_Element_Handler *HardMEHandler();
-    SHERPA::Matrix_Element_Handler *SoftMEHandler();
-#endif
-
-    EXTRAXS::XS_Base *HardXS();
-    EXTRAXS::XS_Base *SoftXS();
 
     // member functions
     bool Initialize();
@@ -74,10 +60,25 @@ namespace AMISIC {
     static ModelID StringToModelID(std::string model);
     static std::string ModelIDToString(ModelID model);
 
+    // inline functions
+    inline ModelID HardModel() const { return m_hardmodel; }
+    inline ModelID SoftModel() const { return m_softmodel; }
+
+    inline MI_Base *const HardBase() const { return p_hardbase; }
+    inline MI_Base *const SoftBase() const { return p_softbase; }
+
+#ifdef USING__Sherpa
+    inline SHERPA::Matrix_Element_Handler *const HardMEHandler()
+    { return p_hardbase->MEHandler(); }
+    inline SHERPA::Matrix_Element_Handler *const SoftMEHandler()
+    { return p_softbase->MEHandler(); }
+#endif
+
+    inline EXTRAXS::XS_Base *const HardXS() { return p_hardbase->XS(); }
+    inline EXTRAXS::XS_Base *const SoftXS() { return p_softbase->XS(); }
+
   }; // end of class Amisic
 
 } // end of namespace AMISIC
-
-#include "Amisic.inl.H"
 
 #endif
