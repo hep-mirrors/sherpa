@@ -28,10 +28,18 @@ Fragmentation_Handler::Fragmentation_Handler(std::string _dir,std::string _file)
     m_mode       = 1;
     return;
   }
+  if (m_fragmentationmodel==std::string("Off") ||
+      m_fragmentationmodel==std::string("off") ) {
+    msg.Out()<<"WARNING : The Fragmentation is switched off "<<std::endl;
+    p_lund       = 0;
+    m_mode       = 0;
+    return;
+  }
 
-  msg.Error()<<"Error in Fragmentation_Handler::Fragmentation_Handler."<<std::endl
-	     <<"    Fragmentation model "<<m_fragmentationmodel
-	     <<" not implemented yet. Abort."<<std::endl;
+  msg.Error()<<"ERROR in Fragmentation_Handler::Fragmentation_Handler."<<std::endl
+	     <<"    please choose between <Lund> and <Off> as Fragmentation model"<<std::endl
+	     <<"    the Fragmentation model <"<<m_fragmentationmodel
+	     <<"> is not implemented yet. Abort."<<std::endl;
   abort();
 }
    
@@ -45,6 +53,8 @@ Fragmentation_Handler::~Fragmentation_Handler() {
 bool Fragmentation_Handler::PerformFragmentation(ATOOLS::Blob_List * bl,
 						 ATOOLS::Particle_List * pl) 
 {
+  if (m_mode==0) return 1;
+
   if (!ExtractSinglets(bl,pl)) return 0;
   bool okay = 1;
   for (Blob_Iterator biter=bl->begin();biter!=bl->end();++biter) {
@@ -163,9 +173,10 @@ bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
 Lund_Fortran_Interface * Fragmentation_Handler::GetLundFortranInterface() 
 { 
   if (p_lund) return p_lund; 
-  msg.Error()<<"Error in Fragmentation_Handler::GetLundFortranInterface()."<<std::endl
-	     <<"   Not yet initialized. This is an inconsistent option at the moment."<<std::endl
-	     <<"   Abort program. "<<std::endl;
-  abort();
+  msg.Out()<<"WARNING: in Fragmentation_Handler::GetLundFortranInterface()."<<std::endl
+	   <<"   Not yet initialized. This is an inconsistent option at the moment."<<std::endl;
+    //	   <<"   Abort program. "<<std::endl;
+    //  abort();
+  return p_lund;
 }
 

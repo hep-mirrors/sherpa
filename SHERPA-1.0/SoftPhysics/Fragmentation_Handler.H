@@ -90,7 +90,7 @@ namespace SHERPA {
   /*!
     \var int Fragmentation_Handler::m_mode
     The actual mode labelling the fragmentation model to be used. At the moment, only
-    1, i.e. Lund string fragmentation, is available.
+    1, i.e. Lund string fragmentation, and 0, i.e. off is available.
   */ 
   /*! 
     \var Lund_Fortran_Interface * Fragmentation_Handler::p_lund 
