@@ -85,7 +85,9 @@ Lund_Interface::Lund_Interface(std::string _m_path,std::string _m_file):
     ATOOLS::rpa.gen.SetEcms(win);
     if (!reader->ReadFromFile(pysubs.msel,"MSEL")) pysubs.msel=1;
   }
-  pysubs.msel=0;
+  else {
+    pysubs.msel=0;
+  }
   reader->MatrixFromFile(help,"MSUB");
   for (size_t i=0;i<help.size();++i) {
     if (help[i].size()>1) if ((int)help[i][0]>0) pysubs.msub[(int)help[i][0]-1]=(int)help[i][1];
