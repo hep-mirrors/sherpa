@@ -681,6 +681,7 @@ Multi_Channel *  Process_Base::FSRIntegrator()           { return p_pshandler->F
 Single_Channel * Process_Base::FSRIntegrator(int i)      { return p_pshandler->FSRIntegrator(i); }
 
 void Process_Base::SwapInOrder() {
+  if (m_nin!=2) return;
   Flavour help = p_flavours[0];
   p_flavours[0] = p_flavours[1];
   p_flavours[1] = help;
@@ -691,7 +692,7 @@ void Process_Base::SwapInOrder() {
 }
 
 void Process_Base::RestoreInOrder() {
-  if (m_swaped) {
+  if (m_nin==2 && m_swaped) {
     Flavour help = p_flavours[0];
     p_flavours[0] = p_flavours[1];
     p_flavours[1] = help;

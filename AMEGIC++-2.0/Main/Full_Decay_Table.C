@@ -185,7 +185,6 @@ void Full_Decay_Table::CalculateWidths()
     m_channels[i]->SetWidth();
     m_width += m_channels[i]->Width();
   }
-  Output();
   if (m_overwrite) m_flin.SetWidth(m_width);
   else {
     for (size_t i=0;i<m_channels.size();i++) 

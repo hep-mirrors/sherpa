@@ -103,9 +103,20 @@ void Single_Process::PolarizationNorm() {
   p_flavours   = new Flavour[m_nvector];
   p_pl   = new Pol_Info[m_nvector];
   p_b    = new int[m_nvector];
-  for (size_t i=0;i<m_nin;i++)             { p_flavours[i] = p_flin[i]       ; p_pl[i] = p_plin[i]       ; p_b[i] = -1; }
-  for (size_t i=m_nin;i<m_nin+m_nout;i++)  { p_flavours[i] = p_flout[i-m_nin]; p_pl[i] = p_plout[i-m_nin]; p_b[i] = 1; } 
-  for (size_t i=m_nin+m_nout;i<m_nvector;i++) { p_flavours[i] = Flavour(kf::pol); p_b[i]  = 1; }
+  for (short int i=0;i<m_nin;i++) { 
+    p_flavours[i] = p_flin[i]; 
+    p_pl[i]       = p_plin[i]; 
+    p_b[i]        = -1; 
+  }
+  for (short int i=m_nin;i<m_nin+m_nout;i++)  { 
+    p_flavours[i] = p_flout[i-m_nin]; 
+    p_pl[i]       = p_plout[i-m_nin]; 
+    p_b[i]        = 1; 
+  } 
+  for (short int i=m_nin+m_nout;i<m_nvector;i++) { 
+    p_flavours[i] = Flavour(kf::pol); 
+    p_b[i]        = 1; 
+  }
 
   m_Norm = SymmetryFactors() * m_pol.Spin_Average(m_nin,p_flin);
 #ifndef Explicit_Pols
@@ -207,10 +218,12 @@ int Single_Process::InitAmplitude(Interaction_Model_Base * model,Topology* top,V
 	msg.Tracking()<<"Single_Process::InitAmplitude : Found compatible process for "<<m_name<<" : "<<links[j]->Name()<<endl;
 
 	if (!FoundMappingFile(m_libname,m_pslibname)) {
-	  system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map ")
-		  +string("Process/")+m_ptypename+string("/")+Name()+string(".map")).c_str());
-	  system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".col ")
-		  +string("Process/")+m_ptypename+string("/")+Name()+string(".col")).c_str());
+	  if (IsFile(string("Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map "))) { 
+	    system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".map ")
+		    +string("Process/")+m_ptypename+string("/")+Name()+string(".map")).c_str());
+	    system((string("cp Process/")+m_ptypename+string("/")+links[j]->Name()+string(".col ")
+		    +string("Process/")+m_ptypename+string("/")+Name()+string(".col")).c_str());
+	  }
 	}
 	
 	p_partner = links[j];
@@ -736,7 +749,8 @@ bool Single_Process::CreateChannelLibrary()
 {
   p_psgen     = new Phase_Space_Generator(m_nin,m_nout);
   bool newch  = 0;
-  if (m_nin>1)  newch = p_psgen->Construct(p_pshandler->FSRIntegrator(),m_ptypename,m_pslibname,p_flavours,this); 
+  if (m_nin>1)  newch = p_psgen->Construct(p_pshandler->FSRIntegrator(),m_ptypename,
+					   m_pslibname,p_flavours,this); 
 
   if (newch>0) {
     msg.Tracking()<<"Single_Process::CreateChannelLibrary() :"<<std::endl
@@ -981,8 +995,15 @@ double Single_Process::Differential2() {
 double Single_Process::DSigma(const ATOOLS::Vec4D* _moms,bool lookup)
 {
   m_last = m_lastdxs = 0.;
-  for (size_t i=0;i<m_nin+m_nout;i++) {
-    if (_moms[i][0] < p_flavours[i].PSMass()) return m_last = 0.;
+  if (m_nin==2) {
+    for (size_t i=0;i<m_nin+m_nout;i++) {
+      if (_moms[i][0]<p_flavours[i].PSMass()) return m_last = 0.;
+    }
+  }
+  if (m_nin==1) {
+    for (size_t i=m_nin;i<m_nin+m_nout;i++) {
+      if (_moms[i][0]<p_flavours[i].PSMass()) return m_last = 0.;
+    }
   }
   if (p_partner == this) {
     if (m_helsample) {
@@ -1061,10 +1082,27 @@ double Single_Process::operator()(const ATOOLS::Vec4D * mom)
 }
 
 
-bool   Single_Process::OneEvent(double _mass) { return p_pshandler->OneEvent(_mass); }
-bool   Single_Process::SameEvent()            { return p_pshandler->SameEvent(); }
-ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent()     { return p_pshandler->WeightedEvent(); }
-ATOOLS::Blob_Data_Base * Single_Process::SameWeightedEvent() { return p_pshandler->SameWeightedEvent(); }
+bool    Single_Process::OneEvent(double _mass) { 
+  if (p_partner==this) return p_pshandler->OneEvent(_mass,1); 
+  return p_partner->OneEvent(_mass);
+}
+
+bool    Single_Process::SameEvent() { 
+  if (p_partner==this) return p_pshandler->SameEvent(); 
+  return p_partner->SameEvent(); 
+}
+
+ATOOLS::Blob_Data_Base * Single_Process::WeightedEvent()     
+{ 
+  if (p_partner==this) return p_pshandler->WeightedEvent(); 
+  return p_partner->WeightedEvent(); 
+}
+
+ATOOLS::Blob_Data_Base * Single_Process::SameWeightedEvent() 
+{ 
+  if (p_partner==this) return p_pshandler->SameWeightedEvent(); 
+  return p_partner->SameWeightedEvent(); 
+}
 
 
 

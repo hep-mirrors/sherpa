@@ -688,7 +688,8 @@ bool Process_Group::SetUpIntegrator()
 	 (p_flavours[1].Mass() != p_isrhandler->Flav(1).Mass()) ) p_isrhandler->SetPartonMasses(p_flavours);
   }
   p_pshandler  = new Phase_Space_Handler(this,p_isrhandler,p_beamhandler);
-  AddChannels(this,p_pshandler->FSRIntegrator(),p_pshandler->BeamParameters(),p_pshandler->ISRParameters());
+  if (m_nin==2 ) AddChannels(this,p_pshandler->FSRIntegrator(),
+			     p_pshandler->BeamParameters(),p_pshandler->ISRParameters());
   if (!p_pshandler->CreateIntegrators()) return 0;
   if (m_nin==2) { for (size_t i=0;i<m_procs.size();i++) m_procs[i]->Empty(); }
   return 1;

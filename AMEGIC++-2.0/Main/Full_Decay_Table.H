@@ -39,8 +39,11 @@ namespace AMEGIC {
   inline int               Full_Decay_Channel::NIn()                  { return p_proc->NIn(); }           
   inline int               Full_Decay_Channel::NOut()                 { return p_proc->NOut(); }          
   inline std::string       Full_Decay_Channel::Name()                 { return p_proc->Name(); }          
-  inline const ATOOLS::Flavour * Full_Decay_Channel::Flavours()             { return p_proc->Flavours(); }          
-  inline const ATOOLS::Vec4D   * Full_Decay_Channel::Momenta()              { return p_proc->Momenta(); }          
+  inline const ATOOLS::Flavour * Full_Decay_Channel::Flavours()       { return p_proc->Flavours(); }
+  inline const ATOOLS::Vec4D   * Full_Decay_Channel::Momenta() { 
+    if (p_proc->Partner()==p_proc) return p_proc->Momenta();
+    return p_proc->Partner()->Momenta();
+  }          
   inline int               Full_Decay_Channel::NumberOfDiagrams()     { return p_proc->NumberOfDiagrams(); }
   inline Point *           Full_Decay_Channel::Diagram(int i)         { return p_proc->Diagram(i); }
 

@@ -38,10 +38,14 @@ Amegic::Amegic(std::string _path,std::string _file,
 }
  
 
+
 double Amegic::OverflowStatistics(Process_Base * proc,int level)
 {
   if (level==0) msg.Tracking()<<"Amegic::OverflowStatistics for : "<<std::endl;
-  if (proc==NULL) proc=p_procs;
+  if (proc==NULL) {
+    if (p_procs==NULL) return 0.;
+    proc=p_procs;
+  }
   double sum=0.;
   if ((*proc)[0]==proc) {
     sum=proc->Overflow()/proc->Max();
@@ -76,7 +80,6 @@ double Amegic::OverflowStatistics(Process_Base * proc,int level)
   }
   return sum;
 }
-
 
 Amegic::~Amegic() {
   OverflowStatistics();
