@@ -1,6 +1,8 @@
 #include "Exception.H"
 
 #include "Run_Parameter.H"
+#include <sys/types.h>
+#include <unistd.h>
 
 using namespace ATOOLS;
 
