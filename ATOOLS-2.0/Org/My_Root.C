@@ -60,7 +60,7 @@ void My_Root::Draw()
     new TCanvas(oit->first.c_str(),oit->first.c_str());
     oit->second->Draw();
   }
-  p_root->Run(kTRUE);
+  if (m_objects.size()>0) p_root->Run(kTRUE);
 }
 
 #ifndef USING__My_Root_only

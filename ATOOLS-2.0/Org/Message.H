@@ -8,6 +8,17 @@
 
 namespace ATOOLS {
 
+  struct bm {
+
+    enum code {
+      none = 0,
+      back = 1,
+      cr   = 2,
+      bell = 4
+    };
+
+  };// end of struct bm
+
   struct om {
 
     enum code {
@@ -30,11 +41,12 @@ namespace ATOOLS {
       brownbg  =  32768,
       violetbg =  65536,
       lbluebg  = 131072,
-      greybg   = 262144  
+      greybg   = 262144
     };
 
   };// end of struct om
 
+  std::ostream &operator<<(std::ostream &str,const bm::code modifier); 
   std::ostream &operator<<(std::ostream &str,const om::code modifier);
 
   class Message {

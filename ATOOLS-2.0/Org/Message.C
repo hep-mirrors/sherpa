@@ -19,6 +19,17 @@ std::string ToString(const Value_Type value) {
 
 using namespace ATOOLS;
 
+std::ostream &ATOOLS::operator<<(std::ostream &str,const bm::code modifier) 
+{
+  switch (modifier) {
+  case bm::back: return msg.Modifiable()?str<<"\b":str<<" \\b ";
+  case bm::cr:   return msg.Modifiable()?str<<"\r":str<<"\n";
+  case bm::bell: return msg.Modifiable()?str<<"\a":str<<" \\a ";
+  case bm::none: return str;
+  }
+  return str;
+}
+
 std::ostream &ATOOLS::operator<<(std::ostream &str,const om::code modifier) 
 {
   if (!msg.Modifiable()) return str;
