@@ -49,7 +49,8 @@ endif
 
 SYSLIBS	      =	-lg2c -lm -ldl
 ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
-PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lMRST -lGRV -lCTEQ 
+PDFLIBS       =	-L@libdir@ -lPDF -lDUPDF -lSudakov -lMRST -lGRV 
+
 
 
 ANALYSISLIBS  = -L@libdir@ -lAnalysis -lObservables
@@ -95,6 +96,8 @@ endif
 if LHAPDF_SUPPORT
 LHAPDFFLAGS    = -DLHAPDF_SUPPORT
 LHAPDFLIBS     = -L@libdir@ -lLHAPDF $(LHAPDFDIR)/libLHAPDF.a 
+else
+CTEQLIBS      = -L@libdir@ -lCTEQ 
 endif
 
 if CVS_INCLUDE
@@ -105,7 +108,7 @@ bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
 Sherpa_LDADD  =	$(ANALYSISLIBS) $(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) $(ADICICLIBS) \
 		$(AMISICLIBS) $(AHADICLIBS) $(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
-		$(PDFLIBS) $(LHAPDFLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) \
+		$(PDFLIBS) $(LHAPDFLIBS) $(CTEQLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS) \
 	        $(CLHEPLIBS) $(ROOTLIBS) 
 Sherpa_LDFLAGS        =	-rdynamic
 AM_CXXFLAGS   =	$(SHERPAFLAGS) $(AHADICFLAGS) $(AMISICFLAGS) $(ADICICFLAGS) \
