@@ -116,7 +116,8 @@ namespace AMISIC {
       _m_ydata.clear();
       return false;
     }
-    SetScaling(gridxscaling,gridyscaling);
+    p_grid->XAxis()->SetScaling(gridxscaling);
+    p_grid->YAxis()->SetScaling(gridyscaling);
     typename ATOOLS::Axis<GridArgumentType>::ScalingModeID xscalingmode=p_grid->XAxis()->ScalingMode();
     typename ATOOLS::Axis<GridResultType>::ScalingModeID yscalingmode=p_grid->YAxis()->ScalingMode();
     p_grid->XAxis()->SetScalingMode(p_grid->XAxis()->Identical);
@@ -169,48 +170,6 @@ namespace AMISIC {
     _m_ydata.clear();
     _m_xydata.clear();
     return true;
-  }
-
-  template <class Argument_Type,class Result_Type>
-  void Grid_Handler<Argument_Type,Result_Type>::SetScaling(std::string gridxscaling,
-							   std::string gridyscaling)
-  {
-    GridArgumentType argx;
-    GridResultType argy;
-    ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
-    reader->SetString(gridxscaling);
-    if (gridxscaling==std::string("Log")) {
-      p_grid->XAxis()->SetScaling(new ATOOLS::Log_Scaling<GridArgumentType>()); 
-    }
-    else if (gridxscaling==std::string("Sqr")) {
-      p_grid->XAxis()->SetScaling(new ATOOLS::Sqr_Scaling<GridArgumentType>()); 
-    }
-    else if (reader->ReadFromString(argx,"Log_B_")) { 
-      p_grid->XAxis()->SetScaling(new ATOOLS::Log_B_Scaling<GridArgumentType>(argx)); 
-    }
-    else if (reader->ReadFromString(argx,"B_To_X_")) { 
-      p_grid->XAxis()->SetScaling(new ATOOLS::B_To_X_Scaling<GridArgumentType>(argx)); 
-    }
-    else if (reader->ReadFromString(argx,"X_To_P_")) { 
-      p_grid->XAxis()->SetScaling(new ATOOLS::X_To_P_Scaling<GridArgumentType>(argx)); 
-    }
-    reader->SetString(gridyscaling);
-    if (gridyscaling==std::string("Log")) {
-      p_grid->YAxis()->SetScaling(new ATOOLS::Log_Scaling<GridResultType>()); 
-    }
-    else if (gridyscaling==std::string("Sqr")) {
-      p_grid->YAxis()->SetScaling(new ATOOLS::Sqr_Scaling<GridResultType>()); 
-    }
-    else if (reader->ReadFromString(argy,"Log_B_")) { 
-      p_grid->YAxis()->SetScaling(new ATOOLS::Log_B_Scaling<GridResultType>(argy)); 
-    }
-    else if (reader->ReadFromString(argy,"B_To_X_")) { 
-      p_grid->YAxis()->SetScaling(new ATOOLS::B_To_X_Scaling<GridResultType>(argy)); 
-    }
-    else if (reader->ReadFromString(argy,"X_To_P_")) { 
-      p_grid->YAxis()->SetScaling(new ATOOLS::X_To_P_Scaling<GridResultType>(argy)); 
-    }
-    delete reader;
   }
 
 } // end of namespace AMISIC

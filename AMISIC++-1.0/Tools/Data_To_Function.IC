@@ -28,11 +28,6 @@ namespace ATOOLS {
   { return m_interpolationmode; }
 
   template <class Argument_Type,class Result_Type>
-  inline void Data_To_Function<Argument_Type,Result_Type>::
-  Import(Data_To_Function<ArgumentType,ResultType> &reference)
-  { Import(reference.p_xydata,reference.p_yxdata); }
-
-  template <class Argument_Type,class Result_Type>
   inline void Data_To_Function<Argument_Type,Result_Type>::Sort()
   { SortX(); SortY(); }
 
@@ -110,6 +105,7 @@ namespace ATOOLS {
   inline void Data_To_Function<Argument_Type,Result_Type>::
   NormalizeY(ArgumentType xmin,ArgumentType xmax,ResultType norm)
   { 
+    if (p_xydata.size()<2) return;
     if (xmin==xmax) {
       xmin=(*p_xydata)[0].first;
       xmax=(*p_xydata)[p_xydata->size()-1].first;
@@ -121,6 +117,7 @@ namespace ATOOLS {
   inline void Data_To_Function<Argument_Type,Result_Type>::
   NormalizeX(ResultType ymin,ResultType ymax,ArgumentType norm)
   { 
+    if (p_yxdata.size()<2) return;
     if (ymin==ymax) {
       ymin=(*p_yxdata)[0].first;
       ymax=(*p_yxdata)[p_yxdata->size()-1].first;
@@ -177,8 +174,24 @@ namespace ATOOLS {
   { return (*p_xaxis)[(*p_xydata)[i%p_xydata->size()].first]; }
 
   template <class Argument_Type,class Result_Type>
+  inline std::pair<Argument_Type,Result_Type> Data_To_Function<Argument_Type,Result_Type>::
+  XYData(unsigned int i)
+  { 
+    return XYPair((*p_xaxis)[(*p_xydata)[i%p_xydata->size()].first],
+                  (*p_yaxis)[(*p_xydata)[i%p_xydata->size()].second]); 
+  }
+
+  template <class Argument_Type,class Result_Type>
   inline Result_Type Data_To_Function<Argument_Type,Result_Type>::YData(unsigned int i)
   { return (*p_yaxis)[(*p_yxdata)[i%p_yxdata->size()].first]; }
+
+  template <class Argument_Type,class Result_Type>
+  inline std::pair<Result_Type,Argument_Type> Data_To_Function<Argument_Type,Result_Type>::
+  YXData(unsigned int i)
+  { 
+    return YXPair((*p_yaxis)[(*p_yxdata)[i%p_yxdata->size()].first],
+                  (*p_xaxis)[(*p_yxdata)[i%p_yxdata->size()].second]); 
+  }
 
   template <class Argument_Type,class Result_Type>
   inline unsigned int Data_To_Function<Argument_Type,Result_Type>::XDataSize()

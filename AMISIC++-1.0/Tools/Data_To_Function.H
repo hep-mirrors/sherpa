@@ -67,6 +67,8 @@ namespace ATOOLS {
     typedef std::_Rb_tree_iterator<XYPair,XYPair&,XYPair*> XYMapIterator;
     typedef std::_Rb_tree_iterator<YXPair,YXPair&,YXPair*> YXMapIterator;
 
+    typedef Data_To_Function<Argument_Type,ResultType> DataToFunctionType;
+
   private:
 
     ATOOLS::Axis<ArgumentType> *p_xaxis;
@@ -158,6 +160,9 @@ namespace ATOOLS {
     ResultType   YData(unsigned int i);
     ArgumentType XData(unsigned int i);
 
+    XYPair XYData(unsigned int i);
+    YXPair YXData(unsigned int i);
+
     unsigned int YDataSize();
     unsigned int XDataSize();
 
@@ -172,6 +177,9 @@ namespace ATOOLS {
 
     void NormalizeY(ArgumentType xmin=0.0,ArgumentType xmax=0.0,ResultType norm=1.0);
     void NormalizeX(ResultType ymin=0.0,ResultType ymax=0.0,ArgumentType norm=1.0);
+
+    DataToFunctionType *IntegralY(ArgumentType xmin=0.0,ArgumentType xmax=0.0);
+    DataToFunctionType *IntegralX(ResultType ymin=0.0,ResultType ymax=0.0);
 
     ResultType   IntegrateY(ArgumentType xmin,ArgumentType xmax);
     ArgumentType IntegrateX(ResultType ymin,ResultType ymax);

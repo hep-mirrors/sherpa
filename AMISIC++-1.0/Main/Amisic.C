@@ -7,6 +7,7 @@ using namespace AMISIC;
 
 Amisic::Amisic():
   m_differential(std::vector<GridHandlerType*>(0)),
+  m_total(new GridHandlerType()),
   m_inputdirectory(std::string("./")),
   m_inputfile(std::string("MI.dat")),
   m_environmentfile(std::string("Run.dat")),
@@ -16,6 +17,7 @@ Amisic::Amisic():
 Amisic::~Amisic()
 {
   ClearVector();
+  if (m_total!=NULL) delete m_total;
 }
 
 void Amisic::ClearVector() 
@@ -399,9 +401,29 @@ bool Amisic::CreateGrid(ATOOLS::Blob_List& bloblist,std::string& filename,std::s
 
 bool Amisic::CalculateTotal()
 {
-  for (std::vector<GridHandlerType*>::iterator blit=m_differential.begin();
-       blit!=m_differential.end();++blit) {
+  if (m_differential.size()==0) return false;
+  GridHandlerType::GridFunctionType *temp, *tempintegral;
+  temp = new GridHandlerType::GridFunctionType();
+  temp->XAxis()->SetVariable(m_differential[0]->Grid()->XAxis()->Variable());
+  temp->YAxis()->SetVariable(m_differential[0]->Grid()->YAxis()->Variable());
+  temp->XAxis()->SetScaling(m_differential[0]->Grid()->XAxis()->Scaling()->Name());
+  temp->YAxis()->SetScaling(m_differential[0]->Grid()->YAxis()->Scaling()->Name());
+  std::vector<GridHandlerType*>::iterator diffit=m_differential.begin();
+  for (unsigned int i=0;i<(*diffit)->Grid()->XDataSize();++i) {
+    temp->AddPoint((*diffit)->Grid()->XYData(i).first,(*diffit)->Grid()->XYData(i).second);
   }
+  for (++diffit;diffit!=m_differential.end();++diffit) {
+    for (unsigned int i=0;i<(*diffit)->Grid()->XDataSize();++i) {
+      GridArgumentType x=(*diffit)->Grid()->XYData(i).first;
+      temp->ReplaceXPoint(x,temp->Y(x,temp->Interpolation)+(*diffit)->Grid()->XYData(i).second);
+    }
+  }
+  m_total->Grid()->XAxis()->SetScaling(m_differential[0]->Grid()->XAxis()->Scaling()->Name());
+  m_total->Grid()->YAxis()->SetScaling(m_differential[0]->Grid()->YAxis()->Scaling()->Name());
+  tempintegral = temp->IntegralY();
+  m_total->Grid()->Import(*tempintegral); 
+  delete tempintegral;
+  delete temp;
   return true;
 }
 

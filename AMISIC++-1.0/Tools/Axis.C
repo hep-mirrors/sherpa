@@ -2,6 +2,7 @@
 #define Axis_C
 
 #include "Axis.H"
+#include "Data_Reader.H"
 
 namespace ATOOLS {
 
@@ -45,6 +46,30 @@ namespace ATOOLS {
       break;
     }
     return (ValueType)0.0;
+  }
+
+  template <class Value_Type>
+  void Axis<Value_Type>::SetScaling(std::string scalename)
+  {
+    ValueType argx;
+    ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader();
+    reader->SetString(scalename);
+    if (scalename==std::string("Log")) {
+      SetScaling(new ATOOLS::Log_Scaling<ValueType>()); 
+    }
+    else if (scalename==std::string("Sqr")) {
+      SetScaling(new ATOOLS::Sqr_Scaling<ValueType>()); 
+    }
+    else if (reader->ReadFromString(argx,"Log_B_")) { 
+      SetScaling(new ATOOLS::Log_B_Scaling<ValueType>(argx)); 
+    }
+    else if (reader->ReadFromString(argx,"B_To_X_")) { 
+      SetScaling(new ATOOLS::B_To_X_Scaling<ValueType>(argx)); 
+    }
+    else if (reader->ReadFromString(argx,"X_To_P_")) { 
+      SetScaling(new ATOOLS::X_To_P_Scaling<ValueType>(argx)); 
+    }
+    delete reader;
   }
 
 } // end of namespace ATOOLS

@@ -38,6 +38,7 @@ namespace ATOOLS {
     void SetScalingMode(ScalingModeID _m_scalingmode);
 
     void SetScaling(ATOOLS::Scaling_Base<ValueType> *_p_scaling);
+    void SetScaling(std::string scalename);
 
     // getters
     ATOOLS::Variable Variable();

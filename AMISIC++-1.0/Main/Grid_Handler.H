@@ -61,7 +61,6 @@ namespace AMISIC {
     std::vector<std::string> Comment();
 
     // member functions
-    void SetScaling(std::string gridxscaling,std::string gridyscaling);
     bool ReadIn(ATOOLS::Type::ID temptype=ATOOLS::Type::TUnknown,std::string tempname=std::string());
     bool WriteOut(ATOOLS::Type::ID temptype=ATOOLS::Type::TUnknown,std::string tempname=std::string(),
 		  std::vector<std::string> comments=std::vector<std::string>(0));

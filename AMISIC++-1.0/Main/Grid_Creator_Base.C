@@ -144,7 +144,8 @@ namespace AMISIC {
     delete reader;
     p_gridhandler->Grid()->XAxis()->SetVariable(m_gridxvariable);
     p_gridhandler->Grid()->YAxis()->SetVariable(m_gridyvariable);
-    p_gridhandler->SetScaling(m_gridxscaling,m_gridyscaling);
+    p_gridhandler->Grid()->XAxis()->SetScaling(m_gridxscaling);
+    p_gridhandler->Grid()->YAxis()->SetScaling(m_gridyscaling);
     return true;
   }
   
@@ -313,21 +314,17 @@ namespace AMISIC {
     comments.push_back(std::string("y scale : ")+
 		       p_gridhandler->Grid()->YAxis()->Scaling()->Name());
     comments.push_back("--------------------");
+    comments.push_back("boundary conditions ");
+    comments.push_back("--------------------");
     comments.push_back(std::string("x_{min} = ")+ATOOLS::ToString(GridXMin()));
     comments.push_back(std::string("x_{max} = ")+ATOOLS::ToString(GridXMax()));
     comments.push_back(std::string("y_{min} = ")+ATOOLS::ToString(GridYMin()));
     comments.push_back(std::string("y_{max} = ")+ATOOLS::ToString(GridYMax()));
     comments.push_back("--------------------");
-    typename ATOOLS::Axis<GridArgumentType>::ScalingModeID xscalingmode=grid->XAxis()->ScalingMode();
-    typename ATOOLS::Axis<GridResultType>::ScalingModeID yscalingmode=grid->YAxis()->ScalingMode();
-    grid->XAxis()->SetScalingMode(grid->XAxis()->Identical);
-    grid->YAxis()->SetScalingMode(grid->YAxis()->Identical);
-    comments.push_back(std::string("\\Delta x_{max} = ")+ATOOLS::ToString(grid->DeltaXMax()));
-    comments.push_back(std::string("\\Delta x_{min} = ")+ATOOLS::ToString(grid->DeltaXMin()));
-    comments.push_back(std::string("\\Delta y_{max} = ")+ATOOLS::ToString(grid->DeltaYMax()));
-    comments.push_back(std::string("\\Delta y_{min} = ")+ATOOLS::ToString(grid->DeltaYMin()));
-    grid->XAxis()->SetScalingMode(xscalingmode);
-    grid->YAxis()->SetScalingMode(yscalingmode);
+    comments.push_back(std::string("\\Delta x_{max} = ")+ATOOLS::ToString(GridDeltaXMax()));
+    comments.push_back(std::string("\\Delta x_{min} = ")+ATOOLS::ToString(GridDeltaXMin()));
+    comments.push_back(std::string("\\Delta y_{max} = ")+ATOOLS::ToString(GridDeltaYMax()));
+    comments.push_back(std::string("\\Delta y_{min} = ")+ATOOLS::ToString(GridDeltaYMin()));
     if (addcomments.size()!=0) {
       comments.push_back("--------------------");
       for (unsigned int i=0;i<addcomments.size();++i) comments.push_back(addcomments[i]);

@@ -16,8 +16,8 @@ namespace ATOOLS {
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type>::
-  Data_To_Function(const Data_To_Function<ArgumentType,ResultType> &reference)
-  { Init(); Import(reference.p_xdata,reference.p_ydata); }
+  Data_To_Function(const DataToFunctionType &reference)
+  { Init(); Import(reference.p_xydata); }
 
   template <class Argument_Type,class Result_Type>
   Data_To_Function<Argument_Type,Result_Type>::
@@ -100,6 +100,23 @@ namespace ATOOLS {
     Sort();
   }
   
+  template <class Argument_Type,class Result_Type>
+  inline void Data_To_Function<Argument_Type,Result_Type>::
+  Import(DataToFunctionType &reference)
+  { 
+    Resize(reference.p_xydata->size());
+    for (unsigned int i=0;i<reference.p_xydata->size();++i) {
+      ArgumentType x=(*p_xaxis)((*reference.p_xaxis)[(*reference.p_xydata)[i].first]);
+      ResultType y=(*p_yaxis)((*reference.p_yaxis)[(*reference.p_xydata)[i].second]);
+      (*p_xydata)[i]=XYPair(x,y);
+      (*p_yxdata)[i]=YXPair(y,x);
+    }
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"Data_To_Function::Import("<<&reference<<") :"<<std::endl;
+#endif
+    Sort();
+  }
+
   template <class Argument_Type,class Result_Type>
   void Data_To_Function<Argument_Type,Result_Type>::
   Export(ArgumentVector *_p_xdata,ResultVector *_p_ydata,bool normal)
@@ -400,9 +417,9 @@ namespace ATOOLS {
   Y(ArgumentType x,AcquisitionModeID tempmode)
   { 
     if (p_xydata->size()<2) {
-      ATOOLS::msg.Error()<<"Data_To_Function::Y("<<x<<","<<tempmode<<"): "
-			 <<"Error! Less than 2 data points available."<<std::endl
-			 <<"   Returning (ResultType)0."<<std::endl;
+      ATOOLS::msg.Debugging()<<"Data_To_Function::Y("<<x<<","<<tempmode<<"): "
+			     <<"Less than 2 data points available."<<std::endl
+			     <<"   Returning (ResultType)0."<<std::endl;
       return (ResultType)0.0;
     }
     if (tempmode==AUnknown) tempmode=m_acquisitionmode;
@@ -424,9 +441,9 @@ namespace ATOOLS {
   X(ResultType y,AcquisitionModeID tempmode)
   { 
     if (p_xdata->size()<2) {
-      ATOOLS::msg.Error()<<"Data_To_Function::X("<<y<<","<<tempmode<<"): "
-			 <<"Error! Less than 2 data points available."<<std::endl
-			 <<"   Returning (ArgumentType)0."<<std::endl;
+      ATOOLS::msg.Debugging()<<"Data_To_Function::X("<<y<<","<<tempmode<<"): "
+			     <<"Less than 2 data points available."<<std::endl
+			     <<"   Returning (ArgumentType)0."<<std::endl;
       return (ArgumentType)0.0;
     }
     if (tempmode==AUnknown) tempmode=m_acquisitionmode;
@@ -514,11 +531,120 @@ namespace ATOOLS {
 #endif
     }
     integral+=((*p_xaxis)[xright]+(*p_xaxis)[(*p_yxdata)[stop].second])*
-      ((*p_yaxis)[ymax]-(*p_yaxis)[(*p_ydata)[stop].first])/(ArgumentType)2.0;
+      ((*p_yaxis)[ymax]-(*p_yaxis)[(*p_yxdata)[stop].first])/(ArgumentType)2.0;
 #ifdef DEBUG__Data_To_Function
     std::cout<<integral<<" ]"<<std::endl;
 #endif
     return integral;
+  }
+
+  template <class Argument_Type,class Result_Type>
+  Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
+  IntegralY(ArgumentType xmin,ArgumentType xmax)
+  { 
+    DataToFunctionType *integrated = NULL;
+    ResultType integral=(ResultType)0.0;
+    if (p_xydata->size()<2) return integrated;
+    if (xmin==xmax) {
+      xmin=(*p_xaxis)[(*p_xydata)[0].first];
+      xmax=(*p_xaxis)[(*p_xydata)[p_xydata->size()-1].first];
+    }
+    integrated = new DataToFunctionType();
+    integrated->XAxis()->SetVariable(p_xaxis->Variable().Name());
+    integrated->YAxis()->SetVariable(std::string("\\int d")+p_xaxis->Variable().Name()
+				     +std::string(" ")+p_yaxis->Variable().Name());
+    integrated->XAxis()->SetScaling(p_xaxis->Scaling()->Name());
+    integrated->YAxis()->SetScaling(p_yaxis->Scaling()->Name());
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"Data_To_Function::IntegralY("<<xmin<<","<<xmax<<"): starting integration"<<std::endl;
+#endif
+    xmin=(*p_xaxis)(xmin);
+    xmax=(*p_xaxis)(xmax);
+    unsigned int dummy, start, stop;
+    ResultType yleft, yright;
+    ClosestX(xmin,dummy,start);
+    yleft=LinearY(xmin,dummy,start);
+    if (xmin<=dummy) start=dummy;
+    ClosestX(xmax,stop,dummy);
+    yright=LinearY(xmax,stop,dummy);
+    if (xmax>=dummy) stop=dummy;
+    integrated->AddPoint((*p_xaxis)[xmin],integral);
+    integral+=((*p_yaxis)[(*p_xydata)[start].second]+(*p_yaxis)[yleft])*
+      ((*p_xaxis)[(*p_xydata)[start].first]-(*p_xaxis)[xmin])/(ResultType)2.0;
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"   integral value for first step is ["<<integral<<"]"<<std::endl;
+#endif
+    for (unsigned int i=start;i<stop;++i) {
+      integrated->AddPoint((*p_xaxis)[(*p_xydata)[i].first],integral);
+      integral+=((*p_yaxis)[(*p_xydata)[i+1].second]+(*p_yaxis)[(*p_xydata)[i].second])*
+	((*p_xaxis)[(*p_xydata)[i+1].first]-(*p_xaxis)[(*p_xydata)[i].first])/(ResultType)2.0;
+#ifdef DEBUG__Data_To_Function
+      std::cout<<"   integral value for step "<<i<<" is ["<<integral<<"]"<<std::endl;
+#endif
+    }
+    integrated->AddPoint((*p_xaxis)[(*p_xydata)[stop].first],integral);
+    integral+=((*p_yaxis)[yright]+(*p_yaxis)[(*p_xydata)[stop].second])*
+      ((*p_xaxis)[xmax]-(*p_xaxis)[(*p_xydata)[stop].first])/(ResultType)2.0;
+    integrated->AddPoint((*p_xaxis)[xmax],integral);
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"   integral value for last step is ["<<integral<<"]"<<std::endl;
+#endif
+    return integrated;
+  }
+
+  template <class Argument_Type,class Result_Type>
+  Data_To_Function<Argument_Type,Result_Type> *Data_To_Function<Argument_Type,Result_Type>::
+  IntegralX(ResultType ymin,ResultType ymax)
+  { 
+    DataToFunctionType *integrated = NULL;
+    ArgumentType integral=(ArgumentType)0.0;
+    if (p_yxdata->size()<2) return integrated;
+    if (ymin==ymax) {
+      ymin=(*p_yaxis)[(*p_yxdata)[0].first];
+      ymax=(*p_yaxis)[(*p_yxdata)[p_yxdata->size()-1].first];
+    }
+    integrated = new DataToFunctionType();
+    integrated->XAxis()->SetVariable(std::string("\\int d")+p_yaxis->Variable().Name()
+				     +std::string(" ")+p_xaxis->Variable().Name());
+    integrated->YAxis()->SetVariable(p_yaxis->Variable().Name());
+    integrated->XAxis()->SetScaling(p_xaxis->Scaling()->Name());
+    integrated->YAxis()->SetScaling(p_yaxis->Scaling()->Name());
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"Data_To_Function::IntegralX("<<ymin<<","<<ymax<<"): starting integration"<<std::endl;
+#endif
+    ymin=(*p_yaxis)(ymin);
+    ymax=(*p_yaxis)(ymax);
+    unsigned int dummy, start, stop;
+    ArgumentType xleft, xright;
+    ClosestY(ymin,dummy,start);
+    xleft=LinearX(ymin,dummy,start);
+    if (ymin<=dummy) start=dummy;
+    ClosestY(ymax,stop,dummy);
+    xright=LinearX(ymax,stop,dummy);
+    if (ymax>=dummy) stop=dummy;
+    integrated->AddPoint((*p_yaxis)[ymin],integral);
+    integral+=((*p_xaxis)[(*p_yxdata)[start].second]+(*p_xaxis)[xleft])*
+      ((*p_yaxis)[(*p_yxdata)[start].first]-(*p_yaxis)[ymin])/(ArgumentType)2.0;
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"   integral value for first step is ["<<integral<<"]"<<std::endl;
+#endif
+    for (unsigned int i=start;i<stop;++i) {
+      integrated->AddPoint((*p_yaxis)[(*p_yxdata)[i].first],integral);
+      integral+=((*p_xaxis)[(*p_yxdata)[i+1].second]+(*p_xaxis)[(*p_yxdata)[i].second])*
+	((*p_yaxis)[(*p_yxdata)[i+1].first]-(*p_yaxis)[(*p_yxdata)[i].first])/(ArgumentType)2.0;
+      integrated->AddXPoint(integral);
+#ifdef DEBUG__Data_To_Function
+      std::cout<<"   integral value for step "<<i<<" is ["<<integral<<"]"<<std::endl;
+#endif
+    }
+    integrated->AddPoint(integral,(*p_yaxis)[(*p_yxdata)[stop].first]);
+    integral+=((*p_xaxis)[xright]+(*p_xaxis)[(*p_yxdata)[stop].second])*
+      ((*p_yaxis)[ymax]-(*p_yaxis)[(*p_yxdata)[stop].first])/(ArgumentType)2.0;
+    integrated->AddPoint(integral,(*p_yaxis)[ymax]);
+#ifdef DEBUG__Data_To_Function
+    std::cout<<"   integral value for last step is ["<<integral<<"]"<<std::endl;
+#endif
+    return integrated;
   }
 
   template <class Argument_Type,class Result_Type>
