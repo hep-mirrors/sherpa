@@ -19,6 +19,7 @@ XS_Group::XS_Group(const size_t nin,const size_t nout,const ATOOLS::Flavour *fla
 	  beamhandler,isrhandler,selectordata),
   m_atoms(false), m_channels(false), p_xsselector(new XS_Selector(this)) 
 {
+  m_name=std::string("G_")+m_name;
   p_selected=NULL;
 }
 
@@ -103,7 +104,7 @@ void XS_Group::SelectOne()
     for (size_t i=0;i<m_xsecs.size();++i) {
       if (m_atoms) disc-=m_xsecs[i]->Max();
       else disc-=m_xsecs[i]->TotalXS();
-      if (disc<0.) {
+      if (disc<=0.) {
 	p_selected=m_xsecs[i];
 	p_selected->SelectOne();
 	return;
@@ -172,8 +173,8 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       int hits=m_xsecs.size();
       infile.open(filename.c_str());
       if (infile.good()) {
+	infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;
 	do {
-	  infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;
 	  ATOOLS::msg.Events()<<"Found result: xs for "<<singlename<<" : "
 			      <<singlexs*ATOOLS::rpa.Picobarn()<<" pb"
 			      <<" +/- "<<singleerr/singlexs*100.<<"%,"<<std::endl
@@ -188,12 +189,11 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	    xs->SetPoints(singlen);
 	    --hits;
 	  }
-	  infile>>singlename>>singlexs>>singlemax>>singleerr;
+	  infile>>singlename>>singlexs>>singlemax>>singleerr>>singlesum>>singlesumsqr>>singlen;
 	} while (infile);
       }
       infile.close();
       if (hits==0) {
-	SetTotal();
 	p_pshandler->ReadIn(resultpath+std::string("/MC_")+m_name);
 	if (p_pshandler->BeamIntegrator() != 0) p_pshandler->BeamIntegrator()->Print();
 	if (p_pshandler->ISRIntegrator() != 0) p_pshandler->ISRIntegrator()->Print();
@@ -203,6 +203,7 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	p_pshandler->InitIncoming();
       }
     }
+    SetTotal();
     m_resultpath=resultpath;
     m_resultfile=filename;
     ATOOLS::Exception_Handler::AddTerminatorObject(this);
@@ -211,8 +212,8 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
       ATOOLS::msg.Error()<<"Result of PS-Integrator and internal summation do not coincide!"<<std::endl
 			 <<"  "<<m_name<<" : "<<m_totalxs<<" vs. "<<m_totalsum/m_n<<std::endl;
     }
-    SetTotal();
     if (m_totalxs>0.) {
+      SetTotal();
       if (resultpath!=std::string("")) {
 	std::ofstream to;
 	to.open(filename.c_str(),std::ios::out);
