@@ -35,6 +35,7 @@ namespace ATOOLS {
     void SetBin(int i, double y)  { m_yvalues[i]=y; }
 //     double * Bin(double x);
     void Extrapolate(double x, double * ys,int mode);
+    inline void SetFills(long int fills) {  m_fills=fills; }
 
     // basic access methods
     int Type() { return m_type; }
