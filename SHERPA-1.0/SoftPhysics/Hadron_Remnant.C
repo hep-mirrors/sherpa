@@ -192,6 +192,7 @@ bool Hadron_Remnant::ValenceQuark(ATOOLS::Particle *const quark)
 	     <<" (x-1)="<<x-1<<std::endl;
     x = 1.;
   }
+  if (x<p_pdfbase->XMin() || p_pdfbase->XMax()) return false;
   p_pdfbase->Calculate(x,0.,0.,m_scale);
   double val=p_pdfbase->GetXPDF(quark->Flav());
   return val>(p_pdfbase->GetXPDF(quark->Flav().Bar())+val)*ATOOLS::ran.Get();
@@ -256,7 +257,7 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
 {
   PROFILE_HERE;
   double cut, x;
-  cut=2.0*(flavour.PSMass()+m_hardpt.PPerp2()/
+  cut=2.0*(flavour.PSMass()+m_hardpt.PPerp()/
 	   ATOOLS::sqr(m_companions.size()))/sqrt(scale);
   if (scale<p_pdfbase->Q2Min()) {
     ATOOLS::msg.Error()<<"Hadron_Remnant::GetXPDF("<<flavour<<","<<scale<<"): "
@@ -284,7 +285,6 @@ double Hadron_Remnant::GetXPDF(ATOOLS::Flavour flavour,double scale)
 double Hadron_Remnant::MinimalEnergy(const ATOOLS::Flavour &flavour) 
 {
   if (!m_initialized) {
-    m_initialized=true;
     if (flavour.IsGluon()) {
       size_t single=(size_t)(ATOOLS::ran.Get()*3.); 
       ATOOLS::Flavour difl, fl=m_constit[single];
