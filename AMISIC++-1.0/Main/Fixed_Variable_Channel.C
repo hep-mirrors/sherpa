@@ -25,7 +25,7 @@ GeneratePoint(ATOOLS::Vec4D *p,double *ran)
       m_trigger=true;
     }
     else {
-      weight=0.0;
+      weight=ATOOLS::Accu();
       m_trigger=false;
       p[2]=ATOOLS::Vec4D(Ehat/2.0,Ehat/2.0*cos(2.0*M_PI*ran[1]),
 			 Ehat/2.0*sin(2.0*M_PI*ran[1]),0.0);

@@ -47,7 +47,7 @@ namespace AMISIC {
 
     EXTRAXS::XS_Base *p_xs;
 
-    static bool s_stophard, s_stopsoft, s_cleaned;
+    static bool s_stophard, s_stopsoft, s_cleaned, s_hard, s_soft;
 
   public:
 
@@ -66,7 +66,7 @@ namespace AMISIC {
     virtual void Update(const MI_Base *mibase);
     virtual void Reset();
 
-    virtual bool DiceOrderingParameter();
+    virtual bool VetoProcess(ATOOLS::Blob *blob);
     virtual bool DiceProcess();
 
     bool CreateBlob(ATOOLS::Blob *blob);
@@ -117,6 +117,7 @@ namespace AMISIC {
     void Reset();
 
     bool DiceOrderingParameter();
+    bool VetoProcess(ATOOLS::Blob *blob);
     bool DiceProcess();
 
   }; // end of class MI_None

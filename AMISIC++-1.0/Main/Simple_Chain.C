@@ -68,8 +68,8 @@ Simple_Chain::Simple_Chain(MODEL::Model_Base *const model,
   SetInputFile("Model.dat",3);
   SetOutputFile("SC.log");
   m_start[4]=m_start[0]=m_ecms/2;
-  m_start[3]=m_start[2]=1.0;
   m_stop[4]=m_stop[0]=0.0;
+  m_start[3]=m_start[2]=1.0;
   m_stop[3]=m_stop[2]=0.0;
 }
 
@@ -666,6 +666,7 @@ bool Simple_Chain::DiceProcess()
 {
   PROFILE_HERE;
   if (m_differentials.size()==0) return false;
+  if (!DiceOrderingParameter()) return false;
   if (m_dicedparameter) m_dicedparameter=false;
   else {
     m_dicedprocess=false;
@@ -786,4 +787,21 @@ void Simple_Chain::Update(const MI_Base *mibase)
 void Simple_Chain::PrepareTerminate() 
 {
   p_gridcreator->WriteOutGrid();
+}
+
+bool Simple_Chain::VetoProcess(ATOOLS::Blob *blob)
+{
+  if (!s_soft) return false;
+  double ptmax=std::numeric_limits<double>::max();
+  if (blob->Type()==ATOOLS::btp::Signal_Process) {
+    for (size_t i=0;i<(size_t)blob->NOutP();++i) 
+      ptmax=ATOOLS::Min(ptmax,blob->OutParticle(i)->Momentum().PPerp());
+  }
+  else {
+    for (size_t i=0;i<(size_t)blob->NInP();++i) 
+      ptmax=ATOOLS::Min(ptmax,blob->InParticle(i)->Momentum().PPerp());
+  }
+//   bool veto=(1.0-(*p_total)(ptmax))>ATOOLS::ran.Get();
+  bool veto=ptmax<m_stop[0];
+  return s_stophard=veto;
 }

@@ -75,10 +75,19 @@ void Amisic::SameSoftProcess(ATOOLS::Blob *blob)
   p_softbase->CreateBlob(blob);
 }
 
+bool Amisic::VetoHardProcess(ATOOLS::Blob *blob)
+{
+  return p_hardbase->VetoProcess(blob);
+}
+
+bool Amisic::VetoSoftProcess(ATOOLS::Blob *blob)
+{
+  return p_softbase->VetoProcess(blob);
+}
+
 bool Amisic::GenerateHardProcess(ATOOLS::Blob *blob)
 {
   if (MI_Base::StopGeneration(MI_Base::HardEvent)) return false;
-  if (!p_hardbase->DiceOrderingParameter()) return false;
   if (!p_hardbase->DiceProcess()) return false;
   p_hardbase->UpdateAll(p_hardbase);
   return p_hardbase->CreateBlob(blob);
@@ -87,7 +96,6 @@ bool Amisic::GenerateHardProcess(ATOOLS::Blob *blob)
 bool Amisic::GenerateSoftProcess(ATOOLS::Blob *blob)
 {
   if (MI_Base::StopGeneration(MI_Base::SoftEvent)) return false;
-  if (!p_softbase->DiceOrderingParameter()) return false;
   if (!p_softbase->DiceProcess()) return false;
   p_softbase->UpdateAll(p_softbase);
   return p_softbase->CreateBlob(blob);
@@ -200,7 +208,7 @@ bool Amisic::SelectSoftModel(ModelID _m_softmodel)
   m_softmodel=_m_softmodel; 
   if (p_softbase!=NULL) delete p_softbase;
   switch (m_softmodel) {
-  case SimpleChain:
+  case SimpleString:
     msg_Tracking()<<"Amisic::SelectSoftModel("<<_m_softmodel<<"): "
 			  <<"Initialize simple soft underlying event model."<<std::endl;
     if (m_external) p_softbase = new Simple_String();
@@ -227,8 +235,9 @@ bool Amisic::SelectSoftModel(ModelID _m_softmodel)
 
 Amisic::ModelID Amisic::StringToModelID(std::string model) 
 {
-  if (model==std::string("Simple Chain")) return SimpleChain;
-  if (model==std::string("None"))         return None;
+  if (model=="Simple_Chain") return SimpleChain;
+  if (model=="Simple_String") return SimpleString;
+  if (model=="None")         return None;
   ATOOLS::msg.Error()<<"Amisic::StringToModelID("<<model<<"): "
 		     <<"Model type unknown!"<<std::endl
 		     <<"   Returning 'Unknown'."<<std::endl;
@@ -238,9 +247,10 @@ Amisic::ModelID Amisic::StringToModelID(std::string model)
 std::string Amisic::ModelIDToString(ModelID model) 
 {
   switch (model) {
-  case SimpleChain: return std::string("Simple Chain");
-  case None       : return std::string("None");
-  case Unknown    : return std::string("Unknown");
+  case SimpleChain : return std::string("Simple_Chain");
+  case SimpleString: return std::string("Simple_String");
+  case None        : return std::string("None");
+  case Unknown     : return std::string("Unknown");
   }
   return std::string("Unknown");
 }

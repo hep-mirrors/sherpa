@@ -128,7 +128,7 @@ Amisic_Histogram<ArgumentType>::operator()(const Argument_Type x) const
   double ta=m_data[hci::y_value][l+1]-yl;
   double xl=(*p_xaxis)(m_data[hci::x_value][l]);
   ta/=(*p_xaxis)(m_data[hci::x_value][l+1])-xl;
-  return (*p_yaxis)[yl+ta*((*p_yaxis)(x)-xl)];
+  return (*p_yaxis)[yl+ta*((*p_xaxis)(x)-xl)];
 }
 
 template <class ArgumentType>

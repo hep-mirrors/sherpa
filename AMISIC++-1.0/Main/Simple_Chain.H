@@ -106,6 +106,8 @@ namespace AMISIC {
 
     bool DiceEnhanceFactor();
     bool DiceOrderingParameter();
+
+    bool VetoProcess(ATOOLS::Blob *blob);
     bool DiceProcess();
 
     // inline functions

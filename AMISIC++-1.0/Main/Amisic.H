@@ -10,11 +10,13 @@ namespace AMISIC {
   class Amisic: public ATOOLS::File_IO_Base {
   public:
 
-    enum ModelID { None        =  0,
+    enum ModelID { None         =  0,
 		   // hard models
-                   SimpleChain =  1,
-		   // soft models (not yet implemented)
-		   Unknown     = 99 };
+                   SimpleChain  = 11,
+		   // soft models 
+                   SimpleString = 21,
+		   // unknown tag
+		   Unknown      = 99 };
 
   private:
     
@@ -53,6 +55,9 @@ namespace AMISIC {
     void SameSoftProcess(ATOOLS::Blob *blob);
     void SameSoftEvent(ATOOLS::Blob_List *blobs);
     
+    bool VetoHardProcess(ATOOLS::Blob *blob);
+    bool VetoSoftProcess(ATOOLS::Blob *blob);
+
     bool GenerateEvent(ATOOLS::Blob_List *blobs);
 
     bool SelectHardModel(ModelID _m_hardmodel);

@@ -19,6 +19,8 @@ MI_Base::String_MI_Base_Map MI_Base::s_bases=MI_Base::String_MI_Base_Map();
 bool MI_Base::s_stophard=true;
 bool MI_Base::s_stopsoft=true;
 bool MI_Base::s_cleaned=true;
+bool MI_Base::s_hard=false;
+bool MI_Base::s_soft=false;
 
 MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
 		 unsigned int infiles,unsigned int outfiles):
@@ -50,6 +52,16 @@ MI_Base::MI_Base(std::string _m_name,TypeID _m_type,unsigned int _m_nparameter,
   p_blob->AddData("MI_Weight",new ATOOLS::Blob_Data<double>(1.0));
   p_blob->AddData("MI_Trials",new ATOOLS::Blob_Data<size_t>(1));
   s_bases[m_name]=this;
+  switch (m_type) {
+  case SoftEvent: 
+    if (m_name!=TypeToString(_m_type)+" None") s_soft=true; 
+    break;
+  case HardEvent: 
+    if (m_name!=TypeToString(_m_type)+" None") s_hard=true; 
+    break;
+  default: 
+    break;
+  }
 }
 
 MI_Base::~MI_Base()
@@ -102,9 +114,9 @@ void MI_Base::CleanUp()
   s_cleaned=true;
 }
 
-bool MI_Base::DiceOrderingParameter()
+bool MI_Base::VetoProcess(ATOOLS::Blob *blob)
 {
-  ATOOLS::msg.Error()<<"MI_Base::DiceOrderingParameter(): "
+  ATOOLS::msg.Error()<<"MI_Base::VetoProcess(): "
 		     <<"Virtual method called!"<<std::endl;
   return false;
 }
@@ -141,6 +153,9 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
   }
   bool _m_dicedprocess=m_dicedprocess;
   m_dicedprocess=false;
+  if (m_type==HardEvent) blob->SetType(ATOOLS::btp::Hard_Collision);
+  else blob->SetType(ATOOLS::btp::Soft_Collision);
+  blob->SetStatus(1);
   ATOOLS::Particle *particle;
   for (unsigned int i=0;i<(unsigned int)p_blob->NInP();++i) {
     particle = new ATOOLS::Particle(-1,p_blob->InParticle(i)->Flav(),
@@ -189,7 +204,7 @@ bool MI_Base::StopGeneration(TypeID type)
   switch (type) {
   case HardEvent: return s_stophard;
   case SoftEvent: return s_stopsoft;
-  case Unknown:   return s_stophard&&s_stopsoft;
+  case Unknown  : return s_stophard&&s_stopsoft;
   }
   return true;
 }
@@ -199,12 +214,12 @@ void MI_Base::SetStopGeneration(TypeID type,const bool stop)
   switch (type) {
   case HardEvent: s_stophard=stop;
   case SoftEvent: s_stopsoft=stop;
-  case Unknown:   s_stophard=s_stopsoft=stop;
+  case Unknown  : s_stophard=s_stopsoft=stop;
   }
 }
 
 MI_None::MI_None(TypeID _m_type):
-  MI_Base(TypeToString(_m_type),_m_type) {}
+  MI_Base(TypeToString(_m_type)+" None",_m_type) {}
 
 MI_None::~MI_None() 
 {
@@ -228,9 +243,9 @@ void MI_None::Reset()
   return;
 }
 
-bool MI_None::DiceOrderingParameter()
+bool MI_None::VetoProcess(ATOOLS::Blob *blob)
 {
-  return true;
+  return false;
 }
 
 bool MI_None::DiceProcess()
