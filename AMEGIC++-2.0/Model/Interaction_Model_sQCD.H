@@ -6,7 +6,7 @@
 
 namespace AMEGIC {  
   class Interaction_Model_sQCD : public Interaction_Model_Base {
-    Kabbala g3,PL,PR,M_I,root2;    
+    Kabbala g1,g3,PL,PR,M_I,root2,num_2;    
     Kabbala K_Z_U(short int i,short int j);
     Kabbala K_Z_D(short int i,short int j);
   public:
@@ -19,7 +19,7 @@ namespace AMEGIC {
     void c_SSV(Single_Vertex *,int &);
     void c_VVS(Single_Vertex *,int &)  {}
     void c_SSS(Single_Vertex *,int &)  {} 
-    void c_SSVV(Single_Vertex *,int &) {}
+    void c_SSVV(Single_Vertex *,int &);
     void c_SSSS(Single_Vertex *,int &) {}
   
     void c_FFT(Single_Vertex  *,int&)  {}
