@@ -175,6 +175,9 @@ if [ "$RUNCLEAN" = "TRUE" ] ; then
 fi
 
 if [ "$SED" = "" ] ; then export SED="sed" ; fi
+if [ "$TOTAL" = "TRUE" ] && [ "$RELEASE" = "TRUE" ] ; then
+  echo -ne "removing old setup files ...\r"
+fi
 for I in $DIRS;
 do
   if test -d $I; then
@@ -188,7 +191,11 @@ do
         make clean
       fi
       if [ "$TOTAL" = "TRUE" ] ; then
-        echo " removing setup files in $I"
+	if [ "$RELEASE" = "TRUE" ] ; then
+          echo " removing setup files in $I" >> ../$LOGFILE 2>&1
+	else
+          echo " removing setup files in $I" 
+	fi
         rmr "Makefile Makefile.in \
              aclocal.m4 config.guess config.log config.status config.sub configure \
              depcomp install-sh libtool ltconfig ltmain.sh missing mkinstalldirs"
@@ -199,6 +206,9 @@ do
     echo "makeinstall: warning: directory $I not found"
   fi
 done
+if [ "$TOTAL" = "TRUE" ] && [ "$RELEASE" = "TRUE" ] ; then
+  echo -e "\e[32m\t\t\t\t\t\t  done\e[0m\n"
+fi
 if test "$RMLIBS" = "TRUE" || test "$CLEANUP" = "TRUE" ; then
   exit 0;
 fi
