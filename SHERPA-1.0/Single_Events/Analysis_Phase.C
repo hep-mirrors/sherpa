@@ -1,6 +1,9 @@
 #include "Analysis_Phase.H"
 #include "Analysis_Handler.H"
 
+#ifdef PROFILE__all
+#define PROFILE__Analysis_Phase
+#endif
 #ifdef PROFILE__Analysis_Phase
 #include "prof.hh"
 #else 
