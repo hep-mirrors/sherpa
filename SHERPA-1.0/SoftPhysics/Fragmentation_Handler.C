@@ -131,12 +131,15 @@ bool Fragmentation_Handler::ExtractSinglets(Blob_List * _bloblist,Parton_List * 
 bool Fragmentation_Handler::FindConnected(Blob_List * _bloblist,
 					  Parton * compare,Blob * blob) {
   Parton * part;
+  cout<<" partner for: "<<compare<<endl;
   for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-    if ((*blit)->Status()==1) {
+    cout<<" checking in Blob "<<(*blit)->Id()<<" status = "<<(*blit)->Status()<<endl;
+    if ((*blit)->Status()==1 || (*blit)->Status()==2) {
       for (int i=0;i<(*blit)->NOutP();i++) {
 	part = (*blit)->OutParton(i);
 	if (part==compare) continue;
 	if (part->Info()!='F' && part->Info() != 'H') continue;
+	cout<<" checking :"<<part<<endl;
 	if (part->Status()!=1) continue; 
 	if (part->GetFlow(2)==compare->GetFlow(1)) {
 	  part->SetStatus(2);
