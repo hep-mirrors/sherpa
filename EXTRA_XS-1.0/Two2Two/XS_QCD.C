@@ -69,7 +69,7 @@ bool XS_q1qbar1_q2qbar2::SetColours(double s,double t,double u)
 { 
   bool swap=m_swaped;
   RestoreInOrder();
-  int r = !(p_fl[0] == p_fl[2]);
+  int r = !(p_fl[0].IsAnti() == p_fl[2].IsAnti());
   p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
   p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
 
