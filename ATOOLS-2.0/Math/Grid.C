@@ -234,12 +234,14 @@ bool Grid::ReadIn(const std::string &filename)
   size_t dim, points;
   p_file->precision(14);
   (*p_file)>>dim>>points>>dummy;
-  if (dim!=m_dim || points!=m_points) {
+  if (dim!=m_dim || points!=m_points || dummy!="{") {
     delete p_file;
     return false;
   }
   size_t node=0;
   bool result=ReadIn(p_root,node);
+  if (result) (*p_file)>>dummy;
+  if (dummy!="}") result=false;
   delete p_file;
   return result;
 }
