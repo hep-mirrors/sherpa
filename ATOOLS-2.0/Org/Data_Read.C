@@ -14,9 +14,8 @@ void Data_Read::SetValue(std::string name, std::string value) {
   // insert name-value pair in list
   parameters[name]=value;
 
-  cout<<" paramerter "<<name<<" = "<<value<<endl;
+  cout<<" parameter "<<name<<" = "<<value<<endl;
 }
-
 
 // definition
 template <class Type>
@@ -50,6 +49,48 @@ Type  Data_Read::GetValue(std::string name) {
   return invar;
 }
 
+Data_Read::Data_Read(std::string filename) { ReadIn(filename); }
+
+
+void Data_Read::FillIn(char * dummy) {
+  if (dummy[0]!='!' && strlen(dummy)>0) {
+    std::string buffer(dummy);
+    int hit = buffer.find(std::string("="));
+    if (hit!=-1) {
+      // define name
+      std::string name = buffer.substr(0,hit);
+      Shorten(name);
+      // define value
+      std::string value = buffer.substr(hit+1);
+      int hit = value.find(std::string("!"));
+      if (hit!=-1) value = value.substr(0,hit);
+      Shorten(value);
+      // insert name-value pair in list
+      parameters[name]=value;
+    }
+  }
+}
+
+void Data_Read::ReadIn(std::string filename) {
+  std::ifstream file;
+  file.open(filename.c_str());
+  if (file.bad()) {
+    msg.Error()<< " ERROR: opening " << filename <<endl;
+    exit (-1);
+  }
+  char dummy[256];
+      
+  for (;file;) {
+    file.getline(dummy,256);
+    FillIn(dummy); 
+  }
+  file.close();
+}
+
+
+
+
+
 // definition  (specialisation), explicit instanciation
 template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   Shorten(name);
@@ -66,15 +107,13 @@ template <> Switch::code Data_Read::GetValue<Switch::code>(std::string name) {
   return NotDefined<Switch::code>();
 }
 
-// definition (specialisation), explicit instanciation
+// Beams
 template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=parameters.find(name);
   if (cit==parameters.end()) return  NotDefined<Beam_Type::code>();
-
   std::string value = parameters[name];
   
-  if (value==std::string("No"))                   return Beam_Type::No;    
   if (value==std::string("Monochromatic"))        return Beam_Type::Monochromatic;    
   if (value==std::string("Gaussian"))             return Beam_Type::Gaussian;    
   if (value==std::string("Laser_Backscattering")) return Beam_Type::Laser_Back;    
@@ -134,7 +173,7 @@ template <> ISR_Type::code Data_Read::GetValue<ISR_Type::code>(std::string name)
   return NotDefined<ISR_Type::code>();
 }
 
-// definition (specialisation), explicit instanciation
+
 template <> String_Type::code Data_Read::GetValue<String_Type::code>(std::string name) {
   Shorten(name);
   Parameter_Map::const_iterator cit=parameters.find(name);
@@ -223,51 +262,6 @@ template <>  Flavour Data_Read::GetValue<Flavour>(std::string name) {
   return fl;
 }
  
-
-
-
-
-
-Data_Read::Data_Read(std::string filename) { ReadIn(filename); }
-
-
-void Data_Read::FillIn(char * dummy) {
-  //Comment
-  if (dummy[0]!='!' && strlen(dummy)>0) {
-    std::string buffer(dummy);
-    int hit = buffer.find(std::string("="));
-    if (hit!=-1) {
-      // define name
-      std::string name = buffer.substr(0,hit);
-      Shorten(name);
-      // define value
-      std::string value = buffer.substr(hit+1);
-      int hit = value.find(std::string("!"));
-      if (hit!=-1) value = value.substr(0,hit);
-      Shorten(value);
-      // insert name-value pair in list
-      parameters[name]=value;
-    }
-  }
-};
-
-// reads datafile in buffer
-void Data_Read::ReadIn(std::string filename) {
-  std::ifstream file;
-  file.open(filename.c_str());
-  if (file.bad()) {
-    msg.Error()<< " ERROR: opening " << filename <<endl;
-    exit (-1);
-  }
-  char dummy[256];
-      
-  for (;file;) {
-    file.getline(dummy,256);
-    FillIn(dummy); 
-  }
-  file.close();
-}
-
 int Data_Read::Crossfoot(string name) {
   int sum = 0;
   for (int i=0;i<name.length();++i)

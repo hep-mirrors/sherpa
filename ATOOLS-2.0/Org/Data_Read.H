@@ -16,53 +16,10 @@ namespace AORGTOOLS {
 		Unknown = 99}; 
   };
 
-  
-  //! The different String types
-  class String_Type {
-  public:
-    enum code {NoString = 0, 
-	       String   = 1, 
-	       Library  = 2, 
-	       Unknown  = 99
-    };
-  };
-
-  //! The different Model types
-  class Model_Type {
-  public:
-    enum code {pure_QCD = 0, 
-	       QCD      = 1, 
-	       EW       = 2, 
-	       SM       = 3, 
-	       MSSM     = 4, 
-	       THDM     = 5,
-	       LED      = 7,
-	       Unknown  = 99
-    };
-  };
-
-  //! different (QED) - ISR realization  
-  class ISR_Type {
-  public:
-    enum code {No             = 0, 
-	       Simple_Struc   = 1,
-	       Extended_Struc = 2,
-	       PA             = 3,
-	       EA             = 4,
-	       MPA            = 5,
-	       KoralZ         = 6,
-	       Pythia         = 7,
-	       KKMC           = 8,
-	       Unknown        = 99
-    };
-  };
-
-
   //! different Beam realization  
   class Beam_Type {
   public:
-    enum code { No             = 0, 
-		Monochromatic  = 0,
+    enum code { Monochromatic  = 0,
 		Gaussian       = 1,
 	        Laser_Back     = 2,
 	        Unknown        = 99
@@ -84,6 +41,45 @@ namespace AORGTOOLS {
     };
   };
 
+  //! The different String types
+  class String_Type {
+  public:
+    enum code { NoString = 0, 
+	        String   = 1, 
+	        Library  = 2, 
+	        Unknown  = 99
+    };
+  };
+
+  //! The different Model types
+  class Model_Type {
+  public:
+    enum code { pure_QCD = 0, 
+	        QCD      = 1, 
+	        EW       = 2, 
+	        SM       = 3, 
+	        MSSM     = 4, 
+	        THDM     = 5,
+	        LED      = 7,
+	        Unknown  = 99
+    };
+  };
+
+  //! different (QED) - ISR realization  
+  class ISR_Type {
+  public:
+    enum code { No             = 0, 
+	        Simple_Struc   = 1,
+	        Extended_Struc = 2,
+	        PA             = 3,
+	        EA             = 4,
+	        MPA            = 5,
+	        KoralZ         = 6,
+	        Pythia         = 7,
+	        KKMC           = 8,
+	        Unknown        = 99
+    };
+  };
 
   typedef std::map<std::string,std::string> Parameter_Map;
   typedef Parameter_Map::iterator           Parameter_Iterator;
@@ -109,7 +105,7 @@ namespace AORGTOOLS {
 
     //    template <class Type> 
       void SetValue(std::string name, std::string value);
-
+  
     std::string GenerateKey();
   };  
 
