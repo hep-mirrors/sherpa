@@ -14,6 +14,7 @@
 #include "Flavour.H"
 #include "Vector.H"
 #include "MathTools.H"
+#include "Flow.H"
 
 #include <string>
 
@@ -43,7 +44,7 @@ namespace EXTRAXS {
     PHASIC::Phase_Space_Handler    * p_ps; 
     BEAM::Beam_Spectra_Handler     * p_beam;
     PDF::ISR_Handler               * p_isr;
-    ATOOLS::Selector_Base       * p_sel;
+    ATOOLS::Selector_Base          * p_sel;
 
     void                             Init(ATOOLS::Flavour *);
     void                             GenerateName();
@@ -87,7 +88,7 @@ namespace EXTRAXS {
     ATOOLS::Cut_Data      * Cuts();
     ATOOLS::Selector_Base * Selector();
     void                       UpdateCuts(double,double)  {};
-    void                       SetMax(double);
+    virtual void               SetMax(double);
     void                       SetTotal(double);
     void                       SetName(std::string);
     virtual void               SetISR(PDF::ISR_Handler *)          = 0;
@@ -100,7 +101,7 @@ namespace EXTRAXS {
     virtual void               AddPoint(double)                    = 0;
     virtual void               DeSelect()                          = 0;
     virtual void               SelectOne()                         = 0;
-    virtual void               SetMomenta(ATOOLS::Vec4D *) {} //      = 0;
+    virtual void               SetMomenta(ATOOLS::Vec4D *);
     virtual bool               OneEvent()                          = 0;
     //virtual bool               SameEvent()                         = 0;
     //virtual double             WeightedEvent()                     = 0;
@@ -128,7 +129,6 @@ namespace EXTRAXS {
   inline ATOOLS::Cut_Data      * XS_Base::Cuts()                  { return NULL; }
   inline ATOOLS::Selector_Base * XS_Base::Selector()              { return p_sel; }
 
-  inline void                       XS_Base::SetMax(double _max)             { m_max     = _max;   }
   inline void                       XS_Base::SetTotal(double _total)         { m_totalxs = _total; }
   inline void                       XS_Base::SetName(std::string _name)      { m_name    = _name; }
   inline int XS_Base::InSwaped() { return m_swaped; }

@@ -19,9 +19,7 @@ namespace EXTRAXS {
     XS_Selector            * p_xsselector;
     bool                     m_atoms;
     std::vector<XS_Base *>   m_xsecs;
-    bool                     m_fsrchannels;
-  private :
-    virtual void CreateFSRChannels() {}
+    bool                     m_channels;
   public :
     XS_Group(int,int,ATOOLS::Flavour *,
 	     PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,ATOOLS::Selector_Data *,
@@ -45,8 +43,10 @@ namespace EXTRAXS {
     virtual bool      CalculateTotalXSec();
     virtual bool      OneEvent();
     virtual void      SetAtoms(bool _atoms) { m_atoms = _atoms; }
+    virtual void      CreateFSRChannels() {}
 
     void      SetTotalXS();
+    void      SetMax(double);
     void      AddPoint(const double);
     double    Differential2();
     double    Differential(double,double,double);

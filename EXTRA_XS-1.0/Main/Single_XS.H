@@ -25,7 +25,7 @@ namespace EXTRAXS {
 
     virtual double                     Differential2();
     virtual double                     Differential(double,double,double);
-    virtual double                     operator()(double,double,double)   = 0;
+    virtual double                     operator()(double,double,double);
     virtual bool                       SetColours(double, double, double) = 0;
 
     virtual bool                       OneEvent();

@@ -105,3 +105,9 @@ double Single_XS::Differential2() {
 }
 
 
+double Single_XS::operator()(double s,double t,double u) 
+{
+  ATOOLS::msg.Error()<<"Single_XS::operator()("<<s<<","<<t<<","<<u<<"): "
+		     <<"Virtual method called!"<<std::endl;
+  return 0.0;
+}

@@ -9,7 +9,7 @@ using namespace ATOOLS;
 
 
 /* 
-   In all the differential cross sections the factor 1/16 Pi is cancelled
+   In all the differential cross sections the factor 1/16 Pi^2 is cancelled
    by the factor 4 Pi for each alpha
 */
 
@@ -21,14 +21,13 @@ XS_q1q2_q1q2::XS_q1q2_q1q2(int _nin,int _nout, Flavour * _fl) :
   int p = _fl[1].IsAnti();
   int r = !(_fl[0] == _fl[2]);
   if (a==p) {
-    p_colours[0][a] = p_colours[3-r][a] = 500;
-    p_colours[1][a] = p_colours[2+r][a] = 501;
+    p_colours[0][a] = p_colours[3-r][a] = Flow::Counter();
+    p_colours[1][a] = p_colours[2+r][a] = Flow::Counter();
   }
   else {
-    p_colours[0][a]   = p_colours[1][p] = 500;
-    p_colours[2+r][a] = p_colours[3-r][p] = 501;
+    p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
+    p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
   }
-
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
 
@@ -54,8 +53,8 @@ XS_q1qbar1_q2qbar2::XS_q1qbar1_q2qbar2(int _nin,int _nout,
   a = _fl[0].IsAnti();
   p = 1-a;
   int r = !(_fl[0] == _fl[2]);
-  p_colours[0][a] = p_colours[1][p] = 500;
-  p_colours[2+r][a] = p_colours[3-r][p] = 501;
+  p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();
+  p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
@@ -104,12 +103,12 @@ bool XS_q1q1_q1q1::SetColours(double s, double t, double u)
 
 bool XS_q1q1_q1q1::SetColours() {
   if (Mt > (Mt+Mu) * ran.Get()) {
-    p_colours[3][a] = p_colours[0][a] = 500;
-    p_colours[2][a] = p_colours[1][a] = 501;
+    p_colours[3][a] = p_colours[0][a] = Flow::Counter();
+    p_colours[2][a] = p_colours[1][a] = Flow::Counter();
   }
   else {
-    p_colours[2][a] = p_colours[0][a] = 500;
-    p_colours[3][a] = p_colours[1][a] = 501;
+    p_colours[2][a] = p_colours[0][a] = Flow::Counter();
+    p_colours[3][a] = p_colours[1][a] = Flow::Counter();
   }
   return 1;
 }
@@ -148,12 +147,12 @@ bool XS_q1qbar1_q1qbar1::SetColours(double s, double t, double u) {
 
 bool XS_q1qbar1_q1qbar1::SetColours() {
   if (Ms >  (Mt+Ms) * ran.Get()) {
-    p_colours[0][a] = p_colours[2+r][a] = 500;	
-    p_colours[1][p] = p_colours[3-r][p] = 501;
+    p_colours[0][a] = p_colours[2+r][a] = Flow::Counter();	
+    p_colours[1][p] = p_colours[3-r][p] = Flow::Counter();
   }
   else {
-    p_colours[0][a] = p_colours[1][p] = 500;	
-    p_colours[2+r][a] = p_colours[3-r][p] = 501;
+    p_colours[0][a]   = p_colours[1][p]   = Flow::Counter();	
+    p_colours[2+r][a] = p_colours[3-r][p] = Flow::Counter();
   }
   return 1;
 }
@@ -170,8 +169,8 @@ XS_q1qbar1_gg::XS_q1qbar1_gg(int _nin,int _nout,
   a = _fl[0].IsAnti();
   p = 1-a;
 
-  p_colours[0][a] = 500;
-  p_colours[1][p] = 501;
+  p_colours[0][a] = Flow::Counter();
+  p_colours[1][p] = Flow::Counter();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
@@ -196,12 +195,12 @@ bool XS_q1qbar1_gg::SetColours() {
   if (Mt > (Mt+Mu) * ran.Get()) {
     p_colours[2][a] = p_colours[0][a];
     p_colours[3][p] = p_colours[1][p];
-    p_colours[2][p] = p_colours[3][a] = 502;
+    p_colours[2][p] = p_colours[3][a] = Flow::Counter();
   }
   else {
     p_colours[3][a] = p_colours[0][a];
     p_colours[2][p] = p_colours[1][p];
-    p_colours[3][p] = p_colours[2][a] = 502;
+    p_colours[3][p] = p_colours[2][a] = Flow::Counter();
   }
   return 1;
 }
@@ -215,8 +214,8 @@ XS_gg_q1qbar1::XS_gg_q1qbar1(int _nin,int _nout, Flavour * _fl) :
 
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
 
-  p_colours[0][0] = 500;
-  p_colours[0][1] = 501;
+  p_colours[0][0] = Flow::Counter();
+  p_colours[0][1] = Flow::Counter();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
@@ -239,11 +238,11 @@ bool XS_gg_q1qbar1::SetColours(double s, double t, double u) {
 bool XS_gg_q1qbar1::SetColours() {
   if (Mt*(1-r) +Mu*r > (Mt+Mu) * ran.Get()) {
     p_colours[2+r][0] = p_colours[0][0];
-    p_colours[3-r][1] = p_colours[1][1] = 502;
+    p_colours[3-r][1] = p_colours[1][1] = Flow::Counter();
     p_colours[1][0] = p_colours[0][1];
   }
   else {
-    p_colours[2+r][0] = p_colours[1][0] = 502;
+    p_colours[2+r][0] = p_colours[1][0] = Flow::Counter();
     p_colours[3-r][1] = p_colours[0][1];
     p_colours[1][1] = p_colours[0][0];
   }
@@ -273,8 +272,8 @@ XS_q1g_q1g::XS_q1g_q1g(int _nin,int _nout, Flavour * _fl) :
   a = _fl[ini_q].IsAnti();
   p = 1-a;
 
-  p_colours[ini_q][a] = 500;
-  p_colours[fin_q][a] = 501;
+  p_colours[ini_q][a] = Flow::Counter();
+  p_colours[fin_q][a] = Flow::Counter();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
@@ -307,12 +306,12 @@ bool XS_q1g_q1g::SetColours(double s, double t, double u) {
 bool XS_q1g_q1g::SetColours() {
   if (Mu > (Ms+Mu) * ran.Get()) {
     p_colours[5-fin_q][a] = p_colours[ini_q][a];
-    p_colours[5-fin_q][p] = p_colours[1-ini_q][p] = 502;
+    p_colours[5-fin_q][p] = p_colours[1-ini_q][p] = Flow::Counter();
     p_colours[1-ini_q][a] = p_colours[fin_q][a];
   }
   else {
     p_colours[5-fin_q][p] = p_colours[fin_q][a];
-    p_colours[1-ini_q][a] = p_colours[5-fin_q][a] = 502;
+    p_colours[1-ini_q][a] = p_colours[5-fin_q][a] = Flow::Counter();
     p_colours[1-ini_q][p] = p_colours[ini_q][a];
   }
   return 1;
@@ -325,8 +324,8 @@ XS_gg_gg::XS_gg_gg(int _nin,int _nout, Flavour * _fl) :
   Single_XS(_nin,_nout,_fl) 
 {
   for (short int i=0;i<4;i++) p_colours[i][0] = p_colours[i][1] = 0;
-  p_colours[0][0] = 500;
-  p_colours[1][1] = 501;
+  p_colours[0][0] = Flow::Counter();
+  p_colours[1][1] = Flow::Counter();
 
   aS = (*as)(sqr(rpa.gen.Ecms()));
 }
@@ -354,21 +353,21 @@ bool XS_gg_gg::SetColours() {
   if (rr-Mt < 0.) {
     p_colours[2][0] = p_colours[0][0];
     p_colours[3][1] = p_colours[1][1];
-    p_colours[0][1] = p_colours[1][0] = 502;
-    p_colours[2][1] = p_colours[3][0] = 503;
+    p_colours[0][1] = p_colours[1][0] = Flow::Counter();
+    p_colours[2][1] = p_colours[3][0] = Flow::Counter();
   }
   else {
     if (rr-Mu-Mt < 0.) {
       p_colours[3][0] = p_colours[0][0];
       p_colours[2][1] = p_colours[1][1];
-      p_colours[0][1] = p_colours[1][0] = 502;
-      p_colours[3][1] = p_colours[2][0] = 503;
+      p_colours[0][1] = p_colours[1][0] = Flow::Counter();
+      p_colours[3][1] = p_colours[2][0] = Flow::Counter();
     }
     else {
       p_colours[2][0] = p_colours[0][0];
-      p_colours[3][1] = p_colours[0][1] = 502;
+      p_colours[3][1] = p_colours[0][1] = Flow::Counter();
       p_colours[2][1] = p_colours[1][1];
-      p_colours[3][0] = p_colours[1][0] = 503;
+      p_colours[3][0] = p_colours[1][0] = Flow::Counter();
     }
   }
   return 1;

@@ -20,6 +20,9 @@ QCD_Processes::QCD_Processes(PDF::ISR_Handler * _isr,BEAM::Beam_Spectra_Handler 
 			     int _scalescheme,int _kfactorscheme,double _scalefactor,bool fillmodes) : 
   XS_Group(2,2,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor)
 {
+  SetFSRInterface(NULL);
+  SetFSRMode(0);
+
   m_name       = std::string("parton parton -> parton parton");
   
   p_xsselector = new XS_Selector();
@@ -140,9 +143,18 @@ void QCD_Processes::FillMode(Mode mode)
 
 void QCD_Processes::CreateFSRChannels() 
 {
-  p_ps->FSRIntegrator()->DropAllChannels();
-  p_ps->FSRIntegrator()->Add(new S1Channel(2,2,p_fl,Flavour(kf::photon)));
-  p_ps->FSRIntegrator()->Add(new T1Channel(2,2,p_fl));
-  p_ps->FSRIntegrator()->Add(new U1Channel(2,2,p_fl));
-  m_fsrchannels=true;
+  if ((m_fsrmode==0)||(p_fsrinterface==NULL)) {
+    p_ps->FSRIntegrator()->DropAllChannels();
+    p_ps->FSRIntegrator()->Add(new S1Channel(2,2,p_fl,Flavour(kf::photon)));
+    p_ps->FSRIntegrator()->Add(new T1Channel(2,2,p_fl));
+    p_ps->FSRIntegrator()->Add(new U1Channel(2,2,p_fl));
+    m_fsrmode=1;
+  }
+  else {
+    if (m_fsrmode==2) {
+      p_ps->FSRIntegrator()->DropAllChannels();
+      p_ps->FSRIntegrator()->Add(p_fsrinterface);
+      m_fsrmode=1;
+    }
+  }
 }

@@ -2,6 +2,7 @@
 #define QCD_Process_H
 
 #include "XS_Group.H"
+#include "Channel_Interface.H"
 
 namespace EXTRAXS {
 
@@ -20,14 +21,23 @@ namespace EXTRAXS {
 		None         =   0,
 		Unknown      = 999 };
   private:
+    int m_fsrmode;
+    PHASIC::Channel_Interface *p_fsrinterface;
     double aS;
-    void CreateFSRChannels();
   public:
     // constructor
     QCD_Processes(PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *,
 		  ATOOLS::Flavour *,ATOOLS::Selector_Data *,int,int,double,bool=true);
+    // setters
+    inline void SetFSRMode(int _m_fsrmode) { m_fsrmode=_m_fsrmode; }
+    inline void SetFSRInterface(PHASIC::Channel_Interface *_p_fsrinterface)
+    { p_fsrinterface=_p_fsrinterface; }
+    // getters
+    inline int                 FSRMode()      { return m_fsrmode;      }
+    PHASIC::Channel_Interface *FSRInterface() { return p_fsrinterface; }
     // member functions
     void FillMode(Mode);
+    void CreateFSRChannels();
   };
 }
 

@@ -18,7 +18,7 @@ XS_Group::XS_Group(int _nin,int _nout,Flavour * _fl,
 		   ATOOLS::Selector_Data * _seldata,
 		   int _scalescheme,int _kfactorscheme,double _scalefactor) :
   XS_Base(_nin,_nout,_fl,_isr,_beam,_seldata,_scalescheme,_kfactorscheme,_scalefactor),
-  p_xsselector(NULL), m_atoms(0), m_fsrchannels(false)
+  p_xsselector(NULL), m_atoms(0), m_channels(false)
 {
   p_selected = NULL;
 }
@@ -168,9 +168,10 @@ bool XS_Group::CalculateTotalXSec()
     for (int i=0;i<m_xsecs.size();i++) m_xsecs[i]->SetISR(p_isr);
   }
 
-  if (!m_fsrchannels) {
-    CreateFSRChannels();
+  CreateFSRChannels();
+  if (!m_channels) {
     p_ps->CreateIntegrators();
+    m_channels = true;
   }
 
   m_totalxs = p_ps->Integrate()/ATOOLS::rpa.Picobarn(); 
@@ -254,5 +255,28 @@ double XS_Group::Differential2()
     return tmp;
   }
   return 0.;
+}
+
+void XS_Group::SetMax(double max) {
+  if (max>0.) {
+    m_max=max;
+    return;
+  }
+  // paramter is dummy!
+  double sum = 0.;
+  m_max = 0.;
+  for (int i=0;i<m_xsecs.size();i++) {
+    sum += m_xsecs[i]->Total();
+    m_max += m_xsecs[i]->Max(); // naive sum, probably unneccessary large
+  }
+  if (m_totalxs!=0.) {
+    if (!ATOOLS::IsEqual(sum,m_totalxs)) {
+      msg.Events().precision(12);
+      msg.Events()<<"Group '"<<m_name<<"' : xs and sum of daughters does not agree !"<<endl
+		  <<" sum = "<<sum<<" vs. total = "<<m_totalxs
+		  <<"  ("<<((sum-m_totalxs)/m_totalxs)<<")"<<endl;
+    }
+    m_totalxs=sum;
+  }
 }
 

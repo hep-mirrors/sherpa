@@ -17,7 +17,7 @@ XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
 		 int _scalescheme,int _kfactorscheme,double _scalefactor) :
   m_nin(_nin), m_nout(_nout),m_name(std::string("")),
   m_scalescheme(_scalescheme), m_kfactorscheme(_kfactorscheme), m_scalefactor(_scalefactor),
-  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.),
+  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.),
   p_selected(NULL), p_beam(_beam), p_isr(_isr), p_sel(NULL), p_ps(NULL), 
   p_fl(NULL), p_colours(NULL), p_moms(NULL)
@@ -31,7 +31,7 @@ XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl,
 XS_Base::XS_Base(int _nin,int _nout,Flavour * _fl) :
   m_nin(_nin), m_nout(_nout),m_name(std::string("")),
   m_scalescheme(0), m_kfactorscheme(0), m_scalefactor(1.),
-  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.),
+  m_n(0), m_last(0.), m_lastlumi(0.), m_lastdxs(0.), m_max(0.),
   m_totalxs(0.),m_totalsum (0.), m_totalsumsqr(0.), m_totalerr(0.),
   p_selected(NULL), p_sel(NULL), p_beam(NULL), p_isr(NULL), p_ps(NULL), 
   p_fl(NULL), p_colours(NULL), p_moms(NULL)
@@ -200,4 +200,12 @@ void XS_Base::ResetSelector(ATOOLS::Selector_Data *_seldata)
   }
 }
 
+void XS_Base::SetMomenta(ATOOLS::Vec4D *_p_moms)
+{
+  for (unsigned int i=0;i<m_nin+m_nout;++i) p_moms[i]=_p_moms[i];
+}
 
+void XS_Base::SetMax(double _max)             
+{ 
+  m_max = _max;   
+}
