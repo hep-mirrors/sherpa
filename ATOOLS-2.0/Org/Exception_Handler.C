@@ -48,6 +48,8 @@ Exception_Handler::s_testerobjects=std::vector<Tester_Object*>();
 std::vector<Terminator_Object*> 
 Exception_Handler::s_terminatorobjects=std::vector<Terminator_Object*>();
 
+static bool s_noremove=false;
+
 bool Exception_Handler::ApproveTerminate()
 {
   if (s_print) msg_Tracking()<<"Exception_Handler::ApproveTerminate(): "
@@ -57,10 +59,12 @@ bool Exception_Handler::ApproveTerminate()
     return true;
   }
   bool approved=true;
+  s_noremove=true;
   for (size_t i=0;i<s_testerfunctions.size();++i) 
     if (!s_testerfunctions[i]()) approved=false;
   for (size_t i=0;i<s_testerobjects.size();++i) 
     if (!s_testerobjects[i]->ApproveTerminate()) approved=false;
+  s_noremove=false;
   if (approved && s_print) msg_Tracking()<<"... approved."<<std::endl;
   else if (s_print) msg_Tracking()<<"... refused."<<std::endl;
   return approved;
@@ -73,11 +77,15 @@ void Exception_Handler::PrepareTerminate()
   if (s_print) msg_Tracking()<<"Exception_Handler::PrepareTerminate(): "
 			     <<"Preparing termination ..."<<std::endl;
   while (s_terminatorobjects.size()>0) {
+    s_noremove=true;
     s_terminatorobjects.back()->PrepareTerminate();
+    s_noremove=false;
     RemoveTerminatorObject(*--s_terminatorobjects.end());
   }
   while (s_terminatorfunctions.size()>0) {
+    s_noremove=true;
     s_terminatorfunctions.back()();
+    s_noremove=false;
     RemoveTerminatorFunction(*--s_terminatorfunctions.end());
   }
   if (s_print) msg_Tracking()<<"... prepared."<<std::endl;
@@ -112,6 +120,7 @@ void Exception_Handler::Terminate()
 
 void Exception_Handler::RemoveTesterObject(Tester_Object *const testerobject)
 {
+  if (s_noremove) return;
   for (std::vector<Tester_Object*>::iterator toit=s_testerobjects.begin();
        toit!=s_testerobjects.end();) {
     if (*toit==testerobject) toit=s_testerobjects.erase(toit); 
@@ -122,6 +131,7 @@ void Exception_Handler::RemoveTesterObject(Tester_Object *const testerobject)
 void Exception_Handler::
 RemoveTerminatorObject(Terminator_Object *const terminatorobject)
 {
+  if (s_noremove) return;
   for (std::vector<Terminator_Object*>::iterator 
 	 toit=s_terminatorobjects.begin();
        toit!=s_terminatorobjects.end();) {
@@ -132,6 +142,7 @@ RemoveTerminatorObject(Terminator_Object *const terminatorobject)
 
 void Exception_Handler::RemoveTesterFunction(bool (*function)(void))
 {
+  if (s_noremove) return;
   for (std::vector<Tester_Function>::iterator tfit=s_testerfunctions.begin();
        tfit!=s_testerfunctions.end();) {
     if (*tfit==function) tfit=s_testerfunctions.erase(tfit); 
@@ -141,6 +152,7 @@ void Exception_Handler::RemoveTesterFunction(bool (*function)(void))
 
 void Exception_Handler::RemoveTerminatorFunction(void (*function)(void))
 {
+  if (s_noremove) return;
   for (std::vector<Terminator_Function>::iterator 
 	 tfit=s_terminatorfunctions.begin();
        tfit!=s_terminatorfunctions.end();) {
