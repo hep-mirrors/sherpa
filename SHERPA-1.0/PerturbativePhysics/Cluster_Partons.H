@@ -43,7 +43,7 @@ namespace SHERPA {
     int     m_maxjetnumber;
     double  m_weight;
 
-    double  m_jetvetopt2;
+    double  m_qmin_i,m_qmin_f;
 
     double  m_scale,m_asscale;
     int     m_colors[4][2];
@@ -72,7 +72,7 @@ namespace SHERPA {
     void    DetermineColourAngles(const std::vector<APACIC::Knot *> &);
 
     void    CreateFlavourMap();
-    void    FixJetvetoPt2();
+    void    FixJetvetoPt2(double &);
 
     void    WriteOutSudakovWeights();
   public :
@@ -80,7 +80,7 @@ namespace SHERPA {
 		    int maxjetnumber, int isrmode, int isrshoweron, int fsrshoweron) ;
     ~Cluster_Partons();
     bool ClusterConfiguration(ATOOLS::Blob *,double=1.,double=1.);
-    void CalculateWeight(double,double,double);
+    void CalculateWeight(double,double,double,double,double);
     void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);
     void FillDecayTree(APACIC::Tree *,EXTRAXS::XS_Base *);
 
@@ -89,7 +89,7 @@ namespace SHERPA {
     double  Weight();
     double  Scale();
     double  AsScale();
-    double  JetvetoPt2();
+    void  JetvetoPt2(double &, double &);
 
     ATOOLS::Flavour Flav(int);
     ATOOLS::Vec4D   Momentum(int); 
@@ -98,7 +98,6 @@ namespace SHERPA {
   inline double  Cluster_Partons::Weight()   { return m_weight; }
   inline double  Cluster_Partons::Scale()    { return m_scale; }
   inline double  Cluster_Partons::AsScale()  { return m_asscale; }
-  inline double  Cluster_Partons::JetvetoPt2()  { return m_jetvetopt2; }
 
   /*!
     \file Cluster_Partons.H

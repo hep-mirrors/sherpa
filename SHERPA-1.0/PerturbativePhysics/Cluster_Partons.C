@@ -77,7 +77,7 @@ Cluster_Partons::Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder
 
 void Cluster_Partons::WriteOutSudakovWeights() 
 {
-  msg.Out()<<" Statistics Sudakov Rejection "<<std::endl;
+  msg.Info()<<" Statistics Sudakov Rejection "<<std::endl;
 
   for (int i=0;i<m_maxjetnumber;++i) {
     if (p_events[i]==0) continue;
@@ -86,7 +86,7 @@ void Cluster_Partons::WriteOutSudakovWeights()
 					   (sqr(p_weight_sum[i])-p_weight_sum_sqr[i])/(p_events[i]-1.)));
     double w_sigma =  sqrt(dabs(( sqr(p_weight_sum[i]/p_events[i])
 				    - p_weight_sum_sqr[i]/p_events[i]))/(p_events[i]-1.) );
-    msg.Out()<<(i+1)<<" : weight="<<w_mean<<" +- "<<w_delta<<" ("<<w_sigma<<")"<<std::endl;
+    msg.Info()<<(i+1)<<" : weight="<<w_mean<<" +- "<<w_delta<<" ("<<w_sigma<<")"<<std::endl;
     p_weight_sum[i]=w_mean;
     p_weight_sum_sqr[i]=w_sigma;
   }
@@ -230,9 +230,10 @@ bool Cluster_Partons::FillLegs(Leg * alegs, Point * root, int & l, int maxl) {
   }
 }
 
-void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double jetscale) 
+void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double jetscale,double qm_i,double qm_f) 
 {
-  double qmin = sqrt(jetscale);
+  m_qmin_i = qm_i;
+  m_qmin_f = qm_f;
   double qmax = sqrt(hardscale);
 
   int nlegs   = p_ct->NLegs();
@@ -270,7 +271,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   // weight with correct alphas at hard scale (if needed).
   if (strong>2 && m_sud_mode%10>0) {
     m_weight *= pow(as_hard/as_jet,strong-2);
-    if (asscale<m_jetvetopt2) m_jetvetopt2=asscale;
   }
 
   int count_startscale=-10;
@@ -280,12 +280,13 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   }
 
   // determine lowest scale
-  m_jetvetopt2=jetscale;
   if (njet==m_maxjetnumber) {
-    m_jetvetopt2=asscale;
-    FixJetvetoPt2();
-    qmin=sqrt(m_jetvetopt2);
+    jetscale=asscale;
+    FixJetvetoPt2(jetscale);
+    m_qmin_i=Max(m_qmin_i,sqrt(jetscale));
+    m_qmin_f=Max(m_qmin_f,sqrt(jetscale));
   }
+
 
 
   Combine_Table * ct_tmp = p_ct;
@@ -307,6 +308,8 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
     double ptij = p_ct->GetWinner(i,j);
 
     if (m_sud_mode%10>1 && ct_down->GetLeg(i)->fl.Strong()) {  // sudakov form factor
+      double qmin = m_qmin_f;
+      if (i<2) qmin = m_qmin_i;
       double w_in =  p_sud->Delta(ct_down->GetLeg(i)->fl)(last_q[i],qmin)/
 	             p_sud->Delta(ct_down->GetLeg(i)->fl)(ptij,qmin);
       m_weight *= w_in;
@@ -345,6 +348,8 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
   // go over all remaining legs
   if (m_sud_mode%10>1) {
     for (int l=0; l<nlegs; ++l) {
+      double qmin = m_qmin_f;
+      if (l<2) qmin = m_qmin_i;
       if (p_ct->GetLeg(l)->fl.Strong() && last_q[l]>qmin) {//  sudakov form factor
 	double w_out = p_sud->Delta(p_ct->GetLeg(l)->fl)(last_q[l],qmin);
 	m_weight *= w_out;
@@ -363,7 +368,6 @@ void Cluster_Partons::CalculateWeight(double hardscale,double asscale, double je
       }
     }
   }
-
 
   p_ct = ct_tmp;
 
@@ -655,7 +659,7 @@ void Cluster_Partons::FillDecayTree(Tree * fin_tree,XS_Base * xs)
 }
 
 
-void Cluster_Partons::FixJetvetoPt2() 
+void Cluster_Partons::FixJetvetoPt2(double & jetvetopt2)
 {
   Combine_Table * ct_tmp = p_ct;
 
@@ -667,7 +671,7 @@ void Cluster_Partons::FixJetvetoPt2()
     double ptij = p_ct->GetWinner(i,j);
     if (m_sud_mode%10>0 && ct_down->GetLeg(i)->fl.Strong()  
 	&& p_ct->GetLeg(i)->fl.Strong() && p_ct->GetLeg(j)->fl.Strong()) {  
-      if (sqr(ptij)<m_jetvetopt2) m_jetvetopt2=sqr(ptij);
+      if (sqr(ptij)<jetvetopt2) jetvetopt2=sqr(ptij);
     }
   }
 
@@ -1100,6 +1104,12 @@ void Cluster_Partons::DetermineColourAngles(const std::vector<APACIC::Knot *> & 
 
 void Cluster_Partons::CreateFlavourMap() {
   //  if (p_me->GetAmegic()->GetProcess()!=p_me->GetAmegic()->GetProcess()->Partner()) {
+
+  // map needed if :
+  //    process != partner process
+  //    if HHMF is turned on (me_handler->Flavour =! proc->Flavour)
+  //
+
   if (1)  {
 
     Process_Base * proc=static_cast<Process_Base*>(p_me->GetAmegic()->GetProcess());
@@ -1138,4 +1148,10 @@ void Cluster_Partons::CreateFlavourMap() {
     // delete old map
     m_flmap.clear();
   }
+}
+
+void   Cluster_Partons::JetvetoPt2(double & q2i, double & q2f) 
+{ 
+  q2i = sqr(m_qmin_i);
+  q2f = sqr(m_qmin_f); 
 }

@@ -44,7 +44,13 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   p_jf       = new ATOOLS::Jet_Finder(m_ycut,m_type);
   p_cluster  = new Cluster_Partons(p_mehandler,p_jf,m_maxjetnumber,
 				   p_shower->GetISRHandler()->On(),p_shower->ISROn(),p_shower->FSROn());
-  m_jetscale = m_ycut * sqr(rpa.gen.Ecms());
+
+
+  double dr   = rpa.gen.DeltaR();
+  double ycut = rpa.gen.Ycut();
+  m_qmin_i = sqrt(ycut)*rpa.gen.Ecms();
+  m_qmin_f = sqrt(ycut)*dr*rpa.gen.Ecms();
+  m_jetscale = sqr(Min(m_qmin_i,m_qmin_f));
 }  
 
 Amegic_Apacic_Interface::~Amegic_Apacic_Interface() 
@@ -159,7 +165,7 @@ int Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
     // save hard scale to be used in plots!
     amegic_apacic_interface_last_hard_scale = scale;
     
-    p_cluster->CalculateWeight(scale,asscale,m_jetscale);
+    p_cluster->CalculateWeight(scale,asscale,m_jetscale,m_qmin_i,m_qmin_f);
     
     m_weight = p_cluster->Weight();
     if (p_mehandler->Weight()==1. && p_mehandler->UseSudakovWeight()) {
@@ -245,8 +251,9 @@ int Amegic_Apacic_Interface::PerformShowers()
   // PROFILE_LOCAL("Amegic_Apacic_Interface::PerformShowers");
   int jetveto=-1;
   if (p_mehandler->UseSudakovWeight()) {
-    double pt2 = p_cluster->JetvetoPt2();
-    p_shower->SetJetvetoPt2(pt2);
+    double qmin2i,qmin2f; 
+    p_cluster->JetvetoPt2(qmin2i,qmin2f);
+    p_shower->SetJetvetoPt2(qmin2i,qmin2f);
     double scale = p_mehandler->FactorisationScale();
     p_shower->SetFactorisationScale(scale);
     jetveto=1;
