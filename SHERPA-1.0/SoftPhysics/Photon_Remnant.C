@@ -22,3 +22,8 @@ bool Photon_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *part
   }
   return true;
 }
+
+bool Photon_Remnant::AdjustKinematics()
+{
+  return true;
+}

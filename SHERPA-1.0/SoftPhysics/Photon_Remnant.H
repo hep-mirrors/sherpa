@@ -14,6 +14,7 @@ namespace SHERPA {
 
     // member functions
     bool FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *particlelist);
+    bool AdjustKinematics();
 
   };// end of class Remnant_Base
 

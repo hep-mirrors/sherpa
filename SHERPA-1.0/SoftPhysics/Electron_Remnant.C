@@ -51,6 +51,6 @@ bool Electron_Remnant::FillBlob(ATOOLS::Blob *beamblob,ATOOLS::Particle_List *pa
 
 bool Electron_Remnant::AdjustKinematics()
 {
-  if (p_partner->Type()!=Hadron) return Remnant_Base::AdjustKinematics();
+  // if (p_partner->Type()!=Hadron) return Remnant_Base::AdjustKinematics();
   return true;
 }
