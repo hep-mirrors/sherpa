@@ -39,19 +39,6 @@ double Continued_PDF::ContinueLinear(const ATOOLS::Flavour flavour)
 
 double Continued_PDF::ContinueSquarish(const ATOOLS::Flavour flavour)
 {
-  double x=ATOOLS::Max(p_pdf->XMin(),m_x);
-  double mu2=ATOOLS::Max(p_pdf->Q2Min(),m_mu2);
-  p_pdf->Calculate(x,m_z,m_kperp2,mu2);
-  double xpdf1=p_pdf->GetXPDF(flavour);
-  p_pdf->Calculate(x*(1.+m_epsilon),m_z,m_kperp2,mu2*(1.+m_epsilon));
-  double xpdf2=p_pdf->GetXPDF(flavour);
-  double p1=sqrt(x*x+mu2*mu2), p2=p1*(1.+m_epsilon);
-  double a=(xpdf1-(xpdf2-xpdf1)/(p2-p1)*p1)/(p1*(p1-(p2*p2-p1*p1)/(p2-p1)));
-  double b=((xpdf2-xpdf1)-a*(p2*p2-p1*p1))/(p2-p1);
-  double p=sqrt(m_x*m_x+m_mu2+m_mu2);
-  double res=a*p*p+b*p;
-  std::cout<<xpdf1<<" "<<xpdf2<<" "<<res<<std::endl;
-  return res;
 }
 
 void Continued_PDF::Calculate(double x,double z,double kperp2,double mu2)
