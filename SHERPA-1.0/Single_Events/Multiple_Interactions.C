@@ -18,7 +18,7 @@ Multiple_Interactions::Multiple_Interactions(MI_Handler *_p_mihandler):
 
 Multiple_Interactions::~Multiple_Interactions() {}
 
-bool Multiple_Interactions::Treat(Blob_List *bloblist,double &weight)
+bool Multiple_Interactions::Treat(ATOOLS::Blob_List *bloblist,double &weight)
 {
 #ifdef PROFILE__Multiple_Interactions
   PROFILE_HERE;

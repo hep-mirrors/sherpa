@@ -1,54 +1,44 @@
 SHERPASYS  = ../..
 
-ATOOLSINC  = $(SHERPASYS)/ATOOLS-2.0
-PDFINC     = $(SHERPASYS)/PDF-1.0
-BEAMINC    = $(SHERPASYS)/BEAM-1.0
-PHASICINC  = $(SHERPASYS)/PHASIC++-1.0
-MODELINC   = $(SHERPASYS)/MODEL-1.0
-EXTRAXSINC = $(SHERPASYS)/EXTRA_XS-1.0
-AMISICINC  = $(SHERPASYS)/AMISIC++-1.0
-AMEGICINC  = $(SHERPASYS)/AMEGIC++-2.0
-APACICINC  = $(SHERPASYS)/APACIC++-2.0
+ATOOLSINC     =	$(SHERPASYS)/ATOOLS-2.0
+PDFINC        =	$(SHERPASYS)/PDF-1.0
+BEAMINC       =	$(SHERPASYS)/BEAM-1.0
+PHASICINC     =	$(SHERPASYS)/PHASIC++-1.0
+MODELINC      =	$(SHERPASYS)/MODEL-1.0
+EXTRAXSINC    =	$(SHERPASYS)/EXTRA_XS-1.0
+AMISICINC     =	$(SHERPASYS)/AMISIC++-1.0
+AMEGICINC     =	$(SHERPASYS)/AMEGIC++-2.0
+APACICINC     =	$(SHERPASYS)/APACIC++-2.0
 
-ATOOLSLIB  = @libdir@
-PDFLIB     = @libdir@
-BEAMLIB    = @libdir@
-PHASICLIB  = @libdir@
-MODELLIB   = @libdir@
-EXTRAXSLIB = @libdir@
-AMISICLIB  = @libdir@
-AMEGICLIB  = @libdir@
-APACICLIB  = @libdir@
-SHERPALIB  = @libdir@
+SYSLIBS	      =	-lg2c -lm -ldl
+ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
+PDFLIBS       =	-L@libdir@ -lPDF -lLHAPDF 
+BEAMLIBS      =	-L@libdir@ -lBeam 
+PHASICLIBS    =	-L@libdir@ -lPhasespace 
+MODELLIBS     =	-L@libdir@ -lModelMain -lIsajet -lHdecay 
+EXTRAXSLIBS   =	-L@libdir@ -lExtraXS -lExtraXS2_2 
+AMISICLIBS    =	-L@libdir@ -lAmisic -lAmisicAnalysis
+AMEGICLIBS    =	-L@libdir@ -lAmegic -lAmplitude -lAmegicPSGen \
+		-lZfunctions -lAmplTools -lModel -lProcess -lString 
+APACICLIBS    =	-L@libdir@ -lApacicShowers -lApacicMain 
+SHERPALIBS    =	-L@libdir@ -lSherpaMain -lSherpaInitialization \
+		-lSherpaSingleEvents -lSherpaPerturbativePhysics \
+		-lSherpaSoftPhysics -lLundInterface -lSherpaTools 
 
-ROOTINC    = $(ROOTSYS)/include
-ROOTLIB    = $(ROOTSYS)/lib
+ROOTINC       =	$(ROOTSYS)/include
+ROOTLIBS      =	$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
+		-lGraf3d -lGpad -lTree -lRint -lPostscript \
+		-lMatrix -lPhysics -lGui -ldl 
 
 CLHEPLIB   = $(CLHEPSYS)/lib
 CLHEPINC   = $(CLHEPSYS)/include
 
 bin_PROGRAMS  =	Sherpa
 Sherpa_SOURCES        =	Main.C 
-Sherpa_LDADD  =	\
-		-L$(SHERPALIB) -lSherpaMain \
-		-lSherpaInitialization -lSherpaSingleEvents \
-		-lSherpaPerturbativePhysics -lSherpaSoftPhysics \
-		-lLundInterface -lSherpaTools \
-		-L$(AMEGICLIB) -lAmegic -lAmplitude -lAmegicPSGen \
-		-lZfunctions -lAmplTools -lModel -lProcess -lString \
-		-L$(APACICLIB) -lApacicShowers -lApacicMain \
-		-L$(EXTRAXSLIB) -lExtraXS -lExtraXS2_2 \
-		-L$(PHASICLIB) -lPhasespace \
-		-L$(MODELLIB) -lModelMain -lIsajet -lHdecay \
-		-L$(PDFLIB) -lPDF -lLHAPDF \
-		-L$(BEAMLIB) -lBeam \
-		-L$(ATOOLSLIB) -lToolsPhys -lToolsMath -lToolsOrg \
-		-lg2c -lm -ldl
-#               -L$(AMISICLIB) -lAmisicTools -lAmisicHelpers \
-#		-lAmisic -lAmisicAnalysis \
-#		-L$(ROOTLIB) -lCint -lCore -lHist -lGraf \
-#		-lGraf3d -lGpad -lTree -lRint -lPostscript \
-#		-lMatrix -lPhysics -lGui -ldl \
+Sherpa_LDADD  =	$(SHERPALIBS) $(AMEGICLIBS) $(APACICLIBS) \
+		$(EXTRAXSLIBS) $(PHASICLIBS) $(MODELLIBS) \
+		$(PDFLIBS) $(BEAMLIBS) $(ATOOLSLIBS) $(SYSLIBS)
+#		$(ROOTLIBS)
 Sherpa_LDFLAGS        =	-rdynamic
 INCLUDES      = \
 		-I../Main \
@@ -79,8 +69,8 @@ INCLUDES      = \
 		-I$(BEAMINC)/Main \
 		-I$(ATOOLSINC)/Phys \
 		-I$(ATOOLSINC)/Math \
-		-I$(ATOOLSINC)/Org \
-		-I$(ROOTINC) 
+		-I$(ATOOLSINC)/Org 
+#		-I$(ROOTINC)
 SUBDIRS       =	Process
 EXTRA_DIST    =	\
 		Integration.dat Processes.dat Selector.dat Model.dat Beam.dat \

@@ -5,10 +5,10 @@
 #define USING__SHERPA
 #include "Amisic.H"
 #else
-#include "Beam_Spectra_Handler.H"
-#include "ISR_Handler.H"
+#include "XS_Base.H"
 #include "Model_Base.H"
-#include "Blob.H"
+#include "Run_Parameter.H"
+#include "Blob_List.H"
 #endif
 
 namespace SHERPA {
