@@ -114,12 +114,12 @@ namespace AMEGIC {
     inline Complex S1d(int i,int j) { return _S1[ATOOLS::iabs(i)][ATOOLS::iabs(j)]; }
     inline Complex S0(int i,int j) {
       i=ATOOLS::iabs(i);j=ATOOLS::iabs(j);
-      if (!calc_st[i][j]) CalcS(i,j); 
+      if (!calc_st[i][j] && !m_precalc) CalcS(i,j); 
       return _S0[i][j];
     }
     inline Complex S1(int i,int j) {
       i=ATOOLS::iabs(i);j=ATOOLS::iabs(j);
-      if (!calc_st[i][j]) CalcS(i,j); 
+      if (!calc_st[i][j] && !m_precalc) CalcS(i,j); 
       return _S1[i][j];
     }
     double Norm(int,int);//N
