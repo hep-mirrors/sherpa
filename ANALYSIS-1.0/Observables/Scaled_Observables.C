@@ -37,8 +37,6 @@ void Scaled_Observable_Base::Evaluate(const Particle_List & plist,double weight,
   for (Particle_Const_Iterator plit=plist.begin();plit!=plist.end();++plit) {
     Evaluate((*plit)->Momentum(),weight, ncount);
   }
-  
-  Evaluate(Vec4D(1.,0,0,1.),0, ncount);
 }
 
 
