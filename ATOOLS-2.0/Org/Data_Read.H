@@ -22,6 +22,7 @@ namespace ATOOLS {
     enum code { Monochromatic  = 0,
 		Gaussian       = 1,
 	        Laser_Back     = 2,
+	        Simple_Compton = 3,
 	        Unknown        = 99
     };
   };

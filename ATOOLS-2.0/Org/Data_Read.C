@@ -131,6 +131,7 @@ template <> Beam_Type::code Data_Read::GetValue<Beam_Type::code>(std::string nam
   if (value==std::string("Monochromatic"))        return Beam_Type::Monochromatic;    
   if (value==std::string("Gaussian"))             return Beam_Type::Gaussian;    
   if (value==std::string("Laser_Backscattering")) return Beam_Type::Laser_Back;    
+  if (value==std::string("Simple_Compton"))       return Beam_Type::Simple_Compton;
     
   msg.Error()<<"Error in Data_Read::GetValue<Beam_Type::code>:"<<endl
 	     <<"   Unknown Beam type  "<<name<<" = "<<value<<"."<<endl;
