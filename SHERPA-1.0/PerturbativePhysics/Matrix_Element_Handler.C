@@ -223,7 +223,6 @@ bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice)
   m_readin = p_dataread->GetValue<string>("RESULT_DIRECTORY",string("./Results"));
   switch (m_mode) { 
   case 1: 
-    //    if (scalechoice>0) p_amegic->Processes()->SetScale(rpa.gen.Ycut()*sqr(rpa.gen.Ecms()));
     if (p_amegic->CalculateTotalXSec(m_readin)) {
       PrintTotalXSec();
       return 1;
