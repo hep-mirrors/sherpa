@@ -160,6 +160,7 @@ bool HepMC_Interface::Sherpa2HepMC(ATOOLS::Particle * parton,HepMC::GenParticle 
   HepLorentzVector momentum(mom[1],mom[2],mom[3],mom[0]);
   int stat = parton->Status();
   if (parton->DecayBlob()!=NULL) stat = 2;
+  else if (stat==2) stat=1;
   if (stat==2) {
     if (parton->DecayBlob()->Type()==ATOOLS::btp::Signal_Process ||
 	parton->ProductionBlob()->Type()==ATOOLS::btp::Signal_Process) stat = 3;
