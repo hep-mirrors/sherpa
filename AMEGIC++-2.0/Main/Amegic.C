@@ -40,26 +40,45 @@ Amegic::Amegic(std::string _path,std::string _file,
 
 double Amegic::OverflowStatistics(Process_Base * proc,int level)
 {
+  if (level==0) msg.Tracking()<<"Amegic::OverflowStatistics for : "<<std::endl;
   if (proc==NULL) proc=p_procs;
   double sum=0.;
   if ((*proc)[0]==proc) {
     sum=proc->Overflow()/proc->Max();
-    for (int i=0;i<level;++i) msg.Out()<<"  ";
-    msg.Out()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+    for (int i=0;i<level;++i) msg.Tracking()<<"  ";
+    msg.Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
   }
   else {
     for (size_t i=0; i<proc->Size();++i) {
       sum+=OverflowStatistics((*proc)[i],level+1);
     }
-    for (int i=0;i<level;++i) msg.Out()<<"  ";
-    msg.Out()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+    for (int i=0;i<level;++i) msg.Tracking()<<"  ";
+    msg.Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+  }
+  if (level==0 && sum!=0. && !msg.LevelIsTracking()) {
+    int save_msg = msg.Level();
+    msg.SetLevel(4);
+    msg.Tracking()<<"Amegic::OverflowStatistics for : "<<std::endl;
+    sum=0.;
+    if ((*proc)[0]==proc) {
+      sum=proc->Overflow()/proc->Max();
+      for (int i=0;i<level;++i) msg.Tracking()<<"  ";
+      msg.Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+    }
+    else {
+      for (size_t i=0; i<proc->Size();++i) {
+	sum+=OverflowStatistics((*proc)[i],level+1);
+      }
+      for (int i=0;i<level;++i) msg.Tracking()<<"  ";
+      msg.Tracking()<<" "<<proc->Name()<<" "<<sum<<std::endl;
+    }
+    msg.SetLevel(save_msg);
   }
   return sum;
 }
 
 
 Amegic::~Amegic() {
-  msg.Out()<<"Amegic::OverflowStatistics for : "<<std::endl;
   OverflowStatistics();
 
   if (p_dataread) { delete p_dataread; p_dataread = NULL; }
@@ -100,8 +119,8 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
 
   ATOOLS::Vec4D * moms  = 0;
 
-  msg.Out()<<"Amegic::InitializeProcesses : "
-	   <<"Process initialization started; new libraries may be created."<<std::endl;
+  msg.Out()<<"Amegic::InitializeProcesses : \n"
+	   <<"   Process initialization started; new libraries may be created."<<std::endl;
   switch (p_procs->InitAllProcesses(p_model,p_top,moms)) { 
   case 1  : 
     msg.Out()<<"   No new libraries have been created."<<std::endl;
@@ -109,7 +128,7 @@ bool Amegic::InitializeProcesses(BEAM::Beam_Spectra_Handler * _beam,PDF::ISR_Han
   case 0  : 
     msg.Error()<<"Amegic::InitializeProcesses : "<<std::endl
 	       <<"   Some new libraries were created and have to be compiled and linked."<<std::endl
-	       <<"   Type \"./makelibs\" and rerun."<<endl;
+	       <<om::bold<<"   Type \"./makelibs\" and rerun."<<om::reset<<endl;
     return 0;
   default :
     return 0;
