@@ -1,0 +1,35 @@
+SHERPASYS = ../..
+
+ATOOLSFLAGS   =	-DUSING__COLOUR -pedantic -Wall -Winline
+
+ATOOLSINCS    =	-I../Org -I../Math -I../Phys
+MODELINCS     =	-I$(SHERPASYS)/MODEL-1.0/Main 
+
+if CVS_INCLUDE
+CVSINCLUDE    =	CVS
+endif
+
+if MODEL_INCLUDE
+MODELFLAGS    =
+else
+MODELFLAGS    = -DUSING__ATOOLS_only
+endif
+
+SYSLIBS	      =	-lg2c -lm -ldl
+ATOOLSLIBS    =	-L@libdir@ -lToolsPhys -lToolsMath -lToolsOrg 
+
+if ROOT_SUPPORT
+ROOTINCS      =	-I$(ROOTSYS)/include
+ROOTLIBS      =	-L$(ROOTSYS)/lib -lCint -lCore -lHist -lGraf \
+		-lGraf3d -lGpad -lTree -lRint -lPostscript \
+		-lMatrix -lPhysics -lGui -ldl 
+ROOTFLAGS     = -DROOT_SUPPORT -Wno-long-long
+endif
+
+bin_PROGRAMS  =	Integrator_Test
+Integrator_Test_SOURCES       =	Integrator_Test.C
+Integrator_Test_LDADD         =	$(ATOOLSLIBS) $(SYSLIBS) $(ROOTLIBS) 
+Integrator_Test_LDFLAGS       =	-rdynamic
+EXTRA_DIST    = $(CVSINCLUDE)
+AM_CXXFLAGS   =	$(MODELFLAGS) $(ATOOLSFLAGS) $(ROOTFLAGS)
+INCLUDES      = $(MODELINCS) $(ATOOLSINCS) $(ROOTINCS)
