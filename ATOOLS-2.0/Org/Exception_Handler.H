@@ -53,10 +53,14 @@ namespace ATOOLS {
 				   const std::string &comment="");
 
     // inline functions
-    static void AddTesterFunction(bool (*testerfunction)(void)); 
-    static void AddTerminatorFunction(void (*terminatorfunction)(void));      
-    static void AddTesterObject(Tester_Object *const object);     
-    static void AddTerminatorObject(Terminator_Object *const object);     
+    static void AddTesterFunction(bool (*function)(void))
+    { s_testerfunctions.push_back(function); }
+    static void AddTerminatorFunction(void (*function)(void))
+    { s_terminatorfunctions.push_back(function); }
+    static void AddTesterObject(Tester_Object *const object)
+    { s_testerobjects.push_back(object); }
+    static void AddTerminatorObject(Terminator_Object *const object)
+    { s_terminatorobjects.push_back(object); }
 
     inline static void SetActive(const bool active)    { s_active=active;     }
     inline static void SetStackTrace(const bool trace) { s_stacktrace=trace;  }
@@ -70,8 +74,6 @@ namespace ATOOLS {
   };// end of class Exception_Handler
   
 }// end of namespace ATOOLS
-
-#include "Exception_Handler.inl.H"
 
 #endif
 #endif
