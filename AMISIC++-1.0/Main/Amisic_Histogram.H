@@ -59,8 +59,10 @@ namespace AMISIC {
 		    const Argument_Type xmax=0.0,
 		    const size_t nbins=0);
 
-    size_t Add(Argument_Type value,const Argument_Type weight);
-    size_t Set(Argument_Type value,const Argument_Type weight);
+    size_t Add(Argument_Type value,
+	       const Argument_Type weight,const size_t trials=1);
+    size_t Set(Argument_Type value,
+	       const Argument_Type weight,const size_t trials=1);
 
     Argument_Type Norm() const;
 

@@ -86,30 +86,34 @@ size_t Amisic_Histogram<ArgumentType>::FindY(const Argument_Type y) const
 
 template <class ArgumentType>
 size_t Amisic_Histogram<ArgumentType>::Add(Argument_Type value,
-					   const Argument_Type weight)
+					   const Argument_Type weight,
+					   const size_t trials)
 {
   if (m_finished) return std::string::npos;
-  ++m_entries;
+  m_entries+=trials;
   size_t i=FindX(value);
   m_data[hci::y_value][i]+=(*p_yaxis)(weight);
   m_data[hci::y_square][i]+=(*p_yaxis)(weight*weight);
   m_data[hci::maximum][i]=ATOOLS::Max(m_data[hci::maximum][i],
 				      (*p_yaxis)(weight));
   ++m_data[hci::entries][i];
+  m_data[hci::entries][0]+=trials-1;
   return i;
 }
   
 template <class ArgumentType>
 size_t Amisic_Histogram<ArgumentType>::Set(Argument_Type value,
-					   const Argument_Type weight)
+					   const Argument_Type weight,
+					   const size_t trials)
 {
   if (m_finished) return std::string::npos;
-  ++m_entries;
+  m_entries+=trials;
   size_t i=FindX(value);
   m_data[hci::y_value][i]=(*p_yaxis)(weight);
   m_data[hci::y_square][i]=(*p_yaxis)(weight*weight);
   m_data[hci::maximum][i]=(*p_yaxis)(weight);
   m_data[hci::entries][i]=1.;
+  m_data[hci::entries][0]+=trials-1;
   return i;
 }
   
