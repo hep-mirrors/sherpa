@@ -335,7 +335,6 @@ CFColor::CFColor(int N,Single_Amplitude* first,bool gc,string& pID)
 		
 		if (string_list.size()>0) {
 		  newaddend = BuildTChain(string_list);
-		  
 		  string_list.clear();
 		  factor_list.clear();
 		  
@@ -442,7 +441,6 @@ string CFColor::BuildTChain(vector<string>  string_list)
 {
   string    key;
   Char_Map  translator;  
-  CharNum_Map  counter;  
   char tmp,ca = 'A';
   vector<string> tmp_list;
   
@@ -451,11 +449,7 @@ string CFColor::BuildTChain(vector<string>  string_list)
     if (tmp_list.size()==0) {
     tmp = string_list[0][2];
     tmp_list.push_back(string_list[0]);
-    if (translator.insert(std::make_pair(tmp,ca)).second) {
-      counter.insert(std::make_pair(translator[tmp],0));
-      ca++;
-    }
-    counter[tmp]+=1;
+    if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
     key+=translator[tmp];
     vector<string>::iterator it = string_list.begin();
     string_list.erase(it);
@@ -464,11 +458,7 @@ string CFColor::BuildTChain(vector<string>  string_list)
       if (tmp_list[tmp_list.size()-1][6]==string_list[i][4]) { 
 	tmp_list.push_back(string_list[i]);
 	tmp = string_list[i][2];
-	if (translator.insert(std::make_pair(tmp,ca)).second) {
-	  counter.insert(std::make_pair(translator[tmp],0));
-	  ca++;
-	}
-	counter[tmp]+=1;
+	if (translator.insert(std::make_pair(tmp,ca)).second) ca++;
 	key+=translator[tmp];
 	vector<string>::iterator it = string_list.begin();
 	string_list.erase(it+=i);
