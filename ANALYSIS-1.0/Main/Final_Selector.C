@@ -5,6 +5,7 @@ using namespace ANALYSIS;
 #include "MyStrStream.H"
 #include "Run_Parameter.H"
 #include "Particle_Qualifier.H"
+#include "Midpoint_Cone.H"
 #include <iomanip>
 
 DECLARE_GETTER(Final_Selector_Getter,"Trigger",
@@ -60,6 +61,7 @@ Final_Selector_Getter::operator()(const String_Matrix &parameters) const
       if (cur.size()>4) data.eta_max=ATOOLS::ToType<double>(cur[4]);
       if (cur.size()>5 && kf==93) data.r_min=ATOOLS::ToType<double>(cur[5]);
       if (cur.size()>6 && kf==93) data.bf=ATOOLS::ToType<bool>(cur[6]);
+      if (cur.size()>7 && kf==93) data.f=ATOOLS::ToType<double>(cur[7]);
       selector->AddSelector(flavour,data);
     }
     else if (cur[0]=="DRMin" && cur.size()>3) {
@@ -149,9 +151,16 @@ void Final_Selector::AddSelector(const Flavour & fl, const Final_Selector_Data &
     it->second.pt_min  = fs.pt_min;
     it->second.r_min   = fs.r_min;
     it->second.bf      = fs.bf;
+    it->second.f       = fs.f;
   }
-  if (m_mode==2 && fl==kf::jet) 
-    p_jetalg = new Calorimeter_Cone(fs.pt_min,p_ana);
+  
+  if (fl==kf::jet) {
+    switch(m_mode) {
+    case 2: p_jetalg = new Calorimeter_Cone(fs.pt_min,p_ana);break;
+    case 10: p_jetalg = new Midpoint_Cone(p_qualifier,0,fs.f); break;
+    case 11: p_jetalg = new Midpoint_Cone(p_qualifier,1,fs.f); break;
+    }
+  }
   if (p_jetalg) p_jetalg->Setbflag(fs.bf);
 }
 
