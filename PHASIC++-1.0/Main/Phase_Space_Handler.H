@@ -4,8 +4,8 @@
 #include "Multi_Channel.H"
 
 namespace PHASIC  { class  Phase_Space_Integrator; }
-namespace PHASIC  { class  Phase_Space_Generator;  }
-namespace BEAM    { class  Beam_Handler;           }
+namespace PHASIC  { const int IS_XS_FLAG = -255;   }
+namespace BEAM    { class  Beam_Spectra_Handler;   }
 namespace ISR     { class  ISR_Handler;            }
 namespace AMEGIC  { class  Process_Base;           }                                       
 namespace EXTRAXS { class  XS_Base;                }                                       
@@ -13,50 +13,45 @@ namespace EXTRAXS { class  XS_Base;                }
 
 namespace PHASIC {
   class Phase_Space_Handler {
-    AMEGIC::Process_Base * proc;
-    Multi_Channel * fsrchannels;
-    Multi_Channel * isrchannels;
-    Multi_Channel * beamchannels;
-    ISR::ISR_Handler        * ih;
-    BEAM::Beam_Handler      * bh;
-    std::vector<Channel_Info> beam_params;
-    std::vector<Channel_Info> isr_params;
-    Phase_Space_Generator   * psgen;
-    int         nin,nout,nvec;
-    APHYTOOLS::Flavour      * psflavs;
-    std::string name;
-    int         int_type;
-    double      error;
-    long int    maxtrials,sumtrials,events;
-    // Kinematics             * kin;
-    double    E,m1,m2,m12,m22,s,sprime,y;
-    double    sprimeB,yB,sprimeI,yI;
-    double    result1,result2,flux;
-    AMATOOLS::Vec4D        * p;
-    Phase_Space_Integrator * psi;    
-    bool   MakeBeamChannels();
-    bool   MakeISRChannels();
-    bool   MakeFSRChannels();
-    void   AddChannels(AMEGIC::Process_Base *,Multi_Channel *,
-		       std::vector<Channel_Info> &,std::vector<Channel_Info> &);
-    void   DropRedundantChannels();
-    void   TestIntegration(double);
-    bool   Compare(AMATOOLS::Vec4D *,AMATOOLS::Vec4D *);
-    bool   MakeIncoming(AMATOOLS::Vec4D *);
-    void   Rotate(AMATOOLS::Vec4D *);
+    AMEGIC::Process_Base       * proc;
+    Multi_Channel              * fsrchannels;
+    Multi_Channel              * isrchannels;
+    Multi_Channel              * beamchannels;
+    BEAM::Beam_Spectra_Handler * bh;
+    ISR::ISR_Handler           * ih;
+    channelinfos                 beam_params;
+    channelinfos                 isr_params;
+    int                          nin,nout,nvec;
+    APHYTOOLS::Flavour         * psflavs;
+    std::string                  name;
+    int                          int_type;
+    double                       error;
+    long int                     maxtrials,sumtrials,events;
+    double                       E,m1,m2,m12,m22,s,sprime,y;
+    double                       sprimeB,yB,sprimeI,yI;
+    double                       result1,result2,flux;
+    AMATOOLS::Vec4D            * p;
+    Phase_Space_Integrator     * psi;    
 
+    void TestIntegration(double);
+    bool MakeIncoming(AMATOOLS::Vec4D *);
+    void Rotate(AMATOOLS::Vec4D *);
+    bool Check4Momentum(AMATOOLS::Vec4D *);
+    void DropRedundantChannels();
+    bool Compare(AMATOOLS::Vec4D *,AMATOOLS::Vec4D *);
+    bool MakeBeamChannels();
+    bool MakeISRChannels();
+    bool CreateBeamChannels();
+    bool CreateISRChannels();
 
-    void   Init(APHYTOOLS::Flavour *);
-    bool   Check4Momentum(AMATOOLS::Vec4D *);
   public:
-    Phase_Space_Handler(AMEGIC::Process_Base *,ISR::ISR_Handler *,BEAM::Beam_Handler *);
+    Phase_Space_Handler(AMEGIC::Process_Base *,ISR::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Phase_Space_Handler();
-    bool   CreateChannelLibrary(std::string,std::string);
-    void   CollectChannels();
-    bool   CreateIntegrators();
 
     void   WriteOut(std::string);
     bool   ReadIn(std::string);
+    bool   CreateIntegrators();
+
     double Integrate();
     double Differential();
     double Differential(AMEGIC::Process_Base *);
@@ -80,6 +75,8 @@ namespace PHASIC {
     inline int              NumberOfISRIntegrators()  { return isrchannels->Number(); }
     inline int              NumberOfFSRIntegrators()  { return fsrchannels->Number(); }
     inline Single_Channel * FSRIntegrator(int i)      { return fsrchannels->Channel(i); }
+    inline channelinfos   & BeamParameters()          { return beam_params; } 
+    inline channelinfos   & ISRParameters()           { return isr_params; } 
 
     void ISRChannels(int i,Channel_Info & ci) {
       if (i<isr_params.size()) {

@@ -1,20 +1,19 @@
 #include "Phase_Space_Handler.H"
 
-#include "Phase_Space_Generator.H"
 #include "Phase_Space_Integrator.H"
-#include "Beam_Handler.H"
+#include "Beam_Spectra_Handler.H"
 #include "ISR_Handler.H"
 #include "Process_Base.H"
-#include "Single_Process.H"
-#include "XS_Base.H"
 
+#include "Rambo.H"
+#include "RamboKK.H"
+#include "Sarge.H"
+#include "ISR_Channel.H"
+#include "FSR_Channel.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"  
 #include "Random.H"
-#include "Rambo.H"
-#include "RamboKK.H"
-#include "Sarge.H"
 
 using namespace PHASIC;
 using namespace AMEGIC;
@@ -27,473 +26,51 @@ using namespace ISR;
 using namespace std;
 
 Phase_Space_Handler::Phase_Space_Handler(Process_Base * _proc,
-					 ISR_Handler * _ih,Beam_Handler * _bh) 
-  : proc(_proc), ih(_ih), bh(_bh)
+					 ISR_Handler * _ih,Beam_Spectra_Handler * _bh) 
+  : proc(_proc), ih(_ih), bh(_bh),
+    E(AORGTOOLS::rpa.gen.Ecms()), s(E*E), sprime(s),
+    maxtrials(100000), sumtrials(0),
+    events(0), psi(NULL), 
+    beamchannels(NULL), isrchannels(NULL), fsrchannels(NULL),
+    nin(proc->Nin()), nout(proc->Nout()), nvec(proc->Nvec()+1), name(proc->Name())
 {
-  nin  = proc->Nin();
-  nout = proc->Nout();
-  nvec = proc->Nvec()+1;
-  name = proc->Name();
-  Init(proc->Flavs());
+  Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
+  
+  error      = dr.GetValue<double>("ERROR",0.01);
+  int_type   = dr.GetValue<int>("INTEGRATOR",3);
+  
+  psflavs    = new Flavour[nin+nout];
+  for (int i=0;i<nin+nout;i++) psflavs[i] = proc->Flavs()[i];
+  p          = new Vec4D[nvec];  
+  msg.Debugging()<<"Initialize new vectors : "<<nvec<<endl;
+  
+  m1 = psflavs[0].Mass(); m12 = m1*m1;
+  if (nin==2) { m2   = psflavs[1].Mass(); m22 = m2*m2; }
 
+  if (nin==2) {
+    if (bh) {
+      if (bh->On()>0) beamchannels = new Multi_Channel(string("beam_")+proc->Name());
+    }
+    if (ih) {
+      if (ih->On()>0) isrchannels  = new Multi_Channel(string("isr_")+proc->Name());
+    }
+    fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
+  }
+
+  msg.Debugging()<<"Initialized new Phase_Space_Handler for "<<proc->Name()<<endl;
+  msg.Tracking()<<" ("<<ih->Type()<<", "<<nin<<"  ->  "<<nout<<" process)"<<endl;
 }
 
 Phase_Space_Handler::~Phase_Space_Handler()
 {
   if (p)            { delete [] p;         p            = 0; }
   if (psi)          { delete psi;          psi          = 0; }
-  if (psgen)        { delete psgen;        psgen        = 0; }
   if (psflavs)      { delete [] psflavs;   psflavs      = 0; }
   if (isrchannels)  { delete isrchannels;  isrchannels  = 0; }
   if (fsrchannels)  { delete fsrchannels;  fsrchannels  = 0; }
   if (beamchannels) { delete beamchannels; beamchannels = 0; }
   // if (kin)          { delete kin;          kin          = 0; }
   if (proc) msg.Debugging()<<"Deleted Phase_Space_Handler for "<<proc->Name()<<endl;
-}
-
-void Phase_Space_Handler::Init(Flavour * _fl) {
-  Data_Read dr(rpa.GetPath()+string("/Integration.dat"));
-
-  error      = dr.GetValue<double>("ERROR");
-  int_type   = dr.GetValue<int>("INTEGRATOR");
-  
-  psflavs    = new Flavour[nin+nout];
-  for (int i=0;i<nin+nout;i++) psflavs[i] = _fl[i];
-  p          = new Vec4D[nvec];  
-  msg.Debugging()<<"Initialize new vectors : "<<nvec<<endl;
-
-  m1 = _fl[0].Mass(); m12 = m1*m1;
-  if (nin==2) {
-    m2   = _fl[1].Mass(); m22 = m2*m2;
-  }
-
-  E          = AORGTOOLS::rpa.gen.Ecms();
-  s = sprime = E*E;
-
-  maxtrials  = 100000;
-  sumtrials  = 0;
-  events     = 0;
-  
-  psi = 0; psgen = 0; beamchannels = 0; isrchannels = 0; fsrchannels = 0; 
-  
-  msg.Debugging()<<"Initialized new Phase_Space_Handler for "<<proc->Name()<<endl;
-  if (ih) msg.Tracking()<<" ("<<ih->Type()<<", "<<nin<<"  ->  "<<nout<<" process)"<<endl;
-}
-
-/* ----------------------------------------------------------------------
-
-   Channel creation
-
-   ---------------------------------------------------------------------- */
-
-bool Phase_Space_Handler::CreateChannelLibrary(string ptype,string pID)
-{
-
-  msg.Tracking()<<"Creating Multichannel for phasespace integration for "
-		<<"  "<<ptype<<"/"<<pID<<endl;   
-
-  int ngraph = proc->NumberOfDiagrams();
-  psgen      = new Phase_Space_Generator(nin,nout);
-  if (ngraph == AMEGIC::IS_XS_FLAG) return 1;
-
-  fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
-  bool newch  = 0;
-  if (nin>1) newch  = psgen->Construct(fsrchannels,ptype,pID,psflavs,proc); 
-  
-  if (newch) {
-    msg.Error()<<fsrchannels->Number()<<" new Channels produced for "<<pID<<" ! "<<endl
-	       <<"After program termination please enter \"make install\" and rerun !"<<endl;
-    return 0;
-  }
-  else {
-    msg.Tracking()<<"No new Channels produced for "<<pID<<" ! "<<endl
-		  <<" added the following channels to the fs multi-channel : "<<endl;
-    /*
-    for (short int i=0;i<fsrchannels->Number();i++)
-      msg.Tracking()<<"     "<<(fsrchannels->Channel(i))->Name()<<endl;
-    */    
-    msg.Debugging()<<"Program continues."<<endl;
-    return 1;
-  }
-}
-
-/* ----------------------------------------------------------------------
-
-   Setting up the integrator
-
-   ---------------------------------------------------------------------- */
-
-bool Phase_Space_Handler::CreateIntegrators()
-{
-  if (proc->NumberOfDiagrams() == IS_XS_FLAG) 
-    psgen = new Phase_Space_Generator(proc->Nin(),proc->Nout());
-
-  if (nin==1) int_type = 0; //The Rambo integrator
-  
-  if (bh) {
-    if ((nin==2) && bh && (bh->On()>0) ) {
-      beamchannels = new Multi_Channel(string("beam_")+proc->Name());
-
-      if (!(MakeBeamChannels())) {
-	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
-		 <<"   did not construct any beam channels !"<<endl;
-      }
-      if (beamchannels) 
-	msg.Debugging()<<"  ("<<beamchannels->Name()<<","<<beamchannels->Number()<<";";
-    }
-    else {
-      msg.Debugging()<<" no Beam-Handling needed : "<<bh->Name()
-		     <<" for "<<nin<<" incoming particles."<<endl;
-    }
-  }
-
-  if ((nin==2) && (ih && ih->On()>0)) {
-    isrchannels = new Multi_Channel(string("isr_")+proc->Name());
-
-    if (!(MakeISRChannels())) {
-      msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
-		 <<"   did not construct any isr channels !"<<endl;
-    }
-    if (isrchannels) 
-      msg.Debugging()<<"  ("<<isrchannels->Name()<<","<<isrchannels->Number()<<";";
-  }
-  else {
-    msg.Debugging()<<" no ISR needed           : ";
-    if (ih) msg.Debugging()<<ih->Name();
-    msg.Debugging()<<" for "<<nin<<" incoming particles."<<endl;
-  }
-  
-  if (proc->NumberOfDiagrams() == AMEGIC::IS_XS_FLAG) {
-    fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
-    msg.Debugging()<<endl<<"Process is of type XS !"<<std::endl
-		   <<"Set up FS Multi Channel for "<<proc->Name()<<std::endl;
-    MakeFSRChannels();
-    msg.Debugging()<<"Initialized Phase_Space_Integrator "<<endl<<"   (";
-    if (isrchannels) msg.Debugging()<<" "<<isrchannels->Name()<<","<<isrchannels->Number()<<";";
-    msg.Debugging()<<" "<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl;
-
-    return 1;
-  }
-  else {
-    /*     
-	   if (fsrchannels) msg.Debugging()<<" "<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl
-	   <<" integration mode = "<<int_type<<endl;
-    */    
-    if (int_type < 3 || int_type ==5 && (fsrchannels!=0)) fsrchannels->DropAllChannels();
-    switch (int_type) {
-    case 0: 
-      {
-      msg.Out()<<"Creating RAMBO for Phasespace integration"<<endl;
-      fsrchannels->Add(new Rambo(nin,nout,psflavs));
-      }
-      break;
-    case 1: 
-      fsrchannels->Add(new Sarge(nin,nout));
-      break;
-    case 2: 
-      fsrchannels->Add(new Rambo(nin,nout,psflavs));
-      fsrchannels->Add(new Sarge(nin,nout));
-      DropRedundantChannels();
-      break;
-    case 3: 
-      fsrchannels->Add(new Rambo(nin,nout,psflavs));
-      DropRedundantChannels();
-      break;
-    case 4: 
-      DropRedundantChannels();
-      break;
-    case 5:
-      msg.Out()<<"using RAMBO with KK-Sum for phasespace integration\n";
-      fsrchannels->Add(new RamboKK(nin,nout,psflavs));
-      break;    
-    default:
-      msg.Error()<<"Wrong phasespace integration switch ! ";
-      msg.Error()<<"Using as default : RAMBO ."<<endl;
-			       fsrchannels->Add(new Rambo(nin,nout,psflavs));
-    }  
-    
-    msg.Debugging()<<"Initialized Phase_Space_Integrator (";
-    if (beamchannels) msg.Debugging()<<beamchannels->Name()<<","<<beamchannels->Number()<<";";
-    if (isrchannels)  msg.Debugging()<<isrchannels->Name()<<","<<isrchannels->Number()<<";";
-    msg.Debugging()<<" "<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl;
-
-    return 1;
-  }
-  return 0;
-}
-
-
-void Phase_Space_Handler::CollectChannels() {
-  msg.Debugging()<<"Phase_Space_Handler::CollectChannels("<<proc->Name()<<") : "<<endl;
-  fsrchannels = new Multi_Channel(string("fsr_")+proc->Name());
-  msg.Debugging()<<"New multichannel init : "<<proc->Name()<<"  "<<fsrchannels<<endl;
-  AddChannels(proc,fsrchannels,beam_params,isr_params);
-
-  msg.Debugging()<<"    in total : "<<fsrchannels->Number()<<" FSR, ";
-  msg.Debugging()<<3*isr_params.size()<<" ISR channels."<<endl;
-}
-
-void Phase_Space_Handler::AddChannels(Process_Base * _proc,Multi_Channel * _fsr,
-				      vector<Channel_Info> & _beamparams,
-				      vector<Channel_Info> & _isrparams) {
-  bool         addit;
-  Channel_Info ci;
-
-  msg.Debugging()<<"In AddChannels("<<_proc->Name()<<", "<<_proc->Size()<<")"<<endl;
-
-  for (int i=0;i<_proc->Size();i++) {
-    if ((*_proc)[i]->Partner() == NULL) AddChannels((*_proc)[i],_fsr,_beamparams,_isrparams);
-    else {
-      msg.Debugging()<<"Test : "<<(*_proc)[i]->Name()<<" "<<(*_proc)[i]->Partner()->Name()<<endl;
-      if ((*_proc)[i]->Partner() == (*_proc)[i]) {
-	Single_Channel * sc;
-	int next; string chname;
-	msg.Debugging()<<"Phase_Space_Handler::Add "<<(*_proc)[i]->NumberOfFSRIntegrators()
-		       <<" Channels of "<<(*_proc)[i]->Name()<<endl;
-	for (int j=0;j<(*_proc)[i]->NumberOfFSRIntegrators();j++) { 
-	  chname = ((*_proc)[i]->FSRIntegrator(j))->Name();
-	  if ( (chname!=string("Rambo")) && (chname!=string("Sarge")) ) { 
-	    next   = chname.find(string("--"));
-	    chname = chname.substr(0,next);
-	    if ((*_proc)[i]->NumberOfDiagrams() == IS_XS_FLAG) {
-	      sc = psgen->SetSimpleChannel(nin,nout,psflavs,
-					   ((*_proc)[i]->FSRIntegrator(j))->ChNumber(), 
-					   chname);}
-	    else {
-	      sc = psgen->SetChannel(nin,nout,psflavs,
-				     ((*_proc)[i]->FSRIntegrator(j))->ChNumber(),chname);
- 	      sc->SetName(((*_proc)[i]->FSRIntegrator(j))->Name());
-	    }
-	    // sc = new Single_Channel((*_proc)[i]->FSRIntegrator(j));
-	    _fsr->Add( sc );
-	  }
-	}
-
-	if (bh->On()>0) {
-	  msg.Debugging()<<"Phase_Space_Handler::Add "
-			 <<(*_proc)[i]->NumberOfBeamIntegrators()<<" "
-			 <<"Beam-Channels of "<<(*_proc)[i]->Name()<<endl;
-	  for (int j=0;j<(*_proc)[i]->NumberOfBeamIntegrators()/3;j++) {
-	    (*_proc)[i]->BeamChannels(j,ci);
-	    addit = 1;
-	    for (int k=0;k<beam_params.size();k++) {
-	      if (beam_params[k]==ci) { addit = 0; break; }
-	    }
-	    if (addit) beam_params.push_back(ci);
-	  }
-	}
-
-	if (ih && ih->On()>0) {
-	  msg.Debugging()<<"Phase_Space_Handler::Add "
-			 <<(*_proc)[i]->NumberOfISRIntegrators()<<" "
-			 <<"ISRChannels of "<<(*_proc)[i]->Name()<<endl;
-	  for (int j=0;j<(*_proc)[i]->NumberOfISRIntegrators()/3;j++) {
-	    (*_proc)[i]->ISRChannels(j,ci);
-	    addit = 1;
-	    msg.Debugging()<<j<<" th channel for "<<(*_proc)[i]->Name()<<" : "
-			   <<" check for "<<ci.type<<" in "<<isr_params.size()<<endl; 
-	    for (int k=0;k<isr_params.size();k++) {
-	      if (isr_params[k]==ci) { addit = 0; break; }
-	    }
-	    if (addit) isr_params.push_back(ci);
-	  }
-	}
-      }
-      else {
-	msg.Debugging()<<"Omit channels of "<<(*_proc)[i]->Name()<<", "
-		       <<" partner = "<<(*_proc)[i]->Partner()->Name()<<endl;
-      }
-    }
-  }
-  msg.Debugging()<<"Leave AddChannels for "<<_proc->Name()<<endl;
-};
-
-
-bool Phase_Space_Handler::MakeFSRChannels()
-{
-  return psgen->CreateFSRChannels(fsrchannels,psflavs);
-}
-
-
-bool Phase_Space_Handler::MakeISRChannels()
-{
-  if ((proc) && (isr_params.size() > 0)) {
-    return psgen->CreateISRChannels(isrchannels,psflavs,isr_params);
-  }
-
-  Channel_Info ci;
-
-  double deltay[2];
-  
-  deltay[0] = log(ih->Upper1());
-  deltay[1] = log(ih->Upper2());
-
-  msg.Debugging()<<"DeltaY1 = "<<deltay[0]<<endl;
-  msg.Debugging()<<"DeltaY2 = "<<deltay[1]<<endl;
-
-
-  if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) {
-    // leptons : 1/s'^2 and 1/(s-s')^beta, sharp FW-BW peak
-    ci.type = 0;
-    (ci.parameters).push_back(.5);
-    (ci.parameters).push_back(1.);
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-    isr_params.push_back(ci);
-    ci.parameters.clear();
-
-    ci.type = 0;
-    (ci.parameters).push_back(2.);
-    (ci.parameters).push_back(1.);
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-    isr_params.push_back(ci);
-    ci.parameters.clear();
-
-    ci.type = 3;
-    (ci.parameters).push_back(ih->Exponent(1));
-    (ci.parameters).push_back(1.);
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-    isr_params.push_back(ci);
-    ci.parameters.clear();
-  }
-  else {
-    // default : 1/s'
-    ci.type = 0;
-    (ci.parameters).push_back(0.5);
-    (ci.parameters).push_back(0.5);
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-    isr_params.push_back(ci);
-    ci.parameters.clear();
-
-    ci.type = 0;
-    (ci.parameters).push_back(0.99);
-    (ci.parameters).push_back(0.5);
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-    isr_params.push_back(ci);
-    ci.parameters.clear();
-  }
-
-  bool   addit;
-  int    type,maxnumber;
-  double mass,width;
-    
-  if (proc->NumberOfDiagrams() == IS_XS_FLAG) maxnumber = proc->ISRNumber();
-  else maxnumber = fsrchannels->Number(); 
-
-  for (int i=0;i<maxnumber;i++) {
-    type = 0; mass = width = 0.;
-    if (proc->NumberOfDiagrams() == IS_XS_FLAG) proc->ISRInfo(i,type,mass,width);
-    else fsrchannels->ISRInfo(i,type,mass,width);
-    msg.Debugging()<<"ISRInfo "<<i<<" : "<<type<<" -> mass = "<<mass<<" GeV "
-		   <<", width = "<<width<< " GeV "<<std::endl;
-    if (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width)) continue;
-    if ((type == 0) || (type == 3))                        continue;
-
-    ci.type = type;
-    (ci.parameters).push_back(mass);
-    (ci.parameters).push_back(width);
-    if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) (ci.parameters).push_back(1.);
-                                                       else (ci.parameters).push_back(.5);
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-
-    addit = 1;
-    for (int j=0;j<isr_params.size();j++) {
-      if (isr_params[j]==ci) { addit = 0; break; }
-    }
-    if (addit) isr_params.push_back(ci);
-    ci.parameters.clear();
-  }
-
-  msg.Debugging()<<" create "<<3*isr_params.size()<<" ISR channels."<<endl;
-  return psgen->CreateISRChannels(isrchannels,psflavs,isr_params);
-}
-
-
-
-
-bool Phase_Space_Handler::MakeBeamChannels()
-{
-  if ((proc) && (beam_params.size() > 0)) {
-    return psgen->CreateBeamChannels(beamchannels,psflavs,beam_params);
-  }
-  double deltay[2];
-  deltay[0] = log(bh->Upper1());
-  deltay[1] = log(bh->Upper2());
-
-  Channel_Info ci;
-
-  // default : Beamstrahlung
-  if ((psflavs[0].IsLepton()) && (psflavs[1].IsLepton())) {
-    ci.type = 0;
-    (ci.parameters).push_back(0.5);
-    (ci.parameters).push_back(bh->Exponent(1));
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-    beam_params.push_back(ci);
-    ci.parameters.clear();
-  }
-
-  // Laser Backscattering spectrum
-  if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
-    ci.type = 0;
-    (ci.parameters).push_back(.5);
-    (ci.parameters).push_back(1.);
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-    beam_params.push_back(ci);
-    ci.parameters.clear();
-
-    ci.type = 3;
-    (ci.parameters).push_back(bh->Peak());
-    (ci.parameters).push_back(bh->Exponent(1));
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-    (ci.parameters).push_back(0.7);
-    beam_params.push_back(ci);
-    ci.parameters.clear();
-  }
-
-  bool   addit;
-  int    type,maxnumber;
-  double mass,width;
-    
-  if (proc->NumberOfDiagrams() == IS_XS_FLAG) maxnumber = proc->ISRNumber();
-  else maxnumber = fsrchannels->Number();
-    
-  for (int i=0;i<maxnumber;i++) {
-    type = 0; mass = width = 0.;
-    if (proc->NumberOfDiagrams() == IS_XS_FLAG) proc->ISRInfo(i,type,mass,width);
-    else fsrchannels->ISRInfo(i,type,mass,width);
-    msg.Debugging()<<"ISRInfo "<<i<<" : "<<type<<" -> mass = "<<mass<<" GeV "
-		   <<", width = "<<width<< " GeV "<<std::endl;
-    
-    msg.Debugging()<<i<<" : "<<type<<"/"<<mass<<"/"<<width<<endl;
-    if (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width)) continue;
-    if ((type == 0) || (type == 3))                        continue;
-
-    ci.type = type;
-    (ci.parameters).push_back(mass);
-    (ci.parameters).push_back(width);
-    if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) (ci.parameters).push_back(1.);
-                                                       else (ci.parameters).push_back(.5);
-    (ci.parameters).push_back(deltay[0]);
-    (ci.parameters).push_back(deltay[1]);
-
-    addit = 1;
-    for (int j=0;j<beam_params.size();j++) {
-      if (beam_params[j]==ci) { addit = 0; break; }
-    }
-    if (addit) beam_params.push_back(ci);
-    ci.parameters.clear();
-  }
-
-  msg.Debugging()<<" create "<<3*beam_params.size()<<" Beam channels."<<endl;
-  return psgen->CreateBeamChannels(beamchannels,psflavs,beam_params);
 }
 
 /* ----------------------------------------------------------------------
@@ -517,7 +94,7 @@ double Phase_Space_Handler::Integrate()
   msg.Debugging()<<"  FSR  : "<<fsrchannels->Name()<<" ("<<fsrchannels<<") "
 		 <<"  ("<<fsrchannels->Number()<<","<<fsrchannels->N()<<")"<<endl;
   
-  sprime     = sqr(AORGTOOLS::rpa.gen.Ecms());
+
   if (!(MakeIncoming(p)) ) {
     msg.Error()<<"Phase_Space_Handler::Integrate : Error !"<<endl
 	       <<"  Either too little energy for initial state"
@@ -526,18 +103,23 @@ double Phase_Space_Handler::Integrate()
     return 0;
   } 
 
-  msg.SetPrecision(12);
-  if (bh && bh->On()>0) {
-    //    beamchannels->GetRange();
-    beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
-    beamchannels->GetRange();
+if (bh) {
+    if (bh->On()>0) {
+      beamchannels->GetRange();
+      beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
+      beamchannels->GetRange();
+    }
   }
-  if (ih && ih->On()>0) {
-    //new SS to ensure the right sprimemin for massive processes
-    ih->SetSprimeMin(sqr(proc->ISRThreshold()));
-    
-    isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
-    isrchannels->GetRange();
+  if (ih) {
+    if (ih->On()>0) {
+      ih->SetSprimeMin(sqr(proc->ISRThreshold()));
+      isrchannels->GetRange();
+      msg.Debugging()<<"In Phase_Space_Handler::Integrate : ";
+      if (bh) bh->On(); <<":"<<ih->On()<<endl;
+      <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl;
+      isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
+      isrchannels->GetRange();
+    }
   }
   msg.SetPrecision(6);
 
@@ -605,15 +187,14 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     proc->UpdateCuts(sprime,y);
   }
   
-  if (proc->NumberOfDiagrams() != IS_XS_FLAG) fsrchannels->GeneratePoint(p,proc->Cuts());
-  else fsrchannels->GeneratePoint(p);
+  fsrchannels->GeneratePoint(p,proc->Cuts());
 
   if (!Check4Momentum(p)) {
     msg.Out()<<"Phase_Space_Handler Check4Momentum(p) failed"<<endl;
     return 0.;
   }
 
-  double KFactor = 0., Q2 = -1.;
+  double value = 0., KFactor = 0., Q2 = -1.;
   
   result1 = result2 = 0.;
 
@@ -647,8 +228,7 @@ double Phase_Space_Handler::Differential(Process_Base * process)
     }
 
     KFactor = proc->KFactor(Q2);
-    if (proc->NumberOfDiagrams() != IS_XS_FLAG) fsrchannels->GenerateWeight(p,proc->Cuts());
-    else  fsrchannels->GenerateWeight(p);
+    fsrchannels->GenerateWeight(p,proc->Cuts());
     result1 *= KFactor;
     result1 *= fsrchannels->Weight();
 
@@ -703,7 +283,6 @@ bool Phase_Space_Handler::OneEvent(int mode)
 	  return 0;
 	}
       }
-      //new SS to ensure the right sprime min for massive processes
       ih->SetSprimeMin(sqr(proc->ISRThreshold()));
       
       if (isrchannels) isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
@@ -758,120 +337,6 @@ void Phase_Space_Handler::AddPoint(const double value) {
   proc->AddPoint(value); 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-void Phase_Space_Handler::DropRedundantChannels()
-{
-  fsrchannels->Reset();
-  int number = fsrchannels->Number();
-
-  msg.Debugging()<<"In Phase_Space_Handler::DropRedundantChannels";
-  msg.Debugging()<<"("<<fsrchannels->Name()<<")."<<endl;
-  msg.Debugging()<<"    Start with "<<number<<" added channel(s)."<<endl;
-
-  if (number<2) return;
-  Vec4D** perm_vec = new Vec4D*[number]; 
-  
-  for (short int i=0;i<number;i++) perm_vec[i] = new Vec4D[nin+nout+1];
-  
-  // Create Momenta
-  int rannum   = 1 + 2 + 3*(nout-2);
-  double * rans = new double[rannum];
-  for (short int i=0;i<rannum;i++) rans[i] = ran.Get();  
-  // Init markers for deletion and results to compare.
-  int    * marker = new int[number];  
-  double * res    = new double[number];
-  for (short int i=0;i<number;i++) { marker[i] = 0;res[i] = 0.; }
-
-  for (short int i=0;i<number;i++) {
-    perm_vec[i][0] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,rpa.gen.Ecms()/2.);
-    perm_vec[i][1] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,-rpa.gen.Ecms()/2.); 
-    msg.Debugging()<<"==== "<<i<<" : ";
-    msg.Debugging()<<(fsrchannels->Channel(i))->Name()<<"====================="<<endl;
-    fsrchannels->GeneratePoint(i,perm_vec[i],proc->Cuts(),rans);
-    // for (short int j=0;j<nin+nout;j++) msg.Debugging()<<j<<"th : "<<perm_vec[i][j]<<endl;
-    fsrchannels->GenerateWeight(i,perm_vec[i],proc->Cuts());
-    res[i] = fsrchannels->Weight();
-    if (res[i]==0.) {
-      msg.Debugging()<<"  "<<(fsrchannels->Channel(i))->Name()<<" produced a zero weight."<<endl;
-      marker[i] = 1;
-    }
-  }
-  delete[] rans;
-
-  // kick identicals & permutations
-  for (short int i=0;i<number;i++) {
-    if (marker[i]==0) {
-      for (short int j=i+1;j<number;j++) {
-	if (marker[j]==0) {
-	  if ( (Compare(perm_vec[i],perm_vec[j])) && 
-	       (AMATOOLS::IsEqual(res[i],res[j])) ) {
-	    msg.Debugging()<<"  "<<(fsrchannels->Channel(i))->Name()
-			   <<" and "<<(fsrchannels->Channel(j))->Name()
-			   <<" are identical."<<endl;
-	    marker[j] = 1; 
-	  }
-	}
-      }
-    }
-  }
-
-  // kick non-resonants
-  /*
-    int max_reson    = 0;
-    Flavour * fl_res = 0;
-    
-    int * reson      = new int[number];
-    for (short int i=0;i<number;i++) {
-    if (marker[i]==0) {
-    reson[i]     = fsrchannels->CountResonances(i,fl_res);
-    if (reson[i]!=0) {
-    //shorten
-    int hit    = 0;
-    for (short int j=0;j<reson[i];j++) {
-    if (sqr(fl_res[j].mass())>ycut*sqr(rpa.gen.Ecms()) &&
-    sqr(fl_res[j].mass())<sqr(rpa.gen.Ecms())) 
-    hit++;
-    }
-    reson[i] = hit;
-    if (reson[i]>max_reson) max_reson = reson[i];
-    }
-    else reson[i] = -1;
-    }
-    else reson[i] = -1;
-    }
-
-    //Drop them
-    for (short int i=0;i<number;i++) {
-    if (reson[i]<max_reson && reson[i]!=-1) marker[i] = 1;
-    }
-    delete [] reson;
-  */
-
-  int count = 0;
-  for (short int i=0;i<number;i++) {
-    if (marker[i]) {
-      fsrchannels->DropChannel(i-count);
-      count++;
-    }
-  }
-  msg.Debugging()<<"    "<<count<<" channel(s) were deleted."<<endl;
-
-
-  delete [] res;
-  delete [] marker; 
-  for (short int i=0;i<number;i++) delete [] perm_vec[i];
-  delete [] perm_vec; 
-}
 
 
 
@@ -937,6 +402,189 @@ void Phase_Space_Handler::Rotate(Vec4D * _p)
 }
 
 
+
+
+bool Phase_Space_Handler::CreateIntegrators()
+{
+  msg.Debugging()<<"In Phase_Space_Handler::CreateIntegrators"<<endl;
+
+  if (nin==1) int_type = 0; //The Rambo integrator
+
+  if (bh) {
+    if ((nin==2) && (bh && bh->On()>0) ) {
+      if (!(MakeBeamChannels())) {
+	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
+		 <<"   did not construct any isr channels !"<<endl;
+      }
+      if (beamchannels) 
+	msg.Debugging()<<"  ("<<beamchannels->Name()<<","<<beamchannels->Number()<<";";
+    }
+    else {
+      msg.Debugging()<<" no Beam-Handling needed : "<<bh->Name()
+		     <<" for "<<nin<<" incoming particles."<<endl;
+    }
+  }
+
+  if (ih) {
+    if ((nin==2) && (ih->On()>0)) {
+      if (!(MakeISRChannels())) {
+	msg.Error()<<"Error in Phase_Space_Handler::CreateIntegrators !"<<endl
+		   <<"   did not construct any isr channels !"<<endl;
+      }
+      if (isrchannels) 
+	msg.Debugging()<<"  ("<<isrchannels->Name()<<","<<isrchannels->Number()<<";";
+    }
+    else {
+      msg.Debugging()<<" no ISR needed           : "<<ih->Name()
+		     <<" for "<<nin<<" incoming particles."<<endl;
+    }
+  }
+
+  msg.Debugging()<<" "<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl
+		 <<" integration mode = "<<int_type<<endl;
+  
+  if (int_type < 3 || int_type == 5 && (fsrchannles!=0)) fsrchannels->DropAllChannels();
+  switch (int_type) {
+  case 0: 
+    fsrchannels->Add(new Rambo(nin,nout,psflavs));
+    break;
+  case 1: 
+    fsrchannels->Add(new Sarge(nin,nout));
+    break;
+  case 2: 
+    fsrchannels->Add(new Rambo(nin,nout,psflavs));
+    fsrchannels->Add(new Sarge(nin,nout));
+    DropRedundantChannels();
+    break;
+  case 3: 
+    fsrchannels->Add(new Rambo(nin,nout,psflavs));
+    DropRedundantChannels();
+    break;
+  case 4: 
+    DropRedundantChannels();
+    break;
+  case 5:
+    fsrchannels->Add(new RamboKK(nin,nout,psflavs));
+      break;    
+  default:
+    msg.Error()<<"Wrong phasespace integration switch ! Using RAMBO as default."<<endl;
+    fsrchannels->Add(new Rambo(nin,nout,psflavs));
+  }  
+    
+  msg.Debugging()<<"Initialized Phase_Space_Integrator (";
+  if (beamchannels) msg.Debugging()<<beamchannels->Name()<<","<<beamchannels->Number()<<";";
+  if (isrchannels)  msg.Debugging()<<isrchannels->Name()<<","<<isrchannels->Number()<<";";
+  if (fsrchannels)  msg.Debugging()<<fsrchannels->Name()<<","<<fsrchannels->Number()<<")"<<endl;
+  
+  return 1;
+}
+
+
+void Phase_Space_Handler::DropRedundantChannels()
+{
+  fsrchannels->Reset();
+  int number = fsrchannels->Number();
+  
+  msg.Debugging()<<"In Phase_Space_Handler::DropRedundantChannels"
+		 <<"("<<fsrchannels->Name()<<")."<<endl
+		 <<"    Start with "<<number<<" added channel(s)."<<endl;
+
+  if (number<2) return;
+  Vec4D** perm_vec = new Vec4D*[number]; 
+  
+  for (short int i=0;i<number;i++) perm_vec[i] = new Vec4D[nin+nout+1];
+  
+  // Create Momenta
+  int rannum   = 1 + 2 + 3*(nout-2);
+  double * rans = new double[rannum];
+  for (short int i=0;i<rannum;i++) rans[i] = ran.Get();  
+  // Init markers for deletion and results to compare.
+  int    * marker = new int[number];  
+  double * res    = new double[number];
+  for (short int i=0;i<number;i++) { marker[i] = 0;res[i] = 0.; }
+
+  for (short int i=0;i<number;i++) {
+    perm_vec[i][0] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,rpa.gen.Ecms()/2.);
+    perm_vec[i][1] = Vec4D(rpa.gen.Ecms()/2.,0.,0.,-rpa.gen.Ecms()/2.); 
+    msg.Debugging()<<"==== "<<i<<" : ";
+    msg.Debugging()<<(fsrchannels->Channel(i))->Name()<<"====================="<<endl;
+    fsrchannels->GeneratePoint(i,perm_vec[i],proc->Cuts(),rans);
+    // for (short int j=0;j<nin+nout;j++) msg.Debugging()<<j<<"th : "<<perm_vec[i][j]<<endl;
+    fsrchannels->GenerateWeight(i,perm_vec[i],proc->Cuts());
+    res[i] = fsrchannels->Weight();
+    if (res[i]==0.) {
+      msg.Debugging()<<"  "<<(fsrchannels->Channel(i))->Name()<<" produced a zero weight."<<endl;
+      marker[i] = 1;
+    }
+  }
+  delete[] rans;
+
+  // kick identicals & permutations
+  for (short int i=0;i<number;i++) {
+    if (marker[i]==0) {
+      for (short int j=i+1;j<number;j++) {
+	if (marker[j]==0) {
+	  if ( (Compare(perm_vec[i],perm_vec[j])) && 
+	       (AMATOOLS::IsEqual(res[i],res[j])) ) {
+	    msg.Debugging()<<"  "<<(fsrchannels->Channel(i))->Name()
+			   <<" and "<<(fsrchannels->Channel(j))->Name()
+			   <<" are identical."<<endl;
+	    marker[j] = 1; 
+	  }
+	}
+      }
+    }
+  }
+
+  // kick non-resonants
+  /*
+    int max_reson    = 0;
+    Flavour * fl_res = 0;
+    
+    int * reson      = new int[number];
+    for (short int i=0;i<number;i++) {
+    if (marker[i]==0) {
+    reson[i]     = fsrchannels->CountResonances(i,fl_res);
+    if (reson[i]!=0) {
+    //shorten
+    int hit    = 0;
+    for (short int j=0;j<reson[i];j++) {
+    if (sqr(fl_res[j].Mass())>ycut*sqr(rpa.gen.Ecms()) &&
+    sqr(fl_res[j].Mass())<sqr(rpa.gen.Ecms())) 
+    hit++;
+    }
+    reson[i] = hit;
+    if (reson[i]>max_reson) max_reson = reson[i];
+    }
+    else reson[i] = -1;
+    }
+    else reson[i] = -1;
+    }
+
+    //Drop them
+    for (short int i=0;i<number;i++) {
+    if (reson[i]<max_reson && reson[i]!=-1) marker[i] = 1;
+    }
+    delete [] reson;
+  */
+
+  int count = 0;
+  for (short int i=0;i<number;i++) {
+    if (marker[i]) {
+      fsrchannels->DropChannel(i-count);
+      count++;
+    }
+  }
+  msg.Debugging()<<"    "<<count<<" channel(s) were deleted."<<endl;
+
+
+  delete [] res;
+  delete [] marker; 
+  for (short int i=0;i<number;i++) delete [] perm_vec[i];
+  delete [] perm_vec; 
+}
+
+
 bool Phase_Space_Handler::Compare(Vec4D* _p1,Vec4D* _p2)
 {
   if (nout==2) {
@@ -990,3 +638,280 @@ bool Phase_Space_Handler::Compare(Vec4D* _p1,Vec4D* _p2)
     return 0;
   }
 }
+
+
+bool Phase_Space_Handler::MakeBeamChannels()
+{
+  if (beam_params.size()>0) return CreateBeamChannels();
+
+  double deltay[2];
+  deltay[0] = log(bh->Upper1());
+  deltay[1] = log(bh->Upper2());
+
+  Channel_Info ci;
+  // default : Beamstrahlung
+  if ((psflavs[0].IsLepton()) && (psflavs[1].IsLepton())) {
+    ci.type = 0;
+    (ci.parameters).push_back(0.5);
+    (ci.parameters).push_back(bh->Exponent(1));
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    beam_params.push_back(ci);
+    ci.parameters.clear();
+  }
+  // Laser Backscattering spectrum
+  if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
+    ci.type = 0;
+    (ci.parameters).push_back(.5);
+    (ci.parameters).push_back(1.);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    beam_params.push_back(ci);
+    ci.parameters.clear();
+
+    ci.type = 3;
+    (ci.parameters).push_back(bh->Peak());
+    (ci.parameters).push_back(bh->Exponent(1));
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    (ci.parameters).push_back(0.7);
+    beam_params.push_back(ci);
+    ci.parameters.clear();
+  }
+
+  bool   addit;
+  int    type;
+  double mass,width;
+
+  for (int i=0;i<fsrchannels->Number();i++) {
+    type = 0; mass = width = 0.;
+    if (proc) fsrchannels->ISRInfo(i,type,mass,width);
+    
+    msg.Debugging()<<i<<" : "<<type<<"/"<<mass<<"/"<<width<<endl;
+    if (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width)) continue;
+    if ((type == 0) || (type == 3))                        continue;
+
+    ci.type = type;
+    (ci.parameters).push_back(mass);
+    (ci.parameters).push_back(width);
+    if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) (ci.parameters).push_back(1.);
+                                                       else (ci.parameters).push_back(.5);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+
+    addit = 1;
+    for (int j=0;j<beam_params.size();j++) {
+      if (beam_params[j]==ci) { addit = 0; break; }
+    }
+    if (addit) beam_params.push_back(ci);
+    ci.parameters.clear();
+  }
+
+  msg.Debugging()<<" create "<<3*beam_params.size()<<" Beam channels."<<endl;
+  return CreateBeamChannels();
+}
+
+
+bool Phase_Space_Handler::MakeISRChannels()
+{
+  if (isr_params.size()>0) return CreateISRChannels();
+
+  Channel_Info ci;
+
+  double deltay[2];  
+  deltay[0] = log(ih->Upper1());
+  deltay[1] = log(ih->Upper2());
+  msg.Out()<<"*** DeltaY1 / 2 = "<<deltay[0]<<" / "<<deltay[1]<<endl;
+
+
+  if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) {
+    // leptons : 1/s'^2 and 1/(s-s')^beta, sharp FW-BW peak
+    ci.type = 0;
+    (ci.parameters).push_back(.5);
+    (ci.parameters).push_back(1.);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    isr_params.push_back(ci);
+    ci.parameters.clear();
+
+    ci.type = 0;
+    (ci.parameters).push_back(2.);
+    (ci.parameters).push_back(1.);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    isr_params.push_back(ci);
+    ci.parameters.clear();
+
+    ci.type = 3;
+    (ci.parameters).push_back(ih->Exponent(1));
+    (ci.parameters).push_back(1.);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    isr_params.push_back(ci);
+    ci.parameters.clear();
+  }
+  else {
+    // default : 1/s'
+    ci.type = 0;
+    (ci.parameters).push_back(0.5);
+    (ci.parameters).push_back(0.5);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    isr_params.push_back(ci);
+    ci.parameters.clear();
+
+    ci.type = 0;
+    (ci.parameters).push_back(0.99);
+    (ci.parameters).push_back(0.5);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+    isr_params.push_back(ci);
+    ci.parameters.clear();
+  }
+
+  bool   addit;
+  int    type;
+  double mass,width;
+    
+  for (int i=0;i<fsrchannels->Number();i++) {
+    type = 0; mass = width = 0.;
+    fsrchannels->ISRInfo(i,type,mass,width);
+    
+    msg.Debugging()<<i<<" : "<<type<<"/"<<mass<<"/"<<width<<endl;
+    if (AMATOOLS::IsZero(mass) || AMATOOLS::IsZero(width)) continue;
+    if ((type == 0) || (type == 3))                        continue;
+
+    ci.type = type;
+    (ci.parameters).push_back(mass);
+    (ci.parameters).push_back(width);
+    if ((psflavs[0].IsLepton()) || (psflavs[1].IsLepton())) (ci.parameters).push_back(1.);
+                                                       else (ci.parameters).push_back(.5);
+    (ci.parameters).push_back(deltay[0]);
+    (ci.parameters).push_back(deltay[1]);
+
+    addit = 1;
+    for (int j=0;j<isr_params.size();j++) {
+      if (isr_params[j]==ci) { addit = 0; break; }
+    }
+    if (addit) isr_params.push_back(ci);
+    ci.parameters.clear();
+  }
+
+  msg.Debugging()<<" create "<<3*isr_params.size()<<" ISR channels."<<endl;
+  return CreateISRChannels();
+}
+
+bool Phase_Space_Handler::CreateBeamChannels()
+{
+  if (beam_params.size() < 1) return 0;
+
+  Single_Channel * channel;   
+
+  for (int i=0;i<beam_params.size();i++) {
+    if ((beam_params[i]).type==0) {
+      channel = new SimplePoleUniform(beam_params[i].parameters[0],
+				      beam_params[i].parameters[2],
+				      beam_params[i].parameters[3]);
+      beamchannels->Add(channel);
+      channel = new SimplePoleForward(beam_params[i].parameters[0],
+				      beam_params[i].parameters[1],
+				      beam_params[i].parameters[2],
+				      beam_params[i].parameters[3]);
+      beamchannels->Add(channel);
+      channel = new SimplePoleBackward(beam_params[i].parameters[0],
+				       beam_params[i].parameters[1],
+				       beam_params[i].parameters[2],
+				       beam_params[i].parameters[3]);
+      beamchannels->Add(channel);
+    } 
+    if ((beam_params[i]).type==3) {
+      if ((psflavs[0].IsPhoton()) || (psflavs[1].IsPhoton())) {
+	  channel = new LBSComptonPeakUniform(beam_params[i].parameters[0],
+					      beam_params[i].parameters[1],
+					      beam_params[i].parameters[2],
+					      beam_params[i].parameters[3]);
+	  beamchannels->Add(channel);
+	  channel = new LBSComptonPeakForward(beam_params[i].parameters[0],
+					      beam_params[i].parameters[1],
+					      beam_params[i].parameters[2],
+					      beam_params[i].parameters[3],
+					      beam_params[i].parameters[4]);
+	  beamchannels->Add(channel);
+	  channel = new LBSComptonPeakBackward(beam_params[i].parameters[0],
+					       beam_params[i].parameters[1],
+					       beam_params[i].parameters[2],
+					       beam_params[i].parameters[3],
+					       beam_params[i].parameters[4]);
+	  beamchannels->Add(channel);
+      }
+    }
+  }
+  return 1;
+}
+
+
+bool Phase_Space_Handler::CreateISRChannels()
+{
+  if (isr_params.size() < 1) return 0;
+
+  Single_Channel * channel;   
+
+  int length = isr_params.size();
+
+  for (int i=0;i<length;i++) {
+    if ((isr_params[i]).type==0) {
+      // Maybe set also the exponent of the y - integral ???
+      channel = new SimplePoleUniform(isr_params[i].parameters[0],
+				      isr_params[i].parameters[2],
+				      isr_params[i].parameters[3]);
+      isrchannels->Add(channel);
+      channel = new SimplePoleForward(isr_params[i].parameters[0],
+				      isr_params[i].parameters[1],
+				      isr_params[i].parameters[2],
+				      isr_params[i].parameters[3]);
+      isrchannels->Add(channel);
+      channel = new SimplePoleBackward(isr_params[i].parameters[0],
+				       isr_params[i].parameters[1],
+				       isr_params[i].parameters[2],
+				       isr_params[i].parameters[3]);
+      isrchannels->Add(channel);
+    } 
+    if ((isr_params[i]).type==1) {
+      channel = new ResonanceUniform(isr_params[i].parameters[0],
+				     isr_params[i].parameters[1],
+				     isr_params[i].parameters[3],
+				     isr_params[i].parameters[4]);
+      isrchannels->Add(channel);
+      channel = new ResonanceForward(isr_params[i].parameters[0],
+				     isr_params[i].parameters[1],
+				     isr_params[i].parameters[2],
+				     isr_params[i].parameters[3],
+				     isr_params[i].parameters[4]);
+      isrchannels->Add(channel);
+      channel = new ResonanceBackward(isr_params[i].parameters[0],
+				      isr_params[i].parameters[1],
+				      isr_params[i].parameters[2],
+				      isr_params[i].parameters[3],
+				      isr_params[i].parameters[4]);
+      isrchannels->Add(channel);
+    }
+    if (isr_params[i].type==3) {
+      channel = new LLUniform(isr_params[i].parameters[0],
+			      isr_params[i].parameters[2],
+			      isr_params[i].parameters[3]);
+      isrchannels->Add(channel);
+      channel = new LLForward(isr_params[i].parameters[0],
+			      isr_params[i].parameters[1],
+			      isr_params[i].parameters[2],
+			      isr_params[i].parameters[3]);
+      isrchannels->Add(channel);
+      channel = new LLBackward(isr_params[i].parameters[0],
+			       isr_params[i].parameters[1],
+			       isr_params[i].parameters[2],
+			       isr_params[i].parameters[3]);
+      isrchannels->Add(channel);
+    }
+  }
+  return 1;
+}
+

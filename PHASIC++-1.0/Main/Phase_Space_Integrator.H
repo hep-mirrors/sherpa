@@ -2,7 +2,6 @@
 #define Phase_Space_Integrator_h
 
 namespace PHASIC {class Phase_Space_Handler;}
-//#include "Phase_Space_Handler.H"
 
 namespace PHASIC {
   /*!

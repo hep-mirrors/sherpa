@@ -199,7 +199,6 @@ void Multi_Channel::Optimize(double error)
 
 void Multi_Channel::EndOptimize(double error)
 {
-
   short int i;
 
 #ifndef _USE_MPI_
@@ -502,16 +501,4 @@ bool Multi_Channel::ReadIn(std::string pID) {
   }
   ifile.close();
   return 1;
-}
-
-
-void Multi_Channel::SetRange(double * sprimerange,double * yrange) 
-{
-  for (int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
-}
-
-void Multi_Channel::GetRange() 
-{
-  AORGTOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
-  for (int i=0;i<channels.size();i++) channels[i]->GetRange();
 }

@@ -21,6 +21,9 @@ namespace PHASIC {
     bool operator!=(const Channel_Info & ci) { return (!(operator==(ci))); }
   };
 
+  typedef std::vector<PHASIC::Channel_Info> channelinfos;
+
+
   /*!
     This is the Multi_Channel, AMEGICs preferred integration
     tool. The idea is to have a vector of Single_Channels
@@ -48,7 +51,6 @@ namespace PHASIC {
 
     double                        rans[2];
     double                        s1xmin, * s1, * s2;
-    
     std::vector<Single_Channel *> channels;
   public:
     Multi_Channel(std::string);
@@ -134,8 +136,13 @@ namespace PHASIC {
     /*!
       This is used for ISR Channels to set the y and s' range.
     */
-    void SetRange(double * sprimerange,double * yrange);
-    void GetRange();
+    void SetRange(double * sprimerange,double * yrange) {
+      for (int i=0;i<channels.size();i++) channels[i]->SetRange(sprimerange,yrange);
+    };
+    void GetRange() {
+      AORGTOOLS::msg.Debugging()<<"Multi_Channel::GetRange() : "<<name<<std::endl;
+      for (int i=0;i<channels.size();i++) channels[i]->GetRange();
+    }
     void WriteOut(std::string);
     bool ReadIn(std::string);
 
