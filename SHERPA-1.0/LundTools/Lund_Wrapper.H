@@ -1,9 +1,7 @@
 #ifndef Lund_Wrapper_H
 #define Lund_Wrapper_H
 
-#ifndef NO_EXPORT__AlphaS
 #include "Running_AlphaS.H"
-#endif
 #include "Lund_Interface.H"
 
 using namespace SHERPA;
@@ -19,13 +17,9 @@ extern "C" {
   void pyplst_();
   void pymult_(int*);
   double pyalp_(double*);
-#ifndef NO_EXPORT__AlphaS
   double shalps_(double*);
-#endif
   void pypdpr_(double*,double*,double*);
-#ifndef NO_EXPORT__PDF
   void shpdpr_(double*,double*,double*);
-#endif
   void sherrm_(int*);
 }
 
@@ -61,14 +55,11 @@ void pymult(int mmul) {
   pymult_(&mmul);
 }
 
-#ifndef NO_EXPORT__AlphaS
 double shalps_(double *q2) {
   if (Lund_Interface::ExportAS()) return (*MODEL::as)(*q2);
   return pyalp_(q2);
 }
-#endif
 
-#ifndef NO_EXPORT__PDF
 void shpdpr_(double *x,double *q2,double *xppr) {
   if (Lund_Interface::ExportPDF()) {
     for (int i=0;i<=10;++i) {
@@ -85,7 +76,6 @@ void shpdpr_(double *x,double *q2,double *xppr) {
     pypdpr_(x,q2,xppr);
   }
 }
-#endif
 
 void sherrm_(int *error) {
   SHERPA::Lund_Interface::Error(*error);

@@ -7,9 +7,7 @@
 #include "Run_Parameter.H"
 #include "Message.H"
 #include "Exception.H"
-#ifndef NO_EXPORT__AlphaS
 #include "Running_AlphaS.H"
-#endif
 #include "Scaling.H"
 
 using namespace SHERPA;
