@@ -183,11 +183,6 @@ bool XS_Group::CalculateTotalXSec(const std::string &resultpath)
 	if (p_pshandler->KMRKPIntegrator() != 0) p_pshandler->KMRKPIntegrator()->Print();
 	if (p_pshandler->FSRIntegrator() != 0) p_pshandler->FSRIntegrator()->Print();
 	p_pshandler->InitIncoming();
-	if (m_totalxs>0.) {
-	  ATOOLS::msg.Tracking()<<"XS_Group::CalculateTotalXSec("<<resultpath<<"): '"
-				<<m_name<<"'"<<std::endl<<"   Read all xsecs."<<std::endl;
-	  return true;
-	}
       }
     }
     m_resultpath=resultpath;
@@ -229,6 +224,7 @@ void XS_Group::Terminate()
   std::ofstream to;
   to.open(m_resultfile.c_str(),std::ios::out);
   to.precision(12);
+  ATOOLS::msg.Events()<<"Store result to "<<m_resultpath<<std::endl;
   ATOOLS::msg.Events()<<"Store result : xs for "<<m_name<<" : ";
   WriteOutXSecs(to);
   if (m_nin==2) ATOOLS::msg.Events()<<m_totalxs*ATOOLS::rpa.Picobarn()<<" pb";
