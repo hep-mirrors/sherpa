@@ -13,7 +13,7 @@ Leading_Log_Z_QQ::Leading_Log_Z_QQ(const double beta,const double cut,
   m_beta(beta),
   m_cut(cut)
 {
-  std::string help=ATOOLS::ToString(beta)+ATOOLS::ToString(cut);
+  std::string help=ATOOLS::ToString(beta)+std::string("_")+ATOOLS::ToString(cut);
   name=std::string("Leading_Log_Z_QQ_")+help;
   m_zkey[0].SetInfo(std::string("Leading_Log_Z_Q_")+help);
   m_zkey[1].SetInfo(std::string("Leading_Log_Z_Q_")+help);
@@ -63,7 +63,7 @@ Leading_Log_Z_QG::Leading_Log_Z_QG(const double beta,const double cut,
   m_beta(beta),
   m_cut(cut)
 {
-  std::string help=ATOOLS::ToString(beta)+ATOOLS::ToString(cut);
+  std::string help=ATOOLS::ToString(beta)+std::string("_")+ATOOLS::ToString(cut);
   name=std::string("Leading_Log_Z_QG_")+help;
   m_zkey[0].SetInfo(std::string("Leading_Log_Z_Q_")+help);
   m_zkey[1].SetInfo(std::string("Leading_Log_Z_G_")+help);
@@ -119,7 +119,7 @@ Leading_Log_Z_GQ::Leading_Log_Z_GQ(const double beta,const double cut,
   m_beta(beta),
   m_cut(cut)
 {
-  std::string help=ATOOLS::ToString(beta)+ATOOLS::ToString(cut);
+  std::string help=ATOOLS::ToString(beta)+std::string("_")+ATOOLS::ToString(cut);
   name=std::string("Leading_Log_Z_GQ_")+help;
   m_zkey[0].SetInfo(std::string("Leading_Log_Z_G_")+help);
   m_zkey[1].SetInfo(std::string("Leading_Log_Z_Q_")+help);
@@ -175,7 +175,7 @@ Leading_Log_Z_GG::Leading_Log_Z_GG(const double beta,const double cut,
   m_beta(beta),
   m_cut(cut)
 {
-  std::string help=ATOOLS::ToString(beta)+ATOOLS::ToString(cut);
+  std::string help=ATOOLS::ToString(beta)+std::string("_")+ATOOLS::ToString(cut);
   name=std::string("Leading_Log_Z_GG_")+help;
   m_zkey[0].SetInfo(std::string("Leading_Log_Z_G_")+help);
   m_zkey[1].SetInfo(std::string("Leading_Log_Z_G_")+help);
