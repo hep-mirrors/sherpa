@@ -16,6 +16,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1_f1f1>(const size_t nin,const size_t nou
 					       const ATOOLS::Flavour *flavours,
 					       const size_t nqed, const size_t nqcd)
 {
+  //  std::cout<<"XS_f1f1_f1f1 Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   if (flavours[0]!=flavours[1] || 
       flavours[0]!=flavours[2] || flavours[0]!=flavours[3])  return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
@@ -122,7 +123,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f1f1b>(const size_t nin,const size_t n
 						 const ATOOLS::Flavour *flavours,
 						 const size_t nqed, const size_t nqcd)
 {
-  //std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  //  std::cout<<"XS_f1f1b_f1f1b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   if (flavours[0]!=flavours[1].Bar() || 
       flavours[0]!=flavours[2] || flavours[1]!=flavours[3])  return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
@@ -242,10 +243,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 						 const ATOOLS::Flavour *flavours,
 						 const size_t nqed, const size_t nqcd)
 {
-  //std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  //  std::cout<<"XS_f1f1b_f2f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<"\n";
   int  kfc1  = abs(flavours[0].Kfcode()), kfc2  = abs(flavours[2].Kfcode());
   if (flavours[0]!=flavours[1].Bar() || 
-      flavours[0]!=flavours[2] || flavours[0]==flavours[3] || 
+      flavours[0]==flavours[2] || flavours[0]==flavours[3] || 
       flavours[2]!=flavours[3].Bar())                        return NULL;
   if (!flavours[0].IsFermion() || !flavours[2].IsFermion())  return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
@@ -258,7 +259,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f1b_f2f2b>(const size_t nin,const size_t n
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc2/2,kfc1/2-1))>0) ||
 	(kfc1/2!=kfc1/2. && kfc2/2==kfc2/2. && 
 	 abs(rpa.gen.ComplexMatrixElement(string("CKM"),kfc1/2,kfc2/2-1))>0))) ||
-      ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f1b_f2f2b(nin,nout,flavours); 
+        ATOOLS::Flavour(ATOOLS::kf::Z).IsOn() )                return new XS_f1f1b_f2f2b(nin,nout,flavours); 
   //   std::cout<<"Checks "<<ATOOLS::Flavour(ATOOLS::kf::W).IsOn()<<" "
   // 	   <<(flavours[0].IsQuark() && flavours[1].IsQuark())<<" "
   // 	   <<kfc1<<" "<<kfc2<<" "
@@ -389,10 +390,10 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f1f2>(const size_t nin,const size_t nou
 					       const ATOOLS::Flavour *flavours,
 					       const size_t nqed, const size_t nqcd)
 {
-  //std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  //  std::cout<<"XS_f1f2_f1f2 Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   int kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  if (!(flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
-      !(flavours[0]==flavours[3] && flavours[1]==flavours[2]) || 
+  if (!((flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
+	(flavours[0]==flavours[3] && flavours[1]==flavours[2])) || 
       (flavours[0].IsAnti() && !flavours[1].IsAnti()) ||
       (!flavours[0].IsAnti() && flavours[1].IsAnti()))       return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
@@ -552,9 +553,9 @@ Single_XS *Single_XS::GetProcess<XS_f1f2b_f1f2b>(const size_t nin,const size_t n
 						 const size_t nqed, const size_t nqcd)
 {
   int kfc1 = flavours[0].Kfcode(), kfc2 = flavours[1].Kfcode();
-  //std::cout<<"Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
-  if (!(flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
-      !(flavours[0]==flavours[3] && flavours[1]==flavours[2]) || 
+  //  std::cout<<"XS_f1f2b_f1f2b Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
+  if (!((flavours[0]==flavours[2] && flavours[1]==flavours[3]) || 
+	(flavours[0]==flavours[3] && flavours[1]==flavours[2])) || 
       (flavours[0].IsAnti() && flavours[1].IsAnti()) ||
       (!flavours[0].IsAnti() && !flavours[1].IsAnti()))      return NULL;
   if (ATOOLS::rpa.gen.Model()==ATOOLS::Model_Type::pure_QCD) return NULL;
@@ -693,6 +694,7 @@ Single_XS *Single_XS::GetProcess<XS_f1f2_f3f4>(const size_t nin,const size_t nou
 					       const ATOOLS::Flavour *flavours,
 					       const size_t nqed, const size_t nqcd)
 {
+  //  std::cout<<"XS_f1f2_f3f4 Test this : "<<flavours[0]<<" "<<flavours[1]<<" "<<flavours[2]<<" "<<flavours[3]<<std::endl;
   int kfc1 = abs(flavours[0].Kfcode()), kfc2 = abs(flavours[1].Kfcode());
   int kfc3 = abs(flavours[2].Kfcode()), kfc4 = abs(flavours[3].Kfcode());
   if (!(((flavours[0].IsUptype() && flavours[1].IsDowntype()) ||
