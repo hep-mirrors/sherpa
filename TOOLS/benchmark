@@ -179,6 +179,7 @@ for I in $LIST ; do
     done 
     if (( $? != 0 )) ; then
       RUNTIME_ERROR=TRUE
+      CURRENT_BENCHMARK_ERROR=TRUE
     fi
     COUNTER=0
     for I in $BENCHMARK ; do
