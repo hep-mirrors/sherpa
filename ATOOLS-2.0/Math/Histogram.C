@@ -126,7 +126,11 @@ void Histogram::Finalize() {
   double total = 0;
   for (int i=0;i<m_nbin;i++) { 
     //    total += m_bins[i][0]; 
-    total += m_bins[i][0]/=m_fills; 
+    if (!m_logarithmic)
+      m_bins[i][0]/=(m_fills*m_binsize);
+    else
+      m_bins[i][0]/=m_fills;
+    total += m_bins[i][0];
   }
 }
 
