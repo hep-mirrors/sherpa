@@ -170,6 +170,7 @@ double XS_Base::CalculateScale(const ATOOLS::Vec4D *momenta)
     if (operator[](0)->p_regulator->Type()!=p_regulator->Type()) 
       return (*operator[](0)->p_regulator)[m_scale[PHASIC::stp::as]]; 
   }
+  m_scale[PHASIC::stp::fac]=m_scale[PHASIC::stp::as];
   return (*p_regulator)[m_scale[PHASIC::stp::as]];
 }
 
