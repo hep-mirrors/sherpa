@@ -124,8 +124,8 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
     particle = new ATOOLS::Particle(m_particlecounter++,
 				    p_blob->InParticle(i)->Flav(),
 				    p_blob->InParticle(i)->Momentum());
-    int index=particle->Flav().IsAnti()+1;
-    particle->GetFlow()->SetCode(index,p_blob->InParticle(i)->GetFlow()->Code(index));
+    particle->SetFlow(1,p_blob->InParticle(i)->GetFlow(1));
+    particle->SetFlow(2,p_blob->InParticle(i)->GetFlow(2));
     particle->SetStatus(1);
     blob->AddToInParticles(particle);
   }
@@ -133,8 +133,8 @@ bool MI_Base::CreateBlob(ATOOLS::Blob *blob)
     particle = new ATOOLS::Particle(m_particlecounter++,
 				    p_blob->OutParticle(i)->Flav(),
 				    p_blob->OutParticle(i)->Momentum());
-    int index=particle->Flav().IsAnti()+1;
-    particle->GetFlow()->SetCode(index,p_blob->OutParticle(i)->GetFlow()->Code(index));
+    particle->SetFlow(1,p_blob->OutParticle(i)->GetFlow(1));
+    particle->SetFlow(2,p_blob->OutParticle(i)->GetFlow(2));
     particle->SetStatus(1);
     blob->AddToOutParticles(particle);
   }

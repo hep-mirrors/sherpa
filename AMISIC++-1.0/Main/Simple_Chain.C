@@ -579,12 +579,15 @@ bool Simple_Chain::Initialize()
   if (!CheckInputPath()) return false;
   if (!CheckInputFile()) return false;
   CleanUp();
+  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   if (!m_external) {
+    std::string initfile;
     ATOOLS::ParticleInit(m_inputpath);
-    ATOOLS::rpa.Init(m_inputpath);
+    reader->SetFileName(m_inputpath+m_inputfile);
+    if (!reader->ReadFromFile(initfile,"ENVIRONMENT")) initfile=std::string("Run.dat");
+    ATOOLS::rpa.Init(m_inputpath,initfile);
   }
   if (!ReadInData()) return false;
-  ATOOLS::Data_Reader *reader = new ATOOLS::Data_Reader("=",";","!");
   reader->SetFileName(m_inputpath+m_environmentfile);
   if (!reader->ReadFromFile(m_xsfile,"XS_FILE")) m_xsfile=std::string("XS.dat");
   delete reader;
@@ -672,24 +675,23 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
     if ((*p_processes)[m_selected]->OneEvent()) {
       p_xs=(*p_processes)[m_selected]->Selected();
       ATOOLS::Vec4D ptot;
-      for (int j=0;j<p_xs->Nin();++j) {
-	ptot+=p_xs->Momenta()[j];
-      }
+      for (int j=0;j<p_xs->Nin();++j) ptot+=p_xs->Momenta()[j];
       m_last[1]-=sqrt(ptot.Abs2());
+      p_xs->SetColours(p_xs->Momenta());
       ATOOLS::Particle *particle;
       for (int j=0;j<p_xs->Nin();++j) {
 	particle = new ATOOLS::Particle(0,p_xs->Flavs()[j]);
 	particle->SetMomentum(p_xs->Momenta()[j]);
- 	particle->GetFlow()->SetCode(particle->Flav().IsAnti()+1,
-				     p_xs->Colours()[j][particle->Flav().IsAnti()]);
+ 	particle->SetFlow(1,p_xs->Colours()[j][0]);
+ 	particle->SetFlow(2,p_xs->Colours()[j][1]);
 	particle->SetStatus(1);
 	blob->AddToInParticles(particle);
       }
       for (int j=0;j<p_xs->Nout();++j) {
 	particle = new ATOOLS::Particle(0,p_xs->Flavs()[p_xs->Nin()+j]);
 	particle->SetMomentum(p_xs->Momenta()[p_xs->Nin()+j]);
- 	particle->GetFlow()->SetCode(particle->Flav().IsAnti()+1,
-				     p_xs->Colours()[j][particle->Flav().IsAnti()]);
+ 	particle->SetFlow(1,p_xs->Colours()[p_xs->Nin()+j][0]);
+ 	particle->SetFlow(2,p_xs->Colours()[p_xs->Nin()+j][1]);
 	particle->SetStatus(1);
 	blob->AddToOutParticles(particle);
       }
