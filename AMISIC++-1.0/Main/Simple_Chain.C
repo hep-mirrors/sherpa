@@ -462,7 +462,7 @@ bool Simple_Chain::CalculateTotal()
   yaxis->SetVariable(refy->Variable());
   xaxis->SetScaling(refx->Scaling()->Name());
   yaxis->SetScaling(refy->Scaling()->Name());
-  p_differential->Initialize(ref->XMin(),ref->XMax(),ref->NBins()-2);
+  p_differential->Initialize(ref->XMin(),ref->XMax(),ref->NBins());
   for (Process_Map::iterator pit=m_processmap.begin();
        pit!=m_processmap.end();++pit) {
     Amisic_Histogram_Map::iterator diffit;
@@ -655,9 +655,9 @@ bool Simple_Chain::FillBlob(ATOOLS::Blob *blob)
 	}
       }
       else {
-	if (m_last[j+2]<=x[j]) test=false;
+	if (m_last[j+2]<=x[j]+.01) test=false;
 	// default: need 1 GeV per process and beam to adjust remnants
-	xrem[1]=xrem[0]=1.;
+	xrem[1]=xrem[0]=1./m_ecms;
       }
     }
     if (!test) {
