@@ -30,9 +30,13 @@ namespace SHERPA {
       if (p_moms) { delete p_moms; p_moms = NULL; }
     }
     virtual bool DefineInitialConditions(ATOOLS::Blob *) = 0;
-    virtual bool FillBlobs(ATOOLS::Blob_List *) = 0; 
-    double GetWeight() { return m_weight; }
+    virtual bool FillBlobs(ATOOLS::Blob_List *)          = 0; 
+    double                   GetWeight()    { return m_weight; }
+    Matrix_Element_Handler * GetMEHandler() { return p_me; }
   };
+
+  typedef std::map<std::string,Perturbative_Interface *> PertInterfaceMap;
+  typedef PertInterfaceMap::iterator                     PertInterfaceIter;
 
   /*!
     \class Perturbative_Interface

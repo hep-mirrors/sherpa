@@ -28,7 +28,9 @@ namespace SHERPA {
 		   PDF::ISR_Handler *,int);
     ~Shower_Handler();
     int             PerformShowers(bool,double,double);
+    int             PerformDecayShowers(bool);
     void            FillBlobs(ATOOLS::Blob_List *);
+    void            FillDecayBlobs(ATOOLS::Blob_List *);
     void            CleanUp();
     std::string     ShowerGenerator() { return m_showergenerator; }
     bool            ISROn()           { return m_isrshowerswitch; }

@@ -3,15 +3,17 @@
 
 #include "Event_Phase_Handler.H"
 #include "Matrix_Element_Handler.H"
+#include "Hard_Decay_Handler.H"
 #include "Sample_Analysis.H"
 
 namespace SHERPA {
   class Signal_Processes : public Event_Phase_Handler {
   private :
     Matrix_Element_Handler * p_mehandler;
+    Hard_Decay_Handler     * p_hdhandler;
     void FillBlob(ATOOLS::Blob *);
   public :
-    Signal_Processes(Matrix_Element_Handler *);
+    Signal_Processes(Matrix_Element_Handler *,Hard_Decay_Handler * = NULL);
     ~Signal_Processes();
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();

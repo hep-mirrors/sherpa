@@ -68,6 +68,7 @@ Particle::Particle(const Particle * in)  {
   m_fl        = in->m_fl;
   m_momentum  = in->m_momentum;
   m_dec_time  = in->m_dec_time;
+  m_finalmass = in->m_finalmass;
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
   p_flow      = new Flow(this);
@@ -90,6 +91,7 @@ Particle& Particle::operator=(const Particle & in)
     m_fl        = in.m_fl;
     m_momentum  = in.m_momentum;
     m_dec_time  = in.m_dec_time;
+    m_finalmass = in.m_finalmass;
     p_startblob = in.p_startblob;
     p_endblob   = in.p_endblob;
     if (p_flow) delete p_flow;
@@ -109,6 +111,7 @@ Particle::Particle(int number,Flavour fl,Vec4D p)  {
   m_fl        = fl;
   m_momentum  = p;
   m_dec_time  = 0.;
+  m_finalmass = 0.;
   p_startblob = 0;
   p_endblob   = 0;
   p_flow      = new Flow(this);
@@ -121,6 +124,7 @@ void Particle::Copy(Particle * in)  {
   m_fl        = in->m_fl;
   m_momentum  = in->m_momentum;
   m_dec_time  = in->m_dec_time;
+  m_finalmass = in->m_finalmass;
   p_startblob = in->p_startblob;
   p_endblob   = in->p_endblob;
   if (!p_flow)  p_flow  = new Flow(this);
@@ -158,9 +162,10 @@ double Particle::LifeTime() {
   return gamma * t;      
 }
 
-Vec3D Particle::Distance() {
+Vec3D Particle::Distance(double _lifetime) {
   Vec3D v = Vec3D(m_momentum)/E()*rpa.c();
-  return v*LifeTime();
+  if (_lifetime<0.) _lifetime = LifeTime();
+  return v*_lifetime;
 }
 
 // Numbers etc.
@@ -178,6 +183,7 @@ void   Particle::SetInfo(char info)               { m_info = info; }
   // Momentum, energy, and lifetime
 Vec4D  Particle::Momentum() const                 { return m_momentum; }
 double Particle::E()                              { return m_momentum[0];}
+double Particle::FinalMass()                      { return m_finalmass; }
 void   Particle::SetMomentum(const Vec4D & vec4 ) { m_momentum = vec4; } 
 double Particle::Time() const                     { return m_dec_time; }
 void   Particle::SetTime(const int t)             { m_dec_time = t; }
@@ -193,15 +199,35 @@ void   Particle::SetDecayBlob(Blob * _blob)       { p_endblob = _blob; }
 
 // Flavour and flow
 Flavour   Particle::Flav() const                     { return m_fl; }
-void      Particle::SetFlav(Flavour & fl) { m_fl      = fl; }
+void      Particle::SetFlav(Flavour & fl)            { m_fl   = fl; }
 Flow    * Particle::GetFlow() const                  { return p_flow; }
 int       Particle::GetFlow(const int index) const   { return p_flow->Code(index); }
-void      Particle::SetFlow(Flow * _flow)            { p_flow    = _flow; }
+void      Particle::SetFlow(Flow * _flow)            { p_flow = _flow; }
 void      Particle::SetFlow(const int index, const int code) {
   if ((!m_fl.IsDiQuark()) && (!m_fl.Strong())) return;
   p_flow->SetCode(index,code);
 }
 
+void   Particle::SetFinalMass(const double _lower,const double _upper) {
+  if (_upper<0.) {
+    m_finalmass = _lower;
+    return;
+  }
+  double mass2  = m_fl.Mass()*m_fl.Mass();
+  double mw     = m_fl.Mass()*m_fl.Width();
+  double low2   = _lower*_lower;
+  double up2    = _upper*_upper;
+  double range  = up2-low2;
+  double yup    = (up2-mass2)/mw;
+  double ylow   = (low2-mass2)/mw;
+  double ymin   = atan(ylow);
+  double yrange = atan(range/(mw*(1.+ylow*yup)));
+  if (ylow*yup<-1.) {
+    if (yup>0) yrange = yrange + M_PI;
+    if (yup<0) yrange = yrange - M_PI;
+  }     
+  m_finalmass = sqrt(mass2+mw*tan(ran.Get()*yrange + ymin));
+}
 
 
 void Particle2MPI(const Particle * p , MPI_Particle & mpi_p) {

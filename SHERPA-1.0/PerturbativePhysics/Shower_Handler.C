@@ -20,8 +20,8 @@ Shower_Handler::Shower_Handler(std::string _dir,std::string _file,
   m_fsrshowerswitch = p_dataread->GetValue<int>("FSR_SHOWER",1);
   
   if (m_showergenerator==std::string("Apacic")) {
-    p_apacic = new APACIC::Hard_Interface(_isr,_model,
-					  m_maxjetnumber,m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
+    p_apacic = new APACIC::Hard_Interface(_isr,_model,m_maxjetnumber,
+					  m_isrshowerswitch,m_fsrshowerswitch,p_dataread);
   }
   else {
     msg.Error()<<"Error in Shower_Handler::ReadInFile()."<<std::endl
@@ -46,10 +46,25 @@ int Shower_Handler::PerformShowers(bool jetveto,double _x1,double _x2) {
   return 0;
 }
 
+int Shower_Handler::PerformDecayShowers(bool jetveto) {
+  if (p_apacic) return p_apacic->PerformShowers(0,m_fsrshowerswitch,jetveto,1.,1.);
+  return 0;
+}
+
 void Shower_Handler::FillBlobs(ATOOLS::Blob_List * _bloblist) 
 {
   if (p_apacic) {
     if (!(p_apacic->ExtractPartons(m_isrshowerswitch,m_fsrshowerswitch,_bloblist))) {
+      msg.Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
+		 <<"   Did not succeed to fill bloblist any further."<<std::endl;
+    }
+  }
+}
+
+void Shower_Handler::FillDecayBlobs(ATOOLS::Blob_List * _bloblist) 
+{
+  if (p_apacic) {
+    if (!(p_apacic->ExtractPartons(0,m_fsrshowerswitch,_bloblist))) {
       msg.Error()<<"Error in Shower_Handler::FillBlobs()."<<std::endl
 		 <<"   Did not succeed to fill bloblist any further."<<std::endl;
     }

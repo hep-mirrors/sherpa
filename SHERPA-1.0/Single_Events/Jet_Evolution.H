@@ -3,6 +3,7 @@
 
 #include "Event_Phase_Handler.H"
 #include "Matrix_Element_Handler.H"
+#include "Hard_Decay_Handler.H"
 #include "Shower_Handler.H"
 #include "Perturbative_Interface.H"
 
@@ -11,9 +12,11 @@ namespace SHERPA {
   private :
     Matrix_Element_Handler * p_mehandler;
     Shower_Handler         * p_showerhandler;
-    Perturbative_Interface * p_interface;
+    PertInterfaceMap         m_interfaces;
+
+    bool AttachShowers(ATOOLS::Blob *,ATOOLS::Blob_List *,Perturbative_Interface *);
   public :
-    Jet_Evolution(Matrix_Element_Handler *,Shower_Handler *);
+    Jet_Evolution(MEHandlersMap *,Shower_Handler *);
     ~Jet_Evolution();
     bool Treat(ATOOLS::Blob_List *, double &);
     void CleanUp();

@@ -887,14 +887,15 @@ double Single_Process::DSigma(ATOOLS::Vec4D* _moms,bool lookup)
     if (_moms[i][0] < p_fl[i].PSMass()) return m_last = 0.;
   }
   if (m_lastdxs <= 0.)                  return m_lastdxs = m_last = 0.;
-  if (m_nin==2) m_lastlumi = p_isr->Weight(p_flin);
-          else  m_lastlumi = 1.;
-
-  int    pols[2]={p_pl[0].type[0],p_pl[1].type[0]};
-  double dofs[2]={p_pl[0].factor[0],p_pl[1].factor[0]};
-  if (p_pl[0].num>1) pols[0]=99;
-  if (p_pl[1].num>1) pols[1]=99;
-  m_lastlumi*= p_beam->Weight(pols,dofs);
+  if (m_nin==2) {
+    m_lastlumi = p_isr->Weight(p_flin);
+    int    pols[2] = {p_pl[0].type[0],p_pl[1].type[0]};
+    double dofs[2] = {p_pl[0].factor[0],p_pl[1].factor[0]};
+    if (p_pl[0].num>1) pols[0] = 99;
+    if (p_pl[1].num>1) pols[1] = 99;
+    m_lastlumi *= p_beam->Weight(pols,dofs);
+  }
+  else  m_lastlumi = 1.;
 
   return m_last = m_Norm * m_lastdxs * m_lastlumi;
 }
@@ -948,10 +949,10 @@ double Single_Process::operator()(ATOOLS::Vec4D * mom)
 }
 
 
-bool   Single_Process::OneEvent()          { return (p_ps->OneEvent()); }
-bool   Single_Process::SameEvent()         { return (p_ps->SameEvent()); }
-double Single_Process::WeightedEvent()     { return (p_ps->WeightedEvent()); }
-double Single_Process::SameWeightedEvent() { return (p_ps->SameWeightedEvent()); }
+bool   Single_Process::OneEvent(double _mass) { return (p_ps->OneEvent(_mass)); }
+bool   Single_Process::SameEvent()            { return (p_ps->SameEvent()); }
+double Single_Process::WeightedEvent()        { return (p_ps->WeightedEvent()); }
+double Single_Process::SameWeightedEvent()    { return (p_ps->SameWeightedEvent()); }
 
 
 

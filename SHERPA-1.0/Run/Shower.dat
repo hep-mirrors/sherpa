@@ -2,7 +2,7 @@
 !-- Parton showers -------------------------------------
 !-------------------------------------------------------
 SHOWER_GENERATOR  = Apacic   !  
-FSR_SHOWER        = 1        !  1=On,0=Off
+FSR_SHOWER        = 0        !  1=On,0=Off
 ISR_SHOWER        = 0        !  1=On,0=Off
 !
 IS PT2MIN         = 4.       !  

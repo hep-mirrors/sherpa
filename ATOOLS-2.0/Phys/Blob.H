@@ -29,17 +29,19 @@ namespace ATOOLS {
     Vec4D     m_cms_vec;
     Poincare  m_cms_boost;
   public:
-    Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=0) : 
+    Blob(const Vec4D _pos = Vec4D(0.,0.,0.,0.), const int _id=-1) : 
       m_position(_pos), m_id(_id), m_weight(1.) { m_beam = -1; m_status = 0; };
     ~Blob();
     void     AddToInParticles(Particle *);
     void     AddToOutParticles(Particle *);
+    Particle_Queue GetOutParticles() { return m_outparticles; }
+    Particle_Queue GetInParticles()  { return m_inparticles;  }
     Particle * OutParticle(int);
     Particle * InParticle(int);
-    Particle * RemoveInParticle(int);
-    Particle * RemoveInParticle(Particle *);
-    Particle * RemoveOutParticle(int);
-    Particle * RemoveOutParticle(Particle *);
+    Particle * RemoveInParticle(int,bool = true);
+    Particle * RemoveInParticle(Particle *,bool = true);
+    Particle * RemoveOutParticle(int,bool = true);
+    Particle * RemoveOutParticle(Particle *,bool = true);
     void     DeleteInParticle(Particle *);
     void     DeleteOutParticle(Particle *);
     void     RemoveOwnedParticles();

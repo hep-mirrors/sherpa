@@ -12,15 +12,37 @@ using namespace std;
 
 Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
 					       MODEL::Model_Base * _model,
+					       Matrix_Element_Handler * _me) :
+  m_dir(_dir), m_file(_file), p_simplexs(NULL), p_amegic(NULL),
+  p_isr(NULL), m_mode(0), m_weight(1.), m_eventmode(1)
+{
+  if (_me) p_amegic = _me->GetAmegic(); 
+  m_mode      = InitializeAmegic(_model,NULL,NULL);
+  msg.Debugging()<<"Run Matrix_Element_Handler in mode :"<<m_mode
+		 <<" and event generation mode : "<<m_eventmode<<endl;
+  if (m_mode>0) return;
+
+  msg.Error()<<"Error in Matrix_Element_Handler::Matrix_Element_Handler."<<endl
+	     <<"   Failed to initialize "<<m_signalgenerator<<" for hard interactions."<<endl
+	     <<"   will abort the run."<<endl;
+  abort();
+}
+
+Matrix_Element_Handler::Matrix_Element_Handler(std::string _dir,std::string _file,
+					       MODEL::Model_Base * _model,
 					       BEAM::Beam_Spectra_Handler * _beam,
 					       PDF::ISR_Handler * _isr,
-					       AMEGIC::Amegic * _amegic) :
-  m_dir(_dir), m_file(_file), p_amegic(_amegic), p_simplexs(NULL), p_isr(_isr), m_mode(0), m_weight(1.)
+					       Matrix_Element_Handler * _me) :
+  m_dir(_dir), m_file(_file), p_simplexs(NULL), p_amegic(NULL),
+  p_isr(_isr), m_mode(0), m_weight(1.)
 {
-  p_dataread = new Data_Read(m_dir+m_file);
+  p_dataread        = new Data_Read(m_dir+m_file);
   m_signalgenerator = p_dataread->GetValue<string>("ME_SIGNAL_GENERATOR",std::string("Amegic"));
   m_sudakovon       = p_dataread->GetValue<int>("SUDAKOV WEIGHT",0);
-  if (m_signalgenerator==string("Amegic"))   m_mode = InitializeAmegic(_model,_beam,_isr);
+  if (m_signalgenerator==string("Amegic")) {
+    if (_me) p_amegic = _me->GetAmegic(); 
+    m_mode = InitializeAmegic(_model,_beam,_isr);
+  }
   if (m_signalgenerator==string("Internal")) m_mode = InitializeSimpleXS(_model,_beam,_isr);
 
   if (p_dataread->GetValue<string>("EVENT_GENERATION_MODE",std::string("Unweighted"))==string("Unweighted"))
@@ -52,7 +74,12 @@ int Matrix_Element_Handler::InitializeAmegic(MODEL::Model_Base * _model,
 {
   m_name    = string("Amegic");
   if (!p_amegic) p_amegic = new AMEGIC::Amegic(m_dir,m_file,_model);
-  if (p_amegic->InitializeProcesses(_beam,_isr)) return 1;
+  if (_beam!=NULL || _isr!=NULL) {
+    if (p_amegic->InitializeProcesses(_beam,_isr)) return 1;
+  }
+  else {
+    if (p_amegic->InitializeDecays(0)) return 1;
+  }
   return 0;
 }
 
@@ -65,6 +92,54 @@ int Matrix_Element_Handler::InitializeSimpleXS(MODEL::Model_Base * _model,
   if (p_simplexs->InitializeProcesses(_beam,_isr)) return 2;
   return 0;
 }
+
+bool Matrix_Element_Handler::AddToDecays(ATOOLS::Flavour & _flav) 
+{
+  switch (m_mode) {
+  case 1 : return p_amegic->GetAllDecays()->AddToDecays(_flav);
+  }
+  msg.Error()<<"Error in Matrix_Element_Handler::AddToDecays("<<_flav<<") : "<<endl
+	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
+  abort();
+
+}
+
+bool Matrix_Element_Handler::InitializeDecayTables()
+{
+  switch (m_mode) {
+  case 1 : return p_amegic->GetAllDecays()->InitializeDecayTables();
+  }
+  msg.Error()<<"Error in Matrix_Element_Handler::InitializeDecayTables() : "<<endl
+	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
+  abort();
+}
+
+bool Matrix_Element_Handler::CalculateWidths() 
+{
+  switch (m_mode) {
+  case 1: 
+    return p_amegic->GetAllDecays()->CalculateWidths();
+  }
+  msg.Error()<<"Error in Matrix_Element_Handler::CalculateWidths() : "<<endl
+	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
+  abort();
+}
+
+bool Matrix_Element_Handler::FillDecayTable(ATOOLS::Decay_Table * _dt,bool _ow) 
+{
+  switch (m_mode) {
+  case 1: 
+    AMEGIC::Full_Decay_Table * fdt;
+    fdt = p_amegic->GetAllDecays()->GetFullDecayTable(_dt->Flav());
+    for (int i=0;i<fdt->NumberOfChannels();i++) _dt->AddDecayChannel(fdt->GetChannel(i));
+    if (_ow) _dt->Flav().SetWidth(fdt->Width());
+    return 1;
+  }
+  msg.Error()<<"Error in Matrix_Element_Handler::FillDecayTable() : "<<endl
+	     <<"   m_mode = "<<m_mode<<" Abort."<<endl;
+  abort();
+}
+
 
 bool Matrix_Element_Handler::CalculateTotalXSecs(int scalechoice) 
 {
@@ -109,6 +184,13 @@ bool Matrix_Element_Handler::GenerateOneEvent()
   if (m_eventmode) return UnweightedEvent();
   m_weight = WeightedEvent() * rpa.Picobarn();
   return (m_weight>0.);
+}
+
+bool Matrix_Element_Handler::GenerateOneEvent(ATOOLS::Decay_Channel * _dc,double _mass) 
+{
+  switch (m_mode) {
+  case 1: return p_amegic->GetAllDecays()->UnweightedEvent(_dc,_mass);
+  }
 }
 
 bool Matrix_Element_Handler::GenerateSameEvent() 
@@ -174,6 +256,13 @@ int Matrix_Element_Handler::Nout() {
   return 0;
 }
 
+int Matrix_Element_Handler::NDecOut() {
+  switch (m_mode) {
+  case 1: return p_amegic->GetAllDecays()->Nout();
+  }
+  return 0;
+}
+
 std::string Matrix_Element_Handler::SignalGenerator() { return m_signalgenerator; }
 
 std::string Matrix_Element_Handler::ProcessName() 
@@ -189,6 +278,13 @@ ATOOLS::Vec4D * Matrix_Element_Handler::Momenta() {
   switch (m_mode) {
   case 1: return p_amegic->Momenta();
   case 2: return p_simplexs->Momenta();
+  }
+  return NULL;
+}
+
+ATOOLS::Vec4D * Matrix_Element_Handler::DecMomenta() {
+  switch (m_mode) {
+  case 1: return p_amegic->Momenta();
   }
   return NULL;
 }

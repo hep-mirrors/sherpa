@@ -155,7 +155,7 @@ namespace AMEGIC {
     virtual double operator()(ATOOLS::Vec4D *) { return 0.; }
     virtual double Scale(ATOOLS::Vec4D *);
     virtual double Scale();
-    virtual bool   OneEvent()                                                      =0;
+    virtual bool   OneEvent(double = -1.)                                          =0;
     virtual bool   SameEvent()                                                     =0;
     virtual double WeightedEvent()                                                 =0;
     virtual double SameWeightedEvent()                                             =0;

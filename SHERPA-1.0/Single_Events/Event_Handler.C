@@ -60,6 +60,7 @@ bool Event_Handler::GenerateEvent()
   CleanUpEvent();
   Blob * hardblob = new Blob();
   hardblob->SetType(std::string("Signal Process : "));
+  hardblob->SetId(0);
   m_blobs.push_back(hardblob);
 
   bool flag = 1;

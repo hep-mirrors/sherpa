@@ -73,26 +73,26 @@ Particle * Blob::OutParticle(int _pos) {
   return m_outparticles[_pos];
 }
 
-Particle * Blob::RemoveInParticle(int _pos) {
+Particle * Blob::RemoveInParticle(int _pos,bool setit) {
   if (_pos>m_inparticles.size()-1 || _pos<0) { return NULL; }
   for (Particle_Queue::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     if ((*part)==m_inparticles[_pos]) {
       m_inparticles.erase(part);
-      (*part)->SetDecayBlob(NULL);
+      if (setit) (*part)->SetDecayBlob(NULL);
       return (*part);
     }
   }
   return NULL;
 }
 
-Particle * Blob::RemoveOutParticle(int _pos) {
+Particle * Blob::RemoveOutParticle(int _pos,bool setit) {
   if (_pos>m_outparticles.size()-1 || _pos<0) { return NULL; }
   for (Particle_Queue::iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     if ((*part)==m_outparticles[_pos]) {
       m_outparticles.erase(part);
-      (*part)->SetProductionBlob(NULL);
+      if (setit) (*part)->SetProductionBlob(NULL);
       return (*part);
     }
   }
@@ -100,28 +100,28 @@ Particle * Blob::RemoveOutParticle(int _pos) {
 }
 
 
-Particle * Blob::RemoveInParticle(Particle * _part) {
+Particle * Blob::RemoveInParticle(Particle * _part,bool setit) {
   if (!_part) return 0;
   for (Particle_Queue::iterator part = m_inparticles.begin();
        part != m_inparticles.end(); ++part) {
     if ((*part)==_part) {
       Particle * p = (*part);
       m_inparticles.erase(part);
-      p->SetDecayBlob(NULL);
+      if (setit) p->SetDecayBlob(NULL);
       return p;
     }
   }
   return NULL;
 }
 
-Particle * Blob::RemoveOutParticle(Particle * _part) {
+Particle * Blob::RemoveOutParticle(Particle * _part,bool setit) {
   if (!_part) return 0;
   for (Particle_Queue::iterator part = m_outparticles.begin();
        part != m_outparticles.end(); ++part) {
     if ((*part)==_part) {
       Particle * p = (*part);
       m_outparticles.erase(part);
-      p->SetProductionBlob(NULL);
+      if (setit) p->SetProductionBlob(NULL);
       return p;
     }
   }

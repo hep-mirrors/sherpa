@@ -18,13 +18,13 @@ namespace AMEGIC {
     void RescaleXSec(double);
 
     bool CalculateTotalXSec(std::string _resdir=std::string(""));
-    bool OneEvent();
+    bool OneEvent(double = -1.);
     bool SameEvent();
 
-    int                  Nin()     { return p_selected->Nin(); }
-    int                  Nout()    { return p_selected->Nout(); } 
+    int               Nin()     { return p_selected->Nin(); }
+    int               Nout()    { return p_selected->Nout(); } 
     ATOOLS::Flavour * Flavs()   { return p_selected->Flavs(); } 
-    ATOOLS::Vec4D    * Momenta() { return p_selected->Momenta(); }
+    ATOOLS::Vec4D   * Momenta() { return p_selected->Momenta(); }
   };
 }
 

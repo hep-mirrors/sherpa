@@ -1,11 +1,11 @@
 !-------------------------------------------------------
 !-- ISR parameters ------------------------------------
 !-------------------------------------------------------
-BUNCH_1         = 22        ! possible beam particles:  P+, P-, e+, e-
+BUNCH_1         = 11        ! possible beam particles:  P+, P-, e+, e-
 ISR_1           = Off       ! On/Off
 ! 
-BUNCH_2         = 11        ! possible beam particles:  P+, P-, e+, e- 
-ISR_2           = On        ! On/Off
+BUNCH_2         = -11       ! possible beam particles:  P+, P-, e+, e- 
+ISR_2           = Off       ! On/Off
 !
 ISR_SMIN        = 0.01    ! Minimal fraction of nominal s for parton after ISR
 ISR_SMAX        = 1.0     ! Maximal fraction of nominal s for parton after ISR

@@ -8,6 +8,7 @@ namespace SHERPA {
   class Hard_Decays : public Event_Phase_Handler {
   private :
     Hard_Decay_Handler * p_dechandler;
+    void FillBlob(ATOOLS::Particle *,ATOOLS::Blob *);
   public :
     Hard_Decays(Hard_Decay_Handler *);
     ~Hard_Decays();

@@ -26,7 +26,7 @@ extern "C" {
 
 Initialization_Handler::Initialization_Handler(string _path,string _file) : 
   m_path(_path), m_file(_file),
-  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), p_mehandler(NULL),
+  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), //p_mehandler(NULL),
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL)
 {
@@ -46,7 +46,7 @@ Initialization_Handler::Initialization_Handler(string _path,string _file) :
 
 
 Initialization_Handler::Initialization_Handler(int argc,char * argv[]) : 
-  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), p_mehandler(NULL),
+  p_model(NULL), p_beamspectra(NULL), p_isrhandler(NULL), //p_mehandler(NULL),
   p_harddecays(NULL), p_showerhandler(NULL), p_beamremnants(NULL), 
   p_fragmentation(NULL), p_hadrondecays(NULL)
 {
@@ -55,7 +55,7 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
 
   m_scan_istep=-1;
 
-  ExtractCommandLineParameters(argc, argv);
+  // ExtractCommandLineParameters(argc, argv);
 
   p_dataread         = new Data_Read(m_path+m_file);
   m_modeldat         = p_dataread->GetValue<string>("MODEL_DATA_FILE",string("Model.dat"));
@@ -67,7 +67,6 @@ Initialization_Handler::Initialization_Handler(int argc,char * argv[]) :
   m_beamremnantdat   = p_dataread->GetValue<string>("BEAMREMNANT_DATA_FILE",string("Beam.dat"));
   m_fragmentationdat = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
   m_hadrondecaysdat  = p_dataread->GetValue<string>("FRAGMENTATION_DATA_FILE",string("Fragmentation.dat"));
-
 }
 
 
@@ -78,7 +77,7 @@ Initialization_Handler::~Initialization_Handler()
   if (p_beamremnants)  { delete p_beamremnants;  p_beamremnants  = NULL; }
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
-  if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
+  //  if (p_mehandler)     { delete p_mehandler;     p_mehandler     = NULL; }
   if (p_isrhandler)    { delete p_isrhandler;    p_isrhandler    = NULL; }
   if (p_beamspectra)   { delete p_beamspectra;   p_beamspectra   = NULL; }
   if (p_model)         { delete p_model;         p_model         = NULL; }
@@ -93,9 +92,9 @@ bool Initialization_Handler::InitializeTheFramework(int nr)
   }
   bool okay = InitializeTheModel();  
 
-  //  set masses and withs from command line
-  SetParameter(nr);
-  UpdateParameters();
+  //  set masses and widths from command line
+  //  SetParameter(nr);
+  //  UpdateParameters();
     
   okay      = okay && InitializeTheBeams();
   okay      = okay && InitializeThePDFs();
@@ -137,9 +136,9 @@ bool Initialization_Handler::CheckBeamISRConsistency()
   }
   string name=p_model->Name();
   if (name==std::string("ADD")) {
-    double mcut2=sqr(p_model->ScalarConstant("M_cut"));
+    double mcut2 = sqr(p_model->ScalarConstant("M_cut"));
     // if ISR & beam -> apply mcut on ISR only
-    // if beam only -> apply mcut on Beam
+    // if beam only  -> apply mcut on Beam
     smax = Min(smax,mcut2);
     if (p_isrhandler->On()) {
       p_isrhandler->SetFixedSprimeMax(smax);
@@ -158,143 +157,6 @@ bool Initialization_Handler::CheckBeamISRConsistency()
   }
 
   return 1;
-}
-
-int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
-{
-  map<std::string,int> special_options;
-  special_options["-V"]=12;
-  special_options["--version"]=12;
-  special_options["-?"]=13;
-  special_options["-h"]=13;
-  special_options["--help"]=13;
-  special_options["-scan"]=14;
-  special_options["-xsout"]=15;
-  special_options["-eventout"]=16;
-
-  special_options["PATH"]=101;
-  special_options["RUNDATA"]=102;
-  special_options["ECMS"]=103;
-
-  for (int i=1; i<argc;++i) {
-    int mode=0;
-    string par=string(argv[i]);
-    string key,value;
-    int equal=par.find("=");
-    if (equal!=-1) {
-      mode=1;
-      value = par.substr(equal+1);
-      key   = par = par.substr(0,equal);
-      if (key.find("MASS")!=string::npos || key.find("WIDTH")!=string::npos) mode=100;
-    }
-
-
-    if (special_options.find(par)!=special_options.end()) 
-      mode=special_options[par];
-    cout<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
-
-    // variables in dat files
-    if (equal!=-1 && mode==1) {
-      cout<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
-      Data_Read::SetCommandLine(key,value);
-    }
-    
-    // special variables
-    if (mode>=100) {
-      MyStrStream s;
-      switch (mode) {
-      case 101:
-	if (value[value.length()-1]!='/') value+=std::string("/");
-	m_path=value;
-	break;
-      case 102:
-	m_file=value;
-	break;
-      case 103:
-	s<<value;
-	double ecms;
-	s>>ecms;
-	cout<<" Setting Ecms to : "<<ecms<<endl;
-	s<<ecms/2.;
-	s>>value;
-	cout<<" Setting Ecms/2 to : "<<value<<endl;
-	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
-	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
-	break;
-      case 100:
-	m_options[key]=value;
-      }
-    }
-    else {
-      // other option
-      switch (mode) {
-      case 12:
-	{
-	  // should call a version roution
-	  cout<<" Sherpa Version 1.0.2"<<endl;
-	  cout<<"   employing: "<<endl;
-	  cout<<"    * AMEGIC++ Version 2.0.2 "<<endl;
-	  cout<<"    * APACIC++ Version 2.0.2 "<<endl;
-
-	  string pyver("6.214");
-	  cout<<"    * Pythia Version "<<pyver<<endl;
-	  Char_Array40 cid=visaje_();
-	  cout<<"    * IsaJet Version "<<cid.s<<endl;
-	}
-	exit(0);
-      case 13:
-	cout<<" Help: "<<endl;
-	cout<<" Sherpa [options] [<variable>=<value>] "<<endl;
-	cout<<endl;
-	cout<<" Possible options: "<<endl;
-	cout<<"  -V,--version   prints the Version number"<<endl;
-	cout<<"  -?,--help      prints this help message"<<endl;
-	cout<<"  -xsout <filename> "<<endl;
-	cout<<"                 sets a file where calculated cross sections should be printed to"<<endl;
-	cout<<"  -eventout <filename> "<<endl;
-	cout<<"                 sets a file where events should be printed to"<<endl;	
-	cout<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
-	cout<<"                 performs a parameter scan"<<endl;
-	exit(0);
-      case 14: 
-	// scan
-	m_mode=14;
-	Data_Read::SetCommandLine("EVENTS","0");
-	if (i+4<argc) {
-	  m_scan_variable=argv[++i];
-	  MyStrStream s;
-	  s<<argv[++i];
-	  s>>m_scan_begin;
-	  s<<argv[++i];
-	  s>>m_scan_end;
-	  s<<argv[++i];
-	  s>>m_scan_nsteps;
-	  m_scan_istep=0;
-	  cout<<" scanning "<<m_scan_variable
-	      <<" from "<<m_scan_begin<<" to "<<m_scan_end
-	      <<" in "<<m_scan_nsteps<<" steps"<<endl;
-	}
-	else {
-	  cout<<"ERROR: missing scan parameter -scan"<<endl;
-	  cout<<"       try Sherpa -? for more information "<<endl;
-	  exit(1);
-	}
-
-	break;
-      case 15:
-	// xsout
-	break;
-      case 16:
-	// eventout
-	break;
-      }
-
-
-    }
-
-  }
-
-  return m_mode;
 }
 
 bool Initialization_Handler::InitializeTheModel()
@@ -380,36 +242,43 @@ bool Initialization_Handler::InitializeTheHardDecays()
 {
   if (p_harddecays)    { delete p_harddecays;    p_harddecays    = NULL; }
   p_harddecays = new Hard_Decay_Handler(m_path,m_decaydat,m_medat,p_model);
+  cout<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
+      <<p_harddecays->GetMEHandler()->Name()<<"/"<<p_harddecays->GetMEHandler()<<endl;
+  m_mehandlers.insert(std::make_pair(std::string("HardDecays"),p_harddecays->GetMEHandler()));
   return 1;
 }
 
 bool Initialization_Handler::InitializeTheMatrixElements()
 {
-  //   for (int i=0; i<20;++i) {
-
-  if (p_mehandler)  { delete p_mehandler; p_mehandler = NULL; }
+  Matrix_Element_Handler * me = NULL;
   if (p_harddecays) {
-    p_mehandler = new Matrix_Element_Handler(m_path,m_medat,
-					     p_model,p_beamspectra,p_isrhandler,
-					     p_harddecays->GetAmegic());
+    me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,p_isrhandler,
+				    p_harddecays->GetMEHandler());
   }
-  else
-    p_mehandler = new Matrix_Element_Handler(m_path,m_medat,
-					     p_model,p_beamspectra,p_isrhandler,NULL);
+  else {
+    me = new Matrix_Element_Handler(m_path,m_medat,p_model,p_beamspectra,p_isrhandler,NULL);
+  }
 
-//        cout<<" Press Enter "<<endl;
-//        char key = cin.get();
-//    }
- 
+  m_mehandlers.insert(std::make_pair(std::string("SignalMEs"),me)); 
+  cout<<"Initialized the Hard_Decay_Handler. Its ME_Handler is : "
+      <<me->Name()<<"/"<<me<<endl;
   return 1;
 }
+
+Matrix_Element_Handler * Initialization_Handler::GetMatrixElementHandler(std::string _key) { 
+  MEHandlerIter pos = m_mehandlers.find(_key);
+  if (pos!=m_mehandlers.end()) return pos->second;
+  ATOOLS::msg.Error()<<"Error in Initialization_Handler::GetMatrixElementHandler("<<_key<<") :"
+		     <<"   Key not found. Return Null pointer."<<endl;
+  return NULL;
+}
+
 
 bool Initialization_Handler::InitializeTheShowers()
 {
   if (p_showerhandler) { delete p_showerhandler; p_showerhandler = NULL; }
-  p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,
-				       p_isrhandler,p_mehandler->MaxJets());
-  
+  int maxjets     = GetMatrixElementHandler(std::string("SignalMEs"))->MaxJets();
+  p_showerhandler = new Shower_Handler(m_path,m_showerdat,p_model,p_isrhandler,maxjets);
   return 1;
 }
 
@@ -444,9 +313,10 @@ bool Initialization_Handler::CalculateTheHardProcesses()
     if (p_showerhandler->ISROn()) scalechoice += 1;
     if (p_showerhandler->FSROn()) scalechoice += 2;
   }
-  int ok = p_mehandler->CalculateTotalXSecs(scalechoice);
+  Matrix_Element_Handler * me = GetMatrixElementHandler(std::string("SignalMEs"));
+  int ok = me->CalculateTotalXSecs(scalechoice);
   if (ok && m_scan_istep!=-1) {
-    AMEGIC::Process_Base * procs= p_mehandler->GetAmegic()->Processes();
+    AMEGIC::Process_Base * procs= me->GetAmegic()->Processes();
     cout<<ParameterValue()<<" ";
     for (int i=0; i<procs->Size();++i) {
       double xstot = (*procs)[i]->Total()*rpa.Picobarn();
@@ -465,6 +335,22 @@ bool Initialization_Handler::InitializeAllHardDecays()
   return 1;
   return p_harddecays->InitializeAllHardDecays(m_medat,p_model);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void Initialization_Handler::SetParameter(int nr) {
   if (nr<0) return;
@@ -498,6 +384,138 @@ void Initialization_Handler::SetParameter(int nr) {
     //    exit(1);
   }
   ++m_scan_istep;
+}
+
+int Initialization_Handler::ExtractCommandLineParameters(int argc,char * argv[])
+{
+  map<std::string,int> special_options;
+  special_options["-V"]=12;
+  special_options["--version"]=12;
+  special_options["-?"]=13;
+  special_options["-h"]=13;
+  special_options["--help"]=13;
+  special_options["-scan"]=14;
+  special_options["-xsout"]=15;
+  special_options["-eventout"]=16;
+
+  special_options["PATH"]=101;
+  special_options["RUNDATA"]=102;
+  special_options["ECMS"]=103;
+
+  for (int i=1; i<argc;++i) {
+    int mode   = 0;
+    string par = string(argv[i]);
+    string key,value;
+    int equal  = par.find("=");
+    if (equal!=-1) {
+      mode=1;
+      value = par.substr(equal+1);
+      key   = par = par.substr(0,equal);
+      if (key.find("MASS")!=string::npos || key.find("WIDTH")!=string::npos) mode=100;
+    }
+
+
+    if (special_options.find(par)!=special_options.end()) 
+      mode = special_options[par];
+    cout<<i<<" : "<<argv[i]<<" ->"<<mode<<endl;
+
+    // variables in dat files
+    if (equal!=-1 && mode==0) {
+      cout<<equal<<":"<<key<<" = "<<value<<" ("<<par<<")"<<endl;
+      Data_Read::SetCommandLine(key,value);
+    }
+    
+    // special variables
+    if (mode>=100) {
+      MyStrStream s;
+      switch (mode) {
+      case 101:
+	if (value[value.length()-1]!='/') value+=std::string("/");
+	m_path=value;
+	break;
+      case 102:
+	m_file=value;
+	break;
+      case 103:
+	s<<value;
+	double ecms;
+	s>>ecms;
+	cout<<" Setting Ecms to : "<<ecms<<endl;
+	s<<ecms/2.;
+	s>>value;
+	cout<<" Setting Ecms/2 to : "<<value<<endl;
+	Data_Read::SetCommandLine("BEAM_ENERGY_1",value);
+	Data_Read::SetCommandLine("BEAM_ENERGY_2",value);
+	break;
+      case 100:
+	m_options[key]=value;
+      }
+    }
+    else {
+      // other option
+      switch (mode) {
+      case 12:
+	{
+	  // should call a version roution
+	  cout<<" Sherpa Version 1.0.2"<<endl;
+	  cout<<"   employing: "<<endl;
+	  cout<<"    * AMEGIC++ Version 2.0.2 "<<endl;
+	  cout<<"    * APACIC++ Version 2.0.2 "<<endl;
+
+	  string pyver("6.214");
+	  cout<<"    * Pythia Version "<<pyver<<endl;
+	  Char_Array40 cid=visaje_();
+	  cout<<"    * IsaJet Version "<<cid.s<<endl;
+	}
+	exit(0);
+      case 13:
+	cout<<" Help: "<<endl;
+	cout<<" Sherpa [options] [<variable>=<value>] "<<endl;
+	cout<<endl;
+	cout<<" Possible options: "<<endl;
+	cout<<"  -V,--version   prints the Version number"<<endl;
+	cout<<"  -?,--help      prints this help message"<<endl;
+	cout<<"  -xsout <filename> "<<endl;
+	cout<<"                 sets a file where calculated cross sections should be printed to"<<endl;
+	cout<<"  -eventout <filename> "<<endl;
+	cout<<"                 sets a file where events should be printed to"<<endl;	
+	cout<<"  -scan <variable> <startvalue> <stopvalue> <number of steps>"<<endl;
+	cout<<"                 performs a parameter scan"<<endl;
+	exit(0);
+      case 14: 
+	// scan
+	m_mode=14;
+	Data_Read::SetCommandLine("EVENTS","0");
+	if (i+4<argc) {
+	  m_scan_variable=argv[++i];
+	  MyStrStream s;
+	  s<<argv[++i];
+	  s>>m_scan_begin;
+	  s<<argv[++i];
+	  s>>m_scan_end;
+	  s<<argv[++i];
+	  s>>m_scan_nsteps;
+	  m_scan_istep=0;
+	  cout<<" scanning "<<m_scan_variable
+	      <<" from "<<m_scan_begin<<" to "<<m_scan_end
+	      <<" in "<<m_scan_nsteps<<" steps"<<endl;
+	}
+	else {
+	  cout<<"ERROR: missing scan parameter -scan"<<endl;
+	  cout<<"       try Sherpa -? for more information "<<endl;
+	  exit(1);
+	}
+	break;
+      case 15:
+	// xsout
+	break;
+      case 16:
+	// eventout
+	break;
+      }
+    }
+  }
+  return m_mode;
 }
 
 int Initialization_Handler::UpdateParameters() 

@@ -16,16 +16,17 @@ namespace ATOOLS {
    
   class Particle {
   private : 
-    int               m_number;       
-    int               m_status;         
-    char              m_info;   
-    int               m_jetnumber; 
-    Flavour           m_fl;         
-    Flow            * p_flow;
-    Vec4D             m_momentum; 
-    Blob            * p_startblob;
-    Blob            * p_endblob;
-    double            m_dec_time;      
+    int       m_number;       
+    int       m_status;         
+    char      m_info;   
+    int       m_jetnumber; 
+    Flavour   m_fl;         
+    Flow    * p_flow;
+    Vec4D     m_momentum; 
+    Blob    * p_startblob;
+    Blob    * p_endblob;
+    double    m_dec_time;      
+    double    m_finalmass;
   public:
     Particle();
     Particle(const Particle * );
@@ -35,25 +36,27 @@ namespace ATOOLS {
     ~Particle();
     friend std::ostream& operator<<(std::ostream &,Particle*);
 
-    void   Copy(Particle * );
-    double ProperTime();
-    double LifeTime();
-    Vec3D Distance();
-    Vec4D    Momentum() const;
-    double             E();
-    int                Status() const;
-    char               Info() const;
-    Vec4D    XProd();
-    Blob             * ProductionBlob();
-    Vec4D    XDec();
-    Blob             * DecayBlob();
-    double             Time() const ;
-    Flavour Flav() const ;
-    Flow  * GetFlow() const ;
-    int                GetFlow( int ) const ;
-    int                Number() const;
-    int                JetNumber() const;
+    void      Copy(Particle * );
+    double    ProperTime();
+    double    LifeTime();
+    Vec3D     Distance(double = -1.);
+    Vec4D     Momentum() const;
+    double    E();
+    double    FinalMass();
+    int       Status() const;
+    char      Info() const;
+    Vec4D     XProd();
+    Blob    * ProductionBlob();
+    Vec4D     XDec();
+    Blob    * DecayBlob();
+    double    Time() const ;
+    Flavour   Flav() const ;
+    Flow    * GetFlow() const ;
+    int       GetFlow( int ) const ;
+    int       Number() const;
+    int       JetNumber() const;
     void   SetMomentum(const Vec4D &);
+    void   SetFinalMass(const double _lower,const double _upper=-1.);
     void   SetStatus( int status = 0 );
     void   SetInfo(char);
     void   SetProductionBlob(Blob *);

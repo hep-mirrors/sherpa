@@ -1,18 +1,21 @@
 #include "Decay_Table.H"
+#include "Random.H"
 #include "Message.H"
 
 using namespace ATOOLS;
 using namespace std;
 
 Decay_Channel::Decay_Channel(const Flavour & _flin) :
-  m_flin(_flin), m_width(0.) { }
+  m_flin(_flin), m_width(0.), m_minmass(0.), m_processname(string("")) { }
 
 Decay_Channel::Decay_Channel(const Decay_Channel & _dec) :
-  m_flin(_dec.m_flin), m_flouts(_dec.m_flouts), m_width(_dec.m_width) { }
+  m_flin(_dec.m_flin), m_flouts(_dec.m_flouts), 
+  m_width(_dec.m_width), m_minmass(_dec.m_minmass), 
+  m_processname(_dec.m_processname) { }
 
 void Decay_Channel::Output() 
 {
-  msg.Out()<<"  "<<m_flin<<" -> ";
+  msg.Out()<<m_flin<<" -> ";
   for (FlSetIter fl=m_flouts.begin();fl!=m_flouts.end();++fl) msg.Out()<<(*fl)<<" ";
   msg.Out()<<" : "<<m_width<<" GeV."<<endl;
 }
@@ -24,6 +27,18 @@ void Decay_Table::AddDecayChannel(Decay_Channel * _dc)
 {
   m_channels.push_back(_dc);
   m_width += _dc->Width();
+}
+
+void Decay_Table::Select() {
+  p_selected = NULL;
+  double disc = m_width*ran.Get();
+  for (int i=0;i<m_channels.size();i++) {
+    disc -= m_channels[i]->Width();
+    if (disc<0) {
+      p_selected = m_channels[i];
+      break;
+    }
+  }
 }
 
 void Decay_Table::Output() {

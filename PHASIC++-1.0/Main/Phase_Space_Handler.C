@@ -70,16 +70,17 @@ Phase_Space_Handler::~Phase_Space_Handler()
 
    ---------------------------------------------------------------------- */
 
-bool Phase_Space_Handler::InitIncoming() 
+bool Phase_Space_Handler::InitIncoming(double _mass) 
 {
   msg.Debugging()<<"Phase_Space_Handler::Integrate with : "<<endl;
-  if (beamchannels) 
-    msg.Debugging()<<"  Beam : "<<beamchannels->Name()<<" ("<<beamchannels<<") "
-		   <<"  ("<<beamchannels->Number()<<","<<beamchannels->N()<<")"<<endl;
-  if (isrchannels) 
-    msg.Debugging()<<"  ISR  : "<<isrchannels->Name()<<" ("<<isrchannels<<") "
-		   <<"  ("<<isrchannels->Number()<<","<<isrchannels->N()<<")"<<endl;
-
+  if (nin>1) {
+    if (beamchannels) 
+      msg.Debugging()<<"  Beam : "<<beamchannels->Name()<<" ("<<beamchannels<<") "
+		     <<"  ("<<beamchannels->Number()<<","<<beamchannels->N()<<")"<<endl;
+    if (isrchannels) 
+      msg.Debugging()<<"  ISR  : "<<isrchannels->Name()<<" ("<<isrchannels<<") "
+		     <<"  ("<<isrchannels->Number()<<","<<isrchannels->N()<<")"<<endl;
+  }
   msg.Debugging()<<"  FSR  : "<<fsrchannels->Name()<<" ("<<fsrchannels<<") "
 		 <<"  ("<<fsrchannels->Number()<<","<<fsrchannels->N()<<")"<<endl;
   
@@ -92,25 +93,27 @@ bool Phase_Space_Handler::InitIncoming()
     return 0;
   } 
 
-  msg.SetPrecision(12);
-  if (bh) {
-    if (bh->On()>0) {
-      bh->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
-      beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
-      beamchannels->GetRange();
+  if (nin>1) {
+    msg.SetPrecision(12);
+    if (bh) {
+      if (bh->On()>0) {
+	bh->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
+	beamchannels->SetRange(bh->SprimeRange(),bh->YRange());
+	beamchannels->GetRange();
+      }
     }
-  }
-  if (ih) {
-    if (ih->On()>0) {
-      ih->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
-      msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
-		     <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
-		     <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
-      isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
-      isrchannels->GetRange();
+    if (ih) {
+      if (ih->On()>0) {
+	ih->SetSprimeMin(ATOOLS::Max(sqr(proc->ISRThreshold()),proc->Selector()->Smin()));
+	msg.Debugging()<<"In Phase_Space_Handler::Integrate : "<<bh->On()<<":"<<ih->On()<<endl
+		       <<"   "<<ih->SprimeMin()<<" ... "<<ih->SprimeMax()<<" ... "<<ih->Pole()<<endl
+		       <<"  for Threshold = "<<proc->ISRThreshold()<<"  "<<proc->Name()<<endl;
+	isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
+	isrchannels->GetRange();
+      }
     }
+    msg.SetPrecision(6);
   }
-  msg.SetPrecision(6);
   m_initialized=1;
   return 1;
 }
@@ -138,13 +141,13 @@ double Phase_Space_Handler::Integrate()
 }
 
 
-bool Phase_Space_Handler::MakeIncoming(Vec4D * _p) {
+bool Phase_Space_Handler::MakeIncoming(Vec4D * _p,double _mass) {
   if (nin == 1) {
-    E     = m1;
+    if (_mass<0.) E = m1;
+             else E = _mass;  
+    flux = 1./(2.*E);
     s     = E*E;
     _p[0] = Vec4D(E,0.,0.,0.);
-
-    flux = 1./(2.*m1);
     return 1;
   }
   if (nin == 2) {
@@ -168,26 +171,27 @@ double Phase_Space_Handler::Differential() {
 
 double Phase_Space_Handler::Differential(Integrable_Base * process) { 
   y = 0;
-  if (bh && bh->On()>0) { 
-    beamchannels->GeneratePoint(sprimeB,yB,bh->On()); 
-    if (!(bh->MakeBeams(p,sprimeB,yB))) return 0.;
-    if (ih && ih->On()>0) {
-      ih->SetSprimeMax(sprimeB*ih->Upper1()*ih->Upper2());
-      ih->SetPole(sprimeB);
-      isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
+  if (nin>1) {
+    if (bh && bh->On()>0) { 
+      beamchannels->GeneratePoint(sprimeB,yB,bh->On()); 
+      if (!(bh->MakeBeams(p,sprimeB,yB))) return 0.;
+      if (ih && ih->On()>0) {
+	ih->SetSprimeMax(sprimeB*ih->Upper1()*ih->Upper2());
+	ih->SetPole(sprimeB);
+	isrchannels->SetRange(ih->SprimeRange(),ih->YRange());
+      }
+      sprime = sprimeB; y += yB;
     }
-    sprime = sprimeB; y += yB;
+    if (ih && ih->On()>0) { 
+      isrchannels->GeneratePoint(sprimeI,yI,ih->On());
+      if (!(ih->MakeISR(p,sprimeI,yI))) return 0.;
+      sprime = sprimeI; y += yI;
+    }
+    
+    if ( (bh && bh->On()>0) || (ih && ih->On()>0) ) {
+      proc->UpdateCuts(sprime,y);
+    }
   }
-  if (ih && ih->On()>0) { 
-    isrchannels->GeneratePoint(sprimeI,yI,ih->On());
-    if (!(ih->MakeISR(p,sprimeI,yI))) return 0.;
-    sprime = sprimeI; y += yI;
-  }
-
-  if ( (bh && bh->On()>0) || (ih && ih->On()>0) ) {
-    proc->UpdateCuts(sprime,y);
-  }
-  
   fsrchannels->GeneratePoint(p,proc->Cuts());
 
   if (!Check4Momentum(p)) {
@@ -196,7 +200,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
     return 0.;
   }
 
-  double KFactor = 0., Q2 = -1.;
+  double KFactor = 1., Q2 = -1.;
   result1 = result2 = 0.;
 
   if (ih && ih->On()>0) ih->BoostInLab(p,nin+nout);
@@ -211,26 +215,26 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
   bool trigger = 0;
  
   if ((proc->Selector())->Trigger(p)) {
-    trigger = 1;
     result1 = 1.;
-    Q2 = proc->Scale(p);
-    if (ih && ih->On()>0) {
-      ih->CalculateWeight(Q2);
-      isrchannels->GenerateWeight(sprimeI,yI,ih->On());
-      result1 *= isrchannels->Weight();
-      ih->BoostInCMS(p,nin+nout);
+    if (nin>1) {
+      trigger = 1;
+      Q2 = proc->Scale(p);
+      if (ih && ih->On()>0) {
+	ih->CalculateWeight(Q2);
+	isrchannels->GenerateWeight(sprimeI,yI,ih->On());
+	result1 *= isrchannels->Weight();
+	ih->BoostInCMS(p,nin+nout);
+      }
+      if (bh && bh->On()>0) {
+	bh->CalculateWeight(Q2);
+	beamchannels->GenerateWeight(sprimeB,yB,bh->On());
+	result1 *= beamchannels->Weight() * bh->Weight();
+	bh->BoostInCMS(p,nin+nout);
+      }
+      KFactor *= proc->KFactor(Q2);
     }
-    if (bh && bh->On()>0) {
-      bh->CalculateWeight(Q2);
-      beamchannels->GenerateWeight(sprimeB,yB,bh->On());
-      result1 *= beamchannels->Weight() * bh->Weight();
-      bh->BoostInCMS(p,nin+nout);
-    }
-
-    KFactor = proc->KFactor(Q2);
     fsrchannels->GenerateWeight(p,proc->Cuts());
     result1 *= KFactor * fsrchannels->Weight();
-
     if (ih && ih->On()==3) result2 = result1;
 
     result1 *= process->Differential(p);
@@ -244,7 +248,7 @@ double Phase_Space_Handler::Differential(Integrable_Base * process) {
                  else result2  = 0.;
   }
 
-  if ( (ih && ih->On()>0) || (bh && bh->On()>0) ) 
+  if ( nin>1 && ((ih && ih->On()>0) || (bh && bh->On()>0)) ) 
     flux = 1./(2.*sqrt(sqr(sprime-m12-m22)-4.*m12*m22));
 
   for (int i=0;i<nin+nout;++i) p[i]=p_save[i];
@@ -264,22 +268,23 @@ bool Phase_Space_Handler::Check4Momentum(Vec4D * _p) {
 }
 
 bool Phase_Space_Handler::SameEvent() {
-  return OneEvent(1);
+  return OneEvent(-1.,1);
 }
 
 double Phase_Space_Handler::SameWeightedEvent() {
   return WeightedEvent(1);
 }
 
-bool Phase_Space_Handler::OneEvent(int mode)
+bool Phase_Space_Handler::OneEvent(double _mass,int _mode)
 {
-  if (!m_initialized) InitIncoming();
+  if ((_mass<0) && (!m_initialized)) InitIncoming();
+  if ((_mass>0) && (nin==1))         InitIncoming(_mass);
 
   m_weight=1.;
 
   double value;
   for (int i=1;i<maxtrials+1;i++) {
-    if (mode==0) {
+    if (_mode==0) {
       proc->DeSelect();
       proc->SelectOne();
     }

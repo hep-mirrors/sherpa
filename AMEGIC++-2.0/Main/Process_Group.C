@@ -655,7 +655,7 @@ bool Process_Group::SetUpIntegrator()
   p_ps  = new Phase_Space_Handler(this,p_isr,p_beam);
   AddChannels(this,p_ps->FSRIntegrator(),p_ps->BeamParameters(),p_ps->ISRParameters());
   if (!p_ps->CreateIntegrators()) return 0;
-  for (int i=0;i<m_procs.size();i++) m_procs[i]->Empty();
+  if (m_nin==2) { for (int i=0;i<m_procs.size();i++) m_procs[i]->Empty(); }
   return 1;
 }
 
@@ -931,12 +931,12 @@ double Process_Group::DSigma2()
 }
 
 
-bool Process_Group::OneEvent() {
+bool Process_Group::OneEvent(double _mass) {
   if (m_atoms) {
     SelectOne();
-    return p_selected->OneEvent();
+    return p_selected->OneEvent(_mass);
   }
-  return p_ps->OneEvent();
+  return p_ps->OneEvent(_mass);
 }
 
 bool Process_Group::SameEvent() {

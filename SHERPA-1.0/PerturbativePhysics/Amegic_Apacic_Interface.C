@@ -49,7 +49,8 @@ Amegic_Apacic_Interface::Amegic_Apacic_Interface(Matrix_Element_Handler * me,
   }
 
   p_jf       = new ATOOLS::Jet_Finder(m_ycut,m_type);
-  p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber,p_shower->GetISRHandler()->On(),p_shower->ISROn(),p_shower->FSROn());
+  p_cluster  = new Cluster_Partons(p_me,p_jf,m_maxjetnumber,
+				   p_shower->GetISRHandler()->On(),p_shower->ISROn(),p_shower->FSROn());
   m_jetscale = m_ycut * sqr(rpa.gen.Ecms());
 }  
 
@@ -61,14 +62,18 @@ Amegic_Apacic_Interface::~Amegic_Apacic_Interface()
   // note :
   //  p_shower and p_me are deleted in Jet_Evolution
   //  p_fl an p_moms are deleted in Perturbative_Interface
-
 }
 
 
 bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
 {
-  if (!(p_cluster->ClusterConfiguration(blob,p_me->GetISR_Handler()->X1(),p_me->GetISR_Handler()->X2()))) {
-    return 0; // Failure!
+  if (blob->NInP()==1) {
+    if (!(p_cluster->ClusterConfiguration(blob))) return 0; 
+  }
+  else {
+    if (!(p_cluster->ClusterConfiguration(blob,p_me->GetISR_Handler()->X1(),p_me->GetISR_Handler()->X2()))) {
+      return 0; // Failure!
+    }
   }
   for (int i=0;i<4;i++) {
     p_fl[i]   = p_cluster->Flav(i); 
@@ -108,54 +113,65 @@ bool Amegic_Apacic_Interface::ClusterConfiguration(Blob * blob)
 
 bool Amegic_Apacic_Interface::DefineInitialConditions(ATOOLS::Blob * blob)
 {
+  int nin  = blob->NInP();
+  int nout = blob->NOutP();
+
   ClusterConfiguration(blob);
+  if (nin==2) {
+    p_xs = 0;
+    if (!(XS_Selector::FindInGroup(p_two2two,p_xs,nin,2,p_fl))) {
+      p_xs = XS_Selector::GetXS(nin,2,p_fl);
+      if (p_xs) p_two2two->Add(p_xs);
+    }
+  
 
-  p_xs = 0;
-
-  if (!(XS_Selector::FindInGroup(p_two2two,p_xs,2,2,p_fl))) {
-    p_xs = XS_Selector::GetXS(2,2,p_fl);
-    if (p_xs) p_two2two->Add(p_xs);
-  }
-
-  if (!p_xs) {
-    p_cluster->SetColours(p_moms,p_fl);
-  }
-  else {
-    if (!(p_xs->SetColours(p_moms))) return 0;
-  }
-
-  if (m_type==1) { // e+ e-
-    double sprime = (p_me->Momenta()[0]+p_me->Momenta()[1]).Abs2();
-    m_jetscale    = m_ycut * sprime;
-  }
-
-  double scale;
-  if (p_xs) scale=p_xs->Scale();
-  else scale=p_cluster->Scale();
-  // save hard scale to be used in plots!
-  amegic_apacic_interface_last_hard_scale=scale;
-
-  p_cluster->CalculateWeight(scale,m_jetscale);
-
-  m_weight=p_cluster->Weight();
-  if (p_me->Weight()==1. && p_me->UseSudakovWeight()) {
-    if (m_weight>ran.Get()) {
-      p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
-
+    //if (!p_xs) p_cluster->SetColours(nin,p_moms,p_fl);
+    if (!p_xs) p_cluster->SetColours(p_moms,p_fl);
+    else { if (!(p_xs->SetColours(p_moms))) return 0; }
+    
+    if (m_type==1) { // e+ e-
+      double sprime = (p_me->Momenta()[0]+p_me->Momenta()[1]).Abs2();
+      m_jetscale    = m_ycut * sprime;
+    }
+    
+    double scale;
+    if (p_xs) scale = p_xs->Scale();
+    else scale = p_cluster->Scale();
+    // save hard scale to be used in plots!
+    amegic_apacic_interface_last_hard_scale = scale;
+    
+    p_cluster->CalculateWeight(scale,m_jetscale);
+    
+    m_weight = p_cluster->Weight();
+    if (p_me->Weight()==1. && p_me->UseSudakovWeight()) {
+      if (m_weight>ran.Get()) {
+	p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
+	m_weight=1.;
+	return 1;
+      }
       m_weight=1.;
+    }
+    else {
+      if (!(p_me->UseSudakovWeight())) m_weight=1.;
+      p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
       return 1;
     }
-    m_weight=1.;
   }
-  else {
-    if (!(p_me->UseSudakovWeight())) m_weight=1.;
-    p_cluster->FillTrees(p_shower->GetIniTrees(),p_shower->GetFinTree(),p_xs);
-    return 1;
+  if (nin==1) {
+    p_fl[0]   = blob->InParticle(0)->Flav();
+    p_moms[0] = blob->InParticle(0)->Momentum();
+    int col1  = blob->InParticle(0)->GetFlow(1),col2 = blob->InParticle(0)->GetFlow(2);
+    for (int i=0;i<nout;i++) {
+      p_fl[i+1]   = blob->OutParticle(i)->Flav();
+      p_moms[i+1] = blob->OutParticle(i)->Momentum();
+    }
+    p_cluster->SetDecayColours(p_moms,p_fl,col1,col2);
+    p_cluster->FillDecayTree(p_shower->GetFinTree());
   }
-  return 0;
+  return 1;
 }
 
-bool   Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
+bool Amegic_Apacic_Interface::FillBlobs(ATOOLS::Blob_List * bl)
 {
   if (p_blob_psme_IS) {
     p_blob_psme_IS->SetId(bl->size());

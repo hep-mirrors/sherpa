@@ -25,20 +25,57 @@ bool Hard_Decays::Treat(ATOOLS::Blob_List * _bloblist, double & weight)
     return 0;
   }
 
-  Blob * myblob;
+  Blob     * myblob, * decblob;
+  Particle * check;
   bool found = 1;
   bool hit   = 0;
-  while (found) {
+  int  pos;
+  //while (found) {
     found = 0;
     for (Blob_Iterator blit=_bloblist->begin();blit!=_bloblist->end();++blit) {
-      if ((*blit)->Status()==1) {
+      pos = (*blit)->Type().find(string("FS Shower"));
+      if ((*blit)->Status()==1 && pos>-1) {
 	myblob = (*blit);
 	// found  = 1;
-	msg.Out()<<"Found a blob for decay : "<<endl<<myblob<<endl;
+	for (int i=0;i<myblob->NOutP();i++) {
+	  if ((!myblob->OutParticle(i)->Flav().IsStable()) &&
+	      (myblob->OutParticle(i)->DecayBlob()!=NULL)) {
+	    decblob = myblob->OutParticle(i)->DecayBlob();
+	    if (decblob->NInP()!=1) {
+	      msg.Error()<<"Error in Hard_Decays::Treat : "<<endl
+			 <<"   wrong number of incoming particles for decayblob."<<endl
+			 <<"   Terminate run."<<endl;
+	      abort();
+	    }
+	    check = decblob->RemoveInParticle(0,false);
+	    if (check->Flav()!=myblob->OutParticle(i)->Flav()) {
+	      msg.Error()<<"Error in Hard_Decays::Treat : "<<endl
+			 <<"   wrong incoming particle for decayblob : "
+			 <<check->Flav()<<" vs. "<<myblob->OutParticle(i)->Flav()<<endl
+			 <<"   Terminate run."<<endl;
+	      abort();
+	    }
+	    decblob->AddToInParticles(myblob->OutParticle(i));
+	    FillBlob(check,decblob);
+	    decblob->SetId(_bloblist->size());
+	    _bloblist->push_back(decblob);
+	  }
+	}
+	myblob->SetStatus(0);
+	return 1;
       }
     }
-  }
+    //}
   return hit;
 }
 
-void Hard_Decays::CleanUp() { return; }
+void Hard_Decays::CleanUp() { p_dechandler->ResetTables(); }
+
+void Hard_Decays::FillBlob(Particle * _orig,Blob * _blob)
+{
+  Particle * decayer = _blob->InParticle(0);
+  double lifetime    = decayer->LifeTime();
+  _blob->SetPosition(decayer->XProd()+Vec4D(lifetime,decayer->Distance(lifetime)));
+  Vec4D cms = Vec4D(decayer->Momentum());
+  p_dechandler->PerformDecay(_blob);
+}

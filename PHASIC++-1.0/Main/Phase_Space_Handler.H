@@ -35,7 +35,7 @@ namespace PHASIC {
     bool  m_initialized;
 
     void TestIntegration(double);
-    bool MakeIncoming(ATOOLS::Vec4D *);
+    bool MakeIncoming(ATOOLS::Vec4D *,double _mass=-1.);
     void Rotate(ATOOLS::Vec4D *);
     bool Check4Momentum(ATOOLS::Vec4D *);
     void DropRedundantChannels();
@@ -44,7 +44,7 @@ namespace PHASIC {
     bool MakeISRChannels();
     bool CreateBeamChannels();
     bool CreateISRChannels();
-    bool InitIncoming();
+    bool InitIncoming(double _mass=-1.);
   public:
     Phase_Space_Handler(Integrable_Base *,PDF::ISR_Handler *,BEAM::Beam_Spectra_Handler *);
     ~Phase_Space_Handler();
@@ -56,7 +56,7 @@ namespace PHASIC {
     double Integrate();
     double Differential();
     double Differential(Integrable_Base *);
-    bool   OneEvent(int mode =0);
+    bool   OneEvent(double _mass = -1.,int mode = 0);
     bool   SameEvent();
     double WeightedEvent(int mode =0);
     double SameWeightedEvent();

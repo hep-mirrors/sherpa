@@ -21,12 +21,29 @@ namespace AMEGIC {
     bool   CreateDecay();
     bool   InitProcess(Interaction_Model_Base *,Topology *);
     bool   CalculateWidth();
+    bool   OneEvent(double);
     void   SetWidth(double _w = -1.);
 
     double                  Width()           { return m_dec.Width(); }
     Process_Base          * GetProcessBase()  { return p_proc; }
     ATOOLS::Decay_Channel * GetDecayChannel() { return &m_dec; }
+    int                     Nin();
+    int                     Nout();
+    std::string             Name();
+    ATOOLS::Flavour       * Flavs();            
+    ATOOLS::Vec4D         * Momenta();          
+    int                     NumberOfDiagrams();
+    Point                 * Diagram(int i);
   };
+  inline bool              Full_Decay_Channel::OneEvent(double _mass) { return p_proc->OneEvent(_mass); }
+  inline int               Full_Decay_Channel::Nin()                  { return p_proc->Nin(); }           
+  inline int               Full_Decay_Channel::Nout()                 { return p_proc->Nout(); }          
+  inline std::string       Full_Decay_Channel::Name()                 { return p_proc->Name(); }          
+  inline ATOOLS::Flavour * Full_Decay_Channel::Flavs()                { return p_proc->Flavs(); }          
+  inline ATOOLS::Vec4D   * Full_Decay_Channel::Momenta()              { return p_proc->Momenta(); }          
+  inline int               Full_Decay_Channel::NumberOfDiagrams()     { return p_proc->NumberOfDiagrams(); }
+  inline Point *           Full_Decay_Channel::Diagram(int i)         { return p_proc->Diagram(i); }
+
 
   class Full_Decay_Table {
   private :
@@ -50,6 +67,7 @@ namespace AMEGIC {
     bool                    IsEvaluated()      { return m_isevaluated; }
     int                     NumberOfChannels() { return m_channels.size(); }
     ATOOLS::Decay_Channel * GetChannel(int);
+    Full_Decay_Channel    * GetFullChannel(int);
   };
 }
 

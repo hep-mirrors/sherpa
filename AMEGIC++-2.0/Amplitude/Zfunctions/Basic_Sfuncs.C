@@ -63,7 +63,7 @@ int Basic_Sfuncs::InitializeMomlist()
     Mom.arg    = new int[Mom.argnum];
     Mom.arg[0] = i;
     Mom.type=mt::mom;
-    Mom.mass =fl[i].Mass();
+    Mom.mass   = fl[i].Mass();
     Momlist.push_back(Mom);
   }
   return nvec; 
@@ -552,7 +552,8 @@ int Basic_Sfuncs::CalcEtaMu(Vec4D* _p)
     }
     if(ATOOLS::IsZero(_eta[i]))etachk=0;
     if (i<nmom) {
-      _mu[i]  =Momlist[i].mass/_eta[i];
+      if ((i==0)) _mu[0]  = sqrt(dabs(Momlist[i].mom.Abs2()))/_eta[0];
+      else _mu[i]  = Momlist[i].mass/_eta[i];
       //if (b[i]==1 && 
       if (fl[i].IsAnti() && i!=0) 
 	_mu[i] = - _mu[i];

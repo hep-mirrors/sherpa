@@ -13,6 +13,7 @@
 
 #include "Data_Read.H"
 
+#include <map>
 #include <string>
 #include <iostream> 
 
@@ -23,7 +24,7 @@ namespace SHERPA {
     std::string m_modeldat, m_beamdat, m_isrdat, m_medat, m_decaydat, m_showerdat;
     std::string m_beamremnantdat, m_fragmentationdat,m_hadrondecaysdat;
 
-    double                 m_bunch_splimits[2];
+    double              m_bunch_splimits[2];
     ATOOLS::Flavour     m_bunch_particles[2];
 
     ATOOLS::Data_Read * p_dataread;
@@ -35,15 +36,15 @@ namespace SHERPA {
     int m_scan_istep;
     ATOOLS::Parameter_Map m_options;
 
-    MODEL::Model_Base                  * p_model;
-    BEAM::Beam_Spectra_Handler         * p_beamspectra;
-    PDF::ISR_Handler                   * p_isrhandler;
-    Matrix_Element_Handler             * p_mehandler;
-    Hard_Decay_Handler                 * p_harddecays;
-    Shower_Handler                     * p_showerhandler;
-    Beam_Remnant_Handler               * p_beamremnants;
-    Fragmentation_Handler              * p_fragmentation;
-    Hadron_Decay_Handler               * p_hadrondecays;
+    MODEL::Model_Base          * p_model;
+    BEAM::Beam_Spectra_Handler * p_beamspectra;
+    PDF::ISR_Handler           * p_isrhandler;
+    MEHandlersMap                m_mehandlers;
+    Hard_Decay_Handler         * p_harddecays;
+    Shower_Handler             * p_showerhandler;
+    Beam_Remnant_Handler       * p_beamremnants;
+    Fragmentation_Handler      * p_fragmentation;
+    Hadron_Decay_Handler       * p_hadrondecays;
   private :
     bool InitializeTheModel();
     bool InitializeTheBeams();
@@ -54,7 +55,6 @@ namespace SHERPA {
     bool InitializeTheBeamRemnants();
     bool InitializeTheFragmentation();
     bool InitializeTheHadronDecays();
-    //bool InitializeTheHardDecays();
     //bool InitializeTheAnalysis();
 
     int  ExtractCommandLineParameters(int argc,char * argv[]);
@@ -70,16 +70,18 @@ namespace SHERPA {
     bool CalculateTheHardProcesses();
     bool InitializeAllHardDecays();
 
-    MODEL::Model_Base           * GetModel()                { return p_model;           }
-    PDF::ISR_Handler            * GetISRHandler()           { return p_isrhandler;      }
-    BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()   { return p_beamspectra;     }
-    Hard_Decay_Handler          * GetHardDecayHandler()     { return p_harddecays;      }
-    Matrix_Element_Handler      * GetMatrixElementHandler() { return p_mehandler;       }
-    Shower_Handler              * GetShowerHandler()        { return p_showerhandler;   }
-    Beam_Remnant_Handler        * GetBeamRemnantHandler()   { return p_beamremnants;    }
-    Fragmentation_Handler       * GetFragmentationHandler() { return p_fragmentation;   }
-    Hadron_Decay_Handler        * GetHadronDecayHandler()   { return p_hadrondecays;    }
-    ATOOLS::Flavour             * GetBunches()              { return m_bunch_particles; }
+    Matrix_Element_Handler      * GetMatrixElementHandler(std::string _key);
+
+    MEHandlersMap               * GetMatrixElementHandlers() { return &m_mehandlers;      }
+    MODEL::Model_Base           * GetModel()                 { return p_model;           }
+    PDF::ISR_Handler            * GetISRHandler()            { return p_isrhandler;      }
+    BEAM::Beam_Spectra_Handler  * GetBeamSpectraHandler()    { return p_beamspectra;     }
+    Hard_Decay_Handler          * GetHardDecayHandler()      { return p_harddecays;      }
+    Shower_Handler              * GetShowerHandler()         { return p_showerhandler;   }
+    Beam_Remnant_Handler        * GetBeamRemnantHandler()    { return p_beamremnants;    }
+    Fragmentation_Handler       * GetFragmentationHandler()  { return p_fragmentation;   }
+    Hadron_Decay_Handler        * GetHadronDecayHandler()    { return p_hadrondecays;    }
+    ATOOLS::Flavour             * GetBunches()               { return m_bunch_particles; }
 
     int     Mode()          { return m_mode; };
     int     NumberOfSteps() { return m_scan_nsteps; }

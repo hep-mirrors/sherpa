@@ -58,11 +58,13 @@ namespace SHERPA {
     Cluster_Partons(Matrix_Element_Handler * me, ATOOLS::Jet_Finder * jf, 
 		    int maxjetnumber, int isrmode, int isrshoweron, int fsrshoweron) ;
     ~Cluster_Partons();
-    bool ClusterConfiguration(ATOOLS::Blob *,double,double);
+    bool ClusterConfiguration(ATOOLS::Blob *,double=1.,double=1.);
     void CalculateWeight(double,double);
     void FillTrees(APACIC::Tree **,APACIC::Tree *,EXTRAXS::XS_Base *);
+    void FillDecayTree(APACIC::Tree *);
 
     int     SetColours(ATOOLS::Vec4D *, ATOOLS::Flavour *);
+    int     SetDecayColours(ATOOLS::Vec4D *, ATOOLS::Flavour *,int,int);
     double  Weight();
     double  Scale();
 

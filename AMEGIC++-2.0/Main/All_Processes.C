@@ -120,9 +120,9 @@ bool All_Processes::CalculateTotalXSec(string _resdir)
   return okay;
 }
 
-bool All_Processes::OneEvent() {
+bool All_Processes::OneEvent(double _mass) {
   SelectOne();
-  return p_selected->OneEvent();
+  return p_selected->OneEvent(_mass);
 }
 
 bool All_Processes::SameEvent() {

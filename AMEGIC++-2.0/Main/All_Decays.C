@@ -5,7 +5,7 @@ using namespace ATOOLS;
 using namespace std;
 
 All_Decays::All_Decays(Interaction_Model_Base * _model,Topology * _top) :
-  p_model(_model), p_top(_top)
+  p_model(_model), p_top(_top), p_decay(NULL)
 {
   Vertex * vertex = p_model->GetVertex();
   for (int i=0;i<vertex->MaxNumber();++i) {
@@ -23,13 +23,18 @@ bool All_Decays::AddToDecays(const Flavour & flav)
     m_particles.insert(flav);
     return 1;
   }
+  msg.Error()<<"Error in All_Decays::AddToDecays("<<flav<<") :"<<endl
+	     <<"   could not add flavour to list of all_decays, no vertex found. Abort run."<<endl;
+  abort();
   return 0;
 }
 
 void All_Decays::PrintDecayings()
 {
-  msg.Out()<<"Final list : "<<m_particles.size()<<endl;
-  for (FlSetIter flit=m_particles.begin();flit!=m_particles.end();++flit) msg.Out()<<(*flit)<<endl;
+  if (rpa.gen.Tracking()) {
+    msg.Out()<<"Final list : "<<m_particles.size()<<endl;
+    for (FlSetIter flit=m_particles.begin();flit!=m_particles.end();++flit) msg.Out()<<(*flit)<<endl;
+  }
 }
 
 bool All_Decays::CheckInVertex(Flavour flav)
@@ -44,6 +49,7 @@ bool All_Decays::CalculateWidths(std::string)
   for (DMIterator dmit=m_decays.begin();dmit!=m_decays.end();dmit++) {
     dmit->second->CalculateWidths();
   }
+  return 1;
 }
 
 double All_Decays::Width(ATOOLS::Flavour _fl) 
@@ -64,7 +70,16 @@ Full_Decay_Table * All_Decays::GetFullDecayTable(ATOOLS::Flavour _fl)
   return NULL;
 }
 
-
+bool All_Decays::UnweightedEvent(ATOOLS::Decay_Channel * _dec,double _mass)
+{
+  DMIterator dit = m_decays.find(_dec->GetDecaying());
+  for (int i=0;i<dit->second->NumberOfChannels();++dit) {
+    if (dit->second->GetChannel(i)==_dec) {
+      p_decay = dit->second->GetFullChannel(i);
+      return p_decay->OneEvent(_mass);
+    } 
+  }
+}
 
 bool All_Decays::InitializeDecayTables() {
   BinaryDecays();
@@ -82,6 +97,7 @@ void All_Decays::BinaryDecays()
   bool                 skippit;
   DMIterator           dmit;
   for (FlSetIter flit=m_particles.begin();flit!=m_particles.end();++flit) {
+    msg.Tracking()<<"Construct decays for "<<(*flit)<<endl;
     skippit = 0;
     dmit    = m_decays.find((*flit));
     if (dmit->first==(*flit)) {
@@ -104,6 +120,8 @@ void All_Decays::BinaryDecays()
 	  for (int j=1;j<3;j++) dc->AddDecayProduct(flavs[j]);
 	  dc->CreateDecay();
 	  dt->AddDecayChannel(dc);
+	  msg.Tracking()<<"Added Decay_Channel :"<<endl;
+	  if (rpa.gen.Tracking()) dc->Output();
 	}
       }
       m_decays.insert(std::make_pair((*flit),dt));
@@ -176,8 +194,11 @@ bool All_Decays::InitializeDecays() {
   }
   msg.Tracking()<<"All_Decays::InitializeDecays() ";
   if (okay) msg.Tracking()<<" successful."<<endl;
-       else msg.Tracking()<<" failed."<<endl;
-  
+  else {
+    msg.Tracking()<<" failed."<<endl;
+    msg.Error()<<"Some libraries were missing ! Type make install and rerun."<<endl;
+    abort();
+  }
   return okay; 
 }
 

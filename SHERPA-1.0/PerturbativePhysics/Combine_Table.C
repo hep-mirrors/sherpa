@@ -139,7 +139,7 @@ Leg * Combine_Table::CombineLegs(Leg *legs, int i, int j, int _nlegs)
 
 void Combine_Table::CombineMoms(Vec4D* _moms , int i, int j, int maxl) 
 {
-    // assume i < j
+  // assume i < j
   for (int l=0; l<j; ++l) {
     if (l==i) { 
       if (i<2) moms[i] = _moms[i] - _moms[j];      
@@ -147,8 +147,7 @@ void Combine_Table::CombineMoms(Vec4D* _moms , int i, int j, int maxl)
     }
     else       moms[l] = _moms[l];
   }
-  for (int l=j+1; l<=maxl; ++l) 
-    moms[l-1]=_moms[l];
+  for (int l=j+1; l<=maxl; ++l) moms[l-1]=_moms[l];
 }
 
 void Combine_Table::CombineMoms(Vec4D * _moms ,int i,int j,int maxl,Vec4D *& omoms) 
@@ -162,8 +161,7 @@ void Combine_Table::CombineMoms(Vec4D * _moms ,int i,int j,int maxl,Vec4D *& omo
     }
     else       omoms[l] = _moms[l];
   }
-  for (int l=j+1; l<=maxl; ++l) 
-    omoms[l-1]=_moms[l];
+  for (int l=j+1; l<=maxl; ++l) omoms[l-1]=_moms[l];
 }
 
 void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
@@ -176,7 +174,7 @@ void Combine_Table::FillTable(Leg **_legs,int _nlegs, int _nampl)
   // determine possible combinations and corresponding y_ij  if nlegs>4
   if (nlegs>4) {
     int start=0;
-    // cluster only initial state only if isrshower and isr_x is on. 
+    // cluster initial state only if isrshower and isr_x is on. 
     if (!m_isrshoweron) start=2;
     for (int i=start; i<nlegs; ++i) {  
       if (!m_isr1on && i==0) i=1;

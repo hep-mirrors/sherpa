@@ -44,18 +44,20 @@ bool Full_Decay_Channel::CreateDecay()
     flavs[i] = (*fl);
   }
   if (decs.size()==2) p_proc = new Single_Process(1,decs.size(),flavs);
-  else p_proc = new Single_Process(1,decs.size(),flavs,NULL,NULL,NULL,2);
+                 else p_proc = new Single_Process(1,decs.size(),flavs,NULL,NULL,NULL,2);
+  m_dec.SetProcessName(p_proc->Name());
 }
 
 bool Full_Decay_Channel::CalculateWidth() 
 {
 }
 
+
 void Full_Decay_Channel::SetWidth(double _w ) 
 {
-  Output();
   if (_w<0.) m_dec.SetWidth(p_proc->Total()); 
   else m_dec.SetWidth(_w);
+  if (rpa.gen.Events()) Output();
 }
 
 //-----------------------------------------------------------------------
@@ -169,7 +171,7 @@ void Full_Decay_Table::CalculateWidths()
 {
   if (m_isevaluated) return;
   for (int i=0;i<m_decaymodes.size();i++) {
-    msg.Tracking()<<"Full_Decay_Table::CalculateWidths for "<<m_decaymodes[i]->Size()<<"."<<endl;
+    msg.Tracking()<<"Full_Decay_Table::CalculateWidths for "<<m_decaymodes[i]->Size()<<" decay(s)."<<endl;
     m_decaymodes[i]->CalculateTotalXSec(string(""));
   }
   for (int i=0;i<m_channels.size();i++) {
@@ -188,6 +190,17 @@ Decay_Channel * Full_Decay_Table::GetChannel(int _ch)
     return new Decay_Channel();
   }
   return m_channels[_ch]->GetDecayChannel();
+}
+
+Full_Decay_Channel * Full_Decay_Table::GetFullChannel(int _ch) 
+{
+  if (_ch<0 || _ch>=m_channels.size()) {
+    msg.Error()<<"Error in Full_Decay_Table::GetFullChannel("<<_ch<<")."<<endl
+	       <<"    Out of bounds : 0 ... "<<m_channels.size()-1<<"."<<endl
+	       <<"    Return NULL."<<endl;
+    return NULL;
+  }
+  return m_channels[_ch];
 }
 
 void Full_Decay_Table::Output() {

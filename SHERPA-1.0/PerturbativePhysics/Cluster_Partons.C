@@ -1,5 +1,6 @@
 #include "Cluster_Partons.H"
 #include "Message.H"
+#include "Flow.H"
 #include "Matrix_Element_Handler.H"
 #include "Initial_State_Shower.H"
 #include "Final_State_Shower.H"
@@ -56,18 +57,16 @@ Cluster_Partons::~Cluster_Partons()
 }
 
 bool Cluster_Partons::ClusterConfiguration(Blob * _blob,double _x1,double _x2) {
-  int nin         = p_me->Nin();
-  int nout        = p_me->Nout();
-  int nampl       = p_me->NumberOfDiagrams();
-
+  p_blob          = _blob;
+  int    nin      = p_me->Nin();
+  int    nout     = p_me->Nout();
+  int    nampl    = p_me->NumberOfDiagrams();
   int    nlegs    = nin + nout;
   Leg ** legs     = 0;
+  bool reuse      = 0;
 
-  p_blob          = _blob;
-
-
-  bool reuse=0;
-
+  if (nin==1) return 0;
+ 
   // start cluster algorithm :
   if (!reuse) {
     if (p_combi) delete p_combi;
@@ -260,7 +259,65 @@ void Cluster_Partons::CalculateWeight(double hard,double jet)
 }
 
 
-int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
+int Cluster_Partons::SetDecayColours(ATOOLS::Vec4D * p, Flavour * fl,int col1,int col2)
+{
+  int ncol   = 0;
+  int nquark = 0;
+  int ngluon = 0;
+  for (int i=0; i<3; ++i) {
+    if (fl[i].Strong()) {
+      ++ncol;
+      if (fl[i].IsQuark() || fl[i].IsSquark()) ++nquark;
+      if (fl[i].IsGluon() || fl[i].IsGluino()) ++ngluon;
+    }
+  }  
+  m_colors[0][0] = col1; m_colors[0][1] = col2; 
+  for (int i=1; i<3; ++i) m_colors[i][0] = m_colors[i][1] = 0;
+  m_scale = p[0].Abs2();
+  switch (ncol) {
+  case 0: 
+    // no colours at all.
+    return 0;
+  case 2:
+    //3->31 8->81
+    if (fl[0].Strong()) {
+      for (short int i=1;i<3;i++) {
+	if (fl[i].Strong()) {
+	  for (short int j=0;j<2;j++) m_colors[i][j] = m_colors[0][j];
+	  return 0;
+	}
+      }
+    }
+    // 1->33 1->88
+    if (col1==0 && col2==0) {
+      if ((fl[1].IsQuark()||fl[1].IsSquark()) && (fl[2].IsQuark()||fl[2].IsSquark())) {
+	if (fl[1].IsAnti() && !(fl[2].IsAnti())) {
+	  m_colors[1][1] = m_colors[2][0] = ATOOLS::Flow::Counter();
+	  return 0;
+	}
+	if (fl[2].IsAnti() && !(fl[1].IsAnti())) {
+	  m_colors[1][0] = m_colors[2][1] = ATOOLS::Flow::Counter();
+	  return 0;
+	}
+      }
+      if ((fl[1].IsGluon()||fl[1].IsGluino()) && (fl[2].IsGluon()||fl[2].IsGluino())) {
+	m_colors[1][1] = m_colors[2][0] = ATOOLS::Flow::Counter();
+	m_colors[1][0] = m_colors[2][1] = ATOOLS::Flow::Counter();
+	return 0;
+      }
+    }
+  case 3:
+  default :
+    msg.Error()<<"Error in Cluster_Partons::SetDecayColours:"<<endl
+	       <<"   Cannot handle single color in 1 -> 2 process :"
+               <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<endl
+	       <<"   Will abort the run."<<endl;
+    abort();
+  }
+}
+
+
+int Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
 {
   // *** 2 -> 2 processes with unambiguous coulor structure
   // (a) no colors
@@ -269,65 +326,68 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
   // (d) two gluons (ADD-Model) 
   // (e) three gluons (ADD-Model)
 
+  int ncol   = 0;
+  int nquark = 0;
+  int ngluon = 0;
+  for (int i=0; i<4; ++i) {
+    if (fl[i].Strong()) {
+      ++ncol;
+      if (fl[i].IsQuark() || fl[i].IsSquark()) ++nquark;
+      if (fl[i].IsGluon() || fl[i].IsGluino()) ++ngluon;
+    }
+  }
 
   for (int i=0; i<4; ++i) m_colors[i][0]=m_colors[i][1]=0;
   double s = (p[0]+p[1]).Abs2();
   double t = (p[0]-p[2]).Abs2();
   double u = (p[0]-p[3]).Abs2();
-
-  m_scale=s;
-  
-  int ncol   = 0;
-  int nquark = 0;
-  int ngluon = 0;
-  for (int i=0; i<4; ++i) if (fl[i].Strong()) {
-    ++ncol;
-    if (fl[i].IsQuark() || fl[i].IsSquark()) ++nquark;
-    if (fl[i].IsGluon() || fl[i].IsGluino()) ++ngluon;
-  }
+  m_scale = s;
 
   // (a) no colors
   if (ncol==0) return 0;
 
   if (ncol==1) {
-    msg.Error()<<"ERROR: Can not handle color singlet in 2 -> 2 process!"<<endl;
+    msg.Error()<<"Error in Cluster_Partons::SetColours:"<<endl
+	       <<"   Cannot handle single color in 2 -> 2 process :"
+               <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<endl
+	       <<"   Will abort the run."<<endl;
     abort();
-    return 1;
   }  
-
+  
   int cols[3]={0,0,0};
+
   // (b) two quarks
-  if (ncol==2 && nquark==2)
-    cols[0]=cols[1]=500;
+  if (ncol==2 && nquark==2) cols[0]=cols[1]=500;
 
   // (c) two quarks and one gluon (and one (massive) boson)
   if (ncol==3 && nquark==2 && ngluon==1) {
     cols[0]=500;
-    cols[1]=501;
+    cols[1]=500+1;
     // in case one leg is massive we add all m^2 to the pt:
-    m_scale = (sqr(p[3][1])+sqr(p[3][2])+p[2].Abs2()+p[3].Abs2());
     // naive:    m_scale = (2.*s*t*u)/(s*s+t*t+u*u);
+    m_scale = (sqr(p[3][1])+sqr(p[3][2])+p[2].Abs2()+p[3].Abs2());
   }
   
   // (d) two gluons (ADD)
   if (ncol==2 && nquark==0 && ngluon==2) {
     cols[0]=500;
-    cols[1]=501;
+    cols[1]=500+1;
   }
 
   // (e) three gluons (ADD-Model)
   if (ncol==3 && nquark==0 && ngluon==3) {
     cols[0]=500;
-    cols[1]=501;
-    cols[2]=502;
+    cols[1]=500+1;
+    cols[2]=500+2;
   }
 
 
   if (cols[0]==0) {
-    msg.Error()<<"ERROR: in Cluster_Partons::SetColours "<<endl
-	       <<"Can not handle color structure in 2 -> 2 process!"<<endl;
+    msg.Error()<<"Error in Cluster_Partons::SetColours:"<<endl
+	       <<"   Cannot handle color structure in 2 -> 2 process :"
+               <<"   "<<fl[0]<<" "<<fl[1]<<" "<<fl[2]<<" "<<fl[3]<<endl
+	       <<"   Will abort the run."<<endl;
     abort();
-    return 1;
   }
 
   ncol=0;
@@ -382,8 +442,67 @@ int  Cluster_Partons::SetColours(ATOOLS::Vec4D * p, Flavour * fl)
     }
   }
   return 0;
-
 }
+
+void Cluster_Partons::FillDecayTree(Tree * fin_tree)
+{
+  if (!fin_tree && m_fsrshoweron) {
+    msg.Error()<<"ERROR in Cluster_Partons::FillTrees: no trees! no shower to be performed! "<<endl;
+    return;
+  } 
+  if (p_blob->NInP()!=1 || p_blob->NOutP()!=2) {
+    msg.Error()<<"ERROR in Cluster_Partons::FillTrees: wrong number of articles in blob."<<endl;
+    return;
+  }
+
+  if (!m_fsrshoweron) {
+    // prepare dummy tree
+    if (!p_local_tree)  p_local_tree=new Tree();
+    p_local_tree->Reset();
+    fin_tree = p_local_tree;
+  }
+
+  std::vector<Knot *> knots;
+  knots.reserve(3);
+
+  Knot * knot  = fin_tree->NewKnot();
+  *knot->part  = p_blob->InParticle(0);
+  knot->part->SetStatus(2);
+  knot->stat   = 0;
+  knot->z      = p_blob->OutParticle(0)->Momentum()[0]/knot->part->Momentum()[0];
+  knot->E2     = sqr(knot->part->Momentum()[0]);
+  knot->t      = knot->part->Momentum().Abs2();
+  knot->thcrit = M_PI;
+  knot->tout   = knot->t;
+  knots.push_back(knot);
+
+  knot         = fin_tree->NewKnot();
+  *knot->part  = p_blob->OutParticle(0);
+  knot->stat   = 3;
+  knot->E2     = knots[0]->t;
+  knot->t      = knots[0]->t;
+  knot->thcrit = M_PI;
+  knot->tout   = Max(knot->part->Momentum().Abs2(),sqr(knot->part->Flav().Mass()));
+  knots.push_back(knot);
+
+  knot         = fin_tree->NewKnot();
+  *knot->part  = p_blob->OutParticle(1);
+  knot->stat   = 3;
+  knot->E2     = knots[0]->t;
+  knot->t      = knots[0]->t;
+  knot->thcrit = M_PI;
+  knot->tout   = Max(knot->part->Momentum().Abs2(),sqr(knot->part->Flav().Mass()));
+  knots.push_back(knot);
+
+
+  for (int i=i;i<3;i++) {
+    for (int j=0;j<2;j++) {
+      knots[i]->part->SetFlow(j+1,m_colors[i][j]);
+    }	
+  }
+  EstablishRelations(knots[0],knots[1],knots[2],1);
+}
+
 
 void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
 {
@@ -451,14 +570,14 @@ void Cluster_Partons::FillTrees(Tree ** ini_trees,Tree * fin_tree,XS_Base * xs)
   }
 
   if (mo) {
-  *(mo->part) = Particle(0,Flavour(kf::none),p_ct->Momentum(2)+p_ct->Momentum(3));
-  mo->part->SetInfo('M');
-  mo->part->SetStatus(2);
-  mo->stat   = 0;
-  mo->z      = knots[2]->part->Momentum()[0]/mo->part->Momentum()[0];
-  mo->E2     = sqr(mo->part->Momentum()[0]);
-  mo->t      = mo->part->Momentum().Abs2();
-  mo->thcrit = M_PI;
+    *(mo->part) = Particle(0,Flavour(kf::none),p_ct->Momentum(2)+p_ct->Momentum(3));
+    mo->part->SetInfo('M');
+    mo->part->SetStatus(2);
+    mo->stat   = 0;
+    mo->z      = knots[2]->part->Momentum()[0]/mo->part->Momentum()[0];
+    mo->E2     = sqr(mo->part->Momentum()[0]);
+    mo->t      = mo->part->Momentum().Abs2();
+    mo->thcrit = M_PI;
   }
 
   EstablishRelations(mo,knots[0],knots[1],0);

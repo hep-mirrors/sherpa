@@ -106,7 +106,7 @@ namespace AMEGIC {
     double         DSigma(ATOOLS::Vec4D *,bool);
     double         DSigma2();
     double         operator()(ATOOLS::Vec4D *);
-    bool           OneEvent();
+    bool           OneEvent(double = -1.);
     bool           SameEvent();
     double         WeightedEvent();
     double         SameWeightedEvent();

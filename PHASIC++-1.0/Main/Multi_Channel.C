@@ -299,6 +299,11 @@ void Multi_Channel::GenerateWeight(int n,Vec4D* p,Cut_Data * cuts)
 
 void Multi_Channel::GenerateWeight(Vec4D * p,Cut_Data * cuts)
 {
+  if (channels.size()==1) {
+    channels[0]->GenerateWeight(p,cuts);
+    if (channels[0]->Weight()!=0) m_weight = channels[0]->Weight();
+    return;
+  }
   m_weight = 0.;
   for (short int i=0; i<channels.size(); ++i) {
     if (channels[i]->Alpha() > 0.) {

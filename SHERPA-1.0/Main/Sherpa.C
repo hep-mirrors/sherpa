@@ -1,5 +1,6 @@
 #include "Sherpa.H"
 #include "Signal_Processes.H"
+#include "Hard_Decays.H"
 #include "Jet_Evolution.H"
 #include "Hadronization.H"
 #include "Message.H"
@@ -51,9 +52,11 @@ bool Sherpa::InitializeTheEventHandler()
 {
   p_analysis        = new Sample_Analysis();
   p_eventhandler    = new Event_Handler();
-  p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler()));
+  p_eventhandler->AddEventPhase(new Signal_Processes(p_inithandler->GetMatrixElementHandler(std::string("SignalMEs")),
+						     p_inithandler->GetHardDecayHandler()));
+  p_eventhandler->AddEventPhase(new Hard_Decays(p_inithandler->GetHardDecayHandler()));
   p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,1));
-  p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandler(),
+  p_eventhandler->AddEventPhase(new Jet_Evolution(p_inithandler->GetMatrixElementHandlers(),
 						  p_inithandler->GetShowerHandler()));
   p_eventhandler->AddEventPhase(new Analysis_Phase(p_analysis,2));
   p_eventhandler->AddEventPhase(new Hadronization(p_inithandler->GetBeamRemnantHandler(),

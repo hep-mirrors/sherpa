@@ -16,11 +16,11 @@
 namespace SHERPA {
   class Amegic_Apacic_Interface : public Perturbative_Interface {
   private :
-    int     m_type;
+    int    m_type;
     double m_ycut,m_jetscale;
 
     ATOOLS::Jet_Finder * p_jf;
-    Cluster_Partons       * p_cluster;
+    Cluster_Partons    * p_cluster;
     /*! 
       Library of 2 -> 2 processes from Extra distribution (to extract the
       initial colour structure of the hardest 2->2 process within the hard blob).

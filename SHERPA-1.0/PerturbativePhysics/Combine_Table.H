@@ -67,8 +67,6 @@ namespace SHERPA {
     Combine_Data(const Combine_Data &);
     Combine_Data(int, int, double, int);
     ~Combine_Data();
-
-    // only friends can access the internal data
     friend class Combine_Table;
     friend std::ostream& operator<< (std::ostream&,Combine_Data &);
     friend std::ostream& operator<< (std::ostream&,Combine_Table *);

@@ -79,7 +79,7 @@ namespace AMEGIC {
     double         Differential2();
     double         DSigma(ATOOLS::Vec4D *,bool);
     double         DSigma2();
-    bool           OneEvent();
+    bool           OneEvent(double = -1.);
     bool           SameEvent();
     double         WeightedEvent();
     double         SameWeightedEvent();

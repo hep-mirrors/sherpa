@@ -35,26 +35,33 @@ namespace SHERPA {
 
     ATOOLS::Data_Read    * p_dataread;
 
-    bool RescaleJetrates() ;
-
-    int InitializeSimpleXS(MODEL::Model_Base *,
-			   BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
-    int InitializeAmegic(MODEL::Model_Base *,
-			 BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
-    bool UnweightedEvent();
+    bool   RescaleJetrates() ;
+    int    InitializeSimpleXS(MODEL::Model_Base *,
+			      BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
+    int    InitializeAmegic(MODEL::Model_Base *,
+			    BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
+    bool   UnweightedEvent();
     double WeightedEvent();
   public :
     Matrix_Element_Handler(std::string,std::string,MODEL::Model_Base *,
+			   Matrix_Element_Handler *);
+    Matrix_Element_Handler(std::string,std::string,MODEL::Model_Base *,
 			   BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *,
-			   AMEGIC::Amegic *);
+			   Matrix_Element_Handler *);
     ~Matrix_Element_Handler();
 
     bool InitializeProcesses(BEAM::Beam_Spectra_Handler *,PDF::ISR_Handler *);
+    bool InitializeDecays(bool);
+    bool AddToDecays(ATOOLS::Flavour &);
+    bool InitializeDecayTables(); 
+    bool CalculateWidths();
+    bool FillDecayTable(ATOOLS::Decay_Table *,bool); 
     bool CalculateTotalXSecs(int);
     bool PrepareXSecTables();
     bool LookUpXSec(double,bool,std::string);
 
     bool GenerateOneEvent();
+    bool GenerateOneEvent(ATOOLS::Decay_Channel *,double);
     bool GenerateSameEvent();
 
     std::string          SignalGenerator();
@@ -62,8 +69,10 @@ namespace SHERPA {
     std::string          Name();
     int                  Nin();
     int                  Nout();
+    int                  NDecOut();
     int                  MaxJets();
     ATOOLS::Vec4D      * Momenta();
+    ATOOLS::Vec4D      * DecMomenta();
     ATOOLS::Flavour    * Flavs();
     int                  InSwaped();
 
@@ -73,9 +82,12 @@ namespace SHERPA {
     EXTRAXS::XS_Base   * GetXS();
     double               Weight();
 
-    PDF::ISR_Handler   * GetISR_Handler() { return p_isr; }
+    PDF::ISR_Handler   * GetISR_Handler()   { return p_isr; }
     int                  UseSudakovWeight() { return m_sudakovon; }
   };
+
+  typedef std::map<std::string,Matrix_Element_Handler *> MEHandlersMap;
+  typedef MEHandlersMap::iterator                        MEHandlerIter;
 
   /*!
     \class Matrix_Element_Handler

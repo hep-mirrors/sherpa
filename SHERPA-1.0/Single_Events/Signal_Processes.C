@@ -5,8 +5,9 @@ using namespace SHERPA;
 using namespace ATOOLS;
 using namespace std;
 
-Signal_Processes::Signal_Processes(Matrix_Element_Handler * _mehandler) :
-  p_mehandler(_mehandler)
+Signal_Processes::Signal_Processes(Matrix_Element_Handler * _mehandler,
+				   Hard_Decay_Handler * _hdhandler) :
+  p_mehandler(_mehandler), p_hdhandler(_hdhandler)
 {
   m_name      = string("Signal_Processes : ")+p_mehandler->Name();
   m_type      = string("Perturbative");
@@ -79,16 +80,32 @@ void Signal_Processes::FillBlob(Blob * _blob)
   for (int i=0;i<p_mehandler->Nin();i++) {
     particle = new Particle(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
     particle->SetNumber(int(particle));
-    particle->SetDecayBlob(_blob);
     particle->SetStatus(2);
     particle->SetInfo('G');
+    particle->SetDecayBlob(_blob);
     _blob->AddToInParticles(particle);
   }
+  bool unstable = false; 
   for (int i=p_mehandler->Nin();i<p_mehandler->Nin()+p_mehandler->Nout();i++) {
     particle = new Particle(i,p_mehandler->Flavs()[i],p_mehandler->Momenta()[i]);
-    particle->SetProductionBlob(_blob);
+    if (!(particle->Flav().IsStable())) unstable = true;
     particle->SetStatus(1);
     particle->SetInfo('H');
+    particle->SetProductionBlob(_blob);
     _blob->AddToOutParticles(particle);
   }
+  if (unstable) {
+    if (p_hdhandler->On()) {
+      p_hdhandler->ResetTables();
+      p_hdhandler->DefineSecondaryDecays(_blob);
+      return;
+    }
+    else {
+      msg.Error()<<"Error in Signal_Processes::FillBlob."<<endl
+		 <<"   Should treat unstable particles without Hard_Decay_Handler = On."<<endl
+		 <<"   Assume no reasonable decay tables. Will abort."<<endl;
+      abort();
+    }
+  }
 }
+

@@ -492,13 +492,11 @@ void ATOOLS::ParticleInit(std::string path)
   
     for(;part2;) {
       part2>>kfc>>mass>>width>>charge>>icharge>>spin>>Take>>stable>>name;
-      if (kfc!=kfcold) {  // read last line only once!
-	
+      if (kfc!=kfcold) {  // read last line only once!	
 	//	if (Take) {
 	  ++pc;
- 
 	  *(pi++)=Part_Info( kf::code(kfc), mass, width, charge, icharge, 
-			   spin, Take, stable, name);
+			     spin, Take, stable, name);
 	  kfcold=kfc;
 	  //	}
       }
