@@ -16,8 +16,6 @@ namespace SHERPA {
     int    * jmohep, * jdahep, * isthep, * idhep;
     int      nhep;
     
-    APHYTOOLS::Parton_List mypl;
-    
     void Parton2HepEvt(APHYTOOLS::Parton *,int *,int *,int);
     void MakeColorChain();
   public:

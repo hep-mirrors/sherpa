@@ -40,7 +40,6 @@ IO_HepEvt::~IO_HepEvt() {
 
 void IO_HepEvt::Blobs2HepEvt(Blob_List * blobs, std::string type, int & _nhep) {
   nhep = _nhep;
-  if (nhep==0) mypl.clear();
 
   int position;
   for (Blob_List::const_iterator bit=blobs->begin(); bit!=blobs->end();++bit) {
@@ -52,8 +51,6 @@ void IO_HepEvt::Blobs2HepEvt(Blob_List * blobs, std::string type, int & _nhep) {
     position = (*bit)->Type().find(type);
     if (position > -1) Blob2HepEvt((*bit),1);
   }
-
-  //mypl.clear();
 
   // f2hepevt_(nhep, isthep, idhep, jmohep, jdahep, phep, vhep);
 
@@ -99,6 +96,9 @@ void IO_HepEvt::Blob2HepEvt(Blob * blob, int mode) {
   dahep[0] = dahep[1] = -1;
   msg.Debugging()<<blob->Type()<<" "<<mode<<" "<<mohep[0]<<" "<<mohep[1]<<endl;
   for (int i=0;i<blob->NOutP();++i) Parton2HepEvt(blob->OutParton(i),mohep,dahep,mode);
+
+  delete [] mohep;
+  delete [] dahep;
 }
 
 
@@ -120,7 +120,7 @@ void IO_HepEvt::Parton2HepEvt(Parton * parton,int mode) {
   if (pabs<0) phep[4+nhep*5] = 0.;
          else phep[4+nhep*5] = sqrt(pabs);
 
-  if (parton->Prod() != 0) {
+  if (parton->ProductionBlob() != 0) {
     for (short int j=1; j<4; ++j) {
       vhep[(j-1)+nhep*4] = parton->XProd()[j];
       vhep[3+nhep*4]     = parton->XProd()[j];
@@ -134,8 +134,6 @@ void IO_HepEvt::Parton2HepEvt(Parton * parton,int mode) {
   jmohep[1+nhep*2]   = 0;
   jdahep[nhep*2]     = 0;
   jdahep[1+nhep*2]   = 0;
-
-  if (mode) { mypl.push_back(parton); ++nhep; }
 }
 
 
@@ -147,12 +145,6 @@ void IO_HepEvt::Parton2HepEvt(Parton * parton,int * mohep,int * dahep,int mode) 
 	       <<"   nehp>=maxentries "<<endl;
     abort();
   }
-
-  for (Parton_List::iterator pit=mypl.begin();pit!=mypl.end();++pit) {
-    if ( (parton->Flav()     == (*pit)->Flav()) &&
-	 (parton->Momentum() == (*pit)->Momentum()) ) return;
-  }
-
   Parton2HepEvt(parton,0);
 
   if (mohep[0] == -1) {
@@ -174,7 +166,6 @@ void IO_HepEvt::Parton2HepEvt(Parton * parton,int * mohep,int * dahep,int mode) 
       jdahep[2*mohep[1]-1]   = dahep[1];
     }
   }
-  if (mode) { mypl.push_back(parton); ++nhep; }
 }
 
 
