@@ -640,31 +640,36 @@ Summed_PT_Selector::~Summed_PT_Selector() { }
 
 bool Summed_PT_Selector::Trigger(const Vec4D * mom) 
 {
-  double pt;
+  Vec4D pt;
   for (int i=m_nin;i<m_n;i++) {
-    if (crit.Includes(m_fl[i])) {
-      pt += sqrt(sqr(mom[i][1]) + sqr(mom[i][2]));
-    }
+    pt = pt+mom[i].Perp();  
   }
-  if (m_sel_log->Hit( ((pt<ptmin) || (pt>ptmax)) )) return 0;
+  double pp=pt.PPerp();
+  if (m_sel_log->Hit( ((pp<ptmin) || (pp>ptmax)) )) return 0;
   return 1;
 }
 
 double * Summed_PT_Selector::ActualValue() { return NULL; }
 
-void Summed_PT_Selector::BuildCuts(Cut_Data * cuts) { }
+void Summed_PT_Selector::BuildCuts(Cut_Data * cuts) 
+{
+  for (int i=0;i<m_n-1;i++) {
+    for (int j=i+1;j<m_n;j++) {
+      cuts->scut[i][j] = cuts->scut[j][i] = Max(cuts->scut[i][j],sqr(ptmin));
+    }
+  }
+}
 
 void Summed_PT_Selector::UpdateCuts(double sprime,double y,Cut_Data * cuts) { }
  
 void Summed_PT_Selector::SetRange(std::vector<Flavour> _crit,double _min, 
 			       double _max=0.5*rpa.gen.Ecms())
 {
-  if (_crit.size() != 1) {
+  if (_crit.size() != 2) {
     msg.Error()<<"Wrong number of arguments in Summed_PT_Selector::SetRange : "
 			  <<_crit.size()<<endl;
     return;
   }
-  crit  = _crit[0];
   ptmin = _min; 
   ptmax = _max;
 }
