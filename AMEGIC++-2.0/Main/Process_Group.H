@@ -3,14 +3,18 @@
 
 #include "Primitive_Observable_Base.H"
 #include "Process_Base.H"
+#include "Single_Process.H"
 #include "Polarisation.H"
 #include <string>
 
 namespace AMEGIC {
+
+  const int FORCED_MODE = -255;
+
   class Process_Group : public Process_Base {
   protected :
     std::vector<Process_Base *> procs;
-
+    int runmode;
     /*------------------------------------------------------------------------------
 
       Constructors
@@ -20,7 +24,7 @@ namespace AMEGIC {
     Process_Group(int,int,APHYTOOLS::Flavour *&,
 		  ISR::ISR_Handler *,BEAM::Beam_Handler *,
 		  APHYTOOLS::Selector_Data *,
-		  int,int,int,Pol_Info* _pl=0);
+		  int,int,int,Pol_Info* _pl=0,int _runmode=AMPLITUDE_MODE);
     Process_Group();
     ~Process_Group();
     /*------------------------------------------------------------------------------
@@ -56,8 +60,8 @@ namespace AMEGIC {
 				 std::vector<Single_Process *> &);
     bool           SetUpIntegrator();
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
-  private:
     void           Initialize(APHYTOOLS::Selector_Data * _seldata=0);
+  private:
     void           ConstructSelector(APHYTOOLS::Selector_Data * _seldata=0);
     void           InitCuts();
     /*------------------------------------------------------------------------------
@@ -86,7 +90,6 @@ namespace AMEGIC {
   public :
     void           PrintDifferential();
     void           ControlOutput(AMATOOLS::Vec4D * moms);
-    double         DSigma(double, double, double);
 
   };
 }

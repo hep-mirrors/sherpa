@@ -1,5 +1,4 @@
 #include "Process_Group.H"
-#include "Single_Process.H"
 
 #include "Run_Parameter.H"
 #include "Message.H"
@@ -49,19 +48,17 @@ Process_Group::Process_Group() {
   atoms = 1;
 }
 
-
-
 Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
 			     ISR::ISR_Handler * _isr,BEAM::Beam_Handler * _beam,
 			     APHYTOOLS::Selector_Data * _seldata,
 			     int _gen_str,int _kfactorscheme, int _scalescheme, 
-			     Pol_Info * _pl) 
+			     Pol_Info * _pl, int _runmode) 
 {
   msg.Tracking()<<"In Process_Group("<<_nin<<","<<_nout<<") : "<<gen_str<<endl;
   nin = _nin; nout = _nout; isr = _isr; beam = _beam;
   kfactorscheme = _kfactorscheme;
   scalescheme   = _scalescheme;
-
+  runmode = _runmode;
 
   flin    = new Flavour[nin];
   flout   = new Flavour[nout];  
@@ -72,20 +69,20 @@ Process_Group::Process_Group(int _nin,int _nout,Flavour *& _fl,
     flin[i]  = _fl[i];
     if (_pl!=0) plin[i] = _pl[i];
            else plin[i] = Pol_Info(flin[i]); 
-
   }
   for (short int i=0;i<nout;i++) { 
     flout[i] = _fl[i+nin]; 
     if (_pl!=0) plout[i] = _pl[i+nin];
            else plout[i] = Pol_Info(flout[i]); 
   }
-
+  
   string stan,oli;
   GenerateNames(nin,flin,plin,nout,flout,plout,name,stan,oli);
 
-  ConstructProcesses(_seldata);
-  GroupProcesses();
-
+  if (runmode!=FORCED_MODE) {
+    ConstructProcesses(_seldata);
+    GroupProcesses();
+  }
   Initialize(_seldata);
 }
 
@@ -157,7 +154,7 @@ void Process_Group::ConstructProcesses(APHYTOOLS::Selector_Data * _seldata) {
 	for (int i=0;i<nin;i++)  _fl[i]     = _flin[i];  
 	for (int i=0;i<nout;i++) _fl[i+nin] = _flout[i]; 
 	Add(new Single_Process(nin,nout,_fl,isr,beam,_seldata,2,
-			       kfactorscheme,scalescheme,pl));
+			       kfactorscheme,scalescheme,pl,runmode));
       }
     }
     overflow = 0;
@@ -331,13 +328,12 @@ void Process_Group::GroupProcesses() {
   }
 }
 
-
-
 void Process_Group::Add(Process_Base * _proc) 
 {
   if (procs.size()==0) {
     nin     = _proc->Nin();
     nout    = _proc->Nout();
+    fl      = _proc->Flavs();
     nvec    = _proc->Nvec();
     nstrong = _proc->NStrong();
     neweak  = _proc->NEWeak();
@@ -452,24 +448,28 @@ void Process_Group::SetAtoms(bool _atoms) { atoms = _atoms; }
 
   ----------------------------------------------------------------------------------*/
 
-void Process_Group::Initialize(APHYTOOLS::Selector_Data * _seldata) {
+void Process_Group::Initialize(APHYTOOLS::Selector_Data * _seldata) 
+{
+  if (runmode==FORCED_MODE) nvec = (Nin()+Nout());
   fl   = new Flavour[nvec];
-  pl   = new Pol_Info[nvec];
+  Pol_Info * _pl   = new Pol_Info[nvec];
   b    = new int[nvec];
   for (short int i=0;i<nin;i++) { 
     fl[i] = flin[i]; 
-    pl[i] = plin[i]; 
+    _pl[i] = plin[i]; 
     b[i]  = -1; 
   }
   for (short int i=nin;i<nin+nout;i++)  { 
     fl[i] = flout[i-nin]; 
-    pl[i] = plout[i-nin]; 
+    _pl[i] = plout[i-nin];
     b[i]  = 1; 
   } 
   for (short int i=nin+nout;i<nvec;i++) { 
     fl[i] = Flavour(kf::pol); 
     b[i]  = 1; 
   }
+
+  SetPol(_pl);
 
   atoms     = 0;
   selected  = 0;
@@ -899,7 +899,3 @@ void Process_Group::ControlOutput(Vec4D * p)
   msg.Out()<<"-----------------------------------------------------------------------"<<endl;
 }
 
-double Process_Group::DSigma(double s, double t, double u) {
-  // this is a dummy method for the use with XS'
-  AORGTOOLS::msg.Error()<<"Error : Process_Base::Dsigma(s,t,u) called in Single_Process"<<std::endl;
-}

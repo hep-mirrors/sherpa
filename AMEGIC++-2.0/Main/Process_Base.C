@@ -325,6 +325,9 @@ int                  Process_Base::Nin()                 { return nin; }
 int                  Process_Base::Nout()                { return nout; }
 int                  Process_Base::Nvec()                { return nvec; }
 Flavour            * Process_Base::Flavs()               { return fl; }
+Flavour            * Process_Base::FlIn()                { return flin;  }
+Flavour            * Process_Base::FlOut()               { return flout; }
+
 AMATOOLS::Vec4D    * Process_Base::Momenta()             { return moms; }
 
 int                  Process_Base::NStrong()             { return nstrong; }

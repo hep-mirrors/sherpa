@@ -7,12 +7,23 @@
 #include "Helicity.H"
 #include "Amplitude_Handler.H"
 #include "Standard_Selector.H"
+#include "Single_XS.H"
 
 namespace AMEGIC {
+
+  const int IS_XS_FLAG     = -255;
+
+  const int AMPLITUDE_MODE =  1;
+  const int XS_MODE        = -1;
+  const int PATCH_MODE     = 0;
+
   class Single_Process : public Process_Base {
+    
+    EXTRAXS::Single_XS  * xsec;
+    
     std::string           ptypename,libname; 
     Polarisation          pol;
-    double                Norm;
+    double                Norm, ModNorm;
 
     Helicity            * hel;
     Basic_Sfuncs        * BS;
@@ -20,17 +31,24 @@ namespace AMEGIC {
     String_Handler      * shand;
 
     Single_Process      * partner;
+
+    int                   runmode, xsflag;
     /*------------------------------------------------------------------------------
 
       Constructors
 
       ------------------------------------------------------------------------------*/
   public:
+    Single_Process(){};
     Single_Process(int,int,APHYTOOLS::Flavour*,
 		   ISR::ISR_Handler *,BEAM::Beam_Handler *,
 		   APHYTOOLS::Selector_Data *,
-		   int,int,int,Pol_Info* _pl=0);
+		   int,int,int,Pol_Info* _pl=0,int _runmode=AMPLITUDE_MODE);
     ~Single_Process();
+
+    int FindXS();
+    int KFactorScheme() { return kfactorscheme; }
+    int ScaleScheme()   { return scalescheme;   }
 
     void Add(Process_Base *) {
       AORGTOOLS::msg.Error()<<"Error in Single_Process. Method Add called."<<std::endl;
@@ -42,11 +60,12 @@ namespace AMEGIC {
       Generic stuff for initialization of Single_Processes
 
       ------------------------------------------------------------------------------*/
+
   private:
-    void           Initialize(APHYTOOLS::Selector_Data * _seldata=0);
-    void           PolarizationNorm();
-    double         SymmetryFactors();
-    void           InitCuts();
+    virtual void           Initialize(APHYTOOLS::Selector_Data * _seldata=0);
+    virtual void           PolarizationNorm();
+    virtual double         SymmetryFactors();
+    virtual void           InitCuts();
     /*------------------------------------------------------------------------------
 
       Initializing libraries, amplitudes, etc.
@@ -59,11 +78,11 @@ namespace AMEGIC {
     bool           FoundMappingFile(std::string &);
     bool           IsFile(std::string);
   public:
-    int            InitAmplitude(Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
-				 std::vector<Single_Process *> &);
+    virtual int            InitAmplitude(Topology *,AMATOOLS::Vec4D *&,std::vector<double> &,
+					 std::vector<Single_Process *> &);
     void           InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *>);
     bool           SetUpIntegrator();
-    bool           IsFreeOfFourVertex(Point * _p) { return 1-ampl->ExistFourVertex(_p); };
+    virtual bool   IsFreeOfFourVertex(Point * _p) { return 1-ampl->ExistFourVertex(_p); }
 
     /*------------------------------------------------------------------------------
 
@@ -71,17 +90,21 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
   public:
-    Process_Base   * Selected()                      { return this;    }
-    void             SelectOne()                     {                 }
-    void             DeSelect()                      {                 }
-    int              Size()                          { return 1;       }
-    Process_Base   * operator[] (int idx)            { return this;    }
-    std::string      LibName()                       { return libname; }
+    Process_Base   * Selected()                       { return this;        }
+
+    void             SelectOne()                      { selected = this;    }
+    void             SetAnalyse(int _analyse)         { analyse = _analyse; }
+
+    void             DeSelect()                       {                     }
+    int              Size()                           { return 1;           }
+    Process_Base   * operator[] (int idx)             { return this;        }
+    std::string      LibName()                        { return libname;     }
+    void             SetLibName(std::string _libname) { libname = _libname; }
     void             SetTotalXS(int);
-    void             SetScale(double _sc)            { scale = _sc;    }
-    void             Empty();
-    void             SetPartner(Single_Process * _p) { partner = _p;   }
-    Process_Base   * Partner()                       { return partner; }
+    void             SetScale(double _sc)             { scale = _sc;        }
+    virtual void     Empty();
+    void             SetPartner(Single_Process * _p)  { partner = _p;       }
+    Process_Base   * Partner()                        { return partner;     }
 
     /*------------------------------------------------------------------------------
 
@@ -97,11 +120,11 @@ namespace AMEGIC {
     double         Differential2();
     double         DSigma(AMATOOLS::Vec4D *,bool);
     double         DSigma2();
-    double         operator()(AMATOOLS::Vec4D *);
+    virtual double operator()(AMATOOLS::Vec4D *);
     bool           OneEvent();
     bool           SameEvent();
     double         WeightedEvent();
-    int            NumberOfDiagrams();
+    virtual int    NumberOfDiagrams();
     Point        * Diagram(int i);
 
     /*------------------------------------------------------------------------------
@@ -109,9 +132,14 @@ namespace AMEGIC {
       Helpers
       
       ------------------------------------------------------------------------------*/
+
   public:
     void           PrintDifferential();
-    double         DSigma(double, double, double);
+    int            ISRNumber() { return xsec->ISRNumber(); }
+    void           ISRInfo(int i,int & type, double & mass, double & width)
+                               { return xsec->ISRInfo(i,type,mass,width); }
+    void           SetXS(EXTRAXS::Single_XS *);
+
    };
 }
 

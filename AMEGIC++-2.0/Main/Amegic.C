@@ -11,7 +11,6 @@
 #include "Message.H"
 #include "QED_Processes.H"
 #include "QCD_Processes.H"
-#include "XS_Base.H"
 
 
 using namespace AMEGIC;
@@ -70,15 +69,13 @@ Amegic::~Amegic() {
 
   ----------------------------------------------------------------------------------*/
 
-bool Amegic::InitializeProcesses(int _mode) 
+bool Amegic::InitializeProcesses(int _runmode) 
 {
-  mode = _mode;
+  runmode = _runmode;
   msg.Debugging()<<"In Amegic::InitializeProcesses() "<<endl;
-  if (!mode) {
-    procs    = new All_Processes();
-    procs->SetName("All_Processes");
-    procs->SetAtoms(1);
-  }
+  procs    = new All_Processes(runmode);
+  procs->SetName("All_Processes");
+  procs->SetAtoms(1);
 
   seldata      = new Selector_Data(path);
 
@@ -98,11 +95,6 @@ bool Amegic::InitializeProcesses(int _mode)
   splimits     = new double[2];
   splimits[0]  = s*sqr(dr.GetValue<double>("SMIN"));
   splimits[1]  = s*sqr(dr.GetValue<double>("SMAX"));
-  /*
-    splimits[0]  = s*sqr(dr.GetValue<double>("SMIN1"));
-    splimits[1]  = s*sqr(dr.GetValue<double>("SMIN2"));
-    splimits[2]  = s*sqr(dr.GetValue<double>("SMAX"));
-  */
 
   bunches      = new Flavour[2];
 
@@ -121,22 +113,30 @@ bool Amegic::InitializeProcesses(int _mode)
   vector<Single_Process *> links;
   Vec4D * moms  = 0;
 
-  if (!mode) {
-    switch (procs->InitAllProcesses(top,moms,results,links)) { 
-    case 1  : 
-      return 1;
-    case 0  : 
-      msg.Error()<<"Some libraries where missing ! Type make install and rerun."<<endl;
-      return 0;
-    default :
+  switch (procs->InitAllProcesses(top,moms,results,links)) { 
+  case 1  : 
+    if (runmode==XS_MODE) {
+      bool okay = 1;
+      for (int j=0; j<links.size(); j++) if (links[j]->NumberOfDiagrams()!=IS_XS_FLAG) okay = 0;
+      return okay;
+    }
+    return 1;
+  case 0  : 
+    if (runmode==XS_MODE) {
+      msg.Error()<<"Some differentials are not available as fast function ! Try \"-P\"."<<endl;
       return 0;
     }
+    msg.Error()<<"Some libraries were missing ! Type \"make install\" and rerun."<<endl;
+    return 0;
+  default :
+    return 0;
   }
   return 1;
 }
 
 int Amegic::ReadProcesses(string path)
 { 
+  int available;
   msg.Debugging()<<"Open file "<<path+string("/Processes.dat")<<endl;
   ifstream from((path+string("/Processes.dat")).c_str());
   if (!from) {
@@ -221,6 +221,7 @@ int Amegic::ReadProcesses(string path)
 	}
       }
       if (!error) {
+	polbunches = 0;// depends on the parameter files ...
 	if (!beam) {
 	  beam = new Beam_Handler(beamtypes,bunches,polbunches,beams,polbeams,splimits);
 	  if (beam->On()>0) {
@@ -281,48 +282,35 @@ int Amegic::ReadProcesses(string path)
 	  }
 	}
       }
-      if (mode) {
+      if (!error) {
+	nFS = ExtractFlavours(FS,plFS,buf);
 	if (!(procs->CheckExternalFlavours(2,partons,nFS,FS))) {
 	  msg.Tracking()<<"Mismatch of flavours. Cannot initialize this process."<<endl
 			<<"flavours are "<<buf<<endl;
 	}
 	else {
-	  InitializeXS(0);
-	  nmax = 4;
-	  count = procs->Size();
-	}
-      }
-      else {
-	if (!error) {
-	  nFS = ExtractFlavours(FS,plFS,buf);
-	  if (!(procs->CheckExternalFlavours(2,partons,nFS,FS))) {
-	    msg.Tracking()<<"Mismatch of flavours. Cannot initialize this process."<<endl
-			  <<"flavours are "<<buf<<endl;
-	  }
-	  else {
-	    ++count;
-	    msg.Tracking()<<"Init process : "<<partons[0]<<" "<<partons[1]<<" -> ";
-	    for (int j=0;j<nFS;j++) msg.Tracking()<<FS[j]<<" ";
-	    msg.Tracking()<<"  (Check : "<<buf<<" )"<<endl;
-	    
-	    if (nIS+nFS > nmax) nmax = nIS+nFS;
-	    flavs = new Flavour[nIS+nFS];
-	    plavs = new Pol_Info[nIS+nFS];
-	    for (int i=0;i<nIS;i++) { flavs[i]     = partons[i]; plavs[i]     = plpartons[i]; }
-	    for (int i=0;i<nFS;i++) { flavs[i+nIS] = FS[i];      plavs[i+nIS] = plFS[i]; }
-	    bool single = 1;
-	    for (int i=0;i<nIS+nFS;i++) {
-	      msg.Debugging()<<i<<" : "<<flavs[i]<<" : "<<flavs[i].Size()<<endl;
-	      if (flavs[i].Size()>1) { single = 0; break; }
-	    } 
-	    if (single) procs->Add(new Single_Process(nIS,nFS,flavs,isr,beam,seldata,2,
-						      rpa.me.KFactorScheme(),
-						      rpa.me.ScaleScheme(),plavs));
-	    else procs->Add(new Process_Group(nIS,nFS,flavs,isr,beam,seldata,2,
-					      rpa.me.KFactorScheme(),
-					      rpa.me.ScaleScheme(),plavs));
-	    delete [] flavs;
-	  }
+	  ++count;
+	  msg.Tracking()<<"Init process : "<<partons[0]<<" "<<partons[1]<<" -> ";
+	  for (int j=0;j<nFS;j++) msg.Tracking()<<FS[j]<<" ";
+	  msg.Tracking()<<"  (Check : "<<buf<<" )"<<endl;
+	  
+	  if (nIS+nFS > nmax) nmax = nIS+nFS;
+	  flavs = new Flavour[nIS+nFS];
+	  plavs = new Pol_Info[nIS+nFS];
+	  for (int i=0;i<nIS;i++) { flavs[i]     = partons[i]; plavs[i]     = plpartons[i]; }
+	  for (int i=0;i<nFS;i++) { flavs[i+nIS] = FS[i];      plavs[i+nIS] = plFS[i]; }
+	  bool single = 1;
+	  for (int i=0;i<nIS+nFS;i++) {
+	    msg.Debugging()<<"Flavour "<<i<<" : "<<flavs[i]<<" : "<<flavs[i].Size()<<endl;
+	    if (flavs[i].Size()>1) { single = 0; break; }
+	  } 
+	  if (single) procs->Add(new Single_Process(nIS,nFS,flavs,isr,beam,seldata,2,
+						    rpa.me.KFactorScheme(),
+						    rpa.me.ScaleScheme(),plavs,runmode));
+	  else procs->Add(new Process_Group(nIS,nFS,flavs,isr,beam,seldata,2,
+					    rpa.me.KFactorScheme(),
+					    rpa.me.ScaleScheme(),plavs, runmode));
+	  delete [] flavs;
 	}
       }
     }
@@ -333,8 +321,6 @@ int Amegic::ReadProcesses(string path)
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 int Amegic::ExtractFlavours(Flavour*& fl,Pol_Info*& pl,string buf)
 {
@@ -559,34 +545,4 @@ void Amegic::SingleEvents() {
       msg.Debugging()<<endl;
     }
   }
-}
-
-bool Amegic::InitializeXS(int hint) {
-  if ( ( (rpa.gen.Beam1() == Flavour(kf::e)) &&
-	 (rpa.gen.Beam2() == (Flavour(kf::e).Bar())) ) ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::e)).Bar()) &&
-	 (rpa.gen.Beam2() == Flavour(kf::e)) ) ) {
-    procs = (new QED_Processes())->CreateBroker();
-    msg.Debugging()<<"In Amegic::InitializeXS() : "<<std::endl;
-    if (procs) msg.Debugging()<<" Initialised new Broker " 
-			      <<procs->Name()<<std::endl;
-    else msg.Debugging()<<" Cannot initialise new Broker ! "<<std::endl;
-    procs->SetUpIntegrator(isr, beam);
-  }
-  if ( ( (rpa.gen.Beam1() == Flavour(kf::p_plus))         &&
-	 (rpa.gen.Beam2() == (Flavour(kf::p_plus).Bar())) )   ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus)).Bar()) &&
-	 (rpa.gen.Beam2() == Flavour(kf::p_plus)) )           ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus)))       &&
-	 (rpa.gen.Beam2() == Flavour(kf::p_plus)) )           ||
-       ( (rpa.gen.Beam1() == (Flavour(kf::p_plus).Bar())) &&
-	 (rpa.gen.Beam2() == Flavour(kf::p_plus).Bar()) )    ) {
-    procs = (new QCD_Processes())->CreateBroker();
-    msg.Debugging()<<"In Amegic::InitializeXS() : "<<std::endl;
-    if (procs) msg.Debugging()<<" Initialised new Broker " 
-			      <<procs->Name()<<std::endl;
-    else msg.Debugging()<<" Cannot initialise new Broker ! "<<std::endl;
-    procs->SetUpIntegrator(isr, beam);
-  }
-  return 1;
 }

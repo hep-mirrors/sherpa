@@ -8,11 +8,20 @@
 namespace AMEGIC {
   //! The container for a list of processes.
   class All_Processes : public Process_Group {
+  protected:
+    
+    int runmode;
+
   public:
+
+    All_Processes(int);
+
     int  InitAllProcesses(Topology *,AMATOOLS::Vec4D *&,
 			  std::vector<double> &,std::vector<Single_Process *> &);
 
     void Add(Process_Base *);
+    void AddProc(Process_Base *);
+
     void SelectOne();
     void RescaleXSec(double);
 

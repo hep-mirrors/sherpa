@@ -94,7 +94,6 @@ namespace AMEGIC {
     virtual void             SelectOne()                                           =0;
     virtual void             DeSelect()                                            =0;
     virtual void             Add(Process_Base *)                                   =0;
-    //    virtual void             Add(EXTRAXS::XS_Base *) { return; }
     virtual int              Size()                                                =0;
     virtual Process_Base  *  operator[] (int idx)                                  =0;
 
@@ -126,7 +125,6 @@ namespace AMEGIC {
     virtual double Differential(AMATOOLS::Vec4D *)                                 =0;
     virtual double Differential2()                                                 =0;
     virtual double DSigma(AMATOOLS::Vec4D *,bool)                                  =0;
-    //    virtual double DSigma(double, double, double)                                  =0;
     virtual double DSigma2()                                                       =0;
     virtual double operator()(AMATOOLS::Vec4D *) {}
     virtual double Scale(AMATOOLS::Vec4D *);
@@ -135,8 +133,6 @@ namespace AMEGIC {
     virtual bool   SameEvent()                                                     =0;
     virtual double WeightedEvent()                                                 =0;
 
-    //virtual double Differential(double,double,double)                            =0;
-    //virtual double DSigma(double,double,double)                                  =0;
     /*------------------------------------------------------------------------------
 
       Access methods
@@ -146,6 +142,9 @@ namespace AMEGIC {
     virtual int                             Nout();
     virtual int                             Nvec();
     virtual APHYTOOLS::Flavour            * Flavs();
+    virtual APHYTOOLS::Flavour            * FlIn(); 
+    virtual APHYTOOLS::Flavour            * FlOut();
+
     virtual AMATOOLS::Vec4D               * Momenta();
 
     virtual int                             NStrong();
@@ -176,8 +175,14 @@ namespace AMEGIC {
     virtual PHASIC::Single_Channel        * FSRIntegrator(int i);
     virtual int                             ISRNumber();
     virtual void                            ISRInfo(int,int &,double &,double &);
+    virtual bool                            SetISRParams(int *)  { return 0; }
     virtual int                             BeamNumber();
     virtual void                            BeamInfo(int,int &,double &,double &);
+    virtual bool                            SetBeamParams(int *) { return 0; }
+
+    virtual int KFactorScheme() { return 0; }
+    virtual int ScaleScheme()   { return 0; }
+    virtual PHASIC::Phase_Space_Handler * GetPSH() { return 0; }
 
     virtual double                          Total();
     virtual double                          Max();
@@ -192,13 +197,15 @@ namespace AMEGIC {
 
       ------------------------------------------------------------------------------*/
 
+    void                      SetPol(AMEGIC::Pol_Info * _pl) { pl = _pl; }
+
     virtual void               PrintDifferential() = 0;
 
     virtual EXTRAXS::XS_Base * GetXS() { return 0; }
+    virtual void               Initialize(APHYTOOLS::Selector_Data *, 
+					  ISR::ISR_Handler *, BEAM::Beam_Handler *) { return; }
 
-    virtual bool SetUpIntegrator(ISR::ISR_Handler *, BEAM::Beam_Handler *) { return 0; }
-
-    // for testing purposes only ...
+// for testing purposes only ...
 
     virtual int  InitAllProcesses(Topology *,AMATOOLS::Vec4D *&,
 		std::vector<double> &,std::vector<Single_Process *> &) { return 0; }

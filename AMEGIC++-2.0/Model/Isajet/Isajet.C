@@ -7,6 +7,7 @@ using namespace AMEGIC;
 using namespace AMATOOLS;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
+using namespace std;
 
 extern "C" {
   void sugrun_(float&,float&,float&,float&,float&,float&);

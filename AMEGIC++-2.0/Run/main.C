@@ -18,14 +18,13 @@ using namespace AORGTOOLS;
 
 int main(int argc,char* argv[]) 
 {    
-  int runmode = 0; 
+  int runmode = AMEGIC::AMPLITUDE_MODE; 
 
   std::string path("Testrun");
   if (argc==2) {
-    if (std::string(argv[1])==std::string("-XS")) runmode = 1;
-    else {
-      path = std::string(argv[1]);
-    }
+    if (std::string(argv[1])==std::string("-XS"))         runmode = AMEGIC::XS_MODE;
+    else if (std::string(argv[1])==std::string("-P")) runmode = AMEGIC::PATCH_MODE;
+    else path = std::string(argv[1]);
   }
 
   ParticleInit(path);

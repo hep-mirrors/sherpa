@@ -10,6 +10,7 @@ using namespace AORGTOOLS;
 using namespace AMATOOLS;
 using namespace std;
 
+All_Processes::All_Processes(int _runmode): runmode(_runmode){}
 
 /*----------------------------------------------------------------------------------
   
@@ -19,7 +20,7 @@ using namespace std;
 
 void All_Processes::Add(Process_Base * _proc)
 {
-  msg.Tracking()<<"Add process "<<_proc->Name()<<" to All_Processes."<<endl;
+  msg.Tracking()<<"Add process group "<<_proc->Name()<<" to All_Processes."<<endl;
   procs.push_back(_proc);
 }
 

@@ -12,8 +12,12 @@
 #include "prof.hh"
 #include "Test_Selector.H"
 
+#include "XS_Selector.H"
+#include "Single_XS.H"
+
 using namespace AMEGIC;
 using namespace PHASIC;
+using namespace EXTRAXS;
 using namespace AORGTOOLS;
 using namespace APHYTOOLS;
 using namespace AMATOOLS;
@@ -38,12 +42,12 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
 			       ISR::ISR_Handler * _isr,BEAM::Beam_Handler * _beam,
 			       APHYTOOLS::Selector_Data * _seldata,
 			       int _gen_str,int _kfactorscheme, int _scalescheme, 
-			       Pol_Info * _pl) 
+			       Pol_Info * _pl, int _runmode) 
 {
   nin = _nin; nout = _nout; isr = _isr; beam = _beam; gen_str = _gen_str;
-  //  std::cout<<"In Single_Process : nin = "<<nin<<" nout = "<<nout<<std::endl;
   kfactorscheme = _kfactorscheme;
   scalescheme   = _scalescheme;
+  runmode       = _runmode; 
 
   flin  = new Flavour[nin];
   flout = new Flavour[nout];  
@@ -72,10 +76,22 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
     if (flout[i].IntCharge()!=0) neweak++;
   }
 
-  GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
-
   PolarizationNorm();
   Initialize(_seldata);
+
+  xsflag = 0;
+  if (_runmode!=AMPLITUDE_MODE) {
+    if ((xsflag = FindXS()) != 0) {
+      msg.Debugging()<<"In Single_Process : xs is available as fast function "<<std::endl;
+    }
+    if ((_runmode==XS_MODE) && (xsflag == 0)) {
+      msg.Debugging()<<"Error in Single_Process : xs not available as fast function ! "<<std::endl
+		     <<"                          Delete this process ! "<<std::endl;
+      return;
+    }
+  }
+
+  GenerateNames(nin,flin,plin,nout,flout,plout,name,ptypename,libname);
 
   // making directory
   int  mode_dir = 448;
@@ -84,9 +100,8 @@ Single_Process::Single_Process(int _nin,int _nout,Flavour* _fl,
 
   msg.Tracking()<<"Initialized Single_Process : "<<name
 		<<", "<<nvec<<", 1/norm = "<<1./Norm<<endl;
+
 }
-
-
 
 Single_Process::~Single_Process()
 {
@@ -109,8 +124,6 @@ Single_Process::~Single_Process()
   if (shand)    delete shand;
   if (ampl)     delete ampl;
 }
-
-
 
 /*------------------------------------------------------------------------------
   
@@ -157,10 +170,12 @@ void Single_Process::PolarizationNorm() {
   for (short int i=nin;i<nin+nout;i++)  { fl[i] = flout[i-nin]    ; pl[i] = plout[i-nin]; b[i] = 1; } 
   for (short int i=nin+nout;i<nvec;i++) { fl[i] = Flavour(kf::pol); b[i] = 1; }
 
-  Norm  = SymmetryFactors() * pol.Spin_Average(nin,flin);
+  ModNorm = pol.Spin_Average(nin,flin);
+  Norm = SymmetryFactors() * ModNorm;
 #ifndef Explicit_Pols
   pol.Attach(nin+nout,fl);
   Norm *= pol.Massive_Norm();
+  ModNorm *= pol.Massive_Norm();
 #endif
 }
 
@@ -185,8 +200,6 @@ double Single_Process::SymmetryFactors()
   return 1./sym;
 }
 
-
-
 void Single_Process::InitCuts() 
 {
   if (cuts == 0) {
@@ -195,21 +208,21 @@ void Single_Process::InitCuts()
   }
 }
 
-
-
-
-
 /*------------------------------------------------------------------------------
 
   Initializing libraries, amplitudes, etc.
 
   ------------------------------------------------------------------------------*/
 
-
-
 int Single_Process::InitAmplitude(Topology* top,Vec4D *& _testmoms,
 				   vector<double> & results,vector<Single_Process *> & links)
 {
+  if (xsflag && (runmode != AMPLITUDE_MODE)) {
+    results.push_back(1.);
+    links.push_back(this);
+    return 1;
+  }
+  if (!xsflag && (runmode == XS_MODE)) return 0;
   if (_testmoms==0) {
     msg.Debugging()<<"Init moms : "<<_testmoms<<" : "<<nin+nout<<endl;
     _testmoms = new Vec4D[nvec];
@@ -236,6 +249,7 @@ int Single_Process::InitAmplitude(Topology* top,Vec4D *& _testmoms,
 
   switch (Tests(result)) {
   case 2 : 
+    //    initflag = 0;
     for (int j=0;j<results.size();j++) {
       if (AMATOOLS::IsZero((results[j]-result)/(results[j]+result))) {
 	msg.Tracking()<<"Test : 2.  Can map "<<name<<" on "<<links[j]->Name()<<endl;
@@ -264,8 +278,6 @@ int Single_Process::InitAmplitude(Topology* top,Vec4D *& _testmoms,
     return -2;
   }
 }
-
-
 
 int Single_Process::Tests(double & result) {
   int number      = 1;
@@ -407,10 +419,6 @@ int Single_Process::Tests(double & result) {
     libname    = testname;
     return 2;
   }
-    
-
-
-
 
   /* ---------------------------------------------------
      
@@ -449,8 +457,6 @@ int Single_Process::Tests(double & result) {
   msg.Tracking()<<"string_test switched off !"<<endl;
   return 0;
 }
-
-
 
 int Single_Process::InitLibrary(double result) {
   if (shand->IsLibrary()) {
@@ -594,8 +600,6 @@ int Single_Process::InitLibrary(double result) {
   }
 }
 
-
-
 void Single_Process::CreateMappingFile() {
   char outname[100];
   sprintf(outname,"%s.map",(string("Process/")+ptypename+string("/")+name).c_str());
@@ -621,8 +625,6 @@ void Single_Process::CreateMappingFile() {
 
 }
 
-
-
 bool Single_Process::FoundMappingFile(std::string & tempname) {
   char outname[100];
   sprintf(outname,"%s.map",(string("Process/")+ptypename+string("/")+name).c_str());
@@ -637,8 +639,6 @@ bool Single_Process::FoundMappingFile(std::string & tempname) {
   return 0;
 }
 
-
-
 bool Single_Process::IsFile(string filename)
 {
   msg.Debugging()<<"Check for "<<filename<<endl;
@@ -650,17 +650,13 @@ bool Single_Process::IsFile(string filename)
   return hit;
 }
 
-
-
 void Single_Process::InitAnalysis(std::vector<APHYTOOLS::Primitive_Observable_Base *> _obs) {
-  analysis = new APHYTOOLS::Primitive_Analysis(this->Name());//check this
+  analysis = new APHYTOOLS::Primitive_Analysis(this->Name());
   for (int i=0;i<_obs.size();i++) {
     analysis->AddObservable(_obs[i]->GetCopy());
   }
   analyse  = 1;
 }
-
-
 
 bool Single_Process::SetUpIntegrator() {  
   sel->BuildCuts(cuts);
@@ -675,13 +671,11 @@ bool Single_Process::SetUpIntegrator() {
   return 0;
 }
 
-
 /*------------------------------------------------------------------------------
   
   Process management
   
   ------------------------------------------------------------------------------*/
-
 
 void Single_Process::Empty() {
   if (cuts)        { delete cuts; cuts = 0; }
@@ -708,8 +702,6 @@ void Single_Process::Empty() {
   msg.Debugging()<<"Emptied "<<name<<" partially"<<endl; 
 }
 
-
-
 void Single_Process::SetTotalXS(int tables)  { 
   if (analyse) analysis->FinishAnalysis(resdir+string("/Tab")+name,tables);
   totalxs  = totalsum/n; 
@@ -721,15 +713,11 @@ void Single_Process::SetTotalXS(int tables)  {
 			 <<"       max : "<<max<<endl;
 }
 
-
-
-
 /*------------------------------------------------------------------------------
 
   Calculating total cross sections
   
   ------------------------------------------------------------------------------*/
-
 
 bool Single_Process::CalculateTotalXSec() { 
   msg.Events()<<"In Single_Process::CalculateTotalXSec() for "<<name<<endl; 
@@ -743,8 +731,6 @@ bool Single_Process::CalculateTotalXSec() {
   if (totalxs>0.) return 1;
   return 0;
 }
-
-
 
 bool Single_Process::LookUpXSec(double ycut,bool calc,string obs) { 
   string filename = (resdir+string("/Tab")+name+string("/")+obs).c_str();
@@ -806,17 +792,12 @@ void Single_Process::AddPoint(const double value) {
   if (analyse) analysis->DoAnalysis(value*rpa.Picobarn());
 }
 
-
-
 double Single_Process::Differential(AMATOOLS::Vec4D* _moms) { return DSigma(_moms,0); }
-
-
 
 double Single_Process::Differential2() { 
   if (isr->On()==0) return 0.;
   return DSigma2(); 
 }
-
 
 double Single_Process::DSigma(AMATOOLS::Vec4D* _moms,bool lookup)
 {
@@ -839,8 +820,6 @@ double Single_Process::DSigma(AMATOOLS::Vec4D* _moms,bool lookup)
   return last = Norm * lastdxs * lastlumi;
 }
 
-
-
 double Single_Process::DSigma2() { 
   if ((flin[0]==flin[1]) || (isr->On()==0) ) return 0.;
   if (partner == this) {
@@ -851,10 +830,9 @@ double Single_Process::DSigma2() {
   return tmp;
 }
 
-
-
 double Single_Process::operator()(AMATOOLS::Vec4D * mom)
 {
+  if (xsflag) return xsec->operator()(mom) / ModNorm;
   double M2 = 0.;
 
 #ifndef Explicit_Pols   
@@ -883,7 +861,7 @@ double Single_Process::operator()(AMATOOLS::Vec4D * mom)
     ampl->ClearCalcList();
   }
 
-  return M2 * sqr(pol.Massless_Norm(nin+nout,fl,BS));
+  return M2 * sqr(pol.Massless_Norm(nin+nout,fl,BS));;
 }
 
 
@@ -894,7 +872,8 @@ double Single_Process::WeightedEvent() { return (ps->WeightedEvent()); }
 
 
 
-int     Single_Process::NumberOfDiagrams() { 
+int Single_Process::NumberOfDiagrams() { 
+  if (xsflag) return IS_XS_FLAG;
   if (partner==this) return ampl->GetGraphNumber(); 
   return             partner->NumberOfDiagrams();
 }
@@ -916,10 +895,22 @@ void Single_Process::PrintDifferential()
 		      <<lastdxs<<" @ "<<lastlumi<<", "<<endl;
 }
 
-double Single_Process::DSigma(double s, double t, double u) {
-  // this is a dummy method for the use with XS'
-  AORGTOOLS::msg.Error()<<"Error : Process_Base::Dsigma(s,t,u) called in Single_Process"<<std::endl;
+int Single_Process::FindXS()
+{
+  xsec = 0;
+  XS_Selector * xsselector = new XS_Selector(); 
+  if (xsec = xsselector->GetXS(nin, nout, fl)) {
+    return 1; 
+  }
+  return 0;
 }
+
+void Single_Process::SetXS(EXTRAXS::Single_XS * _xsec)
+{
+  if (xsec) delete xsec;
+  xsec = _xsec;
+}
+
 
 
 /*

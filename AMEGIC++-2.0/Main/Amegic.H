@@ -34,7 +34,7 @@ namespace AMEGIC {
 
     Topology                 * top;
 
-    int mode;
+    int runmode;
     
       //int ExtractFlavours(APHYTOOLS::Flavour*&,std::string);
     int ExtractFlavours(APHYTOOLS::Flavour*&,Pol_Info*&,std::string);
@@ -49,7 +49,6 @@ namespace AMEGIC {
     bool           LookUpXSec(double,bool,std::string);
     void           SingleEvents();
     bool           InitializeProcesses(int _mode=0);
-    bool           InitializeXS(int);
     Process_Base * Processes();
 
     void           SetResDir(std::string _resdir) { resdir = _resdir; }
