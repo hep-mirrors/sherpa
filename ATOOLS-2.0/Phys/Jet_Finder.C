@@ -8,7 +8,8 @@ using namespace AMATOOLS;
 
 
 Jet_Finder::~Jet_Finder() {
-  if (m_frame)   delete [] m_frame;
+  if (p_frame)   delete [] p_frame;
+  if (p_value)   delete [] p_value;
 }
 
 void Jet_Finder::Init(const AMATOOLS::Vec4D * p)
@@ -42,7 +43,7 @@ void Jet_Finder::Init(const AMATOOLS::Vec4D * p)
 }
 
 double * Jet_Finder::ActualValue() { 
-  return m_value; 
+  return p_value; 
 }
 
 /*---------------------------------------------------------------------
@@ -52,7 +53,7 @@ double * Jet_Finder::ActualValue() {
   --------------------------------------------------------------------- */
 
 Jet_Finder::Jet_Finder(double _ycut,int _type=1) : 
-  m_ycut(_ycut), m_type(_type) , m_jet_alg(1)
+  p_value(NULL), p_frame(NULL), m_ycut(_ycut), m_type(_type) , m_jet_alg(1)
 {
   AORGTOOLS::msg.Debugging()<<"Initialize the Jet_Finder : "<<std::endl
 			    <<"   Jetalg = "<<m_jet_alg<<", type = "<<m_type
@@ -65,7 +66,7 @@ Jet_Finder::Jet_Finder(double _ycut,int _type=1) :
   m_smin    = m_ycut * m_s;
   m_smax    = m_s;
 
-  m_value   = new double[1];
+  p_value   = new double[1];
 
   m_sel_log = new Selector_Log(m_name);
 }
@@ -193,7 +194,7 @@ double Jet_Finder::YminKt(Vec4D * momsin,Flavour * flavsin,std::vector<Vec4D> mo
 
 
 Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) : 
-  m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type) 
+  p_value(NULL),p_frame(NULL),m_ycut(_ycut), m_jet_alg(_jetalg), m_type(_type) 
 {
   AORGTOOLS::msg.Debugging()<<"Initialize the <"<<_n<<"> Jet_Finder : "<<std::endl;
   AORGTOOLS::msg.Debugging()<<"   Jetalg = "<<m_jet_alg<<", type = "<<m_type;
@@ -206,27 +207,27 @@ Jet_Finder::Jet_Finder(int _n,Flavour * _fl,double _ycut,int _jetalg,int _type) 
           else { m_nin = 2; m_nout = _n-2; }
 
   
-  m_frame = new Vec4D[m_nin];
+  p_frame = new Vec4D[m_nin];
   if (m_nin==1) {
     m_ene        = m_fl[0].Mass();
     m_sprime = m_s = sqr(m_ene); 
-    m_frame[0] = Vec4D(m_ene,0.,0.,0.);
-    m_cms_boost = Poincare(m_frame[0]);
+    p_frame[0] = Vec4D(m_ene,0.,0.,0.);
+    m_cms_boost = Poincare(p_frame[0]);
   }
   if (m_nin==2) {
     if((m_type>=3) || (m_type==1)) {
       m_ene      = AORGTOOLS::rpa.gen.Ecms()/2.;
       m_sprime   = m_s = sqr(2.*m_ene); 
-	m_frame[0] = Vec4D(m_ene,0.,0., sqrt(sqr(m_ene)-sqr(m_fl[0].Mass())));
-	m_frame[1] = Vec4D(m_ene,0.,0.,-sqrt(sqr(m_ene)-sqr(m_fl[1].Mass())));
+	p_frame[0] = Vec4D(m_ene,0.,0., sqrt(sqr(m_ene)-sqr(m_fl[0].Mass())));
+	p_frame[1] = Vec4D(m_ene,0.,0.,-sqrt(sqr(m_ene)-sqr(m_fl[1].Mass())));
     }    
-    if (m_type==3) m_cms_boost = Poincare(m_frame[0]+m_frame[1]);
+    if (m_type==3) m_cms_boost = Poincare(p_frame[0]+p_frame[1]);
   }
   
   m_smin = m_ycut * m_s;
   m_smax = m_s;
 
-  m_value   = new double[1];
+  p_value   = new double[1];
 
   m_sel_log = new Selector_Log(m_name);
 }
@@ -269,7 +270,7 @@ bool Jet_Finder::Trigger(const AMATOOLS::Vec4D * p)
   //for (int i=0;i<m_nin+m_nout;i++) msg.Out()<<"   "<<i<<" th mom : "<<moms[i]<<std::endl;
   delete [] moms;
 
-  m_value[0] = ymin;
+  p_value[0] = ymin;
   return (1-m_sel_log->Hit(1-trigger));
 }
 

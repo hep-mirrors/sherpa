@@ -10,12 +10,12 @@ namespace APHYTOOLS {
     int    m_jet_alg;
     int    m_type;
     double m_ycut;
-    double * m_value;
+    double * p_value;
     double m_ene, m_s, m_sprime; //, m_smin, m_smax;
     /*
       The vectors related to the frame
     */
-    AMATOOLS::Vec4D *  m_frame;
+    AMATOOLS::Vec4D *  p_frame;
     AMATOOLS::Poincare m_cms_boost;
     AMATOOLS::Poincare m_zrot;
 
